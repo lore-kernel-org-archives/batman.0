@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 23 Apr 2013 16:34:30 +0200
-Message-Id: <1366727676-23233-3-git-send-email-ordex@autistici.org>
+Date: Tue, 23 Apr 2013 16:34:32 +0200
+Message-Id: <1366727676-23233-5-git-send-email-ordex@autistici.org>
 In-Reply-To: <1366727676-23233-1-git-send-email-ordex@autistici.org>
 References: <1366727676-23233-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/7] batman-adv: use vid when computing local
-	and global TT CRC
+Subject: [B.A.T.M.A.N.] [PATCH 4/7] batman-adv: make the GW component
+	vlan-featured
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,60 +22,68 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-now that each TT entry is characterised by a VLAN ID, the
-latter has to be taken into consideration when computing the
-local/global table CRC as it would be theoretically possible
-to have the same client in two different VLANs
+The gateway code is now adapted in order to correctly
+interact with the Translation Table component by using the
+vlan ID
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- translation-table.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ gateway_client.c | 6 +++---
+ gateway_client.h | 3 ++-
+ soft-interface.c | 3 ++-
+ 3 files changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/translation-table.c b/translation-table.c
-index ae8fad0..c6effd3 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1504,7 +1504,7 @@ static uint32_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
- 	struct batadv_tt_common_entry *tt_common;
- 	struct batadv_tt_global_entry *tt_global;
- 	struct hlist_head *head;
--	uint32_t i, crc = 0;
-+	uint32_t i, crc_tmp, crc = 0;
+diff --git a/gateway_client.c b/gateway_client.c
+index 8812965..5862cff 100644
+--- a/gateway_client.c
++++ b/gateway_client.c
+@@ -635,7 +635,8 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
+ }
  
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -1535,7 +1535,9 @@ static uint32_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
- 							     orig_node))
- 				continue;
+ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
+-			    struct sk_buff *skb, struct ethhdr *ethhdr)
++			    struct sk_buff *skb, struct ethhdr *ethhdr,
++			    unsigned short vid)
+ {
+ 	struct batadv_neigh_node *neigh_curr = NULL, *neigh_old = NULL;
+ 	struct batadv_orig_node *orig_dst_node = NULL;
+@@ -649,8 +650,7 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
+ 		goto out;
  
--			crc ^= crc32c(0, tt_common->addr, ETH_ALEN);
-+			crc_tmp = crc32c(0, &tt_common->vid,
-+					 sizeof(tt_common->vid));
-+			crc ^= crc32c(crc_tmp, tt_common->addr, ETH_ALEN);
+ 	orig_dst_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
+-						 ethhdr->h_dest,
+-						 BATADV_NO_FLAGS);
++						 ethhdr->h_dest, vid);
+ 	if (!orig_dst_node)
+ 		goto out;
+ 
+diff --git a/gateway_client.h b/gateway_client.h
+index 039902d..e276d70 100644
+--- a/gateway_client.h
++++ b/gateway_client.h
+@@ -35,6 +35,7 @@ void batadv_gw_node_purge(struct batadv_priv *bat_priv);
+ int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset);
+ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len);
+ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
+-			    struct sk_buff *skb, struct ethhdr *ethhdr);
++			    struct sk_buff *skb, struct ethhdr *ethhdr,
++			    unsigned short vid);
+ 
+ #endif /* _NET_BATMAN_ADV_GATEWAY_CLIENT_H_ */
+diff --git a/soft-interface.c b/soft-interface.c
+index 8911fe5..1559854 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -267,7 +267,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 	/* unicast packet */
+ 	} else {
+ 		if (atomic_read(&bat_priv->gw_mode) != BATADV_GW_MODE_OFF) {
+-			ret = batadv_gw_out_of_range(bat_priv, skb, ethhdr);
++			ret = batadv_gw_out_of_range(bat_priv, skb, ethhdr,
++						     vid);
+ 			if (ret)
+ 				goto dropped;
  		}
- 		rcu_read_unlock();
- 	}
-@@ -1552,7 +1554,7 @@ static uint32_t batadv_tt_local_crc(struct batadv_priv *bat_priv)
- 	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
- 	struct batadv_tt_common_entry *tt_common;
- 	struct hlist_head *head;
--	uint32_t i, crc = 0;
-+	uint32_t i, crc_tmp, crc = 0;
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -1565,7 +1567,9 @@ static uint32_t batadv_tt_local_crc(struct batadv_priv *bat_priv)
- 			if (tt_common->flags & BATADV_TT_CLIENT_NEW)
- 				continue;
- 
--			crc ^= crc32c(0, tt_common->addr, ETH_ALEN);
-+			crc_tmp = crc32c(0, &tt_common->vid,
-+					 sizeof(tt_common->vid));
-+			crc ^= crc32c(crc_tmp, tt_common->addr, ETH_ALEN);
- 		}
- 		rcu_read_unlock();
- 	}
 -- 
 1.8.1.5
 
