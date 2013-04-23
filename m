@@ -1,11 +1,16 @@
 Return-Path: <ordex@autistici.org>
+Date: Tue, 23 Apr 2013 16:42:23 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 23 Apr 2013 16:34:31 +0200
-Message-Id: <1366727676-23233-4-git-send-email-ordex@autistici.org>
-In-Reply-To: <1366727676-23233-1-git-send-email-ordex@autistici.org>
+Message-ID: <20130423144223.GC5957@ritirata.org>
 References: <1366727676-23233-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 3/7] batman-adv: print the VID together with
-	the TT entries
+ <1366727676-23233-5-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="WplhKdTI2c8ulnbP"
+Content-Disposition: inline
+In-Reply-To: <1366727676-23233-5-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 4/7] batman-adv: make the GW component
+ vlan-featured
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,248 +25,52 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
----
- translation-table.c | 82 ++++++++++++++++++++++++++++++++---------------------
- 1 file changed, 50 insertions(+), 32 deletions(-)
+--WplhKdTI2c8ulnbP
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/translation-table.c b/translation-table.c
-index c6effd3..fc4d10e 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -322,8 +322,9 @@ static void batadv_tt_global_free(struct batadv_priv *bat_priv,
- 				  const char *message)
- {
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
--		   "Deleting global tt entry %pM: %s\n",
--		   tt_global->common.addr, message);
-+		   "Deleting global tt entry %pM (vid: %d): %s\n",
-+		   tt_global->common.addr,
-+		   BATADV_PRINT_VID(tt_global->common.vid), message);
- 
- 	batadv_hash_remove(bat_priv->tt.global_hash, batadv_compare_tt,
- 			   batadv_choose_tt, &tt_global->common);
-@@ -357,7 +358,8 @@ void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 		tt_local->last_seen = jiffies;
- 		if (tt_local->common.flags & BATADV_TT_CLIENT_PENDING) {
- 			batadv_dbg(BATADV_DBG_TT, bat_priv,
--				   "Re-adding pending client %pM\n", addr);
-+				   "Re-adding pending client %pM (vid: %d)\n",
-+				   addr, BATADV_PRINT_VID(vid));
- 			/* whatever the reason why the PENDING flag was set,
- 			 * this is a client which was enqueued to be removed in
- 			 * this orig_interval. Since it popped up again, the
-@@ -369,8 +371,8 @@ void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 
- 		if (tt_local->common.flags & BATADV_TT_CLIENT_ROAM) {
- 			batadv_dbg(BATADV_DBG_TT, bat_priv,
--				   "Roaming client %pM came back to its original location\n",
--				   addr);
-+				   "Roaming client %pM (vid: %d) came back to its original location\n",
-+				   addr, BATADV_PRINT_VID(vid));
- 			/* the ROAM flag is set because this client roamed away
- 			 * and the node got a roaming_advertisement message. Now
- 			 * that the client popped up again at its original
-@@ -387,7 +389,8 @@ void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 		goto out;
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
--		   "Creating new local tt entry: %pM (ttvn: %d)\n", addr,
-+		   "Creating new local tt entry: %pM (vid: %d, ttvn: %d)\n",
-+		   addr, BATADV_PRINT_VID(vid),
- 		   (uint8_t)atomic_read(&bat_priv->tt.vn));
- 
- 	memcpy(tt_local->common.addr, addr, ETH_ALEN);
-@@ -556,8 +559,8 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 		   "Locally retrieved addresses (from %s) announced via TT (TTVN: %u CRC: %#.8x):\n",
- 		   net_dev->name, (uint8_t)atomic_read(&bat_priv->tt.vn),
- 		   bat_priv->tt.local_crc);
--	seq_printf(seq, "       %-13s %-7s %-10s\n", "Client", "Flags",
--		   "Last seen");
-+	seq_printf(seq, "       %-13s  %s %-7s %-10s\n", "Client", "VID",
-+		   "Flags", "Last seen");
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -575,8 +578,9 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 
- 			no_purge = tt_common_entry->flags & np_flag;
- 
--			seq_printf(seq, " * %pM [%c%c%c%c%c] %3u.%03u\n",
-+			seq_printf(seq, " * %pM %4i [%c%c%c%c%c] %3u.%03u\n",
- 				   tt_common_entry->addr,
-+				   BATADV_PRINT_VID(tt_common_entry->vid),
- 				   (tt_common_entry->flags &
- 				    BATADV_TT_CLIENT_ROAM ? 'R' : '.'),
- 				   no_purge ? 'P' : '.',
-@@ -611,8 +615,9 @@ batadv_tt_local_set_pending(struct batadv_priv *bat_priv,
- 	tt_local_entry->common.flags |= BATADV_TT_CLIENT_PENDING;
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
--		   "Local tt entry (%pM) pending to be removed: %s\n",
--		   tt_local_entry->common.addr, message);
-+		   "Local tt entry (%pM, vid: %d) pending to be removed: %s\n",
-+		   tt_local_entry->common.addr,
-+		   BATADV_PRINT_VID(tt_local_entry->common.vid), message);
- }
- 
- /**
-@@ -987,8 +992,9 @@ add_orig_entry:
- 	batadv_tt_global_orig_entry_add(tt_global_entry, orig_node, ttvn);
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
--		   "Creating new global tt entry: %pM (via %pM)\n",
--		   common->addr, orig_node->orig);
-+		   "Creating new global tt entry: %pM (vid: %d, via %pM)\n",
-+		   common->addr, BATADV_PRINT_VID(common->vid),
-+		   orig_node->orig);
- 	ret = 1;
- 
- out_remove:
-@@ -1068,8 +1074,9 @@ batadv_tt_global_print_entry(struct batadv_tt_global_entry *tt_global_entry,
- 	if (best_entry) {
- 		last_ttvn = atomic_read(&best_entry->orig_node->last_ttvn);
- 		seq_printf(seq,
--			   " %c %pM  (%3u) via %pM     (%3u)   (%#.8x) [%c%c%c]\n",
-+			   " %c %pM %4i   (%3u) via %pM     (%3u)   (%#.8x) [%c%c%c]\n",
- 			   '*', tt_global_entry->common.addr,
-+			   BATADV_PRINT_VID(tt_global_entry->common.vid),
- 			   best_entry->ttvn, best_entry->orig_node->orig,
- 			   last_ttvn, best_entry->orig_node->tt_crc,
- 			   (flags & BATADV_TT_CLIENT_ROAM ? 'R' : '.'),
-@@ -1084,8 +1091,10 @@ batadv_tt_global_print_entry(struct batadv_tt_global_entry *tt_global_entry,
- 			continue;
- 
- 		last_ttvn = atomic_read(&orig_entry->orig_node->last_ttvn);
--		seq_printf(seq,	" %c %pM  (%3u) via %pM     (%3u)   [%c%c%c]\n",
-+		seq_printf(seq,
-+			   " %c %pM %4d   (%3u) via %pM     (%3u)   [%c%c%c]\n",
- 			   '+', tt_global_entry->common.addr,
-+			   BATADV_PRINT_VID(tt_global_entry->common.vid),
- 			   orig_entry->ttvn, orig_entry->orig_node->orig,
- 			   last_ttvn,
- 			   (flags & BATADV_TT_CLIENT_ROAM ? 'R' : '.'),
-@@ -1112,9 +1121,9 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq,
- 		   "Globally announced TT entries received via the mesh %s\n",
- 		   net_dev->name);
--	seq_printf(seq, "       %-13s %s       %-15s %s (%-10s) %s\n",
--		   "Client", "(TTVN)", "Originator", "(Curr TTVN)", "CRC",
--		   "Flags");
-+	seq_printf(seq, "       %-13s  %s  %s       %-15s %s (%-10s) %s\n",
-+		   "Client", "VID", "(TTVN)", "Originator", "(Curr TTVN)",
-+		   "CRC", "Flags");
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -1161,15 +1170,18 @@ batadv_tt_global_del_orig_entry(struct batadv_priv *bat_priv,
- 	struct hlist_head *head;
- 	struct hlist_node *safe;
- 	struct batadv_tt_orig_list_entry *orig_entry;
-+	unsigned short vid;
- 
- 	spin_lock_bh(&tt_global_entry->list_lock);
- 	head = &tt_global_entry->orig_list;
- 	hlist_for_each_entry_safe(orig_entry, safe, head, list) {
- 		if (orig_entry->orig_node == orig_node) {
-+			vid = tt_global_entry->common.vid;
- 			batadv_dbg(BATADV_DBG_TT, bat_priv,
--				   "Deleting %pM from global tt entry %pM: %s\n",
-+				   "Deleting %pM from global tt entry %pM (vid: %d): %s\n",
- 				   orig_node->orig,
--				   tt_global_entry->common.addr, message);
-+				   tt_global_entry->common.addr,
-+				   BATADV_PRINT_VID(vid), message);
- 			hlist_del_rcu(&orig_entry->list);
- 			batadv_tt_orig_list_entry_free_ref(orig_entry);
- 		}
-@@ -1293,6 +1305,7 @@ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
- 	struct hlist_node *safe;
- 	struct hlist_head *head;
- 	spinlock_t *list_lock; /* protects write access to the hash lists */
-+	unsigned short vid;
- 
- 	if (!hash)
- 		return;
-@@ -1312,9 +1325,11 @@ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
- 							orig_node, message);
- 
- 			if (hlist_empty(&tt_global->orig_list)) {
-+				vid = tt_global->common.vid;
- 				batadv_dbg(BATADV_DBG_TT, bat_priv,
--					   "Deleting global tt entry %pM: %s\n",
--					   tt_global->common.addr, message);
-+					   "Deleting global tt entry %pM (vid: %d): %s\n",
-+					   tt_global->common.addr,
-+					   BATADV_PRINT_VID(vid), message);
- 				hlist_del_rcu(&tt_common_entry->hash_entry);
- 				batadv_tt_global_entry_free_ref(tt_global);
- 			}
-@@ -1372,8 +1387,10 @@ static void batadv_tt_global_purge(struct batadv_priv *bat_priv)
- 				continue;
- 
- 			batadv_dbg(BATADV_DBG_TT, bat_priv,
--				   "Deleting global tt entry (%pM): %s\n",
--				   tt_global->common.addr, msg);
-+				   "Deleting global tt entry %pM (vid: %d): %s\n",
-+				   tt_global->common.addr,
-+				   BATADV_PRINT_VID(tt_global->common.vid),
-+				   msg);
- 
- 			hlist_del_rcu(&tt_common->hash_entry);
- 
-@@ -2334,8 +2351,8 @@ static void batadv_send_roam_adv(struct batadv_priv *bat_priv, uint8_t *client,
- 		goto out;
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
--		   "Sending ROAMING_ADV to %pM (client %pM)\n",
--		   orig_node->orig, client);
-+		   "Sending ROAMING_ADV to %pM (client %pM, vid: %d)\n",
-+		   orig_node->orig, client, BATADV_PRINT_VID(vid));
- 
- 	batadv_inc_counter(bat_priv, BATADV_CNT_TT_ROAM_ADV_TX);
- 
-@@ -2448,8 +2465,9 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
- 				continue;
- 
- 			batadv_dbg(BATADV_DBG_TT, bat_priv,
--				   "Deleting local tt entry (%pM): pending\n",
--				   tt_common->addr);
-+				   "Deleting local tt entry (%pM, vid: %d): pending\n",
-+				   tt_common->addr,
-+				   BATADV_PRINT_VID(tt_common->vid));
- 
- 			atomic_dec(&bat_priv->tt.local_entry_num);
- 			hlist_del_rcu(&tt_common->hash_entry);
-@@ -2662,7 +2680,7 @@ out:
- bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
- 					  struct batadv_orig_node *orig_node,
- 					  const unsigned char *addr,
--					  unsigned short vlan)
-+					  unsigned short vid)
- {
- 	bool ret = false;
- 
-@@ -2673,14 +2691,14 @@ bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
- 	if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig))
- 		goto out;
- 
--	if (!batadv_tt_global_add(bat_priv, orig_node, addr, vlan,
-+	if (!batadv_tt_global_add(bat_priv, orig_node, addr, vid,
- 				  BATADV_TT_CLIENT_TEMP,
- 				  atomic_read(&orig_node->last_ttvn)))
- 		goto out;
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
--		   "Added temporary global client (addr: %pM orig: %pM)\n",
--		   addr, orig_node->orig);
-+		   "Added temporary global client (addr: %pM, vid: %d, orig: %pM)\n",
-+		   addr, BATADV_PRINT_VID(vid), orig_node->orig);
- 	ret = true;
- out:
- 	return ret;
--- 
-1.8.1.5
+On Tue, Apr 23, 2013 at 04:34:32PM +0200, Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+>=20
+> The gateway code is now adapted in order to correctly
+> interact with the Translation Table component by using the
+> vlan ID
+>=20
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 
+Ooops, this patch has been sent by accident. Please ignore it.
+There is another patch correct patch 4 on the ml.
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--WplhKdTI2c8ulnbP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRdp3PAAoJEADl0hg6qKeOT8sP/1DYNqrf2HjX37wegvFU8rAp
+5TWbKATKS6W2EMixNfFzhn3ZXKu9FrCgqS6V4iXA5LZoPfgu4QuZrwopfGJognVh
+JleP+3o8V21ysSNyT2pxdzlosslrJZTJmthBBsWJpfUNdXnVn5Q4/4DYtm5L/uGE
+ffyPWx9zuonGsD27fjBTsQ44jmnyDA8tN/IV+34l9GX2I02OzcVgRyYmhzWJVjBp
+QAhtwFCQWy4nh3H0QUX86wJ5sKDqAwCIxibwaIXQ22KVQ8sM3ezePp5UoUrKNmk0
+xiwMR1zOfMTRK9FyuR0PLOcZJ/fjqXhKRFUrUCAfoFYBa4v8wXAAfcqzwiZaXuaG
+TSeWhAf4xRjQQuNHgzKOuC67h/g8HlXzN/O+0QCJPvdtguZBi+eWtemnwiGLD0d0
+97MmzJH+sWAM4jBen3c5kLajwhoaBB3sQPd7cozdf0vm6epnCyEpCA7PpZ7DlzTj
++pwKa5+dRfm9OhfI4Io0qBrRwxExBlci0y78GIOH7a6Sf+4TIlkpx89/iJyJKQ4n
+C0yF4akOqZ0CiKsoiK8zX2JybqfGssqmBpZgqwhxU2PR6LW+bqM0I/Azh826Tjzi
+34YGcHc1PjXOKE/0iSXgZjDHFe/XY4z6t1PTfS5uf0XiYielQTXNLcJpov/oTlAe
+BG64nMBesXs5BZtGAvAQ
+=wi2m
+-----END PGP SIGNATURE-----
+
+--WplhKdTI2c8ulnbP--
