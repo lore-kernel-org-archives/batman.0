@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 23 Apr 2013 16:34:34 +0200
-Message-Id: <1366727676-23233-7-git-send-email-ordex@autistici.org>
+Date: Tue, 23 Apr 2013 16:34:35 +0200
+Message-Id: <1366727676-23233-8-git-send-email-ordex@autistici.org>
 In-Reply-To: <1366727676-23233-1-git-send-email-ordex@autistici.org>
 References: <1366727676-23233-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 5/7] batman-adv: make the Distributed ARP
-	Table vlan aware
+Subject: [B.A.T.M.A.N.] [PATCH 6/7] batman-adv: add per VLAN interface
+	attribute framework
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,352 +22,244 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-The same IP subnet can be used on different VLANs, therefore
-DAT has to differentiate whether the IP to resolve belongs
-to one or the other virtual LAN.
-To accomplish this task DAT has to deal with the VLAN tag
-and store it together with each ARP entry.
+Since batman-adv is now fully VLAN-aware, a proper framework
+able to handle per-vlan-interface attributes is now needed.
+Those attributes will affect the associated VLAN interface
+only, rather than the real soft_iface (which would result
+in every vlan interface having the same attribute
+configuration)
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- distributed-arp-table.c | 129 +++++++++++++++++++++++++++++++++---------------
- types.h                 |   2 +
- 2 files changed, 92 insertions(+), 39 deletions(-)
+ main.c           | 44 ++++++++++++++++++++++++++++++++++++
+ main.h           |  3 +++
+ soft-interface.c | 69 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ types.h          | 21 +++++++++++++++++
+ 4 files changed, 137 insertions(+)
 
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index 2123ab2..d05de52 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -19,6 +19,7 @@
+diff --git a/main.c b/main.c
+index 689cf49..d1a049d 100644
+--- a/main.c
++++ b/main.c
+@@ -108,6 +108,7 @@ int batadv_mesh_init(struct net_device *soft_iface)
+ 	spin_lock_init(&bat_priv->gw.list_lock);
+ 	spin_lock_init(&bat_priv->tvlv.container_list_lock);
+ 	spin_lock_init(&bat_priv->tvlv.handler_list_lock);
++	spin_lock_init(&bat_priv->priv_vlan_list_lock);
  
- #include <linux/if_ether.h>
- #include <linux/if_arp.h>
-+#include <linux/if_vlan.h>
- #include <net/arp.h>
+ 	INIT_HLIST_HEAD(&bat_priv->forw_bat_list);
+ 	INIT_HLIST_HEAD(&bat_priv->forw_bcast_list);
+@@ -117,6 +118,7 @@ int batadv_mesh_init(struct net_device *soft_iface)
+ 	INIT_LIST_HEAD(&bat_priv->tt.roam_list);
+ 	INIT_HLIST_HEAD(&bat_priv->tvlv.container_list);
+ 	INIT_HLIST_HEAD(&bat_priv->tvlv.handler_list);
++	INIT_LIST_HEAD(&bat_priv->priv_vlan_list);
  
- #include "main.h"
-@@ -205,15 +206,11 @@ static __be32 batadv_arp_ip_dst(struct sk_buff *skb, int hdr_size)
-  */
- static uint32_t batadv_hash_dat(const void *data, uint32_t size)
- {
--	const unsigned char *key = data;
- 	uint32_t hash = 0;
--	size_t i;
-+	const struct batadv_dat_entry *dat = data;
- 
--	for (i = 0; i < 4; i++) {
--		hash += key[i];
--		hash += (hash << 10);
--		hash ^= (hash >> 6);
--	}
-+	hash = batadv_hash_bytes(hash, &dat->ip, sizeof(dat->ip));
-+	hash = batadv_hash_bytes(hash, &dat->vid, sizeof(dat->vid));
- 
- 	hash += (hash << 3);
- 	hash ^= (hash >> 11);
-@@ -227,21 +224,26 @@ static uint32_t batadv_hash_dat(const void *data, uint32_t size)
-  * table
-  * @bat_priv: the bat priv with all the soft interface information
-  * @ip: search key
-+ * @vid: VLAN identifier
-  *
-  * Returns the dat_entry if found, NULL otherwise.
-  */
- static struct batadv_dat_entry *
--batadv_dat_entry_hash_find(struct batadv_priv *bat_priv, __be32 ip)
-+batadv_dat_entry_hash_find(struct batadv_priv *bat_priv, __be32 ip,
-+			   unsigned short vid)
- {
- 	struct hlist_head *head;
--	struct batadv_dat_entry *dat_entry, *dat_entry_tmp = NULL;
-+	struct batadv_dat_entry to_find, *dat_entry, *dat_entry_tmp = NULL;
- 	struct batadv_hashtable *hash = bat_priv->dat.hash;
- 	uint32_t index;
- 
- 	if (!hash)
- 		return NULL;
- 
--	index = batadv_hash_dat(&ip, hash->size);
-+	to_find.ip = ip;
-+	to_find.vid = vid;
-+
-+	index = batadv_hash_dat(&to_find, hash->size);
- 	head = &hash->table[index];
- 
- 	rcu_read_lock();
-@@ -267,20 +269,20 @@ batadv_dat_entry_hash_find(struct batadv_priv *bat_priv, __be32 ip)
-  * @mac_addr: mac address to assign to the given ipv4
-  */
- static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
--				 uint8_t *mac_addr)
-+				 uint8_t *mac_addr, unsigned short vid)
- {
- 	struct batadv_dat_entry *dat_entry;
- 	int hash_added;
- 
--	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip);
-+	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip, vid);
- 	/* if this entry is already known, just update it */
- 	if (dat_entry) {
- 		if (!batadv_compare_eth(dat_entry->mac_addr, mac_addr))
- 			memcpy(dat_entry->mac_addr, mac_addr, ETH_ALEN);
- 		dat_entry->last_update = jiffies;
- 		batadv_dbg(BATADV_DBG_DAT, bat_priv,
--			   "Entry updated: %pI4 %pM\n", &dat_entry->ip,
--			   dat_entry->mac_addr);
-+			   "Entry updated: %pI4 %pM (vid: %u)\n",
-+			   &dat_entry->ip, dat_entry->mac_addr, vid);
- 		goto out;
- 	}
- 
-@@ -289,12 +291,13 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
- 		goto out;
- 
- 	dat_entry->ip = ip;
-+	dat_entry->vid = vid;
- 	memcpy(dat_entry->mac_addr, mac_addr, ETH_ALEN);
- 	dat_entry->last_update = jiffies;
- 	atomic_set(&dat_entry->refcount, 2);
- 
- 	hash_added = batadv_hash_add(bat_priv->dat.hash, batadv_compare_dat,
--				     batadv_hash_dat, &dat_entry->ip,
-+				     batadv_hash_dat, dat_entry,
- 				     &dat_entry->hash_entry);
- 
- 	if (unlikely(hash_added != 0)) {
-@@ -303,8 +306,8 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
- 		goto out;
- 	}
- 
--	batadv_dbg(BATADV_DBG_DAT, bat_priv, "New entry added: %pI4 %pM\n",
--		   &dat_entry->ip, dat_entry->mac_addr);
-+	batadv_dbg(BATADV_DBG_DAT, bat_priv, "New entry added: %pI4 %pM (vid: %u)\n",
-+		   &dat_entry->ip, dat_entry->mac_addr, vid);
- 
- out:
- 	if (dat_entry)
-@@ -858,6 +861,38 @@ out:
+ 	ret = batadv_originator_init(bat_priv);
+ 	if (ret < 0)
+@@ -1099,6 +1101,48 @@ out:
+ 		batadv_orig_node_free_ref(orig_node);
  }
  
- /**
-+ * batadv_dat_get_vid - extract the VLAN identifier from skb if any
-+ * @skb: the buffer containing the packet to extract the VID from
-+ * @hdr_size: the size of the batman-adv header encapsulating the packet
-+ *
-+ * If the packet contained in skb is vlan tagged then this function returns the
-+ * VID with the BATADV_VLAN_HAS_TAG flag. Otherwise returns BATADV_NO_FLAGS
++/**
++ * batadv_priv_vlan_free_ref - decrease vlan refcounter and possibly free it
++ * @priv_vlan: the vlan object to release
 + */
-+static unsigned short batadv_dat_get_vid(struct sk_buff *skb, int *hdr_size)
++void batadv_priv_vlan_free_ref(struct batadv_priv_vlan *priv_vlan)
 +{
-+	struct ethhdr *ethhdr;
-+	struct vlan_ethhdr *vhdr;
-+	unsigned short vid;
-+
-+	ethhdr = (struct ethhdr *)skb->data + *hdr_size;
-+
-+	if (ntohs(ethhdr->h_proto) != ETH_P_8021Q)
-+		return BATADV_NO_FLAGS;
-+
-+	vhdr = (struct vlan_ethhdr *)ethhdr;
-+	vid = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
-+	vid |= BATADV_VLAN_HAS_TAG;
-+	/* ARP parsing functions jump forward of hdr_size + ETH_HLEN.
-+	 * If the header contained in the packet is a VLAN one (which is longer)
-+	 * hdr_size is updated so that the functions will still jump the
-+	 * correct amount of bytes
-+	 */
-+	*hdr_size += VLAN_HLEN;
-+
-+	return vid;
++	if (atomic_dec_and_test(&priv_vlan->refcount))
++		kfree_rcu(priv_vlan, rcu);
 +}
 +
 +/**
-  * batadv_dat_snoop_outgoing_arp_request - snoop the ARP request and try to
-  * answer using DAT
-  * @bat_priv: the bat priv with all the soft interface information
-@@ -876,11 +911,15 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 	bool ret = false;
- 	struct batadv_dat_entry *dat_entry = NULL;
- 	struct sk_buff *skb_new;
-+	int hdr_size = 0;
-+	unsigned short vid;
- 
- 	if (!atomic_read(&bat_priv->distributed_arp_table))
- 		goto out;
- 
--	type = batadv_arp_get_type(bat_priv, skb, 0);
-+	vid = batadv_dat_get_vid(skb, &hdr_size);
++ * batadv_get_priv_vlan - get VLAN priv data
++ * @bat_priv: the bat priv with all the soft interface information
++ * @vid: the identifier of the VLAN data to retrieve
++ *
++ * Return the private data of the VLAN matching vid and increments its
++ * refcounter or NULL otherwise.
++ */
++struct batadv_priv_vlan *batadv_get_priv_vlan(struct batadv_priv *bat_priv,
++					      unsigned short vid)
++{
++	struct batadv_priv_vlan *vlan, *vlan_tmp = NULL;
 +
-+	type = batadv_arp_get_type(bat_priv, skb, hdr_size);
- 	/* If the node gets an ARP_REQUEST it has to send a DHT_GET unicast
- 	 * message to the selected DHT candidates
- 	 */
-@@ -893,9 +932,9 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 	hw_src = batadv_arp_hw_src(skb, 0);
- 	ip_dst = batadv_arp_ip_dst(skb, 0);
- 
--	batadv_dat_entry_add(bat_priv, ip_src, hw_src);
-+	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
- 
--	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst);
-+	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst, vid);
- 	if (dat_entry) {
- 		skb_new = arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
- 				     bat_priv->soft_iface, ip_dst, hw_src,
-@@ -942,11 +981,14 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 	struct sk_buff *skb_new;
- 	struct batadv_dat_entry *dat_entry = NULL;
- 	bool ret = false;
-+	unsigned short vid;
- 	int err;
- 
- 	if (!atomic_read(&bat_priv->distributed_arp_table))
- 		goto out;
- 
-+	vid = batadv_dat_get_vid(skb, &hdr_size);
++	if (!(vid & BATADV_VID_MASK))
++		return NULL;
 +
- 	type = batadv_arp_get_type(bat_priv, skb, hdr_size);
- 	if (type != ARPOP_REQUEST)
- 		goto out;
-@@ -958,9 +1000,9 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
- 		       "Parsing incoming ARP REQUEST");
- 
--	batadv_dat_entry_add(bat_priv, ip_src, hw_src);
-+	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
- 
--	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst);
-+	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst, vid);
- 	if (!dat_entry)
- 		goto out;
- 
-@@ -978,10 +1020,9 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 	if (hdr_size == sizeof(struct batadv_unicast_4addr_packet))
- 		err = batadv_send_skb_4addr_unicast(bat_priv, skb_new,
- 						    BATADV_P_DAT_CACHE_REPLY,
--						    BATADV_NO_FLAGS);
-+						    vid);
- 	else
--		err = batadv_send_skb_unicast(bat_priv, skb_new,
--					      BATADV_NO_FLAGS);
-+		err = batadv_send_skb_unicast(bat_priv, skb_new, vid);
- 
- 	if (!err) {
- 		batadv_inc_counter(bat_priv, BATADV_CNT_DAT_CACHED_REPLY_TX);
-@@ -1006,23 +1047,27 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 	uint16_t type;
- 	__be32 ip_src, ip_dst;
- 	uint8_t *hw_src, *hw_dst;
-+	int hdr_size = 0;
-+	unsigned short vid;
- 
- 	if (!atomic_read(&bat_priv->distributed_arp_table))
- 		return;
- 
--	type = batadv_arp_get_type(bat_priv, skb, 0);
-+	vid = batadv_dat_get_vid(skb, &hdr_size);
++	rcu_read_lock();
++	list_for_each_entry_rcu(vlan, &bat_priv->priv_vlan_list, list) {
++		if (vlan->vid != (vid & BATADV_VID_MASK))
++			continue;
 +
-+	type = batadv_arp_get_type(bat_priv, skb, hdr_size);
- 	if (type != ARPOP_REPLY)
- 		return;
- 
- 	batadv_dbg_arp(bat_priv, skb, type, 0, "Parsing outgoing ARP REPLY");
- 
--	hw_src = batadv_arp_hw_src(skb, 0);
--	ip_src = batadv_arp_ip_src(skb, 0);
--	hw_dst = batadv_arp_hw_dst(skb, 0);
--	ip_dst = batadv_arp_ip_dst(skb, 0);
-+	hw_src = batadv_arp_hw_src(skb, hdr_size);
-+	ip_src = batadv_arp_ip_src(skb, hdr_size);
-+	hw_dst = batadv_arp_hw_dst(skb, hdr_size);
-+	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
- 
--	batadv_dat_entry_add(bat_priv, ip_src, hw_src);
--	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst);
-+	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
-+	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
- 
- 	/* Send the ARP reply to the candidates for both the IP addresses that
- 	 * the node obtained from the ARP reply
-@@ -1044,10 +1089,13 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	__be32 ip_src, ip_dst;
- 	uint8_t *hw_src, *hw_dst;
- 	bool ret = false;
-+	unsigned short vid;
- 
- 	if (!atomic_read(&bat_priv->distributed_arp_table))
- 		goto out;
- 
-+	vid = batadv_dat_get_vid(skb, &hdr_size);
++		if (!atomic_inc_not_zero(&vlan->refcount))
++			continue;
 +
- 	type = batadv_arp_get_type(bat_priv, skb, hdr_size);
- 	if (type != ARPOP_REPLY)
- 		goto out;
-@@ -1063,13 +1111,13 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	/* Update our internal cache with both the IP addresses the node got
- 	 * within the ARP reply
- 	 */
--	batadv_dat_entry_add(bat_priv, ip_src, hw_src);
--	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst);
-+	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
-+	batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
- 
- 	/* if this REPLY is directed to a client of mine, let's deliver the
- 	 * packet to the interface
- 	 */
--	ret = !batadv_is_my_client(bat_priv, hw_dst, BATADV_NO_FLAGS);
-+	ret = !batadv_is_my_client(bat_priv, hw_dst, vid);
- out:
- 	if (ret)
- 		kfree_skb(skb);
-@@ -1092,7 +1140,8 @@ bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
- 	__be32 ip_dst;
- 	struct batadv_dat_entry *dat_entry = NULL;
- 	bool ret = false;
--	const size_t bcast_len = sizeof(struct batadv_bcast_packet);
-+	int hdr_size = sizeof(struct batadv_bcast_packet);
-+	unsigned short vid;
- 
- 	if (!atomic_read(&bat_priv->distributed_arp_table))
- 		goto out;
-@@ -1103,12 +1152,14 @@ bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
- 	if (forw_packet->num_packets)
- 		goto out;
- 
--	type = batadv_arp_get_type(bat_priv, forw_packet->skb, bcast_len);
-+	vid = batadv_dat_get_vid(forw_packet->skb, &hdr_size);
++		vlan_tmp = vlan;
++		break;
++	}
++	rcu_read_unlock();
 +
-+	type = batadv_arp_get_type(bat_priv, forw_packet->skb, hdr_size);
- 	if (type != ARPOP_REQUEST)
- 		goto out;
++	return vlan_tmp;
++}
++
+ static int batadv_param_set_ra(const char *val, const struct kernel_param *kp)
+ {
+ 	struct batadv_algo_ops *bat_algo_ops;
+diff --git a/main.h b/main.h
+index a60ab1b..175c0d1 100644
+--- a/main.h
++++ b/main.h
+@@ -196,6 +196,9 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
+ int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
+ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
+ __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr);
++void batadv_priv_vlan_free_ref(struct batadv_priv_vlan *priv_vlan);
++struct batadv_priv_vlan *batadv_get_priv_vlan(struct batadv_priv *bat_priv,
++					      unsigned short vid);
  
--	ip_dst = batadv_arp_ip_dst(forw_packet->skb, bcast_len);
--	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst);
-+	ip_dst = batadv_arp_ip_dst(forw_packet->skb, hdr_size);
-+	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst, vid);
- 	/* check if the node already got this entry */
- 	if (!dat_entry) {
- 		batadv_dbg(BATADV_DBG_DAT, bat_priv,
+ /**
+  * enum batadv_dbg_level - available log levels
+diff --git a/soft-interface.c b/soft-interface.c
+index 8911fe5..986e8e5 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -373,6 +373,72 @@ out:
+ 	return;
+ }
+ 
++/**
++ * batadv_add_vid - ndo_add_vid API implementation
++ * @dev: the netdev of the mesh interface
++ * @vid: identifier of the new VLAN
++ *
++ * Set up all the internal structures for handling the new VLAN on top of the
++ * mesh interface
++ */
++static int batadv_add_vid(struct net_device *dev, unsigned short vid)
++{
++	struct batadv_priv *bat_priv = netdev_priv(dev);
++	struct batadv_priv_vlan *vlan;
++
++	vlan = kmalloc(sizeof(*vlan), GFP_ATOMIC);
++	if (!vlan)
++		return -ENOMEM;
++
++	vlan->vid = vid;
++	atomic_set(&vlan->refcount, 1);
++
++	/* add a new TT local entry. This one will be marked with the NOPURGE
++	 * flag
++	 */
++	batadv_tt_local_add(dev, dev->dev_addr, vid | BATADV_VLAN_HAS_TAG,
++			    BATADV_NULL_IFINDEX);
++
++	spin_lock_bh(&bat_priv->priv_vlan_list_lock);
++	list_add_rcu(&vlan->list, &bat_priv->priv_vlan_list);
++	spin_unlock_bh(&bat_priv->priv_vlan_list_lock);
++
++	return 0;
++}
++
++/**
++ * batadv_kill_vid - ndo_kill_vid API implementation
++ * @dev: the netdev of the mesh interface
++ * @vid: identifier of the deleted VLAN
++ *
++ * Destroy all the internal structures used to handle the VLAN identified by vid
++ * on top of the mesh interface
++ */
++static int batadv_kill_vid(struct net_device *dev, unsigned short vid)
++{
++	struct batadv_priv *bat_priv = netdev_priv(dev);
++	struct batadv_priv_vlan *vlan, *vlan_tmp = NULL;
++
++	list_for_each_entry_rcu(vlan, &bat_priv->priv_vlan_list, list) {
++		if (vlan->vid != vid)
++			continue;
++		vlan_tmp = vlan;
++		break;
++	}
++
++	spin_lock_bh(&bat_priv->priv_vlan_list_lock);
++	list_del_rcu(&vlan->list);
++	spin_unlock_bh(&bat_priv->priv_vlan_list_lock);
++
++	/* explicitly remove the associated TT local entry because it is marked
++	 * with the NOPURGE flag
++	 */
++	batadv_tt_local_remove(bat_priv, dev->dev_addr, vid,
++			       "vlan interface destroyed", false);
++
++	return 0;
++}
++
+ /* batman-adv network devices have devices nesting below it and are a special
+  * "super class" of normal network devices; split their locks off into a
+  * separate class since they always nest.
+@@ -573,6 +639,8 @@ static const struct net_device_ops batadv_netdev_ops = {
+ 	.ndo_open = batadv_interface_open,
+ 	.ndo_stop = batadv_interface_release,
+ 	.ndo_get_stats = batadv_interface_stats,
++	.ndo_vlan_rx_add_vid = batadv_add_vid,
++	.ndo_vlan_rx_kill_vid = batadv_kill_vid,
+ 	.ndo_set_mac_address = batadv_interface_set_mac_addr,
+ 	.ndo_change_mtu = batadv_interface_change_mtu,
+ 	.ndo_start_xmit = batadv_interface_tx,
+@@ -611,6 +679,7 @@ static void batadv_softif_init_early(struct net_device *dev)
+ 
+ 	dev->netdev_ops = &batadv_netdev_ops;
+ 	dev->destructor = batadv_softif_free;
++	dev->features |= NETIF_F_HW_VLAN_FILTER;
+ 	dev->tx_queue_len = 0;
+ 
+ 	/* can't call min_mtu, because the needed variables
 diff --git a/types.h b/types.h
-index 20bf2e6..ddeb497 100644
+index ddeb497..956d66b 100644
 --- a/types.h
 +++ b/types.h
-@@ -930,6 +930,7 @@ struct batadv_algo_ops {
-  * is used to stored ARP entries needed for the global DAT cache
-  * @ip: the IPv4 corresponding to this DAT/ARP entry
-  * @mac_addr: the MAC address associated to the stored IPv4
-+ * @vid: the vlan ID associated to this entry
-  * @last_update: time in jiffies when this entry was refreshed last time
-  * @hash_entry: hlist node for batadv_priv_dat::hash
-  * @refcount: number of contexts the object is used
-@@ -938,6 +939,7 @@ struct batadv_algo_ops {
- struct batadv_dat_entry {
- 	__be32 ip;
- 	uint8_t mac_addr[ETH_ALEN];
+@@ -526,6 +526,22 @@ struct batadv_priv_nc {
+ 	struct batadv_hashtable *decoding_hash;
+ };
+ 
++/*
++ * struct batadv_priv_vlan - per VLAN attributes set
++ * @vid: VLAN identifier
++ * @kobj: kobject for sysfs vlan subdirectory
++ * @list: list node for bat_priv::priv_vlan_list
++ * @refcount: number of context where this object is currently in use
++ * @rcu: struct used for freeing in a RCU-safe manner
++ */
++struct batadv_priv_vlan {
 +	unsigned short vid;
- 	unsigned long last_update;
- 	struct hlist_node hash_entry;
- 	atomic_t refcount;
++	struct kobject *kobj;
++	struct list_head list;
++	atomic_t refcount;
++	struct rcu_head rcu;
++};
++
+ /**
+  * struct batadv_priv - per mesh interface data
+  * @mesh_state: current status of the mesh (inactive/active/deactivating)
+@@ -562,6 +578,9 @@ struct batadv_priv_nc {
+  * @primary_if: one of the hard interfaces assigned to this mesh interface
+  *  becomes the primary interface
+  * @bat_algo_ops: routing algorithm used by this mesh interface
++ * @priv_vlan_list: a list of priv_vlan structs, one per VLAN created on top of
++ *  the mesh interface represented by this object
++ * @priv_vlan_list_lock: lock protecting priv_vlan_list
+  * @bla: bridge loope avoidance data
+  * @debug_log: holding debug logging relevant data
+  * @gw: gateway data
+@@ -610,6 +629,8 @@ struct batadv_priv {
+ 	struct work_struct cleanup_work;
+ 	struct batadv_hard_iface __rcu *primary_if;  /* rcu protected pointer */
+ 	struct batadv_algo_ops *bat_algo_ops;
++	spinlock_t priv_vlan_list_lock; /* protects priv_vlan_list */
++	struct list_head priv_vlan_list;
+ #ifdef CONFIG_BATMAN_ADV_BLA
+ 	struct batadv_priv_bla bla;
+ #endif
 -- 
 1.8.1.5
 
