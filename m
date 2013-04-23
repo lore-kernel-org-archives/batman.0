@@ -1,17 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Tue, 23 Apr 2013 21:30:04 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130423193004.GA16603@ritirata.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 24 Apr 2013 03:35:49 +0800
 References: <1366474654-26361-1-git-send-email-martin@hundeboll.net>
- <1366474654-26361-3-git-send-email-martin@hundeboll.net>
- <201304240317.27196.lindner_marek@yahoo.de>
+ <1366474654-26361-4-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1366474654-26361-4-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="NzB8fVQJ5HfG6fxh"
-Content-Disposition: inline
-In-Reply-To: <201304240317.27196.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Receive fragmented
- packets and merge
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201304240335.49403.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Fragment and send skbs
+	larger than mtu
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,68 +22,120 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Martin =?utf-8?q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
+
+On Sunday, April 21, 2013 00:17:34 Martin Hundeb=C3=B8ll wrote:
+> Non-broadcast packets larger than MTU are fragmented and sent with
+> an encapsulating header. Up to 16 fragments are supported, which are
+> sent in reverse order on the wire.
+
+If you explicitely mention the reverse order you should also say why it is=
+=20
+done that way.
 
 
---NzB8fVQJ5HfG6fxh
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> +/**
+> + * batadv_frag_create() - Create a fragment from skb.
 
-On Wed, Apr 24, 2013 at 03:17:26AM +0800, Marek Lindner wrote:
-> On Sunday, April 21, 2013 00:17:33 Martin Hundeb=C3=B8ll wrote:
->=20
->=20
-> > +	/* Make room for the rest of the fragments. */
-> > +	if (pskb_expand_head(skb_out, 0, size - skb->len, GFP_ATOMIC) < 0) {
-> > +		kfree_skb(skb_out);
-> > +		goto free;
-> > +	}
->=20
-> If pskb_expand_head() really fails this function will lead to a crash bec=
-ause=20
-> skb_out points to undefined memory.
+Same kernel doc complaints as in the other patch: no parenthesis and no=20
+capital letters.
 
 
-I'm not sure about this. pskb_expand_head() can only fail in the early phas=
-e and
-in that case it seems to return the original skb as it was.
+> + * @skb: skb to create fragment from.
+> + * @frag_head: header to use in new fragment.
+> + * @mtu: Size of new fragment.
+> + *
+> + * Split the passed skb into two fragments: A new one with size matching
+> the + * passed mtu and the old one with the rest. The new skb contains
+> data from the + * tail of the old skb.
+> + *
+> + * Returns the new fragment, NULL on error.
+> + */
+> +static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
+> +					  struct batadv_frag_packet *frag_head,
+> +					  unsigned int mtu)
+> +{
+> +	struct sk_buff *skb_fragment;
+> +	unsigned header_size =3D sizeof(*frag_head);
+> +	unsigned fragment_size =3D mtu - header_size - ETH_HLEN;
+> +
+> +	skb_fragment =3D dev_alloc_skb(mtu);
+> +	if (!skb_fragment)
+> +		goto out_err;
+> +
+> +	/* Eat the last mtu-bytes of the skb */
+> +	skb_reserve(skb_fragment, header_size);
+> +	skb_split(skb, skb_fragment, skb->len - fragment_size);
+> +
+> +	/* Add the header */
+> +	skb_push(skb_fragment, header_size);
+> +	memcpy(skb_fragment->data, frag_head, header_size);
+> +
+> +	return skb_fragment;
+> +
+> +out_err:
+> +	return NULL;
+> +}
 
->=20
-> Btw, is pskb_expand_head() enough to handle all cases ? Did you try this =
-with=20
-> a large (4000 bytes or more) packet ?=20
->=20
+The two return statements can be merged into one.
 
-I don't personally see any problem with this. But maybe I am overlooking
-something..however, proper testing will make everybody happy :P
 
---=20
-Antonio Quartulli
+> +/**
+> + * batadv_frag_send_packet() - Create up to 16 fragments from the passed
+> skb. + * @skb: skb to create fragments from.
+> + * @orig_node: Final destination of the created fragments.
+> + * @neigh_node: Next-hop of the created fragments.
+> + *
+> + * Returns true on success, false otherwise.
+> + */
+> +bool batadv_frag_send_packet(struct sk_buff *skb,
+> +			     struct batadv_orig_node *orig_node,
+> +			     struct batadv_neigh_node *neigh_node)
+> +{
+> +	struct batadv_priv *bat_priv;
+> +	struct batadv_hard_iface *primary_if;
+> +	struct batadv_frag_packet frag_header;
+> +	struct sk_buff *skb_fragment;
+> +	unsigned mtu =3D neigh_node->if_incoming->net_dev->mtu;
+> +	unsigned header_size =3D sizeof(frag_header);
+> +	unsigned max_fragment_size, max_packet_size;
+> +
+> +	/* To avoid merge and refragmentation at next-hops we never send
+> +	 * fragments larger than BATADV_FRAG_MAX_FRAG_SIZE
+> +	 */
+> +	mtu =3D min_t(int, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
+> +	max_fragment_size =3D (mtu - header_size - ETH_HLEN);
+> +	max_packet_size =3D max_fragment_size*BATADV_FRAG_MAX_FRAGMENTS;
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
+Afaik the linux coding style demands spaces between "*" and its neighbors.
 
---NzB8fVQJ5HfG6fxh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+> --- a/types.h
+> +++ b/types.h
+> @@ -336,6 +336,8 @@ enum batadv_counters {
+>  	BATADV_CNT_MGMT_TX_BYTES,
+>  	BATADV_CNT_MGMT_RX,
+>  	BATADV_CNT_MGMT_RX_BYTES,
+> +	BATADV_CNT_FRAG_TX,
+> +	BATADV_CNT_FRAG_TX_BYTES,
+>  	BATADV_CNT_FRAG_RX,
+>  	BATADV_CNT_FRAG_RX_BYTES,
+>  	BATADV_CNT_FRAG_FWD,
 
-iQIcBAEBCAAGBQJRduE8AAoJEADl0hg6qKeORl8P/j2xWzHNBcd1nRniIfNOaX3S
-7KfUWKfuv0KVrVOlFm7NFD44GWZaen0Pa/3FtQkoP9XYpopb7yY0k0tf1WobtXmE
-AYWPOGGYbaIPKIDKbQGhMjlRpwgMoW7A8KzUBWL1z6PQHuWf7IlioKr/zG5VKr+e
-N+K13f0aYQ70lD6vOOflhWIWeVLajASX2At9aL40sn1z9K6CDRLpuVxDkp+DQLXO
-2dU7pW1nqtV3OXbrdAyT18SnUvohz5PrVqQ4mSWRa60oXP8iexStMU9F+eOHYYxv
-DkLotb05S0cHNxCqcYqkIdIE3JnXr4e1dAwQBfb4dzMBXEGc60h+lmUne61MyaLM
-fag/eBKbosdNMkcWYBknH7+kGFItVbQ96syDzQcOjG71ZY0htK8fwtJ69S2fJd5v
-bAbRlo5aw4ifFSY28bMJssVsQVv66ZFvgjUJVp/ofISlNGuD12qoL6sv7aHI5+41
-ZjdjA64VRpZtZBdN4fhUt2cycInmY6NFUn98hJ8JIG2L/k1pn6v5o047pvf37GZt
-jbNpk4pIObw7XrEyIOTy1PBvscCvKwSPcXlFqLyG6SqyQQLfqeMPuxhWEB9Cnz4S
-S2Ku4+0jzKnDobeTcR9U8Tl4uczNr3Se9oNLN1mm3va0+g9dwFuWp+M4+3vnEf6R
-R+MNUJD26BwuIgzdvWSW
-=idZd
------END PGP SIGNATURE-----
+Kernel doc ?
 
---NzB8fVQJ5HfG6fxh--
+
+> @@ -577,6 +579,7 @@ struct batadv_priv {
+>  	atomic_t aggregated_ogms;
+>  	atomic_t bonding;
+>  	atomic_t fragmentation;
+> +	atomic_t frag_seqno;
+>  	atomic_t ap_isolation;
+>  #ifdef CONFIG_BATMAN_ADV_BLA
+>  	atomic_t bridge_loop_avoidance;
+
+Kernel doc ?
+
+Cheers,
+Marek
