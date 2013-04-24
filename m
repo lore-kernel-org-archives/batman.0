@@ -1,11 +1,9 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 23 Apr 2013 23:45:26 +0200
-Message-Id: <1366753527-17171-3-git-send-email-ordex@autistici.org>
-In-Reply-To: <1366753527-17171-1-git-send-email-ordex@autistici.org>
-References: <1366753527-17171-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: improve TT component to
-	support runtime flag changes
+Return-Path: <mihail.costea2005@gmail.com>
+From: Mihail <mihail.costea2005@gmail.com>
+Date: Wed, 24 Apr 2013 08:16:39 +0300
+Message-Id: <1366780600-5030-1-git-send-email-mihail.costea2005@gmail.com>
+Subject: [B.A.T.M.A.N.] [PATCH 0/1] Added type field to dat_entry in order
+	to generalize the DAT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,91 +16,68 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+Signed-off-by: Mihail Costea <mihail.costea90@gmail.com>
+Signed-off-by: Stefan Popa <Stefan.A.Popa@intel.com>
+Reviewed-by: Stefan Popa <Stefan.A.Popa@intel.com>
 
-The WIFI flag may change (in some rare cases) and get
-switched after that the related local entry has been
-already advertised.
-
-Add runtime flag switch detection and re-announce the entry
-to advertise the new flag values.
-
-By adding this mechanism we allow future flag to be treated
-the same way.
-
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- packet.h            |  6 ++++++
- translation-table.c | 23 +++++++++++++++++++++++
- 2 files changed, 29 insertions(+)
 
-diff --git a/packet.h b/packet.h
-index 32ebfbe..02cba21 100644
---- a/packet.h
-+++ b/packet.h
-@@ -125,6 +125,12 @@ enum batadv_tt_client_flags {
+This change is needed in order to make DAT support any type of data, like IPv6 too.
+Types are going to be added to batadv_dat_types enum. 
+
+ distributed-arp-table.c |    1 +
+ types.h                 |   11 +++++++++++
+ 2 files changed, 12 insertions(+)
+
+diff --git a/distributed-arp-table.c b/distributed-arp-table.c
+index 3a3e1d8..2cb5ebb 100644
+--- a/distributed-arp-table.c
++++ b/distributed-arp-table.c
+@@ -290,6 +290,7 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
+ 		goto out;
+ 
+ 	dat_entry->ip = ip;
++	dat_entry->type = BATADV_DAT_IPV4;
+ 	memcpy(dat_entry->mac_addr, mac_addr, ETH_ALEN);
+ 	dat_entry->last_update = jiffies;
+ 	atomic_set(&dat_entry->refcount, 2);
+diff --git a/types.h b/types.h
+index b2c94e1..0807ef9 100644
+--- a/types.h
++++ b/types.h
+@@ -964,6 +964,7 @@ struct batadv_algo_ops {
+  * struct batadv_dat_entry - it is a single entry of batman-adv ARP backend. It
+  * is used to stored ARP entries needed for the global DAT cache
+  * @ip: the IPv4 corresponding to this DAT/ARP entry
++ * @type: the type corresponding to this DAT entry
+  * @mac_addr: the MAC address associated to the stored IPv4
+  * @last_update: time in jiffies when this entry was refreshed last time
+  * @hash_entry: hlist node for batadv_priv_dat::hash
+@@ -972,6 +973,7 @@ struct batadv_algo_ops {
+  */
+ struct batadv_dat_entry {
+ 	__be32 ip;
++	uint8_t type;
+ 	uint8_t mac_addr[ETH_ALEN];
+ 	unsigned long last_update;
+ 	struct hlist_node hash_entry;
+@@ -980,6 +982,15 @@ struct batadv_dat_entry {
  };
  
  /**
-+ * BATADV_TT_REMOTE_MASK - bitmask selecting the flags that are sent over the
-+ *  wire only
++ * batadv_dat_types - types used in batadv_dat_entry for IP
++ * @BATADV_DAT_IPv4: IPv4 address type
++ * @BATADV_DAT_IPv6: IPv6 address type
 + */
-+#define BATADV_TT_REMOTE_MASK	0x00FF
++enum batadv_dat_types {
++	BATADV_DAT_IPV4 = 0,
++};
 +
 +/**
-  * batadv_vlan_flags - flags for the four MSB of any vlan ID field
-  * @BATADV_VLAN_HAS_TAG: whether the field contains a valid vlan tag or not
-  */
-diff --git a/translation-table.c b/translation-table.c
-index 0543b1a..9dc4207 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -269,6 +269,13 @@ static void batadv_tt_local_event(struct batadv_priv *bat_priv,
- 			goto del;
- 		if (del_op_requested && !del_op_entry)
- 			goto del;
-+
-+		/* this is a second add in the same originator interval. It
-+		 * means that flags have been changed: update them!
-+		 */
-+		if (!del_op_requested && !del_op_entry)
-+			entry->change.flags = flags;
-+
- 		continue;
- del:
- 		list_del(&entry->list);
-@@ -350,6 +357,7 @@ void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 	struct hlist_head *head;
- 	struct batadv_tt_orig_list_entry *orig_entry;
- 	int hash_added;
-+	uint8_t remote_flags;
- 	bool roamed_back = false;
- 
- 	if (ifindex != BATADV_NULL_IFINDEX)
-@@ -454,6 +462,21 @@ check_roaming:
- 		}
- 	}
- 
-+	/* store the current remote flags before altering them. This helps
-+	 * understanding is flags are changing or not
-+	 */
-+	remote_flags = tt_local->common.flags & BATADV_TT_REMOTE_MASK;
-+
-+	if (batadv_is_wifi_netdev(in_dev))
-+		tt_local->common.flags |= BATADV_TT_CLIENT_WIFI;
-+	else
-+		tt_local->common.flags &= ~BATADV_TT_CLIENT_WIFI;
-+
-+	/* if any "dynamic" flag has been modified, resend an ADD event for this
-+	 * entry so that all the nodes can get the new flags
-+	 */
-+	if (remote_flags ^ (tt_local->common.flags & BATADV_TT_REMOTE_MASK))
-+		batadv_tt_local_event(bat_priv, tt_local, BATADV_NO_FLAGS);
- out:
- 	if (in_dev)
- 		dev_put(in_dev);
+  * struct batadv_dat_candidate - candidate destination for DAT operations
+  * @type: the type of the selected candidate. It can one of the following:
+  *	  - BATADV_DAT_CANDIDATE_NOT_FOUND
 -- 
-1.8.1.5
+1.7.10.4
 
