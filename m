@@ -1,14 +1,16 @@
 Return-Path: <ordex@autistici.org>
-Date: Wed, 24 Apr 2013 12:55:05 +0200
+Date: Wed, 24 Apr 2013 14:31:16 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130424105505.GD16603@ritirata.org>
-References: <5176EEE1.40403@wirelesspt.net>
+Message-ID: <20130424123116.GG16603@ritirata.org>
+References: <1366727676-23233-1-git-send-email-ordex@autistici.org>
+ <1366727676-23233-8-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="6WlEvdN9Dv0WHSBl"
+ protocol="application/pgp-signature"; boundary="s5/bjXLgkIwAv6Hi"
 Content-Disposition: inline
-In-Reply-To: <5176EEE1.40403@wirelesspt.net>
-Subject: Re: [B.A.T.M.A.N.] Batman-adv and adroid as mesh client
+In-Reply-To: <1366727676-23233-8-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 6/7] batman-adv: add per VLAN interface
+ attribute framework
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,56 +22,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: cmsv@wirelesspt.net, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 
---6WlEvdN9Dv0WHSBl
+--s5/bjXLgkIwAv6Hi
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi cmsv
+On Tue, Apr 23, 2013 at 04:34:35PM +0200, Antonio Quartulli wrote:
+> =20
+> +/**
+> + * batadv_priv_vlan_free_ref - decrease vlan refcounter and possibly fre=
+e it
+> + * @priv_vlan: the vlan object to release
+> + */
+> +void batadv_priv_vlan_free_ref(struct batadv_priv_vlan *priv_vlan)
+> +{
+> +	if (atomic_dec_and_test(&priv_vlan->refcount))
+> +		kfree_rcu(priv_vlan, rcu);
 
-On Tue, Apr 23, 2013 at 04:28:17PM -0400, cmsv wrote:
-> I have a growing number of users on my mesh that use android and i am
-> now looking at supporting it more and better.
-> As i do some re-search i see some articles like these:
->=20
-> http://www.geek.com/mobile/batman-wants-to-break-android-free-from-wifi-1=
-539651/
->=20
-> https://blog.itu.dk/SPVC-E2010/files/2011/08/13adhocandroid.pdf
->=20
-> https://www.networkworld.com/community/blog/android-phones-are-connecting=
--without-carrier-networks
->=20
-> http://allaboutandroidphone.blogspot.ca/2013/02/project-batman-use-of-ad-=
-hoc-network.html
->=20
-> My questions are:
-> Are here any ideas to have batman-adv working with android ?
+I was just looking at compat.h....I guess this kfree_rcu needs some compat =
+work
+for kernels older than 3.0.0.
 
-we support batman-adv in the linux kernel. As far as I know you can "simply"
-compile the batman-adv module for the Android kernel and it should work. I
-remember of somebody which did it.
-
-However we do not directly work on that.
-
-> Is anyone using android in this stype of scenario ?
->=20
-
-But why do you want to use batman-adv on the Android devices themselves? th=
-is
-kind of applications are not really energy-friendly and a normal user would=
- not
-probably like to drain his battery for no reason (imagine an Android phone
-working as router for traffic going to other nodes..).
-
-What I usually do is to use whatever smartphone as a normal non-mesh client,
-meaning that I simply connect the phone to a node acting as AP.
-This is the common scenario which is also explained in the wiki.
+Will add it during the next respin.
 
 Cheers,
+
 
 
 --=20
@@ -78,26 +59,26 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---6WlEvdN9Dv0WHSBl
+--s5/bjXLgkIwAv6Hi
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRd7oJAAoJEADl0hg6qKeOoksP/1WtN54n7+bdjkXNYFmp1Eo9
-+as+NxzwyHhzkTgv0OxxRJVm/7r0YvLPCJ7VNWR3wDXLGskZVOD+j4zj/Fnn5uKZ
-Ob9fG1fOhPWWcp5yvrS4L/TQlm5OeLRawBdLEfmVuwMuelOqutCXEB/UvCOO6LFx
-IkWQiPxVAky1tdnf8jfzM0jGNLzVv5fZX3mnf4un7lssIw9M+EWKmGi1k2hi0tHt
-LwxI4Op8GelMbMQFXWS4H4j6Lq2c5Wc6Lyeu3HcDTTkL+UWM23rQKglcS9Fq0bo7
-aNX+ZruodJ+YXnpI0/JYVFIqqu9yiv6UzfM1CTnBr/DtlPfvTP0LHE/lnJ5pRaN0
-AbxZgWq0HysfqdoTgoz8lrThp9NJmNqD5yZbO0Zog1QqsxOLIQpJWncYRCBYjTwb
-wyYqDZaXuylVH6ZaHGe5GFOh5FBZQLcW8QxTum2o3igBWR1zCX/p0rWHVO8fGW2O
-BkWzxNiiSCpJE1Xej+gguB7/F1A/jfsA3Pl62XvCfbAWGTcDAT2y3rSM/JW2rc6B
-k6MGKOkujHyz5o1lXWavnfAtoaW/KUFuAVg0LN7Xd4OCn9CFVqo0AJOQx4clkX1F
-wYkx6go7fUJ/2MwF8KM1bI8vT35W4nrjmxWGc1GR+mCjBS7zgXcCuu2rrEtUVohN
-io26m9vyck9DblMefaKy
-=RXF3
+iQIcBAEBCAAGBQJRd9CUAAoJEADl0hg6qKeOpKoQAK5ZBqV4iA7vB0GdEjFFbamC
+aPwIHovX+5gfTw4vUaBKC+oBHLARwymNjZ9/IQ8xTV2Jw8AjgAwxN7biRHKK+6gc
+0kO+mk1hWEl3aqEqSRRnScBdZBOo7pgO4lQDIXhKQ5c6W/XiYjmWX/FqtXIy/++h
+DatU4oOrCJ6wZYVpbBGq1aNy+niTWOHs7QP/xDWrJKHslZnaDWJg2PAGSSVpRsHW
+YsyXfmMtWKbQzE58Kr9qmAG9mB6ZRptQSYflmBxu1kA+9ZMDBlOXsnhf5ugy7YUn
++xGaDodEEhcsbu+LLSkOnsZRKzWdIf9Bxg+8dOIGMpBDPcafqYTVNoi2hvjCmwjB
+h77ifKKvbhSEm3E8Ftg9QLB2+X5CD275XYMStHqAq2GymzQkQXy9eVrFcG5XLt8X
+HelhiidjR9guMpdRg8/elh001YNn3MRs3YXyLR0pdyki5dm/yJYAdNnFJdNFxl9d
+PulNKm8/fOtOPidBHHG6nV0aFsarW18p+6qDkrr2S8d/K5UOgkyf7dU86xi1gHXS
+03Zhz8+1OxeETJ2C/osH/zmhzNCrxczrMexlzyt9uaNy8AhLEBVfSCEdmvheeoXy
+XSS328VJqJ8+aKpKcQOszbdcT8RSFWGmsDUjyXWa+6ALRDyhfKUB6M6OqrkFitoH
+imZxUs14g21Xank/MsCE
+=SrUM
 -----END PGP SIGNATURE-----
 
---6WlEvdN9Dv0WHSBl--
+--s5/bjXLgkIwAv6Hi--
