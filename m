@@ -1,16 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 25 Apr 2013 13:42:44 +0800
-References: <1366814272-21120-1-git-send-email-ordex@autistici.org>
- <1366814272-21120-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1366814272-21120-2-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201304251342.44468.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH respin 2/2] batman-adv: move
-	BATADV_TT_CLIENT_TEMP to higher bit
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Thu, 25 Apr 2013 10:37:20 +0200
+Message-Id: <1366879046-24507-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCHv4 0/6] compat bump work
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,20 +15,37 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <ordex@autistici.org>
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-On Wednesday, April 24, 2013 22:37:52 Antonio Quartulli wrote:
-> Client flags from bit 0 to 7 are sent over the wire.
-> BATADV_TT_CLIENT_TEMP is not sent therefore it has occupy
-> an higher bit so to avoid wasting positions used by flags
-> sent within packets
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
->  packet.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+This is pretty much a rebase (this time on master) of the v3
+patchset with some minor modifications.
 
-Applied in revision bbc2d6d.
+Simon Wunderlich (6):
+  batman-adv: remove vis functionality
+  batman-adv: add build check macros for packet member offset
+  batman-adv: reorder packet types
+  batman-adv: remove packed from batadv_ogm_packet
+  batman-adv: reorder batadv_iv_flags
+  batman-adv: only add recordroute information to icmp request/reply
 
-Thanks,
-Marek
+ Makefile.kbuild  |    1 -
+ bat_iv_ogm.c     |    7 -
+ debugfs.c        |    9 -
+ hard-interface.c |    9 -
+ main.c           |   39 ++-
+ packet.h         |   75 +++--
+ routing.c        |   83 ++---
+ routing.h        |    4 +-
+ send.c           |    1 -
+ soft-interface.c |    1 -
+ sysfs.c          |   72 -----
+ types.h          |   82 -----
+ vis.c            |  936 ------------------------------------------------------
+ vis.h            |   36 ---
+ 14 files changed, 99 insertions(+), 1256 deletions(-)
+ delete mode 100644 vis.c
+ delete mode 100644 vis.h
+
+-- 
+1.7.10.4
+
