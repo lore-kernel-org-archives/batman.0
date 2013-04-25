@@ -1,11 +1,10 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Thu, 25 Apr 2013 10:37:26 +0200
-Message-Id: <1366879046-24507-7-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Thu, 25 Apr 2013 10:37:25 +0200
+Message-Id: <1366879046-24507-6-git-send-email-siwu@hrz.tu-chemnitz.de>
 In-Reply-To: <1366879046-24507-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 References: <1366879046-24507-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCHv4 6/6] batman-adv: only add recordroute
-	information to icmp request/reply
+Subject: [B.A.T.M.A.N.] [PATCHv4 5/6] batman-adv: reorder batadv_iv_flags
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,30 +19,56 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Adding host information for record route is only required for ICMP
-requests and replys, and should not be added to just any (future?)
-packet type.
+The vis flag is not needed anymore, and since we do a compat bump we
+can start with the first bit again
 
 Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 ---
- routing.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ packet.h |   19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
 
-diff --git a/routing.c b/routing.c
-index 3f5802c..7c372f1 100644
---- a/routing.c
-+++ b/routing.c
-@@ -379,7 +379,9 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
- 	icmp_packet = (struct batadv_icmp_packet_rr *)skb->data;
+diff --git a/packet.h b/packet.h
+index 6982d16..222d106 100644
+--- a/packet.h
++++ b/packet.h
+@@ -69,11 +69,19 @@ enum batadv_subtype {
+ /* this file is included by batctl which needs these defines */
+ #define BATADV_COMPAT_VERSION 15
  
- 	/* add record route information if not full */
--	if ((hdr_size == sizeof(struct batadv_icmp_packet_rr)) &&
-+	if ((icmp_packet->msg_type == BATADV_ECHO_REPLY ||
-+	     icmp_packet->msg_type == BATADV_ECHO_REQUEST) &&
-+	    (hdr_size == sizeof(struct batadv_icmp_packet_rr)) &&
- 	    (icmp_packet->rr_cur < BATADV_RR_LEN)) {
- 		memcpy(&(icmp_packet->rr[icmp_packet->rr_cur]),
- 		       ethhdr->h_dest, ETH_ALEN);
++/**
++ * enum batadv_iv_flags - flags used in B.A.T.M.A.N. IV OGM packets
++ * @BATADV_NOT_BEST_NEXT_HOP: flag is set when ogm packet is forwarded and was
++ *	previously received from someone else than the best neighbor.
++ * @BATADV_PRIMARIES_FIRST_HOP: flag is set when the primary interface address
++ *	is used, and the packet travels its first hop.
++ * @BATADV_DIRECTLINK: flag is for the first hop or if rebroadcasted from a
++ *	one hop neighbor on the interface where it was originally received.
++ */
+ enum batadv_iv_flags {
+-	BATADV_NOT_BEST_NEXT_HOP   = BIT(3),
+-	BATADV_PRIMARIES_FIRST_HOP = BIT(4),
+-	BATADV_VIS_SERVER	   = BIT(5),
+-	BATADV_DIRECTLINK	   = BIT(6),
++	BATADV_NOT_BEST_NEXT_HOP   = BIT(0),
++	BATADV_PRIMARIES_FIRST_HOP = BIT(1),
++	BATADV_DIRECTLINK	   = BIT(2),
+ };
+ 
+ /* ICMP message types */
+@@ -167,11 +175,12 @@ struct batadv_header {
+ /**
+  * struct batadv_ogm_packet - ogm (routing protocol) packet
+  * @header: common batman packet header
++ * @flags: contains routing relevant flags - see enum batadv_iv_flags
+  * @tvlv_len: length of tvlv data following the ogm header
+  */
+ struct batadv_ogm_packet {
+ 	struct batadv_header header;
+-	uint8_t  flags;    /* 0x40: DIRECTLINK flag, 0x20 VIS_SERVER flag... */
++	uint8_t  flags;
+ 	__be32   seqno;
+ 	uint8_t  orig[ETH_ALEN];
+ 	uint8_t  prev_sender[ETH_ALEN];
 -- 
 1.7.10.4
 
