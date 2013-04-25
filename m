@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 25 Apr 2013 13:38:01 +0800
+Date: Thu, 25 Apr 2013 13:42:44 +0800
 References: <1366814272-21120-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1366814272-21120-1-git-send-email-ordex@autistici.org>
+ <1366814272-21120-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1366814272-21120-2-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201304251338.01441.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH respin 1/2] batman-adv: use CRC32C
-	instead of CRC16 in TT code
+Message-Id: <201304251342.44468.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH respin 2/2] batman-adv: move
+	BATADV_TT_CLIENT_TEMP to higher bit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,22 +25,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <ordex@autistici.org>
 
-On Wednesday, April 24, 2013 22:37:51 Antonio Quartulli wrote:
-> CRC32C has to be preferred to CRC16 because of its possible
-> HW native support and because of its less likely probability
-> of collision. With this change the Translation Table
-> component now uses CRC32C to compute the Local and Global
-> Table checksum.
+On Wednesday, April 24, 2013 22:37:52 Antonio Quartulli wrote:
+> Client flags from bit 0 to 7 are sent over the wire.
+> BATADV_TT_CLIENT_TEMP is not sent therefore it has occupy
+> an higher bit so to avoid wasting positions used by flags
+> sent within packets
 > 
 > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 > ---
->  packet.h            |  4 +--
->  translation-table.c | 71
-> ++++++++++++++++++++++++++++-------------------------
-> types.h             |  4 +--
->  3 files changed, 42 insertions(+), 37 deletions(-)
+>  packet.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision c5e7a06.
+Applied in revision bbc2d6d.
 
 Thanks,
 Marek
