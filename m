@@ -1,15 +1,13 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 25 Apr 2013 00:54:01 +0800
-References: <1366818176-21765-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1366818176-21765-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Return-Path: <davem@davemloft.net>
+Date: Thu, 25 Apr 2013 01:33:53 -0400 (EDT)
+Message-Id: <20130425.013353.779038075699652078.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1366619894-16857-1-git-send-email-ordex@autistici.org>
+References: <1366619894-16857-1-git-send-email-ordex@autistici.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <201304250054.01565.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH-maint] net: vlan: add protocol argument
-	to packet tagging functions
+Subject: Re: [B.A.T.M.A.N.] pull request net: batman-adv 2013-04-22
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,26 +19,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: ordex@autistici.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Wednesday, April 24, 2013 23:42:56 Simon Wunderlich wrote:
-> From: Patrick McHardy <kaber@trash.net>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon, 22 Apr 2013 10:38:13 +0200
+
+> here we have another (I think the last) fix intended for net/linux-3.9.
 > 
-> Add a protocol argument to the VLAN packet tagging functions. In case of HW
-> tagging, we need that protocol available in the ndo_start_xmit functions,
-> so it is stored in a new field in the skb. The new field fits into a hole
-> (on 64 bit) and doesn't increase the sks's size.
+> This patch fixes a bug in the Translation Table component. In particular, when
+> batman-adv accesses the "inner Ethernet header", it has have to jump over its
+> header which can have two different lengths. The current code assumes
+> that this length is always the same and so leading to a wrong access.
+> This patch fixes it by making the "jump" generic.
 > 
-> Signed-off-by: Patrick McHardy <kaber@trash.net>
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> [siwu@hrz.tu-chemnitz.de: added compat code]
-> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-> ---
->  bridge_loop_avoidance.c |    2 +-
->  compat.h                |   16 +++++++++++++++-
->  2 files changed, 16 insertions(+), 2 deletions(-)
+> The bug is not very critical because it "only" breaks our "smart rerouting
+> feature" and does not lead to a crash since the memory it accesses is always
+> allocated. I would send it to stable, but you can decide whether it is worth or
+> not.
 
-Applied in revision 82d1a8e.
-
-Thanks,
-Marek
+Pulled, thanks.
