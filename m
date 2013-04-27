@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 27 Apr 2013 13:44:46 +0800
+Date: Sat, 27 Apr 2013 13:47:00 +0800
 References: <1366879046-24507-1-git-send-email-siwu@hrz.tu-chemnitz.de>
- <1366879046-24507-4-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1366879046-24507-4-git-send-email-siwu@hrz.tu-chemnitz.de>
+ <1366879046-24507-5-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1366879046-24507-5-git-send-email-siwu@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201304271344.46535.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 3/6] batman-adv: reorder packet types
+Message-Id: <201304271347.00329.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 4/6] batman-adv: remove packed from
+	batadv_ogm_packet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,22 +25,16 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-On Thursday, April 25, 2013 16:37:23 Simon Wunderlich wrote:
-> Reordering the packet type numbers allows us to handle unicast
-> packets in a general way - even if we don't know the specific packet
-> type, we can still forward it. There was already code handling
-> this for a couple of unicast packets, and this is the more
-> generalized version to do that.
+On Thursday, April 25, 2013 16:37:24 Simon Wunderlich wrote:
+> As we decreased the struct size from 26 to 24 byte, we can remove
+> __packed as the compiler will not add any more padding.
 > 
 > Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 > ---
->  main.c    |   20 +++++++++++++++-----
->  packet.h  |   34 +++++++++++++++++++++++++---------
->  routing.c |   28 ++++++++++++++++++++++++++++
->  routing.h |    2 ++
->  4 files changed, 70 insertions(+), 14 deletions(-)
+>  packet.h |    5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 
-Applied in revision 3bcf1e1.
+Applied in revision 85cc6b9.
 
 Thanks,
 Marek
