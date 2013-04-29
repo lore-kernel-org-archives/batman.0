@@ -1,9 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 28 Apr 2013 12:00:29 +0200
-Message-Id: <1367143229-12043-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH master] batman-adv: remove white spaces at
-	the beginning of the lines
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Mon, 29 Apr 2013 15:06:57 +0800
+References: <1367050948-7626-1-git-send-email-lindner_marek@yahoo.de>
+ <20130427160132.GA3179@ritirata.org>
+In-Reply-To: <20130427160132.GA3179@ritirata.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201304291506.57622.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: check proto length before
+	accessing proto string buffer
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,36 +25,23 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <ordex@autistici.org>
 
-Intiroduced by: 3bcf1e15714b78e8581ccbf4724cda9e20ac4aa4
-("batman-adv: reorder packet types")
+On Sunday, April 28, 2013 00:01:32 Antonio Quartulli wrote:
+>   On Sat, Apr 27, 2013 at 04:22:28 +0800, Marek Lindner wrote:
+> > batadv_param_set_ra() strips the trailing '\n' from the supplied
+> > string buffer without checking the length of the buffer first. This
+> > patches avoids random memory access and associated potential
+> > crashes.
+> >
+> > 
+> >
+> > Reported-by: Sasha Levin <sasha.levin@oracle.com>
+> > Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> 
+> Thank you for fixing this!
+> 
+> Please, merge this patch in maint.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- packet.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Applied in revision aa7d19a.
 
-diff --git a/packet.h b/packet.h
-index 559c738..7d45890 100644
---- a/packet.h
-+++ b/packet.h
-@@ -34,7 +34,7 @@
-  * @BATADV_ICMP: unicast packet like IP ICMP used for ping or traceroute
-  * @BATADV_UNICAST_TVLV: unicast packet carrying TVLV containers
-  */
-- enum batadv_packettype {
-+enum batadv_packettype {
- 	/* 0x00 - 0x3f: local packets or special rules for handling */
- 	BATADV_IV_OGM           = 0x00,
- 	BATADV_BCAST            = 0x01,
-@@ -80,7 +80,7 @@ enum batadv_iv_flags {
- 	BATADV_NOT_BEST_NEXT_HOP   = BIT(0),
- 	BATADV_PRIMARIES_FIRST_HOP = BIT(1),
- 	BATADV_DIRECTLINK          = BIT(2),
-- };
-+};
- 
- /* ICMP message types */
- enum batadv_icmp_packettype {
--- 
-1.8.1.5
-
+Regards,
+Marek
