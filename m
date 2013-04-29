@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 29 Apr 2013 15:06:57 +0800
-References: <1367050948-7626-1-git-send-email-lindner_marek@yahoo.de>
- <20130427160132.GA3179@ritirata.org>
-In-Reply-To: <20130427160132.GA3179@ritirata.org>
+Date: Mon, 29 Apr 2013 15:10:01 +0800
+References: <1367136566-12593-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1367136566-12593-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201304291506.57622.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: check proto length before
-	accessing proto string buffer
+Message-Id: <201304291510.02220.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: use the BigEndian notation
+	for variables sent over the wire
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,23 +24,35 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <ordex@autistici.org>
 
-On Sunday, April 28, 2013 00:01:32 Antonio Quartulli wrote:
->   On Sat, Apr 27, 2013 at 04:22:28 +0800, Marek Lindner wrote:
-> > batadv_param_set_ra() strips the trailing '\n' from the supplied
-> > string buffer without checking the length of the buffer first. This
-> > patches avoids random memory access and associated potential
-> > crashes.
-> >
-> > 
-> >
-> > Reported-by: Sasha Levin <sasha.levin@oracle.com>
-> > Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+On Sunday, April 28, 2013 16:09:26 Antonio Quartulli wrote:
+> All the variables sent over the wire must report the
+> BigEndian (__be*) notation so that sparse can easily spot
+> any bug due to missing conversions.
 > 
-> Thank you for fixing this!
+> This patch changes the type used by the up and download
+> bandwidth in the new GW TVLV from uint32_t to __be32 and
+> adds all the related conversions.
 > 
-> Please, merge this patch in maint.
+> Introduced by: 0853ec7fafe0a195754454832993c6b35e22b842
+> ("batman-adv: tvlv - gateway download/upload bandwidth container")
+> 
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+> 
+> v1 was:
+> batman-adv: properly handle Network Ordered variables
+> 
+> v2:
+> change subject and commit message
+> 
+> 
+> 
+>  gateway_client.c | 24 +++++++++++++-----------
+>  gateway_common.c |  4 ++--
+>  packet.h         |  4 ++--
+>  3 files changed, 17 insertions(+), 15 deletions(-)
 
-Applied in revision aa7d19a.
+Applied in revision b6acece.
 
-Regards,
+Thanks,
 Marek
