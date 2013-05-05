@@ -1,11 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun,  5 May 2013 14:37:56 +0200
-Message-Id: <1367757476-1705-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1367757476-1705-1-git-send-email-ordex@autistici.org>
-References: <1367757476-1705-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: remove
-	batadv_tt_global_add_orig declaration
+Date: Sun,  5 May 2013 19:32:38 +0200
+Message-Id: <1367775158-3989-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: make tt_global_add static
+	and return bool
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,25 +18,78 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <ordex@autistici.org>
 
-batadv_tt_global_add_orig is neither used nor implemented
-anymore, therefore it is possible to remove its declaration
+batadv_tt_global_add is not used anymore outside of the TT
+code thanks to the TVLV implementation. It can therefore be
+declared as static
 
+Last user has been removed by 3de4e64df0f1326db7cc0ef25f5af8522850252d
+("batman-adv: tvlv - convert roaming adv packet to use tvlv unicast packets")
+
+Moreover make it return bool since its result can be either 0 or 1.
+
+Reported-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- translation-table.h | 3 ---
- 1 file changed, 3 deletions(-)
 
+v1 name was: [PATCH 1/2] batman-adv: make tt_global_add stati
+
+v2:
+- add some kernel doc
+- make the function return bool
+
+
+ translation-table.c | 14 ++++++++------
+ translation-table.h |  4 ----
+ 2 files changed, 8 insertions(+), 10 deletions(-)
+
+diff --git a/translation-table.c b/translation-table.c
+index 48e1ca9..df6b5cd 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -805,15 +805,17 @@ out:
+  * If a TT local entry exists for this non-mesh client remove it.
+  *
+  * The caller must hold orig_node refcount.
++ *
++ * Return true if the new entry has been added, false otherwise
+  */
+-int batadv_tt_global_add(struct batadv_priv *bat_priv,
+-			 struct batadv_orig_node *orig_node,
+-			 const unsigned char *tt_addr, uint16_t flags,
+-			 uint8_t ttvn)
++static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
++				 struct batadv_orig_node *orig_node,
++				 const unsigned char *tt_addr, uint16_t flags,
++				 uint8_t ttvn)
+ {
+ 	struct batadv_tt_global_entry *tt_global_entry;
+ 	struct batadv_tt_local_entry *tt_local_entry;
+-	int ret = 0;
++	bool ret = false;
+ 	int hash_added;
+ 	struct batadv_tt_common_entry *common;
+ 	uint16_t local_flags;
+@@ -914,7 +916,7 @@ add_orig_entry:
+ 	batadv_dbg(BATADV_DBG_TT, bat_priv,
+ 		   "Creating new global tt entry: %pM (via %pM)\n",
+ 		   common->addr, orig_node->orig);
+-	ret = 1;
++	ret = true;
+ 
+ out_remove:
+ 
 diff --git a/translation-table.h b/translation-table.h
-index fb710c5..015d8b9 100644
+index b4b6dea..fb710c5 100644
 --- a/translation-table.h
 +++ b/translation-table.h
-@@ -27,9 +27,6 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
- 				const uint8_t *addr, const char *message,
- 				bool roaming);
- int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset);
--void batadv_tt_global_add_orig(struct batadv_priv *bat_priv,
--			       struct batadv_orig_node *orig_node,
--			       const unsigned char *tt_buff, int tt_buff_len);
+@@ -30,10 +30,6 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset);
+ void batadv_tt_global_add_orig(struct batadv_priv *bat_priv,
+ 			       struct batadv_orig_node *orig_node,
+ 			       const unsigned char *tt_buff, int tt_buff_len);
+-int batadv_tt_global_add(struct batadv_priv *bat_priv,
+-			 struct batadv_orig_node *orig_node,
+-			 const unsigned char *addr, uint16_t flags,
+-			 uint8_t ttvn);
  int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset);
  void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
  			       struct batadv_orig_node *orig_node,
