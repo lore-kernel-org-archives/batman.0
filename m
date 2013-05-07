@@ -1,9 +1,8 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue,  7 May 2013 13:54:02 +0200
-Message-Id: <1367927642-3223-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: access h_vlan_encapsulated_proto
-	properly
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue,  7 May 2013 14:51:00 +0200
+Message-Id: <1367931069-7177-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 0/9] Adding size relevant build options
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,76 +15,20 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <ordex@autistici.org>
+Cc: Sven Eckelmann <sven@narfation.org>
 
-In the gateway code in case of VLAN tagged frame the ethhdr
-pointer is moved forward by 4 bytes so that the offset of
-h_proto in struct ethhdr matches the real
-h_vlan_encapsulated_proto address in the skb.
+Hi,
 
-This trick is correct but the code is not easy to understand
-and may lead to bugs in case of re-use of ethhdr for other
-purposes.
+I was talking with Marek and Simon about build options which may be size
+relevant. The first change is to allow the linker to check for unused code
+sections. The second change is to let the compiler use get the whole source
+code instead of only one source file during the final compilation step (ok,
+it is originally the link step).
 
-Use a standalone protocol variable and assign it accordingly
-to the header type
+These changes reduce the size on an amd64 (default Debian settings with -O2) by
+around 25%. The size reduction on MIPSel (default OpenWRT settings with -Os)
+were only by 6%-10%. Marek were still interested and asked me to submit the
+changes.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- gateway_client.c | 16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
-
-diff --git a/gateway_client.c b/gateway_client.c
-index 973f02d..8ea13e1 100644
---- a/gateway_client.c
-+++ b/gateway_client.c
-@@ -626,23 +626,29 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
- 	struct iphdr *iphdr;
- 	struct ipv6hdr *ipv6hdr;
- 	struct udphdr *udphdr;
-+	uint16_t proto;
- 
- 	/* check for ethernet header */
- 	if (!pskb_may_pull(skb, *header_len + ETH_HLEN))
- 		return false;
- 	ethhdr = (struct ethhdr *)skb->data;
-+	proto = ntohs(ethhdr->h_proto);
- 	*header_len += ETH_HLEN;
- 
- 	/* check for initial vlan header */
--	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
-+	if (proto == ETH_P_8021Q) {
-+		struct vlan_ethhdr *vhdr;
-+
- 		if (!pskb_may_pull(skb, *header_len + VLAN_HLEN))
- 			return false;
--		ethhdr = (struct ethhdr *)(skb->data + VLAN_HLEN);
-+
-+		vhdr = (struct vlan_ethhdr *)skb->data;
-+		proto = ntohs(vhdr->h_vlan_encapsulated_proto);
- 		*header_len += VLAN_HLEN;
- 	}
- 
- 	/* check for ip header */
--	switch (ntohs(ethhdr->h_proto)) {
-+	switch (proto) {
- 	case ETH_P_IP:
- 		if (!pskb_may_pull(skb, *header_len + sizeof(*iphdr)))
- 			return false;
-@@ -675,11 +681,11 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
- 	*header_len += sizeof(*udphdr);
- 
- 	/* check for bootp port */
--	if ((ntohs(ethhdr->h_proto) == ETH_P_IP) &&
-+	if ((proto == ETH_P_IP) &&
- 	    (ntohs(udphdr->dest) != 67))
- 		return false;
- 
--	if ((ntohs(ethhdr->h_proto) == ETH_P_IPV6) &&
-+	if ((proto == ETH_P_IPV6) &&
- 	    (ntohs(udphdr->dest) != 547))
- 		return false;
- 
--- 
-1.8.1.5
-
+Kind regards,
+	Sven
