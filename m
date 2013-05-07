@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue,  7 May 2013 14:51:03 +0200
-Message-Id: <1367931069-7177-4-git-send-email-sven@narfation.org>
+Date: Tue,  7 May 2013 14:51:04 +0200
+Message-Id: <1367931069-7177-5-git-send-email-sven@narfation.org>
 In-Reply-To: <1367931069-7177-1-git-send-email-sven@narfation.org>
 References: <1367931069-7177-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 3/9] batmand: Add CFLAGS to the linker step
+Subject: [B.A.T.M.A.N.] [PATCH 4/9] vis: Add CFLAGS to the linker step
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -31,10 +31,10 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index ce1e198..721f20b 100755
+index c4220f5..0d49c7e 100755
 --- a/Makefile
 +++ b/Makefile
-@@ -57,7 +57,7 @@ RM ?= rm -f
+@@ -43,7 +43,7 @@ RM ?= rm -f
  INSTALL ?= install
  MKDIR ?= mkdir -p
  COMPILE.c = $(Q_CC)$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
