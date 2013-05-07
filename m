@@ -1,10 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue,  7 May 2013 14:51:06 +0200
-Message-Id: <1367931069-7177-7-git-send-email-sven@narfation.org>
+Date: Tue,  7 May 2013 14:51:07 +0200
+Message-Id: <1367931069-7177-8-git-send-email-sven@narfation.org>
 In-Reply-To: <1367931069-7177-1-git-send-email-sven@narfation.org>
 References: <1367931069-7177-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 6/9] alfred: Enable Link-time optimization
+Subject: [B.A.T.M.A.N.] [PATCH 7/9] batman-adv-devel: Add missing TARGET_*
+	flags to batctl compile
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,33 +20,30 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-Link-time optimization allows to move parts of the optimization from the single
-source file to the global source view. This is done by emitting the GIMPLE
-representation in each object file and analyzing it again during the link step.
-
-This reduces the binary size by around 10% on mipsel (this includes parts which
-were also removed by garbage collection).
+The compilation step of batctl completely dropped the TARGET_CFLAGS,
+TARGET_CPPFLAGS and TARGET_LDFLAGS and therefore weren't compiled and linked
+with the flags given by the OpenWRT build environment.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- alfred/Makefile | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ batman-adv-devel/Makefile | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/alfred/Makefile b/alfred/Makefile
-index ab19325..2656d1c 100644
---- a/alfred/Makefile
-+++ b/alfred/Makefile
-@@ -44,8 +44,8 @@ endef
- MAKE_ALFRED_FLAGS=\
- 	CONFIG_ALFRED_VIS=$(if $(CONFIG_PACKAGE_ALFRED_VIS),y,n)
+diff --git a/batman-adv-devel/Makefile b/batman-adv-devel/Makefile
+index 0958f38..b9e2650 100644
+--- a/batman-adv-devel/Makefile
++++ b/batman-adv-devel/Makefile
+@@ -85,7 +85,9 @@ $(eval $(call Download,batctl))
  
--TARGET_CFLAGS  += -ffunction-sections -fdata-sections
--TARGET_LDFLAGS += -Wl,--gc-sections
-+TARGET_CFLAGS  += -ffunction-sections -fdata-sections -flto
-+TARGET_LDFLAGS += -Wl,--gc-sections -fuse-linker-plugin
+ BATCTL_EXTRACT = tar xzf "$(DL_DIR)/$(PKG_BATCTL_FNAME)" -C "$(BUILD_DIR)/$(PKG_NAME)"
+ BATCTL_PATCH = $(call Build/DoPatch,"$(PKG_BATCTL_BUILD_DIR)","$(PATCH_DIR)","*batctl*")
+-BATCTL_BUILD = $(MAKE) -C $(PKG_BATCTL_BUILD_DIR) $(MAKE_BATCTL_ARGS)
++BATCTL_BUILD =	CPPFLAGS="$(TARGET_CPPFLAGS)" CFLAGS="$(TARGET_CFLAGS)" \
++		LDFLAGS="$(TARGET_LDFLAGS)" \
++		$(MAKE) -C $(PKG_BATCTL_BUILD_DIR) $(MAKE_BATCTL_ARGS)
+ BATCTL_INSTALL = $(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/local/sbin/batctl $(1)/usr/sbin/
+ endif
  
- define Build/Compile
- 	CFLAGS="$(TARGET_CPPFLAGS) $(TARGET_CFLAGS)" \
 -- 
 1.8.2.1
 
