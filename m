@@ -1,14 +1,15 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <5189D8BD.8070500@hundeboll.net>
-Date: Wed, 08 May 2013 06:46:53 +0200
-From: =?ISO-8859-1?Q?Martin_Hundeb=F8ll?= <martin@hundeboll.net>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Wed, 8 May 2013 13:04:15 +0800
+References: <1367931069-7177-1-git-send-email-sven@narfation.org>
+ <1367931069-7177-3-git-send-email-sven@narfation.org>
+In-Reply-To: <1367931069-7177-3-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-References: <1367925902-31578-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1367925902-31578-1-git-send-email-lindner_marek@yahoo.de>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: check return value of
- pskb_trim_rcsum()
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201305081304.15303.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/9] batctl: Add CFLAGS to the linker step
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,56 +21,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-On 2013-05-07 13:25, Marek Lindner wrote:
-> Reported-by: Sven Eckelmann <sven@narfation.org>
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-
-Acked-by: Martin Hundeb=F8ll <martin@hundeboll.net>
-
+On Tuesday, May 07, 2013 20:51:02 Sven Eckelmann wrote:
+> The GCC manual states for different parameters that the options for
+> compilation must also be used when linking. The options for compilation
+> are stored in CFLAGS and added to LINK.o to fix the behavior.
+> 
+> Option which need this are for example -fPIC/-fPIE or -flto.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->   network-coding.c |    8 ++++++--
->   1 file changed, 6 insertions(+), 2 deletions(-)
->
-> diff --git a/network-coding.c b/network-coding.c
-> index f7c5430..e84629e 100644
-> --- a/network-coding.c
-> +++ b/network-coding.c
-> @@ -1514,6 +1514,7 @@ batadv_nc_skb_decode_packet(struct batadv_priv *bat=
-_priv, struct sk_buff *skb,
->   	struct ethhdr *ethhdr, ethhdr_tmp;
->   	uint8_t *orig_dest, ttl, ttvn;
->   	unsigned int coding_len;
-> +	int err;
->
->   	/* Save headers temporarily */
->   	memcpy(&coded_packet_tmp, skb->data, sizeof(coded_packet_tmp));
-> @@ -1568,8 +1569,11 @@ batadv_nc_skb_decode_packet(struct batadv_priv *ba=
-t_priv, struct sk_buff *skb,
->   			 coding_len);
->
->   	/* Resize decoded skb if decoded with larger packet */
-> -	if (nc_packet->skb->len > coding_len + h_size)
-> -		pskb_trim_rcsum(skb, coding_len + h_size);
-> +	if (nc_packet->skb->len > coding_len + h_size) {
-> +		err =3D pskb_trim_rcsum(skb, coding_len + h_size);
-> +		if (err)
-> +			return NULL;
-> +	}
->
->   	/* Create decoded unicast packet */
->   	unicast_packet =3D (struct batadv_unicast_packet *)skb->data;
->
+>  Makefile | 2 +-
 
+Applied in revision b80d07f.
 
---=20
-Kind Regards
-Martin Hundeb=F8ll
-Frederiks All=E9 99, 1.th
-8000 Aarhus C
-Denmark
-
-+45 61 65 54 61
-martin@hundeboll.net
+Thanks,
+Marek
