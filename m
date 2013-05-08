@@ -1,14 +1,9 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <5189E7E2.9010203@hundeboll.net>
-Date: Wed, 08 May 2013 07:51:30 +0200
-From: =?ISO-8859-1?Q?Martin_Hundeb=F8ll?= <martin@hundeboll.net>
-MIME-Version: 1.0
-References: <1367991380-30270-1-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1367991380-30270-1-git-send-email-lindner_marek@yahoo.de>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: consider network coding
- overhead when calculating required mtu
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed,  8 May 2013 09:21:25 +0200
+Message-Id: <1367997686-12331-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [Bonus-PATCH 10/9] batman-adv-devel: Don't overwrite
+	batctl's CFLAGS
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,54 +15,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-On 2013-05-08 07:36, Marek Lindner wrote:
-> The module prints a warning when the MTU on the hard interface is too
-> small to transfer payload traffic without fragmentation. The required
-> MTU is calculated based on the encapsulation header size. If network
-> coding is compild into the module its header size is taken into
-> account as well.
->
-> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+The batctl makefile has CFLAGS which change the behavior of the compiler. This
+includes important things like the C-dialect used or whether the compiler can
+ignore aliasing problems during the optimization step.
 
-Acked-by: Martin Hundeb=F8ll <martin@hundeboll.net>
+The OpenWRT build environment should not overwrite these settings without a
+good reason. Most of these reasons can probably directly be fixed upstream.
 
-> ---
->   types.h |    7 +++++++
->   1 file changed, 7 insertions(+)
->
-> diff --git a/types.h b/types.h
-> index b2c94e1..8089bd6 100644
-> --- a/types.h
-> +++ b/types.h
-> @@ -27,9 +27,16 @@
->   /**
->    * Maximum overhead for the encapsulation for a payload packet
->    */
-> +#ifdef CONFIG_BATMAN_ADV_NC
-> +#define BATADV_HEADER_LEN \
-> +	(ETH_HLEN + max3(sizeof(struct batadv_unicast_packet), \
-> +			 sizeof(struct batadv_bcast_packet),   \
-> +			 sizeof(struct batadv_coded_packet)))
-> +#else
->   #define BATADV_HEADER_LEN \
->   	(ETH_HLEN + max(sizeof(struct batadv_unicast_packet), \
->   			sizeof(struct batadv_bcast_packet)))
-> +#endif /* CONFIG_BATMAN_ADV_NC */
->
->   #ifdef CONFIG_BATMAN_ADV_DAT
->
->
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ batman-adv-devel/Makefile | 3 ---
+ 1 file changed, 3 deletions(-)
 
+diff --git a/batman-adv-devel/Makefile b/batman-adv-devel/Makefile
+index cad95c6..fb2c24a 100644
+--- a/batman-adv-devel/Makefile
++++ b/batman-adv-devel/Makefile
+@@ -65,9 +65,6 @@ MAKE_BATMAN_ADV_ARGS += \
+ 	REVISION="$(PKG_BATMAN_SHORTREV)" all
+ 
+ MAKE_BATCTL_ARGS += \
+-	CFLAGS="$(TARGET_CFLAGS)" \
+-	CCFLAGS="$(TARGET_CFLAGS)" \
+-	OFLAGS="$(TARGET_CFLAGS)" \
+ 	REVISION="$(PKG_BATCTL_SHORTREV)" \
+ 	CC="$(TARGET_CC)" \
+ 	NODEBUG=1 \
+-- 
+1.8.2.1
 
---=20
-Kind Regards
-Martin Hundeb=F8ll
-Frederiks All=E9 99, 1.th
-8000 Aarhus C
-Denmark
-
-+45 61 65 54 61
-martin@hundeboll.net
