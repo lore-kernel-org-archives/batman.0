@@ -1,16 +1,9 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 8 May 2013 13:11:57 +0800
-References: <1367931069-7177-1-git-send-email-sven@narfation.org>
- <1367931069-7177-8-git-send-email-sven@narfation.org>
-In-Reply-To: <1367931069-7177-8-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201305081311.57379.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 7/9] batman-adv-devel: Add missing
-	TARGET_* flags to batctl compile
+Date: Wed,  8 May 2013 13:36:20 +0800
+Message-Id: <1367991380-30270-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: consider network coding
+	overhead when calculating required mtu
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,17 +16,40 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-On Tuesday, May 07, 2013 20:51:07 Sven Eckelmann wrote:
-> The compilation step of batctl completely dropped the TARGET_CFLAGS,
-> TARGET_CPPFLAGS and TARGET_LDFLAGS and therefore weren't compiled and
-> linked with the flags given by the OpenWRT build environment.
+The module prints a warning when the MTU on the hard interface is too
+small to transfer payload traffic without fragmentation. The required
+MTU is calculated based on the encapsulation header size. If network
+coding is compild into the module its header size is taken into
+account as well.
 
-It seems you missed the meaning of MAKE_BATCTL_ARGS ? This variable contains 
-TARGET_CFLAGS already. We apparently are missing TARGET_CPPFLAGS and 
-TARGET_LDFLAGS. Do you want to resend and make the necessary changes to 
-MAKE_BATCTL_ARGS ?
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ types.h |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Cheers,
-Marek
+diff --git a/types.h b/types.h
+index b2c94e1..8089bd6 100644
+--- a/types.h
++++ b/types.h
+@@ -27,9 +27,16 @@
+ /**
+  * Maximum overhead for the encapsulation for a payload packet
+  */
++#ifdef CONFIG_BATMAN_ADV_NC
++#define BATADV_HEADER_LEN \
++	(ETH_HLEN + max3(sizeof(struct batadv_unicast_packet), \
++			 sizeof(struct batadv_bcast_packet),   \
++			 sizeof(struct batadv_coded_packet)))
++#else
+ #define BATADV_HEADER_LEN \
+ 	(ETH_HLEN + max(sizeof(struct batadv_unicast_packet), \
+ 			sizeof(struct batadv_bcast_packet)))
++#endif /* CONFIG_BATMAN_ADV_NC */
+ 
+ #ifdef CONFIG_BATMAN_ADV_DAT
+ 
+-- 
+1.7.10.4
+
