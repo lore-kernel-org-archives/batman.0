@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu,  9 May 2013 12:56:47 +0200
-Message-Id: <1368097007-817-5-git-send-email-ordex@autistici.org>
+Date: Thu,  9 May 2013 12:56:46 +0200
+Message-Id: <1368097007-817-4-git-send-email-ordex@autistici.org>
 In-Reply-To: <1368097007-817-1-git-send-email-ordex@autistici.org>
 References: <1368097007-817-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: reorder clean up routine in
-	order to avoid race conditions
+Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: make DAT drop ARP requests
+	targeting local clients
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,56 +20,45 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <ordex@autistici.org>
 
-nc_worker accesses the originator table during its periodic
-work, but since the originator table is freed before
-stopping the worker this leads to a global protection fault.
+In the outgoing ARP request snooping routine in DAT, ARP
+Request sent by local clients which are supposed to be
+replied by other local clients can be silently dropped.
 
-Fix this by killing the worker (in nc_free) before freeing
-the originator table.
+The destination host will reply by itself through the LAN
+and therefore there is no need to involve DAT.
 
-Moreover tidy up the entire clean up routine by running all
-the subcomponents freeing procedures first and then killing
-the TT and the originator tables at the end.
-
+Reported-by: Carlos Quijano <carlos@crqgestion.es>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Tested-by: Carlos Quijano <carlos@crqgestion.es>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/main.c | 20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
+ net/batman-adv/distributed-arp-table.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 9c620cd..1240f07 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -163,14 +163,22 @@ void batadv_mesh_free(struct net_device *soft_iface)
- 	batadv_vis_quit(bat_priv);
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 8e15d96..2399920 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -837,6 +837,19 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
  
- 	batadv_gw_node_purge(bat_priv);
--	batadv_originator_free(bat_priv);
- 	batadv_nc_free(bat_priv);
--
--	batadv_tt_free(bat_priv);
--
--	batadv_bla_free(bat_priv);
--
- 	batadv_dat_free(bat_priv);
-+	batadv_bla_free(bat_priv);
+ 	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst);
+ 	if (dat_entry) {
++		/* If the ARP request is destined for a local client the local
++		 * client will answer itself. DAT would only generate a
++		 * duplicate packet.
++		 *
++		 * Moreover, if the soft-interface is enslaved into a bridge, an
++		 * additional DAT answer may trigger kernel warnings about
++		 * a packet coming from the wrong port.
++		 */
++		if (batadv_is_my_client(bat_priv, dat_entry->mac_addr)) {
++			ret = true;
++			goto out;
++		}
 +
-+	/* Free the TT and the originator tables only after having terminated
-+	 * all the other depending components which may use these structures for
-+	 * their purposes.
-+	 */
-+	batadv_tt_free(bat_priv);
-+
-+	/* Since the originator table clean up routine is accessing the TT
-+	 * tables as well, it has to be invoked after the TT tables have been
-+	 * freed and marked as empty. This ensures that no cleanup RCU callbacks
-+	 * accessing the TT data are scheduled for later execution.
-+	 */
-+	batadv_originator_free(bat_priv);
- 
- 	free_percpu(bat_priv->bat_counters);
- 
+ 		skb_new = arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
+ 				     bat_priv->soft_iface, ip_dst, hw_src,
+ 				     dat_entry->mac_addr, hw_src);
 -- 
 1.8.1.5
 
