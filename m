@@ -1,11 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu,  9 May 2013 16:28:07 +0200
-Message-Id: <1368109687-3780-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1368109687-3780-1-git-send-email-ordex@autistici.org>
-References: <1368109687-3780-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH next 2/2] batman-adv: use VLAN_VID_MASK when
-	printing the vid
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Fri, 10 May 2013 00:07:08 +0800
+References: <1368109009-2100-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1368109009-2100-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201305100007.08742.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: fix VLAN Ethernet
+	header access
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,29 +22,21 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <ordex@autistici.org>
+Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <ordex@autistici.org>
 
-Introduced in 454b849c7de18a7b44eecebe889f5f3149d24780
-("batman-adv: print the VID properly")
+On Thursday, May 09, 2013 22:16:49 Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+> 
+> In interface_rx() skb->data cannot be directly used to
+> access the Ethernet header because it point to the batman
+> one.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- main.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+You don't believe that these calls (shortly before the code chunks you are 
+changing) are helpful ?
 
-diff --git a/main.h b/main.h
-index 68c7ee0..834b1a0 100644
---- a/main.h
-+++ b/main.h
-@@ -173,7 +173,7 @@ enum batadv_vlan_flags {
- };
- 
- #define BATADV_PRINT_VID(vid) (vid & BATADV_VLAN_HAS_TAG ? \
--			       (int)(vid & BATADV_VID_MASK) : -1)
-+			       (int)(vid & VLAN_VID_MASK) : -1)
- 
- extern char batadv_routing_algo[];
- extern struct list_head batadv_hardif_list;
--- 
-1.8.1.5
+skb_pull_rcsum(skb, hdr_size);
+skb_reset_mac_header(skb);
 
+
+Cheers,
+Marek
