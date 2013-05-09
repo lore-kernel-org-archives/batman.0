@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 9 May 2013 15:57:53 +0800
-References: <1368084945-2531-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1368084945-2531-1-git-send-email-ordex@autistici.org>
+Date: Thu, 9 May 2013 17:31:33 +0800
+References: <1367881578-3353-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1367881578-3353-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201305091557.53587.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: make DAT drop ARP
-	requests targeting local clients
+Message-Id: <201305091731.33754.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: reorder clean up
+	routine in order to avoid race conditions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,22 +24,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <ordex@autistici.org>
 
-On Thursday, May 09, 2013 15:35:45 Antonio Quartulli wrote:
-> In the outgoing ARP request snooping routine in DAT, ARP
-> Request sent by local clients which are supposed to be
-> replied by other local clients can be silently dropped.
+On Tuesday, May 07, 2013 07:06:18 Antonio Quartulli wrote:
+> nc_worker accesses the originator table during its periodic
+> work, but since the originator table is freed before
+> stopping the worker this leads to a global protection fault.
 > 
-> The destination host will reply by itself through the LAN
-> and therefore there is no need to involve DAT.
+> Fix this by killing the worker (in nc_free) before freeing
+> the originator table.
 > 
-> Reported-by: Carlos Quijano <carlos@crqgestion.es>
+> Moreover tidy up the entire clean up routine by running all
+> the subcomponents freeing procedures first and then killing
+> the TT and the originator tables at the end.
+> 
 > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> Tested-by: Carlos Quijano <carlos@crqgestion.es>
 > ---
->  distributed-arp-table.c | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
+> 
+> v2:
+> - based on top of maint
+> - commit message reworded
+> 
+>  main.c | 16 ++++++++++++----
+>  1 file changed, 12 insertions(+), 4 deletions(-)
 
-Applied in revision d6bd8b3.
+Applied in revision 763f413.
 
 Thanks,
 Marek
