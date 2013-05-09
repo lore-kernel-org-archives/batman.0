@@ -1,14 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu,  9 May 2013 12:56:45 +0200
-Message-Id: <1368097007-817-3-git-send-email-ordex@autistici.org>
+Date: Thu,  9 May 2013 12:56:47 +0200
+Message-Id: <1368097007-817-5-git-send-email-ordex@autistici.org>
 In-Reply-To: <1368097007-817-1-git-send-email-ordex@autistici.org>
 References: <1368097007-817-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: check return value of
-	pskb_trim_rcsum()
+Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: reorder clean up routine in
+	order to avoid race conditions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,42 +20,56 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <ordex@autistici.org>
 
-From: Marek Lindner <lindner_marek@yahoo.de>
+nc_worker accesses the originator table during its periodic
+work, but since the originator table is freed before
+stopping the worker this leads to a global protection fault.
 
-Reported-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Acked-by: Martin Hundebøll <martin@hundeboll.net>
+Fix this by killing the worker (in nc_free) before freeing
+the originator table.
+
+Moreover tidy up the entire clean up routine by running all
+the subcomponents freeing procedures first and then killing
+the TT and the originator tables at the end.
+
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/network-coding.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ net/batman-adv/main.c | 20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index f7c5430..e84629e 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -1514,6 +1514,7 @@ batadv_nc_skb_decode_packet(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 	struct ethhdr *ethhdr, ethhdr_tmp;
- 	uint8_t *orig_dest, ttl, ttvn;
- 	unsigned int coding_len;
-+	int err;
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 9c620cd..1240f07 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -163,14 +163,22 @@ void batadv_mesh_free(struct net_device *soft_iface)
+ 	batadv_vis_quit(bat_priv);
  
- 	/* Save headers temporarily */
- 	memcpy(&coded_packet_tmp, skb->data, sizeof(coded_packet_tmp));
-@@ -1568,8 +1569,11 @@ batadv_nc_skb_decode_packet(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 			 coding_len);
+ 	batadv_gw_node_purge(bat_priv);
+-	batadv_originator_free(bat_priv);
+ 	batadv_nc_free(bat_priv);
+-
+-	batadv_tt_free(bat_priv);
+-
+-	batadv_bla_free(bat_priv);
+-
+ 	batadv_dat_free(bat_priv);
++	batadv_bla_free(bat_priv);
++
++	/* Free the TT and the originator tables only after having terminated
++	 * all the other depending components which may use these structures for
++	 * their purposes.
++	 */
++	batadv_tt_free(bat_priv);
++
++	/* Since the originator table clean up routine is accessing the TT
++	 * tables as well, it has to be invoked after the TT tables have been
++	 * freed and marked as empty. This ensures that no cleanup RCU callbacks
++	 * accessing the TT data are scheduled for later execution.
++	 */
++	batadv_originator_free(bat_priv);
  
- 	/* Resize decoded skb if decoded with larger packet */
--	if (nc_packet->skb->len > coding_len + h_size)
--		pskb_trim_rcsum(skb, coding_len + h_size);
-+	if (nc_packet->skb->len > coding_len + h_size) {
-+		err = pskb_trim_rcsum(skb, coding_len + h_size);
-+		if (err)
-+			return NULL;
-+	}
+ 	free_percpu(bat_priv->bat_counters);
  
- 	/* Create decoded unicast packet */
- 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
 -- 
 1.8.1.5
 
