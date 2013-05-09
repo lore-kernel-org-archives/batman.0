@@ -1,8 +1,8 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu,  9 May 2013 16:12:48 +0200
-Message-Id: <1368108768-2772-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix VLAN Ethernet header
+Date: Thu,  9 May 2013 16:16:49 +0200
+Message-Id: <1368109009-2100-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: fix VLAN Ethernet header
 	access
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -26,11 +26,15 @@ one.
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
+
+v2:
+- use vlan_eth_hdr()
+
  soft-interface.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/soft-interface.c b/soft-interface.c
-index 6f20d33..c8e1f8f 100644
+index 6f20d33..114d10d 100644
 --- a/soft-interface.c
 +++ b/soft-interface.c
 @@ -320,7 +320,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
@@ -38,7 +42,7 @@ index 6f20d33..c8e1f8f 100644
  	switch (ntohs(ethhdr->h_proto)) {
  	case ETH_P_8021Q:
 -		vhdr = (struct vlan_ethhdr *)skb->data;
-+		vhdr = (struct vlan_ethhdr *)ethhdr;
++		vhdr = vlan_eth_hdr(skb);
  		vid = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
  
  		if (vhdr->h_vlan_encapsulated_proto != ethertype)
