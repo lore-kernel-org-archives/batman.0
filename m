@@ -1,16 +1,9 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 12 May 2013 15:56:06 +0800
-References: <1367997686-12331-1-git-send-email-sven@narfation.org>
- <1367997686-12331-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1367997686-12331-2-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201305121556.06749.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [Bonus-PATCH 11/9] batman-adv-devel: Remove
-	unused parameters from MAKE_BATCTL_ARGS
+Date: Sun, 12 May 2013 16:15:25 +0800
+Message-Id: <1368346525-15171-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: fix false uninitialized variable
+	warning when compiling with O2
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,18 +16,26 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-On Wednesday, May 08, 2013 15:21:26 Sven Eckelmann wrote:
-> The NODEBUG, UNAME and STRIP parameter aren't used in batctl's Makefile.
-> Removing them should be safe.
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  batman-adv-devel/Makefile | 3 ---
->  1 file changed, 3 deletions(-)
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ functions.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision ffa6898.
+diff --git a/functions.c b/functions.c
+index a025395..cc05a48 100644
+--- a/functions.c
++++ b/functions.c
+@@ -458,7 +458,7 @@ static void request_arp(uint32_t ipv4_addr)
+ static struct ether_addr *resolve_mac_from_arp(uint32_t ipv4_addr)
+ {
+ 	struct ether_addr mac_empty;
+-	struct ether_addr *mac_result = NULL, *mac_tmp;
++	struct ether_addr *mac_result = NULL, *mac_tmp = NULL;
+ 	struct sockaddr_in inet4;
+ 	int ret;
+ 	FILE *f;
+-- 
+1.7.10.4
 
-Thanks,
-Marek
