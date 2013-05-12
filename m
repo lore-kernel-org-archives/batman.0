@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 12 May 2013 15:30:57 +0800
-References: <1367879362-3164-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1367879362-3164-1-git-send-email-ordex@autistici.org>
+Date: Sun, 12 May 2013 15:52:13 +0800
+References: <1367931069-7177-1-git-send-email-sven@narfation.org>
+ <201305081311.57379.lindner_marek@yahoo.de> <5327945.UAE3F7hzx2@bentobox>
+In-Reply-To: <5327945.UAE3F7hzx2@bentobox>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201305121530.57674.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: don't use call_rcu if not
-	needed
+Message-Id: <201305121552.13444.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 7/9] batman-adv-devel: Add missing
+	TARGET_* flags to batctl compile
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,26 +23,31 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <ordex@autistici.org>
+Cc: Sven Eckelmann <sven@narfation.org>
 
-On Tuesday, May 07, 2013 06:29:22 Antonio Quartulli wrote:
-> batadv_tt_global_entry_free_ref uses call_rcu to schedule a
-> function which will only free the global entry itself.
+On Wednesday, May 08, 2013 15:24:50 Sven Eckelmann wrote:
+> On Wednesday 08 May 2013 13:11:57 Marek Lindner wrote:
+> > On Tuesday, May 07, 2013 20:51:07 Sven Eckelmann wrote:
+> > > The compilation step of batctl completely dropped the TARGET_CFLAGS,
+> > > TARGET_CPPFLAGS and TARGET_LDFLAGS and therefore weren't compiled and
+> > > linked with the flags given by the OpenWRT build environment.
+> > 
+> > It seems you missed the meaning of MAKE_BATCTL_ARGS ? This variable
+> > contains TARGET_CFLAGS already. We apparently are missing
+> > TARGET_CPPFLAGS and TARGET_LDFLAGS. Do you want to resend and make the
+> > necessary changes to MAKE_BATCTL_ARGS ?
 > 
-> For this reason call_rcu is useless and kfree_rcu can be
-> used to simplify the code.
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
-> 
-> v2:
-> - removed one useless container_of in compat.c
-> 
->  compat.c            |  9 +++++++++
->  translation-table.c | 20 ++++++--------------
->  2 files changed, 15 insertions(+), 14 deletions(-)
+> I didn't felt like fixing your other problems too, but sent two other
+> patches resolving the MAKE_BATCTL_ARGS problem. See
+> [Bonus-PATCH 10/9] batman-adv-devel: Don't overwrite batctl's CFLAGS
+> [Bonus-PATCH 11/9] batman-adv-devel: Remove unused parameters from
+> MAKE_BATCTL_ARGS
 
-Applied in revision 1bd8161.
+Applied with minor modifications in revision f41a85c.
+
+Thanks for the explanations as to why that is helpful.
 
 Thanks,
 Marek
+
+
