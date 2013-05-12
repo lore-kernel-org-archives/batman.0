@@ -1,8 +1,8 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 12 May 2013 22:06:05 +0200
-Message-Id: <1368389165-1882-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: use __constant_htons when
+Date: Sun, 12 May 2013 22:09:57 +0200
+Message-Id: <1368389397-1518-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: use __constant_htons when
 	possible
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -27,12 +27,20 @@ This refactoring may slightly improve the code performance.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
+
+v2:
+- v1 was based on a patch I decided to not send anymore and was generating a
+  conflict. now it is based on top of
+  "batman-adv: use VLAN_ETH_HLEN instead of sizeof(struct vlan_eth_hdr)"
+
+
+
  bridge_loop_avoidance.c | 12 ++++++------
  gateway_client.c        |  4 ++--
  2 files changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 124a743..b7df579 100644
+index 9e691b0..90b27b3 100644
 --- a/bridge_loop_avoidance.c
 +++ b/bridge_loop_avoidance.c
 @@ -863,25 +863,25 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
@@ -49,7 +57,7 @@ index 124a743..b7df579 100644
  
 -	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
 +	if (ethhdr->h_proto == __constant_htons(ETH_P_8021Q)) {
- 		vhdr = vlan_eth_hdr(skb);
+ 		vhdr = (struct vlan_ethhdr *)ethhdr;
  		vid = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
  		vid |= BATADV_VLAN_HAS_TAG;
 -		proto = ntohs(vhdr->h_vlan_encapsulated_proto);
