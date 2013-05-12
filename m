@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 12 May 2013 15:25:10 +0800
-References: <1367927642-3223-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1367927642-3223-1-git-send-email-ordex@autistici.org>
+Date: Sun, 12 May 2013 15:30:57 +0800
+References: <1367879362-3164-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1367879362-3164-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201305121525.11172.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: access
-	h_vlan_encapsulated_proto properly
+Message-Id: <201305121530.57674.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: don't use call_rcu if not
+	needed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,48 +21,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <ordex@autistici.org>
 
-On Tuesday, May 07, 2013 19:54:02 Antonio Quartulli wrote:
-> In the gateway code in case of VLAN tagged frame the ethhdr
-> pointer is moved forward by 4 bytes so that the offset of
-> h_proto in struct ethhdr matches the real
-> h_vlan_encapsulated_proto address in the skb.
+On Tuesday, May 07, 2013 06:29:22 Antonio Quartulli wrote:
+> batadv_tt_global_entry_free_ref uses call_rcu to schedule a
+> function which will only free the global entry itself.
 > 
-> This trick is correct but the code is not easy to understand
-> and may lead to bugs in case of re-use of ethhdr for other
-> purposes.
+> For this reason call_rcu is useless and kfree_rcu can be
+> used to simplify the code.
 > 
-> Use a standalone protocol variable and assign it accordingly
-> to the header type
-
-How about adding the key word "refactoring" somewhere into the subject line or 
-the commit message ?
-
-
-> @@ -626,23 +626,29 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb,
-> unsigned int *header_len) struct iphdr *iphdr;
->  	struct ipv6hdr *ipv6hdr;
->  	struct udphdr *udphdr;
-> +	uint16_t proto;
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
 > 
->  	/* check for ethernet header */
->  	if (!pskb_may_pull(skb, *header_len + ETH_HLEN))
->  		return false;
->  	ethhdr = (struct ethhdr *)skb->data;
-> +	proto = ntohs(ethhdr->h_proto);
->  	*header_len += ETH_HLEN;
+> v2:
+> - removed one useless container_of in compat.c
 > 
->  	/* check for initial vlan header */
-> -	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
-> +	if (proto == ETH_P_8021Q) {
-> +		struct vlan_ethhdr *vhdr;
-> +
+>  compat.c            |  9 +++++++++
+>  translation-table.c | 20 ++++++--------------
+>  2 files changed, 15 insertions(+), 14 deletions(-)
 
-While we are refactoring I suggest to not ntohs() the protocol every time but 
-the protocol constants. The compiler will replace the constants with the 
-appropriate number during the compilation, thus saving us from a runtime 
-operation every time we check a packet.
+Applied in revision 1bd8161.
 
-Cheers,
+Thanks,
 Marek
