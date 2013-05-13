@@ -1,14 +1,14 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Mon, 13 May 2013 22:23:00 +0200
-Message-Id: <1368476582-19220-2-git-send-email-martin@hundeboll.net>
+Date: Mon, 13 May 2013 22:23:01 +0200
+Message-Id: <1368476582-19220-3-git-send-email-martin@hundeboll.net>
 In-Reply-To: <1368476582-19220-1-git-send-email-martin@hundeboll.net>
 References: <1368476582-19220-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 1/3] batman-adv: Remove old fragmentation
-	code
+Subject: [B.A.T.M.A.N.] [PATCHv2 2/3] batman-adv: Receive fragmented packets
+	and merge
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,1251 +23,801 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-Remove the existing fragmentation code before adding the new version
-and delete unicast.{h,c}.
+Fragments arriving at their destination are buffered for later merge.
+Merged packets are passed to the main receive function as had they never
+been fragmented.
 
-batadv_unicast_send_skb() is moved to send.c and renamed to
-batadv_send_skb_unicast().
-
-fragmentation entry in sysfs (bat_priv->fragmentation) is kept for use in
-the new fragmentation code.
-
-BATADV_UNICAST_FRAG packet type is renamed to BATADV_FRAG for use in the
-new fragmentation code.
+Fragments are forwarded without merging if the MTU of the outgoing
+interface is smaller than the size of the merged packet.
 
 Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 ---
 
 v2:
-unmangle function names with 4addr_unicast
-correctly indent kernel doc
+update copyright years
+remove () and uppercase beginnings from kernel doc
+use hlist_for_entry_safe() in batadv_frag_clear_list()
+merge batadv_frag_clear_orig() and batadv_frag_check_orig()
+update some kernel doc with return values
+remove "inline" from static function in .c file
+rename lists of fragments to "chain"
+remove type in kernel doc
+remove initialization from "curr" and "new" in insert_packet()
+rename "curr" and "new" to "frag_entry_{curr,new}"
+rename packet to frag_packet
+change return description in kernel doc for batadv_frag_merge_packets()
+fix return value on failure in pskb_expand_head() in merge_packets()
+add kernel doc for counters in types.h
 
- Makefile.kbuild         |   1 -
- distributed-arp-table.c |  11 +-
- hard-interface.c        |   1 -
- main.c                  |   4 -
- originator.c            |   9 -
- packet.h                |  16 --
- routing.c               |  86 +--------
- routing.h               |   2 -
- send.c                  | 173 ++++++++++++++++++
- send.h                  |  36 ++++
- soft-interface.c        |   4 +-
- types.h                 |  19 --
- unicast.c               | 478 ------------------------------------------------
- unicast.h               |  92 ----------
- 14 files changed, 216 insertions(+), 716 deletions(-)
- delete mode 100644 unicast.c
- delete mode 100644 unicast.h
+ Makefile.kbuild  |   1 +
+ fragmentation.c  | 360 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fragmentation.h  |  47 ++++++++
+ main.c           |   4 +
+ main.h           |   9 ++
+ originator.c     |  14 ++-
+ packet.h         |  27 +++++
+ routing.c        |  60 ++++++++++
+ routing.h        |   2 +
+ soft-interface.c |   4 +
+ types.h          |  38 ++++++
+ 11 files changed, 565 insertions(+), 1 deletion(-)
+ create mode 100644 fragmentation.c
+ create mode 100644 fragmentation.h
 
 diff --git a/Makefile.kbuild b/Makefile.kbuild
-index 8ddbfe6..f9b465b 100644
+index f9b465b..4f4aabb 100644
 --- a/Makefile.kbuild
 +++ b/Makefile.kbuild
-@@ -37,4 +37,3 @@ batman-adv-y += send.o
- batman-adv-y += soft-interface.o
- batman-adv-y += sysfs.o
- batman-adv-y += translation-table.o
--batman-adv-y += unicast.o
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index f07ec32..99da412 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -29,7 +29,6 @@
- #include "send.h"
- #include "types.h"
- #include "translation-table.h"
--#include "unicast.h"
- 
- static void batadv_dat_purge(struct work_struct *work);
- 
-@@ -592,9 +591,9 @@ static bool batadv_dat_send_data(struct batadv_priv *bat_priv,
- 			goto free_orig;
- 
- 		tmp_skb = pskb_copy(skb, GFP_ATOMIC);
--		if (!batadv_unicast_4addr_prepare_skb(bat_priv, tmp_skb,
--						      cand[i].orig_node,
--						      packet_subtype)) {
-+		if (!batadv_send_skb_prepare_unicast_4addr(bat_priv, tmp_skb,
-+							   cand[i].orig_node,
-+							   packet_subtype)) {
- 			kfree_skb(tmp_skb);
- 			goto free_neigh;
- 		}
-@@ -990,10 +989,10 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 	 * that a node not using the 4addr packet format doesn't support it.
- 	 */
- 	if (hdr_size == sizeof(struct batadv_unicast_4addr_packet))
--		err = batadv_unicast_4addr_send_skb(bat_priv, skb_new,
-+		err = batadv_send_skb_unicast_4addr(bat_priv, skb_new,
- 						    BATADV_P_DAT_CACHE_REPLY);
- 	else
--		err = batadv_unicast_send_skb(bat_priv, skb_new);
-+		err = batadv_send_skb_unicast(bat_priv, skb_new);
- 
- 	if (!err) {
- 		batadv_inc_counter(bat_priv, BATADV_CNT_DAT_CACHED_REPLY_TX);
-diff --git a/hard-interface.c b/hard-interface.c
-index 9746600..c343aa8 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -444,7 +444,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	hard_iface->batman_adv_ptype.dev = hard_iface->net_dev;
- 	dev_add_pack(&hard_iface->batman_adv_ptype);
- 
--	atomic_set(&hard_iface->frag_seqno, 1);
- 	batadv_info(hard_iface->soft_iface, "Adding interface: %s\n",
- 		    hard_iface->net_dev->name);
- 
-diff --git a/main.c b/main.c
-index af89c09..3b5f78f 100644
---- a/main.c
-+++ b/main.c
-@@ -32,7 +32,6 @@
- #include "gateway_client.h"
- #include "bridge_loop_avoidance.h"
- #include "distributed-arp-table.h"
--#include "unicast.h"
- #include "gateway_common.h"
- #include "hash.h"
- #include "bat_algo.h"
-@@ -342,7 +341,6 @@ static void batadv_recv_handler_init(void)
- 	/* compile time checks for struct member offsets */
- 	BUILD_BUG_ON(offsetof(struct batadv_unicast_4addr_packet, src) != 10);
- 	BUILD_BUG_ON(offsetof(struct batadv_unicast_packet, dest) != 4);
--	BUILD_BUG_ON(offsetof(struct batadv_unicast_frag_packet, dest) != 4);
- 	BUILD_BUG_ON(offsetof(struct batadv_unicast_tvlv_packet, dst) != 4);
- 	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet, dst) != 4);
- 	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet_rr, dst) != 4);
-@@ -355,8 +353,6 @@ static void batadv_recv_handler_init(void)
- 	batadv_rx_handler[BATADV_UNICAST_4ADDR] = batadv_recv_unicast_packet;
- 	/* unicast packet */
- 	batadv_rx_handler[BATADV_UNICAST] = batadv_recv_unicast_packet;
--	/* fragmented unicast packet */
--	batadv_rx_handler[BATADV_UNICAST_FRAG] = batadv_recv_ucast_frag_packet;
- 	/* unicast tvlv packet */
- 	batadv_rx_handler[BATADV_UNICAST_TVLV] = batadv_recv_unicast_tvlv;
- 	/* batman icmp packet */
-diff --git a/originator.c b/originator.c
-index 5d53d2f..898b0ce 100644
---- a/originator.c
-+++ b/originator.c
-@@ -25,7 +25,6 @@
- #include "routing.h"
- #include "gateway_client.h"
- #include "hard-interface.h"
--#include "unicast.h"
- #include "soft-interface.h"
- #include "bridge_loop_avoidance.h"
- #include "network-coding.h"
-@@ -146,7 +145,6 @@ static void batadv_orig_node_free_rcu(struct rcu_head *rcu)
- 	/* Free nc_nodes */
- 	batadv_nc_purge_orig(orig_node->bat_priv, orig_node, NULL);
- 
--	batadv_frag_list_free(&orig_node->frag_list);
- 	batadv_tt_global_del_orig(orig_node->bat_priv, orig_node,
- 				  "originator timed out");
- 
-@@ -269,9 +267,6 @@ struct batadv_orig_node *batadv_get_orig_node(struct batadv_priv *bat_priv,
- 	size = bat_priv->num_ifaces * sizeof(uint8_t);
- 	orig_node->bcast_own_sum = kzalloc(size, GFP_ATOMIC);
- 
--	INIT_LIST_HEAD(&orig_node->frag_list);
--	orig_node->last_frag_packet = 0;
--
- 	if (!orig_node->bcast_own_sum)
- 		goto free_bcast_own;
- 
-@@ -393,10 +388,6 @@ static void _batadv_purge_orig(struct batadv_priv *bat_priv)
- 				batadv_orig_node_free_ref(orig_node);
- 				continue;
- 			}
--
--			if (batadv_has_timed_out(orig_node->last_frag_packet,
--						 BATADV_FRAG_TIMEOUT))
--				batadv_frag_list_free(&orig_node->frag_list);
- 		}
- 		spin_unlock_bh(list_lock);
- 	}
-diff --git a/packet.h b/packet.h
-index 7d45890..96b8e57 100644
---- a/packet.h
-+++ b/packet.h
-@@ -91,12 +91,6 @@ enum batadv_icmp_packettype {
- 	BATADV_PARAMETER_PROBLEM       = 12,
- };
- 
--/* fragmentation defines */
--enum batadv_unicast_frag_flags {
--	BATADV_UNI_FRAG_HEAD	  = BIT(0),
--	BATADV_UNI_FRAG_LARGETAIL = BIT(1),
--};
--
- /* tt data subtypes */
- #define BATADV_TT_DATA_TYPE_MASK 0x0F
- 
-@@ -255,16 +249,6 @@ struct batadv_unicast_4addr_packet {
- 	 */
- };
- 
--struct batadv_unicast_frag_packet {
--	struct batadv_header header;
--	uint8_t  ttvn; /* destination translation table version number */
--	uint8_t  dest[ETH_ALEN];
--	uint8_t  flags;
--	uint8_t  align;
--	uint8_t  orig[ETH_ALEN];
--	__be16   seqno;
--} __packed;
--
- struct batadv_bcast_packet {
- 	struct batadv_header header;
- 	uint8_t  reserved;
-diff --git a/routing.c b/routing.c
-index 7c372f1..a099d32 100644
---- a/routing.c
-+++ b/routing.c
-@@ -25,7 +25,6 @@
- #include "icmp_socket.h"
- #include "translation-table.h"
- #include "originator.h"
--#include "unicast.h"
- #include "bridge_loop_avoidance.h"
- #include "distributed-arp-table.h"
- #include "network-coding.h"
-@@ -653,11 +652,9 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
- {
- 	struct batadv_priv *bat_priv = netdev_priv(recv_if->soft_iface);
- 	struct batadv_orig_node *orig_node = NULL;
--	struct batadv_neigh_node *neigh_node = NULL;
- 	struct batadv_unicast_packet *unicast_packet;
- 	struct ethhdr *ethhdr = eth_hdr(skb);
- 	int res, ret = NET_RX_DROP;
--	struct sk_buff *new_skb;
- 
- 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
- 
-@@ -674,46 +671,12 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
- 	if (!orig_node)
- 		goto out;
- 
--	/* find_router() increases neigh_nodes refcount if found. */
--	neigh_node = batadv_find_router(bat_priv, orig_node, recv_if);
--
--	if (!neigh_node)
--		goto out;
--
- 	/* create a copy of the skb, if needed, to modify it. */
- 	if (skb_cow(skb, ETH_HLEN) < 0)
- 		goto out;
- 
--	unicast_packet = (struct batadv_unicast_packet *)skb->data;
--
--	if (unicast_packet->header.packet_type == BATADV_UNICAST &&
--	    atomic_read(&bat_priv->fragmentation) &&
--	    skb->len > neigh_node->if_incoming->net_dev->mtu) {
--		ret = batadv_frag_send_skb(skb, bat_priv,
--					   neigh_node->if_incoming,
--					   neigh_node->addr);
--		goto out;
--	}
--
--	if (unicast_packet->header.packet_type == BATADV_UNICAST_FRAG &&
--	    batadv_frag_can_reassemble(skb,
--				       neigh_node->if_incoming->net_dev->mtu)) {
--		ret = batadv_frag_reassemble_skb(skb, bat_priv, &new_skb);
--
--		if (ret == NET_RX_DROP)
--			goto out;
--
--		/* packet was buffered for late merge */
--		if (!new_skb) {
--			ret = NET_RX_SUCCESS;
--			goto out;
--		}
--
--		skb = new_skb;
--		unicast_packet = (struct batadv_unicast_packet *)skb->data;
--	}
--
- 	/* decrement ttl */
-+	unicast_packet = (struct batadv_unicast_packet *)skb->data;
- 	unicast_packet->header.ttl--;
- 
- 	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
-@@ -732,8 +695,6 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
- 	}
- 
- out:
--	if (neigh_node)
--		batadv_neigh_node_free_ref(neigh_node);
- 	if (orig_node)
- 		batadv_orig_node_free_ref(orig_node);
- 	return ret;
-@@ -987,51 +948,6 @@ rx_success:
- 	return batadv_route_unicast_packet(skb, recv_if);
- }
- 
--int batadv_recv_ucast_frag_packet(struct sk_buff *skb,
--				  struct batadv_hard_iface *recv_if)
--{
--	struct batadv_priv *bat_priv = netdev_priv(recv_if->soft_iface);
--	struct batadv_unicast_frag_packet *unicast_packet;
--	int hdr_size = sizeof(*unicast_packet);
--	struct sk_buff *new_skb = NULL;
--	int ret;
--
--	if (batadv_check_unicast_packet(bat_priv, skb, hdr_size) < 0)
--		return NET_RX_DROP;
--
--	if (!batadv_check_unicast_ttvn(bat_priv, skb, hdr_size))
--		return NET_RX_DROP;
--
--	unicast_packet = (struct batadv_unicast_frag_packet *)skb->data;
--
--	/* packet for me */
--	if (batadv_is_my_mac(bat_priv, unicast_packet->dest)) {
--		ret = batadv_frag_reassemble_skb(skb, bat_priv, &new_skb);
--
--		if (ret == NET_RX_DROP)
--			return NET_RX_DROP;
--
--		/* packet was buffered for late merge */
--		if (!new_skb)
--			return NET_RX_SUCCESS;
--
--		if (batadv_dat_snoop_incoming_arp_request(bat_priv, new_skb,
--							  hdr_size))
--			goto rx_success;
--		if (batadv_dat_snoop_incoming_arp_reply(bat_priv, new_skb,
--							hdr_size))
--			goto rx_success;
--
--		batadv_interface_rx(recv_if->soft_iface, new_skb, recv_if,
--				    sizeof(struct batadv_unicast_packet), NULL);
--
--rx_success:
--		return NET_RX_SUCCESS;
--	}
--
--	return batadv_route_unicast_packet(skb, recv_if);
--}
--
- /**
-  * batadv_recv_unicast_tvlv - receive and process unicast tvlv packets
-  * @skb: unicast tvlv packet to process
-diff --git a/routing.h b/routing.h
-index ea15fa6..efab583 100644
---- a/routing.h
-+++ b/routing.h
-@@ -30,8 +30,6 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
- 			    struct batadv_hard_iface *recv_if);
- int batadv_recv_unicast_packet(struct sk_buff *skb,
- 			       struct batadv_hard_iface *recv_if);
--int batadv_recv_ucast_frag_packet(struct sk_buff *skb,
--				  struct batadv_hard_iface *recv_if);
- int batadv_recv_bcast_packet(struct sk_buff *skb,
- 			     struct batadv_hard_iface *recv_if);
- int batadv_recv_tt_query(struct sk_buff *skb,
-diff --git a/send.c b/send.c
-index 23c7f79..e6852a1 100644
---- a/send.c
-+++ b/send.c
-@@ -25,6 +25,7 @@
- #include "soft-interface.h"
- #include "hard-interface.h"
- #include "gateway_common.h"
-+#include "gateway_client.h"
- #include "originator.h"
- #include "network-coding.h"
- 
-@@ -128,6 +129,178 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
- 	return ret;
- }
- 
-+/**
-+ * batadv_send_skb_push_fill_unicast - extends the buffer and initializes
-+ *  the common fields for unicast packets
-+ * @skb: packet
-+ * @hdr_size: amount of bytes to push at the beginning of the skb
-+ * @orig_node: the destination node
+@@ -24,6 +24,7 @@ batman-adv-y += bitarray.o
+ batman-adv-$(CONFIG_BATMAN_ADV_BLA) += bridge_loop_avoidance.o
+ batman-adv-y += debugfs.o
+ batman-adv-$(CONFIG_BATMAN_ADV_DAT) += distributed-arp-table.o
++batman-adv-y += fragmentation.o
+ batman-adv-y += gateway_client.o
+ batman-adv-y += gateway_common.o
+ batman-adv-y += hard-interface.o
+diff --git a/fragmentation.c b/fragmentation.c
+new file mode 100644
+index 0000000..5a891d7
+--- /dev/null
++++ b/fragmentation.c
+@@ -0,0 +1,360 @@
++/* Copyright (C) 2013 B.A.T.M.A.N. contributors:
 + *
-+ * Returns false if the buffer extension was not possible or true otherwise
++ * Martin Hundebøll <martin@hundeboll.net>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ * 02110-1301, USA
 + */
-+static bool
-+batadv_send_skb_push_fill_unicast(struct sk_buff *skb, int hdr_size,
-+				  struct batadv_orig_node *orig_node)
-+{
-+	struct batadv_unicast_packet *unicast_packet;
-+	uint8_t ttvn = (uint8_t)atomic_read(&orig_node->last_ttvn);
 +
-+	if (batadv_skb_head_push(skb, hdr_size) < 0)
++#include "main.h"
++#include "fragmentation.h"
++#include "send.h"
++#include "originator.h"
++#include "routing.h"
++#include "hard-interface.h"
++#include "soft-interface.h"
++
++
++/**
++ * batadv_frag_clear_chain - delete entries in the fragment buffer chain.
++ * @head: head of chain with entries.
++ *
++ * Frees fragments in the passed hlist. Should be called with appropriate lock.
++ */
++static void batadv_frag_clear_chain(struct hlist_head *head)
++{
++	struct batadv_frag_list_entry *entry;
++	struct hlist_node *node;
++
++	hlist_for_each_entry_safe(entry, node, head, list) {
++		hlist_del(&entry->list);
++		kfree_skb(entry->skb);
++		kfree(entry);
++	}
++}
++
++/**
++ * batadv_frag_purge_orig - free fragments associated to an orig.
++ * @orig_node: Originator to free fragments from.
++ * @check_cb: Optional function to tell if an entry should be purged.
++ */
++void batadv_frag_purge_orig(struct batadv_orig_node *orig_node,
++			    bool (*check_cb)(struct batadv_frag_table_entry *))
++{
++	struct batadv_frag_table_entry *chain;
++	uint8_t i;
++
++	for (i = 0; i < BATADV_FRAG_BUFFER_COUNT; i++) {
++		chain = &orig_node->fragments[i];
++		spin_lock_bh(&orig_node->fragments[i].lock);
++
++		if (!check_cb || check_cb(chain)) {
++			batadv_frag_clear_chain(&orig_node->fragments[i].head);
++			orig_node->fragments[i].size = 0;
++		}
++
++		spin_unlock_bh(&orig_node->fragments[i].lock);
++	}
++}
++
++/**
++ * batadv_frag_size_limit - maximum possible size of packet to be fragmented.
++ *
++ * Returns the maximum size of payload that can be fragmented.
++ */
++static int batadv_frag_size_limit(void)
++{
++	int limit = BATADV_FRAG_MAX_FRAG_SIZE;
++	limit -= sizeof(struct batadv_frag_packet);
++	limit *= BATADV_FRAG_MAX_FRAGMENTS;
++	return limit;
++}
++
++/**
++ * batadv_frag_init_chain - check and prepare fragment chain for new fragment.
++ * @chain: Chain in fragments table to init.
++ * @seqno: Sequence number of the received fragment.
++ *
++ * Make chain ready for a fragment with sequence number "seqno". Delete existing
++ * entries if they have an "old" sequence number.
++ *
++ * Returns true if chain is empty and caller can just insert the new fragment
++ * without searching for the right position.
++ *
++ * Caller must hold chain->lock.
++ */
++static bool batadv_frag_init_chain(struct batadv_frag_table_entry *chain,
++				   uint16_t seqno)
++{
++	if (chain->seqno == seqno)
 +		return false;
 +
-+	unicast_packet = (struct batadv_unicast_packet *)skb->data;
-+	unicast_packet->header.version = BATADV_COMPAT_VERSION;
-+	/* batman packet type: unicast */
-+	unicast_packet->header.packet_type = BATADV_UNICAST;
-+	/* set unicast ttl */
-+	unicast_packet->header.ttl = BATADV_TTL;
-+	/* copy the destination for faster routing */
-+	memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
-+	/* set the destination tt version number */
-+	unicast_packet->ttvn = ttvn;
++	if (!hlist_empty(&chain->head))
++		batadv_frag_clear_chain(&chain->head);
++
++	chain->size = 0;
++	chain->seqno = seqno;
 +
 +	return true;
 +}
 +
 +/**
-+ * batadv_send_skb_prepare_unicast - encapsulate an skb with a unicast header
-+ * @skb: the skb containing the payload to encapsulate
-+ * @orig_node: the destination node
++ * batadv_frag_insert_packet - insert a fragment into a fragment chain.
++ * @orig_node: Originator that the fragment was received from.
++ * @skb: skb to insert.
++ * @head: head to attach complete chains of fragments to.
 + *
-+ * Returns false if the payload could not be encapsulated or true otherwise
++ * Insert a new fragment into the reverse ordered chain in the right table
++ * entry. The hash table entry is cleared if "old" fragments exist in it.
++ *
++ * Returns true if skb is buffered, false on error. If the chain has all the
++ * fragments needed to merge the packet, the chain is moved to the passed head
++ * to avoid locking the chain in the table.
 + */
-+static bool batadv_send_skb_prepare_unicast(struct sk_buff *skb,
-+					    struct batadv_orig_node *orig_node)
++static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
++				      struct sk_buff *skb,
++				      struct hlist_head *chain_out)
 +{
-+	size_t uni_size = sizeof(struct batadv_unicast_packet);
-+	return batadv_send_skb_push_fill_unicast(skb, uni_size, orig_node);
++	struct batadv_frag_table_entry *chain;
++	struct batadv_frag_list_entry *frag_entry_new, *frag_entry_curr;
++	struct batadv_frag_packet *frag_packet;
++	uint8_t bucket;
++	uint16_t seqno, hdr_size = sizeof(struct batadv_frag_packet);
++
++	if (skb_linearize(skb) < 0)
++		goto err;
++
++	frag_packet = (struct batadv_frag_packet *)skb->data;
++	seqno = ntohs(frag_packet->seqno);
++	bucket = seqno % BATADV_FRAG_BUFFER_COUNT;
++
++	frag_entry_new = kmalloc(sizeof(*frag_entry_new), GFP_ATOMIC);
++	if (!frag_entry_new)
++		goto err;
++
++	frag_entry_new->skb = skb;
++	frag_entry_new->no = frag_packet->no;
++
++	/* Select entry in the "chain table" and delete any prior fragments
++	 * with another sequence number. batadv_frag_init_chain() returns true,
++	 * if the list is empty at return.
++	 */
++	chain = &orig_node->fragments[bucket];
++	spin_lock_bh(&chain->lock);
++	if (batadv_frag_init_chain(chain, seqno)) {
++		hlist_add_head(&frag_entry_new->list, &chain->head);
++		chain->size = skb->len - hdr_size;
++		chain->timestamp = jiffies;
++		goto out;
++	}
++
++	/* Find the position for the new fragment. */
++	hlist_for_each_entry(frag_entry_curr, &chain->head, list) {
++		/* Drop packet if fragment already exists. */
++		if (frag_entry_curr->no == frag_entry_new->no)
++			goto err_unlock;
++
++		/* Order fragments from highest to lowest. */
++		if (frag_entry_curr->no < frag_entry_new->no) {
++			hlist_add_before(&frag_entry_new->list,
++					 &frag_entry_curr->list);
++			chain->size += skb->len - hdr_size;
++			chain->timestamp = jiffies;
++			goto out;
++		}
++	}
++
++	/* We reached the end of the list, so insert after 'frag_entry_curr'. */
++	if (likely(frag_entry_curr)) {
++		hlist_add_after(&frag_entry_curr->list, &frag_entry_new->list);
++		chain->size += skb->len - hdr_size;
++		chain->timestamp = jiffies;
++	}
++
++out:
++	if (chain->size > batadv_frag_size_limit() ||
++	    ntohs(frag_packet->total_size) > batadv_frag_size_limit()) {
++		/* Clear chain if total size of either the list or the packet
++		 * exceeds the maximum size of one merged packet.
++		 */
++		batadv_frag_clear_chain(&chain->head);
++		chain->size = 0;
++	} else if (ntohs(frag_packet->total_size) == chain->size) {
++		/* All fragments received. Hand over chain to caller. */
++		hlist_move_list(&chain->head, chain_out);
++		chain->size = 0;
++	}
++
++	spin_unlock_bh(&chain->lock);
++	return true;
++
++err_unlock:
++	spin_unlock_bh(&chain->lock);
++	kfree(frag_entry_new);
++err:
++	return false;
 +}
 +
 +/**
-+ * batadv_send_skb_prepare_unicast_4addr - encapsulate an skb with a
-+ *  unicast4addr header
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: the skb containing the payload to encapsulate
-+ * @orig_node: the destination node
-+ * @packet_subtype: the batman 4addr packet subtype to use
++ * batadv_frag_merge_packets - merge a chain of fragments.
++ * @head: head of chain with fragments.
++ * @skb: Packet with total size of skb after merging.
 + *
-+ * Returns false if the payload could not be encapsulated or true otherwise
++ * Expands the first skb in the chain and copies the content of the remaining
++ * skb's into the expanded one. After doing so, it clears the chain.
++ *
++ * Returns the merged skb or NULL on error.
 + */
-+bool batadv_send_skb_prepare_unicast_4addr(struct batadv_priv *bat_priv,
-+					   struct sk_buff *skb,
-+					   struct batadv_orig_node *orig,
-+					   int packet_subtype)
++static struct sk_buff *
++batadv_frag_merge_packets(struct hlist_head *chain, struct sk_buff *skb)
 +{
-+	struct batadv_hard_iface *primary_if;
-+	struct batadv_unicast_4addr_packet *uc_4addr_packet;
++	struct batadv_frag_packet *packet;
++	struct batadv_frag_list_entry *entry;
++	struct sk_buff *skb_out = NULL;
++	int size, hdr_size = sizeof(struct batadv_frag_packet);
++
++	/* Make sure incoming skb has non-bogus data. */
++	packet = (struct batadv_frag_packet *)skb->data;
++	size = ntohs(packet->total_size);
++	if (size > batadv_frag_size_limit())
++		goto free;
++
++	/* Remove first entry, as this is the destination for the rest of the
++	 * fragments.
++	 */
++	entry = hlist_entry(chain->first, struct batadv_frag_list_entry, list);
++	hlist_del(&entry->list);
++	skb_out = entry->skb;
++	kfree(entry);
++
++	/* Make room for the rest of the fragments. */
++	if (pskb_expand_head(skb_out, 0, size - skb->len, GFP_ATOMIC) < 0) {
++		kfree_skb(skb_out);
++		skb_out = NULL;
++		goto free;
++	}
++
++	/* Move the existing MAC header to just before the payload. (Override
++	 * the fragment header.)
++	 */
++	skb_pull_rcsum(skb_out, hdr_size);
++	memmove(skb_out->data - ETH_HLEN, skb_mac_header(skb_out), ETH_HLEN);
++	skb_set_mac_header(skb_out, -ETH_HLEN);
++	skb_reset_network_header(skb_out);
++	skb_reset_transport_header(skb_out);
++
++	/* Copy the payload of the each fragment into the last skb */
++	hlist_for_each_entry(entry, chain, list) {
++		size = entry->skb->len - hdr_size;
++		memcpy(skb_put(skb_out, size), entry->skb->data + hdr_size,
++		       size);
++	}
++
++free:
++	/* Locking is not needed, because 'chain' is not part of any orig. */
++	batadv_frag_clear_chain(chain);
++	return skb_out;
++}
++
++/**
++ * batadv_frag_skb_buffer - buffer fragment for later merge.
++ * @skb: skb to buffer.
++ * @orig_node_src: Originator that the skb is received from.
++ *
++ * Add fragment to buffer and merge fragments if possible.
++ *
++ * There are three possible outcomes: 1) Packet is merged: Return true and
++ * set *skb to merged packet; 2) Packet is buffered: Return true and set *skb
++ * to NULL; 3) Error: Return false and leave skb as is.
++ */
++bool batadv_frag_skb_buffer(struct sk_buff **skb,
++			    struct batadv_orig_node *orig_node_src)
++{
++	struct sk_buff *skb_out = NULL;
++	struct hlist_head head = HLIST_HEAD_INIT;
 +	bool ret = false;
 +
-+	primary_if = batadv_primary_if_get_selected(bat_priv);
-+	if (!primary_if)
++	/* Add packet to buffer and table entry if merge is possible. */
++	if (!batadv_frag_insert_packet(orig_node_src, *skb, &head))
++		goto out_err;
++
++	/* Leave if more fragments are needed to merge. */
++	if (hlist_empty(&head))
 +		goto out;
 +
-+	/* pull the header space and fill the unicast_packet substructure.
-+	 * We can do that because the first member of the uc_4addr_packet
-+	 * is of type struct unicast_packet
-+	 */
-+	if (!batadv_send_skb_push_fill_unicast(skb, sizeof(*uc_4addr_packet),
-+					       orig))
-+		goto out;
++	skb_out = batadv_frag_merge_packets(&head, *skb);
++	if (!skb_out)
++		goto out_err;
 +
-+	uc_4addr_packet = (struct batadv_unicast_4addr_packet *)skb->data;
-+	uc_4addr_packet->u.header.packet_type = BATADV_UNICAST_4ADDR;
-+	memcpy(uc_4addr_packet->src, primary_if->net_dev->dev_addr, ETH_ALEN);
-+	uc_4addr_packet->subtype = packet_subtype;
-+	uc_4addr_packet->reserved = 0;
-+
-+	ret = true;
 +out:
-+	if (primary_if)
-+		batadv_hardif_free_ref(primary_if);
++	*skb = skb_out;
++	ret = true;
++out_err:
 +	return ret;
 +}
 +
 +/**
-+ * batadv_send_generic_unicast_skb - send an skb as unicast
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: payload to send
-+ * @packet_type: the batman unicast packet type to use
-+ * @packet_subtype: the batman packet subtype. It is ignored if packet_type is
-+ *  not BATADV_UNICAT_4ADDR
++ * batadv_frag_skb_fwd - forward fragments that would exceed MTU when merged.
++ * @skb: skb to forward.
++ * @recv_if: Interface that the skb is received on.
++ * @orig_node_src: Originator that the skb is received from.
 + *
-+ * Returns 1 in case of error or 0 otherwise
++ * Look up the next-hop of the fragments payload and check if the merged packet
++ * will exceed the MTU towards the next-hop. If so, the fragment is forwarded
++ * without merging it.
++ *
++ * Returns true if the fragment is consumed/forwarded, false otherwise.
 + */
-+int batadv_send_skb_generic_unicast(struct batadv_priv *bat_priv,
-+				    struct sk_buff *skb, int packet_type,
-+				    int packet_subtype)
++bool batadv_frag_skb_fwd(struct sk_buff *skb,
++			 struct batadv_hard_iface *recv_if,
++			 struct batadv_orig_node *orig_node_src)
 +{
-+	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
-+	struct batadv_unicast_packet *unicast_packet;
-+	struct batadv_orig_node *orig_node;
-+	struct batadv_neigh_node *neigh_node;
-+	int ret = NET_RX_DROP;
++	struct batadv_priv *bat_priv = netdev_priv(recv_if->soft_iface);
++	struct batadv_orig_node *orig_node_dst = NULL;
++	struct batadv_neigh_node *neigh_node = NULL;
++	struct batadv_frag_packet *packet;
++	uint16_t total_size;
++	bool ret = false;
 +
-+	/* get routing information */
-+	if (is_multicast_ether_addr(ethhdr->h_dest)) {
-+		orig_node = batadv_gw_get_selected_orig(bat_priv);
-+		if (orig_node)
-+			goto find_router;
-+	}
++	packet = (struct batadv_frag_packet *)skb->data;
++	orig_node_dst = batadv_orig_hash_find(bat_priv, packet->dest);
++	if (!orig_node_dst)
++		goto out;
 +
-+	/* check for tt host - increases orig_node refcount.
-+	 * returns NULL in case of AP isolation
-+	 */
-+	orig_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
-+					     ethhdr->h_dest);
-+
-+find_router:
-+	/* find_router():
-+	 *  - if orig_node is NULL it returns NULL
-+	 *  - increases neigh_nodes refcount if found.
-+	 */
-+	neigh_node = batadv_find_router(bat_priv, orig_node, NULL);
-+
++	neigh_node = batadv_find_router(bat_priv, orig_node_dst, recv_if);
 +	if (!neigh_node)
 +		goto out;
 +
-+	switch (packet_type) {
-+	case BATADV_UNICAST:
-+		batadv_send_skb_prepare_unicast(skb, orig_node);
-+		break;
-+	case BATADV_UNICAST_4ADDR:
-+		batadv_send_skb_prepare_unicast_4addr(bat_priv, skb, orig_node,
-+						      packet_subtype);
-+		break;
-+	default:
-+		/* this function supports UNICAST and UNICAST_4ADDR only. It
-+		 * should never be invoked with any other packet type
-+		 */
++	/* Forward the fragment, if the merged packet would be too big to
++	 * be assembled.
++	 */
++	total_size = ntohs(packet->total_size) + ETH_HLEN;
++	if (total_size > neigh_node->if_incoming->net_dev->mtu) {
++		batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_FWD);
++		batadv_add_counter(bat_priv, BATADV_CNT_FRAG_FWD_BYTES,
++				   skb->len + ETH_HLEN);
++
++		packet->header.ttl--;
++		batadv_send_skb_packet(skb, neigh_node->if_incoming,
++				       neigh_node->addr);
++		ret = true;
++	}
++
++out:
++	if (orig_node_dst)
++		batadv_orig_node_free_ref(orig_node_dst);
++	if (neigh_node)
++		batadv_neigh_node_free_ref(neigh_node);
++	return ret;
++}
+diff --git a/fragmentation.h b/fragmentation.h
+new file mode 100644
+index 0000000..2af5df5
+--- /dev/null
++++ b/fragmentation.h
+@@ -0,0 +1,47 @@
++/* Copyright (C) 2013 B.A.T.M.A.N. contributors:
++ *
++ * Martin Hundebøll <martin@hundeboll.net>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ * 02110-1301, USA
++ */
++
++#ifndef _NET_BATMAN_ADV_FRAGMENTATION_H_
++#define _NET_BATMAN_ADV_FRAGMENTATION_H_
++
++void batadv_frag_purge_orig(struct batadv_orig_node *orig,
++			    bool (*check_cb)(struct batadv_frag_table_entry *));
++bool batadv_frag_skb_fwd(struct sk_buff *skb,
++			 struct batadv_hard_iface *recv_if,
++			 struct batadv_orig_node *orig_node_src);
++bool batadv_frag_skb_buffer(struct sk_buff **skb,
++			    struct batadv_orig_node *orig_node);
++
++/**
++ * batadv_frag_check_entry - check if a list of fragments has timed out.
++ * @frags_entry: table entry to check
++ *
++ * Returns true if the frags entry has timed out; false otherwise
++ */
++static inline bool
++batadv_frag_check_entry(struct batadv_frag_table_entry *frags_entry)
++{
++	if (!hlist_empty(&frags_entry->head) &&
++	    batadv_has_timed_out(frags_entry->timestamp, BATADV_FRAG_TIMEOUT))
++		return true;
++	else
++		return false;
++}
++
++#endif /* _NET_BATMAN_ADV_FRAGMENTATION_H_ */
+diff --git a/main.c b/main.c
+index 3b5f78f..7188beb 100644
+--- a/main.c
++++ b/main.c
+@@ -36,6 +36,7 @@
+ #include "hash.h"
+ #include "bat_algo.h"
+ #include "network-coding.h"
++#include "fragmentation.h"
+ 
+ 
+ /* List manipulations on hardif_list have to be rtnl_lock()'ed,
+@@ -342,6 +343,7 @@ static void batadv_recv_handler_init(void)
+ 	BUILD_BUG_ON(offsetof(struct batadv_unicast_4addr_packet, src) != 10);
+ 	BUILD_BUG_ON(offsetof(struct batadv_unicast_packet, dest) != 4);
+ 	BUILD_BUG_ON(offsetof(struct batadv_unicast_tvlv_packet, dst) != 4);
++	BUILD_BUG_ON(offsetof(struct batadv_frag_packet, dest) != 4);
+ 	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet, dst) != 4);
+ 	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet_rr, dst) != 4);
+ 
+@@ -357,6 +359,8 @@ static void batadv_recv_handler_init(void)
+ 	batadv_rx_handler[BATADV_UNICAST_TVLV] = batadv_recv_unicast_tvlv;
+ 	/* batman icmp packet */
+ 	batadv_rx_handler[BATADV_ICMP] = batadv_recv_icmp_packet;
++	/* Fragmented packets */
++	batadv_rx_handler[BATADV_UNICAST_FRAG] = batadv_recv_frag_packet;
+ }
+ 
+ int
+diff --git a/main.h b/main.h
+index 71440df..3db6c2e 100644
+--- a/main.h
++++ b/main.h
+@@ -131,6 +131,15 @@ enum batadv_uev_type {
+ 
+ #define BATADV_GW_THRESHOLD	50
+ 
++/* Number of fragment chains for each orig_node */
++#define BATADV_FRAG_BUFFER_COUNT 8
++/* Maximum number of fragments for one packet */
++#define BATADV_FRAG_MAX_FRAGMENTS 16
++/* Maxumim size of each fragment */
++#define BATADV_FRAG_MAX_FRAG_SIZE 1400
++/* Time to keep fragments while waiting for rest of the fragments */
++#define BATADV_FRAG_TIMEOUT 10000
++
+ #define BATADV_DAT_CANDIDATE_NOT_FOUND	0
+ #define BATADV_DAT_CANDIDATE_ORIG	1
+ 
+diff --git a/originator.c b/originator.c
+index 898b0ce..a591dc5 100644
+--- a/originator.c
++++ b/originator.c
+@@ -28,6 +28,7 @@
+ #include "soft-interface.h"
+ #include "bridge_loop_avoidance.h"
+ #include "network-coding.h"
++#include "fragmentation.h"
+ 
+ /* hash class keys */
+ static struct lock_class_key batadv_orig_hash_lock_class_key;
+@@ -145,6 +146,8 @@ static void batadv_orig_node_free_rcu(struct rcu_head *rcu)
+ 	/* Free nc_nodes */
+ 	batadv_nc_purge_orig(orig_node->bat_priv, orig_node, NULL);
+ 
++	batadv_frag_purge_orig(orig_node, NULL);
++
+ 	batadv_tt_global_del_orig(orig_node->bat_priv, orig_node,
+ 				  "originator timed out");
+ 
+@@ -215,7 +218,7 @@ struct batadv_orig_node *batadv_get_orig_node(struct batadv_priv *bat_priv,
+ 					      const uint8_t *addr)
+ {
+ 	struct batadv_orig_node *orig_node;
+-	int size;
++	int size, i;
+ 	int hash_added;
+ 	unsigned long reset_time;
+ 
+@@ -267,6 +270,12 @@ struct batadv_orig_node *batadv_get_orig_node(struct batadv_priv *bat_priv,
+ 	size = bat_priv->num_ifaces * sizeof(uint8_t);
+ 	orig_node->bcast_own_sum = kzalloc(size, GFP_ATOMIC);
+ 
++	for (i = 0; i < BATADV_FRAG_BUFFER_COUNT; i++) {
++		INIT_HLIST_HEAD(&orig_node->fragments[i].head);
++		spin_lock_init(&orig_node->fragments[i].lock);
++		orig_node->fragments[i].size = 0;
++	}
++
+ 	if (!orig_node->bcast_own_sum)
+ 		goto free_bcast_own;
+ 
+@@ -388,6 +397,9 @@ static void _batadv_purge_orig(struct batadv_priv *bat_priv)
+ 				batadv_orig_node_free_ref(orig_node);
+ 				continue;
+ 			}
++
++			batadv_frag_purge_orig(orig_node,
++					       batadv_frag_check_entry);
+ 		}
+ 		spin_unlock_bh(list_lock);
+ 	}
+diff --git a/packet.h b/packet.h
+index 96b8e57..ae38769 100644
+--- a/packet.h
++++ b/packet.h
+@@ -249,6 +249,33 @@ struct batadv_unicast_4addr_packet {
+ 	 */
+ };
+ 
++/**
++ * struct batadv_frag_packet - Network structure for fragments.
++ * @header: Common batman-adv header with type, compatibility version, and ttl.
++ * @dest: Final destination used when routing fragments.
++ * @orig: Originator of the fragment used when merging the packet.
++ * @no: Fragment number within this sequence.
++ * @reserved: Unused
++ * @seqno: Sequence identification.
++ * @total_size: Size of the merged packet.
++ */
++struct batadv_frag_packet {
++	struct  batadv_header header;
++#if defined(__BIG_ENDIAN_BITFIELD)
++	uint8_t no:4;
++	uint8_t reserved:4;
++#elif defined(__LITTLE_ENDIAN_BITFIELD)
++	uint8_t reserved:4;
++	uint8_t no:4;
++#else
++#error "unknown bitfield endianess"
++#endif
++	uint8_t dest[ETH_ALEN];
++	uint8_t orig[ETH_ALEN];
++	__be16  seqno;
++	__be16  total_size;
++};
++
+ struct batadv_bcast_packet {
+ 	struct batadv_header header;
+ 	uint8_t  reserved;
+diff --git a/routing.c b/routing.c
+index a099d32..b8239f1 100644
+--- a/routing.c
++++ b/routing.c
+@@ -28,6 +28,7 @@
+ #include "bridge_loop_avoidance.h"
+ #include "distributed-arp-table.h"
+ #include "network-coding.h"
++#include "fragmentation.h"
+ 
+ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 				       struct batadv_hard_iface *recv_if);
+@@ -997,6 +998,65 @@ int batadv_recv_unicast_tvlv(struct sk_buff *skb,
+ 	return ret;
+ }
+ 
++/*
++ * batadv_recv_frag_packet() - Process received fragment.
++ * @skb:     The received fragment.
++ * @recv_if: Interface that the skb is received on.
++ *
++ * This function does one of the three following things: 1) Forward fragment, if
++ * the assembled packet will exceed our MTU; 2) Buffer fragment, if we till
++ * lack further fragments; 3) Merge fragments, if we have all needed parts.
++ *
++ * Returns NET_RX_DROP if the skb is not consumed, NET_RX_SUCCESS otherwise.
++ */
++int batadv_recv_frag_packet(struct sk_buff *skb,
++			    struct batadv_hard_iface *recv_if)
++{
++	struct batadv_priv *bat_priv = netdev_priv(recv_if->soft_iface);
++	struct batadv_orig_node *orig_node_src = NULL;
++	struct batadv_frag_packet *frag_packet;
++	int ret = NET_RX_DROP;
++
++	if (batadv_check_unicast_packet(bat_priv, skb,
++					sizeof(*frag_packet)) < 0)
++		goto out;
++
++	frag_packet = (struct batadv_frag_packet *)skb->data;
++	orig_node_src = batadv_orig_hash_find(bat_priv, frag_packet->orig);
++	if (!orig_node_src)
++		goto out;
++
++	/* Route the fragment if it is not for us and too big to be merged. */
++	if (!batadv_is_my_mac(bat_priv, frag_packet->dest) &&
++	    batadv_frag_skb_fwd(skb, recv_if, orig_node_src)) {
++		ret = NET_RX_SUCCESS;
 +		goto out;
 +	}
 +
-+	unicast_packet = (struct batadv_unicast_packet *)skb->data;
++	batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_RX);
++	batadv_add_counter(bat_priv, BATADV_CNT_FRAG_RX_BYTES,
++			   skb->len + ETH_HLEN);
 +
-+	/* inform the destination node that we are still missing a correct route
-+	 * for this client. The destination will receive this packet and will
-+	 * try to reroute it because the ttvn contained in the header is less
-+	 * than the current one
++	/* Add fragment to buffer and merge if possible. */
++	if (!batadv_frag_skb_buffer(&skb, orig_node_src))
++		goto out;
++
++	/* Deliver merged packet to the appropriate handler, if it was
++	 * merged
 +	 */
-+	if (batadv_tt_global_client_is_roaming(bat_priv, ethhdr->h_dest))
-+		unicast_packet->ttvn = unicast_packet->ttvn - 1;
++	if (skb)
++		batadv_batman_skb_recv(skb, recv_if->net_dev,
++				       &recv_if->batman_adv_ptype, NULL);
 +
-+	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
-+		ret = 0;
++	ret = NET_RX_SUCCESS;
 +
 +out:
-+	if (neigh_node)
-+		batadv_neigh_node_free_ref(neigh_node);
-+	if (orig_node)
-+		batadv_orig_node_free_ref(orig_node);
-+	if (ret == NET_RX_DROP)
-+		kfree_skb(skb);
++	if (orig_node_src)
++		batadv_orig_node_free_ref(orig_node_src);
++
 +	return ret;
 +}
 +
- void batadv_schedule_bat_ogm(struct batadv_hard_iface *hard_iface)
+ int batadv_recv_bcast_packet(struct sk_buff *skb,
+ 			     struct batadv_hard_iface *recv_if)
  {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-diff --git a/send.h b/send.h
-index e7b1788..bfe65be 100644
---- a/send.h
-+++ b/send.h
-@@ -34,5 +34,41 @@ void batadv_send_outstanding_bat_ogm_packet(struct work_struct *work);
- void
- batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- 				 const struct batadv_hard_iface *hard_iface);
-+bool batadv_send_skb_prepare_unicast_4addr(struct batadv_priv *bat_priv,
-+					   struct sk_buff *skb,
-+					   struct batadv_orig_node *orig_node,
-+					   int packet_subtype);
-+int batadv_send_skb_generic_unicast(struct batadv_priv *bat_priv,
-+				    struct sk_buff *skb, int packet_type,
-+				    int packet_subtype);
-+
-+
-+/**
-+ * batadv_send_unicast_skb - send the skb encapsulated in a unicast packet
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: the payload to send
-+ */
-+static inline int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
-+					  struct sk_buff *skb)
-+{
-+	return batadv_send_skb_generic_unicast(bat_priv, skb, BATADV_UNICAST,
-+					       0);
-+}
-+
-+/**
-+ * batadv_send_4addr_unicast_skb - send the skb encapsulated in a unicast4addr
-+ *  packet
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: the payload to send
-+ * @packet_subtype: the batman 4addr packet subtype to use
-+ */
-+static inline int batadv_send_skb_unicast_4addr(struct batadv_priv *bat_priv,
-+						struct sk_buff *skb,
-+						int packet_subtype)
-+{
-+	return batadv_send_skb_generic_unicast(bat_priv, skb,
-+					       BATADV_UNICAST_4ADDR,
-+					       packet_subtype);
-+}
- 
- #endif /* _NET_BATMAN_ADV_SEND_H_ */
+diff --git a/routing.h b/routing.h
+index efab583..55d637a 100644
+--- a/routing.h
++++ b/routing.h
+@@ -30,6 +30,8 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
+ 			    struct batadv_hard_iface *recv_if);
+ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 			       struct batadv_hard_iface *recv_if);
++int batadv_recv_frag_packet(struct sk_buff *skb,
++			    struct batadv_hard_iface *iface);
+ int batadv_recv_bcast_packet(struct sk_buff *skb,
+ 			     struct batadv_hard_iface *recv_if);
+ int batadv_recv_tt_query(struct sk_buff *skb,
 diff --git a/soft-interface.c b/soft-interface.c
-index a6ab9e4..2f3810d 100644
+index 2f3810d..481642e 100644
 --- a/soft-interface.c
 +++ b/soft-interface.c
-@@ -34,8 +34,6 @@
- #include <linux/ethtool.h>
- #include <linux/etherdevice.h>
- #include <linux/if_vlan.h>
--#include <linux/if_ether.h>
--#include "unicast.h"
- #include "bridge_loop_avoidance.h"
- #include "network-coding.h"
- 
-@@ -276,7 +274,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 
- 		batadv_dat_snoop_outgoing_arp_reply(bat_priv, skb);
- 
--		ret = batadv_unicast_send_skb(bat_priv, skb);
-+		ret = batadv_send_skb_unicast(bat_priv, skb);
- 		if (ret != 0)
- 			goto dropped_freed;
- 	}
+@@ -747,6 +747,10 @@ static const struct {
+ 	{ "mgmt_tx_bytes" },
+ 	{ "mgmt_rx" },
+ 	{ "mgmt_rx_bytes" },
++	{ "frag_rx" },
++	{ "frag_rx_bytes" },
++	{ "frag_fwd" },
++	{ "frag_fwd_bytes" },
+ 	{ "tt_request_tx" },
+ 	{ "tt_request_rx" },
+ 	{ "tt_response_tx" },
 diff --git a/types.h b/types.h
-index c84f5cc..6cde9c9 100644
+index 6cde9c9..dd3f505 100644
 --- a/types.h
 +++ b/types.h
-@@ -60,7 +60,6 @@ struct batadv_hard_iface_bat_iv {
-  * @if_num: identificator of the interface
-  * @if_status: status of the interface for batman-adv
-  * @net_dev: pointer to the net_device
-- * @frag_seqno: last fragment sequence number sent by this interface
-  * @num_bcasts: number of payload re-broadcasts on this interface (ARQ)
-  * @hardif_obj: kobject of the per interface sysfs "mesh" directory
-  * @refcount: number of contexts the object is used
-@@ -76,7 +75,6 @@ struct batadv_hard_iface {
- 	int16_t if_num;
- 	char if_status;
- 	struct net_device *net_dev;
--	atomic_t frag_seqno;
- 	uint8_t num_bcasts;
- 	struct kobject *hardif_obj;
- 	atomic_t refcount;
-@@ -116,9 +114,6 @@ struct batadv_hard_iface {
-  *  last_bcast_seqno)
-  * @last_bcast_seqno: last broadcast sequence number received by this host
-  * @neigh_list: list of potential next hop neighbor towards this orig node
-- * @frag_list: fragmentation buffer list for fragment re-assembly
-- * @last_frag_packet: time when last fragmented packet from this node was
-- *  received
-  * @neigh_list_lock: lock protecting neigh_list, router and bonding_list
-  * @hash_entry: hlist node for batadv_priv::orig_hash
-  * @bat_priv: pointer to soft_iface this orig node belongs to
-@@ -159,8 +154,6 @@ struct batadv_orig_node {
- 	DECLARE_BITMAP(bcast_bits, BATADV_TQ_LOCAL_WINDOW_SIZE);
- 	uint32_t last_bcast_seqno;
- 	struct hlist_head neigh_list;
--	struct list_head frag_list;
--	unsigned long last_frag_packet;
- 	/* neigh_list_lock protects: neigh_list, router & bonding_list */
- 	spinlock_t neigh_list_lock;
- 	struct hlist_node hash_entry;
-@@ -874,18 +867,6 @@ struct batadv_forw_packet {
+@@ -86,6 +86,34 @@ struct batadv_hard_iface {
  };
  
  /**
-- * struct batadv_frag_packet_list_entry - storage for fragment packet
-- * @list: list node for orig_node::frag_list
-- * @seqno: sequence number of the fragment
-- * @skb: fragment's skb buffer
-- */
--struct batadv_frag_packet_list_entry {
--	struct list_head list;
--	uint16_t seqno;
--	struct sk_buff *skb;
--};
--
--/**
-  * struct batadv_algo_ops - mesh algorithm callbacks
-  * @list: list node for the batadv_algo_list
-  * @name: name of the algorithm
-diff --git a/unicast.c b/unicast.c
-deleted file mode 100644
-index dc8b5d4..0000000
---- a/unicast.c
-+++ /dev/null
-@@ -1,478 +0,0 @@
--/* Copyright (C) 2010-2013 B.A.T.M.A.N. contributors:
-- *
-- * Andreas Langer
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of version 2 of the GNU General Public
-- * License as published by the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-- * General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-- * 02110-1301, USA
-- */
--
--#include "main.h"
--#include "unicast.h"
--#include "send.h"
--#include "soft-interface.h"
--#include "gateway_client.h"
--#include "originator.h"
--#include "hash.h"
--#include "translation-table.h"
--#include "routing.h"
--#include "hard-interface.h"
--
--
--static struct sk_buff *
--batadv_frag_merge_packet(struct list_head *head,
--			 struct batadv_frag_packet_list_entry *tfp,
--			 struct sk_buff *skb)
--{
--	struct batadv_unicast_frag_packet *up;
--	struct sk_buff *tmp_skb;
--	struct batadv_unicast_packet *unicast_packet;
--	int hdr_len = sizeof(*unicast_packet);
--	int uni_diff = sizeof(*up) - hdr_len;
--	uint8_t *packet_pos;
--
--	up = (struct batadv_unicast_frag_packet *)skb->data;
--	/* set skb to the first part and tmp_skb to the second part */
--	if (up->flags & BATADV_UNI_FRAG_HEAD) {
--		tmp_skb = tfp->skb;
--	} else {
--		tmp_skb = skb;
--		skb = tfp->skb;
--	}
--
--	if (skb_linearize(skb) < 0 || skb_linearize(tmp_skb) < 0)
--		goto err;
--
--	skb_pull(tmp_skb, sizeof(*up));
--	if (pskb_expand_head(skb, 0, tmp_skb->len, GFP_ATOMIC) < 0)
--		goto err;
--
--	/* move free entry to end */
--	tfp->skb = NULL;
--	tfp->seqno = 0;
--	list_move_tail(&tfp->list, head);
--
--	memcpy(skb_put(skb, tmp_skb->len), tmp_skb->data, tmp_skb->len);
--	kfree_skb(tmp_skb);
--
--	memmove(skb->data + uni_diff, skb->data, hdr_len);
--	packet_pos = skb_pull(skb, uni_diff);
--	unicast_packet = (struct batadv_unicast_packet *)packet_pos;
--	unicast_packet->header.packet_type = BATADV_UNICAST;
--
--	return skb;
--
--err:
--	/* free buffered skb, skb will be freed later */
--	kfree_skb(tfp->skb);
--	return NULL;
--}
--
--static void batadv_frag_create_entry(struct list_head *head,
--				     struct sk_buff *skb)
--{
--	struct batadv_frag_packet_list_entry *tfp;
--	struct batadv_unicast_frag_packet *up;
--
--	up = (struct batadv_unicast_frag_packet *)skb->data;
--
--	/* free and oldest packets stand at the end */
--	tfp = list_entry((head)->prev, typeof(*tfp), list);
--	kfree_skb(tfp->skb);
--
--	tfp->seqno = ntohs(up->seqno);
--	tfp->skb = skb;
--	list_move(&tfp->list, head);
--	return;
--}
--
--static int batadv_frag_create_buffer(struct list_head *head)
--{
--	int i;
--	struct batadv_frag_packet_list_entry *tfp;
--
--	for (i = 0; i < BATADV_FRAG_BUFFER_SIZE; i++) {
--		tfp = kmalloc(sizeof(*tfp), GFP_ATOMIC);
--		if (!tfp) {
--			batadv_frag_list_free(head);
--			return -ENOMEM;
--		}
--		tfp->skb = NULL;
--		tfp->seqno = 0;
--		INIT_LIST_HEAD(&tfp->list);
--		list_add(&tfp->list, head);
--	}
--
--	return 0;
--}
--
--static struct batadv_frag_packet_list_entry *
--batadv_frag_search_packet(struct list_head *head,
--			  const struct batadv_unicast_frag_packet *up)
--{
--	struct batadv_frag_packet_list_entry *tfp;
--	struct batadv_unicast_frag_packet *tmp_up = NULL;
--	bool is_head_tmp, is_head;
--	uint16_t search_seqno;
--
--	if (up->flags & BATADV_UNI_FRAG_HEAD)
--		search_seqno = ntohs(up->seqno)+1;
--	else
--		search_seqno = ntohs(up->seqno)-1;
--
--	is_head = up->flags & BATADV_UNI_FRAG_HEAD;
--
--	list_for_each_entry(tfp, head, list) {
--		if (!tfp->skb)
--			continue;
--
--		if (tfp->seqno == ntohs(up->seqno))
--			goto mov_tail;
--
--		tmp_up = (struct batadv_unicast_frag_packet *)tfp->skb->data;
--
--		if (tfp->seqno == search_seqno) {
--			is_head_tmp = tmp_up->flags & BATADV_UNI_FRAG_HEAD;
--			if (is_head_tmp != is_head)
--				return tfp;
--			else
--				goto mov_tail;
--		}
--	}
--	return NULL;
--
--mov_tail:
--	list_move_tail(&tfp->list, head);
--	return NULL;
--}
--
--void batadv_frag_list_free(struct list_head *head)
--{
--	struct batadv_frag_packet_list_entry *pf, *tmp_pf;
--
--	if (!list_empty(head)) {
--		list_for_each_entry_safe(pf, tmp_pf, head, list) {
--			kfree_skb(pf->skb);
--			list_del(&pf->list);
--			kfree(pf);
--		}
--	}
--	return;
--}
--
--/* frag_reassemble_skb():
-- * returns NET_RX_DROP if the operation failed - skb is left intact
-- * returns NET_RX_SUCCESS if the fragment was buffered (skb_new will be NULL)
-- * or the skb could be reassembled (skb_new will point to the new packet and
-- * skb was freed)
-- */
--int batadv_frag_reassemble_skb(struct sk_buff *skb,
--			       struct batadv_priv *bat_priv,
--			       struct sk_buff **new_skb)
--{
--	struct batadv_orig_node *orig_node;
--	struct batadv_frag_packet_list_entry *tmp_frag_entry;
--	int ret = NET_RX_DROP;
--	struct batadv_unicast_frag_packet *unicast_packet;
--
--	unicast_packet = (struct batadv_unicast_frag_packet *)skb->data;
--	*new_skb = NULL;
--
--	orig_node = batadv_orig_hash_find(bat_priv, unicast_packet->orig);
--	if (!orig_node)
--		goto out;
--
--	orig_node->last_frag_packet = jiffies;
--
--	if (list_empty(&orig_node->frag_list) &&
--	    batadv_frag_create_buffer(&orig_node->frag_list)) {
--		pr_debug("couldn't create frag buffer\n");
--		goto out;
--	}
--
--	tmp_frag_entry = batadv_frag_search_packet(&orig_node->frag_list,
--						   unicast_packet);
--
--	if (!tmp_frag_entry) {
--		batadv_frag_create_entry(&orig_node->frag_list, skb);
--		ret = NET_RX_SUCCESS;
--		goto out;
--	}
--
--	*new_skb = batadv_frag_merge_packet(&orig_node->frag_list,
--					    tmp_frag_entry, skb);
--	/* if not, merge failed */
--	if (*new_skb)
--		ret = NET_RX_SUCCESS;
--
--out:
--	if (orig_node)
--		batadv_orig_node_free_ref(orig_node);
--	return ret;
--}
--
--int batadv_frag_send_skb(struct sk_buff *skb, struct batadv_priv *bat_priv,
--			 struct batadv_hard_iface *hard_iface,
--			 const uint8_t dstaddr[])
--{
--	struct batadv_unicast_packet tmp_uc, *unicast_packet;
--	struct batadv_hard_iface *primary_if;
--	struct sk_buff *frag_skb;
--	struct batadv_unicast_frag_packet *frag1, *frag2;
--	int uc_hdr_len = sizeof(*unicast_packet);
--	int ucf_hdr_len = sizeof(*frag1);
--	int data_len = skb->len - uc_hdr_len;
--	int large_tail = 0, ret = NET_RX_DROP;
--	uint16_t seqno;
--
--	primary_if = batadv_primary_if_get_selected(bat_priv);
--	if (!primary_if)
--		goto dropped;
--
--	frag_skb = dev_alloc_skb(data_len - (data_len / 2) + ucf_hdr_len);
--	if (!frag_skb)
--		goto dropped;
--	skb_reserve(frag_skb, ucf_hdr_len);
--
--	unicast_packet = (struct batadv_unicast_packet *)skb->data;
--	memcpy(&tmp_uc, unicast_packet, uc_hdr_len);
--	skb_split(skb, frag_skb, data_len / 2 + uc_hdr_len);
--
--	if (batadv_skb_head_push(skb, ucf_hdr_len - uc_hdr_len) < 0 ||
--	    batadv_skb_head_push(frag_skb, ucf_hdr_len) < 0)
--		goto drop_frag;
--
--	frag1 = (struct batadv_unicast_frag_packet *)skb->data;
--	frag2 = (struct batadv_unicast_frag_packet *)frag_skb->data;
--
--	memcpy(frag1, &tmp_uc, sizeof(tmp_uc));
--
--	frag1->header.ttl--;
--	frag1->header.version = BATADV_COMPAT_VERSION;
--	frag1->header.packet_type = BATADV_UNICAST_FRAG;
--
--	memcpy(frag1->orig, primary_if->net_dev->dev_addr, ETH_ALEN);
--	memcpy(frag2, frag1, sizeof(*frag2));
--
--	if (data_len & 1)
--		large_tail = BATADV_UNI_FRAG_LARGETAIL;
--
--	frag1->flags = BATADV_UNI_FRAG_HEAD | large_tail;
--	frag2->flags = large_tail;
--
--	seqno = atomic_add_return(2, &hard_iface->frag_seqno);
--	frag1->seqno = htons(seqno - 1);
--	frag2->seqno = htons(seqno);
--
--	batadv_send_skb_packet(skb, hard_iface, dstaddr);
--	batadv_send_skb_packet(frag_skb, hard_iface, dstaddr);
--	ret = NET_RX_SUCCESS;
--	goto out;
--
--drop_frag:
--	kfree_skb(frag_skb);
--dropped:
--	kfree_skb(skb);
--out:
--	if (primary_if)
--		batadv_hardif_free_ref(primary_if);
--	return ret;
--}
--
--/**
-- * batadv_unicast_push_and_fill_skb - extends the buffer and initializes the
-- * common fields for unicast packets
-- * @skb: packet
-- * @hdr_size: amount of bytes to push at the beginning of the skb
-- * @orig_node: the destination node
-- *
-- * Returns false if the buffer extension was not possible or true otherwise
-- */
--static bool batadv_unicast_push_and_fill_skb(struct sk_buff *skb, int hdr_size,
--					     struct batadv_orig_node *orig_node)
--{
--	struct batadv_unicast_packet *unicast_packet;
--	uint8_t ttvn = (uint8_t)atomic_read(&orig_node->last_ttvn);
--
--	if (batadv_skb_head_push(skb, hdr_size) < 0)
--		return false;
--
--	unicast_packet = (struct batadv_unicast_packet *)skb->data;
--	unicast_packet->header.version = BATADV_COMPAT_VERSION;
--	/* batman packet type: unicast */
--	unicast_packet->header.packet_type = BATADV_UNICAST;
--	/* set unicast ttl */
--	unicast_packet->header.ttl = BATADV_TTL;
--	/* copy the destination for faster routing */
--	memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
--	/* set the destination tt version number */
--	unicast_packet->ttvn = ttvn;
--
--	return true;
--}
--
--/**
-- * batadv_unicast_prepare_skb - encapsulate an skb with a unicast header
-- * @skb: the skb containing the payload to encapsulate
-- * @orig_node: the destination node
-- *
-- * Returns false if the payload could not be encapsulated or true otherwise
-- */
--static bool batadv_unicast_prepare_skb(struct sk_buff *skb,
--				       struct batadv_orig_node *orig_node)
--{
--	size_t uni_size = sizeof(struct batadv_unicast_packet);
--	return batadv_unicast_push_and_fill_skb(skb, uni_size, orig_node);
--}
--
--/**
-- * batadv_unicast_4addr_prepare_skb - encapsulate an skb with a unicast4addr
-- * header
-- * @bat_priv: the bat priv with all the soft interface information
-- * @skb: the skb containing the payload to encapsulate
-- * @orig_node: the destination node
-- * @packet_subtype: the batman 4addr packet subtype to use
-- *
-- * Returns false if the payload could not be encapsulated or true otherwise
-- */
--bool batadv_unicast_4addr_prepare_skb(struct batadv_priv *bat_priv,
--				      struct sk_buff *skb,
--				      struct batadv_orig_node *orig,
--				      int packet_subtype)
--{
--	struct batadv_hard_iface *primary_if;
--	struct batadv_unicast_4addr_packet *unicast_4addr_packet;
--	bool ret = false;
--
--	primary_if = batadv_primary_if_get_selected(bat_priv);
--	if (!primary_if)
--		goto out;
--
--	/* pull the header space and fill the unicast_packet substructure.
--	 * We can do that because the first member of the unicast_4addr_packet
--	 * is of type struct unicast_packet
--	 */
--	if (!batadv_unicast_push_and_fill_skb(skb,
--					      sizeof(*unicast_4addr_packet),
--					      orig))
--		goto out;
--
--	unicast_4addr_packet = (struct batadv_unicast_4addr_packet *)skb->data;
--	unicast_4addr_packet->u.header.packet_type = BATADV_UNICAST_4ADDR;
--	memcpy(unicast_4addr_packet->src, primary_if->net_dev->dev_addr,
--	       ETH_ALEN);
--	unicast_4addr_packet->subtype = packet_subtype;
--	unicast_4addr_packet->reserved = 0;
--
--	ret = true;
--out:
--	if (primary_if)
--		batadv_hardif_free_ref(primary_if);
--	return ret;
--}
--
--/**
-- * batadv_unicast_generic_send_skb - send an skb as unicast
-- * @bat_priv: the bat priv with all the soft interface information
-- * @skb: payload to send
-- * @packet_type: the batman unicast packet type to use
-- * @packet_subtype: the batman packet subtype. It is ignored if packet_type is
-- *		    not BATADV_UNICAT_4ADDR
-- *
-- * Returns 1 in case of error or 0 otherwise
-- */
--int batadv_unicast_generic_send_skb(struct batadv_priv *bat_priv,
--				    struct sk_buff *skb, int packet_type,
--				    int packet_subtype)
--{
--	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
--	struct batadv_unicast_packet *unicast_packet;
--	struct batadv_orig_node *orig_node;
--	struct batadv_neigh_node *neigh_node;
--	int data_len = skb->len;
--	int ret = NET_RX_DROP;
--	unsigned int dev_mtu;
--
--	/* get routing information */
--	if (is_multicast_ether_addr(ethhdr->h_dest)) {
--		orig_node = batadv_gw_get_selected_orig(bat_priv);
--		if (orig_node)
--			goto find_router;
--	}
--
--	/* check for tt host - increases orig_node refcount.
--	 * returns NULL in case of AP isolation
--	 */
--	orig_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
--					     ethhdr->h_dest);
--
--find_router:
--	/* find_router():
--	 *  - if orig_node is NULL it returns NULL
--	 *  - increases neigh_nodes refcount if found.
--	 */
--	neigh_node = batadv_find_router(bat_priv, orig_node, NULL);
--
--	if (!neigh_node)
--		goto out;
--
--	switch (packet_type) {
--	case BATADV_UNICAST:
--		batadv_unicast_prepare_skb(skb, orig_node);
--		break;
--	case BATADV_UNICAST_4ADDR:
--		batadv_unicast_4addr_prepare_skb(bat_priv, skb, orig_node,
--						 packet_subtype);
--		break;
--	default:
--		/* this function supports UNICAST and UNICAST_4ADDR only. It
--		 * should never be invoked with any other packet type
--		 */
--		goto out;
--	}
--
--	unicast_packet = (struct batadv_unicast_packet *)skb->data;
--
--	/* inform the destination node that we are still missing a correct route
--	 * for this client. The destination will receive this packet and will
--	 * try to reroute it because the ttvn contained in the header is less
--	 * than the current one
--	 */
--	if (batadv_tt_global_client_is_roaming(bat_priv, ethhdr->h_dest))
--		unicast_packet->ttvn = unicast_packet->ttvn - 1;
--
--	dev_mtu = neigh_node->if_incoming->net_dev->mtu;
--	/* fragmentation mechanism only works for UNICAST (now) */
--	if (packet_type == BATADV_UNICAST &&
--	    atomic_read(&bat_priv->fragmentation) &&
--	    data_len + sizeof(*unicast_packet) > dev_mtu) {
--		/* send frag skb decreases ttl */
--		unicast_packet->header.ttl++;
--		ret = batadv_frag_send_skb(skb, bat_priv,
--					   neigh_node->if_incoming,
--					   neigh_node->addr);
--		goto out;
--	}
--
--	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
--		ret = 0;
--
--out:
--	if (neigh_node)
--		batadv_neigh_node_free_ref(neigh_node);
--	if (orig_node)
--		batadv_orig_node_free_ref(orig_node);
--	if (ret == NET_RX_DROP)
--		kfree_skb(skb);
--	return ret;
--}
-diff --git a/unicast.h b/unicast.h
-deleted file mode 100644
-index 429cf8a..0000000
---- a/unicast.h
-+++ /dev/null
-@@ -1,92 +0,0 @@
--/* Copyright (C) 2010-2013 B.A.T.M.A.N. contributors:
-- *
-- * Andreas Langer
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of version 2 of the GNU General Public
-- * License as published by the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-- * General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-- * 02110-1301, USA
-- */
--
--#ifndef _NET_BATMAN_ADV_UNICAST_H_
--#define _NET_BATMAN_ADV_UNICAST_H_
--
--#include "packet.h"
--
--#define BATADV_FRAG_TIMEOUT 10000 /* purge frag list entries after time in ms */
--#define BATADV_FRAG_BUFFER_SIZE 6 /* number of list elements in buffer */
--
--int batadv_frag_reassemble_skb(struct sk_buff *skb,
--			       struct batadv_priv *bat_priv,
--			       struct sk_buff **new_skb);
--void batadv_frag_list_free(struct list_head *head);
--int batadv_frag_send_skb(struct sk_buff *skb, struct batadv_priv *bat_priv,
--			 struct batadv_hard_iface *hard_iface,
--			 const uint8_t dstaddr[]);
--bool batadv_unicast_4addr_prepare_skb(struct batadv_priv *bat_priv,
--				      struct sk_buff *skb,
--				      struct batadv_orig_node *orig_node,
--				      int packet_subtype);
--int batadv_unicast_generic_send_skb(struct batadv_priv *bat_priv,
--				    struct sk_buff *skb, int packet_type,
--				    int packet_subtype);
--
--
--/**
-- * batadv_unicast_send_skb - send the skb encapsulated in a unicast packet
-- * @bat_priv: the bat priv with all the soft interface information
-- * @skb: the payload to send
-- */
--static inline int batadv_unicast_send_skb(struct batadv_priv *bat_priv,
--					  struct sk_buff *skb)
--{
--	return batadv_unicast_generic_send_skb(bat_priv, skb, BATADV_UNICAST,
--					       0);
--}
--
--/**
-- * batadv_unicast_send_skb - send the skb encapsulated in a unicast4addr packet
-- * @bat_priv: the bat priv with all the soft interface information
-- * @skb: the payload to send
-- * @packet_subtype: the batman 4addr packet subtype to use
-- */
--static inline int batadv_unicast_4addr_send_skb(struct batadv_priv *bat_priv,
--						struct sk_buff *skb,
--						int packet_subtype)
--{
--	return batadv_unicast_generic_send_skb(bat_priv, skb,
--					       BATADV_UNICAST_4ADDR,
--					       packet_subtype);
--}
--
--static inline int batadv_frag_can_reassemble(const struct sk_buff *skb, int mtu)
--{
--	const struct batadv_unicast_frag_packet *unicast_packet;
--	int uneven_correction = 0;
--	unsigned int merged_size;
--
--	unicast_packet = (struct batadv_unicast_frag_packet *)skb->data;
--
--	if (unicast_packet->flags & BATADV_UNI_FRAG_LARGETAIL) {
--		if (unicast_packet->flags & BATADV_UNI_FRAG_HEAD)
--			uneven_correction = 1;
--		else
--			uneven_correction = -1;
--	}
--
--	merged_size = (skb->len - sizeof(*unicast_packet)) * 2;
--	merged_size += sizeof(struct batadv_unicast_packet) + uneven_correction;
--
--	return merged_size <= mtu;
--}
--
--#endif /* _NET_BATMAN_ADV_UNICAST_H_ */
++ * struct batadv_frag_table_entry - Head in the fragment buffer table.
++ * @head: Head of list with fragments.
++ * @lock: Lock to protect the list of fragments.
++ * @timestamp: Time (jiffie) of last received fragment.
++ * @seqno: Sequence number of the fragments in the list.
++ * @size: Accumulated size of packets in list.
++ */
++struct batadv_frag_table_entry {
++	struct hlist_head head;
++	spinlock_t lock; /* Protects head */
++	unsigned long timestamp;
++	uint16_t seqno;
++	uint16_t size;
++};
++
++/**
++ * struct batadv_frag_list_entry - Entry in a list of fragments.
++ * @list: List node information
++ * @skb: Fragment
++ * @no: Fragment number in the set.
++ */
++struct batadv_frag_list_entry {
++	struct hlist_node list;
++	struct sk_buff *skb;
++	uint8_t no;
++};
++
++/**
+  * struct batadv_orig_node - structure for orig_list maintaining nodes of mesh
+  * @orig: originator ethernet address
+  * @primary_addr: hosts primary interface address
+@@ -128,6 +156,7 @@ struct batadv_hard_iface {
+  * @out_coding_list: list of nodes that can hear this orig
+  * @in_coding_list_lock: protects in_coding_list
+  * @out_coding_list_lock: protects out_coding_list
++ * @fragments: array with heads for fragment chains
+  */
+ struct batadv_orig_node {
+ 	uint8_t orig[ETH_ALEN];
+@@ -174,6 +203,7 @@ struct batadv_orig_node {
+ 	spinlock_t in_coding_list_lock; /* Protects in_coding_list */
+ 	spinlock_t out_coding_list_lock; /* Protects out_coding_list */
+ #endif
++	struct batadv_frag_table_entry fragments[BATADV_FRAG_BUFFER_COUNT];
+ };
+ 
+ /**
+@@ -270,6 +300,10 @@ struct batadv_bcast_duplist_entry {
+  * @BATADV_CNT_MGMT_TX_BYTES: transmitted routing protocol traffic bytes counter
+  * @BATADV_CNT_MGMT_RX: received routing protocol traffic packet counter
+  * @BATADV_CNT_MGMT_RX_BYTES: received routing protocol traffic bytes counter
++ * @BATADV_CNT_FRAG_RX: received fragment traffic packet counter
++ * @BATADV_CNT_FRAG_RX_BYTES: received fragment traffic bytes counter
++ * @BATADV_CNT_FRAG_FWD: forwarded fragment traffic packet counter
++ * @BATADV_CNT_FRAG_FWD_BYTES: forwarded fragment traffic bytes counter
+  * @BATADV_CNT_TT_REQUEST_TX: transmitted tt req traffic packet counter
+  * @BATADV_CNT_TT_REQUEST_RX: received tt req traffic packet counter
+  * @BATADV_CNT_TT_RESPONSE_TX: transmitted tt resp traffic packet counter
+@@ -307,6 +341,10 @@ enum batadv_counters {
+ 	BATADV_CNT_MGMT_TX_BYTES,
+ 	BATADV_CNT_MGMT_RX,
+ 	BATADV_CNT_MGMT_RX_BYTES,
++	BATADV_CNT_FRAG_RX,
++	BATADV_CNT_FRAG_RX_BYTES,
++	BATADV_CNT_FRAG_FWD,
++	BATADV_CNT_FRAG_FWD_BYTES,
+ 	BATADV_CNT_TT_REQUEST_TX,
+ 	BATADV_CNT_TT_REQUEST_RX,
+ 	BATADV_CNT_TT_RESPONSE_TX,
 -- 
 1.8.2.3
 
