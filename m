@@ -1,9 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 12 May 2013 22:09:57 +0200
-Message-Id: <1368389397-1518-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: use __constant_htons when
-	possible
+Date: Mon, 13 May 2013 12:34:56 +0200
+Message-Id: <1368441296-3541-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1368441296-3541-1-git-send-email-ordex@autistici.org>
+References: <1368441296-3541-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: move seqno field outside of
+	the common ICMP header
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,91 +18,67 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <ordex@autistici.org>
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-When comparing a network ordered value with a constant, it
-is better to convert the constant at compile time by means
-of __constant_htons() instead of converting the value at
-runtime using ntohs().
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-This refactoring may slightly improve the code performance.
+The sequence number might be subtype dependent (e.g. a new
+ICMP mechanism may require a bigger space) and therefore it
+is better to move it away from the common ICMP header and
+let each subtype define its own.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
+ packet.h | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-v2:
-- v1 was based on a patch I decided to not send anymore and was generating a
-  conflict. now it is based on top of
-  "batman-adv: use VLAN_ETH_HLEN instead of sizeof(struct vlan_eth_hdr)"
-
-
-
- bridge_loop_avoidance.c | 12 ++++++------
- gateway_client.c        |  4 ++--
- 2 files changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 9e691b0..90b27b3 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -863,25 +863,25 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
- 	struct arphdr *arphdr;
- 	uint8_t *hw_src, *hw_dst;
- 	struct batadv_bla_claim_dst *bla_dst;
--	uint16_t proto;
-+	__be16 proto;
- 	int headlen;
- 	unsigned short vid = BATADV_NO_FLAGS;
- 	int ret;
+diff --git a/packet.h b/packet.h
+index 6f98d02..c8ef60e 100644
+--- a/packet.h
++++ b/packet.h
+@@ -198,7 +198,6 @@ struct batadv_ogm_packet {
+  * @msg_type: ICMP packet type
+  * @dst: address of the destination node
+  * @orig: address of the source node
+- * @seqno: ICMP sequence number
+  * @uid: local ICMP socket identifier
+  */
+ struct batadv_icmp_header {
+@@ -206,7 +205,6 @@ struct batadv_icmp_header {
+ 	uint8_t  msg_type; /* see ICMP message types above */
+ 	uint8_t  dst[ETH_ALEN];
+ 	uint8_t  orig[ETH_ALEN];
+-	__be16   seqno;
+ 	uint8_t  uid;
+ };
  
- 	ethhdr = eth_hdr(skb);
+@@ -214,10 +212,12 @@ struct batadv_icmp_header {
+  * batadv_icmp_packet - ICMP packet
+  * @ih: common ICMP header
+  * @reserved: not used - useful for alignment
++ * @seqno: ICMP sequence number
+  */
+ struct batadv_icmp_packet {
+ 	struct batadv_icmp_header ih;
+ 	uint8_t  reserved;
++	__be16   seqno;
+ };
  
--	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
-+	if (ethhdr->h_proto == __constant_htons(ETH_P_8021Q)) {
- 		vhdr = (struct vlan_ethhdr *)ethhdr;
- 		vid = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
- 		vid |= BATADV_VLAN_HAS_TAG;
--		proto = ntohs(vhdr->h_vlan_encapsulated_proto);
-+		proto = vhdr->h_vlan_encapsulated_proto;
- 		headlen = sizeof(*vhdr);
- 	} else {
--		proto = ntohs(ethhdr->h_proto);
-+		proto = ethhdr->h_proto;
- 		headlen = ETH_HLEN;
- 	}
+ #define BATADV_RR_LEN 16
+@@ -226,11 +226,13 @@ struct batadv_icmp_packet {
+  * batadv_icmp_packet_rr - ICMP RouteRecord packet
+  * @ih: common ICMP header
+  * @rr_cur: number of entries the rr array
++ * @seqno: ICMP sequence number
+  * @rr: route record array
+  */
+ struct batadv_icmp_packet_rr {
+ 	struct batadv_icmp_header ih;
+ 	uint8_t  rr_cur;
++	__be16   seqno;
+ 	uint8_t  rr[BATADV_RR_LEN][ETH_ALEN];
+ };
  
--	if (proto != ETH_P_ARP)
-+	if (proto != __constant_htons(ETH_P_ARP))
- 		return 0; /* not a claim frame */
- 
- 	/* this must be a ARP frame. check if it is a claim. */
-@@ -1375,7 +1375,7 @@ int batadv_bla_is_backbone_gw(struct sk_buff *skb,
- 
- 	ethhdr = (struct ethhdr *)(((uint8_t *)skb->data) + hdr_size);
- 
--	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
-+	if (ethhdr->h_proto == __constant_htons(ETH_P_8021Q)) {
- 		if (!pskb_may_pull(skb, hdr_size + VLAN_ETH_HLEN))
- 			return 0;
- 
-diff --git a/gateway_client.c b/gateway_client.c
-index f59e58d..3cf92f8 100644
---- a/gateway_client.c
-+++ b/gateway_client.c
-@@ -682,11 +682,11 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
- 
- 	/* check for bootp port */
- 	if ((proto == __constant_htons(ETH_P_IP)) &&
--	    (ntohs(udphdr->dest) != 67))
-+	    (udphdr->dest != __constant_htons(67)))
- 		return false;
- 
- 	if ((proto == __constant_htons(ETH_P_IPV6)) &&
--	    (ntohs(udphdr->dest) != 547))
-+	    (udphdr->dest != __constant_htons(547)))
- 		return false;
- 
- 	return true;
 -- 
 1.8.1.5
 
