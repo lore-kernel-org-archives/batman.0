@@ -1,15 +1,16 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 14 May 2013 11:45:01 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130514094501.GC16545@pandem0nium>
-References: <1367931069-7177-1-git-send-email-sven@narfation.org>
- <1367931069-7177-7-git-send-email-sven@narfation.org>
+Return-Path: <ordex@autistici.org>
+Date: Wed, 15 May 2013 09:07:35 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20130515070735.GA3350@ritirata.org>
+References: <1368476582-19220-1-git-send-email-martin@hundeboll.net>
+ <1368476582-19220-2-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="ZwgA9U+XZDXt4+m+"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="J/dobhs11T7y2rNN"
 Content-Disposition: inline
-In-Reply-To: <1367931069-7177-7-git-send-email-sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 6/9] alfred: Enable Link-time optimization
+In-Reply-To: <1368476582-19220-2-git-send-email-martin@hundeboll.net>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/3] batman-adv: Remove old
+ fragmentation code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,47 +23,67 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
 
---ZwgA9U+XZDXt4+m+
+--J/dobhs11T7y2rNN
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, May 07, 2013 at 02:51:06PM +0200, Sven Eckelmann wrote:
-> Link-time optimization allows to move parts of the optimization from the =
-single
-> source file to the global source view. This is done by emitting the GIMPLE
-> representation in each object file and analyzing it again during the link=
- step.
->=20
-> This reduces the binary size by around 10% on mipsel (this includes parts=
- which
-> were also removed by garbage collection).
->=20
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  alfred/Makefile | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->=20
-Applied in revision bbc581c (alfred package feed).
+Hi,
 
-Thanks,
-    Simon
+On Mon, May 13, 2013 at 10:23:00PM +0200, Martin Hundeb=C3=B8ll wrote:
 
+[...]
 
---ZwgA9U+XZDXt4+m+
+> +/**
+> + * batadv_send_skb_prepare_unicast - encapsulate an skb with a unicast h=
+eader
+> + * @skb: the skb containing the payload to encapsulate
+> + * @orig_node: the destination node
+> + *
+> + * Returns false if the payload could not be encapsulated or true otherw=
+ise
+> + */
+> +static bool batadv_send_skb_prepare_unicast(struct sk_buff *skb,
+> +					    struct batadv_orig_node *orig_node)
+> +{
+> +	size_t uni_size =3D sizeof(struct batadv_unicast_packet);
+
+a blank line here is needed
+
+> +	return batadv_send_skb_push_fill_unicast(skb, uni_size, orig_node);
+> +}
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--J/dobhs11T7y2rNN
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
-Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Version: GnuPG v2.0.19 (GNU/Linux)
 
-iEYEARECAAYFAlGSB50ACgkQrzg/fFk7axbJFgCfag4/vXfF9w1MlsnSPR4yYVt2
-p7cAnAtGEt8994cAFjquUIP1S9Ft0ArK
-=Cuoq
+iQIcBAEBCAAGBQJRkzQ3AAoJEADl0hg6qKeOnyIP/0dHm9Dp/Rk84DlpJsnJZgog
+yTOXi8HtdsuAP3JGns47Oa5dJCUnDY+hK8vJsydQDlxy378jyh1Jbr2xhVnj6A88
+W158zC3o73pFmB1rS06XzxBJcXQV5Tmq3JwHipd+Q9C+3w//oJn5ujp2Dy+qOwua
+xfVowKXmggbAib12TfGp3T/33UyilB+5HYW3+zP2vvvdAqM7Ou3Xsu7sBKKme8I5
+TCBnetGEH8H1dXS62/pm0fdgy0XCl16lqfZ+vK7dI0+Q3N/sgkMttSPOLqd1BnDD
+xD8pgXkT+Yib49Q0RSIP1nEamGsTxs2gOc3I4SRbAD0AmtlqJUFHyQmxX2eqaLYI
+H16mAv9t4QJbKrq3PJ+olvPT6VIOGQRdmbk+qFbMR78y7o11IK1fE2L0GRpNbcHJ
+YcaIWBd/ivgvt8HirSCeCL/TGZ/62G8xyR89at2KgwO+PZoR/ynonFqli1tzJLkx
+wUPTF16pa6/+U9VBG3EQMX/Aw5+iyaYZ2P9iZjreg5KfuekmW9kf5XWGwrHPfDu5
+U21CLdIcP5mmshxbNtGXWgcdyljlV8Bo7hAlrXdiNxenpxjKJvF2PjHguolvPuzG
+LU57iU24vUTtyb+Hj6TocBYRCkbsLhvEJjoT2HBXc4t+u5Jo4DP5xrEUzTqReh3x
+8kQEczAMFUgACYnhhWtp
+=3nQ6
 -----END PGP SIGNATURE-----
 
---ZwgA9U+XZDXt4+m+--
+--J/dobhs11T7y2rNN--
