@@ -1,12 +1,13 @@
 Return-Path: <cmsv@wirelesspt.net>
-Message-ID: <51949767.5060400@wirelesspt.net>
-Date: Thu, 16 May 2013 04:23:03 -0400
+Message-ID: <5194A7A6.3080904@wirelesspt.net>
+Date: Thu, 16 May 2013 05:32:22 -0400
 From: cmsv <cmsv@wirelesspt.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="----enig2XJUTPMOKUJJGHLDMXFPT"
-Subject: [B.A.T.M.A.N.] AA "r36608" & Batman-adv 2013.2.0
+References: <51949767.5060400@wirelesspt.net>
+ <20130516090732.GV15209@medion.lan>
+In-Reply-To: <20130516090732.GV15209@medion.lan>
+Content-Type: multipart/mixed; boundary="------------040807040805060909000601"
+Subject: Re: [B.A.T.M.A.N.] [OpenWrt-Devel] AA "r36608" & Batman-adv 2013.2.0
 Reply-To: cmsv@wirelesspt.net,
  The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -19,52 +20,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, OpenWrt Development List <openwrt-devel@lists.openwrt.org>
-
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
-------enig2XJUTPMOKUJJGHLDMXFPT
-Content-Type: multipart/mixed;
- boundary="------------050606090804040806060602"
+To: bittorf@bluebottle.com
+Cc: OpenWrt Development List <openwrt-devel@lists.openwrt.org>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 This is a multi-part message in MIME format.
---------------050606090804040806060602
+--------------040807040805060909000601
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 
-While trying to compile AA "r36608" and Batman-adv 2013.2.0 i noticed
-that some previously working functionalities are not present such as:
+Yes i am aware of that configuration and it is what i use.
+I now see that restarting batman-adv is done by restarting the network
+which means that the change was intentional.
 
-# batman-adv
-Usage: batman-adv <start|stop|restart> [mesh instance]
-
-Does not exist with this combination. I tried to find an answer in the
-docs from both sides but was unable to obtain an answer.
-
-As this been removed from open-mesh side or openwrt?
-Was it intentional,  mistake, or incompatibility?
+Thank you
 
 
+On 05/16/2013 05:07 AM, Bastian Bittorf wrote:
+> * cmsv <cmsv@wirelesspt.net> [16.05.2013 10:43]:
+>> Usage: batman-adv <start|stop|restart> [mesh instance]
+>>
+>> Does not exist with this combination. I tried to find an answer in the
+>> docs from both sides but was unable to obtain an answer.
+> 
+> http://www.open-mesh.org/projects/batman-adv/wiki/Batman-adv-openwrt-config
+> 
+> bye, bastian
+> 
 
---=20
-
-
-
-
-
-Site: http://wirelesspt.net
-Mesh: http://tinyurl.com/wirelesspt
-Admin: http://wirelesspt.net/wiki/Cmsv
-Twitter: http://twitter.com/wirelesspt
-Suporte t=C3=A9cnico via sms: 91 19 11 798
-Donativos/Paypal: http://tinyurl.com/doar-verba
-Chave publica PGP/SSH: http://wirelesspt.net/arquivos/pk
-Email assinado digitalmente pelo emissor assegurando autenticidade
-
-
---------------050606090804040806060602
+--------------040807040805060909000601
 Content-Type: application/pgp-keys;
  name="0x782BF73E.asc"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
  filename="0x782BF73E.asc"
 
@@ -626,34 +612,8 @@ IfrQ2FHfa+Lt6a/VcMK6+Q/bo7vkv7mU0wANvYSZx2UY2WJ1F2BNjsWqXrOv7MZO
 GtZkBKATlvpgUEPFr3G0JPhqKhKymjcDk2uFr7bKJj3OYTafKjVVNJWfmVXd1651
 y2x+UqY58XevLv/TcSSH8vPG232w8qOmyHPXYiMwXXqiR2McYw2DQWzKsEhhqUUe
 3zqg4yMZMEGhdK+kDGmWOYQy2YyJDi4FVpNEWWyNSvg/w1JkanCWQoPQYEdg0mCz
-UbFk3ADtfPX0WbdfPmC8uHwv5UPVhXGSpghkA7veHbqyIQ=3D=3D
-=3DudlR
+UbFk3ADtfPX0WbdfPmC8uHwv5UPVhXGSpghkA7veHbqyIQ==
+=udlR
 -----END PGP PUBLIC KEY BLOCK-----
 
---------------050606090804040806060602--
-
-------enig2XJUTPMOKUJJGHLDMXFPT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJRlJdtAAoJEANP9HZ4K/c+bSEP/2UZkUHogs1c60D8kpBu4ucD
-J9vj6P5hO78R0B6TiaqYbQSrWiKjRBQS8QFAW0rj83c7ghpCM4ibjq4spuET55O5
-gRiSx3CAMK+ncAsZyZP7wezN9thc3YVZjDC0W3OotVhMt03g8Shyr7yHa8IhKile
-zNyDNRekVqHhmrJs2mlJ0T0XuESxT5cnbmzV2s1DARfKvkWbYbB/+Q/o+3ACHYX9
-463A/Rfe3fsoUA3mjlwaN8nWOOgEpp5FVgB4CZNeItYXmlTrZq2Ta6IqgI4qWYVU
-ssbPP69DpH1doryrIUgPODu8YzvIOL8htlEmKkI1cELgg19qMBTA9xF2Mbm+XXYE
-RGv9mvADMmWQ4sZyTwWAyqX+6mhT6y7MltAJtH3Q870VuwRlEqefNFGlQQ0NX2PF
-38pxokHx6gyoC7m+pvl4aT8A+uKicU4pBc2XK2KgRuTuIc9QoFz8kQRoM2xdixQj
-ST4VBXhrarzpNps76uzkRK8vPdY2eW0Hb3vZjEt7mIPYH/c9KZal7jO1XQstEQ8M
-bvFxKxXLUxJQdDVWXcltL2PFqKOgH6vtH+kda978IAtHyoRpV3ljc3AcOSUCpcdo
-YYdH3za+janyP1ItJ6GkvHh+/ZgC9RV1HGc98I1PMpJ2RTJD3HSbI8VYtJkT6f42
-LuxmwGY8Eci8N+uLP5Vr
-=UNJt
------END PGP SIGNATURE-----
-
-------enig2XJUTPMOKUJJGHLDMXFPT--
+--------------040807040805060909000601--
