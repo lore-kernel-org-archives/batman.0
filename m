@@ -1,18 +1,19 @@
-Return-Path: <ordex@autistici.org>
-Date: Thu, 16 May 2013 21:43:36 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130516194336.GJ3350@ritirata.org>
+Return-Path: <linus.luessing@web.de>
+Date: Fri, 17 May 2013 00:34:45 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20130516223445.GE22374@Linus-Debian>
 References: <1368293014-30742-1-git-send-email-linus.luessing@web.de>
- <1368293014-30742-4-git-send-email-linus.luessing@web.de>
- <20130511232929.GF901@ritirata.org>
- <20130516182225.GD22374@Linus-Debian>
+ <1368293014-30742-3-git-send-email-linus.luessing@web.de>
+ <20130511231113.GE901@ritirata.org>
+ <20130516181945.GC22374@Linus-Debian>
+ <20130516194120.GI3350@ritirata.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="rVkomL2febZOZtGQ"
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <20130516182225.GD22374@Linus-Debian>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Modified forwarding
- behaviour for multicast packets
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20130516194120.GI3350@ritirata.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Announce new capability
+ via multicast TVLV
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,71 +27,141 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi Antonio,
 
---rVkomL2febZOZtGQ
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, May 16, 2013 at 09:41:20PM +0200, Antonio Quartulli wrote:
+> On Thu, May 16, 2013 at 08:19:45PM +0200, Linus Lüssing wrote:
+> > > 
+> > > > +
+> > > > +	if (!(mcast_flags & BATADV_MCAST_LISTENER_ANNOUNCEMENT) &&
+> > > > +	    orig->mcast_flags & BATADV_MCAST_LISTENER_ANNOUNCEMENT) {
+> > > > +		atomic_inc(&bat_priv->mcast_num_non_aware);
+> > > > +	} else if (mcast_flags & BATADV_MCAST_LISTENER_ANNOUNCEMENT &&
+> > > > +		   !(orig->mcast_flags & BATADV_MCAST_LISTENER_ANNOUNCEMENT)) {
+> > > > +		atomic_dec(&bat_priv->mcast_num_non_aware);
+> > > > +	}
+> > > > +
+> > > > +	orig->mcast_flags = mcast_flags;
+> > > > +}
+> > > 
+> > > > diff --git a/originator.c b/originator.c
+> > > > index 5d53d2f..acc0c2d 100644
+> > > > --- a/originator.c
+> > > > +++ b/originator.c
+> > > > @@ -257,6 +257,9 @@ struct batadv_orig_node *batadv_get_orig_node(struct batadv_priv *bat_priv,
+> > > >  	reset_time = jiffies - 1 - msecs_to_jiffies(BATADV_RESET_PROTECTION_MS);
+> > > >  	orig_node->bcast_seqno_reset = reset_time;
+> > > >  	orig_node->batman_seqno_reset = reset_time;
+> > > > +#ifdef CONFIG_BATMAN_ADV_MCAST_OPTIMIZATIONS
+> > > > +	orig_node->mcast_flags = BATADV_MCAST_LISTENER_ANNOUNCEMENT;
+> > > > +#endif
+> > > 
+> > > why do you start assuming that an originator has the optimisation enabled? would
+> > > it be better to wait for the first mcast tvlv from it to claim this?
+> > 
+> > Because it is easier code-wise. I had it the other way round first
+> > and issuing an atomic_inc(&bat_priv->mcast_num_non_ware) in
+> > batadv_get_orig_node(), but then I ended up counting up too many
+> > times because I was increasing that counter for secondary
+> > interface originators, too while not decreasing it again because
+> > no TVLV handler will be called for these. And within
+> > batadv_get_orig_node() I don't see an easy way to determine
+> > whether I was called for a primary or secondary interface
+> > originator.
+> > 
+> 
+> mh..I don't really understand this (maybe because I don't have a deep knowledge
+> of this code). My idea was to start with:
+> 
+> orig_node->mcast_flags = BATADV_NO_FLAGS;
+> 
+> and to set
+> 
+> orig_node->mcast_flags = BATADV_MCAST_LISTENER_ANNOUNCEMENT;
+> 
+> only in the received TVLV parsing function (if any TVLV has been received).
+> Is this inconsistent with what you have in the code?
 
-On Thu, May 16, 2013 at 08:22:25PM +0200, Linus L=C3=BCssing wrote:
-> On Sun, May 12, 2013 at 01:29:29AM +0200, Antonio Quartulli wrote:
-> > On Sat, May 11, 2013 at 07:23:27PM +0200, Linus L=C3=BCssing wrote:
-> > > With this patch a multicast packet is not always simply flooded anymo=
-re,
-> > > the bevahiour for the following cases is changed to reduce
-> > > unnecessary overhead:
-> > >=20
-> > > If all nodes within the horizon of a certain node have signalized
-> > > multicast listener announcement capability
-> > > (BATADV_MCAST_LISTENER_ANNOUNCEMENT) then an IPv6 multicast packet
-> > > with a destination of IPv6 link-local scope coming from the upstream
-> > > of this node...
-> > >=20
-> > > * ...is dropped if there is no according multicast listener in the
-> > >   translation table.
-> > > * ...is forwarded via unicast if there is a single node with interest=
-ed
-> > >   multicast listeners.
-> > >=20
-> >=20
-> > othwerwise? Does it get flooded like now if there is more than one rece=
-iver?
->=20
-> Yes, it will get flooded. Thought it was clear because I was
-> saying "for the following cases is changed", trying to imply that
-> for anything else it'll still get flooded. But ok, I can make it
-> more explicit.
+Yes, that was what I initially had and it unfortunately didn't
+work that easily.
 
-Yes, please
 
-Cheers,
+The thing is, I want to be able to easily determine whether all
+nodes have this flag, this capability to be able to know whether I
+can safely make use of the new optimization.
 
---=20
-Antonio Quartulli
+I could for any multicast packet I want to send loop through all
+originators and check for this flag. But I thought that might be
+too performance hungry in that code path. Therefore I decided to
+keep track of that via the "mcast_num_non_aware" variable. If it
+is zero than I can optimize, otherwise not.
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
+If I were initializing flags to BATADV_NO_FLAGS in batadv_get_orig_node(),
+then I'd have to increase "mcast_num_non_aware" in that same
+function because the handler wouldn't be able to do so (unless I'd
+use some magic value instead of BATADV_NO_FLAGS, like
+BATADV_FLAGS_NOT_INIT). So I had something like:
 
---rVkomL2febZOZtGQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+-----
+diff --git a/originator.c b/originator.c
+index 5d53d2f..40a3611 100644
+--- a/originator.c
++++ b/originator.c
+@@ -257,6 +257,9 @@ struct batadv_orig_node *batadv_get_orig_node(struct batadv_priv *bat_priv,
+        reset_time = jiffies - 1 - msecs_to_jiffies(BATADV_RESET_PROTECTION_MS);
+        orig_node->bcast_seqno_reset = reset_time;
+        orig_node->batman_seqno_reset = reset_time;
++#ifdef CONFIG_BATMAN_ADV_MCAST_OPTIMIZATIONS
++ orig_node->mcast_flags = BATADV_NO_FLAGS;
++#endif
+ 
+        atomic_set(&orig_node->bond_candidates, 0);
+ 
+@@ -281,6 +284,8 @@ struct batadv_orig_node *batadv_get_orig_node(struct batadv_priv *bat_priv,
+        if (hash_added != 0)
+                goto free_bcast_own_sum;
+ 
++ atomic_inc(&bat_priv->mcast_num_non_aware);
++
+        return orig_node;
+ free_bcast_own_sum:
+        kfree(orig_node->bcast_own_sum);
+---
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+But that doesn't work because if I am seeing an originator via its
+secondary interface then I'll increase that counter twice. And
+even if that originator actually has the new MCAST flag set, then
+I'll only decrease it once in the handler because the handler is
+not called for secondary interface originators.
 
-iQIcBAEBCAAGBQJRlTboAAoJEADl0hg6qKeOgHYP/iej59IpWAQutOOrnG3CyTwb
-ebRMtgnecZQ4HaIyaJA3K5HYFD4bWxxufalppjFYPWGV3SIt6iNKOpCoNMxvHDx8
-47awKO3ts0VRW4HGc1yWjizYG2xAnww7Y9nT1uMYTNtqd/kjV7Uz1I3+ny+rL6iu
-mCGX/UqWj5qhz/4cIMP8Z6YNGk2xFQGOn8fC1/JqAqWmFB/BXAeq/1QgjIRPs5qG
-Q6enD7k4PKzRtEctSAVhpZPIAemFf+hmU3fT/LHdmwQ5G+IeTzWxmmPgPd2rWhEM
-5j20HbQvTvoRHcibzwY73M3Gt9ASRHWhukMppWWzgfpz8MGB0mcthRaACWxm//GN
-k+gd9b7FTY1nVrEB8Bw/YgEZsdH3AGJP2AErvZdGjJJqIPbbbhohKieYyrdbMiFy
-GsGtm2+Ryiy4VeKZcQXQ9BN/NrsbVu2eMbcfAvcL4NqvOpp0NU4eYFsU8DwvbF8O
-UHoZrEEpn49maFCrVGb3e6/reKg3wA+6PuMqufDOwcdRI3Yp7JiTudQwzC/CkZst
-OxoOhnxUmsh9mdpQYFfxxbE+Qz8J6XN4gOJZXxN0iFE4S6/q74NpXdeaaGMkF0YH
-WueB7fKItntj/mu7M8n/ORKjfOpm3OTZ5oy3mBCjknrducRV8foN7w4H5DZFMMiG
-DxeEx2UIO5YDTbEumLni
-=W6/1
------END PGP SIGNATURE-----
+So ideally I'd do something like:
+-----
+diff --git a/originator.c b/originator.c
+index 5d53d2f..40a3611 100644
+--- a/originator.c
++++ b/originator.c
+@@ -281,6 +284,8 @@ struct batadv_orig_node *batadv_get_orig_node(struct batadv_priv *bat_priv,
+        if (hash_added != 0)
+                goto free_bcast_own_sum;
 
---rVkomL2febZOZtGQ--
++ if (IS_PRIMARY_ORIG_ADDR(addr))
++     atomic_inc(&bat_priv->mcast_num_non_aware);
++
+        return orig_node;
+ free_bcast_own_sum:
+        kfree(orig_node->bcast_own_sum);
+-----
+
+But unfortunately that doesn't exist as far as I know.
+
+> 
+> 
+> Cheers,
+> 
+> -- 
+> Antonio Quartulli
+> 
+> ..each of us alone is worth nothing..
+> Ernesto "Che" Guevara
+
+Cheers, Linus
