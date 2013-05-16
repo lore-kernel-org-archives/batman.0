@@ -1,18 +1,18 @@
 Return-Path: <ordex@autistici.org>
-Date: Thu, 16 May 2013 21:41:20 +0200
+Date: Thu, 16 May 2013 21:43:36 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130516194120.GI3350@ritirata.org>
+Message-ID: <20130516194336.GJ3350@ritirata.org>
 References: <1368293014-30742-1-git-send-email-linus.luessing@web.de>
- <1368293014-30742-3-git-send-email-linus.luessing@web.de>
- <20130511231113.GE901@ritirata.org>
- <20130516181945.GC22374@Linus-Debian>
+ <1368293014-30742-4-git-send-email-linus.luessing@web.de>
+ <20130511232929.GF901@ritirata.org>
+ <20130516182225.GD22374@Linus-Debian>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="fUvfsPTz/SzOZDdw"
+ protocol="application/pgp-signature"; boundary="rVkomL2febZOZtGQ"
 Content-Disposition: inline
-In-Reply-To: <20130516181945.GC22374@Linus-Debian>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Announce new capability
- via multicast TVLV
+In-Reply-To: <20130516182225.GD22374@Linus-Debian>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Modified forwarding
+ behaviour for multicast packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,67 +27,41 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---fUvfsPTz/SzOZDdw
+--rVkomL2febZOZtGQ
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 16, 2013 at 08:19:45PM +0200, Linus L=C3=BCssing wrote:
+On Thu, May 16, 2013 at 08:22:25PM +0200, Linus L=C3=BCssing wrote:
+> On Sun, May 12, 2013 at 01:29:29AM +0200, Antonio Quartulli wrote:
+> > On Sat, May 11, 2013 at 07:23:27PM +0200, Linus L=C3=BCssing wrote:
+> > > With this patch a multicast packet is not always simply flooded anymo=
+re,
+> > > the bevahiour for the following cases is changed to reduce
+> > > unnecessary overhead:
+> > >=20
+> > > If all nodes within the horizon of a certain node have signalized
+> > > multicast listener announcement capability
+> > > (BATADV_MCAST_LISTENER_ANNOUNCEMENT) then an IPv6 multicast packet
+> > > with a destination of IPv6 link-local scope coming from the upstream
+> > > of this node...
+> > >=20
+> > > * ...is dropped if there is no according multicast listener in the
+> > >   translation table.
+> > > * ...is forwarded via unicast if there is a single node with interest=
+ed
+> > >   multicast listeners.
+> > >=20
 > >=20
-> > > +
-> > > +	if (!(mcast_flags & BATADV_MCAST_LISTENER_ANNOUNCEMENT) &&
-> > > +	    orig->mcast_flags & BATADV_MCAST_LISTENER_ANNOUNCEMENT) {
-> > > +		atomic_inc(&bat_priv->mcast_num_non_aware);
-> > > +	} else if (mcast_flags & BATADV_MCAST_LISTENER_ANNOUNCEMENT &&
-> > > +		   !(orig->mcast_flags & BATADV_MCAST_LISTENER_ANNOUNCEMENT)) {
-> > > +		atomic_dec(&bat_priv->mcast_num_non_aware);
-> > > +	}
-> > > +
-> > > +	orig->mcast_flags =3D mcast_flags;
-> > > +}
-> >=20
-> > > diff --git a/originator.c b/originator.c
-> > > index 5d53d2f..acc0c2d 100644
-> > > --- a/originator.c
-> > > +++ b/originator.c
-> > > @@ -257,6 +257,9 @@ struct batadv_orig_node *batadv_get_orig_node(str=
-uct batadv_priv *bat_priv,
-> > >  	reset_time =3D jiffies - 1 - msecs_to_jiffies(BATADV_RESET_PROTECTI=
-ON_MS);
-> > >  	orig_node->bcast_seqno_reset =3D reset_time;
-> > >  	orig_node->batman_seqno_reset =3D reset_time;
-> > > +#ifdef CONFIG_BATMAN_ADV_MCAST_OPTIMIZATIONS
-> > > +	orig_node->mcast_flags =3D BATADV_MCAST_LISTENER_ANNOUNCEMENT;
-> > > +#endif
-> >=20
-> > why do you start assuming that an originator has the optimisation enabl=
-ed? would
-> > it be better to wait for the first mcast tvlv from it to claim this?
+> > othwerwise? Does it get flooded like now if there is more than one rece=
+iver?
 >=20
-> Because it is easier code-wise. I had it the other way round first
-> and issuing an atomic_inc(&bat_priv->mcast_num_non_ware) in
-> batadv_get_orig_node(), but then I ended up counting up too many
-> times because I was increasing that counter for secondary
-> interface originators, too while not decreasing it again because
-> no TVLV handler will be called for these. And within
-> batadv_get_orig_node() I don't see an easy way to determine
-> whether I was called for a primary or secondary interface
-> originator.
->=20
+> Yes, it will get flooded. Thought it was clear because I was
+> saying "for the following cases is changed", trying to imply that
+> for anything else it'll still get flooded. But ok, I can make it
+> more explicit.
 
-mh..I don't really understand this (maybe because I don't have a deep knowl=
-edge
-of this code). My idea was to start with:
-
-orig_node->mcast_flags =3D BATADV_NO_FLAGS;
-
-and to set
-
-orig_node->mcast_flags =3D BATADV_MCAST_LISTENER_ANNOUNCEMENT;
-
-only in the received TVLV parsing function (if any TVLV has been received).
-Is this inconsistent with what you have in the code?
-
+Yes, please
 
 Cheers,
 
@@ -97,26 +71,26 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---fUvfsPTz/SzOZDdw
+--rVkomL2febZOZtGQ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRlTZgAAoJEADl0hg6qKeOD3QQAIzHv+NU9j2NHjBJBW1VVzZW
-BAlKlDjyFR3aVe64pXbxqLE8ngF9DIaJMmwK1cdWfv5FFqBSjQgL00b+/OQWpMc9
-lGaj0PDugQ33BTF+Fq9Ssd1i/L/oqHURbyNtjUVnGXxChrCdpvGNVsvBXti6GX6J
-JbcT6UlafMetUSspdLfYvkom8831JGFZDCYXES7Pyx0KJaTSzSrzua1vLl+8p0x2
-h0aFitV8NL+ftIWq4EzL0ZyJb1xXJ3amwT9NOLjhWwsumSq2w6bMvR2vRw8pfcBF
-19Vd3/lXVgCNTBnO0JogEWffL+0KUO7J77J2nu3R6qPMpbWjawt/E9rI159BarJp
-8BE0R/v7saEEG0kXwvIUJGQB4FbQTSF5wlGO+byLkO9bde3hrdZZ/OUeINYNluxq
-Y97tS4z27JVVfilQwIuLDzsVxdekw0y//AbDHQGZxTdb4F2BpIwtsXeCQDmealo9
-tuVK/65HEmPUu8xeoIRpnipR63dbiW9/dzo5+v3B1wWYWqw2j0Dw4hKSF+AJfZ5r
-stQ0KEYpjoL8SuiBFQ/MrMMGEiRCuM5wE/sH3bPDFWbZhhp3mjjHq22vBqoE/fzm
-gK/Ou9cs3HZFLGXkM25pImViyO6Px3vgWTKQxPmtolUTVCBG01ft6RiowytfLP9z
-iyCyG81/PkuvYqGCd1WP
-=IE56
+iQIcBAEBCAAGBQJRlTboAAoJEADl0hg6qKeOgHYP/iej59IpWAQutOOrnG3CyTwb
+ebRMtgnecZQ4HaIyaJA3K5HYFD4bWxxufalppjFYPWGV3SIt6iNKOpCoNMxvHDx8
+47awKO3ts0VRW4HGc1yWjizYG2xAnww7Y9nT1uMYTNtqd/kjV7Uz1I3+ny+rL6iu
+mCGX/UqWj5qhz/4cIMP8Z6YNGk2xFQGOn8fC1/JqAqWmFB/BXAeq/1QgjIRPs5qG
+Q6enD7k4PKzRtEctSAVhpZPIAemFf+hmU3fT/LHdmwQ5G+IeTzWxmmPgPd2rWhEM
+5j20HbQvTvoRHcibzwY73M3Gt9ASRHWhukMppWWzgfpz8MGB0mcthRaACWxm//GN
+k+gd9b7FTY1nVrEB8Bw/YgEZsdH3AGJP2AErvZdGjJJqIPbbbhohKieYyrdbMiFy
+GsGtm2+Ryiy4VeKZcQXQ9BN/NrsbVu2eMbcfAvcL4NqvOpp0NU4eYFsU8DwvbF8O
+UHoZrEEpn49maFCrVGb3e6/reKg3wA+6PuMqufDOwcdRI3Yp7JiTudQwzC/CkZst
+OxoOhnxUmsh9mdpQYFfxxbE+Qz8J6XN4gOJZXxN0iFE4S6/q74NpXdeaaGMkF0YH
+WueB7fKItntj/mu7M8n/ORKjfOpm3OTZ5oy3mBCjknrducRV8foN7w4H5DZFMMiG
+DxeEx2UIO5YDTbEumLni
+=W6/1
 -----END PGP SIGNATURE-----
 
---fUvfsPTz/SzOZDdw--
+--rVkomL2febZOZtGQ--
