@@ -1,9 +1,13 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Fri, 17 May 2013 10:21:43 +0200
-Message-Id: <1368778903-2289-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: use __constant_htons when
-	possible
+Return-Path: <davem@davemloft.net>
+Date: Fri, 17 May 2013 01:41:40 -0700 (PDT)
+Message-Id: <20130517.014140.2125848646591726751.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1368778211-2142-1-git-send-email-ordex@autistici.org>
+References: <1368778211-2142-1-git-send-email-ordex@autistici.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request for net: batman-adv 2013-05-17
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,103 +19,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <ordex@autistici.org>
+To: ordex@autistici.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-When comparing a network ordered value with a constant, it
-is better to convert the constant at compile time by means
-of __constant_htons() instead of converting the value at
-runtime using ntohs().
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Fri, 17 May 2013 10:10:10 +0200
 
-This refactoring may slightly improve the code performance.
+> here you have one fix intended for net/linux-3.10.
+> This patch is fixing a global fault protection that can be triggered on module
+> removal due to the double invocation of call_rcu() in chain.
+> 
+> While fixing, the patch is also adding some kernel doc to the changed functions.
+> Consider queueing this patch to -stable.
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
-
-v2:
-- patch rebased on top of
-"batman-adv: use VLAN_ETH_HLEN instead of sizeof(struct vlan_eth_hdr)"
-
-v3:
-- use __constant* for vlan_insert_tag() argument
-
-
-
- bridge_loop_avoidance.c | 14 +++++++-------
- gateway_client.c        |  4 ++--
- 2 files changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 9e691b0..de02e7c 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -343,7 +343,7 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, uint8_t *mac,
- 	}
- 
- 	if (vid & BATADV_VLAN_HAS_TAG)
--		skb = vlan_insert_tag(skb, htons(ETH_P_8021Q),
-+		skb = vlan_insert_tag(skb, __constant_htons(ETH_P_8021Q),
- 				      vid & VLAN_VID_MASK);
- 
- 	skb_reset_mac_header(skb);
-@@ -863,25 +863,25 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
- 	struct arphdr *arphdr;
- 	uint8_t *hw_src, *hw_dst;
- 	struct batadv_bla_claim_dst *bla_dst;
--	uint16_t proto;
-+	__be16 proto;
- 	int headlen;
- 	unsigned short vid = BATADV_NO_FLAGS;
- 	int ret;
- 
- 	ethhdr = eth_hdr(skb);
- 
--	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
-+	if (ethhdr->h_proto == __constant_htons(ETH_P_8021Q)) {
- 		vhdr = (struct vlan_ethhdr *)ethhdr;
- 		vid = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
- 		vid |= BATADV_VLAN_HAS_TAG;
--		proto = ntohs(vhdr->h_vlan_encapsulated_proto);
-+		proto = vhdr->h_vlan_encapsulated_proto;
- 		headlen = sizeof(*vhdr);
- 	} else {
--		proto = ntohs(ethhdr->h_proto);
-+		proto = ethhdr->h_proto;
- 		headlen = ETH_HLEN;
- 	}
- 
--	if (proto != ETH_P_ARP)
-+	if (proto != __constant_htons(ETH_P_ARP))
- 		return 0; /* not a claim frame */
- 
- 	/* this must be a ARP frame. check if it is a claim. */
-@@ -1375,7 +1375,7 @@ int batadv_bla_is_backbone_gw(struct sk_buff *skb,
- 
- 	ethhdr = (struct ethhdr *)(((uint8_t *)skb->data) + hdr_size);
- 
--	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
-+	if (ethhdr->h_proto == __constant_htons(ETH_P_8021Q)) {
- 		if (!pskb_may_pull(skb, hdr_size + VLAN_ETH_HLEN))
- 			return 0;
- 
-diff --git a/gateway_client.c b/gateway_client.c
-index f59e58d..3cf92f8 100644
---- a/gateway_client.c
-+++ b/gateway_client.c
-@@ -682,11 +682,11 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
- 
- 	/* check for bootp port */
- 	if ((proto == __constant_htons(ETH_P_IP)) &&
--	    (ntohs(udphdr->dest) != 67))
-+	    (udphdr->dest != __constant_htons(67)))
- 		return false;
- 
- 	if ((proto == __constant_htons(ETH_P_IPV6)) &&
--	    (ntohs(udphdr->dest) != 547))
-+	    (udphdr->dest != __constant_htons(547)))
- 		return false;
- 
- 	return true;
--- 
-1.8.1.5
-
+Pulled, thanks.
