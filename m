@@ -1,9 +1,11 @@
 Return-Path: <mihail.costea2005@gmail.com>
 From: Mihail <mihail.costea2005@gmail.com>
-Date: Fri, 17 May 2013 15:27:49 +0300
-Message-Id: <1368793673-27539-1-git-send-email-mihail.costea2005@gmail.com>
-Subject: [B.A.T.M.A.N.] [RFC 1/4] batman-adv: renamed
-	batadv_dat_snoop_*_arp_* functions to batadv_dat_snoop_*_msg_*
+Date: Fri, 17 May 2013 15:27:50 +0300
+Message-Id: <1368793673-27539-2-git-send-email-mihail.costea2005@gmail.com>
+In-Reply-To: <1368793673-27539-1-git-send-email-mihail.costea2005@gmail.com>
+References: <1368793673-27539-1-git-send-email-mihail.costea2005@gmail.com>
+Subject: [B.A.T.M.A.N.] [RFC 2/4] batman-adv: added IPv6 to DAT and generic
+	functions in distributed-arp-table.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,213 +21,117 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 From: "mihail.costea90@gmail.com" <mihail.costea90@gmail.com>
 
-Renamed snooping functions in order to suggest that they should work on
-more protocols than ARP.
+Added IPv6 functionality to generic functions implemented in the first
+patch.
 
 Signed-off-by: Mihail Costea <mihail.costea90@gmail.com>
 Signed-off-by: Stefan Popa <Stefan.A.Popa@intel.com>
 Reviewed-by: Stefan Popa <Stefan.A.Popa@intel.com>
 
 ---
- distributed-arp-table.c |   16 ++++++++--------
- distributed-arp-table.h |   16 ++++++++--------
- routing.c               |   12 ++++++------
- soft-interface.c        |    6 +++---
- 4 files changed, 25 insertions(+), 25 deletions(-)
+ distributed-arp-table.c |   30 ++++++++++++++++++++++++++----
+ types.h                 |    6 +++++-
+ 2 files changed, 31 insertions(+), 5 deletions(-)
 
 diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index af670d3..b2ca7e0 100644
+index b2ca7e0..42118be 100644
 --- a/distributed-arp-table.c
 +++ b/distributed-arp-table.c
-@@ -978,7 +978,7 @@ out:
+@@ -32,7 +32,7 @@
+ #include "unicast.h"
+ 
+ static char *batadv_dat_types_str_fmt[] = {
+-	"%pI4",
++	"%pI4", "%pI6c",
+ };
+ 
+ static void batadv_dat_purge(struct work_struct *work);
+@@ -173,6 +173,10 @@ static size_t batadv_sizeof_dat_data(uint8_t data_type)
+ 	switch (data_type) {
+ 	case BATADV_DAT_IPV4:
+ 		return sizeof(__be32);
++#if IS_ENABLED(CONFIG_IPV6)
++	case BATADV_DAT_IPV6:
++		return sizeof(struct in6_addr);
++#endif
+ 	default:
+ 		return 0;
+ 	}
+@@ -295,6 +299,12 @@ static uint32_t batadv_hash_dat_ipv4(const void *data, uint32_t size)
+ 	return batadv_hash_dat(data, BATADV_DAT_IPV4, size);
  }
+ 
++#if IS_ENABLED(CONFIG_IPV6)
++static uint32_t batadv_hash_dat_ipv6(const void *data, uint32_t size)
++{
++	return batadv_hash_dat(data, BATADV_DAT_IPV6, size);
++}
++#endif
  
  /**
-- * batadv_dat_snoop_outgoing_arp_request - snoop the ARP request and try to
-+ * batadv_dat_snoop_outgoing_msg_request - snoop the ARP request and try to
-  * answer using DAT
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: packet to check
-@@ -987,7 +987,7 @@ out:
-  * otherwise. In case of a positive return value the message has to be enqueued
-  * to permit the fallback.
-  */
--bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
-+bool batadv_dat_snoop_outgoing_msg_request(struct batadv_priv *bat_priv,
- 					   struct sk_buff *skb)
- {
- 	uint16_t type = 0;
-@@ -1060,7 +1060,7 @@ out:
- }
- 
- /**
-- * batadv_dat_snoop_incoming_arp_request - snoop the ARP request and try to
-+ * batadv_dat_snoop_incoming_msg_request - snoop the ARP request and try to
-  * answer using the local DAT storage
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: packet to check
-@@ -1068,7 +1068,7 @@ out:
-  *
-  * Returns true if the request has been answered, false otherwise.
-  */
--bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
-+bool batadv_dat_snoop_incoming_msg_request(struct batadv_priv *bat_priv,
- 					   struct sk_buff *skb, int hdr_size)
- {
- 	uint16_t type;
-@@ -1130,11 +1130,11 @@ out:
- }
- 
- /**
-- * batadv_dat_snoop_outgoing_arp_reply - snoop the ARP reply and fill the DHT
-+ * batadv_dat_snoop_outgoing_msg_reply - snoop the ARP reply and fill the DHT
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: packet to check
-  */
--void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
-+void batadv_dat_snoop_outgoing_msg_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb)
- {
- 	uint16_t type;
-@@ -1167,13 +1167,13 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 			     BATADV_P_DAT_DHT_PUT);
- }
- /**
-- * batadv_dat_snoop_incoming_arp_reply - snoop the ARP reply and fill the local
-+ * batadv_dat_snoop_incoming_msg_reply - snoop the ARP reply and fill the local
-  * DAT storage only
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: packet to check
-  * @hdr_size: size of the encapsulation header
-  */
--bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
-+bool batadv_dat_snoop_incoming_msg_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb, int hdr_size)
- {
- 	uint16_t type;
-diff --git a/distributed-arp-table.h b/distributed-arp-table.h
-index 557bab9..28c062b 100644
---- a/distributed-arp-table.h
-+++ b/distributed-arp-table.h
-@@ -31,13 +31,13 @@
- #define BATADV_DAT_DATA_MAX_LEN 16
- 
- void batadv_dat_status_update(struct net_device *net_dev);
--bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
-+bool batadv_dat_snoop_outgoing_msg_request(struct batadv_priv *bat_priv,
- 					   struct sk_buff *skb);
--bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
-+bool batadv_dat_snoop_incoming_msg_request(struct batadv_priv *bat_priv,
- 					   struct sk_buff *skb, int hdr_size);
--void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
-+void batadv_dat_snoop_outgoing_msg_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb);
--bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
-+bool batadv_dat_snoop_incoming_msg_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb, int hdr_size);
- bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
- 				      struct batadv_forw_packet *forw_packet);
-@@ -105,28 +105,28 @@ static inline void batadv_dat_status_update(struct net_device *net_dev)
- }
- 
- static inline bool
--batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
-+batadv_dat_snoop_outgoing_msg_request(struct batadv_priv *bat_priv,
- 				      struct sk_buff *skb)
- {
- 	return false;
- }
- 
- static inline bool
--batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
-+batadv_dat_snoop_incoming_msg_request(struct batadv_priv *bat_priv,
- 				      struct sk_buff *skb, int hdr_size)
- {
- 	return false;
- }
- 
- static inline bool
--batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
-+batadv_dat_snoop_outgoing_msg_reply(struct batadv_priv *bat_priv,
- 				    struct sk_buff *skb)
- {
- 	return false;
- }
- 
- static inline bool
--batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
-+batadv_dat_snoop_incoming_msg_reply(struct batadv_priv *bat_priv,
- 				    struct sk_buff *skb, int hdr_size)
- {
- 	return false;
-diff --git a/routing.c b/routing.c
-index 7c372f1..1c43f55 100644
---- a/routing.c
-+++ b/routing.c
-@@ -967,10 +967,10 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 			orig_node = batadv_orig_hash_find(bat_priv, orig_addr);
- 		}
- 
--		if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb,
-+		if (batadv_dat_snoop_incoming_msg_request(bat_priv, skb,
- 							  hdr_size))
- 			goto rx_success;
--		if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb,
-+		if (batadv_dat_snoop_incoming_msg_reply(bat_priv, skb,
- 							hdr_size))
- 			goto rx_success;
- 
-@@ -1015,10 +1015,10 @@ int batadv_recv_ucast_frag_packet(struct sk_buff *skb,
- 		if (!new_skb)
- 			return NET_RX_SUCCESS;
- 
--		if (batadv_dat_snoop_incoming_arp_request(bat_priv, new_skb,
-+		if (batadv_dat_snoop_incoming_msg_request(bat_priv, new_skb,
- 							  hdr_size))
- 			goto rx_success;
--		if (batadv_dat_snoop_incoming_arp_reply(bat_priv, new_skb,
-+		if (batadv_dat_snoop_incoming_msg_reply(bat_priv, new_skb,
- 							hdr_size))
- 			goto rx_success;
- 
-@@ -1159,9 +1159,9 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
- 	if (batadv_bla_is_backbone_gw(skb, orig_node, hdr_size))
+  * batadv_dat_entry_hash_find - look for a given dat_entry in the local hash
+@@ -393,6 +403,11 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, void *data,
+ 	case BATADV_DAT_IPV4:
+ 		choose = batadv_hash_dat_ipv4;
+ 		break;
++#if IS_ENABLED(CONFIG_IPV6)
++	case BATADV_DAT_IPV6:
++		choose = batadv_hash_dat_ipv6;
++		break;
++#endif
+ 	default:
+ 		goto out;
+ 	}
+@@ -872,8 +887,8 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
  		goto out;
  
--	if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb, hdr_size))
-+	if (batadv_dat_snoop_incoming_msg_request(bat_priv, skb, hdr_size))
- 		goto rx_success;
--	if (batadv_dat_snoop_incoming_arp_reply(bat_priv, skb, hdr_size))
-+	if (batadv_dat_snoop_incoming_msg_reply(bat_priv, skb, hdr_size))
- 		goto rx_success;
+ 	seq_printf(seq, "Distributed ARP Table (%s):\n", net_dev->name);
+-	seq_printf(seq, "          %-7s          %-13s %5s\n", "IPv4", "MAC",
+-		   "last-seen");
++	seq_printf(seq, "                       %-26s %-15s %5s\n",
++		   "IPv4/IPv6", "MAC", "last-seen");
  
- 	/* broadcast for me */
-diff --git a/soft-interface.c b/soft-interface.c
-index a6ab9e4..9e8fd44 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -232,7 +232,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 		 * packet, instead we first wait for DAT to try to retrieve the
- 		 * correct ARP entry
- 		 */
--		if (batadv_dat_snoop_outgoing_arp_request(bat_priv, skb))
-+		if (batadv_dat_snoop_outgoing_msg_request(bat_priv, skb))
- 			brd_delay = msecs_to_jiffies(ARP_REQ_DELAY);
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+@@ -888,10 +903,17 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
  
- 		if (batadv_skb_head_push(skb, sizeof(*bcast_packet)) < 0)
-@@ -271,10 +271,10 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 				goto dropped;
+ 			switch (dat_entry->type) {
+ 			case BATADV_DAT_IPV4:
+-				seq_printf(seq, " * %15pI4 %14pM %6i:%02i\n",
++				seq_printf(seq, " * %-40pI4 %15pM %6i:%02i\n",
+ 					   dat_entry->data, dat_entry->mac_addr,
+ 					   last_seen_mins, last_seen_secs);
+ 				break;
++#if IS_ENABLED(CONFIG_IPV6)
++			case BATADV_DAT_IPV6:
++				seq_printf(seq, " * %-40pI6c %15pM %6i:%02i\n",
++					   dat_entry->data, dat_entry->mac_addr,
++					   last_seen_mins, last_seen_secs);
++				break;
++#endif
+ 			}
  		}
+ 		rcu_read_unlock();
+diff --git a/types.h b/types.h
+index 284e3d2..74c7091 100644
+--- a/types.h
++++ b/types.h
+@@ -931,10 +931,14 @@ struct batadv_dat_entry {
  
--		if (batadv_dat_snoop_outgoing_arp_request(bat_priv, skb))
-+		if (batadv_dat_snoop_outgoing_msg_request(bat_priv, skb))
- 			goto dropped;
+ /**
+  * batadv_dat_types - types used in batadv_dat_entry for IP
+- * @BATADV_DAT_IPv4: IPv4 address type
++ * @BATADV_DAT_IPV4: IPv4 address type
++ * @BATADV_DAT_IPV4: IPv6 address type
+  */
+ enum batadv_dat_types {
+ 	BATADV_DAT_IPV4 = 0,
++#if IS_ENABLED(CONFIG_IPV6)
++	BATADV_DAT_IPV6 = 1,
++#endif
+ };
  
--		batadv_dat_snoop_outgoing_arp_reply(bat_priv, skb);
-+		batadv_dat_snoop_outgoing_msg_reply(bat_priv, skb);
- 
- 		ret = batadv_unicast_send_skb(bat_priv, skb);
- 		if (ret != 0)
+ /**
 -- 
 1.7.10.4
 
