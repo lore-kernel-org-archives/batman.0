@@ -1,12 +1,8 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 19 May 2013 12:50:34 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130519105034.GB16497@pandem0nium>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="cvVnyQ+4j833TQvp"
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] Alfred Open Beta
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sun, 19 May 2013 12:55:16 +0200
+Message-Id: <1368960916-861-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv4] batman-adv: use htons when possible
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,53 +15,184 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <ordex@autistici.org>
 
+When comparing a network ordered value with a constant, it
+is better to convert the constant at compile time by means
+of htons() instead of converting the value at runtime using
+ntohs().
 
---cvVnyQ+4j833TQvp
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+This refactoring may slightly improve the code performance.
 
-To those of you who actively follow the recent discussions it may come to no
-big surprise that it was decided to remove the vis functionality from the
-batman-adv kernel module in a not so distant future (with the next
-compatibility bump). There always has been a debate whether or not such
-functionality belongs into the kernel or not. The in-kernel solution bears the
-disadvantage of being rather inflexible because every change has to go through
-the official Linux channels. With the growing interest in flooding the network
-with arbitrary data in addition to the visualization data realizing a solution
-in user-space became the obvious choice.
+Moreover substitute __constant_htons() with htons() since
+the latter increase readability and it is smart enough to be
+as efficient as the former
 
-A new, more general user-space daemon which takes over the old vis
-functionality and much more, called A.L.F.R.E.D. (Almighty Lightweight Fact
-Remote Exchange Daemon) came to life. Alfred is capable of distributing
-information over your mesh network in a decentralized fashion, for example
-graph information for vis, but also any other data which appears to be useful
-- like hostnames, phone books, administration information, DNS information,
-the local weather forecast, etc while requiring (almost) zero configuration.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
 
-As the development on the core functionality has been finished and alfred works
-(at least on the developers boxes), we would like to call for an open beta!
-There are bleeding edge downloads and an OpenWRT feed available [1]. Please
-try alfred and report bugs, send patches and inform us about your experiences.
-Alfred will be release along with the next batman-adv release.
+v2:
+- patch rebased on top of
+"batman-adv: use VLAN_ETH_HLEN instead of sizeof(struct vlan_eth_hdr)"
 
-Happy routing,
+v3:
+- use __constant* for vlan_insert_tag() argument
 
-The B.A.T.M.A.N. team
+v4:
+- use htons instead of __constant_htons
 
-[1] http://www.open-mesh.org/projects/open-mesh/wiki/Alfred#Download
+ bridge_loop_avoidance.c | 12 ++++++------
+ gateway_client.c        | 14 +++++++-------
+ hard-interface.c        |  2 +-
+ send.c                  |  4 ++--
+ soft-interface.c        |  4 ++--
+ 5 files changed, 18 insertions(+), 18 deletions(-)
 
---cvVnyQ+4j833TQvp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 9e691b0..ab537ec 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -863,25 +863,25 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
+ 	struct arphdr *arphdr;
+ 	uint8_t *hw_src, *hw_dst;
+ 	struct batadv_bla_claim_dst *bla_dst;
+-	uint16_t proto;
++	__be16 proto;
+ 	int headlen;
+ 	unsigned short vid = BATADV_NO_FLAGS;
+ 	int ret;
+ 
+ 	ethhdr = eth_hdr(skb);
+ 
+-	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
++	if (ethhdr->h_proto == htons(ETH_P_8021Q)) {
+ 		vhdr = (struct vlan_ethhdr *)ethhdr;
+ 		vid = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
+ 		vid |= BATADV_VLAN_HAS_TAG;
+-		proto = ntohs(vhdr->h_vlan_encapsulated_proto);
++		proto = vhdr->h_vlan_encapsulated_proto;
+ 		headlen = sizeof(*vhdr);
+ 	} else {
+-		proto = ntohs(ethhdr->h_proto);
++		proto = ethhdr->h_proto;
+ 		headlen = ETH_HLEN;
+ 	}
+ 
+-	if (proto != ETH_P_ARP)
++	if (proto != htons(ETH_P_ARP))
+ 		return 0; /* not a claim frame */
+ 
+ 	/* this must be a ARP frame. check if it is a claim. */
+@@ -1375,7 +1375,7 @@ int batadv_bla_is_backbone_gw(struct sk_buff *skb,
+ 
+ 	ethhdr = (struct ethhdr *)(((uint8_t *)skb->data) + hdr_size);
+ 
+-	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
++	if (ethhdr->h_proto == htons(ETH_P_8021Q)) {
+ 		if (!pskb_may_pull(skb, hdr_size + VLAN_ETH_HLEN))
+ 			return 0;
+ 
+diff --git a/gateway_client.c b/gateway_client.c
+index 3a27408..131136f 100644
+--- a/gateway_client.c
++++ b/gateway_client.c
+@@ -637,7 +637,7 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
+ 	*header_len += ETH_HLEN;
+ 
+ 	/* check for initial vlan header */
+-	if (proto == __constant_htons(ETH_P_8021Q)) {
++	if (proto == htons(ETH_P_8021Q)) {
+ 		if (!pskb_may_pull(skb, *header_len + VLAN_HLEN))
+ 			return false;
+ 
+@@ -648,7 +648,7 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
+ 
+ 	/* check for ip header */
+ 	switch (proto) {
+-	case __constant_htons(ETH_P_IP):
++	case htons(ETH_P_IP):
+ 		if (!pskb_may_pull(skb, *header_len + sizeof(*iphdr)))
+ 			return false;
+ 		iphdr = (struct iphdr *)(skb->data + *header_len);
+@@ -659,7 +659,7 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
+ 			return false;
+ 
+ 		break;
+-	case __constant_htons(ETH_P_IPV6):
++	case htons(ETH_P_IPV6):
+ 		if (!pskb_may_pull(skb, *header_len + sizeof(*ipv6hdr)))
+ 			return false;
+ 		ipv6hdr = (struct ipv6hdr *)(skb->data + *header_len);
+@@ -680,12 +680,12 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
+ 	*header_len += sizeof(*udphdr);
+ 
+ 	/* check for bootp port */
+-	if ((proto == __constant_htons(ETH_P_IP)) &&
+-	    (ntohs(udphdr->dest) != 67))
++	if ((proto == htons(ETH_P_IP)) &&
++	    (udphdr->dest != htons(67)))
+ 		return false;
+ 
+-	if ((proto == __constant_htons(ETH_P_IPV6)) &&
+-	    (ntohs(udphdr->dest) != 547))
++	if ((proto == htons(ETH_P_IPV6)) &&
++	    (udphdr->dest != htons(547)))
+ 		return false;
+ 
+ 	return true;
+diff --git a/hard-interface.c b/hard-interface.c
+index 9746600..5edbe52 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -379,7 +379,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ {
+ 	struct batadv_priv *bat_priv;
+ 	struct net_device *soft_iface, *master;
+-	__be16 ethertype = __constant_htons(ETH_P_BATMAN);
++	__be16 ethertype = htons(ETH_P_BATMAN);
+ 	int ret;
+ 
+ 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
+diff --git a/send.c b/send.c
+index 23c7f79..f2ec99c 100644
+--- a/send.c
++++ b/send.c
+@@ -63,11 +63,11 @@ int batadv_send_skb_packet(struct sk_buff *skb,
+ 	ethhdr = eth_hdr(skb);
+ 	memcpy(ethhdr->h_source, hard_iface->net_dev->dev_addr, ETH_ALEN);
+ 	memcpy(ethhdr->h_dest, dst_addr, ETH_ALEN);
+-	ethhdr->h_proto = __constant_htons(ETH_P_BATMAN);
++	ethhdr->h_proto = htons(ETH_P_BATMAN);
+ 
+ 	skb_set_network_header(skb, ETH_HLEN);
+ 	skb->priority = TC_PRIO_CONTROL;
+-	skb->protocol = __constant_htons(ETH_P_BATMAN);
++	skb->protocol = htons(ETH_P_BATMAN);
+ 
+ 	skb->dev = hard_iface->net_dev;
+ 
+diff --git a/soft-interface.c b/soft-interface.c
+index a6ab9e4..4696142 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -147,7 +147,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_bcast_packet *bcast_packet;
+ 	struct vlan_ethhdr *vhdr;
+-	__be16 ethertype = __constant_htons(ETH_P_BATMAN);
++	__be16 ethertype = htons(ETH_P_BATMAN);
+ 	static const uint8_t stp_addr[ETH_ALEN] = {0x01, 0x80, 0xC2, 0x00,
+ 						   0x00, 0x00};
+ 	static const uint8_t ectp_addr[ETH_ALEN] = {0xCF, 0x00, 0x00, 0x00,
+@@ -304,7 +304,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 	struct vlan_ethhdr *vhdr;
+ 	struct batadv_header *batadv_header = (struct batadv_header *)skb->data;
+ 	unsigned short vid __maybe_unused = BATADV_NO_FLAGS;
+-	__be16 ethertype = __constant_htons(ETH_P_BATMAN);
++	__be16 ethertype = htons(ETH_P_BATMAN);
+ 	bool is_bcast;
+ 
+ 	is_bcast = (batadv_header->packet_type == BATADV_BCAST);
+-- 
+1.8.1.5
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAlGYrnoACgkQrzg/fFk7axZ9NgCgxXBkytzsS+o3fK9h2jsvztZT
-FS0AnirzNAXHtBWLKExcl+CVlCBAwN+3
-=gD/u
------END PGP SIGNATURE-----
-
---cvVnyQ+4j833TQvp--
