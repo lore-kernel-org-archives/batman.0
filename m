@@ -1,16 +1,16 @@
 Return-Path: <ordex@autistici.org>
-Date: Tue, 21 May 2013 21:10:11 +0200
+Date: Tue, 21 May 2013 21:19:26 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130521191011.GA3435@ritirata.org>
+Message-ID: <20130521191926.GB3435@ritirata.org>
 References: <1369133299-8325-1-git-send-email-martin@hundeboll.net>
- <1369133299-8325-3-git-send-email-martin@hundeboll.net>
+ <1369133299-8325-4-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="qDbXVdCdHGoSgWSk"
+ protocol="application/pgp-signature"; boundary="gj572EiMnwbLXET9"
 Content-Disposition: inline
-In-Reply-To: <1369133299-8325-3-git-send-email-martin@hundeboll.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/3] batman-adv: Receive fragmented
- packets and merge
+In-Reply-To: <1369133299-8325-4-git-send-email-martin@hundeboll.net>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 3/3] batman-adv: Fragment and send skbs
+ larger than mtu
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,53 +26,79 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
 
---qDbXVdCdHGoSgWSk
+--gj572EiMnwbLXET9
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, May 21, 2013 at 12:48:18PM +0200, Martin Hundeb=C3=B8ll wrote:
-> +bool batadv_frag_skb_fwd(struct sk_buff *skb,
-> +			 struct batadv_hard_iface *recv_if,
-> +			 struct batadv_orig_node *orig_node_src)
+On Tue, May 21, 2013 at 12:48:19PM +0200, Martin Hundeb=C3=B8ll wrote:
+> +static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
+> +					  struct batadv_frag_packet *frag_head,
+> +					  unsigned int mtu)
 > +{
-> +	struct batadv_priv *bat_priv =3D netdev_priv(recv_if->soft_iface);
-> +	struct batadv_orig_node *orig_node_dst =3D NULL;
-> +	struct batadv_neigh_node *neigh_node =3D NULL;
-> +	struct batadv_frag_packet *packet;
-> +	uint16_t total_size;
-> +	bool ret =3D false;
+> +	struct sk_buff *skb_fragment;
+> +	unsigned header_size =3D sizeof(*frag_head);
+> +	unsigned fragment_size =3D mtu - header_size;
 > +
-> +	packet =3D (struct batadv_frag_packet *)skb->data;
-> +	orig_node_dst =3D batadv_orig_hash_find(bat_priv, packet->dest);
-> +	if (!orig_node_dst)
-> +		goto out;
+> +	skb_fragment =3D dev_alloc_skb(mtu + ETH_HLEN);
+> +	if (!skb_fragment)
+> +		goto err;
 > +
-> +	neigh_node =3D batadv_find_router(bat_priv, orig_node_dst, recv_if);
-> +	if (!neigh_node)
-> +		goto out;
+> +	/* Eat the last mtu-bytes of the skb */
+> +	skb_reserve(skb_fragment, header_size + ETH_HLEN);
+> +	skb_split(skb, skb_fragment, skb->len - fragment_size);
 > +
-> +	/* Forward the fragment, if the merged packet would be too big to
-> +	 * be assembled.
+> +	/* Add the header */
+> +	skb_push(skb_fragment, header_size);
+> +	memcpy(skb_fragment->data, frag_head, header_size);
+
+here we are copying the data right after the Fragment header. However I am =
+not
+sure we are accessing aligned memory because:
+
+ETH_HLEN + header_size =3D 14 + 20 =3D 34
+
+To speed up the copy, wouldn't it be better to allocate ETH_HLEN +
+header_size + IP_ALIGN bytes like we do for other packets? (you can use
+netdev_alloc_skb_ip_align() like we do somewhere else).
+
+In this way the memcpy will access a 4bytes aligned memory (if I am not wro=
+ng).
+
+Can somebody else comment on this?
+
+
+> +bool batadv_frag_send_packet(struct sk_buff *skb,
+> +			     struct batadv_orig_node *orig_node,
+> +			     struct batadv_neigh_node *neigh_node)
+> +{
+> +	struct batadv_priv *bat_priv;
+> +	struct batadv_hard_iface *primary_if;
+> +	struct batadv_frag_packet frag_header;
+> +	struct sk_buff *skb_fragment;
+> +	unsigned mtu =3D neigh_node->if_incoming->net_dev->mtu;
+> +	unsigned header_size =3D sizeof(frag_header);
+> +	unsigned max_fragment_size, max_packet_size;
+> +
+> +	/* To avoid merge and refragmentation at next-hops we never send
+> +	 * fragments larger than BATADV_FRAG_MAX_FRAG_SIZE
 > +	 */
-> +	total_size =3D ntohs(packet->total_size) + ETH_HLEN;
-> +	if (total_size > neigh_node->if_incoming->net_dev->mtu) {
+> +	mtu =3D min_t(int, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
 
-I guess here you forgot to remove the ETH_LEN from the total_size computati=
-on.
+if mtu is unsigned (int), why not using unsigned (int) inside the min_t
+function?
 
-> +		batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_FWD);
-> +		batadv_add_counter(bat_priv, BATADV_CNT_FRAG_FWD_BYTES,
-> +				   skb->len + ETH_HLEN);
+> +
+> +	/* Send the last fragment */
+> +	batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_TX);
+> +	batadv_add_counter(bat_priv, BATADV_CNT_FRAG_TX_BYTES,
+> +			   skb->len + ETH_HLEN);
 
-and here should ETH_HLEN be counted in the amount of bytes sent?
+Like int he previous patch: do we really need to count ETH_HLEN? (I'm not s=
+ure
+about this)
 
-Moreover we are always avoiding third person in kernel doc ("Returns" shoul=
-d be
-"Return" and so on..) and you should not put () (in the kernel doc).
-
-
-Cheers,
+Thanks again :)
 
 --=20
 Antonio Quartulli
@@ -80,26 +106,26 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---qDbXVdCdHGoSgWSk
+--gj572EiMnwbLXET9
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRm8aTAAoJEADl0hg6qKeOa/gQAIyMBX5+ENzUun2/mpje+Geb
-aFwxh5h6w9LDgWqHLZI0ZAP9CTtCw+et77xBbEwQas9U2NtPwfaeJBBsTkDWezBT
-XlyeOUKv6cmYrZIms5jSHJcZGlnH0C3JeAbAVE5L90jDsW8togBPcL6kvki5IdIM
-9gvFhSYuvH+q0gn5Mn3WZw44H1pkW2p5P9DzCnbtp2gKbTeOlYwZRBIkInv6/oBc
-6udxptxPtx9s5tnFJQgSFf5DkwAA6mDLXSN8bGNbeLB0HY1p5snLZthIOaw0FWUr
-vZN9rdEZMOnV06bKtxMjezusFv0LqZkXPM0h4zrZyxEHjKtrqbyJvBma868skdUE
-uRlqTufsgm9oK33acRKmMvE0FsboR58NLBMKSc3740f9Ys8322XFh+MOdZNVcMv1
-RhXISJtHx/a2YMyj4G828dzlLgXXIxscxrcgMDpItQ2eRg0APlKCa1SfYqTLgHyc
-QLoFKumJ1DK1lFtOzCgZWHUA/8tqJhu6LmlfcuqZ0YHZ/E5RxhpbtYxyVE55jvdu
-aF5AZeBTd+VvcuQ3r6GPW1aFLzKlMPC0Cpa0H5GVohOoRydTggcEfVKro+Y+UpKT
-auqgu7s9KqXYrvsQ+6/XBRyyMIReJuTsyn+cmIB+KAEonMeNE54G4YOiltsdEdSQ
-1TZOhu2gz1bdDfqoU3FQ
-=/slg
+iQIcBAEBCAAGBQJRm8i+AAoJEADl0hg6qKeO1esP/jglV2z6jGjd2FWLdeiXyyJW
+eILncCcsmGPGAOhz/PPqoKKrikF1PvO17Et47Vb/aVRD4KHCDii3nvfRZWSJfpeg
+nvpA+K7ZLoV/bUXriv0c404FfEqjGy3nJAHEBdwXhfVn2BTR01icTMzsJelxEYtY
+mWMvuOwVbjwjnGZBACM8nJc6Xfh2xtySi7Ci5cfl2Ncbj6olJTbzME6Uo2z5xQO1
+hcHcEv2tR1p8QwhOdVxWvhj9bnY40MqE9sgrrksNibY2LLqQQufVp+E4xpw23idj
+nkwCfjle3y8hjRioAhzO4uohD0LfdyuEqyTFRsdVEpZ3GrUTEK3bx1vQI27BzNCI
+WsceN091FEq0UursGnB3E3SmE863t0hNl0d15s7lORGWbHgBda/er+xI0kw2YteQ
+fEn9XBPUv6AqBcP/1anE+LUBMatw18jdiUQj86NDwE3/mbvlwKpFye89cSF2Yx5f
+SS9660EnEhFSZE7LpDOYEwkWp/P9qEK+7TCNcUWhllJ7Zff1pIej1j3ho+5UpAT4
+PjrvWRTYRaTj0ZNdATZ1PzEtgV9Xwu8NUKNj3VcfGIF/FsyjnPN2pEc9SftMEO16
+Hq21ohf0fThoTdElg2u8WDbGNWREcoVNa7QPx/AhNwH4JYx/JYhP/CX8TRaA0SoZ
+iIl8rSGNc7MINX0k8eHR
+=QLa4
 -----END PGP SIGNATURE-----
 
---qDbXVdCdHGoSgWSk--
+--gj572EiMnwbLXET9--
