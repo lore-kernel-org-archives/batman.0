@@ -1,14 +1,9 @@
-Return-Path: <ordex@autistici.org>
-Date: Tue, 21 May 2013 21:56:26 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130521195626.GC3435@ritirata.org>
-References: <1369166035-585-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="4jXrM3lyYWu4nBt5"
-Content-Disposition: inline
-In-Reply-To: <1369166035-585-1-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] (no subject)
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Wed, 22 May 2013 20:46:17 +0200
+Message-Id: <1369248377-16466-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: forward late OGMs from best next
+	hop
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,66 +15,78 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>, Antonio Quartulli <ordex@autistici.org>
 
+From: Simon Wunderlich <simon@open-mesh.com>
 
---4jXrM3lyYWu4nBt5
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+When a packet is received from another node first and later from the
+best next hop, this packet is dropped. However the first OGM was sent
+with the BATADV_NOT_BEST_NEXT_HOP flag and thus dropped by neighbors.
+The late OGM from the best neighbor is then dropped because it is a
+duplicate.
 
-On Tue, May 21, 2013 at 09:53:54PM +0200, Antonio Quartulli wrote:
-> Hello David,
+If this situation happens constantly, a node might end up not forwarding
+the "valid" OGMs anymore, and nodes behind will starve from not getting
+valid OGMs.
 
-Sorry but git-send-email fooled me. Subject was supposed to be:
+Fix this by changing the is_duplicate behaviour: It will only mark
+duplicates which are received for the same neighbor. OGMs which are not
+from the best next hop will be dropped within batadv_iv_ogm_forward()
+anyway. Therefore, late OGMs are forwarded now and not dropped as
+duplicates.
 
-pull request for net: batman-adv 2013-05-21
+Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ bat_iv_ogm.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-Regards,
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 8d87f87..bcd2527 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -948,7 +948,7 @@ batadv_iv_ogm_update_seqnos(const struct ethhdr *ethhdr,
+ 	struct batadv_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
+ 	struct batadv_orig_node *orig_node;
+ 	struct batadv_neigh_node *tmp_neigh_node;
+-	int is_duplicate = 0;
++	int is_dup = 0;
+ 	int32_t seq_diff;
+ 	int need_update = 0;
+ 	int set_mark, ret = -1;
+@@ -972,16 +972,16 @@ batadv_iv_ogm_update_seqnos(const struct ethhdr *ethhdr,
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(tmp_neigh_node,
+ 				 &orig_node->neigh_list, list) {
+-		is_duplicate |= batadv_test_bit(tmp_neigh_node->real_bits,
+-						orig_node->last_real_seqno,
+-						seqno);
+-
+ 		neigh_addr = tmp_neigh_node->addr;
+ 		if (batadv_compare_eth(neigh_addr, ethhdr->h_source) &&
+-		    tmp_neigh_node->if_incoming == if_incoming)
++		    tmp_neigh_node->if_incoming == if_incoming) {
++			is_dup |= batadv_test_bit(tmp_neigh_node->real_bits,
++						  orig_node->last_real_seqno,
++						  seqno);
+ 			set_mark = 1;
+-		else
++		} else {
+ 			set_mark = 0;
++		}
+ 
+ 		/* if the window moved, set the update flag. */
+ 		need_update |= batadv_bit_get_packet(bat_priv,
+@@ -1001,7 +1001,7 @@ batadv_iv_ogm_update_seqnos(const struct ethhdr *ethhdr,
+ 		orig_node->last_real_seqno = seqno;
+ 	}
+ 
+-	ret = is_duplicate;
++	ret = is_dup;
+ 
+ out:
+ 	spin_unlock_bh(&orig_node->ogm_cnt_lock);
+-- 
+1.7.10.4
 
->=20
-> this is another small patch for net/linux-3.10. It is preventing a double=
- free
-> of the bat_counters in case of mesh initialisation failure.
->=20
-> Sorry for sending such small pull requests (I guess this is not that bad =
-since
-> they target net :-)), but these are small glitches we are finding while t=
-esting
-> new features.
->=20
-> Please pull or let me know if there is any problem.
->=20
-> Thanks a lot,
-> 	Antonio
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---4jXrM3lyYWu4nBt5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRm9FqAAoJEADl0hg6qKeOOBAQALkbB+2DiL+uuWRArhltP2SB
-jGNBfDL39G8PpCxM7St3xJ8dxzXPIUxvO4k3nXivX8dB7qs8Q7cOZ+M4edELImA5
-U+voxc3HFMS0TjXnWdG1HUyCS/g64IcTDWsIADlfiRwhTKkEK3kHM05W4xn9EYqI
-/SPuuSubVHuJT0uZbIkyKL8NLYPsM5SvNOiHVOHgD8NcZmEq9ZR/fsNVbKVWZkja
-3tx1URhKcR7tLFEtzGaYzgtkaVKplbpFVrXfYxtR6JLEptIese79NVLlWyOkH67j
-PJMwfwTHPTcAw0YkDM9dtw8Orzg7Ye43hBiwewLjxmvHn3aEMSeZUa2MS4Kl3C9T
-AT5G69LnGFSfyH0JKLtYTM/2wtI5UZdinD2H7FTJrIaatJWcxieQsAqC6yrcyWG3
-rBHGaFXqQEMhOfams6EPBKTjIZzSsbXgfmCEN3dORAIzlKHktGLshzcFMIuFfWO5
-17TOsylBfBknZQF/7E06cfV45UdP7W2sj8XkxaOJuNR2WpG1hhgTD7+RQ+Byb9y1
-J9RbdxjXhclp1S9laDJU3863KvMQTMKOqdlKv39c6rkmW5GWetPIn/uF5uxculFr
-XaM8H0gso1wnCA7yG1/y9opY+qjkFGEm91YG0KcEnJRl54j6X9weDMtIN2WixULB
-SZJVSlttvMG5+qPqjt0z
-=LGVp
------END PGP SIGNATURE-----
-
---4jXrM3lyYWu4nBt5--
