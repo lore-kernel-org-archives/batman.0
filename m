@@ -1,9 +1,16 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed, 22 May 2013 20:46:17 +0200
-Message-Id: <1369248377-16466-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: forward late OGMs from best next
-	hop
+Return-Path: <martin@hundeboll.net>
+Message-ID: <519DA425.30708@hundeboll.net>
+Date: Thu, 23 May 2013 07:07:49 +0200
+From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
+MIME-Version: 1.0
+References: <1369133299-8325-1-git-send-email-martin@hundeboll.net>
+ <1369133299-8325-3-git-send-email-martin@hundeboll.net>
+ <20130521191011.GA3435@ritirata.org>
+In-Reply-To: <20130521191011.GA3435@ritirata.org>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/3] batman-adv: Receive fragmented
+ packets and merge
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,78 +22,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>, Antonio Quartulli <ordex@autistici.org>
+To: Antonio Quartulli <ordex@autistici.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Simon Wunderlich <simon@open-mesh.com>
+Hi Antonio,
 
-When a packet is received from another node first and later from the
-best next hop, this packet is dropped. However the first OGM was sent
-with the BATADV_NOT_BEST_NEXT_HOP flag and thus dropped by neighbors.
-The late OGM from the best neighbor is then dropped because it is a
-duplicate.
+Thanks for your carefull reviews!
 
-If this situation happens constantly, a node might end up not forwarding
-the "valid" OGMs anymore, and nodes behind will starve from not getting
-valid OGMs.
+On 2013-05-21 21:10, Antonio Quartulli wrote:
+> On Tue, May 21, 2013 at 12:48:18PM +0200, Martin Hundebøll wrote:
+>> +	/* Forward the fragment, if the merged packet would be too big to
+>> +	 * be assembled.
+>> +	 */
+>> +	total_size = ntohs(packet->total_size) + ETH_HLEN;
+>> +	if (total_size > neigh_node->if_incoming->net_dev->mtu) {
+>
+> I guess here you forgot to remove the ETH_LEN from the total_size computation.
 
-Fix this by changing the is_duplicate behaviour: It will only mark
-duplicates which are received for the same neighbor. OGMs which are not
-from the best next hop will be dropped within batadv_iv_ogm_forward()
-anyway. Therefore, late OGMs are forwarded now and not dropped as
-duplicates.
+True.
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- bat_iv_ogm.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+>> +		batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_FWD);
+>> +		batadv_add_counter(bat_priv, BATADV_CNT_FRAG_FWD_BYTES,
+>> +				   skb->len + ETH_HLEN);
+>
+> and here should ETH_HLEN be counted in the amount of bytes sent?
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 8d87f87..bcd2527 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -948,7 +948,7 @@ batadv_iv_ogm_update_seqnos(const struct ethhdr *ethhdr,
- 	struct batadv_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct batadv_orig_node *orig_node;
- 	struct batadv_neigh_node *tmp_neigh_node;
--	int is_duplicate = 0;
-+	int is_dup = 0;
- 	int32_t seq_diff;
- 	int need_update = 0;
- 	int set_mark, ret = -1;
-@@ -972,16 +972,16 @@ batadv_iv_ogm_update_seqnos(const struct ethhdr *ethhdr,
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(tmp_neigh_node,
- 				 &orig_node->neigh_list, list) {
--		is_duplicate |= batadv_test_bit(tmp_neigh_node->real_bits,
--						orig_node->last_real_seqno,
--						seqno);
--
- 		neigh_addr = tmp_neigh_node->addr;
- 		if (batadv_compare_eth(neigh_addr, ethhdr->h_source) &&
--		    tmp_neigh_node->if_incoming == if_incoming)
-+		    tmp_neigh_node->if_incoming == if_incoming) {
-+			is_dup |= batadv_test_bit(tmp_neigh_node->real_bits,
-+						  orig_node->last_real_seqno,
-+						  seqno);
- 			set_mark = 1;
--		else
-+		} else {
- 			set_mark = 0;
-+		}
- 
- 		/* if the window moved, set the update flag. */
- 		need_update |= batadv_bit_get_packet(bat_priv,
-@@ -1001,7 +1001,7 @@ batadv_iv_ogm_update_seqnos(const struct ethhdr *ethhdr,
- 		orig_node->last_real_seqno = seqno;
- 	}
- 
--	ret = is_duplicate;
-+	ret = is_dup;
- 
- out:
- 	spin_unlock_bh(&orig_node->ogm_cnt_lock);
+I would say so, yes, since batadv_send_skb_packet() will add an ethernet 
+header to the packet before transmitting it.
+
+> Moreover we are always avoiding third person in kernel doc ("Returns" should be
+> "Return" and so on..) and you should not put () (in the kernel doc).
+
+Will do so and send another revision...
+
 -- 
-1.7.10.4
+Kind Regards
+Martin Hundebøll
+Frederiks Allé 99, 1.th
+8000 Aarhus C
+Denmark
 
++45 61 65 54 61
+martin@hundeboll.net
