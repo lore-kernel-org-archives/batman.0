@@ -1,14 +1,15 @@
 Return-Path: <ordex@autistici.org>
-Date: Thu, 23 May 2013 10:51:43 +0200
+Date: Thu, 23 May 2013 11:06:58 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130523085143.GD1679@ritirata.org>
-References: <1369133299-8325-1-git-send-email-martin@hundeboll.net>
+Message-ID: <20130523090658.GE1679@ritirata.org>
+References: <1369248377-16466-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="+B+y8wtTXqdUj1xM"
+ protocol="application/pgp-signature"; boundary="Ns7jmDPpOpCD+GE/"
 Content-Disposition: inline
-In-Reply-To: <1369133299-8325-1-git-send-email-martin@hundeboll.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 0/3] Fragmentation version 2
+In-Reply-To: <1369248377-16466-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: forward late OGMs from best
+ next hop
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,47 +22,42 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
 
---+B+y8wtTXqdUj1xM
+--Ns7jmDPpOpCD+GE/
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, May 21, 2013 at 12:48:16PM +0200, Martin Hundeb=C3=B8ll wrote:
-> These are the second revision of a few patches to remove the current frag=
-mentation code and replace it with a new version that supports more packet =
-types and more fragments per packet, thus allowing bigger payloads.
+On Wed, May 22, 2013 at 08:46:17PM +0200, Simon Wunderlich wrote:
+> From: Simon Wunderlich <simon@open-mesh.com>
 >=20
-> The patches are based on current master and are meant for the next big bu=
-mp in compat number. Revision 3 is changed according to Antonios review.
+> When a packet is received from another node first and later from the
+> best next hop, this packet is dropped. However the first OGM was sent
+> with the BATADV_NOT_BEST_NEXT_HOP flag and thus dropped by neighbors.
+> The late OGM from the best neighbor is then dropped because it is a
+> duplicate.
+>=20
+> If this situation happens constantly, a node might end up not forwarding
+> the "valid" OGMs anymore, and nodes behind will starve from not getting
+> valid OGMs.
+>=20
+> Fix this by changing the is_duplicate behaviour: It will only mark
+> duplicates which are received for the same neighbor. OGMs which are not
+> from the best next hop will be dropped within batadv_iv_ogm_forward()
+> anyway. Therefore, late OGMs are forwarded now and not dropped as
+> duplicates.
+>=20
+> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 
-Side note:
+Thanks for sending this Simon.
 
-While testing aligned vs unaligned memory I saw that fragmentation raised I=
-CMP
-latency (tested by means of ping) from 1msec to 20msecs.
-
-Test has been done between two neighbouring nodes and one of them was confi=
-gured
-as follows:
-
-- mesh0 mtu =3D 1000
-- bat0 mtu =3D 1500
-- mesh0 is enslaved in bat0
-- ping packet was 1408 bytes big
-
-
-Conclusion is: fragmentation worked as expected (at least in this case :-))=
-, so
-batman-adv should also be able to work over Bluetooth as well, but it is
-recommended to avoid it :D
-
-
-Thanks a lot for your work Martin!
+However, even if not reported in the subject, this patch is for maint.
 
 Cheers,
+
 
 --=20
 Antonio Quartulli
@@ -69,26 +65,26 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---+B+y8wtTXqdUj1xM
+--Ns7jmDPpOpCD+GE/
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRndifAAoJEADl0hg6qKeO4mYP/RPxi2f24kZnRcOOQ6v3GKsL
-krwBGkbVpQk3WMIJ81KEW7LRYZmgWkv0AbpigOeHTVv6oaYDv6ZkM+pq7nB+zUvF
-QJYjNKgHjSDnbEHBvI3noljqy1AMGByfgigRR9Lof0bsTb7Tz+eruozohNODRuY2
-lA8fARrln6TEM9OXkwz+tEU4SVt3IeVOg+V4yWDYhXJILrYrH1MNt0j9BqaQWj/n
-HcHaEyxtmMLfe6PTZxTZGhc/YWukDX14oXWeVi3Jv0oUwRF7bUiaIa5HM+rvMrAf
-ikX0Sl+zjllD7t+Led3a0o6vY9wV28BpcbFY9gtAFzctJPTDKEpa3/AG8ZGSO9vq
-u6NyvwUDWdO6P05nQxq/XM5lwODErf4rYCa61FZ6zobhQYjmfFaenqiQu5QksAVo
-1IxiQC7r6FmsGkF6RIBPQU8LlVRCL2ynUOf53JTkUqxYeQa6hPf06MTEyypKdfIh
-U0KSi4T4dQKRznFtdjH3ztWjqhbv7bTAyhMXrBFJvQGxLMqi66n1dJk9psk7/tel
-98a+1DcyY4ypktFezLVjnXwkkljsMfKx1xXxgMTcJUaj/xGuyR9DVS0wQDKjbZgf
-UQ78DncWohHfFnfjOD6OsMHeLgksKm3rflt0+XRnIkvkkBKpPtLtysJz1GLZ7G2S
-4C71ZO8CFEQ52iDTDTk6
-=oxpA
+iQIcBAEBCAAGBQJRndwyAAoJEADl0hg6qKeOj3YP/A0bNuAj4o+A+/EFy6SSeUJW
+Mj4l6bxIKlONULk0RZBgb10bpEA2etSVyK1ue+UY16lHpYbMEc5ujCoCdQfNZED/
+RgJHJj9dKMtBb8FAwwzaTsKtEpxKnTdV8LkXOH5jnq8UHd/Mkoq2wZ0zBFpu5xlk
+GNNtvmmUT4NK5yMP8mlZnooISPJJW4K/I95BObSzWfC+EFRzcX1nwTVONEM3X/bM
+77zCjuehS7gIvPHDMPn+f3N8Q4NI04IaryIbxtM6u4v9Ty/iU1bGubzugWppRv1c
+JZkqNw4YD1ecefSp0FWzKxj2owoc3mWieJEea1ldyrRyJQPewicOIXVtzmBOcW4F
+9RFnuxElIfPICES+U0YGwvUlLKmTx/IXgwNgtlrV7Ra3uWRC0AxheQiGl59d03nB
+fBuy/ppBnCR8w03y5MvUwyTU4e2CbkEF5UVrJSulgnVqi/htnIGcclT3VZnsJf/p
+s8EeBJ+99WWXiDCqRmBStaGGvS+aiZmJwKbaKLKnj7wJ/W4kpeHaTvwpoLXZcjtM
+CxActqqzNLUoL7Lw9Ro+weAiivQgXOcA1oJL5CE06vd8GFORj13NSF+BD5z7igcz
+UyuVJKbsTbLzbAinRWLvyEUcEBMXAbxSZt+AWWzdKe277SZeVvHlBwvMbL3hOOF1
+7cKxq3d9SAkQaBZOfjzO
+=YTCk
 -----END PGP SIGNATURE-----
 
---+B+y8wtTXqdUj1xM--
+--Ns7jmDPpOpCD+GE/--
