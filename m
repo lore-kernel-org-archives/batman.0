@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 23 May 2013 22:15:21 +0200
-Message-Id: <1369340122-2660-7-git-send-email-ordex@autistici.org>
+Date: Thu, 23 May 2013 22:15:22 +0200
+Message-Id: <1369340122-2660-8-git-send-email-ordex@autistici.org>
 In-Reply-To: <1369340122-2660-1-git-send-email-ordex@autistici.org>
 References: <1369340122-2660-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 6/7] batman-adv: add per VLAN interface
-	attribute framework
+Subject: [B.A.T.M.A.N.] [PATCHv2 7/7] batman-adv: make the AP isolation
+	attribute VLAN specific
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,95 +22,93 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-Since batman-adv is now fully VLAN-aware, a proper framework
-able to handle per-vlan-interface attributes is now needed.
-Those attributes will affect the associated VLAN interface
-only, rather than the real soft_iface (which would result
-in every vlan interface having the same attribute
-configuration)
+AP isolation has to be enabled on one VLAN interface only.
+This patch moves the AP isolation attribute to the per-vlan
+interface attribute set, enabling it to have a different
+value depending on the selected vlan.
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- compat.c         |  9 ++++++++
- main.c           | 44 ++++++++++++++++++++++++++++++++++++
- main.h           |  3 +++
- soft-interface.c | 69 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- types.h          | 21 +++++++++++++++++
- 5 files changed, 146 insertions(+)
+ soft-interface.c    |  12 ++++-
+ sysfs.c             | 140 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ sysfs.h             |  10 ++++
+ translation-table.c |  21 +++++---
+ translation-table.h |   2 +-
+ types.h             |   2 +
+ 6 files changed, 179 insertions(+), 8 deletions(-)
 
-diff --git a/compat.c b/compat.c
-index da556a4..b99d505 100644
---- a/compat.c
-+++ b/compat.c
-@@ -27,6 +27,15 @@
+diff --git a/soft-interface.c b/soft-interface.c
+index c90f8fa..5e9a355 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -33,6 +33,7 @@
+ #include <linux/slab.h>
+ #include <linux/ethtool.h>
+ #include <linux/etherdevice.h>
++#include <linux/netdevice.h>
+ #include <linux/if_vlan.h>
+ #include "bridge_loop_avoidance.h"
+ #include "network-coding.h"
+@@ -360,7 +361,8 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 		batadv_tt_add_temporary_global_entry(bat_priv, orig_node,
+ 						     ethhdr->h_source, vid);
  
- #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 0, 0)
+-	if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest))
++	if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest,
++				  vid))
+ 		goto dropped;
  
-+void batadv_free_rcu_priv_vlan(struct rcu_head *rcu)
-+{
-+	struct batadv_priv_vlan *vlan;
-+
-+	vlan = container_of(rcu, struct batadv_priv_vlan, rcu);
-+
-+	kfree(vlan);
-+}
-+
- void batadv_free_rcu_tt_global_entry(struct rcu_head *rcu)
+ 	netif_rx(skb);
+@@ -384,6 +386,7 @@ static int batadv_add_vid(struct net_device *dev, unsigned short vid)
  {
- 	struct batadv_tt_global_entry *global;
-diff --git a/main.c b/main.c
-index 08ee7f3..41a9996 100644
---- a/main.c
-+++ b/main.c
-@@ -109,6 +109,7 @@ int batadv_mesh_init(struct net_device *soft_iface)
- 	spin_lock_init(&bat_priv->gw.list_lock);
- 	spin_lock_init(&bat_priv->tvlv.container_list_lock);
- 	spin_lock_init(&bat_priv->tvlv.handler_list_lock);
-+	spin_lock_init(&bat_priv->priv_vlan_list_lock);
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
+ 	struct batadv_priv_vlan *vlan;
++	int err;
  
- 	INIT_HLIST_HEAD(&bat_priv->forw_bat_list);
- 	INIT_HLIST_HEAD(&bat_priv->forw_bcast_list);
-@@ -118,6 +119,7 @@ int batadv_mesh_init(struct net_device *soft_iface)
- 	INIT_LIST_HEAD(&bat_priv->tt.roam_list);
- 	INIT_HLIST_HEAD(&bat_priv->tvlv.container_list);
- 	INIT_HLIST_HEAD(&bat_priv->tvlv.handler_list);
-+	INIT_LIST_HEAD(&bat_priv->priv_vlan_list);
+ 	vlan = kmalloc(sizeof(*vlan), GFP_ATOMIC);
+ 	if (!vlan)
+@@ -397,6 +400,11 @@ static int batadv_add_vid(struct net_device *dev, unsigned short vid)
+ 	 */
+ 	batadv_tt_local_add(dev, dev->dev_addr, vid | BATADV_VLAN_HAS_TAG,
+ 			    BATADV_NULL_IFINDEX);
++	atomic_set(&vlan->ap_isolation, 0);
++
++	err = batadv_sysfs_add_vlan(dev, vlan);
++	if (err)
++		return err;
  
- 	ret = batadv_originator_init(bat_priv);
- 	if (ret < 0)
-@@ -1136,6 +1138,48 @@ unsigned short batadv_get_vid(struct sk_buff *skb, size_t header_len)
- 	return vid;
+ 	spin_lock_bh(&bat_priv->priv_vlan_list_lock);
+ 	list_add_rcu(&vlan->list, &bat_priv->priv_vlan_list);
+@@ -429,6 +437,8 @@ static int batadv_kill_vid(struct net_device *dev, unsigned short vid)
+ 	list_del_rcu(&vlan->list);
+ 	spin_unlock_bh(&bat_priv->priv_vlan_list_lock);
+ 
++	batadv_sysfs_del_vlan(bat_priv, vlan);
++
+ 	/* explicitly remove the associated TT local entry because it is marked
+ 	 * with the NOPURGE flag
+ 	 */
+diff --git a/sysfs.c b/sysfs.c
+index cbbb77b..e15856e 100644
+--- a/sysfs.c
++++ b/sysfs.c
+@@ -39,6 +39,31 @@ static struct batadv_priv *batadv_kobj_to_batpriv(struct kobject *obj)
+ 	return netdev_priv(net_dev);
  }
  
 +/**
-+ * batadv_priv_vlan_free_ref - decrease vlan refcounter and possibly free it
-+ * @priv_vlan: the vlan object to release
-+ */
-+void batadv_priv_vlan_free_ref(struct batadv_priv_vlan *priv_vlan)
-+{
-+	if (atomic_dec_and_test(&priv_vlan->refcount))
-+		kfree_rcu(priv_vlan, rcu);
-+}
-+
-+/**
-+ * batadv_get_priv_vlan - get VLAN priv data
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @vid: the identifier of the VLAN data to retrieve
++ * batadv_kobj_to_vlan - convert a kobj in the associated priv_vlan struct
++ * @obj: kobject to covert
 + *
-+ * Return the private data of the VLAN matching vid and increments its
-+ * refcounter or NULL otherwise.
++ * Return the associated priv_vlan struct if cound, NULL otherwise
 + */
-+struct batadv_priv_vlan *batadv_get_priv_vlan(struct batadv_priv *bat_priv,
-+					      unsigned short vid)
++static struct batadv_priv_vlan *batadv_kobj_to_vlan(struct kobject *obj)
 +{
++	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(obj->parent);
 +	struct batadv_priv_vlan *vlan, *vlan_tmp = NULL;
 +
-+	if (!(vid & BATADV_VLAN_HAS_TAG))
-+		return NULL;
-+
-+	rcu_read_lock();
 +	list_for_each_entry_rcu(vlan, &bat_priv->priv_vlan_list, list) {
-+		if (vlan->vid != (vid & VLAN_VID_MASK))
++		if (vlan->kobj != obj)
 +			continue;
 +
 +		if (!atomic_inc_not_zero(&vlan->refcount))
@@ -119,168 +117,271 @@ index 08ee7f3..41a9996 100644
 +		vlan_tmp = vlan;
 +		break;
 +	}
-+	rcu_read_unlock();
 +
 +	return vlan_tmp;
 +}
 +
- static int batadv_param_set_ra(const char *val, const struct kernel_param *kp)
- {
- 	struct batadv_algo_ops *bat_algo_ops;
-diff --git a/main.h b/main.h
-index fb46cbb..c4fbe9f 100644
---- a/main.h
-+++ b/main.h
-@@ -197,6 +197,9 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
- int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
- int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
- __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr);
-+void batadv_priv_vlan_free_ref(struct batadv_priv_vlan *priv_vlan);
-+struct batadv_priv_vlan *batadv_get_priv_vlan(struct batadv_priv *bat_priv,
-+					      unsigned short vid);
+ #define BATADV_UEV_TYPE_VAR	"BATTYPE="
+ #define BATADV_UEV_ACTION_VAR	"BATACTION="
+ #define BATADV_UEV_DATA_VAR	"BATDATA="
+@@ -53,6 +78,15 @@ static char *batadv_uev_type_str[] = {
+ 	"gw"
+ };
  
- /**
-  * enum batadv_dbg_level - available log levels
-diff --git a/soft-interface.c b/soft-interface.c
-index 3162ccb..c90f8fa 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -372,6 +372,72 @@ out:
- 	return;
++/* Use this, if you have customized show and store functions for vlan attrs */
++#define BATADV_ATTR_VLAN(_name, _mode, _show, _store)	\
++struct batadv_attribute batadv_attr_vlan_##_name = {	\
++	.attr = {.name = __stringify(_name),		\
++		 .mode = _mode },			\
++	.show   = _show,				\
++	.store  = _store,				\
++};
++
+ /* Use this, if you have customized show and store functions */
+ #define BATADV_ATTR(_name, _mode, _show, _store)	\
+ struct batadv_attribute batadv_attr_##_name = {		\
+@@ -122,6 +156,38 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
+ 			   batadv_store_##_name)
+ 
++#define BATADV_ATTR_VLAN_STORE_BOOL(_name, _post_func)			\
++ssize_t batadv_store_vlan_##_name(struct kobject *kobj,			\
++				  struct attribute *attr, char *buff,	\
++				  size_t count)				\
++{									\
++	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj->parent);\
++	struct batadv_priv_vlan *vlan = batadv_kobj_to_vlan(kobj);	\
++	size_t res = __batadv_store_bool_attr(buff, count, _post_func, attr,\
++					      &vlan->_name,		\
++					      bat_priv->soft_iface);	\
++	batadv_priv_vlan_free_ref(vlan);				\
++	return res;							\
++}
++
++#define BATADV_ATTR_VLAN_SHOW_BOOL(_name)				\
++ssize_t batadv_show_vlan_##_name(struct kobject *kobj,			\
++			    struct attribute *attr, char *buff)		\
++{									\
++	struct batadv_priv_vlan *vlan = batadv_kobj_to_vlan(kobj);	\
++	size_t res =  sprintf(buff, "%s\n",				\
++			      atomic_read(&vlan->_name) == 0 ?		\
++			      "disabled" : "enabled");			\
++	batadv_priv_vlan_free_ref(vlan);				\
++	return res;							\
++}
++
++/* Use this, if you are going to turn a [name] in the vlan struct on or off */
++#define BATADV_ATTR_VLAN_BOOL(_name, _mode, _post_func)			\
++	static BATADV_ATTR_VLAN_STORE_BOOL(_name, _post_func)		\
++	static BATADV_ATTR_VLAN_SHOW_BOOL(_name)			\
++	static BATADV_ATTR_VLAN(_name, _mode, batadv_show_vlan_##_name,	\
++				batadv_store_vlan_##_name)
+ 
+ static int batadv_store_bool_attr(char *buff, size_t count,
+ 				  struct net_device *net_dev,
+@@ -403,6 +469,17 @@ static struct batadv_attribute *batadv_mesh_attrs[] = {
+ 	NULL,
+ };
+ 
++/* vlan attributes below */
++BATADV_ATTR_VLAN_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
++
++/**
++ * batadv_vlan_attrs - array of vlan specific sysfs attributes
++ */
++static struct batadv_attribute *batadv_vlan_attrs[] = {
++	&batadv_attr_vlan_ap_isolation,
++	NULL,
++};
++
+ int batadv_sysfs_add_meshif(struct net_device *dev)
+ {
+ 	struct kobject *batif_kobject = &dev->dev.kobj;
+@@ -453,6 +530,69 @@ void batadv_sysfs_del_meshif(struct net_device *dev)
+ 	bat_priv->mesh_obj = NULL;
  }
  
 +/**
-+ * batadv_add_vid - ndo_add_vid API implementation
-+ * @dev: the netdev of the mesh interface
-+ * @vid: identifier of the new VLAN
++ * batadv_sysfs_add_vlan - add all the needed sysfs objects for the new vlan
++ * @dev: netdev of the mesh interface
++ * @vlan: private data of the newly added VLAN interface
 + *
-+ * Set up all the internal structures for handling the new VLAN on top of the
-+ * mesh interface
++ * Return 0 on success and -ENOMEM if any of the structure allocations fails
 + */
-+static int batadv_add_vid(struct net_device *dev, unsigned short vid)
++int batadv_sysfs_add_vlan(struct net_device *dev, struct batadv_priv_vlan *vlan)
 +{
 +	struct batadv_priv *bat_priv = netdev_priv(dev);
-+	struct batadv_priv_vlan *vlan;
++	struct batadv_attribute **bat_attr;
++	char vlan_subdir[256];
++	int err;
 +
-+	vlan = kmalloc(sizeof(*vlan), GFP_ATOMIC);
-+	if (!vlan)
-+		return -ENOMEM;
++	sprintf(vlan_subdir, BATADV_SYSFS_VLAN_SUBDIR_PREFIX "%u", vlan->vid);
 +
-+	vlan->vid = vid;
-+	atomic_set(&vlan->refcount, 1);
++	vlan->kobj = kobject_create_and_add(vlan_subdir, bat_priv->mesh_obj);
++	if (!vlan->kobj) {
++		batadv_err(dev, "Can't add sysfs directory: %s/%s\n", dev->name,
++			   vlan_subdir);
++		goto out;
++	}
 +
-+	/* add a new TT local entry. This one will be marked with the NOPURGE
-+	 * flag
-+	 */
-+	batadv_tt_local_add(dev, dev->dev_addr, vid | BATADV_VLAN_HAS_TAG,
-+			    BATADV_NULL_IFINDEX);
-+
-+	spin_lock_bh(&bat_priv->priv_vlan_list_lock);
-+	list_add_rcu(&vlan->list, &bat_priv->priv_vlan_list);
-+	spin_unlock_bh(&bat_priv->priv_vlan_list_lock);
++	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr) {
++		err = sysfs_create_file(vlan->kobj,
++					&((*bat_attr)->attr));
++		if (err) {
++			batadv_err(dev, "Can't add sysfs file: %s/%s/%s\n",
++				   dev->name, vlan_subdir,
++				   ((*bat_attr)->attr).name);
++			goto rem_attr;
++		}
++	}
 +
 +	return 0;
++
++rem_attr:
++	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr)
++		sysfs_remove_file(vlan->kobj, &((*bat_attr)->attr));
++
++	kobject_put(vlan->kobj);
++	vlan->kobj = NULL;
++out:
++	return -ENOMEM;
 +}
 +
 +/**
-+ * batadv_kill_vid - ndo_kill_vid API implementation
-+ * @dev: the netdev of the mesh interface
-+ * @vid: identifier of the deleted VLAN
-+ *
-+ * Destroy all the internal structures used to handle the VLAN identified by vid
-+ * on top of the mesh interface
++ * batadv_sysfs_del_vlan - remove all the sysfs objects for a given VLAN
++ * @bat_priv: the bat priv with all the soft interface information
++ * @vlan: the private data of the VLAN to destroy
 + */
-+static int batadv_kill_vid(struct net_device *dev, unsigned short vid)
++void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
++			   struct batadv_priv_vlan *vlan)
 +{
-+	struct batadv_priv *bat_priv = netdev_priv(dev);
-+	struct batadv_priv_vlan *vlan, *vlan_tmp = NULL;
++	struct batadv_attribute **bat_attr;
 +
-+	list_for_each_entry_rcu(vlan, &bat_priv->priv_vlan_list, list) {
-+		if (vlan->vid != vid)
-+			continue;
-+		vlan_tmp = vlan;
-+		break;
-+	}
++	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr)
++		sysfs_remove_file(vlan->kobj, &((*bat_attr)->attr));
 +
-+	spin_lock_bh(&bat_priv->priv_vlan_list_lock);
-+	list_del_rcu(&vlan->list);
-+	spin_unlock_bh(&bat_priv->priv_vlan_list_lock);
-+
-+	/* explicitly remove the associated TT local entry because it is marked
-+	 * with the NOPURGE flag
-+	 */
-+	batadv_tt_local_remove(bat_priv, dev->dev_addr, vid,
-+			       "vlan interface destroyed", false);
-+
-+	return 0;
++	kobject_put(vlan->kobj);
++	vlan->kobj = NULL;
 +}
 +
- /* batman-adv network devices have devices nesting below it and are a special
-  * "super class" of normal network devices; split their locks off into a
-  * separate class since they always nest.
-@@ -573,6 +639,8 @@ static const struct net_device_ops batadv_netdev_ops = {
- 	.ndo_open = batadv_interface_open,
- 	.ndo_stop = batadv_interface_release,
- 	.ndo_get_stats = batadv_interface_stats,
-+	.ndo_vlan_rx_add_vid = batadv_add_vid,
-+	.ndo_vlan_rx_kill_vid = batadv_kill_vid,
- 	.ndo_set_mac_address = batadv_interface_set_mac_addr,
- 	.ndo_change_mtu = batadv_interface_change_mtu,
- 	.ndo_start_xmit = batadv_interface_tx,
-@@ -611,6 +679,7 @@ static void batadv_softif_init_early(struct net_device *dev)
+ static ssize_t batadv_show_mesh_iface(struct kobject *kobj,
+ 				      struct attribute *attr, char *buff)
+ {
+diff --git a/sysfs.h b/sysfs.h
+index 479acf4..d105e4b 100644
+--- a/sysfs.h
++++ b/sysfs.h
+@@ -22,6 +22,12 @@
  
- 	dev->netdev_ops = &batadv_netdev_ops;
- 	dev->destructor = batadv_softif_free;
-+	dev->features |= NETIF_F_HW_VLAN_FILTER;
- 	dev->tx_queue_len = 0;
+ #define BATADV_SYSFS_IF_MESH_SUBDIR "mesh"
+ #define BATADV_SYSFS_IF_BAT_SUBDIR "batman_adv"
++/**
++ * BATADV_SYSFS_VLAN_SUBDIR_PREFIX - prefix of the subfolder that will be
++ *  created in the sysfs hierarchy for each VLAN interface. The subfolder will
++ *  be named "BATADV_SYSFS_VLAN_SUBDIR_PREFIX%vid"
++ */
++#define BATADV_SYSFS_VLAN_SUBDIR_PREFIX "vlan"
  
- 	/* can't call min_mtu, because the needed variables
+ struct batadv_attribute {
+ 	struct attribute attr;
+@@ -36,6 +42,10 @@ void batadv_sysfs_del_meshif(struct net_device *dev);
+ int batadv_sysfs_add_hardif(struct kobject **hardif_obj,
+ 			    struct net_device *dev);
+ void batadv_sysfs_del_hardif(struct kobject **hardif_obj);
++int batadv_sysfs_add_vlan(struct net_device *dev,
++			  struct batadv_priv_vlan *vlan);
++void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
++			   struct batadv_priv_vlan *vlan);
+ int batadv_throw_uevent(struct batadv_priv *bat_priv, enum batadv_uev_type type,
+ 			enum batadv_uev_action action, const char *data);
+ 
+diff --git a/translation-table.c b/translation-table.c
+index c7709b8..9cb061e 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1467,12 +1467,23 @@ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
+ 						  const uint8_t *addr,
+ 						  unsigned short vid)
+ {
++	bool ap_isolation_enabled = atomic_read(&bat_priv->ap_isolation);
+ 	struct batadv_tt_local_entry *tt_local_entry = NULL;
+ 	struct batadv_tt_global_entry *tt_global_entry = NULL;
+ 	struct batadv_orig_node *orig_node = NULL;
+ 	struct batadv_tt_orig_list_entry *best_entry;
++	struct batadv_priv_vlan *vlan;
+ 
+-	if (src && atomic_read(&bat_priv->ap_isolation)) {
++	/* if the AP isolation is requested on a VLAN, then check for the
++	 * its setting in the proper VLAN private data structure
++	 */
++	vlan = batadv_get_priv_vlan(bat_priv, vid);
++	if (vlan) {
++		ap_isolation_enabled = atomic_read(&vlan->ap_isolation);
++		batadv_priv_vlan_free_ref(vlan);
++	}
++
++	if (src && ap_isolation_enabled) {
+ 		tt_local_entry = batadv_tt_local_hash_find(bat_priv, src, vid);
+ 		if (!tt_local_entry ||
+ 		    (tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING))
+@@ -2537,7 +2548,7 @@ void batadv_tt_local_commit_changes(struct batadv_priv *bat_priv)
+ }
+ 
+ bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, uint8_t *src,
+-			   uint8_t *dst)
++			   uint8_t *dst, unsigned short vid)
+ {
+ 	struct batadv_tt_local_entry *tt_local_entry = NULL;
+ 	struct batadv_tt_global_entry *tt_global_entry = NULL;
+@@ -2546,13 +2557,11 @@ bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, uint8_t *src,
+ 	if (!atomic_read(&bat_priv->ap_isolation))
+ 		goto out;
+ 
+-	tt_local_entry = batadv_tt_local_hash_find(bat_priv, dst,
+-						   BATADV_NO_FLAGS);
++	tt_local_entry = batadv_tt_local_hash_find(bat_priv, dst, vid);
+ 	if (!tt_local_entry)
+ 		goto out;
+ 
+-	tt_global_entry = batadv_tt_global_hash_find(bat_priv, src,
+-						     BATADV_NO_FLAGS);
++	tt_global_entry = batadv_tt_global_hash_find(bat_priv, src, vid);
+ 	if (!tt_global_entry)
+ 		goto out;
+ 
+diff --git a/translation-table.h b/translation-table.h
+index 1d9506d..c6bf33c 100644
+--- a/translation-table.h
++++ b/translation-table.h
+@@ -39,7 +39,7 @@ void batadv_tt_free(struct batadv_priv *bat_priv);
+ bool batadv_is_my_client(struct batadv_priv *bat_priv, const uint8_t *addr,
+ 			 unsigned short vid);
+ bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, uint8_t *src,
+-			   uint8_t *dst);
++			   uint8_t *dst, unsigned short vid);
+ void batadv_tt_local_commit_changes(struct batadv_priv *bat_priv);
+ bool batadv_tt_global_client_is_roaming(struct batadv_priv *bat_priv,
+ 					uint8_t *addr, unsigned short vid);
 diff --git a/types.h b/types.h
-index 736f822..e737423 100644
+index e737423..5daa58e 100644
 --- a/types.h
 +++ b/types.h
-@@ -537,6 +537,22 @@ struct batadv_priv_nc {
- 	struct batadv_hashtable *decoding_hash;
- };
- 
-+/*
-+ * struct batadv_priv_vlan - per VLAN attributes set
-+ * @vid: VLAN identifier
-+ * @kobj: kobject for sysfs vlan subdirectory
-+ * @list: list node for bat_priv::priv_vlan_list
-+ * @refcount: number of context where this object is currently in use
-+ * @rcu: struct used for freeing in a RCU-safe manner
-+ */
-+struct batadv_priv_vlan {
-+	unsigned short vid;
-+	struct kobject *kobj;
-+	struct list_head list;
-+	atomic_t refcount;
-+	struct rcu_head rcu;
-+};
-+
- /**
-  * struct batadv_priv - per mesh interface data
-  * @mesh_state: current status of the mesh (inactive/active/deactivating)
-@@ -573,6 +589,9 @@ struct batadv_priv_nc {
-  * @primary_if: one of the hard interfaces assigned to this mesh interface
-  *  becomes the primary interface
-  * @bat_algo_ops: routing algorithm used by this mesh interface
-+ * @priv_vlan_list: a list of priv_vlan structs, one per VLAN created on top of
-+ *  the mesh interface represented by this object
-+ * @priv_vlan_list_lock: lock protecting priv_vlan_list
-  * @bla: bridge loope avoidance data
-  * @debug_log: holding debug logging relevant data
-  * @gw: gateway data
-@@ -620,6 +639,8 @@ struct batadv_priv {
- 	struct work_struct cleanup_work;
- 	struct batadv_hard_iface __rcu *primary_if;  /* rcu protected pointer */
- 	struct batadv_algo_ops *bat_algo_ops;
-+	struct list_head priv_vlan_list;
-+	spinlock_t priv_vlan_list_lock; /* protects priv_vlan_list */
- #ifdef CONFIG_BATMAN_ADV_BLA
- 	struct batadv_priv_bla bla;
- #endif
+@@ -541,6 +541,7 @@ struct batadv_priv_nc {
+  * struct batadv_priv_vlan - per VLAN attributes set
+  * @vid: VLAN identifier
+  * @kobj: kobject for sysfs vlan subdirectory
++ * @ap_isolation: AP isolation state
+  * @list: list node for bat_priv::priv_vlan_list
+  * @refcount: number of context where this object is currently in use
+  * @rcu: struct used for freeing in a RCU-safe manner
+@@ -548,6 +549,7 @@ struct batadv_priv_nc {
+ struct batadv_priv_vlan {
+ 	unsigned short vid;
+ 	struct kobject *kobj;
++	atomic_t ap_isolation;		/* boolean */
+ 	struct list_head list;
+ 	atomic_t refcount;
+ 	struct rcu_head rcu;
 -- 
 1.8.1.5
 
