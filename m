@@ -1,9 +1,11 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Thu, 23 May 2013 23:21:05 +0200
-Message-Id: <1369344072-23916-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [RFC 0/7] add network wide multi interface
-	optimization
+Date: Thu, 23 May 2013 23:21:06 +0200
+Message-Id: <1369344072-23916-2-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1369344072-23916-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+References: <1369344072-23916-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [RFC 1/7] batman-adv: remove useless find_router
+	look up
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,62 +22,67 @@ Cc: Simon Wunderlich <simon@open-mesh.com>
 
 From: Simon Wunderlich <simon@open-mesh.com>
 
-This patchset adds the network wide multi interface optimization as
-proposed in our wiki [1] for BATMAN IV. The main purpose is to do
-interface alternating and bonding by considering multi interface
-capabilities globally and not just for the (next) link, otherwise
-non-optimal links may be chosen.
+This is not used anymore with the new fragmentation, and it might
+actually mess up the bonding code because find_router() assumes it
+is only called once per packet.
 
-This patchset needs to change a lot of core data structures and
-routing, please review it carefully. It is based on the current master
-plus the "batman-adv: forward late OGMs from best next hop" patch. A
-local development branch exists on the public git repo [2].
+Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+---
+ send.c |   29 ++++++++---------------------
+ 1 file changed, 8 insertions(+), 21 deletions(-)
 
-Things to discuss from my end are:
- * are there any metric proposals for the wifi half duplex penalty? I've
-   just used "half" for now, but this makes the TQ degrade very quickly
-   over the links. 
- * Note also that this change will generally change the TQ propagation
-   behaviour even for single interface networks, i.e. the TQ will degrade
-   fast in any case in this networks after this change. This is inevitable
-   if we want to mix single/multi interface devices
- * anything to consider for network coding?
- * this code was used in my virtual VMs only, I'd like to test it on
-   multi-interface devices if the direction I go here can be confirmed. :)
-
-As always, any comments are appreciated!
-
-Thanks,
-	Simon
-
-[1] http://www.open-mesh.org/projects/batman-adv/wiki/network-wide-multi-link-optimization
-[2] http://git.open-mesh.org/batman-adv.git/shortlog/refs/heads/simon/network-wide-multiif
-
-Simon Wunderlich (7):
-  batman-adv: remove useless find_router look up
-  batman-adv: remove bonding and interface alternating
-  batman-adv: split tq information in neigh_node struct
-  batman-adv: split out router from orig_node
-  batman-adv: add WiFi penalty
-  batman-adv: consider outgoing interface in OGM sending
-  batman-adv: add bonding again
-
- bat_iv_ogm.c            |  654 +++++++++++++++++++++++++++++++----------------
- distributed-arp-table.c |    3 +-
- gateway_client.c        |   78 ++++--
- hard-interface.c        |    2 +-
- hard-interface.h        |    1 +
- icmp_socket.c           |    2 +-
- network-coding.c        |    9 +-
- originator.c            |  324 ++++++++++++++++++++---
- originator.h            |   14 +-
- routing.c               |  413 ++++++++++--------------------
- routing.h               |   11 +-
- send.c                  |   42 ++-
- translation-table.c     |   14 +-
- types.h                 |   79 ++++--
- 14 files changed, 1037 insertions(+), 609 deletions(-)
-
+diff --git a/send.c b/send.c
+index 32690c6..616364e 100644
+--- a/send.c
++++ b/send.c
+@@ -251,30 +251,19 @@ int batadv_send_skb_generic_unicast(struct batadv_priv *bat_priv,
+ 	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
+ 	struct batadv_unicast_packet *unicast_packet;
+ 	struct batadv_orig_node *orig_node;
+-	struct batadv_neigh_node *neigh_node;
+ 	int ret = NET_RX_DROP;
+ 
+ 	/* get routing information */
+-	if (is_multicast_ether_addr(ethhdr->h_dest)) {
++	if (is_multicast_ether_addr(ethhdr->h_dest))
+ 		orig_node = batadv_gw_get_selected_orig(bat_priv);
+-		if (orig_node)
+-			goto find_router;
+-	}
++	else
++		/* check for tt host - increases orig_node refcount.
++		 * returns NULL in case of AP isolation
++		 */
++		orig_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
++						     ethhdr->h_dest);
+ 
+-	/* check for tt host - increases orig_node refcount.
+-	 * returns NULL in case of AP isolation
+-	 */
+-	orig_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
+-					     ethhdr->h_dest);
+-
+-find_router:
+-	/* find_router():
+-	 *  - if orig_node is NULL it returns NULL
+-	 *  - increases neigh_nodes refcount if found.
+-	 */
+-	neigh_node = batadv_find_router(bat_priv, orig_node, NULL);
+-
+-	if (!neigh_node)
++	if (!orig_node)
+ 		goto out;
+ 
+ 	switch (packet_type) {
+@@ -306,8 +295,6 @@ find_router:
+ 		ret = 0;
+ 
+ out:
+-	if (neigh_node)
+-		batadv_neigh_node_free_ref(neigh_node);
+ 	if (orig_node)
+ 		batadv_orig_node_free_ref(orig_node);
+ 	if (ret == NET_RX_DROP)
 -- 
 1.7.10.4
 
