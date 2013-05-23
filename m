@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Fri, 24 May 2013 00:58:41 +0800
+Date: Fri, 24 May 2013 01:12:27 +0800
 References: <1369320783-1165-1-git-send-email-martin@hundeboll.net>
- <1369320783-1165-2-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1369320783-1165-2-git-send-email-martin@hundeboll.net>
+ <1369320783-1165-3-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1369320783-1165-3-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <201305240058.41545.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 1/3] batman-adv: Remove old
-	fragmentation code
+Message-Id: <201305240112.27902.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 2/3] batman-adv: Receive fragmented
+	packets and merge
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,49 +25,60 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Martin =?utf-8?q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-On Thursday, May 23, 2013 22:53:01 Martin Hundeb=C3=B8ll wrote:
-> Remove the existing fragmentation code before adding the new version
-> and delete unicast.{h,c}.
+On Thursday, May 23, 2013 22:53:02 Martin Hundeb=C3=B8ll wrote:
+> Fragments arriving at their destination are buffered for later merge.
+> Merged packets are passed to the main receive function as had they never
+> been fragmented.
 >=20
-> batadv_unicast_send_skb() is moved to send.c and renamed to
-> batadv_send_skb_unicast().
->=20
-> fragmentation entry in sysfs (bat_priv->fragmentation) is kept for use in
-> the new fragmentation code.
->=20
-> BATADV_UNICAST_FRAG packet type is renamed to BATADV_FRAG for use in the
-> new fragmentation code.
+> Fragments are forwarded without merging if the MTU of the outgoing
+> interface is smaller than the size of the merged packet.
 >=20
 > Signed-off-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
 > ---
 >=20
 > v2:
->  unmangle function names with 4addr_unicast
->  correctly indent kernel doc
+> update copyright years
+> remove () and uppercase beginnings from kernel doc
+> use hlist_for_entry_safe() in batadv_frag_clear_list()
+> merge batadv_frag_clear_orig() and batadv_frag_check_orig()
+> update some kernel doc with return values
+> remove "inline" from static function in .c file
+> rename lists of fragments to "chain"
+> remove type in kernel doc
+> remove initialization from "curr" and "new" in insert_packet()
+> rename "curr" and "new" to "frag_entry_{curr,new}"
+> rename packet to frag_packet
+> change return description in kernel doc for batadv_frag_merge_packets()
+> fix return value on failure in pskb_expand_head() in merge_packets()
+> add kernel doc for counters in types.h
 >=20
 > v3:
->  add line before return statement in batadv_send_skb_prepare_unicast()
+> added blank lines to int batadv_frag_size_limit()
+> added comment to explain linearization of received fragments
+> removed ETH_HLEN in counters for received fragments
 >=20
->  Makefile.kbuild         |   1 -
->  distributed-arp-table.c |  11 +-
->  hard-interface.c        |   1 -
->  main.c                  |   4 -
->  originator.c            |   9 -
->  packet.h                |  16 --
->  routing.c               |  86 +--------
->  routing.h               |   2 -
->  send.c                  | 174 ++++++++++++++++++
->  send.h                  |  36 ++++
->  soft-interface.c        |   4 +-
->  types.h                 |  19 --
->  unicast.c               | 478
-> ------------------------------------------------
-> unicast.h               |  92 ----------
->  14 files changed, 217 insertions(+), 716 deletions(-)
->  delete mode 100644 unicast.c
->  delete mode 100644 unicast.h
+> v4:
+> remove ETH_HLEN from size check in batadv_frag_skb_fwd()
+> don't third person in kernel doc
+> correct some kernel doc leftovers from namechange to "chains"
+>=20
+>  Makefile.kbuild  |   1 +
+>  fragmentation.c  | 366
+> +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> fragmentation.h  |  47 +++++++
+>  main.c           |   4 +
+>  main.h           |   9 ++
+>  originator.c     |  14 ++-
+>  packet.h         |  27 ++++
+>  routing.c        |  59 +++++++++
+>  routing.h        |   2 +
+>  soft-interface.c |   4 +
+>  types.h          |  38 ++++++
+>  11 files changed, 570 insertions(+), 1 deletion(-)
+>  create mode 100644 fragmentation.c
+>  create mode 100644 fragmentation.h
 
-Applied in revision 8980aad.
+Applied in revision 9b3eab6.
 
 Thanks,
 Marek
