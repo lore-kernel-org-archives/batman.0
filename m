@@ -1,11 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 26 May 2013 06:15:21 +0800
-Message-Id: <1369520121-5998-2-git-send-email-lindner_marek@yahoo.de>
-In-Reply-To: <1369520121-5998-1-git-send-email-lindner_marek@yahoo.de>
-References: <1369520121-5998-1-git-send-email-lindner_marek@yahoo.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: properly align roaming tvlv
-	container
+Date: Sun, 26 May 2013 14:07:42 +0800
+References: <1368881817-2087-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1368881817-2087-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201305261407.42288.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: create common header for
+	ICMP packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,50 +22,48 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <ordex@autistici.org>
 
-4bytes long members must start at an address multiple of 4
-in order to avoid unaligned memory access.
+On Saturday, May 18, 2013 20:56:57 Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+> 
+> the icmp and the icmp_rr packets share the same initial
+> fields since they use the same code to be processed and
+> forwarded.
+> 
+> Extract the common fields and put them into a separate
+> struct so that future ICMP packets can be easily added
+> without bloating the packet definition.
+> 
+> However, keep the seqno field outside of the newly created
+> common header because future ICMP types may require a
+> bigger sequence number space.
+> 
+> This change breaks compatibility due to fields reordering
+> in the ICMP headers.
+> 
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+> 
+> 
+> v2:
+> - merge of
+> [PATCH 1/2] batman-adv: simplify ICMP packet structures
+> and
+> [PATCH 2/2] batman-adv: move seqno field outside of the common ICMP header
+> 
+> - reword commit subject and message
+> - rename the new member from "ih" to "icmph"
+> 
+> 
+> 
+>  icmp_socket.c | 22 +++++++++++-----------
+>  main.c        |  4 ++--
+>  packet.h      | 38 ++++++++++++++++++++++++++++----------
+>  routing.c     | 40 +++++++++++++++++++++-------------------
+>  4 files changed, 62 insertions(+), 42 deletions(-)
 
-Introduced by 3de4e64df0f1326db7cc0ef25f5af8522850252d
-"batman-adv: tvlv - convert roaming adv packet to use
-tvlv unicast packets"
+Applied in revision 1897ab7.
 
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- packet.h            |    4 +++-
- translation-table.c |    1 +
- 2 files changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/packet.h b/packet.h
-index 840d73d..22494f7 100644
---- a/packet.h
-+++ b/packet.h
-@@ -389,9 +389,11 @@ struct batadv_tvlv_tt_change {
- /**
-  * struct batadv_tvlv_roam_adv - roaming advertisement
-  * @client: mac address of roaming client
-+ * @reserved: field reserved for future use
-  */
- struct batadv_tvlv_roam_adv {
--	uint8_t client[ETH_ALEN];
-+	uint8_t  client[ETH_ALEN];
-+	uint16_t reserved;
- };
- 
- #endif /* _NET_BATMAN_ADV_PACKET_H_ */
-diff --git a/translation-table.c b/translation-table.c
-index 44e7789..d53c212 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -2208,6 +2208,7 @@ static void batadv_send_roam_adv(struct batadv_priv *bat_priv, uint8_t *client,
- 	batadv_inc_counter(bat_priv, BATADV_CNT_TT_ROAM_ADV_TX);
- 
- 	memcpy(tvlv_roam.client, client, sizeof(tvlv_roam.client));
-+	tvlv_roam.reserved = 0;
- 
- 	batadv_tvlv_unicast_send(bat_priv, primary_if->net_dev->dev_addr,
- 				 orig_node->orig, BATADV_TVLV_ROAM, 1,
--- 
-1.7.10.4
-
+Thanks,
+Marek
