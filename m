@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 27 May 2013 21:43:02 +0200
-Message-Id: <1369683792-531-3-git-send-email-ordex@autistici.org>
+Date: Mon, 27 May 2013 21:43:04 +0200
+Message-Id: <1369683792-531-5-git-send-email-ordex@autistici.org>
 In-Reply-To: <1369683792-531-1-git-send-email-ordex@autistici.org>
 References: <1369683792-531-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 02/12] batman-adv: make
-	batadv_tt_save_orig_buffer() generic
+Subject: [B.A.T.M.A.N.] [PATCHv3 04/12] batman-adv: use vid when computing
+	local and global TT CRC
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,40 +22,96 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
+now that each TT entry is characterised by a VLAN ID, the
+latter has to be taken into consideration when computing the
+local/global table CRC as it would be theoretically possible
+to have the same client in two different VLANs
+
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- translation-table.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ translation-table.c | 35 +++++++++++++++++++++++++++++++----
+ 1 file changed, 31 insertions(+), 4 deletions(-)
 
 diff --git a/translation-table.c b/translation-table.c
-index fdc640c..9989bd6 100644
+index 6c38099..761b377 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -1496,11 +1496,9 @@ static void batadv_tt_req_list_free(struct batadv_priv *bat_priv)
+@@ -1506,6 +1506,24 @@ out:
+  * batadv_tt_global_crc - calculates the checksum of the local table belonging
+  *  to the given orig_node
+  * @bat_priv: the bat priv with all the soft interface information
++ * @orig_node: originator for which the CRC should be computed
++ *
++ * This function computes the checksum for the global table corresponding to a
++ * particular originator. In particular the checksum is computed as follows: for
++ * each client connected to the originator the CRC32C of the MAC address and the
++ * VID is computed and then all the CRC32Cs of the various clients are xor'ed
++ * together.
++ *
++ * The idea behind is that CRC32C should be used as much as possible in order to
++ * produce a unique hash of the table, but since the order which is used to feed
++ * the CRC32C function affects the result and since every node in the network
++ * probably sorts the clients differently, the hash function cannot be directly
++ * computed over the entire table. Hence the CRC32C is used only on
++ * the single client entry, while all the results are then xor'ed together
++ * because the XOR operation can combine them all while trying to reduce the
++ * noise as much as possible.
++ *
++ * Returns the checksum of the global table of a given originator
+  */
+ static uint32_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
+ 				     struct batadv_orig_node *orig_node)
+@@ -1514,7 +1532,7 @@ static uint32_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
+ 	struct batadv_tt_common_entry *tt_common;
+ 	struct batadv_tt_global_entry *tt_global;
+ 	struct hlist_head *head;
+-	uint32_t i, crc = 0;
++	uint32_t i, crc_tmp, crc = 0;
  
- static void batadv_tt_save_orig_buffer(struct batadv_priv *bat_priv,
- 				       struct batadv_orig_node *orig_node,
--				       const unsigned char *tt_buff,
--				       uint16_t tt_num_changes)
-+				       const void *tt_buff,
-+				       uint16_t tt_buff_len)
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+@@ -1545,7 +1563,9 @@ static uint32_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
+ 							     orig_node))
+ 				continue;
+ 
+-			crc ^= crc32c(0, tt_common->addr, ETH_ALEN);
++			crc_tmp = crc32c(0, &tt_common->vid,
++					 sizeof(tt_common->vid));
++			crc ^= crc32c(crc_tmp, tt_common->addr, ETH_ALEN);
+ 		}
+ 		rcu_read_unlock();
+ 	}
+@@ -1556,13 +1576,18 @@ static uint32_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
+ /**
+  * batadv_tt_local_crc - calculates the checksum of the local table
+  * @bat_priv: the bat priv with all the soft interface information
++ *
++ * For details about the computation, please refer to the documentation for
++ * batadv_tt_global_crc().
++ *
++ * Returns the checksum of the local table
+  */
+ static uint32_t batadv_tt_local_crc(struct batadv_priv *bat_priv)
  {
--	uint16_t tt_buff_len = batadv_tt_len(tt_num_changes);
--
- 	/* Replace the old buffer only if I received something in the
- 	 * last OGM (the OGM could carry no changes)
- 	 */
-@@ -2037,8 +2035,8 @@ static void batadv_tt_update_changes(struct batadv_priv *bat_priv,
- 	_batadv_tt_update_changes(bat_priv, orig_node, tt_change,
- 				  tt_num_changes, ttvn);
+ 	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
+ 	struct batadv_tt_common_entry *tt_common;
+ 	struct hlist_head *head;
+-	uint32_t i, crc = 0;
++	uint32_t i, crc_tmp, crc = 0;
  
--	batadv_tt_save_orig_buffer(bat_priv, orig_node,
--				   (unsigned char *)tt_change, tt_num_changes);
-+	batadv_tt_save_orig_buffer(bat_priv, orig_node, tt_change,
-+				   batadv_tt_len(tt_num_changes));
- 	atomic_set(&orig_node->last_ttvn, ttvn);
- }
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+@@ -1575,7 +1600,9 @@ static uint32_t batadv_tt_local_crc(struct batadv_priv *bat_priv)
+ 			if (tt_common->flags & BATADV_TT_CLIENT_NEW)
+ 				continue;
  
+-			crc ^= crc32c(0, tt_common->addr, ETH_ALEN);
++			crc_tmp = crc32c(0, &tt_common->vid,
++					 sizeof(tt_common->vid));
++			crc ^= crc32c(crc_tmp, tt_common->addr, ETH_ALEN);
+ 		}
+ 		rcu_read_unlock();
+ 	}
 -- 
 1.8.1.5
 
