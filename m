@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 27 May 2013 21:43:09 +0200
-Message-Id: <1369683792-531-10-git-send-email-ordex@autistici.org>
+Date: Mon, 27 May 2013 21:43:10 +0200
+Message-Id: <1369683792-531-11-git-send-email-ordex@autistici.org>
 In-Reply-To: <1369683792-531-1-git-send-email-ordex@autistici.org>
 References: <1369683792-531-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 09/12] batman-adv: make the AP isolation
-	attribute VLAN specific
+Subject: [B.A.T.M.A.N.] [PATCHv3 10/12] batman-adv: make the backbone gw
+	check VLAN specific
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,371 +18,197 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-AP isolation has to be enabled on one VLAN interface only.
-This patch moves the AP isolation attribute to the per-vlan
-interface attribute set, enabling it to have a different
-value depending on the selected vlan.
+The backbone gw check has to be vlan specific so that code
+using it can be aware of which is the VLAN connecting two of
+them.
 
+In the TT code, the check has been moved into the
+tt_global_add() functions so that it can be performed on a
+per-entry basis instead of ignoring all the TT data received
+from another backbone node.
+
+Moreover, batadv_bla_is_backbone_gw_orig() now returns bool
+since it used to return only 1 or 0.
+
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- soft-interface.c    |  12 ++++-
- sysfs.c             | 141 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- sysfs.h             |  10 ++++
- translation-table.c |  21 +++++---
- translation-table.h |   2 +-
- types.h             |   2 +
- 6 files changed, 180 insertions(+), 8 deletions(-)
+ bridge_loop_avoidance.c | 19 +++++++++++--------
+ bridge_loop_avoidance.h | 10 ++++++----
+ translation-table.c     | 35 ++++++-----------------------------
+ 3 files changed, 23 insertions(+), 41 deletions(-)
 
-diff --git a/soft-interface.c b/soft-interface.c
-index 26ee698..649aea6 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -33,6 +33,7 @@
- #include <linux/slab.h>
- #include <linux/ethtool.h>
- #include <linux/etherdevice.h>
-+#include <linux/netdevice.h>
- #include <linux/if_vlan.h>
- #include "bridge_loop_avoidance.h"
- #include "network-coding.h"
-@@ -360,7 +361,8 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 		batadv_tt_add_temporary_global_entry(bat_priv, orig_node,
- 						     ethhdr->h_source, vid);
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 02f6f81..72df179 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -1311,12 +1311,14 @@ out:
  
--	if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest))
-+	if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest,
-+				  vid))
- 		goto dropped;
- 
- 	netif_rx(skb);
-@@ -387,6 +389,7 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ /* @bat_priv: the bat priv with all the soft interface information
+  * @orig: originator mac address
++ * @vid: VLAN identifier
+  *
+- * check if the originator is a gateway for any VLAN ID.
++ * check if the originator is a gateway for VLAN idenfied by vid.
+  *
+- * returns 1 if it is found, 0 otherwise
++ * returns true if orig is a backbone for this vid, false otherwise
+  */
+-int batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv, uint8_t *orig)
++bool batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv, uint8_t *orig,
++				    unsigned short vid)
  {
- 	struct batadv_priv *bat_priv = netdev_priv(dev);
- 	struct batadv_softif_vlan *vlan;
-+	int err;
+ 	struct batadv_hashtable *hash = bat_priv->bla.backbone_hash;
+ 	struct hlist_head *head;
+@@ -1324,25 +1326,26 @@ int batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv, uint8_t *orig)
+ 	int i;
  
- 	/* only 802.1Q vlans are supported. batman-adv does not know how to
- 	 * handle other types
-@@ -406,6 +409,11 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
- 	 */
- 	batadv_tt_local_add(dev, dev->dev_addr, vid | BATADV_VLAN_HAS_TAG,
- 			    BATADV_NULL_IFINDEX);
-+	atomic_set(&vlan->ap_isolation, 0);
-+
-+	err = batadv_sysfs_add_vlan(dev, vlan);
-+	if (err)
-+		return err;
+ 	if (!atomic_read(&bat_priv->bridge_loop_avoidance))
+-		return 0;
++		return false;
  
- 	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
- 	list_add_rcu(&vlan->list, &bat_priv->softif_vlan_list);
-@@ -444,6 +452,8 @@ static int batadv_interface_kill_vid(struct net_device *dev, __be16 proto,
- 	list_del_rcu(&vlan->list);
- 	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+ 	if (!hash)
+-		return 0;
++		return false;
  
-+	batadv_sysfs_del_vlan(bat_priv, vlan);
-+
- 	/* explicitly remove the associated TT local entry because it is marked
- 	 * with the NOPURGE flag
- 	 */
-diff --git a/sysfs.c b/sysfs.c
-index cbbb77b..b00fa7c 100644
---- a/sysfs.c
-+++ b/sysfs.c
-@@ -39,6 +39,31 @@ static struct batadv_priv *batadv_kobj_to_batpriv(struct kobject *obj)
- 	return netdev_priv(net_dev);
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+ 
+ 		rcu_read_lock();
+ 		hlist_for_each_entry_rcu(backbone_gw, head, hash_entry) {
+-			if (batadv_compare_eth(backbone_gw->orig, orig)) {
++			if (batadv_compare_eth(backbone_gw->orig, orig) &&
++			    backbone_gw->vid == vid) {
+ 				rcu_read_unlock();
+-				return 1;
++				return true;
+ 			}
+ 		}
+ 		rcu_read_unlock();
+ 	}
+ 
+-	return 0;
++	return false;
  }
  
-+/**
-+ * batadv_kobj_to_vlan - convert a kobj in the associated softif_vlan struct
-+ * @obj: kobject to covert
-+ *
-+ * Return the associated softif_vlan struct if cound, NULL otherwise
-+ */
-+static struct batadv_softif_vlan *batadv_kobj_to_vlan(struct kobject *obj)
-+{
-+	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(obj->parent);
-+	struct batadv_softif_vlan *vlan, *vlan_tmp = NULL;
-+
-+	list_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
-+		if (vlan->kobj != obj)
-+			continue;
-+
-+		if (!atomic_inc_not_zero(&vlan->refcount))
-+			continue;
-+
-+		vlan_tmp = vlan;
-+		break;
-+	}
-+
-+	return vlan_tmp;
-+}
-+
- #define BATADV_UEV_TYPE_VAR	"BATTYPE="
- #define BATADV_UEV_ACTION_VAR	"BATACTION="
- #define BATADV_UEV_DATA_VAR	"BATDATA="
-@@ -53,6 +78,15 @@ static char *batadv_uev_type_str[] = {
- 	"gw"
- };
  
-+/* Use this, if you have customized show and store functions for vlan attrs */
-+#define BATADV_ATTR_VLAN(_name, _mode, _show, _store)	\
-+struct batadv_attribute batadv_attr_vlan_##_name = {	\
-+	.attr = {.name = __stringify(_name),		\
-+		 .mode = _mode },			\
-+	.show   = _show,				\
-+	.store  = _store,				\
-+};
-+
- /* Use this, if you have customized show and store functions */
- #define BATADV_ATTR(_name, _mode, _show, _store)	\
- struct batadv_attribute batadv_attr_##_name = {		\
-@@ -122,6 +156,38 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
- 	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
- 			   batadv_store_##_name)
- 
-+#define BATADV_ATTR_VLAN_STORE_BOOL(_name, _post_func)			\
-+ssize_t batadv_store_vlan_##_name(struct kobject *kobj,			\
-+				  struct attribute *attr, char *buff,	\
-+				  size_t count)				\
-+{									\
-+	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj->parent);\
-+	struct batadv_softif_vlan *vlan = batadv_kobj_to_vlan(kobj);	\
-+	size_t res = __batadv_store_bool_attr(buff, count, _post_func, attr,\
-+					      &vlan->_name,		\
-+					      bat_priv->soft_iface);	\
-+	batadv_softif_vlan_free_ref(vlan);				\
-+	return res;							\
-+}
-+
-+#define BATADV_ATTR_VLAN_SHOW_BOOL(_name)				\
-+ssize_t batadv_show_vlan_##_name(struct kobject *kobj,			\
-+			    struct attribute *attr, char *buff)		\
-+{									\
-+	struct batadv_softif_vlan *vlan = batadv_kobj_to_vlan(kobj);	\
-+	size_t res =  sprintf(buff, "%s\n",				\
-+			      atomic_read(&vlan->_name) == 0 ?		\
-+			      "disabled" : "enabled");			\
-+	batadv_softif_vlan_free_ref(vlan);				\
-+	return res;							\
-+}
-+
-+/* Use this, if you are going to turn a [name] in the vlan struct on or off */
-+#define BATADV_ATTR_VLAN_BOOL(_name, _mode, _post_func)			\
-+	static BATADV_ATTR_VLAN_STORE_BOOL(_name, _post_func)		\
-+	static BATADV_ATTR_VLAN_SHOW_BOOL(_name)			\
-+	static BATADV_ATTR_VLAN(_name, _mode, batadv_show_vlan_##_name,	\
-+				batadv_store_vlan_##_name)
- 
- static int batadv_store_bool_attr(char *buff, size_t count,
- 				  struct net_device *net_dev,
-@@ -403,6 +469,17 @@ static struct batadv_attribute *batadv_mesh_attrs[] = {
- 	NULL,
- };
- 
-+/* vlan attributes below */
-+BATADV_ATTR_VLAN_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
-+
-+/**
-+ * batadv_vlan_attrs - array of vlan specific sysfs attributes
-+ */
-+static struct batadv_attribute *batadv_vlan_attrs[] = {
-+	&batadv_attr_vlan_ap_isolation,
-+	NULL,
-+};
-+
- int batadv_sysfs_add_meshif(struct net_device *dev)
- {
- 	struct kobject *batif_kobject = &dev->dev.kobj;
-@@ -453,6 +530,70 @@ void batadv_sysfs_del_meshif(struct net_device *dev)
- 	bat_priv->mesh_obj = NULL;
+diff --git a/bridge_loop_avoidance.h b/bridge_loop_avoidance.h
+index 4b102e7..da173e7 100644
+--- a/bridge_loop_avoidance.h
++++ b/bridge_loop_avoidance.h
+@@ -30,7 +30,8 @@ int batadv_bla_is_backbone_gw(struct sk_buff *skb,
+ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset);
+ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq,
+ 					     void *offset);
+-int batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv, uint8_t *orig);
++bool batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv, uint8_t *orig,
++				    unsigned short vid);
+ int batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
+ 				   struct sk_buff *skb);
+ void batadv_bla_update_orig_address(struct batadv_priv *bat_priv,
+@@ -74,10 +75,11 @@ static inline int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq,
+ 	return 0;
  }
  
-+/**
-+ * batadv_sysfs_add_vlan - add all the needed sysfs objects for the new vlan
-+ * @dev: netdev of the mesh interface
-+ * @vlan: private data of the newly added VLAN interface
-+ *
-+ * Return 0 on success and -ENOMEM if any of the structure allocations fails
-+ */
-+int batadv_sysfs_add_vlan(struct net_device *dev,
-+			  struct batadv_softif_vlan *vlan)
-+{
-+	struct batadv_priv *bat_priv = netdev_priv(dev);
-+	struct batadv_attribute **bat_attr;
-+	char vlan_subdir[256];
-+	int err;
-+
-+	sprintf(vlan_subdir, BATADV_SYSFS_VLAN_SUBDIR_PREFIX "%u", vlan->vid);
-+
-+	vlan->kobj = kobject_create_and_add(vlan_subdir, bat_priv->mesh_obj);
-+	if (!vlan->kobj) {
-+		batadv_err(dev, "Can't add sysfs directory: %s/%s\n", dev->name,
-+			   vlan_subdir);
-+		goto out;
-+	}
-+
-+	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr) {
-+		err = sysfs_create_file(vlan->kobj,
-+					&((*bat_attr)->attr));
-+		if (err) {
-+			batadv_err(dev, "Can't add sysfs file: %s/%s/%s\n",
-+				   dev->name, vlan_subdir,
-+				   ((*bat_attr)->attr).name);
-+			goto rem_attr;
-+		}
-+	}
-+
-+	return 0;
-+
-+rem_attr:
-+	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr)
-+		sysfs_remove_file(vlan->kobj, &((*bat_attr)->attr));
-+
-+	kobject_put(vlan->kobj);
-+	vlan->kobj = NULL;
-+out:
-+	return -ENOMEM;
-+}
-+
-+/**
-+ * batadv_sysfs_del_vlan - remove all the sysfs objects for a given VLAN
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @vlan: the private data of the VLAN to destroy
-+ */
-+void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
-+			   struct batadv_softif_vlan *vlan)
-+{
-+	struct batadv_attribute **bat_attr;
-+
-+	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr)
-+		sysfs_remove_file(vlan->kobj, &((*bat_attr)->attr));
-+
-+	kobject_put(vlan->kobj);
-+	vlan->kobj = NULL;
-+}
-+
- static ssize_t batadv_show_mesh_iface(struct kobject *kobj,
- 				      struct attribute *attr, char *buff)
+-static inline int batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv,
+-						 uint8_t *orig)
++static inline bool batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv,
++						  uint8_t *orig,
++						  unsigned short vid)
  {
-diff --git a/sysfs.h b/sysfs.h
-index 479acf4..c4f96c1 100644
---- a/sysfs.h
-+++ b/sysfs.h
-@@ -22,6 +22,12 @@
+-	return 0;
++	return false;
+ }
  
- #define BATADV_SYSFS_IF_MESH_SUBDIR "mesh"
- #define BATADV_SYSFS_IF_BAT_SUBDIR "batman_adv"
-+/**
-+ * BATADV_SYSFS_VLAN_SUBDIR_PREFIX - prefix of the subfolder that will be
-+ *  created in the sysfs hierarchy for each VLAN interface. The subfolder will
-+ *  be named "BATADV_SYSFS_VLAN_SUBDIR_PREFIX%vid"
-+ */
-+#define BATADV_SYSFS_VLAN_SUBDIR_PREFIX "vlan"
- 
- struct batadv_attribute {
- 	struct attribute attr;
-@@ -36,6 +42,10 @@ void batadv_sysfs_del_meshif(struct net_device *dev);
- int batadv_sysfs_add_hardif(struct kobject **hardif_obj,
- 			    struct net_device *dev);
- void batadv_sysfs_del_hardif(struct kobject **hardif_obj);
-+int batadv_sysfs_add_vlan(struct net_device *dev,
-+			  struct batadv_softif_vlan *vlan);
-+void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
-+			   struct batadv_softif_vlan *vlan);
- int batadv_throw_uevent(struct batadv_priv *bat_priv, enum batadv_uev_type type,
- 			enum batadv_uev_action action, const char *data);
- 
+ static inline int
 diff --git a/translation-table.c b/translation-table.c
-index fbf08b0..91c7838 100644
+index 91c7838..a1d5777 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -1478,12 +1478,23 @@ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
- 						  const uint8_t *addr,
- 						  unsigned short vid)
- {
-+	bool ap_isolation_enabled = atomic_read(&bat_priv->ap_isolation);
- 	struct batadv_tt_local_entry *tt_local_entry = NULL;
- 	struct batadv_tt_global_entry *tt_global_entry = NULL;
- 	struct batadv_orig_node *orig_node = NULL;
- 	struct batadv_tt_orig_list_entry *best_entry;
-+	struct batadv_softif_vlan *vlan;
+@@ -906,6 +906,10 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 	struct batadv_tt_common_entry *common;
+ 	uint16_t local_flags;
  
--	if (src && atomic_read(&bat_priv->ap_isolation)) {
-+	/* if the AP isolation is requested on a VLAN, then check for the
-+	 * its setting in the proper VLAN private data structure
-+	 */
-+	vlan = batadv_softif_vlan_get(bat_priv, vid);
-+	if (vlan) {
-+		ap_isolation_enabled = atomic_read(&vlan->ap_isolation);
-+		batadv_softif_vlan_free_ref(vlan);
-+	}
++	/* ignore global entries from backbone nodes */
++	if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig, vid))
++		return true;
 +
-+	if (src && ap_isolation_enabled) {
- 		tt_local_entry = batadv_tt_local_hash_find(bat_priv, src, vid);
- 		if (!tt_local_entry ||
- 		    (tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING))
-@@ -2546,7 +2557,7 @@ void batadv_tt_local_commit_changes(struct batadv_priv *bat_priv)
+ 	tt_global_entry = batadv_tt_global_hash_find(bat_priv, tt_addr, vid);
+ 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, tt_addr, vid);
+ 
+@@ -2113,16 +2117,11 @@ static bool batadv_send_tt_response(struct batadv_priv *bat_priv,
+ 				    struct batadv_tvlv_tt_data *tt_data,
+ 				    uint8_t *req_src, uint8_t *req_dst)
+ {
+-	if (batadv_is_my_mac(bat_priv, req_dst)) {
+-		/* don't answer backbone gws! */
+-		if (batadv_bla_is_backbone_gw_orig(bat_priv, req_src))
+-			return true;
+-
++	if (batadv_is_my_mac(bat_priv, req_dst))
+ 		return batadv_send_my_tt_response(bat_priv, tt_data, req_src);
+-	} else {
++	else
+ 		return batadv_send_other_tt_response(bat_priv, tt_data,
+ 						     req_src, req_dst);
+-	}
  }
  
- bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, uint8_t *src,
--			   uint8_t *dst)
-+			   uint8_t *dst, unsigned short vid)
+ static void _batadv_tt_update_changes(struct batadv_priv *bat_priv,
+@@ -2251,10 +2250,6 @@ static void batadv_handle_tt_response(struct batadv_priv *bat_priv,
+ 		   resp_src, tt_data->ttvn, num_entries,
+ 		   (tt_data->flags & BATADV_TT_FULL_TABLE ? 'F' : '.'));
+ 
+-	/* we should have never asked a backbone gw */
+-	if (batadv_bla_is_backbone_gw_orig(bat_priv, resp_src))
+-		goto out;
+-
+ 	orig_node = batadv_orig_hash_find(bat_priv, resp_src);
+ 	if (!orig_node)
+ 		goto out;
+@@ -2607,10 +2602,6 @@ static void batadv_tt_update_orig(struct batadv_priv *bat_priv,
+ 	bool full_table = true;
+ 	struct batadv_tvlv_tt_change *tt_change;
+ 
+-	/* don't care about a backbone gateways updates. */
+-	if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig))
+-		return;
+-
+ 	/* orig table not initialised AND first diff is in the OGM OR the ttvn
+ 	 * increased by one -> we can apply the attached changes
+ 	 */
+@@ -2724,13 +2715,6 @@ bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
  {
- 	struct batadv_tt_local_entry *tt_local_entry = NULL;
- 	struct batadv_tt_global_entry *tt_global_entry = NULL;
-@@ -2555,13 +2566,11 @@ bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, uint8_t *src,
- 	if (!atomic_read(&bat_priv->ap_isolation))
+ 	bool ret = false;
+ 
+-	/* if the originator is a backbone node (meaning it belongs to the same
+-	 * LAN of this node) the temporary client must not be added because to
+-	 * reach such destination the node must use the LAN instead of the mesh
+-	 */
+-	if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig))
+-		goto out;
+-
+ 	if (!batadv_tt_global_add(bat_priv, orig_node, addr, vid,
+ 				  BATADV_TT_CLIENT_TEMP,
+ 				  atomic_read(&orig_node->last_ttvn)))
+@@ -2875,13 +2859,6 @@ static int batadv_roam_tvlv_unicast_handler_v1(struct batadv_priv *bat_priv,
+ 	if (!batadv_is_my_mac(bat_priv, dst))
+ 		return NET_RX_DROP;
+ 
+-	/* check if it is a backbone gateway. we don't accept
+-	 * roaming advertisement from it, as it has the same
+-	 * entries as we have.
+-	 */
+-	if (batadv_bla_is_backbone_gw_orig(bat_priv, src))
+-		goto out;
+-
+ 	if (tvlv_value_len < sizeof(*roaming_adv))
  		goto out;
  
--	tt_local_entry = batadv_tt_local_hash_find(bat_priv, dst,
--						   BATADV_NO_FLAGS);
-+	tt_local_entry = batadv_tt_local_hash_find(bat_priv, dst, vid);
- 	if (!tt_local_entry)
- 		goto out;
- 
--	tt_global_entry = batadv_tt_global_hash_find(bat_priv, src,
--						     BATADV_NO_FLAGS);
-+	tt_global_entry = batadv_tt_global_hash_find(bat_priv, src, vid);
- 	if (!tt_global_entry)
- 		goto out;
- 
-diff --git a/translation-table.h b/translation-table.h
-index 1d9506d..c6bf33c 100644
---- a/translation-table.h
-+++ b/translation-table.h
-@@ -39,7 +39,7 @@ void batadv_tt_free(struct batadv_priv *bat_priv);
- bool batadv_is_my_client(struct batadv_priv *bat_priv, const uint8_t *addr,
- 			 unsigned short vid);
- bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, uint8_t *src,
--			   uint8_t *dst);
-+			   uint8_t *dst, unsigned short vid);
- void batadv_tt_local_commit_changes(struct batadv_priv *bat_priv);
- bool batadv_tt_global_client_is_roaming(struct batadv_priv *bat_priv,
- 					uint8_t *addr, unsigned short vid);
-diff --git a/types.h b/types.h
-index 8646d5a..f83c882 100644
---- a/types.h
-+++ b/types.h
-@@ -541,6 +541,7 @@ struct batadv_priv_nc {
-  * struct batadv_softif_vlan - per VLAN attributes set
-  * @vid: VLAN identifier
-  * @kobj: kobject for sysfs vlan subdirectory
-+ * @ap_isolation: AP isolation state
-  * @list: list node for bat_priv::softif_vlan_list
-  * @refcount: number of context where this object is currently in use
-  * @rcu: struct used for freeing in a RCU-safe manner
-@@ -548,6 +549,7 @@ struct batadv_priv_nc {
- struct batadv_softif_vlan {
- 	unsigned short vid;
- 	struct kobject *kobj;
-+	atomic_t ap_isolation;		/* boolean */
- 	struct list_head list;
- 	atomic_t refcount;
- 	struct rcu_head rcu;
 -- 
 1.8.1.5
 
