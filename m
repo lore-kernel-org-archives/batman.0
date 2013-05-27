@@ -1,10 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 27 May 2013 15:10:01 +0200
-Message-Id: <1369660201-1096-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1369660201-1096-1-git-send-email-ordex@autistici.org>
-References: <1369660201-1096-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: fix typo in kernel doc
+Date: Mon, 27 May 2013 15:10:00 +0200
+Message-Id: <1369660201-1096-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: fix num_changes type to
+	uint16_t
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,29 +18,49 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <ordex@autistici.org>
 
-Now TT uses CRC32 instead of CRC16
+Since the introduction of the tvlv_tt_data struct variables
+storing the number of TT changes are always declared as
+uint16_t, however some of them were not changed.
 
-Introduced by c5e7a06a29612056006e4dc01910c0b44e858583
-("batman-adv: use CRC32C instead of CRC16 in TT code")
+Switch them al to uint16_t.
+
+Introduced by 8405301b979466610a726b7d595b6bfee5306cf7
+("batman-adv: tvlv - convert tt data sent within OGMs")
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- translation-table.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+
+patches based on top of:
+
+("batman-adv: correctly align the tt_tvlv_data struct")
+
+ translation-table.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/translation-table.c b/translation-table.c
-index f6b96cb..08da23a 100644
+index 44e7789..f6b96cb 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -2402,7 +2402,7 @@ out:
-  * @tt_buff: buffer holding the tt information
-  * @tt_num_changes: number of tt changes inside the tt buffer
-  * @ttvn: translation table version number of this changeset
-- * @tt_crc: crc16 checksum of orig node's translation table
-+ * @tt_crc: crc32 checksum of orig node's translation table
-  */
+@@ -1486,7 +1486,7 @@ static void batadv_tt_req_list_free(struct batadv_priv *bat_priv)
+ static void batadv_tt_save_orig_buffer(struct batadv_priv *bat_priv,
+ 				       struct batadv_orig_node *orig_node,
+ 				       const unsigned char *tt_buff,
+-				       uint8_t tt_num_changes)
++				       uint16_t tt_num_changes)
+ {
+ 	uint16_t tt_buff_len = batadv_tt_len(tt_num_changes);
+ 
+@@ -2407,8 +2407,8 @@ out:
  static void batadv_tt_update_orig(struct batadv_priv *bat_priv,
  				  struct batadv_orig_node *orig_node,
+ 				  const unsigned char *tt_buff,
+-				  uint8_t tt_num_changes,
+-				  uint8_t ttvn, uint32_t tt_crc)
++				  uint16_t tt_num_changes, uint8_t ttvn,
++				  uint32_t tt_crc)
+ {
+ 	uint8_t orig_ttvn = (uint8_t)atomic_read(&orig_node->last_ttvn);
+ 	bool full_table = true;
 -- 
 1.8.1.5
 
