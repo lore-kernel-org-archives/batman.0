@@ -1,9 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 27 May 2013 21:43:00 +0200
-Message-Id: <1369683792-531-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 00/12] make the Translation Table component
-	VLAN-aware
+Date: Mon, 27 May 2013 21:43:01 +0200
+Message-Id: <1369683792-531-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1369683792-531-1-git-send-email-ordex@autistici.org>
+References: <1369683792-531-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3 01/12] batman-adv: implement
+	batadv_tt_entries
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,84 +18,78 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <ordex@autistici.org>
+Cc: Antonio Quartulli <ordex@autistici.org>, Antonio Quartulli <antonio@open-mesh.com>
 
-Hello people,
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-with this patchset I want to introduce a new feature in the TT code which makes
-it VLAN aware. This means that now clients belonging to different VLANs created
-on top of a generic bat0 are treated differently.
+Implement batadv_tt_entries() to get the number of entries
+fitting in a given amount of bytes. This computation is done
+several times in the code and therefore it is useful to have
+an helper function.
 
-One of the major reason for bringing this change is to allow BLA to selectively
-ignore TT entries belonging to a given VLAN.
-To allow the latter behaviour, the CRC logic has been divided on a per-VLAN
-basis. This means that the local TT table is logically divided in sub-tables
-containing all the entries belonging to the same VLAN and the CRC is then
-computed on each of them.
-As a natural consequence, each node now stores a set of local CRCs instead of
-one only. Due to this also the way the TVLV-TT object is built and announced has
-been changed.
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ translation-table.c | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
 
-
-This patchset gives the possibility to:
-- enable AP isolation only on a selected VLAN rather than on all the traffic
-- make DAT work correctly when the same IP subnet is used on different VLANs
-- make BLA refuse global entries from certain VLANs
-- leave the possibility to future developers to implement more VLAN specific
-  attributes
-
-
-This patchset is based on top of: "batman-adv: fix typo in kernel doc"
-
-Changes from v2:
-- CRC logic divided on a VLAN-basis
-- BLA can now select the TT entries to ignore based on the VLAN
-
-Changes from v1:
-- improved kernel doc
-- created batadv_get_vid() function
-- improved documentation for CRC computation
-- added compat code for kfree_rcu (struct batadv_priv_vlan)
-
-
-Cheers,
-
-Antonio Quartulli (12):
-  batman-adv: implement batadv_tt_entries
-  batman-adv: avoid cast by using void pointer as argument
-  batman-adv: add the VLAN ID attribute to the TT entry
-  batman-adv: use vid when computing local and global TT CRC
-  batman-adv: print the VID together with the TT entries
-  batman-adv: make the GW module correctly talk to the new VLAN-TT
-  batman-adv: make the Distributed ARP Table vlan aware
-  batman-adv: add per VLAN interface attribute framework
-  batman-adv: make the AP isolation attribute VLAN specific
-  batman-adv: make the backbone gw check VLAN specific
-  batman-adv: make the TT global purge routine VLAN specific
-  batman-adv: make the TT RC logic VLAN specific
-
- bridge_loop_avoidance.c |   58 ++-
- bridge_loop_avoidance.h |   10 +-
- compat.c                |   18 +
- compat.h                |   25 ++
- distributed-arp-table.c |  125 ++++--
- gateway_client.c        |   18 +-
- main.c                  |   72 +++-
- main.h                  |   13 +-
- originator.c            |  100 ++++-
- originator.h            |    7 +
- packet.h                |   30 +-
- routing.c               |   28 +-
- send.c                  |    8 +-
- send.h                  |   16 +-
- soft-interface.c        |  158 ++++++-
- sysfs.c                 |  140 ++++++
- sysfs.h                 |   10 +
- translation-table.c     | 1080 +++++++++++++++++++++++++++++++++++------------
- translation-table.h     |   23 +-
- types.h                 |   66 ++-
- 20 files changed, 1599 insertions(+), 406 deletions(-)
-
+diff --git a/translation-table.c b/translation-table.c
+index 08da23a..fdc640c 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -232,6 +232,17 @@ static int batadv_tt_len(int changes_num)
+ 	return changes_num * sizeof(struct batadv_tvlv_tt_change);
+ }
+ 
++/**
++ * batadv_tt_entries - compute the number of entries fitting in tt_len bytes
++ * @tt_len: available space
++ *
++ * Return the number of entries.
++ */
++static uint16_t batadv_tt_entries(uint16_t tt_len)
++{
++	return tt_len / sizeof(struct batadv_tvlv_tt_change);
++}
++
+ static int batadv_tt_local_init(struct batadv_priv *bat_priv)
+ {
+ 	if (bat_priv->tt.local_hash)
+@@ -406,7 +417,7 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
+ 	if (tt_diff_len == 0)
+ 		goto container_register;
+ 
+-	tt_diff_entries_num = tt_diff_len / batadv_tt_len(1);
++	tt_diff_entries_num = batadv_tt_entries(tt_diff_len);
+ 
+ 	spin_lock_bh(&bat_priv->tt.changes_list_lock);
+ 	atomic_set(&bat_priv->tt.local_changes, 0);
+@@ -1616,7 +1627,7 @@ batadv_tt_tvlv_generate(struct batadv_priv *bat_priv,
+ 		tt_len -= tt_len % sizeof(struct batadv_tvlv_tt_change);
+ 	}
+ 
+-	tt_tot = tt_len / sizeof(struct batadv_tvlv_tt_change);
++	tt_tot = batadv_tt_entries(tt_len);
+ 
+ 	tvlv_tt_data = kzalloc(sizeof(*tvlv_tt_data) + tt_len,
+ 			       GFP_ATOMIC);
+@@ -2566,7 +2577,7 @@ static void batadv_tt_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ 	tt_data = (struct batadv_tvlv_tt_data *)tvlv_value;
+ 	tvlv_value_len -= sizeof(*tt_data);
+ 
+-	num_entries = tvlv_value_len / batadv_tt_len(1);
++	num_entries = batadv_tt_entries(tvlv_value_len);
+ 
+ 	batadv_tt_update_orig(bat_priv, orig,
+ 			      (unsigned char *)(tt_data + 1),
+@@ -2601,7 +2612,7 @@ static int batadv_tt_tvlv_unicast_handler_v1(struct batadv_priv *bat_priv,
+ 	tt_data = (struct batadv_tvlv_tt_data *)tvlv_value;
+ 	tvlv_value_len -= sizeof(*tt_data);
+ 
+-	num_entries = tvlv_value_len / batadv_tt_len(1);
++	num_entries = batadv_tt_entries(tvlv_value_len);
+ 
+ 	switch (tt_data->flags & BATADV_TT_DATA_TYPE_MASK) {
+ 	case BATADV_TT_REQUEST:
 -- 
 1.8.1.5
 
