@@ -1,15 +1,15 @@
 Return-Path: <ordex@autistici.org>
-Date: Tue, 28 May 2013 08:31:25 +0200
+Date: Tue, 28 May 2013 08:31:52 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130528063124.GA3333@ritirata.org>
+Message-ID: <20130528063152.GB3333@ritirata.org>
 References: <1369660201-1096-1-git-send-email-ordex@autistici.org>
+ <1369660201-1096-2-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="jRHKVT23PllUwdXP"
+ protocol="application/pgp-signature"; boundary="4SFOXa2GPu3tIq4H"
 Content-Disposition: inline
-In-Reply-To: <1369660201-1096-1-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: fix num_changes type to
- uint16_t
+In-Reply-To: <1369660201-1096-2-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: fix typo in kernel doc
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,25 +24,20 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---jRHKVT23PllUwdXP
+--4SFOXa2GPu3tIq4H
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Sorry, ignore this patch. It has been resent by accident.
+Sorry, ignore this patch. It has been resent by accident
 
-On Mon, May 27, 2013 at 03:10:00PM +0200, Antonio Quartulli wrote:
-> Since the introduction of the tvlv_tt_data struct variables
-> storing the number of TT changes are always declared as
-> uint16_t, however some of them were not changed.
+On Mon, May 27, 2013 at 03:10:01PM +0200, Antonio Quartulli wrote:
+> Now TT uses CRC32 instead of CRC16
 >=20
-> Switch them al to uint16_t.
->=20
-> Introduced by 8405301b979466610a726b7d595b6bfee5306cf7
-> ("batman-adv: tvlv - convert tt data sent within OGMs")
+> Introduced by c5e7a06a29612056006e4dc01910c0b44e858583
+> ("batman-adv: use CRC32C instead of CRC16 in TT code")
 >=20
 > Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
 
 --=20
 Antonio Quartulli
@@ -50,26 +45,26 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---jRHKVT23PllUwdXP
+--4SFOXa2GPu3tIq4H
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRpE88AAoJEADl0hg6qKeODrIP/ivdWOMl/IvG2GaJLRfmMapo
-Ufg2WpgBO4q9BBzfOIAYQGLud5RF+eNZrtPacK/SrglupSgllrX0VUWFkwdjgfLm
-c9sEJ4pEwEUKvC4Oc0MFSqnG8ZEW0zi3ErcryuiU93LqUHhfMjl80ufmSQHy/NiR
-YdncPJVExxPLT1/MnOsTxjJb9Yot0DUqCLIsOW703aTmp5e3xcvLB+4d60iRom4v
-tih6zHtiH0crz0HDYpLwZz2z1rMsMcdGUFs3f0zTpd757pLUJqyUoFUrY9bX+MjA
-hshwPJOcjjH9bNxZaJ7VWSS9mjdPNTvUGb7NZdJWBLGzDmWf3BVI+20fWJnJE7fQ
-Bp6ihGl91Wb5HC6uU3iyFU6m3MzOE5FpbkkHOsbOFnHb4kNzpiLw6g0mh0XVohMx
-fJ4wbd6RTyliyRzqKErh5V42tfCjF2hZwrRFbM+bYJKR7SuajEcbKRnyBGJEaVc2
-/tUVPTjsbH9zjYteFoa9MV1R4d0P12I3HTkNPH9n4yX42x8kY1iSB/0Mn+2Vm2ak
-e/jQM48R1zpVJAI2HUWWDkxguccTNaGqaI+pVs+vBKIArYVUdaENeke0wM+/gm1s
-xoZo5v27Lvhvv/NDaSKTE8O87UySMmuqncdTT4x+FkAg7BQ8x7jsP9DrUQmsqswl
-tOhH2rf43LC4ZpxVuG0y
-=qE2s
+iQIcBAEBCAAGBQJRpE9YAAoJEADl0hg6qKeOZ5sP/jZXwu7v4BkWAnBNUUQqeYUj
+sq1jmaFO26VCYf+k/dpmy3nGK+VcRT/A+JA/Cb/NU7dqa2Okohc/c+4uHHotfkXw
+BnwDvssc7e0uLIT91w8EIX9nW7ykwiYX1THg+0eiyGSMR7mhK5B4tAJr8CHAunmW
+eV+kELBgHW2ByaqKc0kRolqdn1WqPq55D5RODuTfSV6ufh/bhwGY86W4AHgo+NON
+lDuRQSXCJ6uYELo2jRkfp2/WAI9A9wbD+/Xw4cFHVYYJkA0cDJ6zq+7qPteGpoAD
+SCTf6ybzyCo7Zk10nquDkj/VCanWFaHoDYtilR3wh6Q8L27aNoTiTlzY+RHOHOps
+p9vBN1vgRYXgGLpKz2/AAJdBzkKZHOdvO1x6IeQKJZTZO6KSXwyzVyWxlh1yySSg
+pL8igas3OCddW8nxXemUcv9thWihlS36k2Npt5ReHVLcM1GX2NnPzcHDK5g5jJ8e
+f0dtGhJ8WPAncPJzB7RJD1x7SpH6Ldu/Z8fFTQuTcyxmm+j4tC+5T3b7fJY8IdNl
+lSEvaIk7uQjnHNedmtx/DuPEyD/6rGNbT7jIh6x6n8JMwsiNY6q5fd3WQBPbfcxD
+HmNDAHj97Scdqw8WQV4wdp6FSFW+rx3nyjr0TCpPZ2MhDV6789VrOB5ynIlgnZhk
+3kjpM5r0YE5x9F2ak9H9
+=lv+a
 -----END PGP SIGNATURE-----
 
---jRHKVT23PllUwdXP--
+--4SFOXa2GPu3tIq4H--
