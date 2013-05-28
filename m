@@ -1,14 +1,14 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <51A450B4.9090901@hundeboll.net>
-Date: Tue, 28 May 2013 08:37:40 +0200
-From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 28 May 2013 14:54:18 +0800
+References: <1369387285-2248-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1369387285-2248-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-References: <1369722202-19422-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1369722202-19422-1-git-send-email-martin@hundeboll.net>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix possible memleak in
-	fragmentation
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201305281454.18594.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix typo in kernel doc
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,14 +21,20 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <ordex@autistici.org>
 
-On 2013-05-28 08:23, Martin Hundebøll wrote:
-> Use a variable for return value in batadv_frag_insert_packet() to free
-> the allocated struct batadv_frag_list_entry in all cases where it is not
-> inserted into a chain.
+On Friday, May 24, 2013 17:21:25 Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+> 
+> Introduced by 8405301b979466610a726b7d595b6bfee5306cf7
+> ("batman-adv: tvlv - convert tt data sent within OGMs")
+> 
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+>  packet.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-The possible memleak was introduced by 
-9b3eab61754d74a93c9840c296013fe3b4a1b606 ("batman-adv: Receive 
-fragmented packets and merge")
+Applied in revision eddf586.
 
-// Martin
+Thanks,
+Marek
