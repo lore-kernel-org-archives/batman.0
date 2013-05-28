@@ -1,15 +1,10 @@
 Return-Path: <ordex@autistici.org>
-Date: Wed, 29 May 2013 00:23:22 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130528222322.GK3333@ritirata.org>
-References: <1369779649-2537-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="v2/QI0iRXglpx0hK"
-Content-Disposition: inline
+Date: Wed, 29 May 2013 01:19:35 +0200
+Message-Id: <1369783175-4036-1-git-send-email-ordex@autistici.org>
 In-Reply-To: <1369779649-2537-1-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [RFC 00/10] Improving the routing protocol
- abstraction
+References: <1369779649-2537-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [RFC 10/10] batman-adv: provide orig_node routing API
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,47 +17,322 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
+From: Antonio Quartulli <antonio@open-mesh.com>
 
---v2/QI0iRXglpx0hK
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Some operations executed on an orig_node depends on the
+current routing algorithm being used. To easily make this
+mechanism routing algorithm agnostic add a orig_node
+specific API that each algorithm can populate with its own
+routines.
 
-On Wed, May 29, 2013 at 12:20:39AM +0200, Antonio Quartulli wrote:
-> Hello list,
+Such routines are then invoked by the code when needed,
+without knowing which routing algorithm is currently in use
 
-I forgot to say that this patchset is based on top of the TT-VLAN patches.
+With this patch 3 API functions are added:
+- orig_free (to free routing depending internal structs)
+- orig_add_if (to change the inner state of an orig_node
+  when a new hard interface is added)
+- orig_del_if (to change the inner state of an orig_node
+  when an hard interface is removed)
 
-Cheers=C2=B2,
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
+ bat_iv_ogm.c | 103 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ originator.c | 101 ++++++++-------------------------------------------------
+ types.h      |   5 +++
+ 3 files changed, 122 insertions(+), 87 deletions(-)
 
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index a061e8a..76448de 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -71,6 +71,106 @@ static uint8_t batadv_ring_buffer_avg(const uint8_t lq_recv[])
+ 	return (uint8_t)(sum / count);
+ }
+ 
++static void batadv_iv_ogm_orig_free(struct batadv_orig_node *orig_node)
++{
++	kfree(orig_node->bat_iv.bcast_own);
++	kfree(orig_node->bat_iv.bcast_own_sum);
++}
++
++static int batadv_iv_ogm_orig_add_if(struct batadv_orig_node *orig_node,
++				     int max_if_num)
++{
++	void *data_ptr;
++	size_t data_size, old_size;
++	int ret = -ENOMEM;
++
++	spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
++
++	data_size = max_if_num * sizeof(unsigned long) * BATADV_NUM_WORDS;
++	old_size = (max_if_num - 1) * sizeof(unsigned long) * BATADV_NUM_WORDS;
++	data_ptr = kmalloc(data_size, GFP_ATOMIC);
++	if (!data_ptr)
++		goto unlock;
++
++	memcpy(data_ptr, orig_node->bat_iv.bcast_own, old_size);
++	kfree(orig_node->bat_iv.bcast_own);
++	orig_node->bat_iv.bcast_own = data_ptr;
++
++	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
++	if (!data_ptr) {
++		kfree(orig_node->bat_iv.bcast_own);
++		goto unlock;
++	}
++
++	memcpy(data_ptr, orig_node->bat_iv.bcast_own_sum,
++	       (max_if_num - 1) * sizeof(uint8_t));
++	kfree(orig_node->bat_iv.bcast_own_sum);
++	orig_node->bat_iv.bcast_own_sum = data_ptr;
++
++	ret = 0;
++
++unlock:
++	spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
++
++	return ret;
++}
++
++static int batadv_iv_ogm_orig_del_if(struct batadv_orig_node *orig_node,
++				     int max_if_num, int del_if_num)
++{
++	void *data_ptr = NULL;
++	int chunk_size,  ret = -ENOMEM;
++
++	spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
++
++	/* last interface was removed */
++	if (max_if_num == 0)
++		goto free_bcast_own;
++
++	chunk_size = sizeof(unsigned long) * BATADV_NUM_WORDS;
++	data_ptr = kmalloc(max_if_num * chunk_size, GFP_ATOMIC);
++	if (!data_ptr)
++		goto unlock;
++
++	/* copy first part */
++	memcpy(data_ptr, orig_node->bat_iv.bcast_own, del_if_num * chunk_size);
++
++	/* copy second part */
++	memcpy((char *)data_ptr + del_if_num * chunk_size,
++	       orig_node->bat_iv.bcast_own + ((del_if_num + 1) * chunk_size),
++	       (max_if_num - del_if_num) * chunk_size);
++
++free_bcast_own:
++	kfree(orig_node->bat_iv.bcast_own);
++	orig_node->bat_iv.bcast_own = data_ptr;
++
++	if (max_if_num == 0)
++		goto free_own_sum;
++
++	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
++	if (!data_ptr) {
++		kfree(orig_node->bat_iv.bcast_own);
++		goto unlock;
++	}
++
++	memcpy(data_ptr, orig_node->bat_iv.bcast_own_sum,
++	       del_if_num * sizeof(uint8_t));
++
++	memcpy((char *)data_ptr + del_if_num * sizeof(uint8_t),
++	       orig_node->bat_iv.bcast_own_sum + ((del_if_num + 1) * sizeof(uint8_t)),
++	       (max_if_num - del_if_num) * sizeof(uint8_t));
++
++free_own_sum:
++	kfree(orig_node->bat_iv.bcast_own_sum);
++	orig_node->bat_iv.bcast_own_sum = data_ptr;
++
++	ret = 0;
++unlock:
++	spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
++
++	return ret;
++}
++
+ static struct batadv_orig_node *
+ batadv_iv_ogm_orig_get(struct batadv_priv *bat_priv, const uint8_t *addr)
+ {
+@@ -1472,6 +1572,9 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
+ 	.bat_metric_is_similar = batadv_iv_ogm_metric_is_similar,
+ 	.bat_metric_compare = batadv_iv_ogm_metric_compare,
+ 	.bat_orig_print = batadv_iv_ogm_orig_print,
++	.bat_orig_free = batadv_iv_ogm_orig_free,
++	.bat_orig_add_if = batadv_iv_ogm_orig_add_if,
++	.bat_orig_del_if = batadv_iv_ogm_orig_del_if,
+ };
+ 
+ int __init batadv_iv_init(void)
+diff --git a/originator.c b/originator.c
+index f7fc006..1bca894 100644
+--- a/originator.c
++++ b/originator.c
+@@ -234,9 +234,10 @@ static void batadv_orig_node_free_rcu(struct rcu_head *rcu)
+ 	batadv_tt_global_del_orig(orig_node->bat_priv, orig_node, -1,
+ 				  "originator timed out");
+ 
++	if (orig_node->bat_priv->bat_algo_ops->bat_orig_free)
++		orig_node->bat_priv->bat_algo_ops->bat_orig_free(orig_node);
++
+ 	kfree(orig_node->tt_buff);
+-	kfree(orig_node->bat_iv.bcast_own);
+-	kfree(orig_node->bat_iv.bcast_own_sum);
+ 	kfree(orig_node);
+ }
+ 
+@@ -531,38 +532,11 @@ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
+ 	return 0;
+ }
+ 
+-static int batadv_orig_node_add_if(struct batadv_orig_node *orig_node,
+-				   int max_if_num)
+-{
+-	void *data_ptr;
+-	size_t data_size, old_size;
+-
+-	data_size = max_if_num * sizeof(unsigned long) * BATADV_NUM_WORDS;
+-	old_size = (max_if_num - 1) * sizeof(unsigned long) * BATADV_NUM_WORDS;
+-	data_ptr = kmalloc(data_size, GFP_ATOMIC);
+-	if (!data_ptr)
+-		return -ENOMEM;
+-
+-	memcpy(data_ptr, orig_node->bat_iv.bcast_own, old_size);
+-	kfree(orig_node->bat_iv.bcast_own);
+-	orig_node->bat_iv.bcast_own = data_ptr;
+-
+-	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
+-	if (!data_ptr)
+-		return -ENOMEM;
+-
+-	memcpy(data_ptr, orig_node->bat_iv.bcast_own_sum,
+-	       (max_if_num - 1) * sizeof(uint8_t));
+-	kfree(orig_node->bat_iv.bcast_own_sum);
+-	orig_node->bat_iv.bcast_own_sum = data_ptr;
+-
+-	return 0;
+-}
+-
+ int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
+ 			    int max_if_num)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
++	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
+ 	struct batadv_hashtable *hash = bat_priv->orig_hash;
+ 	struct hlist_head *head;
+ 	struct batadv_orig_node *orig_node;
+@@ -577,10 +551,10 @@ int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
+ 
+ 		rcu_read_lock();
+ 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
+-			spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
+-			ret = batadv_orig_node_add_if(orig_node, max_if_num);
+-			spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
+-
++			ret = 0;
++			if (bao->bat_orig_add_if)
++				ret = bao->bat_orig_add_if(orig_node,
++							   max_if_num);
+ 			if (ret == -ENOMEM)
+ 				goto err;
+ 		}
+@@ -594,54 +568,6 @@ err:
+ 	return -ENOMEM;
+ }
+ 
+-static int batadv_orig_node_del_if(struct batadv_orig_node *orig_node,
+-				   int max_if_num, int del_if_num)
+-{
+-	void *data_ptr = NULL;
+-	int chunk_size;
+-
+-	/* last interface was removed */
+-	if (max_if_num == 0)
+-		goto free_bcast_own;
+-
+-	chunk_size = sizeof(unsigned long) * BATADV_NUM_WORDS;
+-	data_ptr = kmalloc(max_if_num * chunk_size, GFP_ATOMIC);
+-	if (!data_ptr)
+-		return -ENOMEM;
+-
+-	/* copy first part */
+-	memcpy(data_ptr, orig_node->bat_iv.bcast_own, del_if_num * chunk_size);
+-
+-	/* copy second part */
+-	memcpy((char *)data_ptr + del_if_num * chunk_size,
+-	       orig_node->bat_iv.bcast_own + ((del_if_num + 1) * chunk_size),
+-	       (max_if_num - del_if_num) * chunk_size);
+-
+-free_bcast_own:
+-	kfree(orig_node->bat_iv.bcast_own);
+-	orig_node->bat_iv.bcast_own = data_ptr;
+-
+-	if (max_if_num == 0)
+-		goto free_own_sum;
+-
+-	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
+-	if (!data_ptr)
+-		return -ENOMEM;
+-
+-	memcpy(data_ptr, orig_node->bat_iv.bcast_own_sum,
+-	       del_if_num * sizeof(uint8_t));
+-
+-	memcpy((char *)data_ptr + del_if_num * sizeof(uint8_t),
+-	       orig_node->bat_iv.bcast_own_sum + ((del_if_num + 1) * sizeof(uint8_t)),
+-	       (max_if_num - del_if_num) * sizeof(uint8_t));
+-
+-free_own_sum:
+-	kfree(orig_node->bat_iv.bcast_own_sum);
+-	orig_node->bat_iv.bcast_own_sum = data_ptr;
+-
+-	return 0;
+-}
+-
+ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
+ 			    int max_if_num)
+ {
+@@ -650,6 +576,7 @@ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
+ 	struct hlist_head *head;
+ 	struct batadv_hard_iface *hard_iface_tmp;
+ 	struct batadv_orig_node *orig_node;
++	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
+ 	uint32_t i;
+ 	int ret;
+ 
+@@ -661,11 +588,11 @@ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
+ 
+ 		rcu_read_lock();
+ 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
+-			spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
+-			ret = batadv_orig_node_del_if(orig_node, max_if_num,
+-						      hard_iface->if_num);
+-			spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
+-
++			ret = 0;
++			if (bao->bat_orig_del_if)
++				ret = bao->bat_orig_del_if(orig_node,
++							   max_if_num,
++							   hard_iface->if_num);
+ 			if (ret == -ENOMEM)
+ 				goto err;
+ 		}
+diff --git a/types.h b/types.h
+index e2b2aaa..d042ae7 100644
+--- a/types.h
++++ b/types.h
+@@ -1001,6 +1001,11 @@ struct batadv_algo_ops {
+ 	int (*bat_metric_compare)(uint32_t metric, uint32_t new_metric);
+ 	/* orig_node handling API */
+ 	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq);
++	void (*bat_orig_free)(struct batadv_orig_node *orig_node);
++	int (*bat_orig_add_if)(struct batadv_orig_node *orig_node,
++			       int max_if_num);
++	int (*bat_orig_del_if)(struct batadv_orig_node *orig_node,
++			       int max_if_num, int del_if_num);
+ };
+ 
+ /**
+-- 
+1.8.1.5
 
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---v2/QI0iRXglpx0hK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRpS5aAAoJEADl0hg6qKeOZ3AQAL5mg1iRWJb/+yckLy5GaOVM
-pBwDXrsrJPl6EmEV366itpGCQEQwKJ8cf3uNFiSB15oTsX37MmTfvOSN3NIem/lS
-p6fZQLDkmNZa/86b+4hv3osnh3fCcVjZOE/ifttn3weI5a8gGPzaRoeybbYWzypx
-zCFT8cAHUee/SWfzUYGTIhSG3ZLFA3asM8HmXfL9291jFZNEXds553iHH6xqcJWT
-J+6rhyvqMEvBgjtCrqUPyT5AoXUvxL1cXoFIyuioFUm54EysIA1yUcfYXTHgfG9G
-0ec0z7S3A9oPmtWTCQzgBZYnCSa/OzejJPYcpCKc/MYWk3Z1tI3vQU0QI4FMxA9o
-WILgRcwiBP9Ks74lhFr11jLnr0ZKU/uzRNVzTt8aMjmLw9JpPO5ZxCMHrcm2NL4C
-PE1ofGUyOFIKMat5CpDEReVl3hSeTiPxnrTzNGfjJsW5Rfz1ZL6fz/Jr6qfWoYP/
-gnWm/gTzZTFGQ98LmHl+ElsNVruugTf8SSFRkHLOT8W2i3v5Fjg0/eFY2BOXUCj0
-sjT/o1uO+aZWqWQVZRLfnRPKh/PgPDNZS/fgnJr+EhOhMqJyzpxJaAWZW5ejfncy
-5ve3UEvKZ8V9izDFF29n+XzAwNcEfbewizsWcrLhnXBgmqwFDJiercT4BupgnLFk
-m+VTou0Xl2QAIMAIk7MM
-=vqrc
------END PGP SIGNATURE-----
-
---v2/QI0iRXglpx0hK--
