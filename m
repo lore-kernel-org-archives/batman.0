@@ -1,17 +1,9 @@
-Return-Path: <ordex@autistici.org>
-Date: Tue, 28 May 2013 09:49:55 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130528074955.GG3333@ritirata.org>
-References: <1369683792-531-1-git-send-email-ordex@autistici.org>
- <1369683792-531-3-git-send-email-ordex@autistici.org>
- <201305281530.34341.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="//IivP0gvsAy3Can"
-Content-Disposition: inline
-In-Reply-To: <201305281530.34341.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 02/12] batman-adv: make
- batadv_tt_save_orig_buffer() generic
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Tue, 28 May 2013 11:49:47 +0200
+Message-Id: <1369734587-13104-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove useless find_router look
+	up
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,50 +15,76 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
+From: Simon Wunderlich <simon@open-mesh.com>
 
---//IivP0gvsAy3Can
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is not used anymore with the new fragmentation, and it might
+actually mess up the bonding code because find_router() assumes it
+is only called once per packet.
 
-On Tue, May 28, 2013 at 03:30:34PM +0800, Marek Lindner wrote:
-> On Tuesday, May 28, 2013 03:43:02 Antonio Quartulli wrote:
-> > From: Antonio Quartulli <antonio@open-mesh.com>
->=20
-> The magic word "refactoring" is missing ...
+Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+---
+This patch was originally part of the RFC series
+"add network wide multi interface optimization", but since it is
+just a fix it is resent as PATCH to be applied now.
+---
+ send.c |   29 ++++++++---------------------
+ 1 file changed, 8 insertions(+), 21 deletions(-)
 
-ok :)
+diff --git a/send.c b/send.c
+index 8f74201..d780b9d 100644
+--- a/send.c
++++ b/send.c
+@@ -251,30 +251,19 @@ int batadv_send_skb_generic_unicast(struct batadv_priv *bat_priv,
+ 	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
+ 	struct batadv_unicast_packet *unicast_packet;
+ 	struct batadv_orig_node *orig_node;
+-	struct batadv_neigh_node *neigh_node;
+ 	int ret = NET_RX_DROP;
+ 
+ 	/* get routing information */
+-	if (is_multicast_ether_addr(ethhdr->h_dest)) {
++	if (is_multicast_ether_addr(ethhdr->h_dest))
+ 		orig_node = batadv_gw_get_selected_orig(bat_priv);
+-		if (orig_node)
+-			goto find_router;
+-	}
++	else
++		/* check for tt host - increases orig_node refcount.
++		 * returns NULL in case of AP isolation
++		 */
++		orig_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
++						     ethhdr->h_dest);
+ 
+-	/* check for tt host - increases orig_node refcount.
+-	 * returns NULL in case of AP isolation
+-	 */
+-	orig_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
+-					     ethhdr->h_dest);
+-
+-find_router:
+-	/* find_router():
+-	 *  - if orig_node is NULL it returns NULL
+-	 *  - increases neigh_nodes refcount if found.
+-	 */
+-	neigh_node = batadv_find_router(bat_priv, orig_node, NULL);
+-
+-	if (!neigh_node)
++	if (!orig_node)
+ 		goto out;
+ 
+ 	switch (packet_type) {
+@@ -306,8 +295,6 @@ find_router:
+ 		ret = 0;
+ 
+ out:
+-	if (neigh_node)
+-		batadv_neigh_node_free_ref(neigh_node);
+ 	if (orig_node)
+ 		batadv_orig_node_free_ref(orig_node);
+ 	if (ret == NET_RX_DROP)
+-- 
+1.7.10.4
 
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---//IivP0gvsAy3Can
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRpGGjAAoJEADl0hg6qKeOVzQP/iM2ooi6ikKyRyIoDT1KTTVw
-X87SZpmRVTip5lgQG+GpfQTkNe9JsFv9+wGsiS6Y+S/t8KrukluZSWWoRPO5fDYa
-LvXYl77n9L/2++MxX35DNKywZtcXHEKsXeggZdgC0ESUuNbM6FBad9BcJkzZXXGK
-vxYEmbQMylPUYgolJH5XXsAI4aHKPfLCGm/Mqpf22nM1kmrl0RqXfe0NtyHNQX9x
-/uAUHI/7Qslb/Nn8Z5vL5XOPEQyVfX+RB2nB/bCwTZDT8pvQaglS8QgQRF4cL6VO
-uTiDJRjFlZ3XgrNQWP3WwOoSWBEHZ7aSp79yWFopcoe248t/p7Y5Kkbk38i0hT+R
-D3wiOhaBicXpK6JCO1R5dj+TuUmct8Ew439/IgEUAMP43uLVyXJaSaoz9aZ3I4B+
-jc/f6Sxcw5Hwjp4MF738jH8ijjZrdDWa3Gsnt8gJ+mz8xcae8aGdUWQmDOHTC3lN
-D0B/dW3IMRDDboDZr5NTLNme46i3gcFghdhVkSCP3o9HrK7dGPBXIykm17FCdF6W
-05qjdAhb7i9WqXcEywWks9Jv2vbrLtMxrBHtElZLh7CBYcRd6r/xyu0ji28PqSIF
-AthEWt/Vyiht3UjV67XGHd/UwZU3SmW8wNO98O0aXMceIVDtEyP83cjNAgjltuS4
-8/Ky9ePrGUTKWZXYz/rb
-=fUyA
------END PGP SIGNATURE-----
-
---//IivP0gvsAy3Can--
