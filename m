@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 28 May 2013 15:13:20 +0800
-References: <1369409129-1760-1-git-send-email-ordex@autistici.org>
- <1369409129-1760-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1369409129-1760-2-git-send-email-ordex@autistici.org>
+Date: Tue, 28 May 2013 15:19:57 +0800
+References: <1369333096-15869-1-git-send-email-lindner_marek@yahoo.de>
+In-Reply-To: <1369333096-15869-1-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201305281513.20570.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: fix typo in kernel doc
+Message-Id: <201305281519.57686.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: consider network coding
+	overhead when calculating required mtu
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,21 +21,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <ordex@autistici.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Friday, May 24, 2013 23:25:29 Antonio Quartulli wrote:
-> Now TT uses CRC32 instead of CRC16
+On Friday, May 24, 2013 02:18:16 Marek Lindner wrote:
+> The module prints a warning when the MTU on the hard interface is too
+> small to transfer payload traffic without fragmentation. The required
+> MTU is calculated based on the encapsulation header size. If network
+> coding is compild into the module its header size is taken into
+> account as well.
 > 
-> Introduced by c5e7a06a29612056006e4dc01910c0b44e858583
-> ("batman-adv: use CRC32C instead of CRC16 in TT code")
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 > ---
->  translation-table.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  hard-interface.c |   19 ++++++++++---------
+>  main.c           |   25 +++++++++++++++++++++++++
+>  main.h           |    1 +
+>  soft-interface.c |    2 +-
+>  types.h          |    7 -------
+>  5 files changed, 37 insertions(+), 17 deletions(-)
 
-Applied in revision 3b0654e.
+Applied in revision f1f310d.
 
-Thanks,
+Regards,
 Marek
