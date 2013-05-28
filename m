@@ -1,8 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 28 May 2013 13:14:27 +0200
-Message-Id: <1369739668-3692-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv4 1/2] batman-adv: implement batadv_tt_entries
+Date: Tue, 28 May 2013 13:14:28 +0200
+Message-Id: <1369739668-3692-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1369739668-3692-1-git-send-email-ordex@autistici.org>
+References: <1369739668-3692-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv4 2/2] batman-adv: make
+	batadv_tt_save_orig_buffer() generic
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,74 +22,43 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-Implement batadv_tt_entries() to get the number of entries
-fitting in a given amount of bytes. This computation is done
-several times in the code and therefore it is useful to have
-an helper function.
+This is a simple batadv_tt_save_orig_buffer() refactoring
+aimed to make it more generic and avoid useless casts.
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- translation-table.c | 19 +++++++++++++++----
- 1 file changed, 15 insertions(+), 4 deletions(-)
+ translation-table.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
 diff --git a/translation-table.c b/translation-table.c
-index 8d9f5cc..d1957af 100644
+index d1957af..891e053 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -232,6 +232,17 @@ static int batadv_tt_len(int changes_num)
- 	return changes_num * sizeof(struct batadv_tvlv_tt_change);
+@@ -1496,11 +1496,9 @@ static void batadv_tt_req_list_free(struct batadv_priv *bat_priv)
+ 
+ static void batadv_tt_save_orig_buffer(struct batadv_priv *bat_priv,
+ 				       struct batadv_orig_node *orig_node,
+-				       const unsigned char *tt_buff,
+-				       uint16_t tt_num_changes)
++				       const void *tt_buff,
++				       uint16_t tt_buff_len)
+ {
+-	uint16_t tt_buff_len = batadv_tt_len(tt_num_changes);
+-
+ 	/* Replace the old buffer only if I received something in the
+ 	 * last OGM (the OGM could carry no changes)
+ 	 */
+@@ -2037,8 +2035,8 @@ static void batadv_tt_update_changes(struct batadv_priv *bat_priv,
+ 	_batadv_tt_update_changes(bat_priv, orig_node, tt_change,
+ 				  tt_num_changes, ttvn);
+ 
+-	batadv_tt_save_orig_buffer(bat_priv, orig_node,
+-				   (unsigned char *)tt_change, tt_num_changes);
++	batadv_tt_save_orig_buffer(bat_priv, orig_node, tt_change,
++				   batadv_tt_len(tt_num_changes));
+ 	atomic_set(&orig_node->last_ttvn, ttvn);
  }
  
-+/**
-+ * batadv_tt_entries - compute the number of entries fitting in tt_len bytes
-+ * @tt_len: available space
-+ *
-+ * Return the number of entries.
-+ */
-+static uint16_t batadv_tt_entries(uint16_t tt_len)
-+{
-+	return tt_len / batadv_tt_len(1);
-+}
-+
- static int batadv_tt_local_init(struct batadv_priv *bat_priv)
- {
- 	if (bat_priv->tt.local_hash)
-@@ -406,7 +417,7 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
- 	if (tt_diff_len == 0)
- 		goto container_register;
- 
--	tt_diff_entries_num = tt_diff_len / batadv_tt_len(1);
-+	tt_diff_entries_num = batadv_tt_entries(tt_diff_len);
- 
- 	spin_lock_bh(&bat_priv->tt.changes_list_lock);
- 	atomic_set(&bat_priv->tt.local_changes, 0);
-@@ -1616,7 +1627,7 @@ batadv_tt_tvlv_generate(struct batadv_priv *bat_priv,
- 		tt_len -= tt_len % sizeof(struct batadv_tvlv_tt_change);
- 	}
- 
--	tt_tot = tt_len / sizeof(struct batadv_tvlv_tt_change);
-+	tt_tot = batadv_tt_entries(tt_len);
- 
- 	tvlv_tt_data = kzalloc(sizeof(*tvlv_tt_data) + tt_len,
- 			       GFP_ATOMIC);
-@@ -2567,7 +2578,7 @@ static void batadv_tt_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- 	tt_data = (struct batadv_tvlv_tt_data *)tvlv_value;
- 	tvlv_value_len -= sizeof(*tt_data);
- 
--	num_entries = tvlv_value_len / batadv_tt_len(1);
-+	num_entries = batadv_tt_entries(tvlv_value_len);
- 
- 	batadv_tt_update_orig(bat_priv, orig,
- 			      (unsigned char *)(tt_data + 1),
-@@ -2602,7 +2613,7 @@ static int batadv_tt_tvlv_unicast_handler_v1(struct batadv_priv *bat_priv,
- 	tt_data = (struct batadv_tvlv_tt_data *)tvlv_value;
- 	tvlv_value_len -= sizeof(*tt_data);
- 
--	num_entries = tvlv_value_len / batadv_tt_len(1);
-+	num_entries = batadv_tt_entries(tvlv_value_len);
- 
- 	switch (tt_data->flags & BATADV_TT_DATA_TYPE_MASK) {
- 	case BATADV_TT_REQUEST:
 -- 
 1.8.1.5
 
