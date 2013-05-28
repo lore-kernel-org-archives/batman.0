@@ -1,15 +1,16 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 28 May 2013 17:42:48 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130528154248.GD14466@pandem0nium>
-References: <179dd3afbd3ecdcd2144bd3016e1b01eaf0d5263.1369754967.git.mschiffer@universe-factory.net>
+Return-Path: <linus.luessing@web.de>
+Date: Tue, 28 May 2013 17:51:14 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20130528155114.GA27671@Linus-Debian>
+References: <1369583768-15280-1-git-send-email-linus.luessing@web.de>
+ <201305281755.44921.lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="DrWhICOqskFTAXiy"
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <179dd3afbd3ecdcd2144bd3016e1b01eaf0d5263.1369754967.git.mschiffer@universe-factory.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: wait for rtnl in
- batadv_store_mesh_iface instead of failing if it is taken
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <201305281755.44921.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Add dummy soft-interface
+ rx mode handler
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,71 +24,23 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Tue, May 28, 2013 at 05:55:44PM +0800, Marek Lindner wrote:
+> On Sunday, May 26, 2013 23:56:07 Linus Lüssing wrote:
+> > @@ -572,6 +584,7 @@ static const struct net_device_ops batadv_netdev_ops =
+> > { .ndo_get_stats = batadv_interface_stats,
+> >         .ndo_set_mac_address = batadv_interface_set_mac_addr,
+> >         .ndo_change_mtu = batadv_interface_change_mtu,
+> > +       .ndo_set_rx_mode = batadv_interface_set_rx_mode,
+> >         .ndo_start_xmit = batadv_interface_tx,
+> >         .ndo_validate_addr = eth_validate_addr,
+> >         .ndo_add_slave = batadv_softif_slave_add,
+> 
+> Do we need compat code for this API call ?
+> 
+> Cheers,
+> Marek
 
---DrWhICOqskFTAXiy
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes it does, actually. A PATCHv3 will follow soonish. Thanks for
+the hint!
 
-On Tue, May 28, 2013 at 05:32:32PM +0200, Matthias Schiffer wrote:
-> The rtnl_lock in batadv_store_mesh_iface has been converted to a rtnl_try=
-lock
-> some time ago to avoid a possible deadlock between rtnl and s_active on r=
-emoval
-> of the sysfs nodes.
->=20
-> The behaviour introduced by that was quite confusing as it could lead to =
-the
-> sysfs store to fail, making batman-adv setup scripts unreliable. As recen=
-tly the
-> sysfs removal was postponed to a worker not running with the rtnl taken, =
-the
-> deadlock can't occur any more and it is safe to change the trylock back t=
-o a
-> lock to make the sysfs store reliable again.
->=20
-> Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-
-Reviewed-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-
-Thanks for posting,
-	Simon
-
-> ---
->  sysfs.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
->=20
-> diff --git a/sysfs.c b/sysfs.c
-> index 15a22ef..929e304 100644
-> --- a/sysfs.c
-> +++ b/sysfs.c
-> @@ -582,10 +582,7 @@ static ssize_t batadv_store_mesh_iface(struct kobjec=
-t *kobj,
->  	    (strncmp(hard_iface->soft_iface->name, buff, IFNAMSIZ) =3D=3D 0))
->  		goto out;
-> =20
-> -	if (!rtnl_trylock()) {
-> -		ret =3D -ERESTARTSYS;
-> -		goto out;
-> -	}
-> +	rtnl_lock();
-> =20
->  	if (status_tmp =3D=3D BATADV_IF_NOT_IN_USE) {
->  		batadv_hardif_disable_interface(hard_iface,
-> --=20
-> 1.8.3
->=20
-
---DrWhICOqskFTAXiy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iEYEARECAAYFAlGk0HgACgkQrzg/fFk7axZh7ACeJ0G+4h8PVobVFwLSrLhYaefB
-NCwAn2qlewxX7xWNwTBY0ZhbLzFNR10Q
-=JUa9
------END PGP SIGNATURE-----
-
---DrWhICOqskFTAXiy--
+Cheers, Linus
