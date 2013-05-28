@@ -1,12 +1,15 @@
-Return-Path: <martin@hundeboll.net>
-From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Tue, 28 May 2013 08:23:22 +0200
-Message-Id: <1369722202-19422-1-git-send-email-martin@hundeboll.net>
+Return-Path: <ordex@autistici.org>
+Date: Tue, 28 May 2013 08:31:25 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20130528063124.GA3333@ritirata.org>
+References: <1369660201-1096-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix possible memleak in
-	fragmentation
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="jRHKVT23PllUwdXP"
+Content-Disposition: inline
+In-Reply-To: <1369660201-1096-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: fix num_changes type to
+ uint16_t
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,78 +22,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-Use a variable for return value in batadv_frag_insert_packet() to free
-the allocated struct batadv_frag_list_entry in all cases where it is not
-inserted into a chain.
 
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
----
- fragmentation.c | 16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
+--jRHKVT23PllUwdXP
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/fragmentation.c b/fragmentation.c
-index 6054ff6..ab85e75 100644
---- a/fragmentation.c
-+++ b/fragmentation.c
-@@ -129,10 +129,11 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
- 				      struct hlist_head *chain_out)
- {
- 	struct batadv_frag_table_entry *chain;
--	struct batadv_frag_list_entry *frag_entry_new, *frag_entry_curr;
-+	struct batadv_frag_list_entry *frag_entry_new = NULL, *frag_entry_curr;
- 	struct batadv_frag_packet *frag_packet;
- 	uint8_t bucket;
- 	uint16_t seqno, hdr_size = sizeof(struct batadv_frag_packet);
-+	bool ret = false;
- 
- 	/* Linearize packet to avoid linearizing 16 packets in a row when doing
- 	 * the later merge. Non-linear merge should be added to remove this
-@@ -162,6 +163,7 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
- 		hlist_add_head(&frag_entry_new->list, &chain->head);
- 		chain->size = skb->len - hdr_size;
- 		chain->timestamp = jiffies;
-+		ret = true;
- 		goto out;
- 	}
- 
-@@ -177,6 +179,7 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
- 					 &frag_entry_curr->list);
- 			chain->size += skb->len - hdr_size;
- 			chain->timestamp = jiffies;
-+			ret = true;
- 			goto out;
- 		}
- 	}
-@@ -186,6 +189,7 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
- 		hlist_add_after(&frag_entry_curr->list, &frag_entry_new->list);
- 		chain->size += skb->len - hdr_size;
- 		chain->timestamp = jiffies;
-+		ret = true;
- 	}
- 
- out:
-@@ -202,14 +206,14 @@ out:
- 		chain->size = 0;
- 	}
- 
--	spin_unlock_bh(&chain->lock);
--	return true;
--
- err_unlock:
- 	spin_unlock_bh(&chain->lock);
--	kfree(frag_entry_new);
-+
- err:
--	return false;
-+	if (!ret)
-+		kfree(frag_entry_new);
-+
-+	return ret;
- }
- 
- /**
--- 
-1.8.3
+Sorry, ignore this patch. It has been resent by accident.
 
+On Mon, May 27, 2013 at 03:10:00PM +0200, Antonio Quartulli wrote:
+> Since the introduction of the tvlv_tt_data struct variables
+> storing the number of TT changes are always declared as
+> uint16_t, however some of them were not changed.
+>=20
+> Switch them al to uint16_t.
+>=20
+> Introduced by 8405301b979466610a726b7d595b6bfee5306cf7
+> ("batman-adv: tvlv - convert tt data sent within OGMs")
+>=20
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--jRHKVT23PllUwdXP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRpE88AAoJEADl0hg6qKeODrIP/ivdWOMl/IvG2GaJLRfmMapo
+Ufg2WpgBO4q9BBzfOIAYQGLud5RF+eNZrtPacK/SrglupSgllrX0VUWFkwdjgfLm
+c9sEJ4pEwEUKvC4Oc0MFSqnG8ZEW0zi3ErcryuiU93LqUHhfMjl80ufmSQHy/NiR
+YdncPJVExxPLT1/MnOsTxjJb9Yot0DUqCLIsOW703aTmp5e3xcvLB+4d60iRom4v
+tih6zHtiH0crz0HDYpLwZz2z1rMsMcdGUFs3f0zTpd757pLUJqyUoFUrY9bX+MjA
+hshwPJOcjjH9bNxZaJ7VWSS9mjdPNTvUGb7NZdJWBLGzDmWf3BVI+20fWJnJE7fQ
+Bp6ihGl91Wb5HC6uU3iyFU6m3MzOE5FpbkkHOsbOFnHb4kNzpiLw6g0mh0XVohMx
+fJ4wbd6RTyliyRzqKErh5V42tfCjF2hZwrRFbM+bYJKR7SuajEcbKRnyBGJEaVc2
+/tUVPTjsbH9zjYteFoa9MV1R4d0P12I3HTkNPH9n4yX42x8kY1iSB/0Mn+2Vm2ak
+e/jQM48R1zpVJAI2HUWWDkxguccTNaGqaI+pVs+vBKIArYVUdaENeke0wM+/gm1s
+xoZo5v27Lvhvv/NDaSKTE8O87UySMmuqncdTT4x+FkAg7BQ8x7jsP9DrUQmsqswl
+tOhH2rf43LC4ZpxVuG0y
+=qE2s
+-----END PGP SIGNATURE-----
+
+--jRHKVT23PllUwdXP--
