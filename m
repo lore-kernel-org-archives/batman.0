@@ -1,10 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 29 May 2013 00:20:43 +0200
-Message-Id: <1369779649-2537-5-git-send-email-ordex@autistici.org>
+Date: Wed, 29 May 2013 00:20:44 +0200
+Message-Id: <1369779649-2537-6-git-send-email-ordex@autistici.org>
 In-Reply-To: <1369779649-2537-1-git-send-email-ordex@autistici.org>
 References: <1369779649-2537-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [RFC 04/10] batman-adv: add bat_get_metric API
+Subject: [B.A.T.M.A.N.] [RFC 04/10] batman-adv: add bat_metric_get API
 	function
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
