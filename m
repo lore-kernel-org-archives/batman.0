@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 29 May 2013 02:59:30 +0200
-Message-Id: <1369789186-3600-6-git-send-email-ordex@autistici.org>
+Date: Wed, 29 May 2013 02:59:31 +0200
+Message-Id: <1369789186-3600-7-git-send-email-ordex@autistici.org>
 In-Reply-To: <1369789186-3600-1-git-send-email-ordex@autistici.org>
 References: <1369789186-3600-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 05/21] batman-adv: slightly improve neighbor
-	creation debug message
+Subject: [B.A.T.M.A.N.] [PATCH 06/21] batman-adv: don't check the source
+	address twice
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,28 +22,54 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lind
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-print the interface along with the new neighbor mac address
+The source address has already been checked in
+batadv_check_management_packet() upon packet reception and
+therefore it does not need to be checked again in
+ogm_process()
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/originator.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ net/batman-adv/bat_iv_ogm.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index ddf5634..f50553a 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -110,7 +110,8 @@ batadv_neigh_node_new(struct batadv_hard_iface *hard_iface,
- 	atomic_set(&neigh_node->refcount, 2);
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index da239c5..6d62e29 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -988,7 +988,7 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
+ 	struct batadv_neigh_node *orig_neigh_router = NULL;
+ 	int has_directlink_flag;
+ 	int is_my_addr = 0, is_my_orig = 0, is_my_oldorig = 0;
+-	int is_broadcast = 0, is_bidirect;
++	int is_bidirect;
+ 	bool is_single_hop_neigh = false;
+ 	bool is_from_best_next_hop = false;
+ 	int is_duplicate, sameseq, simlar_ttl;
+@@ -1051,9 +1051,6 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
+ 		if (batadv_compare_eth(batadv_ogm_packet->prev_sender,
+ 				       hard_iface->net_dev->dev_addr))
+ 			is_my_oldorig = 1;
+-
+-		if (is_broadcast_ether_addr(ethhdr->h_source))
+-			is_broadcast = 1;
+ 	}
+ 	rcu_read_unlock();
  
- 	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
--		   "Creating new neighbor %pM\n", neigh_addr);
-+		   "Creating new neighbor %pM on interface %s\n", neigh_addr,
-+		   hard_iface->net_dev->name);
+@@ -1071,13 +1068,6 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
+ 		return;
+ 	}
  
- out:
- 	return neigh_node;
+-	if (is_broadcast) {
+-		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+-			   "Drop packet: ignoring all packets with broadcast source addr (sender: %pM)\n",
+-			   ethhdr->h_source);
+-		return;
+-	}
+-
+ 	if (is_my_orig) {
+ 		unsigned long *word;
+ 		int offset;
 -- 
 1.8.1.5
 
