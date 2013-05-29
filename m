@@ -1,17 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 29 May 2013 16:12:46 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130529141246.GP3333@ritirata.org>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Wed, 29 May 2013 16:16:57 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20130529141657.GB23657@pandem0nium>
 References: <1369779649-2537-1-git-send-email-ordex@autistici.org>
- <1369779649-2537-3-git-send-email-ordex@autistici.org>
- <20130529140950.GA23657@pandem0nium>
+ <1369779649-2537-7-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="sy9WyBOsCRoUO165"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="PmA2V3Z32TCmWXqI"
 Content-Disposition: inline
-In-Reply-To: <20130529140950.GA23657@pandem0nium>
-Subject: Re: [B.A.T.M.A.N.] [RFC 02/10] batman-adv: make struct
- batadv_orig_node algorithm agnostic
+In-Reply-To: <1369779649-2537-7-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [RFC 05/10] batman-adv: add
+ bat_metric_is_similar API function
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,74 +25,59 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---sy9WyBOsCRoUO165
+--PmA2V3Z32TCmWXqI
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, May 29, 2013 at 04:09:51PM +0200, Simon Wunderlich wrote:
-> > -	if (!orig_node->bcast_own_sum)
-> > -		goto free_bcast_own;
-> > +	spin_lock_init(&orig_node->bcast_seqno_lock);
-> > +	reset_time =3D jiffies - 1 - msecs_to_jiffies(BATADV_RESET_PROTECTION=
-_MS);
-> > +	orig_node->bcast_seqno_reset =3D reset_time;
-> > +	orig_node->batman_seqno_reset =3D reset_time;
+On Wed, May 29, 2013 at 12:20:45AM +0200, Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
 >=20
-> Why are you moving this stuff around in the function? I don't see the pur=
-pose ... reset_time
-> or bcast_seqno_lock are just moved, but not changed.
-
-well, if you look some lines above you see the vlan stuff being
-allocated....hence this is a rebase error :) while merging this change with=
- tt-vlan I
-introduced the error.
-[...]
-
-> >  	struct list_head vlan_list;
-> >  	spinlock_t vlan_list_lock; /* protects vlan_list */
-> > +	struct batadv_orig_bat_iv bat_iv;
-> >  };
+> Each routing protocol has its own metric semantic and
+> therefore is the protocol itself the only component able to
+> compare two metrics to check similarity similarity.
 >=20
-> Same here: there are various fields which are just moved around for no ob=
-vious
-> reason (bcast_seqno_lock, batman_seqno_reset, bcast_seqno_reset, last_see=
-n, last_ttl,
-> ...)
+> This new API allows each routing protocol to implement its
+> own logic and make the external code protocol agnostic.
+>=20
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+>  bat_iv_ogm.c | 7 +++++++
+>  main.c       | 3 ++-
+>  main.h       | 6 ++++++
+>  types.h      | 3 +++
+>  4 files changed, 18 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+> index abf4cd3..18c9ae8 100644
+> --- a/bat_iv_ogm.c
+> +++ b/bat_iv_ogm.c
+> @@ -1441,6 +1441,12 @@ static uint32_t batadv_iv_ogm_metric_get(struct ba=
+tadv_neigh_node *neigh_node)
+>  	return neigh_node->bat_iv.tq_avg;
+>  }
+> =20
+> +static bool batadv_iv_ogm_metric_is_similar(uint32_t metric,
+> +					    uint32_t new_metric)
+> +{
+> +	return (metric - new_metric < BATADV_TQ_SIMILARITY_THRESHOLD);
 
-yeah sorry. as before, probably an issue triggered by a rebase.
-Luckily this is just an rfc and not the final patchset :)
+You might want to use abs(metric - new_metric) here, otherwise is_similar(a=
+, b) output
+might differ from is_similar(b, a).
+> +}
+> +
 
-Thanks!
-
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---sy9WyBOsCRoUO165
+--PmA2V3Z32TCmWXqI
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRpgzeAAoJEADl0hg6qKeO8+kP+wYgyuPSJnz2i3jo/s+JbfOK
-LhvyVqVuylpD38jGZn6nRJXAqRP/74g4BUw2wq1sK9wQY6pDD01lhXFjm6sIIAu6
-hVIXDlV6gXwWsUnMbtetv+GWHgCH4fyW+Tlt3LK07rHdXF5atltgK62WnNB3JWuy
-32Xlwbsm+KJXu0zKPcHiTyIBPZS9fvx1wm8rPKUnV0+E6c8RtrCQPQRgQbnBZ/SL
-v0AYd7vJMmbonkZ7VFfon4mGSRfhKfk5kmmmbjdJc/Y+oup4zxOT1qx2NXGphUjr
-53weaMlQ3bCrRJ8XBCE9EYStDYOSMlbayVsgng8mt1c76CwNWqJDZYZuzNFSDy6W
-t09KO1Ba7ummK3atYAJ1TmMWJuWEBvvf3fvxV1+dud+KDX9iw8pWQflv06demtpO
-AMnYM8YPyBttRZTQrfJ27BjP23S5Zs5mqSW/c9u8Axcf8faeI75f7/6rVLKBxrZe
-Xj2hSgHdR9IgyeTucrbq0wUbFPzDQMKmkCjcfVsSkavpQ3uC2KHnLzAO2QhcVymE
-iifN2gGYlEJkDy2zQo2VUYxOt8cwDASxI1uo9MP5xJLODmeYM8amoFcLzN5NioYD
-BGir3BP1VJmWJ1GQmoetWHsnXo58Bt4ly9tJ1lByPwGL7Y22nxLvISehD9hnKtGD
-lMD6L9JC+7FarRAIEF5I
-=k8e7
+iEYEARECAAYFAlGmDdkACgkQrzg/fFk7axbNjACfQBf9KTmMMRDbfq87QonjJuRE
+f/4AoMC8P3nYQNY1SFtp2de8tbc7swJN
+=6r7h
 -----END PGP SIGNATURE-----
 
---sy9WyBOsCRoUO165--
+--PmA2V3Z32TCmWXqI--
