@@ -1,19 +1,17 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 29 May 2013 17:43:53 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130529154352.GW3333@ritirata.org>
-References: <1368793673-27539-1-git-send-email-mihail.costea2005@gmail.com>
- <1368793673-27539-3-git-send-email-mihail.costea2005@gmail.com>
- <20130526140240.GO1679@ritirata.org>
- <CAP5XTDOc8iDYQNLbY9f1=07eifGWMZD2xYqvPF+VLxk4M5M43g@mail.gmail.com>
+Return-Path: <mihail.costea90@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="8KmZJhJMEENkOiL3"
-Content-Disposition: inline
-In-Reply-To: <CAP5XTDOc8iDYQNLbY9f1=07eifGWMZD2xYqvPF+VLxk4M5M43g@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] [RFC 3/4] batman-adv: added necessary functions
- for NDP,
- like checking if a packet is valid or creating a Neighbor Advertisement
+In-Reply-To: <20130529153314.GV3333@ritirata.org>
+References: <1368793673-27539-1-git-send-email-mihail.costea2005@gmail.com>
+ <1368793673-27539-2-git-send-email-mihail.costea2005@gmail.com>
+ <20130526135746.GM1679@ritirata.org>
+ <CAP5XTDPhKhaJtagOw2XO04g5ffqt=MmFKaTjtaHZ5RAiACWHJg@mail.gmail.com>
+ <20130529153314.GV3333@ritirata.org>
+Date: Wed, 29 May 2013 09:12:49 -0700
+Message-ID: <CAP5XTDNvRo6f++SEKrLmKJc=gWNoABp_mXjC1NBjuH77C7uB6g@mail.gmail.com>
+From: Mihail Costea <mihail.costea90@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] [RFC 2/4] batman-adv: added IPv6 to DAT and
+ generic functions in distributed-arp-table.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,92 +25,127 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On 29 May 2013 08:33, Antonio Quartulli <ordex@autistici.org> wrote:
+> On Wed, May 29, 2013 at 08:21:37AM -0700, Mihail Costea wrote:
+>> On 26 May 2013 06:57, Antonio Quartulli <ordex@autistici.org> wrote:
+>> > On Fri, May 17, 2013 at 03:27:50PM +0300, Mihail wrote:
+>> >> From: "mihail.costea90@gmail.com" <mihail.costea90@gmail.com>
+>> >>
+>> >> Added IPv6 functionality to generic functions implemented in the first
+>> >> patch.
+>> >
+>> > avoid references to "first"/"second"/"third" patch. Once committed, they will
+>> > just be some patches in the list. You can either explicitly mention the name of
+>> > the patch ("writing the subject in this way") or just saying
+>> > previously/whatever else.
+>> >
+>> >
+>>
+>> ACK
+>>
+>> >>
+>> >> Signed-off-by: Mihail Costea <mihail.costea90@gmail.com>
+>> >> Signed-off-by: Stefan Popa <Stefan.A.Popa@intel.com>
+>> >> Reviewed-by: Stefan Popa <Stefan.A.Popa@intel.com>
+>> >>
+>> >> ---
+>> >>  distributed-arp-table.c |   30 ++++++++++++++++++++++++++----
+>> >>  types.h                 |    6 +++++-
+>> >>  2 files changed, 31 insertions(+), 5 deletions(-)
+>> >>
+>> >> diff --git a/distributed-arp-table.c b/distributed-arp-table.c
+>> >> index b2ca7e0..42118be 100644
+>> >> --- a/distributed-arp-table.c
+>> >> +++ b/distributed-arp-table.c
+>> >> @@ -32,7 +32,7 @@
+>> >>  #include "unicast.h"
+>> >>
+>> >>  static char *batadv_dat_types_str_fmt[] = {
+>> >> -     "%pI4",
+>> >> +     "%pI4", "%pI6c",
+>> >
+>> > better going on a new line rather than putting both on the same one (like the
+>> > array declared in the gateway code).
+>> >
+>>
+>> ACK
+>>
+>> >>  };
+>> >>
+>> >>  static void batadv_dat_purge(struct work_struct *work);
+>> >> @@ -173,6 +173,10 @@ static size_t batadv_sizeof_dat_data(uint8_t data_type)
+>> >>       switch (data_type) {
+>> >>       case BATADV_DAT_IPV4:
+>> >>               return sizeof(__be32);
+>> >> +#if IS_ENABLED(CONFIG_IPV6)
+>> >> +     case BATADV_DAT_IPV6:
+>> >> +             return sizeof(struct in6_addr);
+>> >> +#endif
+>> >>       default:
+>> >>               return 0;
+>> >>       }
+>> >> @@ -295,6 +299,12 @@ static uint32_t batadv_hash_dat_ipv4(const void *data, uint32_t size)
+>> >>       return batadv_hash_dat(data, BATADV_DAT_IPV4, size);
+>> >>  }
+>> >>
+>> >> +#if IS_ENABLED(CONFIG_IPV6)
+>> >> +static uint32_t batadv_hash_dat_ipv6(const void *data, uint32_t size)
+>> >> +{
+>> >> +     return batadv_hash_dat(data, BATADV_DAT_IPV6, size);
+>> >> +}
+>> >> +#endif
+>> >>
+>> >>  /**
+>> >>   * batadv_dat_entry_hash_find - look for a given dat_entry in the local hash
+>> >> @@ -393,6 +403,11 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, void *data,
+>> >>       case BATADV_DAT_IPV4:
+>> >>               choose = batadv_hash_dat_ipv4;
+>> >>               break;
+>> >> +#if IS_ENABLED(CONFIG_IPV6)
+>> >> +     case BATADV_DAT_IPV6:
+>> >> +             choose = batadv_hash_dat_ipv6;
+>> >> +             break;
+>> >> +#endif
+>> >
+>> > mh...I was just wondering: for the hash functions it would be nice to re-use the
+>> > same "array approach" that you used for the printing format.
+>> >
+>> > So we would have an array of function pointers to reference rather than having
+>> > this switch block...What do you think?
+>> >
+>> > I think it would be possible to do this for many other "variable" parameters if
+>> > required.
+>> >
+>>
+>> Should there be a struct that contains all of them, like:
+>>
+>> struct batadv_dat_data  {
+>>   char *format;
+>>   signature *hash_function;
+>>   .......
+>> }
+>>
+>> And after that the array with the initialization for all types.
+>> Or should they be declared as arrays that have nothing in common? Like
+>> just adding a new array for the choose functions.
+>>
+>
+> I guess you replied to the same email twice.
+> However, the idea of 1  array of structs is nice! I like it :)
+>
 
---8KmZJhJMEENkOiL3
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Sorry about that. I thought it didn't send (I was messing with tab key).
 
-On Wed, May 29, 2013 at 08:36:50AM -0700, Mihail Costea wrote:
-> On 26 May 2013 07:02, Antonio Quartulli <ordex@autistici.org> wrote:
-> > On Fri, May 17, 2013 at 03:27:51PM +0300, Mihail wrote:
-> >> From: "mihail.costea90@gmail.com" <mihail.costea90@gmail.com>
-> >>
-> >> Added functions needed for NDP snooping, like getting the IPv6 address=
-es
-> >> or getting the target HW address from an Neighbor Advertisement (NA).
-> >> Also added functions to create NA for Neighbor
-> >> Solicitations that have already the HW address in DAT.
-> >>
-> >> Problems: I have to generate router and override flags for NA. For now
-> >> I don't now exactly how to get them. From what I've seen, batman could
-> >> now which nodes are routers, but for override flag, we should find a
-> >> mechanism to know if the node is proxy or has anycast address.
-> >> For inspiration I have used the code at: <net/ipv6/ndisc.c>.
-> >
-> > What is the concept you have in mind?
-> > Maybe you first explain a bit more about your idea so that we can help =
-you in
-> > find a way to implement that.
-> >
-> > You want to edit the router address and flags carried by the NA?
-> >
->=20
-> When creating the NA response for an HW address already contained in
-> the DAT, I must set 3 flags: router, solicited and override.
->=20
-> The solicited flag is 1 because I only answer to solicited NS.
->=20
-> The router flag should be 1 only if the device for which we have the
-> HW address is a router. From what I've seen there are some functions
-> in batatv for finding routers, but I'll have to see if they can be
-> used on the nodes connected to mesh-nodes. Or maybe there is another
-> way to see if the device is a router.
+I'll implement it in the next version for a review :).
 
-I guess here you are looking for an IPv6 router, right? so a node which
-advertised itself as it, correct? In this case in batman-adv there is nothi=
-ng
-which can help you because there is no IPv6 detection of any type..
-How can we recognise if a node is advertising itself as router? maybe by
-snooping other NDP messages?
+>
+> --
+> Antonio Quartulli
+>
+> ..each of us alone is worth nothing..
+> Ernesto "Che" Guevara
 
->=20
-> About the override flag, I don't really have an idea. I didn't
-> understand very well how it was calculated in net/ipv6/ndisc.c so I
-> set it to 1 by default (it should be 0 for proxy and anycast address).
->=20
 
-mh..ok. We may want to better check this once more to avoid triggering any
-strange behaviour in the network :)
 
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---8KmZJhJMEENkOiL3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRpiI4AAoJEADl0hg6qKeOLVUQALWLfxeHNf9Wg3ENooZGC+LO
-94V1gKbr1ZDwfPcXnSwqIU7f4xmhtVRgKrPN2lAS/kp5ZOKhLYJm0tXNQUyRG1Uw
-+dxDQB2ZSWzPXxVx8FdHZHyp8FOBU3ZI6UUMCSvWkjf2ymZiEURkEIGvZSOHSB9j
-YeY1JpQjGNqymR4DfyapMhKq+sLvxNqV/zkSl3soF0KYbnosVEm5BzKPKCapr5c4
-x3BqiLpbii3Gnt57blQtindym+JRfqLQj4+xMgy6Hf3cs4Lky4iHNYdYuqViJncH
-PqdXbtdmkQaiYqCJod52d7fmCXRk9UjCysuCWu6alnxvI4ip4g0srMzpnmdlvoIA
-GZMQkchAQgh6kKw+erTJTB+Mgq+MG+5dmwGzQVN23TUnsvJAOVAiuP3H10n8jLqO
-wDN1msXmQC81yjo8IQ420E1QKYVhHGJl/K9x4Kq28qe/q2sLfZ/adDRr0evwnpOJ
-EuqJrArG1DbxckhgrOeKh9lFGGWnrP1RDIuQdtP2wdjLxATYKIbIKeMLV1EVNTPA
-Lt+Kl/V9Y80+NNaduyhTJ92OIF1r9KFMLRG1fMJcOK5SL9aZSbf91LMKVQFMYhCI
-T+jKz5ga/lPk7ROtHAVPHTMRXW64vjZRiAnMrZ61hI7vdVd2iSnQhMNol8fgoKyq
-NnR7e9SnSAmDBZkY9BYH
-=wYXj
------END PGP SIGNATURE-----
-
---8KmZJhJMEENkOiL3--
+--
+Mihail Costea
