@@ -4,8 +4,8 @@ In-Reply-To: <20130526135746.GM1679@ritirata.org>
 References: <1368793673-27539-1-git-send-email-mihail.costea2005@gmail.com>
  <1368793673-27539-2-git-send-email-mihail.costea2005@gmail.com>
  <20130526135746.GM1679@ritirata.org>
-Date: Wed, 29 May 2013 08:16:25 -0700
-Message-ID: <CAP5XTDOfQeQ_13wUebA2e68kBCty=NV7mLG4x2nqZ6aVzL6xig@mail.gmail.com>
+Date: Wed, 29 May 2013 08:21:37 -0700
+Message-ID: <CAP5XTDPhKhaJtagOw2XO04g5ffqt=MmFKaTjtaHZ5RAiACWHJg@mail.gmail.com>
 From: Mihail Costea <mihail.costea90@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Subject: Re: [B.A.T.M.A.N.] [RFC 2/4] batman-adv: added IPv6 to DAT and
@@ -36,6 +36,9 @@ On 26 May 2013 06:57, Antonio Quartulli <ordex@autistici.org> wrote:
 > previously/whatever else.
 >
 >
+
+ACK
+
 >>
 >> Signed-off-by: Mihail Costea <mihail.costea90@gmail.com>
 >> Signed-off-by: Stefan Popa <Stefan.A.Popa@intel.com>
@@ -113,8 +116,14 @@ ACK
 Should there be a struct that contains all of them, like:
 
 struct batadv_dat_data  {
-
+  char *format;
+  signature *hash_function;
+  .......
 }
+
+And after that the array with the initialization for all types.
+Or should they be declared as arrays that have nothing in common? Like
+just adding a new array for the choose functions.
 
 >>       default:
 >>               goto out;
@@ -146,6 +155,9 @@ struct batadv_dat_data  {
 > can't you generalise this using the printing format array defined at the
 > top of this patch?
 >
+
+I forgot about that.
+
 >> +                                        dat_entry->data, dat_entry->mac_addr,
 >> +                                        last_seen_mins, last_seen_secs);
 >> +                             break;
@@ -169,6 +181,10 @@ struct batadv_dat_data  {
 > to fix this comment...in this case, this fix should go direclty in the previous
 > patch).
 >
+
+Don't know what happened here. Maybe by mistake I introduces this when
+I merged it with the old code used for snooping.
+
 >> + * @BATADV_DAT_IPV4: IPv6 address type
 >>   */
 >>  enum batadv_dat_types {
@@ -189,6 +205,5 @@ struct batadv_dat_data  {
 > Ernesto "Che" Guevara
 
 
-
---
-Mihail Costea
+Thanks,
+Mihail
