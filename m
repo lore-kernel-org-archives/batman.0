@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 29 May 2013 02:59:32 +0200
-Message-Id: <1369789186-3600-8-git-send-email-ordex@autistici.org>
+Date: Wed, 29 May 2013 02:59:33 +0200
+Message-Id: <1369789186-3600-9-git-send-email-ordex@autistici.org>
 In-Reply-To: <1369789186-3600-1-git-send-email-ordex@autistici.org>
 References: <1369789186-3600-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 07/21] batman-adv: don't check compat version
-	twice
+Subject: [B.A.T.M.A.N.] [PATCH 08/21] batman-adv: do not silently ignore
+	wrong condition
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,38 +18,33 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <antonio@open-mesh.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <ordex@autistici.org>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+Only one neigh_node per orig_node should match a given
+neighbor address, therefore, if more than one matching
+neigh_node is found, a WARNING has to be triggered to let
+the user know that something is wrong in the originator
+state instead of silently skipping the error.
 
-Compatibility version is checked upon packet reception
-before calling any handler. For this reason it does need to
-be checked once more in the handler itself.
-
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/bat_iv_ogm.c | 7 -------
- 1 file changed, 7 deletions(-)
+ net/batman-adv/bat_iv_ogm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 6d62e29..38183dc 100644
+index 38183dc..bd50e0d 100644
 --- a/net/batman-adv/bat_iv_ogm.c
 +++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1054,13 +1054,6 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
- 	}
- 	rcu_read_unlock();
- 
--	if (batadv_ogm_packet->header.version != BATADV_COMPAT_VERSION) {
--		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
--			   "Drop packet: incompatible batman version (%i)\n",
--			   batadv_ogm_packet->header.version);
--		return;
--	}
--
- 	if (is_my_addr) {
- 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
- 			   "Drop packet: received my own broadcast (sender: %pM)\n",
+@@ -669,7 +669,7 @@ batadv_iv_ogm_orig_update(struct batadv_priv *bat_priv,
+ 		if (batadv_compare_eth(neigh_addr, ethhdr->h_source) &&
+ 		    tmp_neigh_node->if_incoming == if_incoming &&
+ 		    atomic_inc_not_zero(&tmp_neigh_node->refcount)) {
+-			if (neigh_node)
++			if (WARN(neigh_node, "too many matching neigh_nodes"))
+ 				batadv_neigh_node_free_ref(neigh_node);
+ 			neigh_node = tmp_neigh_node;
+ 			continue;
 -- 
 1.8.1.5
 
