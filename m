@@ -1,16 +1,15 @@
 Return-Path: <ordex@autistici.org>
-Date: Wed, 29 May 2013 09:08:59 +0200
+Date: Wed, 29 May 2013 09:10:14 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130529070859.GL3333@ritirata.org>
-References: <1369779649-2537-1-git-send-email-ordex@autistici.org>
- <51A59E1F.5070204@hundeboll.net>
+Message-ID: <20130529071014.GM3333@ritirata.org>
+References: <1369789186-3600-1-git-send-email-ordex@autistici.org>
+ <20130528.233413.727546400524779763.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="JsihDCElWRmQcbOr"
+ protocol="application/pgp-signature"; boundary="5mZBmBd1ZkdwT1ny"
 Content-Disposition: inline
-In-Reply-To: <51A59E1F.5070204@hundeboll.net>
-Subject: Re: [B.A.T.M.A.N.] [RFC 00/10] Improving the routing protocol
- abstraction
+In-Reply-To: <20130528.233413.727546400524779763.davem@davemloft.net>
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2013-05-29
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,50 +21,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Martin =?utf-8?Q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 
---JsihDCElWRmQcbOr
+--5mZBmBd1ZkdwT1ny
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, May 29, 2013 at 08:20:15AM +0200, Martin Hundeb=C3=B8ll wrote:
-> Hi Antonio,
+On Tue, May 28, 2013 at 11:34:13PM -0700, David Miller wrote:
 >=20
-> Great work. We are looking forward to the next generation of Batman=20
-> (shouldn't that be Robin?) :)
->=20
-> On 2013-05-29 00:20, Antonio Quartulli wrote:
-> > Antonio Quartulli (10):
-> >    batman-adv: make struct batadv_neigh_node algorithm agnostic
-> >    batman-adv: make struct batadv_orig_node algorithm agnostic
-> >    batman-adv: add bat_orig_print function API
-> >    batman-adv: add bat_metric_get API function
-> >    batman-adv: add bat_metric_is_similar API function
-> >    batman-adv: add bat_metric_compare API function
-> >    batman-adv: adapt bonding to use the new API functions
-> >    batman-adv: adapt the gateway feature to use the new API functions
-> >    batman-adv: adapt the neighbor purging routine to use the new API
-> >      functions
-> >    batman-adv: provide orig_node routing API
->=20
-> I see that in nc.c you changed the uses of neigh_node->tq_avg to the new=
-=20
-> private algo-specific struct (neigh_node->bat_iv.tq_avg), but there is=20
-> no patch to make nc.c use the new API (bat_algo_ops.bat_metric_get() )...
->=20
-> Is this because you were in doubt wether NC will be usable with bat_v or=
-=20
-> just because you did "make && git-push" ? :)
+> Only 13 of the 21 patches made it to netdev.
 
-because I am totally unaware on how this should work in a generic fashion :)
-maybe you can try to describe what is needed and then we try together to ma=
-ke
-the API comfortable for NC too.
 
-Thanks!
+uhm. I see. I don't know what went wrong.
+I'll check and resend the pull request later.
+
+
+Cheers,
 
 --=20
 Antonio Quartulli
@@ -73,26 +47,26 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---JsihDCElWRmQcbOr
+--5mZBmBd1ZkdwT1ny
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRpamLAAoJEADl0hg6qKeO4hAQALfDdv3rkMRByt4Zt2ephFCc
-B8nAoMED0SDRATJZnTKfHqn+lnwS0FXcVct15TK5rJXqhalFTfBL7eDcF2JLFg4l
-Ik2vbdxzNCpIiipcq5inSGGEFTVUdDF7EgAoxCcj/NsrF1b/FbhyUyPhGe/SWwGo
-2z/m7Fsi/BQDllNiPFTApq1KjuDYe35/Y3WZT6pyWXilKGn3SCxnLuVo58cmPWEp
-1KDRf66/VtJe7Ko6BEtwjrifcPk5+3MR7zQbiQhfqgPorPnkinYWukS2XKpc1u5T
-pgc2Cc/6lUcQi5NpRA9xsYsUsViNfR+WO9LJFcoIQl39qDD48pqA0mMPyk1FG+he
-J4qzPIjuBSsz2ZkTgZsM0JDJbAAuKiiq4C4yxGPRc7S0Ist48t3ktwVAQqLFbKIk
-cXCkeB4HmoYIYB9QWC0bI8rc3MwKRxkQ1hILEEYV52eu8S/L9INBrMS+V94Qg4gk
-msOF207wmPFQi4CiUz7f9UGztyU9LsbnBcfdeXhlP7v6mh8zwY+LduIjOS8XgO0h
-KquBbS56c3nzkk3yVLtH7qMaa8jVuzT61uQC7leeC5i5xYd00gmiBazyre//QJ38
-f2sYWh1ZKJbXegpaYrqXlf7Bgl2zsg4CvcAKNjZ5PDdnk4XoLbrFVVq1DdtzW9Dx
-wkT9d87CmPfOsFWNMT5P
-=aM3J
+iQIcBAEBCAAGBQJRpanWAAoJEADl0hg6qKeOsasP/2jUrcUhaCOGHpMywjnAiayg
+6WMn3vfxnXHXt58sj+6KlhUiiLAJTlwTFf0b7GXtN7l0079YLrx0HK9O1ML1oKEw
+kFen2qd2l0UmcHLPCH0sXNe+NBeCENe1djquMntvZpZbDs+SNHP5e+wr2uV01z2y
+RBOLVouFn7VQvUefwdGb2+7Ql+0CdU7qHmtZfiHbLudo3kyI5YZ2kiHYHo/mt9t6
+1l2/JR4NHZo2Y1vqHLIeaLXVDdbJgGKfonIIfcjfPofzewvYgQUUEKRMtncAR1pf
+ItivyEDyPiray28KnDO/5xNg8/anONZXaxw7gwXQerQ+/NMClzK8TtUFiXttbw2M
+nu5Sp/nK+s8Vk0wmG6aNwcsBiWOSVVJGW5KuacOmI0utn1rKflSQaM0qZadhvbtq
+jPAPppopbbrFr69cxpg/YJbYBpKRRjwz7vRObl9sl5hTYket0YkUlIyv5JXMRsnR
+bleezp7C7ZV6pXm+uGIVaKw+kPp5/od2IgqCjE2IOQnAw4LgsHjtO8VSn8MRupUD
+vkiI/FLVP/MMKlbgwHDrLJqfRt2SEmKgzK2Tsrxn04VwmQugE8Py+KXZX00C1uF5
+tRy0nhpmeqSsuXztZrZ9Lak0/LABv6ixzvR/nm9EPwz6a2yTkqqM1LacMIbyNQ4P
+T1zhhEnuGed767zfMANB
+=itvy
 -----END PGP SIGNATURE-----
 
---JsihDCElWRmQcbOr--
+--5mZBmBd1ZkdwT1ny--
