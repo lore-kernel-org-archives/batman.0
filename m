@@ -1,10 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 29 May 2013 01:19:35 +0200
-Message-Id: <1369783175-4036-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1369779649-2537-1-git-send-email-ordex@autistici.org>
-References: <1369779649-2537-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [RFC 10/10] batman-adv: provide orig_node routing API
+Date: Wed, 29 May 2013 02:59:25 +0200
+Message-Id: <1369789186-3600-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2013-05-29
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,323 +17,110 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+Hello David,
 
-Some operations executed on an orig_node depends on the
-current routing algorithm being used. To easily make this
-mechanism routing algorithm agnostic add a orig_node
-specific API that each algorithm can populate with its own
-routines.
+this is our pull request intended for net-next/linux-3.11.
 
-Such routines are then invoked by the code when needed,
-without knowing which routing algorithm is currently in use
+The only real behavioural change in this batch is the broadcast overhead
+reduction on non-wireless interfaces brought by Matthias Schiffer.
 
-With this patch 3 API functions are added:
-- orig_free (to free routing depending internal structs)
-- orig_add_if (to change the inner state of an orig_node
-  when a new hard interface is added)
-- orig_del_if (to change the inner state of an orig_node
-  when an hard interface is removed)
+The rest is made up by code cleanups and refactoring.
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
----
- bat_iv_ogm.c | 103 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- originator.c | 101 ++++++++-------------------------------------------------
- types.h      |   5 +++
- 3 files changed, 122 insertions(+), 87 deletions(-)
+Two highlights on the refactoring are the introduction of
+netdev_alloc_skb_ip_align() to avoid to deal with NET_IP_ALIGN manually and the
+introduction of the eth_hdr() wherever it was possible in order to improve
+readability.
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index a061e8a..76448de 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -71,6 +71,106 @@ static uint8_t batadv_ring_buffer_avg(const uint8_t lq_recv[])
- 	return (uint8_t)(sum / count);
- }
- 
-+static void batadv_iv_ogm_orig_free(struct batadv_orig_node *orig_node)
-+{
-+	kfree(orig_node->bat_iv.bcast_own);
-+	kfree(orig_node->bat_iv.bcast_own_sum);
-+}
-+
-+static int batadv_iv_ogm_orig_add_if(struct batadv_orig_node *orig_node,
-+				     int max_if_num)
-+{
-+	void *data_ptr;
-+	size_t data_size, old_size;
-+	int ret = -ENOMEM;
-+
-+	spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
-+
-+	data_size = max_if_num * sizeof(unsigned long) * BATADV_NUM_WORDS;
-+	old_size = (max_if_num - 1) * sizeof(unsigned long) * BATADV_NUM_WORDS;
-+	data_ptr = kmalloc(data_size, GFP_ATOMIC);
-+	if (!data_ptr)
-+		goto unlock;
-+
-+	memcpy(data_ptr, orig_node->bat_iv.bcast_own, old_size);
-+	kfree(orig_node->bat_iv.bcast_own);
-+	orig_node->bat_iv.bcast_own = data_ptr;
-+
-+	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
-+	if (!data_ptr) {
-+		kfree(orig_node->bat_iv.bcast_own);
-+		goto unlock;
-+	}
-+
-+	memcpy(data_ptr, orig_node->bat_iv.bcast_own_sum,
-+	       (max_if_num - 1) * sizeof(uint8_t));
-+	kfree(orig_node->bat_iv.bcast_own_sum);
-+	orig_node->bat_iv.bcast_own_sum = data_ptr;
-+
-+	ret = 0;
-+
-+unlock:
-+	spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
-+
-+	return ret;
-+}
-+
-+static int batadv_iv_ogm_orig_del_if(struct batadv_orig_node *orig_node,
-+				     int max_if_num, int del_if_num)
-+{
-+	void *data_ptr = NULL;
-+	int chunk_size,  ret = -ENOMEM;
-+
-+	spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
-+
-+	/* last interface was removed */
-+	if (max_if_num == 0)
-+		goto free_bcast_own;
-+
-+	chunk_size = sizeof(unsigned long) * BATADV_NUM_WORDS;
-+	data_ptr = kmalloc(max_if_num * chunk_size, GFP_ATOMIC);
-+	if (!data_ptr)
-+		goto unlock;
-+
-+	/* copy first part */
-+	memcpy(data_ptr, orig_node->bat_iv.bcast_own, del_if_num * chunk_size);
-+
-+	/* copy second part */
-+	memcpy((char *)data_ptr + del_if_num * chunk_size,
-+	       orig_node->bat_iv.bcast_own + ((del_if_num + 1) * chunk_size),
-+	       (max_if_num - del_if_num) * chunk_size);
-+
-+free_bcast_own:
-+	kfree(orig_node->bat_iv.bcast_own);
-+	orig_node->bat_iv.bcast_own = data_ptr;
-+
-+	if (max_if_num == 0)
-+		goto free_own_sum;
-+
-+	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
-+	if (!data_ptr) {
-+		kfree(orig_node->bat_iv.bcast_own);
-+		goto unlock;
-+	}
-+
-+	memcpy(data_ptr, orig_node->bat_iv.bcast_own_sum,
-+	       del_if_num * sizeof(uint8_t));
-+
-+	memcpy((char *)data_ptr + del_if_num * sizeof(uint8_t),
-+	       orig_node->bat_iv.bcast_own_sum + ((del_if_num + 1) * sizeof(uint8_t)),
-+	       (max_if_num - del_if_num) * sizeof(uint8_t));
-+
-+free_own_sum:
-+	kfree(orig_node->bat_iv.bcast_own_sum);
-+	orig_node->bat_iv.bcast_own_sum = data_ptr;
-+
-+	ret = 0;
-+unlock:
-+	spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
-+
-+	return ret;
-+}
-+
- static struct batadv_orig_node *
- batadv_iv_ogm_orig_get(struct batadv_priv *bat_priv, const uint8_t *addr)
- {
-@@ -1472,6 +1572,9 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
- 	.bat_metric_is_similar = batadv_iv_ogm_metric_is_similar,
- 	.bat_metric_compare = batadv_iv_ogm_metric_compare,
- 	.bat_orig_print = batadv_iv_ogm_orig_print,
-+	.bat_orig_free = batadv_iv_ogm_orig_free,
-+	.bat_orig_add_if = batadv_iv_ogm_orig_add_if,
-+	.bat_orig_del_if = batadv_iv_ogm_orig_del_if,
- };
- 
- int __init batadv_iv_init(void)
-diff --git a/originator.c b/originator.c
-index f7fc006..1bca894 100644
---- a/originator.c
-+++ b/originator.c
-@@ -234,9 +234,10 @@ static void batadv_orig_node_free_rcu(struct rcu_head *rcu)
- 	batadv_tt_global_del_orig(orig_node->bat_priv, orig_node, -1,
- 				  "originator timed out");
- 
-+	if (orig_node->bat_priv->bat_algo_ops->bat_orig_free)
-+		orig_node->bat_priv->bat_algo_ops->bat_orig_free(orig_node);
-+
- 	kfree(orig_node->tt_buff);
--	kfree(orig_node->bat_iv.bcast_own);
--	kfree(orig_node->bat_iv.bcast_own_sum);
- 	kfree(orig_node);
- }
- 
-@@ -531,38 +532,11 @@ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
- 	return 0;
- }
- 
--static int batadv_orig_node_add_if(struct batadv_orig_node *orig_node,
--				   int max_if_num)
--{
--	void *data_ptr;
--	size_t data_size, old_size;
--
--	data_size = max_if_num * sizeof(unsigned long) * BATADV_NUM_WORDS;
--	old_size = (max_if_num - 1) * sizeof(unsigned long) * BATADV_NUM_WORDS;
--	data_ptr = kmalloc(data_size, GFP_ATOMIC);
--	if (!data_ptr)
--		return -ENOMEM;
--
--	memcpy(data_ptr, orig_node->bat_iv.bcast_own, old_size);
--	kfree(orig_node->bat_iv.bcast_own);
--	orig_node->bat_iv.bcast_own = data_ptr;
--
--	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
--	if (!data_ptr)
--		return -ENOMEM;
--
--	memcpy(data_ptr, orig_node->bat_iv.bcast_own_sum,
--	       (max_if_num - 1) * sizeof(uint8_t));
--	kfree(orig_node->bat_iv.bcast_own_sum);
--	orig_node->bat_iv.bcast_own_sum = data_ptr;
--
--	return 0;
--}
--
- int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
- 			    int max_if_num)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
- 	struct batadv_hashtable *hash = bat_priv->orig_hash;
- 	struct hlist_head *head;
- 	struct batadv_orig_node *orig_node;
-@@ -577,10 +551,10 @@ int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
- 
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
--			spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
--			ret = batadv_orig_node_add_if(orig_node, max_if_num);
--			spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
--
-+			ret = 0;
-+			if (bao->bat_orig_add_if)
-+				ret = bao->bat_orig_add_if(orig_node,
-+							   max_if_num);
- 			if (ret == -ENOMEM)
- 				goto err;
- 		}
-@@ -594,54 +568,6 @@ err:
- 	return -ENOMEM;
- }
- 
--static int batadv_orig_node_del_if(struct batadv_orig_node *orig_node,
--				   int max_if_num, int del_if_num)
--{
--	void *data_ptr = NULL;
--	int chunk_size;
--
--	/* last interface was removed */
--	if (max_if_num == 0)
--		goto free_bcast_own;
--
--	chunk_size = sizeof(unsigned long) * BATADV_NUM_WORDS;
--	data_ptr = kmalloc(max_if_num * chunk_size, GFP_ATOMIC);
--	if (!data_ptr)
--		return -ENOMEM;
--
--	/* copy first part */
--	memcpy(data_ptr, orig_node->bat_iv.bcast_own, del_if_num * chunk_size);
--
--	/* copy second part */
--	memcpy((char *)data_ptr + del_if_num * chunk_size,
--	       orig_node->bat_iv.bcast_own + ((del_if_num + 1) * chunk_size),
--	       (max_if_num - del_if_num) * chunk_size);
--
--free_bcast_own:
--	kfree(orig_node->bat_iv.bcast_own);
--	orig_node->bat_iv.bcast_own = data_ptr;
--
--	if (max_if_num == 0)
--		goto free_own_sum;
--
--	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
--	if (!data_ptr)
--		return -ENOMEM;
--
--	memcpy(data_ptr, orig_node->bat_iv.bcast_own_sum,
--	       del_if_num * sizeof(uint8_t));
--
--	memcpy((char *)data_ptr + del_if_num * sizeof(uint8_t),
--	       orig_node->bat_iv.bcast_own_sum + ((del_if_num + 1) * sizeof(uint8_t)),
--	       (max_if_num - del_if_num) * sizeof(uint8_t));
--
--free_own_sum:
--	kfree(orig_node->bat_iv.bcast_own_sum);
--	orig_node->bat_iv.bcast_own_sum = data_ptr;
--
--	return 0;
--}
--
- int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
- 			    int max_if_num)
- {
-@@ -650,6 +576,7 @@ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
- 	struct hlist_head *head;
- 	struct batadv_hard_iface *hard_iface_tmp;
- 	struct batadv_orig_node *orig_node;
-+	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
- 	uint32_t i;
- 	int ret;
- 
-@@ -661,11 +588,11 @@ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
- 
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
--			spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
--			ret = batadv_orig_node_del_if(orig_node, max_if_num,
--						      hard_iface->if_num);
--			spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
--
-+			ret = 0;
-+			if (bao->bat_orig_del_if)
-+				ret = bao->bat_orig_del_if(orig_node,
-+							   max_if_num,
-+							   hard_iface->if_num);
- 			if (ret == -ENOMEM)
- 				goto err;
- 		}
-diff --git a/types.h b/types.h
-index e2b2aaa..d042ae7 100644
---- a/types.h
-+++ b/types.h
-@@ -1001,6 +1001,11 @@ struct batadv_algo_ops {
- 	int (*bat_metric_compare)(uint32_t metric, uint32_t new_metric);
- 	/* orig_node handling API */
- 	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq);
-+	void (*bat_orig_free)(struct batadv_orig_node *orig_node);
-+	int (*bat_orig_add_if)(struct batadv_orig_node *orig_node,
-+			       int max_if_num);
-+	int (*bat_orig_del_if)(struct batadv_orig_node *orig_node,
-+			       int max_if_num, int del_if_num);
- };
- 
- /**
--- 
-1.8.1.5
 
+Please pull or let me know of any problem.
+
+Thanks a lot,
+	Antonio
+
+
+
+The following changes since commit 06ecf24bdf2b7afc6c8fd13de6dba2a96dd331b6:
+
+  net: Fix build warnings after mac_header and transport_header became __u16. (2013-05-28 13:15:50 -0700)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to 6715fd3f0538e805b6a769d66823ec16b8b647ac:
+
+  batman-adv: Start new development cycle (2013-05-29 02:44:56 +0200)
+
+----------------------------------------------------------------
+Included changes:
+- reduce broadcast overhead on non-lossy wired links
+- fix typos in kernel doc
+- use eth_hdr() when possible
+- use netdev_allock_skb_ip_align() and don't deal with NET_IP_ALIGN
+- change VID semantic in the BLA component
+- other minor cleanups and code refactoring
+
+----------------------------------------------------------------
+Antonio Quartulli (14):
+      batman-adv: drop useless argument seqno in neighbor creation
+      batman-adv: slightly improve neighbor creation debug message
+      batman-adv: don't check the source address twice
+      batman-adv: don't check compat version twice
+      batman-adv: do not silently ignore wrong condition
+      batman-adv: don't initialise batman_iv private members in hard-interface.c
+      batman-adv: use eth_hdr() when it makes sense
+      batman-adv: move ring_buffer helper functions in bat_iv_ogm
+      batman-adv: move batadv_slide_own_bcast_window to bat_iv_ogm.c
+      batman-adv: refactor batadv_tt_local_event()
+      batman-adv: don't deal with NET_IP_ALIGN manually
+      batman-adv: pass a 16bit long flag argument to tt_global_add()
+      batman-adv: change VID semantic in the BLA code
+      batman-adv: print the VID properly
+
+Linus Lüssing (1):
+      batman-adv: Remove unnecessary INIT_HLIST_NODE() calls
+
+Marek Lindner (2):
+      batman-adv: fix typos in kernel doc & comments
+      batman-adv: do not print orig nodes without nc neighbors on nc table print
+
+Martin Hundebøll (1):
+      batman-adv: Move call to batadv_nc_skb_forward() from routing.c to send.c
+
+Matthias Schiffer (2):
+      batman-adv: split batadv_is_wifi_iface() into two functions
+      batman-adv: send each broadcast only once on non-wireless interfaces
+
+Simon Wunderlich (1):
+      batman-adv: Start new development cycle
+
+ net/batman-adv/Makefile                |   1 -
+ net/batman-adv/bat_iv_ogm.c            | 122 ++++++++++++++++++++++++---------
+ net/batman-adv/bridge_loop_avoidance.c |  94 +++++++++++++------------
+ net/batman-adv/bridge_loop_avoidance.h |  12 ++--
+ net/batman-adv/distributed-arp-table.c |  82 +++++++++++-----------
+ net/batman-adv/hard-interface.c        |  96 +++++++++++++++-----------
+ net/batman-adv/icmp_socket.c           |   4 +-
+ net/batman-adv/main.h                  |  18 ++++-
+ net/batman-adv/network-coding.c        |  22 +++---
+ net/batman-adv/network-coding.h        |   6 +-
+ net/batman-adv/originator.c            |   6 +-
+ net/batman-adv/originator.h            |   2 +-
+ net/batman-adv/ring_buffer.c           |  51 --------------
+ net/batman-adv/ring_buffer.h           |  27 --------
+ net/batman-adv/routing.c               |  64 +++++------------
+ net/batman-adv/routing.h               |   1 -
+ net/batman-adv/send.c                  |  36 ++++++----
+ net/batman-adv/send.h                  |   6 +-
+ net/batman-adv/soft-interface.c        |   6 +-
+ net/batman-adv/translation-table.c     |  74 +++++++++++++-------
+ net/batman-adv/translation-table.h     |   2 +-
+ net/batman-adv/types.h                 |   6 +-
+ net/batman-adv/unicast.c               |   2 +-
+ net/batman-adv/vis.c                   |  19 ++---
+ 24 files changed, 395 insertions(+), 364 deletions(-)
+ delete mode 100644 net/batman-adv/ring_buffer.c
+ delete mode 100644 net/batman-adv/ring_buffer.h
