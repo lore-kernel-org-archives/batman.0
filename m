@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 29 May 2013 10:10:31 +0200
-Message-Id: <1369815051-708-2-git-send-email-ordex@autistici.org>
+Date: Wed, 29 May 2013 10:10:32 +0200
+Message-Id: <1369815051-708-3-git-send-email-ordex@autistici.org>
 In-Reply-To: <1369815051-708-1-git-send-email-ordex@autistici.org>
 References: <1369815051-708-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 01/21] batman-adv: split
-	batadv_is_wifi_iface() into two functions
+Subject: [B.A.T.M.A.N.] [PATCH 02/21] batman-adv: send each broadcast only
+	once on non-wireless interfaces
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,121 +22,98 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <
 
 From: Matthias Schiffer <mschiffer@universe-factory.net>
 
-Previously batadv_is_wifi_iface() did two things at once: looking up a
-net_device from an interface index, and determining if it is a wifi device.
+While it makes sense to send each broadcast thrice on 802.11 (WLAN) interfaces
+as broadcasts are often unreliable on these, there is no reason to do so on
+other interface types.
 
-The second part is useful itself when the caller already has a net_device
-reference.
+The increased the overhead can be harmful on low-bandwidth links like VPN
+connections over slow internet lines, therefore it is better to reduce the
+number of broadcast packets sent on non-wireless links to one.
 
 Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/hard-interface.c | 84 +++++++++++++++++++++++++----------------
- 1 file changed, 52 insertions(+), 32 deletions(-)
+ net/batman-adv/hard-interface.c | 4 ++++
+ net/batman-adv/main.h           | 5 +++++
+ net/batman-adv/send.c           | 5 ++++-
+ net/batman-adv/types.h          | 2 ++
+ 4 files changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index b6504ea..d5ec67b 100644
+index d5ec67b..4a76ed6 100644
 --- a/net/batman-adv/hard-interface.c
 +++ b/net/batman-adv/hard-interface.c
-@@ -117,6 +117,58 @@ static int batadv_is_valid_iface(const struct net_device *net_dev)
- 	return 1;
- }
+@@ -593,6 +593,10 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 	INIT_WORK(&hard_iface->cleanup_work,
+ 		  batadv_hardif_remove_interface_finish);
  
-+/**
-+ * batadv_is_wifi_netdev - check if the given net_device struct is a wifi
-+ *  interface
-+ * @net_device: the device to check
-+ *
-+ * Returns true if the net device is a 802.11 wireless device, false otherwise.
-+ */
-+static bool batadv_is_wifi_netdev(struct net_device *net_device)
-+{
-+#ifdef CONFIG_WIRELESS_EXT
-+	/* pre-cfg80211 drivers have to implement WEXT, so it is possible to
-+	 * check for wireless_handlers != NULL
-+	 */
-+	if (net_device->wireless_handlers)
-+		return true;
-+#endif
++	hard_iface->num_bcasts = BATADV_NUM_BCASTS_DEFAULT;
++	if (batadv_is_wifi_netdev(net_dev))
++		hard_iface->num_bcasts = BATADV_NUM_BCASTS_WIRELESS;
 +
-+	/* cfg80211 drivers have to set ieee80211_ptr */
-+	if (net_device->ieee80211_ptr)
-+		return true;
-+
-+	return false;
-+}
-+
-+/**
-+ * batadv_is_wifi_iface - check if the given interface represented by ifindex
-+ *  is a wifi interface
-+ * @ifindex: interface index to check
-+ *
-+ * Returns true if the interface represented by ifindex is a 802.11 wireless
-+ * device, false otherwise.
-+ */
-+bool batadv_is_wifi_iface(int ifindex)
-+{
-+	struct net_device *net_device = NULL;
-+	bool ret = false;
-+
-+	if (ifindex == BATADV_NULL_IFINDEX)
-+		goto out;
-+
-+	net_device = dev_get_by_index(&init_net, ifindex);
-+	if (!net_device)
-+		goto out;
-+
-+	ret = batadv_is_wifi_netdev(net_device);
-+
-+out:
-+	if (net_device)
-+		dev_put(net_device);
-+	return ret;
-+}
-+
- static struct batadv_hard_iface *
- batadv_hardif_get_active(const struct net_device *soft_iface)
- {
-@@ -657,38 +709,6 @@ out:
- 	return NOTIFY_DONE;
- }
+ 	/* extra reference for return */
+ 	atomic_set(&hard_iface->refcount, 2);
  
--/* This function returns true if the interface represented by ifindex is a
-- * 802.11 wireless device
-- */
--bool batadv_is_wifi_iface(int ifindex)
--{
--	struct net_device *net_device = NULL;
--	bool ret = false;
--
--	if (ifindex == BATADV_NULL_IFINDEX)
--		goto out;
--
--	net_device = dev_get_by_index(&init_net, ifindex);
--	if (!net_device)
--		goto out;
--
--#ifdef CONFIG_WIRELESS_EXT
--	/* pre-cfg80211 drivers have to implement WEXT, so it is possible to
--	 * check for wireless_handlers != NULL
--	 */
--	if (net_device->wireless_handlers)
--		ret = true;
--	else
--#endif
--		/* cfg80211 drivers have to set ieee80211_ptr */
--		if (net_device->ieee80211_ptr)
--			ret = true;
--out:
--	if (net_device)
--		dev_put(net_device);
--	return ret;
--}
--
- struct notifier_block batadv_hard_if_notifier = {
- 	.notifier_call = batadv_hard_if_event,
- };
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 59a0d6a..ea1a3ba 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -76,6 +76,11 @@
+ 
+ #define BATADV_LOG_BUF_LEN 8192	  /* has to be a power of 2 */
+ 
++/* number of packets to send for broadcasts on different interface types */
++#define BATADV_NUM_BCASTS_DEFAULT 1
++#define BATADV_NUM_BCASTS_WIRELESS 3
++#define BATADV_NUM_BCASTS_MAX 3
++
+ /* msecs after which an ARP_REQUEST is sent in broadcast as fallback */
+ #define ARP_REQ_DELAY 250
+ /* numbers of originator to contact for any PUT/GET DHT operation */
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 263cfd1..eb16b04 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -260,6 +260,9 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
+ 		if (hard_iface->soft_iface != soft_iface)
+ 			continue;
+ 
++		if (forw_packet->num_packets >= hard_iface->num_bcasts)
++			continue;
++
+ 		/* send a copy of the saved skb */
+ 		skb1 = skb_clone(forw_packet->skb, GFP_ATOMIC);
+ 		if (skb1)
+@@ -271,7 +274,7 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
+ 	forw_packet->num_packets++;
+ 
+ 	/* if we still have some more bcasts to send */
+-	if (forw_packet->num_packets < 3) {
++	if (forw_packet->num_packets < BATADV_NUM_BCASTS_MAX) {
+ 		_batadv_add_bcast_packet_to_list(bat_priv, forw_packet,
+ 						 msecs_to_jiffies(5));
+ 		return;
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index aba8364..5f542bd 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -61,6 +61,7 @@ struct batadv_hard_iface_bat_iv {
+  * @if_status: status of the interface for batman-adv
+  * @net_dev: pointer to the net_device
+  * @frag_seqno: last fragment sequence number sent by this interface
++ * @num_bcasts: number of payload re-broadcasts on this interface (ARQ)
+  * @hardif_obj: kobject of the per interface sysfs "mesh" directory
+  * @refcount: number of contexts the object is used
+  * @batman_adv_ptype: packet type describing packets that should be processed by
+@@ -76,6 +77,7 @@ struct batadv_hard_iface {
+ 	char if_status;
+ 	struct net_device *net_dev;
+ 	atomic_t frag_seqno;
++	uint8_t num_bcasts;
+ 	struct kobject *hardif_obj;
+ 	atomic_t refcount;
+ 	struct packet_type batman_adv_ptype;
 -- 
 1.8.1.5
 
