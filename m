@@ -1,16 +1,16 @@
 Return-Path: <ordex@autistici.org>
-Date: Wed, 29 May 2013 17:32:02 +0200
+Date: Wed, 29 May 2013 17:33:14 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130529153202.GU3333@ritirata.org>
+Message-ID: <20130529153314.GV3333@ritirata.org>
 References: <1368793673-27539-1-git-send-email-mihail.costea2005@gmail.com>
  <1368793673-27539-2-git-send-email-mihail.costea2005@gmail.com>
  <20130526135746.GM1679@ritirata.org>
- <CAP5XTDOfQeQ_13wUebA2e68kBCty=NV7mLG4x2nqZ6aVzL6xig@mail.gmail.com>
+ <CAP5XTDPhKhaJtagOw2XO04g5ffqt=MmFKaTjtaHZ5RAiACWHJg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="U7F658e60E1K4csu"
+ protocol="application/pgp-signature"; boundary="tbn31orTZdSAVHoc"
 Content-Disposition: inline
-In-Reply-To: <CAP5XTDOfQeQ_13wUebA2e68kBCty=NV7mLG4x2nqZ6aVzL6xig@mail.gmail.com>
+In-Reply-To: <CAP5XTDPhKhaJtagOw2XO04g5ffqt=MmFKaTjtaHZ5RAiACWHJg@mail.gmail.com>
 Subject: Re: [B.A.T.M.A.N.] [RFC 2/4] batman-adv: added IPv6 to DAT and
  generic functions in distributed-arp-table.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,12 +27,85 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---U7F658e60E1K4csu
+--tbn31orTZdSAVHoc
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, May 29, 2013 at 08:16:25AM -0700, Mihail Costea wrote:
+On Wed, May 29, 2013 at 08:21:37AM -0700, Mihail Costea wrote:
+> On 26 May 2013 06:57, Antonio Quartulli <ordex@autistici.org> wrote:
+> > On Fri, May 17, 2013 at 03:27:50PM +0300, Mihail wrote:
+> >> From: "mihail.costea90@gmail.com" <mihail.costea90@gmail.com>
+> >>
+> >> Added IPv6 functionality to generic functions implemented in the first
+> >> patch.
+> >
+> > avoid references to "first"/"second"/"third" patch. Once committed, the=
+y will
+> > just be some patches in the list. You can either explicitly mention the=
+ name of
+> > the patch ("writing the subject in this way") or just saying
+> > previously/whatever else.
+> >
+> >
+>=20
+> ACK
+>=20
+> >>
+> >> Signed-off-by: Mihail Costea <mihail.costea90@gmail.com>
+> >> Signed-off-by: Stefan Popa <Stefan.A.Popa@intel.com>
+> >> Reviewed-by: Stefan Popa <Stefan.A.Popa@intel.com>
+> >>
+> >> ---
+> >>  distributed-arp-table.c |   30 ++++++++++++++++++++++++++----
+> >>  types.h                 |    6 +++++-
+> >>  2 files changed, 31 insertions(+), 5 deletions(-)
+> >>
+> >> diff --git a/distributed-arp-table.c b/distributed-arp-table.c
+> >> index b2ca7e0..42118be 100644
+> >> --- a/distributed-arp-table.c
+> >> +++ b/distributed-arp-table.c
+> >> @@ -32,7 +32,7 @@
+> >>  #include "unicast.h"
+> >>
+> >>  static char *batadv_dat_types_str_fmt[] =3D {
+> >> -     "%pI4",
+> >> +     "%pI4", "%pI6c",
+> >
+> > better going on a new line rather than putting both on the same one (li=
+ke the
+> > array declared in the gateway code).
+> >
+>=20
+> ACK
+>=20
+> >>  };
+> >>
+> >>  static void batadv_dat_purge(struct work_struct *work);
+> >> @@ -173,6 +173,10 @@ static size_t batadv_sizeof_dat_data(uint8_t data=
+_type)
+> >>       switch (data_type) {
+> >>       case BATADV_DAT_IPV4:
+> >>               return sizeof(__be32);
+> >> +#if IS_ENABLED(CONFIG_IPV6)
+> >> +     case BATADV_DAT_IPV6:
+> >> +             return sizeof(struct in6_addr);
+> >> +#endif
+> >>       default:
+> >>               return 0;
+> >>       }
+> >> @@ -295,6 +299,12 @@ static uint32_t batadv_hash_dat_ipv4(const void *=
+data, uint32_t size)
+> >>       return batadv_hash_dat(data, BATADV_DAT_IPV4, size);
+> >>  }
+> >>
+> >> +#if IS_ENABLED(CONFIG_IPV6)
+> >> +static uint32_t batadv_hash_dat_ipv6(const void *data, uint32_t size)
+> >> +{
+> >> +     return batadv_hash_dat(data, BATADV_DAT_IPV6, size);
+> >> +}
+> >> +#endif
+> >>
 > >>  /**
 > >>   * batadv_dat_entry_hash_find - look for a given dat_entry in the loc=
 al hash
@@ -63,14 +136,19 @@ eters if
 > Should there be a struct that contains all of them, like:
 >=20
 > struct batadv_dat_data  {
+>   char *format;
+>   signature *hash_function;
+>   .......
+> }
+>=20
+> And after that the array with the initialization for all types.
+> Or should they be declared as arrays that have nothing in common? Like
+> just adding a new array for the choose functions.
 >=20
 
-I was thinking of having many array, but I have to say that the "struct ide=
-a" is
-much cleaner and it can be seen like an API.
-Then we would only have one array of objects of this type.
+I guess you replied to the same email twice.
+However, the idea of 1  array of structs is nice! I like it :)
 
-Cheers,
 
 --=20
 Antonio Quartulli
@@ -78,26 +156,26 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---U7F658e60E1K4csu
+--tbn31orTZdSAVHoc
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRph9yAAoJEADl0hg6qKeOzYsP/1CLxGXIZKgft6MZtBdYvrI9
-Li+SwWYLmVpcPl/56IB0uWHbip04zEZc6MxUfHhjhMdh/zLwIBEMJhr4pMgoUSrP
-adZoE0GbpvD7LLkYgKK8OcWjSadH5Sfz38mu1uiBZ/DtHETa+Ar4UhL2Y1N1iI0l
-mKHPuQZP+x/GJeSObqMZEONVJKSMQIMDlJ9exYrw/uucEq8HeM3vh15IN+cyqOnT
-vSLyuRRjgPREbH27ZlXPlWZnrrrXDrvJl9jlXdWrwyCSzhHpuex8Bj1AA+ft7OGS
-u9+6UrjDLIDxJP5lPXMJ3/ZKIn4bj5cnR0P8IMSwl4imsb0gd4rMkcypzkSHhBTw
-zHOk1CAQWhrdanqS1cWOC9Yw6XkbFS23Pw5bVOwQEB052bcwFx5wttFsWSFWlGhE
-XIVQGv16fnyHjmlzlfw7GlTzmDu6BiuRsQhbdntHvqY9xkPo2df+W67TQWDQeAPk
-4wxBPqNs7xY7ArRkA6004FPsfnMeBvP/8AzGfSYndMwyZe1bZ8r5TTOJObErrHb5
-Vwfzr+l09QFShRJBdSnvw+tmrhDOgW2ww/DGJ064uPeauj1dRbC4WtQBg8MQSGCV
-Ay/+Gjro664rS/MNLLia4n3Zsvbgc8rmlioUwgU1EZXQppHR5LHFt0tmrbykvlgp
-niuVMKmAcn9HhaIPrT2b
-=HMcw
+iQIbBAEBCAAGBQJRph+6AAoJEADl0hg6qKeOlKgP9R79kxf0HkO6vuM2yFxFfjNg
+S2ulvqlWohNDnyqzdm24Rc/WOqeD3qKISjbst8dgIRllI29ONflKeBIWp4NKe4rA
+809FUBxgFvQmWVg7RBhK+Qe9fCIqikg2heGdebwP+gQj0ys/p/MzInhVqUnVEF2y
+U9jO1nQFFA0NTrrREZtlVltkj7anhb1+fqPojaOXmfj7jgn8PsQCOcpyZ3Z5dWxK
+PxbYAXz936t6TtDO6BaY2OTVM2GjfEoyowRzvB79l9WOsYTItJxIz3UqjnSZt9Q+
+d44KSv17yJsKDqQoAnZ0EcG7pWiDrv+LVlE+FuZnK/nfuo9CL9I7TsDezwdnrcpe
+NCsxdmAnSBCeHEL+LbCPX61APchKKg24wlZSMgw3vmObuWFtJYkLRhDKQyH0xe/v
+j/CnxFv9wDcXrU5P+1O3qWbHe3XFRK5rUIjY0B8PhoSqkGZQtQY7E5iVZQce0Tz1
+MTrE6Ls/AsrTHZ57FIjKf55pexnFFHuKj1ZRE4Gyx6l5UUdDMT0tTg0dPQlBy3Oz
+Afd3He0eaTEvdEmJb5cfUjI/nd5w57iGESiP2Sk/eWBWz5vcL92IwaBhGnt6Lc/t
+MtQXB15zMsVDGHAlU+2UGMgCuDxFcA5AJ85NiUr4pdlCQ5YUyn/YN8NX89X2sQ7Q
+PDICA92OEumTcSuHHcA=
+=R1io
 -----END PGP SIGNATURE-----
 
---U7F658e60E1K4csu--
+--tbn31orTZdSAVHoc--
