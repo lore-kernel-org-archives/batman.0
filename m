@@ -1,15 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 29 May 2013 16:06:34 +0800
-References: <1369814304-2852-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1369814304-2852-1-git-send-email-ordex@autistici.org>
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Wed, 29 May 2013 10:10:30 +0200
+Message-Id: <1369815051-708-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201305291606.34646.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: create common header for ICMP
-	packets
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2013-05-29b
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,40 +17,116 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <ordex@autistici.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Wednesday, May 29, 2013 15:58:24 Antonio Quartulli wrote:
-> From: Antonio Quartulli <antonio@open-mesh.com>
-> 
-> the icmp and the icmp_rr packets share the same initial
-> fields since they use the same code to be processed and
-> forwarded.
-> 
-> Extract the common fields and put them into a separate
-> struct so that future ICMP packets can be easily added
-> without bloating the packet definition.
-> 
-> However, keep the seqno field outside of the newly created
-> common header because future ICMP types may require a
-> bigger sequence number space.
-> 
-> This change breaks compatibility due to fields reordering
-> in the ICMP headers.
-> 
-> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-> ---
-> 
-> v2:
-> - added changes to packet.h
-> 
->  packet.h     | 38 ++++++++++++++++++++++++++++----------
->  ping.c       | 24 ++++++++++++++----------
->  tcpdump.c    | 27 +++++++++++++++++----------
->  traceroute.c | 31 +++++++++++++++++++------------
->  4 files changed, 78 insertions(+), 42 deletions(-)
+Hello David,
 
-Applied in revision 9ffe18f.
+this is again our pull request intended for net-next/linux-3.11.
 
-Thanks,
-Marek
+Apparently my mail server decided that 14/21 was spam and refused all the
+subsequent emails. It's a first step towards the automatic kernel maintenance
+:-)
+
+Again:
+
+The only real behavioural change in this batch is the broadcast overhead
+reduction on non-wireless interfaces brought by Matthias Schiffer.
+
+The rest is made up by code cleanups and refactoring.
+
+Two highlights on the refactoring are the introduction of
+netdev_alloc_skb_ip_align() to avoid to deal with NET_IP_ALIGN manually and the
+introduction of the eth_hdr() wherever it was possible in order to improve
+readability.
+
+
+Please pull or let me know of any problem.
+
+Thanks a lot,
+	Antonio
+
+
+
+The following changes since commit 06ecf24bdf2b7afc6c8fd13de6dba2a96dd331b6:
+
+  net: Fix build warnings after mac_header and transport_header became __u16. (2013-05-28 13:15:50 -0700)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to 6715fd3f0538e805b6a769d66823ec16b8b647ac:
+
+  batman-adv: Start new development cycle (2013-05-29 02:44:56 +0200)
+
+----------------------------------------------------------------
+Included changes:
+- reduce broadcast overhead on non-lossy wired links
+- fix typos in kernel doc
+- use eth_hdr() when possible
+- use netdev_allock_skb_ip_align() and don't deal with NET_IP_ALIGN
+- change VID semantic in the BLA component
+- other minor cleanups and code refactoring
+
+----------------------------------------------------------------
+Antonio Quartulli (14):
+      batman-adv: drop useless argument seqno in neighbor creation
+      batman-adv: slightly improve neighbor creation debug message
+      batman-adv: don't check the source address twice
+      batman-adv: don't check compat version twice
+      batman-adv: do not silently ignore wrong condition
+      batman-adv: don't initialise batman_iv private members in hard-interface.c
+      batman-adv: use eth_hdr() when it makes sense
+      batman-adv: move ring_buffer helper functions in bat_iv_ogm
+      batman-adv: move batadv_slide_own_bcast_window to bat_iv_ogm.c
+      batman-adv: refactor batadv_tt_local_event()
+      batman-adv: don't deal with NET_IP_ALIGN manually
+      batman-adv: pass a 16bit long flag argument to tt_global_add()
+      batman-adv: change VID semantic in the BLA code
+      batman-adv: print the VID properly
+
+Linus Lüssing (1):
+      batman-adv: Remove unnecessary INIT_HLIST_NODE() calls
+
+Marek Lindner (2):
+      batman-adv: fix typos in kernel doc & comments
+      batman-adv: do not print orig nodes without nc neighbors on nc table print
+
+Martin Hundebøll (1):
+      batman-adv: Move call to batadv_nc_skb_forward() from routing.c to send.c
+
+Matthias Schiffer (2):
+      batman-adv: split batadv_is_wifi_iface() into two functions
+      batman-adv: send each broadcast only once on non-wireless interfaces
+
+Simon Wunderlich (1):
+      batman-adv: Start new development cycle
+
+ net/batman-adv/Makefile                |   1 -
+ net/batman-adv/bat_iv_ogm.c            | 122 ++++++++++++++++++++++++---------
+ net/batman-adv/bridge_loop_avoidance.c |  94 +++++++++++++------------
+ net/batman-adv/bridge_loop_avoidance.h |  12 ++--
+ net/batman-adv/distributed-arp-table.c |  82 +++++++++++-----------
+ net/batman-adv/hard-interface.c        |  96 +++++++++++++++-----------
+ net/batman-adv/icmp_socket.c           |   4 +-
+ net/batman-adv/main.h                  |  18 ++++-
+ net/batman-adv/network-coding.c        |  22 +++---
+ net/batman-adv/network-coding.h        |   6 +-
+ net/batman-adv/originator.c            |   6 +-
+ net/batman-adv/originator.h            |   2 +-
+ net/batman-adv/ring_buffer.c           |  51 --------------
+ net/batman-adv/ring_buffer.h           |  27 --------
+ net/batman-adv/routing.c               |  64 +++++------------
+ net/batman-adv/routing.h               |   1 -
+ net/batman-adv/send.c                  |  36 ++++++----
+ net/batman-adv/send.h                  |   6 +-
+ net/batman-adv/soft-interface.c        |   6 +-
+ net/batman-adv/translation-table.c     |  74 +++++++++++++-------
+ net/batman-adv/translation-table.h     |   2 +-
+ net/batman-adv/types.h                 |   6 +-
+ net/batman-adv/unicast.c               |   2 +-
+ net/batman-adv/vis.c                   |  19 ++---
+ 24 files changed, 395 insertions(+), 364 deletions(-)
+ delete mode 100644 net/batman-adv/ring_buffer.c
+ delete mode 100644 net/batman-adv/ring_buffer.h
