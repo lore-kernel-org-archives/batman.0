@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 29 May 2013 10:10:44 +0200
-Message-Id: <1369815051-708-15-git-send-email-ordex@autistici.org>
+Date: Wed, 29 May 2013 10:10:45 +0200
+Message-Id: <1369815051-708-16-git-send-email-ordex@autistici.org>
 In-Reply-To: <1369815051-708-1-git-send-email-ordex@autistici.org>
 References: <1369815051-708-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 14/21] batman-adv: don't deal with
-	NET_IP_ALIGN manually
+Subject: [B.A.T.M.A.N.] [PATCH 15/21] batman-adv: pass a 16bit long flag
+	argument to tt_global_add()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,175 +20,61 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <ordex@autistici.org>
 
-Instead of dealing with NET_IP_ALIGN during allocation and
-headroom reservation, it is possible to use
-netdev_alloc_skb_ip_align() which transparently allocate
-and reserve the correct amount of data
+it may be the case that we want to store some local TT client flags in a global
+entry, therefore the tt_global_add needs to get a proper argument for this
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/bat_iv_ogm.c        |  6 +++---
- net/batman-adv/icmp_socket.c       |  4 ++--
- net/batman-adv/translation-table.c | 20 ++++++++++----------
- net/batman-adv/vis.c               | 12 ++++++------
- 4 files changed, 21 insertions(+), 21 deletions(-)
+ net/batman-adv/translation-table.c | 19 +++++++++++++++++--
+ net/batman-adv/translation-table.h |  2 +-
+ 2 files changed, 18 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 42b7a94..5b0a043 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -453,16 +453,16 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- 	else
- 		skb_size = packet_len;
- 
--	skb_size += ETH_HLEN + NET_IP_ALIGN;
-+	skb_size += ETH_HLEN;
- 
--	forw_packet_aggr->skb = dev_alloc_skb(skb_size);
-+	forw_packet_aggr->skb = netdev_alloc_skb_ip_align(NULL, skb_size);
- 	if (!forw_packet_aggr->skb) {
- 		if (!own_packet)
- 			atomic_inc(&bat_priv->batman_queue_left);
- 		kfree(forw_packet_aggr);
- 		goto out;
- 	}
--	skb_reserve(forw_packet_aggr->skb, ETH_HLEN + NET_IP_ALIGN);
-+	skb_reserve(forw_packet_aggr->skb, ETH_HLEN);
- 
- 	INIT_HLIST_NODE(&forw_packet_aggr->list);
- 
-diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
-index 0ba6c89..b27508b 100644
---- a/net/batman-adv/icmp_socket.c
-+++ b/net/batman-adv/icmp_socket.c
-@@ -177,13 +177,13 @@ static ssize_t batadv_socket_write(struct file *file, const char __user *buff,
- 	if (len >= sizeof(struct batadv_icmp_packet_rr))
- 		packet_len = sizeof(struct batadv_icmp_packet_rr);
- 
--	skb = dev_alloc_skb(packet_len + ETH_HLEN + NET_IP_ALIGN);
-+	skb = netdev_alloc_skb_ip_align(NULL, packet_len + ETH_HLEN);
- 	if (!skb) {
- 		len = -ENOMEM;
- 		goto out;
- 	}
- 
--	skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
-+	skb_reserve(skb, ETH_HLEN);
- 	icmp_packet = (struct batadv_icmp_packet_rr *)skb_put(skb, packet_len);
- 
- 	if (copy_from_user(icmp_packet, buff, packet_len)) {
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index d35b739..52808c4 100644
+index 52808c4..e272f68 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -1607,11 +1607,11 @@ batadv_tt_response_fill_table(uint16_t tt_len, uint8_t ttvn,
- 	tt_tot = tt_len / sizeof(struct batadv_tt_change);
+@@ -798,10 +798,25 @@ out:
+ 		batadv_tt_orig_list_entry_free_ref(orig_entry);
+ }
  
- 	len = tt_query_size + tt_len;
--	skb = dev_alloc_skb(len + ETH_HLEN + NET_IP_ALIGN);
-+	skb = netdev_alloc_skb_ip_align(NULL, len + ETH_HLEN);
- 	if (!skb)
- 		goto out;
- 
--	skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
-+	skb_reserve(skb, ETH_HLEN);
- 	tt_response = (struct batadv_tt_query_packet *)skb_put(skb, len);
- 	tt_response->ttvn = ttvn;
- 
-@@ -1672,11 +1672,11 @@ static int batadv_send_tt_request(struct batadv_priv *bat_priv,
- 	if (!tt_req_node)
- 		goto out;
- 
--	skb = dev_alloc_skb(sizeof(*tt_request) + ETH_HLEN + NET_IP_ALIGN);
-+	skb = netdev_alloc_skb_ip_align(NULL, sizeof(*tt_request) + ETH_HLEN);
- 	if (!skb)
- 		goto out;
- 
--	skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
-+	skb_reserve(skb, ETH_HLEN);
- 
- 	tt_req_len = sizeof(*tt_request);
- 	tt_request = (struct batadv_tt_query_packet *)skb_put(skb, tt_req_len);
-@@ -1769,11 +1769,11 @@ batadv_send_other_tt_response(struct batadv_priv *bat_priv,
- 		tt_tot = tt_len / sizeof(struct batadv_tt_change);
- 
- 		len = sizeof(*tt_response) + tt_len;
--		skb = dev_alloc_skb(len + ETH_HLEN + NET_IP_ALIGN);
-+		skb = netdev_alloc_skb_ip_align(NULL, len + ETH_HLEN);
- 		if (!skb)
- 			goto unlock;
- 
--		skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
-+		skb_reserve(skb, ETH_HLEN);
- 		packet_pos = skb_put(skb, len);
- 		tt_response = (struct batadv_tt_query_packet *)packet_pos;
- 		tt_response->ttvn = req_ttvn;
-@@ -1885,11 +1885,11 @@ batadv_send_my_tt_response(struct batadv_priv *bat_priv,
- 		tt_tot = tt_len / sizeof(struct batadv_tt_change);
- 
- 		len = sizeof(*tt_response) + tt_len;
--		skb = dev_alloc_skb(len + ETH_HLEN + NET_IP_ALIGN);
-+		skb = netdev_alloc_skb_ip_align(NULL, len + ETH_HLEN);
- 		if (!skb)
- 			goto unlock;
- 
--		skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
-+		skb_reserve(skb, ETH_HLEN);
- 		packet_pos = skb_put(skb, len);
- 		tt_response = (struct batadv_tt_query_packet *)packet_pos;
- 		tt_response->ttvn = req_ttvn;
-@@ -2219,11 +2219,11 @@ static void batadv_send_roam_adv(struct batadv_priv *bat_priv, uint8_t *client,
- 	if (!batadv_tt_check_roam_count(bat_priv, client))
- 		goto out;
- 
--	skb = dev_alloc_skb(sizeof(*roam_adv_packet) + ETH_HLEN + NET_IP_ALIGN);
-+	skb = netdev_alloc_skb_ip_align(NULL, len + ETH_HLEN);
- 	if (!skb)
- 		goto out;
- 
--	skb_reserve(skb, ETH_HLEN + NET_IP_ALIGN);
-+	skb_reserve(skb, ETH_HLEN);
- 
- 	roam_adv_packet = (struct batadv_roam_adv_packet *)skb_put(skb, len);
- 
-diff --git a/net/batman-adv/vis.c b/net/batman-adv/vis.c
-index 1625e57..94eaeb5 100644
---- a/net/batman-adv/vis.c
-+++ b/net/batman-adv/vis.c
-@@ -392,12 +392,12 @@ batadv_add_packet(struct batadv_priv *bat_priv,
- 		return NULL;
- 
- 	len = sizeof(*packet) + vis_info_len;
--	info->skb_packet = dev_alloc_skb(len + ETH_HLEN + NET_IP_ALIGN);
-+	info->skb_packet = netdev_alloc_skb_ip_align(NULL, len + ETH_HLEN);
- 	if (!info->skb_packet) {
- 		kfree(info);
- 		return NULL;
- 	}
--	skb_reserve(info->skb_packet, ETH_HLEN + NET_IP_ALIGN);
-+	skb_reserve(info->skb_packet, ETH_HLEN);
- 	packet = (struct batadv_vis_packet *)skb_put(info->skb_packet, len);
- 
- 	kref_init(&info->refcount);
-@@ -854,13 +854,13 @@ int batadv_vis_init(struct batadv_priv *bat_priv)
- 	if (!bat_priv->vis.my_info)
- 		goto err;
- 
--	len = sizeof(*packet) + BATADV_MAX_VIS_PACKET_SIZE;
--	len += ETH_HLEN + NET_IP_ALIGN;
--	bat_priv->vis.my_info->skb_packet = dev_alloc_skb(len);
-+	len = sizeof(*packet) + BATADV_MAX_VIS_PACKET_SIZE + ETH_HLEN;
-+	bat_priv->vis.my_info->skb_packet = netdev_alloc_skb_ip_align(NULL,
-+								      len);
- 	if (!bat_priv->vis.my_info->skb_packet)
- 		goto free_info;
- 
--	skb_reserve(bat_priv->vis.my_info->skb_packet, ETH_HLEN + NET_IP_ALIGN);
-+	skb_reserve(bat_priv->vis.my_info->skb_packet, ETH_HLEN);
- 	tmp_skb = bat_priv->vis.my_info->skb_packet;
- 	packet = (struct batadv_vis_packet *)skb_put(tmp_skb, sizeof(*packet));
- 
+-/* caller must hold orig_node refcount */
++/**
++ * batadv_tt_global_add - add a new TT global entry or update an existing one
++ * @bat_priv: the bat priv with all the soft interface information
++ * @orig_node: the originator announcing the client
++ * @tt_addr: the mac address of the non-mesh client
++ * @flags: TT flags that have to be set for this non-mesh client
++ * @ttvn: the tt version number ever announcing this non-mesh client
++ *
++ * Add a new TT global entry for the given originator. If the entry already
++ * exists add a new reference to the given originator (a global entry can have
++ * references to multiple originators) and adjust the flags attribute to reflect
++ * the function argument.
++ * If a TT local entry exists for this non-mesh client remove it.
++ *
++ * The caller must hold orig_node refcount.
++ */
+ int batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 			 struct batadv_orig_node *orig_node,
+-			 const unsigned char *tt_addr, uint8_t flags,
++			 const unsigned char *tt_addr, uint16_t flags,
+ 			 uint8_t ttvn)
+ {
+ 	struct batadv_tt_global_entry *tt_global_entry;
+diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
+index ab8e683..659a3bb 100644
+--- a/net/batman-adv/translation-table.h
++++ b/net/batman-adv/translation-table.h
+@@ -33,7 +33,7 @@ void batadv_tt_global_add_orig(struct batadv_priv *bat_priv,
+ 			       const unsigned char *tt_buff, int tt_buff_len);
+ int batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 			 struct batadv_orig_node *orig_node,
+-			 const unsigned char *addr, uint8_t flags,
++			 const unsigned char *addr, uint16_t flags,
+ 			 uint8_t ttvn);
+ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset);
+ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
 -- 
 1.8.1.5
 
