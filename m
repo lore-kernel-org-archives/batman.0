@@ -1,11 +1,14 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 29 May 2013 02:59:38 +0200
-Message-Id: <1369789186-3600-14-git-send-email-ordex@autistici.org>
-In-Reply-To: <1369789186-3600-1-git-send-email-ordex@autistici.org>
-References: <1369789186-3600-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 13/21] batman-adv: refactor
-	batadv_tt_local_event()
+Return-Path: <martin@hundeboll.net>
+Message-ID: <51A59E1F.5070204@hundeboll.net>
+Date: Wed, 29 May 2013 08:20:15 +0200
+From: =?ISO-8859-1?Q?Martin_Hundeb=F8ll?= <martin@hundeboll.net>
+MIME-Version: 1.0
+References: <1369779649-2537-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1369779649-2537-1-git-send-email-ordex@autistici.org>
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] [RFC 00/10] Improving the routing protocol
+	abstraction
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,98 +20,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <antonio@open-mesh.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <ordex@autistici.org>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+Hi Antonio,
 
-Instead of passing a generic combination of flags as
-argument, it is easier to pass the entire tt_common
-structure (containing the flags already set) plus a
-bitfield of event flags that will be unified with
-the already existing ones before inserting the client
-in the event queue.
-In this way invocations of the modified function can be
-simplified.
+Great work. We are looking forward to the next generation of Batman=20
+(shouldn't that be Robin?) :)
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- net/batman-adv/translation-table.c | 23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
+On 2013-05-29 00:20, Antonio Quartulli wrote:
+> Antonio Quartulli (10):
+>    batman-adv: make struct batadv_neigh_node algorithm agnostic
+>    batman-adv: make struct batadv_orig_node algorithm agnostic
+>    batman-adv: add bat_orig_print function API
+>    batman-adv: add bat_metric_get API function
+>    batman-adv: add bat_metric_is_similar API function
+>    batman-adv: add bat_metric_compare API function
+>    batman-adv: adapt bonding to use the new API functions
+>    batman-adv: adapt the gateway feature to use the new API functions
+>    batman-adv: adapt the neighbor purging routine to use the new API
+>      functions
+>    batman-adv: provide orig_node routing API
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 9e87485..d35b739 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -163,10 +163,19 @@ batadv_tt_orig_list_entry_free_ref(struct batadv_tt_orig_list_entry *orig_entry)
- 	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
- }
- 
-+/**
-+ * batadv_tt_local_event - store a local TT event (ADD/DEL)
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @tt_local_entry: the TT entry involved in the event
-+ * @event_flags: flags to store in the event structure
-+ */
- static void batadv_tt_local_event(struct batadv_priv *bat_priv,
--				  const uint8_t *addr, uint8_t flags)
-+				  struct batadv_tt_local_entry *tt_local_entry,
-+				  uint8_t event_flags)
- {
- 	struct batadv_tt_change_node *tt_change_node, *entry, *safe;
-+	struct batadv_tt_common_entry *common = &tt_local_entry->common;
-+	uint8_t flags = common->flags | event_flags;
- 	bool event_removed = false;
- 	bool del_op_requested, del_op_entry;
- 
-@@ -176,7 +185,7 @@ static void batadv_tt_local_event(struct batadv_priv *bat_priv,
- 		return;
- 
- 	tt_change_node->change.flags = flags;
--	memcpy(tt_change_node->change.addr, addr, ETH_ALEN);
-+	memcpy(tt_change_node->change.addr, common->addr, ETH_ALEN);
- 
- 	del_op_requested = flags & BATADV_TT_CLIENT_DEL;
- 
-@@ -184,7 +193,7 @@ static void batadv_tt_local_event(struct batadv_priv *bat_priv,
- 	spin_lock_bh(&bat_priv->tt.changes_list_lock);
- 	list_for_each_entry_safe(entry, safe, &bat_priv->tt.changes_list,
- 				 list) {
--		if (!batadv_compare_eth(entry->change.addr, addr))
-+		if (!batadv_compare_eth(entry->change.addr, common->addr))
- 			continue;
- 
- 		/* DEL+ADD in the same orig interval have no effect and can be
-@@ -332,7 +341,7 @@ void batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 	}
- 
- add_event:
--	batadv_tt_local_event(bat_priv, addr, tt_local->common.flags);
-+	batadv_tt_local_event(bat_priv, tt_local, BATADV_NO_FLAGS);
- 
- check_roaming:
- 	/* Check whether it is a roaming, but don't do anything if the roaming
-@@ -529,8 +538,7 @@ batadv_tt_local_set_pending(struct batadv_priv *bat_priv,
- 			    struct batadv_tt_local_entry *tt_local_entry,
- 			    uint16_t flags, const char *message)
- {
--	batadv_tt_local_event(bat_priv, tt_local_entry->common.addr,
--			      tt_local_entry->common.flags | flags);
-+	batadv_tt_local_event(bat_priv, tt_local_entry, flags);
- 
- 	/* The local client has to be marked as "pending to be removed" but has
- 	 * to be kept in the table in order to send it in a full table
-@@ -584,8 +592,7 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
- 	/* if this client has been added right now, it is possible to
- 	 * immediately purge it
- 	 */
--	batadv_tt_local_event(bat_priv, tt_local_entry->common.addr,
--			      curr_flags | BATADV_TT_CLIENT_DEL);
-+	batadv_tt_local_event(bat_priv, tt_local_entry, BATADV_TT_CLIENT_DEL);
- 	hlist_del_rcu(&tt_local_entry->common.hash_entry);
- 	batadv_tt_local_entry_free_ref(tt_local_entry);
- 
--- 
-1.8.1.5
+I see that in nc.c you changed the uses of neigh_node->tq_avg to the new=20
+private algo-specific struct (neigh_node->bat_iv.tq_avg), but there is=20
+no patch to make nc.c use the new API (bat_algo_ops.bat_metric_get() )...
 
+Is this because you were in doubt wether NC will be usable with bat_v or=20
+just because you did "make && git-push" ? :)
+
+I am sure NC will need some work in order to support bat_v, and I will=20
+try to catch up soon...
+
+--=20
+Kind Regards
+Martin Hundeb=F8ll
+Frederiks All=E9 99, 1.th
+8000 Aarhus C
+Denmark
+
++45 61 65 54 61
+martin@hundeboll.net
