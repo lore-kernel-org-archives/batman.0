@@ -1,11 +1,14 @@
 Return-Path: <ordex@autistici.org>
+Date: Wed, 29 May 2013 10:17:37 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 29 May 2013 10:12:30 +0200
-Message-Id: <1369815152-2750-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1369815152-2750-1-git-send-email-ordex@autistici.org>
+Message-ID: <20130529081736.GO3333@ritirata.org>
 References: <1369815051-708-1-git-send-email-ordex@autistici.org>
- <1369815152-2750-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 19/21] batman-adv: print the VID properly
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="UUMz/kfoogzZ9WLZ"
+Content-Disposition: inline
+In-Reply-To: <1369815051-708-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2013-05-29b
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,171 +21,61 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <antonio@open-mesh.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <antonio@open-mesh.com>
 
-Since the MSB bits of any vid variable are now used for
-storing flags, print the vid properly by taking the flags
-away and printing -1 in case of VID representing no real
-VLAN.
+--UUMz/kfoogzZ9WLZ
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
----
- net/batman-adv/bridge_loop_avoidance.c | 37 +++++++++++++++++++---------------
- 1 file changed, 21 insertions(+), 16 deletions(-)
+On Wed, May 29, 2013 at 10:10:30AM +0200, Antonio Quartulli wrote:
+> Hello David,
+>=20
+> this is again our pull request intended for net-next/linux-3.11.
+>=20
+> Apparently my mail server decided that 14/21 was spam and refused all the
+> subsequent emails. It's a first step towards the automatic kernel mainten=
+ance
+> :-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 7354063..e9d8e0b 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -307,7 +307,8 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, uint8_t *mac,
- 		 */
- 		memcpy(ethhdr->h_source, mac, ETH_ALEN);
- 		batadv_dbg(BATADV_DBG_BLA, bat_priv,
--			   "bla_send_claim(): CLAIM %pM on vid %d\n", mac, vid);
-+			   "bla_send_claim(): CLAIM %pM on vid %d\n", mac,
-+			   BATADV_PRINT_VID(vid));
- 		break;
- 	case BATADV_CLAIM_TYPE_UNCLAIM:
- 		/* unclaim frame
-@@ -316,7 +317,7 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, uint8_t *mac,
- 		memcpy(hw_src, mac, ETH_ALEN);
- 		batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 			   "bla_send_claim(): UNCLAIM %pM on vid %d\n", mac,
--			   vid);
-+			   BATADV_PRINT_VID(vid));
- 		break;
- 	case BATADV_CLAIM_TYPE_ANNOUNCE:
- 		/* announcement frame
-@@ -325,7 +326,7 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, uint8_t *mac,
- 		memcpy(hw_src, mac, ETH_ALEN);
- 		batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 			   "bla_send_claim(): ANNOUNCE of %pM on vid %d\n",
--			   ethhdr->h_source, vid);
-+			   ethhdr->h_source, BATADV_PRINT_VID(vid));
- 		break;
- 	case BATADV_CLAIM_TYPE_REQUEST:
- 		/* request frame
-@@ -336,7 +337,8 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, uint8_t *mac,
- 		memcpy(ethhdr->h_dest, mac, ETH_ALEN);
- 		batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 			   "bla_send_claim(): REQUEST of %pM to %pM on vid %d\n",
--			   ethhdr->h_source, ethhdr->h_dest, vid);
-+			   ethhdr->h_source, ethhdr->h_dest,
-+			   BATADV_PRINT_VID(vid));
- 		break;
- 	}
- 
-@@ -381,7 +383,7 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, uint8_t *orig,
- 
- 	batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 		   "bla_get_backbone_gw(): not found (%pM, %d), creating new entry\n",
--		   orig, vid);
-+		   orig, BATADV_PRINT_VID(vid));
- 
- 	entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
- 	if (!entry)
-@@ -573,7 +575,7 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
- 		atomic_set(&claim->refcount, 2);
- 		batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 			   "bla_add_claim(): adding new entry %pM, vid %d to hash ...\n",
--			   mac, vid);
-+			   mac, BATADV_PRINT_VID(vid));
- 		hash_added = batadv_hash_add(bat_priv->bla.claim_hash,
- 					     batadv_compare_claim,
- 					     batadv_choose_claim, claim,
-@@ -592,7 +594,7 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
- 
- 		batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 			   "bla_add_claim(): changing ownership for %pM, vid %d\n",
--			   mac, vid);
-+			   mac, BATADV_PRINT_VID(vid));
- 
- 		claim->backbone_gw->crc ^= crc16(0, claim->addr, ETH_ALEN);
- 		batadv_backbone_gw_free_ref(claim->backbone_gw);
-@@ -623,7 +625,7 @@ static void batadv_bla_del_claim(struct batadv_priv *bat_priv,
- 		return;
- 
- 	batadv_dbg(BATADV_DBG_BLA, bat_priv, "bla_del_claim(): %pM, vid %d\n",
--		   mac, vid);
-+		   mac, BATADV_PRINT_VID(vid));
- 
- 	batadv_hash_remove(bat_priv->bla.claim_hash, batadv_compare_claim,
- 			   batadv_choose_claim, claim);
-@@ -659,12 +661,13 @@ static int batadv_handle_announce(struct batadv_priv *bat_priv,
- 
- 	batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 		   "handle_announce(): ANNOUNCE vid %d (sent by %pM)... CRC = %#.4x\n",
--		   vid, backbone_gw->orig, crc);
-+		   BATADV_PRINT_VID(vid), backbone_gw->orig, crc);
- 
- 	if (backbone_gw->crc != crc) {
- 		batadv_dbg(BATADV_DBG_BLA, backbone_gw->bat_priv,
- 			   "handle_announce(): CRC FAILED for %pM/%d (my = %#.4x, sent = %#.4x)\n",
--			   backbone_gw->orig, backbone_gw->vid,
-+			   backbone_gw->orig,
-+			   BATADV_PRINT_VID(backbone_gw->vid),
- 			   backbone_gw->crc, crc);
- 
- 		batadv_bla_send_request(backbone_gw);
-@@ -700,7 +703,7 @@ static int batadv_handle_request(struct batadv_priv *bat_priv,
- 
- 	batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 		   "handle_request(): REQUEST vid %d (sent by %pM)...\n",
--		   vid, ethhdr->h_source);
-+		   BATADV_PRINT_VID(vid), ethhdr->h_source);
- 
- 	batadv_bla_answer_request(bat_priv, primary_if, vid);
- 	return 1;
-@@ -728,7 +731,7 @@ static int batadv_handle_unclaim(struct batadv_priv *bat_priv,
- 	/* this must be an UNCLAIM frame */
- 	batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 		   "handle_unclaim(): UNCLAIM %pM on vid %d (sent by %pM)...\n",
--		   claim_addr, vid, backbone_gw->orig);
-+		   claim_addr, BATADV_PRINT_VID(vid), backbone_gw->orig);
- 
- 	batadv_bla_del_claim(bat_priv, claim_addr, vid);
- 	batadv_backbone_gw_free_ref(backbone_gw);
-@@ -912,7 +915,8 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
- 	if (ret == 1)
- 		batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 			   "bla_process_claim(): received a claim frame from another group. From: %pM on vid %d ...(hw_src %pM, hw_dst %pM)\n",
--			   ethhdr->h_source, vid, hw_src, hw_dst);
-+			   ethhdr->h_source, BATADV_PRINT_VID(vid), hw_src,
-+			   hw_dst);
- 
- 	if (ret < 2)
- 		return ret;
-@@ -947,7 +951,7 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
- 
- 	batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 		   "bla_process_claim(): ERROR - this looks like a claim frame, but is useless. eth src %pM on vid %d ...(hw_src %pM, hw_dst %pM)\n",
--		   ethhdr->h_source, vid, hw_src, hw_dst);
-+		   ethhdr->h_source, BATADV_PRINT_VID(vid), hw_src, hw_dst);
- 	return 1;
- }
- 
-@@ -1628,7 +1632,7 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
- 			is_own = batadv_compare_eth(claim->backbone_gw->orig,
- 						    primary_addr);
- 			seq_printf(seq, " * %pM on %5d by %pM [%c] (%#.4x)\n",
--				   claim->addr, claim->vid,
-+				   claim->addr, BATADV_PRINT_VID(claim->vid),
- 				   claim->backbone_gw->orig,
- 				   (is_own ? 'x' : ' '),
- 				   claim->backbone_gw->crc);
-@@ -1681,7 +1685,8 @@ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
- 				continue;
- 
- 			seq_printf(seq, " * %pM on %5d %4i.%03is (%#.4x)\n",
--				   backbone_gw->orig, backbone_gw->vid, secs,
-+				   backbone_gw->orig,
-+				   BATADV_PRINT_VID(backbone_gw->vid), secs,
- 				   msecs, backbone_gw->crc);
- 		}
- 		rcu_read_unlock();
--- 
-1.8.1.5
+David, sorry but it happened again.
 
+I'm in touch with my provider admin in order to solve the issue.
+Meanwhile I sent the patches divided in two subsets and I hope it did not c=
+reate
+troubles to patchwork.
+
+Sorry for the noise.
+
+Regards,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--UUMz/kfoogzZ9WLZ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRpbmgAAoJEADl0hg6qKeOtjEP/j7HYFa2QRGtCUuVBm4UO0Tm
+FkkE5cmFjo9/jsuXeh4+XcKE38IFWtGsnUbXby7kpvw7ow1eCts377nlhxxbhHzY
+CP5qcTu1oa14Ouzg3LoPhVNQHs7k6PCUbHQ/SF9dG4Eqgkbr36bzzJk8PQJguIm0
+u7w1igU7aViWh6OndQH5IjQvvwMShA+kqvoLtZ+H9PGuMGjDvjs54uIOSx98VKIq
+gS0OexUvrrCb908NZoKAi1dX6kRmiDmyXTU723NbO7oZ2iXpxRR3l8UMPM64Uv4N
+VUdRmJOd6sPXkYlii9Gwzg7NymOH25UA9TViiqHj7KV0upiK+y9O67hYqrGi7KtD
+2Y+h9pIHhxRFjvQwNu+CIXIhHpVhhApm/4QxwFXxaO+K0m9QfHWy5QZR5ydG65oO
+LQLDBQWQ3uBSDRYJIk/9LXGhC2hXgD5lJNkavdheRrMF0maPudAyT8tZLrxkspXw
+2KBDWWBE5707LyxlocQKTweZJ6/7cAWPs2eFr3HLMZjJoI4ht9TtFw2DTwqqdKQ6
+euSLY+rSeNuPC46T9lrZXNMeC4DklxpdSu6tlEJmWJPASZCHCQTeljYdCIMPHneB
+D/Z4U/U63KJRQOb+yr9ii97bWJG0xisgPrZtPU/DiQbbFAXcgLSjJnPw5vDi7mFb
+SSZ/RMJqaku57N+y+sjT
+=E0R8
+-----END PGP SIGNATURE-----
+
+--UUMz/kfoogzZ9WLZ--
