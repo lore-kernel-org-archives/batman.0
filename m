@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 29 May 2013 10:10:35 +0200
-Message-Id: <1369815051-708-6-git-send-email-ordex@autistici.org>
+Date: Wed, 29 May 2013 10:10:37 +0200
+Message-Id: <1369815051-708-8-git-send-email-ordex@autistici.org>
 In-Reply-To: <1369815051-708-1-git-send-email-ordex@autistici.org>
 References: <1369815051-708-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 05/21] batman-adv: slightly improve neighbor
-	creation debug message
+Subject: [B.A.T.M.A.N.] [PATCH 07/21] batman-adv: don't check compat version
+	twice
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,28 +22,34 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lind
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-print the interface along with the new neighbor mac address
+Compatibility version is checked upon packet reception
+before calling any handler. For this reason it does need to
+be checked once more in the handler itself.
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/originator.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ net/batman-adv/bat_iv_ogm.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index ddf5634..f50553a 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -110,7 +110,8 @@ batadv_neigh_node_new(struct batadv_hard_iface *hard_iface,
- 	atomic_set(&neigh_node->refcount, 2);
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 6d62e29..38183dc 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1054,13 +1054,6 @@ static void batadv_iv_ogm_process(const struct ethhdr *ethhdr,
+ 	}
+ 	rcu_read_unlock();
  
- 	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
--		   "Creating new neighbor %pM\n", neigh_addr);
-+		   "Creating new neighbor %pM on interface %s\n", neigh_addr,
-+		   hard_iface->net_dev->name);
- 
- out:
- 	return neigh_node;
+-	if (batadv_ogm_packet->header.version != BATADV_COMPAT_VERSION) {
+-		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+-			   "Drop packet: incompatible batman version (%i)\n",
+-			   batadv_ogm_packet->header.version);
+-		return;
+-	}
+-
+ 	if (is_my_addr) {
+ 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+ 			   "Drop packet: received my own broadcast (sender: %pM)\n",
 -- 
 1.8.1.5
 
