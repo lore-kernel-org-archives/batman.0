@@ -1,18 +1,8 @@
-Return-Path: <mihail.costea90@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <20130529154352.GW3333@ritirata.org>
-References: <1368793673-27539-1-git-send-email-mihail.costea2005@gmail.com>
- <1368793673-27539-3-git-send-email-mihail.costea2005@gmail.com>
- <20130526140240.GO1679@ritirata.org>
- <CAP5XTDOc8iDYQNLbY9f1=07eifGWMZD2xYqvPF+VLxk4M5M43g@mail.gmail.com>
- <20130529154352.GW3333@ritirata.org>
-Date: Wed, 29 May 2013 19:19:56 -0700
-Message-ID: <CAP5XTDOvRsvfQURMQYgHQpdKsmcS9_pfWYE3=a61tsg-J+o-PQ@mail.gmail.com>
-From: Mihail Costea <mihail.costea90@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] [RFC 3/4] batman-adv: added necessary functions
- for NDP,
- like checking if a packet is valid or creating a Neighbor Advertisement
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 30 May 2013 14:37:10 +0800
+Message-Id: <1369895830-8588-1-git-send-email-lindner_marek@yahoo.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove obsolete variable
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,73 +14,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-On 29 May 2013 08:43, Antonio Quartulli <ordex@autistici.org> wrote:
-> On Wed, May 29, 2013 at 08:36:50AM -0700, Mihail Costea wrote:
->> On 26 May 2013 07:02, Antonio Quartulli <ordex@autistici.org> wrote:
->> > On Fri, May 17, 2013 at 03:27:51PM +0300, Mihail wrote:
->> >> From: "mihail.costea90@gmail.com" <mihail.costea90@gmail.com>
->> >>
->> >> Added functions needed for NDP snooping, like getting the IPv6 addresses
->> >> or getting the target HW address from an Neighbor Advertisement (NA).
->> >> Also added functions to create NA for Neighbor
->> >> Solicitations that have already the HW address in DAT.
->> >>
->> >> Problems: I have to generate router and override flags for NA. For now
->> >> I don't now exactly how to get them. From what I've seen, batman could
->> >> now which nodes are routers, but for override flag, we should find a
->> >> mechanism to know if the node is proxy or has anycast address.
->> >> For inspiration I have used the code at: <net/ipv6/ndisc.c>.
->> >
->> > What is the concept you have in mind?
->> > Maybe you first explain a bit more about your idea so that we can help you in
->> > find a way to implement that.
->> >
->> > You want to edit the router address and flags carried by the NA?
->> >
->>
->> When creating the NA response for an HW address already contained in
->> the DAT, I must set 3 flags: router, solicited and override.
->>
->> The solicited flag is 1 because I only answer to solicited NS.
->>
->> The router flag should be 1 only if the device for which we have the
->> HW address is a router. From what I've seen there are some functions
->> in batatv for finding routers, but I'll have to see if they can be
->> used on the nodes connected to mesh-nodes. Or maybe there is another
->> way to see if the device is a router.
->
-> I guess here you are looking for an IPv6 router, right? so a node which
-> advertised itself as it, correct? In this case in batman-adv there is nothing
-> which can help you because there is no IPv6 detection of any type..
-> How can we recognise if a node is advertising itself as router? maybe by
-> snooping other NDP messages?
->
+Introduced by 1ab746a3f2441d3466592b86134fbc72a9fe0558
+("batman-adv: properly align tvlv infrastructure")
 
-I'll look into this. There are some router packets, so those might be useful.
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+---
+ main.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
->>
->> About the override flag, I don't really have an idea. I didn't
->> understand very well how it was calculated in net/ipv6/ndisc.c so I
->> set it to 1 by default (it should be 0 for proxy and anycast address).
->>
->
-> mh..ok. We may want to better check this once more to avoid triggering any
-> strange behaviour in the network :)
->
-> Cheers,
->
-> --
-> Antonio Quartulli
->
-> ..each of us alone is worth nothing..
-> Ernesto "Che" Guevara
+diff --git a/main.c b/main.c
+index 1192e61..5d30fe0 100644
+--- a/main.c
++++ b/main.c
+@@ -1043,7 +1043,7 @@ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, uint8_t *src,
+ 	struct batadv_orig_node *orig_node;
+ 	struct sk_buff *skb = NULL;
+ 	unsigned char *tvlv_buff;
+-	unsigned int tvlv_len, tvlv_long_hdr = 0;
++	unsigned int tvlv_len;
+ 	ssize_t hdr_len = sizeof(*unicast_tvlv_packet);
+ 	bool ret = false;
+ 
+@@ -1051,9 +1051,6 @@ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, uint8_t *src,
+ 	if (!orig_node)
+ 		goto out;
+ 
+-	if (tvlv_value_len > 255)
+-		tvlv_long_hdr = 1;
+-
+ 	tvlv_len = sizeof(*tvlv_hdr) + tvlv_value_len;
+ 
+ 	skb = netdev_alloc_skb_ip_align(NULL, ETH_HLEN + hdr_len + tvlv_len);
+-- 
+1.7.10.4
 
-This needs more research. Maybe we can find something for this.
-
-I'll get a laptop in 1-2 weeks, but I'll be able to work only during
-weekends. I'll implement the mentioned changes at that moment.
-
---
-Mihail Costea
