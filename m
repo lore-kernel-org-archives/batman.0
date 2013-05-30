@@ -1,18 +1,14 @@
-Return-Path: <ordex@autistici.org>
-Date: Thu, 30 May 2013 13:29:20 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130530112920.GB2475@ritirata.org>
-References: <1369779649-2537-1-git-send-email-ordex@autistici.org>
- <1369779649-2537-10-git-send-email-ordex@autistici.org>
- <20130529143221.GD23657@pandem0nium>
- <20130529144817.GS3333@ritirata.org>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Thu, 30 May 2013 21:59:51 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20130530195951.GA1788@pandem0nium>
+References: <51A68F85.8@wirelesspt.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="A6N2fC+uXW/VQSAv"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="RnlQjJ0d97Da+TV1"
 Content-Disposition: inline
-In-Reply-To: <20130529144817.GS3333@ritirata.org>
-Subject: Re: [B.A.T.M.A.N.] [RFC 08/10] batman-adv: adapt the gateway
- feature to use the new API functions
+In-Reply-To: <51A68F85.8@wirelesspt.net>
+Subject: Re: [B.A.T.M.A.N.] alfred and ipv6
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,99 +20,80 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: cmsv@wirelesspt.net, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---A6N2fC+uXW/VQSAv
+--RnlQjJ0d97Da+TV1
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, May 29, 2013 at 04:48:17PM +0200, Antonio Quartulli wrote:
-> On Wed, May 29, 2013 at 04:32:21PM +0200, Simon Wunderlich wrote:
-> > On Wed, May 29, 2013 at 12:20:48AM +0200, Antonio Quartulli wrote:
-
-[...]
-
-> > =20
-> > >  	gw_divisor =3D BATADV_TQ_LOCAL_WINDOW_SIZE * BATADV_TQ_LOCAL_WINDOW=
-_SIZE;
-> > >  	gw_divisor *=3D 64;
-> > > @@ -137,18 +137,19 @@ batadv_gw_get_best_gw_node(struct batadv_priv *=
-bat_priv)
-> > >  		if (!atomic_inc_not_zero(&gw_node->refcount))
-> > >  			goto next;
-> > > =20
-> > > -		tq_avg =3D router->bat_iv.tq_avg;
-> > > +		metric =3D bao->bat_metric_get(router);
-> > > =20
-> > >  		switch (atomic_read(&bat_priv->gw_sel_class)) {
-> > >  		case 1: /* fast connection */
-> > > -			tmp_gw_factor =3D tq_avg * tq_avg;
-> > > +			tmp_gw_factor =3D metric * metric;
-> >=20
-> > Hmm, that is rather strange ... I think fiddling with the metric direct=
-ly
-> > this way is weird when abstracting. For example:
-> >  1.) Assuming we don't know how the metric looks like, we can't just
-> >      multiplicate them. A logarithmic scaled metric or even arbritrary
-> >      metric would look different compared to the linear metrics as we
-> >      use now.
-> >  2.) This might overflow because metric is u32 and tmp_gw_factor is too.
-> >      It should work for batman IV where the metric is <256, but might
-> >      not for BATMAN V.
-> >=20
-> > I think this "bandwidth magic" should be abstracted as well somehow, if
-> > we want to keep on using it that way.
+On Wed, May 29, 2013 at 07:30:13PM -0400, cmsv wrote:
+> As i am about to try out alfred i already face myself with a couple issue=
+s:
 >=20
-> I totally agree. Thanks for your feedback, but I don't really know how I =
-could
-> abstract this behaviour. This is totally GW related, but hardcoded around=
- the
-> metric semantic. here we would need a routing API that should be implemen=
-ted by
-> the GW component....mhhh..suggestions? :D
+> http://www.open-mesh.org/projects/open-mesh/wiki/Alfred
+> http://git.open-mesh.org/alfred.git/blob_plain/refs/heads/master:/README
 >=20
+> I the past i had removed ipv6 support since i do not need it and it
+> helps trimming up the final image. (most routers and people still use 4
+> mb flash)
+>=20
+> I would like to use alfred and would also like to know if compiling the
+> image with
+> <*> kmod-ipv6................................................... IPv6
+> support
+>=20
+> Leaving out :
+> [ ] ping6
+> [ ] Enable IPv6 support
+> [ ] Enable IPv6 support in packages
+>=20
+> will allow Alfred to work as intended. As anyone tested?
 
-After discussing with Marek on IRC, we agreed that it is probably better to
-leave this part of the code untouched.
+You will only need basic support for alfred. I don't know if "Enable IPv6 s=
+upport"
+is mandatory or not. alfred relies on link local addresses configured on yo=
+ur
+interface.
+>=20
+> Another problem with using ipv6 is the final image size.
+> kmod-ipv6_3.3.8-1_ar71xx.ipk  is at least 138K
+> An that is quite a bit ...
 
-It has to be rearranged when implementing the new GW logic discussed at WBM=
-v6
-and therefore does not really need to be made protocol agnostic now.
+You can disable IPv4 in return. :D
 
+Just kidding ... but IPv6 will become more popular, we can't deny it foreve=
+r.
+Anyway, alfred is built on top of IPv6 link local multicast and there is no
+plan to change that.
 
+>=20
+> What are exactly the reasons why alfred does not use ipv4 ?
+
+We wanted to have alfred working without requiring user configuration of the
+interface (IP addresses etc). This left the choice to use either another
+Ethertype and special Ethernet frames, or IPv6 multicast. As we did not want
+to add more custom Ethernet types (some switches don't like that, and alfred
+is payload traffic and does not just stays in the Ad-Hoc WLAN), and IPv6=20
+allows longer messages due to built-in fragmentation, we decided to go for
+IPv6.
 
 Cheers,
+	Simon
 
 
 
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---A6N2fC+uXW/VQSAv
+--RnlQjJ0d97Da+TV1
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRpzgQAAoJEADl0hg6qKeOGnIP/0MjJc+sQFKT0DVSWdQHKzn6
-Gf2o2h+Z2BB/wqug19Cl/EPp8qoALKgPX825hAvCBrBRgPID3fpaX1swyQSLDIFf
-UytZ5wUi0QP2IP2bpYSQxSzzmf6+UGauAAn37dLnUeWfss2JcbobM8NX21cHEnXS
-G01wd03bHA3P28Bc8wZuIhpFM916PT/CUqlNa07BhbbJsYAhCAW/b6yqW5xCYilq
-WGzduoR/wTRLowrMyssMQqA7B3BsoLcCYHi8mORiXroMrkeOG2MdDdi5USI0JJxx
-H3E6TeHbMcz655TgHpq6IiAh3drPk6jp4rBkv05LPnh0KvA58zqWX7YdVUkt+wbC
-jrNa/etYbO9fGPur2oZojlvG+K1BReTrMSN4eWHLMSeGBZApjdCjaC3ATtR1YnEc
-b5Zz2TR6VxvMdpakyKRniOWnccvvGHmh68N7IVI75yiWUC3fO6LFBURFkpCWGDgT
-HVqoAosvhFkmeUy/t3DuCd7CwxB4SBQtMH48zGJuAsplutdptMhxaDmChlm31PqY
-18Q+3Gzb1J7oRREnK3gkQ1yLH0TGH9YEeNPbXRhhdmUArG7N8kw7dma+QYQEqzXK
-Vb6QOAswsiZZMm5pjou7G7/6ImtRH8ThEPlrn1yw2xVnuLANHnDSH8WL2Otyn08m
-SG4+RTa2YKVWY+LRLKtf
-=nX9Q
+iEYEARECAAYFAlGnr7cACgkQrzg/fFk7axY5AgCgyVF7DZDDqsmfO5uPyI0QfBAF
+lWYAoJye8rlaz5FbsH6a+RIs0wmnvKNO
+=hfxm
 -----END PGP SIGNATURE-----
 
---A6N2fC+uXW/VQSAv--
+--RnlQjJ0d97Da+TV1--
