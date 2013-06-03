@@ -1,13 +1,9 @@
-Return-Path: <davem@davemloft.net>
-Date: Thu, 30 May 2013 15:53:59 -0700 (PDT)
-Message-Id: <20130530.155359.2022430388757359040.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1369815051-708-1-git-send-email-ordex@autistici.org>
-References: <1369815051-708-1-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2013-05-29b
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon,  3 Jun 2013 11:48:50 +0200
+Message-Id: <1370252930-3601-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH next] net: pass info struct via netdevice
+	notifier
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,30 +15,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 29 May 2013 10:10:30 +0200
+From: Jiri Pirko <jiri@resnulli.us>
 
-> The only real behavioural change in this batch is the broadcast overhead
-> reduction on non-wireless interfaces brought by Matthias Schiffer.
-> 
-> The rest is made up by code cleanups and refactoring.
-> 
-> Two highlights on the refactoring are the introduction of
-> netdev_alloc_skb_ip_align() to avoid to deal with NET_IP_ALIGN manually and the
-> introduction of the eth_hdr() wherever it was possible in order to improve
-> readability.
-> 
-> Please pull or let me know of any problem.
- ...
-> The following changes since commit 06ecf24bdf2b7afc6c8fd13de6dba2a96dd331b6:
-> 
->   net: Fix build warnings after mac_header and transport_header became __u16. (2013-05-28 13:15:50 -0700)
-> 
-> are available in the git repository at:
-> 
->   git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+So far, only net_device * could be passed along with netdevice notifier
+event. This patch provides a possibility to pass custom structure
+able to provide info that event listener needs to know.
 
-Pulled, thanks Antonio.
+Signed-off-by: Jiri Pirko <jiri@resnulli.us>
+
+v2->v3: fix typo on simeth
+	shortened dev_getter
+	shortened notifier_info struct name
+v1->v2: fix notifier_call parameter in call_netdevice_notifier()
+Signed-off-by: David S. Miller <davem@davemloft.net>
+[ordex@autistici.org: added compat code]
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ compat.h         | 6 ++++++
+ hard-interface.c | 2 +-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/compat.h b/compat.h
+index 08b7500..17ef089 100644
+--- a/compat.h
++++ b/compat.h
+@@ -302,4 +302,10 @@ static int __batadv_interface_set_mac_addr(x, y)
+ 
+ #endif /* < KERNEL_VERSION(3, 10, 0) */
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 11, 0)
++
++#define netdev_notifier_info_to_dev(ptr) ptr
++
++#endif /* < KERNEL_VERSION(3, 11, 0) */
++
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
+diff --git a/hard-interface.c b/hard-interface.c
+index dc4ac29..c478e6b 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -645,7 +645,7 @@ void batadv_hardif_remove_interfaces(void)
+ static int batadv_hard_if_event(struct notifier_block *this,
+ 				unsigned long event, void *ptr)
+ {
+-	struct net_device *net_dev = ptr;
++	struct net_device *net_dev = netdev_notifier_info_to_dev(ptr);
+ 	struct batadv_hard_iface *hard_iface;
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_priv *bat_priv;
+-- 
+1.8.1.5
+
