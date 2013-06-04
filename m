@@ -1,16 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 4 Jun 2013 17:14:52 +0800
-References: <179dd3afbd3ecdcd2144bd3016e1b01eaf0d5263.1369754967.git.mschiffer@universe-factory.net>
- <20130528154248.GD14466@pandem0nium>
-In-Reply-To: <20130528154248.GD14466@pandem0nium>
+Date: Tue, 4 Jun 2013 17:23:28 +0800
+References: <1369734587-13104-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+In-Reply-To: <1369734587-13104-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201306041714.52831.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: wait for rtnl in
-	batadv_store_mesh_iface instead of failing if it is taken
+Message-Id: <201306041723.28549.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove useless find_router
+	look up
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,25 +22,25 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
-On Tuesday, May 28, 2013 23:42:48 Simon Wunderlich wrote:
->   On Tue, May 28, 2013 at 05:32:32PM +0200, Matthias Schiffer wrote:
-> > The rtnl_lock in batadv_store_mesh_iface has been converted to a
-> > rtnl_trylock some time ago to avoid a possible deadlock between rtnl and
-> > s_active on removal of the sysfs nodes.
-> >
-> > The behaviour introduced by that was quite confusing as it could lead to
-> > the sysfs store to fail, making batman-adv setup scripts unreliable. As
-> > recently the sysfs removal was postponed to a worker not running with
-> > the rtnl taken, the deadlock can't occur any more and it is safe to
-> > change the trylock back to a lock to make the sysfs store reliable
-> > again.
-> >
-> > Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+On Tuesday, May 28, 2013 17:49:47 Simon Wunderlich wrote:
+> From: Simon Wunderlich <simon@open-mesh.com>
 > 
-> Reviewed-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+> This is not used anymore with the new fragmentation, and it might
+> actually mess up the bonding code because find_router() assumes it
+> is only called once per packet.
+> 
+> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+> ---
+> This patch was originally part of the RFC series
+> "add network wide multi interface optimization", but since it is
+> just a fix it is resent as PATCH to be applied now.
+> ---
+>  send.c |   29 ++++++++---------------------
+>  1 file changed, 8 insertions(+), 21 deletions(-)
 
-Applied in revision 96cd772.
+Applied in revision 87d4a28.
 
 Thanks,
 Marek
