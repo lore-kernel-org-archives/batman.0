@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue,  4 Jun 2013 12:11:46 +0200
-Message-Id: <1370340711-1399-9-git-send-email-ordex@autistici.org>
+Date: Tue,  4 Jun 2013 12:11:47 +0200
+Message-Id: <1370340711-1399-10-git-send-email-ordex@autistici.org>
 In-Reply-To: <1370340711-1399-1-git-send-email-ordex@autistici.org>
 References: <1370340711-1399-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv4 08/13] batman-adv: treat bat0 like yet
-	another VLAN
+Subject: [B.A.T.M.A.N.] [PATCHv4 09/13] batman-adv: add sysfs framework for
+	VLAN
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,148 +22,261 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-To make the code simpler and easier to extend, treat the
-normal LAN (bat0) like any other VLAN having vid 0
-(untagged).
+Each VLAN can now have its own set of attributes and these
+are exported through a new subfolder in the sysfs
+environment.
 
-This change makes things simpler since bat0 is not a
-particular case anymore but it is treated like any other
-VLAN.
+The subfolder is named "vlan%VID", there will be one per
+VLAN, and it is created inside the "mesh" sysfs folder
+belonging to batman-adv.
+
+Create all the needed macros and data structures to easily
+handle new attributes.
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- main.c           |  8 +-------
- soft-interface.c | 61 +++++++++++++++++++++++++++++++++++++++-----------------
- 2 files changed, 44 insertions(+), 25 deletions(-)
+ soft-interface.c |   7 +++
+ sysfs.c          | 138 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ sysfs.h          |  10 ++++
+ 3 files changed, 155 insertions(+)
 
-diff --git a/main.c b/main.c
-index 7525d96..455661b 100644
---- a/main.c
-+++ b/main.c
-@@ -129,9 +129,6 @@ int batadv_mesh_init(struct net_device *soft_iface)
- 	if (ret < 0)
- 		goto err;
- 
--	batadv_tt_local_add(soft_iface, soft_iface->dev_addr,
--			    BATADV_NULL_IFINDEX, BATADV_NO_FLAGS);
--
- 	ret = batadv_bla_init(bat_priv);
- 	if (ret < 0)
- 		goto err;
-@@ -1140,12 +1137,9 @@ struct batadv_softif_vlan *batadv_softif_vlan_get(struct batadv_priv *bat_priv,
- {
- 	struct batadv_softif_vlan *vlan, *vlan_tmp = NULL;
- 
--	if (!(vid & BATADV_VLAN_HAS_TAG))
--		return NULL;
--
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
--		if (vlan->vid != (vid & VLAN_VID_MASK))
-+		if (vlan->vid != vid)
- 			continue;
- 
- 		if (!atomic_inc_not_zero(&vlan->refcount))
 diff --git a/soft-interface.c b/soft-interface.c
-index 414b4b1..0280dfc 100644
+index 0280dfc..e6679e2 100644
 --- a/soft-interface.c
 +++ b/soft-interface.c
-@@ -373,28 +373,18 @@ out:
- }
- 
- /**
-- * batadv_interface_add_vid - ndo_add_vid API implementation
-- * @dev: the netdev of the mesh interface
-- * @vid: identifier of the new VLAN
-- *
-- * Set up all the internal structures for handling the new VLAN on top of the
-- * mesh interface
-+ * batadv_create_vlan - allocate the needed resources for a new vlan
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @vid: the VLAN identifier
-  *
-- * Return 0 on success or a negative error code in case of failure
-+ * Return 0 on success, a negative error otherwise.
-  */
--static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
--				    unsigned short vid)
-+static int batadv_softif_create_vlan(struct batadv_priv *bat_priv,
-+				     unsigned short vid)
+@@ -383,6 +383,7 @@ static int batadv_softif_create_vlan(struct batadv_priv *bat_priv,
+ 				     unsigned short vid)
  {
--	struct batadv_priv *bat_priv = netdev_priv(dev);
  	struct batadv_softif_vlan *vlan;
++	int err;
  
--	/* only 802.1Q vlans are supported. batman-adv does not know how to
--	 * handle other types
--	 */
--	if (proto != htons(ETH_P_8021Q))
--		return -EINVAL;
--
--	vlan = kmalloc(sizeof(*vlan), GFP_ATOMIC);
-+	vlan = kzalloc(sizeof(*vlan), GFP_ATOMIC);
+ 	vlan = kzalloc(sizeof(*vlan), GFP_ATOMIC);
  	if (!vlan)
- 		return -ENOMEM;
- 
-@@ -404,7 +394,8 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
- 	/* add a new TT local entry. This one will be marked with the NOPURGE
- 	 * flag
- 	 */
--	batadv_tt_local_add(dev, dev->dev_addr, vid | BATADV_VLAN_HAS_TAG,
-+	batadv_tt_local_add(bat_priv->soft_iface,
-+			    bat_priv->soft_iface->dev_addr, vid,
+@@ -398,6 +399,10 @@ static int batadv_softif_create_vlan(struct batadv_priv *bat_priv,
+ 			    bat_priv->soft_iface->dev_addr, vid,
  			    BATADV_NULL_IFINDEX);
  
++	err = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
++	if (err)
++		return err;
++
  	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
-@@ -415,6 +406,32 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ 	list_add_rcu(&vlan->list, &bat_priv->softif_vlan_list);
+ 	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+@@ -461,6 +466,8 @@ static int batadv_interface_kill_vid(struct net_device *dev, __be16 proto,
+ 	list_del_rcu(&vlan->list);
+ 	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+ 
++	batadv_sysfs_del_vlan(bat_priv, vlan);
++
+ 	/* explicitly remove the associated TT local entry because it is marked
+ 	 * with the NOPURGE flag
+ 	 */
+diff --git a/sysfs.c b/sysfs.c
+index b70ae52..03285dd 100644
+--- a/sysfs.c
++++ b/sysfs.c
+@@ -39,6 +39,31 @@ static struct batadv_priv *batadv_kobj_to_batpriv(struct kobject *obj)
+ 	return netdev_priv(net_dev);
  }
  
- /**
-+ * batadv_interface_add_vid - ndo_add_vid API implementation
-+ * @dev: the netdev of the mesh interface
-+ * @vid: identifier of the new VLAN
++/**
++ * batadv_kobj_to_vlan - convert a kobj in the associated softif_vlan struct
++ * @obj: kobject to covert
 + *
-+ * Set up all the internal structures for handling the new VLAN on top of the
-+ * mesh interface
-+ *
-+ * Return 0 on success or a negative error code otherwise
++ * Return the associated softif_vlan struct if cound, NULL otherwise
 + */
-+static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
-+				    unsigned short vid)
++static struct batadv_softif_vlan *batadv_kobj_to_vlan(struct kobject *obj)
++{
++	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(obj->parent);
++	struct batadv_softif_vlan *vlan, *vlan_tmp = NULL;
++
++	list_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
++		if (vlan->kobj != obj)
++			continue;
++
++		if (!atomic_inc_not_zero(&vlan->refcount))
++			continue;
++
++		vlan_tmp = vlan;
++		break;
++	}
++
++	return vlan_tmp;
++}
++
+ #define BATADV_UEV_TYPE_VAR	"BATTYPE="
+ #define BATADV_UEV_ACTION_VAR	"BATACTION="
+ #define BATADV_UEV_DATA_VAR	"BATDATA="
+@@ -53,6 +78,15 @@ static char *batadv_uev_type_str[] = {
+ 	"gw"
+ };
+ 
++/* Use this, if you have customized show and store functions for vlan attrs */
++#define BATADV_ATTR_VLAN(_name, _mode, _show, _store)	\
++struct batadv_attribute batadv_attr_vlan_##_name = {	\
++	.attr = {.name = __stringify(_name),		\
++		 .mode = _mode },			\
++	.show   = _show,				\
++	.store  = _store,				\
++};
++
+ /* Use this, if you have customized show and store functions */
+ #define BATADV_ATTR(_name, _mode, _show, _store)	\
+ struct batadv_attribute batadv_attr_##_name = {		\
+@@ -122,6 +156,38 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
+ 			   batadv_store_##_name)
+ 
++#define BATADV_ATTR_VLAN_STORE_BOOL(_name, _post_func)			\
++ssize_t batadv_store_vlan_##_name(struct kobject *kobj,			\
++				  struct attribute *attr, char *buff,	\
++				  size_t count)				\
++{									\
++	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj->parent);\
++	struct batadv_softif_vlan *vlan = batadv_kobj_to_vlan(kobj);	\
++	size_t res = __batadv_store_bool_attr(buff, count, _post_func, attr,\
++					      &vlan->_name,		\
++					      bat_priv->soft_iface);	\
++	batadv_softif_vlan_free_ref(vlan);				\
++	return res;							\
++}
++
++#define BATADV_ATTR_VLAN_SHOW_BOOL(_name)				\
++ssize_t batadv_show_vlan_##_name(struct kobject *kobj,			\
++			    struct attribute *attr, char *buff)		\
++{									\
++	struct batadv_softif_vlan *vlan = batadv_kobj_to_vlan(kobj);	\
++	size_t res =  sprintf(buff, "%s\n",				\
++			      atomic_read(&vlan->_name) == 0 ?		\
++			      "disabled" : "enabled");			\
++	batadv_softif_vlan_free_ref(vlan);				\
++	return res;							\
++}
++
++/* Use this, if you are going to turn a [name] in the vlan struct on or off */
++#define BATADV_ATTR_VLAN_BOOL(_name, _mode, _post_func)			\
++	static BATADV_ATTR_VLAN_STORE_BOOL(_name, _post_func)		\
++	static BATADV_ATTR_VLAN_SHOW_BOOL(_name)			\
++	static BATADV_ATTR_VLAN(_name, _mode, batadv_show_vlan_##_name,	\
++				batadv_store_vlan_##_name)
+ 
+ static int batadv_store_bool_attr(char *buff, size_t count,
+ 				  struct net_device *net_dev,
+@@ -403,6 +469,13 @@ static struct batadv_attribute *batadv_mesh_attrs[] = {
+ 	NULL,
+ };
+ 
++/**
++ * batadv_vlan_attrs - array of vlan specific sysfs attributes
++ */
++static struct batadv_attribute *batadv_vlan_attrs[] = {
++	NULL,
++};
++
+ int batadv_sysfs_add_meshif(struct net_device *dev)
+ {
+ 	struct kobject *batif_kobject = &dev->dev.kobj;
+@@ -453,6 +526,71 @@ void batadv_sysfs_del_meshif(struct net_device *dev)
+ 	bat_priv->mesh_obj = NULL;
+ }
+ 
++/**
++ * batadv_sysfs_add_vlan - add all the needed sysfs objects for the new vlan
++ * @dev: netdev of the mesh interface
++ * @vlan: private data of the newly added VLAN interface
++ *
++ * Return 0 on success and -ENOMEM if any of the structure allocations fails
++ */
++int batadv_sysfs_add_vlan(struct net_device *dev,
++			  struct batadv_softif_vlan *vlan)
 +{
 +	struct batadv_priv *bat_priv = netdev_priv(dev);
++	struct batadv_attribute **bat_attr;
++	char vlan_subdir[256];
++	int err;
 +
-+	/* only 802.1Q vlans are supported.
-+	 * batman-adv does not know how to handle other types
-+	 */
-+	if (proto != htons(ETH_P_8021Q))
-+		return -EINVAL;
++	sprintf(vlan_subdir, BATADV_SYSFS_VLAN_SUBDIR_PREFIX "%u",
++		vlan->vid & VLAN_VID_MASK);
 +
-+	vid |= BATADV_VLAN_HAS_TAG;
++	vlan->kobj = kobject_create_and_add(vlan_subdir, bat_priv->mesh_obj);
++	if (!vlan->kobj) {
++		batadv_err(dev, "Can't add sysfs directory: %s/%s\n", dev->name,
++			   vlan_subdir);
++		goto out;
++	}
 +
-+	return batadv_softif_create_vlan(bat_priv, vid);
++	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr) {
++		err = sysfs_create_file(vlan->kobj,
++					&((*bat_attr)->attr));
++		if (err) {
++			batadv_err(dev, "Can't add sysfs file: %s/%s/%s\n",
++				   dev->name, vlan_subdir,
++				   ((*bat_attr)->attr).name);
++			goto rem_attr;
++		}
++	}
++
++	return 0;
++
++rem_attr:
++	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr)
++		sysfs_remove_file(vlan->kobj, &((*bat_attr)->attr));
++
++	kobject_put(vlan->kobj);
++	vlan->kobj = NULL;
++out:
++	return -ENOMEM;
 +}
 +
 +/**
-  * batadv_interface_kill_vid - ndo_kill_vid API implementation
-  * @dev: the netdev of the mesh interface
-  * @vid: identifier of the deleted VLAN
-@@ -741,8 +758,16 @@ struct net_device *batadv_softif_create(const char *name)
- 	if (ret < 0)
- 		goto free_mesh;
- 
-+	bat_priv = netdev_priv(soft_iface);
-+	/* add the "untagged" LAN */
-+	ret = batadv_softif_create_vlan(bat_priv, BATADV_NO_FLAGS);
-+	if (ret < 0)
-+		goto free_sysfs;
++ * batadv_sysfs_del_vlan - remove all the sysfs objects for a given VLAN
++ * @bat_priv: the bat priv with all the soft interface information
++ * @vlan: the private data of the VLAN to destroy
++ */
++void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
++			   struct batadv_softif_vlan *vlan)
++{
++	struct batadv_attribute **bat_attr;
 +
- 	return soft_iface;
++	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr)
++		sysfs_remove_file(vlan->kobj, &((*bat_attr)->attr));
++
++	kobject_put(vlan->kobj);
++	vlan->kobj = NULL;
++}
++
+ static ssize_t batadv_show_mesh_iface(struct kobject *kobj,
+ 				      struct attribute *attr, char *buff)
+ {
+diff --git a/sysfs.h b/sysfs.h
+index 479acf4..c4f96c1 100644
+--- a/sysfs.h
++++ b/sysfs.h
+@@ -22,6 +22,12 @@
  
-+free_sysfs:
-+	batadv_sysfs_del_meshif(soft_iface);
- free_mesh:
- 	batadv_mesh_free(soft_iface);
- free_dev:
+ #define BATADV_SYSFS_IF_MESH_SUBDIR "mesh"
+ #define BATADV_SYSFS_IF_BAT_SUBDIR "batman_adv"
++/**
++ * BATADV_SYSFS_VLAN_SUBDIR_PREFIX - prefix of the subfolder that will be
++ *  created in the sysfs hierarchy for each VLAN interface. The subfolder will
++ *  be named "BATADV_SYSFS_VLAN_SUBDIR_PREFIX%vid"
++ */
++#define BATADV_SYSFS_VLAN_SUBDIR_PREFIX "vlan"
+ 
+ struct batadv_attribute {
+ 	struct attribute attr;
+@@ -36,6 +42,10 @@ void batadv_sysfs_del_meshif(struct net_device *dev);
+ int batadv_sysfs_add_hardif(struct kobject **hardif_obj,
+ 			    struct net_device *dev);
+ void batadv_sysfs_del_hardif(struct kobject **hardif_obj);
++int batadv_sysfs_add_vlan(struct net_device *dev,
++			  struct batadv_softif_vlan *vlan);
++void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
++			   struct batadv_softif_vlan *vlan);
+ int batadv_throw_uevent(struct batadv_priv *bat_priv, enum batadv_uev_type type,
+ 			enum batadv_uev_action action, const char *data);
+ 
 -- 
 1.8.1.5
 
