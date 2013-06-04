@@ -1,9 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue,  4 Jun 2013 12:11:38 +0200
-Message-Id: <1370340711-1399-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv4 00/13] make the Translation Table component
-	VLAN-aware
+Date: Tue,  4 Jun 2013 12:11:40 +0200
+Message-Id: <1370340711-1399-3-git-send-email-ordex@autistici.org>
+In-Reply-To: <1370340711-1399-1-git-send-email-ordex@autistici.org>
+References: <1370340711-1399-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv4 02/13] batman-adv: use vid when computing
+	local and global TT CRC
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,105 +18,100 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <ordex@autistici.org>
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-Hello people,
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-with this patchset I want to introduce a new feature in the TT code which makes
-it VLAN aware. This means that now clients belonging to different VLANs created
-on top of a generic bat0 are treated differently.
+now that each TT entry is characterised by a VLAN ID, the
+latter has to be taken into consideration when computing the
+local/global table CRC as it would be theoretically possible
+to have the same client in two different VLANs
 
-One of the major reason for bringing this change is to allow BLA to selectively
-ignore TT entries belonging to a given VLAN.
-To allow the latter behaviour, the CRC logic has been divided on a per-VLAN
-basis. This means that the local TT table is logically divided in sub-tables
-containing all the entries belonging to the same VLAN and the CRC is then
-computed on each of them.
-As a natural consequence, each node now stores a set of local CRCs instead of
-one only. Due to this also the way the TVLV-TT object is built and announced has
-been changed.
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
+ translation-table.c | 35 +++++++++++++++++++++++++++++++----
+ 1 file changed, 31 insertions(+), 4 deletions(-)
 
-
-This patchset gives the possibility to:
-- enable AP isolation only on a selected VLAN rather than on all the traffic
-- make DAT work correctly when the same IP subnet is used on different VLANs
-- make BLA refuse global entries from certain VLANs
-- leave the possibility to future developers to implement more VLAN specific
-  attributes
-
-
-Somebody asked me to send the AP Isolation improvement in a separate patchset,
-but I did not do that because it is only one patch and it is not worth.
-
-
-
-This patchset is based on top of master plus these two patches:
-"batman-adv: implement batadv_tt_entries"
-"batman-adv: make batadv_tt_save_orig_buffer() generic"
-
-
-
-Changes from v3:
-- split the per-VLAN CRC patch in two:
-	- generalise the VLAN structures to be used by the "untagged" lan
-	- introduce per-VLAN CRC logic
-- initialize sysfs earlier to allow the VLAN code to create the subfolders
-  during soft_iface init
-- changed path for ap_isolation in sysfs-class-net-mesh
-
-Changes from v2:
-- CRC logic divided on a VLAN-basis
-- BLA can now select the TT entries to ignore based on the VLAN
-
-Changes from v1:
-- improved kernel doc
-- created batadv_get_vid() function
-- improved documentation for CRC computation
-- added compat code for kfree_rcu (struct batadv_priv_vlan)
-
-
-
-Cheers,
-
-Antonio Quartulli (13):
-  batman-adv: add the VLAN ID attribute to the TT entry
-  batman-adv: use vid when computing local and global TT CRC
-  batman-adv: print the VID together with the TT entries
-  batman-adv: make the GW module correctly talk to the new VLAN-TT
-  batman-adv: make the Distributed ARP Table vlan aware
-  batman-adv: add per VLAN interface attribute framework
-  batman-adv: initialise sysfs folder in softif_create()
-  batman-adv: treat bat0 like yet another VLAN
-  batman-adv: add sysfs framework for VLAN
-  batman-adv: make the AP isolation attribute VLAN specific
-  batman-adv: make the backbone gw check VLAN specific
-  batman-adv: make the TT global purge routine VLAN specific
-  batman-adv: make the TT CRC logic VLAN specific
-
- bridge_loop_avoidance.c |   58 ++-
- bridge_loop_avoidance.h |   10 +-
- compat.c                |   18 +
- compat.h                |   25 ++
- distributed-arp-table.c |  125 ++++--
- gateway_client.c        |   18 +-
- hard-interface.c        |    5 +-
- main.c                  |   72 +++-
- main.h                  |   13 +-
- originator.c            |  100 ++++-
- originator.h            |    7 +
- packet.h                |   32 +-
- routing.c               |   28 +-
- send.c                  |    8 +-
- send.h                  |   16 +-
- soft-interface.c        |  174 +++++++-
- sysfs-class-net-mesh    |    2 +-
- sysfs.c                 |  148 ++++++-
- sysfs.h                 |   10 +
- translation-table.c     | 1070 +++++++++++++++++++++++++++++++++++------------
- translation-table.h     |   23 +-
- types.h                 |   68 ++-
- 22 files changed, 1613 insertions(+), 417 deletions(-)
-
+diff --git a/translation-table.c b/translation-table.c
+index 708bafe..0427d2f 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1506,6 +1506,24 @@ out:
+  * batadv_tt_global_crc - calculates the checksum of the local table belonging
+  *  to the given orig_node
+  * @bat_priv: the bat priv with all the soft interface information
++ * @orig_node: originator for which the CRC should be computed
++ *
++ * This function computes the checksum for the global table corresponding to a
++ * particular originator. In particular the checksum is computed as follows: for
++ * each client connected to the originator the CRC32C of the MAC address and the
++ * VID is computed and then all the CRC32Cs of the various clients are xor'ed
++ * together.
++ *
++ * The idea behind is that CRC32C should be used as much as possible in order to
++ * produce a unique hash of the table, but since the order which is used to feed
++ * the CRC32C function affects the result and since every node in the network
++ * probably sorts the clients differently, the hash function cannot be directly
++ * computed over the entire table. Hence the CRC32C is used only on
++ * the single client entry, while all the results are then xor'ed together
++ * because the XOR operation can combine them all while trying to reduce the
++ * noise as much as possible.
++ *
++ * Returns the checksum of the global table of a given originator
+  */
+ static uint32_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
+ 				     struct batadv_orig_node *orig_node)
+@@ -1514,7 +1532,7 @@ static uint32_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
+ 	struct batadv_tt_common_entry *tt_common;
+ 	struct batadv_tt_global_entry *tt_global;
+ 	struct hlist_head *head;
+-	uint32_t i, crc = 0;
++	uint32_t i, crc_tmp, crc = 0;
+ 
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+@@ -1545,7 +1563,9 @@ static uint32_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
+ 							     orig_node))
+ 				continue;
+ 
+-			crc ^= crc32c(0, tt_common->addr, ETH_ALEN);
++			crc_tmp = crc32c(0, &tt_common->vid,
++					 sizeof(tt_common->vid));
++			crc ^= crc32c(crc_tmp, tt_common->addr, ETH_ALEN);
+ 		}
+ 		rcu_read_unlock();
+ 	}
+@@ -1556,13 +1576,18 @@ static uint32_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
+ /**
+  * batadv_tt_local_crc - calculates the checksum of the local table
+  * @bat_priv: the bat priv with all the soft interface information
++ *
++ * For details about the computation, please refer to the documentation for
++ * batadv_tt_global_crc().
++ *
++ * Returns the checksum of the local table
+  */
+ static uint32_t batadv_tt_local_crc(struct batadv_priv *bat_priv)
+ {
+ 	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
+ 	struct batadv_tt_common_entry *tt_common;
+ 	struct hlist_head *head;
+-	uint32_t i, crc = 0;
++	uint32_t i, crc_tmp, crc = 0;
+ 
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+@@ -1575,7 +1600,9 @@ static uint32_t batadv_tt_local_crc(struct batadv_priv *bat_priv)
+ 			if (tt_common->flags & BATADV_TT_CLIENT_NEW)
+ 				continue;
+ 
+-			crc ^= crc32c(0, tt_common->addr, ETH_ALEN);
++			crc_tmp = crc32c(0, &tt_common->vid,
++					 sizeof(tt_common->vid));
++			crc ^= crc32c(crc_tmp, tt_common->addr, ETH_ALEN);
+ 		}
+ 		rcu_read_unlock();
+ 	}
 -- 
 1.8.1.5
 
