@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 4 Jun 2013 17:23:28 +0800
-References: <1369734587-13104-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1369734587-13104-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Tue, 4 Jun 2013 17:31:35 +0800
+References: <1369722202-19422-1-git-send-email-martin@hundeboll.net>
+ <51A450B4.9090901@hundeboll.net>
+In-Reply-To: <51A450B4.9090901@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201306041723.28549.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove useless find_router
-	look up
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201306041731.35269.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix possible memleak in
+	fragmentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,25 +23,19 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+Cc: Martin =?utf-8?q?Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-On Tuesday, May 28, 2013 17:49:47 Simon Wunderlich wrote:
-> From: Simon Wunderlich <simon@open-mesh.com>
-> 
-> This is not used anymore with the new fragmentation, and it might
-> actually mess up the bonding code because find_router() assumes it
-> is only called once per packet.
-> 
-> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-> ---
-> This patch was originally part of the RFC series
-> "add network wide multi interface optimization", but since it is
-> just a fix it is resent as PATCH to be applied now.
-> ---
->  send.c |   29 ++++++++---------------------
->  1 file changed, 8 insertions(+), 21 deletions(-)
+On Tuesday, May 28, 2013 14:37:40 Martin Hundeb=C3=B8ll wrote:
+> On 2013-05-28 08:23, Martin Hundeb=C3=B8ll wrote:
+> > Use a variable for return value in batadv_frag_insert_packet() to free
+> > the allocated struct batadv_frag_list_entry in all cases where it is not
+> > inserted into a chain.
+>=20
+> The possible memleak was introduced by=20
+> 9b3eab61754d74a93c9840c296013fe3b4a1b606 ("batman-adv: Receive=20
+> fragmented packets and merge")
 
-Applied in revision 87d4a28.
+Applied in revision 0b415bb.
 
 Thanks,
 Marek
