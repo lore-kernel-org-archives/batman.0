@@ -1,17 +1,17 @@
-Return-Path: <gtolon@inti.gob.ar>
-Message-ID: <51B214AE.2090603@inti.gob.ar>
-Date: Fri, 07 Jun 2013 14:13:18 -0300
-From: =?UTF-8?B?R2FicmllbCBUb2zDs24=?= <gtolon@inti.gob.ar>
-MIME-Version: 1.0
-References: <51AF567A.7030404@inti.gob.ar> <51AF58F4.8080501@inti.gob.ar>
- <20130606055102.GH1789@ritirata.org> <51B0D294.4070809@inti.gob.ar>
+Return-Path: <ordex@autistici.org>
+Date: Fri, 7 Jun 2013 19:27:34 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20130607172734.GO1789@ritirata.org>
+References: <20130606055102.GH1789@ritirata.org> <51B0D294.4070809@inti.gob.ar>
  <20130606182954.GI1789@ritirata.org> <51B0DD43.6090500@inti.gob.ar>
  <20130606191823.GJ1789@ritirata.org> <51B1E4D6.5000900@inti.gob.ar>
  <20130607135713.GL1789@ritirata.org> <51B1F062.3060101@inti.gob.ar>
- <20130607144019.GM1789@ritirata.org>
-In-Reply-To: <20130607144019.GM1789@ritirata.org>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
+ <20130607144019.GM1789@ritirata.org> <51B214AE.2090603@inti.gob.ar>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="Zvl510+jvRFHh8wJ"
+Content-Disposition: inline
+In-Reply-To: <51B214AE.2090603@inti.gob.ar>
 Subject: Re: [B.A.T.M.A.N.] batctl bw performance
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,165 +24,171 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-
-El 07/06/13 11:40, Antonio Quartulli escribió:
-> On Fri, Jun 07, 2013 at 11:38:26AM -0300, Gabriel Tolón wrote:
->> Hi,
->>
->>
->> El 07/06/13 10:57, Antonio Quartulli escribió:
->>> Hi Gabriel,
->>>
->>> thank you for your logs
->>>
->>> On Fri, Jun 07, 2013 at 10:49:10AM -0300, Gabriel Tolón wrote:
->>>>>
->>>>> Hello Gabriel,
->>>>> there is a lot of noise because you are also generating traffic on the network.
->>>>> However I can see the ICMP Echo Request and then an Echo Reply, therefore the
->>>>> two nodes seem to be exchanging ICMP packets correctly.
->>>>>
->>>>> I'm checking again to try to understand what went wrong.
->>>>>
->>>>> Meanwhile, can you please report the output of
->>>>> "batctl l"
->>>>> during a bw test after having set the bw_meter log level by running
->>>>> "batctl ll bwm" ?
->>>>>
->>>>> To get the exact log of one test, you can first run batctl l (this will print
->>>>> all the past log), then you run the test and then you run batctl l again to
->>>>> obtain the interesting log. Please upload it on pastebin too.
->>>>>
->>>>> Thanks a lot!
->>>>>
->>>>
->>>> Sure, here they are:
->>>>
->>>> http://pastebin.com/fLu9hsyt
->>>>
->>>
->>>
->>>   From this log I can see that the protocol is entering Fast Retransmit many times
->>> and this happens due to reordering or small losses (the latter option is more
->>> realistic on a single hop network - but is it really one hop? I never asked).
->>
->> Yes, it's one hop. Just two routers at a distance of 2 meters. They have
->> two radios, but in the last tests I've unloaded one of them (the 5 Ghz
->> one) to make it simpler, so they see each other just by one radio interface.
->>
->>>
->>> The other strange thing I see is the final SRTT value which is 260ms and looks
->>> pretty high. Is there anything else going on the network (other traffic or..)?
->>
->> Mmm, I don't know what's that SRTT, but no, there shouldn't be anything
->> else in the air, at least not from me. But If there were interference or
->> something like that, normal iperf would be slower I guess.
->>
->> Besides, now I've tested connecting my PC via Ethernet to log avoiding
->> interference from myself, also unloading the 2GHz, and loading the 5GHz
->> in the routers (the 5GHz band should be cleaner), and the batctl bw
->> keeps with slower values than iperf, 5Mbps this time.
->>
->> If you want I could sniff the air with wireshark or something.
->>
->> Maybe other possibility could be testing the bw meter connecting the
->> routers by etnernet and not wirelessly?
->
-> Yes, you can try ethernet too. it works the same way.
->
->>
->> Just for curiosity, you have already tested this on other scenarios and
->> worked OK?
->
-> yeah, I tested it using my routers (OM2Ps) and it worked good.
->
-> You can try to sniff one or two seconds of traffic with "batctl td"
-> on the nodes. This will give us what is exactly going in the air.
->
-> Cheers,
->
->
-
-This time, I logged just from Equipo 1, to generate less traffic.
-
-I noticed something weird. When I run batctl bw I get this time 
-something like 12 Mbps. If I wait for about 10 seconds and repeat the 
-command, I get something similar, but, if I run the command inmediatly 
-after the bw test finishes, the result improves a lot, here you can see 
-the commands with the seconds between them:
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
-root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
-Fri Jun  7 16:40:09 UTC 2013
-Bandwidth meter called towards 64:70:02:4e:d9:d7
-Test over in 2000ms.
-Sent 3064500 Bytes.
-Throughput: 1.46 MB/s (12.26 Mbps)
-root@Equipo 1:~#
-root@Equipo 1:~#
-root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
-Fri Jun  7 16:40:15 UTC 2013
-Bandwidth meter called towards 64:70:02:4e:d9:d7
-Test over in 2000ms.
-Sent 3201000 Bytes.
-Throughput: 1.53 MB/s (12.80 Mbps)
-root@Equipo 1:~#
-root@Equipo 1:~#
-root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
-Fri Jun  7 16:40:18 UTC 2013
-Bandwidth meter called towards 64:70:02:4e:d9:d7
-Test over in 2000ms.
-Sent 14545500 Bytes.
-Throughput: 6.94 MB/s (58.18 Mbps)
-root@Equipo 1:~#
-root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
-Fri Jun  7 16:40:20 UTC 2013
-Bandwidth meter called towards 64:70:02:4e:d9:d7
-Test over in 2000ms.
-Sent 18729000 Bytes.
-Throughput: 8.93 MB/s (74.91 Mbps)
-root@Equipo 1:~#
-root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
-Fri Jun  7 16:40:23 UTC 2013
-Bandwidth meter called towards 64:70:02:4e:d9:d7
-Test over in 2000ms.
-Sent 21067500 Bytes.
-Throughput: 10.05 MB/s (84.26 Mbps)
-root@Equipo 1:~#
-root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
-Fri Jun  7 16:40:26 UTC 2013
-Bandwidth meter called towards 64:70:02:4e:d9:d7
-Test over in 2000ms.
-Sent 22351500 Bytes.
-Throughput: 10.66 MB/s (89.40 Mbps)
-root@Equipo 1:~#
-root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
-Fri Jun  7 16:40:37 UTC 2013
-Bandwidth meter called towards 64:70:02:4e:d9:d7
-Test over in 2000ms.
-Sent 13281000 Bytes.
-Throughput: 6.33 MB/s (53.12 Mbps)
-root@Equipo 1:~#
-root@Equipo 1:~#
-root@Equipo 1:~#
-root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
-Fri Jun  7 16:40:49 UTC 2013
-Bandwidth meter called towards 64:70:02:4e:d9:d7
-Test over in 2000ms.
-Sent 3204000 Bytes.
-Throughput: 1.53 MB/s (12.82 Mbps)
-root@Equipo 1:~#
+--Zvl510+jvRFHh8wJ
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hello Gabriel,
+
+On Fri, Jun 07, 2013 at 02:13:18PM -0300, Gabriel Tol=C3=B3n wrote:
+>=20
+> This time, I logged just from Equipo 1, to generate less traffic.
+>=20
+> I noticed something weird. When I run batctl bw I get this time=20
+> something like 12 Mbps. If I wait for about 10 seconds and repeat the=20
+> command, I get something similar, but, if I run the command inmediatly=20
+> after the bw test finishes, the result improves a lot, here you can see=
+=20
+> the commands with the seconds between them:
+>=20
+>=20
+> root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
+> Fri Jun  7 16:40:09 UTC 2013
+> Bandwidth meter called towards 64:70:02:4e:d9:d7
+> Test over in 2000ms.
+> Sent 3064500 Bytes.
+> Throughput: 1.46 MB/s (12.26 Mbps)
+> root@Equipo 1:~#
+> root@Equipo 1:~#
+> root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
+> Fri Jun  7 16:40:15 UTC 2013
+> Bandwidth meter called towards 64:70:02:4e:d9:d7
+> Test over in 2000ms.
+> Sent 3201000 Bytes.
+> Throughput: 1.53 MB/s (12.80 Mbps)
+> root@Equipo 1:~#
+> root@Equipo 1:~#
+> root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
+> Fri Jun  7 16:40:18 UTC 2013
+> Bandwidth meter called towards 64:70:02:4e:d9:d7
+> Test over in 2000ms.
+> Sent 14545500 Bytes.
+> Throughput: 6.94 MB/s (58.18 Mbps)
+> root@Equipo 1:~#
+> root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
+> Fri Jun  7 16:40:20 UTC 2013
+> Bandwidth meter called towards 64:70:02:4e:d9:d7
+> Test over in 2000ms.
+> Sent 18729000 Bytes.
+> Throughput: 8.93 MB/s (74.91 Mbps)
+> root@Equipo 1:~#
+> root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
+> Fri Jun  7 16:40:23 UTC 2013
+> Bandwidth meter called towards 64:70:02:4e:d9:d7
+> Test over in 2000ms.
+> Sent 21067500 Bytes.
+> Throughput: 10.05 MB/s (84.26 Mbps)
+> root@Equipo 1:~#
+> root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
+> Fri Jun  7 16:40:26 UTC 2013
+> Bandwidth meter called towards 64:70:02:4e:d9:d7
+> Test over in 2000ms.
+> Sent 22351500 Bytes.
+> Throughput: 10.66 MB/s (89.40 Mbps)
+> root@Equipo 1:~#
+> root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
+> Fri Jun  7 16:40:37 UTC 2013
+> Bandwidth meter called towards 64:70:02:4e:d9:d7
+> Test over in 2000ms.
+> Sent 13281000 Bytes.
+> Throughput: 6.33 MB/s (53.12 Mbps)
+> root@Equipo 1:~#
+> root@Equipo 1:~#
+> root@Equipo 1:~#
+> root@Equipo 1:~# date; batctl bw -t 2000 E3-5GHz
+> Fri Jun  7 16:40:49 UTC 2013
+> Bandwidth meter called towards 64:70:02:4e:d9:d7
+> Test over in 2000ms.
+> Sent 3204000 Bytes.
+> Throughput: 1.53 MB/s (12.82 Mbps)
+> root@Equipo 1:~#
+>=20
+>=20
+> Maybe something in the time calculation is wrong?
+>=20
+
+This strange. The point is that the receiver takes at least 1 second to shu=
+tdown
+the session. Theoretically (and this is what happened during my tests) the
+receiver should refuse any "second new" connection and the sender should th=
+en
+get 0 throughput. Can I ask you what wifi driver is your device using?
+Anyway, there must be something wrong in the bw meter given that you see th=
+is
+behaviour only with it and not with iperf.
+
+Did you try a short run over Ethernet? I'm curious to see if the behaviour =
+will
+be the same.
+
+> The logs aretoo heavy for pastebin, so here it's just the part=20
+> corresponding to the first batctl bw in Equipo1:
+>=20
+> http://pastebin.com/THEr2Cq3
+>=20
+
+Thanks for the log.
+
+I saw something strange:
+
+16:40:09.533172 BAT 64:70:02:4e:d9:43 > E3-5GHz: ICMP BW type MSG (0), id 0=
+, seq
+2018499, ttl 50, v 15, length 1510
+16:40:09.533392 BAT 64:70:02:4e:d9:43 > E3-5GHz: ICMP BW type MSG (0), id 0=
+, seq
+2049999, ttl 50, v 15, length 1510
+
+These are two packets sent one after the other but the second sequence numb=
+er is
+not equal to the first + 1500 (payload size)
+
+> If you want to watch the whole log I can send you, or paste it in parts.
+>=20
+
+This gave me already some hints. I'll dig into the code to try to spot what=
+'s
+wrong. But strange that I did not see any problem during my tests..maybe
+something introduced later by accident.
 
 
-Maybe something in the time calculation is wrong?
+Thank you so far. I'm still curious about the Ethernet test, then I'll try =
+to
+upload some more code to test :)
 
-The logs are too heavy for pastebin, so here it's just the part 
-corresponding to the first batctl bw in Equipo1:
 
-http://pastebin.com/THEr2Cq3
+Cheers,
 
-If you want to watch the whole log I can send you, or paste it in parts.
 
-Regards
+--=20
+Antonio Quartulli
 
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--Zvl510+jvRFHh8wJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRshgFAAoJEADl0hg6qKeOzloP/3X9vmTKO5gld0sMJSdQmREG
+XCqLBRT5bIzGuxCpytHa8HnbnE50VlksIGEift+bBcM9q/H5k88pstX0i0aa/vdl
+ZVbq1WYK0/0r4qbJRNEKh5Vq1mKEp1xJ0XHmWK8eMc+OBnWkAwZKjXCcS5SIRtqJ
+P45OOB/gxgV2mYZy9LGFOh+tFozT7LmUawA4qT9GUcZXYIiVZ4woECkzUcGYV9YS
+lJwfbriDNrigkZrPE9IhdhVStRIH0eoLhrF3AY5uT1CZcY9cl/k930X3ZQtvxqjw
+atgklXDGIasKaPEZdylJ4YHaaY28TD5hxg+TbTMtKPQtudwvLSdDEFwUkFF30T2J
+Qz8nVSArF8yxvx7mkg0FFFhvAGVG4m8V/9IXLqFLRQoHSPs6UbXLbX3LPZFtnxmL
+uNxxIEyq2kDAbOHEq7ye+NN/FSyUP97ojvFjP5kFseN0YX6Ojdz9kfW6jac+0KQT
+KtrxPBTeBCwysPjIwVTzB80KZwIeRr6FbDSm5p/6jH7zH/3BX/0fHViaFvL/7LBf
+ET7lLK/c8wxn3avPpGebjiqMa5sPwQIT5QMKYHufXokzCMto6lW6V9ST/zq5vSqm
+OP97QmPx1AFqr1mX9n5VSVqpCK4MmbflNBl0PP1bxDhxHggA3E+QHFMeFcVZjG1G
+FQGFJEffl4X12adWKYId
+=oVpe
+-----END PGP SIGNATURE-----
+
+--Zvl510+jvRFHh8wJ--
