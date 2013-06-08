@@ -1,17 +1,18 @@
-Return-Path: <linus.luessing@web.de>
-Date: Fri, 7 Jun 2013 23:16:44 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20130607211644.GE6426@Linus-Debian>
-References: <1369583768-15280-1-git-send-email-linus.luessing@web.de>
- <201305281755.44921.lindner_marek@yahoo.de>
- <20130528155114.GA27671@Linus-Debian>
+Return-Path: <ordex@autistici.org>
+Date: Sat, 8 Jun 2013 14:29:39 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20130608122939.GR1789@ritirata.org>
+References: <20130606182954.GI1789@ritirata.org> <51B0DD43.6090500@inti.gob.ar>
+ <20130606191823.GJ1789@ritirata.org> <51B1E4D6.5000900@inti.gob.ar>
+ <20130607135713.GL1789@ritirata.org> <51B1F062.3060101@inti.gob.ar>
+ <20130607144019.GM1789@ritirata.org> <51B214AE.2090603@inti.gob.ar>
+ <20130607172734.GO1789@ritirata.org> <51B22D19.7080807@inti.gob.ar>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="RyOXVFQXzAE23HDB"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20130528155114.GA27671@Linus-Debian>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Add dummy soft-interface
- rx mode handler
+In-Reply-To: <51B22D19.7080807@inti.gob.ar>
+Subject: Re: [B.A.T.M.A.N.] batctl bw performance
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,34 +26,73 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tue, May 28, 2013 at 05:51:14PM +0200, Linus Lüssing wrote:
-> On Tue, May 28, 2013 at 05:55:44PM +0800, Marek Lindner wrote:
-> > On Sunday, May 26, 2013 23:56:07 Linus Lüssing wrote:
-> > > @@ -572,6 +584,7 @@ static const struct net_device_ops batadv_netdev_ops =
-> > > { .ndo_get_stats = batadv_interface_stats,
-> > >         .ndo_set_mac_address = batadv_interface_set_mac_addr,
-> > >         .ndo_change_mtu = batadv_interface_change_mtu,
-> > > +       .ndo_set_rx_mode = batadv_interface_set_rx_mode,
-> > >         .ndo_start_xmit = batadv_interface_tx,
-> > >         .ndo_validate_addr = eth_validate_addr,
-> > >         .ndo_add_slave = batadv_softif_slave_add,
-> > 
-> > Do we need compat code for this API call ?
-> > 
-> > Cheers,
-> > Marek
-> 
-> Yes it does, actually. A PATCHv3 will follow soonish. Thanks for
-> the hint!
 
-Hm, I changed my mind, it actually shouldn't need any compat code.
-At least compiling worked fine for me for 2.6.29 to 3.9 kernels.
+--RyOXVFQXzAE23HDB
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-There was a .ndo_set_multicast_list once with all these calls
-being reassigned to .ndo_set_rx_mode and .ndo_set_multicast_list
-being removed since 3.2 ("net: remove use of
-ndo_set_multicast_list in drivers":afc4b13df143122f99a0eb10bfefb216c2806de0).
-However .ndo_set_rx_mode has always been threre for
-kernels >= 2.6.29, <= 3.9.
+Hello Gabriel,
 
-Cheers, Linus
+On Fri, Jun 07, 2013 at 03:57:29PM -0300, Gabriel Tol=C3=B3n wrote:
+>=20
+> Yes, that's strange, that's why I asked if you had tested the same. It=20
+> couldn't be due to hardware differences? Just in case WDR3500 have=20
+> AR9344 SoC.
+>=20
+
+I guess it's the same:
+
+system type		: Atheros AR9344 rev 2
+
+and this is one test I just performed:
+
+# batctl bw a6:86:74:00:0f:12
+Bandwidth meter called towards a6:86:74:00:0f:12
+Test over in 10030ms.
+Sent 187528500 Bytes.
+Throughput: 17.83 MB/s (149.57 Mbps)
+
+There must be something different in our setup that is probably triggering =
+a bug
+in the bw_meter (I guess).
+
+Here you have more results from tests performed a couple of weeks ago.
+
+
+Maybe I find a couple of WDR3500 on which I can remotely try to debug the
+problem....
+
+
+Cheers,
+
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--RyOXVFQXzAE23HDB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRsyOzAAoJEADl0hg6qKeOSgMQAJhem4EnEO28FtBAMGuevfHL
+8BHqTjpzdtvFdaXaHGSq4CVX0A0De6Q6gVmbFPMkqHI+nA/55b+2heNdPJpIQpUi
+3xxfaXypOx5Ko4drnbbF31mQ3VEKtalWk8oSHedXn4PndO2LhIjwFjqlxy80NGs9
+tqHeEdO60ppVnUU1YU8sjSdCtJ9GSiFyF51tlMijhMzf55ZqMWffQlsHRWP33iYR
+ZVGR6CgvRcBuNorvL7wnL02dqIwBMuoTqbZUWq4ztsqkfRKYJrwVSYANGzGKU+SM
+exRQCAAF/thESfSJhkfKtS5s+849yX0ukonk/wUfyvRKVmtGxP4cDmPQgwv9M3ku
+vshxb9reYxIjpwQELpWak4p/JACb5HxnJE/JcoSgkkJoor67+ncSc7425BcWnTrQ
+pzuj7Cada4YONvGl7fcuq/jsiDmiM3pU39jZykVn4TX7Ad0dCQTELDC3b1nnd1kv
+JQ+Xj9gbDvpIP5ThUYZkgbr0kr8US/6emRdQ2Gifl7J8bj17lFiwHY/8I/o5UJkO
+uDBuebxDoY/vXczVXSVoN+PIrlSGhjSJAXMs9RGrbKQYVd/lVIwTsnHiNo8vl5rG
+40QV5wbLFUjEV8DT2ASg3I69tb5EPcrX03/tZjIYmoini8Y+zm8Ol8LScFkI6+xZ
+PB/fR/nBkQ15nBBhTnZv
+=i/Re
+-----END PGP SIGNATURE-----
+
+--RyOXVFQXzAE23HDB--
