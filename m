@@ -1,17 +1,11 @@
-Return-Path: <ordex@autistici.org>
-Date: Sun, 9 Jun 2013 16:20:48 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130609142048.GB3347@ritirata.org>
-References: <1370340711-1399-1-git-send-email-ordex@autistici.org>
- <1370340711-1399-9-git-send-email-ordex@autistici.org>
- <201306092213.59813.lindner_marek@yahoo.de>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Mon, 10 Jun 2013 08:28:18 +0200
+Message-Id: <1370845701-18481-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="2B/JsCI69OhZNC5r"
-Content-Disposition: inline
-In-Reply-To: <201306092213.59813.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 08/13] batman-adv: treat bat0 like yet
- another VLAN
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] Basic Multicast Optimizations
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,78 +17,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+This is the third revision of the basic multicast optimization patches.
+It includes one functional and some compat fixes, and some style improvements,
+thanks to Simons feedback:
 
---2B/JsCI69OhZNC5r
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+PATCHv3 1/3:
+* the pmc_rcu functions got removed - they weren't actually used in the
+  submitted revision - so there's no more patch for net to export
+  for_each_pmc_rcu() needed anymore. Should also fix Simon's compat error.
+* Compat code for netdev_for_each_mc_addr() added.
+  (I needed to introduce a batadv_hw_addr because I wasn't able to achieve
+  backwards compatibility with a netdev_hw_addr - my "official reasoning" will
+  be that netdev_hw_addr is unnecessarily bloated, struct batadv_hw_addr
+  has just the right size to do the job)
+* Compat fix for IFF_BRIDGE_PORT
+* Removed primary_if->soft_iface in batadv_mcast_mla_tt_update() as we
+  can always use bat_priv->soft_iface instead.
 
-On Sun, Jun 09, 2013 at 10:13:59PM +0800, Marek Lindner wrote:
-> On Tuesday, June 04, 2013 18:11:46 Antonio Quartulli wrote:
-> > To make the code simpler and easier to extend, treat the
-> > normal LAN (bat0) like any other VLAN having vid 0
-> > (untagged).
-> >=20
-> > This change makes things simpler since bat0 is not a
-> > particular case anymore but it is treated like any other
-> > VLAN.
->=20
-> What makes you think "vid 0" is not a valid vlan tag ? If this patch is=
-=20
-> applied how can I create a VLAN 0 on top of batX ?
+PATCHv3 2/3
+* Renamed num_non_aware to a more specific num_no_mla - because we will need
+  things like a num_no_tracker for instance with the multicast tracker feature
+  in the future.
+* Fixed removal of orig_node's without BATADV_MCAST_LISTENER_ANNOUNCEMENT
+  flag, update num_no_mla properly now.
 
-The commit message talks about the value of the vid variable (used to keep =
-the
-value of the VID, of course) and as introduced in a previous patch, if the
-HAS_TAG bit is not set, then we don't consider the this variable to represe=
-nt a
-real VID.
+PATCHv3 3/3
+* Renamed batadv_mcast_flood() to batadv_mcast_forw_mode() because it does not
+  only show whether to flood or not (=drop), but also whether to forward via
+  unicast. In the future with the multicast tracker feature a fourth return value
+  is going to be added, making the name "batadv_mcast_flood()" even less fitting.
+* Simon's style suggestions for batadv_mcast_forw_mode() and
+  batadv_interface_tx().
+* batadv_mcast_forw_mode() now returns an enum (thanks to Marek and Antonio for
+  the suggestion).
 
-VLAN 0 on top of batX will generate vid =3D (HAS_TAG | 0), while in this ca=
-se I am
-talking about vid =3D 0.
+I did not change:
+> I don't quite understand why you return -1, maybe the packet could still
+> be forwarded even if it could not be pulled?
 
-This is implicit in the vid variables semantic previously introduced and th=
-is
-is what I meant with that "untagged" at the end of the sentence.
+Because if it returns -1 then something is wrong, for instance we could be
+out of memory. If we are out of memory then we probably won't be able to
+forward any packet. Also we shouldn't allocate any more memory for one thing
+but I think it is also better to drop/free packets to save some memory
+to increase the possibility of the system to recover without crashing.
 
-Maybe we should substitute "having vid 0" with "having vid with no HAS_TAG =
-bit
-set" ?
+Cheers, Linus
 
-
-Cheers,
-
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---2B/JsCI69OhZNC5r
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRtI9AAAoJEADl0hg6qKeOfCUQALWoxKxiWyc/uDCuHbRyBJey
-tMdn1LE2VlOaI/b0zx6m5NtifmzQwSIizZUeRbq20UuE7UNLt+SiK+pH4lKRpQku
-RnJ39v2LVzlGCmpJs3fwQq/5/TkRERmQRujPPwIE/rKGpT0RibA2zv309LjlWHQg
-f9ijRZL1Nq/zvBs3Tn0Aq0OZBf+HoiNvg7KpCGho3j4FViYyVDMNqWWi0lZcPvcI
-AVv+rT4yy3EbWbMi4od701XzxW+AnQ4jAl+s/razogdc9ygA6sOHiRA/qs6Pxx/Y
-hW3+UxYBBPd7e4PtUXoIpLAXi7LH009oCB6NYf/9W00KFpeX6pR/HRtVYFifd13b
-WxWKfGUBFkojoKI28vebqkd9YL+zuBYJu07mxjZ8qhBQIYKt8Rx36Aitc2lnMckY
-4JfbSXp1JnrtD+Zm2RM4zlFiZFrZyN8tf8W+4y+BFUHIHqLu4JKEt0/Bjx0Sp9UG
-GFiKJwrX0/cY9XdRR8Ujfq7NPT+ClPLMz4V9RVjG02AyimSu3yyr4i/jBhQ8ALby
-IC+2Nm7Q3N2kCX8uLnvJzTpZYP/lkEd8ZnEomtD1pqbldP41NOMVjNiw0duriC5W
-bQbKNZ3SH1s5WvCr6Og+H6M4ydXzx0y60a+El64kLCucoJSVCKYyHu1X6LbkmlnZ
-sJO/CoVm4YhATnaCrto1
-=YazV
------END PGP SIGNATURE-----
-
---2B/JsCI69OhZNC5r--
