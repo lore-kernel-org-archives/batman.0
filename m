@@ -1,11 +1,14 @@
 Return-Path: <ordex@autistici.org>
+Date: Tue, 11 Jun 2013 10:07:35 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 11 Jun 2013 08:35:01 +0200
-Message-Id: <1370932501-3937-4-git-send-email-ordex@autistici.org>
-In-Reply-To: <1370932501-3937-1-git-send-email-ordex@autistici.org>
+Message-ID: <20130611080735.GA1466@ritirata.org>
 References: <1370932501-3937-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Don't handle address updates
-	when bla is disabled
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="FCuugMFkClbJLl1L"
+Content-Disposition: inline
+In-Reply-To: <1370932501-3937-1-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] pull request for net: batman-adv 2013-06-11
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,37 +21,185 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, Simon Wunderlich <simon@open-mesh.com>, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <ordex@autistici.org>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Simon Wunderlich <simon@open-mesh.com>
 
-The bridge loop avoidance has a hook to handle address updates of the
-originator. These should not be handled when bridge loop avoidance is
-disabled - it might send some bridge loop avoidance packets which should
-not appear if bla is disabled.
+--FCuugMFkClbJLl1L
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/bridge_loop_avoidance.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Hello David,
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 379061c..de27b31 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1067,6 +1067,10 @@ void batadv_bla_update_orig_address(struct batadv_priv *bat_priv,
- 	group = htons(crc16(0, primary_if->net_dev->dev_addr, ETH_ALEN));
- 	bat_priv->bla.claim_dest.group = group;
- 
-+	/* purge everything when bridge loop avoidance is turned off */
-+	if (!atomic_read(&bat_priv->bridge_loop_avoidance))
-+		oldif = NULL;
-+
- 	if (!oldif) {
- 		batadv_bla_purge_claims(bat_priv, NULL, 1);
- 		batadv_bla_purge_backbone_gw(bat_priv, 1);
--- 
-1.8.1.5
+On Tue, Jun 11, 2013 at 08:34:58AM +0200, Antonio Quartulli wrote:
 
+[...]
+
+>=20
+>=20
+> Please pull or let me know if there is any problem!
+
+After having applied this patchset the merge of net into net-next will gene=
+rate
+a conflict. Here you have the needed information to properly solve it.
+
+Regards,
+
+
+
+conflict in net/batman-adv/bat_iv_ogm.c:
+
+++<<<<<<< HEAD
+ + * batadv_ring_buffer_set - update the ring buffer with the given value
+ + * @lq_recv: pointer to the ring buffer
+ + * @lq_index: index to store the value at
+ + * @value: value to store in the ring buffer
+ + */
+ +static void batadv_ring_buffer_set(uint8_t lq_recv[], uint8_t *lq_index,
+ +				   uint8_t value)
+ +{
+ +	lq_recv[*lq_index] =3D value;
+ +	*lq_index =3D (*lq_index + 1) % BATADV_TQ_GLOBAL_WINDOW_SIZE;
+ +}
+ +
+ +/**
+ + * batadv_ring_buffer_set - compute the average of all non-zero values st=
+ored
+ + * in the given ring buffer
+ + * @lq_recv: pointer to the ring buffer
+ + *
+ + * Returns computed average value.
+ + */
+ +static uint8_t batadv_ring_buffer_avg(const uint8_t lq_recv[])
+ +{
+ +	const uint8_t *ptr;
+ +	uint16_t count =3D 0, i =3D 0, sum =3D 0;
+ +
+ +	ptr =3D lq_recv;
+ +
+ +	while (i < BATADV_TQ_GLOBAL_WINDOW_SIZE) {
+ +		if (*ptr !=3D 0) {
+ +			count++;
+ +			sum +=3D *ptr;
+ +		}
+ +
+ +		i++;
+ +		ptr++;
+ +	}
+ +
+ +	if (count =3D=3D 0)
+ +		return 0;
+ +
+ +	return (uint8_t)(sum / count);
+ +}
+++=3D=3D=3D=3D=3D=3D=3D
++  * batadv_dup_status - duplicate status
++  * @BATADV_NO_DUP: the packet is a duplicate
++  * @BATADV_ORIG_DUP: OGM is a duplicate in the originator (but not for the
++  *  neighbor)
++  * @BATADV_NEIGH_DUP: OGM is a duplicate for the neighbor
++  * @BATADV_PROTECTED: originator is currently protected (after reboot)
++  */
++ enum batadv_dup_status {
++ 	BATADV_NO_DUP =3D 0,
++ 	BATADV_ORIG_DUP,
++ 	BATADV_NEIGH_DUP,
++ 	BATADV_PROTECTED,
++ };
++=20
+++>>>>>>> 7c24bbb... batman-adv: forward late OGMs from best next hop
+
+is solved as follows (add /** at the top of the batadv_dup_status kerneldoc=
+ and
+keep everything):
+
+<<<<<<<<<<<<
+ * batadv_ring_buffer_set - update the ring buffer with the given value
+ * @lq_recv: pointer to the ring buffer
+ * @lq_index: index to store the value at
+ * @value: value to store in the ring buffer
+ */
+static void batadv_ring_buffer_set(uint8_t lq_recv[], uint8_t *lq_index,
+				   uint8_t value)
+{
+	lq_recv[*lq_index] =3D value;
+	*lq_index =3D (*lq_index + 1) % BATADV_TQ_GLOBAL_WINDOW_SIZE;
+}
+
+/**
+ * batadv_ring_buffer_set - compute the average of all non-zero values stor=
+ed
+ * in the given ring buffer
+ * @lq_recv: pointer to the ring buffer
+ *
+ * Returns computed average value.
+ */
+static uint8_t batadv_ring_buffer_avg(const uint8_t lq_recv[])
+{
+	const uint8_t *ptr;
+	uint16_t count =3D 0, i =3D 0, sum =3D 0;
+
+	ptr =3D lq_recv;
+
+	while (i < BATADV_TQ_GLOBAL_WINDOW_SIZE) {
+		if (*ptr !=3D 0) {
+			count++;
+			sum +=3D *ptr;
+		}
+
+		i++;
+		ptr++;
+	}
+
+	if (count =3D=3D 0)
+		return 0;
+
+	return (uint8_t)(sum / count);
+}
+
+/**
+ * batadv_dup_status - duplicate status
+ * @BATADV_NO_DUP: the packet is a duplicate
+ * @BATADV_ORIG_DUP: OGM is a duplicate in the originator (but not for the
+ *  neighbor)
+ * @BATADV_NEIGH_DUP: OGM is a duplicate for the neighbor
+ * @BATADV_PROTECTED: originator is currently protected (after reboot)
+ */
+enum batadv_dup_status {
+	BATADV_NO_DUP =3D 0,
+	BATADV_ORIG_DUP,
+	BATADV_NEIGH_DUP,
+	BATADV_PROTECTED,
+};
+
+>>>>>>>>>>>>>>
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--FCuugMFkClbJLl1L
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBCAAGBQJRttrHAAoJEADl0hg6qKeOtY8QAMQmA/ZGoX2AqodeOGNG0+M5
+y1cm2v/BI0+44/n8fJYphJIhmBYn1MthQNot1jgCNPIxmNVJfFt6JIqGRVYbnhI5
+vWdqgEEq50HI3N9VMPn8ehMiIcyyDacVMX4QpiO4Q3z2y1+2YksD2mCZNsmLu/KF
+vLfwHRL88RsZfcnEHT4vRseJ6PFSyfLNtH5Yx2AgTQwUkwshIncPKn/eLr66glox
+hCmXftVIXyAyGQW1+5zM9UNGtRo/n2J0H7JShmOPPw1Dsa9l5GaEKWcYF3o1Mzfm
+SHjroYXLMcsMdzUgjUxm7gy5lJB5LFnj2XcJh8JZVgo/q6vuLWfCcqWA/AKG4ZwM
+AFMsUbAM9aTOWiPRyahiyo02e+Lze63o1sfGhHHKJmHAsHPQyTmfI8q73igammiE
+Rsloko0bIpOFGq7E7JFbuvbyF26Gss3LPZVQKgUmQTjqyV/6GyS/9Umg1OTOnkDg
+BGSegUU/jdXuGAfyM1F4wemQ3kvgaM1WvNI7cMzYBTf2OeDJGhYw2Ghp9nEH0SF4
+RLcXeZ3hUMG90zVISbhdIHEb90bD3RFDcHbZIQse7OgHDc3oP/Z/bHjHi358St4f
+GJbHiwXJtUe9pPw156pqJhRvpwEE/vcNLMRo3aaLGiHkxyyy2fIKAyKRsf5cMnrK
+s9jQtJUZwjcP6TTPPAkF
+=8u65
+-----END PGP SIGNATURE-----
+
+--FCuugMFkClbJLl1L--
