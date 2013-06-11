@@ -1,18 +1,8 @@
-Return-Path: <gtolon@inti.gob.ar>
-Message-ID: <51B5D0D8.8090007@inti.gob.ar>
-Date: Mon, 10 Jun 2013 10:12:56 -0300
-From: =?UTF-8?B?R2FicmllbCBUb2zDs24=?= <gtolon@inti.gob.ar>
-MIME-Version: 1.0
-References: <20130606182954.GI1789@ritirata.org>
- <51B0DD43.6090500@inti.gob.ar> <20130606191823.GJ1789@ritirata.org>
- <51B1E4D6.5000900@inti.gob.ar> <20130607135713.GL1789@ritirata.org>
- <51B1F062.3060101@inti.gob.ar> <20130607144019.GM1789@ritirata.org>
- <51B214AE.2090603@inti.gob.ar> <20130607172734.GO1789@ritirata.org>
- <51B22D19.7080807@inti.gob.ar> <20130608122939.GR1789@ritirata.org>
-In-Reply-To: <20130608122939.GR1789@ritirata.org>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] batctl bw performance
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 11 Jun 2013 08:34:58 +0200
+Message-Id: <1370932501-3937-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] pull request for net: batman-adv 2013-06-11
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,52 +14,79 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Antonio
+Hello David,
 
-El 08/06/13 09:29, Antonio Quartulli escribió:
-> Hello Gabriel,
->
-> On Fri, Jun 07, 2013 at 03:57:29PM -0300, Gabriel Tolón wrote:
->>
->> Yes, that's strange, that's why I asked if you had tested the same. It
->> couldn't be due to hardware differences? Just in case WDR3500 have
->> AR9344 SoC.
->>
->
-> I guess it's the same:
->
-> system type		: Atheros AR9344 rev 2
->
-> and this is one test I just performed:
->
-> # batctl bw a6:86:74:00:0f:12
-> Bandwidth meter called towards a6:86:74:00:0f:12
-> Test over in 10030ms.
-> Sent 187528500 Bytes.
-> Throughput: 17.83 MB/s (149.57 Mbps)
+here you have three patches intended for net/linux-3.10.
 
-Great!
+Patch 1/3 is substituting a rtnl_trylock with a rtnl_lock. The trylock was used
+before to avoid deadlock, but since this situation has been fixed, the trylock
+is not necessary anymore. It only creates troubles every time batman-adv is
+initialised and the RTNL lock is taken by another component.
+Since the deadlock has been fixed in 3.8, I'd like to queue this patch for
+stable for 3.8+.
 
->
-> There must be something different in our setup that is probably triggering a bug
-> in the bw_meter (I guess).
 
-Maybe. If you find something you want to try just tell me. Thanks!
+Patch 2/3 fixes an important point in our routing protocol, in particular in the
+duplicate control messages detection. In the right condition, the protocol
+prevents some control packets to be forwarded making some nodes in the network
+totally unreachable and so breaking the mesh. The fix, by Simon Wunderlich,
+enhances the duplicate message detection and avoids this situation (the change
+may look a bit big, but it is just because a variable has been changed from int
+to enum to better describe the duplicate packet event).
+Please, enqueue this patch for -stable because the bug is there since a while..
 
->
-> Here you have more results from tests performed a couple of weeks ago.
->
->
-> Maybe I find a couple of WDR3500 on which I can remotely try to debug the
-> problem....
->
->
-> Cheers,
->
->
 
-Regards
+Patch 3/3 fixes the Bridge Loop Avoidance component by avoiding a particular
+routine to run even if the aforementioned feature is off. This bug leads to some
+useless packets to be sent over the mesh. This one is not critical and therefore
+does not need to be enqueued for stable.
 
-Gabriel
+
+Please pull or let me know if there is any problem!
+
+Thanks a lot,
+	Antonio
+
+
+The following changes since commit 40edeff6e1c6f9a6f16536ae3375e3af9d648449:
+
+  net_sched: qdisc_get_rtab() must check data[] array (2013-06-07 15:24:04 -0700)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to d5b4c93e67b0b1291aa8e2aaf694e40afc3412d0:
+
+  batman-adv: Don't handle address updates when bla is disabled (2013-06-10 08:42:18 +0200)
+
+----------------------------------------------------------------
+Included change:
+- fix "rtnl locked" concurrent executions by using rtnl_lock instead of
+  rtnl_trylock. This fix enables batman-adv initialisation to do not fail just
+  because somewhere else in the system another code path is holding the rtnl
+  lock. It is easy to see the problem when batman-adv is trying to start
+  together with other networking components.
+- fix the routing protocol forwarding policy by enhancing the duplicate control
+  packet detection. When the right circumstances trigger the issue, some nodes in
+  the network become totally unreachable, so breaking the mesh connectivity.
+- fix the Bridge Loop Avoidance component by not running the originator address
+  change handling routine when the component is disabled. The routine was
+  generating useless packets that were sent over the network.
+
+----------------------------------------------------------------
+Matthias Schiffer (1):
+      batman-adv: wait for rtnl in batadv_store_mesh_iface instead of failing if it is taken
+
+Simon Wunderlich (2):
+      batman-adv: forward late OGMs from best next hop
+      batman-adv: Don't handle address updates when bla is disabled
+
+ net/batman-adv/bat_iv_ogm.c            | 86 ++++++++++++++++++++++------------
+ net/batman-adv/bridge_loop_avoidance.c |  4 ++
+ net/batman-adv/sysfs.c                 |  5 +-
+ 3 files changed, 60 insertions(+), 35 deletions(-)
+
