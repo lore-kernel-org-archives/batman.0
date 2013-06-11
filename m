@@ -1,8 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 11 Jun 2013 08:34:58 +0200
-Message-Id: <1370932501-3937-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] pull request for net: batman-adv 2013-06-11
+Date: Tue, 11 Jun 2013 08:34:59 +0200
+Message-Id: <1370932501-3937-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1370932501-3937-1-git-send-email-ordex@autistici.org>
+References: <1370932501-3937-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: wait for rtnl in
+	batadv_store_mesh_iface instead of failing if it is taken
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,78 +18,44 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <ordex@autistici.org>, Marek Lindner <lindner_marek@yahoo.de>
 
-Hello David,
+From: Matthias Schiffer <mschiffer@universe-factory.net>
 
-here you have three patches intended for net/linux-3.10.
+The rtnl_lock in batadv_store_mesh_iface has been converted to a rtnl_trylock
+some time ago to avoid a possible deadlock between rtnl and s_active on removal
+of the sysfs nodes.
 
-Patch 1/3 is substituting a rtnl_trylock with a rtnl_lock. The trylock was used
-before to avoid deadlock, but since this situation has been fixed, the trylock
-is not necessary anymore. It only creates troubles every time batman-adv is
-initialised and the RTNL lock is taken by another component.
-Since the deadlock has been fixed in 3.8, I'd like to queue this patch for
-stable for 3.8+.
+The behaviour introduced by that was quite confusing as it could lead to the
+sysfs store to fail, making batman-adv setup scripts unreliable. As recently the
+sysfs removal was postponed to a worker not running with the rtnl taken, the
+deadlock can't occur any more and it is safe to change the trylock back to a
+lock to make the sysfs store reliable again.
 
+Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+Reviewed-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ net/batman-adv/sysfs.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-Patch 2/3 fixes an important point in our routing protocol, in particular in the
-duplicate control messages detection. In the right condition, the protocol
-prevents some control packets to be forwarded making some nodes in the network
-totally unreachable and so breaking the mesh. The fix, by Simon Wunderlich,
-enhances the duplicate message detection and avoids this situation (the change
-may look a bit big, but it is just because a variable has been changed from int
-to enum to better describe the duplicate packet event).
-Please, enqueue this patch for -stable because the bug is there since a while..
-
-
-Patch 3/3 fixes the Bridge Loop Avoidance component by avoiding a particular
-routine to run even if the aforementioned feature is off. This bug leads to some
-useless packets to be sent over the mesh. This one is not critical and therefore
-does not need to be enqueued for stable.
-
-
-Please pull or let me know if there is any problem!
-
-Thanks a lot,
-	Antonio
-
-
-The following changes since commit 40edeff6e1c6f9a6f16536ae3375e3af9d648449:
-
-  net_sched: qdisc_get_rtab() must check data[] array (2013-06-07 15:24:04 -0700)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
-
-for you to fetch changes up to d5b4c93e67b0b1291aa8e2aaf694e40afc3412d0:
-
-  batman-adv: Don't handle address updates when bla is disabled (2013-06-10 08:42:18 +0200)
-
-----------------------------------------------------------------
-Included change:
-- fix "rtnl locked" concurrent executions by using rtnl_lock instead of
-  rtnl_trylock. This fix enables batman-adv initialisation to do not fail just
-  because somewhere else in the system another code path is holding the rtnl
-  lock. It is easy to see the problem when batman-adv is trying to start
-  together with other networking components.
-- fix the routing protocol forwarding policy by enhancing the duplicate control
-  packet detection. When the right circumstances trigger the issue, some nodes in
-  the network become totally unreachable, so breaking the mesh connectivity.
-- fix the Bridge Loop Avoidance component by not running the originator address
-  change handling routine when the component is disabled. The routine was
-  generating useless packets that were sent over the network.
-
-----------------------------------------------------------------
-Matthias Schiffer (1):
-      batman-adv: wait for rtnl in batadv_store_mesh_iface instead of failing if it is taken
-
-Simon Wunderlich (2):
-      batman-adv: forward late OGMs from best next hop
-      batman-adv: Don't handle address updates when bla is disabled
-
- net/batman-adv/bat_iv_ogm.c            | 86 ++++++++++++++++++++++------------
- net/batman-adv/bridge_loop_avoidance.c |  4 ++
- net/batman-adv/sysfs.c                 |  5 +-
- 3 files changed, 60 insertions(+), 35 deletions(-)
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index 15a22ef..929e304 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -582,10 +582,7 @@ static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
+ 	    (strncmp(hard_iface->soft_iface->name, buff, IFNAMSIZ) == 0))
+ 		goto out;
+ 
+-	if (!rtnl_trylock()) {
+-		ret = -ERESTARTSYS;
+-		goto out;
+-	}
++	rtnl_lock();
+ 
+ 	if (status_tmp == BATADV_IF_NOT_IN_USE) {
+ 		batadv_hardif_disable_interface(hard_iface,
+-- 
+1.8.1.5
 
