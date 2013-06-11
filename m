@@ -1,14 +1,15 @@
-Return-Path: <ordex@autistici.org>
-Date: Tue, 11 Jun 2013 10:07:35 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130611080735.GA1466@ritirata.org>
+Return-Path: <bhutchings@solarflare.com>
+Message-ID: <1370959770.1954.3.camel@bwh-desktop.uk.level5networks.com>
+From: Ben Hutchings <bhutchings@solarflare.com>
+Date: Tue, 11 Jun 2013 15:09:30 +0100
+In-Reply-To: <1370932501-3937-2-git-send-email-ordex@autistici.org>
 References: <1370932501-3937-1-git-send-email-ordex@autistici.org>
+ <1370932501-3937-2-git-send-email-ordex@autistici.org>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="FCuugMFkClbJLl1L"
-Content-Disposition: inline
-In-Reply-To: <1370932501-3937-1-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] pull request for net: batman-adv 2013-06-11
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: wait for rtnl in
+ batadv_store_mesh_iface instead of failing if it is taken
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,186 +21,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: Antonio Quartulli <ordex@autistici.org>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, Marek Lindner <lindner_marek@yahoo.de>
 
+On Tue, 2013-06-11 at 08:34 +0200, Antonio Quartulli wrote:
+> From: Matthias Schiffer <mschiffer@universe-factory.net>
+> 
+> The rtnl_lock in batadv_store_mesh_iface has been converted to a rtnl_trylock
+> some time ago to avoid a possible deadlock between rtnl and s_active on removal
+> of the sysfs nodes.
+> 
+> The behaviour introduced by that was quite confusing as it could lead to the
+> sysfs store to fail, making batman-adv setup scripts unreliable.
 
---FCuugMFkClbJLl1L
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I think what you actually wanted was ERESTARTNOINTR.  But the real
+problem is that neither of these error codes is valid unless the system
+call is aborted due to a signal.
 
-Hello David,
+Ben.
 
-On Tue, Jun 11, 2013 at 08:34:58AM +0200, Antonio Quartulli wrote:
+>  As recently the
+> sysfs removal was postponed to a worker not running with the rtnl taken, the
+> deadlock can't occur any more and it is safe to change the trylock back to a
+> lock to make the sysfs store reliable again.
+> 
+> Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+> Reviewed-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+> ---
+>  net/batman-adv/sysfs.c | 5 +----
+>  1 file changed, 1 insertion(+), 4 deletions(-)
+> 
+> diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+> index 15a22ef..929e304 100644
+> --- a/net/batman-adv/sysfs.c
+> +++ b/net/batman-adv/sysfs.c
+> @@ -582,10 +582,7 @@ static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
+>  	    (strncmp(hard_iface->soft_iface->name, buff, IFNAMSIZ) == 0))
+>  		goto out;
+>  
+> -	if (!rtnl_trylock()) {
+> -		ret = -ERESTARTSYS;
+> -		goto out;
+> -	}
+> +	rtnl_lock();
+>  
+>  	if (status_tmp == BATADV_IF_NOT_IN_USE) {
+>  		batadv_hardif_disable_interface(hard_iface,
 
-[...]
+-- 
+Ben Hutchings, Staff Engineer, Solarflare
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
 
->=20
->=20
-> Please pull or let me know if there is any problem!
-
-After having applied this patchset the merge of net into net-next will gene=
-rate
-a conflict. Here you have the needed information to properly solve it.
-
-Regards,
-
-
-
-conflict in net/batman-adv/bat_iv_ogm.c:
-
-++<<<<<<< HEAD
- + * batadv_ring_buffer_set - update the ring buffer with the given value
- + * @lq_recv: pointer to the ring buffer
- + * @lq_index: index to store the value at
- + * @value: value to store in the ring buffer
- + */
- +static void batadv_ring_buffer_set(uint8_t lq_recv[], uint8_t *lq_index,
- +				   uint8_t value)
- +{
- +	lq_recv[*lq_index] =3D value;
- +	*lq_index =3D (*lq_index + 1) % BATADV_TQ_GLOBAL_WINDOW_SIZE;
- +}
- +
- +/**
- + * batadv_ring_buffer_set - compute the average of all non-zero values st=
-ored
- + * in the given ring buffer
- + * @lq_recv: pointer to the ring buffer
- + *
- + * Returns computed average value.
- + */
- +static uint8_t batadv_ring_buffer_avg(const uint8_t lq_recv[])
- +{
- +	const uint8_t *ptr;
- +	uint16_t count =3D 0, i =3D 0, sum =3D 0;
- +
- +	ptr =3D lq_recv;
- +
- +	while (i < BATADV_TQ_GLOBAL_WINDOW_SIZE) {
- +		if (*ptr !=3D 0) {
- +			count++;
- +			sum +=3D *ptr;
- +		}
- +
- +		i++;
- +		ptr++;
- +	}
- +
- +	if (count =3D=3D 0)
- +		return 0;
- +
- +	return (uint8_t)(sum / count);
- +}
-++=3D=3D=3D=3D=3D=3D=3D
-+  * batadv_dup_status - duplicate status
-+  * @BATADV_NO_DUP: the packet is a duplicate
-+  * @BATADV_ORIG_DUP: OGM is a duplicate in the originator (but not for the
-+  *  neighbor)
-+  * @BATADV_NEIGH_DUP: OGM is a duplicate for the neighbor
-+  * @BATADV_PROTECTED: originator is currently protected (after reboot)
-+  */
-+ enum batadv_dup_status {
-+ 	BATADV_NO_DUP =3D 0,
-+ 	BATADV_ORIG_DUP,
-+ 	BATADV_NEIGH_DUP,
-+ 	BATADV_PROTECTED,
-+ };
-+=20
-++>>>>>>> 7c24bbb... batman-adv: forward late OGMs from best next hop
-
-is solved as follows (add /** at the top of the batadv_dup_status kerneldoc=
- and
-keep everything):
-
-<<<<<<<<<<<<
- * batadv_ring_buffer_set - update the ring buffer with the given value
- * @lq_recv: pointer to the ring buffer
- * @lq_index: index to store the value at
- * @value: value to store in the ring buffer
- */
-static void batadv_ring_buffer_set(uint8_t lq_recv[], uint8_t *lq_index,
-				   uint8_t value)
-{
-	lq_recv[*lq_index] =3D value;
-	*lq_index =3D (*lq_index + 1) % BATADV_TQ_GLOBAL_WINDOW_SIZE;
-}
-
-/**
- * batadv_ring_buffer_set - compute the average of all non-zero values stor=
-ed
- * in the given ring buffer
- * @lq_recv: pointer to the ring buffer
- *
- * Returns computed average value.
- */
-static uint8_t batadv_ring_buffer_avg(const uint8_t lq_recv[])
-{
-	const uint8_t *ptr;
-	uint16_t count =3D 0, i =3D 0, sum =3D 0;
-
-	ptr =3D lq_recv;
-
-	while (i < BATADV_TQ_GLOBAL_WINDOW_SIZE) {
-		if (*ptr !=3D 0) {
-			count++;
-			sum +=3D *ptr;
-		}
-
-		i++;
-		ptr++;
-	}
-
-	if (count =3D=3D 0)
-		return 0;
-
-	return (uint8_t)(sum / count);
-}
-
-/**
- * batadv_dup_status - duplicate status
- * @BATADV_NO_DUP: the packet is a duplicate
- * @BATADV_ORIG_DUP: OGM is a duplicate in the originator (but not for the
- *  neighbor)
- * @BATADV_NEIGH_DUP: OGM is a duplicate for the neighbor
- * @BATADV_PROTECTED: originator is currently protected (after reboot)
- */
-enum batadv_dup_status {
-	BATADV_NO_DUP =3D 0,
-	BATADV_ORIG_DUP,
-	BATADV_NEIGH_DUP,
-	BATADV_PROTECTED,
-};
-
->>>>>>>>>>>>>>
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---FCuugMFkClbJLl1L
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRttrHAAoJEADl0hg6qKeOtY8QAMQmA/ZGoX2AqodeOGNG0+M5
-y1cm2v/BI0+44/n8fJYphJIhmBYn1MthQNot1jgCNPIxmNVJfFt6JIqGRVYbnhI5
-vWdqgEEq50HI3N9VMPn8ehMiIcyyDacVMX4QpiO4Q3z2y1+2YksD2mCZNsmLu/KF
-vLfwHRL88RsZfcnEHT4vRseJ6PFSyfLNtH5Yx2AgTQwUkwshIncPKn/eLr66glox
-hCmXftVIXyAyGQW1+5zM9UNGtRo/n2J0H7JShmOPPw1Dsa9l5GaEKWcYF3o1Mzfm
-SHjroYXLMcsMdzUgjUxm7gy5lJB5LFnj2XcJh8JZVgo/q6vuLWfCcqWA/AKG4ZwM
-AFMsUbAM9aTOWiPRyahiyo02e+Lze63o1sfGhHHKJmHAsHPQyTmfI8q73igammiE
-Rsloko0bIpOFGq7E7JFbuvbyF26Gss3LPZVQKgUmQTjqyV/6GyS/9Umg1OTOnkDg
-BGSegUU/jdXuGAfyM1F4wemQ3kvgaM1WvNI7cMzYBTf2OeDJGhYw2Ghp9nEH0SF4
-RLcXeZ3hUMG90zVISbhdIHEb90bD3RFDcHbZIQse7OgHDc3oP/Z/bHjHi358St4f
-GJbHiwXJtUe9pPw156pqJhRvpwEE/vcNLMRo3aaLGiHkxyyy2fIKAyKRsf5cMnrK
-s9jQtJUZwjcP6TTPPAkF
-=8u65
------END PGP SIGNATURE-----
-
---FCuugMFkClbJLl1L--
