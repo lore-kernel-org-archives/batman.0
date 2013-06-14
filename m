@@ -1,11 +1,12 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Fri, 14 Jun 2013 19:50:06 +0200
-Message-Id: <1371232209-7808-1-git-send-email-linus.luessing@web.de>
+Date: Fri, 14 Jun 2013 20:04:09 +0200
+Message-Id: <1371233050-7938-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] Basic Multicast Optimizations
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: (style) fix for switched
+	vid-ifiindex parameter order
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,12 +20,36 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is the sixth revision of the basic multicast optimization patches.
+batadv_tt_local_add() first takes the vid and then the interface index
+parameter. One of these calls had the order switched.
 
-It simplifies and speeds-up the new batadv_tt_global_hash_count():
+However in this case it is not a functional, but just a style fix
+because at the moment BATADV_NO_FLAGS is equal to BATADV_NULL_IFINDEX.
 
-* We now use batadv_tt_global_hash_find() instead of our custom look-up.
-* A counter for the orig_list was added, so that we won't need to recount
-  with every multicast packet.
+Introduced by 580d7919f19e4f73ccd79e82a532af2bdc638042
+("batman-adv: add the VLAN ID attribute to the TT entry")
 
-Cheers, Linus
+Acked-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+---
+v2: Added "Introduced by..." to commit message
+
+ main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/main.c b/main.c
+index f2f1137..a7ad6cb 100644
+--- a/main.c
++++ b/main.c
+@@ -128,7 +128,7 @@ int batadv_mesh_init(struct net_device *soft_iface)
+ 		goto err;
+ 
+ 	batadv_tt_local_add(soft_iface, soft_iface->dev_addr,
+-			    BATADV_NULL_IFINDEX, BATADV_NO_FLAGS);
++			    BATADV_NO_FLAGS, BATADV_NULL_IFINDEX);
+ 
+ 	ret = batadv_bla_init(bat_priv);
+ 	if (ret < 0)
+-- 
+1.7.10.4
+
