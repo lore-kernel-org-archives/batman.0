@@ -1,13 +1,11 @@
-Return-Path: <davem@davemloft.net>
-Date: Thu, 13 Jun 2013 01:27:45 -0700 (PDT)
-Message-Id: <20130613.012745.275777609215183999.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1370932501-3937-1-git-send-email-ordex@autistici.org>
-References: <1370932501-3937-1-git-send-email-ordex@autistici.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request for net: batman-adv 2013-06-11
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Fri, 14 Jun 2013 11:02:02 +0200
+Message-Id: <1371200525-2011-1-git-send-email-linus.luessing@web.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] Basic Multicast Optimizations
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,12 +17,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 11 Jun 2013 08:34:58 +0200
+This is the fifth revision of the basic multicast optimization patches.
 
-> here you have three patches intended for net/linux-3.10.
+It fixes two bugs:
 
-Pulled, thanks Antonio.
+For one thing packets to the IPv6 all-hosts-link-scope multicast address
+(ff02::1) were optimized, too. However this is the one link local address
+which we should not never optimize (see RFC4541, section 3 [1]).
+
+For another since commit 87d4a282 ("batman-adv: remove useless find_router look up"
+the unicast-forwarding of multicast packets was broken and I had
+only runtime tested the patches based on an older commit
+(before 87d4a282 such unicast-forwarding was "only" broken if
+a gateway-server was present).
+
+
+Also note that rebasing on top of the TT-VLAN patches wasn't trivial:
+Simply resolving the rebase complaints resulted in subtle runtime
+bugs. A few lines in the counting methods added to translation-table.c
+needed changes.
+
+Cheers, Linus
+
+
+[1]: Considerations for Internet Group Management Protocol (IGMP)
+     and Multicast Listener Discovery (MLD) Snooping Switches
+     -> "Packets with the all hosts link-scope address should be forwarded
+         on all ports."
+     https://tools.ietf.org/html/rfc4541
