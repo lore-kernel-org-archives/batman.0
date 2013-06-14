@@ -1,15 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Fri, 14 Jun 2013 14:49:26 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130614124926.GB1237@ritirata.org>
-References: <1371203642-2224-1-git-send-email-linus.luessing@web.de>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Fri, 14 Jun 2013 16:30:28 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20130614143028.GA26907@pandem0nium>
+References: <1371200525-2011-1-git-send-email-linus.luessing@web.de>
+ <1371200525-2011-4-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="mxv5cy4qt+RJ9ypb"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="5vNYLRcllDrimb99"
 Content-Disposition: inline
-In-Reply-To: <1371203642-2224-1-git-send-email-linus.luessing@web.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: (style) fix for switched
- vid-ifiindex parameter order
+In-Reply-To: <1371200525-2011-4-git-send-email-linus.luessing@web.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv5 3/3] batman-adv: Modified forwarding
+ behaviour for multicast packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,83 +25,114 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---mxv5cy4qt+RJ9ypb
+--5vNYLRcllDrimb99
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hey Linus,
+On Fri, Jun 14, 2013 at 11:02:05AM +0200, Linus L=C3=BCssing wrote:
+ =20
+>  /**
+> + * batadv_tt_orig_entries_count - count the number of originators
+> + * @head: a list of originators
+> + *
+> + * Return the number of originator entries in the given list.
+> + *
+> + * The caller needs to hold the rcu_read_lock().
+> + */
+> +static int batadv_tt_orig_entries_count(struct hlist_head *head)
+> +{
+> +	struct batadv_tt_orig_list_entry *orig_entry;
+> +	int count =3D 0;
+> +
+> +	hlist_for_each_entry_rcu(orig_entry, head, list) {
+> +		if (!atomic_read(&orig_entry->refcount))
+> +			continue;
+> +
+> +		count++;
+> +	}
+> +
+> +	return count;
+> +}
+> +
+> +/**
+> + * batadv_tt_global_hash_count - count the number of orig entries
+> + * @hash: hash table containing the tt entries
+> + * @addr: the mac address of the client to count entries for
+> + * @vid: VLAN identifier
+> + *
+> + * Return the number of originators advertising the given address/data
+> + * (excluding ourself).
+> + */
+> +int batadv_tt_global_hash_count(struct batadv_priv *bat_priv,
+> +				const uint8_t *addr, unsigned short vid)
+> +{
+> +	struct hlist_head *head, *orig_list;
+> +	struct batadv_tt_common_entry to_search, *tt_common_entry;
+> +	struct batadv_tt_global_entry *tt_global_entry;
+> +	uint32_t index;
+> +	int count =3D 0;
+> +
+> +	if (!bat_priv->tt.global_hash)
+> +		goto out;
+> +
+> +	memcpy(to_search.addr, addr, ETH_ALEN);
+> +	to_search.vid =3D vid;
+> +
+> +	index =3D batadv_choose_tt(&to_search, bat_priv->tt.global_hash->size);
+> +	head =3D &bat_priv->tt.global_hash->table[index];
+> +
+> +	rcu_read_lock();
+> +	hlist_for_each_entry_rcu(tt_common_entry, head, hash_entry) {
+> +		if (!batadv_compare_eth(tt_common_entry, addr))
+> +			continue;
+> +
+> +		if (!atomic_read(&tt_common_entry->refcount))
+> +			continue;
+> +
+> +		tt_global_entry =3D container_of(tt_common_entry,
+> +					       struct batadv_tt_global_entry,
+> +					       common);
+> +		orig_list =3D &tt_global_entry->orig_list;
+> +		count =3D batadv_tt_orig_entries_count(orig_list);
+> +		break;
+> +	}
+> +	rcu_read_unlock();
+> +
+> +out:
+> +	return count;
+> +}
+> +
+> +/**
 
-On Fri, Jun 14, 2013 at 11:54:02AM +0200, Linus L=C3=BCssing wrote:
-> batadv_tt_local_add() first takes the vid and then the interface index
-> parameter. One of these calls had the order switched.
->=20
-> However in this case it is not a functional, but just a style fix
-> because at the moment BATADV_NO_FLAGS is equal to BATADV_NULL_IFINDEX.
->=20
+I've been thinking about this part ... it is not good to iterate over the w=
+hole
+hash for every multicast packet - this is the fastpath after all, so it's c=
+ritical.
 
-Thanks for fixing this :)
+Can't you just use batadv_tt_global_hash_find(), count the list entries wit=
+hin
+struct batadv_tt_global_entry (or find out if it is empty, one entry or more
+than one entry) and be done? This should be much faster.
 
-However, can you please resend this patch adding the commit id and the subj=
-ect
-of the change introducing this problem? This will help me in squashing the
-original patch and this fix before sending the patches upstream.
-(Sorry for annoying with this :-))
-
-> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
-
-You can also add
-
-Acked-by: Antonio Quartulli <ordex@autistici.org>
+Apart from that, the patch series appears to be pretty mature now, I've done
+some more testing in my VMs and it looks good. Should be (hopefully) the la=
+st
+thing from my side. :)
 
 Cheers,
+	Simon
 
-> ---
->  main.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/main.c b/main.c
-> index f2f1137..a7ad6cb 100644
-> --- a/main.c
-> +++ b/main.c
-> @@ -128,7 +128,7 @@ int batadv_mesh_init(struct net_device *soft_iface)
->  		goto err;
-> =20
->  	batadv_tt_local_add(soft_iface, soft_iface->dev_addr,
-> -			    BATADV_NULL_IFINDEX, BATADV_NO_FLAGS);
-> +			    BATADV_NO_FLAGS, BATADV_NULL_IFINDEX);
-> =20
->  	ret =3D batadv_bla_init(bat_priv);
->  	if (ret < 0)
-> --=20
-> 1.7.10.4
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---mxv5cy4qt+RJ9ypb
+--5vNYLRcllDrimb99
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRuxFWAAoJEADl0hg6qKeOuCgP/2DHk3v3+qAKvPbPFJRkG19r
-BOoOpdLNE8pLhc6S9NPv2mNWuG4kJW3MeSfH6cBVPreneXVEnz/Dl4DX5IsTjj8G
-izPbXHKFwi/2M5kkU3XukS+1Csm1baG18B3dOLwvkJWOpvoCUq+AkNIVfDZiTtkn
-tcxB9Je8FcMtKqQJPGkIA3BDAQGWZhmiVeTKAdfy0ufvTrfPsQUrByZWSCupBtzQ
-Y44dt7yMcCrx2HgggUZCmu5EF5FahwaK1OWgWBWKopOlMSbPQnPaJkSPGFSl1Ylo
-qinkiIDVQHuyzvnzgEqxJQfOgfF8U5R5h7hRcOWE/VciU/b6dNZ0vUHABRoaOPn2
-f3VVk3L6EsM6s7vtI4q8mm32utYTTof0NDVSY3nop17wKByuViavYbeC8zMzGlv2
-/duSv9EOqOBmjThRJNGmg13Rk17tRhZ5k3ZJ76NGJ6rr2Gx64RFSI9fJiNHaLGX2
-ugulSpsyHsQ/83MBGDlVeJItOVvHgYywHibSDqWX+s3GknKEip+wPYFyQ7cjkc5i
-P2/dTd8T4ZBu5fBClFtTE4YxF66Um5mUW2OKY7CiSgbk00TfDGBt1E78zrnZ/Zs/
-GhGHWmCxeo+9zkvh0eXJXjwP+FHUy11yinDNmiOt41bhZQ0/uXn97AhPpfBuCU9S
-0OIQ3CxBMLhF8O4pwJ0S
-=rt/g
+iEYEARECAAYFAlG7KQQACgkQrzg/fFk7axbFjACffLUDOyA+1orDsOdBs3DVT8O7
+cNMAn0OtXWLWvk5Hq/1+ZX+/YJXJDg3f
+=Uo2+
 -----END PGP SIGNATURE-----
 
---mxv5cy4qt+RJ9ypb--
+--5vNYLRcllDrimb99--
