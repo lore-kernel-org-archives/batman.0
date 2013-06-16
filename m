@@ -1,12 +1,14 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Fri, 14 Jun 2013 20:04:09 +0200
-Message-Id: <1371233050-7938-1-git-send-email-linus.luessing@web.de>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sun, 16 Jun 2013 16:08:42 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20130616140842.GA13449@pandem0nium>
+References: <1371232209-7808-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: (style) fix for switched
-	vid-ifiindex parameter order
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="J2SCkAp4GZ/dPZZf"
+Content-Disposition: inline
+In-Reply-To: <1371232209-7808-1-git-send-email-linus.luessing@web.de>
+Subject: Re: [B.A.T.M.A.N.] Basic Multicast Optimizations
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,38 +20,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-batadv_tt_local_add() first takes the vid and then the interface index
-parameter. One of these calls had the order switched.
 
-However in this case it is not a functional, but just a style fix
-because at the moment BATADV_NO_FLAGS is equal to BATADV_NULL_IFINDEX.
+--J2SCkAp4GZ/dPZZf
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Introduced by 580d7919f19e4f73ccd79e82a532af2bdc638042
-("batman-adv: add the VLAN ID attribute to the TT entry")
+Looks good, Tested/Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-Acked-by: Antonio Quartulli <ordex@autistici.org>
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
-v2: Added "Introduced by..." to commit message
+Thanks,
+	Simon
 
- main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Fri, Jun 14, 2013 at 07:50:06PM +0200, Linus L=C3=BCssing wrote:
+> This is the sixth revision of the basic multicast optimization patches.
+>=20
+> It simplifies and speeds-up the new batadv_tt_global_hash_count():
+>=20
+> * We now use batadv_tt_global_hash_find() instead of our custom look-up.
+> * A counter for the orig_list was added, so that we won't need to recount
+>   with every multicast packet.
+>=20
+> Cheers, Linus
 
-diff --git a/main.c b/main.c
-index f2f1137..a7ad6cb 100644
---- a/main.c
-+++ b/main.c
-@@ -128,7 +128,7 @@ int batadv_mesh_init(struct net_device *soft_iface)
- 		goto err;
- 
- 	batadv_tt_local_add(soft_iface, soft_iface->dev_addr,
--			    BATADV_NULL_IFINDEX, BATADV_NO_FLAGS);
-+			    BATADV_NO_FLAGS, BATADV_NULL_IFINDEX);
- 
- 	ret = batadv_bla_init(bat_priv);
- 	if (ret < 0)
--- 
-1.7.10.4
+--J2SCkAp4GZ/dPZZf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEARECAAYFAlG9xuoACgkQrzg/fFk7axYdHgCgrf+9SQQfEUZCl/TBLHz5aUqT
++LEAn0K84P+4SQaUYXd9VtHB+5R2UoIh
+=L3Tw
+-----END PGP SIGNATURE-----
+
+--J2SCkAp4GZ/dPZZf--
