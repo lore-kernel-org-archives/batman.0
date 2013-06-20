@@ -1,13 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 20 Jun 2013 05:33:13 +0800
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201306200533.13727.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv5 1/2] batman-adv: add per VLAN interface
-	attribute framework
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Thu, 20 Jun 2013 15:00:25 +0200
+Message-Id: <1371733228-3295-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv7 0/3] TT-VLAN: First patchset
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,48 +14,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <ordex@autistici.org>
 
-On Thursday, June 13, 2013 02:04:19 Antonio Quartulli wrote:
-> --- a/hard-interface.c
-> +++ b/hard-interface.c
-> @@ -643,6 +643,8 @@ static int batadv_hard_if_event(struct notifier_block
-> *this,
-> 
->  	if (batadv_softif_is_valid(net_dev) && event == NETDEV_REGISTER) {
->  		batadv_sysfs_add_meshif(net_dev);
-> +		bat_priv = netdev_priv(net_dev);
-> +		batadv_softif_create_vlan(bat_priv, BATADV_NO_FLAGS);
->  		return NOTIFY_DONE;
->  	}
+Hello folks,
 
-When is this entry ever removed ? Did you try to rmmod the module with these 
-patches enabled ?
+after version 4 I decided to split the bug TT-VLAN batch in several patchsets to
+make them easier to get digested by the maintainers.
 
+This is the third iteration of the first patchset.
 
-> +       /* explicitly remove the associated TT local entry because it is 
-marked
-> +        * with the NOPURGE flag
-> +        */
-> +       batadv_tt_local_remove(bat_priv, dev->dev_addr, vid,
-> +                              "vlan interface destroyed", false);
-
-Curious. In batadv_interface_add_vid() you force the BATADV_VLAN_HAS_TAG tag 
-onto each batadv_tt_local_add() call but on removal we don't have the flag 
-set. Are you certain that is correct ?
+Differences from v6:
+- added patch introducing the per-VLAN ap_isolation attribute. It made no sense
+  to have the new framework without a user. This patch introduces it.
+- removed the "novlan" sysfs folder. To avoid confusion and keep backward
+  compatibility in a sane way, attributes corresponding to the untagged LAN are
+  located in the root sysfs mesh folder (as it was done before). To implement
+  this, some changes to the sysfs routines were needed (with respect to v6).
+- the array used to build the sysfs subfolder name now has a proper size instead
+  of a too generic "256".
 
 
-> @@ -613,6 +632,8 @@ struct batadv_priv {
->  	struct work_struct cleanup_work;
->  	struct batadv_hard_iface __rcu *primary_if;  /* rcu protected pointer */
->  	struct batadv_algo_ops *bat_algo_ops;
-> +	struct list_head softif_vlan_list;
-> +	spinlock_t softif_vlan_list_lock; /* protects softif_vlan_list */
->  #ifdef CONFIG_BATMAN_ADV_BLA
->  	struct batadv_priv_bla bla;
->  #endif
+Differences from v5 are:
+- added "untagged VLAN" removal routine. In the previous code the "untagged
+  VLAN" was added but never removed.
 
-Why do we need a full blown list ? Isn't hlist sufficient ?
+- use the correct vid argument when invoking batadv_tt_local_remove(). One
+  invocation to the mentioned function was getting a vid that was not ORed with
+  the HAS_TAG flag. However, such invocation has been enclosed into the new
+  batadv_softif_destroy_vlan() function introduced to account the previous
+  point.
 
-Cheers,
-Marek
+- bat_priv->softif_vlan_list is now an hlist instead of of a list.
+
+
+Thanks to Marek for his feedbacks.
+
+
+*** BLURB HERE ***
+
+Antonio Quartulli (3):
+  batman-adv: add per VLAN interface attribute framework
+  batman-adv: add sysfs framework for VLAN
+  batman-adv: make the AP isolation attribute VLAN specific
+
+ compat.c             |   9 +++
+ compat.h             |  24 ++++++++
+ hard-interface.c     |   2 +
+ main.c               |   5 +-
+ soft-interface.c     | 171 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ soft-interface.h     |   4 ++
+ sysfs-class-net-mesh |   2 +-
+ sysfs.c              | 167 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ sysfs.h              |  10 +++
+ translation-table.c  |  21 +++++--
+ translation-table.h  |   2 +-
+ types.h              |  23 +++++++
+ 12 files changed, 426 insertions(+), 14 deletions(-)
+
+-- 
+1.8.1.5
+
