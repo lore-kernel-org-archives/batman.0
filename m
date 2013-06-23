@@ -1,11 +1,10 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 20 Jun 2013 15:00:28 +0200
-Message-Id: <1371733228-3295-4-git-send-email-ordex@autistici.org>
-In-Reply-To: <1371733228-3295-1-git-send-email-ordex@autistici.org>
-References: <1371733228-3295-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv7 3/3] batman-adv: make the AP isolation
-	attribute VLAN specific
+Return-Path: <gui@altermundi.net>
+Message-ID: <51C76DDE.20903@altermundi.net>
+Date: Sun, 23 Jun 2013 18:51:26 -0300
+From: Gui Iribarren <gui@altermundi.net>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="------------030805040404030403010608"
+Subject: [B.A.T.M.A.N.] Possible bad interaction between BLA2 and TT?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,303 +16,380 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+This is a multi-part message in MIME format.
+--------------030805040404030403010608
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-AP isolation has to be enabled on one VLAN interface only.
-This patch moves the AP isolation attribute to the per-vlan
-interface attribute set, enabling it to have a different
-value depending on the selected vlan.
+Hey everyone!
+fiiinally got back home, a week ago, and got time to debug a strange 
+issue here. The report i had from a few users was "intermittent 
+connectivity", with "waves" of traffic, with random pauses lasting from 
+a few seconds to a minute or so.
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
----
- soft-interface.c     | 10 ++++++----
- soft-interface.h     |  3 +++
- sysfs-class-net-mesh |  5 +++--
- sysfs.c              | 48 ++++++++++++++++++++++++++++--------------------
- translation-table.c  | 21 +++++++++++++++------
- translation-table.h  |  2 +-
- types.h              |  2 ++
- 7 files changed, 58 insertions(+), 33 deletions(-)
+I initially dismissed as interference, or even OS problems, but turns 
+out they were right! and sadly, batman seems to be in the way
 
-diff --git a/soft-interface.c b/soft-interface.c
-index 2d1ea48..b8701a0 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -372,7 +372,8 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 		batadv_tt_add_temporary_global_entry(bat_priv, orig_node,
- 						     ethhdr->h_source, vid);
- 
--	if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest))
-+	if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest,
-+				  vid))
- 		goto dropped;
- 
- 	netif_rx(skb);
-@@ -389,7 +390,7 @@ out:
-  *  possibly free it
-  * @softif_vlan: the vlan object to release
-  */
--static void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *softif_vlan)
-+void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *softif_vlan)
- {
- 	if (atomic_dec_and_test(&softif_vlan->refcount))
- 		kfree_rcu(softif_vlan, rcu);
-@@ -403,8 +404,8 @@ static void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *softif_vlan)
-  * Return the private data of the vlan matching the vid passed as argument or
-  * NULL otherwise. The refcounter of the returned object is incremented by 1.
-  */
--static struct batadv_softif_vlan *
--batadv_softif_vlan_get(struct batadv_priv *bat_priv, unsigned short vid)
-+struct batadv_softif_vlan *batadv_softif_vlan_get(struct batadv_priv *bat_priv,
-+						  unsigned short vid)
- {
- 	struct batadv_softif_vlan *vlan, *vlan_tmp = NULL;
- 
-@@ -449,6 +450,7 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- 	batadv_tt_local_add(bat_priv->soft_iface,
- 			    bat_priv->soft_iface->dev_addr, vid,
- 			    BATADV_NULL_IFINDEX);
-+	atomic_set(&vlan->ap_isolation, 0);
- 
- 	err = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
- 	if (err)
-diff --git a/soft-interface.h b/soft-interface.h
-index 16d9be6..06fc91f 100644
---- a/soft-interface.h
-+++ b/soft-interface.h
-@@ -29,5 +29,8 @@ void batadv_softif_destroy_sysfs(struct net_device *soft_iface);
- int batadv_softif_is_valid(const struct net_device *net_dev);
- extern struct rtnl_link_ops batadv_link_ops;
- int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid);
-+void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *softif_vlan);
-+struct batadv_softif_vlan *batadv_softif_vlan_get(struct batadv_priv *bat_priv,
-+						  unsigned short vid);
- 
- #endif /* _NET_BATMAN_ADV_SOFT_INTERFACE_H_ */
-diff --git a/sysfs-class-net-mesh b/sysfs-class-net-mesh
-index f00a69b..ee4a479 100644
---- a/sysfs-class-net-mesh
-+++ b/sysfs-class-net-mesh
-@@ -6,13 +6,14 @@ Description:
-                 Indicates whether the batman protocol messages of the
-                 mesh <mesh_iface> shall be aggregated or not.
- 
--What:           /sys/class/net/<mesh_iface>/mesh/ap_isolation
-+What:           /sys/class/net/<mesh_iface>/mesh/<vlan_subdir>/ap_isolation
- Date:           May 2011
- Contact:        Antonio Quartulli <ordex@autistici.org>
- Description:
-                 Indicates whether the data traffic going from a
-                 wireless client to another wireless client will be
--                silently dropped.
-+                silently dropped. <vlan_subdir> is empty when referring
-+		to the untagged lan.
- 
- What:           /sys/class/net/<mesh_iface>/mesh/bonding
- Date:           June 2010
-diff --git a/sysfs.c b/sysfs.c
-index 6a04fb3..8c458c3 100644
---- a/sysfs.c
-+++ b/sysfs.c
-@@ -24,6 +24,7 @@
- #include "network-coding.h"
- #include "originator.h"
- #include "hard-interface.h"
-+#include "soft-interface.h"
- #include "gateway_common.h"
- #include "gateway_client.h"
- 
-@@ -39,27 +40,30 @@ static struct batadv_priv *batadv_kobj_to_batpriv(struct kobject *obj)
- 	return netdev_priv(net_dev);
- }
- 
-+static struct batadv_priv *batadv_vlan_kobj_to_batpriv(struct kobject *obj)
-+{
-+	/* VLAN specific attributes are located in the root sysfs folder if they
-+	 * refer to the untagged VLAN..
-+	 */
-+	if (!strcmp(BATADV_SYSFS_IF_MESH_SUBDIR, obj->name))
-+		return batadv_kobj_to_batpriv(obj);
-+
-+	/* ..while the attributed for the tagged vlans are located in
-+	 * the in the corresponding "vlan%VID" subfolder
-+	 */
-+	return batadv_kobj_to_batpriv(obj->parent);
-+}
-+
- /**
-  * batadv_kobj_to_vlan - convert a kobj in the associated softif_vlan struct
-  * @obj: kobject to covert
-  *
-  * Return the associated softif_vlan struct if cound, NULL otherwise
-  */
--static struct batadv_softif_vlan *batadv_kobj_to_vlan(struct kobject *obj)
-+static struct batadv_softif_vlan *
-+batadv_kobj_to_vlan(struct batadv_priv *bat_priv, struct kobject *obj)
- {
- 	struct batadv_softif_vlan *vlan;
--	struct batadv_priv *bat_priv;
--
--	/* VLAN specific attributes are located in the root sysfs folder if they
--	 * refer to the untagged VLAN..
--	 */
--	if (!strcmp(BATADV_SYSFS_IF_MESH_SUBDIR, obj->name))
--		bat_priv = batadv_kobj_to_batpriv(obj);
--	else
--		/* ..while the attributed for the tagged vlans are located in
--		 * the in the corresponding "vlan%VID" subfolder
--		 */
--		bat_priv = batadv_kobj_to_batpriv(obj->parent);
- 
- 	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
- 		if (vlan->kobj != obj)
-@@ -171,10 +175,11 @@ ssize_t batadv_store_vlan_##_name(struct kobject *kobj,			\
- 				  struct attribute *attr, char *buff,	\
- 				  size_t count)				\
- {									\
--	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj->parent);\
--	struct batadv_softif_vlan *vlan = batadv_kobj_to_vlan(kobj);	\
--	size_t res = __batadv_store_bool_attr(buff, count, _post_func, attr,\
--					      &vlan->_name,		\
-+	struct batadv_priv *bat_priv = batadv_vlan_kobj_to_batpriv(kobj);\
-+	struct batadv_softif_vlan *vlan = batadv_kobj_to_vlan(bat_priv,	\
-+							      kobj);	\
-+	size_t res = __batadv_store_bool_attr(buff, count, _post_func,	\
-+					      attr, &vlan->_name,	\
- 					      bat_priv->soft_iface);	\
- 	batadv_softif_vlan_free_ref(vlan);				\
- 	return res;							\
-@@ -184,7 +189,9 @@ ssize_t batadv_store_vlan_##_name(struct kobject *kobj,			\
- ssize_t batadv_show_vlan_##_name(struct kobject *kobj,			\
- 			    struct attribute *attr, char *buff)		\
- {									\
--	struct batadv_softif_vlan *vlan = batadv_kobj_to_vlan(kobj);	\
-+	struct batadv_priv *bat_priv = batadv_vlan_kobj_to_batpriv(kobj);\
-+	struct batadv_softif_vlan *vlan = batadv_kobj_to_vlan(bat_priv,	\
-+							      kobj);	\
- 	size_t res = sprintf(buff, "%s\n",				\
- 			     atomic_read(&vlan->_name) == 0 ?		\
- 			     "disabled" : "enabled");			\
-@@ -433,7 +440,6 @@ BATADV_ATTR_SIF_BOOL(distributed_arp_table, S_IRUGO | S_IWUSR,
- 		     batadv_dat_status_update);
- #endif
- BATADV_ATTR_SIF_BOOL(fragmentation, S_IRUGO | S_IWUSR, batadv_update_min_mtu);
--BATADV_ATTR_SIF_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
- static BATADV_ATTR(routing_algo, S_IRUGO, batadv_show_bat_algo, NULL);
- static BATADV_ATTR(gw_mode, S_IRUGO | S_IWUSR, batadv_show_gw_mode,
- 		   batadv_store_gw_mode);
-@@ -463,7 +469,6 @@ static struct batadv_attribute *batadv_mesh_attrs[] = {
- 	&batadv_attr_distributed_arp_table,
- #endif
- 	&batadv_attr_fragmentation,
--	&batadv_attr_ap_isolation,
- 	&batadv_attr_routing_algo,
- 	&batadv_attr_gw_mode,
- 	&batadv_attr_orig_interval,
-@@ -479,10 +484,13 @@ static struct batadv_attribute *batadv_mesh_attrs[] = {
- 	NULL,
- };
- 
-+BATADV_ATTR_VLAN_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
-+
- /**
-  * batadv_vlan_attrs - array of vlan specific sysfs attributes
-  */
- static struct batadv_attribute *batadv_vlan_attrs[] = {
-+	&batadv_attr_vlan_ap_isolation,
- 	NULL,
- };
- 
-diff --git a/translation-table.c b/translation-table.c
-index 8404eef..3e60f57 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1478,12 +1478,23 @@ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
- 						  const uint8_t *addr,
- 						  unsigned short vid)
- {
-+	bool ap_isolation_enabled = atomic_read(&bat_priv->ap_isolation);
- 	struct batadv_tt_local_entry *tt_local_entry = NULL;
- 	struct batadv_tt_global_entry *tt_global_entry = NULL;
- 	struct batadv_orig_node *orig_node = NULL;
- 	struct batadv_tt_orig_list_entry *best_entry;
-+	struct batadv_softif_vlan *vlan;
- 
--	if (src && atomic_read(&bat_priv->ap_isolation)) {
-+	/* if the AP isolation is requested on a VLAN, then check for the
-+	 * its setting in the proper VLAN private data structure
-+	 */
-+	vlan = batadv_softif_vlan_get(bat_priv, vid);
-+	if (vlan) {
-+		ap_isolation_enabled = atomic_read(&vlan->ap_isolation);
-+		batadv_softif_vlan_free_ref(vlan);
-+	}
-+
-+	if (src && ap_isolation_enabled) {
- 		tt_local_entry = batadv_tt_local_hash_find(bat_priv, src, vid);
- 		if (!tt_local_entry ||
- 		    (tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING))
-@@ -2547,7 +2558,7 @@ void batadv_tt_local_commit_changes(struct batadv_priv *bat_priv)
- }
- 
- bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, uint8_t *src,
--			   uint8_t *dst)
-+			   uint8_t *dst, unsigned short vid)
- {
- 	struct batadv_tt_local_entry *tt_local_entry = NULL;
- 	struct batadv_tt_global_entry *tt_global_entry = NULL;
-@@ -2556,13 +2567,11 @@ bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, uint8_t *src,
- 	if (!atomic_read(&bat_priv->ap_isolation))
- 		goto out;
- 
--	tt_local_entry = batadv_tt_local_hash_find(bat_priv, dst,
--						   BATADV_NO_FLAGS);
-+	tt_local_entry = batadv_tt_local_hash_find(bat_priv, dst, vid);
- 	if (!tt_local_entry)
- 		goto out;
- 
--	tt_global_entry = batadv_tt_global_hash_find(bat_priv, src,
--						     BATADV_NO_FLAGS);
-+	tt_global_entry = batadv_tt_global_hash_find(bat_priv, src, vid);
- 	if (!tt_global_entry)
- 		goto out;
- 
-diff --git a/translation-table.h b/translation-table.h
-index 1d9506d..c6bf33c 100644
---- a/translation-table.h
-+++ b/translation-table.h
-@@ -39,7 +39,7 @@ void batadv_tt_free(struct batadv_priv *bat_priv);
- bool batadv_is_my_client(struct batadv_priv *bat_priv, const uint8_t *addr,
- 			 unsigned short vid);
- bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, uint8_t *src,
--			   uint8_t *dst);
-+			   uint8_t *dst, unsigned short vid);
- void batadv_tt_local_commit_changes(struct batadv_priv *bat_priv);
- bool batadv_tt_global_client_is_roaming(struct batadv_priv *bat_priv,
- 					uint8_t *addr, unsigned short vid);
-diff --git a/types.h b/types.h
-index be08721..fa9874d 100644
---- a/types.h
-+++ b/types.h
-@@ -534,6 +534,7 @@ struct batadv_priv_nc {
-  * struct batadv_softif_vlan - per VLAN attributes set
-  * @vid: VLAN identifier
-  * @kobj: kobject for sysfs vlan subdirectory
-+ * @ap_isolation: AP isolation state
-  * @list: list node for bat_priv::softif_vlan_list
-  * @refcount: number of context where this object is currently in use
-  * @rcu: struct used for freeing in a RCU-safe manner
-@@ -541,6 +542,7 @@ struct batadv_priv_nc {
- struct batadv_softif_vlan {
- 	unsigned short vid;
- 	struct kobject *kobj;
-+	atomic_t ap_isolation;		/* boolean */
- 	struct hlist_node list;
- 	atomic_t refcount;
- 	struct rcu_head rcu;
--- 
-1.8.1.5
+ From what i've seen, watching "batctl tg -w" on every node along the 
+way, i could determine the window of time where the traffic gets lost:
+from the moment when there's a TT change on one side of the network,
+to the moment that change is propagated to the other side.
 
+By ordex's advice, i ran some "batctl ll tt ; batctl l" along the way 
+and i'm sending the pastebin results at the end of this mail.
+
+Some (hopefully) useful context follows, and a batctl vd graph is attached
+
+The IPv6 of tdorado is pinged (to rule out DAT interactions) from 
+labanda-este (works fine always) and from labanda-oeste (suffers the 
+issue, as well as all nodes "behind" it, i.e. casapuente & alfredo).
+both labandas are tl-wdr3500 connected by 2.4ghz, 5ghz, and an ethernet 
+cable. The ethernet carries only batadv packets (eth0.1 is added to 
+bat0); there's no "lan backbone" (the eth0.2 that appears under br-lan 
+is not connected to anything)
+
+root@tdorado:~# opkg list kmod-batman-adv # same in all nodes
+kmod-batman-adv - 3.8.3+2013.2.0-2
+root@tdorado:~# ip a s br-lan
+6: br-lan: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue 
+state UP
+     link/ether 64:70:02:3d:a0:f7 brd ff:ff:ff:ff:ff:ff
+     inet6 2a00:1508:1:f004:6670:2ff:fe3d:a0f7/64 scope global dynamic
+        valid_lft 6985sec preferred_lft 6985sec
+root@tdorado:~# batctl tl -n |grep f7
+  * 64:70:02:3d:a0:f7 [.....]   1.140
+root@tdorado:~# batctl o |head -n 1
+[B.A.T.M.A.N. adv 2013.2.0, MainIF/MAC: wlan0-1/66:70:02:3d:a0:f9 (bat0)]
+
+labanda-este
+http://pastebin.com/R1kHQCQG
+
+labanda-oeste
+http://pastebin.com/b1Uc23VZ
+
+Both ping6s were started at the same time, so the seq numbers are 
+synchronized, and can be used as timestamps.
+
+the "gap" in labanda-oeste is between seq=73 and seq=89
+in labanda-oeste there were no messages or traffic for 25secs, and then 
+the "TT inconsistency" came up, resolved, and seq=89 succeded, traffic 
+restored.
+at that time, seq=74, labanda-este got a TT update:
+[  23161800] Deleting tdorado from global tt entry 44:d8:84:b0:d2:f5: tt 
+removed by changes
+and (AFAIU) dropped traffic coming from labanda-oeste until 
+labanda-oeste finally got the TT update and increased the ttvn to 129
+
+does any of this make sense? I imagine a tcpdump would help, so i'll try 
+getting one, but maybe this debug was enough to get an insight?
+
+As you can imagine, any further pointer will be greatly appreciated,
+
+I hope you're having a great week, ...and that i'm not ruining it as 
+always :D
+
+Gui
+
+--------------030805040404030403010608
+Content-Type: image/svg+xml;
+ name="dl.svg"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="dl.svg"
+
+PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+
+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRw
+Oi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdl
+bmVyYXRlZCBieSBncmFwaHZpeiB2ZXJzaW9uIDIuMjYuMyAoMjAxMDAxMjYuMTYwMCkKIC0t
+Pgo8IS0tIFRpdGxlOiBfYW5vbnltb3VzXzAgUGFnZXM6IDEgLS0+Cjxzdmcgd2lkdGg9IjEx
+NTdwdCIgaGVpZ2h0PSIzNzlwdCIKIHZpZXdCb3g9IjAuMDAgMC4wMCAxMTU3LjAwIDM3OS4w
+MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0
+cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CjxnIGlkPSJncmFwaDEiIGNsYXNzPSJncmFw
+aCIgdHJhbnNmb3JtPSJzY2FsZSgxIDEpIHJvdGF0ZSgwKSB0cmFuc2xhdGUoNCAzNzUpIj4K
+PHRpdGxlPl9hbm9ueW1vdXNfMDwvdGl0bGU+Cjxwb2x5Z29uIGZpbGw9IndoaXRlIiBzdHJv
+a2U9IndoaXRlIiBwb2ludHM9Ii00LDUgLTQsLTM3NSAxMTU0LC0zNzUgMTE1NCw1IC00LDUi
+Lz4KPGcgaWQ9ImdyYXBoMiIgY2xhc3M9ImNsdXN0ZXIiPjx0aXRsZT5jbHVzdGVyX3Rkb3Jh
+ZG88L3RpdGxlPgo8cG9seWdvbiBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBwb2ludHM9
+IjY1MS4xODcsLTk3LjU2MjEgNjUxLjE4NywtMTk4LjU2MiA5NTAuMTg3LC0xOTguNTYyIDk1
+MC4xODcsLTk3LjU2MjEgNjUxLjE4NywtOTcuNTYyMSIvPgo8L2c+CjxnIGlkPSJncmFwaDMi
+IGNsYXNzPSJjbHVzdGVyIj48dGl0bGU+Y2x1c3Rlcl95YXRjaHNtYW48L3RpdGxlPgo8cG9s
+eWdvbiBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBwb2ludHM9Ijk4My43MjYsLTE4Ny44
+NiA5ODMuNzI2LC0yNTAuODYgMTEzOS43MywtMjUwLjg2IDExMzkuNzMsLTE4Ny44NiA5ODMu
+NzI2LC0xODcuODYiLz4KPC9nPgo8ZyBpZD0iZ3JhcGg0IiBjbGFzcz0iY2x1c3RlciI+PHRp
+dGxlPmNsdXN0ZXJfYWxmcmVkbzwvdGl0bGU+Cjxwb2x5Z29uIGZpbGw9Im5vbmUiIHN0cm9r
+ZT0iYmxhY2siIHBvaW50cz0iMjg5LjQ3NiwtMC44Nzg3MTkgMjg5LjQ3NiwtMTEwLjg3OSA1
+ODIuNDc2LC0xMTAuODc5IDU4Mi40NzYsLTAuODc4NzE5IDI4OS40NzYsLTAuODc4NzE5Ii8+
+CjwvZz4KPGcgaWQ9ImdyYXBoNSIgY2xhc3M9ImNsdXN0ZXIiPjx0aXRsZT5jbHVzdGVyX2Nh
+c2FwdWVudGU8L3RpdGxlPgo8cG9seWdvbiBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBw
+b2ludHM9IjAuOTgzNzIxLC04MC4zMDQ0IDAuOTgzNzIxLC0xOTEuMzA0IDI0My45ODQsLTE5
+MS4zMDQgMjQzLjk4NCwtODAuMzA0NCAwLjk4MzcyMSwtODAuMzA0NCIvPgo8L2c+CjxnIGlk
+PSJncmFwaDYiIGNsYXNzPSJjbHVzdGVyIj48dGl0bGU+Y2x1c3Rlcl9taXJhbmNobzwvdGl0
+bGU+Cjxwb2x5Z29uIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIHBvaW50cz0iOTUwLjE5
+NiwtMjYyLjEyOSA5NTAuMTk2LC0zNzAuMTI5IDExNDguMiwtMzcwLjEyOSAxMTQ4LjIsLTI2
+Mi4xMjkgOTUwLjE5NiwtMjYyLjEyOSIvPgo8L2c+CjxnIGlkPSJncmFwaDciIGNsYXNzPSJj
+bHVzdGVyIj48dGl0bGU+Y2x1c3Rlcl9sYWJhbmRhJiM0NTtlc3RlX2V0aDA8L3RpdGxlPgo8
+cG9seWdvbiBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBwb2ludHM9IjU1My43ODQsLTIw
+OS44MDYgNTUzLjc4NCwtMzU0LjgwNiA5NDEuNzg0LC0zNTQuODA2IDk0MS43ODQsLTIwOS44
+MDYgNTUzLjc4NCwtMjA5LjgwNiIvPgo8L2c+CjxnIGlkPSJncmFwaDgiIGNsYXNzPSJjbHVz
+dGVyIj48dGl0bGU+Y2x1c3Rlcl9sYWJhbmRhJiM0NTtvZXN0ZV9ldGgwPC90aXRsZT4KPHBv
+bHlnb24gZmlsbD0ibm9uZSIgc3Ryb2tlPSJibGFjayIgcG9pbnRzPSIyNTMuMTU2LC0xMTku
+MjQ4IDI1My4xNTYsLTIyOS4yNDggNTQzLjE1NiwtMjI5LjI0OCA1NDMuMTU2LC0xMTkuMjQ4
+IDI1My4xNTYsLTExOS4yNDgiLz4KPC9nPgo8IS0tIHRkb3JhZG9fNWdoeiAtLT4KPGcgaWQ9
+Im5vZGUxIiBjbGFzcz0ibm9kZSI+PHRpdGxlPnRkb3JhZG9fNWdoejwvdGl0bGU+CjxlbGxp
+cHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIGN4PSI3MzkuNjU3IiBjeT0iLTE3MC43
+NjkiIHJ4PSI3OS4xOTYiIHJ5PSIxOC4zODQ4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRk
+bGUiIHg9IjczOS42NTciIHk9Ii0xNjcuMTY5IiBmb250LWZhbWlseT0iVGltZXMgUm9tYW4s
+c2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiPnRkb3JhZG9fNWdoejwvdGV4dD4KPC9nPgo8IS0t
+IGxhYmFuZGEmIzQ1O2VzdGVfNWdoeiAtLT4KPGcgaWQ9Im5vZGUzIiBjbGFzcz0ibm9kZSI+
+PHRpdGxlPmxhYmFuZGEmIzQ1O2VzdGVfNWdoejwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5v
+bmUiIHN0cm9rZT0iYmxhY2siIGN4PSI4MjguOTM2IiBjeT0iLTI3NC4zMDkiIHJ4PSIxMDMu
+OTQ1IiByeT0iMTguMzg0OCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI4Mjgu
+OTM2IiB5PSItMjcwLjcwOSIgZm9udC1mYW1pbHk9IlRpbWVzIFJvbWFuLHNlcmlmIiBmb250
+LXNpemU9IjE0LjAwIj5sYWJhbmRhJiM0NTtlc3RlXzVnaHo8L3RleHQ+CjwvZz4KPCEtLSB0
+ZG9yYWRvXzVnaHomIzQ1OyZndDtsYWJhbmRhJiM0NTtlc3RlXzVnaHogLS0+CjxnIGlkPSJl
+ZGdlMiIgY2xhc3M9ImVkZ2UiPjx0aXRsZT50ZG9yYWRvXzVnaHomIzQ1OyZndDtsYWJhbmRh
+JiM0NTtlc3RlXzVnaHo8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNr
+IiBkPSJNNzQ5LjA3OCwtMTg5LjI4MkM3NjAuODk5LC0yMDUuODY0IDc4MS4zNSwtMjMwLjIw
+MiA3OTguNjUsLTI0OC42MzYiLz4KPHBvbHlnb24gZmlsbD0iYmxhY2siIHN0cm9rZT0iYmxh
+Y2siIHBvaW50cz0iNzk2LjM5LC0yNTEuMzM3IDgwNS44MzcsLTI1Ni4xMzUgODAxLjQ0NCwt
+MjQ2LjQ5NCA3OTYuMzksLTI1MS4zMzciLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIg
+eD0iNzU4Ljg2NCIgeT0iLTIyNy4zNTkiIGZvbnQtZmFtaWx5PSJUaW1lcyBSb21hbixzZXJp
+ZiIgZm9udC1zaXplPSIxNC4wMCI+My41NDE8L3RleHQ+CjwvZz4KPCEtLSBsYWJhbmRhJiM0
+NTtlc3RlXzVnaHomIzQ1OyZndDt0ZG9yYWRvXzVnaHogLS0+CjxnIGlkPSJlZGdlMzUiIGNs
+YXNzPSJlZGdlIj48dGl0bGU+bGFiYW5kYSYjNDU7ZXN0ZV81Z2h6JiM0NTsmZ3Q7dGRvcmFk
+b181Z2h6PC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSJibGFjayIgZD0iTTgx
+OS41MTYsLTI1NS43OTVDODA3LjYxOCwtMjM5LjEwNyA3ODYuOTgxLC0yMTQuNTYzIDc2OS42
+MTEsLTE5Ni4wODciLz4KPHBvbHlnb24gZmlsbD0iYmxhY2siIHN0cm9rZT0iYmxhY2siIHBv
+aW50cz0iNzcxLjg1NCwtMTkzLjM2OSA3NjIuNDAyLC0xODguNTgxIDc2Ni44MDUsLTE5OC4y
+MTggNzcxLjg1NCwtMTkzLjM2OSIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI3
+NzkuNTYzIiB5PSItMjM0LjM0MSIgZm9udC1mYW1pbHk9IlRpbWVzIFJvbWFuLHNlcmlmIiBm
+b250LXNpemU9IjE0LjAwIj4yLjkzMTwvdGV4dD4KPC9nPgo8IS0tIG1pcmFuY2hvXzVnaHog
+LS0+CjxnIGlkPSJub2RlMjUiIGNsYXNzPSJub2RlIj48dGl0bGU+bWlyYW5jaG9fNWdoejwv
+dGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIGN4PSIxMDUyLjc0
+IiBjeT0iLTM0Mi44NTQiIHJ4PSI4NS43Njg0IiByeT0iMTguMzg0OCIvPgo8dGV4dCB0ZXh0
+LWFuY2hvcj0ibWlkZGxlIiB4PSIxMDUyLjc0IiB5PSItMzM5LjI1NCIgZm9udC1mYW1pbHk9
+IlRpbWVzIFJvbWFuLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIj5taXJhbmNob181Z2h6PC90
+ZXh0Pgo8L2c+CjwhLS0gbGFiYW5kYSYjNDU7ZXN0ZV81Z2h6JiM0NTsmZ3Q7bWlyYW5jaG9f
+NWdoeiAtLT4KPGcgaWQ9ImVkZ2UzMyIgY2xhc3M9ImVkZ2UiPjx0aXRsZT5sYWJhbmRhJiM0
+NTtlc3RlXzVnaHomIzQ1OyZndDttaXJhbmNob181Z2h6PC90aXRsZT4KPHBhdGggZmlsbD0i
+bm9uZSIgc3Ryb2tlPSJibGFjayIgZD0iTTg2Ny4xMzcsLTI5MS41NTVDODk4LjA2NSwtMzAy
+LjU4MiA5NDIuNTA5LC0zMTYuNTUxIDk4MC4xNTUsLTMyNy4yNCIvPgo8cG9seWdvbiBmaWxs
+PSJibGFjayIgc3Ryb2tlPSJibGFjayIgcG9pbnRzPSI5NzkuNDk3LC0zMzAuNjkgOTkwLjA3
+LC0zMzAuMDIyIDk4MS4zODgsLTMyMy45NSA5NzkuNDk3LC0zMzAuNjkiLz4KPHRleHQgdGV4
+dC1hbmNob3I9Im1pZGRsZSIgeD0iOTI3LjY0NiIgeT0iLTI5MS43OTciIGZvbnQtZmFtaWx5
+PSJUaW1lcyBSb21hbixzZXJpZiIgZm9udC1zaXplPSIxNC4wMCI+MS4wMzI8L3RleHQ+Cjwv
+Zz4KPCEtLSB0ZG9yYWRvIC0tPgo8ZyBpZD0ibm9kZTQiIGNsYXNzPSJub2RlIj48dGl0bGU+
+dGRvcmFkbzwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIGN4
+PSI4ODcuNTMyIiBjeT0iLTEyOC44MjMiIHJ4PSI0OS4wMzQ5IiByeT0iMTguMzg0OCIvPgo8
+ZWxsaXBzZSBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBjeD0iODg3LjUzMiIgY3k9Ii0x
+MjguODIzIiByeD0iNTIuOTk3NSIgcnk9IjIyLjM4NDgiLz4KPHRleHQgdGV4dC1hbmNob3I9
+Im1pZGRsZSIgeD0iODg3LjUzMiIgeT0iLTEyNS4yMjMiIGZvbnQtZmFtaWx5PSJUaW1lcyBS
+b21hbixzZXJpZiIgZm9udC1zaXplPSIxNC4wMCI+dGRvcmFkbzwvdGV4dD4KPC9nPgo8IS0t
+IHlhdGNoc21hbiAtLT4KPGcgaWQ9Im5vZGU2IiBjbGFzcz0ibm9kZSI+PHRpdGxlPnlhdGNo
+c21hbjwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIGN4PSIx
+MDYxLjMxIiBjeT0iLTIxOS4wMTIiIHJ4PSI2NS4wNTM4IiByeT0iMTguMzg0OCIvPgo8ZWxs
+aXBzZSBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBjeD0iMTA2MS4zMSIgY3k9Ii0yMTku
+MDEyIiByeD0iNjkuMDUzOCIgcnk9IjIyLjM4NDgiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1p
+ZGRsZSIgeD0iMTA2MS4zMSIgeT0iLTIxNS40MTIiIGZvbnQtZmFtaWx5PSJUaW1lcyBSb21h
+bixzZXJpZiIgZm9udC1zaXplPSIxNC4wMCI+eWF0Y2hzbWFuPC90ZXh0Pgo8L2c+CjwhLS0g
+dGRvcmFkbyYjNDU7Jmd0O3lhdGNoc21hbiAtLT4KPGcgaWQ9ImVkZ2U0IiBjbGFzcz0iZWRn
+ZSI+PHRpdGxlPnRkb3JhZG8mIzQ1OyZndDt5YXRjaHNtYW48L3RpdGxlPgo8cGF0aCBmaWxs
+PSJub25lIiBzdHJva2U9ImJsYWNrIiBkPSJNOTE0LjIyNywtMTQ4LjUyN0M5MzguNjk0LC0x
+NjMuMDYzIDk3NS42NDEsLTE4Mi42MzIgMTAwNi4zOSwtMTk3LjU0MiIvPgo8cG9seWdvbiBm
+aWxsPSJibGFjayIgc3Ryb2tlPSJibGFjayIgcG9pbnRzPSIxMDA1LjE4LC0yMDAuODQ1IDEw
+MTUuNzIsLTIwMi4wMDkgMTAwOC4yMSwtMTk0LjUzMiAxMDA1LjE4LC0yMDAuODQ1Ii8+Cjx0
+ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9Ijk2OC4zMDkiIHk9Ii0xNTQuNDM0IiBmb250
+LWZhbWlseT0iVGltZXMgUm9tYW4sc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiPjEuMjU2PC90
+ZXh0Pgo8L2c+CjwhLS0gbGFiYW5kYSYjNDU7ZXN0ZSAtLT4KPGcgaWQ9Im5vZGU4IiBjbGFz
+cz0ibm9kZSI+PHRpdGxlPmxhYmFuZGEmIzQ1O2VzdGU8L3RpdGxlPgo8ZWxsaXBzZSBmaWxs
+PSJub25lIiBzdHJva2U9ImJsYWNrIiBjeD0iNjM2LjkyOSIgY3k9Ii0yMzcuNzkiIHJ4PSI3
+NC4yNDYyIiByeT0iMTguMzg0OCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI2
+MzYuOTI5IiB5PSItMjM0LjE5IiBmb250LWZhbWlseT0iVGltZXMgUm9tYW4sc2VyaWYiIGZv
+bnQtc2l6ZT0iMTQuMDAiPmxhYmFuZGEmIzQ1O2VzdGU8L3RleHQ+CjwvZz4KPCEtLSB0ZG9y
+YWRvJiM0NTsmZ3Q7bGFiYW5kYSYjNDU7ZXN0ZSAtLT4KPGcgaWQ9ImVkZ2U2IiBjbGFzcz0i
+ZWRnZSI+PHRpdGxlPnRkb3JhZG8mIzQ1OyZndDtsYWJhbmRhJiM0NTtlc3RlPC90aXRsZT4K
+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSJibGFjayIgZD0iTTg1MC4yODUsLTE0NS4wMTlD
+ODA1LjgwMSwtMTY0LjM2MSA3MzEuMzc5LC0xOTYuNzIyIDY4My4yMzQsLTIxNy42NTYiLz4K
+PHBvbHlnb24gZmlsbD0iYmxhY2siIHN0cm9rZT0iYmxhY2siIHBvaW50cz0iNjgxLjc0Nywt
+MjE0LjQ4NiA2NzMuOTcyLC0yMjEuNjg0IDY4NC41MzgsLTIyMC45MDYgNjgxLjc0NywtMjE0
+LjQ4NiIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI3NzIuNzU5IiB5PSItMTkx
+LjczOCIgZm9udC1mYW1pbHk9IlRpbWVzIFJvbWFuLHNlcmlmIiBmb250LXNpemU9IjE0LjAw
+Ij4xMi43NTA8L3RleHQ+CjwvZz4KPCEtLSB5YXRjaHNtYW4mIzQ1OyZndDt0ZG9yYWRvIC0t
+Pgo8ZyBpZD0iZWRnZTExIiBjbGFzcz0iZWRnZSI+PHRpdGxlPnlhdGNoc21hbiYjNDU7Jmd0
+O3Rkb3JhZG88L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBkPSJN
+MTAzMy4wOCwtMTk4LjM5OUMxMDA3LjI1LC0xODMuMTU1IDk2OC40OTQsLTE2Mi43NDUgOTM3
+LjQ1NSwtMTQ3Ljg4NSIvPgo8cG9seWdvbiBmaWxsPSJibGFjayIgc3Ryb2tlPSJibGFjayIg
+cG9pbnRzPSI5MzguNjI5LC0xNDQuNTY5IDkyOC4wOTIsLTE0My40NjMgOTM1LjY0LC0xNTAu
+ODk4IDkzOC42MjksLTE0NC41NjkiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0i
+OTkzLjI2OCIgeT0iLTE1NC41NDIiIGZvbnQtZmFtaWx5PSJUaW1lcyBSb21hbixzZXJpZiIg
+Zm9udC1zaXplPSIxNC4wMCI+MS40OTE8L3RleHQ+CjwvZz4KPCEtLSBtaXJhbmNobyAtLT4K
+PGcgaWQ9Im5vZGUxMSIgY2xhc3M9Im5vZGUiPjx0aXRsZT5taXJhbmNobzwvdGl0bGU+Cjxl
+bGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIGN4PSIxMDIwLjExIiBjeT0iLTI5
+My40MzMiIHJ4PSI1Ni4xMDEiIHJ5PSIxOC4zODQ4Ii8+CjxlbGxpcHNlIGZpbGw9Im5vbmUi
+IHN0cm9rZT0iYmxhY2siIGN4PSIxMDIwLjExIiBjeT0iLTI5My40MzMiIHJ4PSI2MC4wNjgi
+IHJ5PSIyMi4zODQ4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjEwMjAuMTEi
+IHk9Ii0yODkuODMzIiBmb250LWZhbWlseT0iVGltZXMgUm9tYW4sc2VyaWYiIGZvbnQtc2l6
+ZT0iMTQuMDAiPm1pcmFuY2hvPC90ZXh0Pgo8L2c+CjwhLS0geWF0Y2hzbWFuJiM0NTsmZ3Q7
+bWlyYW5jaG8gLS0+CjxnIGlkPSJlZGdlOSIgY2xhc3M9ImVkZ2UiPjx0aXRsZT55YXRjaHNt
+YW4mIzQ1OyZndDttaXJhbmNobzwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0i
+YmxhY2siIGQ9Ik0xMDQxLjk5LC0yNDAuNjkxQzEwMzcuOTIsLTI0Ny4yNDcgMTAzMy43OSwt
+MjU0LjU3NyAxMDMwLjE4LC0yNjEuNjQzIi8+Cjxwb2x5Z29uIGZpbGw9ImJsYWNrIiBzdHJv
+a2U9ImJsYWNrIiBwb2ludHM9IjEwMjYuODUsLTI2MC40OTQgMTAyNS42NCwtMjcxLjAxOSAx
+MDMzLjE1LC0yNjMuNTQ1IDEwMjYuODUsLTI2MC40OTQiLz4KPHRleHQgdGV4dC1hbmNob3I9
+Im1pZGRsZSIgeD0iMTA1NC4wOSIgeT0iLTI1Ni41NjciIGZvbnQtZmFtaWx5PSJUaW1lcyBS
+b21hbixzZXJpZiIgZm9udC1zaXplPSIxNC4wMCI+MS4wMDM8L3RleHQ+CjwvZz4KPCEtLSBs
+YWJhbmRhJiM0NTtvZXN0ZSAtLT4KPGcgaWQ9Im5vZGUxOSIgY2xhc3M9Im5vZGUiPjx0aXRs
+ZT5sYWJhbmRhJiM0NTtvZXN0ZTwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9r
+ZT0iYmxhY2siIGN4PSIzNDEuNzY2IiBjeT0iLTIwMi4yMzIiIHJ4PSI3OS45MDMxIiByeT0i
+MTguMzg0OCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIzNDEuNzY2IiB5PSIt
+MTk4LjYzMiIgZm9udC1mYW1pbHk9IlRpbWVzIFJvbWFuLHNlcmlmIiBmb250LXNpemU9IjE0
+LjAwIj5sYWJhbmRhJiM0NTtvZXN0ZTwvdGV4dD4KPC9nPgo8IS0tIGxhYmFuZGEmIzQ1O2Vz
+dGUmIzQ1OyZndDtsYWJhbmRhJiM0NTtvZXN0ZSAtLT4KPGcgaWQ9ImVkZ2UzMSIgY2xhc3M9
+ImVkZ2UiPjx0aXRsZT5sYWJhbmRhJiM0NTtlc3RlJiM0NTsmZ3Q7bGFiYW5kYSYjNDU7b2Vz
+dGU8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBkPSJNNTgxLjAy
+LC0yMjUuNTY5QzUzOC42ODEsLTIxOS4wNDYgNDc5LjY3NywtMjExLjY3MSA0MzAuODU5LC0y
+MDYuNjc4Ii8+Cjxwb2x5Z29uIGZpbGw9ImJsYWNrIiBzdHJva2U9ImJsYWNrIiBwb2ludHM9
+IjQzMC45MDYsLTIwMy4xNjUgNDIwLjYwNiwtMjA1LjY1IDQzMC4yMDcsLTIxMC4xMyA0MzAu
+OTA2LC0yMDMuMTY1Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjUwNi45Mzki
+IHk9Ii0yMDEuNTI0IiBmb250LWZhbWlseT0iVGltZXMgUm9tYW4sc2VyaWYiIGZvbnQtc2l6
+ZT0iMTQuMDAiPjEuMTgwPC90ZXh0Pgo8L2c+CjwhLS0gbWlyYW5jaG8mIzQ1OyZndDt5YXRj
+aHNtYW4gLS0+CjxnIGlkPSJlZGdlMjYiIGNsYXNzPSJlZGdlIj48dGl0bGU+bWlyYW5jaG8m
+IzQ1OyZndDt5YXRjaHNtYW48L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9ImJs
+YWNrIiBkPSJNMTAzOS40MywtMjcxLjc1M0MxMDQzLjQ0LC0yNjUuMzExIDEwNDcuNDksLTI1
+OC4xMiAxMDUxLjA1LC0yNTEuMTY3Ii8+Cjxwb2x5Z29uIGZpbGw9ImJsYWNrIiBzdHJva2U9
+ImJsYWNrIiBwb2ludHM9IjEwNTQuMzIsLTI1Mi40NDcgMTA1NS41NSwtMjQxLjkyNCAxMDQ4
+LjAzLC0yNDkuMzgzIDEwNTQuMzIsLTI1Mi40NDciLz4KPHRleHQgdGV4dC1hbmNob3I9Im1p
+ZGRsZSIgeD0iMTA2My4yNCIgeT0iLTI2Ni44NiIgZm9udC1mYW1pbHk9IlRpbWVzIFJvbWFu
+LHNlcmlmIiBmb250LXNpemU9IjE0LjAwIj4xLjE2NDwvdGV4dD4KPC9nPgo8IS0tIG1pcmFu
+Y2hvJiM0NTsmZ3Q7bGFiYW5kYSYjNDU7ZXN0ZSAtLT4KPGcgaWQ9ImVkZ2UyOCIgY2xhc3M9
+ImVkZ2UiPjx0aXRsZT5taXJhbmNobyYjNDU7Jmd0O2xhYmFuZGEmIzQ1O2VzdGU8L3RpdGxl
+Pgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBkPSJNOTYzLjk4MSwtMjg1LjI4
+MkM4OTcuMTczLC0yNzUuNTgxIDc4NS4zNzUsLTI1OS4zNDcgNzExLjM5LC0yNDguNjAzIi8+
+Cjxwb2x5Z29uIGZpbGw9ImJsYWNrIiBzdHJva2U9ImJsYWNrIiBwb2ludHM9IjcxMS42MDks
+LTI0NS4wOTggNzAxLjIxLC0yNDcuMTI1IDcxMC42MDMsLTI1Mi4wMjYgNzExLjYwOSwtMjQ1
+LjA5OCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI4MzguNjg1IiB5PSItMjUx
+LjM0MyIgZm9udC1mYW1pbHk9IlRpbWVzIFJvbWFuLHNlcmlmIiBmb250LXNpemU9IjE0LjAw
+Ij4xLjE0ODwvdGV4dD4KPC9nPgo8IS0tIGFsZnJlZG9fd2xhbjEgLS0+CjxnIGlkPSJub2Rl
+MTQiIGNsYXNzPSJub2RlIj48dGl0bGU+YWxmcmVkb193bGFuMTwvdGl0bGU+CjxlbGxpcHNl
+IGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIGN4PSIzNzkuMzIzIiBjeT0iLTI4LjYxOCIg
+cng9IjgwLjEwOTUiIHJ5PSIxOC4zODQ4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUi
+IHg9IjM3OS4zMjMiIHk9Ii0yNS4wMTgiIGZvbnQtZmFtaWx5PSJUaW1lcyBSb21hbixzZXJp
+ZiIgZm9udC1zaXplPSIxNC4wMCI+YWxmcmVkb193bGFuMTwvdGV4dD4KPC9nPgo8IS0tIGNh
+c2FwdWVudGVfd2xhbjEgLS0+CjxnIGlkPSJub2RlMTYiIGNsYXNzPSJub2RlIj48dGl0bGU+
+Y2FzYXB1ZW50ZV93bGFuMTwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0i
+YmxhY2siIGN4PSIxMzEuOTA0IiBjeT0iLTEwNy40ODkiIHJ4PSIxMDMuMjM4IiByeT0iMTgu
+Mzg0OCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxMzEuOTA0IiB5PSItMTAz
+Ljg4OSIgZm9udC1mYW1pbHk9IlRpbWVzIFJvbWFuLHNlcmlmIiBmb250LXNpemU9IjE0LjAw
+Ij5jYXNhcHVlbnRlX3dsYW4xPC90ZXh0Pgo8L2c+CjwhLS0gYWxmcmVkb193bGFuMSYjNDU7
+Jmd0O2Nhc2FwdWVudGVfd2xhbjEgLS0+CjxnIGlkPSJlZGdlMTQiIGNsYXNzPSJlZGdlIj48
+dGl0bGU+YWxmcmVkb193bGFuMSYjNDU7Jmd0O2Nhc2FwdWVudGVfd2xhbjE8L3RpdGxlPgo8
+cGF0aCBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBkPSJNMzIwLjQ5MSwtNDEuMjk0MkMy
+NzcuMjI2LC01My42NDgyIDIxOS4yMDUsLTcyLjI0NTkgMTc4Ljk5MSwtODYuNzA2OCIvPgo8
+cG9seWdvbiBmaWxsPSJibGFjayIgc3Ryb2tlPSJibGFjayIgcG9pbnRzPSIxNzcuNjIyLC04
+My40ODA1IDE2OS40MjYsLTkwLjE5MzYgMTgwLjAyLC05MC4wNTcyIDE3Ny42MjIsLTgzLjQ4
+MDUiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMjQ1Ljc0MSIgeT0iLTQ2LjQw
+MDUiIGZvbnQtZmFtaWx5PSJUaW1lcyBSb21hbixzZXJpZiIgZm9udC1zaXplPSIxNC4wMCI+
+MS4wMTU8L3RleHQ+CjwvZz4KPCEtLSBjYXNhcHVlbnRlX3dsYW4xJiM0NTsmZ3Q7YWxmcmVk
+b193bGFuMSAtLT4KPGcgaWQ9ImVkZ2UxOSIgY2xhc3M9ImVkZ2UiPjx0aXRsZT5jYXNhcHVl
+bnRlX3dsYW4xJiM0NTsmZ3Q7YWxmcmVkb193bGFuMTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5v
+bmUiIHN0cm9rZT0iYmxhY2siIGQ9Ik0xOTYuNzkyLC05My4wNzA1QzIzOS44NjgsLTgwLjU5
+MiAyOTUuMzQxLC02Mi43MjI1IDMzMy43NzYsLTQ4Ljg0NDkiLz4KPHBvbHlnb24gZmlsbD0i
+YmxhY2siIHN0cm9rZT0iYmxhY2siIHBvaW50cz0iMzM1LjQ2NSwtNTEuOTUzNiAzNDMuNjUs
+LTQ1LjIyNjkgMzMzLjA1NiwtNDUuMzgwOSAzMzUuNDY1LC01MS45NTM2Ii8+Cjx0ZXh0IHRl
+eHQtYW5jaG9yPSJtaWRkbGUiIHg9IjI2MS4yODQiIHk9Ii01My4zNTc3IiBmb250LWZhbWls
+eT0iVGltZXMgUm9tYW4sc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiPjEuMDAwPC90ZXh0Pgo8
+L2c+CjwhLS0gYWxmcmVkbyAtLT4KPGcgaWQ9Im5vZGUxNyIgY2xhc3M9Im5vZGUiPjx0aXRs
+ZT5hbGZyZWRvPC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSJibGFjayIg
+Y3g9IjUyMy42MyIgY3k9Ii03OS4xMzk1IiByeD0iNDQuNzk3NyIgcnk9IjE4LjM4NDgiLz4K
+PGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSJibGFjayIgY3g9IjUyMy42MyIgY3k9Ii03
+OS4xMzk1IiByeD0iNDguNzU3MyIgcnk9IjIyLjM4NDgiLz4KPHRleHQgdGV4dC1hbmNob3I9
+Im1pZGRsZSIgeD0iNTIzLjYzIiB5PSItNzUuNTM5NSIgZm9udC1mYW1pbHk9IlRpbWVzIFJv
+bWFuLHNlcmlmIiBmb250LXNpemU9IjE0LjAwIj5hbGZyZWRvPC90ZXh0Pgo8L2c+CjwhLS0g
+YWxmcmVkbyYjNDU7Jmd0O2xhYmFuZGEmIzQ1O29lc3RlIC0tPgo8ZyBpZD0iZWRnZTE2IiBj
+bGFzcz0iZWRnZSI+PHRpdGxlPmFsZnJlZG8mIzQ1OyZndDtsYWJhbmRhJiM0NTtvZXN0ZTwv
+dGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIGQ9Ik00ODkuODU1LC05
+NS43QzQ1NC44MzQsLTExNi45MDggNDAwLjg2NSwtMTUzLjQ2NCAzNjguNjMxLC0xNzcuODMy
+Ii8+Cjxwb2x5Z29uIGZpbGw9ImJsYWNrIiBzdHJva2U9ImJsYWNrIiBwb2ludHM9IjM2Ni4z
+MzMsLTE3NS4xODMgMzYwLjUzOSwtMTg0LjA1MyAzNzAuNiwtMTgwLjczMyAzNjYuMzMzLC0x
+NzUuMTgzIi8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjQxOS4yNDMiIHk9Ii0x
+MTguMTY2IiBmb250LWZhbWlseT0iVGltZXMgUm9tYW4sc2VyaWYiIGZvbnQtc2l6ZT0iMTQu
+MDAiPjEuMDE1PC90ZXh0Pgo8L2c+CjwhLS0gbGFiYW5kYSYjNDU7b2VzdGUmIzQ1OyZndDts
+YWJhbmRhJiM0NTtlc3RlIC0tPgo8ZyBpZD0iZWRnZTQwIiBjbGFzcz0iZWRnZSI+PHRpdGxl
+PmxhYmFuZGEmIzQ1O29lc3RlJiM0NTsmZ3Q7bGFiYW5kYSYjNDU7ZXN0ZTwvdGl0bGU+Cjxw
+YXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIGQ9Ik00MDAuNDgsLTIxNC44ODJDNDQ0
+LjI0MiwtMjIxLjU0OSA1MDQuNjE0LC0yMjkuMDIyIDU1My40LC0yMzMuOTA3Ii8+Cjxwb2x5
+Z29uIGZpbGw9ImJsYWNrIiBzdHJva2U9ImJsYWNrIiBwb2ludHM9IjU1My4zMzEsLTIzNy40
+MTcgNTYzLjYyNSwtMjM0LjkwOSA1NTQuMDE0LC0yMzAuNDUgNTUzLjMzMSwtMjM3LjQxNyIv
+Pgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSI0NzcuOTQiIHk9Ii0yMDguNzk1IiBm
+b250LWZhbWlseT0iVGltZXMgUm9tYW4sc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiPjIuMTA3
+PC90ZXh0Pgo8L2c+CjwhLS0gbGFiYW5kYSYjNDU7b2VzdGUmIzQ1OyZndDthbGZyZWRvIC0t
+Pgo8ZyBpZD0iZWRnZTQyIiBjbGFzcz0iZWRnZSI+PHRpdGxlPmxhYmFuZGEmIzQ1O29lc3Rl
+JiM0NTsmZ3Q7YWxmcmVkbzwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxh
+Y2siIGQ9Ik0zNzUuOTY4LC0xODUuNDEyQzQwOS45ODgsLTE2NC43OCA0NjEuNTgxLC0xMjku
+ODk0IDQ5My45MzQsLTEwNS42NjkiLz4KPHBvbHlnb24gZmlsbD0iYmxhY2siIHN0cm9rZT0i
+YmxhY2siIHBvaW50cz0iNDk2LjI3NiwtMTA4LjI4NiA1MDIuMTIsLTk5LjQ0ODMgNDkyLjA0
+MSwtMTAyLjcxMiA0OTYuMjc2LC0xMDguMjg2Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRk
+bGUiIHg9IjQyNC45NTEiIHk9Ii0xMjYuOTQxIiBmb250LWZhbWlseT0iVGltZXMgUm9tYW4s
+c2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiPjEuMDcxPC90ZXh0Pgo8L2c+CjwhLS0gY2FzYXB1
+ZW50ZSAtLT4KPGcgaWQ9Im5vZGUyMiIgY2xhc3M9Im5vZGUiPjx0aXRsZT5jYXNhcHVlbnRl
+PC90aXRsZT4KPGVsbGlwc2UgZmlsbD0ibm9uZSIgc3Ryb2tlPSJibGFjayIgY3g9IjgwLjUw
+NDciIGN5PSItMTU5LjkwMSIgcng9IjY3LjE3NTEiIHJ5PSIxOC4zODQ4Ii8+CjxlbGxpcHNl
+IGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIGN4PSI4MC41MDQ3IiBjeT0iLTE1OS45MDEi
+IHJ4PSI3MS4xNzUxIiByeT0iMjIuMzg0OCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxl
+IiB4PSI4MC41MDQ3IiB5PSItMTU2LjMwMSIgZm9udC1mYW1pbHk9IlRpbWVzIFJvbWFuLHNl
+cmlmIiBmb250LXNpemU9IjE0LjAwIj5jYXNhcHVlbnRlPC90ZXh0Pgo8L2c+CjwhLS0gY2Fz
+YXB1ZW50ZSYjNDU7Jmd0O2xhYmFuZGEmIzQ1O29lc3RlIC0tPgo8ZyBpZD0iZWRnZTIxIiBj
+bGFzcz0iZWRnZSI+PHRpdGxlPmNhc2FwdWVudGUmIzQ1OyZndDtsYWJhbmRhJiM0NTtvZXN0
+ZTwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIGQ9Ik0xNDMuNzQ5
+LC0xNzAuMTQ4QzE4MC40ODYsLTE3Ni4xIDIyNy4wMTQsLTE4My42MzkgMjY1LjczNywtMTg5
+LjkxMyIvPgo8cG9seWdvbiBmaWxsPSJibGFjayIgc3Ryb2tlPSJibGFjayIgcG9pbnRzPSIy
+NjUuNDg3LC0xOTMuNDE4IDI3NS45MTgsLTE5MS41NjMgMjY2LjYwNywtMTg2LjUwOCAyNjUu
+NDg3LC0xOTMuNDE4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjIwMy43NDMi
+IHk9Ii0xODguNDMxIiBmb250LWZhbWlseT0iVGltZXMgUm9tYW4sc2VyaWYiIGZvbnQtc2l6
+ZT0iMTQuMDAiPjEuMTAzPC90ZXh0Pgo8L2c+CjwhLS0gbWlyYW5jaG9fNWdoeiYjNDU7Jmd0
+O2xhYmFuZGEmIzQ1O2VzdGVfNWdoeiAtLT4KPGcgaWQ9ImVkZ2UyNCIgY2xhc3M9ImVkZ2Ui
+Pjx0aXRsZT5taXJhbmNob181Z2h6JiM0NTsmZ3Q7bGFiYW5kYSYjNDU7ZXN0ZV81Z2h6PC90
+aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSJibGFjayIgZD0iTTEwMTUuOCwtMzI2
+LjA1OEM5ODYuMDYxLC0zMTUuNDA1IDk0My4yNTEsLTMwMS44ODMgOTA2LjEwNiwtMjkxLjIz
+MSIvPgo8cG9seWdvbiBmaWxsPSJibGFjayIgc3Ryb2tlPSJibGFjayIgcG9pbnRzPSI5MDYu
+ODcyLC0yODcuODExIDg5Ni4yOTcsLTI4OC40NDkgOTA0Ljk2MiwtMjk0LjU0NSA5MDYuODcy
+LC0yODcuODExIi8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9Ijk2NC45NTMiIHk9
+Ii0yOTEuMDQ1IiBmb250LWZhbWlseT0iVGltZXMgUm9tYW4sc2VyaWYiIGZvbnQtc2l6ZT0i
+MTQuMDAiPjEuMDIwPC90ZXh0Pgo8L2c+CjwhLS0gbGFiYW5kYSYjNDU7ZXN0ZV9ldGgwIC0t
+Pgo8ZyBpZD0ibm9kZTMzIiBjbGFzcz0ibm9kZSI+PHRpdGxlPmxhYmFuZGEmIzQ1O2VzdGVf
+ZXRoMDwvdGl0bGU+CjxlbGxpcHNlIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIGN4PSI2
+OTUuMTIzIiBjeT0iLTMyMy41MTIiIHJ4PSIxMDIuMDQ5IiByeT0iMTguMzg0OCIvPgo8ZWxs
+aXBzZSBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBjeD0iNjk1LjEyMyIgY3k9Ii0zMjMu
+NTEyIiByeD0iMTA2LjAzIiByeT0iMjIuMzg0OCIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlk
+ZGxlIiB4PSI2OTUuMTIzIiB5PSItMzE5LjkxMiIgZm9udC1mYW1pbHk9IlRpbWVzIFJvbWFu
+LHNlcmlmIiBmb250LXNpemU9IjE0LjAwIj5sYWJhbmRhJiM0NTtlc3RlX2V0aDA8L3RleHQ+
+CjwvZz4KPCEtLSBsYWJhbmRhJiM0NTtvZXN0ZV9ldGgwIC0tPgo8ZyBpZD0ibm9kZTM1IiBj
+bGFzcz0ibm9kZSI+PHRpdGxlPmxhYmFuZGEmIzQ1O29lc3RlX2V0aDA8L3RpdGxlPgo8ZWxs
+aXBzZSBmaWxsPSJub25lIiBzdHJva2U9ImJsYWNrIiBjeD0iNDIyLjMyNSIgY3k9Ii0xNTEu
+MTEyIiByeD0iMTA4LjE4NyIgcnk9IjE4LjM4NDgiLz4KPGVsbGlwc2UgZmlsbD0ibm9uZSIg
+c3Ryb2tlPSJibGFjayIgY3g9IjQyMi4zMjUiIGN5PSItMTUxLjExMiIgcng9IjExMi4xODci
+IHJ5PSIyMi4zODQ4Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjQyMi4zMjUi
+IHk9Ii0xNDcuNTEyIiBmb250LWZhbWlseT0iVGltZXMgUm9tYW4sc2VyaWYiIGZvbnQtc2l6
+ZT0iMTQuMDAiPmxhYmFuZGEmIzQ1O29lc3RlX2V0aDA8L3RleHQ+CjwvZz4KPCEtLSBsYWJh
+bmRhJiM0NTtlc3RlX2V0aDAmIzQ1OyZndDtsYWJhbmRhJiM0NTtvZXN0ZV9ldGgwIC0tPgo8
+ZyBpZD0iZWRnZTM3IiBjbGFzcz0iZWRnZSI+PHRpdGxlPmxhYmFuZGEmIzQ1O2VzdGVfZXRo
+MCYjNDU7Jmd0O2xhYmFuZGEmIzQ1O29lc3RlX2V0aDA8L3RpdGxlPgo8cGF0aCBmaWxsPSJu
+b25lIiBzdHJva2U9ImJsYWNrIiBkPSJNNjY4LjI2MywtMzAxLjM2OEM2MjMuMTkxLC0yNjku
+NTQ5IDUzMS43MjYsLTIxMS4zNzMgNDczLjkxMSwtMTc3LjQyNSIvPgo8cG9seWdvbiBmaWxs
+PSJibGFjayIgc3Ryb2tlPSJibGFjayIgcG9pbnRzPSI0NzUuMzM2LC0xNzQuMjA1IDQ2NC45
+MzQsLTE3Mi4xOTMgNDcxLjgxMSwtMTgwLjI1MiA0NzUuMzM2LC0xNzQuMjA1Ii8+Cjx0ZXh0
+IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjU2Mi4wODciIHk9Ii0yNTAuNzk3IiBmb250LWZh
+bWlseT0iVGltZXMgUm9tYW4sc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiPjEuMDAwPC90ZXh0
+Pgo8L2c+CjwhLS0gbGFiYW5kYSYjNDU7b2VzdGVfZXRoMCYjNDU7Jmd0O2xhYmFuZGEmIzQ1
+O2VzdGVfZXRoMCAtLT4KPGcgaWQ9ImVkZ2U0NCIgY2xhc3M9ImVkZ2UiPjx0aXRsZT5sYWJh
+bmRhJiM0NTtvZXN0ZV9ldGgwJiM0NTsmZ3Q7bGFiYW5kYSYjNDU7ZXN0ZV9ldGgwPC90aXRs
+ZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSJibGFjayIgZD0iTTQ0OS4xODUsLTE3My4y
+NTZDNDk0LjM4MywtMjA1LjE2MyA1ODYuMjM1LC0yNjMuNTc3IDY0NC4wMjEsLTI5Ny40ODMi
+Lz4KPHBvbHlnb24gZmlsbD0iYmxhY2siIHN0cm9rZT0iYmxhY2siIHBvaW50cz0iNjQyLjU4
+OCwtMzAwLjY5OSA2NTIuOTkxLC0zMDIuNzA3IDY0Ni4xMTEsLTI5NC42NSA2NDIuNTg4LC0z
+MDAuNjk5Ii8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjUzNy42MDMiIHk9Ii0y
+NDYuNzciIGZvbnQtZmFtaWx5PSJUaW1lcyBSb21hbixzZXJpZiIgZm9udC1zaXplPSIxNC4w
+MCI+MS4wMDA8L3RleHQ+CjwvZz4KPC9nPgo8L3N2Zz4K
+--------------030805040404030403010608--
