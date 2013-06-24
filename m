@@ -1,16 +1,16 @@
-Return-Path: <ordex@autistici.org>
-Date: Tue, 25 Jun 2013 08:38:09 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130625063809.GA3136@ritirata.org>
-References: <51C76DDE.20903@altermundi.net> <51C77678.1040904@altermundi.net>
- <20130624070245.GI1124@ritirata.org>
- <51C91911.9000506@altermundi.net>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Tue, 25 Jun 2013 05:47:20 +0800
+References: <1371232209-7808-1-git-send-email-linus.luessing@web.de>
+ <1371232209-7808-2-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1371232209-7808-2-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
-Content-Disposition: inline
-In-Reply-To: <51C91911.9000506@altermundi.net>
-Subject: Re: [B.A.T.M.A.N.] Possible bad interaction between BLA2 and TT?
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201306250547.20341.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv6 1/3] batman-adv: Multicast Listener
+	Announcements via Translation Table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,87 +24,121 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-
---UlVJffcvxoiEqYs2
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Jun 25, 2013 at 01:14:09AM -0300, Gui Iribarren wrote:
-> On 06/24/2013 04:02 AM, Antonio Quartulli wrote:
-> > On Sun, Jun 23, 2013 at 07:28:08PM -0300, Gui Iribarren wrote:
-> >> On 06/23/2013 06:51 PM, Gui Iribarren wrote:
-> >>>
-> >>> the "gap" in labanda-oeste is between seq=3D73 and seq=3D89
-> >>> in labanda-oeste there were no messages or traffic for 25secs, and th=
-en
-> >>> the "TT inconsistency" came up, resolved, and seq=3D89 succeded, traf=
-fic
-> >>> restored.
-> >>> at that time, seq=3D74, labanda-este got a TT update:
-> >>> [  23161800] Deleting tdorado from global tt entry 44:d8:84:b0:d2:f5:=
- tt
-> >>> removed by changes
-> >>> and (AFAIU) dropped traffic coming from labanda-oeste until
-> >>> labanda-oeste finally got the TT update and increased the ttvn to 129
-> >
-> > As we clarified on IRC, BLA2 is not involved at all.
-> >  From what I can see I'd say that a node in the middle is dropping the =
-traffic
-> > due to a wrong re-routing operation. if you could reproduce the issue, =
-it would
-> > be nice if you could get the tt log on all the nodes along the path.
-> > In this way we can clearly see who is doing what.
+On Saturday, June 15, 2013 01:50:07 Linus L=C3=BCssing wrote:
+> With this patch a node which has no bridge interface on top of its soft
+> interface announces its local multicast listeners via the translation
+> table.
 >=20
-> (11:58:09 AM) gui_: ah, ordex, btw, there's no "in the middle" :(
-> (11:58:29 AM) ordex: what do you mean?
-> (11:58:41 AM) ordex: does it happen with two nodes only?
-> (11:58:44 AM) gui_: labanda-este is a direct neighbor of tdorado
-> (11:58:49 AM) gui_: i mean the path is
-> (11:58:53 AM) gui_: oeste -> este -> tdorado
+> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
+> ---
+>  Makefile               |    2 +
+>  Makefile.kbuild        |    1 +
+>  compat.h               |   20 ++++-
+>  gen-compat-autoconf.sh |    1 +
+>  main.c                 |    6 ++
+>  main.h                 |    1 +
+>  multicast.c            |  210
+> ++++++++++++++++++++++++++++++++++++++++++++++++ multicast.h            |=
+=20
+>  43 ++++++++++
+>  soft-interface.c       |    3 +
+>  sysfs.c                |    6 ++
+>  translation-table.c    |   22 ++++-
+>  types.h                |   12 +++
+>  12 files changed, 322 insertions(+), 5 deletions(-)
+>  create mode 100644 multicast.c
+>  create mode 100644 multicast.h
 >=20
-> And, finally, to throw some spice into the mix, i downgraded=20
-> kmod-batman-adv just in labanda-este (my key suspect) twice, and...
-> i can reproduce this issue with 3.8.3+2013.2.0-2 and 3.8.3+2013.1.0-3
-> but not with 3.8.3+2012.4.0-1
->=20
-> both labanda-oeste and tdorado are still running 2013.2.0. Downgrading=20
-> labanda-este to 2012.4.0 was enough to solve the issue.
->=20
-> so it looks like a regression introduced between 2012.4.0 and 2013.1.0
+> diff --git a/Makefile b/Makefile
+> index 407cdc4..d7c6fa6 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -27,6 +27,8 @@ export CONFIG_BATMAN_ADV_BLA=3Dy
+>  export CONFIG_BATMAN_ADV_DAT=3Dy
+>  # B.A.T.M.A.N network coding (catwoman):
+>  export CONFIG_BATMAN_ADV_NC=3Dn
+> +# B.A.T.M.A.N. multicast optimizations:
+> +export CONFIG_BATMAN_ADV_MCAST_OPTIMIZATIONS=3Dy
 
-why didn't you 2013.0.0 since you were jumping from version to version? :)
+Can we please find a shorter define ? How about "CONFIG_BATMAN_ADV_MCAST" ?=
+=20
+That would be in line with the rest.
 
-Thanks a lot for doing these tests!
+
+> +struct batadv_hw_addr {
+> +	struct list_head	list;
+> +	unsigned char addr[ETH_ALEN];
+> +};
+
+All struct defines should go into types.h or packet.h if they are sent over=
+=20
+the wire.
+
+
+> +/**
+> + * batadv_mcast_mla_tt_update - update the own MLAs
+> + * @bat_priv: the bat priv with all the soft interface information
+> + *
+> + * Update the own multicast listener announcements in the translation
+> + * table. Also take care of registering or unregistering the multicast
+> + * tvlv depending on whether the user activated or deactivated
+> + * multicast optimizations.
+> + */
+> +void batadv_mcast_mla_tt_update(struct batadv_priv *bat_priv)
+> +{
+> +	struct net_device *soft_iface =3D bat_priv->soft_iface;
+> +	struct list_head mcast_list;
+> +	int ret;
+> +	static bool enabled;
+> +
+> +	INIT_LIST_HEAD(&mcast_list);
+> +
+> +	/* Avoid attaching MLAs, if multicast optimization is disabled
+> +	 * or there is a bridge on top of our soft interface (TODO)
+> +	 */
+> +	if (!atomic_read(&bat_priv->mcast_group_awareness) ||
+> +	    bat_priv->soft_iface->priv_flags & IFF_BRIDGE_PORT) {
+> +		if (enabled)
+> +			enabled =3D false;
+> +
+> +		goto update;
+> +	}
+> +
+> +	if (!enabled)
+> +		enabled =3D true;
+> +
+> +	ret =3D batadv_mcast_mla_local_collect(soft_iface, &mcast_list);
+> +	if (ret < 0)
+> +		goto out;
+> +
+> +update:
+> +	batadv_mcast_mla_tt_clean(bat_priv, &mcast_list);
+> +	batadv_mcast_mla_tt_add(bat_priv, &mcast_list);
+> +
+> +out:
+> +	batadv_mcast_mla_collect_free(&mcast_list);
+> +}
+
+You can use the LIST_HEAD static initializer.
+The "enabled" variable does not make any sense.
+
+How about we change some function names for the sake of clarity ? Here my=20
+suggestions:
+
+ * batadv_mcast_mla_local_collect() =3D> batadv_mcast_mla_softif_retrieve()=
+ or=20
+batadv_mcast_mla_softif_get()
+ * batadv_mcast_mla_tt_clean() =3D> batadv_mcast_mla_tt_retract()
+ * batadv_mcast_mla_collect_free() =3D> batadv_mcast_mla_list_free()
+
+
+> +#ifdef CONFIG_BATMAN_ADV_MCAST_OPTIMIZATIONS
+> +struct batadv_priv_mcast {
+> +	struct list_head mla_list;
+> +};
+> +#endif
+
+I don't see a good reason to use a double linked list or is there one ?
 
 Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---UlVJffcvxoiEqYs2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJRyTrRAAoJEADl0hg6qKeOLuoP/3e3JW/qri0zg0JU8RrbNaqk
-hoCW5w73KEziaE9x/GYYuv3Wngd5j4sCY9w2AYepweLTuKz+GHejgp/ZjOjXuwae
-IjWgpamPH+e/dfst0+wRN3RInYSzk2D4dELnobcHWww06+FaRyjlCRQtWLLXXxGp
-ZGB6XccCynv7+IV2DuMUL5FZAdgT+7OMaMgqEn4XEtrCr5BJZLss7Mt5cOuiZolG
-U7WuPRe91bxvHNoYZgtpGaLlcRVYohGZXq19s8hkGXcznjEVrAREOCWeeoaiuPGD
-YlYclmUOlRxDJ3exF2qauyKZlBJQYWhEHBEMi6cLuZPVp1XNNWPJRCe9mxAKDaur
-xEr2IF7R66zz/yrxYpis7hj7b8Vxo7bLdHWf8VnbNaNsPUyvQwTh+BjRr3foM1i1
-DJg8wRNzWrjrWeGYlxAUWPQqH4DY5fBnrZ2phRjncRFp7AcYRCtb5ac6S9YCtHp6
-uWxehtLD5zIkbeD18L8ptsB9D9jw/7rm++9g0L96/lFU+olWZWx2KNOHwd7zihPv
-smgABALNI9m6Sk45fjC+v7SZ0IwnB45VFJltOWS96AudiLxM4twLCRtky768PSwt
-AFRTb+zDOxqRcHLEY5PMz+2Ta4m0rq05Yd6AEs6IjRqaur+csiuRpJ8N4lXipT2Q
-DwwQE8ZljsM/6/+tyIig
-=v4xJ
------END PGP SIGNATURE-----
-
---UlVJffcvxoiEqYs2--
+Marek
