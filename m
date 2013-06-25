@@ -1,16 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 25 Jun 2013 05:47:20 +0800
-References: <1371232209-7808-1-git-send-email-linus.luessing@web.de>
- <1371232209-7808-2-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1371232209-7808-2-git-send-email-linus.luessing@web.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201306250547.20341.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv6 1/3] batman-adv: Multicast Listener
-	Announcements via Translation Table
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 25 Jun 2013 12:28:30 +0200
+Message-Id: <1372156113-1416-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv8 0/3] TT-VLAN: First patchset
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,123 +14,72 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <ordex@autistici.org>
 
-On Saturday, June 15, 2013 01:50:07 Linus L=C3=BCssing wrote:
-> With this patch a node which has no bridge interface on top of its soft
-> interface announces its local multicast listeners via the translation
-> table.
->=20
-> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
-> ---
->  Makefile               |    2 +
->  Makefile.kbuild        |    1 +
->  compat.h               |   20 ++++-
->  gen-compat-autoconf.sh |    1 +
->  main.c                 |    6 ++
->  main.h                 |    1 +
->  multicast.c            |  210
-> ++++++++++++++++++++++++++++++++++++++++++++++++ multicast.h            |=
-=20
->  43 ++++++++++
->  soft-interface.c       |    3 +
->  sysfs.c                |    6 ++
->  translation-table.c    |   22 ++++-
->  types.h                |   12 +++
->  12 files changed, 322 insertions(+), 5 deletions(-)
->  create mode 100644 multicast.c
->  create mode 100644 multicast.h
->=20
-> diff --git a/Makefile b/Makefile
-> index 407cdc4..d7c6fa6 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -27,6 +27,8 @@ export CONFIG_BATMAN_ADV_BLA=3Dy
->  export CONFIG_BATMAN_ADV_DAT=3Dy
->  # B.A.T.M.A.N network coding (catwoman):
->  export CONFIG_BATMAN_ADV_NC=3Dn
-> +# B.A.T.M.A.N. multicast optimizations:
-> +export CONFIG_BATMAN_ADV_MCAST_OPTIMIZATIONS=3Dy
+Hello folks,
 
-Can we please find a shorter define ? How about "CONFIG_BATMAN_ADV_MCAST" ?=
-=20
-That would be in line with the rest.
+after version 4 I decided to split the bug TT-VLAN batch in several patchsets to
+make them easier to get digested by the maintainers.
+
+This is the fourth iteration of the first patchset.
+
+Difference from v7:
+- fixed refcounting for mesh_obj (must be increased when used by the untagged
+  LAN)
+- added kernel doc for batadv_softif_destroy_vlan()
+- added kernel doc for batadv_vlan_kobj_to_batpriv()
+- moved changes to sysfs routine from patch 3/3 to 2/3. In this way patch 2 is
+  the only one manipulating the sysfs framework
 
 
-> +struct batadv_hw_addr {
-> +	struct list_head	list;
-> +	unsigned char addr[ETH_ALEN];
-> +};
-
-All struct defines should go into types.h or packet.h if they are sent over=
-=20
-the wire.
-
-
-> +/**
-> + * batadv_mcast_mla_tt_update - update the own MLAs
-> + * @bat_priv: the bat priv with all the soft interface information
-> + *
-> + * Update the own multicast listener announcements in the translation
-> + * table. Also take care of registering or unregistering the multicast
-> + * tvlv depending on whether the user activated or deactivated
-> + * multicast optimizations.
-> + */
-> +void batadv_mcast_mla_tt_update(struct batadv_priv *bat_priv)
-> +{
-> +	struct net_device *soft_iface =3D bat_priv->soft_iface;
-> +	struct list_head mcast_list;
-> +	int ret;
-> +	static bool enabled;
-> +
-> +	INIT_LIST_HEAD(&mcast_list);
-> +
-> +	/* Avoid attaching MLAs, if multicast optimization is disabled
-> +	 * or there is a bridge on top of our soft interface (TODO)
-> +	 */
-> +	if (!atomic_read(&bat_priv->mcast_group_awareness) ||
-> +	    bat_priv->soft_iface->priv_flags & IFF_BRIDGE_PORT) {
-> +		if (enabled)
-> +			enabled =3D false;
-> +
-> +		goto update;
-> +	}
-> +
-> +	if (!enabled)
-> +		enabled =3D true;
-> +
-> +	ret =3D batadv_mcast_mla_local_collect(soft_iface, &mcast_list);
-> +	if (ret < 0)
-> +		goto out;
-> +
-> +update:
-> +	batadv_mcast_mla_tt_clean(bat_priv, &mcast_list);
-> +	batadv_mcast_mla_tt_add(bat_priv, &mcast_list);
-> +
-> +out:
-> +	batadv_mcast_mla_collect_free(&mcast_list);
-> +}
-
-You can use the LIST_HEAD static initializer.
-The "enabled" variable does not make any sense.
-
-How about we change some function names for the sake of clarity ? Here my=20
-suggestions:
-
- * batadv_mcast_mla_local_collect() =3D> batadv_mcast_mla_softif_retrieve()=
- or=20
-batadv_mcast_mla_softif_get()
- * batadv_mcast_mla_tt_clean() =3D> batadv_mcast_mla_tt_retract()
- * batadv_mcast_mla_collect_free() =3D> batadv_mcast_mla_list_free()
+Differences from v6:
+- added patch introducing the per-VLAN ap_isolation attribute. It made no sense
+  to have the new framework without a user. This patch introduces it.
+- removed the "novlan" sysfs folder. To avoid confusion and keep backward
+  compatibility in a sane way, attributes corresponding to the untagged LAN are
+  located in the root sysfs mesh folder (as it was done before). To implement
+  this, some changes to the sysfs routines were needed (with respect to v6).
+- the array used to build the sysfs subfolder name now has a proper size instead
+  of a too generic "256".
 
 
-> +#ifdef CONFIG_BATMAN_ADV_MCAST_OPTIMIZATIONS
-> +struct batadv_priv_mcast {
-> +	struct list_head mla_list;
-> +};
-> +#endif
+Differences from v5 are:
+- added "untagged VLAN" removal routine. In the previous code the "untagged
+  VLAN" was added but never removed.
 
-I don't see a good reason to use a double linked list or is there one ?
+- use the correct vid argument when invoking batadv_tt_local_remove(). One
+  invocation to the mentioned function was getting a vid that was not ORed with
+  the HAS_TAG flag. However, such invocation has been enclosed into the new
+  batadv_softif_destroy_vlan() function introduced to account the previous
+  point.
 
-Cheers,
-Marek
+- bat_priv->softif_vlan_list is now an hlist instead of of a list.
+
+
+Thanks to Marek for his feedback.
+
+
+
+Antonio Quartulli (3):
+  batman-adv: add per VLAN interface attribute framework
+  batman-adv: add sysfs framework for VLAN
+  batman-adv: make the AP isolation attribute VLAN specific
+
+ compat.c             |   9 +++
+ compat.h             |  24 +++++++
+ hard-interface.c     |   2 +
+ main.c               |   5 +-
+ soft-interface.c     | 175 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ soft-interface.h     |   4 ++
+ sysfs-class-net-mesh |   5 +-
+ sysfs.c              | 175 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ sysfs.h              |  10 +++
+ translation-table.c  |  21 +++++--
+ translation-table.h  |   2 +-
+ types.h              |  23 +++++++
+ 12 files changed, 440 insertions(+), 15 deletions(-)
+
+-- 
+1.8.1.5
+
