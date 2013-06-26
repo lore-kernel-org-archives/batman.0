@@ -1,12 +1,14 @@
-Return-Path: <jonsmirl@gmail.com>
+Return-Path: <gui@altermundi.net>
+Message-ID: <51CB7254.7030907@altermundi.net>
+Date: Wed, 26 Jun 2013 19:59:32 -0300
+From: Gui Iribarren <gui@altermundi.net>
 MIME-Version: 1.0
-In-Reply-To: <51CB60F0.6090604@wirelesspt.net>
 References: <CAKON4Ox2+uFUWR5ZBQ8yHdWZWW0zrxAgkd8iv-QG3DtTnVKJWQ@mail.gmail.com>
  <51CB60F0.6090604@wirelesspt.net>
-Date: Wed, 26 Jun 2013 18:39:04 -0400
-Message-ID: <CAKON4Ozy3ObsYRYTF71i4Ys7A4H5228xywXfjZxvfwrepUyjTQ@mail.gmail.com>
-From: "jonsmirl@gmail.com" <jonsmirl@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+ <CAKON4Ozy3ObsYRYTF71i4Ys7A4H5228xywXfjZxvfwrepUyjTQ@mail.gmail.com>
+In-Reply-To: <CAKON4Ozy3ObsYRYTF71i4Ys7A4H5228xywXfjZxvfwrepUyjTQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Subject: Re: [B.A.T.M.A.N.] single radio routers and ap/adhoc interfaces
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -19,51 +21,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: cmsv@wirelesspt.net
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wed, Jun 26, 2013 at 5:45 PM, cmsv <cmsv@wirelesspt.net> wrote:
-> I am not sure what are you trying to do with the info yuo have showed...
-> but it kind looks that someone is not reading important documentation.
+On 06/26/2013 07:39 PM, jonsmirl@gmail.com wrote:
 >
-> AR72* should not cause you any problems.
-> You need to consult openwrt wiki for driver support and not batman-adv
-> wiki. Driver support is openwrt business.
+> It looks like OpenWRT trunk is broken. I just sent this out on the
+> OpenWRT list but I haven't received a response yet. When I loaded
+> Steve image the hardware worked as expected.
 
-It looks like OpenWRT trunk is broken. I just sent this out on the
-OpenWRT list but I haven't received a response yet. When I loaded
-Steve image the hardware worked as expected.
+Bleeding edge often hurts :-/
 
-----------------------------------------------------
+(Thanks for sending that report to openwrt-devel!)
 
-IBBS seems to have dropped out of the valid mode combinations...
-This is preventing use of batman on dual AP/adhoc nodes.
+The last trunk i tried and didn't find blocker bugs was r36139
+With r36655 we experienced severe instability of ath9k wifi, and rolled 
+back to r36139. Haven't tried more recent trunks than that yet.
 
-On an older AR9331 build..
+hope that helps :)
 
-root@TP-20:/etc# uname -a
-Linux TP-20 3.3.8 #204 Tue Jun 18 08:55:58 EST 2013 mips GNU/Linux
+about ap/sta mode:
 
-iw list
-valid interface combinations:
-* #{ managed, WDS, P2P-client } <= 2048, #{ IBSS, AP, mesh point, P2P-GO } <= 8,
-  total <= 2048, #channels <= 1
+On 06/26/2013 03:46 PM, Antonio Quartulli wrote:> On Wed, Jun 26, 2013 
+at 02:38:16PM -0400, jonsmirl@gmail.com wrote:
+ >> Is it a bad idea to run batman over the STA/AP mode type interfaces?
+ >
+ > batman-adv supports it. From the batman-adv prospective there is no 
+problem. The
+ > important thing is that you know what you are doing and that you take 
+care of
+ > properly configuring the underlying layer (e.g. Isolation of the 
+client should
+ > be enabled, imho).
 
-Now on the current openwrt trunk...
+We agree :) we use this approach with *ath9k_htc* devices (usb dongles) 
+which still suffer bugs in adhoc mode.
 
-root@OpenWrt:/etc/config# iw list
-Wiphy phy0
-......
+http://blog.altermundi.net/article/batman-adv-ap-mode-with-isolation-enabled/
 
-valid interface combinations:
-* #{ managed, WDS, P2P-client } <= 2048, #{ AP, mesh point, P2P-GO }
-<= 8, #{ IBSS } <= 1,
-  total <= 2048, #channels <= 1, STA/AP BI must match
-* #{ AP } <= 1,
-  total <= 1, #channels <= 1, STA/AP BI must match, radar detect
-widths: { 20 MHz (no HT), 20 MHz }
-
-
---
-Jon Smirl
-jonsmirl@gmail.com
+Cheers!
