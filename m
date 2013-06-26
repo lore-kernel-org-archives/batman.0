@@ -1,18 +1,20 @@
 Return-Path: <ordex@autistici.org>
-Date: Tue, 25 Jun 2013 15:03:16 +0200
+Date: Wed, 26 Jun 2013 10:59:34 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130625130316.GC3136@ritirata.org>
-References: <1371232209-7808-1-git-send-email-linus.luessing@web.de>
- <1371232209-7808-2-git-send-email-linus.luessing@web.de>
- <201306250547.20341.lindner_marek@yahoo.de>
- <20130625125508.GA20017@Linus-Debian>
+Message-ID: <20130626085934.GL3136@ritirata.org>
+References: <1369779649-2537-1-git-send-email-ordex@autistici.org>
+ <1369779649-2537-7-git-send-email-ordex@autistici.org>
+ <20130529141657.GB23657@pandem0nium>
+ <20130529142851.GQ3333@ritirata.org>
+ <20130529145519.GA24352@pandem0nium>
+ <20130529145754.GT3333@ritirata.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="iFRdW5/EC4oqxDHL"
+ protocol="application/pgp-signature"; boundary="0z5c7mBtSy1wdr4F"
 Content-Disposition: inline
-In-Reply-To: <20130625125508.GA20017@Linus-Debian>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv6 1/3] batman-adv: Multicast Listener
- Announcements via Translation Table
+In-Reply-To: <20130529145754.GT3333@ritirata.org>
+Subject: Re: [B.A.T.M.A.N.] [RFC 05/10] batman-adv: add
+ bat_metric_is_similar API function
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,68 +29,93 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---iFRdW5/EC4oqxDHL
+--0z5c7mBtSy1wdr4F
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jun 25, 2013 at 02:55:08PM +0200, Linus L=C3=BCssing wrote:
-> > > --- a/Makefile
-> > > +++ b/Makefile
-> > > @@ -27,6 +27,8 @@ export CONFIG_BATMAN_ADV_BLA=3Dy
-> > >  export CONFIG_BATMAN_ADV_DAT=3Dy
-> > >  # B.A.T.M.A.N network coding (catwoman):
-> > >  export CONFIG_BATMAN_ADV_NC=3Dn
-> > > +# B.A.T.M.A.N. multicast optimizations:
-> > > +export CONFIG_BATMAN_ADV_MCAST_OPTIMIZATIONS=3Dy
+On Wed, May 29, 2013 at 04:57:54PM +0200, Antonio Quartulli wrote:
+> > > > > +static bool batadv_iv_ogm_metric_is_similar(uint32_t metric,
+> > > > > +					    uint32_t new_metric)
+> > > > > +{
+> > > > > +	return (metric - new_metric < BATADV_TQ_SIMILARITY_THRESHOLD);
+> > > >=20
+> > > > You might want to use abs(metric - new_metric) here, otherwise is_s=
+imilar(a, b) output
+> > > > might differ from is_similar(b, a).
+> > >=20
+> > > Mh..imho the name of the function is bad because this has been done o=
+n purpose.
 > >=20
-> > Can we please find a shorter define ? How about "CONFIG_BATMAN_ADV_MCAS=
-T" ?=20
-> > That would be in line with the rest.
->=20
-> Hm, yes I also don't like the length of that so much. But I had
-> dismissed "CONFIG_BATMAN_ADV_MCAST" so far because I thought it
-> might seem as if batman-adv were not able to handle multicast at
-> all without that option.
->=20
-> What about CONFIG_BATMAN_ADV_MCAST_OPT (hm, that could suggest
-> 'optional', too...) or CONFIG_BATMAN_ADV_MCO?
->=20
-> .oO(also don't sound as nice as the other CONFIG_ exports...)
->=20
-> Ok, maybe CONFIG_BATMAN_ADV_MCAST is still the best option. I'll
-> change it to that.
-
-I agree with using the CONFIG_BATMAN_ADV_MCAST too.
-
-
->=20
+> > agreed, the function name is not really good. You could rename it to so=
+mething like
+> > "is_almost_or_better()" if you keep the current semantics, although thi=
+s is not an
+> > "easy name" either. Or rename it to "similar_or_greater()". Something l=
+ike that
 > >=20
+> > Although ...
+> > >=20
+> > > The idea is that we want to see if 'b' is at least
+> > > as good as 'a', therefore what we want to check if is b is greater th=
+an
+> > > 'a - threshold' only.
+> > >=20
+> > > Imagine that 'b' is greater than (a + threshold), for me the function=
+ has to
+> > > return true, because the metric b is at least as good as a, but if I =
+introduce
+> > > the abs() the function would return false.
+> > >=20
+> > > Example:
+> > >=20
+> > > a=3D190
+> > > b=3D240
+> > > threshold=3D20
+> > >=20
+> > > a - b =3D -50 < 20 =3D> b is at least as good as a!
+> > >=20
+> > > using abs:
+> > >=20
+> > > abs(a - b) =3D 50 < 20 =3D> NO! b is worse than a....and this is not =
+true.
+> > >=20
+> > >=20
+> > > this situation can happen in the code because usually 'a' will repres=
+ents some
+> > > kind of current metric and this is not supposed to be the best ever (=
+maybe we
+> > > still have to switch to a new best).
 > >=20
-> > > +struct batadv_hw_addr {
-> > > +	struct list_head	list;
-> > > +	unsigned char addr[ETH_ALEN];
-> > > +};
-> >=20
-> > All struct defines should go into types.h or packet.h if they are sent =
-over=20
-> > the wire.
+> > ... we actually compare to the biggest value (e.g. highest gateway rank=
+, highest
+> > bonding candidate), so I wonder if this can really happen. So adding ab=
+s() would
+> > just make the semantics more clear without breaking the current code wh=
+en we simply
+> > replace. Although we need to check all occurences again, I'm not comple=
+tely sure
+> > that it's always compared to the greatest member.
 >=20
-> This struct isn't sent over the wire, it's just for local book
-> keeping. I was thinking about naming it 'struct batadv_mcast_hw_addr'
-> but didn't do that because it is so generic and thought maybe
-> because of that it might be reusable in the future.
+> well the current code uses the semantic that I implemented in the API (II=
+RC) and
+> this is why I've done so: I wanted to keep the very same behaviour.
 >=20
-> Hm, maybe it's better to rename it to 'struct
-> batadv_mcast_hw_addr' anyways and leave it in that place to avoid
-> bloating types.h/packet.h with "unimportant" structs and defines?
+> I'm also not entirely sure that we always compare to the greatest member.
+>=20
+> What you are thinking about is the compare() function taking a threshold =
+as
+> parameter. We can do that with the compare() API if you want, but I think=
+ we
+> should keep this "~is_similar()" API in order to avoid behavioural change=
+s in
+> the code.
+>=20
 
-I think this struct should go into type.h too. Many structs in there are us=
-ed by
-a single component only, but it is better to keep them into the same file.
-And yes, renaming to batadv_mcast_hw_addr is probably better (given that it=
- is
-used by the mcast component only).
+
+so I'll go for "bat_metric_is_alike_or_better"...we couldn't find a better
+name..but if you have one :) let me know
+
 
 Cheers,
 
@@ -98,26 +125,26 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---iFRdW5/EC4oqxDHL
+--0z5c7mBtSy1wdr4F
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.20 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRyZUUAAoJEADl0hg6qKeODQ4QAJDLWoc/2GHpZAgcpd59t9dv
-o8rVVwF07Y/glwbIL+2l0/r6PGZ7GvQu61vE3h0zVoEYgv8K6B/0/qDQ+xiksbyr
-TzylTgIIeP5QW6atoWjQcGlm1gKvFRbF5HUvQNlDIwvNRrncZ9Yak0MjWPzDAz9M
-sVmf1jGh/VV03cAV8/VMsYC3T8onAAsto59RBvyOHbbAEz6v6QtOiMa5HCpDG4ET
-JEAVKRyWgit022kG2AQ6bc/RGBTz61pfya4twRmSxp2dgLvVsMGZ4KkdW0up7PQa
-bAJGAe07KKswrnL/yWE0hrbSik0sXarTEsYeI8a8lJIG3WFAsPuXutPTNeqkftiA
-RRr1pPxU1mzucZxc58KYhsBsf4fG3otvwAEbWUwK0u+UrpPz1m2KuJ0qDXDhGtDm
-hW5Ch2UlmosZ4WuCt9zovRDlPNQbfuEoPoVw4v0uVFXddwllCfW0Pah06f+g8ZeS
-6nleWkjb9ypfPhp3SMyZigh4dSqFAdyKwmzbozKjlC0tMGVInr+laxfjEYCJZP1L
-kfQku2seMRjTI7DJYCczUigCq/CaX9Ou+IMabCKB67aoZoINVfq8quOdtJ3pgclr
-ZLgfJn12rLr2CbeDlss2e7/4ccYmRrpbNglYYjw6RmhM+k39+x0bYAXXh/peW4Th
-BQwSj05MMMdQ99ae75//
-=TopO
+iQIcBAEBCAAGBQJRyq12AAoJEADl0hg6qKeONM0P+gLmwSnWNtkArUNMNth3ReVV
+kF5tErOEeBaNEd6FDwWb34X55L+MEvh6HAYT/haX+RTzGu9ZRbEu5HCUs1s0u5cx
+P1R/8BNCi4hERycZERfLRhNjL+TFUx8nCFykZuGO8gFKFIbtHX8dbs7CFbQmvo3f
+fXiSrl8pB1C5iu9p9/DbPYGYs6dw5PIpChi8e2WSVUgJL3EgR3Ca4Dq9L9XVzHNo
+qyrDrquPWDKEI7hKm0++fdKCLqYam+dZXtuaRht7B/GBpGJwknyLI31JstpPbzco
+7J69jMWiWbVq7hkyHCiuE1/JO5qyQ7Wc0KmqrSHf5BZAMAom2dm67uc21Zqumo98
+yBCKB/KyfsZQdpLMmpumxKHt6kfnAKGv3AHN+6uzNHvH77xa8er80KMp5Z2oBKSh
+PFJrwXGu+tF9fVBU3hgjSkskvZuUD8Q/UqJtLsHu3HLDjjEZKz/CzRM0WBhN9i/1
+TaDC6pad13KHAf5nNUAzvzD8DOonGoYp3h5b7pi+OremZBA9gXeNUM9U9L9O86Mv
+jSEhiDjd+fHvoPS5DVC9ng8NcthN+GwmbVaMCMhHQemo1x7Z4vhHFuWc+jjuuhET
+B4QjF+ie3NO2GBO7VfuiOSOovwCYTeNkgvmV3DIwvDMidcX6mIsbeJ6tFPbrXToI
+p3C/J054dND1o14/1a6U
+=7SZ4
 -----END PGP SIGNATURE-----
 
---iFRdW5/EC4oqxDHL--
+--0z5c7mBtSy1wdr4F--
