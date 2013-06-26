@@ -1,17 +1,8 @@
 Return-Path: <ordex@autistici.org>
-Date: Wed, 26 Jun 2013 23:05:22 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130626210522.GG2120@ritirata.org>
-References: <1372266127-1281-1-git-send-email-ordex@autistici.org>
- <1372266127-1281-3-git-send-email-ordex@autistici.org>
- <201306270500.04863.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="B8ONY/mu/bqBak9m"
-Content-Disposition: inline
-In-Reply-To: <201306270500.04863.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv9 2/3] batman-adv: add sysfs framework
- for VLAN
+Date: Wed, 26 Jun 2013 23:12:31 +0200
+Message-Id: <1372281154-628-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv10 0/3] TT-VLAN: First patchset
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,72 +14,79 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <ordex@autistici.org>
+
+Hello folks,
+
+after version 4 I decided to split the bug TT-VLAN batch in several patchsets to
+make them easier to get digested by the maintainers.
+
+This is the fourth iteration of the first patchset.
+
+Difference from v9:
+- added rcu_read_lock()/unlock() to batadv_kobj_to_vlan()
+
+Difference from v8:
+- remove bat_priv->ap_isolation and converts code using it to use
+  vlan->ap_isolation
+
+Difference from v7:
+- fixed refcounting for mesh_obj (must be increased when used by the untagged
+  LAN)
+- added kernel doc for batadv_softif_destroy_vlan()
+- added kernel doc for batadv_vlan_kobj_to_batpriv()
+- moved changes to sysfs routine from patch 3/3 to 2/3. In this way patch 2 is
+  the only one manipulating the sysfs framework
 
 
---B8ONY/mu/bqBak9m
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Jun 27, 2013 at 05:00:04AM +0800, Marek Lindner wrote:
-> On Thursday, June 27, 2013 01:02:06 Antonio Quartulli wrote:
-> > +static struct batadv_softif_vlan *
-> > +batadv_kobj_to_vlan(struct batadv_priv *bat_priv, struct kobject *obj)
-> > +{
-> > +       struct batadv_softif_vlan *vlan;
-> > +
-> > +       hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, lis=
-t) {
-> > +               if (vlan->kobj !=3D obj)
-> > +                       continue;
-> > +
-> > +               if (!atomic_inc_not_zero(&vlan->refcount))
-> > +                       continue;
-> > +
-> > +               return vlan;
-> > +       }
-> > +
-> > +       return NULL;
-> > +}
->=20
-> Aren't we missing a rcu_lock()/rcu_unlock() combo ?
-
-I was unsure of this because of the context where this for_each is executed.
-But I think there is nothing protecting the RCU..so yes, we need
-rcu_read_lock/unlock.
+Differences from v6:
+- added patch introducing the per-VLAN ap_isolation attribute. It made no sense
+  to have the new framework without a user. This patch introduces it.
+- removed the "novlan" sysfs folder. To avoid confusion and keep backward
+  compatibility in a sane way, attributes corresponding to the untagged LAN are
+  located in the root sysfs mesh folder (as it was done before). To implement
+  this, some changes to the sysfs routines were needed (with respect to v6).
+- the array used to build the sysfs subfolder name now has a proper size instead
+  of a too generic "256".
 
 
->=20
-> Cheers,
-> Marek
+Differences from v5 are:
+- added "untagged VLAN" removal routine. In the previous code the "untagged
+  VLAN" was added but never removed.
 
---=20
-Antonio Quartulli
+- use the correct vid argument when invoking batadv_tt_local_remove(). One
+  invocation to the mentioned function was getting a vid that was not ORed with
+  the HAS_TAG flag. However, such invocation has been enclosed into the new
+  batadv_softif_destroy_vlan() function introduced to account the previous
+  point.
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
+- bat_priv->softif_vlan_list is now an hlist instead of of a list.
 
---B8ONY/mu/bqBak9m
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
+Thanks to Marek for his feedback.
 
-iQIcBAEBCAAGBQJRy1eSAAoJEADl0hg6qKeOl0wP/jIPJ+Rp8ZkJJp5qeSy6xRXL
-gh1rAfeXjPb8hoaZ3LqZCfoAy5bYFgySpHnnntSO6DRPywwxbhxFb0AinSk5tIN/
-lfyh+vebkfj/L0EZSswstInsFbOQT8kaw7ApoG+p9fwzKYYCIEha5wLm9ZMSgS1/
-Zq04ra/Ab9U1Mxe5OFOiMOEIgL9DvmQHPZfHj3wiFtLftiz4ce4wDYMcYFgar/xR
-RvRm4VN9+CdDCpdFbhlJspwL3Z/C6nN1IVUmfp6Zdxf+v2CQVdt3/FiR/PJhoVqx
-BDyxL1SM9lLS+EpvcJBYrNtbiC3nUsr/VBmC83avFS48cgFBsYG7bA7KLH0ZN8Tw
-Gsb4V4wVSoImKB29a+6YHWtOgSJEV4WwUaIT8p3y3UiNTS8QGDqvIg6s8KeS0F7N
-jpY2hHTUlYvW3ZeuC4nWieHGz1LuyhQVvEGKR6+fC8d9xeT3K1Y7j2bRp8DBC2n+
-R9tqHPnad/VMVHcdlpAXYf7837JAFQmnBYF++FUZihsFGwxZKLjPH6r6qPhT5CoS
-2srec3I5/1UcrX51HA+cDdctT52hRP7DwUFmrqME3uIA6IdC0qxrfgKo6xSRtN83
-1nHcfo8gvb6NWUxfC7S9CCTQ7GpinDWxqxBoupG0Ued9uV9xEXTnZ/MkMsfc1jyG
-EMtUInqA5u3XIp6Dp9ZL
-=J9h2
------END PGP SIGNATURE-----
 
---B8ONY/mu/bqBak9m--
+
+Antonio Quartulli (3):
+  batman-adv: add per VLAN interface attribute framework
+  batman-adv: add sysfs framework for VLAN
+  batman-adv: make the AP isolation attribute VLAN specific
+
+ compat.c             |   9 +++
+ compat.h             |  24 +++++++
+ hard-interface.c     |   2 +
+ main.c               |   5 +-
+ soft-interface.c     | 176 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ soft-interface.h     |   4 ++
+ sysfs-class-net-mesh |   5 +-
+ sysfs.c              | 178 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ sysfs.h              |  10 +++
+ translation-table.c  |  27 ++++++--
+ translation-table.h  |   2 +-
+ types.h              |  25 +++++++-
+ 12 files changed, 448 insertions(+), 19 deletions(-)
+
+-- 
+1.8.1.5
+
