@@ -1,9 +1,18 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed, 26 Jun 2013 11:37:51 +0200
-Message-Id: <1372239472-13217-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: compat-code for
-	skb_abort_seq_read()
+Return-Path: <linus.luessing@web.de>
+Date: Wed, 26 Jun 2013 11:38:00 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20130626093800.GC22334@Linus-Debian>
+References: <1371232209-7808-1-git-send-email-linus.luessing@web.de>
+ <1371232209-7808-2-git-send-email-linus.luessing@web.de>
+ <201306250547.20341.lindner_marek@yahoo.de>
+ <20130625125508.GA20017@Linus-Debian>
+ <20130625130316.GC3136@ritirata.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20130625130316.GC3136@ritirata.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv6 1/3] batman-adv: Multicast Listener
+ Announcements via Translation Table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,37 +24,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Since skb_abort_seq_read() has been removed in the patch "net: Unmap
-fragment page once iterator is done" in linux, but is still needed for
-older kernel, add compat code to call it after the iteration is done.
+On Tue, Jun 25, 2013 at 03:03:16PM +0200, Antonio Quartulli wrote:
+> > > All struct defines should go into types.h or packet.h if they are sent over 
+> > > the wire.
 
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
----
- compat.h |    8 ++++++++
- 1 file changed, 8 insertions(+)
+I just noticed that I had misread this sentence as: "All struct
+defines which are sent over the wire go into types.h or packet.h"
 
-diff --git a/compat.h b/compat.h
-index ddc1b29..e9b531f 100644
---- a/compat.h
-+++ b/compat.h
-@@ -326,6 +326,14 @@ static int __batadv_interface_set_mac_addr(x, y)
- 
- #define netdev_notifier_info_to_dev(ptr) ptr
- 
-+/* older kernels still need to call skb_abort_seq_read() */
-+#define skb_seq_read(consumed, data, st) \
-+	({ \
-+		int len = skb_seq_read(consumed, data, st); \
-+		if (len == 0) \
-+			skb_abort_seq_read(st); \
-+		len; \
-+	})
- #endif /* < KERNEL_VERSION(3, 11, 0) */
- 
- #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
--- 
-1.7.10.4
+> > 
+> > This struct isn't sent over the wire, it's just for local book
+> > keeping. I was thinking about naming it 'struct batadv_mcast_hw_addr'
+> > but didn't do that because it is so generic and thought maybe
+> > because of that it might be reusable in the future.
+> > 
+> > Hm, maybe it's better to rename it to 'struct
+> > batadv_mcast_hw_addr' anyways and leave it in that place to avoid
+> > bloating types.h/packet.h with "unimportant" structs and defines?
+> 
+> I think this struct should go into type.h too. Many structs in there are used by
+> a single component only, but it is better to keep them into the same file.
+> And yes, renaming to batadv_mcast_hw_addr is probably better (given that it is
+> used by the mcast component only).
+
+And now this makes sense :). I'm going to move it into types.h (and
+will keep the name as batadv_hw_addr).
+
+> 
+> Cheers,
+> 
+> -- 
+> Antonio Quartulli
+> 
+> ..each of us alone is worth nothing..
+> Ernesto "Che" Guevara
+
 
