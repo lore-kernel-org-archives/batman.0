@@ -1,16 +1,16 @@
 Return-Path: <ordex@autistici.org>
-Date: Wed, 26 Jun 2013 16:46:05 +0200
+Date: Wed, 26 Jun 2013 18:53:19 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130626144605.GA2120@ritirata.org>
-References: <1371232209-7808-1-git-send-email-linus.luessing@web.de>
- <1371232209-7808-4-git-send-email-linus.luessing@web.de>
+Message-ID: <20130626165319.GB2120@ritirata.org>
+References: <1372156113-1416-1-git-send-email-ordex@autistici.org>
+ <1372156113-1416-4-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
+ protocol="application/pgp-signature"; boundary="XOIedfhf+7KOe/yw"
 Content-Disposition: inline
-In-Reply-To: <1371232209-7808-4-git-send-email-linus.luessing@web.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv6 3/3] batman-adv: Modified forwarding
- behaviour for multicast packets
+In-Reply-To: <1372156113-1416-4-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv8 3/3] batman-adv: make the AP isolation
+ attribute VLAN specific
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,30 +22,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 
---huq684BweRXVnRxX
+--XOIedfhf+7KOe/yw
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jun 14, 2013 at 07:50:09PM +0200, Linus L=C3=BCssing wrote:
->  static void
-> -batadv_tt_global_del_orig_entry(struct batadv_priv *bat_priv,
-> -				struct batadv_tt_global_entry *tt_global_entry,
-> -				struct batadv_orig_node *orig_node,
-> -				const char *message)
-> +batadv_tt_global_del_orig_node(struct batadv_priv *bat_priv,
-> +			       struct batadv_tt_global_entry *tt_global_entry,
-> +			       struct batadv_orig_node *orig_node,
-> +			       const char *message)
+On Tue, Jun 25, 2013 at 12:28:33PM +0200, Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+>=20
+> AP isolation has to be enabled on one VLAN interface only.
+> This patch moves the AP isolation attribute to the per-vlan
+> interface attribute set, enabling it to have a different
+> value depending on the selected vlan.
+>=20
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 
-*cough*cough*kerneldoc*cough* :)
+I just found out that i did not remove all the occurrences of
+bat_priv->ap_isolation...
 
-For all the remaining TT bits you have my ACK.
 
-Cheers,
+I'll send v9 :)
 
 --=20
 Antonio Quartulli
@@ -53,26 +53,26 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---huq684BweRXVnRxX
+--XOIedfhf+7KOe/yw
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.20 (GNU/Linux)
 
-iQIcBAEBCAAGBQJRyv6tAAoJEADl0hg6qKeOcd4P/RfkIJ5R+Zx1JMs8mZ68BGcV
-UY7T9NtI6P1meOOu7ByDsKJNmPwJbp+awFrSYyv28iJV/DCOH3CR4sV8lPArOksq
-o7AAHQ1sZErHtnUav92yorFDLHyYZqEUD56wASDckLj+v5Du6cCdwlOlt0KMqiPw
-btc0/wCK/rd0zelIZCZjAB+QiHAUD/bc/Al86Dmk5PBN4Lx/y9bEDnTAmHoaw5dm
-cVJOpeHP2vJbWtuTR6jht8P7yP3gqyk3dQYCAjxOmjyXfWE8+egwEnmiZVhKrbG6
-+6p9qavM7eh25wegm7MkPz0mRXUN+TtfJmijzNiqmxJpqxnm/Akeh5Q6LRwBjwq2
-QXVekM7T0dGBFq9ofvjPUZqe2iPjfixTQv35YSAjgH7bwRJg9YMXyS+Nvbs0NfuW
-0SKUikEXM1wBS5h1TV08c4Y5VDZ1qLM+JtWXDJu4qYbPxnUM/AigVLbRkplZ5MF6
-8uXA0Y27x5DPcbqb+xJdfRsXS6QpSW65sCi+NbUWo3Wym1XPgP2t2G++ja+g43hQ
-CVmkqJ5hWJUxtPZ3uPNGiSUJNSC+nS8oUcSkXoF5M/oRgN9I9K+tSDxQ4m5dgQKg
-JxUmxcxGIq+e5ciuQbQ9ML5wDeWpE0zmk9pDKXVfXJmw5cOgReemxtlBZf603dei
-iFMJfeEkxeE4Evrdc33y
-=SB8n
+iQIcBAEBCAAGBQJRyxx/AAoJEADl0hg6qKeOihQP/A7bgrDAS5sVaSJwz21xy2qn
+4tF1BxYyFo3h7vHIalMFnCOe4wIo1HxPkKnLeY0AO4Kx67KdIWd/psGIh6L6bjBg
+NfrMC8CHWKday7y1GVYqyKLdshxSCSqda+l+hIoAZNJyT0Nlmmg/9inHkdiD9PNA
+2Df13kQpE+I0zhZ8PlLASpfnauEgVmjq2Ts4NRVdg/pQpYfFM7zDMrgy6KbB2tmh
+likquxzTp6LiSYsQNLAP1WflUjxQH/9hvDnXcDfVYuNVSgRnncUH7x9G7c2lW+Ie
+dyx3uvq0oDFDYB+YMYJWo3m1XxrPwWiuASJC+5j3KawabgwFVG06u3MK7wVfysZp
+iZEW5X5hGKEuTGGF1HTbuFd3QhNvgNowub+AdekgoIuhZ7rztUaj6Fxuic2kAZ0P
+hJJ0Rss8v3BJgyi+8VWNKQIIURo/tsgMnDaczfMa6KM5nMJpbkQeW0q52bEYJ70J
+sGdtn+JIdcSMSOB/JDdny7b9nEUk/Kw2Y33A58AivczviX82g7PsFX3aeGFOVz5x
+sVQe1OB8JDh8ygx7Ldgm5pI4xT+djuGAd32PrSFK5bzZ0jAjT3QMFBIKpdOoyJ+k
+YlxJCEB69fBfWP2xK0SJ7+SI51J4Vu/CUH7pELPRNJpmtUxFaqp46kBJiLHE1qVk
+JBTNpbH5LAiESeAnCVAW
+=lxTd
 -----END PGP SIGNATURE-----
 
---huq684BweRXVnRxX--
+--XOIedfhf+7KOe/yw--
