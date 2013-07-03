@@ -1,15 +1,12 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 3 Jul 2013 08:31:04 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130703063104.GE2325@ritirata.org>
-References: <1372809377-32042-1-git-send-email-linus.luessing@web.de>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Wed,  3 Jul 2013 10:40:00 +0200
+Message-Id: <1372840800-642-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="at6+YcpfzWZg/htY"
-Content-Disposition: inline
-In-Reply-To: <1372809377-32042-1-git-send-email-linus.luessing@web.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: refine API calls for
- unicast transmissions of SKBs
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: refine API calls for unicast
+	transmissions of SKBs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,106 +18,276 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+With this patch the functions batadv_send_skb_unicast() and
+batadv_send_skb_unicast_4addr() are further refined into
+batadv_send_skb_via_tt(), batadv_send_skb_via_tt_4addr() and
+batadv_send_skb_via_gw(). This way we avoid any "guessing" about where to send
+a packet in the unicast forwarding methods and let the callers decide.
 
---at6+YcpfzWZg/htY
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is going to be useful for the upcoming multicast related patches in
+particular.
 
-Hi Linus,
+Further, the return values were polished a little to use the more
+appropriate NET_XMIT_* defines.
 
-On Wed, Jul 03, 2013 at 01:56:17AM +0200, Linus L=C3=BCssing wrote:
-> diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-> index f2543c2..12e84f7 100644
-> --- a/distributed-arp-table.c
-> +++ b/distributed-arp-table.c
-> @@ -1026,11 +1026,11 @@ bool batadv_dat_snoop_incoming_arp_request(struct=
- batadv_priv *bat_priv,
->  	 * that a node not using the 4addr packet format doesn't support it.
->  	 */
->  	if (hdr_size =3D=3D sizeof(struct batadv_unicast_4addr_packet))
-> -		err =3D batadv_send_skb_unicast_4addr(bat_priv, skb_new,
-> -						    BATADV_P_DAT_CACHE_REPLY,
-> -						    vid);
-> +		err =3D batadv_send_skb_via_tt_4addr(bat_priv, skb_new,
-> +						   BATADV_P_DAT_CACHE_REPLY,
-> +						   vid);
->  	else
-> -		err =3D batadv_send_skb_unicast(bat_priv, skb_new, vid);
-> +		err =3D batadv_send_skb_via_tt(bat_priv, skb_new, vid);
-> =20
->  	if (!err) {
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+---
+v3: changed return values to use the appropriate defines
 
-now that the functions do not return 0 or 1 anymore this check should be ch=
-anged
-to "ret !=3D DROP". We can't assume that the SUCCESS define is 0.
+ distributed-arp-table.c |   10 +++---
+ send.c                  |   87 ++++++++++++++++++++++++++++++++++++-----------
+ send.h                  |   51 +++++++++++++++------------
+ soft-interface.c        |    8 +++--
+ 4 files changed, 108 insertions(+), 48 deletions(-)
 
->  		batadv_inc_counter(bat_priv, BATADV_CNT_DAT_CACHED_REPLY_TX);
-> diff --git a/send.c b/send.c
-> index b631355..29b42fe 100644
-> --- a/send.c
-> +++ b/send.c
-> @@ -235,36 +235,32 @@ out:
->  }
-> =20
->  /**
-> - * batadv_send_generic_unicast_skb - send an skb as unicast
-> + * batadv_send_skb_unicast - encapsulate and send an skb via unicast
->   * @bat_priv: the bat priv with all the soft interface information
->   * @skb: payload to send
->   * @packet_type: the batman unicast packet type to use
->   * @packet_subtype: the unicast 4addr packet subtype (only relevant for =
-unicast
->   *  4addr packets)
-> + * @orig_node: the originator to send the packet to
->   * @vid: the vid to be used to search the translation table
->   *
-> - * Returns 1 in case of error or 0 otherwise.
-> + * Wrap the given skb into a batman-adv unicast or unicast-4addr header
-> + * depending on whether BATADV_UNICAST or BATADV_UNICAST_4ADDR was suppl=
-ied
-> + * as packet_type. Then send this frame to the given orig_node and relea=
-se a
-> + * reference to this orig_node.
-> + *
-> + * Return NET_RX_DROP in case of error or NET_RX_SUCCESS otherwise.
+diff --git a/distributed-arp-table.c b/distributed-arp-table.c
+index f2543c2..081c1af 100644
+--- a/distributed-arp-table.c
++++ b/distributed-arp-table.c
+@@ -1026,13 +1026,13 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
+ 	 * that a node not using the 4addr packet format doesn't support it.
+ 	 */
+ 	if (hdr_size == sizeof(struct batadv_unicast_4addr_packet))
+-		err = batadv_send_skb_unicast_4addr(bat_priv, skb_new,
+-						    BATADV_P_DAT_CACHE_REPLY,
+-						    vid);
++		err = batadv_send_skb_via_tt_4addr(bat_priv, skb_new,
++						   BATADV_P_DAT_CACHE_REPLY,
++						   vid);
+ 	else
+-		err = batadv_send_skb_unicast(bat_priv, skb_new, vid);
++		err = batadv_send_skb_via_tt(bat_priv, skb_new, vid);
+ 
+-	if (!err) {
++	if (err != NET_XMIT_DROP) {
+ 		batadv_inc_counter(bat_priv, BATADV_CNT_DAT_CACHED_REPLY_TX);
+ 		ret = true;
+ 	}
+diff --git a/send.c b/send.c
+index b631355..bf3e915 100644
+--- a/send.c
++++ b/send.c
+@@ -235,35 +235,31 @@ out:
+ }
+ 
+ /**
+- * batadv_send_generic_unicast_skb - send an skb as unicast
++ * batadv_send_skb_unicast - encapsulate and send an skb via unicast
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: payload to send
+  * @packet_type: the batman unicast packet type to use
+  * @packet_subtype: the unicast 4addr packet subtype (only relevant for unicast
+  *  4addr packets)
++ * @orig_node: the originator to send the packet to
+  * @vid: the vid to be used to search the translation table
+  *
+- * Returns 1 in case of error or 0 otherwise.
++ * Wrap the given skb into a batman-adv unicast or unicast-4addr header
++ * depending on whether BATADV_UNICAST or BATADV_UNICAST_4ADDR was supplied
++ * as packet_type. Then send this frame to the given orig_node and release a
++ * reference to this orig_node.
++ *
++ * Return NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
+  */
+-int batadv_send_skb_generic_unicast(struct batadv_priv *bat_priv,
+-				    struct sk_buff *skb, int packet_type,
+-				    int packet_subtype,
+-				    unsigned short vid)
++static int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
++				   struct sk_buff *skb, int packet_type,
++				   int packet_subtype,
++				   struct batadv_orig_node *orig_node,
++				   unsigned short vid)
+ {
+ 	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
+ 	struct batadv_unicast_packet *unicast_packet;
+-	struct batadv_orig_node *orig_node;
+-	int ret = NET_RX_DROP;
+-
+-	/* get routing information */
+-	if (is_multicast_ether_addr(ethhdr->h_dest))
+-		orig_node = batadv_gw_get_selected_orig(bat_priv);
+-	else
+-		/* check for tt host - increases orig_node refcount.
+-		 * returns NULL in case of AP isolation
+-		 */
+-		orig_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
+-						     ethhdr->h_dest, vid);
++	int ret = NET_XMIT_DROP;
+ 
+ 	if (!orig_node)
+ 		goto out;
+@@ -294,16 +290,67 @@ int batadv_send_skb_generic_unicast(struct batadv_priv *bat_priv,
+ 		unicast_packet->ttvn = unicast_packet->ttvn - 1;
+ 
+ 	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
+-		ret = 0;
++		ret = NET_XMIT_SUCCESS;
+ 
+ out:
+ 	if (orig_node)
+ 		batadv_orig_node_free_ref(orig_node);
+-	if (ret == NET_RX_DROP)
++	if (ret == NET_XMIT_DROP)
+ 		kfree_skb(skb);
+ 	return ret;
+ }
+ 
++/**
++ * batadv_send_skb_via_tt_generic - send an skb via TT lookup
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: payload to send
++ * @packet_type: the batman unicast packet type to use
++ * @packet_subtype: the unicast 4addr packet subtype (only relevant for unicast
++ *  4addr packets)
++ * @vid: the vid to be used to search the translation table
++ *
++ * Look up the recipient node for the destination address in the ethernet
++ * header via the translation table. Wrap the given skb into a batman-adv
++ * unicast or unicast-4addr header depending on whether BATADV_UNICAST or
++ * BATADV_UNICAST_4ADDR was supplied as packet_type. Then send this frame
++ * to the according destination node.
++ *
++ * Return NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
++ */
++int batadv_send_skb_via_tt_generic(struct batadv_priv *bat_priv,
++				   struct sk_buff *skb, int packet_type,
++				   int packet_subtype, unsigned short vid)
++{
++	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
++	struct batadv_orig_node *orig_node;
++
++	orig_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
++					     ethhdr->h_dest, vid);
++	return batadv_send_skb_unicast(bat_priv, skb, packet_type,
++				       packet_subtype, orig_node, vid);
++}
++
++/**
++ * batadv_send_skb_via_gw - send an skb via gateway lookup
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: payload to send
++ * @vid: the vid to be used to search the translation table
++ *
++ * Look up the currently selected gateway. Wrap the given skb into a batman-adv
++ * unicast header and send this frame to this gateway node.
++ *
++ * Return NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
++ */
++int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
++			   unsigned short vid)
++{
++	struct batadv_orig_node *orig_node;
++
++	orig_node = batadv_gw_get_selected_orig(bat_priv);
++	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST, 0,
++				       orig_node, vid);
++}
++
+ void batadv_schedule_bat_ogm(struct batadv_hard_iface *hard_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+diff --git a/send.h b/send.h
+index c030cb7..817fdb7 100644
+--- a/send.h
++++ b/send.h
+@@ -38,45 +38,54 @@ bool batadv_send_skb_prepare_unicast_4addr(struct batadv_priv *bat_priv,
+ 					   struct sk_buff *skb,
+ 					   struct batadv_orig_node *orig_node,
+ 					   int packet_subtype);
+-int batadv_send_skb_generic_unicast(struct batadv_priv *bat_priv,
+-				    struct sk_buff *skb, int packet_type,
+-				    int packet_subtype,
+-				    unsigned short vid);
++int batadv_send_skb_via_tt_generic(struct batadv_priv *bat_priv,
++				   struct sk_buff *skb, int packet_type,
++				   int packet_subtype, unsigned short vid);
++int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
++			   unsigned short vid);
+ 
+ /**
+- * batadv_send_unicast_skb - send the skb encapsulated in a unicast packet
++ * batadv_send_skb_via_tt - send an skb via TT lookup
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: the payload to send
+  * @vid: the vid to be used to search the translation table
+  *
+- * Returns 1 in case of error or 0 otherwise.
++ * Look up the recipient node for the destination address in the ethernet
++ * header via the translation table. Wrap the given skb into a batman-adv
++ * unicast header. Then send this frame to the according destination node.
++ *
++ * Return NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
+  */
+-static inline int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+-					  struct sk_buff *skb,
+-					  unsigned short vid)
++static inline int batadv_send_skb_via_tt(struct batadv_priv *bat_priv,
++					 struct sk_buff *skb,
++					 unsigned short vid)
+ {
+-	return batadv_send_skb_generic_unicast(bat_priv, skb, BATADV_UNICAST,
+-					       0, vid);
++	return batadv_send_skb_via_tt_generic(bat_priv, skb, BATADV_UNICAST, 0,
++					      vid);
+ }
+ 
+ /**
+- * batadv_send_4addr_unicast_skb - send the skb encapsulated in a unicast 4addr
+- *  packet
++ * batadv_send_skb_via_tt_4addr - send an skb via TT lookup
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: the payload to send
+  * @packet_subtype: the unicast 4addr packet subtype to use
+  * @vid: the vid to be used to search the translation table
+  *
+- * Returns 1 in case of error or 0 otherwise.
++ * Look up the recipient node for the destination address in the ethernet
++ * header via the translation table. Wrap the given skb into a batman-adv
++ * unicast-4addr header. Then send this frame to the according destination
++ * node.
++ *
++ * Return NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
+  */
+-static inline int batadv_send_skb_unicast_4addr(struct batadv_priv *bat_priv,
+-						struct sk_buff *skb,
+-						int packet_subtype,
+-						unsigned short vid)
++static inline int batadv_send_skb_via_tt_4addr(struct batadv_priv *bat_priv,
++					       struct sk_buff *skb,
++					       int packet_subtype,
++					       unsigned short vid)
+ {
+-	return batadv_send_skb_generic_unicast(bat_priv, skb,
+-					       BATADV_UNICAST_4ADDR,
+-					       packet_subtype, vid);
++	return batadv_send_skb_via_tt_generic(bat_priv, skb,
++					      BATADV_UNICAST_4ADDR,
++					      packet_subtype, vid);
+ }
+ 
+ #endif /* _NET_BATMAN_ADV_SEND_H_ */
+diff --git a/soft-interface.c b/soft-interface.c
+index d897194..049bcc4 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -289,8 +289,12 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 
+ 		batadv_dat_snoop_outgoing_arp_reply(bat_priv, skb);
+ 
+-		ret = batadv_send_skb_unicast(bat_priv, skb, vid);
+-		if (ret != 0)
++		if (is_multicast_ether_addr(ethhdr->h_dest))
++			ret = batadv_send_skb_via_gw(bat_priv, skb, vid);
++		else
++			ret = batadv_send_skb_via_tt(bat_priv, skb, vid);
++
++		if (ret == NET_XMIT_DROP)
+ 			goto dropped_freed;
+ 	}
+ 
+-- 
+1.7.10.4
 
-This function is in the TX path, therefore you should use NET_XMIT_SUCCESS/=
-DROP
-rather than their RX version.
-
-Same comments apply to the other functions.
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---at6+YcpfzWZg/htY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJR08UnAAoJEADl0hg6qKeOM4oP/02KYenka7bgr+FaDtOq0rCH
-ExGiyCpBvhexpDROWVkIqm1ZL/Bj3CPlOhdPI29vuuiM8AhEha/kZ5oza1xuJzcl
-+CMmflkEgSfgVKPyqrNrufweYDdlyRB0notC2FICbIfEoDF4EK4AQti8v1PYtb5d
-WHsZv+2J61Bs5TRL8LSMRzACf/s3mTm88raT9jzBwaQU0b4r/iTe4DOXoYsXwyAn
-DfAbsxHWchlmq+gelH/jtq81IQMacFLj+WA1e3vxRUGggO5qnWctI2WdE1IAgcyy
-eg/c8uK/mdTVL0TCQMOFGrjcFge8LRZtPUEbeqzsX1mZ1pEJdly+ggk8v65UMHHt
-7vckTCQ+lWdc+bV3hB+wI6SWPUn/hk9Rkk76gpwOSYO2x2Eyb/8xzWZe7tAefKWH
-6JecY3CNFIXJv6csIPSgHaPiE2thj1clYtgKwOZ+cTtkaYny6GnxLp2x65XEX5lK
-JE/q5EdgHjhezxTD6m+uRwj17jRF05gEZXcu/iG08FerqztuWc3208q172wRyxLh
-N54Ad1NhkhXUOgCHtjbUg2BwEOgmlT0t1cMlQLPflR+SzudTJ2fV0GhaKFGaWnAG
-XpsUV8lT26PdgzAtGUeObXaQ3pGOCuL/cOR1PybeWCAajNlcWEmUx1h69+W7HG3q
-W+t7W4MfnYjw3kdjhWAc
-=E8Df
------END PGP SIGNATURE-----
-
---at6+YcpfzWZg/htY--
