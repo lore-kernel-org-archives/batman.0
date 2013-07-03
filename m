@@ -1,16 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 3 Jul 2013 18:21:21 +0800
-References: <1372755876-3969-1-git-send-email-ordex@autistici.org>
- <1372755876-3969-4-git-send-email-ordex@autistici.org>
-In-Reply-To: <1372755876-3969-4-git-send-email-ordex@autistici.org>
+Return-Path: <ordex@autistici.org>
+Date: Wed, 3 Jul 2013 12:22:23 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20130703102223.GF2325@ritirata.org>
+References: <1372840800-642-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201307031821.21920.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv11 3/3] batman-adv: make the AP isolation
-	attribute VLAN specific
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="pY3vCvL1qV+PayAL"
+Content-Disposition: inline
+In-Reply-To: <1372840800-642-1-git-send-email-linus.luessing@web.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: refine API calls for
+ unicast transmissions of SKBs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,28 +21,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <ordex@autistici.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday, July 02, 2013 17:04:36 Antonio Quartulli wrote:
-> From: Antonio Quartulli <antonio@open-mesh.com>
-> 
-> AP isolation has to be enabled on one VLAN interface only.
-> This patch moves the AP isolation attribute to the per-vlan
-> interface attribute set, enabling it to have a different
-> value depending on the selected vlan.
-> 
-> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-> ---
->  soft-interface.c     |  5 +++--
->  sysfs-class-net-mesh |  5 +++--
->  sysfs.c              |  5 +++--
->  translation-table.c  | 27 ++++++++++++++++++++-------
->  translation-table.h  |  2 +-
->  types.h              |  4 ++--
->  6 files changed, 32 insertions(+), 16 deletions(-)
 
-Applied in revision b8160b9.
+--pY3vCvL1qV+PayAL
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Marek
+On Wed, Jul 03, 2013 at 10:40:00AM +0200, Linus L=C3=BCssing wrote:
+> With this patch the functions batadv_send_skb_unicast() and
+> batadv_send_skb_unicast_4addr() are further refined into
+> batadv_send_skb_via_tt(), batadv_send_skb_via_tt_4addr() and
+> batadv_send_skb_via_gw(). This way we avoid any "guessing" about where to=
+ send
+> a packet in the unicast forwarding methods and let the callers decide.
+>=20
+> This is going to be useful for the upcoming multicast related patches in
+> particular.
+>=20
+> Further, the return values were polished a little to use the more
+> appropriate NET_XMIT_* defines.
+>=20
+> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
+
+Acked-by: Antonio Quartulli <ordex@autistici.org>
+
+Thanks a lot Linus!
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--pY3vCvL1qV+PayAL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBCAAGBQJR0/tfAAoJEADl0hg6qKeOjOYQAJPryF/8y7Twb4L8Zoqv4iO/
+pf8mD3vOMzF1TPngrfD0Q8JRw8FT+aElRDdNTL5hk9IhUpvUztd51Jm8cdRi3GcU
+QLAxF9hk6R4+wg8P7OJQF3aGa/FwuIwnmq/pa4IJIW9pfx5p3xJBuFf8YmTRLQN2
+ylW9F5+9LcWy46zG7Xn/wvtv1t5EzN5gRhZABXVFzqDAYM7UyWqvsEcRE3Y2IvNc
+I46umIBmEBbfxh5XtH6EFOAS8iYVRrLcSLUgS2vUOEooSI5GpYwrGLVSAArI/osM
+MKYRx3D9CsfxQXDx2nEbXp/izkAJ7UbKvjQSK0kopGJsxLWjOC1nUIZYuPQ5ZMmv
+7puJbnhgnWRFcE8d4WlagJnMbA64zDIJsxMqRHQW41c0Nl9oUUhSyEiR4vRch+2y
+mG+R0qsJoS1ubuq/tP5CK8Yn5JKaWD+7wDzAQsMiexnaBMGUc0wxggEJszVjS0iL
+0CrTEcrCytH5KlSZz9Gr4B7KB40RLMP8ZSPNiuEURaChmmWmp4MTbGmDSHf6BtOL
+PbH0NEPWR1IvEcmecmiB2SuSwAdXnhgZ7Io0MCAw1PXXwIEGKsuENiADSKKtUAjw
+NZtw+s8xf7GgaILSjC1jcv9GRZp09XPZ3E+YvKekJBOBU46JO2ZTknBu3ou1rlOm
+T9E8jUYcfM174aNsZkOw
+=gr3V
+-----END PGP SIGNATURE-----
+
+--pY3vCvL1qV+PayAL--
