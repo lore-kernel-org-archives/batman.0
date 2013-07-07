@@ -1,14 +1,11 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 7 Jul 2013 17:57:24 +0800
-References: <1373181596-3700-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1373181596-3700-1-git-send-email-ordex@autistici.org>
+Return-Path: <mickael.ogier@yahoo.fr>
+Message-ID: <51D9FA69.1030009@yahoo.fr>
+Date: Mon, 08 Jul 2013 01:31:53 +0200
+From: Mickael <mickael.ogier@yahoo.fr>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201307071757.24135.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix argument alignment
+Subject: [B.A.T.M.A.N.] Suscribe
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,20 +17,10 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sunday, July 07, 2013 15:19:56 Antonio Quartulli wrote:
-> From: Antonio Quartulli <antonio@open-mesh.com>
-> 
-> Introduced by e4ff5c153dab054a6cd1c4132f87bc5e77127456
-> ("batman-adv: add sysfs framework for VLAN")
-> 
-> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-> ---
->  sysfs.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Hello!
 
-Applied in revision 41b728c.
+I'm a french and i want follow your list!
 
-Thanks,
-Marek
+Thanks!
