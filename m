@@ -1,11 +1,11 @@
 Return-Path: <mihail.costea2005@gmail.com>
 From: mihail.costea2005@gmail.com
-Date: Mon,  8 Jul 2013 03:12:44 +0300
-Message-Id: <1373242365-763-5-git-send-email-mihail.costea2005@gmail.com>
+Date: Mon,  8 Jul 2013 03:12:45 +0300
+Message-Id: <1373242365-763-6-git-send-email-mihail.costea2005@gmail.com>
 In-Reply-To: <1373242365-763-1-git-send-email-mihail.costea2005@gmail.com>
 References: <1373242365-763-1-git-send-email-mihail.costea2005@gmail.com>
-Subject: [B.A.T.M.A.N.] [RFC 5/6] batman-adv: Generalize snooping mechanism
-	in order to suport NDP too
+Subject: [B.A.T.M.A.N.] [RFC 6/6] batman-adv: Adds snooping of router and
+	override flags for NA creation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,813 +21,486 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 From: Mihail Costea <mihail.costea90@gmail.com>
 
-Generalize snooping functions in order to support Neighbor Advertisement
-and Neighbor Solicitation too. Adds snooping functions to generic
-struct so there won't be a need for switch-cases.
+Snoops router and override flags for Neighbor Advertisement in order to
+use it in NA creation. This information is stored in a extra member
+in the dat entry. This is done separately from normal data,
+because data is used for DHT comparison, while this flags can change
+their value over time.
+
+Comments:
+For now router and override are initialized to the values used in most
+case scenarios. This can be changed easily if we want to avoid the
+NA creation until we get the flags.
+Also, the router flag can be calculated easily using the Router Advertisement.
+Any node that sends that package is a router, so there isn't a lot of snooping
+in that case. This feature can be added easily.
+The problem is that I have no other idea how to get the override flag,
+with the exception of the current implemented mechanism.
 
 Signed-off-by: Mihail Costea <mihail.costea90@gmail.com>
 Signed-off-by: Stefan Popa <Stefan.A.Popa@intel.com>
 Reviewed-by: Stefan Popa <Stefan.A.Popa@intel.com>
 
 ---
- distributed-arp-table.c |  438 +++++++++++++++++++++++++++++++++++------------
- types.h                 |   69 ++++++++
- 2 files changed, 401 insertions(+), 106 deletions(-)
+ distributed-arp-table.c |  139 +++++++++++++++++++++++++++++++++++------------
+ types.h                 |   21 ++++++-
+ 2 files changed, 124 insertions(+), 36 deletions(-)
 
 diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index d0b9e95..1a5749b 100644
+index 1a5749b..ce5c13d 100644
 --- a/distributed-arp-table.c
 +++ b/distributed-arp-table.c
-@@ -33,21 +33,55 @@
- #include "types.h"
- #include "translation-table.h"
+@@ -39,7 +39,8 @@ static bool batadv_dat_snoop_arp_pkt(struct batadv_priv *bat_priv,
+ 				     struct sk_buff *skb, int hdr_size,
+ 				     uint16_t pkt_type, uint8_t pkt_dir_type,
+ 				     uint8_t **hw_src, void **ip_src,
+-				     uint8_t **hw_dst, void **ip_dst);
++				     uint8_t **hw_dst, void **ip_dst,
++				     void **extra_data);
  
-+static void batadv_dat_purge(struct work_struct *work);
-+
-+static bool batadv_dat_snoop_arp_pkt(struct batadv_priv *bat_priv,
-+				     struct sk_buff *skb, int hdr_size,
-+				     uint16_t pkt_type, uint8_t pkt_dir_type,
-+				     uint8_t **hw_src, void **ip_src,
-+				     uint8_t **hw_dst, void **ip_dst);
-+
-+static struct sk_buff *
-+batadv_dat_create_arp_reply(struct batadv_priv *bat_priv,
-+			    struct batadv_dat_entry *dat_entry,
-+			    uint8_t *hw_src, void *ip_src, void *ip_dst)
-+{
-+	return arp_create(ARPOP_REPLY, ETH_P_ARP, *(__be32 *)ip_src,
-+			  bat_priv->soft_iface, *(__be32 *)ip_dst,
-+			  hw_src, dat_entry->mac_addr, hw_src);
-+}
-+
-+#if IS_ENABLED(CONFIG_IPV6)
-+static bool batadv_dat_snoop_ndisc_pkt(struct batadv_priv *bat_priv,
-+				       struct sk_buff *skb, int hdr_size,
-+				       uint16_t pkt_type, uint8_t pkt_dir_type,
-+				       uint8_t **hw_src, void **ip_src,
-+				       uint8_t **hw_dst, void **ip_dst);
-+
-+static struct sk_buff *
-+batadv_dat_create_ndisc_na(struct batadv_priv *bat_priv,
-+			   struct batadv_dat_entry *dat_entry,
-+			   uint8_t *hw_src, void *ip_src, void *ip_dst);
-+
-+#endif
-+
+ static struct sk_buff *
+ batadv_dat_create_arp_reply(struct batadv_priv *bat_priv,
+@@ -56,7 +57,8 @@ static bool batadv_dat_snoop_ndisc_pkt(struct batadv_priv *bat_priv,
+ 				       struct sk_buff *skb, int hdr_size,
+ 				       uint16_t pkt_type, uint8_t pkt_dir_type,
+ 				       uint8_t **hw_src, void **ip_src,
+-				       uint8_t **hw_dst, void **ip_dst);
++				       uint8_t **hw_dst, void **ip_dst,
++				       void **extra_data);
+ 
+ static struct sk_buff *
+ batadv_dat_create_ndisc_na(struct batadv_priv *bat_priv,
+@@ -68,6 +70,7 @@ batadv_dat_create_ndisc_na(struct batadv_priv *bat_priv,
  static struct batadv_dat_type_info batadv_dat_types_info[] = {
  	{
  		.size = sizeof(__be32),
++		.extra_size = 0,
  		.str_fmt = "%pI4",
-+		.snoop_pkt = batadv_dat_snoop_arp_pkt,
-+		.create_skb = batadv_dat_create_arp_reply,
- 	},
+ 		.snoop_pkt = batadv_dat_snoop_arp_pkt,
+ 		.create_skb = batadv_dat_create_arp_reply,
+@@ -75,6 +78,7 @@ static struct batadv_dat_type_info batadv_dat_types_info[] = {
  #if IS_ENABLED(CONFIG_IPV6)
  	{
  		.size = sizeof(struct in6_addr),
++		.extra_size = sizeof(struct batadv_dat_ipv6_extra_data),
  		.str_fmt = "%pI6c",
-+		.snoop_pkt = batadv_dat_snoop_ndisc_pkt,
-+		.create_skb = batadv_dat_create_ndisc_na,
- 	},
- #endif
- };
+ 		.snoop_pkt = batadv_dat_snoop_ndisc_pkt,
+ 		.create_skb = batadv_dat_create_ndisc_na,
+@@ -119,6 +123,7 @@ static void batadv_dat_entry_free_ref_rcu(struct rcu_head *rcu)
  
--static void batadv_dat_purge(struct work_struct *work);
--
- /**
-  * batadv_dat_data_to_str: transforms DAT data to string
-  * @data: the DAT data
-@@ -61,7 +95,7 @@ static char *batadv_dat_data_to_str(void *data, uint8_t type,
- 				    char *buf, size_t buf_len)
- {
- 	snprintf(buf, buf_len, batadv_dat_types_info[type].str_fmt, data);
--return buf;
-+	return buf;
+ 	dat_entry = container_of(rcu, struct batadv_dat_entry, rcu);
+ 	kfree(dat_entry->data);
++	kfree(dat_entry->extra_data);
+ 	kfree(dat_entry);
  }
  
- /**
-@@ -221,9 +255,9 @@ static uint8_t *batadv_arp_hw_src(struct sk_buff *skb, int hdr_size)
-  *
-  * Returns the value of the ip_src field in the ARP packet.
-  */
--static __be32 batadv_arp_ip_src(struct sk_buff *skb, int hdr_size)
-+static __be32 *batadv_arp_ip_src(struct sk_buff *skb, int hdr_size)
- {
--	return *(__be32 *)(batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN);
-+	return (__be32 *)(batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN);
- }
- 
- /**
-@@ -245,9 +279,9 @@ static uint8_t *batadv_arp_hw_dst(struct sk_buff *skb, int hdr_size)
-  *
-  * Returns the value of the ip_dst field in the ARP packet.
-  */
--static __be32 batadv_arp_ip_dst(struct sk_buff *skb, int hdr_size)
-+static __be32 *batadv_arp_ip_dst(struct sk_buff *skb, int hdr_size)
- {
--	return *(__be32 *)(batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN * 2 + 4);
-+	return (__be32 *)(batadv_arp_hw_src(skb, hdr_size) + ETH_ALEN * 2 + 4);
- }
- 
- /**
-@@ -411,8 +445,8 @@ static void batadv_dbg_arp(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 	if (msg)
- 		batadv_dbg(BATADV_DBG_DAT, bat_priv, "%s\n", msg);
- 
--	ip_src = batadv_arp_ip_src(skb, hdr_size);
--	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
-+	ip_src = *batadv_arp_ip_src(skb, hdr_size);
-+	ip_dst = *batadv_arp_ip_dst(skb, hdr_size);
- 	batadv_dbg(BATADV_DBG_DAT, bat_priv,
- 		   "ARP MSG = [src: %pM-%pI4 dst: %pM-%pI4]\n",
- 		   batadv_arp_hw_src(skb, hdr_size), &ip_src,
-@@ -867,7 +901,7 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
- 			last_seen_msecs = last_seen_msecs % 60000;
- 			last_seen_secs = last_seen_msecs / 1000;
- 
--			seq_printf(seq, " * %40s %15pM %6i:%02i\n",
-+			seq_printf(seq, " * %-40s %15pM %6i:%02i\n",
- 				   batadv_dat_data_to_str(dat_entry->data,
- 							  dat_entry->type,
- 							  dbg_data,
-@@ -933,8 +967,8 @@ static uint16_t batadv_arp_get_type(struct batadv_priv *bat_priv,
- 	/* Check for bad reply/request. If the ARP message is not sane, DAT
- 	 * will simply ignore it
- 	 */
--	ip_src = batadv_arp_ip_src(skb, hdr_size);
--	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
-+	ip_src = *batadv_arp_ip_src(skb, hdr_size);
-+	ip_dst = *batadv_arp_ip_dst(skb, hdr_size);
- 	if (ipv4_is_loopback(ip_src) || ipv4_is_multicast(ip_src) ||
- 	    ipv4_is_loopback(ip_dst) || ipv4_is_multicast(ip_dst) ||
- 	    ipv4_is_zeronet(ip_src) || ipv4_is_lbcast(ip_src) ||
-@@ -958,6 +992,40 @@ out:
- 	return type;
- }
- 
-+static bool batadv_dat_snoop_arp_pkt(struct batadv_priv *bat_priv,
-+				     struct sk_buff *skb, int hdr_size,
-+				     uint16_t pkt_type, uint8_t pkt_dir_type,
-+				     uint8_t **hw_src, void **ip_src,
-+				     uint8_t **hw_dst, void **ip_dst)
-+{
-+	if ((pkt_dir_type == BATADV_DAT_OUTGOING_PKT_REQUEST ||
-+	     pkt_dir_type == BATADV_DAT_INCOMING_PKT_REQUEST ||
-+	     pkt_dir_type == BATADV_DAT_BROADCAST_FALLBACK) &&
-+	    pkt_type != ARPOP_REQUEST)
-+		return false;
-+	if ((pkt_dir_type == BATADV_DAT_OUTGOING_PKT_REPLY ||
-+	     pkt_dir_type == BATADV_DAT_INCOMING_PKT_REPLY) &&
-+	    pkt_type != ARPOP_REPLY)
-+		return false;
-+
-+	if (hw_src)
-+		*hw_src = batadv_arp_hw_src(skb, hdr_size);
-+	if (ip_src)
-+		*ip_src = batadv_arp_ip_src(skb, hdr_size);
-+	if (hw_dst)
-+		*hw_dst = batadv_arp_hw_dst(skb, hdr_size);
-+	if (ip_dst)
-+		*ip_dst = batadv_arp_ip_dst(skb, hdr_size);
-+
-+	if (pkt_type == ARPOP_REQUEST)
-+		batadv_dbg_arp(bat_priv, skb, pkt_type, hdr_size,
-+			       "Parsing ARP REQUEST");
-+	else if (pkt_type == ARPOP_REPLY)
-+		batadv_dbg_arp(bat_priv, skb, pkt_type, hdr_size,
-+			       "Parsing ARP REPLY");
-+
-+	return true;
-+}
- /**
-  * batadv_dat_get_vid - extract the VLAN identifier from skb if any
-  * @skb: the buffer containing the packet to extract the VID from
-@@ -1135,7 +1203,7 @@ out:
+@@ -363,18 +368,20 @@ batadv_dat_entry_hash_find(struct batadv_priv *bat_priv, void *data,
+  * batadv_dat_entry_add - add a new dat entry or update it if already exists
   * @bat_priv: the bat priv with all the soft interface information
-  * @skb: packet to check
-  * @hdr_size: size of the encapsulation header
-- * @ndisc_type: type of ndisc packet to check
-+ * @type: type of ndisc packet to check
-  *
-  * Check if all IPs are valid (source, destination, target) and if
-  * options hw address is valid too.
-@@ -1146,17 +1214,14 @@ out:
+  * @data: the data to add/edit
++ * @extra_data: the extra data for data param (can be NULL if none)
+  * @data_type: type of the data added to DAT
+  * @mac_addr: mac address to assign to the given data
+  * @vid: VLAN identifier
   */
- static bool batadv_ndisc_is_valid(struct batadv_priv *bat_priv,
- 				  struct sk_buff *skb, int hdr_size,
--				  int ndisc_type)
-+				  uint16_t type)
+ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, void *data,
+-				 uint8_t data_type, uint8_t *mac_addr,
+-				 unsigned short vid)
++				 void *extra_data, uint8_t data_type,
++				 uint8_t *mac_addr, unsigned short vid)
  {
- 	uint8_t *hw_target = NULL;
- 	struct in6_addr *ipv6_src, *ipv6_dst, *ipv6_target;
--	__u8 type = batadv_ndisc_get_type(bat_priv, skb, hdr_size);
- 	int ndisc_hdr_len = hdr_size + ETH_HLEN + sizeof(struct ipv6hdr) +
- 			    sizeof(struct icmp6hdr) + sizeof(struct in6_addr) +
- 			    8; /* ndisc options length */
+ 	struct batadv_dat_entry *dat_entry;
+ 	int hash_added;
+ 	char dbg_data[BATADV_DAT_DATA_MAX_LEN];
+ 	size_t data_size = batadv_dat_types_info[data_type].size;
++	size_t extra_data_size = batadv_dat_types_info[data_type].extra_size;
  
--	if (type != ndisc_type)
--		return false;
- 	if (unlikely(!pskb_may_pull(skb, ndisc_hdr_len)))
- 		return false;
- 
-@@ -1169,6 +1234,8 @@ static bool batadv_ndisc_is_valid(struct batadv_priv *bat_priv,
- 	else if (type == NDISC_NEIGHBOUR_ADVERTISEMENT)
- 		hw_target = batadv_ndisc_hw_opt(skb, hdr_size,
- 						ND_OPT_TARGET_LL_ADDR);
-+	else
-+		return false;
- 
- 	if (!hw_target || is_zero_ether_addr(hw_target) ||
- 	    is_multicast_ether_addr(hw_target))
-@@ -1298,11 +1365,155 @@ sk_buff *batadv_ndisc_create_na(struct net_device *dev,
- 
- 	return skb;
- }
+ 	dat_entry = batadv_dat_entry_hash_find(bat_priv, data, data_type, vid);
+ 	/* if this entry is already known, just update it */
+@@ -382,22 +389,40 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, void *data,
+ 		if (!batadv_compare_eth(dat_entry->mac_addr, mac_addr))
+ 			memcpy(dat_entry->mac_addr, mac_addr, ETH_ALEN);
+ 		dat_entry->last_update = jiffies;
+-		batadv_dbg(BATADV_DBG_DAT, bat_priv, "Entry updated: %s %pM (vid: %u)\n",
++		if (extra_data)
++			memcpy(dat_entry->extra_data, extra_data,
++			       extra_data_size);
 +
-+struct sk_buff *
-+batadv_dat_create_ndisc_na(struct batadv_priv *bat_priv,
-+			   struct batadv_dat_entry *dat_entry,
-+			   uint8_t *hw_src, void *ip_src, void *ip_dst)
-+{
-+	/* TODO calculate router and override parameters */
-+	return batadv_ndisc_create_na(bat_priv->soft_iface,
-+				      ip_src, ip_dst,
-+				      hw_src, dat_entry->mac_addr,
-+				      0, 1, 1);
-+}
-+
-+/**
-+ * batadv_dat_snoop_ndisc_addr - snoop addresses from NA / NS messages
-+ * @skb: packet to snoop
-+ * @hdr_size: size of the encapsulation header
-+ * @target_address_type: type of target address
-+ * (ND_OPT_SOURCE_LL_ADDR or ND_OPT_TARGET_LL_ADDR)
-+ * @hw_src: source HW Address
-+ * @ipv6_src: source IPv6
-+ * @hw_dst: destination HW Address
-+ * @ipv6_dst: destination IPv6
-+ * @hw_target: target HW Address
-+ * @ipv6_target: target IPv6
-+ *
-+ * If an address parameter is NULL, then the correspondent field is not
-+ * snooped. The fields might be different depending on packet type (NS / NA).
-+ *
-+ * Return true if snooping was successful.
-+ */
-+static bool batadv_dat_snoop_ndisc_addr(struct sk_buff *skb, int hdr_size,
-+					uint8_t target_address_type,
-+					uint8_t **hw_src, void **ipv6_src,
-+					uint8_t **hw_dst, void **ipv6_dst,
-+					uint8_t **hw_target, void **ipv6_target)
-+{
-+	if (hw_src)
-+		*hw_src = batadv_ndisc_hw_src(skb, hdr_size);
-+	if (ipv6_src)
-+		*ipv6_src = batadv_ndisc_ipv6_src(skb, hdr_size);
-+	if (hw_dst)
-+		*hw_dst = batadv_ndisc_hw_dst(skb, hdr_size);
-+	if (ipv6_dst)
-+		*ipv6_dst = batadv_ndisc_ipv6_dst(skb, hdr_size);
-+	if (hw_target) {
-+		*hw_target = batadv_ndisc_hw_opt(skb, hdr_size,
-+						 target_address_type);
-+		if (!*hw_target)
-+			return false;
++		batadv_dbg(BATADV_DBG_DAT, bat_priv,
++			   "Entry updated: %s %pM (vid: %u)\n",
+ 			   batadv_dat_data_to_str(dat_entry->data, data_type,
+ 						  dbg_data, sizeof(dbg_data)),
+ 			   dat_entry->mac_addr, vid);
+ 		goto out;
+ 	}
+ 
++	/* alloc entry */
+ 	dat_entry = kmalloc(sizeof(*dat_entry), GFP_ATOMIC);
+ 	if (!dat_entry)
+ 		goto out;
++	/* some entries don't have an extra data and useful if allocation for
++	 * data fails */
++	dat_entry->extra_data = NULL;
+ 
++	/* alloc data */
+ 	dat_entry->data = kmalloc(data_size, GFP_ATOMIC);
+ 	if (!dat_entry->data)
+ 		goto out;
+ 	memcpy(dat_entry->data, data, data_size);
+ 
++	/* alloc extra data */
++	if (extra_data) {
++		dat_entry->extra_data = kmalloc(extra_data_size, GFP_ATOMIC);
++		if (!dat_entry->extra_data)
++			goto out;
++		memcpy(dat_entry->extra_data, extra_data, extra_data_size);
 +	}
-+	if (ipv6_target)
-+		*ipv6_target = batadv_ndisc_ipv6_target(skb, hdr_size);
 +
-+	return true;
-+}
+ 	dat_entry->type = data_type;
+ 	dat_entry->vid = vid;
+ 	memcpy(dat_entry->mac_addr, mac_addr, ETH_ALEN);
+@@ -996,7 +1021,8 @@ static bool batadv_dat_snoop_arp_pkt(struct batadv_priv *bat_priv,
+ 				     struct sk_buff *skb, int hdr_size,
+ 				     uint16_t pkt_type, uint8_t pkt_dir_type,
+ 				     uint8_t **hw_src, void **ip_src,
+-				     uint8_t **hw_dst, void **ip_dst)
++				     uint8_t **hw_dst, void **ip_dst,
++				     void **extra_data)
+ {
+ 	if ((pkt_dir_type == BATADV_DAT_OUTGOING_PKT_REQUEST ||
+ 	     pkt_dir_type == BATADV_DAT_INCOMING_PKT_REQUEST ||
+@@ -1371,11 +1397,13 @@ batadv_dat_create_ndisc_na(struct batadv_priv *bat_priv,
+ 			   struct batadv_dat_entry *dat_entry,
+ 			   uint8_t *hw_src, void *ip_src, void *ip_dst)
+ {
+-	/* TODO calculate router and override parameters */
++	struct batadv_dat_ipv6_extra_data *ipv6_extra_data =
++		(struct batadv_dat_ipv6_extra_data *)dat_entry->extra_data;
+ 	return batadv_ndisc_create_na(bat_priv->soft_iface,
+ 				      ip_src, ip_dst,
+ 				      hw_src, dat_entry->mac_addr,
+-				      0, 1, 1);
++				      ipv6_extra_data->router, 1,
++				      ipv6_extra_data->override);
+ }
+ 
+ /**
+@@ -1426,8 +1454,13 @@ static bool batadv_dat_snoop_ndisc_pkt(struct batadv_priv *bat_priv,
+ 				       struct sk_buff *skb, int hdr_size,
+ 				       uint16_t pkt_type, uint8_t pkt_dir_type,
+ 				       uint8_t **hw_src, void **ip_src,
+-				       uint8_t **hw_dst, void **ip_dst)
++				       uint8_t **hw_dst, void **ip_dst,
++				       void **extra_data)
+ {
++	struct icmp6hdr *icmp6hdr;
++	struct batadv_dat_ipv6_extra_data *ipv6_extra_data;
++	size_t extra_data_size = sizeof(struct batadv_dat_ipv6_extra_data);
 +
-+static bool batadv_dat_snoop_ndisc_pkt(struct batadv_priv *bat_priv,
-+				       struct sk_buff *skb, int hdr_size,
-+				       uint16_t pkt_type, uint8_t pkt_dir_type,
-+				       uint8_t **hw_src, void **ip_src,
-+				       uint8_t **hw_dst, void **ip_dst)
-+{
-+	if (batadv_ndisc_is_valid(bat_priv, skb, hdr_size, pkt_type)) {
-+		if ((pkt_dir_type == BATADV_DAT_OUTGOING_PKT_REQUEST ||
-+		     pkt_dir_type == BATADV_DAT_INCOMING_PKT_REQUEST ||
-+		     pkt_dir_type == BATADV_DAT_BROADCAST_FALLBACK) &&
-+		    pkt_type == NDISC_NEIGHBOUR_SOLICITATION) {
-+			if (!batadv_dat_snoop_ndisc_addr(skb, hdr_size,
-+							 ND_OPT_SOURCE_LL_ADDR,
-+							 NULL, ip_src,
-+							 hw_dst, NULL,
-+							 hw_src, ip_dst))
-+				return false;
+ 	if (batadv_ndisc_is_valid(bat_priv, skb, hdr_size, pkt_type)) {
+ 		if ((pkt_dir_type == BATADV_DAT_OUTGOING_PKT_REQUEST ||
+ 		     pkt_dir_type == BATADV_DAT_INCOMING_PKT_REQUEST ||
+@@ -1440,11 +1473,27 @@ static bool batadv_dat_snoop_ndisc_pkt(struct batadv_priv *bat_priv,
+ 							 hw_src, ip_dst))
+ 				return false;
+ 
+-			if (pkt_dir_type != BATADV_DAT_BROADCAST_FALLBACK)
++			if (pkt_dir_type != BATADV_DAT_BROADCAST_FALLBACK) {
++				/* init extra data
++				 * TODO: this can be NULL if entry should
++				 * be ignored until extra data is updated */
++				*extra_data = kmalloc(extra_data_size,
++						      GFP_ATOMIC);
++				ipv6_extra_data =
++					(struct batadv_dat_ipv6_extra_data *)
++						*extra_data;
++				ipv6_extra_data->router = 0;
++				ipv6_extra_data->override = 1;
 +
-+			if (pkt_dir_type != BATADV_DAT_BROADCAST_FALLBACK)
-+				batadv_dbg(BATADV_DBG_DAT, bat_priv,
-+					   "Parsing NS = [src: %pM / %pI6c -> "
-+						"target: %pM / %pI6c]\n",
-+					   *hw_src, *ip_src, *hw_dst, *ip_dst);
-+			return true;
-+		}
+ 				batadv_dbg(BATADV_DBG_DAT, bat_priv,
+ 					   "Parsing NS = [src: %pM / %pI6c -> "
+-						"target: %pM / %pI6c]\n",
+-					   *hw_src, *ip_src, *hw_dst, *ip_dst);
++						"target: %pM / %pI6c "
++						"(router: %i, override %i)]\n",
++					   *hw_src, *ip_src, *hw_dst, *ip_dst,
++					   ipv6_extra_data->router,
++					   ipv6_extra_data->override);
++			}
 +
-+		if ((pkt_dir_type == BATADV_DAT_OUTGOING_PKT_REPLY ||
-+		     pkt_dir_type == BATADV_DAT_INCOMING_PKT_REPLY) &&
-+		    pkt_type == NDISC_NEIGHBOUR_ADVERTISEMENT) {
-+			if (!batadv_dat_snoop_ndisc_addr(skb, hdr_size,
-+							 ND_OPT_TARGET_LL_ADDR,
-+							 NULL, NULL,
-+							 hw_dst, ip_dst,
-+							 hw_src, ip_src))
-+				return false;
+ 			return true;
+ 		}
+ 
+@@ -1458,15 +1507,27 @@ static bool batadv_dat_snoop_ndisc_pkt(struct batadv_priv *bat_priv,
+ 							 hw_src, ip_src))
+ 				return false;
+ 
+-			batadv_dbg(BATADV_DBG_DAT, bat_priv,
+-				   "Parsing NA = [src: %pM / %pI6c -> "
+-					"target: %pM / %pI6c]\n",
+-				   *hw_src, *ip_src, *hw_dst, *ip_dst);
+-			return true;
+-
+ 			/* ignore multicast address for unsolicited NA */
+ 			if (ipv6_addr_is_multicast(*ip_dst))
+ 				*ip_dst = NULL;
++
++			/* get extra data */
++			*extra_data = kmalloc(extra_data_size, GFP_ATOMIC);
++			ipv6_extra_data = (struct batadv_dat_ipv6_extra_data *)
++							*extra_data;
++			icmp6hdr = (struct icmp6hdr *)(skb->data + hdr_size +
++					ETH_HLEN + sizeof(struct ipv6hdr));
++			ipv6_extra_data->router = icmp6hdr->icmp6_router;
++			ipv6_extra_data->override = icmp6hdr->icmp6_override;
 +
 +			batadv_dbg(BATADV_DBG_DAT, bat_priv,
 +				   "Parsing NA = [src: %pM / %pI6c -> "
-+					"target: %pM / %pI6c]\n",
-+				   *hw_src, *ip_src, *hw_dst, *ip_dst);
++					"target: %pM / %pI6c "
++					"(router: %i, override %i)]\n",
++				   *hw_src, *ip_src, *hw_dst, *ip_dst,
++				   ipv6_extra_data->router,
++				   ipv6_extra_data->override);
 +			return true;
-+
-+			/* ignore multicast address for unsolicited NA */
-+			if (ipv6_addr_is_multicast(*ip_dst))
-+				*ip_dst = NULL;
-+		}
-+	}
-+
-+	return false;
-+}
-+#endif
-+
-+/**
-+ * batadv_dat_get_pair_type : gets packet and data types
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: packet to snoop
-+ * @hdr_size: size of the encapsulation header
-+ *
-+ * Returns the packet and types, or -1 for data_type if invalid.
-+ */
-+static struct batadv_dat_pair_type
-+batadv_dat_get_pair_type(struct batadv_priv *bat_priv,
-+			 struct sk_buff *skb, int hdr_size)
-+{
-+	struct batadv_dat_pair_type pair_type = {
-+		.data_type = -1,
-+	};
-+
-+	uint16_t arp_type;
-+	__u8 ndisc_type;
-+
-+	arp_type = batadv_arp_get_type(bat_priv, skb, hdr_size);
-+	if (arp_type == ARPOP_REQUEST || arp_type == ARPOP_REPLY) {
-+		pair_type.pkt_type = arp_type;
-+		pair_type.data_type = BATADV_DAT_IPV4;
-+	}
-+
-+#if IS_ENABLED(CONFIG_IPV6)
-+	ndisc_type = batadv_ndisc_get_type(bat_priv, skb, hdr_size);
-+	if (ndisc_type == NDISC_NEIGHBOUR_SOLICITATION ||
-+	    ndisc_type == NDISC_NEIGHBOUR_ADVERTISEMENT) {
-+		pair_type.pkt_type = ndisc_type;
-+		pair_type.data_type = BATADV_DAT_IPV6;
-+	}
- #endif
+ 		}
+ 	}
  
-+	return pair_type;
-+}
-+
- /**
-- * batadv_dat_snoop_outgoing_pkt_request - snoop the ARP request and try to
-- * answer using DAT
-+ * batadv_dat_snoop_outgoing_pkt_request - snoop the ARP request / NS
-+ * and try to answer using DAT
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: packet to check
-  *
-@@ -1313,37 +1524,37 @@ sk_buff *batadv_ndisc_create_na(struct net_device *dev,
- bool batadv_dat_snoop_outgoing_pkt_request(struct batadv_priv *bat_priv,
- 					   struct sk_buff *skb)
- {
--	uint16_t type = 0;
--	__be32 ip_dst, ip_src;
--	uint8_t *hw_src;
-+	void *ip_src, *ip_dst;
-+	uint8_t *hw_src, *hw_dst;
- 	bool ret = false;
- 	struct batadv_dat_entry *dat_entry = NULL;
- 	struct sk_buff *skb_new;
+@@ -1532,6 +1593,7 @@ bool batadv_dat_snoop_outgoing_pkt_request(struct batadv_priv *bat_priv,
  	int hdr_size = 0;
  	unsigned short vid;
-+	struct batadv_dat_pair_type dat_pair_type;
+ 	struct batadv_dat_pair_type dat_pair_type;
++	void *extra_data = NULL;
  
  	if (!atomic_read(&bat_priv->distributed_arp_table))
  		goto out;
- 
- 	vid = batadv_dat_get_vid(skb, &hdr_size);
- 
--	type = batadv_arp_get_type(bat_priv, skb, hdr_size);
--	/* If the node gets an ARP_REQUEST it has to send a DHT_GET unicast
-+	/* If the node gets an ARP_REQUEST / NS it has to send a DHT_GET unicast
- 	 * message to the selected DHT candidates
- 	 */
--	if (type != ARPOP_REQUEST)
-+	dat_pair_type = batadv_dat_get_pair_type(bat_priv, skb, hdr_size);
-+	if (dat_pair_type.data_type < 0)
-+		goto out;
-+	if (!batadv_dat_types_info[dat_pair_type.data_type].snoop_pkt(
-+			bat_priv, skb, hdr_size, dat_pair_type.pkt_type,
-+			BATADV_DAT_OUTGOING_PKT_REQUEST,
-+			&hw_src, &ip_src, &hw_dst, &ip_dst))
+@@ -1547,11 +1609,11 @@ bool batadv_dat_snoop_outgoing_pkt_request(struct batadv_priv *bat_priv,
+ 	if (!batadv_dat_types_info[dat_pair_type.data_type].snoop_pkt(
+ 			bat_priv, skb, hdr_size, dat_pair_type.pkt_type,
+ 			BATADV_DAT_OUTGOING_PKT_REQUEST,
+-			&hw_src, &ip_src, &hw_dst, &ip_dst))
++			&hw_src, &ip_src, &hw_dst, &ip_dst, &extra_data))
  		goto out;
  
--	batadv_dbg_arp(bat_priv, skb, type, 0, "Parsing outgoing ARP REQUEST");
--
--	ip_src = batadv_arp_ip_src(skb, 0);
--	hw_src = batadv_arp_hw_src(skb, 0);
--	ip_dst = batadv_arp_ip_dst(skb, 0);
--
--	batadv_dat_entry_add(bat_priv, &ip_src, BATADV_DAT_IPV4, hw_src, vid);
-+	batadv_dat_entry_add(bat_priv, ip_src, dat_pair_type.data_type,
-+			     hw_src, vid);
+-	batadv_dat_entry_add(bat_priv, ip_src, dat_pair_type.data_type,
+-			     hw_src, vid);
++	batadv_dat_entry_add(bat_priv, ip_src, extra_data,
++			     dat_pair_type.data_type, hw_src, vid);
  
--	dat_entry = batadv_dat_entry_hash_find(bat_priv, &ip_dst,
--					       BATADV_DAT_IPV4, vid);
-+	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst,
-+					       dat_pair_type.data_type, vid);
- 	if (dat_entry) {
- 		/* If the ARP request is destined for a local client the local
- 		 * client will answer itself. DAT would only generate a
-@@ -1359,9 +1570,9 @@ bool batadv_dat_snoop_outgoing_pkt_request(struct batadv_priv *bat_priv,
- 			goto out;
- 		}
- 
--		skb_new = arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
--				     bat_priv->soft_iface, ip_dst, hw_src,
--				     dat_entry->mac_addr, hw_src);
-+		skb_new = batadv_dat_types_info[dat_pair_type.data_type].
-+				create_skb(bat_priv, dat_entry,
-+					   hw_src, ip_src, ip_dst);
- 		if (!skb_new)
- 			goto out;
- 
-@@ -1373,12 +1584,13 @@ bool batadv_dat_snoop_outgoing_pkt_request(struct batadv_priv *bat_priv,
- 		bat_priv->soft_iface->last_rx = jiffies;
- 
- 		netif_rx(skb_new);
--		batadv_dbg(BATADV_DBG_DAT, bat_priv, "ARP request replied locally\n");
-+		batadv_dbg(BATADV_DBG_DAT, bat_priv,
-+			   "ARP request / NS replied locally\n");
- 		ret = true;
- 	} else {
- 		/* Send the request to the DHT */
--		ret = batadv_dat_send_data(bat_priv, skb, &ip_dst,
--					   BATADV_DAT_IPV4,
-+		ret = batadv_dat_send_data(bat_priv, skb, ip_dst,
-+					   dat_pair_type.data_type,
- 					   BATADV_P_DAT_DHT_GET);
- 	}
+ 	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst,
+ 					       dat_pair_type.data_type, vid);
+@@ -1596,6 +1658,7 @@ bool batadv_dat_snoop_outgoing_pkt_request(struct batadv_priv *bat_priv,
  out:
-@@ -1388,8 +1600,8 @@ out:
+ 	if (dat_entry)
+ 		batadv_dat_entry_free_ref(dat_entry);
++	kfree(extra_data);
+ 	return ret;
  }
  
- /**
-- * batadv_dat_snoop_incoming_pkt_request - snoop the ARP request and try to
-- * answer using the local DAT storage
-+ * batadv_dat_snoop_incoming_pkt_request - snoop the ARP request / NS and try
-+ * to answer using the local DAT storage
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: packet to check
-  * @hdr_size: size of the encapsulation header
-@@ -1399,42 +1611,39 @@ out:
- bool batadv_dat_snoop_incoming_pkt_request(struct batadv_priv *bat_priv,
- 					   struct sk_buff *skb, int hdr_size)
- {
--	uint16_t type;
--	__be32 ip_src, ip_dst;
--	uint8_t *hw_src;
-+	void *ip_src, *ip_dst;
-+	uint8_t *hw_src, *hw_dst;
- 	struct sk_buff *skb_new;
- 	struct batadv_dat_entry *dat_entry = NULL;
- 	bool ret = false;
+@@ -1619,6 +1682,7 @@ bool batadv_dat_snoop_incoming_pkt_request(struct batadv_priv *bat_priv,
  	unsigned short vid;
  	int err;
-+	struct batadv_dat_pair_type dat_pair_type;
+ 	struct batadv_dat_pair_type dat_pair_type;
++	void *extra_data = NULL;
  
  	if (!atomic_read(&bat_priv->distributed_arp_table))
  		goto out;
- 
- 	vid = batadv_dat_get_vid(skb, &hdr_size);
- 
--	type = batadv_arp_get_type(bat_priv, skb, hdr_size);
--	if (type != ARPOP_REQUEST)
-+	dat_pair_type = batadv_dat_get_pair_type(bat_priv, skb, hdr_size);
-+	if (dat_pair_type.data_type < 0)
-+		goto out;
-+	if (!batadv_dat_types_info[dat_pair_type.data_type].snoop_pkt(
-+			bat_priv, skb, hdr_size, dat_pair_type.pkt_type,
-+			BATADV_DAT_INCOMING_PKT_REQUEST,
-+			&hw_src, &ip_src, &hw_dst, &ip_dst))
+@@ -1631,11 +1695,11 @@ bool batadv_dat_snoop_incoming_pkt_request(struct batadv_priv *bat_priv,
+ 	if (!batadv_dat_types_info[dat_pair_type.data_type].snoop_pkt(
+ 			bat_priv, skb, hdr_size, dat_pair_type.pkt_type,
+ 			BATADV_DAT_INCOMING_PKT_REQUEST,
+-			&hw_src, &ip_src, &hw_dst, &ip_dst))
++			&hw_src, &ip_src, &hw_dst, &ip_dst, &extra_data))
  		goto out;
  
--	hw_src = batadv_arp_hw_src(skb, hdr_size);
--	ip_src = batadv_arp_ip_src(skb, hdr_size);
--	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
--
--	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
--		       "Parsing incoming ARP REQUEST");
--
--	batadv_dat_entry_add(bat_priv, &ip_src, BATADV_DAT_IPV4, hw_src, vid);
-+	batadv_dat_entry_add(bat_priv, ip_src, dat_pair_type.data_type,
-+			     hw_src, vid);
+-	batadv_dat_entry_add(bat_priv, ip_src, dat_pair_type.data_type,
+-			     hw_src, vid);
++	batadv_dat_entry_add(bat_priv, ip_src, extra_data,
++			     dat_pair_type.data_type, hw_src, vid);
  
--	dat_entry = batadv_dat_entry_hash_find(bat_priv, &ip_dst,
--					       BATADV_DAT_IPV4, vid);
-+	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst,
-+					       dat_pair_type.data_type, vid);
- 	if (!dat_entry)
- 		goto out;
- 
--	skb_new = arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
--			     bat_priv->soft_iface, ip_dst, hw_src,
--			     dat_entry->mac_addr, hw_src);
--
-+	skb_new = batadv_dat_types_info[dat_pair_type.data_type].create_skb(
-+			bat_priv, dat_entry, hw_src, ip_src, ip_dst);
- 	if (!skb_new)
- 		goto out;
- 
-@@ -1462,49 +1671,55 @@ out:
+ 	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst,
+ 					       dat_pair_type.data_type, vid);
+@@ -1667,6 +1731,7 @@ out:
+ 		batadv_dat_entry_free_ref(dat_entry);
+ 	if (ret)
+ 		kfree_skb(skb);
++	kfree(extra_data);
+ 	return ret;
  }
  
- /**
-- * batadv_dat_snoop_outgoing_pkt_reply - snoop the ARP reply and fill the DHT
-+ * batadv_dat_snoop_outgoing_pkt_reply - snoop the ARP reply / NA and fill
-+ * the DHT
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: packet to check
-  */
- void batadv_dat_snoop_outgoing_pkt_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb)
- {
--	uint16_t type;
--	__be32 ip_src, ip_dst;
-+	void *ip_src, *ip_dst;
- 	uint8_t *hw_src, *hw_dst;
+@@ -1684,6 +1749,7 @@ void batadv_dat_snoop_outgoing_pkt_reply(struct batadv_priv *bat_priv,
  	int hdr_size = 0;
  	unsigned short vid;
-+	struct batadv_dat_pair_type dat_pair_type;
+ 	struct batadv_dat_pair_type dat_pair_type;
++	void *extra_data = NULL;
  
  	if (!atomic_read(&bat_priv->distributed_arp_table))
  		return;
- 
- 	vid = batadv_dat_get_vid(skb, &hdr_size);
- 
--	type = batadv_arp_get_type(bat_priv, skb, hdr_size);
--	if (type != ARPOP_REPLY)
-+	dat_pair_type = batadv_dat_get_pair_type(bat_priv, skb, hdr_size);
-+	if (dat_pair_type.data_type < 0)
-+		return;
-+	if (!batadv_dat_types_info[dat_pair_type.data_type].snoop_pkt(
-+			bat_priv, skb, hdr_size, dat_pair_type.pkt_type,
-+			BATADV_DAT_OUTGOING_PKT_REPLY,
-+			&hw_src, &ip_src, &hw_dst, &ip_dst))
+@@ -1696,25 +1762,26 @@ void batadv_dat_snoop_outgoing_pkt_reply(struct batadv_priv *bat_priv,
+ 	if (!batadv_dat_types_info[dat_pair_type.data_type].snoop_pkt(
+ 			bat_priv, skb, hdr_size, dat_pair_type.pkt_type,
+ 			BATADV_DAT_OUTGOING_PKT_REPLY,
+-			&hw_src, &ip_src, &hw_dst, &ip_dst))
++			&hw_src, &ip_src, &hw_dst, &ip_dst, &extra_data))
  		return;
--
--	batadv_dbg_arp(bat_priv, skb, type, 0, "Parsing outgoing ARP REPLY");
--
--	hw_src = batadv_arp_hw_src(skb, hdr_size);
--	ip_src = batadv_arp_ip_src(skb, hdr_size);
--	hw_dst = batadv_arp_hw_dst(skb, hdr_size);
--	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
--
--	batadv_dat_entry_add(bat_priv, &ip_src, BATADV_DAT_IPV4, hw_src, vid);
--	batadv_dat_entry_add(bat_priv, &ip_dst, BATADV_DAT_IPV4, hw_dst, vid);
  
  	/* Send the ARP reply to the candidates for both the IP addresses that
  	 * the node obtained from the ARP reply
  	 */
--	batadv_dat_send_data(bat_priv, skb, &ip_src, BATADV_DAT_IPV4,
--			     BATADV_P_DAT_DHT_PUT);
--	batadv_dat_send_data(bat_priv, skb, &ip_dst, BATADV_DAT_IPV4,
-+	batadv_dat_entry_add(bat_priv, ip_src, dat_pair_type.data_type,
-+			     hw_src, vid);
-+	batadv_dat_send_data(bat_priv, skb, ip_src, dat_pair_type.data_type,
+-	batadv_dat_entry_add(bat_priv, ip_src, dat_pair_type.data_type,
+-			     hw_src, vid);
++	batadv_dat_entry_add(bat_priv, ip_src, extra_data,
++			     dat_pair_type.data_type, hw_src, vid);
+ 	batadv_dat_send_data(bat_priv, skb, ip_src, dat_pair_type.data_type,
  			     BATADV_P_DAT_DHT_PUT);
-+
-+	/* not a solicited advertisement (see snooping mechanism) */
-+	if (ip_dst) {
-+		batadv_dat_entry_add(bat_priv, ip_dst, dat_pair_type.data_type,
-+				     hw_dst, vid);
-+		batadv_dat_send_data(bat_priv, skb, ip_dst,
-+				     dat_pair_type.data_type,
-+				     BATADV_P_DAT_DHT_PUT);
-+	}
+ 
+ 	/* not a solicited advertisement (see snooping mechanism) */
+ 	if (ip_dst) {
+-		batadv_dat_entry_add(bat_priv, ip_dst, dat_pair_type.data_type,
+-				     hw_dst, vid);
++		batadv_dat_entry_add(bat_priv, ip_dst, extra_data,
++				     dat_pair_type.data_type, hw_dst, vid);
+ 		batadv_dat_send_data(bat_priv, skb, ip_dst,
+ 				     dat_pair_type.data_type,
+ 				     BATADV_P_DAT_DHT_PUT);
+ 	}
++	kfree(extra_data);
  }
-+
+ 
  /**
-- * batadv_dat_snoop_incoming_pkt_reply - snoop the ARP reply and fill the local
-- * DAT storage only
-+ * batadv_dat_snoop_incoming_pkt_reply - snoop the ARP reply / NA and fill
-+ * the local DAT storage only
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: packet to check
-  * @hdr_size: size of the encapsulation header
-@@ -1512,34 +1727,35 @@ void batadv_dat_snoop_outgoing_pkt_reply(struct batadv_priv *bat_priv,
- bool batadv_dat_snoop_incoming_pkt_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb, int hdr_size)
- {
--	uint16_t type;
--	__be32 ip_src, ip_dst;
-+	void *ip_src, *ip_dst;
- 	uint8_t *hw_src, *hw_dst;
+@@ -1732,6 +1799,7 @@ bool batadv_dat_snoop_incoming_pkt_reply(struct batadv_priv *bat_priv,
  	bool ret = false;
  	unsigned short vid;
-+	struct batadv_dat_pair_type dat_pair_type;
+ 	struct batadv_dat_pair_type dat_pair_type;
++	void *extra_data = NULL;
  
  	if (!atomic_read(&bat_priv->distributed_arp_table))
  		goto out;
- 
- 	vid = batadv_dat_get_vid(skb, &hdr_size);
- 
--	type = batadv_arp_get_type(bat_priv, skb, hdr_size);
--	if (type != ARPOP_REPLY)
-+	dat_pair_type = batadv_dat_get_pair_type(bat_priv, skb, hdr_size);
-+	if (dat_pair_type.data_type < 0)
-+		goto out;
-+	if (!batadv_dat_types_info[dat_pair_type.data_type].snoop_pkt(
-+			bat_priv, skb, hdr_size, dat_pair_type.pkt_type,
-+			BATADV_DAT_INCOMING_PKT_REPLY,
-+			&hw_src, &ip_src, &hw_dst, &ip_dst))
+@@ -1744,17 +1812,17 @@ bool batadv_dat_snoop_incoming_pkt_reply(struct batadv_priv *bat_priv,
+ 	if (!batadv_dat_types_info[dat_pair_type.data_type].snoop_pkt(
+ 			bat_priv, skb, hdr_size, dat_pair_type.pkt_type,
+ 			BATADV_DAT_INCOMING_PKT_REPLY,
+-			&hw_src, &ip_src, &hw_dst, &ip_dst))
++			&hw_src, &ip_src, &hw_dst, &ip_dst, &extra_data))
  		goto out;
--
--	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
--		       "Parsing incoming ARP REPLY");
--
--	hw_src = batadv_arp_hw_src(skb, hdr_size);
--	ip_src = batadv_arp_ip_src(skb, hdr_size);
--	hw_dst = batadv_arp_hw_dst(skb, hdr_size);
--	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
  
  	/* Update our internal cache with both the IP addresses the node got
  	 * within the ARP reply
  	 */
--	batadv_dat_entry_add(bat_priv, &ip_src, BATADV_DAT_IPV4, hw_src, vid);
--	batadv_dat_entry_add(bat_priv, &ip_dst, BATADV_DAT_IPV4, hw_dst, vid);
-+	batadv_dat_entry_add(bat_priv, ip_src, dat_pair_type.data_type,
-+			     hw_src, vid);
-+	/* not a solicited advertisement (see snooping mechanism) */
-+	if (ip_dst)
-+		batadv_dat_entry_add(bat_priv, ip_dst,
-+				     dat_pair_type.data_type, hw_dst, vid);
+-	batadv_dat_entry_add(bat_priv, ip_src, dat_pair_type.data_type,
+-			     hw_src, vid);
++	batadv_dat_entry_add(bat_priv, ip_src, extra_data,
++			     dat_pair_type.data_type, hw_src, vid);
+ 	/* not a solicited advertisement (see snooping mechanism) */
+ 	if (ip_dst)
+-		batadv_dat_entry_add(bat_priv, ip_dst,
++		batadv_dat_entry_add(bat_priv, ip_dst, extra_data,
+ 				     dat_pair_type.data_type, hw_dst, vid);
  
  	/* if this REPLY is directed to a client of mine, let's deliver the
- 	 * packet to the interface
-@@ -1553,8 +1769,8 @@ out:
+@@ -1764,6 +1832,7 @@ bool batadv_dat_snoop_incoming_pkt_reply(struct batadv_priv *bat_priv,
+ out:
+ 	if (ret)
+ 		kfree_skb(skb);
++	kfree(extra_data);
+ 	/* if ret == false -> packet has to be delivered to the interface */
+ 	return ret;
  }
- 
- /**
-- * batadv_dat_drop_broadcast_packet - check if an ARP request has to be dropped
-- * (because the node has already obtained the reply via DAT) or not
-+ * batadv_dat_drop_broadcast_packet - check if an ARP request / NA has to be
-+ * dropped (because the node has already obtained the reply via DAT) or not
-  * @bat_priv: the bat priv with all the soft interface information
-  * @forw_packet: the broadcast packet
-  *
-@@ -1563,12 +1779,13 @@ out:
- bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
- 				      struct batadv_forw_packet *forw_packet)
- {
--	uint16_t type;
--	__be32 ip_dst;
-+	void *ip_dst;
- 	struct batadv_dat_entry *dat_entry = NULL;
- 	bool ret = false;
- 	int hdr_size = sizeof(struct batadv_bcast_packet);
+@@ -1786,6 +1855,7 @@ bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
  	unsigned short vid;
-+	struct batadv_dat_pair_type dat_pair_type;
-+	char dbg_data[BATADV_DAT_DATA_MAX_LEN];
+ 	struct batadv_dat_pair_type dat_pair_type;
+ 	char dbg_data[BATADV_DAT_DATA_MAX_LEN];
++	void *extra_data = NULL;
  
  	if (!atomic_read(&bat_priv->distributed_arp_table))
  		goto out;
-@@ -1581,22 +1798,31 @@ bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
- 
- 	vid = batadv_dat_get_vid(forw_packet->skb, &hdr_size);
- 
--	type = batadv_arp_get_type(bat_priv, forw_packet->skb, hdr_size);
--	if (type != ARPOP_REQUEST)
-+	dat_pair_type = batadv_dat_get_pair_type(bat_priv, forw_packet->skb,
-+						 hdr_size);
-+	if (dat_pair_type.data_type < 0)
+@@ -1806,7 +1876,7 @@ bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
+ 			bat_priv, forw_packet->skb, hdr_size,
+ 			dat_pair_type.pkt_type,
+ 			BATADV_DAT_BROADCAST_FALLBACK,
+-			NULL, NULL, NULL, &ip_dst))
++			NULL, NULL, NULL, &ip_dst, &extra_data))
  		goto out;
-+	if (!batadv_dat_types_info[dat_pair_type.data_type].snoop_pkt(
-+			bat_priv, forw_packet->skb, hdr_size,
-+			dat_pair_type.pkt_type,
-+			BATADV_DAT_BROADCAST_FALLBACK,
-+			NULL, NULL, NULL, &ip_dst))
-+		goto out;
-+
-+	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst,
-+					       dat_pair_type.data_type, vid);
  
--	ip_dst = batadv_arp_ip_dst(forw_packet->skb, hdr_size);
--	dat_entry = batadv_dat_entry_hash_find(bat_priv, &ip_dst,
--					       BATADV_DAT_IPV4, vid);
- 	/* check if the node already got this entry */
-+	batadv_dat_data_to_str(ip_dst, dat_pair_type.data_type,
-+			       dbg_data, sizeof(dbg_data));
- 	if (!dat_entry) {
- 		batadv_dbg(BATADV_DBG_DAT, bat_priv,
--			   "ARP Request for %pI4: fallback\n", &ip_dst);
-+			   "ARP Request for %s: fallback\n", dbg_data);
- 		goto out;
- 	}
- 
- 	batadv_dbg(BATADV_DBG_DAT, bat_priv,
--		   "ARP Request for %pI4: fallback prevented\n", &ip_dst);
-+		   "ARP Request for %s fallback prevented\n", dbg_data);
- 	ret = true;
- 
+ 	dat_entry = batadv_dat_entry_hash_find(bat_priv, ip_dst,
+@@ -1828,5 +1898,6 @@ bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
  out:
+ 	if (dat_entry)
+ 		batadv_dat_entry_free_ref(dat_entry);
++	kfree(extra_data);
+ 	return ret;
+ }
 diff --git a/types.h b/types.h
-index 60d2d64..6ad4500 100644
+index 6ad4500..5301af1 100644
 --- a/types.h
 +++ b/types.h
-@@ -964,13 +964,82 @@ enum batadv_dat_types {
+@@ -931,7 +931,9 @@ struct batadv_algo_ops {
+ /**
+  * struct batadv_dat_entry - it is a single entry of batman-adv ARP backend. It
+  * is used to stored ARP entries needed for the global DAT cache
+- * @data: the data corresponding to this DAT entry
++ * @data: the data corresponding to this DAT entry; this is used for comparison
++ * between DAT entries
++ * @extra_data: extra data for this DAT entry (NULL if none)
+  * @type: the type corresponding to this DAT entry
+  * @mac_addr: the MAC address associated to the stored IPv4
+  * @vid: the vlan ID associated to this entry
+@@ -942,6 +944,7 @@ struct batadv_algo_ops {
+  */
+ struct batadv_dat_entry {
+ 	void *data;
++	void *extra_data;
+ 	uint8_t type;
+ 	uint8_t mac_addr[ETH_ALEN];
+ 	unsigned short vid;
+@@ -983,6 +986,16 @@ enum batadv_dat_pkt_types {
  };
  
  /**
-+ * batadv_dat_pkt_types - describe generic packet types
-+ * @BATADV_DAT_OUTGOING_PKT_REQUEST: an outgoing packet request
-+ * @BATADV_DAT_INCOMING_PKT_REQUEST: an incoming packet request
-+ * @BATADV_DAT_OUTGOING_PKT_REPLY: an outgoing packet reply
-+ * @BATADV_DAT_INCOMING_PKT_REPLY: an incoming packet reply
-+ * @BATADV_DAT_BROADCAST_FALLBACK: used for broadcasts fallback;
-+ * can any type of request packets
-+ *
-+ * The packets can be ARP Request / Reply, NS / NA or other packets.
++ * batadv_dat_ipv6_extra_data - defines extra data for IPv6
++ * @router: entry is router
++ * @override: override flag (see RFC2461)
 + */
-+enum batadv_dat_pkt_types {
-+	BATADV_DAT_OUTGOING_PKT_REQUEST,
-+	BATADV_DAT_INCOMING_PKT_REQUEST,
-+	BATADV_DAT_OUTGOING_PKT_REPLY,
-+	BATADV_DAT_INCOMING_PKT_REPLY,
-+	BATADV_DAT_BROADCAST_FALLBACK,
++struct batadv_dat_ipv6_extra_data {
++	__u8 router:1,
++	     override:1;
 +};
 +
 +/**
-+ * batadv_dat_pair_type - types needed for a dat packet
-+ * @data_type the data type (negative values represents invalid values)
-+ * @pkt_type: the packet type
-+ */
-+struct batadv_dat_pair_type {
-+	int data_type;
-+	uint16_t pkt_type;
-+};
-+
-+/**
+  * batadv_dat_pair_type - types needed for a dat packet
+  * @data_type the data type (negative values represents invalid values)
+  * @pkt_type: the packet type
+@@ -995,11 +1008,13 @@ struct batadv_dat_pair_type {
+ /**
   * batadv_dat_type_info - info needed for a DAT type data
   * @size: the size of the type data
++ * @extra_size: the size of the extra data (can be 0 if no extra data)
   * @str_fmt: string format used by the data
-+ * @snoop_pkt: function used to snoop addresses from a packet
+  * @snoop_pkt: function used to snoop addresses from a packet
   */
  struct batadv_dat_type_info {
  	size_t size;
++	size_t extra_size;
  	char *str_fmt;
-+	/**
-+	 * snoop_pkt - snooping mechanism for all packets that participate
-+	 * in DAT
-+	 * @bat_priv: the bat priv with all the soft interface information
-+	 * @skb: packet to snoop
-+	 * @hdr_size: size of the encapsulation header
-+	 * @pkt_type: the packet type
-+	 * @pkt_dir_type: outgoing / incoming message request / reply
-+	 * @hw_src: source HW Address
-+	 * @ip_src: source IP
-+	 * @hw_dst: destination HW Address
-+	 * @ip_dst: destination IP
-+	 *
-+	 * Any address pointer can be null if there is no need to memorize
-+	 * calculate that address.
-+	 *
-+	 * Returns true if snooping was successful.
-+	 */
-+	bool (*snoop_pkt)(struct batadv_priv *bat_priv,
-+			  struct sk_buff *skb, int hdr_size,
-+			  uint16_t pkt_type, uint8_t pkt_dir_type,
-+			  uint8_t **hw_src, void **ip_src,
-+			  uint8_t **hw_dst, void **ip_dst);
-+
-+	/**
-+	 * batadv_dat_create_skb - creates a skb as a reply to a message request
-+	 * @bat_priv: the bat priv with all the soft interface information
-+	 * @dat_entry: the DAT entry used for destination HW Address
-+	 * @hw_src: source HW Address
-+	 * @ip_src: source IP
-+	 * @ip_dst: destination IP
-+	 *
-+	 * Returns the newly created skb, or NULL if any error.
-+	 */
-+	struct sk_buff *(*create_skb)(struct batadv_priv *bat_priv,
-+				      struct batadv_dat_entry *dat_entry,
-+				      uint8_t *hw_src, void *ip_src,
-+				      void *ip_dst);
-+
- };
+ 	/**
+ 	 * snoop_pkt - snooping mechanism for all packets that participate
+@@ -1013,6 +1028,8 @@ struct batadv_dat_type_info {
+ 	 * @ip_src: source IP
+ 	 * @hw_dst: destination HW Address
+ 	 * @ip_dst: destination IP
++	 * @extra_data: extra data that must be snooped; it is either allocated
++	 * dynamically or NULL inside the function; must be freed outside
+ 	 *
+ 	 * Any address pointer can be null if there is no need to memorize
+ 	 * calculate that address.
+@@ -1023,7 +1040,7 @@ struct batadv_dat_type_info {
+ 			  struct sk_buff *skb, int hdr_size,
+ 			  uint16_t pkt_type, uint8_t pkt_dir_type,
+ 			  uint8_t **hw_src, void **ip_src,
+-			  uint8_t **hw_dst, void **ip_dst);
++			  uint8_t **hw_dst, void **ip_dst, void **extra_data);
  
- /**
+ 	/**
+ 	 * batadv_dat_create_skb - creates a skb as a reply to a message request
 -- 
 1.7.10.4
 
