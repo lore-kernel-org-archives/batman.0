@@ -1,14 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sat, 13 Jul 2013 05:09:18 +0800
-References: <1373467924-2316-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1373467924-2316-1-git-send-email-ordex@autistici.org>
+Date: Sat, 13 Jul 2013 05:24:02 +0800
+References: <1373564858-2248-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1373564858-2248-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201307130509.19248.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove bogus comment
+Message-Id: <201307130524.02992.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: send GW_DEL event when the
+	gw client mode is deselected
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,21 +21,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <ordex@autistici.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wednesday, July 10, 2013 22:52:04 Antonio Quartulli wrote:
-> From: Antonio Quartulli <antonio@open-mesh.com>
-> 
-> this comment refers to the old batmand codebase and does
-> not make sense anymore. Remove it
-> 
-> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-> ---
->  gateway_client.c | 5 -----
->  1 file changed, 5 deletions(-)
+On Friday, July 12, 2013 01:47:38 Antonio Quartulli wrote:
+> + * batadv_gw_check_client_stop - check if clitn mode has been switched off
 
-Applied in revision 31b3725.
+clitn => client
 
-Thanks,
+
+> + * @bat_priv: the bat priv with all the soft interface information
+> + * @new_mode: the gw mode which the node is switching to
+
+The param "new_mode" does not exist.
+
+
+>  	batadv_gw_deselect(bat_priv);
+> +	/* always call the client check before changing the state */
+> +	batadv_gw_check_client_stop(bat_priv);
+
+I don't get what the "client check" comment is trying to say. 
+
+Cheers,
 Marek
