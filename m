@@ -1,17 +1,12 @@
 Return-Path: <linus.luessing@web.de>
-Date: Sun, 14 Jul 2013 18:25:42 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20130714162542.GA4014@Linus-Debian>
-References: <1372889002-6767-1-git-send-email-linus.luessing@web.de>
- <1372889002-6767-5-git-send-email-linus.luessing@web.de>
- <20130712091215.GA9077@pandem0nium>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Mon, 15 Jul 2013 03:46:14 +0200
+Message-Id: <1373852774-3802-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20130712091215.GA9077@pandem0nium>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv7 4/4] batman-adv: Add IPv4
- link-local/IPv6-ll-all-nodes multicast support
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: prepare and schedule initial OGM
+	without rtnl_lock()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,109 +18,93 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Fri, Jul 12, 2013 at 11:12:16AM +0200, Simon Wunderlich wrote:
-> On Thu, Jul 04, 2013 at 12:03:22AM +0200, Linus Lüssing wrote:
-> > [...]
-> > +enum batadv_forw_mode
-> > +batadv_mcast_forw_mode(struct sk_buff *skb, struct batadv_priv *bat_priv)
-> > +{
-> > +	struct ethhdr *ethhdr = (struct ethhdr *)(skb->data);
-> > +	int ret;
-> > +
-> > +	ret = batadv_mcast_forw_mode_check(skb, bat_priv);
-> > +	if (ret == -ENOMEM)
-> > +		return BATADV_FORW_NONE;
-> > +	else if (ret == -EINVAL)
-> 
-> Shouldn't this better be "ret < 0", in case you add more error cases later?
+There is no need to hold the rtnl-lock during the preparation of the
+initial OGM of a hard interface.
 
-Good idea! Looks better, I'm adding that.
+Besides, it is a little uggly to have batadv_schedule_bat_ogm() executed
+with an rtnl-lock on its first run but without an rtnl-lock in its
+rearmed versions as it makes additions to batadv_schedule_bat_ogm() that
+require an rtnl-lock difficult.
 
-> 
-> >  		return BATADV_FORW_ALL;
-> >  
-> > -	count = batadv_tt_global_hash_count(bat_priv, ethhdr->h_dest,
-> > +	ret = batadv_tt_global_hash_count(bat_priv, ethhdr->h_dest,
-> >  					    BATADV_NO_FLAGS);
-> >  
-> > -	switch (count) {
-> > +	switch (ret) {
-> >  	case 0:
-> >  		return BATADV_FORW_NONE;
-> >  	case 1:
-> > @@ -263,6 +348,28 @@ batadv_mcast_forw_mode(struct sk_buff *skb, struct batadv_priv *bat_priv)
-> >  }
-> >  
-> >  /**
-> > + * batadv_mcast_tvlv_update_flag_counter - update the counter of a flag
-> > + * @flag: the flag we want to update counters for
-> > + * @flag_counter: the counter we might update
-> > + * @new_flags: the new capability bitset of a node
-> > + * @old_flags: the current, to be updated bitset of a node
-> > + *
-> > + * Update the given flag_counter with the help of the new flag information
-> > + * of a node to reflect how many nodes have the given flag unset.
-> > + */
-> > +static void batadv_mcast_tvlv_update_flag_counter(uint8_t flag,
-> > +						  atomic_t *flag_counter,
-> > +						  uint8_t new_flags,
-> > +						  int old_flags)
-> 
-> Why are parts of the bitsets uint8_t, some int?
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+---
 
-Because the locally stored mcast_flags variable is bigger than the tvlv
-mcast_flags (because of the BATADV_UNINIT_FLAGS).
+the compat code for the multicast-basic patchset needs an rtnl-lock
+somewhere within batadv_schedule_bat_ogm()
 
-> 
-> Also, this function should go into one of the previous patches, this has nothing to do with
-> IPv4 but is just a refactoring.
 
-Hm, it's just moving some code to a new function because the
-original function got too long for my taste now. Anyways, ok, I'm
-going to introduce that function in the previous patch already.
+ hard-interface.c |   21 ++++++++++++++++++++-
+ types.h          |    2 ++
+ 2 files changed, 22 insertions(+), 1 deletion(-)
 
-> 
-> > +{
-> > +	if (!(new_flags & flag) &&
-> > +	    (old_flags & flag || old_flags & BATADV_UNINIT_FLAGS))
-> > +		atomic_inc(flag_counter);
-> > +	else if (new_flags & flag && !(old_flags & flag))
-> > +		atomic_dec(flag_counter);
-> > +}
-> > +
-> > +/**
-> >   * batadv_mcast_tvlv_ogm_handler_v1 - process incoming multicast tvlv container
-> >   * @bat_priv: the bat priv with all the soft interface information
-> >   * @orig: the orig_node of the ogm
-> > @@ -285,13 +392,14 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
-> >  	    (tvlv_value) && (tvlv_value_len == sizeof(mcast_flags)))
-> >  		mcast_flags = *(uint8_t *)tvlv_value;
-> >  
-> > -	if (!(mcast_flags & BATADV_MCAST_LISTENER_ANNOUNCEMENT) &&
-> > -	    (orig->mcast_flags & BATADV_MCAST_LISTENER_ANNOUNCEMENT ||
-> > -	     orig->mcast_flags & BATADV_UNINIT_FLAGS))
-> > -		atomic_inc(&bat_priv->mcast.num_no_mla);
-> > -	else if (mcast_flags & BATADV_MCAST_LISTENER_ANNOUNCEMENT &&
-> > -		   !(orig->mcast_flags & BATADV_MCAST_LISTENER_ANNOUNCEMENT))
-> > -		atomic_dec(&bat_priv->mcast.num_no_mla);
-> > +	batadv_mcast_tvlv_update_flag_counter(
-> > +					BATADV_MCAST_LISTENER_ANNOUNCEMENT,
-> > +					&bat_priv->mcast.num_no_mla,
-> > +					mcast_flags, orig->mcast_flags);
-> > +	batadv_mcast_tvlv_update_flag_counter(
-> > +					BATADV_MCAST_HAS_NO_BRIDGE,
-> > +					&bat_priv->mcast.num_has_bridge,
-> > +					mcast_flags, orig->mcast_flags);
-> 
-> You should find a shorter name, the alignment looks really ugly. :)
+diff --git a/hard-interface.c b/hard-interface.c
+index c5f871f..c7ad8ae 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -470,7 +470,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 			   hard_iface->net_dev->name);
+ 
+ 	/* begin scheduling originator messages on that interface */
+-	batadv_schedule_bat_ogm(hard_iface);
++	queue_work(batadv_event_workqueue, &hard_iface->init_ogm_work);
+ 
+ out:
+ 	return 0;
+@@ -554,6 +554,23 @@ static void batadv_hardif_remove_interface_finish(struct work_struct *work)
+ 	batadv_hardif_free_ref(hard_iface);
+ }
+ 
++/**
++ * batadv_hardif_init_ogm - initialize the ogm scheduler
++ * @work: work queue item
++ *
++ * Prepare and queue the initial OGM on this hard interface to get its ogm
++ * scheduler into gear.
++ */
++static void batadv_hardif_init_ogm(struct work_struct *work)
++{
++	struct batadv_hard_iface *hard_iface;
++
++	hard_iface = container_of(work, struct batadv_hard_iface,
++				  init_ogm_work);
++
++	batadv_schedule_bat_ogm(hard_iface);
++}
++
+ static struct batadv_hard_iface *
+ batadv_hardif_add_interface(struct net_device *net_dev)
+ {
+@@ -583,6 +600,8 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 	INIT_LIST_HEAD(&hard_iface->list);
+ 	INIT_WORK(&hard_iface->cleanup_work,
+ 		  batadv_hardif_remove_interface_finish);
++	INIT_WORK(&hard_iface->init_ogm_work,
++		  batadv_hardif_init_ogm);
+ 
+ 	hard_iface->num_bcasts = BATADV_NUM_BCASTS_DEFAULT;
+ 	if (batadv_is_wifi_netdev(net_dev))
+diff --git a/types.h b/types.h
+index 0d5b24b..a8b5725 100644
+--- a/types.h
++++ b/types.h
+@@ -62,6 +62,7 @@ struct batadv_hard_iface_bat_iv {
+  * @rcu: struct used for freeing in an RCU-safe manner
+  * @bat_iv: BATMAN IV specific per hard interface data
+  * @cleanup_work: work queue callback item for hard interface deinit
++ * @init_ogm_work: work queue callback item for ogm scheduler initialization
+  */
+ struct batadv_hard_iface {
+ 	struct list_head list;
+@@ -76,6 +77,7 @@ struct batadv_hard_iface {
+ 	struct rcu_head rcu;
+ 	struct batadv_hard_iface_bat_iv bat_iv;
+ 	struct work_struct cleanup_work;
++	struct work_struct init_ogm_work;
+ };
+ 
+ /**
+-- 
+1.7.10.4
 
-Oki doki, fair point :).
-
-> 
-> Cheers,
-> 	Simon
-
-Cheers, Linus
