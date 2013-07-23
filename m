@@ -1,15 +1,15 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 21 Jul 2013 19:10:39 +0800
-References: <1373666760-3552-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1373666760-3552-1-git-send-email-ordex@autistici.org>
+Return-Path: <ordex@autistici.org>
+Date: Tue, 23 Jul 2013 09:27:14 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20130723072714.GC1957@ritirata.org>
+References: <1373242365-763-1-git-send-email-mihail.costea2005@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201307211910.40087.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: send GW_DEL event when the
-	gw client mode is deselected
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="17pEHd4RhPHOinZp"
+Content-Disposition: inline
+In-Reply-To: <1373242365-763-1-git-send-email-mihail.costea2005@gmail.com>
+Subject: Re: [B.A.T.M.A.N.] [RFC 1/6] batman-adv: Generalize DAT in order to
+ support any type of data, not only IPv4
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,33 +21,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <ordex@autistici.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Saturday, July 13, 2013 06:06:00 Antonio Quartulli wrote:
-> From: Antonio Quartulli <antonio@open-mesh.com>
-> 
-> Whenever the GW client mode is deselected, a DEL event has
-> to be sent in order to tell userspace that the current
-> gateway has been lost. Send the uevent on state change only
-> if a gateway was currently selected.
-> 
-> Reported-by: Marek Lindner <lindner_marek@yahoo.de>
-> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-> ---
-> 
-> v2:
-> - fixed typo
-> - fixed kernel doc
-> - fixed comment in sysfs.c
-> 
-> 
->  gateway_client.c | 27 +++++++++++++++++++++++++++
->  gateway_client.h |  1 +
->  sysfs.c          |  4 ++++
->  3 files changed, 32 insertions(+)
 
-Applied in revision 2bde624.
+--17pEHd4RhPHOinZp
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Marek
+On Mon, Jul 08, 2013 at 03:12:40AM +0300, mihail.costea2005@gmail.com wrote:
+> From: Mihail Costea <mihail.costea90@gmail.com>
+
+Hi Mihail,
+
+sorry for the very long delay but I'm currently out of my office, so I'm not
+spending a lot of time on batman-adv.
+
+Anyway, I'll try to review your patches as soon as possible!
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--17pEHd4RhPHOinZp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBCAAGBQJR7jBSAAoJEADl0hg6qKeOUt4P/14/q+QBKTCwB6IHYf9jl1Ju
+uX5gzGIL4TDqRL/Ov9IeHkJQOuE9WSQj8fq6OSHm55NYg56Eq5f94sdT3uxgqPyL
+Lh1M+ei/HhUw+owBEHI9wZWQHtPJPsGzFwmha10b6zP2aPYq4PBZsdmSJB3or2SL
+DX3ioBhHxXxJO9/5aYNialOuy+1HrSrng2WTn9Z1qkEVgXYutsSEeVEzjIwb3Bee
+b2lmILMKvXAUK8r+CAj4qHoA5cReFtKKl1g9fezU0lPmE0UvhiyjJPhFAXu8O5I3
++9fsR8qlocMKiORa5WFIv3Yc2lSSpKJCnIKjyHt4GxqsFgC1GGHBPcnO44PRPpM0
+/KtvpaVbZQJPW78v/ndi1BmxvQ3S+S0wBXXj3H84cA+u3icmNHji+gnGjxNaCSs+
+ff0HgeTmjGjeMKrcqqrn/Qm1DVgSottobCKieWqrXtlaNiq4CF74wy+5RbxbVSkt
+D7fkw09xIoKgUht24ki5zNjg5bx2iT+lNWywnn9E0/CHkWwswHtHBraH+9CokoY8
+XL1lUTg5vwRripu7tm5b0YHI0evEFLt8V9ACVNXgT/S6Ouwaj29P1KJa4Gfx9GdX
+1lv26F2j2t0HCoKZZdeK86nlCHu6X4mgHJRPyl9JMiE+d5VKDRVKaBJToGYdj0tR
+KCOqFwLgHF8NQBEzjTgf
+=9Qfc
+-----END PGP SIGNATURE-----
+
+--17pEHd4RhPHOinZp--
