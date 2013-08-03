@@ -1,16 +1,16 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sat, 3 Aug 2013 23:05:13 +0200
+Date: Sat, 3 Aug 2013 23:07:15 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130803210512.GB12891@pandem0nium>
+Message-ID: <20130803210715.GC12891@pandem0nium>
 References: <1375303667-3018-1-git-send-email-ordex@autistici.org>
- <1375303667-3018-3-git-send-email-ordex@autistici.org>
+ <1375303667-3018-4-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="zx4FCpZtqtKETZ7O"
+ protocol="application/pgp-signature"; boundary="rQ2U398070+RC21q"
 Content-Disposition: inline
-In-Reply-To: <1375303667-3018-3-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [RFCv2 02/10] batman-adv: make struct
- batadv_orig_node algorithm agnostic
+In-Reply-To: <1375303667-3018-4-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [RFCv2 03/10] batman-adv: add bat_orig_print
+ function API
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,72 +26,73 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 
---zx4FCpZtqtKETZ7O
+--rQ2U398070+RC21q
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jul 31, 2013 at 10:47:39PM +0200, Antonio Quartulli wrote:
->  	/* check whether the packet is a duplicate */
-> -	if (batadv_test_bit(orig_node->bcast_bits, orig_node->last_bcast_seqno,
-> +	if (batadv_test_bit(orig_node->bcast_bits,
-> +			    orig_node->last_bcast_seqno,
-
-Is this change really neccesary? Looks rather random to me. :)
-
->  			    ntohl(bcast_packet->seqno)))
->  		goto spin_unlock;
+On Wed, Jul 31, 2013 at 10:47:40PM +0200, Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+>=20
+> Each routing protocol has its own metric and private
+> variables, therefore it is useful to introduce a new API
+> for originator information printing.
+>=20
+> This API needs to be implemented by each protocol in order
+> to provide its specific originator table output.
+>=20
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+>  bat_iv_ogm.c | 67 ++++++++++++++++++++++++++++++++++++++++++++++++++++++=
+++++++
+>  originator.c | 66 +++++++++---------------------------------------------=
+-----
+>  types.h      |  3 +++
+>  3 files changed, 80 insertions(+), 56 deletions(-)
+>=20
+> diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+> index 595fcb0..605c954 100644
+> --- a/bat_iv_ogm.c
+> +++ b/bat_iv_ogm.c
+> @@ -1391,6 +1391,72 @@ static int batadv_iv_ogm_receive(struct sk_buff *s=
+kb,
+>  	return NET_RX_SUCCESS;
+>  }
 > =20
-> -	seq_diff =3D ntohl(bcast_packet->seqno) - orig_node->last_bcast_seqno;
-> +	seqno =3D orig_node->last_bcast_seqno;
-> +	seq_diff =3D ntohl(bcast_packet->seqno) - seqno;
+> +/**
+> + * batadv_iv_ogm_orig_print - print the originator table
+> + * @bat_priv: the bat priv with all the soft interface information
+> + * @seq: debugfs table seq_file struct
+> + */
+> +static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
+> +				     struct seq_file *seq)
+> +{
+> +	struct batadv_hashtable *hash =3D bat_priv->orig_hash;
+> +	struct hlist_head *head;
+> +	struct batadv_orig_node *orig_node;
+> +	struct batadv_neigh_node *neigh_node, *neigh_node_tmp;
+> +	int batman_count =3D 0;
+> +	int last_seen_secs;
+> +	int last_seen_msecs;
+> +	unsigned long last_seen_jiffies;
+> +	uint32_t i;
+> +
+> +
 
-Same here ... you are not using the seqno variable below, are you?
+unneccesary double newline?
 
-> =20
->  	/* check whether the packet is old and the host just restarted. */
->  	if (batadv_window_protected(bat_priv, seq_diff,
-> @@ -1125,7 +1128,8 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
->  	/* mark broadcast in flood history, update window position
->  	 * if required.
->  	 */
-> -	if (batadv_bit_get_packet(bat_priv, orig_node->bcast_bits, seq_diff, 1))
-> +	if (batadv_bit_get_packet(bat_priv, orig_node->bcast_bits,
-> +				  seq_diff, 1))
+Rest looks good.
 
-=2E.. same here.
-
->  		orig_node->last_bcast_seqno =3D ntohl(bcast_packet->seqno);
-> =20
->  	spin_unlock_bh(&orig_node->bcast_seqno_lock);
-> diff --git a/types.h b/types.h
-> index 0088a53..0c0d999 100644
-> --- a/types.h
-> +++ b/types.h
-> @@ -133,14 +133,28 @@ struct batadv_orig_node_vlan {
->  };
-> =20
->  /**
-> + * struct batadv_orig_bat_iv - B.A.T.M.A.N. IV private orig_node members
-> + * @bcast_own: bitfield containing the number of our OGMs this orig_node
-> + *  rebroadcasted "back" to us (relative to last_real_seqno)
-> + * @bcast_own_sum: counted result of bcast_own
-> + * @ogm_cnt_lock: lock protecting bcast_own, bcast_own_sum,
-> + *  neigh_node->real_bits & neigh_node->real_packet_count
-
-Hmm, neigh_node is not part of this structure, please change the reference
-(if it's actually still protecting things).
-
---zx4FCpZtqtKETZ7O
+--rQ2U398070+RC21q
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iEYEARECAAYFAlH9cIgACgkQrzg/fFk7axYgdQCggcVcfxXviIy/70QdMT64zobq
-8BsAn1wRsp8ii5zemg22G16mpaO6Y0zF
-=Mg8C
+iEYEARECAAYFAlH9cQMACgkQrzg/fFk7axb98QCguG95DhWyTz5fV1GJpFYrwyr2
+o4EAoO5qT7vPZLMpHjwKZvJhUhYAAwFA
+=j9bE
 -----END PGP SIGNATURE-----
 
---zx4FCpZtqtKETZ7O--
+--rQ2U398070+RC21q--
