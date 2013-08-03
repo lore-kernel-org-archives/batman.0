@@ -1,16 +1,16 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sat, 3 Aug 2013 23:10:56 +0200
+Date: Sat, 3 Aug 2013 23:17:57 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130803211053.GE12891@pandem0nium>
+Message-ID: <20130803211755.GF12891@pandem0nium>
 References: <1375303667-3018-1-git-send-email-ordex@autistici.org>
- <1375303667-3018-7-git-send-email-ordex@autistici.org>
+ <1375303667-3018-11-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="6e7ZaeXHKrTJCxdu"
+ protocol="application/pgp-signature"; boundary="924gEkU1VlJlwnwX"
 Content-Disposition: inline
-In-Reply-To: <1375303667-3018-7-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [RFCv2 06/10] batman-adv: add bat_metric_compare
- API function
+In-Reply-To: <1375303667-3018-11-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [RFCv2 10/10] batman-adv: adapt the TT component
+ to use the new API functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,51 +26,36 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 
---6e7ZaeXHKrTJCxdu
+--924gEkU1VlJlwnwX
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jul 31, 2013 at 10:47:43PM +0200, Antonio Quartulli wrote:
-> diff --git a/types.h b/types.h
-> index 8885dc0..516d30d 100644
-> --- a/types.h
-> +++ b/types.h
-> @@ -993,6 +993,8 @@ struct batadv_forw_packet {
->   * @bat_ogm_emit: send scheduled OGM
->   * @bat_metric_is_equiv_or_better: check if new_metric is good enough to=
- be
->   *  comparable with metric
-> + *  with metric
+On Wed, Jul 31, 2013 at 10:47:47PM +0200, Antonio Quartulli wrote:
+> +
+> +		if (metric <= best_metric)
+> +			continue;
+> +
+> +		best_entry = orig_entry;
+> +		best_metric = metric;
 
-???
+Why don't you use the bat_metric_compare() function here?
 
-> + * @bat_metric_compare: compare two metric values
->   * @bat_orig_print: print the originator table
->   */
->  struct batadv_algo_ops {
-> @@ -1007,6 +1009,7 @@ struct batadv_algo_ops {
->  	uint32_t (*bat_metric_get)(struct batadv_neigh_node *neigh_node);
->  	bool (*bat_metric_is_equiv_or_better)(uint32_t metric,
->  					      uint32_t new_metric);
-> +	int (*bat_metric_compare)(uint32_t metric, uint32_t new_metric);
->  	/* orig_node handling API */
->  	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq);
->  };
-> --=20
-> 1.8.1.5
->=20
+BTW, do we need bat_metric_compare() anyway? I think both TQ and the metric in BATMAN V
+can work with integer comparison, so as long as we don't add some other "special" metrics
+we might not need this bat_metric_compare() at all?
 
---6e7ZaeXHKrTJCxdu
+	Simon
+
+--924gEkU1VlJlwnwX
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iEYEARECAAYFAlH9cd0ACgkQrzg/fFk7axaNKQCgnZWF9E6BaidLUoPFZlUhjlSr
-5vIAoNHvOhfe3tL6WDqPKotHfSuBMJlO
-=2Y7D
+iEYEARECAAYFAlH9c4MACgkQrzg/fFk7axbj3QCdH1N+FrMbh3y37IzZycTb1bTh
+dTwAnA+UUG7f2k1N9pmSrbyRfSCfLWqn
+=bXdq
 -----END PGP SIGNATURE-----
 
---6e7ZaeXHKrTJCxdu--
+--924gEkU1VlJlwnwX--
