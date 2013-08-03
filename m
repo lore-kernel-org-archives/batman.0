@@ -1,14 +1,16 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Fri,  2 Aug 2013 14:44:55 +0200
-Message-Id: <1375447495-31820-2-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1375447495-31820-1-git-send-email-linus.luessing@web.de>
-References: <1375447495-31820-1-git-send-email-linus.luessing@web.de>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sat, 3 Aug 2013 22:57:36 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20130803205736.GA12891@pandem0nium>
+References: <1375303667-3018-1-git-send-email-ordex@autistici.org>
+ <1375303667-3018-2-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: fix potential kernel
-	paging errors for unicast transmissions
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="ew6BAiZeqk4r7MaW"
+Content-Disposition: inline
+In-Reply-To: <1375303667-3018-2-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [RFCv2 01/10] batman-adv: make struct
+ batadv_neigh_node algorithm agnostic
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,163 +22,109 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-There are several functions which might reallocate skb data. Currently
-some places keep reusing their old ethhdr pointer regardless of whether
-they became invalid after such a reallocation or not. This potentially
-leads to kernel paging errors.
 
-This patch fixes these by refetching the ethdr pointer after the
-potential reallocations.
+--ew6BAiZeqk4r7MaW
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
- bridge_loop_avoidance.c |    2 ++
- gateway_client.c        |    6 +++++-
- gateway_client.h        |    3 +--
- soft-interface.c        |    8 +++++++-
- unicast.c               |   11 ++++++++---
- 5 files changed, 23 insertions(+), 7 deletions(-)
+On Wed, Jul 31, 2013 at 10:47:38PM +0200, Antonio Quartulli wrote:
+> @@ -974,6 +973,7 @@ batadv_iv_ogm_update_seqnos(const struct ethhdr *ethh=
+dr,
+>  	uint32_t seqno =3D ntohl(batadv_ogm_packet->seqno);
+>  	uint8_t *neigh_addr;
+>  	uint8_t packet_count;
+> +	unsigned long (*bitmap)[];
+> [...]
+> @@ -1010,13 +1010,13 @@ batadv_iv_ogm_update_seqnos(const struct ethhdr *=
+ethhdr,
+>  		}
+> =20
+>  		/* if the window moved, set the update flag. */
+> -		need_update |=3D batadv_bit_get_packet(bat_priv,
+> -						     tmp_neigh_node->real_bits,
+> +		bitmap =3D &tmp_neigh_node->bat_iv.real_bits;
+> +		need_update |=3D batadv_bit_get_packet(bat_priv, *bitmap,
+>  						     seq_diff, set_mark);
+Why referencing and derefencing here? That looks odd, you don't use the bit=
+map after that, do you?
+> =20
+> -		packet_count =3D bitmap_weight(tmp_neigh_node->real_bits,
+> +		packet_count =3D bitmap_weight(tmp_neigh_node->bat_iv.real_bits,
+>  					     BATADV_TQ_LOCAL_WINDOW_SIZE);
+> -		tmp_neigh_node->real_packet_count =3D packet_count;
+> +		tmp_neigh_node->bat_iv.real_packet_count =3D packet_count;
+>  	}
+>  	rcu_read_unlock();
+> =20
+>  	/* ... and is good enough to be considered */
+> -	if (neigh_node->tq_avg < router->tq_avg - BATADV_BONDING_TQ_THRESHOLD)
+> +	if (neigh_node->bat_iv.tq_avg <
+> +	    router->bat_iv.tq_avg - BATADV_BONDING_TQ_THRESHOLD)
+>  		goto candidate_del;
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index e14531f..264de88 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -1529,6 +1529,8 @@ out:
-  * in these cases, the skb is further handled by this function and
-  * returns 1, otherwise it returns 0 and the caller shall further
-  * process the skb.
-+ *
-+ * This call might reallocate skb data.
-  */
- int batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 		  unsigned short vid)
-diff --git a/gateway_client.c b/gateway_client.c
-index f105219..30de529 100644
---- a/gateway_client.c
-+++ b/gateway_client.c
-@@ -568,6 +568,7 @@ out:
- 	return ret;
- }
- 
-+/* this call might reallocate skb data */
- bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
- {
- 	struct ethhdr *ethhdr;
-@@ -634,12 +635,14 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
- 	return true;
- }
- 
-+/* this call might reallocate skb data */
- bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
--			    struct sk_buff *skb, struct ethhdr *ethhdr)
-+			    struct sk_buff *skb)
- {
- 	struct batadv_neigh_node *neigh_curr = NULL, *neigh_old = NULL;
- 	struct batadv_orig_node *orig_dst_node = NULL;
- 	struct batadv_gw_node *curr_gw = NULL;
-+	struct ethhdr *ethhdr;
- 	bool ret, out_of_range = false;
- 	unsigned int header_len = 0;
- 	uint8_t curr_tq_avg;
-@@ -648,6 +651,7 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
- 	if (!ret)
- 		goto out;
- 
-+	ethhdr = eth_hdr(skb);
- 	orig_dst_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
- 						 ethhdr->h_dest);
- 	if (!orig_dst_node)
-diff --git a/gateway_client.h b/gateway_client.h
-index 039902d..1037d75 100644
---- a/gateway_client.h
-+++ b/gateway_client.h
-@@ -34,7 +34,6 @@ void batadv_gw_node_delete(struct batadv_priv *bat_priv,
- void batadv_gw_node_purge(struct batadv_priv *bat_priv);
- int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset);
- bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len);
--bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
--			    struct sk_buff *skb, struct ethhdr *ethhdr);
-+bool batadv_gw_out_of_range(struct batadv_priv *bat_priv, struct sk_buff *skb);
- 
- #endif /* _NET_BATMAN_ADV_GATEWAY_CLIENT_H_ */
-diff --git a/soft-interface.c b/soft-interface.c
-index 700d0b4..51c6b5d 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -180,6 +180,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	if (batadv_bla_tx(bat_priv, skb, vid))
- 		goto dropped;
- 
-+	ethhdr = eth_hdr(skb);
-+
- 	/* Register the client MAC in the transtable */
- 	if (!is_multicast_ether_addr(ethhdr->h_source))
- 		batadv_tt_local_add(soft_iface, ethhdr->h_source, skb->skb_iif);
-@@ -220,6 +222,10 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 		default:
- 			break;
- 		}
-+
-+		/* reminder: ethhdr might have become unusable from here on
-+		 * (batadv_gw_is_dhcp_target() might have reallocated skb data)
-+		 */
- 	}
- 
- 	/* ethernet packet should be broadcasted */
-@@ -266,7 +272,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	/* unicast packet */
- 	} else {
- 		if (atomic_read(&bat_priv->gw_mode) != BATADV_GW_MODE_OFF) {
--			ret = batadv_gw_out_of_range(bat_priv, skb, ethhdr);
-+			ret = batadv_gw_out_of_range(bat_priv, skb);
- 			if (ret)
- 				goto dropped;
- 		}
-diff --git a/unicast.c b/unicast.c
-index 4c5a1aa..8378845 100644
---- a/unicast.c
-+++ b/unicast.c
-@@ -326,7 +326,9 @@ static bool batadv_unicast_push_and_fill_skb(struct sk_buff *skb, int hdr_size,
-  * @skb: the skb containing the payload to encapsulate
-  * @orig_node: the destination node
-  *
-- * Returns false if the payload could not be encapsulated or true otherwise
-+ * Return false if the payload could not be encapsulated or true otherwise.
-+ *
-+ * This call might reallocate skb data.
-  */
- static bool batadv_unicast_prepare_skb(struct sk_buff *skb,
- 				       struct batadv_orig_node *orig_node)
-@@ -343,7 +345,9 @@ static bool batadv_unicast_prepare_skb(struct sk_buff *skb,
-  * @orig_node: the destination node
-  * @packet_subtype: the batman 4addr packet subtype to use
-  *
-- * Returns false if the payload could not be encapsulated or true otherwise
-+ * Return false if the payload could not be encapsulated or true otherwise.
-+ *
-+ * This call might reallocate skb data.
-  */
- bool batadv_unicast_4addr_prepare_skb(struct batadv_priv *bat_priv,
- 				      struct sk_buff *skb,
-@@ -395,7 +399,7 @@ int batadv_unicast_generic_send_skb(struct batadv_priv *bat_priv,
- 				    struct sk_buff *skb, int packet_type,
- 				    int packet_subtype)
- {
--	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
-+	struct ethhdr *ethhdr = eth_hdr(skb);
- 	struct batadv_unicast_packet *unicast_packet;
- 	struct batadv_orig_node *orig_node;
- 	struct batadv_neigh_node *neigh_node;
-@@ -444,6 +448,7 @@ find_router:
- 	}
- 
- 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
-+	ethhdr = eth_hdr(skb);
- 
- 	/* inform the destination node that we are still missing a correct route
- 	 * for this client. The destination will receive this packet and will
--- 
-1.7.10.4
+alignment looks a little weird, although this will probably replaced anyway=
+ in the later patches?
 
+>  /**
+> - * struct batadv_neigh_node - structure for single hop neighbors
+> - * @list: list node for batadv_orig_node::neigh_list
+> - * @addr: mac address of neigh node
+> + * struct batadv_neigh_bat_iv - structure for single hop neighbors
+>   * @tq_recv: ring buffer of received TQ values from this neigh node
+>   * @tq_index: ring buffer index
+>   * @tq_avg: averaged tq of all tq values in the ring buffer (tq_recv)
+> - * @last_ttl: last received ttl from this neigh node
+> - * @bonding_list: list node for batadv_orig_node::bond_list
+> - * @last_seen: when last packet via this neighbor was received
+>   * @real_bits: bitfield containing the number of OGMs received from this=
+ neigh
+>   *  node (relative to orig_node->last_real_seqno)
+>   * @real_packet_count: counted result of real_bits
+> - * @orig_node: pointer to corresponding orig_node
+> - * @if_incoming: pointer to incoming hard interface
+>   * @lq_update_lock: lock protecting tq_recv & tq_index
+>   * @refcount: number of contexts the object is used
+> - * @rcu: struct used for freeing in an RCU-safe manner
+>   */
+> -struct batadv_neigh_node {
+> -	struct hlist_node list;
+> -	uint8_t addr[ETH_ALEN];
+> +struct batadv_neigh_bat_iv {
+>  	uint8_t tq_recv[BATADV_TQ_GLOBAL_WINDOW_SIZE];
+>  	uint8_t tq_index;
+>  	uint8_t tq_avg;
+> -	uint8_t last_ttl;
+> -	struct list_head bonding_list;
+> -	unsigned long last_seen;
+>  	DECLARE_BITMAP(real_bits, BATADV_TQ_LOCAL_WINDOW_SIZE);
+>  	uint8_t real_packet_count;
+> +	spinlock_t lq_update_lock; /* protects tq_recv & tq_index */
+
+I'd like to suggest to split out struct batadv_neigh_bat_iv in an own struc=
+t instead
+of keeping it in batadv_neigh_node. If you want to keep it there, you shoul=
+d at least
+do some indendation for the bat_iv specific parts (and maybe also the kerne=
+l doc?)
+
+Cheers,
+	Simon
+=20
+
+--ew6BAiZeqk4r7MaW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEARECAAYFAlH9bsAACgkQrzg/fFk7axYHRgCbBZY2S5WVBga8Wakw7PMXcIAD
+2ooAn09xyz28L7e58akoBpvsvRCjRfHe
+=6xps
+-----END PGP SIGNATURE-----
+
+--ew6BAiZeqk4r7MaW--
