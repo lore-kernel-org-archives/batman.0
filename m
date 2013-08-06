@@ -1,16 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Mon, 5 Aug 2013 16:36:18 +0800
-References: <1375447495-31820-1-git-send-email-linus.luessing@web.de>
- <1375447495-31820-2-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1375447495-31820-2-git-send-email-linus.luessing@web.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201308051636.19197.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: fix potential kernel
-	paging errors for unicast transmissions
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue,  6 Aug 2013 10:09:52 +0200
+Message-Id: <1375776594-301-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 0/2] TT-VLAN: BLA2 integration
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,48 +14,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <ordex@autistici.org>
 
-On Friday, August 02, 2013 20:44:55 Linus L=C3=BCssing wrote:
-> There are several functions which might reallocate skb data. Currently
-> some places keep reusing their old ethhdr pointer regardless of whether
-> they became invalid after such a reallocation or not. This potentially
-> leads to kernel paging errors.
->=20
-> This patch fixes these by refetching the ethdr pointer after the
-> potential reallocations.
+Hello people,
 
-As discussed on IRC, please fix a similar problem in=20
-batadv_gw_is_dhcp_target(). I know this bug wasn't created by your patch bu=
-t I=20
-found it while reviewing your code and looking for similar cases. Should be=
-=20
-simple to fix as well.
+this is the last patchset of the TT-VLAN series and requires the last one to be
+applied (per-VLAN TT CRC).
+
+In a few words...
+These changes enable BLA2 to filter only those TT entries belonging to the VLAN
+where BLA discovered other backbone nodes. The current code instead assumes that
+_all_ the local clients are shared among the backbones, despite of the VLAN used
+to interconnect them.
+
+Example.
+Imagine 2 nodes having several vlans over the wired connection.
+Node1 having eth0.1 and eth0.2
+Node2 having eth0.1 and eth0.3
+
+Node1 and Node2 are connected using a cable and so they hear each other on
+eth0.1.
+Clients connected to eth0.2 and eth0.3 are reachable only through the respective
+nodes therefore, if Node1 wanted to talk to a client connected to eth0.3 needs
+to know that it is served by Node2.
+
+In the current implementation this is not possible because BLA would consider
+all the clients reachable through any node of the LAN and will reject all the
+global TT entries from any other backbone, so losing this TT information.
+
+With this patchset, instead, BLA will detect that the backbone
+connection is only over eth0.1 and so will continue to store all the global
+clients belonging to the other VLANs.
 
 
-> @@ -326,7 +326,9 @@ static bool batadv_unicast_push_and_fill_skb(struct
-> sk_buff *skb, int hdr_size, * @skb: the skb containing the payload to
-> encapsulate
->   * @orig_node: the destination node
->   *
-> - * Returns false if the payload could not be encapsulated or true
-> otherwise +=20
-> * Return false if the payload could not be encapsulated or
-> true otherwise.=20
-
-Don't change "returns" to "return".
-
-
-> @@ -343,7 +345,9 @@ static bool batadv_unicast_prepare_skb(struct sk_buff
-> *skb, * @orig_node: the destination node
->   * @packet_subtype: the batman 4addr packet subtype to use
->   *
-> - * Returns false if the payload could not be encapsulated or true
-> otherwise +=20
-> * Return false if the payload could not be encapsulated or
-> true otherwise.
-
-Same here.
+I hope the example did not create more confusion :)
 
 Cheers,
-Marek
+
+
+Antonio Quartulli (2):
+  batman-adv: make the TT global purge routine VLAN specific
+  batman-adv: make the backbone gw check VLAN specific
+
+ bridge_loop_avoidance.c | 23 +++++++++++---------
+ bridge_loop_avoidance.h | 10 +++++----
+ originator.c            |  2 +-
+ routing.c               |  2 +-
+ translation-table.c     | 58 ++++++++++++++++++++++---------------------------
+ translation-table.h     |  2 +-
+ 6 files changed, 48 insertions(+), 49 deletions(-)
+
+-- 
+1.8.1.5
+
