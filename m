@@ -1,11 +1,11 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Tue,  6 Aug 2013 16:15:32 +0200
-Message-Id: <1375798532-29520-1-git-send-email-linus.luessing@web.de>
+Date: Tue,  6 Aug 2013 20:21:15 +0200
+Message-Id: <1375813275-19292-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv3 next] batman-adv: fix potential kernel
+Subject: [B.A.T.M.A.N.] [PATCHv4 next] batman-adv: fix potential kernel
 	paging errors for unicast transmissions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -30,6 +30,9 @@ potential reallocations.
 
 Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 ---
+v4:
+* Reassign new ethhdr correctly in batadv_unicast_generic_send_skb()
+
 v3:
 * Remove the change from 'Returns' to 'Return
 * Avoid using eth_hdr(skb), using (struct ethhdr *)skb->data instead
@@ -39,8 +42,8 @@ v3:
  gateway_client.c        |   12 +++++++++++-
  gateway_client.h        |    3 +--
  soft-interface.c        |    8 +++++++-
- unicast.c               |    9 +++++++--
- 5 files changed, 28 insertions(+), 6 deletions(-)
+ unicast.c               |   12 ++++++++++--
+ 5 files changed, 31 insertions(+), 6 deletions(-)
 
 diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
 index e14531f..264de88 100644
@@ -158,7 +161,7 @@ index 700d0b4..b39e50d 100644
  				goto dropped;
  		}
 diff --git a/unicast.c b/unicast.c
-index 4c5a1aa..7250b10 100644
+index 4c5a1aa..49ffb7c 100644
 --- a/unicast.c
 +++ b/unicast.c
 @@ -326,7 +326,9 @@ static bool batadv_unicast_push_and_fill_skb(struct sk_buff *skb, int hdr_size,
@@ -183,14 +186,36 @@ index 4c5a1aa..7250b10 100644
   */
  bool batadv_unicast_4addr_prepare_skb(struct batadv_priv *bat_priv,
  				      struct sk_buff *skb,
-@@ -444,6 +448,7 @@ find_router:
+@@ -402,6 +406,7 @@ int batadv_unicast_generic_send_skb(struct batadv_priv *bat_priv,
+ 	int data_len = skb->len;
+ 	int ret = NET_RX_DROP;
+ 	unsigned int dev_mtu;
++	unsigned int header_len;
+ 
+ 	/* get routing information */
+ 	if (is_multicast_ether_addr(ethhdr->h_dest)) {
+@@ -430,11 +435,13 @@ find_router:
+ 	case BATADV_UNICAST:
+ 		if (!batadv_unicast_prepare_skb(skb, orig_node))
+ 			goto out;
++		header_len = sizeof(struct batadv_unicast_packet);
+ 		break;
+ 	case BATADV_UNICAST_4ADDR:
+ 		if (!batadv_unicast_4addr_prepare_skb(bat_priv, skb, orig_node,
+ 						      packet_subtype))
+ 			goto out;
++		header_len = sizeof(struct batadv_unicast_4addr_packet);
+ 		break;
+ 	default:
+ 		/* this function supports UNICAST and UNICAST_4ADDR only. It
+@@ -443,6 +450,7 @@ find_router:
+ 		goto out;
  	}
  
++	ethhdr = (struct ethhdr *)(skb->data + header_len);
  	unicast_packet = (struct batadv_unicast_packet *)skb->data;
-+	ethhdr = (struct ethhdr *)skb->data;
  
  	/* inform the destination node that we are still missing a correct route
- 	 * for this client. The destination will receive this packet and will
 -- 
 1.7.10.4
 
