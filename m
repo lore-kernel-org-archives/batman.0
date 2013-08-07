@@ -1,15 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Wed, 7 Aug 2013 19:12:54 +0800
-References: <1375813275-19292-1-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1375813275-19292-1-git-send-email-linus.luessing@web.de>
+Date: Wed, 7 Aug 2013 19:27:22 +0800
+References: <1375215385-606-1-git-send-email-ordex@autistici.org>
+ <1375215385-606-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1375215385-606-2-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <201308071912.54321.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 next] batman-adv: fix potential kernel
-	paging errors for unicast transmissions
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201308071927.22294.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv9 1/2] batman-adv: lock around TT
+	operations to avoid sending inconsistent data
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,34 +23,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <ordex@autistici.org>
 
-On Wednesday, August 07, 2013 02:21:15 Linus L=C3=BCssing wrote:
-> There are several functions which might reallocate skb data. Currently
-> some places keep reusing their old ethhdr pointer regardless of whether
-> they became invalid after such a reallocation or not. This potentially
-> leads to kernel paging errors.
->=20
-> This patch fixes these by refetching the ethdr pointer after the
-> potential reallocations.
->=20
-> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
+On Wednesday, July 31, 2013 04:16:24 Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+> 
+> A TT response may be prepared and sent while the local or
+> global translation table is getting updated.
+> 
+> The worst case is when one of the tables is accessed after
+> its content has been recently updated but the metadata
+> (TTVN/CRC) has not yet. In this case the reader will get a
+> table content which does not match the TTVN/CRC.
+> This will lead to an inconsistent state and so to a TT
+> recovery.
+> 
+> To avoid entering this situation, put a lock around those TT
+> operations recomputing the metadata and around the TT
+> Response creation (the latter is the only reader that
+> accesses the metadata together with the table).
+> 
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 > ---
-> v4:
-> * Reassign new ethhdr correctly in batadv_unicast_generic_send_skb()
->=20
-> v3:
-> * Remove the change from 'Returns' to 'Return
-> * Avoid using eth_hdr(skb), using (struct ethhdr *)skb->data instead
-> * Added fix for batadv_gw_is_dhcp_target() too
->=20
->  bridge_loop_avoidance.c |    2 ++
->  gateway_client.c        |   12 +++++++++++-
->  gateway_client.h        |    3 +--
->  soft-interface.c        |    8 +++++++-
->  unicast.c               |   12 ++++++++++--
->  5 files changed, 31 insertions(+), 6 deletions(-)
+>  main.c              |  1 +
+>  originator.c        |  1 +
+>  translation-table.c | 23 +++++++++++++++++++----
+>  types.h             | 13 +++++++++++++
+>  4 files changed, 34 insertions(+), 4 deletions(-)
 
-Applied in revision c98c3e5.
+Applied in revision 1583626.
 
 Thanks,
 Marek
