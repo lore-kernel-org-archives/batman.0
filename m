@@ -1,8 +1,9 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu,  8 Aug 2013 00:21:31 +0200
-Message-Id: <1375914091-2808-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: make the TT CRC logic VLAN specific
+Date: Thu,  8 Aug 2013 01:07:28 +0200
+Message-Id: <1375916848-1874-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix memory leak in
+	batadv_softif_create_vlan()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,67 +20,30 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-This change allows nodes to handle the TT table on a
-per-VLAN basis. This is needed because nodes may have to
-store only some of the global entries advertised by another
-node.
-
-In this scenario such nodes would re-create only a partial
-global table and would not be able to compute a correct CRC
-anymore.
-
-This patch splits the logic and introduces one CRC per VLAN.
-In this way a node fetching only some entries belonging to
-some VLANs is still able to compute the needed CRCs and
-still check the table correctness.
-
-With this patch the shape of the TVLV-TT is changed too
-because now a node needs to advertise all the CRCs of all
-the VLANs that it is wired to.
-
-The debug output of the local Translation Table now shows
-the CRC along with each entry since there is not a common
-value for the entire table anymore.
+Introduced by e4ff5c153dab054a6cd1c4132f87bc5e77127456
+("batman-adv: add sysfs framework for VLAN")
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- packet.h | 18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+ soft-interface.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/packet.h b/packet.h
-index 08e175a..f4bbb05 100644
---- a/packet.h
-+++ b/packet.h
-@@ -391,14 +391,26 @@ struct batadv_tvlv_gateway_data {
-  * struct batadv_tvlv_tt_data - tt data propagated through the tt tvlv container
-  * @flags: translation table flags (see batadv_tt_data_flags)
-  * @ttvn: translation table version number
-- * @reserved: field reserved for future use
-- * @crc: crc32 checksum of the local translation table
-+ * @vlan_num: number of announced VLANs. In the TVLV this struct is followed by
-+ *  one batadv_tvlv_tt_vlan_data object per announced vlan
-  */
- struct batadv_tvlv_tt_data {
- 	uint8_t flags;
- 	uint8_t ttvn;
-+	__be16  num_vlan;
-+};
-+
-+/**
-+ * struct batadv_tvlv_tt_vlan_data - vlan specific tt data propagated through
-+ *  the tt tvlv container
-+ * @crc: crc32 checksum of the entries belonging to this vlan
-+ * @vid: vlan identifier
-+ * @reserved: unused, useful for alignment purposes
-+ */
-+struct batadv_tvlv_tt_vlan_data {
-+	__be32	crc;
-+	__be16	vid;
- 	uint16_t reserved;
--	__be32  crc;
- };
+diff --git a/soft-interface.c b/soft-interface.c
+index 7cd23f5..f813bd5 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -466,8 +466,10 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 	atomic_set(&vlan->ap_isolation, 0);
  
- /**
+ 	err = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
+-	if (err)
++	if (err) {
++		kfree(vlan);
+ 		return err;
++	}
+ 
+ 	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
+ 	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
 -- 
 1.8.1.5
 
