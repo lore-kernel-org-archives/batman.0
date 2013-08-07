@@ -1,16 +1,8 @@
 Return-Path: <ordex@autistici.org>
-Date: Wed, 7 Aug 2013 18:09:45 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130807160945.GN2943@ritirata.org>
-References: <52020C25.9080705@gmail.com> <20130807090941.GK2943@ritirata.org>
- <52022858.3030105@gmail.com> <20130807120527.GL2943@ritirata.org>
- <52026D74.4060006@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="YH9Qf6Fh2G5kB/85"
-Content-Disposition: inline
-In-Reply-To: <52026D74.4060006@gmail.com>
-Subject: Re: [B.A.T.M.A.N.] DAT issue
+Date: Wed,  7 Aug 2013 18:28:54 +0200
+Message-Id: <1375892936-3602-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 0/2] TT-VLAN: BLA2 integration
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,61 +14,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <ordex@autistici.org>
+
+Hello people,
+
+this is the last patchset of the TT-VLAN series and requires the last one to be
+applied (per-VLAN TT CRC).
+
+In a few words...
+These changes enable BLA2 to filter only those TT entries belonging to the VLAN
+where BLA discovered other backbone nodes. The current code instead assumes that
+_all_ the local clients are shared among the backbones, despite of the VLAN used
+to interconnect them.
+
+Example.
+Imagine 2 nodes having several vlans over the wired connection.
+Node1 having eth0.1 and eth0.2
+Node2 having eth0.1 and eth0.3
+
+Node1 and Node2 are connected using a cable and so they hear each other on
+eth0.1.
+Clients connected to eth0.2 and eth0.3 are reachable only through the respective
+nodes therefore, if Node1 wanted to talk to a client connected to eth0.3 needs
+to know that it is served by Node2.
+
+In the current implementation this is not possible because BLA would consider
+all the clients reachable through any node of the LAN and will reject all the
+global TT entries from any other backbone, so losing this TT information.
+
+With this patchset, instead, BLA will detect that the backbone
+connection is only over eth0.1 and so will continue to store all the global
+clients belonging to the other VLANs.
 
 
---YH9Qf6Fh2G5kB/85
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hello Fernando,
-
-to be honest the set up is not really clear to me, not because of the topol=
-ogy
-but because of all the bridges you created.
-
-Once thing I am confident enough is
-that if you have clients connected to wlan1.N and then you have a bridge
-configured as { wlan1, eth0, bat0 } this is not going to work as expected.
-
-Traffic sent over wlan1.1 will not be delivered to the bridge and so not
-delivered to bat0.
-
-You should include wlan1.1 in the bridge itself.
-
-
-Other than DAT, I expect this to be a general problem.
-
+I hope the example did not create more confusion :)
 
 Cheers,
 
---=20
-Antonio Quartulli
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
+Changes from v1:
+- fixed kernel doc
 
---YH9Qf6Fh2G5kB/85
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
+Antonio Quartulli (2):
+  batman-adv: make the TT global purge routine VLAN specific
+  batman-adv: make the backbone gw check VLAN specific
 
-iQIcBAEBCAAGBQJSAnFJAAoJEADl0hg6qKeO0LYQALBwb2yapFrGR9IfG/qPJ5o4
-FeNSsJ9k9owZEhrpZXPBoiytJNb0e21gPqmo4Q7JJ4J5Rg/4j3n8PLG0UDc4Uni2
-fJm/veMpJuFDNEzpuTeqoUhvdvKJLsrXgIZDBc5tplFgmns67Dqjo8WF470cg5KP
-r5azNwRdlV0e4U3YRpICsDz1H/0uV/pskPQQLcrpzLDP0Nq3Fr9bCFkKRLmu6qX9
-9xCP6uzP0+Q1Wy9b/Q9qUpDolAWVZJ43WBKS+EDV2t3o41gH41NaeXww4SUVm2ta
-f12icfdVOvIYSC4/cZ2erJ4MndIBtWLR8ih/J+I2g/zxahDLkcQJLdafeRs5d+jT
-r+G2ZwA9pDiKn7aXUqUucCVQnWQ4+czD0e6Vn9OmiCjKHWdif/WLJKchdceSEllh
-UgV4ckLetwIKaF1IohvpnjuShfCS5ZiAsdl5VCtRFwZvU6vjdU9yBSu98f35qDfU
-agWCl9+joE28mQrcjc1yAd35N+JachfXjv9/c7d4abU03icKON51D0LotmIBmI/K
-HnBT3+67iipO7N+TTNuNy/hE24lpT8QvRLX/BWe4TOEEU31OK+aSVItZ+g7xAsJy
-u1PYKUI3wlrIEfjzePujo2ZPe6eHCB4G4xoOnL/rf8GQEeulow/RQyj22J8HyOGE
-7bKkrcN4HBXw+cXPgdPN
-=lg22
------END PGP SIGNATURE-----
+ bridge_loop_avoidance.c | 23 +++++++++++---------
+ bridge_loop_avoidance.h | 10 +++++----
+ originator.c            |  2 +-
+ routing.c               |  2 +-
+ translation-table.c     | 58 ++++++++++++++++++++++---------------------------
+ translation-table.h     |  2 +-
+ 6 files changed, 48 insertions(+), 49 deletions(-)
 
---YH9Qf6Fh2G5kB/85--
+-- 
+1.8.1.5
+
