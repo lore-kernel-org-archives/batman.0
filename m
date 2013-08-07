@@ -1,8 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed,  7 Aug 2013 18:28:54 +0200
-Message-Id: <1375892936-3602-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 0/2] TT-VLAN: BLA2 integration
+Date: Wed,  7 Aug 2013 18:28:55 +0200
+Message-Id: <1375892936-3602-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1375892936-3602-1-git-send-email-ordex@autistici.org>
+References: <1375892936-3602-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: make the TT global purge
+	routine VLAN specific
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,60 +18,133 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <ordex@autistici.org>
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Antonio Quartulli <antonio@open-mesh.com>
 
-Hello people,
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-this is the last patchset of the TT-VLAN series and requires the last one to be
-applied (per-VLAN TT CRC).
+Instead of unconditionally remove all the TT entries
+served by a given originator, make tt_global_orig_del()
+remove only entries matching a given VLAN identifier
+provided as argument.
 
-In a few words...
-These changes enable BLA2 to filter only those TT entries belonging to the VLAN
-where BLA discovered other backbone nodes. The current code instead assumes that
-_all_ the local clients are shared among the backbones, despite of the VLAN used
-to interconnect them.
+If such argument is negative then all the global entries
+served by the originator are removed.
 
-Example.
-Imagine 2 nodes having several vlans over the wired connection.
-Node1 having eth0.1 and eth0.2
-Node2 having eth0.1 and eth0.3
+This change is used into the BLA code to purge entries
+served by a newly discovered Backbone node, but limiting
+the operation only to those connected to the VLAN where the
+backbone has been discovered.
 
-Node1 and Node2 are connected using a cable and so they hear each other on
-eth0.1.
-Clients connected to eth0.2 and eth0.3 are reachable only through the respective
-nodes therefore, if Node1 wanted to talk to a client connected to eth0.3 needs
-to know that it is served by Node2.
-
-In the current implementation this is not possible because BLA would consider
-all the clients reachable through any node of the LAN and will reject all the
-global TT entries from any other backbone, so losing this TT information.
-
-With this patchset, instead, BLA will detect that the backbone
-connection is only over eth0.1 and so will continue to store all the global
-clients belonging to the other VLANs.
-
-
-I hope the example did not create more confusion :)
-
-Cheers,
-
-
-Changes from v1:
-- fixed kernel doc
-
-
-Antonio Quartulli (2):
-  batman-adv: make the TT global purge routine VLAN specific
-  batman-adv: make the backbone gw check VLAN specific
-
- bridge_loop_avoidance.c | 23 +++++++++++---------
- bridge_loop_avoidance.h | 10 +++++----
+Cc: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
+ bridge_loop_avoidance.c |  4 ++--
  originator.c            |  2 +-
  routing.c               |  2 +-
- translation-table.c     | 58 ++++++++++++++++++++++---------------------------
+ translation-table.c     | 17 ++++++++++++++++-
  translation-table.h     |  2 +-
- 6 files changed, 48 insertions(+), 49 deletions(-)
+ 5 files changed, 21 insertions(+), 6 deletions(-)
 
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index e8a6458..3b3867d 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -411,10 +411,10 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, uint8_t *orig,
+ 		return NULL;
+ 	}
+ 
+-	/* this is a gateway now, remove any tt entries */
++	/* this is a gateway now, remove any TT entry on this VLAN */
+ 	orig_node = batadv_orig_hash_find(bat_priv, orig);
+ 	if (orig_node) {
+-		batadv_tt_global_del_orig(bat_priv, orig_node,
++		batadv_tt_global_del_orig(bat_priv, orig_node, vid,
+ 					  "became a backbone gateway");
+ 		batadv_orig_node_free_ref(orig_node);
+ 	}
+diff --git a/originator.c b/originator.c
+index 7a499da..ee1d847 100644
+--- a/originator.c
++++ b/originator.c
+@@ -230,7 +230,7 @@ static void batadv_orig_node_free_rcu(struct rcu_head *rcu)
+ 
+ 	batadv_frag_purge_orig(orig_node, NULL);
+ 
+-	batadv_tt_global_del_orig(orig_node->bat_priv, orig_node,
++	batadv_tt_global_del_orig(orig_node->bat_priv, orig_node, -1,
+ 				  "originator timed out");
+ 
+ 	kfree(orig_node->tt_buff);
+diff --git a/routing.c b/routing.c
+index e63b05d..2b35205 100644
+--- a/routing.c
++++ b/routing.c
+@@ -47,7 +47,7 @@ static void _batadv_update_route(struct batadv_priv *bat_priv,
+ 	if ((curr_router) && (!neigh_node)) {
+ 		batadv_dbg(BATADV_DBG_ROUTES, bat_priv,
+ 			   "Deleting route towards: %pM\n", orig_node->orig);
+-		batadv_tt_global_del_orig(bat_priv, orig_node,
++		batadv_tt_global_del_orig(bat_priv, orig_node, -1,
+ 					  "Deleted route towards originator");
+ 
+ 	/* route added */
+diff --git a/translation-table.c b/translation-table.c
+index 982a3c5..37f34a8 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1581,8 +1581,18 @@ out:
+ 		batadv_tt_local_entry_free_ref(local_entry);
+ }
+ 
++/**
++ * batadv_tt_global_del_orig - remove all the TT global entries belonging to the
++ *  given originator matching the provided vid
++ * @bat_priv: the bat priv with all the soft interface information
++ * @orig_node: the originator owning the entries to remove
++ * @match_vid: the VLAN identifier to match. If negative all the entries will be
++ *  removed
++ * @message: debug message to print as "reason"
++ */
+ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
+ 			       struct batadv_orig_node *orig_node,
++			       int32_t match_vid,
+ 			       const char *message)
+ {
+ 	struct batadv_tt_global_entry *tt_global;
+@@ -1604,6 +1614,10 @@ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
+ 		spin_lock_bh(list_lock);
+ 		hlist_for_each_entry_safe(tt_common_entry, safe,
+ 					  head, hash_entry) {
++			/* remove only matching entries */
++			if (match_vid >= 0 && tt_common_entry->vid != match_vid)
++				continue;
++
+ 			tt_global = container_of(tt_common_entry,
+ 						 struct batadv_tt_global_entry,
+ 						 common);
+@@ -2571,7 +2585,8 @@ static void batadv_tt_fill_gtable(struct batadv_priv *bat_priv,
+ 		goto out;
+ 
+ 	/* Purge the old table first.. */
+-	batadv_tt_global_del_orig(bat_priv, orig_node, "Received full table");
++	batadv_tt_global_del_orig(bat_priv, orig_node, -1,
++				  "Received full table");
+ 
+ 	_batadv_tt_update_changes(bat_priv, orig_node, tt_change, num_entries,
+ 				  ttvn);
+diff --git a/translation-table.h b/translation-table.h
+index c6bf33c..dc6db4e 100644
+--- a/translation-table.h
++++ b/translation-table.h
+@@ -30,7 +30,7 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset);
+ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset);
+ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
+ 			       struct batadv_orig_node *orig_node,
+-			       const char *message);
++			       int32_t match_vid, const char *message);
+ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
+ 						  const uint8_t *src,
+ 						  const uint8_t *addr,
 -- 
 1.8.1.5
 
