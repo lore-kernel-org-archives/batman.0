@@ -1,12 +1,11 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Tue,  6 Aug 2013 20:21:15 +0200
-Message-Id: <1375813275-19292-1-git-send-email-linus.luessing@web.de>
+Return-Path: <feanpg@gmail.com>
+Message-ID: <52020C25.9080705@gmail.com>
+Date: Wed, 07 Aug 2013 10:58:13 +0200
+From: Fernando Pizarro <feanpg@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv4 next] batman-adv: fix potential kernel
-	paging errors for unicast transmissions
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] DAT issue
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,202 +19,34 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-There are several functions which might reallocate skb data. Currently
-some places keep reusing their old ethhdr pointer regardless of whether
-they became invalid after such a reallocation or not. This potentially
-leads to kernel paging errors.
+Hi all!
 
-This patch fixes these by refetching the ethdr pointer after the
-potential reallocations.
+I'm playing with OpenWRT and BATMAN advance and I had configured one 
+essid to serve dynamic vlans via freeradius reply attributes.
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
-v4:
-* Reassign new ethhdr correctly in batadv_unicast_generic_send_skb()
+I have a bridge (br0) with bat0, wireless and ethernet interface, and 
+hostapd creates a new bridge by vlan (brvlanX) with vlanX and wlan1.X 
+succefully. Br0 has configured a VLAN and IP to connect with every other 
+nodes. There is the same explanation, but schematic:
 
-v3:
-* Remove the change from 'Returns' to 'Return
-* Avoid using eth_hdr(skb), using (struct ethhdr *)skb->data instead
-* Added fix for batadv_gw_is_dhcp_target() too
+Wireless:
 
- bridge_loop_avoidance.c |    2 ++
- gateway_client.c        |   12 +++++++++++-
- gateway_client.h        |    3 +--
- soft-interface.c        |    8 +++++++-
- unicast.c               |   12 ++++++++++--
- 5 files changed, 31 insertions(+), 6 deletions(-)
+phy0 -> wlan0 -> bat0
+phy1 -> wlan1 -> wlan1.1
+                      \ --> wlan1.N
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index e14531f..264de88 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -1529,6 +1529,8 @@ out:
-  * in these cases, the skb is further handled by this function and
-  * returns 1, otherwise it returns 0 and the caller shall further
-  * process the skb.
-+ *
-+ * This call might reallocate skb data.
-  */
- int batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 		  unsigned short vid)
-diff --git a/gateway_client.c b/gateway_client.c
-index f105219..e1516d5 100644
---- a/gateway_client.c
-+++ b/gateway_client.c
-@@ -508,6 +508,7 @@ out:
- 	return 0;
- }
- 
-+/* this call might reallocate skb data */
- static bool batadv_is_type_dhcprequest(struct sk_buff *skb, int header_len)
- {
- 	int ret = false;
-@@ -568,6 +569,7 @@ out:
- 	return ret;
- }
- 
-+/* this call might reallocate skb data */
- bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
- {
- 	struct ethhdr *ethhdr;
-@@ -619,6 +621,11 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
- 
- 	if (!pskb_may_pull(skb, *header_len + sizeof(*udphdr)))
- 		return false;
-+
-+	ethhdr = (struct ethhdr *)skb->data;
-+	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q)
-+		ethhdr = (struct ethhdr *)(skb->data + VLAN_HLEN);
-+
- 	udphdr = (struct udphdr *)(skb->data + *header_len);
- 	*header_len += sizeof(*udphdr);
- 
-@@ -634,12 +641,14 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
- 	return true;
- }
- 
-+/* this call might reallocate skb data */
- bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
--			    struct sk_buff *skb, struct ethhdr *ethhdr)
-+			    struct sk_buff *skb)
- {
- 	struct batadv_neigh_node *neigh_curr = NULL, *neigh_old = NULL;
- 	struct batadv_orig_node *orig_dst_node = NULL;
- 	struct batadv_gw_node *curr_gw = NULL;
-+	struct ethhdr *ethhdr;
- 	bool ret, out_of_range = false;
- 	unsigned int header_len = 0;
- 	uint8_t curr_tq_avg;
-@@ -648,6 +657,7 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
- 	if (!ret)
- 		goto out;
- 
-+	ethhdr = (struct ethhdr *)skb->data;
- 	orig_dst_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
- 						 ethhdr->h_dest);
- 	if (!orig_dst_node)
-diff --git a/gateway_client.h b/gateway_client.h
-index 039902d..1037d75 100644
---- a/gateway_client.h
-+++ b/gateway_client.h
-@@ -34,7 +34,6 @@ void batadv_gw_node_delete(struct batadv_priv *bat_priv,
- void batadv_gw_node_purge(struct batadv_priv *bat_priv);
- int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset);
- bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len);
--bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
--			    struct sk_buff *skb, struct ethhdr *ethhdr);
-+bool batadv_gw_out_of_range(struct batadv_priv *bat_priv, struct sk_buff *skb);
- 
- #endif /* _NET_BATMAN_ADV_GATEWAY_CLIENT_H_ */
-diff --git a/soft-interface.c b/soft-interface.c
-index 700d0b4..b39e50d 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -180,6 +180,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	if (batadv_bla_tx(bat_priv, skb, vid))
- 		goto dropped;
- 
-+	ethhdr = (struct ethhdr *)skb->data;
-+
- 	/* Register the client MAC in the transtable */
- 	if (!is_multicast_ether_addr(ethhdr->h_source))
- 		batadv_tt_local_add(soft_iface, ethhdr->h_source, skb->skb_iif);
-@@ -220,6 +222,10 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 		default:
- 			break;
- 		}
-+
-+		/* reminder: ethhdr might have become unusable from here on
-+		 * (batadv_gw_is_dhcp_target() might have reallocated skb data)
-+		 */
- 	}
- 
- 	/* ethernet packet should be broadcasted */
-@@ -266,7 +272,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	/* unicast packet */
- 	} else {
- 		if (atomic_read(&bat_priv->gw_mode) != BATADV_GW_MODE_OFF) {
--			ret = batadv_gw_out_of_range(bat_priv, skb, ethhdr);
-+			ret = batadv_gw_out_of_range(bat_priv, skb);
- 			if (ret)
- 				goto dropped;
- 		}
-diff --git a/unicast.c b/unicast.c
-index 4c5a1aa..49ffb7c 100644
---- a/unicast.c
-+++ b/unicast.c
-@@ -326,7 +326,9 @@ static bool batadv_unicast_push_and_fill_skb(struct sk_buff *skb, int hdr_size,
-  * @skb: the skb containing the payload to encapsulate
-  * @orig_node: the destination node
-  *
-- * Returns false if the payload could not be encapsulated or true otherwise
-+ * Returns false if the payload could not be encapsulated or true otherwise.
-+ *
-+ * This call might reallocate skb data.
-  */
- static bool batadv_unicast_prepare_skb(struct sk_buff *skb,
- 				       struct batadv_orig_node *orig_node)
-@@ -343,7 +345,9 @@ static bool batadv_unicast_prepare_skb(struct sk_buff *skb,
-  * @orig_node: the destination node
-  * @packet_subtype: the batman 4addr packet subtype to use
-  *
-- * Returns false if the payload could not be encapsulated or true otherwise
-+ * Returns false if the payload could not be encapsulated or true otherwise.
-+ *
-+ * This call might reallocate skb data.
-  */
- bool batadv_unicast_4addr_prepare_skb(struct batadv_priv *bat_priv,
- 				      struct sk_buff *skb,
-@@ -402,6 +406,7 @@ int batadv_unicast_generic_send_skb(struct batadv_priv *bat_priv,
- 	int data_len = skb->len;
- 	int ret = NET_RX_DROP;
- 	unsigned int dev_mtu;
-+	unsigned int header_len;
- 
- 	/* get routing information */
- 	if (is_multicast_ether_addr(ethhdr->h_dest)) {
-@@ -430,11 +435,13 @@ find_router:
- 	case BATADV_UNICAST:
- 		if (!batadv_unicast_prepare_skb(skb, orig_node))
- 			goto out;
-+		header_len = sizeof(struct batadv_unicast_packet);
- 		break;
- 	case BATADV_UNICAST_4ADDR:
- 		if (!batadv_unicast_4addr_prepare_skb(bat_priv, skb, orig_node,
- 						      packet_subtype))
- 			goto out;
-+		header_len = sizeof(struct batadv_unicast_4addr_packet);
- 		break;
- 	default:
- 		/* this function supports UNICAST and UNICAST_4ADDR only. It
-@@ -443,6 +450,7 @@ find_router:
- 		goto out;
- 	}
- 
-+	ethhdr = (struct ethhdr *)(skb->data + header_len);
- 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
- 
- 	/* inform the destination node that we are still missing a correct route
--- 
-1.7.10.4
+Hostapd bridge:
 
+wlan1 -> brvlan1 -> {wlan1.1; vlan1}
+       \ --> brvlanN -> {wlan1.N; vlanN}
+
+Ethernet bridge:
+
+br0 -> {bat0; eth0; wlan1}
+    \ --> br0.X == IP/NETMASK
+
+When I look at batman dat table there aren't any registry, but variuos 
+stations are connected. Why is that? What's wrong in my config?
+
+Thanks a lot.
+Fernando.
