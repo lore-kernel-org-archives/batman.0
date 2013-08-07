@@ -1,15 +1,8 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 8 Aug 2013 01:23:50 +0800
-References: <52020C25.9080705@gmail.com> <20130807160945.GN2943@ritirata.org>
- <52027EBD.70007@gmail.com>
-In-Reply-To: <52027EBD.70007@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201308080123.50676.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] DAT issue
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Thu,  8 Aug 2013 00:21:31 +0200
+Message-Id: <1375914091-2808-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: make the TT CRC logic VLAN specific
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,38 +14,72 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-Fernando,
+This change allows nodes to handle the TT table on a
+per-VLAN basis. This is needed because nodes may have to
+store only some of the global entries advertised by another
+node.
 
-On Thursday, August 08, 2013 01:07:09 Fernando Pizarro wrote:
-> 2) I thougt having nodes without IP and just forwarding traffic to the 
-> main GW (the firewall) through batman-adv, not natting every client 
-> traffic with the node IP. In that way, roaming is working very good. The 
-> problem are stablished sessions, these sessions are lost jumping from a 
-> node to any other. I think this problem is nearly related to the empty 
-> DAT table, and empty DAT table problem is nearly related too the nodes 
-> has no IP assigned. However, I'm not sure about this..
+In this scenario such nodes would re-create only a partial
+global table and would not be able to compute a correct CRC
+anymore.
 
-the DAT table has nothing to do with roaming or sessions. It merely is an IP 
-address cache to speed up ARP lookups. Even without DAT everything should 
-work. I recommend to read our DAT user guide:
-http://www.open-mesh.org/projects/batman-adv/wiki/DistributedArpTable
+This patch splits the logic and introduces one CRC per VLAN.
+In this way a node fetching only some entries belonging to
+some VLANs is still able to compute the needed CRCs and
+still check the table correctness.
 
-If disabling DAT would break something we certainly would not make it an 
-option to invite everybody to shoot themselves in the foot.  ;-)
+With this patch the shape of the TVLV-TT is changed too
+because now a node needs to advertise all the CRCs of all
+the VLANs that it is wired to.
 
-Therefore, I have to agree with Antonio that your problem is likely to be 
-found somewhere else. First, you should define which established sessions 
-break. The ones going into the internet or the ones you have locally. 
-Depending on the answer we can dig deeper.
+The debug output of the local Translation Table now shows
+the CRC along with each entry since there is not a common
+value for the entire table anymore.
 
-Generally it is a good idea to simplfy the setup until a point where 
-everything works. Then you can move forward and make things more complicated. 
-For the time being I'd recommend to vastly simplify your bridge & vlan setup 
-by bridging your AP interface with bat0 only (no vlans, no radius tags, no 
-brvlanN interface) to see if your roaming works.
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
+ packet.h | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
-Cheers,
-Marek
+diff --git a/packet.h b/packet.h
+index 08e175a..f4bbb05 100644
+--- a/packet.h
++++ b/packet.h
+@@ -391,14 +391,26 @@ struct batadv_tvlv_gateway_data {
+  * struct batadv_tvlv_tt_data - tt data propagated through the tt tvlv container
+  * @flags: translation table flags (see batadv_tt_data_flags)
+  * @ttvn: translation table version number
+- * @reserved: field reserved for future use
+- * @crc: crc32 checksum of the local translation table
++ * @vlan_num: number of announced VLANs. In the TVLV this struct is followed by
++ *  one batadv_tvlv_tt_vlan_data object per announced vlan
+  */
+ struct batadv_tvlv_tt_data {
+ 	uint8_t flags;
+ 	uint8_t ttvn;
++	__be16  num_vlan;
++};
++
++/**
++ * struct batadv_tvlv_tt_vlan_data - vlan specific tt data propagated through
++ *  the tt tvlv container
++ * @crc: crc32 checksum of the entries belonging to this vlan
++ * @vid: vlan identifier
++ * @reserved: unused, useful for alignment purposes
++ */
++struct batadv_tvlv_tt_vlan_data {
++	__be32	crc;
++	__be16	vid;
+ 	uint16_t reserved;
+-	__be32  crc;
+ };
+ 
+ /**
+-- 
+1.8.1.5
+
