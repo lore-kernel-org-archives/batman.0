@@ -1,15 +1,15 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Thu, 8 Aug 2013 12:53:22 +0800
-References: <1375914091-2808-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1375914091-2808-1-git-send-email-ordex@autistici.org>
+Date: Thu, 8 Aug 2013 12:55:22 +0800
+References: <1375916848-1874-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1375916848-1874-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201308081253.23071.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: make the TT CRC logic VLAN
-	specific
+Message-Id: <201308081255.22537.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix memory leak in
+	batadv_softif_create_vlan()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,40 +21,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <ordex@autistici.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thursday, August 08, 2013 06:21:31 Antonio Quartulli wrote:
-> From: Antonio Quartulli <antonio@open-mesh.com>
-> 
-> This change allows nodes to handle the TT table on a
-> per-VLAN basis. This is needed because nodes may have to
-> store only some of the global entries advertised by another
-> node.
-> 
-> In this scenario such nodes would re-create only a partial
-> global table and would not be able to compute a correct CRC
-> anymore.
-> 
-> This patch splits the logic and introduces one CRC per VLAN.
-> In this way a node fetching only some entries belonging to
-> some VLANs is still able to compute the needed CRCs and
-> still check the table correctness.
-> 
-> With this patch the shape of the TVLV-TT is changed too
-> because now a node needs to advertise all the CRCs of all
-> the VLANs that it is wired to.
-> 
-> The debug output of the local Translation Table now shows
-> the CRC along with each entry since there is not a common
-> value for the entire table anymore.
-> 
-> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-> ---
->  packet.h | 18 +++++++++++++++---
->  1 file changed, 15 insertions(+), 3 deletions(-)
+On Thursday, August 08, 2013 07:07:28 Antonio Quartulli wrote:
+> --- a/soft-interface.c
+> +++ b/soft-interface.c
+> @@ -466,8 +466,10 @@ int batadv_softif_create_vlan(struct batadv_priv
+> *bat_priv, unsigned short vid) atomic_set(&vlan->ap_isolation, 0);
+>  
+>         err = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
+> -       if (err)
+> +       if (err) {
+> +               kfree(vlan);
+>                 return err;
+> +       }
 
-Applied in revision 38ae8d7.
+You raise a valid point here but what about the local entry that is added 
+right above ? Does it require cleanup as well ?
 
-Thanks,
+Cheers,
 Marek
