@@ -1,9 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu,  8 Aug 2013 01:18:19 +0200
-Message-Id: <1375917499-847-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: use proper network order
-	conversion
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 8 Aug 2013 12:53:22 +0800
+References: <1375914091-2808-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1375914091-2808-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201308081253.23071.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: make the TT CRC logic VLAN
+	specific
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,29 +22,39 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <ordex@autistici.org>
+Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <ordex@autistici.org>
 
-Introduced by eb7643628a608cb338d48d298ce7ca15fadfb239
-("batman-adv: set skb priority according to content")
+On Thursday, August 08, 2013 06:21:31 Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+> 
+> This change allows nodes to handle the TT table on a
+> per-VLAN basis. This is needed because nodes may have to
+> store only some of the global entries advertised by another
+> node.
+> 
+> In this scenario such nodes would re-create only a partial
+> global table and would not be able to compute a correct CRC
+> anymore.
+> 
+> This patch splits the logic and introduces one CRC per VLAN.
+> In this way a node fetching only some entries belonging to
+> some VLANs is still able to compute the needed CRCs and
+> still check the table correctness.
+> 
+> With this patch the shape of the TVLV-TT is changed too
+> because now a node needs to advertise all the CRCs of all
+> the VLANs that it is wired to.
+> 
+> The debug output of the local Translation Table now shows
+> the CRC along with each entry since there is not a common
+> value for the entire table anymore.
+> 
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+>  packet.h | 18 +++++++++++++++---
+>  1 file changed, 15 insertions(+), 3 deletions(-)
 
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Applied in revision 38ae8d7.
 
-diff --git a/main.c b/main.c
-index ed97382..58c98b6 100644
---- a/main.c
-+++ b/main.c
-@@ -283,7 +283,7 @@ void batadv_skb_set_priority(struct sk_buff *skb, int offset)
- 					  sizeof(*vhdr), &vhdr_tmp);
- 		if (!vhdr)
- 			return;
--		prio = htons(vhdr->h_vlan_TCI) & VLAN_PRIO_MASK;
-+		prio = ntohs(vhdr->h_vlan_TCI) & VLAN_PRIO_MASK;
- 		prio = prio >> VLAN_PRIO_SHIFT;
- 		break;
- 	case htons(ETH_P_IP):
--- 
-1.8.1.5
-
+Thanks,
+Marek
