@@ -1,17 +1,9 @@
 Return-Path: <ordex@autistici.org>
-Date: Sat, 10 Aug 2013 18:24:14 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130810162414.GE849@ritirata.org>
-References: <1375303667-3018-1-git-send-email-ordex@autistici.org>
- <1375303667-3018-6-git-send-email-ordex@autistici.org>
- <20130803211005.GD12891@pandem0nium>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="wchHw8dVAp53YPj8"
-Content-Disposition: inline
-In-Reply-To: <20130803211005.GD12891@pandem0nium>
-Subject: Re: [B.A.T.M.A.N.] [RFCv2 05/10] batman-adv: add
- bat_metric_is_equiv_or_better API function
+Date: Sat, 10 Aug 2013 19:04:53 +0200
+Message-Id: <1376154302-1203-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 00/10] Improving the routing protocol
+	abstraction
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,73 +15,86 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Antonio Quartulli <antonio@open-mesh.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <ordex@autistici.org>
+
+Hello list,
+
+After two iterations of this patchset as RFC, I'm here sending the first real
+PATCH series :)
+
+This patchset is introducing a new set of routing API functions meant to
+improve the routing protocol abstraction.
+
+Also the orig_node and the neigh_node structure have been heavily modified in
+order to split their generic members from those which are metric related.
+
+(the rest of the message is what you already had in the RFC cover
+letter).
+
+This changes have been written while developing batman V. The latter helped me
+in understanding what batman iv and v have in common and what not.
+
+The main problem was the metric: the two protocols use different metric domains
+and different semantics.
+Therefore all the functions handling/printing the metric needed to be
+generalised and rearranged to let the protocols decide what to do.
+
+Another issue was the way routing protocols handle the orig and neigh node
+structures. Also these two have been changed and some small APIs have been
+provided as well.
+
+Moreover, after Simon's RFC about the new multi-interface optimisation, we saw
+the need for a better abstraction so that mechanisms like that could easily be
+re-used by new algorithms (like batman v) with little effort.
 
 
---wchHw8dVAp53YPj8
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is the second version of this RFC where I introduced some changes to the
+names of some functions and some other minor changes discussed in the previous
+RFC thread.
 
-On Sat, Aug 03, 2013 at 11:10:07PM +0200, Simon Wunderlich wrote:
-> > +static bool batadv_iv_ogm_metric_is_eob(uint32_t metric, uint32_t new_=
-metric)
-> > +{
-> > +	return (metric - new_metric < BATADV_TQ_SIMILARITY_THRESHOLD);
-> > +}
-> > +
->=20
-> Since it's static anyway, maybe call this function batadv_iv_ogm_metric_i=
-s_equiv_or_better instead? eob
 
-if I use batadv_iv_ogm_metric_is_equiv_or_better than I have problems wit h=
-the
-assignment of the ops member later...line toooo long :) This is why I chose=
- that
-name.
++ metric related:
+        - bat_metric_get
+	- bat_metric_is_equiv_or_better
+        - bat_metric_compare
 
-> looks so ... random. :) Also, maybe use BATADV_IV_TQ_SIMILARITY_THRESHOLD=
-? Although TQ somehow implies
-> BATADV_IV ...
-
-I don't think it is correct. Metric is separated from the algorithm and and=
- this
-define belongs to the metric. In the future we may have B.A.T.M.A.N. X which
-wants to use the TQ again..at that point it should (re-)use all the constan=
-ts we
-already have.
-
++ orig_node related:
+        - bat_orig_print: print the originator table
+        - bat_orig_free
+        - bat_orig_add_if
+        - bat_orig_del_if
 
 
 Cheers,
 
---=20
-Antonio Quartulli
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
+Antonio Quartulli (10):
+  batman-adv: make struct batadv_neigh_node algorithm agnostic
+  batman-adv: make struct batadv_orig_node algorithm agnostic
+  batman-adv: add bat_orig_print function API
+  batman-adv: add bat_metric_get API function
+  batman-adv: add bat_metric_is_equiv_or_better API function
+  batman-adv: add bat_metric_compare API function
+  batman-adv: adapt bonding to use the new API functions
+  batman-adv: adapt the neighbor purging routine to use the new API
+    functions
+  batman-adv: provide orig_node routing API
+  batman-adv: adapt the TT component to use the new API functions
 
---wchHw8dVAp53YPj8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+ bat_iv_ogm.c        | 358 +++++++++++++++++++++++++++++++++++++++++++---------
+ gateway_client.c    |  16 +--
+ main.c              |   5 +-
+ main.h              |   6 +
+ network-coding.c    |   8 +-
+ originator.c        | 230 +++++++--------------------------
+ originator.h        |   5 +-
+ routing.c           |  35 +++--
+ routing.h           |   3 +-
+ translation-table.c |  31 +++--
+ types.h             |  85 +++++++++----
+ 11 files changed, 476 insertions(+), 306 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
+-- 
+1.8.1.5
 
-iQIcBAEBCAAGBQJSBmkuAAoJEADl0hg6qKeOfUEP/jtp0spVF6p33+WI0dIzzofN
-XsmriPNh2Dk6bfOqLZGc5es3SDbwUYcmhidluGhVXJZ8LgfxtZzUHSQFRrp18EDh
-iUzokTwLXQ6icS3zkmPUBQb7CndFSM9Lo6Y5lKxqhoJL6uzawrlQzRTX1bwFoo+y
-Qtce/pnqmTlIqE0YdJPwwVqeDS7z3iJlDJPqW4hiyOdHjvDZxKjeUVgRG4Ud1Aqf
-ZDe4slhIOma/4K55GMLzM5MNRrJeTEpRL/aRyVeoAuS9GneDFCd21geQ24eCRWby
-nx+q60YPTjWUjqauDyTvzwGH891Sy76y3oFIWWJ8BnCm2871E7V2BRDlImwVFmSr
-bymYWublsprbt+9yZBzZTeSClLOnzRVjcCNe+VdaESr3R7RNBrhv2tLEgpNFS1E7
-zrspU09guDiI+eh1LwJUaNrWz6VlFRvGGX7+MVh53zPNSmXqP/uxQe/4NM3UPM6A
-2xUCk/6W0uV0F29oF25GWHKvUFs7NOcFqTUyvd3adeL4243O3j9tRrlEmwPt69Kz
-zuhGtHTGCBKGPfHKfZosLN5za9mIzWsY0P8ZJ10Ya2dXa2fjajBzQQkYYQa8J40m
-ki6OdFcr1a0OvMDcscY5FBs3AfeYEPLG6PGCSpaH9+A8bos8/ZmN1n3R+IhoTXQH
-SNFlxJoFGW4nspQmaFfS
-=6WP+
------END PGP SIGNATURE-----
-
---wchHw8dVAp53YPj8--
