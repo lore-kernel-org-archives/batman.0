@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 11 Aug 2013 14:33:17 +0200
-Message-Id: <1376224403-2494-4-git-send-email-ordex@autistici.org>
+Date: Sun, 11 Aug 2013 14:33:18 +0200
+Message-Id: <1376224403-2494-5-git-send-email-ordex@autistici.org>
 In-Reply-To: <1376224403-2494-1-git-send-email-ordex@autistici.org>
 References: <1376224403-2494-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 3/9] batman-adv: add bat_orig_print
-	function API
+Subject: [B.A.T.M.A.N.] [PATCHv2 4/9] batman-adv: add bat_metric_get API
+	function
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,213 +22,71 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-Each routing protocol has its own metric and private
-variables, therefore it is useful to introduce a new API
-for originator information printing.
-
-This API needs to be implemented by each protocol in order
-to provide its specific originator table output.
+Each routing algorithm may store its metric value in a
+different place, therefore a new API function is needed in
+order to ask the algorithm to return the metric of a given
+originator
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- bat_iv_ogm.c | 66 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- originator.c | 66 +++++++++---------------------------------------------------
- types.h      |  3 +++
- 3 files changed, 79 insertions(+), 56 deletions(-)
+ bat_iv_ogm.c | 9 +++++++++
+ main.c       | 3 ++-
+ types.h      | 1 +
+ 3 files changed, 12 insertions(+), 1 deletion(-)
 
 diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index b8114d6..61b74ca 100644
+index 61b74ca..6865ccf 100644
 --- a/bat_iv_ogm.c
 +++ b/bat_iv_ogm.c
-@@ -1392,6 +1392,71 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
- 	return NET_RX_SUCCESS;
+@@ -1457,6 +1457,14 @@ next:
+ 		seq_puts(seq, "No batman nodes in range ...\n");
  }
  
-+/**
-+ * batadv_iv_ogm_orig_print - print the originator table
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @seq: debugfs table seq_file struct
-+ */
-+static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
-+				     struct seq_file *seq)
++static uint32_t batadv_iv_ogm_metric_get(struct batadv_neigh_node *neigh_node)
 +{
-+	struct batadv_hashtable *hash = bat_priv->orig_hash;
-+	struct hlist_head *head;
-+	struct batadv_orig_node *orig_node;
-+	struct batadv_neigh_node *neigh_node, *neigh_node_tmp;
-+	int batman_count = 0;
-+	int last_seen_secs;
-+	int last_seen_msecs;
-+	unsigned long last_seen_jiffies;
-+	uint32_t i;
++	if (!neigh_node)
++		return 0;
 +
-+	seq_printf(seq, "  %-15s %s (%s/%i) %17s [%10s]: %20s ...\n",
-+		   "Originator", "last-seen", "#", BATADV_TQ_MAX_VALUE,
-+		   "Nexthop", "outgoingIF", "Potential nexthops");
-+
-+	for (i = 0; i < hash->size; i++) {
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
-+			neigh_node = batadv_orig_node_get_router(orig_node);
-+			if (!neigh_node)
-+				continue;
-+
-+			if (neigh_node->bat_iv.tq_avg == 0)
-+				goto next;
-+
-+			last_seen_jiffies = jiffies - orig_node->last_seen;
-+			last_seen_msecs = jiffies_to_msecs(last_seen_jiffies);
-+			last_seen_secs = last_seen_msecs / 1000;
-+			last_seen_msecs = last_seen_msecs % 1000;
-+
-+			seq_printf(seq, "%pM %4i.%03is   (%3i) %pM [%10s]:",
-+				   orig_node->orig, last_seen_secs,
-+				   last_seen_msecs, neigh_node->bat_iv.tq_avg,
-+				   neigh_node->addr,
-+				   neigh_node->if_incoming->net_dev->name);
-+
-+			hlist_for_each_entry_rcu(neigh_node_tmp,
-+						 &orig_node->neigh_list, list) {
-+				seq_printf(seq, " %pM (%3i)",
-+					   neigh_node_tmp->addr,
-+					   neigh_node_tmp->bat_iv.tq_avg);
-+			}
-+
-+			seq_puts(seq, "\n");
-+			batman_count++;
-+
-+next:
-+			batadv_neigh_node_free_ref(neigh_node);
-+		}
-+		rcu_read_unlock();
-+	}
-+
-+	if (batman_count == 0)
-+		seq_puts(seq, "No batman nodes in range ...\n");
++	return neigh_node->bat_iv.tq_avg;
 +}
 +
  static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
  	.name = "BATMAN_IV",
  	.bat_iface_enable = batadv_iv_ogm_iface_enable,
-@@ -1400,6 +1465,7 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
+@@ -1465,6 +1473,7 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
  	.bat_primary_iface_set = batadv_iv_ogm_primary_iface_set,
  	.bat_ogm_schedule = batadv_iv_ogm_schedule,
  	.bat_ogm_emit = batadv_iv_ogm_emit,
-+	.bat_orig_print = batadv_iv_ogm_orig_print,
++	.bat_metric_get = batadv_iv_ogm_metric_get,
+ 	.bat_orig_print = batadv_iv_ogm_orig_print,
  };
  
- int __init batadv_iv_init(void)
-diff --git a/originator.c b/originator.c
-index ccdb246..b3f6910 100644
---- a/originator.c
-+++ b/originator.c
-@@ -506,73 +506,27 @@ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
- {
- 	struct net_device *net_dev = (struct net_device *)seq->private;
- 	struct batadv_priv *bat_priv = netdev_priv(net_dev);
--	struct batadv_hashtable *hash = bat_priv->orig_hash;
--	struct hlist_head *head;
- 	struct batadv_hard_iface *primary_if;
--	struct batadv_orig_node *orig_node;
--	struct batadv_neigh_node *neigh_node, *neigh_node_tmp;
--	int batman_count = 0;
--	int last_seen_secs;
--	int last_seen_msecs;
--	unsigned long last_seen_jiffies;
--	uint32_t i;
- 
- 	primary_if = batadv_seq_print_text_primary_if_get(seq);
- 	if (!primary_if)
--		goto out;
-+		return 0;
- 
--	seq_printf(seq, "[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%pM (%s)]\n",
-+	seq_printf(seq, "[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%pM (%s %s)]\n",
- 		   BATADV_SOURCE_VERSION, primary_if->net_dev->name,
--		   primary_if->net_dev->dev_addr, net_dev->name);
--	seq_printf(seq, "  %-15s %s (%s/%i) %17s [%10s]: %20s ...\n",
--		   "Originator", "last-seen", "#", BATADV_TQ_MAX_VALUE,
--		   "Nexthop", "outgoingIF", "Potential nexthops");
-+		   primary_if->net_dev->dev_addr, net_dev->name,
-+		   bat_priv->bat_algo_ops->name);
- 
--	for (i = 0; i < hash->size; i++) {
--		head = &hash->table[i];
-+	batadv_hardif_free_ref(primary_if);
- 
--		rcu_read_lock();
--		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
--			neigh_node = batadv_orig_node_get_router(orig_node);
--			if (!neigh_node)
--				continue;
--
--			if (neigh_node->bat_iv.tq_avg == 0)
--				goto next;
--
--			last_seen_jiffies = jiffies - orig_node->last_seen;
--			last_seen_msecs = jiffies_to_msecs(last_seen_jiffies);
--			last_seen_secs = last_seen_msecs / 1000;
--			last_seen_msecs = last_seen_msecs % 1000;
--
--			seq_printf(seq, "%pM %4i.%03is   (%3i) %pM [%10s]:",
--				   orig_node->orig, last_seen_secs,
--				   last_seen_msecs, neigh_node->bat_iv.tq_avg,
--				   neigh_node->addr,
--				   neigh_node->if_incoming->net_dev->name);
--
--			hlist_for_each_entry_rcu(neigh_node_tmp,
--						 &orig_node->neigh_list, list) {
--				seq_printf(seq, " %pM (%3i)",
--					   neigh_node_tmp->addr,
--					   neigh_node_tmp->bat_iv.tq_avg);
--			}
--
--			seq_puts(seq, "\n");
--			batman_count++;
--
--next:
--			batadv_neigh_node_free_ref(neigh_node);
--		}
--		rcu_read_unlock();
-+	if (!bat_priv->bat_algo_ops->bat_orig_print) {
-+		seq_puts(seq,
-+			 "No printing function for this routing protocol\n");
-+		return 0;
- 	}
- 
--	if (batman_count == 0)
--		seq_puts(seq, "No batman nodes in range ...\n");
-+	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq);
- 
--out:
--	if (primary_if)
--		batadv_hardif_free_ref(primary_if);
- 	return 0;
- }
- 
+diff --git a/main.c b/main.c
+index 1066889..975973f 100644
+--- a/main.c
++++ b/main.c
+@@ -502,7 +502,8 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
+ 	    !bat_algo_ops->bat_iface_update_mac ||
+ 	    !bat_algo_ops->bat_primary_iface_set ||
+ 	    !bat_algo_ops->bat_ogm_schedule ||
+-	    !bat_algo_ops->bat_ogm_emit) {
++	    !bat_algo_ops->bat_ogm_emit ||
++	    !bat_algo_ops->bat_metric_get) {
+ 		pr_info("Routing algo '%s' does not implement required ops\n",
+ 			bat_algo_ops->name);
+ 		ret = -EINVAL;
 diff --git a/types.h b/types.h
-index dcfc5b0..0141261 100644
+index 0141261..2b5b1c1 100644
 --- a/types.h
 +++ b/types.h
-@@ -991,6 +991,7 @@ struct batadv_forw_packet {
-  * @bat_primary_iface_set: called when primary interface is selected / changed
-  * @bat_ogm_schedule: prepare a new outgoing OGM for the send queue
-  * @bat_ogm_emit: send scheduled OGM
-+ * @bat_orig_print: print the originator table
-  */
- struct batadv_algo_ops {
- 	struct hlist_node list;
-@@ -1001,6 +1002,8 @@ struct batadv_algo_ops {
+@@ -1002,6 +1002,7 @@ struct batadv_algo_ops {
  	void (*bat_primary_iface_set)(struct batadv_hard_iface *hard_iface);
  	void (*bat_ogm_schedule)(struct batadv_hard_iface *hard_iface);
  	void (*bat_ogm_emit)(struct batadv_forw_packet *forw_packet);
-+	/* orig_node handling API */
-+	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq);
++	uint32_t (*bat_metric_get)(struct batadv_neigh_node *neigh_node);
+ 	/* orig_node handling API */
+ 	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq);
  };
- 
- /**
 -- 
 1.8.1.5
 
