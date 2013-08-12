@@ -1,11 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sun, 11 Aug 2013 14:33:23 +0200
-Message-Id: <1376224403-2494-10-git-send-email-ordex@autistici.org>
-In-Reply-To: <1376224403-2494-1-git-send-email-ordex@autistici.org>
-References: <1376224403-2494-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 9/9] batman-adv: adapt the TT component to
-	use the new API functions
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Mon, 12 Aug 2013 11:42:00 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20130812094200.GA17322@pandem0nium>
+References: <1376061617-18493-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="NzB8fVQJ5HfG6fxh"
+Content-Disposition: inline
+In-Reply-To: <1376061617-18493-1-git-send-email-siwu@hrz.tu-chemnitz.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: handle failing write() in unix
+	sockets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,108 +22,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
----
- translation-table.c | 31 +++++++++++++++++++------------
- 1 file changed, 19 insertions(+), 12 deletions(-)
+--NzB8fVQJ5HfG6fxh
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/translation-table.c b/translation-table.c
-index 2dc214c..ff492c8 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1280,18 +1280,21 @@ out:
- }
- 
- /* batadv_transtable_best_orig - Get best originator list entry from tt entry
-+ * @bat_priv: the bat priv with all the soft interface information
-  * @tt_global_entry: global translation table entry to be analyzed
-  *
-  * This functon assumes the caller holds rcu_read_lock().
-  * Returns best originator list entry or NULL on errors.
-  */
- static struct batadv_tt_orig_list_entry *
--batadv_transtable_best_orig(struct batadv_tt_global_entry *tt_global_entry)
-+batadv_transtable_best_orig(struct batadv_priv *bat_priv,
-+			    struct batadv_tt_global_entry *tt_global_entry)
- {
--	struct batadv_neigh_node *router = NULL;
-+	struct batadv_neigh_node *router;
-+	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
- 	struct hlist_head *head;
- 	struct batadv_tt_orig_list_entry *orig_entry, *best_entry = NULL;
--	int best_tq = 0;
-+	uint16_t metric, best_metric = 0;
- 
- 	head = &tt_global_entry->orig_list;
- 	hlist_for_each_entry_rcu(orig_entry, head, list) {
-@@ -1299,12 +1302,14 @@ batadv_transtable_best_orig(struct batadv_tt_global_entry *tt_global_entry)
- 		if (!router)
- 			continue;
- 
--		if (router->bat_iv.tq_avg > best_tq) {
--			best_entry = orig_entry;
--			best_tq = router->bat_iv.tq_avg;
--		}
--
-+		metric = bao->bat_metric_get(router);
- 		batadv_neigh_node_free_ref(router);
-+
-+		if (metric <= best_metric)
-+			continue;
-+
-+		best_entry = orig_entry;
-+		best_metric = metric;
- 	}
- 
- 	return best_entry;
-@@ -1312,13 +1317,15 @@ batadv_transtable_best_orig(struct batadv_tt_global_entry *tt_global_entry)
- 
- /* batadv_tt_global_print_entry - print all orig nodes who announce the address
-  * for this global entry
-+ * @bat_priv: the bat priv with all the soft interface information
-  * @tt_global_entry: global translation table entry to be printed
-  * @seq: debugfs table seq_file struct
-  *
-  * This functon assumes the caller holds rcu_read_lock().
-  */
- static void
--batadv_tt_global_print_entry(struct batadv_tt_global_entry *tt_global_entry,
-+batadv_tt_global_print_entry(struct batadv_priv *bat_priv,
-+			     struct batadv_tt_global_entry *tt_global_entry,
- 			     struct seq_file *seq)
- {
- 	struct batadv_tt_orig_list_entry *orig_entry, *best_entry;
-@@ -1331,7 +1338,7 @@ batadv_tt_global_print_entry(struct batadv_tt_global_entry *tt_global_entry,
- 	tt_common_entry = &tt_global_entry->common;
- 	flags = tt_common_entry->flags;
- 
--	best_entry = batadv_transtable_best_orig(tt_global_entry);
-+	best_entry = batadv_transtable_best_orig(bat_priv, tt_global_entry);
- 	if (best_entry) {
- 		vlan = batadv_orig_node_vlan_get(best_entry->orig_node,
- 						 tt_common_entry->vid);
-@@ -1420,7 +1427,7 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
- 			tt_global = container_of(tt_common_entry,
- 						 struct batadv_tt_global_entry,
- 						 common);
--			batadv_tt_global_print_entry(tt_global, seq);
-+			batadv_tt_global_print_entry(bat_priv, tt_global, seq);
- 		}
- 		rcu_read_unlock();
- 	}
-@@ -1808,7 +1815,7 @@ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
- 		goto out;
- 
- 	rcu_read_lock();
--	best_entry = batadv_transtable_best_orig(tt_global_entry);
-+	best_entry = batadv_transtable_best_orig(bat_priv, tt_global_entry);
- 	/* found anything? */
- 	if (best_entry)
- 		orig_node = best_entry->orig_node;
--- 
-1.8.1.5
+On Fri, Aug 09, 2013 at 05:20:17PM +0200, Simon Wunderlich wrote:
+> This is not really critical, but some compilers seem to complain about
+> that.
+>=20
+> Reported-by: Braden Aran <bradenaran@gmail.com>
+> Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
+Applied in revision 4a77be4.
+
+Cheers,
+	Simon
+
+--NzB8fVQJ5HfG6fxh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEARECAAYFAlIIregACgkQrzg/fFk7axaTwQCgqQHJfPIaEiUE0sqVB2+dWTW/
+xkMAn0kMnVHInvHsHB/m6YPH5sDmcHfF
+=IPR8
+-----END PGP SIGNATURE-----
+
+--NzB8fVQJ5HfG6fxh--
