@@ -1,16 +1,16 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 12 Aug 2013 16:28:12 +0200
+Date: Mon, 12 Aug 2013 16:31:29 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130812142812.GA18832@pandem0nium>
+Message-ID: <20130812143129.GB18832@pandem0nium>
 References: <1376224403-2494-1-git-send-email-ordex@autistici.org>
- <1376224403-2494-3-git-send-email-ordex@autistici.org>
+ <1376224403-2494-8-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="VbJkn9YxBvnuCH5J"
+ protocol="application/pgp-signature"; boundary="qcHopEYAB45HaUaB"
 Content-Disposition: inline
-In-Reply-To: <1376224403-2494-3-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/9] batman-adv: make struct
- batadv_orig_node algorithm agnostic
+In-Reply-To: <1376224403-2494-8-git-send-email-ordex@autistici.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 7/9] batman-adv: adapt the neighbor
+ purging routine to use the new API functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,65 +25,66 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---VbJkn9YxBvnuCH5J
+--qcHopEYAB45HaUaB
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-> diff --git a/routing.c b/routing.c
-> index d4f512d..5b8f087 100644
-> --- a/routing.c
-> +++ b/routing.c
-> @@ -1091,6 +1091,7 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
->  	int hdr_size =3D sizeof(*bcast_packet);
->  	int ret =3D NET_RX_DROP;
->  	int32_t seq_diff;
-> +	uint32_t seqno;
+On Sun, Aug 11, 2013 at 02:33:21PM +0200, Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+>=20
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+>  originator.c | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/originator.c b/originator.c
+> index b3f6910..3ee8806 100644
+> --- a/originator.c
+> +++ b/originator.c
+> @@ -380,6 +380,8 @@ batadv_purge_orig_neighbors(struct batadv_priv *bat_p=
+riv,
+>  	bool neigh_purged =3D false;
+>  	unsigned long last_seen;
+>  	struct batadv_hard_iface *if_incoming;
+> +	struct batadv_algo_ops *bao =3D bat_priv->bat_algo_ops;
+> +	uint32_t neigh_metric, best_metric;
 > =20
->  	/* drop packet if it has not necessary minimum size */
->  	if (unlikely(!pskb_may_pull(skb, hdr_size)))
-> @@ -1126,12 +1127,13 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
+>  	*best_neigh_node =3D NULL;
 > =20
->  	spin_lock_bh(&orig_node->bcast_seqno_lock);
-> =20
-> +	seqno =3D ntohl(bcast_packet->seqno);
->  	/* check whether the packet is a duplicate */
->  	if (batadv_test_bit(orig_node->bcast_bits, orig_node->last_bcast_seqno,
-> -			    ntohl(bcast_packet->seqno)))
-> +			    seqno))
->  		goto spin_unlock;
-> =20
-> -	seq_diff =3D ntohl(bcast_packet->seqno) - orig_node->last_bcast_seqno;
-> +	seq_diff =3D seqno - orig_node->last_bcast_seqno;
-> =20
->  	/* check whether the packet is old and the host just restarted. */
->  	if (batadv_window_protected(bat_priv, seq_diff,
-> @@ -1142,7 +1144,7 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
->  	 * if required.
->  	 */
->  	if (batadv_bit_get_packet(bat_priv, orig_node->bcast_bits, seq_diff, 1))
-> -		orig_node->last_bcast_seqno =3D ntohl(bcast_packet->seqno);
-> +		orig_node->last_bcast_seqno =3D seqno;
-> =20
->  	spin_unlock_bh(&orig_node->bcast_seqno_lock);
+> @@ -414,10 +416,11 @@ batadv_purge_orig_neighbors(struct batadv_priv *bat=
+_priv,
+>  			batadv_bonding_candidate_del(orig_node, neigh_node);
+>  			batadv_neigh_node_free_ref(neigh_node);
+>  		} else {
+> -			if ((!*best_neigh_node) ||
+> -			    (neigh_node->bat_iv.tq_avg >
+> -			     (*best_neigh_node)->bat_iv.tq_avg))
+> +			neigh_metric =3D bao->bat_metric_get(neigh_node);
+> +			if (!*best_neigh_node || (neigh_metric > best_metric)) {
 
-Why are you changing this seqno stuff? Although this might be a valid
-(micro-)optimization, I don't think this should be in this patch ... or
-at least I don't understand it. :)
+Shouldn't you initialize best_metric at some point?
 
-Cheers,
-	Simon
+>  				*best_neigh_node =3D neigh_node;
+> +				best_metric =3D bao->bat_metric_get(neigh_node);
+> +			}
+>  		}
+>  	}
+> =20
+> --=20
+> 1.8.1.5
+>=20
 
---VbJkn9YxBvnuCH5J
+--qcHopEYAB45HaUaB
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iEYEARECAAYFAlII8PwACgkQrzg/fFk7axbYdQCg0Om1/9ahGeh+QlnvRd+HKb1r
-RC8Anii76ar+zq3jTzC7vZWq1TNdxKhg
-=bZU2
+iEYEARECAAYFAlII8cEACgkQrzg/fFk7axbVtwCgjbihG3p4CKewbfqmyepjIMh3
+4qAAoNpxc0DtuD+kvRPnFc/hykg7IAnB
+=8pRH
 -----END PGP SIGNATURE-----
 
---VbJkn9YxBvnuCH5J--
+--qcHopEYAB45HaUaB--
