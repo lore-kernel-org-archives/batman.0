@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 13 Aug 2013 08:43:48 +0200
-Message-Id: <1376376232-2178-6-git-send-email-ordex@autistici.org>
+Date: Tue, 13 Aug 2013 08:43:49 +0200
+Message-Id: <1376376232-2178-7-git-send-email-ordex@autistici.org>
 In-Reply-To: <1376376232-2178-1-git-send-email-ordex@autistici.org>
 References: <1376376232-2178-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 5/9] batman-adv: add
-	bat_metric_is_equiv_or_better API function
+Subject: [B.A.T.M.A.N.] [PATCHv3 6/9] batman-adv: adapt bonding to use the
+	new API functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,98 +22,118 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-Each routing protocol has its own metric semantic and
-therefore is the protocol itself the only component able to
-compare two metrics to check similarity similarity.
-
-This new API allows each routing protocol to implement its
-own logic and make the external code protocol agnostic.
-
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- bat_iv_ogm.c | 6 ++++++
- main.c       | 3 ++-
- main.h       | 6 ++++++
- types.h      | 4 ++++
- 4 files changed, 18 insertions(+), 1 deletion(-)
+ bat_iv_ogm.c |  2 +-
+ routing.c    | 25 +++++++++++++++++--------
+ routing.h    |  3 ++-
+ 3 files changed, 20 insertions(+), 10 deletions(-)
 
 diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 6865ccf..12a9686 100644
+index 12a9686..956d39b 100644
 --- a/bat_iv_ogm.c
 +++ b/bat_iv_ogm.c
-@@ -1465,6 +1465,11 @@ static uint32_t batadv_iv_ogm_metric_get(struct batadv_neigh_node *neigh_node)
- 	return neigh_node->bat_iv.tq_avg;
+@@ -834,7 +834,7 @@ batadv_iv_ogm_orig_update(struct batadv_priv *bat_priv,
+ 		neigh_node->last_ttl = batadv_ogm_packet->header.ttl;
+ 	}
+ 
+-	batadv_bonding_candidate_add(orig_node, neigh_node);
++	batadv_bonding_candidate_add(bat_priv, orig_node, neigh_node);
+ 
+ 	/* if this neighbor already is our next hop there is nothing
+ 	 * to change
+diff --git a/routing.c b/routing.c
+index 5b8f087..5672a2d 100644
+--- a/routing.c
++++ b/routing.c
+@@ -115,11 +115,14 @@ out:
+ 	return;
  }
  
-+static bool batadv_iv_ogm_metric_is_eob(uint32_t metric, uint32_t new_metric)
-+{
-+	return (metric - new_metric < BATADV_TQ_SIMILARITY_THRESHOLD);
-+}
-+
- static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
- 	.name = "BATMAN_IV",
- 	.bat_iface_enable = batadv_iv_ogm_iface_enable,
-@@ -1474,6 +1479,7 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
- 	.bat_ogm_schedule = batadv_iv_ogm_schedule,
- 	.bat_ogm_emit = batadv_iv_ogm_emit,
- 	.bat_metric_get = batadv_iv_ogm_metric_get,
-+	.bat_metric_is_equiv_or_better = batadv_iv_ogm_metric_is_eob,
- 	.bat_orig_print = batadv_iv_ogm_orig_print,
- };
+-void batadv_bonding_candidate_add(struct batadv_orig_node *orig_node,
++void batadv_bonding_candidate_add(struct batadv_priv *bat_priv,
++				  struct batadv_orig_node *orig_node,
+ 				  struct batadv_neigh_node *neigh_node)
+ {
++	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
+ 	struct batadv_neigh_node *tmp_neigh_node, *router = NULL;
+ 	uint8_t interference_candidate = 0;
++	uint32_t router_metric, neigh_metric;
  
-diff --git a/main.c b/main.c
-index 975973f..bf6ece1 100644
---- a/main.c
-+++ b/main.c
-@@ -503,7 +503,8 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
- 	    !bat_algo_ops->bat_primary_iface_set ||
- 	    !bat_algo_ops->bat_ogm_schedule ||
- 	    !bat_algo_ops->bat_ogm_emit ||
--	    !bat_algo_ops->bat_metric_get) {
-+	    !bat_algo_ops->bat_metric_get ||
-+	    !bat_algo_ops->bat_metric_is_equiv_or_better) {
- 		pr_info("Routing algo '%s' does not implement required ops\n",
- 			bat_algo_ops->name);
- 		ret = -EINVAL;
-diff --git a/main.h b/main.h
-index e860f1e..ebdfad8 100644
---- a/main.h
-+++ b/main.h
-@@ -86,6 +86,12 @@
- /* numbers of originator to contact for any PUT/GET DHT operation */
- #define BATADV_DAT_CANDIDATES_NUM 3
+ 	spin_lock_bh(&orig_node->neigh_list_lock);
  
-+/**
-+ * BATADV_TQ_SIMILARITY_THRESHOLD - TQ points that a secondary metric can differ
-+ *  at most from the primary one in order to be still considered acceptable
-+ */
-+#define BATADV_TQ_SIMILARITY_THRESHOLD 50
-+
- /* how much worse secondary interfaces may be to be considered as bonding
-  * candidates
+@@ -133,8 +136,9 @@ void batadv_bonding_candidate_add(struct batadv_orig_node *orig_node,
+ 		goto candidate_del;
+ 
+ 	/* ... and is good enough to be considered */
+-	if (neigh_node->bat_iv.tq_avg <
+-	    router->bat_iv.tq_avg - BATADV_BONDING_TQ_THRESHOLD)
++	router_metric = bao->bat_metric_get(router);
++	neigh_metric = bao->bat_metric_get(neigh_node);
++	if (bao->bat_metric_is_equiv_or_better(neigh_metric, router_metric))
+ 		goto candidate_del;
+ 
+ 	/* check if we have another candidate with the same mac address or
+@@ -486,11 +490,14 @@ out:
+  * Increases the returned router's refcount
   */
-diff --git a/types.h b/types.h
-index 2b5b1c1..7a12eef 100644
---- a/types.h
-+++ b/types.h
-@@ -991,6 +991,8 @@ struct batadv_forw_packet {
-  * @bat_primary_iface_set: called when primary interface is selected / changed
-  * @bat_ogm_schedule: prepare a new outgoing OGM for the send queue
-  * @bat_ogm_emit: send scheduled OGM
-+ * @bat_metric_is_equiv_or_better: check if new_metric is good enough to be
-+ *  comparable with metric
-  * @bat_orig_print: print the originator table
-  */
- struct batadv_algo_ops {
-@@ -1003,6 +1005,8 @@ struct batadv_algo_ops {
- 	void (*bat_ogm_schedule)(struct batadv_hard_iface *hard_iface);
- 	void (*bat_ogm_emit)(struct batadv_forw_packet *forw_packet);
- 	uint32_t (*bat_metric_get)(struct batadv_neigh_node *neigh_node);
-+	bool (*bat_metric_is_equiv_or_better)(uint32_t metric,
-+					      uint32_t new_metric);
- 	/* orig_node handling API */
- 	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq);
- };
+ static struct batadv_neigh_node *
+-batadv_find_ifalter_router(struct batadv_orig_node *primary_orig,
++batadv_find_ifalter_router(struct batadv_priv *bat_priv,
++			   struct batadv_orig_node *primary_orig,
+ 			   const struct batadv_hard_iface *recv_if)
+ {
+-	struct batadv_neigh_node *tmp_neigh_node;
+ 	struct batadv_neigh_node *router = NULL, *first_candidate = NULL;
++	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
++	struct batadv_neigh_node *tmp_neigh_node;
++	uint32_t tmp_metric, router_metric = UINT_MAX;
+ 
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(tmp_neigh_node, &primary_orig->bond_list,
+@@ -502,8 +509,8 @@ batadv_find_ifalter_router(struct batadv_orig_node *primary_orig,
+ 		if (tmp_neigh_node->if_incoming == recv_if)
+ 			continue;
+ 
+-		if (router &&
+-		    tmp_neigh_node->bat_iv.tq_avg <= router->bat_iv.tq_avg)
++		tmp_metric = bao->bat_metric_get(tmp_neigh_node);
++		if (router && (tmp_metric <= router_metric))
+ 			continue;
+ 
+ 		if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
+@@ -515,6 +522,7 @@ batadv_find_ifalter_router(struct batadv_orig_node *primary_orig,
+ 
+ 		/* we found a better router (or at least one valid router) */
+ 		router = tmp_neigh_node;
++		router_metric = bao->bat_metric_get(router);
+ 	}
+ 
+ 	/* use the first candidate if nothing was found. */
+@@ -637,7 +645,8 @@ batadv_find_router(struct batadv_priv *bat_priv,
+ 	if (bonding_enabled)
+ 		router = batadv_find_bond_router(primary_orig_node, recv_if);
+ 	else
+-		router = batadv_find_ifalter_router(primary_orig_node, recv_if);
++		router = batadv_find_ifalter_router(bat_priv, primary_orig_node,
++						    recv_if);
+ 
+ return_router:
+ 	if (router && router->if_incoming->if_status != BATADV_IF_ACTIVE)
+diff --git a/routing.h b/routing.h
+index 55d637a..19544dd 100644
+--- a/routing.h
++++ b/routing.h
+@@ -48,7 +48,8 @@ batadv_find_router(struct batadv_priv *bat_priv,
+ 		   const struct batadv_hard_iface *recv_if);
+ void batadv_bonding_candidate_del(struct batadv_orig_node *orig_node,
+ 				  struct batadv_neigh_node *neigh_node);
+-void batadv_bonding_candidate_add(struct batadv_orig_node *orig_node,
++void batadv_bonding_candidate_add(struct batadv_priv *bat_priv,
++				  struct batadv_orig_node *orig_node,
+ 				  struct batadv_neigh_node *neigh_node);
+ void batadv_bonding_save_primary(const struct batadv_orig_node *orig_node,
+ 				 struct batadv_orig_node *orig_neigh_node,
 -- 
 1.8.1.5
 
