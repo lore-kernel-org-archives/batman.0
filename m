@@ -1,18 +1,14 @@
-Return-Path: <ordex@autistici.org>
-Date: Mon, 12 Aug 2013 23:25:35 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130812212535.GM849@ritirata.org>
-References: <1376224403-2494-1-git-send-email-ordex@autistici.org>
- <1376224403-2494-8-git-send-email-ordex@autistici.org>
- <20130812143129.GB18832@pandem0nium>
- <20130812175102.GK849@ritirata.org>
+Return-Path: <gui@altermundi.net>
+Message-ID: <520984DC.7040401@altermundi.net>
+Date: Mon, 12 Aug 2013 21:59:08 -0300
+From: Gui Iribarren <gui@altermundi.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="qDymnuGqqhW10CwH"
-Content-Disposition: inline
-In-Reply-To: <20130812175102.GK849@ritirata.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 7/9] batman-adv: adapt the neighbor
- purging routine to use the new API functions
+References: <5209814D.3020506@wirelesspt.net>
+In-Reply-To: <5209814D.3020506@wirelesspt.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [OpenWrt-Devel] Kernel panic & Process batadv.sh
+	- Fatal
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,103 +20,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <lindner_marek@yahoo.de>
+To: cmsv@wirelesspt.net, OpenWrt Development List <openwrt-devel@lists.openwrt.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On 08/12/2013 09:43 PM, cmsv wrote:
+> OpenWrt version: Attitude Adjustment (r37747)
+>
+> Recently there was someone (Lucaspost) on #batman with a problem caused
+> by mixing the latest AA and Batman-adv 2013.3.0 and while i can't be
+> sure the problem is exactly this one; here goes my testing with a D-link
+> 615C1
+>
 
---qDymnuGqqhW10CwH
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+maybe you're mixing module and kernel versions?
 
-On Mon, Aug 12, 2013 at 07:51:02PM +0200, Antonio Quartulli wrote:
-> On Mon, Aug 12, 2013 at 04:31:29PM +0200, Simon Wunderlich wrote:
-> > On Sun, Aug 11, 2013 at 02:33:21PM +0200, Antonio Quartulli wrote:
-> > > From: Antonio Quartulli <antonio@open-mesh.com>
-> > >=20
-> > > Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-> > > ---
-> > >  originator.c | 9 ++++++---
-> > >  1 file changed, 6 insertions(+), 3 deletions(-)
-> > >=20
-> > > diff --git a/originator.c b/originator.c
-> > > index b3f6910..3ee8806 100644
-> > > --- a/originator.c
-> > > +++ b/originator.c
-> > > @@ -380,6 +380,8 @@ batadv_purge_orig_neighbors(struct batadv_priv *b=
-at_priv,
-> > >  	bool neigh_purged =3D false;
-> > >  	unsigned long last_seen;
-> > >  	struct batadv_hard_iface *if_incoming;
-> > > +	struct batadv_algo_ops *bao =3D bat_priv->bat_algo_ops;
-> > > +	uint32_t neigh_metric, best_metric;
-> > > =20
-> > >  	*best_neigh_node =3D NULL;
-> > > =20
-> > > @@ -414,10 +416,11 @@ batadv_purge_orig_neighbors(struct batadv_priv =
-*bat_priv,
-> > >  			batadv_bonding_candidate_del(orig_node, neigh_node);
-> > >  			batadv_neigh_node_free_ref(neigh_node);
-> > >  		} else {
-> > > -			if ((!*best_neigh_node) ||
-> > > -			    (neigh_node->bat_iv.tq_avg >
-> > > -			     (*best_neigh_node)->bat_iv.tq_avg))
-> > > +			neigh_metric =3D bao->bat_metric_get(neigh_node);
-> > > +			if (!*best_neigh_node || (neigh_metric > best_metric)) {
-> >=20
-> > Shouldn't you initialize best_metric at some point?
->=20
-> Actually I did initialise it with UINT_MAX but I have the feeling I forgo=
-t to
-> "add" the change to the commit. However this is only saving us from a war=
-ning
-> (which means the initialisation is needed) but not from any other problem:
-> best_metric will always have a value when best_neigh_node will be not NUL=
-L.
->=20
-> Anyhow, good catch :)
-> Thanks for raising the point.
->=20
-> Do you think I should send the entire patchset again? Or can I just resen=
-d this
-> patch only? Marek?
+try to "make dirclean" and rebuild
 
-Sorry, I was wrong. The initialisation I was talking about is done in
-batadv_find_ifalter_router() (so I did not forgot to add it :-)).
+batadv.sh only does this
 
-Here instead it is not useful at all.
+echo "$mesh" > "/sys/class/net/$iface/batman_adv/mesh_iface"
 
-Cheers,
+where $iface is something like "wlan0" and $mesh is "bat0"
 
+HTH,
 
-
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---qDymnuGqqhW10CwH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSCVLPAAoJEADl0hg6qKeO/UcP/3VnMeRpIqhGr8tcItqjwy+X
-uzgYp2MZ//ELopscGIViR2NDGHrKV2e0UmmgMqR8ORaimWbU62+lsvtnKrqASz3O
-4OH6TPNGCUADwdzb54AZor/WMiTAaDUVNFTXZQ0nWtR3X4aZnm0IM/nJbfSJU0Ti
-yMhrtBDy+Qdkxg0Qc7DZAcstXDUyndyYEZ1mDLG9e7r9kP0DTlNnzuWzDUcsfSDo
-cU8RuP811SROA5CE64iFgbG7xVobTwjotjXd+EFX3CDxEJTpnu8JiIKd83evujT1
-VUtt6OgPOg+5ALXx737ZInUwyiSPVSf5PZQkVVIYFb0RhRTEa9P8K79Awe9fBTne
-5zahJlS6q/MrJwiRNUbPxkXzjmbW/r7wIBZgkdWPZmkcRVuweaVN2l1A3JUiSg5e
-o8jo5nOa7utTRxld5HbufHaQ0aby8OtwqR+aFPd22etXhaUCg9KIN5vTiXxA+/ct
-iery5jyzwbPPqauc4uGIIGnXYolX1YC2xrOEi8iESQCDPQBNoxMPNV6qM+/C2upk
-hi7Xxu8/w08kKkPImhFvOuT3gIx30jAjEaApWAT+ca4zVh2fYAB4JRC7RlTgX3Sd
-ZUiY8mxyIvmpu442pU7nUVhVugL7mVugU3T5jC18AN8MXFWy+O5MBSsbwzMt+4IH
-Twa5Q38k/On/4zLSZHeu
-=D6Tw
------END PGP SIGNATURE-----
-
---qDymnuGqqhW10CwH--
+Gui
