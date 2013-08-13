@@ -1,19 +1,9 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Tue, 13 Aug 2013 08:08:31 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130813060831.GA22149@pandem0nium>
-References: <1376224403-2494-1-git-send-email-ordex@autistici.org>
- <1376224403-2494-8-git-send-email-ordex@autistici.org>
- <20130812143129.GB18832@pandem0nium>
- <20130812175102.GK849@ritirata.org>
- <20130812212535.GM849@ritirata.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
-Content-Disposition: inline
-In-Reply-To: <20130812212535.GM849@ritirata.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 7/9] batman-adv: adapt the neighbor
- purging routine to use the new API functions
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Tue, 13 Aug 2013 08:43:43 +0200
+Message-Id: <1376376232-2178-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3 0/9] Improving the routing protocol
+	abstraction
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,88 +15,97 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <ordex@autistici.org>
+
+Hello list,
+
+This is the third version of the "improved routing abstraction" patchset.
+Thanks for the feedback so far!
 
 
---huq684BweRXVnRxX
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patchset is introducing a new set of routing API functions meant to
+improve the routing protocol abstraction.
 
-On Mon, Aug 12, 2013 at 11:25:35PM +0200, Antonio Quartulli wrote:
-> On Mon, Aug 12, 2013 at 07:51:02PM +0200, Antonio Quartulli wrote:
-> > On Mon, Aug 12, 2013 at 04:31:29PM +0200, Simon Wunderlich wrote:
-> > > On Sun, Aug 11, 2013 at 02:33:21PM +0200, Antonio Quartulli wrote:
-> > > > From: Antonio Quartulli <antonio@open-mesh.com>
-> > > >=20
-> > > > Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-> > > > ---
-> > > >  originator.c | 9 ++++++---
-> > > >  1 file changed, 6 insertions(+), 3 deletions(-)
-> > > >=20
-> > > > diff --git a/originator.c b/originator.c
-> > > > index b3f6910..3ee8806 100644
-> > > > --- a/originator.c
-> > > > +++ b/originator.c
-> > > > @@ -380,6 +380,8 @@ batadv_purge_orig_neighbors(struct batadv_priv =
-*bat_priv,
-> > > >  	bool neigh_purged =3D false;
-> > > >  	unsigned long last_seen;
-> > > >  	struct batadv_hard_iface *if_incoming;
-> > > > +	struct batadv_algo_ops *bao =3D bat_priv->bat_algo_ops;
-> > > > +	uint32_t neigh_metric, best_metric;
-> > > > =20
-> > > >  	*best_neigh_node =3D NULL;
-> > > > =20
-> > > > @@ -414,10 +416,11 @@ batadv_purge_orig_neighbors(struct batadv_pri=
-v *bat_priv,
-> > > >  			batadv_bonding_candidate_del(orig_node, neigh_node);
-> > > >  			batadv_neigh_node_free_ref(neigh_node);
-> > > >  		} else {
-> > > > -			if ((!*best_neigh_node) ||
-> > > > -			    (neigh_node->bat_iv.tq_avg >
-> > > > -			     (*best_neigh_node)->bat_iv.tq_avg))
-> > > > +			neigh_metric =3D bao->bat_metric_get(neigh_node);
-> > > > +			if (!*best_neigh_node || (neigh_metric > best_metric)) {
-> > >=20
-> > > Shouldn't you initialize best_metric at some point?
-> >=20
-> > Actually I did initialise it with UINT_MAX but I have the feeling I for=
-got to
-> > "add" the change to the commit. However this is only saving us from a w=
-arning
-> > (which means the initialisation is needed) but not from any other probl=
-em:
-> > best_metric will always have a value when best_neigh_node will be not N=
-ULL.
-> >=20
-> > Anyhow, good catch :)
-> > Thanks for raising the point.
-> >=20
-> > Do you think I should send the entire patchset again? Or can I just res=
-end this
-> > patch only? Marek?
->=20
-> Sorry, I was wrong. The initialisation I was talking about is done in
-> batadv_find_ifalter_router() (so I did not forgot to add it :-)).
->=20
-> Here instead it is not useful at all.
+Also the orig_node and the neigh_node structure have been heavily modified in
+order to split their generic members from those which are metric related.
 
-I think we still need an initialisation here. Even my compiler complains. :)
+(the rest of the message is what you already had in the RFC cover
+letter).
+
+This changes have been written while developing batman V. The latter helped me
+in understanding what batman iv and v have in common and what not.
+
+The main problem was the metric: the two protocols use different metric domains
+and different semantics.
+Therefore all the functions handling/printing the metric needed to be
+generalised and rearranged to let the protocols decide what to do.
+
+Another issue was the way routing protocols handle the orig and neigh node
+structures. Also these two have been changed and some small APIs have been
+provided as well.
+
+Moreover, after Simon's RFC about the new multi-interface optimisation, we saw
+the need for a better abstraction so that mechanisms like that could easily be
+re-used by new algorithms (like batman v) with little effort.
+
+
+This is the second version of this RFC where I introduced some changes to the
+names of some functions and some other minor changes discussed in the previous
+RFC thread.
+
+
++ metric related:
+        - bat_metric_get
+	- bat_metric_is_equiv_or_better
+
++ orig_node related:
+        - bat_orig_print: print the originator table
+        - bat_orig_free
+        - bat_orig_add_if
+        - bat_orig_del_if
+
+
+Changes from v1:
+- removed bat_metric_compare() API. This is not really useful since we are
+  assuming all the metrics are in the same domain (uint32_t) so a simple
+  comparison is more than enough.
+
+Changes from v2:
+- initialise best_metric in the neighbor purging routine
+- don't optimise ntohs. Will be done in a separate patch
+
 
 Cheers,
-	Simon
 
---huq684BweRXVnRxX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+*** BLURB HERE ***
 
-iEYEARECAAYFAlIJzV8ACgkQrzg/fFk7axbXHQCbBx04Q2i1hCZb9dnpDSITKOry
-+HgAn3kVV7csHCbz24VbewrpvVB3y++e
-=L2Nr
------END PGP SIGNATURE-----
+Antonio Quartulli (9):
+  batman-adv: make struct batadv_neigh_node algorithm agnostic
+  batman-adv: make struct batadv_orig_node algorithm agnostic
+  batman-adv: add bat_orig_print function API
+  batman-adv: add bat_metric_get API function
+  batman-adv: add bat_metric_is_equiv_or_better API function
+  batman-adv: adapt bonding to use the new API functions
+  batman-adv: adapt the neighbor purging routine to use the new API
+    functions
+  batman-adv: provide orig_node routing API
+  batman-adv: adapt the TT component to use the new API functions
 
---huq684BweRXVnRxX--
+ bat_iv_ogm.c        | 344 +++++++++++++++++++++++++++++++++++++++++++---------
+ gateway_client.c    |  16 +--
+ main.c              |   4 +-
+ main.h              |   6 +
+ network-coding.c    |   8 +-
+ originator.c        | 231 ++++++++---------------------------
+ originator.h        |   5 +-
+ routing.c           |  26 ++--
+ routing.h           |   3 +-
+ translation-table.c |  31 +++--
+ types.h             |  83 ++++++++-----
+ 11 files changed, 454 insertions(+), 303 deletions(-)
+
+-- 
+1.8.1.5
+
