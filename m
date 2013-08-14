@@ -1,14 +1,16 @@
-Return-Path: <feanpg@gmail.com>
-Message-ID: <520B5678.4090200@gmail.com>
-Date: Wed, 14 Aug 2013 12:05:44 +0200
-From: Fernando Pizarro <feanpg@gmail.com>
+Return-Path: <ordex@autistici.org>
+Date: Wed, 14 Aug 2013 12:33:06 +0200
+From: Antonio Quartulli <ordex@autistici.org>
+Message-ID: <20130814103306.GO849@ritirata.org>
+References: <5209814D.3020506@wirelesspt.net> <520984DC.7040401@altermundi.net>
+ <520AEFEF.8050403@wirelesspt.net>
 MIME-Version: 1.0
-References: <52020C25.9080705@gmail.com> <20130807160945.GN2943@ritirata.org>
- <52027EBD.70007@gmail.com> <201308080123.50676.lindner_marek@yahoo.de>
-In-Reply-To: <201308080123.50676.lindner_marek@yahoo.de>
-Content-Type: text/plain; charset="iso-8859-15"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] DAT issue
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="2EnvhqpWJq810sZn"
+Content-Disposition: inline
+In-Reply-To: <520AEFEF.8050403@wirelesspt.net>
+Subject: Re: [B.A.T.M.A.N.] [OpenWrt-Devel] Kernel panic & Process batadv.sh
+ - Fatal
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,49 +22,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: cmsv@wirelesspt.net, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: OpenWrt Development List <openwrt-devel@lists.openwrt.org>
 
-El 07/08/13 19:23, Marek Lindner escribi=F3:
-> Fernando,
->
-> On Thursday, August 08, 2013 01:07:09 Fernando Pizarro wrote:
->> 2) I thougt having nodes without IP and just forwarding traffic to the
->> main GW (the firewall) through batman-adv, not natting every client
->> traffic with the node IP. In that way, roaming is working very good. The
->> problem are stablished sessions, these sessions are lost jumping from a
->> node to any other. I think this problem is nearly related to the empty
->> DAT table, and empty DAT table problem is nearly related too the nodes
->> has no IP assigned. However, I'm not sure about this..
-> the DAT table has nothing to do with roaming or sessions. It merely is an=
- IP
-> address cache to speed up ARP lookups. Even without DAT everything should
-> work. I recommend to read our DAT user guide:
-> http://www.open-mesh.org/projects/batman-adv/wiki/DistributedArpTable
->
-> If disabling DAT would break something we certainly would not make it an
-> option to invite everybody to shoot themselves in the foot.  ;-)
->
-> Therefore, I have to agree with Antonio that your problem is likely to be
-> found somewhere else. First, you should define which established sessions
-> break. The ones going into the internet or the ones you have locally.
-> Depending on the answer we can dig deeper.
->
-> Generally it is a good idea to simplfy the setup until a point where
-> everything works. Then you can move forward and make things more complica=
-ted.
-> For the time being I'd recommend to vastly simplify your bridge & vlan se=
-tup
-> by bridging your AP interface with bat0 only (no vlans, no radius tags, no
-> brvlanN interface) to see if your roaming works.
->
-> Cheers,
-> Marek
->
-Hi all, thanks for your answers.
 
-I have tested my setup in lab and I think that roaming works even if the=20
-DAT table is empty, local and external established connections seems to=20
-don't have problems.
+--2EnvhqpWJq810sZn
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for your help.
-Fernando
+On Tue, Aug 13, 2013 at 10:48:15PM -0400, cmsv wrote:
+> The problem has now been solved with the needed patch that was
+> backported to AA. It is now available in r37768 and the images with
+> batman-adv are not affected by this problem.
+>=20
+> Patch is at: target/linux/generic/patches-3.3/721-phy_packets.patch
+
+Just to clarify: this patch existed before and the backported fix is
+"changing the patch" to avoid the crash :-)
+
+Thanks for raising the issue!
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--2EnvhqpWJq810sZn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSC1ziAAoJEADl0hg6qKeOo9EP/jTfQNR27Pp2k9TWX8cL6MWS
+zLou+vaQbvvHSOF+e3K+UCI1QZyxuRTiP3rQozljDJjn6XB1aqb4eCO+e39V9d0w
+nYSVr591bsUo0jgCD6fkzj/RGiLg5tvfZsLjPAVuChwyhfSZhgCrmyrlmF3xyISL
+qtlTRFUkdAQneQM1JSxhxDHbIXK874YtfGL9wRhsh1dSlBRyVA/yzgcZOh+C6ILF
+sPYYXrHMG9oe6kPGsmLIvWPiUp2qxpqZDPqndoszjdkV/OvlaO+syrq6u3syS4zU
+CxZQY5xq8pAsw8ox1KFpDbkMvzdOn7qylVtA5THpXo1yJAyMIjNLbGun0LF08Ewj
+IG5tcCsjesvEuIoAWSfsfJkArbGXvfE88Xm6yEKBtpOY1zupoP3VwYt/uqXdlyLq
+5G3SN9LVxddvsjT8LB2udaCIpnzJ9IZY+1vWe1VH9NcBgM8YwWjgVUwhz25Dug8q
+PiLL0SAGSJ9KUFCvKnh2LCbyCyOOBiDdUcrCCdbhvbuvWWIh/wdjBO+7lbDxbvgR
+qvlm62wYQ3ica8GWJIdxzAcInK8hsoVU7k2f9hihQ7T8JmsdRPxoJlGTFO+wmmpe
+5ReR86LFCU9jJKGLQ9qhAPx7B7VT+za6VIJxRuA+VLghJ6ejm60xkjNyy3JkPXrl
+2L6HEqlFr6bZvXwk/elk
+=Ru92
+-----END PGP SIGNATURE-----
+
+--2EnvhqpWJq810sZn--
