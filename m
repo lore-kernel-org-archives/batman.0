@@ -1,16 +1,14 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Thu, 15 Aug 2013 15:45:49 +0200
+Date: Thu, 15 Aug 2013 15:56:47 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130815134549.GA1982@pandem0nium>
+Message-ID: <20130815135647.GB1982@pandem0nium>
 References: <1376382240-30664-1-git-send-email-linus.luessing@web.de>
- <1376382240-30664-4-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="8t9RHnE3ZwKMSgU+"
+ protocol="application/pgp-signature"; boundary="yNb1oOkm5a9FJOVX"
 Content-Disposition: inline
-In-Reply-To: <1376382240-30664-4-git-send-email-linus.luessing@web.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv8 3/5] batman-adv: Modified forwarding
- behaviour for multicast packets
+In-Reply-To: <1376382240-30664-1-git-send-email-linus.luessing@web.de>
+Subject: Re: [B.A.T.M.A.N.] Basic Multicast Optimizations
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,67 +23,34 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---8t9RHnE3ZwKMSgU+
+--yNb1oOkm5a9FJOVX
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hey Linus,
 
-I'm currently playing a little with this patchset ...
+I've tested the patchset, and it looks good from my testcases (testing
+multicast to IPv4 and IPv6 addresses). I've not tested the MLD stuff
+though, but from our discussions your implementation looks reasonable.
+Did you get to test it somehow?
 
-On Tue, Aug 13, 2013 at 10:23:58AM +0200, Linus L=C3=BCssing wrote:
-> [...]
-> +	count =3D atomic_read(&tt_global_entry->orig_list_count);
-> [...]
-> +	atomic_inc(&tt_global->orig_list_count);
-> [...]
-> +		atomic_set(&tt_global_entry->orig_list_count, 0);
-> [...]
-> @@ -830,12 +833,14 @@ struct batadv_tt_local_entry {
->   * struct batadv_tt_global_entry - translation table global entry data
->   * @common: general translation table data
->   * @orig_list: list of orig nodes announcing this non-mesh client
-> + * @orig_list_count: number of items in the orig_list
->   * @list_lock: lock protecting orig_list
->   * @roam_at: time at which TT_GLOBAL_ROAM was set
->   */
->  struct batadv_tt_global_entry {
->  	struct batadv_tt_common_entry common;
->  	struct hlist_head orig_list;
-> +	atomic_t orig_list_count;
->  	spinlock_t list_lock;	/* protects orig_list */
->  	unsigned long roam_at;
-
-You never decrease this orig_list_count, do you? But actually you should
-when a node leaves the group. What I've tried is:
-
-Node 1 pings a multicast address
- -> no group member, nothing is sent
-Node 2 is added to the group
- -> multicast is now sent as unicast
-Node 3 is added to the group
- -> multicast is now sent as broadcast
-Node 2 is removed from the group
- -> multicast is still sent as broadcast (should be unicast!)
-Node 3 is removed from the group
- -> nothing is sent (as to be expected).
-
-Could you please check the removal case?
+=46rom my perspective, if you fix the orig list stuff we could integrate
+your patchset. I'd like to ask others to review the patchset too. :)
 
 Thanks,
 	Simon
 
---8t9RHnE3ZwKMSgU+
+--yNb1oOkm5a9FJOVX
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iEYEARECAAYFAlIM240ACgkQrzg/fFk7axYRswCgsJ7OgFp+e48XoUUJw/lEsKB3
-1LgAn0pXVxGlDdVjo0nobANBO5317Rex
-=2d1T
+iEYEARECAAYFAlIM3h8ACgkQrzg/fFk7axYHFgCdHwjw6KJwxkH9v66w8T9U7nHc
+rJMAoLT8PQcETblsfEPhaWyYgZKl4okk
+=/u8r
 -----END PGP SIGNATURE-----
 
---8t9RHnE3ZwKMSgU+--
+--yNb1oOkm5a9FJOVX--
