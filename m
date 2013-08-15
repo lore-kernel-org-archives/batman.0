@@ -1,14 +1,11 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Thu, 15 Aug 2013 15:56:47 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130815135647.GB1982@pandem0nium>
-References: <1376382240-30664-1-git-send-email-linus.luessing@web.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="yNb1oOkm5a9FJOVX"
-Content-Disposition: inline
-In-Reply-To: <1376382240-30664-1-git-send-email-linus.luessing@web.de>
-Subject: Re: [B.A.T.M.A.N.] Basic Multicast Optimizations
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Thu, 15 Aug 2013 19:45:58 +0200
+Message-Id: <1376588758-3625-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <20130815131307.GA2042@pandem0nium>
+References: <20130815131307.GA2042@pandem0nium>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: print some info for vlan
+	debugging
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,37 +17,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <ordex@autistici.org>
 
+This patch will print some more information when doing
+ifconfig bat0 up & down
 
---yNb1oOkm5a9FJOVX
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+please report the output.
 
-Hey Linus,
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ soft-interface.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-I've tested the patchset, and it looks good from my testcases (testing
-multicast to IPv4 and IPv6 addresses). I've not tested the MLD stuff
-though, but from our discussions your implementation looks reasonable.
-Did you get to test it somehow?
+diff --git a/soft-interface.c b/soft-interface.c
+index d018c49..7876476 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -525,6 +525,9 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ 
+ 	vid |= BATADV_VLAN_HAS_TAG;
+ 
++	printk("batadv_add_vid(): creating vlan %s %d\n", dev->name,
++	       BATADV_PRINT_VID(vid));
++
+ 	return batadv_softif_create_vlan(bat_priv, vid);
+ }
+ 
+@@ -551,9 +554,14 @@ static int batadv_interface_kill_vid(struct net_device *dev, __be16 proto,
+ 	if (proto != htons(ETH_P_8021Q))
+ 		return -EINVAL;
+ 
++	printk("batadv_kill_vid(): %s %d\n", dev->name,
++		BATADV_PRINT_VID(vid | BATADV_VLAN_HAS_TAG));
++
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid | BATADV_VLAN_HAS_TAG);
+-	if (!vlan)
++	if (!vlan) {
++		printk("batadv_kill_vid(): couldn't find vlan to kill\n");
+ 		return -ENOENT;
++	}
+ 
+ 	batadv_softif_destroy_vlan(bat_priv, vlan);
+ 
+-- 
+1.8.1.5
 
-=46rom my perspective, if you fix the orig list stuff we could integrate
-your patchset. I'd like to ask others to review the patchset too. :)
-
-Thanks,
-	Simon
-
---yNb1oOkm5a9FJOVX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iEYEARECAAYFAlIM3h8ACgkQrzg/fFk7axYHFgCdHwjw6KJwxkH9v66w8T9U7nHc
-rJMAoLT8PQcETblsfEPhaWyYgZKl4okk
-=/u8r
------END PGP SIGNATURE-----
-
---yNb1oOkm5a9FJOVX--
