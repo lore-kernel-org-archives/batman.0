@@ -1,11 +1,17 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 15 Aug 2013 19:45:58 +0200
-Message-Id: <1376588758-3625-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <20130815131307.GA2042@pandem0nium>
-References: <20130815131307.GA2042@pandem0nium>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: print some info for vlan
-	debugging
+Return-Path: <linus.luessing@web.de>
+Date: Thu, 15 Aug 2013 20:02:12 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20130815180212.GA8728@Linus-Debian>
+References: <1376382240-30664-1-git-send-email-linus.luessing@web.de>
+ <1376382240-30664-4-git-send-email-linus.luessing@web.de>
+ <20130815134549.GA1982@pandem0nium>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20130815134549.GA1982@pandem0nium>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv8 3/5] batman-adv: Modified forwarding
+ behaviour for multicast packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,49 +23,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <ordex@autistici.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This patch will print some more information when doing
-ifconfig bat0 up & down
+On Thu, Aug 15, 2013 at 03:45:49PM +0200, Simon Wunderlich wrote:
+> Hey Linus,
+> 
+> I'm currently playing a little with this patchset ...
+> 
+> On Tue, Aug 13, 2013 at 10:23:58AM +0200, Linus Lüssing wrote:
+> > [...]
+> > +	count = atomic_read(&tt_global_entry->orig_list_count);
+> > [...]
+> > +	atomic_inc(&tt_global->orig_list_count);
+> > [...]
+> > +		atomic_set(&tt_global_entry->orig_list_count, 0);
+> > [...]
+> > @@ -830,12 +833,14 @@ struct batadv_tt_local_entry {
+> >   * struct batadv_tt_global_entry - translation table global entry data
+> >   * @common: general translation table data
+> >   * @orig_list: list of orig nodes announcing this non-mesh client
+> > + * @orig_list_count: number of items in the orig_list
+> >   * @list_lock: lock protecting orig_list
+> >   * @roam_at: time at which TT_GLOBAL_ROAM was set
+> >   */
+> >  struct batadv_tt_global_entry {
+> >  	struct batadv_tt_common_entry common;
+> >  	struct hlist_head orig_list;
+> > +	atomic_t orig_list_count;
+> >  	spinlock_t list_lock;	/* protects orig_list */
+> >  	unsigned long roam_at;
+> 
+> You never decrease this orig_list_count, do you? But actually you should
+> when a node leaves the group. What I've tried is:
+> 
+> Node 1 pings a multicast address
+>  -> no group member, nothing is sent
+> Node 2 is added to the group
+>  -> multicast is now sent as unicast
+> Node 3 is added to the group
+>  -> multicast is now sent as broadcast
+> Node 2 is removed from the group
+>  -> multicast is still sent as broadcast (should be unicast!)
+> Node 3 is removed from the group
+>  -> nothing is sent (as to be expected).
+> 
+> Could you please check the removal case?
+> 
+> Thanks,
+> 	Simon
 
-please report the output.
-
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- soft-interface.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/soft-interface.c b/soft-interface.c
-index d018c49..7876476 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -525,6 +525,9 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
- 
- 	vid |= BATADV_VLAN_HAS_TAG;
- 
-+	printk("batadv_add_vid(): creating vlan %s %d\n", dev->name,
-+	       BATADV_PRINT_VID(vid));
-+
- 	return batadv_softif_create_vlan(bat_priv, vid);
- }
- 
-@@ -551,9 +554,14 @@ static int batadv_interface_kill_vid(struct net_device *dev, __be16 proto,
- 	if (proto != htons(ETH_P_8021Q))
- 		return -EINVAL;
- 
-+	printk("batadv_kill_vid(): %s %d\n", dev->name,
-+		BATADV_PRINT_VID(vid | BATADV_VLAN_HAS_TAG));
-+
- 	vlan = batadv_softif_vlan_get(bat_priv, vid | BATADV_VLAN_HAS_TAG);
--	if (!vlan)
-+	if (!vlan) {
-+		printk("batadv_kill_vid(): couldn't find vlan to kill\n");
- 		return -ENOENT;
-+	}
- 
- 	batadv_softif_destroy_vlan(bat_priv, vlan);
- 
--- 
-1.8.1.5
-
+Hrm, stupid regression introduced with v8 while rebasing...
+Sorry and thanks for spotting it! Going to send v9 in a minute.
