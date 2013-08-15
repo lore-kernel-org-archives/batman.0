@@ -1,10 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 15 Aug 2013 21:32:50 +0200
-Message-Id: <1376595170-506-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1376588758-3625-1-git-send-email-ordex@autistici.org>
-References: <1376588758-3625-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: check if a softif_vlan already
+Date: Thu, 15 Aug 2013 23:05:55 +0200
+Message-Id: <1376600755-544-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1376595170-506-1-git-send-email-ordex@autistici.org>
+References: <1376595170-506-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: check if a softif_vlan already
 	exists
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -38,20 +38,32 @@ Introduced by 952cebb57518ec18dfdebfcb2b85539f58f20779
 Reported-by: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- soft-interface.c | 4 ++++
- 1 file changed, 4 insertions(+)
+
+however I don't know if returning -EEXIST will make ifconfig happy..it may be
+that we simply have to return 0 and silently ignore the problem..
+let's see :)
+
+cheers,
+
+changes from v1:
+- fixed refcounting
+
+ soft-interface.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/soft-interface.c b/soft-interface.c
-index d018c49..2459967 100644
+index d018c49..bafc811 100644
 --- a/soft-interface.c
 +++ b/soft-interface.c
-@@ -450,6 +450,10 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+@@ -450,6 +450,12 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
  	struct batadv_softif_vlan *vlan;
  	int err;
  
 +	vlan = batadv_softif_vlan_get(bat_priv, vid);
-+	if (vlan)
++	if (vlan) {
++		batadv_softif_vlan_free_ref(vlan);
 +		return -EEXIST;
++	}
 +
  	vlan = kzalloc(sizeof(*vlan), GFP_ATOMIC);
  	if (!vlan)
