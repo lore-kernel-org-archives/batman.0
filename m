@@ -1,15 +1,9 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Sun, 18 Aug 2013 22:06:45 +0800
-References: <1376822403-3383-1-git-send-email-ordex@autistici.org>
-In-Reply-To: <1376822403-3383-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201308182206.45373.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix variable name in
-	compat code
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Mon, 19 Aug 2013 18:39:59 +0200
+Message-Id: <1376930399-1043-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: send GW_DEL event in case of
+	soft-iface destruction
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,22 +15,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Antonio Quartulli <ordex@autistici.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-On Sunday, August 18, 2013 18:40:03 Antonio Quartulli wrote:
-> compat code introduced by
-> 0d941e82ab5f92faf33bee6abdde519056f3ac2d
-> ("batman-adv: Unmap fragment page once iterator is done")
-> is declaring a variable having the same name of one used in
-> the batman-adv code. Rename it to prevent sparse warnings.
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
-> ---
->  compat.h | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-Applied in revision e39bc52.
+In case of soft_iface destruction send a GW DEL event to
+userspace so that applications which are listening for GW
+events are informed about the lost of connectivity and can
+react accordingly.
 
-Thanks,
-Marek
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
+ hard-interface.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/hard-interface.c b/hard-interface.c
+index c5f871f..8a42745 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -28,6 +28,7 @@
+ #include "originator.h"
+ #include "hash.h"
+ #include "bridge_loop_avoidance.h"
++#include "gateway_client.h"
+ 
+ #include <linux/if_arp.h>
+ #include <linux/if_ether.h>
+@@ -524,8 +525,12 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
+ 	dev_put(hard_iface->soft_iface);
+ 
+ 	/* nobody uses this interface anymore */
+-	if (!bat_priv->num_ifaces && autodel == BATADV_IF_CLEANUP_AUTO)
+-		batadv_softif_destroy_sysfs(hard_iface->soft_iface);
++	if (!bat_priv->num_ifaces) {
++		batadv_gw_check_client_stop(bat_priv);
++
++		if (autodel == BATADV_IF_CLEANUP_AUTO)
++			batadv_softif_destroy_sysfs(hard_iface->soft_iface);
++	}
+ 
+ 	netdev_upper_dev_unlink(hard_iface->net_dev, hard_iface->soft_iface);
+ 	hard_iface->soft_iface = NULL;
+-- 
+1.8.1.5
+
