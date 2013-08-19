@@ -1,14 +1,14 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 19 Aug 2013 18:59:55 +0200
-Message-Id: <1376931595-2070-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1376931595-2070-1-git-send-email-ordex@autistici.org>
-References: <1376931595-2070-1-git-send-email-ordex@autistici.org>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Mon, 19 Aug 2013 22:12:03 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20130819201203.GA18020@pandem0nium>
+References: <1376594479-11563-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: check return type of unicast
-	packet preparations
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="GvXjxJ+pjyke8COw"
+Content-Disposition: inline
+In-Reply-To: <1376594479-11563-1-git-send-email-linus.luessing@web.de>
+Subject: Re: [B.A.T.M.A.N.] Basic Multicast Optimizations
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,48 +20,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <ordex@autistici.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Linus Lüssing <linus.luessing@web.de>
 
-batadv_unicast(_4addr)_prepare_skb  might reallocate the skb's data.
-And if it tries to do so then this can potentially fail.
+--GvXjxJ+pjyke8COw
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-We shouldn't continue working on this skb in such a case.
+I think this looks good now! Thanks :)
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Acked-by: Antonio Quartulli <ordex@autistici.org>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- net/batman-adv/unicast.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+Reviewed/Tested-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
 
-diff --git a/net/batman-adv/unicast.c b/net/batman-adv/unicast.c
-index 688a041..857e1b8 100644
---- a/net/batman-adv/unicast.c
-+++ b/net/batman-adv/unicast.c
-@@ -432,12 +432,16 @@ find_router:
- 
- 	switch (packet_type) {
- 	case BATADV_UNICAST:
--		batadv_unicast_prepare_skb(skb, orig_node);
-+		if (!batadv_unicast_prepare_skb(skb, orig_node))
-+			goto out;
-+
- 		header_len = sizeof(struct batadv_unicast_packet);
- 		break;
- 	case BATADV_UNICAST_4ADDR:
--		batadv_unicast_4addr_prepare_skb(bat_priv, skb, orig_node,
--						 packet_subtype);
-+		if (!batadv_unicast_4addr_prepare_skb(bat_priv, skb, orig_node,
-+						      packet_subtype))
-+			goto out;
-+
- 		header_len = sizeof(struct batadv_unicast_4addr_packet);
- 		break;
- 	default:
--- 
-1.8.1.5
+Cheers,
+	Simon
 
+On Thu, Aug 15, 2013 at 09:21:14PM +0200, Linus L=C3=BCssing wrote:
+> This is the ninth revision of the basic multicast optimization patches.
+>=20
+> It fixes a regression in Patch 3/5, introduced in v8 while rebasing:
+> An atomic_dec() for the orig_list_count got lost.
+>=20
+> Cheers, Linus
+>=20
+
+--GvXjxJ+pjyke8COw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEARECAAYFAlISfBMACgkQrzg/fFk7axb7RgCfX2WyVyBW7K+s18jsSDQxa1Ew
+kDwAnAtNC7U8vBZb3HRmdWrsTMMuLZo2
+=V6IL
+-----END PGP SIGNATURE-----
+
+--GvXjxJ+pjyke8COw--
