@@ -1,11 +1,14 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Mon, 19 Aug 2013 18:59:54 +0200
-Message-Id: <1376931595-2070-1-git-send-email-ordex@autistici.org>
+Date: Mon, 19 Aug 2013 18:59:55 +0200
+Message-Id: <1376931595-2070-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1376931595-2070-1-git-send-email-ordex@autistici.org>
+References: <1376931595-2070-1-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] pull request net: 2013-08-19
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: check return type of unicast
+	packet preparations
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,46 +21,47 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <ordex@autistici.org>
 
-Hi David,
+From: Linus Lüssing <linus.luessing@web.de>
 
-after a not so quiet weekend, here is my small pull request intended for
-net/linux-3.11.
+batadv_unicast(_4addr)_prepare_skb  might reallocate the skb's data.
+And if it tries to do so then this can potentially fail.
 
-This is a fix that aims to block TX operations in case of skb preparation
-failure.
+We shouldn't continue working on this skb in such a case.
 
-
-Please pull or let me know of any problem.
-
-Thanks,
-	Antonio
-
-p.s. is net going to be merged into net-next one of these days? I need it in
-order to send a couple of changes to net-next.
-
-
-The following changes since commit 0f7dd1aa8f959216f1faa71513b9d3c1a9065e5a:
-
-  Merge tag 'clk-fixes-for-linus' of git://git.linaro.org/people/mturquette/linux (2013-08-16 10:00:18 -0700)
-
-are available in the git repository at:
-
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
-
-for you to fetch changes up to 50fa3b31f4700deb1a860fa1a04016b889765323:
-
-  batman-adv: check return type of unicast packet preparations (2013-08-17 20:02:32 +0200)
-
-----------------------------------------------------------------
-Included change:
-- Check if the skb has been correctly prepared before going on
-
-----------------------------------------------------------------
-Linus Lüssing (1):
-      batman-adv: check return type of unicast packet preparations
-
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Acked-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
  net/batman-adv/unicast.c | 10 +++++++---
  1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/net/batman-adv/unicast.c b/net/batman-adv/unicast.c
+index 688a041..857e1b8 100644
+--- a/net/batman-adv/unicast.c
++++ b/net/batman-adv/unicast.c
+@@ -432,12 +432,16 @@ find_router:
+ 
+ 	switch (packet_type) {
+ 	case BATADV_UNICAST:
+-		batadv_unicast_prepare_skb(skb, orig_node);
++		if (!batadv_unicast_prepare_skb(skb, orig_node))
++			goto out;
++
+ 		header_len = sizeof(struct batadv_unicast_packet);
+ 		break;
+ 	case BATADV_UNICAST_4ADDR:
+-		batadv_unicast_4addr_prepare_skb(bat_priv, skb, orig_node,
+-						 packet_subtype);
++		if (!batadv_unicast_4addr_prepare_skb(bat_priv, skb, orig_node,
++						      packet_subtype))
++			goto out;
++
+ 		header_len = sizeof(struct batadv_unicast_4addr_packet);
+ 		break;
+ 	default:
+-- 
+1.8.1.5
+
