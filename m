@@ -1,13 +1,13 @@
 Return-Path: <davem@davemloft.net>
-Date: Tue, 20 Aug 2013 16:56:49 -0700 (PDT)
-Message-Id: <20130820.165649.385314778551035966.davem@davemloft.net>
+Date: Tue, 20 Aug 2013 16:55:12 -0700 (PDT)
+Message-Id: <20130820.165512.254703237118139261.davem@davemloft.net>
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1376737486-1863-1-git-send-email-ordex@autistici.org>
-References: <1376737486-1863-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <1376735694-676-1-git-send-email-ordex@autistici.org>
+References: <1376735694-676-1-git-send-email-ordex@autistici.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] pull request net: 2013-08-17b
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request net: 2013-08-17
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,18 +23,18 @@ To: ordex@autistici.org
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 17 Aug 2013 13:04:44 +0200
+Date: Sat, 17 Aug 2013 12:34:53 +0200
 
->   git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-dav=
-em
- ...
-> Antonio Quartulli (1):
->       batman-adv: properly end seq_read session
-> =
+> here you have another very small fix intended for net/linux-3.11.
+> Tha patch properly closes a seq_read session by adding an invocation to
+> skb_abort_seq_read().
+> 
+> Please pull or let me know if there is any problem.
 
-> Linus L=FCssing (1):
->       batman-adv: check return type of unicast packet preparations
+Pulled thanks.
 
-The change by Linus is not in that tree.
+> Also, when do you plan to merge net into net-next? I have a couple of changes
+> for net-next which is better to apply after the merge.
 
-When I pulled I only got the seq_rea fix.
+I did one the other day.  I'll probably do one the next time I merge
+changes to Linus, say Thursday some time.
