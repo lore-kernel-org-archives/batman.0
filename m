@@ -1,13 +1,14 @@
 Return-Path: <davem@davemloft.net>
-Date: Tue, 20 Aug 2013 16:55:12 -0700 (PDT)
-Message-Id: <20130820.165512.254703237118139261.davem@davemloft.net>
+Date: Tue, 20 Aug 2013 16:58:05 -0700 (PDT)
+Message-Id: <20130820.165805.1328306127818071916.davem@davemloft.net>
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1376735694-676-1-git-send-email-ordex@autistici.org>
-References: <1376735694-676-1-git-send-email-ordex@autistici.org>
+In-Reply-To: <20130820.165649.385314778551035966.davem@davemloft.net>
+References: <1376737486-1863-1-git-send-email-ordex@autistici.org>
+ <20130820.165649.385314778551035966.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request net: 2013-08-17
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] pull request net: 2013-08-17b
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,19 +23,30 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: ordex@autistici.org
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 17 Aug 2013 12:34:53 +0200
+From: David Miller <davem@davemloft.net>
+Date: Tue, 20 Aug 2013 16:56:49 -0700 (PDT)
 
-> here you have another very small fix intended for net/linux-3.11.
-> Tha patch properly closes a seq_read session by adding an invocation to
-> skb_abort_seq_read().
-> 
-> Please pull or let me know if there is any problem.
+> From: Antonio Quartulli <ordex@autistici.org>
+> Date: Sat, 17 Aug 2013 13:04:44 +0200
+> =
 
-Pulled thanks.
+>>   git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-da=
+vem
+>  ...
+>> Antonio Quartulli (1):
+>>       batman-adv: properly end seq_read session
+>> =
 
-> Also, when do you plan to merge net into net-next? I have a couple of changes
-> for net-next which is better to apply after the merge.
+>> Linus L=FCssing (1):
+>>       batman-adv: check return type of unicast packet preparations
+> =
 
-I did one the other day.  I'll probably do one the next time I merge
-changes to Linus, say Thursday some time.
+> The change by Linus is not in that tree.
+> =
+
+> When I pulled I only got the seq_rea fix.
+
+Nevermind, in fact, I see that only Linus's unicast fix was in there,
+which is what you intended.
+
+Sorry for the false alarm.
