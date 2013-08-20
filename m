@@ -1,16 +1,13 @@
-Return-Path: <lindner_marek@yahoo.de>
-From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 20 Aug 2013 16:13:04 +0800
-References: <1376595170-506-1-git-send-email-ordex@autistici.org>
- <20130819202028.GB18020@pandem0nium> <20130820063906.GA2963@ritirata.org>
-In-Reply-To: <20130820063906.GA2963@ritirata.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201308201613.04678.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: check if a softif_vlan
-	already exists
+Return-Path: <davem@davemloft.net>
+Date: Tue, 20 Aug 2013 16:56:49 -0700 (PDT)
+Message-Id: <20130820.165649.385314778551035966.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1376737486-1863-1-git-send-email-ordex@autistici.org>
+References: <1376737486-1863-1-git-send-email-ordex@autistici.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] pull request net: 2013-08-17b
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,45 +19,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <ordex@autistici.org>
+To: ordex@autistici.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday, August 20, 2013 14:39:06 Antonio Quartulli wrote:
-> > Tested-by: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-> >
-> > 
-> >
-> > Just one thing ...
-> >
-> > 
-> >
-> > On Thu, Aug 15, 2013 at 11:05:55PM +0200, Antonio Quartulli wrote:
-> > > From: Antonio Quartulli <antonio@open-mesh.com>
-> > >
-> > > 
-> > >
-> > > Before creating a new softif_vlan it is better to check if
-> > > that does already exist.
-> > > If so batman-adv should refuse to create a new structure
-> > > otherwise this would lead to an inconsistent state.
-> > >
-> > > 
-> > >
-> > > Normally this is not a problem because the operating system
-> > > will prevent from creating the same vlan twice, but some
-> > > ancient kernels exhibited an improper behaviour that led to
-> > > a bug.
-> >
-> > 
-> >
-> > You might want to skip that when sending upstream? They might not
-> > care about older kernels. Duno. :)
-> 
-> This patch is only for us, because it is going to be squashed with a
-> previous one before going to David. So I'd leave the commit message as it
-> is.
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Sat, 17 Aug 2013 13:04:44 +0200
 
-Applied in revision 00f2151.
+>   git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-dav=
+em
+ ...
+> Antonio Quartulli (1):
+>       batman-adv: properly end seq_read session
+> =
 
-Thanks,
-Marek
+> Linus L=FCssing (1):
+>       batman-adv: check return type of unicast packet preparations
+
+The change by Linus is not in that tree.
+
+When I pulled I only got the seq_rea fix.
