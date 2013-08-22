@@ -1,9 +1,10 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 22 Aug 2013 09:21:11 +0200
-Message-Id: <1377156073-556-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: print the VID in the
-	dat_cache output
+Date: Thu, 22 Aug 2013 09:21:12 +0200
+Message-Id: <1377156073-556-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1377156073-556-1-git-send-email-ordex@autistici.org>
+References: <1377156073-556-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: fix ARP header parsing in DAT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,43 +19,60 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <ordex@autistici.org>
 
-Now that DAT is vlan aware, it should also print the VID
-along with the MAC address of each cached entry.
+In case of VLAN packets flowing into the DAT module, the
+parsing routines have to consider the correct header size
+when accessing an ARP packet.
 
 Introduced by: 3e26722bc9f248ec4316749fc1957365c0fa5e4b
 ("batman-adv: make the Distributed ARP Table vlan aware")
 
+Reported-by: Marco Dalla Torre <marco.dallato@gmail.com>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Tested-by: Marco Dalla Torre <marco.dallato@gmail.com>
 ---
- distributed-arp-table.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ distributed-arp-table.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
 diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index df65f8c..c825d76 100644
+index c825d76..6eb1ce3 100644
 --- a/distributed-arp-table.c
 +++ b/distributed-arp-table.c
-@@ -761,8 +761,8 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
+@@ -922,11 +922,12 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
+ 	if (type != ARPOP_REQUEST)
  		goto out;
  
- 	seq_printf(seq, "Distributed ARP Table (%s):\n", net_dev->name);
--	seq_printf(seq, "          %-7s          %-13s %5s\n", "IPv4", "MAC",
--		   "last-seen");
-+	seq_printf(seq, "          %-7s          %-9s %4s %11s\n", "IPv4",
-+		   "MAC", "VID", "last-seen");
+-	batadv_dbg_arp(bat_priv, skb, type, 0, "Parsing outgoing ARP REQUEST");
++	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
++		       "Parsing outgoing ARP REQUEST");
  
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -775,8 +775,9 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
- 			last_seen_msecs = last_seen_msecs % 60000;
- 			last_seen_secs = last_seen_msecs / 1000;
+-	ip_src = batadv_arp_ip_src(skb, 0);
+-	hw_src = batadv_arp_hw_src(skb, 0);
+-	ip_dst = batadv_arp_ip_dst(skb, 0);
++	ip_src = batadv_arp_ip_src(skb, hdr_size);
++	hw_src = batadv_arp_hw_src(skb, hdr_size);
++	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
  
--			seq_printf(seq, " * %15pI4 %14pM %6i:%02i\n",
-+			seq_printf(seq, " * %15pI4 %14pM %4i %6i:%02i\n",
- 				   &dat_entry->ip, dat_entry->mac_addr,
-+				   BATADV_PRINT_VID(dat_entry->vid),
- 				   last_seen_mins, last_seen_secs);
- 		}
- 		rcu_read_unlock();
+ 	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
+ 
+@@ -956,7 +957,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
+ 		skb_new->protocol = eth_type_trans(skb_new,
+ 						   bat_priv->soft_iface);
+ 		bat_priv->stats.rx_packets++;
+-		bat_priv->stats.rx_bytes += skb->len + ETH_HLEN;
++		bat_priv->stats.rx_bytes += skb->len + ETH_HLEN + hdr_size;
+ 		bat_priv->soft_iface->last_rx = jiffies;
+ 
+ 		netif_rx(skb_new);
+@@ -1069,7 +1070,8 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
+ 	if (type != ARPOP_REPLY)
+ 		return;
+ 
+-	batadv_dbg_arp(bat_priv, skb, type, 0, "Parsing outgoing ARP REPLY");
++	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
++		       "Parsing outgoing ARP REPLY");
+ 
+ 	hw_src = batadv_arp_hw_src(skb, hdr_size);
+ 	ip_src = batadv_arp_ip_src(skb, hdr_size);
 -- 
 1.8.1.5
 
