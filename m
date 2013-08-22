@@ -1,14 +1,9 @@
-Return-Path: <davem@davemloft.net>
-Date: Tue, 20 Aug 2013 16:58:05 -0700 (PDT)
-Message-Id: <20130820.165805.1328306127818071916.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20130820.165649.385314778551035966.davem@davemloft.net>
-References: <1376737486-1863-1-git-send-email-ordex@autistici.org>
- <20130820.165649.385314778551035966.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] pull request net: 2013-08-17b
+Return-Path: <ordex@autistici.org>
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Thu, 22 Aug 2013 09:21:11 +0200
+Message-Id: <1377156073-556-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: print the VID in the
+	dat_cache output
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,33 +15,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: ordex@autistici.org
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <ordex@autistici.org>
 
-From: David Miller <davem@davemloft.net>
-Date: Tue, 20 Aug 2013 16:56:49 -0700 (PDT)
+Now that DAT is vlan aware, it should also print the VID
+along with the MAC address of each cached entry.
 
-> From: Antonio Quartulli <ordex@autistici.org>
-> Date: Sat, 17 Aug 2013 13:04:44 +0200
-> =
+Introduced by: 3e26722bc9f248ec4316749fc1957365c0fa5e4b
+("batman-adv: make the Distributed ARP Table vlan aware")
 
->>   git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-da=
-vem
->  ...
->> Antonio Quartulli (1):
->>       batman-adv: properly end seq_read session
->> =
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ distributed-arp-table.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
->> Linus L=FCssing (1):
->>       batman-adv: check return type of unicast packet preparations
-> =
+diff --git a/distributed-arp-table.c b/distributed-arp-table.c
+index df65f8c..c825d76 100644
+--- a/distributed-arp-table.c
++++ b/distributed-arp-table.c
+@@ -761,8 +761,8 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
+ 		goto out;
+ 
+ 	seq_printf(seq, "Distributed ARP Table (%s):\n", net_dev->name);
+-	seq_printf(seq, "          %-7s          %-13s %5s\n", "IPv4", "MAC",
+-		   "last-seen");
++	seq_printf(seq, "          %-7s          %-9s %4s %11s\n", "IPv4",
++		   "MAC", "VID", "last-seen");
+ 
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+@@ -775,8 +775,9 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
+ 			last_seen_msecs = last_seen_msecs % 60000;
+ 			last_seen_secs = last_seen_msecs / 1000;
+ 
+-			seq_printf(seq, " * %15pI4 %14pM %6i:%02i\n",
++			seq_printf(seq, " * %15pI4 %14pM %4i %6i:%02i\n",
+ 				   &dat_entry->ip, dat_entry->mac_addr,
++				   BATADV_PRINT_VID(dat_entry->vid),
+ 				   last_seen_mins, last_seen_secs);
+ 		}
+ 		rcu_read_unlock();
+-- 
+1.8.1.5
 
-> The change by Linus is not in that tree.
-> =
-
-> When I pulled I only got the seq_rea fix.
-
-Nevermind, in fact, I see that only Linus's unicast fix was in there,
-which is what you intended.
-
-Sorry for the false alarm.
