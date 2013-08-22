@@ -1,11 +1,15 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Thu, 22 Aug 2013 09:21:13 +0200
-Message-Id: <1377156073-556-3-git-send-email-ordex@autistici.org>
-In-Reply-To: <1377156073-556-1-git-send-email-ordex@autistici.org>
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Thu, 22 Aug 2013 15:52:36 +0800
 References: <1377156073-556-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: tag locally generated ARP
-	reply if needed
+In-Reply-To: <1377156073-556-1-git-send-email-ordex@autistici.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201308221552.36925.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: print the VID in the
+	dat_cache output
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,47 +21,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <ordex@autistici.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-When DAT replies to a client laying on a VLAN it has
-to attach to the packet the proper VLAN tag.
+On Thursday, August 22, 2013 15:21:11 Antonio Quartulli wrote:
+> @@ -761,8 +761,8 @@ int batadv_dat_cache_seq_print_text(struct seq_file
+> *seq, void *offset) goto out;
+>  
+>         seq_printf(seq, "Distributed ARP Table (%s):\n", net_dev->name);
+> -       seq_printf(seq, "          %-7s          %-13s %5s\n", "IPv4",
+> "MAC", -                  "last-seen");
+> +       seq_printf(seq, "          %-7s          %-9s %4s %11s\n", "IPv4",
+> +                  "MAC", "VID", "last-seen");
 
-Introduced by: 3e26722bc9f248ec4316749fc1957365c0fa5e4b
-("batman-adv: make the Distributed ARP Table vlan aware")
+Why are you shortening the MAC address length while you try to add the vid ?
 
-Reported-by: Marco Dalla Torre <marco.dallato@gmail.com>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
----
- distributed-arp-table.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index 6eb1ce3..6c8c393 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -953,6 +953,10 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 		if (!skb_new)
- 			goto out;
- 
-+		if (vid & BATADV_VLAN_HAS_TAG)
-+			skb_new = vlan_insert_tag(skb_new, htons(ETH_P_8021Q),
-+						  vid & VLAN_VID_MASK);
-+
- 		skb_reset_mac_header(skb_new);
- 		skb_new->protocol = eth_type_trans(skb_new,
- 						   bat_priv->soft_iface);
-@@ -1024,6 +1028,10 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 	if (!skb_new)
- 		goto out;
- 
-+	if (vid & BATADV_VLAN_HAS_TAG)
-+		skb_new = vlan_insert_tag(skb_new, htons(ETH_P_8021Q),
-+					  vid & VLAN_VID_MASK);
-+
- 	/* To preserve backwards compatibility, the node has choose the outgoing
- 	 * format based on the incoming request packet type. The assumption is
- 	 * that a node not using the 4addr packet format doesn't support it.
--- 
-1.8.1.5
-
+Cheers,
+Marek
