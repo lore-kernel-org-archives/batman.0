@@ -1,17 +1,9 @@
 Return-Path: <ordex@autistici.org>
-Date: Tue, 27 Aug 2013 18:33:24 +0200
 From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130827163324.GG2896@ritirata.org>
-References: <1376376232-2178-1-git-send-email-ordex@autistici.org>
- <1376376232-2178-7-git-send-email-ordex@autistici.org>
- <201308261111.37380.lindner_marek@yahoo.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="cz6wLo+OExbGG7q/"
-Content-Disposition: inline
-In-Reply-To: <201308261111.37380.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 6/9] batman-adv: adapt bonding to use
- the new API functions
+Date: Tue, 27 Aug 2013 22:57:42 +0200
+Message-Id: <1377637071-2498-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv4 0/9] Improving the routing protocol
+	abstraction
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,92 +15,103 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <ordex@autistici.org>
+
+Hello list,
+
+This is the *fourth* version of the "improved routing abstraction" patchset.
+Thanks for the feedback so far! (Message below is the same as v3)
 
 
---cz6wLo+OExbGG7q/
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patchset is introducing a new set of routing API functions meant to
+improve the routing protocol abstraction.
 
-On Mon, Aug 26, 2013 at 11:11:37AM +0800, Marek Lindner wrote:
-> On Tuesday, August 13, 2013 14:43:49 Antonio Quartulli wrote:
-> >  	list_for_each_entry_rcu(tmp_neigh_node, &primary_orig->bond_list,
-> > @@ -502,8 +509,8 @@ batadv_find_ifalter_router(struct batadv_orig_node
-> > *primary_orig, if (tmp_neigh_node->if_incoming =3D=3D recv_if)
-> >  			continue;
-> >=20
-> > -		if (router &&
-> > -		    tmp_neigh_node->bat_iv.tq_avg <=3D router->bat_iv.tq_avg)
-> > +		tmp_metric =3D bao->bat_metric_get(tmp_neigh_node);
-> > +		if (router && (tmp_metric <=3D router_metric))
-> >  			continue;
->=20
-> This last comparison looks horribly wrong. Isn't that what we have the AP=
-I=20
-> for?
+Also the orig_node and the neigh_node structure have been heavily modified in
+order to split their generic members from those which are metric related.
 
-we don't have an API for this.
-In this case we should use the "bat_metric_compare" but we removed
-that API in this version since it was going to be implemented as a "<=3D" f=
-or all
-the algorithms we have on the plate now (bat_iv and bat_v).
-This is the reason why here we use the compare operation directly.
+(the rest of the message is what you already had in the RFC cover
+letter).
 
->=20
-> Besides, it seems to me the bat_metric_is_equiv_or_better() call has been=
-=20
-> misdesigned. Instead of passing the metric and having each function store=
- +=20
-> process the metric this call should accept 2 neighbor nodes as argument. =
-This=20
-> should save 2 out of 3 API calls (2 * bao->bat_metric_get()) and some cod=
-e in=20
-> all the functions needing the bat_metric_is_equiv_or_better() API. Moreov=
-er,=20
-> it should reduce the impact on performance because each callback will cos=
-t us=20
-> a little bit ..
->=20
+This changes have been written while developing batman V. The latter helped me
+in understanding what batman iv and v have in common and what not.
 
-we could do that, yeah, even if the tests[1] shown that there is not much to
-gain at the moment.
-What do you suggest?
+The main problem was the metric: the two protocols use different metric domains
+and different semantics.
+Therefore all the functions handling/printing the metric needed to be
+generalised and rearranged to let the protocols decide what to do.
+
+Another issue was the way routing protocols handle the orig and neigh node
+structures. Also these two have been changed and some small APIs have been
+provided as well.
+
+Moreover, after Simon's RFC about the new multi-interface optimisation, we saw
+the need for a better abstraction so that mechanisms like that could easily be
+re-used by new algorithms (like batman v) with little effort.
+
+
+****** API functions changed from v3 ******
+
++ neigh comparison related:
+	- bat_neigh_cmp
+	- bat_neigh_is_equiv_or_better
+
++ orig_node related:
+        - bat_orig_print: print the originator table
+        - bat_orig_free
+        - bat_orig_add_if
+        - bat_orig_del_if
+
+
+Changes from v1:
+- removed bat_metric_compare() API. This is not really useful since we are
+  assuming all the metrics are in the same domain (uint32_t) so a simple
+  comparison is more than enough.
+
+Changes from v2:
+- initialise best_metric in the neighbor purging routine
+- don't optimise ntohs. Will be done in a separate patch
+
+Changes from v3:
+- bat_metric_is_equiv_or_better is now called bat_neigh_is_equiv_or_better and
+  now directly takes two neigh_node as parameters. This allows to do not export
+  the metric at all: all the metric magic is handled inside the function.
+- bat_metric_compare has been re-introduced again with the bat_neigh_cmp name. As
+  for bat_neigh_is_equiv_or_better it also takes two neigh_node as parameters
+  and the metric is handled inside only.
+- as result of the two changes above bat_metric_get has been removed. The
+  metric is always handled inside the routing protocol code and there is no need
+  to export it to the rest of the module. This simplified the code and reduced
+  code duplication. (Thanks Marek for the hint!)
 
 
 Cheers,
 
-[1] http://codepad.org/ZEtQASF3 - test performed using iperf between two cl=
-ients
-connected via Ethernet to 2 OM2P-HS.
+Antonio Quartulli (9):
+  batman-adv: make struct batadv_neigh_node algorithm agnostic
+  batman-adv: make struct batadv_orig_node algorithm agnostic
+  batman-adv: add bat_orig_print API function
+  batman-adv: add bat_neigh_cmp API function
+  batman-adv: add bat_neigh_is_equiv_or_better API function
+  batman-adv: adapt bonding to use the new API functions
+  batman-adv: adapt the neighbor purging routine to use the new API
+    functions
+  batman-adv: provide orig_node routing API
+  batman-adv: adapt the TT component to use the new API functions
 
+ bat_iv_ogm.c        | 398 ++++++++++++++++++++++++++++++++++++++++++++--------
+ gateway_client.c    |  16 +--
+ main.c              |   4 +-
+ main.h              |   6 +
+ network-coding.c    |   8 +-
+ originator.c        | 248 ++++++++------------------------
+ originator.h        |   5 +-
+ routing.c           |  42 ++++--
+ routing.h           |   3 +-
+ translation-table.c |  35 +++--
+ types.h             |  91 ++++++++----
+ 11 files changed, 546 insertions(+), 310 deletions(-)
 
---=20
-Antonio Quartulli
+-- 
+1.8.1.5
 
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---cz6wLo+OExbGG7q/
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSHNTUAAoJEADl0hg6qKeOolYQAJdh6oE7+P0M4IYDb7wogk+D
-xtDCuwhBrkxc3VgbQMf1onaNr7jFa5EH/ndmjtbjHW39pm16zyzcTZQtbIi1CHMU
-BXQbc6+evqg04NLca9upGPx00aKo8V0ZI89lwwqcc0Nymi1P1rAEKbV2Y8vtEfNe
-J+u6wwfgItYPI0IdY5CIlQoOxw7VegnES3YzJe3InZi1sDL1qQwcAOxsw2jFo1Fs
-a2RoQ4bFODCROu4N+g6yFNMFVAcTWBi8dxzkpP8w8uPDFDS0aqN25GJTugufAAgt
-ifefTNvOeqPkGKiw7td6ujU+nzjh1pqPidO9au9+tnCWzfudaZCwZ17/o9gaSjhv
-xv24SXCeFz2yk4IfcOwr0ddeTaerOw0Yn+lFhbl7QpKgnYBpHeAj244oVlruZNeq
-Oqts0b0vCcm31eibF9Q/LJEBnJoGC0fCtNdJAdDaRx5yqxpvgZdiqtFgqCMBg8Zj
-LQgICqWSwg62Fg2IbOiCso02w72niG2GjB6aHPBt18Fb10LW9lDxxZiChh2vq4Co
-lajQhDcpbjRJSjDsqYGDbuxDDi8s5GQLKBbeWu7sBqsrGQWTBAH5wMUzW48s9N4P
-7C+1TsOeckqrZuH7nDCJBiK4KXi39q0AoIHc2zYrF6SOYe6VzAQIsqx4nHOYYWkF
-r+8S1zQdDBMzMO8mXl3t
-=YrYX
------END PGP SIGNATURE-----
-
---cz6wLo+OExbGG7q/--
