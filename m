@@ -1,11 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 28 Aug 2013 13:28:09 +0200
-Message-Id: <1377689291-2412-3-git-send-email-ordex@autistici.org>
+Date: Wed, 28 Aug 2013 13:28:11 +0200
+Message-Id: <1377689291-2412-5-git-send-email-ordex@autistici.org>
 In-Reply-To: <1377689291-2412-1-git-send-email-ordex@autistici.org>
 References: <1377689291-2412-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: move enum definition at the
-	top of the file
+Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: send GW_DEL event when the
+	gw client mode is deselected
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,62 +18,90 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <ordex@autistici.org>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <ordex@autistici.org>, Antonio Quartulli <antonio@open-mesh.com>
 
+From: Antonio Quartulli <antonio@open-mesh.com>
+
+Whenever the GW client mode is deselected, a DEL event has
+to be sent in order to tell userspace that the current
+gateway has been lost. Send the uevent on state change only
+if a gateway was currently selected.
+
+Reported-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 ---
- net/batman-adv/bat_iv_ogm.c | 31 ++++++++++++++++---------------
- 1 file changed, 16 insertions(+), 15 deletions(-)
+ net/batman-adv/gateway_client.c | 27 +++++++++++++++++++++++++++
+ net/batman-adv/gateway_client.h |  1 +
+ net/batman-adv/sysfs.c          |  4 ++++
+ 3 files changed, 32 insertions(+)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 9886a2f..0a8a80c 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -28,6 +28,22 @@
- #include "bat_algo.h"
- #include "network-coding.h"
- 
-+
-+/**
-+ * batadv_dup_status - duplicate status
-+ * @BATADV_NO_DUP: the packet is a duplicate
-+ * @BATADV_ORIG_DUP: OGM is a duplicate in the originator (but not for the
-+ *  neighbor)
-+ * @BATADV_NEIGH_DUP: OGM is a duplicate for the neighbor
-+ * @BATADV_PROTECTED: originator is currently protected (after reboot)
-+ */
-+enum batadv_dup_status {
-+	BATADV_NO_DUP = 0,
-+	BATADV_ORIG_DUP,
-+	BATADV_NEIGH_DUP,
-+	BATADV_PROTECTED,
-+};
-+
- /**
-  * batadv_ring_buffer_set - update the ring buffer with the given value
-  * @lq_recv: pointer to the ring buffer
-@@ -71,21 +87,6 @@ static uint8_t batadv_ring_buffer_avg(const uint8_t lq_recv[])
- 	return (uint8_t)(sum / count);
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 7614af3..1ce4b87 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -190,6 +190,33 @@ next:
+ 	return curr_gw;
  }
  
--/*
-- * batadv_dup_status - duplicate status
-- * @BATADV_NO_DUP: the packet is a duplicate
-- * @BATADV_ORIG_DUP: OGM is a duplicate in the originator (but not for the
-- *  neighbor)
-- * @BATADV_NEIGH_DUP: OGM is a duplicate for the neighbor
-- * @BATADV_PROTECTED: originator is currently protected (after reboot)
-- */
--enum batadv_dup_status {
--	BATADV_NO_DUP = 0,
--	BATADV_ORIG_DUP,
--	BATADV_NEIGH_DUP,
--	BATADV_PROTECTED,
--};
--
- static struct batadv_neigh_node *
- batadv_iv_ogm_neigh_new(struct batadv_hard_iface *hard_iface,
- 			const uint8_t *neigh_addr,
++/**
++ * batadv_gw_check_client_stop - check if client mode has been switched off
++ * @bat_priv: the bat priv with all the soft interface information
++ *
++ * This function assumes the caller has checked that the gw state *is actually
++ * changing*. This function is not supposed to be called when there is no state
++ * change.
++ */
++void batadv_gw_check_client_stop(struct batadv_priv *bat_priv)
++{
++	struct batadv_gw_node *curr_gw;
++
++	if (atomic_read(&bat_priv->gw_mode) != BATADV_GW_MODE_CLIENT)
++		return;
++
++	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
++	if (!curr_gw)
++		return;
++
++	/* if batman-adv is switching the gw client mode off and a gateway was
++	 * already selected, send a DEL uevent
++	 */
++	batadv_throw_uevent(bat_priv, BATADV_UEV_GW, BATADV_UEV_DEL, NULL);
++
++	batadv_gw_node_free_ref(curr_gw);
++}
++
+ void batadv_gw_election(struct batadv_priv *bat_priv)
+ {
+ 	struct batadv_gw_node *curr_gw = NULL, *next_gw = NULL;
+diff --git a/net/batman-adv/gateway_client.h b/net/batman-adv/gateway_client.h
+index 1037d75..ceef4eb 100644
+--- a/net/batman-adv/gateway_client.h
++++ b/net/batman-adv/gateway_client.h
+@@ -20,6 +20,7 @@
+ #ifndef _NET_BATMAN_ADV_GATEWAY_CLIENT_H_
+ #define _NET_BATMAN_ADV_GATEWAY_CLIENT_H_
+ 
++void batadv_gw_check_client_stop(struct batadv_priv *bat_priv);
+ void batadv_gw_deselect(struct batadv_priv *bat_priv);
+ void batadv_gw_election(struct batadv_priv *bat_priv);
+ struct batadv_orig_node *
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index 929e304..4114b96 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -385,6 +385,10 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
+ 		    curr_gw_mode_str, buff);
+ 
+ 	batadv_gw_deselect(bat_priv);
++	/* always call batadv_gw_check_client_stop() before changing the gateway
++	 * state
++	 */
++	batadv_gw_check_client_stop(bat_priv);
+ 	atomic_set(&bat_priv->gw_mode, (unsigned int)gw_mode_tmp);
+ 	return count;
+ }
 -- 
 1.8.1.5
 
