@@ -1,11 +1,8 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue, 27 Aug 2013 22:57:51 +0200
-Message-Id: <1377637071-2498-10-git-send-email-ordex@autistici.org>
-In-Reply-To: <1377637071-2498-1-git-send-email-ordex@autistici.org>
-References: <1377637071-2498-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv4 9/9] batman-adv: adapt the TT component to
-	use the new API functions
+Date: Wed, 28 Aug 2013 13:28:07 +0200
+Message-Id: <1377689291-2412-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2013-08-28
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,114 +14,67 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+Hello David,
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
----
- translation-table.c | 35 ++++++++++++++++++++++++-----------
- 1 file changed, 24 insertions(+), 11 deletions(-)
+here is a small pull request intended for net-next/linux-3.12.
 
-diff --git a/translation-table.c b/translation-table.c
-index 2dc214c..8e2f4fb 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1280,18 +1280,20 @@ out:
- }
- 
- /* batadv_transtable_best_orig - Get best originator list entry from tt entry
-+ * @bat_priv: the bat priv with all the soft interface information
-  * @tt_global_entry: global translation table entry to be analyzed
-  *
-  * This functon assumes the caller holds rcu_read_lock().
-  * Returns best originator list entry or NULL on errors.
-  */
- static struct batadv_tt_orig_list_entry *
--batadv_transtable_best_orig(struct batadv_tt_global_entry *tt_global_entry)
-+batadv_transtable_best_orig(struct batadv_priv *bat_priv,
-+			    struct batadv_tt_global_entry *tt_global_entry)
- {
--	struct batadv_neigh_node *router = NULL;
-+	struct batadv_neigh_node *router, *best_router = NULL;
-+	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
- 	struct hlist_head *head;
- 	struct batadv_tt_orig_list_entry *orig_entry, *best_entry = NULL;
--	int best_tq = 0;
- 
- 	head = &tt_global_entry->orig_list;
- 	hlist_for_each_entry_rcu(orig_entry, head, list) {
-@@ -1299,26 +1301,37 @@ batadv_transtable_best_orig(struct batadv_tt_global_entry *tt_global_entry)
- 		if (!router)
- 			continue;
- 
--		if (router->bat_iv.tq_avg > best_tq) {
--			best_entry = orig_entry;
--			best_tq = router->bat_iv.tq_avg;
-+		if (!best_router ||
-+		    bao->bat_neigh_cmp(router, best_router) <= 0) {
-+			batadv_neigh_node_free_ref(router);
-+			continue;
- 		}
- 
--		batadv_neigh_node_free_ref(router);
-+		/* release the refcount for the "old" best */
-+		if (best_router)
-+			batadv_neigh_node_free_ref(best_router);
-+
-+		best_entry = orig_entry;
-+		best_router = router;
- 	}
- 
-+	if (best_router)
-+		batadv_neigh_node_free_ref(best_router);
-+
- 	return best_entry;
- }
- 
- /* batadv_tt_global_print_entry - print all orig nodes who announce the address
-  * for this global entry
-+ * @bat_priv: the bat priv with all the soft interface information
-  * @tt_global_entry: global translation table entry to be printed
-  * @seq: debugfs table seq_file struct
-  *
-  * This functon assumes the caller holds rcu_read_lock().
-  */
- static void
--batadv_tt_global_print_entry(struct batadv_tt_global_entry *tt_global_entry,
-+batadv_tt_global_print_entry(struct batadv_priv *bat_priv,
-+			     struct batadv_tt_global_entry *tt_global_entry,
- 			     struct seq_file *seq)
- {
- 	struct batadv_tt_orig_list_entry *orig_entry, *best_entry;
-@@ -1331,7 +1344,7 @@ batadv_tt_global_print_entry(struct batadv_tt_global_entry *tt_global_entry,
- 	tt_common_entry = &tt_global_entry->common;
- 	flags = tt_common_entry->flags;
- 
--	best_entry = batadv_transtable_best_orig(tt_global_entry);
-+	best_entry = batadv_transtable_best_orig(bat_priv, tt_global_entry);
- 	if (best_entry) {
- 		vlan = batadv_orig_node_vlan_get(best_entry->orig_node,
- 						 tt_common_entry->vid);
-@@ -1420,7 +1433,7 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
- 			tt_global = container_of(tt_common_entry,
- 						 struct batadv_tt_global_entry,
- 						 common);
--			batadv_tt_global_print_entry(tt_global, seq);
-+			batadv_tt_global_print_entry(bat_priv, tt_global, seq);
- 		}
- 		rcu_read_unlock();
- 	}
-@@ -1808,7 +1821,7 @@ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
- 		goto out;
- 
- 	rcu_read_lock();
--	best_entry = batadv_transtable_best_orig(tt_global_entry);
-+	best_entry = batadv_transtable_best_orig(bat_priv, tt_global_entry);
- 	/* found anything? */
- 	if (best_entry)
- 		orig_node = best_entry->orig_node;
--- 
-1.8.1.5
+In this batch you have two really minor things (code rearranging and version
+increment) and two behavioural changes:
+1) the 'protocol' field of outgoing SKBs is now set according to the type of
+   the payload that batman-adv is going to encapsulate;
+2) a uevent is now sent when a node exits the "GW client" mode. This is done in
+   order to tell userspace that a remote "GW server" is not available anymore.
 
+Please pull or let me know of any problem!
+
+Thanks a lot,
+	Antonio
+
+The following changes since commit 5b2941b18dc5f60a5c14a5c15693f9c58b0dd922:
+
+  Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/jesse/openvswitch (2013-08-27 22:11:18 -0400)
+
+are available in the git repository at:
+
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to c6eaa3f067d6f9fa55fd9645e93ed79411bebdaf:
+
+  batman-adv: send GW_DEL event when the gw client mode is deselected (2013-08-28 11:33:00 +0200)
+
+----------------------------------------------------------------
+Included changes:
+- set the protocol field in the skb structure according to the encapsulated
+  payload
+- make the gateway component send a uevent in case of "gw client mode"
+  de-selection
+- increment version number
+- minor code rearrangement
+
+----------------------------------------------------------------
+Antonio Quartulli (2):
+      batman-adv: move enum definition at the top of the file
+      batman-adv: send GW_DEL event when the gw client mode is deselected
+
+Simon Wunderlich (2):
+      batman-adv: set skb priority according to content
+      batman-adv: Start new development cycle
+
+ net/batman-adv/bat_iv_ogm.c        | 32 +++++++++++----------
+ net/batman-adv/gateway_client.c    | 27 ++++++++++++++++++
+ net/batman-adv/gateway_client.h    |  1 +
+ net/batman-adv/icmp_socket.c       |  1 +
+ net/batman-adv/main.c              | 58 ++++++++++++++++++++++++++++++++++++++
+ net/batman-adv/main.h              |  3 +-
+ net/batman-adv/routing.c           | 20 ++++++++++++-
+ net/batman-adv/send.c              |  1 -
+ net/batman-adv/soft-interface.c    |  2 ++
+ net/batman-adv/sysfs.c             |  4 +++
+ net/batman-adv/translation-table.c |  5 ++++
+ net/batman-adv/unicast.c           |  2 ++
+ net/batman-adv/vis.c               |  2 ++
+ 13 files changed, 140 insertions(+), 18 deletions(-)
