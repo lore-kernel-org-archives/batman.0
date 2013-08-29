@@ -1,15 +1,13 @@
-Return-Path: <ordex@autistici.org>
-Date: Wed, 28 Aug 2013 23:55:59 +0200
-From: Antonio Quartulli <ordex@autistici.org>
-Message-ID: <20130828215559.GL2896@ritirata.org>
-References: <1377723291-3335-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="yiup30KVCQiHUZFC"
-Content-Disposition: inline
-In-Reply-To: <1377723291-3335-1-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv5 0/9] Improving the routing protocol
- abstraction
+Return-Path: <davem@davemloft.net>
+Date: Thu, 29 Aug 2013 01:45:34 -0400 (EDT)
+Message-Id: <20130829.014534.666385498886400918.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1377689291-2412-1-git-send-email-ordex@autistici.org>
+References: <1377689291-2412-1-git-send-email-ordex@autistici.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2013-08-28
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,122 +19,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: ordex@autistici.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
+From: Antonio Quartulli <ordex@autistici.org>
+Date: Wed, 28 Aug 2013 13:28:07 +0200
 
---yiup30KVCQiHUZFC
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> here is a small pull request intended for net-next/linux-3.12.
+> 
+> In this batch you have two really minor things (code rearranging and version
+> increment) and two behavioural changes:
+> 1) the 'protocol' field of outgoing SKBs is now set according to the type of
+>    the payload that batman-adv is going to encapsulate;
+> 2) a uevent is now sent when a node exits the "GW client" mode. This is done in
+>    order to tell userspace that a remote "GW server" is not available anymore.
+> 
+> Please pull or let me know of any problem!
 
-On Wed, Aug 28, 2013 at 10:54:42PM +0200, Antonio Quartulli wrote:
-> Hello list,
->=20
-> This is the *fifth* version of the "improved routing abstraction" patchse=
-t.
-> Thanks for the feedback so far! (Message below is the same as v3)
-
-This night I performed another series of tests using two OM2P-HSs meshing o=
-ver
-the Ethernet interface.
-The tests have been performed by using iperf which generated a UDP stream f=
-rom a
-node to the other.
-
-After discussing with Marek we decided to use iperf because it would have
-generated much more CPU load than a "client-to-client" test and would have
-probably helped in showing the performance loss given by the patchset.
-
-The command used was "iperf -uc 192.168.103.2 -b 85M".
-Bandwidth higher than 85M was generating packet loss >20% so I decided to d=
-o not
-go beyond that value.
-
-
-The results are:
-without abstraciton patchset:
-
-[  3]  0.0-10.0 sec  98.3 MBytes  82.4 Mbits/sec   0.054 ms  406/70494 (0.5=
-8%)
-[  3]  0.0-10.0 sec  98.5 MBytes  82.6 Mbits/sec   0.058 ms  726/70999 (1%)
-[  3]  0.0-10.0 sec  98.8 MBytes  82.9 Mbits/sec   0.077 ms  422/70931 (0.5=
-9%)
-[  3]  0.0-10.0 sec  98.7 MBytes  82.8 Mbits/sec   0.078 ms  550/70938 (0.7=
-8%)
-[  3]  0.0-10.0 sec  98.7 MBytes  82.8 Mbits/sec   0.057 ms  380/70795 (0.5=
-4%)
-[  3]  0.0-10.0 sec  98.1 MBytes  82.3 Mbits/sec   0.053 ms  516/70499 (0.7=
-3%)
-[  3]  0.0-10.0 sec  98.6 MBytes  82.7 Mbits/sec   0.088 ms  267/70614 (0.3=
-8%)
-[  3]  0.0-10.0 sec  98.4 MBytes  82.6 Mbits/sec   0.056 ms  515/70726 (0.7=
-3%)
-[  3]  0.0-10.0 sec  98.5 MBytes  82.7 Mbits/sec   0.044 ms  526/70817 (0.7=
-4%)
-[  3]  0.0-10.0 sec  98.3 MBytes  82.5 Mbits/sec   0.044 ms  691/70811 (0.9=
-8%)
-
-with abstraction patchset:
-[  3]  0.0-10.0 sec  98.0 MBytes  82.2 Mbits/sec   0.113 ms  671/70568 (0.9=
-5%)
-[  3]  0.0-10.0 sec  98.7 MBytes  82.8 Mbits/sec   0.085 ms  600/70989 (0.8=
-5%)
-[  3]  0.0-10.0 sec  98.5 MBytes  82.6 Mbits/sec   0.088 ms  496/70725 (0.7=
-%)
-[  3]  0.0-10.0 sec  98.5 MBytes  82.6 Mbits/sec   0.063 ms  537/70784 (0.7=
-6%)
-[  3]  0.0-10.0 sec  98.4 MBytes  82.6 Mbits/sec   0.093 ms  589/70798 (0.8=
-3%)
-[  3]  0.0-10.0 sec  98.1 MBytes  82.3 Mbits/sec   0.060 ms  761/70742 (1.1=
-%)
-[  3]  0.0-10.0 sec  98.0 MBytes  82.2 Mbits/sec   0.098 ms  764/70674 (1.1=
-%)
-[  3]  0.0-10.0 sec  98.5 MBytes  82.7 Mbits/sec   0.063 ms  761/71047 (1.1=
-%)
-[  3]  0.0-10.0 sec  97.9 MBytes  82.2 Mbits/sec   0.067 ms  953/70821 (1.3=
-%)
-[  3]  0.0-10.0 sec  98.0 MBytes  82.2 Mbits/sec   0.070 ms  697/70620 (0.9=
-9%)
-
-Given the results I would say that the patchset is not introducing any
-performance loss.
-
-By the way I am not 100% that the overhead brought by iperf is comparable
-to the overhead generated by the abstraction code..if not, the consequence
-could be that iperf is hiding the overhead given by the patchset.
-
-
-However we can say that the patchset is not introducing any big performance
-drop and this is a good point! :-)
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---yiup30KVCQiHUZFC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSHnHvAAoJEADl0hg6qKeOUM4P/3ARlGmOHTyGUc6RN7jq3nbR
-3JU39W00UkgmUhoz7JgkIQ8+eFn/1xZuyuptildM3nXkxQK22IEjkByWGxIBkUks
-hRTFzFHpAF+PrWGil8ZLdcoS4y2xzjnN24K3bKOUHg93sPRoSs49AcySwQqjQ1sm
-WiNga0uWAWNNpoogDATqRF9ohHVce1AG2fYgyWauCWqGhxEp8xgr/YJr50TwHAV/
-fkmeDUEr2CHilQcS5ToUGC6FAiIEPr3HVPPE7uFOc6021pAcT5FxD3un6oTMvakV
-MVqyBw6A5AwEhKoh47Us73yT0j53QA7BJ+PhcgL5kMjRY51muS7e2bwkk6igI07J
-/T310/rQ7dPA1KhTnTpkmeFwWaudMgZtCBHNHk30brm21o0/d+D1av1bKrLCJluq
-lP9ew6MQold957kl4BdxJI9VpAp8532J/eAvjQLH6BkRA78g7nsCr/LNiaTrVbnG
-YMpRZychmYJhiH+bxMnds/y+UUpeDvdZMywD7mrXmJfwOUuh2g+0cczEQZQP7arp
-o9oZMkXWA2QOM/UEPYs7Hz7zzRz2QNQPTqXY6toqLd0h/bb+Qeno7Bd0+RRLQJxQ
-yOaKKEWc3b/+Q2thT4r8+hz+xGyaU/TRcIKDQY5+TegnNcfRLem1X9HLJL81J6LI
-H3RJbG0OcgTpwVwPFY7I
-=CEpZ
------END PGP SIGNATURE-----
-
---yiup30KVCQiHUZFC--
+Pulled, thanks Antonio.
