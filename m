@@ -1,11 +1,16 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Sat, 31 Aug 2013 20:51:37 +0200
-Message-Id: <1377975097-1664-10-git-send-email-ordex@autistici.org>
-In-Reply-To: <1377975097-1664-1-git-send-email-ordex@autistici.org>
-References: <1377975097-1664-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv6 9/9] batman-adv: adapt the TT component to
-	use the new API functions
+Return-Path: <lindner_marek@yahoo.de>
+From: Marek Lindner <lindner_marek@yahoo.de>
+Date: Sun, 1 Sep 2013 12:48:44 +0800
+References: <1377790385-24720-1-git-send-email-lindner_marek@yahoo.de>
+ <20130831183829.GT2896@ritirata.org>
+In-Reply-To: <20130831183829.GT2896@ritirata.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201309011248.44874.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: limit local translation
+	table max size
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,114 +22,122 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+On Sunday, September 01, 2013 02:38:29 Antonio Quartulli wrote:
+> > diff --git a/hard-interface.c b/hard-interface.c
+> > index c5f871f..c60d3ed 100644
+> > --- a/hard-interface.c
+> > +++ b/hard-interface.c
+> > @@ -266,16 +266,9 @@ static void batadv_check_known_mac_addr(const stru=
+ct
+> > net_device *net_dev)
+> >=20
+> >  int batadv_hardif_min_mtu(struct net_device *soft_iface)
+> >  {
+> >=20
+> > -	const struct batadv_priv *bat_priv =3D netdev_priv(soft_iface);
+> > +	struct batadv_priv *bat_priv =3D netdev_priv(soft_iface);
+>=20
+> Why are you removing the const qualifier?
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
----
- translation-table.c | 35 ++++++++++++++++++++++++-----------
- 1 file changed, 24 insertions(+), 11 deletions(-)
+  CC [M]  /home/marek/batman-adv/hard-interface.o
+/home/marek/batman-adv/hard-interface.c: In function =E2=80=98batadv_hardif=
+_min_mtu=E2=80=99:
+/home/marek/batman-adv/hard-interface.c:286:2: warning: passing argument 1 =
+of=20
+=E2=80=98atomic_set=E2=80=99 discards =E2=80=98const=E2=80=99 qualifier fro=
+m pointer target type [enabled by=20
+default]
+/usr/src/linux-headers-3.2.0-4-common/arch/x86/include/asm/atomic.h:35:20:=
+=20
+note: expected =E2=80=98struct atomic_t *=E2=80=99 but argument is of type =
+=E2=80=98const struct=20
+atomic_t *=E2=80=99
+/home/marek/batman-adv/hard-interface.c:298:2: warning: passing argument 1 =
+of=20
+=E2=80=98atomic_set=E2=80=99 discards =E2=80=98const=E2=80=99 qualifier fro=
+m pointer target type [enabled by=20
+default]
+/usr/src/linux-headers-3.2.0-4-common/arch/x86/include/asm/atomic.h:35:20:=
+=20
+note: expected =E2=80=98struct atomic_t *=E2=80=99 but argument is of type =
+=E2=80=98const struct=20
+atomic_t *=E2=80=99
 
-diff --git a/translation-table.c b/translation-table.c
-index 2dc214c..364a661 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1280,18 +1280,20 @@ out:
- }
- 
- /* batadv_transtable_best_orig - Get best originator list entry from tt entry
-+ * @bat_priv: the bat priv with all the soft interface information
-  * @tt_global_entry: global translation table entry to be analyzed
-  *
-  * This functon assumes the caller holds rcu_read_lock().
-  * Returns best originator list entry or NULL on errors.
-  */
- static struct batadv_tt_orig_list_entry *
--batadv_transtable_best_orig(struct batadv_tt_global_entry *tt_global_entry)
-+batadv_transtable_best_orig(struct batadv_priv *bat_priv,
-+			    struct batadv_tt_global_entry *tt_global_entry)
- {
--	struct batadv_neigh_node *router = NULL;
-+	struct batadv_neigh_node *router, *best_router = NULL;
-+	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
- 	struct hlist_head *head;
- 	struct batadv_tt_orig_list_entry *orig_entry, *best_entry = NULL;
--	int best_tq = 0;
- 
- 	head = &tt_global_entry->orig_list;
- 	hlist_for_each_entry_rcu(orig_entry, head, list) {
-@@ -1299,26 +1301,37 @@ batadv_transtable_best_orig(struct batadv_tt_global_entry *tt_global_entry)
- 		if (!router)
- 			continue;
- 
--		if (router->bat_iv.tq_avg > best_tq) {
--			best_entry = orig_entry;
--			best_tq = router->bat_iv.tq_avg;
-+		if (best_router &&
-+		    bao->bat_neigh_cmp(router, best_router) <= 0) {
-+			batadv_neigh_node_free_ref(router);
-+			continue;
- 		}
- 
--		batadv_neigh_node_free_ref(router);
-+		/* release the refcount for the "old" best */
-+		if (best_router)
-+			batadv_neigh_node_free_ref(best_router);
-+
-+		best_entry = orig_entry;
-+		best_router = router;
- 	}
- 
-+	if (best_router)
-+		batadv_neigh_node_free_ref(best_router);
-+
- 	return best_entry;
- }
- 
- /* batadv_tt_global_print_entry - print all orig nodes who announce the address
-  * for this global entry
-+ * @bat_priv: the bat priv with all the soft interface information
-  * @tt_global_entry: global translation table entry to be printed
-  * @seq: debugfs table seq_file struct
-  *
-  * This functon assumes the caller holds rcu_read_lock().
-  */
- static void
--batadv_tt_global_print_entry(struct batadv_tt_global_entry *tt_global_entry,
-+batadv_tt_global_print_entry(struct batadv_priv *bat_priv,
-+			     struct batadv_tt_global_entry *tt_global_entry,
- 			     struct seq_file *seq)
- {
- 	struct batadv_tt_orig_list_entry *orig_entry, *best_entry;
-@@ -1331,7 +1344,7 @@ batadv_tt_global_print_entry(struct batadv_tt_global_entry *tt_global_entry,
- 	tt_common_entry = &tt_global_entry->common;
- 	flags = tt_common_entry->flags;
- 
--	best_entry = batadv_transtable_best_orig(tt_global_entry);
-+	best_entry = batadv_transtable_best_orig(bat_priv, tt_global_entry);
- 	if (best_entry) {
- 		vlan = batadv_orig_node_vlan_get(best_entry->orig_node,
- 						 tt_common_entry->vid);
-@@ -1420,7 +1433,7 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
- 			tt_global = container_of(tt_common_entry,
- 						 struct batadv_tt_global_entry,
- 						 common);
--			batadv_tt_global_print_entry(tt_global, seq);
-+			batadv_tt_global_print_entry(bat_priv, tt_global, seq);
- 		}
- 		rcu_read_unlock();
- 	}
-@@ -1808,7 +1821,7 @@ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
- 		goto out;
- 
- 	rcu_read_lock();
--	best_entry = batadv_transtable_best_orig(tt_global_entry);
-+	best_entry = batadv_transtable_best_orig(bat_priv, tt_global_entry);
- 	/* found anything? */
- 	if (best_entry)
- 		orig_node = best_entry->orig_node;
--- 
-1.8.1.5
+=09
+> >  	/* Register the client MAC in the transtable */
+> >=20
+> > -	if (!is_multicast_ether_addr(ethhdr->h_source))
+> > -		batadv_tt_local_add(soft_iface, ethhdr->h_source, vid,
+> > -				    skb->skb_iif);
+> > +	if (!is_multicast_ether_addr(ethhdr->h_source)) {
+> > +		client_added =3D batadv_tt_local_add(soft_iface, ethhdr->h_source,
+> > +						   vid, skb->skb_iif);
+>=20
+> Isn't this assignment as ugly as the following if condition?
+>=20
+> 		if (!batadv_tt_local_add(soft_iface, ethhdr->h_source, vid,
+> 					 skb->skb_iif))
+>=20
+> client_added looks useless to me.
 
+The general idea behind "client_added" was to increase readibility. For the=
+=20
+casual reader this variable makes it more obvious what goes on.
+
+
+> > +/**
+> > + * batadv_tt_local_table_transmit_size - calculates the local
+> > translation table + *  size when transmitted over the air
+> > + * @bat_priv: the bat priv with all the soft interface information
+> > + *
+> > + * Returns local translation table size in bytes.
+> > + */
+> > +static int batadv_tt_local_table_transmit_size(struct batadv_priv
+> > *bat_priv) +{
+> > +	struct batadv_softif_vlan *vlan;
+> > +	uint16_t num_vlan =3D 0, tt_local_entries =3D 0;
+> > +	int hdr_size;
+>=20
+> David always asks to sort variable declaration lines from the longest to
+> the shorter.
+> IMHO it is not really important (in particular in this case) but since you
+> are creating the function now, please follow that indication.
+
+Sure.
+
+
+> > @@ -717,12 +762,6 @@ static void batadv_tt_tvlv_container_update(struct
+> > batadv_priv *bat_priv)
+> >=20
+> >  	tt_diff_entries_num =3D atomic_read(&bat_priv->tt.local_changes);
+> >  	tt_diff_len =3D batadv_tt_len(tt_diff_entries_num);
+> >=20
+> > -	/* if we have too many changes for one packet don't send any
+> > -	 * and wait for the tt table request which will be fragmented
+> > -	 */
+> > -	if (tt_diff_len > bat_priv->soft_iface->mtu)
+> > -		tt_diff_len =3D 0;
+> > -
+>=20
+> Why are you removing this? We are not going to fragment OGMs and in this
+> function we are preparing the TVLV to send within one of those.
+
+Upon reading this function a realized this "tt_diff_len =3D 0" mechanism is=
+=20
+buggy. For instance, the changes_list list is not purged but keeps growing=
+=20
+until it magically fits the ogm diff again. Or checking bat_priv->soft_ifac=
+e-
+>mtu isn't terribly accurate either. The more I looked the more my head=20
+started to spin. Suddenly, I was convinced we don't need the check anymore=
+=20
+because we have the fragmentation but you are right - it won't help here. I=
+'ll=20
+add the check again but be aware that it is broken.
+
+Thanks for the review!
+
+Cheers,
+Marek
