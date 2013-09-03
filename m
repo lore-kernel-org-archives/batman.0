@@ -1,16 +1,16 @@
 Return-Path: <lindner_marek@yahoo.de>
 From: Marek Lindner <lindner_marek@yahoo.de>
-Date: Tue, 3 Sep 2013 16:54:03 +0800
+Date: Tue, 3 Sep 2013 16:55:08 +0800
 References: <1378116909-551-1-git-send-email-ordex@autistici.org>
- <1378116909-551-6-git-send-email-ordex@autistici.org>
-In-Reply-To: <1378116909-551-6-git-send-email-ordex@autistici.org>
+ <1378116909-551-7-git-send-email-ordex@autistici.org>
+In-Reply-To: <1378116909-551-7-git-send-email-ordex@autistici.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201309031654.04017.lindner_marek@yahoo.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv7 5/9] batman-adv: add
-	bat_neigh_is_equiv_or_better API function
+Message-Id: <201309031655.09134.lindner_marek@yahoo.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv7 6/9] batman-adv: adapt bonding to use
+	the new API functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,25 +25,17 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <ordex@autistici.org>
 
-On Monday, September 02, 2013 18:15:05 Antonio Quartulli wrote:
+On Monday, September 02, 2013 18:15:06 Antonio Quartulli wrote:
 > From: Antonio Quartulli <antonio@open-mesh.com>
-> 
-> Each routing protocol has its own metric semantic and
-> therefore is the protocol itself the only component able to
-> compare two metrics to check their "similarity".
-> 
-> This new API allows each routing protocol to implement its
-> own logic and make the external code protocol agnostic.
 > 
 > Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 > ---
->  bat_iv_ogm.c | 18 ++++++++++++++++++
->  main.c       |  3 ++-
->  main.h       |  6 ++++++
->  types.h      |  4 ++++
->  4 files changed, 30 insertions(+), 1 deletion(-)
+>  bat_iv_ogm.c |  2 +-
+>  routing.c    | 42 +++++++++++++++++++++++++++++-------------
+>  routing.h    |  3 ++-
+>  3 files changed, 32 insertions(+), 15 deletions(-)
 
-Applied in revision 51e42c8.
+Applied in revision a641082.
 
 Thanks,
 Marek
