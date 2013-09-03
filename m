@@ -1,9 +1,11 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Tue,  3 Sep 2013 11:10:23 +0200
-Message-Id: <1378199424-795-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCHv8 1/2] batman-adv: provide orig_node routing
-	API
+Date: Tue,  3 Sep 2013 11:10:24 +0200
+Message-Id: <1378199424-795-2-git-send-email-ordex@autistici.org>
+In-Reply-To: <1378199424-795-1-git-send-email-ordex@autistici.org>
+References: <1378199424-795-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] [PATCHv8 2/2] batman-adv: adapt the TT component to
+	use the new API functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,363 +22,109 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-Some operations executed on an orig_node depends on the
-current routing algorithm being used. To easily make this
-mechanism routing algorithm agnostic add a orig_node
-specific API that each algorithm can populate with its own
-routines.
-
-Such routines are then invoked by the code when needed,
-without knowing which routing algorithm is currently in use
-
-With this patch 3 API functions are added:
-- orig_free (to free routing depending internal structs)
-- orig_add_if (to change the inner state of an orig_node
-  when a new hard interface is added)
-- orig_del_if (to change the inner state of an orig_node
-  when an hard interface is removed)
-
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
+ translation-table.c | 35 ++++++++++++++++++++++++-----------
+ 1 file changed, 24 insertions(+), 11 deletions(-)
 
-changes from v7:
-- removed batadv_orig_node_del_if() (it has been accidentally re-introduced
-  during the last rebase)
-
-Cheers,
-
-
- bat_iv_ogm.c | 126 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- originator.c | 102 +++++++----------------------------------------
- types.h      |  11 ++++++
- 3 files changed, 151 insertions(+), 88 deletions(-)
-
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 7cdc394..a2b480a 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -88,6 +88,129 @@ static uint8_t batadv_ring_buffer_avg(const uint8_t lq_recv[])
+diff --git a/translation-table.c b/translation-table.c
+index c1e6cdf..76803b2 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1339,18 +1339,20 @@ out:
  }
  
- /**
-+ * batadv_iv_ogm_orig_free - free the private resources allocated for this
-+ *  orig_node
-+ * @orig_node: the orig_node for which the resources have to be free'd
-+ */
-+static void batadv_iv_ogm_orig_free(struct batadv_orig_node *orig_node)
-+{
-+	kfree(orig_node->bat_iv.bcast_own);
-+	kfree(orig_node->bat_iv.bcast_own_sum);
-+}
-+
-+/**
-+ * batadv_iv_ogm_orig_add_if - change the private structures of the orig_node to
-+ *  include the new hard-interface
-+ * @orig_node: the orig_node that has to be changed
-+ * @max_if_num: the current amount of interfaces
-+ *
-+ * Returns 0 on success, a negative error code otherwise.
-+ */
-+static int batadv_iv_ogm_orig_add_if(struct batadv_orig_node *orig_node,
-+				     int max_if_num)
-+{
-+	void *data_ptr;
-+	size_t data_size, old_size;
-+	int ret = -ENOMEM;
-+
-+	spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
-+
-+	data_size = max_if_num * sizeof(unsigned long) * BATADV_NUM_WORDS;
-+	old_size = (max_if_num - 1) * sizeof(unsigned long) * BATADV_NUM_WORDS;
-+	data_ptr = kmalloc(data_size, GFP_ATOMIC);
-+	if (!data_ptr)
-+		goto unlock;
-+
-+	memcpy(data_ptr, orig_node->bat_iv.bcast_own, old_size);
-+	kfree(orig_node->bat_iv.bcast_own);
-+	orig_node->bat_iv.bcast_own = data_ptr;
-+
-+	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
-+	if (!data_ptr) {
-+		kfree(orig_node->bat_iv.bcast_own);
-+		goto unlock;
-+	}
-+
-+	memcpy(data_ptr, orig_node->bat_iv.bcast_own_sum,
-+	       (max_if_num - 1) * sizeof(uint8_t));
-+	kfree(orig_node->bat_iv.bcast_own_sum);
-+	orig_node->bat_iv.bcast_own_sum = data_ptr;
-+
-+	ret = 0;
-+
-+unlock:
-+	spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
-+
-+	return ret;
-+}
-+
-+/**
-+ * batadv_iv_ogm_orig_del_if - change the private structures of the orig_node to
-+ *  exclude the removed interface
-+ * @orig_node: the orig_node that has to be changed
-+ * @max_if_num: the current amount of interfaces
-+ * @del_if_num: the index of the interface being removed
-+ *
-+ * Returns 0 on success, a negative error code otherwise.
-+ */
-+static int batadv_iv_ogm_orig_del_if(struct batadv_orig_node *orig_node,
-+				     int max_if_num, int del_if_num)
-+{
-+	int chunk_size,  ret = -ENOMEM, if_offset;
-+	void *data_ptr = NULL;
-+
-+	spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
-+
-+	/* last interface was removed */
-+	if (max_if_num == 0)
-+		goto free_bcast_own;
-+
-+	chunk_size = sizeof(unsigned long) * BATADV_NUM_WORDS;
-+	data_ptr = kmalloc(max_if_num * chunk_size, GFP_ATOMIC);
-+	if (!data_ptr)
-+		goto unlock;
-+
-+	/* copy first part */
-+	memcpy(data_ptr, orig_node->bat_iv.bcast_own, del_if_num * chunk_size);
-+
-+	/* copy second part */
-+	memcpy((char *)data_ptr + del_if_num * chunk_size,
-+	       orig_node->bat_iv.bcast_own + ((del_if_num + 1) * chunk_size),
-+	       (max_if_num - del_if_num) * chunk_size);
-+
-+free_bcast_own:
-+	kfree(orig_node->bat_iv.bcast_own);
-+	orig_node->bat_iv.bcast_own = data_ptr;
-+
-+	if (max_if_num == 0)
-+		goto free_own_sum;
-+
-+	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
-+	if (!data_ptr) {
-+		kfree(orig_node->bat_iv.bcast_own);
-+		goto unlock;
-+	}
-+
-+	memcpy(data_ptr, orig_node->bat_iv.bcast_own_sum,
-+	       del_if_num * sizeof(uint8_t));
-+
-+	if_offset = (del_if_num + 1) * sizeof(uint8_t);
-+	memcpy((char *)data_ptr + del_if_num * sizeof(uint8_t),
-+	       orig_node->bat_iv.bcast_own_sum + if_offset,
-+	       (max_if_num - del_if_num) * sizeof(uint8_t));
-+
-+free_own_sum:
-+	kfree(orig_node->bat_iv.bcast_own_sum);
-+	orig_node->bat_iv.bcast_own_sum = data_ptr;
-+
-+	ret = 0;
-+unlock:
-+	spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
-+
-+	return ret;
-+}
-+
-+/**
-  * batadv_iv_ogm_orig_get - retrieve or create (if does not exist) an originator
-  * @bat_priv: the bat priv with all the soft interface information
-  * @addr: mac address of the originator
-@@ -1522,6 +1645,9 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
- 	.bat_neigh_cmp = batadv_iv_ogm_neigh_cmp,
- 	.bat_neigh_is_equiv_or_better = batadv_iv_ogm_neigh_is_eob,
- 	.bat_orig_print = batadv_iv_ogm_orig_print,
-+	.bat_orig_free = batadv_iv_ogm_orig_free,
-+	.bat_orig_add_if = batadv_iv_ogm_orig_add_if,
-+	.bat_orig_del_if = batadv_iv_ogm_orig_del_if,
- };
- 
- int __init batadv_iv_init(void)
-diff --git a/originator.c b/originator.c
-index 9cee053..8ab1434 100644
---- a/originator.c
-+++ b/originator.c
-@@ -241,9 +241,10 @@ static void batadv_orig_node_free_rcu(struct rcu_head *rcu)
- 	batadv_tt_global_del_orig(orig_node->bat_priv, orig_node, -1,
- 				  "originator timed out");
- 
-+	if (orig_node->bat_priv->bat_algo_ops->bat_orig_free)
-+		orig_node->bat_priv->bat_algo_ops->bat_orig_free(orig_node);
-+
- 	kfree(orig_node->tt_buff);
--	kfree(orig_node->bat_iv.bcast_own);
--	kfree(orig_node->bat_iv.bcast_own_sum);
- 	kfree(orig_node);
- }
- 
-@@ -538,38 +539,11 @@ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
- 	return 0;
- }
- 
--static int batadv_orig_node_add_if(struct batadv_orig_node *orig_node,
--				   int max_if_num)
--{
--	void *data_ptr;
--	size_t data_size, old_size;
--
--	data_size = max_if_num * sizeof(unsigned long) * BATADV_NUM_WORDS;
--	old_size = (max_if_num - 1) * sizeof(unsigned long) * BATADV_NUM_WORDS;
--	data_ptr = kmalloc(data_size, GFP_ATOMIC);
--	if (!data_ptr)
--		return -ENOMEM;
--
--	memcpy(data_ptr, orig_node->bat_iv.bcast_own, old_size);
--	kfree(orig_node->bat_iv.bcast_own);
--	orig_node->bat_iv.bcast_own = data_ptr;
--
--	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
--	if (!data_ptr)
--		return -ENOMEM;
--
--	memcpy(data_ptr, orig_node->bat_iv.bcast_own_sum,
--	       (max_if_num - 1) * sizeof(uint8_t));
--	kfree(orig_node->bat_iv.bcast_own_sum);
--	orig_node->bat_iv.bcast_own_sum = data_ptr;
--
--	return 0;
--}
--
- int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
- 			    int max_if_num)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
- 	struct batadv_hashtable *hash = bat_priv->orig_hash;
- 	struct hlist_head *head;
- 	struct batadv_orig_node *orig_node;
-@@ -584,10 +558,10 @@ int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
- 
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
--			spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
--			ret = batadv_orig_node_add_if(orig_node, max_if_num);
--			spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
--
-+			ret = 0;
-+			if (bao->bat_orig_add_if)
-+				ret = bao->bat_orig_add_if(orig_node,
-+							   max_if_num);
- 			if (ret == -ENOMEM)
- 				goto err;
- 		}
-@@ -601,55 +575,6 @@ err:
- 	return -ENOMEM;
- }
- 
--static int batadv_orig_node_del_if(struct batadv_orig_node *orig_node,
--				   int max_if_num, int del_if_num)
--{
--	int chunk_size, if_offset;
--	void *data_ptr = NULL;
--
--	/* last interface was removed */
--	if (max_if_num == 0)
--		goto free_bcast_own;
--
--	chunk_size = sizeof(unsigned long) * BATADV_NUM_WORDS;
--	data_ptr = kmalloc(max_if_num * chunk_size, GFP_ATOMIC);
--	if (!data_ptr)
--		return -ENOMEM;
--
--	/* copy first part */
--	memcpy(data_ptr, orig_node->bat_iv.bcast_own, del_if_num * chunk_size);
--
--	/* copy second part */
--	memcpy((char *)data_ptr + del_if_num * chunk_size,
--	       orig_node->bat_iv.bcast_own + ((del_if_num + 1) * chunk_size),
--	       (max_if_num - del_if_num) * chunk_size);
--
--free_bcast_own:
--	kfree(orig_node->bat_iv.bcast_own);
--	orig_node->bat_iv.bcast_own = data_ptr;
--
--	if (max_if_num == 0)
--		goto free_own_sum;
--
--	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
--	if (!data_ptr)
--		return -ENOMEM;
--
--	memcpy(data_ptr, orig_node->bat_iv.bcast_own_sum,
--	       del_if_num * sizeof(uint8_t));
--
--	if_offset = (del_if_num + 1) * sizeof(uint8_t);
--	memcpy((char *)data_ptr + del_if_num * sizeof(uint8_t),
--	       orig_node->bat_iv.bcast_own_sum + if_offset,
--	       (max_if_num - del_if_num) * sizeof(uint8_t));
--
--free_own_sum:
--	kfree(orig_node->bat_iv.bcast_own_sum);
--	orig_node->bat_iv.bcast_own_sum = data_ptr;
--
--	return 0;
--}
--
- int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
- 			    int max_if_num)
- {
-@@ -658,6 +583,7 @@ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
- 	struct hlist_head *head;
- 	struct batadv_hard_iface *hard_iface_tmp;
- 	struct batadv_orig_node *orig_node;
-+	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
- 	uint32_t i;
- 	int ret;
- 
-@@ -669,11 +595,11 @@ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
- 
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
--			spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
--			ret = batadv_orig_node_del_if(orig_node, max_if_num,
--						      hard_iface->if_num);
--			spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
--
-+			ret = 0;
-+			if (bao->bat_orig_del_if)
-+				ret = bao->bat_orig_del_if(orig_node,
-+							   max_if_num,
-+							   hard_iface->if_num);
- 			if (ret == -ENOMEM)
- 				goto err;
- 		}
-diff --git a/types.h b/types.h
-index c0761a4..f323822 100644
---- a/types.h
-+++ b/types.h
-@@ -999,6 +999,12 @@ struct batadv_forw_packet {
-  * @bat_neigh_is_equiv_or_better: check if neigh1 is equally good or
-  *  better than neigh2 from the metric prospective
-  * @bat_orig_print: print the originator table (optional)
-+ * @bat_orig_free: free the resources allocated by the routing algorithm for an
-+ *  orig_node object
-+ * @bat_orig_add_if: ask the routing algorithm to apply the needed changes to
-+ *  the orig_node due to a new hard-interface being added into the mesh
-+ * @bat_orig_del_if: ask the routing algorithm to apply the needed changes to
-+ *  the orig_node due to an hard-interface being removed from the mesh
+ /* batadv_transtable_best_orig - Get best originator list entry from tt entry
++ * @bat_priv: the bat priv with all the soft interface information
+  * @tt_global_entry: global translation table entry to be analyzed
+  *
+  * This functon assumes the caller holds rcu_read_lock().
+  * Returns best originator list entry or NULL on errors.
   */
- struct batadv_algo_ops {
- 	struct hlist_node list;
-@@ -1015,6 +1021,11 @@ struct batadv_algo_ops {
- 					     struct batadv_neigh_node *neigh2);
- 	/* orig_node handling API */
- 	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq);
-+	void (*bat_orig_free)(struct batadv_orig_node *orig_node);
-+	int (*bat_orig_add_if)(struct batadv_orig_node *orig_node,
-+			       int max_if_num);
-+	int (*bat_orig_del_if)(struct batadv_orig_node *orig_node,
-+			       int max_if_num, int del_if_num);
- };
+ static struct batadv_tt_orig_list_entry *
+-batadv_transtable_best_orig(struct batadv_tt_global_entry *tt_global_entry)
++batadv_transtable_best_orig(struct batadv_priv *bat_priv,
++			    struct batadv_tt_global_entry *tt_global_entry)
+ {
+-	struct batadv_neigh_node *router = NULL;
++	struct batadv_neigh_node *router, *best_router = NULL;
++	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
+ 	struct hlist_head *head;
+ 	struct batadv_tt_orig_list_entry *orig_entry, *best_entry = NULL;
+-	int best_tq = 0;
  
- /**
+ 	head = &tt_global_entry->orig_list;
+ 	hlist_for_each_entry_rcu(orig_entry, head, list) {
+@@ -1358,26 +1360,37 @@ batadv_transtable_best_orig(struct batadv_tt_global_entry *tt_global_entry)
+ 		if (!router)
+ 			continue;
+ 
+-		if (router->bat_iv.tq_avg > best_tq) {
+-			best_entry = orig_entry;
+-			best_tq = router->bat_iv.tq_avg;
++		if (best_router &&
++		    bao->bat_neigh_cmp(router, best_router) <= 0) {
++			batadv_neigh_node_free_ref(router);
++			continue;
+ 		}
+ 
+-		batadv_neigh_node_free_ref(router);
++		/* release the refcount for the "old" best */
++		if (best_router)
++			batadv_neigh_node_free_ref(best_router);
++
++		best_entry = orig_entry;
++		best_router = router;
+ 	}
+ 
++	if (best_router)
++		batadv_neigh_node_free_ref(best_router);
++
+ 	return best_entry;
+ }
+ 
+ /* batadv_tt_global_print_entry - print all orig nodes who announce the address
+  * for this global entry
++ * @bat_priv: the bat priv with all the soft interface information
+  * @tt_global_entry: global translation table entry to be printed
+  * @seq: debugfs table seq_file struct
+  *
+  * This functon assumes the caller holds rcu_read_lock().
+  */
+ static void
+-batadv_tt_global_print_entry(struct batadv_tt_global_entry *tt_global_entry,
++batadv_tt_global_print_entry(struct batadv_priv *bat_priv,
++			     struct batadv_tt_global_entry *tt_global_entry,
+ 			     struct seq_file *seq)
+ {
+ 	struct batadv_tt_orig_list_entry *orig_entry, *best_entry;
+@@ -1390,7 +1403,7 @@ batadv_tt_global_print_entry(struct batadv_tt_global_entry *tt_global_entry,
+ 	tt_common_entry = &tt_global_entry->common;
+ 	flags = tt_common_entry->flags;
+ 
+-	best_entry = batadv_transtable_best_orig(tt_global_entry);
++	best_entry = batadv_transtable_best_orig(bat_priv, tt_global_entry);
+ 	if (best_entry) {
+ 		vlan = batadv_orig_node_vlan_get(best_entry->orig_node,
+ 						 tt_common_entry->vid);
+@@ -1479,7 +1492,7 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 			tt_global = container_of(tt_common_entry,
+ 						 struct batadv_tt_global_entry,
+ 						 common);
+-			batadv_tt_global_print_entry(tt_global, seq);
++			batadv_tt_global_print_entry(bat_priv, tt_global, seq);
+ 		}
+ 		rcu_read_unlock();
+ 	}
+@@ -1867,7 +1880,7 @@ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
+ 		goto out;
+ 
+ 	rcu_read_lock();
+-	best_entry = batadv_transtable_best_orig(tt_global_entry);
++	best_entry = batadv_transtable_best_orig(bat_priv, tt_global_entry);
+ 	/* found anything? */
+ 	if (best_entry)
+ 		orig_node = best_entry->orig_node;
 -- 
 1.8.1.5
 
