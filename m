@@ -1,10 +1,8 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed,  4 Sep 2013 18:27:40 +0200
-Message-Id: <1378312060-30922-7-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1378312060-30922-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-References: <1378312060-30922-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [RFCv2 6/6] batman-adv: add bonding again
+Return-Path: <marco.dallato@gmail.com>
+From: Marco Dalla Torre <marco.dallato@gmail.com>
+Date: Thu,  5 Sep 2013 11:47:26 +0200
+Message-Id: <1378374446-11859-1-git-send-email-marco.dallato@gmail.com>
+Subject: [B.A.T.M.A.N.] [PATCHv5] batctl: add sys framework for VLAN support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,179 +15,208 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
 
-From: Simon Wunderlich <simon@open-mesh.com>
+Allow the batctl tool to take advantage of changes from commit
+e4ff5c153dab054a6cd1c4132f87bc5e77127456 "add sys framework for VLAN"
+recently added to batman-adv, so that users can execute commands in
+a per VLAN fashion.
 
-With the new interface alternating, the first hop may send packets
-in a round robin fashion to it's neighbors because it has multiple
-valid routes built by the multi interface optimization. This patch
-enables the feature if bonding is selected. Note that unlike the
-bonding implemented before, this version is much simpler and may
-even enable multi path routing to a certain degree.
+If no directory entry corresponding to the user-selected device is found
+at the standard location for non VLAN interfaces
+(/sys/class/net/${device}/mesh/), 'batctl' now looks into directory:
+     /sys/devices/virtual/net/${base_device}/mesh/vlan${vid}
+Information on VLAN devices (base device, vid) necessary to construct the
+directory path is acquired by parsing /proc/net/vlan/${device}.
+Where:
+    -${base_device}: the batman device on top of which the VLAN is sitting
+    -${device}: the device interface for the VLAN,
+    -${vid}: the identifier assigned to the VLAN.
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+If the user-selected command is not supported by the VLAN, an appropriate
+error is shown.
+
+Signed-off-by: Marco Dalla Torre <marco.dallato@gmail.com>
 ---
- routing.c |  104 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
- routing.h |    2 +-
- types.h   |    2 ++
- 3 files changed, 104 insertions(+), 4 deletions(-)
+ functions.c  |  3 +++
+ main.c       |  2 +-
+ man/batctl.8 |  4 +--
+ sys.c        | 86 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
+ sys.h        |  3 +++
+ 5 files changed, 92 insertions(+), 6 deletions(-)
 
-diff --git a/routing.c b/routing.c
-index 304e44b..013958f 100644
---- a/routing.c
-+++ b/routing.c
-@@ -407,16 +407,114 @@ static int batadv_check_unicast_packet(struct batadv_priv *bat_priv,
- struct batadv_neigh_node *
- batadv_find_router(struct batadv_priv *bat_priv,
- 		   struct batadv_orig_node *orig_node,
--		   const struct batadv_hard_iface *recv_if)
-+		   struct batadv_hard_iface *recv_if)
- {
--	struct batadv_neigh_node *router;
-+	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
-+	struct batadv_neigh_node *router, *cand_router,
-+				 *first_candidate_router = NULL,
-+				 *next_candidate_router;
-+	struct batadv_neigh_node_ifinfo *router_ifinfo, *cand_ifinfo;
-+	struct batadv_orig_node_ifinfo *cand, *first_candidate = NULL,
-+				       *next_candidate = NULL;
-+	bool last_candidate_found = false;
+diff --git a/functions.c b/functions.c
+index cc05a48..ed010ea 100644
+--- a/functions.c
++++ b/functions.c
+@@ -135,6 +135,9 @@ static void file_open_problem_dbg(char *dir, char *fname, char *full_path)
+ 			fprintf(stderr, "Error - the folder '/sys/' was not found on the system\n");
+ 			fprintf(stderr, "Please make sure that the sys filesystem is properly mounted\n");
+ 			return;
++		} else if (strstr(dir, "/sys/devices/virtual/")) {
++			fprintf(stderr, "The selected feature '%s' is not supported for vlans\n", fname);
++			return;
+ 		}
+ 	}
  
- 	if (!orig_node)
- 		return NULL;
+diff --git a/main.c b/main.c
+index 24d42fb..bac37ca 100644
+--- a/main.c
++++ b/main.c
+@@ -49,7 +49,7 @@ void print_usage(void)
  
- 	router = batadv_orig_node_get_router(orig_node, recv_if);
- 
--	/* TODO: fill this later with new bonding mechanism */
-+	/* only consider bonding for recv_if == NULL (first hop) and if
-+	 * activated.
-+	 */
-+	if (recv_if || !atomic_read(&bat_priv->bonding) || !router)
-+		return router;
-+
-+	/* bonding: loop through the list of possible routers found
-+	 * for the various outgoing interfaces and find a candidate after
-+	 * the last chosen bonding candidate (next_candidate). If no such
-+	 * router is found, use the first candidate found (the last chosen
-+	 * bonding candidate might have been the last one in the list).
-+	 * If this can't be found either, return the previously choosen
-+	 * router - obviously there are no other candidates.
-+	 */
-+	rcu_read_lock();
-+	router_ifinfo = batadv_neigh_node_get_ifinfo(router, recv_if);
-+	hlist_for_each_entry_rcu(cand, &orig_node->ifinfo_list, list) {
-+		cand_router = rcu_dereference(cand->router);
-+		if (!cand_router)
-+			continue;
-+
-+		if (!atomic_inc_not_zero(&cand_router->refcount))
-+			continue;
-+
-+		cand_ifinfo = batadv_neigh_node_get_ifinfo(cand_router,
-+							   cand->if_outgoing);
-+		if (!cand_ifinfo)
-+			goto next;
-+
-+		/* alternative candidate should be good enough to be
-+		 * considered
-+		 */
-+		if (!bao->bat_neigh_ifinfo_is_equiv_or_better(cand_ifinfo,
-+							      router_ifinfo))
-+			goto next;
-+
-+		/* don't use the same router twice */
-+		if (orig_node->last_bonding_candidate &&
-+		    (orig_node->last_bonding_candidate->router ==
-+		     cand_router))
-+				goto next;
-+
-+		/* mark the first possible candidate */
-+		if (!first_candidate) {
-+			atomic_inc(&cand_router->refcount);
-+			first_candidate = cand;
-+			first_candidate_router = cand_router;
-+		}
-+
-+		/* check if already passed the next candidate ... this function
-+		 * should get the next candidate AFTER the last used bonding
-+		 * candidate.
-+		 */
-+		if (orig_node->last_bonding_candidate) {
-+			if (orig_node->last_bonding_candidate == cand) {
-+				last_candidate_found = true;
-+				goto next;
-+			}
-+
-+			if (!last_candidate_found)
-+				goto next;
-+		}
-+
-+		next_candidate = cand;
-+		next_candidate_router = cand_router;
-+		break;
-+next:
-+		batadv_neigh_node_free_ref(cand_router);
-+	}
-+
-+	if (next_candidate) {
-+		/* found a possible candidate after the last chosen bonding
-+		 * candidate, return it.
-+		 */
-+		batadv_neigh_node_free_ref(router);
-+		if (first_candidate)
-+			batadv_neigh_node_free_ref(first_candidate_router);
-+		router = next_candidate_router;
-+		orig_node->last_bonding_candidate = next_candidate;
-+	} else if (first_candidate) {
-+		/* found no possible candidate after the last candidate, return
-+		 * the first candidate if available, or the already selected
-+		 * router otherwise.
-+		 */
-+		batadv_neigh_node_free_ref(router);
-+		router = first_candidate_router;
-+		orig_node->last_bonding_candidate = first_candidate;
-+	} else {
-+		orig_node->last_bonding_candidate = NULL;
-+	}
-+
-+	rcu_read_unlock();
- 
- 	return router;
+ 	fprintf(stderr, "Usage: batctl [options] command|debug table [parameters]\n");
+ 	fprintf(stderr, "options:\n");
+-	fprintf(stderr, " \t-m mesh interface (default 'bat0')\n");
++	fprintf(stderr, " \t-m mesh interface or mesh-based VLAN interface (default 'bat0')\n");
+ 	fprintf(stderr, " \t-h print this help (or 'batctl <command|debug table> -h' for the parameter help)\n");
+ 	fprintf(stderr, " \t-v print version\n");
+ 	fprintf(stderr, "\n");
+diff --git a/man/batctl.8 b/man/batctl.8
+index d04385b..b45cccf 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -42,7 +42,7 @@ behaviour or using the B.A.T.M.A.N. advanced protocol.
+ .SH OPTIONS
+ .TP
+ .I \fBoptions:
+-\-m     specify mesh interface (default 'bat0')
++\-m     specify mesh interface or a mesh-based VLAN interface (default 'bat0')
+ .br
+ \-h     print general batctl help
+ .br
+@@ -61,7 +61,7 @@ originator interval. The interval is in units of milliseconds.
+ .br
+ .IP "\fBap_isolation\fP|\fBap\fP [\fB0\fP|\fB1\fP]"
+ If no parameter is given the current ap isolation setting is displayed. Otherwise the parameter is used to enable or
+-disable ap isolation.
++disable ap isolation. This command can be used in conjunction with "-m" option to target per VLAN configurations.
+ .br
+ .IP "\fBbridge_loop_avoidance\fP|\fBbl\fP [\fB0\fP|\fB1\fP]"
+ If no parameter is given the current bridge loop avoidance setting is displayed. Otherwise the parameter is used to enable
+diff --git a/sys.c b/sys.c
+index b1d7ea8..3dad9b7 100644
+--- a/sys.c
++++ b/sys.c
+@@ -371,11 +371,61 @@ static void settings_usage(int setting)
+ 	fprintf(stderr, " \t -h print this help\n");
  }
-diff --git a/routing.h b/routing.h
-index 7a7c6e9..2c80b6a 100644
---- a/routing.h
-+++ b/routing.h
-@@ -46,7 +46,7 @@ int batadv_recv_unhandled_unicast_packet(struct sk_buff *skb,
- struct batadv_neigh_node *
- batadv_find_router(struct batadv_priv *bat_priv,
- 		   struct batadv_orig_node *orig_node,
--		   const struct batadv_hard_iface *recv_if);
-+		   struct batadv_hard_iface *recv_if);
- int batadv_window_protected(struct batadv_priv *bat_priv, int32_t seq_num_diff,
- 			    unsigned long *last_reset);
  
-diff --git a/types.h b/types.h
-index 7255500..fa58a14 100644
---- a/types.h
-+++ b/types.h
-@@ -173,6 +173,7 @@ struct batadv_orig_bat_iv {
-  * @orig: originator ethernet address
-  * @primary_addr: hosts primary interface address
-  * @ifinfo_list: list for routers per outgoing interface
-+ * @last_bonding_candidate: pointer to last ifinfo of last used router
-  * @batadv_dat_addr_t:  address of the orig node in the distributed hash
-  * @last_seen: time when last packet from this node was received
-  * @bcast_seqno_reset: time when the broadcast seqno window was reset
-@@ -213,6 +214,7 @@ struct batadv_orig_node {
- 	uint8_t orig[ETH_ALEN];
- 	uint8_t primary_addr[ETH_ALEN];
- 	struct hlist_head ifinfo_list;
-+	struct batadv_orig_node_ifinfo *last_bonding_candidate;
- #ifdef CONFIG_BATMAN_ADV_DAT
- 	batadv_dat_addr_t dat_addr;
- #endif
++/**
++ * get_basedev_vid - given a valid VLAN interface, identifies the batman device
++ *	on top of which the VLAN is sitting and its VLAN ID
++ * @mesh_iface: name of the VLAN network interface
++ * @base_dev: output argument, pointer to the base device name
++ * @vid: output argument, pointer to the VLAN ID number
++ *
++ * Returns 0 if execution is successful, -1 if an error occurred
++ */
++static int get_basedev_vid(const char *mesh_iface, char **base_dev, unsigned short *vid)
++{
++	char *vdev;
++	char *line_ptr = NULL;
++	size_t len;
++	*base_dev = NULL;
++
++	int size = strlen(PROC_VLAN_PATH) + strlen(mesh_iface) + 1;
++	FILE *fp;
++	char *fpath = malloc(size);
++	if (!fpath) {
++		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
++		return EXIT_FAILURE;
++	}
++	/* prepare path file path: /proc/net/vlan/$mesh_iface*/
++	snprintf(fpath, size, "%s%s", PROC_VLAN_PATH, mesh_iface);
++
++	fp = fopen(fpath, "r");
++	if (!fp) {
++		fprintf(stderr, "Error - could not open file '%s': %s\n", fpath, strerror(errno));
++		return EXIT_FAILURE;
++	}
++
++	if (fscanf(fp, "%ms %*s %hu %*s %*d %*s %*d", &vdev, vid) != 2)
++		return EXIT_FAILURE;
++	while (getline(&line_ptr, &len, fp) != -1) {
++		if (sscanf(line_ptr, "Device: %ms", base_dev) == 1)
++			break;
++	}
++	fclose(fp);
++	free(line_ptr);
++	/* handle base device not found case */
++	if (*base_dev == NULL )
++		return EXIT_FAILURE;
++
++	return EXIT_SUCCESS;
++}
++
+ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
+ {
+ 	int optchar, res = EXIT_FAILURE;
+ 	char *path_buff;
+ 	const char **ptr;
++	unsigned short vid = 0;
++	char *base_dev = NULL;
++	ssize_t path_length = 0;
+ 
+ 	while ((optchar = getopt(argc, argv, "h")) != -1) {
+ 		switch (optchar) {
+@@ -388,10 +438,40 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
+ 		}
+ 	}
+ 
+-	path_buff = malloc(PATH_BUFF_LEN);
+-	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
+-	path_buff[PATH_BUFF_LEN - 1] = '\0';
++	path_length = strlen(SYS_BATIF_PATH_FMT) - 2 + strlen(mesh_iface) + 1;
++	path_buff = malloc(path_length);
++	if (!path_buff) {
++		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
++		return EXIT_FAILURE;
++	}
++	snprintf(path_buff, path_length, SYS_BATIF_PATH_FMT, mesh_iface);
+ 
++	if (access(path_buff, F_OK) != 0) {
++		if (errno == ENOENT) {
++			/* path does not exist, no lan interface: check vlan */
++			if (get_basedev_vid(mesh_iface, &base_dev, &vid) == EXIT_SUCCESS) {
++				/* free for previous allocation */
++				free(path_buff);
++				path_length = strlen(SYS_VLAN_PATH) - 2
++					+ strlen(base_dev) - 2
++					+ VLAN_ID_MAX_LEN + 1;
++				path_buff = malloc(path_length);
++				if (!path_buff) {
++					fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
++					return EXIT_FAILURE;
++				}
++				snprintf(path_buff, path_length, SYS_VLAN_PATH,
++					base_dev, vid);
++			} else {
++				return EXIT_FAILURE;
++			}
++		} else if (errno == ENOTDIR) {
++			/* not a directory, something wrong here */
++			fprintf(stderr, "Error - expected directory at '%s'\n",
++				path_buff);
++			return EXIT_FAILURE;
++		}
++	}
+ 	if (argc == 1) {
+ 		res = read_file(path_buff, (char *)batctl_settings[setting].sysfs_name,
+ 				NO_FLAGS, 0, 0, 0);
+diff --git a/sys.h b/sys.h
+index a588e0b..f5df845 100644
+--- a/sys.h
++++ b/sys.h
+@@ -30,6 +30,9 @@
+ #define SYS_IFACE_DIR SYS_IFACE_PATH"/%s/"
+ #define SYS_MESH_IFACE_FMT SYS_IFACE_PATH"/%s/batman_adv/mesh_iface"
+ #define SYS_IFACE_STATUS_FMT SYS_IFACE_PATH"/%s/batman_adv/iface_status"
++#define PROC_VLAN_PATH "/proc/net/vlan/"
++#define SYS_VLAN_PATH "/sys/devices/virtual/net/%s/mesh/vlan%d/"
++#define VLAN_ID_MAX_LEN 4
+ 
+ enum batctl_settings_list {
+ 	BATCTL_SETTINGS_ORIG_INTERVAL,
 -- 
-1.7.10.4
+1.8.3.2
 
