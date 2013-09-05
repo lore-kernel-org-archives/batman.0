@@ -1,8 +1,8 @@
 Return-Path: <marco.dallato@gmail.com>
 From: Marco Dalla Torre <marco.dallato@gmail.com>
-Date: Thu,  5 Sep 2013 11:47:26 +0200
-Message-Id: <1378374446-11859-1-git-send-email-marco.dallato@gmail.com>
-Subject: [B.A.T.M.A.N.] [PATCHv5] batctl: add sys framework for VLAN support
+Date: Thu,  5 Sep 2013 14:16:47 +0200
+Message-Id: <1378383407-13460-1-git-send-email-marco.dallato@gmail.com>
+Subject: [B.A.T.M.A.N.] [PATCHv6] batctl: add sys framework for VLAN support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -37,12 +37,27 @@ error is shown.
 
 Signed-off-by: Marco Dalla Torre <marco.dallato@gmail.com>
 ---
- functions.c  |  3 +++
+Notable changes in V6
+-fixed error in string length computation
+-moved some more variable declarations at the beginning of functions 
+
+Notable changes in V5
+-fixed use of sizeof instead of strlen to compute length of string
+-use of getline instead of fgets
+-avoid using fixed-size buffer in 'get_basedev_vid'
+-moved constant string declarations, local to functions 'get_basedev_vid'
+ and 'handle_sys_setting', from sys.c to sys.h. Now uses #define like
+ other path declarations.
+-fixed scanf error condition check
+-fixed malloc error condition check
+-moved variable declarations at the beginning of functions
+
+ functions.c  |  3 ++
  main.c       |  2 +-
  man/batctl.8 |  4 +--
- sys.c        | 86 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
- sys.h        |  3 +++
- 5 files changed, 92 insertions(+), 6 deletions(-)
+ sys.c        | 89 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ sys.h        |  3 ++
+ 5 files changed, 95 insertions(+), 6 deletions(-)
 
 diff --git a/functions.c b/functions.c
 index cc05a48..ed010ea 100644
@@ -94,10 +109,10 @@ index d04385b..b45cccf 100644
  .IP "\fBbridge_loop_avoidance\fP|\fBbl\fP [\fB0\fP|\fB1\fP]"
  If no parameter is given the current bridge loop avoidance setting is displayed. Otherwise the parameter is used to enable
 diff --git a/sys.c b/sys.c
-index b1d7ea8..3dad9b7 100644
+index b1d7ea8..6f23fb2 100644
 --- a/sys.c
 +++ b/sys.c
-@@ -371,11 +371,61 @@ static void settings_usage(int setting)
+@@ -371,11 +371,64 @@ static void settings_usage(int setting)
  	fprintf(stderr, " \t -h print this help\n");
  }
  
@@ -113,13 +128,13 @@ index b1d7ea8..3dad9b7 100644
 +static int get_basedev_vid(const char *mesh_iface, char **base_dev, unsigned short *vid)
 +{
 +	char *vdev;
-+	char *line_ptr = NULL;
++	char *line_ptr;
 +	size_t len;
-+	*base_dev = NULL;
++	FILE *fp;
++	char *fpath;
 +
 +	int size = strlen(PROC_VLAN_PATH) + strlen(mesh_iface) + 1;
-+	FILE *fp;
-+	char *fpath = malloc(size);
++	fpath = malloc(size);
 +	if (!fpath) {
 +		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
 +		return EXIT_FAILURE;
@@ -129,12 +144,15 @@ index b1d7ea8..3dad9b7 100644
 +
 +	fp = fopen(fpath, "r");
 +	if (!fp) {
-+		fprintf(stderr, "Error - could not open file '%s': %s\n", fpath, strerror(errno));
++		fprintf(stderr, "Error - could not open file '%s': %s\n",
++			fpath, strerror(errno));
 +		return EXIT_FAILURE;
 +	}
 +
 +	if (fscanf(fp, "%ms %*s %hu %*s %*d %*s %*d", &vdev, vid) != 2)
 +		return EXIT_FAILURE;
++
++	*base_dev = NULL;
 +	while (getline(&line_ptr, &len, fp) != -1) {
 +		if (sscanf(line_ptr, "Device: %ms", base_dev) == 1)
 +			break;
@@ -142,7 +160,7 @@ index b1d7ea8..3dad9b7 100644
 +	fclose(fp);
 +	free(line_ptr);
 +	/* handle base device not found case */
-+	if (*base_dev == NULL )
++	if (*base_dev == NULL)
 +		return EXIT_FAILURE;
 +
 +	return EXIT_SUCCESS;
@@ -153,20 +171,20 @@ index b1d7ea8..3dad9b7 100644
  	int optchar, res = EXIT_FAILURE;
  	char *path_buff;
  	const char **ptr;
-+	unsigned short vid = 0;
-+	char *base_dev = NULL;
-+	ssize_t path_length = 0;
++	unsigned short vid;
++	char *base_dev;
++	ssize_t path_length;
  
  	while ((optchar = getopt(argc, argv, "h")) != -1) {
  		switch (optchar) {
-@@ -388,10 +438,40 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
+@@ -388,10 +441,40 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
  		}
  	}
  
 -	path_buff = malloc(PATH_BUFF_LEN);
 -	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
 -	path_buff[PATH_BUFF_LEN - 1] = '\0';
-+	path_length = strlen(SYS_BATIF_PATH_FMT) - 2 + strlen(mesh_iface) + 1;
++	path_length = strlen(SYS_BATIF_PATH_FMT) + strlen(mesh_iface) + 1;
 +	path_buff = malloc(path_length);
 +	if (!path_buff) {
 +		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
@@ -180,8 +198,8 @@ index b1d7ea8..3dad9b7 100644
 +			if (get_basedev_vid(mesh_iface, &base_dev, &vid) == EXIT_SUCCESS) {
 +				/* free for previous allocation */
 +				free(path_buff);
-+				path_length = strlen(SYS_VLAN_PATH) - 2
-+					+ strlen(base_dev) - 2
++				path_length = strlen(SYS_VLAN_PATH)
++					+ strlen(base_dev)
 +					+ VLAN_ID_MAX_LEN + 1;
 +				path_buff = malloc(path_length);
 +				if (!path_buff) {
