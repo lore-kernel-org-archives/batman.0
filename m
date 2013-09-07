@@ -1,14 +1,12 @@
-Return-Path: <bittorf@bluebottle.com>
-Date: Fri, 6 Sep 2013 15:52:12 +0200
-From: Bastian Bittorf <bittorf@bluebottle.com>
-Message-ID: <20130906135212.GA1558@medion.lan>
-References: <1378473281-692-1-git-send-email-ordex@autistici.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1378473281-692-1-git-send-email-ordex@autistici.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH openwrt-feed only] batman-adv: fix
- metadata stripping
+Return-Path: <m.andre.schmidt@me.com>
+From: Andre Schmidt <m.andre.schmidt@me.com>
+Content-type: multipart/signed;
+ boundary="Apple-Mail=_15A6794D-94BB-4D04-9C1B-6A04E53A3318";
+ protocol="application/pkcs7-signature"; micalg=sha1
+Date: Sat, 07 Sep 2013 11:38:54 +0200
+Message-id: <4D6A50F5-46B8-4D2E-B485-F69932FE5971@me.com>
+MIME-version: 1.0 (Mac OS X Mail 6.5 \(1508\))
+Subject: [B.A.T.M.A.N.] Hamburg freifunk geekend02
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,12 +18,110 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Antonio Quartulli <ordex@autistici.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-> Un-define this constant to prevent the metadata from being stripped
-> 
-> Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 
-thank you - applied in 7936cfc9b862af3451dddd01e96501a38e6872be 
-git@github.com:openwrt-routing/packages.git
+--Apple-Mail=_15A6794D-94BB-4D04-9C1B-6A04E53A3318
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+	charset=iso-8859-1
+
+Hi there,
+
+Sep. 27.-29., 2013, we'll meet up for geekend02 [0] at B=FCrgerhaus =
+Hamburg-Eidelstedt, Germany. This is going to be a great opportunity to =
+meet AFK. Naturally, you can bring your own keyboard, so it's all good, =
+don't worry.
+
+Since Hamburg is probably one of the larger B.A.T.M.A.N. networks on =
+this planet w/ 300+ routers constantly online and still growing rapidly, =
+we do fear that we'll run into scaling problems sooner or later. =
+Therefore, your expertise on how to counteract is very welcome.
+
+We'd love to meet you. If you need a place to stay, shoot a mail [1]. =
+Help us ordering sufficient amounts of Mate by signing up for =
+participation [2].
+
+Later,
+andre
+
+[0] http://wiki.freifunk.net/Freifunk_Hamburg/Geekend02
+[1] freifunk@hamburg.ccc.de
+[2] http://wiki.freifunk.net/Freifunk_Hamburg/Geekend02/Teilnehmende=
+
+--Apple-Mail=_15A6794D-94BB-4D04-9C1B-6A04E53A3318
+Content-Disposition: attachment;
+	filename=smime.p7s
+Content-Type: application/pkcs7-signature;
+	name=smime.p7s
+Content-Transfer-Encoding: base64
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIILHTCCBT0w
+ggQloAMCAQICDlAzAAEAAmoTfb5gL/fNMA0GCSqGSIb3DQEBBQUAMHwxCzAJBgNVBAYTAkRFMRww
+GgYDVQQKExNUQyBUcnVzdENlbnRlciBHbWJIMSUwIwYDVQQLExxUQyBUcnVzdENlbnRlciBDbGFz
+cyAxIEwxIENBMSgwJgYDVQQDEx9UQyBUcnVzdENlbnRlciBDbGFzcyAxIEwxIENBIElYMB4XDTEy
+MDkyNTIxNTM0NFoXDTEzMDkyNjIxNTM0NFowJTELMAkGA1UEBhMCREUxFjAUBgNVBAMTDUFuZHJl
+IFNjaG1pZHQwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDiD3ZMk3GZBychkiLvo0bO
+lEv7MOZdura3JyGB5k5I378+DlqxGoN4EmmBk1hB5DQBN4Hsfh/3AN1gUycmYKEBPaIMHydtz1qT
+giBzi/qTUyP0IdN1484TlANsRo++Cc0JrgFVUTCQ04lKluvvXqYkbU/qepq5ZzXq6B0We176PLEt
+IFhobQ6g+pQj6PY+6M9LCfl8IHBtgQeHFQzpVG/hLI2WALLoraZUSvLM2QmgMGunmFMtFr6fAVAW
+jxqj8kTudbEvYwngInHS3+ZL4MUHGY1CaLN4xnSdWEn3BzhhHYASb0UQml956TL/IFrlA5j/9Hkw
+v0pfujQf0dLTj0YHAgMBAAGjggISMIICDjCBpQYIKwYBBQUHAQEEgZgwgZUwUQYIKwYBBQUHMAKG
+RWh0dHA6Ly93d3cudHJ1c3RjZW50ZXIuZGUvY2VydHNlcnZpY2VzL2NhY2VydHMvdGNfY2xhc3Mx
+X0wxX0NBX0lYLmNydDBABggrBgEFBQcwAYY0aHR0cDovL29jc3AuaXgudGNjbGFzczEudGN1bml2
+ZXJzYWwtaS50cnVzdGNlbnRlci5kZTAfBgNVHSMEGDAWgBTpuCgdRs/8zfhOm8XuS2Dr2Ds/0TAM
+BgNVHRMBAf8EAjAAMEoGA1UdIARDMEEwPwYJKoIUACwBAQEBMDIwMAYIKwYBBQUHAgEWJGh0dHA6
+Ly93d3cudHJ1c3RjZW50ZXIuZGUvZ3VpZGVsaW5lczAOBgNVHQ8BAf8EBAMCBPAwHQYDVR0OBBYE
+FPBR6mXz7JYxhb+Duhjd9+pRT3t7MGIGA1UdHwRbMFkwV6BVoFOGUWh0dHA6Ly9jcmwuaXgudGNj
+bGFzczEudGN1bml2ZXJzYWwtaS50cnVzdGNlbnRlci5kZS9jcmwvdjIvdGNfQ2xhc3MxX0wxX0NB
+X0lYLmNybDAzBgNVHSUELDAqBggrBgEFBQcDAgYIKwYBBQUHAwQGCCsGAQUFBwMHBgorBgEEAYI3
+FAICMCEGA1UdEQQaMBiBFm0uYW5kcmUuc2NobWlkdEBtZS5jb20wDQYJKoZIhvcNAQEFBQADggEB
+AHnM1LBhLgtU7Rw6W/HWd+AxPYkttyH3plF3LfODDbhxNH3GzQqFXsgIkPeUTuPeSvikTBBvkvTg
+wpzspmatu8Hm0B/cLbuhrBeyhuNKJLBgW6BW7G/V5nk1pBhryo3LZvD4tD1CRaxXw4W+boTTxx3/
+E9fAMCEN7r+bsA6hKAc0f4tq1e4s916l0YUth3AQ53gfT4LXhco0a0X0LQhjvbeEgAftUwh/V/Oy
+5zvz1qj8xCzpmLnYHyx4L4bOgnZNXOUXLuoVESX/VTup1p0INJsirEFk3xFVhBR0+6n0S3zhV94W
+/Z82/Sqf/I+Gg89scQ/YSTnFd2nyknMHxCHKhvMwggXYMIIEwKADAgECAg4G6AABAAJKli0kDP7F
+yTANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJERTEcMBoGA1UEChMTVEMgVHJ1c3RDZW50ZXIg
+R21iSDEkMCIGA1UECxMbVEMgVHJ1c3RDZW50ZXIgVW5pdmVyc2FsIENBMSYwJAYDVQQDEx1UQyBU
+cnVzdENlbnRlciBVbml2ZXJzYWwgQ0EgSTAeFw0wOTExMDMxNDA4MTlaFw0yNTEyMzEyMTU5NTla
+MHwxCzAJBgNVBAYTAkRFMRwwGgYDVQQKExNUQyBUcnVzdENlbnRlciBHbWJIMSUwIwYDVQQLExxU
+QyBUcnVzdENlbnRlciBDbGFzcyAxIEwxIENBMSgwJgYDVQQDEx9UQyBUcnVzdENlbnRlciBDbGFz
+cyAxIEwxIENBIElYMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu+aQbs9i6ekLqrYQ
+1UflfF0rJ3GaaM1VbeSi7+T+8npjEcJXish9z45mH2VFS+uAYmm9Ro6LxW5alRgq3qfxH3UaJ6tt
+MlPj+01YYiz/GeXHoA2aLSGIWYTNHfHDyIo+sOXeCCTP/EAsukEjlLuAEok1SLaGBOABT4y6qZj8
+HIntH4qhx4aYJh5yZWv+z2XZDGRLGgn1QxFgZibjM1aayT0+NGp4xuVQS8jNiOQ5bFAmnkAstjt8
+N7Kn9d3cs1HL9NyCArjXOt7aMFwN9ULdE2lTVOmAJkIzHqXXzG7KZgmfhvA9vsaKYRDz0f9b5LLb
+LbJlDKl9F6y6J01CXM4JTwIDAQABo4ICWTCCAlUwgZoGCCsGAQUFBwEBBIGNMIGKMFIGCCsGAQUF
+BzAChkZodHRwOi8vd3d3LnRydXN0Y2VudGVyLmRlL2NlcnRzZXJ2aWNlcy9jYWNlcnRzL3RjX3Vu
+aXZlcnNhbF9yb290X0kuY3J0MDQGCCsGAQUFBzABhihodHRwOi8vb2NzcC50Y3VuaXZlcnNhbC1J
+LnRydXN0Y2VudGVyLmRlMB8GA1UdIwQYMBaAFJKkdSyknr6BROt5/IrFlaXrEHVzMBIGA1UdEwEB
+/wQIMAYBAf8CAQAwUgYDVR0gBEswSTAGBgRVHSAAMD8GCSqCFAAsAQEBATAyMDAGCCsGAQUFBwIB
+FiRodHRwOi8vd3d3LnRydXN0Y2VudGVyLmRlL2d1aWRlbGluZXMwDgYDVR0PAQH/BAQDAgEGMB0G
+A1UdDgQWBBTpuCgdRs/8zfhOm8XuS2Dr2Ds/0TCB/QYDVR0fBIH1MIHyMIHvoIHsoIHphkZodHRw
+Oi8vY3JsLnRjdW5pdmVyc2FsLUkudHJ1c3RjZW50ZXIuZGUvY3JsL3YyL3RjX3VuaXZlcnNhbF9y
+b290X0kuY3JshoGebGRhcDovL3d3dy50cnVzdGNlbnRlci5kZS9DTj1UQyUyMFRydXN0Q2VudGVy
+JTIwVW5pdmVyc2FsJTIwQ0ElMjBJLE89VEMlMjBUcnVzdENlbnRlciUyMEdtYkgsT1U9cm9vdGNl
+cnRzLERDPXRydXN0Y2VudGVyLERDPWRlP2NlcnRpZmljYXRlUmV2b2NhdGlvbkxpc3Q/YmFzZT8w
+DQYJKoZIhvcNAQEFBQADggEBADnIxJvuvpjuSHJvjedxtg6QjNOywRUhqEaQaF9KBPE6yWiEIdil
+5gR1XZ/S1PJLd0My3JXLYL8CVdCsHLDFFJebZQrDD6Ud7NhJOZW1qb769B6rVuem5QEIiDVfZwXd
+RCRQEiJEY3nxm1dpzqvWM1FPjfBwO46tUToXfzWWa2hoY7YcCsn43x1ezysRpWPtzNDG0yBvqvxo
+SH5tHrg6RaoShvPHvQC16/7qEp9zM3jnKDlo06Vt2nbRTuFVlYCm4Bu4zaxW70VZR5hS2zpuJrIx
+OWl1sS4k8KSdl4heMynGtbwHQDoMPbrPdIxLTnoh+hs4zcRDL2+033jumZLnOhwxggNdMIIDWQIB
+ATCBjjB8MQswCQYDVQQGEwJERTEcMBoGA1UEChMTVEMgVHJ1c3RDZW50ZXIgR21iSDElMCMGA1UE
+CxMcVEMgVHJ1c3RDZW50ZXIgQ2xhc3MgMSBMMSBDQTEoMCYGA1UEAxMfVEMgVHJ1c3RDZW50ZXIg
+Q2xhc3MgMSBMMSBDQSBJWAIOUDMAAQACahN9vmAv980wCQYFKw4DAhoFAKCCAaMwGAYJKoZIhvcN
+AQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTMwOTA3MDkzODU0WjAjBgkqhkiG9w0B
+CQQxFgQUaDe6NjQEyLoNghDGo1CPgX3rnekwgZ8GCSsGAQQBgjcQBDGBkTCBjjB8MQswCQYDVQQG
+EwJERTEcMBoGA1UEChMTVEMgVHJ1c3RDZW50ZXIgR21iSDElMCMGA1UECxMcVEMgVHJ1c3RDZW50
+ZXIgQ2xhc3MgMSBMMSBDQTEoMCYGA1UEAxMfVEMgVHJ1c3RDZW50ZXIgQ2xhc3MgMSBMMSBDQSBJ
+WAIOUDMAAQACahN9vmAv980wgaEGCyqGSIb3DQEJEAILMYGRoIGOMHwxCzAJBgNVBAYTAkRFMRww
+GgYDVQQKExNUQyBUcnVzdENlbnRlciBHbWJIMSUwIwYDVQQLExxUQyBUcnVzdENlbnRlciBDbGFz
+cyAxIEwxIENBMSgwJgYDVQQDEx9UQyBUcnVzdENlbnRlciBDbGFzcyAxIEwxIENBIElYAg5QMwAB
+AAJqE32+YC/3zTANBgkqhkiG9w0BAQEFAASCAQBKP9DsuYGYIweq1WVmi6oBcPTZ2ByDqZ9J4WW2
+ZiQGXyaaVah8qfgjuGs/sib/h9GijFwOXgDpozintkFHiBsQyggcbXInFcIn9SpVU3Ijv+zyIZXV
+iTCpAMiyvZQgdU2AjiXzKlhE/ERRvEsOpRseq2/4S3kLULBGx5aY6cluoI9uCeDc1JidoIEA8C4x
+rOnKKhSpby1uksg8t2jj3s8WIikiRaEm2IGV8Qcax4278QSYc3ZNvLY0OAT6ZwFSm27sMLMg7uPB
+3oKPIW8UpL9uAFI4AzN9bAoemWJLhrMlOS8IXaHBpIud2IJHhtJkC0YUFr4ei10OB4eFsbq4XxHQ
+AAAAAAAA
+
+--Apple-Mail=_15A6794D-94BB-4D04-9C1B-6A04E53A3318--
