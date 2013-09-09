@@ -1,16 +1,16 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 9 Sep 2013 19:22:38 +0200
+Date: Mon, 9 Sep 2013 19:23:07 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130909172238.GF12716@pandem0nium>
+Message-ID: <20130909172307.GG12716@pandem0nium>
 References: <1378741567-25152-1-git-send-email-sven@open-mesh.com>
- <1378741567-25152-6-git-send-email-sven@open-mesh.com>
+ <1378741567-25152-7-git-send-email-sven@open-mesh.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="ExXT7PjY8AI4Hyfa"
+ protocol="application/pgp-signature"; boundary="E69HUUNAyIJqGpVn"
 Content-Disposition: inline
-In-Reply-To: <1378741567-25152-6-git-send-email-sven@open-mesh.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 6/7] alfred: Fix crash when vis opened
- empty file
+In-Reply-To: <1378741567-25152-7-git-send-email-sven@open-mesh.com>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 7/7] alfred: Allow to switch daemon
+ between slave and master
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,34 +26,46 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Sven Eckelmann <sven@open-mesh.com>
 
 
---ExXT7PjY8AI4Hyfa
+--E69HUUNAyIJqGpVn
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Sep 09, 2013 at 05:46:06PM +0200, Sven Eckelmann wrote:
+On Mon, Sep 09, 2013 at 05:46:07PM +0200, Sven Eckelmann wrote:
+> The running daemon may need to be switched between from master to slave m=
+ode or
+> from slave to master mode to increase the efficiency of the data distribu=
+tion
+> network. This must be possible during runtime to avoid the data loss duri=
+ng the
+> switch time.
+>=20
 > Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
 > ---
->  vis/vis.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  alfred.h    |  2 ++
+>  client.c    | 38 ++++++++++++++++++++++++++++++++++++++
+>  main.c      | 19 ++++++++++++++++++-
+>  packet.h    | 24 ++++++++++++++++++++++++
+>  unix_sock.c | 33 +++++++++++++++++++++++++++++++++
+>  5 files changed, 115 insertions(+), 1 deletion(-)
 >=20
-
-Applied in revision 1606d72.
+Applied in revision 06ce1cc with minor modifications (added newlines to
+usage text).
 
 Thanks,
     Simon
 
 
---ExXT7PjY8AI4Hyfa
+--E69HUUNAyIJqGpVn
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iEYEARECAAYFAlIuA94ACgkQrzg/fFk7axa8mwCg2xJp0iuz19QqtZKbMTSz0+ux
-280AnjOLkgQpFtosR6aE4N70+ZSpWea4
-=bvgg
+iEYEARECAAYFAlIuA/sACgkQrzg/fFk7axZ9EQCgi9REmn6P+BRa9gOSXSeM2Muc
+zlEAoIAL0zJS7pEYSyUDteePP7vDzOvU
+=levR
 -----END PGP SIGNATURE-----
 
---ExXT7PjY8AI4Hyfa--
+--E69HUUNAyIJqGpVn--
