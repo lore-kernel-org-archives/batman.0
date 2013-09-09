@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@open-mesh.com>
-Date: Mon,  9 Sep 2013 17:46:02 +0200
-Message-Id: <1378741567-25152-2-git-send-email-sven@open-mesh.com>
+Date: Mon,  9 Sep 2013 17:46:03 +0200
+Message-Id: <1378741567-25152-3-git-send-email-sven@open-mesh.com>
 In-Reply-To: <1378741567-25152-1-git-send-email-sven@open-mesh.com>
 References: <1378741567-25152-1-git-send-email-sven@open-mesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH 2/7] alfred: Mark all local functions as
-	static
+Subject: [B.A.T.M.A.N.] [PATCH 3/7] alfred: Fix warning about assigning
+	const to non-const
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,166 +22,151 @@ Cc: Sven Eckelmann <sven@open-mesh.com>
 
 Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
 ---
- vis/vis.c | 34 +++++++++++++++++-----------------
- 1 file changed, 17 insertions(+), 17 deletions(-)
+ alfred.h       | 8 ++++----
+ batadv_query.c | 6 +++---
+ batadv_query.h | 6 +++---
+ debugfs.c      | 3 ++-
+ debugfs.h      | 2 +-
+ unix_sock.c    | 4 ++--
+ vis/vis.h      | 2 +-
+ 7 files changed, 16 insertions(+), 15 deletions(-)
 
-diff --git a/vis/vis.c b/vis/vis.c
-index 5247b31..5e7a109 100644
---- a/vis/vis.c
-+++ b/vis/vis.c
-@@ -36,7 +36,7 @@
- #include <unistd.h>
- #include "debugfs.h"
- 
--char *read_file(char *fname)
-+static char *read_file(char *fname)
- {
- 	FILE *fp;
- 	char *buf = NULL;
-@@ -64,7 +64,7 @@ char *read_file(char *fname)
- 	return buf;
- }
- 
--char *mac_to_str(uint8_t *mac)
-+static char *mac_to_str(uint8_t *mac)
- {
- 	static char macstr[20];
- 	snprintf(macstr, sizeof(macstr), "%02x:%02x:%02x:%02x:%02x:%02x",
-@@ -72,7 +72,7 @@ char *mac_to_str(uint8_t *mac)
- 	return macstr;
- }
- 
--uint8_t *str_to_mac(char *str)
-+static uint8_t *str_to_mac(char *str)
- {
- 	static uint8_t mac[ETH_ALEN];
- 	int ret;
-@@ -91,7 +91,7 @@ uint8_t *str_to_mac(char *str)
- 	return mac;
- }
- 
--int get_if_mac(char *ifname, uint8_t *mac)
-+static int get_if_mac(char *ifname, uint8_t *mac)
- {
- 	struct ifreq ifr;
- 	int sock;
-@@ -112,7 +112,7 @@ int get_if_mac(char *ifname, uint8_t *mac)
+diff --git a/alfred.h b/alfred.h
+index a244c64..e44919c 100644
+--- a/alfred.h
++++ b/alfred.h
+@@ -91,8 +91,8 @@ struct globals {
+ 	struct in6_addr address;
+ 	uint32_t scope_id;
+ 	struct server *best_server;	/* NULL if we are a server ourselves */
+-	char *interface;
+-	char *mesh_iface;
++	const char *interface;
++	const char *mesh_iface;
+ 	enum opmode opmode;
+ 	enum clientmode clientmode;
+ 	int clientmode_arg;
+@@ -139,8 +139,8 @@ int send_alfred_packet(struct globals *globals, const struct in6_addr *dest,
+ 		       void *buf, int length);
+ /* unix_sock.c */
+ int unix_sock_read(struct globals *globals);
+-int unix_sock_open_daemon(struct globals *globals, char *path);
+-int unix_sock_open_client(struct globals *globals, char *path);
++int unix_sock_open_daemon(struct globals *globals, const char *path);
++int unix_sock_open_client(struct globals *globals, const char *path);
+ int unix_sock_close(struct globals *globals);
+ int unix_sock_req_data_finish(struct globals *globals,
+ 			      struct transaction_head *head);
+diff --git a/batadv_query.c b/batadv_query.c
+index 83083a1..f1e3f24 100644
+--- a/batadv_query.c
++++ b/batadv_query.c
+@@ -88,7 +88,7 @@ int ipv6_to_mac(const struct in6_addr *addr, struct ether_addr *mac)
  	return 0;
  }
  
--int get_if_index(struct globals *globals, char *ifname)
-+static int get_if_index(struct globals *globals, char *ifname)
+-int batadv_interface_check(char *mesh_iface)
++int batadv_interface_check(const char *mesh_iface)
  {
- 	struct iface_list_entry *i_entry;
- 	int i;
-@@ -143,7 +143,7 @@ int get_if_index(struct globals *globals, char *ifname)
- 	return i;
+ 	char *debugfs_mnt;
+ 	char full_path[MAX_PATH+1];
+@@ -125,7 +125,7 @@ int batadv_interface_check(char *mesh_iface)
+ 	return 0;
  }
  
--int alfred_open_sock(struct globals *globals)
-+static int alfred_open_sock(struct globals *globals)
+-struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac)
++struct ether_addr *translate_mac(const char *mesh_iface, struct ether_addr *mac)
+ {
+ 	enum {
+ 		tg_start,
+@@ -207,7 +207,7 @@ out:
+ 	return mac_result;
+ }
+ 
+-uint8_t get_tq(char *mesh_iface, struct ether_addr *mac)
++uint8_t get_tq(const char *mesh_iface, struct ether_addr *mac)
+ {
+ 	enum {
+ 		orig_mac,
+diff --git a/batadv_query.h b/batadv_query.h
+index 7dca319..5ab6f3e 100644
+--- a/batadv_query.h
++++ b/batadv_query.h
+@@ -24,9 +24,9 @@
+ #include <stdint.h>
+ #include <netinet/in.h>
+ 
+-struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac);
+-uint8_t get_tq(char *mesh_iface, struct ether_addr *mac);
+-int batadv_interface_check(char *mesh_iface);
++struct ether_addr *translate_mac(const char *mesh_iface, struct ether_addr *mac);
++uint8_t get_tq(const char *mesh_iface, struct ether_addr *mac);
++int batadv_interface_check(const char *mesh_iface);
+ int mac_to_ipv6(const struct ether_addr *mac, struct in6_addr *addr);
+ int ipv6_to_mac(const struct in6_addr *addr, struct ether_addr *mac);
+ int is_ipv6_eui64(const struct in6_addr *addr);
+diff --git a/debugfs.c b/debugfs.c
+index e62978b..1e9418d 100644
+--- a/debugfs.c
++++ b/debugfs.c
+@@ -43,7 +43,8 @@ static const char *debugfs_known_mountpoints[] = {
+ };
+ 
+ /* construct a full path to a debugfs element */
+-int debugfs_make_path(const char *fmt, char *mesh_iface, char *buffer, int size)
++int debugfs_make_path(const char *fmt, const char *mesh_iface, char *buffer,
++		      int size)
+ {
+ 	int len;
+ 
+diff --git a/debugfs.h b/debugfs.h
+index 6307a9b..b4dc6bb 100644
+--- a/debugfs.h
++++ b/debugfs.h
+@@ -32,7 +32,7 @@
+ 
+ extern int debugfs_valid_entry(const char *path);
+ extern char *debugfs_mount(const char *mountpoint);
+-extern int debugfs_make_path(const char *fmt, char *mesh_iface,
++extern int debugfs_make_path(const char *fmt, const char *mesh_iface,
+ 			     char *buffer, int size);
+ 
+ #endif /* __DEBUGFS_H__ */
+diff --git a/unix_sock.c b/unix_sock.c
+index 8bff2e1..6b80f38 100644
+--- a/unix_sock.c
++++ b/unix_sock.c
+@@ -35,7 +35,7 @@
+ #include "hash.h"
+ #include "packet.h"
+ 
+-int unix_sock_open_daemon(struct globals *globals, char *path)
++int unix_sock_open_daemon(struct globals *globals, const char *path)
  {
  	struct sockaddr_un addr;
  
-@@ -168,7 +168,7 @@ int alfred_open_sock(struct globals *globals)
+@@ -68,7 +68,7 @@ int unix_sock_open_daemon(struct globals *globals, char *path)
  	return 0;
  }
  
--int parse_transtable_local(struct globals *globals)
-+static int parse_transtable_local(struct globals *globals)
+-int unix_sock_open_client(struct globals *globals, char *path)
++int unix_sock_open_client(struct globals *globals, const char *path)
  {
- 	char *fbuf;
- 	char *lptr, *tptr;
-@@ -218,7 +218,7 @@ int parse_transtable_local(struct globals *globals)
- 	return 0;
- }
+ 	struct sockaddr_un addr;
  
--void clear_lists(struct globals *globals)
-+static void clear_lists(struct globals *globals)
- {
- 	struct vis_list_entry *v_entry, *v_entry_safe;
- 	struct iface_list_entry *i_entry, *i_entry_safe;
-@@ -300,7 +300,7 @@ err:
- }
+diff --git a/vis/vis.h b/vis/vis.h
+index d4a49d0..6ba70c6 100644
+--- a/vis/vis.h
++++ b/vis/vis.h
+@@ -89,7 +89,7 @@ struct vis_list_entry {
+ 	 		   + (vis_data)->entries_n * sizeof(struct vis_entry))
  
- 
--int parse_orig_list(struct globals *globals)
-+static int parse_orig_list(struct globals *globals)
- {
- 	char *fbuf;
- 	char *lptr, *tptr;
-@@ -368,7 +368,7 @@ int parse_orig_list(struct globals *globals)
- 	return 0;
- }
- 
--int vis_publish_data(struct globals *globals)
-+static int vis_publish_data(struct globals *globals)
- {
- 	int len, ret;
- 
-@@ -396,7 +396,7 @@ int vis_publish_data(struct globals *globals)
- 	return 0;
- }
- 
--int compile_vis_data(struct globals *globals)
-+static int compile_vis_data(struct globals *globals)
- {
- 	struct iface_list_entry *i_entry;
- 	struct vis_list_entry *v_entry;
-@@ -424,7 +424,7 @@ int compile_vis_data(struct globals *globals)
- 	return 0;
- }
- 
--int vis_update_data(struct globals *globals)
-+static int vis_update_data(struct globals *globals)
- {
- 	clear_lists(globals);
- 	register_interfaces(globals);
-@@ -437,7 +437,7 @@ int vis_update_data(struct globals *globals)
- 	return 0;
- }
- 
--int vis_request_data(struct globals *globals)
-+static int vis_request_data(struct globals *globals)
- {
- 	int ret;
- 
-@@ -463,7 +463,7 @@ int vis_request_data(struct globals *globals)
- }
- 
- 
--struct vis_v1 *vis_receive_answer_packet(int sock, uint16_t *len)
-+static struct vis_v1 *vis_receive_answer_packet(int sock, uint16_t *len)
- {
- 	static uint8_t buf[65536];
- 	struct alfred_tlv *tlv;
-@@ -510,7 +510,7 @@ struct vis_v1 *vis_receive_answer_packet(int sock, uint16_t *len)
- 	return (struct vis_v1 *) data->data;
- }
- 
--int vis_read_answer(struct globals *globals)
-+static int vis_read_answer(struct globals *globals)
- {
- 	struct vis_v1 *vis_data;
- 	uint16_t len;
-@@ -593,7 +593,7 @@ int vis_read_answer(struct globals *globals)
- 	return 0;
- }
- 
--int vis_get_data(struct globals *globals)
-+static int vis_get_data(struct globals *globals)
- {
- 	globals->unix_sock = vis_request_data(globals);
- 	if (globals->unix_sock < 0)
-@@ -676,7 +676,7 @@ static struct globals *vis_init(int argc, char *argv[])
- 
- 
- 
--int vis_server(struct globals *globals)
-+static int vis_server(struct globals *globals)
- {
- 	char *debugfs_mnt;
- 
+ struct globals {
+-	char *interface;
++	const char *interface;
+ 	enum opmode opmode;
+ 	enum vis_format vis_format;
+ 	uint8_t buf[65536];
 -- 
 1.8.4.rc3
 
