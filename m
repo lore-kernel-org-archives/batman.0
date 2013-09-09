@@ -1,16 +1,14 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 9 Sep 2013 19:23:07 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130909172307.GG12716@pandem0nium>
-References: <1378741567-25152-1-git-send-email-sven@open-mesh.com>
- <1378741567-25152-7-git-send-email-sven@open-mesh.com>
+Return-Path: <linus.luessing@web.de>
+Date: Tue, 10 Sep 2013 01:16:27 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20130909231626.GB6492@Linus-Debian>
+References: <1378690742-19656-1-git-send-email-nils@nilsschneider.net>
+ <20130909150831.GA11737@pandem0nium>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="E69HUUNAyIJqGpVn"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1378741567-25152-7-git-send-email-sven@open-mesh.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 7/7] alfred: Allow to switch daemon
- between slave and master
+In-Reply-To: <20130909150831.GA11737@pandem0nium>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: free globals. Fixes memory leak
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,49 +21,32 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Sven Eckelmann <sven@open-mesh.com>
+
+On Mon, Sep 09, 2013 at 05:08:31PM +0200, Simon Wunderlich wrote:
+> Hrm, apart from that this patch lacks a commit message and signoff, what does it help
+> freeing stuff just before the program exits? This will free anything automatically
+> anyway ...
+> 
+
+Hm, the advantage of freeing such memory in the code is that
+for one thing it makes valgrind happy :P. And this in turn makes
+finding "real" memory leaks easier. And besides, isn't it a better
+coding style to free such global variables, too?
+
+I think I'd love seeing a PATCHv2 of this one. And I guess only a
+short, two sentence commit message should be sufficient as this
+isn't a very invasive patch. For instance:
+
+"This patch fixes a non-serious memory leak on program exit by
+freeing the memory allocated for the globals variables. This makes
+valgrind happy, too.
+
+Signed-off-by: ..."
 
 
---E69HUUNAyIJqGpVn
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Sep 09, 2013 at 05:46:07PM +0200, Sven Eckelmann wrote:
-> The running daemon may need to be switched between from master to slave m=
-ode or
-> from slave to master mode to increase the efficiency of the data distribu=
-tion
-> network. This must be possible during runtime to avoid the data loss duri=
-ng the
-> switch time.
->=20
-> Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
-> ---
->  alfred.h    |  2 ++
->  client.c    | 38 ++++++++++++++++++++++++++++++++++++++
->  main.c      | 19 ++++++++++++++++++-
->  packet.h    | 24 ++++++++++++++++++++++++
->  unix_sock.c | 33 +++++++++++++++++++++++++++++++++
->  5 files changed, 115 insertions(+), 1 deletion(-)
->=20
-Applied in revision 06ce1cc with minor modifications (added newlines to
-usage text).
-
-Thanks,
-    Simon
+Cheers, Linus
 
 
---E69HUUNAyIJqGpVn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iEYEARECAAYFAlIuA/sACgkQrzg/fFk7axZ9EQCgi9REmn6P+BRa9gOSXSeM2Muc
-zlEAoIAL0zJS7pEYSyUDteePP7vDzOvU
-=levR
------END PGP SIGNATURE-----
-
---E69HUUNAyIJqGpVn--
+PS: Sorry, I had a glance over this patch before it got submitted
+but even though I should be somehow familiar with the prefered
+coding style, I didn't object.
