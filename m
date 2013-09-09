@@ -1,14 +1,17 @@
-Return-Path: <mihail.costea90@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <20130810203604.GF849@ritirata.org>
+Return-Path: <antonio@meshcoding.com>
+Date: Mon, 9 Sep 2013 16:53:22 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
+Message-ID: <20130909145322.GA3979@neomailbox.net>
 References: <1373242365-763-1-git-send-email-mihail.costea2005@gmail.com>
  <20130810110303.GA849@ritirata.org>
  <CAP5XTDMWzo8S086mdmHpgKnGCVWtiJvdHWA=KHa5gFV0H_D5QA@mail.gmail.com>
  <20130810203604.GF849@ritirata.org>
-Date: Mon, 9 Sep 2013 17:05:47 +0300
-Message-ID: <CAP5XTDOq8qwsD1b7DcsYb3p5sGwnDE301cLuP-_fnYLE+cz5yA@mail.gmail.com>
-From: Mihail Costea <mihail.costea90@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+ <CAP5XTDOq8qwsD1b7DcsYb3p5sGwnDE301cLuP-_fnYLE+cz5yA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="oyUTqETQ0mS9luUI"
+Content-Disposition: inline
+In-Reply-To: <CAP5XTDOq8qwsD1b7DcsYb3p5sGwnDE301cLuP-_fnYLE+cz5yA@mail.gmail.com>
 Subject: Re: [B.A.T.M.A.N.] [RFC 1/6] batman-adv: Generalize DAT in order to
  support any type of data, not only IPv4
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,46 +27,54 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Antonio,
 
-Is it possible to send the new model for the generalization as a patch
-first (the part without IPv6), or maybe everything as a patch as once?
-Having 5-6 patches to rewrite every time something changes makes the
-development harder.
+--oyUTqETQ0mS9luUI
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Mihail
+On Mon, Sep 09, 2013 at 05:05:47PM +0300, Mihail Costea wrote:
+> Hi Antonio,
+>=20
+> Is it possible to send the new model for the generalization as a patch
+> first (the part without IPv6), or maybe everything as a patch as once?
+> Having 5-6 patches to rewrite every time something changes makes the
+> development harder.
 
-On 10 August 2013 23:36, Antonio Quartulli <ordex@autistici.org> wrote:
-> On Sat, Aug 10, 2013 at 12:01:02PM -0700, Mihail Costea wrote:
->> Hi Antonio,
->>
->> Thanks for the update.
->> I will do the changes as soon as possible. I haven't sync in a while
->> with the code base, so I think the whole changes might take a while to
->> implement (+ I'm also working full time and trying to finish the paper
->> for my Diploma Project).
->> I hope that in 2 weeks I will finish everything because I can mostly
->> work on my weekends. I don't have to finish everything by the time I
->> present the Diploma Project, but once I have presented it, I can
->> dedicate all my time here (at that time I would have finished my
->> internship too).
->>
->> But maybe that is done by then :).
->
-> Oh, ok, then good luck for your Diploma Project and your internship!
-> Remember that you can also join the IRC channel if you want to ask/discuss
-> whatever you may need for the implementation!
->
-> Cheers,
->
-> --
-> Antonio Quartulli
->
-> ..each of us alone is worth nothing..
-> Ernesto "Che" Guevara
+Which patches do you want to merge?
+If they are ready it is better to send them as PATCH to the ml and then base
+your work on top of them assuming they will be merged at some point.
 
+Cheers,
 
+p.s. welcome to the rebase nightmare ;)
 
--- 
-Mihail Costea
+--=20
+Antonio Quartulli
+
+=2E.each of us alone is worth nothing..
+Ernesto "Che" Guevara
+
+--oyUTqETQ0mS9luUI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSLeDiAAoJEADl0hg6qKeOKvMQAJeVCvg1lwhxMnwJN8l+lm2/
+LrUB9d840F6oaY5UK+7kcqYOxfZqqsWeIqnKpxWIkdRc/1ncVPN4tl1f9CwZbxBW
+kL5bkPtDqGQtkZyTHeQflqBgYX5Yjymltx/sHVxnsBnYIOcz2LhowF/1Ktq2EQxn
+UO2VUhkVJFmLcd2cyiali/M1yTNL5Ft79hrU5qBUAFlhrjhRnngj11uTwdhm5PB3
+x2ajQGvDYds2dRM2+BeNhQsP8x2OGCVkFdjepg0BqdK9AyioBF3iz6rzoDeHUUaf
+j+qTqJ0MPUaBU3OZXfUdett7Z5P9avy8h/wa/1js4K6EXD3gzEPb4SPAvFVhq9HC
+gUnYTUqnJm0ujvPZ0j4KrqsKWa/yACKOmt2GhoAR+hXfmrb6PmNFPVsrbh8WVZn4
+TFbD4FveQq2ySXF3hmE/SGBcDVYyKH/OBd0+nURpsVzjEGlUcDtoP1eAcwNtXb8i
+5A3oIh2ZYpUnVZARvm7mGjTxV955o5f0fvdMYAegT69zul2qaVGuYb8m3qKitNxc
+l6dx1cGIpwRpwI2yowiP8soHDbyCVJAWRsIySbd+bvsrmZA0wi2Og+IinsLVyMGX
+MHnknDI/9vzjR21SRxTcI14o0w+FtIcEtzeMKGorUGoCf0SVUif2k7tOPGMwIaCv
+evq0572AF/lf/Uv0N+92
+=YysD
+-----END PGP SIGNATURE-----
+
+--oyUTqETQ0mS9luUI--
