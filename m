@@ -1,14 +1,14 @@
 Return-Path: <linus.luessing@web.de>
-Date: Tue, 10 Sep 2013 01:16:27 +0200
+Date: Tue, 10 Sep 2013 01:48:35 +0200
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20130909231626.GB6492@Linus-Debian>
-References: <1378690742-19656-1-git-send-email-nils@nilsschneider.net>
- <20130909150831.GA11737@pandem0nium>
+Message-ID: <20130909234835.GC6492@Linus-Debian>
+References: <4D6A50F5-46B8-4D2E-B485-F69932FE5971@me.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <20130909150831.GA11737@pandem0nium>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: free globals. Fixes memory leak
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4D6A50F5-46B8-4D2E-B485-F69932FE5971@me.com>
+Subject: Re: [B.A.T.M.A.N.] Hamburg freifunk geekend02
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,31 +22,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Mon, Sep 09, 2013 at 05:08:31PM +0200, Simon Wunderlich wrote:
-> Hrm, apart from that this patch lacks a commit message and signoff, what does it help
-> freeing stuff just before the program exits? This will free anything automatically
-> anyway ...
-> 
+Hi andre,
 
-Hm, the advantage of freeing such memory in the code is that
-for one thing it makes valgrind happy :P. And this in turn makes
-finding "real" memory leaks easier. And besides, isn't it a better
-coding style to free such global variables, too?
-
-I think I'd love seeing a PATCHv2 of this one. And I guess only a
-short, two sentence commit message should be sufficient as this
-isn't a very invasive patch. For instance:
-
-"This patch fixes a non-serious memory leak on program exit by
-freeing the memory allocated for the globals variables. This makes
-valgrind happy, too.
-
-Signed-off-by: ..."
-
+We had a little discussion on the batman IRC channel and I
+guess I could prepare a little presentation about batman-adv and
+scalability, as well as future plans and patches on the horizon
+to enhance this from the B.A.T.M.A.N. development side. And for
+illustration, I can draw some pretty graphs from the measurements
+I did from time to time here at Freifunk Lübeck.
 
 Cheers, Linus
 
 
-PS: Sorry, I had a glance over this patch before it got submitted
-but even though I should be somehow familiar with the prefered
-coding style, I didn't object.
+On Sat, Sep 07, 2013 at 11:38:54AM +0200, Andre Schmidt wrote:
+> Hi there,
+> 
+> Sep. 27.-29., 2013, we'll meet up for geekend02 [0] at Bürgerhaus Hamburg-Eidelstedt, Germany. This is going to be a great opportunity to meet AFK. Naturally, you can bring your own keyboard, so it's all good, don't worry.
+> 
+> Since Hamburg is probably one of the larger B.A.T.M.A.N. networks on this planet w/ 300+ routers constantly online and still growing rapidly, we do fear that we'll run into scaling problems sooner or later. Therefore, your expertise on how to counteract is very welcome.
+> 
+> We'd love to meet you. If you need a place to stay, shoot a mail [1]. Help us ordering sufficient amounts of Mate by signing up for participation [2].
+> 
+> Later,
+> andre
+> 
+> [0] http://wiki.freifunk.net/Freifunk_Hamburg/Geekend02
+> [1] freifunk@hamburg.ccc.de
+> [2] http://wiki.freifunk.net/Freifunk_Hamburg/Geekend02/Teilnehmende
+
+
