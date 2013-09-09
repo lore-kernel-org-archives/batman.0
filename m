@@ -1,15 +1,16 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Mon, 9 Sep 2013 19:20:47 +0200
+Date: Mon, 9 Sep 2013 19:21:10 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20130909172047.GA12716@pandem0nium>
+Message-ID: <20130909172110.GB12716@pandem0nium>
 References: <1378741567-25152-1-git-send-email-sven@open-mesh.com>
+ <1378741567-25152-2-git-send-email-sven@open-mesh.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="lrZ03NoBR/3+SXJZ"
+ protocol="application/pgp-signature"; boundary="6sX45UoQRIJXqkqR"
 Content-Disposition: inline
-In-Reply-To: <1378741567-25152-1-git-send-email-sven@open-mesh.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/7] alfred: Add missing includes and
- remove unused includes
+In-Reply-To: <1378741567-25152-2-git-send-email-sven@open-mesh.com>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/7] alfred: Mark all local functions as
+ static
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,45 +25,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---lrZ03NoBR/3+SXJZ
+--6sX45UoQRIJXqkqR
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Sep 09, 2013 at 05:46:01PM +0200, Sven Eckelmann wrote:
+On Mon, Sep 09, 2013 at 05:46:02PM +0200, Sven Eckelmann wrote:
 > Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
 > ---
->  alfred.h       |  6 ++----
->  batadv_query.c | 13 +++++++++----
->  client.c       | 12 +++++-------
->  debugfs.c      | 10 ++++------
->  debugfs.h      |  3 ---
->  hash.c         |  5 +++--
->  main.c         | 11 ++++-------
->  netsock.c      | 14 ++++++++------
->  recv.c         | 21 ++++++++++++---------
->  send.c         | 17 ++++++-----------
->  server.c       | 10 ++++++----
->  unix_sock.c    | 14 +++++++++-----
->  util.c         |  6 ++++--
->  vis/vis.c      | 15 +++++++++++++++
->  vis/vis.h      | 20 +++-----------------
->  15 files changed, 90 insertions(+), 87 deletions(-)
-
-Applied in revision 5599105.
+>  vis/vis.c | 34 +++++++++++++++++-----------------
+>  1 file changed, 17 insertions(+), 17 deletions(-)
+Applied in revision 65aee8d.
 
 Thanks,
-	Simon
+    Simon
+>=20
 
---lrZ03NoBR/3+SXJZ
+--6sX45UoQRIJXqkqR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iEYEARECAAYFAlIuA28ACgkQrzg/fFk7axbxAwCfRh8Oq1h2dJ5omhV1E79LiD8T
-tNYAn2ZnUn4QeC3TzLmBJRLPeKbPGstX
-=LD8j
+iEYEARECAAYFAlIuA4YACgkQrzg/fFk7axb7GQCeOy3reBU07dzh2ONFrxucEEBy
+6nAAn1l3X8bsp8fy1WqiKzdJjjafpcea
+=lXHa
 -----END PGP SIGNATURE-----
 
---lrZ03NoBR/3+SXJZ--
+--6sX45UoQRIJXqkqR--
