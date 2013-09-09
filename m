@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@open-mesh.com>
-Date: Mon,  9 Sep 2013 17:46:04 +0200
-Message-Id: <1378741567-25152-4-git-send-email-sven@open-mesh.com>
+Date: Mon,  9 Sep 2013 17:46:05 +0200
+Message-Id: <1378741567-25152-5-git-send-email-sven@open-mesh.com>
 In-Reply-To: <1378741567-25152-1-git-send-email-sven@open-mesh.com>
 References: <1378741567-25152-1-git-send-email-sven@open-mesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH 4/7] alfred: Stop client when data header
-	could not be read
+Subject: [B.A.T.M.A.N.] [PATCH 5/7] alfred: Remove dead assignment in
+	unix_sock_read
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,23 +22,22 @@ Cc: Sven Eckelmann <sven@open-mesh.com>
 
 Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
 ---
- client.c | 3 +++
- 1 file changed, 3 insertions(+)
+ unix_sock.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/client.c b/client.c
-index 3c1916c..2187ff2 100644
---- a/client.c
-+++ b/client.c
-@@ -81,6 +81,9 @@ int alfred_client_request_data(struct globals *globals)
- 		ret = read(globals->unix_sock, buf + sizeof(*push),
- 			   sizeof(*data));
+diff --git a/unix_sock.c b/unix_sock.c
+index 6b80f38..e6b22e8 100644
+--- a/unix_sock.c
++++ b/unix_sock.c
+@@ -310,8 +310,6 @@ int unix_sock_read(struct globals *globals)
+ 	if (packet->version != ALFRED_VERSION)
+ 		goto err;
  
-+		if (ret < (ssize_t)sizeof(*data))
-+			break;
-+
- 		data = push->data;
- 		data_len = ntohs(data->header.length);
- 
+-	ret = 0;
+-
+ 	switch (packet->type) {
+ 	case ALFRED_PUSH_DATA:
+ 		ret = unix_sock_add_data(globals,
 -- 
 1.8.4.rc3
 
