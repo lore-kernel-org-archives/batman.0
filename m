@@ -1,19 +1,14 @@
-Return-Path: <antonio@meshcoding.com>
-Date: Mon, 9 Sep 2013 16:53:22 +0200
-From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <20130909145322.GA3979@neomailbox.net>
-References: <1373242365-763-1-git-send-email-mihail.costea2005@gmail.com>
- <20130810110303.GA849@ritirata.org>
- <CAP5XTDMWzo8S086mdmHpgKnGCVWtiJvdHWA=KHa5gFV0H_D5QA@mail.gmail.com>
- <20130810203604.GF849@ritirata.org>
- <CAP5XTDOq8qwsD1b7DcsYb3p5sGwnDE301cLuP-_fnYLE+cz5yA@mail.gmail.com>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Mon, 9 Sep 2013 17:08:31 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20130909150831.GA11737@pandem0nium>
+References: <1378690742-19656-1-git-send-email-nils@nilsschneider.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="oyUTqETQ0mS9luUI"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="UugvWAfsgieZRqgk"
 Content-Disposition: inline
-In-Reply-To: <CAP5XTDOq8qwsD1b7DcsYb3p5sGwnDE301cLuP-_fnYLE+cz5yA@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] [RFC 1/6] batman-adv: Generalize DAT in order to
- support any type of data, not only IPv4
+In-Reply-To: <1378690742-19656-1-git-send-email-nils@nilsschneider.net>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: free globals. Fixes memory leak
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -28,53 +23,74 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---oyUTqETQ0mS9luUI
+--UugvWAfsgieZRqgk
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Sep 09, 2013 at 05:05:47PM +0300, Mihail Costea wrote:
-> Hi Antonio,
+On Mon, Sep 09, 2013 at 03:39:02AM +0200, Nils Schneider wrote:
+> ---
+>  main.c | 15 +++++++++++----
+>  1 file changed, 11 insertions(+), 4 deletions(-)
 >=20
-> Is it possible to send the new model for the generalization as a patch
-> first (the part without IPv6), or maybe everything as a patch as once?
-> Having 5-6 patches to rewrite every time something changes makes the
-> development harder.
+> diff --git a/main.c b/main.c
+> index 86acfb7..58622f8 100644
+> --- a/main.c
+> +++ b/main.c
+> @@ -142,6 +142,7 @@ static struct globals *alfred_init(int argc, char *ar=
+gv[])
+>  int main(int argc, char *argv[])
+>  {
+>  	struct globals *globals;
+> +	int ret;
+> =20
+>  	globals =3D alfred_init(argc, argv);
+> =20
+> @@ -150,15 +151,21 @@ int main(int argc, char *argv[])
+> =20
+>  	switch (globals->clientmode) {
+>  	case CLIENT_NONE:
+> -		return alfred_server(globals);
+> +		ret =3D alfred_server(globals);
+>  		break;
+>  	case CLIENT_REQUEST_DATA:
+> -		return alfred_client_request_data(globals);
+> +		ret =3D alfred_client_request_data(globals);
+>  		break;
+>  	case CLIENT_SET_DATA:
+> -		return alfred_client_set_data(globals);
+> +		ret =3D alfred_client_set_data(globals);
+>  		break;
+> +	default:
+> +		ret =3D 0;
+>  	}
+> =20
+> -	return 0;
+> +	free(globals->interface);
+> +	free(globals->mesh_iface);
+> +	free(globals);
+> +
+> +	return ret;
 
-Which patches do you want to merge?
-If they are ready it is better to send them as PATCH to the ml and then base
-your work on top of them assuming they will be merged at some point.
+Hrm, apart from that this patch lacks a commit message and signoff, what do=
+es it help
+freeing stuff just before the program exits? This will free anything automa=
+tically
+anyway ...
 
 Cheers,
+	Simon
 
-p.s. welcome to the rebase nightmare ;)
-
---=20
-Antonio Quartulli
-
-=2E.each of us alone is worth nothing..
-Ernesto "Che" Guevara
-
---oyUTqETQ0mS9luUI
+--UugvWAfsgieZRqgk
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJSLeDiAAoJEADl0hg6qKeOKvMQAJeVCvg1lwhxMnwJN8l+lm2/
-LrUB9d840F6oaY5UK+7kcqYOxfZqqsWeIqnKpxWIkdRc/1ncVPN4tl1f9CwZbxBW
-kL5bkPtDqGQtkZyTHeQflqBgYX5Yjymltx/sHVxnsBnYIOcz2LhowF/1Ktq2EQxn
-UO2VUhkVJFmLcd2cyiali/M1yTNL5Ft79hrU5qBUAFlhrjhRnngj11uTwdhm5PB3
-x2ajQGvDYds2dRM2+BeNhQsP8x2OGCVkFdjepg0BqdK9AyioBF3iz6rzoDeHUUaf
-j+qTqJ0MPUaBU3OZXfUdett7Z5P9avy8h/wa/1js4K6EXD3gzEPb4SPAvFVhq9HC
-gUnYTUqnJm0ujvPZ0j4KrqsKWa/yACKOmt2GhoAR+hXfmrb6PmNFPVsrbh8WVZn4
-TFbD4FveQq2ySXF3hmE/SGBcDVYyKH/OBd0+nURpsVzjEGlUcDtoP1eAcwNtXb8i
-5A3oIh2ZYpUnVZARvm7mGjTxV955o5f0fvdMYAegT69zul2qaVGuYb8m3qKitNxc
-l6dx1cGIpwRpwI2yowiP8soHDbyCVJAWRsIySbd+bvsrmZA0wi2Og+IinsLVyMGX
-MHnknDI/9vzjR21SRxTcI14o0w+FtIcEtzeMKGorUGoCf0SVUif2k7tOPGMwIaCv
-evq0572AF/lf/Uv0N+92
-=YysD
+iEYEARECAAYFAlIt5G8ACgkQrzg/fFk7axaF8gCdEMVc97ru2LlD83B2vvlJRFHx
+SaMAn1kChHdb282yIjwgF2kmd4e0g/BY
+=XPbc
 -----END PGP SIGNATURE-----
 
---oyUTqETQ0mS9luUI--
+--UugvWAfsgieZRqgk--
