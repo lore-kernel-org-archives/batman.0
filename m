@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 10 Sep 2013 23:11:55 +0200
-Message-Id: <1378847522-13776-5-git-send-email-sven@narfation.org>
+Date: Tue, 10 Sep 2013 23:11:54 +0200
+Message-Id: <1378847522-13776-4-git-send-email-sven@narfation.org>
 In-Reply-To: <1378847522-13776-1-git-send-email-sven@narfation.org>
 References: <1378847522-13776-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 04/11] batctl: Mark all local functions as
-	static
+Subject: [B.A.T.M.A.N.] [PATCH 03/11] batctl: Avoid assigning const buffer
+	to non-const pointer
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,75 +20,66 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
+Strings in C are tried to be saved in the .rodata by the compiler/linker. This
+section is readonly as the name suggests. Pointer to these strings should
+therefore be const.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- debug.c      | 2 +-
- main.c       | 2 +-
- ping.c       | 4 ++--
- traceroute.c | 2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ functions.c | 8 +++++---
+ functions.h | 5 +++--
+ 2 files changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/debug.c b/debug.c
-index 3ea112a..2589dbc 100644
---- a/debug.c
-+++ b/debug.c
-@@ -84,7 +84,7 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
- 	},
- };
- 
--void debug_table_usage(int debug_table)
-+static void debug_table_usage(int debug_table)
- {
- 	fprintf(stderr, "Usage: batctl [options] %s|%s [parameters]\n",
- 	       batctl_debug_tables[debug_table].opt_long, batctl_debug_tables[debug_table].opt_short);
-diff --git a/main.c b/main.c
-index 24d42fb..6b44359 100644
---- a/main.c
-+++ b/main.c
-@@ -43,7 +43,7 @@
- char mesh_dfl_iface[] = "bat0";
- char module_ver_path[] = "/sys/module/batman_adv/version";
- 
--void print_usage(void)
-+static void print_usage(void)
- {
- 	int i, opt_indent;
- 
-diff --git a/ping.c b/ping.c
-index 6679604..4d76484 100644
---- a/ping.c
-+++ b/ping.c
-@@ -42,7 +42,7 @@
- char is_aborted = 0;
- 
- 
--void ping_usage(void)
-+static void ping_usage(void)
- {
- 	fprintf(stderr, "Usage: batctl [options] ping [parameters] mac|bat-host|host_name|IPv4_address \n");
- 	fprintf(stderr, "parameters:\n");
-@@ -54,7 +54,7 @@ void ping_usage(void)
- 	fprintf(stderr, " \t -T don't try to translate mac to originator address\n");
+diff --git a/functions.c b/functions.c
+index 2a2f392..bd4da59 100644
+--- a/functions.c
++++ b/functions.c
+@@ -124,7 +124,8 @@ int file_exists(const char *fpath)
+ 	return stat(fpath, &st) == 0;
  }
  
--void sig_handler(int sig)
-+static void sig_handler(int sig)
+-static void file_open_problem_dbg(char *dir, char *fname, char *full_path)
++static void file_open_problem_dbg(const char *dir, const char *fname,
++				  const char *full_path)
  {
- 	switch (sig) {
- 	case SIGINT:
-diff --git a/traceroute.c b/traceroute.c
-index 362d293..d62df5e 100644
---- a/traceroute.c
-+++ b/traceroute.c
-@@ -41,7 +41,7 @@
- #define NUM_PACKETS 3
+ 	const char **ptr;
+ 	struct stat st;
+@@ -162,7 +163,7 @@ static void file_open_problem_dbg(char *dir, char *fname, char *full_path)
+ 	}
+ }
  
- 
--void traceroute_usage(void)
-+static void traceroute_usage(void)
+-int read_file(char *dir, char *fname, int read_opt,
++int read_file(const char *dir, const char *fname, int read_opt,
+ 	      float orig_timeout, float watch_interval, size_t header_lines)
  {
- 	fprintf(stderr, "Usage: batctl [options] traceroute [parameters] mac|bat-host|host_name|IPv4_address \n");
- 	fprintf(stderr, "parameters:\n");
+ 	struct ether_addr *mac_addr;
+@@ -296,7 +297,8 @@ out:
+ 	return res;
+ }
+ 
+-int write_file(char *dir, char *fname, char *arg1, char *arg2)
++int write_file(const char *dir, const char *fname, const char *arg1,
++	       const char *arg2)
+ {
+ 	int fd = 0, res = EXIT_FAILURE;
+ 	char full_path[500];
+diff --git a/functions.h b/functions.h
+index d88c494..f9c8191 100644
+--- a/functions.h
++++ b/functions.h
+@@ -34,9 +34,10 @@ char *ether_ntoa_long(const struct ether_addr *addr);
+ char *get_name_by_macaddr(struct ether_addr *mac_addr, int read_opt);
+ char *get_name_by_macstr(char *mac_str, int read_opt);
+ int file_exists(const char *fpath);
+-int read_file(char *dir, char *path, int read_opt,
++int read_file(const char *dir, const char *path, int read_opt,
+ 	      float orig_timeout, float watch_interval, size_t header_lines);
+-int write_file(char *dir, char *fname, char *arg1, char *arg2);
++int write_file(const char *dir, const char *fname, const char *arg1,
++	       const char *arg2);
+ struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac);
+ struct ether_addr *resolve_mac(const char *asc);
+ 
 -- 
 1.8.4.rc3
 
