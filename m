@@ -1,14 +1,18 @@
-Return-Path: <linus.luessing@web.de>
-Date: Tue, 10 Sep 2013 01:48:35 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20130909234835.GC6492@Linus-Debian>
-References: <4D6A50F5-46B8-4D2E-B485-F69932FE5971@me.com>
+Return-Path: <mihail.costea90@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4D6A50F5-46B8-4D2E-B485-F69932FE5971@me.com>
-Subject: Re: [B.A.T.M.A.N.] Hamburg freifunk geekend02
+In-Reply-To: <20130909145322.GA3979@neomailbox.net>
+References: <1373242365-763-1-git-send-email-mihail.costea2005@gmail.com>
+ <20130810110303.GA849@ritirata.org>
+ <CAP5XTDMWzo8S086mdmHpgKnGCVWtiJvdHWA=KHa5gFV0H_D5QA@mail.gmail.com>
+ <20130810203604.GF849@ritirata.org>
+ <CAP5XTDOq8qwsD1b7DcsYb3p5sGwnDE301cLuP-_fnYLE+cz5yA@mail.gmail.com>
+ <20130909145322.GA3979@neomailbox.net>
+Date: Tue, 10 Sep 2013 07:35:34 +0300
+Message-ID: <CAP5XTDPCRj0H3djYsg2pHLDHqSPUqp6faciUF8gpDCOcSp1bRw@mail.gmail.com>
+From: Mihail Costea <mihail.costea90@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] [RFC 1/6] batman-adv: Generalize DAT in order to
+ support any type of data, not only IPv4
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,32 +26,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi andre,
+On 9 September 2013 17:53, Antonio Quartulli <antonio@meshcoding.com> wrote:
+> On Mon, Sep 09, 2013 at 05:05:47PM +0300, Mihail Costea wrote:
+>> Hi Antonio,
+>>
+>> Is it possible to send the new model for the generalization as a patch
+>> first (the part without IPv6), or maybe everything as a patch as once?
+>> Having 5-6 patches to rewrite every time something changes makes the
+>> development harder.
+>
+> Which patches do you want to merge?
+> If they are ready it is better to send them as PATCH to the ml and then base
+> your work on top of them assuming they will be merged at some point.
+>
 
-We had a little discussion on the batman IRC channel and I
-guess I could prepare a little presentation about batman-adv and
-scalability, as well as future plans and patches on the horizon
-to enhance this from the B.A.T.M.A.N. development side. And for
-illustration, I can draw some pretty graphs from the measurements
-I did from time to time here at Freifunk Lübeck.
+I took a small rest last week and now I'm redoing everything.
+I was thinking about sending the first part for merging (the one with
+generalization the DAT).
+That is the one that needs most rewriting every time because it
+affects the most existing code.
+The rest I think I can send them together.
 
-Cheers, Linus
+> Cheers,
+>
+> p.s. welcome to the rebase nightmare ;)
+>
+> --
+> Antonio Quartulli
+>
+> ..each of us alone is worth nothing..
+> Ernesto "Che" Guevara
 
+Thanls,
+Mihail
 
-On Sat, Sep 07, 2013 at 11:38:54AM +0200, Andre Schmidt wrote:
-> Hi there,
-> 
-> Sep. 27.-29., 2013, we'll meet up for geekend02 [0] at Bürgerhaus Hamburg-Eidelstedt, Germany. This is going to be a great opportunity to meet AFK. Naturally, you can bring your own keyboard, so it's all good, don't worry.
-> 
-> Since Hamburg is probably one of the larger B.A.T.M.A.N. networks on this planet w/ 300+ routers constantly online and still growing rapidly, we do fear that we'll run into scaling problems sooner or later. Therefore, your expertise on how to counteract is very welcome.
-> 
-> We'd love to meet you. If you need a place to stay, shoot a mail [1]. Help us ordering sufficient amounts of Mate by signing up for participation [2].
-> 
-> Later,
-> andre
-> 
-> [0] http://wiki.freifunk.net/Freifunk_Hamburg/Geekend02
-> [1] freifunk@hamburg.ccc.de
-> [2] http://wiki.freifunk.net/Freifunk_Hamburg/Geekend02/Teilnehmende
-
-
+-- 
+Mihail Costea
