@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 10 Sep 2013 23:11:59 +0200
-Message-Id: <1378847522-13776-9-git-send-email-sven@narfation.org>
+Date: Tue, 10 Sep 2013 23:11:52 +0200
+Message-Id: <1378847522-13776-2-git-send-email-sven@narfation.org>
 In-Reply-To: <1378847522-13776-1-git-send-email-sven@narfation.org>
 References: <1378847522-13776-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 08/11] batctl: Fix error handling jump in
-	interface when batadv not loaded
+Subject: [B.A.T.M.A.N.] [PATCH 01/11] batctl: Fix possible buffer overflow
+	when using strncat
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,27 +20,51 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-The jump to the path_buffer free must be taken when batman-adv was not loaded
-because it has to free path_buff which was allocated earlier
+The length field (n) of strncat is used to specify the length of the buffer
+without the \0 delimiter. strncat will add it even when it will write it to the
+limit of n bytes was written.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- sys.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ bat-hosts.c | 2 +-
+ functions.c | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/sys.c b/sys.c
-index 2fcd67b..7539f76 100644
---- a/sys.c
-+++ b/sys.c
-@@ -230,7 +230,7 @@ int interface(char *mesh_iface, int argc, char **argv)
+diff --git a/bat-hosts.c b/bat-hosts.c
+index 04e7a9b..f0adb9c 100644
+--- a/bat-hosts.c
++++ b/bat-hosts.c
+@@ -194,7 +194,7 @@ void bat_hosts_init(int read_opt)
  
- 			if (!file_exists(module_ver_path)) {
- 				fprintf(stderr, "Error - batman-adv module has not been loaded\n");
--				goto err;
-+				goto err_buff;
- 			}
+ 			strncpy(confdir, homedir, CONF_DIR_LEN);
+ 			confdir[CONF_DIR_LEN - 1] = '\0';
+-			strncat(confdir, &bat_hosts_path[i][1], CONF_DIR_LEN - strlen(confdir));
++			strncat(confdir, &bat_hosts_path[i][1], CONF_DIR_LEN - strlen(confdir) - 1);
+ 		} else {
+ 			strncpy(confdir, bat_hosts_path[i], CONF_DIR_LEN);
+ 			confdir[CONF_DIR_LEN - 1] = '\0';
+diff --git a/functions.c b/functions.c
+index cc05a48..0359287 100644
+--- a/functions.c
++++ b/functions.c
+@@ -180,7 +180,7 @@ int read_file(char *dir, char *fname, int read_opt,
  
- 			fprintf(stderr, "Error - interface type not supported by batman-adv: %s\n", argv[i]);
+ 	strncpy(full_path, dir, strlen(dir));
+ 	full_path[strlen(dir)] = '\0';
+-	strncat(full_path, fname, sizeof(full_path) - strlen(full_path));
++	strncat(full_path, fname, sizeof(full_path) - strlen(full_path) - 1);
+ 
+ open:
+ 	line = 0;
+@@ -305,7 +305,7 @@ int write_file(char *dir, char *fname, char *arg1, char *arg2)
+ 
+ 	strncpy(full_path, dir, strlen(dir));
+ 	full_path[strlen(dir)] = '\0';
+-	strncat(full_path, fname, sizeof(full_path) - strlen(full_path));
++	strncat(full_path, fname, sizeof(full_path) - strlen(full_path) - 1);
+ 
+ 	fd = open(full_path, O_WRONLY);
+ 
 -- 
 1.8.4.rc3
 
