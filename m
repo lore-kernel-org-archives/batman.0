@@ -1,13 +1,15 @@
-Return-Path: <nicoechaniz@altermundi.net>
-Message-ID: <5230230B.9000902@altermundi.net>
-Date: Wed, 11 Sep 2013 05:00:11 -0300
-From: =?ISO-8859-1?Q?Nicol=E1s_Ech=E1niz?= <nicoechaniz@altermundi.net>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Wed, 11 Sep 2013 18:49:24 +0800
+Message-ID: <2718336.kvyubBO8lj@diderot>
+In-Reply-To: <1378847522-13776-2-git-send-email-sven@narfation.org>
+References: <1378847522-13776-1-git-send-email-sven@narfation.org>
+ <1378847522-13776-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-References: <4D6A50F5-46B8-4D2E-B485-F69932FE5971@me.com>
-In-Reply-To: <4D6A50F5-46B8-4D2E-B485-F69932FE5971@me.com>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] Hamburg freifunk geekend02
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 01/11] batctl: Fix possible buffer
+	overflow when using strncat
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,30 +21,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-El 07/09/13 06:38, Andre Schmidt escribi=F3:
-> Hi there,
->=20
-> Sep. 27.-29., 2013, we'll meet up for geekend02 [0] at B=FCrgerhaus
-> Hamburg-Eidelstedt, Germany. This is going to be a great opportunity
-> to meet AFK. Naturally, you can bring your own keyboard, so it's all
-> good, don't worry.
->=20
-> Since Hamburg is probably one of the larger B.A.T.M.A.N. networks on
-> this planet w/ 300+ routers constantly online and still growing
-> rapidly, we do fear that we'll run into scaling problems sooner or
-> later. Therefore, your expertise on how to counteract is very
-> welcome.
+On Tuesday, September 10, 2013 11:11:52 PM Sven Eckelmann wrote:
+> The length field (n) of strncat is used to specify the length of the buffer
+> without the \0 delimiter. strncat will add it even when it will write it to
+> the limit of n bytes was written.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  bat-hosts.c | 2 +-
+>  functions.c | 4 ++--
+>  2 files changed, 3 insertions(+), 3 deletions(-)
 
-sounds very interesting, please document :)
+Applied in revision f1e262c.
 
-are this 300+ routers physically connected or is it mostly VPN?
-
-hope to meet some of you during the summit in Berlin and to hear more
-about your conclusions regarding scalability.
-
-
-cheers,
-Nico
+Thanks,
+Marek
 
