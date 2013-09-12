@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 12 Sep 2013 22:58:35 +0200
-Message-Id: <1379019524-23543-5-git-send-email-sven@narfation.org>
+Date: Thu, 12 Sep 2013 22:58:36 +0200
+Message-Id: <1379019524-23543-6-git-send-email-sven@narfation.org>
 In-Reply-To: <1379019524-23543-1-git-send-email-sven@narfation.org>
 References: <1379019524-23543-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 04/13] batmand: Add include guards to avoid
-	redundant declarations or include loops
+Subject: [B.A.T.M.A.N.] [PATCH 05/13] batmand: Avoid assigning const buffer
+	to non-const pointer
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,234 +20,269 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
+Strings in C are tried to be saved in the .rodata by the compiler/linker. This
+section is readonly as the name suggests. Pointer to these strings should
+therefore be const.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- allocate.h    | 6 +++---
- batman.h      | 4 ++--
- bitarray.h    | 4 +++-
- hash.h        | 4 ++--
- hna.h         | 5 ++++-
- originator.h  | 4 +++-
- os.h          | 4 ++--
- packet.h      | 5 +++++
- profile.h     | 5 ++++-
- ring_buffer.h | 5 ++++-
- schedule.h    | 4 ++++
- types.h       | 4 ++--
- 12 files changed, 38 insertions(+), 16 deletions(-)
+ allocate.c          |  2 +-
+ hna.c               |  4 ++--
+ linux/kernel.c      | 10 +++++-----
+ linux/route.c       |  8 ++++----
+ linux/tun.c         |  4 ++--
+ os.h                | 16 ++++++++--------
+ posix/posix.c       |  2 +-
+ posix/unix_socket.c |  2 +-
+ profile.c           |  2 +-
+ profile.h           |  4 ++--
+ 10 files changed, 27 insertions(+), 27 deletions(-)
 
-diff --git a/allocate.h b/allocate.h
-index 167ab33..99c3a49 100644
---- a/allocate.h
-+++ b/allocate.h
-@@ -20,10 +20,10 @@
-  */
+diff --git a/allocate.c b/allocate.c
+index 9d79d87..57a4894 100644
+--- a/allocate.c
++++ b/allocate.c
+@@ -67,7 +67,7 @@ struct memoryUsage
+ };
  
  
--#ifndef _ALLOCATE_H
--#define _ALLOCATE_H 1
--#include <stdint.h>
-+#ifndef _BATMAND_ALLOCATE_H
-+#define _BATMAND_ALLOCATE_H
+-static size_t getHeaderPad() {
++static size_t getHeaderPad(void) {
+ 	size_t alignwith, pad;
  
-+#include <stdint.h>
+ 	if (sizeof(TYPE_OF_WORD) > sizeof(void*))
+diff --git a/hna.c b/hna.c
+index 4c90dd3..b007ce5 100644
+--- a/hna.c
++++ b/hna.c
+@@ -39,12 +39,12 @@ struct list_head_first hna_chg_list;
+ static pthread_mutex_t hna_chg_list_mutex;
+ static struct hashtable_t *hna_global_hash = NULL;
  
+-int compare_hna(void *data1, void *data2)
++static int compare_hna(void *data1, void *data2)
+ {
+ 	return (memcmp(data1, data2, 5) == 0 ? 1 : 0);
+ }
  
- void checkIntegrity(void);
-diff --git a/batman.h b/batman.h
-index c8e35f1..05c48c1 100644
---- a/batman.h
-+++ b/batman.h
-@@ -21,8 +21,8 @@
+-int choose_hna(void *data, int32_t size)
++static int choose_hna(void *data, int32_t size)
+ {
+ 	unsigned char *key= data;
+ 	uint32_t hash = 0;
+diff --git a/linux/kernel.c b/linux/kernel.c
+index fa8882c..08c7e20 100644
+--- a/linux/kernel.c
++++ b/linux/kernel.c
+@@ -70,7 +70,7 @@ static void set_integer_file(const char* filename, int32_t integer)
+ 	fclose(f);
+ }
  
+-void set_rp_filter(int32_t state, char* dev)
++void set_rp_filter(int32_t state, const char* dev)
+ {
+ 	char filename[100], *colon_ptr;
  
+@@ -85,7 +85,7 @@ void set_rp_filter(int32_t state, char* dev)
+ 		*colon_ptr = ':';
+ }
  
--#ifndef _BATMAN_BATMAN_H
--#define _BATMAN_BATMAN_H
-+#ifndef _BATMAND_BATMAN_H
-+#define _BATMAND_BATMAN_H
+-int32_t get_rp_filter(char *dev)
++int32_t get_rp_filter(const char *dev)
+ {
+ 	int32_t state = 0;
+ 	char filename[100], *colon_ptr;
+@@ -103,7 +103,7 @@ int32_t get_rp_filter(char *dev)
+ 	return state;
+ }
  
- #include <sys/types.h>
- #include <netinet/in.h>
-diff --git a/bitarray.h b/bitarray.h
-index 9a1f80d..e0ca302 100644
---- a/bitarray.h
-+++ b/bitarray.h
-@@ -19,7 +19,8 @@
+-void set_send_redirects(int32_t state, char* dev)
++void set_send_redirects(int32_t state, const char* dev)
+ {
+ 	char filename[100], *colon_ptr;
+ 
+@@ -118,7 +118,7 @@ void set_send_redirects(int32_t state, char* dev)
+ 		*colon_ptr = ':';
+ }
+ 
+-int32_t get_send_redirects(char *dev)
++int32_t get_send_redirects(const char *dev)
+ {
+ 	int32_t state = 0;
+ 	char filename[100], *colon_ptr;
+@@ -146,7 +146,7 @@ int32_t get_forwarding(void)
+ 	return get_integer_file("/proc/sys/net/ipv4/ip_forward");
+ }
+ 
+-int8_t bind_to_iface(int32_t sock, char *dev)
++int8_t bind_to_iface(int32_t sock, const char *dev)
+ {
+ 	char *colon_ptr;
+ 
+diff --git a/linux/route.c b/linux/route.c
+index bceac95..7934c27 100644
+--- a/linux/route.c
++++ b/linux/route.c
+@@ -73,7 +73,7 @@ static const char *rule_type_to_string_script[] = {
+ 
+ #include <net/route.h>
+ 
+-void add_del_route(uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src_ip, int32_t ifi, char *dev, uint8_t rt_table, int8_t route_type, int8_t route_action)
++void add_del_route(uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src_ip, int32_t ifi, const char *dev, uint8_t rt_table, int8_t route_type, int8_t route_action)
+ {
+ 	struct rtentry route;
+ 	struct sockaddr_in *addr;
+@@ -152,7 +152,7 @@ void add_del_route(uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src
+ 	close(sock);
+ }
+ 
+-void add_del_rule(uint32_t BATMANUNUSED(network), uint8_t BATMANUNUSED(netmask), int8_t BATMANUNUSED(rt_table), uint32_t BATMANUNUSED(prio), char *BATMANUNUSED(iif), int8_t BATMANUNUSED(rule_type), int8_t BATMANUNUSED(rule_action))
++void add_del_rule(uint32_t BATMANUNUSED(network), uint8_t BATMANUNUSED(netmask), int8_t BATMANUNUSED(rt_table), uint32_t BATMANUNUSED(prio), const char *BATMANUNUSED(iif), int8_t BATMANUNUSED(rule_type), int8_t BATMANUNUSED(rule_action))
+ {
+ 	return;
+ }
+@@ -169,7 +169,7 @@ int flush_routes_rules(int8_t BATMANUNUSED(is_rule))
+ 
+ #else
+ 
+-void add_del_route(uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src_ip, int32_t ifi, char *dev, uint8_t rt_table, int8_t route_type, int8_t route_action)
++void add_del_route(uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src_ip, int32_t ifi, const char *dev, uint8_t rt_table, int8_t route_type, int8_t route_action)
+ {
+ 	int netlink_sock;
+ 	size_t len;
+@@ -354,7 +354,7 @@ void add_del_route(uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src
   *
-  */
+  ***/
  
--
-+#ifndef _BATMAND_BITARRAY_H
-+#define _BATMAND_BITARRAY_H
- 
- #include "batman.h"
- #define WORD_BIT_SIZE ( sizeof(TYPE_OF_WORD) * 8 )
-@@ -34,3 +35,4 @@ char bit_get_packet( TYPE_OF_WORD *seq_bits, int16_t seq_num_diff, int8_t set_ma
- int  bit_packet_count( TYPE_OF_WORD *seq_bits );
- uint8_t bit_count( int32_t to_count );
- 
-+#endif
-diff --git a/hash.h b/hash.h
-index 91ee7d8..66d7162 100644
---- a/hash.h
-+++ b/hash.h
-@@ -18,8 +18,8 @@
-  * 02110-1301, USA
-  *
-  */
--#ifndef _BATMAN_HASH_H
--#define _BATMAN_HASH_H
-+#ifndef _BATMAND_HASH_H
-+#define _BATMAND_HASH_H
+-void add_del_rule(uint32_t network, uint8_t netmask, int8_t rt_table, uint32_t prio, char *iif, int8_t rule_type, int8_t rule_action)
++void add_del_rule(uint32_t network, uint8_t netmask, int8_t rt_table, uint32_t prio, const char *iif, int8_t rule_type, int8_t rule_action)
+ {
+ 	int netlink_sock;
+ 	size_t len;
+diff --git a/linux/tun.c b/linux/tun.c
+index afb0447..ac5e069 100644
+--- a/linux/tun.c
++++ b/linux/tun.c
+@@ -47,7 +47,7 @@
+ #define IPTABLES_DEL_ACC "iptables -t nat -D POSTROUTING -s %s/%i -j ACCEPT"
  
  
+-int run_cmd(char *cmd) {
++static int run_cmd(const char *cmd) {
+ 	int error, pipes[2], stderr = -1, ret = 0;
+ 	char error_log[256];
  
-diff --git a/hna.h b/hna.h
-index 5af9317..99f7664 100644
---- a/hna.h
-+++ b/hna.h
-@@ -19,7 +19,8 @@
-  *
-  */
+@@ -90,7 +90,7 @@ int probe_nat_tool(void) {
+ 	return run_cmd("which iptables > /dev/null");
+ }
  
--
-+#ifndef _BATMAND_HNA_H
-+#define _BATMAND_HNA_H
+-void exec_iptables_rule(char *cmd, int8_t route_action) {
++static void exec_iptables_rule(const char *cmd, int8_t route_action) {
+ 	if (disable_client_nat)
+ 		return;
  
- #include "batman.h"
- 
-@@ -82,3 +83,5 @@ void hna_global_update(struct orig_node *orig_node, unsigned char *new_hna,
- 				int16_t new_hna_len, struct neigh_node *old_router);
- void hna_global_check_tq(struct orig_node *orig_node);
- void hna_global_del(struct orig_node *orig_node);
-+
-+#endif
-diff --git a/originator.h b/originator.h
-index fb5e063..5ce5162 100644
---- a/originator.h
-+++ b/originator.h
-@@ -19,7 +19,8 @@
-  *
-  */
- 
--
-+#ifndef _BATMAND_ORIGINATOR_H
-+#define _BATMAND_ORIGINATOR_H
- 
- #include "batman.h"
- #include "types.h"
-@@ -33,3 +34,4 @@ void update_orig( struct orig_node *orig_node, struct bat_packet *in, uint32_t n
- void purge_orig( uint32_t curr_time );
- void debug_orig(void);
- 
-+#endif
 diff --git a/os.h b/os.h
-index ab02497..26e97f5 100644
+index 26e97f5..2f2b2df 100644
 --- a/os.h
 +++ b/os.h
-@@ -19,8 +19,8 @@
-  *
-  */
+@@ -44,8 +44,8 @@ void segmentation_fault(int32_t sig) NO_RETURN;
+ void restore_and_exit(uint8_t is_sigsegv) NO_RETURN;
  
--#ifndef _BATMAN_OS_H
--#define _BATMAN_OS_H
-+#ifndef _BATMAND_OS_H
-+#define _BATMAND_OS_H
+ /* route.c */
+-void add_del_route( uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src_ip, int32_t ifi, char *dev, uint8_t rt_table, int8_t route_type, int8_t del );
+-void add_del_rule( uint32_t network, uint8_t netmask, int8_t rt_table, uint32_t prio, char *iif, int8_t dst_rule, int8_t del );
++void add_del_route( uint32_t dest, uint8_t netmask, uint32_t router, uint32_t src_ip, int32_t ifi, const char *dev, uint8_t rt_table, int8_t route_type, int8_t del );
++void add_del_rule( uint32_t network, uint8_t netmask, int8_t rt_table, uint32_t prio, const char *iif, int8_t dst_rule, int8_t del );
+ int add_del_interface_rules( int8_t del );
+ int flush_routes_rules( int8_t rt_table );
  
- #include "batman.h"
+@@ -69,13 +69,13 @@ void init_interface_gw(void);
+ void interface_listen_sockets(void);
  
-diff --git a/packet.h b/packet.h
-index 7d7e5b4..3a98ea5 100644
---- a/packet.h
-+++ b/packet.h
-@@ -19,6 +19,9 @@
-  *
-  */
+ /* kernel.c */
+-void set_rp_filter( int32_t state, char* dev );
+-int32_t get_rp_filter( char *dev );
+-void set_send_redirects( int32_t state, char* dev );
+-int32_t get_send_redirects( char *dev );
++void set_rp_filter( int32_t state, const char* dev );
++int32_t get_rp_filter( const char *dev );
++void set_send_redirects( int32_t state, const char* dev );
++int32_t get_send_redirects( const char *dev );
+ void set_forwarding( int32_t state );
+ int32_t get_forwarding( void );
+-int8_t bind_to_iface( int32_t sock, char *dev );
++int8_t bind_to_iface( int32_t sock, const char *dev );
+ int is_wifi_interface(char *dev, int fd);
  
-+#ifndef _BATMAND_PACKET_H
-+#define _BATMAND_PACKET_H
-+
- #define COMPAT_VERSION 5
- #define VIS_COMPAT_VERSION 23
+ /* posix.c */
+@@ -96,7 +96,7 @@ void *client_to_gw_tun( void *arg );
+ /* unix_sokcet.c */
+ void *unix_listen( void *arg );
+ void internal_output(uint32_t sock);
+-void debug_output( int8_t debug_prio, char *format, ... );
++void debug_output( int8_t debug_prio, const char *format, ... );
  
-@@ -57,3 +60,5 @@ struct vis_data {
- 	uint8_t data;
- 	uint32_t ip;
- } __attribute__((packed));
-+
-+#endif
+ 
+ #endif
+diff --git a/posix/posix.c b/posix/posix.c
+index ae1cef0..81cd2e1 100644
+--- a/posix/posix.c
++++ b/posix/posix.c
+@@ -125,7 +125,7 @@ uint64_t get_time_msec64(void)
+ }
+ 
+ /* batman animation */
+-static void sym_print( char x, char y, char *z ) {
++static void sym_print( char x, char y, const char *z ) {
+ 
+ 	char i = 0, Z;
+ 
+diff --git a/posix/unix_socket.c b/posix/unix_socket.c
+index 02a0a3a..11c5d3e 100644
+--- a/posix/unix_socket.c
++++ b/posix/unix_socket.c
+@@ -39,7 +39,7 @@
+ #include "../hna.h"
+ 
+ 
+-void debug_output(int8_t debug_prio, char *format, ...) {
++void debug_output(int8_t debug_prio, const char *format, ...) {
+ 
+ 	struct list_head *debug_pos;
+ 	struct debug_level_info *debug_level_info;
+diff --git a/profile.c b/profile.c
+index e691f5d..c76ae8d 100644
+--- a/profile.c
++++ b/profile.c
+@@ -33,7 +33,7 @@ static struct prof_container prof_container[PROF_COUNT];
+ 
+ 
+ 
+-void prof_init(int32_t index, char *name) {
++void prof_init(int32_t index, const char *name) {
+ 
+ 	prof_container[index].total_time = 0;
+ 	prof_container[index].calls = 0;
 diff --git a/profile.h b/profile.h
-index a4afde0..d9221d5 100644
+index d9221d5..e50bf70 100644
 --- a/profile.h
 +++ b/profile.h
-@@ -19,7 +19,8 @@
-  *
-  */
+@@ -42,13 +42,13 @@ struct prof_container {
  
--
-+#ifndef _BATMAND_PROFILE_H
-+#define _BATMAND_PROFILE_H
+ 	clock_t start_time;
+ 	clock_t total_time;
+-	char *name;
++	const char *name;
+ 	uint64_t calls;
  
- enum {
+ };
  
-@@ -51,3 +52,5 @@ void prof_init(int32_t index, char *name);
+ 
+-void prof_init(int32_t index, char *name);
++void prof_init(int32_t index, const char *name);
  void prof_start(int32_t index);
  void prof_stop(int32_t index);
  void prof_print(void);
-+
-+#endif
-diff --git a/ring_buffer.h b/ring_buffer.h
-index 78d8f9e..c1679d9 100644
---- a/ring_buffer.h
-+++ b/ring_buffer.h
-@@ -19,7 +19,8 @@
-  *
-  */
- 
--
-+#ifndef _BATMAND_RING_BUFFER_H
-+#define _BATMAND_RING_BUFFER_H
- 
- #include <stdint.h>
- #include "batman.h"
-@@ -28,3 +29,5 @@
- 
- void ring_buffer_set(uint8_t tq_recv[], uint8_t *tq_index, uint8_t value);
- uint8_t ring_buffer_avg(uint8_t tq_recv[]);
-+
-+#endif
-diff --git a/schedule.h b/schedule.h
-index 50fd5aa..8bd54cd 100644
---- a/schedule.h
-+++ b/schedule.h
-@@ -19,7 +19,11 @@
-  *
-  */
- 
-+#ifndef _BATMAND_SCHEDULE_H
-+#define _BATMAND_SCHEDULE_H
- 
- void schedule_own_packet( struct batman_if *batman_if );
- void schedule_forward_packet(struct orig_node *orig_node, struct bat_packet *in, uint32_t neigh, uint8_t directlink, int16_t hna_buff_len, struct batman_if *if_outgoing, uint32_t curr_time);
- void send_outstanding_packets(uint32_t curr_time);
-+
-+#endif
-diff --git a/types.h b/types.h
-index 7aa4884..6ae336e 100644
---- a/types.h
-+++ b/types.h
-@@ -19,8 +19,8 @@
-  *
-  */
- 
--#ifndef TYPES_H
--#define TYPES_H
-+#ifndef _BATMAND_TYPES_H
-+#define _BATMAND_TYPES_H
- 
- #include "packet.h"
- 
 -- 
 1.8.4.rc3
 
