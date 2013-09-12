@@ -1,8 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 12 Sep 2013 22:58:31 +0200
-Message-Id: <1379019524-23543-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] batmand: Debian patches for 0.3.2+51+g1e275d9-1
+Date: Thu, 12 Sep 2013 22:58:33 +0200
+Message-Id: <1379019524-23543-3-git-send-email-sven@narfation.org>
+In-Reply-To: <1379019524-23543-1-git-send-email-sven@narfation.org>
+References: <1379019524-23543-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 02/13] batmand: Add CFLAGS to the linker step
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,14 +17,32 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-Hi,
+The GCC manual states for different parameters that the options for compilation
+must also be used when linking. The options for compilation are stored in
+CFLAGS and added to LINK.o to fix the behavior.
 
-different patches [1] were aggregated in the Debian package of batmand
-0.3.2+51+g1e275d9-1.
+Option which need this are for example -fPIC/-fPIE or -flto.
 
-Kind regards,
-        Sven
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-[1] http://anonscm.debian.org/gitweb/?p=collab-maint/batmand.git;a=tree;f=debian/patches;hb=refs/tags/debian/0.3.2%2B51%2Bg1e275d9-1
+diff --git a/Makefile b/Makefile
+index 3205573..50d1fe8 100755
+--- a/Makefile
++++ b/Makefile
+@@ -57,7 +57,7 @@ RM ?= rm -f
+ INSTALL ?= install
+ MKDIR ?= mkdir -p
+ COMPILE.c = $(Q_CC)$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+-LINK.o = $(Q_LD)$(CC) $(LDFLAGS) $(TARGET_ARCH)
++LINK.o = $(Q_LD)$(CC) $(CFLAGS) $(LDFLAGS) $(TARGET_ARCH)
+ 
+ # standard install paths
+ PREFIX = /usr/local
+-- 
+1.8.4.rc3
 
