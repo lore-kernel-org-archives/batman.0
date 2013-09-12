@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 12 Sep 2013 22:58:43 +0200
-Message-Id: <1379019524-23543-13-git-send-email-sven@narfation.org>
+Date: Thu, 12 Sep 2013 22:58:44 +0200
+Message-Id: <1379019524-23543-14-git-send-email-sven@narfation.org>
 In-Reply-To: <1379019524-23543-1-git-send-email-sven@narfation.org>
 References: <1379019524-23543-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 12/13] batmand: Fix preprocessor check for
-	defined DEBUG_MALLOC && MEMORY_USAGE
+Subject: [B.A.T.M.A.N.] [PATCH 13/13] batmand: Add error for MEMORY_USAGE
+	dependency
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,24 +20,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
+Print error during build when MEMORY_USAGE is requested but the build is done
+without DEBUG_MALLOC.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- batman.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ allocate.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/batman.c b/batman.c
-index 39ef9be..89b3bf1 100644
---- a/batman.c
-+++ b/batman.c
-@@ -47,7 +47,7 @@ uint8_t debug_level = 0;
+diff --git a/allocate.c b/allocate.c
+index c6c3082..fe61847 100644
+--- a/allocate.c
++++ b/allocate.c
+@@ -32,6 +32,10 @@
  
- uint8_t debug_level_max = 5;
+ #if defined DEBUG_MALLOC
  
--#elif DEBUG_MALLOC && MEMORY_USAGE
-+#elif defined DEBUG_MALLOC && defined MEMORY_USAGE
++#ifndef MEMORY_USAGE
++#error DEBUG_MALLOC can only be used together with MEMORY_USAGE
++#endif
++
+ static pthread_mutex_t chunk_mutex = PTHREAD_MUTEX_INITIALIZER;
  
- uint8_t debug_level_max = 5;
- 
+ struct chunkHeader *chunkList = NULL;
 -- 
 1.8.4.rc3
 
