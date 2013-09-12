@@ -1,13 +1,11 @@
-Return-Path: <nicoechaniz@altermundi.net>
-Message-ID: <5231012A.60709@altermundi.net>
-Date: Wed, 11 Sep 2013 20:47:54 -0300
-From: =?UTF-8?B?Tmljb2zDoXMgRWNow6FuaXo=?= <nicoechaniz@altermundi.net>
+Return-Path: <bittorf@bluebottle.com>
+Date: Thu, 12 Sep 2013 11:36:41 +0200
+From: Bastian Bittorf <bittorf@bluebottle.com>
+Message-ID: <20130912093641.GX1558@medion.lan>
 MIME-Version: 1.0
-References: <2F24C929-999A-4422-A7D7-91E0F8271CA5@me.com>
-In-Reply-To: <2F24C929-999A-4422-A7D7-91E0F8271CA5@me.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] Fwd: Re:  Hamburg freifunk geekend02
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] fool batman by simulating a layer3 mesh
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,63 +17,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-I'm forwarding this e-mail to the list per request of Andre.
+discussed in IRC, i'am searched for a better way to
+load-balance a batman network. not the whole shaping/splashing
+should run on one (central) node, so we needed something to stick it
+to the node/AP which the user is connected to. than we have also
+the ability to show a good page when the network is b0rken.
 
+short overview:
 
--------- Mensaje original --------
-Asunto: 	Re: [B.A.T.M.A.N.] Hamburg freifunk geekend02
-Fecha: 	Wed, 11 Sep 2013 10:18:09 +0200
-De: 	Andre Schmidt <m.andre.schmidt@me.com>
-A: 	nicoechaniz@altermundi.net <nicoechaniz@altermundi.net>
+NODE-1 (master/gateway)
+ipv4: 192.168.1.1/16
+dhcp: 192.168.1.x / gateway: 192.168.0.1
+gateway: e.g. pppoe
 
+NODE-2
+ipv4: 192.168.2.1/16
+dhcp: 192.168.2.x / gateway: 192.168.0.1
+gateway: 192.168.1.1
 
+NODE-3
+ipv4: 192.168.3.1/16
+dhcp: 192.168.3.x / gateway: 192.168.0.1
+gateway: 192.168.1.1
 
-A filter on the list rejects my answer, so I can only answer to you.
-Maybe you can forward it to the list, in case others care as well. thanks
+the trick is, that every node offers DHCP which
+does not interfere with other nodes AND offers a
+gateway which is always the same: 192.168.0.1
 
+if a user roams he simply moves on layer 1/2 and
+its further working ok. important: the MAC of the
+gateway should not change otherwise it's not working
+for some seconds till the ARP times out. this can
+be circumvented via kmod-macvlan:
 
-Hi Nico,
+ip link add link br-mybridge gateway0 address '02:00:c0:ca:c0:1a' type macvlan
+ip address add 192.168.0.1/16 dev gateway0
+ip link set dev gateway0 up
 
-By physically connected you mean wireless mesh and by VPN you mean
-cable-based VPN over the internet?
-Mostly the latter, but it is mixed. You can check out our node graph [0]
-to get an impression of the topology.
+then the IP 192.168.0.1 is always reachable with the same MAC.
+thats it. we can use the "normal" iptables/tc stuff like in
+olsrd-networks...
 
-See you in Berlin,
-andre
+giving out such dhcp-leases needs a fix to /etc/init.d/dhcp
+which is available soon on OpenWrt mailinglist.
 
-[0] http://knotengraph.de <http://knotengraph.de>
+bye, bastian
 
-
-Am 11.09.2013 um 10:00 schrieb Nicolás Echániz
-<nicoechaniz@altermundi.net <mailto:nicoechaniz@altermundi.net>>:
-
-> El 07/09/13 06:38, Andre Schmidt escribió:
->> Hi there,
->>
->> Sep. 27.-29., 2013, we'll meet up for geekend02 [0] at Bürgerhaus
->> Hamburg-Eidelstedt, Germany. This is going to be a great opportunity
->> to meet AFK. Naturally, you can bring your own keyboard, so it's all
->> good, don't worry.
->>
->> Since Hamburg is probably one of the larger B.A.T.M.A.N. networks on
->> this planet w/ 300+ routers constantly online and still growing
->> rapidly, we do fear that we'll run into scaling problems sooner or
->> later. Therefore, your expertise on how to counteract is very
->> welcome.
->
-> sounds very interesting, please document :)
->
-> are this 300+ routers physically connected or is it mostly VPN?
->
-> hope to meet some of you during the summit in Berlin and to hear more
-> about your conclusions regarding scalability.
->
->
-> cheers,
-> Nico
->
-
-
+PS:
+thanks for the discussion and help, escpecially to T_X, ordex and marec
