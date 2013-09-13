@@ -1,16 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
-Date: Fri, 13 Sep 2013 13:39:47 +0200
+Date: Fri, 13 Sep 2013 13:49:55 +0200
 From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <20130913113947.GI404@neomailbox.net>
-References: <1378903492-2604-1-git-send-email-mihail.costea90@gmail.com>
- <CAP5XTDN4F=1SXMMB=yk5e+hgpMXgSUPukt70unR8x4UQ3RWkMg@mail.gmail.com>
+Message-ID: <20130913114955.GA896@neomailbox.net>
+References: <20130912093641.GX1558@medion.lan>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="8/pVXlBMPtxfSuJG"
+ protocol="application/pgp-signature"; boundary="Dxnq1zWXvFF0Q93v"
 Content-Disposition: inline
-In-Reply-To: <CAP5XTDN4F=1SXMMB=yk5e+hgpMXgSUPukt70unR8x4UQ3RWkMg@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Generalize DAT in order to
- support any type of key/value, not only IPv4 and MAC
+In-Reply-To: <20130912093641.GX1558@medion.lan>
+Subject: Re: [B.A.T.M.A.N.] fool batman by simulating a layer3 mesh
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,20 +20,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---8/pVXlBMPtxfSuJG
+--Dxnq1zWXvFF0Q93v
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Sep 11, 2013 at 03:51:04PM +0300, Mihail Costea wrote:
-> This is the github url: https://github.com/cmihail/batman-adv
+On Thu, Sep 12, 2013 at 11:36:41AM +0200, Bastian Bittorf wrote:
+> discussed in IRC, i'am searched for a better way to
+> load-balance a batman network. not the whole shaping/splashing
+> should run on one (central) node, so we needed something to stick it
+> to the node/AP which the user is connected to. than we have also
+> the ability to show a good page when the network is b0rken.
+>=20
 
-Mihail, but on github I see only this patch. Do you plan to merge the other=
-s as
-soon as they are ready?
+I'd like to remember that you could also do the same by using iptables and =
+the
+netfilter hook in the bridge code (look for netfilter_bridge). It would all=
+ow
+you to apply shaping/firewalling rules directly onto a bridge, without
+transforming each and every AP in a Layer 3 Gateway.
+
+I think this would also fit a Layer2 mesh network better.
+
+Cheers,
+
 
 --=20
 Antonio Quartulli
@@ -43,26 +54,26 @@ Antonio Quartulli
 =2E.each of us alone is worth nothing..
 Ernesto "Che" Guevara
 
---8/pVXlBMPtxfSuJG
+--Dxnq1zWXvFF0Q93v
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.20 (GNU/Linux)
 
-iQIcBAEBCAAGBQJSMvmDAAoJEADl0hg6qKeOKJIP/2OHwnV1HKK9/3bUG+xfQI5F
-6dUEvQFU9Ge0JN5sPMYo+vsR7OzHMNGiire7QLczM6UJdtP5UKWHH8u/EqlVRDxN
-s2h6lEPIqPpqremmkU9heFSHuckJDouJj0S3CnR0iIMiQadxLgVeaNDxUE2QXel2
-czINlYQevRdRhOI8PEev/IaZ5vBR5M9uIq/9LJZ10LPcz95FHogFb2187Xb0Sa5M
-fVUhlJU1zVzHYwvQMMF3lyn8D7vYPiV/v6jW0IeZcqX4VEd5Z6PksOzFS3R2bTPJ
-Nh4bFmcl7J8WMiMR5nO7/CNcsDqaj79AVGx8+K2pDcNrfL8w7Zb4+3xHs5mdS1Cj
-uWmTZaunQLQwlWRzM/F7rGSGhzouuAQRuPaeoc20eS28ODK4VQCfv3w54muSd1S3
-EP2BBKTTz6a/Xu81/BqCrJOdSDQDkhN39Te4cOHImNTa+LyySkoMpUzmpwWGu/Ch
-6wZHRz3d5AOW5Islfe2LH1TPHMEe7lTChyA8vE/G+DXIBVpVLbhnoc4vsBmxATar
-KqioH2JO6C407cnJIpiPlY2apzfQdmFW4iYmA1eAgB0yffY33VoqSD4qWkCFhEoU
-myVD2nh/LgU5/9fVd+GNSsGYvqKinluuCgPuUBLtdzHXWWbs9EkWa855kpiIvORi
-AKcbFuK2xu5c2gJBPWo8
-=FT7D
+iQIcBAEBCAAGBQJSMvvjAAoJEADl0hg6qKeOH8IP/3PBR4uXJjAg0b6UN6BjmQDq
+T8hDdMh1X+LJOet87BLBqf4FmKxBdDwOg+B/2Zxy7tLSoGsGzMuO+kW7n3Ax+xI/
+WkeJYlECMxKDuu7YEFRn4MG8K0XBeeZlbGjQQg3PYoCmLUk2r018jE4gpyc4iNy0
+ni7f8hb9ctXwj715iaOySgu8sQmo2MMCkRrF2A7W1/TW27orATbE/9Qr84Zwexk5
+7fTMTXa2oupek2Xne3epTsaWM7vQqn/oMPkrmeP1+AeGZ2rfmOE5mfzSOCJ2xEff
+MRbJ/uM1wXW8drfgEEJKOop2g7XdeRB9kUywp20wRttE6oaVqgcQRYz/s/i4ZaEI
+Q+xbzS/Q8hrcIn/2Ugn6Ew2b5F2+JiPJjFD+ZZ73DKvG7xWBoTfTBypZbNI/PzRz
+AYaoJMY64PUpaOUQeh+WXX6bZBQUEYIxG9r7RZ6eO586t5XHmZm9tLSqH9usP0Ze
+/zlutc+7hlFaH6WmxO8BnqzOOAkGiDhZ5bHxLezj3OL79cKMW7fAlWbXXKlrHj9x
+xHTe/wYR09E79jyJdREAsc74jXO6dbkONDsFgppa4tIl+iQwrCBqB9lHzrLXAnyy
+ypuoEdyiwcb860yItClLVie+Jl/P4m/3Iehvg2XsqDVk2NJzSyg3A4YRkQoYekgJ
+lW6WTPlQaryP9oD0rtFU
+=Y3id
 -----END PGP SIGNATURE-----
 
---8/pVXlBMPtxfSuJG--
+--Dxnq1zWXvFF0Q93v--
