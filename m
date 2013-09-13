@@ -1,11 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 12 Sep 2013 22:58:44 +0200
-Message-Id: <1379019524-23543-14-git-send-email-sven@narfation.org>
-In-Reply-To: <1379019524-23543-1-git-send-email-sven@narfation.org>
-References: <1379019524-23543-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 13/13] batmand: Add error for MEMORY_USAGE
-	dependency
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Fri, 13 Sep 2013 18:51:05 +0800
+Message-ID: <4024628.apkocGBlCt@diderot>
+In-Reply-To: <1378847522-13776-7-git-send-email-sven@narfation.org>
+References: <1378847522-13776-1-git-send-email-sven@narfation.org>
+ <1378847522-13776-7-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 06/11] batctl: Remove legacy types u64
+	and caddr_t
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,29 +24,19 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-Print error during build when MEMORY_USAGE is requested but the build is done
-without DEBUG_MALLOC.
+On Tuesday 10 September 2013 23:11:57 Sven Eckelmann wrote:
+> The definition of u64 was not obtained from the correct source to always use
+> 64 bit. Instead uint64_t can be used.
+> 
+> Also caddr_t is obsolete BSDism and void* should be used instead.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  ioctl.c | 11 +++++------
+>  1 file changed, 5 insertions(+), 6 deletions(-)
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- allocate.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Applied in revision 0a88d31.
 
-diff --git a/allocate.c b/allocate.c
-index c6c3082..fe61847 100644
---- a/allocate.c
-+++ b/allocate.c
-@@ -32,6 +32,10 @@
- 
- #if defined DEBUG_MALLOC
- 
-+#ifndef MEMORY_USAGE
-+#error DEBUG_MALLOC can only be used together with MEMORY_USAGE
-+#endif
-+
- static pthread_mutex_t chunk_mutex = PTHREAD_MUTEX_INITIALIZER;
- 
- struct chunkHeader *chunkList = NULL;
--- 
-1.8.4.rc3
+Thanks,
+Marek
 
