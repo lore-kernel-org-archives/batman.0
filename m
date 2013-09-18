@@ -1,14 +1,17 @@
-Return-Path: <carocci.eugenio@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <20130918061901.GF3053@neomailbox.net>
+Return-Path: <antonio@meshcoding.com>
+Date: Wed, 18 Sep 2013 12:08:48 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
+Message-ID: <20130918100848.GH3053@neomailbox.net>
 References: <CADtP98UYNT7KOg9a1Pc+bozarwxfpNh8E+BG14xbvGX5EQsFVA@mail.gmail.com>
  <20130918061901.GF3053@neomailbox.net>
-Date: Wed, 18 Sep 2013 10:16:51 +0200
-Message-ID: <CADtP98XqeKBw=T8__wbOprKUVkreAZGhPyrYuCcerYJj5zLuKQ@mail.gmail.com>
-From: Eugenio Carocci <carocci.eugenio@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+ <CADtP98XqeKBw=T8__wbOprKUVkreAZGhPyrYuCcerYJj5zLuKQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="uTRFFR9qmiCqR05s"
+Content-Disposition: inline
+In-Reply-To: <CADtP98XqeKBw=T8__wbOprKUVkreAZGhPyrYuCcerYJj5zLuKQ@mail.gmail.com>
 Subject: Re: [B.A.T.M.A.N.] Where can i see, sequence number, eq,
-	rq for an originator?
+ rq for an originator?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,47 +25,60 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Thanks you for the reply, just one last question. Is there some paper
-online that explain, how the protocol
-avoid routing loop, may with some examples? :)
 
-2013/9/18 Antonio Quartulli <antonio@meshcoding.com>:
-> Hello Eugenio,
->
-> On Wed, Sep 18, 2013 at 12:55:27AM +0200, Eugenio Carocci wrote:
->> Hello everybody,
->>
->> first of all, i want to excuse myself, if i write something wrong for
->> my horrible english. I am writing my thesis of Information Engineering
->> about your protocol.
->
-> It's not only ours, but it's everybody's protocol ;-)
->
->> So, as i wrote in the object of the
->> message, i want to see where BATMAN-adv save the last sequence number
->> saved for a generic originator, and also
->> where it puts all the information act to evaluate the TQ toward each
->> originator of the mesh.
->>
->
-> The information exported to the user are visible through the originator table
-> (batctl can help you getting that), but most of the things you were asking for
-> (I'm reading the subject of the email..)are not exported at all.
->
-> This means you can't see those values from a user prospective.
-> You would need to patch the code and print them manually (if you are really
-> interested in that..).
-> For this you may want to have a look at the "neigh_node" structure.
->
->
->
->
-> Cheers,
->
-> --
-> Antonio Quartulli
+--uTRFFR9qmiCqR05s
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Sep 18, 2013 at 10:16:51AM +0200, Eugenio Carocci wrote:
+> Thanks you for the reply, just one last question. Is there some paper
+> online that explain, how the protocol
+> avoid routing loop, may with some examples? :)
+
+The document explaining something closer to what you want can be found on t=
+he
+wiki: http://www.open-mesh.org/projects/batman-adv/wiki/OGM
+
+However, the current implementation of the protocol is the result of a sort=
+ of
+"evolution" and for this reason what you read in the document may not refle=
+ct
+the current implementation 100% (but we always try to keep the two in sync).
+
+Here[1] you also have an explanation of the former protocol, and some of the
+things written there are still valid, but I'd use it only to get the flavour
+of what is going on (not as a real reference).
 
 
+Regards,
 
--- 
-Eugenio Carocci
+
+p.s. don't top-post please
+
+--=20
+Antonio Quartulli
+
+--uTRFFR9qmiCqR05s
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSOXuwAAoJEADl0hg6qKeOOP4P/R+wk1+2pFP3LaaZyYt0sr3E
+9KRH4tu3TT6m7q8Mw1TXngYynPCc5eJJeE9W1Me2C/66mRjTtQmH8wxfXyK2Yg7b
+iwem/Ff4PNLCtoBKpuYonitc43/OWjqRO++f7ll2W3IdXQcPn/tso6UgO0/8G2D4
+wdNvnr4iooDbAJXsmPo0MNWrm7pBo39Md6JMjird8jxAvJ5rKvTlluYD5LBbgB55
+QGDIwxFwQaC5q7yUajxtKXXgge9U0i/b88aB1fkoeLE0fBtxFSPwWb6xIW1cDLQf
+Tlh9/JWmgXUlHlhpNs1aHq9VMnllh2HKlW8txoogbmRs8G1PxOlobl05I3r2pq6U
+APx+OYILWemtGICm5knI7BNGoJQiQkS+JtZX0es8BEvXXGdIUYnb/qQeG/93uZeb
+6foePFNogTIdUiq6e23va9Z6BJfKNK3bfg1RAA4zkMatP+U/lkMVL3FiT2xIfuMe
+4ZNBxxbpVMAO27HdAxjDDzPLtQcupFc+oKqU2UyzpDYSVfXFcandHFGoUVhfbcSs
+/inie8tJ23FeG6EMEbbwyC+66/H7SnUJdlXjzdSJsF1sFMN53RoNJi3mg9FL0VZw
+MdV6QbuAGqwJsc342PCaI2JfNsmVVyWZmBv9gkUtt1JpPLWebH7Ajfgun1MsniFV
+696we6UWEv3CReYuRVK+
+=uibL
+-----END PGP SIGNATURE-----
+
+--uTRFFR9qmiCqR05s--
