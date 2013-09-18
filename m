@@ -1,11 +1,8 @@
 Return-Path: <ordex@autistici.org>
 From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 18 Sep 2013 08:27:38 +0200
-Message-Id: <1379485658-2317-2-git-send-email-ordex@autistici.org>
-In-Reply-To: <1379485658-2317-1-git-send-email-ordex@autistici.org>
-References: <1379485658-2317-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: set the TAG flag for the vid
-	passed to BLA
+Date: Wed, 18 Sep 2013 08:27:37 +0200
+Message-Id: <1379485658-2317-1-git-send-email-ordex@autistici.org>
+Subject: [B.A.T.M.A.N.] pull request net: batman-adv 2013-09-18
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,48 +15,44 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: Antonio Quartulli <antonio@open-mesh.org>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@open-mesh.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+Hello David,
 
-When receiving or sending a packet a packet on a VLAN, the
-vid has to be marked with the TAG flag in order to make any
-component in batman-adv understand that the packet is coming
-from a really tagged network.
+this is a very small (but important) fix intended for net/linux-3.{11,12} (since
+3.12-rc1 is out I guess this patch needs to be enqueued for stable in order to
+reach 3.11?)
 
-This fix the Bridge Loop Avoidance behaviour which was not
-able to send announces over VLAN interfaces.
+This change fixes a regression introduced in 3.11 that prevents the Bridge Loop
+Avoidance component from correctly operate on VLANs.
 
-Introduced by 0b1da1765fdb00ca5d53bc95c9abc70dfc9aae5b
-("batman-adv: change VID semantic in the BLA code")
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.org>
-Acked-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
+Please pull or let me know of any problem.
+Thank you,
+	Antonio
+
+
+The following changes since commit 1ef68ec462571955f2a667ddf1ffe279848709d7:
+
+  Merge branch 'sfc-3.12' of git://git.kernel.org/pub/scm/linux/kernel/git/bwh/sfc (2013-09-16 21:43:54 -0400)
+
+are available in the git repository at:
+
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to 4c18c425b2d228415b635e97a64737d7f27c5536:
+
+  batman-adv: set the TAG flag for the vid passed to BLA (2013-09-17 21:15:16 +0200)
+
+----------------------------------------------------------------
+Included change:
+- fix the Bridge Loop Avoidance component by marking the variables containing
+  the VLAN ID with the HAS_TAG flag when needed.
+
+----------------------------------------------------------------
+Antonio Quartulli (1):
+      batman-adv: set the TAG flag for the vid passed to BLA
+
  net/batman-adv/soft-interface.c | 2 ++
  1 file changed, 2 insertions(+)
-
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 4493913..813db4e 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -168,6 +168,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	case ETH_P_8021Q:
- 		vhdr = (struct vlan_ethhdr *)skb->data;
- 		vid = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
-+		vid |= BATADV_VLAN_HAS_TAG;
- 
- 		if (vhdr->h_vlan_encapsulated_proto != ethertype)
- 			break;
-@@ -331,6 +332,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 	case ETH_P_8021Q:
- 		vhdr = (struct vlan_ethhdr *)skb->data;
- 		vid = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
-+		vid |= BATADV_VLAN_HAS_TAG;
- 
- 		if (vhdr->h_vlan_encapsulated_proto != ethertype)
- 			break;
--- 
-1.8.1.5
-
