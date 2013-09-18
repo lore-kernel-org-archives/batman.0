@@ -1,8 +1,14 @@
-Return-Path: <ordex@autistici.org>
-From: Antonio Quartulli <ordex@autistici.org>
-Date: Wed, 18 Sep 2013 08:27:37 +0200
-Message-Id: <1379485658-2317-1-git-send-email-ordex@autistici.org>
-Subject: [B.A.T.M.A.N.] pull request net: batman-adv 2013-09-18
+Return-Path: <carocci.eugenio@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <20130918061901.GF3053@neomailbox.net>
+References: <CADtP98UYNT7KOg9a1Pc+bozarwxfpNh8E+BG14xbvGX5EQsFVA@mail.gmail.com>
+ <20130918061901.GF3053@neomailbox.net>
+Date: Wed, 18 Sep 2013 10:16:51 +0200
+Message-ID: <CADtP98XqeKBw=T8__wbOprKUVkreAZGhPyrYuCcerYJj5zLuKQ@mail.gmail.com>
+From: Eugenio Carocci <carocci.eugenio@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] Where can i see, sequence number, eq,
+	rq for an originator?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,45 +20,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello David,
+Thanks you for the reply, just one last question. Is there some paper
+online that explain, how the protocol
+avoid routing loop, may with some examples? :)
 
-this is a very small (but important) fix intended for net/linux-3.{11,12} (since
-3.12-rc1 is out I guess this patch needs to be enqueued for stable in order to
-reach 3.11?)
+2013/9/18 Antonio Quartulli <antonio@meshcoding.com>:
+> Hello Eugenio,
+>
+> On Wed, Sep 18, 2013 at 12:55:27AM +0200, Eugenio Carocci wrote:
+>> Hello everybody,
+>>
+>> first of all, i want to excuse myself, if i write something wrong for
+>> my horrible english. I am writing my thesis of Information Engineering
+>> about your protocol.
+>
+> It's not only ours, but it's everybody's protocol ;-)
+>
+>> So, as i wrote in the object of the
+>> message, i want to see where BATMAN-adv save the last sequence number
+>> saved for a generic originator, and also
+>> where it puts all the information act to evaluate the TQ toward each
+>> originator of the mesh.
+>>
+>
+> The information exported to the user are visible through the originator table
+> (batctl can help you getting that), but most of the things you were asking for
+> (I'm reading the subject of the email..)are not exported at all.
+>
+> This means you can't see those values from a user prospective.
+> You would need to patch the code and print them manually (if you are really
+> interested in that..).
+> For this you may want to have a look at the "neigh_node" structure.
+>
+>
+>
+>
+> Cheers,
+>
+> --
+> Antonio Quartulli
 
-This change fixes a regression introduced in 3.11 that prevents the Bridge Loop
-Avoidance component from correctly operate on VLANs.
 
 
-Please pull or let me know of any problem.
-Thank you,
-	Antonio
-
-
-The following changes since commit 1ef68ec462571955f2a667ddf1ffe279848709d7:
-
-  Merge branch 'sfc-3.12' of git://git.kernel.org/pub/scm/linux/kernel/git/bwh/sfc (2013-09-16 21:43:54 -0400)
-
-are available in the git repository at:
-
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
-
-for you to fetch changes up to 4c18c425b2d228415b635e97a64737d7f27c5536:
-
-  batman-adv: set the TAG flag for the vid passed to BLA (2013-09-17 21:15:16 +0200)
-
-----------------------------------------------------------------
-Included change:
-- fix the Bridge Loop Avoidance component by marking the variables containing
-  the VLAN ID with the HAS_TAG flag when needed.
-
-----------------------------------------------------------------
-Antonio Quartulli (1):
-      batman-adv: set the TAG flag for the vid passed to BLA
-
- net/batman-adv/soft-interface.c | 2 ++
- 1 file changed, 2 insertions(+)
+-- 
+Eugenio Carocci
