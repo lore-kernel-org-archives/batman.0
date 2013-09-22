@@ -1,11 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sun, 22 Sep 2013 20:18:28 +0200
-Message-Id: <1379873908-1766-2-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1379873908-1766-1-git-send-email-antonio@meshcoding.com>
-References: <1379873908-1766-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2 next] batman-adv: fix orig capabilities
-	numbering (NetCod)
+Date: Sun, 22 Sep 2013 20:18:27 +0200
+Message-Id: <1379873908-1766-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2 next] batman-adv: fix orig capabilities
+	numbering
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,10 +18,10 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Use bit 1 after bit 0.
+Let's start the capabilities from bit 0.
 
-Introduced by 7dd9d8992b0c197ba656a6d9a70966cea10fc2d9
-("batman-adv: tvlv - add network coding container")
+Introduced by 2b1c07b918d2acc41555bbde9d538179acb308b4
+("batman-adv: tvlv - add distributed arp table container")
 
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
@@ -31,18 +29,18 @@ Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/types.h b/types.h
-index 8465a55..04b6b0b 100644
+index f323822..8465a55 100644
 --- a/types.h
 +++ b/types.h
-@@ -247,7 +247,7 @@ struct batadv_orig_node {
+@@ -246,7 +246,7 @@ struct batadv_orig_node {
+  * @BATADV_ORIG_CAPA_HAS_NC: orig node has network coding enabled
   */
  enum batadv_orig_capabilities {
- 	BATADV_ORIG_CAPA_HAS_DAT = BIT(0),
--	BATADV_ORIG_CAPA_HAS_NC = BIT(2),
-+	BATADV_ORIG_CAPA_HAS_NC = BIT(1),
+-	BATADV_ORIG_CAPA_HAS_DAT = BIT(1),
++	BATADV_ORIG_CAPA_HAS_DAT = BIT(0),
+ 	BATADV_ORIG_CAPA_HAS_NC = BIT(2),
  };
  
- /**
 -- 
 1.8.1.5
 
