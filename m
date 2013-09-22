@@ -1,9 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sun, 22 Sep 2013 20:26:50 +0200
-Message-Id: <1379874410-3354-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: no need for return in void
-	functions
+Date: Sun, 22 Sep 2013 21:19:03 +0200
+Message-Id: <1379877543-435-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix wrong kernel doc
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,31 +17,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Only network-coding.h is using "return;" inside void stub
-functions. This is not a consistent with the rest of the code,
-therefore don't continue to do as such.
-(Other stub functions will be cleaned later)
+The name of the function does not match the kernel doc. Fix it.
 
-Introduced by 7dd9d8992b0c197ba656a6d9a70966cea10fc2d9
-("batman-adv: tvlv - add network coding container")
+Introduced by 6228419df3a53d09a2ba1f3e7b32bcd7cd59c968
+("batman-adv: tvlv - convert tt query packet to use tvlv unicast packets")
 
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- network-coding.h | 1 -
- 1 file changed, 1 deletion(-)
+ translation-table.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/network-coding.h b/network-coding.h
-index 8a97b40..d2f110c 100644
---- a/network-coding.h
-+++ b/network-coding.h
-@@ -49,7 +49,6 @@ int batadv_nc_init_debugfs(struct batadv_priv *bat_priv);
- 
- static inline void batadv_nc_status_update(struct net_device *net_dev)
- {
--	return;
+diff --git a/translation-table.c b/translation-table.c
+index 1198aea..d1840dd 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -2729,7 +2729,7 @@ out:
  }
  
- static inline int batadv_nc_init(struct batadv_priv *bat_priv)
+ /**
+- * batadv_dat_status_update - process incoming tt reply
++ * batadv_handle_tt_response - process incoming tt reply
+  * @bat_priv: the bat priv with all the soft interface information
+  * @tt_data: tt data containing the tt request information
+  * @resp_src: mac address of tt reply sender
 -- 
 1.8.1.5
 
