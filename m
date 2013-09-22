@@ -1,9 +1,9 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sun, 22 Sep 2013 15:45:07 +0200
-Message-Id: <1379857507-3878-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: remove accidentally
-	re-introduced unicast.c file
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 22 Sep 2013 16:42:23 +0200
+Message-Id: <1379860946-32669-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/4] batctl: Add missing includes and remove
+	unused includes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,516 +16,343 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+Cc: Sven Eckelmann <sven@narfation.org>
 
-During the Fragmentation redesign the unicast.c file has
-been removed, but it seems that it has been accidentally
-re-introduced during a merge operation.
-Remove it again.
-
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- unicast.c | 491 --------------------------------------------------------------
- 1 file changed, 491 deletions(-)
- delete mode 100644 unicast.c
+ bat-hosts.c   |  5 +++--
+ bat-hosts.h   |  2 +-
+ bisect_iv.c   |  7 ++++---
+ debug.c       |  5 -----
+ debug.h       |  3 +++
+ debugfs.c     | 10 ++++------
+ debugfs.h     |  3 ---
+ functions.c   |  2 ++
+ functions.h   |  3 ++-
+ ioctl.c       |  3 +--
+ list-batman.h |  3 ---
+ main.c        |  3 ---
+ ping.c        |  5 +++++
+ sys.c         |  1 -
+ sys.h         |  2 ++
+ tcpdump.c     |  6 +++++-
+ tcpdump.h     |  5 ++++-
+ traceroute.c  |  4 ++++
+ translate.c   |  1 -
+ 19 files changed, 40 insertions(+), 33 deletions(-)
 
-diff --git a/unicast.c b/unicast.c
-deleted file mode 100644
-index 48b31d3..0000000
---- a/unicast.c
-+++ /dev/null
-@@ -1,491 +0,0 @@
--/* Copyright (C) 2010-2013 B.A.T.M.A.N. contributors:
-- *
-- * Andreas Langer
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of version 2 of the GNU General Public
-- * License as published by the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-- * General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-- * 02110-1301, USA
-- */
--
+diff --git a/bat-hosts.c b/bat-hosts.c
+index ee862da..9d36531 100644
+--- a/bat-hosts.c
++++ b/bat-hosts.c
+@@ -21,14 +21,15 @@
+ 
+ 
+ 
+-#include <stdio.h>
+ #include <stdint.h>
++#include <stdio.h>
+ #include <limits.h>
+ #include <stdlib.h>
+ #include <errno.h>
+ #include <string.h>
++#include <stddef.h>
++#include <netinet/ether.h>
+ 
 -#include "main.h"
--#include "unicast.h"
--#include "send.h"
--#include "soft-interface.h"
--#include "gateway_client.h"
--#include "originator.h"
--#include "hash.h"
--#include "translation-table.h"
--#include "routing.h"
--#include "hard-interface.h"
--
--
--static struct sk_buff *
--batadv_frag_merge_packet(struct list_head *head,
--			 struct batadv_frag_packet_list_entry *tfp,
--			 struct sk_buff *skb)
--{
--	struct batadv_unicast_frag_packet *up;
--	struct sk_buff *tmp_skb;
--	struct batadv_unicast_packet *unicast_packet;
--	int hdr_len = sizeof(*unicast_packet);
--	int uni_diff = sizeof(*up) - hdr_len;
--	uint8_t *packet_pos;
--
--	up = (struct batadv_unicast_frag_packet *)skb->data;
--	/* set skb to the first part and tmp_skb to the second part */
--	if (up->flags & BATADV_UNI_FRAG_HEAD) {
--		tmp_skb = tfp->skb;
--	} else {
--		tmp_skb = skb;
--		skb = tfp->skb;
--	}
--
--	if (skb_linearize(skb) < 0 || skb_linearize(tmp_skb) < 0)
--		goto err;
--
--	skb_pull(tmp_skb, sizeof(*up));
--	if (pskb_expand_head(skb, 0, tmp_skb->len, GFP_ATOMIC) < 0)
--		goto err;
--
--	/* move free entry to end */
--	tfp->skb = NULL;
--	tfp->seqno = 0;
--	list_move_tail(&tfp->list, head);
--
--	memcpy(skb_put(skb, tmp_skb->len), tmp_skb->data, tmp_skb->len);
--	kfree_skb(tmp_skb);
--
--	memmove(skb->data + uni_diff, skb->data, hdr_len);
--	packet_pos = skb_pull(skb, uni_diff);
--	unicast_packet = (struct batadv_unicast_packet *)packet_pos;
--	unicast_packet->header.packet_type = BATADV_UNICAST;
--
--	return skb;
--
--err:
--	/* free buffered skb, skb will be freed later */
--	kfree_skb(tfp->skb);
--	return NULL;
--}
--
--static void batadv_frag_create_entry(struct list_head *head,
--				     struct sk_buff *skb)
--{
--	struct batadv_frag_packet_list_entry *tfp;
--	struct batadv_unicast_frag_packet *up;
--
--	up = (struct batadv_unicast_frag_packet *)skb->data;
--
--	/* free and oldest packets stand at the end */
--	tfp = list_entry((head)->prev, typeof(*tfp), list);
--	kfree_skb(tfp->skb);
--
--	tfp->seqno = ntohs(up->seqno);
--	tfp->skb = skb;
--	list_move(&tfp->list, head);
--	return;
--}
--
--static int batadv_frag_create_buffer(struct list_head *head)
--{
--	int i;
--	struct batadv_frag_packet_list_entry *tfp;
--
--	for (i = 0; i < BATADV_FRAG_BUFFER_SIZE; i++) {
--		tfp = kmalloc(sizeof(*tfp), GFP_ATOMIC);
--		if (!tfp) {
--			batadv_frag_list_free(head);
--			return -ENOMEM;
--		}
--		tfp->skb = NULL;
--		tfp->seqno = 0;
--		INIT_LIST_HEAD(&tfp->list);
--		list_add(&tfp->list, head);
--	}
--
--	return 0;
--}
--
--static struct batadv_frag_packet_list_entry *
--batadv_frag_search_packet(struct list_head *head,
--			  const struct batadv_unicast_frag_packet *up)
--{
--	struct batadv_frag_packet_list_entry *tfp;
--	struct batadv_unicast_frag_packet *tmp_up = NULL;
--	bool is_head_tmp, is_head;
--	uint16_t search_seqno;
--
--	if (up->flags & BATADV_UNI_FRAG_HEAD)
--		search_seqno = ntohs(up->seqno)+1;
--	else
--		search_seqno = ntohs(up->seqno)-1;
--
--	is_head = up->flags & BATADV_UNI_FRAG_HEAD;
--
--	list_for_each_entry(tfp, head, list) {
--		if (!tfp->skb)
--			continue;
--
--		if (tfp->seqno == ntohs(up->seqno))
--			goto mov_tail;
--
--		tmp_up = (struct batadv_unicast_frag_packet *)tfp->skb->data;
--
--		if (tfp->seqno == search_seqno) {
--			is_head_tmp = tmp_up->flags & BATADV_UNI_FRAG_HEAD;
--			if (is_head_tmp != is_head)
--				return tfp;
--			else
--				goto mov_tail;
--		}
--	}
--	return NULL;
--
--mov_tail:
--	list_move_tail(&tfp->list, head);
--	return NULL;
--}
--
--void batadv_frag_list_free(struct list_head *head)
--{
--	struct batadv_frag_packet_list_entry *pf, *tmp_pf;
--
--	if (!list_empty(head)) {
--		list_for_each_entry_safe(pf, tmp_pf, head, list) {
--			kfree_skb(pf->skb);
--			list_del(&pf->list);
--			kfree(pf);
--		}
--	}
--	return;
--}
--
--/* frag_reassemble_skb():
-- * returns NET_RX_DROP if the operation failed - skb is left intact
-- * returns NET_RX_SUCCESS if the fragment was buffered (skb_new will be NULL)
-- * or the skb could be reassembled (skb_new will point to the new packet and
-- * skb was freed)
-- */
--int batadv_frag_reassemble_skb(struct sk_buff *skb,
--			       struct batadv_priv *bat_priv,
--			       struct sk_buff **new_skb)
--{
--	struct batadv_orig_node *orig_node;
--	struct batadv_frag_packet_list_entry *tmp_frag_entry;
--	int ret = NET_RX_DROP;
--	struct batadv_unicast_frag_packet *unicast_packet;
--
--	unicast_packet = (struct batadv_unicast_frag_packet *)skb->data;
--	*new_skb = NULL;
--
--	orig_node = batadv_orig_hash_find(bat_priv, unicast_packet->orig);
--	if (!orig_node)
--		goto out;
--
--	orig_node->last_frag_packet = jiffies;
--
--	if (list_empty(&orig_node->frag_list) &&
--	    batadv_frag_create_buffer(&orig_node->frag_list)) {
--		pr_debug("couldn't create frag buffer\n");
--		goto out;
--	}
--
--	tmp_frag_entry = batadv_frag_search_packet(&orig_node->frag_list,
--						   unicast_packet);
--
--	if (!tmp_frag_entry) {
--		batadv_frag_create_entry(&orig_node->frag_list, skb);
--		ret = NET_RX_SUCCESS;
--		goto out;
--	}
--
--	*new_skb = batadv_frag_merge_packet(&orig_node->frag_list,
--					    tmp_frag_entry, skb);
--	/* if not, merge failed */
--	if (*new_skb)
--		ret = NET_RX_SUCCESS;
--
--out:
--	if (orig_node)
--		batadv_orig_node_free_ref(orig_node);
--	return ret;
--}
--
--int batadv_frag_send_skb(struct sk_buff *skb, struct batadv_priv *bat_priv,
--			 struct batadv_hard_iface *hard_iface,
--			 const uint8_t dstaddr[])
--{
--	struct batadv_unicast_packet tmp_uc, *unicast_packet;
--	struct batadv_hard_iface *primary_if;
--	struct sk_buff *frag_skb;
--	struct batadv_unicast_frag_packet *frag1, *frag2;
--	int uc_hdr_len = sizeof(*unicast_packet);
--	int ucf_hdr_len = sizeof(*frag1);
--	int data_len = skb->len - uc_hdr_len;
--	int large_tail = 0, ret = NET_RX_DROP;
--	uint16_t seqno;
--
--	primary_if = batadv_primary_if_get_selected(bat_priv);
--	if (!primary_if)
--		goto dropped;
--
--	frag_skb = dev_alloc_skb(data_len - (data_len / 2) + ucf_hdr_len);
--	if (!frag_skb)
--		goto dropped;
--
--	skb->priority = TC_PRIO_CONTROL;
--	skb_reserve(frag_skb, ucf_hdr_len);
--
--	unicast_packet = (struct batadv_unicast_packet *)skb->data;
--	memcpy(&tmp_uc, unicast_packet, uc_hdr_len);
--	skb_split(skb, frag_skb, data_len / 2 + uc_hdr_len);
--
--	if (batadv_skb_head_push(skb, ucf_hdr_len - uc_hdr_len) < 0 ||
--	    batadv_skb_head_push(frag_skb, ucf_hdr_len) < 0)
--		goto drop_frag;
--
--	frag1 = (struct batadv_unicast_frag_packet *)skb->data;
--	frag2 = (struct batadv_unicast_frag_packet *)frag_skb->data;
--
--	memcpy(frag1, &tmp_uc, sizeof(tmp_uc));
--
--	frag1->header.ttl--;
--	frag1->header.version = BATADV_COMPAT_VERSION;
--	frag1->header.packet_type = BATADV_UNICAST_FRAG;
--
--	memcpy(frag1->orig, primary_if->net_dev->dev_addr, ETH_ALEN);
--	memcpy(frag2, frag1, sizeof(*frag2));
--
--	if (data_len & 1)
--		large_tail = BATADV_UNI_FRAG_LARGETAIL;
--
--	frag1->flags = BATADV_UNI_FRAG_HEAD | large_tail;
--	frag2->flags = large_tail;
--
--	seqno = atomic_add_return(2, &hard_iface->frag_seqno);
--	frag1->seqno = htons(seqno - 1);
--	frag2->seqno = htons(seqno);
--
--	batadv_send_skb_packet(skb, hard_iface, dstaddr);
--	batadv_send_skb_packet(frag_skb, hard_iface, dstaddr);
--	ret = NET_RX_SUCCESS;
--	goto out;
--
--drop_frag:
--	kfree_skb(frag_skb);
--dropped:
--	kfree_skb(skb);
--out:
--	if (primary_if)
--		batadv_hardif_free_ref(primary_if);
--	return ret;
--}
--
--/**
-- * batadv_unicast_push_and_fill_skb - extends the buffer and initializes the
-- * common fields for unicast packets
-- * @skb: packet
-- * @hdr_size: amount of bytes to push at the beginning of the skb
-- * @orig_node: the destination node
-- *
-- * Returns false if the buffer extension was not possible or true otherwise
-- */
--static bool batadv_unicast_push_and_fill_skb(struct sk_buff *skb, int hdr_size,
--					     struct batadv_orig_node *orig_node)
--{
--	struct batadv_unicast_packet *unicast_packet;
--	uint8_t ttvn = (uint8_t)atomic_read(&orig_node->last_ttvn);
--
--	if (batadv_skb_head_push(skb, hdr_size) < 0)
--		return false;
--
--	unicast_packet = (struct batadv_unicast_packet *)skb->data;
--	unicast_packet->header.version = BATADV_COMPAT_VERSION;
--	/* batman packet type: unicast */
--	unicast_packet->header.packet_type = BATADV_UNICAST;
--	/* set unicast ttl */
--	unicast_packet->header.ttl = BATADV_TTL;
--	/* copy the destination for faster routing */
--	memcpy(unicast_packet->dest, orig_node->orig, ETH_ALEN);
--	/* set the destination tt version number */
--	unicast_packet->ttvn = ttvn;
--
--	return true;
--}
--
--/**
-- * batadv_unicast_prepare_skb - encapsulate an skb with a unicast header
-- * @skb: the skb containing the payload to encapsulate
-- * @orig_node: the destination node
-- *
-- * Returns false if the payload could not be encapsulated or true otherwise.
-- *
-- * This call might reallocate skb data.
-- */
--static bool batadv_unicast_prepare_skb(struct sk_buff *skb,
--				       struct batadv_orig_node *orig_node)
--{
--	size_t uni_size = sizeof(struct batadv_unicast_packet);
--	return batadv_unicast_push_and_fill_skb(skb, uni_size, orig_node);
--}
--
--/**
-- * batadv_unicast_4addr_prepare_skb - encapsulate an skb with a unicast4addr
-- * header
-- * @bat_priv: the bat priv with all the soft interface information
-- * @skb: the skb containing the payload to encapsulate
-- * @orig_node: the destination node
-- * @packet_subtype: the batman 4addr packet subtype to use
-- *
-- * Returns false if the payload could not be encapsulated or true otherwise.
-- *
-- * This call might reallocate skb data.
-- */
--bool batadv_unicast_4addr_prepare_skb(struct batadv_priv *bat_priv,
--				      struct sk_buff *skb,
--				      struct batadv_orig_node *orig,
--				      int packet_subtype)
--{
--	struct batadv_hard_iface *primary_if;
--	struct batadv_unicast_4addr_packet *unicast_4addr_packet;
--	bool ret = false;
--
--	primary_if = batadv_primary_if_get_selected(bat_priv);
--	if (!primary_if)
--		goto out;
--
--	/* pull the header space and fill the unicast_packet substructure.
--	 * We can do that because the first member of the unicast_4addr_packet
--	 * is of type struct unicast_packet
--	 */
--	if (!batadv_unicast_push_and_fill_skb(skb,
--					      sizeof(*unicast_4addr_packet),
--					      orig))
--		goto out;
--
--	unicast_4addr_packet = (struct batadv_unicast_4addr_packet *)skb->data;
--	unicast_4addr_packet->u.header.packet_type = BATADV_UNICAST_4ADDR;
--	memcpy(unicast_4addr_packet->src, primary_if->net_dev->dev_addr,
--	       ETH_ALEN);
--	unicast_4addr_packet->subtype = packet_subtype;
--	unicast_4addr_packet->reserved = 0;
--
--	ret = true;
--out:
--	if (primary_if)
--		batadv_hardif_free_ref(primary_if);
--	return ret;
--}
--
--/**
-- * batadv_unicast_generic_send_skb - send an skb as unicast
-- * @bat_priv: the bat priv with all the soft interface information
-- * @skb: payload to send
-- * @packet_type: the batman unicast packet type to use
-- * @packet_subtype: the batman packet subtype. It is ignored if packet_type is
-- *		    not BATADV_UNICAT_4ADDR
-- *
-- * Returns 1 in case of error or 0 otherwise
-- */
--int batadv_unicast_generic_send_skb(struct batadv_priv *bat_priv,
--				    struct sk_buff *skb, int packet_type,
--				    int packet_subtype)
--{
--	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
--	struct batadv_unicast_packet *unicast_packet;
--	struct batadv_orig_node *orig_node;
--	struct batadv_neigh_node *neigh_node;
--	int data_len = skb->len;
--	int ret = NET_RX_DROP;
--	unsigned int dev_mtu, header_len;
--
--	/* get routing information */
--	if (is_multicast_ether_addr(ethhdr->h_dest)) {
--		orig_node = batadv_gw_get_selected_orig(bat_priv);
--		if (orig_node)
--			goto find_router;
--	}
--
--	/* check for tt host - increases orig_node refcount.
--	 * returns NULL in case of AP isolation
--	 */
--	orig_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
--					     ethhdr->h_dest);
--
--find_router:
--	/* find_router():
--	 *  - if orig_node is NULL it returns NULL
--	 *  - increases neigh_nodes refcount if found.
--	 */
--	neigh_node = batadv_find_router(bat_priv, orig_node, NULL);
--
--	if (!neigh_node)
--		goto out;
--
--	switch (packet_type) {
--	case BATADV_UNICAST:
--		if (!batadv_unicast_prepare_skb(skb, orig_node))
--			goto out;
--
--		header_len = sizeof(struct batadv_unicast_packet);
--		break;
--	case BATADV_UNICAST_4ADDR:
--		if (!batadv_unicast_4addr_prepare_skb(bat_priv, skb, orig_node,
--						      packet_subtype))
--			goto out;
--
--		header_len = sizeof(struct batadv_unicast_4addr_packet);
--		break;
--	default:
--		/* this function supports UNICAST and UNICAST_4ADDR only. It
--		 * should never be invoked with any other packet type
--		 */
--		goto out;
--	}
--
--	ethhdr = (struct ethhdr *)(skb->data + header_len);
--	unicast_packet = (struct batadv_unicast_packet *)skb->data;
--
--	/* inform the destination node that we are still missing a correct route
--	 * for this client. The destination will receive this packet and will
--	 * try to reroute it because the ttvn contained in the header is less
--	 * than the current one
--	 */
--	if (batadv_tt_global_client_is_roaming(bat_priv, ethhdr->h_dest))
--		unicast_packet->ttvn = unicast_packet->ttvn - 1;
--
--	dev_mtu = neigh_node->if_incoming->net_dev->mtu;
--	/* fragmentation mechanism only works for UNICAST (now) */
--	if (packet_type == BATADV_UNICAST &&
--	    atomic_read(&bat_priv->fragmentation) &&
--	    data_len + sizeof(*unicast_packet) > dev_mtu) {
--		/* send frag skb decreases ttl */
--		unicast_packet->header.ttl++;
--		ret = batadv_frag_send_skb(skb, bat_priv,
--					   neigh_node->if_incoming,
--					   neigh_node->addr);
--		goto out;
--	}
--
--	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
--		ret = 0;
--
--out:
--	if (neigh_node)
--		batadv_neigh_node_free_ref(neigh_node);
--	if (orig_node)
--		batadv_orig_node_free_ref(orig_node);
--	if (ret == NET_RX_DROP)
--		kfree_skb(skb);
--	return ret;
--}
+ #include "bat-hosts.h"
+ #include "hash.h"
+ #include "functions.h"
+diff --git a/bat-hosts.h b/bat-hosts.h
+index 74a4ce5..96abfa9 100644
+--- a/bat-hosts.h
++++ b/bat-hosts.h
+@@ -24,7 +24,7 @@
+ #ifndef _BATCTL_BAT_HOSTS_H
+ #define _BATCTL_BAT_HOSTS_H
+ 
+-#include <netinet/ether.h>
++#include <net/ethernet.h>
+ 
+ #define HOST_NAME_MAX_LEN 50
+ #define CONF_DIR_LEN 256
+diff --git a/bisect_iv.c b/bisect_iv.c
+index c0f9420..917ffec 100644
+--- a/bisect_iv.c
++++ b/bisect_iv.c
+@@ -19,14 +19,15 @@
+  *
+  */
+ 
++#include <stdint.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+-#include <stdint.h>
+-#include <unistd.h>
+ #include <string.h>
+ #include <errno.h>
++#include <unistd.h>
++#include <stddef.h>
++#include <netinet/ether.h>
+ 
+-#include "main.h"
+ #include "bisect_iv.h"
+ #include "bat-hosts.h"
+ #include "hash.h"
+diff --git a/debug.c b/debug.c
+index 2589dbc..6b7b648 100644
+--- a/debug.c
++++ b/debug.c
+@@ -23,12 +23,7 @@
+ #include <unistd.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+-#include <string.h>
+-#include <errno.h>
+-#include <sys/types.h>
+-#include <dirent.h>
+ 
+-#include "main.h"
+ #include "debug.h"
+ #include "debugfs.h"
+ #include "functions.h"
+diff --git a/debug.h b/debug.h
+index 8d9de08..563a7bb 100644
+--- a/debug.h
++++ b/debug.h
+@@ -22,6 +22,9 @@
+ #ifndef _BATCTL_DEBUG_H
+ #define _BATCTL_DEBUG_H
+ 
++#include <stddef.h>
++#include "main.h"
++
+ #define DEBUG_BATIF_PATH_FMT "%s/batman_adv/%s"
+ #define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
+ #define DEBUG_LOG "log"
+diff --git a/debugfs.c b/debugfs.c
+index bfedcfe..8033f8b 100644
+--- a/debugfs.c
++++ b/debugfs.c
+@@ -19,14 +19,12 @@
+  */
+ 
+ #include "debugfs.h"
+-#include <stdio.h>
+-#include <stdlib.h>
+ #include <errno.h>
+-#include <sys/vfs.h>
+-#include <sys/types.h>
++#include <stdio.h>
++#include <string.h>
++#include <sys/mount.h>
+ #include <sys/stat.h>
+-#include <fcntl.h>
+-#include <unistd.h>
++#include <sys/statfs.h>
+ 
+ #ifndef DEBUGFS_MAGIC
+ #define DEBUGFS_MAGIC          0x64626720
+diff --git a/debugfs.h b/debugfs.h
+index 3981b8b..e608902 100644
+--- a/debugfs.h
++++ b/debugfs.h
+@@ -21,9 +21,6 @@
+ #ifndef __DEBUGFS_H__
+ #define __DEBUGFS_H__
+ 
+-#include <sys/mount.h>
+-#include <string.h>
+-
+ #ifndef MAX_PATH
+ # define MAX_PATH 256
+ #endif
+diff --git a/functions.c b/functions.c
+index bd4da59..1a33d6d 100644
+--- a/functions.c
++++ b/functions.c
+@@ -33,6 +33,8 @@
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <sys/time.h>
++#include <netinet/in.h>
++#include <stdint.h>
+ 
+ #include "main.h"
+ #include "functions.h"
+diff --git a/functions.h b/functions.h
+index 6720a1b..a96b7ee 100644
+--- a/functions.h
++++ b/functions.h
+@@ -22,7 +22,8 @@
+ #ifndef _BATCTL_FUNCTIONS_H
+ #define _BATCTL_FUNCTIONS_H
+ 
+-#include <netinet/if_ether.h>
++#include <net/ethernet.h>
++#include <stddef.h>
+ 
+ 
+ #define ETH_STR_LEN 17
+diff --git a/ioctl.c b/ioctl.c
+index 3d5b50d..cbb1aa5 100644
+--- a/ioctl.c
++++ b/ioctl.c
+@@ -26,15 +26,14 @@
+ #include <string.h>
+ #include <unistd.h>
+ #include <sys/ioctl.h>
++#include <sys/types.h>
+ #include <sys/socket.h>
+ #include <linux/if.h>
+ #include <linux/sockios.h>
+ #include <linux/ethtool.h>
+ #include <stdint.h>
+ 
+-#include "main.h"
+ #include "ioctl.h"
+-#include "debugfs.h"
+ 
+ /* code borrowed from ethtool */
+ static int statistics_custom_get(int fd, struct ifreq *ifr)
+diff --git a/list-batman.h b/list-batman.h
+index 7de5943..aea0f95 100644
+--- a/list-batman.h
++++ b/list-batman.h
+@@ -19,9 +19,6 @@
+  *
+  */
+ 
+-
+-#include <stddef.h> /* offsetof() */
+-
+ #ifndef _LINUX_LIST_H
+ #define _LINUX_LIST_H
+ 
+diff --git a/main.c b/main.c
+index 6b44359..84bb42a 100644
+--- a/main.c
++++ b/main.c
+@@ -21,9 +21,7 @@
+ 
+ 
+ 
+-#include <sys/types.h>
+ #include <stdio.h>
+-#include <stdint.h>
+ #include <stdlib.h>
+ #include <unistd.h>
+ #include <string.h>
+@@ -38,7 +36,6 @@
+ #include "bisect_iv.h"
+ #include "ioctl.h"
+ #include "functions.h"
+-#include <err.h>
+ 
+ char mesh_dfl_iface[] = "bat0";
+ char module_ver_path[] = "/sys/module/batman_adv/version";
+diff --git a/ping.c b/ping.c
+index 4d76484..d505d02 100644
+--- a/ping.c
++++ b/ping.c
+@@ -30,6 +30,11 @@
+ #include <fcntl.h>
+ #include <string.h>
+ #include <math.h>
++#include <stddef.h>
++#include <stdint.h>
++#include <sys/select.h>
++#include <sys/time.h>
++#include <linux/if_ether.h>
+ 
+ #include "main.h"
+ #include "ping.h"
+diff --git a/sys.c b/sys.c
+index 3e60c79..7539f76 100644
+--- a/sys.c
++++ b/sys.c
+@@ -25,7 +25,6 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <errno.h>
+-#include <sys/types.h>
+ #include <dirent.h>
+ 
+ #include "main.h"
+diff --git a/sys.h b/sys.h
+index dfc167a..5d207a1 100644
+--- a/sys.h
++++ b/sys.h
+@@ -22,6 +22,8 @@
+ #ifndef _BATCTL_SYS_H
+ #define _BATCTL_SYS_H
+ 
++#include "main.h"
++
+ #define SYS_BATIF_PATH_FMT "/sys/class/net/%s/mesh/"
+ #define SYS_LOG_LEVEL "log_level"
+ #define SYS_LOG "log"
+diff --git a/tcpdump.c b/tcpdump.c
+index 7e0987b..a220c3c 100644
+--- a/tcpdump.c
++++ b/tcpdump.c
+@@ -36,8 +36,12 @@
+ #include <netinet/udp.h>
+ #include <netinet/ip_icmp.h>
+ #include <netinet/if_ether.h>
++#include <net/ethernet.h>
++#include <stddef.h>
++#include <stdint.h>
++#include <sys/select.h>
++#include <sys/socket.h>
+ 
+-#include "main.h"
+ #include "tcpdump.h"
+ #include "packet.h"
+ #include "bat-hosts.h"
+diff --git a/tcpdump.h b/tcpdump.h
+index 2845576..3c1a0e1 100644
+--- a/tcpdump.h
++++ b/tcpdump.h
+@@ -23,7 +23,10 @@
+ #define _BATCTL_TCPDUMP_H
+ 
+ #include <netpacket/packet.h>
+-#include <net/ethernet.h>
++#include <linux/if_ether.h>
++#include <net/if_arp.h>
++#include <sys/types.h>
++#include "main.h"
+ #include "list-batman.h"
+ 
+ #ifndef ARPHRD_IEEE80211_PRISM
+diff --git a/traceroute.c b/traceroute.c
+index d62df5e..0cb0441 100644
+--- a/traceroute.c
++++ b/traceroute.c
+@@ -28,6 +28,10 @@
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <string.h>
++#include <linux/if_ether.h>
++#include <stddef.h>
++#include <sys/select.h>
++#include <sys/time.h>
+ 
+ #include "main.h"
+ #include "traceroute.h"
+diff --git a/translate.c b/translate.c
+index 0b4fbc6..da6d593 100644
+--- a/translate.c
++++ b/translate.c
+@@ -19,7 +19,6 @@
+  *
+  */
+ 
+-#include <netinet/in.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
 -- 
-1.8.1.5
+1.8.4.rc3
 
