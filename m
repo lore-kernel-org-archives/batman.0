@@ -1,9 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sun, 22 Sep 2013 20:08:25 +0200
-Message-Id: <1379873305-1292-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix usage and declaration
-	of batadv_bandwidth_units
+Date: Sun, 22 Sep 2013 20:18:28 +0200
+Message-Id: <1379873908-1766-2-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1379873908-1766-1-git-send-email-antonio@meshcoding.com>
+References: <1379873908-1766-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2 next] batman-adv: fix orig capabilities
+	numbering (NetCod)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,48 +20,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Name in declaration does not reflect the one reporte din the kernel doc.
-Moreover a variable storing an enum should be of type enum rather than
-int (this helps the compiler to spott possible mistakes)
+Use bit 1 after bit 0.
 
-Introduced by 0853ec7fafe0a195754454832993c6b35e22b842
-("batman-adv: tvlv - gateway download/upload bandwidth container")
+Introduced by 7dd9d8992b0c197ba656a6d9a70966cea10fc2d9
+("batman-adv: tvlv - add network coding container")
 
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- gateway_common.c | 3 ++-
- gateway_common.h | 2 +-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ types.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/gateway_common.c b/gateway_common.c
-index ab9a5ac..b211b0f 100644
---- a/gateway_common.c
-+++ b/gateway_common.c
-@@ -34,9 +34,10 @@
- static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 				      uint32_t *down, uint32_t *up)
- {
--	int ret, bw_unit_type = BATADV_BW_UNIT_KBIT;
-+	enum batadv_bandwidth_units bw_unit_type = BATADV_BW_UNIT_KBIT;
- 	char *slash_ptr, *tmp_ptr;
- 	long ldown, lup;
-+	int ret;
- 
- 	slash_ptr = strchr(buff, '/');
- 	if (slash_ptr)
-diff --git a/gateway_common.h b/gateway_common.h
-index 368d50e..56384a4 100644
---- a/gateway_common.h
-+++ b/gateway_common.h
-@@ -31,7 +31,7 @@ enum batadv_gw_modes {
-  * @BATADV_BW_UNIT_KBIT: unit type kbit
-  * @BATADV_BW_UNIT_MBIT: unit type mbit
+diff --git a/types.h b/types.h
+index 8465a55..04b6b0b 100644
+--- a/types.h
++++ b/types.h
+@@ -247,7 +247,7 @@ struct batadv_orig_node {
   */
--enum batadv_bandwidth_types {
-+enum batadv_bandwidth_units {
- 	BATADV_BW_UNIT_KBIT,
- 	BATADV_BW_UNIT_MBIT,
+ enum batadv_orig_capabilities {
+ 	BATADV_ORIG_CAPA_HAS_DAT = BIT(0),
+-	BATADV_ORIG_CAPA_HAS_NC = BIT(2),
++	BATADV_ORIG_CAPA_HAS_NC = BIT(1),
  };
+ 
+ /**
 -- 
 1.8.1.5
 
