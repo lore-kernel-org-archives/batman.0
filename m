@@ -1,9 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sun, 22 Sep 2013 20:18:27 +0200
-Message-Id: <1379873908-1766-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2 next] batman-adv: fix orig capabilities
-	numbering
+Date: Sun, 22 Sep 2013 20:26:50 +0200
+Message-Id: <1379874410-3354-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: no need for return in void
+	functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,29 +18,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Let's start the capabilities from bit 0.
+Only network-coding.h is using "return;" inside void stub
+functions. This is not a consistent with the rest of the code,
+therefore don't continue to do as such.
+(Other stub functions will be cleaned later)
 
-Introduced by 2b1c07b918d2acc41555bbde9d538179acb308b4
-("batman-adv: tvlv - add distributed arp table container")
+Introduced by 7dd9d8992b0c197ba656a6d9a70966cea10fc2d9
+("batman-adv: tvlv - add network coding container")
 
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- types.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ network-coding.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/types.h b/types.h
-index f323822..8465a55 100644
---- a/types.h
-+++ b/types.h
-@@ -246,7 +246,7 @@ struct batadv_orig_node {
-  * @BATADV_ORIG_CAPA_HAS_NC: orig node has network coding enabled
-  */
- enum batadv_orig_capabilities {
--	BATADV_ORIG_CAPA_HAS_DAT = BIT(1),
-+	BATADV_ORIG_CAPA_HAS_DAT = BIT(0),
- 	BATADV_ORIG_CAPA_HAS_NC = BIT(2),
- };
+diff --git a/network-coding.h b/network-coding.h
+index 8a97b40..d2f110c 100644
+--- a/network-coding.h
++++ b/network-coding.h
+@@ -49,7 +49,6 @@ int batadv_nc_init_debugfs(struct batadv_priv *bat_priv);
  
+ static inline void batadv_nc_status_update(struct net_device *net_dev)
+ {
+-	return;
+ }
+ 
+ static inline int batadv_nc_init(struct batadv_priv *bat_priv)
 -- 
 1.8.1.5
 
