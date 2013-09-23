@@ -1,8 +1,8 @@
 Return-Path: <marco.dallato@gmail.com>
 From: Marco Dalla Torre <marco.dallato@gmail.com>
-Date: Mon, 23 Sep 2013 11:27:50 +0200
-Message-Id: <1379928470-19090-1-git-send-email-marco.dallato@gmail.com>
-Subject: [B.A.T.M.A.N.] [RFCv3] [batctl] add IPv6 support to tcpdump parser
+Date: Mon, 23 Sep 2013 11:52:44 +0200
+Message-Id: <1379929964-19779-1-git-send-email-marco.dallato@gmail.com>
+Subject: [B.A.T.M.A.N.] [RFCv4] [batctl] add IPv6 support to tcpdump parser
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -30,13 +30,14 @@ the underlying protocol.
 
 Signed-off-by: Marco Dalla Torre <marco.dallato@gmail.com>
 ---
-CHANGE FROM V2
--rebased on fix "batctl tcpdump: Fix reported length of TCP payload"
+CHANGE FROM V3
+- fixed a string spacing issue
+To apply on fix "batctl tcpdump: Fix reported length of TCP payload"
  tcpdump.c | 232 ++++++++++++++++++++++++++++++++++++++++++++++++++------------
  1 file changed, 187 insertions(+), 45 deletions(-)
 
 diff --git a/tcpdump.c b/tcpdump.c
-index e6f8f7d..9432ecb 100644
+index e6f8f7d..01ec445 100644
 --- a/tcpdump.c
 +++ b/tcpdump.c
 @@ -32,9 +32,11 @@
@@ -180,7 +181,7 @@ index e6f8f7d..9432ecb 100644
 +				printf(", unreachable port\n");
 +				break;
 +			default:
-+				printf("unknown unreach code (%u)\n",
++				printf(" unknown unreach code (%u)\n",
 +				       icmphdr->icmp6_code);
 +			}
 +			break;
