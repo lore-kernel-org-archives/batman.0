@@ -1,15 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 23 Sep 2013 10:18:27 +0200
-Message-ID: <4148310.CdzoCJI8ee@bentobox>
-In-Reply-To: <20130923070342.GF3911@neomailbox.net>
+Return-Path: <antonio@meshcoding.com>
+Date: Mon, 23 Sep 2013 10:20:46 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
+Message-ID: <20130923082045.GI3911@neomailbox.net>
 References: <1379860946-32669-1-git-send-email-sven@narfation.org>
  <20130923070342.GF3911@neomailbox.net>
+ <4148310.CdzoCJI8ee@bentobox>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart20003297.eKOsgGU0Ko";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="VaKJWhUROU/xPxjb"
+Content-Disposition: inline
+In-Reply-To: <4148310.CdzoCJI8ee@bentobox>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 1/4] batctl: Add missing includes and
-	remove unused includes
+ remove unused includes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,52 +23,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <antonio@meshcoding.com>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart20003297.eKOsgGU0Ko
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--VaKJWhUROU/xPxjb
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Monday 23 September 2013 09:03:42 Antonio Quartulli wrote:
-> > -#include <stdio.h>
-> > 
-> >  #include <stdint.h>
-> > 
-> > +#include <stdio.h>
-> 
-> why is it important to move stdio.h below stdint.h ? Is there a particular
-> reason for that?
+On Mon, Sep 23, 2013 at 10:18:27AM +0200, Sven Eckelmann wrote:
+> On Monday 23 September 2013 09:03:42 Antonio Quartulli wrote:
+> > > -#include <stdio.h>
+> > >=20
+> > >  #include <stdint.h>
+> > >=20
+> > > +#include <stdio.h>
+> >=20
+> > why is it important to move stdio.h below stdint.h ? Is there a particu=
+lar
+> > reason for that?
+>=20
+> No, just an artifact of the work on the includes. But now it is an=20
+> alphabetical order (at least these two items)... so it is extremely impor=
+tant=20
+> :D
 
-No, just an artifact of the work on the includes. But now it is an 
-alphabetical order (at least these two items)... so it is extremely important 
-:D
+lol, ok!
 
-Kind regards,
-	Sven
---nextPart20003297.eKOsgGU0Ko
+--=20
+Antonio Quartulli
+
+--VaKJWhUROU/xPxjb
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.21 (GNU/Linux)
+Version: GnuPG v2.0.20 (GNU/Linux)
 
-iQIcBAABCgAGBQJSP/lTAAoJEF2HCgfBJntGIJAP/1rlVT5lalrn81M3g6iZWg5C
-gSCuNRhlTWKFznT97ISzRQ38Nnn3MFw52CJrS4fpENSKJXQgz/CF0fBODmZSJ6uN
-SP+GzCmG5CQmAM1QGxOaAoZ8DHjEQUM/PwXe5haeRTm1EMamMqXgdy8c+6ULah8y
-UT3Zpf92cQi4v74T7tusgJRDujU5CT7sNrILwKGWatozydmcJ118hcG5hxsl5Y8Y
-xOTSou79i5Bc4eBn+QY3Xdlag1CdkwHI5P+VYuOBTZ9giVLUyze70P1Ul8AvVkB9
-M7D5ivB6nvd31MB/SNKRLeG1b5pPXRcgzomyMJokQ6042g5No2ejIeJB+AjgZGiW
-wTDEK1XKkApCaQw2F7cvXYsU4IoxDzP27DmEV3Z/4VSZenAwMQKtFzXixOJ92lkB
-nU+HAT88p6lFhZcfbcWVG4+ekerOr31CmcrD+6UcPzlCobpCt+v8mgwuFdvOjLZG
-hlEUmHBk8YwE+NDWfNmJm+WPehwLABsvOLV7cj2EBryMTemm6mnbGbtGOvLIexbb
-VsFAnExUew7g68CjsGX8+HFTnHTo+AsNYijO6lRIXov9fdGk7IdwCPQHoPKbQF17
-Y04g8g+dOB3vHE/tjgI+84c+40rBL5VE41kbLDH4vAckSM9pu+Sjx6iW80zboM3Q
-x5xJKqshr0o6MO9Uneg5
-=f2jY
+iQIcBAEBCAAGBQJSP/ndAAoJEADl0hg6qKeOELYP/RavXiB5ixxP4wPehu9m2+yz
+p3OvsHeT6Z8io/5AYV+LKQZXaHJ9qnKB/xaxFnXmGzZWcWcbBXVAl3CYkQMFgXFQ
+WoB2awMX8ylduF1kskm9Tq2UguME70Mbs+eqrHzxtKLQW3zeTUbsT0yXGfWvmjum
+d+yjHto3r6jSXZfp8sWh7kTeuXuBUm3w6FTaTgUpEaoh1JegeMd5oE/gU8OsQqlL
+1sFUu18Y0GLT4ArYLAdDWIkw8m4wTw7JDRBk2JfswJ4AVtItF6djdKGTES53tqvy
+TlwTrqHmRC658073I6I3Bbgf0sjt8TP2LQ4UT08vBPkx9RTqhEPBCXqZ/msH5goe
+ioJzG9BQufR5VwAVK30AlbhLzLHDEc6AMIe6TuNHBYGDimANU+FdhhsaFiYI1zcD
+PliTboKVK/2Q5oFZisMkTXP4qBgYUv5sPfGpWaJVKy5ssGOasTbJUrzfPQycuBkW
+/tVB4t3znWIjEmSnN81ZtUWE9U1MB4FtYHg3mxg4aYoTBO4rurjMrGrfvwfO0Dgx
+OfT0oRiIiTCC1xwwSK+fhlCE3U1nhvXhvJ4nYw2TGmNwbxXyv5ubvJpeyzXXdMXi
+S2+0WZSLiS1b3t0MEpoXduEeNZmYDpxXvhp1GBN1Nv1FGMe6HolJ9VUBPabG54lr
+AzmO3ukoLuqDvGt6pAXo
+=flK3
 -----END PGP SIGNATURE-----
 
---nextPart20003297.eKOsgGU0Ko--
-
+--VaKJWhUROU/xPxjb--
