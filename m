@@ -1,13 +1,14 @@
-Return-Path: <antonio@meshcoding.com>
-Date: Tue, 24 Sep 2013 15:46:50 +0200
-From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <20130924134650.GP3911@neomailbox.net>
+Return-Path: <linus.luessing@web.de>
+Date: Tue, 24 Sep 2013 16:57:24 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20130924145723.GN18530@Linus-Debian>
 References: <1380030033-11533-1-git-send-email-linus.luessing@web.de>
+ <20130924134650.GP3911@neomailbox.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="51uid+Ur/3ko9cBW"
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <1380030033-11533-1-git-send-email-linus.luessing@web.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20130924134650.GP3911@neomailbox.net>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: introduce 'no_rebroadcast'
  option
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,59 +24,77 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-
---51uid+Ur/3ko9cBW
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Sep 24, 2013 at 03:40:33PM +0200, Linus L=C3=BCssing wrote:
->=20
-> Using this option wrongly will break your mesh network, use this option
-> wisely and at your own risk!
-
-Exactly for this reason (As we discussed on IRC) I think this mechanism sho=
-uld be
-reasoned a bit more. As I told you, it would be nice to have a self-activat=
-ing
-mechanism which is able to switch it on or off when really needed.
-
-The common network administrator will probably not have enough knowledge to
-understand when this is useful or when this is breaking things.
+Hi Antonio,
 
 
-Moreover, with this patch you are adding a userspace API that we won't be a=
-ble
-to remove anymore (!) and since the feature needs some more time before bei=
-ng
-mature I'd rather to suggest to avoid this.
+On Tue, Sep 24, 2013 at 03:46:50PM +0200, Antonio Quartulli wrote:
+> On Tue, Sep 24, 2013 at 03:40:33PM +0200, Linus Lüssing wrote:
+> > 
+> > Using this option wrongly will break your mesh network, use this option
+> > wisely and at your own risk!
+> 
+> Exactly for this reason (As we discussed on IRC) I think this mechanism should be
+> reasoned a bit more.
+
+Hm, my personal reason to want such a feature is included, the VPN
+example. And since I know that using batman-adv over VPNs is not
+uncommon, I'd love to have this feature upstream.
+
+I believe such a feature would be more commonly used than a
+non-default hop penalty for example, therefore I think it is
+suitable to be considered for upstream.
 
 
-Cheers,
+> As I told you, it would be nice to have a self-activating
+> mechanism which is able to switch it on or off when really needed.
 
---=20
-Antonio Quartulli
+I totally agree that a self-activating mechanism would be nice
+indeed. Maybe even with a self-adjusting number of rebroadcasts.
+But since that is all non-trivial I'm not going to work on
+such an automatic feature before my queued multicast patches and
+the ones to follow are upstream. I'd prefer not hopping between
+multiple feature patchsets again to spare everyone a déjà vu.
 
---51uid+Ur/3ko9cBW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+So since such an automatic feature is not going to be available
+upstream within the next one or two years at least, I guess,
+I don't see why the easy, manual option which could be added to
+a release relatively quickly, should be spared from the
+interested users.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
 
-iQIcBAEBCAAGBQJSQZfKAAoJEADl0hg6qKeOZIcP/1XNjccWfOvMuKy7u0YSEHjC
-mGuA7PbM4hQ3gdY4l6UaCbC7hyKrwu64In9IRwS05HUxMysid1okMv8q0MU23pFt
-mmUJ6+OEVxuqgBI/68dtPpQYeYira9ClVemqwajkkueY7MEastLzskLIP+oZslET
-8awe4xyFUX9VdHLwwe9qyEvsk0fFbcRQpgExlNdTm7kz6AiHycy3GmqmWXWUzWZC
-alavlrVjhlKTmYNg2DN9dStPsbUPyhcUBmo9kXOnF2epRr/G2p59/ZaChtUF5vgM
-Rxw39eTW7S0/Ltb7EWmqSmcdws3dxLVMV7Vg7wBGQX6Msn8mDPJNI5XpjAhQGPdq
-//MZCtaMyRE6+vJvkRcvgzmJNujUWOys+9l8CGxXl69ys2dE4Dj9tC3TrpliBdIq
-cXSNRTqWxDoXypP8JepUNgVZZLDRAXUc8z0QR+u/WGtePDelhO7bUAX7H4icQeY7
-bwyDvw9CetjbQIfG7FzzZhBp/U63ND9Ou4jGJcWDGXVB49neIlHqmsK0uUGiu7UJ
-MjhdQCNaiVNjZksvfrIWsEw9sUTF+S2tkIZFsXmvO4Wu5kkgCwwWuK3rxUTneMRD
-3iaRbbE4IrkXAKc2r3RjoPQ81Moy6+zF5PgSXb2KzuQnJGHy69/d54N/sxFSL1kO
-IvA8lrcDR45ubrAYqyvj
-=HqeD
------END PGP SIGNATURE-----
+> 
+> The common network administrator will probably not have enough knowledge to
+> understand when this is useful or when this is breaking things.
 
---51uid+Ur/3ko9cBW--
+That's why I added the extra warning at the end.
+
+
+> 
+> 
+> Moreover, with this patch you are adding a userspace API that we won't be able
+> to remove anymore (!)
+
+So we should have never added a hop-penalty sysfs option either?
+That one could have been automized, too.
+
+
+> and since the feature needs some more time before being
+> mature I'd rather to suggest to avoid this.
+
+I'm sorry, I currently fail to see in which regards this would
+need a considerable amount of time to mature. To me this option
+seems easy and straightforward, especially as other routing
+protocols like babel for instance have such a manual option
+available, too. If you have certain, specific maturity concerns,
+things I might have overlooked, I'd be happy if you could share
+them.
+
+
+> 
+> 
+> Cheers,
+> 
+> -- 
+> Antonio Quartulli
+
+Cheers, Linus
