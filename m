@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 24 Sep 2013 20:25:53 +0800
-Message-ID: <7713506.B9Eh2S0lu4@diderot>
-In-Reply-To: <1379874410-3354-1-git-send-email-antonio@meshcoding.com>
-References: <1379874410-3354-1-git-send-email-antonio@meshcoding.com>
+Date: Tue, 24 Sep 2013 20:28:41 +0800
+Message-ID: <1602969.NQcLbttgeq@diderot>
+In-Reply-To: <1379873908-1766-1-git-send-email-antonio@meshcoding.com>
+References: <1379873908-1766-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: no need for return in
-	void functions
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2 next] batman-adv: fix orig
+	capabilities numbering
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,21 +23,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-On Sunday 22 September 2013 20:26:50 Antonio Quartulli wrote:
-> Only network-coding.h is using "return;" inside void stub
-> functions. This is not a consistent with the rest of the code,
-> therefore don't continue to do as such.
-> (Other stub functions will be cleaned later)
+On Sunday 22 September 2013 20:18:27 Antonio Quartulli wrote:
+> Let's start the capabilities from bit 0.
 > 
-> Introduced by 7dd9d8992b0c197ba656a6d9a70966cea10fc2d9
-> ("batman-adv: tvlv - add network coding container")
+> Introduced by 2b1c07b918d2acc41555bbde9d538179acb308b4
+> ("batman-adv: tvlv - add distributed arp table container")
 > 
 > Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
->  network-coding.h | 1 -
->  1 file changed, 1 deletion(-)
+>  types.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision 96cebef.
+Applied in revision a5aa462.
 
 Thanks,
 Marek
