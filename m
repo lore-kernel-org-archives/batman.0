@@ -1,15 +1,14 @@
-Return-Path: <antonio@meshcoding.com>
-Date: Tue, 24 Sep 2013 20:47:57 +0200
-From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <20130924184753.GS3911@neomailbox.net>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Wed, 25 Sep 2013 17:47:04 +0800
+Message-ID: <1453554.8qxes47yMf@diderot>
+In-Reply-To: <1380048034-13103-1-git-send-email-sven@narfation.org>
 References: <1380048034-13103-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="7gQyIpR7q4QSXYu+"
-Content-Disposition: inline
-In-Reply-To: <1380048034-13103-1-git-send-email-sven@narfation.org>
+Content-Type: multipart/signed; boundary="nextPart1629429.cYu835TAeH";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Add documentation for IPv6
- translate feature
+	translate feature
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,53 +20,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
 
---7gQyIpR7q4QSXYu+
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--nextPart1629429.cYu835TAeH
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Tue, Sep 24, 2013 at 08:40:34PM +0200, Sven Eckelmann wrote:
+On Tuesday 24 September 2013 20:40:34 Sven Eckelmann wrote:
 > c760fb3c8029edf40657d283dc47af2fef9b3a6f ("batctl: Add support for IPv6 to
-> address resolver") added support for translating IPv6 addresses to mac ad=
-resses
-> but didn't update the documentation.
->=20
+> address resolver") added support for translating IPv6 addresses to mac
+> adresses but didn't update the documentation.
+> 
 > Reported-by: Antonio Quartulli <antonio@meshcoding.com>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  README       | 12 +++++++-----
+>  man/batctl.8 | 20 ++++++++++----------
+>  2 files changed, 17 insertions(+), 15 deletions(-)
 
-Great!
-Thanks a lot!
+Applied in revision b2eba82.
 
+Thanks,
+Marek
 
-Cheers,
-
---=20
-Antonio Quartulli
-
---7gQyIpR7q4QSXYu+
+--nextPart1629429.cYu835TAeH
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
+Version: GnuPG v2.0.21 (GNU/Linux)
 
-iQIcBAEBCAAGBQJSQd5dAAoJEADl0hg6qKeOTYsQALd7iV0RyC/vo5lFnnbLckwM
-RJBzp0FLKxUj+ZFkAoDGKyflLu2oS1P7dRPE5kO/hUKSrqtBdSqcroZRHnyIgXTr
-StbJZHKegSZm8d1ousmJBFqSLS15dESGLZ/VydzuelX1kygIfw/32eeCt7dOQDj5
-3HsmGjvhWOX6yM/Pf6Rvr1LxzoB2AUpKP05d0OhS1dyntmkSV5taWHSX42MMDjr2
-1PvTEzUlxCMl4vioO2KwQ9j9cx0M/ZvlFdrxInN+oRIUYdVq7hFoxLrKBLspZoK0
-fUDtPwbi3MFVfLjD4xzo33pd9pFhtG9+Ip7/bLhJbKcymx25QoD5zBN80vVgfc7V
-zj41jP8hEqCcNz779bdnZCrQoQRgJGuE1GMkd1EV0F8BtaWj0+2x1OKMTqQ2c8sc
-q0b/p/1Qi8shBQEXHJtcuLQsfZCCBBvd9OAfvv5+E4ONfHPESZf3IwrqxGdT1ver
-nRLcHKkmydjv0IR4He4KBsus/zHW4e4YhdEU5r5G6cxGIlSwqzSvCZxs4m2MxgUP
-t4KsL47SU1Nbe2Nqry1chm9aKc9rYhEfj6caMaV9Xi65Lb8VmTSXijFVO2DNIHOF
-1urbNlo/d7kLaJ3XDx12Ax4RgOLj/iV1BFZs390Cq2MV8si8XtDVlAPOkKZgWYb4
-ZfQBcxQw+CyzN6PnNGRf
-=nvAe
+iQEcBAABAgAGBQJSQrEYAAoJEFNVTo/uthzACcYIAKZE+9GUAc4macyUk/4gdn5+
++iOxF8VWYj6O/JoKGoVBypvHTwSWS5GlPALcC5YY6TANSjn6Cs1qHtaIQHmuRRNc
++AMPYyJ7YGxatyYVUhnIhVWmmRUsD8LBTVhNo+5CmJdKg7+2QEGDq/q/NlBmGr0q
+JxYVKK2EwZs+o67wNKgIgwLduQC3/yFojEFzRSdM66oNhshLjGVmLAiavIOWbWvy
+icD6Q8hFAY8OMYYJdWHf+si37PkWQtwTnWS99/choIs3ArifqOWlQIIGVUK3bWNq
+Zp6Mdzeyetr3gE13iugq27DEN7aeDR1qJ6l6sWthmWDYa6tY7PPeAiIF8rxU7Ng=
+=eTpu
 -----END PGP SIGNATURE-----
 
---7gQyIpR7q4QSXYu+--
+--nextPart1629429.cYu835TAeH--
+
