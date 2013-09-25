@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 25 Sep 2013 22:53:41 +0800
-Message-ID: <43132642.fX8QJAUdHI@diderot>
-In-Reply-To: <1379759294-1481-1-git-send-email-antonio@meshcoding.com>
-References: <1379759294-1481-1-git-send-email-antonio@meshcoding.com>
+Date: Wed, 25 Sep 2013 23:03:48 +0800
+Message-ID: <1680806.MqrY0WE4J8@diderot>
+In-Reply-To: <20130924145723.GN18530@Linus-Debian>
+References: <1380030033-11533-1-git-send-email-linus.luessing@web.de>
+ <20130924134650.GP3911@neomailbox.net> <20130924145723.GN18530@Linus-Debian>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1800899.zqr9KzdqEa";
+Content-Type: multipart/signed; boundary="nextPart1684891.YT7NJCyhcq";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix DAT candidate
-	selection (must use vid)
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: introduce 'no_rebroadcast'
+	option
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,43 +24,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart1800899.zqr9KzdqEa
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart1684891.YT7NJCyhcq
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Saturday 21 September 2013 12:28:14 Antonio Quartulli wrote:
-> diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-> index 6c8c393..d4b3940 100644
-> --- a/distributed-arp-table.c
-> +++ b/distributed-arp-table.c
-> @@ -530,11 +530,13 @@ static void batadv_choose_next_candidate(struct
-> batadv_priv *bat_priv, * Returns the candidate array of size
-> BATADV_DAT_CANDIDATE_NUM.
->   */
->  static struct batadv_dat_candidate *
-> -batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst)
-> +batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst,
-> +			     unsigned short vid)
->  {
+On Tuesday 24 September 2013 16:57:24 Linus L=FCssing wrote:
+> On Tue, Sep 24, 2013 at 03:46:50PM +0200, Antonio Quartulli wrote:
+> > On Tue, Sep 24, 2013 at 03:40:33PM +0200, Linus L=FCssing wrote:
+> > >=20
+> > >
+> > > Using this option wrongly will break your mesh network, use this =
+option
+> > > wisely and at your own risk!
+> >
+> >=20
+> >
+> > Exactly for this reason (As we discussed on IRC) I think this mecha=
+nism
+> > should be reasoned a bit more.
+>=20
+> Hm, my personal reason to want such a feature is included, the VPN
+> example. And since I know that using batman-adv over VPNs is not
+> uncommon, I'd love to have this feature upstream.
 
-Kernel doc ?
+Admittedly, I haven't followed the entire discussion but what speaks ag=
+ainst=20
+setting the rebroadcast count define for non-wireless to 0 ? Matthias (=
+if I am=20
+not mistaken) provided a patch for the wireless / non-wireless distinct=
+ion not=20
+too long ago.=20
+Seems way easier as we are looking for a quick and temporary solution ?=
 
-
->  	batadv_dbg(BATADV_DBG_DAT, bat_priv,
-> @@ -572,7 +577,7 @@ batadv_dat_select_candidates(struct batadv_priv
-> *bat_priv, __be32 ip_dst) */
->  static bool batadv_dat_send_data(struct batadv_priv *bat_priv,
->  				 struct sk_buff *skb, __be32 ip,
-> -				 int packet_subtype)
-> +				 unsigned short vid, int packet_subtype)
->  {
-
-Kernel doc ?
 
 Cheers,
 Marek
 
---nextPart1800899.zqr9KzdqEa
+--nextPart1684891.YT7NJCyhcq
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -67,14 +68,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.21 (GNU/Linux)
 
-iQEcBAABAgAGBQJSQvj1AAoJEFNVTo/uthzAAj0IAKBVNVM1aT5z8VapNwT4dvWs
-FJXTBaOjygKfDot5jAgm748ELoW8D8Sfxk44BTTwjqIrdNDobGYGLBfn08TnoveP
-Fmp9G228oXVEX5CgAJvIG+H33ZL5E02gtwNTOzj8YiRJ9jImXzdAgoO2NeloF3Xm
-4upJPSseQvyVQNNTXA8aKILzmGSZtTbopng9fUD8P2MfAr12LIlliJwDds+OwHYP
-I39xnqS9w98W8SsfXZIOgXNA85hC3KxDM78Og1D8tawHhb7mH7HGelcDLFNqp9CA
-OJAslWkVACMj40/16C9VItuzVGxtYUFxs4FYY/cZuZQGQhJCLhbNaDFBMM7kxMA=
-=IMXE
+iQEcBAABAgAGBQJSQvtYAAoJEFNVTo/uthzAwXwH/3bsAze41wO7zUxbUFd+QkD3
+p0U+HQwFaMixTFXwp/MuIJmkAS9rU4OuAHrEBpY1QJVkwzC8B/CuxA1T0WqSZ+X5
+YAGo4ZTY+ChD0mXM5Kiirnu6ddKYVBdfkkd+Fb0+1LvrKaXzUqKsfiIEkBdJDtpt
+AvCQ7a05zEfdbao9FaBAwB+X1gHWusjFCbH27JnfbRGEpxN8+8yUrh/pXrMYwdVT
+jfELz9qN4dOXmZiepAXPs/MDnGfULlE9cTNAsrZulFG+EXTuaDD8EY0VhHkXSNYT
+weg77O97csFO2quqacN1OdKa+vADYb9YMbzlihJ/5ucwe2iuEtNJnfe3uSHgByM=
+=qnuB
 -----END PGP SIGNATURE-----
 
---nextPart1800899.zqr9KzdqEa--
+--nextPart1684891.YT7NJCyhcq--
 
