@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 25 Sep 2013 17:47:04 +0800
-Message-ID: <1453554.8qxes47yMf@diderot>
-In-Reply-To: <1380048034-13103-1-git-send-email-sven@narfation.org>
-References: <1380048034-13103-1-git-send-email-sven@narfation.org>
+Date: Wed, 25 Sep 2013 22:08:55 +0800
+Message-ID: <5851825.cAHVtlsesn@diderot>
+In-Reply-To: <1379857507-3878-1-git-send-email-antonio@meshcoding.com>
+References: <1379857507-3878-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1629429.cYu835TAeH";
+Content-Type: multipart/signed; boundary="nextPart3654973.WcVWGFVJZ7";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Add documentation for IPv6
-	translate feature
+Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: remove accidentally
+	re-introduced unicast.c file
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,31 +21,32 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart1629429.cYu835TAeH
+--nextPart3654973.WcVWGFVJZ7
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday 24 September 2013 20:40:34 Sven Eckelmann wrote:
-> c760fb3c8029edf40657d283dc47af2fef9b3a6f ("batctl: Add support for IPv6 to
-> address resolver") added support for translating IPv6 addresses to mac
-> adresses but didn't update the documentation.
+On Sunday 22 September 2013 15:45:07 Antonio Quartulli wrote:
+> During the Fragmentation redesign the unicast.c file has
+> been removed, but it seems that it has been accidentally
+> re-introduced during a merge operation.
+> Remove it again.
 > 
-> Reported-by: Antonio Quartulli <antonio@meshcoding.com>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
->  README       | 12 +++++++-----
->  man/batctl.8 | 20 ++++++++++----------
->  2 files changed, 17 insertions(+), 15 deletions(-)
+>  unicast.c | 491
+> -------------------------------------------------------------- 1 file
+> changed, 491 deletions(-)
+>  delete mode 100644 unicast.c
 
-Applied in revision b2eba82.
+Applied in revision 4e1f729.
 
 Thanks,
 Marek
 
---nextPart1629429.cYu835TAeH
+--nextPart3654973.WcVWGFVJZ7
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +54,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.21 (GNU/Linux)
 
-iQEcBAABAgAGBQJSQrEYAAoJEFNVTo/uthzACcYIAKZE+9GUAc4macyUk/4gdn5+
-+iOxF8VWYj6O/JoKGoVBypvHTwSWS5GlPALcC5YY6TANSjn6Cs1qHtaIQHmuRRNc
-+AMPYyJ7YGxatyYVUhnIhVWmmRUsD8LBTVhNo+5CmJdKg7+2QEGDq/q/NlBmGr0q
-JxYVKK2EwZs+o67wNKgIgwLduQC3/yFojEFzRSdM66oNhshLjGVmLAiavIOWbWvy
-icD6Q8hFAY8OMYYJdWHf+si37PkWQtwTnWS99/choIs3ArifqOWlQIIGVUK3bWNq
-Zp6Mdzeyetr3gE13iugq27DEN7aeDR1qJ6l6sWthmWDYa6tY7PPeAiIF8rxU7Ng=
-=eTpu
+iQEcBAABAgAGBQJSQu6EAAoJEFNVTo/uthzAho0H+gO1M4A1gs+ACTO9/tlBZQi6
+gXvqdrUBJ18VwQ5T2tMeIWYy3qOLnB78G/y5qtwTQR1TGqoIacrtkoJyd0IClRcP
+O0MX3+Xq1KOAHiASWvEaKKpDtcL3uAMTGfp+V4joan7MZU5dsVP4WR4dyI0hpFBw
+HAQI5a7aUfepQHSaeEEwq0o6gCQWHmeHoNZQOEpf7Wz0TcWOP3HtN/9x033hnDs7
+RRSm3kfdtKzT3iIpC5e4ABgBx00/2AuGnSnkTHNBUYpTBiFiBnNXGCCDQVo6fgJ9
+OGIFZbVBLBaGaIRRTkOahYEKead0ciTFvvkAA7UfIbxcxHDCD8dAmCTMc95X26E=
+=U02N
 -----END PGP SIGNATURE-----
 
---nextPart1629429.cYu835TAeH--
+--nextPart3654973.WcVWGFVJZ7--
 
