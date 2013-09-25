@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 25 Sep 2013 22:08:55 +0800
-Message-ID: <5851825.cAHVtlsesn@diderot>
-In-Reply-To: <1379857507-3878-1-git-send-email-antonio@meshcoding.com>
-References: <1379857507-3878-1-git-send-email-antonio@meshcoding.com>
+Date: Wed, 25 Sep 2013 22:49:54 +0800
+Message-ID: <6575869.FX9F3cA1N1@diderot>
+In-Reply-To: <1379775907-19199-1-git-send-email-marco.dallato@gmail.com>
+References: <1379775907-19199-1-git-send-email-marco.dallato@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3654973.WcVWGFVJZ7";
+Content-Type: multipart/signed; boundary="nextPart3489020.fGMBEBrdBB";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: remove accidentally
-	re-introduced unicast.c file
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batctl tcpdump: Fix reported
+	length of TCP payload
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,32 +21,29 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart3654973.WcVWGFVJZ7
+--nextPart3489020.fGMBEBrdBB
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday 22 September 2013 15:45:07 Antonio Quartulli wrote:
-> During the Fragmentation redesign the unicast.c file has
-> been removed, but it seems that it has been accidentally
-> re-introduced during a merge operation.
-> Remove it again.
+On Saturday 21 September 2013 17:05:07 Marco Dalla Torre wrote:
+> Fixes the erratic report of TCP payload length in 'batctl tcpdump'.
+> Previously TCP header length size was considered fixed, while
+> this is actually not the case given the variable length (or no
+> presence at all) of the options field.
 > 
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> Signed-off-by: Marco Dalla Torre <marco.dallato@gmail.com>
 > ---
->  unicast.c | 491
-> -------------------------------------------------------------- 1 file
-> changed, 491 deletions(-)
->  delete mode 100644 unicast.c
+>  tcpdump.c | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
 
-Applied in revision 4e1f729.
+Applied in revision e374a3f.
 
 Thanks,
 Marek
 
---nextPart3654973.WcVWGFVJZ7
+--nextPart3489020.fGMBEBrdBB
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -54,14 +51,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.21 (GNU/Linux)
 
-iQEcBAABAgAGBQJSQu6EAAoJEFNVTo/uthzAho0H+gO1M4A1gs+ACTO9/tlBZQi6
-gXvqdrUBJ18VwQ5T2tMeIWYy3qOLnB78G/y5qtwTQR1TGqoIacrtkoJyd0IClRcP
-O0MX3+Xq1KOAHiASWvEaKKpDtcL3uAMTGfp+V4joan7MZU5dsVP4WR4dyI0hpFBw
-HAQI5a7aUfepQHSaeEEwq0o6gCQWHmeHoNZQOEpf7Wz0TcWOP3HtN/9x033hnDs7
-RRSm3kfdtKzT3iIpC5e4ABgBx00/2AuGnSnkTHNBUYpTBiFiBnNXGCCDQVo6fgJ9
-OGIFZbVBLBaGaIRRTkOahYEKead0ciTFvvkAA7UfIbxcxHDCD8dAmCTMc95X26E=
-=U02N
+iQEcBAABAgAGBQJSQvgWAAoJEFNVTo/uthzAwKsIAJdqs5mbcoUGdXR4uIMtO+cH
+Tr0u93xehU3rcK2LA389Royd8cQS8JeP+aYadySOUMdMpC5wCoudc9Ct3fAAuWb8
+7WSR5e89svHxAA9wTQ2UoAOz+Atxt+Cov9FGorB9SIveWope6Qp3Hku9GAlggc9e
+VqfVnwPxseiN2t2Pf8XJO4GJSqpS6x5pqnL83gXT5yn9GA32mSaWsY8dX8ksGkDW
+JHV2qyYCxR+0j13tNMjkU12ID5AXxdRYnOwOkiXshp3z3RnQUYh5ps+XYMJrGqT0
+KiUvfAWhxkXusKgrZx3X/SdgT9DccvGwyKA1GPUna+cXLaeHbBGJiIV5CRYWqLs=
+=MvuS
 -----END PGP SIGNATURE-----
 
---nextPart3654973.WcVWGFVJZ7--
+--nextPart3489020.fGMBEBrdBB--
 
