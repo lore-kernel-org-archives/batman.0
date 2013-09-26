@@ -1,15 +1,9 @@
-Return-Path: <antonio@meshcoding.com>
-Date: Wed, 25 Sep 2013 22:18:32 +0200
-From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <20130925201832.GW3911@neomailbox.net>
-References: <1378312060-30922-1-git-send-email-siwu@hrz.tu-chemnitz.de>
- <1378312060-30922-5-git-send-email-siwu@hrz.tu-chemnitz.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="gvPGo+RAdjC9O5ul"
-Content-Disposition: inline
-In-Reply-To: <1378312060-30922-5-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] [RFCv2 4/6] batman-adv: add WiFi penalty
+Return-Path: <mschiffer@universe-factory.net>
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+Date: Thu, 26 Sep 2013 09:49:18 +0200
+Message-Id: <de510a1e7cb175c854734fa07c347f18ac697446.1380181735.git.mschiffer@universe-factory.net>
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: set network coding packet
+	handlers in batadv_recv_handler_init()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,109 +15,103 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Simon Wunderlich <simon@open-mesh.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+Registering and unregistering the packet handlers on softif creation and
+destruction is obviously broken when multiple softif are used (and causes the
+second softif creation to fail). Instead, just set the network coding handlers
+in the __init function (like all other handlers).
 
---gvPGo+RAdjC9O5ul
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+---
+ main.c           |  2 ++
+ network-coding.c | 12 ++----------
+ network-coding.h |  8 ++++++++
+ 3 files changed, 12 insertions(+), 10 deletions(-)
 
-On Wed, Sep 04, 2013 at 06:27:38PM +0200, Simon Wunderlich wrote:
-> diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-> index d32b2f2..efddadf 100644
-> --- a/bat_iv_ogm.c
-> +++ b/bat_iv_ogm.c
-> @@ -1085,6 +1085,7 @@ static int batadv_iv_ogm_calc_tq(struct batadv_orig=
-_node *orig_node,
->  	uint8_t orig_eq_count, neigh_rq_count, neigh_rq_inv, tq_own;
->  	unsigned int neigh_rq_inv_cube, neigh_rq_max_cube;
->  	int tq_asym_penalty, inv_asym_penalty, if_num, ret =3D 0;
-> +	int tq_iface_penalty;
->  	unsigned int combined_tq;
+diff --git a/main.c b/main.c
+index 08125f3..87ef89a 100644
+--- a/main.c
++++ b/main.c
+@@ -349,6 +349,8 @@ static void batadv_recv_handler_init(void)
+ 	batadv_rx_handler[BATADV_TT_QUERY] = batadv_recv_tt_query;
+ 	/* Roaming advertisement */
+ 	batadv_rx_handler[BATADV_ROAM_ADV] = batadv_recv_roam_adv;
++	/* network coding */
++	batadv_rx_handler[BATADV_CODED] = batadv_nc_recv_coded_packet;
+ }
+ 
+ int
+diff --git a/network-coding.c b/network-coding.c
+index a487d46..6f392fd 100644
+--- a/network-coding.c
++++ b/network-coding.c
+@@ -31,8 +31,6 @@ static struct lock_class_key batadv_nc_coding_hash_lock_class_key;
+ static struct lock_class_key batadv_nc_decoding_hash_lock_class_key;
+ 
+ static void batadv_nc_worker(struct work_struct *work);
+-static int batadv_nc_recv_coded_packet(struct sk_buff *skb,
+-				       struct batadv_hard_iface *recv_if);
+ 
+ /**
+  * batadv_nc_start_timer - initialise the nc periodic worker
+@@ -70,11 +68,6 @@ int batadv_nc_init(struct batadv_priv *bat_priv)
+ 	batadv_hash_set_lock_class(bat_priv->nc.coding_hash,
+ 				   &batadv_nc_decoding_hash_lock_class_key);
+ 
+-	/* Register our packet type */
+-	if (batadv_recv_handler_register(BATADV_CODED,
+-					 batadv_nc_recv_coded_packet) < 0)
+-		goto err;
+-
+ 	INIT_DELAYED_WORK(&bat_priv->nc.work, batadv_nc_worker);
+ 	batadv_nc_start_timer(bat_priv);
+ 
+@@ -1657,8 +1650,8 @@ batadv_nc_find_decoding_packet(struct batadv_priv *bat_priv,
+  * @skb: incoming coded packet
+  * @recv_if: pointer to interface this packet was received on
+  */
+-static int batadv_nc_recv_coded_packet(struct sk_buff *skb,
+-				       struct batadv_hard_iface *recv_if)
++int batadv_nc_recv_coded_packet(struct sk_buff *skb,
++				struct batadv_hard_iface *recv_if)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(recv_if->soft_iface);
+ 	struct batadv_unicast_packet *unicast_packet;
+@@ -1726,7 +1719,6 @@ free_nc_packet:
+  */
+ void batadv_nc_free(struct batadv_priv *bat_priv)
+ {
+-	batadv_recv_handler_unregister(BATADV_CODED);
+ 	cancel_delayed_work_sync(&bat_priv->nc.work);
+ 
+ 	batadv_nc_purge_paths(bat_priv, bat_priv->nc.coding_hash, NULL);
+diff --git a/network-coding.h b/network-coding.h
+index 85a4ec8..f00cd4d 100644
+--- a/network-coding.h
++++ b/network-coding.h
+@@ -35,6 +35,8 @@ void batadv_nc_purge_orig(struct batadv_priv *bat_priv,
+ 					   struct batadv_nc_node *));
+ void batadv_nc_init_bat_priv(struct batadv_priv *bat_priv);
+ void batadv_nc_init_orig(struct batadv_orig_node *orig_node);
++int batadv_nc_recv_coded_packet(struct sk_buff *skb,
++				struct batadv_hard_iface *recv_if);
+ bool batadv_nc_skb_forward(struct sk_buff *skb,
+ 			   struct batadv_neigh_node *neigh_node);
+ void batadv_nc_skb_store_for_decoding(struct batadv_priv *bat_priv,
+@@ -85,6 +87,12 @@ static inline void batadv_nc_init_orig(struct batadv_orig_node *orig_node)
+ 	return;
+ }
+ 
++static inline int batadv_nc_recv_coded_packet(struct sk_buff *skb,
++					      struct batadv_hard_iface *recv_if)
++{
++	return NET_RX_DROP;
++}
++
+ static inline bool batadv_nc_skb_forward(struct sk_buff *skb,
+ 					 struct batadv_neigh_node *neigh_node)
+ {
+-- 
+1.8.4
 
-please, add the new variable at the end (line length sorting).
-
-> =20
->  	/* find corresponding one hop neighbor */
-> @@ -1169,15 +1170,33 @@ static int batadv_iv_ogm_calc_tq(struct batadv_or=
-ig_node *orig_node,
->  	inv_asym_penalty /=3D neigh_rq_max_cube;
->  	tq_asym_penalty =3D BATADV_TQ_MAX_VALUE - inv_asym_penalty;
-> =20
-> -	combined_tq =3D batadv_ogm_packet->tq * tq_own * tq_asym_penalty;
-> -	combined_tq /=3D BATADV_TQ_MAX_VALUE * BATADV_TQ_MAX_VALUE;
-> +	/* penalize if the OGM is forwarded on the same interface. WiFi
-> +	 * interfaces and other half duplex devices suffer from throughput
-> +	 * drops as they can't send and receive at the same time.
-> +	 */
-> +	tq_iface_penalty =3D BATADV_TQ_MAX_VALUE;
-> +	if (if_outgoing && (if_incoming =3D=3D if_outgoing) &&
-> +	    batadv_is_wifi_netdev(if_outgoing->net_dev))
-> +		tq_iface_penalty =3D batadv_hop_penalty(BATADV_TQ_MAX_VALUE,
-> +						      bat_priv);
-> +
-> +	combined_tq =3D batadv_ogm_packet->tq *
-> +		      tq_own *
-> +		      tq_asym_penalty *
-> +		      tq_iface_penalty;
-> +	combined_tq /=3D BATADV_TQ_MAX_VALUE *
-> +		       BATADV_TQ_MAX_VALUE *
-> +		       BATADV_TQ_MAX_VALUE;
-
-Mh..I am not sure about the style of these assignments...but we can live wi=
-th
-those for now.
-
->  	batadv_ogm_packet->tq =3D combined_tq;
-> =20
->  	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-> -		   "bidirectional: orig =3D %-15pM neigh =3D %-15pM =3D> own_bcast =3D=
- %2i, real recv =3D %2i, local tq: %3i, asym_penalty: %3i, total tq: %3i\n",
-> +		   "bidirectional: orig =3D %-15pM neigh =3D %-15pM =3D> own_bcast =3D=
- %2i, real recv =3D %2i, local tq: %3i, asym_penalty: %3i, iface_penalty: %=
-3i, total tq: %3i, if_incoming =3D %s, if_outgoing =3D %s\n",
->  		   orig_node->orig, orig_neigh_node->orig, total_count,
->  		   neigh_rq_count, tq_own,
-> -		   tq_asym_penalty, batadv_ogm_packet->tq);
-> +		   tq_asym_penalty, tq_iface_penalty,
-> +		   batadv_ogm_packet->tq,
-
-this one can go on the line above..
-
-> +		   if_incoming ? if_incoming->net_dev->name : "NULL",
-> +		   if_outgoing ? if_outgoing->net_dev->name : "NULL");
-> =20
->  	/* if link has the minimum required transmission quality
->  	 * consider it bidirectional
-
-Cheers,
-
-
---=20
-Antonio Quartulli
-
---gvPGo+RAdjC9O5ul
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSQ0UYAAoJEADl0hg6qKeOwnQQALWDjwrsBX7eN5M5lssYQ5Tt
-ME3Lp3H26y0Jgk+91lDKsxZ7Q2Zo2BMjfEJ//gifo3PNYcEoVQgJgLqx4mxA1LS9
-EntPe2AXwsqK6RHMJHlB254Cp/qTAjy38mHK3YoIZHsOoZlds5iBbGyyA+4aSqHi
-PxvLDG36zIjRbttHVXzFWvkxpc/hNSW6/wpKCvnLi8uyOaGBTrwiMN/OyhDicslA
-1a5fZm6Lhu7SLtDrrYXn9W7vjtEUHCTYJN7klKYI5UYw2WKHkvVXy5um/WT934TR
-6/Kr6YftotZQjdHYxwMrpavyLYW3Wg/YFnjDis9P1FPrWPwBJndB/6jup/ckrXxw
-L7jt9yin28ljcFnG/KJ9VayQrZOgIrhsCjdFlic2uevOGnBHeXX5LrvfrblLeZI6
-Rao82Y5GtcflL0znUmvuBeOxHWBbrhI3QsW1c/GTKPidRs4kXfKmdE2QjsmsJBKm
-XF3fPeOrpAVsxk521Eu2I/8Wco3CYrTcK+B6w7d7Jk52zMPoG2JQtKTP+K3Nk2vG
-cgZ6Xc4BZ+lyrxNu4qWcTI3Ck1aW0qgzlZFibeiUVrNMKAb6lzyqvHsSVduwfUZc
-BVuEHAhvKezeAuFCyf+1k+aoRCosWVG9i5NVvOLQ+qxH0RRCWOwTe5OKzjukci2O
-WoAQMeazPOp6xx4iYHoY
-=W42h
------END PGP SIGNATURE-----
-
---gvPGo+RAdjC9O5ul--
