@@ -1,9 +1,11 @@
 Return-Path: <mschiffer@universe-factory.net>
 From: Matthias Schiffer <mschiffer@universe-factory.net>
-Date: Thu, 26 Sep 2013 09:49:18 +0200
-Message-Id: <de510a1e7cb175c854734fa07c347f18ac697446.1380181735.git.mschiffer@universe-factory.net>
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: set network coding packet
-	handlers in batadv_recv_handler_init()
+Date: Thu, 26 Sep 2013 10:29:49 +0200
+Message-Id: <0b55d834953625e28eb8c77b96c08cc0f13448dd.1380184164.git.mschiffer@universe-factory.net>
+In-Reply-To: <de510a1e7cb175c854734fa07c347f18ac697446.1380181735.git.mschiffer@universe-factory.net>
+References: <de510a1e7cb175c854734fa07c347f18ac697446.1380181735.git.mschiffer@universe-factory.net>
+Subject: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: set network coding
+	packet handlers in batadv_recv_handler_init()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,13 +19,21 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Registering and unregistering the packet handlers on softif creation and
-destruction is obviously broken when multiple softif are used (and causes the
-second softif creation to fail). Instead, just set the network coding handlers
-in the __init function (like all other handlers).
+batman-adv saves its table of packet handlers as a global state, so handlers
+must be set up only once (and setting them up a second time will fail).
+
+The recently-added network coding support tries to set up its handler each time
+a new softif is registered, which obviously fails when more that one softif is
+used (and in consequence, the softif creation fails).
+
+Fix this by moving the handler setup to batadv_recv_handler_init(), which is
+called by batman-adv's __init function (and where most other packet handlers are
+set up).
 
 Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
 ---
+v2: refined commit message
+
  main.c           |  2 ++
  network-coding.c | 12 ++----------
  network-coding.h |  8 ++++++++
