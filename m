@@ -1,15 +1,15 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 30 Sep 2013 21:04:21 +0800
-Message-ID: <2191431.IgCfgzuJ3T@diderot>
-In-Reply-To: <e1d5e2f6144c8c36bf80e6f1a6ffc7a4d4c22544.1380297720.git.mschiffer@universe-factory.net>
-References: <2446824.BO6cEXVXT6@diderot>
- <e1d5e2f6144c8c36bf80e6f1a6ffc7a4d4c22544.1380297720.git.mschiffer@universe-factory.net>
+Return-Path: <linus.luessing@web.de>
+Date: Mon, 30 Sep 2013 22:06:49 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20130930200649.GD7002@Linus-Debian>
+References: <1373242365-763-1-git-send-email-mihail.costea2005@gmail.com>
+ <1373242365-763-5-git-send-email-mihail.costea2005@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3838411.rEeasRRrhQ";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 maint] batman-adv: set up network
-	coding packet handlers during module init
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1373242365-763-5-git-send-email-mihail.costea2005@gmail.com>
+Subject: Re: [B.A.T.M.A.N.] [RFC 5/6] batman-adv: Generalize snooping
+ mechanism in order to suport NDP too
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,56 +21,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: mihail.costea2005@gmail.com
 
+Hi Mihail,
 
---nextPart3838411.rEeasRRrhQ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+On Mon, Jul 08, 2013 at 03:12:44AM +0300, mihail.costea2005@gmail.com wrote:
+> From: Mihail Costea <mihail.costea90@gmail.com>
+>  /**
+> - * batadv_dat_snoop_outgoing_pkt_reply - snoop the ARP reply and fill the DHT
+> + * batadv_dat_snoop_outgoing_pkt_reply - snoop the ARP reply / NA and fill
+> + * the DHT
+>   * @bat_priv: the bat priv with all the soft interface information
+>   * @skb: packet to check
+>   */
+>  void batadv_dat_snoop_outgoing_pkt_reply(struct batadv_priv *bat_priv,
+>  					 struct sk_buff *skb)
+>  {
+--- snip ---
+> +	/* not a solicited advertisement (see snooping mechanism) */
+> +	if (ip_dst) {
+> +		batadv_dat_entry_add(bat_priv, ip_dst, dat_pair_type.data_type,
+> +				     hw_dst, vid);
+> +		batadv_dat_send_data(bat_priv, skb, ip_dst,
+> +				     dat_pair_type.data_type,
+> +				     BATADV_P_DAT_DHT_PUT);
+> +	}
+>  }
 
-On Friday 27 September 2013 18:03:39 Matthias Schiffer wrote:
-> batman-adv saves its table of packet handlers as a global state, so handlers
-> must be set up only once (and setting them up a second time will fail).
-> 
-> The recently-added network coding support tries to set up its handler each
-> time a new softif is registered, which obviously fails when more that one
-> softif is used (and in consequence, the softif creation fails).
-> 
-> Fix this by splitting up batadv_nc_init into batadv_nc_init (which is called
-> only once) and batadv_nc_mesh_init (which is called for each softif); in
-> addition batadv_nc_free is renamed to batadv_nc_mesh_free to keep naming
-> consistent.
-> 
-> Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-> ---
-> v3: moved things around as Marek suggested
-> 
->  main.c           |  5 +++--
->  network-coding.c | 28 ++++++++++++++++++----------
->  network-coding.h | 14 ++++++++++----
->  3 files changed, 31 insertions(+), 16 deletions(-)
+I'm currently wondering about the unsolicited neighbor
+advertisement case. So far, your concept/patchset does not seem
+to apply any optimizations for those packets, does it? They are
+still flooded unconditionally, right?
 
-Applied in revision 586cf84.
+What do you think, would it make sense to prevent unsolicited
+neighbor advertisements from being forwarded into the mesh
+network? Or would that create certain issues?
 
-Thanks,
-Marek
-
---nextPart3838411.rEeasRRrhQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.21 (GNU/Linux)
-
-iQEcBAABAgAGBQJSSXbZAAoJEFNVTo/uthzArHYIAKZIZP1n0P22mJ/QW3s69PDA
-82uBJnIfBweMDQo3AcRYy8z6LcZSL04KU7sjtxulXLVcvZHTK0FV8jBLGXJ3GFGU
-YSE+gP8V5fiVCfHaPnPuqKjaQK6LRLplseRTFt4vHYAzd2hzDKXi+/x6PrLeQPM6
-RZxFIrhD122qS1OJL3soP1wvgP51CeaP2isWyIp2gQw2khl1La/r8UKopzdR82jW
-xLTTjSQMRXLV4hI3rGXlNxQxvlO2BT+Mx8zksNSF+anZqD8NdyDwhTSr4XZFJx4E
-lUxgIuU0rUJ0p/IpGKcLPLWTQAscbrlp3v91QKNqtaJmXE+ocYKxnzoPnPXZP9Y=
-=pItT
------END PGP SIGNATURE-----
-
---nextPart3838411.rEeasRRrhQ--
-
+Cheers, Linus
