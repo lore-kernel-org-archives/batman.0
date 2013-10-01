@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@open-mesh.com>
-Date: Tue,  1 Oct 2013 14:02:13 +0200
-Message-Id: <1380628934-22220-6-git-send-email-sven@open-mesh.com>
+Date: Tue,  1 Oct 2013 14:02:14 +0200
+Message-Id: <1380628934-22220-7-git-send-email-sven@open-mesh.com>
 In-Reply-To: <1380628934-22220-1-git-send-email-sven@open-mesh.com>
 References: <1380628934-22220-1-git-send-email-sven@open-mesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH 5/6] alfred: Try to reinitialize invalid
-	netsock
+Subject: [B.A.T.M.A.N.] [PATCH 6/6] alfred: Remove unused check for device
+	MTU
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,29 +20,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@open-mesh.com>
 
-Alfred needs to recover when the netsock became invalid. Otherwise it is
-incapable of communicating with other alfred instances. This recovery can fail
-until the used interface reappeared.
-
 Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
 ---
- server.c | 3 +++
- 1 file changed, 3 insertions(+)
+ netsock.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/server.c b/server.c
-index bc3b551..ed04f70 100644
---- a/server.c
-+++ b/server.c
-@@ -246,6 +246,9 @@ int alfred_server(struct globals *globals)
- 			tv.tv_nsec = 0;
- 		}
+diff --git a/netsock.c b/netsock.c
+index bed62e9..dc57b3c 100644
+--- a/netsock.c
++++ b/netsock.c
+@@ -80,11 +80,6 @@ int netsock_open(struct globals *globals)
+ 	memcpy(&globals->hwaddr, &ifr.ifr_hwaddr.sa_data, 6);
+ 	mac_to_ipv6(&globals->hwaddr, &globals->address);
  
-+		if (globals->netsock < 0)
-+			netsock_open(globals);
-+
- 		maxsock = -1;
- 		if (globals->netsock > maxsock)
- 			maxsock = globals->netsock;
+-	if (ioctl(sock, SIOCGIFMTU, &ifr) == -1) {
+-		fprintf(stderr, "can't get MTU: %s\n", strerror(errno));
+-		goto err;
+-	}
+-
+ 	if (bind(sock, (struct sockaddr *)&sin6, sizeof(sin6)) < 0) {
+ 		fprintf(stderr, "can't bind\n");
+ 		goto err;
 -- 
 1.8.4.rc3
 
