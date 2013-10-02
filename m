@@ -1,17 +1,8 @@
-Return-Path: <andrew@lunn.ch>
-Date: Wed, 2 Oct 2013 18:47:54 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20131002164754.GE16339@lunn.ch>
-References: <1380659032-14488-1-git-send-email-andrew@lunn.ch>
- <1380659032-14488-2-git-send-email-andrew@lunn.ch>
- <20131002131915.GB24077@pandem0nium>
- <2038458.nCDZnQrXiI@sven-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2038458.nCDZnQrXiI@sven-desktop>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv1] alfred: Add support for passing
- location information over alfred.
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Wed,  2 Oct 2013 22:03:20 +0200
+Message-Id: <1380744201-2074-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] pull request net: 2013-10-02
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,26 +14,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: "Janne.Paatero@ruag.com" <Janne.Paatero@ruag.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Wed, Oct 02, 2013 at 06:34:15PM +0200, Sven Eckelmann wrote:
-> On Wednesday 02 October 2013 06:19:15 Simon Wunderlich wrote:
-> > > +# alfred build
-> > > +BINARY_NAME = alfred-gpsd
-> > > +OBJ = alfred-gpsd.o
-> > > +
-> > > +# alfred flags and options
-> > > +CFLAGS += -pedantic -Wall -W -std=gnu99 -fno-strict-aliasing -MD -MP
-> > > +LDLIBS += -lgps
-> > 
-> > I have no idea if we need some special handling for this to let it work
-> > for crosscompiling, OpenWRT etc?
-> 
-> Please use pkg-config for things like this. An example Makefile is attached.
+Hello David,
 
-Hi Sven
+this is a "one-change" pull request intended for net/linux-3.{12,11,10}.
 
-Thanks for the Makefile. Works on my Debian system.
+This patch from Matthias Schiffer is fixing the init routine of the Network
+Coding component by preventing it from registering the handler for the CODED
+packet type each time a new soft-interface is created.
 
-       Andrew
+Without this fix a second soft-interface cannot be created unless the Network
+Coding component is not part of the module (not compiled-in).
+
+As I mentioned before, this fix should be queued for stable as it aims
+kernels older than linux-3.12.
+
+Please pull or let me know of any problem.
+Thanks a lot,
+	Antonio
+
+
+p.s. this change generates some non-negligible conflicts with the patchset I'd
+like to send to net-next during this week. Since I'd like to solve them all by
+myself before sending the new patches, I'd kindly ask you to merge net into
+net-next when possible.
+
+
+The following changes since commit c31eeaced22ce8bd61268a3c595d542bb38c0a4f:
+
+  Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net (2013-10-01 12:58:48 -0700)
+
+are available in the git repository at:
+
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to 6c519bad7b19a2c14a075b400edabaa630330123:
+
+  batman-adv: set up network coding packet handlers during module init (2013-10-02 13:46:19 +0200)
+
+----------------------------------------------------------------
+Included change:
+- fix multi soft-interfaces setups with Network Coding enabled by
+  registering the CODED packet type once only (instead of once per soft-if)
+
+----------------------------------------------------------------
+Matthias Schiffer (1):
+      batman-adv: set up network coding packet handlers during module init
+
+ net/batman-adv/main.c           |  5 +++--
+ net/batman-adv/network-coding.c | 28 ++++++++++++++++++----------
+ net/batman-adv/network-coding.h | 14 ++++++++++----
+ 3 files changed, 31 insertions(+), 16 deletions(-)
+
