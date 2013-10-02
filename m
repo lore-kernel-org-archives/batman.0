@@ -1,16 +1,14 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed, 2 Oct 2013 15:19:15 +0200
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20131002131915.GB24077@pandem0nium>
-References: <1380659032-14488-1-git-send-email-andrew@lunn.ch>
- <1380659032-14488-2-git-send-email-andrew@lunn.ch>
+Return-Path: <andrew@lunn.ch>
+Date: Wed, 2 Oct 2013 15:36:00 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20131002133600.GD16339@lunn.ch>
+References: <20131001202648.GT11097@lunn.ch>
+ <20131002130548.GA24077@pandem0nium>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="CUfgB8w4ZwR/yMy5"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1380659032-14488-2-git-send-email-andrew@lunn.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv1] alfred: Add support for passing
- location information over alfred.
+In-Reply-To: <20131002130548.GA24077@pandem0nium>
+Subject: Re: [B.A.T.M.A.N.] Alfred batadv-vis json conformance
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,118 +21,87 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Janne.Paatero@ruag.com, sven@open-mesh.com, siwu@hrz.tu-chmnitz.de
+Cc: Janne Paatero <janne.paatero@ruag.com>
 
+On Wed, Oct 02, 2013 at 03:05:48PM +0200, Simon Wunderlich wrote:
+> Hey Andrew,
+> 
+> On Tue, Oct 01, 2013 at 10:26:48PM +0200, Andrew Lunn wrote:
+> > Hi Folks
+> > 
+> > I will soon need to parse the output of batadv-vis -f json.  However,
+> > its not really, json, it does not pass json validation tools. Hence i
+> > doubt i can use the standard parsing libraries.
+> 
+> Yes, it is only JSON line-wise, but not the whole output. This output format
+> however is the same as we have/had in the batctl JSON output which comes
+> from the kernel (I think that was your contribution in the first place?).
+> 
+> Therefore I'd like to leave this old format as it is to allow communities
+> to seamlessly switch from batctl json vis to alfred-vis.
 
---CUfgB8w4ZwR/yMy5
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Simon
 
-On Tue, Oct 01, 2013 at 10:23:52PM +0200, Andrew Lunn wrote:
-> ---
->  CHANGELOG          |   3 +
->  Makefile           |  24 ++-
->  README             |  52 +++++-
->  gpsd/Makefile      |  81 ++++++++
->  gpsd/alfred-gpsd.c | 529 +++++++++++++++++++++++++++++++++++++++++++++++=
-++++++
->  gpsd/alfred-gpsd.h | 102 +++++++++++
->  6 files changed, 784 insertions(+), 7 deletions(-)
->  create mode 100644 gpsd/Makefile
->  create mode 100644 gpsd/alfred-gpsd.c
->  create mode 100644 gpsd/alfred-gpsd.h
->=20
-> diff --git a/CHANGELOG b/CHANGELOG
-> index aa0371f..404f3f3 100644
-> --- a/CHANGELOG
-> +++ b/CHANGELOG
-> @@ -11,3 +11,6 @@ alfred 2013.3.0:
->   * exchanges data via IPv6 unicast/multicast
-> =20
->   -- Sun, 28 Jul 2013 18:56:52 +0200
-> +
-> + * Add support for distributing geographic location information,=20
-> +   either fixed, or read from gpsd.
+That is what i was expecting. So when i did the first implementation
+this morning, i added a new format, cjson, for conforming json. Not
+the best of names, but i could not think of anything better.
 
-I'd like to do the CHANGELOG the other way around, e.g. newest entries come
-first - and your changes will not be released in 2013.3.0 or before. :)
+> I don't want to "parse" any transferred data in alfred, but we can do this
+> for tools like alfred-vis 
 
-Please just drop this change as I'll compile the CHANGELOG when releasing
-myself anyway. No need to bother. :)
+No parsing needed, its just needs new functions to print it. RFC patch
+to come soon.
 
-> \ No newline at end of file
-> [...]
-> --- /dev/null
-> +++ b/gpsd/Makefile
-> @@ -0,0 +1,81 @@
-> +#!/usr/bin/make -f
-> +# -*- makefile -*-
-> +#
-> +# Copyright (C) 2013 B.A.T.M.A.N. contributors
-> +#
-> +# This program is free software; you can redistribute it and/or
-> +# modify it under the terms of version 2 of the GNU General Public
-> +# License as published by the Free Software Foundation.
-> +#
-> +# This program is distributed in the hope that it will be useful, but
-> +# WITHOUT ANY WARRANTY; without even the implied warranty of
-> +# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-> +# General Public License for more details.
-> +#
-> +# You should have received a copy of the GNU General Public License
-> +# along with this program; if not, write to the Free Software
-> +# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-> +# 02110-1301, USA
-> +#
-> +
-> +# alfred build
-> +BINARY_NAME =3D alfred-gpsd
-> +OBJ =3D alfred-gpsd.o
-> +
-> +# alfred flags and options
-> +CFLAGS +=3D -pedantic -Wall -W -std=3Dgnu99 -fno-strict-aliasing -MD -MP
-> +LDLIBS +=3D -lgps
+> >   { "primary" : "02:00:00:00:13:01",
+> >     "secondary" : [ 
+> >       "02:00:00:30:13:01"
+> >     ],
+> >     "neighbors" : [
+> >        { "router" : "02:00:00:00:13:01", "neighbor" : "02:00:00:00:10:01", "label" : "1.000" },
+> >        { "router" : "02:00:00:00:13:01", "neighbor" : "02:00:00:00:12:01", "label" : "1.000" },
+> >        { "router" : "02:00:00:30:13:01", "neighbor" : "02:00:00:30:10:01", "label" : "1.016" },
+> >        { "router" : "02:00:00:00:13:01", "neighbor" : "02:00:00:00:11:01", "label" : "1.000" }
+> >     ],
+> >     "TT" : [
+> >        { "router" : "02:00:00:00:13:01", "gateway" : "8e:4c:77:b3:65:b4" }
+> >     ]
+> >   }
+> > ]
+> > 
+> > I'm also wondering if label and gateway could have more meaningful
+> > names? TQ and host? Also, is TT the best?
+> 
+> Hm, that is a good question. We also have the batman v with new metrics
+> coming up,
 
-I have no idea if we need some special handling for this to let it work
-for crosscompiling, OpenWRT etc?=20
-> +
-> +# disable verbose output
-> +ifneq ($(findstring $(MAKEFLAGS),s),s)
-> +ifndef V
-> +	Q_CC =3D @echo '   ' CC $@;
-> +	Q_LD =3D @echo '   ' LD $@;
-> +	export Q_CC
-> +	export Q_LD
-> +endif
-> +endif
-> [...]
-> +
-> +	if ((alt < -1000) || (lon > 9000)) {
-> +		/* No support for aircraft or submarines! */
+I've not been following BATMAN V too well. Is it metric, or metrics?
+Can we simply change label to metric?
 
-Too bad :D
+> Maybe we can change the names to:
+>  * for neighbors: router->nexthop
+>  * TT: "gateway" -> "client", "router" -> "node", maybe also change TT to clients?
 
-I haven't tested this, but I like the idea to transport the gpsd informatio=
-n.
-We will probably seperate the package to let OpenWRT users choose if they
-want to have this feature (because it comes with gpsd dependency), just as
-we have done with vis. TBH I didn't expect to fill the alfred repository
-with feature daemons, but as long as it is maintained, why not. :)
+So here is what i have implemented.
 
-Thanks,
-	Simon
+# batadv-vis -f cjson 
+[
+  { "primary" : "02:00:00:00:12:01",
+    "neighbors" : [
+       { "router" : "02:00:00:00:12:01",
+         "neighbor" : "02:00:00:00:10:01",
+         "metric" : "1.000" },
+       { "router" : "02:00:00:00:12:01",
+         "neighbor" : "02:00:00:00:13:01",
+         "metric" : "1.012" },
+       { "router" : "02:00:00:00:12:01",
+         "neighbor" : "02:00:00:00:11:01",
+         "metric" : "1.000" }
+    ],
+    "clients" : [
+       { "node" : "02:00:00:00:12:01",
+         "client" : "8e:4c:88:c4:76:c5" }
+    ]
+  }
+]
 
---CUfgB8w4ZwR/yMy5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iEYEARECAAYFAlJMHVMACgkQrzg/fFk7axa+YgCgsyMEU/O5SAXAbjGeY4wif9xb
-CvUAoO/4n9VVujYoaN35DGvXOCiOv81I
-=a5Yp
------END PGP SIGNATURE-----
-
---CUfgB8w4ZwR/yMy5--
+	Andrew
