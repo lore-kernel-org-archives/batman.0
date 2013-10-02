@@ -1,11 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
+Date: Wed, 2 Oct 2013 22:15:37 +0200
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed,  2 Oct 2013 22:03:21 +0200
-Message-Id: <1380744201-2074-2-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1380744201-2074-1-git-send-email-antonio@meshcoding.com>
+Message-ID: <20131002201537.GB1939@neomailbox.net>
 References: <1380744201-2074-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: set up network coding packet
-	handlers during module init
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="jho1yZJdad60DJr+"
+Content-Disposition: inline
+In-Reply-To: <1380744201-2074-1-git-send-email-antonio@meshcoding.com>
+Subject: Re: [B.A.T.M.A.N.] pull request net: 2013-10-02
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,162 +21,45 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Matthias Schiffer <mschiffer@universe-factory.net>
 
-batman-adv saves its table of packet handlers as a global state, so handlers
-must be set up only once (and setting them up a second time will fail).
+--jho1yZJdad60DJr+
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The recently-added network coding support tries to set up its handler each time
-a new softif is registered, which obviously fails when more that one softif is
-used (and in consequence, the softif creation fails).
+On Wed, Oct 02, 2013 at 10:03:20PM +0200, Antonio Quartulli wrote:
+> Hello David,
 
-Fix this by splitting up batadv_nc_init into batadv_nc_init (which is called
-only once) and batadv_nc_mesh_init (which is called for each softif); in
-addition batadv_nc_free is renamed to batadv_nc_mesh_free to keep naming
-consistent.
+of course, the pull request is from the "batman-adv" tree.
+I forgot to mention that in the subject.
 
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- net/batman-adv/main.c           |  5 +++--
- net/batman-adv/network-coding.c | 28 ++++++++++++++++++----------
- net/batman-adv/network-coding.h | 14 ++++++++++----
- 3 files changed, 31 insertions(+), 16 deletions(-)
+Regards,
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index c72d1bc..1356af6 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -65,6 +65,7 @@ static int __init batadv_init(void)
- 	batadv_recv_handler_init();
- 
- 	batadv_iv_init();
-+	batadv_nc_init();
- 
- 	batadv_event_workqueue = create_singlethread_workqueue("bat_events");
- 
-@@ -142,7 +143,7 @@ int batadv_mesh_init(struct net_device *soft_iface)
- 	if (ret < 0)
- 		goto err;
- 
--	ret = batadv_nc_init(bat_priv);
-+	ret = batadv_nc_mesh_init(bat_priv);
- 	if (ret < 0)
- 		goto err;
- 
-@@ -167,7 +168,7 @@ void batadv_mesh_free(struct net_device *soft_iface)
- 	batadv_vis_quit(bat_priv);
- 
- 	batadv_gw_node_purge(bat_priv);
--	batadv_nc_free(bat_priv);
-+	batadv_nc_mesh_free(bat_priv);
- 	batadv_dat_free(bat_priv);
- 	batadv_bla_free(bat_priv);
- 
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index a487d46..4ecc0b6 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -35,6 +35,20 @@ static int batadv_nc_recv_coded_packet(struct sk_buff *skb,
- 				       struct batadv_hard_iface *recv_if);
- 
- /**
-+ * batadv_nc_init - one-time initialization for network coding
-+ */
-+int __init batadv_nc_init(void)
-+{
-+	int ret;
-+
-+	/* Register our packet type */
-+	ret = batadv_recv_handler_register(BATADV_CODED,
-+					   batadv_nc_recv_coded_packet);
-+
-+	return ret;
-+}
-+
-+/**
-  * batadv_nc_start_timer - initialise the nc periodic worker
-  * @bat_priv: the bat priv with all the soft interface information
-  */
-@@ -45,10 +59,10 @@ static void batadv_nc_start_timer(struct batadv_priv *bat_priv)
- }
- 
- /**
-- * batadv_nc_init - initialise coding hash table and start house keeping
-+ * batadv_nc_mesh_init - initialise coding hash table and start house keeping
-  * @bat_priv: the bat priv with all the soft interface information
-  */
--int batadv_nc_init(struct batadv_priv *bat_priv)
-+int batadv_nc_mesh_init(struct batadv_priv *bat_priv)
- {
- 	bat_priv->nc.timestamp_fwd_flush = jiffies;
- 	bat_priv->nc.timestamp_sniffed_purge = jiffies;
-@@ -70,11 +84,6 @@ int batadv_nc_init(struct batadv_priv *bat_priv)
- 	batadv_hash_set_lock_class(bat_priv->nc.coding_hash,
- 				   &batadv_nc_decoding_hash_lock_class_key);
- 
--	/* Register our packet type */
--	if (batadv_recv_handler_register(BATADV_CODED,
--					 batadv_nc_recv_coded_packet) < 0)
--		goto err;
--
- 	INIT_DELAYED_WORK(&bat_priv->nc.work, batadv_nc_worker);
- 	batadv_nc_start_timer(bat_priv);
- 
-@@ -1721,12 +1730,11 @@ free_nc_packet:
- }
- 
- /**
-- * batadv_nc_free - clean up network coding memory
-+ * batadv_nc_mesh_free - clean up network coding memory
-  * @bat_priv: the bat priv with all the soft interface information
-  */
--void batadv_nc_free(struct batadv_priv *bat_priv)
-+void batadv_nc_mesh_free(struct batadv_priv *bat_priv)
- {
--	batadv_recv_handler_unregister(BATADV_CODED);
- 	cancel_delayed_work_sync(&bat_priv->nc.work);
- 
- 	batadv_nc_purge_paths(bat_priv, bat_priv->nc.coding_hash, NULL);
-diff --git a/net/batman-adv/network-coding.h b/net/batman-adv/network-coding.h
-index 85a4ec8..ddfa618 100644
---- a/net/batman-adv/network-coding.h
-+++ b/net/batman-adv/network-coding.h
-@@ -22,8 +22,9 @@
- 
- #ifdef CONFIG_BATMAN_ADV_NC
- 
--int batadv_nc_init(struct batadv_priv *bat_priv);
--void batadv_nc_free(struct batadv_priv *bat_priv);
-+int batadv_nc_init(void);
-+int batadv_nc_mesh_init(struct batadv_priv *bat_priv);
-+void batadv_nc_mesh_free(struct batadv_priv *bat_priv);
- void batadv_nc_update_nc_node(struct batadv_priv *bat_priv,
- 			      struct batadv_orig_node *orig_node,
- 			      struct batadv_orig_node *orig_neigh_node,
-@@ -46,12 +47,17 @@ int batadv_nc_init_debugfs(struct batadv_priv *bat_priv);
- 
- #else /* ifdef CONFIG_BATMAN_ADV_NC */
- 
--static inline int batadv_nc_init(struct batadv_priv *bat_priv)
-+static inline int batadv_nc_init(void)
- {
- 	return 0;
- }
- 
--static inline void batadv_nc_free(struct batadv_priv *bat_priv)
-+static inline int batadv_nc_mesh_init(struct batadv_priv *bat_priv)
-+{
-+	return 0;
-+}
-+
-+static inline void batadv_nc_mesh_free(struct batadv_priv *bat_priv)
- {
- 	return;
- }
--- 
-1.8.1.5
+--=20
+Antonio Quartulli
 
+--jho1yZJdad60DJr+
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSTH7pAAoJEADl0hg6qKeOvqcP/jXdjwpEblA+BEKskJZbIbm4
+aQPSVIg+Ng2iriQZVlC1syAln8tZ8ZhIuHF2T8DtCMZTHSK64IoIkFRSiSABy5XI
+NrSWIlNDiFTvUQCuYYA7KrIP5YDND0+nEV6oUAZ6rFavJD4JIBe+5elNQE7hflE0
+t8+XC6hhBIso5F4JnGZCCtxAQrNhQOEmHae/5zOAsCHaMA5PVDU/6q2+hcwLEn3f
+9y5Pnr0AgJke6YHwfb95piTyZbXepGcfkLRnxkxyzZf1gXrIQvkXQ1aNsUaTuQWR
+BgChIzljyfQ1DmpWoGYHGV0/VzE5C5qaGlV6ic2tTDQmrqeM0obQZXAw4NM0rI0W
+lmVnXVOFWN+pvP/L/5oaxYd7NW+1xYjQFUyCDxUQKM16bq6gFJhAOtwd1Yd56EqI
+S6F63Qg0mjcdHlLnD7rWZxZfKVM5sCdWaN34h2Nvts0mNOGXIZq4xspt3HkeB6pd
+IFO3HmXfLzIPPjUFKk8y9jmsDA2DEw9JqRuikUNJS1B7ezNrQwAnWLuAvv7DHD7K
+omEnA2fS/eogoaPQDDj1I/eJFyr8FvGKrE8qbG/d5w6slxyFXqwA8WuceskmOJiB
+/Wme+3aY7e/ov+NTbw/RCazIDPCo+1wpAI7ZwtZrqe7bH6TXHGDugyrY0YOdjDZo
+x2CmTpdXM0pnSQ06eClH
+=e9gK
+-----END PGP SIGNATURE-----
+
+--jho1yZJdad60DJr+--
