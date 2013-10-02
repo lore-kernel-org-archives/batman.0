@@ -1,17 +1,14 @@
-Return-Path: <andrew@lunn.ch>
-Date: Wed, 2 Oct 2013 10:28:30 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20131002082830.GA16339@lunn.ch>
-References: <1380659032-14488-1-git-send-email-andrew@lunn.ch>
- <1380659032-14488-2-git-send-email-andrew@lunn.ch>
- <1380698731.22367.28956361.6696D00A@webmail.messagingengine.com>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Wed, 2 Oct 2013 15:05:48 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20131002130548.GA24077@pandem0nium>
+References: <20131001202648.GT11097@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="tThc/1wpZn/ma/RB"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1380698731.22367.28956361.6696D00A@webmail.messagingengine.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv1] alfred: Add support for passing
- location information over alfred.
+In-Reply-To: <20131001202648.GT11097@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] Alfred batadv-vis json conformance
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,109 +23,194 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 Cc: Janne Paatero <janne.paatero@ruag.com>
 
-On Wed, Oct 02, 2013 at 09:25:31AM +0200, Thijs van Veen wrote:
-> Hello Andrew (and the rest of the list),
-> 
-> On Tue, Oct 1, 2013, at 22:23, Andrew Lunn wrote:
-> > +Alfred-gpsd
-> > +-----------
-> > +
-> > +Alfred-gpsd can be used to distibute GPS location information about
-> > +your batman-adv mesh network. This information could be, for example,
-> > +combined with Vis to visualize your mesh topology with true geographic
-> > +layout. For mobile or nomadic nodes, Alfred-gpsd, can get location
-> > +information from gpsd.  Alternatively, a static location can be passed
-> > +on the command line, which is useful for static nodes without a GPS.
-> > +
-> > +Alfred-gpsd, similar to to alfred, combines server (daemon) and client
-> > +functionality in the 'alfred-gpsd' binary. The alfred-gpsd server must
-> > +be started to distribute location information. When retrieving
-> > +location information from gpsd, it should be started with:
-> > +
-> > + $ alfred-gpsd -s
-> > +
-> > +For a static location, use:
-> > +
-> > + $ alfred-gpsd -s -l 48.858222,2.2945,358
-> > +
-> > +This server will set the location in alfred via unix
-> > +socket. Obviously, the alfred server must run too to get this
-> > +information set. When using gpsd, it updates alfred every 2
-> > +seconds. With a static location, the update it made every 5 minutes.
-> > +
-> > +To get JSON formatted output, use:
-> > +
-> > + $ alfred-gpsd
-> > +[
-> > +  { "source" : "f6:00:48:13:d3:1e", "tpv" :
-> > {"class":"TPV","tag":"RMC","device":"/dev/ttyACM0","mode":3,"time":"2013-10-01T10:43:20.000Z","ept":0.005,"lat":52.575485000,"lon":-1.339716667,"alt":122.500,"epx":10.199,"epy":15.720,"epv":31.050,"track":0.0000,"speed":0.010,"climb":0.000,"eps":31.44}
-> > },
-> > +  { "source" : "8e:4c:77:b3:65:b4", "tpv" :
-> > {"class":"TPV","device":"command
-> > line","time":"2013-10-01T10:43:05.129Z","lat":48.858222,"lon":2.2945,"alt":358.000000,"mode":3}
-> > }
-> > +]
-> > +
-> > +See gpsd_json(5) for documentation of the tpv object. 
-> 
-> As there are many different ways to display GPS coordinates, I suggest
-> adding the format in which the data will be reported to the
-> documentation.
 
-This would be quite a bit of information, so i would probably put in
-into an alfred-gpsd specific README, not the Alfred README.
+--tThc/1wpZn/ma/RB
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> In my time playing with gps positioning (just a couple of weeks), I've
-> run into at least 4 different latitude/longitude formats, most of which
-> look very much alike, but all of which are incompatible with each other,
-> so it's important to know which format is used.
-> 
-> Specifically, gpsd parses (standard) NMEA messages, which give position
-> as hybrid of integer degrees and decimal arc minutes (ddmm.mmmm)
-> followed by a direction (NSEW).
-> When displayed in raw mode, gpsd will return these NMEA formatted
-> values; the JSON output however (which is used) returns pure decimal
-> degrees (dd.dddddd), with the sign specifying direction (NW are
-> positive, SE are negative if I'm not mistaking).
-> 
-> I know the format is specified in the gpsd_json man page (which is
-> referenced), but it seems more user-friendly to me to have the output
-> format described here as well.
+Hey Andrew,
 
-The gpsd_json documentation is not very specific:
+On Tue, Oct 01, 2013 at 10:26:48PM +0200, Andrew Lunn wrote:
+> Hi Folks
+>=20
+> I will soon need to parse the output of batadv-vis -f json.  However,
+> its not really, json, it does not pass json validation tools. Hence i
+> doubt i can use the standard parsing libraries.
 
-           ├───────┼─────────┼─────────┼────────────────────────┤
-           │lat    │ No      │ numeric │ Latitude in degrees:   │
-           │       │         │         │ +/- signifies          │
-           │       │         │         │ West/East.  Present    │
-           │       │         │         │         when mode is 2 │
-           │       │         │         │ or 3.                  │
-           ├───────┼─────────┼─────────┼────────────────────────┤
-           │lon    │ No      │ numeric │ Longitude in degrees:  │
-           │       │         │         │ +/- signifies          │
-           │       │         │         │ North/South. Present   │
-           │       │         │         │         when mode is 2 │
-           │       │         │         │ or 3.                  │
-           ├───────┼─────────┼─────────┼────────────────────────┤
+Yes, it is only JSON line-wise, but not the whole output. This output format
+however is the same as we have/had in the batctl JSON output which comes
+=66rom the kernel (I think that was your contribution in the first place?).
 
-It just says degrees, not "pure" degrees, "not hybrid" degrees, etc.
-So importing the gpsd documentation does not really clarify it more.
-I'm also hesitant to add additional documentation, above what
-gpsd_json says. I've just implemented a "dumb pipe". I don't interpret
-the data in any way, i don't guarantee that the format will never
-change etc.
+Therefore I'd like to leave this old format as it is to allow communities
+to seamlessly switch from batctl json vis to alfred-vis.
 
-> Seeing as there is a member gpsd_format, I'm assuming this is meant to
-> allow for different formatting in the future, which makes it even more
-> important to explicitly state how the values are formatted.
+>=20
+> There has been discussion similar to this recently, about alfred -r,
+> and a proposal to change the output to make it json conforming. I
+> would like to raise the discussion of modifying the vis output from
+> batadv-vis.
 
-No, that is not why i added the tpv gpsd_format. I will probably need
-the ATT, the vehicle-attitude report, to report what direction my
-directional antennae are pointing. I've no intentional of adding other
-location formats, eg raw NMEA. That just added complexity i don't want
-to handle.
- 
-> Other than that, this looks very promising.
+Regarding the other discussions, I'm still waiting for new patches from
+Nils. ;)
 
-Thanks
-	Andrew
+I don't want to "parse" any transferred data in alfred, but we can do this
+for tools like alfred-vis ... And yes, the default json output is
+currently not JSON-compatible for binary data...
+>=20
+> I have a simulation system of four nodes, fully interconnected, with
+> one double link, but is rather sort of translation table entries. The
+> current vis output is:
+>=20
+> { "primary" : "02:00:00:00:12:01" }
+> { "router" : "02:00:00:00:12:01", "neighbor" : "02:00:00:00:10:01", "labe=
+l" : "1.000" }
+> { "router" : "02:00:00:00:12:01", "neighbor" : "02:00:00:00:13:01", "labe=
+l" : "1.004" }
+> { "router" : "02:00:00:00:12:01", "neighbor" : "02:00:00:00:11:01", "labe=
+l" : "1.000" }
+> { "router" : "02:00:00:00:12:01", "gateway" : "8e:4c:88:c4:76:c5", "label=
+" : "TT" }
+> { "primary" : "02:00:00:30:10:01" }
+> { "secondary" : "02:00:00:00:10:01", "of" : "02:00:00:30:10:01" }
+> { "router" : "02:00:00:30:10:01", "neighbor" : "02:00:00:30:13:01", "labe=
+l" : "1.000" }
+> { "router" : "02:00:00:00:10:01", "neighbor" : "02:00:00:00:12:01", "labe=
+l" : "1.000" }
+> { "router" : "02:00:00:00:10:01", "neighbor" : "02:00:00:00:13:01", "labe=
+l" : "1.000" }
+> { "router" : "02:00:00:00:10:01", "neighbor" : "02:00:00:00:11:01", "labe=
+l" : "1.000" }
+> { "router" : "02:00:00:30:10:01", "gateway" : "f6:00:48:13:d3:1e", "label=
+" : "TT" }
+> { "primary" : "02:00:00:00:11:01" }
+> { "router" : "02:00:00:00:11:01", "neighbor" : "02:00:00:00:10:01", "labe=
+l" : "1.000" }
+> { "router" : "02:00:00:00:11:01", "neighbor" : "02:00:00:00:12:01", "labe=
+l" : "1.000" }
+> { "router" : "02:00:00:00:11:01", "neighbor" : "02:00:00:00:13:01", "labe=
+l" : "1.000" }
+> { "router" : "02:00:00:00:11:01", "gateway" : "ee:be:f3:0f:26:66", "label=
+" : "TT" }
+> { "primary" : "02:00:00:00:13:01" }
+> { "secondary" : "02:00:00:30:13:01", "of" : "02:00:00:00:13:01" }
+> { "router" : "02:00:00:00:13:01", "neighbor" : "02:00:00:00:10:01", "labe=
+l" : "1.000" }
+> { "router" : "02:00:00:00:13:01", "neighbor" : "02:00:00:00:12:01", "labe=
+l" : "1.000" }
+> { "router" : "02:00:00:30:13:01", "neighbor" : "02:00:00:30:10:01", "labe=
+l" : "1.016" }
+> { "router" : "02:00:00:00:13:01", "neighbor" : "02:00:00:00:11:01", "labe=
+l" : "1.000" }
+> { "router" : "02:00:00:00:13:01", "gateway" : "8e:4c:77:b3:65:b4", "label=
+" : "TT" }
+>=20
+> My first suggestion for a conforming output would be: =20
+>=20
+> [
+>   { "primary" : "02:00:00:00:12:01",=20
+>     "neighbors" : [
+>         { "router" : "02:00:00:00:12:01", "neighbor" : "02:00:00:00:10:01=
+", "label" : "1.000" },
+>         { "router" : "02:00:00:00:12:01", "neighbor" : "02:00:00:00:13:01=
+", "label" : "1.004" },
+>         { "router" : "02:00:00:00:12:01", "neighbor" : "02:00:00:00:11:01=
+", "label" : "1.000" }
+>     ],
+>     "TT" : [
+>       { "router" : "02:00:00:00:12:01", "gateway" : "8e:4c:88:c4:76:c5" }
+>     ]
+>   },
+>   { "primary" : "02:00:00:30:10:01",
+>     "secondary" : [
+>        "02:00:00:00:10:01"
+>     ],
+>     "neighbors" : [
+>       { "router" : "02:00:00:30:10:01", "neighbor" : "02:00:00:30:13:01",=
+ "label" : "1.000" },
+>       { "router" : "02:00:00:00:10:01", "neighbor" : "02:00:00:00:12:01",=
+ "label" : "1.000" },
+>       { "router" : "02:00:00:00:10:01", "neighbor" : "02:00:00:00:13:01",=
+ "label" : "1.000" },
+>       { "router" : "02:00:00:00:10:01", "neighbor" : "02:00:00:00:11:01",=
+ "label" : "1.000" }
+>     ],
+>     "TT" : [
+>       { "router" : "02:00:00:30:10:01", "gateway" : "f6:00:48:13:d3:1e" }
+>     ]
+>   },
+>   { "primary" : "02:00:00:00:11:01",
+>     "neighbors" : [
+>       { "router" : "02:00:00:00:11:01", "neighbor" : "02:00:00:00:10:01",=
+ "label" : "1.000" },
+>       { "router" : "02:00:00:00:11:01", "neighbor" : "02:00:00:00:12:01",=
+ "label" : "1.000" },
+>       { "router" : "02:00:00:00:11:01", "neighbor" : "02:00:00:00:13:01",=
+ "label" : "1.000" }
+>     ],
+>     "TT" : [
+>       { "router" : "02:00:00:00:11:01", "gateway" : "ee:be:f3:0f:26:66" }
+>     ]
+>   },
+>   { "primary" : "02:00:00:00:13:01",
+>     "secondary" : [=20
+>       "02:00:00:30:13:01"
+>     ],
+>     "neighbors" : [
+>        { "router" : "02:00:00:00:13:01", "neighbor" : "02:00:00:00:10:01"=
+, "label" : "1.000" },
+>        { "router" : "02:00:00:00:13:01", "neighbor" : "02:00:00:00:12:01"=
+, "label" : "1.000" },
+>        { "router" : "02:00:00:30:13:01", "neighbor" : "02:00:00:30:10:01"=
+, "label" : "1.016" },
+>        { "router" : "02:00:00:00:13:01", "neighbor" : "02:00:00:00:11:01"=
+, "label" : "1.000" }
+>     ],
+>     "TT" : [
+>        { "router" : "02:00:00:00:13:01", "gateway" : "8e:4c:77:b3:65:b4" }
+>     ]
+>   }
+> ]
+>=20
+> I'm also wondering if label and gateway could have more meaningful
+> names? TQ and host? Also, is TT the best?
+
+Hm, that is a good question. We also have the batman v with new metrics
+coming up, I'm not sure how to handle these (maybe Antonio has some
+idea?). It is not the TQ-value in the label after all, but some kind of
+ETX-converted value (255/TQ if i remember correctly).
+
+Maybe we can change the names to:
+ * for neighbors: router->nexthop
+ * TT: "gateway" -> "client", "router" -> "node", maybe also change TT to c=
+lients?
+>=20
+> I would like suggestions and comments from others with more experience
+> with json. Is the basic structure O.K. Are there better names to use?
+>=20
+> There is also the issue of can we change the format of the current
+> output. Is it considered an ABI? Should I add a third format string
+> which can be passed with -f to produce true json, and leave the old
+> format as is, for backward compatibility?
+
+As explained above, I'd like to keep the old format, so a third format
+string should be used. It would be nice (if possible) to consider BATMAN V
+at this point too to avoid adding many more formats in the future, but
+generally I'm okay with adding new formats.
+
+Thanks,
+	Simon
+
+--tThc/1wpZn/ma/RB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEARECAAYFAlJMGiwACgkQrzg/fFk7axZCAwCgs3Nr7E7/FrPUzAGlbneihkxA
+YvwAoLkwe5uIxYzhMJQabQ1VSM/7J8jq
+=1r9f
+-----END PGP SIGNATURE-----
+
+--tThc/1wpZn/ma/RB--
