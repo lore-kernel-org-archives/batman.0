@@ -1,18 +1,14 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Thu, 3 Oct 2013 16:21:16 +0200
+Date: Thu, 3 Oct 2013 16:25:07 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20131003142116.GC3588@pandem0nium>
-References: <1380659032-14488-1-git-send-email-andrew@lunn.ch>
- <1380659032-14488-2-git-send-email-andrew@lunn.ch>
- <20131002131915.GB24077@pandem0nium>
- <2038458.nCDZnQrXiI@sven-desktop>
+Message-ID: <20131003142506.GD3588@pandem0nium>
+References: <1380731152-17874-1-git-send-email-andrew@lunn.ch>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="GPJrCs/72TxItFYR"
+ protocol="application/pgp-signature"; boundary="mSxgbZZZvrAyzONB"
 Content-Disposition: inline
-In-Reply-To: <2038458.nCDZnQrXiI@sven-desktop>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv1] alfred: Add support for passing
- location information over alfred.
+In-Reply-To: <1380731152-17874-1-git-send-email-andrew@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv1] GPS distribution via Alfred
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,49 +20,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: "Janne.Paatero@ruag.com" <Janne.Paatero@ruag.com>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Janne.Paatero@ruag.com, sven@open-mesh.com, siwu@hrz.tu-chmnitz.de
 
 
---GPJrCs/72TxItFYR
+--mSxgbZZZvrAyzONB
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Oct 02, 2013 at 06:34:15PM +0200, Sven Eckelmann wrote:
-> On Wednesday 02 October 2013 06:19:15 Simon Wunderlich wrote:
-> > > +# alfred build
-> > > +BINARY_NAME =3D alfred-gpsd
-> > > +OBJ =3D alfred-gpsd.o
-> > > +
-> > > +# alfred flags and options
-> > > +CFLAGS +=3D -pedantic -Wall -W -std=3Dgnu99 -fno-strict-aliasing -MD=
- -MP
-> > > +LDLIBS +=3D -lgps
-> >=20
-> > I have no idea if we need some special handling for this to let it work
-> > for crosscompiling, OpenWRT etc?
+On Wed, Oct 02, 2013 at 06:25:51PM +0200, Andrew Lunn wrote:
+> Hi Folks
 >=20
-> Please use pkg-config for things like this. An example Makefile is attach=
-ed.
+> I'm working on a mesh project with some nodes which are nomadic.  I
+> need to know the location of each node, so i can do map overlays. So
+> these nomadic nodes have GPS and i'm distributing the location
+> information over Alfred, with a new server/client binary. I also have
+> stationary nodes, and a simulation system, without GPS, so i have
+> support for passing location via the command line.
 >=20
-> @Simon: Please fix your e-mail adress inside the README file.
+> The code needs some more testing, a man page, but release early,
+> release often, so here it is.=20
+>=20
+> Comment welcome.
+>=20
+> 	Andrew
 
-Done, applied in 9021511.
+Did you accidentlly send this E-mail a second time? I'm a little
+bit confused, it has the same PATCHv1 and no patches following
+(btw, if it's just one patch you probably don't need a cover letter.
+ I don't care too much though)
 
-Thanks for pointing that out.
 	Simon
 
---GPJrCs/72TxItFYR
+--mSxgbZZZvrAyzONB
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iEYEARECAAYFAlJNfVwACgkQrzg/fFk7axaPugCfTNm5rb1q8SaYbgw+oILG0FBx
-0BkAmwZoCYz2f+5GmP4RrZgeZdt0qCMQ
-=46WK
+iEYEARECAAYFAlJNfkIACgkQrzg/fFk7axYgswCeKxCcELexGglk0J33xJIjuTSI
+qzAAoKN1xkNFsmdf4wlqVgp09cwtnjH5
+=QChV
 -----END PGP SIGNATURE-----
 
---GPJrCs/72TxItFYR--
+--mSxgbZZZvrAyzONB--
