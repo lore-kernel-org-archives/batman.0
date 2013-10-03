@@ -1,19 +1,15 @@
-Return-Path: <andrew@lunn.ch>
-Date: Thu, 3 Oct 2013 11:05:07 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20131003090507.GC20056@lunn.ch>
-References: <20131001202648.GT11097@lunn.ch>
- <20131002130548.GA24077@pandem0nium>
- <20131002160106.GA1939@neomailbox.net>
- <524D0A04.4090702@hundeboll.net> <20131003081124.GA20056@lunn.ch>
- <20131003082221.GC1939@neomailbox.net>
- <20131003085316.GB20056@lunn.ch>
- <20131003090056.GD1939@neomailbox.net>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Thu, 3 Oct 2013 16:18:54 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20131003141852.GA3588@pandem0nium>
+References: <1380628934-22220-1-git-send-email-sven@open-mesh.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="5vNYLRcllDrimb99"
 Content-Disposition: inline
-In-Reply-To: <20131003090056.GD1939@neomailbox.net>
-Subject: Re: [B.A.T.M.A.N.] Alfred batadv-vis json conformance
+In-Reply-To: <1380628934-22220-1-git-send-email-sven@open-mesh.com>
+Subject: Re: [B.A.T.M.A.N.] alfred: Allow listening interface to
+ appear/disappear
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,18 +22,71 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Janne Paatero <janne.paatero@ruag.com>
 
-> > > What about the source version? How did you get it from the module?
-> > 
-> > It is the alfred version, not the kernel module version.
-> 
-> Ok (but I don't see how it can be useful)
 
-If for some reason we need to change the format in a none backwards
-compatible way, it gives us a key we can use to determine what format
-is in use.
+--5vNYLRcllDrimb99
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It is just an idea, i've no strong preference.
+On Tue, Oct 01, 2013 at 02:02:08PM +0200, Sven Eckelmann wrote:
+> Hi,
+>=20
+> a device running alfred maybe has to remove the underlying device (e.g. w=
+lan
+> device has to be reconfigured). This currently makes it necessary to rest=
+art
+> alfred to get the device sending data again. An unwanted side effect of t=
+his
+> procedure is the removal of all data currently stored in alfred.
+>=20
+> Instead alfred should detect such problems and try to recover by reopenin=
+g the
+> device after sleeping a while. The sleeping is automatically done by sele=
+ct.
+>=20
+> I've tested the changes only using macvtap:
+>=20
+> Terminal 1:
+>=20
+> $ ip link del dev macvlan0
+> $ ip link add link eth0 name macvlan0 type macvlan
+> $ ip link set macvlan0 address 1a:46:0b:ca:bc:7b up
+> $ ./alfred -b none -i macvlan0
+>=20
+> Terminal 2 (after letting alfred run for a while)
+>=20
+> $ ip link del dev macvlan0
+> $ ip link add link eth0 name macvlan0 type macvlan
+> $ ip link set macvlan0 address 1a:46:0b:ca:bc:7b up
+>=20
+> Kind regards,
+> 	Sven
 
-   Andrew
+Thanks, applied the whole series (785bc8b, 87c1916, 02997b2, 1b79312, 65d26=
+ca, d6de864).
+
+Your testsetup did not work for me (no IPv6 addresses where assigned to the=
+se macvlan0
+interfaces), but I've tried on my WiFi network in alfred master mode and co=
+uld confirm
+that alfred continues to send announcements after tearing down the WiFi and=
+ setting it
+up again.
+
+Thanks,
+	Simon
+
+--5vNYLRcllDrimb99
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEARECAAYFAlJNfMwACgkQrzg/fFk7axbDuQCgkzPFDViqXJElfsZLAGAKCJlH
+eiQAoJhUfzTQm3QhXbDj4yijRvFdMlNt
+=Bby0
+-----END PGP SIGNATURE-----
+
+--5vNYLRcllDrimb99--
