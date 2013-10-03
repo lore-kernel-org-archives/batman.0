@@ -1,17 +1,16 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Fri, 4 Oct 2013 00:11:52 +0200
+Date: Fri, 4 Oct 2013 00:53:17 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20131003221152.GB9172@pandem0nium>
+Message-ID: <20131003225317.GC9172@pandem0nium>
 References: <1378312060-30922-1-git-send-email-siwu@hrz.tu-chemnitz.de>
- <1378312060-30922-6-git-send-email-siwu@hrz.tu-chemnitz.de>
- <20131001090009.GD1448@neomailbox.net>
+ <1378312060-30922-7-git-send-email-siwu@hrz.tu-chemnitz.de>
+ <20131001092419.GE1448@neomailbox.net>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="WYTEVAkct0FjGQmd"
+ protocol="application/pgp-signature"; boundary="O3RTKUHj+75w1tg5"
 Content-Disposition: inline
-In-Reply-To: <20131001090009.GD1448@neomailbox.net>
-Subject: Re: [B.A.T.M.A.N.] [RFCv2 5/6] batman-adv: consider outgoing
- interface in OGM sending
+In-Reply-To: <20131001092419.GE1448@neomailbox.net>
+Subject: Re: [B.A.T.M.A.N.] [RFCv2 6/6] batman-adv: add bonding again
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,102 +26,145 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Simon Wunderlich <simon@open-mesh.com>
 
 
---WYTEVAkct0FjGQmd
+--O3RTKUHj+75w1tg5
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Oct 01, 2013 at 11:00:09AM +0200, Antonio Quartulli wrote:
-> On Wed, Sep 04, 2013 at 06:27:39PM +0200, Simon Wunderlich wrote:
-> > @@ -574,6 +562,13 @@ batadv_iv_ogm_can_aggregate(const struct batadv_og=
-m_packet *new_bat_ogm_packet,
-> >  		if (!primary_if)
-> >  			goto out;
-> > =20
-> > +		/* packet is not leaving on the same interface.
-> > +		 * TODO: some other parts here could be reworked as the
-> > +		 * outgoing interface is specified now.
+On Tue, Oct 01, 2013 at 11:24:19AM +0200, Antonio Quartulli wrote:
+> > +	/* bonding: loop through the list of possible routers found
+> > +	 * for the various outgoing interfaces and find a candidate after
+> > +	 * the last chosen bonding candidate (next_candidate). If no such
+> > +	 * router is found, use the first candidate found (the last chosen
+> > +	 * bonding candidate might have been the last one in the list).
+> > +	 * If this can't be found either, return the previously choosen
+> > +	 * router - obviously there are no other candidates.
+> > +	 */
+> > +	rcu_read_lock();
+> > +	router_ifinfo =3D batadv_neigh_node_get_ifinfo(router, recv_if);
+> > +	hlist_for_each_entry_rcu(cand, &orig_node->ifinfo_list, list) {
+> > +		cand_router =3D rcu_dereference(cand->router);
+> > +		if (!cand_router)
+> > +			continue;
+> > +
+> > +		if (!atomic_inc_not_zero(&cand_router->refcount))
+> > +			continue;
+> > +
+> > +		cand_ifinfo =3D batadv_neigh_node_get_ifinfo(cand_router,
+> > +							   cand->if_outgoing);
+> > +		if (!cand_ifinfo)
+> > +			goto next;
+> > +
+> > +		/* alternative candidate should be good enough to be
+> > +		 * considered
 > > +		 */
+> > +		if (!bao->bat_neigh_ifinfo_is_equiv_or_better(cand_ifinfo,
+> > +							      router_ifinfo))
+> > +			goto next;
+> > +
+> > +		/* don't use the same router twice */
+> > +		if (orig_node->last_bonding_candidate &&
+> > +		    (orig_node->last_bonding_candidate->router =3D=3D
+> > +		     cand_router))
+> > +				goto next;
+> > +
+> > +		/* mark the first possible candidate */
+> > +		if (!first_candidate) {
+> > +			atomic_inc(&cand_router->refcount);
+> > +			first_candidate =3D cand;
+> > +			first_candidate_router =3D cand_router;
+> > +		}
+> > +
 >=20
-> What does this TODO exactly mean? What could be reworked?
+> What if you change this:
 >=20
-
-There might be some more places where we can optimize/save a few cycles. Th=
-e forw_packet
-was scheduled for all interfaces instead of individual interfaces before. T=
-herefore direct
-link flag handling might be simplified. TBH I'm not sure and the aggregatio=
-n code is not
-too easy to understand, so I preferred to not break it and put that TODO. :P
-
-> > @@ -1449,6 +1489,10 @@ batadv_iv_ogm_process_per_outif(const struct eth=
-hdr *ethhdr,
-> >  					  if_outgoing, tt_buff, dup_status);
-> >  	rcu_read_unlock();
-> > =20
-> > +	/* don't forward packet if no outgoing interface was specified */
-> > +	if (!if_outgoing)
-> > +		goto out_neigh;
+> > +		/* check if already passed the next candidate ... this function
+> > +		 * should get the next candidate AFTER the last used bonding
+> > +		 * candidate.
+> > +		 */
+> > +		if (orig_node->last_bonding_candidate) {
+> > +			if (orig_node->last_bonding_candidate =3D=3D cand) {
+> > +				last_candidate_found =3D true;
+> > +				goto next;
+> > +			}
+> > +
+> > +			if (!last_candidate_found)
+> > +				goto next;
+> > +		}
+> > +
+> > +		next_candidate =3D cand;
+> > +		next_candidate_router =3D cand_router;
+> > +		break;
+> > +next:
+> > +		batadv_neigh_node_free_ref(cand_router);
 >=20
-> can this really happen? or does it mean we have a BUG?
+> to this:
 >=20
-
-No, this is one of the main cases actually. batadv_iv_ogm_process_per_outif=
-() is called:
-
- * first for the out interface NULL
- * then for all interfaces
-
-However the OGM is not forwarded for the NULL interface, only for the hard =
-interfaces according
-to the respective rules. The if_outgoing =3D NULL case is only for locally =
-generated packets.
-
-> > @@ -539,9 +542,12 @@ void batadv_send_outstanding_bat_ogm_packet(struct=
- work_struct *work)
-> > =20
-> >  	/* we have to have at least one packet in the queue
-> >  	 * to determine the queues wake up time unless we are
-> > -	 * shutting down
-> > +	 * shutting down.
-> > +	 *
-> > +	 * only re-schedule if this is the "original" copy.
-> >  	 */
-> > -	if (forw_packet->own)
-> > +	if (forw_packet->own &&
-> > +	    forw_packet->if_incoming =3D=3D forw_packet->if_outgoing)
-> >  		batadv_schedule_bat_ogm(forw_packet->if_incoming);
+> if (!orig_node->last_bonding_candidate || last_candidate_found) {
+> 	next_candidate =3D cand;
+> 	next_candidate_router =3D cand_router;
+> 	break;
+> }
 >=20
-> What do you mean with "original" copy? Can an "own" packet have if_incomi=
-ng !=3D
-> if_outgoing?
-
-Yes, for the forw_packet of the primary interface we have multiple copies n=
-ow
-for each outgoing interface (secondary interfaces). However we want to resc=
-hedule
-the OGM only once per period. This is why the check is neccesary. I'll rewo=
-rk the
-comment to make this more clear ...
+> if (orig_node->last_bonding_candidate =3D=3D cand)
+> 	last_candidate_found =3D true;
+>=20
+> batadv_neigh_node_free_ref(cand_router);
 >=20
 >=20
-> Cheers,
+> ? (I hope the two are equivalent..I took some time to fully get the flow =
+of your
+> if/else block)
 >=20
-> --=20
-> Antonio Quartulli
+> Removing the "goto next" makes me look at it in a more linear way (and we=
+ also
+> reduce the max indentation by one tab).
+>=20
 
+Yup, that should work too, good suggestion. We need to keep the next label =
+though.
+I'll change it according to your suggestion.
 
+> > diff --git a/types.h b/types.h
+> > index 7255500..fa58a14 100644
+> > --- a/types.h
+> > +++ b/types.h
+> > @@ -173,6 +173,7 @@ struct batadv_orig_bat_iv {
+> >   * @orig: originator ethernet address
+> >   * @primary_addr: hosts primary interface address
+> >   * @ifinfo_list: list for routers per outgoing interface
+> > + * @last_bonding_candidate: pointer to last ifinfo of last used router
+> >   * @batadv_dat_addr_t:  address of the orig node in the distributed ha=
+sh
+> >   * @last_seen: time when last packet from this node was received
+> >   * @bcast_seqno_reset: time when the broadcast seqno window was reset
+> > @@ -213,6 +214,7 @@ struct batadv_orig_node {
+> >  	uint8_t orig[ETH_ALEN];
+> >  	uint8_t primary_addr[ETH_ALEN];
+> >  	struct hlist_head ifinfo_list;
+> > +	struct batadv_orig_node_ifinfo *last_bonding_candidate;
+>=20
+> Do you think it is not needed to set this field to NULL when disabling bo=
+nding
+> mode? Can an old value trigger some strange behaviour when bonding is tur=
+ned on
+> again? Maybe not..just wondering..
 
---WYTEVAkct0FjGQmd
+Hmm, maybe, can't say now but will look into that.
+
+Thanks for all your suggestions!
+	Simon
+
+--O3RTKUHj+75w1tg5
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iEYEARECAAYFAlJN66gACgkQrzg/fFk7axYpkACg8lqofoV0oik1Wi0M0+bVqjTm
-2w8An2xUva86P7XGFUTdM6wHdgUc6uNp
-=LkAp
+iEYEARECAAYFAlJN9V0ACgkQrzg/fFk7axYoeACghEXr1/O7bBJDk4MUXrHf2G9X
+YXcAn0iIElWuponW3yrwp1fvpBH1I/6F
+=XITY
 -----END PGP SIGNATURE-----
 
---WYTEVAkct0FjGQmd--
+--O3RTKUHj+75w1tg5--
