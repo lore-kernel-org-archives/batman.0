@@ -1,14 +1,14 @@
-Return-Path: <antonio@meshcoding.com>
-Date: Wed, 2 Oct 2013 22:15:37 +0200
-From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <20131002201537.GB1939@neomailbox.net>
-References: <1380744201-2074-1-git-send-email-antonio@meshcoding.com>
+Return-Path: <martin@hundeboll.net>
+Message-ID: <524D0A04.4090702@hundeboll.net>
+Date: Thu, 03 Oct 2013 08:09:08 +0200
+From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="jho1yZJdad60DJr+"
-Content-Disposition: inline
-In-Reply-To: <1380744201-2074-1-git-send-email-antonio@meshcoding.com>
-Subject: Re: [B.A.T.M.A.N.] pull request net: 2013-10-02
+References: <20131001202648.GT11097@lunn.ch>
+ <20131002130548.GA24077@pandem0nium> <20131002160106.GA1939@neomailbox.net>
+In-Reply-To: <20131002160106.GA1939@neomailbox.net>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] Alfred batadv-vis json conformance
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,46 +20,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On 2013-10-02 18:01, Antonio Quartulli wrote:
+> On Wed, Oct 02, 2013 at 03:05:48PM +0200, Simon Wunderlich wrote:
+>>> > >I'm also wondering if label and gateway could have more meaningful
+>>> > >names? TQ and host? Also, is TT the best?
+>> >
+>> >Hm, that is a good question. We also have the batman v with new metrics
+>> >coming up, I'm not sure how to handle these (maybe Antonio has some
+>> >idea?). It is not the TQ-value in the label after all, but some kind of
+>> >ETX-converted value (255/TQ if i remember correctly).
+> I think the ETX stuff comes from OLSR (but I don't know the details).
+>
+> I agree with Simon that we should find a generic name (e.g. metric ?) but I am
+> not sure we can represent this value in a "algorithm-generic" fashion (and maybe
+> we don't want to).
 
---jho1yZJdad60DJr+
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+May I suggest that the cjson output includes an entry to tell the 
+version of the batman-algorithm?
 
-On Wed, Oct 02, 2013 at 10:03:20PM +0200, Antonio Quartulli wrote:
-> Hello David,
+Users might want to do different map overlays (or whatever) depending on 
+the available metric(s).
 
-of course, the pull request is from the "batman-adv" tree.
-I forgot to mention that in the subject.
+-- 
+Kind Regards
+Martin Hundebøll
+Frederiks Allé 99, 1.th
+8000 Aarhus C
+Denmark
 
-Regards,
-
---=20
-Antonio Quartulli
-
---jho1yZJdad60DJr+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.20 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSTH7pAAoJEADl0hg6qKeOvqcP/jXdjwpEblA+BEKskJZbIbm4
-aQPSVIg+Ng2iriQZVlC1syAln8tZ8ZhIuHF2T8DtCMZTHSK64IoIkFRSiSABy5XI
-NrSWIlNDiFTvUQCuYYA7KrIP5YDND0+nEV6oUAZ6rFavJD4JIBe+5elNQE7hflE0
-t8+XC6hhBIso5F4JnGZCCtxAQrNhQOEmHae/5zOAsCHaMA5PVDU/6q2+hcwLEn3f
-9y5Pnr0AgJke6YHwfb95piTyZbXepGcfkLRnxkxyzZf1gXrIQvkXQ1aNsUaTuQWR
-BgChIzljyfQ1DmpWoGYHGV0/VzE5C5qaGlV6ic2tTDQmrqeM0obQZXAw4NM0rI0W
-lmVnXVOFWN+pvP/L/5oaxYd7NW+1xYjQFUyCDxUQKM16bq6gFJhAOtwd1Yd56EqI
-S6F63Qg0mjcdHlLnD7rWZxZfKVM5sCdWaN34h2Nvts0mNOGXIZq4xspt3HkeB6pd
-IFO3HmXfLzIPPjUFKk8y9jmsDA2DEw9JqRuikUNJS1B7ezNrQwAnWLuAvv7DHD7K
-omEnA2fS/eogoaPQDDj1I/eJFyr8FvGKrE8qbG/d5w6slxyFXqwA8WuceskmOJiB
-/Wme+3aY7e/ov+NTbw/RCazIDPCo+1wpAI7ZwtZrqe7bH6TXHGDugyrY0YOdjDZo
-x2CmTpdXM0pnSQ06eClH
-=e9gK
------END PGP SIGNATURE-----
-
---jho1yZJdad60DJr+--
++45 61 65 54 61
+martin@hundeboll.net
