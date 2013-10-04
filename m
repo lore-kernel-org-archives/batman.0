@@ -1,9 +1,9 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Fri,  4 Oct 2013 15:58:35 +0200
-Message-Id: <1380895115-24947-1-git-send-email-andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH v2] vis: Add an output format which is json
-	conformant.
+Date: Fri,  4 Oct 2013 17:16:15 +0200
+Message-Id: <1380899775-25238-1-git-send-email-andrew@lunn.ch>
+Subject: [B.A.T.M.A.N.] [PATCH v2] alfred: Add support for passing location
+	information over alfred.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,516 +18,1014 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Janne.Paatero@ruag.com
 
-The current json output consists of individual lines which are json
-conformant, but there is no conformancy between lines. Add a new
-output format, which as a whole is json conformant.
+It can be useful to know where mesh nodes are located. Add an Alfred
+server which can get the current location from gpsd, or a static
+location from the command line. Add a client which can display this
+information distributed by nodes in JSON format.
 
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
 
 Since v1:
- Add routing algorithm to output
- Add batadv-vis version to output
- Update man page
+ Remove CHANGELOG entry
+ Makefile uses pkg-config, thanks to Sven
+ Add man page.
 
- README               |  44 +++++++-
- vis/man/batadv-vis.8 |  45 +++++++-
- vis/vis.c            | 301 ++++++++++++++++++++++++++++++++++++++++++---------
- vis/vis.h            |   3 +-
- 4 files changed, 336 insertions(+), 57 deletions(-)
+ Makefile               |  24 ++-
+ README                 |  52 ++++-
+ gpsd/Makefile          |  98 +++++++++
+ gpsd/alfred-gpsd.c     | 529 +++++++++++++++++++++++++++++++++++++++++++++++++
+ gpsd/alfred-gpsd.h     | 102 ++++++++++
+ gpsd/man/alfred-gpsd.8 |  92 +++++++++
+ 6 files changed, 890 insertions(+), 7 deletions(-)
+ create mode 100644 gpsd/Makefile
+ create mode 100644 gpsd/alfred-gpsd.c
+ create mode 100644 gpsd/alfred-gpsd.h
+ create mode 100644 gpsd/man/alfred-gpsd.8
 
+diff --git a/Makefile b/Makefile
+index 7b13d7b..5bc24d8 100644
+--- a/Makefile
++++ b/Makefile
+@@ -64,9 +64,15 @@ ifneq ($(CONFIG_ALFRED_VIS),n)
+ 	VIS_INSTALL=vis-install
+ endif
+ 
++ifneq ($(CONFIG_ALFRED_GPSD),n)
++	GPSD_ALL=gpsd-all
++	GPSD_CLEAN=gpsd-clean
++	GPSD_INSTALL=gpsd-install
++endif
++
+ 
+ # default target
+-all: $(BINARY_NAME) $(VIS_ALL)
++all: $(BINARY_NAME) $(VIS_ALL) $(GPSD_ALL)
+ 
+ # standard build rules
+ .SUFFIXES: .o .c
+@@ -76,10 +82,10 @@ all: $(BINARY_NAME) $(VIS_ALL)
+ $(BINARY_NAME): $(OBJ)
+ 	$(LINK.o) $^ $(LDLIBS) -o $@
+ 
+-clean:	$(VIS_CLEAN)
++clean:	$(VIS_CLEAN) $(GPSD_CLEAN)
+ 	$(RM) $(BINARY_NAME) $(OBJ) $(DEP)
+ 
+-install: $(BINARY_NAME) $(VIS_INSTALL)
++install: $(BINARY_NAME) $(VIS_INSTALL) $(GPSD_INSTALL)
+ 	$(MKDIR) $(DESTDIR)$(SBINDIR)
+ 	$(MKDIR) $(DESTDIR)$(MANDIR)/man8
+ 	$(INSTALL) -m 0755 $(BINARY_NAME) $(DESTDIR)$(SBINDIR)
+@@ -94,8 +100,18 @@ vis-all:
+ vis-clean:
+ 	$(MAKE) -C vis clean
+ 
++gpsd-install:
++	$(MAKE) -C gpsd install
++
++gpsd-all:
++	$(MAKE) -C gpsd all
++
++gpsd-clean:
++	$(MAKE) -C gpsd clean
++
+ # load dependencies
+ DEP = $(OBJ:.o=.d)
+ -include $(DEP)
+ 
+-.PHONY: all clean install vis-install vis-all vis-clean
++.PHONY: all clean install vis-install vis-all vis-clean \
++	gpsd-install gpsd-all gpsd-clean
 diff --git a/README b/README
-index 50c36ad..fea4f08 100644
+index 4a494a4..dbcc44a 100644
 --- a/README
 +++ b/README
-@@ -152,7 +152,7 @@ digraph {
- [...]
- }
+@@ -29,11 +29,14 @@ alfred depends on:
+  * librt (usually part of libc)
+  * IPv6 support in the kernel/host system
  
--For a json formatted output, use:
-+For a json like formatted output, use:
++and if distributing GPS information:
++ * libgps
++
+ To compile alfred, simply type:
  
-  $ batadv-vis -f json
- { "primary" : "fe:f0:00:00:04:01" }
-@@ -169,6 +169,48 @@ For a json formatted output, use:
+  $ make
+ 
+-This will compile both alfred and batadv-vis. To install, use
++This will compile alfred, batadv-vis & alfred-gpsd. To install, use
+ 
+  $ make install
+ 
+@@ -44,6 +47,13 @@ If you don't want to compile batadv-vis, add the directive CONFIG_ALFRED_VIS=n:
+  $ make CONFIG_ALFRED_VIS=n 
+  $ make CONFIG_ALFRED_VIS=n install
+ 
++If you don't want to compile alfred-gpsd, add the directive
++CONFIG_ALFRED_GPSD=n:
++
++ $ make CONFIG_ALFRED_GPSD=n 
++ $ make CONFIG_ALFRED_GPSD=n install
++
++
+ Usage
+ -----
+ 
+@@ -169,11 +179,47 @@ For a json formatted output, use:
  { "primary" : "fe:f0:00:00:08:01" }
  [...]
  
-+and for conformant json output, use:
++Alfred-gpsd
++-----------
 +
-+ $ batadv-vis -f cjson
-+{
-+  "source_version" : "2013.3.0-14-gcd34783",
-+  "algorithm" : 4,
-+  "vis" : [
-+    { "primary" : "fe:f0:00:00:04:01",
-+      "neighbors" : [
-+         { "router" : "fe:f0:00:00:04:01",
-+           "neighbor" : "fe:f0:00:00:05:01",
-+           "metric" : "1.000" },
-+         { "router" : "fe:f0:00:00:04:01",
-+           "neighbor" : "fe:f0:00:00:03:01",
-+           "metric" : "1.008" }
-+      ],
-+      "clients" : [
-+         "00:00:43:05:00:04",
-+         "fe:f1:00:00:04:01"
-+      ]
-+    },
-+    { "primary" : "fe:f0:00:00:02:01",
-+      "neighbors" : [
-+         { "router" : "fe:f0:00:00:02:01",
-+           "neighbor" : "fe:f0:00:00:03:01",
-+  	 "metric" : "1.000" },
-+         { "router" : "fe:f0:00:00:02:01",
-+           "neighbor" : "fe:f0:00:00:01:01",
-+           "metric" : "1.016" },
-+         { "router" : "fe:f0:00:00:02:01",
-+           "neighbor" : "fe:f0:00:00:08:01",
-+           "metric" : "1.000" }
-+      ],
-+      "clients" : [
-+        "fe:f1:00:00:02:01",
-+        "00:00:43:05:00:02"
-+      ]
-+    },
-+    { "primary" : "fe:f0:00:00:08:01",
-+[...]
++Alfred-gpsd can be used to distibute GPS location information about
++your batman-adv mesh network. This information could be, for example,
++combined with Vis to visualize your mesh topology with true geographic
++layout. For mobile or nomadic nodes, Alfred-gpsd, can get location
++information from gpsd.  Alternatively, a static location can be passed
++on the command line, which is useful for static nodes without a GPS.
 +
++Alfred-gpsd, similar to to alfred, combines server (daemon) and client
++functionality in the 'alfred-gpsd' binary. The alfred-gpsd server must
++be started to distribute location information. When retrieving
++location information from gpsd, it should be started with:
++
++ $ alfred-gpsd -s
++
++For a static location, use:
++
++ $ alfred-gpsd -s -l 48.858222,2.2945,358
++
++This server will set the location in alfred via unix
++socket. Obviously, the alfred server must run too to get this
++information set. When using gpsd, it updates alfred every 2
++seconds. With a static location, the update it made every 5 minutes.
++
++To get JSON formatted output, use:
++
++ $ alfred-gpsd
++[
++  { "source" : "f6:00:48:13:d3:1e", "tpv" : {"class":"TPV","tag":"RMC","device":"/dev/ttyACM0","mode":3,"time":"2013-10-01T10:43:20.000Z","ept":0.005,"lat":52.575485000,"lon":-1.339716667,"alt":122.500,"epx":10.199,"epy":15.720,"epv":31.050,"track":0.0000,"speed":0.010,"climb":0.000,"eps":31.44} },
++  { "source" : "8e:4c:77:b3:65:b4", "tpv" : {"class":"TPV","device":"command line","time":"2013-10-01T10:43:05.129Z","lat":48.858222,"lon":2.2945,"alt":358.000000,"mode":3} }
++]
++
++See gpsd_json(5) for documentation of the tpv object. 
 +
  License
  -------
  
-diff --git a/vis/man/batadv-vis.8 b/vis/man/batadv-vis.8
-index dfa2604..4f60a0a 100644
---- a/vis/man/batadv-vis.8
-+++ b/vis/man/batadv-vis.8
-@@ -51,7 +51,7 @@ information from batman-adv every 10 seconds and set it in alfred via unix
- socket. The alfred server must run too to get this information set.
- .TP
- \fB\-f\fP, \fB\-\-format\fP \fIformat\fP
--Specify the output format for client mode (either "json" or "dot")
-+Specify the output format for client mode (either "json", "cjson" or "dot")
- .
- .SH EXAMPLES
- Start an batadv\-vis server which is fetching the information for bat0:
-@@ -106,6 +106,49 @@ To get a json vis output:
-      [...]
- .fi
- .br
-+
-+To get a json conforming vis output:
-+.br
-+\fB     batadv-vis -f cjson\fP
-+.nf
-+     {
-+       "source_version" : "2013.3.0-14-gcd34783",
-+       "algorithm" : 4,
-+       "vis" : [
-+         { "primary" : "fe:f0:00:00:04:01",
-+           "neighbors" : [
-+              { "router" : "fe:f0:00:00:04:01",
-+                "neighbor" : "fe:f0:00:00:05:01",
-+                "metric" : "1.000" },
-+              { "router" : "fe:f0:00:00:04:01",
-+                "neighbor" : "fe:f0:00:00:03:01",
-+                "metric" : "1.008" }
-+           ],
-+           "clients" : [
-+              "00:00:43:05:00:04",
-+              "fe:f1:00:00:04:01"
-+           ]
-+         },
-+         { "primary" : "fe:f0:00:00:02:01",
-+           "neighbors" : [
-+              { "router" : "fe:f0:00:00:02:01",
-+                "neighbor" : "fe:f0:00:00:03:01",
-+       	 "metric" : "1.000" },
-+              { "router" : "fe:f0:00:00:02:01",
-+                "neighbor" : "fe:f0:00:00:01:01",
-+                "metric" : "1.016" },
-+              { "router" : "fe:f0:00:00:02:01",
-+                "neighbor" : "fe:f0:00:00:08:01",
-+                "metric" : "1.000" }
-+           ],
-+           "clients" : [
-+             "fe:f1:00:00:02:01",
-+             "00:00:43:05:00:02"
-+           ]
-+         },
-+         { "primary" : "fe:f0:00:00:08:01",
-+     [...]
-+
- .
- .SH SEE ALSO
- .BR alfred (8),
-diff --git a/vis/vis.c b/vis/vis.c
-index ad7f530..17ffa98 100644
---- a/vis/vis.c
-+++ b/vis/vis.c
-@@ -26,6 +26,7 @@
- #include <linux/if.h>
- #include <netinet/in.h>
- #include <signal.h>
-+#include <stdbool.h>
- #include <stddef.h>
- #include <stdio.h>
- #include <stdlib.h>
-@@ -511,18 +512,253 @@ static struct vis_v1 *vis_receive_answer_packet(int sock, uint16_t *len)
- 	return (struct vis_v1 *) data->data;
- }
+-alfred and batadv-vis are licensed under the terms of version 2 of the GNU
+-General Public License (GPL). Please see the LICENSE file.
++alfred, batadv-vis and alfred-gpsd are licensed under the terms of version 2
++of the GNU General Public License (GPL). Please see the LICENSE file.
  
-+static void vis_dot_preamble(void)
+ The file "packet.h" is an exception and not licensed with the GPL. Instead,
+ it is licensed using ISC license (see the head of this file). This allows
+diff --git a/gpsd/Makefile b/gpsd/Makefile
+new file mode 100644
+index 0000000..eaf390b
+--- /dev/null
++++ b/gpsd/Makefile
+@@ -0,0 +1,98 @@
++#!/usr/bin/make -f
++# -*- makefile -*-
++#
++# Copyright (C) 2013 B.A.T.M.A.N. contributors
++#
++# This program is free software; you can redistribute it and/or
++# modify it under the terms of version 2 of the GNU General Public
++# License as published by the Free Software Foundation.
++#
++# This program is distributed in the hope that it will be useful, but
++# WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++# General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, write to the Free Software
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++# 02110-1301, USA
++#
++
++# alfred-gpsd build
++BINARY_NAME = alfred-gpsd
++OBJ = alfred-gpsd.o
++
++# alfred flags and options
++CFLAGS += -pedantic -Wall -W -std=gnu99 -fno-strict-aliasing -MD -MP
++
++# disable verbose output
++ifneq ($(findstring $(MAKEFLAGS),s),s)
++ifndef V
++	Q_CC = @echo '   ' CC $@;
++	Q_LD = @echo '   ' LD $@;
++	export Q_CC
++	export Q_LD
++endif
++endif
++
++ifeq ($(origin PKG_CONFIG), undefined)
++  PKG_CONFIG = pkg-config
++  ifeq ($(shell which $(PKG_CONFIG) 2>/dev/null),)
++    $(error $(PKG_CONFIG) not found)
++  endif
++endif
++
++ifeq ($(origin LIBGPS_CFLAGS) $(origin LIBGPS_LDLIBS), undefined undefined)
++  LIBGPS_NAME ?= libgps
++  ifeq ($(shell $(PKG_CONFIG) --modversion $(LIBGPS_NAME) 2>/dev/null),)
++    $(error No $(LIBGPS_NAME) development libraries found!)
++  endif
++  LIBGPS_CFLAGS += $(shell $(PKG_CONFIG) --cflags $(LIBGPS_NAME))
++  LIBGPS_LDLIBS +=  $(shell $(PKG_CONFIG) --libs $(LIBGPS_NAME))
++endif
++CFLAGS += $(LIBGPS_CFLAGS)
++LDLIBS += $(LIBGPS_LDLIBS)
++
++# standard build tools
++CC ?= gcc
++RM ?= rm -f
++INSTALL ?= install
++MKDIR ?= mkdir -p
++COMPILE.c = $(Q_CC)$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
++LINK.o = $(Q_LD)$(CC) $(CFLAGS) $(LDFLAGS) $(TARGET_ARCH)
++
++# standard install paths
++PREFIX = /usr/local
++SBINDIR = $(PREFIX)/sbin
++
++# try to generate revision
++REVISION= $(shell	if [ -d ../.git ]; then \
++				echo $$(git describe --always --dirty --match "v*" |sed 's/^v//' 2> /dev/null || echo "[unknown]"); \
++			fi)
++ifneq ($(REVISION),)
++CPPFLAGS += -DSOURCE_VERSION=\"$(REVISION)\"
++endif
++
++# default target
++all: $(BINARY_NAME)
++
++# standard build rules
++.SUFFIXES: .o .c
++.c.o:
++	$(COMPILE.c) -o $@ $<
++
++$(BINARY_NAME): $(OBJ)
++	$(LINK.o) $^ $(LDLIBS) -o $@
++
++clean:
++	$(RM) $(BINARY_NAME) $(OBJ) $(DEP)
++
++install: $(BINARY_NAME)
++	$(MKDIR) $(DESTDIR)$(SBINDIR)
++	$(INSTALL) -m 0755 $(BINARY_NAME) $(DESTDIR)$(SBINDIR)
++
++# load dependencies
++DEP = $(OBJ:.o=.d)
++-include $(DEP)
++
++.PHONY: all clean install
+diff --git a/gpsd/alfred-gpsd.c b/gpsd/alfred-gpsd.c
+new file mode 100644
+index 0000000..e8f1125
+--- /dev/null
++++ b/gpsd/alfred-gpsd.c
+@@ -0,0 +1,529 @@
++/*
++ * Copyright (C) 2013 B.A.T.M.A.N. contributors:
++ *
++ * Andrew Lunn, Simon Wunderlich
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ * 02110-1301, USA
++ *
++ */
++
++#include "alfred-gpsd.h"
++
++static int alfred_open_sock(struct globals *globals)
 +{
-+	printf("digraph {\n");
-+}
++	struct sockaddr_un addr;
 +
-+static void vis_dot_interfaces(uint8_t iface_n, struct vis_iface *ifaces)
-+{
-+	int i;
-+
-+	printf("\tsubgraph \"cluster_%s\" {\n", mac_to_str(ifaces[0].mac));
-+	for (i = 0; i < iface_n; i++)
-+		printf("\t\t\"%s\"%s\n", mac_to_str(ifaces[i].mac),
-+		       i ? " [peripheries=2]":"");
-+	printf("\t}\n");
-+}
-+
-+static void vis_dot_entries(uint8_t entries_n, struct vis_entry *vis_entries,
-+			    uint8_t iface_n, struct vis_iface *ifaces)
-+{
-+	int i;
-+
-+	for (i = 0; i < entries_n; i++) {
-+		if (vis_entries[i].ifindex == 255) {
-+			printf("\t\"%s\" ", mac_to_str(ifaces[0].mac));
-+			printf("-> \"%s\" [label=\"TT\"]\n",
-+			       mac_to_str(vis_entries[i].mac));
-+		} else {
-+			if (vis_entries[i].ifindex >= iface_n) {
-+				fprintf(stderr, "ERROR: bad ifindex ...\n");
-+				continue;
-+			}
-+			if (vis_entries[i].qual == 0) {
-+				fprintf(stderr, "ERROR: quality = 0?\n");
-+				continue;
-+			}
-+			printf("\t\"%s\" ",
-+			       mac_to_str(ifaces[vis_entries[i].ifindex].mac));
-+			printf("-> \"%s\" [label=\"%3.3f\"]\n",
-+			       mac_to_str(vis_entries[i].mac),
-+			       255.0 / ((float)vis_entries[i].qual));
-+		}
-+	}
-+}
-+
-+static void vis_dot_postamble(void)
-+{
-+	printf("}\n");
-+}
-+
-+static void vis_json_preamble(void)
-+{
-+}
-+
-+static void vis_json_interfaces(uint8_t iface_n, struct vis_iface *ifaces)
-+{
-+	int i;
-+
-+	printf("{ \"primary\" : \"%s\" }\n", mac_to_str(ifaces[0].mac));
-+	for (i = 1; i < iface_n; i++) {
-+		printf("{ \"secondary\" : \"%s\"", mac_to_str(ifaces[i].mac));
-+		printf(", \"of\" : \"%s\" }\n", mac_to_str(ifaces[0].mac));
-+	}
-+}
-+
-+static void vis_json_entries(uint8_t entries_n, struct vis_entry *vis_entries,
-+			     uint8_t iface_n, struct vis_iface *ifaces)
-+{
-+	int i;
-+
-+	for (i = 0; i < entries_n; i++) {
-+		if (vis_entries[i].ifindex == 255) {
-+			printf("{ \"router\" : \"%s\"",
-+			       mac_to_str(ifaces[0].mac));
-+			printf(", \"gateway\" : \"%s\", \"label\" : \"TT\" }\n",
-+			       mac_to_str(vis_entries[i].mac));
-+		} else {
-+			if (vis_entries[i].ifindex >= iface_n) {
-+				fprintf(stderr, "ERROR: bad ifindex ...\n");
-+				continue;
-+			}
-+			if (vis_entries[i].qual == 0) {
-+				fprintf(stderr, "ERROR: quality = 0?\n");
-+				continue;
-+			}
-+			printf("{ \"router\" : \"%s\"",
-+			       mac_to_str(ifaces[vis_entries[i].ifindex].mac));
-+			printf(", \"neighbor\" : \"%s\", \"label\" : \"%3.3f\" }\n",
-+			       mac_to_str(vis_entries[i].mac),
-+			       255.0 / ((float)vis_entries[i].qual));
-+		}
-+	}
-+}
-+
-+static void vis_json_postamble(void)
-+{
-+}
-+
-+static void vis_cjson_preamble(void)
-+{
-+	printf("{\n");
-+	printf("  \"source_version\" : \"%s\",\n", SOURCE_VERSION);
-+	printf("  \"algorithm\" : 4,\n");
-+	printf("  \"vis\" : [\n");
-+}
-+
-+static void vis_cjson_interfaces(uint8_t iface_n, struct vis_iface *ifaces)
-+{
-+	int i;
-+	static bool first_interface = true;
-+
-+	if (first_interface)
-+		first_interface = false;
-+	else
-+		printf(",\n");
-+
-+	printf("    { \"primary\" : \"%s\",\n", mac_to_str(ifaces[0].mac));
-+	if (iface_n > 1) {
-+		printf("      \"secondary\" : [ ");
-+		for (i = 1; i < iface_n; i++) {
-+			printf("\"%s\"", mac_to_str(ifaces[i].mac));
-+			if ( i < iface_n - 1)
-+				printf(",");
-+		}
-+		printf("\n       ],\n");
-+	}
-+}
-+
-+static void vis_cjson_entries(uint8_t entries_n, struct vis_entry *vis_entries,
-+			      uint8_t iface_n, struct vis_iface *ifaces)
-+{
-+	bool first_neighbor = true;
-+	bool first_tt = true;
-+	int i;
-+
-+	printf("      \"neighbors\" : [\n");
-+
-+	for (i = 0; i < entries_n; i++) {
-+		if (vis_entries[i].ifindex == 255) {
-+			continue;
-+		}
-+
-+		if (vis_entries[i].ifindex >= iface_n) {
-+			fprintf(stderr, "ERROR: bad ifindex ...\n");
-+			continue;
-+		}
-+		if (vis_entries[i].qual == 0) {
-+			fprintf(stderr, "ERROR: quality = 0?\n");
-+			continue;
-+		}
-+
-+		if (first_neighbor)
-+			first_neighbor = false;
-+		else
-+			printf(",\n");
-+
-+		printf("         { \"router\" : \"%s\",\n",
-+		       mac_to_str(ifaces[vis_entries[i].ifindex].mac));
-+		printf("           \"neighbor\" : \"%s\",\n",
-+		       mac_to_str(vis_entries[i].mac));
-+		printf("           \"metric\" : \"%3.3f\" }",
-+		       255.0 / ((float)vis_entries[i].qual));
-+	}
-+
-+	printf("\n      ],\n");
-+
-+	printf("      \"clients\" : [\n");
-+
-+	for (i = 0; i < entries_n; i++) {
-+		if (vis_entries[i].ifindex == 255) {
-+			if (first_tt)
-+				first_tt = false;
-+			else
-+				printf(",\n");
-+
-+			printf("        \"%s\"",
-+			       mac_to_str(vis_entries[i].mac));
-+		}
-+	}
-+	printf("\n      ]\n");
-+	printf("    }");
-+}
-+
-+static void vis_cjson_postamble(void)
-+{
-+	printf("\n  ]\n");
-+	printf("}\n");
-+}
-+
-+struct vis_print_ops
-+{
-+	void (*preamble)(void);
-+	void (*interfaces)(uint8_t iface_n, struct vis_iface *ifaces);
-+	void (*entries)(uint8_t entries_n, struct vis_entry *vis_entries,
-+			uint8_t iface_n, struct vis_iface *ifaces);
-+	void (*postamble)(void);
-+};
-+
-+static const struct vis_print_ops vis_dot_ops =
-+{
-+	vis_dot_preamble,
-+	vis_dot_interfaces,
-+	vis_dot_entries,
-+	vis_dot_postamble
-+};
-+
-+static const struct vis_print_ops vis_json_ops =
-+{
-+	vis_json_preamble,
-+	vis_json_interfaces,
-+	vis_json_entries,
-+	vis_json_postamble
-+};
-+
-+static const struct vis_print_ops vis_cjson_ops =
-+{
-+	vis_cjson_preamble,
-+	vis_cjson_interfaces,
-+	vis_cjson_entries,
-+	vis_cjson_postamble
-+};
-+
- static int vis_read_answer(struct globals *globals)
- {
-+	const struct vis_print_ops *ops;
- 	struct vis_v1 *vis_data;
- 	uint16_t len;
- 	struct vis_iface *ifaces;
- 	struct vis_entry *vis_entries;
--	int i;
- 
--	if (globals->vis_format == FORMAT_DOT)
--		printf("digraph {\n");
-+	switch (globals->vis_format) {
-+	case FORMAT_DOT:
-+		ops = &vis_dot_ops;
-+		break;
-+	case FORMAT_JSON:
-+		ops = &vis_json_ops;
-+		break;
-+	case FORMAT_CJSON:
-+		ops = &vis_cjson_ops;
-+		break;
-+	default:
++	globals->unix_sock = socket(AF_LOCAL, SOCK_STREAM, 0);
++	if (globals->unix_sock < 0) {
++		fprintf(stderr, "can't create unix socket: %s\n",
++			strerror(errno));
 +		return -1;
 +	}
 +
-+	ops->preamble();
- 
--	while ((vis_data = vis_receive_answer_packet(globals->unix_sock, &len)) != NULL) {
-+	while ((vis_data =
-+		vis_receive_answer_packet(globals->unix_sock, &len)) != NULL) {
- 		if (len < sizeof(*vis_data))
- 			return -1;
- 
-@@ -536,60 +772,15 @@ static int vis_read_answer(struct globals *globals)
- 		ifaces = vis_data->ifaces;
- 		vis_entries = (struct vis_entry *) &ifaces[vis_data->iface_n];
- 
--		if (globals->vis_format == FORMAT_DOT) {
--			printf("\tsubgraph \"cluster_%s\" {\n", mac_to_str(ifaces[0].mac));
--			for (i = 0; i < vis_data->iface_n; i++)
--				printf("\t\t\"%s\"%s\n", mac_to_str(ifaces[i].mac),
--				       i ? " [peripheries=2]":"");
--			printf("\t}\n");
--		} else if (globals->vis_format == FORMAT_JSON) {
--			printf("{ \"primary\" : \"%s\" }\n", mac_to_str(ifaces[0].mac));
--			for (i = 1; i < vis_data->iface_n; i++) {
--				printf("{ \"secondary\" : \"%s\"", mac_to_str(ifaces[i].mac));
--				printf(", \"of\" : \"%s\" }\n", mac_to_str(ifaces[0].mac));
--			}
--		}
-+		ops->interfaces(vis_data->iface_n, ifaces);
- 
- 		if (vis_data->entries_n == 0)
- 			continue;
- 
--                for (i = 0; i < vis_data->entries_n; i++) {
--			if (vis_entries[i].ifindex == 255) {
--				if (globals->vis_format == FORMAT_DOT) {
--					printf("\t\"%s\" ", mac_to_str(ifaces[0].mac));
--					printf("-> \"%s\" [label=\"TT\"]\n", mac_to_str(vis_entries[i].mac));
--				} else if (globals->vis_format == FORMAT_JSON) {
--					printf("{ \"router\" : \"%s\"", mac_to_str(ifaces[0].mac));
--					printf(", \"gateway\" : \"%s\", \"label\" : \"TT\" }\n", mac_to_str(vis_entries[i].mac));
--				}
--			} else {
--				if (vis_entries[i].ifindex >= vis_data->iface_n) {
--					fprintf(stderr, "ERROR: bad ifindex ...\n");
--					continue;
--				}
--				if (vis_entries[i].qual == 0) {
--					fprintf(stderr, "ERROR: quality = 0?\n");
--					continue;
--				}
--				if (globals->vis_format == FORMAT_DOT) {
--					printf("\t\"%s\" ",
--					       mac_to_str(ifaces[vis_entries[i].ifindex].mac));
--					printf("-> \"%s\" [label=\"%3.3f\"]\n",
--					       mac_to_str(vis_entries[i].mac),
--					       255.0 / ((float)vis_entries[i].qual));
--				} else if (globals->vis_format == FORMAT_JSON) {
--					printf("{ \"router\" : \"%s\"",
--					       mac_to_str(ifaces[vis_entries[i].ifindex].mac));
--					printf(", \"neighbor\" : \"%s\", \"label\" : \"%3.3f\" }\n",
--					       mac_to_str(vis_entries[i].mac),
--					       255.0 / ((float)vis_entries[i].qual));
--
--				}
--			}
--		}
-+		ops->entries(vis_data->entries_n, vis_entries,
-+			     vis_data->iface_n, ifaces);
- 	}
--	if (globals->vis_format == FORMAT_DOT)
--		printf("}\n");
-+	ops->postamble();
- 
- 	return 0;
- }
-@@ -611,7 +802,7 @@ static void vis_usage(void)
- 	printf("Usage: batadv-vis [options]\n");
- 	printf("  -i, --interface             specify the batman-adv interface configured on the system (default: bat0)\n");
- 	printf("  -s, --server                start up in server mode, which regularly updates vis data from batman-adv\n");
--	printf("  -f, --format <format>       specify the output format for client mode (either \"json\" or \"dot\")\n");
-+	printf("  -f, --format <format>       specify the output format for client mode (either \"json\", \"cjson\" or \"dot\")\n");
- 	printf("  -v, --version               print the version\n");
- 	printf("  -h, --help                  this help\n");
- 	printf("\n");
-@@ -651,6 +842,8 @@ static struct globals *vis_init(int argc, char *argv[])
- 				globals->vis_format = FORMAT_DOT;
- 			else if (strncmp(optarg, "json", 4) == 0)
- 				globals->vis_format = FORMAT_JSON;
-+			else if (strncmp(optarg, "cjson", 5) == 0)
-+				globals->vis_format = FORMAT_CJSON;
- 			else {
- 				vis_usage();
- 				return NULL;
-diff --git a/vis/vis.h b/vis/vis.h
-index 6ba70c6..5d01ffd 100644
---- a/vis/vis.h
-+++ b/vis/vis.h
-@@ -49,7 +49,8 @@ enum opmode {
- 
- enum vis_format {
- 	FORMAT_DOT,
--	FORMAT_JSON
-+	FORMAT_JSON,
-+	FORMAT_CJSON,
- };
- 
- struct vis_iface {
++	memset(&addr, 0, sizeof(addr));
++	addr.sun_family = AF_LOCAL;
++	strcpy(addr.sun_path, ALFRED_SOCK_PATH);
++
++	if (connect(globals->unix_sock, (struct sockaddr *)&addr,
++		    sizeof(addr)) < 0) {
++		fprintf(stderr, "can't connect to unix socket: %s\n",
++			strerror(errno));
++		return -1;
++	}
++
++	return 0;
++}
++
++static int gpsd_publish_data(struct globals *globals)
++{
++	int len, ret;
++
++	/* to push data we have to add a push header, the header for the data
++	 * and our own data type.
++	 */
++	globals->push->tx.id = htons(ntohs(globals->push->tx.id) + 1);
++
++	len = GPSD_DATA_SIZE(globals->gpsd_data);
++	globals->push->data->header.length = htons(len);
++	len += sizeof(*globals->push) - sizeof(globals->push->header);
++	len += sizeof(*globals->push->data);
++	globals->push->header.length = htons(len);
++	len +=  sizeof(globals->push->header);
++
++	alfred_open_sock(globals);
++	if (globals->unix_sock < 0)
++		return globals->unix_sock;
++
++	ret = write(globals->unix_sock, globals->buf, len);
++	close(globals->unix_sock);
++	if (ret < len)
++		return -1;
++
++	return 0;
++}
++
++static void gpsd_get_location(struct globals *globals)
++{
++	if (globals->source == SOURCE_CMDLINE) {
++		char tbuf[JSON_DATE_MAX+1];
++		timestamp_t now = timestamp();
++
++		sprintf(globals->gpsd_data->tpv,
++			"{\"class\":\"TPV\",\"device\":\"command line\","
++			"\"time\":\"%s\","
++			"\"lat\":%f,\"lon\":%f,\"alt\":%f,"
++			"\"mode\":3}",
++			unix_to_iso8601(now, tbuf, sizeof(tbuf)),
++			globals->lat, globals->lon, globals->alt);
++		globals->gpsd_data->tpv_len =
++			htonl(strlen(globals->gpsd_data->tpv) + 1);
++	}
++}
++
++static int gpsd_update_data(struct globals *globals)
++{
++	gpsd_get_location(globals);
++	gpsd_publish_data(globals);
++
++	return 0;
++}
++
++static int gpsd_request_data(struct globals *globals)
++{
++	int ret;
++
++	globals->request = (struct alfred_request_v0 *) globals->buf;
++
++	globals->request->header.type = ALFRED_REQUEST;
++	globals->request->header.version = ALFRED_VERSION;
++	globals->request->header.length =
++		htons(sizeof(*globals->request) - 
++		      sizeof(globals->request->header));
++	globals->request->requested_type = GPSD_PACKETTYPE;
++	globals->request->tx_id = htons(random());
++
++	alfred_open_sock(globals);
++	if (globals->unix_sock < 0)
++		return globals->unix_sock;
++
++	ret = write(globals->unix_sock, globals->request,
++		    sizeof(*globals->request));
++	if (ret < (int)sizeof(*globals->request)) {
++		close(globals->unix_sock);
++		return -1;
++	}
++
++	return globals->unix_sock;
++}
++
++static struct gpsd_v1 *gpsd_receive_answer_packet(int sock, uint16_t *len,
++						  uint8_t *source)
++{
++	static uint8_t buf[65536];
++	struct alfred_tlv *tlv;
++	struct alfred_push_data_v0 *push;
++	struct alfred_data *data;
++	int l, ret;
++
++	ret = read(sock, buf, sizeof(*tlv));
++	if (ret < 0)
++		return NULL;
++
++	if (ret < (int)sizeof(*tlv))
++		return NULL;
++
++	tlv = (struct alfred_tlv *)buf;
++	/* TODO: might return an ALFRED_STATUS_ERROR too, handle it */
++	if (tlv->type != ALFRED_PUSH_DATA)
++		return NULL;
++
++	l = ntohs(tlv->length);
++	/* exceed the buffer? don't read */
++	if (l > (int)(sizeof(buf) - sizeof(push->header)))
++		return NULL;
++
++	/* not enough for even the push packet and header? don't bother. */
++	if (l < (int)(sizeof(*push) - sizeof(push->header) + sizeof(*data)))
++		return NULL;
++
++	/* read the rest of the packet */
++	ret = read(sock, buf + sizeof(*tlv), l);
++	if (ret < l)
++		return NULL;
++
++	push = (struct alfred_push_data_v0 *)buf;
++	data = push->data;
++	*len = ntohs(data->header.length);
++
++	if (data->header.type != GPSD_PACKETTYPE)
++		return NULL;
++
++	if (data->header.version != GPSD_PACKETVERSION)
++		return NULL;
++
++	memcpy(source, data->source, ETH_ALEN);
++	return (struct gpsd_v1 *) data->data;
++}
++
++static int gpsd_read_answer(struct globals *globals)
++{
++	struct gpsd_v1 *gpsd_data;
++	uint16_t len;
++	uint8_t source[ETH_ALEN];
++	bool first_line = true;
++
++	printf("[\n");
++
++	while ((gpsd_data = gpsd_receive_answer_packet(globals->unix_sock,
++						       &len,
++						       source)) != NULL) {
++		if (len < sizeof(*gpsd_data))
++			break;
++
++		/* check size and skip bogus packets */
++		if (len != GPSD_DATA_SIZE(gpsd_data))
++			continue;
++
++		if (first_line)
++			first_line = false;
++		else
++			printf(",\n");
++
++		printf("  { \"source\" : \"%02x:%02x:%02x:%02x:%02x:%02x\", "
++		       "\"tpv\" : %s }",
++		       source[0], source[1], source[2],
++		       source[3], source[4], source[5],
++		       gpsd_data->tpv);
++	}
++	printf("\n]\n");
++
++
++	return 0;
++}
++
++/* Standard parsing of a GPS data source spec. Taken from gpsdclient.c */
++static void gpsd_source_spec(const char *arg, struct fixsource_t *source)
++{
++	/* the casts attempt to head off a -Wwrite-strings warning */
++	source->server = (char *)"localhost";
++	source->port = (char *)DEFAULT_GPSD_PORT;
++	source->device = NULL;
++
++	if (arg != NULL) {
++		char *colon1, *skipto, *rbrk;
++		source->spec = strdup(arg);
++		assert(source->spec != NULL);
++
++		skipto = source->spec;
++		if (*skipto == '[' && (rbrk = strchr(skipto, ']')) != NULL) {
++			skipto = rbrk;
++		}
++		colon1 = strchr(skipto, ':');
++
++		if (colon1 != NULL) {
++			char *colon2;
++			*colon1 = '\0';
++			if (colon1 != source->spec) {
++				source->server = source->spec;
++			}
++			source->port = colon1 + 1;
++			colon2 = strchr(source->port, ':');
++			if (colon2 != NULL) {
++				*colon2 = '\0';
++				source->device = colon2 + 1;
++			}
++		} else if (strchr(source->spec, '/') != NULL) {
++			source->device = source->spec;
++		} else {
++			source->server = source->spec;
++		}
++	}
++
++	if (*source->server == '[') {
++		char *rbrk = strchr(source->server, ']');
++		++source->server;
++		if (rbrk != NULL)
++			*rbrk = '\0';
++	}
++}
++
++static int gpsd_get_data(struct globals *globals)
++{
++	globals->unix_sock = gpsd_request_data(globals);
++	if (globals->unix_sock < 0)
++		return -1;
++
++	gpsd_read_answer(globals);
++	close(globals->unix_sock);
++
++	return 0;
++}
++
++static void gpsd_connect_gpsd(struct globals *globals)
++{
++	unsigned int flags = WATCH_ENABLE | WATCH_JSON;
++	int ret;
++
++	ret = gps_open(globals->gpsdsource.server, globals->gpsdsource.port,
++		       &globals->gpsdata);
++
++	if (ret) {
++		/* Could not connect to gpsd. Set the fd so we don't
++		   try to perform select(2) on it. */
++		globals->gpsdata.gps_fd = -1;
++		return;
++	}
++
++	if (globals->gpsdsource.device != NULL)
++		flags |= WATCH_DEVICE;
++
++	gps_stream(&globals->gpsdata, flags, globals->gpsdsource.device);
++}
++
++static void gpsd_read_gpsd(struct globals *globals)
++{
++	ssize_t ret;
++	size_t cnt;
++	bool eol = false;
++	char buf[4096];
++
++	cnt = 0;
++	do {
++		ret = read(globals->gpsdata.gps_fd, &buf[cnt], 1);
++		if (ret != 1) {
++			gps_close(&globals->gpsdata);
++			globals->gpsdata.gps_fd = -1;
++			return;
++		}
++
++		if (buf[cnt] == '\r')
++			cnt--;
++
++		if (buf[cnt] == '\n') {
++			eol = true;
++			buf[cnt] = '\0';
++			break;
++		}
++	} while (cnt++ < sizeof(buf) - 1);
++
++	if (!eol) {
++		gps_close(&globals->gpsdata);
++		globals->gpsdata.gps_fd = -1;
++		return;
++	}
++
++#define STARTSWITH(str, prefix)	strncmp(str, prefix, sizeof(prefix)-1)==0
++	if (STARTSWITH(buf, "{\"class\":\"TPV\"")) {
++		strcpy(globals->gpsd_data->tpv, buf);
++		globals->gpsd_data->tpv_len =
++			htonl(strlen(globals->gpsd_data->tpv) + 1);
++	}
++}
++
++static void gpsd_usage(void)
++{
++	printf("Usage: alfred-gpsd [options]\n");
++	printf("  -s, --server                start up in server mode, which regularly updates gpsd data from batman-adv\n");
++	printf("  -l <lat>,<lon>,<alt>        Static location\n");
++	printf("  -g server[:port[:device]]   GPSD source\n");
++	printf("  -v, --version               print the version\n");
++	printf("  -h, --help                  this help\n");
++	printf("\n");
++}
++
++static void gpsd_parse_location(struct globals *globals,
++				const char * optarg)
++{
++	int n;
++	float lat, lon, alt;
++
++	n = sscanf(optarg, "%f,%f,%f", &lat, &lon, &alt);
++	if (n != 3) {
++		printf("Unable to parse location\n");
++		gpsd_usage();
++		exit(EXIT_FAILURE);
++	}
++
++	if ((lat < -90) || (lat > 90)) {
++		printf("Invalid latitude\n");
++		gpsd_usage();
++		exit(EXIT_FAILURE);
++	}
++
++	if ((lon < -180) || (lon > 180)) {
++		printf("Invalid longitude\n");
++		gpsd_usage();
++		exit(EXIT_FAILURE);
++	}
++
++	if ((alt < -1000) || (lon > 9000)) {
++		/* No support for aircraft or submarines! */
++		printf("Invalid altitude\n");
++		gpsd_usage();
++		exit(EXIT_FAILURE);
++	}
++
++	globals->lat = lat;
++	globals->lon = lon;
++	globals->alt = alt;
++}
++
++static struct globals *gpsd_init(int argc, char *argv[])
++{
++	bool have_source = false;
++	int opt, opt_ind;
++	struct globals *globals;
++	struct option long_options[] = {
++		{"server",	no_argument,		NULL,	's'},
++		{"location",    required_argument,	NULL,	'l'},
++		{"gpsd",	required_argument,	NULL,	'g'},
++		{"help",	no_argument,		NULL,	'h'},
++		{"version",	no_argument,		NULL,	'v'},
++		{NULL,		0,			NULL,	0},
++	};
++
++	globals = malloc(sizeof(*globals));
++	if (!globals)
++		return NULL;
++
++	memset(globals, 0, sizeof(*globals));
++
++	globals->opmode = OPMODE_CLIENT;
++	globals->source = SOURCE_GPSD;
++	globals->gpsd_format = FORMAT_JSON;
++
++	while ((opt = getopt_long(argc, argv, "shl:g:v", long_options,
++				  &opt_ind)) != -1) {
++		switch (opt) {
++		case 's':
++			globals->opmode = OPMODE_SERVER;
++			break;
++		case 'l':
++			globals->source = SOURCE_CMDLINE;
++			gpsd_parse_location(globals, optarg);
++			break;
++		case 'g':
++			gpsd_source_spec(optarg, &globals->gpsdsource);
++			have_source = true;
++			break;
++		case 'v':
++			printf("%s %s\n", argv[0], SOURCE_VERSION);
++			printf("GPSD alfred client\n");
++			return NULL;
++		case 'h':
++		default:
++			gpsd_usage();
++			return NULL;
++		}
++	}
++
++	if (globals->source == SOURCE_GPSD && !have_source)
++		gpsd_source_spec(NULL, &globals->gpsdsource);
++
++	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
++		fprintf(stderr, "could not register SIGPIPE handler\n");
++	return globals;
++}
++
++static int gpsd_server(struct globals *globals)
++{
++	struct timeval tv;
++	fd_set fds;
++	int max_fd, ret;
++	const size_t overhead = sizeof(*globals->push) +
++		sizeof(struct alfred_data);
++	long interval;
++
++	globals->push = (struct alfred_push_data_v0 *) globals->buf;
++	globals->gpsd_data = (struct gpsd_v1 *)
++		(globals->buf + overhead);
++
++	globals->push->header.type = ALFRED_PUSH_DATA;
++	globals->push->header.version = ALFRED_VERSION;
++	globals->push->tx.id = 0;
++	globals->push->tx.seqno = 0;
++	globals->push->data->header.type = GPSD_PACKETTYPE;
++	globals->push->data->header.version = GPSD_PACKETVERSION;
++
++	strcpy(globals->gpsd_data->tpv, GPSD_INIT_TPV);
++	globals->gpsd_data->tpv_len =
++		htonl(strlen(globals->gpsd_data->tpv) + 1);
++
++	/* If we have a static location, we don't need to update very
++	   often. */
++	if (globals->source == SOURCE_GPSD) {
++		globals->gpsdata.gps_fd = -1;
++		interval = 2;
++	} else
++		interval = 60 * 5;
++
++	while (1) {
++		gpsd_update_data(globals);
++
++		/* If we are not connected to gpsd, try to connect. */
++		if (globals->source == SOURCE_GPSD &&
++		    globals->gpsdata.gps_fd == -1) {
++			gpsd_connect_gpsd(globals);
++		}
++
++		/* Use linux's select(2) behaviour of setting
++		   tv to the remaining time when it exists */
++		tv.tv_sec = interval;
++		tv.tv_usec = 0;
++
++		do {
++			FD_ZERO(&fds);
++
++			if (globals->source == SOURCE_GPSD &&
++				globals->gpsdata.gps_fd != -1) {
++				FD_SET(globals->gpsdata.gps_fd, &fds);
++				max_fd = globals->gpsdata.gps_fd + 1;
++			} else {
++				max_fd = 0;
++			}
++
++			errno = 0;
++			ret = select(max_fd, &fds, NULL, NULL, &tv);
++			if (ret == -1 && errno != EINTR)
++				printf("select error %s(%d)\n",
++				       strerror(errno), errno);
++
++			if (ret == 1)
++				gpsd_read_gpsd(globals);
++		} while (ret != 0);
++	}
++	return EXIT_FAILURE;
++}
++
++int main(int argc, char *argv[])
++{
++	struct globals *globals;
++
++	globals = gpsd_init(argc, argv);
++
++	if (!globals)
++		return EXIT_FAILURE;
++
++	switch (globals->opmode) {
++	case OPMODE_SERVER:
++		return gpsd_server(globals);
++		break;
++	case OPMODE_CLIENT:
++		return gpsd_get_data(globals);
++		break;
++	}
++
++	return EXIT_FAILURE;
++}
+diff --git a/gpsd/alfred-gpsd.h b/gpsd/alfred-gpsd.h
+new file mode 100644
+index 0000000..206561e
+--- /dev/null
++++ b/gpsd/alfred-gpsd.h
+@@ -0,0 +1,102 @@
++/*
++ * Copyright (C) 2013 B.A.T.M.A.N. contributors:
++ *
++ * Andrew Lunn, Simon Wunderlich
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
++ * 02110-1301, USA
++ *
++ */
++
++#include <stdio.h>
++#include <stdint.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++#include <errno.h>
++#include <getopt.h>
++#include <signal.h>
++#include <assert.h>
++#include <sys/types.h>
++#include <sys/socket.h>
++#include <sys/un.h>
++#include <netinet/ether.h>
++#include <netinet/in.h>
++#include <gps.h>
++#include "../packet.h"
++#include "../list.h"
++
++#ifndef SOURCE_VERSION
++#define SOURCE_VERSION				"2013.4.0"
++#endif
++
++#define ALFRED_SOCK_PATH			"/var/run/alfred.sock"
++#define PATH_BUFF_LEN				200
++#define GPSD_PACKETTYPE				2
++#define	GPSD_PACKETVERSION			1
++#define UPDATE_INTERVAL				10
++
++enum opmode {
++	OPMODE_SERVER,
++	OPMODE_CLIENT
++};
++
++enum source {
++	SOURCE_CMDLINE,
++	SOURCE_GPSD
++};
++
++enum gpsd_format {
++	FORMAT_JSON
++};
++
++#define JSON_DATE_MAX   24      /* ISO8601 timestamp with 2 decimal places */
++
++struct gpsd_v1 {
++	uint32_t tpv_len;
++	__extension__ char tpv[0];
++} __packed;
++
++#define GPSD_INIT_TPV "{\"class\":\"TPV\",\"mode\":0}"
++
++#define GPSD_DATA_SIZE(gpsd_data)	\
++	(sizeof(*gpsd_data) + (ntohl(gpsd_data->tpv_len)))
++
++/* struct taken from gpsdclient.h */
++struct fixsource_t
++{
++	char *spec;         /* pointer to actual storage */
++	char *server;
++	char *port;
++	char *device;
++};
++
++struct globals {
++	enum opmode opmode;
++	enum source source;
++	enum gpsd_format gpsd_format;
++	uint8_t buf[65536];
++
++	/* internal pointers into buf */
++	struct alfred_request_v0 *request;
++	struct alfred_push_data_v0 *push;
++	struct gpsd_v1 *gpsd_data;
++
++	float lat, lon, alt;
++	int unix_sock;
++
++	struct fixsource_t gpsdsource;
++	struct gps_data_t gpsdata;
++	char * tpv;
++};
+diff --git a/gpsd/man/alfred-gpsd.8 b/gpsd/man/alfred-gpsd.8
+new file mode 100644
+index 0000000..fa5cb1f
+--- /dev/null
++++ b/gpsd/man/alfred-gpsd.8
+@@ -0,0 +1,92 @@
++.\"                                      Hey, EMACS: -*- nroff -*-
++.\" First parameter, NAME, should be all caps
++.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
++.\" other parameters are allowed: see man(7), man(1)
++.TH "ALFRED-GPSD" "8" "Oct 04, 2013" "Linux" "Alfred GPS distribution server"
++.\" Please adjust this date whenever revising the manpage.
++.\"
++.\" Some roff macros, for reference:
++.\" .nh        disable hyphenation
++.\" .hy        enable hyphenation
++.\" .ad l      left justify
++.\" .ad b      justify to both left and right margins
++.\" .nf        disable filling
++.\" .fi        enable filling
++.\" .br        insert line break
++.\" .sp <n>    insert n+1 empty lines
++.\" for manpage-specific macros, see man(7)
++.\" --------------------------------------------------------------------------
++.\" Process this file with
++.\" groff -man batadv-vis.8 -Tutf8
++.\" Retrieve format warnings with
++.\" man --warnings batadv-vis.8 > /dev/null
++.\" --------------------------------------------------------------------------
++.ad l
++.SH NAME
++alfred\-gpsd \- Alfred GPS distribution server
++.SH SYNOPSIS
++.B alfred\-gpsd [\fIoptions\fP]
++.br
++.SH DESCRIPTION
++alfred\-gpsd can be used to distribute GPS location information over
++your batman-adv mesh network. It reads the current location from gpsd,
++or a fixed location from the command line, and distributes this
++information via alfred. By gathering this local information, any
++alfred-gpsd node can get location information about other nodes.
++.PP
++.PP
++.SH OPTIONS
++.TP
++\fB\-v\fP, \fB\-\-version\fP
++Print the version
++.TP
++\fB\-h\fP, \fB\-\-help\fP
++Display a brief help message.
++.TP
++\fB\-s\fP, \fB\-\-server\fP
++Start up in server mode. This server will read the current location
++from gpsd and set it in alfred via unix socket. The alfred server must
++run too to get this information set.
++.TP
++\fB\-l\fP, \fB\-\-location <lat>,<lon>,<alt>\fP
++Rather than read the current location from gpsd, use a fixed location.
++.TP
++\fB\-g\fP, \fB\-\-gpsd server[:port[:device]]\fP
++Specify the server hostname and optional port of where gpsd is
++listening. Additionally, a specific device connected to gpsd can be specified.
++.
++.SH EXAMPLES
++Start an alfred\-gpsd server which is fetching GPS data from the local gpsd.
++.br
++\fB     alfred\-gpsd \-s\fP
++.br
++
++Start an alfred\-gpsd server with a fixed location
++.br
++\fB     alfred\-gpsd \-s \-l 48.858222,2.2945,358\fP
++.br
++
++To get a list of GPS locations, in JSON format:
++.br
++\fB     alfred-gpsd\fP
++.nf
++[
++  { "source" : "f6:00:48:13:d3:1e", "tpv" : {"class":"TPV","tag":"RMC",
++    "device":"/dev/ttyACM0","mode":3,"time":"2013-10-01T10:43:20.000Z",
++    "ept":0.005,"lat":52.575485000,"lon":-1.339716667,"alt":122.500,
++    "epx":10.199,"epy":15.720,"epv":31.050,"track":0.0000,"speed":0.010,
++    "climb":0.000,"eps":31.44} },
++  { "source" : "8e:4c:77:b3:65:b4", "tpv" : {"class":"TPV",
++    "device":"command line","time":"2013-10-01T10:43:05.129Z",
++    "lat":48.858222,"lon":2.2945,"alt":358.000000,"mode":3}
++  }
++]
++.fi
++.br
++.
++.SH SEE ALSO
++.BR alfred (8),
++.BR gpsd (8)
++.BR gpsd_json(5)
++.SH AUTHOR
++alfred\-gpsd and this Manual page was written by Andrew Lunn <andrew@lunn.ch>
 -- 
 1.8.4.rc3
 
