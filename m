@@ -1,16 +1,12 @@
 Return-Path: <andrew@lunn.ch>
-Date: Mon, 7 Oct 2013 11:00:28 +0200
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20131007090028.GB3391@lunn.ch>
-References: <20131001202648.GT11097@lunn.ch>
- <20131002130548.GA24077@pandem0nium>
- <20131002133600.GD16339@lunn.ch> <525120D8.10508@altermundi.net>
+Date: Mon,  7 Oct 2013 11:23:02 +0200
+Message-Id: <1381137782-3676-1-git-send-email-andrew@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <525120D8.10508@altermundi.net>
-Subject: Re: [B.A.T.M.A.N.] Alfred batadv-vis json conformance
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] =?utf-8?q?=5BPATCH_v3=5D_vis=3A_Add_an_output_form?=
+	=?utf-8?q?at_which_is_json_conformant=2E?=
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,36 +18,523 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Janne.Paatero@ruag.com
 
-On Sun, Oct 06, 2013 at 10:35:36AM +0200, Nicol=E1s Ech=E1niz wrote:
-> El 02/10/13 15:36, Andrew Lunn escribi=F3:
-> > On Wed, Oct 02, 2013 at 03:05:48PM +0200, Simon Wunderlich wrote:
-> >> Hey Andrew,
-> >>
-> >> On Tue, Oct 01, 2013 at 10:26:48PM +0200, Andrew Lunn wrote:
->=20
-> >> Yes, it is only JSON line-wise, but not the whole output. This output =
-format
-> >> however is the same as we have/had in the batctl JSON output which com=
-es
-> >> from the kernel (I think that was your contribution in the first place=
-?).
-> >>
-> >> Therefore I'd like to leave this old format as it is to allow communit=
-ies
-> >> to seamlessly switch from batctl json vis to alfred-vis.
-> >=20
-> > That is what i was expecting. So when i did the first implementation
-> > this morning, i added a new format, cjson, for conforming json. Not
-> > the best of names, but i could not think of anything better.
->=20
-> maybe jsondoc would be more explicit, as it differentiates the output
-> from the current json(lines) format.
+The current json output consists of individual lines which are json
+conformant, but there is no conformancy between lines. Add a new
+output format, which as a whole is json conformant.
 
-Hi Nico
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+---
 
-Yes, i link it. Another patch version coming soon.
+Since v1:
+ Add routing algorithm to output
+ Add batadv-vis version to output
+ Update man page
 
-     Thanks
-          Andrew
+Since v2:
+ Change cjson to jasondoc, as suggested by Nicolás Echániz
+
+ README               |  44 +++++++-
+ vis/man/batadv-vis.8 |  45 +++++++-
+ vis/vis.c            | 302 ++++++++++++++++++++++++++++++++++++++++++---------
+ vis/vis.h            |   3 +-
+ 4 files changed, 337 insertions(+), 57 deletions(-)
+
+diff --git a/README b/README
+index 50c36ad..83cdaf8 100644
+--- a/README
++++ b/README
+@@ -152,7 +152,7 @@ digraph {
+ [...]
+ }
+ 
+-For a json formatted output, use:
++For a json line formatted output, use:
+ 
+  $ batadv-vis -f json
+ { "primary" : "fe:f0:00:00:04:01" }
+@@ -169,6 +169,48 @@ For a json formatted output, use:
+ { "primary" : "fe:f0:00:00:08:01" }
+ [...]
+ 
++and for output where the complete document is json, use:
++
++ $ batadv-vis -f jsondoc
++{
++  "source_version" : "2013.3.0-14-gcd34783",
++  "algorithm" : 4,
++  "vis" : [
++    { "primary" : "fe:f0:00:00:04:01",
++      "neighbors" : [
++         { "router" : "fe:f0:00:00:04:01",
++           "neighbor" : "fe:f0:00:00:05:01",
++           "metric" : "1.000" },
++         { "router" : "fe:f0:00:00:04:01",
++           "neighbor" : "fe:f0:00:00:03:01",
++           "metric" : "1.008" }
++      ],
++      "clients" : [
++         "00:00:43:05:00:04",
++         "fe:f1:00:00:04:01"
++      ]
++    },
++    { "primary" : "fe:f0:00:00:02:01",
++      "neighbors" : [
++         { "router" : "fe:f0:00:00:02:01",
++           "neighbor" : "fe:f0:00:00:03:01",
++  	 "metric" : "1.000" },
++         { "router" : "fe:f0:00:00:02:01",
++           "neighbor" : "fe:f0:00:00:01:01",
++           "metric" : "1.016" },
++         { "router" : "fe:f0:00:00:02:01",
++           "neighbor" : "fe:f0:00:00:08:01",
++           "metric" : "1.000" }
++      ],
++      "clients" : [
++        "fe:f1:00:00:02:01",
++        "00:00:43:05:00:02"
++      ]
++    },
++    { "primary" : "fe:f0:00:00:08:01",
++[...]
++
++
+ License
+ -------
+ 
+diff --git a/vis/man/batadv-vis.8 b/vis/man/batadv-vis.8
+index dfa2604..807c3b1 100644
+--- a/vis/man/batadv-vis.8
++++ b/vis/man/batadv-vis.8
+@@ -51,7 +51,7 @@ information from batman-adv every 10 seconds and set it in alfred via unix
+ socket. The alfred server must run too to get this information set.
+ .TP
+ \fB\-f\fP, \fB\-\-format\fP \fIformat\fP
+-Specify the output format for client mode (either "json" or "dot")
++Specify the output format for client mode (either "json", "jsondoc" or "dot")
+ .
+ .SH EXAMPLES
+ Start an batadv\-vis server which is fetching the information for bat0:
+@@ -106,6 +106,49 @@ To get a json vis output:
+      [...]
+ .fi
+ .br
++
++To get output where the complete document is json:
++.br
++\fB     batadv-vis -f jsondoc\fP
++.nf
++     {
++       "source_version" : "2013.3.0-14-gcd34783",
++       "algorithm" : 4,
++       "vis" : [
++         { "primary" : "fe:f0:00:00:04:01",
++           "neighbors" : [
++              { "router" : "fe:f0:00:00:04:01",
++                "neighbor" : "fe:f0:00:00:05:01",
++                "metric" : "1.000" },
++              { "router" : "fe:f0:00:00:04:01",
++                "neighbor" : "fe:f0:00:00:03:01",
++                "metric" : "1.008" }
++           ],
++           "clients" : [
++              "00:00:43:05:00:04",
++              "fe:f1:00:00:04:01"
++           ]
++         },
++         { "primary" : "fe:f0:00:00:02:01",
++           "neighbors" : [
++              { "router" : "fe:f0:00:00:02:01",
++                "neighbor" : "fe:f0:00:00:03:01",
++       	 "metric" : "1.000" },
++              { "router" : "fe:f0:00:00:02:01",
++                "neighbor" : "fe:f0:00:00:01:01",
++                "metric" : "1.016" },
++              { "router" : "fe:f0:00:00:02:01",
++                "neighbor" : "fe:f0:00:00:08:01",
++                "metric" : "1.000" }
++           ],
++           "clients" : [
++             "fe:f1:00:00:02:01",
++             "00:00:43:05:00:02"
++           ]
++         },
++         { "primary" : "fe:f0:00:00:08:01",
++     [...]
++
+ .
+ .SH SEE ALSO
+ .BR alfred (8),
+diff --git a/vis/vis.c b/vis/vis.c
+index ad7f530..9c7d7a9 100644
+--- a/vis/vis.c
++++ b/vis/vis.c
+@@ -26,6 +26,7 @@
+ #include <linux/if.h>
+ #include <netinet/in.h>
+ #include <signal.h>
++#include <stdbool.h>
+ #include <stddef.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -511,18 +512,254 @@ static struct vis_v1 *vis_receive_answer_packet(int sock, uint16_t *len)
+ 	return (struct vis_v1 *) data->data;
+ }
+ 
++static void vis_dot_preamble(void)
++{
++	printf("digraph {\n");
++}
++
++static void vis_dot_interfaces(uint8_t iface_n, struct vis_iface *ifaces)
++{
++	int i;
++
++	printf("\tsubgraph \"cluster_%s\" {\n", mac_to_str(ifaces[0].mac));
++	for (i = 0; i < iface_n; i++)
++		printf("\t\t\"%s\"%s\n", mac_to_str(ifaces[i].mac),
++		       i ? " [peripheries=2]":"");
++	printf("\t}\n");
++}
++
++static void vis_dot_entries(uint8_t entries_n, struct vis_entry *vis_entries,
++			    uint8_t iface_n, struct vis_iface *ifaces)
++{
++	int i;
++
++	for (i = 0; i < entries_n; i++) {
++		if (vis_entries[i].ifindex == 255) {
++			printf("\t\"%s\" ", mac_to_str(ifaces[0].mac));
++			printf("-> \"%s\" [label=\"TT\"]\n",
++			       mac_to_str(vis_entries[i].mac));
++		} else {
++			if (vis_entries[i].ifindex >= iface_n) {
++				fprintf(stderr, "ERROR: bad ifindex ...\n");
++				continue;
++			}
++			if (vis_entries[i].qual == 0) {
++				fprintf(stderr, "ERROR: quality = 0?\n");
++				continue;
++			}
++			printf("\t\"%s\" ",
++			       mac_to_str(ifaces[vis_entries[i].ifindex].mac));
++			printf("-> \"%s\" [label=\"%3.3f\"]\n",
++			       mac_to_str(vis_entries[i].mac),
++			       255.0 / ((float)vis_entries[i].qual));
++		}
++	}
++}
++
++static void vis_dot_postamble(void)
++{
++	printf("}\n");
++}
++
++static void vis_json_preamble(void)
++{
++}
++
++static void vis_json_interfaces(uint8_t iface_n, struct vis_iface *ifaces)
++{
++	int i;
++
++	printf("{ \"primary\" : \"%s\" }\n", mac_to_str(ifaces[0].mac));
++	for (i = 1; i < iface_n; i++) {
++		printf("{ \"secondary\" : \"%s\"", mac_to_str(ifaces[i].mac));
++		printf(", \"of\" : \"%s\" }\n", mac_to_str(ifaces[0].mac));
++	}
++}
++
++static void vis_json_entries(uint8_t entries_n, struct vis_entry *vis_entries,
++			     uint8_t iface_n, struct vis_iface *ifaces)
++{
++	int i;
++
++	for (i = 0; i < entries_n; i++) {
++		if (vis_entries[i].ifindex == 255) {
++			printf("{ \"router\" : \"%s\"",
++			       mac_to_str(ifaces[0].mac));
++			printf(", \"gateway\" : \"%s\", \"label\" : \"TT\" }\n",
++			       mac_to_str(vis_entries[i].mac));
++		} else {
++			if (vis_entries[i].ifindex >= iface_n) {
++				fprintf(stderr, "ERROR: bad ifindex ...\n");
++				continue;
++			}
++			if (vis_entries[i].qual == 0) {
++				fprintf(stderr, "ERROR: quality = 0?\n");
++				continue;
++			}
++			printf("{ \"router\" : \"%s\"",
++			       mac_to_str(ifaces[vis_entries[i].ifindex].mac));
++			printf(", \"neighbor\" : \"%s\", \"label\" : \"%3.3f\" }\n",
++			       mac_to_str(vis_entries[i].mac),
++			       255.0 / ((float)vis_entries[i].qual));
++		}
++	}
++}
++
++static void vis_json_postamble(void)
++{
++}
++
++static void vis_jsondoc_preamble(void)
++{
++	printf("{\n");
++	printf("  \"source_version\" : \"%s\",\n", SOURCE_VERSION);
++	printf("  \"algorithm\" : 4,\n");
++	printf("  \"vis\" : [\n");
++}
++
++static void vis_jsondoc_interfaces(uint8_t iface_n, struct vis_iface *ifaces)
++{
++	int i;
++	static bool first_interface = true;
++
++	if (first_interface)
++		first_interface = false;
++	else
++		printf(",\n");
++
++	printf("    { \"primary\" : \"%s\",\n", mac_to_str(ifaces[0].mac));
++	if (iface_n > 1) {
++		printf("      \"secondary\" : [ ");
++		for (i = 1; i < iface_n; i++) {
++			printf("\"%s\"", mac_to_str(ifaces[i].mac));
++			if ( i < iface_n - 1)
++				printf(",");
++		}
++		printf("\n       ],\n");
++	}
++}
++
++static void vis_jsondoc_entries(uint8_t entries_n,
++				struct vis_entry *vis_entries,
++				uint8_t iface_n, struct vis_iface *ifaces)
++{
++	bool first_neighbor = true;
++	bool first_tt = true;
++	int i;
++
++	printf("      \"neighbors\" : [\n");
++
++	for (i = 0; i < entries_n; i++) {
++		if (vis_entries[i].ifindex == 255) {
++			continue;
++		}
++
++		if (vis_entries[i].ifindex >= iface_n) {
++			fprintf(stderr, "ERROR: bad ifindex ...\n");
++			continue;
++		}
++		if (vis_entries[i].qual == 0) {
++			fprintf(stderr, "ERROR: quality = 0?\n");
++			continue;
++		}
++
++		if (first_neighbor)
++			first_neighbor = false;
++		else
++			printf(",\n");
++
++		printf("         { \"router\" : \"%s\",\n",
++		       mac_to_str(ifaces[vis_entries[i].ifindex].mac));
++		printf("           \"neighbor\" : \"%s\",\n",
++		       mac_to_str(vis_entries[i].mac));
++		printf("           \"metric\" : \"%3.3f\" }",
++		       255.0 / ((float)vis_entries[i].qual));
++	}
++
++	printf("\n      ],\n");
++
++	printf("      \"clients\" : [\n");
++
++	for (i = 0; i < entries_n; i++) {
++		if (vis_entries[i].ifindex == 255) {
++			if (first_tt)
++				first_tt = false;
++			else
++				printf(",\n");
++
++			printf("        \"%s\"",
++			       mac_to_str(vis_entries[i].mac));
++		}
++	}
++	printf("\n      ]\n");
++	printf("    }");
++}
++
++static void vis_jsondoc_postamble(void)
++{
++	printf("\n  ]\n");
++	printf("}\n");
++}
++
++struct vis_print_ops
++{
++	void (*preamble)(void);
++	void (*interfaces)(uint8_t iface_n, struct vis_iface *ifaces);
++	void (*entries)(uint8_t entries_n, struct vis_entry *vis_entries,
++			uint8_t iface_n, struct vis_iface *ifaces);
++	void (*postamble)(void);
++};
++
++static const struct vis_print_ops vis_dot_ops =
++{
++	vis_dot_preamble,
++	vis_dot_interfaces,
++	vis_dot_entries,
++	vis_dot_postamble
++};
++
++static const struct vis_print_ops vis_json_ops =
++{
++	vis_json_preamble,
++	vis_json_interfaces,
++	vis_json_entries,
++	vis_json_postamble
++};
++
++static const struct vis_print_ops vis_jsondoc_ops =
++{
++	vis_jsondoc_preamble,
++	vis_jsondoc_interfaces,
++	vis_jsondoc_entries,
++	vis_jsondoc_postamble
++};
++
+ static int vis_read_answer(struct globals *globals)
+ {
++	const struct vis_print_ops *ops;
+ 	struct vis_v1 *vis_data;
+ 	uint16_t len;
+ 	struct vis_iface *ifaces;
+ 	struct vis_entry *vis_entries;
+-	int i;
+ 
+-	if (globals->vis_format == FORMAT_DOT)
+-		printf("digraph {\n");
++	switch (globals->vis_format) {
++	case FORMAT_DOT:
++		ops = &vis_dot_ops;
++		break;
++	case FORMAT_JSON:
++		ops = &vis_json_ops;
++		break;
++	case FORMAT_JSONDOC:
++		ops = &vis_jsondoc_ops;
++		break;
++	default:
++		return -1;
++	}
++
++	ops->preamble();
+ 
+-	while ((vis_data = vis_receive_answer_packet(globals->unix_sock, &len)) != NULL) {
++	while ((vis_data =
++		vis_receive_answer_packet(globals->unix_sock, &len)) != NULL) {
+ 		if (len < sizeof(*vis_data))
+ 			return -1;
+ 
+@@ -536,60 +773,15 @@ static int vis_read_answer(struct globals *globals)
+ 		ifaces = vis_data->ifaces;
+ 		vis_entries = (struct vis_entry *) &ifaces[vis_data->iface_n];
+ 
+-		if (globals->vis_format == FORMAT_DOT) {
+-			printf("\tsubgraph \"cluster_%s\" {\n", mac_to_str(ifaces[0].mac));
+-			for (i = 0; i < vis_data->iface_n; i++)
+-				printf("\t\t\"%s\"%s\n", mac_to_str(ifaces[i].mac),
+-				       i ? " [peripheries=2]":"");
+-			printf("\t}\n");
+-		} else if (globals->vis_format == FORMAT_JSON) {
+-			printf("{ \"primary\" : \"%s\" }\n", mac_to_str(ifaces[0].mac));
+-			for (i = 1; i < vis_data->iface_n; i++) {
+-				printf("{ \"secondary\" : \"%s\"", mac_to_str(ifaces[i].mac));
+-				printf(", \"of\" : \"%s\" }\n", mac_to_str(ifaces[0].mac));
+-			}
+-		}
++		ops->interfaces(vis_data->iface_n, ifaces);
+ 
+ 		if (vis_data->entries_n == 0)
+ 			continue;
+ 
+-                for (i = 0; i < vis_data->entries_n; i++) {
+-			if (vis_entries[i].ifindex == 255) {
+-				if (globals->vis_format == FORMAT_DOT) {
+-					printf("\t\"%s\" ", mac_to_str(ifaces[0].mac));
+-					printf("-> \"%s\" [label=\"TT\"]\n", mac_to_str(vis_entries[i].mac));
+-				} else if (globals->vis_format == FORMAT_JSON) {
+-					printf("{ \"router\" : \"%s\"", mac_to_str(ifaces[0].mac));
+-					printf(", \"gateway\" : \"%s\", \"label\" : \"TT\" }\n", mac_to_str(vis_entries[i].mac));
+-				}
+-			} else {
+-				if (vis_entries[i].ifindex >= vis_data->iface_n) {
+-					fprintf(stderr, "ERROR: bad ifindex ...\n");
+-					continue;
+-				}
+-				if (vis_entries[i].qual == 0) {
+-					fprintf(stderr, "ERROR: quality = 0?\n");
+-					continue;
+-				}
+-				if (globals->vis_format == FORMAT_DOT) {
+-					printf("\t\"%s\" ",
+-					       mac_to_str(ifaces[vis_entries[i].ifindex].mac));
+-					printf("-> \"%s\" [label=\"%3.3f\"]\n",
+-					       mac_to_str(vis_entries[i].mac),
+-					       255.0 / ((float)vis_entries[i].qual));
+-				} else if (globals->vis_format == FORMAT_JSON) {
+-					printf("{ \"router\" : \"%s\"",
+-					       mac_to_str(ifaces[vis_entries[i].ifindex].mac));
+-					printf(", \"neighbor\" : \"%s\", \"label\" : \"%3.3f\" }\n",
+-					       mac_to_str(vis_entries[i].mac),
+-					       255.0 / ((float)vis_entries[i].qual));
+-
+-				}
+-			}
+-		}
++		ops->entries(vis_data->entries_n, vis_entries,
++			     vis_data->iface_n, ifaces);
+ 	}
+-	if (globals->vis_format == FORMAT_DOT)
+-		printf("}\n");
++	ops->postamble();
+ 
+ 	return 0;
+ }
+@@ -611,7 +803,7 @@ static void vis_usage(void)
+ 	printf("Usage: batadv-vis [options]\n");
+ 	printf("  -i, --interface             specify the batman-adv interface configured on the system (default: bat0)\n");
+ 	printf("  -s, --server                start up in server mode, which regularly updates vis data from batman-adv\n");
+-	printf("  -f, --format <format>       specify the output format for client mode (either \"json\" or \"dot\")\n");
++	printf("  -f, --format <format>       specify the output format for client mode (either \"json\", \"jsondoc\" or \"dot\")\n");
+ 	printf("  -v, --version               print the version\n");
+ 	printf("  -h, --help                  this help\n");
+ 	printf("\n");
+@@ -649,6 +841,8 @@ static struct globals *vis_init(int argc, char *argv[])
+ 		case 'f':
+ 			if (strncmp(optarg, "dot", 3) == 0)
+ 				globals->vis_format = FORMAT_DOT;
++			else if (strncmp(optarg, "jsondoc", 7) == 0)
++				globals->vis_format = FORMAT_JSONDOC;
+ 			else if (strncmp(optarg, "json", 4) == 0)
+ 				globals->vis_format = FORMAT_JSON;
+ 			else {
+diff --git a/vis/vis.h b/vis/vis.h
+index 6ba70c6..4ccbdad 100644
+--- a/vis/vis.h
++++ b/vis/vis.h
+@@ -49,7 +49,8 @@ enum opmode {
+ 
+ enum vis_format {
+ 	FORMAT_DOT,
+-	FORMAT_JSON
++	FORMAT_JSON,
++	FORMAT_JSONDOC,
+ };
+ 
+ struct vis_iface {
+-- 
+1.8.4.rc3
+
