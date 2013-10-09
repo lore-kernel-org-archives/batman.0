@@ -1,14 +1,10 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed,  9 Oct 2013 14:40:04 +0200
-Message-Id: <1381322418-1349-3-git-send-email-antonio@meshcoding.com>
+Date: Wed,  9 Oct 2013 14:40:03 +0200
+Message-Id: <1381322418-1349-2-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1381322418-1349-1-git-send-email-antonio@meshcoding.com>
 References: <1381322418-1349-1-git-send-email-antonio@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 02/16] batman-adv: switch to a new packet
-	compatibility version
+Subject: [B.A.T.M.A.N.] [PATCH 01/16] MAINTAINERS: batman-adv - update emails
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,34 +17,31 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Antonio Quartulli <ordex@autistici.org>, =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>, Marek Lindner <lindner_marek@yahoo.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Antonio Quartulli <ordex@autistici.org>
+Update my and Marek Lindner's email in the MAINTAINERS file
 
-With this change batman-adv is breaking compatibility with
-older versions and it is moving to compat-version 15.
-
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
-Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/packet.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ MAINTAINERS | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index a51ccfc..11a22c8 100644
---- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -48,7 +48,7 @@ enum batadv_subtype {
- };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 43dfc82..7a86b44 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1652,9 +1652,9 @@ F:	drivers/video/backlight/
+ F:	include/linux/backlight.h
  
- /* this file is included by batctl which needs these defines */
--#define BATADV_COMPAT_VERSION 14
-+#define BATADV_COMPAT_VERSION 15
- 
- enum batadv_iv_flags {
- 	BATADV_NOT_BEST_NEXT_HOP   = BIT(3),
+ BATMAN ADVANCED
+-M:	Marek Lindner <lindner_marek@yahoo.de>
++M:	Marek Lindner <mareklindner@neomailbox.ch>
+ M:	Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+-M:	Antonio Quartulli <ordex@autistici.org>
++M:	Antonio Quartulli <antonio@meshcoding.com>
+ L:	b.a.t.m.a.n@lists.open-mesh.org
+ W:	http://www.open-mesh.org/
+ S:	Maintained
 -- 
 1.8.3.2
 
