@@ -1,10 +1,11 @@
-Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed,  9 Oct 2013 15:05:37 +0200
-Message-Id: <1381323938-26931-7-git-send-email-siwu@hrz.tu-chemnitz.de>
-In-Reply-To: <1381323938-26931-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-References: <1381323938-26931-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCH 6/7] batman-adv: add bonding again
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Wed,  9 Oct 2013 14:40:17 +0200
+Message-Id: <1381322418-1349-16-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1381322418-1349-1-git-send-email-antonio@meshcoding.com>
+References: <1381322418-1349-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH 15/16] batman-adv: remove packed from
+	batadv_ogm_packet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,191 +17,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <lindner_marek@yahoo.de>
 
-From: Simon Wunderlich <simon@open-mesh.com>
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
 
-With the new interface alternating, the first hop may send packets
-in a round robin fashion to it's neighbors because it has multiple
-valid routes built by the multi interface optimization. This patch
-enables the feature if bonding is selected. Note that unlike the
-bonding implemented before, this version is much simpler and may
-even enable multi path routing to a certain degree.
+As we decreased the struct size from 26 to 24 byte, we can remove
+__packed as the compiler will not add any more padding.
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
-Changes to RFCv2:
- * style changes (allo variables on one line
- * use new bat_neigh_is_equiv_or_better parameters
- * simplify last candidate lookup (Antonios suggestion)
- * remove last_bonding_candidate pointer when purging
----
- originator.c |    3 ++
- routing.c    |   94 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
- routing.h    |    2 +-
- types.h      |    2 ++
- 4 files changed, 97 insertions(+), 4 deletions(-)
+ net/batman-adv/packet.h | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/originator.c b/originator.c
-index 62bab34..6d7e978 100644
---- a/originator.c
-+++ b/originator.c
-@@ -560,6 +560,9 @@ batadv_purge_orig_ifinfo(struct batadv_priv *bat_priv,
- 		ifinfo_purged = true;
- 
- 		hlist_del_rcu(&orig_node_ifinfo->list);
-+		if (orig_node->last_bonding_candidate == orig_node_ifinfo)
-+			orig_node->last_bonding_candidate = NULL;
-+
- 		call_rcu(&orig_node_ifinfo->rcu,
- 			 batadv_orig_node_ifinfo_free_rcu);
- 	}
-diff --git a/routing.c b/routing.c
-index 304e44b..666f02d 100644
---- a/routing.c
-+++ b/routing.c
-@@ -407,16 +407,104 @@ static int batadv_check_unicast_packet(struct batadv_priv *bat_priv,
- struct batadv_neigh_node *
- batadv_find_router(struct batadv_priv *bat_priv,
- 		   struct batadv_orig_node *orig_node,
--		   const struct batadv_hard_iface *recv_if)
-+		   struct batadv_hard_iface *recv_if)
- {
--	struct batadv_neigh_node *router;
-+	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
-+	struct batadv_neigh_node *first_candidate_router = NULL;
-+	struct batadv_neigh_node *next_candidate_router;
-+	struct batadv_neigh_node *router, *cand_router;
-+	struct batadv_orig_node_ifinfo *cand, *first_candidate = NULL;
-+	struct batadv_orig_node_ifinfo *next_candidate = NULL;
-+	bool last_candidate_found = false;
- 
- 	if (!orig_node)
- 		return NULL;
- 
- 	router = batadv_orig_node_get_router(orig_node, recv_if);
- 
--	/* TODO: fill this later with new bonding mechanism */
-+	/* only consider bonding for recv_if == NULL (first hop) and if
-+	 * activated.
+diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
+index f02dbb1..4e5fe7d 100644
+--- a/net/batman-adv/packet.h
++++ b/net/batman-adv/packet.h
+@@ -175,7 +175,10 @@ struct batadv_ogm_packet {
+ 	uint8_t  reserved;
+ 	uint8_t  tq;
+ 	__be16   tvlv_len;
+-} __packed;
++	/* __packed is not needed as the struct size is divisible by 4,
++	 * and the largest data type in this struct has a size of 4.
 +	 */
-+	if (recv_if || !atomic_read(&bat_priv->bonding) || !router)
-+		return router;
-+
-+	/* bonding: loop through the list of possible routers found
-+	 * for the various outgoing interfaces and find a candidate after
-+	 * the last chosen bonding candidate (next_candidate). If no such
-+	 * router is found, use the first candidate found (the last chosen
-+	 * bonding candidate might have been the last one in the list).
-+	 * If this can't be found either, return the previously choosen
-+	 * router - obviously there are no other candidates.
-+	 */
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(cand, &orig_node->ifinfo_list, list) {
-+		cand_router = rcu_dereference(cand->router);
-+		if (!cand_router)
-+			continue;
-+
-+		if (!atomic_inc_not_zero(&cand_router->refcount))
-+			continue;
-+
-+		/* alternative candidate should be good enough to be
-+		 * considered
-+		 */
-+		if (!bao->bat_neigh_is_equiv_or_better(cand_router,
-+						       cand->if_outgoing,
-+						       router, recv_if))
-+			goto next;
-+
-+		/* don't use the same router twice */
-+		if (orig_node->last_bonding_candidate &&
-+		    (orig_node->last_bonding_candidate->router ==
-+		     cand_router))
-+				goto next;
-+
-+		/* mark the first possible candidate */
-+		if (!first_candidate) {
-+			atomic_inc(&cand_router->refcount);
-+			first_candidate = cand;
-+			first_candidate_router = cand_router;
-+		}
-+
-+		/* check if already passed the next candidate ... this function
-+		 * should the next candidate AFTER the last used bonding
-+		 * candidate.
-+		 */
-+		if (!orig_node->last_bonding_candidate ||
-+		    last_candidate_found) {
-+			next_candidate = cand;
-+			next_candidate_router = cand_router;
-+			break;
-+		}
-+
-+		if (orig_node->last_bonding_candidate == cand)
-+			last_candidate_found = true;
-+next:
-+		batadv_neigh_node_free_ref(cand_router);
-+	}
-+
-+	if (next_candidate) {
-+		/* found a possible candidate after the last chosen bonding
-+		 * candidate, return it.
-+		 */
-+		batadv_neigh_node_free_ref(router);
-+		if (first_candidate)
-+			batadv_neigh_node_free_ref(first_candidate_router);
-+		router = next_candidate_router;
-+		orig_node->last_bonding_candidate = next_candidate;
-+	} else if (first_candidate) {
-+		/* found no possible candidate after the last candidate, return
-+		 * the first candidate if available, or the already selected
-+		 * router otherwise.
-+		 */
-+		batadv_neigh_node_free_ref(router);
-+		router = first_candidate_router;
-+		orig_node->last_bonding_candidate = first_candidate;
-+	} else {
-+		orig_node->last_bonding_candidate = NULL;
-+	}
-+
-+	rcu_read_unlock();
++};
  
- 	return router;
- }
-diff --git a/routing.h b/routing.h
-index 7a7c6e9..2c80b6a 100644
---- a/routing.h
-+++ b/routing.h
-@@ -46,7 +46,7 @@ int batadv_recv_unhandled_unicast_packet(struct sk_buff *skb,
- struct batadv_neigh_node *
- batadv_find_router(struct batadv_priv *bat_priv,
- 		   struct batadv_orig_node *orig_node,
--		   const struct batadv_hard_iface *recv_if);
-+		   struct batadv_hard_iface *recv_if);
- int batadv_window_protected(struct batadv_priv *bat_priv, int32_t seq_num_diff,
- 			    unsigned long *last_reset);
+ #define BATADV_OGM_HLEN sizeof(struct batadv_ogm_packet)
  
-diff --git a/types.h b/types.h
-index a0387d2..9587cfe 100644
---- a/types.h
-+++ b/types.h
-@@ -173,6 +173,7 @@ struct batadv_orig_bat_iv {
-  * @orig: originator ethernet address
-  * @primary_addr: hosts primary interface address
-  * @ifinfo_list: list for routers per outgoing interface
-+ * @last_bonding_candidate: pointer to last ifinfo of last used router
-  * @batadv_dat_addr_t:  address of the orig node in the distributed hash
-  * @last_seen: time when last packet from this node was received
-  * @bcast_seqno_reset: time when the broadcast seqno window was reset
-@@ -213,6 +214,7 @@ struct batadv_orig_node {
- 	uint8_t orig[ETH_ALEN];
- 	uint8_t primary_addr[ETH_ALEN];
- 	struct hlist_head ifinfo_list;
-+	struct batadv_orig_node_ifinfo *last_bonding_candidate;
- #ifdef CONFIG_BATMAN_ADV_DAT
- 	batadv_dat_addr_t dat_addr;
- #endif
 -- 
-1.7.10.4
+1.8.3.2
 
