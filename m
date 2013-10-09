@@ -1,11 +1,11 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Wed,  9 Oct 2013 15:05:36 +0200
-Message-Id: <1381323938-26931-6-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Wed,  9 Oct 2013 15:05:38 +0200
+Message-Id: <1381323938-26931-8-git-send-email-siwu@hrz.tu-chemnitz.de>
 In-Reply-To: <1381323938-26931-1-git-send-email-siwu@hrz.tu-chemnitz.de>
 References: <1381323938-26931-1-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: [B.A.T.M.A.N.] [PATCH 5/7] batman-adv: consider outgoing interface
-	in OGM sending
+Subject: [B.A.T.M.A.N.] [PATCH 7/7] batman-adv: add debugfs support to view
+	multiif tables
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,402 +22,213 @@ Cc: Simon Wunderlich <simon@open-mesh.com>
 
 From: Simon Wunderlich <simon@open-mesh.com>
 
-The current OGM sending an aggregation functionality decides on
-which interfaces a packet should be sent when it parses the forward
-packet struct. However, with the network wide multi interface
-optimization the outgoing interface is decided by the OGM processing
-function.
-
-This is reflected by moving the decision in the OGM processing function
-and add the outgoing interface in the forwarding packet struct. This
-practically implies that an OGM may be added multiple times (once per
-outgoing interface), and this also affects aggregation which needs to
-consider the outgoing interface as well.
+Show tables for the multi interface operation. To keep the
+implementation simple, all tables are put into one debugfs file.
 
 Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 ---
-Changes to RFCv2:
- * rework kerneldoc and comments
----
- bat_iv_ogm.c |  144 ++++++++++++++++++++++++++++++++++++++++------------------
- send.c       |   19 ++++++--
- types.h      |    7 ++-
- 3 files changed, 118 insertions(+), 52 deletions(-)
+ bat_iv_ogm.c |   27 +++++++++++++++------------
+ debugfs.c    |   16 ++++++++++++++++
+ originator.c |   44 +++++++++++++++++++++++++++++++++++++++++++-
+ originator.h |    1 +
+ types.h      |    3 ++-
+ 5 files changed, 77 insertions(+), 14 deletions(-)
 
 diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 2b21353..017da4b 100644
+index 017da4b..eae3b92 100644
 --- a/bat_iv_ogm.c
 +++ b/bat_iv_ogm.c
-@@ -467,7 +467,6 @@ static void batadv_iv_ogm_send_to_if(struct batadv_forw_packet *forw_packet,
- /* send a batman ogm packet */
- static void batadv_iv_ogm_emit(struct batadv_forw_packet *forw_packet)
+@@ -1766,15 +1766,17 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
+  * batadv_iv_ogm_orig_print - print the originator table
+  * @bat_priv: the bat priv with all the soft interface information
+  * @seq: debugfs table seq_file struct
++ * @if_outgoing: the outgoing interface for which this should be printed
+  */
+ static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
+-				     struct seq_file *seq)
++				     struct seq_file *seq,
++				     struct batadv_hard_iface *if_outgoing)
  {
--	struct batadv_hard_iface *hard_iface;
- 	struct net_device *soft_iface;
- 	struct batadv_priv *bat_priv;
- 	struct batadv_hard_iface *primary_if = NULL;
-@@ -487,6 +486,12 @@ static void batadv_iv_ogm_emit(struct batadv_forw_packet *forw_packet)
- 	soft_iface = forw_packet->if_incoming->soft_iface;
- 	bat_priv = netdev_priv(soft_iface);
+ 	struct batadv_neigh_node *neigh_node, *neigh_node_tmp;
+ 	struct batadv_hashtable *hash = bat_priv->orig_hash;
+ 	int last_seen_msecs, last_seen_secs;
+ 	struct batadv_orig_node *orig_node;
+-	struct batadv_neigh_node_ifinfo *neigh_ifinfo;
++	struct batadv_neigh_node_ifinfo *n_ifinfo;
+ 	unsigned long last_seen_jiffies;
+ 	struct hlist_head *head;
+ 	int batman_count = 0;
+@@ -1790,16 +1792,16 @@ static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
+ 		rcu_read_lock();
+ 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
+ 			neigh_node = batadv_orig_node_get_router(orig_node,
+-								 NULL);
++								 if_outgoing);
+ 			if (!neigh_node)
+ 				continue;
  
-+	if (WARN_ON(!forw_packet->if_outgoing))
-+		goto out;
-+
-+	if (WARN_ON(forw_packet->if_outgoing->soft_iface != soft_iface))
-+		goto out;
-+
- 	if (forw_packet->if_incoming->if_status != BATADV_IF_ACTIVE)
- 		goto out;
+-			neigh_ifinfo = batadv_neigh_node_get_ifinfo(neigh_node,
+-								    NULL);
+-			if (!neigh_ifinfo)
++			n_ifinfo = batadv_neigh_node_get_ifinfo(neigh_node,
++								if_outgoing);
++			if (!n_ifinfo)
+ 				goto next;
  
-@@ -494,52 +499,35 @@ static void batadv_iv_ogm_emit(struct batadv_forw_packet *forw_packet)
- 	if (!primary_if)
- 		goto out;
+-			if (neigh_ifinfo->bat_iv.tq_avg == 0)
++			if (n_ifinfo->bat_iv.tq_avg == 0)
+ 				goto next;
  
--	/* multihomed peer assumed
--	 * non-primary OGMs are only broadcasted on their interface
--	 */
--	if ((directlink && (batadv_ogm_packet->header.ttl == 1)) ||
--	    (forw_packet->own && (forw_packet->if_incoming != primary_if))) {
--		/* FIXME: what about aggregated packets ? */
--		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
--			   "%s packet (originator %pM, seqno %u, TTL %d) on interface %s [%pM]\n",
--			   (forw_packet->own ? "Sending own" : "Forwarding"),
--			   batadv_ogm_packet->orig,
--			   ntohl(batadv_ogm_packet->seqno),
--			   batadv_ogm_packet->header.ttl,
--			   forw_packet->if_incoming->net_dev->name,
--			   forw_packet->if_incoming->net_dev->dev_addr);
--
--		/* skb is only used once and than forw_packet is free'd */
--		batadv_send_skb_packet(forw_packet->skb,
--				       forw_packet->if_incoming,
--				       batadv_broadcast_addr);
--		forw_packet->skb = NULL;
--
--		goto out;
--	}
--
--	/* broadcast on every interface */
--	rcu_read_lock();
--	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
--		if (hard_iface->soft_iface != soft_iface)
--			continue;
--
--		batadv_iv_ogm_send_to_if(forw_packet, hard_iface);
--	}
--	rcu_read_unlock();
-+	/* only for one specific outgoing interface */
-+	batadv_iv_ogm_send_to_if(forw_packet, forw_packet->if_outgoing);
+ 			last_seen_jiffies = jiffies - orig_node->last_seen;
+@@ -1809,20 +1811,21 @@ static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
  
- out:
- 	if (primary_if)
- 		batadv_hardif_free_ref(primary_if);
+ 			seq_printf(seq, "%pM %4i.%03is   (%3i) %pM [%10s]:",
+ 				   orig_node->orig, last_seen_secs,
+-				   last_seen_msecs, neigh_ifinfo->bat_iv.tq_avg,
++				   last_seen_msecs, n_ifinfo->bat_iv.tq_avg,
+ 				   neigh_node->addr,
+ 				   neigh_node->if_incoming->net_dev->name);
+ 
+ 			hlist_for_each_entry_rcu(neigh_node_tmp,
+ 						 &orig_node->neigh_list, list) {
+-				neigh_ifinfo = batadv_neigh_node_get_ifinfo(
+-							neigh_node, NULL);
+-				if (!neigh_ifinfo)
++				n_ifinfo = batadv_neigh_node_get_ifinfo(
++							neigh_node,
++							if_outgoing);
++				if (!n_ifinfo)
+ 					continue;
+ 
+ 				seq_printf(seq, " %pM (%3i)",
+ 					   neigh_node_tmp->addr,
+-					   neigh_ifinfo->bat_iv.tq_avg);
++					   n_ifinfo->bat_iv.tq_avg);
+ 			}
+ 
+ 			seq_puts(seq, "\n");
+diff --git a/debugfs.c b/debugfs.c
+index 049a7a2..1a4bcb5 100644
+--- a/debugfs.c
++++ b/debugfs.c
+@@ -250,6 +250,19 @@ static int batadv_originators_open(struct inode *inode, struct file *file)
+ 	return single_open(file, batadv_orig_seq_print_text, net_dev);
  }
  
--/* return true if new_packet can be aggregated with forw_packet */
 +/**
-+ * batadv_iv_ogm_can_aggregate - find out if an OGM can be aggregated on an
-+ *  existing forward packet
-+ * @new_bat_ogm_packet: OGM packet to be aggregated
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @packet_len: (total) length of the OGM
-+ * @send_time: timestamp (jiffies) when the packet is to be sent
-+ * @direktlink: true if this is a direct link packet
-+ * @if_incoming: interface where the packet was received
-+ * @if_outgoing: interface for which the retransmission should be considered
-+ * @forw_packet: the forwarded packet which should be checked
-+ *
-+ * Returns true if new_packet can be aggregated with forw_packet
++ * batadv_originators_open_multiif - handles debugfs output for the
++ *	originators_multiif table
++ * @inode: inode pointer to debugfs file
++ * @file: pointer to the seq_file
 + */
- static bool
- batadv_iv_ogm_can_aggregate(const struct batadv_ogm_packet *new_bat_ogm_packet,
- 			    struct batadv_priv *bat_priv,
- 			    int packet_len, unsigned long send_time,
- 			    bool directlink,
- 			    const struct batadv_hard_iface *if_incoming,
-+			    const struct batadv_hard_iface *if_outgoing,
- 			    const struct batadv_forw_packet *forw_packet)
- {
- 	struct batadv_ogm_packet *batadv_ogm_packet;
-@@ -573,6 +561,13 @@ batadv_iv_ogm_can_aggregate(const struct batadv_ogm_packet *new_bat_ogm_packet,
- 		if (!primary_if)
- 			goto out;
- 
-+		/* packet is not leaving on the same interface.
-+		 * TODO: some other parts here could be reworked as the
-+		 * outgoing interface is specified now.
-+		 */
-+		if (forw_packet->if_outgoing != if_outgoing)
-+			goto out;
++static int batadv_originators_open_multiif(struct inode *inode,
++					   struct file *file)
++{
++	struct net_device *net_dev = (struct net_device *)inode->i_private;
++	return single_open(file, batadv_orig_multiif_seq_print_text, net_dev);
++}
 +
- 		/* packets without direct link flag and high TTL
- 		 * are flooded through the net
- 		 */
-@@ -614,11 +609,21 @@ out:
- 	return res;
- }
- 
--/* create a new aggregated packet and add this packet to it */
-+/* batadv_iv_ogm_aggregate_new - create a new aggregated packet and add this
-+ *  packet to it.
-+ * @packet_buff: pointer to the OGM
-+ * @packet_len: (total) length of the OGM
-+ * @send_time: timestamp (jiffies) when the packet is to be sent
-+ * @direct_link: whether this OGM has direct link status
-+ * @if_incoming: interface where the packet was received
-+ * @if_outgoing: interface for which the retransmission should be considered
-+ * @own_packet: true if it is a self-generated ogm
-+ */
- static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- 					int packet_len, unsigned long send_time,
- 					bool direct_link,
- 					struct batadv_hard_iface *if_incoming,
-+					struct batadv_hard_iface *if_outgoing,
- 					int own_packet)
+ static int batadv_gateways_open(struct inode *inode, struct file *file)
  {
- 	struct batadv_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
-@@ -629,6 +634,9 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- 	if (!atomic_inc_not_zero(&if_incoming->refcount))
- 		return;
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+@@ -336,6 +349,8 @@ static struct batadv_debuginfo *batadv_general_debuginfos[] = {
  
-+	if (!atomic_inc_not_zero(&if_outgoing->refcount))
-+		goto out_free_incoming;
-+
- 	/* own packet should always be scheduled */
- 	if (!own_packet) {
- 		if (!batadv_atomic_dec_not_zero(&bat_priv->batman_queue_left)) {
-@@ -669,6 +677,7 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ /* The following attributes are per soft interface */
+ static BATADV_DEBUGINFO(originators, S_IRUGO, batadv_originators_open);
++static BATADV_DEBUGINFO(originators_multiif, S_IRUGO,
++			batadv_originators_open_multiif);
+ static BATADV_DEBUGINFO(gateways, S_IRUGO, batadv_gateways_open);
+ static BATADV_DEBUGINFO(transtable_global, S_IRUGO,
+ 			batadv_transtable_global_open);
+@@ -355,6 +370,7 @@ static BATADV_DEBUGINFO(nc_nodes, S_IRUGO, batadv_nc_nodes_open);
  
- 	forw_packet_aggr->own = own_packet;
- 	forw_packet_aggr->if_incoming = if_incoming;
-+	forw_packet_aggr->if_outgoing = if_outgoing;
- 	forw_packet_aggr->num_packets = 0;
- 	forw_packet_aggr->direct_link_flags = BATADV_NO_FLAGS;
- 	forw_packet_aggr->send_time = send_time;
-@@ -691,6 +700,8 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- 
- 	return;
- out:
-+	batadv_hardif_free_ref(if_outgoing);
-+out_free_incoming:
- 	batadv_hardif_free_ref(if_incoming);
- }
- 
-@@ -714,10 +725,21 @@ static void batadv_iv_ogm_aggregate(struct batadv_forw_packet *forw_packet_aggr,
+ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
+ 	&batadv_debuginfo_originators,
++	&batadv_debuginfo_originators_multiif,
+ 	&batadv_debuginfo_gateways,
+ 	&batadv_debuginfo_transtable_global,
+ #ifdef CONFIG_BATMAN_ADV_BLA
+diff --git a/originator.c b/originator.c
+index 6d7e978..a35ec2d 100644
+--- a/originator.c
++++ b/originator.c
+@@ -776,7 +776,49 @@ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
+ 		return 0;
  	}
- }
  
+-	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq);
++	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq, NULL);
++
++	return 0;
++}
++
 +/**
-+ * batadv_iv_ogm_queue_add - queue up an OGM for transmission
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @packet_buff: pointer to the OGM
-+ * @packet_len: (total) length of the OGM
-+ * @if_incoming: interface where the packet was received
-+ * @if_outgoing: interface for which the retransmission should be considered
-+ * @own_packet: true if it is a self-generated ogm
-+ * @send_time: timestamp (jiffies) when the packet is to be sent
++ * batadv_orig_multiif_seq_print_text - writes originator infos for all
++ *	outgoing interfaces
++ * @seq: debugfs table seq_file struct
++ * @offset: not used
++ *
++ * Returns 0
 + */
- static void batadv_iv_ogm_queue_add(struct batadv_priv *bat_priv,
- 				    unsigned char *packet_buff,
- 				    int packet_len,
- 				    struct batadv_hard_iface *if_incoming,
-+				    struct batadv_hard_iface *if_outgoing,
- 				    int own_packet, unsigned long send_time)
- {
- 	/* _aggr -> pointer to the packet we want to aggregate with
-@@ -743,6 +765,7 @@ static void batadv_iv_ogm_queue_add(struct batadv_priv *bat_priv,
- 							bat_priv, packet_len,
- 							send_time, direct_link,
- 							if_incoming,
-+							if_outgoing,
- 							forw_packet_pos)) {
- 				forw_packet_aggr = forw_packet_pos;
- 				break;
-@@ -766,7 +789,8 @@ static void batadv_iv_ogm_queue_add(struct batadv_priv *bat_priv,
- 
- 		batadv_iv_ogm_aggregate_new(packet_buff, packet_len,
- 					    send_time, direct_link,
--					    if_incoming, own_packet);
-+					    if_incoming, if_outgoing,
-+					    own_packet);
- 	} else {
- 		batadv_iv_ogm_aggregate(forw_packet_aggr, packet_buff,
- 					packet_len, direct_link);
-@@ -779,7 +803,8 @@ static void batadv_iv_ogm_forward(struct batadv_orig_node *orig_node,
- 				  struct batadv_ogm_packet *batadv_ogm_packet,
- 				  bool is_single_hop_neigh,
- 				  bool is_from_best_next_hop,
--				  struct batadv_hard_iface *if_incoming)
-+				  struct batadv_hard_iface *if_incoming,
-+				  struct batadv_hard_iface *if_outgoing)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	uint16_t tvlv_len;
-@@ -824,7 +849,8 @@ static void batadv_iv_ogm_forward(struct batadv_orig_node *orig_node,
- 
- 	batadv_iv_ogm_queue_add(bat_priv, (unsigned char *)batadv_ogm_packet,
- 				BATADV_OGM_HLEN + tvlv_len,
--				if_incoming, 0, batadv_iv_ogm_fwd_send_time());
-+				if_incoming, if_outgoing, 0,
-+				batadv_iv_ogm_fwd_send_time());
- }
- 
- /**
-@@ -869,10 +895,11 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
- 	unsigned char **ogm_buff = &hard_iface->bat_iv.ogm_buff;
- 	struct batadv_ogm_packet *batadv_ogm_packet;
--	struct batadv_hard_iface *primary_if;
-+	struct batadv_hard_iface *primary_if, *tmp_hard_iface;
- 	int *ogm_buff_len = &hard_iface->bat_iv.ogm_buff_len;
- 	uint32_t seqno;
- 	uint16_t tvlv_len = 0;
-+	unsigned long send_time;
- 
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
- 
-@@ -895,9 +922,31 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
- 	atomic_inc(&hard_iface->bat_iv.ogm_seqno);
- 
- 	batadv_iv_ogm_slide_own_bcast_window(hard_iface);
--	batadv_iv_ogm_queue_add(bat_priv, hard_iface->bat_iv.ogm_buff,
--				hard_iface->bat_iv.ogm_buff_len, hard_iface, 1,
--				batadv_iv_ogm_emit_send_time(bat_priv));
++int batadv_orig_multiif_seq_print_text(struct seq_file *seq, void *offset)
++{
++	struct net_device *net_dev = (struct net_device *)seq->private;
++	struct batadv_priv *bat_priv = netdev_priv(net_dev);
++	struct batadv_hard_iface *hard_iface;
 +
-+	send_time = batadv_iv_ogm_emit_send_time(bat_priv);
-+
-+	if (hard_iface == primary_if) {
-+		/* OGMs from primary interfaces are scheduled on all
-+		 * interfaces.
-+		 */
-+		rcu_read_lock();
-+		list_for_each_entry_rcu(tmp_hard_iface, &batadv_hardif_list,
-+					list) {
-+			if (tmp_hard_iface->soft_iface !=
-+			    hard_iface->soft_iface)
-+				continue;
-+			batadv_iv_ogm_queue_add(bat_priv, *ogm_buff,
-+						*ogm_buff_len, hard_iface,
-+						tmp_hard_iface, 1, send_time);
-+		}
-+		rcu_read_unlock();
-+	} else {
-+		/* OGMs from secondary interfaces are only scheduled on their
-+		 * respective interfaces.
-+		 */
-+		batadv_iv_ogm_queue_add(bat_priv, *ogm_buff, *ogm_buff_len,
-+					hard_iface, hard_iface, 1, send_time);
++	if (!bat_priv->bat_algo_ops->bat_orig_print) {
++		seq_puts(seq,
++			 "No printing function for this routing protocol\n");
++		return 0;
 +	}
- 
- 	if (primary_if)
- 		batadv_hardif_free_ref(primary_if);
-@@ -1446,6 +1495,10 @@ batadv_iv_ogm_process_per_outif(const struct ethhdr *ethhdr,
- 					  if_outgoing, tt_buff, dup_status);
- 	rcu_read_unlock();
- 
-+	/* don't forward packet if no outgoing interface was specified */
-+	if (!if_outgoing)
-+		goto out_neigh;
 +
- 	/* is single hop (direct) neighbor */
- 	if (is_single_hop_neigh) {
- 		if ((batadv_ogm_packet->header.ttl <= 2) &&
-@@ -1457,7 +1510,8 @@ batadv_iv_ogm_process_per_outif(const struct ethhdr *ethhdr,
- 		/* mark direct link on incoming interface */
- 		batadv_iv_ogm_forward(orig_node, ethhdr, batadv_ogm_packet,
- 				      is_single_hop_neigh,
--				      is_from_best_next_hop, if_incoming);
-+				      is_from_best_next_hop, if_incoming,
-+				      if_outgoing);
++	rcu_read_lock();
++	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
++		if (hard_iface->if_status != BATADV_IF_ACTIVE)
++			continue;
++
++		if (hard_iface->soft_iface != bat_priv->soft_iface)
++			continue;
++
++		seq_printf(seq,
++			   "[B.A.T.M.A.N. adv %s, IF/MAC: %s/%pM (%s %s)]\n",
++			   BATADV_SOURCE_VERSION, hard_iface->net_dev->name,
++			   hard_iface->net_dev->dev_addr, net_dev->name,
++			   bat_priv->bat_algo_ops->name);
++
++		bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq,
++						       hard_iface);
++	}
++	rcu_read_unlock();
  
- 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
- 			   "Forwarding packet: rebroadcast neighbor packet with direct link flag\n");
-@@ -1481,7 +1535,7 @@ batadv_iv_ogm_process_per_outif(const struct ethhdr *ethhdr,
- 		   "Forwarding packet: rebroadcast originator packet\n");
- 	batadv_iv_ogm_forward(orig_node, ethhdr, batadv_ogm_packet,
- 			      is_single_hop_neigh, is_from_best_next_hop,
--			      if_incoming);
-+			      if_incoming, if_outgoing);
- 
- out_neigh:
- 	if ((orig_neigh_node) && (!is_single_hop_neigh))
-diff --git a/send.c b/send.c
-index c83be5e..a0dbeef 100644
---- a/send.c
-+++ b/send.c
-@@ -379,6 +379,8 @@ static void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
- 		kfree_skb(forw_packet->skb);
- 	if (forw_packet->if_incoming)
- 		batadv_hardif_free_ref(forw_packet->if_incoming);
-+	if (forw_packet->if_outgoing)
-+		batadv_hardif_free_ref(forw_packet->if_outgoing);
- 	kfree(forw_packet);
+ 	return 0;
  }
- 
-@@ -442,6 +444,7 @@ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 
- 	forw_packet->skb = newskb;
- 	forw_packet->if_incoming = primary_if;
-+	forw_packet->if_outgoing = NULL;
- 
- 	/* how often did we send the bcast packet ? */
- 	forw_packet->num_packets = 0;
-@@ -537,11 +540,16 @@ void batadv_send_outstanding_bat_ogm_packet(struct work_struct *work)
- 
- 	bat_priv->bat_algo_ops->bat_ogm_emit(forw_packet);
- 
--	/* we have to have at least one packet in the queue
--	 * to determine the queues wake up time unless we are
--	 * shutting down
-+	/* we have to have at least one packet in the queue to determine the
-+	 * queues wake up time unless we are shutting down.
-+	 *
-+	 * only re-schedule if this is the "original" copy, e.g. the OGM of the
-+	 * primary interface should only be rescheduled once per period, but
-+	 * this function will be called for the forw_packet instances of the
-+	 * other secondary interfaces as well.
- 	 */
--	if (forw_packet->own)
-+	if (forw_packet->own &&
-+	    forw_packet->if_incoming == forw_packet->if_outgoing)
- 		batadv_schedule_bat_ogm(forw_packet->if_incoming);
- 
- out:
-@@ -602,7 +610,8 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- 		 * we delete only packets belonging to the given interface
- 		 */
- 		if ((hard_iface) &&
--		    (forw_packet->if_incoming != hard_iface))
-+		    (forw_packet->if_incoming != hard_iface) &&
-+		    (forw_packet->if_outgoing != hard_iface))
- 			continue;
- 
- 		spin_unlock_bh(&bat_priv->forw_bat_list_lock);
+diff --git a/originator.h b/originator.h
+index ef2500a..0b4b0c9 100644
+--- a/originator.h
++++ b/originator.h
+@@ -46,6 +46,7 @@ struct batadv_neigh_node_ifinfo *
+ batadv_neigh_node_get_ifinfo(struct batadv_neigh_node *neigh,
+ 			     struct batadv_hard_iface *if_outgoing);
+ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset);
++int batadv_orig_multiif_seq_print_text(struct seq_file *seq, void *offset);
+ int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
+ 			    int max_if_num);
+ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
 diff --git a/types.h b/types.h
-index 860d6a4..a0387d2 100644
+index 9587cfe..99e2ab7 100644
 --- a/types.h
 +++ b/types.h
-@@ -986,8 +986,10 @@ struct batadv_skb_cb {
-  * @direct_link_flags: direct link flags for aggregated OGM packets
-  * @num_packets: counter for bcast packet retransmission
-  * @delayed_work: work queue callback item for packet sending
-- * @if_incoming: pointer incoming hard-iface or primary iface if locally
-- *  generated packet
-+ * @if_incoming: pointer to incoming hard-iface or primary iface if
-+ *  locally generated packet
-+ * @if_outgoing: packet where the packet should be sent to, or NULL if
-+ *  unspecified
-  */
- struct batadv_forw_packet {
- 	struct hlist_node list;
-@@ -999,6 +1001,7 @@ struct batadv_forw_packet {
- 	uint8_t num_packets;
- 	struct delayed_work delayed_work;
- 	struct batadv_hard_iface *if_incoming;
-+	struct batadv_hard_iface *if_outgoing;
- };
- 
- /**
+@@ -1049,7 +1049,8 @@ struct batadv_algo_ops {
+ 		 struct batadv_neigh_node *neigh2,
+ 		 struct batadv_hard_iface *if_outgoing2);
+ 	/* orig_node handling API */
+-	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq);
++	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq,
++			       struct batadv_hard_iface *hard_iface);
+ 	void (*bat_orig_free)(struct batadv_orig_node *orig_node);
+ 	int (*bat_orig_add_if)(struct batadv_orig_node *orig_node,
+ 			       int max_if_num);
 -- 
 1.7.10.4
 
