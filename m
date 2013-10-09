@@ -1,16 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
-Date: Wed, 9 Oct 2013 21:01:01 +0200
 From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <20131009190101.GL3544@neomailbox.net>
-References: <1381322418-1349-1-git-send-email-antonio@meshcoding.com>
- <20131009.135652.2086284751199593695.davem@davemloft.net>
- <20131009.145306.1949528592789606941.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="3MMMIZFJzhAsRj/+"
-Content-Disposition: inline
-In-Reply-To: <20131009.145306.1949528592789606941.davem@davemloft.net>
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2013-10-09
+Date: Wed,  9 Oct 2013 21:32:38 +0200
+Message-Id: <1381347174-3629-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2013-10-09b
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,83 +14,101 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: David Miller <davem@davemloft.net>
+To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
+Hello David,
 
---3MMMIZFJzhAsRj/+
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+here you have my fixed pull request intended for net-next.
 
-On Wed, Oct 09, 2013 at 02:53:06PM -0400, David Miller wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Wed, 09 Oct 2013 13:56:52 -0400 (EDT)
->=20
-> > Pulled, thanks.
->=20
-> Please don't send me stuff that doesn't build:
->=20
-> net/batman-adv/translation-table.c: In function =E2=80=98batadv_send_roam=
-_adv=E2=80=99:
-> net/batman-adv/translation-table.c:2210:49: warning: left-hand operand of=
- comma expression has no effect [-Wunused-value]
-> net/batman-adv/translation-table.c:2211:21: warning: left-hand operand of=
- comma expression has no effect [-Wunused-value]
-> net/batman-adv/translation-table.c:2210:6: warning: statement with no eff=
-ect [-Wunused-value]
-> net/batman-adv/translation-table.c:2211:29: error: expected =E2=80=98;=E2=
-=80=99 before =E2=80=98)=E2=80=99 token
-> net/batman-adv/translation-table.c:2211:29: error: expected statement bef=
-ore =E2=80=98)=E2=80=99 toke
->=20
-> That looks like:
->=20
-> 	/* before going on we have to check whether the client has
-> 	 * already roamed to us too many times
-> 	 */
-> 	if (!batadv_tt_check_roam_count(bat_priv, client))
-> 		goto out;
->=20
-> 		   "Sending ROAMING_ADV to %pM (client %pM)\n",
-> 		   orig_node->orig, client);
->=20
-> Looks like a merge problem to me.
+The previous build error was due to an accidental remotion of the beginning of a
+batadv_dbg() statement during a merge conflict resolution.
+Sorry for that.
 
 
-Oh damn. Sorry David.
-I have probably done something wrong during my last rebase on top net-next.
+Please pull or let me know of any problem.
+
+Thanks a lot,
+	Antonio
 
 
-I'll fix, double check and resend the pull request.
 
+The following changes since commit 3d7d562ca4a884089344eb13451b5903a18d3817:
 
-Regards,
+  bnx2x: Add ndo_get_phys_port_id support (2013-10-09 14:55:13 -0400)
 
+are available in the git repository at:
 
---=20
-Antonio Quartulli
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
 
---3MMMIZFJzhAsRj/+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+for you to fetch changes up to 18c68d5960c8dfeb2db113f4b871bab259cfd565:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+  batman-adv: reorder batadv_iv_flags (2013-10-09 21:22:35 +0200)
 
-iQIcBAEBCAAGBQJSVaftAAoJEADl0hg6qKeOAbsQAJoliPEL9r6YvMBymWv6ek3/
-nxOKwJRG0dZ+HG/f+20cRRosoWiDrdqFhz1THmgLqI6wQhZwp4gGS+c6iWuSxPNT
-n8rPMCvSjXXgWFkUNmuUGoBWjApowUQKNpcBP7jFmqGZ5/Nju1TcqLKIrEbrEoqj
-Tp7eaVubTboYsJP/ARNTBg+88Y14MSj6RreNZw/LPn4hZ0e9Rv1FiGEbHh3/GNPH
-WConfxhdFSWFcNAUAkRhEEDvC+ULBRdXP32xPuJ0cM45qBSsejw8A37FTNvHUWNt
-GMOv8kOm/160Djym9cBXNG6X9FxbxUfzS04HzMh3SXnXJiXTlrk9RQJFnVQGdzeb
-OouTz71A6DicZ5oRhvPyKc2j+4MEGknaGU8KFNDEKmYABbGfQJYoVeXHEABjmEqK
-VMU7nUf7ZgxjG5cJFSJLKmlClutWmVwKkmSbFB4BawCH+pQwNCy6wmLYayJDIs3U
-yewFWshyrIImxN63qjJxdl6mf5uQc6AJ1VU3O2JZ4biil1W/JLt0ytexgHkONKr9
-oi1EPwlIxD2uzvwgKsWJtMzz3YXX53QrZ2Fdw3QPiHJke1BYaoJWCxbS+PwJJzWO
-EiK0ENE1bt3YzA51bdXU7KP53w8cSuxR3iEkIyObeB7M3fBG9TTbjvQKVaGEl6Td
-48WDuuKxSsClEM/064Ym
-=bmYs
------END PGP SIGNATURE-----
+----------------------------------------------------------------
+Included changes:
+- update emails for A. Quartulli and M. Lindner in MAINTAINERS
+- switch to the next on-the-wire protocol version
+- introduce the T(ype) V(ersion) L(ength) V(alue) framework
+- adjust the existing components to make them use the new TVLV code
+- make the TT component use CRC32 instead of CRC16
+- totally remove the VIS functionality (has been moved to userspace)
+- reorder packet types and flags
+- add static checks on packet format
+- remove __packed from batadv_ogm_packet
 
---3MMMIZFJzhAsRj/+--
+----------------------------------------------------------------
+Antonio Quartulli (4):
+      MAINTAINERS: batman-adv - update emails
+      batman-adv: switch to a new packet compatibility version
+      batman-adv: use CRC32C instead of CRC16 in TT code
+      batman-adv: move BATADV_TT_CLIENT_TEMP to higher bit
+
+Marek Lindner (7):
+      batman-adv: tvlv - basic infrastructure
+      batman-adv: tvlv - gateway download/upload bandwidth container
+      batman-adv: tvlv - add distributed arp table container
+      batman-adv: tvlv - add network coding container
+      batman-adv: tvlv - convert tt data sent within OGMs
+      batman-adv: tvlv - convert tt query packet to use tvlv unicast packets
+      batman-adv: tvlv - convert roaming adv packet to use tvlv unicast packets
+
+Simon Wunderlich (5):
+      batman-adv: remove vis functionality
+      batman-adv: add build check macros for packet member offset
+      batman-adv: reorder packet types
+      batman-adv: remove packed from batadv_ogm_packet
+      batman-adv: reorder batadv_iv_flags
+
+ Documentation/ABI/testing/sysfs-class-net-mesh |  11 -
+ Documentation/networking/batman-adv.txt        |  50 +-
+ MAINTAINERS                                    |   4 +-
+ net/batman-adv/Makefile                        |   1 -
+ net/batman-adv/bat_iv_ogm.c                    | 111 +--
+ net/batman-adv/debugfs.c                       |   9 -
+ net/batman-adv/distributed-arp-table.c         |  64 ++
+ net/batman-adv/distributed-arp-table.h         |   5 +
+ net/batman-adv/gateway_client.c                | 187 +++--
+ net/batman-adv/gateway_client.h                |   2 +-
+ net/batman-adv/gateway_common.c                | 230 +++---
+ net/batman-adv/gateway_common.h                |  14 +-
+ net/batman-adv/hard-interface.c                |   9 -
+ net/batman-adv/main.c                          | 623 +++++++++++++++-
+ net/batman-adv/main.h                          |  37 +-
+ net/batman-adv/network-coding.c                |  63 ++
+ net/batman-adv/network-coding.h                |   5 +
+ net/batman-adv/originator.c                    |   4 +-
+ net/batman-adv/packet.h                        | 248 ++++---
+ net/batman-adv/routing.c                       | 247 ++-----
+ net/batman-adv/routing.h                       |   6 +-
+ net/batman-adv/send.c                          |   1 -
+ net/batman-adv/soft-interface.c                |   4 +-
+ net/batman-adv/sysfs.c                         |  96 +--
+ net/batman-adv/translation-table.c             | 905 ++++++++++++++----------
+ net/batman-adv/translation-table.h             |  13 +-
+ net/batman-adv/types.h                         | 178 ++---
+ net/batman-adv/vis.c                           | 938 -------------------------
+ net/batman-adv/vis.h                           |  36 -
+ 29 files changed, 1968 insertions(+), 2133 deletions(-)
+ delete mode 100644 net/batman-adv/vis.c
+ delete mode 100644 net/batman-adv/vis.h
