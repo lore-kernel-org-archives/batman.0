@@ -1,10 +1,17 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed,  9 Oct 2013 14:40:18 +0200
-Message-Id: <1381322418-1349-17-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1381322418-1349-1-git-send-email-antonio@meshcoding.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
+Date: Wed, 9 Oct 2013 15:11:08 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7384@saturn3.aculab.com>
+In-Reply-To: <1381322418-1349-11-git-send-email-antonio@meshcoding.com>
 References: <1381322418-1349-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 16/16] batman-adv: reorder batadv_iv_flags
+ <1381322418-1349-11-git-send-email-antonio@meshcoding.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 10/16] batman-adv: use CRC32C instead of
+	CRC16 in TT code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,62 +23,59 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <lindner_marek@yahoo.de>
+To: Antonio Quartulli <antonio@meshcoding.com>, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <ordex@autistici.org>
 
-From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+> CRC32C has to be preferred to CRC16 because of its possible
+> HW native support and because of the reduced collision
+> probability. With this change the Translation Table
+> component now uses CRC32C to compute the local and global
+> table checksum.
+...
+> -/* Calculates the checksum of the local table of a given orig_node */
+> -static uint16_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
+> +/**
+> + * batadv_tt_global_crc - calculates the checksum of the local table =
+belonging
+> + *  to the given orig_node
+> + * @bat_priv: the bat priv with all the soft interface information
+> + */
+> +static uint32_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
+>  				     struct batadv_orig_node *orig_node)
+...
+>  	for (i =3D 0; i < hash->size; i++) {
+>  		head =3D &hash->table[i];
+> @@ -1435,27 +1437,24 @@ static uint16_t batadv_tt_global_crc(struct =
+batadv_priv *bat_priv,
+>  							     orig_node))
+>  				continue;
+>=20
+...
+> +			crc ^=3D crc32c(0, tt_common->addr, ETH_ALEN);
+>  		}
 
-The vis flag is not needed anymore, and since we do a compat bump we
-can start with the first bit again
+Are you really generating CRC32 of a pile of ethernet MAC addresses
+and the XORing the CRC together?
+That gives the same answer as XORing together the MAC addresses and
+then doing a CRC of the final value.
+So it gives you almost no protection against corruption at all.
 
-Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- net/batman-adv/packet.h | 18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+...
+> -/* Calculates the checksum of the local table */
+> -static uint16_t batadv_tt_local_crc(struct batadv_priv *bat_priv)
+> +/**
+> + * batadv_tt_local_crc - calculates the checksum of the local table
+> + * @bat_priv: the bat priv with all the soft interface information
+> + */
+> +static uint32_t batadv_tt_local_crc(struct batadv_priv *bat_priv)
+>  {
+...
 
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index 4e5fe7d..4361bae 100644
---- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -67,10 +67,19 @@ enum batadv_subtype {
- /* this file is included by batctl which needs these defines */
- #define BATADV_COMPAT_VERSION 15
- 
-+/**
-+ * enum batadv_iv_flags - flags used in B.A.T.M.A.N. IV OGM packets
-+ * @BATADV_NOT_BEST_NEXT_HOP: flag is set when ogm packet is forwarded and was
-+ *     previously received from someone else than the best neighbor.
-+ * @BATADV_PRIMARIES_FIRST_HOP: flag is set when the primary interface address
-+ *     is used, and the packet travels its first hop.
-+ * @BATADV_DIRECTLINK: flag is for the first hop or if rebroadcasted from a
-+ *     one hop neighbor on the interface where it was originally received.
-+ */
- enum batadv_iv_flags {
--	BATADV_NOT_BEST_NEXT_HOP   = BIT(3),
--	BATADV_PRIMARIES_FIRST_HOP = BIT(4),
--	BATADV_DIRECTLINK	   = BIT(6),
-+	BATADV_NOT_BEST_NEXT_HOP   = BIT(0),
-+	BATADV_PRIMARIES_FIRST_HOP = BIT(1),
-+	BATADV_DIRECTLINK          = BIT(2),
- };
- 
- /* ICMP message types */
-@@ -164,11 +173,12 @@ struct batadv_header {
- /**
-  * struct batadv_ogm_packet - ogm (routing protocol) packet
-  * @header: common batman packet header
-+ * @flags: contains routing relevant flags - see enum batadv_iv_flags
-  * @tvlv_len: length of tvlv data following the ogm header
-  */
- struct batadv_ogm_packet {
- 	struct batadv_header header;
--	uint8_t  flags;    /* 0x40: DIRECTLINK flag ... */
-+	uint8_t  flags;
- 	__be32   seqno;
- 	uint8_t  orig[ETH_ALEN];
- 	uint8_t  prev_sender[ETH_ALEN];
--- 
-1.8.3.2
+This looks like a clone of the previous routine.
+Surely you can avoid the code duplication.
+
+	David
+
+
+
 
