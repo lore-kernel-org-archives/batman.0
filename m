@@ -1,13 +1,11 @@
 Return-Path: <steve@dymos.org.uk>
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Apple Message framework v1283)
 From: Stephen Thornton <steve@dymos.org.uk>
-In-Reply-To: <1380899775-25238-1-git-send-email-andrew@lunn.ch>
-Date: Wed, 9 Oct 2013 17:34:00 +0100
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <70C9D015-5815-4EDA-A427-F496906D18EE@dymos.org.uk>
-References: <1380899775-25238-1-git-send-email-andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] a question regarding ALFRED
+Date: Wed, 9 Oct 2013 17:28:43 +0100
+Message-Id: <52ECD1A4-9BFD-4220-851F-F101F398E117@dymos.org.uk>
+Mime-Version: 1.0 (Apple Message framework v1283)
+Subject: [B.A.T.M.A.N.] regarding ALFRED and GPS
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
