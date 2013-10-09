@@ -1,15 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 09 Oct 2013 20:05:18 +0800
-Message-ID: <1865185.sMNWqjjBIC@diderot>
-In-Reply-To: <20131009103515.GI8785@medion.lan>
-References: <1380834133-10808-1-git-send-email-siwu@hrz.tu-chemnitz.de>
- <12447770.xO0R1XlQHM@diderot> <20131009103515.GI8785@medion.lan>
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Wed,  9 Oct 2013 14:40:04 +0200
+Message-Id: <1381322418-1349-3-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1381322418-1349-1-git-send-email-antonio@meshcoding.com>
+References: <1381322418-1349-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4266902.I2yfO4lR6O";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix compat of
-	net_ratelimited_function for >3.2.46
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 02/16] batman-adv: switch to a new packet
+	compatibility version
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,52 +20,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Antonio Quartulli <ordex@autistici.org>, =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>, Marek Lindner <lindner_marek@yahoo.de>
 
+From: Antonio Quartulli <ordex@autistici.org>
 
---nextPart4266902.I2yfO4lR6O
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+With this change batman-adv is breaking compatibility with
+older versions and it is moving to compat-version 15.
 
-On Wednesday 09 October 2013 12:35:15 Bastian Bittorf wrote:
-> * Marek Lindner <mareklindner@neomailbox.ch> [09.10.2013 12:28]:
-> > > Appearently net_ratelimited_function was added to the stable series of
-> > > from 3.2.47, which results in a lot of warnings when compiling against
-> > > this kernel. This patch avoids this redefinition.
-> > > 
-> > > Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-> > > ---
-> > > 
-> > >  compat.h |    2 ++
-> > >  1 file changed, 2 insertions(+)
-> > 
-> > Applied in revision 227df84.
-> 
-> can this be backported to 'openwrt-routing' feed?
+Signed-off-by: Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
+Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+Signed-off-by: Antonio Quartulli <ordex@autistici.org>
+---
+ net/batman-adv/packet.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Is it urgent ? This weekend we planned to release the next batman-adv version 
-which includes this fix.
-
-Cheers,
-Marek
-
---nextPart4266902.I2yfO4lR6O
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.21 (GNU/Linux)
-
-iQEcBAABAgAGBQJSVUaCAAoJEFNVTo/uthzApBEIAJ4vfRBeT05yGmy9teNQr6ye
-421WrYKfGKOsqUcjlOkZMu2NXHIfeilWRwLjD/gjmbycmYZKTtOwgFLD0bWBqaFU
-1gRz5POUh0ydAsAjrb1ir8NvEJ503sRRautwsOtHUFibPpSafdIYreETFh6KMoPA
-SQt5lH94B6hUIsjVWt4JSY+osf1ubrnALWqDvcZlaRFY7wXlX8aZnckE0tggbU/C
-IdBavLtf9WyFmwsZ48BGaiXvDQic3OzG/2KTRmbSgpnkRXNgCy8ls8d6nHPI5316
-JvQIz8IOaX+1A5UIzPRRA3Xvxoy2oGPNO5/bwrzAWCBWn9iEmmeJGTF3kYppF/A=
-=6DsP
------END PGP SIGNATURE-----
-
---nextPart4266902.I2yfO4lR6O--
+diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
+index a51ccfc..11a22c8 100644
+--- a/net/batman-adv/packet.h
++++ b/net/batman-adv/packet.h
+@@ -48,7 +48,7 @@ enum batadv_subtype {
+ };
+ 
+ /* this file is included by batctl which needs these defines */
+-#define BATADV_COMPAT_VERSION 14
++#define BATADV_COMPAT_VERSION 15
+ 
+ enum batadv_iv_flags {
+ 	BATADV_NOT_BEST_NEXT_HOP   = BIT(3),
+-- 
+1.8.3.2
 
