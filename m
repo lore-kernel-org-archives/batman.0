@@ -1,11 +1,13 @@
-Return-Path: <steve@dymos.org.uk>
-From: Stephen Thornton <steve@dymos.org.uk>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
-Date: Wed, 9 Oct 2013 17:28:43 +0100
-Message-Id: <52ECD1A4-9BFD-4220-851F-F101F398E117@dymos.org.uk>
-Mime-Version: 1.0 (Apple Message framework v1283)
-Subject: [B.A.T.M.A.N.] regarding ALFRED and GPS
+Return-Path: <davem@davemloft.net>
+Date: Wed, 09 Oct 2013 13:56:52 -0400 (EDT)
+Message-Id: <20131009.135652.2086284751199593695.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1381322418-1349-1-git-send-email-antonio@meshcoding.com>
+References: <1381322418-1349-1-git-send-email-antonio@meshcoding.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2013-10-09
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,21 +19,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: antonio@meshcoding.com
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-I am currently developing a mesh router solution for several clients. I =
-have been using batman-adv in this project for almost a year (using =
-OpenWRT), and it has all worked fantastically. Thanks so much guys.
-I now have a requirement for GPS logging functionality, along with =
-passing other data between nodes. I have already written a simple layer3 =
-protocol for this purpose, but this was before ALFRED. ALFRED provides =
-almost all the functionality I need apart from the fact that I really =
-need to embed the alfred code within my own application. I could use it =
-as is via a sys call, but it would be so much better to include the =
-code. What are your feelings regarding splitting the alfred code into a =
-library with can be included in other user applications, and an alfred =
-client program that uses this library? I'm quite prepared to give quite =
-a bit of my own time to doing this if you like the idea.
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Wed,  9 Oct 2013 14:40:02 +0200
 
-best regards
-Steve Thornton=
+> Hello David,
+> 
+> this is a set of changes intended for net-next/linux-3.13.
+> 
+> As introduced one year ago (http://article.gmane.org/gmane.org.freifunk.batman/8484)
+> in the last period we have been busy working on giving our batman-adv
+> protocol/packet-format all those means to get stable and avoid incompatibilities
+> in the near future (this is also why we did not send many changes for
+> linux-3.12..).
+> 
+> With this patchset we are finally switching to a new compatibility version and
+> within this development cycle I will send you all those changes aimed to
+> introduce all the needed mechanism to avoid any further compatibility breakage.
+> 
+> First of all, in this batch you have the new TVLV code (Type Version Value
+> Length) which is the first very important milestone towards our goal[1].
+> With this mechanism we will be able to improve/change the packet contents layout
+> (used by the various features) without breaking compatibility with older
+> protocol versions anymore.
+> The development of this new component has been started by Spyros Gasteratos
+> during his Google Summer of Code 2012 and then adjusted, finished and submitted
+> by Marek Lindner.
+> 
+> Together with it, you have a set of improvements that we are allowed to apply
+> thanks to the switching to the new compat version.
+> These changes are:
+> - adapt the existing features to make them use the new TVLV mechanism
+> - move from CRC16 to CRC32c for table correctness check in the TT component
+> - reorder some of the flags sent over the wire
+> - remove the __packed attribute from the OGM packet struct.
+> 
+> Moreover, with this patchset we are totally removing our VISualisation component
+> that is now implemented in userspace.
+> 
+> Please pull let me know of any problem.
+
+Pulled, thanks.
