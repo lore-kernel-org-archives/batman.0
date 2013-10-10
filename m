@@ -1,10 +1,10 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 10 Oct 2013 23:59:09 +0200
-Message-Id: <1381442351-20066-2-git-send-email-sw@simonwunderlich.de>
+Date: Thu, 10 Oct 2013 23:59:10 +0200
+Message-Id: <1381442351-20066-3-git-send-email-sw@simonwunderlich.de>
 In-Reply-To: <1381442351-20066-1-git-send-email-sw@simonwunderlich.de>
 References: <1381442351-20066-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: update email address for Simon
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: update email address for Simon
 	Wunderlich
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,20 +24,56 @@ use my new e-mail address instead.
 
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- man/batctl.8 |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ README               |    2 +-
+ main.h               |    2 +-
+ sysfs-class-net-mesh |    4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/man/batctl.8 b/man/batctl.8
-index 38060d6..eff6f23 100644
---- a/man/batctl.8
-+++ b/man/batctl.8
-@@ -308,5 +308,5 @@ addresses.
- .SH AUTHOR
- batctl was written by Andreas Langer <an.langer@gmx.de> and Marek Lindner <lindner_marek@yahoo.de>.
- .PP
--This manual page was written by Simon Wunderlich <siwu@hrz.tu-chemnitz.de>, Marek Lindner <lindner_marek@yahoo.de> and
-+This manual page was written by Simon Wunderlich <sw@simonwunderlich.de>, Marek Lindner <lindner_marek@yahoo.de> and
- Andrew Lunn <andrew@lunn.ch>
+diff --git a/README b/README
+index 897d1f4..89ace66 100644
+--- a/README
++++ b/README
+@@ -200,4 +200,4 @@ Mailing-list:   b.a.t.m.a.n@open-mesh.org (optional  subscription
+ You can also contact the Authors:
+ 
+ Marek  Lindner  <lindner_marek@yahoo.de>
+-Simon  Wunderlich  <siwu@hrz.tu-chemnitz.de>
++Simon  Wunderlich  <sw@simonwunderlich.de>
+diff --git a/main.h b/main.h
+index 42f293d..ff39e46 100644
+--- a/main.h
++++ b/main.h
+@@ -21,7 +21,7 @@
+ #define _NET_BATMAN_ADV_MAIN_H_
+ 
+ #define BATADV_DRIVER_AUTHOR "Marek Lindner <lindner_marek@yahoo.de>, " \
+-			     "Simon Wunderlich <siwu@hrz.tu-chemnitz.de>"
++			     "Simon Wunderlich <sw@simonwunderlich.de>"
+ #define BATADV_DRIVER_DESC   "B.A.T.M.A.N. advanced"
+ #define BATADV_DRIVER_DEVICE "batman-adv"
+ 
+diff --git a/sysfs-class-net-mesh b/sysfs-class-net-mesh
+index ee4a479..ba826f9 100644
+--- a/sysfs-class-net-mesh
++++ b/sysfs-class-net-mesh
+@@ -17,7 +17,7 @@ Description:
+ 
+ What:           /sys/class/net/<mesh_iface>/mesh/bonding
+ Date:           June 2010
+-Contact:        Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
++Contact:        Simon Wunderlich <sw@simonwunderlich.de>
+ Description:
+                 Indicates whether the data traffic going through the
+                 mesh will be sent using multiple interfaces at the
+@@ -25,7 +25,7 @@ Description:
+ 
+ What:           /sys/class/net/<mesh_iface>/mesh/bridge_loop_avoidance
+ Date:           November 2011
+-Contact:        Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
++Contact:        Simon Wunderlich <sw@simonwunderlich.de>
+ Description:
+                 Indicates whether the bridge loop avoidance feature
+                 is enabled. This feature detects and avoids loops
 -- 
 1.7.10.4
 
