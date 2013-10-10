@@ -1,14 +1,11 @@
-Return-Path: <andrew@lunn.ch>
-Date: Wed, 9 Oct 2013 23:48:10 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20131009214810.GB14447@lunn.ch>
-References: <1380899775-25238-1-git-send-email-andrew@lunn.ch>
- <70C9D015-5815-4EDA-A427-F496906D18EE@dymos.org.uk>
+Return-Path: <bittorf@bluebottle.com>
+Date: Thu, 10 Oct 2013 10:36:18 +0200
+From: Bastian Bittorf <bittorf@bluebottle.com>
+Message-ID: <20131010083618.GQ8785@medion.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <70C9D015-5815-4EDA-A427-F496906D18EE@dymos.org.uk>
-Subject: Re: [B.A.T.M.A.N.] a question regarding ALFRED
+Subject: [B.A.T.M.A.N.] batman / iptables / changed mac
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,32 +17,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wed, Oct 09, 2013 at 05:34:00PM +0100, Stephen Thornton wrote:
+we see a strange behaviour using OpenWrt r38277
+with kernel 3.10.14 and batman-adv: 2013.3.0
 
-Hi Stephen
+we use a http-splash-page, where the laptop's must
+click 'ok'. the iptables-rules are working like this,
+when the button is pressed:
 
-Please could you fix your mail client to keep lines short than around
-70 characters.
+iptables -t mangle -I PREROUTING -d $laptop_ip -j ACCEPT
+iptables -t mangle -I PREROUTING -m mac --mac-source $laptop_mac -j ACCEPT
 
-> I am currently developing a mesh router solution for several clients. I have been using batman-adv in this project for almost a year (using OpenWRT), and it has all worked fantastically. Thanks so much guys.
-> I now have a requirement for GPS logging functionality, along with passing other data between nodes. I have already written a simple layer3 protocol for this purpose, but this was before ALFRED. ALFRED provides almost all the functionality I need apart from the fact that I really need to embed the alfred code within my own application. I could use it as is via a sys call, but it would be so much better to include the code. What are your feelings regarding splitting the alfred code into a library with can be included in other user applications, and an alfred client program that uses this library? I'm quite prepared to give quite a bit of my own time to doing this if you like the idea.
+we had the effect, that laptop can press the button and
+the rules are active, but 'internet was not working'.
 
-Are you interested in using alfred, or vis built on top of alfred?
-Would you want a library for accessing alfred, or for accessing vis?
+looking deeper into this, we can see that the second rule (mac)
+was not used, so the laptop gets the splash-page again and again.
 
-You could pull some of the boilerplate code out of vis and my
-alfred-gpsd server/client into a library. e.g. alfred_open_sock(),
-_publish_data(), _request_data(), _receive_answer_packet(),
-_get_data(). What will cause problems is the globals structure.  It is
-a mixture of generic and application specific members. That will
-require quite a bit of refactoring.
+via using:
 
-I'm just not sure it is worth the effort. It took me less than a
-mythical man day to get a proof of concept gpsd code working, and
-another day to sort out output formatting issues and the odd bug, etc.
-Creating a new client/server embedded in some other application is not
-particularly difficult, re-using the existing code.
+iptables -t mangle -I PREROUTING -s $laptop_ip -j LOG
 
-     Andrew
+we can see, that the mac-adress which the kernel/iptables sees is not
+the one from the laptop, the log-entry looks like this:
+(IP 192.168.99.243 = Laptop)
+
+[ 2579.600000] from_192.168.99.243: IN=eth0.1 OUT=
+MAC=02:00:ca:b1:00:99:02:00:de:ad:00:02:08:00:45:00:00:3c
+SRC=192.168.99.243 DST=193.99.144.80 LEN=60 TOS=0x00 PREC=0x00 TTL=62
+ID=43918 DF PROTO=TCP SPT=55132 DPT=80 WINDOW=14600 RES=0x00 SYN URGP=0
+
+the mac seems strange, the real mac is '00:13:e8:82:7e:4b'.
+but the pattern is interesting:
+
+MAC=02:00:ca:b1:00:99:02:00:de:ad:00:02:08:00:45:00:00:3c
+
+the mac consists of 3 macs somehow:
+02:00:ca:b1:00:99
+02:00:de:ad:00:02
+08:00:45:00:00:3c
+
+the first is the 'lan1/cable' mac of the router which does the splash
+the second is the 'lan2/cable' mac of the nexthop router. the last one:
+* i have no idea *.
+
+i can reproduce the issue, so i can deliver much more debug-output than
+this. any idea with this data yet? for now we mac a 3rd rule, like the
+log-rule to 'free' the laptop - but i call it a workaround.
+
+iptables -t mangle -I PREROUTING -s $laptop_ip -j ACCEPT
+
+bye, bastian
+
