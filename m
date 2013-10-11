@@ -1,11 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 10 Oct 2013 23:59:11 +0200
-Message-Id: <1381442351-20066-4-git-send-email-sw@simonwunderlich.de>
-In-Reply-To: <1381442351-20066-1-git-send-email-sw@simonwunderlich.de>
-References: <1381442351-20066-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batmand: update email address for Simon
-	Wunderlich
+Return-Path: <antonio@meshcoding.com>
+Date: Fri, 11 Oct 2013 08:10:53 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
+Message-ID: <20131011061053.GF576@neomailbox.net>
+References: <1381347174-3629-1-git-send-email-antonio@meshcoding.com>
+ <20131009.155658.131342560291162660.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="5p8PegU4iirBW1oA"
+Content-Disposition: inline
+In-Reply-To: <20131009.155658.131342560291162660.davem@davemloft.net>
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2013-10-09b
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,29 +21,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-My university will stop email service for alumni in january 2014,
-please use my new e-mail address instead.
 
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- THANKS |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+--5p8PegU4iirBW1oA
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/THANKS b/THANKS
-index 9c10878..c102caa 100644
---- a/THANKS
-+++ b/THANKS
-@@ -9,7 +9,7 @@ Corinna 'Elektra' Aichele (onelektra-at-gmx.net)
- Thomas Lopatic  (thomas-at-lopatic.de)
- Felix Fietkau (nbd-at-nbd.name)
- Ludger Schmudde (lui-at-schmudde.com)
--Simon Wunderlich (siwu-at-hrz.tu-chemnitz.de)
-+Simon Wunderlich (sw-at-simonwunderlich.de)
- Andreas Langer (an.langer-at-gmx.de)
- Sven Eckelmann (sven.eckelmann-at-gmx.de)
- Antoine van Gelder (antoine-at-7degrees.co.za)
--- 
-1.7.10.4
+On Wed, Oct 09, 2013 at 03:56:58PM -0400, David Miller wrote:
+> From: Antonio Quartulli <antonio@meshcoding.com>
+> Date: Wed,  9 Oct 2013 21:32:38 +0200
+>=20
+> > here you have my fixed pull request intended for net-next.
+> >=20
+> > The previous build error was due to an accidental remotion of the begin=
+ning of a
+> > batadv_dbg() statement during a merge conflict resolution.
+> > Sorry for that.
+>=20
+> This looks better, pulled, thanks a lot.
 
+Hello David,
+
+I can't find my patchset in net-next, hasn't it been pushed yet?
+
+Regards,
+
+
+--=20
+Antonio Quartulli
+
+--5p8PegU4iirBW1oA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSV5ZtAAoJEADl0hg6qKeOLsEP/3UGu3G8tIm6W1ENMsUiYOZj
+XkJoNQAi2CXJ8r/P0e5EC9Y2Se4/bIrxEGUW9n2j+omvLmP4LKqbm7uUw/BpHzeP
+UH+0CudVW9cjbsQSQqtK/f4nXGTKM9yJ2Gu1fJQ4FIn6PzQg7CRglSPQpFpfpZwB
+IK6yhgD3ZanjIpyXAo7BLUNZoa5h7pntcp0OMuH8iesOsKZbMFA7lYpEBABAH52D
+XlJ2NNXDf+MtVTpwM07z0uFQOrjoadwAcpG75msXCMnQkZ+L5/rBzuU64zY7Wlk8
+heBKuzk0bHeX8in6kwMcR+2Tdg8jwmEbEm1DCOXcoE/ISQl6jJyLHCAyIAXyvlVm
+N9LMjQ4G/176SK1wpl7xk6asDQrko8kmQEgmj4xbooaz0YDAclBemwNJv6LVgzvp
+E8CcO8Kpf7v6bPXWqtI2hGu4phLfeoY72c8I05OFeFKvM7Oou/u2PH7dHuaghGz5
+Gpbk3hLf9ZG9P8Xb/mas9lzk0JgX4agJ32ECuka4ebsTceG15daP0jwZwwyR3JLe
+st/+XKHkERBSIKWxS8o9V33G1dJN9x0fcPkg/Mk4OYb/1iFfedUELT9n16L1g0kK
+nZyc8LltHCZHpxPjMfI6ARaa6Whxhpbh9YPQl1v3+XgM7AJybOW+6Umiu/tIALgH
+DUrJ2E7VI1VRCOxXFxco
+=t82w
+-----END PGP SIGNATURE-----
+
+--5p8PegU4iirBW1oA--
