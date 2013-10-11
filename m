@@ -1,15 +1,11 @@
-Return-Path: <davem@davemloft.net>
-Date: Fri, 11 Oct 2013 16:45:47 -0400 (EDT)
-Message-Id: <20131011.164547.1567827514531486369.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20131011061053.GF576@neomailbox.net>
-References: <1381347174-3629-1-git-send-email-antonio@meshcoding.com>
- <20131009.155658.131342560291162660.davem@davemloft.net>
- <20131011061053.GF576@neomailbox.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2013-10-09b
+Return-Path: <zaki.bm@gmail.com>
+MIME-Version: 1.0
+Date: Fri, 11 Oct 2013 11:11:04 +0800
+Message-ID: <CABQkniC4b-CEdx9-7rNBuG0p5a5tM1fptsKjida0vThVUYVtug@mail.gmail.com>
+From: Zaki <zaki.bm@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Batman-Adv : Hops and Throughput with Collocated
+	dual-radio
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,26 +17,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: antonio@meshcoding.com
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 11 Oct 2013 08:10:53 +0200
+Hi,
 
-> On Wed, Oct 09, 2013 at 03:56:58PM -0400, David Miller wrote:
->> From: Antonio Quartulli <antonio@meshcoding.com>
->> Date: Wed,  9 Oct 2013 21:32:38 +0200
->> 
->> > here you have my fixed pull request intended for net-next.
->> > 
->> > The previous build error was due to an accidental remotion of the beginning of a
->> > batadv_dbg() statement during a merge conflict resolution.
->> > Sorry for that.
->> 
->> This looks better, pulled, thanks a lot.
-> 
-> Hello David,
-> 
-> I can't find my patchset in net-next, hasn't it been pushed yet?
+I am a newbie in batman-adv.  I got a question regarding Hops and
+Throughput, especially in regards with a collocated dual-radio device.
+ Hopefully somebody could offer some help here for me to fully
+understand batman-adv operation.  I have 3 devices, namely A, B and C.
 
-Sorry, it should be there now.
+A is only having single radio (operating at Freq 5.20G in AdHoc mode).
+ Put this under bat0.  Bridge bat0 with eth0.
+B is having dual-radio (radio1 operates at 5.20G in AdHoc mode, radio2
+is at 5.24G in AdHoc mode). Put these under bat0. Bridge bat0 with
+eth0
+C is like A (single radio, operating at 5.24G in AdHoc mode). Put this
+under bat0.  Bridge bat0 with eth0.
+
+So, the wireless link will be like this :
+
+[A]::::::::::::::: [B(radio1)---B(radio2)]::::::::::::::::[C]
+
+1) If i were to ping from A to C, how many hops is it considered?.  Is
+it 2 hops or 3 hops?.
+2) If my Iperf TCP throughput from A to B is 40Mbps, what is the
+expected throughput of Iperf from A to C ?.
+
+Thanks a lot.
+
+Jack.
