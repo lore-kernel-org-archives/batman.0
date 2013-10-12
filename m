@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 12 Oct 2013 21:54:22 +0800
-Message-ID: <3677817.uxt2mnKIdH@diderot>
-In-Reply-To: <1381442351-20066-3-git-send-email-sw@simonwunderlich.de>
-References: <1381442351-20066-1-git-send-email-sw@simonwunderlich.de>
- <1381442351-20066-3-git-send-email-sw@simonwunderlich.de>
+Date: Sat, 12 Oct 2013 21:56:41 +0800
+Message-ID: <1977080.kpqYg7X3sy@diderot>
+In-Reply-To: <1381473030-3806-1-git-send-email-antonio@meshcoding.com>
+References: <1381473030-3806-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8082836.sdTQJSlYP7";
+Content-Type: multipart/signed; boundary="nextPart8427692.un1X5KszCq";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: update email address for
-	Simon Wunderlich
+	Antonio Quartulli
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,29 +21,25 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart8082836.sdTQJSlYP7
+--nextPart8427692.un1X5KszCq
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Thursday 10 October 2013 23:59:10 Simon Wunderlich wrote:
-> My university will stop email service for alumni in january 2014, please
-> use my new e-mail address instead.
-> 
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+On Friday 11 October 2013 08:30:30 Antonio Quartulli wrote:
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
->  README               |    2 +-
->  main.h               |    2 +-
->  sysfs-class-net-mesh |    4 ++--
->  3 files changed, 4 insertions(+), 4 deletions(-)
+>  sysfs-class-net-mesh | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision 512b735.
+Applied in revision e89a9f9.
 
 Thanks,
 Marek
 
---nextPart8082836.sdTQJSlYP7
+--nextPart8427692.un1X5KszCq
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -52,14 +47,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.21 (GNU/Linux)
 
-iQEcBAABAgAGBQJSWVSTAAoJEFNVTo/uthzAY8QH/1H+/66d/YstYduiu3ogqdKZ
-2VDGO67Yu07ocsOqurGwIWkskT/0mDVarhPfVtCZibtwkaGquf0yitOqfEcNuJbn
-0cIxXVrQdNA42sOhoekVqoftyTqBLJ89k9/xgMVy5FJEGsZl09hmq7xwngccxiEp
-Kw8E0nFCqYlq/raNbxw7v+Bsj34+Ycd0dA6ApP2GrR+2N8M1BpJvz6DNPDoKlFWR
-H+MFiRGHrwTe9zhY3+QIKXggAmjgk6Na56wApBn4sVdkt1+58dl9U6u/QG+K4iix
-K3CX2kbmq6vEnxtnfMVaVgochjsEbRt/J1o2XoiM4kw0NV/30UxHowHM7EVudFg=
-=7xIE
+iQEcBAABAgAGBQJSWVUZAAoJEFNVTo/uthzAiB0H+wUSaPvo3yx7b4M7C9jkyhhm
+NQYZMehiqpX99SwxQ9viGllD4IkcDBNcJYThFB90bRjqxuVxOgfalt9sNzAeqzzT
+fvvDtvxzZQuRdV6krULi9PtZy/MGhZ3yQK7YGhMTwXcigEm1Gp5q7dBelDaumDLt
+A5XA0TIojmxjDuyIBBSk86jCx/aYbq6KQyOtxCzxR94PUyro7gkrh/JhlF3YqRQ3
+TB/NOEdCP2JD7hMb0qBncXuomakOw3Ao73JR5aG872QRfOgcGvO5n7jyyNjCHgHd
+fHFGVUKk0yRa/PvxnXkiNP+Cv8MwpDLrZF7wXa1tmexVdWqifVkOkfTQW1CwNGQ=
+=1gOJ
 -----END PGP SIGNATURE-----
 
---nextPart8082836.sdTQJSlYP7--
+--nextPart8427692.un1X5KszCq--
 
