@@ -1,11 +1,15 @@
-Return-Path: <zaki.bm@gmail.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sat, 12 Oct 2013 21:54:22 +0800
+Message-ID: <3677817.uxt2mnKIdH@diderot>
+In-Reply-To: <1381442351-20066-3-git-send-email-sw@simonwunderlich.de>
+References: <1381442351-20066-1-git-send-email-sw@simonwunderlich.de>
+ <1381442351-20066-3-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Date: Fri, 11 Oct 2013 11:11:04 +0800
-Message-ID: <CABQkniC4b-CEdx9-7rNBuG0p5a5tM1fptsKjida0vThVUYVtug@mail.gmail.com>
-From: Zaki <zaki.bm@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: [B.A.T.M.A.N.] Batman-Adv : Hops and Throughput with Collocated
-	dual-radio
+Content-Type: multipart/signed; boundary="nextPart8082836.sdTQJSlYP7";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: update email address for
+	Simon Wunderlich
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,30 +23,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
 
-I am a newbie in batman-adv.  I got a question regarding Hops and
-Throughput, especially in regards with a collocated dual-radio device.
- Hopefully somebody could offer some help here for me to fully
-understand batman-adv operation.  I have 3 devices, namely A, B and C.
+--nextPart8082836.sdTQJSlYP7
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-A is only having single radio (operating at Freq 5.20G in AdHoc mode).
- Put this under bat0.  Bridge bat0 with eth0.
-B is having dual-radio (radio1 operates at 5.20G in AdHoc mode, radio2
-is at 5.24G in AdHoc mode). Put these under bat0. Bridge bat0 with
-eth0
-C is like A (single radio, operating at 5.24G in AdHoc mode). Put this
-under bat0.  Bridge bat0 with eth0.
+On Thursday 10 October 2013 23:59:10 Simon Wunderlich wrote:
+> My university will stop email service for alumni in january 2014, please
+> use my new e-mail address instead.
+> 
+> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+> ---
+>  README               |    2 +-
+>  main.h               |    2 +-
+>  sysfs-class-net-mesh |    4 ++--
+>  3 files changed, 4 insertions(+), 4 deletions(-)
 
-So, the wireless link will be like this :
+Applied in revision 512b735.
 
-[A]::::::::::::::: [B(radio1)---B(radio2)]::::::::::::::::[C]
+Thanks,
+Marek
 
-1) If i were to ping from A to C, how many hops is it considered?.  Is
-it 2 hops or 3 hops?.
-2) If my Iperf TCP throughput from A to B is 40Mbps, what is the
-expected throughput of Iperf from A to C ?.
+--nextPart8082836.sdTQJSlYP7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-Thanks a lot.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.21 (GNU/Linux)
 
-Jack.
+iQEcBAABAgAGBQJSWVSTAAoJEFNVTo/uthzAY8QH/1H+/66d/YstYduiu3ogqdKZ
+2VDGO67Yu07ocsOqurGwIWkskT/0mDVarhPfVtCZibtwkaGquf0yitOqfEcNuJbn
+0cIxXVrQdNA42sOhoekVqoftyTqBLJ89k9/xgMVy5FJEGsZl09hmq7xwngccxiEp
+Kw8E0nFCqYlq/raNbxw7v+Bsj34+Ycd0dA6ApP2GrR+2N8M1BpJvz6DNPDoKlFWR
+H+MFiRGHrwTe9zhY3+QIKXggAmjgk6Na56wApBn4sVdkt1+58dl9U6u/QG+K4iix
+K3CX2kbmq6vEnxtnfMVaVgochjsEbRt/J1o2XoiM4kw0NV/30UxHowHM7EVudFg=
+=7xIE
+-----END PGP SIGNATURE-----
+
+--nextPart8082836.sdTQJSlYP7--
+
