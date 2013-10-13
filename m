@@ -1,15 +1,15 @@
 Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
-Date: Sun, 13 Oct 2013 23:51:07 +0200
+Date: Sun, 13 Oct 2013 23:51:36 +0200
 From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
-Message-ID: <20131013215107.GA29403@pandem0nium>
-References: <1381137782-3676-1-git-send-email-andrew@lunn.ch>
+Message-ID: <20131013215136.GB29403@pandem0nium>
+References: <1380899775-25238-1-git-send-email-andrew@lunn.ch>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="SLDf9lqlvOQaIe6s"
+ protocol="application/pgp-signature"; boundary="IrhDeMKUP4DT/M7F"
 Content-Disposition: inline
-In-Reply-To: <1381137782-3676-1-git-send-email-andrew@lunn.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v3] vis: Add an output format which is
- json conformant.
+In-Reply-To: <1380899775-25238-1-git-send-email-andrew@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] alfred: Add support for passing
+ location information over alfred.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,33 +25,34 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Janne.Paatero@ruag.com
 
 
---SLDf9lqlvOQaIe6s
+--IrhDeMKUP4DT/M7F
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Oct 07, 2013 at 11:23:02AM +0200, Andrew Lunn wrote:
-> The current json output consists of individual lines which are json
-> conformant, but there is no conformancy between lines. Add a new
-> output format, which as a whole is json conformant.
+On Fri, Oct 04, 2013 at 05:16:15PM +0200, Andrew Lunn wrote:
+> It can be useful to know where mesh nodes are located. Add an Alfred
+> server which can get the current location from gpsd, or a static
+> location from the command line. Add a client which can display this
+> information distributed by nodes in JSON format.
 >=20
 > Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 
-Applied in 38eae4d.
+Applied in revision 2b901d6.
 
 Thanks,
 	Simon
 
---SLDf9lqlvOQaIe6s
+--IrhDeMKUP4DT/M7F
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iEYEARECAAYFAlJbFcsACgkQrzg/fFk7axZR3gCff/GzEPo5xL/Q45nQWm0Ln4lo
-BrkAn0iFVDjKti3dO5jZ2lkUlWhJZk27
-=DuuK
+iEYEARECAAYFAlJbFegACgkQrzg/fFk7axYe3wCeO3efv77POpUd92STZI/s9ljY
+7VgAn2RsK832hjngWiHQrhYIegJRay9l
+=ikEN
 -----END PGP SIGNATURE-----
 
---SLDf9lqlvOQaIe6s--
+--IrhDeMKUP4DT/M7F--
