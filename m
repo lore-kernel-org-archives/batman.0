@@ -1,14 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sun, 13 Oct 2013 13:23:01 +0200
-Message-Id: <1381663381-626-17-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1381663381-626-1-git-send-email-antonio@meshcoding.com>
-References: <1381663381-626-1-git-send-email-antonio@meshcoding.com>
+Return-Path: <simon.wunderlich@s2003.tu-chemnitz.de>
+Date: Sun, 13 Oct 2013 16:36:49 +0200
+From: Simon Wunderlich <simon.wunderlich@s2003.tu-chemnitz.de>
+Message-ID: <20131013143649.GA27965@pandem0nium>
+References: <CABQkniC4b-CEdx9-7rNBuG0p5a5tM1fptsKjida0vThVUYVtug@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 16/16] batman-adv: Add dummy soft-interface
-	rx mode handler
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="pf9I7BMVVzbSWLtt"
+Content-Disposition: inline
+In-Reply-To: <CABQkniC4b-CEdx9-7rNBuG0p5a5tM1fptsKjida0vThVUYVtug@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Batman-Adv : Hops and Throughput with Collocated
+ dual-radio
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,53 +21,74 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <antonio@meshcoding.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Linus Lüssing <linus.luessing@web.de>
 
-We do not actually need to set any rx filters for the virtual batman
-soft interface. However a dummy handler enables a user to set static
-multicast listeners for instance.
+--pf9I7BMVVzbSWLtt
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- net/batman-adv/soft-interface.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+Hi Zaki/Jack,
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 15c7237..e8a2bd6 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -137,6 +137,18 @@ static int batadv_interface_change_mtu(struct net_device *dev, int new_mtu)
- 	return 0;
- }
- 
-+/**
-+ * batadv_interface_set_rx_mode - set the rx mode of a device
-+ * @dev: registered network device to modify
-+ *
-+ * We do not actually need to set any rx filters for the virtual batman
-+ * soft interface. However a dummy handler enables a user to set static
-+ * multicast listeners for instance.
-+ */
-+static void batadv_interface_set_rx_mode(struct net_device *dev)
-+{
-+}
-+
- static int batadv_interface_tx(struct sk_buff *skb,
- 			       struct net_device *soft_iface)
- {
-@@ -583,6 +595,7 @@ static const struct net_device_ops batadv_netdev_ops = {
- 	.ndo_get_stats = batadv_interface_stats,
- 	.ndo_set_mac_address = batadv_interface_set_mac_addr,
- 	.ndo_change_mtu = batadv_interface_change_mtu,
-+	.ndo_set_rx_mode = batadv_interface_set_rx_mode,
- 	.ndo_start_xmit = batadv_interface_tx,
- 	.ndo_validate_addr = eth_validate_addr,
- 	.ndo_add_slave = batadv_softif_slave_add,
--- 
-1.8.3.2
+On Fri, Oct 11, 2013 at 11:11:04AM +0800, Zaki wrote:
+> Hi,
+>=20
+> I am a newbie in batman-adv.  I got a question regarding Hops and
+> Throughput, especially in regards with a collocated dual-radio device.
+>  Hopefully somebody could offer some help here for me to fully
+> understand batman-adv operation.  I have 3 devices, namely A, B and C.
+>=20
+> A is only having single radio (operating at Freq 5.20G in AdHoc mode).
+>  Put this under bat0.  Bridge bat0 with eth0.
+> B is having dual-radio (radio1 operates at 5.20G in AdHoc mode, radio2
+> is at 5.24G in AdHoc mode). Put these under bat0. Bridge bat0 with
+> eth0
+> C is like A (single radio, operating at 5.24G in AdHoc mode). Put this
+> under bat0.  Bridge bat0 with eth0.
+>=20
+> So, the wireless link will be like this :
+>=20
+> [A]::::::::::::::: [B(radio1)---B(radio2)]::::::::::::::::[C]
+>=20
+> 1) If i were to ping from A to C, how many hops is it considered?.  Is
+> it 2 hops or 3 hops?.
 
+that would be two hops. One hop is considered traversing one link, and
+you have two links here.
+
+> 2) If my Iperf TCP throughput from A to B is 40Mbps, what is the
+> expected throughput of Iperf from A to C ?.
+
+That depends. If the links are not interferring, you should get approx.
+the maximum of both link throughputs. So if one link is 30 mbit/s, the seco=
+nd
+is 25 mbit/s, that whole path would yield 25 mbit/s - there might be tcp
+effects further decreasing throughput (latency etc).
+
+However you use two frequencies adjacent to each other. If you use omni
+antennas, expect a lot of interferences (even if the channels are not
+overlapping). If you use directional antennas you should be fine.
+
+Cheers,
+	Simon
+
+
+>=20
+> Thanks a lot.
+>=20
+> Jack.
+
+--pf9I7BMVVzbSWLtt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEARECAAYFAlJasAEACgkQrzg/fFk7axZHvACdFY+KgyliEy1Nnbbdwb4evSsW
+o3UAnimNtforTeGChf//AxC9dNnsQN5v
+=bzrA
+-----END PGP SIGNATURE-----
+
+--pf9I7BMVVzbSWLtt--
