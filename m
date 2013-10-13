@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sun, 13 Oct 2013 13:22:48 +0200
-Message-Id: <1381663381-626-4-git-send-email-antonio@meshcoding.com>
+Date: Sun, 13 Oct 2013 13:22:49 +0200
+Message-Id: <1381663381-626-5-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1381663381-626-1-git-send-email-antonio@meshcoding.com>
 References: <1381663381-626-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 03/16] batman-adv: remove
-	batadv_tt_global_add_orig declaration
+Subject: [B.A.T.M.A.N.] [PATCH 04/16] batman-adv: don't use call_rcu if not
+	needed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,29 +22,54 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lind
 
 From: Antonio Quartulli <ordex@autistici.org>
 
-batadv_tt_global_add_orig is neither used nor implemented
-anymore, therefore it is possible to remove its declaration
+batadv_tt_global_entry_free_ref uses call_rcu to schedule a
+function which will only free the global entry itself.
+
+For this reason call_rcu is useless and kfree_rcu can be
+used to simplify the code.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/translation-table.h | 3 ---
- 1 file changed, 3 deletions(-)
+ net/batman-adv/translation-table.c | 20 ++++++--------------
+ 1 file changed, 6 insertions(+), 14 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
-index fb710c5..015d8b9 100644
---- a/net/batman-adv/translation-table.h
-+++ b/net/batman-adv/translation-table.h
-@@ -27,9 +27,6 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
- 				const uint8_t *addr, const char *message,
- 				bool roaming);
- int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset);
--void batadv_tt_global_add_orig(struct batadv_priv *bat_priv,
--			       struct batadv_orig_node *orig_node,
--			       const unsigned char *tt_buff, int tt_buff_len);
- int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset);
- void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
- 			       struct batadv_orig_node *orig_node,
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index b3c4369..34fa6cc 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -117,25 +117,17 @@ batadv_tt_local_entry_free_ref(struct batadv_tt_local_entry *tt_local_entry)
+ 		kfree_rcu(tt_local_entry, common.rcu);
+ }
+ 
+-static void batadv_tt_global_entry_free_rcu(struct rcu_head *rcu)
+-{
+-	struct batadv_tt_common_entry *tt_common_entry;
+-	struct batadv_tt_global_entry *tt_global_entry;
+-
+-	tt_common_entry = container_of(rcu, struct batadv_tt_common_entry, rcu);
+-	tt_global_entry = container_of(tt_common_entry,
+-				       struct batadv_tt_global_entry, common);
+-
+-	kfree(tt_global_entry);
+-}
+-
++/**
++ * batadv_tt_global_entry_free_ref - decrement the refcounter for a
++ *  tt_global_entry and possibly free it
++ * @tt_global_entry: the object to free
++ */
+ static void
+ batadv_tt_global_entry_free_ref(struct batadv_tt_global_entry *tt_global_entry)
+ {
+ 	if (atomic_dec_and_test(&tt_global_entry->common.refcount)) {
+ 		batadv_tt_global_del_orig_list(tt_global_entry);
+-		call_rcu(&tt_global_entry->common.rcu,
+-			 batadv_tt_global_entry_free_rcu);
++		kfree_rcu(tt_global_entry, common.rcu);
+ 	}
+ }
+ 
 -- 
 1.8.3.2
 
