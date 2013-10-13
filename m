@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sun, 13 Oct 2013 13:22:49 +0200
-Message-Id: <1381663381-626-5-git-send-email-antonio@meshcoding.com>
+Date: Sun, 13 Oct 2013 13:22:50 +0200
+Message-Id: <1381663381-626-6-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1381663381-626-1-git-send-email-antonio@meshcoding.com>
 References: <1381663381-626-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 04/16] batman-adv: don't use call_rcu if not
-	needed
+Subject: [B.A.T.M.A.N.] [PATCH 05/16] batman-adv: h_vlan_encapsulated_proto
+	access refactoring
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,53 +22,83 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lind
 
 From: Antonio Quartulli <ordex@autistici.org>
 
-batadv_tt_global_entry_free_ref uses call_rcu to schedule a
-function which will only free the global entry itself.
+In case of a VLAN tagged frame the ethhdr pointer is
+moved forward by 4 bytes so that the offset of h_proto
+in struct ethhdr matches the real
+h_vlan_encapsulated_proto address in the skb. While this
+trickery is correct it makes the code harder to understand
+and may lead to bugs in case of re-use of ethhdr for other
+purposes.
 
-For this reason call_rcu is useless and kfree_rcu can be
-used to simplify the code.
+This patch introduces a proto variable to make things
+cleaner and easier to understand.
 
 Signed-off-by: Antonio Quartulli <ordex@autistici.org>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 ---
- net/batman-adv/translation-table.c | 20 ++++++--------------
- 1 file changed, 6 insertions(+), 14 deletions(-)
+ net/batman-adv/gateway_client.c | 19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index b3c4369..34fa6cc 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -117,25 +117,17 @@ batadv_tt_local_entry_free_ref(struct batadv_tt_local_entry *tt_local_entry)
- 		kfree_rcu(tt_local_entry, common.rcu);
- }
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 1bce63a..ac97ca7 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -655,24 +655,29 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
+ 	struct iphdr *iphdr;
+ 	struct ipv6hdr *ipv6hdr;
+ 	struct udphdr *udphdr;
++	struct vlan_ethhdr *vhdr;
++	__be16 proto;
  
--static void batadv_tt_global_entry_free_rcu(struct rcu_head *rcu)
--{
--	struct batadv_tt_common_entry *tt_common_entry;
--	struct batadv_tt_global_entry *tt_global_entry;
--
--	tt_common_entry = container_of(rcu, struct batadv_tt_common_entry, rcu);
--	tt_global_entry = container_of(tt_common_entry,
--				       struct batadv_tt_global_entry, common);
--
--	kfree(tt_global_entry);
--}
--
-+/**
-+ * batadv_tt_global_entry_free_ref - decrement the refcounter for a
-+ *  tt_global_entry and possibly free it
-+ * @tt_global_entry: the object to free
-+ */
- static void
- batadv_tt_global_entry_free_ref(struct batadv_tt_global_entry *tt_global_entry)
- {
- 	if (atomic_dec_and_test(&tt_global_entry->common.refcount)) {
- 		batadv_tt_global_del_orig_list(tt_global_entry);
--		call_rcu(&tt_global_entry->common.rcu,
--			 batadv_tt_global_entry_free_rcu);
-+		kfree_rcu(tt_global_entry, common.rcu);
+ 	/* check for ethernet header */
+ 	if (!pskb_may_pull(skb, *header_len + ETH_HLEN))
+ 		return false;
+ 	ethhdr = (struct ethhdr *)skb->data;
++	proto = ethhdr->h_proto;
+ 	*header_len += ETH_HLEN;
+ 
+ 	/* check for initial vlan header */
+-	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q) {
++	if (proto == htons(ETH_P_8021Q)) {
+ 		if (!pskb_may_pull(skb, *header_len + VLAN_HLEN))
+ 			return false;
+-		ethhdr = (struct ethhdr *)(skb->data + VLAN_HLEN);
++
++		vhdr = (struct vlan_ethhdr *)skb->data;
++		proto = vhdr->h_vlan_encapsulated_proto;
+ 		*header_len += VLAN_HLEN;
  	}
- }
+ 
+ 	/* check for ip header */
+-	switch (ntohs(ethhdr->h_proto)) {
+-	case ETH_P_IP:
++	switch (proto) {
++	case htons(ETH_P_IP):
+ 		if (!pskb_may_pull(skb, *header_len + sizeof(*iphdr)))
+ 			return false;
+ 		iphdr = (struct iphdr *)(skb->data + *header_len);
+@@ -683,7 +688,7 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
+ 			return false;
+ 
+ 		break;
+-	case ETH_P_IPV6:
++	case htons(ETH_P_IPV6):
+ 		if (!pskb_may_pull(skb, *header_len + sizeof(*ipv6hdr)))
+ 			return false;
+ 		ipv6hdr = (struct ipv6hdr *)(skb->data + *header_len);
+@@ -710,11 +715,11 @@ bool batadv_gw_is_dhcp_target(struct sk_buff *skb, unsigned int *header_len)
+ 	*header_len += sizeof(*udphdr);
+ 
+ 	/* check for bootp port */
+-	if ((ntohs(ethhdr->h_proto) == ETH_P_IP) &&
++	if ((proto == htons(ETH_P_IP)) &&
+ 	    (ntohs(udphdr->dest) != 67))
+ 		return false;
+ 
+-	if ((ntohs(ethhdr->h_proto) == ETH_P_IPV6) &&
++	if ((proto == htons(ETH_P_IPV6)) &&
+ 	    (ntohs(udphdr->dest) != 547))
+ 		return false;
  
 -- 
 1.8.3.2
