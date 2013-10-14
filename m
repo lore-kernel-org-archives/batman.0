@@ -1,14 +1,14 @@
-Return-Path: <zaki.bm@gmail.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 14 Oct 2013 19:03:33 +0800
+Message-ID: <3365315.RfSqKxhnD4@diderot>
+In-Reply-To: <1381698165-1146-1-git-send-email-antonio@meshcoding.com>
+References: <1381698165-1146-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-In-Reply-To: <20131013143649.GA27965@pandem0nium>
-References: <CABQkniC4b-CEdx9-7rNBuG0p5a5tM1fptsKjida0vThVUYVtug@mail.gmail.com>
- <20131013143649.GA27965@pandem0nium>
-Date: Mon, 14 Oct 2013 09:26:41 +0800
-Message-ID: <CABQkniCDwfVB+1n5W0M-xqkWKtkO+xKqqGSEtLm9zaYfEZC8YA@mail.gmail.com>
-From: Zaki <zaki.bm@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] Batman-Adv : Hops and Throughput with Collocated
-	dual-radio
+Content-Type: multipart/signed; boundary="nextPart1670162.IHFVmxnpSj";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: properly rename define in
+	distributed arp table header file
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,66 +20,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Hi Simon,
 
-Thanks for your reply.  I am using omni antenna right now and what i
-got when i did an iPerf from A to C is only 20Mbps.  It looks like the
-throughput is cut to half (just like a single radio mesh).  Tried 2.4G
-frequency in one of the pair, had the same result too.  Anything in
-terms of setting of batman-adv i can look for?.
+--nextPart1670162.IHFVmxnpSj
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Rgds,
-Jack
+On Sunday 13 October 2013 23:02:45 Antonio Quartulli wrote:
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> ---
+>  distributed-arp-table.h | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 
-On Sun, Oct 13, 2013 at 10:36 PM, Simon Wunderlich
-<simon.wunderlich@s2003.tu-chemnitz.de> wrote:
-> Hi Zaki/Jack,
->
-> On Fri, Oct 11, 2013 at 11:11:04AM +0800, Zaki wrote:
->> Hi,
->>
->> I am a newbie in batman-adv.  I got a question regarding Hops and
->> Throughput, especially in regards with a collocated dual-radio device.
->>  Hopefully somebody could offer some help here for me to fully
->> understand batman-adv operation.  I have 3 devices, namely A, B and C.
->>
->> A is only having single radio (operating at Freq 5.20G in AdHoc mode).
->>  Put this under bat0.  Bridge bat0 with eth0.
->> B is having dual-radio (radio1 operates at 5.20G in AdHoc mode, radio2
->> is at 5.24G in AdHoc mode). Put these under bat0. Bridge bat0 with
->> eth0
->> C is like A (single radio, operating at 5.24G in AdHoc mode). Put this
->> under bat0.  Bridge bat0 with eth0.
->>
->> So, the wireless link will be like this :
->>
->> [A]::::::::::::::: [B(radio1)---B(radio2)]::::::::::::::::[C]
->>
->> 1) If i were to ping from A to C, how many hops is it considered?.  Is
->> it 2 hops or 3 hops?.
->
-> that would be two hops. One hop is considered traversing one link, and
-> you have two links here.
->
->> 2) If my Iperf TCP throughput from A to B is 40Mbps, what is the
->> expected throughput of Iperf from A to C ?.
->
-> That depends. If the links are not interferring, you should get approx.
-> the maximum of both link throughputs. So if one link is 30 mbit/s, the second
-> is 25 mbit/s, that whole path would yield 25 mbit/s - there might be tcp
-> effects further decreasing throughput (latency etc).
->
-> However you use two frequencies adjacent to each other. If you use omni
-> antennas, expect a lot of interferences (even if the channels are not
-> overlapping). If you use directional antennas you should be fine.
->
-> Cheers,
->         Simon
->
->
->>
->> Thanks a lot.
->>
->> Jack.
+Applied in revision cb1d05d.
+
+Thanks,
+Marek
+
+--nextPart1670162.IHFVmxnpSj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJSW8+IAAoJEFNVTo/uthzAVVUH/in4ZizoJHQ0BDz4XLqkoqPw
+OFabHvArc4wigOGCPV1V7MFVB10IQaKe9VoThBLViHqtdor5ZzX03vU9ajxzyN0P
+tJCl4zFdAxj5xWS2U/dNztPftvnR9nVASfH48pJz3K3iVDuWhr0kj/Ou9M0Vmq+8
+OITxFThkYXvFAyY8yrEa2rO3e+QIQKZcfn7tyoQzc5QKgtP/9Mo8m7LHbc9A7+R/
+n44/tE2Ta1QBfF7j0mOJoS/bCarErNznUDrQN2eStYSGhn1kgUGDqpWiPgb6j8CY
+dwWZFRLuMiIbS2WUS9I0s32bsyxZDDgmYs4vxg91BFwbN5KGybfcDQqcPsI5yZA=
+=Qa8/
+-----END PGP SIGNATURE-----
+
+--nextPart1670162.IHFVmxnpSj--
+
