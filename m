@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 14 Oct 2013 21:20:38 +0800
-Message-ID: <2870112.LGk05b1ysp@diderot>
-In-Reply-To: <1381625420-4062-3-git-send-email-antonio@meshcoding.com>
+Date: Mon, 14 Oct 2013 22:37:21 +0800
+Message-ID: <2488579.ibi0SMlka2@diderot>
+In-Reply-To: <1381625420-4062-5-git-send-email-antonio@meshcoding.com>
 References: <1381625420-4062-1-git-send-email-antonio@meshcoding.com>
- <1381625420-4062-3-git-send-email-antonio@meshcoding.com>
+ <1381625420-4062-5-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1545536.bfbYqpXzeE";
+Content-Type: multipart/signed; boundary="nextPart7766101.SHv2neAicl";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/4] batman-adv: invoke
-	dev_get_by_index() outside of is_wifi_iface()
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: include the
+	synch-flags when compute the global/local table CRC
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,33 +25,42 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart1545536.bfbYqpXzeE
+--nextPart7766101.SHv2neAicl
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday 13 October 2013 02:50:18 Antonio Quartulli wrote:
+On Sunday 13 October 2013 02:50:20 Antonio Quartulli wrote:
 > From: Antonio Quartulli <antonio@open-mesh.com>
 > 
-> Upcoming changes need to perform other checks on the
-> incoming net_device struct.
+> Flags covered by TT_SYNCH_MASK are kept in sync among the
+> nodes in the network and therefore they have to be
+> considered while computing the global/local table CRC.
 > 
-> To avoid performing dev_get_by_index() for each and every
-> check, it is better to move it outside of is_wifi_iface()
-> and search the netdev object once only.
+> In this way a generic originator is able to understand if
+> its table contains the correct flags or not.
+> 
+> Bits from 4 to 7 in the TT flags fields are now reserved for
+> "synchronized" flags only.
+> 
+> This allows future developers to add more flags of this type
+> without breaking compatibility.
+> 
+> It's important to note that not all the remote TT flags are
+> synchronised. This comes from the fact that some flags are
+> used to inject an information once only.
 > 
 > Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 > ---
->  hard-interface.c    | 31 +++----------------------------
->  hard-interface.h    |  1 -
->  translation-table.c |  8 +++++++-
->  3 files changed, 10 insertions(+), 30 deletions(-)
+>  packet.h            | 11 +++++++++--
+>  translation-table.c | 19 +++++++++++++++++++
+>  2 files changed, 28 insertions(+), 2 deletions(-)
 
-Applied in revision f7391e9.
+Applied in revision 05d4de2.
 
 Thanks,
 Marek
 
---nextPart1545536.bfbYqpXzeE
+--nextPart7766101.SHv2neAicl
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -59,14 +68,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSW++yAAoJEFNVTo/uthzAk40H/jcVq1Du3kYIuQ7YvGwdEkc5
-gMEPPsDhhrSzKbDOyCZXXd603FSuWbs4J7iQgcqmdtZQZGpm4wLTV3RTg0ZRIF9o
-d7yqqel8lqPa04doKCvTfLscXWtZ8B6/pEeOFG/nftkhASHwsU+JnJ8J0LlZspIf
-HVPyKye5JUVOQ6I81+U0w7HNH/TCKoakGkBp5/UKgzhWuiJCTj38YAaSallQGgJV
-34UHErRlNyIkUQtQkE9MScNzPE9xg3zYSyR6ru2NyW2iLSpz3iPwKbBbJk8J1p7V
-bOdSpLys7q1gu9ogPYEm4TOSvvde+u+EN9Pc1iq0mIOeB0gq7x6XMESfWmf0W0g=
-=nqbv
+iQEcBAABAgAGBQJSXAGkAAoJEFNVTo/uthzAd+wH/0Ogxy6UcrK+IZKy5/z6om6S
+gyF48WyxzasmMGZ2Hir+aV2po4WyYwvUvmLzxlhPMkSXOLEiL6lblfAqjkSkKdlb
+/Le7j+q8o2YUhXKRBHEnPHKDTLjvr6QVFqGOpMGkBpxN7a0M+2RkOw5H4Fad16oW
+kt3ILmQE/zQwJ9Oa0CY2MmXKww16VE0Z7NPwA399Hx2TaH/TTCIdSMKYlVtx74YV
+JlGS+9LjJtxiMr3uh+tLVKOD938DycZSYYOh3BhBa3t+2OOMUW9FZQkxYHNfvoxA
+Ka/uxB46t0xqyxdunftGx5WF0eD5+XIcpqlEPrmNG+4PDeNSex9jXTq0MUPm1zo=
+=F2ll
 -----END PGP SIGNATURE-----
 
---nextPart1545536.bfbYqpXzeE--
+--nextPart7766101.SHv2neAicl--
 
