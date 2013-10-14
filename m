@@ -1,12 +1,14 @@
-Return-Path: <gui@altermundi.net>
-Message-ID: <525B189E.1080105@altermundi.net>
-Date: Mon, 14 Oct 2013 00:03:10 +0200
-From: Gui Iribarren <gui@altermundi.net>
+Return-Path: <zaki.bm@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Bundle a lua script for
- autogenerating bat-hosts file
+In-Reply-To: <20131013143649.GA27965@pandem0nium>
+References: <CABQkniC4b-CEdx9-7rNBuG0p5a5tM1fptsKjida0vThVUYVtug@mail.gmail.com>
+ <20131013143649.GA27965@pandem0nium>
+Date: Mon, 14 Oct 2013 09:26:41 +0800
+Message-ID: <CABQkniCDwfVB+1n5W0M-xqkWKtkO+xKqqGSEtLm9zaYfEZC8YA@mail.gmail.com>
+From: Zaki <zaki.bm@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [B.A.T.M.A.N.] Batman-Adv : Hops and Throughput with Collocated
+	dual-radio
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,145 +22,64 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi Simon,
 
-Provide a lua script that uses alfred to propagate and collect all interface
-mac + names, then generate a /tmp/bat-hosts file.
-If there's already a (probably hand-made) /etc/bat-hosts it won't overwrite it
-but if there's none, it will symlink /etc/bat-hosts -> /tmp/bat-hosts
+Thanks for your reply.  I am using omni antenna right now and what i
+got when i did an iPerf from A to C is only 20Mbps.  It looks like the
+throughput is cut to half (just like a single radio mesh).  Tried 2.4G
+frequency in one of the pair, had the same result too.  Anything in
+terms of setting of batman-adv i can look for?.
 
-Signed-off-by: Gui Iribarren <gui@altermundi.net>
-Thanks-to: Joshua Head <joshua.head@outlook.com>
----
- alfred/Makefile            |    2 +
- alfred/files/bat-hosts.lua |  107 ++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 109 insertions(+)
- create mode 100644 alfred/files/bat-hosts.lua
+Rgds,
+Jack
 
-diff --git a/alfred/Makefile b/alfred/Makefile
-index db9c71f..7027192 100644
---- a/alfred/Makefile
-+++ b/alfred/Makefile
-@@ -74,6 +74,8 @@ define Package/alfred/install
- 	$(INSTALL_BIN) ./files/alfred.init $(1)/etc/init.d/alfred
- 	$(INSTALL_DIR) $(1)/etc/config
- 	$(INSTALL_DATA) ./files/alfred.config $(1)/etc/config/alfred
-+	$(INSTALL_DIR) $(1)/etc/alfred
-+	$(INSTALL_BIN) ./files/bat-hosts.lua $(1)/etc/alfred/bat-hosts.lua
- endef
- 
- $(eval $(call BuildPackage,alfred))
-diff --git a/alfred/files/bat-hosts.lua b/alfred/files/bat-hosts.lua
-new file mode 100644
-index 0000000..19f2cad
---- /dev/null
-+++ b/alfred/files/bat-hosts.lua
-@@ -0,0 +1,107 @@
-+#!/usr/bin/lua
-+
-+local type_id = 64 -- bat-hosts
-+
-+function get_hostname()
-+  local hostfile = io.open("/proc/sys/kernel/hostname", "r")
-+  local ret_string = hostfile:read("*a")
-+  ret_string = string.gsub(ret_string, "\n", "")
-+  hostfile:close()
-+  return ret_string
-+end
-+
-+function get_interfaces_names()
-+  local ret = {}
-+
-+  for name in io.popen("ls -1 /sys/class/net/"):lines() do
-+    table.insert(ret, name)
-+  end
-+
-+  return ret
-+end
-+
-+function get_interface_address(name)
-+  local addressfile = io.open("/sys/class/net/"..name.."/address", "r")
-+  local ret_string = addressfile:read("*a")
-+  ret_string = string.gsub(ret_string, "\n", "")
-+  addressfile:close()
-+  return ret_string
-+end
-+
-+
-+local function generate_bat_hosts()
-+-- get hostname and interface macs/names
-+-- then return a table containing valid bat-hosts lines
-+  local n, i
-+  local ifaces, ret = {}, {}
-+
-+  local hostname = get_hostname()
-+
-+  for n, i in ipairs(get_interfaces_names()) do
-+    local address = get_interface_address(i)
-+    ifaces[address] = i
-+  end
-+
-+  for mac, iname in pairs(ifaces) do
-+    if mac:match("^%x%x:%x%x:%x%x:%x%x:%x%x:%x%x$") and not mac:match("00:00:00:00:00:00") then
-+      table.insert(ret, mac.." "..hostname.."_"..iname.."\n")
-+    end
-+  end
-+
-+  return ret
-+end
-+
-+local function publish_bat_hosts()
-+-- pass a raw chunk of data to alfred
-+  local fd = io.popen("alfred -s " .. type_id, "w")
-+  if fd then
-+    local ret = generate_bat_hosts()
-+    if ret then
-+      fd:write(table.concat(ret))
-+    end
-+    fd:close()
-+  end
-+end
-+
-+local function receive_bat_hosts()
-+-- read raw chunks from alfred, convert them to a nested table and call write_bat_hosts
-+  local fd = io.popen("alfred -r " .. type_id)
-+    --[[ this command returns something like
-+    { "54:e6:fc:b9:cb:37", "00:11:22:33:44:55 ham_wlan0\x0a00:22:33:22:33:22 ham_eth0\x0a" },
-+    { "90:f6:52:bb:ec:57", "00:22:33:22:33:23 spam\x0a" },
-+    ]]--
-+
-+  if fd then
-+    local output = fd:read("*a")
-+    if output then
-+      assert(loadstring("rows = {" .. output .. "}"))()
-+      write_bat_hosts(rows)
-+    end
-+    fd:close()
-+  end
-+end
-+
-+local function write_bat_hosts(rows)
-+  local content = { "### File generated by alfred-bat-hosts\n" }
-+
-+  -- merge the chunks from all nodes, de-escaping newlines
-+  for _, row in ipairs(rows) do
-+    local node, value = unpack(row)
-+    table.insert(content, "# Node ".. node .. "\n")
-+    table.insert(content, value:gsub("\x0a", "\n") .. "\n")
-+  end
-+
-+  -- write parsed content down to disk
-+  local fd = io.open("/tmp/bat-hosts", "w")
-+  if fd then
-+    fd:write(table.concat(content))
-+    fd:close()
-+  end
-+
-+  -- try to make a symlink in /etc pointing to /tmp,
-+  -- if it exists, ln will do nothing.
-+  os.execute("ln -ns /tmp/bat-hosts /etc/bat-hosts 2>/dev/null")
-+end
-+
-+publish_bat_hosts()
-+receive_bat_hosts()
--- 
-1.7.10.4
+On Sun, Oct 13, 2013 at 10:36 PM, Simon Wunderlich
+<simon.wunderlich@s2003.tu-chemnitz.de> wrote:
+> Hi Zaki/Jack,
+>
+> On Fri, Oct 11, 2013 at 11:11:04AM +0800, Zaki wrote:
+>> Hi,
+>>
+>> I am a newbie in batman-adv.  I got a question regarding Hops and
+>> Throughput, especially in regards with a collocated dual-radio device.
+>>  Hopefully somebody could offer some help here for me to fully
+>> understand batman-adv operation.  I have 3 devices, namely A, B and C.
+>>
+>> A is only having single radio (operating at Freq 5.20G in AdHoc mode).
+>>  Put this under bat0.  Bridge bat0 with eth0.
+>> B is having dual-radio (radio1 operates at 5.20G in AdHoc mode, radio2
+>> is at 5.24G in AdHoc mode). Put these under bat0. Bridge bat0 with
+>> eth0
+>> C is like A (single radio, operating at 5.24G in AdHoc mode). Put this
+>> under bat0.  Bridge bat0 with eth0.
+>>
+>> So, the wireless link will be like this :
+>>
+>> [A]::::::::::::::: [B(radio1)---B(radio2)]::::::::::::::::[C]
+>>
+>> 1) If i were to ping from A to C, how many hops is it considered?.  Is
+>> it 2 hops or 3 hops?.
+>
+> that would be two hops. One hop is considered traversing one link, and
+> you have two links here.
+>
+>> 2) If my Iperf TCP throughput from A to B is 40Mbps, what is the
+>> expected throughput of Iperf from A to C ?.
+>
+> That depends. If the links are not interferring, you should get approx.
+> the maximum of both link throughputs. So if one link is 30 mbit/s, the second
+> is 25 mbit/s, that whole path would yield 25 mbit/s - there might be tcp
+> effects further decreasing throughput (latency etc).
+>
+> However you use two frequencies adjacent to each other. If you use omni
+> antennas, expect a lot of interferences (even if the channels are not
+> overlapping). If you use directional antennas you should be fine.
+>
+> Cheers,
+>         Simon
+>
+>
+>>
+>> Thanks a lot.
+>>
+>> Jack.
