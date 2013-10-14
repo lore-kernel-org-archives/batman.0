@@ -1,15 +1,16 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 14 Oct 2013 22:37:21 +0800
-Message-ID: <2488579.ibi0SMlka2@diderot>
-In-Reply-To: <1381625420-4062-5-git-send-email-antonio@meshcoding.com>
-References: <1381625420-4062-1-git-send-email-antonio@meshcoding.com>
- <1381625420-4062-5-git-send-email-antonio@meshcoding.com>
+Return-Path: <linus.luessing@web.de>
+Date: Mon, 14 Oct 2013 17:37:09 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20131014153709.GF14032@Linus-Debian>
+References: <CABQkniC4b-CEdx9-7rNBuG0p5a5tM1fptsKjida0vThVUYVtug@mail.gmail.com>
+ <20131013143649.GA27965@pandem0nium>
+ <CABQkniCDwfVB+1n5W0M-xqkWKtkO+xKqqGSEtLm9zaYfEZC8YA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7766101.SHv2neAicl";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: include the
-	synch-flags when compute the global/local table CRC
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <CABQkniCDwfVB+1n5W0M-xqkWKtkO+xKqqGSEtLm9zaYfEZC8YA@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Batman-Adv : Hops and Throughput with Collocated
+ dual-radio
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,61 +22,76 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <antonio@meshcoding.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+
+Hi Jack,
+
+what is the throughput you get from B to C? What was the
+throughput you got on the 2.4GHz link alone? Did you change to
+2.4GHz on A-B or B-C?
+
+Cheers, Linus
 
 
---nextPart7766101.SHv2neAicl
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Sunday 13 October 2013 02:50:20 Antonio Quartulli wrote:
-> From: Antonio Quartulli <antonio@open-mesh.com>
+On Mon, Oct 14, 2013 at 09:26:41AM +0800, Zaki wrote:
+> Hi Simon,
 > 
-> Flags covered by TT_SYNCH_MASK are kept in sync among the
-> nodes in the network and therefore they have to be
-> considered while computing the global/local table CRC.
+> Thanks for your reply.  I am using omni antenna right now and what i
+> got when i did an iPerf from A to C is only 20Mbps.  It looks like the
+> throughput is cut to half (just like a single radio mesh).  Tried 2.4G
+> frequency in one of the pair, had the same result too.  Anything in
+> terms of setting of batman-adv i can look for?.
 > 
-> In this way a generic originator is able to understand if
-> its table contains the correct flags or not.
+> Rgds,
+> Jack
 > 
-> Bits from 4 to 7 in the TT flags fields are now reserved for
-> "synchronized" flags only.
-> 
-> This allows future developers to add more flags of this type
-> without breaking compatibility.
-> 
-> It's important to note that not all the remote TT flags are
-> synchronised. This comes from the fact that some flags are
-> used to inject an information once only.
-> 
-> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-> ---
->  packet.h            | 11 +++++++++--
->  translation-table.c | 19 +++++++++++++++++++
->  2 files changed, 28 insertions(+), 2 deletions(-)
-
-Applied in revision 05d4de2.
-
-Thanks,
-Marek
-
---nextPart7766101.SHv2neAicl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJSXAGkAAoJEFNVTo/uthzAd+wH/0Ogxy6UcrK+IZKy5/z6om6S
-gyF48WyxzasmMGZ2Hir+aV2po4WyYwvUvmLzxlhPMkSXOLEiL6lblfAqjkSkKdlb
-/Le7j+q8o2YUhXKRBHEnPHKDTLjvr6QVFqGOpMGkBpxN7a0M+2RkOw5H4Fad16oW
-kt3ILmQE/zQwJ9Oa0CY2MmXKww16VE0Z7NPwA399Hx2TaH/TTCIdSMKYlVtx74YV
-JlGS+9LjJtxiMr3uh+tLVKOD938DycZSYYOh3BhBa3t+2OOMUW9FZQkxYHNfvoxA
-Ka/uxB46t0xqyxdunftGx5WF0eD5+XIcpqlEPrmNG+4PDeNSex9jXTq0MUPm1zo=
-=F2ll
------END PGP SIGNATURE-----
-
---nextPart7766101.SHv2neAicl--
-
+> On Sun, Oct 13, 2013 at 10:36 PM, Simon Wunderlich
+> <simon.wunderlich@s2003.tu-chemnitz.de> wrote:
+> > Hi Zaki/Jack,
+> >
+> > On Fri, Oct 11, 2013 at 11:11:04AM +0800, Zaki wrote:
+> >> Hi,
+> >>
+> >> I am a newbie in batman-adv.  I got a question regarding Hops and
+> >> Throughput, especially in regards with a collocated dual-radio device.
+> >>  Hopefully somebody could offer some help here for me to fully
+> >> understand batman-adv operation.  I have 3 devices, namely A, B and C.
+> >>
+> >> A is only having single radio (operating at Freq 5.20G in AdHoc mode).
+> >>  Put this under bat0.  Bridge bat0 with eth0.
+> >> B is having dual-radio (radio1 operates at 5.20G in AdHoc mode, radio2
+> >> is at 5.24G in AdHoc mode). Put these under bat0. Bridge bat0 with
+> >> eth0
+> >> C is like A (single radio, operating at 5.24G in AdHoc mode). Put this
+> >> under bat0.  Bridge bat0 with eth0.
+> >>
+> >> So, the wireless link will be like this :
+> >>
+> >> [A]::::::::::::::: [B(radio1)---B(radio2)]::::::::::::::::[C]
+> >>
+> >> 1) If i were to ping from A to C, how many hops is it considered?.  Is
+> >> it 2 hops or 3 hops?.
+> >
+> > that would be two hops. One hop is considered traversing one link, and
+> > you have two links here.
+> >
+> >> 2) If my Iperf TCP throughput from A to B is 40Mbps, what is the
+> >> expected throughput of Iperf from A to C ?.
+> >
+> > That depends. If the links are not interferring, you should get approx.
+> > the maximum of both link throughputs. So if one link is 30 mbit/s, the second
+> > is 25 mbit/s, that whole path would yield 25 mbit/s - there might be tcp
+> > effects further decreasing throughput (latency etc).
+> >
+> > However you use two frequencies adjacent to each other. If you use omni
+> > antennas, expect a lot of interferences (even if the channels are not
+> > overlapping). If you use directional antennas you should be fine.
+> >
+> > Cheers,
+> >         Simon
+> >
+> >
+> >>
+> >> Thanks a lot.
+> >>
+> >> Jack.
