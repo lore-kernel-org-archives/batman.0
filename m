@@ -1,9 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@open-mesh.com>
-Date: Tue, 15 Oct 2013 12:29:07 +0200
-Message-Id: <1381832947-25980-1-git-send-email-sven@open-mesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: Fix warning about comparing signed
-	vs. unsigned
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Tue, 15 Oct 2013 22:01:51 +0800
+Message-ID: <1453392.LrPeSdtQbS@diderot>
+In-Reply-To: <1381832947-25980-1-git-send-email-sven@open-mesh.com>
+References: <1381832947-25980-1-git-send-email-sven@open-mesh.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart7238191.RYmTU8jYrO";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Fix warning about comparing
+	signed vs. unsigned
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,42 +23,45 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@open-mesh.com>
 
-The macros NLMSG_OK and NLMSG_NEXT operate on the parameter len as if it would
-be a variable from the type size_t. Using ssize_t (signed size_t) can cause
-warnings about comparing a signed with an unsigned variable.
 
-It is ok to store the signed len variable in an unsigned variable because an
-check is used to stop processing when it was negative.
+--nextPart7238191.RYmTU8jYrO
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
----
- functions.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+On Tuesday 15 October 2013 12:29:07 Sven Eckelmann wrote:
+> The macros NLMSG_OK and NLMSG_NEXT operate on the parameter len as if it
+> would be a variable from the type size_t. Using ssize_t (signed size_t) can
+> cause warnings about comparing a signed with an unsigned variable.
+> 
+> It is ok to store the signed len variable in an unsigned variable because an
+> check is used to stop processing when it was negative.
+> 
+> Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
+> ---
+>  functions.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/functions.c b/functions.c
-index d8d86ce..9e03e72 100644
---- a/functions.c
-+++ b/functions.c
-@@ -637,7 +637,7 @@ static struct ether_addr *resolve_mac_from_cache(int ai_family,
- 	size_t buflen;
- 	struct nlmsghdr *nh;
- 	ssize_t len;
--	size_t l3_len;
-+	size_t l3_len, mlen;
- 	int socknl;
- 	int parsed;
- 	int finished = 0;
-@@ -667,8 +667,9 @@ static struct ether_addr *resolve_mac_from_cache(int ai_family,
- 		len = resolve_mac_from_cache_dump(socknl, &buf, &buflen);
- 		if (len < 0)
- 			goto err_sock;
-+		mlen = len;
- 
--		for (nh = buf; NLMSG_OK(nh, len); nh = NLMSG_NEXT(nh, len)) {
-+		for (nh = buf; NLMSG_OK(nh, mlen); nh = NLMSG_NEXT(nh, mlen)) {
- 			if (nh->nlmsg_type == NLMSG_DONE) {
- 				finished = 1;
- 				break;
--- 
-1.8.4.rc3
+Applied in revision c1ffa59.
+
+Thanks,
+Marek
+
+--nextPart7238191.RYmTU8jYrO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJSXUrTAAoJEFNVTo/uthzABl4IALcCjlpLbMbxRe5GuH6EHY5c
+Q9+NndKpGv3MvDPdAkqddFyYrkcASo+ER1jzwd16fpiJP7kHEiYI4OfKu54dA5R0
+wDIuVjy9gqrS9WswvM9FKoOGZ8TLrtbK435Jj32wzmYYPKtGhhZeEp9vuVyvRL2z
+myqIFEjUsAQvya8EMj75Iz7i+Ljj37sKhOhUrx8aIw3uB+BNKxpIdWqj0Aok8Fa8
+8UYZ/n1iscNW+gswD+aFc4oQyFxwXACN6o835gat/kaQEE1beYsHCK0Tdzes1xv+
+mYJfBLSOHQxWW1/7HwyxmPZ3FJSZXse5I3MGgBqbUruNRlqAin3tbqdJ/43CRpU=
+=Qvi1
+-----END PGP SIGNATURE-----
+
+--nextPart7238191.RYmTU8jYrO--
 
