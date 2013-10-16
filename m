@@ -1,17 +1,11 @@
-Return-Path: <antonio@meshcoding.com>
-Date: Wed, 16 Oct 2013 08:16:14 +0200
-From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <20131016061614.GA2596@neomailbox.net>
-References: <1379088490-2693-1-git-send-email-siwu@hrz.tu-chemnitz.de>
- <3449342.7k6WirsOky@diderot> <20131015192023.GN3873@neomailbox.net>
- <1779622.xWDEdjCAYf@diderot>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Wed, 16 Oct 2013 14:18:49 +0800
+Message-ID: <5553213.hTQb2bQGTZ@diderot>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="82I3+IH0IqGh5yIs"
-Content-Disposition: inline
-In-Reply-To: <1779622.xWDEdjCAYf@diderot>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: generalize batman-adv icmp
- packet handling
+Content-Type: multipart/signed; boundary="nextPart1629166.2KmNVlS254";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: [B.A.T.M.A.N.] batman-adv 2013.4.0 released
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,62 +20,118 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---82I3+IH0IqGh5yIs
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+--nextPart1629166.2KmNVlS254
 Content-Transfer-Encoding: quoted-printable
-
-On Wed, Oct 16, 2013 at 01:59:18PM +0800, Marek Lindner wrote:
-> On Tuesday 15 October 2013 21:20:23 Antonio Quartulli wrote:
-> > > Besides, if we make everything generic batadv_socket_packet->icmp_pac=
-ket
-> > > should not be hard-coded to batadv_icmp_packet_rr but the largest
-> > > available
-> > > ICMP packet type ?
-> >=20
-> > or we dynamically allocate a buffer of size 'len'? In this way we don't=
- need
-> > to change icmp_packet each time (hopefully not so many but still..)  the
-> > "largest available ICMP packet type" changes.
->=20
-> Allocating a dynamic buffer does not solve the underlying issue. At some =
-point=20
-> we would want to check the packet size - either through sizeof(socket_pac=
-ket-
-> >icmp_packet) or a macro or whatever.=20
-> Take a look at batadv_max_header_len() for an idea how to address the mat=
-ter.
->=20
-
-Right. Thanks for the clarification
+Content-Type: text/plain; charset="iso-8859-1"
 
 
-Cheers,
+On October 16th, B.A.T.M.A.N. has released batman-adv 2013.4.0, the new=
+est in=20
+a series of stability and bugfix releases. The recently introduced data=
+=20
+distribution daemon 'alfred' received quite some attention and gained n=
+ew=20
+features. As the kernel module always depends on the Linux kernel it wa=
+s=20
+compiled against, it does not make sense to provide binaries on our web=
+site.=20
+As usual, you will find the signed tarballs in our download section:
+
+http://downloads.open-mesh.org/batman/releases/batman-adv-2013.4.0/
+
+as well as prepackaged binaries in your distribution.
 
 
---=20
-Antonio Quartulli
+Thanks
+------
 
---82I3+IH0IqGh5yIs
+Thanks to all people sending in patches:
+
+ * Andrew Lunn <andrew@lunn.ch>
+ * Antonio Quartulli <ordex@autistici.org>
+ * Linus L=FCssing <linus.luessing@web.de>
+ * Marco Dalla Torre <marco.dallato@gmail.com>
+ * Marek Lindner <mareklindner@neomailbox.ch>
+ * Matthias Schiffer <mschiffer@universe-factory.net>
+ * Simon Wunderlich <sw@simonwunderlich.de>
+ * Sven Eckelmann <sven@open-mesh.com>
+ * Wedson Almeida Filho <wedsonaf@gmail.com>
+
+
+batman-adv
+----------
+
+With this release comes a fix for a kernel crash running on hardware wi=
+th=20
+specific Ethernet chips triggering a rare code path when forwarding tra=
+ffic. A fix=20
+for the network coding initialization was submitted to allow to create=20=
+
+multiple batX interfaces when this feature has been included in the mod=
+ule.=20
+The bridge loop avoidance now correctly handles VLAN tags (a regression=
+=20
+introduced with the previous release). Additional Linux kernel backward=
+=20
+compatibility code enables batman-adv to run on various kernel versions=
+.
+
+
+batctl
+------
+
+The incorrectly reported TCP payload length in the tcpdump component wa=
+s fixed.=20
+The hyphens in the manpage were properly escaped to be groff compliant.=
+ C types=20
+and error handling were improved to better handle some error cases.
+
+
+alfred
+------
+
+In order to allow a mesh topology visualization with true geographic la=
+yout=20
+alfred was enriched with a location service based on libgpsd. In additi=
+on to=20
+retrieving the location via GPS on mobile nodes alfred can be configure=
+d with a=20
+static location on stationary nodes to be announced in the network.=20
+A new JSON output format for the vis service was added. The newly added=
+ format=20
+is JSON compliant throughout an entire message, in contrast to the "leg=
+acy"=20
+per-line JSON output. Alfred also learned to be tolerant to=20
+vanishing/reappearing interfaces and to switch its operation mode=20
+(slave/master) without the need for a restart or losing cached informat=
+ion. To=20
+avoid conflicts in distributions with other "vis" binaries (like the ba=
+tmand=20
+vis), the binary was renamed to "batadv-vis". Manpages have been added =
+to help=20
+documenting the growing functionality. Also various code/build system c=
+leanups=20
+and bugfixes have been integrated.
+
+Happy routing,
+The B.A.T.M.A.N. team
+
+--nextPart1629166.2KmNVlS254
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBCAAGBQJSXi8uAAoJEADl0hg6qKeORSAQAJSSNTfipK7/O0HakEFMggJh
-0bjQptHtag4+zJIAhq06n1gtrCCwOsiC3pu9ERFYrbAw2v7Kls5WxZm228ZvdcRx
-smzkZF/X5OzTn2dml9IF+hQqROXarFidQyj69/kL8KOWIWAXb20wurSKUXf7XB78
-uw/lal4XcPx4VpKcyF7NBesafFtwUD4g3ft0Kv4obt6Fl2pd7CZBnywZzwC+w7mo
-rj3UhJjrZj4pof6JC+MbvdfMO7eyQaqJW1ewf6xnDJqe+qOKGDg0HE6w8tsb2+yL
-STcmMwfI1qvvjjyjCJbcaNmT2ZMndbEdVJ5DgDG9mz7jqm0d0fEqQ5PL94KOAz0I
-xOvO9o4bnRMiLwu7G5Pw5wU/M+7q3LIljBEcaI/pQu8CjYQU3u4NDfDGfFNcksN6
-MyGAcYRzrPNhZaUrTkYDxe5BTzu1hYJ9jb7fV9YUi/WOQYmSdFkhQgeykiQFrx4j
-VfPETYNKeASLuZkR6OF4KvDauENdKagqZbTwFdzCYAEl+qK+g3eX/K+yspKWivhH
-VaMnjVT1P4DB9BRr0FK3OkhY5z9tna6uChTZ+CBOlrn9ME70zF08sGsotR//nm2z
-glOEG1ayb308jxXmtR18MFJSnj/8Xh3Lyau6X+nyneqrcgwBM2JjQ9imXc8MvFfU
-8XWBJkrn6DMI1BCPeOwh
-=Jcfo
+iQEcBAABAgAGBQJSXi/NAAoJEFNVTo/uthzAjmEH/AqRCNPgXw+XNuRA6r1mjAnN
+EGi+UVD6V+r89dAPEcBulFOu9zOVrwromd4TYm8deyRY7oep5C8HlwM4oXbAjybY
+fy/en2uxL5bDR+jJF9uH7dqGweLnTS1fanZ8FzOq2qAIplOQdGLBgraMNHF/whOd
+ocJ7J++3ZNnw6gPgguAFBrjL9fLZeoNygm8OWyDcRLSdKrSxcUv7UGzUPHT3tayd
+nzstybBOKkmT3O9v8q7+5jBgC9gwLA7PRIWgmGPS2vY9Zmf2/m3F2OVW0xLZ9Rsc
+x4rJaM1Xx6bgUdV5aVIxZcHbSlt52dMYZhnkSKL6QNuKh0+/ix5AvMtclCu2HEM=
+=nCGA
 -----END PGP SIGNATURE-----
 
---82I3+IH0IqGh5yIs--
+--nextPart1629166.2KmNVlS254--
+
