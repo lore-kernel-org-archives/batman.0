@@ -1,15 +1,17 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 16 Oct 2013 13:59:18 +0800
-Message-ID: <1779622.xWDEdjCAYf@diderot>
-In-Reply-To: <20131015192023.GN3873@neomailbox.net>
+Return-Path: <antonio@meshcoding.com>
+Date: Wed, 16 Oct 2013 08:16:14 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
+Message-ID: <20131016061614.GA2596@neomailbox.net>
 References: <1379088490-2693-1-git-send-email-siwu@hrz.tu-chemnitz.de>
  <3449342.7k6WirsOky@diderot> <20131015192023.GN3873@neomailbox.net>
+ <1779622.xWDEdjCAYf@diderot>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1545699.c6FcK5136r";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="82I3+IH0IqGh5yIs"
+Content-Disposition: inline
+In-Reply-To: <1779622.xWDEdjCAYf@diderot>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: generalize batman-adv icmp
-	packet handling
+ packet handling
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,71 +26,62 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart1545699.c6FcK5136r
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--82I3+IH0IqGh5yIs
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tuesday 15 October 2013 21:20:23 Antonio Quartulli wrote:
-> > Besides, if we make everything generic batadv_socket_packet->icmp_packet
-> > should not be hard-coded to batadv_icmp_packet_rr but the largest
-> > available
-> > ICMP packet type ?
-> 
-> or we dynamically allocate a buffer of size 'len'? In this way we don't need
-> to change icmp_packet each time (hopefully not so many but still..)  the
-> "largest available ICMP packet type" changes.
+On Wed, Oct 16, 2013 at 01:59:18PM +0800, Marek Lindner wrote:
+> On Tuesday 15 October 2013 21:20:23 Antonio Quartulli wrote:
+> > > Besides, if we make everything generic batadv_socket_packet->icmp_pac=
+ket
+> > > should not be hard-coded to batadv_icmp_packet_rr but the largest
+> > > available
+> > > ICMP packet type ?
+> >=20
+> > or we dynamically allocate a buffer of size 'len'? In this way we don't=
+ need
+> > to change icmp_packet each time (hopefully not so many but still..)  the
+> > "largest available ICMP packet type" changes.
+>=20
+> Allocating a dynamic buffer does not solve the underlying issue. At some =
+point=20
+> we would want to check the packet size - either through sizeof(socket_pac=
+ket-
+> >icmp_packet) or a macro or whatever.=20
+> Take a look at batadv_max_header_len() for an idea how to address the mat=
+ter.
+>=20
 
-Allocating a dynamic buffer does not solve the underlying issue. At some point 
-we would want to check the packet size - either through sizeof(socket_packet-
->icmp_packet) or a macro or whatever. 
-Take a look at batadv_max_header_len() for an idea how to address the matter.
+Right. Thanks for the clarification
 
-
-> > Wouldn't it be better to dump unkown icmp types for us instead of copying
-> > everything to user space ?
-> 
-> dump == drop ? in that case I agree. Delivering unknown packets to batctl
-> may also be dangerous.
-
-Yes, that is what I was talking about.
-
-
-> > Same is true for batadv_socket_write(). We should use the icmp header and
-> > not assume icmp echo.
-> 
-> do you mean using the ICMP header to understand what packet it is and then
-> behave accordingly? Also in this case I agree with you :)
-
-Yap.
-
-
-> Moving to a packet type based "check" was also part of the original idea of
-> this generalisation (if I remember correctly), but not really needed when
-> looking at avoiding further compatibility breakage (this should be the
-> reason why this "feature" is not part of this patch).
-
-I agree - it is not strictly needed but would fit since the rest of the patch 
-works into the same direction.
 
 Cheers,
-Marek
- 
---nextPart1545699.c6FcK5136r
+
+
+--=20
+Antonio Quartulli
+
+--82I3+IH0IqGh5yIs
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSXis6AAoJEFNVTo/uthzAPVUIAIgrE+t/DWzoLsEGfk6QgzQi
-iZMLKJRufHR3hh4jg2/BXh5Gl5c2/srvRA3XtoLp24W2TlatFM6OJ/p8o5BrDlV0
-zHb8qEVP+IrIuOujzowxndzrUjTXggV+ejnUL5rvK7y+n2WDs/TydcXAZHH+TpJ6
-Whx8hmzcXCPqvZ8kdN/qkjB3P8CPOXrsvMIoBM6gsoxPOYbFVpGVJILTCfEt02E5
-Ezz4wPd2LMccSTXHhOd+7QtxMupViW8BswYkeY4Yp4N06vRqSPTwitI8rnab8zDK
-n4bFjS42o/em0JuW3n3m1KUa4kMLP07VPaqNtUapvRvN4FlD7n//snxncMpBliQ=
-=rGB/
+iQIcBAEBCAAGBQJSXi8uAAoJEADl0hg6qKeORSAQAJSSNTfipK7/O0HakEFMggJh
+0bjQptHtag4+zJIAhq06n1gtrCCwOsiC3pu9ERFYrbAw2v7Kls5WxZm228ZvdcRx
+smzkZF/X5OzTn2dml9IF+hQqROXarFidQyj69/kL8KOWIWAXb20wurSKUXf7XB78
+uw/lal4XcPx4VpKcyF7NBesafFtwUD4g3ft0Kv4obt6Fl2pd7CZBnywZzwC+w7mo
+rj3UhJjrZj4pof6JC+MbvdfMO7eyQaqJW1ewf6xnDJqe+qOKGDg0HE6w8tsb2+yL
+STcmMwfI1qvvjjyjCJbcaNmT2ZMndbEdVJ5DgDG9mz7jqm0d0fEqQ5PL94KOAz0I
+xOvO9o4bnRMiLwu7G5Pw5wU/M+7q3LIljBEcaI/pQu8CjYQU3u4NDfDGfFNcksN6
+MyGAcYRzrPNhZaUrTkYDxe5BTzu1hYJ9jb7fV9YUi/WOQYmSdFkhQgeykiQFrx4j
+VfPETYNKeASLuZkR6OF4KvDauENdKagqZbTwFdzCYAEl+qK+g3eX/K+yspKWivhH
+VaMnjVT1P4DB9BRr0FK3OkhY5z9tna6uChTZ+CBOlrn9ME70zF08sGsotR//nm2z
+glOEG1ayb308jxXmtR18MFJSnj/8Xh3Lyau6X+nyneqrcgwBM2JjQ9imXc8MvFfU
+8XWBJkrn6DMI1BCPeOwh
+=Jcfo
 -----END PGP SIGNATURE-----
 
---nextPart1545699.c6FcK5136r--
-
+--82I3+IH0IqGh5yIs--
