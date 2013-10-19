@@ -1,9 +1,14 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 19 Oct 2013 17:04:14 +0200
-Message-Id: <1382195054-1943-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix typ0s in comment and
-	kerneldoc
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 20 Oct 2013 04:19:25 +0800
+Message-ID: <1667097.Scrr0smqIn@diderot>
+In-Reply-To: <1382189022-3987-1-git-send-email-antonio@meshcoding.com>
+References: <1382189022-3987-1-git-send-email-antonio@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart5105230.uVQcMaHHeD";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix arguments order
+	when calling tt_local_add
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,36 +23,41 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Introduced by 21a57f6e7a3b4455dfe68ee07a7b901d9e7f200b
-("batman-adv: make the TT CRC logic VLAN specific")
 
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- translation-table.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+--nextPart5105230.uVQcMaHHeD
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-diff --git a/translation-table.c b/translation-table.c
-index 5750c88..4add57d 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -2181,7 +2181,7 @@ static int batadv_tt_global_valid(const void *entry_ptr,
- }
- 
- /**
-- * batadv_tt_tvlv_generate - fill the tvlv buff it with the tt entries from the
-+ * batadv_tt_tvlv_generate - fill the tvlv buff with the tt entries from the
-  *  specified tt hash
-  * @bat_priv: the bat priv with all the soft interface information
-  * @hash: hash table containing the tt entries
-@@ -2359,7 +2359,7 @@ static int batadv_send_tt_request(struct batadv_priv *bat_priv,
- 	tvlv_tt_data->num_vlan = htons(num_vlan);
- 
- 	/* send all the CRCs within the request. This is needed by intermediate
--	 * node to ensure they have the correct table before replying
-+	 * nodes to ensure they have the correct table before replying
- 	 */
- 	tt_vlan_req = (struct batadv_tvlv_tt_vlan_data *)(tvlv_tt_data + 1);
- 	for (i = 0; i < num_vlan; i++) {
--- 
-1.8.4
+On Saturday 19 October 2013 15:23:42 Antonio Quartulli wrote:
+> Introduced by c018ad3de61a1dc4194879a53e5559e094aa7b1a
+> ("batman-adv: add the VLAN ID attribute to the TT entry")
+> 
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> ---
+>  soft-interface.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+
+Applied in revision 148fc50.
+
+Thanks,
+Marek
+
+--nextPart5105230.uVQcMaHHeD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJSYulWAAoJEFNVTo/uthzAmOsH/1PAsGy1YQQJdKoKs0sLqUmu
+cMwKdvXnVekbHbcmzxOMu5waXQVH0fLOMMMe7HpwWYrObZgWpxNNoge5BAGP9yt/
+5WqZ8Xh8Mok3eWtDWat30BhM4g3XsIyY0N5IBT6tPrRYPwSrQ49OTciX6GI0gv1i
+b+IHXOjG2/aOhL7ofU8+WHhxb8Sgui1A439g13dowSJvZOmYgVVaN1JePH4BTWek
+XpAbvFYgoxSRfbtwYC2cgKxykc65S/Bl/e1lH3EQj7Op5FlrRFMNABx2nZEubFo1
+e9ate4/LHVN9xmY0INU924q2xQHOD1hRyCGfnxI35c8oq2+mmH1QFCYsV6o/nlM=
+=Wdnm
+-----END PGP SIGNATURE-----
+
+--nextPart5105230.uVQcMaHHeD--
 
