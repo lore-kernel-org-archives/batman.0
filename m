@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sun, 20 Oct 2013 00:21:54 +0200
-Message-Id: <1382221330-3769-3-git-send-email-antonio@meshcoding.com>
+Date: Sun, 20 Oct 2013 00:21:55 +0200
+Message-Id: <1382221330-3769-4-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1382221330-3769-1-git-send-email-antonio@meshcoding.com>
 References: <1382221330-3769-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 02/18] batman-adv: update email address for
-	Simon Wunderlich
+Subject: [B.A.T.M.A.N.] [PATCH 03/18] batman-adv: update email address for
+	Antonio Quartulli
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,80 +18,27 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
-
-My university will stop email service for alumni in january 2014, please
-use my new e-mail address instead.
-
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- Documentation/ABI/testing/sysfs-class-net-mesh | 4 ++--
- Documentation/networking/batman-adv.txt        | 2 +-
- MAINTAINERS                                    | 2 +-
- net/batman-adv/main.h                          | 2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ Documentation/ABI/testing/sysfs-class-net-mesh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Documentation/ABI/testing/sysfs-class-net-mesh b/Documentation/ABI/testing/sysfs-class-net-mesh
-index f00a69b..96ae0a4 100644
+index 96ae0a4..a86528c 100644
 --- a/Documentation/ABI/testing/sysfs-class-net-mesh
 +++ b/Documentation/ABI/testing/sysfs-class-net-mesh
-@@ -16,7 +16,7 @@ Description:
+@@ -8,7 +8,7 @@ Description:
  
- What:           /sys/class/net/<mesh_iface>/mesh/bonding
- Date:           June 2010
--Contact:        Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-+Contact:        Simon Wunderlich <sw@simonwunderlich.de>
+ What:           /sys/class/net/<mesh_iface>/mesh/ap_isolation
+ Date:           May 2011
+-Contact:        Antonio Quartulli <ordex@autistici.org>
++Contact:        Antonio Quartulli <antonio@meshcoding.com>
  Description:
-                 Indicates whether the data traffic going through the
-                 mesh will be sent using multiple interfaces at the
-@@ -24,7 +24,7 @@ Description:
- 
- What:           /sys/class/net/<mesh_iface>/mesh/bridge_loop_avoidance
- Date:           November 2011
--Contact:        Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-+Contact:        Simon Wunderlich <sw@simonwunderlich.de>
- Description:
-                 Indicates whether the bridge loop avoidance feature
-                 is enabled. This feature detects and avoids loops
-diff --git a/Documentation/networking/batman-adv.txt b/Documentation/networking/batman-adv.txt
-index 897d1f4..89ace66 100644
---- a/Documentation/networking/batman-adv.txt
-+++ b/Documentation/networking/batman-adv.txt
-@@ -200,4 +200,4 @@ Mailing-list:   b.a.t.m.a.n@open-mesh.org (optional  subscription
- You can also contact the Authors:
- 
- Marek  Lindner  <lindner_marek@yahoo.de>
--Simon  Wunderlich  <siwu@hrz.tu-chemnitz.de>
-+Simon  Wunderlich  <sw@simonwunderlich.de>
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a46bcf81..f169259 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1653,7 +1653,7 @@ F:	include/linux/backlight.h
- 
- BATMAN ADVANCED
- M:	Marek Lindner <mareklindner@neomailbox.ch>
--M:	Simon Wunderlich <siwu@hrz.tu-chemnitz.de>
-+M:	Simon Wunderlich <sw@simonwunderlich.de>
- M:	Antonio Quartulli <antonio@meshcoding.com>
- L:	b.a.t.m.a.n@lists.open-mesh.org
- W:	http://www.open-mesh.org/
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 54c13d5..c754f8e 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -21,7 +21,7 @@
- #define _NET_BATMAN_ADV_MAIN_H_
- 
- #define BATADV_DRIVER_AUTHOR "Marek Lindner <lindner_marek@yahoo.de>, " \
--			     "Simon Wunderlich <siwu@hrz.tu-chemnitz.de>"
-+			     "Simon Wunderlich <sw@simonwunderlich.de>"
- #define BATADV_DRIVER_DESC   "B.A.T.M.A.N. advanced"
- #define BATADV_DRIVER_DEVICE "batman-adv"
- 
+                 Indicates whether the data traffic going from a
+                 wireless client to another wireless client will be
 -- 
 1.8.4
 
