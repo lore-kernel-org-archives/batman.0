@@ -1,13 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 20 Oct 2013 04:20:43 +0800
-Message-ID: <2374265.nAIqmLE0ME@diderot>
-In-Reply-To: <1382192089-2977-1-git-send-email-antonio@meshcoding.com>
-References: <1382192089-2977-1-git-send-email-antonio@meshcoding.com>
+Date: Sun, 20 Oct 2013 04:22:08 +0800
+Message-ID: <1747020.jXfFqomHkF@diderot>
+In-Reply-To: <1382195054-1943-1-git-send-email-antonio@meshcoding.com>
+References: <1382195054-1943-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5319400.CrZ6PcgJ5R";
+Content-Type: multipart/signed; boundary="nextPart2041391.zceOR8B7KJ";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix typ0 in kernel doc
+Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix typ0s in comment
+	and kerneldoc
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,25 +24,25 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart5319400.CrZ6PcgJ5R
+--nextPart2041391.zceOR8B7KJ
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 19 October 2013 16:14:49 Antonio Quartulli wrote:
-> Introduced by 9a40777e03bb2710a4f716867b2153257098972f
-> ("batman-adv: make the GW module correctly talk to the new VLAN-TT")
+On Saturday 19 October 2013 17:04:14 Antonio Quartulli wrote:
+> Introduced by 21a57f6e7a3b4455dfe68ee07a7b901d9e7f200b
+> ("batman-adv: make the TT CRC logic VLAN specific")
 > 
 > Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
->  gateway_client.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  translation-table.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Applied in revision e00f562.
+Applied in revision c619e84.
 
 Thanks,
 Marek
 
---nextPart5319400.CrZ6PcgJ5R
+--nextPart2041391.zceOR8B7KJ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -49,14 +50,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSYumbAAoJEFNVTo/uthzAyxUH/R/gPzirPpCsSaNAyke44P/u
-PDeIlDxQz9JH7LxO9gJeAPE6BWtvtUaJfrK4UrDtWKhGN4SnTmqv4eN7bT1L7wBU
-bFfbV5uUrsEnliAzMWUrh4luEnXWlm1/FwfKaciXpBKCxKTD7NX5NPfeArqHq31r
-YsjFVn0XGT+Pt4xRLuzQdvbMJu6OnRzq1RpZph4ViWS4EKYFVZMmuM7n4VOooYqI
-Bqj+/5iowhCadGy5EmkECy+3QrBfv2RBht6AMI/afkKPAZVZABbIcrngVPZsZZiG
-GHn3bALiBZnwYS55AcMmwiNNfkN9a2A8+3ebhX/61vI1HnECuDrIKyJV9GH4fFk=
-=dUEb
+iQEcBAABAgAGBQJSYunwAAoJEFNVTo/uthzApJoH/1YP77+4+Sy0LCo9VlrQcQm6
+ZLAKlNguKge7z43CL/vxrETQORYH+bgRWw90I4KXOf3xUGCuAw1+94jjYSpDDhs4
+bn09IxadE+/Bbkd9kKLqMr+mXhfpmGZT0Iyy+Zs/iVyo3VZ7Wn6WtSnQjAsNoDkq
+ioEHFq8iXzRrXtJkFcthTojr2DpUDWfj1odKMZ39ciD1WilIzEVt7nZx5Alj7EM6
+AVX9vuTqozevjCvXUZiJ+WT/6whW7HWs5XEA6EH3qI1IYilZYAvwLJVKTAcDABz2
+Y4hsqtyoju6Xd04KpPJxu7LeG+obUWa88A6IriNddnsFvpQgBc0ohzCvB2EGw7A=
+=59sX
 -----END PGP SIGNATURE-----
 
---nextPart5319400.CrZ6PcgJ5R--
+--nextPart2041391.zceOR8B7KJ--
 
