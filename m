@@ -1,14 +1,8 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 20 Oct 2013 04:22:08 +0800
-Message-ID: <1747020.jXfFqomHkF@diderot>
-In-Reply-To: <1382195054-1943-1-git-send-email-antonio@meshcoding.com>
-References: <1382195054-1943-1-git-send-email-antonio@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2041391.zceOR8B7KJ";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix typ0s in comment
-	and kerneldoc
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Sat, 19 Oct 2013 23:29:00 +0200
+Message-Id: <1382218140-1359-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix small glitch in comment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,41 +17,30 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
+Introduced by e4ff5c153dab054a6cd1c4132f87bc5e77127456
+("batman-adv: add sysfs framework for VLAN")
 
---nextPart2041391.zceOR8B7KJ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
 
-On Saturday 19 October 2013 17:04:14 Antonio Quartulli wrote:
-> Introduced by 21a57f6e7a3b4455dfe68ee07a7b901d9e7f200b
-> ("batman-adv: make the TT CRC logic VLAN specific")
-> 
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-> ---
->  translation-table.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+sorry for not having sent this before..
 
-Applied in revision c619e84.
+ sysfs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
-Marek
-
---nextPart2041391.zceOR8B7KJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJSYunwAAoJEFNVTo/uthzApJoH/1YP77+4+Sy0LCo9VlrQcQm6
-ZLAKlNguKge7z43CL/vxrETQORYH+bgRWw90I4KXOf3xUGCuAw1+94jjYSpDDhs4
-bn09IxadE+/Bbkd9kKLqMr+mXhfpmGZT0Iyy+Zs/iVyo3VZ7Wn6WtSnQjAsNoDkq
-ioEHFq8iXzRrXtJkFcthTojr2DpUDWfj1odKMZ39ciD1WilIzEVt7nZx5Alj7EM6
-AVX9vuTqozevjCvXUZiJ+WT/6whW7HWs5XEA6EH3qI1IYilZYAvwLJVKTAcDABz2
-Y4hsqtyoju6Xd04KpPJxu7LeG+obUWa88A6IriNddnsFvpQgBc0ohzCvB2EGw7A=
-=59sX
------END PGP SIGNATURE-----
-
---nextPart2041391.zceOR8B7KJ--
+diff --git a/sysfs.c b/sysfs.c
+index 096b511..6335433 100644
+--- a/sysfs.c
++++ b/sysfs.c
+@@ -54,7 +54,7 @@ static struct batadv_priv *batadv_vlan_kobj_to_batpriv(struct kobject *obj)
+ 	if (!strcmp(BATADV_SYSFS_IF_MESH_SUBDIR, obj->name))
+ 		return batadv_kobj_to_batpriv(obj);
+ 
+-	/* ..while the attributed for the tagged vlans are located in
++	/* ..while the attributes for the tagged vlans are located in
+ 	 * the in the corresponding "vlan%VID" subfolder
+ 	 */
+ 	return batadv_kobj_to_batpriv(obj->parent);
+-- 
+1.8.4
 
