@@ -1,12 +1,17 @@
 Return-Path: <linus.luessing@web.de>
-Date: Sun, 20 Oct 2013 10:25:07 +0200
+Date: Sun, 20 Oct 2013 11:21:00 +0200
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20131020082506.GC13550@Linus-Debian>
+Message-ID: <20131020092100.GD13550@Linus-Debian>
+References: <1380030033-11533-1-git-send-email-linus.luessing@web.de>
+ <20130924134650.GP3911@neomailbox.net>
+ <20130924145723.GN18530@Linus-Debian> <1680806.MqrY0WE4J8@diderot>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="lc9FT7cWel8HagAv"
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] A few questions on TVLV
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1680806.MqrY0WE4J8@diderot>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: introduce 'no_rebroadcast'
+ option
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,86 +23,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Wed, Sep 25, 2013 at 11:03:48PM +0800, Marek Lindner wrote:
+> On Tuesday 24 September 2013 16:57:24 Linus Lüssing wrote:
+> > On Tue, Sep 24, 2013 at 03:46:50PM +0200, Antonio Quartulli wrote:
+> > > On Tue, Sep 24, 2013 at 03:40:33PM +0200, Linus Lüssing wrote:
+> > > > 
+> > > >
+> > > > Using this option wrongly will break your mesh network, use this option
+> > > > wisely and at your own risk!
+> > >
+> > > 
+> > >
+> > > Exactly for this reason (As we discussed on IRC) I think this mechanism
+> > > should be reasoned a bit more.
+> > 
+> > Hm, my personal reason to want such a feature is included, the VPN
+> > example. And since I know that using batman-adv over VPNs is not
+> > uncommon, I'd love to have this feature upstream.
+> 
+> Admittedly, I haven't followed the entire discussion but what speaks against 
+> setting the rebroadcast count define for non-wireless to 0 ? Matthias (if I am 
+> not mistaken) provided a patch for the wireless / non-wireless distinction not 
+> too long ago. 
+> Seems way easier as we are looking for a quick and temporary solution ?
+> 
 
---lc9FT7cWel8HagAv
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Just to summarize the IRC discussion for the archive: For our case
+(and about half a dozen other Freifunk communities) this wouldn't work
+because we'd want to have it to 0 for some VPN interfaces but not all. (*)
 
-Hi,
+The bar for introducing new configuration / tuning options is a
+high one for batman-adv because ease of use is a high priority for
+the batman team. Therefore things should be automized as much as
+possible or configuration options should only be introduced if
+there is a high demand for it. Also if it is easy to misuse such an
+option and if misuse causes havoc then such patches are not very
+welcome, too.
 
-I think I had posted some thoughts on the TVLV feature on the IRC
-channel before with some suggestions for changes (e.g. moving the
-TVLV feature from the individual packet types down to the common
-batman header). And had tried to come up with examples for
-features where TVLVs for batman broadcast packets could be useful
-- which might have been potential, but not the most convincing,
-not the most awesome features.
-
-So now I have a feature which I would like to have / would like to
-work on in the future [0], and I would like to know:
-
-a) Whether it is possible to do that with the current TVLV
-infrastructure without breaking compatibility.
-
-I think it is, probably by announcing this capability via an OGM
-TVLV and only activating this feature if all visible nodes support
-it, right?
-
-b) If it is possible without breaking compatibility, then this
-could still cause quite some burdon for heterogeneous, multi party
-controlled networks, because all nodes would need to
-upgraded or older ones somehow blacklisted, right?
-
-c) What is your estimation, would it be easy to pull the TVLV
-feature down onto the common batman-header code-wise?
-
-d) Would the ease or difficulty to implement it (c)) and the
-benefits it would provide (a)+b)) justify including a patch
-for a TVLV-per-batman-header in the first compat bump release?
-
-e) The first compat bump patches were already submitted to net/,
-so there actually wouldn't be much time left to do that, would
-there?
+Since this option can generally be automized (with some, but
+doable effort) we decided to apply this patch in our project
+locally and agreed on not bringing the patch posted here upstream
+now.
 
 Cheers, Linus
 
-PS: I would also volunteer to work on moving the TVLV down to the
-common batman header, but if the time frame to do that is too
-short then I'd probably not be fast enough to do that.
 
-
-[0]: Split Horizon with a tag (the tag would need a per batman bcast TVLV)
-* A per hard-interface mechanism tries to automatically detect whether
-  the connectivity to all local link layer neighbors is both
-  transitive and symmetric.
-* If so broadcast/multicast packets coming from that interface are
-  tagged with a unique ID (e.g. the lowest MAC address present on
-  that link)
-* Such tagged packets are never forwarded onto the according link
-  again.
-
---lc9FT7cWel8HagAv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.15 (GNU/Linux)
-
-iQIcBAEBAgAGBQJSY5NhAAoJELxyPiAAt6UvUfEP/1GSnRr87dmA/QfQshMp93dF
-hkXW3JWeitlkiMuWttqpnmmf2xGbCrca6aFA6ak41ZtjQq9NEAIm1X9s/pFGkqEl
-WDO6McpgIHmQrZiM2m1HaP6L7MWXaXRe1LEIxFocx8rzBXPygHz8G0hk47oAEjin
-h22c246w2h9bG+1SniYHq+jIhMYBFOFhh0mo2FW8gmFrK/fP7yx8EN8O+fCXxM+u
-URl/RodEF+9qKiXXrYVb11+nTr8UmKfeBR5DKJ0DwBTefVBXR+Q+J9Y3yk3USYgI
-fmJbrcSgwXRCtoFfT2QtV8rRmLYCoZJQgxt3iXgAYzv9bImqHkEicb0d2JFUQ17c
-gjJSW27H8V6iMCcsO1g7Xc1gb8Wil/ef2E7k4FgmAabnpQvHhqea+TLdxwYtltg3
-ToNInOXl5l/qm5lMfPPBXzHLYk/CiFW1jZk2pkANL74qu/d0QnXjXjFpJiCN6IPw
-G27gz9PlqOsHoYqrZ4qhgYF8V/qU18ivWpCqfDq4JJHMti3hAi/F/oxROmSk4xWb
-COlVKxDzc7HL/av5DIoi+oKWLjzwZl+JWQ6MUfwmjUS0YaAEtC1Euomr6aF7X8fE
-KlCHf1Zk9Vmc89LIJFkfvXSW8W4FWATf/S/WVF30lRS3fw8NjDRVXxHRMfUP3f0E
-IFXAgbFuisOn7MVECM6a
-=AFGF
------END PGP SIGNATURE-----
-
---lc9FT7cWel8HagAv--
+(*) We have a VPN topology with a few, fully meshed master servers
+and several more clients which are connected to two random master
+servers. The VPN software we are using, fastd, does not provide
+any mesh routing / forwarding capabilities (so it kind of behaves
+like OpenVPN in bridged mode without the client-to-client option or
+tinc with Mode=switch,Broadcast=no,Forwarding=off).
