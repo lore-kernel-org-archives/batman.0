@@ -1,17 +1,13 @@
-Return-Path: <linus.luessing@web.de>
-Date: Sun, 20 Oct 2013 11:21:00 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20131020092100.GD13550@Linus-Debian>
-References: <1380030033-11533-1-git-send-email-linus.luessing@web.de>
- <20130924134650.GP3911@neomailbox.net>
- <20130924145723.GN18530@Linus-Debian> <1680806.MqrY0WE4J8@diderot>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 20 Oct 2013 18:26:41 +0800
+Message-ID: <1989798.ZHJlJXvcrz@diderot>
+In-Reply-To: <20131020082506.GC13550@Linus-Debian>
+References: <20131020082506.GC13550@Linus-Debian>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1680806.MqrY0WE4J8@diderot>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: introduce 'no_rebroadcast'
- option
+Content-Type: multipart/signed; boundary="nextPart1429730.uhjTrqhjtF";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] A few questions on TVLV
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,54 +21,52 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wed, Sep 25, 2013 at 11:03:48PM +0800, Marek Lindner wrote:
-> On Tuesday 24 September 2013 16:57:24 Linus Lüssing wrote:
-> > On Tue, Sep 24, 2013 at 03:46:50PM +0200, Antonio Quartulli wrote:
-> > > On Tue, Sep 24, 2013 at 03:40:33PM +0200, Linus Lüssing wrote:
-> > > > 
-> > > >
-> > > > Using this option wrongly will break your mesh network, use this option
-> > > > wisely and at your own risk!
-> > >
-> > > 
-> > >
-> > > Exactly for this reason (As we discussed on IRC) I think this mechanism
-> > > should be reasoned a bit more.
-> > 
-> > Hm, my personal reason to want such a feature is included, the VPN
-> > example. And since I know that using batman-adv over VPNs is not
-> > uncommon, I'd love to have this feature upstream.
-> 
-> Admittedly, I haven't followed the entire discussion but what speaks against 
-> setting the rebroadcast count define for non-wireless to 0 ? Matthias (if I am 
-> not mistaken) provided a patch for the wireless / non-wireless distinction not 
-> too long ago. 
-> Seems way easier as we are looking for a quick and temporary solution ?
-> 
 
-Just to summarize the IRC discussion for the archive: For our case
-(and about half a dozen other Freifunk communities) this wouldn't work
-because we'd want to have it to 0 for some VPN interfaces but not all. (*)
+--nextPart1429730.uhjTrqhjtF
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-The bar for introducing new configuration / tuning options is a
-high one for batman-adv because ease of use is a high priority for
-the batman team. Therefore things should be automized as much as
-possible or configuration options should only be introduced if
-there is a high demand for it. Also if it is easy to misuse such an
-option and if misuse causes havoc then such patches are not very
-welcome, too.
+On Sunday 20 October 2013 10:25:07 Linus L=FCssing wrote:
+> I think I had posted some thoughts on the TVLV feature on the IRC
+> channel before with some suggestions for changes (e.g. moving the
+> TVLV feature from the individual packet types down to the common
+> batman header). And had tried to come up with examples for
+> features where TVLVs for batman broadcast packets could be useful
+> - which might have been potential, but not the most convincing,
+> not the most awesome features.
+>=20
+> So now I have a feature which I would like to have / would like to
+> work on in the future [0], and I would like to know:
 
-Since this option can generally be automized (with some, but
-doable effort) we decided to apply this patch in our project
-locally and agreed on not bringing the patch posted here upstream
-now.
+Before we discuss how we get TVLVs 'down to the common batman header' w=
+e=20
+should talk about why that would be useful. What are the advantages and=
+=20
+disadvantages ? Adding tvlvs everywhere for the mere sake of having the=
+m=20
+around isn't good enough as they increase code complexity, network traf=
+fic=20
+overhead and encapsulation speed penalties.
 
-Cheers, Linus
+Cheers,
+Marek
 
+--nextPart1429730.uhjTrqhjtF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-(*) We have a VPN topology with a few, fully meshed master servers
-and several more clients which are connected to two random master
-servers. The VPN software we are using, fastd, does not provide
-any mesh routing / forwarding capabilities (so it kind of behaves
-like OpenVPN in bridged mode without the client-to-client option or
-tinc with Mode=switch,Broadcast=no,Forwarding=off).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJSY6/hAAoJEFNVTo/uthzAE3oH/2Bh4mSrbkeShbVYDX6kibgv
+vTaB2nXN7PbAoQY4YAVBHvUWISWWmj3Z/ZwFHsGejokzGbzWwZ2X5JQLBVSr5zSV
+aH3Mh26pibUJCgfklcPkvd7wBA509w1vcGNDRa4N70aq3f8KContgtis4/WU5Izn
+wkujXu+ocRvPYM0KdsqvzaRgimLTgeTFHsCI34MrU4LAjHs5KeUL7VNBaZu3nZn5
+NauQBpqArZ6eMz/5029c25d8s+xYUP1soU+nhcb5Qzx6i6sCeAyUk2yL2/oe5Mc5
+5dNPSfsHlO0dDwqpCoOsxRxNrzOgsLLlQnODMVDJWTXyamDC3N5dpUajhdAaVcE=
+=WKGm
+-----END PGP SIGNATURE-----
+
+--nextPart1429730.uhjTrqhjtF--
+
