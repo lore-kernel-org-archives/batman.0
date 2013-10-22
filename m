@@ -1,14 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 23 Oct 2013 05:01:04 +0800
-Message-ID: <1819951.9mYekNXCEW@diderot>
-In-Reply-To: <1382475009-20517-1-git-send-email-sw@simonwunderlich.de>
-References: <1382475009-20517-1-git-send-email-sw@simonwunderlich.de>
+Return-Path: <linus.luessing@web.de>
+Date: Tue, 22 Oct 2013 23:26:05 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20131022212604.GA6214@Linus-Debian>
+References: <20131020082506.GC13550@Linus-Debian> <1989798.ZHJlJXvcrz@diderot>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8927254.O61vABPiYz";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: generalize batman-adv icmp
-	packet handling
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1989798.ZHJlJXvcrz@diderot>
+Subject: Re: [B.A.T.M.A.N.] A few questions on TVLV
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,68 +20,74 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-
---nextPart8927254.O61vABPiYz
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Tuesday 22 October 2013 22:50:09 Simon Wunderlich wrote:
-> Instead of handling icmp packets only up to length of icmp_packet_rr,
-> the code should handle any icmp length size. Therefore the length
-> truncating is moved to when the packet is actually sent to userspace
-> (this does not support lengths longer than icmp_packet_rr yet). Longer
-> packets are forwarded without truncating.
+On Sun, Oct 20, 2013 at 06:26:41PM +0800, Marek Lindner wrote:
+> On Sunday 20 October 2013 10:25:07 Linus Lüssing wrote:
+> > I think I had posted some thoughts on the TVLV feature on the IRC
+> > channel before with some suggestions for changes (e.g. moving the
+> > TVLV feature from the individual packet types down to the common
+> > batman header). And had tried to come up with examples for
+> > features where TVLVs for batman broadcast packets could be useful
+> > - which might have been potential, but not the most convincing,
+> > not the most awesome features.
+> > 
+> > So now I have a feature which I would like to have / would like to
+> > work on in the future [0], and I would like to know:
 > 
-> This patch also cleans up some parts where the icmp header struct could
-> be used instead of other icmp_packet(_rr) structs to make the code more
-> readable.
+> Before we discuss how we get TVLVs 'down to the common batman header' we 
+> should talk about why that would be useful. What are the advantages and 
+> disadvantages ? Adding tvlvs everywhere for the mere sake of having them 
+> around isn't good enough as they increase code complexity, network traffic 
+> overhead and encapsulation speed penalties.
 > 
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-> ---
-> Changes to PATCHv2 (as per IRC discussion with Marek and Antonio):
->  * use length for icmp_len after truncating in batadv_socket_add_packet
->  * remove the MAX macro and define packet size to icmp_packet_rr for now
-> 
-> Changes to PATCHv1 (suggested by Marek):
->  * use maximum packet size for batadv_socket_client icmp_packet instead
->    of hardcoded icmp_packet_rr
->  * drop unknown packet types in batadv_recv_my_icmp_packet()
->  * remove usage for icmp_packet_rr in batadv_socket_write where not
->    needed, and check for message type
->  * use right length parameter in batadv_socket_add_packet
-> ---
->  icmp_socket.c |  128
-> ++++++++++++++++++++++++++++++++++--------------------- icmp_socket.h
-> |    2 +-
->  packet.h      |    2 +
->  routing.c     |  131
-> ++++++++++++++++++++++++++++++++++-----------------------
-> types.h       |    2 +-
->  5 files changed, 163 insertions(+), 102 deletions(-)
+> Cheers,
+> Marek
 
-Applied in revision bb69cb6.
+Agreed, bloated, never used code is never a good thing. And yes,
+before we do get into discussing the specific proposal, we should
+discuss the current limitations, (perceived) issues.
 
-Thanks,
-Marek
+To be honest, I'm not 100% sure about the advantages and
+disadvantages, that's why I had decided to ask questions,
+initially :).
 
---nextPart8927254.O61vABPiYz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+This is my current (probably wrong) understanding about the
+disadvantages of the current implementation:
 
-iQEcBAABAgAGBQJSZueYAAoJEFNVTo/uthzAqfgH/32Qg5UlkxDaouzICl5uMvuI
-+qRmhej0wann8F652Fpiogy9iMENAz/Pxcz84N9ITsh5sVRuR6oEoNWg362Jtkpn
-/oaxSIv89ikF93H6mwZSncnpCKz4Acb939j10H6NSdc0PMa7B1O4MLAe+ogZULAF
-Z66jDrsZKVbw16W2KaVNWtnj+DrXMMkZuhEKGz1phCaUj2g9GF5dNw8LWm0UWzKe
-xW99opsxsSnAkMfVuKQTUNntkPHkkDR+4K9Ye6wnHQzmOHlRTAsby2KRIoBHikxZ
-pHx6MYt6kAdpxMrTjfrfC9J4nVKnk0/eBuHtkVNMN5uWA5Jf4QBySoMvdugU5pc=
-=AZSc
------END PGP SIGNATURE-----
+With the current TVLV approach it is still going to be difficult
+to introduce new features / changes to batman-adv broadcast /
+coded / fragment / ... packets as the current approach only
+provides TVLVs for OGMs and unicast packets.
 
---nextPart8927254.O61vABPiYz--
+How difficult, I'm not quite sure. Initially I thought compat
+bumps would be needed for new broadcast features for instance,
+but now I realized, that this is not the case, because bcast features
+could be signalized via OGM TVLVs and like with the mcast patches,
+could be enabled only if all nodes have that bcast-feature OGM
+TVLV.
 
+So I guess the only disadvantage is, that you would either only be
+able to use a new bcast feature, if all nodes had it (which might
+be painful in a heterogeneous mesh network). Or if it is an
+optimization which can be applied "locally", then the according
+nodes would need to convert the broadcast packets back and forth.
+
+
+So vice versa, the advantage of having TVLVs for broadcast packets
+would be to have ignorable features, no need for conversions
+because the TVLV could be skipped, no compat bumps, not always a
+need to wait for all nodes to be upgraded to make the feature effective
+- just like for the current OGM and unicast TVLVs. We'd have the
+same flexibility provided by a uniform framework for all packet
+types from an "infrastructure point of view".
+
+--
+
+For the disadvantages of moving 'TVLVs down to the common header',
+I'm actually having trouble getting them. Maybe others could list
+them again and I try to explain which of these I'm having trouble
+understanding and why?
+
+Cheers, Linus
