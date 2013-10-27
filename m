@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 27 Oct 2013 18:12:28 +0800
-Message-ID: <3097636.PlnBFYxLHF@diderot>
-In-Reply-To: <1381323938-26931-6-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Sun, 27 Oct 2013 18:27:30 +0800
+Message-ID: <1625153.CDEY5RvPtE@diderot>
+In-Reply-To: <1381323938-26931-7-git-send-email-siwu@hrz.tu-chemnitz.de>
 References: <1381323938-26931-1-git-send-email-siwu@hrz.tu-chemnitz.de>
- <1381323938-26931-6-git-send-email-siwu@hrz.tu-chemnitz.de>
+ <1381323938-26931-7-git-send-email-siwu@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1617585.5AzGK0O0XM";
+Content-Type: multipart/signed; boundary="nextPart9881610.PCFk2o3Kks";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 5/7] batman-adv: consider outgoing
-	interface in OGM sending
+Subject: Re: [B.A.T.M.A.N.] [PATCH 6/7] batman-adv: add bonding again
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,70 +23,117 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart1617585.5AzGK0O0XM
+--nextPart9881610.PCFk2o3Kks
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday 09 October 2013 15:05:36 Simon Wunderlich wrote:
-> @@ -573,6 +561,13 @@ batadv_iv_ogm_can_aggregate(const struct
-> batadv_ogm_packet *new_bat_ogm_packet, if (!primary_if)
->  			goto out;
+On Wednesday 09 October 2013 15:05:37 Simon Wunderlich wrote:
+> --- a/routing.c
+> +++ b/routing.c
+> @@ -407,16 +407,104 @@ static int batadv_check_unicast_packet(struct
+> batadv_priv *bat_priv, struct batadv_neigh_node *
+>  batadv_find_router(struct batadv_priv *bat_priv,
+>  		   struct batadv_orig_node *orig_node,
+> -		   const struct batadv_hard_iface *recv_if)
+> +		   struct batadv_hard_iface *recv_if)
+>  {
+> -	struct batadv_neigh_node *router;
+> +	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
+> +	struct batadv_neigh_node *first_candidate_router = NULL;
+> +	struct batadv_neigh_node *next_candidate_router;
+> +	struct batadv_neigh_node *router, *cand_router;
+> +	struct batadv_orig_node_ifinfo *cand, *first_candidate = NULL;
+> +	struct batadv_orig_node_ifinfo *next_candidate = NULL;
+> +	bool last_candidate_found = false;
 > 
-> +		/* packet is not leaving on the same interface.
-> +		 * TODO: some other parts here could be reworked as the
-> +		 * outgoing interface is specified now.
-> +		 */
-> +		if (forw_packet->if_outgoing != if_outgoing)
-> +			goto out;
-> +
->  		/* packets without direct link flag and high TTL
->  		 * are flooded through the net
->  		 */
-
-What is the TODO trying tell us ?
-
-
-> @@ -895,9 +922,31 @@ static void batadv_iv_ogm_schedule(struct
-> batadv_hard_iface *hard_iface) atomic_inc(&hard_iface->bat_iv.ogm_seqno);
+>  	if (!orig_node)
+>  		return NULL;
 > 
->  	batadv_iv_ogm_slide_own_bcast_window(hard_iface);
-> -	batadv_iv_ogm_queue_add(bat_priv, hard_iface->bat_iv.ogm_buff,
-> -				hard_iface->bat_iv.ogm_buff_len, hard_iface, 1,
-> -				batadv_iv_ogm_emit_send_time(bat_priv));
+>  	router = batadv_orig_node_get_router(orig_node, recv_if);
+> 
+> -	/* TODO: fill this later with new bonding mechanism */
+> +	/* only consider bonding for recv_if == NULL (first hop) and if
+> +	 * activated.
+> +	 */
+> +	if (recv_if || !atomic_read(&bat_priv->bonding) || !router)
+> +		return router;
 > +
-> +	send_time = batadv_iv_ogm_emit_send_time(bat_priv);
+> +	/* bonding: loop through the list of possible routers found
+> +	 * for the various outgoing interfaces and find a candidate after
+> +	 * the last chosen bonding candidate (next_candidate). If no such
+> +	 * router is found, use the first candidate found (the last chosen
+> +	 * bonding candidate might have been the last one in the list).
+> +	 * If this can't be found either, return the previously choosen
+> +	 * router - obviously there are no other candidates.
+> +	 */
+> +	rcu_read_lock();
+> +	hlist_for_each_entry_rcu(cand, &orig_node->ifinfo_list, list) {
+> +		cand_router = rcu_dereference(cand->router);
+> +		if (!cand_router)
+> +			continue;
 > +
-> +	if (hard_iface == primary_if) {
-> +		/* OGMs from primary interfaces are scheduled on all
-> +		 * interfaces.
+> +		if (!atomic_inc_not_zero(&cand_router->refcount))
+> +			continue;
+> +
+> +		/* alternative candidate should be good enough to be
+> +		 * considered
 > +		 */
-> +		rcu_read_lock();
-> +		list_for_each_entry_rcu(tmp_hard_iface, &batadv_hardif_list,
-> +					list) {
-> +			if (tmp_hard_iface->soft_iface !=
-> +			    hard_iface->soft_iface)
-> +				continue;
-> +			batadv_iv_ogm_queue_add(bat_priv, *ogm_buff,
-> +						*ogm_buff_len, hard_iface,
-> +						tmp_hard_iface, 1, send_time);
+> +		if (!bao->bat_neigh_is_equiv_or_better(cand_router,
+> +						       cand->if_outgoing,
+> +						       router, recv_if))
+> +			goto next;
+> +
+> +		/* don't use the same router twice */
+> +		if (orig_node->last_bonding_candidate &&
+> +		    (orig_node->last_bonding_candidate->router ==
+> +		     cand_router))
+> +				goto next;
+
+Again, this if-statement won't pass.
+
+
+> +		/* check if already passed the next candidate ... this function
+> +		 * should the next candidate AFTER the last used bonding
+> +		 * candidate.
+> +		 */
+> +		if (!orig_node->last_bonding_candidate ||
+> +		    last_candidate_found) {
+> +			next_candidate = cand;
+> +			next_candidate_router = cand_router;
+> +			break;
 > +		}
-> +		rcu_read_unlock();
-> +	} else {
-> +		/* OGMs from secondary interfaces are only scheduled on their
-> +		 * respective interfaces.
+
+The comment above would benefit from additional love. :)
+
+
+> +	if (next_candidate) {
+> +		/* found a possible candidate after the last chosen bonding
+> +		 * candidate, return it.
 > +		 */
-> +		batadv_iv_ogm_queue_add(bat_priv, *ogm_buff, *ogm_buff_len,
-> +					hard_iface, hard_iface, 1, send_time);
+> +		batadv_neigh_node_free_ref(router);
+> +		if (first_candidate)
+> +			batadv_neigh_node_free_ref(first_candidate_router);
+> +		router = next_candidate_router;
+> +		orig_node->last_bonding_candidate = next_candidate;
+> +	} else if (first_candidate) {
+> +		/* found no possible candidate after the last candidate, return
+> +		 * the first candidate if available, or the already selected
+> +		 * router otherwise.
+> +		 */
+> +		batadv_neigh_node_free_ref(router);
+> +		router = first_candidate_router;
+> +		orig_node->last_bonding_candidate = first_candidate;
+> +	} else {
+> +		orig_node->last_bonding_candidate = NULL;
 > +	}
 
-The 2 line if-statement certainly won't pass. You could handle the hard_iface 
-!= primary_if case and then return. No need to have a big if-else block. That 
-should give you enough space to move the if-statement to one line.
+It is not safe to hold a pointer to first_candidate or next_candidate without 
+having a refcounter protecting it.
 
 Cheers,
 Marek
 
---nextPart1617585.5AzGK0O0XM
+--nextPart9881610.PCFk2o3Kks
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -95,14 +141,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSbOcQAAoJEFNVTo/uthzAB6MH/jqql3xLFtrwQwZl7/Di2iOb
-ISPlMyk2YJxW6SzIrDbhthblyFiQTF2DWIjl+khw2CEIN5e5vErEUhXdEyRpdcOZ
-ux+ywBAE3Tu9AY9AzOAhZGs/DN0S14Z8ucjjhdd2IeN2prOkKcjwAzlS7uj7p9be
-VmPjsMo83NuktkAvPxVhbMYGytiueAUMpJ4JEuIPK+WLyjOuWQgD4TF+yV/Yyj81
-u70JWVYE2z5TJWR+TqNtXuUf8o17+CW4RL5hq7K13GY8pZVGtDmrN8hTO7SVrAkg
-/5UEN4nQryzh9lESqyDTwXreu6Ya5hllAG76rgCR9ddakeoglcrluiRZpO2I9WM=
-=LuTK
+iQEcBAABAgAGBQJSbOqWAAoJEFNVTo/uthzAv5MIAJHhUZ9YI50ovVeXrG8vUKhR
+5opqWJU++K00n0+jolXlpWXQOg9AdahEPK8bbGSfLkXA+bOFmjssG85o+r36CB37
+BxoTZGs4NBygVmqteWwuWZ6rWw10QhcaFSeSO+5kFXRIXf1sNp8nqJRgmjQVNKxR
+Z+D/Qra/D8f+KpM48/CRXzMtrqR6opOUlmYRoqbkUuRML+giMCmF6aAGbN75hNNX
+51izAdhDLVUcerDnaBtQO492JwcSelejBYZgfpBmOgEFT1RDbiC2Lynv4Egp+YNH
+fagy3+Q3Zxrf0sJ11w6seansHxul9MNPhOBrQ/Uluw8NosVEVim2nrUdlrLxxNI=
+=6dis
 -----END PGP SIGNATURE-----
 
---nextPart1617585.5AzGK0O0XM--
+--nextPart9881610.PCFk2o3Kks--
 
