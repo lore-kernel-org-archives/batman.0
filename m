@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 27 Oct 2013 18:27:30 +0800
-Message-ID: <1625153.CDEY5RvPtE@diderot>
-In-Reply-To: <1381323938-26931-7-git-send-email-siwu@hrz.tu-chemnitz.de>
+Date: Sun, 27 Oct 2013 18:55:15 +0800
+Message-ID: <2541348.dk7oEX68Hn@diderot>
+In-Reply-To: <1381323938-26931-8-git-send-email-siwu@hrz.tu-chemnitz.de>
 References: <1381323938-26931-1-git-send-email-siwu@hrz.tu-chemnitz.de>
- <1381323938-26931-7-git-send-email-siwu@hrz.tu-chemnitz.de>
+ <1381323938-26931-8-git-send-email-siwu@hrz.tu-chemnitz.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9881610.PCFk2o3Kks";
+Content-Type: multipart/signed; boundary="nextPart3513795.9YiLGVhgLf";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 6/7] batman-adv: add bonding again
+Subject: Re: [B.A.T.M.A.N.] [PATCH 7/7] batman-adv: add debugfs support to
+	view multiif tables
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,117 +24,61 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart9881610.PCFk2o3Kks
+--nextPart3513795.9YiLGVhgLf
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday 09 October 2013 15:05:37 Simon Wunderlich wrote:
-> --- a/routing.c
-> +++ b/routing.c
-> @@ -407,16 +407,104 @@ static int batadv_check_unicast_packet(struct
-> batadv_priv *bat_priv, struct batadv_neigh_node *
->  batadv_find_router(struct batadv_priv *bat_priv,
->  		   struct batadv_orig_node *orig_node,
-> -		   const struct batadv_hard_iface *recv_if)
-> +		   struct batadv_hard_iface *recv_if)
->  {
-> -	struct batadv_neigh_node *router;
-> +	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
-> +	struct batadv_neigh_node *first_candidate_router = NULL;
-> +	struct batadv_neigh_node *next_candidate_router;
-> +	struct batadv_neigh_node *router, *cand_router;
-> +	struct batadv_orig_node_ifinfo *cand, *first_candidate = NULL;
-> +	struct batadv_orig_node_ifinfo *next_candidate = NULL;
-> +	bool last_candidate_found = false;
+On Wednesday 09 October 2013 15:05:38 Simon Wunderlich wrote:
+>  			hlist_for_each_entry_rcu(neigh_node_tmp,
+>  						 &orig_node->neigh_list, list) {
+> -				neigh_ifinfo = batadv_neigh_node_get_ifinfo(
+> -							neigh_node, NULL);
+> -				if (!neigh_ifinfo)
+> +				n_ifinfo = batadv_neigh_node_get_ifinfo(
+> +							neigh_node,
+> +							if_outgoing);
+
+Nope ...
+
+
+> +/**
+> + * batadv_originators_open_multiif - handles debugfs output for the
+> + *	originators_multiif table
+> + * @inode: inode pointer to debugfs file
+> + * @file: pointer to the seq_file
+> + */
+
+Documentation longer than one line should be indented by one char not 8 
+(second line).
+
+
+> --- a/originator.c
+> +++ b/originator.c
+> @@ -776,7 +776,49 @@ int batadv_orig_seq_print_text(struct seq_file *seq,
+> void *offset) return 0;
+>  	}
 > 
->  	if (!orig_node)
->  		return NULL;
-> 
->  	router = batadv_orig_node_get_router(orig_node, recv_if);
-> 
-> -	/* TODO: fill this later with new bonding mechanism */
-> +	/* only consider bonding for recv_if == NULL (first hop) and if
-> +	 * activated.
-> +	 */
-> +	if (recv_if || !atomic_read(&bat_priv->bonding) || !router)
-> +		return router;
+> -	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq);
+> +	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq, NULL);
 > +
-> +	/* bonding: loop through the list of possible routers found
-> +	 * for the various outgoing interfaces and find a candidate after
-> +	 * the last chosen bonding candidate (next_candidate). If no such
-> +	 * router is found, use the first candidate found (the last chosen
-> +	 * bonding candidate might have been the last one in the list).
-> +	 * If this can't be found either, return the previously choosen
-> +	 * router - obviously there are no other candidates.
-> +	 */
-> +	rcu_read_lock();
-> +	hlist_for_each_entry_rcu(cand, &orig_node->ifinfo_list, list) {
-> +		cand_router = rcu_dereference(cand->router);
-> +		if (!cand_router)
-> +			continue;
+> +	return 0;
+> +}
 > +
-> +		if (!atomic_inc_not_zero(&cand_router->refcount))
-> +			continue;
-> +
-> +		/* alternative candidate should be good enough to be
-> +		 * considered
-> +		 */
-> +		if (!bao->bat_neigh_is_equiv_or_better(cand_router,
-> +						       cand->if_outgoing,
-> +						       router, recv_if))
-> +			goto next;
-> +
-> +		/* don't use the same router twice */
-> +		if (orig_node->last_bonding_candidate &&
-> +		    (orig_node->last_bonding_candidate->router ==
-> +		     cand_router))
-> +				goto next;
+> +/**
+> + * batadv_orig_multiif_seq_print_text - writes originator infos for all
+> + *	outgoing interfaces
+> + * @seq: debugfs table seq_file struct
+> + * @offset: not used
+> + *
+> + * Returns 0
+> + */
 
-Again, this if-statement won't pass.
-
-
-> +		/* check if already passed the next candidate ... this function
-> +		 * should the next candidate AFTER the last used bonding
-> +		 * candidate.
-> +		 */
-> +		if (!orig_node->last_bonding_candidate ||
-> +		    last_candidate_found) {
-> +			next_candidate = cand;
-> +			next_candidate_router = cand_router;
-> +			break;
-> +		}
-
-The comment above would benefit from additional love. :)
-
-
-> +	if (next_candidate) {
-> +		/* found a possible candidate after the last chosen bonding
-> +		 * candidate, return it.
-> +		 */
-> +		batadv_neigh_node_free_ref(router);
-> +		if (first_candidate)
-> +			batadv_neigh_node_free_ref(first_candidate_router);
-> +		router = next_candidate_router;
-> +		orig_node->last_bonding_candidate = next_candidate;
-> +	} else if (first_candidate) {
-> +		/* found no possible candidate after the last candidate, return
-> +		 * the first candidate if available, or the already selected
-> +		 * router otherwise.
-> +		 */
-> +		batadv_neigh_node_free_ref(router);
-> +		router = first_candidate_router;
-> +		orig_node->last_bonding_candidate = first_candidate;
-> +	} else {
-> +		orig_node->last_bonding_candidate = NULL;
-> +	}
-
-It is not safe to hold a pointer to first_candidate or next_candidate without 
-having a refcounter protecting it.
+Same indentation problem here.
 
 Cheers,
 Marek
 
---nextPart9881610.PCFk2o3Kks
+--nextPart3513795.9YiLGVhgLf
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -141,14 +86,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSbOqWAAoJEFNVTo/uthzAv5MIAJHhUZ9YI50ovVeXrG8vUKhR
-5opqWJU++K00n0+jolXlpWXQOg9AdahEPK8bbGSfLkXA+bOFmjssG85o+r36CB37
-BxoTZGs4NBygVmqteWwuWZ6rWw10QhcaFSeSO+5kFXRIXf1sNp8nqJRgmjQVNKxR
-Z+D/Qra/D8f+KpM48/CRXzMtrqR6opOUlmYRoqbkUuRML+giMCmF6aAGbN75hNNX
-51izAdhDLVUcerDnaBtQO492JwcSelejBYZgfpBmOgEFT1RDbiC2Lynv4Egp+YNH
-fagy3+Q3Zxrf0sJ11w6seansHxul9MNPhOBrQ/Uluw8NosVEVim2nrUdlrLxxNI=
-=6dis
+iQEcBAABAgAGBQJSbPEWAAoJEFNVTo/uthzAxHMH/RTB90sNITP/izptvfWzpsYO
+FxxDLyCb9YKTkA+kZ3JQK/RmcRH8ZsqFfoCG704n5Ead0ty9hsf+jer8fRLY3DAO
+Nc4qUMyIUZN6wunL76ZFKeoItna8Hn2VZPn+y6W+4RPuQu7gUC7gNjiym/CgK5c7
+rL2d8s7VG5VW6L6WjR/YilkHHkoA09NfQTN5ePF59+3jnaCCJNR059NAfepJR48f
+Wf5J0/qibRCj2NVd0ypuZI57VcoKlZbEVASOa16rC2GEke0ov1OVhV5x6hT3dUyJ
+BqrZBQmpGP7DFqkQR/+6/p+AbKUFDdNHSNBOQ5X/x32Bp6I5z+4rL2cxDhXNPdo=
+=z5Zz
 -----END PGP SIGNATURE-----
 
---nextPart9881610.PCFk2o3Kks--
+--nextPart3513795.9YiLGVhgLf--
 
