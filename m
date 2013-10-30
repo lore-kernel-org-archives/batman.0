@@ -1,11 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 30 Oct 2013 15:01:53 +0100
-Message-Id: <1383141713-15820-9-git-send-email-sw@simonwunderlich.de>
-In-Reply-To: <1383141713-15820-1-git-send-email-sw@simonwunderlich.de>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Thu, 31 Oct 2013 00:33:40 +0800
+Message-ID: <3955829.tFnjpO9dDf@diderot>
+In-Reply-To: <1383141713-15820-3-git-send-email-sw@simonwunderlich.de>
 References: <1383141713-15820-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2 8/8] batman-adv: add debugfs support to
-	view multiif tables
+ <1383141713-15820-3-git-send-email-sw@simonwunderlich.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart10643591.tCSQcNY1QT";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/8] batman-adv: split tq information
+	in neigh_node struct
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,198 +21,86 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Simon Wunderlich <simon@open-mesh.com>
 
-Show tables for the multi interface operation. Originator tables
-are added per hard interface.
+--nextPart10643591.tCSQcNY1QT
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-This patch also changes the API by adding the interface to the
-bat_orig_print() parameters.
+On Wednesday 30 October 2013 15:01:47 Simon Wunderlich wrote:
+> @@ -1559,7 +1661,12 @@ static void batadv_iv_ogm_orig_print(struct
+> batadv_priv *bat_priv, if (!neigh_node)
+>  				continue;
+> 
+> -			if (neigh_node->bat_iv.tq_avg == 0)
+> +			n_ifinfo = batadv_neigh_ifinfo_get(neigh_node,
+> +							   BATADV_IF_DEFAULT);
+> +			if (!n_ifinfo)
+> +				goto next;
+> +
+> +			if (n_ifinfo->bat_iv.tq_avg == 0)
+>  				goto next;
+> 
+>  			last_seen_jiffies = jiffies - orig_node->last_seen;
+> @@ -1569,17 +1676,12 @@ static void batadv_iv_ogm_orig_print(struct
+> batadv_priv *bat_priv,
+> 
+>  			seq_printf(seq, "%pM %4i.%03is   (%3i) %pM [%10s]:",
+>  				   orig_node->orig, last_seen_secs,
+> -				   last_seen_msecs, neigh_node->bat_iv.tq_avg,
+> +				   last_seen_msecs, n_ifinfo->bat_iv.tq_avg,
+>  				   neigh_node->addr,
+>  				   neigh_node->if_incoming->net_dev->name);
+> 
+> -			hlist_for_each_entry_rcu(neigh_node_tmp,
+> -						 &orig_node->neigh_list, list) {
+> -				seq_printf(seq, " %pM (%3i)",
+> -					   neigh_node_tmp->addr,
+> -					   neigh_node_tmp->bat_iv.tq_avg);
+> -			}
+> -
+> +			batadv_iv_ogm_orig_print_neigh(orig_node,
+> +						       BATADV_IF_DEFAULT, seq);
+>  			seq_puts(seq, "\n");
+>  			batman_count++;
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
----
-Changes to PATCH:
- * use one file per interface instead of all tables in one file
- * kernel doc and commit message improvement
----
- bat_iv_ogm.c |   12 +++++++-----
- debugfs.c    |   17 +++++++++++++++++
- originator.c |   48 +++++++++++++++++++++++++++++++++++++++++++++++-
- originator.h |    1 +
- types.h      |    3 ++-
- 5 files changed, 74 insertions(+), 7 deletions(-)
+Aren't we missing a free_ref(n_ifinfo) here ?
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index c44bca6..c7e5eb7 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -1784,9 +1784,11 @@ batadv_iv_ogm_orig_print_neigh(struct batadv_orig_node *orig_node,
-  * batadv_iv_ogm_orig_print - print the originator table
-  * @bat_priv: the bat priv with all the soft interface information
-  * @seq: debugfs table seq_file struct
-+ * @if_outgoing: the outgoing interface for which this should be printed
-  */
- static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
--				     struct seq_file *seq)
-+				     struct seq_file *seq,
-+				     struct batadv_hard_iface *if_outgoing)
- {
- 	struct batadv_neigh_node *neigh_node;
- 	struct batadv_hashtable *hash = bat_priv->orig_hash;
-@@ -1808,12 +1810,12 @@ static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
- 			neigh_node = batadv_orig_router_get(orig_node,
--							    BATADV_IF_DEFAULT);
-+							    if_outgoing);
- 			if (!neigh_node)
- 				continue;
- 
- 			n_ifinfo = batadv_neigh_ifinfo_get(neigh_node,
--							   BATADV_IF_DEFAULT);
-+							   if_outgoing);
- 			if (!n_ifinfo)
- 				goto next;
- 
-@@ -1831,8 +1833,8 @@ static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
- 				   neigh_node->addr,
- 				   neigh_node->if_incoming->net_dev->name);
- 
--			batadv_iv_ogm_orig_print_neigh(orig_node,
--						       BATADV_IF_DEFAULT, seq);
-+			batadv_iv_ogm_orig_print_neigh(orig_node, if_outgoing,
-+						       seq);
- 			seq_puts(seq, "\n");
- 			batman_count++;
- 
-diff --git a/debugfs.c b/debugfs.c
-index 53e13a3..2aac76a 100644
---- a/debugfs.c
-+++ b/debugfs.c
-@@ -251,6 +251,19 @@ static int batadv_originators_open(struct inode *inode, struct file *file)
- 	return single_open(file, batadv_orig_seq_print_text, net_dev);
- }
- 
-+/**
-+ * batadv_originators_open_multiif - handles debugfs output for the
-+ *  originators_multiif table
-+ * @inode: inode pointer to debugfs file
-+ * @file: pointer to the seq_file
-+ */
-+static int batadv_originators_open_multiif(struct inode *inode,
-+					   struct file *file)
-+{
-+	struct net_device *net_dev = (struct net_device *)inode->i_private;
-+	return single_open(file, batadv_orig_multiif_seq_print_text, net_dev);
-+}
-+
- static int batadv_gateways_open(struct inode *inode, struct file *file)
- {
- 	struct net_device *net_dev = (struct net_device *)inode->i_private;
-@@ -372,7 +385,11 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- 	NULL,
- };
- 
-+static BATADV_DEBUGINFO(originators_multiif, S_IRUGO,
-+			batadv_originators_open_multiif);
-+
- static struct batadv_debuginfo *batadv_hardif_debuginfos[] = {
-+	&batadv_debuginfo_originators_multiif,
- 	NULL,
- };
- 
-diff --git a/originator.c b/originator.c
-index 589bfed..e67749a 100644
---- a/originator.c
-+++ b/originator.c
-@@ -909,11 +909,57 @@ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
- 		return 0;
- 	}
- 
--	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq);
-+	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq,
-+					       BATADV_IF_DEFAULT);
- 
- 	return 0;
- }
- 
-+/**
-+ * batadv_orig_multiif_seq_print_text - writes originator infos for all
-+ *  outgoing interfaces
-+ * @seq: debugfs table seq_file struct
-+ * @offset: not used
-+ *
-+ * Returns 0
-+ */
-+int batadv_orig_multiif_seq_print_text(struct seq_file *seq, void *offset)
-+{
-+	struct net_device *net_dev = (struct net_device *)seq->private;
-+	struct batadv_hard_iface *hard_iface;
-+	struct batadv_priv *bat_priv;
-+
-+	hard_iface = batadv_hardif_get_by_netdev(net_dev);
-+
-+	if (!hard_iface || !hard_iface->soft_iface) {
-+		seq_puts(seq, "Interface not known to to B.A.T.M.A.N.\n");
-+		goto out;
-+	}
-+
-+	bat_priv = netdev_priv(hard_iface->soft_iface);
-+	if (!bat_priv->bat_algo_ops->bat_orig_print) {
-+		seq_puts(seq,
-+			 "No printing function for this routing protocol\n");
-+		goto out;
-+	}
-+
-+	if (hard_iface->if_status != BATADV_IF_ACTIVE) {
-+		seq_puts(seq, "Interface not active\n");
-+		goto out;
-+	}
-+
-+	seq_printf(seq, "[B.A.T.M.A.N. adv %s, IF/MAC: %s/%pM (%s %s)]\n",
-+		   BATADV_SOURCE_VERSION, hard_iface->net_dev->name,
-+		   hard_iface->net_dev->dev_addr,
-+		   hard_iface->soft_iface->name, bat_priv->bat_algo_ops->name);
-+
-+	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq, hard_iface);
-+
-+out:
-+	batadv_hardif_free_ref(hard_iface);
-+	return 0;
-+}
-+
- int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
- 			    int max_if_num)
- {
-diff --git a/originator.h b/originator.h
-index 404f7cb..28e8487 100644
---- a/originator.h
-+++ b/originator.h
-@@ -55,6 +55,7 @@ batadv_orig_ifinfo_new(struct batadv_orig_node *orig_node,
- void batadv_orig_ifinfo_free_ref(struct batadv_orig_ifinfo *orig_ifinfo);
- 
- int batadv_orig_seq_print_text(struct seq_file *seq, void *offset);
-+int batadv_orig_multiif_seq_print_text(struct seq_file *seq, void *offset);
- int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
- 			    int max_if_num);
- int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
-diff --git a/types.h b/types.h
-index 25a9815..65b76fa 100644
---- a/types.h
-+++ b/types.h
-@@ -1070,7 +1070,8 @@ struct batadv_algo_ops {
- 		 struct batadv_neigh_node *neigh2,
- 		 struct batadv_hard_iface *if_outgoing2);
- 	/* orig_node handling API */
--	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq);
-+	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq,
-+			       struct batadv_hard_iface *hard_iface);
- 	void (*bat_orig_free)(struct batadv_orig_node *orig_node);
- 	int (*bat_orig_add_if)(struct batadv_orig_node *orig_node,
- 			       int max_if_num);
--- 
-1.7.10.4
+
+> +/**
+> + * batadv_neigh_node_free_ref - decrement the neighbors refcounter
+> + * and possibly free it
+> + * neigh_node: neigh neighbor to free
+> + */
+>  void batadv_neigh_node_free_ref(struct batadv_neigh_node *neigh_node)
+>  {
+>  	if (atomic_dec_and_test(&neigh_node->refcount))
+> -		kfree_rcu(neigh_node, rcu);
+> +		call_rcu(&neigh_node->rcu, batadv_neigh_node_free_rcu);
+>  }
+
+Isn't there some compat code you can remove as well ?
+
+Cheers,
+Marek
+
+--nextPart10643591.tCSQcNY1QT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJScTToAAoJEFNVTo/uthzA25cH/2jd7n726/8LH3KFJYeyFzh+
+nUWW5KaTtZplqMJHvFzsSGmDnuRc+pGe+peOyi8hW3EkGxO2SKGz1pXgDAsvD+R7
+mdyzkPdjYILIeGvxBajnTTl/vh4ZFs6AT2pnXDiEQabz0stzH1tvXCvZJcXSO6c9
+uT//Piq5yE23Yy+n59GNfSuwDSK0Gtxlly6c8ApNwkLeWtLwgc8jIZjHUqvXMgTm
+rQsMdA5v5Frnec4VqdrapLdF+YwQ/qQ506oOYAcFb4ccdoAOsSqgKVOT+ICc8+zc
+i1oMAi2o7GmjHXoILieZ0WDj0MS9JmzHRBwjcJg9ykUtbmzuETyQzeD70G+jQNc=
+=RIUt
+-----END PGP SIGNATURE-----
+
+--nextPart10643591.tCSQcNY1QT--
 
