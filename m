@@ -1,16 +1,9 @@
-Return-Path: <antonio@meshcoding.com>
-Date: Sun, 27 Oct 2013 13:49:20 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <20131027124920.GB510@neomailbox.net>
-References: <1381323938-26931-1-git-send-email-siwu@hrz.tu-chemnitz.de>
- <1381323938-26931-8-git-send-email-siwu@hrz.tu-chemnitz.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="zx4FCpZtqtKETZ7O"
-Content-Disposition: inline
-In-Reply-To: <1381323938-26931-8-git-send-email-siwu@hrz.tu-chemnitz.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 7/7] batman-adv: add debugfs support to
- view multiif tables
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 30 Oct 2013 15:01:45 +0100
+Message-Id: <1383141713-15820-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2 0/8] add network wide multi interface
+	optimization
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,48 +15,70 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Simon Wunderlich <simon@open-mesh.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+This patchset adds the network wide multi interface optimization as
+proposed in our wiki [1] for BATMAN IV. The main purpose is to do
+interface alternating and bonding by considering multi interface
+capabilities globally and not just for the (next) link, otherwise
+non-optimal links may be chosen.
 
---zx4FCpZtqtKETZ7O
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patchset needs to change a lot of core data structures and
+routing, please review it carefully. A local development branch
+exists on the public git repo [2].
 
-On Wed, Oct 09, 2013 at 03:05:38PM +0200, Simon Wunderlich wrote:
-> From: Simon Wunderlich <simon@open-mesh.com>
->=20
-> Show tables for the multi interface operation. To keep the
-> implementation simple, all tables are put into one debugfs file.
+Changes from PATCH series earlier this month (thanks Marek and Antonio
+for suggestions) are:
+ * change locking from implicit rcu locking to refcount based locking
+ * add debugfs folder for hardif (new patch 7) and use separate tables per interface
+ * split *ifinfo_get() functions into ifinfo_new() and ifinfo_get()
+ * simplify function names and change to new naming scheme
+ * review bonding locking
+ * various kerneldoc/style/comment improvements
+ * rebase on latest master
+ * ... and some more in the changelog of the individual patches
 
-Please, explicitly mention that this is also changing the routing API.
+I've tested the patchset in my VMs to confirm that bonding and alternating
+works as expected. Patches should be checkpatch and sparse clean.
 
-Cheers,
+As always, any comments are appreciated!
 
---=20
-Antonio Quartulli
+Thanks,
+	Simon
 
---zx4FCpZtqtKETZ7O
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+[1] http://www.open-mesh.org/projects/batman-adv/wiki/network-wide-multi-link-optimization
+[2] http://git.open-mesh.org/batman-adv.git/shortlog/refs/heads/simon/network-wide-multiif
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Simon Wunderlich (8):
+  batman-adv: remove bonding and interface alternating
+  batman-adv: split tq information in neigh_node struct
+  batman-adv: split out router from orig_node
+  batman-adv: add WiFi penalty
+  batman-adv: consider outgoing interface in OGM sending
+  batman-adv: add bonding again
+  batman-adv: add debugfs structure for information per interface
+  batman-adv: add debugfs support to view multiif tables
 
-iQIcBAEBCAAGBQJSbQvQAAoJEADl0hg6qKeOl9EP/2MaZwHzysFuZ396Yahbb+xC
-wg640y63/T3X9XLzSgADKpQUUQbOHVxjKHS+J5o5ZMSUvXTL2JGafel5/moBG00O
-KwFkC0Qr0krqO2vHmR28oXBoxNiZoTXj2jxdXmmmvGIUN/U8b3Q895EwDfVvIow7
-lyjWpV3AEtmZf1QTHKmKwHJXwHxanFsyFDvdq6LpYvobduKNGd85frxf1D/YBdkJ
-Z1VGglR/Xmi8iiN6LkGLerX/uk01d0AKW9wq2l72r2A37oWouPJjN65vx3JrX7C6
-NEbNmomsk3q9Z0ILB+vh98SyAZHEJgwCszLpGx9iZ5UYsLTBAeqqOnbb+/YmN1Kl
-uZNQOWWbw9dZj33RcjkRJIq0/vimn1ePZdvmnU8HJ1RsCdII4IKGPDbiu0icHcBI
-qnshOkj3GqX1o7toPrdlTKZtloanlSui1FT+BrlUCVuFb77+FveEvthh2U56fzzL
-7TjTqq1prXTf1cof/aqxL5BTmoxPimsPXrKp62CIh97SFEBtTFjYLKViUUzDCc0b
-LA6C7Z/heOhiRWRxqcj7yPJuMCnP0KNJeOwNF8nzf0eODgDfWORXOPSl8NPTeSsS
-qNbaJUxyIF/cAsau5SdmRJfGDd742CZB0g3LyafsoBWxZZbAUYo/dFJJo5m2jdth
-b3ePIepv8u6m/rekPKgM
-=OMqV
------END PGP SIGNATURE-----
+ bat_iv_ogm.c            |  855 +++++++++++++++++++++++++++++++----------------
+ debugfs.c               |   83 +++++
+ debugfs.h               |    3 +
+ distributed-arp-table.c |    3 +-
+ gateway_client.c        |   83 ++++-
+ hard-interface.c        |    9 +
+ hard-interface.h        |   18 +
+ icmp_socket.c           |    3 +-
+ main.h                  |    5 +
+ network-coding.c        |    9 +-
+ originator.c            |  501 ++++++++++++++++++++++++---
+ originator.h            |   20 +-
+ routing.c               |  426 ++++++++---------------
+ routing.h               |   12 +-
+ send.c                  |   19 +-
+ soft-interface.c        |    2 +-
+ translation-table.c     |    6 +-
+ types.h                 |  129 ++++---
+ 18 files changed, 1498 insertions(+), 688 deletions(-)
 
---zx4FCpZtqtKETZ7O--
+-- 
+1.7.10.4
+
