@@ -1,10 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 30 Oct 2013 15:01:51 +0100
-Message-Id: <1383141713-15820-7-git-send-email-sw@simonwunderlich.de>
+Date: Wed, 30 Oct 2013 15:01:52 +0100
+Message-Id: <1383141713-15820-8-git-send-email-sw@simonwunderlich.de>
 In-Reply-To: <1383141713-15820-1-git-send-email-sw@simonwunderlich.de>
 References: <1383141713-15820-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2 6/8] batman-adv: add bonding again
+Subject: [B.A.T.M.A.N.] [PATCHv2 7/8] batman-adv: add debugfs structure for
+	information per interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,210 +22,202 @@ Cc: Simon Wunderlich <simon@open-mesh.com>
 
 From: Simon Wunderlich <simon@open-mesh.com>
 
-With the new interface alternating, the first hop may send packets
-in a round robin fashion to it's neighbors because it has multiple
-valid routes built by the multi interface optimization. This patch
-enables the feature if bonding is selected. Note that unlike the
-bonding implemented before, this version is much simpler and may
-even enable multi path routing to a certain degree.
+To show information per interface, add a debugfs hardif structure
+similar to the system in sysfs. A folder "$debugfs/batman_adv/hardif"
+will be created and will contain all hard interfaces. Files are not
+yet added.
 
 Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 ---
-Changes to PATCH:
- * use new references for orig_ifinfo in the bonding code
- * fix/beautify comments
+ debugfs.c        |   66 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ debugfs.h        |    3 +++
+ hard-interface.c |    9 ++++++++
+ types.h          |    2 ++
+ 4 files changed, 80 insertions(+)
 
-Changes to RFCv2:
- * style changes (allo variables on one line
- * use new bat_neigh_is_equiv_or_better parameters
- * simplify last candidate lookup (Antonios suggestion)
- * remove last_bonding_candidate pointer when purging
----
- originator.c |    4 +++
- routing.c    |  113 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
- routing.h    |    2 +-
- types.h      |    2 ++
- 4 files changed, 117 insertions(+), 4 deletions(-)
-
-diff --git a/originator.c b/originator.c
-index 62691d0..589bfed 100644
---- a/originator.c
-+++ b/originator.c
-@@ -692,6 +692,10 @@ batadv_purge_orig_ifinfo(struct batadv_priv *bat_priv,
+diff --git a/debugfs.c b/debugfs.c
+index 049a7a2..53e13a3 100644
+--- a/debugfs.c
++++ b/debugfs.c
+@@ -34,6 +34,7 @@
+ #include "network-coding.h"
  
- 		hlist_del_rcu(&orig_ifinfo->list);
- 		batadv_orig_ifinfo_free_ref(orig_ifinfo);
-+		if (orig_node->last_bonding_candidate == orig_ifinfo) {
-+			orig_node->last_bonding_candidate = NULL;
-+			batadv_orig_ifinfo_free_ref(orig_ifinfo);
-+		}
- 	}
+ static struct dentry *batadv_debugfs;
++static struct dentry *batadv_hardif_debugfs;
  
- 	spin_unlock_bh(&orig_node->neigh_list_lock);
-diff --git a/routing.c b/routing.c
-index da6741a..c221e8c 100644
---- a/routing.c
-+++ b/routing.c
-@@ -426,16 +426,123 @@ static int batadv_check_unicast_packet(struct batadv_priv *bat_priv,
- struct batadv_neigh_node *
- batadv_find_router(struct batadv_priv *bat_priv,
- 		   struct batadv_orig_node *orig_node,
--		   const struct batadv_hard_iface *recv_if)
-+		   struct batadv_hard_iface *recv_if)
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+ #define BATADV_LOG_BUFF_MASK (batadv_log_buff_len - 1)
+@@ -371,6 +372,10 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
+ 	NULL,
+ };
+ 
++static struct batadv_debuginfo *batadv_hardif_debuginfos[] = {
++	NULL,
++};
++
+ void batadv_debugfs_init(void)
  {
--	struct batadv_neigh_node *router;
-+	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
-+	struct batadv_neigh_node *first_candidate_router = NULL;
-+	struct batadv_neigh_node *next_candidate_router;
-+	struct batadv_neigh_node *router, *cand_router = NULL;
-+	struct batadv_orig_ifinfo *cand, *first_candidate = NULL;
-+	struct batadv_orig_ifinfo *next_candidate = NULL;
-+	bool last_candidate_found = false;
+ 	struct batadv_debuginfo **bat_debug;
+@@ -383,6 +388,11 @@ void batadv_debugfs_init(void)
+ 	if (!batadv_debugfs)
+ 		goto err;
  
- 	if (!orig_node)
- 		return NULL;
- 
- 	router = batadv_orig_router_get(orig_node, recv_if);
- 
--	/* TODO: fill this later with new bonding mechanism */
-+	/* only consider bonding for recv_if == BATADV_IF_DEFAULT (first hop)
-+	 * and if activated.
-+	 */
-+	if (recv_if == BATADV_IF_DEFAULT || !atomic_read(&bat_priv->bonding) ||
-+	    !router)
-+		return router;
++	batadv_hardif_debugfs = debugfs_create_dir(BATADV_DEBUGFS_HARDIF_SUBDIR,
++						   batadv_debugfs);
++	if (batadv_hardif_debugfs == ERR_PTR(-ENODEV))
++		goto err;
 +
-+	/* bonding: loop through the list of possible routers found
-+	 * for the various outgoing interfaces and find a candidate after
-+	 * the last chosen bonding candidate (next_candidate). If no such
-+	 * router is found, use the first candidate found (the previously
-+	 * chosen bonding candidate might have been the last one in the list).
-+	 * If this can't be found either, return the previously choosen
-+	 * router - obviously there are no other candidates.
-+	 */
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(cand, &orig_node->ifinfo_list, list) {
-+		/* acquire some structures and references ... */
-+		if (!atomic_inc_not_zero(&cand->refcount))
-+			continue;
-+
-+		cand_router = rcu_dereference(cand->router);
-+		if (!cand_router)
-+			goto next;
-+
-+		if (!atomic_inc_not_zero(&cand_router->refcount)) {
-+			cand_router = NULL;
-+			goto next;
-+		}
-+
-+		/* alternative candidate should be good enough to be
-+		 * considered
-+		 */
-+		if (!bao->bat_neigh_is_equiv_or_better(cand_router,
-+						       cand->if_outgoing,
-+						       router, recv_if))
-+			goto next;
-+
-+		/* don't use the same router twice */
-+		if (orig_node->last_bonding_candidate &&
-+		    (orig_node->last_bonding_candidate->router == cand_router))
-+				goto next;
-+
-+		/* mark the first possible candidate */
-+		if (!first_candidate) {
-+			atomic_inc(&cand_router->refcount);
-+			atomic_inc(&cand->refcount);
-+			first_candidate = cand;
-+			first_candidate_router = cand_router;
-+		}
-+
-+		/* check if the loop has already passed the previously selected
-+		 * candidate ... this function should select the next candidate
-+		 * AFTER the previously used bonding candidate.
-+		 */
-+		if (!orig_node->last_bonding_candidate ||
-+		    last_candidate_found) {
-+			next_candidate = cand;
-+			next_candidate_router = cand_router;
-+			break;
-+		}
-+
-+		if (orig_node->last_bonding_candidate == cand)
-+			last_candidate_found = true;
-+next:
-+		/* free references */
-+		if (cand_router) {
-+			batadv_neigh_node_free_ref(cand_router);
-+			cand_router = NULL;
-+		}
-+		batadv_orig_ifinfo_free_ref(cand);
-+	}
-+	rcu_read_unlock();
-+
-+	/* last_bonding_candidate is reset below, remove the old reference. */
-+	if (orig_node->last_bonding_candidate)
-+		batadv_orig_ifinfo_free_ref(orig_node->last_bonding_candidate);
-+
-+	/* After finding candidates, handle the three cases:
-+	 * 1) there is a next candidate, use that
-+	 * 2) there is no next candidate, use the first of the list
-+	 * 3) there is no candidate at all, return the default router
-+	 */
-+	if (next_candidate) {
-+		batadv_neigh_node_free_ref(router);
-+
-+		/* remove references to first candidate, we don't need it. */
-+		if (first_candidate) {
-+			batadv_neigh_node_free_ref(first_candidate_router);
-+			batadv_orig_ifinfo_free_ref(first_candidate);
-+		}
-+		router = next_candidate_router;
-+		orig_node->last_bonding_candidate = next_candidate;
-+	} else if (first_candidate) {
-+		batadv_neigh_node_free_ref(router);
-+
-+		/* refcounting has already been done in the loop above. */
-+		router = first_candidate_router;
-+		orig_node->last_bonding_candidate = first_candidate;
-+	} else {
-+		orig_node->last_bonding_candidate = NULL;
-+	}
- 
- 	return router;
+ 	for (bat_debug = batadv_general_debuginfos; *bat_debug; ++bat_debug) {
+ 		file = debugfs_create_file(((*bat_debug)->attr).name,
+ 					   S_IFREG | ((*bat_debug)->attr).mode,
+@@ -398,12 +408,68 @@ void batadv_debugfs_init(void)
+ 	return;
+ err:
+ 	debugfs_remove_recursive(batadv_debugfs);
++	batadv_debugfs = NULL;
++	batadv_hardif_debugfs = NULL;
  }
-diff --git a/routing.h b/routing.h
-index 7a7c6e9..2c80b6a 100644
---- a/routing.h
-+++ b/routing.h
-@@ -46,7 +46,7 @@ int batadv_recv_unhandled_unicast_packet(struct sk_buff *skb,
- struct batadv_neigh_node *
- batadv_find_router(struct batadv_priv *bat_priv,
- 		   struct batadv_orig_node *orig_node,
--		   const struct batadv_hard_iface *recv_if);
-+		   struct batadv_hard_iface *recv_if);
- int batadv_window_protected(struct batadv_priv *bat_priv, int32_t seq_num_diff,
- 			    unsigned long *last_reset);
  
+ void batadv_debugfs_destroy(void)
+ {
+ 	debugfs_remove_recursive(batadv_debugfs);
+ 	batadv_debugfs = NULL;
++	batadv_hardif_debugfs = NULL;
++}
++
++/**
++ * batadv_debugfs_add_hardif - creates the base directory for a hard interface
++ *  in debugfs.
++ * @hard_iface: hard interface which should be added.
++ */
++int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface)
++{
++	struct batadv_debuginfo **bat_debug;
++	struct dentry *file;
++
++	if (!batadv_debugfs)
++		goto out;
++
++	hard_iface->debug_dir = debugfs_create_dir(hard_iface->net_dev->name,
++						   batadv_hardif_debugfs);
++	if (!hard_iface->debug_dir)
++		goto out;
++
++	for (bat_debug = batadv_hardif_debuginfos; *bat_debug; ++bat_debug) {
++		file = debugfs_create_file(((*bat_debug)->attr).name,
++					   S_IFREG | ((*bat_debug)->attr).mode,
++					   hard_iface->debug_dir,
++					   hard_iface->net_dev,
++					   &(*bat_debug)->fops);
++		if (!file)
++			goto rem_attr;
++	}
++
++	return 0;
++rem_attr:
++	debugfs_remove_recursive(hard_iface->debug_dir);
++	hard_iface->debug_dir = NULL;
++out:
++#ifdef CONFIG_DEBUG_FS
++	return -ENOMEM;
++#else
++	return 0;
++#endif /* CONFIG_DEBUG_FS */
++}
++
++/**
++ * batadv_debugfs_del_hardif - delete the base directory for a hard interface
++ *  in debugfs.
++ * @hard_iface: hard interface which is deleted.
++ */
++void batadv_debugfs_del_hardif(struct batadv_hard_iface *hard_iface)
++{
++	if (batadv_hardif_debugfs) {
++		debugfs_remove_recursive(hard_iface->debug_dir);
++		hard_iface->debug_dir = NULL;
++	}
+ }
+ 
+ int batadv_debugfs_add_meshif(struct net_device *dev)
+diff --git a/debugfs.h b/debugfs.h
+index f8c3849..5228d63 100644
+--- a/debugfs.h
++++ b/debugfs.h
+@@ -21,10 +21,13 @@
+ #define _NET_BATMAN_ADV_DEBUGFS_H_
+ 
+ #define BATADV_DEBUGFS_SUBDIR "batman_adv"
++#define BATADV_DEBUGFS_HARDIF_SUBDIR "hardif"
+ 
+ void batadv_debugfs_init(void);
+ void batadv_debugfs_destroy(void);
+ int batadv_debugfs_add_meshif(struct net_device *dev);
+ void batadv_debugfs_del_meshif(struct net_device *dev);
++int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface);
++void batadv_debugfs_del_hardif(struct batadv_hard_iface *hard_iface);
+ 
+ #endif /* _NET_BATMAN_ADV_DEBUGFS_H_ */
+diff --git a/hard-interface.c b/hard-interface.c
+index 57c2a19..ded7043 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -25,6 +25,7 @@
+ #include "translation-table.h"
+ #include "routing.h"
+ #include "sysfs.h"
++#include "debugfs.h"
+ #include "originator.h"
+ #include "hash.h"
+ #include "bridge_loop_avoidance.h"
+@@ -541,6 +542,7 @@ static void batadv_hardif_remove_interface_finish(struct work_struct *work)
+ 	hard_iface = container_of(work, struct batadv_hard_iface,
+ 				  cleanup_work);
+ 
++	batadv_debugfs_del_hardif(hard_iface);
+ 	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
+ 	batadv_hardif_free_ref(hard_iface);
+ }
+@@ -571,6 +573,11 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 	hard_iface->net_dev = net_dev;
+ 	hard_iface->soft_iface = NULL;
+ 	hard_iface->if_status = BATADV_IF_NOT_IN_USE;
++
++	ret = batadv_debugfs_add_hardif(hard_iface);
++	if (ret)
++		goto free_sysfs;
++
+ 	INIT_LIST_HEAD(&hard_iface->list);
+ 	INIT_WORK(&hard_iface->cleanup_work,
+ 		  batadv_hardif_remove_interface_finish);
+@@ -587,6 +594,8 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 
+ 	return hard_iface;
+ 
++free_sysfs:
++	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
+ free_if:
+ 	kfree(hard_iface);
+ release_dev:
 diff --git a/types.h b/types.h
-index be3a4fd..2793b64 100644
+index 2793b64..25a9815 100644
 --- a/types.h
 +++ b/types.h
-@@ -187,6 +187,7 @@ struct batadv_orig_bat_iv {
-  * @orig: originator ethernet address
-  * @primary_addr: hosts primary interface address
-  * @ifinfo_list: list for routers per outgoing interface
-+ * @last_bonding_candidate: pointer to last ifinfo of last used router
-  * @batadv_dat_addr_t:  address of the orig node in the distributed hash
-  * @last_seen: time when last packet from this node was received
-  * @bcast_seqno_reset: time when the broadcast seqno window was reset
-@@ -227,6 +228,7 @@ struct batadv_orig_node {
- 	uint8_t orig[ETH_ALEN];
- 	uint8_t primary_addr[ETH_ALEN];
- 	struct hlist_head ifinfo_list;
-+	struct batadv_orig_ifinfo *last_bonding_candidate;
- #ifdef CONFIG_BATMAN_ADV_DAT
- 	batadv_dat_addr_t dat_addr;
- #endif
+@@ -74,6 +74,7 @@ struct batadv_hard_iface_bat_iv {
+  * @rcu: struct used for freeing in an RCU-safe manner
+  * @bat_iv: BATMAN IV specific per hard interface data
+  * @cleanup_work: work queue callback item for hard interface deinit
++ * @debug_dir: dentry for nc subdir in batman-adv directory in debugfs
+  */
+ struct batadv_hard_iface {
+ 	struct list_head list;
+@@ -88,6 +89,7 @@ struct batadv_hard_iface {
+ 	struct rcu_head rcu;
+ 	struct batadv_hard_iface_bat_iv bat_iv;
+ 	struct work_struct cleanup_work;
++	struct dentry *debug_dir;
+ };
+ 
+ /* struct batadv_orig_ifinfo - originator info per outgoing interface
 -- 
 1.7.10.4
 
