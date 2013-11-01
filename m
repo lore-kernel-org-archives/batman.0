@@ -1,11 +1,15 @@
-Return-Path: <bittorf@bluebottle.com>
-Date: Fri, 1 Nov 2013 08:55:58 +0100
-From: Bastian Bittorf <bittorf@bluebottle.com>
-Message-ID: <20131101075558.GI6252@medion.lan>
+Return-Path: <antonio@meshcoding.com>
+Date: Fri, 1 Nov 2013 13:36:10 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
+Message-ID: <20131101123610.GR970@neomailbox.net>
+References: <20131101075558.GI6252@medion.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="1Sa0i77dkqaUxqYg"
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] lost connection to a client / Q: transglobal-table
+In-Reply-To: <20131101075558.GI6252@medion.lan>
+Subject: Re: [B.A.T.M.A.N.] lost connection to a client / Q:
+	transglobal-table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,46 +23,79 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-in my small office-network we have _often_ the situation,
-that my laptop 8-) has no internet. if this happens, i can
-connect via ssh hop by hop and can see, that the network
-itself (wireless/wired) is working, but the 'routes' are wrong.
 
-here the transglobal-table in the master, my laptop is '00:21:6a:32:7c:1c'
+--1Sa0i77dkqaUxqYg
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-root@EG-labor-AP:~ batctl tg
-Globally announced TT entries received via the mesh bat0
-       Client        (TTVN)       Originator      (Curr TTVN) (CRC   )
-Flags
- * 02:00:c0:ca:c0:1a  (  8) via 02:00:ca:b1:00:15     (  8)   (0xe285) [...]
- * 06:2f:65:8a:d2:b7  (  1) via 02:00:ca:b1:00:02     (  1)   (0x50f6) [...]
- * 46:0a:75:3c:f2:47  (  1) via 02:00:ca:b1:00:15     (  8)   (0xe285) [...]
- * 5e:27:29:d8:ee:b4  (  1) via 02:00:ca:b1:00:76     (  1)   (0xc9fc) [...]
- * 72:f7:18:80:9d:9d  ( 86) via 02:00:de:ad:00:03     ( 86)   (0x7651) [...]
- * ae:d9:0f:ef:01:c3  (  1) via 02:00:ca:b1:02:22     (  5)   (0x6456) [...]
- * 56:fb:55:27:b2:63  (  1) via 02:00:ca:b1:00:58     (  5)   (0xac7c) [...]
- * 46:13:bf:2a:53:1e  (  1) via 02:00:ca:b1:00:13     (  5)   (0x8133) [...]
- * 0a:c6:fd:60:5d:5f  (  1) via 02:00:de:ad:02:23     (  1)   (0xa1c1) [...]
-### interesting part:
- * 00:21:6a:32:7c:1c  (  4) via 02:00:ca:b1:02:22     (  5)   (0x6456) [.W.]
- + 00:21:6a:32:7c:1c  (  5) via 02:00:ca:b1:00:13     (  5)   [.W.]
-###
- * e6:ad:ca:24:f6:10  (  1) via 02:00:ca:b1:00:45     (  3)   (0x6182) [...]
+Hello Bastian,
 
-root@EG-labor-AP:~ batctl -v
-batctl 2013.4.0 [batman-adv: 2013.4.0]
+On Fri, Nov 01, 2013 at 08:55:58AM +0100, Bastian Bittorf wrote:
+> in my small office-network we have _often_ the situation,
+> that my laptop 8-) has no internet. if this happens, i can
+> connect via ssh hop by hop and can see, that the network
+> itself (wireless/wired) is working, but the 'routes' are wrong.
+>=20
+> here the transglobal-table in the master, my laptop is '00:21:6a:32:7c:1c'
 
-root@EG-labor-AP:~ cat /etc/openwrt_version 
-r38568
+what is master?
 
-the interesting thing is, that my laptop seems to be reachable via
-*:02:22 and *:00:13 - the 2nd entry has no hash (?), but 'batctl t 00:21:6a:32:7c:1c'
-outputs *:00:13 as originator. from the topology, it is impossible to be
-near this node, so no roaming can happen AND i can see on my laptop,
-that there was no roaming. the situation recovers without interaction after some
-minutes. the transglobal table does not change, but 'batctl t 00:21:6a:32:7c:1c' 
-outputs the correct *:02:22
+[..]
 
-what can i do for more debugging or is this bug already solved in trunk?
+> the interesting thing is, that my laptop seems to be reachable via
+> *:02:22 and *:00:13 - the 2nd entry has no hash (?), but 'batctl t 00:21:=
+6a:32:7c:1c'
+> outputs *:00:13 as originator. from the topology, it is impossible to be
+> near this node, so no roaming can happen AND i can see on my laptop,
+> that there was no roaming. the situation recovers without interaction aft=
+er some
+> minutes. the transglobal table does not change, but 'batctl t 00:21:6a:32=
+:7c:1c'=20
+> outputs the correct *:02:22
+>=20
 
-bye, bastian
+Here[1] you have an explanation about the translation table output.
+
+My guess is that you have more than one node connected to the same LAN and =
+BLA2
+is properly enabled but some kind of L3 tricks on top of batman-adv is crea=
+ting
+confusion in the network. I'd suggest to read (if you have not done it yet)=
+ [2].
+
+
+[1] http://www.open-mesh.org/projects/batman-adv/wiki/Understand-your-batma=
+n-adv-network#translation-tables
+[2] http://www.open-mesh.org/projects/batman-adv/wiki/Bridge-loop-avoidance=
+-II
+
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+--1Sa0i77dkqaUxqYg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSc6A6AAoJEADl0hg6qKeOYw8P/AjYYkF24naTgvoW/tnntUyx
+DSsh4VLptIIXGJUg9Hmo1L8527zorDA4BPwOpjuQiqKLSsebelA3alR3RjqM1Ydv
+Z2Oyr3CKyUZPJEduexE+NEK4N2B+xH6hjxoFwItNqw5ap2Q3UYu7k7fCGanUDrnR
+3cTy0i0EGgKB4z3j/svsbNsocN5ZvcdMLJ8SwPYo0L9fiiSBuFbw6+Xewr0mylQU
+H31n6mGrpjFqy0DE5N7ez5yhRxMOSjvScAHwWj5ncTd/SwXfWP1GW5MBBGxy7OBr
+0jDt1zFeStAbb7uuu4ZoUgwO4paTjFaqQgjvudXI5jUuoWX3MwWscgKFCFnivEJZ
+ACTiMjgK0manZkBBJlDQjVz/2Gf+eHiRjAr4vRlp2uvgPATm3BRCgU1L30OAy1N6
+RlqiT1oXQ5TRJ5/rdqORVdC2oiJcI6zIbJ090ShSxfO9goQsXLnbi54uysNe66eO
+cFVtjLaKyB0s6ULtUVC1RflVZRsooqc9hshgREMPOnPvm6hw1CQsG8xPudANcB/s
+/e2mvDHli0On6WIdLc2T8/6nJwFV402fkBpp+qjsM4qLGna8vuZr94tA/xfZJ2Ru
+QSuq0Bs71ZFrrtWUGBwQ3K3w3aJHnS/8dQSypjjkpelQRp1BYpS46SXRWdaI0fr0
+Qn35e5cPTzkr3YMoqKSU
+=IZL4
+-----END PGP SIGNATURE-----
+
+--1Sa0i77dkqaUxqYg--
