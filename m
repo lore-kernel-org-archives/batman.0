@@ -1,16 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
-Date: Mon, 4 Nov 2013 15:11:58 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <20131104141158.GH970@neomailbox.net>
-References: <1382875379-2921-1-git-send-email-antonio@meshcoding.com>
- <1382875379-2921-2-git-send-email-antonio@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="r21wuLfwIlf/vvzy"
-Content-Disposition: inline
-In-Reply-To: <1382875379-2921-2-git-send-email-antonio@meshcoding.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: rename gw_deselect()
- to gw_reselect()
+Date: Mon,  4 Nov 2013 20:59:40 +0100
+Message-Id: <1383595181-2061-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: deselect current GW on
+	client mode switch off
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,62 +18,66 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@open-mesh.com>
 
+From: Antonio Quartulli <antonio@open-mesh.com>
 
---r21wuLfwIlf/vvzy
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+When switching from gw_mode client to either off or server
+the current selected gateway has to be deselected.
+In this way when client mode is enabled again a gateway
+re-election is forced and a GW_ADD event is consequently
+sent.
 
-On Sun, Oct 27, 2013 at 01:02:59PM +0100, Antonio Quartulli wrote:
-> From: Antonio Quartulli <antonio@open-mesh.com>
->=20
-> The function batadv_gw_deselect() is actually not deselecting
-> anything. It is just informing the GW code to perform a
-> re-election procedure when possible.
-> The current gateway is not being touched at all and therefore
-> the name of this function is rather misleading.
->=20
-> Rename it to batadv_gw_reselect() to batadv_gw_reselect()
-> to make its behaviour easier to grasp.
->=20
-> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-> ---
->  gateway_client.c | 35 +++++++++++++++++++++++------------
->  gateway_common.c |  2 +-
->  sysfs.c          | 10 +++++-----
+The current behaviour instead is to keep the current gateway
+leading to no GW_ADD event when gw_mode client is selected
+for a second time
 
-The declaration of this function is in gw_client.h but I forgot to change i=
-t.
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
 
-v2 will follow.
-
+Patch 2/2:
+- rename gw_deselect to gw_reselect in gw_client.h
 
 Cheers,
 
 
---=20
-Antonio Quartulli
+ gateway_client.c | 4 ++++
+ sysfs.c          | 9 +++++++++
+ 2 files changed, 13 insertions(+)
 
---r21wuLfwIlf/vvzy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+diff --git a/gateway_client.c b/gateway_client.c
+index 2449afa..2903bdb 100644
+--- a/gateway_client.c
++++ b/gateway_client.c
+@@ -207,6 +207,10 @@ void batadv_gw_check_client_stop(struct batadv_priv *bat_priv)
+ 	if (!curr_gw)
+ 		return;
+ 
++	/* deselect the current gateway so that next time that client mode is
++	 * enabled a proper GW_ADD event can be sent */
++	batadv_gw_select(bat_priv, NULL);
++
+ 	/* if batman-adv is switching the gw client mode off and a gateway was
+ 	 * already selected, send a DEL uevent
+ 	 */
+diff --git a/sysfs.c b/sysfs.c
+index 6335433..d1765fd 100644
+--- a/sysfs.c
++++ b/sysfs.c
+@@ -408,6 +408,15 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
+ 	batadv_info(net_dev, "Changing gw mode from: %s to: %s\n",
+ 		    curr_gw_mode_str, buff);
+ 
++	/* invoking batadv_gw_deselect() is not enough to really de-select the
++	 * current GW. It will only instruct the gateway code to perform a
++	 * re-election the next time that this is needed.
++	 *
++	 * When gw client mode is being switched off the current GW must be
++	 * de-selected explicitly otherwise no GW_ADD uevent is thrown on
++	 * client mode reactivation. This is operation is performed in
++	 * batadv_gw_check_client_stop().
++	 */
+ 	batadv_gw_deselect(bat_priv);
+ 	/* always call batadv_gw_check_client_stop() before changing the gateway
+ 	 * state
+-- 
+1.8.4.2
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSd6suAAoJEADl0hg6qKeOYagP/0HLCwyRejEVPiUPL0/eLeix
-+WPqanvqfGD1os+Bptia9gMQpWtqHEyMazNWw+1ucgDjk3pKjrJ3rWy1Yy/qT2xT
-fRCvQFcW3kmYMHcf9hdGGCTdXFZ/55D/8SIPCjS3oCcWBV9Tp8vAkiu0KNRNuf4m
-sKXhVEihoyPPT4kBOTBPMw1d5SAduXppwSuw1fLubi+HF8RuF7LhHuFiv+tUpkHL
-aJmUbJiCWSa9iePXxxCkgrgYdl80szYp0lbNT//6MdT5euHDrHYmdUWmhkmB+nv4
-DFsJ0yeRVIBhZAgWj385/181Fk2Ityi1HjSdDZJdxsyQX/wlMW/RO2TPUyUR2B1p
-Y+ElRtY5P7EFmF6H3pQPbUzRT30hwpYsmlpZLjuEwiCnK+NGBuBWRC6vbxoMr8c6
-wWytKDIzOlbXCDYNLrAtjejeX4u3bR+cy/YLdbpe1dP162vycUn0bCeSl2KKfNRu
-2zwcckAPEUgChe+jIuUgj6EAwEbbwQrFzSacyJ2ZmzLIlf7RFBFQrnWvAM/Oxd3O
-Cp3fbsX0jCAHYCBBwTbg+wD8pqwPawOFwveaHA3GbhXToP3vVuXaqePYIObYyIpk
-rt3fOsnaelSqVC4j6Q/ZZcNRGQQfNNgnycuzkWuWEKc9AJlpBuWsefutNhbZ3yHP
-XOkKn537KDIGuWGvJ61B
-=iMkW
------END PGP SIGNATURE-----
-
---r21wuLfwIlf/vvzy--
