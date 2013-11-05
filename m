@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 05 Nov 2013 15:52:11 +0800
-Message-ID: <1707741.pOqQd3Qijv@diderot>
-In-Reply-To: <1383595181-2061-1-git-send-email-antonio@meshcoding.com>
+Date: Tue, 05 Nov 2013 15:59:42 +0800
+Message-ID: <4121725.uIErerH5vU@diderot>
+In-Reply-To: <1383595181-2061-2-git-send-email-antonio@meshcoding.com>
 References: <1383595181-2061-1-git-send-email-antonio@meshcoding.com>
+ <1383595181-2061-2-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1561904.WUcPJk9oH3";
+Content-Type: multipart/signed; boundary="nextPart4678207.0HPuzmDds0";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: deselect current GW on
-	client mode switch off
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: rename gw_deselect()
+	to gw_reselect()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,45 +21,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@open-mesh.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart1561904.WUcPJk9oH3
+--nextPart4678207.0HPuzmDds0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday 04 November 2013 20:59:40 Antonio Quartulli wrote:
+On Monday 04 November 2013 20:59:41 Antonio Quartulli wrote:
 > From: Antonio Quartulli <antonio@open-mesh.com>
 > 
-> When switching from gw_mode client to either off or server
-> the current selected gateway has to be deselected.
-> In this way when client mode is enabled again a gateway
-> re-election is forced and a GW_ADD event is consequently
-> sent.
+> The function batadv_gw_deselect() is actually not deselecting
+> anything. It is just informing the GW code to perform a
+> re-election procedure when possible.
+> The current gateway is not being touched at all and therefore
+> the name of this function is rather misleading.
 > 
-> The current behaviour instead is to keep the current gateway
-> leading to no GW_ADD event when gw_mode client is selected
-> for a second time
+> Rename it to batadv_gw_reselect() to batadv_gw_reselect()
+> to make its behaviour easier to grasp.
 > 
 > Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 > ---
-> 
-> Patch 2/2:
-> - rename gw_deselect to gw_reselect in gw_client.h
-> 
-> Cheers,
-> 
-> 
->  gateway_client.c | 4 ++++
->  sysfs.c          | 9 +++++++++
->  2 files changed, 13 insertions(+)
+>  gateway_client.c | 35 +++++++++++++++++++++++------------
+>  gateway_client.h |  2 +-
+>  gateway_common.c |  2 +-
+>  sysfs.c          | 10 +++++-----
+>  4 files changed, 30 insertions(+), 19 deletions(-)
 
-Applied in revision 99a6eb5.
+Applied in revision 65afe85.
 
 Thanks,
 Marek
 
---nextPart1561904.WUcPJk9oH3
+--nextPart4678207.0HPuzmDds0
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -66,14 +62,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSeKOrAAoJEFNVTo/uthzAymEIAJB4yf4FftJUIB2H00c8Zk/d
-kGR61q3G55Tv+M5GIHvQ+YHVXckd8gEMquut9f43/DbjhBip9DghgGQFEK8NulTe
-fqNU6y/8ynu3CIaSkZRLXQhd4lzx8P2dQaRUNgnU/tBNBsVQ6kFvROGq+WtFJbxo
-QVPgbhCnVzm0pnFja70pRh4ZczUsqdmwcPXoNNrBe4YCBzfyHTlzt27/uVhjMt/B
-xikE8Iv40AaCf+VDzKGHzcnbog5NTGFn/0MminfNmFfGxfqhHH6adGpQAsxiRCuO
-XRkMtEDKRW1UwUQ2MBpPGmcFSPQAezZnI8KwdrdP6KA7huPCeP37uogxOD3Mlj8=
-=mJp4
+iQEcBAABAgAGBQJSeKVuAAoJEFNVTo/uthzArAQH/R1q/INi6zfjgrMG6gYSTGyD
+CszjkuS9KiObmoIJKCqSSJGgAOrzg+RtEp7yZIHu+ru6J/6khagL+rIWFiDJk93z
+KnDMFzqthsxWvqOB/zXuKhvLcjRa5tl9fhpJkBiR+VL1Wbb81OTk05IrvwMdNRrI
+rh0nItU+XIl9rblwCmQ8QzjWepFU8grywWSaKy5OlOTC9tfHdFlfsGFPPf11oavD
+o9cog5SaNYu8TbBx6J7Hi4Dejj7zOPrTl7PEA1vNo+dpCqo19qG1mVqMTBozZtQS
+M5XitQQ/Ui675B9JqQYuFoSlNif3BnJiNWvsVw6Y0rMRtMJFvaao5N8g6H2lf+k=
+=Kwdz
 -----END PGP SIGNATURE-----
 
---nextPart1561904.WUcPJk9oH3--
+--nextPart4678207.0HPuzmDds0--
 
