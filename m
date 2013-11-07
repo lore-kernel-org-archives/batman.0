@@ -1,9 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu,  7 Nov 2013 08:24:51 +0100
-Message-Id: <1383809091-3887-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: use static string for table
-	headers
+Return-Path: <clemens-john@gmx.de>
+From: Clemens John <clemens-john@gmx.de>
+Date: Fri, 08 Nov 2013 00:25:32 +0100
+Message-ID: <4645807.Ug7HQD34Gu@flohlap>
+In-Reply-To: <201311041128.20618.sw@simonwunderlich.de>
+References: <2578313.zUW7Pc5dQb@flohlap>
+ <201311041128.20618.sw@simonwunderlich.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1509439.jf5Y1I195u";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Bad link quality if routers are connected by 2
+	interfaces
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,106 +22,90 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Use a static string when showing table headers rather then
-a nonsense parametric one with fixed arguments.
 
-It is easier to grep and it does not need to be recomputed
-at runtime each time.
+--nextPart1509439.jf5Y1I195u
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-Reported-by: Joe Perches <joe@perches.com>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- bat_iv_ogm.c            | 5 ++---
- bridge_loop_avoidance.c | 7 +++----
- distributed-arp-table.c | 4 ++--
- translation-table.c     | 9 ++++-----
- 4 files changed, 11 insertions(+), 14 deletions(-)
+Am Montag, 4. November 2013, 11:28:20 schrieben Sie:
+> this is certainly not the expected behaviour. Are you building a brid=
+ge loop
+> by any chance? Please explain your configuration (batctl if, brctl sh=
+ow,
+> ...) and check if you have a high amount of broadcasts somehow.
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 409cb16..553f8e4 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -1546,9 +1546,8 @@ static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
- 	int batman_count = 0;
- 	uint32_t i;
- 
--	seq_printf(seq, "  %-15s %s (%s/%i) %17s [%10s]: %20s ...\n",
--		   "Originator", "last-seen", "#", BATADV_TQ_MAX_VALUE,
--		   "Nexthop", "outgoingIF", "Potential nexthops");
-+	seq_puts(seq,
-+		 "  Originator      last-seen (#/" __stringify(BATADV_TQ_MAX_VALUE) ")           Nexthop [outgoingIF]:   Potential nexthops ...\n");
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 4382127..0c83809 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -1613,8 +1613,8 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
- 		   "Claims announced for the mesh %s (orig %pM, group id %#.4x)\n",
- 		   net_dev->name, primary_addr,
- 		   ntohs(bat_priv->bla.claim_dest.group));
--	seq_printf(seq, "   %-17s    %-5s    %-17s [o] (%-6s)\n",
--		   "Client", "VID", "Originator", "CRC");
-+	seq_puts(seq,
-+		 "   Client               VID      Originator        [o] (CRC   )\n");
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
- 
-@@ -1658,8 +1658,7 @@ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
- 		   "Backbones announced for the mesh %s (orig %pM, group id %#.4x)\n",
- 		   net_dev->name, primary_addr,
- 		   ntohs(bat_priv->bla.claim_dest.group));
--	seq_printf(seq, "   %-17s    %-5s %-9s (%-6s)\n",
--		   "Originator", "VID", "last seen", "CRC");
-+	seq_puts(seq, "   Originator           VID   last seen (CRC   )\n");
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
- 
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index ed4b97a..4ba2d7d 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -756,8 +756,8 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
- 		goto out;
- 
- 	seq_printf(seq, "Distributed ARP Table (%s):\n", net_dev->name);
--	seq_printf(seq, "          %-7s          %-9s %4s %11s\n", "IPv4",
--		   "MAC", "VID", "last-seen");
-+	seq_puts(seq,
-+		 "          IPv4             MAC        VID   last-seen\n");
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-diff --git a/translation-table.c b/translation-table.c
-index 5957bad..6abb240 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -869,8 +869,8 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq,
- 		   "Locally retrieved addresses (from %s) announced via TT (TTVN: %u):\n",
- 		   net_dev->name, (uint8_t)atomic_read(&bat_priv->tt.vn));
--	seq_printf(seq, "       %-13s  %s %-7s %-9s (%-10s)\n", "Client", "VID",
--		   "Flags", "Last seen", "CRC");
-+	seq_puts(seq,
-+		 "       Client         VID Flags    Last seen (CRC       )\n");
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -1503,9 +1503,8 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq,
- 		   "Globally announced TT entries received via the mesh %s\n",
- 		   net_dev->name);
--	seq_printf(seq, "       %-13s  %s  %s       %-15s %s (%-10s) %s\n",
--		   "Client", "VID", "(TTVN)", "Originator", "(Curr TTVN)",
--		   "CRC", "Flags");
-+	seq_puts(seq,
-+		 "       Client         VID  (TTVN)       Originator      (Curr TTVN) (CRC       ) Flags\n");
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
--- 
-1.8.4.2
+Sorry for my late answer. I was busy during the week and didnt find the=
+ time to=20
+look into out setup in detail till now.
+
+We have two wireless interfaces wlan0 and wlan0-1. We also have two eth=
+ernet=20
+interfaces eth0.1 and eth0.3 and one VPN interface ffolVPN.
+
+The interfaces wlan0 and eth0.1 are the interfaces used for clients. Th=
+ey are=20
+bridged together with bat0:
+root@RosenplatzVPN:~# brctl show
+bridge name   bridge id                     STP enabled     interfaces
+br-mesh          8000.a0f3c15b54a6   no                    bat0
+                                                                       =
+          eth0.1
+                                                                       =
+          wlan0
+
+The interfaces wlan0-1 and eth0.3 are the interfaces we use for meshing=
+ with=20
+other routers in the same "mesh cloud". These are the interfaces both r=
+outers=20
+are connected by each other. The vpn interface ffolVPN is used to conne=
+ct with=20
+outher "mesh clouds" but the two routers in this case are not connected=
+ by=20
+this interface. On the interfaces wlan0-1, eth0.3 and ffolVPN runs Batm=
+an=20
+advanced:
+root@RosenplatzVPN:~# batctl if
+eth0.3: active
+wlan0-1: active
+ffolVPN: active
+
+To analyze the amount of broadcast traffic I did a tcpdump on the Batma=
+n=20
+interfaces wlan0-1 and eth0.3. For me there seems to be a big amount of=
+=20
+broadcast traffic, but I don=B4t know the normal level of brodcasts so =
+I can=B4t=20
+compare which amount is right and which is wrong. But maybe you can so =
+I=20
+uploaded the files for you. You can analyze them using wireshark or som=
+e other=20
+tool:
+* https://dev.freifunk-ol.de/tcpdumps/eth0.3.dump
+* https://dev.freifunk-ol.de/tcpdumps/wlan0-1.dump
+
+If you need more data just ask and I will try to provide it.
+
+Kind regards
+Clemens
+--=20
+#Clemens John <clemens-john@gmx.de>
+#GnuPG:
+Identifier: 0xD92F6BA5
+Fingerprint: 1D6D 3EC6 C80F C1D4 CE1F 1133 6607 476C 0DB6 96A3
+   Always encrypt your messages
+--nextPart1509439.jf5Y1I195u
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iEYEABECAAYFAlJ8IXEACgkQZgdHbA22lqPigwCdFqDHjQZattOPprOHDeLpy2eT
+3CkAn3Mqd9jU3FFmaw9/kK0Ox/wtNk+2
+=LcZz
+-----END PGP SIGNATURE-----
+
+--nextPart1509439.jf5Y1I195u--
 
