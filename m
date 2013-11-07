@@ -1,11 +1,9 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Wed,  6 Nov 2013 14:15:11 +0100
-Message-Id: <1383743711-10143-1-git-send-email-linus.luessing@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: add missing multicast.h include
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Thu,  7 Nov 2013 08:02:07 +0100
+Message-Id: <1383807727-662-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: remove parenthesis from
+	return statements
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,32 +16,71 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Not having it doesn't seem to break anything, but looks like it's
-recommended C practice.
+Remove parenthesis around return expression as suggested by
+checkpatch.
 
-Introduced by: a3f58139efedb96222dffdda89896c243fdff49e
-("batman-adv: Multicast Listener Announcements via Translation Table")
-
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
-Added "Introduced by" clause
+ distributed-arp-table.c | 2 +-
+ main.h                  | 2 +-
+ originator.c            | 2 +-
+ translation-table.c     | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
- multicast.c |    1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/multicast.c b/multicast.c
-index 4a978a6..cb1984d 100644
---- a/multicast.c
-+++ b/multicast.c
-@@ -13,6 +13,7 @@
-  */
+diff --git a/distributed-arp-table.c b/distributed-arp-table.c
+index 6c8c393..1ef2f79 100644
+--- a/distributed-arp-table.c
++++ b/distributed-arp-table.c
+@@ -141,7 +141,7 @@ static int batadv_compare_dat(const struct hlist_node *node, const void *data2)
+ 	const void *data1 = container_of(node, struct batadv_dat_entry,
+ 					 hash_entry);
  
- #include "main.h"
-+#include "multicast.h"
- #include "originator.h"
- #include "hard-interface.h"
- #include "translation-table.h"
+-	return (memcmp(data1, data2, sizeof(__be32)) == 0 ? 1 : 0);
++	return memcmp(data1, data2, sizeof(__be32)) == 0 ? 1 : 0;
+ }
+ 
+ /**
+diff --git a/main.h b/main.h
+index c5d6eb2..1403f52 100644
+--- a/main.h
++++ b/main.h
+@@ -267,7 +267,7 @@ static inline void batadv_dbg(int type __always_unused,
+  */
+ static inline int batadv_compare_eth(const void *data1, const void *data2)
+ {
+-	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
++	return memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0;
+ }
+ 
+ /**
+diff --git a/originator.c b/originator.c
+index 8ab1434..8c1de1b 100644
+--- a/originator.c
++++ b/originator.c
+@@ -41,7 +41,7 @@ int batadv_compare_orig(const struct hlist_node *node, const void *data2)
+ 	const void *data1 = container_of(node, struct batadv_orig_node,
+ 					 hash_entry);
+ 
+-	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
++	return memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0;
+ }
+ 
+ /**
+diff --git a/translation-table.c b/translation-table.c
+index 4add57d..4be5ee1 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -51,7 +51,7 @@ static int batadv_compare_tt(const struct hlist_node *node, const void *data2)
+ 	const void *data1 = container_of(node, struct batadv_tt_common_entry,
+ 					 hash_entry);
+ 
+-	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
++	return memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0;
+ }
+ 
+ /**
 -- 
-1.7.10.4
+1.8.4.2
 
