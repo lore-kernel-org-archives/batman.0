@@ -1,15 +1,16 @@
-Return-Path: <cmsv@wirelesspt.net>
-Message-ID: <527E152F.5090708@wirelesspt.net>
-Date: Sat, 09 Nov 2013 05:57:51 -0500
-From: cmsv <cmsv@wirelesspt.net>
-MIME-Version: 1.0
+Return-Path: <antonio@meshcoding.com>
+Date: Fri, 8 Nov 2013 12:07:40 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
+Message-ID: <20131108110740.GM970@neomailbox.net>
 References: <CAAxzKbRQ-ZPZ8vQUu8GevK+gC-J16EZ-WDkyTcpVxqPZbYg5gw@mail.gmail.com>
-In-Reply-To: <CAAxzKbRQ-ZPZ8vQUu8GevK+gC-J16EZ-WDkyTcpVxqPZbYg5gw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ <527E152F.5090708@wirelesspt.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="e890kymSckUvwzhr"
+Content-Disposition: inline
+In-Reply-To: <527E152F.5090708@wirelesspt.net>
 Subject: Re: [B.A.T.M.A.N.] Replacing OLSRD with batman-adv?
-Reply-To: cmsv@wirelesspt.net,
- The list for a Better Approach To Mobile Ad-hoc Networking
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -20,64 +21,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-Hello Travis.
-
-On 11/08/2013 03:42 AM, tjhowse wrote:
-> Hi Ladies and Gents,
-> 
-> I've built a three-node mesh network using cheap TP-Link TL-WDR3600
-> routers. They can do simultaneous 5.8GHz and 2.4GHz. I use the 5.8 for
-> the backbone links between the nodes, and 2.4 to clients. The nodes
-> are running OpenWRT and OLSRD.
-> 
-> This system mostly works well, but there are a couple of problems with
-> it that I'm wondering if batman-adv would solve or make easier to
-> solve:
-> 
-> 1) The backbone links cannot be better protected than WEP, a
-> limitation of OLSRD,
-> 2) Gateway assignment is a manual process, which must be performed on
-> every node in the mesh, referring to the single node connected to the
-> WAN,
-> 3) The manual gateway configuration of 2) prevents peer-to-peer
-> communications between mesh clients,
-> 4) Each node has its own /24 subnet. This causes problems when a
-> device roams from one device's jurisdiction to another if the
-> interface doesn't re-issue a DHCP request.
-> 
-> We're expanding the network, I've just bought another ten of these
-> routers, and I'm going to spend some time assessing if batman-adv
-> would be a better fit for our purposes. There will be a range of ios,
-> android and windows devices connecting to the mesh.
-> 
-> My questions are as follows:
-> 
-> 1) Does batman-adv worth with WPA2 or better encryption?
-Yes but you need some changes such as replacing wpad-mini by wpad and
-probably mac80211 and hostpad depending on which openwrt release you
-will be using to do all this.
-
-> 2) Must every client to a batman-adv mesh have a daemon installed?
-Every node must have batman-adv
-
-> 3) Is it possible to separate different radio interfaces for different
-> purposes? I.E. 5.8 for backbone, 2.4 for clients.
-Yes and you can even have VAP's
-
-> 4) Can all nodes and clients on a mesh have an IP in the same subnet,
-> solving some of the roaming problems caused by bad interface settings
-> or drivers?
-Yes.
+To: cmsv@wirelesspt.net, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
-Let me know about your progress regarding these changes if you encounter
-some issues because there are some and i have also being trying to solve
-them.
+--e890kymSckUvwzhr
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> Thanks,
-> Travis.
-> .
-> 
+On Sat, Nov 09, 2013 at 05:57:51AM -0500, cmsv wrote:
+> > 2) Must every client to a batman-adv mesh have a daemon installed?
+> Every node must have batman-adv
+
+Be careful to do not confuse him. He asked about *clients*, and clients are=
+ not
+required to run batman-adv.
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+--e890kymSckUvwzhr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSfMX8AAoJEADl0hg6qKeOQFoP/39TFITZo86HvlR3Vad625/Y
+eHVWHrxRqp/4ZUTnjJssehxTKjfIdmFnA5YkMbkOqFDZAdGzZ0eivy+MNA5dtWa+
+TD8MYqQ8dhKxorxZlfDDH2L9KIkI20h/pSd83CIul1HEe1MFle+G/64xGkLMJxBe
+0tC84lWqTKRHpsGG8zEzINquWyvs2SyED2lJ0OOaSEr3qvpUnIJkk8XsmNLhjY54
+iMNKGxXHAkTV0cRX+olzHkg+0odDHW+Ioq+a8vI9ssXIpjYHbF7yLGIb9X/go+iJ
+6+KjZGxVxRN6uVhocdVf1wItdbZV6wDe/s/AaPJ9JFcIGl2rhObTx2g6lHAVsoZc
+9tv+eSz2KsrNiA9umcrqRAcs9ukmVS2boQSXMldA4JEVnei9zfz8QmMoe/tPpfId
+HN7thsXLKojsNlTPznnltM8XqF9HGZxEQN1ikyIQJqk3cDkj9JH3vaYZoE6CRoLB
+G6lH1HefNqvAzoJt3LqwjR0a2v4sdXJ9FbSG6FMsvC90mnLtlEJ0DwIveI2lQywK
+1XdPztZYDeG71AAJQ3lHHIn2FpPntEmJNBwanxJhxoAl9Q4i9STrigu4uu8mD5/k
+JGfC4l2gGAZmxPVV1V0zUYG4A2zrqqMz4YfbTArf4go0GZPPlqhy5RURJC9UYEA+
+gLI5WlQTbKBEMW9FhyZM
+=Ru8G
+-----END PGP SIGNATURE-----
+
+--e890kymSckUvwzhr--
