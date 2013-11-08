@@ -1,15 +1,10 @@
-Return-Path: <clemens-john@gmx.de>
-From: Clemens John <clemens-john@gmx.de>
-Date: Fri, 08 Nov 2013 00:25:32 +0100
-Message-ID: <4645807.Ug7HQD34Gu@flohlap>
-In-Reply-To: <201311041128.20618.sw@simonwunderlich.de>
-References: <2578313.zUW7Pc5dQb@flohlap>
- <201311041128.20618.sw@simonwunderlich.de>
+Return-Path: <tjhowse@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1509439.jf5Y1I195u";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Bad link quality if routers are connected by 2
-	interfaces
+From: tjhowse <tjhowse@gmail.com>
+Date: Fri, 8 Nov 2013 18:42:37 +1000
+Message-ID: <CAAxzKbRQ-ZPZ8vQUu8GevK+gC-J16EZ-WDkyTcpVxqPZbYg5gw@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Replacing OLSRD with batman-adv?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,89 +18,42 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+Hi Ladies and Gents,
 
---nextPart1509439.jf5Y1I195u
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+I've built a three-node mesh network using cheap TP-Link TL-WDR3600
+routers. They can do simultaneous 5.8GHz and 2.4GHz. I use the 5.8 for
+the backbone links between the nodes, and 2.4 to clients. The nodes
+are running OpenWRT and OLSRD.
 
-Am Montag, 4. November 2013, 11:28:20 schrieben Sie:
-> this is certainly not the expected behaviour. Are you building a brid=
-ge loop
-> by any chance? Please explain your configuration (batctl if, brctl sh=
-ow,
-> ...) and check if you have a high amount of broadcasts somehow.
+This system mostly works well, but there are a couple of problems with
+it that I'm wondering if batman-adv would solve or make easier to
+solve:
 
-Sorry for my late answer. I was busy during the week and didnt find the=
- time to=20
-look into out setup in detail till now.
+1) The backbone links cannot be better protected than WEP, a
+limitation of OLSRD,
+2) Gateway assignment is a manual process, which must be performed on
+every node in the mesh, referring to the single node connected to the
+WAN,
+3) The manual gateway configuration of 2) prevents peer-to-peer
+communications between mesh clients,
+4) Each node has its own /24 subnet. This causes problems when a
+device roams from one device's jurisdiction to another if the
+interface doesn't re-issue a DHCP request.
 
-We have two wireless interfaces wlan0 and wlan0-1. We also have two eth=
-ernet=20
-interfaces eth0.1 and eth0.3 and one VPN interface ffolVPN.
+We're expanding the network, I've just bought another ten of these
+routers, and I'm going to spend some time assessing if batman-adv
+would be a better fit for our purposes. There will be a range of ios,
+android and windows devices connecting to the mesh.
 
-The interfaces wlan0 and eth0.1 are the interfaces used for clients. Th=
-ey are=20
-bridged together with bat0:
-root@RosenplatzVPN:~# brctl show
-bridge name   bridge id                     STP enabled     interfaces
-br-mesh          8000.a0f3c15b54a6   no                    bat0
-                                                                       =
-          eth0.1
-                                                                       =
-          wlan0
+My questions are as follows:
 
-The interfaces wlan0-1 and eth0.3 are the interfaces we use for meshing=
- with=20
-other routers in the same "mesh cloud". These are the interfaces both r=
-outers=20
-are connected by each other. The vpn interface ffolVPN is used to conne=
-ct with=20
-outher "mesh clouds" but the two routers in this case are not connected=
- by=20
-this interface. On the interfaces wlan0-1, eth0.3 and ffolVPN runs Batm=
-an=20
-advanced:
-root@RosenplatzVPN:~# batctl if
-eth0.3: active
-wlan0-1: active
-ffolVPN: active
+1) Does batman-adv worth with WPA2 or better encryption?
+2) Must every client to a batman-adv mesh have a daemon installed?
+3) Is it possible to separate different radio interfaces for different
+purposes? I.E. 5.8 for backbone, 2.4 for clients.
+4) Can all nodes and clients on a mesh have an IP in the same subnet,
+solving some of the roaming problems caused by bad interface settings
+or drivers?
 
-To analyze the amount of broadcast traffic I did a tcpdump on the Batma=
-n=20
-interfaces wlan0-1 and eth0.3. For me there seems to be a big amount of=
-=20
-broadcast traffic, but I don=B4t know the normal level of brodcasts so =
-I can=B4t=20
-compare which amount is right and which is wrong. But maybe you can so =
-I=20
-uploaded the files for you. You can analyze them using wireshark or som=
-e other=20
-tool:
-* https://dev.freifunk-ol.de/tcpdumps/eth0.3.dump
-* https://dev.freifunk-ol.de/tcpdumps/wlan0-1.dump
-
-If you need more data just ask and I will try to provide it.
-
-Kind regards
-Clemens
---=20
-#Clemens John <clemens-john@gmx.de>
-#GnuPG:
-Identifier: 0xD92F6BA5
-Fingerprint: 1D6D 3EC6 C80F C1D4 CE1F 1133 6607 476C 0DB6 96A3
-   Always encrypt your messages
---nextPart1509439.jf5Y1I195u
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iEYEABECAAYFAlJ8IXEACgkQZgdHbA22lqPigwCdFqDHjQZattOPprOHDeLpy2eT
-3CkAn3Mqd9jU3FFmaw9/kK0Ox/wtNk+2
-=LcZz
------END PGP SIGNATURE-----
-
---nextPart1509439.jf5Y1I195u--
-
+Thanks,
+Travis.
