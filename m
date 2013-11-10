@@ -1,11 +1,11 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Sun, 10 Nov 2013 05:58:03 +0100
-Message-Id: <1384059483-17815-1-git-send-email-linus.luessing@web.de>
+Date: Sun, 10 Nov 2013 06:29:09 +0100
+Message-Id: <1384061349-17901-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: introduce capability
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: introduce capability
 	initialization bitfield
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -28,10 +28,12 @@ added soon.
 
 Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 ---
+* style improvements (+has_tt_init)
+
  originator.c        |    1 -
- translation-table.c |   11 ++++++-----
+ translation-table.c |   12 +++++++-----
  types.h             |    6 ++++--
- 3 files changed, 10 insertions(+), 8 deletions(-)
+ 3 files changed, 11 insertions(+), 8 deletions(-)
 
 diff --git a/originator.c b/originator.c
 index edfb921..24e0681 100644
@@ -46,7 +48,7 @@ index edfb921..24e0681 100644
  	memcpy(orig_node->orig, addr, ETH_ALEN);
  	batadv_dat_init_orig_node_addr(orig_node);
 diff --git a/translation-table.c b/translation-table.c
-index 1f482a4..128d20c 100644
+index 1f482a4..2b7bb2e 100644
 --- a/translation-table.c
 +++ b/translation-table.c
 @@ -1748,7 +1748,7 @@ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
@@ -67,24 +69,30 @@ index 1f482a4..128d20c 100644
  }
  
  static void batadv_tt_fill_gtable(struct batadv_priv *bat_priv,
-@@ -3197,8 +3197,8 @@ static void batadv_tt_update_orig(struct batadv_priv *bat_priv,
+@@ -3192,13 +3192,15 @@ static void batadv_tt_update_orig(struct batadv_priv *bat_priv,
+ 	uint8_t orig_ttvn = (uint8_t)atomic_read(&orig_node->last_ttvn);
+ 	struct batadv_tvlv_tt_vlan_data *tt_vlan;
+ 	bool full_table = true;
++	bool has_tt_init;
+ 
+ 	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)tt_buff;
++	has_tt_init = orig_node->capa_initialized & BATADV_ORIG_CAPA_HAS_TVLV;
++
  	/* orig table not initialised AND first diff is in the OGM OR the ttvn
  	 * increased by one -> we can apply the attached changes
  	 */
 -	if ((!orig_node->tt_initialised && ttvn == 1) ||
 -	    ttvn - orig_ttvn == 1) {
-+	if ((!(orig_node->capa_initialized & BATADV_ORIG_CAPA_HAS_TVLV) &&
-+	     ttvn == 1) || ttvn - orig_ttvn == 1) {
++	if ((!has_tt_init && ttvn == 1) || ttvn - orig_ttvn == 1) {
  		/* the OGM could not contain the changes due to their size or
  		 * because they have already been sent BATADV_TT_OGM_APPEND_MAX
  		 * times.
-@@ -3239,7 +3239,8 @@ static void batadv_tt_update_orig(struct batadv_priv *bat_priv,
+@@ -3239,7 +3241,7 @@ static void batadv_tt_update_orig(struct batadv_priv *bat_priv,
  		/* if we missed more than one change or our tables are not
  		 * in sync anymore -> request fresh tt data
  		 */
 -		if (!orig_node->tt_initialised || ttvn != orig_ttvn ||
-+		if (!(orig_node->capa_initialized
-+		      & BATADV_ORIG_CAPA_HAS_TVLV) || ttvn != orig_ttvn ||
++		if (!has_tt_init || ttvn != orig_ttvn ||
  		    !batadv_tt_global_check_crc(orig_node, tt_vlan,
  						tt_num_vlan)) {
  request_table:
