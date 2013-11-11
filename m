@@ -1,12 +1,15 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Mon, 11 Nov 2013 07:48:47 +0100
-Message-Id: <1384152527-6916-1-git-send-email-linus.luessing@web.de>
+Return-Path: <antonio@meshcoding.com>
+Date: Mon, 11 Nov 2013 08:05:02 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
+Message-ID: <20131111070502.GA3713@neomailbox.net>
+References: <1384123721-23691-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: compat: fix multicast compat
-	code for < 2.6.35
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="PNTmBPCT7hxwcZjr"
+Content-Disposition: inline
+In-Reply-To: <1384123721-23691-1-git-send-email-linus.luessing@web.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: introduce capability
+ initialization bitfield
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,38 +21,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-A typo resulted into the following build warning:
 
-"In function 'batadv_mcast_mla_softif_get':
- warning: assignment from incompatible pointer type"
+--PNTmBPCT7hxwcZjr
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This commit fixes it by using the correct name for the according struct.
+On Sun, Nov 10, 2013 at 11:48:41PM +0100, Linus L=C3=BCssing wrote:
+> The new bitfield allows us to keep track whether capability subsets of
+> an originator have gone through their initialization phase yet.
+>=20
+> The translation table is the only user right now, but a new one will be
+> added soon.
+>=20
+> Signed-off-by: Linus L=C3=BCssing <linus.luessing@web.de>
 
-Introduced by: a3f58139efedb96222dffdda89896c243fdff49e
-("batman-adv: Multicast Listener Announcements via Translation Table")
+Acked-by: Antonio Quartulli <antonio@meshcoding.com>
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
- compat.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+--=20
+Antonio Quartulli
 
-diff --git a/compat.h b/compat.h
-index 186547b..c83ac2c 100644
---- a/compat.h
-+++ b/compat.h
-@@ -103,8 +103,8 @@ static inline struct sk_buff *netdev_alloc_skb_ip_align(struct net_device *dev,
- 
- #undef  netdev_for_each_mc_addr
- #define netdev_for_each_mc_addr(mclist, dev) \
--	for (mclist = (struct bat_dev_addr_list *)dev->mc_list; mclist; \
--	     mclist = (struct bat_dev_addr_list *)mclist->next)
-+	for (mclist = (struct batadv_dev_addr_list *)dev->mc_list; mclist; \
-+	     mclist = (struct batadv_dev_addr_list *)mclist->next)
- 
- /* Note, that this breaks the usage of the normal 'struct netdev_hw_addr'
-  * for kernels < 2.6.35 in batman-adv!
--- 
-1.7.10.4
+--PNTmBPCT7hxwcZjr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSgIGeAAoJEADl0hg6qKeO8wMQAJ9vXxL0yUbUJmzxYOT9dLSB
+R1Oso6GEgtNf3xQ8qJcuMVWLik9iRh4Km46efFbCKuxC8sI3ZvPky2hlaHeXwn53
+nC4WBh7Cwni7oKGTzLOLJMfTP2mYzB4Owe8i1oogRxpQXh8yhRPRtNj9oBCH/TB/
+ioLlpL4a50z/myTUQ0wPrN88PE9+ldBcKja/bA2XeBD0XIlA4x8CUcFAoMPE4Zs4
+Ommmqh4NUo50a22Uk/UYHt4yBCjZdAtAS3GpK613r967Vl5ikpUsSwwuJ2NdKRkd
+bCN+AAKahGc4hyazJO7CFQnhw8wMfas+9IdaspUdvD4tzM6V+oVjrn9iXZ5FydJX
+XPdMZyZCJh5TLhSqhuuPFCbYC0YlHRj3gSvqQuWk6Lye4cEePtQOrPT30ok5Cx8+
+maa3E+3Il1psGe0sY4HHrDpDeklb0rBF/Znvsy1bMvXOiRoWVa+liMp4p7eZtEIU
+N+vFpNQOAqSFQb1No5A6pOCJi9RdblPT4rpWllGMXoeBa6VWxfTj+3VGIL8LLvIt
+KyDFQ+a4dQ/aBhm38kYNob0aUwyZgEyQuWZR9sJC+c63YXgDTym7ntCyKEhV681G
+sA/MxpK4xOPZMUlYEvZ0iVYiJn1rDS8jgNvtFQsZXY9ZsIiK3Vj9udDsSErOgAnz
+XTuF+ilDMRKGUjaaZXQ6
+=66mS
+-----END PGP SIGNATURE-----
+
+--PNTmBPCT7hxwcZjr--
