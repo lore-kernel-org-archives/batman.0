@@ -1,8 +1,8 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 11 Nov 2013 20:32:12 +0100
-Message-Id: <1384198332-25345-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: silence smatch errors in
+Date: Mon, 11 Nov 2013 17:33:09 +0100
+Message-Id: <1384187589-23259-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: silence smatch errors in
 	multicast compat code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -35,14 +35,11 @@ Introduced by: a3f58139efedb96222dffdda89896c243fdff49e
 
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
-Changes to PATCH:
- * remove useless \
----
- compat.h |   16 ++++++----------
- 1 file changed, 6 insertions(+), 10 deletions(-)
+ compat.h |   14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
 
 diff --git a/compat.h b/compat.h
-index 186547b..86ef366 100644
+index 186547b..a99c9d5 100644
 --- a/compat.h
 +++ b/compat.h
 @@ -160,14 +160,12 @@ static inline int batadv_param_set_copystring(const char *val,
@@ -56,10 +53,9 @@ index 186547b..86ef366 100644
 +		rcu_read_unlock(); \
  		dev_hold(dev); \
  		return dev; \
--	} \
+ 	} \
 -\
 -	return NULL\
-+	}
  
  #endif /* < KERNEL_VERSION(2, 6, 36) */
  
