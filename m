@@ -1,15 +1,9 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 11 Nov 2013 16:04:17 +0800
-Message-ID: <2967765.EH6Nq9tJVD@diderot>
-In-Reply-To: <20131111070502.GA3713@neomailbox.net>
-References: <1384123721-23691-1-git-send-email-linus.luessing@web.de>
- <20131111070502.GA3713@neomailbox.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1553839.eW7Cdk7Q2F";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: introduce capability
-	initialization bitfield
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 11 Nov 2013 20:32:12 +0100
+Message-Id: <1384198332-25345-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: silence smatch errors in
+	multicast compat code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,48 +16,71 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
 
+smatch is reporting problems of unreachable code parts:
 
---nextPart1553839.eW7Cdk7Q2F
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+multicast.c:170 batadv_mcast_get_bridge() info: ignoring unreachable
+code.
+tmp/multicast.c:172 batadv_mcast_get_bridge() info: ignoring
+unreachable code.
 
-On Monday 11 November 2013 08:05:02 Antonio Quartulli wrote:
-> On Sun, Nov 10, 2013 at 11:48:41PM +0100, Linus L=FCssing wrote:
-> > The new bitfield allows us to keep track whether capability subsets=
- of
-> > an originator have gone through their initialization phase yet.
-> >=20
-> > The translation table is the only user right now, but a new one wil=
-l be
-> > added soon.
-> >=20
-> > Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
->=20
-> Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+These are caused by compat code which returns within a loop, never
+giving the rest of the function a chance to be processed. This can be
+changed by slightly adjusting the compat code, setting the iterator
+variable to NULL and let the original function handle the rest. This
+does not introduce any functional change.
 
-Applied in revision 47d2674.
+Introduced by: a3f58139efedb96222dffdda89896c243fdff49e
+("batman-adv: Multicast Listener Announcements via Translation Table")
 
-Thanks,
-Marek
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+Changes to PATCH:
+ * remove useless \
+---
+ compat.h |   16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
 
---nextPart1553839.eW7Cdk7Q2F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJSgI+FAAoJEFNVTo/uthzAFcYH/AuI00bIsKDNPpp2wEC1TyE9
-FJNabHWZd9xH1g82rtH19HAX9B/uK9XrDyvfnWQ8KmlG3lNQidjHPyZjfVbVwZ2z
-BoBCIkW6/qBWQ2Dw6Zm68QSPr8bnyn9tuyR5r/nk/BLR/sz2HhmkKZmFUd814le0
-EodfFutkl+YY7LkLIWiSgrrVaRHbCQ+9N4nEpYY+w79fY0CMjhLPNAXw1DWZP+wT
-STlxvJEMT55S5M5OMm1uL5AfJ69I3JESK/RDuKra1bi9ZWwwwvv4LXxe9cqLLrZs
-lY8kKTCywAf39On6mDZ5uOPKSw8+7sU58TrAkPYe+hgq4Fr+XKrxQVgMHCm0PUA=
-=/R/j
------END PGP SIGNATURE-----
-
---nextPart1553839.eW7Cdk7Q2F--
+diff --git a/compat.h b/compat.h
+index 186547b..86ef366 100644
+--- a/compat.h
++++ b/compat.h
+@@ -160,14 +160,12 @@ static inline int batadv_param_set_copystring(const char *val,
+ #define NET_ADDR_RANDOM 0
+ 
+ #define netdev_master_upper_dev_get_rcu(dev) \
+-	upper; \
+-	rcu_read_unlock(); \
++	NULL; \
+ 	if (dev->br_port ? 1 : 0) { \
++		rcu_read_unlock(); \
+ 		dev_hold(dev); \
+ 		return dev; \
+-	} \
+-\
+-	return NULL\
++	}
+ 
+ #endif /* < KERNEL_VERSION(2, 6, 36) */
+ 
+@@ -344,14 +342,12 @@ static int __batadv_interface_set_mac_addr(x, y)
+ 
+ #ifndef netdev_master_upper_dev_get_rcu
+ #define netdev_master_upper_dev_get_rcu(dev) \
+-	upper; \
+-	rcu_read_unlock(); \
++	NULL; \
+ 	if (dev->priv_flags & IFF_BRIDGE_PORT) { \
++		rcu_read_unlock(); \
+ 		dev_hold(dev); \
+ 		return dev; \
+-	} \
+-\
+-	return NULL\
++	}
+ 
+ #endif /* netdev_master_upper_dev_get_rcu */
+ 
+-- 
+1.7.10.4
 
