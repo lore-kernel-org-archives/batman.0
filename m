@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 12 Nov 2013 10:18:21 +0100
-Message-Id: <1384247902-789-5-git-send-email-antonio@meshcoding.com>
+Date: Tue, 12 Nov 2013 10:18:22 +0100
+Message-Id: <1384247902-789-6-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1384247902-789-1-git-send-email-antonio@meshcoding.com>
 References: <1384247902-789-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 4/5] batman-adv: extend the ap_isolation
-	mechanism
+Subject: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: set the isolation mark in
+	the skb if needed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,35 +22,94 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-Change the AP isolation mechanism to not only "isolate" WIFI
-clients but also all those marked with the more generic
-"isolation flag" (BATADV_TT_CLIENT_ISOLA).
+If a broadcast packet is coming from a client marked as
+isolated, then mark the skb using the isolation mark so
+that netfilter (or any other application) can recognise
+them.
 
-The result is that when AP isolation is on any unicast
-packet originated by an "isolated" client and directed to
-another "isolated" client is dropped at the source node.
+The mark is written in the skb based on the mask value:
+only bits set in the mask are substitued by those in the
+mark value
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- translation-table.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ soft-interface.c    | 14 ++++++++++++--
+ translation-table.c | 26 ++++++++++++++++++++++++++
+ translation-table.h |  2 ++
+ 3 files changed, 40 insertions(+), 2 deletions(-)
 
+diff --git a/soft-interface.c b/soft-interface.c
+index 2d629ee..d93144f 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -390,9 +390,19 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 		batadv_tt_add_temporary_global_entry(bat_priv, orig_node,
+ 						     ethhdr->h_source, vid);
+ 
+-	if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest,
+-				  vid))
++	if (is_multicast_ether_addr(ethhdr->h_dest)) {
++		if (batadv_tt_global_is_isolated(bat_priv, ethhdr->h_source,
++						 vid)) {
++			/* save bits in skb->mark not covered by the mask and
++			 * apply the mark on the rest
++			 */
++			skb->mark &= ~bat_priv->isolation_mark_mask;
++			skb->mark |= bat_priv->isolation_mark;
++		}
++	} else if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source,
++					 ethhdr->h_dest, vid)) {
+ 		goto dropped;
++	}
+ 
+ 	netif_rx(skb);
+ 	goto out;
 diff --git a/translation-table.c b/translation-table.c
-index 98655be..2a546e2 100644
+index 2a546e2..eda84aa 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -1873,6 +1873,11 @@ _batadv_is_ap_isolated(struct batadv_tt_local_entry *tt_local_entry,
- 	    tt_global_entry->common.flags & BATADV_TT_CLIENT_WIFI)
- 		ret = true;
+@@ -3596,3 +3596,29 @@ int batadv_tt_init(struct batadv_priv *bat_priv)
  
-+	/* check if the two clients are marked as isolated */
-+	if (tt_local_entry->common.flags & BATADV_TT_CLIENT_ISOLA &&
-+	    tt_global_entry->common.flags & BATADV_TT_CLIENT_ISOLA)
-+		ret = true;
-+
- 	return ret;
+ 	return 1;
  }
++
++/**
++ * batadv_tt_global_is_isolated - check if a client is marked as isolated
++ * @bat_priv: the bat priv with all the soft interface information
++ * @addr: the mac address of the client
++ * @vid: the identifier of the VLAN where this client is connected
++ *
++ * Return true if the client is marked with the TT_CLIENT_ISOLA flag, flase
++ * otherwise
++ */
++bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
++				  const uint8_t *addr, unsigned short vid)
++{
++	struct batadv_tt_global_entry *tt;
++	bool ret;
++
++	tt = batadv_tt_global_hash_find(bat_priv, addr, vid);
++	if (!tt)
++		return false;
++
++	ret = tt->common.flags & BATADV_TT_CLIENT_ISOLA;
++
++	batadv_tt_global_entry_free_ref(tt);
++
++	return ret;
++}
+diff --git a/translation-table.h b/translation-table.h
+index 202c289..3ab8a7b 100644
+--- a/translation-table.h
++++ b/translation-table.h
+@@ -45,5 +45,7 @@ bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
+ 					  struct batadv_orig_node *orig_node,
+ 					  const unsigned char *addr,
+ 					  unsigned short vid);
++bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
++				  const uint8_t *addr, unsigned short vid);
  
+ #endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */
 -- 
 1.8.4.3
 
