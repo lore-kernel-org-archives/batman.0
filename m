@@ -1,15 +1,8 @@
-Return-Path: <clemens-john@gmx.de>
-From: Clemens John <clemens-john@gmx.de>
-Date: Wed, 13 Nov 2013 13:14:34 +0100
-Message-ID: <2452151.NSlNhUJhdY@flohlap>
-In-Reply-To: <201311122057.16685.sw@simonwunderlich.de>
-References: <2578313.zUW7Pc5dQb@flohlap> <2195225.ZahV9KD01s@flohlap>
- <201311122057.16685.sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2560846.TnAAmzf5Km";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Bad link quality if routers are connected by 2
-	interfaces
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Wed, 13 Nov 2013 17:37:59 +0100
+Message-Id: <1384360685-366-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv2 0/5] Introducing the Extended-Isolation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,40 +14,84 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
+
+Hello list,
+
+this is the second version of this patchset.
+
+Changes from v1 are:
+- Introduction of patch 5/6: it adds an helper function to avoid code
+  duplication - function is called batadv_vlan_ap_isola_get() and it is used to
+  get the current AP isolation status on a given vlan
+- patch 1/6 has been changed to allow the user to enter a mark value without
+  specifying any bitmask - 0xFFFFFFFF will be used as default
+- patch 6/6 has been changed so that broadcasts packets are marked on the
+  receiver node only if AP isolation is enabled. In this way, if AP isolation
+  is not ON packets are not altered at all neither on the sender nor on the
+  receiver.
+- the patchset has been rebased on top of current master (dependency from the
+  patch altering the table headers has been removed)
+
+Description:
+=========================
+
+This feature is an extension of the already existing "AP isolation" which aims
+to generalise the latter.
+
+The idea is based on considering a particular subset of non-mesh clients as
+"ISOLATED" and then apply the same policy that batman-adv already applies for
+WiFi clients.
+
+To decide which client belongs to this subset batman-adv uses the skb->mark
+field which value can be altered by several components in the kernel (e.g.
+netfilter). When an skb hits the soft-interface (e.g. bat0) the skb->mark
+is compared to a preconfigured value and the source client is classified as
+"ISOLATED" only in case of match.
+
+The pre-configured mark (and its mask) is a user choice and can be set through
+a new sysfs interface that is added within this patchset.
+
+"ISOLATED" clients won't be able to talk to each other (batman-adv will drop
+any packet originated by an isolated client and directed to another isolated
+client) like it now happens for WiFi ones (when AP isolation is on).
+
+Moreover broadcast packets sent by ISOLATED clients are marked on the
+receiving node with the same mark that the user configured through the sysfs.
+In this way netfilter (or any other program) can make decisions about
+these packets on the receiver side (e.g. a rule could be "broadcast packets
+created by ISOLATED clients cannot be forwarded over any port of the bridge X")
 
 
---nextPart2560846.TnAAmzf5Km
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+A draft of the documentation (with an example of how to use tc to mark/filter
+packets) is available here[1] and will be improved as soon as the feature is
+released.
 
-Am Dienstag, 12. November 2013, 20:57:16 schrieben Sie:
-> Would be nice to hear if the problem was resolved, also we can reference to
-> that later when somebody asks again for "my TQ dropped to half, why?" :)
 
-Yes resolving the conflict solves the problem. 
+Cheers,
 
-Kind Regards
-Clemens
+[1] http://www.open-mesh.org/projects/batman-adv/wiki/Extended-isolation
+
+
+Antonio Quartulli (6):
+  batman-adv: add isolation_mark sysfs attribute
+  batman-adv: mark a local client as isolated when needed
+  batman-adv: print the new BATADV_TT_CLIENT_ISOLA flag
+  batman-adv: extend the ap_isolation mechanism
+  batman-adv: create helper function to get AP isolation status
+  batman-adv: set the isolation mark in the skb if needed
+
+ main.c              | 26 ++++++++++++++++++++
+ main.h              |  3 +++
+ packet.h            |  1 +
+ soft-interface.c    | 27 +++++++++++++++++----
+ sysfs.c             | 68 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ translation-table.c | 70 ++++++++++++++++++++++++++++++++++++++++-------------
+ translation-table.h |  4 ++-
+ types.h             |  2 ++
+ 8 files changed, 178 insertions(+), 23 deletions(-)
+
 -- 
-#Clemens John <clemens-john@gmx.de>
-#GnuPG:
-Identifier: 0xD92F6BA5
-Fingerprint: 1D6D 3EC6 C80F C1D4 CE1F 1133 6607 476C 0DB6 96A3
-   Always encrypt your messages
---nextPart2560846.TnAAmzf5Km
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iEYEABECAAYFAlKDbS4ACgkQZgdHbA22lqN/TACgpHlmGHgV0AHa3vRk6nfHyrYU
-gqsAoPf/u1NGfvbhnUPVQghRzqEByR+r
-=F7wG
------END PGP SIGNATURE-----
-
---nextPart2560846.TnAAmzf5Km--
+1.8.4.3
 
