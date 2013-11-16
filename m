@@ -1,18 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
-Date: Sat, 16 Nov 2013 11:43:10 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <20131116104309.GK1663@neomailbox.net>
-References: <1384360685-366-1-git-send-email-antonio@meshcoding.com>
- <1384360685-366-3-git-send-email-antonio@meshcoding.com>
- <6858187.HqJ4FjDvbE@diderot> <20131116091108.GJ1663@neomailbox.net>
- <5287431F.2000205@hundeboll.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="W/+CTqSGWdiRg+8j"
-Content-Disposition: inline
-In-Reply-To: <5287431F.2000205@hundeboll.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/6] batman-adv: mark a local client as
- isolated when needed
+Date: Sat, 16 Nov 2013 12:03:49 +0100
+Message-Id: <1384599832-3959-4-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1384599832-3959-1-git-send-email-antonio@meshcoding.com>
+References: <1384599832-3959-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv3 3/6] batman-adv: print the new
+	BATADV_TT_CLIENT_ISOLA flag
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,66 +17,85 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
+From: Antonio Quartulli <antonio@open-mesh.com>
 
---W/+CTqSGWdiRg+8j
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Print the new BATADV_TT_CLIENT_ISOLA flag properly in the
+Local and Global Translation Table output.
 
-On Sat, Nov 16, 2013 at 11:04:15AM +0100, Martin Hundeb=C3=B8ll wrote:
-> On 2013-11-16 10:11, Antonio Quartulli wrote:
-> > On Sat, Nov 16, 2013 at 01:31:11PM +0800, Marek Lindner wrote:
-> >> On Wednesday 13 November 2013 17:38:01 Antonio Quartulli wrote:
-> >>> @@ -474,7 +474,7 @@ static void batadv_tt_global_free(struct batadv_p=
-riv
-> >>> *bat_priv, * Returns true if the client was successfully added, false
-> >>> otherwise. */
-> >>>   bool batadv_tt_local_add(struct net_device *soft_iface, const uint8=
-_t
-> >>> *addr, -                        unsigned short vid, int ifindex)
-> >>> +                        unsigned short vid, int ifindex, uint32_t ma=
-rk)
-> >>>   {
-> >>>          struct batadv_priv *bat_priv =3D netdev_priv(soft_iface);
-> >>>          struct batadv_tt_local_entry *tt_local;
-> >>
-> >> Kernel doc ?
-> >
-> > argh, I tried to escape the kerneldoc tradition :D
->=20
-> We should make a patch to checkpatch to check for kerneldoc :)
+The character 'I' is used in the flags column to indicate
+that the entry is marked as isolated.
 
-why not :) we can have "per-path" rules. So we can specify our rules for
-net/batman-adv/...Thanks for volunteering!
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
+ translation-table.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-Cheers,
+diff --git a/translation-table.c b/translation-table.c
+index 6788b5d..09b1112 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -883,7 +883,7 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 	seq_printf(seq,
+ 		   "Locally retrieved addresses (from %s) announced via TT (TTVN: %u):\n",
+ 		   net_dev->name, (uint8_t)atomic_read(&bat_priv->tt.vn));
+-	seq_printf(seq, "       %-13s  %s %-7s %-9s (%-10s)\n", "Client", "VID",
++	seq_printf(seq, "       %-13s  %s %-8s %-9s (%-10s)\n", "Client", "VID",
+ 		   "Flags", "Last seen", "CRC");
+ 
+ 	for (i = 0; i < hash->size; i++) {
+@@ -911,7 +911,7 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 			}
+ 
+ 			seq_printf(seq,
+-				   " * %pM %4i [%c%c%c%c%c] %3u.%03u   (%#.8x)\n",
++				   " * %pM %4i [%c%c%c%c%c%c] %3u.%03u   (%#.8x)\n",
+ 				   tt_common_entry->addr,
+ 				   BATADV_PRINT_VID(tt_common_entry->vid),
+ 				   (tt_common_entry->flags &
+@@ -923,6 +923,8 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 				    BATADV_TT_CLIENT_PENDING ? 'X' : '.'),
+ 				   (tt_common_entry->flags &
+ 				    BATADV_TT_CLIENT_WIFI ? 'W' : '.'),
++				   (tt_common_entry->flags &
++				    BATADV_TT_CLIENT_ISOLA ? 'I' : '.'),
+ 				   no_purge ? 0 : last_seen_secs,
+ 				   no_purge ? 0 : last_seen_msecs,
+ 				   vlan->tt.crc);
+@@ -1455,13 +1457,14 @@ batadv_tt_global_print_entry(struct batadv_priv *bat_priv,
+ 
+ 		last_ttvn = atomic_read(&best_entry->orig_node->last_ttvn);
+ 		seq_printf(seq,
+-			   " %c %pM %4i   (%3u) via %pM     (%3u)   (%#.8x) [%c%c%c]\n",
++			   " %c %pM %4i   (%3u) via %pM     (%3u)   (%#.8x) [%c%c%c%c]\n",
+ 			   '*', tt_global_entry->common.addr,
+ 			   BATADV_PRINT_VID(tt_global_entry->common.vid),
+ 			   best_entry->ttvn, best_entry->orig_node->orig,
+ 			   last_ttvn, vlan->tt.crc,
+ 			   (flags & BATADV_TT_CLIENT_ROAM ? 'R' : '.'),
+ 			   (flags & BATADV_TT_CLIENT_WIFI ? 'W' : '.'),
++			   (flags & BATADV_TT_CLIENT_ISOLA ? 'I' : '.'),
+ 			   (flags & BATADV_TT_CLIENT_TEMP ? 'T' : '.'));
+ 
+ 		batadv_orig_node_vlan_free_ref(vlan);
+@@ -1486,13 +1489,14 @@ print_list:
+ 
+ 		last_ttvn = atomic_read(&orig_entry->orig_node->last_ttvn);
+ 		seq_printf(seq,
+-			   " %c %pM %4d   (%3u) via %pM     (%3u)   (%#.8x) [%c%c%c]\n",
++			   " %c %pM %4d   (%3u) via %pM     (%3u)   (%#.8x) [%c%c%c%c]\n",
+ 			   '+', tt_global_entry->common.addr,
+ 			   BATADV_PRINT_VID(tt_global_entry->common.vid),
+ 			   orig_entry->ttvn, orig_entry->orig_node->orig,
+ 			   last_ttvn, vlan->tt.crc,
+ 			   (flags & BATADV_TT_CLIENT_ROAM ? 'R' : '.'),
+ 			   (flags & BATADV_TT_CLIENT_WIFI ? 'W' : '.'),
++			   (flags & BATADV_TT_CLIENT_ISOLA ? 'I' : '.'),
+ 			   (flags & BATADV_TT_CLIENT_TEMP ? 'T' : '.'));
+ 
+ 		batadv_orig_node_vlan_free_ref(vlan);
+-- 
+1.8.4.3
 
-
---=20
-Antonio Quartulli
-
---W/+CTqSGWdiRg+8j
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSh0w9AAoJEADl0hg6qKeO9iQP/2WzHPxymoL63w6Dr2Jqy2+b
-CLdshQr9EHsp61KbY6XtEs4dy6N7G4bFusz436GnZn6Ua8oucn8KZf668h+0gnNT
-QmNdk7nQNneGjHfiChbKKxgCfAKRFHXqT9fTmg7UvAquvfn8jfJ2C/FLasP+VvSI
-zou4/oy8/vYkXkzaT7eZxRhFxkWoR3Wjrmx/7AsmE0kDkQMMjS5TgfONVLl5QJag
-/r0J1CG8uXrn3b8GaVkxLZhpXO5xT5YISy56ImjT0OeeGj5V5KSkE0Dmm0Fmxu5R
-UzOa4LEDW9NsXQrZ7nP9r328egyoL1roOBkG9HRHSBlkCQ6DYsJpiNxnG2hRitXp
-Gj4lMRcdfIlC2eW9cADr2AtWqVieYgav5AWgKWjcqm8qwdZL3v2bzUO4qVeYXYgU
-arJwGh/1IkXJVfnc0ebKrKV8qqJWM84IzIWUW9p3+nrHcXNMC4prTkw6/H7NmTqP
-a09la5bWaXtsVqHDYVavz/v+fMsFTAFr15P8/uyR7CoiCJW+D9goNYQ2SuZZpt/L
-pZB81BjA4nsjyaecK3boo93iVe/qy+tZE7D/Cd8ZjG7IdOFinS9Tq8owSGdcvFh5
-aeX2dEC/e2t8Wm8kTt8PzhjA093BH4uVDO0hKZhR0+icznMV1hmDpc/RpyJcmoQB
-mzkjZFvI6P/ZN0B1TzDC
-=nxvw
------END PGP SIGNATURE-----
-
---W/+CTqSGWdiRg+8j--
