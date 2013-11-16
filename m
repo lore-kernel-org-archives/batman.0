@@ -1,14 +1,15 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Thu, 14 Nov 2013 07:26:08 +0100
-Message-Id: <1384410369-7437-6-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1384410369-7437-1-git-send-email-linus.luessing@web.de>
-References: <1384410369-7437-1-git-send-email-linus.luessing@web.de>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sat, 16 Nov 2013 13:31:11 +0800
+Message-ID: <6858187.HqJ4FjDvbE@diderot>
+In-Reply-To: <1384360685-366-3-git-send-email-antonio@meshcoding.com>
+References: <1384360685-366-1-git-send-email-antonio@meshcoding.com>
+ <1384360685-366-3-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv11 5/6] batman-adv: Add IPv4
-	link-local/IPv6-ll-all-nodes multicast support
+Content-Type: multipart/signed; boundary="nextPart10820862.oZMcfqH0Q6";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/6] batman-adv: mark a local client as
+	isolated when needed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,191 +21,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-With this patch a node may additionally perform the dropping or
-unicasting behaviour for a link-local IPv4 and link-local-all-nodes
-IPv6 multicast packet, too.
 
-The extra counter and BATADV_MCAST_WANT_ALL_UNSNOOPABLES flag is needed
-because with a future bridge snooping support integration a node with a
-bridge on top of its soft interface is not able to reliably detect its
-multicast listeners for IPv4 link-local and the IPv6
-link-local-all-nodes addresses anymore (see RFC4541, section 2.1.2.2
-and section 3).
+--nextPart10820862.oZMcfqH0Q6
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Even though this new flag does make "no difference" now, it'll ensure
-a seamless integration of multicast bridge support without needing to
-break compatibility later.
+On Wednesday 13 November 2013 17:38:01 Antonio Quartulli wrote:
+> @@ -474,7 +474,7 @@ static void batadv_tt_global_free(struct batadv_priv
+> *bat_priv, * Returns true if the client was successfully added, false
+> otherwise. */
+>  bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t
+> *addr, -                        unsigned short vid, int ifindex)
+> +                        unsigned short vid, int ifindex, uint32_t mark)
+>  {
+>         struct batadv_priv *bat_priv = netdev_priv(soft_iface);
+>         struct batadv_tt_local_entry *tt_local;
 
-Also note, that even with multicast bridge support it will need only
-one node with a bridge to disable optimizations for link-local IPv4
-and IPv6-link-local-all-nodes multicast, resulting in flooding all
-these packets again. So the 224.0.0.x address range and the ff02::1
-address will never be a safe choice for multicast streaming etc. if
-you do not control every node.
+Kernel doc ?
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
- main.h           |    1 +
- multicast.c      |   52 +++++++++++++++++++++++++++++++++++++++++++++++++++-
- packet.h         |    9 +++++++++
- soft-interface.c |    1 +
- types.h          |    2 ++
- 5 files changed, 64 insertions(+), 1 deletion(-)
+Cheers,
+Marek
 
-diff --git a/main.h b/main.h
-index 99b26b2..5d7174c 100644
---- a/main.h
-+++ b/main.h
-@@ -166,6 +166,7 @@ enum batadv_uev_type {
- #include <linux/slab.h>
- #include <net/sock.h>		/* struct sock */
- #include <net/addrconf.h>	/* ipv6 address stuff */
-+#include <linux/ip.h>
- #include <net/rtnetlink.h>
- #include <linux/jiffies.h>
- #include <linux/seq_file.h>
-diff --git a/multicast.c b/multicast.c
-index 990e4d7..023d426 100644
---- a/multicast.c
-+++ b/multicast.c
-@@ -263,6 +263,44 @@ out:
- }
- 
- /**
-+ * batadv_mcast_forw_mode_check_ipv4 - check for optimized forwarding potential
-+ * @skb: the IPv4 packet to check
-+ * @bat_priv: the bat priv with all the soft interface information
-+ *
-+ * Check whether the given IPv4 packet has the potential to
-+ * be forwarded with a mode more optimal than classic flooding.
-+ *
-+ * If so then return 0. Otherwise -EINVAL is returned or -ENOMEM if we are
-+ * out of memory.
-+ */
-+static int batadv_mcast_forw_mode_check_ipv4(struct sk_buff *skb,
-+					     struct batadv_priv *bat_priv)
-+{
-+	struct iphdr *iphdr;
-+
-+	/* We might fail due to out-of-memory -> drop it */
-+	if (!pskb_may_pull(skb, sizeof(struct ethhdr) + sizeof(*iphdr)))
-+		return -ENOMEM;
-+
-+	iphdr = ip_hdr(skb);
-+
-+	/* TODO: Implement Multicast Router Discovery (RFC4286),
-+	 * then allow scope > link local, too
-+	 */
-+	if (!ipv4_is_local_multicast(iphdr->daddr))
-+		return -EINVAL;
-+
-+	/* With one bridge involved, we cannot be certain about
-+	 * link-local multicast listener announcements anymore
-+	 * (see RFC4541, section 2.1.2.2)
-+	 */
-+	if (atomic_read(&bat_priv->mcast.num_want_all_unsnoopables))
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+/**
-  * batadv_mcast_forw_mode_check_ipv6 - check for optimized forwarding potential
-  * @skb: the IPv6 packet to check
-  * @bat_priv: the bat priv with all the soft interface information
-@@ -295,7 +333,8 @@ static int batadv_mcast_forw_mode_check_ipv6(struct sk_buff *skb,
- 	 * link-local-all-nodes multicast listener announcements anymore
- 	 * (see RFC4541, section 3, paragraph 3)
- 	 */
--	if (ipv6_addr_is_ll_all_nodes(&ip6hdr->daddr))
-+	if (ipv6_addr_is_ll_all_nodes(&ip6hdr->daddr) &&
-+	    atomic_read(&bat_priv->mcast.num_want_all_unsnoopables))
- 		return -EINVAL;
- 
- 	return 0;
-@@ -324,6 +363,8 @@ static int batadv_mcast_forw_mode_check(struct sk_buff *skb,
- 		return -EINVAL;
- 
- 	switch (ntohs(ethhdr->h_proto)) {
-+	case ETH_P_IP:
-+		return batadv_mcast_forw_mode_check_ipv4(skb, bat_priv);
- 	case ETH_P_IPV6:
- 		return batadv_mcast_forw_mode_check_ipv6(skb, bat_priv);
- 	default:
-@@ -407,6 +448,13 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- 	    (tvlv_value_len >= sizeof(mcast_flags)))
- 		mcast_flags = *(uint8_t *)tvlv_value;
- 
-+	if (mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
-+	    !(orig->mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES))
-+		atomic_inc(&bat_priv->mcast.num_want_all_unsnoopables);
-+	else if (!(mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES) &&
-+		 orig->mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES)
-+		atomic_dec(&bat_priv->mcast.num_want_all_unsnoopables);
-+
- 	orig->mcast_flags = mcast_flags;
- }
- 
-@@ -443,4 +491,6 @@ void batadv_mcast_purge_orig(struct batadv_orig_node *orig)
- 
- 	if (!(orig->capabilities & BATADV_ORIG_CAPA_HAS_MCAST))
- 		atomic_dec(&bat_priv->mcast.num_disabled);
-+	if (orig->mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES)
-+		atomic_dec(&bat_priv->mcast.num_want_all_unsnoopables);
- }
-diff --git a/packet.h b/packet.h
-index 85542e4..9b68f9f 100644
---- a/packet.h
-+++ b/packet.h
-@@ -86,6 +86,15 @@ enum batadv_icmp_packettype {
- 	BATADV_PARAMETER_PROBLEM       = 12,
- };
- 
-+/**
-+ * enum batadv_mcast_flags - flags for multicast capabilities and settings
-+ * @BATADV_MCAST_WANT_ALL_UNSNOOPABLES: we want all packets destined for
-+ *  224.0.0.0/24 or ff02::1
-+ */
-+enum batadv_mcast_flags {
-+	BATADV_MCAST_WANT_ALL_UNSNOOPABLES = BIT(0),
-+};
-+
- /* tt data subtypes */
- #define BATADV_TT_DATA_TYPE_MASK 0x0F
- 
-diff --git a/soft-interface.c b/soft-interface.c
-index 64899cd..6eed340 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -683,6 +683,7 @@ static int batadv_softif_init_late(struct net_device *dev)
- 	bat_priv->mcast.flags = BATADV_NO_FLAGS;
- 	atomic_set(&bat_priv->multicast_mode, 1);
- 	atomic_set(&bat_priv->mcast.num_disabled, 0);
-+	atomic_set(&bat_priv->mcast.num_want_all_unsnoopables, 0);
- #endif
- 	atomic_set(&bat_priv->gw_mode, BATADV_GW_MODE_OFF);
- 	atomic_set(&bat_priv->gw_sel_class, 20);
-diff --git a/types.h b/types.h
-index badbdf9..c837e98 100644
---- a/types.h
-+++ b/types.h
-@@ -588,12 +588,14 @@ struct batadv_priv_dat {
-  * @flags: the flags we have last sent in our mcast tvlv
-  * @enabled: whether the multicast tvlv is currently enabled
-  * @num_disabled: number of nodes that have no mcast tvlv
-+ * @num_want_all_unsnoopables: number of nodes wanting unsnoopable IP traffic
-  */
- struct batadv_priv_mcast {
- 	struct hlist_head mla_list;
- 	uint8_t flags;
- 	bool enabled;
- 	atomic_t num_disabled;
-+	atomic_t num_want_all_unsnoopables;
- };
- #endif
- 
--- 
-1.7.10.4
+--nextPart10820862.oZMcfqH0Q6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJShwMgAAoJEFNVTo/uthzAkDUH/jlyCPlka62LRkr+b5N97JY9
+J6yt6L2qslDyo2MXcAGzdCAe+MD/XAaRkD2VSaRN0GhDFgPzmAHNpcx79XfB4rP3
+5z9he4/inEebOr0nV6+wQPi4RaUl4UUxvMTu4kEIFk6U7k6Qu8LZbH88SC3hgfRh
+uIgptbdHQW6uA4kUcPLD2q9TCUwlv4MQcoJsZH7kTuCt32WXtWejJ1dXJyMd32tR
+dZ9C8W5us6vfREFOD7IqTjhso+Bd6bOhOQHHwKjzSLhaaWzgnETYpSAVomXVcS1/
+Wc4mbVIcDncfBMOPGN3+2HbKxvm0PlCd5IfVhmAuBsRV2rIUdPYZHQTRdsnyMxU=
+=gOi4
+-----END PGP SIGNATURE-----
+
+--nextPart10820862.oZMcfqH0Q6--
 
