@@ -1,11 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 16 Nov 2013 12:03:52 +0100
-Message-Id: <1384599832-3959-7-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1384599832-3959-1-git-send-email-antonio@meshcoding.com>
-References: <1384599832-3959-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv3 6/6] batman-adv: set the isolation mark in
-	the skb if needed
+Date: Sat, 16 Nov 2013 23:02:51 +0100
+Message-Id: <1384639371-630-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove returns at the end of
+	void functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,102 +16,73 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+Return at the end of void functions is not needed.
 
-If a broadcast packet is coming from a client marked as
-isolated, then mark the skb using the isolation mark so
-that netfilter (or any other application) can recognise
-them.
+Since most of the void functions in the code do not do so,
+make all the others consistent by removing the useless
+returns. Actually all the functions to be "fixed" are in
+network-coding.h only.
 
-The mark is written in the skb based on the mask value:
-only bits set in the mask are substitued by those in the
-mark value
-
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- soft-interface.c    | 18 ++++++++++++++++--
- translation-table.c | 26 ++++++++++++++++++++++++++
- translation-table.h |  2 ++
- 3 files changed, 44 insertions(+), 2 deletions(-)
+ network-coding.h | 7 -------
+ 1 file changed, 7 deletions(-)
 
-diff --git a/soft-interface.c b/soft-interface.c
-index 2d629ee..97441d8 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -390,9 +390,23 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 		batadv_tt_add_temporary_global_entry(bat_priv, orig_node,
- 						     ethhdr->h_source, vid);
+diff --git a/network-coding.h b/network-coding.h
+index 6b1a5d7..b16639f 100644
+--- a/network-coding.h
++++ b/network-coding.h
+@@ -59,7 +59,6 @@ static inline int batadv_nc_mesh_init(struct batadv_priv *bat_priv)
  
--	if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest,
--				  vid))
-+	if (is_multicast_ether_addr(ethhdr->h_dest)) {
-+		/* set the mark on broadcast packets if AP isolation is ON and
-+		 * the packet is coming from an "isolated" client
-+		 */
-+		if (batadv_vlan_ap_isola_get(bat_priv, vid) &&
-+		    batadv_tt_global_is_isolated(bat_priv, ethhdr->h_source,
-+						 vid)) {
-+			/* save bits in skb->mark not covered by the mask and
-+			 * apply the mark on the rest
-+			 */
-+			skb->mark &= ~bat_priv->isolation_mark_mask;
-+			skb->mark |= bat_priv->isolation_mark;
-+		}
-+	} else if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source,
-+					 ethhdr->h_dest, vid)) {
- 		goto dropped;
-+	}
- 
- 	netif_rx(skb);
- 	goto out;
-diff --git a/translation-table.c b/translation-table.c
-index 42c7664..f9a1fb4 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -3572,3 +3572,29 @@ int batadv_tt_init(struct batadv_priv *bat_priv)
- 
- 	return 1;
+ static inline void batadv_nc_mesh_free(struct batadv_priv *bat_priv)
+ {
+-	return;
  }
-+
-+/**
-+ * batadv_tt_global_is_isolated - check if a client is marked as isolated
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @addr: the mac address of the client
-+ * @vid: the identifier of the VLAN where this client is connected
-+ *
-+ * Return true if the client is marked with the TT_CLIENT_ISOLA flag, flase
-+ * otherwise
-+ */
-+bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
-+				  const uint8_t *addr, unsigned short vid)
-+{
-+	struct batadv_tt_global_entry *tt;
-+	bool ret;
-+
-+	tt = batadv_tt_global_hash_find(bat_priv, addr, vid);
-+	if (!tt)
-+		return false;
-+
-+	ret = tt->common.flags & BATADV_TT_CLIENT_ISOLA;
-+
-+	batadv_tt_global_entry_free_ref(tt);
-+
-+	return ret;
-+}
-diff --git a/translation-table.h b/translation-table.h
-index 202c289..3ab8a7b 100644
---- a/translation-table.h
-+++ b/translation-table.h
-@@ -45,5 +45,7 @@ bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
- 					  struct batadv_orig_node *orig_node,
- 					  const unsigned char *addr,
- 					  unsigned short vid);
-+bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
-+				  const uint8_t *addr, unsigned short vid);
  
- #endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */
+ static inline void
+@@ -69,7 +68,6 @@ batadv_nc_update_nc_node(struct batadv_priv *bat_priv,
+ 			 struct batadv_ogm_packet *ogm_packet,
+ 			 int is_single_hop_neigh)
+ {
+-	return;
+ }
+ 
+ static inline void
+@@ -78,17 +76,14 @@ batadv_nc_purge_orig(struct batadv_priv *bat_priv,
+ 		     bool (*to_purge)(struct batadv_priv *,
+ 				      struct batadv_nc_node *))
+ {
+-	return;
+ }
+ 
+ static inline void batadv_nc_init_bat_priv(struct batadv_priv *bat_priv)
+ {
+-	return;
+ }
+ 
+ static inline void batadv_nc_init_orig(struct batadv_orig_node *orig_node)
+ {
+-	return;
+ }
+ 
+ static inline bool batadv_nc_skb_forward(struct sk_buff *skb,
+@@ -101,14 +96,12 @@ static inline void
+ batadv_nc_skb_store_for_decoding(struct batadv_priv *bat_priv,
+ 				 struct sk_buff *skb)
+ {
+-	return;
+ }
+ 
+ static inline void
+ batadv_nc_skb_store_sniffed_unicast(struct batadv_priv *bat_priv,
+ 				    struct sk_buff *skb)
+ {
+-	return;
+ }
+ 
+ static inline int batadv_nc_nodes_seq_print_text(struct seq_file *seq,
 -- 
 1.8.4.3
 
