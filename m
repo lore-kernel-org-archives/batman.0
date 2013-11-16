@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 16 Nov 2013 12:03:48 +0100
-Message-Id: <1384599832-3959-3-git-send-email-antonio@meshcoding.com>
+Date: Sat, 16 Nov 2013 12:03:50 +0100
+Message-Id: <1384599832-3959-5-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1384599832-3959-1-git-send-email-antonio@meshcoding.com>
 References: <1384599832-3959-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv3 2/6] batman-adv: mark a local client as
-	isolated when needed
+Subject: [B.A.T.M.A.N.] [PATCHv3 4/6] batman-adv: extend the ap_isolation
+	mechanism
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,143 +22,35 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-A client sending packets which mark matches the value
-configured via sysfs has to be identified as isolated using
-the TT_CLIENT_ISOLA flag.
+Change the AP isolation mechanism to not only "isolate" WIFI
+clients but also all those marked with the more generic
+"isolation flag" (BATADV_TT_CLIENT_ISOLA).
 
-The match is mask based, meaning that only bits set in the
-mask are compared with those in the mark value.
-
-If the configured mask is equal to 0 no operation is
-performed.
-
-Such flag is then advertised within the classic client
-announcement mechanism.
+The result is that when AP isolation is on any unicast
+packet originated by an "isolated" client and directed to
+another "isolated" client is dropped at the source node.
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- main.h              |  2 ++
- packet.h            |  1 +
- soft-interface.c    |  7 ++++---
- translation-table.c | 16 +++++++++++++++-
- translation-table.h |  2 +-
- 5 files changed, 23 insertions(+), 5 deletions(-)
+ translation-table.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/main.h b/main.h
-index e6f868f..6ee984c 100644
---- a/main.h
-+++ b/main.h
-@@ -67,6 +67,8 @@
- 
- #define BATADV_NULL_IFINDEX 0 /* dummy ifindex used to avoid iface checks */
- 
-+#define BATADV_NO_MARK 0
-+
- #define BATADV_NUM_WORDS BITS_TO_LONGS(BATADV_TQ_LOCAL_WINDOW_SIZE)
- 
- #define BATADV_LOG_BUF_LEN 8192	  /* has to be a power of 2 */
-diff --git a/packet.h b/packet.h
-index cbebac6..5f402c9 100644
---- a/packet.h
-+++ b/packet.h
-@@ -112,6 +112,7 @@ enum batadv_tt_client_flags {
- 	BATADV_TT_CLIENT_DEL     = BIT(0),
- 	BATADV_TT_CLIENT_ROAM    = BIT(1),
- 	BATADV_TT_CLIENT_WIFI    = BIT(4),
-+	BATADV_TT_CLIENT_ISOLA	 = BIT(5),
- 	BATADV_TT_CLIENT_NOPURGE = BIT(8),
- 	BATADV_TT_CLIENT_NEW     = BIT(9),
- 	BATADV_TT_CLIENT_PENDING = BIT(10),
-diff --git a/soft-interface.c b/soft-interface.c
-index c945cea..2d629ee 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -116,7 +116,7 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
- 		batadv_tt_local_remove(bat_priv, old_addr, BATADV_NO_FLAGS,
- 				       "mac address changed", false);
- 		batadv_tt_local_add(dev, addr->sa_data, BATADV_NO_FLAGS,
--				    BATADV_NULL_IFINDEX);
-+				    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
- 	}
- 
- 	return 0;
-@@ -196,7 +196,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	/* Register the client MAC in the transtable */
- 	if (!is_multicast_ether_addr(ethhdr->h_source)) {
- 		client_added = batadv_tt_local_add(soft_iface, ethhdr->h_source,
--						   vid, skb->skb_iif);
-+						   vid, skb->skb_iif,
-+						   skb->mark);
- 		if (!client_added)
- 			goto dropped;
- 	}
-@@ -480,7 +481,7 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- 	 */
- 	batadv_tt_local_add(bat_priv->soft_iface,
- 			    bat_priv->soft_iface->dev_addr, vid,
--			    BATADV_NULL_IFINDEX);
-+			    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
- 
- 	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
- 	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
 diff --git a/translation-table.c b/translation-table.c
-index 979d9b9..6788b5d 100644
+index 09b1112..9c8d55f 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -470,11 +470,13 @@ static void batadv_tt_global_free(struct batadv_priv *bat_priv,
-  * @vid: VLAN identifier
-  * @ifindex: index of the interface where the client is connected to (useful to
-  *  identify wireless clients)
-+ * @mark: the value contained in the skb->mark field of the received packet (if
-+ *  any)
-  *
-  * Returns true if the client was successfully added, false otherwise.
-  */
- bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
--			 unsigned short vid, int ifindex)
-+			 unsigned short vid, int ifindex, uint32_t mark)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
- 	struct batadv_tt_local_entry *tt_local;
-@@ -485,6 +487,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 	int hash_added, table_size, packet_size_max;
- 	bool ret = false, roamed_back = false;
- 	uint8_t remote_flags;
-+	uint32_t match_mark;
+@@ -1865,6 +1865,11 @@ _batadv_is_ap_isolated(struct batadv_tt_local_entry *tt_local_entry,
+ 	    tt_global_entry->common.flags & BATADV_TT_CLIENT_WIFI)
+ 		ret = true;
  
- 	if (ifindex != BATADV_NULL_IFINDEX)
- 		in_dev = dev_get_by_index(&init_net, ifindex);
-@@ -609,6 +612,17 @@ check_roaming:
- 	else
- 		tt_local->common.flags &= ~BATADV_TT_CLIENT_WIFI;
- 
-+	/* check the mark in the skb: if it's equal to the configured
-+	 * isolation_mark, it means the packet is coming from an isolated
-+	 * non-mesh client
-+	 */
-+	match_mark = (mark & bat_priv->isolation_mark_mask);
-+	if (bat_priv->isolation_mark_mask &&
-+	    match_mark == bat_priv->isolation_mark)
-+		tt_local->common.flags |= BATADV_TT_CLIENT_ISOLA;
-+	else
-+		tt_local->common.flags &= ~BATADV_TT_CLIENT_ISOLA;
++	/* check if the two clients are marked as isolated */
++	if (tt_local_entry->common.flags & BATADV_TT_CLIENT_ISOLA &&
++	    tt_global_entry->common.flags & BATADV_TT_CLIENT_ISOLA)
++		ret = true;
 +
- 	/* if any "dynamic" flag has been modified, resend an ADD event for this
- 	 * entry so that all the nodes can get the new flags
- 	 */
-diff --git a/translation-table.h b/translation-table.h
-index 270773e..202c289 100644
---- a/translation-table.h
-+++ b/translation-table.h
-@@ -17,7 +17,7 @@
+ 	return ret;
+ }
  
- int batadv_tt_init(struct batadv_priv *bat_priv);
- bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
--			 unsigned short vid, int ifindex);
-+			 unsigned short vid, int ifindex, uint32_t mark);
- uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
- 				const uint8_t *addr, unsigned short vid,
- 				const char *message, bool roaming);
 -- 
 1.8.4.3
 
