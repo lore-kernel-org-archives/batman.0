@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 16 Nov 2013 12:03:51 +0100
-Message-Id: <1384599832-3959-6-git-send-email-antonio@meshcoding.com>
+Date: Sat, 16 Nov 2013 12:03:52 +0100
+Message-Id: <1384599832-3959-7-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1384599832-3959-1-git-send-email-antonio@meshcoding.com>
 References: <1384599832-3959-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv3 5/6] batman-adv: create helper function to
-	get AP isolation status
+Subject: [B.A.T.M.A.N.] [PATCHv3 6/6] batman-adv: set the isolation mark in
+	the skb if needed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,89 +22,98 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-The AP isolation status may be evaluated in different spots.
-Create an helper function to avoid code duplication.
+If a broadcast packet is coming from a client marked as
+isolated, then mark the skb using the isolation mark so
+that netfilter (or any other application) can recognise
+them.
+
+The mark is written in the skb based on the mask value:
+only bits set in the mask are substitued by those in the
+mark value
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- main.c              | 26 ++++++++++++++++++++++++++
- main.h              |  1 +
- translation-table.c | 13 +------------
- 3 files changed, 28 insertions(+), 12 deletions(-)
+ soft-interface.c    | 18 ++++++++++++++++--
+ translation-table.c | 26 ++++++++++++++++++++++++++
+ translation-table.h |  2 ++
+ 3 files changed, 44 insertions(+), 2 deletions(-)
 
-diff --git a/main.c b/main.c
-index d51bc5f..a7da5ea 100644
---- a/main.c
-+++ b/main.c
-@@ -1168,6 +1168,32 @@ unsigned short batadv_get_vid(struct sk_buff *skb, size_t header_len)
- 	return vid;
- }
+diff --git a/soft-interface.c b/soft-interface.c
+index 2d629ee..97441d8 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -390,9 +390,23 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 		batadv_tt_add_temporary_global_entry(bat_priv, orig_node,
+ 						     ethhdr->h_source, vid);
  
-+/**
-+ * batadv_vlan_ap_isola_get - return the AP isolation status for the given vlan
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @vid: the VLAN identifier for which the AP isolation attributed as to be
-+ *  looked up
-+ *
-+ * Returns true if AP isolation is on for the VLAN idenfied by vid, false
-+ * otherwise
-+ */
-+bool batadv_vlan_ap_isola_get(struct batadv_priv *bat_priv, unsigned short vid)
-+{
-+	bool ap_isolation_enabled = false;
-+	struct batadv_softif_vlan *vlan;
-+
-+	/* if the AP isolation is requested on a VLAN, then check for its
-+	 * setting in the proper VLAN private data structure
-+	 */
-+	vlan = batadv_softif_vlan_get(bat_priv, vid);
-+	if (vlan) {
-+		ap_isolation_enabled = atomic_read(&vlan->ap_isolation);
-+		batadv_softif_vlan_free_ref(vlan);
+-	if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest,
+-				  vid))
++	if (is_multicast_ether_addr(ethhdr->h_dest)) {
++		/* set the mark on broadcast packets if AP isolation is ON and
++		 * the packet is coming from an "isolated" client
++		 */
++		if (batadv_vlan_ap_isola_get(bat_priv, vid) &&
++		    batadv_tt_global_is_isolated(bat_priv, ethhdr->h_source,
++						 vid)) {
++			/* save bits in skb->mark not covered by the mask and
++			 * apply the mark on the rest
++			 */
++			skb->mark &= ~bat_priv->isolation_mark_mask;
++			skb->mark |= bat_priv->isolation_mark;
++		}
++	} else if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source,
++					 ethhdr->h_dest, vid)) {
+ 		goto dropped;
 +	}
-+
-+	return ap_isolation_enabled;
-+}
-+
- static int batadv_param_set_ra(const char *val, const struct kernel_param *kp)
- {
- 	struct batadv_algo_ops *bat_algo_ops;
-diff --git a/main.h b/main.h
-index 6ee984c..e456762 100644
---- a/main.h
-+++ b/main.h
-@@ -367,5 +367,6 @@ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, uint8_t *src,
- 			      uint8_t *dst, uint8_t type, uint8_t version,
- 			      void *tvlv_value, uint16_t tvlv_value_len);
- unsigned short batadv_get_vid(struct sk_buff *skb, size_t header_len);
-+bool batadv_vlan_ap_isola_get(struct batadv_priv *bat_priv, unsigned short vid);
  
- #endif /* _NET_BATMAN_ADV_MAIN_H_ */
+ 	netif_rx(skb);
+ 	goto out;
 diff --git a/translation-table.c b/translation-table.c
-index 9c8d55f..42c7664 100644
+index 42c7664..f9a1fb4 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -1896,19 +1896,8 @@ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
- 	struct batadv_tt_global_entry *tt_global_entry = NULL;
- 	struct batadv_orig_node *orig_node = NULL;
- 	struct batadv_tt_orig_list_entry *best_entry;
--	bool ap_isolation_enabled = false;
--	struct batadv_softif_vlan *vlan;
--
--	/* if the AP isolation is requested on a VLAN, then check for its
--	 * setting in the proper VLAN private data structure
--	 */
--	vlan = batadv_softif_vlan_get(bat_priv, vid);
--	if (vlan) {
--		ap_isolation_enabled = atomic_read(&vlan->ap_isolation);
--		batadv_softif_vlan_free_ref(vlan);
--	}
+@@ -3572,3 +3572,29 @@ int batadv_tt_init(struct batadv_priv *bat_priv)
  
--	if (src && ap_isolation_enabled) {
-+	if (src && batadv_vlan_ap_isola_get(bat_priv, vid)) {
- 		tt_local_entry = batadv_tt_local_hash_find(bat_priv, src, vid);
- 		if (!tt_local_entry ||
- 		    (tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING))
+ 	return 1;
+ }
++
++/**
++ * batadv_tt_global_is_isolated - check if a client is marked as isolated
++ * @bat_priv: the bat priv with all the soft interface information
++ * @addr: the mac address of the client
++ * @vid: the identifier of the VLAN where this client is connected
++ *
++ * Return true if the client is marked with the TT_CLIENT_ISOLA flag, flase
++ * otherwise
++ */
++bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
++				  const uint8_t *addr, unsigned short vid)
++{
++	struct batadv_tt_global_entry *tt;
++	bool ret;
++
++	tt = batadv_tt_global_hash_find(bat_priv, addr, vid);
++	if (!tt)
++		return false;
++
++	ret = tt->common.flags & BATADV_TT_CLIENT_ISOLA;
++
++	batadv_tt_global_entry_free_ref(tt);
++
++	return ret;
++}
+diff --git a/translation-table.h b/translation-table.h
+index 202c289..3ab8a7b 100644
+--- a/translation-table.h
++++ b/translation-table.h
+@@ -45,5 +45,7 @@ bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
+ 					  struct batadv_orig_node *orig_node,
+ 					  const unsigned char *addr,
+ 					  unsigned short vid);
++bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
++				  const uint8_t *addr, unsigned short vid);
+ 
+ #endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */
 -- 
 1.8.4.3
 
