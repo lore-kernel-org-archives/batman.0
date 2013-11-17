@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 17 Nov 2013 11:32:33 +0800
-Message-ID: <2117201.lOdXSplxnP@diderot>
-In-Reply-To: <1384599832-3959-4-git-send-email-antonio@meshcoding.com>
+Date: Sun, 17 Nov 2013 11:34 +0800
+Message-ID: <7989682.kegn5kvAK7@diderot>
+In-Reply-To: <1384599832-3959-5-git-send-email-antonio@meshcoding.com>
 References: <1384599832-3959-1-git-send-email-antonio@meshcoding.com>
- <1384599832-3959-4-git-send-email-antonio@meshcoding.com>
+ <1384599832-3959-5-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7516515.5BLvqmkGUv";
+Content-Type: multipart/signed; boundary="nextPart1472723.ZtpRVWVzNq";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 3/6] batman-adv: print the new
-	BATADV_TT_CLIENT_ISOLA flag
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 4/6] batman-adv: extend the
+	ap_isolation mechanism
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,30 +25,32 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart7516515.5BLvqmkGUv
+--nextPart1472723.ZtpRVWVzNq
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 16 November 2013 12:03:49 Antonio Quartulli wrote:
+On Saturday 16 November 2013 12:03:50 Antonio Quartulli wrote:
 > From: Antonio Quartulli <antonio@open-mesh.com>
 > 
-> Print the new BATADV_TT_CLIENT_ISOLA flag properly in the
-> Local and Global Translation Table output.
+> Change the AP isolation mechanism to not only "isolate" WIFI
+> clients but also all those marked with the more generic
+> "isolation flag" (BATADV_TT_CLIENT_ISOLA).
 > 
-> The character 'I' is used in the flags column to indicate
-> that the entry is marked as isolated.
+> The result is that when AP isolation is on any unicast
+> packet originated by an "isolated" client and directed to
+> another "isolated" client is dropped at the source node.
 > 
 > Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 > ---
->  translation-table.c | 12 ++++++++----
->  1 file changed, 8 insertions(+), 4 deletions(-)
+>  translation-table.c | 5 +++++
+>  1 file changed, 5 insertions(+)
 
-Applied in revision febf510.
+Applied in revision ae95c4e.
 
 Thanks,
 Marek
 
---nextPart7516515.5BLvqmkGUv
+--nextPart1472723.ZtpRVWVzNq
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -56,14 +58,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSiDjRAAoJEFNVTo/uthzAqFwH/iY2wWrlXn8WgcuCpIH/ujGD
-gFuX87/xe9sQghENP6ZL3huj/ped0tCJ1LY0ZeXVeCTRQvT7tsPlWI+1RlZqbyyL
-9MFy/T2oZvQxCDnszv02KoZrcKkEk8TKnr44eUrVMnS1//s/UKqeKMB65f7m0Jv5
-g5eetaxXw9L78SRLVNUXBC18HSKQoGYJ1DCELOlAr2j2KcXQmb1ZnEdK5PuEbVyK
-VrHX9BOkv20Xln51Vzu8wrgSIN/jZyTWAaUn6zpTuSY5W4xcB4ZVFwqLzt+S1kwg
-ZRoPCzoRFGeez1phrBqSpqeJkIggmfavKzCsdimcMHlC9gfSZ/goiO1L9lG3Xnk=
-=BvIW
+iQEcBAABAgAGBQJSiDkoAAoJEFNVTo/uthzAelQH/3kVSroiScLs51DEceX+5h8A
+NlcXEXeh0nhOulMESo7akglmQlwacRAY9g+q0hMsPKP7UlyVe6osBwzQycff1sHI
+Tz7FvZ4sPNOHIyA2pcLo/zVMHxTgju469kFE12HHwP7HQqWaXX79LIRFYSqlXEyU
+bNkiai8oxFBvvH13YYuGmj57xLUrjKoZCVlp1bZBopLHUf9APdtan9oKM12wBMVQ
+kQb6Q9z1RRpidwU3T8pipt4GqWPoB+vI/G0KdA1Swgc4UB/f8AIwkoIkBX+s5ctG
+rZNOHqDipM/fMx/72LWmoxpLWQWfl3+lJIIbwj4R3+2GkMughBB8VgOthuuyEEA=
+=iVkD
 -----END PGP SIGNATURE-----
 
---nextPart7516515.5BLvqmkGUv--
+--nextPart1472723.ZtpRVWVzNq--
 
