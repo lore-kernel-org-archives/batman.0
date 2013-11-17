@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 17 Nov 2013 11:35:45 +0800
-Message-ID: <5949218.HgMH9zx54d@diderot>
-In-Reply-To: <1384599832-3959-6-git-send-email-antonio@meshcoding.com>
+Date: Sun, 17 Nov 2013 11:37:10 +0800
+Message-ID: <2679403.uqHTqpnomK@diderot>
+In-Reply-To: <1384599832-3959-7-git-send-email-antonio@meshcoding.com>
 References: <1384599832-3959-1-git-send-email-antonio@meshcoding.com>
- <1384599832-3959-6-git-send-email-antonio@meshcoding.com>
+ <1384599832-3959-7-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1773580.dC9kIpmkSf";
+Content-Type: multipart/signed; boundary="nextPart2452604.cSVp2tYSju";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 5/6] batman-adv: create helper function
-	to get AP isolation status
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 6/6] batman-adv: set the isolation mark
+	in the skb if needed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,29 +25,35 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart1773580.dC9kIpmkSf
+--nextPart2452604.cSVp2tYSju
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 16 November 2013 12:03:51 Antonio Quartulli wrote:
+On Saturday 16 November 2013 12:03:52 Antonio Quartulli wrote:
 > From: Antonio Quartulli <antonio@open-mesh.com>
 > 
-> The AP isolation status may be evaluated in different spots.
-> Create an helper function to avoid code duplication.
+> If a broadcast packet is coming from a client marked as
+> isolated, then mark the skb using the isolation mark so
+> that netfilter (or any other application) can recognise
+> them.
+> 
+> The mark is written in the skb based on the mask value:
+> only bits set in the mask are substitued by those in the
+> mark value
 > 
 > Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 > ---
->  main.c              | 26 ++++++++++++++++++++++++++
->  main.h              |  1 +
->  translation-table.c | 13 +------------
->  3 files changed, 28 insertions(+), 12 deletions(-)
+>  soft-interface.c    | 18 ++++++++++++++++--
+>  translation-table.c | 26 ++++++++++++++++++++++++++
+>  translation-table.h |  2 ++
+>  3 files changed, 44 insertions(+), 2 deletions(-)
 
-Applied in revision ceb002c.
+Applied in revision 6fa38a2.
 
 Thanks,
 Marek
 
---nextPart1773580.dC9kIpmkSf
+--nextPart2452604.cSVp2tYSju
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -55,14 +61,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSiDmSAAoJEFNVTo/uthzA8JsH/AmhV2dgqZ9F5jZPnvUn+bzD
-1pNSqEzJu2GLXQw97rM4YXcbc8R6DVAPKvVSLjQrKs6geTlIHZDpsaXVd4YIKBai
-e4aLLTGEWmKQ/SObiE0lhjQN/544vDYYNQ5TzTC4Jx+z97UdN1BW76McdyRjU32k
-fuQ6Dma14giV7amvNIq+iEvAhYGo5kQBtwV+i0a/yb8FnHd49/MWeM6KqeCFOs2c
-VidsjLpAAtrjw0QZaCYpOONeKXT06KzCVoRsjA+zYTxPBJgOqMetlICWk6VDwVrR
-MNq2sRlNvOAec9uU2VP6Ia05wJv+iojF3XBw9EsO5EgpzqucXuLpKbs3aIzGQHc=
-=V21X
+iQEcBAABAgAGBQJSiDnmAAoJEFNVTo/uthzAvMgH/iJygC9EsSGRR0y23q6fPSe9
+5ai/M4CA4fw0iZ3RkVqHWsXlpDj7Uhtc4QRuPi/isW9csw85fHMF06cDQucM4pvv
+A0Nh6QhmQHwEAE7ECkJ9OZGSzl+2Si9PiW+IysOSOvX9V7jc3DEL0EoAsKxrlhkV
+GP+V0lBxX8iaHhXYZ2HEEzN2AiNey7gCb96+kHm0lGDJJ0gyNiBpmGHKbvz7oyGM
++gYj4sZCdOWCWs0ek07hvxCoVz1B9a6oUOUcanyk9dTZT6QnzxFv3x+My+oy/zEU
+gtuxedZo2EFXVWJXR1YfnVPrDsDUhos+l6NpPMmphDrlL8KemFkXJGQ8znEtKgo=
+=As/D
 -----END PGP SIGNATURE-----
 
---nextPart1773580.dC9kIpmkSf--
+--nextPart2452604.cSVp2tYSju--
 
