@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 17 Nov 2013 11:34 +0800
-Message-ID: <7989682.kegn5kvAK7@diderot>
-In-Reply-To: <1384599832-3959-5-git-send-email-antonio@meshcoding.com>
+Date: Sun, 17 Nov 2013 11:35:45 +0800
+Message-ID: <5949218.HgMH9zx54d@diderot>
+In-Reply-To: <1384599832-3959-6-git-send-email-antonio@meshcoding.com>
 References: <1384599832-3959-1-git-send-email-antonio@meshcoding.com>
- <1384599832-3959-5-git-send-email-antonio@meshcoding.com>
+ <1384599832-3959-6-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1472723.ZtpRVWVzNq";
+Content-Type: multipart/signed; boundary="nextPart1773580.dC9kIpmkSf";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 4/6] batman-adv: extend the
-	ap_isolation mechanism
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 5/6] batman-adv: create helper function
+	to get AP isolation status
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,32 +25,29 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart1472723.ZtpRVWVzNq
+--nextPart1773580.dC9kIpmkSf
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 16 November 2013 12:03:50 Antonio Quartulli wrote:
+On Saturday 16 November 2013 12:03:51 Antonio Quartulli wrote:
 > From: Antonio Quartulli <antonio@open-mesh.com>
 > 
-> Change the AP isolation mechanism to not only "isolate" WIFI
-> clients but also all those marked with the more generic
-> "isolation flag" (BATADV_TT_CLIENT_ISOLA).
-> 
-> The result is that when AP isolation is on any unicast
-> packet originated by an "isolated" client and directed to
-> another "isolated" client is dropped at the source node.
+> The AP isolation status may be evaluated in different spots.
+> Create an helper function to avoid code duplication.
 > 
 > Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 > ---
->  translation-table.c | 5 +++++
->  1 file changed, 5 insertions(+)
+>  main.c              | 26 ++++++++++++++++++++++++++
+>  main.h              |  1 +
+>  translation-table.c | 13 +------------
+>  3 files changed, 28 insertions(+), 12 deletions(-)
 
-Applied in revision ae95c4e.
+Applied in revision ceb002c.
 
 Thanks,
 Marek
 
---nextPart1472723.ZtpRVWVzNq
+--nextPart1773580.dC9kIpmkSf
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -58,14 +55,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSiDkoAAoJEFNVTo/uthzAelQH/3kVSroiScLs51DEceX+5h8A
-NlcXEXeh0nhOulMESo7akglmQlwacRAY9g+q0hMsPKP7UlyVe6osBwzQycff1sHI
-Tz7FvZ4sPNOHIyA2pcLo/zVMHxTgju469kFE12HHwP7HQqWaXX79LIRFYSqlXEyU
-bNkiai8oxFBvvH13YYuGmj57xLUrjKoZCVlp1bZBopLHUf9APdtan9oKM12wBMVQ
-kQb6Q9z1RRpidwU3T8pipt4GqWPoB+vI/G0KdA1Swgc4UB/f8AIwkoIkBX+s5ctG
-rZNOHqDipM/fMx/72LWmoxpLWQWfl3+lJIIbwj4R3+2GkMughBB8VgOthuuyEEA=
-=iVkD
+iQEcBAABAgAGBQJSiDmSAAoJEFNVTo/uthzA8JsH/AmhV2dgqZ9F5jZPnvUn+bzD
+1pNSqEzJu2GLXQw97rM4YXcbc8R6DVAPKvVSLjQrKs6geTlIHZDpsaXVd4YIKBai
+e4aLLTGEWmKQ/SObiE0lhjQN/544vDYYNQ5TzTC4Jx+z97UdN1BW76McdyRjU32k
+fuQ6Dma14giV7amvNIq+iEvAhYGo5kQBtwV+i0a/yb8FnHd49/MWeM6KqeCFOs2c
+VidsjLpAAtrjw0QZaCYpOONeKXT06KzCVoRsjA+zYTxPBJgOqMetlICWk6VDwVrR
+MNq2sRlNvOAec9uU2VP6Ia05wJv+iojF3XBw9EsO5EgpzqucXuLpKbs3aIzGQHc=
+=V21X
 -----END PGP SIGNATURE-----
 
---nextPart1472723.ZtpRVWVzNq--
+--nextPart1773580.dC9kIpmkSf--
 
