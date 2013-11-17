@@ -1,9 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 16 Nov 2013 23:02:51 +0100
-Message-Id: <1384639371-630-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove returns at the end of
-	void functions
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 17 Nov 2013 11:30 +0800
+Message-ID: <1674408.CWmMTnBMIb@diderot>
+In-Reply-To: <1384599832-3959-2-git-send-email-antonio@meshcoding.com>
+References: <1384599832-3959-1-git-send-email-antonio@meshcoding.com>
+ <1384599832-3959-2-git-send-email-antonio@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart5801283.BLscItgJyk";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 1/6] batman-adv: add isolation_mark
+	sysfs attribute
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,73 +22,60 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <antonio@meshcoding.com>
 
-Return at the end of void functions is not needed.
 
-Since most of the void functions in the code do not do so,
-make all the others consistent by removing the useless
-returns. Actually all the functions to be "fixed" are in
-network-coding.h only.
+--nextPart5801283.BLscItgJyk
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- network-coding.h | 7 -------
- 1 file changed, 7 deletions(-)
+On Saturday 16 November 2013 12:03:47 Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+> 
+> This attribute can be used to set and read the value and the
+> mask of the skb mark which will be used to classify the
+> source non-mesh client as ISOLATED. In this way a client can
+> be advertised as such and the mark can potentially be
+> restored at the receiving node before delivering the skb.
+> 
+> This can be helpful for creating network wide netfilter
+> policies.
+> 
+> This sysfs file expects a string of the shape "$mark/$mask".
+> Where $mark has to be a 32-bit number in any base, while
+> $mask must be a 32bit mask expressed in hex base. Only bits
+> in $mark covered by the bitmask are really stored.
+> 
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+>  soft-interface.c     |  2 ++
+>  sysfs-class-net-mesh |  8 ++++++
+>  sysfs.c              | 71
+> ++++++++++++++++++++++++++++++++++++++++++++++++++++
+> types.h              |  2 ++
+>  4 files changed, 83 insertions(+)
 
-diff --git a/network-coding.h b/network-coding.h
-index 6b1a5d7..b16639f 100644
---- a/network-coding.h
-+++ b/network-coding.h
-@@ -59,7 +59,6 @@ static inline int batadv_nc_mesh_init(struct batadv_priv *bat_priv)
- 
- static inline void batadv_nc_mesh_free(struct batadv_priv *bat_priv)
- {
--	return;
- }
- 
- static inline void
-@@ -69,7 +68,6 @@ batadv_nc_update_nc_node(struct batadv_priv *bat_priv,
- 			 struct batadv_ogm_packet *ogm_packet,
- 			 int is_single_hop_neigh)
- {
--	return;
- }
- 
- static inline void
-@@ -78,17 +76,14 @@ batadv_nc_purge_orig(struct batadv_priv *bat_priv,
- 		     bool (*to_purge)(struct batadv_priv *,
- 				      struct batadv_nc_node *))
- {
--	return;
- }
- 
- static inline void batadv_nc_init_bat_priv(struct batadv_priv *bat_priv)
- {
--	return;
- }
- 
- static inline void batadv_nc_init_orig(struct batadv_orig_node *orig_node)
- {
--	return;
- }
- 
- static inline bool batadv_nc_skb_forward(struct sk_buff *skb,
-@@ -101,14 +96,12 @@ static inline void
- batadv_nc_skb_store_for_decoding(struct batadv_priv *bat_priv,
- 				 struct sk_buff *skb)
- {
--	return;
- }
- 
- static inline void
- batadv_nc_skb_store_sniffed_unicast(struct batadv_priv *bat_priv,
- 				    struct sk_buff *skb)
- {
--	return;
- }
- 
- static inline int batadv_nc_nodes_seq_print_text(struct seq_file *seq,
--- 
-1.8.4.3
+Applied in revision e29249b.
+
+Thanks,
+Marek
+
+--nextPart5801283.BLscItgJyk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJSiDg8AAoJEFNVTo/uthzAjPQH/RiyM57TCedTK2AbVhxilfRB
+dgEadO/tfqGgvRgU2s50YiJc8Z04CI59U75rkh2opu0rVAZ91QkR7WCIga/GGf7z
+tnd997QU7+2eK4ilzI8g5nnl6kU/VwALqCirRN0TAzAYFI8wI/IE6W/fRdo+WmZn
+wZDmOmTY7VzStCSvG4LNbmjsrtQAuRVqPhfoBwRaXFfQvChqdNakurRmDWcQIne8
+PhIQdxeezEBHi+adzBlZ86vwoOCx9rimmbEOHLLfR5Lxa3uNqwy3pELlFRGm67Mv
+CeI3NSXagUHFCbC8mZqnyquuikGSBHnw/cweEVgi42suAwWwuCCXMKQqzP/eGO4=
+=F0Bd
+-----END PGP SIGNATURE-----
+
+--nextPart5801283.BLscItgJyk--
 
