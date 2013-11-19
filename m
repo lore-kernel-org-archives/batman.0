@@ -1,8 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 19 Nov 2013 08:26:07 +0100
-Message-Id: <1384845967-2497-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: add compat code for kstrtou32
+Date: Tue, 19 Nov 2013 08:36:29 +0100
+Message-Id: <1384846589-3428-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: improve README
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,29 +17,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-kstrtou32() does not exist before 2.6.39. Convert it to
-strict_strtoul() in that case.
-
-Used-by: e29249b4483b91d7a590a16e9b5ffe9412ce7fde
-("batman-adv: add isolation_mark sysfs attribute")
+Add missing sysfs attributes in the proper section of the README
 
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- compat.h | 2 ++
- 1 file changed, 2 insertions(+)
+ README | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/compat.h b/compat.h
-index 01984b8..334dc5c 100644
---- a/compat.h
-+++ b/compat.h
-@@ -152,6 +152,8 @@ static inline int batadv_param_set_copystring(const char *val,
+diff --git a/README b/README
+index 89490be..58e4904 100644
+--- a/README
++++ b/README
+@@ -66,11 +66,10 @@ All  mesh  wide  settings  can be found in batman's own interface
+ folder:
  
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 39)
+ # ls /sys/class/net/bat0/mesh/
+-# aggregated_ogms        gw_bandwidth           log_level
+-# ap_isolation           gw_mode                orig_interval
+-# bonding                gw_sel_class           routing_algo
+-# bridge_loop_avoidance  hop_penalty            fragmentation
+-
++#aggregated_ogms        distributed_arp_table  gw_sel_class    orig_interval
++#ap_isolation           fragmentation          hop_penalty     routing_algo
++#bonding                gw_bandwidth           isolation_mark  vlan0
++#bridge_loop_avoidance  gw_mode                log_level
  
-+/* cast last argument of strict_strtoul() because we have a uint32_t */
-+#define kstrtou32(cp, base, v) strict_strtoul(cp, base, (unsigned long *)v)
- #define kstrtoul strict_strtoul
- #define kstrtol  strict_strtol
+ There is a special folder for debugging information:
  
 -- 
 1.8.4.3
