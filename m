@@ -1,8 +1,17 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 21 Nov 2013 14:17:45 +0100
-Message-Id: <1385039865-7570-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix debuginfo macro style issue
+Date: Thu, 21 Nov 2013 14:22:44 +0100
+References: <1384366492-27310-1-git-send-email-sw@simonwunderlich.de>
+ <1384366492-27310-8-git-send-email-sw@simonwunderlich.de>
+ <12732164.njm70c9A0l@diderot>
+In-Reply-To: <12732164.njm70c9A0l@diderot>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201311211422.44620.sw@simonwunderlich.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 7/8] batman-adv: add debugfs structure
+	for information per interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,50 +24,53 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Simon Wunderlich <simon@open-mesh.com>
+Hi Marek,
 
-Structure initialization within the macros should follow the general
-coding style used in the kernel: put the initialization of the first
-variable and the closing brace on a separate line.
+> On Wednesday 13 November 2013 19:14:51 Simon Wunderlich wrote:
+> >  void batadv_debugfs_init(void)
+> >  {
+> >  
+> >         struct batadv_debuginfo **bat_debug;
+> > 
+> > @@ -378,6 +395,11 @@ void batadv_debugfs_init(void)
+> > 
+> >         if (!batadv_debugfs)
+> >         
+> >                 goto err;
+> > 
+> > +       batadv_hardif_debugfs =
+> > debugfs_create_dir(BATADV_DEBUGFS_HARDIF_SUBDIR,
+> > +                                                  batadv_debugfs);
+> > +       if (batadv_hardif_debugfs == ERR_PTR(-ENODEV))
+> > +               goto err;
+> > +
+> > 
+> >         for (bat_debug = batadv_general_debuginfos; *bat_debug;
+> >         ++bat_debug)
+> > 
+> > { file = debugfs_create_file(((*bat_debug)->attr).name, S_IFREG |
+> > ((*bat_debug)->attr).mode,
+> 
+> I see no specific reason to create a 'hardif' subdirectory. We developers
+> may know what the term relates to but it is reasonable to assume our users
+> do not. How about adding the interface directory (e.g. wlan0) right next
+> to the batX directory ? 
 
-Reported-by: Antonio Quartulli <antonio@meshcoding.com>
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
----
- debugfs.c |   19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+thanks for the suggestion, I've done that in the reviewed patch v4 (there is 
+also a v5 fixing another style issue antonio pointed out).
 
-diff --git a/debugfs.c b/debugfs.c
-index cd5d24a..92d9d83 100644
---- a/debugfs.c
-+++ b/debugfs.c
-@@ -322,14 +322,17 @@ static int batadv_nc_nodes_open(struct inode *inode, struct file *file)
- 
- #define BATADV_DEBUGINFO(_name, _mode, _open)		\
- struct batadv_debuginfo batadv_debuginfo_##_name = {	\
--	.attr = { .name = __stringify(_name),		\
--		  .mode = _mode, },			\
--	.fops = { .owner = THIS_MODULE,			\
--		  .open = _open,			\
--		  .read	= seq_read,			\
--		  .llseek = seq_lseek,			\
--		  .release = single_release,		\
--		}					\
-+	.attr = {					\
-+		.name = __stringify(_name),		\
-+		.mode = _mode,				\
-+	},						\
-+	.fops = {					\
-+		.owner = THIS_MODULE,			\
-+		.open = _open,				\
-+		.read	= seq_read,			\
-+		.llseek = seq_lseek,			\
-+		.release = single_release,		\
-+	},						\
- };
- 
- /* the following attributes are general and therefore they will be directly
--- 
-1.7.10.4
+> For clarity we could also move the interface
+> directory into the corresponding batX folder. In case multiple batX
+> interfaces it might makes things more obvious.
 
+That's a little harder to do as the folder creation is done when the interface 
+is registered to batman-adv, just as for sysfs. Although not impossible, as 
+discussed on IRC, I'd like to keep it at the proposal from above. This will 
+also keep the folders in the same flat hierarchy as we have in /sys/class/net/* 
+to manage batman devices. I think it's good to keep it at this consistent 
+scheme.
+
+Thanks,
+    Simon
