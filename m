@@ -1,15 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 21 Nov 2013 09:41:26 +0800
-Message-ID: <18492403.daOuMBLdry@diderot>
-In-Reply-To: <1384366492-27310-9-git-send-email-sw@simonwunderlich.de>
-References: <1384366492-27310-1-git-send-email-sw@simonwunderlich.de>
- <1384366492-27310-9-git-send-email-sw@simonwunderlich.de>
+Return-Path: <mschiffer@universe-factory.net>
+Message-ID: <528D81CA.8000106@universe-factory.net>
+Date: Thu, 21 Nov 2013 04:45:14 +0100
+From: Matthias Schiffer <mschiffer@universe-factory.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4017110.K3oIgTWNkB";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 8/8] batman-adv: add debugfs support to
-	view multiif tables
+References: <1384845967-2497-1-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1384845967-2497-1-git-send-email-antonio@meshcoding.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="F3kC9vrmg2rQO0Ax5wuq1FPhwW3mRn4oK"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add compat code for kstrtou32
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,62 +20,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Antonio Quartulli <antonio@meshcoding.com>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--F3kC9vrmg2rQO0Ax5wuq1FPhwW3mRn4oK
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 11/19/2013 08:26 AM, Antonio Quartulli wrote:
+> kstrtou32() does not exist before 2.6.39. Convert it to
+> strict_strtoul() in that case.
+>=20
+> Used-by: e29249b4483b91d7a590a16e9b5ffe9412ce7fde
+> ("batman-adv: add isolation_mark sysfs attribute")
+>=20
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> ---
+>  compat.h | 2 ++
+>  1 file changed, 2 insertions(+)
+>=20
+> diff --git a/compat.h b/compat.h
+> index 01984b8..334dc5c 100644
+> --- a/compat.h
+> +++ b/compat.h
+> @@ -152,6 +152,8 @@ static inline int batadv_param_set_copystring(const=
+ char *val,
+> =20
+>  #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 39)
+> =20
+> +/* cast last argument of strict_strtoul() because we have a uint32_t *=
+/
+> +#define kstrtou32(cp, base, v) strict_strtoul(cp, base, (unsigned long=
+ *)v)
+>  #define kstrtoul strict_strtoul
+>  #define kstrtol  strict_strtol
+> =20
+>=20
+
+You are casting a u32 * to unsigned long *? Won't this break horribly
+when sizeof(u32) !=3D sizeof(unsigned long)?
 
 
---nextPart4017110.K3oIgTWNkB
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Wednesday 13 November 2013 19:14:52 Simon Wunderlich wrote:
-> +/**
-> + * batadv_originators_open_multiif - handles debugfs output for the
-> + *  originators_multiif table
-> + * @inode: inode pointer to debugfs file
-> + * @file: pointer to the seq_file
-> + */
-> +static int batadv_originators_open_multiif(struct inode *inode,
-> +					   struct file *file)
-> +{
-> +	struct net_device *net_dev = (struct net_device *)inode->i_private;
-> +	return single_open(file, batadv_orig_multiif_seq_print_text, net_dev);
-> +}
-
-Please find a better name than 'multiif'. That term isn't used in any function 
-your patchset introduced. How about: batadv_originators_iface_open() ?
-
-
-> +/**
-> + * batadv_orig_multiif_seq_print_text - writes originator infos for all
-> + *  outgoing interfaces
-> + * @seq: debugfs table seq_file struct
-> + * @offset: not used
-> + *
-> + * Returns 0
-> + */
-> +int batadv_orig_multiif_seq_print_text(struct seq_file *seq, void *offset)
-
-Same here.
-
-Cheers,
-Marek
-
---nextPart4017110.K3oIgTWNkB
+--F3kC9vrmg2rQO0Ax5wuq1FPhwW3mRn4oK
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQEcBAABAgAGBQJSjWTGAAoJEFNVTo/uthzATN4IAI/HE+cMB4/JDU8T/lu45rwQ
-eO+Qd1lkaTT319r1Q0oOK3+FM88Gc32g1Ystr1u5yl4HOl1Q5tP3+AmWCkdintrL
-DJ4YN7aykU8satjG0oSZF9heveoLzpVAd02kPSbuDzPbt4wLiw12JqJ7NLBVv6au
-3pv/rTS17Ol5V3aql4L6+aRlGqSdiYmcZf0iyxPDUWocgffTQFEQDy/4doWDEndq
-YVb9h4r4P4cyEmSf71Vtt1bAEjMRqvZ6PL8ztjoF4JbAtPiTsSc5p0pRDCjILdxM
-VhuYQtpvxX5fPgwe1EIFCRb9tx3rsHmGk2dHJVSaBz2UQFtNXnGfc5kARWC8AAg=
-=9UD4
+iEYEARECAAYFAlKNgcsACgkQq3qIxbiQM9gdEQCgudVL0oKZ+hYj3LqxnSuc/g2u
+zm0An2iqSbwKR1t+hYl8Md0WQtiUAayk
+=8lRH
 -----END PGP SIGNATURE-----
 
---nextPart4017110.K3oIgTWNkB--
-
+--F3kC9vrmg2rQO0Ax5wuq1FPhwW3mRn4oK--
