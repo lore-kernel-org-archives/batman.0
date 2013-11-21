@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 21 Nov 2013 11:52:15 +0100
-Message-Id: <1385031136-15967-2-git-send-email-sw@simonwunderlich.de>
+Date: Thu, 21 Nov 2013 11:52:16 +0100
+Message-Id: <1385031136-15967-3-git-send-email-sw@simonwunderlich.de>
 In-Reply-To: <1385031136-15967-1-git-send-email-sw@simonwunderlich.de>
 References: <1385031136-15967-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCHv4 1/2] batman-adv: add debugfs structure for
-	information per interface
+Subject: [B.A.T.M.A.N.] [PATCHv4 2/2] batman-adv: add debugfs support to
+	view multiif tables
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,192 +22,201 @@ Cc: Simon Wunderlich <simon@open-mesh.com>
 
 From: Simon Wunderlich <simon@open-mesh.com>
 
-To show information per interface, add a debugfs hardif structure
-similar to the system in sysfs. Hard interface folders will be created
-in "$debugfs/batman-adv/". Files are not yet added.
+Show tables for the multi interface operation. Originator tables
+are added per hard interface.
+
+This patch also changes the API by adding the interface to the
+bat_orig_print() parameters.
 
 Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 ---
-Changes to PATCHv3:
- * move hardif debugfs files into $debugfs/batman-adv/$hardif
+Changes to PACHv3:
+ * change *multiif* function names to *hardif* names
+ * fix outdated kerneldoc
 
 Changes to PATCHv2:
- * add macro to add hardif debug infos
----
- debugfs.c        |   70 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- debugfs.h        |    2 ++
- hard-interface.c |    9 +++++++
- types.h          |    2 ++
- 4 files changed, 83 insertions(+)
+ * use name "originators", not "originators_multiif" for the
+   originator table per interface.
 
+Changes to PATCH:
+ * use one file per interface instead of all tables in one file
+ * kernel doc and commit message improvement
+---
+ bat_iv_ogm.c |   12 +++++++-----
+ debugfs.c    |   16 ++++++++++++++++
+ originator.c |   48 +++++++++++++++++++++++++++++++++++++++++++++++-
+ originator.h |    1 +
+ types.h      |    3 ++-
+ 5 files changed, 73 insertions(+), 7 deletions(-)
+
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index dbd55f0..bf4fd9c 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -1781,9 +1781,11 @@ batadv_iv_ogm_orig_print_neigh(struct batadv_orig_node *orig_node,
+  * batadv_iv_ogm_orig_print - print the originator table
+  * @bat_priv: the bat priv with all the soft interface information
+  * @seq: debugfs table seq_file struct
++ * @if_outgoing: the outgoing interface for which this should be printed
+  */
+ static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
+-				     struct seq_file *seq)
++				     struct seq_file *seq,
++				     struct batadv_hard_iface *if_outgoing)
+ {
+ 	struct batadv_neigh_node *neigh_node;
+ 	struct batadv_hashtable *hash = bat_priv->orig_hash;
+@@ -1805,12 +1807,12 @@ static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
+ 		rcu_read_lock();
+ 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
+ 			neigh_node = batadv_orig_router_get(orig_node,
+-							    BATADV_IF_DEFAULT);
++							    if_outgoing);
+ 			if (!neigh_node)
+ 				continue;
+ 
+ 			n_ifinfo = batadv_neigh_ifinfo_get(neigh_node,
+-							   BATADV_IF_DEFAULT);
++							   if_outgoing);
+ 			if (!n_ifinfo)
+ 				goto next;
+ 
+@@ -1828,8 +1830,8 @@ static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
+ 				   neigh_node->addr,
+ 				   neigh_node->if_incoming->net_dev->name);
+ 
+-			batadv_iv_ogm_orig_print_neigh(orig_node,
+-						       BATADV_IF_DEFAULT, seq);
++			batadv_iv_ogm_orig_print_neigh(orig_node, if_outgoing,
++						       seq);
+ 			seq_puts(seq, "\n");
+ 			batman_count++;
+ 
 diff --git a/debugfs.c b/debugfs.c
-index 367ea86..e01e1c0 100644
+index e01e1c0..f9aaeb8 100644
 --- a/debugfs.c
 +++ b/debugfs.c
-@@ -366,6 +366,22 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
+@@ -245,6 +245,19 @@ static int batadv_originators_open(struct inode *inode, struct file *file)
+ 	return single_open(file, batadv_orig_seq_print_text, net_dev);
+ }
+ 
++/**
++ * batadv_originators_hardif_open - handles debugfs output for the
++ *  originator table of an hard interface
++ * @inode: inode pointer to debugfs file
++ * @file: pointer to the seq_file
++ */
++static int batadv_originators_hardif_open(struct inode *inode,
++					   struct file *file)
++{
++	struct net_device *net_dev = (struct net_device *)inode->i_private;
++	return single_open(file, batadv_orig_hardif_seq_print_text, net_dev);
++}
++
+ static int batadv_gateways_open(struct inode *inode, struct file *file)
+ {
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+@@ -377,8 +390,11 @@ struct batadv_debuginfo batadv_hardif_debuginfo_##_name = {	\
+ 		  .release = single_release,			\
+ 		}						\
+ };
++static BATADV_HARDIF_DEBUGINFO(originators, S_IRUGO,
++			       batadv_originators_hardif_open);
+ 
+ static struct batadv_debuginfo *batadv_hardif_debuginfos[] = {
++	&batadv_hardif_debuginfo_originators,
  	NULL,
  };
  
-+#define BATADV_HARDIF_DEBUGINFO(_name, _mode, _open)		\
-+struct batadv_debuginfo batadv_hardif_debuginfo_##_name = {	\
-+	.attr = { .name = __stringify(_name),			\
-+		  .mode = _mode, },				\
-+	.fops = { .owner = THIS_MODULE,				\
-+		  .open = _open,				\
-+		  .read	= seq_read,				\
-+		  .llseek = seq_lseek,				\
-+		  .release = single_release,			\
-+		}						\
-+};
-+
-+static struct batadv_debuginfo *batadv_hardif_debuginfos[] = {
-+	NULL,
-+};
-+
- void batadv_debugfs_init(void)
- {
- 	struct batadv_debuginfo **bat_debug;
-@@ -393,6 +409,7 @@ void batadv_debugfs_init(void)
- 	return;
- err:
- 	debugfs_remove_recursive(batadv_debugfs);
-+	batadv_debugfs = NULL;
- }
+diff --git a/originator.c b/originator.c
+index 9f0ae77..a001a3d 100644
+--- a/originator.c
++++ b/originator.c
+@@ -932,11 +932,57 @@ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
+ 		return 0;
+ 	}
  
- void batadv_debugfs_destroy(void)
-@@ -401,6 +418,59 @@ void batadv_debugfs_destroy(void)
- 	batadv_debugfs = NULL;
+-	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq);
++	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq,
++					       BATADV_IF_DEFAULT);
+ 
+ 	return 0;
  }
  
 +/**
-+ * batadv_debugfs_add_hardif - creates the base directory for a hard interface
-+ *  in debugfs.
-+ * @hard_iface: hard interface which should be added.
++ * batadv_orig_hardif_seq_print_text - writes originator infos for a specific
++ *  outgoing interface
++ * @seq: debugfs table seq_file struct
++ * @offset: not used
++ *
++ * Returns 0
 + */
-+int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface)
++int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
 +{
-+	struct batadv_debuginfo **bat_debug;
-+	struct dentry *file;
++	struct net_device *net_dev = (struct net_device *)seq->private;
++	struct batadv_hard_iface *hard_iface;
++	struct batadv_priv *bat_priv;
 +
-+	if (!batadv_debugfs)
++	hard_iface = batadv_hardif_get_by_netdev(net_dev);
++
++	if (!hard_iface || !hard_iface->soft_iface) {
++		seq_puts(seq, "Interface not known to to B.A.T.M.A.N.\n");
 +		goto out;
-+
-+	hard_iface->debug_dir = debugfs_create_dir(hard_iface->net_dev->name,
-+						   batadv_debugfs);
-+	if (!hard_iface->debug_dir)
-+		goto out;
-+
-+	for (bat_debug = batadv_hardif_debuginfos; *bat_debug; ++bat_debug) {
-+		file = debugfs_create_file(((*bat_debug)->attr).name,
-+					   S_IFREG | ((*bat_debug)->attr).mode,
-+					   hard_iface->debug_dir,
-+					   hard_iface->net_dev,
-+					   &(*bat_debug)->fops);
-+		if (!file)
-+			goto rem_attr;
 +	}
 +
-+	return 0;
-+rem_attr:
-+	debugfs_remove_recursive(hard_iface->debug_dir);
-+	hard_iface->debug_dir = NULL;
++	bat_priv = netdev_priv(hard_iface->soft_iface);
++	if (!bat_priv->bat_algo_ops->bat_orig_print) {
++		seq_puts(seq,
++			 "No printing function for this routing protocol\n");
++		goto out;
++	}
++
++	if (hard_iface->if_status != BATADV_IF_ACTIVE) {
++		seq_puts(seq, "Interface not active\n");
++		goto out;
++	}
++
++	seq_printf(seq, "[B.A.T.M.A.N. adv %s, IF/MAC: %s/%pM (%s %s)]\n",
++		   BATADV_SOURCE_VERSION, hard_iface->net_dev->name,
++		   hard_iface->net_dev->dev_addr,
++		   hard_iface->soft_iface->name, bat_priv->bat_algo_ops->name);
++
++	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq, hard_iface);
++
 +out:
-+#ifdef CONFIG_DEBUG_FS
-+	return -ENOMEM;
-+#else
++	batadv_hardif_free_ref(hard_iface);
 +	return 0;
-+#endif /* CONFIG_DEBUG_FS */
 +}
 +
-+/**
-+ * batadv_debugfs_del_hardif - delete the base directory for a hard interface
-+ *  in debugfs.
-+ * @hard_iface: hard interface which is deleted.
-+ */
-+void batadv_debugfs_del_hardif(struct batadv_hard_iface *hard_iface)
-+{
-+	if (batadv_debugfs) {
-+		debugfs_remove_recursive(hard_iface->debug_dir);
-+		hard_iface->debug_dir = NULL;
-+	}
-+}
-+
- int batadv_debugfs_add_meshif(struct net_device *dev)
+ int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
+ 			    int max_if_num)
  {
- 	struct batadv_priv *bat_priv = netdev_priv(dev);
-diff --git a/debugfs.h b/debugfs.h
-index 169ab7b..f6e16f3 100644
---- a/debugfs.h
-+++ b/debugfs.h
-@@ -21,5 +21,7 @@ void batadv_debugfs_init(void);
- void batadv_debugfs_destroy(void);
- int batadv_debugfs_add_meshif(struct net_device *dev);
- void batadv_debugfs_del_meshif(struct net_device *dev);
-+int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface);
-+void batadv_debugfs_del_hardif(struct batadv_hard_iface *hard_iface);
+diff --git a/originator.h b/originator.h
+index 382f335..39fa3b7 100644
+--- a/originator.h
++++ b/originator.h
+@@ -50,6 +50,7 @@ batadv_orig_ifinfo_new(struct batadv_orig_node *orig_node,
+ void batadv_orig_ifinfo_free_ref(struct batadv_orig_ifinfo *orig_ifinfo);
  
- #endif /* _NET_BATMAN_ADV_DEBUGFS_H_ */
-diff --git a/hard-interface.c b/hard-interface.c
-index 42db38e..3873175 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -20,6 +20,7 @@
- #include "translation-table.h"
- #include "routing.h"
- #include "sysfs.h"
-+#include "debugfs.h"
- #include "originator.h"
- #include "hash.h"
- #include "bridge_loop_avoidance.h"
-@@ -536,6 +537,7 @@ static void batadv_hardif_remove_interface_finish(struct work_struct *work)
- 	hard_iface = container_of(work, struct batadv_hard_iface,
- 				  cleanup_work);
- 
-+	batadv_debugfs_del_hardif(hard_iface);
- 	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
- 	batadv_hardif_free_ref(hard_iface);
- }
-@@ -566,6 +568,11 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 	hard_iface->net_dev = net_dev;
- 	hard_iface->soft_iface = NULL;
- 	hard_iface->if_status = BATADV_IF_NOT_IN_USE;
-+
-+	ret = batadv_debugfs_add_hardif(hard_iface);
-+	if (ret)
-+		goto free_sysfs;
-+
- 	INIT_LIST_HEAD(&hard_iface->list);
- 	INIT_WORK(&hard_iface->cleanup_work,
- 		  batadv_hardif_remove_interface_finish);
-@@ -582,6 +589,8 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 
- 	return hard_iface;
- 
-+free_sysfs:
-+	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
- free_if:
- 	kfree(hard_iface);
- release_dev:
+ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset);
++int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset);
+ int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
+ 			    int max_if_num);
+ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
 diff --git a/types.h b/types.h
-index 245a547..0e5d238 100644
+index 0e5d238..2627a3d 100644
 --- a/types.h
 +++ b/types.h
-@@ -81,6 +81,7 @@ struct batadv_hard_iface_bat_iv {
-  * @rcu: struct used for freeing in an RCU-safe manner
-  * @bat_iv: BATMAN IV specific per hard interface data
-  * @cleanup_work: work queue callback item for hard interface deinit
-+ * @debug_dir: dentry for nc subdir in batman-adv directory in debugfs
-  */
- struct batadv_hard_iface {
- 	struct list_head list;
-@@ -95,6 +96,7 @@ struct batadv_hard_iface {
- 	struct rcu_head rcu;
- 	struct batadv_hard_iface_bat_iv bat_iv;
- 	struct work_struct cleanup_work;
-+	struct dentry *debug_dir;
- };
- 
- /**
+@@ -1080,7 +1080,8 @@ struct batadv_algo_ops {
+ 		 struct batadv_neigh_node *neigh2,
+ 		 struct batadv_hard_iface *if_outgoing2);
+ 	/* orig_node handling API */
+-	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq);
++	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq,
++			       struct batadv_hard_iface *hard_iface);
+ 	void (*bat_orig_free)(struct batadv_orig_node *orig_node);
+ 	int (*bat_orig_add_if)(struct batadv_orig_node *orig_node,
+ 			       int max_if_num);
 -- 
 1.7.10.4
 
