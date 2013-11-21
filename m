@@ -1,17 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 21 Nov 2013 14:22:44 +0100
-References: <1384366492-27310-1-git-send-email-sw@simonwunderlich.de>
- <1384366492-27310-8-git-send-email-sw@simonwunderlich.de>
- <12732164.njm70c9A0l@diderot>
-In-Reply-To: <12732164.njm70c9A0l@diderot>
+Return-Path: <mschiffer@universe-factory.net>
+Message-ID: <528E115E.6070901@universe-factory.net>
+Date: Thu, 21 Nov 2013 14:57:50 +0100
+From: Matthias Schiffer <mschiffer@universe-factory.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201311211422.44620.sw@simonwunderlich.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 7/8] batman-adv: add debugfs structure
-	for information per interface
+References: <1384845967-2497-1-git-send-email-antonio@meshcoding.com>
+ <528D81CA.8000106@universe-factory.net> <20131121072143.GD311@neomailbox.net>
+In-Reply-To: <20131121072143.GD311@neomailbox.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="JwH0EXmX8RwaTCmx7Sch1I8tgxPeM2j80"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add compat code for kstrtou32
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,54 +21,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+To: Antonio Quartulli <antonio@meshcoding.com>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Marek,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--JwH0EXmX8RwaTCmx7Sch1I8tgxPeM2j80
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> On Wednesday 13 November 2013 19:14:51 Simon Wunderlich wrote:
-> >  void batadv_debugfs_init(void)
-> >  {
-> >  
-> >         struct batadv_debuginfo **bat_debug;
-> > 
-> > @@ -378,6 +395,11 @@ void batadv_debugfs_init(void)
-> > 
-> >         if (!batadv_debugfs)
-> >         
-> >                 goto err;
-> > 
-> > +       batadv_hardif_debugfs =
-> > debugfs_create_dir(BATADV_DEBUGFS_HARDIF_SUBDIR,
-> > +                                                  batadv_debugfs);
-> > +       if (batadv_hardif_debugfs == ERR_PTR(-ENODEV))
-> > +               goto err;
-> > +
-> > 
-> >         for (bat_debug = batadv_general_debuginfos; *bat_debug;
-> >         ++bat_debug)
-> > 
-> > { file = debugfs_create_file(((*bat_debug)->attr).name, S_IFREG |
-> > ((*bat_debug)->attr).mode,
-> 
-> I see no specific reason to create a 'hardif' subdirectory. We developers
-> may know what the term relates to but it is reasonable to assume our users
-> do not. How about adding the interface directory (e.g. wlan0) right next
-> to the batX directory ? 
+On 11/21/2013 08:21 AM, Antonio Quartulli wrote:
+> On Thu, Nov 21, 2013 at 04:45:14AM +0100, Matthias Schiffer wrote:
+>> You are casting a u32 * to unsigned long *? Won't this break horribly
+>> when sizeof(u32) !=3D sizeof(unsigned long)?
+>>
+>=20
+> It will break when sizeof(unsigned long) > sizeof(uint32). For example =
+on
+> x86_64. Hopefully nobody would use such ancient kernel on his machine. =
+But you
+> are right.
+>=20
+> What do you think of the attached patch?
+>=20
 
-thanks for the suggestion, I've done that in the reviewed patch v4 (there is 
-also a v5 fixing another style issue antonio pointed out).
+That's better, but if you care about overflow, you should add something l=
+ike
 
-> For clarity we could also move the interface
-> directory into the corresponding batX folder. In case multiple batX
-> interfaces it might makes things more obvious.
+if (_v !=3D (unsigned long)v)
+	_r =3D -ERANGE;
 
-That's a little harder to do as the folder creation is done when the interface 
-is registered to batman-adv, just as for sysfs. Although not impossible, as 
-discussed on IRC, I'd like to keep it at the proposal from above. This will 
-also keep the folders in the same flat hierarchy as we have in /sys/class/net/* 
-to manage batman devices. I think it's good to keep it at this consistent 
-scheme.
+Also, the comment in the line above doesn't make sense anymore...
 
-Thanks,
-    Simon
+
+--JwH0EXmX8RwaTCmx7Sch1I8tgxPeM2j80
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iEYEARECAAYFAlKOEV4ACgkQq3qIxbiQM9jQYgCfVgQKxw0QD/oFW9JuWLzJrDaU
+u9oAnAqBfwvYn5TxjSq3O0l/JByjEcA3
+=9dUQ
+-----END PGP SIGNATURE-----
+
+--JwH0EXmX8RwaTCmx7Sch1I8tgxPeM2j80--
