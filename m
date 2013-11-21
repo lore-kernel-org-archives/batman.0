@@ -1,14 +1,13 @@
-Return-Path: <antonio@meshcoding.com>
-Date: Wed, 20 Nov 2013 16:38:58 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <20131120153858.GC311@neomailbox.net>
-References: <CAAxzKbRaF_a5UZdZUUQXmgO_zEp=Fe2_AdTAfSOKrTX=rFpq2A@mail.gmail.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Thu, 21 Nov 2013 09:20:07 +0800
+Message-ID: <3505653.Qt8n1aILax@diderot>
+In-Reply-To: <1384845967-2497-1-git-send-email-antonio@meshcoding.com>
+References: <1384845967-2497-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="w7PDEPdKQumQfZlR"
-Content-Disposition: inline
-In-Reply-To: <CAAxzKbRaF_a5UZdZUUQXmgO_zEp=Fe2_AdTAfSOKrTX=rFpq2A@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] Automatically starting adaptors at boot
+Content-Type: multipart/signed; boundary="nextPart8319156.dig8S0yAAL";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add compat code for kstrtou32
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,66 +19,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---w7PDEPdKQumQfZlR
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--nextPart8319156.dig8S0yAAL
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Tue, Nov 19, 2013 at 01:36:16PM +1000, tjhowse wrote:
-> Hello Ladies and Gentlemen,
->=20
-> This might be a question better suited to the OpenWRT list, but I
-> figure it would've been solved better here.
->=20
-> I've got a two-node mesh set up and working well. Config files are
-> below. I have some minor woes though. Each time one of the nodes boots
-> up I must:
->=20
-> brctl addif br-lan bat0
-> ifconfig bat0 up
->=20
-> ...before traffic starts to flow between clients connected to the
-> wlan0 radios of each node. What's the best way of having this happen
-> automatically? I assume there's a better way than having an init
-> script run those commands at boot.
+On Tuesday 19 November 2013 08:26:07 Antonio Quartulli wrote:
+> kstrtou32() does not exist before 2.6.39. Convert it to
+> strict_strtoul() in that case.
+> 
+> Used-by: e29249b4483b91d7a590a16e9b5ffe9412ce7fde
+> ("batman-adv: add isolation_mark sysfs attribute")
+> 
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> ---
+>  compat.h | 2 ++
+>  1 file changed, 2 insertions(+)
 
-This is totally related to openwrt and unrelated to batman-adv.
+Applied in revision 28855a6.
 
-If I remember correctly you can directly configure the lan "interface" in
-the /etc/config/network file. You should be allowed to specify more than one
-ifname (in the same option line).
+Thanks,
+Marek
 
-The openwrt channel/documentation can probably be more helpful.
-
-
-Cheers,
-
---=20
-Antonio Quartulli
-
---w7PDEPdKQumQfZlR
+--nextPart8319156.dig8S0yAAL
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBCAAGBQJSjNeSAAoJEADl0hg6qKeOzLkQAMK2TAeE0uWh6hQPrKc+gNc+
-H2PnrbHv5MY9G36tRg6Wem9OYjWMWyVm+7DIX+ZHfQOwLkXMQxgJP4DYF1E9X3mH
-KBx0hbBNmQYb1PYaItdb4uFJHHXFzQRC9UhSGe2SLApy1e+Wm26sfk3PNCF34MtH
-VTnf17LCwf+90f0uJzy0LnqccOwOiT7FRn5WiNWW60cFWSKPU8rS92SU6XHq9etM
-qUXA/g48HC/9YbWCCtgkcv3OLGgWai+iAXrq8uAvpVOydLQgb8QrLkpTA66Xp0CB
-oCWdWmek3IC8GKahdOgZM+hlwpQRr926tFTIUtW0pzQJfBtWBpQtkHsz18NYokUX
-WpsPQRusoZsdx2tdOnA/HlsNN/wUVpu5RmwIQB+vGwREDQKdC3SseInVsdYqfhwA
-i+prVDNPW2FZdJSqL6qYnJp75QO1IKxsIyRmZ8sbTZvPBjCAaRCzSdUpBohC6Muw
-+inwkDxNS8aDxTRzMt2nsubUOkyUSDi3yk0RT0DbMO0GiF9gJBzLX+kSaondAb4F
-MLQXdmyTss3pSdecrrF9WT+t/Lrow7iQC9yXpXTpSD5/WQxWWqs0R+CDntg7olSI
-CTp3j6GIotx0ZMSvk5d+lAJD8rXBs6ff6sV7GS4GpYbwj5LFqGtQvC8tF/SmKlcz
-z8Z53vtAJIcjzehaP+f4
-=jA6l
+iQEcBAABAgAGBQJSjV/MAAoJEFNVTo/uthzAmhQH/0J0/6XpKUG4EYrzNGIQHajI
+gy9CRucC6mSqlCp6SrMjzNWLSG5TJh4qzHTzf2k+oUnRbb8hPhbAbm2so9rB99B9
+MMwV/RuEQLxf5ICKUFhU7/nF9sjwHmZy1CNJ0z2EDsTcxxd2MSUGCaPxSVBo8oy7
+YWRTVR4gt0tDaUTz35k01J8P4eB+c34TT3RiWPY87Ll5lBcQOW6BeIKrLVZVPtzl
+KFmCRzUBKivwXm6mrDZKxTILJLxq6Bn1mr4xdiHGOKbDmWCGYEZAQvcgulz7MvLr
+Q60/EfvoEtlqk+AJWYAFlsbbpaOLwIzdAZm8TUmCF0aNCy4B6XDrdIskmOprGK4=
+=YLJu
 -----END PGP SIGNATURE-----
 
---w7PDEPdKQumQfZlR--
+--nextPart8319156.dig8S0yAAL--
+
