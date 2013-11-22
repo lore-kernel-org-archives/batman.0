@@ -1,11 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 22 Nov 2013 13:30:27 +0100
-Message-Id: <1385123427-15460-4-git-send-email-sw@simonwunderlich.de>
-In-Reply-To: <1385123427-15460-1-git-send-email-sw@simonwunderlich.de>
-References: <1385123427-15460-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: fix sparse warning in
-	batadv_iv_ogm_process_per_outif
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sat, 23 Nov 2013 01:20:18 +0800
+Message-ID: <2086683.i5Pvxjn4Ed@diderot>
+In-Reply-To: <1385039772-7485-1-git-send-email-sw@simonwunderlich.de>
+References: <1385031136-15967-2-git-send-email-sw@simonwunderlich.de>
+ <1385039772-7485-1-git-send-email-sw@simonwunderlich.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2824825.O3BYpC0DFm";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv5 1/2] batman-adv: add debugfs structure
+	for information per interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,41 +24,57 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <simon@open-mesh.com>
 
-From: Simon Wunderlich <simon@open-mesh.com>
 
-The orig_node_tmp variable is not needed anymore, and spare complains
-about that. Remove it.
+--nextPart2824825.O3BYpC0DFm
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-This variable was used for line length reasons and usage was removed
-in de6bcc76ea84fecb136f8c8f5ba1862e4a13f06b ("batman-adv: split out
-router from orig_node")
+On Thursday 21 November 2013 14:16:12 Simon Wunderlich wrote:
+> From: Simon Wunderlich <simon@open-mesh.com>
+> 
+> To show information per interface, add a debugfs hardif structure
+> similar to the system in sysfs. Hard interface folders will be created
+> in "$debugfs/batman-adv/". Files are not yet added.
+> 
+> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+> ---
+> Changes to PATCHv4:
+>  * properly align the BATADV_HARDIF_DEBUGINFO macro
+> 
+> Changes to PATCHv3:
+>  * move hardif debugfs files into $debugfs/batman-adv/$hardif
+> 
+> Changes to PATCHv2:
+>  * add macro to add hardif debug infos
+> ---
+>  debugfs.c        |   73
+> ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> debugfs.h        |    2 ++
+>  hard-interface.c |    9 +++++++
+>  types.h          |    2 ++
+>  4 files changed, 86 insertions(+)
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
----
- bat_iv_ogm.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Applied in revision 3c926a0.
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 2a36de8..939d16e 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -1368,7 +1368,7 @@ batadv_iv_ogm_process_per_outif(const struct sk_buff *skb, int ogm_offset,
- {
- 	struct batadv_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct batadv_neigh_node *router = NULL, *router_router = NULL;
--	struct batadv_orig_node *orig_neigh_node, *orig_node_tmp;
-+	struct batadv_orig_node *orig_neigh_node;
- 	struct batadv_orig_ifinfo *orig_ifinfo;
- 	struct batadv_neigh_node *orig_neigh_router = NULL;
- 	struct batadv_neigh_ifinfo *router_ifinfo = NULL;
-@@ -1412,7 +1412,6 @@ batadv_iv_ogm_process_per_outif(const struct sk_buff *skb, int ogm_offset,
- 
- 	router = batadv_orig_router_get(orig_node, if_outgoing);
- 	if (router) {
--		orig_node_tmp = router->orig_node;
- 		router_router = batadv_orig_router_get(router->orig_node,
- 						       if_outgoing);
- 		router_ifinfo = batadv_neigh_ifinfo_get(router, if_outgoing);
--- 
-1.7.10.4
+Thanks,
+Marek
+
+--nextPart2824825.O3BYpC0DFm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJSj5JWAAoJEFNVTo/uthzAa58IAKyWwqep0hbV9CzrKNv1BwJO
+41UkS1NFJgySv7Xxy/1bg22f3GNQf1ApzqiP8QUdiU0UsZJjwwCiWGqpMb0k9kDf
+eCMXhcAatKXhZjHb7Z2kOGiMpCgNPVx2PAEz3YIdwmdnrjeUiBdGd3H5yOsgsJUf
+/e95M8EKSXPsC1QX4OtFXylvC7MBEePXlFhXo8V7cFPfWTHqfsBsq7Fuuy0gd+mK
+QlRroRNJMvqA2v1hLjpGgtKQIBhgBoVMQNH7Q7L+lWcuK2+1CmNBqBpiuq2Sj9h8
+6/eFTN+fHtWHNINVKkG0FSAM3t2qsvu8OSTdLvn487qUDslsSWk9W3GfjicRKpw=
+=tkV6
+-----END PGP SIGNATURE-----
+
+--nextPart2824825.O3BYpC0DFm--
 
