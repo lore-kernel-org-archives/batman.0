@@ -1,8 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 22 Nov 2013 13:30:24 +0100
-Message-Id: <1385123427-15460-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: fix multiline comment
+Date: Fri, 22 Nov 2013 13:30:25 +0100
+Message-Id: <1385123427-15460-2-git-send-email-sw@simonwunderlich.de>
+In-Reply-To: <1385123427-15460-1-git-send-email-sw@simonwunderlich.de>
+References: <1385123427-15460-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: silence uninitialized
+	variable warning
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,29 +22,36 @@ Cc: Simon Wunderlich <simon@open-mesh.com>
 
 From: Simon Wunderlich <simon@open-mesh.com>
 
-This problem was introduced by commit
-9bb33b8d88e318c4879d37d06ad28e3e018b9036
-("batman-adv: split tq information in neigh_node struct")
+sparse (at least the version of the build checker) is complaining about:
+
+routing.c: In function 'batadv_find_router':
+routing.c:431:28: warning: 'next_candidate_router' may be used
+uninitialized in this function [-Wmaybe-uninitialized]
+
+Although this is bogus, silencing is not expensive and is done by this
+patch.
+
+Introduced by 797edd9e87ac838711e03498a4ae795b600191af
+("batman-adv: add bonding again")
 
 Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 ---
- main.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ routing.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/main.h b/main.h
-index 09cdebb..d154d4d 100644
---- a/main.h
-+++ b/main.h
-@@ -71,7 +71,8 @@
- 
- /* default interface for multi interface operation. The default interface is
-  * used for communication which originated locally (i.e. is not forwarded)
-- * or where special forwarding is not desired/necessary. */
-+ * or where special forwarding is not desired/necessary.
-+ */
- #define BATADV_IF_DEFAULT	((struct batadv_hard_iface *)NULL)
- 
- #define BATADV_NUM_WORDS BITS_TO_LONGS(BATADV_TQ_LOCAL_WINDOW_SIZE)
+diff --git a/routing.c b/routing.c
+index 69620e0..23311f5 100644
+--- a/routing.c
++++ b/routing.c
+@@ -428,7 +428,7 @@ batadv_find_router(struct batadv_priv *bat_priv,
+ {
+ 	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
+ 	struct batadv_neigh_node *first_candidate_router = NULL;
+-	struct batadv_neigh_node *next_candidate_router;
++	struct batadv_neigh_node *next_candidate_router = NULL;
+ 	struct batadv_neigh_node *router, *cand_router = NULL;
+ 	struct batadv_orig_ifinfo *cand, *first_candidate = NULL;
+ 	struct batadv_orig_ifinfo *next_candidate = NULL;
 -- 
 1.7.10.4
 
