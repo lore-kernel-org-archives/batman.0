@@ -1,15 +1,8 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 23 Nov 2013 01:30:25 +0800
-Message-ID: <30784685.pbnSSedVYW@diderot>
-In-Reply-To: <1385123427-15460-4-git-send-email-sw@simonwunderlich.de>
-References: <1385123427-15460-1-git-send-email-sw@simonwunderlich.de>
- <1385123427-15460-4-git-send-email-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1682724.FflnZrKkug";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: fix sparse warning in
-	batadv_iv_ogm_process_per_outif
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Fri, 22 Nov 2013 18:38:30 +0100
+Message-Id: <1385141910-2670-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix compat macro for kstrtou32
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,49 +15,47 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
+The macro previously introduced in the compat code to replace
+kstrtou32() may not work properly in case of a too large
+user input.
 
---nextPart1682724.FflnZrKkug
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Fix it by using a temporary variable of the proper length
+and then cast the result.
 
-On Friday 22 November 2013 13:30:27 Simon Wunderlich wrote:
-> From: Simon Wunderlich <simon@open-mesh.com>
-> 
-> The orig_node_tmp variable is not needed anymore, and spare complains
-> about that. Remove it.
-> 
-> This variable was used for line length reasons and usage was removed
-> in de6bcc76ea84fecb136f8c8f5ba1862e4a13f06b ("batman-adv: split out
-> router from orig_node")
-> 
-> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-> ---
->  bat_iv_ogm.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+Possibly return -ERANGE is the result is too big to fix a 32bit
+long variable.
 
-Applied in revision 930c3b9.
+Cc: Matthias Schiffer <mschiffer@universe-factory.net>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ compat.h | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-Thanks,
-Marek
-
---nextPart1682724.FflnZrKkug
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJSj5SxAAoJEFNVTo/uthzA3cIIAJ1tAfh9g0hgQXjKqAmcFig3
-htPA1Zf8sEzRzkpDz+/WEfd4rgLopTwYrMx+MIuqUXztCPOUMOdELG1AAa2Q9NS5
-DGWu5QnnPoHoxKX0YeWfiebxLtRvsTPEUt/fEIn7lubFyc5VGNHrd5DcfHX1N7Ml
-OfG9OAFCz9eafXqDlyqrQ7nBdQDFR6J0+D6UtyhY3Byj81KSNAPTn0JCXDJ9lGlM
-Nhzo7QJYQxJp2O+SP4rRm6bxXTn1fokZBsvCZ6GL/kiXIxFyZve5Rnv5bE15bmzH
-83eRPKp9yEsXT2mozuqwYa9+8UrfoO7cqqAzkPZoixN33aelphzYltqEHBi0PGQ=
-=fI3O
------END PGP SIGNATURE-----
-
---nextPart1682724.FflnZrKkug--
+diff --git a/compat.h b/compat.h
+index a050bb8..6daeff9 100644
+--- a/compat.h
++++ b/compat.h
+@@ -152,8 +152,16 @@ static inline int batadv_param_set_copystring(const char *val,
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 39)
+ 
+-/* cast last argument of strict_strtoul() because we have a uint32_t */
+-#define kstrtou32(cp, base, v) strict_strtoul(cp, base, (unsigned long *)v)
++#define kstrtou32(cp, base, v)\
++({\
++	unsigned long _v;\
++	int _r;\
++	_r = strict_strtoul(cp, base, &_v);\
++	*(v) = (uint32_t)_v;\
++	if ((unsigned long)*(v) != _v)\
++		_r = -ERANGE;\
++	_r;\
++})
+ #define kstrtoul strict_strtoul
+ #define kstrtol  strict_strtol
+ 
+-- 
+1.8.4.4
 
