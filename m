@@ -1,13 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 23 Nov 2013 01:27:19 +0800
-Message-ID: <2327827.amMuxV6vdH@diderot>
-In-Reply-To: <1385123427-15460-1-git-send-email-sw@simonwunderlich.de>
+Date: Sat, 23 Nov 2013 01:28:20 +0800
+Message-ID: <1883196.2CQKWgRpkL@diderot>
+In-Reply-To: <1385123427-15460-2-git-send-email-sw@simonwunderlich.de>
 References: <1385123427-15460-1-git-send-email-sw@simonwunderlich.de>
+ <1385123427-15460-2-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2195444.0Ox4NBuJny";
+Content-Type: multipart/signed; boundary="nextPart14897757.sJ10aV0bsX";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: fix multiline comment
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: silence uninitialized
+	variable warning
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,28 +25,36 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <simon@open-mesh.com>
 
 
---nextPart2195444.0Ox4NBuJny
+--nextPart14897757.sJ10aV0bsX
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday 22 November 2013 13:30:24 Simon Wunderlich wrote:
+On Friday 22 November 2013 13:30:25 Simon Wunderlich wrote:
 > From: Simon Wunderlich <simon@open-mesh.com>
 > 
-> This problem was introduced by commit
-> 9bb33b8d88e318c4879d37d06ad28e3e018b9036
-> ("batman-adv: split tq information in neigh_node struct")
+> sparse (at least the version of the build checker) is complaining about:
+> 
+> routing.c: In function 'batadv_find_router':
+> routing.c:431:28: warning: 'next_candidate_router' may be used
+> uninitialized in this function [-Wmaybe-uninitialized]
+> 
+> Although this is bogus, silencing is not expensive and is done by this
+> patch.
+> 
+> Introduced by 797edd9e87ac838711e03498a4ae795b600191af
+> ("batman-adv: add bonding again")
 > 
 > Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 > ---
->  main.h |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  routing.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision 4812dfd.
+Applied in revision aed390d.
 
 Thanks,
 Marek
 
---nextPart2195444.0Ox4NBuJny
+--nextPart14897757.sJ10aV0bsX
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -52,14 +62,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSj5P3AAoJEFNVTo/uthzAIIMH/i5u8gEE+4NGxSJkIhIrIwIg
-vQav0Tm+Dz/4x86pge2dK3H72tz7DCYdIYWXU/x0nRJN3btV9dJ+lTy3niG7BDgy
-NTdCWX16g16KvxZPI/4zNs3dK9pL4rqP9C1ydOM9b2BnV/BJvMqWnJI+YZTdKk0N
-k36khzUEjFUEW111lDLDNS4+eYjtanaswI/x9M6yU8IRgQ0LYOlvO+dNd0yzsRSv
-qq4ISxeLrLvry2F/5g6EK3ft7eMa7dLvBcaTyvpzyz+vZsLvtZ3flOtcXyiwuH+o
-iBMFitw8VDM0p1FcrCF8IuCYbUmEhbJc+9PrIgRDrqjdKq0JdsMlRG8/P4byo3E=
-=RSLz
+iQEcBAABAgAGBQJSj5Q0AAoJEFNVTo/uthzAEd8IAIhiJcZ7VQpsk5lMVOt0TYfO
+uiz0XknKg93K3LkrRQxUp074UYe8Txwxgr06yS1irWqPTbb67ACvc8hSbuoJ5PZ0
+6qRxlyHBuGLeZBQ/XTvwQkdWwBJeDCFaRZzYi7WfC7yNjAAEfHzyZ9X/YxZcGFtI
+fJ4/BJBJy4lwZeeY+iQ2h5dxK8GxukUBT+aHuGXfto6cGR1EnM1NxGDjAda2o92p
+HlDyLHqbZalybYyXYOhjB/fI8YEfoITVySgMcca8LDbKvOR2G5AnHmQo4ai6chsS
+9KaPSr0Kkm5x0Wc+wL2iRyPWu5qO32tyRYLcQA+WqUo1flztjII39iin0zyOqzA=
+=EjF5
 -----END PGP SIGNATURE-----
 
---nextPart2195444.0Ox4NBuJny--
+--nextPart14897757.sJ10aV0bsX--
 
