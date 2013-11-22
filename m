@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 23 Nov 2013 01:29:26 +0800
-Message-ID: <4796641.YPunqkdCHu@diderot>
-In-Reply-To: <1385123427-15460-3-git-send-email-sw@simonwunderlich.de>
+Date: Sat, 23 Nov 2013 01:30:25 +0800
+Message-ID: <30784685.pbnSSedVYW@diderot>
+In-Reply-To: <1385123427-15460-4-git-send-email-sw@simonwunderlich.de>
 References: <1385123427-15460-1-git-send-email-sw@simonwunderlich.de>
- <1385123427-15460-3-git-send-email-sw@simonwunderlich.de>
+ <1385123427-15460-4-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5500357.rUKoP9R5KM";
+Content-Type: multipart/signed; boundary="nextPart1682724.FflnZrKkug";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: fix sparse warning in
-	batadv_iv_ogm_emit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: fix sparse warning in
+	batadv_iv_ogm_process_per_outif
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,30 +25,31 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <simon@open-mesh.com>
 
 
---nextPart5500357.rUKoP9R5KM
+--nextPart1682724.FflnZrKkug
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday 22 November 2013 13:30:26 Simon Wunderlich wrote:
+On Friday 22 November 2013 13:30:27 Simon Wunderlich wrote:
 > From: Simon Wunderlich <simon@open-mesh.com>
 > 
-> The directlink variable is not needed anymore, and sparse complains
+> The orig_node_tmp variable is not needed anymore, and spare complains
 > about that. Remove it.
 > 
-> Removal was introduced in 29b9256e6631876d4f1719f4d5e13d7ee140c61b
-> ("batman-adv: consider outgoing interface in OGM sending")
+> This variable was used for line length reasons and usage was removed
+> in de6bcc76ea84fecb136f8c8f5ba1862e4a13f06b ("batman-adv: split out
+> router from orig_node")
 > 
 > Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 > ---
->  bat_iv_ogm.c |    2 --
->  1 file changed, 2 deletions(-)
+>  bat_iv_ogm.c |    3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
-Applied in revision a0fc2f1.
+Applied in revision 930c3b9.
 
 Thanks,
 Marek
 
---nextPart5500357.rUKoP9R5KM
+--nextPart1682724.FflnZrKkug
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -56,14 +57,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSj5R2AAoJEFNVTo/uthzAR+EH/2WouzrQko3nFDyEYWKzQWFy
-S7woKXhHObUO/liySVOsiIgo9Yg70oGAj97TNSLNjDnPyh13p1DdL50qiNQdjYTr
-t8j9QLQWbCnuDQ1QMPhOxlJ0MsbyuKLLyqRZdtW/VTMkn1wWmRmkGSkIP84UmWXJ
-Myqu1EG4Fr06yMMn2dsWDy5FGNXWz6JYXfgicE+wJAJv9xz0kXp8EpZM9ess9fea
-MmXjJGGH3gdoE10HseieUa9SernMJqUMpzo0R2nvsFgPgXCETql/buXtQWseJ6nU
-GU0URQZH3O6ADzFsWpvR7LHBUCT0ho2jpGEY+K5x6Da0f6H1yvnBC0d/mJJnyFA=
-=9eoG
+iQEcBAABAgAGBQJSj5SxAAoJEFNVTo/uthzA3cIIAJ1tAfh9g0hgQXjKqAmcFig3
+htPA1Zf8sEzRzkpDz+/WEfd4rgLopTwYrMx+MIuqUXztCPOUMOdELG1AAa2Q9NS5
+DGWu5QnnPoHoxKX0YeWfiebxLtRvsTPEUt/fEIn7lubFyc5VGNHrd5DcfHX1N7Ml
+OfG9OAFCz9eafXqDlyqrQ7nBdQDFR6J0+D6UtyhY3Byj81KSNAPTn0JCXDJ9lGlM
+Nhzo7QJYQxJp2O+SP4rRm6bxXTn1fokZBsvCZ6GL/kiXIxFyZve5Rnv5bE15bmzH
+83eRPKp9yEsXT2mozuqwYa9+8UrfoO7cqqAzkPZoixN33aelphzYltqEHBi0PGQ=
+=fI3O
 -----END PGP SIGNATURE-----
 
---nextPart5500357.rUKoP9R5KM--
+--nextPart1682724.FflnZrKkug--
 
