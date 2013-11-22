@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 22 Nov 2013 13:30:25 +0100
-Message-Id: <1385123427-15460-2-git-send-email-sw@simonwunderlich.de>
+Date: Fri, 22 Nov 2013 13:30:26 +0100
+Message-Id: <1385123427-15460-3-git-send-email-sw@simonwunderlich.de>
 In-Reply-To: <1385123427-15460-1-git-send-email-sw@simonwunderlich.de>
 References: <1385123427-15460-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: silence uninitialized
-	variable warning
+Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: fix sparse warning in
+	batadv_iv_ogm_emit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,36 +22,34 @@ Cc: Simon Wunderlich <simon@open-mesh.com>
 
 From: Simon Wunderlich <simon@open-mesh.com>
 
-sparse (at least the version of the build checker) is complaining about:
+The directlink variable is not needed anymore, and sparse complains
+about that. Remove it.
 
-routing.c: In function 'batadv_find_router':
-routing.c:431:28: warning: 'next_candidate_router' may be used
-uninitialized in this function [-Wmaybe-uninitialized]
-
-Although this is bogus, silencing is not expensive and is done by this
-patch.
-
-Introduced by 797edd9e87ac838711e03498a4ae795b600191af
-("batman-adv: add bonding again")
+Removal was introduced in 29b9256e6631876d4f1719f4d5e13d7ee140c61b
+("batman-adv: consider outgoing interface in OGM sending")
 
 Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 ---
- routing.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ bat_iv_ogm.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/routing.c b/routing.c
-index 69620e0..23311f5 100644
---- a/routing.c
-+++ b/routing.c
-@@ -428,7 +428,7 @@ batadv_find_router(struct batadv_priv *bat_priv,
- {
- 	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
- 	struct batadv_neigh_node *first_candidate_router = NULL;
--	struct batadv_neigh_node *next_candidate_router;
-+	struct batadv_neigh_node *next_candidate_router = NULL;
- 	struct batadv_neigh_node *router, *cand_router = NULL;
- 	struct batadv_orig_ifinfo *cand, *first_candidate = NULL;
- 	struct batadv_orig_ifinfo *next_candidate = NULL;
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index dbd55f0..2a36de8 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -467,12 +467,10 @@ static void batadv_iv_ogm_emit(struct batadv_forw_packet *forw_packet)
+ 	struct batadv_priv *bat_priv;
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_ogm_packet *batadv_ogm_packet;
+-	unsigned char directlink;
+ 	uint8_t *packet_pos;
+ 
+ 	packet_pos = forw_packet->skb->data;
+ 	batadv_ogm_packet = (struct batadv_ogm_packet *)packet_pos;
+-	directlink = (batadv_ogm_packet->flags & BATADV_DIRECTLINK ? 1 : 0);
+ 
+ 	if (!forw_packet->if_incoming) {
+ 		pr_err("Error - can't forward packet: incoming iface not specified\n");
 -- 
 1.7.10.4
 
