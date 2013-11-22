@@ -1,15 +1,13 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 23 Nov 2013 01:25:13 +0800
-Message-ID: <1644927.XJ9ypIo1Au@diderot>
-In-Reply-To: <1385031136-15967-3-git-send-email-sw@simonwunderlich.de>
-References: <1385031136-15967-1-git-send-email-sw@simonwunderlich.de>
- <1385031136-15967-3-git-send-email-sw@simonwunderlich.de>
+Date: Sat, 23 Nov 2013 01:27:19 +0800
+Message-ID: <2327827.amMuxV6vdH@diderot>
+In-Reply-To: <1385123427-15460-1-git-send-email-sw@simonwunderlich.de>
+References: <1385123427-15460-1-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5230712.0gBurOhjZ3";
+Content-Type: multipart/signed; boundary="nextPart2195444.0Ox4NBuJny";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 2/2] batman-adv: add debugfs support to
-	view multiif tables
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: fix multiline comment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,46 +23,28 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <simon@open-mesh.com>
 
 
---nextPart5230712.0gBurOhjZ3
+--nextPart2195444.0Ox4NBuJny
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Thursday 21 November 2013 11:52:16 Simon Wunderlich wrote:
+On Friday 22 November 2013 13:30:24 Simon Wunderlich wrote:
 > From: Simon Wunderlich <simon@open-mesh.com>
 > 
-> Show tables for the multi interface operation. Originator tables
-> are added per hard interface.
-> 
-> This patch also changes the API by adding the interface to the
-> bat_orig_print() parameters.
+> This problem was introduced by commit
+> 9bb33b8d88e318c4879d37d06ad28e3e018b9036
+> ("batman-adv: split tq information in neigh_node struct")
 > 
 > Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 > ---
-> Changes to PACHv3:
->  * change *multiif* function names to *hardif* names
->  * fix outdated kerneldoc
-> 
-> Changes to PATCHv2:
->  * use name "originators", not "originators_multiif" for the
->    originator table per interface.
-> 
-> Changes to PATCH:
->  * use one file per interface instead of all tables in one file
->  * kernel doc and commit message improvement
-> ---
->  bat_iv_ogm.c |   12 +++++++-----
->  debugfs.c    |   16 ++++++++++++++++
->  originator.c |   48 +++++++++++++++++++++++++++++++++++++++++++++++-
->  originator.h |    1 +
->  types.h      |    3 ++-
->  5 files changed, 73 insertions(+), 7 deletions(-)
+>  main.h |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
-Applied in revision f13f960.
+Applied in revision 4812dfd.
 
 Thanks,
 Marek
 
---nextPart5230712.0gBurOhjZ3
+--nextPart2195444.0Ox4NBuJny
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -72,14 +52,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSj5N5AAoJEFNVTo/uthzAyWIIAK6ox6wYjHEVch/fpwzmwcmJ
-aP5tWvkroeEqGcXL0SB7UhgjdimM1BhXI00fX3FmIXaVdltGPe7qmHBrHct01XaG
-yAeFOHbdzWcZUAVJczciJCZAyOahENMYZNvuqF1fk9s3ctrxvoXc9ZXqHQ/5d4zy
-id9lgY4JlF2dsVkaBt58JZtYYLQqnUiZTeiJwD+Z+9ZjT/cKQkE5W96OylFMN3Tu
-Sths+ycdA/3D7MPQUjzsmmXQQrqMr0R9/ER0rhBXMUX0R2K0xtgd+3MwTkmHjbq9
-u7JoTlvz1ISAS2spCZ8lMT/bfNPT6pyMBvuOIUxUO5sNtce5L+el4GkfZrd40Zo=
-=NEhO
+iQEcBAABAgAGBQJSj5P3AAoJEFNVTo/uthzAIIMH/i5u8gEE+4NGxSJkIhIrIwIg
+vQav0Tm+Dz/4x86pge2dK3H72tz7DCYdIYWXU/x0nRJN3btV9dJ+lTy3niG7BDgy
+NTdCWX16g16KvxZPI/4zNs3dK9pL4rqP9C1ydOM9b2BnV/BJvMqWnJI+YZTdKk0N
+k36khzUEjFUEW111lDLDNS4+eYjtanaswI/x9M6yU8IRgQ0LYOlvO+dNd0yzsRSv
+qq4ISxeLrLvry2F/5g6EK3ft7eMa7dLvBcaTyvpzyz+vZsLvtZ3flOtcXyiwuH+o
+iBMFitw8VDM0p1FcrCF8IuCYbUmEhbJc+9PrIgRDrqjdKq0JdsMlRG8/P4byo3E=
+=RSLz
 -----END PGP SIGNATURE-----
 
---nextPart5230712.0gBurOhjZ3--
+--nextPart2195444.0Ox4NBuJny--
 
