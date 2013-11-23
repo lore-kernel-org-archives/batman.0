@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 24 Nov 2013 00:35:17 +0800
-Message-ID: <3008590.CHRxIxEvmE@diderot>
-In-Reply-To: <1385121727-12847-2-git-send-email-sw@simonwunderlich.de>
-References: <1385121727-12847-1-git-send-email-sw@simonwunderlich.de>
- <1385121727-12847-2-git-send-email-sw@simonwunderlich.de>
+Date: Sun, 24 Nov 2013 00:45:06 +0800
+Message-ID: <8502078.3ioMQf3Zdu@diderot>
+In-Reply-To: <1385141910-2670-1-git-send-email-antonio@meshcoding.com>
+References: <1385141910-2670-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4813572.o30rB3eIQI";
+Content-Type: multipart/signed; boundary="nextPart2220125.Jgp32QIr4W";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: fix orig_node multiif
-	regression in network coding
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix compat macro for
+	kstrtou32
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,34 +21,36 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart4813572.o30rB3eIQI
+--nextPart2220125.Jgp32QIr4W
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday 22 November 2013 13:02:07 Simon Wunderlich wrote:
-> From: Simon Wunderlich <simon@open-mesh.com>
+On Friday 22 November 2013 18:38:30 Antonio Quartulli wrote:
+> The macro previously introduced in the compat code to replace
+> kstrtou32() may not work properly in case of a too large
+> user input.
 > 
-> A previous commit for the multi interface optimization did not
-> change the member access for orig_node to their respective new ifinfo
-> structures for the network coding implementation.
+> Fix it by using a temporary variable of the proper length
+> and then cast the result.
 > 
-> This was introduced by change de6bcc76ea84fecb136f8c8f5ba1862e4a13f06b
-> ("batman-adv: split out router from orig_node")
+> Possibly return -ERANGE is the result is too big to fix a 32bit
+> long variable.
 > 
-> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+> Cc: Matthias Schiffer <mschiffer@universe-factory.net>
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
->  network-coding.c |   16 ++++++++++++++--
->  1 file changed, 14 insertions(+), 2 deletions(-)
+>  compat.h | 12 ++++++++++--
+>  1 file changed, 10 insertions(+), 2 deletions(-)
 
-Applied in revision d078de3.
+Applied in revision 28dab26.
 
 Thanks,
 Marek
 
---nextPart4813572.o30rB3eIQI
+--nextPart2220125.Jgp32QIr4W
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -57,14 +58,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSkNlFAAoJEFNVTo/uthzAucYIAKQYHFEjcHm1CYZkBgcCshN0
-1UuewUJOJ1v7i9Xirk8kNJ1Y9XGlDhZjv4sEdmBdu8GJ665yzcDDz5eMOX2kmrNA
-nBA4w9niu8WfrNl+aZaInu4pfTq91jpmEO9m1k41p7lD2lEwgK8deLQ63PcI7oUv
-I4iUygzOujLJ6gq43fOK7aalarvuxS7bSGoZvc3L0eTaDtknK+JssMFzS2sbz7zh
-mbsJ0q/Svv3jpgzaRk4h6wLh8yWkoMREIs2LKCsGs4GIg0YserDWaAVSSgN/VrZn
-V3zo22G4lcYtfUCR2yt5nj5psh59Fx1i0LdECafSvojK/+O5WiheFE1OLqo+ZiA=
-=xuAY
+iQEcBAABAgAGBQJSkNuSAAoJEFNVTo/uthzANJIH/jo7BGxUZfrXScXgjtjYo95e
+5JNa5vksXdnMiEKnivfnmvKISc3m3J1esoFB/AmYs0JDzzLauxOhoFOUYuTt2iif
+YCpyr8ALS7zhkQgYo8EEKmOB5N+Kji56CgdOSaN835loC25YyjnBn/k3TKcJJGvi
+ii23y4Jm48ZRwKuG3F1dzI9xpNmVhbI274HpzlUXXRGk4MZcQeqF125OUJRDjm+v
+Mau09uzIjEmBRxeIqIksWIBvOA+pDEV3UA1xsF8y/v01z/h6kevBMY24kd3tdLKL
+QoSi1bM3/AFMFCxXHQLOTItvigqaL/m6fJxdGldwF2u/iNMFfZ3YlCM9uNifuyw=
+=Xj1s
 -----END PGP SIGNATURE-----
 
---nextPart4813572.o30rB3eIQI--
+--nextPart2220125.Jgp32QIr4W--
 
