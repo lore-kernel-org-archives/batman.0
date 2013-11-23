@@ -1,8 +1,21 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 22 Nov 2013 18:38:30 +0100
-Message-Id: <1385141910-2670-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix compat macro for kstrtou32
+Return-Path: <bittorf@bluebottle.com>
+Date: Sat, 23 Nov 2013 10:24:45 +0100
+From: Bastian Bittorf <bittorf@bluebottle.com>
+Message-ID: <20131123092445.GN886@medion.lan>
+References: <20131101075558.GI6252@medion.lan>
+ <20131101123610.GR970@neomailbox.net>
+ <20131101143305.GO6252@medion.lan>
+ <20131101143903.GX970@neomailbox.net>
+ <20131101151626.GP6252@medion.lan>
+ <5275F6CC.9080009@altermundi.net>
+ <20131103091832.GR6252@medion.lan>
+ <52761A86.5080106@altermundi.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <52761A86.5080106@altermundi.net>
+Subject: Re: [B.A.T.M.A.N.] lost connection to a client / Q:
+	transglobal-table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,48 +27,77 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The macro previously introduced in the compat code to replace
-kstrtou32() may not work properly in case of a too large
-user input.
+* Gui Iribarren <gui@altermundi.net> [03.11.2013 20:37]:
+> .....until then, ebtables WORKSFORME :D
+> and all this doesn't make batman-adv any less awesome than what it
+> was already ;)
+> 
+> btw, even with the ebtables rule, we had to turn off DAT in a
+> scenario equivalent to yours, because the DAT cache was also acting
+> funny (DUP arp replies from each node in the cloud)
+> haven't got around to properly debug it / report it, but still, be warned :)
 
-Fix it by using a temporary variable of the proper length
-and then cast the result.
+since a few days we have running those 2 ebtable-rules on all nodes:
+ebtables -A FORWARD -j DROP -d "$mac_gateway"
+ebtables -t nat -A POSTROUTING -o bat0 -j DROP -s "$mac_gateway"
 
-Possibly return -ERANGE is the result is too big to fix a 32bit
-long variable.
+it looks like this:
+root@box:~ ebtables -L FORWARD --Lc
+Bridge table: filter
 
-Cc: Matthias Schiffer <mschiffer@universe-factory.net>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- compat.h | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+Bridge chain: FORWARD, entries: 1, policy: ACCEPT
+-d 2:0:c0:ca:c0:1a -j DROP , pcnt = 9581 -- bcnt = 1116077
 
-diff --git a/compat.h b/compat.h
-index a050bb8..6daeff9 100644
---- a/compat.h
-+++ b/compat.h
-@@ -152,8 +152,16 @@ static inline int batadv_param_set_copystring(const char *val,
- 
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 39)
- 
--/* cast last argument of strict_strtoul() because we have a uint32_t */
--#define kstrtou32(cp, base, v) strict_strtoul(cp, base, (unsigned long *)v)
-+#define kstrtou32(cp, base, v)\
-+({\
-+	unsigned long _v;\
-+	int _r;\
-+	_r = strict_strtoul(cp, base, &_v);\
-+	*(v) = (uint32_t)_v;\
-+	if ((unsigned long)*(v) != _v)\
-+		_r = -ERANGE;\
-+	_r;\
-+})
- #define kstrtoul strict_strtoul
- #define kstrtol  strict_strtol
- 
--- 
-1.8.4.4
+root@box:~ ebtables -t nat -L POSTROUTING --Lc
+Bridge table: nat
+
+Bridge chain: POSTROUTING, entries: 1, policy: ACCEPT
+-s 2:0:c0:ca:c0:1a -o bat0 -j DROP , pcnt = 4 -- bcnt = 352
+
+so most of the time it is working fine. but we have seen another
+issue, but i'am unsure where is it coming from:
+
+"clients time out in translocal-table"
+
+A laptop connected to always the same router / no roaming involved
+times out in 'translocal-table' and so it also times out on the
+other nodes in the 'transglobal-table', so it is not reachable anymore.
+
+a bad translocal-table/dat-cache with this client looks like this:
+(i have removed other clients, for better readablility)
+
+root@box:~ batctl tl
+Locally retrieved addresses (from bat0) announced via TT (TTVN: 2 CRC:
+0x6023):
+       Client        Flags   Last seen
+ * 00:21:6a:32:7c:1c [....W]   0.010
+
+root@box:~ batctl dc
+Distributed ARP Table (bat0):
+          IPv4             MAC           last-seen
+ *  192.168.222.61 00:21:6a:32:7c:1c      3:50
+
+after some seconds the client disappaers from DAT-cache:
+
+root@box:~ batctl tl
+Locally retrieved addresses (from bat0) announced via TT (TTVN: 2 CRC:
+0x6023):
+       Client        Flags   Last seen 
+ * 00:21:6a:32:7c:1c [....W]   0.010
+
+root@box:~ batctl dc
+Distributed ARP Table (bat0):
+          IPv4             MAC           last-seen
+
+after some time even the 'translocal-table' is empty, although with
+'iw dev wlan0 station dump' i can see the active client. i'm
+normally connected, can ping/ssh the node itself but not further.
+(only hop by hop)
+
+how does batman detect, if a client is active? (can i trigger is somehow?)
+what can i do tho debug further?
+
+thanks & bye, bastian
 
