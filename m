@@ -1,11 +1,14 @@
-Return-Path: <tjhowse@gmail.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Tue, 26 Nov 2013 01:48:59 +0800
+Message-ID: <8299583.p9F3l6Gztg@diderot>
+In-Reply-To: <1385298345-13746-1-git-send-email-sw@simonwunderlich.de>
+References: <1385298345-13746-1-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-From: tjhowse <tjhowse@gmail.com>
-Date: Mon, 25 Nov 2013 09:36:42 +1000
-Message-ID: <CAAxzKbSBjtJ2HGr0AUqQsysDjrrvuCtS6jb1tKbUmpk-B1CeMw@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: [B.A.T.M.A.N.] Loss of connection to remote nodes,
-	from clients only.
+Content-Type: multipart/signed; boundary="nextPart3668848.9S5gFcGq9W";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: fix another sparse
+	warning in batadv_iv_ogm_emit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,22 +21,51 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
-In my test system I have 11 dual-channel nodes. The 5GHz link is used
-for interconnect between the nodes and the 2.4GHz link is for clients.
-One of the nodes is distant. My laptop is connected to a common-SSID
-AP link from one of the local nodes. I can always ping the distant
-node from one of the local nodes, but the link from my laptop is less
-reliable. I can have an SSH session open to the distant node and a
-local node, pinging the distant node from both the local node and my
-laptop. At no particular point the distant node will stop pinging from
-my laptop and its SSH session will drop, while the ping continues just
-fine from the local node.
 
-The connection can restore equally mysteriously.
+--nextPart3668848.9S5gFcGq9W
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Can anyone explain this behavior? No manual network configuration
-changes are being made at the point at which the connection drops or
-is restored, though I suppose my laptop could be hopping between one
-of the local APs. I am pinging an IP attached to the bridge joining
-bat0, the copper node LAN and the 2.4GHz client LAN.
+On Sunday 24 November 2013 14:05:43 Simon Wunderlich wrote:
+> From: Simon Wunderlich <simon@open-mesh.com>
+> 
+> Since the directlink variable was not needed anymore and was removed,
+> more variables are now obsolete too, so remove them.
+> 
+> The directlink flag commit (which was obviously incomplete) was
+> a0fc2f129f7193cbdd7e9c2e4da0d6e7ac15dd58 ("batman-adv: fix sparse warning
+> in batadv_iv_ogm_emit"), which itself was a fix for
+> 29b9256e6631876d4f1719f4d5e13d7ee140c61b ("batman-adv: consider outgoing
+> interface in OGM sending").
+> 
+> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+> ---
+>  bat_iv_ogm.c |    5 -----
+>  1 file changed, 5 deletions(-)
+
+Applied in revision 20978ca.
+
+Thanks,
+Marek
+
+--nextPart3668848.9S5gFcGq9W
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJSk42OAAoJEFNVTo/uthzArwQH/jd5MbMFF7RGARx+qwgI9lPT
+phl2o5Iqrw0ppcdlxDNI+I0MSWcPYLVwAZsIxweyzASCj749cY1utj4ffauTTv40
+HAMjVe1ml6avpt3AIO5KMZrDC6OGT74f2nCH9Hq0AnIvEHr2F2NwWi47M/Q9KJK/
+6XTO8h7aTy8Hqc8KW9DUzzQ/vHYeRgHL01eM6Tr5fORVzxRwWhssHYW5hfojrGyi
+8GTGPv4etj/ARAbPTkbRHpUMdygya05+oeCfPdjhiPhKNFNmVgaiaPWRYUfufvbc
+o6vF3ILKmEqtii5Pyh0lnxJQyZDWRqAVvNeU4ZCBena6OV0/MO+9AYwLTNBJmHU=
+=5m9H
+-----END PGP SIGNATURE-----
+
+--nextPart3668848.9S5gFcGq9W--
+
