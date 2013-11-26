@@ -1,15 +1,16 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 26 Nov 2013 01:51:13 +0800
-Message-ID: <4090496.CKZxZ93Xi7@diderot>
-In-Reply-To: <1385298345-13746-3-git-send-email-sw@simonwunderlich.de>
-References: <1385298345-13746-1-git-send-email-sw@simonwunderlich.de>
- <1385298345-13746-3-git-send-email-sw@simonwunderlich.de>
+Return-Path: <nicoechaniz@altermundi.net>
+Message-ID: <52941BED.9070402@altermundi.net>
+Date: Tue, 26 Nov 2013 00:56:29 -0300
+From: =?UTF-8?B?Tmljb2zDoXMgRWNow6FuaXo=?= <nicoechaniz@altermundi.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2202815.FOS2Rdz5mY";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: fix rcu pointer
-	comparison problem
+References: <525B11F2.5030605@altermundi.net>
+ <5282A184.1020704@altermundi.net> <20131112215442.GN3713@neomailbox.net>
+ <5282CE44.8000402@altermundi.net> <20131113080404.GO886@medion.lan>
+ <20131113080157.GO3713@neomailbox.net>
+In-Reply-To: <20131113080157.GO3713@neomailbox.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] mad mad batman ...
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,57 +22,59 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
---nextPart2202815.FOS2Rdz5mY
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Sunday 24 November 2013 14:05:45 Simon Wunderlich wrote:
-> From: Simon Wunderlich <simon@open-mesh.com>
+El 13/11/13 05:01, Antonio Quartulli escribió:
+> On Wed, Nov 13, 2013 at 09:04:05AM +0100, Bastian Bittorf wrote:
+>> * Nicolás Echániz <nicoechaniz@altermundi.net> [13.11.2013
+>> 08:59]:
+>>> Am I the only one who has bumped into this (twice)?
+>> 
+>> I have also seen a lot of these messages with an indoor mesh, so
+>> no lightning involved 8-) but with v2013.04 this is gone. (same
+>> network).
 > 
-> sparse complained about:
-> 
-> routing.c:482:64: error: incompatible types in comparison expression
-> (different address spaces)
-> 
-> This was due to comparing a __rcu pointer with a regular one. Fix that
-> by adding the missing rcu_dereference call. A temporary variable is used
-> to comply with the line length limit, use the opportunity to beautify a
-> few other places.
-> 
-> This problem was introduced in commit
-> 797edd9e87ac838711e03498a4ae795b600191af ("batman-adv: add bonding
-> again")
-> 
-> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-> ---
->  routing.c |   16 ++++++++++------
->  1 file changed, 10 insertions(+), 6 deletions(-)
+> this message is the symptom of a loop. The causes can be
+> gazillions.
 
-Applied in revision f2a1300.
+Well... it took about a week to finally find the node creating this
+problem. As before, it's failing hardware that caused the issue.
 
-Thanks,
-Marek
+When this happens every node in the net is repeatedly showing that
+message. It is not the same with any "loop symptom" I believe... At
+least I've never seen this happen on every node being caused by
+something else.
 
---nextPart2202815.FOS2Rdz5mY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+I really would like to find out more about how this condition comes to
+happen and how to diagnose and prevent it. The whole batman-adv cloud
+dies when this happens and it's a pain in the ass to "debug".
+
+All the failing routers are WR842ND. There are many more of the same
+model working just fine.
+
+
+I now have three routers which produce this symptom, so if anyone who
+can understand the problem better is willing to test, I can set up a
+dedicated mini-test-bed.
+
+
+Cheers,
+NicoEchániz
+
+
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Icedove - http://www.enigmail.net/
 
-iQEcBAABAgAGBQJSk44RAAoJEFNVTo/uthzAaQ0H/1XP/kqR7ZGQV23ejZqLJiGm
-bLZAfkfPLIKUv2sVvMOW8bHqhBHtHdff08yzfhSEaFPDw0IvR5I+tg+54jZJEeNu
-XYtmdUQc/ejEJMidQtzNosItJlKxI1ZdjOhltXrURXVAi3RV7zIQqeHIQzt7xuwA
-QJQ4F+wdz6+OAzLHKnT3wdtv+dMUXIw2C2KcTQyBZ6LwEvBUn9Tx+qiHke+azsi/
-kulDO2arhiMeg74qCu2+JbjFc+MmJIVQz9ZzOizOX6d1PERmNUiFswNpDpRUHN8P
-fLzOkoq/euYXf+B1HsVH5Twt+kAp+r2F8ELM7TZ09rRwnG9h8WjBPbnFElCtoDc=
-=396W
+iQEcBAEBAgAGBQJSlBvtAAoJEPHORz17N0TFf+sH/jC2qGbx3SpHZSNGgUoQrD/f
+J9n+lUMugbsM7uOodBnU+iiswpOrNVn4NsddWNYXFmydpbIbnO6wuUTlDZu3wNig
+gOMNDZqaze5fcdopwgcEuxvp1S5QRiAe2DN+ci0jQ3OGdOjuZgZJjpRxARDbSExT
+guF4TgB4izZUy5/5OTg4pJdNZ8zUsMap45Gy4xzslP58EZUBKkeqol+kaWuiq4eX
+FbUpezTpeTXlUi401pOzvrVMg7/JXhN7JULMgjPPR6y8359tfZFFQq4JwuYNSwz1
+Fg6L3/kJSKm4DF7MyYa2Id/3DJx7NLZk1B7RQR05ISmuvGLDBqobqv6EY5a+Z0M=
+=0BD+
 -----END PGP SIGNATURE-----
-
---nextPart2202815.FOS2Rdz5mY--
-
