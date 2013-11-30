@@ -1,14 +1,12 @@
-Return-Path: <gui@altermundi.net>
-Message-ID: <52995D10.5000907@altermundi.net>
-Date: Sat, 30 Nov 2013 00:35:44 -0300
-From: Gui Iribarren <gui@altermundi.net>
+Return-Path: <linux+b.a.t.m.a.n=lists.open-mesh.org@arm.linux.org.uk>
+Date: Sat, 30 Nov 2013 19:15:53 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Message-ID: <20131130191553.GA16735@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-References: <CAAxzKbSBjtJ2HGr0AUqQsysDjrrvuCtS6jb1tKbUmpk-B1CeMw@mail.gmail.com>
-In-Reply-To: <CAAxzKbSBjtJ2HGr0AUqQsysDjrrvuCtS6jb1tKbUmpk-B1CeMw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] Loss of connection to remote nodes,
- from clients only.
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: [B.A.T.M.A.N.] [PATCH] Fix ARM BUILD_BUG_ON() errors with batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,32 +18,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
 
-On 11/24/2013 08:36 PM, tjhowse wrote:
-> In my test system I have 11 dual-channel nodes. The 5GHz link is used
-> for interconnect between the nodes and the 2.4GHz link is for clients.
-> One of the nodes is distant. My laptop is connected to a common-SSID
-> AP link from one of the local nodes. I can always ping the distant
-> node from one of the local nodes, but the link from my laptop is less
-> reliable. I can have an SSH session open to the distant node and a
-> local node, pinging the distant node from both the local node and my
-> laptop. At no particular point the distant node will stop pinging from
-> my laptop and its SSH session will drop, while the ping continues just
-> fine from the local node.
->
-> The connection can restore equally mysteriously.
->
-> Can anyone explain this behavior? No manual network configuration
-> changes are being made at the point at which the connection drops or
-> is restored, though I suppose my laptop could be hopping between one
-> of the local APs. I am pinging an IP attached to the bridge joining
-> bat0, the copper node LAN and the 2.4GHz client LAN.
+From: Russell King <rmk+kernel@arm.linux.org.uk>
 
-Which batman-adv version are you using?
+The following errors were observed on ARM during a randconfig build.
+This patch addresses them by ensuring that the batadv_header structure
+is appropriately packed; this structure contains three 8-bit elements
+so there should be no undesired side effect from this packing.
 
-i've seen a similar behaviour on 2013.1.0 and 2013.2.0, related to TTVN, 
-but never collected data clean enough to report it, and then 2013.4.0 
-came out.
-i'll test this week 2013.4.0 to see if it's still an issue.
+net/batman-adv/main.c: In function 'batadv_init':
+net/batman-adv/main.c:425:279: error: call to '__compiletime_assert_425' declared with attribute error: BUILD_BUG_ON failed: offsetof(struct batadv_unicast_4addr_packet, src) != 10
+net/batman-adv/main.c:426:267: error: call to '__compiletime_assert_426' declared with attribute error: BUILD_BUG_ON failed: offsetof(struct batadv_unicast_packet, dest) != 4
+net/batman-adv/main.c:427:275: error: call to '__compiletime_assert_427' declared with attribute error: BUILD_BUG_ON failed: offsetof(struct batadv_unicast_tvlv_packet, dst) != 4
+net/batman-adv/main.c:428:261: error: call to '__compiletime_assert_428' declared with attribute error: BUILD_BUG_ON failed: offsetof(struct batadv_frag_packet, dest) != 4
+net/batman-adv/main.c:429:271: error: call to '__compiletime_assert_429' declared with attribute error: BUILD_BUG_ON failed: offsetof(struct batadv_icmp_packet, icmph.dst) != 4
+net/batman-adv/main.c:430:277: error: call to '__compiletime_assert_430' declared with attribute error: BUILD_BUG_ON failed: offsetof(struct batadv_icmp_packet_rr, icmph.dst) != 4
 
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ net/batman-adv/packet.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
+index 207459b62966..4039f25794e0 100644
+--- a/net/batman-adv/packet.h
++++ b/net/batman-adv/packet.h
+@@ -171,7 +171,7 @@ struct batadv_header {
+ 	/* the parent struct has to add a byte after the header to make
+ 	 * everything 4 bytes aligned again
+ 	 */
+-};
++} __attribute__((packed));
+ 
+ /**
+  * struct batadv_ogm_packet - ogm (routing protocol) packet
