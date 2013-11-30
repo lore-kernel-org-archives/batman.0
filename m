@@ -1,16 +1,14 @@
-Return-Path: <bittorf@bluebottle.com>
-Date: Wed, 27 Nov 2013 09:37:07 +0100
-From: Bastian Bittorf <bittorf@bluebottle.com>
-Message-ID: <20131127083707.GJ886@medion.lan>
-References: <20130912093641.GX1558@medion.lan> <5233571B.3050405@sotun.de>
- <20130915075534.GI11829@medion.lan>
- <20131127063204.GE5457@Linus-Debian>
+Return-Path: <gui@altermundi.net>
+Message-ID: <52995D10.5000907@altermundi.net>
+Date: Sat, 30 Nov 2013 00:35:44 -0300
+From: Gui Iribarren <gui@altermundi.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-15"
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20131127063204.GE5457@Linus-Debian>
-Subject: Re: [B.A.T.M.A.N.] fool batman by simulating a layer3 mesh
+References: <CAAxzKbSBjtJ2HGr0AUqQsysDjrrvuCtS6jb1tKbUmpk-B1CeMw@mail.gmail.com>
+In-Reply-To: <CAAxzKbSBjtJ2HGr0AUqQsysDjrrvuCtS6jb1tKbUmpk-B1CeMw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] Loss of connection to remote nodes,
+ from clients only.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,27 +20,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Linus =?iso-8859-15?Q?L=FCssing?= <linus.luessing@web.de>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-* Linus L=FCssing <linus.luessing@web.de> [27.11.2013 09:21]:
-> Did you have a chance to try the iptables + netfilter_bridge hook
-> (I believe via the iptables physdev module?) Antonio suggested
-> yet?
+On 11/24/2013 08:36 PM, tjhowse wrote:
+> In my test system I have 11 dual-channel nodes. The 5GHz link is used
+> for interconnect between the nodes and the 2.4GHz link is for clients.
+> One of the nodes is distant. My laptop is connected to a common-SSID
+> AP link from one of the local nodes. I can always ping the distant
+> node from one of the local nodes, but the link from my laptop is less
+> reliable. I can have an SSH session open to the distant node and a
+> local node, pinging the distant node from both the local node and my
+> laptop. At no particular point the distant node will stop pinging from
+> my laptop and its SSH session will drop, while the ping continues just
+> fine from the local node.
+>
+> The connection can restore equally mysteriously.
+>
+> Can anyone explain this behavior? No manual network configuration
+> changes are being made at the point at which the connection drops or
+> is restored, though I suppose my laptop could be hopping between one
+> of the local APs. I am pinging an IP attached to the bridge joining
+> bat0, the copper node LAN and the 2.4GHz client LAN.
 
-not yet - still working with macvlan (+ebtables for not confusing
-the daemon about a client which es everywhere at the same time)
+Which batman-adv version are you using?
 
-> It sounds like a good idea to me and since no one seems to have
-> tried it with batman-adv yet I'm curious whether it works well in
-> practice.
+i've seen a similar behaviour on 2013.1.0 and 2013.2.0, related to TTVN, 
+but never collected data clean enough to report it, and then 2013.4.0 
+came out.
+i'll test this week 2013.4.0 to see if it's still an issue.
 
-will have time for testing during end of december...
-
-> Whether you could enhance the user experience in an open,
-> batman-adv based community mesh network by having an IP instead
-> of connection based sharing of available bandwidth.
-
-++
-
-bye, bastian
