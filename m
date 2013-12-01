@@ -1,15 +1,17 @@
-Return-Path: <tjhowse@gmail.com>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <529B47AA.8060403@meshcoding.com>
+Date: Sun, 01 Dec 2013 15:28:58 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-In-Reply-To: <CAAxzKbRnG=fB+HNKQW-eznrgP8vOUqNZpyqRQYVk8WsCNr9C4A@mail.gmail.com>
-References: <CAAxzKbSBjtJ2HGr0AUqQsysDjrrvuCtS6jb1tKbUmpk-B1CeMw@mail.gmail.com>
- <52995D10.5000907@altermundi.net>
- <CAAxzKbRnG=fB+HNKQW-eznrgP8vOUqNZpyqRQYVk8WsCNr9C4A@mail.gmail.com>
-From: tjhowse <tjhowse@gmail.com>
-Date: Sun, 1 Dec 2013 11:18:30 +1000
-Message-ID: <CAAxzKbRq9FQHsY1vbg0p93VsKkfcGHtVsyqBtRs7CPv2DjhM5A@mail.gmail.com>
+References: <20131130191553.GA16735@n2100.arm.linux.org.uk>
+ <529A46C4.9090906@meshcoding.com>
+ <20131130230518.GC16735@n2100.arm.linux.org.uk>
+ <529A8276.9060002@meshcoding.com>
+In-Reply-To: <529A8276.9060002@meshcoding.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] Loss of connection to remote nodes,
-	from clients only.
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH] Fix ARM BUILD_BUG_ON() errors
+	with	batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,47 +23,81 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: linux@arm.linux.org.uk
+Cc: netdev@vger.kernel.org, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, David Miller <davem@davemloft.net>
 
-I can't say which version for certain right now - I'll check when I'm
-back at work on Monday - but it was the latest available from the
-barrier_breaker sources as of approximately two weeks ago.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On 1 December 2013 09:19, tjhowse <tjhowse@gmail.com> wrote:
-> I can't say which version for certain right now - I'll check when I'm back
-> at work on Monday - but it was the latest available from the barrier_breaker
-> sources as of approximately two weeks ago.
->
->
-> On 30 November 2013 13:35, Gui Iribarren <gui@altermundi.net> wrote:
->>
->> On 11/24/2013 08:36 PM, tjhowse wrote:
->>>
->>> In my test system I have 11 dual-channel nodes. The 5GHz link is used
->>> for interconnect between the nodes and the 2.4GHz link is for clients.
->>> One of the nodes is distant. My laptop is connected to a common-SSID
->>> AP link from one of the local nodes. I can always ping the distant
->>> node from one of the local nodes, but the link from my laptop is less
->>> reliable. I can have an SSH session open to the distant node and a
->>> local node, pinging the distant node from both the local node and my
->>> laptop. At no particular point the distant node will stop pinging from
->>> my laptop and its SSH session will drop, while the ping continues just
->>> fine from the local node.
->>>
->>> The connection can restore equally mysteriously.
->>>
->>> Can anyone explain this behavior? No manual network configuration
->>> changes are being made at the point at which the connection drops or
->>> is restored, though I suppose my laptop could be hopping between one
->>> of the local APs. I am pinging an IP attached to the bridge joining
->>> bat0, the copper node LAN and the 2.4GHz client LAN.
->>
->>
->> Which batman-adv version are you using?
->>
->> i've seen a similar behaviour on 2013.1.0 and 2013.2.0, related to TTVN,
->> but never collected data clean enough to report it, and then 2013.4.0 came
->> out.
->> i'll test this week 2013.4.0 to see if it's still an issue.
->>
->
+On 01/12/13 01:27, Antonio Quartulli wrote:
+> On 01/12/13 00:05, Russell King - ARM Linux wrote:
+>> On Sat, Nov 30, 2013 at 09:12:52PM +0100, Antonio Quartulli 
+>> wrote:
+>>> I don't know the ARM architecture at all (I don't know if the 
+>>> other batman-adv developers do), so could you please provide 
+>>> here some more details about why that static check is failing? 
+>>> We would like to address this issue differently rather than 
+>>> re-adding the __packed attribute.
+> 
+>> The reason is this struct becomes a size of 4 bytes, even though 
+>> it only contains three uint8_t members.  This offsets the
+>> members of all structs that this struct is embedded in.
+> 
+>> If you don't wish to fix this, then please make your subsystem 
+>> depend on !ARM because it's otherwise impossible to fix and can 
+>> never work on ARM.
+> 
+> 
+> I'd like to fix this.
+> 
+> Actually I can't really understand your explanation: struct 
+> batadv_header is always used inside another parent structure and 
+> the latter always has a uint8_t following the batadv_header, thus 
+> filling that gap and aligning it to 4bytes. I think this is also 
+> why we don't get this compiler error on any other architecture. Or 
+> am I missing something?
+> 
+> I'll install a toolchain for ARM and I'll try to inspect it
+> better. If we have to make a change we should do it before 3.13 is
+> release since this change could possibly alter the packet layout.
+> 
+> 
+
+It looks like that the ARM compiler cannot pack the structures properly.
+
+So, given these two structures:
+
+struct batadv_header {
+        uint8_t  packet_type;
+        uint8_t  version;
+        uint8_t  ttl;
+};
+
+struct batadv_unicast_packet {
+        struct batadv_header header;
+        uint8_t  ttvn;
+        uint8_t  dest[ETH_ALEN];
+};
+
+we have the compiler saying that offset_of dest in struct
+batadv_unicast_packet is 5.
+
+This means that struct batadv_header is padded to 4 bytes even if it
+is enclosed in struct batadv_unicast_packet and a proper 1byte member
+is put right after it.
+
+Am I wrong or this is a problem in the ARM compiler not doing the
+right assumption? On x86 and x86_64 offset_of dest is 4, as expected.
+
+
+Regards,
+
+- -- 
+Antonio Quartulli
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iEYEARECAAYFAlKbR6oACgkQpGgxIkP9cwdpYACgjcWLZ7EGFDatHTsByPz7idsY
+YOgAnRq6JTmOv8zI3OrRiBRtOIprgOew
+=Jxbq
+-----END PGP SIGNATURE-----
