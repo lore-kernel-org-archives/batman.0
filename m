@@ -1,11 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon,  2 Dec 2013 20:38:33 +0100
-Message-Id: <1386013113-25471-4-git-send-email-sw@simonwunderlich.de>
-In-Reply-To: <1386013113-25471-1-git-send-email-sw@simonwunderlich.de>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <529CEA90.3010709@meshcoding.com>
+Date: Mon, 02 Dec 2013 21:16:16 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
+MIME-Version: 1.0
 References: <1386013113-25471-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH-next 4/4] batman-adv: fix size of
-	batadv_bla_claim_dst
+ <1386013113-25471-3-git-send-email-sw@simonwunderlich.de>
+In-Reply-To: <1386013113-25471-3-git-send-email-sw@simonwunderlich.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH-next 3/4] batman-adv: fix size of
+	batadv_icmp_header
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,36 +21,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Since this is a mac address and always 48 bit, and we can assume that
-it is always aligned to 2-byte boundaries, add a pack(2) pragma.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- packet.h |    2 ++
- 1 file changed, 2 insertions(+)
+On 02/12/13 20:38, Simon Wunderlich wrote:
+> struct batadv_icmp_header { uint8_t  packet_type; @@ -208,18
+> +211,16 @@ struct batadv_icmp_header { uint8_t  dst[ETH_ALEN]; 
+> uint8_t  orig[ETH_ALEN]; uint8_t  uid; +	uint8_t  rr_cur; +	__be16
+> seqno; };
+> 
 
-diff --git a/packet.h b/packet.h
-index 001b941..cc7ac9e 100644
---- a/packet.h
-+++ b/packet.h
-@@ -155,6 +155,7 @@ enum batadv_tvlv_type {
- 	BATADV_TVLV_ROAM	= 0x05,
- };
- 
-+#pragma pack(2)
- /* the destination hardware field in the ARP frame is used to
-  * transport the claim type and the group id
-  */
-@@ -163,6 +164,7 @@ struct batadv_bla_claim_dst {
- 	uint8_t type;		/* bla_claimframe */
- 	__be16 group;		/* group id */
- };
-+#pragma pack()
- 
- /**
-  * struct batadv_ogm_packet - ogm (routing protocol) packet
--- 
-1.7.10.4
+seqno was not in the header on purpose because new features may need a
+larger seqno space (e.g. the bw meter uses 32bits long seqnos).
+I think we have to re-work this structure differently..
 
+rr_cur was not in the header because it is only used by the PING and
+not by all the others ICMP packets. But having it in the header is
+harmless I think.
+
+
+Cheers,
+
+- -- 
+Antonio Quartulli
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iEYEARECAAYFAlKc6pAACgkQpGgxIkP9cwdUkgCeNYm2xfFIIKO8OL2TJ9au7rQe
+4ncAnieIgls5N4Ea+939rMD2taypkJP5
+=nWqI
+-----END PGP SIGNATURE-----
