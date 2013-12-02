@@ -1,16 +1,9 @@
-Return-Path: <davem@davemloft.net>
-Date: Mon, 02 Dec 2013 13:38:38 -0500 (EST)
-Message-Id: <20131202.133838.1257454198436895412.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <201312021858.48074.sw@simonwunderlich.de>
-References: <20131130191553.GA16735@n2100.arm.linux.org.uk>
- <20131130.160547.837987320410619405.davem@davemloft.net>
- <201312021858.48074.sw@simonwunderlich.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] Fix ARM BUILD_BUG_ON() errors with
-	batman-adv
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon,  2 Dec 2013 20:38:30 +0100
+Message-Id: <1386013113-25471-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH-next 1/4] batman-adv: fix alignment for
+	batadv_coded_packet
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,28 +15,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sw@simonwunderlich.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux@arm.linux.org.uk, mareklindner@neomailbox.ch, antonio@meshcoding.com
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 2 Dec 2013 18:58:47 +0100
+The compiler may decide to pad the structure, and then it does not
+have the expected size of 46 byte. Fix this by moving it in the
+pragma pack(2) part of the code.
 
-> Therefore I'd suggest to pick Russels patch, I can send a fix for 
-> batadv_interface_rx() later, too.
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ packet.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-You are ignoring the downside of Russel's patch which is that it
-negatively impacts many architectures, in that now the compiler
-can make no assumptions as to the alignment of a structure marked
-with "packed" and therefore, for example, a 32-bit load will
-be done with 4 byte loads, shifts, and masking.
+diff --git a/packet.h b/packet.h
+index 207459b..10597a6 100644
+--- a/packet.h
++++ b/packet.h
+@@ -315,8 +315,6 @@ struct batadv_bcast_packet {
+ 	 */
+ };
+ 
+-#pragma pack()
+-
+ /**
+  * struct batadv_coded_packet - network coded packet
+  * @header: common batman packet header and ttl of first included packet
+@@ -349,6 +347,8 @@ struct batadv_coded_packet {
+ 	__be16   coded_len;
+ };
+ 
++#pragma pack()
++
+ /**
+  * struct batadv_unicast_tvlv - generic unicast packet with tvlv payload
+  * @header: common batman packet header
+-- 
+1.7.10.4
 
-Please just 4 byte align your structures.  I can't believe that
-you cannot make this work cleanly.
-
-Why can't you just include that fourth final byte in the batadv_header
-structure and have the sub-header types just interpret it differently
-or ignore it?
-
-This is getting frustrating, I seemed clear to me that the non-packed
-suggestions given to you so far were both reasonable and easy to
-implement.
