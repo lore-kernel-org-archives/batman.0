@@ -1,16 +1,20 @@
-Return-Path: <tjhowse@gmail.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-In-Reply-To: <CAAxzKbRq9FQHsY1vbg0p93VsKkfcGHtVsyqBtRs7CPv2DjhM5A@mail.gmail.com>
-References: <CAAxzKbSBjtJ2HGr0AUqQsysDjrrvuCtS6jb1tKbUmpk-B1CeMw@mail.gmail.com>
- <52995D10.5000907@altermundi.net>
- <CAAxzKbRnG=fB+HNKQW-eznrgP8vOUqNZpyqRQYVk8WsCNr9C4A@mail.gmail.com>
- <CAAxzKbRq9FQHsY1vbg0p93VsKkfcGHtVsyqBtRs7CPv2DjhM5A@mail.gmail.com>
-From: tjhowse <tjhowse@gmail.com>
-Date: Mon, 2 Dec 2013 08:04:20 +1000
-Message-ID: <CAAxzKbSG=m00Q0KwH7pmMcbp2xFUeKQLbFKVOQErLe3_eDL8Hw@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] Loss of connection to remote nodes,
-	from clients only.
+Content-Type: text/plain;
+	charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
+Date: Mon, 2 Dec 2013 10:24:17 -0000
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7451@saturn3.aculab.com>
+In-Reply-To: <20131201171309.GD16735@n2100.arm.linux.org.uk>
+References: <20131130191553.GA16735@n2100.arm.linux.org.uk>
+ <529A46C4.9090906@meshcoding.com>
+ <20131130230518.GC16735@n2100.arm.linux.org.uk>
+ <529A8276.9060002@meshcoding.com> <529B47AA.8060403@meshcoding.com>
+ <20131201171309.GD16735@n2100.arm.linux.org.uk>
+From: "David Laight" <David.Laight@ACULAB.COM>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] Fix ARM BUILD_BUG_ON() errors
+	withbatman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,50 +26,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, David Miller <davem@davemloft.net>
 
-2013.4.0
+> The ARM compilers have for the last 20 years always aligned the size =
+of
+> structs to a multiple of 32 bits to ensure that members following a
+> structure are appropriately aligned.
 
-On 1 December 2013 11:18, tjhowse <tjhowse@gmail.com> wrote:
-> I can't say which version for certain right now - I'll check when I'm
-> back at work on Monday - but it was the latest available from the
-> barrier_breaker sources as of approximately two weeks ago.
->
-> On 1 December 2013 09:19, tjhowse <tjhowse@gmail.com> wrote:
->> I can't say which version for certain right now - I'll check when I'm back
->> at work on Monday - but it was the latest available from the barrier_breaker
->> sources as of approximately two weeks ago.
->>
->>
->> On 30 November 2013 13:35, Gui Iribarren <gui@altermundi.net> wrote:
->>>
->>> On 11/24/2013 08:36 PM, tjhowse wrote:
->>>>
->>>> In my test system I have 11 dual-channel nodes. The 5GHz link is used
->>>> for interconnect between the nodes and the 2.4GHz link is for clients.
->>>> One of the nodes is distant. My laptop is connected to a common-SSID
->>>> AP link from one of the local nodes. I can always ping the distant
->>>> node from one of the local nodes, but the link from my laptop is less
->>>> reliable. I can have an SSH session open to the distant node and a
->>>> local node, pinging the distant node from both the local node and my
->>>> laptop. At no particular point the distant node will stop pinging from
->>>> my laptop and its SSH session will drop, while the ping continues just
->>>> fine from the local node.
->>>>
->>>> The connection can restore equally mysteriously.
->>>>
->>>> Can anyone explain this behavior? No manual network configuration
->>>> changes are being made at the point at which the connection drops or
->>>> is restored, though I suppose my laptop could be hopping between one
->>>> of the local APs. I am pinging an IP attached to the bridge joining
->>>> bat0, the copper node LAN and the 2.4GHz client LAN.
->>>
->>>
->>> Which batman-adv version are you using?
->>>
->>> i've seen a similar behaviour on 2013.1.0 and 2013.2.0, related to TTVN,
->>> but never collected data clean enough to report it, and then 2013.4.0 came
->>> out.
->>> i'll test this week 2013.4.0 to see if it's still an issue.
->>>
->>
+ARM has (or had) another one for the unwary, bitfields were also
+always 32bits.
+
+...
+> The only solutions are: use the GCC packed attribute, redesign the
+> structures...
+
+It is probably enough to mark the inner structure containing the three
+byte fields 'packed'.
+Marking it aligned(1) might also have the desired effect.
+The outer structure should then be ok.
+But would need to use a specially named attribute so it doesn't
+get removed.
+
+In the past I've had to replace a struct with an array in order
+to avoid a similar alignment rule for structs.
+
+	David
+
+
+
