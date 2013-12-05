@@ -1,15 +1,10 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <529FD011.2090508@meshcoding.com>
-Date: Thu, 05 Dec 2013 02:00:01 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
-References: <1386013113-25471-1-git-send-email-sw@simonwunderlich.de>
- <1386013113-25471-3-git-send-email-sw@simonwunderlich.de>
- <529CEA90.3010709@meshcoding.com> <201312031154.37297.sw@simonwunderlich.de>
-In-Reply-To: <201312031154.37297.sw@simonwunderlich.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH-next 3/4] batman-adv: fix size of
+Date: Thu,  5 Dec 2013 15:20:12 +0100
+Message-Id: <1386253212-998-1-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <529FD011.2090508@meshcoding.com>
+References: <529FD011.2090508@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv2 next 3/4] batman-adv: fix size of
 	batadv_icmp_header
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,58 +17,168 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+struct batadv_icmp_header currently has a size of 17, which
+will be padded to 20 on some architectures. Fix this by
+unrolling the header into the parent structures.
 
-On 03/12/13 11:54, Simon Wunderlich wrote:
-> Hey Antonio,
-> 
->> On 02/12/13 20:38, Simon Wunderlich wrote:
->>> struct batadv_icmp_header { uint8_t  packet_type; @@ -208,18 
->>> +211,16 @@ struct batadv_icmp_header { uint8_t  dst[ETH_ALEN]; 
->>> uint8_t  orig[ETH_ALEN]; uint8_t  uid; +	uint8_t  rr_cur; +
->>> __be16 seqno; };
->> 
->> seqno was not in the header on purpose because new features may
->> need a larger seqno space (e.g. the bw meter uses 32bits long
->> seqnos). I think we have to re-work this structure differently..
-> 
-> ah ok, didn't know that. Well I also thought to move that uid into
-> the other structures to have the icmp header at 16 bytes, but then
-> we need to access the icmp_packet instead of icmp_header in
-> functions like batadv_socket_write() - I changed that just
-> recently. ;)
-> 
-> What do you suggest? These new types can't work with 16bit seqnos?
-> :)
->> 
+Moreover keep the ICMP parsing functions as generic as they
+are now by using a stub icmp_header struct during packet
+parsing.
 
-No, we can;t use 16bit seqnos for that...sorry :)
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ main.c    |  4 ++--
+ packet.h  | 42 ++++++++++++++++++++++++++++++++++++------
+ routing.c | 14 +++++++-------
+ 3 files changed, 45 insertions(+), 15 deletions(-)
 
-Right now I don't have a clear solution in mind. I'll try to look at
-that header closely tomorrow.
+diff --git a/main.c b/main.c
+index d87778b..1511f64 100644
+--- a/main.c
++++ b/main.c
+@@ -426,8 +426,8 @@ static void batadv_recv_handler_init(void)
+ 	BUILD_BUG_ON(offsetof(struct batadv_unicast_packet, dest) != 4);
+ 	BUILD_BUG_ON(offsetof(struct batadv_unicast_tvlv_packet, dst) != 4);
+ 	BUILD_BUG_ON(offsetof(struct batadv_frag_packet, dest) != 4);
+-	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet, icmph.dst) != 4);
+-	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet_rr, icmph.dst) != 4);
++	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet, dst) != 4);
++	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet_rr, dst) != 4);
+ 
+ 	/* broadcast packet */
+ 	batadv_rx_handler[BATADV_BCAST] = batadv_recv_bcast_packet;
+diff --git a/packet.h b/packet.h
+index 175ce7d..ada940b 100644
+--- a/packet.h
++++ b/packet.h
+@@ -191,7 +191,7 @@ struct batadv_ogm_packet {
+ #define BATADV_OGM_HLEN sizeof(struct batadv_ogm_packet)
+ 
+ /**
+- * batadv_icmp_header - common ICMP header
++ * batadv_icmp_header - common members among all the ICMP packets
+  * @packet_type: batman-adv packet type, part of the general header
+  * @version: batman-adv protocol version, part of the genereal header
+  * @ttl: time to live for this packet, part of the genereal header
+@@ -199,25 +199,43 @@ struct batadv_ogm_packet {
+  * @dst: address of the destination node
+  * @orig: address of the source node
+  * @uid: local ICMP socket identifier
++ * @align: not used - useful for alignment purposes only
++ *
++ * This structure is used for ICMP packets parsing only and it is never sent
++ * over the wire. The alignment field at the end is there to ensure that
++ * members are padded the same way as they are in real packets.
+  */
+ struct batadv_icmp_header {
+ 	uint8_t  packet_type;
+ 	uint8_t  version;
+ 	uint8_t  ttl;
+-	uint8_t  msg_type; /* see ICMP message types above */
++	uint8_t  msg_type;
+ 	uint8_t  dst[ETH_ALEN];
+ 	uint8_t  orig[ETH_ALEN];
+ 	uint8_t  uid;
++	uint8_t  align[3];
+ };
+ 
+ /**
+  * batadv_icmp_packet - ICMP packet
+- * @icmph: common ICMP header
++ * @packet_type: batman-adv packet type, part of the general header
++ * @version: batman-adv protocol version, part of the genereal header
++ * @ttl: time to live for this packet, part of the genereal header
++ * @msg_type: ICMP packet type
++ * @dst: address of the destination node
++ * @orig: address of the source node
++ * @uid: local ICMP socket identifier
+  * @reserved: not used - useful for alignment
+  * @seqno: ICMP sequence number
+  */
+ struct batadv_icmp_packet {
+-	struct batadv_icmp_header icmph;
++	uint8_t  packet_type;
++	uint8_t  version;
++	uint8_t  ttl;
++	uint8_t  msg_type; /* see ICMP message types above */
++	uint8_t  dst[ETH_ALEN];
++	uint8_t  orig[ETH_ALEN];
++	uint8_t  uid;
+ 	uint8_t  reserved;
+ 	__be16   seqno;
+ };
+@@ -226,13 +244,25 @@ struct batadv_icmp_packet {
+ 
+ /**
+  * batadv_icmp_packet_rr - ICMP RouteRecord packet
+- * @icmph: common ICMP header
++ * @packet_type: batman-adv packet type, part of the general header
++ * @version: batman-adv protocol version, part of the genereal header
++ * @ttl: time to live for this packet, part of the genereal header
++ * @msg_type: ICMP packet type
++ * @dst: address of the destination node
++ * @orig: address of the source node
++ * @uid: local ICMP socket identifier
+  * @rr_cur: number of entries the rr array
+  * @seqno: ICMP sequence number
+  * @rr: route record array
+  */
+ struct batadv_icmp_packet_rr {
+-	struct batadv_icmp_header icmph;
++	uint8_t  packet_type;
++	uint8_t  version;
++	uint8_t  ttl;
++	uint8_t  msg_type; /* see ICMP message types above */
++	uint8_t  dst[ETH_ALEN];
++	uint8_t  orig[ETH_ALEN];
++	uint8_t  uid;
+ 	uint8_t  rr_cur;
+ 	__be16   seqno;
+ 	uint8_t  rr[BATADV_RR_LEN][ETH_ALEN];
+diff --git a/routing.c b/routing.c
+index 5b52d71..46278bf 100644
+--- a/routing.c
++++ b/routing.c
+@@ -338,9 +338,9 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 	icmp_packet = (struct batadv_icmp_packet *)skb->data;
+ 
+ 	/* send TTL exceeded if packet is an echo request (traceroute) */
+-	if (icmp_packet->icmph.msg_type != BATADV_ECHO_REQUEST) {
++	if (icmp_packet->msg_type != BATADV_ECHO_REQUEST) {
+ 		pr_debug("Warning - can't forward icmp packet from %pM to %pM: ttl exceeded\n",
+-			 icmp_packet->icmph.orig, icmp_packet->icmph.dst);
++			 icmp_packet->orig, icmp_packet->dst);
+ 		goto out;
+ 	}
+ 
+@@ -349,7 +349,7 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 		goto out;
+ 
+ 	/* get routing information */
+-	orig_node = batadv_orig_hash_find(bat_priv, icmp_packet->icmph.orig);
++	orig_node = batadv_orig_hash_find(bat_priv, icmp_packet->orig);
+ 	if (!orig_node)
+ 		goto out;
+ 
+@@ -359,11 +359,11 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 
+ 	icmp_packet = (struct batadv_icmp_packet *)skb->data;
+ 
+-	memcpy(icmp_packet->icmph.dst, icmp_packet->icmph.orig, ETH_ALEN);
+-	memcpy(icmp_packet->icmph.orig, primary_if->net_dev->dev_addr,
++	memcpy(icmp_packet->dst, icmp_packet->orig, ETH_ALEN);
++	memcpy(icmp_packet->orig, primary_if->net_dev->dev_addr,
+ 	       ETH_ALEN);
+-	icmp_packet->icmph.msg_type = BATADV_TTL_EXCEEDED;
+-	icmp_packet->icmph.ttl = BATADV_TTL;
++	icmp_packet->msg_type = BATADV_TTL_EXCEEDED;
++	icmp_packet->ttl = BATADV_TTL;
+ 
+ 	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
+ 		ret = NET_RX_SUCCESS;
+-- 
+1.8.4.4
 
-
-Cheers,
-
-- -- 
-Antonio Quartulli
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSn9AQAAoJEEKTMo6mOh1VyCUQAJhyn+YJIUznEHq/U3GkIvy7
-q2rXosmUKmZX5wxdXQDOPkVzUGRwBf2azNq77F7oIjnzJ/oGCJKOKtvPZ6gFzH/l
-MeSEgk3LZ6RjEHPO46lVFM5YeaF5V/xZzuFVUaEfU4mOlotFYqMlJeeDWmCA8lzV
-eglll0q7xwHAJkmD0Dg8qh/Yqep+lmjF4RNYz4QTP4VShyWP5swX9EedoocnZ1Rp
-COFgCV0ZwpV95PIrX/cnrE7qX7VNJfqJdyL7S8Nabfd1pdhxE1j45I0CdETPszSs
-hdN6tgQjcghQUwVAauXyy4oU51B0ISjjcV3Oi9CyLIxS7wF1SwnlHHL5R0Lt372/
-WPm62gAhM7qHjOTQGPZ+Z7Ap/qSxXO6nmUMEJUPdXJYmVlg2ZkryPPEFD4SzDfPl
-8fnWjtmO06yo3WMIozTqav+ZCNt/qinyt/JDINV+Pos7oxW9JZFF1vWyo1NZyljW
-R88GmwOnPoMvPL0M6O4d+I3wrEMHI0MFNLkP6GAiRzC/HhiuYxgoCZj47kLtrb+U
-Dtc0Ix7cuvvUt3GC4xBAXJ/12fGljldXRrcVVQkoluboVpgls8RScbCztET/dpTr
-1QQhUWFgiR7BSP1lZyZDu3hxFiPBOBCqzcmEXQ+Po1HYyzOB1Ju4X1JCNIrxBcvO
-SZ/IhMR6OWuI61qhv7GN
-=3QQX
------END PGP SIGNATURE-----
