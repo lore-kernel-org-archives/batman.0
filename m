@@ -1,10 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu,  5 Dec 2013 15:20:12 +0100
-Message-Id: <1386253212-998-1-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <529FD011.2090508@meshcoding.com>
-References: <529FD011.2090508@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv2 next 3/4] batman-adv: fix size of
+Date: Thu,  5 Dec 2013 15:33:00 +0100
+Message-Id: <1386253980-2415-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv3 next 3/4] batman-adv: fix size of
 	batadv_icmp_header
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -30,10 +28,16 @@ parsing.
 
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
+
+Changes from v2:
+- readded comment next to msg_type memeber
+
+
+
  main.c    |  4 ++--
- packet.h  | 42 ++++++++++++++++++++++++++++++++++++------
+ packet.h  | 40 +++++++++++++++++++++++++++++++++++-----
  routing.c | 14 +++++++-------
- 3 files changed, 45 insertions(+), 15 deletions(-)
+ 3 files changed, 44 insertions(+), 14 deletions(-)
 
 diff --git a/main.c b/main.c
 index d87778b..1511f64 100644
@@ -51,7 +55,7 @@ index d87778b..1511f64 100644
  	/* broadcast packet */
  	batadv_rx_handler[BATADV_BCAST] = batadv_recv_bcast_packet;
 diff --git a/packet.h b/packet.h
-index 175ce7d..ada940b 100644
+index 175ce7d..2a857ed 100644
 --- a/packet.h
 +++ b/packet.h
 @@ -191,7 +191,7 @@ struct batadv_ogm_packet {
@@ -63,7 +67,7 @@ index 175ce7d..ada940b 100644
   * @packet_type: batman-adv packet type, part of the general header
   * @version: batman-adv protocol version, part of the genereal header
   * @ttl: time to live for this packet, part of the genereal header
-@@ -199,25 +199,43 @@ struct batadv_ogm_packet {
+@@ -199,6 +199,11 @@ struct batadv_ogm_packet {
   * @dst: address of the destination node
   * @orig: address of the source node
   * @uid: local ICMP socket identifier
@@ -75,10 +79,7 @@ index 175ce7d..ada940b 100644
   */
  struct batadv_icmp_header {
  	uint8_t  packet_type;
- 	uint8_t  version;
- 	uint8_t  ttl;
--	uint8_t  msg_type; /* see ICMP message types above */
-+	uint8_t  msg_type;
+@@ -208,16 +213,29 @@ struct batadv_icmp_header {
  	uint8_t  dst[ETH_ALEN];
  	uint8_t  orig[ETH_ALEN];
  	uint8_t  uid;
