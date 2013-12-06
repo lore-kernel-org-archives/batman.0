@@ -1,15 +1,12 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <52A08DF4.3020604@meshcoding.com>
-Date: Thu, 05 Dec 2013 15:30:12 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
-References: <529FD011.2090508@meshcoding.com>
- <1386253212-998-1-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1386253212-998-1-git-send-email-antonio@meshcoding.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <joe@perches.com>
+Message-ID: <1386317890.31845.26.camel@joe-AO722>
+From: Joe Perches <joe@perches.com>
+Date: Fri, 06 Dec 2013 00:18:10 -0800
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next 3/4] batman-adv: fix size of
-	batadv_icmp_header
+Subject: [B.A.T.M.A.N.] [PATCH -next] batadv: Slight optimization of
+	batadv_compare_eth
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,27 +18,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
 
-On 05/12/13 15:20, Antonio Quartulli wrote:
+Use CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS to check if
+this function can be optimized by using the generic
+ether_addr_equal.
 
->  struct batadv_icmp_header {
->  	uint8_t  packet_type;
->  	uint8_t  version;
->  	uint8_t  ttl;
-> -	uint8_t  msg_type; /* see ICMP message types above */
+Remove the unnecessary ?: after the unoptimized memcmp.
 
-I think we should keep this comment. I'm going to send v3.
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ net/batman-adv/main.h | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-Cheers,
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index f94f287b..74a7a3f 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -266,7 +266,11 @@ static inline void batadv_dbg(int type __always_unused,
+  */
+ static inline int batadv_compare_eth(const void *data1, const void *data2)
+ {
+-	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
++#if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS)
++	return ether_addr_equal(data1, data2);
++#else
++	return memcmp(data1, data2, ETH_ALEN) == 0;
++#endif
+ }
+ 
+ /**
 
-> +	uint8_t  msg_type;
->  	uint8_t  dst[ETH_ALEN];
->  	uint8_t  orig[ETH_ALEN];
->  	uint8_t  uid;
-> +	uint8_t  align[3];
->  };
 
--- 
-Antonio Quartulli
