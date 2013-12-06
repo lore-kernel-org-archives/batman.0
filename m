@@ -1,14 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <52A1A297.9010208@meshcoding.com>
-Date: Fri, 06 Dec 2013 11:10:31 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
-References: <1386317890.31845.26.camel@joe-AO722>
-In-Reply-To: <1386317890.31845.26.camel@joe-AO722>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH -next] batadv: Slight optimization of
-	batadv_compare_eth
+Date: Fri,  6 Dec 2013 15:07:15 +0100
+Message-Id: <1386338835-3302-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: free nf_bridge member on
+	locally delivered skb
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,39 +15,76 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Joe Perches <joe@perches.com>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+If an interface enslaved into batman-adv is a bridge (or a
+virtual interface built on top of a bridge) the nf_bridge
+member of the skbs reaching the soft-interface is filled
+with the state about "netfilter bridge" operations.
 
-On 06/12/13 09:18, Joe Perches wrote:
-> Use CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS to check if this
-> function can be optimized by using the generic ether_addr_equal.
-> 
-> Remove the unnecessary ?: after the unoptimized memcmp.
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
+Then, if one of such skbs is locally delivered, the nf_bridge
+member should be cleaned up to avoid that the old state
+could mess up with other "netfilter bridge" operations when
+entering a second bridge.
+This is needed because batman-adv is an encapsulation
+protocol.
 
-Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+However at the moment skb->nf_bridge is not released at all
+leading to bogus "netfilter bridge" behaviours.
+Fix this by releasing skb->nf_bridge before an skb gets
+delivered to the upper layer in interface_rx().
 
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ soft-interface.c |  8 ++++++++
+ soft-interface.h | 16 ++++++++++++++++
+ 2 files changed, 24 insertions(+)
 
-- -- 
-Antonio Quartulli
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+diff --git a/soft-interface.c b/soft-interface.c
+index 33b6144..5dd1247 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -371,6 +371,14 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 	if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest))
+ 		goto dropped;
+ 
++	/* Clean the netfilter state before delivering the skb.
++	 * This packet may have traversed a bridge when it was encapsulated into
++	 * the batman header. Now that the header has been removed, the
++	 * netfilter state must be cleaned up to avoid to mess up with a
++	 * possible second bridge
++	 */
++	batadv_nf_bridge_skb_free(skb);
++
+ 	netif_rx(skb);
+ 	goto out;
+ 
+diff --git a/soft-interface.h b/soft-interface.h
+index 2f2472c..5c19c42 100644
+--- a/soft-interface.h
++++ b/soft-interface.h
+@@ -29,4 +29,20 @@ void batadv_softif_destroy_sysfs(struct net_device *soft_iface);
+ int batadv_softif_is_valid(const struct net_device *net_dev);
+ extern struct rtnl_link_ops batadv_link_ops;
+ 
++#ifdef CONFIG_BRIDGE_NETFILTER
++/**
++ * batadv_nf_bridge_skb_free - clean the NF bridge data in an skb
++ * @skb: the skb which nf data has to be free'd
++ */
++static inline void batadv_nf_bridge_skb_free(struct sk_buff *skb)
++{
++	nf_bridge_put(skb->nf_bridge);
++	skb->nf_bridge = NULL;
++}
++#else
++static inline void batadv_nf_bridge_skb_free(struct sk_buff *skb)
++{
++}
++#endif /* CONFIG_BRIDGE_NETFILTER */
++
+ #endif /* _NET_BATMAN_ADV_SOFT_INTERFACE_H_ */
+-- 
+1.8.5.1
 
-iQIcBAEBCAAGBQJSoaKXAAoJEEKTMo6mOh1VMjoP/3GqGy0TQG1yXRzbrzAbbklJ
-8Oa6DHQd2pSN/cJkR501JYwSUnCGh3m7eh7qc1HZYrEIgxIrJDLHWSqBL3FPtgap
-gQ92BBQG/pd38ZmmWSeZob44bEMEGAn00B1kgFx+Xb4YW4bP2rDAlvPxjjaqjT3U
-tBNbNYxUTBY2JMftI7WwEOwMWgLPVoHR1PhAbBTpbXMXCRrGp/vXN1xXam1xIDNx
-kahFmHA1Dc91dwr8ev4bcUjfGO2tXkQOEoqKRkwc1SEzuKTjgJNDxdbFNqG6vMAm
-k/aXhMvf3DOUkaCeslRQIkwefbKmzN69c1x2ND7S8mLEMIKyBuhKUFcf6PebD9SK
-Dc+KdwIx0lsaS2vGqOt6mUSie1KfY8QNAc74eF6XjDhKyJynYXe6S3L40uT4eLXR
-8fwGClJmyYVIiYD65NOtiIx6C2uHFchjDpXjlz0X8N9oQ2Azr4e2RMTGkkoihvOh
-94r1dmAaBrnRiAu6AkImhgN+lWgLglHWD5trmmRCxNEJf0iW+x9ZaR4yAQFDUP3k
-mrk5AN8JuRZkOeY5QK4AIZ0bFUh8tKW6JaNb8VHQGsLqjhAB/HPS6VljyRgMalyQ
-c/kLlEOIIZ9dsjMwKMgyoJ9bMtTYUTxrriKz12mQbx8mWvm4CMFEQglljQiuTyvh
-J+UsjAHs/ffW59JIGCfB
-=8xL7
------END PGP SIGNATURE-----
