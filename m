@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat,  7 Dec 2013 11:21:22 +0100
-Message-Id: <1386411684-2448-2-git-send-email-antonio@meshcoding.com>
+Date: Sat,  7 Dec 2013 11:21:23 +0100
+Message-Id: <1386411684-2448-3-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1386411684-2448-1-git-send-email-antonio@meshcoding.com>
 References: <1386411684-2448-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: fix typ0 in
-	batadv_orig_hardif_seq_print_text()
+Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: fix typ0s in
+	batadv_store_isolation_mark()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,27 +20,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Introduced by f13f960797fd1969b3c0470cc97435ddfb6aecb4
-("batman-adv: add debugfs support to view multiif tables")
+Introduced by e29249b4483b91d7a590a16e9b5ffe9412ce7fde
+("batman-adv: add isolation_mark sysfs attribute")
 
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- originator.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ sysfs.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/originator.c b/originator.c
-index 4af1c77..2243003 100644
---- a/originator.c
-+++ b/originator.c
-@@ -958,7 +958,7 @@ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
- 	hard_iface = batadv_hardif_get_by_netdev(net_dev);
+diff --git a/sysfs.c b/sysfs.c
+index 037f411..b6a4403 100644
+--- a/sysfs.c
++++ b/sysfs.c
+@@ -469,8 +469,8 @@ static ssize_t batadv_show_isolation_mark(struct kobject *kobj,
+ }
  
- 	if (!hard_iface || !hard_iface->soft_iface) {
--		seq_puts(seq, "Interface not known to to B.A.T.M.A.N.\n");
-+		seq_puts(seq, "Interface not known to B.A.T.M.A.N.\n");
- 		goto out;
- 	}
- 
+ /**
+- * batadv_store_isolation_mark - parse and store the isolation mark/mask entered by
+- *  the user
++ * batadv_store_isolation_mark - parse and store the isolation mark/mask entered
++ *  by the user
+  * @kobj: kobject representing the private mesh sysfs directory
+  * @attr: the batman-adv attribute the user is interacting with
+  * @buff: the buffer containing the user data
 -- 
 1.8.5.1
 
