@@ -1,8 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat,  7 Dec 2013 11:21:21 +0100
-Message-Id: <1386411684-2448-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: fix typ0 in sysfs.c
+Date: Sat,  7 Dec 2013 11:21:22 +0100
+Message-Id: <1386411684-2448-2-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1386411684-2448-1-git-send-email-antonio@meshcoding.com>
+References: <1386411684-2448-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: fix typ0 in
+	batadv_orig_hardif_seq_print_text()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,28 +20,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Fix a small typ0 in sysfs.c.
-Introduced by 99a6eb50ef5066e125cedb97bc0fcfcdff4f08cc
-("batman-adv: deselect current GW on client mode switch off")
+Introduced by f13f960797fd1969b3c0470cc97435ddfb6aecb4
+("batman-adv: add debugfs support to view multiif tables")
 
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- sysfs.c | 2 +-
+ originator.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/sysfs.c b/sysfs.c
-index 2f89a57..037f411 100644
---- a/sysfs.c
-+++ b/sysfs.c
-@@ -407,7 +407,7 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
- 		    curr_gw_mode_str, buff);
+diff --git a/originator.c b/originator.c
+index 4af1c77..2243003 100644
+--- a/originator.c
++++ b/originator.c
+@@ -958,7 +958,7 @@ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
+ 	hard_iface = batadv_hardif_get_by_netdev(net_dev);
  
- 	/* Invoking batadv_gw_reselect() is not enough to really de-select the
--	 * current GW. It will only instruct the gateway clientcode to perform
-+	 * current GW. It will only instruct the gateway client code to perform
- 	 * a re-election the next time that this is needed.
- 	 *
- 	 * When gw client mode is being switched off the current GW must be
+ 	if (!hard_iface || !hard_iface->soft_iface) {
+-		seq_puts(seq, "Interface not known to to B.A.T.M.A.N.\n");
++		seq_puts(seq, "Interface not known to B.A.T.M.A.N.\n");
+ 		goto out;
+ 	}
+ 
 -- 
 1.8.5.1
 
