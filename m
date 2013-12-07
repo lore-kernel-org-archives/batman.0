@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat,  7 Dec 2013 11:21:23 +0100
-Message-Id: <1386411684-2448-3-git-send-email-antonio@meshcoding.com>
+Date: Sat,  7 Dec 2013 11:21:24 +0100
+Message-Id: <1386411684-2448-4-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1386411684-2448-1-git-send-email-antonio@meshcoding.com>
 References: <1386411684-2448-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: fix typ0s in
-	batadv_store_isolation_mark()
+Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: fix typ0s in
+	batadv_tt_global_is_isolated()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,29 +20,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Introduced by e29249b4483b91d7a590a16e9b5ffe9412ce7fde
-("batman-adv: add isolation_mark sysfs attribute")
+Introduced by 6fa38a2c72cc79dd961a6d9ed00d32e1c308b448
+("batman-adv: set the isolation mark in the skb if needed")
 
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- sysfs.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ translation-table.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/sysfs.c b/sysfs.c
-index 037f411..b6a4403 100644
---- a/sysfs.c
-+++ b/sysfs.c
-@@ -469,8 +469,8 @@ static ssize_t batadv_show_isolation_mark(struct kobject *kobj,
- }
- 
- /**
-- * batadv_store_isolation_mark - parse and store the isolation mark/mask entered by
-- *  the user
-+ * batadv_store_isolation_mark - parse and store the isolation mark/mask entered
-+ *  by the user
-  * @kobj: kobject representing the private mesh sysfs directory
-  * @attr: the batman-adv attribute the user is interacting with
-  * @buff: the buffer containing the user data
+diff --git a/translation-table.c b/translation-table.c
+index 6fbb6a0..9fee80c 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -3584,7 +3584,7 @@ int batadv_tt_init(struct batadv_priv *bat_priv)
+  * @addr: the mac address of the client
+  * @vid: the identifier of the VLAN where this client is connected
+  *
+- * Return true if the client is marked with the TT_CLIENT_ISOLA flag, flase
++ * Returns true if the client is marked with the TT_CLIENT_ISOLA flag, false
+  * otherwise
+  */
+ bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
 -- 
 1.8.5.1
 
