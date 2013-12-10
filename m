@@ -1,9 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 10 Dec 2013 19:39:00 +0100
-Message-Id: <1386700740-2752-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv2 next] batadv: Slight optimization of
-	batadv_compare_eth
+Date: Tue, 10 Dec 2013 21:08:03 +0100
+Message-Id: <1386706083-2396-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv2 next - RESEND] batadv: Slight optimization
+	of batadv_compare_eth
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
