@@ -1,15 +1,16 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <52A2F72A.9050308@meshcoding.com>
-Date: Sat, 07 Dec 2013 11:23:38 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
-References: <1386411684-2448-1-git-send-email-antonio@meshcoding.com>
- <1386411684-2448-3-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1386411684-2448-3-git-send-email-antonio@meshcoding.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <davem@davemloft.net>
+Date: Mon, 09 Dec 2013 20:58:22 -0500 (EST)
+Message-Id: <20131209.205822.126859687683341998.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1386368461.31845.38.camel@joe-AO722>
+References: <1386364621.31845.32.camel@joe-AO722>
+ <20131206.163806.1555069105347405484.davem@davemloft.net>
+ <1386368461.31845.38.camel@joe-AO722>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: fix typ0s in
-	batadv_store_isolation_mark()
+Subject: Re: [B.A.T.M.A.N.] [PATCH -next] etherdevice: Add
+	ether_addr_equal_unaligned
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,39 +22,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+To: joe@perches.com
+Cc: mareklindner@neomailbox.ch, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, antonio@meshcoding.com
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+From: Joe Perches <joe@perches.com>
+Date: Fri, 06 Dec 2013 14:21:01 -0800
 
-On 07/12/13 11:21, Antonio Quartulli wrote:
-> Introduced by e29249b4483b91d7a590a16e9b5ffe9412ce7fde 
-> ("batman-adv: add isolation_mark sysfs attribute")
+> Add a generic routine to test if possibly unaligned
+> to u16 Ethernet addresses are equal.
 > 
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> If CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS is set,
+> this uses the slightly faster generic routine
+> ether_addr_equal, otherwise this uses memcmp.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-Actually this is fixing a too long line, not a real typ0.
-
-Cheers,
-
-
-- -- 
-Antonio Quartulli
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSovcqAAoJEEKTMo6mOh1V9lMP/irZacM+TT5SPygrB8PjxJMx
-KHl8IlEJd7SXpZD4i6UU7NftzSOw+bipQGUoBzrqZScBIll41xv/vnJYJJ/e60Fj
-/1hngbjzbGlQzrTTEf3clCjnwjvmpq0SjmIfd815XhnDEHTPvcy+TgAlbCg1RjK2
-5kYPXa1Zll+ldT9T9nWkua1g/DZ58GPID8HLofswxDYVdf8i3+KR5QLZK7f9s4MC
-QGrx3RkI6DekXAWUjzg7Q2m+9Ep+c7LV1KSDbBzHLjzPjOsbuAfqm9J7B3EGaLf1
-fdBgQqHIsQWfvGa58xgte3Z79KqxDugyB9Gd1+jZxBJOWCbHeclDIQ1Y3Mos62LK
-+xV6GRt9OVPF5L6dhs1SrmZ9ykNlOMAqTx0G2kvogdCxkGdkuyEV+ZaXqm18TuKy
-tFLvZ7u8tRz2WlAPutbRGcz6Ek+mbdNoqKoaFHgKEEtwWoU1JmW6zA0UvCh9GB2m
-BTRarvZh9egK+zt2ISSKLma7p2TZW1E9N4L5mhxXr6RJo2mEpJP3yAdqqRFo4zDS
-uUTkn7c1387dRWTUes6MlHQa0NocTdbZN/83Ij/3kuqqVI6OKYvntKOUB2Q9n7+f
-77LUbp1EBSZdFS435DZE0QIkwb/8pRwyiiIufhWEBON+LrRuk2s8NMVFXg1bZX5c
-TByXtG13Dv/FETlLH3ik
-=UIv7
------END PGP SIGNATURE-----
+Applied.
