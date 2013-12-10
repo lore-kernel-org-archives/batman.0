@@ -1,15 +1,8 @@
-Return-Path: <davem@davemloft.net>
-Date: Mon, 09 Dec 2013 20:58:28 -0500 (EST)
-Message-Id: <20131209.205828.1383796128690214997.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1386369586.31845.42.camel@joe-AO722>
-References: <20131206.163806.1555069105347405484.davem@davemloft.net>
- <1386368461.31845.38.camel@joe-AO722>
- <1386369586.31845.42.camel@joe-AO722>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH -next] batadv: Slight optimization of
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Tue, 10 Dec 2013 08:44:14 +0100
+Message-Id: <1386661454-3036-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batadv: Slight optimization of
 	batadv_compare_eth
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,18 +15,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: joe@perches.com
-Cc: mareklindner@neomailbox.ch, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, antonio@meshcoding.com
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Joe Perches <joe@perches.com>, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Joe Perches <joe@perches.com>
-Date: Fri, 06 Dec 2013 14:39:46 -0800
+Use the newly added generic routine ether_addr_equal_unaligned
+to test if possibly unaligned to u16 Ethernet addresses are equal.
 
-> Use the newly added generic routine ether_addr_equal_unaligned
-> to test if possibly unaligned to u16 Ethernet addresses are equal.
-> 
-> This slightly improves comparison time for systems with
-> CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS.
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
+This slightly improves comparison time for systems with
+CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS.
 
-Applied.
+Signed-off-by: Joe Perches <joe@perches.com>
+[antonio@meshcoding.com: added compat code for linux <3.14]
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ compat.h | 6 ++++++
+ main.h   | 2 +-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/compat.h b/compat.h
+index 8545b0a..a1c8396 100644
+--- a/compat.h
++++ b/compat.h
+@@ -382,4 +382,10 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
+ 	})
+ #endif /* < KERNEL_VERSION(3, 11, 0) */
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0)
++
++#define ether_addr_equal_unaligned(_a, _b) (memcmp(_a, _b, ETH_ALEN) == 0)
++
++#endif /* < KERNEL_VERSION(3, 14, 0) */
++
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
+diff --git a/main.h b/main.h
+index 2f3ac06..d636449 100644
+--- a/main.h
++++ b/main.h
+@@ -273,7 +273,7 @@ static inline void batadv_dbg(int type __always_unused,
+  */
+ static inline int batadv_compare_eth(const void *data1, const void *data2)
+ {
+-	return memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0;
++	return ether_addr_equal_unaligned(data1, data2);
+ }
+ 
+ /**
+-- 
+1.8.5.1
+
