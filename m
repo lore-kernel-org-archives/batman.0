@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 11 Dec 2013 16:30:18 +0800
-Message-ID: <1961946.V41ydriljF@diderot>
-In-Reply-To: <1386411684-2448-3-git-send-email-antonio@meshcoding.com>
+Date: Wed, 11 Dec 2013 16:31:21 +0800
+Message-ID: <1804468.QD6oqgSnBX@diderot>
+In-Reply-To: <1386411684-2448-4-git-send-email-antonio@meshcoding.com>
 References: <1386411684-2448-1-git-send-email-antonio@meshcoding.com>
- <1386411684-2448-3-git-send-email-antonio@meshcoding.com>
+ <1386411684-2448-4-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart81593284.0nNCObB7rb";
+Content-Type: multipart/signed; boundary="nextPart2071125.jy8PD0UmIl";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: fix typ0s in
-	batadv_store_isolation_mark()
+Subject: Re: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: fix typ0s in
+	batadv_tt_global_is_isolated()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,25 +25,25 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart81593284.0nNCObB7rb
+--nextPart2071125.jy8PD0UmIl
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 07 December 2013 11:21:23 Antonio Quartulli wrote:
-> Introduced by e29249b4483b91d7a590a16e9b5ffe9412ce7fde
-> ("batman-adv: add isolation_mark sysfs attribute")
+On Saturday 07 December 2013 11:21:24 Antonio Quartulli wrote:
+> Introduced by 6fa38a2c72cc79dd961a6d9ed00d32e1c308b448
+> ("batman-adv: set the isolation mark in the skb if needed")
 > 
 > Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
->  sysfs.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  translation-table.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision 21dfc1a.
+Applied in revision 65f9fec.
 
 Thanks,
 Marek
 
---nextPart81593284.0nNCObB7rb
+--nextPart2071125.jy8PD0UmIl
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -51,14 +51,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSqCKaAAoJEFNVTo/uthzAtoAH/2ev5kc2cCa48s7nEqICDcp3
-3Dr4A7qtndSVSgra8MEKKUYqqsUFrccdqd0/4ZiSAiQSxtpp3vInnzNnvJjSUljK
-9KJbmQ3i/LqMgv1uzSY7xkr1Mstn9W6fhwM8WVIRqK8gXSiCYEGbsgAEL6t4pWT9
-TVTZhRud1XAReqaGE5aKAzyvze7OUeQ+AENdtFNCbjvxNc7a9Qb7b2nZ5mITmngH
-rD09uSu6BI2b/z5/7FdMoQMkMjCmuImt7Ze5RcSKPm9QdvQeUkvO7GshP/IF4Na2
-/I/y6FiMZ0myXo7ECDoKT/k+6ACS18ZkOrXK977uzW19TNLKFsfphRuDw9f6xuE=
-=+jGv
+iQEcBAABAgAGBQJSqCLZAAoJEFNVTo/uthzA71kH/jtviESM2TEJyPk1vdADt3HD
+qR7EwEYuRd9doHECnSpsX6dZ53gYTwaS2FP/Dye2YOEm1WXkH+TyCDqsXgv+zOsE
+oz1BgIGiGmVLztAzfVuYBZXEN/2xJOqxDE+JjmKf4W/kcPyBiuyFaYh7UsKG4xtz
+JFnzpk5VYkV5B+UX70koZvn/dI26hfdOc/y4UXhcg2hzyLfDKzNyQcLCRsIr1vxj
+hNGFzs/ka3KvRFbL9tABaDQ+rTUrcMCxQR1TofpZOTxpQnHPG2r9S61mcu9THaBZ
+WS5qFvYPuFC9fyrlcTqSLflRUDRD1b9Kz3EoAJjPgrWXC9109RPh7b7YvHg81ug=
+=h7aU
 -----END PGP SIGNATURE-----
 
---nextPart81593284.0nNCObB7rb--
+--nextPart2071125.jy8PD0UmIl--
 
