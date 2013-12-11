@@ -1,15 +1,14 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <52A814D7.1060805@meshcoding.com>
-Date: Wed, 11 Dec 2013 08:31:35 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
+Return-Path: <viro@ftp.linux.org.uk>
+Date: Wed, 11 Dec 2013 07:55:26 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+Message-ID: <20131211075526.GR10323@ZenIV.linux.org.uk>
 References: <cover.1386738050.git.joe@perches.com>
  <e7104b35287b1e1ec456734c1b5e1aa98dac99f8.1386738050.git.joe@perches.com>
- <52A813C1.8070404@meshcoding.com>
-In-Reply-To: <52A813C1.8070404@meshcoding.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="bbG9snU5osjWRKo4NB4AAansjRPstJHRd"
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e7104b35287b1e1ec456734c1b5e1aa98dac99f8.1386738050.git.joe@perches.com>
+Sender: Al Viro <viro@ftp.linux.org.uk>
 Subject: Re: [B.A.T.M.A.N.] [PATCH -next 2/3] batman-adv: Use seq_overflow
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,51 +21,67 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Joe Perches <joe@perches.com>, Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, Kees Cook <keescook@chromium.org>
+To: Joe Perches <joe@perches.com>
+Cc: Kees Cook <keescook@chromium.org>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Antonio Quartulli <antonio@meshcoding.com>, "David S. Miller" <davem@davemloft.net>, Marek Lindner <mareklindner@neomailbox.ch>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---bbG9snU5osjWRKo4NB4AAansjRPstJHRd
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Dec 10, 2013 at 09:12:43PM -0800, Joe Perches wrote:
 
-Joe,
+> diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+> index 2449afa..dfa5d2d 100644
+> --- a/net/batman-adv/gateway_client.c
+> +++ b/net/batman-adv/gateway_client.c
+> @@ -517,29 +517,28 @@ static int batadv_write_buffer_text(struct batadv_priv *bat_priv,
+>  {
+>  	struct batadv_gw_node *curr_gw;
+>  	struct batadv_neigh_node *router;
+> -	int ret = -1;
+>  
+>  	router = batadv_orig_node_get_router(gw_node->orig_node);
+>  	if (!router)
+> -		goto out;
+> +		return -1;
 
-we have other places in the batman-adv code where we use seq_printf, but
-at the moment we don't check the return value and we always return 0 at
-the end of the function.
+This (as well as the original) means "fail read(2) with -EINVAL", which
+might or might not be correct behaviour.
 
-I think we could use seq_overflow here as well?
+>  	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
+>  
+> -	ret = seq_printf(seq, "%s %pM (%3i) %pM [%10s]: %u.%u/%u.%u MBit\n",
+> -			 (curr_gw == gw_node ? "=>" : "  "),
+> -			 gw_node->orig_node->orig,
+> -			 router->bat_iv.tq_avg, router->addr,
+> -			 router->if_incoming->net_dev->name,
+> -			 gw_node->bandwidth_down / 10,
+> -			 gw_node->bandwidth_down % 10,
+> -			 gw_node->bandwidth_up / 10,
+> -			 gw_node->bandwidth_up % 10);
+> +	seq_printf(seq, "%s %pM (%3i) %pM [%10s]: %u.%u/%u.%u MBit\n",
+> +		   (curr_gw == gw_node ? "=>" : "  "),
+> +		   gw_node->orig_node->orig,
+> +		   router->bat_iv.tq_avg, router->addr,
+> +		   router->if_incoming->net_dev->name,
+> +		   gw_node->bandwidth_down / 10,
+> +		   gw_node->bandwidth_down % 10,
+> +		   gw_node->bandwidth_up / 10,
+> +		   gw_node->bandwidth_up % 10);
+>  
+>  	batadv_neigh_node_free_ref(router);
+>  	if (curr_gw)
+>  		batadv_gw_node_free_ref(curr_gw);
+> -out:
+> -	return ret;
+> +
+> +	return seq_overflow(seq);
 
+... and this is utter junk.
 
-Thanks,
+This sucker should return 0.  Insufficiently large buffer will be handled
+by caller, TYVM, if you give that caller a chance to do so.  Returning 1
+from ->show() is a bug in almost all cases, and definitely so in this one.
 
+Just in case somebody decides that above is worth copying: It Is Not.
+Original code is buggy, plain and simple.  This one trades the older
+bug ("fail with -EINVAL whenever the buffer is too small") with just as buggy
+"silently skip an entry entirely whenever the buffer is too small".
 
---=20
-Antonio Quartulli
-
-
---bbG9snU5osjWRKo4NB4AAansjRPstJHRd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSqBTbAAoJEEKTMo6mOh1VQRAQAJ5F+K+L3WKBmDNEm5hDwEqH
-QEkP/hoUahL+awpng34XuxE90ci9GksBZfm6kXADZhtqRH1SeXh89D99sX/BKL0N
-4POYhXv9Z5NVSfEl0FqEcaidSIKfoHuLXl0vHFNLT+UKnZZ1Hx/RIHF74hcSbCTj
-niKhmWEt1OUKmUiQcLz5FKWF6VG1AJL2kT2MISgHHahNEBZDwuOIgjY+unL0MsAS
-ClAuSgym5MDoPRcPzARDq7znt1Ql4aOgjo8n5lCymDW/zJ922UHJSU31N4IRkU6R
-c4Fsx2AWorasM6PMgma+sUPAZTRdsekDHI1hNPNK3cHuaBLBPBOHD1Bljdc69ILy
-rtKcUoW6E8I4P2EzV+p37Eahn+xoNI/mQUV0fIAsRk2fFICKul9urswD33WRBiqs
-CaB7twGviBUCpou+Q4AdxQH+Yz50aXRosz1aEjcWSGniVmI1Vll6m+Z4lxLneHzs
-LDm0WwLZFxZt1tvb/xnLs/VsIFsS22XEr1VsBb5oEDKSaWcTzEwSCZg8MH/3cy1f
-6bE0tGQ8mDiagr/cVizLU6VCSTCt3W9iiOacL8xv8vLI3oR8y/8aWOv/m63EwSbL
-KV0Wg+U4mpXo8E/Cc6v+8/W9+V4h2dAUHmXf9/8q675ZXu99hrJl3HaOSSuxaRPx
-Or7pQuy6CQNhXL9jaNij
-=s7fm
------END PGP SIGNATURE-----
-
---bbG9snU5osjWRKo4NB4AAansjRPstJHRd--
+Don't Do That.
