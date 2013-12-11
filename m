@@ -1,9 +1,14 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 10 Dec 2013 21:08:03 +0100
-Message-Id: <1386706083-2396-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv2 next - RESEND] batadv: Slight optimization
-	of batadv_compare_eth
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Wed, 11 Dec 2013 10:28:31 +0800
+Message-ID: <4704613.YrgyhfTcIu@diderot>
+In-Reply-To: <1386700740-2752-1-git-send-email-antonio@meshcoding.com>
+References: <1386700740-2752-1-git-send-email-antonio@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart5194080.nhlrTB09fj";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next] batadv: Slight optimization of
+	batadv_compare_eth
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,48 +23,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Use the newly added generic routine ether_addr_equal_unaligned
-to test if possibly unaligned to u16 Ethernet addresses are equal.
 
-This slightly improves comparison time for systems with
-CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS.
+--nextPart5194080.nhlrTB09fj
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Joe Perches <joe@perches.com>
-[antonio@meshcoding.com: added compat code for linux <3.14]
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- compat.h | 6 ++++++
- main.h   | 2 +-
- 2 files changed, 7 insertions(+), 1 deletion(-)
+On Tuesday 10 December 2013 19:39:00 Antonio Quartulli wrote:
+> Use the newly added generic routine ether_addr_equal_unaligned
+> to test if possibly unaligned to u16 Ethernet addresses are equal.
+> 
+> This slightly improves comparison time for systems with
+> CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> [antonio@meshcoding.com: added compat code for linux <3.14]
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> ---
+>  compat.h | 6 ++++++
+>  main.h   | 2 +-
+>  2 files changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/compat.h b/compat.h
-index 04a2256..997b817 100644
---- a/compat.h
-+++ b/compat.h
-@@ -376,4 +376,10 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
- 	})
- #endif /* < KERNEL_VERSION(3, 11, 0) */
- 
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0)
-+
-+#define ether_addr_equal_unaligned(_a, _b) (memcmp(_a, _b, ETH_ALEN) == 0)
-+
-+#endif /* < KERNEL_VERSION(3, 14, 0) */
-+
- #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
-diff --git a/main.h b/main.h
-index c5d6eb2..d4187ba 100644
---- a/main.h
-+++ b/main.h
-@@ -267,7 +267,7 @@ static inline void batadv_dbg(int type __always_unused,
-  */
- static inline int batadv_compare_eth(const void *data1, const void *data2)
- {
--	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
-+	return ether_addr_equal_unaligned(data1, data2);
- }
- 
- /**
--- 
-1.8.5.1
+Applied in revision 91890af.
+
+Thanks,
+Marek
+
+--nextPart5194080.nhlrTB09fj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJSp83SAAoJEFNVTo/uthzAPWgIAJzhUcMP2NMmehIvAtaHi1ey
+u9yMa+MAW4DshGH/jrCQJmcKxS3sRJ2cbH8roGRqT4h8OljHpPBNQS7p4IW9xSbV
+TJcgUzl4CNMxIqO5MoIA2ZNht/7K2VoYo8VrA6fKFFPqHjgW86wOFJwDa6p9SOX1
+8cAQlhli2k7Sy7XDFwPt8X4PW1+iJY2jC4P9GQaPWmneMl3DXiqmgh/+CPgPwsux
+HsFS3RcOgxv8fZPX0r85bE/8Y7kBI1wrcASHdg0RqyIcqW0gQ4P6Mu+tTMr/Mh0A
+dj5djTxm7cv0taiwEknJPctUbvWLPe38nNpAlXvXnqjAnyCi1NXxcWX5ZLeA4iU=
+=0Qos
+-----END PGP SIGNATURE-----
+
+--nextPart5194080.nhlrTB09fj--
 
