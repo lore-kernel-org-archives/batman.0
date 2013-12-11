@@ -1,14 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Date: Wed, 11 Dec 2013 00:20:40 -0500 (EST)
-Message-Id: <20131211.002040.1061939246483044835.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <cover.1386738050.git.joe@perches.com>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <52A813C1.8070404@meshcoding.com>
+Date: Wed, 11 Dec 2013 08:26:57 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
+MIME-Version: 1.0
 References: <cover.1386738050.git.joe@perches.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH -next 0/3] seq_printf/puts/putc: Start to
- convert to return void
+ <e7104b35287b1e1ec456734c1b5e1aa98dac99f8.1386738050.git.joe@perches.com>
+In-Reply-To: <e7104b35287b1e1ec456734c1b5e1aa98dac99f8.1386738050.git.joe@perches.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="T9RiPpL6d9kUP2kj5H5iCLKUgUwIs1p7M"
+Subject: Re: [B.A.T.M.A.N.] [PATCH -next 2/3] batman-adv: Use seq_overflow
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,26 +21,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: joe@perches.com
-Cc: coreteam@netfilter.org, keescook@chromium.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, netfilter@vger.kernel.org, netfilter-devel@vger.kernel.org, viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org
+To: Joe Perches <joe@perches.com>, Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Kees Cook <keescook@chromium.org>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Joe Perches <joe@perches.com>
-Date: Tue, 10 Dec 2013 21:12:41 -0800
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--T9RiPpL6d9kUP2kj5H5iCLKUgUwIs1p7M
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> Many uses of the return value of seq_printf/seq_puts/seq_putc are
-> incorrect.  Many assume that the return value is the number of
-> chars emitted into a buffer like printf/puts/putc.
-> 
-> It would be better to make the return value of these functions void
-> to avoid these misuses.
-> 
-> Start to do so.
-> Convert seq_overflow to a public function from a static function.
-> 
-> Remove the return uses of seq_printf/seq_puts/seq_putc from net.
-> Add a seq_overflow function call instead.
+On 11/12/13 06:12, Joe Perches wrote:
+> Convert the uses of the return of seq_printf to
+> instead check seq_overflow to determine if a buffer
+> overflow has occurred.
+>=20
+> This will eventually allow seq_printf & seq_puts to
+> be converted to a void return instead of the often
+> misused return that is often assumed to be an int for
+> the number of bytes emitted ala printk.
+>=20
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-I'm fine with this going in whatever tree is appropriate for
-the seq_overflow un-static change:
+I assume this patch is going to be merged with the others in some tree.
+In that case:
 
-Acked-by: David S. Miller <davem@davemloft.net>
+Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+
+Thanks,
+
+--=20
+Antonio Quartulli
+
+
+--T9RiPpL6d9kUP2kj5H5iCLKUgUwIs1p7M
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBCAAGBQJSqBPKAAoJEEKTMo6mOh1VHyAP/jCSeWzDq+NDUQzZ7l2Wf9Or
+2iIN0wzyHpEy8YJxZb7Lzbpr78zaROWZPYAyIwqGHTi4fuOGXvYAAA61PpQyzfIH
+gA7m7iqp3D95SFN2Dn47ymQKJBTsoaMty6iCA1wElk9xaD+jBLXAQsg1VTD0eYjk
+qCoNLUqyznNh3yMlid+eGckwdlaiispZBl9Qgm2nVZBD0/crWMPdM/K+nwIrE7su
+zQ3LTIMkjMt0+Qqp8MwKK0QOL/nzl+lauwyb7biLSeX9bpaWWkxicuzOfNgmeJ5R
+rbLy42esJDhgJLyDb2zWTW9q+WAFBVvf/kmWXgi2wrIuThZmRdkhAZhAsv44IjSX
+gdJ0EANYVOXzEaV15hnP87ykHxSqfHQRyzdiEgUumeh5dWi9cW7u2o5o6j8CCvs2
+RVDS/hz/ous5VTljuiCACbo23SWi7UATh84xOMsrAY59RTXhbfX0nd4r1vgALOwv
+W/mja1z6G0aL5wYV+3jn07oqKcPXhfnpfoGq9pM+W6uxgzXWgHVomFWVFvfXBfzO
+qgowRpgHSJf5quthncFnQ5PrMX6FfQgAqbswsJfzZX1nulgbHwmB3D/9tpKaFut5
+qlFnGMOOsXib+ntdZlaTI+mVM3nRY7ThErCezcMGDW4ChMRkQc/Xb04Wf+1UhGAS
+8iez/gKHwAiMpB5drjQU
+=Qmot
+-----END PGP SIGNATURE-----
+
+--T9RiPpL6d9kUP2kj5H5iCLKUgUwIs1p7M--
