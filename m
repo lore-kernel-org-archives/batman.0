@@ -1,14 +1,9 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 11 Dec 2013 10:28:31 +0800
-Message-ID: <4704613.YrgyhfTcIu@diderot>
-In-Reply-To: <1386700740-2752-1-git-send-email-antonio@meshcoding.com>
-References: <1386700740-2752-1-git-send-email-antonio@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5194080.nhlrTB09fj";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next] batadv: Slight optimization of
-	batadv_compare_eth
+Return-Path: <joe@perches.com>
+From: Joe Perches <joe@perches.com>
+Date: Tue, 10 Dec 2013 21:12:41 -0800
+Message-Id: <cover.1386738050.git.joe@perches.com>
+Subject: [B.A.T.M.A.N.] [PATCH -next 0/3] seq_printf/puts/putc: Start to
+	convert to return void
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,50 +15,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+To: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: netfilter@vger.kernel.org, Kees Cook <keescook@chromium.org>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, coreteam@netfilter.org, netfilter-devel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 
+Many uses of the return value of seq_printf/seq_puts/seq_putc are
+incorrect.  Many assume that the return value is the number of
+chars emitted into a buffer like printf/puts/putc.
 
---nextPart5194080.nhlrTB09fj
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+It would be better to make the return value of these functions void
+to avoid these misuses.
 
-On Tuesday 10 December 2013 19:39:00 Antonio Quartulli wrote:
-> Use the newly added generic routine ether_addr_equal_unaligned
-> to test if possibly unaligned to u16 Ethernet addresses are equal.
-> 
-> This slightly improves comparison time for systems with
-> CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS.
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> [antonio@meshcoding.com: added compat code for linux <3.14]
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-> ---
->  compat.h | 6 ++++++
->  main.h   | 2 +-
->  2 files changed, 7 insertions(+), 1 deletion(-)
+Start to do so.
+Convert seq_overflow to a public function from a static function.
 
-Applied in revision 91890af.
+Remove the return uses of seq_printf/seq_puts/seq_putc from net.
+Add a seq_overflow function call instead.
 
-Thanks,
-Marek
+Joe Perches (3):
+  seq: Add a seq_overflow test.
+  batman-adv: Use seq_overflow
+  netfilter: Use seq_overflow
 
---nextPart5194080.nhlrTB09fj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+ fs/seq_file.c                                      | 15 ++++----
+ include/linux/seq_file.h                           |  2 +
+ include/net/netfilter/nf_conntrack_acct.h          |  3 +-
+ net/batman-adv/gateway_client.c                    | 25 ++++++------
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c     |  6 ++-
+ .../netfilter/nf_conntrack_l3proto_ipv4_compat.c   | 42 +++++++++++++--------
+ net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c     |  6 ++-
+ net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c     | 10 +++--
+ net/netfilter/nf_conntrack_acct.c                  | 11 +++---
+ net/netfilter/nf_conntrack_expect.c                |  4 +-
+ net/netfilter/nf_conntrack_proto_dccp.c            | 12 ++++--
+ net/netfilter/nf_conntrack_proto_gre.c             | 15 +++++---
+ net/netfilter/nf_conntrack_proto_sctp.c            | 12 ++++--
+ net/netfilter/nf_conntrack_proto_tcp.c             | 11 ++++--
+ net/netfilter/nf_conntrack_proto_udp.c             |  7 ++--
+ net/netfilter/nf_conntrack_proto_udplite.c         |  7 ++--
+ net/netfilter/nf_conntrack_standalone.c            | 44 +++++++++++++---------
+ net/netfilter/nf_log.c                             | 26 ++++++-------
+ net/netfilter/nfnetlink_log.c                      | 12 +++---
+ net/netfilter/nfnetlink_queue_core.c               | 14 ++++---
+ net/netfilter/x_tables.c                           |  8 ++--
+ net/netfilter/xt_hashlimit.c                       | 34 +++++++++--------
+ 22 files changed, 191 insertions(+), 135 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJSp83SAAoJEFNVTo/uthzAPWgIAJzhUcMP2NMmehIvAtaHi1ey
-u9yMa+MAW4DshGH/jrCQJmcKxS3sRJ2cbH8roGRqT4h8OljHpPBNQS7p4IW9xSbV
-TJcgUzl4CNMxIqO5MoIA2ZNht/7K2VoYo8VrA6fKFFPqHjgW86wOFJwDa6p9SOX1
-8cAQlhli2k7Sy7XDFwPt8X4PW1+iJY2jC4P9GQaPWmneMl3DXiqmgh/+CPgPwsux
-HsFS3RcOgxv8fZPX0r85bE/8Y7kBI1wrcASHdg0RqyIcqW0gQ4P6Mu+tTMr/Mh0A
-dj5djTxm7cv0taiwEknJPctUbvWLPe38nNpAlXvXnqjAnyCi1NXxcWX5ZLeA4iU=
-=0Qos
------END PGP SIGNATURE-----
-
---nextPart5194080.nhlrTB09fj--
+-- 
+1.8.1.2.459.gbcd45b4.dirty
 
