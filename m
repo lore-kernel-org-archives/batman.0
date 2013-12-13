@@ -1,15 +1,11 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 12 Dec 2013 13:44:19 +0800
-Message-ID: <7685347.MVhl80WSVP@diderot>
-In-Reply-To: <1386013113-25471-2-git-send-email-sw@simonwunderlich.de>
-References: <1386013113-25471-1-git-send-email-sw@simonwunderlich.de>
- <1386013113-25471-2-git-send-email-sw@simonwunderlich.de>
+Return-Path: <gui@altermundi.net>
+Message-ID: <52AB595E.8090104@altermundi.net>
+Date: Fri, 13 Dec 2013 16:00:46 -0300
+From: Gui Iribarren <gui@altermundi.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2986625.lLLRIrSDl1";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-next 2/4] batman-adv: fix header
-	alignment by unrolling batadv_header
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] alfred init.d bugs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,56 +17,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+alfred will refuse to start if bat0 doesn't exist yet
 
---nextPart2986625.lLLRIrSDl1
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+root@48cfeb:~# alfred -i br-lan -m -b bat0
+Could not find transtable_global for interface bat0. Make sure it is a 
+valid batman-adv soft-interface
 
-On Monday 02 December 2013 20:38:31 Simon Wunderlich wrote:
-> The size of the batadv_header of 3 is problematic on some architectures
-> which automatically pad all structures to a 32 bit boundary. To not lose
-> performance by packing this struct, better embed it into the various
-> host structures.
-> 
-> Reported-by: Russell King <linux@arm.linux.org.uk>
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-> ---
->  bat_iv_ogm.c            |   36 +++++++++++------------
->  distributed-arp-table.c |    6 ++--
->  fragmentation.c         |    8 ++---
->  icmp_socket.c           |    6 ++--
->  main.c                  |   12 ++++----
->  network-coding.c        |   22 +++++++-------
->  packet.h                |   74
-> +++++++++++++++++++++++++++++++++--------------
-> routing.c               |   18 ++++++------
->  send.c                  |   10 +++----
->  soft-interface.c        |   11 +++----
->  10 files changed, 118 insertions(+), 85 deletions(-)
+at boot time this can create a race condition, since wifi interfaces can 
+take longer to be brought up, making bat0 appear much later than the 
+time alfred init.d script is run. In the following example, 4 seconds later.
 
-Applied in revision 31f0d40.
+Sun Nov  3 05:09:13 2013 kern.emerg /etc/rc.d/S99alfred: starting alfred
+Sun Nov  3 05:09:13 2013 kern.emerg /etc/rc.d/S99alfred: starting batadv-vis
+Sun Nov  3 05:09:13 2013 kern.emerg can't connect to unix socket: 
+Connection refused
+Sun Nov  3 05:09:13 2013 kern.emerg can't connect to unix socket: 
+Connection refused
+Sun Nov  3 05:09:17 2013 kern.info kernel: [   28.620000] batman_adv: 
+bat0: Adding interface: wlan0ah.145
+Sun Nov  3 05:09:17 2013 kern.info kernel: [   28.620000] batman_adv: 
+bat0: Interface activated: wlan0ah.145
+Sun Nov  3 05:09:17 2013 daemon.notice netifd: Interface 
+'lm_wlan0ah_bata' is now up
+Sun Nov  3 05:09:17 2013 kern.info kernel: [   29.060000] batman_adv: 
+bat0: bridge_loop_avoidance: Changing from: disabled to: enabled
+Sun Nov  3 05:09:17 2013 kern.info kernel: [   29.080000] batman_adv: 
+bat0: distributed_arp_table: Changing from: enabled to: disabled
 
-Thanks,
-Marek
-
---nextPart2986625.lLLRIrSDl1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJSqU0zAAoJEFNVTo/uthzArPoH/2Rwe9fc6P2w9HthF+F1ovAG
-/m2WBT0HhTJSPHfTIRJtu91Jw1sWmXSAynqPEZkVgcaUHh6zg3PnuHEQsxqbqbKz
-7uDnd9Obvn7Gma4TPazA3eXhgrOPNHv7utoa5hvrnkiReebpN0IL3IBAxo2FCXA2
-xoB/LeJMFUbAAnbyL4gZ6ME4MjZ8KcYQjvIWS3bPhgnB6MhBMFTLeo2QNWTH8J2g
-+FKGvFknWYO4JAqo6+y83/A4N33iT+RPhOMZeDUUouHYyGDzzluwGR+st9qI9AJy
-0oEkkQxFMHWyxXv4Dd06gakW9nrr0C01YpdHFTVQ+0zYD2YdiyWREJQAvHFmLzo=
-=vSlw
------END PGP SIGNATURE-----
-
---nextPart2986625.lLLRIrSDl1--
-
+sending a patch for this in a minute, along with another bugfix which 
+needs less explanation :)
