@@ -1,15 +1,9 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 14 Dec 2013 17:43:12 +0800
-Message-ID: <1430028.zLpfgZ7XZd@diderot>
-In-Reply-To: <1386013113-25471-4-git-send-email-sw@simonwunderlich.de>
-References: <1386013113-25471-1-git-send-email-sw@simonwunderlich.de>
- <1386013113-25471-4-git-send-email-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1497298.37hNSnlavf";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-next 4/4] batman-adv: fix size of
-	batadv_bla_claim_dst
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Sun, 15 Dec 2013 13:26:55 +0100
+Message-Id: <1387110415-1062-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix alignment for
+	batadv_tvlv_tt_change
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,42 +16,61 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
+Make struct batadv_tvlv_tt_change 4 bytes long to avoid
+padding on any architecture.
 
---nextPart1497298.37hNSnlavf
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ packet.h            | 4 ++--
+ translation-table.c | 6 ++++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
-On Monday 02 December 2013 20:38:33 Simon Wunderlich wrote:
-> Since this is a mac address and always 48 bit, and we can assume that
-> it is always aligned to 2-byte boundaries, add a pack(2) pragma.
-> 
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-> ---
->  packet.h |    2 ++
->  1 file changed, 2 insertions(+)
-
-Applied in revision 6b5c638.
-
-Thanks,
-Marek
-
---nextPart1497298.37hNSnlavf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJSrCgwAAoJEFNVTo/uthzAwHgH/3Xzqr/2m9DVtJnhJ1f/UMDg
-BnfgI6ehDWPAb5gfip9GxROB4mMiskv84pIuGJfCFFY1/lx4fuMpRLgyUVhs6VBt
-FNjQJxlCQkWVCpaB3jwN+XykSlZ8CUj02rVT4K21nl3xMDf6xj7u2M+YyTEUzi1T
-XKtJ3Aver1xGtHTxW82XgPYeez4V0TWtPPFEzzBl/HuVlAtg51p+gQGlCZfHlX1h
-VtF9FQCzQQ3IzrfZXFGhH3t0HFQyUaKDqXCR/jSlhO34wvQck/wRnlM/p6SE9paD
-hVZtC7gX5txIRSbC9uQ5qqWzF1NxwQvG3ZH4A1aaYzO5GretfnQoj+9d5AqwB58=
-=gbdz
------END PGP SIGNATURE-----
-
---nextPart1497298.37hNSnlavf--
+diff --git a/packet.h b/packet.h
+index 04cf27c..2dd8f24 100644
+--- a/packet.h
++++ b/packet.h
+@@ -484,13 +484,13 @@ struct batadv_tvlv_tt_vlan_data {
+  * struct batadv_tvlv_tt_change - translation table diff data
+  * @flags: status indicators concerning the non-mesh client (see
+  *  batadv_tt_client_flags)
+- * @reserved: reserved field
++ * @reserved: reserved field - useful for alignment purposes only
+  * @addr: mac address of non-mesh client that triggered this tt change
+  * @vid: VLAN identifier
+  */
+ struct batadv_tvlv_tt_change {
+ 	uint8_t flags;
+-	uint8_t reserved;
++	uint8_t reserved[3];
+ 	uint8_t addr[ETH_ALEN];
+ 	__be16 vid;
+ };
+diff --git a/translation-table.c b/translation-table.c
+index 4add57d..ff625fe 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -333,7 +333,8 @@ static void batadv_tt_local_event(struct batadv_priv *bat_priv,
+ 		return;
+ 
+ 	tt_change_node->change.flags = flags;
+-	tt_change_node->change.reserved = 0;
++	memset(tt_change_node->change.reserved, 0,
++	       sizeof(tt_change_node->change.reserved));
+ 	memcpy(tt_change_node->change.addr, common->addr, ETH_ALEN);
+ 	tt_change_node->change.vid = htons(common->vid);
+ 
+@@ -2221,7 +2222,8 @@ static void batadv_tt_tvlv_generate(struct batadv_priv *bat_priv,
+ 			       ETH_ALEN);
+ 			tt_change->flags = tt_common_entry->flags;
+ 			tt_change->vid = htons(tt_common_entry->vid);
+-			tt_change->reserved = 0;
++			memset(tt_change->reserved, 0,
++			       sizeof(tt_change->reserved));
+ 
+ 			tt_num_entries++;
+ 			tt_change++;
+-- 
+1.8.5.1
 
