@@ -1,8 +1,8 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 17 Dec 2013 19:12:12 +0100
-Message-Id: <1387303932-18445-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: add build checks for packet sizes
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Thu, 19 Dec 2013 01:15:26 +0100
+Message-Id: <1387412132-889-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] pull request [net]: batman-adv 2013-12-19
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,53 +14,87 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-With unrolling the batadv_header into the respective structures, the
-offsetof checks are now useless. Instead, add build checks for all
-packet types which go over the wire to avoid problems with wrong sizes
-or compatibility issues on some architectures which don't use every day.
+Hello David,
 
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- main.c |   24 +++++++++++++++++-------
- 1 file changed, 17 insertions(+), 7 deletions(-)
+this is a pull request intended for net.
 
-diff --git a/main.c b/main.c
-index 945e441..ad6aeed 100644
---- a/main.c
-+++ b/main.c
-@@ -419,13 +419,23 @@ static void batadv_recv_handler_init(void)
- 	for (i = BATADV_UNICAST_MIN; i <= BATADV_UNICAST_MAX; i++)
- 		batadv_rx_handler[i] = batadv_recv_unhandled_unicast_packet;
- 
--	/* compile time checks for struct member offsets */
--	BUILD_BUG_ON(offsetof(struct batadv_unicast_4addr_packet, src) != 10);
--	BUILD_BUG_ON(offsetof(struct batadv_unicast_packet, dest) != 4);
--	BUILD_BUG_ON(offsetof(struct batadv_unicast_tvlv_packet, dst) != 4);
--	BUILD_BUG_ON(offsetof(struct batadv_frag_packet, dest) != 4);
--	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet, dst) != 4);
--	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet_rr, dst) != 4);
-+	/* compile time checks for sizes */
-+	BUILD_BUG_ON(sizeof(struct batadv_bla_claim_dst) != 6);
-+	BUILD_BUG_ON(sizeof(struct batadv_ogm_packet) != 24);
-+	BUILD_BUG_ON(sizeof(struct batadv_icmp_header) != 20);
-+	BUILD_BUG_ON(sizeof(struct batadv_icmp_packet) != 20);
-+	BUILD_BUG_ON(sizeof(struct batadv_icmp_packet_rr) != 116);
-+	BUILD_BUG_ON(sizeof(struct batadv_unicast_packet) != 10);
-+	BUILD_BUG_ON(sizeof(struct batadv_unicast_4addr_packet) != 18);
-+	BUILD_BUG_ON(sizeof(struct batadv_frag_packet) != 20);
-+	BUILD_BUG_ON(sizeof(struct batadv_bcast_packet) != 14);
-+	BUILD_BUG_ON(sizeof(struct batadv_coded_packet) != 46);
-+	BUILD_BUG_ON(sizeof(struct batadv_unicast_tvlv_packet) != 20);
-+	BUILD_BUG_ON(sizeof(struct batadv_tvlv_hdr) != 4);
-+	BUILD_BUG_ON(sizeof(struct batadv_tvlv_gateway_data) != 8);
-+	BUILD_BUG_ON(sizeof(struct batadv_tvlv_tt_vlan_data) != 8);
-+	BUILD_BUG_ON(sizeof(struct batadv_tvlv_tt_change) != 12);
-+	BUILD_BUG_ON(sizeof(struct batadv_tvlv_roam_adv) != 8);
- 
- 	/* broadcast packet */
- 	batadv_rx_handler[BATADV_BCAST] = batadv_recv_bcast_packet;
--- 
-1.7.10.4
+Patch 1 is fixing a bug that is present in the batman-adv code since a while.
+The bug prevents a batman-adv encapsulated packet from being correctly
+processed by "Netfilter Bridge" twice. In particular a packet that
+first enters a bridge with the batman-adv header and then enters another bridge
+after the header has been removed is improperly processed. The problem is due to
+the skb->nf_bridge member not being cleaned when the batman-adv header is
+removed.
+This patch takes care of properly releasing the nf_bridge field at the right
+time (like all the other tunneling protocol do).
 
+** Please, enqueue this patch for stable.
+
+
+Patches from 2 to 6 take care of reshaping the packet layout a little bit to
+make sure that all the structures we use for sending messages have size multiple
+of 4 (or 2 when pack(2) is used).
+This solves the problem raised by Russel King about the static checks failure
+when compiling the module on the ARM architecture.
+
+
+
+Please pull or let me know of any problem.
+
+
+Thank you,
+	Antonio
+
+
+The following changes since commit 58a4782449c5882f61882396ef18cc34c7dc1269:
+
+  ipv6: sit: update mtu check to take care of gso packets (2013-12-18 17:55:24 -0500)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to 128cfa6a586154581ce1b891baf929810117a82a:
+
+  batman-adv: fix alignment for batadv_tvlv_tt_change (2013-12-19 00:27:24 +0100)
+
+----------------------------------------------------------------
+Included changes:
+
+- release skb->nf_bridge when removing the batman-adv header
+  from an incoming packet. This prevents netfilter bridge
+  from being fooled when the same packet enters a bridge
+  twice (or more): the first time within the batman-adv
+  header and the second time without.
+
+- adjust the packet layout to prevent any architecture from
+  adding padding bytes. All the structs sent over the wire
+  now have size multiple of 4bytes (unless pack(2) is used).
+
+----------------------------------------------------------------
+Antonio Quartulli (3):
+      batman-adv: free nf_bridge member on locally delivered skb
+      batman-adv: fix size of batadv_icmp_header
+      batman-adv: fix alignment for batadv_tvlv_tt_change
+
+Simon Wunderlich (3):
+      batman-adv: fix alignment for batadv_coded_packet
+      batman-adv: fix header alignment by unrolling batadv_header
+      batman-adv: fix size of batadv_bla_claim_dst
+
+ net/batman-adv/bat_iv_ogm.c            |  36 +++++-----
+ net/batman-adv/distributed-arp-table.c |   6 +-
+ net/batman-adv/fragmentation.c         |   8 +--
+ net/batman-adv/icmp_socket.c           |   6 +-
+ net/batman-adv/main.c                  |  16 ++---
+ net/batman-adv/network-coding.c        |  22 +++---
+ net/batman-adv/packet.h                | 124 +++++++++++++++++++++++++--------
+ net/batman-adv/routing.c               |  30 ++++----
+ net/batman-adv/send.c                  |  10 +--
+ net/batman-adv/soft-interface.c        |  19 +++--
+ net/batman-adv/soft-interface.h        |  16 +++++
+ net/batman-adv/translation-table.c     |   6 +-
+ 12 files changed, 195 insertions(+), 104 deletions(-)
