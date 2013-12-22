@@ -1,11 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu, 19 Dec 2013 01:15:31 +0100
-Message-Id: <1387412132-889-6-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1387412132-889-1-git-send-email-antonio@meshcoding.com>
+Return-Path: <davem@davemloft.net>
+Date: Sun, 22 Dec 2013 18:50:27 -0500 (EST)
+Message-Id: <20131222.185027.572777902017063381.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1387412132-889-2-git-send-email-antonio@meshcoding.com>
 References: <1387412132-889-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 5/6] batman-adv: fix size of
-	batadv_bla_claim_dst
+ <1387412132-889-2-git-send-email-antonio@meshcoding.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/6] batman-adv: free nf_bridge member on
+ locally delivered skb
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,41 +21,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+To: antonio@meshcoding.com
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, mareklindner@neomailbox.ch
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Thu, 19 Dec 2013 01:15:27 +0100
 
-Since this is a mac address and always 48 bit, and we can assume that
-it is always aligned to 2-byte boundaries, add a pack(2) pragma.
+> If an interface enslaved into batman-adv is a bridge (or a
+> virtual interface built on top of a bridge) the nf_bridge
+> member of the skbs reaching the soft-interface is filled
+> with the state about "netfilter bridge" operations.
+> 
+> Then, if one of such skbs is locally delivered, the nf_bridge
+> member should be cleaned up to avoid that the old state
+> could mess up with other "netfilter bridge" operations when
+> entering a second bridge.
+> This is needed because batman-adv is an encapsulation
+> protocol.
+> 
+> However at the moment skb->nf_bridge is not released at all
+> leading to bogus "netfilter bridge" behaviours.
+> Fix this by releasing skb->nf_bridge before an skb gets
+> delivered to the upper layer in interface_rx().
+> 
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- net/batman-adv/packet.h | 2 ++
- 1 file changed, 2 insertions(+)
+See nf_reset() and skb_scrub_packet().  Do not reinvent the
+wheel.
 
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index 2a857ed..04cf27c 100644
---- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -155,6 +155,7 @@ enum batadv_tvlv_type {
- 	BATADV_TVLV_ROAM	= 0x05,
- };
- 
-+#pragma pack(2)
- /* the destination hardware field in the ARP frame is used to
-  * transport the claim type and the group id
-  */
-@@ -163,6 +164,7 @@ struct batadv_bla_claim_dst {
- 	uint8_t type;		/* bla_claimframe */
- 	__be16 group;		/* group id */
- };
-+#pragma pack()
- 
- /**
-  * struct batadv_ogm_packet - ogm (routing protocol) packet
--- 
-1.8.5.1
-
+Thank you.
