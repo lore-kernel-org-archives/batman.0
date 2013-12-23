@@ -1,16 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <52B7817E.8090007@meshcoding.com>
-Date: Mon, 23 Dec 2013 01:19:10 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
-References: <1387412132-889-2-git-send-email-antonio@meshcoding.com>	<20131222.185027.572777902017063381.davem@davemloft.net>	<52B77F9E.8040201@meshcoding.com>
- <20131222.191622.118900475665948342.davem@davemloft.net>
-In-Reply-To: <20131222.191622.118900475665948342.davem@davemloft.net>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="7dXcfl16xs4TsMxwv5ADA2xHuv2tevERl"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/6] batman-adv: free nf_bridge member on
- locally delivered skb
+Date: Mon, 23 Dec 2013 01:28:04 +0100
+Message-Id: <1387758485-3568-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH maint 1/2] Revert "batman-adv: free nf_bridge
+	member on locally delivered skb"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,56 +15,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, mareklindner@neomailbox.ch
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---7dXcfl16xs4TsMxwv5ADA2xHuv2tevERl
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This reverts commit 9048eb62124f47f66d12eb1d706ab5fb265553f7.
 
-On 23/12/13 01:16, David Miller wrote:
-> There is zero reason for your protocol layer to have an ad-hoc private
-> SKB netfilter state reset function that touches internals in this way.
->=20
+This fix can be implemented using the nf_Reset() helper
+instead of partly reimplementing it with a batman-adv
+private function.
 
-agreed.
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ soft-interface.c |  8 --------
+ soft-interface.h | 16 ----------------
+ 2 files changed, 24 deletions(-)
 
-> At least with the generic helpers, we know the side effects and the
-> function is well known to other developers.
->=20
+diff --git a/soft-interface.c b/soft-interface.c
+index 5dd1247..33b6144 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -371,14 +371,6 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 	if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source, ethhdr->h_dest))
+ 		goto dropped;
+ 
+-	/* Clean the netfilter state before delivering the skb.
+-	 * This packet may have traversed a bridge when it was encapsulated into
+-	 * the batman header. Now that the header has been removed, the
+-	 * netfilter state must be cleaned up to avoid to mess up with a
+-	 * possible second bridge
+-	 */
+-	batadv_nf_bridge_skb_free(skb);
+-
+ 	netif_rx(skb);
+ 	goto out;
+ 
+diff --git a/soft-interface.h b/soft-interface.h
+index 5c19c42..2f2472c 100644
+--- a/soft-interface.h
++++ b/soft-interface.h
+@@ -29,20 +29,4 @@ void batadv_softif_destroy_sysfs(struct net_device *soft_iface);
+ int batadv_softif_is_valid(const struct net_device *net_dev);
+ extern struct rtnl_link_ops batadv_link_ops;
+ 
+-#ifdef CONFIG_BRIDGE_NETFILTER
+-/**
+- * batadv_nf_bridge_skb_free - clean the NF bridge data in an skb
+- * @skb: the skb which nf data has to be free'd
+- */
+-static inline void batadv_nf_bridge_skb_free(struct sk_buff *skb)
+-{
+-	nf_bridge_put(skb->nf_bridge);
+-	skb->nf_bridge = NULL;
+-}
+-#else
+-static inline void batadv_nf_bridge_skb_free(struct sk_buff *skb)
+-{
+-}
+-#endif /* CONFIG_BRIDGE_NETFILTER */
+-
+ #endif /* _NET_BATMAN_ADV_SOFT_INTERFACE_H_ */
+-- 
+1.8.5.2
 
-
-Ok, I'll do it the clean way and resend the pull request.
-
-
-Thanks!
-
---=20
-Antonio Quartulli
-
-
---7dXcfl16xs4TsMxwv5ADA2xHuv2tevERl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSt4GDAAoJEEKTMo6mOh1VsHcP/jm6GiDip6+hqSA8K3CEczE9
-OHvwf0MdaJZcw5GR0oJqbHy3JcjeUS5TU4Ot14fPwIM9gL6D+8sbuKZc+/ptdoc4
-W6DufnuD6RPtCY5k6miY8FfBXHEpAaHiIoRCbikofvCF1onCDMyRM4mBZFM/o7sb
-wXHHhKZ9UnuIZzxK9IOe0sPl2fzE3GR6oRXi8Nk4gVLvpryrRknNlJPF5M1WSED6
-ILEU8oNODuZxkCbVnSEE7CONNOtktF7zRWXs6nCSQW1xdgACDG+8t9ZqhKa1gcLL
-IrPi1YTjKdYj7/D35zzfpXVg0X8figtfoAmPmlLvHaRnpwSjAegSUxp7oseeEWA5
-l1rxSO0dCNAFuFNMTTq7Klaz6JUVAKOBve4XN+ZTnXgyINXFerOderaqpwh0dIfJ
-CUTx7hjHOl5pDS9Au4QsJRdrFy0XHYL6wgLtdmEd+7qLz77AOGZkCCwk5zcpjsrI
-iShHKJAKb6AwCyHwCAugKMZ7qynuap8ZjMqMfrA99842wARF4XMMOtL9+QC+qItI
-B2M4Nw0/UKmIDH9EXL510Y5myPxiw4wdnWmstiMJZl8GstiQ+ElpTWUNpc3xU17i
-xcoaJBfg/aOrzmJ41QgnQb3zJB0186Tmrn+vlLaIGEkCN7EfxSXXzxQkQ+BXXH/w
-hZUR23JbFOVT/yJQ/ye3
-=Mqg5
------END PGP SIGNATURE-----
-
---7dXcfl16xs4TsMxwv5ADA2xHuv2tevERl--
