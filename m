@@ -1,11 +1,13 @@
 Return-Path: <dingtianhong@huawei.com>
-Message-ID: <52B7C5C5.2050304@huawei.com>
-Date: Mon, 23 Dec 2013 13:10:29 +0800
+Message-ID: <52B7FDB2.6090700@huawei.com>
+Date: Mon, 23 Dec 2013 17:09:06 +0800
 From: Ding Tianhong <dingtianhong@huawei.com>
 MIME-Version: 1.0
+References: <52B7C5C5.2050304@huawei.com> <52B7F853.8050806@meshcoding.com>
+In-Reply-To: <52B7F853.8050806@meshcoding.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] [PATCH 09/21] batman-adv: slight optimization of
+Subject: Re: [B.A.T.M.A.N.] [PATCH 09/21] batman-adv: slight optimization of
 	addr compare
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -18,53 +20,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>, "David
- S. Miller" <davem@davemloft.net>, b.a.t.m.a.n@lists.open-mesh.org, Netdev <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, "David S. Miller" <davem@davemloft.net>, b.a.t.m.a.n@lists.open-mesh.org, Netdev <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Use the recently added and possibly more efficient
-ether_addr_equal_unaligned to instead of memcmp.
+On 2013/12/23 16:46, Antonio Quartulli wrote:
+> On 23/12/13 06:10, Ding Tianhong wrote:
+> 
+> [...]
+> 
+>> --- a/net/batman-adv/originator.c
+>> +++ b/net/batman-adv/originator.c
+>> @@ -41,7 +41,7 @@ int batadv_compare_orig(const struct hlist_node *node, const void *data2)
+>>  	const void *data1 = container_of(node, struct batadv_orig_node,
+>>  					 hash_entry);
+>>  
+>> -	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
+>> +	return ether_addr_equal_unaligned(data1, data2) ? 1 : 0;
+> 
+> ether_addr_equal_unaligned() returns a bool value which is implicitly
+> converted to 1 or 0: there is no need for the ternary if anymore.
+> 
+> 
+>>  }
+>>  
+>>  /**
+>> diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+>> index 4add57d..5e66d4b 100644
+>> --- a/net/batman-adv/translation-table.c
+>> +++ b/net/batman-adv/translation-table.c
+>> @@ -51,7 +51,7 @@ static int batadv_compare_tt(const struct hlist_node *node, const void *data2)
+>>  	const void *data1 = container_of(node, struct batadv_tt_common_entry,
+>>  					 hash_entry);
+>>  
+>> -	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
+>> +	return ether_addr_equal_unaligned(data1, data2) ? 1 : 0;
+> 
+> same here
+> 
+> 
+> Moreover, include linux/etherdevice.h in both files as explained in
+> point 1) of Documentation/SubmitChecklist
+> 
+> Thanks.
+> 
+> 
+> 
+> Cheers,
+> 
 
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: Antonio Quartulli <antonio@meshcoding.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Tan Xiaojun <tanxiaojun@huawei.com>
-Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
----
- net/batman-adv/originator.c        | 2 +-
- net/batman-adv/translation-table.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Yes, thanks a lot, fix it soon.
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 8ab1434..0490a26 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -41,7 +41,7 @@ int batadv_compare_orig(const struct hlist_node *node, const void *data2)
- 	const void *data1 = container_of(node, struct batadv_orig_node,
- 					 hash_entry);
- 
--	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
-+	return ether_addr_equal_unaligned(data1, data2) ? 1 : 0;
- }
- 
- /**
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 4add57d..5e66d4b 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -51,7 +51,7 @@ static int batadv_compare_tt(const struct hlist_node *node, const void *data2)
- 	const void *data1 = container_of(node, struct batadv_tt_common_entry,
- 					 hash_entry);
- 
--	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
-+	return ether_addr_equal_unaligned(data1, data2) ? 1 : 0;
- }
- 
- /**
--- 
-1.8.0
+Regards
+Ding
+
 
 
