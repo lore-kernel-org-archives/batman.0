@@ -1,8 +1,12 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Mon, 23 Dec 2013 21:43:39 +0100
-Message-Id: <1387831419-3848-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix vlan header access
+Return-Path: <dingtianhong@huawei.com>
+Message-ID: <52B96FD6.6030309@huawei.com>
+Date: Tue, 24 Dec 2013 19:28:22 +0800
+From: Ding Tianhong <dingtianhong@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] [PATCH v2 07/20] batman-adv: use batadv_compare_eth
+	for concise
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,34 +18,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>, "David
+ S. Miller" <davem@davemloft.net>, b.a.t.m.a.n@lists.open-mesh.org, Netdev <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+
+It is better to use batadv_compate_eth instead of memcpy for
+concise style.
+
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>
 Cc: Antonio Quartulli <antonio@meshcoding.com>
-
-When batadv_get_vid() is invoked in interface_rx() the
-batman-adv header has already been removed, therefore
-the header_len argument has to be 0.
-
-Introduced by 580d7919f19e4f73ccd79e82a532af2bdc638042
-("batman-adv: add the VLAN ID attribute to the TT entry")
-
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Tan Xiaojun <tanxiaojun@huawei.com>
+Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
 ---
- soft-interface.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/originator.c        | 2 +-
+ net/batman-adv/translation-table.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/soft-interface.c b/soft-interface.c
-index 74f4630..2a09294 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -346,7 +346,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 	skb_pull_rcsum(skb, hdr_size);
- 	skb_reset_mac_header(skb);
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 8ab1434..803ab4b 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -41,7 +41,7 @@ int batadv_compare_orig(const struct hlist_node *node, const void *data2)
+ 	const void *data1 = container_of(node, struct batadv_orig_node,
+ 					 hash_entry);
  
--	vid = batadv_get_vid(skb, hdr_size);
-+	vid = batadv_get_vid(skb, 0);
- 	ethhdr = eth_hdr(skb);
+-	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
++	return batadv_compare_eth(data1, data2);
+ }
  
- 	switch (ntohs(ethhdr->h_proto)) {
+ /**
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 4add57d..06506e6 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -51,7 +51,7 @@ static int batadv_compare_tt(const struct hlist_node *node, const void *data2)
+ 	const void *data1 = container_of(node, struct batadv_tt_common_entry,
+ 					 hash_entry);
+ 
+-	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
++	return batadv_compare_eth(data1, data2);
+ }
+ 
+ /**
 -- 
-1.8.5.2
+1.8.0
+
+
 
