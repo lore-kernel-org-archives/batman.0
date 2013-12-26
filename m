@@ -1,12 +1,9 @@
-Return-Path: <dingtianhong@huawei.com>
-Message-ID: <52BC15B7.2060209@huawei.com>
-Date: Thu, 26 Dec 2013 19:40:39 +0800
-From: Ding Tianhong <dingtianhong@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] [PATCH v3.5 06/19] batman-adv: use
-	batadv_compare_eth for concise
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Thu, 26 Dec 2013 18:57:01 +0100
+Message-Id: <1388080621-15040-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix NULL pointer deref in
+	batadv_find_best_neighbor
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,54 +15,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>, "David
- S. Miller" <davem@davemloft.net>, b.a.t.m.a.n@lists.open-mesh.org, Netdev <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-It is better to use batadv_compate_eth instead of memcpy for
-concise style.
+If there is no best neighbor, don't dereference the NULL pointer. Try to
+acquire the neighbor node right in the loop instead. There also was a
+logic bug, finding the worst instead of the best neighbor.
 
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: Antonio Quartulli <antonio@meshcoding.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Tan Xiaojun <tanxiaojun@huawei.com>
-Signed-off-by: Ding Tianhong <dingtianhong@huawei.com>
-Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+Introduced by 9bb33b8d88e318c4879d37d06ad28e3e018b9036 ("batman-adv:
+split tq information in neigh_node struct")
+
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/originator.c        | 2 +-
- net/batman-adv/translation-table.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ originator.c |   19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 8ab1434..803ab4b 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -41,7 +41,7 @@ int batadv_compare_orig(const struct hlist_node *node, const void *data2)
- 	const void *data1 = container_of(node, struct batadv_orig_node,
- 					 hash_entry);
+diff --git a/originator.c b/originator.c
+index 2243003..4a5d027 100644
+--- a/originator.c
++++ b/originator.c
+@@ -783,14 +783,19 @@ batadv_find_best_neighbor(struct batadv_priv *bat_priv,
+ 	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
  
--	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
-+	return batadv_compare_eth(data1, data2);
- }
+ 	rcu_read_lock();
+-	hlist_for_each_entry_rcu(neigh, &orig_node->neigh_list, list)
+-		if (!best ||
+-		    (bao->bat_neigh_cmp(neigh, if_outgoing,
+-					best, if_outgoing) <= 0))
+-			best = neigh;
++	hlist_for_each_entry_rcu(neigh, &orig_node->neigh_list, list) {
++		if (best && (bao->bat_neigh_cmp(neigh, if_outgoing,
++						best, if_outgoing) <= 0))
++			continue;
  
- /**
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 4add57d..06506e6 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -51,7 +51,7 @@ static int batadv_compare_tt(const struct hlist_node *node, const void *data2)
- 	const void *data1 = container_of(node, struct batadv_tt_common_entry,
- 					 hash_entry);
+-	if (!atomic_inc_not_zero(&best->refcount))
+-		best = NULL;
++		if (!atomic_inc_not_zero(&neigh->refcount))
++			continue;
++
++		if (best)
++			batadv_neigh_node_free_ref(best);
++
++		best = neigh;
++	}
+ 	rcu_read_unlock();
  
--	return (memcmp(data1, data2, ETH_ALEN) == 0 ? 1 : 0);
-+	return batadv_compare_eth(data1, data2);
- }
- 
- /**
+ 	return best;
 -- 
-1.8.0
-
+1.7.10.4
 
