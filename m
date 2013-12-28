@@ -1,14 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 28 Dec 2013 16:40:29 +0800
-Message-ID: <6521165.NWQqhbiWGY@diderot>
-In-Reply-To: <1388149537-26581-1-git-send-email-sw@simonwunderlich.de>
-References: <1388149537-26581-1-git-send-email-sw@simonwunderlich.de>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Sat, 28 Dec 2013 14:41:51 +0100
+References: <CAFkF_bJP+Ri1Q7ELxRkVkudvMUZMfC10WFmrCHceeHV0Rtd8TA@mail.gmail.com>
+In-Reply-To: <CAFkF_bJP+Ri1Q7ELxRkVkudvMUZMfC10WFmrCHceeHV0Rtd8TA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1427516.4DN9T6JOfb";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix compat sparse errors for
-	BUILD_BUG_ON in <= 2.6.39
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201312281441.51738.sw@simonwunderlich.de>
+Subject: Re: [B.A.T.M.A.N.] Using bat-adv for Wireless Video Streaming
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,39 +21,46 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Kartic Bhargav <karticbhargavinline@gmail.com>
 
+Hi Kartic,
 
---nextPart1427516.4DN9T6JOfb
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+> I have set up the bat-adv mesh network and am able to ping each node.
+> I am working on the Video forwarding from one node to another now and
+> am facing problems here as I am unsure as to how to proceed. I have a
+> Microsoft LifeCam Camera attached to one of my Nodes and have to hop
+> the captured video packets to the next series of nodes.
 
-On Friday 27 December 2013 14:05:37 Simon Wunderlich wrote:
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-> ---
->  compat.h |    7 +++++++
->  1 file changed, 7 insertions(+)
+Great, pinging each node is the first step to go!
 
-Applied in revision 46b165b.
+> 
+> I'm relatively new to bat-adv and some of its advanced functions.
+> Since we are dealing with ipv6 connectivity here, the eth0 is down and
+> as expected am unable to connect to the existing ipv4 LAN Network at
+> my Lab. So I'm not able to use the conventional Video streaming / Port
+> listening & forwarding tools. (like Netcat etc.)
+> 
+> Is there any specific tool/way by which I can achieve my 'Video
+> Forwarding' objective via bat-adv commands like batctl etc.? How
+> exactly do you make use of the connectivity between nodes? Any such
+> applications that are supported to forward Video Packets?
 
-Thanks,
-Marek
+You can use eth0 and bat0 at the same time, that should be no problem. Batman-
+adv provides a layer 2 mesh, that means you'll get a virtual interface called 
+bat0 by default, and you can use this interface just as you would use your 
+Ethernet interface eth0. This means you should use the same tools for 
+streaming which you would on a wired network, like netcat or ffmpeg or 
+mjpegstreamer or whatever ... batctl is just used for controlling and 
+monitoring batman-adv, nothing else.
 
---nextPart1427516.4DN9T6JOfb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+We have some quick start guide here, which might be useful to read (even if 
+you have set up the mesh already):
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+http://www.open-mesh.org/projects/batman-adv/wiki/Quick-start-guide
 
-iQEcBAABAgAGBQJSvo59AAoJEFNVTo/uthzAZjgIALi65kzG1M1rK01CEFzxcuoP
-jDhtrg8I8urFK6x875eltrO/sW+kAx5KG+Vd7fxbXX04hFRe158FWBlBqh/TVpa+
-wf5PPiM+yhnO25eAweWmc/tkKuJ9L4DZMUdvXvC/LUkXWIk82+ybeGyNXiXM9xkK
-QkpSBSMVQTbon1oLEa3rIpdgt25yVdoPE/FV+hlw/CRaAcWH1c3US7GpLpHVbLn1
-6YedhQ2VZp8CdasUr5nBrf6Rvu0bQXckT6COy41Ll7mrfDO0+KFrlUbIxrNUVr4F
-3rnyGkkLsPBNbQhgE20c9PiDhAfhgsQV2jF6SOsmAbZvy1SStUK8fvGdMa+ZFE0=
-=79ji
------END PGP SIGNATURE-----
+If you want to send data from one node to another, just set up IP addresses on 
+bat0 (or their respective bridge interfaces if you use bridging) and start 
+sending data with your favourite network tools ;)
 
---nextPart1427516.4DN9T6JOfb--
-
+Cheers,
+    Simon
