@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 28 Dec 2013 17:05:58 +0100
-Message-Id: <1388246760-3335-6-git-send-email-antonio@meshcoding.com>
+Date: Sat, 28 Dec 2013 17:05:59 +0100
+Message-Id: <1388246760-3335-7-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1388246760-3335-1-git-send-email-antonio@meshcoding.com>
 References: <1388246760-3335-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 5/7] batman-adv: fix alignment for
-	batadv_tvlv_tt_change
+Subject: [B.A.T.M.A.N.] [PATCH 6/7] batman-adv: clean nf state when removing
+	protocol header
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,60 +20,46 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-Make struct batadv_tvlv_tt_change a multiple 4 bytes long
-to avoid padding on any architecture.
+If an interface enslaved into batman-adv is a bridge (or a
+virtual interface built on top of a bridge) the nf_bridge
+member of the skbs reaching the soft-interface is filled
+with the state about "netfilter bridge" operations.
+
+Then, if one of such skbs is locally delivered, the nf_bridge
+member should be cleaned up to avoid that the old state
+could mess up with other "netfilter bridge" operations when
+entering a second bridge.
+This is needed because batman-adv is an encapsulation
+protocol.
+
+However at the moment skb->nf_bridge is not released at all
+leading to bogus "netfilter bridge" behaviours.
+
+Fix this by cleaning the netfilter state of the skb before
+it gets delivered to the upper layer in interface_rx().
 
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/packet.h            | 4 ++--
- net/batman-adv/translation-table.c | 6 ++++--
- 2 files changed, 6 insertions(+), 4 deletions(-)
+ net/batman-adv/soft-interface.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index 04cf27c..2dd8f24 100644
---- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -484,13 +484,13 @@ struct batadv_tvlv_tt_vlan_data {
-  * struct batadv_tvlv_tt_change - translation table diff data
-  * @flags: status indicators concerning the non-mesh client (see
-  *  batadv_tt_client_flags)
-- * @reserved: reserved field
-+ * @reserved: reserved field - useful for alignment purposes only
-  * @addr: mac address of non-mesh client that triggered this tt change
-  * @vid: VLAN identifier
-  */
- struct batadv_tvlv_tt_change {
- 	uint8_t flags;
--	uint8_t reserved;
-+	uint8_t reserved[3];
- 	uint8_t addr[ETH_ALEN];
- 	__be16 vid;
- };
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 4add57d..ff625fe 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -333,7 +333,8 @@ static void batadv_tt_local_event(struct batadv_priv *bat_priv,
- 		return;
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index b4881f8..875a702 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -346,6 +346,11 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 	skb_pull_rcsum(skb, hdr_size);
+ 	skb_reset_mac_header(skb);
  
- 	tt_change_node->change.flags = flags;
--	tt_change_node->change.reserved = 0;
-+	memset(tt_change_node->change.reserved, 0,
-+	       sizeof(tt_change_node->change.reserved));
- 	memcpy(tt_change_node->change.addr, common->addr, ETH_ALEN);
- 	tt_change_node->change.vid = htons(common->vid);
++	/* clean the netfilter state now that the batman-adv header has been
++	 * removed
++	 */
++	nf_reset(skb);
++
+ 	vid = batadv_get_vid(skb, hdr_size);
+ 	ethhdr = eth_hdr(skb);
  
-@@ -2221,7 +2222,8 @@ static void batadv_tt_tvlv_generate(struct batadv_priv *bat_priv,
- 			       ETH_ALEN);
- 			tt_change->flags = tt_common_entry->flags;
- 			tt_change->vid = htons(tt_common_entry->vid);
--			tt_change->reserved = 0;
-+			memset(tt_change->reserved, 0,
-+			       sizeof(tt_change->reserved));
- 
- 			tt_num_entries++;
- 			tt_change++;
 -- 
 1.8.5.2
 
