@@ -1,14 +1,8 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Sat, 28 Dec 2013 14:41:51 +0100
-References: <CAFkF_bJP+Ri1Q7ELxRkVkudvMUZMfC10WFmrCHceeHV0Rtd8TA@mail.gmail.com>
-In-Reply-To: <CAFkF_bJP+Ri1Q7ELxRkVkudvMUZMfC10WFmrCHceeHV0Rtd8TA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201312281441.51738.sw@simonwunderlich.de>
-Subject: Re: [B.A.T.M.A.N.] Using bat-adv for Wireless Video Streaming
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Sat, 28 Dec 2013 17:05:53 +0100
+Message-Id: <1388246760-3335-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] pull request [net]: batman-adv 2013-12-28
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,47 +14,95 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Kartic Bhargav <karticbhargavinline@gmail.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Kartic,
+Hello David,
 
-> I have set up the bat-adv mesh network and am able to ping each node.
-> I am working on the Video forwarding from one node to another now and
-> am facing problems here as I am unsure as to how to proceed. I have a
-> Microsoft LifeCam Camera attached to one of my Nodes and have to hop
-> the captured video packets to the next series of nodes.
+this is our "fixed" pull request intended for net/linux-3.13.
 
-Great, pinging each node is the first step to go!
+Here you have the same patches as before except for the netfilter patch that is
+now using nf_reset() (as you suggested) and for a new patch that fixes the
+access to the vlan_hdr in the rx path while reading the VID.
 
-> 
-> I'm relatively new to bat-adv and some of its advanced functions.
-> Since we are dealing with ipv6 connectivity here, the eth0 is down and
-> as expected am unable to connect to the existing ipv4 LAN Network at
-> my Lab. So I'm not able to use the conventional Video streaming / Port
-> listening & forwarding tools. (like Netcat etc.)
-> 
-> Is there any specific tool/way by which I can achieve my 'Video
-> Forwarding' objective via bat-adv commands like batctl etc.? How
-> exactly do you make use of the connectivity between nodes? Any such
-> applications that are supported to forward Video Packets?
 
-You can use eth0 and bat0 at the same time, that should be no problem. Batman-
-adv provides a layer 2 mesh, that means you'll get a virtual interface called 
-bat0 by default, and you can use this interface just as you would use your 
-Ethernet interface eth0. This means you should use the same tools for 
-streaming which you would on a wired network, like netcat or ffmpeg or 
-mjpegstreamer or whatever ... batctl is just used for controlling and 
-monitoring batman-adv, nothing else.
+Short summary:
 
-We have some quick start guide here, which might be useful to read (even if 
-you have set up the mesh already):
+Patches from 1 to 5 take care of reshaping the packet layout a little bit to
+make sure that all the structures we use for sending messages have size multiple
+of 4 (or 2 when pack(2) is used).
+This solves the problem raised by Russel King about the static checks in
+batman-adv failing when compiling the module on the ARM architecture.
 
-http://www.open-mesh.org/projects/batman-adv/wiki/Quick-start-guide
 
-If you want to send data from one node to another, just set up IP addresses on 
-bat0 (or their respective bridge interfaces if you use bridging) and start 
-sending data with your favourite network tools ;)
+Patch 6 is adding the nf_reset() (as you suggested) after having removed the
+batman-adv encapsulation header from a packet. This patch fixes the behaviour of
+netfilter in case the skb enters two bridges during its life: once with the
+batman-adv header and once without.
+==> Please, enqueue this patch (number 6) for stable.
 
-Cheers,
-    Simon
+
+Patch 7 fixes a wrong access to the inner vlan_eth header when trying to read
+the VID in the rx path.
+
+
+Please pull or let me know of any problem.
+
+
+Thank you,
+	Antonio
+
+
+
+The following changes since commit 6a9eadccff2926e392173a989042f14c867cffbf:
+
+  ipv6: release dst properly in ipip6_tunnel_xmit (2013-12-27 13:14:40 -0500)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to 2b1e2cb3594df80446dc33bb8e12230da11f38ff:
+
+  batman-adv: fix vlan header access (2013-12-28 14:48:40 +0100)
+
+----------------------------------------------------------------
+Included changes:
+
+- reset netfilter-bridge state when removing the batman-adv
+  header from an incoming packet. This prevents netfilter
+  bridge from being fooled when the same packet enters a
+  bridge twice (or more): the first time within the
+  batman-adv header and the second time without.
+
+- adjust the packet layout to prevent any architecture from
+  adding padding bytes. All the structs sent over the wire
+  now have size multiple of 4bytes (unless pack(2) is used).
+
+- fix access to the inner vlan_eth header when reading the
+  VID in the rx path.
+
+----------------------------------------------------------------
+Antonio Quartulli (4):
+      batman-adv: fix size of batadv_icmp_header
+      batman-adv: fix alignment for batadv_tvlv_tt_change
+      batman-adv: clean nf state when removing protocol header
+      batman-adv: fix vlan header access
+
+Simon Wunderlich (3):
+      batman-adv: fix alignment for batadv_coded_packet
+      batman-adv: fix header alignment by unrolling batadv_header
+      batman-adv: fix size of batadv_bla_claim_dst
+
+ net/batman-adv/bat_iv_ogm.c            |  36 +++++-----
+ net/batman-adv/distributed-arp-table.c |   6 +-
+ net/batman-adv/fragmentation.c         |   8 +--
+ net/batman-adv/icmp_socket.c           |   6 +-
+ net/batman-adv/main.c                  |  16 ++---
+ net/batman-adv/network-coding.c        |  22 +++---
+ net/batman-adv/packet.h                | 124 +++++++++++++++++++++++++--------
+ net/batman-adv/routing.c               |  30 ++++----
+ net/batman-adv/send.c                  |  10 +--
+ net/batman-adv/soft-interface.c        |  18 +++--
+ net/batman-adv/translation-table.c     |   6 +-
+ 11 files changed, 177 insertions(+), 105 deletions(-)
