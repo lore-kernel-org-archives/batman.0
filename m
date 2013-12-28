@@ -1,13 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 28 Dec 2013 16:37:27 +0800
-Message-ID: <5282103.sW0R888Hkr@diderot>
-In-Reply-To: <1387831419-3848-1-git-send-email-antonio@meshcoding.com>
-References: <1387831419-3848-1-git-send-email-antonio@meshcoding.com>
+Date: Sat, 28 Dec 2013 16:39:04 +0800
+Message-ID: <2694049.AXOnNYvq8q@diderot>
+In-Reply-To: <1388080621-15040-1-git-send-email-sw@simonwunderlich.de>
+References: <1388080621-15040-1-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart12510186.2VESkAF4W4";
+Content-Type: multipart/signed; boundary="nextPart3195011.MUnETSytIL";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix vlan header access
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: fix NULL pointer deref in
+	batadv_find_best_neighbor
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,32 +21,31 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart12510186.2VESkAF4W4
+--nextPart3195011.MUnETSytIL
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday 23 December 2013 21:43:39 Antonio Quartulli wrote:
-> When batadv_get_vid() is invoked in interface_rx() the
-> batman-adv header has already been removed, therefore
-> the header_len argument has to be 0.
+On Thursday 26 December 2013 18:57:01 Simon Wunderlich wrote:
+> If there is no best neighbor, don't dereference the NULL pointer. Try to
+> acquire the neighbor node right in the loop instead. There also was a
+> logic bug, finding the worst instead of the best neighbor.
 > 
-> Introduced by 580d7919f19e4f73ccd79e82a532af2bdc638042
-> ("batman-adv: add the VLAN ID attribute to the TT entry")
+> Introduced by 9bb33b8d88e318c4879d37d06ad28e3e018b9036 ("batman-adv:
+> split tq information in neigh_node struct")
 > 
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 > ---
->  soft-interface.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  originator.c |   19 ++++++++++++-------
+>  1 file changed, 12 insertions(+), 7 deletions(-)
 
-Applied in revision c03be25.
+Applied in revision 183150b.
 
 Thanks,
 Marek
 
---nextPart12510186.2VESkAF4W4
+--nextPart3195011.MUnETSytIL
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +53,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSvo3LAAoJEFNVTo/uthzAmiIH/RElabNvPFFXupEVqUeIL1F4
-f3J1EUdV6JEdhcW06ReetzEKRh555UFS06+HI0e0O3krZ6xe14cwPjuw04OReh6r
-scqXqZucbwljxzl5sYSUHd6s6R1ancidvKo6eZiOGL5iO8fCUkBsfxLsbw9oD8R4
-6DpGPO2xrmf8c0WLvFQqW4TG0PIuck7uxgoHRZEZcR0WGN5k+Ox/btsUoacwiNWp
-6rQABQIUGPLacntzQEnc4W1+CqYkTuga5tfjEJMQRMJsycTWZhtkri5W3Oyz5wmz
-s43yOVoD3vs9YVVo/SV0nrJSvTmFC09gGN6ANQtwy4RbSDAcA8KMQ+GxEBPcyDw=
-=B298
+iQEcBAABAgAGBQJSvo4oAAoJEFNVTo/uthzAtCoIAJytak8lmEd2+h9gacrtu4xk
+6eLT4NCXa9zXTQN8DIrh6THNFlLuiBImy7piQiKCUmWDTK6gJNue76t8uVr975ZE
+zZA3gUR8p3T5L8iVEb/2IgTFxRc0PGdPc+4S/FyljbmRBfMgnKc4jkfdPM7DLRmz
+PbLSnqbsUP3IGQ8ZqLeGQ2VwgK+NkI3B0vgh+TX2bi0MCH65tw2ToaqCA0S/8sSF
+PtD7oZxeOs9Ex+19CFK4PlKGTR5i7T/bWtnJ6pJACHOI9ZpOb4ncIkXxpFPHD/N1
+1qWjC0ZxSaXJnnZ6l+cY+K+Wwousx+myps3ypvldvg9KP6IalesYW41k0qezqo8=
+=eAtD
 -----END PGP SIGNATURE-----
 
---nextPart12510186.2VESkAF4W4--
+--nextPart3195011.MUnETSytIL--
 
