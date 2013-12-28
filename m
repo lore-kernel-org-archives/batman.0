@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 28 Dec 2013 17:05:57 +0100
-Message-Id: <1388246760-3335-5-git-send-email-antonio@meshcoding.com>
+Date: Sat, 28 Dec 2013 17:05:58 +0100
+Message-Id: <1388246760-3335-6-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1388246760-3335-1-git-send-email-antonio@meshcoding.com>
 References: <1388246760-3335-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 4/7] batman-adv: fix size of
-	batadv_bla_claim_dst
+Subject: [B.A.T.M.A.N.] [PATCH 5/7] batman-adv: fix alignment for
+	batadv_tvlv_tt_change
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,38 +20,60 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
+Make struct batadv_tvlv_tt_change a multiple 4 bytes long
+to avoid padding on any architecture.
 
-Since this is a mac address and always 48 bit, and we can assume that
-it is always aligned to 2-byte boundaries, add a pack(2) pragma.
-
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/packet.h | 2 ++
- 1 file changed, 2 insertions(+)
+ net/batman-adv/packet.h            | 4 ++--
+ net/batman-adv/translation-table.c | 6 ++++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index 2a857ed..04cf27c 100644
+index 04cf27c..2dd8f24 100644
 --- a/net/batman-adv/packet.h
 +++ b/net/batman-adv/packet.h
-@@ -155,6 +155,7 @@ enum batadv_tvlv_type {
- 	BATADV_TVLV_ROAM	= 0x05,
- };
- 
-+#pragma pack(2)
- /* the destination hardware field in the ARP frame is used to
-  * transport the claim type and the group id
+@@ -484,13 +484,13 @@ struct batadv_tvlv_tt_vlan_data {
+  * struct batadv_tvlv_tt_change - translation table diff data
+  * @flags: status indicators concerning the non-mesh client (see
+  *  batadv_tt_client_flags)
+- * @reserved: reserved field
++ * @reserved: reserved field - useful for alignment purposes only
+  * @addr: mac address of non-mesh client that triggered this tt change
+  * @vid: VLAN identifier
   */
-@@ -163,6 +164,7 @@ struct batadv_bla_claim_dst {
- 	uint8_t type;		/* bla_claimframe */
- 	__be16 group;		/* group id */
+ struct batadv_tvlv_tt_change {
+ 	uint8_t flags;
+-	uint8_t reserved;
++	uint8_t reserved[3];
+ 	uint8_t addr[ETH_ALEN];
+ 	__be16 vid;
  };
-+#pragma pack()
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 4add57d..ff625fe 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -333,7 +333,8 @@ static void batadv_tt_local_event(struct batadv_priv *bat_priv,
+ 		return;
  
- /**
-  * struct batadv_ogm_packet - ogm (routing protocol) packet
+ 	tt_change_node->change.flags = flags;
+-	tt_change_node->change.reserved = 0;
++	memset(tt_change_node->change.reserved, 0,
++	       sizeof(tt_change_node->change.reserved));
+ 	memcpy(tt_change_node->change.addr, common->addr, ETH_ALEN);
+ 	tt_change_node->change.vid = htons(common->vid);
+ 
+@@ -2221,7 +2222,8 @@ static void batadv_tt_tvlv_generate(struct batadv_priv *bat_priv,
+ 			       ETH_ALEN);
+ 			tt_change->flags = tt_common_entry->flags;
+ 			tt_change->vid = htons(tt_common_entry->vid);
+-			tt_change->reserved = 0;
++			memset(tt_change->reserved, 0,
++			       sizeof(tt_change->reserved));
+ 
+ 			tt_num_entries++;
+ 			tt_change++;
 -- 
 1.8.5.2
 
