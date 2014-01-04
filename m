@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 05 Jan 2014 01:51:12 +0800
-Message-ID: <33076397.UoRVxvRVpk@diderot>
-In-Reply-To: <1388855065-8966-1-git-send-email-sw@simonwunderlich.de>
+Date: Sun, 05 Jan 2014 01:52:41 +0800
+Message-ID: <4389608.6kAf4PJt93@diderot>
+In-Reply-To: <1388855065-8966-2-git-send-email-sw@simonwunderlich.de>
 References: <1388855065-8966-1-git-send-email-sw@simonwunderlich.de>
+ <1388855065-8966-2-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5171393.K2uAU6L1t1";
+Content-Type: multipart/signed; boundary="nextPart2920004.U0Qx11nYlg";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-next 1/2] batman-adv: change version to
-	2014.0.0
+Subject: Re: [B.A.T.M.A.N.] [PATCH-next 2/2] batman-adv: update copyright
+	years for 2014
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,24 +24,65 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart5171393.K2uAU6L1t1
+--nextPart2920004.U0Qx11nYlg
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 04 January 2014 18:04:24 Simon Wunderlich wrote:
-> Since we delayed the 2013.5.0 release to 2014, change the release name.
-> 
+On Saturday 04 January 2014 18:04:25 Simon Wunderlich wrote:
 > Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 > ---
->  main.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  Makefile                |    2 +-
+>  Makefile.kbuild         |    2 +-
+>  bat_algo.h              |    2 +-
+>  bat_iv_ogm.c            |    2 +-
+>  bitarray.c              |    2 +-
+>  bitarray.h              |    2 +-
+>  bridge_loop_avoidance.c |    2 +-
+>  bridge_loop_avoidance.h |    2 +-
+>  compat.c                |    2 +-
+>  compat.h                |    2 +-
+>  debugfs.c               |    2 +-
+>  debugfs.h               |    2 +-
+>  distributed-arp-table.c |    2 +-
+>  distributed-arp-table.h |    2 +-
+>  fragmentation.c         |    2 +-
+>  fragmentation.h         |    2 +-
+>  gateway_client.c        |    2 +-
+>  gateway_client.h        |    2 +-
+>  gateway_common.c        |    2 +-
+>  gateway_common.h        |    2 +-
+>  hard-interface.c        |    2 +-
+>  hard-interface.h        |    2 +-
+>  hash.c                  |    2 +-
+>  hash.h                  |    2 +-
+>  icmp_socket.c           |    2 +-
+>  icmp_socket.h           |    2 +-
+>  main.c                  |    2 +-
+>  main.h                  |    2 +-
+>  network-coding.c        |    2 +-
+>  network-coding.h        |    2 +-
+>  originator.c            |    2 +-
+>  originator.h            |    2 +-
+>  packet.h                |    2 +-
+>  routing.c               |    2 +-
+>  routing.h               |    2 +-
+>  send.c                  |    2 +-
+>  send.h                  |    2 +-
+>  soft-interface.c        |    2 +-
+>  soft-interface.h        |    2 +-
+>  sysfs.c                 |    2 +-
+>  sysfs.h                 |    2 +-
+>  translation-table.c     |    2 +-
+>  translation-table.h     |    2 +-
+>  types.h                 |    2 +-
+>  44 files changed, 44 insertions(+), 44 deletions(-)
 
-Applied in revision 4ae5daa.
+Applied in revision 1ae5d31.
 
 Thanks,
 Marek
 
---nextPart5171393.K2uAU6L1t1
+--nextPart2920004.U0Qx11nYlg
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -48,14 +90,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSyEofAAoJEFNVTo/uthzAIYwIAI03m7NbEwHHeOlEyRc1F0RK
-gJ3G8jdjK4Q4rrG4OCogD1g2zyP2OX+VOV45SCmeyTazMHkOhtA4rIWm1xV8clm5
-vIT13a9725WSLnpsCZfxwtFxa2zknTXSW6SAfpJ3eNbEp/PKVnmJPfNkrZYMGnjw
-y7Yp/30CoSRKQjLpblOdWE5Zv0d4SRHscE1sFK817TIfmxrquyjxorMDjANliaK3
-qeyw5JEtX22D5d7evYXEURMRluh2O1NmGdGrdgnLvJNDOu/TDXEuKrIqriJua06u
-2u/WuYQoGfsK90OOHkS/Ng0ggD6pv5dwKYR0WShkb6ZK3K3p7bgOknof8DT90U8=
-=PcBK
+iQEcBAABAgAGBQJSyEppAAoJEFNVTo/uthzAIOQIAMGkv+pWWQ8TIsfu8WSvsaIi
+IiWSnVVy3AlNZA9fX7pmIckk0lUtmdZQ2jbXqUD8z2KbXN7VV74U/tmZOM9DTeyP
+79V8Z0epxs7C9zQTjKJJ/GdmvDhSuKX4gkW2oDaLR7bE76MONxhCtUN0YUqea5ve
+v7EAwiiWDekYusU+rzMWJoh9yTj/TNvjKDmjzl9wIoqN5w6I39jqSdytkfyVpwXc
+eDie0FrvIXRBNNZrgyXy2AfBMlym7Te5zLU/pqN7FRUfU93CtuXHg1gqYHB0iajE
+96/Xd9bO5ckCk4H5wn/fNYLAdKAyuljpjrbIibZKz2rKdsr5GmDJlAlUG9jFRzw=
+=5QfT
 -----END PGP SIGNATURE-----
 
---nextPart5171393.K2uAU6L1t1--
+--nextPart2920004.U0Qx11nYlg--
 
