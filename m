@@ -1,11 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sun,  5 Jan 2014 09:59:53 +0100
-Message-Id: <1388912394-824-2-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1388912394-824-1-git-send-email-antonio@meshcoding.com>
-References: <1388912394-824-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH next 2/3] batctl: implement vlan-to-link
-	helper functions
+Date: Sun,  5 Jan 2014 09:59:52 +0100
+Message-Id: <1388912394-824-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH next 1/3] batctl: introduce rtnl_open()
+	helper function
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,222 +18,95 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-This functions can be used to convert a vlan interface
-into the real one and to extract the vlan identifier.
+Other part of batctl may require to open and send
+a message to RTNL. Extract this code and put it in
+a generic helper to simplify future uses.
 
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- functions.c | 180 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- functions.h |   1 +
- 2 files changed, 181 insertions(+)
+ functions.c | 46 ++++++++++++++++++++++++++++++----------------
+ 1 file changed, 30 insertions(+), 16 deletions(-)
 
 diff --git a/functions.c b/functions.c
-index a73b493..4934675 100644
+index 13ba190..a73b493 100644
 --- a/functions.c
 +++ b/functions.c
-@@ -40,6 +40,7 @@
- #include <linux/neighbour.h>
- #include <sys/uio.h>
- #include <errno.h>
-+#include <net/if.h>
- 
- #include "main.h"
- #include "functions.h"
-@@ -765,3 +766,182 @@ struct ether_addr *resolve_mac(const char *asc)
- out:
- 	return mac_result;
+@@ -497,30 +497,28 @@ static void request_mac_resolve(int ai_family, const void *l3addr)
+ 	close(sock);
  }
-+
+ 
+-static int resolve_mac_from_cache_open(int ai_family)
 +/**
-+ * vlan_get_link_parse - parse a get_link rtnl message and extract the important
-+ *  data
-+ * @nh: the reply header
-+ * @iface: pointer to the buffer where the link interface has to be stored (it
-+ *  is allocated by this function)
++ * rtnl_open - open a socket to rtnl and send a request
++ * @req: the buffer containing the request to send
++ * @len: the length of the buffer containing the request
++ * @protocol: the protocol to use when opening the socket
 + *
-+ * Return the vid in case of success or -1 otherwise
++ * Return 0 on success or a negative error code otherwise
 + */
-+static int vlan_get_link_parse(struct nlmsghdr *nh, char **iface)
-+{
-+	struct ifinfomsg *ifi = NLMSG_DATA(nh);
-+	size_t vlan_len, info_len, len = nh->nlmsg_len;
-+	struct rtattr *rta, *info, *vlan;
-+	int idx = -1, vid = -1;
-+
-+	*iface = NULL;
-+
-+	rta = IFLA_RTA(ifi);
-+	while (RTA_OK(rta, len)) {
-+		/* check if the interface is a vlan */
-+		if (rta->rta_type == IFLA_LINKINFO) {
-+			info = RTA_DATA(rta);
-+			info_len = RTA_PAYLOAD(rta);
-+
-+			while (RTA_OK(info, info_len)) {
-+				if (info->rta_type == IFLA_INFO_KIND &&
-+				    strcmp(RTA_DATA(info), "vlan")) {
-+					fprintf(stderr,
-+						"Interface is not a VLAN\n");
-+					goto err;
-+				}
-+
-+				if (info->rta_type == IFLA_INFO_DATA) {
-+					vlan = RTA_DATA(info);
-+					vlan_len = RTA_PAYLOAD(info);
-+
-+					while (RTA_OK(vlan, vlan_len)) {
-+						if (vlan->rta_type == IFLA_VLAN_ID)
-+							vid = *(int *)RTA_DATA(vlan);
-+						vlan = RTA_NEXT(vlan, vlan_len);
-+					}
-+				}
-+				info = RTA_NEXT(info, info_len);
-+			}
-+		}
-+
-+		/* extract the name of the "link" interface */
-+		if (rta->rta_type == IFLA_LINK) {
-+			idx = *(int *)RTA_DATA(rta);
-+
-+			*iface = malloc(IFNAMSIZ + 1);
-+			if (!if_indextoname(idx, *iface))
-+				goto err;
-+		}
-+		rta = RTA_NEXT(rta, len);
-+	}
-+
-+	if (vid == -1) {
-+		fprintf(stderr, "Couldn't find a valid VLAN ID for this interface\n");
-+		goto err;
-+	}
-+
-+	if (idx <= 0) {
-+		fprintf(stderr, "Couldn't find a valid parent interface\n");
-+		goto err;
-+	}
-+
-+	return vid;
-+err:
-+	free(*iface);
-+	return -1;
-+}
-+
-+/**
-+ * vlan_get_link_dump - receive and dump a get_link rtnl reply
-+ * @sock: the socket to listen for the reply on
-+ * @buf: pointer to the buffer where the reply has to be dumped to
-+ * @buflen: length of the buffer
-+ *
-+ * Returns the amount of dumped bytes
-+ */
-+static ssize_t vlan_get_link_dump(int sock, void *buf, size_t buflen)
-+{
-+	struct iovec iov;
-+	struct msghdr msg;
-+	struct sockaddr_nl nladdr;
-+	ssize_t ret = -1;
-+
-+	memset(&msg, 0, sizeof(msg));
-+	memset(&iov, 0, sizeof(iov));
-+
-+	msg.msg_iov = &iov;
-+	msg.msg_iovlen = 1;
-+	msg.msg_controllen = 0;
-+	msg.msg_control = NULL;
-+	msg.msg_flags = 0;
-+	msg.msg_name = &nladdr;
-+	msg.msg_namelen = sizeof(nladdr);
-+
-+	iov.iov_len = buflen;
-+	iov.iov_base = buf;
-+
-+	ret = recvmsg(sock, &msg, 0);
-+	if (ret < 0)
-+		goto err;
-+
-+	return ret;
-+err:
-+	free(buf);
-+	return ret;
-+}
-+
-+/**
-+ * vlan_get_link_open - send a get_link request
-+ * @ifname: the interface to query
-+ *
-+ * Returns 0 in case of success or a negative error code otherwise
-+ */
-+static int vlan_get_link_open(const char *ifname)
++static int rtnl_open(void *req, size_t len, int protocol)
+ {
+-	int socknl;
+-	int ret;
+-	struct {
+-		struct nlmsghdr hdr;
+-		struct ndmsg msg;
+-	} nlreq;
+-	struct sockaddr_nl addrnl;
+ 	static uint32_t nr_call = 0;
+ 	uint32_t pid = (++nr_call + getpid()) & 0x3FFFFF;
++	struct sockaddr_nl addrnl;
++	int socknl;
++	int ret;
+ 
+ 	memset(&addrnl, 0, sizeof(addrnl));
+ 	addrnl.nl_family = AF_NETLINK;
+ 	addrnl.nl_pid = pid;
+ 	addrnl.nl_groups = 0;
+ 
+-	memset(&nlreq, 0, sizeof(nlreq));
+-	nlreq.hdr.nlmsg_len = NLMSG_LENGTH(sizeof(nlreq.msg));
+-	nlreq.hdr.nlmsg_type = RTM_GETNEIGH;
+-	nlreq.hdr.nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
+-	nlreq.msg.ndm_family = ai_family;
+-
+-	socknl = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
++	socknl = socket(AF_NETLINK, SOCK_RAW, protocol);
+ 	if (socknl < 0)
+ 		goto out;
+ 
+@@ -528,7 +526,7 @@ static int resolve_mac_from_cache_open(int ai_family)
+ 	if (ret < 0)
+ 		goto outclose;
+ 
+-	ret = send(socknl, &nlreq, nlreq.hdr.nlmsg_len, 0);
++	ret = send(socknl, req, len, 0);
+ 	if (ret < 0)
+ 		goto outclose;
+ out:
+@@ -538,6 +536,22 @@ outclose:
+ 	return ret;
+ }
+ 
++static int resolve_mac_from_cache_open(int ai_family)
 +{
 +	struct {
 +		struct nlmsghdr hdr;
-+		struct ifinfomsg ifi;
-+		/* attribute has to be NLMAG aligned */
-+		struct rtattr rta_ifname __attribute__ ((aligned(NLMSG_ALIGNTO)));
-+		char ifname[IFNAMSIZ + 1];
++		struct ndmsg msg;
 +	} nlreq;
 +
 +	memset(&nlreq, 0, sizeof(nlreq));
-+	nlreq.hdr.nlmsg_len = sizeof(nlreq);
-+	nlreq.hdr.nlmsg_type = RTM_GETLINK;
-+	nlreq.hdr.nlmsg_flags = NLM_F_REQUEST;
-+	nlreq.ifi.ifi_family = AF_UNSPEC;
++	nlreq.hdr.nlmsg_len = NLMSG_LENGTH(sizeof(nlreq.msg));
++	nlreq.hdr.nlmsg_type = RTM_GETNEIGH;
++	nlreq.hdr.nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
++	nlreq.msg.ndm_family = ai_family;
 +
-+	nlreq.rta_ifname.rta_type = IFLA_IFNAME;
-+	nlreq.rta_ifname.rta_len = IFNAMSIZ + 1;
-+	strncpy(nlreq.ifname, ifname, IFNAMSIZ);
-+
-+	return rtnl_open(&nlreq, sizeof(nlreq), 0);
++	return rtnl_open(&nlreq, sizeof(nlreq), NETLINK_ROUTE);
 +}
 +
-+/**
-+ * vlan_get_link - convert a VLAN interface into its parent one
-+ * @ifname: the interface to convert
-+ * @parent: buffer where the parent interface name will be written (allocated by
-+ *  this function)
-+ *
-+ * Returns the vlan identifier on success or -1 on error
-+ */
-+int vlan_get_link(const char *ifname, char **parent)
-+{
-+	int vid = -1, socknl;
-+	void *buf = NULL;
-+	size_t buflen;
-+	ssize_t len;
-+
-+	buflen = 8192;
-+	buf = malloc(buflen);
-+	if (!buf)
-+		goto err;
-+
-+	socknl = vlan_get_link_open(ifname);
-+	if (socknl < 0)
-+		goto err;
-+
-+	len = vlan_get_link_dump(socknl, buf, buflen);
-+	if (len < 0)
-+		goto err_sock;
-+
-+	vid = vlan_get_link_parse(buf, parent);
-+
-+err_sock:
-+	close(socknl);
-+err:
-+	free(buf);
-+	return vid;
-+}
-diff --git a/functions.h b/functions.h
-index 522c607..14ba525 100644
---- a/functions.h
-+++ b/functions.h
-@@ -42,6 +42,7 @@ int write_file(const char *dir, const char *fname, const char *arg1,
- 	       const char *arg2);
- struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac);
- struct ether_addr *resolve_mac(const char *asc);
-+int vlan_get_link(const char *ifname, char **parent);
- 
- extern char *line_ptr;
- 
+ static ssize_t resolve_mac_from_cache_dump(int sock, void **buf, size_t *buflen)
+ {
+ 	struct iovec iov;
 -- 
 1.8.5.2
 
