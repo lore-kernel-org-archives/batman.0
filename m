@@ -1,16 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <52C9B659.8040400@meshcoding.com>
-Date: Sun, 05 Jan 2014 20:45:29 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
-References: <1388912394-824-1-git-send-email-antonio@meshcoding.com>
- <2648905.iCJy0vMviH@diderot>
-In-Reply-To: <2648905.iCJy0vMviH@diderot>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="7ejepQK6B7UtJ5ASTkTGlK9BUMjWJF1cH"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next 1/3] batctl: introduce rtnl_open()
- helper function
+Date: Sun,  5 Jan 2014 22:37:13 +0100
+Message-Id: <1388957835-2421-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv2 next 1/3] batctl: introduce rtnl_open()
+	helper function
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,89 +15,107 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---7ejepQK6B7UtJ5ASTkTGlK9BUMjWJF1cH
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Other part of batctl may require to open and send
+a message to RTNL. Extract this code and put it in
+a generic helper to simplify future uses.
 
-On 05/01/14 15:04, Marek Lindner wrote:
-> On Sunday 05 January 2014 09:59:52 Antonio Quartulli wrote:
->> @@ -528,7 +526,7 @@ static int resolve_mac_from_cache_open(int ai_fami=
-ly)
->>         if (ret < 0)
->>                 goto outclose;
->> =20
->> -       ret =3D send(socknl, &nlreq, nlreq.hdr.nlmsg_len, 0);
->> +       ret =3D send(socknl, req, len, 0);
->>         if (ret < 0)
->>                 goto outclose;
->>  out:
->> @@ -538,6 +536,22 @@ outclose:
->>         return ret;
->>  }
->> =20
->> +static int resolve_mac_from_cache_open(int ai_family)
->> +{
->> +       struct {
->> +               struct nlmsghdr hdr;
->> +               struct ndmsg msg;
->> +       } nlreq;
->> +
->> +       memset(&nlreq, 0, sizeof(nlreq));
->> +       nlreq.hdr.nlmsg_len =3D NLMSG_LENGTH(sizeof(nlreq.msg));
->> +       nlreq.hdr.nlmsg_type =3D RTM_GETNEIGH;
->> +       nlreq.hdr.nlmsg_flags =3D NLM_F_REQUEST | NLM_F_DUMP;
->> +       nlreq.msg.ndm_family =3D ai_family;
->> +
->> +       return rtnl_open(&nlreq, sizeof(nlreq), NETLINK_ROUTE);
->> +}
->=20
-> Is 'sizeof(nlreq)' equal to 'nlreq.hdr.nlmsg_len' ? It seems not ...
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
 
-It is because the macro NLMSG_LENGTH adds NLMSG_HDRLEN to the value
-passed as argument (in this case it is sizeof(nlreq.msg)) and therefore
-what we store in nlreq.hdr.nlmsg_len is sizeof(nlreq) (plus some
-possible alignment bytes).
-
-I think I can make it more clear and always pass nlreq.hdr.nlmsg_len to
-send().
+Changes from v1:
+- fixed typ0
+- removed len argument from rtnl_open() in 1/3
+- removed error messages in 2/3
+- avoided double free in 2/3
+- simplified 3/3
 
 
-Thanks!
 
-v2 is coming!
+ functions.c | 45 +++++++++++++++++++++++++++++----------------
+ 1 file changed, 29 insertions(+), 16 deletions(-)
 
+diff --git a/functions.c b/functions.c
+index 13ba190..50bb834 100644
+--- a/functions.c
++++ b/functions.c
+@@ -497,30 +497,27 @@ static void request_mac_resolve(int ai_family, const void *l3addr)
+ 	close(sock);
+ }
+ 
+-static int resolve_mac_from_cache_open(int ai_family)
++/**
++ * rtnl_open - open a socket to rtnl and send a request
++ * @nh: the header of the request to send
++ * @protocol: the protocol to use when opening the socket
++ *
++ * Return 0 on success or a negative error code otherwise
++ */
++static int rtnl_open(struct nlmsghdr *nh, int protocol)
+ {
+-	int socknl;
+-	int ret;
+-	struct {
+-		struct nlmsghdr hdr;
+-		struct ndmsg msg;
+-	} nlreq;
+-	struct sockaddr_nl addrnl;
+ 	static uint32_t nr_call = 0;
+ 	uint32_t pid = (++nr_call + getpid()) & 0x3FFFFF;
++	struct sockaddr_nl addrnl;
++	int socknl;
++	int ret;
+ 
+ 	memset(&addrnl, 0, sizeof(addrnl));
+ 	addrnl.nl_family = AF_NETLINK;
+ 	addrnl.nl_pid = pid;
+ 	addrnl.nl_groups = 0;
+ 
+-	memset(&nlreq, 0, sizeof(nlreq));
+-	nlreq.hdr.nlmsg_len = NLMSG_LENGTH(sizeof(nlreq.msg));
+-	nlreq.hdr.nlmsg_type = RTM_GETNEIGH;
+-	nlreq.hdr.nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
+-	nlreq.msg.ndm_family = ai_family;
+-
+-	socknl = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
++	socknl = socket(AF_NETLINK, SOCK_RAW, protocol);
+ 	if (socknl < 0)
+ 		goto out;
+ 
+@@ -528,7 +525,7 @@ static int resolve_mac_from_cache_open(int ai_family)
+ 	if (ret < 0)
+ 		goto outclose;
+ 
+-	ret = send(socknl, &nlreq, nlreq.hdr.nlmsg_len, 0);
++	ret = send(socknl, nh, nh->nlmsg_len, 0);
+ 	if (ret < 0)
+ 		goto outclose;
+ out:
+@@ -538,6 +535,22 @@ outclose:
+ 	return ret;
+ }
+ 
++static int resolve_mac_from_cache_open(int ai_family)
++{
++	struct {
++		struct nlmsghdr hdr;
++		struct ndmsg msg;
++	} nlreq;
++
++	memset(&nlreq, 0, sizeof(nlreq));
++	nlreq.hdr.nlmsg_len = NLMSG_LENGTH(sizeof(nlreq.msg));
++	nlreq.hdr.nlmsg_type = RTM_GETNEIGH;
++	nlreq.hdr.nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
++	nlreq.msg.ndm_family = ai_family;
++
++	return rtnl_open(&nlreq.hdr, NETLINK_ROUTE);
++}
++
+ static ssize_t resolve_mac_from_cache_dump(int sock, void **buf, size_t *buflen)
+ {
+ 	struct iovec iov;
+-- 
+1.8.5.2
 
-Cheers,
-
-
---=20
-Antonio Quartulli
-
-
---7ejepQK6B7UtJ5ASTkTGlK9BUMjWJF1cH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSybZoAAoJEEKTMo6mOh1V7u8QAIkUjFfUvYr6WB8CNhVb/Vtq
-GO/+O2xUmeMW+ewVcqXx+DjjNjqPl8BZaEJexrtVMrZdhJjRPhmrpF6kA3yM6tVl
-nXiXdZmYdcMhTAyZ4gHHEJXz+WQW2nf/KM6eSq+qTsz/Av7PagWmeRRiBW12SgTe
-4fgee+xCj27E70c6IKMQT6XELBP504/tIAf1hMoe9H/a1q8aWwYqYPZ/czyglQhP
-BzlRXWwCoufkyQVu/kcOzxwqHQReUzXpMAS3Kv92fZ51HjYJyWio1bwPYDBFoaOZ
-f8dDDiJoB2akQn6QMMONiprCGeyBufmVG6bCIAqGWHJFG31HVUdwUfqVMGeSRUin
-OqQwG5zSoIp+6R6eSTh2gwcfTLz31jpr4jNn7AvQbg/mgaHeLb+yf/ad0AKxjwd0
-n5FcGwmOkiVN8j0sTvFhEeEVX02zqTzMro6yZPEvEq6iKrBtIfJLFva1K7LHtfXL
-/+Uff2Wal/DPUVbGJTkmb1dPW734aUSLVnJIRHK9JQmDMN50Az4hmQsJCWn/7qT6
-DDZavZ6wX3+hiAJFaVE1JVufevUtCBO1Z30zN/hou0XlT8UayaZhtyW48FjnvM03
-fxTs1laIAQ7CqkMukvvMsqLjwdf/EBNs6YiAf/x7xvSy5MsddbeZ9gqFaZdupmec
-9Z4hzPaSaXn2HL6EFbH2
-=GYBP
------END PGP SIGNATURE-----
-
---7ejepQK6B7UtJ5ASTkTGlK9BUMjWJF1cH--
