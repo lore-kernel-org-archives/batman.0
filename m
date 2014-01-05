@@ -1,15 +1,17 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 06 Jan 2014 03:07:16 +0800
-Message-ID: <2109637.jlPLNyN0nR@diderot>
-In-Reply-To: <1388912394-824-2-git-send-email-antonio@meshcoding.com>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <52C9B37C.7030707@meshcoding.com>
+Date: Sun, 05 Jan 2014 20:33:16 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
+MIME-Version: 1.0
 References: <1388912394-824-1-git-send-email-antonio@meshcoding.com>
  <1388912394-824-2-git-send-email-antonio@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2520014.MIHMIfxK0T";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
+ <2109637.jlPLNyN0nR@diderot>
+In-Reply-To: <2109637.jlPLNyN0nR@diderot>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="2WOR5pr85jOLj3FpGaQBIKAKIQXPIVVC2"
 Subject: Re: [B.A.T.M.A.N.] [PATCH next 2/3] batctl: implement vlan-to-link
-	helper functions
+ helper functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,88 +25,52 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--2WOR5pr85jOLj3FpGaQBIKAKIQXPIVVC2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
---nextPart2520014.MIHMIfxK0T
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+On 05/01/14 20:07, Marek Lindner wrote:
+> On Sunday 05 January 2014 09:59:53 Antonio Quartulli wrote:
+>> +static int vlan_get_link_open(const char *ifname)
+>> +{
+>> +	struct {
+>> +		struct nlmsghdr hdr;
+>> +		struct ifinfomsg ifi;
+>> +		/* attribute has to be NLMAG aligned */
+>=20
+> NLMSG aligned ?
 
-On Sunday 05 January 2014 09:59:53 Antonio Quartulli wrote:
-> +/**
-> + * vlan_get_link_dump - receive and dump a get_link rtnl reply
-> + * @sock: the socket to listen for the reply on
-> + * @buf: pointer to the buffer where the reply has to be dumped to
-> + * @buflen: length of the buffer
-> + *
-> + * Returns the amount of dumped bytes
-> + */
-> +static ssize_t vlan_get_link_dump(int sock, void *buf, size_t buflen)
-> +{
-> +	struct iovec iov;
-> +	struct msghdr msg;
-> +	struct sockaddr_nl nladdr;
-> +	ssize_t ret = -1;
-> +
-> +	memset(&msg, 0, sizeof(msg));
-> +	memset(&iov, 0, sizeof(iov));
-> +
-> +	msg.msg_iov = &iov;
-> +	msg.msg_iovlen = 1;
-> +	msg.msg_controllen = 0;
-> +	msg.msg_control = NULL;
-> +	msg.msg_flags = 0;
-> +	msg.msg_name = &nladdr;
-> +	msg.msg_namelen = sizeof(nladdr);
-> +
-> +	iov.iov_len = buflen;
-> +	iov.iov_base = buf;
-> +
-> +	ret = recvmsg(sock, &msg, 0);
-> +	if (ret < 0)
-> +		goto err;
-> +
-> +	return ret;
-> +err:
-> +	free(buf);
-> +	return ret;
-> +}
+Yes, you are right!
 
-Do we double free 'buf' in case of an error ?
+Thanks,
 
 
-> +/**
-> + * vlan_get_link_open - send a get_link request
-> + * @ifname: the interface to query
-> + *
-> + * Returns 0 in case of success or a negative error code otherwise
-> + */
-> +static int vlan_get_link_open(const char *ifname)
-> +{
-> +	struct {
-> +		struct nlmsghdr hdr;
-> +		struct ifinfomsg ifi;
-> +		/* attribute has to be NLMAG aligned */
-
-NLMSG aligned ?
+--=20
+Antonio Quartulli
 
 
-Cheers,
-Marek
---nextPart2520014.MIHMIfxK0T
+--2WOR5pr85jOLj3FpGaQBIKAKIQXPIVVC2
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSya1oAAoJEFNVTo/uthzADYUH/2i40wP+jXD1EqukqgYoPuJg
-qIhg6j2N9/OK4px0gpV+JVsow/cL73HnhFoyqJ2gtHsefMjPKaLFJ7GL8W+rBZar
-OfsoDncYFG+47tm3vvnoMs/Z+nAZDdDDJmIfkWp456qTp35DfaiLBJEMK15l0p37
-PeDCREkd+YPCLX0lTNv5HXVaoIWlb+5urN+48x+huPCF0HKrZBuCKWB8xL46L+L/
-LB+3IpAOQW4ehIudII0aZ4Xda+bi6eD5ue0mOsbrjJemnWS2p9CZZ4ATFuI9SsDD
-zRbO3a9cxWNHeWUDzH1UzQq2j7bh//Bg+jJ66E0ZNbJR0u+6yWikNvnsvtzHcyo=
-=zaCO
+iQIcBAEBCAAGBQJSybOAAAoJEEKTMo6mOh1VIjwP/Rf/PvcqLT/C5gQQiKEdYw+e
+jF40D6QGXBRKTCWy3O+falKF4RNEk+RSalevKdFWe37ITc5p3pEeTv1QMGWpgvnb
+WKFnhlN1/FS+np3avmHW0TYFTbgqycrCMetAHElT0KNvlwsas7dXPGAfXWDjpBSP
+TNVfCoKePLFwODIfTsZ8p7bQezSlaP4kzWt4SfnhFNwghveURj3OtAdX3mc9SlS9
+eJRlPCXPAPUhcUrnQsteWJq8FinmdAlmFUTUtWCpcO0DT7UzfdUwpgGiIRtvBdy5
+712cpLT8KKOzdBwBwjhNCxRYyQvDV9r5YtkQBjICAsTpjJT3AtlDgRX5dwzTqATo
+w4Dgk3qF6uwfhsIZI7WcMsrSbufyTSwhJ0ByA6iVO5aob7HOaslUye/2Fe+hs/lv
+AvQkkUbKv/fyjYffZMxUYjSqzwjFgV7igg6m5mi2QfSltjE6eUkl0Z7PSiiDAvqq
+GzvuLb0Aao0sxtI5A/o40KveLJnZXJcN0j0T7wpaMf+f9isHKyrcOCYD9T1OJi37
+iZLvLFaQXOTHvnsY92FkAS4t6zZaYfI2NQc6agIDS/24oxDzzva/oOHgdvF9l8Ke
+qfqLJULNRifokKpZm6R0K11etqYHX1IQttIw4F6VWb0wP2xf/b3rqn1k/o1lmHuI
+bW4xIxlc4SJxFt7ssumP
+=HzO2
 -----END PGP SIGNATURE-----
 
---nextPart2520014.MIHMIfxK0T--
-
+--2WOR5pr85jOLj3FpGaQBIKAKIQXPIVVC2--
