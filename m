@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 06 Jan 2014 16:43:09 +0800
-Message-ID: <1689948.JcGQ6VuExe@diderot>
-In-Reply-To: <1388960736-3873-3-git-send-email-antonio@meshcoding.com>
-References: <1388960736-3873-1-git-send-email-antonio@meshcoding.com>
- <1388960736-3873-3-git-send-email-antonio@meshcoding.com>
+Date: Mon, 06 Jan 2014 16:44:08 +0800
+Message-ID: <1625347.eyVQ5XTkGV@diderot>
+In-Reply-To: <1388997414-7390-1-git-send-email-mareklindner@neomailbox.ch>
+References: <1388997414-7390-1-git-send-email-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5133806.sHkqzavcf5";
+Content-Type: multipart/signed; boundary="nextPart4308655.4UANOAbAIm";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 next 3/3] batctl: add sys framework for
-	VLAN support
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: remove gateway class left-overs
+	in the manpage
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,51 +20,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marco Dalla Torre <marco.dallato@gmail.com>, Antonio Quartulli <antonio@meshcoding.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart5133806.sHkqzavcf5
+--nextPart4308655.4UANOAbAIm
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday 05 January 2014 23:25:36 Antonio Quartulli wrote:
-> From: Marco Dalla Torre <marco.dallato@gmail.com>
-> 
-> Allow the batctl tool to take advantage of changes from commit
-> e4ff5c153dab054a6cd1c4132f87bc5e77127456 "add sys framework for VLAN"
-> recently added to batman-adv, so that users can execute commands in
-> a per VLAN fashion.
-> 
-> If no directory entry corresponding to the user-selected device is found
-> at the standard location for non VLAN interfaces
-> (/sys/class/net/${device}/mesh/), 'batctl' now looks into directory:
->      /sys/class/net/${base_device}/mesh/vlan${vid}
-> Information on VLAN devices (base device, vid) necessary to construct the
-> directory path is acquired by querying the netlink kernel module.
-> Where:
->     -${base_device}: the batman device on top of which the VLAN is sitting
->     -${device}: the device interface for the VLAN,
->     -${vid}: the identifier assigned to the VLAN.
-> 
-> If the user-selected command is not supported by the VLAN, an appropriate
-> error is shown.
-> 
-> Signed-off-by: Marco Dalla Torre <marco.dallato@gmail.com>
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+On Monday 06 January 2014 16:36:54 Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 > ---
->  main.c       |  2 +-
->  man/batctl.8 |  4 ++--
->  sys.c        | 15 +++++++++++++--
->  sys.h        | 22 ++++++++++++----------
->  4 files changed, 28 insertions(+), 15 deletions(-)
+>  man/batctl.8 | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 
-Applied in revision 03eaa85.
+Applied in revision 3387207.
 
-Thanks,
+Regards,
 Marek
 
---nextPart5133806.sHkqzavcf5
+--nextPart4308655.4UANOAbAIm
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -73,14 +46,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSymydAAoJEFNVTo/uthzAyJ4IAIQFC6eWTBJaKKX2fDR4i3na
-F+PVAjKkyT4tGxLsQAouvjpdacDgbQdqEGV9m5o9Wm9VAUu6BZ1q9pUyJlpkgoFV
-OS17efC6p8Sl2O0OvPjw3tVJuENhefIkVBRBlpcMkvtVDFnTWeawq0v9P9D5ymZp
-OjecY/LnMId9wRF960ZebHgZ36eblLh8utLApXFUSuAE4JjsYoA8/EYz2cqDzv0o
-3zcPxtbExz+o9pq3+kV8uHEGjb70MKxLC43eAx9zMmbKWblJuDP0gO91Yogou5Np
-O5A0+Ik8T7NujuZpD4go2OcZUMpWKMySv4pQrd6R+cwzXZTir2NhDNtz3wLEC0c=
-=T2zo
+iQEcBAABAgAGBQJSymzYAAoJEFNVTo/uthzA9jMH/0gbNFlOYW6OeEFdIeBf5r2u
+u2ROn6jnnMJgR7aDPMRzdgFLF5nGzZMuGiQQbBk/mLJTUf7ThmVaHVCmaysT/NUd
+3MUqWkrOXPuHzi15whBQqsR6FnitdCR+sBYLAIVIy9qKUNqGS0HKq+/PN2jeSYPh
+9Wp2stDzS4ZKqVx3IxFYyy+ocw3iaxFpCOomGkYen2cat1dKlw9qhRPfwG7+aLZK
+XsC4Gp0zYVbs6YL1aPU/LU5bn0Pt3qGXC8qCCebZAmBFbGkzfi3mY24YFd78t25I
+8LZIcYpmBZSUrt8FXe6uvdTO4N68jl90Z1K6ccgfsDXqnsLpXTZQ0hT7seZTHak=
+=sFEp
 -----END PGP SIGNATURE-----
 
---nextPart5133806.sHkqzavcf5--
+--nextPart4308655.4UANOAbAIm--
 
