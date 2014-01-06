@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 06 Jan 2014 16:40:34 +0800
-Message-ID: <2502065.E5JWJGtyGY@diderot>
-In-Reply-To: <1388960736-3873-1-git-send-email-antonio@meshcoding.com>
+Date: Mon, 06 Jan 2014 16:42:05 +0800
+Message-ID: <92608201.UqxXi7mTSg@diderot>
+In-Reply-To: <1388960736-3873-2-git-send-email-antonio@meshcoding.com>
 References: <1388960736-3873-1-git-send-email-antonio@meshcoding.com>
+ <1388960736-3873-2-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2296652.jsFVfGG7LN";
+Content-Type: multipart/signed; boundary="nextPart3412759.pEXQB2nvfU";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 next 1/3] batctl: introduce rtnl_open()
-	helper function
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 next 2/3] batctl: implement
+	vlan-to-link helper functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,40 +25,27 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart2296652.jsFVfGG7LN
+--nextPart3412759.pEXQB2nvfU
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday 05 January 2014 23:25:34 Antonio Quartulli wrote:
-> Other part of batctl may require to open and send
-> a message to RTNL. Extract this code and put it in
-> a generic helper to simplify future uses.
+On Sunday 05 January 2014 23:25:35 Antonio Quartulli wrote:
+> This functions can be used to convert a vlan interface
+> into the real one and to extract the vlan identifier.
 > 
 > Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
-> 
-> Changes from v2:
-> - removed IFLA_NAME attribute from request (now we send the ifindex
-> directly) - improved rtnl_open()
-> 
-> Changes from v1:
-> - fixed typ0
-> - removed len argument from rtnl_open() in 1/3
-> - removed error messages in 2/3
-> - avoided double free in 2/3
-> - simplified 3/3
-> 
-> 
-> 
->  functions.c | 51 +++++++++++++++++++++++++++++++++++----------------
->  1 file changed, 35 insertions(+), 16 deletions(-)
+>  functions.c | 159
+> ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ functions.h
+> |   1 +
+>  2 files changed, 160 insertions(+)
 
-Applied in revision 148ba1c.
+Applied in revision d29288f.
 
 Thanks,
 Marek
 
---nextPart2296652.jsFVfGG7LN
+--nextPart3412759.pEXQB2nvfU
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -65,14 +53,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJSymwTAAoJEFNVTo/uthzAlc4H/28fJYJ0mA/cSSeWcNz3UXBq
-tsQma77qKsnWNRTIBIAPVeDrll+4sSrQx4/o2h0LQrIVAX9nLYFTvRyKUwU95eKY
-1x2qNs9iqQ4kzfv1LRntEuVSriOW2LnX8LNK1AE1R5mKvBRmpmhKj8qujNVTEDlQ
-SG3Ib1WmEkXXY0GFtM1UAJGEy+vfwvQfbhiuyOdYn8j32GKYsLXMNWJpMRk2/TKr
-eavwnYlhIT4OnWxd8Y1ubRMYkWF48F9I/eOfu36iEOflguZpL8tyWFqpluzd9UgJ
-PDWm1Zerqh4sh67BMdo5zb9dAd+OG7sStHOkDuWxmtev6krzMscTqf7E+QbxTkA=
-=2nJo
+iQEcBAABAgAGBQJSymxdAAoJEFNVTo/uthzA8UgH/1nRDrMk2RVvvX1QtGw1rvoe
+Rz8kJwY7s2hnSiev9hBUgWFcPokOSLJiXXZLgUFzm+yFCzjTvL8S1Ft1W3Wk/C/v
+lbV85L9Onj2ydpn93UNv2B7dHh0xTQsJrhRhBRjLpubEj+rhN1FTN2DCwDTwWaJ2
+B0mZIYWag3VxiXlBPHCMmUOWvchgKSjvgMOXHrH3Ljq68bsuNU/iFutRq4XitUAm
+xAgrs8L3b9BZJDfjMv9BM19vn4pVSNaNM0rAXV2EDz7d/3ZTovoNcDsQl+9ixw5X
+Z1aeCj0yWLrTrXyjKFc1FpnzKSPDVOUpdh99z6Nk0Nkv4N8OUKKi4diFAbBcjws=
+=SKSI
 -----END PGP SIGNATURE-----
 
---nextPart2296652.jsFVfGG7LN--
+--nextPart3412759.pEXQB2nvfU--
 
