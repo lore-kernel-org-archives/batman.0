@@ -1,12 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon,  6 Jan 2014 20:37:23 +0100
-Message-Id: <1389037044-27530-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1389037044-27530-1-git-send-email-sven@narfation.org>
-References: <6312194.LhI8hzXjyH@bentobox>
- <1389037044-27530-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/3] batctl: Use libnl to implement mac
-	resolver
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Tue, 07 Jan 2014 20:53:18 +0800
+Message-ID: <4577758.QFzZxb72dK@diderot>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart14328963.aXyxCV32X8";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: [B.A.T.M.A.N.] batman-adv 2014.0.0 released
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,420 +17,237 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-It is not necessary to have code duplicated which is already available in
-libraries like libnl-3.0 or libnl-tiny. This is done to reduce maintenance and
-security risks.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- Makefile    |  18 ++++
- functions.c | 312 +++++++++++++++++++++++++-----------------------------------
- 2 files changed, 149 insertions(+), 181 deletions(-)
+--nextPart14328963.aXyxCV32X8
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-diff --git a/Makefile b/Makefile
-index fc0925d..0eb71a1 100755
---- a/Makefile
-+++ b/Makefile
-@@ -43,6 +43,24 @@ ifndef V
- endif
- endif
- 
-+ifeq ($(origin PKG_CONFIG), undefined)
-+  PKG_CONFIG = pkg-config
-+  ifeq ($(shell which $(PKG_CONFIG) 2>/dev/null),)
-+    $(error $(PKG_CONFIG) not found)
-+  endif
-+endif
-+
-+ifeq ($(origin LIBNL_CFLAGS) $(origin LIBNL_LDLIBS), undefined undefined)
-+  LIBNL_NAME ?= libnl-3.0
-+  ifeq ($(shell $(PKG_CONFIG) --modversion $(LIBNL_NAME) 2>/dev/null),)
-+    $(error No $(LIBNL_NAME) development libraries found!)
-+  endif
-+  LIBNL_CFLAGS += $(shell $(PKG_CONFIG) --cflags $(LIBNL_NAME))
-+  LIBNL_LDLIBS +=  $(shell $(PKG_CONFIG) --libs $(LIBNL_NAME))
-+endif
-+CFLAGS += $(LIBNL_CFLAGS)
-+LDLIBS += $(LIBNL_LDLIBS)
-+
- # standard build tools
- ifeq ($(CONFIG_BATCTL_BISECT),y)
- OBJ += $(OBJ_BISECT)
-diff --git a/functions.c b/functions.c
-index 10a7f86..c21431c 100644
---- a/functions.c
-+++ b/functions.c
-@@ -38,9 +38,13 @@
- #include <net/ethernet.h>
- #include <linux/rtnetlink.h>
- #include <linux/neighbour.h>
--#include <sys/uio.h>
- #include <errno.h>
- #include <net/if.h>
-+#include <netlink/socket.h>
-+#include <netlink/netlink.h>
-+#include <netlink/handlers.h>
-+#include <netlink/msg.h>
-+#include <netlink/attr.h>
- 
- #include "main.h"
- #include "functions.h"
-@@ -457,47 +461,6 @@ static int resolve_l3addr(int ai_family, const char *asc, void *l3addr)
- 	return ret;
- }
- 
--static void request_mac_resolve(int ai_family, const void *l3addr)
--{
--	const struct sockaddr *sockaddr;
--	struct sockaddr_in inet4;
--	struct sockaddr_in6 inet6;
--	size_t sockaddr_len;
--	int sock;
--	char t = 0;
--
--	sock = socket(ai_family, SOCK_DGRAM, IPPROTO_UDP);
--	if (sock < 0)
--		return;
--
--	switch (ai_family) {
--	case AF_INET:
--		memset(&inet4, 0, sizeof(inet4));
--		inet4.sin_family = ai_family;
--		inet4.sin_port = htons(9);
--		memcpy(&inet4.sin_addr.s_addr, l3addr,
--		       sizeof(inet4.sin_addr.s_addr));
--		sockaddr = (const struct sockaddr *)&inet4;
--		sockaddr_len = sizeof(inet4);
--		break;
--	case AF_INET6:
--		memset(&inet6, 0, sizeof(inet6));
--		inet6.sin6_family = ai_family;
--		inet6.sin6_port = htons(9);
--		memcpy(&inet6.sin6_addr.s6_addr, l3addr,
--		       sizeof(inet6.sin6_addr.s6_addr));
--		sockaddr = (const struct sockaddr *)&inet6;
--		sockaddr_len = sizeof(inet6);
--		break;
--	default:
--		close(sock);
--		return;
--	}
--
--	sendto(sock, &t, sizeof(t), 0, sockaddr, sockaddr_len);
--	close(sock);
--}
--
- /**
-  * batadv_rtnl_open - open a socket to rtnl and send a request
-  * @nh: the header of the request to send
-@@ -542,178 +505,165 @@ outclose:
- 	return ret;
- }
- 
--static int resolve_mac_from_cache_open(int ai_family)
-+static void request_mac_resolve(int ai_family, const void *l3addr)
- {
--	struct {
--		struct nlmsghdr hdr;
--		struct ndmsg msg;
--	} nlreq;
--
--	memset(&nlreq, 0, sizeof(nlreq));
--	nlreq.hdr.nlmsg_len = NLMSG_LENGTH(sizeof(nlreq.msg));
--	nlreq.hdr.nlmsg_type = RTM_GETNEIGH;
--	nlreq.hdr.nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
--	nlreq.msg.ndm_family = ai_family;
-+	const struct sockaddr *sockaddr;
-+	struct sockaddr_in inet4;
-+	struct sockaddr_in6 inet6;
-+	size_t sockaddr_len;
-+	int sock;
-+	char t = 0;
- 
--	return batadv_rtnl_open(&nlreq, NETLINK_ROUTE);
--}
-+	sock = socket(ai_family, SOCK_DGRAM, IPPROTO_UDP);
-+	if (sock < 0)
-+		return;
- 
--static ssize_t resolve_mac_from_cache_dump(int sock, void **buf, size_t *buflen)
--{
--	struct iovec iov;
--	struct msghdr msg;
--	ssize_t ret = -1;
--	int flags = MSG_PEEK | MSG_TRUNC;
-+	switch (ai_family) {
-+	case AF_INET:
-+		memset(&inet4, 0, sizeof(inet4));
-+		inet4.sin_family = ai_family;
-+		inet4.sin_port = htons(9);
-+		memcpy(&inet4.sin_addr.s_addr, l3addr,
-+		       sizeof(inet4.sin_addr.s_addr));
-+		sockaddr = (const struct sockaddr *)&inet4;
-+		sockaddr_len = sizeof(inet4);
-+		break;
-+	case AF_INET6:
-+		memset(&inet6, 0, sizeof(inet6));
-+		inet6.sin6_family = ai_family;
-+		inet6.sin6_port = htons(9);
-+		memcpy(&inet6.sin6_addr.s6_addr, l3addr,
-+		       sizeof(inet6.sin6_addr.s6_addr));
-+		sockaddr = (const struct sockaddr *)&inet6;
-+		sockaddr_len = sizeof(inet6);
-+		break;
-+	default:
-+		close(sock);
-+		return;
-+	}
- 
--	memset(&msg, 0, sizeof(msg));
--	memset(&iov, 0, sizeof(iov));
-+	sendto(sock, &t, sizeof(t), 0, sockaddr, sockaddr_len);
-+	close(sock);
-+}
- 
--	msg.msg_iov = &iov;
--	msg.msg_iovlen = 1;
--	msg.msg_controllen = 0;
--	msg.msg_control = NULL;
--	msg.msg_flags = 0;
-+struct resolve_mac_nl_arg {
-+	int ai_family;
-+	const void *l3addr;
-+	struct ether_addr *mac_result;
-+	int found;
-+};
- 
--	iov.iov_len = *buflen;
--	iov.iov_base = *buf;
-+static struct nla_policy neigh_policy[NDA_MAX+1] = {
-+	[NDA_CACHEINFO] = { .minlen = sizeof(struct nda_cacheinfo) },
-+	[NDA_PROBES]    = { .type = NLA_U32 },
-+};
- 
--	ret = recvmsg(sock, &msg, flags);
-+static int resolve_mac_from_parse(struct nl_msg *msg, void *arg)
-+{
-+	struct nlattr *tb[NDA_MAX + 1];
-+	struct ndmsg *nm;
-+	int ret;
-+	int l3_len;
-+	struct resolve_mac_nl_arg *nl_arg = arg;
-+	uint8_t *mac;
-+	uint8_t *l3addr;
-+
-+	nm = nlmsg_data(nlmsg_hdr(msg));
-+	ret = nlmsg_parse(nlmsg_hdr(msg), sizeof(*nm), tb, NDA_MAX,
-+			  neigh_policy);
- 	if (ret < 0)
- 		goto err;
- 
--	if (msg.msg_flags & MSG_TRUNC) {
--		if ((size_t)ret <= *buflen) {
--			ret = -ENOBUFS;
--			goto err;
--		}
--
--		while (*buflen <= (size_t)ret) {
--			if (*buflen == 0)
--				*buflen = 1;
--			*buflen *= 2;
--		}
-+	if (nl_arg->ai_family != nm->ndm_family)
-+		goto err;
- 
--		*buf = realloc(*buf, *buflen);
--		if (!*buf) {
--			ret = -ENOMEM;
--			*buflen = 0;
--			goto err;
--		}
-+	switch (nl_arg->ai_family) {
-+	case AF_INET:
-+		l3_len = 4;
-+		break;
-+	case AF_INET6:
-+		l3_len = 16;
-+		break;
-+	default:
-+		l3_len = 0;
- 	}
--	flags = 0;
- 
--	ret = recvmsg(sock, &msg, flags);
--	if (ret < 0)
-+	if (l3_len == 0)
- 		goto err;
- 
--	return ret;
--err:
--	free(*buf);
--	*buf = NULL;
--	return ret;
--}
-+	if (!tb[NDA_LLADDR] || !tb[NDA_DST])
-+		goto err;
- 
--static int resolve_mac_from_cache_parse(struct ndmsg *ndmsg, size_t len_payload,
--					struct ether_addr *mac_addr,
--					uint8_t *l3addr,
--					size_t l3_len)
--{
--	int l3found, llfound;
--	struct rtattr *rtattr;
--	struct ether_addr mac_empty;
--
--	l3found = 0;
--	llfound = 0;
--	memset(&mac_empty, 0, sizeof(mac_empty));
--
--	for (rtattr = RTM_RTA(ndmsg); RTA_OK(rtattr, len_payload);
--		rtattr = RTA_NEXT(rtattr, len_payload)) {
--		switch (rtattr->rta_type) {
--		case NDA_DST:
--			memcpy(l3addr, RTA_DATA(rtattr), l3_len);
--			l3found = 1;
--			break;
--		case NDA_LLADDR:
--			memcpy(mac_addr, RTA_DATA(rtattr), ETH_ALEN);
--			if (memcmp(mac_addr, &mac_empty,
--					sizeof(mac_empty)) == 0)
--				llfound = 0;
--			else
--				llfound = 1;
--			break;
--		}
-+	if (nla_len(tb[NDA_LLADDR]) != ETH_ALEN)
-+		goto err;
-+
-+	if (nla_len(tb[NDA_DST]) != l3_len)
-+		goto err;
-+
-+	mac = nla_data(tb[NDA_LLADDR]);
-+	l3addr = nla_data(tb[NDA_DST]);
-+
-+	if (memcmp(nl_arg->l3addr, l3addr, l3_len) == 0) {
-+		memcpy(nl_arg->mac_result, mac, ETH_ALEN);
-+		nl_arg->found = 1;
- 	}
- 
--	return l3found && llfound;
-+err:
-+	if (nl_arg->found)
-+		return NL_STOP;
-+	else
-+		return NL_OK;
- }
- 
- static struct ether_addr *resolve_mac_from_cache(int ai_family,
- 						 const void *l3addr)
- {
--	uint8_t l3addr_tmp[16];
--	static struct ether_addr mac_tmp;
-+	struct nl_sock *sock;
- 	struct ether_addr *mac_result = NULL;
--	void *buf = NULL;
--	size_t buflen;
--	struct nlmsghdr *nh;
--	ssize_t len;
--	size_t l3_len, mlen;
--	int socknl;
--	int parsed;
--	int finished = 0;
--
--	switch (ai_family) {
--	case AF_INET:
--		l3_len = 4;
--		break;
--	case AF_INET6:
--		l3_len = 16;
--		break;
--	default:
--		l3_len = 0;
--	}
--
--	buflen = 8192;
--	buf = malloc(buflen);
--	if (!buf)
-+	static struct ether_addr mac_tmp;
-+	int ret;
-+	struct rtgenmsg gmsg = {
-+		.rtgen_family = ai_family,
-+	};
-+	struct nl_cb *cb = NULL;
-+	struct resolve_mac_nl_arg arg = {
-+		.ai_family = ai_family,
-+		.l3addr = l3addr,
-+		.mac_result = &mac_tmp,
-+		.found = 0,
-+	};
-+
-+	sock = nl_socket_alloc();
-+	if (!sock)
- 		goto err;
- 
--	socknl = resolve_mac_from_cache_open(ai_family);
--	if (socknl < 0)
-+	ret = nl_connect(sock, NETLINK_ROUTE);
-+	if (ret < 0)
- 		goto err;
- 
-+	ret = nl_send_simple(sock, RTM_GETNEIGH, NLM_F_REQUEST | NLM_F_DUMP,
-+			     &gmsg, sizeof(gmsg));
-+	if (ret < 0)
-+		goto err;
- 
--	while (!finished) {
--		len = resolve_mac_from_cache_dump(socknl, &buf, &buflen);
--		if (len < 0)
--			goto err_sock;
--		mlen = len;
-+	cb = nl_cb_alloc(NL_CB_DEFAULT);
-+	if (!cb)
-+		goto err;
- 
--		for (nh = buf; NLMSG_OK(nh, mlen); nh = NLMSG_NEXT(nh, mlen)) {
--			if (nh->nlmsg_type == NLMSG_DONE) {
--				finished = 1;
--				break;
--			}
-+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, resolve_mac_from_parse, &arg);
-+	ret = nl_recvmsgs(sock, cb);
-+	if (ret < 0)
-+		goto err;
- 
--			parsed = resolve_mac_from_cache_parse(NLMSG_DATA(nh),
--							      RTM_PAYLOAD(nh),
--							      &mac_tmp,
--							      l3addr_tmp,
--							      l3_len);
--			if (parsed) {
--				if (memcmp(&l3addr_tmp, l3addr, l3_len) == 0) {
--					mac_result = &mac_tmp;
--					finished = 1;
--					break;
--				}
--			}
--		}
--	}
-+	if (arg.found)
-+		mac_result = &mac_tmp;
- 
--err_sock:
--	close(socknl);
- err:
--	free(buf);
-+	if (cb)
-+		nl_cb_put(cb);
-+	if (sock)
-+		nl_socket_free(sock);
-+
- 	return mac_result;
- }
- 
--- 
-1.8.5.2
+
+The B.A.T.M.A.N. team is pleased to announce the immediate availability=
+ of=20
+batman-adv 2014.0.0 - a release coming with a rewritten packet handling=
+ engine=20
+and many new features almost uniquely tailored to preserve backward=20
+compatibility in the future. As the kernel module always depends on the=
+ Linux=20
+kernel it was compiled against, it does not make sense to provide binar=
+ies on=20
+our website. As usual, you will find the signed tarballs in our downloa=
+d=20
+section:
+
+http://downloads.open-mesh.org/batman/releases/batman-adv-2014.0.0/
+
+as well as prepackaged binaries in your distribution.
+
+
+Important changes
+-----------------
+
+*Compatibility break*: In 2011, batman-adv broke backward compatibility=
+ with=20
+the introduction of the translation table mechanism. Since then, intere=
+sts=20
+have been divided between those who wish a stable network with as littl=
+e=20
+changes as possible and those who wish to experiment with new features =
+to=20
+bring meshing to the next level. To accommodate both groups the batman-=
+adv=20
+developers dedicated a lot of effort on building code infrastructure al=
+lowing=20
+to mix stable nodes with new features without breaking compatibility. T=
+his new=20
+system is incompatible to the pre-2014.0.0 versions, but it has been de=
+signed=20
+to stay compatible with future versions for the next decade or so.
+
+At the same time, the legacy visualization support was removed from the=
+ kernel=20
+module. The alfred user space module provides an adequate replacement.
+
+
+Thanks
+------
+
+Thanks to all people sending in patches:
+
+ * Antonio Quartulli <antonio@meshcoding.com>
+ * Joe Perches <joe@perches.com>
+ * Linus L=FCssing <linus.luessing@web.de>
+ * Marco Dalla Torre <marco.dallato@gmail.com>
+ * Marek Lindner <mareklindner@neomailbox.ch>
+ * Martin Hundeb=F8ll <martin@hundeboll.net>
+ * Simon Wunderlich <sw@simonwunderlich.de>
+ * Spyros Gasteratos <morfeas3000@gmail.com>
+ * Sven Eckelmann <sven@narfation.org>
+ * Tan Xiaojun <tanxiaojun@huawei.com>
+
+
+batman-adv
+----------
+
+Transforming a rather static design to a module architecture in the int=
+erest=20
+of preserving backward compatibility requires modifications on a multit=
+ude of=20
+levels. The principal idea behind the TVLV (type-version-length-value)=20=
+
+infrastructure is to break up mesh management data into logic chunks=20=
+
+(containers) which can be extended in the future while preserving backw=
+ard=20
+compatibility. If a mesh participant receives an unknown TVLV type or v=
+ersion=20
+of a certain container it can simply skip the current container and pro=
+ceed=20
+with the next. Therefore, all non-routing data sent with OGMs (e.g. gat=
+eway=20
+advertisement, translation table data, etc) were transformed to TVLV=20=
+
+containers that are still attached to OGMs. In addition, translation ta=
+ble=20
+request & response packets as well as roaming advertisement packets wer=
+e=20
+transformed to TVLV containers too.
+While designing the containers a couple of feature requests were also=20=
+
+addressed: The compressed download & upload gateway bandwidth (known as=
+=20
+'gateway class') was replaced by uncompressed bandwidth information per=
+mitting=20
+granular gateway bandwidth announcement. DAT and network coding feature=
+=20
+support is communicated into the mesh through TVLV containers as both=20=
+
+subsystems optimize their performance based on the knowledge which mesh=
+=20
+participant has the feature enabled.
+In the interest of backward compatibility on the packet forwarding leve=
+l=20
+batman-adv received a general unicast packet forwarding mechanism. This=
+=20
+mechanism forwards or drops unknown packet types based on the packet ty=
+pe=20
+numbering.
+
+The batman-adv built-in packet fragmentation has been redesigned and re=
+written=20
+as part of the 'fragmentation 2' Google Summer of Code project. Major d=
+esign=20
+goals include: Variable number of fragments (up to 16), generic fragmen=
+tation=20
+framework capable of handling all types of traffic (the 'old' fragmenta=
+tion code=20
+was limited to payload unicast packets) and 'upper layer' transparency =
+through=20
+early re-assembly. The maximum of local clients the translation table i=
+s able=20
+to handle went up by a factor of 16 (the maximum number of fragmented p=
+ackets)=20
+as full translation table exchanges are able to take advantage of the n=
+ewly=20
+introduced generic fragmentation. If the fragmentation is disabled or t=
+he MTU=20
+altered the local translation table is automatically reduced to fit the=
+ new=20
+maximum translation table size. Part of the increased maximum table siz=
+e is=20
+the transition from CRC16 consistency checksumming to CRC32 to reduce=20=
+
+collision probability and take advantage of hardware acceleration suppo=
+rt. The=20
+translation table also gained full VLAN awareness making it the final c=
+omponent=20
+receiving full VLAN support. Non-mesh clients are now entirely separate=
+d on a=20
+per-VLAN basis. As a consequence, the bridge loop avoidance is capable =
+of=20
+resolving bridge loops more elegantly (one VLAN might be bridged into t=
+he LAN=20
+while another one is not), the Distributed ARP Table (DAT) builds its=20=
+
+distributed IP-MAC address hash on a per-VLAN basis and the AP isolatio=
+n=20
+allows fine-grained control over which VLAN should be isolated and whic=
+h should=20
+not.
+
+The kernel module sets a dummy rx mode handler on batman-adv' virtual=20=
+
+interface creation to be able to accepts static multicast listener=20
+configurations on top of the batX interface. In order to help wireless =
+drivers=20
+to select the suitable traffic queue (e.g. WMM queues), batman-adv peek=
+s into=20
+the encapsulated payload IP or VLAN header and sets the skb priority fi=
+eld=20
+accordingly. This priority field is used whenever the lower layer drive=
+rs (like=20
+wireless or ethernet drivers) are unable to retrieve the prioritization=
+=20
+themselves due to the batman-adv traffic encapsulation.
+
+
+batctl
+------
+
+As part of our ongoing effort for better IPv6 support quite a few missi=
+ng=20
+pieces have been tackled: The IP-address-to-MAC-address resolver was ex=
+tended=20
+to also support IPv6 addresses. This was achieved by porting the intern=
+al=20
+resolver from the '/proc/net/arp' based approach to the RTNL API. As a =
+result=20
+the translate, ping and traceroute commands accept IPv6 addresses as=20=
+
+destination argument which batctl tries to convert back to MAC addresse=
+s in=20
+similar to the IPv4 conversion. Furthermore, the tcpdump component was=20=
+
+enriched with an IPv6 parser being able to decapsulate TCP, UDP and com=
+mon=20
+ICMPv6 packet types.
+The vis export feature has been removed as the kernel module no longer=20=
+
+supports the visualization protocol. A number of cleanups and smaller f=
+ixes=20
+such as marking local functions as static, adding header include guards=
+ and=20
+more found their way into this release as well.
+
+
+alfred
+------
+
+The missing libmath linker flag of the alfred-gpsd component was fixed =
+and its=20
+manpage installation arranged.
+
+
+
+Happy routing,
+The B.A.T.M.A.N. team
+
+--nextPart14328963.aXyxCV32X8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJSy/jBAAoJEFNVTo/uthzACXYIAL3LafTV/ha5SQkO/STF24em
+RxkFV9EPwqiTmN8Q5DtjwUCVKbfzNnXA/34CZVc/5TdBLTC7+WP6DGJP//ojIuUq
+6udilJU77mGtjWYdYIsAR5YlGWuFhZVsLUZ3GxDpRyJV0ALVx6ArrDbs6D74ClNw
+8cL0jubLNBtQHRP8FhECZnnxP20c4AfSNT3FQ22200bukpY7pejB34i4ZKtog2B7
+hx5we5apX60TYCHe6QLP7CHTbBwjkkqj2N0f5Y3er1S1Eelnat6LOWOKiaLeHOyy
+BDRlagGeJo3gvzMbUV/Vx0m8XswmVd+yfl/wtNK2cF8J4R29iRXMdeFJH9MqLOQ=
+=IDvv
+-----END PGP SIGNATURE-----
+
+--nextPart14328963.aXyxCV32X8--
 
