@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu,  9 Jan 2014 15:52:57 +0100
-Message-Id: <1389279182-3256-9-git-send-email-antonio@meshcoding.com>
+Date: Thu,  9 Jan 2014 15:52:58 +0100
+Message-Id: <1389279182-3256-10-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1389279182-3256-1-git-send-email-antonio@meshcoding.com>
 References: <1389279182-3256-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 08/13] batman-adv: add isolation_mark sysfs
-	attribute
+Subject: [B.A.T.M.A.N.] [PATCH 09/13] batman-adv: mark a local client as
+	isolated when needed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,170 +22,144 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mare
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-This attribute can be used to set and read the value and the
-mask of the skb mark which will be used to classify the
-source non-mesh client as ISOLATED. In this way a client can
-be advertised as such and the mark can potentially be
-restored at the receiving node before delivering the skb.
+A client sending packets which mark matches the value
+configured via sysfs has to be identified as isolated using
+the TT_CLIENT_ISOLA flag.
 
-This can be helpful for creating network wide netfilter
-policies.
+The match is mask based, meaning that only bits set in the
+mask are compared with those in the mark value.
 
-This sysfs file expects a string of the shape "$mark/$mask".
-Where $mark has to be a 32-bit number in any base, while
-$mask must be a 32bit mask expressed in hex base. Only bits
-in $mark covered by the bitmask are really stored.
+If the configured mask is equal to 0 no operation is
+performed.
+
+Such flag is then advertised within the classic client
+announcement mechanism.
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- Documentation/ABI/testing/sysfs-class-net-mesh |  8 +++
- net/batman-adv/soft-interface.c                |  2 +
- net/batman-adv/sysfs.c                         | 71 ++++++++++++++++++++++++++
- net/batman-adv/types.h                         |  2 +
- 4 files changed, 83 insertions(+)
+ net/batman-adv/main.h              |  2 ++
+ net/batman-adv/packet.h            |  1 +
+ net/batman-adv/soft-interface.c    |  7 ++++---
+ net/batman-adv/translation-table.c | 16 +++++++++++++++-
+ net/batman-adv/translation-table.h |  2 +-
+ 5 files changed, 23 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-net-mesh b/Documentation/ABI/testing/sysfs-class-net-mesh
-index 0baa657..4793d3d 100644
---- a/Documentation/ABI/testing/sysfs-class-net-mesh
-+++ b/Documentation/ABI/testing/sysfs-class-net-mesh
-@@ -68,6 +68,14 @@ Description:
-                 Defines the penalty which will be applied to an
-                 originator message's tq-field on every hop.
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 9e76b6c..fa9edbf 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -70,6 +70,8 @@
  
-+What:		/sys/class/net/<mesh_iface>/mesh/isolation_mark
-+Date:		Nov 2013
-+Contact:	Antonio Quartulli <antonio@meshcoding.com>
-+Description:
-+		Defines the isolation mark (and its bitmask) which
-+		is used to classify clients as "isolated" by the
-+		Extended Isolation feature.
+ #define BATADV_NULL_IFINDEX 0 /* dummy ifindex used to avoid iface checks */
+ 
++#define BATADV_NO_MARK 0
 +
- What:           /sys/class/net/<mesh_iface>/mesh/network_coding
- Date:           Nov 2012
- Contact:        Martin Hundeboll <martin@hundeboll.net>
+ #define BATADV_NUM_WORDS BITS_TO_LONGS(BATADV_TQ_LOCAL_WINDOW_SIZE)
+ 
+ #define BATADV_LOG_BUF_LEN 8192	  /* has to be a power of 2 */
+diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
+index 5e73294..ef2010c 100644
+--- a/net/batman-adv/packet.h
++++ b/net/batman-adv/packet.h
+@@ -115,6 +115,7 @@ enum batadv_tt_client_flags {
+ 	BATADV_TT_CLIENT_DEL     = BIT(0),
+ 	BATADV_TT_CLIENT_ROAM    = BIT(1),
+ 	BATADV_TT_CLIENT_WIFI    = BIT(4),
++	BATADV_TT_CLIENT_ISOLA	 = BIT(5),
+ 	BATADV_TT_CLIENT_NOPURGE = BIT(8),
+ 	BATADV_TT_CLIENT_NEW     = BIT(9),
+ 	BATADV_TT_CLIENT_PENDING = BIT(10),
 diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index b569932..35a82e3 100644
+index 35a82e3..e126d74 100644
 --- a/net/batman-adv/soft-interface.c
 +++ b/net/batman-adv/soft-interface.c
-@@ -701,6 +701,8 @@ static int batadv_softif_init_late(struct net_device *dev)
- #endif
- 	bat_priv->tt.last_changeset = NULL;
- 	bat_priv->tt.last_changeset_len = 0;
-+	bat_priv->isolation_mark = 0;
-+	bat_priv->isolation_mark_mask = 0;
+@@ -119,7 +119,7 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
+ 		batadv_tt_local_remove(bat_priv, old_addr, BATADV_NO_FLAGS,
+ 				       "mac address changed", false);
+ 		batadv_tt_local_add(dev, addr->sa_data, BATADV_NO_FLAGS,
+-				    BATADV_NULL_IFINDEX);
++				    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
+ 	}
  
- 	/* randomize initial seqno to avoid collision */
- 	get_random_bytes(&random_seqno, sizeof(random_seqno));
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 511e011..b6a4403 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -450,6 +450,74 @@ static ssize_t batadv_store_gw_bwidth(struct kobject *kobj,
- 	return batadv_gw_bandwidth_set(net_dev, buff, count);
- }
+ 	return 0;
+@@ -199,7 +199,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 	/* Register the client MAC in the transtable */
+ 	if (!is_multicast_ether_addr(ethhdr->h_source)) {
+ 		client_added = batadv_tt_local_add(soft_iface, ethhdr->h_source,
+-						   vid, skb->skb_iif);
++						   vid, skb->skb_iif,
++						   skb->mark);
+ 		if (!client_added)
+ 			goto dropped;
+ 	}
+@@ -489,7 +490,7 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 	 */
+ 	batadv_tt_local_add(bat_priv->soft_iface,
+ 			    bat_priv->soft_iface->dev_addr, vid,
+-			    BATADV_NULL_IFINDEX);
++			    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
  
-+/**
-+ * batadv_show_isolation_mark - print the current isolation mark/mask
-+ * @kobj: kobject representing the private mesh sysfs directory
-+ * @attr: the batman-adv attribute the user is interacting with
-+ * @buff: the buffer that will contain the data to send back to the user
-+ *
-+ * Returns the number of bytes written into 'buff' on success or a negative
-+ * error code in case of failure
-+ */
-+static ssize_t batadv_show_isolation_mark(struct kobject *kobj,
-+					  struct attribute *attr, char *buff)
-+{
-+	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
-+
-+	return sprintf(buff, "%#.8x/%#.8x\n", bat_priv->isolation_mark,
-+		       bat_priv->isolation_mark_mask);
-+}
-+
-+/**
-+ * batadv_store_isolation_mark - parse and store the isolation mark/mask entered
-+ *  by the user
-+ * @kobj: kobject representing the private mesh sysfs directory
-+ * @attr: the batman-adv attribute the user is interacting with
-+ * @buff: the buffer containing the user data
-+ * @count: number of bytes in the buffer
-+ *
-+ * Returns 'count' on success or a negative error code in case of failure
-+ */
-+static ssize_t batadv_store_isolation_mark(struct kobject *kobj,
-+					   struct attribute *attr, char *buff,
-+					   size_t count)
-+{
-+	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
-+	struct batadv_priv *bat_priv = netdev_priv(net_dev);
-+	uint32_t mark, mask;
-+	char *mask_ptr;
-+
-+	/* parse the mask if it has been specified, otherwise assume the mask is
-+	 * the biggest possible
+ 	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
+ 	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 2eaa1e9..669b8b6 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -474,11 +474,13 @@ static void batadv_tt_global_free(struct batadv_priv *bat_priv,
+  * @vid: VLAN identifier
+  * @ifindex: index of the interface where the client is connected to (useful to
+  *  identify wireless clients)
++ * @mark: the value contained in the skb->mark field of the received packet (if
++ *  any)
+  *
+  * Returns true if the client was successfully added, false otherwise.
+  */
+ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+-			 unsigned short vid, int ifindex)
++			 unsigned short vid, int ifindex, uint32_t mark)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
+ 	struct batadv_tt_local_entry *tt_local;
+@@ -489,6 +491,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 	int hash_added, table_size, packet_size_max;
+ 	bool ret = false, roamed_back = false;
+ 	uint8_t remote_flags;
++	uint32_t match_mark;
+ 
+ 	if (ifindex != BATADV_NULL_IFINDEX)
+ 		in_dev = dev_get_by_index(&init_net, ifindex);
+@@ -613,6 +616,17 @@ check_roaming:
+ 	else
+ 		tt_local->common.flags &= ~BATADV_TT_CLIENT_WIFI;
+ 
++	/* check the mark in the skb: if it's equal to the configured
++	 * isolation_mark, it means the packet is coming from an isolated
++	 * non-mesh client
 +	 */
-+	mask = 0xFFFFFFFF;
-+	mask_ptr = strchr(buff, '/');
-+	if (mask_ptr) {
-+		*mask_ptr = '\0';
-+		mask_ptr++;
++	match_mark = (mark & bat_priv->isolation_mark_mask);
++	if (bat_priv->isolation_mark_mask &&
++	    match_mark == bat_priv->isolation_mark)
++		tt_local->common.flags |= BATADV_TT_CLIENT_ISOLA;
++	else
++		tt_local->common.flags &= ~BATADV_TT_CLIENT_ISOLA;
 +
-+		/* the mask must be entered in hex base as it is going to be a
-+		 * bitmask and not a prefix length
-+		 */
-+		if (kstrtou32(mask_ptr, 16, &mask) < 0)
-+			return -EINVAL;
-+	}
-+
-+	/* the mark can be entered in any base */
-+	if (kstrtou32(buff, 0, &mark) < 0)
-+		return -EINVAL;
-+
-+	bat_priv->isolation_mark_mask = mask;
-+	/* erase bits not covered by the mask */
-+	bat_priv->isolation_mark = mark & bat_priv->isolation_mark_mask;
-+
-+	batadv_info(net_dev,
-+		    "New skb mark for extended isolation: %#.8x/%#.8x\n",
-+		    bat_priv->isolation_mark, bat_priv->isolation_mark_mask);
-+
-+	return count;
-+}
-+
- BATADV_ATTR_SIF_BOOL(aggregated_ogms, S_IRUGO | S_IWUSR, NULL);
- BATADV_ATTR_SIF_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
- #ifdef CONFIG_BATMAN_ADV_BLA
-@@ -478,6 +546,8 @@ BATADV_ATTR_SIF_UINT(log_level, S_IRUGO | S_IWUSR, 0, BATADV_DBG_ALL, NULL);
- BATADV_ATTR_SIF_BOOL(network_coding, S_IRUGO | S_IWUSR,
- 		     batadv_nc_status_update);
- #endif
-+static BATADV_ATTR(isolation_mark, S_IRUGO | S_IWUSR,
-+		   batadv_show_isolation_mark, batadv_store_isolation_mark);
+ 	/* if any "dynamic" flag has been modified, resend an ADD event for this
+ 	 * entry so that all the nodes can get the new flags
+ 	 */
+diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
+index 08d9bbe..0e7023e 100644
+--- a/net/batman-adv/translation-table.h
++++ b/net/batman-adv/translation-table.h
+@@ -20,7 +20,7 @@
  
- static struct batadv_attribute *batadv_mesh_attrs[] = {
- 	&batadv_attr_aggregated_ogms,
-@@ -501,6 +571,7 @@ static struct batadv_attribute *batadv_mesh_attrs[] = {
- #ifdef CONFIG_BATMAN_ADV_NC
- 	&batadv_attr_network_coding,
- #endif
-+	&batadv_attr_isolation_mark,
- 	NULL,
- };
- 
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 70abb1c..0430a04 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -697,6 +697,8 @@ struct batadv_priv {
- #ifdef CONFIG_BATMAN_ADV_DEBUG
- 	atomic_t log_level;
- #endif
-+	uint32_t isolation_mark;
-+	uint32_t isolation_mark_mask;
- 	atomic_t bcast_seqno;
- 	atomic_t bcast_queue_left;
- 	atomic_t batman_queue_left;
+ int batadv_tt_init(struct batadv_priv *bat_priv);
+ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+-			 unsigned short vid, int ifindex);
++			 unsigned short vid, int ifindex, uint32_t mark);
+ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
+ 				const uint8_t *addr, unsigned short vid,
+ 				const char *message, bool roaming);
 -- 
 1.8.5.2
 
