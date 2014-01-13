@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Mon, 13 Jan 2014 23:31:33 +0100
-Message-Id: <1389652298-472-10-git-send-email-antonio@meshcoding.com>
+Date: Mon, 13 Jan 2014 23:31:35 +0100
+Message-Id: <1389652298-472-12-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1389652298-472-1-git-send-email-antonio@meshcoding.com>
 References: <1389652298-472-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 09/14] batman-adv: remove returns at the end
-	of void functions
+Subject: [B.A.T.M.A.N.] [PATCH 11/14] batman-adv: add build checks for
+	packet sizes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,72 +20,55 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-Return at the end of void functions is not needed.
+From: Simon Wunderlich <sw@simonwunderlich.de>
 
-Since most of the void functions in the code do not do so,
-make all the others consistent by removing the useless
-returns. Actually all the functions to be "fixed" are in
-network-coding.h only.
+With unrolling the batadv_header into the respective structures, the
+offsetof checks are now useless. Instead, add build checks for all
+packet types which go over the wire to avoid problems with wrong sizes
+or compatibility issues on some architectures which don't use every day.
 
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/network-coding.h | 7 -------
- 1 file changed, 7 deletions(-)
+ net/batman-adv/main.c | 24 +++++++++++++++++-------
+ 1 file changed, 17 insertions(+), 7 deletions(-)
 
-diff --git a/net/batman-adv/network-coding.h b/net/batman-adv/network-coding.h
-index ab59b3d..136db6d 100644
---- a/net/batman-adv/network-coding.h
-+++ b/net/batman-adv/network-coding.h
-@@ -62,7 +62,6 @@ static inline int batadv_nc_mesh_init(struct batadv_priv *bat_priv)
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 945e441..ad6aeed 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -419,13 +419,23 @@ static void batadv_recv_handler_init(void)
+ 	for (i = BATADV_UNICAST_MIN; i <= BATADV_UNICAST_MAX; i++)
+ 		batadv_rx_handler[i] = batadv_recv_unhandled_unicast_packet;
  
- static inline void batadv_nc_mesh_free(struct batadv_priv *bat_priv)
- {
--	return;
- }
+-	/* compile time checks for struct member offsets */
+-	BUILD_BUG_ON(offsetof(struct batadv_unicast_4addr_packet, src) != 10);
+-	BUILD_BUG_ON(offsetof(struct batadv_unicast_packet, dest) != 4);
+-	BUILD_BUG_ON(offsetof(struct batadv_unicast_tvlv_packet, dst) != 4);
+-	BUILD_BUG_ON(offsetof(struct batadv_frag_packet, dest) != 4);
+-	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet, dst) != 4);
+-	BUILD_BUG_ON(offsetof(struct batadv_icmp_packet_rr, dst) != 4);
++	/* compile time checks for sizes */
++	BUILD_BUG_ON(sizeof(struct batadv_bla_claim_dst) != 6);
++	BUILD_BUG_ON(sizeof(struct batadv_ogm_packet) != 24);
++	BUILD_BUG_ON(sizeof(struct batadv_icmp_header) != 20);
++	BUILD_BUG_ON(sizeof(struct batadv_icmp_packet) != 20);
++	BUILD_BUG_ON(sizeof(struct batadv_icmp_packet_rr) != 116);
++	BUILD_BUG_ON(sizeof(struct batadv_unicast_packet) != 10);
++	BUILD_BUG_ON(sizeof(struct batadv_unicast_4addr_packet) != 18);
++	BUILD_BUG_ON(sizeof(struct batadv_frag_packet) != 20);
++	BUILD_BUG_ON(sizeof(struct batadv_bcast_packet) != 14);
++	BUILD_BUG_ON(sizeof(struct batadv_coded_packet) != 46);
++	BUILD_BUG_ON(sizeof(struct batadv_unicast_tvlv_packet) != 20);
++	BUILD_BUG_ON(sizeof(struct batadv_tvlv_hdr) != 4);
++	BUILD_BUG_ON(sizeof(struct batadv_tvlv_gateway_data) != 8);
++	BUILD_BUG_ON(sizeof(struct batadv_tvlv_tt_vlan_data) != 8);
++	BUILD_BUG_ON(sizeof(struct batadv_tvlv_tt_change) != 12);
++	BUILD_BUG_ON(sizeof(struct batadv_tvlv_roam_adv) != 8);
  
- static inline void
-@@ -72,7 +71,6 @@ batadv_nc_update_nc_node(struct batadv_priv *bat_priv,
- 			 struct batadv_ogm_packet *ogm_packet,
- 			 int is_single_hop_neigh)
- {
--	return;
- }
- 
- static inline void
-@@ -81,17 +79,14 @@ batadv_nc_purge_orig(struct batadv_priv *bat_priv,
- 		     bool (*to_purge)(struct batadv_priv *,
- 				      struct batadv_nc_node *))
- {
--	return;
- }
- 
- static inline void batadv_nc_init_bat_priv(struct batadv_priv *bat_priv)
- {
--	return;
- }
- 
- static inline void batadv_nc_init_orig(struct batadv_orig_node *orig_node)
- {
--	return;
- }
- 
- static inline bool batadv_nc_skb_forward(struct sk_buff *skb,
-@@ -104,14 +99,12 @@ static inline void
- batadv_nc_skb_store_for_decoding(struct batadv_priv *bat_priv,
- 				 struct sk_buff *skb)
- {
--	return;
- }
- 
- static inline void
- batadv_nc_skb_store_sniffed_unicast(struct batadv_priv *bat_priv,
- 				    struct sk_buff *skb)
- {
--	return;
- }
- 
- static inline int batadv_nc_nodes_seq_print_text(struct seq_file *seq,
+ 	/* broadcast packet */
+ 	batadv_rx_handler[BATADV_BCAST] = batadv_recv_bcast_packet;
 -- 
 1.8.5.2
 
