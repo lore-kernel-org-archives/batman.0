@@ -1,12 +1,8 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Wed, 15 Jan 2014 23:54:44 +0100
-Message-Id: <1389826484-7075-1-git-send-email-linus.luessing@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: use eth_hdr() instead of
-	skb->data in interface_tx path
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Thu, 16 Jan 2014 00:10:43 +0100
+Message-Id: <1389827444-3911-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] pull request [net]: batman-adv 2014-01-16
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,74 +14,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Using eth_hdr() instead of skb->data avoids some ugly type casts.
+Hello David,
 
-I wasn't able to reproduce the skb ether header pointer mismatch
-mentioned in batadv_bla_tx() on a 3.11 kernel with a vlan on top of
-bat0 and therefore removed the according skb_reset_mac_header()
-call, too. Nevertheless I've added a check to the beginning of
-batadv_interface_tx() as I guess there might potentially be some device
-drivers not being that nice.
+here you have a very small fix intended for net/linux-3.13.
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
- bridge_loop_avoidance.c |    3 ---
- soft-interface.c        |   12 +++++++++---
- 2 files changed, 9 insertions(+), 6 deletions(-)
+This patch is fixing the batman-adv overhead computation
+(by Marek Lindner).
+The result of such operation is used to initialize the
+hard_header_len member of the soft-interface netdev object.
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 5c0eda4..26ec489 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -1535,9 +1535,6 @@ int batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 	if (!atomic_read(&bat_priv->bridge_loop_avoidance))
- 		goto allow;
- 
--	/* in VLAN case, the mac header might not be set. */
--	skb_reset_mac_header(skb);
--
- 	if (batadv_bla_process_claim(bat_priv, primary_if, skb))
- 		goto handled;
- 
-diff --git a/soft-interface.c b/soft-interface.c
-index f82c267..8af69b9 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -176,7 +176,13 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 
- 	soft_iface->trans_start = jiffies;
- 	vid = batadv_get_vid(skb, 0);
--	ethhdr = (struct ethhdr *)skb->data;
-+
-+	if (skb->data != eth_hdr(skb)) {
-+		pr_warn("Upper device did not set the ethernet header pointer correctly - adjusting\n");
-+		skb_reset_mac_header(skb);
-+	}
-+
-+	ethhdr = eth_hdr(skb);
- 
- 	switch (ntohs(ethhdr->h_proto)) {
- 	case ETH_P_8021Q:
-@@ -194,7 +200,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 		goto dropped;
- 
- 	/* skb->data might have been reallocated by batadv_bla_tx() */
--	ethhdr = (struct ethhdr *)skb->data;
-+	ethhdr = eth_hdr(skb);
- 
- 	/* Register the client MAC in the transtable */
- 	if (!is_multicast_ether_addr(ethhdr->h_source)) {
-@@ -230,7 +236,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 		/* skb->data may have been modified by
- 		 * batadv_gw_dhcp_recipient_get()
- 		 */
--		ethhdr = (struct ethhdr *)skb->data;
-+		ethhdr = eth_hdr(skb);
- 		/* if gw_mode is on, broadcast any non-DHCP message.
- 		 * All the DHCP packets are going to be sent as unicast
- 		 */
--- 
-1.7.10.4
+
+Please pull or let me know of any problem!
+
+Thanks a lot,
+	Antonio
+
+
+
+The following changes since commit 51bb352f15595f2dee42b599680809de3d08999d:
+
+  qlge: Fix vlan netdev features. (2014-01-14 19:02:35 -0800)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to 1df0cbd509bc21b0c331358c1f9d9a6fc94bada8:
+
+  batman-adv: fix batman-adv header overhead calculation (2014-01-15 23:54:20 +0100)
+
+----------------------------------------------------------------
+Included change:
+- properly compute the batman-adv header overhead. Such
+  result is later used to initialize the hard_header_len
+  member of the soft-interface netdev object
+
+----------------------------------------------------------------
+Marek Lindner (1):
+      batman-adv: fix batman-adv header overhead calculation
+
+ net/batman-adv/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
