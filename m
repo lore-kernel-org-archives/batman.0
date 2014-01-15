@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 16 Jan 2014 06:42:17 +0800
-Message-ID: <1992241.rmdj3Vzc2C@diderot>
-In-Reply-To: <1389817074-20416-1-git-send-email-sw@simonwunderlich.de>
-References: <1389817074-20416-1-git-send-email-sw@simonwunderlich.de>
+Date: Thu, 16 Jan 2014 06:56:33 +0800
+Message-ID: <3472529.36863DVfs0@diderot>
+In-Reply-To: <20140115143029.GA20992@medion.lan>
+References: <20140115143029.GA20992@medion.lan>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1607260.x0EKdneU8Q";
+Content-Type: multipart/signed; boundary="nextPart2242535.GhV5qgxGsK";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-next] batman-adv: use consistent
-	kerneldoc style
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 OpenWrt] [batman-adv: Makefile: add
+	depends for 'crc16' which is still needed but removed accidentally
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,26 +23,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart1607260.x0EKdneU8Q
+--nextPart2242535.GhV5qgxGsK
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday 15 January 2014 21:17:54 Simon Wunderlich wrote:
-> Reported-by: Antonio Quartulli <antonio@meshcoding.com>
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+On Wednesday 15 January 2014 15:30:29 Bastian Bittorf wrote:
+> batman-adv: Makefile: add depends for 'crc16' which is still needed/used in
+> BLA-framework (Bridge Loop Avoidance) in bridge_loop_avoidance.c. Thanks to
+> Antonio 'ordex' Quartulli for confirmation. The problem was introduced with
+> 1ee5b17e4f7b2c145524edfb51617c911fad7cc4 ("upgrade package to latest
+> release 2014.0.0").
+> 
+> Signed-off-by: Bastian Bittorf <bittorf@bluebottle.com>
 > ---
->  bat_iv_ogm.c            |    6 ++++--
->  bridge_loop_avoidance.c |   24 ++++++++++++++++++------
->  translation-table.c     |    8 +++++---
->  types.h                 |    6 ++++--
->  4 files changed, 31 insertions(+), 13 deletions(-)
+>  batman-adv/Makefile | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision 4b78c87.
+Applied with minor changes in revision b5a0b78.
 
 Thanks,
 Marek
 
---nextPart1607260.x0EKdneU8Q
+--nextPart2242535.GhV5qgxGsK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -50,14 +52,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJS1w7JAAoJEFNVTo/uthzAgz0IALP/hu4ySQGf3AtG52hIwLfX
-lqVzJfumildyE4DIHgZeMVSddTd+44KFGDY5iPhgkHpIKVAth0pTjtjdyrHdzBP4
-EbZ1gq56dMiX3ne4w1gBdDtjU6obqM2zQO05EH0843H2QtjA242LNO0gDB4FqIT9
-c/FaUOCn7/FJzLTatF0jKiUCPQFv3fqWFUpqNf8QcP+JEdjB3JKaGuQ01sEIC61C
-WE8iRU5u4Am9DVh6/utv/sF9OfgpkI39mTI0QzGP315/UjSox9ZOMuAzoA5Drawn
-+RBkR/cM6Sp+tG6k3+UawoVu9ygPYO+qyFalyDD20nNZc3mQV9ky/7XRtlZAklY=
-=51Le
+iQEcBAABAgAGBQJS1xItAAoJEFNVTo/uthzAgKAH+weVAOK0wGRS+0i0Lu2UjVCQ
+z+QHXhIWA9SBw37MLxefHmA/ekwpTXASx2UbbB3bmyPMKH9tM/xWzNdXEYl30JCg
+CKqIBJ3P9LS2ru1RR/t7IQvUDMxaNQS4SzQewydBINa7FK9Wk7MjO1VIc+SVl5Ug
+hQwkj8zMyfV78kLmBeSQ8vvXM1JdZ+KzCfd4I1APkD/ogP5dtVn5h5DvUnHSCjBo
+ewVgJo0YrkMPkKW0f3QmsPZzqTQdoC7vD37gxcnMPs9uZ1iJHcsdPsbpCrtjpnp7
+KXeHXGs3EWFga2K88y0cx8xilG5LV4C3jx7OVE7F7VJFUI1qLmGJLbu+gG2xgYg=
+=uQIu
 -----END PGP SIGNATURE-----
 
---nextPart1607260.x0EKdneU8Q--
+--nextPart2242535.GhV5qgxGsK--
 
