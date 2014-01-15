@@ -1,12 +1,12 @@
 Return-Path: <bittorf@bluebottle.com>
-Date: Wed, 15 Jan 2014 15:03:33 +0100
+Date: Wed, 15 Jan 2014 15:30:29 +0100
 From: Bastian Bittorf <bittorf@bluebottle.com>
-Message-ID: <20140115140332.GA20268@medion.lan>
+Message-ID: <20140115143029.GA20992@medion.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Makefile: add depends for
- 'crc16' which is still needed but removed accidentally
+Subject: [B.A.T.M.A.N.] [PATCH v2 OpenWrt] [batman-adv: Makefile: add
+ depends for 'crc16' which is still needed but removed accidentally
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,7 +22,8 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 batman-adv: Makefile: add depends for 'crc16' which is still needed/used in BLA-framework
 (Bridge Loop Avoidance) in bridge_loop_avoidance.c. Thanks to Antonio 'ordex' Quartulli for
-confirmation.
+confirmation. The problem was introduced with 1ee5b17e4f7b2c145524edfb51617c911fad7cc4
+("upgrade package to latest release 2014.0.0").
 
 Signed-off-by: Bastian Bittorf <bittorf@bluebottle.com>
 ---
