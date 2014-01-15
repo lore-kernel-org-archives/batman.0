@@ -1,14 +1,12 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 16 Jan 2014 06:56:33 +0800
-Message-ID: <3472529.36863DVfs0@diderot>
-In-Reply-To: <20140115143029.GA20992@medion.lan>
-References: <20140115143029.GA20992@medion.lan>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Wed, 15 Jan 2014 23:54:44 +0100
+Message-Id: <1389826484-7075-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2242535.GhV5qgxGsK";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 OpenWrt] [batman-adv: Makefile: add
-	depends for 'crc16' which is still needed but removed accidentally
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: use eth_hdr() instead of
+	skb->data in interface_tx path
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,44 +20,72 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+Using eth_hdr() instead of skb->data avoids some ugly type casts.
 
---nextPart2242535.GhV5qgxGsK
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+I wasn't able to reproduce the skb ether header pointer mismatch
+mentioned in batadv_bla_tx() on a 3.11 kernel with a vlan on top of
+bat0 and therefore removed the according skb_reset_mac_header()
+call, too. Nevertheless I've added a check to the beginning of
+batadv_interface_tx() as I guess there might potentially be some device
+drivers not being that nice.
 
-On Wednesday 15 January 2014 15:30:29 Bastian Bittorf wrote:
-> batman-adv: Makefile: add depends for 'crc16' which is still needed/used in
-> BLA-framework (Bridge Loop Avoidance) in bridge_loop_avoidance.c. Thanks to
-> Antonio 'ordex' Quartulli for confirmation. The problem was introduced with
-> 1ee5b17e4f7b2c145524edfb51617c911fad7cc4 ("upgrade package to latest
-> release 2014.0.0").
-> 
-> Signed-off-by: Bastian Bittorf <bittorf@bluebottle.com>
-> ---
->  batman-adv/Makefile | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+---
+ bridge_loop_avoidance.c |    3 ---
+ soft-interface.c        |   12 +++++++++---
+ 2 files changed, 9 insertions(+), 6 deletions(-)
 
-Applied with minor changes in revision b5a0b78.
-
-Thanks,
-Marek
-
---nextPart2242535.GhV5qgxGsK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJS1xItAAoJEFNVTo/uthzAgKAH+weVAOK0wGRS+0i0Lu2UjVCQ
-z+QHXhIWA9SBw37MLxefHmA/ekwpTXASx2UbbB3bmyPMKH9tM/xWzNdXEYl30JCg
-CKqIBJ3P9LS2ru1RR/t7IQvUDMxaNQS4SzQewydBINa7FK9Wk7MjO1VIc+SVl5Ug
-hQwkj8zMyfV78kLmBeSQ8vvXM1JdZ+KzCfd4I1APkD/ogP5dtVn5h5DvUnHSCjBo
-ewVgJo0YrkMPkKW0f3QmsPZzqTQdoC7vD37gxcnMPs9uZ1iJHcsdPsbpCrtjpnp7
-KXeHXGs3EWFga2K88y0cx8xilG5LV4C3jx7OVE7F7VJFUI1qLmGJLbu+gG2xgYg=
-=uQIu
------END PGP SIGNATURE-----
-
---nextPart2242535.GhV5qgxGsK--
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 5c0eda4..26ec489 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -1535,9 +1535,6 @@ int batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 	if (!atomic_read(&bat_priv->bridge_loop_avoidance))
+ 		goto allow;
+ 
+-	/* in VLAN case, the mac header might not be set. */
+-	skb_reset_mac_header(skb);
+-
+ 	if (batadv_bla_process_claim(bat_priv, primary_if, skb))
+ 		goto handled;
+ 
+diff --git a/soft-interface.c b/soft-interface.c
+index f82c267..8af69b9 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -176,7 +176,13 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 
+ 	soft_iface->trans_start = jiffies;
+ 	vid = batadv_get_vid(skb, 0);
+-	ethhdr = (struct ethhdr *)skb->data;
++
++	if (skb->data != eth_hdr(skb)) {
++		pr_warn("Upper device did not set the ethernet header pointer correctly - adjusting\n");
++		skb_reset_mac_header(skb);
++	}
++
++	ethhdr = eth_hdr(skb);
+ 
+ 	switch (ntohs(ethhdr->h_proto)) {
+ 	case ETH_P_8021Q:
+@@ -194,7 +200,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 		goto dropped;
+ 
+ 	/* skb->data might have been reallocated by batadv_bla_tx() */
+-	ethhdr = (struct ethhdr *)skb->data;
++	ethhdr = eth_hdr(skb);
+ 
+ 	/* Register the client MAC in the transtable */
+ 	if (!is_multicast_ether_addr(ethhdr->h_source)) {
+@@ -230,7 +236,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 		/* skb->data may have been modified by
+ 		 * batadv_gw_dhcp_recipient_get()
+ 		 */
+-		ethhdr = (struct ethhdr *)skb->data;
++		ethhdr = eth_hdr(skb);
+ 		/* if gw_mode is on, broadcast any non-DHCP message.
+ 		 * All the DHCP packets are going to be sent as unicast
+ 		 */
+-- 
+1.7.10.4
 
