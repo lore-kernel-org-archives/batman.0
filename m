@@ -1,14 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu, 16 Jan 2014 00:10:44 +0100
-Message-Id: <1389827444-3911-2-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1389827444-3911-1-git-send-email-antonio@meshcoding.com>
-References: <1389827444-3911-1-git-send-email-antonio@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix batman-adv header overhead
-	calculation
+Date: Thu, 16 Jan 2014 00:24:22 +0100
+Message-Id: <1389828263-798-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 2014-01-16
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,38 +15,47 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Marek Lindner <mareklindner@neomailbox.ch>
+Hello David,
 
-Batman-adv prepends a full ethernet header in addition to its own
-header. This has to be reflected in the MTU calculation, especially
-since the value is used to set dev->hard_header_len.
+here you have one more change by Simon Wunderlich intended for
+net-next/linux-3.14.
 
-Introduced by 411d6ed93a5d0601980d3e5ce75de07c98e3a7de
-("batman-adv: consider network coding overhead when calculating required mtu")
+This patch is properly formatting some kerneldoc that we already had but
+which has not been written down in a proper way.
 
-Reported-by: cmsv <cmsv@wirelesspt.net>
-Reported-by: Martin Hundebøll <martin@hundeboll.net>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- net/batman-adv/main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 1511f64..faba0f6 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -277,7 +277,7 @@ int batadv_max_header_len(void)
- 			   sizeof(struct batadv_coded_packet));
- #endif
- 
--	return header_len;
-+	return header_len + ETH_HLEN;
- }
- 
- /**
--- 
-1.8.5.3
+Please pull or let me know if something is wrong!
+
+Thanks a lot,
+	Antonio
+
+
+
+The following changes since commit b93819854d6e79999a01ae73f90d3a4b06816cf7:
+
+  stmmac: Add vlan rx for better GRO performance. (2014-01-15 15:13:08 -0800)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to 1b371d13071d6b6b9dc7a00fe1bc5a6babd68a5b:
+
+  batman-adv: use consistent kerneldoc style (2014-01-16 00:16:00 +0100)
+
+----------------------------------------------------------------
+Included change:
+- properly format already existing kerneldoc
+
+----------------------------------------------------------------
+Simon Wunderlich (1):
+      batman-adv: use consistent kerneldoc style
+
+ net/batman-adv/bat_iv_ogm.c            |  6 ++++--
+ net/batman-adv/bridge_loop_avoidance.c | 24 ++++++++++++++++++------
+ net/batman-adv/translation-table.c     |  8 +++++---
+ net/batman-adv/types.h                 |  6 ++++--
+ 4 files changed, 31 insertions(+), 13 deletions(-)
 
