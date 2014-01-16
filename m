@@ -1,15 +1,15 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <52D84A0B.5050700@meshcoding.com>
-Date: Thu, 16 Jan 2014 22:07:23 +0100
+Message-ID: <52D84B0A.10208@meshcoding.com>
+Date: Thu, 16 Jan 2014 22:11:38 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1389832761-7914-1-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1389832761-7914-1-git-send-email-linus.luessing@web.de>
+References: <6312194.LhI8hzXjyH@bentobox>
+In-Reply-To: <6312194.LhI8hzXjyH@bentobox>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="KG527AFsFLqtM2u8GBvnXeiogUu3nU7HX"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: use eth_hdr() instead of
- skb->data in interface_tx path
+ boundary="lqQg9PVcfqkHNQQ4Xrdqsw5frxB4fehu0"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 0/3] batctl: Use libnl(-tiny) for netlink
+ communication
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,39 +21,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: =?UTF-8?B?TGludXMgTMO8c3Npbmc=?= <linus.luessing@web.de>
+To: Sven Eckelmann <sven@narfation.org>
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---KG527AFsFLqtM2u8GBvnXeiogUu3nU7HX
-Content-Type: text/plain; charset=UTF-8
+--lqQg9PVcfqkHNQQ4Xrdqsw5frxB4fehu0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-Hi Linus!
+Hi Sven,
 
-On 16/01/14 01:39, Linus L=C3=BCssing wrote:
-> +	if ((struct ethhdr *)skb->data !=3D eth_hdr(skb)) {
-> +		pr_warn("Upper device did not set the ethernet header pointer correc=
-tly - adjusting\n");
-> +		skb_reset_mac_header(skb);
-> +	}
+On 06/01/14 20:35, Sven Eckelmann wrote:
+> Hi,
+>=20
+> the current release 2014.0.0 made some problems for me because Debian t=
+he new=20
+> function "rtnl_open" conflicted with libnl-3.0. libnl-3.0 was used in t=
+he=20
+> Debian package to follow the Debian policy chapter 4 about duplicated c=
+ode.
+>=20
+> Using libnl should not be a problem for any linux system because everyo=
+ne uses=20
+> it when wireless configuration is done. For example libnl-tiny is alrea=
+dy used=20
+> by the normal OpenWrt system in base system packages:
 
-I think that if we really want to properly set the mac_header we should
-just do it and forget about the if and about the warning.
+I think that it may still be the case that we want to compile batctl on
+an host without libnl.
 
-It's a really "stupid" operation and in the end we have many spots in
-the kernel where the pointers are just set without adding too much
-overhead like messages or other things...
+In the end batman-adv can run on Ethernet and we may have an embedded
+system with no wifi which has no libnl at all.
 
+I was wondering....what if we check if libnl is installed or not and in
+case it is missing we disable the address translation and vlan operations=
+?
+In this way we can add the dependency to libnl and avoid code
+duplication but at the same time we keep libnl-free users happy.
+
+I think batctl can be useful for many things, also if libnl is not
+installed.
+
+What do you think?
 
 Cheers,
-
 
 --=20
 Antonio Quartulli
 
 
---KG527AFsFLqtM2u8GBvnXeiogUu3nU7HX
+--lqQg9PVcfqkHNQQ4Xrdqsw5frxB4fehu0
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -61,19 +78,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBCAAGBQJS2EoOAAoJEEKTMo6mOh1VraYP/1Y7z2S40Pvi00ckIHIZDUnA
-WCIMuLOwJUhYUu1fH0F1mIxHMy8TWNYVzywCjXQuDS6/mki6AprpOAfmTgZzoqKz
-EmfWu1SjW/q1CsPlbSuuQEumavUw0Xusz6LwCHy2fiOnp42vZtH96EWro0q28JX2
-A/20dJcPHSUvSpqXXCUTS28gseHFEAxC2Z7hjypnYTYzolPtZWoS+nkizOG3imRq
-oH0To0sS9PIg38YgoLfS6X8KeBk1gJSnmJo9n4EAPR6aCOj30RbIKSsyLuwbT4/h
-N0BMnotgcy6kPbvx0Z4SeIv0MMckmSNfBswCmIqwBKprE8JjBO/ZlPMcEilym1R4
-aWE9FzdoZhpFa+1s3R5Dg9pV+UOiuYN+Ps66/HhtVssc1QWjGMUnrUDTyKF4LuoU
-c3K7/JVNLaVOGB1/oRtqpxjS7q5zJ5EjCJ97zN2Nb8EOdKuVrhbEaFeS2WG1sR7e
-PbvYh8jI13JrYyZn1sY5EeDrlZdijLsthfq7CrXQfpU3haZUhN3fkqpdLF7KvlwH
-inXNyxi+xpY70qv3EKpACd3R4uGRfiSAXToDp47rRE4ngbVqdrbP/0oPZqE/6nSH
-F+K02frqQ8FDLYsLVHS2YaA1Jzr+6D5mDn17WYVCnp+bBxRgpJArV3XpHg6Nj5x6
-r07rD7pyrd9QyfYz9t+J
-=JqGJ
+iQIcBAEBCAAGBQJS2EsNAAoJEEKTMo6mOh1VmbkP/1bRvbf3blISUgBhdrw+JsgB
+M7Sdj6omJco9aAefT4Sc6PZdZNdKmyeJ81VqDKbzdlEYO30dMug7KfpqLQYp/TMT
+MDV5+vMcyD27NeJdRiPdtxVVVUHt7ncnebe6Qu1TqDznYHgU3ENCdxqntg/cCreN
+jFz1LE3LPyaI7s0Kcw8B3MW2ADl7N5WQ04rIR/QzijCjRQd92EPyr4ZdvsE6KdmR
+LbeVTdl03V6aFUlbWVlFsg9GMfmnX7w+NLsX++Y9FIJqu/h1odR4z4s3zXUuS21o
+rNh1QHzLZ7xWN9PwPWjJX7DSMwG8weGepb49R+E9lfpDmnQG6KjVgRaMsqyjTUfT
+qwPiO79632Je/cuHsTpGPQN6d0nOnbBbr10gsy8Bx3Zf7IcRXkoNtotHBIgfC/5V
+eSbif1YmucQvMbnIgNgo9L0TBhE2riYT1iwxiXfrDF/6sEcPDMGy7WyzBgLSwS+8
+zHKlcUwBaCDDFXoV+vUQzjQjk5Ts59wP4FCpRct51erkeFDx3xRN+7MYr+YlSPpV
+iyyzrhhg9bZPGrq6B96WIyr06uciwTg7cLqeSeCOqph2DZSOF6FHJwfFH8zkVQRA
+l9IRHSDjuG8JTeve8bkEOf0NcualSYyrlLJWejNhTFkQACxTHCM/4Ab1bAMLZDjN
+XBlqqCIGb4bxGcByUTvV
+=5H6e
 -----END PGP SIGNATURE-----
 
---KG527AFsFLqtM2u8GBvnXeiogUu3nU7HX--
+--lqQg9PVcfqkHNQQ4Xrdqsw5frxB4fehu0--
