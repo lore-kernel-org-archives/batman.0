@@ -1,13 +1,10 @@
-Return-Path: <davem@davemloft.net>
-Date: Thu, 16 Jan 2014 17:23:14 -0800 (PST)
-Message-Id: <20140116.172314.790120088244919278.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1389828263-798-1-git-send-email-antonio@meshcoding.com>
-References: <1389828263-798-1-git-send-email-antonio@meshcoding.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2014-01-16
+Return-Path: <tjhowse@gmail.com>
+MIME-Version: 1.0
+From: tjhowse <tjhowse@gmail.com>
+Date: Fri, 17 Jan 2014 16:41:06 +1000
+Message-ID: <CAAxzKbR22CvtrPapZkDdXdRL=_dNC-HUzvCWZPi0HZ-h8ZFLQA@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] Barrier breaking kmod-batman-adv package
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,18 +16,19 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: antonio@meshcoding.com
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu, 16 Jan 2014 00:24:22 +0100
+Not sure if this is appropriate for this list, but I'm trying to get
+batman-adv running on the latest bleeding edge barrier breaker r39286
+but kmod-batman-adv is not available from the package repo.
 
-> here you have one more change by Simon Wunderlich intended for
-> net-next/linux-3.14.
-> 
-> This patch is properly formatting some kerneldoc that we already had but
-> which has not been written down in a proper way.
-> 
-> Please pull or let me know if something is wrong!
+When I was setting up a r38816-based router a few months ago and I
+didn't have to set up the build environment and whatnot, just opkg
+install kmod-batman-adv.
 
-Pulled, thanks.
+Anyone know why it's not available anymore? I'm working on creating an
+updated system image using batman-adv 2014 for the purpose of
+future-proofery.
+
+Thanks,
+Travis.
