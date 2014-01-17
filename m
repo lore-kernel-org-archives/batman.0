@@ -1,13 +1,13 @@
 Return-Path: <davem@davemloft.net>
-Date: Thu, 16 Jan 2014 17:17:11 -0800 (PST)
-Message-Id: <20140116.171711.1684801994017990455.davem@davemloft.net>
+Date: Thu, 16 Jan 2014 17:23:14 -0800 (PST)
+Message-Id: <20140116.172314.790120088244919278.davem@davemloft.net>
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1389827444-3911-1-git-send-email-antonio@meshcoding.com>
-References: <1389827444-3911-1-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1389828263-798-1-git-send-email-antonio@meshcoding.com>
+References: <1389828263-798-1-git-send-email-antonio@meshcoding.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request [net]: batman-adv 2014-01-16
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2014-01-16
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,15 +23,14 @@ To: antonio@meshcoding.com
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu, 16 Jan 2014 00:10:43 +0100
+Date: Thu, 16 Jan 2014 00:24:22 +0100
 
-> here you have a very small fix intended for net/linux-3.13.
+> here you have one more change by Simon Wunderlich intended for
+> net-next/linux-3.14.
 > 
-> This patch is fixing the batman-adv overhead computation
-> (by Marek Lindner).
-> The result of such operation is used to initialize the
-> hard_header_len member of the soft-interface netdev object.
+> This patch is properly formatting some kerneldoc that we already had but
+> which has not been written down in a proper way.
 > 
-> Please pull or let me know of any problem!
+> Please pull or let me know if something is wrong!
 
-Pulled, thanks Antonio.
+Pulled, thanks.
