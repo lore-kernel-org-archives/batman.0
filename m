@@ -1,13 +1,12 @@
-Return-Path: <tjhowse@gmail.com>
+Return-Path: <gang.chen.5i5j@gmail.com>
+Message-ID: <52DA65F4.5070501@gmail.com>
+Date: Sat, 18 Jan 2014 19:31:00 +0800
+From: Chen Gang <gang.chen.5i5j@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <52D91339.8000906@openwrt.org>
-References: <CAAxzKbR22CvtrPapZkDdXdRL=_dNC-HUzvCWZPi0HZ-h8ZFLQA@mail.gmail.com>
- <52D91339.8000906@openwrt.org>
-From: tjhowse <tjhowse@gmail.com>
-Date: Sat, 18 Jan 2014 22:11:01 +1000
-Message-ID: <CAAxzKbTbY3trEJ0ayMh58Kp2xwteefMYAskV2JrwPfUNWdnP3g@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] Barrier breaking kmod-batman-adv package
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] [PATCH linux-next] net: batman-adv: use "__packed
+ __aligned(2)" for each structure instead of "__packed(2)" region
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,21 +18,104 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: mareklindner@neomailbox.ch, sw@simonwunderlich.de, antonio@meshcoding.com
+Cc: James Hogan <james.hogan@imgtec.com>, netdev <netdev@vger.kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>, linux-metag@vger.kernel.org
 
-Awesome. Thank you all.
+Unfortunately, not all compilers assumes the structures within a pack
+region also need be packed (e.g. metag), so need add a pack explicitly
+to satisfy all compilers.
 
-On 17 January 2014 21:25, Jo-Philipp Wich <jow@openwrt.org> wrote:
-> Hi.
->
-> This is likely due to https://dev.openwrt.org/ticket/14776 which should
-> have been fixed with https://github.com/openwrt-routing/packages/commit/b5a0b783ee792f070f8bc286575a26217be21b64
->
-> The buildbot seems to emit the package again, e.g.
-> http://downloads.openwrt.org/snapshots/trunk/brcm47xx/packages/kmod-batman-adv_3.10.26%2b2014.0.0-1_brcm47xx.ipk
->
-> The ar71xx builds have not been updated yet but will likely appear
-> during the day.
->
-> ~ Jow
->
+The related error (under metag with allmodconfig):
+
+    MODPOST 2952 modules
+  ERROR: "__compiletime_assert_431" [net/batman-adv/batman-adv.ko] undefined!
+  ERROR: "__compiletime_assert_432" [net/batman-adv/batman-adv.ko] undefined!
+  ERROR: "__compiletime_assert_429" [net/batman-adv/batman-adv.ko] undefined!
+  ERROR: "__compiletime_assert_428" [net/batman-adv/batman-adv.ko] undefined!
+  ERROR: "__compiletime_assert_423" [net/batman-adv/batman-adv.ko] undefined!
+
+
+Signed-off-by: Chen Gang <gang.chen.5i5j@gmail.com>
+---
+ net/batman-adv/packet.h | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
+
+diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
+index 0a381d1..9206b48 100644
+--- a/net/batman-adv/packet.h
++++ b/net/batman-adv/packet.h
+@@ -154,7 +154,6 @@ enum batadv_tvlv_type {
+ 	BATADV_TVLV_ROAM	= 0x05,
+ };
+ 
+-#pragma pack(2)
+ /* the destination hardware field in the ARP frame is used to
+  * transport the claim type and the group id
+  */
+@@ -162,8 +161,7 @@ struct batadv_bla_claim_dst {
+ 	uint8_t magic[3];	/* FF:43:05 */
+ 	uint8_t type;		/* bla_claimframe */
+ 	__be16 group;		/* group id */
+-};
+-#pragma pack()
++} __packed __aligned(2);
+ 
+ /**
+  * struct batadv_ogm_packet - ogm (routing protocol) packet
+@@ -281,7 +279,6 @@ struct batadv_icmp_packet_rr {
+  * misalignment of the payload after the ethernet header. It may also lead to
+  * leakage of information when the padding it not initialized before sending.
+  */
+-#pragma pack(2)
+ 
+ /**
+  * struct batadv_unicast_packet - unicast packet for network payload
+@@ -300,7 +297,7 @@ struct batadv_unicast_packet {
+ 	/* "4 bytes boundary + 2 bytes" long to make the payload after the
+ 	 * following ethernet header again 4 bytes boundary aligned
+ 	 */
+-};
++}  __packed __aligned(2);
+ 
+ /**
+  * struct batadv_unicast_4addr_packet - extended unicast packet
+@@ -316,7 +313,7 @@ struct batadv_unicast_4addr_packet {
+ 	/* "4 bytes boundary + 2 bytes" long to make the payload after the
+ 	 * following ethernet header again 4 bytes boundary aligned
+ 	 */
+-};
++}  __packed __aligned(2);
+ 
+ /**
+  * struct batadv_frag_packet - fragmented packet
+@@ -347,7 +344,7 @@ struct batadv_frag_packet {
+ 	uint8_t orig[ETH_ALEN];
+ 	__be16  seqno;
+ 	__be16  total_size;
+-};
++}  __packed __aligned(2);
+ 
+ /**
+  * struct batadv_bcast_packet - broadcast packet for network payload
+@@ -368,7 +365,7 @@ struct batadv_bcast_packet {
+ 	/* "4 bytes boundary + 2 bytes" long to make the payload after the
+ 	 * following ethernet header again 4 bytes boundary aligned
+ 	 */
+-};
++}  __packed __aligned(2);
+ 
+ /**
+  * struct batadv_coded_packet - network coded packet
+@@ -404,9 +401,8 @@ struct batadv_coded_packet {
+ 	uint8_t  second_orig_dest[ETH_ALEN];
+ 	__be32   second_crc;
+ 	__be16   coded_len;
+-};
++}  __packed __aligned(2);
+ 
+-#pragma pack()
+ 
+ /**
+  * struct batadv_unicast_tvlv - generic unicast packet with tvlv payload
+-- 
+1.7.11.7
