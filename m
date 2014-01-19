@@ -1,16 +1,16 @@
-Return-Path: <james@albanarts.com>
-Sender: James Hogan <james@albanarts.com>
-From: James Hogan <james.hogan@imgtec.com>
-Date: Sun, 19 Jan 2014 01:10:39 +0000
-Message-ID: <4915262.qEFumRrH4p@radagast>
-In-Reply-To: <52DA7B9E.4040202@meshcoding.com>
-References: <52DA65F4.5070501@gmail.com> <52DA7B9E.4040202@meshcoding.com>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <52DB9B39.9090502@meshcoding.com>
+Date: Sun, 19 Jan 2014 10:30:33 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5248907.2zWhsaco1j";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
+References: <52DA65F4.5070501@gmail.com> <52DA7B9E.4040202@meshcoding.com>
+ <4915262.qEFumRrH4p@radagast>
+In-Reply-To: <4915262.qEFumRrH4p@radagast>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="dwlJkL9EKIhSkSimllsEG6nT9F2A7dCAa"
 Subject: Re: [B.A.T.M.A.N.] [PATCH linux-next] net: batman-adv: use
-	"__packed __aligned(2)" for each structure instead of
-	"__packed(2)" region
+ "__packed __aligned(2)" for each structure instead of "__packed(2)" region
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,91 +22,79 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <antonio@meshcoding.com>
+To: James Hogan <james.hogan@imgtec.com>
 Cc: mareklindner@neomailbox.ch, netdev <netdev@vger.kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-metag@vger.kernel.org, David Miller <davem@davemloft.net>, Chen Gang <gang.chen.5i5j@gmail.com>
 
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--dwlJkL9EKIhSkSimllsEG6nT9F2A7dCAa
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
---nextPart5248907.2zWhsaco1j
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+On 19/01/14 02:10, James Hogan wrote:
+>=20
+> It appears that the following gcc patch adds support for #pragma pack:
+> http://gcc.gnu.org/ml/gcc-patches/2006-10/msg01115.html
+>=20
+> I gave it a quick spin on metag gcc (which is unfortunately stuck on an=
+ old=20
+> version) and it seems to fix my simple test case so that #pragma pack(2=
+)=20
+> becomes equivalent to __packed __aligned(2) (for sizeof and __alignof__=
+).
+>=20
 
-On Saturday 18 January 2014 14:03:26 Antonio Quartulli wrote:
-> On 18/01/14 12:31, Chen Gang wrote:
-> > Unfortunately, not all compilers assumes the structures within a pack
-> > region also need be packed (e.g. metag), so need add a pack explicitly
-> > to satisfy all compilers.
-> > 
-> > The related error (under metag with allmodconfig):
-> >     MODPOST 2952 modules
-> >   
-> >   ERROR: "__compiletime_assert_431" [net/batman-adv/batman-adv.ko]
-> >   undefined!
-> >   ERROR: "__compiletime_assert_432" [net/batman-adv/batman-adv.ko]
-> >   undefined!
-> >   ERROR: "__compiletime_assert_429" [net/batman-adv/batman-adv.ko]
-> >   undefined!
-> >   ERROR: "__compiletime_assert_428" [net/batman-adv/batman-adv.ko]
-> >   undefined!
-> >   ERROR: "__compiletime_assert_423" [net/batman-adv/batman-adv.ko]
-> >   undefined!
-> > 
-> > Signed-off-by: Chen Gang <gang.chen.5i5j@gmail.com>
-> 
-> David, what do you think about this change?
-> 
-> 
-> Can "__packed __aligned(2)" generate a different structure padding than
-> "#pragma pack(2)" ?
-> 
-> I am not really sure about the difference between the two. But if we
-> have the possibility that the padding may change then this patch should
-> go into net, otherwise we will have a protocol compatibility problem
-> between 3.13 and 3.14.
+Then I personally think that it is better to fix metag gcc instead of
+changing the kernel.
 
-(Chen: sorry I didn't twig what you were referring to before about #pragma 
-pack not working)
+Actually there are many different spots where "#pragma pack" is used.
+batman-adv is just the only one having compile time checks for structure
+sizes.
 
-It appears that the following gcc patch adds support for #pragma pack:
-http://gcc.gnu.org/ml/gcc-patches/2006-10/msg01115.html
+>=20
+> However, the __packed and __aligned are linux specific macros to abstra=
+ct=20
+> compiler details, whereas #pragma pack appears to be a compiler-specifi=
+c WIN32=20
+> style equivalent to GCC's __attribute__((packed)) and=20
+> __attribute__((aligned(2))) (these are what __packed and __aligned use =
+in=20
+> compiler-gcc.h).
+>=20
+> Therefore I believe using the Linux abstractions is still more correct =
+here.
 
-I gave it a quick spin on metag gcc (which is unfortunately stuck on an old 
-version) and it seems to fix my simple test case so that #pragma pack(2) 
-becomes equivalent to __packed __aligned(2) (for sizeof and __alignof__).
+If you really think so, I'd suggest to grep in the kernel and catch all
+the other occurrences of "#pragma pack" and change them all (assuming
+that using __attribute__((aligned(2))) is the way to go).
+
+Cheers,
 
 
-However, the __packed and __aligned are linux specific macros to abstract 
-compiler details, whereas #pragma pack appears to be a compiler-specific WIN32 
-style equivalent to GCC's __attribute__((packed)) and 
-__attribute__((aligned(2))) (these are what __packed and __aligned use in 
-compiler-gcc.h).
+--=20
+Antonio Quartulli
 
-Therefore I believe using the Linux abstractions is still more correct here.
 
-Cheers
-James
-
---nextPart5248907.2zWhsaco1j
+--dwlJkL9EKIhSkSimllsEG6nT9F2A7dCAa
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAABAgAGBQJS2yYYAAoJEKHZs+irPybfwPgP/RpixtlwIvbQJQ29rTzabkgS
-deB6rN/4332leZtIX1REV3s5zFxRJ5iC+NstNMtV8gLZY8JiBPy+RPOU45m7O77X
-b/Ryey4NKy7A0X2fxM8GrR+xZAVSLEJ+N21Ra6QpLOIFdRwL6RL1pBZ7OBfW85Wr
-4tVt18bjZkeFMq2BRqC6xyik3RsXMyyKx4Rk1w8ruEJPJWFzqfSv1Q8G6EiV3lD5
-bJ7A6KHagjI717VmB1QkPQhXBZXQF4Xut4yuC/0yZ/5Ivgp31Ve8Siu+uapgIeGA
-q1QV/SVA6sIpwmpoAooDUhUMmR2e0N2RBGBWCD10B+oFZbJ/5WFwqOyGkqhwDLNL
-rFBgeXNE9jYZsr1wZz/rH9NudZImExhQF3wmcHo0y/hZ3f4Qb3s3AOZL4O6J5Nnx
-hMkW+F6ChZywLrr4QKOymLAQrVxykyB8Z3XS6io+1MmkiFrvMTxLS2sKDV03t5HW
-rgb+I3QCnS8s6TKGTula72cKX4nq3FQ1p3wIPib+08nc92eruTpXclwmHWGbQeyl
-7krH+toHGBMP0rK6ndeMkk4E42+LMuXalf182umFz1y/eweUP4mZtZkPNviAfrhR
-yQ/3cH46tv0DwDZfPtotCoLMZtZ58wjQOQR5CY5WFmTiRE197zApWvruOGGoKU27
-enJQ/rrackYEQQzkUP8e
-=wy98
+iQIcBAEBCAAGBQJS25s8AAoJEEKTMo6mOh1VXCAP/A8qzEMtBis4jfr4qSBamy8P
+tGGhZYRnn8WnH+YPndVTmfXtao7A+lTk1LF1cmMNbk/Tsp6e4sAoIolB2xF4/kHh
+SDAwA4BOZfy0SyVnaDEHoJgfN9pBsGaxaogqcYRwvRpGGXbcI/QgU3nGB01MSDjm
+lfcUo+kPP0JLtAbGfqUYnxhWjhFauq12Csaf7eZ2yT3g8RmxliCCSD+YA4gMWfAl
+htSnBfd5mEb8FlGc8hfmON/zk9oiLkZ3doaISwbrEj1Bp5E6dr/ExkVrQmanV9Ln
+WbidBglTq0heM8Ym7HVkXdhSMNP2FWZyU/IC+wmwXAmL9YdYgLIaySfu7Wk/B/us
+tBqTBbEezUomOunLL0j2AQktlDB42AqSI390o70GgT9qgMenrMPXK4EG1LnUsby5
+RitJPvGgu2yKqIp9CYZ1RJYBig1Aom+aJNQo3wdACeqEIFpp3rUYay+eKjBCFCj5
+SzbJM7wYpmrRC1VnwL7WCyJRFqSVqAhuRF74euM9mrO76C5jBrTniwB7FQaf0+Ja
+QpMRSBr3rvXDnX9Wt5YECDOFdmR+QGATVbZG0T4ot06gB69ebHwbQKo+09K4CDpo
+vo1WU/pmd2E7zNTDlrJ1zgTTiBWg9AQ3pWZHbcHf7NOuJn1yThgLMD+wSVBu4mdQ
+ESx1DyVwg93m8HP0a6GL
+=JR3W
 -----END PGP SIGNATURE-----
 
---nextPart5248907.2zWhsaco1j--
-
+--dwlJkL9EKIhSkSimllsEG6nT9F2A7dCAa--
