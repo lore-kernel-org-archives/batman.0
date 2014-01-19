@@ -1,15 +1,12 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <52DC5887.9070105@meshcoding.com>
-Date: Sun, 19 Jan 2014 23:58:15 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Mon, 20 Jan 2014 00:26:08 +0100
+Message-Id: <1390173968-8670-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-References: <1390166566-8315-1-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1390166566-8315-1-git-send-email-linus.luessing@web.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="OFDm3nc4VJf9WRwoL7cD8X1gTt85beATg"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v6 0/2] eth_hdr/skb_reset_mac_header
-	changes
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: fix potential kernel
+	paging error for unicast transmissions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,47 +18,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---OFDm3nc4VJf9WRwoL7cD8X1gTt85beATg
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+batadv_send_skb_prepare_unicast(_4addr) might reallocate the skb's
+data. If it does then our ethhdr pointer is not valid anymore in
+batadv_send_skb_unicast(), resulting in a kernel paging error.
 
-On 19/01/14 22:22, Linus L=C3=BCssing wrote:
-> In v6, a few more vlan_/eth_hdr()s were added to [PATCH 1/2] which are
-> also along the interface_tx path:
->=20
+Fixing this by refetching the ethhdr pointer after the potential
+reallocation.
 
-for the whole patchset:
+~~~
+NOTE TO LINUX STABLE MAINTAINERS:
 
-Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+For kernels < 3.9 you will need an additional skb_reset_mac_header(skb)
+call in the beginning of batadv_send_skb_unicast().
 
---=20
-Antonio Quartulli
+For kernels >= 3.9 this is not necessary thanks to:
+
+"net: reset mac header in dev_start_xmit()" (6d1ccff627)
+~~~
+
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+---
+Note: this patch shouldn't be used in an off-tree module on
+kernels < 3.9 without the compat hunk provided by:
+
+"batman-adv: use vlan_/eth_hdr() instead of skb->data in interface_tx path"
 
 
---OFDm3nc4VJf9WRwoL7cD8X1gTt85beATg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+ send.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+diff --git a/send.c b/send.c
+index 579f5f0..8b312e3 100644
+--- a/send.c
++++ b/send.c
+@@ -279,6 +279,10 @@ static int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ 		goto out;
+ 	}
+ 
++	/* skb->data might have been reallocated by
++	 * batadv_send_skb_prepare_unicast*
++	 */
++	ethhdr = eth_hdr(skb);
+ 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
+ 
+ 	/* inform the destination node that we are still missing a correct route
+-- 
+1.7.10.4
 
-iQIcBAEBCAAGBQJS3FiLAAoJEEKTMo6mOh1VCsoP/355KVhktXV+GgI6RulJZQfM
-OYW5Zqn2pxdAbswExi6z45ML/QDJMKBxy3CMjYojtn+/sr/QRxebIh8ymi8hoG9M
-tEf9qjHOr3gA3kFTc8FvTi83hNGxnfvdc0D3w5eXisUfemEOE9Vc7s4cQON73WIx
-oYGcawkDygah5sTguOB/ciE9Ns+kqGw7LEUzdGOK10BsOpIY36BFuzbcP6uKy+kQ
-zwITzJGQXbEahxR5wTwGZsBefgMDCCmWkw5vmdUO2vY9O6mDcwcEzovaY9L7NwAU
-CJX12NWK9El4rlticU9CMTc3JywxAvYk1fSs9V6DiFT+ZGL35Hr7XEO1jYUklOb9
-AqSlAzeU2o+w+6fMG9/xbuIODXT4KvFPDXYRFFIf4X6qgXtoaCkWiNvEN6yuIYQ5
-p+bllIg6cZOpy9RUGLDMhrsmMl6DgOBqptpwKGYy+VoD22wFG/vWpFsaU9I8NYws
-n7kOF2fh6OAPuXc/Un8Pr7nAxdAHuNN0nWJJdy9oq4M4n1gc16ezGNoi/xGsYMT6
-UqcLuqlzsDLOvx//ajDS4FoOBZqUY79DVVnt3tExVFFNaEPxNEW/YfVI1AceSkh/
-k3Rp7yMHaWJwtuIlmooM+46ag0/z+VQ6pxNuQ+RAg+9NaTcCeF9nPCDdmjFBRmMR
-BHwl+ZZTD/t/e2SyZ/vx
-=hHFV
------END PGP SIGNATURE-----
-
---OFDm3nc4VJf9WRwoL7cD8X1gTt85beATg--
