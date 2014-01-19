@@ -1,16 +1,11 @@
-Return-Path: <mschiffer@universe-factory.net>
-Message-ID: <52DC00A5.3030409@universe-factory.net>
-Date: Sun, 19 Jan 2014 17:43:17 +0100
-From: Matthias Schiffer <mschiffer@universe-factory.net>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Sun, 19 Jan 2014 22:22:44 +0100
+Message-Id: <1390166566-8315-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-References: <d48019225b19f19f5ac724d3b1a247cdf921f92b.1390143639.git.mschiffer@universe-factory.net>
- <52DBFA49.1090102@meshcoding.com>
-In-Reply-To: <52DBFA49.1090102@meshcoding.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="enJuJbkj5NdRwHrS4Eaf2geDlUHFRMJMc"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batadv-vis: don't leak socket fd in
-	get_if_mac()
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH v6 0/2] eth_hdr/skb_reset_mac_header changes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,56 +17,24 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <antonio@meshcoding.com>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---enJuJbkj5NdRwHrS4Eaf2geDlUHFRMJMc
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+In v6, a few more vlan_/eth_hdr()s were added to [PATCH 1/2] which are
+also along the interface_tx path:
 
-On 01/19/2014 05:16 PM, Antonio Quartulli wrote:
-> On 19/01/14 16:01, Matthias Schiffer wrote:
->> Leaking an fd every time get_if_mac() is called causes a batadv-vis se=
-rver
->> process to hit the open file limit in a matter of hours when it is as =
-low as
->> 1024 (which it is on OpenWRT).
->>
->> Reported-by: Jan-Philipp Litza <janphilipp@litza.de>
->> Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
->=20
-> Matthias,
->=20
-> what repository is this patch against?
->=20
->> ---
->>  vis/vis.c | 8 ++++++--
->=20
-> I am puzzled because your commit subject says "batadv-vis" but the patc=
-h
-> does not seem to be against batman-adv/batctl. Can you clarify please?
->=20
-> Cheers,
->=20
->=20
->=20
+-----
+bridge_loop_avoidance.c:
+@@ -872,7 +872,7 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
+gateway_client.c:
+@@ -680,7 +680,7 @@ batadv_gw_dhcp_recipient_get(struct sk_buff *skb, unsigned int *header_len,
+@@ -689,7 +689,7 @@ batadv_gw_dhcp_recipient_get(struct sk_buff *skb, unsigned int *header_len,
+@@ -728,7 +728,7 @@ batadv_gw_dhcp_recipient_get(struct sk_buff *skb, unsigned int *header_len,
+send.c:
+@@ -254,7 +254,7 @@ static int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+soft-interface.c
+@@ -180,7 +180,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
+----
 
-Sorry, I forgot to change the subject to [PATCH alfred]...
+Cheers, Linus
 
 
---enJuJbkj5NdRwHrS4Eaf2geDlUHFRMJMc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iEYEARECAAYFAlLcAKUACgkQq3qIxbiQM9iF9wCgyynxV2g+38WbJrt663/pqnpI
-LuwAoIqele1/q1bBPgVzcM4r2qE5lNds
-=Jwdi
------END PGP SIGNATURE-----
-
---enJuJbkj5NdRwHrS4Eaf2geDlUHFRMJMc--
