@@ -1,12 +1,15 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Mon, 20 Jan 2014 11:06:44 +0100
-Message-Id: <1390212404-9726-1-git-send-email-linus.luessing@web.de>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 20 Jan 2014 11:52:00 +0100
+References: <d48019225b19f19f5ac724d3b1a247cdf921f92b.1390143639.git.mschiffer@universe-factory.net>
+In-Reply-To: <d48019225b19f19f5ac724d3b1a247cdf921f92b.1390143639.git.mschiffer@universe-factory.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv4 maint] batman-adv: fix potential kernel
-	paging error for unicast transmissions
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201401201152.00646.sw@simonwunderlich.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batadv-vis: don't leak socket fd in
+	get_if_mac()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,41 +21,18 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-batadv_send_skb_prepare_unicast(_4addr) might reallocate the skb's
-data. If it does then our ethhdr pointer is not valid anymore in
-batadv_send_skb_unicast(), resulting in a kernel paging error.
 
-Fixing this by refetching the ethhdr pointer after the potential
-reallocation.
+> Leaking an fd every time get_if_mac() is called causes a batadv-vis server
+> process to hit the open file limit in a matter of hours when it is as low
+> as 1024 (which it is on OpenWRT).
+> 
+> Reported-by: Jan-Philipp Litza <janphilipp@litza.de>
+> Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
 
-Introduced by b46c60b9e1ee7a1909c542413a85875a750955d6
-("batman-adv: improve unicast packet (re)routing")
+Applied in e99382e. If you use something like "alfred" in the header next time 
+it will make it more unlikely for me to miss your patch. :)
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
-Changes v4:
-* "s/Introduced-by:/Introduced by/" to make checkpatch happy
-
- send.c |    4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/send.c b/send.c
-index b0a3d76..50df184 100644
---- a/send.c
-+++ b/send.c
-@@ -281,6 +281,10 @@ static int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
- 		goto out;
- 	}
- 
-+	/* skb->data might have been reallocated by
-+	 * batadv_send_skb_prepare_unicast*
-+	 */
-+	ethhdr = eth_hdr(skb);
- 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
- 
- 	/* inform the destination node that we are still missing a correct route
--- 
-1.7.10.4
-
+Thanks!
+    Simon
