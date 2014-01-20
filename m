@@ -1,11 +1,11 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Mon, 20 Jan 2014 11:00:19 +0100
-Message-Id: <1390212019-9681-1-git-send-email-linus.luessing@web.de>
+Date: Mon, 20 Jan 2014 11:06:44 +0100
+Message-Id: <1390212404-9726-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv3 maint] batman-adv: fix potential kernel
+Subject: [B.A.T.M.A.N.] [PATCHv4 maint] batman-adv: fix potential kernel
 	paging error for unicast transmissions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -27,16 +27,13 @@ batadv_send_skb_unicast(), resulting in a kernel paging error.
 Fixing this by refetching the ethhdr pointer after the potential
 reallocation.
 
-Introduced-by: b46c60b9e1ee7a1909c542413a85875a750955d6
+Introduced by b46c60b9e1ee7a1909c542413a85875a750955d6
 ("batman-adv: improve unicast packet (re)routing")
 
 Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 ---
-Changes v3:
-* now rebased on maint
-* added "Introduced-by"
-* removed "NOTE TO..." paragraph
-  (still can't be applied as is to kernels < 3.9)
+Changes v4:
+* "s/Introduced-by:/Introduced by/" to make checkpatch happy
 
  send.c |    4 ++++
  1 file changed, 4 insertions(+)
