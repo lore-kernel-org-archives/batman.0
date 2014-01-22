@@ -1,20 +1,16 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <52DF6A30.2040100@hundeboll.net>
-Date: Wed, 22 Jan 2014 07:50:24 +0100
-From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <52DF6D2B.2070304@meshcoding.com>
+Date: Wed, 22 Jan 2014 08:03:07 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <4577758.QFzZxb72dK@diderot> <52D5B47D.8090406@wirelesspt.net>
- <52D631FB.9070106@hundeboll.net> <52D66D45.4060301@wirelesspt.net>
- <52D66DE4.3050300@meshcoding.com> <52DED209.5000207@wirelesspt.net>
- <52DF0A14.3030705@meshcoding.com> <52DF0B77.3070106@meshcoding.com>
- <52DF0D4E.5070207@wirelesspt.net> <52DF0ECE.7000707@meshcoding.com>
- <52DF10D1.4080207@wirelesspt.net> <52DF1156.6000606@meshcoding.com>
- <52DF166A.7080309@wirelesspt.net>
-In-Reply-To: <52DF166A.7080309@wirelesspt.net>
-Content-Type: multipart/signed; micalg=pgp-sha512;
+References: <1390299725-1873-1-git-send-email-antonio@meshcoding.com>	<86mwipch0u.fsf@coulee.tdb.com>
+ <86lhy8pn5v.fsf@coulee.tdb.com>
+In-Reply-To: <86lhy8pn5v.fsf@coulee.tdb.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="5iMkiVSOwXAPPS9LLhMTfcwVXhc72eBTA"
-Subject: Re: [B.A.T.M.A.N.] batman-adv 2014.0.0 released
+ boundary="q0jqShQwbOouqED6n3eOqBnC9F2AnQN74"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix soft-interface MTU
+ computation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,83 +22,77 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: cmsv@wirelesspt.net, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Antonio Quartulli <antonio@meshcoding.com>
+To: Russell Senior <russell@personaltelco.net>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---5iMkiVSOwXAPPS9LLhMTfcwVXhc72eBTA
-Content-Type: text/plain; charset=UTF-8
+--q0jqShQwbOouqED6n3eOqBnC9F2AnQN74
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-Hi cmsv,
+On 22/01/14 07:04, Russell Senior wrote:
+>>>>>> "Russell" =3D=3D Russell Senior <russell@personaltelco.net> writes=
+:
+>=20
+>>>>>> "Antonio" =3D=3D Antonio Quartulli <antonio@meshcoding.com> writes=
+:
+> Antonio> The current MTU computation always returns a value smaller
+> Antonio> than 1500bytes even if the real interfaces have an MTU large
+> Antonio> enough to compensate the batman-adv overhead.
+>=20
+> Antonio> Fix the computation by properly returning the highest
+> Antonio> admitted value.
+>=20
+> Antonio> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com> ---
+>=20
+> Russell> This seems to fix the bat0-MTU-unnecessarily-small problem I
+> Russell> observed last night and reported on the IRC channel.  I
+> Russell> haven't actually passed any traffic over it yet, but the
+> Russell> interface is up with the expected MTU value with the patch.
+>=20
+> Antonio> This patch is missing a Reported-by clause because I did not
+> Antonio> have "russell"'s email address at hand.
+>=20
+> Russell> Reported-by: Russell Senior <russell@personaltelco.net>
+>=20
+> Followup, as requested, I tried setting a smaller MTU (1400) on the
+> adhoc0 interface.  When fragmentation was enabled, this resulted in no
+> change to MTU (still 1500) for bat0.  When I disabled fragmentation,
+> the bat0 MTU dropped, as expected, to 1368.  Interestingly, the MTU on
+> the bridge that bat0 was a member of remained 1500 despite the lower
+> bat0 MTU.  Should that be?
+>=20
 
-On 2014-01-22 01:52, cmsv wrote:
->  uci show batman-adv | grep network_coding
-> batman-adv.bat0.network_coding=3D0
->=20
-> after reboot:
->=20
-> # dmesg | grep MTU
-> [   28.030000] batman_adv: bat0: The MTU of interface adhoc0 is too
-> small (1546) to handle the transport of batman-adv packets. Packets
-> going over this interface will be fragmented on layer2 which could
-> impact the performance. Setting the MTU to 1560 would solve the problem=
-=2E
->=20
->  uci show network | grep mtu
-> network.mesh0.mtu=3D1546
->=20
-> changing the mtu to 1560 when NC is disabled:
->=20
-> # uci show batman-adv | grep network_coding
-> batman-adv.bat0.network_coding=3D0
->=20
-> # dmesg | grep MTU
-> no output/result
+I don't really know how the bridge code behaves. As far as I remember it
+should adapt to the smallest MTU.
 
-It might not have been clear, but when we tell to disable NC, we are
-referring to the compile time options. batman-adv is not considering if
-NC is enabled/disabled at runtime when checking for MTU, but only
-checking if NC is compiled in or not.
+But thanks for testing! This shows that the patch is working fine ;)
 
-It might make sense to check for runtime options when complaining about
-MTU in batman-adv, but I don't think so, as it complicates the checks
-whenever MTU is changed or NC is toggled.
-
-// Martin
 
 --=20
-Kind Regards
-Martin Hundeb=C3=B8ll
-Frederiks All=C3=A9 99, 1.th
-8000 Aarhus C
-Denmark
-
-+45 61 65 54 61
-martin@hundeboll.net
+Antonio Quartulli
 
 
---5iMkiVSOwXAPPS9LLhMTfcwVXhc72eBTA
+--q0jqShQwbOouqED6n3eOqBnC9F2AnQN74
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBCgAGBQJS32o0AAoJEI7EM4tTnYEZWuIQAI5CdFbvN7MeVj9eWfY8Aoef
-TSkEelFAOr/HAVV3/Kc0S6DwL7XUe1gLsADA3jeDu9S4DCOBbsUwTuIqNi242YZn
-K/XatnYDmBTeqIwVoLeV2N3cb5rqNN3rOctS2Y6n80pNnT9kp+L9SKPW+9DvKXTE
-nCJZeL8O1HOXpSBRNCrnk8c3E5Q4WQYTpXyTv9xKRassAZRlSOk2JJv1U9/U3nJ3
-ERrQjv2olgfujR5+ZJMpSlJ7QjKLzRsxPOf9TtIiTRvYvkXuFg9JFLzuzS2l7r1i
-Uz2conf2QWxx8qwBqyyY96eSVEvBqgCkP2DOxYwgA8PCe9tEyktrFwfgpRDkEuYu
-/j1s19fwN7WQiUkDRdCImm/cesFpvGVNcUQZ4A429tfahcUvCnMXPUZe9a8RsxXr
-Yw2XkmrrDTH2WTU39Y2d7gEBG2v0vdx0KTpiTbz1euKajgSo91lL6tFUr/71dGIM
-zU1E+9se1UyLx4pvS0qxLaj4AgSQM07Im2ucx5LyRikZRxAxMhB8fY6RDROMLw+R
-n0rHGmll+RIArnK02OgiQ5Hp4m/1sVCpsNBv1kDfkoOdApzdTDHiOiSFv7WZkBhG
-9LejBgAK22YyApC6M1jrYEV8B1kPgHlMzFQoCqXTgR0jXSjw8db4do39jdfAV/N7
-xO1L86NZOhihcMFqzD/h
-=TrZP
+iQIcBAEBCAAGBQJS320wAAoJEEKTMo6mOh1V7+QP/jOOtbgu6Rz5OJl/l5WT9ZoW
+a9ZEOpzvQa3sY+zX6rdS1Fg5vtlmjtdGBR9XRkzrJLOrumuOMcCzcNZiMmeFf6v8
+c9HqdXLDY54GZKQFbQAhq4n9/Diuug2Aw83WcrkBqTQuay9YKQFHaCHL/vhoGSej
+BlGTqJHZPCfcHGVvWTXnXbp/scOY7GCgmXnjRNs7KFPls6MqRiPS+ZW4HTJeCBmX
+BqfwbEtKM2S2aGrapjfrjfYEN7nUS99XpV3PJUSkOZrHTx3cFnoX8SYGovqYJ3d0
+xg57EZkX8ByzuWZLMNi6LEtEQ8Tr6epHI6X+0/tYVsK0krEwNbVTJKl5TmWc8WsT
+VKiVrU2n+BGOwO6ZZLoFk0/ap/FUjhA1Hzp/LX41HuHbZ+zTUbFymrTZgS9DOvdR
+DsXj4mBuW8ySAyThol+zkZ/y3IzKoF/9vmoimZ5Wn5UEhR8BEcpdqdahslBYWB9D
+zEJ0WNLQh+vgDpmRGEKI4F/HgqOata8PyQFKock6NThriNBTeG9JE9THFTpZ5/fE
+VEC8DLoI9YOlbLSbMNp7oB/4zmSwfaBbstqRzx0Oqf0De9bgBsxWrqcD+Gmm4Bki
+Jv8UIguMxyh8tNCNep5MWIQLwu6ZrNbSa1nJduEKHWIs2c28uTTLawFFxAlvqVze
+x/cosXSu+bv2AIJ50z9J
+=HNTc
 -----END PGP SIGNATURE-----
 
---5iMkiVSOwXAPPS9LLhMTfcwVXhc72eBTA--
+--q0jqShQwbOouqED6n3eOqBnC9F2AnQN74--
