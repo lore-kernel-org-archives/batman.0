@@ -1,7 +1,7 @@
-Return-Path: <cmsv@wirelesspt.net>
-Message-ID: <52E5322D.60202@wirelesspt.net>
-Date: Sun, 26 Jan 2014 11:05:01 -0500
-From: cmsv <cmsv@wirelesspt.net>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <52E532D0.2000907@meshcoding.com>
+Date: Sun, 26 Jan 2014 17:07:44 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
 References: <1390299725-1873-1-git-send-email-antonio@meshcoding.com>	<86mwipch0u.fsf@coulee.tdb.com>
  <86lhy8pn5v.fsf@coulee.tdb.com>	<52DF7556.9090200@makrotopia.org>
@@ -9,13 +9,13 @@ References: <1390299725-1873-1-git-send-email-antonio@meshcoding.com>	<86mwipch0
  <52E02EDC.3080805@wirelesspt.net> <86iotbo9hw.fsf@coulee.tdb.com>
  <52E05E0F.7010203@wirelesspt.net> <52E08DFE.9030604@makrotopia.org>
  <52E5063E.3080408@makrotopia.org> <52E51A04.8020800@meshcoding.com>
-In-Reply-To: <52E51A04.8020800@meshcoding.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
+ <52E5322D.60202@wirelesspt.net>
+In-Reply-To: <52E5322D.60202@wirelesspt.net>
+Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="WuTvbBbxIUrbeH6pV6gr9FGR0ObLQsXXF"
+ boundary="bLnjTQrJTwwskIc94LhdGmB1jVlg0xTjT"
 Subject: Re: [B.A.T.M.A.N.] batman-adv: memory leak?
-Reply-To: cmsv@wirelesspt.net,
- The list for a Better Approach To Mobile Ad-hoc Networking
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -29,80 +29,52 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---WuTvbBbxIUrbeH6pV6gr9FGR0ObLQsXXF
+--bLnjTQrJTwwskIc94LhdGmB1jVlg0xTjT
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-Inline:
-
-On 01/26/2014 09:21 AM, Antonio Quartulli wrote:
-> On 26/01/14 13:57, Daniel wrote:
->> I now built OpenWrt trunk/BB r39365 with batman-adv 2013.4.0 instead o=
-f
->> 2014.0.0, tried with all possible settings, no memory leak what-so-ove=
-r, happy
->> uptimes of more than a day by now :)
->> all other system components and settings are exactly identical to my p=
-revious
->> setup with batman-adv 2014.0.0.
->>
->> On 01/23/2014 04:35 AM, Daniel wrote:
->>> On 01/23/2014 01:10 AM, cmsv wrote:
->>>> what version are you using ?
->>
->>> out-of-memory every 20 minutes or so on OpenWrt trunk/BB r39365 on tl=
--wr841nd-v8
->>> with batman-adv 2014.0.0 from openwrt's routing feed with "batman-adv=
-: fix
->>> batman-adv header overhead calculation" and "batman-adv: fix soft-int=
-erface MTU
->>> computation" on top.
->>> A sample node is (occasionally) reachable via DN42 at 104.61.99.104 (=
-feel free
->>> to ask for ssh or any kind of logs, serial access, remote gdb or what=
-ever)
->>
+On 26/01/14 17:05, cmsv wrote:
 >=20
-> Thanks for testing guys!
+> Will this patch also be relevant to attitude adjustment ? The reason wh=
+y
+> i was if because with AA right now i do not experience the reboots.
+> I should also add that i am using mac80211 r39150 and hostapd r39155 on=
+
+> top of the latest AA.
 >=20
-> I found something wrong in the code and I am going to send a patch soon=
-=2E
-> I'd really appreciate if somebody could test it!
+> Can you explain in what exactly your code findings have an impact on ?
 
-Will this patch also be relevant to attitude adjustment ? The reason why
-i was if because with AA right now i do not experience the reboots.
-I should also add that i am using mac80211 r39150 and hostapd r39155 on
-top of the latest AA.
+This is a patch to fix the memleak we were discussing about.
+This bug appeared with and it is meant to be applied on
+batman-adv-2014.0.0 (regardless of the openwrt revision).
 
-Can you explain in what exactly your code findings have an impact on ?
+Cheers,
 
->=20
-> Thanks!
->=20
+--=20
+Antonio Quartulli
 
 
---WuTvbBbxIUrbeH6pV6gr9FGR0ObLQsXXF
+--bLnjTQrJTwwskIc94LhdGmB1jVlg0xTjT
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJS5TI4AAoJENmyd4cVxLOCeGAP/1DjFhq5KnnKmLcwgJpU+zAO
-sJ6LCG8rAhewwE2W0crA5+wRY4nkk6vy7ZNEB31FECUgIugOSJEoKcFj1I1NGuAd
-rtRtXq30ultaMHFkGRe5sJTSQ+zBxPdrRLdFaQ/1QsYBSJzBfnCN+KsblXJv6uVZ
-d8PFfNf1pbUdKtqpjgeEpc4+clOatihGjOELeUKbiCIkeM1Tzm6uQIicckdrNb4Q
-jrMrKfxS5OtYIEux+f9IoQbY5u+TxPM+xsOtoIVxe/GNmFtPGH+IiX53fZLrHYZu
-3iLFdFr8OqDINDPwQvABSpyP8x+DDSsprWAM7GnwPtAVa7NoppGSJPYrBHtfMEsG
-06ZIcMrTt9H0Ui2jawTGj0imwRnCCkvibxneblx8zYWrow3/+tt0jrEN9JtklRtP
-MZ4VYiNV5OCwwy2QUnztLLPVeRTzf73hXSI5ZsAvjbvJETJPUc4QmAl0U1fuQOLo
-0RnouTKxczGDO6ZhwZdgX0FO7m+Ib9AxM/bnqOxzVQegGebzfPNikOzY9t/mXhoQ
-VPmX7tXtjVdAPRC/ro2VPXTmFoYQACIm2WeYdunDRn2iiZ1QKdjuDE09IooytLqX
-X1LCPI8LbF1GwIh0q6iBpmUK1inOgL8cSNV1inVfBeZR/nV2q73YeMSzaCvhnp0R
-SP+j+S+jpk9uuv5upb+p
-=mJ5V
+iQIcBAEBCAAGBQJS5TLUAAoJEEKTMo6mOh1VinQP/iKeINYmmXYL6g4w+rM12FJS
+RTqR/uokcV6wBtvNjduelufFSHmVD+iGJmjX6yOOY7dBlsViycR1CcTsyU7rhvbp
+Y5cfT8PUhqtC3lGeXZvpNSzz7NMO0ucwkEt6Oqx4gk+pbpZ2SiLn4cWq6Vqrzopy
+G1iPxuZ17RthnusBZt91JWAPU+0bS4LYHJggAK2lO8Kv8XeEHz88aa5SiL+ClfiM
+8/XZVL+ns5iCHm9jYCC/Cp7tKP2cXqReGk7JKaC6OUpm80B52mZEHjLF+JjOFtIB
+aG2iAxJNIMONtE5VEisHuuCFbEsZO9bYYR3rcxEy2R1536mGcB40EZy9iHV9Cr7d
+aNEu5sTzqST9LM+IyNXMs8TUOi7YQrN3NeHpidcyTFTvdLo5E90B9B9gPdPvRiR1
+FMRoRf182QcFRtQRIcxhpDqNZjIP2joFdSMBH7LyBkzc6vQoQWlNeQu2cn1bJ2kR
+s0/F8EoFxeuqNoQyna2X6cEaAXTMqcd69iCLoy5MVpkKcx/V4M6rK/LUpb0X70PR
+0ag0r46cNxAMzXnZsiXkOkm+xGeZ5NzjAuSSt8iZI+choHT38d7zb6r6jn+pqQIC
+55OaRDCCgJsk6lPRU69ym7DkhOpCh053+/+75v0ljS7R9h5iBccPpYGb0l3jRJja
+Mdf5e5PN10anp4H1Q8zh
+=tbFV
 -----END PGP SIGNATURE-----
 
---WuTvbBbxIUrbeH6pV6gr9FGR0ObLQsXXF--
+--bLnjTQrJTwwskIc94LhdGmB1jVlg0xTjT--
