@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 27 Jan 2014 15:53:12 +0800
-Message-ID: <1775804.Hc2uRnZy1e@diderot>
-In-Reply-To: <1390598185-7221-1-git-send-email-sw@simonwunderlich.de>
-References: <1390598185-7221-1-git-send-email-sw@simonwunderlich.de>
+Date: Mon, 27 Jan 2014 15:57:55 +0800
+Message-ID: <2314387.HvPbVFGchE@diderot>
+In-Reply-To: <52DE4C6C.10904@meshcoding.com>
+References: <1390299725-1873-1-git-send-email-antonio@meshcoding.com>
+ <52DE4C6C.10904@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3231008.bjnCnprbqc";
+Content-Type: multipart/signed; boundary="nextPart44868894.680PfLeRJK";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix a few kerneldoc
-	inconsistencies
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix soft-interface MTU
+	computation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,25 +22,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart3231008.bjnCnprbqc
+--nextPart44868894.680PfLeRJK
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday 24 January 2014 22:16:25 Simon Wunderlich wrote:
-> Reported-by: Antonio Quartulli <antonio@meshcoding.com>
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-> ---
->  types.h |   10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
+On Tuesday 21 January 2014 11:31:08 Antonio Quartulli wrote:
+> On 21/01/14 11:22, Antonio Quartulli wrote:
+> > The current MTU computation always returns a value
+> > smaller than 1500bytes even if the real interfaces
+> > have an MTU large enough to compensate the batman-adv
+> > overhead.
+> >
+> > 
+> >
+> > Fix the computation by properly returning the highest
+> > admitted value.
+> >
+> > 
+> 
+> Introduced by f7f2fe494388fca828094a4ebdab918a7b2d64f8
+> ("batman-adv: limit local translation table max size")
+> 
+> > Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 
-Applied in revision 5b70699.
+Applied in revision 2b108cc.
 
 Thanks,
 Marek
 
---nextPart3231008.bjnCnprbqc
+--nextPart44868894.680PfLeRJK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -47,14 +61,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJS5hBoAAoJEFNVTo/uthzAy0oH/3lL8n76XtLvbyVhdsNpyLJ+
-1bNFEyrys6RjaHTZjsTrkEqUyyebR1PXCPwzdkn8pLK/35l5DZIRQa3B1TrYPY/v
-AgV3+x8ICkKMlfSa6LCnyRSAeiEiZrpKy85+kHdmPanzzzFP+8mT2uGZwrlV/o7b
-131qrcNHo6Hlon4RfJuqKKVItO1/iPuX3RVPTTSuOkdboeMSWCf0mG6feeX6ObCK
-P3FuUaBG5kZ9Ra2yl7kzc9u/zmAjnpl5vSHl/SKUlg1q5dVWuXXs3PyI2CX2J8hk
-N2DgPBnxHykIOouiPcrqe58vwqU9yuuAPaZ386V4GpFiMnc1pey9DOAQCHYbYws=
-=hBht
+iQEcBAABAgAGBQJS5hGDAAoJEFNVTo/uthzAb5wH/ijByQORxdKKtGA7bchIahZN
+KoN8y6D+tDvLgGhahslnK1Uu/doD838IxMiJHfd2iZUTgRvigZzJ+QOvRnRgIknm
+Uzxf/NA0xZUeT+aM607SjHwni31wET0UGTjjLkV1GfHniCKGLm1/PGd5+V7MOMpH
+cSFjP/6wvYbGBqxTehe3T6N6vBxgaK3gXbafbA0dZNntDmvdQi2AUrYcg7pPlLEK
+nuXe0bNPMyhVoj1KFUghZTzZNIzk8JNaGP/RkiJaC6lV8o8BrxAhuXySY+FQQro0
+ukR49cBUpaRvkgQfMQ5E3DqcYyyxnDRteVi6WmnexxS1IwcPlZbZopTcjRgqHVg=
+=SmFa
 -----END PGP SIGNATURE-----
 
---nextPart3231008.bjnCnprbqc--
+--nextPart44868894.680PfLeRJK--
 
