@@ -1,16 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <52E6174B.1070101@meshcoding.com>
-Date: Mon, 27 Jan 2014 09:22:35 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
-References: <1390553883-1940-1-git-send-email-antonio@meshcoding.com>
- <5373996.23YD93TvXH@diderot>
-In-Reply-To: <5373996.23YD93TvXH@diderot>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="acC05h1k5PUfnIpRjfEnbIuggiW2o3r9x"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: avoid potential race
- condition when adding a new neighbour
+Date: Mon, 27 Jan 2014 09:27:14 +0100
+Message-Id: <1390811234-655-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: avoid potential race
+	condition when adding a new neighbour
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,88 +16,138 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---acC05h1k5PUfnIpRjfEnbIuggiW2o3r9x
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-On 27/01/14 09:10, Marek Lindner wrote:
-> On Friday 24 January 2014 09:58:03 Antonio Quartulli wrote:
->> @@ -281,14 +281,23 @@ batadv_iv_ogm_neigh_new(struct batadv_hard_iface=
+When adding a new neighbour it is important to atomically
+perform the following:
+- check if the neighbour already exists
+- append the neighbour to the proper list
 
->> *hard_iface, neigh_node->orig_node =3D orig_neigh;
->>  	neigh_node->if_incoming =3D hard_iface;
->>
->> -	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
->> -		   "Creating new neighbor %pM for orig_node %pM on interface %s\n",=
+If the two operations are not performed in an atomic context
+it is possible that two concurrent insertions add the same
+neighbour twice.
 
->> -		   neigh_addr, orig_node->orig, hard_iface->net_dev->name);
->> -
->>  	spin_lock_bh(&orig_node->neigh_list_lock);
->> -	hlist_add_head_rcu(&neigh_node->list, &orig_node->neigh_list);
->> +	tmp_neigh_node =3D batadv_neigh_node_get(orig_node, hard_iface,
->> +					       neigh_addr);
->> +	if (!tmp_neigh_node) {
->> +		hlist_add_head_rcu(&neigh_node->list, &orig_node->neigh_list);
->> +	} else {
->> +		kfree(neigh_node);
->> +		neigh_node =3D tmp_neigh_node;
->> +	}
->=20
-> What about hard_iface->refcount ?
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
 
-True.
-hard_iface must be released if we found an already existent neighbour.
-I'll put a batadv_hardif_free_ref(hard_iface); right after the
-kfree(neigh_node);.
+Changes from v2:
+- release hard_iface if we already have a matching neighbour (thanks Marek!)
 
->=20
->=20
->>  /**
->> + * batadv_neigh_node_get - retrieve a neighbour from the list
->> + * @orig_node: originator which the neighbour belongs to
->> + * @hard_iface: the interface where this neighbour is connected to
->> + * @addr: the address of the neighbour
->> + *
->> + * Looks for and possibly return a neighbour belonging to this origin=
-ator
->> list + * which is connected through the provided hard interface.
->=20
-> 'Looks and return' does not work. Either 'look and return' or 'looks an=
-d=20
-> returns'.
-
-Yap, thanks!
+Cheers,
 
 
-I'll send v2 soon!
+ bat_iv_ogm.c | 22 ++++++++++++++++------
+ originator.c | 36 ++++++++++++++++++++++++++++++++++++
+ originator.h |  4 ++++
+ 3 files changed, 56 insertions(+), 6 deletions(-)
 
---=20
-Antonio Quartulli
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 512159b..c450fb8 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -266,7 +266,7 @@ batadv_iv_ogm_neigh_new(struct batadv_hard_iface *hard_iface,
+ 			struct batadv_orig_node *orig_neigh)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+-	struct batadv_neigh_node *neigh_node;
++	struct batadv_neigh_node *neigh_node = NULL, *tmp_neigh_node;
+ 
+ 	neigh_node = batadv_neigh_node_new(hard_iface, neigh_addr, orig_node);
+ 	if (!neigh_node)
+@@ -281,14 +281,24 @@ batadv_iv_ogm_neigh_new(struct batadv_hard_iface *hard_iface,
+ 	neigh_node->orig_node = orig_neigh;
+ 	neigh_node->if_incoming = hard_iface;
+ 
+-	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+-		   "Creating new neighbor %pM for orig_node %pM on interface %s\n",
+-		   neigh_addr, orig_node->orig, hard_iface->net_dev->name);
+-
+ 	spin_lock_bh(&orig_node->neigh_list_lock);
+-	hlist_add_head_rcu(&neigh_node->list, &orig_node->neigh_list);
++	tmp_neigh_node = batadv_neigh_node_get(orig_node, hard_iface,
++					       neigh_addr);
++	if (!tmp_neigh_node) {
++		hlist_add_head_rcu(&neigh_node->list, &orig_node->neigh_list);
++	} else {
++		kfree(neigh_node);
++		batadv_hardif_free_ref(hard_iface);
++		neigh_node = tmp_neigh_node;
++	}
+ 	spin_unlock_bh(&orig_node->neigh_list_lock);
+ 
++	if (!tmp_neigh_node)
++		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++			   "Creating new neighbor %pM for orig_node %pM on interface %s\n",
++			   neigh_addr, orig_node->orig,
++			   hard_iface->net_dev->name);
++
+ out:
+ 	return neigh_node;
+ }
+diff --git a/originator.c b/originator.c
+index 6df12a2..bb07c92 100644
+--- a/originator.c
++++ b/originator.c
+@@ -458,6 +458,42 @@ out:
+ }
+ 
+ /**
++ * batadv_neigh_node_get - retrieve a neighbour from the list
++ * @orig_node: originator which the neighbour belongs to
++ * @hard_iface: the interface where this neighbour is connected to
++ * @addr: the address of the neighbour
++ *
++ * Looks for and possibly return a neighbour belonging to this originator list
++ * which is connected through the provided hard interface.
++ * Returns NULL if the neighbour is not found.
++ */
++struct batadv_neigh_node *
++batadv_neigh_node_get(const struct batadv_orig_node *orig_node,
++		      const struct batadv_hard_iface *hard_iface,
++		      const uint8_t *addr)
++{
++	struct batadv_neigh_node *tmp_neigh_node, *res = NULL;
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(tmp_neigh_node, &orig_node->neigh_list, list) {
++		if (!batadv_compare_eth(tmp_neigh_node->addr, addr))
++			continue;
++
++		if (tmp_neigh_node->if_incoming != hard_iface)
++			continue;
++
++		if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
++			continue;
++
++		res = tmp_neigh_node;
++		break;
++	}
++	rcu_read_unlock();
++
++	return res;
++}
++
++/**
+  * batadv_orig_ifinfo_free_rcu - free the orig_ifinfo object
+  * @rcu: rcu pointer of the orig_ifinfo object
+  */
+diff --git a/originator.h b/originator.h
+index 37be290..db3a9ed 100644
+--- a/originator.h
++++ b/originator.h
+@@ -29,6 +29,10 @@ void batadv_orig_node_free_ref_now(struct batadv_orig_node *orig_node);
+ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
+ 					      const uint8_t *addr);
+ struct batadv_neigh_node *
++batadv_neigh_node_get(const struct batadv_orig_node *orig_node,
++		      const struct batadv_hard_iface *hard_iface,
++		      const uint8_t *addr);
++struct batadv_neigh_node *
+ batadv_neigh_node_new(struct batadv_hard_iface *hard_iface,
+ 		      const uint8_t *neigh_addr,
+ 		      struct batadv_orig_node *orig_node);
+-- 
+1.8.5.3
 
-
---acC05h1k5PUfnIpRjfEnbIuggiW2o3r9x
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJS5hdPAAoJEEKTMo6mOh1Vwb0P/R+1Se/wlgwU33m/y7NpQP1t
-us87jQuJZ/ayJvXAHKPMJExt5CzhvhVWL4QOwOR/zrqUdWxF8LOxkGmxOb6S3FXb
-W2AcGOT3ltIUAYCZcfZy8u9ROISlH9szoGKJ2Jpct+GK6T+pW2H4gHIEK8SFEsBX
-iBz/RbyNa4obr6Xl2AZGjUPivRqWYW2JC1EPV00qeqpM4pyvV703pIKPFArlO2Ok
-pGPT9SbIGiZedJPKjV4SyvGU2DxPmFs3wPZZJbOn/d1WPc4SFCrYrT5gWsQGYZP/
-TZQIB5++KBBKFVq/kGFEBYf9JA9IUAnYA7vc0Pm+Ykakybyu/l7xUlez/D41/SYg
-ce6CHCWM5JYwhIsH1IW6fF+HZPK9bjuoUsOGW481a81TVzGvtwQCKMZxscCKHBTl
-qMpOZSmTqfn3p21D9k6AkFL/UxiT/0JAWijW/+kWd//Oz0IU6yYMGQn/0qSnWjs7
-a9QUSkPzFsOjVbnVSCm85EH4HI/VQX78PPLHHadGYhr+I98XtUPNrliRnzjeWnKp
-f9tEssj/EXs+yLw9Zkj5RKWcyU+WoGsWvSDJm9D7B6iTBjbjsoH+jpCBVM0CDNzr
-BjeBQFw0oaSTcsh5UxHhzj/B5UpaJJD+k0bsaksft8sNEUCmFONimjdma+q3D4Gc
-FC/RQxyD7d6NFXhCvnqi
-=Brk4
------END PGP SIGNATURE-----
-
---acC05h1k5PUfnIpRjfEnbIuggiW2o3r9x--
