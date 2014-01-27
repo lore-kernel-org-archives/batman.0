@@ -1,23 +1,16 @@
-Return-Path: <cmsv@wirelesspt.net>
-Message-ID: <52E69D7D.80905@wirelesspt.net>
-Date: Mon, 27 Jan 2014 12:55:09 -0500
-From: cmsv <cmsv@wirelesspt.net>
+Return-Path: <russell@personaltelco.net>
+References: <52E51A04.8020800@meshcoding.com>
+ <1390746256-551-1-git-send-email-antonio@meshcoding.com>
+From: Russell Senior <russell@personaltelco.net>
+Date: Mon, 27 Jan 2014 10:43:19 -0800
+In-Reply-To: <1390746256-551-1-git-send-email-antonio@meshcoding.com> (Antonio
+ Quartulli's message of "Sun\, 26 Jan 2014 15\:24\:16 +0100")
+Message-ID: <86zjmhfepk.fsf@coulee.tdb.com>
 MIME-Version: 1.0
-References: <1390299725-1873-1-git-send-email-antonio@meshcoding.com>	<86mwipch0u.fsf@coulee.tdb.com>
- <86lhy8pn5v.fsf@coulee.tdb.com>	<52DF7556.9090200@makrotopia.org>
- <86y527oqpl.fsf_-_@coulee.tdb.com>	<52E003DD.6040302@meshcoding.com>
- <52E02EDC.3080805@wirelesspt.net> <86iotbo9hw.fsf@coulee.tdb.com>
- <52E05E0F.7010203@wirelesspt.net> <52E08DFE.9030604@makrotopia.org>
- <52E5063E.3080408@makrotopia.org> <52E51A04.8020800@meshcoding.com>
- <52E5322D.60202@wirelesspt.net> <52E532D0.2000907@meshcoding.com>
- <52E5341F.30800@meshcoding.com>
-In-Reply-To: <52E5341F.30800@meshcoding.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="WWmdhRQDR6FKnjDg9mJEvwiqGOJBxM8LH"
-Subject: Re: [B.A.T.M.A.N.] batman-adv: memory leak?
-Reply-To: cmsv@wirelesspt.net,
- The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Type: text/plain; charset=us-ascii
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: release vlan object
+	after checking the CRC
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -28,122 +21,228 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, daniel@makrotopia.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---WWmdhRQDR6FKnjDg9mJEvwiqGOJBxM8LH
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+>>>>> "Antonio" == Antonio Quartulli <antonio@meshcoding.com> writes:
 
-Here is an update of some tests i ran in the past 24h with the following
-build:
+Antonio> There is a refcounter unbalance in the CRC checking routine
+Antonio> invoked on OGM reception. A vlan object is retrieved (thus
+Antonio> its refcounter is increased by one) but it is never properly
+Antonio> released. This leads to a memleak because the vlan object
+Antonio> will never be free'd.
 
-routers used:
-dlink dir 601a and tplink wr703n in "ng" mode. (atheros)
+Antonio> Fix this by releasing the vlan object after having read the
+Antonio> CRC.
 
-My current AA DISTRIB_REVISION=3D"r39154"
-mac80211 r39150 from openwrt trunk
-hostapd r39155 from trunk
+Antonio> Reported-by: Russell Senior <russell@personaltelco.net>
+Antonio> [...]
 
-From batman-adv i am using the following patches:
-ls  feeds/routing/batman-adv/patches/
-0001-batman-adv-fix-batman-adv-header-overhead-calculatio.patch
+I am still seeing a kernel memory leak, even with this patch.
 
-From d72756b97529b3c6afa08933216aaa912bb16ce6 Mon Sep 17 00:00:00 2001
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 15 Jan 2014 20:31:18 +0800
-Subject: [PATCH] batman-adv: fix batman-adv header overhead calculation
+My test configuration is a Ubiquiti AirRouter (ar71xx) on OpenWrt r39397 with
+this patch and the MTU patch on one end, and a Soekris net4826 (x86)
+on the same OpenWrt r39397 revision and patchs on the other end
+(kmemleak also enabled on the x86 end, not on the ar71xx end).  
+
+The airrouter, with the bat0 interface disabled, has a /proc/meminfo
+that looks like this right after boot:
+
+  root@ar0:/# cat /proc/meminfo 
+  MemTotal:          29044 kB
+  MemFree:            8220 kB
+  Buffers:            2164 kB
+  Cached:             6176 kB
+  SwapCached:            0 kB
+  Active:             4624 kB
+  Inactive:           5672 kB
+  Active(anon):       1984 kB
+  Inactive(anon):       20 kB
+  Active(file):       2640 kB
+  Inactive(file):     5652 kB
+  Unevictable:           0 kB
+  Mlocked:               0 kB
+  SwapTotal:             0 kB
+  SwapFree:              0 kB
+  Dirty:                 0 kB
+  Writeback:             0 kB
+  AnonPages:          1972 kB
+  Mapped:             1872 kB
+  Shmem:                48 kB
+  Slab:               4928 kB
+  SReclaimable:        932 kB
+  SUnreclaim:         3996 kB
+  KernelStack:         272 kB
+  PageTables:          188 kB
+  NFS_Unstable:          0 kB
+  Bounce:                0 kB
+  WritebackTmp:          0 kB
+  CommitLimit:       14520 kB
+  Committed_AS:       3992 kB
+  VmallocTotal:    1048372 kB
+  VmallocUsed:        1476 kB
+  VmallocChunk:    1043448 kB
+
+With bat0 enabled, however, the AirRouter will begin to become
+unresponsive at around 7m15s after boot and then OOM and reboot within
+9 minutes of uptime.  Using "watch -d cat /proc/meminfo", I see
+MemFree first erode, then it begin to chew into Buffers and Cached
+until supreme unhappiness ensues.
+
+On the x86 side, I see some activity from kmemleak, which
+substantially goes away when batman-adv does not have a peer.  The
+unreferenced objects that show up in /sys/kernel/debug/kmemleak look
+like this (only a sample):
+
+  unreferenced object 0xc2eab000 (size 184):
+    comm "softirq", pid 0, jiffies 33396 (age 692.960s)
+    hex dump (first 32 bytes):
+      00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+      00 00 00 00 00 00 3c c2 00 00 00 00 00 00 00 00  ......<.........
+    backtrace:
+      [<c10039b9>] print_context_stack+0x99/0xb0
+      [<c108cf00>] kmem_cache_alloc+0xd0/0xf0
+      [<c12eedc9>] build_skb+0x29/0x140
+      [<c12eedc9>] build_skb+0x29/0x140
+      [<c12f1a86>] __netdev_alloc_skb+0x56/0xd0
+      [<c4c020b2>] ath_rxbuf_alloc+0x22/0x80 [ath]
+      [<c1372619>] free_debug_processing+0x14c/0x190
+      [<c4c42204>] ath5k_stop+0xd4/0xc90 [ath5k]
+      [<c4c43773>] ath5k_beacon_update_timers+0x9b3/0x9d0 [ath5k]
+      [<c4c02a8f>] ath_hw_cycle_counters_update+0xcf/0x130 [ath]
+      [<c108c727>] kmem_cache_free+0xe7/0x100
+      [<c105ccfa>] __rcu_process_callbacks+0x5a/0x70
+      [<c102d62e>] tasklet_action+0x3e/0x70
+      [<c102dac5>] __do_softirq+0x85/0x140
+      [<c102da40>] __do_softirq+0x0/0x140
+      [<c102dc42>] irq_exit+0x32/0x50
+  unreferenced object 0xc0c1c600 (size 184):
+    comm "softirq", pid 0, jiffies 33490 (age 692.020s)
+    hex dump (first 32 bytes):
+      00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+      00 00 00 00 00 00 3c c2 00 00 00 00 00 00 00 00  ......<.........
+    backtrace:
+      [<c10039b9>] print_context_stack+0x99/0xb0
+      [<c108cf00>] kmem_cache_alloc+0xd0/0xf0
+      [<c12eedc9>] build_skb+0x29/0x140
+      [<c12eedc9>] build_skb+0x29/0x140
+      [<c12f1a86>] __netdev_alloc_skb+0x56/0xd0
+      [<c4c020b2>] ath_rxbuf_alloc+0x22/0x80 [ath]
+      [<c1372619>] free_debug_processing+0x14c/0x190
+      [<c4c42204>] ath5k_stop+0xd4/0xc90 [ath5k]
+      [<c4c43773>] ath5k_beacon_update_timers+0x9b3/0x9d0 [ath5k]
+      [<c108c727>] kmem_cache_free+0xe7/0x100
+      [<c105ccfa>] __rcu_process_callbacks+0x5a/0x70
+      [<c102d62e>] tasklet_action+0x3e/0x70
+      [<c102dac5>] __do_softirq+0x85/0x140
+      [<c102da40>] __do_softirq+0x0/0x140
+      [<c102dc42>] irq_exit+0x32/0x50
+      [<c1002b4d>] do_IRQ+0x8d/0xb0
+
+Memory is disappearing at a faster rate than is accounted for here
+(size 184 bytes at a time).  The OOM-reboot rate indicates memory is
+being consumed at a rate on the order of 30-40 kB per second.
+
+My OpenWrt diffconfig is as follows:
+
+  CONFIG_TARGET_x86=y
+  CONFIG_TARGET_x86_generic=y
+  CONFIG_TARGET_x86_generic_Soekris48xx=y
+  CONFIG_DEVEL=y
+  CONFIG_ALFRED_NEEDS_lua=y
+  CONFIG_BUILD_LOG=y
+  CONFIG_DOWNLOAD_FOLDER="/usr/portage/distfiles"
+  CONFIG_KMOD_BATMAN_ADV_BATCTL=y
+  CONFIG_KMOD_BATMAN_ADV_BLA=y
+  CONFIG_KMOD_BATMAN_ADV_DAT=y
+  CONFIG_KMOD_BATMAN_ADV_DEBUG_LOG=y
+  CONFIG_LIBCURL_FILE=y
+  CONFIG_LIBCURL_FTP=y
+  CONFIG_LIBCURL_HTTP=y
+  CONFIG_LIBCURL_POLARSSL=y
+  CONFIG_OPENSSL_WITH_EC=y
+  CONFIG_PACKAGE_ALFRED_BATHOSTS=y
+  CONFIG_PACKAGE_ALFRED_VIS=y
+  CONFIG_PACKAGE_MAC80211_DEBUGFS=y
+  CONFIG_PACKAGE_MAC80211_MESH=y
+  CONFIG_PACKAGE_alfred=y
+  CONFIG_PACKAGE_bridge=y
+  CONFIG_PACKAGE_crda=y
+  CONFIG_PACKAGE_curl=y
+  CONFIG_PACKAGE_diffutils=y
+  # CONFIG_PACKAGE_dnsmasq is not set
+  # CONFIG_PACKAGE_firewall is not set
+  CONFIG_PACKAGE_horst=y
+  CONFIG_PACKAGE_hostapd-common=y
+  CONFIG_PACKAGE_iftop=y
+  CONFIG_PACKAGE_ip=y
+  CONFIG_PACKAGE_iw=y
+  CONFIG_PACKAGE_iwinfo=y
+  CONFIG_PACKAGE_kmod-ath=y
+  CONFIG_PACKAGE_kmod-ath5k=y
+  CONFIG_PACKAGE_kmod-batman-adv=y
+  CONFIG_PACKAGE_kmod-bridge=y
+  CONFIG_PACKAGE_kmod-cfg80211=y
+  CONFIG_PACKAGE_kmod-crypto-aes=y
+  CONFIG_PACKAGE_kmod-crypto-arc4=y
+  CONFIG_PACKAGE_kmod-crypto-core=y
+  CONFIG_PACKAGE_kmod-crypto-crc32c=y
+  CONFIG_PACKAGE_kmod-crypto-hash=y
+  # CONFIG_PACKAGE_kmod-lib-crc-ccitt is not set
+  CONFIG_PACKAGE_kmod-lib-crc16=y
+  CONFIG_PACKAGE_kmod-lib-crc32c=y
+  CONFIG_PACKAGE_kmod-llc=y
+  CONFIG_PACKAGE_kmod-mac80211=y
+  # CONFIG_PACKAGE_kmod-ppp is not set
+  CONFIG_PACKAGE_kmod-stp=y
+  CONFIG_PACKAGE_libcurl=y
+  CONFIG_PACKAGE_libelf1=y
+  CONFIG_PACKAGE_libiwinfo=y
+  CONFIG_PACKAGE_liblua=y
+  CONFIG_PACKAGE_libncurses=y
+  CONFIG_PACKAGE_libnetsnmp=y
+  CONFIG_PACKAGE_libopenssl=y
+  CONFIG_PACKAGE_libpcap=y
+  CONFIG_PACKAGE_libpcre=y
+  CONFIG_PACKAGE_libpolarssl=y
+  CONFIG_PACKAGE_libpopt=y
+  CONFIG_PACKAGE_libpthread=y
+  CONFIG_PACKAGE_librt=y
+  CONFIG_PACKAGE_lua=y
+  CONFIG_PACKAGE_missnet-node=y
+  # CONFIG_PACKAGE_odhcp6c is not set
+  # CONFIG_PACKAGE_ppp is not set
+  CONFIG_PACKAGE_procps=y
+  CONFIG_PACKAGE_procps-free=y
+  CONFIG_PACKAGE_procps-pgrep=y
+  CONFIG_PACKAGE_procps-pkill=y
+  CONFIG_PACKAGE_procps-pmap=y
+  CONFIG_PACKAGE_procps-ps=y
+  CONFIG_PACKAGE_procps-pwdx=y
+  CONFIG_PACKAGE_procps-skill=y
+  CONFIG_PACKAGE_procps-slabtop=y
+  CONFIG_PACKAGE_procps-snice=y
+  CONFIG_PACKAGE_procps-tload=y
+  CONFIG_PACKAGE_procps-top=y
+  CONFIG_PACKAGE_procps-vmstat=y
+  CONFIG_PACKAGE_procps-w=y
+  CONFIG_PACKAGE_procps-watch=y
+  CONFIG_PACKAGE_rsync=y
+  CONFIG_PACKAGE_snmpd=y
+  CONFIG_PACKAGE_tcpdump=y
+  CONFIG_PACKAGE_terminfo=y
+  CONFIG_PACKAGE_traceroute6=y
+  CONFIG_PACKAGE_wget=y
+  CONFIG_PACKAGE_wireless-tools=y
+  CONFIG_PACKAGE_wpad-mini=y
+  CONFIG_PACKAGE_zlib=y
+  # CONFIG_TARGET_ROOTFS_EXT4FS is not set
+  # CONFIG_TARGET_ROOTFS_TARGZ is not set
+
+Anything you are interested in that I left out, I'm happy to provide
+on request.
 
 
-batman-adv/Makefile
-# $Id: Makefile 5624 2006-11-23 00:29:07Z nbd $
-
-include $(TOPDIR)/rules.mk
-
-PKG_NAME:=3Dbatman-adv
-
-PKG_VERSION:=3D2014.0.0
-BATCTL_VERSION:=3D2014.0.0
-PKG_RELEASE:=3D1
-PKG_MD5SUM:=3D8d58ecaede17dc05aab1b549dc09fa7d
-BATCTL_MD5SUM:=3Db0bcf29fef80ddcc33769e13f5937d0a
-
-
-I tried to find any memory leaks that could be causing reboots and i was
-unable to find any after having compiled the build with
-batman-adv-header-overhead-calculatio.patch. Before this patch i did get
-reboots caused by the leak.
-
-
-I keep monitoring memory usage with top, htop, ps and /proc/meminfo
-since i was not able to install valgrind due to lack of available flash
-memory given the size of the valgrind package.
-
-Got some tips from here:
-http://blog.thewebsitepeople.org/2011/03/linux-memory-leak-detection
-
-Additionally i ran iperf tests on both routers against each other to forc=
-e
-them under heavy load during 24h: iperf -c <ip> -t 99999 -i 5
-
-The mtu is 1560 for the adhoc.
-
-After 24h i still had 6 mb of ram and above on both routers. Once i
-stopped the tests; the ram increased.
-
-Dmesh and logread output nothing wrong and or errors.
-
-No reboots happened during this time which leads me to conclude that the
-problem might not be all from batman-adv side or maybe not even at all
-or maybe only happens when in use with something very specific.
-
-I would like to run a few more tests to be more sure about possible
-leaks but are there any other tools that someone might recommend ?
-
-@ daniel
-What did you use to find the leak and or how did you troubleshoot it ?
-
-
-
-On 01/26/2014 11:13 AM, Antonio Quartulli wrote:
-> On 26/01/14 17:07, Antonio Quartulli wrote:Can you explain in what
->>
->> This is a patch to fix the memleak we were discussing about.
->> This bug appeared with and it is meant to be applied on
->> batman-adv-2014.0.0 (regardless of the openwrt revision).
->=20
-> sorry, bad copy/paste.
->=20
-> The patch is for batman-adv-2014.0.0 (I don't know what version you hav=
-e
-> in AA).
-> It fixes the memleak bug that we were discussing about.
->=20
->=20
-
-
---WWmdhRQDR6FKnjDg9mJEvwiqGOJBxM8LH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJS5p2HAAoJENmyd4cVxLOCezMP/3tTfmFJuHdcneFRl7USZ3yI
-O5l3vThlSXgyjyZcq2q6NdOZiMflR5bA0qZ2G63scKENXG8f+1nU4+dqVLY9DFF7
-sLd9/yBqVii3EzZu1T7F4SstVMuB0Gjt6/Ak+6cQTeqz1Q4GtR4zpqvH7Gpi7qie
-b8fV+m6nJYrA64FEByZJhSOvR+j6dtrunLoDF5F8DP2y5jmRpooCiWGTdqtQ53+t
-UkJuF17Db0DW1rH9lOlZ8yjWrjPmBaskjv9Aa+MVRYc/o6WBsmDy+WzblWR3z7bp
-eOO+nkTZETWKrWtG8UsCpNrU/kg00M584YpdECdbAOmE0nAlf5L3zbZG6j3KkJ9W
-+0hB2lSPUFuntY2lQ8O72tPlaR7B88GP0qZ1r/XzmcGDIUIO9991Fh3/gWxqdRdf
-hMMqtTXRaXLWyr0t9Ab+u3eeBEZYmG4KC7Qg0bjLOftIDIdeqUehodZWDmCk3wBj
-uHFzGQ21CKoJKrQOpWoVopqh4M3memO2piWnzITGNEWdleqgrTFh+sCEo7qInELP
-3d6fWEKV8qptLBxQ4wwPLK2/trV4wg9MqGwl+xLeYj4EaIN4Mhne97vWMYzlK8lY
-+cDomqIrSB+kGoNWeF7zNa3SpGPFTKY54Q287jLkpE6iO17I5wEaD3Jnk7C7+fkl
-UnuHe4JAw3nqiK4yrJO0
-=J4t/
------END PGP SIGNATURE-----
-
---WWmdhRQDR6FKnjDg9mJEvwiqGOJBxM8LH--
+-- 
+Russell Senior, President
+russell@personaltelco.net
