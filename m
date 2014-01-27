@@ -1,16 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 27 Jan 2014 14:22:02 +0800
-Message-ID: <4624683.mBIvnjSfqg@diderot>
-In-Reply-To: <1389037044-27530-3-git-send-email-sven@narfation.org>
-References: <6312194.LhI8hzXjyH@bentobox>
- <1389037044-27530-1-git-send-email-sven@narfation.org>
- <1389037044-27530-3-git-send-email-sven@narfation.org>
+Date: Mon, 27 Jan 2014 15:38:12 +0800
+Message-ID: <2269233.xVshGbV36T@diderot>
+In-Reply-To: <1390166566-8315-2-git-send-email-linus.luessing@web.de>
+References: <1390166566-8315-1-git-send-email-linus.luessing@web.de>
+ <1390166566-8315-2-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5751195.q11qrElokV";
+Content-Type: multipart/signed; boundary="nextPart2222268.EQQIIRZXsa";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batctl: Use libnl to implement vlan
-	parent device resolver
+Subject: Re: [B.A.T.M.A.N.] [PATCHv6 1/2] batman-adv: use vlan_/eth_hdr()
+	instead of skb->data in interface_tx path
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,30 +22,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
 
 
---nextPart5751195.q11qrElokV
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart2222268.EQQIIRZXsa
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Monday 06 January 2014 20:37:24 Sven Eckelmann wrote:
-> It is not necessary to have code duplicated which is already available in
-> libraries like libnl-3.0 or libnl-tiny. This is done to reduce maintenance
-> and security risks.
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+On Sunday 19 January 2014 22:22:45 Linus L=FCssing wrote:
+> Our .ndo_start_xmit handler (batadv_interface_tx()) can rely on havin=
+g
+> the skb mac header pointer set correctly since the following commit
+> present in kernels >=3D 3.9:
+>=20
+> "net: reset mac header in dev_start_xmit()" (6d1ccff627)
+>=20
+> Therefore we can safely use eth_hdr() and vlan_eth_hdr() instead of
+> skb->data now, which spares us some ugly type casts.
+>=20
+> Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
 > ---
->  functions.c | 274
-> ++++++++++++++++++++++++------------------------------------ 1 file
-> changed, 110 insertions(+), 164 deletions(-)
+>  bridge_loop_avoidance.c |    2 +-
+>  compat.h                |   11 +++++++++++
+>  gateway_client.c        |    6 +++---
+>  send.c                  |    2 +-
+>  soft-interface.c        |    8 ++++----
+>  5 files changed, 20 insertions(+), 9 deletions(-)
 
-Applied in revision b8eaea8.
+Applied in revision f9170f2.
 
 Thanks,
 Marek
 
---nextPart5751195.q11qrElokV
+--nextPart2222268.EQQIIRZXsa
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -54,14 +61,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJS5fsOAAoJEFNVTo/uthzAH0IIAJMGD4TK4wIpCBM2NR6VK9Uz
-ZRlRlkllUI4Vq+CObVs8V1DTQ9hTw/a9IYVbWOJsWcn8kxN/TTqHfUgcL+7WDqoE
-6mkdKn07IUEQm+LK1kqIXe+eoRAH4Hd/1yuMZuezm4eDbYiheZGAM+92VjkL4ZRE
-jGb2hYNIVdOQt69B4sd3WoEbB5c3dkGY5QY4vvqe8o33e6SCqfowX1eLgRmqBhT+
-5csFBsdDsytlMvTAMwqzUCga1VJLI8303Muj5nASAmaSkvf4LehkYJTLnyAgg1kv
-JSO3Xshmmi46jfctEEe4nM/mH4h0zogiT2ZBPqznmFY/T1aAU5cRPTUX1FSXRtg=
-=QX24
+iQEcBAABAgAGBQJS5gzrAAoJEFNVTo/uthzAamQH/iCejdotEvS263vEfUjMXhK3
+C2bnoHYtgMyA6xEyUH9ZjfVtPJEvn3Ss+sa1cwh5oIDVmM+UjQxH3EBRbdwH2djg
+hNkUb2jOb/Y4v3MQD6heRNE1BXNxDaw0tJzZraF5IhbPhPdiYVLLRnDKT68wVqN/
+g2q5AWX8M1IXQhyiVyixwRZ6zk+97WDd3mPs+MPcqXdZIvKJOeggV5Yq91vYeo40
+dmAqHCv+3RXztKwMNxA19w0k2q01z1Ca2ma2577UpAPgQAmSnsYWdjNRw0MMe3w8
+V0MtenuIzmwF3P8XMoUSvikGATc2xOpVhnap+DJ62M9yae68FJR6Yxd+/loTPw4=
+=GuD5
 -----END PGP SIGNATURE-----
 
---nextPart5751195.q11qrElokV--
+--nextPart2222268.EQQIIRZXsa--
 
