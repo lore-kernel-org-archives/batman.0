@@ -1,24 +1,14 @@
-Return-Path: <cmsv@wirelesspt.net>
-Message-ID: <52E70836.3050502@wirelesspt.net>
-Date: Mon, 27 Jan 2014 20:30:30 -0500
-From: cmsv <cmsv@wirelesspt.net>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 28 Jan 2014 16:09:45 +0100
 MIME-Version: 1.0
-References: <1390299725-1873-1-git-send-email-antonio@meshcoding.com>	<86mwipch0u.fsf@coulee.tdb.com>
- <86lhy8pn5v.fsf@coulee.tdb.com>	<52DF7556.9090200@makrotopia.org>
- <86y527oqpl.fsf_-_@coulee.tdb.com>	<52E003DD.6040302@meshcoding.com>
- <52E02EDC.3080805@wirelesspt.net>	<86iotbo9hw.fsf@coulee.tdb.com>
- <52E05E0F.7010203@wirelesspt.net>	<52E08DFE.9030604@makrotopia.org>
- <52E5063E.3080408@makrotopia.org>	<52E51A04.8020800@meshcoding.com>
- <52E5322D.60202@wirelesspt.net>	<52E532D0.2000907@meshcoding.com>
- <52E5341F.30800@meshcoding.com>	<52E69D7D.80905@wirelesspt.net>
- <861tzsgaub.fsf@coulee.tdb.com>
-In-Reply-To: <861tzsgaub.fsf@coulee.tdb.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="WVVCf30s0VrEed1DgB6tAIJ5dfDf6FiwJ"
-Subject: Re: [B.A.T.M.A.N.] batman-adv: memory leak?
-Reply-To: cmsv@wirelesspt.net,
- The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <201401281609.46141.sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] Fwd: [Battlemesh] Battlemesh v7 Call for talks and
+	workshops
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -29,83 +19,114 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Russell Senior <russell@personaltelco.net>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---WVVCf30s0VrEed1DgB6tAIJ5dfDf6FiwJ
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hello list,
 
-inline:
+the battlemesh v7 call for talks is out, it would be great to see your=20
+WiFi/Mesh related talks and workshops in Leipzig this year. :)
 
-On 01/27/2014 08:21 PM, Russell Senior wrote:
->>>>>> "cmsv" =3D=3D cmsv  <cmsv@wirelesspt.net> writes:
+If you haven't booked a hotel yet, have a look at the accomodation package=
+=20
+[1], where you can get bed and breakfast for the whole week (early bird pri=
+ce=20
+for 150EUR until Feb 15th). The event itself is free of charge.
+
+Cheers,
+    Simon
+
+[1] http://battlemesh.org/BattleMeshV7#Participant_Registration_and_Fee
+
+> Do you have an idea or project related to mesh routing protocols? Are you
+> involved in a community networking project that uses a mesh network? Are
+> you aware of a related issue that you think should be discussed?
 >=20
-> cmsv> Here is an update of some tests i ran in the past 24h with the
-> cmsv> following build:
+> Your workshop or presentation proposal is welcomed to BattleMeshV7 Leipzi=
+g!
 >=20
-> cmsv> routers used: dlink dir 601a and tplink wr703n in "ng"
-> cmsv> mode. (atheros)
+> What is Battlemesh?
+> -------------------
 >=20
-> cmsv> My current AA DISTRIB_REVISION=3D"r39154" mac80211 r39150 from
-> cmsv> openwrt trunk hostapd r39155 from trunk
+> The Wireless Battle of the Mesh is an event that aims at bringing together
+> people from across Europe and beyond to test the performance of different
+> routing protocols for ad-hoc networks, like Babel, B.A.T.M.A.N., BMX,
+> OLSR, 802.11s and Static Routing.
 >=20
-> I just went to try to set up an AA build environment from:
+> It is a tournament with a social character. If you are a mesh networking
+> enthusiast, community networking activist, or have an interest in mesh
+> networks you might want to check this out !
 >=20
->   git://git.openwrt.org/12.09/openwrt.git
+> The goal of the WirelessBattleMesh events is to set-up hands-on testbed f=
+or
+> each available mesh routing protocol with a standard test procedure for
+> the different mesh networks. During the different WBM events, similar
+> hardware and software configuration will be used based on the OpenWRT
+> BoardSupportPackage and packages for each protocol implementation. The WBM
+> events are also a great opportunity to develop testing tools for PHY/MAC
+> radio layers (drivers, scripts and PHY analyzers) .
 >=20
-> in order to replicate.  The default feeds.conf from that tree seems to
-> point at a 'for-12.09.x' branch of the routing feed, and the
-> batman-adv Makefile there seems to use 2013.4.0, not 2014.0.0. =20
+> This years Battlemesh will take place from 12 - 18 May 2014 in Leipzig,
+> Germany at the Sublab, Karl-Heine-Stra=DFe 93, 04229 Leipzig.
 >=20
-> Can you paste your feeds.conf file?
-
-Of course:
-
-
-for AA and batman-adv 2014.0.0 in feeds.default.conf
-
-src-svn packages svn://svn.openwrt.org/openwrt/branches/packages_12.09
-src-git routing git://github.com/openwrt-routing/packages.git
-
-
-For the hostapd and mentioned mac80211 you will need to clone
-git clone git://git.openwrt.org/12.09/openwrt.git
-
-Then obtain the specific revisions and replace  the original hostapd and
-mac80211 from AA.
-
-
-
-
-
-
-
-
-
---WVVCf30s0VrEed1DgB6tAIJ5dfDf6FiwJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJS5wg6AAoJENmyd4cVxLOCz0QP/AvoFGJDdd613tfajQ77O6Qb
-p6sNrpOZQ8aCsuuayL8IphAWBESBrOmB7ccAid+amBlSu6Ng4vSRLi/CvmugFiST
-kuZVisncWpq1Sw4SfeNRaGfzDnb13txZPH2IajoPnxBnFk2twdkGuVO/kQTbBn54
-BXzvCCXNnb4XAZ8qak991ozKbikaeBMaBrFzaFd4Ru1Tgq2DpoMsW+23kOY4XhtI
-6gdsX2rHRUTpv3czudFzR+jjMdoiWOj75rXZnQB2jSnVA3ABUhWivfJptG3oKcXE
-0r+kSMWdzgV6/ljkLg98qX7829xaT3ODyJ6Lf9Q24KvCrGZL67LR9Ke/JpaSaw2G
-idNg8WfgAOl4adKIsdRPorjkDKwRDmrappKvcMqlteag5cdK7lncbppjRk7pLPy6
-T01D0K3uls8oyZeZjJYEfH5t+PqE7hpeE4UE6+1flxpB+Briza2pY0QOua6oP1J0
-bCYjfExINfq6EO0XVyp76gZXmb57vm3oHXDGuTKL26vD7zGUqiZmJIXcMvqw1Vws
-fKa2shTK2At+BKpK5pnMY+eqzgyCJYQTAKRCt9Ne9zze/k8XmH0tPt/w9k8lKpnX
-n9hjqJAGHcDHfmUAB4ndMXGY11vmF+Etb5gaFISeSNqOYaZ9aSkfdf8Fg6v90s2e
-k2nobjglD+1SeHHnPOpN
-=ovM9
------END PGP SIGNATURE-----
-
---WVVCf30s0VrEed1DgB6tAIJ5dfDf6FiwJ--
+> http://battlemesh.org
+>=20
+> Format and topic of talks
+> -------------------------
+>=20
+> Workshops or talks relating directly to open source mesh routing protocols
+> will be prioritised, but we welcome proposals of anything you think may be
+> of interest to mesh routing and community networking enthusiasts.
+>=20
+> They may take any format, for example a presentation, talk, discussion,
+> debate, practical workshop, or film showing.
+>=20
+> To get an idea of the kinds of talks and workshops at the previous events,
+> see http://battlemesh.org/BattleMeshV6/Agenda,
+> http://battlemesh.org/BattleMeshV5/Agenda and
+> http://battlemesh.org/BattleMeshV4/Agenda
+>=20
+> Lightening talks
+> ----------------
+>=20
+> Lightening talks are shorter talks which can be submitted later than the
+> main workshops deadline, to allow everybody to have the opportunity to
+> present their project/idea. Each lightening talk will be 7 minutes long
+> followed by 3 minutes of questions. Projector slides can be submitted
+> before in PDF format to: submissions@battlemesh.org
+>=20
+> Submissions
+> -----------
+>=20
+> To allow an efficient handling of your proposal, please provide the follo=
+wing=20
+information and send them by email to the email to the address below:
+>  * Your name
+>  * What format will it take (talk/workshop/panel discussion/lightening
+>  talk) * Your topic headline
+>  * Your topic description which can be brief (does not need to exceed a
+>  couple of lines) but should provide a reasonable summary of your talk *
+>  The dates of your stay at the event and (optional) preferred day for your
+>  slot * The length of the slot if you wish to do a workshop (all other
+>  slots will be limited to one hour) * Any requirements you need, for
+>  example, a projector.
+>=20
+> Deadline
+> --------
+>=20
+> The deadline for proposals is the 1st of May.
+>=20
+> Contact
+> -------
+>=20
+> Email your proposals or specific questions to: submissions@battlemesh.org
+>=20
+> For general questions, please use the Battlemesh mailing list:
+> http://ml.ninux.org/mailman/listinfo/battlemesh
+>=20
+> Please forward this message any groups or individuals who might be
+> interested.
+>=20
+> _______________________________________________
+> Battlemesh mailing list
+> Battlemesh@ml.ninux.org
+> http://ml.ninux.org/mailman/listinfo/battlemesh
