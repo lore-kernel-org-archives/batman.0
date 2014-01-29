@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 29 Jan 2014 12:44:18 +0800
-Message-ID: <1433642.KAeoiFfFlZ@diderot>
-In-Reply-To: <1390821808-3855-1-git-send-email-antonio@meshcoding.com>
-References: <1390821808-3855-1-git-send-email-antonio@meshcoding.com>
+Date: Wed, 29 Jan 2014 12:45:46 +0800
+Message-ID: <7324971.gcLLUq3Wf7@diderot>
+In-Reply-To: <1390871207-431-1-git-send-email-antonio@meshcoding.com>
+References: <1390871207-431-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6269706.plkOqZiHmp";
+Content-Type: multipart/signed; boundary="nextPart1556495.0qG3ZzzxTP";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix TT-TVLV parsing on
-	OGM reception
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: release vlan object
+	after checking the CRC
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,31 +24,34 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart6269706.plkOqZiHmp
+--nextPart1556495.0qG3ZzzxTP
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday 27 January 2014 12:23:28 Antonio Quartulli wrote:
-> When accessing a TT-TVLV container in the OGM RX path
-> the variable pointing to the list of changes to apply is
-> altered by mistake.
+On Tuesday 28 January 2014 02:06:47 Antonio Quartulli wrote:
+> There is a refcounter unbalance in the CRC checking routine
+> invoked on OGM reception. A vlan object is retrieved (thus
+> its refcounter is increased by one) but it is never properly
+> released. This leads to a memleak because the vlan object
+> will never be free'd.
 > 
-> This makes the TT component read data at the wrong position
-> in the OGM packet buffer.
+> Fix this by releasing the vlan object after having read the
+> CRC.
 > 
-> Fix it by removing the bogus pointer alteration.
-> 
+> Reported-by: Russell Senior <russell@personaltelco.net>
+> Reported-by: Daniel <daniel@makrotopia.org>
+> Reported-by: cmsv <cmsv@wirelesspt.net>
 > Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
->  translation-table.c | 1 -
->  1 file changed, 1 deletion(-)
+>  translation-table.c | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
 
-Applied in revision db13d36.
+Applied in revision dc08c04.
 
 Thanks,
 Marek
 
---nextPart6269706.plkOqZiHmp
+--nextPart1556495.0qG3ZzzxTP
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -56,14 +59,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJS6IcjAAoJEFNVTo/uthzAjOkH/iuVKdO/7PewuVvHeaLJ680a
-UhNYgySxx3j5rtw8F0VrQWVnD4Gk3LG7PewVa0QFGF7e3AmjtX1YF+mJ/pXGpUBn
-v/VYbotLSilKIt488Dy/BA/rM9yEXbe89K0gUoTb7ZyK6Yw+RSiVY507f8II8INa
-KwdyfpJn7Mkpi+Ij/dpDd7ssv6PWjUk/zZhoBUtNDsnITSTztizoiYKjb6fPCavx
-JyJyOv+vGL8ydcuF44w+Gla14/3KIIny1mtJeFE1Ie3onFtRh0BNJSskX/V4gyiY
-Qp9j71LC5XS/JmcO46oBSeD10ThzA7+Sr9jyYvzQFUrQdyFGnpHgA/gWvhA/a4w=
-=bKiV
+iQEcBAABAgAGBQJS6Id7AAoJEFNVTo/uthzA2KAH+wZnF3cbhx+P7LXfNiIY0Dip
+UrV/8l59uCg09g3z0wqpVDTY4OoZGzYaYBgzBcqhkOPKRK2Vg/rPZbHxLuTjOerO
+YB8aSuZVueAZhwJ7v7hunZB8lsY/FxLXg0prrTA2cXq9o2SLxmd9XU70ipw7dBTz
+VluMQOr3kzT/hLxuWh1WdiVLZIvsBKXpzyrFnnunZp3Kse28Sg1cjNZ419I1g5e3
+VowXS02Ym7CUMQAapaxmq/A63SA4RsI47FoVYlouTYJuWmwUdZ8r0hV7kMuLahxB
+I8IMAiDN+qlrdBX9T90YiFiHAmzSj/dhRpXJTHZpFUnuwMj0EtGngGtadKLDRjk=
+=53Np
 -----END PGP SIGNATURE-----
 
---nextPart6269706.plkOqZiHmp--
+--nextPart1556495.0qG3ZzzxTP--
 
