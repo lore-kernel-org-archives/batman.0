@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 02 Feb 2014 22:30:14 +0800
-Message-ID: <4013731.Syhc611NlW@diderot>
-In-Reply-To: <1390984890-6812-1-git-send-email-mareklindner@neomailbox.ch>
-References: <1390984890-6812-1-git-send-email-mareklindner@neomailbox.ch>
+Date: Sun, 02 Feb 2014 22:38:13 +0800
+Message-ID: <36618596.ZToeit0aZU@diderot>
+In-Reply-To: <52E98B7E.4000400@meshcoding.com>
+References: <1391037144-2448-1-git-send-email-antonio@meshcoding.com>
+ <52E98B7E.4000400@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1794744.PXjR3rrJEa";
+Content-Type: multipart/signed; boundary="nextPart1849367.MWGkPibpK4";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batctl: switch to net/if.h include
-	to make OpenWrt build happy
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: properly check
+	pskb_may_pull return value
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,26 +22,32 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart1794744.PXjR3rrJEa
+--nextPart1849367.MWGkPibpK4
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday 29 January 2014 16:41:30 Marek Lindner wrote:
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> ---
->  ioctl.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+On Thursday 30 January 2014 00:15:10 Antonio Quartulli wrote:
+> On 30/01/14 00:12, Antonio Quartulli wrote:
+> > pskb_may_pull() returns 1 on success and 0 in case of failure,
+> > therefore checking for the return value being negative does
+> > not make sense at all.
+> >
+> > 
+> 
+> I should have added:
+> 
+> This way if the function fails we will probably read beyond the current
+> skb data buffer.
 
-Applied in revision abe78a5.
+Applied in revision eabdc31.
 
 Thanks,
 Marek
 
---nextPart1794744.PXjR3rrJEa
+--nextPart1849367.MWGkPibpK4
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -48,14 +55,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJS7lZ5AAoJEFNVTo/uthzAVqEH/ie+7YaxYGgbBk5aljcSm7vw
-jbpbN4JE8RAMdUF0R6A1kl6VAWhKNGclGqeNi672O+7miOArOzxUF6L/NeIsfMz7
-a3hsYB0aq2w1Hi8AarLwzCNcYTuXuxikxjNRBXeDQDIkbQnP3UBlUhVwi5MLFE7K
-BLodNn0hlETpiur5xZuyNLHkoNsPaCpEh5cRuCofHowJysK0XNEWAuqM/vdt0/b2
-NtrlKGvpDnyI7CsMAmF9+qpkacDrYZaioddaQlEEkcCu1EfgGhbvOat7hpiQuXz9
-2htnyRKyk9UeZM6jtNvqiOSi/BpzR2fImBkw7NbW1dyf4VnWo8DNxgTg7pYVkA4=
-=LfeH
+iQEcBAABAgAGBQJS7lhVAAoJEFNVTo/uthzAFqEH/RCEvEwV442aRptfbYF/iZk6
+kgYEech3y73nvRsTqEaEcXwNhI0TaTWemypvOCNxrz6Nfbl5QJMBcZeomgU1vozA
+dtPU0lC6xz7GhRSCYzv0ZMqOBPucymuMH6kFeqHHBlrP9sb+DMxw7+huQcTsXEHR
+9AFxvmCEWnYyDdZ9CD6zI/P620iY15n2vxhwGX1fUf2C8S4QwNTN9LswrO5zRFF1
+V+NtTZvtni5/diFVTaNTyiPRD1Q1GkfdBKLweGhYc6a23Tkrl47eQhmP6mk6Lxsz
+hEDjDKvt2FXuFszkPB4dG0et0/MU6plHnehjqBz8h94N6uxqBFTe6RVveHOLWjM=
+=oaTh
 -----END PGP SIGNATURE-----
 
---nextPart1794744.PXjR3rrJEa--
+--nextPart1849367.MWGkPibpK4--
 
