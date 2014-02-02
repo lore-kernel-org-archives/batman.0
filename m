@@ -1,14 +1,12 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 02 Feb 2014 22:43:53 +0800
-Message-ID: <99386375.iv1ytOqtl5@diderot>
-In-Reply-To: <1391086647-1732-1-git-send-email-antonio@meshcoding.com>
-References: <1391086647-1732-1-git-send-email-antonio@meshcoding.com>
+Date: Sun,  2 Feb 2014 22:53:11 +0800
+Message-Id: <1391352791-19305-1-git-send-email-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8487928.dfJIVFryAd";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: remove useless
-	assignment
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: backport eth_hdr() compat fix to
+	avoid kernel oops
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,44 +19,41 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
+From: Linus Lüssing <linus.luessing@web.de>
 
---nextPart8487928.dfJIVFryAd
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Introduced by 41b38727749a94c1a65cf0f4be9bfe1cbaf0adeb
+   ("batman-adv: fix potential kernel paging error for unicast transmissions")
 
-On Thursday 30 January 2014 13:57:27 Antonio Quartulli wrote:
-> Introduced by 41b38727749a94c1a65cf0f4be9bfe1cbaf0adeb
->    ("batman-adv: fix potential kernel paging error for unicast
-> transmissions")
-> 
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-> ---
->  send.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+CC: Linus Lüssing <linus.luessing@web.de>
+---
+ compat.h | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Applied in revision 9a91d33.
-
-Thanks,
-Marek
-
---nextPart8487928.dfJIVFryAd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJS7lmpAAoJEFNVTo/uthzATOIH/iqP+3sF1VMS/fhLrwHP2WFw
-88L5O6vb8U2FXQL/JcAsHp8+h/kTTU6lBlFe8JZSVc9uFea2v1wiuO9tsZ2m64C/
-Mvz4uJaD9FlCZZpn/Pk5ARMH0tChkVqMoOzxjnZBFfciqzu8bzNCewR0l+FI1bkl
-N/lBYpLMVQPshQncVwOD/JKDt803pWzmkZDT12sv88RG5meqA3bjgSgwV8cUzfjs
-gby96t/jMmwjSWiYQdRS0YLpRU23ya/Jw54uHRxplXaQXQl9bKdjOLhFSoD+QOZ+
-OP5tasNCfla95MndCyEtygN7A/+EeyzbGxcap2aEvll2GZ8K4lL2RUyfIvOpOs0=
-=y9Ve
------END PGP SIGNATURE-----
-
---nextPart8487928.dfJIVFryAd--
+diff --git a/compat.h b/compat.h
+index a4ab202..deea92b 100644
+--- a/compat.h
++++ b/compat.h
+@@ -289,6 +289,17 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p) \
+ }\
+ static int __batadv_interface_set_mac_addr(x, y)
+ 
++#define batadv_interface_tx(x, y) \
++__batadv_interface_tx(struct sk_buff *skb, struct net_device *soft_iface); \
++static int batadv_interface_tx(struct sk_buff *skb, \
++			       struct net_device *soft_iface) \
++{ \
++	skb_reset_mac_header(skb); \
++	return __batadv_interface_tx(skb, soft_iface); \
++} \
++static int __batadv_interface_tx(struct sk_buff *skb, \
++				 struct net_device *soft_iface)
++
+ #define netdev_master_upper_dev_link netdev_set_master
+ #define netdev_upper_dev_unlink(slave, master) netdev_set_master(slave, NULL)
+ #define netdev_master_upper_dev_get(dev) \
+-- 
+1.8.5.3
 
