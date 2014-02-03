@@ -1,12 +1,15 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun,  2 Feb 2014 22:53:11 +0800
-Message-Id: <1391352791-19305-1-git-send-email-mareklindner@neomailbox.ch>
+Return-Path: <dan.carpenter@oracle.com>
+Date: Tue, 4 Feb 2014 00:16:15 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Message-ID: <20140203211615.GC26776@mwanda>
+References: <20140130125206.GA23793@elgon.mountain>
+ <52EA5AAB.8080101@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: backport eth_hdr() compat fix to
-	avoid kernel oops
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <52EA5AAB.8080101@meshcoding.com>
+Subject: Re: [B.A.T.M.A.N.] question about min_t() casting in
+ batadv_hardif_min_mtu()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,42 +21,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+To: Antonio Quartulli <antonio@meshcoding.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Linus Lüssing <linus.luessing@web.de>
+On Thu, Jan 30, 2014 at 02:59:07PM +0100, Antonio Quartulli wrote:
+> 
+> But why don't dev_set_mtu() check for the argument to be larger than
+> 68bytes? Isn't that a general requirement?
 
-Introduced by 41b38727749a94c1a65cf0f4be9bfe1cbaf0adeb
-   ("batman-adv: fix potential kernel paging error for unicast transmissions")
+I'm not a networking person.  It sounds reasonable to me that we could
+use add a better minimum check there but why is it 68 bytes?
 
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-CC: Linus Lüssing <linus.luessing@web.de>
----
- compat.h | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/compat.h b/compat.h
-index a4ab202..deea92b 100644
---- a/compat.h
-+++ b/compat.h
-@@ -289,6 +289,17 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p) \
- }\
- static int __batadv_interface_set_mac_addr(x, y)
- 
-+#define batadv_interface_tx(x, y) \
-+__batadv_interface_tx(struct sk_buff *skb, struct net_device *soft_iface); \
-+static int batadv_interface_tx(struct sk_buff *skb, \
-+			       struct net_device *soft_iface) \
-+{ \
-+	skb_reset_mac_header(skb); \
-+	return __batadv_interface_tx(skb, soft_iface); \
-+} \
-+static int __batadv_interface_tx(struct sk_buff *skb, \
-+				 struct net_device *soft_iface)
-+
- #define netdev_master_upper_dev_link netdev_set_master
- #define netdev_upper_dev_unlink(slave, master) netdev_set_master(slave, NULL)
- #define netdev_master_upper_dev_get(dev) \
--- 
-1.8.5.3
+regards,
+dan carpenter
 
