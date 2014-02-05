@@ -1,16 +1,9 @@
-Return-Path: <christian@solvare.se>
-Message-ID: <52F20489.9010009@solvare.se>
-Date: Wed, 05 Feb 2014 10:29:45 +0100
-From: Christian Huldt <christian@solvare.se>
-MIME-Version: 1.0
-References: <CAL0=0H0Ad6Bum5wy3Dr+LNrJEkKipWY0feG4hMiNjPQe+ztD5g@mail.gmail.com>
- <52F0C851.9060203@solvare.se>
- <CAL0=0H0xHokevT6k_L-WiV==5HMHQx_5KDmk3RJ8senfApb5DA@mail.gmail.com>
-In-Reply-To: <CAL0=0H0xHokevT6k_L-WiV==5HMHQx_5KDmk3RJ8senfApb5DA@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] When will BATMAN be available on stock android
- devices?
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed,  5 Feb 2014 13:02:48 +0100
+Message-Id: <1391601768-6792-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix potential orig_node
+	reference leak
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,17 +17,57 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-https://code.google.com/p/android/issues/detail?id=82&q=mesh&colspec=ID%20Type%20Status%20Owner%20Summary%20Stars
+Since batadv_orig_node_new() does not add the originator into the orig
+hash, it should only return the created orig_node object with a refcount
+of one (for the object return). Otherwise batadv_iv_ogm_orig_get() will
+not free the orig_node correctly when allocating its private structures
+or adding to the hash fails (refcount will just be decreased to one) and
+eventually leak it.
 
-crocket skrev 2014-02-04 21:34:
-> Where do I find bug 82?
-> 
-> On Tue, Feb 4, 2014 at 8:00 PM, Christian Huldt <christian@solvare.se> wrote:
->> crocket skrev 2014-02-03 22:38:
->>> If people have to root android, not many people will use BATMAN.
->>>
->>> When do you guys think it will be available on off-the-shelf android devices?
->>
->> When Google stops messing with the kernel, see bug 82
->>
+Reported-by: Antonio Quartulli <antonio@meshcoding.com>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ bat_iv_ogm.c |    8 +++++++-
+ originator.c |    3 +--
+ 2 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 7cf26bc..10acd39 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -243,11 +243,17 @@ batadv_iv_ogm_orig_get(struct batadv_priv *bat_priv, const uint8_t *addr)
+ 	if (!orig_node->bat_iv.bcast_own_sum)
+ 		goto free_bcast_own;
+ 
++	/* increase refcount for the hash reference */
++	if (atomic_inc_not_zero(&orig_node->refcount))
++		goto free_bcast_own;
++
+ 	hash_added = batadv_hash_add(bat_priv->orig_hash, batadv_compare_orig,
+ 				     batadv_choose_orig, orig_node,
+ 				     &orig_node->hash_entry);
+-	if (hash_added != 0)
++	if (hash_added != 0) {
++		batadv_orig_node_free_ref(orig_node);
+ 		goto free_bcast_own;
++	}
+ 
+ 	return orig_node;
+ 
+diff --git a/originator.c b/originator.c
+index c4d16e5..c308367 100644
+--- a/originator.c
++++ b/originator.c
+@@ -625,8 +625,7 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
+ 
+ 	batadv_nc_init_orig(orig_node);
+ 
+-	/* extra reference for return */
+-	atomic_set(&orig_node->refcount, 2);
++	atomic_set(&orig_node->refcount, 1);
+ 
+ 	orig_node->tt_initialised = false;
+ 	orig_node->bat_priv = bat_priv;
+-- 
+1.7.10.4
 
