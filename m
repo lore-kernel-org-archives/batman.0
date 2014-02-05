@@ -1,9 +1,11 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed,  5 Feb 2014 13:02:48 +0100
-Message-Id: <1391601768-6792-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix potential orig_node
-	reference leak
+Return-Path: <daniel@makrotopia.org>
+Message-ID: <52F2968D.8050101@makrotopia.org>
+Date: Wed, 05 Feb 2014 20:52:45 +0100
+From: Daniel <daniel@makrotopia.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] question regarding gateway_mode server
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,58 +18,31 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Ufo <ufo@public-ip.org>
 
-Since batadv_orig_node_new() does not add the originator into the orig
-hash, it should only return the created orig_node object with a refcount
-of one (for the object return). Otherwise batadv_iv_ogm_orig_get() will
-not free the orig_node correctly when allocating its private structures
-or adding to the hash fails (refcount will just be decreased to one) and
-eventually leak it.
+Hi!
 
-Reported-by: Antonio Quartulli <antonio@meshcoding.com>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- bat_iv_ogm.c |    8 +++++++-
- originator.c |    3 +--
- 2 files changed, 8 insertions(+), 3 deletions(-)
+Is there a way how I can prevent a local DHCP-server from replying to
+non-gw_mode-client's DHCP requests?
+The situation is that we got a central DHCP server on the mesh which should be
+used by all nodes which do not have gw_mode set. In my understanding, setting
+gw_mode to 'server' on another local DHCP server should prevent that DHCP server
+from receiving (and thus replying to) requests from clients with gw_mode set to
+'off', however, it seems like the local gw_mode==server node occasionally
+replies to gw_mode==off clients (seems like the usual
+more-than-one-dhcp-server-on-a-subnet race condition)
+I'm aware that this could probably be solved using ebtables, however, due to the
+high performance impact and ugliness of ebtables, I'd prefer another way to fix it.
+Am I getting something wrong regarding the intended behavior of gw_mode==server?
+If needed, I can write a patch to implement that functionality and have a
+gw_mode==exclusive_server or something like that in case the current behavior is
+actually intentional.
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 7cf26bc..10acd39 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -243,11 +243,17 @@ batadv_iv_ogm_orig_get(struct batadv_priv *bat_priv, const uint8_t *addr)
- 	if (!orig_node->bat_iv.bcast_own_sum)
- 		goto free_bcast_own;
- 
-+	/* increase refcount for the hash reference */
-+	if (atomic_inc_not_zero(&orig_node->refcount))
-+		goto free_bcast_own;
-+
- 	hash_added = batadv_hash_add(bat_priv->orig_hash, batadv_compare_orig,
- 				     batadv_choose_orig, orig_node,
- 				     &orig_node->hash_entry);
--	if (hash_added != 0)
-+	if (hash_added != 0) {
-+		batadv_orig_node_free_ref(orig_node);
- 		goto free_bcast_own;
-+	}
- 
- 	return orig_node;
- 
-diff --git a/originator.c b/originator.c
-index c4d16e5..c308367 100644
---- a/originator.c
-+++ b/originator.c
-@@ -625,8 +625,7 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
- 
- 	batadv_nc_init_orig(orig_node);
- 
--	/* extra reference for return */
--	atomic_set(&orig_node->refcount, 2);
-+	atomic_set(&orig_node->refcount, 1);
- 
- 	orig_node->tt_initialised = false;
- 	orig_node->bat_priv = bat_priv;
--- 
-1.7.10.4
+(We are using batman-adv v14 (2013.4.0) on various OpenWrt versions.)
+
+
+Cheers
+
+
+Daniel
 
