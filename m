@@ -1,12 +1,15 @@
-Return-Path: <trandatnh@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <201402061055.11799.sw@simonwunderlich.de>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Thu, 6 Feb 2014 13:40:08 +0100
 References: <CAOyZXpTWbaPckhZisRRO4itnYVSRAamddXPZkoUWibhsKs2dLw@mail.gmail.com>
  <201402061055.11799.sw@simonwunderlich.de>
-From: Le Tran Dat <trandatnh@gmail.com>
-Date: Thu, 6 Feb 2014 04:06:07 -0800
-Message-ID: <CAOyZXpT8mRYrWfMfkKOr+7ks3H=3PzhRAPeyJ1oLvSoYx1uz_A@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+ <CAOyZXpT8mRYrWfMfkKOr+7ks3H=3PzhRAPeyJ1oLvSoYx1uz_A@mail.gmail.com>
+In-Reply-To: <CAOyZXpT8mRYrWfMfkKOr+7ks3H=3PzhRAPeyJ1oLvSoYx1uz_A@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201402061340.08606.sw@simonwunderlich.de>
 Subject: Re: [B.A.T.M.A.N.] How to send message/execute script on clients
 	from server?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,61 +23,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>
+To: Le Tran Dat <trandatnh@gmail.com>
 Cc: "b.a.t.m.a.n" <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Simon,
+Hello Dat,
 
-Thanks for your response. I've read about Alfred, tomorrow I will try
-installing Alfred.
+> Hi Simon,
+> 
+> Thanks for your response. I've read about Alfred, tomorrow I will try
+> installing Alfred.
+> 
+> I am browsing the source code of batman adv and if I am not wrong I
+> can create and send a user-defined message.
+> I think I can broadcast something like a "struct sk_buff *skb;" to all
+> clients. However I don't think this one is a good way since it may
+> impact to the current design of batman adv. How do you think?
 
-I am browsing the source code of batman adv and if I am not wrong I
-can create and send a user-defined message.
-I think I can broadcast something like a "struct sk_buff *skb;" to all
-clients. However I don't think this one is a good way since it may
-impact to the current design of batman adv. How do you think?
+well in theory you can do a lot of things, but in practice I'd really not 
+recommend to send userspace-specific stuff through the kernel. I think it would 
+be better to just a userspace tool (alfred, wget/httpd, netcat, your own tool) 
+to transfer this kind of data.
 
-One more question, why browsing source code, I can not find the
-definition of struct sk_buff; where could I find it?
+> 
+> One more question, why browsing source code, I can not find the
+> definition of struct sk_buff; where could I find it?
 
-P/S: I forgot to give the detail of my issue is that I do not know the IP
-addresses of all clients but I want to be able to send the
-configuration to them.
-Is it possible for Alfred to send those configuration without knowing
-cients' IP address by using mac-address only?
+This is part of the linux kernel headers, to be found in 
+include/linux/skbuff.h. Again, you should really look into sending this kind of 
+information via userspace, e.g. use an UDP-socket and send a broadcast 
+message. In case you have never done something like that, have a look
+at that guide:
 
-I haven't tried with IPv6 before. I have no IPv6 knowledge.
+http://beej.us/guide/bgnet/
 
-Thanks,
-Dat
+> 
+> P/S: I forgot to give the detail of my issue is that I do not know the IP
+> addresses of all clients but I want to be able to send the
+> configuration to them.
+> Is it possible for Alfred to send those configuration without knowing
+> cients' IP address by using mac-address only?
 
-On Thu, Feb 6, 2014 at 1:55 AM, Simon Wunderlich <sw@simonwunderlich.de> wrote:
-> Hi Dat,
->
->> Hi,
->>
->> I would like to know if batman adv [2013.2.0] supports a way to
->> send/receive message between server and client?
->>
->> I have setup a mesh network which has 1 server and several clients. I
->> want to broadcast a message to all the clients from the server. The
->> message might contain one more many parameters that I want all clients
->> will use these parameters for their configuration.
->>
->> It would be very convenience if I could execute a script remotely on
->> clients from the server via batman adv without knowing their IP
->> address.
->
-> batman-adv does not allow that by itself, but you can find various ways to do
-> that. For example, install an HTTP server and let the clients download scripts
-> from the default router in your routing table which hopefully points to your
-> server. Another alternative would be to use alfred[1], which is designed to
-> distribute data through a mesh network and to be used by clients. You can use
-> it to send any kind of data over your mesh network. I would not exactly send
-> shellscripts over it (might be a security problem), but configuration
-> parameters should work just fine.
->
-> Cheers,
->     Simon
->
-> [1] http://www.open-mesh.org/projects/open-mesh/wiki/Alfred
+Yes, that is possible.
+> 
+> I haven't tried with IPv6 before. I have no IPv6 knowledge.
+
+That's not a problem, just turn on IPv6 in your system and the interface will 
+get a link-local address assigned automatically.
+
+Cheers,
+    Simon
