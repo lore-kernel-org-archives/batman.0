@@ -1,11 +1,11 @@
-Return-Path: <daniel@makrotopia.org>
-Message-ID: <52F2968D.8050101@makrotopia.org>
-Date: Wed, 05 Feb 2014 20:52:45 +0100
-From: Daniel <daniel@makrotopia.org>
+Return-Path: <trandatnh@gmail.com>
 MIME-Version: 1.0
+From: Le Tran Dat <trandatnh@gmail.com>
+Date: Thu, 6 Feb 2014 15:09:20 +0800
+Message-ID: <CAOyZXpRx4Frsppj3UmoOJS9ave0wrVLiZR7PwT1j4ZNEo1KZ2A@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] question regarding gateway_mode server
+Subject: [B.A.T.M.A.N.] How to send message/execute script on clients from
+	Gateway?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,31 +18,20 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Ufo <ufo@public-ip.org>
 
-Hi!
+Hi,
 
-Is there a way how I can prevent a local DHCP-server from replying to
-non-gw_mode-client's DHCP requests?
-The situation is that we got a central DHCP server on the mesh which should be
-used by all nodes which do not have gw_mode set. In my understanding, setting
-gw_mode to 'server' on another local DHCP server should prevent that DHCP server
-from receiving (and thus replying to) requests from clients with gw_mode set to
-'off', however, it seems like the local gw_mode==server node occasionally
-replies to gw_mode==off clients (seems like the usual
-more-than-one-dhcp-server-on-a-subnet race condition)
-I'm aware that this could probably be solved using ebtables, however, due to the
-high performance impact and ugliness of ebtables, I'd prefer another way to fix it.
-Am I getting something wrong regarding the intended behavior of gw_mode==server?
-If needed, I can write a patch to implement that functionality and have a
-gw_mode==exclusive_server or something like that in case the current behavior is
-actually intentional.
+I would like to know if batman adv [2013.2.0] supports a way to
+send/receive message between gateway and client?
 
-(We are using batman-adv v14 (2013.4.0) on various OpenWrt versions.)
+I have setup a mesh network which has 1 gateway and several clients. I
+want to broadcast a message to all the clients from the gateway. The
+message might contain one more many parameters that I want all clients
+will use these parameters for their configuration.
 
+It would be very convenience if I could execute a script remotely on
+clients from the gateway via batman adv without knowing their IP
+address.
 
-Cheers
-
-
-Daniel
-
+Thanks,
+Dat
