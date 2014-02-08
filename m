@@ -1,9 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Sat,  8 Feb 2014 16:45:06 +0100
-Message-Id: <1391874306-15627-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: fix potential orig_node
-	reference leak
+Return-Path: <onelektra@gmx.net>
+Date: Sat, 8 Feb 2014 16:34:27 +0100
+From: Elektra <onelektra@gmx.net>
+Message-Id: <20140208163427.46e812fc3e517b6c04d909c0@gmx.net>
+In-Reply-To: <201402061652.48854.sw@simonwunderlich.de>
+References: <1375184174.231615127.1391591164796.JavaMail.root@spooler5n-g27.priv.proxad.net>
+ <201402061652.48854.sw@simonwunderlich.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] question about VIS servera
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,33 +20,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Since batadv_orig_node_new() sets the refcount to two, assuming that
-the calling function will use a reference for putting the orig_node into
-a hash or similar, both references must be freed if initialization of
-the orig_node fails. Otherwise that object may be leaked in that error
-case.
+Hi -
 
-Reported-by: Antonio Quartulli <antonio@meshcoding.com>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- bat_iv_ogm.c |    2 ++
- 1 file changed, 2 insertions(+)
+> > Is there a bug ?
+> 
+> We can't exclude or confirm that from your report.
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 6f4fcdc..6000337 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -256,6 +256,8 @@ batadv_iv_ogm_orig_get(struct batadv_priv *bat_priv, const uint8_t *addr)
- free_bcast_own:
- 	kfree(orig_node->bat_iv.bcast_own);
- free_orig_node:
-+	/* free twice, as batadv_orig_node_new set refcount to 2 */
-+	batadv_orig_node_free_ref(orig_node);
- 	batadv_orig_node_free_ref(orig_node);
- 
- 	return NULL;
--- 
-1.7.10.4
+batmand + vis have been used by the Villagetelco community, I'm not assumming a basic bug there.  
 
+Cheers,
+Elektra
