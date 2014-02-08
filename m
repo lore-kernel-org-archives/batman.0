@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 08 Feb 2014 21:14:34 +0800
-Message-ID: <4985684.n49h5G54Rj@diderot>
-In-Reply-To: <1391352791-19305-1-git-send-email-mareklindner@neomailbox.ch>
-References: <1391352791-19305-1-git-send-email-mareklindner@neomailbox.ch>
+Date: Sat, 08 Feb 2014 21:24:04 +0800
+Message-ID: <9483212.4sKq0BcBlF@diderot>
+In-Reply-To: <1390991112-2494-1-git-send-email-antonio@meshcoding.com>
+References: <1390991112-2494-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2460897.rW5psCgrrN";
+Content-Type: multipart/signed; boundary="nextPart2098368.1gMUU1BR4j";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: backport eth_hdr() compat
-	fix to avoid kernel oops
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4] batman-adv: avoid potential race
+	condition when adding a new neighbour
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,31 +21,49 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart2460897.rW5psCgrrN
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart2098368.1gMUU1BR4j
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Sunday 02 February 2014 22:53:11 Marek Lindner wrote:
-> From: Linus L=FCssing <linus.luessing@web.de>
->=20
-> Introduced by 41b38727749a94c1a65cf0f4be9bfe1cbaf0adeb
->    ("batman-adv: fix potential kernel paging error for unicast
-> transmissions")
->=20
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> CC: Linus L=FCssing <linus.luessing@web.de>
+On Wednesday 29 January 2014 11:25:12 Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+> 
+> When adding a new neighbour it is important to atomically
+> perform the following:
+> - check if the neighbour already exists
+> - append the neighbour to the proper list
+> 
+> If the two operations are not performed in an atomic context
+> it is possible that two concurrent insertions add the same
+> neighbour twice.
+> 
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 > ---
->  compat.h | 11 +++++++++++
->  1 file changed, 11 insertions(+)
+> 
+> Changes from v3:
+> - remove useless initialization
+> 
+> Changes from v2:
+> - fix typ0
+> 
+> Changes from v1:
+> - release hard_iface if we already have a matching neighbour
+> 
+> 
+>  bat_iv_ogm.c | 22 ++++++++++++++++------
+>  originator.c | 36 ++++++++++++++++++++++++++++++++++++
+>  originator.h |  4 ++++
+>  3 files changed, 56 insertions(+), 6 deletions(-)
 
-Applied in revision b921e8f.
+Applied in revision e08e28f.
 
 Thanks,
 Marek
 
---nextPart2460897.rW5psCgrrN
+--nextPart2098368.1gMUU1BR4j
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +71,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJS9i2+AAoJEFNVTo/uthzAhdcIAKldrMoCTG9VunWKDH4OpO08
-QDK3yl3veRD5Yz3Cog61soz+jpDVKJBmE0wCTl9IRoC5nQ5QypjLBldHXWkCwm2j
-ojgJrQ0eTsHU3IVtd2DKKGp9dP1m8T1+wlvifyhtp/Eoi7e5I/p8KDpxa43RCVBL
-TP9SxLVas9qHgEqC8GpdV9Ll1yDyo2tV+8zn4/buenhkjQMVprzIE3ejwyjegtpg
-J51NOI8ZKX5S7cDrY2kTEJJgTFwgsGW2mwa7JRsvQAd11JtB2blRU0GcIMp6LELo
-w41fOm6hjVfpTN5+kEdRTRTh8RcRc7Ni4X4ibMlnY2Snv4vAulbStOKgK4bMDe4=
-=8taL
+iQEcBAABAgAGBQJS9i/0AAoJEFNVTo/uthzAUT0H/1vIvov+C7JrqMAyT/N1Kz1k
+8+Dojkz/8eP8iesvtYvw/yyYh/CAF07ILX52QwCOkq3zgrKjGOsrL6iiNamjkSn/
+XV8xU77/XUZLEfikMG73Jm6DDOiLDPFiG1aKBxxi2VxCM0hWcGIgnm9C4e7LZjqo
+LH/LSbTy8MoTBKaEN8nnnHvsK/55ejtKqcqoiDd+hXTK6oJrYj5/lfamPDveG+aX
+TyO46yzavsCF+4tdGLxqpq5+T3tqBF7ulvnQNRFU/fpgYcgoqOae91qvxdJJq4rR
+StHaduft9sWLf+oI5UxV/k583yiqkUCYp2CG6UFzUnYEDJIUjzBOOC8RPs+B0Ug=
+=FAVz
 -----END PGP SIGNATURE-----
 
---nextPart2460897.rW5psCgrrN--
+--nextPart2098368.1gMUU1BR4j--
 
