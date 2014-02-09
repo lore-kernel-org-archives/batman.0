@@ -1,14 +1,14 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Sun,  9 Feb 2014 04:48:55 +0100
-Message-Id: <1391917738-4483-4-git-send-email-linus.luessing@web.de>
+Date: Sun,  9 Feb 2014 04:48:56 +0100
+Message-Id: <1391917738-4483-5-git-send-email-linus.luessing@web.de>
 In-Reply-To: <1391917738-4483-1-git-send-email-linus.luessing@web.de>
 References: <1391917738-4483-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv13 3/6] batman-adv: Announce new capability
-	via multicast TVLV
+Subject: [B.A.T.M.A.N.] [PATCHv13 4/6] batman-adv: Modified forwarding
+	behaviour for multicast packets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,361 +22,589 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-If the soft interface of a node is not part of a bridge then a node
-announces a new multicast TVLV: The existence of this TVLV
-signalizes that this node is announcing all of its multicast listeners
-via the translation table infrastructure.
+With this patch a multicast packet is not always simply flooded anymore,
+the behaviour for the following cases is changed to reduce
+unnecessary overhead:
+
+If all nodes within the horizon of a certain node have signalized
+multicast listener announcement capability then an IPv6 multicast packet
+with a destination of IPv6 link-local scope (excluding ff02::1) coming
+from the upstream of this node...
+
+* ...is dropped if there is no according multicast listener in the
+  translation table,
+* ...is forwarded via unicast if there is a single node with interested
+  multicast listeners
+* ...and otherwise still gets flooded.
 
 Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 ---
- main.c           |    1 +
- multicast.c      |  121 +++++++++++++++++++++++++++++++++++++++++++++++++++---
- multicast.h      |   14 +++++++
- originator.c     |    6 +++
- packet.h         |   12 ++++++
- soft-interface.c |    4 ++
- types.h          |   13 ++++++
- 7 files changed, 166 insertions(+), 5 deletions(-)
+ multicast.c          |  134 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ multicast.h          |   24 +++++++++
+ send.c               |   10 ++--
+ send.h               |    5 ++
+ soft-interface.c     |   20 +++++++-
+ sysfs-class-net-mesh |    9 ++++
+ sysfs.c              |    6 +++
+ translation-table.c  |   92 ++++++++++++++++++++++++++--------
+ translation-table.h  |    2 +
+ types.h              |    7 +++
+ 10 files changed, 283 insertions(+), 26 deletions(-)
 
-diff --git a/main.c b/main.c
-index 58e98c8..8f11b67 100644
---- a/main.c
-+++ b/main.c
-@@ -149,6 +149,7 @@ int batadv_mesh_init(struct net_device *soft_iface)
- 		goto err;
- 
- 	batadv_gw_init(bat_priv);
-+	batadv_mcast_init(bat_priv);
- 
- 	atomic_set(&bat_priv->gw.reselect, 0);
- 	atomic_set(&bat_priv->mesh_state, BATADV_MESH_ACTIVE);
 diff --git a/multicast.c b/multicast.c
-index 66e270c..fe9e1e3 100644
+index fe9e1e3..66a4fe8 100644
 --- a/multicast.c
 +++ b/multicast.c
-@@ -202,11 +202,52 @@ out:
+@@ -17,6 +17,7 @@
+ #include "originator.h"
+ #include "hard-interface.h"
+ #include "translation-table.h"
++#include "multicast.h"
+ 
+ /**
+  * batadv_mcast_mla_softif_get - get softif multicast listeners
+@@ -271,6 +272,139 @@ out:
  }
  
  /**
-+ * batadv_mcast_mla_tvlv_update - update multicast tvlv
++ * batadv_mcast_forw_mode_check_ipv6 - check for optimized forwarding potential
 + * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the IPv6 packet to check
 + *
-+ * Update the own multicast tvlv with our current multicast related settings,
-+ * capabilities and inabilities.
++ * Check whether the given IPv6 packet has the potential to
++ * be forwarded with a mode more optimal than classic flooding.
 + *
-+ * Return true if the tvlv container is registered afterwards. Otherwise return
-+ * false.
++ * If so then return 0. Otherwise -EINVAL is returned or -ENOMEM if we are
++ * out of memory.
 + */
-+static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
++static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
++					     struct sk_buff *skb)
 +{
-+	struct batadv_tvlv_mcast_data mcast_data;
++	struct ipv6hdr *ip6hdr;
 +
-+	mcast_data.flags = BATADV_NO_FLAGS;
-+	memset(mcast_data.reserved, 0, sizeof(mcast_data.reserved));
++	/* We might fail due to out-of-memory -> drop it */
++	if (!pskb_may_pull(skb, sizeof(struct ethhdr) + sizeof(*ip6hdr)))
++		return -ENOMEM;
 +
-+	/* Avoid attaching MLAs, if there is a bridge on top of our soft
-+	 * interface, we don't support that yet (TODO)
++	ip6hdr = ipv6_hdr(skb);
++
++	/* TODO: Implement Multicast Router Discovery (RFC4286),
++	 * then allow scope > link local, too
 +	 */
-+	if (batadv_mcast_has_bridge(bat_priv)) {
-+		if (bat_priv->mcast.enabled) {
-+			batadv_tvlv_container_unregister(bat_priv,
-+							 BATADV_TVLV_MCAST, 1);
-+			bat_priv->mcast.enabled = false;
-+		}
++	if (IPV6_ADDR_MC_SCOPE(&ip6hdr->daddr) !=
++	    IPV6_ADDR_SCOPE_LINKLOCAL)
++		return -EINVAL;
 +
-+		return false;
-+	}
-+
-+	if (!bat_priv->mcast.enabled ||
-+	    mcast_data.flags != bat_priv->mcast.flags) {
-+		batadv_tvlv_container_register(bat_priv, BATADV_TVLV_MCAST, 1,
-+					       &mcast_data, sizeof(mcast_data));
-+		bat_priv->mcast.flags = mcast_data.flags;
-+		bat_priv->mcast.enabled = true;
-+	}
-+
-+	return true;
-+}
-+
-+/**
-  * batadv_mcast_mla_update - update the own MLAs
-  * @bat_priv: the bat priv with all the soft interface information
-  *
-  * Update the own multicast listener announcements in the translation
-- * table.
-+ * table as well as the own, announced multicast tvlv container.
-  */
- void batadv_mcast_mla_update(struct batadv_priv *bat_priv)
- {
-@@ -214,10 +255,7 @@ void batadv_mcast_mla_update(struct batadv_priv *bat_priv)
- 	struct hlist_head mcast_list = HLIST_HEAD_INIT;
- 	int ret;
- 
--	/* Avoid attaching MLAs, if there is a bridge on top of our soft
--	 * interface, we don't support that yet (TODO)
--	 */
--	if (batadv_mcast_has_bridge(bat_priv))
-+	if (!batadv_mcast_mla_tvlv_update(bat_priv))
- 		goto update;
- 
- 	ret = batadv_mcast_mla_softif_get(soft_iface, &mcast_list);
-@@ -233,10 +271,83 @@ out:
- }
- 
- /**
-+ * batadv_mcast_tvlv_ogm_handler_v1 - process incoming multicast tvlv container
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @orig: the orig_node of the ogm
-+ * @flags: flags indicating the tvlv state (see batadv_tvlv_handler_flags)
-+ * @tvlv_value: tvlv buffer containing the multicast data
-+ * @tvlv_value_len: tvlv buffer length
-+ */
-+static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
-+					     struct batadv_orig_node *orig,
-+					     uint8_t flags,
-+					     void *tvlv_value,
-+					     uint16_t tvlv_value_len)
-+{
-+	bool orig_mcast_enabled = !(flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
-+	uint8_t mcast_flags = BATADV_NO_FLAGS;
-+	bool orig_initialized;
-+
-+	orig_initialized = orig->capa_initialized & BATADV_ORIG_CAPA_HAS_MCAST;
-+
-+	/* If mcast support is turned on decrease the disabled mcast node
-+	 * counter only if we had increased it for this node before. If this
-+	 * is a completely new orig_node no need to decrease the counter.
++	/* link-local-all-nodes multicast listeners behind a bridge are
++	 * not snoopable (see RFC4541, section 3, paragraph 3)
 +	 */
-+	if (orig_mcast_enabled &&
-+	    !(orig->capabilities & BATADV_ORIG_CAPA_HAS_MCAST)) {
-+		if (orig_initialized)
-+			atomic_dec(&bat_priv->mcast.num_disabled);
-+		orig->capabilities |= BATADV_ORIG_CAPA_HAS_MCAST;
-+	/* If mcast support is being switched off increase the disabled
-+	 * mcast node counter.
-+	 */
-+	} else if (!orig_mcast_enabled &&
-+		   orig->capabilities & BATADV_ORIG_CAPA_HAS_MCAST) {
-+		atomic_inc(&bat_priv->mcast.num_disabled);
-+		orig->capabilities &= ~BATADV_ORIG_CAPA_HAS_MCAST;
-+	}
++	if (ipv6_addr_is_ll_all_nodes(&ip6hdr->daddr))
++		return -EINVAL;
 +
-+	orig->capa_initialized |= BATADV_ORIG_CAPA_HAS_MCAST;
-+
-+	if (orig_mcast_enabled && tvlv_value &&
-+	    (tvlv_value_len >= sizeof(mcast_flags)))
-+		mcast_flags = *(uint8_t *)tvlv_value;
-+
-+	orig->mcast_flags = mcast_flags;
-+}
-+
-+/**
-+ * batadv_mcast_init - initialize the multicast optimizations structures
-+ * @bat_priv: the bat priv with all the soft interface information
-+ */
-+void batadv_mcast_init(struct batadv_priv *bat_priv)
-+{
-+	batadv_tvlv_handler_register(bat_priv, batadv_mcast_tvlv_ogm_handler_v1,
-+				     NULL, BATADV_TVLV_MCAST, 1,
-+				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
-+}
-+
-+/**
-  * batadv_mcast_free - free the multicast optimizations structures
-  * @bat_priv: the bat priv with all the soft interface information
-  */
- void batadv_mcast_free(struct batadv_priv *bat_priv)
- {
-+	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_MCAST, 1);
-+	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_MCAST, 1);
-+
- 	batadv_mcast_mla_tt_retract(bat_priv, NULL);
- }
-+
-+/**
-+ * batadv_mcast_purge_orig - reset originator global mcast state modifications
-+ * @orig: the originator which is going to get purged
-+ */
-+void batadv_mcast_purge_orig(struct batadv_orig_node *orig)
-+{
-+	struct batadv_priv *bat_priv = orig->bat_priv;
-+
-+	if (!(orig->capabilities & BATADV_ORIG_CAPA_HAS_MCAST))
-+		atomic_dec(&bat_priv->mcast.num_disabled);
-+}
-diff --git a/multicast.h b/multicast.h
-index 111aad7..d736335 100644
---- a/multicast.h
-+++ b/multicast.h
-@@ -19,8 +19,12 @@
- 
- void batadv_mcast_mla_update(struct batadv_priv *bat_priv);
- 
-+void batadv_mcast_init(struct batadv_priv *bat_priv);
-+
- void batadv_mcast_free(struct batadv_priv *bat_priv);
- 
-+void batadv_mcast_purge_orig(struct batadv_orig_node *orig_node);
-+
- #else
- 
- static inline void batadv_mcast_mla_update(struct batadv_priv *bat_priv)
-@@ -28,11 +32,21 @@ static inline void batadv_mcast_mla_update(struct batadv_priv *bat_priv)
- 	return;
- }
- 
-+static inline int batadv_mcast_init(struct batadv_priv *bat_priv)
-+{
 +	return 0;
 +}
 +
- static inline void batadv_mcast_free(struct batadv_priv *bat_priv)
- {
++/**
++ * batadv_mcast_forw_mode_check - check for optimized forwarding potential
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the multicast frame to check
++ *
++ * Check whether the given multicast ethernet frame has the potential to
++ * be forwarded with a mode more optimal than classic flooding.
++ *
++ * If so then return 0. Otherwise -EINVAL is returned or -ENOMEM if we are
++ * out of memory.
++ */
++static int batadv_mcast_forw_mode_check(struct batadv_priv *bat_priv,
++					struct sk_buff *skb)
++{
++	struct ethhdr *ethhdr = eth_hdr(skb);
++
++	if (!atomic_read(&bat_priv->multicast_mode))
++		return -EINVAL;
++
++	if (atomic_read(&bat_priv->mcast.num_disabled))
++		return -EINVAL;
++
++	switch (ntohs(ethhdr->h_proto)) {
++	case ETH_P_IPV6:
++		return batadv_mcast_forw_mode_check_ipv6(bat_priv, skb);
++	default:
++		return -EINVAL;
++	}
++}
++
++/**
++ * batadv_mcast_tt_count - count the number of matching TT entries
++ * @bat_priv: the bat priv with all the soft interface information
++ * @ethhdr: ethernet header of a packet
++ * @orig_node: an originator to be set to forward the skb to
++ *
++ * Set an orig_node matching the given ethhdr source address and increase its
++ * refcount or keep it unchanged if there is none. Finally return the total
++ * number of matching orig_nodes.
++ */
++static int batadv_mcast_tt_count(struct batadv_priv *bat_priv,
++				 struct ethhdr *ethhdr,
++				 struct batadv_orig_node **orig_node)
++{
++	int ret = batadv_tt_global_hash_count(bat_priv, ethhdr->h_dest,
++					      BATADV_NO_FLAGS);
++
++	if (!ret)
++		goto out;
++
++	*orig_node = batadv_transtable_search(bat_priv, ethhdr->h_source,
++					      ethhdr->h_dest,
++					      BATADV_NO_FLAGS);
++	if (!*orig_node)
++		ret = 0;
++
++out:
++	return ret;
++}
++
++/**
++ * batadv_mcast_forw_mode - check on how to forward a multicast packet
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: The multicast packet to check
++ * @mcast_single_orig: an originator to be set to forward the skb to
++ *
++ * Return the forwarding mode as enum batadv_forw_mode and in case of
++ * BATADV_FORW_SINGLE set the mcast_single_orig to the single originator
++ * the skb should be forwarded to.
++ */
++enum batadv_forw_mode
++batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
++		       struct batadv_orig_node **mcast_single_orig)
++{
++	struct ethhdr *ethhdr = eth_hdr(skb);
++	int ret;
++
++	ret = batadv_mcast_forw_mode_check(bat_priv, skb);
++	if (ret == -ENOMEM)
++		return BATADV_FORW_NONE;
++	else if (ret < 0)
++		return BATADV_FORW_ALL;
++
++	ret = batadv_mcast_tt_count(bat_priv, ethhdr, mcast_single_orig);
++
++	switch (ret) {
++	case 0:
++		return BATADV_FORW_NONE;
++	case 1:
++		return BATADV_FORW_SINGLE;
++	default:
++		return BATADV_FORW_ALL;
++	}
++}
++
++/**
+  * batadv_mcast_tvlv_ogm_handler_v1 - process incoming multicast tvlv container
+  * @bat_priv: the bat priv with all the soft interface information
+  * @orig: the orig_node of the ogm
+diff --git a/multicast.h b/multicast.h
+index d736335..61e631b 100644
+--- a/multicast.h
++++ b/multicast.h
+@@ -15,10 +15,28 @@
+ #ifndef _NET_BATMAN_ADV_MULTICAST_H_
+ #define _NET_BATMAN_ADV_MULTICAST_H_
+ 
++/**
++ * batadv_forw_mode - the way a packet should be forwarded as
++ * @BATADV_FORW_ALL: forward the packet to all nodes
++ *  (currently via classic flooding)
++ * @BATADV_FORW_SINGLE: forward the packet to a single node
++ *  (currently via the BATMAN unicast routing protocol)
++ * @BATADV_FORW_NONE: don't forward, drop it
++ */
++enum batadv_forw_mode {
++	BATADV_FORW_ALL,
++	BATADV_FORW_SINGLE,
++	BATADV_FORW_NONE,
++};
++
+ #ifdef CONFIG_BATMAN_ADV_MCAST
+ 
+ void batadv_mcast_mla_update(struct batadv_priv *bat_priv);
+ 
++enum batadv_forw_mode
++batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
++		       struct batadv_orig_node **mcast_single_orig);
++
+ void batadv_mcast_init(struct batadv_priv *bat_priv);
+ 
+ void batadv_mcast_free(struct batadv_priv *bat_priv);
+@@ -32,6 +50,12 @@ static inline void batadv_mcast_mla_update(struct batadv_priv *bat_priv)
  	return;
  }
  
-+static inline void batadv_mcast_purge_orig(struct batadv_orig_node *orig_node)
++static inline enum batadv_forw_mode
++batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb)
 +{
-+	return;
++	return BATADV_FORW_ALL;
 +}
 +
- #endif /* CONFIG_BATMAN_ADV_MCAST */
- 
- #endif /* _NET_BATMAN_ADV_MULTICAST_H_ */
-diff --git a/originator.c b/originator.c
-index 24a9300..ffd9dfb 100644
---- a/originator.c
-+++ b/originator.c
-@@ -27,6 +27,7 @@
- #include "bridge_loop_avoidance.h"
- #include "network-coding.h"
- #include "fragmentation.h"
-+#include "multicast.h"
- 
- /* hash class keys */
- static struct lock_class_key batadv_orig_hash_lock_class_key;
-@@ -557,6 +558,8 @@ static void batadv_orig_node_free_rcu(struct rcu_head *rcu)
- 	}
- 	spin_unlock_bh(&orig_node->neigh_list_lock);
- 
-+	batadv_mcast_purge_orig(orig_node);
-+
- 	/* Free nc_nodes */
- 	batadv_nc_purge_orig(orig_node->bat_priv, orig_node, NULL);
- 
-@@ -672,6 +675,9 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
- 	orig_node->tt_buff_len = 0;
- 	reset_time = jiffies - 1 - msecs_to_jiffies(BATADV_RESET_PROTECTION_MS);
- 	orig_node->bcast_seqno_reset = reset_time;
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+	orig_node->mcast_flags = BATADV_NO_FLAGS;
-+#endif
- 
- 	/* create a vlan object for the "untagged" LAN */
- 	vlan = batadv_orig_node_vlan_new(orig_node, BATADV_NO_FLAGS);
-diff --git a/packet.h b/packet.h
-index 0a381d1..e8c483d 100644
---- a/packet.h
-+++ b/packet.h
-@@ -145,6 +145,7 @@ enum batadv_bla_claimframe {
-  * @BATADV_TVLV_NC: network coding tvlv
-  * @BATADV_TVLV_TT: translation table tvlv
-  * @BATADV_TVLV_ROAM: roaming advertisement tvlv
-+ * @BATADV_TVLV_MCAST: multicast capability tvlv
+ static inline int batadv_mcast_init(struct batadv_priv *bat_priv)
+ {
+ 	return 0;
+diff --git a/send.c b/send.c
+index 31a8c19..ef4c93e 100644
+--- a/send.c
++++ b/send.c
+@@ -248,11 +248,11 @@ out:
+  *
+  * Returns NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
   */
- enum batadv_tvlv_type {
- 	BATADV_TVLV_GW		= 0x01,
-@@ -152,6 +153,7 @@ enum batadv_tvlv_type {
- 	BATADV_TVLV_NC		= 0x03,
- 	BATADV_TVLV_TT		= 0x04,
- 	BATADV_TVLV_ROAM	= 0x05,
-+	BATADV_TVLV_MCAST	= 0x06,
- };
- 
- #pragma pack(2)
-@@ -504,4 +506,14 @@ struct batadv_tvlv_roam_adv {
- 	__be16 vid;
- };
- 
-+/**
-+ * struct batadv_tvlv_mcast_data - payload of a multicast tvlv
-+ * @flags: multicast flags announced by the orig node
-+ * @reserved: reserved field
-+ */
-+struct batadv_tvlv_mcast_data {
-+	uint8_t	flags;
-+	uint8_t reserved[3];
-+};
-+
- #endif /* _NET_BATMAN_ADV_PACKET_H_ */
+-static int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+-				   struct sk_buff *skb, int packet_type,
+-				   int packet_subtype,
+-				   struct batadv_orig_node *orig_node,
+-				   unsigned short vid)
++int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
++			    struct sk_buff *skb, int packet_type,
++			    int packet_subtype,
++			    struct batadv_orig_node *orig_node,
++			    unsigned short vid)
+ {
+ 	struct batadv_unicast_packet *unicast_packet;
+ 	struct ethhdr *ethhdr;
+diff --git a/send.h b/send.h
+index aaddaa9..887b63f 100644
+--- a/send.h
++++ b/send.h
+@@ -36,6 +36,11 @@ bool batadv_send_skb_prepare_unicast_4addr(struct batadv_priv *bat_priv,
+ 					   struct sk_buff *skb,
+ 					   struct batadv_orig_node *orig_node,
+ 					   int packet_subtype);
++int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
++			    struct sk_buff *skb, int packet_type,
++			    int packet_subtype,
++			    struct batadv_orig_node *orig_node,
++			    unsigned short vid);
+ int batadv_send_skb_via_tt_generic(struct batadv_priv *bat_priv,
+ 				   struct sk_buff *skb, int packet_type,
+ 				   int packet_subtype, uint8_t *dst_hint,
 diff --git a/soft-interface.c b/soft-interface.c
-index db3e467..ef9d0aa 100644
+index ef9d0aa..6b1eb75 100644
 --- a/soft-interface.c
 +++ b/soft-interface.c
-@@ -692,6 +692,10 @@ static int batadv_softif_init_late(struct net_device *dev)
+@@ -32,6 +32,7 @@
+ #include <linux/ethtool.h>
+ #include <linux/etherdevice.h>
+ #include <linux/if_vlan.h>
++#include "multicast.h"
+ #include "bridge_loop_avoidance.h"
+ #include "network-coding.h"
+ 
+@@ -170,6 +171,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 	unsigned short vid;
+ 	uint32_t seqno;
+ 	int gw_mode;
++	enum batadv_forw_mode forw_mode;
++	struct batadv_orig_node *mcast_single_orig = NULL;
+ 
+ 	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+ 		goto dropped;
+@@ -247,9 +250,19 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 			 * directed to a DHCP server
+ 			 */
+ 			goto dropped;
+-	}
+ 
+ send:
++		if (do_bcast && !is_broadcast_ether_addr(ethhdr->h_dest)) {
++			forw_mode = batadv_mcast_forw_mode(bat_priv, skb,
++							   &mcast_single_orig);
++			if (forw_mode == BATADV_FORW_NONE)
++				goto dropped;
++
++			if (forw_mode == BATADV_FORW_SINGLE)
++				do_bcast = false;
++		}
++	}
++
+ 	batadv_skb_set_priority(skb, 0);
+ 
+ 	/* ethernet packet should be broadcasted */
+@@ -301,6 +314,10 @@ send:
+ 			if (ret)
+ 				goto dropped;
+ 			ret = batadv_send_skb_via_gw(bat_priv, skb, vid);
++		} else if (mcast_single_orig) {
++			ret = batadv_send_skb_unicast(bat_priv, skb,
++						      BATADV_UNICAST, 0,
++						      mcast_single_orig, vid);
+ 		} else {
+ 			if (batadv_dat_snoop_outgoing_arp_request(bat_priv,
+ 								  skb))
+@@ -694,6 +711,7 @@ static int batadv_softif_init_late(struct net_device *dev)
+ #endif
+ #ifdef CONFIG_BATMAN_ADV_MCAST
+ 	bat_priv->mcast.flags = BATADV_NO_FLAGS;
++	atomic_set(&bat_priv->multicast_mode, 1);
+ 	atomic_set(&bat_priv->mcast.num_disabled, 0);
+ #endif
+ 	atomic_set(&bat_priv->gw_mode, BATADV_GW_MODE_OFF);
+diff --git a/sysfs-class-net-mesh b/sysfs-class-net-mesh
+index 4793d3d..a8e918c 100644
+--- a/sysfs-class-net-mesh
++++ b/sysfs-class-net-mesh
+@@ -76,6 +76,15 @@ Description:
+ 		is used to classify clients as "isolated" by the
+ 		Extended Isolation feature.
+ 
++What:           /sys/class/net/<mesh_iface>/mesh/multicast_mode
++Date:           June 2013
++Contact:        Linus Lüssing <linus.luessing@web.de>
++Description:
++                Indicates whether multicast optimizations are enabled
++                or disabled. If set to zero then all nodes in the
++                mesh are going to use classic flooding for any
++                multicast packet with no optimizations.
++
+ What:           /sys/class/net/<mesh_iface>/mesh/network_coding
+ Date:           Nov 2012
+ Contact:        Martin Hundeboll <martin@hundeboll.net>
+diff --git a/sysfs.c b/sysfs.c
+index e456bf6..1ebb0d9 100644
+--- a/sysfs.c
++++ b/sysfs.c
+@@ -539,6 +539,9 @@ BATADV_ATTR_SIF_UINT(gw_sel_class, S_IRUGO | S_IWUSR, 1, BATADV_TQ_MAX_VALUE,
+ 		     batadv_post_gw_reselect);
+ static BATADV_ATTR(gw_bandwidth, S_IRUGO | S_IWUSR, batadv_show_gw_bwidth,
+ 		   batadv_store_gw_bwidth);
++#ifdef CONFIG_BATMAN_ADV_MCAST
++BATADV_ATTR_SIF_BOOL(multicast_mode, S_IRUGO | S_IWUSR, NULL);
++#endif
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+ BATADV_ATTR_SIF_UINT(log_level, S_IRUGO | S_IWUSR, 0, BATADV_DBG_ALL, NULL);
+ #endif
+@@ -558,6 +561,9 @@ static struct batadv_attribute *batadv_mesh_attrs[] = {
  #ifdef CONFIG_BATMAN_ADV_DAT
- 	atomic_set(&bat_priv->distributed_arp_table, 1);
+ 	&batadv_attr_distributed_arp_table,
  #endif
 +#ifdef CONFIG_BATMAN_ADV_MCAST
-+	bat_priv->mcast.flags = BATADV_NO_FLAGS;
-+	atomic_set(&bat_priv->mcast.num_disabled, 0);
++	&batadv_attr_multicast_mode,
 +#endif
- 	atomic_set(&bat_priv->gw_mode, BATADV_GW_MODE_OFF);
- 	atomic_set(&bat_priv->gw_sel_class, 20);
- 	atomic_set(&bat_priv->gw.bandwidth_down, 100);
+ 	&batadv_attr_fragmentation,
+ 	&batadv_attr_routing_algo,
+ 	&batadv_attr_gw_mode,
+diff --git a/translation-table.c b/translation-table.c
+index 6b5268d..1d858d5 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -193,6 +193,32 @@ batadv_tt_global_entry_free_ref(struct batadv_tt_global_entry *tt_global_entry)
+ 	}
+ }
+ 
++/**
++ * batadv_tt_global_hash_count - count the number of orig entries
++ * @hash: hash table containing the tt entries
++ * @addr: the mac address of the client to count entries for
++ * @vid: VLAN identifier
++ *
++ * Return the number of originators advertising the given address/data
++ * (excluding ourself).
++ */
++int batadv_tt_global_hash_count(struct batadv_priv *bat_priv,
++				const uint8_t *addr, unsigned short vid)
++{
++	struct batadv_tt_global_entry *tt_global_entry;
++	int count = 0;
++
++	tt_global_entry = batadv_tt_global_hash_find(bat_priv, addr, vid);
++	if (!tt_global_entry)
++		goto out;
++
++	count = atomic_read(&tt_global_entry->orig_list_count);
++	batadv_tt_global_entry_free_ref(tt_global_entry);
++
++out:
++	return count;
++}
++
+ static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
+ {
+ 	struct batadv_tt_orig_list_entry *orig_entry;
+@@ -1225,6 +1251,8 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
+ 	hlist_add_head_rcu(&orig_entry->list,
+ 			   &tt_global->orig_list);
+ 	spin_unlock_bh(&tt_global->list_lock);
++	atomic_inc(&tt_global->orig_list_count);
++
+ out:
+ 	if (orig_entry)
+ 		batadv_tt_orig_list_entry_free_ref(orig_entry);
+@@ -1298,6 +1326,7 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 		common->added_at = jiffies;
+ 
+ 		INIT_HLIST_HEAD(&tt_global_entry->orig_list);
++		atomic_set(&tt_global_entry->orig_list_count, 0);
+ 		spin_lock_init(&tt_global_entry->list_lock);
+ 
+ 		hash_added = batadv_hash_add(bat_priv->tt.global_hash,
+@@ -1563,6 +1592,25 @@ out:
+ 	return 0;
+ }
+ 
++/**
++ * batadv_tt_global_del_orig_entry - remove and free an orig_entry
++ * @tt_global_entry: the global entry to remove the orig_entry from
++ * @orig_entry: the orig entry to remove and free
++ *
++ * Remove an orig_entry from its list in the given tt_global_entry and
++ * free this orig_entry afterwards.
++ */
++static void
++batadv_tt_global_del_orig_entry(struct batadv_tt_global_entry *tt_global_entry,
++				struct batadv_tt_orig_list_entry *orig_entry)
++{
++	batadv_tt_global_size_dec(orig_entry->orig_node,
++				  tt_global_entry->common.vid);
++	atomic_dec(&tt_global_entry->orig_list_count);
++	hlist_del_rcu(&orig_entry->list);
++	batadv_tt_orig_list_entry_free_ref(orig_entry);
++}
++
+ /* deletes the orig list of a tt_global_entry */
+ static void
+ batadv_tt_global_del_orig_list(struct batadv_tt_global_entry *tt_global_entry)
+@@ -1573,20 +1621,26 @@ batadv_tt_global_del_orig_list(struct batadv_tt_global_entry *tt_global_entry)
+ 
+ 	spin_lock_bh(&tt_global_entry->list_lock);
+ 	head = &tt_global_entry->orig_list;
+-	hlist_for_each_entry_safe(orig_entry, safe, head, list) {
+-		hlist_del_rcu(&orig_entry->list);
+-		batadv_tt_global_size_dec(orig_entry->orig_node,
+-					  tt_global_entry->common.vid);
+-		batadv_tt_orig_list_entry_free_ref(orig_entry);
+-	}
++	hlist_for_each_entry_safe(orig_entry, safe, head, list)
++		batadv_tt_global_del_orig_entry(tt_global_entry, orig_entry);
+ 	spin_unlock_bh(&tt_global_entry->list_lock);
+ }
+ 
++/**
++ * batadv_tt_global_del_orig_node - remove orig_node from a global tt entry
++ * @bat_priv: the bat priv with all the soft interface information
++ * @tt_global_entry: the global entry to remove the orig_node from
++ * @orig_node: the originator announcing the client
++ * @message: message to append to the log on deletion
++ *
++ * Remove the given orig_node and its according orig_entry from the given
++ * global tt entry.
++ */
+ static void
+-batadv_tt_global_del_orig_entry(struct batadv_priv *bat_priv,
+-				struct batadv_tt_global_entry *tt_global_entry,
+-				struct batadv_orig_node *orig_node,
+-				const char *message)
++batadv_tt_global_del_orig_node(struct batadv_priv *bat_priv,
++			       struct batadv_tt_global_entry *tt_global_entry,
++			       struct batadv_orig_node *orig_node,
++			       const char *message)
+ {
+ 	struct hlist_head *head;
+ 	struct hlist_node *safe;
+@@ -1603,10 +1657,8 @@ batadv_tt_global_del_orig_entry(struct batadv_priv *bat_priv,
+ 				   orig_node->orig,
+ 				   tt_global_entry->common.addr,
+ 				   BATADV_PRINT_VID(vid), message);
+-			hlist_del_rcu(&orig_entry->list);
+-			batadv_tt_global_size_dec(orig_node,
+-						  tt_global_entry->common.vid);
+-			batadv_tt_orig_list_entry_free_ref(orig_entry);
++			batadv_tt_global_del_orig_entry(tt_global_entry,
++							orig_entry);
+ 		}
+ 	}
+ 	spin_unlock_bh(&tt_global_entry->list_lock);
+@@ -1648,8 +1700,8 @@ batadv_tt_global_del_roaming(struct batadv_priv *bat_priv,
+ 		/* there is another entry, we can simply delete this
+ 		 * one and can still use the other one.
+ 		 */
+-		batadv_tt_global_del_orig_entry(bat_priv, tt_global_entry,
+-						orig_node, message);
++		batadv_tt_global_del_orig_node(bat_priv, tt_global_entry,
++					       orig_node, message);
+ }
+ 
+ /**
+@@ -1675,8 +1727,8 @@ static void batadv_tt_global_del(struct batadv_priv *bat_priv,
+ 		goto out;
+ 
+ 	if (!roaming) {
+-		batadv_tt_global_del_orig_entry(bat_priv, tt_global_entry,
+-						orig_node, message);
++		batadv_tt_global_del_orig_node(bat_priv, tt_global_entry,
++					       orig_node, message);
+ 
+ 		if (hlist_empty(&tt_global_entry->orig_list))
+ 			batadv_tt_global_free(bat_priv, tt_global_entry,
+@@ -1759,8 +1811,8 @@ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
+ 						 struct batadv_tt_global_entry,
+ 						 common);
+ 
+-			batadv_tt_global_del_orig_entry(bat_priv, tt_global,
+-							orig_node, message);
++			batadv_tt_global_del_orig_node(bat_priv, tt_global,
++						       orig_node, message);
+ 
+ 			if (hlist_empty(&tt_global->orig_list)) {
+ 				vid = tt_global->common.vid;
+diff --git a/translation-table.h b/translation-table.h
+index 20a1d78..ad84d7b 100644
+--- a/translation-table.h
++++ b/translation-table.h
+@@ -29,6 +29,8 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset);
+ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
+ 			       struct batadv_orig_node *orig_node,
+ 			       int32_t match_vid, const char *message);
++int batadv_tt_global_hash_count(struct batadv_priv *bat_priv,
++				const uint8_t *addr, unsigned short vid);
+ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
+ 						  const uint8_t *src,
+ 						  const uint8_t *addr,
 diff --git a/types.h b/types.h
-index b46117c..96ee0d2 100644
+index 96ee0d2..c28fc4a 100644
 --- a/types.h
 +++ b/types.h
-@@ -204,6 +204,7 @@ struct batadv_orig_bat_iv {
-  * @batadv_dat_addr_t:  address of the orig node in the distributed hash
-  * @last_seen: time when last packet from this node was received
-  * @bcast_seqno_reset: time when the broadcast seqno window was reset
-+ * @mcast_flags: multicast flags announced by the orig node
-  * @capabilities: announced capabilities of this originator
-  * @capa_initialized: bitfield to remember whether a capability was initialized
-  * @last_ttvn: last seen translation table version number
-@@ -246,6 +247,9 @@ struct batadv_orig_node {
+@@ -696,6 +696,8 @@ struct batadv_softif_vlan {
+  *  enabled
+  * @distributed_arp_table: bool indicating whether distributed ARP table is
+  *  enabled
++ * @multicast_mode: Enable or disable multicast optimizations on this node's
++ *  sender/originating side
+  * @gw_mode: gateway operation: off, client or server (see batadv_gw_modes)
+  * @gw_sel_class: gateway selection class (applies if gw_mode client)
+  * @orig_interval: OGM broadcast interval in milliseconds
+@@ -746,6 +748,9 @@ struct batadv_priv {
+ #ifdef CONFIG_BATMAN_ADV_DAT
+ 	atomic_t distributed_arp_table;
  #endif
- 	unsigned long last_seen;
- 	unsigned long bcast_seqno_reset;
 +#ifdef CONFIG_BATMAN_ADV_MCAST
-+	uint8_t mcast_flags;
++	atomic_t multicast_mode;
 +#endif
- 	uint8_t capabilities;
- 	uint8_t capa_initialized;
- 	atomic_t last_ttvn;
-@@ -282,11 +286,14 @@ struct batadv_orig_node {
-  * @BATADV_ORIG_CAPA_HAS_DAT: orig node has distributed arp table enabled
-  * @BATADV_ORIG_CAPA_HAS_NC: orig node has network coding enabled
-  * @BATADV_ORIG_CAPA_HAS_TT: orig node has tt capability
-+ * @BATADV_ORIG_CAPA_HAS_MCAST: orig node has some multicast capability
-+ *  (= orig node announces a tvlv of type BATADV_TVLV_MCAST)
+ 	atomic_t gw_mode;
+ 	atomic_t gw_sel_class;
+ 	atomic_t orig_interval;
+@@ -909,12 +914,14 @@ struct batadv_tt_local_entry {
+  * struct batadv_tt_global_entry - translation table global entry data
+  * @common: general translation table data
+  * @orig_list: list of orig nodes announcing this non-mesh client
++ * @orig_list_count: number of items in the orig_list
+  * @list_lock: lock protecting orig_list
+  * @roam_at: time at which TT_GLOBAL_ROAM was set
   */
- enum batadv_orig_capabilities {
- 	BATADV_ORIG_CAPA_HAS_DAT = BIT(0),
- 	BATADV_ORIG_CAPA_HAS_NC = BIT(1),
- 	BATADV_ORIG_CAPA_HAS_TT = BIT(2),
-+	BATADV_ORIG_CAPA_HAS_MCAST = BIT(3),
+ struct batadv_tt_global_entry {
+ 	struct batadv_tt_common_entry common;
+ 	struct hlist_head orig_list;
++	atomic_t orig_list_count;
+ 	spinlock_t list_lock;	/* protects orig_list */
+ 	unsigned long roam_at;
  };
- 
- /**
-@@ -612,9 +619,15 @@ struct batadv_priv_dat {
- /**
-  * struct batadv_priv_mcast - per mesh interface mcast data
-  * @mla_list: list of multicast addresses we are currently announcing via TT
-+ * @flags: the flags we have last sent in our mcast tvlv
-+ * @enabled: whether the multicast tvlv is currently enabled
-+ * @num_disabled: number of nodes that have no mcast tvlv
-  */
- struct batadv_priv_mcast {
- 	struct hlist_head mla_list;
-+	uint8_t flags;
-+	bool enabled;
-+	atomic_t num_disabled;
- };
- #endif
- 
 -- 
 1.7.10.4
 
