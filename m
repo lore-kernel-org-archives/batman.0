@@ -1,14 +1,11 @@
-Return-Path: <onelektra@gmx.net>
-Date: Sat, 8 Feb 2014 16:34:27 +0100
-From: Elektra <onelektra@gmx.net>
-Message-Id: <20140208163427.46e812fc3e517b6c04d909c0@gmx.net>
-In-Reply-To: <201402061652.48854.sw@simonwunderlich.de>
-References: <1375184174.231615127.1391591164796.JavaMail.root@spooler5n-g27.priv.proxad.net>
- <201402061652.48854.sw@simonwunderlich.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] question about VIS servera
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Sun,  9 Feb 2014 04:48:52 +0100
+Message-Id: <1391917738-4483-1-git-send-email-linus.luessing@web.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv13 0/6] Basic Multicast Optimizations
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,15 +17,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi -
+This is the thirteenth revision of the basic multicast optimization patches.
 
-> > Is there a bug ?
-> 
-> We can't exclude or confirm that from your report.
+Changes in v13 include, thanks to the additional feedback of Simon and Marek:
 
-batmand + vis have been used by the Villagetelco community, I'm not assumming a basic bug there.  
+* Using counting for unsnoopable addresses, too, instead of unconditionally
+  disabling optimizations
+* Using an orig_node pointer instead of passing a want_all_list around in
+  batadv_interface_tx()
+  -> removed batadv_send_skb_via_mcast()
+* fixed the bug which was present in batadv_mcast_want_all_ipv{4,6}_node_get()
+  (now: batadv_mcast_want_ipv{4,6}_count)
 
-Cheers,
-Elektra
+Also:
+* Updated copyright year to 2014 in multicast.{c,h}
+
+Cheers, Linus
+
