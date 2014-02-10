@@ -1,18 +1,9 @@
-Return-Path: <trandatnh@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <52F3871B.4020704@meshcoding.com>
-References: <CAOyZXpTWbaPckhZisRRO4itnYVSRAamddXPZkoUWibhsKs2dLw@mail.gmail.com>
- <201402061055.11799.sw@simonwunderlich.de>
- <CAOyZXpT8mRYrWfMfkKOr+7ks3H=3PzhRAPeyJ1oLvSoYx1uz_A@mail.gmail.com>
- <52F3831F.3080203@meshcoding.com>
- <CAOyZXpRA2+gLxwNc-10c-HVJcN58vP8bnfFSGb5f-m9wzCh2rw@mail.gmail.com>
- <52F3871B.4020704@meshcoding.com>
-From: Le Tran Dat <trandatnh@gmail.com>
-Date: Mon, 10 Feb 2014 09:27:35 +0800
-Message-ID: <CAOyZXpTP6X3x9Zf7FX-XDE7K1Uy5B9z0fS=GxunZASaNHvCSpQ@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [B.A.T.M.A.N.] How to send message/execute script on clients
-	from server?
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Mon, 10 Feb 2014 10:33:40 +0100
+Message-Id: <1392024820-1436-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [RFC] batman-adv: invoke ogm_schedule() only when
+	the interface is activated
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,35 +15,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <ordex@autistici.org>
 
-Thanks all,
+From: Antonio Quartulli <ordex@autistici.org>
 
-I used alfred to share configuration parameters to the whole network.
-Everything works fine.
+In the current implementation the first OGM is scheduled
+when a new hard-interface is enabled, no matter if it is
+active (thus ready for sending packets) or not.
+The B.A.T.M.A.N. IV scheduling mechanism works in a way
+that reschedules the task forever even if the interface is
+not active and therefore everything works as expected.
 
-Anyway, If I want to know any change of the current parameter then I
-need to periodically check for every 5 minutes. Is there any event
-triggered when a new value has just been set to alfred?
+Unfortunately this behaviour is not fine for other
+algorithms which may expect the interface to be active
+before scheduling the first OGM.
 
-Thanks,
-Dat
+Therefore change this behaviour by scheduling the first OGM
+on interface activation.
 
-On Thu, Feb 6, 2014 at 8:59 PM, Antonio Quartulli
-<antonio@meshcoding.com> wrote:
-> On 06/02/14 13:54, Le Tran Dat wrote:
->> Hi Antonio,
->>
->> Could you explain more about opening a socket on the bat0 interface?
->> Should I write a new user space deamon or write it inside batman adv?
->
-> everything is userspace in this case. It's about writing a program in
-> userspace that sends raw Ethernet frames. batman-adv in this case can be
-> seen like an Ethernet switch, so you can treat you bat0 like it was a
-> normal eth0 connected to this switch. No need to touch batman-adv at all.
->
-> Cheers,
->
-> --
-> Antonio Quartulli
->
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
+ hard-interface.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/hard-interface.c b/hard-interface.c
+index b851cc5..2a04130 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -320,6 +320,8 @@ batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
+ 
+ 	batadv_update_min_mtu(hard_iface->soft_iface);
+ 
++	/* begin scheduling originator messages on that interface */
++	batadv_schedule_bat_ogm(hard_iface);
+ out:
+ 	if (primary_if)
+ 		batadv_hardif_free_ref(primary_if);
+@@ -459,9 +461,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 			   "Not using interface %s (retrying later): interface not active\n",
+ 			   hard_iface->net_dev->name);
+ 
+-	/* begin scheduling originator messages on that interface */
+-	batadv_schedule_bat_ogm(hard_iface);
+-
+ out:
+ 	return 0;
+ 
+-- 
+1.8.5.4
+
