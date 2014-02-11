@@ -1,9 +1,15 @@
 Return-Path: <antonio@meshcoding.com>
+Message-ID: <52F9FD08.9040307@meshcoding.com>
+Date: Tue, 11 Feb 2014 11:35:52 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 11 Feb 2014 11:26:43 +0100
-Message-Id: <1392114403-4069-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix memory access by setting
-	mac_header in DAT
+MIME-Version: 1.0
+References: <1392114403-4069-1-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1392114403-4069-1-git-send-email-antonio@meshcoding.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="drbsq76x82su9FvaRWo5U6Ke3lANIlhMj"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix memory access by setting
+ mac_header in DAT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,39 +22,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-In the TX path we now have functions that rely on the
-skb->mac_header field. DAT does not set such field when
-creating its own ARP packets thus leading to wrong memory
-access.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--drbsq76x82su9FvaRWo5U6Ke3lANIlhMj
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Fix it by always setting the mac_header after having forged
-the ARP packet.
+On 11/02/14 11:26, Antonio Quartulli wrote:
+> In the TX path we now have functions that rely on the
+> skb->mac_header field. DAT does not set such field when
+> creating its own ARP packets thus leading to wrong memory
+> access.
+>=20
+> Fix it by always setting the mac_header after having forged
+> the ARP packet.
+>=20
+> Reported-by: Russel Senior <russell@personaltelco.net>
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> Tested-by: Russel Senior <russell@personaltelco.net>
 
-Reported-by: Russel Senior <russell@personaltelco.net>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-Tested-by: Russel Senior <russell@personaltelco.net>
----
- distributed-arp-table.c | 5 +++++
- 1 file changed, 5 insertions(+)
+This patch is supposed to be applied on maint.
 
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index 6da587a..0b69b61 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -1028,6 +1028,11 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 	if (!skb_new)
- 		goto out;
- 
-+	/* the rest of the TX path assumes that the mac_header offset pointing
-+	 * to the inner Ethernet header has been set, therefore reset it now.
-+	 */
-+	skb_reset_mac_header(skb_new);
-+
- 	if (vid & BATADV_VLAN_HAS_TAG)
- 		skb_new = vlan_insert_tag(skb_new, htons(ETH_P_8021Q),
- 					  vid & VLAN_VID_MASK);
--- 
-1.8.5.3
+Cheers,
 
+--=20
+Antonio Quartulli
+
+
+--drbsq76x82su9FvaRWo5U6Ke3lANIlhMj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBCAAGBQJS+f0SAAoJEEKTMo6mOh1VAXEP/1BsQvL0n9ie5a4QKJV/uoK+
+yDN5HqLlQ5w5cVlzpWzD4PMMdKSxvRvE8aZpA+hQPVCjZ0JZ5mmNRwPqsLr+75MS
+PPj0PrlmlNa8ykwuOo2k67IScdTQg1gquL3T+uMhDA1ssYjyfsVc9Mxj/3OXp13X
+8i8/0tPEC354JPAjNYWQnZUM2mLjfOmzvuXYUrLxAMGoRD85ToJXfPNEYYbwBlj3
+NaljQk3ednOdq+I+bjBVg/l4vc4/r5Z7DRFa0WiqSm4r/q8+FiZ/cIMrhFnCoOT1
+HboSsoZnhiCrWR0AorNZ05cKjV+7C9MAVVyyEBDPcy+PnCHP2b4oHTlioqpO2sJ8
+z4tkSPFmid+Mvy3mZi0bxrTAE5HBaz2Yda4QnDwGB1laS8LBwjDbXRM+VV9wWebh
+0wbdIXiAOj9aOlxWAP/VcbGG8T9MFX5da/Mm0J6kLC+h4xLIRmtlYGhrBdbB2MuN
+ZuIl0LotMhgcHmxU3wACGv1ZLW0lzW3YaXuU7Ic8OMypQPIFUD9gBcXdmSSRNZql
+zhtTJ8uBfZLesCDkUla9dzojpQd9Gcb7I2ghicaybp1KOvpUhzlqfYuMRuhnOta4
+dRnUcvq/UZ1lacc4uXcCiVu70GPWVbrug3kfvc45lB3IPmKKDoBN/6IjpP9GaeUe
+mXL/R/xcDrTlOqTLz8kp
+=43I2
+-----END PGP SIGNATURE-----
+
+--drbsq76x82su9FvaRWo5U6Ke3lANIlhMj--
