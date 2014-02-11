@@ -1,14 +1,13 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 11 Feb 2014 18:35:52 +0100
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Wed, 12 Feb 2014 01:40 +0800
+Message-ID: <27300725.U6R9joZBFU@diderot>
+In-Reply-To: <52FA5F12.5090406@meshcoding.com>
 References: <1391874306-15627-1-git-send-email-sw@simonwunderlich.de>
- <52FA5D35.6020809@meshcoding.com>
-In-Reply-To: <52FA5D35.6020809@meshcoding.com>
+ <52FA5DE6.8050005@hundeboll.net> <52FA5F12.5090406@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201402111835.52663.sw@simonwunderlich.de>
+Content-Type: multipart/signed; boundary="nextPart2620660.QdgtJJSsdt";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: fix potential
 	orig_node reference leak
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,50 +21,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <antonio@meshcoding.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-> On 08/02/14 16:45, Simon Wunderlich wrote:
-> > Since batadv_orig_node_new() sets the refcount to two, assuming that
-> > the calling function will use a reference for putting the orig_node into
-> > a hash or similar, both references must be freed if initialization of
-> > the orig_node fails. Otherwise that object may be leaked in that error
-> > case.
-> > 
-> > Reported-by: Antonio Quartulli <antonio@meshcoding.com>
-> > Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-> > ---
-> > 
-> >  bat_iv_ogm.c |    2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-> > index 6f4fcdc..6000337 100644
-> > --- a/bat_iv_ogm.c
-> > +++ b/bat_iv_ogm.c
-> > @@ -256,6 +256,8 @@ batadv_iv_ogm_orig_get(struct batadv_priv *bat_priv,
-> > const uint8_t *addr)
-> > 
-> >  free_bcast_own:
-> >  	kfree(orig_node->bat_iv.bcast_own);
-> >  
-> >  free_orig_node:
-> > +	/* free twice, as batadv_orig_node_new set refcount to 2 */
-> > +	batadv_orig_node_free_ref(orig_node);
-> > 
-> >  	batadv_orig_node_free_ref(orig_node);
-> 
-> Coudln't we just invoke kfree(orig_node) here ? I think that if we hit
-> this point it is because the node has not added to the hash and
-> therefore it i snot used in any other context. This way we avoid the
-> double free_ref() and we don't trgger the whole RCU mechanism.
-> 
-> Or am I missing something?
 
-What about already allocated substructures like bat_iv.bcast_own, 
-bat_iv.bacst_own_sum etc? Of course we could find out which is already 
-allocated and free that too, but that orig node free function does already 
-that.
+--nextPart2620660.QdgtJJSsdt
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Tuesday 11 February 2014 18:34:10 Antonio Quartulli wrote:
+> true, but since the orig_node has not been returned yet there is no
+> other component in batman-adv which is using it.
+> 
+> Otherwise, we may want to define and invoke a free_now() version of this
+> function (like we have done for other objects). But I think kfree() is
+> safe here.
+
+It may be safe now but will surely be forgotten later. A guaranteed source for 
+trouble. That is why we have cleanup routines for everything.
 
 Cheers,
-    Simon
+Marek
+
+--nextPart2620660.QdgtJJSsdt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJS+mBzAAoJEFNVTo/uthzAHIwIAJAGtyppnq5ACzaELSPt8doB
+kxvT8aBFsC6n3ZF91WnOBsPZUeyJy2ARK8w4bnEVUuGaLvNwpwN19/QoW8/OPl2p
+oZL/z3bb1Voazqcxqwl4n/AaLgivh90uzHNSZQeJfdsU8syLz2Kh1z6C1KItERz6
+yWIvpmRDPSkaCxQsOwmdOzTCPUh5jjHWQB5eO8DQbY4w8b4Tt+F6ds+1pn0+hDbw
+8ROAaPJuLlJOllizuK9D+ZIchbsM2Fgce38piHyMsNbVdDY4fPRst7anBJ8ovh9Q
+Icppt9F84/K//Vcp4vlDNWmTKbaVzGEUv+xuX/7dEbp6n2tRHYxt0mB/daPGSl4=
+=xwFM
+-----END PGP SIGNATURE-----
+
+--nextPart2620660.QdgtJJSsdt--
+
