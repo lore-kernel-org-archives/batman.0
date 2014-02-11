@@ -1,17 +1,15 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <52FA4F2F.3080304@meshcoding.com>
-Date: Tue, 11 Feb 2014 17:26:23 +0100
+Message-ID: <52FA563A.8080309@meshcoding.com>
+Date: Tue, 11 Feb 2014 17:56:26 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
- <20140211153224.GB24633@lunn.ch> <52FA4983.6070901@open-mesh.com>
- <201402111111.32918.lew.pitcher@digitalfreehold.ca>
-In-Reply-To: <201402111111.32918.lew.pitcher@digitalfreehold.ca>
+References: <1392134707-2318-1-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1392134707-2318-1-git-send-email-antonio@meshcoding.com>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="DkFc14aV730EGBwf0bu3I4ftuP5JGOFcu"
-Subject: Re: [B.A.T.M.A.N.] [RFC 04/23] batman-adv: ELP - creating neighbor
- structures
+ boundary="I8C0X2MWuJA4KP8UqVpCkgBNbNoCUlWrM"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: fix TT CRC
+ computation by ensuring byte order
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,131 +24,42 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---DkFc14aV730EGBwf0bu3I4ftuP5JGOFcu
+--I8C0X2MWuJA4KP8UqVpCkgBNbNoCUlWrM
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 11/02/14 17:11, Lew Pitcher wrote:
-> On Tuesday 11 February 2014 11:02:11 Antonio Quartulli wrote:
->> On 11/02/14 16:32, Andrew Lunn wrote:
->>> On Tue, Feb 11, 2014 at 01:48:04PM +0100, Antonio Quartulli wrote:
->>>> From: Linus Luessing <linus.luessing@web.de>
->>>>
->>>> Initially developed by Linus during a 6 months trainee study
->>>> period in Ascom (Switzerland) AG.
->>>>
->>>> Signed-off-by: Linus Luessing <linus.luessing@web.de>
->>>> Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
->>>> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
->>>> ---
->>>>  bat_v.c     |  18 +++++-
->>>>  bat_v_elp.c | 204=20
-> +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
->>>>  bat_v_elp.h |   6 ++
->>>>  main.h      |   2 +
->>>>  types.h     |  53 ++++++++++++++++
->>>>  5 files changed, 281 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/bat_v.c b/bat_v.c
->>>> index 7247d7f..bed5e00 100644
->>>> --- a/bat_v.c
->>>> +++ b/bat_v.c
->>>> @@ -61,5 +61,21 @@ static struct batadv_algo_ops batadv_batman_v=20
-> __read_mostly =3D {
->>>> =20
->>>>  int __init batadv_v_init(void)
->>>>  {
->>>> -	return batadv_algo_register(&batadv_batman_v);
->>>> +	int ret;
->>>> +
->>>> +	/* batman v echo location protocol packet  */
->>>> +	ret =3D batadv_recv_handler_register(BATADV_ELP,
->>>> +					   batadv_v_elp_packet_recv);
->>>> +	if (ret < 0)
->>>> +		goto elp_unregister;
->>>> +
->>>> +	ret =3D batadv_algo_register(&batadv_batman_v);
->>>> +
->>>> +	return ret;
->>>> +
->>>> +elp_unregister:
->>>> +	if (ret < 0)
->>>> +		batadv_recv_handler_unregister(BATADV_ELP);
->>>
->>> No need to check ret here. If we are here, it has to be < 0.
->>>
->>> It also seems odd to me you are unregistering the handler when the
->>> registration of the handler fails!
->>>
->>> I suspect the first if (ret < 0) should be followed by a plain return=
-
->>> ret; and there should be a second test for the return value of
->>> batadv_algo_register() which should goto the label and unregister the=
-
->>> handler.
->>
->> I totally agree with what you said.
->> We should jump to elp_unregister if batadv_algo_register() fails.
+On 11/02/14 17:05, Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
 >=20
-> Sorry to break in here, but the (ex) professional programmer in me just=
- /has/=20
-> to comment.
-
-Everybody is welcome! :)
-
+> When computing the CRC on a 2byte variable the order of
+> the bytes obviously alters the final result. This means
+> that computing the CRC over the same value on two archs
+> having different endianess leads to different numbers.
 >=20
-> Why not just
->   int __init batadv_v_init(void)
->   {
->  -	return batadv_algo_register(&batadv_batman_v);
->  +	int ret;
->  +
->  +	/* batman v echo location protocol packet  */
->  +	ret =3D batadv_recv_handler_register(BATADV_ELP,
->  +					   batadv_v_elp_packet_recv);
->  +
->  +	if (ret >=3D 0)
->  +	  ret =3D batadv_algo_register(&batadv_batman_v);
->  +	else
->  +	  batadv_recv_handler_unregister(BATADV_ELP);
->  +
->  +	return ret;
-> ?
+> The global and local translation table CRC computation
+> routine makes this mistake while processing the clients
+> VIDs. The result is a continuous CRC mismatching between
+> nodes having different endianess.
 >=20
+> Fix this by converting the VID to Network Order before
+> processing it. This guarantees that every node uses the same
+> byte order.
+>=20
+> Introduced by 21a57f6e7a3b4455dfe68ee07a7b901d9e7f200b
+> ("batman-adv: make the TT CRC logic VLAN specific")
+>=20
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 
+Both the patch are:
 
-Actually I already fixed it like this:
-
- int __init batadv_v_init(void)
- {
--       return batadv_algo_register(&batadv_batman_v);
-+       int ret;
-+
-+       /* batman v echo location protocol packet  */
-+       ret =3D batadv_recv_handler_register(BATADV_ELP,
-+                                          batadv_v_elp_packet_recv);
-+       if (ret < 0)
-+               return ret;
-+
-+       ret =3D batadv_algo_register(&batadv_batman_v);
-+       if (ret < 0)
-+               batadv_recv_handler_unregister(BATADV_ELP);
-+
-+       return ret;
-
-
-I think it is easier to read, no?
-Anyway, this chunk is changed later b patch 7/23 because we add the OGM2
-registration.
-
-Cheers,
+Reported-by: Russel Senior <russell@personaltelco.net>
 
 
 --=20
 Antonio Quartulli
 
 
---DkFc14aV730EGBwf0bu3I4ftuP5JGOFcu
+--I8C0X2MWuJA4KP8UqVpCkgBNbNoCUlWrM
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -158,19 +67,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBCAAGBQJS+k8zAAoJEEKTMo6mOh1VIDcP/2gJVYV4dJptE65j3xn6Y7n3
-LxqlUKNaIyoC5zYJ25G4E3F5PnpbqArIL7RRerlnBJMA4+MQ9BQ/vh9ew41HbYG1
-8RSd5hp8RY/5hwhVDDGI5e/JD8NJbQx+A2JHR5pAtrM3m9JBLVvJOg4QaxoPiSC+
-ZEwjsxlUkOEz+w4Rq0iHAMcbV6r+Y7QLB3jka96dnSD7zwRBYvraULs1vEp4WQl2
-SHmz1bPNP/LF4uwID4B+0MWfhtGgMDIRPScG5E1erRpTiGDMNap+gN2RO3fWl27l
-wDRMripvDhpG71Q1qySK7Lr4veis7at4MsT9CFedFfqOeV1oED0BfixWt2XJzlZi
-Pd/EY6ynqMh7VQyxAapDkjm2lxt0SCotHghgSAwxYInB2Z0UApU56qkW+BJd3de+
-50w1D17FBikWs2hA24u9WPWMK8DipcYLkaoP7/UUx23shiCdGVL4WQnZC+mSUckY
-jofyyHfhh6G30lZBPW8VUGSq4QnDUqw6sQ1uItani/NiOGqZd9GpvRxF+3mrkTZy
-ClMRY2Tv7ZI/Cw2yB6YzueYZ74vpqKgeEXt+gz0dEYeph7hQJzm/y3bib3/LJq6u
-sZd39GhQGPuUL1Z8/3wOj0CFcLnPwBruQSmfne0kPHNUDI14vQGJgxb6fDFeovXR
-nt1SWsowlQDpEHy3Ksjw
-=lulw
+iQIcBAEBCAAGBQJS+lY9AAoJEEKTMo6mOh1VL0MP/jmkRzJkKHXFR0WcLJ+oxhhD
+J4nt2nRBhiT/e1W3OqPFh/jyFWnOwxfxPETJquXm8YO/XsbU7SXWVUpzyGtn5u89
+4gm4C0rNP6eENhcyi9l2lp8g0W9udRjX+X1iJQWK3pEK/2krD7MxlIY98VEOkec1
+hmeT1eh9X0SH2pSMYq54f4m+4W/B2BoU+74t6T7HWHP87rd3j458H38xmrNICfiM
+AZeNRKxZq0KL5OTmCORzVjpp/8SdMdgXguIKrUDZFbYE1uRBfanODy2j7/4mAuGh
+6gXvLTDsmtSNMrRk2jeP6AiqSDykIYHWHfPnvljWIvikEeE4SO37O6LUzqLbbkUY
+1oGShe/ft0iijk1vzC9zF2IQ+aa74EanIWEa/wnj+f2wGi/RRLYlOQ4v0U4qWCZt
+grjWJ9r3H3A+jfzSPNAw9EA3Z7i3R40gdRnAtwdlHKRiFtT8LKMPmJ9k0hXI+uaG
+ARotpiP6YyCgqdfsjca9RLzYKqxUw8LYFM3cUYwHlbIWXGPfYkBjFHz2mGCG6rxD
+nOmByxuSkbW79bDPutCA9itmOEMW3eBB79aBTpUgzYp292lWkkkmCIz8iuWT+8Z/
+sP/kXWxoL0NPb/gH5QIR/g+u8Gl3Poc6j1rh+TVA0r/qID8DFoVSix63IOObzJFK
+pnJWdY7umf5aAiHqg8GK
+=6T+T
 -----END PGP SIGNATURE-----
 
---DkFc14aV730EGBwf0bu3I4ftuP5JGOFcu--
+--I8C0X2MWuJA4KP8UqVpCkgBNbNoCUlWrM--
