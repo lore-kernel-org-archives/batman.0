@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 11 Feb 2014 13:48:11 +0100
-Message-Id: <1392122903-805-12-git-send-email-antonio@meshcoding.com>
+Date: Tue, 11 Feb 2014 13:48:10 +0100
+Message-Id: <1392122903-805-11-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
 References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [RFC 11/23] batman-adv: add throughput attribute to
-	hard_ifaces
+Subject: [B.A.T.M.A.N.] [RFC 10/23] batman-adv: split name from variable for
+	uint mesh attributes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,76 +22,70 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-This attribute is exported to the user which can manually
-select its value. It is the throughput value to be used
-by default when batman-adv is trying to compute the link
-throughput towards a neighbour using this interface.
+Some mesh attributes are behind substructs in the
+batadv_priv object and for this reason the name cannot be
+used anymore to refer to them.
 
-If the value is set to 0 then batman-adv will try to detect
-the throughput by itself.
+This patch allows to specify the variable name where the
+attribute is stored inside batadv_priv instead of using the
+name
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- bat_v.c | 3 +++
- sysfs.c | 3 +++
- types.h | 2 ++
- 3 files changed, 8 insertions(+)
+ sysfs.c | 21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
 
-diff --git a/bat_v.c b/bat_v.c
-index b4214c5..d5457b3 100644
---- a/bat_v.c
-+++ b/bat_v.c
-@@ -34,6 +34,9 @@ static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
- 	if (ret < 0)
- 		batadv_v_elp_iface_disable(hard_iface);
- 
-+	/* disable user customised throughput by default */
-+	atomic_set(&hard_iface->bat_v.user_throughput, 0);
-+
- 	return ret;
- }
- 
 diff --git a/sysfs.c b/sysfs.c
-index 9139319..8bbbdfa 100644
+index 1d6653c..9139319 100644
 --- a/sysfs.c
 +++ b/sysfs.c
-@@ -889,6 +889,8 @@ static BATADV_ATTR(iface_status, S_IRUGO, batadv_show_iface_status, NULL);
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- BATADV_ATTR_HIF_UINT(elp_interval, bat_v.elp_interval, S_IRUGO | S_IWUSR,
- 		     2 * BATADV_JITTER, INT_MAX, NULL);
-+BATADV_ATTR_HIF_UINT(throughput, bat_v.user_throughput, S_IRUGO | S_IWUSR,
-+		     0, UINT_MAX, NULL);
- #endif
+@@ -148,7 +148,7 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 			   batadv_store_##_name)
  
- static struct batadv_attribute *batadv_batman_attrs[] = {
-@@ -896,6 +898,7 @@ static struct batadv_attribute *batadv_batman_attrs[] = {
- 	&batadv_attr_iface_status,
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- 	&batadv_attr_elp_interval,
-+	&batadv_attr_throughput,
- #endif
- 	NULL,
- };
-diff --git a/types.h b/types.h
-index 28f2b85..64316b9 100644
---- a/types.h
-+++ b/types.h
-@@ -78,6 +78,7 @@ struct batadv_hard_iface_bat_iv {
-  * @num_neighbours: number of neighbours in the neigh_list
-  * @elp_skb: base skb containing the ELP message to send
-  * @elp_wq: workqueue used to schedule ELP transmissions
-+ * @user_throughput: user specified throughput
+ 
+-#define BATADV_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)	\
++#define BATADV_ATTR_SIF_STORE_UINT(_name, _var, _min, _max, _post_func)	\
+ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 			     struct attribute *attr, char *buff,	\
+ 			     size_t count)				\
+@@ -157,23 +157,32 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 	struct batadv_priv *bat_priv = netdev_priv(net_dev);		\
+ 	return __batadv_store_uint_attr(buff, count, _min, _max,	\
+ 					_post_func, attr,		\
+-					&bat_priv->_name, net_dev);	\
++					&bat_priv->_var, net_dev);	\
+ }
+ 
+-#define BATADV_ATTR_SIF_SHOW_UINT(_name)				\
++#define BATADV_ATTR_SIF_SHOW_UINT(_name, _var)				\
+ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 			    struct attribute *attr, char *buff)		\
+ {									\
+ 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);	\
+-	return sprintf(buff, "%i\n", atomic_read(&bat_priv->_name));	\
++	return sprintf(buff, "%i\n", atomic_read(&bat_priv->_var));	\
+ }									\
+ 
+ /* Use this, if you are going to set [name] in the soft-interface
+  * (bat_priv) to an unsigned integer value
   */
- struct batadv_hard_iface_bat_v {
- 	atomic_t elp_interval;
-@@ -87,6 +88,7 @@ struct batadv_hard_iface_bat_v {
- 	atomic_t num_neighbors;
- 	struct sk_buff *elp_skb;
- 	struct delayed_work elp_wq;
-+	atomic_t user_throughput;
- };
+ #define BATADV_ATTR_SIF_UINT(_name, _mode, _min, _max, _post_func)	\
+-	static BATADV_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)\
+-	static BATADV_ATTR_SIF_SHOW_UINT(_name)				\
++	static BATADV_ATTR_SIF_STORE_UINT(_name, _name, _min, _max, _post_func)\
++	static BATADV_ATTR_SIF_SHOW_UINT(_name, _name)			\
++	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
++			   batadv_store_##_name)
++
++/* Same as BATADV_ATTR_SIF_UINT, but allow to specify the variable name as
++ * second parameter so that it does not need to match the attribute name
++ */
++#define BATADV_ATTR_SIF_UINT2(_name, _var, _mode, _min, _max, _post_func)\
++	static BATADV_ATTR_SIF_STORE_UINT(_name, _var, _min, _max, _post_func)\
++	static BATADV_ATTR_SIF_SHOW_UINT(_name, _var)			\
+ 	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
+ 			   batadv_store_##_name)
  
- /**
 -- 
 1.8.5.3
 
