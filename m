@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 11 Feb 2014 13:48:02 +0100
-Message-Id: <1392122903-805-3-git-send-email-antonio@meshcoding.com>
+Date: Tue, 11 Feb 2014 13:48:01 +0100
+Message-Id: <1392122903-805-2-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
 References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [RFC 02/23] batman-adv: Add hard_iface specific
-	sysfs wrapper macros for UINT
+Subject: [B.A.T.M.A.N.] [RFC 01/23] batman-adv: invoke ogm_schedule() only
+	when the interface is activated
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,87 +18,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <antonio@open-mesh.com>
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-From: Linus Luessing <linus.luessing@web.de>
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-This allows us to easily add a sysfs parameter for an
-unsigned int later, which is not for a batman mesh interface
-(e.g. bat0), but for a common interface instead. It allows
-reading and writing an atomic_t in hard_iface (instead of
-bat_priv compared to the mesh variant).
+In the current implementation the first OGM is scheduled
+when a new hard-interface is enabled, no matter if it is
+active (thus ready for sending packets) or not.
 
-Developed by Linus during a 6 months trainee study period in
-Ascom (Switzerland) AG.
+However, the B.A.T.M.A.N. IV OGM scheduling mechanism works
+in a way that reschedules the task forever even if the
+interface is not yet ready and therefore everything works as
+expected.
 
-Signed-off-by: Linus Luessing <linus.luessing@web.de>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
-[antonio@open-mesh.com: rename functions and move macros]
+Unfortunately this behaviour is not fine in general and
+other algorithms may pretend the interface to be active
+before scheduling the first OGM.
+
+Change this behaviour by scheduling the first OGM upon
+interface activation.
+
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- sysfs.c | 49 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 49 insertions(+)
+ hard-interface.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/sysfs.c b/sysfs.c
-index e456bf6..1e9ee3a 100644
---- a/sysfs.c
-+++ b/sysfs.c
-@@ -213,6 +213,55 @@ ssize_t batadv_show_vlan_##_name(struct kobject *kobj,			\
- 	static BATADV_ATTR_VLAN(_name, _mode, batadv_show_vlan_##_name,	\
- 				batadv_store_vlan_##_name)
+diff --git a/hard-interface.c b/hard-interface.c
+index b851cc5..2a04130 100644
+--- a/hard-interface.c
++++ b/hard-interface.c
+@@ -320,6 +320,8 @@ batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
  
-+#define BATADV_ATTR_HIF_STORE_UINT(_name, _var, _min, _max, _post_func)	\
-+ssize_t batadv_store_##_name(struct kobject *kobj,			\
-+			     struct attribute *attr, char *buff,	\
-+			     size_t count)				\
-+{									\
-+	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
-+	struct batadv_hard_iface *hard_iface;					\
-+	ssize_t length;							\
-+									\
-+	hard_iface = batadv_hardif_get_by_netdev(net_dev);		\
-+	if (!hard_iface)						\
-+		return 0;						\
-+									\
-+	length = __batadv_store_uint_attr(buff, count, _min, _max,	\
-+					  _post_func, attr,		\
-+					  &hard_iface->_var, net_dev);	\
-+									\
-+	batadv_hardif_free_ref(hard_iface);					\
-+	return length;							\
-+}
-+
-+#define BATADV_ATTR_HIF_SHOW_UINT(_name, _var)				\
-+ssize_t batadv_show_##_name(struct kobject *kobj,			\
-+			    struct attribute *attr, char *buff)		\
-+{									\
-+	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
-+	struct batadv_hard_iface *hard_iface;				\
-+	ssize_t length;							\
-+									\
-+	hard_iface = batadv_hardif_get_by_netdev(net_dev);		\
-+	if (!hard_iface)						\
-+		return 0;						\
-+									\
-+	length = sprintf(buff, "%i\n", atomic_read(&hard_iface->_var));	\
-+									\
-+	batadv_hardif_free_ref(hard_iface);					\
-+	return length;							\
-+}
-+
-+/* Use this, if you are going to set [name] in hard_iface to an
-+ * unsigned integer value
-+ */
-+#define BATADV_ATTR_HIF_UINT(_name, _var, _mode, _min, _max, _post_func)\
-+	static BATADV_ATTR_HIF_STORE_UINT(_name, _var, _min,		\
-+					  _max, _post_func)		\
-+	static BATADV_ATTR_HIF_SHOW_UINT(_name, _var)			\
-+	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
-+			   batadv_store_##_name)
-+
- static int batadv_store_bool_attr(char *buff, size_t count,
- 				  struct net_device *net_dev,
- 				  const char *attr_name, atomic_t *attr)
+ 	batadv_update_min_mtu(hard_iface->soft_iface);
+ 
++	/* begin scheduling originator messages on that interface */
++	batadv_schedule_bat_ogm(hard_iface);
+ out:
+ 	if (primary_if)
+ 		batadv_hardif_free_ref(primary_if);
+@@ -459,9 +461,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 			   "Not using interface %s (retrying later): interface not active\n",
+ 			   hard_iface->net_dev->name);
+ 
+-	/* begin scheduling originator messages on that interface */
+-	batadv_schedule_bat_ogm(hard_iface);
+-
+ out:
+ 	return 0;
+ 
 -- 
 1.8.5.3
 
