@@ -1,14 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 11 Feb 2014 13:48:03 +0100
-Message-Id: <1392122903-805-4-git-send-email-antonio@meshcoding.com>
+Date: Tue, 11 Feb 2014 13:48:04 +0100
+Message-Id: <1392122903-805-5-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
 References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [RFC 03/23] batman-adv: ELP - adding basic
-	infrastructure
+Subject: [B.A.T.M.A.N.] [RFC 04/23] batman-adv: ELP - creating neighbor
+	structures
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,531 +22,447 @@ Cc: Marek Lindner <lindner_marek@yahoo.de>, Antonio Quartulli <antonio@open-mesh
 
 From: Linus Luessing <linus.luessing@web.de>
 
-The B.A.T.M.A.N. protocol originally only used a single
-message type (called OGM) to determine the link qualities to
-the direct neighbors and spreading these link quality
-information through the whole mesh. This procedure is
-summarized on the BATMAN concept page and explained in
-details in the RFC draft published in 2008.
-
-This approach was chosen for its simplicity during the
-protocol design phase and the implementation. However, it
-also bears some drawbacks:
-
- *  Wireless interfaces usually come with some packet loss,
-    therefore a higher broadcast rate is desirable to allow
-    a fast reaction on flaky connections.
-    Other interfaces of the same host might be connected to
-    Ethernet LANs / VPNs / etc which rarely exhibit packet
-    loss would benefit from a lower broadcast rate to reduce
-    overhead.
- *  It generally is more desirable to detect local link
-    quality changes at a faster rate than propagating all
-    these changes through the entire mesh (the far end of
-    the mesh does not need to care about local link quality
-    changes that much). Other optimizations strategies, like
-    reducing overhead, might be possible if OGMs weren't
-    used for all tasks in the mesh at the same time.
-
-As a result detecting local link qualities shall be handled
-by an independent message type, ELP, whereas the OGM message
-type remains responsible for flooding the mesh with these
-link quality information and determining the overall path
-transmit qualities.
-
-Developed by Linus during a 6 months trainee study period in
-Ascom (Switzerland) AG.
+Initially developed by Linus during a 6 months trainee study
+period in Ascom (Switzerland) AG.
 
 Signed-off-by: Linus Luessing <linus.luessing@web.de>
 Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- Makefile               |   2 +
- Makefile.kbuild        |   2 +
- README.external        |   1 +
- bat_algo.h             |  15 ++++-
- bat_v.c                |  65 ++++++++++++++++++
- bat_v_elp.c            | 179 +++++++++++++++++++++++++++++++++++++++++++++++++
- bat_v_elp.h            |  30 +++++++++
- gen-compat-autoconf.sh |   1 +
- main.c                 |   1 +
- packet.h               |  25 +++++++
- types.h                |  18 +++++
- 11 files changed, 338 insertions(+), 1 deletion(-)
- create mode 100644 bat_v.c
- create mode 100644 bat_v_elp.c
- create mode 100644 bat_v_elp.h
+ bat_v.c     |  18 +++++-
+ bat_v_elp.c | 204 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ bat_v_elp.h |   6 ++
+ main.h      |   2 +
+ types.h     |  53 ++++++++++++++++
+ 5 files changed, 281 insertions(+), 2 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index 9a7cbae..405175d 100644
---- a/Makefile
-+++ b/Makefile
-@@ -25,6 +25,8 @@ export CONFIG_BATMAN_ADV_BLA=y
- export CONFIG_BATMAN_ADV_DAT=y
- # B.A.T.M.A.N network coding (catwoman):
- export CONFIG_BATMAN_ADV_NC=n
-+# B.A.T.M.A.N. V routing algorithm (experimental):
-+# export CONFIG_BATMAN_ADV_BATMAN_V=y
- 
- PWD:=$(shell pwd)
- KERNELPATH ?= /lib/modules/$(shell uname -r)/build
-diff --git a/Makefile.kbuild b/Makefile.kbuild
-index 42df18f..ae9a6ca 100644
---- a/Makefile.kbuild
-+++ b/Makefile.kbuild
-@@ -18,6 +18,8 @@
- 
- obj-$(CONFIG_BATMAN_ADV) += batman-adv.o
- batman-adv-y += bat_iv_ogm.o
-+batman-adv-$(CONFIG_BATMAN_ADV_BATMAN_V) += bat_v.o
-+batman-adv-$(CONFIG_BATMAN_ADV_BATMAN_V) += bat_v_elp.o
- batman-adv-y += bitarray.o
- batman-adv-$(CONFIG_BATMAN_ADV_BLA) += bridge_loop_avoidance.o
- batman-adv-y += debugfs.o
-diff --git a/README.external b/README.external
-index c8eac1a..6f0d18b 100644
---- a/README.external
-+++ b/README.external
-@@ -39,6 +39,7 @@ module).  Available  options  and  their    possible   values are
-  * CONFIG_BATMAN_ADV_BLA=[y*|n] (B.A.T.M.A.N. bridge loop avoidance)
-  * CONFIG_BATMAN_ADV_DAT=[y*|n] (B.A.T.M.A.N. Distributed ARP Table)
-  * CONFIG_BATMAN_ADV_NC=[y|n*] (B.A.T.M.A.N. Network Coding)
-+ * CONFIG_BATMAN_ADV_BATMAN_V=[y|n*] (B.A.T.M.A.N. V routing algorithm)
- 
- e.g., debugging can be enabled by
- 
-diff --git a/bat_algo.h b/bat_algo.h
-index 4e49666..7289336 100644
---- a/bat_algo.h
-+++ b/bat_algo.h
-@@ -1,6 +1,6 @@
- /* Copyright (C) 2011-2014 B.A.T.M.A.N. contributors:
-  *
-- * Marek Lindner
-+ * Marek Lindner, Antonio Quartulli
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of version 2 of the GNU General Public
-@@ -20,4 +20,17 @@
- 
- int batadv_iv_init(void);
- 
-+#ifdef CONFIG_BATMAN_ADV_BATMAN_V
-+
-+int batadv_v_init(void);
-+
-+#else
-+
-+static inline int batadv_v_init(void)
-+{
-+	return 0;
-+}
-+
-+#endif /* CONFIG_BATMAN_ADV_BATMAN_V */
-+
- #endif /* _NET_BATMAN_ADV_BAT_ALGO_H_ */
 diff --git a/bat_v.c b/bat_v.c
-new file mode 100644
-index 0000000..7247d7f
---- /dev/null
+index 7247d7f..bed5e00 100644
+--- a/bat_v.c
 +++ b/bat_v.c
-@@ -0,0 +1,65 @@
-+/* Copyright (C) 2013-2014 B.A.T.M.A.N. contributors:
-+ *
-+ * Antonio Quartulli
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301, USA
-+ */
+@@ -61,5 +61,21 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+ 
+ int __init batadv_v_init(void)
+ {
+-	return batadv_algo_register(&batadv_batman_v);
++	int ret;
 +
-+#include "main.h"
-+#include "bat_algo.h"
-+#include "bat_v_elp.h"
++	/* batman v echo location protocol packet  */
++	ret = batadv_recv_handler_register(BATADV_ELP,
++					   batadv_v_elp_packet_recv);
++	if (ret < 0)
++		goto elp_unregister;
 +
-+static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
-+{
-+	return batadv_v_elp_iface_enable(hard_iface);
-+}
++	ret = batadv_algo_register(&batadv_batman_v);
 +
-+static void batadv_v_iface_disable(struct batadv_hard_iface *hard_iface)
-+{
-+	batadv_v_elp_iface_disable(hard_iface);
-+}
++	return ret;
 +
-+static void batadv_v_iface_update_mac(struct batadv_hard_iface *hard_iface)
-+{
-+}
++elp_unregister:
++	if (ret < 0)
++		batadv_recv_handler_unregister(BATADV_ELP);
 +
-+static void batadv_v_primary_iface_set(struct batadv_hard_iface *hard_iface)
-+{
-+	batadv_v_elp_primary_iface_set(hard_iface);
-+}
-+
-+static void batadv_v_ogm_schedule(struct batadv_hard_iface *hard_iface)
-+{
-+}
-+
-+static void batadv_v_ogm_emit(struct batadv_forw_packet *forw_packet)
-+{
-+}
-+
-+static struct batadv_algo_ops batadv_batman_v __read_mostly = {
-+	.name = "BATMAN_V",
-+	.bat_iface_enable = batadv_v_iface_enable,
-+	.bat_iface_disable = batadv_v_iface_disable,
-+	.bat_iface_update_mac = batadv_v_iface_update_mac,
-+	.bat_primary_iface_set = batadv_v_primary_iface_set,
-+	.bat_ogm_emit = batadv_v_ogm_emit,
-+	.bat_ogm_schedule = batadv_v_ogm_schedule,
-+};
-+
-+
-+int __init batadv_v_init(void)
-+{
-+	return batadv_algo_register(&batadv_batman_v);
-+}
++	return ret;
+ }
 diff --git a/bat_v_elp.c b/bat_v_elp.c
-new file mode 100644
-index 0000000..45b082b
---- /dev/null
+index 45b082b..ee4207d 100644
+--- a/bat_v_elp.c
 +++ b/bat_v_elp.c
-@@ -0,0 +1,179 @@
-+/* Copyright (C) 2011-2014 B.A.T.M.A.N. contributors:
-+ *
-+ * Linus Lüssing, Marek Lindner, Antonio Quartulli
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301, USA
-+ *
+@@ -23,6 +23,8 @@
+ #include "send.h"
+ #include "bat_algo.h"
+ #include "bat_v_elp.h"
++#include "originator.h"
++#include "routing.h"
+ 
+ /**
+  * batadv_v_elp_start_timer - restart timer for ELP periodic work
+@@ -40,6 +42,111 @@ static void batadv_v_elp_start_timer(struct batadv_hard_iface *hard_iface)
+ }
+ 
+ /**
++ * batadv_elp_neigh_node_free_ref - release a ELP neighbour node
++ * @neigh: the neighbour object to release
 + */
-+
-+#include "main.h"
-+#include "hard-interface.h"
-+#include "send.h"
-+#include "bat_algo.h"
-+#include "bat_v_elp.h"
-+
-+/**
-+ * batadv_v_elp_start_timer - restart timer for ELP periodic work
-+ * @hard_iface: the interface for which the timer has to be reset
-+ */
-+static void batadv_v_elp_start_timer(struct batadv_hard_iface *hard_iface)
++void batadv_elp_neigh_node_free_ref(struct batadv_elp_neigh_node *neigh)
 +{
-+	unsigned int msecs;
-+
-+	msecs = atomic_read(&hard_iface->bat_v.elp_interval) - BATADV_JITTER;
-+	msecs += prandom_u32() % (2 * BATADV_JITTER);
-+
-+	queue_delayed_work(batadv_event_workqueue, &hard_iface->bat_v.elp_wq,
-+			   msecs_to_jiffies(msecs));
++	if (atomic_dec_and_test(&neigh->refcount))
++		kfree_rcu(neigh, rcu);
 +}
 +
 +/**
-+ * batadv_v_elp_send_outstanding - ELP periodic broadcast sending
-+ * @work: work queue item
++ * batadv_v_elp_neigh_new - create a new ELP neighbour node
++ * @hard_iface: the interface the neighbour is connected to
++ * @neigh_addr: the neighbour interface address
++ * @orig_addr: the neighbour originator address
++ * @seqno: the received sequence number to be used to initialize the object
 + *
-+ * Sends a broadcast ELP message over the interface that this work item belongs
-+ * to.
++ * Returns a new ELP neighbour node or NULL in case of failure.
 + */
-+static void batadv_v_elp_send_outstanding(struct work_struct *work)
++static struct batadv_elp_neigh_node *
++batadv_v_elp_neigh_new(struct batadv_hard_iface *hard_iface,
++		       uint8_t *neigh_addr, uint8_t *orig_addr, uint32_t seqno)
 +{
-+	struct batadv_hard_iface *hard_iface;
-+	struct batadv_hard_iface_bat_v *bat_v;
-+	struct batadv_priv *bat_priv;
-+	struct batadv_elp_packet *elp_packet;
-+	uint32_t elp_interval;
-+	struct sk_buff *skb;
++	struct batadv_elp_neigh_node *neigh;
 +
-+	bat_v = container_of(work, struct batadv_hard_iface_bat_v, elp_wq.work);
-+	hard_iface = container_of(bat_v, struct batadv_hard_iface, bat_v);
-+	bat_priv = netdev_priv(hard_iface->soft_iface);
++	neigh = kzalloc(sizeof(*neigh), GFP_ATOMIC);
++	if (!neigh)
++		return NULL;
 +
-+	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
-+		goto out;
++	memcpy(neigh->orig, orig_addr, ETH_ALEN);
++	memcpy(neigh->addr, neigh_addr, ETH_ALEN);
++	neigh->last_recv_seqno = seqno - 1;
++	neigh->last_seen = jiffies;
++	ewma_init(&neigh->metric, 1024, 8);
++	/* recount initialised to 2 to simplify the caller function */
++	atomic_set(&neigh->refcount, 2);
 +
-+	/* we are in the process of shutting this interface down */
-+	if ((hard_iface->if_status == BATADV_IF_NOT_IN_USE) ||
-+	    (hard_iface->if_status == BATADV_IF_TO_BE_REMOVED))
-+		goto out;
++	spin_lock_bh(&hard_iface->bat_v.neigh_list_lock);
++	hlist_add_head_rcu(&neigh->list, &hard_iface->bat_v.neigh_list);
++	spin_unlock_bh(&hard_iface->bat_v.neigh_list_lock);
++	atomic_inc(&hard_iface->bat_v.num_neighbors);
 +
-+	/* the interface was enabled but may not be ready yet */
-+	if (hard_iface->if_status != BATADV_IF_ACTIVE)
-+		goto restart_timer;
-+
-+	skb = skb_copy(hard_iface->bat_v.elp_skb, GFP_ATOMIC);
-+	if (!skb)
-+		goto out;
-+
-+	elp_packet = (struct batadv_elp_packet *)skb->data;
-+	elp_packet->seqno = htonl(atomic_read(&hard_iface->bat_v.elp_seqno));
-+	elp_packet->num_neighbors = 0;
-+	elp_interval = atomic_read(&hard_iface->bat_v.elp_interval);
-+	elp_packet->elp_interval = htonl(elp_interval);
-+
-+	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+		   "Sending ELP packet on interface %s, seqno %u\n",
-+		   hard_iface->net_dev->name,
-+		   atomic_read(&hard_iface->bat_v.elp_seqno));
-+
-+	batadv_send_skb_packet(skb, hard_iface, batadv_broadcast_addr);
-+
-+	atomic_inc(&hard_iface->bat_v.elp_seqno);
-+
-+restart_timer:
-+	batadv_v_elp_start_timer(hard_iface);
-+out:
-+	return;
++	return neigh;
 +}
 +
 +/**
-+ * batadv_v_elp_iface_enable - setup the ELP interface private resources
-+ * @hard_iface: interface for which the data has to be prepared
++ * batadv_v_elp_neigh_get - retrieve an ELP neighbour node
++ * @hard_iface: the interface this neighbour is connected to
++ * @neigh_addr: the interface address of the neighbour to retrieve
 + *
-+ * Returns 0 on success or a -ENOMEM in case of failure.
++ * Returns the ELP neighbour node if found or NULL otherwise.
 + */
-+int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
++struct batadv_elp_neigh_node *
++batadv_v_elp_neigh_get(struct batadv_hard_iface *hard_iface,
++		       uint8_t *neigh_addr)
 +{
-+	struct batadv_elp_packet *elp_packet;
-+	unsigned char *elp_buff;
-+	uint32_t random_seqno;
-+	size_t size;
-+	int res = -ENOMEM;
++	struct batadv_elp_neigh_node *neigh = NULL, *neigh_tmp;
 +
-+	size = ETH_HLEN + NET_IP_ALIGN + BATADV_ELP_HLEN;
-+	hard_iface->bat_v.elp_skb = dev_alloc_skb(size);
-+	if (!hard_iface->bat_v.elp_skb)
-+		goto out;
-+
-+	skb_reserve(hard_iface->bat_v.elp_skb, ETH_HLEN + NET_IP_ALIGN);
-+	elp_buff = skb_push(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
-+	elp_packet = (struct batadv_elp_packet *)elp_buff;
-+	memset(elp_packet, 0, BATADV_ELP_HLEN);
-+
-+	elp_packet->packet_type = BATADV_ELP;
-+	elp_packet->version = BATADV_COMPAT_VERSION;
-+	elp_packet->ttl = 0;
-+
-+	/* randomize initial seqno to avoid collision */
-+	get_random_bytes(&random_seqno, sizeof(random_seqno));
-+	atomic_set(&hard_iface->bat_v.elp_seqno, random_seqno);
-+	atomic_set(&hard_iface->bat_v.elp_interval, 500);
-+
-+	INIT_DELAYED_WORK(&hard_iface->bat_v.elp_wq,
-+			  batadv_v_elp_send_outstanding);
-+	batadv_v_elp_start_timer(hard_iface);
-+	res = 0;
-+
-+out:
-+	return res;
-+}
-+
-+/**
-+ * batadv_v_elp_iface_disable - release ELP interface private resources
-+ * @hard_iface: interface for which the resources have to be released
-+ */
-+void batadv_v_elp_iface_disable(struct batadv_hard_iface *hard_iface)
-+{
-+	cancel_delayed_work_sync(&hard_iface->bat_v.elp_wq);
-+
-+	dev_kfree_skb(hard_iface->bat_v.elp_skb);
-+	hard_iface->bat_v.elp_skb = NULL;
-+}
-+
-+/**
-+ * batadv_v_elp_primary_iface_set - change internal data to reflect the new
-+ *  primary interface
-+ * @hard_iface: the new primary interface
-+ */
-+void batadv_v_elp_primary_iface_set(struct batadv_hard_iface *hard_iface)
-+{
-+	struct batadv_hard_iface *hard_iface_tmp;
-+	struct batadv_elp_packet *elp_packet;
-+	struct sk_buff *skb;
-+
-+	/* update orig field of every elp iface belonging to this mesh */
 +	rcu_read_lock();
-+	list_for_each_entry_rcu(hard_iface_tmp, &batadv_hardif_list, list) {
-+		if (hard_iface->soft_iface != hard_iface_tmp->soft_iface)
++	hlist_for_each_entry_rcu(neigh_tmp,
++				 &hard_iface->bat_v.neigh_list, list) {
++		if (!batadv_compare_eth(neigh_tmp->addr, neigh_addr))
 +			continue;
 +
-+		if (!hard_iface_tmp->bat_v.elp_skb)
++		if (!atomic_inc_not_zero(&neigh_tmp->refcount))
 +			continue;
 +
-+		skb = hard_iface_tmp->bat_v.elp_skb;
-+		elp_packet = (struct batadv_elp_packet *)skb->data;
-+		memcpy(elp_packet->orig,
-+		       hard_iface->net_dev->dev_addr, ETH_ALEN);
++		neigh = neigh_tmp;
++		break;
 +	}
 +	rcu_read_unlock();
++
++	return neigh;
++}
++
++/**
++ * batadv_v_elp_neigh_purge - purge obsolete neighbour nodes
++ *
++ * Deletes the ELP neighbour nodes that did not send any ELP message for a
++ * pre-defined amount of time.
++ */
++static void batadv_v_elp_neigh_purge(struct batadv_hard_iface *hard_iface)
++{
++	unsigned long timeout;
++	struct batadv_elp_neigh_node *neigh;
++	struct hlist_node *node;
++	bool has_timed_out;
++
++	spin_lock_bh(&hard_iface->bat_v.neigh_list_lock);
++	hlist_for_each_entry_safe(neigh, node, &hard_iface->bat_v.neigh_list,
++				  list) {
++		timeout = neigh->elp_interval * BATADV_ELP_OUTDATED_MAX;
++		has_timed_out = batadv_has_timed_out(neigh->last_seen, timeout);
++
++		if ((!has_timed_out) &&
++		    (hard_iface->if_status == BATADV_IF_ACTIVE))
++			continue;
++
++		hlist_del_rcu(&neigh->list);
++		atomic_dec(&hard_iface->bat_v.num_neighbors);
++		batadv_elp_neigh_node_free_ref(neigh);
++	}
++	spin_unlock_bh(&hard_iface->bat_v.neigh_list_lock);
++}
++
++/**
+  * batadv_v_elp_send_outstanding - ELP periodic broadcast sending
+  * @work: work queue item
+  *
+@@ -54,6 +161,7 @@ static void batadv_v_elp_send_outstanding(struct work_struct *work)
+ 	struct batadv_elp_packet *elp_packet;
+ 	uint32_t elp_interval;
+ 	struct sk_buff *skb;
++	uint8_t num_neighs;
+ 
+ 	bat_v = container_of(work, struct batadv_hard_iface_bat_v, elp_wq.work);
+ 	hard_iface = container_of(bat_v, struct batadv_hard_iface, bat_v);
+@@ -75,9 +183,15 @@ static void batadv_v_elp_send_outstanding(struct work_struct *work)
+ 	if (!skb)
+ 		goto out;
+ 
++	/* purge outdated entries first */
++	batadv_v_elp_neigh_purge(hard_iface);
++
+ 	elp_packet = (struct batadv_elp_packet *)skb->data;
+ 	elp_packet->seqno = htonl(atomic_read(&hard_iface->bat_v.elp_seqno));
+-	elp_packet->num_neighbors = 0;
++
++	num_neighs = atomic_read(&hard_iface->bat_v.num_neighbors);
++	elp_packet->num_neighbors = num_neighs;
++
+ 	elp_interval = atomic_read(&hard_iface->bat_v.elp_interval);
+ 	elp_packet->elp_interval = htonl(elp_interval);
+ 
+@@ -110,6 +224,9 @@ int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
+ 	size_t size;
+ 	int res = -ENOMEM;
+ 
++	INIT_HLIST_HEAD(&hard_iface->bat_v.neigh_list);
++	spin_lock_init(&hard_iface->bat_v.neigh_list_lock);
++
+ 	size = ETH_HLEN + NET_IP_ALIGN + BATADV_ELP_HLEN;
+ 	hard_iface->bat_v.elp_skb = dev_alloc_skb(size);
+ 	if (!hard_iface->bat_v.elp_skb)
+@@ -148,6 +265,8 @@ void batadv_v_elp_iface_disable(struct batadv_hard_iface *hard_iface)
+ 
+ 	dev_kfree_skb(hard_iface->bat_v.elp_skb);
+ 	hard_iface->bat_v.elp_skb = NULL;
++
++	batadv_v_elp_neigh_purge(hard_iface);
+ }
+ 
+ /**
+@@ -177,3 +296,86 @@ void batadv_v_elp_primary_iface_set(struct batadv_hard_iface *hard_iface)
+ 	}
+ 	rcu_read_unlock();
+ }
++
++/**
++ * batadv_v_elp_neigh_update - update an ELP neighbour node
++ * @bat_priv: the bat priv with all the soft interface information
++ * @neigh_addr: the neighbour interface address
++ * @if_incoming: the interface the packet was received through
++ * @elp_packet: the received ELP packet
++ *
++ * Updates the ELP neighbour node state with the data received within the new
++ * ELP packet.
++ */
++static void batadv_v_elp_neigh_update(struct batadv_priv *bat_priv,
++				      uint8_t *neigh_addr,
++				      struct batadv_hard_iface *if_incoming,
++				      struct batadv_elp_packet *elp_packet)
++{
++	struct batadv_elp_neigh_node *neigh;
++
++	neigh = batadv_v_elp_neigh_get(if_incoming, neigh_addr);
++	if (!neigh) {
++		neigh = batadv_v_elp_neigh_new(if_incoming, neigh_addr,
++					       elp_packet->orig,
++					       ntohl(elp_packet->seqno));
++		if (!neigh)
++			goto out;
++	}
++
++	neigh->last_seen = jiffies;
++
++out:
++	if (neigh)
++		batadv_elp_neigh_node_free_ref(neigh);
++}
++
++/**
++ * batadv_v_elp_packet_recv - main ELP packet handler
++ * @skb: the received packet
++ * @if_incoming: the interface this packet was received through
++ *
++ * Returns NET_RX_SUCCESS and consumes the skb if the packet was peoperly
++ * processed or NET_RX_DROP in case of failure.
++ */
++int batadv_v_elp_packet_recv(struct sk_buff *skb,
++			     struct batadv_hard_iface *if_incoming)
++{
++	struct batadv_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
++	struct batadv_elp_packet *elp_packet;
++	struct batadv_hard_iface *primary_if;
++	struct ethhdr *ethhdr = (struct ethhdr *)skb_mac_header(skb);
++	bool ret;
++
++	ret = batadv_check_management_packet(skb, if_incoming, BATADV_ELP_HLEN);
++	if (!ret)
++		return NET_RX_DROP;
++
++	if (batadv_is_my_mac(bat_priv, ethhdr->h_source))
++		return NET_RX_DROP;
++
++	/* did we receive a B.A.T.M.A.N. V ELP packet on an interface
++	 * that does not have B.A.T.M.A.N. V ELP enabled ? */
++	if (strcmp(bat_priv->bat_algo_ops->name, "BATMAN_V") != 0)
++		return NET_RX_DROP;
++
++	elp_packet = (struct batadv_elp_packet *)skb->data;
++
++	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++		   "Received ELP packet from %pM seqno %u ORIG: %pM\n",
++		   ethhdr->h_source, ntohl(elp_packet->seqno),
++		   elp_packet->orig);
++
++	primary_if = batadv_primary_if_get_selected(bat_priv);
++	if (!primary_if)
++		goto out;
++
++	batadv_v_elp_neigh_update(bat_priv, ethhdr->h_source, if_incoming,
++				  elp_packet);
++
++out:
++	if (primary_if)
++		batadv_hardif_free_ref(primary_if);
++	consume_skb(skb);
++	return NET_RX_SUCCESS;
 +}
 diff --git a/bat_v_elp.h b/bat_v_elp.h
-new file mode 100644
-index 0000000..06d2cb1
---- /dev/null
+index 06d2cb1..186ff4b 100644
+--- a/bat_v_elp.h
 +++ b/bat_v_elp.h
-@@ -0,0 +1,30 @@
-+/* Copyright (C) 2013-2014 B.A.T.M.A.N. contributors:
-+ *
-+ * Antonio Quartulli
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301, USA
-+ *
-+ */
-+
-+#include "main.h"
-+
-+#ifndef _NET_BATMAN_ADV_BAT_V_ELP_H_
-+#define _NET_BATMAN_ADV_BAT_V_ELP_H_
-+
-+int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface);
-+void batadv_v_elp_iface_disable(struct batadv_hard_iface *hard_iface);
-+void batadv_v_elp_primary_iface_set(struct batadv_hard_iface *hard_iface);
-+
-+#endif /* _NET_BATMAN_ADV_BAT_V_ELP_H_ */
-diff --git a/gen-compat-autoconf.sh b/gen-compat-autoconf.sh
-index 78573e4..001707f 100755
---- a/gen-compat-autoconf.sh
-+++ b/gen-compat-autoconf.sh
-@@ -40,6 +40,7 @@ gen_config 'CONFIG_BATMAN_ADV_DEBUG' ${CONFIG_BATMAN_ADV_DEBUG:="n"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_BLA' ${CONFIG_BATMAN_ADV_BLA:="y"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_DAT' ${CONFIG_BATMAN_ADV_DAT:="y"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_NC' ${CONFIG_BATMAN_ADV_NC:="n"} >> "${TMP}"
-+gen_config 'CONFIG_BATMAN_ADV_BATMAN_V' ${CONFIG_BATMAN_ADV_BATMAN_V:="n"} >> "${TMP}"
+@@ -23,8 +23,14 @@
+ #ifndef _NET_BATMAN_ADV_BAT_V_ELP_H_
+ #define _NET_BATMAN_ADV_BAT_V_ELP_H_
  
- # only regenerate compat-autoconf.h when config was changed
- diff "${TMP}" "${TARGET}" > /dev/null 2>&1 || cp "${TMP}" "${TARGET}"
-diff --git a/main.c b/main.c
-index fbeaebd..b7d9996 100644
---- a/main.c
-+++ b/main.c
-@@ -63,6 +63,7 @@ static int __init batadv_init(void)
++struct batadv_elp_neigh_node *
++batadv_v_elp_neigh_get(struct batadv_hard_iface *hard_iface,
++		       uint8_t *neigh_addr);
++void batadv_elp_neigh_node_free_ref(struct batadv_elp_neigh_node *neigh);
+ int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface);
+ void batadv_v_elp_iface_disable(struct batadv_hard_iface *hard_iface);
+ void batadv_v_elp_primary_iface_set(struct batadv_hard_iface *hard_iface);
++int batadv_v_elp_packet_recv(struct sk_buff *skb,
++			     struct batadv_hard_iface *if_incoming);
  
- 	batadv_recv_handler_init();
+ #endif /* _NET_BATMAN_ADV_BAT_V_ELP_H_ */
+diff --git a/main.h b/main.h
+index 34e85a2..4ab3216 100644
+--- a/main.h
++++ b/main.h
+@@ -45,6 +45,7 @@
+ #define BATADV_TT_WORK_PERIOD 5000 /* 5 seconds */
+ #define BATADV_ORIG_WORK_PERIOD 1000 /* 1 second */
+ #define BATADV_DAT_ENTRY_TIMEOUT (5*60000) /* 5 mins in milliseconds */
++#define BATADV_ELP_OUTDATED_MAX 4
+ /* sliding packet range of received originator messages in sequence numbers
+  * (should be a multiple of our word size)
+  */
+@@ -180,6 +181,7 @@ enum batadv_uev_type {
+ #include <linux/jiffies.h>
+ #include <linux/seq_file.h>
+ #include <linux/if_vlan.h>
++#include <linux/average.h>	/* ewma */
+ #include "compat.h"
  
-+	batadv_v_init();
- 	batadv_iv_init();
- 	batadv_nc_init();
- 
-diff --git a/packet.h b/packet.h
-index 0a381d1..71b1aeb 100644
---- a/packet.h
-+++ b/packet.h
-@@ -37,6 +37,7 @@ enum batadv_packettype {
- 	BATADV_IV_OGM           = 0x00,
- 	BATADV_BCAST            = 0x01,
- 	BATADV_CODED            = 0x02,
-+	BATADV_ELP		= 0x03,
- 	/* 0x40 - 0x7f: unicast */
- #define BATADV_UNICAST_MIN     0x40
- 	BATADV_UNICAST          = 0x40,
-@@ -192,6 +193,30 @@ struct batadv_ogm_packet {
- #define BATADV_OGM_HLEN sizeof(struct batadv_ogm_packet)
- 
- /**
-+ * struct batadv_elp_packet - elp (neighbor discovery) packet
-+ * @packet_type: batman-adv packet type, part of the general header
-+ * @version: batman-adv protocol version, part of the genereal header
-+ * @ttl: time to live for this packet, part of the genereal header
-+ * @num_neighbors: number of already discovered neighbors
-+ * @seqno: sequence number
-+ * @elp_interval: currently used ELP sending interval
-+ * @orig: originator mac address
-+ * @align: not used - useful for alignment purposes only
-+ */
-+struct batadv_elp_packet {
-+	uint8_t  packet_type;
-+	uint8_t  version;
-+	uint8_t  ttl;
-+	uint8_t  num_neighbors;
-+	__be32	 seqno;
-+	__be32	 elp_interval;
-+	uint8_t  orig[ETH_ALEN];
-+	uint8_t  align[2];
-+};
-+
-+#define BATADV_ELP_HLEN sizeof(struct batadv_elp_packet)
-+
-+/**
-  * batadv_icmp_header - common members among all the ICMP packets
-  * @packet_type: batman-adv packet type, part of the general header
-  * @version: batman-adv protocol version, part of the genereal header
+ #include "types.h"
 diff --git a/types.h b/types.h
-index 9f52517..518fa81 100644
+index 518fa81..be230b6 100644
 --- a/types.h
 +++ b/types.h
-@@ -70,6 +70,20 @@ struct batadv_hard_iface_bat_iv {
+@@ -73,12 +73,18 @@ struct batadv_hard_iface_bat_iv {
+  * struct batadv_hard_iface_bat_v - per hard interface B.A.T.M.A.N. V data
+  * @elp_interval: time interval between two ELP transmissions
+  * @elp_seqno: current ELP sequence number
++ * @neigh_list: list of ELP neighbour objects
++ * @neigh_list_lock: protects neigh_list
++ * @num_neighbours: number of neighbours in the neigh_list
+  * @elp_skb: base skb containing the ELP message to send
+  * @elp_wq: workqueue used to schedule ELP transmissions
+  */
+ struct batadv_hard_iface_bat_v {
+ 	atomic_t elp_interval;
+ 	atomic_t elp_seqno;
++	struct hlist_head neigh_list;
++	spinlock_t neigh_list_lock;
++	atomic_t num_neighbors;
+ 	struct sk_buff *elp_skb;
+ 	struct delayed_work elp_wq;
+ };
+@@ -327,6 +333,37 @@ struct batadv_gw_node {
  };
  
  /**
-+ * struct batadv_hard_iface_bat_v - per hard interface B.A.T.M.A.N. V data
-+ * @elp_interval: time interval between two ELP transmissions
-+ * @elp_seqno: current ELP sequence number
-+ * @elp_skb: base skb containing the ELP message to send
-+ * @elp_wq: workqueue used to schedule ELP transmissions
++ * struct batadv_elp_neigh - hard_iface ralated neighbor information
++ * @list: list node for batadv_hard_iface::neigh_list
++ * @orig: the MAC address of the corresponding orig_node
++ * @addr: the MAC address of the neighboring interface
++ * @metric: ewma link metric towards this neighbor
++ * @last_recv_seqno: last ELP received sequence number
++ * @lest_seen: last time this neigh has been seen
++ * @refcount: number of contexts the object is used
++ * @rcu: struct used for freeing in an RCU-safe manner
 + */
-+struct batadv_hard_iface_bat_v {
-+	atomic_t elp_interval;
-+	atomic_t elp_seqno;
-+	struct sk_buff *elp_skb;
-+	struct delayed_work elp_wq;
++struct batadv_elp_neigh_node {
++	struct hlist_node list;
++	uint8_t orig[ETH_ALEN];
++	uint8_t addr[ETH_ALEN];
++	struct ewma metric;
++	uint32_t last_recv_seqno;
++	unsigned long last_seen;
++	uint32_t elp_interval;
++	atomic_t refcount;
++	struct rcu_head rcu;
 +};
 +
 +/**
-  * struct batadv_hard_iface - network device known to batman-adv
-  * @list: list node for batadv_hardif_list
-  * @if_num: identificator of the interface
-@@ -83,6 +97,7 @@ struct batadv_hard_iface_bat_iv {
-  * @soft_iface: the batman-adv interface which uses this network interface
++ * batadv_neigh_node_bat_v - B.A.T.M.A.N. V private neighbor information
++ * @elp_neigh: ELP private neighbour data
++ */
++struct batadv_neigh_node_bat_v {
++	struct batadv_elp_neigh_node *elp_neigh;
++};
++
++/**
+  * struct batadv_neigh_node - structure for single hops neighbors
+  * @list: list node for batadv_orig_node::neigh_list
+  * @orig_node: pointer to corresponding orig_node
+@@ -336,6 +373,7 @@ struct batadv_gw_node {
+  * @if_incoming: pointer to incoming hard interface
+  * @last_seen: when last packet via this neighbor was received
+  * @last_ttl: last received ttl from this neigh node
++ * @elp_neigh: ELP private neighbour data
   * @rcu: struct used for freeing in an RCU-safe manner
-  * @bat_iv: BATMAN IV specific per hard interface data
-+ * @bat_v: BATMAN V specific per hard interface data
-  * @cleanup_work: work queue callback item for hard interface deinit
-  * @debug_dir: dentry for nc subdir in batman-adv directory in debugfs
+  * @bat_iv: B.A.T.M.A.N. IV private structure
   */
-@@ -98,6 +113,9 @@ struct batadv_hard_iface {
- 	struct net_device *soft_iface;
- 	struct rcu_head rcu;
- 	struct batadv_hard_iface_bat_iv bat_iv;
+@@ -347,6 +385,9 @@ struct batadv_neigh_node {
+ 	spinlock_t ifinfo_lock;	/* protects ifinfo_list and its members */
+ 	struct batadv_hard_iface *if_incoming;
+ 	unsigned long last_seen;
 +#ifdef CONFIG_BATMAN_ADV_BATMAN_V
-+	struct batadv_hard_iface_bat_v bat_v;
++	struct batadv_neigh_node_bat_v bat_v;
 +#endif
- 	struct work_struct cleanup_work;
- 	struct dentry *debug_dir;
+ 	atomic_t refcount;
+ 	struct rcu_head rcu;
  };
+@@ -370,6 +411,15 @@ struct batadv_neigh_ifinfo_bat_iv {
+ };
+ 
+ /**
++ * struct batadv_neigh_ifinfo_bat_v - neighbor information per outgoing
++ *  interface for BATMAN V
++ * @metric: last metric received from an originator via this neigh
++ */
++struct batadv_neigh_ifinfo_bat_v {
++	uint32_t metric;
++};
++
++/**
+  * struct batadv_neigh_ifinfo - neighbor information per outgoing interface
+  * @list: list node for batadv_neigh_node::ifinfo_list
+  * @if_outgoing: pointer to outgoing hard interface
+@@ -382,6 +432,9 @@ struct batadv_neigh_ifinfo {
+ 	struct hlist_node list;
+ 	struct batadv_hard_iface *if_outgoing;
+ 	struct batadv_neigh_ifinfo_bat_iv bat_iv;
++#ifdef CONFIG_BATMAN_ADV_BATMAN_V
++	struct batadv_neigh_ifinfo_bat_v bat_v;
++#endif
+ 	uint8_t last_ttl;
+ 	atomic_t refcount;
+ 	struct rcu_head rcu;
 -- 
 1.8.5.3
 
