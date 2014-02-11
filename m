@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 11 Feb 2014 13:48:15 +0100
-Message-Id: <1392122903-805-16-git-send-email-antonio@meshcoding.com>
+Date: Tue, 11 Feb 2014 13:48:16 +0100
+Message-Id: <1392122903-805-17-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
 References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [RFC 15/23] batman-adv: ELP - send unicast ELP
-	packets for throughput sampling
+Subject: [B.A.T.M.A.N.] [RFC 16/23] batman-adv: ELP - read estimated
+	throughput from cfg80211
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,194 +22,184 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-In case of a unused link, the throughput estimation will
-get stuck to the last sampled value and therefore the
-reported metric will becomes obsolete.
-
-Send unicast ELP packets to each neighbor to trigger throughput
-sampling on unused links.
-
-These packets will fill an entire frame so that the
-measurement is as much reliable as possible
+In case of wireless interface retrieve the throughput by
+querying cfg80211. To perform this call a separate work
+must be scheduled because the function may sleep and this
+is not allowed within an RCU protected context (RCU in this
+case is used to iterate over all the neighbours).
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- bat_v_elp.c | 86 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----
- main.h      |  3 +++
- send.c      |  4 +--
- 3 files changed, 85 insertions(+), 8 deletions(-)
+ bat_v_elp.c | 61 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-------
+ compat.h    | 20 ++++++++++++++++++++
+ types.h     |  2 ++
+ 3 files changed, 76 insertions(+), 7 deletions(-)
 
 diff --git a/bat_v_elp.c b/bat_v_elp.c
-index ef4e476..14a1e15 100644
+index 14a1e15..31190af 100644
 --- a/bat_v_elp.c
 +++ b/bat_v_elp.c
-@@ -25,6 +25,7 @@
- #include "bat_v_elp.h"
- #include "originator.h"
- #include "routing.h"
-+#include "soft-interface.h"
- #include "translation-table.h"
+@@ -18,6 +18,8 @@
+  *
+  */
  
- /**
-@@ -171,6 +172,67 @@ static void batadv_v_elp_neigh_purge(struct batadv_hard_iface *hard_iface)
++#include <net/cfg80211.h>
++
+ #include "main.h"
+ #include "hard-interface.h"
+ #include "send.h"
+@@ -64,19 +66,56 @@ batadv_v_elp_get_throughput(struct batadv_elp_neigh_node *neigh)
+ {
+ 	struct batadv_hard_iface *hard_iface = neigh->hard_iface;
+ 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
++	struct station_info sinfo;
+ 	uint32_t throughput;
++	int r;
+ 
+-	/* get the customised user value for the throughput */
+-	throughput = atomic_read(&hard_iface->bat_v.user_throughput);
+-	/* if the user specified a value, let's return it */
++	/* if the user specified a customised value for this interface, then
++	 * return it directly
++	 */
++	throughput =  atomic_read(&hard_iface->bat_v.user_throughput);
+ 	if (throughput != 0)
+ 		return throughput;
+ 
+-	/* throughput cannot be computed right now. Return base value */
++	/* if this is a wireless device, then ask its throughput through
++	 * cfg80211 API
++	 */
++	if (hard_iface->net_dev->ieee80211_ptr) {
++		r = cfg80211_get_station(hard_iface->net_dev, neigh->addr,
++					 &sinfo);
++		if (r == -ENOENT) {
++			/* node is not associated anymore! it would be possible
++			 * to delete this neighbor. for now set metric to 0
++			 */
++			return 0;
++		}
++		if (!r)
++			return sinfo.expected_throughput;
++	}
++
++	/* if none of the above cases apply, return the base_throughput */
+ 	return atomic_read(&bat_priv->bat_v.base_throughput);
  }
  
  /**
-+ * batadv_v_elp_wifi_neigh_probe - send link probing packets to a neighbour
-+ * @hard_iface: the interface to use while sending the probing packets
-+ * @neigh: the neighbour to probe
-+ *
-+ * Sends a predefined number of unicast wifi packets to a given neighbour in
-+ * order to trigger the throughput estimation on this link by the RC algorithm.
-+ * Packets are sent only if there there is not enough payload unicast traffic
-+ * towards this neighbour..
-+ *
-+ * Returns 0 on success and -1 in case of error during skb preparation.
++ * batadv_v_elp_metric_update - worker updating the metric of one neighbour
++ * @work: the work queue item
 + */
-+static int batadv_v_elp_wifi_neigh_probe(struct batadv_hard_iface *hard_iface,
-+					 struct batadv_elp_neigh_node *neigh)
++static void batadv_v_elp_metric_update(struct work_struct *work)
 +{
-+	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	unsigned long last_tx_diff;
-+	struct sk_buff *skb;
-+	int probe_len, i;
++	struct batadv_elp_neigh_node *neigh;
 +
-+	/* this probing routine is for Wifi neighbours only */
-+	if (batadv_is_wifi_netdev(hard_iface->net_dev))
-+		return 0;
++	neigh = container_of(work, struct batadv_elp_neigh_node, metric_work);
 +
-+	/* probe the neighbor only if no unicast packets have been sent
-+	 * to it in the last 100 milliseconds: this is the rate control
-+	 * algorithm sampling interval (minstrel). In this way, if not
-+	 * enough traffic has been sent to the neighbor, batman-adv can
-+	 * generate 2 probe packets and push the RC algorithm to perform
-+	 * the sampling
++	ewma_add(&neigh->metric, batadv_v_elp_get_throughput(neigh));
++
++	/* decrement refcounter to balance increment performed before scheduling
++	 * this task
 +	 */
-+	last_tx_diff = jiffies_to_msecs(jiffies - neigh->last_unicast_tx);
-+	if (last_tx_diff <= BATADV_ELP_PROBE_MAX_TX_DIFF)
-+		return 0;
-+
-+	probe_len = max_t(int, sizeof(struct batadv_elp_packet),
-+			  BATADV_ELP_MIN_PROBE_SIZE);
-+
-+	for (i = 0; i < BATADV_ELP_PROBES_PER_NODE; i++) {
-+		skb = skb_copy_expand(hard_iface->bat_v.elp_skb, 0,
-+				      probe_len - hard_iface->bat_v.elp_skb->len,
-+				      GFP_ATOMIC);
-+		if (!skb)
-+			return -1;
-+
-+		/* Tell the skb to get as bigger as the allocated space (we want
-+		 * the packet to be exactly of that size to make the link
-+		 * throughput estimation effective.
-+		 */
-+		skb_put(skb, probe_len - hard_iface->bat_v.elp_skb->len);
-+
-+		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+			   "Sending unicast (probe) ELP packet on interface %s to %pM\n",
-+			   hard_iface->net_dev->name, neigh->addr);
-+
-+		batadv_send_skb_packet(skb, hard_iface, neigh->addr);
-+	}
-+
-+	return 0;
++	batadv_elp_neigh_node_free_ref(neigh);
 +}
 +
 +/**
-  * batadv_v_elp_periodic_work - ELP periodic task per interface
-  * @work: work queue item
-  *
-@@ -181,11 +243,11 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
- {
- 	struct batadv_hard_iface *hard_iface;
- 	struct batadv_hard_iface_bat_v *bat_v;
--	struct batadv_priv *bat_priv;
- 	struct batadv_elp_packet *elp_packet;
--	uint32_t elp_interval;
- 	struct batadv_elp_neigh_node *neigh;
-+	struct batadv_priv *bat_priv;
- 	struct sk_buff *skb;
-+	uint32_t elp_interval;
- 	uint8_t num_neighs;
+  * batadv_v_elp_neigh_new - create a new ELP neighbour node
+  * @hard_iface: the interface the neighbour is connected to
+  * @neigh_addr: the neighbour interface address
+@@ -108,6 +147,8 @@ batadv_v_elp_neigh_new(struct batadv_hard_iface *hard_iface,
+ 	spin_unlock_bh(&hard_iface->bat_v.neigh_list_lock);
+ 	atomic_inc(&hard_iface->bat_v.num_neighbors);
  
- 	bat_v = container_of(work, struct batadv_hard_iface_bat_v, elp_wq.work);
-@@ -206,7 +268,7 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
- 
- 	skb = skb_copy(hard_iface->bat_v.elp_skb, GFP_ATOMIC);
- 	if (!skb)
--		goto update_metric;
-+		goto restart_timer;
- 
- 	/* purge outdated entries first */
- 	batadv_v_elp_neigh_purge(hard_iface);
-@@ -221,7 +283,7 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
- 	elp_packet->elp_interval = htonl(elp_interval);
- 
- 	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
--		   "Sending ELP packet on interface %s, seqno %u\n",
-+		   "Sending broadcast ELP packet on interface %s, seqno %u\n",
- 		   hard_iface->net_dev->name,
- 		   atomic_read(&hard_iface->bat_v.elp_seqno));
- 
-@@ -229,15 +291,27 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
- 
- 	atomic_inc(&hard_iface->bat_v.elp_seqno);
- 
--update_metric:
- 	/* Instead of updating the metric each "received" ELP packet, it is
- 	 * better to do it on each ELP sending. This way, if a node is dead and
- 	 * does not send packets anymore, batman-adv is still able to timely
- 	 * react to its death.
-+	 *
-+	 * The metric is updated by following these steps:
-+	 * 1) if the hard_iface if wifi => send a unicast ELP for
-+	 * probing/sampling to each neighbor
-+	 * 2) update the metric value of each neighbor
-+	 *
- 	 */
- 	rcu_read_lock();
--	hlist_for_each_entry_rcu(neigh, &hard_iface->bat_v.neigh_list, list)
-+	hlist_for_each_entry_rcu(neigh, &hard_iface->bat_v.neigh_list, list) {
-+		if (batadv_v_elp_wifi_neigh_probe(hard_iface, neigh) < 0)
-+			/* if something goes wrong while probing, better to stop
-+			 * sending packets immediately and reschedule the task
-+			 */
-+			break;
++	INIT_WORK(&neigh->metric_work, batadv_v_elp_metric_update);
 +
- 		ewma_add(&neigh->metric, batadv_v_elp_get_throughput(neigh));
-+	}
+ 	return neigh;
+ }
+ 
+@@ -192,7 +233,7 @@ static int batadv_v_elp_wifi_neigh_probe(struct batadv_hard_iface *hard_iface,
+ 	int probe_len, i;
+ 
+ 	/* this probing routine is for Wifi neighbours only */
+-	if (batadv_is_wifi_netdev(hard_iface->net_dev))
++	if (!batadv_is_wifi_netdev(hard_iface->net_dev))
+ 		return 0;
+ 
+ 	/* probe the neighbor only if no unicast packets have been sent
+@@ -310,7 +351,14 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
+ 			 */
+ 			break;
+ 
+-		ewma_add(&neigh->metric, batadv_v_elp_get_throughput(neigh));
++		if (!atomic_inc_not_zero(&neigh->refcount))
++			continue;
++
++		/* reading the estimated throughput from cfg80211 is a task that
++		 * may sleep and that is not allowed in an rcu protected
++		 * context. Therefore schedule a task for that.
++		 */
++		queue_work(batadv_event_workqueue, &neigh->metric_work);
+ 	}
  	rcu_read_unlock();
  
- restart_timer:
-diff --git a/main.h b/main.h
-index 5699c9f..9cfdbb3 100644
---- a/main.h
-+++ b/main.h
-@@ -54,6 +54,9 @@
- #define BATADV_ORIG_WORK_PERIOD 1000 /* 1 second */
- #define BATADV_DAT_ENTRY_TIMEOUT (5*60000) /* 5 mins in milliseconds */
- #define BATADV_ELP_OUTDATED_MAX 4
-+#define BATADV_ELP_PROBES_PER_NODE 2
-+#define BATADV_ELP_MIN_PROBE_SIZE 200 /* bytes */
-+#define BATADV_ELP_PROBE_MAX_TX_DIFF 100 /* milliseconds */
- /* sliding packet range of received originator messages in sequence numbers
-  * (should be a multiple of our word size)
+@@ -442,7 +490,6 @@ static void batadv_v_elp_neigh_update(struct batadv_priv *bat_priv,
+ 
+ 	neigh->last_seen = jiffies;
+ 	neigh->last_recv_seqno = ntohl(elp_packet->seqno);
+-	ewma_add(&neigh->metric, batadv_v_elp_get_throughput(neigh));
+ 
+ out:
+ 	if (neigh)
+diff --git a/compat.h b/compat.h
+index 12bc8d8..9f71f51 100644
+--- a/compat.h
++++ b/compat.h
+@@ -407,4 +407,24 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
+ 
+ #endif /* < KERNEL_VERSION(3, 14, 0) */
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 15, 0)
++
++/* NOTE: shall I put this ifndef outside of every #if block ? */
++#ifndef cfg80211_get_station
++
++/* the expected behaviour of this function is to return 0 on success, therefore
++ * it is possible to define it as 1 so that batman-adv thinks like something
++ * went wrong. It will then decide what to do.
++ */
++#define cfg80211_get_station(_a, _b, _c) (1)
++/* the following define substitute the expected_throughput field with a random
++ * one existing in the station_info struct. It can be random because due to the
++ * define above it will never be used. We need it only to make the code compile
++ */
++#define expected_throughput filled
++
++#endif /* cfg80211_get_station */
++
++#endif /* < KERNEL_VERSION(3, 15, 0) */
++
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
+diff --git a/types.h b/types.h
+index 948d5dc..6f05d99 100644
+--- a/types.h
++++ b/types.h
+@@ -346,6 +346,7 @@ struct batadv_gw_node {
+  * @refcount: number of contexts the object is used
+  * @rcu: struct used for freeing in an RCU-safe manner
+  * @hard_iface: the interface where this neighbor is connected to
++ * @metric_work: work queue callback item for metric update
   */
-diff --git a/send.c b/send.c
-index 734b24e..20b60d7 100644
---- a/send.c
-+++ b/send.c
-@@ -108,8 +108,8 @@ int batadv_send_unicast_skb(struct sk_buff *skb,
+ struct batadv_elp_neigh_node {
+ 	struct hlist_node list;
+@@ -359,6 +360,7 @@ struct batadv_elp_neigh_node {
+ 	atomic_t refcount;
+ 	struct rcu_head rcu;
+ 	struct batadv_hard_iface *hard_iface;
++	struct work_struct metric_work;
+ };
  
- 	ret = batadv_send_skb_packet(skb, neigh->if_incoming, neigh->addr);
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
--	if (ret != NET_XMIT_DROP && neigh->elp_neigh)
--		neigh->elp_neigh->last_unicast_tx = jiffies;
-+	if (ret != NET_XMIT_DROP && neigh->bat_v.elp_neigh)
-+		neigh->bat_v.elp_neigh->last_unicast_tx = jiffies;
- #endif
- 
- 	return ret;
+ /**
 -- 
 1.8.5.3
 
