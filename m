@@ -1,10 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 11 Feb 2014 13:48:19 +0100
-Message-Id: <1392122903-805-20-git-send-email-antonio@meshcoding.com>
+Date: Tue, 11 Feb 2014 13:48:20 +0100
+Message-Id: <1392122903-805-21-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
 References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [RFC 19/23] batman-adv: add bat_neigh_free() API
+Subject: [B.A.T.M.A.N.] [RFC 20/23] batman-adv: B.A.T.M.A.N. V - implement
+	bat_neigh_free() API
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,52 +22,36 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-This API has to be used to let any routing protocol free
-neighbor specific allocated resources
-
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- originator.c | 6 ++++++
- types.h      | 2 ++
- 2 files changed, 8 insertions(+)
+ bat_v.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/originator.c b/originator.c
-index 447f417..5670df8 100644
---- a/originator.c
-+++ b/originator.c
-@@ -196,13 +196,19 @@ static void batadv_neigh_node_free_rcu(struct rcu_head *rcu)
- 	struct hlist_node *node_tmp;
- 	struct batadv_neigh_node *neigh_node;
- 	struct batadv_neigh_ifinfo *neigh_ifinfo;
-+	struct batadv_algo_ops *bao;
+diff --git a/bat_v.c b/bat_v.c
+index 5681d19..3e4575d 100644
+--- a/bat_v.c
++++ b/bat_v.c
+@@ -63,6 +63,12 @@ static void batadv_v_ogm_emit(struct batadv_forw_packet *forw_packet)
+ {
+ }
  
- 	neigh_node = container_of(rcu, struct batadv_neigh_node, rcu);
-+	bao = neigh_node->orig_node->bat_priv->bat_algo_ops;
- 
- 	hlist_for_each_entry_safe(neigh_ifinfo, node_tmp,
- 				  &neigh_node->ifinfo_list, list) {
- 		batadv_neigh_ifinfo_free_ref_now(neigh_ifinfo);
- 	}
++static void batadv_v_neigh_free(struct batadv_neigh_node *neigh)
++{
++	batadv_elp_neigh_node_free_ref(neigh->bat_v.elp_neigh);
++	neigh->bat_v.elp_neigh = NULL;
++}
 +
-+	if (bao->bat_neigh_free)
-+		bao->bat_neigh_free(neigh_node);
-+
- 	batadv_hardif_free_ref_now(neigh_node->if_incoming);
- 
- 	kfree(neigh_node);
-diff --git a/types.h b/types.h
-index a51921e..df1479e 100644
---- a/types.h
-+++ b/types.h
-@@ -1203,6 +1203,8 @@ struct batadv_algo_ops {
- 			       int max_if_num);
- 	int (*bat_orig_del_if)(struct batadv_orig_node *orig_node,
- 			       int max_if_num, int del_if_num);
-+	/* neigh_node handling API */
-+	void (*bat_neigh_free)(struct batadv_neigh_node *neigh);
+ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+ 	.name = "BATMAN_V",
+ 	.bat_iface_enable = batadv_v_iface_enable,
+@@ -71,6 +77,7 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+ 	.bat_primary_iface_set = batadv_v_primary_iface_set,
+ 	.bat_ogm_emit = batadv_v_ogm_emit,
+ 	.bat_ogm_schedule = batadv_v_ogm_schedule,
++	.bat_neigh_free = batadv_v_neigh_free,
  };
  
- /**
+ int batadv_v_mesh_init(struct batadv_priv *bat_priv)
 -- 
 1.8.5.3
 
