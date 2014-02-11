@@ -1,15 +1,15 @@
-Return-Path: <russell@personaltelco.net>
-References: <1392134707-2318-1-git-send-email-antonio@meshcoding.com>
- <1392134707-2318-2-git-send-email-antonio@meshcoding.com>
-From: Russell Senior <russell@personaltelco.net>
-Date: Tue, 11 Feb 2014 09:13:22 -0800
-In-Reply-To: <1392134707-2318-2-git-send-email-antonio@meshcoding.com>
- (Antonio Quartulli's message of "Tue\, 11 Feb 2014 17\:05\:07 +0100")
-Message-ID: <86eh398te5.fsf@coulee.tdb.com>
+Return-Path: <andrew@lunn.ch>
+Date: Tue, 11 Feb 2014 18:22:12 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20140211172212.GF24633@lunn.ch>
+References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
+ <1392122903-805-9-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: free skb on TVLV
-	parsing success
+Content-Disposition: inline
+In-Reply-To: <1392122903-805-9-git-send-email-antonio@meshcoding.com>
+Subject: Re: [B.A.T.M.A.N.] [RFC 08/23] batman-adv: OGMv2 - implement
+ originators logic
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,43 +22,31 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
+> +static struct batadv_orig_node *
+> +batadv_v_ogm_orig_get(struct batadv_priv *bat_priv, const uint8_t *addr)
+> +{
+> +	struct batadv_orig_node *orig_node;
+> +	int hash_added;
+> +
+> +	orig_node = batadv_orig_hash_find(bat_priv, addr);
+> +	if (orig_node)
+> +		return orig_node;
+> +
+> +	orig_node = batadv_orig_node_new(bat_priv, addr);
 
-From: Antonio Quartulli <antonio@open-mesh.com>
-When the TVLV parsing routine succeed the skb is left
-untouched thus leading to a memory leak.
+Can this fail and return NULL?
 
-Fix this by consuming the skb in case of success.
+> +
+> +	hash_added = batadv_hash_add(bat_priv->orig_hash, batadv_compare_orig,
+> +				     batadv_choose_orig, orig_node,
+> +				     &orig_node->hash_entry);
+> +	if (hash_added != 0) {
+> +		batadv_orig_node_free_ref(orig_node);
+> +		batadv_orig_node_free_ref(orig_node);
 
-Introduced by 0b6aa0d43767889eeda43a132cf5e73df4e63bf2
-("batman-adv: tvlv - basic infrastructure")
+Looks odd. If it is correct, it should have a comment why it is
+correct.
 
-Reported-by: Russell Senior <russell@personaltelco.net>
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-Tested-by: Russell Senior <russell@personaltelco.net>
----
- routing.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/routing.c b/routing.c
-index f7579d0..71bf698 100644
---- a/routing.c
-+++ b/routing.c
-@@ -1063,6 +1063,8 @@ int batadv_recv_unicast_tvlv(struct sk_buff *skb,
- 
- 	if (ret != NET_RX_SUCCESS)
- 		ret = batadv_route_unicast_packet(skb, recv_if);
-+	else
-+		consume_skb(skb);
- 
- 	return ret;
- }
--- 
-1.8.5.3
-
-
-
-
--- 
-Russell Senior, President
-russell@personaltelco.net
+	Andrew
