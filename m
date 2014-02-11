@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 11 Feb 2014 13:48:16 +0100
-Message-Id: <1392122903-805-17-git-send-email-antonio@meshcoding.com>
+Date: Tue, 11 Feb 2014 13:48:17 +0100
+Message-Id: <1392122903-805-18-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
 References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [RFC 16/23] batman-adv: ELP - read estimated
-	throughput from cfg80211
+Subject: [B.A.T.M.A.N.] [RFC 17/23] batman-adv: ELP - implement dead neigh
+	node detection
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,181 +22,215 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-In case of wireless interface retrieve the throughput by
-querying cfg80211. To perform this call a separate work
-must be scheduled because the function may sleep and this
-is not allowed within an RCU protected context (RCU in this
-case is used to iterate over all the neighbours).
+Improve the neighbour purging routine to timely detect when
+a neighbour is not sending data anymore without waiting for
+a real timeout. This detection system can be used by the
+B.A.T.M.A.N. V routing algorithm to trigger an on-demand
+route reconstruction.
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- bat_v_elp.c | 61 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-------
- compat.h    | 20 ++++++++++++++++++++
+ bat_v.c     |  7 +++++
+ bat_v_elp.c | 91 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
+ bat_v_elp.h |  2 ++
  types.h     |  2 ++
- 3 files changed, 76 insertions(+), 7 deletions(-)
+ 4 files changed, 98 insertions(+), 4 deletions(-)
 
+diff --git a/bat_v.c b/bat_v.c
+index 3aa42ec..5681d19 100644
+--- a/bat_v.c
++++ b/bat_v.c
+@@ -75,14 +75,21 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+ 
+ int batadv_v_mesh_init(struct batadv_priv *bat_priv)
+ {
++	int r;
++
+ 	atomic_set(&bat_priv->bat_v.base_throughput,
+ 		   BATADV_DEFAULT_BASE_THROUGHPUT);
+ 
++	r = batadv_v_elp_init(bat_priv);
++	if (r)
++		return r;
++
+ 	return batadv_v_ogm_init(bat_priv);
+ }
+ 
+ void batadv_v_mesh_free(struct batadv_priv *bat_priv)
+ {
++	batadv_v_elp_free(bat_priv);
+ 	batadv_v_ogm_free(bat_priv);
+ }
+ 
 diff --git a/bat_v_elp.c b/bat_v_elp.c
-index 14a1e15..31190af 100644
+index 31190af..763113e 100644
 --- a/bat_v_elp.c
 +++ b/bat_v_elp.c
-@@ -18,6 +18,8 @@
-  *
-  */
- 
-+#include <net/cfg80211.h>
-+
- #include "main.h"
- #include "hard-interface.h"
+@@ -25,6 +25,7 @@
  #include "send.h"
-@@ -64,19 +66,56 @@ batadv_v_elp_get_throughput(struct batadv_elp_neigh_node *neigh)
+ #include "bat_algo.h"
+ #include "bat_v_elp.h"
++#include "bat_v_ogm.h"
+ #include "originator.h"
+ #include "routing.h"
+ #include "soft-interface.h"
+@@ -186,30 +187,55 @@ batadv_v_elp_neigh_get(struct batadv_hard_iface *hard_iface,
+  * batadv_v_elp_neigh_purge - purge obsolete neighbour nodes
+  *
+  * Deletes the ELP neighbour nodes that did not send any ELP message for a
+- * pre-defined amount of time.
++ * pre-defined amount of time and returns the minimum ELP interval among all the
++ * remaining neighbours.
+  */
+-static void batadv_v_elp_neigh_purge(struct batadv_hard_iface *hard_iface)
++static uint32_t batadv_v_elp_neigh_purge(struct batadv_hard_iface *hard_iface)
  {
- 	struct batadv_hard_iface *hard_iface = neigh->hard_iface;
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	struct station_info sinfo;
- 	uint32_t throughput;
-+	int r;
++	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+ 	unsigned long timeout;
+ 	struct batadv_elp_neigh_node *neigh;
+ 	struct hlist_node *node;
+ 	bool has_timed_out;
++	uint32_t tmp_interval, min_interval = UINT_MAX;
  
--	/* get the customised user value for the throughput */
--	throughput = atomic_read(&hard_iface->bat_v.user_throughput);
--	/* if the user specified a value, let's return it */
-+	/* if the user specified a customised value for this interface, then
-+	 * return it directly
-+	 */
-+	throughput =  atomic_read(&hard_iface->bat_v.user_throughput);
- 	if (throughput != 0)
- 		return throughput;
- 
--	/* throughput cannot be computed right now. Return base value */
-+	/* if this is a wireless device, then ask its throughput through
-+	 * cfg80211 API
-+	 */
-+	if (hard_iface->net_dev->ieee80211_ptr) {
-+		r = cfg80211_get_station(hard_iface->net_dev, neigh->addr,
-+					 &sinfo);
-+		if (r == -ENOENT) {
-+			/* node is not associated anymore! it would be possible
-+			 * to delete this neighbor. for now set metric to 0
-+			 */
-+			return 0;
-+		}
-+		if (!r)
-+			return sinfo.expected_throughput;
-+	}
+ 	spin_lock_bh(&hard_iface->bat_v.neigh_list_lock);
+ 	hlist_for_each_entry_safe(neigh, node, &hard_iface->bat_v.neigh_list,
+ 				  list) {
+-		timeout = neigh->elp_interval * BATADV_ELP_OUTDATED_MAX;
++		tmp_interval = neigh->elp_interval;
 +
-+	/* if none of the above cases apply, return the base_throughput */
- 	return atomic_read(&bat_priv->bat_v.base_throughput);
++		timeout = tmp_interval * BATADV_ELP_OUTDATED_MAX;
+ 		has_timed_out = batadv_has_timed_out(neigh->last_seen, timeout);
++		if (has_timed_out) {
++			/* this neigh is dead! the node could react somehow.
++			 * TODO: implement dead node reaction mechanism
++			 */
++			batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++				   "Node %pM is dead.\n", neigh->addr);
+ 
++			/* this node is not sending ELP packets anymore. Don't
++			 * consider it in the minimum ELP interval research
++			 */
++			tmp_interval = UINT_MAX;
++		}
++
++		has_timed_out = batadv_has_timed_out(neigh->last_seen,
++						     BATADV_PURGE_TIMEOUT);
+ 		if ((!has_timed_out) &&
+-		    (hard_iface->if_status == BATADV_IF_ACTIVE))
++		    (hard_iface->if_status == BATADV_IF_ACTIVE)) {
++			if (tmp_interval < min_interval)
++				min_interval = tmp_interval;
+ 			continue;
++		}
+ 
+ 		hlist_del_rcu(&neigh->list);
+ 		atomic_dec(&hard_iface->bat_v.num_neighbors);
+ 		batadv_elp_neigh_node_free_ref(neigh);
++
+ 	}
+ 	spin_unlock_bh(&hard_iface->bat_v.neigh_list_lock);
++
++	return min_interval;
  }
  
  /**
-+ * batadv_v_elp_metric_update - worker updating the metric of one neighbour
-+ * @work: the work queue item
-+ */
-+static void batadv_v_elp_metric_update(struct work_struct *work)
-+{
-+	struct batadv_elp_neigh_node *neigh;
-+
-+	neigh = container_of(work, struct batadv_elp_neigh_node, metric_work);
-+
-+	ewma_add(&neigh->metric, batadv_v_elp_get_throughput(neigh));
-+
-+	/* decrement refcounter to balance increment performed before scheduling
-+	 * this task
-+	 */
-+	batadv_elp_neigh_node_free_ref(neigh);
-+}
-+
-+/**
-  * batadv_v_elp_neigh_new - create a new ELP neighbour node
-  * @hard_iface: the interface the neighbour is connected to
-  * @neigh_addr: the neighbour interface address
-@@ -108,6 +147,8 @@ batadv_v_elp_neigh_new(struct batadv_hard_iface *hard_iface,
- 	spin_unlock_bh(&hard_iface->bat_v.neigh_list_lock);
- 	atomic_inc(&hard_iface->bat_v.num_neighbors);
+@@ -479,6 +505,7 @@ static void batadv_v_elp_neigh_update(struct batadv_priv *bat_priv,
  
-+	INIT_WORK(&neigh->metric_work, batadv_v_elp_metric_update);
-+
- 	return neigh;
- }
+ {
+ 	struct batadv_elp_neigh_node *neigh;
++	uint32_t interval;
  
-@@ -192,7 +233,7 @@ static int batadv_v_elp_wifi_neigh_probe(struct batadv_hard_iface *hard_iface,
- 	int probe_len, i;
- 
- 	/* this probing routine is for Wifi neighbours only */
--	if (batadv_is_wifi_netdev(hard_iface->net_dev))
-+	if (!batadv_is_wifi_netdev(hard_iface->net_dev))
- 		return 0;
- 
- 	/* probe the neighbor only if no unicast packets have been sent
-@@ -310,7 +351,14 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
- 			 */
- 			break;
- 
--		ewma_add(&neigh->metric, batadv_v_elp_get_throughput(neigh));
-+		if (!atomic_inc_not_zero(&neigh->refcount))
-+			continue;
-+
-+		/* reading the estimated throughput from cfg80211 is a task that
-+		 * may sleep and that is not allowed in an rcu protected
-+		 * context. Therefore schedule a task for that.
-+		 */
-+		queue_work(batadv_event_workqueue, &neigh->metric_work);
- 	}
- 	rcu_read_unlock();
- 
-@@ -442,7 +490,6 @@ static void batadv_v_elp_neigh_update(struct batadv_priv *bat_priv,
+ 	neigh = batadv_v_elp_neigh_get(if_incoming, neigh_addr);
+ 	if (!neigh) {
+@@ -490,6 +517,16 @@ static void batadv_v_elp_neigh_update(struct batadv_priv *bat_priv,
  
  	neigh->last_seen = jiffies;
  	neigh->last_recv_seqno = ntohl(elp_packet->seqno);
--	ewma_add(&neigh->metric, batadv_v_elp_get_throughput(neigh));
++	neigh->elp_interval = ntohl(elp_packet->elp_interval);
++
++	interval = atomic_read(&bat_priv->bat_v.neigh_interval);
++	if (neigh->elp_interval >= interval)
++		goto out;
++
++	/* got a shorter elp interval: reschedule the neigh check */
++	atomic_set(&bat_priv->bat_v.neigh_interval, neigh->elp_interval);
++	queue_delayed_work(batadv_event_workqueue, &bat_priv->bat_v.neigh_wq,
++			   msecs_to_jiffies(neigh->elp_interval));
  
  out:
  	if (neigh)
-diff --git a/compat.h b/compat.h
-index 12bc8d8..9f71f51 100644
---- a/compat.h
-+++ b/compat.h
-@@ -407,4 +407,24 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
+@@ -625,3 +662,49 @@ out:
+ 		batadv_hardif_free_ref(primary_if);
+ 	return 0;
+ }
++
++static void batadv_v_elp_check_neigh(struct work_struct *work)
++{
++	struct batadv_priv_bat_v *bat_v;
++	struct batadv_priv *bat_priv;
++	struct batadv_hard_iface *hard_iface;
++	uint32_t tmp_interval, min_interval = UINT_MAX;
++
++	bat_v = container_of(work, struct batadv_priv_bat_v, neigh_wq.work);
++	bat_priv = container_of(bat_v, struct batadv_priv, bat_v);
++
++	list_for_each_entry(hard_iface, &batadv_hardif_list, list) {
++		if (hard_iface->soft_iface != bat_priv->soft_iface)
++			continue;
++
++		tmp_interval = batadv_v_elp_neigh_purge(hard_iface);
++		/* while iterating over all the ELP neighbors, find the smallest
++		 * ELP interval to use to schedule the next check
++		 */
++		if (tmp_interval < min_interval)
++			min_interval = tmp_interval;
++	}
++
++	/* if there are no more ELP neighbors the work does not need to be
++	 * rescheduled
++	 */
++	if (min_interval == UINT_MAX)
++		return;
++
++	atomic_set(&bat_priv->bat_v.neigh_interval, min_interval);
++	queue_delayed_work(batadv_event_workqueue, &bat_priv->bat_v.neigh_wq,
++			   msecs_to_jiffies(min_interval));
++}
++
++int batadv_v_elp_init(struct batadv_priv *bat_priv)
++{
++	INIT_DELAYED_WORK(&bat_priv->bat_v.neigh_wq, batadv_v_elp_check_neigh);
++	atomic_set(&bat_priv->bat_v.neigh_interval, UINT_MAX);
++
++	return 0;
++}
++
++void batadv_v_elp_free(struct batadv_priv *bat_priv)
++{
++	cancel_delayed_work_sync(&bat_priv->bat_v.neigh_wq);
++}
+diff --git a/bat_v_elp.h b/bat_v_elp.h
+index 4f34ecb..5dd0568 100644
+--- a/bat_v_elp.h
++++ b/bat_v_elp.h
+@@ -33,5 +33,7 @@ void batadv_v_elp_primary_iface_set(struct batadv_hard_iface *hard_iface);
+ int batadv_v_elp_packet_recv(struct sk_buff *skb,
+ 			     struct batadv_hard_iface *if_incoming);
+ int batadv_v_elp_seq_print_text(struct seq_file *seq, void *offset);
++int batadv_v_elp_init(struct batadv_priv *bat_priv);
++void batadv_v_elp_free(struct batadv_priv *bat_priv);
  
- #endif /* < KERNEL_VERSION(3, 14, 0) */
- 
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 15, 0)
-+
-+/* NOTE: shall I put this ifndef outside of every #if block ? */
-+#ifndef cfg80211_get_station
-+
-+/* the expected behaviour of this function is to return 0 on success, therefore
-+ * it is possible to define it as 1 so that batman-adv thinks like something
-+ * went wrong. It will then decide what to do.
-+ */
-+#define cfg80211_get_station(_a, _b, _c) (1)
-+/* the following define substitute the expected_throughput field with a random
-+ * one existing in the station_info struct. It can be random because due to the
-+ * define above it will never be used. We need it only to make the code compile
-+ */
-+#define expected_throughput filled
-+
-+#endif /* cfg80211_get_station */
-+
-+#endif /* < KERNEL_VERSION(3, 15, 0) */
-+
- #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
+ #endif /* _NET_BATMAN_ADV_BAT_V_ELP_H_ */
 diff --git a/types.h b/types.h
-index 948d5dc..6f05d99 100644
+index 6f05d99..2ba27ab 100644
 --- a/types.h
 +++ b/types.h
-@@ -346,6 +346,7 @@ struct batadv_gw_node {
-  * @refcount: number of contexts the object is used
-  * @rcu: struct used for freeing in an RCU-safe manner
-  * @hard_iface: the interface where this neighbor is connected to
-+ * @metric_work: work queue callback item for metric update
-  */
- struct batadv_elp_neigh_node {
- 	struct hlist_node list;
-@@ -359,6 +360,7 @@ struct batadv_elp_neigh_node {
- 	atomic_t refcount;
- 	struct rcu_head rcu;
- 	struct batadv_hard_iface *hard_iface;
-+	struct work_struct metric_work;
+@@ -748,6 +748,8 @@ struct batadv_priv_bat_v {
+ 	struct delayed_work ogm_wq;
+ 	atomic_t ogm_seqno;
+ 	atomic_t base_throughput;
++	atomic_t neigh_interval;
++	struct delayed_work neigh_wq;
  };
  
  /**
