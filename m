@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 11 Feb 2014 13:48:21 +0100
-Message-Id: <1392122903-805-22-git-send-email-antonio@meshcoding.com>
+Date: Tue, 11 Feb 2014 13:48:11 +0100
+Message-Id: <1392122903-805-12-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
 References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [RFC 21/23] batman-adv: B.A.T.M.A.N. V - implement
-	neigh_is_equiv_or_better API
+Subject: [B.A.T.M.A.N.] [RFC 11/23] batman-adv: add throughput attribute to
+	hard_ifaces
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,55 +22,76 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
+This attribute is exported to the user which can manually
+select its value. It is the throughput value to be used
+by default when batman-adv is trying to compute the link
+throughput towards a neighbour using this interface.
+
+If the value is set to 0 then batman-adv will try to detect
+the throughput by itself.
+
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- bat_v.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ bat_v.c | 3 +++
+ sysfs.c | 3 +++
+ types.h | 2 ++
+ 3 files changed, 8 insertions(+)
 
 diff --git a/bat_v.c b/bat_v.c
-index 3e4575d..70ff9e9 100644
+index b4214c5..d5457b3 100644
 --- a/bat_v.c
 +++ b/bat_v.c
-@@ -21,6 +21,7 @@
- #include "bat_algo.h"
- #include "bat_v_elp.h"
- #include "bat_v_ogm.h"
-+#include "originator.h"
+@@ -34,6 +34,9 @@ static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
+ 	if (ret < 0)
+ 		batadv_v_elp_iface_disable(hard_iface);
  
- static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
- {
-@@ -63,6 +64,23 @@ static void batadv_v_ogm_emit(struct batadv_forw_packet *forw_packet)
- {
++	/* disable user customised throughput by default */
++	atomic_set(&hard_iface->bat_v.user_throughput, 0);
++
+ 	return ret;
  }
  
-+static bool batadv_v_neigh_is_eob(struct batadv_neigh_node *neigh1,
-+				  struct batadv_hard_iface *if_outgoing1,
-+				  struct batadv_neigh_node *neigh2,
-+				  struct batadv_hard_iface *if_outgoing2)
-+{
-+	struct batadv_neigh_ifinfo *ifinfo1, *ifinfo2;
-+	uint32_t threshold;
-+
-+	ifinfo1 = batadv_neigh_ifinfo_get(neigh1, if_outgoing1);
-+	ifinfo2 = batadv_neigh_ifinfo_get(neigh2, if_outgoing2);
-+
-+	threshold = ifinfo1->bat_v.metric << 8 >> 10;
-+	threshold = ifinfo1->bat_v.metric - threshold;
-+
-+	return ifinfo2->bat_v.metric > threshold;
-+}
-+
- static void batadv_v_neigh_free(struct batadv_neigh_node *neigh)
- {
- 	batadv_elp_neigh_node_free_ref(neigh->bat_v.elp_neigh);
-@@ -77,6 +95,7 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.bat_primary_iface_set = batadv_v_primary_iface_set,
- 	.bat_ogm_emit = batadv_v_ogm_emit,
- 	.bat_ogm_schedule = batadv_v_ogm_schedule,
-+	.bat_neigh_is_equiv_or_better = batadv_v_neigh_is_eob,
- 	.bat_neigh_free = batadv_v_neigh_free,
+diff --git a/sysfs.c b/sysfs.c
+index 9139319..8bbbdfa 100644
+--- a/sysfs.c
++++ b/sysfs.c
+@@ -889,6 +889,8 @@ static BATADV_ATTR(iface_status, S_IRUGO, batadv_show_iface_status, NULL);
+ #ifdef CONFIG_BATMAN_ADV_BATMAN_V
+ BATADV_ATTR_HIF_UINT(elp_interval, bat_v.elp_interval, S_IRUGO | S_IWUSR,
+ 		     2 * BATADV_JITTER, INT_MAX, NULL);
++BATADV_ATTR_HIF_UINT(throughput, bat_v.user_throughput, S_IRUGO | S_IWUSR,
++		     0, UINT_MAX, NULL);
+ #endif
+ 
+ static struct batadv_attribute *batadv_batman_attrs[] = {
+@@ -896,6 +898,7 @@ static struct batadv_attribute *batadv_batman_attrs[] = {
+ 	&batadv_attr_iface_status,
+ #ifdef CONFIG_BATMAN_ADV_BATMAN_V
+ 	&batadv_attr_elp_interval,
++	&batadv_attr_throughput,
+ #endif
+ 	NULL,
+ };
+diff --git a/types.h b/types.h
+index 28f2b85..64316b9 100644
+--- a/types.h
++++ b/types.h
+@@ -78,6 +78,7 @@ struct batadv_hard_iface_bat_iv {
+  * @num_neighbours: number of neighbours in the neigh_list
+  * @elp_skb: base skb containing the ELP message to send
+  * @elp_wq: workqueue used to schedule ELP transmissions
++ * @user_throughput: user specified throughput
+  */
+ struct batadv_hard_iface_bat_v {
+ 	atomic_t elp_interval;
+@@ -87,6 +88,7 @@ struct batadv_hard_iface_bat_v {
+ 	atomic_t num_neighbors;
+ 	struct sk_buff *elp_skb;
+ 	struct delayed_work elp_wq;
++	atomic_t user_throughput;
  };
  
+ /**
 -- 
 1.8.5.3
 
