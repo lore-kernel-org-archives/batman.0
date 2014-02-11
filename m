@@ -1,17 +1,17 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <52FA61BD.8040304@meshcoding.com>
-Date: Tue, 11 Feb 2014 18:45:33 +0100
+Message-ID: <52FA6347.2050901@meshcoding.com>
+Date: Tue, 11 Feb 2014 18:52:07 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1391874306-15627-1-git-send-email-sw@simonwunderlich.de>
- <52FA5DE6.8050005@hundeboll.net> <52FA5F12.5090406@meshcoding.com>
- <27300725.U6R9joZBFU@diderot>
-In-Reply-To: <27300725.U6R9joZBFU@diderot>
+References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
+ <1392122903-805-8-git-send-email-antonio@meshcoding.com>
+ <20140211171207.GE24633@lunn.ch>
+In-Reply-To: <20140211171207.GE24633@lunn.ch>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="MihHrEEWpoWorbS7BXt2EKceOvhUtnQK4"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: fix potential
- orig_node reference leak
+ boundary="OBRbMAGQ52xlwaqgrEP4Q4wi560Um4JqB"
+Subject: Re: [B.A.T.M.A.N.] [RFC 07/23] batman-adv: OGMv2 - add basic
+	infrastructure
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,50 +26,45 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---MihHrEEWpoWorbS7BXt2EKceOvhUtnQK4
+--OBRbMAGQ52xlwaqgrEP4Q4wi560Um4JqB
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 11/02/14 18:40, Marek Lindner wrote:
-> On Tuesday 11 February 2014 18:34:10 Antonio Quartulli wrote:
->> true, but since the orig_node has not been returned yet there is no
->> other component in batman-adv which is using it.
->>
->> Otherwise, we may want to define and invoke a free_now() version of th=
-is
->> function (like we have done for other objects). But I think kfree() is=
-
->> safe here.
+On 11/02/14 18:12, Andrew Lunn wrote:
+>> +
+>> +	batadv_v_ogm_start_timer(bat_priv);
+>> +out:
+>> +	return;
 >=20
-> It may be safe now but will surely be forgotten later. A guaranteed sou=
-rce for=20
-> trouble. That is why we have cleanup routines for everything.
+> If you jump to out because netdev_alloc_skb_ip_align() failed, don't
+> you want to start the timer again? I would assume it is a transient
+> problem not being able to get memory for the skb, and the next time
+> the timer goes off it might work?
+
+Now that I think about it I agree with you. If
+netdev_alloc_skb_ip_align() fails either:
+- the situation is permanent -> OOM soon
+- or the situation is transient -> we should try re-scheduling the task.
+
 >=20
+>> +	bat_priv->bat_v.ogm_buff_len =3D BATADV_OGM2_HLEN;
+>> +	ogm_buff =3D kmalloc(bat_priv->bat_v.ogm_buff_len, GFP_ATOMIC);
+>=20
+> Maybe use kzalloc to ensure it is zero?
 
-True, in particular because we (as bat_iv_ogm.c) do not know what
-batadv_orig_node_new() has allocated - a kfree() would be fine if the
-object was allocated with a plain kmalloc(), but this is not the case.
-
-By the way we have a bug here:
-if we jump to
-
- 256 free_bcast_own:
- 257         kfree(orig_node->bat_iv.bcast_own);
-
-bcast_own gets free'd but not assigned to NULL. Later
-batadv_orig_node_free_rcu() (scheduled by batadv_orig_node_free_ref())
-will call batadv_iv_ogm_orig_free() that will try to kfree() bcast_own
-again (line 98 in bat_iv_ogm.c), thus leading to a double free. no?
-
+Not really needed because each field is explicitly assigned later. But
+to be sure we sit on the safe side we can do that: in the end we are not
+in the fastpath here.
 
 Cheers,
+
 
 
 --=20
 Antonio Quartulli
 
 
---MihHrEEWpoWorbS7BXt2EKceOvhUtnQK4
+--OBRbMAGQ52xlwaqgrEP4Q4wi560Um4JqB
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -77,19 +72,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBCAAGBQJS+mHAAAoJEEKTMo6mOh1VZ2wP/j5oGYyagZpGGuaFsiJeBg1R
-UvXbhm0uYCNOtYXMs/EO6y3TwxSZtpOpYsx1ZW/XDA/Kdcm9npOcveuHfmsXM20/
-3kB1bGxJiFIlQhIj2vyRHbPhOVAyWdGmNoPO+UOGtfrNSRgOmFUH5FbBAiKCOijI
-Wv1iPYd2c9SptidsDVjQTFYunf4xzwP8yRk2iaFAm9NuQDCFwSEgx5DyxNoGrwkR
-r9IEwGfZHFjtIIOSwVsU4DsnG+07LXVDZ67hvPggRWgdTpiMN8aQ7MWtv7Nrhrf4
-+aaH+NXHMYaNb7/l8H0WkV/mJwQ6oM6vbK9ozPrhf4f/YZ3IjMiwLSNdFptPqcAJ
-hF5ggxKc+alRnGKUA9e5gn5BTtSyAbzwTADZMh47eIAEzo6sfF7pazbthXDLkqRL
-5JumEju0+f+R7Z3rEPZVwGgLnuhSRbEtg+LwEa0u+DdV48YW4twzVN3Ovn3s/QRD
-TC2+B0EPixFyMYNFXO+gXWW+86S0A9fJ+tsHA9Evji4KLfq2Ltagy1CiLRH5hWNO
-Nunjrf13gUZWyxgxfSj/oNV99KoYWj8bxZVaygFzshhKSTESKly+9iZ6Camn4Rz7
-QBqchAvAqmSb+zCDGtYle2kPsfu09JGVKZofje2s6rmcIbebSkrpBAEKIoxDR+ub
-k6t5UTJXbLG6Kc2f3dfi
-=Oyok
+iQIcBAEBCAAGBQJS+mNKAAoJEEKTMo6mOh1VScgP+gKOJoiCEI3JUpSaRafkYqiY
+KuL2bgoJnwuJGn3V4YMgPVRLcKizj5ZS8wHjXu1ZSnnn4xaQAj/3DsomPsDPjMfT
+EvRQkI0dZodKGvvjanb2RPxUXb+ML0Gk+TA84Y8y7+hwOzqnM7pnW0fVUcqcCXa+
+LWJqTJcMVGzy9EpGOJwNQNYaJpcxtZR5m/DDXYJ03AqPVQH/VQQ+scRLO7b5nN1b
++AVUneBoIK368vIO6y3SDYJbQy3ULNsZBPYiNG9Yq6oxROswzuApNIQjC5Oqb3Pt
+tnYuc0ZHHD8TUbymZeDjT3ohKJ06q/xdJvJ/noQO5LH6/Im9dL5Wd7PxNoJbPAox
++MAKTQsclNn7jtnHUSWgGedjXDJNqglUicEpSYwgGF3iuoyCfL+m8m94DY19D0jU
+BwV0Qr1+lZU/yDrG8CGmx0cbCJDv7V5msGvz9VEWA57eXcTnllsdUGkQqkW2rV1P
+wYeOIq54f78Ais0vpdXwdEMF8JdIVn5Ncds4m/0wbCBGAzonb1xz9CZcp7o5V7o2
+NrDK9l2kT3fMre4cBE9IX6HxrnVEJhOlAnp5onoVIOvLbqrTAWkcLcqy5c6yyC07
+arXv07IiQngkelzjBR0jP63nmQdp4hzYKqzw+BrNKftQnqLf+FbpFlnwoGB2tZ/Z
+u+mu/abSApW0ENjlw5pg
+=+7Mh
 -----END PGP SIGNATURE-----
 
---MihHrEEWpoWorbS7BXt2EKceOvhUtnQK4--
+--OBRbMAGQ52xlwaqgrEP4Q4wi560Um4JqB--
