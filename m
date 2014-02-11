@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 11 Feb 2014 13:48:07 +0100
-Message-Id: <1392122903-805-8-git-send-email-antonio@meshcoding.com>
+Date: Tue, 11 Feb 2014 13:48:08 +0100
+Message-Id: <1392122903-805-9-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
 References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [RFC 07/23] batman-adv: OGMv2 - add basic
-	infrastructure
+Subject: [B.A.T.M.A.N.] [RFC 08/23] batman-adv: OGMv2 - implement
+	originators logic
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,647 +22,539 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-This is the initial implementation of the new OGM protocol
-(version 2). It has been designed to work on top of the
-newly added ELP.
-
-In the previous version the OGM protocol was used to both
-measure link qualities and flood the network with the metric
-information. In this version the protocol is in charge of
-the latter task only, leaving the former to ELP.
-
-This means being able to decouple the interval used by the
-neighbor discovery from the OGM broadcasting, which revealed
-to be costly in dense networks and needed to be relaxed so
-leading to a less responsive routing protocol.
+Add the support for recognising new originators in the
+network and rebroadcast their OGMs.
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- Makefile.kbuild |   1 +
- bat_algo.h      |  11 +++
- bat_v.c         |  36 ++++++++-
- bat_v_elp.c     |  11 ++-
- bat_v_ogm.c     | 230 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- bat_v_ogm.h     |  32 ++++++++
- main.c          |  31 +++++++-
- main.h          |   1 +
- packet.h        |  25 ++++++
- types.h         |  15 ++++
- 10 files changed, 385 insertions(+), 8 deletions(-)
- create mode 100644 bat_v_ogm.c
- create mode 100644 bat_v_ogm.h
+ bat_v_elp.c |   7 +-
+ bat_v_ogm.c | 422 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 414 insertions(+), 15 deletions(-)
 
-diff --git a/Makefile.kbuild b/Makefile.kbuild
-index ae9a6ca..8073940 100644
---- a/Makefile.kbuild
-+++ b/Makefile.kbuild
-@@ -20,6 +20,7 @@ obj-$(CONFIG_BATMAN_ADV) += batman-adv.o
- batman-adv-y += bat_iv_ogm.o
- batman-adv-$(CONFIG_BATMAN_ADV_BATMAN_V) += bat_v.o
- batman-adv-$(CONFIG_BATMAN_ADV_BATMAN_V) += bat_v_elp.o
-+batman-adv-$(CONFIG_BATMAN_ADV_BATMAN_V) += bat_v_ogm.o
- batman-adv-y += bitarray.o
- batman-adv-$(CONFIG_BATMAN_ADV_BLA) += bridge_loop_avoidance.o
- batman-adv-y += debugfs.o
-diff --git a/bat_algo.h b/bat_algo.h
-index 7289336..14cf89f 100644
---- a/bat_algo.h
-+++ b/bat_algo.h
-@@ -23,6 +23,8 @@ int batadv_iv_init(void);
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
+diff --git a/bat_v_elp.c b/bat_v_elp.c
+index 1c23951..f9a6bfe 100644
+--- a/bat_v_elp.c
++++ b/bat_v_elp.c
+@@ -63,7 +63,7 @@ void batadv_elp_neigh_node_free_ref(struct batadv_elp_neigh_node *neigh)
+  */
+ static struct batadv_elp_neigh_node *
+ batadv_v_elp_neigh_new(struct batadv_hard_iface *hard_iface,
+-		       uint8_t *neigh_addr, uint8_t *orig_addr, uint32_t seqno)
++		       uint8_t *neigh_addr, uint8_t *orig_addr)
+ {
+ 	struct batadv_elp_neigh_node *neigh;
  
- int batadv_v_init(void);
-+int batadv_v_mesh_init(struct batadv_priv *bat_priv);
-+void batadv_v_mesh_free(struct batadv_priv *bat_priv);
+@@ -73,7 +73,6 @@ batadv_v_elp_neigh_new(struct batadv_hard_iface *hard_iface,
  
- #else
+ 	memcpy(neigh->orig, orig_addr, ETH_ALEN);
+ 	memcpy(neigh->addr, neigh_addr, ETH_ALEN);
+-	neigh->last_recv_seqno = seqno - 1;
+ 	neigh->last_seen = jiffies;
+ 	ewma_init(&neigh->metric, 1024, 8);
+ 	/* recount initialised to 2 to simplify the caller function */
+@@ -326,13 +325,13 @@ static void batadv_v_elp_neigh_update(struct batadv_priv *bat_priv,
+ 	neigh = batadv_v_elp_neigh_get(if_incoming, neigh_addr);
+ 	if (!neigh) {
+ 		neigh = batadv_v_elp_neigh_new(if_incoming, neigh_addr,
+-					       elp_packet->orig,
+-					       ntohl(elp_packet->seqno));
++					       elp_packet->orig);
+ 		if (!neigh)
+ 			goto out;
+ 	}
  
-@@ -31,6 +33,15 @@ static inline int batadv_v_init(void)
- 	return 0;
+ 	neigh->last_seen = jiffies;
++	neigh->last_recv_seqno = ntohl(elp_packet->seqno);
+ 
+ out:
+ 	if (neigh)
+diff --git a/bat_v_ogm.c b/bat_v_ogm.c
+index f66dc02..4981d7c 100644
+--- a/bat_v_ogm.c
++++ b/bat_v_ogm.c
+@@ -21,6 +21,7 @@
+ 
+ #include "main.h"
+ 
++#include "bat_v_elp.h"
+ #include "bat_v_ogm.h"
+ #include "hard-interface.h"
+ #include "originator.h"
+@@ -28,6 +29,78 @@
+ #include "send.h"
+ #include "translation-table.h"
+ 
++static struct batadv_orig_node *
++batadv_v_ogm_orig_get(struct batadv_priv *bat_priv, const uint8_t *addr)
++{
++	struct batadv_orig_node *orig_node;
++	int hash_added;
++
++	orig_node = batadv_orig_hash_find(bat_priv, addr);
++	if (orig_node)
++		return orig_node;
++
++	orig_node = batadv_orig_node_new(bat_priv, addr);
++
++	hash_added = batadv_hash_add(bat_priv->orig_hash, batadv_compare_orig,
++				     batadv_choose_orig, orig_node,
++				     &orig_node->hash_entry);
++	if (hash_added != 0) {
++		batadv_orig_node_free_ref(orig_node);
++		batadv_orig_node_free_ref(orig_node);
++		orig_node = NULL;
++	}
++
++	return orig_node;
++}
++
++static struct batadv_neigh_node *
++batadv_v_ogm_neigh_new(struct batadv_priv *bat_priv,
++		       struct batadv_hard_iface *hard_iface,
++		       uint8_t *addr,
++		       struct batadv_orig_node *orig_node,
++		       struct batadv_orig_node *orig_neigh)
++{
++	struct batadv_neigh_node *neigh_node, *tmp_neigh_node;
++	struct batadv_elp_neigh_node *elp_neigh;
++
++	neigh_node = batadv_neigh_node_new(hard_iface, addr, orig_neigh);
++	if (!neigh_node)
++		return NULL;
++
++	if (!atomic_inc_not_zero(&hard_iface->refcount)) {
++		kfree(neigh_node);
++		return NULL;
++	}
++
++	elp_neigh = batadv_v_elp_neigh_get(hard_iface, addr);
++	if (!elp_neigh) {
++		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++			   "No ELP object for this neighbor!\n");
++		return NULL;
++	}
++
++	neigh_node->bat_v.elp_neigh = elp_neigh;
++
++	spin_lock_bh(&orig_node->neigh_list_lock);
++	tmp_neigh_node = batadv_neigh_node_get(orig_node, hard_iface, addr);
++	if (!tmp_neigh_node) {
++		hlist_add_head_rcu(&neigh_node->list, &orig_node->neigh_list);
++	} else {
++		kfree(neigh_node);
++		batadv_hardif_free_ref(hard_iface);
++		batadv_elp_neigh_node_free_ref(elp_neigh);
++		neigh_node = tmp_neigh_node;
++	}
++	spin_unlock_bh(&orig_node->neigh_list_lock);
++
++	if (!tmp_neigh_node)
++		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++			   "Creating new neighbor %pM for orig_node %pM on interface %s\n",
++			   addr, orig_node->orig, hard_iface->net_dev->name);
++
++	return neigh_node;
++}
++
+ static void batadv_v_ogm_start_timer(struct batadv_priv *bat_priv)
+ {
+ 	unsigned long msecs;
+@@ -48,20 +121,15 @@ static void batadv_v_ogm_send_to_if(struct sk_buff *skb,
+ 				    struct batadv_hard_iface *hard_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+-	struct sk_buff *tmp_skb;
+ 
+ 	if (hard_iface->if_status != BATADV_IF_ACTIVE)
+ 		return;
+ 
+-	tmp_skb = skb_clone(skb, GFP_ATOMIC);
+-	if (!tmp_skb)
+-		return;
+-
+ 	batadv_inc_counter(bat_priv, BATADV_CNT_MGMT_TX);
+ 	batadv_add_counter(bat_priv, BATADV_CNT_MGMT_TX_BYTES,
+-			   tmp_skb->len + ETH_HLEN);
++			   skb->len + ETH_HLEN);
+ 
+-	batadv_send_skb_packet(tmp_skb, hard_iface, batadv_broadcast_addr);
++	batadv_send_skb_packet(skb, hard_iface, batadv_broadcast_addr);
  }
  
-+static inline int batadv_v_mesh_init(struct batadv_priv *bat_priv)
+ static void batadv_v_ogm_send(struct work_struct *work)
+@@ -70,7 +138,7 @@ static void batadv_v_ogm_send(struct work_struct *work)
+ 	struct batadv_priv_bat_v *bat_v;
+ 	struct batadv_priv *bat_priv;
+ 	struct batadv_ogm2_packet *ogm2;
+-	struct sk_buff *skb;
++	struct sk_buff *skb, *tmp_skb;
+ 	unsigned char *ogm_buff, *pkt_buff;
+ 	int ogm_buff_len;
+ 	uint16_t tvlv_len = 0;
+@@ -119,7 +187,12 @@ static void batadv_v_ogm_send(struct work_struct *work)
+ 			   ogm2->ttl, hard_iface->net_dev->name,
+ 			   hard_iface->net_dev->dev_addr);
+ 
+-		batadv_v_ogm_send_to_if(skb, hard_iface);
++		/* this skb gets consumed by batadv_v_ogm_send_to_if() */
++		tmp_skb = skb_clone(skb, GFP_ATOMIC);
++		if (!tmp_skb)
++			break;
++
++		batadv_v_ogm_send_to_if(tmp_skb, hard_iface);
+ 	}
+ 	rcu_read_unlock();
+ 
+@@ -162,11 +235,259 @@ void batadv_v_ogm_primary_iface_set(struct batadv_hard_iface *hard_iface)
+ 	rcu_read_unlock();
+ }
+ 
++static void
++batadv_v_ogm_orig_update(struct batadv_priv *bat_priv,
++			 struct batadv_orig_node *orig_node,
++			 struct batadv_neigh_node *neigh_node,
++			 const struct batadv_ogm2_packet *ogm2,
++			 struct batadv_hard_iface *if_outgoing)
 +{
-+	return 0;
++	struct batadv_neigh_ifinfo *router_ifinfo = NULL, *neigh_ifinfo = NULL;
++	struct batadv_neigh_node *router = NULL;
++	struct batadv_orig_ifinfo *orig_ifinfo;
++
++	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++		   "update_originator(): Searching and updating originator entry of received packet\n");
++
++	/* get the TVLV container and process it */
++	batadv_tvlv_containers_process(bat_priv, true, orig_node, NULL, NULL,
++				       (unsigned char *)(ogm2 + 1),
++				       ntohs(ogm2->tvlv_len));
++
++	orig_node->last_seen = jiffies;
++
++	orig_ifinfo = batadv_orig_ifinfo_new(orig_node, if_outgoing);
++	orig_ifinfo->last_real_seqno = ntohl(ogm2->seqno);
++	orig_ifinfo->last_ttl = ogm2->ttl;
++	batadv_orig_ifinfo_free_ref(orig_ifinfo);
++
++	/* if this neighbor already is our next hop there is nothing
++	 * to change
++	 */
++	router = batadv_orig_router_get(orig_node, if_outgoing);
++	if (router == neigh_node)
++		goto out;
++
++	/* don't consider neighbours with worse metric */
++	if (router) {
++		router_ifinfo = batadv_neigh_ifinfo_get(router, if_outgoing);
++		neigh_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
++		if (router_ifinfo && neigh_ifinfo &&
++		    router_ifinfo->bat_v.metric >= neigh_ifinfo->bat_v.metric)
++			goto out;
++	}
++
++	batadv_update_route(bat_priv, orig_node, if_outgoing, neigh_node);
++
++out:
++	if (router_ifinfo)
++		batadv_neigh_ifinfo_free_ref(router_ifinfo);
++	if (neigh_ifinfo)
++		batadv_neigh_ifinfo_free_ref(neigh_ifinfo);
++	if (router)
++		batadv_neigh_node_free_ref(router);
 +}
 +
-+static inline void batadv_v_mesh_free(struct batadv_priv *bat_priv)
++/**
++ * batadv_v_penalty - apply a penalty to the metric forwarded by the OGM
++ * @bat_priv: the bat priv with all the soft interface information
++ * @metric: the current metric value
++ * @link_metric: the metric of the last link traversed by the OGM
++ * @if_incoming: the interface where the OGM has been received
++ *
++ * Apply a penalty on the current metric value based on the characteristic of
++ * the interface where the OGM has been received. The return value is computed
++ * as follows:
++ * - metric * 50% if the incoming interface is wireless and the metric is not
++ *   less than 10% of the link throughput
++ * - metric * (100 - hop_penalty)% otherwise
++ *
++ * Return the penalised metric value
++ */
++static uint32_t batadv_v_penalty(struct batadv_priv *bat_priv,
++				 uint32_t metric, uint32_t link_metric,
++				 struct batadv_hard_iface *if_incoming)
 +{
++	int hop_penalty = atomic_read(&bat_priv->hop_penalty);
++
++	/* proportion to use the same value used in batman iv (x * 128 / 256) */
++	hop_penalty = hop_penalty * 100 / 255;
++
++	if (batadv_is_wifi_netdev(if_incoming->net_dev) &&
++	    metric > link_metric / 10)
++		return metric / 2;
++
++	return metric * (100 - hop_penalty) / 100;
 +}
 +
- #endif /* CONFIG_BATMAN_ADV_BATMAN_V */
- 
- #endif /* _NET_BATMAN_ADV_BAT_ALGO_H_ */
-diff --git a/bat_v.c b/bat_v.c
-index bed5e00..b4214c5 100644
---- a/bat_v.c
-+++ b/bat_v.c
-@@ -20,10 +20,21 @@
- #include "main.h"
- #include "bat_algo.h"
- #include "bat_v_elp.h"
-+#include "bat_v_ogm.h"
- 
- static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
- {
--	return batadv_v_elp_iface_enable(hard_iface);
-+	int ret;
++static void batadv_v_ogm_forward(struct batadv_priv *bat_priv,
++				 const struct batadv_ogm2_packet *ogm2,
++				 struct batadv_neigh_node *neigh_node,
++				 struct batadv_hard_iface *if_incoming,
++				 struct batadv_hard_iface *if_outgoing)
++{
++	struct batadv_ogm2_packet *ogm_new;
++	uint32_t link_metric, new_metric;
++	unsigned char *skb_buff;
++	struct sk_buff *skb;
++	uint16_t tvlv_len;
++	size_t packet_len;
 +
-+	ret = batadv_v_elp_iface_enable(hard_iface);
-+	if (ret < 0)
-+		return ret;
++	if (ogm2->ttl <= 1) {
++		batadv_dbg(BATADV_DBG_BATMAN, bat_priv, "ttl exceeded\n");
++		return;
++	}
 +
-+	ret = batadv_v_ogm_iface_enable(hard_iface);
-+	if (ret < 0)
-+		batadv_v_elp_iface_disable(hard_iface);
++	tvlv_len = ntohs(ogm2->tvlv_len);
++
++	packet_len = BATADV_OGM2_HLEN + tvlv_len;
++	skb = netdev_alloc_skb_ip_align(if_outgoing->net_dev,
++					ETH_HLEN + packet_len);
++	if (!skb)
++		return;
++
++	skb_reserve(skb, ETH_HLEN);
++	skb_buff = skb_put(skb, packet_len);
++	memcpy(skb_buff, ogm2, packet_len);
++
++	/* apply hop penalty */
++	ogm_new = (struct batadv_ogm2_packet *)skb_buff;
++	link_metric = ewma_read(&neigh_node->bat_v.elp_neigh->metric);
++	new_metric = batadv_v_penalty(bat_priv, ntohl(ogm_new->metric),
++				      link_metric, if_incoming);
++	ogm_new->metric = htonl(new_metric);
++	ogm_new->ttl--;
++
++	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++		   "Forwarding OGM2 packet on %s: metric %u, ttl %u\n",
++		   if_outgoing->net_dev->name, new_metric, ogm_new->ttl);
++
++	batadv_v_ogm_send_to_if(skb, if_outgoing);
++}
++
++/**
++ * batadv_v_ogm_process_per_outif - process a batman iv OGM for an outgoing if
++ * @skb: the skb containing the OGM
++ * @if_incoming: the interface where this packet was received
++ * @if_outgoing: the interface for which the packet should be considered
++ */
++static void
++batadv_v_ogm_process_per_outif(struct batadv_priv *bat_priv,
++			       const struct ethhdr *ethhdr,
++			       const struct batadv_ogm2_packet *ogm2,
++			       struct batadv_orig_node *orig_node,
++			       struct batadv_neigh_node *neigh_node,
++			       struct batadv_hard_iface *if_incoming,
++			       struct batadv_hard_iface *if_outgoing)
++{
++	struct batadv_neigh_ifinfo *neigh_ifinfo = NULL, *router_ifinfo = NULL;
++	struct batadv_neigh_node *orig_neigh_router = NULL;
++	struct batadv_neigh_node *router = NULL, *router_router = NULL;
++	struct batadv_orig_node *orig_neigh_node;
++	struct batadv_orig_ifinfo *orig_ifinfo = NULL;
++	bool is_from_best_next_hop = false;
++	uint32_t new_metric;
++	int32_t seq_diff;
++
++	orig_ifinfo = batadv_orig_ifinfo_new(orig_node, if_outgoing);
++	seq_diff = ntohl(ogm2->seqno) - orig_ifinfo->last_real_seqno;
++	if (!hlist_empty(&orig_node->neigh_list) &&
++	    batadv_window_protected(bat_priv, seq_diff,
++				    &orig_ifinfo->batman_seqno_reset)) {
++		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++			   "Drop packet: packet within window protection time from %pM\n",
++			   ogm2->orig);
++		goto out;
++	}
++
++	new_metric = ntohl(ogm2->metric);
++	neigh_ifinfo = batadv_neigh_ifinfo_new(neigh_node, if_outgoing);
++	if (seq_diff > 0 || new_metric > neigh_ifinfo->bat_v.metric) {
++		neigh_ifinfo->bat_v.metric = new_metric;
++		neigh_ifinfo->last_ttl = ogm2->ttl;
++	}
++
++	router = batadv_orig_router_get(orig_node, if_outgoing);
++	if (router) {
++		router_ifinfo = batadv_neigh_ifinfo_get(router, if_outgoing);
++		if (router_ifinfo && (router_ifinfo->bat_v.metric != 0) &&
++		    (batadv_compare_eth(router->addr, ethhdr->h_source)))
++			is_from_best_next_hop = true;
++	}
++
++	orig_ifinfo->last_real_seqno = ntohl(ogm2->seqno);
++
++	/* if sender is a direct neighbor the sender mac equals
++	 * originator mac
++	 */
++	if (router && router->orig_node == orig_node)
++		orig_neigh_node = orig_node;
++	else
++		orig_neigh_node = batadv_v_ogm_orig_get(bat_priv,
++							ethhdr->h_source);
++
++	if (!orig_neigh_node)
++		goto out;
++
++	orig_neigh_router = batadv_orig_router_get(orig_neigh_node,
++						   if_outgoing);
++
++	/* drop packet if sender is not a direct neighbor and if we
++	 * don't route towards it
++	 */
++	if (router && router->orig_node != orig_node &&
++	    (!orig_neigh_router)) {
++		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++			   "Drop packet: OGM via unknown neighbor!\n");
++		goto out_neigh;
++	}
++
++	/* if there is a router and the sequence number is the same as the last
++	 * received from it, but the metric is worse, then drop the packet
++	 */
++	if (router && seq_diff == 0 && new_metric < router_ifinfo->bat_v.metric)
++		goto out_neigh;
++
++	batadv_v_ogm_orig_update(bat_priv, orig_node, neigh_node, ogm2,
++				 if_outgoing);
++
++	/* strict rule: forward packets coming from the best next hop only */
++	if (router && !is_from_best_next_hop)
++		goto out_neigh;
++
++	/* only forward for specific interface, not for the default one. */
++	if (if_outgoing != BATADV_IF_DEFAULT)
++		batadv_v_ogm_forward(bat_priv, ogm2, neigh_node, if_incoming,
++				     if_outgoing);
++
++out_neigh:
++	if (orig_neigh_node != orig_node && orig_neigh_node)
++		batadv_orig_node_free_ref(orig_neigh_node);
++out:
++	if (orig_ifinfo)
++		batadv_orig_ifinfo_free_ref(orig_ifinfo);
++	if (router)
++		batadv_neigh_node_free_ref(router);
++	if (router_ifinfo)
++		batadv_neigh_ifinfo_free_ref(router_ifinfo);
++	if (router_router)
++		batadv_neigh_node_free_ref(router_router);
++	if (orig_neigh_router)
++		batadv_neigh_node_free_ref(orig_neigh_router);
++	if (neigh_ifinfo)
++		batadv_neigh_ifinfo_free_ref(neigh_ifinfo);
++}
++
+ int batadv_v_ogm_packet_recv(struct sk_buff *skb,
+ 			      struct batadv_hard_iface *if_incoming)
+ {	struct batadv_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
+-	struct ethhdr *ethhdr = (struct ethhdr *)skb_mac_header(skb);
++	struct batadv_orig_node *orig_node, *orig_neigh;
++	uint32_t ogm_metric, link_metric, new_metric;
++	struct batadv_neigh_node *neigh_node = NULL;
++	struct ethhdr *ethhdr = eth_hdr(skb);
++	struct batadv_hard_iface *hard_iface;
+ 	struct batadv_ogm2_packet *ogm2;
++	int ret = NET_RX_DROP;
+ 
+ 	/* did we receive a OGM2 packet on an interface that does not have
+ 	 * B.A.T.M.A.N. V enabled ?
+@@ -189,8 +510,87 @@ int batadv_v_ogm_packet_recv(struct sk_buff *skb,
+ 	batadv_add_counter(bat_priv, BATADV_CNT_MGMT_RX_BYTES,
+ 			   skb->len + ETH_HLEN);
+ 
++	ogm_metric = ntohl(ogm2->metric);
++
++	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++		   "Received OGM2 packet via NB: %pM, IF: %s [%pM] (from OG: %pM, seqno %u, metric %u, TTL %u, V %u, tvlv_len %u)\n",
++		   ethhdr->h_source, if_incoming->net_dev->name,
++		   if_incoming->net_dev->dev_addr, ogm2->orig,
++		   ntohl(ogm2->seqno), ogm_metric, ogm2->ttl,
++		   ogm2->version, ntohs(ogm2->tvlv_len));
++
++	/* if the metric is 0, immediately drop the packet. no need to create
++	 * orig_node/neigh_node for a not usable route
++	 */
++	if (ogm_metric == 0) {
++		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++			   "Drop packet: originator packet with metric equal 0\n");
++		return NET_RX_DROP;
++	}
++
++	orig_node = batadv_v_ogm_orig_get(bat_priv, ogm2->orig);
++	if (!orig_node)
++		return NET_RX_DROP;
++
++	orig_neigh = batadv_v_ogm_orig_get(bat_priv, ethhdr->h_source);
++	if (!orig_neigh)
++		goto out;
++
++	neigh_node = batadv_v_ogm_neigh_new(bat_priv, if_incoming,
++					    ethhdr->h_source, orig_node,
++					    orig_neigh);
++	if (!neigh_node) {
++		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++			   "Could not create neigh node!\n");
++		goto out;
++	}
++
++	/* update the neigh_node information */
++	neigh_node->last_seen = jiffies;
++
++	/* update the received metric to match the node topology: if this node
++	 * is the first hop traversed by the OGM, then the metric is substituted
++	 * with the value of the traversed link. Otherwise the metric is
++	 * computed as the minimum between the metric of the traversed link and
++	 * the value contained in the OGM
++	 */
++	link_metric = ewma_read(&neigh_node->bat_v.elp_neigh->metric);
++	if (ogm_metric == BATADV_MAX_METRIC)
++		new_metric = link_metric;
++	else
++		new_metric = min_t(uint32_t, link_metric, ogm_metric);
++	ogm2->metric = htonl(new_metric);
++
++	batadv_v_ogm_process_per_outif(bat_priv, ethhdr, ogm2, orig_node,
++				       neigh_node, if_incoming,
++				       BATADV_IF_DEFAULT);
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
++		if (hard_iface->if_status != BATADV_IF_ACTIVE)
++			continue;
++
++		if (hard_iface->soft_iface != bat_priv->soft_iface)
++			continue;
++
++		batadv_v_ogm_process_per_outif(bat_priv, ethhdr, ogm2,
++					       orig_node, neigh_node,
++					       if_incoming, hard_iface);
++	}
++	rcu_read_unlock();
++
++	ret = NET_RX_SUCCESS;
+ 	consume_skb(skb);
+-	return NET_RX_SUCCESS;
++
++out:
++	if (orig_node)
++		batadv_orig_node_free_ref(orig_node);
++	if (orig_neigh)
++		batadv_orig_node_free_ref(orig_neigh);
++	if (neigh_node)
++		batadv_neigh_node_free_ref(neigh_node);
 +
 +	return ret;
  }
  
- static void batadv_v_iface_disable(struct batadv_hard_iface *hard_iface)
-@@ -38,6 +49,7 @@ static void batadv_v_iface_update_mac(struct batadv_hard_iface *hard_iface)
- static void batadv_v_primary_iface_set(struct batadv_hard_iface *hard_iface)
- {
- 	batadv_v_elp_primary_iface_set(hard_iface);
-+	batadv_v_ogm_primary_iface_set(hard_iface);
- }
- 
- static void batadv_v_ogm_schedule(struct batadv_hard_iface *hard_iface)
-@@ -58,6 +70,15 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.bat_ogm_schedule = batadv_v_ogm_schedule,
- };
- 
-+int batadv_v_mesh_init(struct batadv_priv *bat_priv)
-+{
-+	return batadv_v_ogm_init(bat_priv);
-+}
-+
-+void batadv_v_mesh_free(struct batadv_priv *bat_priv)
-+{
-+	batadv_v_ogm_free(bat_priv);
-+}
- 
- int __init batadv_v_init(void)
- {
-@@ -67,15 +88,24 @@ int __init batadv_v_init(void)
- 	ret = batadv_recv_handler_register(BATADV_ELP,
- 					   batadv_v_elp_packet_recv);
- 	if (ret < 0)
-+		return ret;
-+
-+	ret = batadv_recv_handler_register(BATADV_OGM2,
-+					   batadv_v_ogm_packet_recv);
-+	if (ret < 0)
- 		goto elp_unregister;
- 
- 	ret = batadv_algo_register(&batadv_batman_v);
-+	if (ret < 0)
-+		goto ogm_unregister;
- 
- 	return ret;
- 
-+ogm_unregister:
-+	batadv_recv_handler_unregister(BATADV_OGM2);
-+
- elp_unregister:
--	if (ret < 0)
--		batadv_recv_handler_unregister(BATADV_ELP);
-+	batadv_recv_handler_unregister(BATADV_ELP);
- 
- 	return ret;
- }
-diff --git a/bat_v_elp.c b/bat_v_elp.c
-index 9c40415..1c23951 100644
---- a/bat_v_elp.c
-+++ b/bat_v_elp.c
-@@ -25,6 +25,7 @@
- #include "bat_v_elp.h"
- #include "originator.h"
- #include "routing.h"
-+#include "translation-table.h"
- 
- /**
-  * batadv_v_elp_start_timer - restart timer for ELP periodic work
-@@ -276,11 +277,15 @@ void batadv_v_elp_iface_disable(struct batadv_hard_iface *hard_iface)
-  */
- void batadv_v_elp_primary_iface_set(struct batadv_hard_iface *hard_iface)
- {
-+	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
- 	struct batadv_hard_iface *hard_iface_tmp;
- 	struct batadv_elp_packet *elp_packet;
-+	struct batadv_ogm2_packet *ogm2;
- 	struct sk_buff *skb;
- 
--	/* update orig field of every elp iface belonging to this mesh */
-+	/* update orig field of every elp and ogm iface belonging to this
-+	 * mesh
-+	 */
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(hard_iface_tmp, &batadv_hardif_list, list) {
- 		if (hard_iface->soft_iface != hard_iface_tmp->soft_iface)
-@@ -293,6 +298,9 @@ void batadv_v_elp_primary_iface_set(struct batadv_hard_iface *hard_iface)
- 		elp_packet = (struct batadv_elp_packet *)skb->data;
- 		memcpy(elp_packet->orig,
- 		       hard_iface->net_dev->dev_addr, ETH_ALEN);
-+
-+		ogm2 = (struct batadv_ogm2_packet *)bat_priv->bat_v.ogm_buff;
-+		memcpy(ogm2->orig, hard_iface->net_dev->dev_addr, ETH_ALEN);
- 	}
- 	rcu_read_unlock();
- }
-@@ -311,6 +319,7 @@ static void batadv_v_elp_neigh_update(struct batadv_priv *bat_priv,
- 				      uint8_t *neigh_addr,
- 				      struct batadv_hard_iface *if_incoming,
- 				      struct batadv_elp_packet *elp_packet)
-+
- {
- 	struct batadv_elp_neigh_node *neigh;
- 
-diff --git a/bat_v_ogm.c b/bat_v_ogm.c
-new file mode 100644
-index 0000000..f66dc02
---- /dev/null
-+++ b/bat_v_ogm.c
-@@ -0,0 +1,230 @@
-+/*
-+ * Copyright (C) 2013 B.A.T.M.A.N. contributors:
-+ *
-+ * Antonio Quartulli
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301, USA
-+ *
-+ */
-+
-+#include "main.h"
-+
-+#include "bat_v_ogm.h"
-+#include "hard-interface.h"
-+#include "originator.h"
-+#include "routing.h"
-+#include "send.h"
-+#include "translation-table.h"
-+
-+static void batadv_v_ogm_start_timer(struct batadv_priv *bat_priv)
-+{
-+	unsigned long msecs;
-+	/* this function may be invoked in different contexts (ogm rescheduling
-+	 * or hard_iface activation), but the work timer should not be reset
-+	 */
-+	if (delayed_work_pending(&bat_priv->bat_v.ogm_wq))
-+		return;
-+
-+	msecs = atomic_read(&bat_priv->orig_interval) - BATADV_JITTER;
-+	msecs += prandom_u32() % (2 * BATADV_JITTER);
-+	queue_delayed_work(batadv_event_workqueue, &bat_priv->bat_v.ogm_wq,
-+			   msecs_to_jiffies(msecs));
-+}
-+
-+/* send a batman ogm to a given interface */
-+static void batadv_v_ogm_send_to_if(struct sk_buff *skb,
-+				    struct batadv_hard_iface *hard_iface)
-+{
-+	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	struct sk_buff *tmp_skb;
-+
-+	if (hard_iface->if_status != BATADV_IF_ACTIVE)
-+		return;
-+
-+	tmp_skb = skb_clone(skb, GFP_ATOMIC);
-+	if (!tmp_skb)
-+		return;
-+
-+	batadv_inc_counter(bat_priv, BATADV_CNT_MGMT_TX);
-+	batadv_add_counter(bat_priv, BATADV_CNT_MGMT_TX_BYTES,
-+			   tmp_skb->len + ETH_HLEN);
-+
-+	batadv_send_skb_packet(tmp_skb, hard_iface, batadv_broadcast_addr);
-+}
-+
-+static void batadv_v_ogm_send(struct work_struct *work)
-+{
-+	struct batadv_hard_iface *hard_iface;
-+	struct batadv_priv_bat_v *bat_v;
-+	struct batadv_priv *bat_priv;
-+	struct batadv_ogm2_packet *ogm2;
-+	struct sk_buff *skb;
-+	unsigned char *ogm_buff, *pkt_buff;
-+	int ogm_buff_len;
-+	uint16_t tvlv_len = 0;
-+
-+	bat_v = container_of(work, struct batadv_priv_bat_v, ogm_wq.work);
-+	bat_priv = container_of(bat_v, struct batadv_priv, bat_v);
-+
-+	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
-+		goto out;
-+
-+	ogm_buff = bat_priv->bat_v.ogm_buff;
-+	ogm_buff_len = bat_priv->bat_v.ogm_buff_len;
-+	/* tt changes have to be committed before the tvlv data is
-+	 * appended as it may alter the tt tvlv container
-+	 */
-+	batadv_tt_local_commit_changes(bat_priv);
-+	tvlv_len = batadv_tvlv_container_ogm_append(bat_priv, &ogm_buff,
-+						    &ogm_buff_len,
-+						    BATADV_OGM2_HLEN);
-+
-+	bat_priv->bat_v.ogm_buff = ogm_buff;
-+	bat_priv->bat_v.ogm_buff_len = ogm_buff_len;
-+
-+	skb = netdev_alloc_skb_ip_align(NULL, ETH_HLEN + ogm_buff_len);
-+	if (!skb)
-+		goto out;
-+
-+	skb_reserve(skb, ETH_HLEN);
-+	pkt_buff = skb_put(skb, ogm_buff_len);
-+	memcpy(pkt_buff, ogm_buff, ogm_buff_len);
-+
-+	ogm2 = (struct batadv_ogm2_packet *)skb->data;
-+	ogm2->seqno = htonl(atomic_read(&bat_priv->bat_v.ogm_seqno));
-+	atomic_inc(&bat_priv->bat_v.ogm_seqno);
-+	ogm2->tvlv_len = htons(tvlv_len);
-+
-+	/* broadcast on every interface */
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-+		if (hard_iface->soft_iface != bat_priv->soft_iface)
-+			continue;
-+
-+		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+			   "Sending own OGM2 packet (originator %pM, seqno %u, metric %u, TTL %d) on interface %s [%pM]\n",
-+			   ogm2->orig, ntohl(ogm2->seqno), ntohl(ogm2->metric),
-+			   ogm2->ttl, hard_iface->net_dev->name,
-+			   hard_iface->net_dev->dev_addr);
-+
-+		batadv_v_ogm_send_to_if(skb, hard_iface);
-+	}
-+	rcu_read_unlock();
-+
-+	consume_skb(skb);
-+
-+	batadv_v_ogm_start_timer(bat_priv);
-+out:
-+	return;
-+}
-+
-+int batadv_v_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
-+{
-+	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+
-+	batadv_v_ogm_start_timer(bat_priv);
-+
-+	return 0;
-+}
-+
-+void batadv_v_ogm_primary_iface_set(struct batadv_hard_iface *hard_iface)
-+{
-+	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	struct batadv_hard_iface *hard_iface_tmp;
-+	struct batadv_ogm2_packet *ogm2;
-+
-+	/* update orig field of every elp and ogm iface belonging to this
-+	 * mesh
-+	 */
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(hard_iface_tmp, &batadv_hardif_list, list) {
-+		if (hard_iface->soft_iface != hard_iface_tmp->soft_iface)
-+			continue;
-+
-+		if (!hard_iface_tmp->bat_v.elp_skb)
-+			continue;
-+
-+		ogm2 = (struct batadv_ogm2_packet *)bat_priv->bat_v.ogm_buff;
-+		memcpy(ogm2->orig, hard_iface->net_dev->dev_addr, ETH_ALEN);
-+	}
-+	rcu_read_unlock();
-+}
-+
-+int batadv_v_ogm_packet_recv(struct sk_buff *skb,
-+			      struct batadv_hard_iface *if_incoming)
-+{	struct batadv_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
-+	struct ethhdr *ethhdr = (struct ethhdr *)skb_mac_header(skb);
-+	struct batadv_ogm2_packet *ogm2;
-+
-+	/* did we receive a OGM2 packet on an interface that does not have
-+	 * B.A.T.M.A.N. V enabled ?
-+	 */
-+	if (strcmp(bat_priv->bat_algo_ops->name, "BATMAN_V") != 0)
-+		return NET_RX_DROP;
-+
-+	if (!batadv_check_management_packet(skb, if_incoming, BATADV_OGM2_HLEN))
-+		return NET_RX_DROP;
-+
-+	if (batadv_is_my_mac(bat_priv, ethhdr->h_source))
-+		return NET_RX_DROP;
-+
-+	ogm2 = (struct batadv_ogm2_packet *)skb->data;
-+
-+	if (batadv_is_my_mac(bat_priv, ogm2->orig))
-+		return NET_RX_DROP;
-+
-+	batadv_inc_counter(bat_priv, BATADV_CNT_MGMT_RX);
-+	batadv_add_counter(bat_priv, BATADV_CNT_MGMT_RX_BYTES,
-+			   skb->len + ETH_HLEN);
-+
-+	consume_skb(skb);
-+	return NET_RX_SUCCESS;
-+}
-+
-+int batadv_v_ogm_init(struct batadv_priv *bat_priv)
-+{
-+	struct batadv_ogm2_packet *ogm2;
-+	unsigned char *ogm_buff;
-+	uint32_t random_seqno;
-+
-+	bat_priv->bat_v.ogm_buff_len = BATADV_OGM2_HLEN;
-+	ogm_buff = kmalloc(bat_priv->bat_v.ogm_buff_len, GFP_ATOMIC);
-+	if (!ogm_buff)
-+		return -ENOMEM;
-+
-+	bat_priv->bat_v.ogm_buff = ogm_buff;
-+	ogm2 = (struct batadv_ogm2_packet *)ogm_buff;
-+	ogm2->packet_type = BATADV_OGM2;
-+	ogm2->version = BATADV_COMPAT_VERSION;
-+	ogm2->ttl = BATADV_TTL;
-+	ogm2->flags = BATADV_NO_FLAGS;
-+	ogm2->metric = htonl(BATADV_MAX_METRIC);
-+
-+	/* randomize initial seqno to avoid collision */
-+	get_random_bytes(&random_seqno, sizeof(random_seqno));
-+	atomic_set(&bat_priv->bat_v.ogm_seqno, random_seqno);
-+	INIT_DELAYED_WORK(&bat_priv->bat_v.ogm_wq, batadv_v_ogm_send);
-+
-+	return 0;
-+}
-+
-+void batadv_v_ogm_free(struct batadv_priv *bat_priv)
-+{
-+	cancel_delayed_work_sync(&bat_priv->bat_v.ogm_wq);
-+
-+	kfree(bat_priv->bat_v.ogm_buff);
-+	bat_priv->bat_v.ogm_buff = NULL;
-+	bat_priv->bat_v.ogm_buff_len = 0;
-+}
-diff --git a/bat_v_ogm.h b/bat_v_ogm.h
-new file mode 100644
-index 0000000..7f7341e
---- /dev/null
-+++ b/bat_v_ogm.h
-@@ -0,0 +1,32 @@
-+/*
-+ * Copyright (C) 2013 B.A.T.M.A.N. contributors:
-+ *
-+ * Antonio Quartulli
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301, USA
-+ *
-+ */
-+
-+#ifndef _BATAMAN_ADV_BATADV_V_OGM_H_
-+#define _BATAMAN_ADV_BATADV_V_OGM_H_
-+
-+int batadv_v_ogm_init(struct batadv_priv *bat_priv);
-+void batadv_v_ogm_free(struct batadv_priv *bat_priv);
-+int batadv_v_ogm_iface_enable(struct batadv_hard_iface *hard_iface);
-+void batadv_v_ogm_primary_iface_set(struct batadv_hard_iface *hard_iface);
-+int batadv_v_ogm_packet_recv(struct sk_buff *skb,
-+			      struct batadv_hard_iface *if_incoming);
-+
-+#endif /* _BATAMAN_ADV_BATADV_V_OGM_H_ */
-diff --git a/main.c b/main.c
-index b7d9996..424fa82 100644
---- a/main.c
-+++ b/main.c
-@@ -35,6 +35,7 @@
- #include "bridge_loop_avoidance.h"
- #include "distributed-arp-table.h"
- #include "gateway_common.h"
-+#include "hard-interface.h"
- #include "hash.h"
- #include "bat_algo.h"
- #include "network-coding.h"
-@@ -125,6 +126,10 @@ int batadv_mesh_init(struct net_device *soft_iface)
- 	INIT_HLIST_HEAD(&bat_priv->tvlv.handler_list);
- 	INIT_HLIST_HEAD(&bat_priv->softif_vlan_list);
- 
-+	ret = batadv_v_mesh_init(bat_priv);
-+	if (ret < 0)
-+		goto err;
-+
- 	ret = batadv_originator_init(bat_priv);
- 	if (ret < 0)
- 		goto err;
-@@ -165,6 +170,8 @@ void batadv_mesh_free(struct net_device *soft_iface)
- 
- 	batadv_purge_outstanding_packets(bat_priv, NULL);
- 
-+	batadv_v_mesh_free(bat_priv);
-+
- 	batadv_gw_node_purge(bat_priv);
- 	batadv_nc_mesh_free(bat_priv);
- 	batadv_dat_free(bat_priv);
-@@ -835,21 +842,32 @@ uint16_t batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
- {
- 	struct batadv_tvlv_container *tvlv;
- 	struct batadv_tvlv_hdr *tvlv_hdr;
--	uint16_t tvlv_value_len;
-+	uint16_t tvlv_value_len = 0;
- 	void *tvlv_value;
- 	bool ret;
-+	struct batadv_hard_iface *primary_if;
-+
-+	primary_if = batadv_primary_if_get_selected(bat_priv);
-+	if (!primary_if)
-+		goto end;
- 
- 	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
- 	tvlv_value_len = batadv_tvlv_container_list_size(bat_priv);
- 
-+	if (packet_min_len + tvlv_value_len > primary_if->net_dev->mtu) {
-+		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+			   "OGM size too big to fit the primary_if mtu\n");
-+		goto unlock;
-+	}
-+
- 	ret = batadv_tvlv_realloc_packet_buff(packet_buff, packet_buff_len,
- 					      packet_min_len, tvlv_value_len);
- 
- 	if (!ret)
--		goto end;
-+		goto unlock;
- 
- 	if (!tvlv_value_len)
--		goto end;
-+		goto unlock;
- 
- 	tvlv_value = (*packet_buff) + packet_min_len;
- 
-@@ -863,8 +881,13 @@ uint16_t batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
- 		tvlv_value = (uint8_t *)tvlv_value + ntohs(tvlv->tvlv_hdr.len);
- 	}
- 
--end:
-+unlock:
- 	spin_unlock_bh(&bat_priv->tvlv.container_list_lock);
-+
-+end:
-+	if (primary_if)
-+		batadv_hardif_free_ref(primary_if);
-+
- 	return tvlv_value_len;
- }
- 
-diff --git a/main.h b/main.h
-index 4ab3216..4badd01 100644
---- a/main.h
-+++ b/main.h
-@@ -30,6 +30,7 @@
- /* B.A.T.M.A.N. parameters */
- 
- #define BATADV_TQ_MAX_VALUE 255
-+#define BATADV_MAX_METRIC 0xFFFFFFFF
- #define BATADV_JITTER 20
- 
- /* Time To Live of broadcast messages */
-diff --git a/packet.h b/packet.h
-index 71b1aeb..a985802 100644
---- a/packet.h
-+++ b/packet.h
-@@ -38,6 +38,7 @@ enum batadv_packettype {
- 	BATADV_BCAST            = 0x01,
- 	BATADV_CODED            = 0x02,
- 	BATADV_ELP		= 0x03,
-+	BATADV_OGM2		= 0x0d,
- 	/* 0x40 - 0x7f: unicast */
- #define BATADV_UNICAST_MIN     0x40
- 	BATADV_UNICAST          = 0x40,
-@@ -193,6 +194,30 @@ struct batadv_ogm_packet {
- #define BATADV_OGM_HLEN sizeof(struct batadv_ogm_packet)
- 
- /**
-+ * struct batadv_ogm2_packet - ogm2 (routing protocol) packet
-+ * @packet_type: batman-adv packet type, part of the general header
-+ * @version: batman-adv protocol version, part of the general header
-+ * @ttl: time to live for this packet, part of the general header
-+ * @flags:
-+ * @seqno: sequence number
-+ * @orig: originator mac address
-+ * @tvlv_len: length of the appended tvlv buffer (in bytes)
-+ * @metric: the currently flooded metric value
-+ */
-+struct batadv_ogm2_packet {
-+	uint8_t  packet_type;
-+	uint8_t  version;
-+	uint8_t  ttl;
-+	uint8_t flags;
-+	__be32 seqno;
-+	uint8_t orig[ETH_ALEN];
-+	__be16 tvlv_len;
-+	__be32 metric;
-+};
-+
-+#define BATADV_OGM2_HLEN sizeof(struct batadv_ogm2_packet)
-+
-+/**
-  * struct batadv_elp_packet - elp (neighbor discovery) packet
-  * @packet_type: batman-adv packet type, part of the general header
-  * @version: batman-adv protocol version, part of the genereal header
-diff --git a/types.h b/types.h
-index be230b6..e9149d1 100644
---- a/types.h
-+++ b/types.h
-@@ -728,6 +728,18 @@ struct batadv_softif_vlan {
- };
- 
- /**
-+ * struct batadv_priv_bat_v -
-+ * @ogm_buff:
-+ * @ogm_buff_len:
-+ */
-+struct batadv_priv_bat_v {
-+	unsigned char *ogm_buff;
-+	int ogm_buff_len;
-+	struct delayed_work ogm_wq;
-+	atomic_t ogm_seqno;
-+};
-+
-+/**
-  * struct batadv_priv - per mesh interface data
-  * @mesh_state: current status of the mesh (inactive/active/deactivating)
-  * @soft_iface: net device which holds this struct as private data
-@@ -834,6 +846,9 @@ struct batadv_priv {
- 	atomic_t network_coding;
- 	struct batadv_priv_nc nc;
- #endif /* CONFIG_BATMAN_ADV_NC */
-+#ifdef CONFIG_BATMAN_ADV_BATMAN_V
-+	struct batadv_priv_bat_v bat_v;
-+#endif
- };
- 
- /**
+ int batadv_v_ogm_init(struct batadv_priv *bat_priv)
 -- 
 1.8.5.3
 
