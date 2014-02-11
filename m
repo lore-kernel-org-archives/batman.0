@@ -1,15 +1,15 @@
-Return-Path: <andrew@lunn.ch>
-Date: Tue, 11 Feb 2014 18:12:07 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20140211171207.GE24633@lunn.ch>
-References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
- <1392122903-805-8-git-send-email-antonio@meshcoding.com>
+Return-Path: <russell@personaltelco.net>
+References: <1392134707-2318-1-git-send-email-antonio@meshcoding.com>
+ <1392134707-2318-2-git-send-email-antonio@meshcoding.com>
+From: Russell Senior <russell@personaltelco.net>
+Date: Tue, 11 Feb 2014 09:13:22 -0800
+In-Reply-To: <1392134707-2318-2-git-send-email-antonio@meshcoding.com>
+ (Antonio Quartulli's message of "Tue\, 11 Feb 2014 17\:05\:07 +0100")
+Message-ID: <86eh398te5.fsf@coulee.tdb.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1392122903-805-8-git-send-email-antonio@meshcoding.com>
-Subject: Re: [B.A.T.M.A.N.] [RFC 07/23] batman-adv: OGMv2 - add basic
- infrastructure
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: free skb on TVLV
+	parsing success
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,81 +22,43 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-> +static void batadv_v_ogm_send(struct work_struct *work)
-> +{
-> +	struct batadv_hard_iface *hard_iface;
-> +	struct batadv_priv_bat_v *bat_v;
-> +	struct batadv_priv *bat_priv;
-> +	struct batadv_ogm2_packet *ogm2;
-> +	struct sk_buff *skb;
-> +	unsigned char *ogm_buff, *pkt_buff;
-> +	int ogm_buff_len;
-> +	uint16_t tvlv_len = 0;
-> +
-> +	bat_v = container_of(work, struct batadv_priv_bat_v, ogm_wq.work);
-> +	bat_priv = container_of(bat_v, struct batadv_priv, bat_v);
-> +
-> +	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
-> +		goto out;
-> +
-> +	ogm_buff = bat_priv->bat_v.ogm_buff;
-> +	ogm_buff_len = bat_priv->bat_v.ogm_buff_len;
-> +	/* tt changes have to be committed before the tvlv data is
-> +	 * appended as it may alter the tt tvlv container
-> +	 */
-> +	batadv_tt_local_commit_changes(bat_priv);
-> +	tvlv_len = batadv_tvlv_container_ogm_append(bat_priv, &ogm_buff,
-> +						    &ogm_buff_len,
-> +						    BATADV_OGM2_HLEN);
-> +
-> +	bat_priv->bat_v.ogm_buff = ogm_buff;
-> +	bat_priv->bat_v.ogm_buff_len = ogm_buff_len;
-> +
-> +	skb = netdev_alloc_skb_ip_align(NULL, ETH_HLEN + ogm_buff_len);
-> +	if (!skb)
-> +		goto out;
-> +
-> +	skb_reserve(skb, ETH_HLEN);
-> +	pkt_buff = skb_put(skb, ogm_buff_len);
-> +	memcpy(pkt_buff, ogm_buff, ogm_buff_len);
-> +
-> +	ogm2 = (struct batadv_ogm2_packet *)skb->data;
-> +	ogm2->seqno = htonl(atomic_read(&bat_priv->bat_v.ogm_seqno));
-> +	atomic_inc(&bat_priv->bat_v.ogm_seqno);
-> +	ogm2->tvlv_len = htons(tvlv_len);
-> +
-> +	/* broadcast on every interface */
-> +	rcu_read_lock();
-> +	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-> +		if (hard_iface->soft_iface != bat_priv->soft_iface)
-> +			continue;
-> +
-> +		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-> +			   "Sending own OGM2 packet (originator %pM, seqno %u, metric %u, TTL %d) on interface %s [%pM]\n",
-> +			   ogm2->orig, ntohl(ogm2->seqno), ntohl(ogm2->metric),
-> +			   ogm2->ttl, hard_iface->net_dev->name,
-> +			   hard_iface->net_dev->dev_addr);
-> +
-> +		batadv_v_ogm_send_to_if(skb, hard_iface);
-> +	}
-> +	rcu_read_unlock();
-> +
-> +	consume_skb(skb);
-> +
-> +	batadv_v_ogm_start_timer(bat_priv);
-> +out:
-> +	return;
 
-If you jump to out because netdev_alloc_skb_ip_align() failed, don't
-you want to start the timer again? I would assume it is a transient
-problem not being able to get memory for the skb, and the next time
-the timer goes off it might work?
+From: Antonio Quartulli <antonio@open-mesh.com>
+When the TVLV parsing routine succeed the skb is left
+untouched thus leading to a memory leak.
 
-> +	bat_priv->bat_v.ogm_buff_len = BATADV_OGM2_HLEN;
-> +	ogm_buff = kmalloc(bat_priv->bat_v.ogm_buff_len, GFP_ATOMIC);
+Fix this by consuming the skb in case of success.
 
-Maybe use kzalloc to ensure it is zero?
+Introduced by 0b6aa0d43767889eeda43a132cf5e73df4e63bf2
+("batman-adv: tvlv - basic infrastructure")
 
-      Andrew
+Reported-by: Russell Senior <russell@personaltelco.net>
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+Tested-by: Russell Senior <russell@personaltelco.net>
+---
+ routing.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/routing.c b/routing.c
+index f7579d0..71bf698 100644
+--- a/routing.c
++++ b/routing.c
+@@ -1063,6 +1063,8 @@ int batadv_recv_unicast_tvlv(struct sk_buff *skb,
+ 
+ 	if (ret != NET_RX_SUCCESS)
+ 		ret = batadv_route_unicast_packet(skb, recv_if);
++	else
++		consume_skb(skb);
+ 
+ 	return ret;
+ }
+-- 
+1.8.5.3
+
+
+
+
+-- 
+Russell Senior, President
+russell@personaltelco.net
