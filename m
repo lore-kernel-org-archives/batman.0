@@ -1,13 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <52F9FD08.9040307@meshcoding.com>
-Date: Tue, 11 Feb 2014 11:35:52 +0100
+Message-ID: <52FA0252.6040209@meshcoding.com>
+Date: Tue, 11 Feb 2014 11:58:26 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
 References: <1392114403-4069-1-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1392114403-4069-1-git-send-email-antonio@meshcoding.com>
+ <52F9FD08.9040307@meshcoding.com>
+In-Reply-To: <52F9FD08.9040307@meshcoding.com>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="drbsq76x82su9FvaRWo5U6Ke3lANIlhMj"
+ boundary="LoA25GvJLFfq2mR9mqnEuffExrMF2P5hd"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix memory access by setting
  mac_header in DAT
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,24 +25,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---drbsq76x82su9FvaRWo5U6Ke3lANIlhMj
+--LoA25GvJLFfq2mR9mqnEuffExrMF2P5hd
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 11/02/14 11:26, Antonio Quartulli wrote:
-> In the TX path we now have functions that rely on the
-> skb->mac_header field. DAT does not set such field when
-> creating its own ARP packets thus leading to wrong memory
-> access.
+On 11/02/14 11:35, Antonio Quartulli wrote:
+> On 11/02/14 11:26, Antonio Quartulli wrote:
+>> In the TX path we now have functions that rely on the
+>> skb->mac_header field. DAT does not set such field when
+>> creating its own ARP packets thus leading to wrong memory
+>> access.
+>>
+>> Fix it by always setting the mac_header after having forged
+>> the ARP packet.
+>>
+>> Reported-by: Russel Senior <russell@personaltelco.net>
+>> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+>> Tested-by: Russel Senior <russell@personaltelco.net>
 >=20
-> Fix it by always setting the mac_header after having forged
-> the ARP packet.
->=20
-> Reported-by: Russel Senior <russell@personaltelco.net>
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-> Tested-by: Russel Senior <russell@personaltelco.net>
+> This patch is supposed to be applied on maint.
 
-This patch is supposed to be applied on maint.
+Introduced by 41b38727749a94c1a65cf0f4be9bfe1cbaf0adeb
+("batman-adv: fix potential kernel paging error for unicast transmissions=
+")
+
+In this patch we have the introduction of eth_hdr() in
+batadv_send_skb_unicast() which creates the problem..
+
 
 Cheers,
 
@@ -49,7 +59,7 @@ Cheers,
 Antonio Quartulli
 
 
---drbsq76x82su9FvaRWo5U6Ke3lANIlhMj
+--LoA25GvJLFfq2mR9mqnEuffExrMF2P5hd
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -57,19 +67,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBCAAGBQJS+f0SAAoJEEKTMo6mOh1VAXEP/1BsQvL0n9ie5a4QKJV/uoK+
-yDN5HqLlQ5w5cVlzpWzD4PMMdKSxvRvE8aZpA+hQPVCjZ0JZ5mmNRwPqsLr+75MS
-PPj0PrlmlNa8ykwuOo2k67IScdTQg1gquL3T+uMhDA1ssYjyfsVc9Mxj/3OXp13X
-8i8/0tPEC354JPAjNYWQnZUM2mLjfOmzvuXYUrLxAMGoRD85ToJXfPNEYYbwBlj3
-NaljQk3ednOdq+I+bjBVg/l4vc4/r5Z7DRFa0WiqSm4r/q8+FiZ/cIMrhFnCoOT1
-HboSsoZnhiCrWR0AorNZ05cKjV+7C9MAVVyyEBDPcy+PnCHP2b4oHTlioqpO2sJ8
-z4tkSPFmid+Mvy3mZi0bxrTAE5HBaz2Yda4QnDwGB1laS8LBwjDbXRM+VV9wWebh
-0wbdIXiAOj9aOlxWAP/VcbGG8T9MFX5da/Mm0J6kLC+h4xLIRmtlYGhrBdbB2MuN
-ZuIl0LotMhgcHmxU3wACGv1ZLW0lzW3YaXuU7Ic8OMypQPIFUD9gBcXdmSSRNZql
-zhtTJ8uBfZLesCDkUla9dzojpQd9Gcb7I2ghicaybp1KOvpUhzlqfYuMRuhnOta4
-dRnUcvq/UZ1lacc4uXcCiVu70GPWVbrug3kfvc45lB3IPmKKDoBN/6IjpP9GaeUe
-mXL/R/xcDrTlOqTLz8kp
-=43I2
+iQIcBAEBCAAGBQJS+gJWAAoJEEKTMo6mOh1VHCUQAKH2mEVVdSHnhsNOTuZPEyxd
+k5Ml2x5usOZOv95Knr7eC5ajLtiLoKeWZayhxpzr5RYVqZbQyzqmjVhwA+lBQ9wf
+aTk5maii0kz0DmBm3QCC1m2XhuDEy01I6YGUJk0Y8qn3ixnoLkkYCmmwB6SscZFg
+je+1wJC02OSoQbsayYrqqr5UgZaiVpS5LeDT2Dl4AkHue8agOgiIRTqZNFtXbBEV
+EQhAOF9i26g6cIXKRY6rB04eQWhER+e5iUxcXOQ52goSWH8DEok3hA9jwXuxfxW0
+QbMpzHbEbp2E0XWSVskL1XMVCAEWuARQX9vwEY6+fVhr6lTb6ch/xAm+QHV+KQsb
+6dGnfnd1a5Md2nzIoe9BSKRNz1bHKNVHEwcylHsJPwzALjDQkXDX+kTBDxOEyEN6
+amIDHs1d8Y4HvX7yqAIoeuqGjC8vfI3sfQQGm+EhB4p3WhFOZoOjCiDkIo26uPKg
+fu4WDqV+j+dl+1qoRTusnq0SDGl+uZswBe1rqtdto5Euff3r6Dia8YuijWP0yjkn
+sS6HXGzFb5wpOrsDImJvZwZ/ZmaTSSoMLMJ1cvcYaZ60x2cXGX3yeoGlKCvp73be
+qk4wjsjVtntbmy1nhzgzNsxgCNAngfsDIe0jQwJn7NBksNbfJCW7mL/Yegs+eWhf
+yF0oyNFCIOmmelZWDsAJ
+=+JPo
 -----END PGP SIGNATURE-----
 
---drbsq76x82su9FvaRWo5U6Ke3lANIlhMj--
+--LoA25GvJLFfq2mR9mqnEuffExrMF2P5hd--
