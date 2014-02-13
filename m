@@ -1,20 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <52FC9AD9.5020704@meshcoding.com>
-Date: Thu, 13 Feb 2014 11:13:45 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
+Return-Path: <andrew@lunn.ch>
+Date: Thu, 13 Feb 2014 11:52:49 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20140213105249.GH7193@lunn.ch>
 References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
- <1392122903-805-16-git-send-email-antonio@meshcoding.com>
- <20140212091215.GI30814@lunn.ch> <52FB6525.7090001@open-mesh.com>
- <52FB6F04.3000404@openwrt.org> <52FB6F75.6070802@meshcoding.com>
- <20140213095527.GC7193@lunn.ch> <52FC981C.50309@meshcoding.com>
- <20140213100954.GE7193@lunn.ch>
-In-Reply-To: <20140213100954.GE7193@lunn.ch>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="31QjTKpRm0kv2okRrV4XV5g8LL1CRqPSE"
-Subject: Re: [B.A.T.M.A.N.] [RFC 15/23] batman-adv: ELP - send unicast ELP
- packets for throughput sampling
+ <1392122903-805-19-git-send-email-antonio@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1392122903-805-19-git-send-email-antonio@meshcoding.com>
+Subject: Re: [B.A.T.M.A.N.] [RFC 18/23] batman-adv: ELP - use phydev to
+ determine link characteristics
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,65 +21,112 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Felix Fietkau <nbd@openwrt.org>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---31QjTKpRm0kv2okRrV4XV5g8LL1CRqPSE
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Feb 11, 2014 at 01:48:18PM +0100, Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+> 
+> The phydev member of a net_device can be used to get
+> information about an ethernet link like HALF/FULL_DUPLEX
+> and advertised bandwidth (e.g. 100/10Mbps).
+> 
+> This information are then stored in the hard_iface object
+> to be used during the metric computation routine.
+> 
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+>  bat_v_elp.c      |  8 ++++++++
+>  bat_v_ogm.c      |  4 ++--
+>  hard-interface.c | 19 +++++++++++++++++++
+>  types.h          | 12 ++++++++++++
+>  4 files changed, 41 insertions(+), 2 deletions(-)
+> 
+> diff --git a/bat_v_elp.c b/bat_v_elp.c
+> index 763113e..958843c 100644
+> --- a/bat_v_elp.c
+> +++ b/bat_v_elp.c
+> @@ -78,6 +78,14 @@ batadv_v_elp_get_throughput(struct batadv_elp_neigh_node *neigh)
+>  	if (throughput != 0)
+>  		return throughput;
+>  
+> +	/* In case of Ethernet interface, the throughput has already been
+> +	 * obtained from the phydev object in the net_device struct (see
+> +	 * batadv_hardif_activate_interface()). So return this value.
+> +	 */
+> +	throughput = hard_iface->bat_v.eth_throughput;
+> +	if (throughput != 0)
+> +		return throughput;
+> +
+>  	/* if this is a wireless device, then ask its throughput through
+>  	 * cfg80211 API
+>  	 */
+> diff --git a/bat_v_ogm.c b/bat_v_ogm.c
+> index fa3d1a1..060ce80 100644
+> --- a/bat_v_ogm.c
+> +++ b/bat_v_ogm.c
+> @@ -393,8 +393,8 @@ static uint32_t batadv_v_penalty(struct batadv_priv *bat_priv,
+>  	/* proportion to use the same value used in batman iv (x * 128 / 256) */
+>  	hop_penalty = hop_penalty * 100 / 255;
+>  
+> -	if (batadv_is_wifi_netdev(if_incoming->net_dev) &&
+> -	    metric > link_metric / 10)
+> +	if ((if_incoming->bat_v.flags & BATADV_FULL_DUPLEX) &&
+> +	    (metric > link_metric / 10))
+>  		return metric / 2;
+>  
+>  	return metric * (100 - hop_penalty) / 100;
+> diff --git a/hard-interface.c b/hard-interface.c
+> index 2a04130..58c8669 100644
+> --- a/hard-interface.c
+> +++ b/hard-interface.c
+> @@ -31,6 +31,8 @@
+>  
+>  #include <linux/if_arp.h>
+>  #include <linux/if_ether.h>
+> +#include <linux/netdevice.h>
+> +#include <linux/phy.h>
+>  
+>  void batadv_hardif_free_rcu(struct rcu_head *rcu)
+>  {
+> @@ -297,6 +299,7 @@ void batadv_update_min_mtu(struct net_device *soft_iface)
+>  static void
+>  batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
+>  {
+> +	struct net_device *dev = hard_iface->net_dev;
+>  	struct batadv_priv *bat_priv;
+>  	struct batadv_hard_iface *primary_if = NULL;
+>  
+> @@ -315,6 +318,22 @@ batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
+>  	if (!primary_if)
+>  		batadv_primary_if_select(bat_priv, hard_iface);
+>  
+> +	/* set the default values */
+> +	hard_iface->bat_v.flags &= ~BATADV_FULL_DUPLEX;
+> +	hard_iface->bat_v.eth_throughput = 0;
+> +	if (dev->phydev) {
+> +		if (dev->phydev->duplex == DUPLEX_FULL)
+> +			hard_iface->bat_v.flags |= BATADV_FULL_DUPLEX;
+> +
+> +		/* set the speed according to the phydev setting. Store the
+> +		 * value in Kbps (as done for the other throughput variables)
+> +		 */
+> +		if (dev->phydev->speed != SPEED_UNKNOWN) {
+> +			hard_iface->bat_v.eth_throughput = dev->phydev->speed;
+> +			hard_iface->bat_v.eth_throughput *= 10;
+> +		}
+> +	}
+> +
 
-On 13/02/14 11:09, Andrew Lunn wrote:
->> We can't use the hard_iface statistics because we need to know where
->> that traffic has been sent to.
->=20
-> Oh, yes, my error.
->=20
->> However, to go in the direction that you are suggesting, I could use t=
-he
->> same API I use to read the throughput (cfg80211_get_station()) to also=
+Hi Antonio
 
->> read when the last packet was sent to a given peer.
->> This information should be good for our purposes, but it means that we=
+If i'm reading this correctly, you get the bandwidth once when the
+interface is added to bat0? Are we sure that auto-negotiation has
+finished? It can take a few seconds to complete after the interface is
+brought up. It would not be good to have batman use 10Mbps/Half Duplex
+on my gigabit links...
 
->> probe the neighbours right after having read the throughput.
->=20
-> My guess is, there are not many use cases where the hard interface is
-> used for other traffic as well as BATMAN. So i don't see it as being a
-> big issue. Maybe put it onto a TODO list once the code has been
-> merged, to swap to using statistics from lower down in the stack.
->=20
+Is there a notification mechanism which could be used to keep these
+values up to date? Or is that in a patch i have not yet got to?
 
-Yes, note taken ;)
-
-Thanks!
-
-
---=20
-Antonio Quartulli
-
-
---31QjTKpRm0kv2okRrV4XV5g8LL1CRqPSE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJS/JrcAAoJEEKTMo6mOh1VeOsP/jI0w+ETGGJsO6vdnNzzN67o
-gJOrTBvPFivIQMe5nA6lZs9GusuTaC7D4uF7ZKz7pIhsbvSBHQ9k3+CFNEUArUUI
-AVjP+9Jq+VvAmlT2ndDkRo1I73yuP95a7dRfTswTBQLnhCzHaRQNa3dC4iayjPXI
-4VR3uDkiirQeIzyYkFg674IRmOjXVzsCS6gGhknn8V3086Gp0KVAqpvRkH0accPV
-6OuPN0eLrYNiRzdCBkmjyQ5nDVRn3UkTBqaOdhCz6+NP4ycxwatt8AYQMYRwa7m3
-gVLXM+E21E+ZgHVf8c4J1dDe+tpnNNGfrdY2aQLiW1uuT34+P6Kl4D8tUhBJZ2XT
-Ulvc7NkYhHZz5rQPBeAt0c1WzJcWZ/LwlvUKVV7ank9nN0f7Niwmw/UMNRgCUqZF
-gaKYq7e2FfH1i+YwyCDwA6dfmzGkTBhovObFYuC9ji1qXAhd/iH54gRTrP/6ZtCk
-0wBHNqhwOdpXjNJ4kBg8uxwsSNOIIYNZpXiJTtNl12rHCmciXV9R+F4769XU99VN
-HrZfA3c1w2Q12Ef3eAzUOZhQVk7Krv0z+3kZAz3p6gOWuwpYDPMkOOiVgxz+Yzsh
-eiy5aeIkB1gcATzeY3WndQutbBIdCFm0KUecEePfk0VbXm9twacnVGsGNBv9oLp+
-OCK/B2zb23ymJ7ZPzL0F
-=/ESN
------END PGP SIGNATURE-----
-
---31QjTKpRm0kv2okRrV4XV5g8LL1CRqPSE--
+       Andrew
