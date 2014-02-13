@@ -1,11 +1,14 @@
 Return-Path: <russell@personaltelco.net>
+References: <86r4775d8s.fsf@coulee.tdb.com>
 From: Russell Senior <russell@personaltelco.net>
-Date: Thu, 13 Feb 2014 05:54:59 -0800
-Message-ID: <86r4775d8s.fsf@coulee.tdb.com>
+Date: Thu, 13 Feb 2014 06:01:19 -0800
+In-Reply-To: <86r4775d8s.fsf@coulee.tdb.com> (Russell Senior's message of
+ "Thu\, 13 Feb 2014 05\:54\:59 -0800")
+Message-ID: <86mwhv5cy8.fsf@coulee.tdb.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Subject: [B.A.T.M.A.N.] [PATCH 1/4] openwrt routing feed: add three ordex
-	patches for anti-panic, anti-leaking
+Subject: [B.A.T.M.A.N.] [PATCH 2/4] openwrt routing feed: batman-adv: split
+	kmod and userland into separate packages
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,205 +20,287 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
-These three patches successfully stopped panics and memory leaks for
-me, tested during some extended IRC sessions.  Thanks Antonio!
-
-This patch adds them to the OpenWrt routing feed patches directory for batman-adv.
+Creates a new package, batctl, split out from the batman-adv package.
+Simplifies the Makefiles, allows QUILT patch management to work,
+removes the quirky naming requirement for patches.  The batctl package
+is a dependency of kmod-batman-adv, retaining the existing dependency
+relationship.
 
 Signed-off-by: Russell Senior <russell@personaltelco.net>
 ---
- ...set-mac_header-when-forging-an-ARP-reply-.patch | 38 ++++++++++
- .../0010-batman-adv-byte-order-affects-crc.patch   | 83 ++++++++++++++++++++++
- .../patches/0011-batman-adv-memory-leak-fix.patch  | 39 ++++++++++
- 3 files changed, 160 insertions(+)
- create mode 100644 batman-adv/patches/0008-batman-adv-set-mac_header-when-forging-an-ARP-reply-.patch
- create mode 100644 batman-adv/patches/0010-batman-adv-byte-order-affects-crc.patch
- create mode 100644 batman-adv/patches/0011-batman-adv-memory-leak-fix.patch
+ batctl/Makefile                                    | 66 +++++++++++++++++
+ batman-adv/Config.in                               |  9 ---
+ batman-adv/Makefile                                | 84 +++-------------------
+ .../patches/0011-batman-adv-memory-leak-fix.patch  | 15 ++--
+ 4 files changed, 80 insertions(+), 94 deletions(-)
+ create mode 100644 batctl/Makefile
 
-diff --git a/batman-adv/patches/0008-batman-adv-set-mac_header-when-forging-an-ARP-reply-.patch b/batman-adv/patches/0008-batman-adv-set-mac_header-when-forging-an-ARP-reply-.patch
+diff --git a/batctl/Makefile b/batctl/Makefile
 new file mode 100644
-index 0000000..67c6dde
+index 0000000..7a34957
 --- /dev/null
-+++ b/batman-adv/patches/0008-batman-adv-set-mac_header-when-forging-an-ARP-reply-.patch
-@@ -0,0 +1,38 @@
-+From 9cfee06f7350c28881b5cb0bfa2901c3b726eb1a Mon Sep 17 00:00:00 2001
-+From: Antonio Quartulli <antonio@meshcoding.com>
-+Date: Fri, 31 Jan 2014 00:51:50 +0100
-+Subject: [PATCH 8/9] batman-adv: set mac_header when forging an ARP reply in
-+ DAT
++++ b/batctl/Makefile
+@@ -0,0 +1,66 @@
++#
++# Copyright (C) 2010-2014 OpenWrt.org
++#
++# This is free software, licensed under the GNU General Public License v2.
++# See /LICENSE for more information.
++#
 +
-+In the TX path we now have functions that rely on the
-+skb->mac_header field. DAT does not set such field when
-+creating its own ARP packets thus leading to wrong memory
-+access.
++include $(TOPDIR)/rules.mk
 +
-+Fix it by always setting the mac_header after having forged
-+the ARP packet.
++PKG_NAME:=batctl
++PKG_VERSION:=2014.0.0
++PKG_RELEASE:=2
++PKG_MD5SUM:=b0bcf29fef80ddcc33769e13f5937d0a
 +
-+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-+---
-+ distributed-arp-table.c | 5 +++++
-+ 1 file changed, 5 insertions(+)
++PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
++PKG_SOURCE_URL:=http://downloads.open-mesh.org/batman/releases/batman-adv-$(PKG_VERSION)
 +
-+diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-+index 6da587a..0b69b61 100644
-+--- a/distributed-arp-table.c
-++++ b/distributed-arp-table.c
-+@@ -1028,6 +1028,11 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
-+ 	if (!skb_new)
-+ 		goto out;
-+ 
-++	/* the rest of the TX path assumes that the mac_header offset pointing
-++	 * to the inner Ethernet header has been set, therefore reset it now.
-++	 */
-++	skb_reset_mac_header(skb_new);
-++
-+ 	if (vid & BATADV_VLAN_HAS_TAG)
-+ 		skb_new = vlan_insert_tag(skb_new, htons(ETH_P_8021Q),
-+ 					  vid & VLAN_VID_MASK);
-+-- 
-+1.8.5.3
++include $(INCLUDE_DIR)/package.mk
 +
-diff --git a/batman-adv/patches/0010-batman-adv-byte-order-affects-crc.patch b/batman-adv/patches/0010-batman-adv-byte-order-affects-crc.patch
-new file mode 100644
-index 0000000..577d9b7
---- /dev/null
-+++ b/batman-adv/patches/0010-batman-adv-byte-order-affects-crc.patch
-@@ -0,0 +1,83 @@
-+From: Antonio Quartulli <antonio@meshcoding.com>
-+Date: Tue, 11 Feb 2014 17:05:06 +0100
-+Message-Id: <1392134707-2318-1-git-send-email-antonio@meshcoding.com>
-+Subject: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: fix TT CRC computation
-+	by ensuring byte order
++define Package/batctl
++  URL:=http://www.open-mesh.org/
++  SECTION:=net
++  CATEGORY:=Network
++  TITLE:=B.A.T.M.A.N. Advanced user space configuration tool batctl
++  MAINTAINER:=Marek Lindner <lindner_marek@yahoo.de>
++endef
 +
-+From: Antonio Quartulli <antonio@open-mesh.com>
++define Package/batctl/description
++B.A.T.M.A.N. advanced is a kernel module which allows to
++build layer 2 mesh networks. This package contains the
++version $(PKG_VERSION) of the user space configuration & 
++management tool batctl.
++endef
 +
-+When computing the CRC on a 2byte variable the order of
-+the bytes obviously alters the final result. This means
-+that computing the CRC over the same value on two archs
-+having different endianess leads to different numbers.
++TARGET_CFLAGS  += -ffunction-sections -fdata-sections
++TARGET_LDFLAGS += -Wl,--gc-sections
 +
-+The global and local translation table CRC computation
-+routine makes this mistake while processing the clients
-+VIDs. The result is a continuous CRC mismatching between
-+nodes having different endianess.
++# Link-time optimization allows to move parts of the optimization from the single
++# source file to the global source view. This is done by emitting the GIMPLE
++# representation in each object file and analyzing it again during the link step.
 +
-+Fix this by converting the VID to Network Order before
-+processing it. This guarantees that every node uses the same
-+byte order.
++TARGET_CFLAGS  += -flto
++TARGET_LDFLAGS += -fuse-linker-plugin
 +
-+Introduced by 21a57f6e7a3b4455dfe68ee07a7b901d9e7f200b
-+("batman-adv: make the TT CRC logic VLAN specific")
++MAKE_BATCTL_ENV += \
++        CPPFLAGS="$(TARGET_CPPFLAGS)" \
++        CFLAGS="$(TARGET_CFLAGS)" \
++        LDFLAGS="$(TARGET_LDFLAGS)"
 +
-+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-+---
-+ translation-table.c | 16 ++++++++++++----
-+ 1 file changed, 12 insertions(+), 4 deletions(-)
-+
-+diff --git a/translation-table.c b/translation-table.c
-+index 05c2a9b..24e3267 100644
-+--- a/translation-table.c
-++++ b/translation-table.c
-+@@ -1961,6 +1961,7 @@ static uint32_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
-+ 	struct hlist_head *head;
-+ 	uint32_t i, crc_tmp, crc = 0;
-+ 	uint8_t flags;
-++	__be16 tmp_vid;
-+ 
-+ 	for (i = 0; i < hash->size; i++) {
-+ 		head = &hash->table[i];
-+@@ -1997,8 +1998,11 @@ static uint32_t batadv_tt_global_crc(struct batadv_priv *bat_priv,
-+ 							     orig_node))
-+ 				continue;
-+ 
-+-			crc_tmp = crc32c(0, &tt_common->vid,
-+-					 sizeof(tt_common->vid));
-++			/* use network order to read the VID: this ensures that
-++			 * every node reads the bytes in the same order.
-++			 */
-++			tmp_vid = htons(tt_common->vid);
-++			crc_tmp = crc32c(0, &tmp_vid, sizeof(tmp_vid));
-+ 
-+ 			/* compute the CRC on flags that have to be kept in sync
-+ 			 * among nodes
-+@@ -2032,6 +2036,7 @@ static uint32_t batadv_tt_local_crc(struct batadv_priv *bat_priv,
-+ 	struct hlist_head *head;
-+ 	uint32_t i, crc_tmp, crc = 0;
-+ 	uint8_t flags;
-++	__be16 tmp_vid;
-+ 
-+ 	for (i = 0; i < hash->size; i++) {
-+ 		head = &hash->table[i];
-+@@ -2050,8 +2055,11 @@ static uint32_t batadv_tt_local_crc(struct batadv_priv *bat_priv,
-+ 			if (tt_common->flags & BATADV_TT_CLIENT_NEW)
-+ 				continue;
-+ 
-+-			crc_tmp = crc32c(0, &tt_common->vid,
-+-					 sizeof(tt_common->vid));
-++			/* use network order to read the VID: this ensures that
-++			 * every node reads the bytes in the same order.
-++			 */
-++			tmp_vid = htons(tt_common->vid);
-++			crc_tmp = crc32c(0, &tmp_vid, sizeof(tmp_vid));
-+ 
-+ 			/* compute the CRC on flags that have to be kept in sync
-+ 			 * among nodes
-+-- 
-+1.8.5.3
++MAKE_BATCTL_ARGS += \
++        REVISION="" \
++        CC="$(TARGET_CC)" \
++        DESTDIR="$(PKG_INSTALL_DIR)" \
++        batctl install
 +
 +
++define Build/compile
++	$(MAKE_BATCTL_ENV) $(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_BATCTL_ARGS)
++endef
 +
++define Package/batctl/install
++	$(INSTALL_DIR) $(1)/usr/sbin
++	$(INSTALL_BIN) $(PKG_BUILD_DIR)/$(PKG_NAME) $(1)/usr/sbin/
++endef
++
++$(eval $(call BuildPackage,batctl))
+diff --git a/batman-adv/Config.in b/batman-adv/Config.in
+index 1330525..160d3a3 100644
+--- a/batman-adv/Config.in
++++ b/batman-adv/Config.in
+@@ -18,12 +18,3 @@ config KMOD_BATMAN_ADV_NC
+ 	bool "enable network coding [requires promisc mode support]"
+ 	depends on PACKAGE_kmod-batman-adv
+ 	default n
+-
+-config KMOD_BATMAN_ADV_BATCTL
+-	bool "enable batctl"
+-	depends on PACKAGE_kmod-batman-adv
+-	default y
+-	help
+-	  batctl is a more intuitive managment utility for B.A.T.M.A.N.-Advanced.
+-	  It is an easier method for configuring batman-adv and
+-	  provides some additional tools for debugging as well.
+diff --git a/batman-adv/Makefile b/batman-adv/Makefile
+index 4bfbe54..c5c7625 100644
+--- a/batman-adv/Makefile
++++ b/batman-adv/Makefile
+@@ -1,35 +1,29 @@
+ #
+-# Copyright (C) 2010 OpenWrt.org
++# Copyright (C) 2010-2014 OpenWrt.org
+ #
+ # This is free software, licensed under the GNU General Public License v2.
+ # See /LICENSE for more information.
+ #
+-# $Id: Makefile 5624 2006-11-23 00:29:07Z nbd $
+ 
+ include $(TOPDIR)/rules.mk
++include $(INCLUDE_DIR)/kernel.mk
+ 
+ PKG_NAME:=batman-adv
+-
+ PKG_VERSION:=2014.0.0
+-BATCTL_VERSION:=2014.0.0
+-PKG_RELEASE:=1
+-PKG_MD5SUM:=8d58ecaede17dc05aab1b549dc09fa7d
+-BATCTL_MD5SUM:=b0bcf29fef80ddcc33769e13f5937d0a
++PKG_RELEASE:=2
+ 
+ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+ PKG_SOURCE_URL:=http://downloads.open-mesh.org/batman/releases/batman-adv-$(PKG_VERSION)
+-
+-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(PKG_NAME)-$(PKG_VERSION)
+-PKG_BATCTL_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/batctl-$(BATCTL_VERSION)
++PKG_MD5SUM:=8d58ecaede17dc05aab1b549dc09fa7d
++PKG_CAT:=zcat
+ 
+ include $(INCLUDE_DIR)/package.mk
+-include $(INCLUDE_DIR)/kernel.mk
+ 
+ define KernelPackage/batman-adv
+   URL:=http://www.open-mesh.org/
+   MAINTAINER:=Marek Lindner <lindner_marek@yahoo.de>
+   SUBMENU:=Network Support
+-  DEPENDS:=+KMOD_BATMAN_ADV_BLA:kmod-lib-crc16 +kmod-crypto-core +kmod-crypto-crc32c +kmod-lib-crc32c +libc
++  DEPENDS:=+KMOD_BATMAN_ADV_BLA:kmod-lib-crc16 +kmod-crypto-core +kmod-crypto-crc32c +kmod-lib-crc32c +libc +batctl
+   TITLE:=B.A.T.M.A.N. Adv
+   FILES:=$(PKG_BUILD_DIR)/batman-adv.$(LINUX_KMOD_SUFFIX)
+   AUTOLOAD:=$(call AutoLoad,50,batman-adv)
+@@ -38,8 +32,7 @@ endef
+ define KernelPackage/batman-adv/description
+ B.A.T.M.A.N. advanced is a kernel module which allows to
+ build layer 2 mesh networks. This package contains the
+-version $(PKG_VERSION) of the kernel module plus its user space
+-configuration & managerment tool batctl.
++version $(PKG_VERSION) of the kernel module.
+ endef
+ 
+ define KernelPackage/batman-adv/config
+@@ -60,75 +53,16 @@ MAKE_BATMAN_ADV_ARGS += \
+ 	CONFIG_BATMAN_ADV_NC=$(if $(CONFIG_KMOD_BATMAN_ADV_NC),y,n) \
+ 	REVISION="" all
+ 
+-# The linker can identify unused sections of a binary when each symbol is stored
+-# in a separate section. This mostly removes unused linker sections and reduces 
+-# the size by ~3% on mipsel.
+-
+-TARGET_CFLAGS  += -ffunction-sections -fdata-sections
+-TARGET_LDFLAGS += -Wl,--gc-sections
+-
+-# Link-time optimization allows to move parts of the optimization from the single
+-# source file to the global source view. This is done by emitting the GIMPLE
+-# representation in each object file and analyzing it again during the link step.
+-
+-TARGET_CFLAGS  += -flto
+-TARGET_LDFLAGS += -fuse-linker-plugin
+-
+-MAKE_BATCTL_ENV += \
+-	CPPFLAGS="$(TARGET_CPPFLAGS)" \
+-	CFLAGS="$(TARGET_CFLAGS)" \
+-	LDFLAGS="$(TARGET_LDFLAGS)"
+-
+-MAKE_BATCTL_ARGS += \
+-	REVISION="" \
+-	CC="$(TARGET_CC)" \
+-	DESTDIR="$(PKG_INSTALL_DIR)" \
+-	batctl install
+-
+-ifneq ($(DEVELOPER)$(CONFIG_KMOD_BATMAN_ADV_BATCTL),)
+-define Download/batctl
+-  FILE:=batctl-$(BATCTL_VERSION).tar.gz
+-  URL:=$(PKG_SOURCE_URL)
+-  MD5SUM:=$(BATCTL_MD5SUM)
+-endef
+-$(eval $(call Download,batctl))
+-
+-BATCTL_EXTRACT = tar xzf "$(DL_DIR)/batctl-$(BATCTL_VERSION).tar.gz" -C "$(BUILD_DIR)/$(PKG_NAME)"
+-BATCTL_PATCH = $(call Build/DoPatch,"$(PKG_BATCTL_BUILD_DIR)","$(PATCH_DIR)","*batctl*")
+-BATCTL_BUILD = $(MAKE_BATCTL_ENV) $(MAKE) -C $(PKG_BATCTL_BUILD_DIR) $(MAKE_BATCTL_ARGS)
+-BATCTL_INSTALL = $(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/local/sbin/batctl $(1)/usr/sbin/
+-endif
+-
+-KPATCH ?= $(PATCH)
+-define Build/DoPatch
+-	@if [ -d "$(2)" ]; then \
+-		if [ "$$$$(ls $(2) | grep -Ec $(3))" -gt 0 ]; then \
+-			$(KPATCH) "$(1)" "$(2)" "$(3)"; \
+-		fi; \
+-	fi
+-endef
+-
+-define Build/Patch
+-	$(call Build/DoPatch,"$(PKG_BUILD_DIR)","$(PATCH_DIR)","*batman*")
+-	$(BATCTL_EXTRACT)
+-	$(BATCTL_PATCH)
+-endef
+-
+ define Build/Prepare
+ 	$(call Build/Prepare/Default)
+-	$(SED) '/#define _NET_BATMAN_ADV_MAIN_H_/a\#undef CONFIG_MODULE_STRIPPED' \
+-		$(PKG_BUILD_DIR)/main.h
++	$(SED) '/#define _NET_BATMAN_ADV_MAIN_H_/a\#undef CONFIG_MODULE_STRIPPED' $(PKG_BUILD_DIR)/main.h
+ endef
+ 
+ 
+ define Build/Compile
+ 	$(MAKE) -C "$(PKG_BUILD_DIR)" $(MAKE_BATMAN_ADV_ARGS)
+-	$(BATCTL_BUILD)
+ endef
+ 
+-define Build/Clean
+-        rm -rf $(BUILD_DIR)/$(PKG_NAME)/
+-endef
+ 
+ define KernelPackage/batman-adv/install
+ 	$(INSTALL_DIR) $(1)/etc/config $(1)/etc/hotplug.d/net $(1)/etc/hotplug.d/iface $(1)/lib/batman-adv $(1)/usr/sbin $(1)/lib/netifd/proto
+@@ -136,7 +70,7 @@ define KernelPackage/batman-adv/install
+ 	$(INSTALL_DATA) ./files/lib/batman-adv/config.sh $(1)/lib/batman-adv
+ 	$(INSTALL_BIN) ./files/etc/hotplug.d/net/99-batman-adv $(1)/etc/hotplug.d/net
+ 	$(INSTALL_BIN) ./files/lib/netifd/proto/batadv.sh $(1)/lib/netifd/proto
+-	$(BATCTL_INSTALL)
+ endef
+ 
++
+ $(eval $(call KernelPackage,batman-adv))
 diff --git a/batman-adv/patches/0011-batman-adv-memory-leak-fix.patch b/batman-adv/patches/0011-batman-adv-memory-leak-fix.patch
-new file mode 100644
-index 0000000..c991d5d
---- /dev/null
+index c991d5d..d8fe56e 100644
+--- a/batman-adv/patches/0011-batman-adv-memory-leak-fix.patch
 +++ b/batman-adv/patches/0011-batman-adv-memory-leak-fix.patch
-@@ -0,0 +1,39 @@
-+From: Antonio Quartulli <antonio@meshcoding.com>
-+To: b.a.t.m.a.n@lists.open-mesh.org
-+Date: Tue, 11 Feb 2014 17:05:07 +0100
-+Subject: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: free skb on TVLV
-+	parsing success
-+
-+From: Antonio Quartulli <antonio@open-mesh.com>
-+
-+When the TVLV parsing routine succeed the skb is left
-+untouched thus leading to a memory leak.
-+
-+Fix this by consuming the skb in case of success.
-+
-+Introduced by 0b6aa0d43767889eeda43a132cf5e73df4e63bf2
-+("batman-adv: tvlv - basic infrastructure")
-+
-+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-+---
-+ routing.c | 2 ++
-+ 1 file changed, 2 insertions(+)
-+
-+diff --git a/routing.c b/routing.c
-+index f7579d0..71bf698 100644
-+--- a/routing.c
-++++ b/routing.c
-+@@ -1063,6 +1063,8 @@ int batadv_recv_unicast_tvlv(struct sk_buff *skb,
-+ 
-+ 	if (ret != NET_RX_SUCCESS)
-+ 		ret = batadv_route_unicast_packet(skb, recv_if);
-++	else
-++		consume_skb(skb);
-+ 
-+ 	return ret;
-+ }
-+-- 
-+1.8.5.3
-+
-+
-+
+@@ -19,11 +19,11 @@ Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+  routing.c | 2 ++
+  1 file changed, 2 insertions(+)
+ 
+-diff --git a/routing.c b/routing.c
+-index f7579d0..71bf698 100644
+---- a/routing.c
+-+++ b/routing.c
+-@@ -1063,6 +1063,8 @@ int batadv_recv_unicast_tvlv(struct sk_buff *skb,
++Index: batman-adv-2014.0.0/routing.c
++===================================================================
++--- batman-adv-2014.0.0.orig/routing.c
+++++ batman-adv-2014.0.0/routing.c
++@@ -1063,6 +1063,8 @@ int batadv_recv_unicast_tvlv(struct sk_b
+  
+  	if (ret != NET_RX_SUCCESS)
+  		ret = batadv_route_unicast_packet(skb, recv_if);
+@@ -32,8 +32,3 @@ index f7579d0..71bf698 100644
+  
+  	return ret;
+  }
+--- 
+-1.8.5.3
+-
+-
+-
 -- 
 1.8.1.2
-
 
 
 -- 
