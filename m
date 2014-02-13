@@ -1,17 +1,16 @@
-Return-Path: <antonio@open-mesh.com>
-Message-ID: <52FC802B.3040200@open-mesh.com>
-Date: Thu, 13 Feb 2014 09:19:55 +0100
-From: Antonio Quartulli <antonio@open-mesh.com>
-MIME-Version: 1.0
+Return-Path: <andrew@lunn.ch>
+Date: Thu, 13 Feb 2014 10:36:50 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20140213093650.GA7193@lunn.ch>
 References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
- <1392122903-805-19-git-send-email-antonio@meshcoding.com>
- <52FC7FAC.60404@open-mesh.com>
-In-Reply-To: <52FC7FAC.60404@open-mesh.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="ldPPUj2rKACv4ETmlMuFM1M90Mo3SERkx"
-Subject: Re: [B.A.T.M.A.N.] [RFC 18/23] batman-adv: ELP - use phydev to
-	determine link characteristics
+ <1392122903-805-13-git-send-email-antonio@meshcoding.com>
+ <20140212084022.GE30814@lunn.ch> <52FB6701.5000406@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <52FB6701.5000406@meshcoding.com>
+Subject: Re: [B.A.T.M.A.N.] [RFC 12/23] batman-adv: add base throughput
+ attribute
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,89 +22,67 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---ldPPUj2rKACv4ETmlMuFM1M90Mo3SERkx
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wed, Feb 12, 2014 at 01:20:17PM +0100, Antonio Quartulli wrote:
+> On 12/02/14 09:40, Andrew Lunn wrote:
+> > On Tue, Feb 11, 2014 at 01:48:12PM +0100, Antonio Quartulli wrote:
+> >> From: Antonio Quartulli <antonio@open-mesh.com>
+> >>
+> >> when batman-adv is asked to estimate/compute the throughput
+> >> of an interface, but it fails for whatever reason, then the
+> >> value in this attribute is used
+> >>
+> >> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> >> ---
+> >>  bat_v.c | 3 +++
+> >>  main.h  | 7 +++++++
+> >>  sysfs.c | 7 +++++++
+> >>  types.h | 1 +
+> >>  4 files changed, 18 insertions(+)
+> >>
+> >> diff --git a/bat_v.c b/bat_v.c
+> >> index d5457b3..3aa42ec 100644
+> >> --- a/bat_v.c
+> >> +++ b/bat_v.c
+> >> @@ -75,6 +75,9 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+> >>  
+> >>  int batadv_v_mesh_init(struct batadv_priv *bat_priv)
+> >>  {
+> >> +	atomic_set(&bat_priv->bat_v.base_throughput,
+> >> +		   BATADV_DEFAULT_BASE_THROUGHPUT);
+> >> +
+> >>  	return batadv_v_ogm_init(bat_priv);
+> >>  }
+> >>  
+> >> diff --git a/main.h b/main.h
+> >> index 47fb9ed..5699c9f 100644
+> >> --- a/main.h
+> >> +++ b/main.h
+> >> @@ -33,6 +33,13 @@
+> >>  #define BATADV_MAX_METRIC 0xFFFFFFFF
+> >>  #define BATADV_JITTER 20
+> >>  
+> >> +/**
+> >> + * BATADV_DEFAULT_BASE_THROUGHPUT - default value used as throughput for
+> >> + * hard_ifaces for which it is not possible to measure/estimate the real one.
+> >> + * Value is expressed in Mbps/10
+> > 
+> > Mbps/10 is a rather odd unit. How about just Kbps?
+> 
+> This is the unit used in cfg/mac80211 because most of the rates are
+> either in the form of XX.0Mbps of XX.YMbps (so just one decimal number
+> needs to be saved).
+> Moreover I thought that having an higher precision is not very useful
+> because the routing decision cannot be taken on such a fine grained value.
+> Actually the originator table prints the metric in Mbps (XX.YMbps).
 
-On 13/02/14 09:17, Antonio Quartulli wrote:
-> On 11/02/14 13:48, Antonio Quartulli wrote:
->> @@ -297,6 +299,7 @@ void batadv_update_min_mtu(struct net_device *soft=
-_iface)
->>  static void
->>  batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface=
-)
->>  {
->> +	struct net_device *dev =3D hard_iface->net_dev;
->>  	struct batadv_priv *bat_priv;
->>  	struct batadv_hard_iface *primary_if =3D NULL;
->> =20
->> @@ -315,6 +318,22 @@ batadv_hardif_activate_interface(struct batadv_ha=
-rd_iface *hard_iface)
->>  	if (!primary_if)
->>  		batadv_primary_if_select(bat_priv, hard_iface);
->> =20
->> +	/* set the default values */
->> +	hard_iface->bat_v.flags &=3D ~BATADV_FULL_DUPLEX;
->> +	hard_iface->bat_v.eth_throughput =3D 0;
->> +	if (dev->phydev) {
->> +		if (dev->phydev->duplex =3D=3D DUPLEX_FULL)
->> +			hard_iface->bat_v.flags |=3D BATADV_FULL_DUPLEX;
->> +
->> +		/* set the speed according to the phydev setting. Store the
->> +		 * value in Kbps (as done for the other throughput variables)
->> +		 */
+It is not precision which i think is important, it is having a unit a
+user expects. Networking people work in Kbps, or MBps. If it is
+printed in the originator table as XX.YMBps, then i think this sysfs
+file also needs to be XX.YMBps. That does however make your parsing
+more complex, since it is no longer an int. I suppose there is the use
+case of an ADSL link, with bandwidth of say 2Mbps down, 256Kbps up,
+and then you do need the decimal point in XX.YMBps.
 
-And of course this is not Kbps but Mbps/10 (like everywhere else)..
-
-
->> +		if (dev->phydev->speed !=3D SPEED_UNKNOWN) {
->> +			hard_iface->bat_v.eth_throughput =3D dev->phydev->speed;
->> +			hard_iface->bat_v.eth_throughput *=3D 10;
->> +		}
->> +	}
->> +
->=20
-> For the record: I just moved this chunk into a proper
-> bat_algo_ops->bat_iface_activate() API.
->=20
-> This initialisation is obviously B.A.T.M.A.N. V specific and cannot liv=
-e
-> in the batadv_hardif_activate_interface() function.
->=20
->=20
-> Cheers,
->=20
->=20
-
-
---=20
-Antonio Quartulli
-
-
---ldPPUj2rKACv4ETmlMuFM1M90Mo3SERkx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJS/IAuAAoJEEKTMo6mOh1V1o8P/3kmliOFJ3MLGkOeKtABZNah
-0eUdIbeekokDD8HCkUtTDjrosrmA+8jahzUMcGtJa2HxXfODQXcDcgdzrIZ9sDOD
-XNaB2pmWE9ngKgJVBJAH/ORS5j/5iHZq9jlxd+CH5xgAanZna8k4Fo1uIFyf6ShU
-375tzPtbnI0UvCk8vQ+nM7aGxE29g2Nm3DT7OVfOkVLFJdHlcHwigvmwE0d1TjAF
-IClL36sTM6ZApOudbw6uubveuVzS725Nw4N9JJYkQsWR7y1D1iAyIrRYklBvRWkL
-2sOTO6K4qmjcMx37Ow9t/3ix0fb22J5Ku84vuUk6COtpW5an/lBNF5B4garqE8HA
-M4+DtSDwIpuVmD6bis5VwyjB0CXfqh3vNfV9FoE106u2/HhlnbT7HeP4sBUmWIhG
-Fm5pfjT+pVXlGZS6iNiGn3dulz1rZdirz5wxrfKIGVbK01kuhBwzhtArSY5GyGyV
-2pl4H6q9lS4yGrdU8Fb9rbZM99LlDCkj+h+gmfCsl3JYR6/v3yMDm5QejVhqeEbP
-NO7Xa3c2X29jZcIyFNI8JNHDxFf5xeOeYa1SSldpfpYHbOIc1qO1ZtgvqSolVW10
-o4ZMFuni746AYGVZdeIRa2K6YcOjTxnd5dkDOOJbDGXj4FMoC35kClhLzauKDW1v
-7bplqJ3d1rYjQWmnjb5x
-=+q0F
------END PGP SIGNATURE-----
-
---ldPPUj2rKACv4ETmlMuFM1M90Mo3SERkx--
+    Andrew
