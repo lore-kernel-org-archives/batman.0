@@ -1,15 +1,18 @@
-Return-Path: <russell@personaltelco.net>
-References: <86r4775d8s.fsf@coulee.tdb.com> <86mwhv5cy8.fsf@coulee.tdb.com>
- <2155796.4nLzYnGVik@diderot>
-From: Russell Senior <russell@personaltelco.net>
-Date: Thu, 13 Feb 2014 16:40:38 -0800
-In-Reply-To: <2155796.4nLzYnGVik@diderot> (Marek Lindner's message of "Thu\,
- 13 Feb 2014 23\:39\:38 +0800")
-Message-ID: <8661oi5xx5.fsf_-_@coulee.tdb.com>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <52FDD2CB.70104@meshcoding.com>
+Date: Fri, 14 Feb 2014 09:24:43 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: [B.A.T.M.A.N.] [PATCHv2] openwrt routing feed: batman-adv: split
-	kmod and userland into separate packages
+References: <1392122903-805-1-git-send-email-antonio@meshcoding.com>
+ <1392122903-805-19-git-send-email-antonio@meshcoding.com>
+ <20140213105249.GH7193@lunn.ch> <52FCA639.9080204@meshcoding.com>
+ <20140213114449.GI7193@lunn.ch>
+In-Reply-To: <20140213114449.GI7193@lunn.ch>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="QqglgM05S6TduD6oQNdD6g2o5mQXQrKgN"
+Subject: Re: [B.A.T.M.A.N.] [RFC 18/23] batman-adv: ELP - use phydev to
+ determine link characteristics
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,250 +24,101 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Andrew Lunn <andrew@lunn.ch>
+
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--QqglgM05S6TduD6oQNdD6g2o5mQXQrKgN
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 13/02/14 12:44, Andrew Lunn wrote:
+>> it is invoked every time the interface is brought up. So if you
+>> disconnect and then reconnect the cable (e.g. to connect the NIC to a
+>> faster switch) this function is invoked again and the bandwidth is upd=
+ated.
+>>
+>>> Are we sure that auto-negotiation has
+>>> finished? It can take a few seconds to complete after the interface i=
+s
+>>> brought up. It would not be good to have batman use 10Mbps/Half Duple=
+x
+>>> on my gigabit links...
+>>
+>> So it can take up to "few" seconds? I did not expect such a delay!
+>=20
+> It varies a lot between devices. I have a NAS box which i use for
+> kernel hacking. I TFTP boot the kernel, using u-boot configuration
+> variables. I found that for a cold boot it works great, but a warm
+> boot seems to be faster and the TFTP GET command is sent while the phy
+> is still auto-negotiating, and it gets lost. This then triggers a bug
+> in u-boot, it never re-transmits the GET command, and then whole TFTP
+> boot times out eventually.
+>=20
+> So i'm just cautious about making assumptions here, especially
+> assumptions which might be mostly true, but in some odd edge case turn
+> out to be false.
+>=20
+>> However this function if invoked when the NETDEV_UP event is issued by=
+
+>> the underlying system. I expect the event to be thrown when the
+>> interface is ready to be used, not when the auto-negotiatin is still
+>> going on. I will double check.
+>=20
+> I had a quick look at the code. It seems like NETDEV_UP is issued
+> directly after the device is opened. There does not seem to be any
+> waiting around for auto-neg.
 
 
-Creates a new package, batctl, split out from batman-adv package.
-Simplifies the Makefiles, allows QUILT patch management wto work,
-removes the quirky patch naming requirement.  Modified Config.in to
-work as before with batctl, except now with PACKAGE_batctl.
+Hi Andrew,
 
-This patch also avoids leakage of unrelated changes from first
-try. Oops.
+This morning I've been trying to dig into the tg3 Ethernet driver to get
+an idea of what happens before the NETDEV_UP event is fired.
 
-Signed-off-by: Russell Senior <russell@personaltelco.net>
----
- batctl/Makefile      | 66 ++++++++++++++++++++++++++++++++++++++++++++
- batman-adv/Config.in |  5 ++--
- batman-adv/Makefile  | 78 ++++------------------------------------------------
- 3 files changed, 74 insertions(+), 75 deletions(-)
+The network stack invokes the ndo_open() callback implemented by the
+driver and, as far as I can see, this function does not return until
+having set speed and half/full_duplex state.
+Thus it looks like that when NETDEV_UP is fired the speed and the
+full_duplex attribute have already a meaningful value.
 
-diff --git a/batctl/Makefile b/batctl/Makefile
-new file mode 100644
-index 0000000..7a34957
---- /dev/null
-+++ b/batctl/Makefile
-@@ -0,0 +1,66 @@
-+#
-+# Copyright (C) 2010-2014 OpenWrt.org
-+#
-+# This is free software, licensed under the GNU General Public License v2.
-+# See /LICENSE for more information.
-+#
-+
-+include $(TOPDIR)/rules.mk
-+
-+PKG_NAME:=batctl
-+PKG_VERSION:=2014.0.0
-+PKG_RELEASE:=2
-+PKG_MD5SUM:=b0bcf29fef80ddcc33769e13f5937d0a
-+
-+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-+PKG_SOURCE_URL:=http://downloads.open-mesh.org/batman/releases/batman-adv-$(PKG_VERSION)
-+
-+include $(INCLUDE_DIR)/package.mk
-+
-+define Package/batctl
-+  URL:=http://www.open-mesh.org/
-+  SECTION:=net
-+  CATEGORY:=Network
-+  TITLE:=B.A.T.M.A.N. Advanced user space configuration tool batctl
-+  MAINTAINER:=Marek Lindner <lindner_marek@yahoo.de>
-+endef
-+
-+define Package/batctl/description
-+B.A.T.M.A.N. advanced is a kernel module which allows to
-+build layer 2 mesh networks. This package contains the
-+version $(PKG_VERSION) of the user space configuration & 
-+management tool batctl.
-+endef
-+
-+TARGET_CFLAGS  += -ffunction-sections -fdata-sections
-+TARGET_LDFLAGS += -Wl,--gc-sections
-+
-+# Link-time optimization allows to move parts of the optimization from the single
-+# source file to the global source view. This is done by emitting the GIMPLE
-+# representation in each object file and analyzing it again during the link step.
-+
-+TARGET_CFLAGS  += -flto
-+TARGET_LDFLAGS += -fuse-linker-plugin
-+
-+MAKE_BATCTL_ENV += \
-+        CPPFLAGS="$(TARGET_CPPFLAGS)" \
-+        CFLAGS="$(TARGET_CFLAGS)" \
-+        LDFLAGS="$(TARGET_LDFLAGS)"
-+
-+MAKE_BATCTL_ARGS += \
-+        REVISION="" \
-+        CC="$(TARGET_CC)" \
-+        DESTDIR="$(PKG_INSTALL_DIR)" \
-+        batctl install
-+
-+
-+define Build/compile
-+	$(MAKE_BATCTL_ENV) $(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_BATCTL_ARGS)
-+endef
-+
-+define Package/batctl/install
-+	$(INSTALL_DIR) $(1)/usr/sbin
-+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/$(PKG_NAME) $(1)/usr/sbin/
-+endef
-+
-+$(eval $(call BuildPackage,batctl))
-diff --git a/batman-adv/Config.in b/batman-adv/Config.in
-index 1330525..aeefd35 100644
---- a/batman-adv/Config.in
-+++ b/batman-adv/Config.in
-@@ -19,11 +19,12 @@ config KMOD_BATMAN_ADV_NC
- 	depends on PACKAGE_kmod-batman-adv
- 	default n
- 
--config KMOD_BATMAN_ADV_BATCTL
--	bool "enable batctl"
-+config PACKAGE_batctl
-+	tristate "enable batctl"
- 	depends on PACKAGE_kmod-batman-adv
- 	default y
- 	help
- 	  batctl is a more intuitive managment utility for B.A.T.M.A.N.-Advanced.
- 	  It is an easier method for configuring batman-adv and
- 	  provides some additional tools for debugging as well.
-+
-diff --git a/batman-adv/Makefile b/batman-adv/Makefile
-index 4bfbe54..9bfb91c 100644
---- a/batman-adv/Makefile
-+++ b/batman-adv/Makefile
-@@ -1,29 +1,22 @@
- #
--# Copyright (C) 2010 OpenWrt.org
-+# Copyright (C) 2010-2014 OpenWrt.org
- #
- # This is free software, licensed under the GNU General Public License v2.
- # See /LICENSE for more information.
- #
--# $Id: Makefile 5624 2006-11-23 00:29:07Z nbd $
- 
- include $(TOPDIR)/rules.mk
-+include $(INCLUDE_DIR)/kernel.mk
- 
- PKG_NAME:=batman-adv
--
- PKG_VERSION:=2014.0.0
--BATCTL_VERSION:=2014.0.0
--PKG_RELEASE:=1
-+PKG_RELEASE:=2
- PKG_MD5SUM:=8d58ecaede17dc05aab1b549dc09fa7d
--BATCTL_MD5SUM:=b0bcf29fef80ddcc33769e13f5937d0a
- 
- PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
- PKG_SOURCE_URL:=http://downloads.open-mesh.org/batman/releases/batman-adv-$(PKG_VERSION)
- 
--PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(PKG_NAME)-$(PKG_VERSION)
--PKG_BATCTL_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/batctl-$(BATCTL_VERSION)
--
- include $(INCLUDE_DIR)/package.mk
--include $(INCLUDE_DIR)/kernel.mk
- 
- define KernelPackage/batman-adv
-   URL:=http://www.open-mesh.org/
-@@ -38,8 +31,7 @@ endef
- define KernelPackage/batman-adv/description
- B.A.T.M.A.N. advanced is a kernel module which allows to
- build layer 2 mesh networks. This package contains the
--version $(PKG_VERSION) of the kernel module plus its user space
--configuration & managerment tool batctl.
-+version $(PKG_VERSION) of the kernel module.
- endef
- 
- define KernelPackage/batman-adv/config
-@@ -60,75 +52,16 @@ MAKE_BATMAN_ADV_ARGS += \
- 	CONFIG_BATMAN_ADV_NC=$(if $(CONFIG_KMOD_BATMAN_ADV_NC),y,n) \
- 	REVISION="" all
- 
--# The linker can identify unused sections of a binary when each symbol is stored
--# in a separate section. This mostly removes unused linker sections and reduces 
--# the size by ~3% on mipsel.
--
--TARGET_CFLAGS  += -ffunction-sections -fdata-sections
--TARGET_LDFLAGS += -Wl,--gc-sections
--
--# Link-time optimization allows to move parts of the optimization from the single
--# source file to the global source view. This is done by emitting the GIMPLE
--# representation in each object file and analyzing it again during the link step.
--
--TARGET_CFLAGS  += -flto
--TARGET_LDFLAGS += -fuse-linker-plugin
--
--MAKE_BATCTL_ENV += \
--	CPPFLAGS="$(TARGET_CPPFLAGS)" \
--	CFLAGS="$(TARGET_CFLAGS)" \
--	LDFLAGS="$(TARGET_LDFLAGS)"
--
--MAKE_BATCTL_ARGS += \
--	REVISION="" \
--	CC="$(TARGET_CC)" \
--	DESTDIR="$(PKG_INSTALL_DIR)" \
--	batctl install
--
--ifneq ($(DEVELOPER)$(CONFIG_KMOD_BATMAN_ADV_BATCTL),)
--define Download/batctl
--  FILE:=batctl-$(BATCTL_VERSION).tar.gz
--  URL:=$(PKG_SOURCE_URL)
--  MD5SUM:=$(BATCTL_MD5SUM)
--endef
--$(eval $(call Download,batctl))
--
--BATCTL_EXTRACT = tar xzf "$(DL_DIR)/batctl-$(BATCTL_VERSION).tar.gz" -C "$(BUILD_DIR)/$(PKG_NAME)"
--BATCTL_PATCH = $(call Build/DoPatch,"$(PKG_BATCTL_BUILD_DIR)","$(PATCH_DIR)","*batctl*")
--BATCTL_BUILD = $(MAKE_BATCTL_ENV) $(MAKE) -C $(PKG_BATCTL_BUILD_DIR) $(MAKE_BATCTL_ARGS)
--BATCTL_INSTALL = $(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/local/sbin/batctl $(1)/usr/sbin/
--endif
--
--KPATCH ?= $(PATCH)
--define Build/DoPatch
--	@if [ -d "$(2)" ]; then \
--		if [ "$$$$(ls $(2) | grep -Ec $(3))" -gt 0 ]; then \
--			$(KPATCH) "$(1)" "$(2)" "$(3)"; \
--		fi; \
--	fi
--endef
--
--define Build/Patch
--	$(call Build/DoPatch,"$(PKG_BUILD_DIR)","$(PATCH_DIR)","*batman*")
--	$(BATCTL_EXTRACT)
--	$(BATCTL_PATCH)
--endef
--
- define Build/Prepare
- 	$(call Build/Prepare/Default)
--	$(SED) '/#define _NET_BATMAN_ADV_MAIN_H_/a\#undef CONFIG_MODULE_STRIPPED' \
--		$(PKG_BUILD_DIR)/main.h
-+	$(SED) '/#define _NET_BATMAN_ADV_MAIN_H_/a\#undef CONFIG_MODULE_STRIPPED' $(PKG_BUILD_DIR)/main.h
- endef
- 
- 
- define Build/Compile
- 	$(MAKE) -C "$(PKG_BUILD_DIR)" $(MAKE_BATMAN_ADV_ARGS)
--	$(BATCTL_BUILD)
- endef
- 
--define Build/Clean
--        rm -rf $(BUILD_DIR)/$(PKG_NAME)/
--endef
- 
- define KernelPackage/batman-adv/install
- 	$(INSTALL_DIR) $(1)/etc/config $(1)/etc/hotplug.d/net $(1)/etc/hotplug.d/iface $(1)/lib/batman-adv $(1)/usr/sbin $(1)/lib/netifd/proto
-@@ -136,7 +69,6 @@ define KernelPackage/batman-adv/install
- 	$(INSTALL_DATA) ./files/lib/batman-adv/config.sh $(1)/lib/batman-adv
- 	$(INSTALL_BIN) ./files/etc/hotplug.d/net/99-batman-adv $(1)/etc/hotplug.d/net
- 	$(INSTALL_BIN) ./files/lib/netifd/proto/batadv.sh $(1)/lib/netifd/proto
--	$(BATCTL_INSTALL)
- endef
- 
- $(eval $(call KernelPackage,batman-adv))
+Of course this may vary depending on the driver, so this may not be the
+case everywhere.
+
+I think that we can keep this approach for now and then perform some
+tests on a couple of platforms before merging the code.
+This way we should be "sure" about this particular behaviour.
+
+I think that your NAS might also be a good testing platform, assuming
+that the owner is willing to insmod batman-adv on that machine :-)
 
 
--- 
-Russell Senior, President
-russell@personaltelco.net
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+
+--QqglgM05S6TduD6oQNdD6g2o5mQXQrKgN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBCAAGBQJS/dLOAAoJEEKTMo6mOh1VMtkP/2+rD76JKzScWzR4wcxheHpt
+YYgRwyX2KuMrZI+O7eFgntSTVy9E34n8DxBhnomSlJfMQV8U0777A8G1mpaa88Ra
+CFR9LmMdpenWjh4wiM0YPSrFLHUk79uxR8k6LUOP50r6XVoTmlaAGXxMFhL04IcP
+Bcv9bLQvT2IHfQxpSsAs0fZ1lyoZ79/ZC61WqwktepXyfRbrkp0rV+f9E/zB1SPM
+z/7gb6tllGjVwhWzH+kvKL+DSH5rQeFL+MOJ68P+R6rd14Lq/IwUdi3wB2eOLudh
+DLU0lSTUBll/obHfUIHae0G+RvTeGv05z5lQBv0udw9y1Ko+Q1bDoUSyeRXepdrc
+rbhq9tbWsMka0oBkzxy7LI/+lIkFniL53WCIQe27dkHnDK3b0TgRqe2XQCv6j4Nz
+HHet3OAeihm98iW5YTONTABQIejn9ico9lLQr3i9T5QSVQklOi/qDJkwRsVHymrJ
+z1nUkw2V0V5XldUjNRKSS0jKwDe7G/c5c43RiZXbqdqY8QI7hOVZrOos/dl40GXj
+lNUxwYHePxKbrQOhrhQJBe5mGmPgWbRJGPVfh3XujQwP/bfUCh471xDuHhHLUyws
+WIYDCaU4RtmoYyb+wTxNjXAdQmqFz4ZgYMcz1mPx87EVJAFjZRCfIaHGc0pye1zF
++mrjmPA/BrmI62aIwOz4
+=WRRA
+-----END PGP SIGNATURE-----
+
+--QqglgM05S6TduD6oQNdD6g2o5mQXQrKgN--
