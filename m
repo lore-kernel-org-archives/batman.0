@@ -1,14 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <52FD0475.1040705@meshcoding.com>
-Date: Thu, 13 Feb 2014 18:44:21 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
+Return-Path: <russell@personaltelco.net>
+References: <86r4775d8s.fsf@coulee.tdb.com> <86mwhv5cy8.fsf@coulee.tdb.com>
+ <2155796.4nLzYnGVik@diderot>
+From: Russell Senior <russell@personaltelco.net>
+Date: Thu, 13 Feb 2014 16:40:38 -0800
+In-Reply-To: <2155796.4nLzYnGVik@diderot> (Marek Lindner's message of "Thu\,
+ 13 Feb 2014 23\:39\:38 +0800")
+Message-ID: <8661oi5xx5.fsf_-_@coulee.tdb.com>
 MIME-Version: 1.0
-References: <CANcKu40YtXgXGSiPnPo9biG=auHFqKNRA3G0WNy3E2MYWyqiNg@mail.gmail.com>
-In-Reply-To: <CANcKu40YtXgXGSiPnPo9biG=auHFqKNRA3G0WNy3E2MYWyqiNg@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="MErBvAJc0HcUvq5AwBTV9OQ8DJocCHVOm"
-Subject: Re: [B.A.T.M.A.N.] Problem compiling batman for openwrt
+Content-Type: text/plain; charset=us-ascii
+Subject: [B.A.T.M.A.N.] [PATCHv2] openwrt routing feed: batman-adv: split
+	kmod and userland into separate packages
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,108 +21,250 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, konstantin.pribluda@gmail.com
-
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---MErBvAJc0HcUvq5AwBTV9OQ8DJocCHVOm
-Content-Type: multipart/mixed;
- boundary="------------020506070509020904080000"
-
-This is a multi-part message in MIME format.
---------------020506070509020904080000
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-On 13/02/14 15:15, Konstantin Pribluda wrote:
-> Hi all,
->=20
-> I try to compile  2013.4 against trunk of openwrt,  and habe problem
-> with batctl:
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 
-Hi Konstantin,
+Creates a new package, batctl, split out from batman-adv package.
+Simplifies the Makefiles, allows QUILT patch management wto work,
+removes the quirky patch naming requirement.  Modified Config.in to
+work as before with batctl, except now with PACKAGE_batctl.
 
-due to some CFLAGS problem (related to lto) batctl-2013.4.0 does not
-compile unless you apply the attached patch (you can save and put it in
-the patches folder within the batman-adv package).
+This patch also avoids leakage of unrelated changes from first
+try. Oops.
 
-
-The new batman-adv/batctl-2014.0.0 already includes this fix.
-
-
-
-Cheers,
-
-
---=20
-Antonio Quartulli
-
---------------020506070509020904080000
-Content-Type: text/x-patch;
- name="1001-batctl-Add-CFLAGS-to-the-linker-step.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="1001-batctl-Add-CFLAGS-to-the-linker-step.patch"
-
-=46rom 2c7bfe1299efa97438814bf6826a8f7ab3bc0b16 Mon Sep 17 00:00:00 2001
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 7 May 2013 14:51:02 +0200
-Subject: [PATCH] batctl: Add CFLAGS to the linker step
-
-The GCC manual states for different parameters that the options for compi=
-lation
-must also be used when linking. The options for compilation are stored in=
-
-CFLAGS and added to LINK.o to fix the behavior.
-
-Option which need this are for example -fPIC/-fPIE or -flto.
-
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <lindner_marek@yahoo.de>
+Signed-off-by: Russell Senior <russell@personaltelco.net>
 ---
- Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ batctl/Makefile      | 66 ++++++++++++++++++++++++++++++++++++++++++++
+ batman-adv/Config.in |  5 ++--
+ batman-adv/Makefile  | 78 ++++------------------------------------------------
+ 3 files changed, 74 insertions(+), 75 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index 311e70e..233f453 100755
---- a/Makefile
-+++ b/Makefile
-@@ -53,7 +53,7 @@ RM ?=3D rm -f
- INSTALL ?=3D install
- MKDIR ?=3D mkdir -p
- COMPILE.c =3D $(Q_CC)$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
--LINK.o =3D $(Q_LD)$(CC) $(LDFLAGS) $(TARGET_ARCH)
-+LINK.o =3D $(Q_LD)$(CC) $(CFLAGS) $(LDFLAGS) $(TARGET_ARCH)
-=20
- # standard install paths
- PREFIX =3D /usr/local
---=20
-1.8.5.3
+diff --git a/batctl/Makefile b/batctl/Makefile
+new file mode 100644
+index 0000000..7a34957
+--- /dev/null
++++ b/batctl/Makefile
+@@ -0,0 +1,66 @@
++#
++# Copyright (C) 2010-2014 OpenWrt.org
++#
++# This is free software, licensed under the GNU General Public License v2.
++# See /LICENSE for more information.
++#
++
++include $(TOPDIR)/rules.mk
++
++PKG_NAME:=batctl
++PKG_VERSION:=2014.0.0
++PKG_RELEASE:=2
++PKG_MD5SUM:=b0bcf29fef80ddcc33769e13f5937d0a
++
++PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
++PKG_SOURCE_URL:=http://downloads.open-mesh.org/batman/releases/batman-adv-$(PKG_VERSION)
++
++include $(INCLUDE_DIR)/package.mk
++
++define Package/batctl
++  URL:=http://www.open-mesh.org/
++  SECTION:=net
++  CATEGORY:=Network
++  TITLE:=B.A.T.M.A.N. Advanced user space configuration tool batctl
++  MAINTAINER:=Marek Lindner <lindner_marek@yahoo.de>
++endef
++
++define Package/batctl/description
++B.A.T.M.A.N. advanced is a kernel module which allows to
++build layer 2 mesh networks. This package contains the
++version $(PKG_VERSION) of the user space configuration & 
++management tool batctl.
++endef
++
++TARGET_CFLAGS  += -ffunction-sections -fdata-sections
++TARGET_LDFLAGS += -Wl,--gc-sections
++
++# Link-time optimization allows to move parts of the optimization from the single
++# source file to the global source view. This is done by emitting the GIMPLE
++# representation in each object file and analyzing it again during the link step.
++
++TARGET_CFLAGS  += -flto
++TARGET_LDFLAGS += -fuse-linker-plugin
++
++MAKE_BATCTL_ENV += \
++        CPPFLAGS="$(TARGET_CPPFLAGS)" \
++        CFLAGS="$(TARGET_CFLAGS)" \
++        LDFLAGS="$(TARGET_LDFLAGS)"
++
++MAKE_BATCTL_ARGS += \
++        REVISION="" \
++        CC="$(TARGET_CC)" \
++        DESTDIR="$(PKG_INSTALL_DIR)" \
++        batctl install
++
++
++define Build/compile
++	$(MAKE_BATCTL_ENV) $(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_BATCTL_ARGS)
++endef
++
++define Package/batctl/install
++	$(INSTALL_DIR) $(1)/usr/sbin
++	$(INSTALL_BIN) $(PKG_BUILD_DIR)/$(PKG_NAME) $(1)/usr/sbin/
++endef
++
++$(eval $(call BuildPackage,batctl))
+diff --git a/batman-adv/Config.in b/batman-adv/Config.in
+index 1330525..aeefd35 100644
+--- a/batman-adv/Config.in
++++ b/batman-adv/Config.in
+@@ -19,11 +19,12 @@ config KMOD_BATMAN_ADV_NC
+ 	depends on PACKAGE_kmod-batman-adv
+ 	default n
+ 
+-config KMOD_BATMAN_ADV_BATCTL
+-	bool "enable batctl"
++config PACKAGE_batctl
++	tristate "enable batctl"
+ 	depends on PACKAGE_kmod-batman-adv
+ 	default y
+ 	help
+ 	  batctl is a more intuitive managment utility for B.A.T.M.A.N.-Advanced.
+ 	  It is an easier method for configuring batman-adv and
+ 	  provides some additional tools for debugging as well.
++
+diff --git a/batman-adv/Makefile b/batman-adv/Makefile
+index 4bfbe54..9bfb91c 100644
+--- a/batman-adv/Makefile
++++ b/batman-adv/Makefile
+@@ -1,29 +1,22 @@
+ #
+-# Copyright (C) 2010 OpenWrt.org
++# Copyright (C) 2010-2014 OpenWrt.org
+ #
+ # This is free software, licensed under the GNU General Public License v2.
+ # See /LICENSE for more information.
+ #
+-# $Id: Makefile 5624 2006-11-23 00:29:07Z nbd $
+ 
+ include $(TOPDIR)/rules.mk
++include $(INCLUDE_DIR)/kernel.mk
+ 
+ PKG_NAME:=batman-adv
+-
+ PKG_VERSION:=2014.0.0
+-BATCTL_VERSION:=2014.0.0
+-PKG_RELEASE:=1
++PKG_RELEASE:=2
+ PKG_MD5SUM:=8d58ecaede17dc05aab1b549dc09fa7d
+-BATCTL_MD5SUM:=b0bcf29fef80ddcc33769e13f5937d0a
+ 
+ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+ PKG_SOURCE_URL:=http://downloads.open-mesh.org/batman/releases/batman-adv-$(PKG_VERSION)
+ 
+-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(PKG_NAME)-$(PKG_VERSION)
+-PKG_BATCTL_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/batctl-$(BATCTL_VERSION)
+-
+ include $(INCLUDE_DIR)/package.mk
+-include $(INCLUDE_DIR)/kernel.mk
+ 
+ define KernelPackage/batman-adv
+   URL:=http://www.open-mesh.org/
+@@ -38,8 +31,7 @@ endef
+ define KernelPackage/batman-adv/description
+ B.A.T.M.A.N. advanced is a kernel module which allows to
+ build layer 2 mesh networks. This package contains the
+-version $(PKG_VERSION) of the kernel module plus its user space
+-configuration & managerment tool batctl.
++version $(PKG_VERSION) of the kernel module.
+ endef
+ 
+ define KernelPackage/batman-adv/config
+@@ -60,75 +52,16 @@ MAKE_BATMAN_ADV_ARGS += \
+ 	CONFIG_BATMAN_ADV_NC=$(if $(CONFIG_KMOD_BATMAN_ADV_NC),y,n) \
+ 	REVISION="" all
+ 
+-# The linker can identify unused sections of a binary when each symbol is stored
+-# in a separate section. This mostly removes unused linker sections and reduces 
+-# the size by ~3% on mipsel.
+-
+-TARGET_CFLAGS  += -ffunction-sections -fdata-sections
+-TARGET_LDFLAGS += -Wl,--gc-sections
+-
+-# Link-time optimization allows to move parts of the optimization from the single
+-# source file to the global source view. This is done by emitting the GIMPLE
+-# representation in each object file and analyzing it again during the link step.
+-
+-TARGET_CFLAGS  += -flto
+-TARGET_LDFLAGS += -fuse-linker-plugin
+-
+-MAKE_BATCTL_ENV += \
+-	CPPFLAGS="$(TARGET_CPPFLAGS)" \
+-	CFLAGS="$(TARGET_CFLAGS)" \
+-	LDFLAGS="$(TARGET_LDFLAGS)"
+-
+-MAKE_BATCTL_ARGS += \
+-	REVISION="" \
+-	CC="$(TARGET_CC)" \
+-	DESTDIR="$(PKG_INSTALL_DIR)" \
+-	batctl install
+-
+-ifneq ($(DEVELOPER)$(CONFIG_KMOD_BATMAN_ADV_BATCTL),)
+-define Download/batctl
+-  FILE:=batctl-$(BATCTL_VERSION).tar.gz
+-  URL:=$(PKG_SOURCE_URL)
+-  MD5SUM:=$(BATCTL_MD5SUM)
+-endef
+-$(eval $(call Download,batctl))
+-
+-BATCTL_EXTRACT = tar xzf "$(DL_DIR)/batctl-$(BATCTL_VERSION).tar.gz" -C "$(BUILD_DIR)/$(PKG_NAME)"
+-BATCTL_PATCH = $(call Build/DoPatch,"$(PKG_BATCTL_BUILD_DIR)","$(PATCH_DIR)","*batctl*")
+-BATCTL_BUILD = $(MAKE_BATCTL_ENV) $(MAKE) -C $(PKG_BATCTL_BUILD_DIR) $(MAKE_BATCTL_ARGS)
+-BATCTL_INSTALL = $(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/local/sbin/batctl $(1)/usr/sbin/
+-endif
+-
+-KPATCH ?= $(PATCH)
+-define Build/DoPatch
+-	@if [ -d "$(2)" ]; then \
+-		if [ "$$$$(ls $(2) | grep -Ec $(3))" -gt 0 ]; then \
+-			$(KPATCH) "$(1)" "$(2)" "$(3)"; \
+-		fi; \
+-	fi
+-endef
+-
+-define Build/Patch
+-	$(call Build/DoPatch,"$(PKG_BUILD_DIR)","$(PATCH_DIR)","*batman*")
+-	$(BATCTL_EXTRACT)
+-	$(BATCTL_PATCH)
+-endef
+-
+ define Build/Prepare
+ 	$(call Build/Prepare/Default)
+-	$(SED) '/#define _NET_BATMAN_ADV_MAIN_H_/a\#undef CONFIG_MODULE_STRIPPED' \
+-		$(PKG_BUILD_DIR)/main.h
++	$(SED) '/#define _NET_BATMAN_ADV_MAIN_H_/a\#undef CONFIG_MODULE_STRIPPED' $(PKG_BUILD_DIR)/main.h
+ endef
+ 
+ 
+ define Build/Compile
+ 	$(MAKE) -C "$(PKG_BUILD_DIR)" $(MAKE_BATMAN_ADV_ARGS)
+-	$(BATCTL_BUILD)
+ endef
+ 
+-define Build/Clean
+-        rm -rf $(BUILD_DIR)/$(PKG_NAME)/
+-endef
+ 
+ define KernelPackage/batman-adv/install
+ 	$(INSTALL_DIR) $(1)/etc/config $(1)/etc/hotplug.d/net $(1)/etc/hotplug.d/iface $(1)/lib/batman-adv $(1)/usr/sbin $(1)/lib/netifd/proto
+@@ -136,7 +69,6 @@ define KernelPackage/batman-adv/install
+ 	$(INSTALL_DATA) ./files/lib/batman-adv/config.sh $(1)/lib/batman-adv
+ 	$(INSTALL_BIN) ./files/etc/hotplug.d/net/99-batman-adv $(1)/etc/hotplug.d/net
+ 	$(INSTALL_BIN) ./files/lib/netifd/proto/batadv.sh $(1)/lib/netifd/proto
+-	$(BATCTL_INSTALL)
+ endef
+ 
+ $(eval $(call KernelPackage,batman-adv))
 
 
---------------020506070509020904080000--
-
---MErBvAJc0HcUvq5AwBTV9OQ8DJocCHVOm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJS/QR6AAoJEEKTMo6mOh1VF0gP/3Sp7qpVBf4O/q+0cA0XlT1l
-0WrDBdgG+qk7tx+bKS2s2V5yZYUZxLZvXlc58xAuACiSAyhqaecInwoh/eD0eqbD
-zFR5lomW8LRn0hAOsFcELHZrKbNhUHTeHlr53q9FdfbeNgrbeA6ZD+9+ichckJsq
-agDM97K0t/IShSwTLUYQdNW1G9TRSY68nhhDQEdvY0HnCkm1unBKTKMqPF3p5IPq
-XoRhREsqTNZLRHV3W8PbHn+O064J/bzi4Rzmn0RcYTOf0EsYjx4BqUUTZJKjA2bZ
-vJDA1NT2Kfz+4bWswd4FXYpD8/oWMLnYLegPhzC2JR3GdZHN8d6pYiVHVn/hQs8D
-qhGlxUICB5+gZyUIzXRHdEEsqlZBvbheur8HI3oFZimQ3VsLDGytO+YXqizWVZXW
-gnWrrzx3UI99RZ/ZWY3gOuCfjixEkRT0YGv7r2PdX8QaAde/+WpKJCEgoB1VSc/N
-koPJoIwrN+eq0O5v0PjfS2Zrwav4wsw3hAHT4XAUbc5U3+QRCViB5OYlxkKE+/+/
-p8EDrHX5ghfOPw4mKlLx3NJyDpX172z/JuxFLKrJaE+c/RFUEjHRcsRgd/nEiPbn
-SJU61Cm+x+qOKTlOME5nXtbQPDJJ6lEOkljcRkNxKZCY1ZsDaS1tCVxRpXs+WFuT
-H1QGGKHU1pL+lx1rKplE
-=wOaX
------END PGP SIGNATURE-----
-
---MErBvAJc0HcUvq5AwBTV9OQ8DJocCHVOm--
+-- 
+Russell Senior, President
+russell@personaltelco.net
