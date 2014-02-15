@@ -1,15 +1,9 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 15 Feb 2014 08:36:23 +0800
-Message-ID: <2359903.7ZUkPc7fVf@diderot>
-In-Reply-To: <1392134707-2318-2-git-send-email-antonio@meshcoding.com>
-References: <1392134707-2318-1-git-send-email-antonio@meshcoding.com>
- <1392134707-2318-2-git-send-email-antonio@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart12896675.VlGBUmiNBM";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: free skb on TVLV
-	parsing success
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Sat, 15 Feb 2014 02:17:20 +0100
+Message-Id: <1392427040-1614-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: avoid double free when
+	orig_node initialization fails
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,50 +16,51 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: Antonio Quartulli <antonio@meshcoding.com>
+
+In the failure path of the orig_node initialization routine
+the orig_node->bat_iv.bcast_own field is free'd twice: first
+in batadv_iv_ogm_orig_get() and then later in
+batadv_orig_node_free_rcu().
+
+Fix it by removing the kfree in batadv_iv_ogm_orig_get().
+
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+
+Change form v1:
+- remove kfree from batadv_iv_ogm_orig_get() instead of setting
+  orig_node->bat_iv.bcast_own to NULL
 
 
---nextPart12896675.VlGBUmiNBM
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+ bat_iv_ogm.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-On Tuesday 11 February 2014 17:05:07 Antonio Quartulli wrote:
-> From: Antonio Quartulli <antonio@open-mesh.com>
-> 
-> When the TVLV parsing routine succeed the skb is left
-> untouched thus leading to a memory leak.
-> 
-> Fix this by consuming the skb in case of success.
-> 
-> Introduced by 0b6aa0d43767889eeda43a132cf5e73df4e63bf2
-> ("batman-adv: tvlv - basic infrastructure")
-> 
-> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-> ---
->  routing.c | 2 ++
->  1 file changed, 2 insertions(+)
-
-Applied in revision 9289542.
-
-Thanks,
-Marek
-
---nextPart12896675.VlGBUmiNBM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJS/raHAAoJEFNVTo/uthzA0zsH/iE7ALrvNpJy9NgrYqU/KE/X
-IbdwT6pMrGlF7Fe+9zvyQjR2Qq8N5Z14ZyK82711OnsOwPJA0YByHZdRVApzemI8
-INaF0sjvXgUEWJvG2xO0RZ3dFsBQOE6RKR/bQX9kfSDO5lpQ8ETfPfTarQ+Jm2j4
-yxZTJcp/bawfjIJQGMytEz5DdN52Ycu0hQHL0iyGyTt3JWhc6H4aNT0fLI/tv1X4
-JfdZCUXRuVdArH1URG7OlKsw/vJJbIBBppNUY4FVGAtZFhfQYoXstJ/PNVyhzW6A
-YyFhlgGyYYmmMu1JKkznHYAMrcEaB//KgNfkh/ah8uuQc22153arUipI/10TqnM=
-=dkdr
------END PGP SIGNATURE-----
-
---nextPart12896675.VlGBUmiNBM--
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index c07e59f..fdf4322 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -243,18 +243,16 @@ batadv_iv_ogm_orig_get(struct batadv_priv *bat_priv, const uint8_t *addr)
+ 	size = bat_priv->num_ifaces * sizeof(uint8_t);
+ 	orig_node->bat_iv.bcast_own_sum = kzalloc(size, GFP_ATOMIC);
+ 	if (!orig_node->bat_iv.bcast_own_sum)
+-		goto free_bcast_own;
++		goto free_orig_node;
+ 
+ 	hash_added = batadv_hash_add(bat_priv->orig_hash, batadv_compare_orig,
+ 				     batadv_choose_orig, orig_node,
+ 				     &orig_node->hash_entry);
+ 	if (hash_added != 0)
+-		goto free_bcast_own;
++		goto free_orig_node;
+ 
+ 	return orig_node;
+ 
+-free_bcast_own:
+-	kfree(orig_node->bat_iv.bcast_own);
+ free_orig_node:
+ 	/* free twice, as batadv_orig_node_new sets refcount to 2 */
+ 	batadv_orig_node_free_ref(orig_node);
+-- 
+1.8.5.3
 
