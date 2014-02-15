@@ -1,14 +1,9 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 15 Feb 2014 09:27:59 +0800
-Message-ID: <1821645.R5sTtn65FM@diderot>
-In-Reply-To: <1392427040-1614-1-git-send-email-antonio@meshcoding.com>
-References: <1392427040-1614-1-git-send-email-antonio@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart37637035.F12XZAyKWJ";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: avoid double free when
-	orig_node initialization fails
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Sat, 15 Feb 2014 11:58:01 +0100
+Message-Id: <1392461881-2435-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: add kerneldoc for dst_hint
+	argument
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,51 +18,52 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
+Some helper functions used along the TX path have now a new
+"dst_hint" argument but the kerneldoc was missing.
 
---nextPart37637035.F12XZAyKWJ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
 
-On Saturday 15 February 2014 02:17:20 Antonio Quartulli wrote:
-> In the failure path of the orig_node initialization routine
-> the orig_node->bat_iv.bcast_own field is free'd twice: first
-> in batadv_iv_ogm_orig_get() and then later in
-> batadv_orig_node_free_rcu().
-> 
-> Fix it by removing the kfree in batadv_iv_ogm_orig_get().
-> 
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-> ---
-> 
-> Change form v1:
-> - remove kfree from batadv_iv_ogm_orig_get() instead of setting
->   orig_node->bat_iv.bcast_own to NULL
-> 
-> 
->  bat_iv_ogm.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
+Changes from v1:
+- comment rephrased (thanks Marek!)
 
-Applied in revision d4acda1.
 
-Thanks,
-Marek
+ send.c | 1 +
+ send.h | 2 ++
+ 2 files changed, 3 insertions(+)
 
---nextPart37637035.F12XZAyKWJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJS/sKiAAoJEFNVTo/uthzANLkH/1Dp4TJUP1lMaZ+CrhQNj/vC
-M1vODNMEb+m+OXpKWV0dazZNrpyx1P/LyqpkgFGAfXZbnseauZEIGJHN0aN7a6Ji
-KBgl5HnWg/jJi0IWvDfEkzIf5gk8D3RZjQ1mFIAUD6afACIbbNUW3BAq7ZvG6pYe
-g2pIM/jRNI5JcF772Xm8RrMoRJDKB+vqv/QmimS5SrNwUTYueq0mqH4KD0w3+TDR
-xzD6kJ+dLB01CPBHnblkY7KkNOXTYH1YH6hLXywbqKK3LGnX1Fa6gO4eY5QrFbXm
-qSIy5qQStthLT4d/ieuBbtAliwWfFaOLT98xjUOPavpVN8BfnNLI99qBuSE+6G8=
-=fsSp
------END PGP SIGNATURE-----
-
---nextPart37637035.F12XZAyKWJ--
+diff --git a/send.c b/send.c
+index 31a8c19..e8b7124 100644
+--- a/send.c
++++ b/send.c
+@@ -311,6 +311,7 @@ out:
+  * @packet_type: the batman unicast packet type to use
+  * @packet_subtype: the unicast 4addr packet subtype (only relevant for unicast
+  *  4addr packets)
++ * @dst_hint: can be used to override the destination contained in the skb
+  * @vid: the vid to be used to search the translation table
+  *
+  * Look up the recipient node for the destination address in the ethernet
+diff --git a/send.h b/send.h
+index aaddaa9..31e8781 100644
+--- a/send.h
++++ b/send.h
+@@ -47,6 +47,7 @@ int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
+  * batadv_send_skb_via_tt - send an skb via TT lookup
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: the payload to send
++ * @dst_hint: can be used to override the destination contained in the skb
+  * @vid: the vid to be used to search the translation table
+  *
+  * Look up the recipient node for the destination address in the ethernet
+@@ -68,6 +69,7 @@ static inline int batadv_send_skb_via_tt(struct batadv_priv *bat_priv,
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: the payload to send
+  * @packet_subtype: the unicast 4addr packet subtype to use
++ * @dst_hint: can be used to override the destination contained in the skb
+  * @vid: the vid to be used to search the translation table
+  *
+  * Look up the recipient node for the destination address in the ethernet
+-- 
+1.8.5.3
 
