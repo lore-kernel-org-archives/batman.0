@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 16 Feb 2014 14:23 +0800
-Message-ID: <26278039.q4ydkmULZj@diderot>
-In-Reply-To: <1392482874-9024-2-git-send-email-linus.luessing@web.de>
+Date: Sun, 16 Feb 2014 14:24:27 +0800
+Message-ID: <2054711.eOSEPyua8Q@diderot>
+In-Reply-To: <1392482874-9024-3-git-send-email-linus.luessing@web.de>
 References: <1392482874-9024-1-git-send-email-linus.luessing@web.de>
- <1392482874-9024-2-git-send-email-linus.luessing@web.de>
+ <1392482874-9024-3-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1710389.J6CgHjbgcf";
+Content-Type: multipart/signed; boundary="nextPart2104204.20OyCo8Krl";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv14 1/6] batman-adv: Multicast Listener
-	Announcements via Translation Table
+Subject: Re: [B.A.T.M.A.N.] [PATCHv14 2/6] batman-adv: introduce capability
+	initialization bitfield
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,38 +24,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart1710389.J6CgHjbgcf
+--nextPart2104204.20OyCo8Krl
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Saturday 15 February 2014 17:47:49 Linus L=FCssing wrote:
-> With this patch a node which has no bridge interface on top of its so=
-ft
-> interface announces its local multicast listeners via the translation=
-
-> table.
+On Saturday 15 February 2014 17:47:50 Linus L=FCssing wrote:
+> The new bitfield allows us to keep track whether capability subsets o=
+f
+> an originator have gone through their initialization phase yet.
+>=20
+> The translation table is the only user right now, but a new one will =
+be
+> added soon.
 >=20
 > Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
 > ---
->  Makefile               |    2 +
->  Makefile.kbuild        |    1 +
->  compat.h               |   37 ++++++++
->  gen-compat-autoconf.sh |    1 +
->  main.c                 |    6 ++
->  main.h                 |    1 +
->  multicast.c            |  242
-> ++++++++++++++++++++++++++++++++++++++++++++++++
-> multicast.h            |   38 ++++++++
->  translation-table.c    |   22 ++++-
->  types.h                |   24 +++++
->  10 files changed, 370 insertions(+), 4 deletions(-)
+>  originator.c        |    1 -
+>  translation-table.c |   12 +++++++-----
+>  types.h             |    7 ++++---
+>  3 files changed, 11 insertions(+), 9 deletions(-)
 
-Applied in revision e368857.
+Applied in revision 5d2121a.
 
 Thanks,
 Marek
 
---nextPart1710389.J6CgHjbgcf
+--nextPart2104204.20OyCo8Krl
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -63,14 +57,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTAFlEAAoJEFNVTo/uthzACy4H/3I+iZHlz2btMvI2TTMdQnIn
-M2OGLl0ul8pHq6HPK5/8XZJrcgx+/MrC8j6HW4ZDmsSlgXZFAj93fQEQunK7INq3
-Q3KlSjDCvO1BMK1EDGq/czzCZ1vrkHZJH/Le8OPRe7iPEPQtEJBll6EFJVIrxgn/
-YE8/DQpEYlNQA0luSDX6cypDKceFsWoKlK8+pevN+gZ8dBMlPwcoma0rl2PDwxT2
-q/LAcExfBoZZko/hXEWhaGW+Q9UGvdRTxCwq80frsKsIGljZZxtjCHr0loopCS2m
-LZgi5kFK/39CcCbC1iAbiT3aC9X5VqP6/6X0F5UN2m+9zicpnS87As5M8cX2Dsw=
-=5NoU
+iQEcBAABAgAGBQJTAFmcAAoJEFNVTo/uthzAxwAH/29ChgqYgYbLF6j7B+3cubRK
+hj20/SQqkUNamnaWQ39yqAdHaeMDhTreeZtogkYweQJ7aMRNOrfZIODz0CQq7SSd
+96qWYz+uE3ik0EaxbHEkwm8CAYujLD9kQBMSlmiMtWZ4SyVJNqdIjwpTV0yq06OU
+8Em8trL51Glz4OdIXuf3OnxwXdrjsXf7CnJk92i9GqB7SoCDeqKUp9GlL6xgpfG6
+uR6xujCWw0MNyBZQas1zsHm7Nv9zpCzkfiuL5J5Q1yGBZU6wQYDxSz+LvPM2JZ+q
+1N/G3/saZpWZPE2KpZNQTqk/cF5I3U8cAsOICf9omDrSeZRfbxWvi6lrs5iCBho=
+=dytw
 -----END PGP SIGNATURE-----
 
---nextPart1710389.J6CgHjbgcf--
+--nextPart2104204.20OyCo8Krl--
 
