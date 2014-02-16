@@ -1,12 +1,14 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 15 Feb 2014 22:00:26 +0100
-Message-Id: <1392498026-3946-1-git-send-email-antonio@meshcoding.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 16 Feb 2014 14:12:52 +0800
+Message-ID: <3265052.kWx0Wm7c0A@diderot>
+In-Reply-To: <1392461881-2435-1-git-send-email-antonio@meshcoding.com>
+References: <1392461881-2435-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH net 10/10] batman-adv: fix potential kernel
-	paging error for unicast transmissions
+Content-Type: multipart/signed; boundary="nextPart1420468.rM0UhcWeS1";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: add kerneldoc for dst_hint
+	argument
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,89 +23,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-batadv_send_skb_prepare_unicast(_4addr) might reallocate the
-skb's data. If it does then our ethhdr pointer is not valid
-anymore in batadv_send_skb_unicast(), resulting in a kernel
-paging error.
 
-Fixing this by refetching the ethhdr pointer after the
-potential reallocation.
+--nextPart1420468.rM0UhcWeS1
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Introduced by 3275e7cc84fb0574e9662e8e74c3b1dab38f7143
-("batman-adv: improve unicast packet (re)routing")
+On Saturday 15 February 2014 11:58:01 Antonio Quartulli wrote:
+> Some helper functions used along the TX path have now a new
+> "dst_hint" argument but the kerneldoc was missing.
+> 
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> ---
+> 
+> Changes from v1:
+> - comment rephrased (thanks Marek!)
+> 
+> 
+>  send.c | 1 +
+>  send.h | 2 ++
+>  2 files changed, 3 insertions(+)
 
-Reported-by: Linus Lüssing <linus.luessing@web.de>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
+Applied in revision 4d421fb.
 
-***This patch is not supposed to be merged in the batman-adv
-repository***
+Thanks,
+Marek
 
-This is a substitutive patch that I am going to send to net
-instead of the one that we have in maint (same subject).
-I am doing this because the original patch together with all
-the bugfixes that followed it cannot be considered a "simple
-bugfix" anymore and I'd rather prefer to send it to net-next
-with a later pull request.
+--nextPart1420468.rM0UhcWeS1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-This patch instead fixes the same problem but in a much
-simpler way (does not use of eth_hdr()).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-I sent it over the ml for peer review. If nobody has any
-objection I will send it to net.
+iQEcBAABAgAGBQJTAFbsAAoJEFNVTo/uthzAgVQH/im05+4mQHKPy31sojiF94fo
+J8qG9u7tbrBAoKTAx7VJAOzrfx2ADnBcyEfPTytWaAsxJxHAbAf/neVb96qyA132
+D9+OCqkRhzdAYjd89trQ90GvuDtmKSw1IK6JQ4eeEBxz6gZ4h51PC6rPX03Ldxt5
+an5lUbtcSNgqH9QKuoZ3A0UayKKFsCi7I9c8pRD1wnrLCne1SF0jXCysOZ7MMxee
+wuNuvp6y7RbwPHux0GLBfv8K7EOyE1fDM2fzk087xZ/mN4VI8MRHuv5gOWKdGvOv
+I/87oiB62Tu5YKE13IF/F+iv3KoR6jN4S3jn1dSPdJb9ZL+itj5/EQ00Dc/N05s=
+=ryGq
+-----END PGP SIGNATURE-----
 
-@Linus: I'd like to add your signed-off to this patch
-because it is essentially your patch but just reworked a
-bit. Please let me know what you think.
-
-
-Cheers,
-
-
- net/batman-adv/send.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 579f5f0..2f378a1 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -254,9 +254,9 @@ static int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
- 				   struct batadv_orig_node *orig_node,
- 				   unsigned short vid)
- {
--	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
-+	struct ethhdr *ethhdr;
- 	struct batadv_unicast_packet *unicast_packet;
--	int ret = NET_XMIT_DROP;
-+	int ret = NET_XMIT_DROP, hdr_size;
- 
- 	if (!orig_node)
- 		goto out;
-@@ -265,12 +265,16 @@ static int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
- 	case BATADV_UNICAST:
- 		if (!batadv_send_skb_prepare_unicast(skb, orig_node))
- 			goto out;
-+
-+		hdr_size = sizeof(*unicast_packet);
- 		break;
- 	case BATADV_UNICAST_4ADDR:
- 		if (!batadv_send_skb_prepare_unicast_4addr(bat_priv, skb,
- 							   orig_node,
- 							   packet_subtype))
- 			goto out;
-+
-+		hdr_size = sizeof(struct batadv_unicast_packet_4addr);
- 		break;
- 	default:
- 		/* this function supports UNICAST and UNICAST_4ADDR only. It
-@@ -279,6 +283,7 @@ static int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
- 		goto out;
- 	}
- 
-+	eth_hdr = (struct eth_hdr *)(skb->data + hdr_size);
- 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
- 
- 	/* inform the destination node that we are still missing a correct route
--- 
-1.8.5.3
+--nextPart1420468.rM0UhcWeS1--
 
