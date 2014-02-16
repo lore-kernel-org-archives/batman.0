@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 16 Feb 2014 14:28:41 +0800
-Message-ID: <4941912.0bnlJBaeNa@diderot>
-In-Reply-To: <1392482874-9024-5-git-send-email-linus.luessing@web.de>
+Date: Sun, 16 Feb 2014 14:30:38 +0800
+Message-ID: <5422268.oz0seJLFlf@diderot>
+In-Reply-To: <1392482874-9024-6-git-send-email-linus.luessing@web.de>
 References: <1392482874-9024-1-git-send-email-linus.luessing@web.de>
- <1392482874-9024-5-git-send-email-linus.luessing@web.de>
+ <1392482874-9024-6-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1568497.tz7A91YHVc";
+Content-Type: multipart/signed; boundary="nextPart2110560.PHeQN6oX8v";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv14 4/6] batman-adv: Modified forwarding
-	behaviour for multicast packets
+Subject: Re: [B.A.T.M.A.N.] [PATCHv14 5/6] batman-adv: Add IPv4
+	link-local/IPv6-ll-all-nodes multicast support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,51 +24,54 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart1568497.tz7A91YHVc
+--nextPart2110560.PHeQN6oX8v
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Saturday 15 February 2014 17:47:52 Linus L=FCssing wrote:
-> With this patch a multicast packet is not always simply flooded anymo=
-re,
-> the behaviour for the following cases is changed to reduce
-> unnecessary overhead:
+On Saturday 15 February 2014 17:47:53 Linus L=FCssing wrote:
+> With this patch a node may additionally perform the dropping or
+> unicasting behaviour for a link-local IPv4 and link-local-all-nodes
+> IPv6 multicast packet, too.
 >=20
-> If all nodes within the horizon of a certain node have signalized
-> multicast listener announcement capability then an IPv6 multicast pac=
-ket
-> with a destination of IPv6 link-local scope (excluding ff02::1) comin=
-g
-> from the upstream of this node...
->=20
-> * ...is dropped if there is no according multicast listener in the
->   translation table,
-> * ...is forwarded via unicast if there is a single node with interest=
+> The extra counter and BATADV_MCAST_WANT_ALL_UNSNOOPABLES flag is need=
 ed
->   multicast listeners
-> * ...and otherwise still gets flooded.
+> because with a future bridge snooping support integration a node with=
+ a
+> bridge on top of its soft interface is not able to reliably detect it=
+s
+> multicast listeners for IPv4 link-local and the IPv6
+> link-local-all-nodes addresses anymore (see RFC4541, section 2.1.2.2
+> and section 3).
+>=20
+> Even though this new flag does make "no difference" now, it'll ensure=
+
+> a seamless integration of multicast bridge support without needing to=
+
+> break compatibility later.
+>=20
+> Also note, that even with multicast bridge support it won't be possib=
+le
+> to optimize 224.0.0.x and ff02::1 towards nodes with bridges, they wi=
+ll
+> always receive these ranges.
 >=20
 > Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
 > ---
->  multicast.c          |  127
-> ++++++++++++++++++++++++++++++++++++++++++++++++++
-> multicast.h          |   25 ++++++++++
->  send.c               |   10 ++--
->  send.h               |    5 ++
->  soft-interface.c     |   20 +++++++-
->  sysfs-class-net-mesh |    9 ++++
->  sysfs.c              |    6 +++
->  translation-table.c  |   92 ++++++++++++++++++++++++++++--------
->  translation-table.h  |    2 +
->  types.h              |    7 +++
->  10 files changed, 277 insertions(+), 26 deletions(-)
+>  main.c           |    6 +++
+>  main.h           |    1 +
+>  multicast.c      |  135
+> ++++++++++++++++++++++++++++++++++++++++++++++++++----
+> packet.h         |    9 ++++
+>  soft-interface.c |    1 +
+>  types.h          |   12 +++++
+>  6 files changed, 156 insertions(+), 8 deletions(-)
 
-Applied in revision 405cc1e.
+Applied in revision 1c09034.
 
 Thanks,
 Marek
 
---nextPart1568497.tz7A91YHVc
+--nextPart2110560.PHeQN6oX8v
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -76,14 +79,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTAFqZAAoJEFNVTo/uthzASBwH/1l0fCjs53sR0oF2tT5TUEk7
-NhzUV/TbgenIVbkmP7MSzSM76LQIvgVO0MOKrO9IM/LtadWwQqx9wQ5j7E1VMt42
-lUUrXtykZUSHzPBEqtZkOFoBno9Wv1d0Syh6gh7xxFTTSY4DBgFocmyuexpLFq1Y
-cQwhUkv0bUh2UWjRMrMuBAFb2EG6etlpONzYvKv5F8hq1qxVAzm5//JayiYPQvIq
-GeeorgmSDpKQ2xBtRb0jhIkvvi2tcma54Y7tVpRj4/2qSKGC820llbnogRB8/csY
-KOEB4fjF3xQR8+evaykihVHd6loY5vKck6awSOagPbQ9HsDwPG1UUsbFggni/qA=
-=NJLO
+iQEcBAABAgAGBQJTAFsOAAoJEFNVTo/uthzA/X8H/izJ2dX2dlUf4Ud2/zmFKRuV
+dL8V79AOIOfFUzGWTciyN/pPT0YS8VnHtTtFyAoPn7f+vDcxXlrwYH1VMTM+BPBM
+VyKOTo4IQRbGllP4Jdszs5LbluAzW633RreFALj61c/iSSPFiUBeyrC2pf+0LKJe
+c6fqk4WADpLjjA74WCMahtvgwv8Wqh/55A8xPOwkepJtOd+18CCoYHB+5wJgNNZK
+13t4PmhFNby+X/jywKebd+aixia4HUrU0IKeurDkZVJVs+caq1X6v6mj4eMgi681
+zm0HLjkJRIm/3HFisR1ZKWyBGaxeHQr6ojYAfW+UuTgxDsLSornFB6SCziTagto=
+=CH1n
 -----END PGP SIGNATURE-----
 
---nextPart1568497.tz7A91YHVc--
+--nextPart2110560.PHeQN6oX8v--
 
