@@ -1,12 +1,15 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Sun, 16 Feb 2014 13:01:02 +0100
-Message-Id: <1392552062-17927-1-git-send-email-linus.luessing@web.de>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <5300BFA0.9080903@meshcoding.com>
+Date: Sun, 16 Feb 2014 14:39:44 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: compat: fix null pointer
-	exception for kernels < 3.9
+References: <1392552062-17927-1-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1392552062-17927-1-git-send-email-linus.luessing@web.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="IUIufLtiG8kJ9cKeCNNnrdUBRO6Irkld7"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: compat: fix null pointer
+ exception for kernels < 3.9
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,61 +21,87 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, =?UTF-8?B?TGludXMgTMO8c3Npbmc=?= <linus.luessing@web.de>
 
-The compat code of the new multicast patchset leads to null pointer
-derefernces for kernels 3.9 in netdev_master_upper_dev_get_rcu(). This
-is because the initially NULL is assigned to upper, which is equal to
-dev. dev is dereferenced one line later, though, leading to a crash.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--IUIufLtiG8kJ9cKeCNNnrdUBRO6Irkld7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Fixing this by assigning NULL only when we are sure that the according
-pointer is not going to be dereferenced anymore.
+On 16/02/14 13:01, Linus L=C3=BCssing wrote:
+> @@ -371,12 +372,13 @@ static int __batadv_interface_tx(struct sk_buff *=
+skb, \
+> =20
+>  #ifndef netdev_master_upper_dev_get_rcu
+>  #define netdev_master_upper_dev_get_rcu(dev) \
+> -	NULL; \
+> +	upper; \
+>  	if (dev->priv_flags & IFF_BRIDGE_PORT) { \
+>  		rcu_read_unlock(); \
+>  		dev_hold(dev); \
+>  		return dev; \
+> -	}
+> +	} else \
+> +		dev =3D NULL;
+> =20
 
-Introduced by: 532cadf26cfbb1099ef31fae9ccafcbbfc37b9b5
-("batman-adv: Multicast Listener Announcements via Translation Table")
+Following your patch the code in multicast.c will become:
 
-Reported-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
- compat.h |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+172         do {
+173                 upper =3D upper;
+			if (dev->priv_flags & IFF_BRIDGE_PORT) {
+				rcu_read_unlock();
+				dev_hold(dev);
+				return dev;
+			} else
+				dev =3D NULL;
+174         } while (upper && !(upper->priv_flags & IFF_EBRIDGE));
 
-diff --git a/compat.h b/compat.h
-index 7a3d235..7beba36 100644
---- a/compat.h
-+++ b/compat.h
-@@ -162,12 +162,13 @@ static inline int batadv_param_set_copystring(const char *val,
- #define NET_ADDR_RANDOM 0
- 
+am I wrong or this is going to break the while? I think there is a
+missing '}'.
+
+
+What about a simplified version like this:
+
  #define netdev_master_upper_dev_get_rcu(dev) \
 -	NULL; \
-+	upper; \
- 	if (dev->br_port ? 1 : 0) { \
+-	if (dev->priv_flags & IFF_BRIDGE_PORT) { \
++	({if (dev->priv_flags & IFF_BRIDGE_PORT) { \
  		rcu_read_unlock(); \
  		dev_hold(dev); \
  		return dev; \
 -	}
-+	} else \
-+		dev = NULL;
- 
- #endif /* < KERNEL_VERSION(2, 6, 36) */
- 
-@@ -371,12 +372,13 @@ static int __batadv_interface_tx(struct sk_buff *skb, \
- 
- #ifndef netdev_master_upper_dev_get_rcu
- #define netdev_master_upper_dev_get_rcu(dev) \
--	NULL; \
-+	upper; \
- 	if (dev->priv_flags & IFF_BRIDGE_PORT) { \
- 		rcu_read_unlock(); \
- 		dev_hold(dev); \
- 		return dev; \
--	}
-+	} else \
-+		dev = NULL;
- 
- #endif /* netdev_master_upper_dev_get_rcu */
- 
--- 
-1.7.10.4
++	}\
++	NULL;})
 
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+
+--IUIufLtiG8kJ9cKeCNNnrdUBRO6Irkld7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBCAAGBQJTAL+kAAoJEEKTMo6mOh1V8yYP/R/NnHfKIIq467IUir2Tf2E+
+ymltW6tsDcVKKE4sE90UsQ0QyUmuGQFJhh4fb55iZQinFfTvHFeHtr37+vesiB1B
+VYLcl8RSMLKtc0pIYWPWQUyyDu44J8dLRo4KLMwusSF7x/nuMfck5COz59plrBNy
+mW0vFvgE/T+4C94FG5aYuWf9PBkOpTGxNlb9C1TO4vPFOAlAZivd55rVM3V8U6EH
+ML4pt6CDdzpmOJMCsrFlH0sU3BDNjfo51MiH0anvsf3Njvb0hgOXBfB4rENYfp03
+LIaulVaiG0wjhsseOdaijAz/esvVOMu7vQUIu6XMjbTfPWj+gssZe5JLoLD7hm2e
+ItRpRUctLFT2gSLM88tr6EGmBsO1vfrNaEhoEhEjWFaZXcx72JK02wVtbYPAhSTx
+nvaZE8O4eGYSyNmddgW3Lxi3NQBfUvhfv7qbdH9IZ6z4854o66GCW6AcBfp1WUQ+
+4GIRQZsucsNQb2nSItwFwKCFckuLdu330sT/Irl0qEjeMD3ifL738tE8F1fAuphF
+NgjuXS1HBHzmeXI65hSUns2aPZbi9QN06G8PPC5/JRwi9IWfIKqlpZdE/c9CudOk
+EpOFipigi/oJIHwJik78wP0mjW4Vtqutoktz5NtymDuyTf+3i5JzjsWcp5fkZcQ5
+Ao5KsG5iQqxx0ElAfAff
+=SH4B
+-----END PGP SIGNATURE-----
+
+--IUIufLtiG8kJ9cKeCNNnrdUBRO6Irkld7--
