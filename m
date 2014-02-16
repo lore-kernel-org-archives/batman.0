@@ -1,11 +1,11 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Sun, 16 Feb 2014 10:25:52 +0100
-Message-Id: <1392542752-16987-1-git-send-email-linus.luessing@web.de>
+Date: Sun, 16 Feb 2014 10:27:58 +0100
+Message-Id: <1392542878-17033-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: return NULL instead of 0 in
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: return NULL instead of 0 in
 	batadv_mcast_forw_ip_node_get()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -26,8 +26,11 @@ error cases is always more appropriate than 0.
 Introduced by: c8fedbea81eac41a4971bb43353fd52a903d7c4c
 ("batman-adv: Send multicast packets to nodes with a WANT_ALL flag")
 
+Reported-by: Antonio Quartulli <antonio@meshcoding.com>
 Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 ---
+* added Reported-by
+
  multicast.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
