@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 16 Feb 2014 14:12:52 +0800
-Message-ID: <3265052.kWx0Wm7c0A@diderot>
-In-Reply-To: <1392461881-2435-1-git-send-email-antonio@meshcoding.com>
-References: <1392461881-2435-1-git-send-email-antonio@meshcoding.com>
+Date: Sun, 16 Feb 2014 14:23 +0800
+Message-ID: <26278039.q4ydkmULZj@diderot>
+In-Reply-To: <1392482874-9024-2-git-send-email-linus.luessing@web.de>
+References: <1392482874-9024-1-git-send-email-linus.luessing@web.de>
+ <1392482874-9024-2-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1420468.rM0UhcWeS1";
+Content-Type: multipart/signed; boundary="nextPart1710389.J6CgHjbgcf";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: add kerneldoc for dst_hint
-	argument
+Subject: Re: [B.A.T.M.A.N.] [PATCHv14 1/6] batman-adv: Multicast Listener
+	Announcements via Translation Table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,34 +22,40 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart1420468.rM0UhcWeS1
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart1710389.J6CgHjbgcf
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Saturday 15 February 2014 11:58:01 Antonio Quartulli wrote:
-> Some helper functions used along the TX path have now a new
-> "dst_hint" argument but the kerneldoc was missing.
-> 
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+On Saturday 15 February 2014 17:47:49 Linus L=FCssing wrote:
+> With this patch a node which has no bridge interface on top of its so=
+ft
+> interface announces its local multicast listeners via the translation=
+
+> table.
+>=20
+> Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
 > ---
-> 
-> Changes from v1:
-> - comment rephrased (thanks Marek!)
-> 
-> 
->  send.c | 1 +
->  send.h | 2 ++
->  2 files changed, 3 insertions(+)
+>  Makefile               |    2 +
+>  Makefile.kbuild        |    1 +
+>  compat.h               |   37 ++++++++
+>  gen-compat-autoconf.sh |    1 +
+>  main.c                 |    6 ++
+>  main.h                 |    1 +
+>  multicast.c            |  242
+> ++++++++++++++++++++++++++++++++++++++++++++++++
+> multicast.h            |   38 ++++++++
+>  translation-table.c    |   22 ++++-
+>  types.h                |   24 +++++
+>  10 files changed, 370 insertions(+), 4 deletions(-)
 
-Applied in revision 4d421fb.
+Applied in revision e368857.
 
 Thanks,
 Marek
 
---nextPart1420468.rM0UhcWeS1
+--nextPart1710389.J6CgHjbgcf
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -56,14 +63,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTAFbsAAoJEFNVTo/uthzAgVQH/im05+4mQHKPy31sojiF94fo
-J8qG9u7tbrBAoKTAx7VJAOzrfx2ADnBcyEfPTytWaAsxJxHAbAf/neVb96qyA132
-D9+OCqkRhzdAYjd89trQ90GvuDtmKSw1IK6JQ4eeEBxz6gZ4h51PC6rPX03Ldxt5
-an5lUbtcSNgqH9QKuoZ3A0UayKKFsCi7I9c8pRD1wnrLCne1SF0jXCysOZ7MMxee
-wuNuvp6y7RbwPHux0GLBfv8K7EOyE1fDM2fzk087xZ/mN4VI8MRHuv5gOWKdGvOv
-I/87oiB62Tu5YKE13IF/F+iv3KoR6jN4S3jn1dSPdJb9ZL+itj5/EQ00Dc/N05s=
-=ryGq
+iQEcBAABAgAGBQJTAFlEAAoJEFNVTo/uthzACy4H/3I+iZHlz2btMvI2TTMdQnIn
+M2OGLl0ul8pHq6HPK5/8XZJrcgx+/MrC8j6HW4ZDmsSlgXZFAj93fQEQunK7INq3
+Q3KlSjDCvO1BMK1EDGq/czzCZ1vrkHZJH/Le8OPRe7iPEPQtEJBll6EFJVIrxgn/
+YE8/DQpEYlNQA0luSDX6cypDKceFsWoKlK8+pevN+gZ8dBMlPwcoma0rl2PDwxT2
+q/LAcExfBoZZko/hXEWhaGW+Q9UGvdRTxCwq80frsKsIGljZZxtjCHr0loopCS2m
+LZgi5kFK/39CcCbC1iAbiT3aC9X5VqP6/6X0F5UN2m+9zicpnS87As5M8cX2Dsw=
+=5NoU
 -----END PGP SIGNATURE-----
 
---nextPart1420468.rM0UhcWeS1--
+--nextPart1710389.J6CgHjbgcf--
 
