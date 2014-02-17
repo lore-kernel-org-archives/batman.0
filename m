@@ -1,8 +1,10 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Mon, 17 Feb 2014 09:29:32 +0100
-Message-Id: <1392625772-1860-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv add compat code for consume_skb
+Return-Path: <trandatnh@gmail.com>
+MIME-Version: 1.0
+From: Le Tran Dat <trandatnh@gmail.com>
+Date: Mon, 17 Feb 2014 17:24:04 +0800
+Message-ID: <CAOyZXpRjy=e+Q-qq11YrkJJ=c1ni8CQVfmGepYEnKZ_TJda9Uw@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.] [A.L.F.R.E.D] Can not get data from alfred client.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,33 +16,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+To: "b.a.t.m.a.n" <b.a.t.m.a.n@lists.open-mesh.org>
 
-consume_skb() has been implemented in 2.6.30, therefore some
-some compat code is needed for 2.6.29. This patch adds it.
+Hi list,
 
-Introduced by 9289542085d7e298b90c7b6fb6efb509dab69d8b
-("batman-adv: free skb on TVLV parsing success")
+I have trouble with Alfred server and client. I have a Batman-adv
+serve as a server and another as client.
 
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- compat.h | 2 ++
- 1 file changed, 2 insertions(+)
+In the server node (batman-adv server) I start alfred as master.
+In the client node (batman-adv client) I start alfred as slave.
 
-diff --git a/compat.h b/compat.h
-index deea92b..94407a6 100644
---- a/compat.h
-+++ b/compat.h
-@@ -26,6 +26,8 @@
- 
- #include <linux/version.h>	/* LINUX_VERSION_CODE */
- 
-+#define consume_skb(_skb) kfree_skb(_skb)
-+
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 30)
- 
- #undef __alloc_percpu
--- 
-1.8.5.3
+Then I try to set data from server node by command:
+echo "data from server" | alfred -s 65
+I can see the data in server side by command
+alfred -r 65
 
+But I can not read the data from client by using the same command.
+
+How can I troubleshoot this issue since I have successfully set and
+get data via alfred before. I have no ideas why it is not working now.
+
+Thanks,
+Dat
