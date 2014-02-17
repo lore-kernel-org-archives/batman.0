@@ -1,10 +1,8 @@
-Return-Path: <tjhowse@gmail.com>
-MIME-Version: 1.0
-From: tjhowse <tjhowse@gmail.com>
-Date: Mon, 17 Feb 2014 08:56:05 +1000
-Message-ID: <CAAxzKbQoeJy2dKpaOjUK46Xi6ypSu2F6AR9n1ihxJHWymXHUsA@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: [B.A.T.M.A.N.] Bridge loop avoidance required?
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Mon, 17 Feb 2014 09:29:32 +0100
+Message-Id: <1392625772-1860-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv add compat code for consume_skb
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,26 +14,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Behold my shitty diagram:
+consume_skb() has been implemented in 2.6.30, therefore some
+some compat code is needed for 2.6.29. This patch adds it.
 
-http://i.imgur.com/9tODwRu.png
+Introduced by 9289542085d7e298b90c7b6fb6efb509dab69d8b
+("batman-adv: free skb on TVLV parsing success")
 
-In this configuration, where the only route out of the
-batman-adv-supported layer 2 network is via a layer 3 router to the
-WAN port on the nodes, is there any benefit to enabling bridge loop
-avoidance? My understanding is that forming a loop would only be
-accidentally possible if the link to the non-mesh LAN doesn't go via a
-gateway. The gateway is configured to block all WAN->LAN traffic,
-except SSH to the node itself.
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ compat.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-The reason I ask is that the operator of the non-mesh network has
-demanded that we cease connecting any form of mesh routers to their
-network on the basis that it could mesh a route between two routers
-connected to their network and form a loop. The situation is quite
-political, and the facts aren't necessarily the most important
-factors.
+diff --git a/compat.h b/compat.h
+index deea92b..94407a6 100644
+--- a/compat.h
++++ b/compat.h
+@@ -26,6 +26,8 @@
+ 
+ #include <linux/version.h>	/* LINUX_VERSION_CODE */
+ 
++#define consume_skb(_skb) kfree_skb(_skb)
++
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 30)
+ 
+ #undef __alloc_percpu
+-- 
+1.8.5.3
 
-Thanks for your time,
-Travis.
