@@ -1,14 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Mon, 17 Feb 2014 21:48:49 +0100
-Message-Id: <1392670129-2498-11-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1392670129-2498-1-git-send-email-antonio@meshcoding.com>
+Return-Path: <davem@davemloft.net>
+Date: Mon, 17 Feb 2014 16:13:14 -0500 (EST)
+Message-Id: <20140217.161314.741869447870850076.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1392670129-2498-2-git-send-email-antonio@meshcoding.com>
 References: <1392670129-2498-1-git-send-email-antonio@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 10/10] batman-adv: fix potential kernel
-	paging error for unicast transmissions
+ <1392670129-2498-2-git-send-email-antonio@meshcoding.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 01/10] batman-adv: fix soft-interface MTU
+	computation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,64 +21,18 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>
+To: antonio@meshcoding.com
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, mareklindner@neomailbox.ch
 
-batadv_send_skb_prepare_unicast(_4addr) might reallocate the
-skb's data. If it does then our ethhdr pointer is not valid
-anymore in batadv_send_skb_unicast(), resulting in a kernel
-paging error.
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Mon, 17 Feb 2014 21:48:40 +0100
 
-Fixing this by refetching the ethhdr pointer after the
-potential reallocation.
+> +	atomic_set(&bat_priv->packet_size_max, min_mtu);
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- net/batman-adv/send.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+Please fix this.
 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 579f5f0..843febd 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -254,9 +254,9 @@ static int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
- 				   struct batadv_orig_node *orig_node,
- 				   unsigned short vid)
- {
--	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
-+	struct ethhdr *ethhdr;
- 	struct batadv_unicast_packet *unicast_packet;
--	int ret = NET_XMIT_DROP;
-+	int ret = NET_XMIT_DROP, hdr_size;
- 
- 	if (!orig_node)
- 		goto out;
-@@ -265,12 +265,16 @@ static int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
- 	case BATADV_UNICAST:
- 		if (!batadv_send_skb_prepare_unicast(skb, orig_node))
- 			goto out;
-+
-+		hdr_size = sizeof(*unicast_packet);
- 		break;
- 	case BATADV_UNICAST_4ADDR:
- 		if (!batadv_send_skb_prepare_unicast_4addr(bat_priv, skb,
- 							   orig_node,
- 							   packet_subtype))
- 			goto out;
-+
-+		hdr_size = sizeof(struct batadv_unicast_4addr_packet);
- 		break;
- 	default:
- 		/* this function supports UNICAST and UNICAST_4ADDR only. It
-@@ -279,6 +283,7 @@ static int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
- 		goto out;
- 	}
- 
-+	ethhdr = (struct ethhdr *)(skb->data + hdr_size);
- 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
- 
- 	/* inform the destination node that we are still missing a correct route
--- 
-1.8.5.3
+The only operations performed on packet_size_max are 'set' and
+'read'.  This is not what one uses atomic_t's for.
 
+The use of an atomic_t in this context is a NOP.  You aren't
+getting any kind of synchronization at all.
