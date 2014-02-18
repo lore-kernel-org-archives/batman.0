@@ -1,14 +1,17 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 18 Feb 2014 12:45:14 +0800
-Message-ID: <2396808.4J5DmCeU4f@diderot>
-In-Reply-To: <1392552062-17927-1-git-send-email-linus.luessing@web.de>
-References: <1392552062-17927-1-git-send-email-linus.luessing@web.de>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <53030165.2050404@meshcoding.com>
+Date: Tue, 18 Feb 2014 07:44:53 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart99482334.BSddBFLDc3";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: compat: fix null pointer
-	exception for kernels < 3.9
+References: <1392670129-2498-1-git-send-email-antonio@meshcoding.com>
+ <1392670129-2498-2-git-send-email-antonio@meshcoding.com>
+ <20140217.161314.741869447870850076.davem@davemloft.net>
+In-Reply-To: <20140217.161314.741869447870850076.davem@davemloft.net>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="lwUKLMUudfQxo5RbpvCitHEBpt16U01JW"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 01/10] batman-adv: fix soft-interface MTU
+ computation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,56 +23,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: netdev@vger.kernel.org, mareklindner@neomailbox.ch
 
-
---nextPart99482334.BSddBFLDc3
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--lwUKLMUudfQxo5RbpvCitHEBpt16U01JW
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
 
-On Sunday 16 February 2014 13:01:02 Linus L=FCssing wrote:
-> The compat code of the new multicast patchset leads to null pointer
-> derefernces for kernels 3.9 in netdev_master_upper_dev_get_rcu(). Thi=
-s
-> is because the initially NULL is assigned to upper, which is equal to=
-
-> dev. dev is dereferenced one line later, though, leading to a crash.
+On 17/02/14 22:13, David Miller wrote:
+> From: Antonio Quartulli <antonio@meshcoding.com>
+> Date: Mon, 17 Feb 2014 21:48:40 +0100
 >=20
-> Fixing this by assigning NULL only when we are sure that the accordin=
-g
-> pointer is not going to be dereferenced anymore.
+>> +	atomic_set(&bat_priv->packet_size_max, min_mtu);
 >=20
-> Introduced by: 532cadf26cfbb1099ef31fae9ccafcbbfc37b9b5
-> ("batman-adv: Multicast Listener Announcements via Translation Table"=
-)
+> Please fix this.
 >=20
-> Reported-by: Marek Lindner <mareklindner@neomailbox.ch>
-> Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
-> ---
->  compat.h |   10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
+> The only operations performed on packet_size_max are 'set' and
+> 'read'.  This is not what one uses atomic_t's for.
+>=20
+> The use of an atomic_t in this context is a NOP.  You aren't
+> getting any kind of synchronization at all.
 
-Applied in revision 65d8217.
+True. Thanks for the suggestion.
+Unfortunately this is not the only "fake-atomic" variable we have.
 
-Thanks,
-Marek
+We'll send a change for this later within our pull request for net-next, =
+ok?
 
---nextPart99482334.BSddBFLDc3
+
+--=20
+Antonio Quartulli
+
+
+--lwUKLMUudfQxo5RbpvCitHEBpt16U01JW
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTAuVeAAoJEFNVTo/uthzAttwH/AgMwndMiqV2wJnt+E+xYrc0
-n7FI9evOzuYQju6OazHdVtFwRzpoFgkKaaVUVj0EehiFN/Drhryrklw5Xy754Zut
-BXGBr8Poxr30/edrT1SZ0L5xY2KpRXP6UMyn0yOVmRJCO0n0UrBACJsEJnS8kb4g
-DTWuYw40C4EMNVdalTdqhn1zjAi6vPEnFGZehjt66uoZuaw8W+YiBFvmMeaMyAqX
-HifXeuxQ3rCRKDAX6dZ47Uaj1isAk4sLtwKOdjzd+x9+KjU6PYGrhKuHaMIJ07DF
-GFg5Z8kj9vX31g5P+lm0zDr8q83pBPnZqFKK3Hzp/Ba2Uesp2JhK4gLFpGs7UT0=
-=sFRn
+iQIcBAEBCAAGBQJTAwFyAAoJEEKTMo6mOh1VZpUP/Amp8NL6jJnQFsJG5UrqvLoa
+NHupYrSV4pokOfDg6LPfLpVYXPNSy0kQFqUsP6lLyrmSTnhuMIWYYFL31+dm4A0Z
+e5WDX+WhmbbGc+LCGygPmftUA8uEyIritcpVd7QBc+botqMR6CN5og35hMYrd9Cb
+OX+IDFusxJfDbprpfmlyYv/l+D5kHZ/Wyuk929XaAy1uR4fm5loBgcprKQGtLVPy
+1ipBkOZvZEJw54iy24oX+qKqqP5+7s0JCR9FaxyTEXDk5yND+8MAHXkhoVY2AhDD
+hXrOdrefbw55UYnNRYjRaN3vGSLNwZmr8sTg+MRJ5YvAQorPEknGUWLPD8udmK5b
+frSiGYhtL39IUUexwDIH1GDT1I0h8HutSDXDoicEi0vmUQj+GXnIO7GPZNe3gZzH
+97xgpSAzGdx4Q85G3PIlAfXqm91vJrQQ4hF8DQSqExgGxIMcsftBRgXeEOe69N9c
+dT4on7RS6MO6LLbMnxmIlPhN/RoVQjvc3lLxJx15A9fZXZEh7r74ahAoF+lS68o9
+B8o10JS3EB9fvwHtP3Se+1RblC1AcdBmc5efB2B5iQSZjCMcMzhz+VqNeqV0uMlF
+3U4QodFQty2W6/pPfvAf//3Dhfc1bqZe7Y10VobPdxahNUwynBgA7E+cSM45Wfpg
+B1iZBXVOim2VrIVxzNnJ
+=lcZh
 -----END PGP SIGNATURE-----
 
---nextPart99482334.BSddBFLDc3--
-
+--lwUKLMUudfQxo5RbpvCitHEBpt16U01JW--
