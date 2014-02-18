@@ -1,6 +1,6 @@
 Return-Path: <davem@davemloft.net>
-Date: Tue, 18 Feb 2014 13:22:21 -0500 (EST)
-Message-Id: <20140218.132221.1485466625541655137.davem@davemloft.net>
+Date: Tue, 18 Feb 2014 15:41:52 -0500 (EST)
+Message-Id: <20140218.154152.94226033273009453.davem@davemloft.net>
 From: David Miller <davem@davemloft.net>
 In-Reply-To: <53030165.2050404@meshcoding.com>
 References: <1392670129-2498-2-git-send-email-antonio@meshcoding.com>
@@ -28,10 +28,25 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, mareklindner@neomai
 From: Antonio Quartulli <antonio@meshcoding.com>
 Date: Tue, 18 Feb 2014 07:44:53 +0100
 
+> On 17/02/14 22:13, David Miller wrote:
+>> From: Antonio Quartulli <antonio@meshcoding.com>
+>> Date: Mon, 17 Feb 2014 21:48:40 +0100
+>> 
+>>> +	atomic_set(&bat_priv->packet_size_max, min_mtu);
+>> 
+>> Please fix this.
+>> 
+>> The only operations performed on packet_size_max are 'set' and
+>> 'read'.  This is not what one uses atomic_t's for.
+>> 
+>> The use of an atomic_t in this context is a NOP.  You aren't
+>> getting any kind of synchronization at all.
+> 
+> True. Thanks for the suggestion.
 > Unfortunately this is not the only "fake-atomic" variable we have.
 
-:-(
+So I pulled this, but I just want you to know that you should really
+start to bear down and minimize the amount of changes you are submitting
+for 'net' as we're starting to get deep into -rc territory.
 
-> We'll send a change for this later within our pull request for net-next, ok?
-
-Fair enough.
+Thanks.
