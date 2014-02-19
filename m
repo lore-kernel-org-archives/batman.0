@@ -1,11 +1,14 @@
-Return-Path: <whangarei.hamburg.freifunk.net@gmx.de>
-Message-Id: <4F5A043B-6BFB-46F0-9D14-BDF07F2533E0@gmx.de>
-From: whangarei & opua <whangarei.hamburg.freifunk.net@gmx.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v936)
-Date: Wed, 19 Feb 2014 21:56:35 +0100
-Subject: [B.A.T.M.A.N.] Suggestion for routing improvement on poor links
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <530521C0.8060705@meshcoding.com>
+Date: Wed, 19 Feb 2014 22:27:28 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
+MIME-Version: 1.0
+References: <4F5A043B-6BFB-46F0-9D14-BDF07F2533E0@gmx.de>
+In-Reply-To: <4F5A043B-6BFB-46F0-9D14-BDF07F2533E0@gmx.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="NhANu2HQBucUnRaD4UPE7Frl0JnMA1W6L"
+Subject: Re: [B.A.T.M.A.N.] Suggestion for routing improvement on poor links
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,39 +20,102 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: whangarei.hamburg.freifunk.net@gmx.de
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi all,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--NhANu2HQBucUnRaD4UPE7Frl0JnMA1W6L
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-have running batman-adv 2013.4.0 on a hamburg.freifunk.net out-of-the- 
-box router.
-Have 3 uplinks over Wlan, with trees in the way and some rain at this  
-time... So not perfect conditions...
+On 19/02/14 21:56, whangarei & opua wrote:
+> Hi all,
+>=20
+> have running batman-adv 2013.4.0 on a hamburg.freifunk.net
+> out-of-the-box router.
+> Have 3 uplinks over Wlan, with trees in the way and some rain at this
+> time... So not perfect conditions...
+>=20
+> Have seen via 'batctl o' 3 uplinks to the other side of the park.
+> (logging was unfortunately not compiled in)
+> Of cause, one was the best link based on the metric (or what you called=
 
-Have seen via 'batctl o' 3 uplinks to the other side of the park.  
-(logging was unfortunately not compiled in)
-Of cause, one was the best link based on the metric (or what you  
-called it) at this time.
+> it) at this time.
+>=20
+> But also seen that the metric was not changed during packet lost =3D>
+> increased last-seen time on this best link :-(
+>=20
+> So there was a entry with a last-seen of up to 180 sec while other link=
+s
+> have had much better update times because of less packet lost, but not
+> so good metric like the main link at his 'best time'.
+> So the 'old' best link was also active, at least by the metric shown by=
 
-But also seen that the metric was not changed during packet lost =>  
-increased last-seen time on this best link :-(
+> 'batctl o'. Expect the traffic will be sent to this way...
+>=20
+> Is it maybe a good idea to decrease the metric after a last seen time o=
+f
+> a links has increased 15 or 20 sec, step by step on the best link (or
+> all links with increased last seen time) , so a more reliable link ( at=
 
-So there was a entry with a last-seen of up to 180 sec while other  
-links have had much better update times because of less packet lost,  
-but not so good metric like the main link at his 'best time'.
-So the 'old' best link was also active, at least by the metric shown  
-by 'batctl o'. Expect the traffic will be sent to this way...
+> this time) has a chance to be activated? I only think about the local
+> routing decision, not about to announce anything to a neighbor...
 
-Is it maybe a good idea to decrease the metric after a last seen time  
-of a links has increased 15 or 20 sec, step by step on the best link  
-(or all links with increased last seen time) , so a more reliable link  
-( at this time) has a chance to be activated? I only think about the  
-local routing decision, not about to announce anything to a neighbor...
+If I got your question properly I'd say that batman-adv already performs
+(in a similar way) what you are suggesting.
 
-Sorry, have not much experiences with Wlan links, also be not familiar  
-with programming, but with some layer 3 routing protocols... Hope you  
-understand my issue anyway :)
+First of all I try to summarize your scenario. You have:
+- a source node S, where you are reading the output of "batctl o"
+- a destination node D, which you use to check the output of the command
+above
+- two neighbours of S, say N1 and N2
+- N1 is the best nexthop towards D
+- at some point the link between S and N1 becomes unusable and we have
+really high packet loss -> no OGMs are received via this neighbour anymor=
+e.
 
-By, Joe
+At this point S still receives the OGMs generated by D via N2. Each time
+one of these packets is received the metric towards D "via N1" decreases
+a little bit.
+When this metric "via N1" reaches a value that is smaller then the
+metric "via N2" we have a route change: N2 becomes the bext nexthop.
+You can check this by monitoring the TQ (name of the batman-adv metric)
+towards D via N1 in "batctl o" (this command prints the "originator table=
+").
+
+How many seconds you need to see this switch depends on the current
+metric values via N1 and via N2.
+
+I hope this clarifies.
+
+Cheers,
 
 
+--=20
+Antonio Quartulli
+
+
+--NhANu2HQBucUnRaD4UPE7Frl0JnMA1W6L
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBCAAGBQJTBSHKAAoJEEKTMo6mOh1VI3EQAJ9l3qearnbIdawPIh9VobhI
+4RfQHqUSHb80d83WPKkDCuieJNXGuj7Vutfbnvn6fZu7A099rz2ZV472gkjEW3tC
+03RLslxw4cx9TbOt3vT1JpqV2taCe2DHXEpM2r/LuA+r497yuu6ypXuqrgRGXHlW
+AcMrJ/wz3J9BNdJf2p/3pn9wvTJDzaHw/nN9ak25nqLHoVUChwZiGRENXMAlwfJ3
+k6CuAG6jB4JwVJJfib84SWZb6KpjyJK8QHgOJRT4R4bYmOU9iKWJhj21OO5Ypvcq
+W04nhO2M3w5lEtuaDXiA/vP5ocTu4IC8ElCdBklfKPqnhmeiUQQ0NBrz4GM0kCgs
+Y4RAX6BBjguvBOAt/95nj98rUO8QStTsq8lRtzjWLZ7o1+jqgqj0hOSHOsMRv6dH
+Co9v7Oc+l3BExcGNqOVi6+Zc8U4Hs2gfdiGnKKhx8lFfAfpdZaC74ZifcS1/wW0r
+J+ISHdhqD7cJc/g4EM7iLaxLXMiWWOaV0523t4kiOq5tDrdogr1J2PNS1l0dHdcK
+tkkgL/bbnY/1UkWbfqyLMy6qWIGK4FO9udiWaZ1CfskpoLSlzCzTZYQecsScKfDr
+tHzhtw6hiCZjFnpOjVI2jOc6p8pYjaB8bnbyZDV7VYIcigaJIImXxwezyEM2v9JY
+r12QOAf9DwbvVrVTBrFK
+=VbyC
+-----END PGP SIGNATURE-----
+
+--NhANu2HQBucUnRaD4UPE7Frl0JnMA1W6L--
