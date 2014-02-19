@@ -1,12 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 19 Feb 2014 15:21:54 +0800
-Message-ID: <3768164.qYOYKYLPuX@diderot>
-In-Reply-To: <1392732804-23206-1-git-send-email-sw@simonwunderlich.de>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 19 Feb 2014 19:18:26 +0100
 References: <1392732804-23206-1-git-send-email-sw@simonwunderlich.de>
+ <3768164.qYOYKYLPuX@diderot>
+In-Reply-To: <3768164.qYOYKYLPuX@diderot>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart21106802.Snnc99dpM9";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201402191918.26582.sw@simonwunderlich.de>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: add option for multiif orig table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -19,57 +21,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
+> On Tuesday 18 February 2014 15:13:24 Simon Wunderlich wrote:
+> > @@ -162,7 +175,10 @@ int handle_debug_table(char *mesh_iface, int
+> > debug_table, int argc, char **argv) return EXIT_FAILURE;
+> > 
+> >         }
+> > 
+> > -       debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface,
+> > full_path, sizeof(full_path)); +       if (orig_iface)
+> > +               debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", orig_iface,
+> > full_path, sizeof(full_path)); +       else
+> > +               debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface,
+> > full_path, sizeof(full_path)); return read_file(full_path, (char
+> > *)batctl_debug_tables[debug_table].debugfs_name, read_opt, orig_timeout,
+> > watch_interval,
+> > 
+> >                          batctl_debug_tables[debug_table].header_lines);
+> 
+> While playing with your patch I noticed a couple of things:
+> 
+>  * 'batctl originators -i eth0' is equivalent to 'batctl -m eth0
+> originators'
+> * the latter works even without your patch
 
---nextPart21106802.Snnc99dpM9
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Both is true, because the originators file is at the same position 
+(eth0/originators instead of bat0/originators).
 
-On Tuesday 18 February 2014 15:13:24 Simon Wunderlich wrote:
-> @@ -162,7 +175,10 @@ int handle_debug_table(char *mesh_iface, int
-> debug_table, int argc, char **argv) return EXIT_FAILURE;
->         }
->  
-> -       debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path,
-> sizeof(full_path)); +       if (orig_iface)
-> +               debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", orig_iface,
-> full_path, sizeof(full_path)); +       else
-> +               debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface,
-> full_path, sizeof(full_path)); return read_file(full_path, (char
-> *)batctl_debug_tables[debug_table].debugfs_name, read_opt, orig_timeout,
-> watch_interval,
->                          batctl_debug_tables[debug_table].header_lines);
+>  * the orig table output does not say which interface we are looking at but
+> always reports: (bat0 BATMAN_IV)
 
-While playing with your patch I noticed a couple of things:
+Yes, check the whole first line:
+bat0/originators: [B.A.T.M.A.N. adv master-b82b9b2, MainIF/MAC: 
+eth0/fe:f0:00:00:02:01 (bat0 BATMAN_IV)]
+eth0/originators: [B.A.T.M.A.N. adv master-b82b9b2, IF/MAC: 
+eth0/fe:f0:00:00:02:01 (bat0 BATMAN_IV)]
+eth1/originators: [B.A.T.M.A.N. adv master-b82b9b2, IF/MAC: 
+eth1/fe:f1:00:00:02:01 (bat0 BATMAN_IV)]
 
- * 'batctl originators -i eth0' is equivalent to 'batctl -m eth0 originators'
- * the latter works even without your patch
- * the orig table output does not say which interface we are looking at but 
-always reports: (bat0 BATMAN_IV)
- * /sys/kernel/debug/batman_adv/ contains all sorts of hard-interfaces on my 
-test setup even if they are not used by batman-adv - is the intended ?
+>  * /sys/kernel/debug/batman_adv/ contains all sorts of hard-interfaces on
+> my test setup even if they are not used by batman-adv - is the intended ?
 
+Yes. Like the for the sysfs, a folder is created for every interface even if 
+not used - creating/removing on the fly would bring us a lot of locking fun 
+which I wanted to avoid (I think we have discussed that when the batman-adv 
+patches came in).
 
 Cheers,
-Marek
-
---nextPart21106802.Snnc99dpM9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJTBFuWAAoJEFNVTo/uthzA7lkH/RluCC71OSABpKr4paXy7ZZd
-kptZqIuN/l7qE8X/jA+oF3WjI63ewB0rjVW0avmpvpqmxei32c56gpPV2zVDpTc0
-m6+SBgyb10BxVnYq+ywUUGYS1ADCv/JOm817lXAqxU9Ebf7sZ77HV4wraaaMM2C0
-1E70xsnR4d8xX/Cuoz0KydinMBNJ8R5KrZNwVRbJkMQ1OV7gEQ+bQZVu4AWnEqPV
-0jTyy/lJjoddYztCJiLUhXc+ENyTjkp1DArgfalmUMpxc7TUeSCxgev2s1RjUU/G
-U9OXie1iKIergRX8b7X6YQUVXbwkTr1R/6jrGqcZYirK3mRRubxD7g9LHMft1IE=
-=rCvM
------END PGP SIGNATURE-----
-
---nextPart21106802.Snnc99dpM9--
-
+    Simon
