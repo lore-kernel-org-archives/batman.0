@@ -1,14 +1,13 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 19 Feb 2014 14:57:55 +0800
-Message-ID: <4540640.KzBSvFgoGj@diderot>
-In-Reply-To: <1392721435-7461-1-git-send-email-martin@hundeboll.net>
-References: <1392721435-7461-1-git-send-email-martin@hundeboll.net>
+Date: Wed, 19 Feb 2014 15:21:54 +0800
+Message-ID: <3768164.qYOYKYLPuX@diderot>
+In-Reply-To: <1392732804-23206-1-git-send-email-sw@simonwunderlich.de>
+References: <1392732804-23206-1-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart11236057.K5LAU6Qg33";
+Content-Type: multipart/signed; boundary="nextPart21106802.Snnc99dpM9";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: make the use of braces in
-	if-else consistent
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: add option for multiif orig table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,33 +19,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Martin =?ISO-8859-1?Q?Hundeb=F8ll?= <martin@hundeboll.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart11236057.K5LAU6Qg33
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart21106802.Snnc99dpM9
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday 18 February 2014 12:03:55 Martin Hundeb=F8ll wrote:
-> To avoid confusion, the linux kernel coding style discourage the use
-> of one if-else branch with braces and another without braces.
->=20
-> Introduced-by: 65d8217193427026169c48112c561c5ca4d1bd18 ("batman-adv:=
+On Tuesday 18 February 2014 15:13:24 Simon Wunderlich wrote:
+> @@ -162,7 +175,10 @@ int handle_debug_table(char *mesh_iface, int
+> debug_table, int argc, char **argv) return EXIT_FAILURE;
+>         }
+>  
+> -       debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path,
+> sizeof(full_path)); +       if (orig_iface)
+> +               debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", orig_iface,
+> full_path, sizeof(full_path)); +       else
+> +               debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface,
+> full_path, sizeof(full_path)); return read_file(full_path, (char
+> *)batctl_debug_tables[debug_table].debugfs_name, read_opt, orig_timeout,
+> watch_interval,
+>                          batctl_debug_tables[debug_table].header_lines);
 
-> compat: fix null pointer exception for kernels < 3.9")
->=20
-> Signed-off-by: Martin Hundeb=F8ll <martin@hundeboll.net>
-> ---
->  compat.h | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+While playing with your patch I noticed a couple of things:
 
-Applied in revision 534aa4a.
+ * 'batctl originators -i eth0' is equivalent to 'batctl -m eth0 originators'
+ * the latter works even without your patch
+ * the orig table output does not say which interface we are looking at but 
+always reports: (bat0 BATMAN_IV)
+ * /sys/kernel/debug/batman_adv/ contains all sorts of hard-interfaces on my 
+test setup even if they are not used by batman-adv - is the intended ?
 
-Thanks,
+
+Cheers,
 Marek
 
---nextPart11236057.K5LAU6Qg33
+--nextPart21106802.Snnc99dpM9
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -54,14 +62,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTBFX2AAoJEFNVTo/uthzA6/QH/1OnowET5IcnntpHqIMaNN0h
-ypzL7Vp7qOHLGnq9HDvDL9303zjc6u1RwkFhKtsDiD0n20YAwfz+kDKH5alZ/Mvz
-nc6FtKTuedkOZ1uws73j7PiQqx8A5Y+r0DRhj2aMx8Q9rN9+3+m+BjoYognGaVEl
-OGkUJBaRxJDSXJy2iSsCzcjGQrJN36SZUy4LllE/RhMa6395e/WvBRUnu/GHcgil
-0m5OnX01wpN8V0wZweVmiG728H/9zPH1le5D0ljoYchRiZJQpAbZE75iyWDQf+E3
-BvtLAqSPY/WfuartGB5Z3GGYFcXfJzhOBdhJs5omlrZWx+46mC7CIqCNDcK1Go4=
-=Ns40
+iQEcBAABAgAGBQJTBFuWAAoJEFNVTo/uthzA7lkH/RluCC71OSABpKr4paXy7ZZd
+kptZqIuN/l7qE8X/jA+oF3WjI63ewB0rjVW0avmpvpqmxei32c56gpPV2zVDpTc0
+m6+SBgyb10BxVnYq+ywUUGYS1ADCv/JOm817lXAqxU9Ebf7sZ77HV4wraaaMM2C0
+1E70xsnR4d8xX/Cuoz0KydinMBNJ8R5KrZNwVRbJkMQ1OV7gEQ+bQZVu4AWnEqPV
+0jTyy/lJjoddYztCJiLUhXc+ENyTjkp1DArgfalmUMpxc7TUeSCxgev2s1RjUU/G
+U9OXie1iKIergRX8b7X6YQUVXbwkTr1R/6jrGqcZYirK3mRRubxD7g9LHMft1IE=
+=rCvM
 -----END PGP SIGNATURE-----
 
---nextPart11236057.K5LAU6Qg33--
+--nextPart21106802.Snnc99dpM9--
 
