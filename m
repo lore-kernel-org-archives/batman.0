@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 20 Feb 2014 18:56:24 +0800
-Message-ID: <2473524.Ovb87v20Tu@diderot>
-In-Reply-To: <1392625772-1860-1-git-send-email-antonio@meshcoding.com>
-References: <1392625772-1860-1-git-send-email-antonio@meshcoding.com>
+Date: Thu, 20 Feb 2014 19:00:03 +0800
+Message-ID: <3778635.cDiIDheKpq@diderot>
+In-Reply-To: <1392711245-29837-1-git-send-email-linus.luessing@web.de>
+References: <1392711245-29837-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart12011560.I39xUlKDF3";
+Content-Type: multipart/signed; boundary="nextPart4468258.m7H98HPNSW";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv add compat code for
-	consume_skb
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: use ether_addr_copy
+	instead of memcpy in multicast code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,31 +21,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart12011560.I39xUlKDF3
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart4468258.m7H98HPNSW
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Monday 17 February 2014 09:29:32 Antonio Quartulli wrote:
-> consume_skb() has been implemented in 2.6.30, therefore some
-> some compat code is needed for 2.6.29. This patch adds it.
-> 
-> Introduced by 9289542085d7e298b90c7b6fb6efb509dab69d8b
-> ("batman-adv: free skb on TVLV parsing success")
-> 
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+On Tuesday 18 February 2014 09:14:05 Linus L=FCssing wrote:
+> ether_addr_copy is supposed to be slightly more efficient for copying=
+
+> mac addresses, so let's use it. This makes recent versions of checkpa=
+tch
+> happy, too.
+>=20
+> Introduced by e368857f66620b8483166e8e6556d9c87f9b3e71
+> ("batman-adv: Multicast Listener Announcements via Translation Table"=
+)
+>=20
+> Reported-by: Antonio Quartulli <antonio@meshcoding.com>
+> Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
 > ---
->  compat.h | 2 ++
->  1 file changed, 2 insertions(+)
+>  multicast.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision 15fb0fa.
+Applied in revision fb4756f.
 
 Thanks,
 Marek
 
---nextPart12011560.I39xUlKDF3
+--nextPart4468258.m7H98HPNSW
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +57,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTBd9bAAoJEFNVTo/uthzA5JgIAJYFKqTtD4dU4R+9uoAbPm90
-Th7XEthpKBCwFtYa0CQdB/S6dt/+f9+fkjxQJqcSL04VlGilUpCzen9JtlpTmcZp
-k8IZsUGyzkN6wx/Hg59Xrz2Q7ivb2dFxvAzVx7OvIPUyI+3Ydf5FoE7iLPH1B9A/
-5Yyi/sV2nnbNtlSA0q7d3bcoVkL1mxuRmCupjtpkJkEc26xD1gWzPo4GIZFMazBv
-1x0uOTtkCH2tAqWXq/zij22i/8GrNLBdqRt5CRfWs5c9sUs8bLLNysulyYunizML
-4n6xrXCVsTI8IuQHp7SnWtH90LyaWcVbb/KTEjio9yOyVkpI+O+MJnQ+jkM/R80=
-=goxs
+iQEcBAABAgAGBQJTBeAzAAoJEFNVTo/uthzAA2QIAJZt8Lfr7jv2u6JCEOr50gQ3
+Fs8l5VBjgbD1R1gL8N7/ZnXuh1WOl6yGuXGBZGsfHAoChPMKFePOJgdvivksBJok
+1thgJ9kFBEXN9tS2ViM+X9emo836sOArFm9v8WB9DMIcmuRj2w7bzLlsUTVrgXsT
+LSIc4BpNE7NNhVm/o4uT5KrzdlYmnBIJseVUROcS47/RjRAt5TRNvqdPZ0gdwzC4
+7lETkmztdcqbnsVfI+YQ7NUul6wztV9R04gx21ZAEHaafarwEebrGqZacLOBOLnX
+JabwQZAsVjYI39IoVJBdMFXWx7dV8P9EUzmtVpt6C5+MyB//WRxtHLPtCTwp2jE=
+=Sau7
 -----END PGP SIGNATURE-----
 
---nextPart12011560.I39xUlKDF3--
+--nextPart4468258.m7H98HPNSW--
 
