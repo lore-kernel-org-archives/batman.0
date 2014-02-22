@@ -1,8 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 22 Feb 2014 15:16:41 +0100
-Message-Id: <1393078601-455-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batctl: add isolation_mark support
+Date: Sat, 22 Feb 2014 16:20:06 +0100
+Message-Id: <1393082406-3615-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: properly align constant
+	assignments
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,89 +16,36 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+All the assignments in packet.h are properly aligned.
+Also the multicast constants have to have a similar shape.
 
-With this patch it is now possible to set/unset the value
-of the isolation_mark used by the Extended Isolation feature
-in batman-adv.
+Introduced by 1c090349e2f65d19a7f356cc0b61f13644c53bb6
+("batman-adv: Add IPv4 link-local/IPv6-ll-all-nodes multicast support")
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
+ packet.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Change from v1:
-- added section in man page
-
-
- man/batctl.8 | 20 ++++++++++++++++++++
- sys.c        |  9 +++++++--
- sys.h        |  1 +
- 3 files changed, 28 insertions(+), 2 deletions(-)
-
-diff --git a/man/batctl.8 b/man/batctl.8
-index 2fe5941..b808293 100644
---- a/man/batctl.8
-+++ b/man/batctl.8
-@@ -151,6 +151,26 @@ least XX TQ better than the currently selected gateway (XX has to be a number be
- .RE
- .RE
- .br
-+.IP "\fBisolation_mark\fP|\fBmark\fP"
-+If no parameter is given the current isolation mark value is displayed.
-+Otherwise the parameter is used to set or unset the isolation mark used by the
-+Extended Isolation feature.
-+.br
-+The input is supposed to be of the form $value/$mask, where $value can be any
-+32bit long integer (expressed in decimal or hex base) and $mask is a generic
-+bitmask (expressed in hex base) that selects the bits to take into consideration
-+from $value. It is also possible to enter the input using only $value and in
-+this case the full bitmask is used by default.
-+
-+.br
-+.br
-+Example 1: 0x00000001/0xffffffff
-+.br
-+Example 2: 0x00040000/0xffff0000
-+.br
-+Example 3: 16 or 0x0F
-+.br
-+.br
- .PP
- .I \fBdebug tables:
- .IP
-diff --git a/sys.c b/sys.c
-index 5cebf52..fd6e107 100644
---- a/sys.c
-+++ b/sys.c
-@@ -96,8 +96,13 @@ const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
- 		.opt_short = "nc",
- 		.sysfs_name = "network_coding",
- 		.params = sysfs_param_enable,
--	}
--
-+	},
-+	{
-+		.opt_long = "isolation_mark",
-+		.opt_short = "mark",
-+		.sysfs_name = "isolation_mark",
-+		.params = NULL,
-+	},
+diff --git a/packet.h b/packet.h
+index feaa336..c7f6eef 100644
+--- a/packet.h
++++ b/packet.h
+@@ -97,9 +97,9 @@ enum batadv_icmp_packettype {
+  * @BATADV_MCAST_WANT_ALL_IPV6: we want all IPv6 multicast packets
+  */
+ enum batadv_mcast_flags {
+-	BATADV_MCAST_WANT_ALL_UNSNOOPABLES = BIT(0),
+-	BATADV_MCAST_WANT_ALL_IPV4 = BIT(1),
+-	BATADV_MCAST_WANT_ALL_IPV6 = BIT(2),
++	BATADV_MCAST_WANT_ALL_UNSNOOPABLES	= BIT(0),
++	BATADV_MCAST_WANT_ALL_IPV4		= BIT(1),
++	BATADV_MCAST_WANT_ALL_IPV6		= BIT(2),
  };
  
- static void interface_usage(void)
-diff --git a/sys.h b/sys.h
-index 2cbbcfb..5633822 100644
---- a/sys.h
-+++ b/sys.h
-@@ -46,6 +46,7 @@ enum batctl_settings_list {
- 	BATCTL_SETTINGS_BONDING,
- 	BATCTL_SETTINGS_FRAGMENTATION,
- 	BATCTL_SETTINGS_NETWORK_CODING,
-+	BATCTL_SETTINGS_ISOLATION_MARK,
- 	BATCTL_SETTINGS_NUM,
- };
- 
+ /* tt data subtypes */
 -- 
 1.8.4.5
 
