@@ -1,9 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 22 Feb 2014 16:20:06 +0100
-Message-Id: <1393082406-3615-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: properly align constant
-	assignments
+Date: Sat, 22 Feb 2014 16:48:14 +0100
+Message-Id: <1393084094-2113-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: improve the TT flags
+	documentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,36 +16,58 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-All the assignments in packet.h are properly aligned.
-Also the multicast constants have to have a similar shape.
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-Introduced by 1c090349e2f65d19a7f356cc0b61f13644c53bb6
-("batman-adv: Add IPv4 link-local/IPv6-ll-all-nodes multicast support")
+Convert the current documentation for the TT flags in proper
+kerneldoc and improve it by adding an explanation for each
+of the flags.
 
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- packet.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ packet.h | 28 ++++++++++++++++++++++++----
+ 1 file changed, 24 insertions(+), 4 deletions(-)
 
 diff --git a/packet.h b/packet.h
-index feaa336..c7f6eef 100644
+index c7f6eef..34e096d 100644
 --- a/packet.h
 +++ b/packet.h
-@@ -97,9 +97,9 @@ enum batadv_icmp_packettype {
-  * @BATADV_MCAST_WANT_ALL_IPV6: we want all IPv6 multicast packets
-  */
- enum batadv_mcast_flags {
--	BATADV_MCAST_WANT_ALL_UNSNOOPABLES = BIT(0),
--	BATADV_MCAST_WANT_ALL_IPV4 = BIT(1),
--	BATADV_MCAST_WANT_ALL_IPV6 = BIT(2),
-+	BATADV_MCAST_WANT_ALL_UNSNOOPABLES	= BIT(0),
-+	BATADV_MCAST_WANT_ALL_IPV4		= BIT(1),
-+	BATADV_MCAST_WANT_ALL_IPV6		= BIT(2),
+@@ -119,10 +119,30 @@ enum batadv_tt_data_flags {
+ 	BATADV_TT_FULL_TABLE = BIT(4),
  };
  
- /* tt data subtypes */
+-/* BATADV_TT_CLIENT flags.
+- * Flags from BIT(0) to BIT(7) are sent on the wire, while flags from BIT(8) to
+- * BIT(15) are used for local computation only.
+- * Flags from BIT(4) to BIT(7) are kept in sync with the rest of the network.
++/**
++ * enum batadv_tt_client_flags - TT client specific flags
++ * @BATADV_TT_CLIENT_DEL: the client has to be deleted from the table
++ * @BATADV_TT_CLIENT_ROAM: the client roamed to/from another node and the new
++ *  update telling its new real location has not been received/sent yet
++ * @BATADV_TT_CLIENT_WIFI: this client is connected through a wifi interface.
++ *  This information is used by the "AP Isolation" feature
++ * @BATADV_TT_CLIENT_ISOLA: this client is considered "isolated". This
++ *  information is used by the Extended Isolation feature
++ * @BATADV_TT_CLIENT_NOPURGE: this client should never be removed from the table
++ * @BATADV_TT_CLIENT_NEW: this client has been added to the local table but has
++ *  not been announced yet
++ * @BATADV_TT_CLIENT_PENDING: this client is marked for removal but it is kept
++ *  in the table for one more originator interval for consistency purposes
++ * @BATADV_TT_CLIENT_TEMP: this global client has been detected to be part of
++ *  the network but no nnode has already announced it
++ *
++ * Bits from 0 to 7 are called _remote flags_ because they are sent on the wire.
++ * Bits from 8 to 15 are called _local flags_ because they are used for local
++ * computations only.
++ *
++ * Bits from 4 to 7 - a subset of remote flags - are ensured to be in sync with
++ * the other nodes in the network. To achieve this goal these flags are included
++ * in the TT CRC computation.
+  */
+ enum batadv_tt_client_flags {
+ 	BATADV_TT_CLIENT_DEL     = BIT(0),
 -- 
 1.8.4.5
 
