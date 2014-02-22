@@ -1,9 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 22 Feb 2014 16:48:14 +0100
-Message-Id: <1393084094-2113-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: improve the TT flags
-	documentation
+Date: Sat, 22 Feb 2014 17:02:38 +0100
+Message-Id: <1393084958-2133-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: improve DAT documentation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,54 +19,45 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-Convert the current documentation for the TT flags in proper
-kerneldoc and improve it by adding an explanation for each
-of the flags.
+Add missing documentation for BATADV_DAT_ADDR_MAX and
+convert an existing documentation to kerneldoc
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- packet.h | 28 ++++++++++++++++++++++++----
- 1 file changed, 24 insertions(+), 4 deletions(-)
+ distributed-arp-table.h | 3 +++
+ types.h                 | 5 +++--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/packet.h b/packet.h
-index c7f6eef..34e096d 100644
---- a/packet.h
-+++ b/packet.h
-@@ -119,10 +119,30 @@ enum batadv_tt_data_flags {
- 	BATADV_TT_FULL_TABLE = BIT(4),
- };
+diff --git a/distributed-arp-table.h b/distributed-arp-table.h
+index ac9be9b..d76e1d0 100644
+--- a/distributed-arp-table.h
++++ b/distributed-arp-table.h
+@@ -25,6 +25,9 @@
  
--/* BATADV_TT_CLIENT flags.
-- * Flags from BIT(0) to BIT(7) are sent on the wire, while flags from BIT(8) to
-- * BIT(15) are used for local computation only.
-- * Flags from BIT(4) to BIT(7) are kept in sync with the rest of the network.
+ #include <linux/if_arp.h>
+ 
 +/**
-+ * enum batadv_tt_client_flags - TT client specific flags
-+ * @BATADV_TT_CLIENT_DEL: the client has to be deleted from the table
-+ * @BATADV_TT_CLIENT_ROAM: the client roamed to/from another node and the new
-+ *  update telling its new real location has not been received/sent yet
-+ * @BATADV_TT_CLIENT_WIFI: this client is connected through a wifi interface.
-+ *  This information is used by the "AP Isolation" feature
-+ * @BATADV_TT_CLIENT_ISOLA: this client is considered "isolated". This
-+ *  information is used by the Extended Isolation feature
-+ * @BATADV_TT_CLIENT_NOPURGE: this client should never be removed from the table
-+ * @BATADV_TT_CLIENT_NEW: this client has been added to the local table but has
-+ *  not been announced yet
-+ * @BATADV_TT_CLIENT_PENDING: this client is marked for removal but it is kept
-+ *  in the table for one more originator interval for consistency purposes
-+ * @BATADV_TT_CLIENT_TEMP: this global client has been detected to be part of
-+ *  the network but no nnode has already announced it
-+ *
-+ * Bits from 0 to 7 are called _remote flags_ because they are sent on the wire.
-+ * Bits from 8 to 15 are called _local flags_ because they are used for local
-+ * computations only.
-+ *
-+ * Bits from 4 to 7 - a subset of remote flags - are ensured to be in sync with
-+ * the other nodes in the network. To achieve this goal these flags are included
-+ * in the TT CRC computation.
++ * BATADV_DAT_ADDR_MAX - maximum address value in the DHT space
++ */
+ #define BATADV_DAT_ADDR_MAX ((batadv_dat_addr_t)~(batadv_dat_addr_t)0)
+ 
+ void batadv_dat_status_update(struct net_device *net_dev);
+diff --git a/types.h b/types.h
+index d4b923c..34891a5 100644
+--- a/types.h
++++ b/types.h
+@@ -24,8 +24,9 @@
+ 
+ #ifdef CONFIG_BATMAN_ADV_DAT
+ 
+-/* batadv_dat_addr_t is the type used for all DHT addresses. If it is changed,
+- * BATADV_DAT_ADDR_MAX is changed as well.
++/**
++ * batadv_dat_addr_t - it is the type used for all DHT addresses. If it is
++ *  changed, BATADV_DAT_ADDR_MAX is changed as well.
+  *
+  * *Please be careful: batadv_dat_addr_t must be UNSIGNED*
   */
- enum batadv_tt_client_flags {
- 	BATADV_TT_CLIENT_DEL     = BIT(0),
 -- 
 1.8.4.5
 
