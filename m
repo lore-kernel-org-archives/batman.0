@@ -1,15 +1,13 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <53070488.2020303@meshcoding.com>
-Date: Fri, 21 Feb 2014 08:47:20 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sat, 22 Feb 2014 21:15:45 +0800
+Message-ID: <6669223.SUrzlxMZWX@diderot>
+In-Reply-To: <1392908422-364-1-git-send-email-antonio@meshcoding.com>
+References: <1392908422-364-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1392670129-2498-1-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1392670129-2498-1-git-send-email-antonio@meshcoding.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="88EFkjNOc8xD17cIUKaKs5CNvemkcHIVd"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 00/10] pull request net: batman-adv
-	2014-02-17
+Content-Type: multipart/signed; boundary="nextPart2243463.7LZTVqI6u7";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: add isolation_mark support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,59 +19,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
-
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---88EFkjNOc8xD17cIUKaKs5CNvemkcHIVd
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-On 17/02/14 21:48, Antonio Quartulli wrote:
-> Hello David,
->=20
-> here you have a pull request intended for net/linux-3.14 and linux-3.13=
- (please
-> take care of queuing these patches for merging in the latter).
->=20
-
-David,
-
-as I asked above, do you think it would be possible to queue this
-patchset for inclusion in 3.13.x ?
-
-If you think the patchset is too big, we can safely _exclude_ patches 4,
-5, 6 and 9 from sending to stable since they are fixing "potential" error=
-s.
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
-Thanks a lot!
+--nextPart2243463.7LZTVqI6u7
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---=20
-Antonio Quartulli
+On Thursday 20 February 2014 16:00:22 Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+> 
+> With this patch it is now possible to set/unset the value
+> of the isolation_mark used by the Extended Isolation feature
+> in batman-adv.
+> 
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+>  sys.c | 9 +++++++--
+>  sys.h | 1 +
+>  2 files changed, 8 insertions(+), 2 deletions(-)
 
+What about the manpage documentation ?
 
---88EFkjNOc8xD17cIUKaKs5CNvemkcHIVd
+Cheers,
+Marek
+
+--nextPart2243463.7LZTVqI6u7
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBCAAGBQJTBwSNAAoJEEKTMo6mOh1VrmUQAJwsCiT95GCGdxQg6hyLW8K8
-SwYK2VM+qPiqu4/X0Ra//t+xBgh6PV2QgStiDxYjHlNmu0AKkfIXzgy2Pa9wA7jG
-cUOlk5QcI8X2Ui8yw83gvQ92XRk1eevd91Sj/1/JScLj1VJ0HgjvzqDV5Deo6nfP
-cQ7Ftp9xaW+/4NAJ64PFRLQf9zs3nzo8ABFA6LkACnXt9wg9Kqv65anDTfKRFNfF
-MYXVj3NMPPeZiqBFJ2ik4miL4p4LzN/Z9bZZ/pwqls/eiU8mcUINMKNWyLIeFRqh
-Jdm6MxXWiSgEo58PUa+E+wAE6wLtAuDDII+4arankjO66nK+q2lylap4S65zZH7c
-HRRMLltDr4G8nRXYuOcoWCjBiqcsWJX6L9GjOGAwo14KeqIpTAmqiiOtZtKHZp4n
-j5cvUFqgpLp/jVxWFsvJ4/zt2kHA5+zyahY+Rkq6AIHXot7Z5QyQB594AzFeclY5
-meJYF37ITy3PLYiVUiE8KToiJ7KKk305b99J1kVR6ontakoHftWowhMeDTonZc71
-so9CvP3KMk+7Mrq7b15ZdCHtHLEedtE5neLhp8d5CdfccDNYqhomb7eG4N6UWCng
-Q74tIMSjFv2+PZgsGIIOMK/atP//vdMjK4VN/DI4bDL99N9ogWfxPrJXKwOWjoeJ
-oo0otaJYmw3dYYwfRZ6U
-=qyo4
+iQEcBAABAgAGBQJTCKMKAAoJEFNVTo/uthzABwUH/3nenjM5WI+stQLiyxIr3OeE
+l0YgXdUHBz+REl/o6p3lhGP797AGUNBYW2r7tQdvAnWFcvsPXmMTPkTFRyQPJVUh
+/1m/b8awTVj0A4UfR14QgrBbpUV8VfB+IzG4vpapXoqN52ulZfz2hSoV/pijj8MX
+CuIls5BenJaRrefONSyb3cA6V1Fm2mfKfEoqTd4Uah3BpNIlSYId7KuZ/LA2z3uq
+r9cUe+3H+DMAflQq5h+we5KnzqMULwm2nuiCWRR13RdAsUEyKDU8PG1v/x/AN0w9
+2mc8ereGz9h6B0Bw88uVeK4IWOufOMwJEfineJWmfaG8aP34fVjjRRM3Rlaw1So=
+=DTkM
 -----END PGP SIGNATURE-----
 
---88EFkjNOc8xD17cIUKaKs5CNvemkcHIVd--
+--nextPart2243463.7LZTVqI6u7--
+
