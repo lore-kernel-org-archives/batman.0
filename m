@@ -1,15 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <530AEB3B.1050501@meshcoding.com>
-Date: Mon, 24 Feb 2014 07:48:27 +0100
+Message-ID: <530AEB9B.1050706@meshcoding.com>
+Date: Mon, 24 Feb 2014 07:50:03 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1393196418-4001-1-git-send-email-antonio@meshcoding.com>
- <1702820.sOKJFjBZI7@diderot>
-In-Reply-To: <1702820.sOKJFjBZI7@diderot>
+References: <1393078601-455-1-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1393078601-455-1-git-send-email-antonio@meshcoding.com>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="LMlnQAhrlV1CnERw0ral6Mlhpc46cPLAi"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix merge resolution
+ boundary="qlFUqBdDbEl9ajaH08x5aCJF68BrqCCTa"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: add isolation_mark support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,45 +20,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---LMlnQAhrlV1CnERw0ral6Mlhpc46cPLAi
+--qlFUqBdDbEl9ajaH08x5aCJF68BrqCCTa
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 24/02/14 01:36, Marek Lindner wrote:
-> On Monday 24 February 2014 00:00:18 Antonio Quartulli wrote:
->> --- a/send.c
->> +++ b/send.c
->> @@ -255,8 +255,8 @@ int batadv_send_skb_unicast(struct batadv_priv
->> *bat_priv, struct batadv_orig_node *orig_node,
->>                             unsigned short vid)
->>  {
->> -       struct batadv_unicast_packet *unicast_packet;
->>         struct ethhdr *ethhdr;
->> +       struct batadv_unicast_packet *unicast_packet;
->>         int ret =3D NET_XMIT_DROP;
->> =20
->>         if (!orig_node)
+On 22/02/14 15:16, Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
 >=20
-> Don't we want longer declarations before shorter declarations ?
+> With this patch it is now possible to set/unset the value
+> of the isolation_mark used by the Extended Isolation feature
+> in batman-adv.
+>=20
 
-Yes, but the point is that there is no patch doing this change.
-This line was moved during a merge...
+I just realised that I have to modify the README as well :)
 
-If you want to rearrange the variable declaration I'd suggest to do it
-with one patch changing them all.
-
+v3 is coming!
 
 Cheers,
-
 
 --=20
 Antonio Quartulli
 
 
---LMlnQAhrlV1CnERw0ral6Mlhpc46cPLAi
+--qlFUqBdDbEl9ajaH08x5aCJF68BrqCCTa
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -67,19 +54,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBCAAGBQJTCutFAAoJEEKTMo6mOh1Vh3MP/R7qM0lQqEiC0VOzYXqIQij5
-F092dTmc44KKtNKaRwTWLKWjq3u/ZeNnBfJMfGGS1fq4aIIh4c2fkfuZ1knr1jVC
-xZ24dZGBAOw+wR+GWlDQ0vf9P8ZB0ikCHyUL0HhS2bxElXMZuyv8By64ykmsLzy+
-qUJvdoEwEvq18amu+OOuM1XJ8RM7PUl8ptnIYQWlmI2aU+wnbYSPgGz1xgulMWEC
-MHgE6+Mt1eLYT36ownbJVNefQRPdayk2gATA0+JN3+UnZclfAiJZNDJKtMsdg+WV
-sZYaf1jGnwNPRqwgGjlYL+PlBg3mMct2BPa0NuCwYPqHWRE4ZExX7NFQDaElCzwE
-Z8MMbGYhKP4ar6ibF7TN6+Fmn05jsOidINRNnb++5gMTPgphuUBuTd/4r/Jho7e2
-3nf2cEsk7hATdqH0ZGzk4VmhO1WeQDvjEU1uAzCE38OGqEUTx4eikhFkPAQexHCy
-c5B7DH80aVs5Kd2KD4gChMkUcVW7VfC0xrbWaRumPPbu3NPAOiemK0xAKBJBmfiL
-PDOmKcDbYqNbtVGEuJS8+YKfcrq3SgaOjOLMdrOQDLncwffHEvSVVNIasIyNP1rY
-ysteRN2xY4vDia/K2a9MwcE6D4Ns4+NptR/5B6URrwJJRo5Xo1/sY8SUBBx4MJza
-QvyBQRyF3uXVe1EaIUw+
-=uAvN
+iQIcBAEBCAAGBQJTCuufAAoJEEKTMo6mOh1VhcQP/2D7/xkPl7vxQ9d7UtfEQo2Z
+ep9qERUL93eB1qKMthrx0ubrtmlfcAbljJjC4hhgUBGEHKLNqCu/Cr0dL3dAvNoO
+vnAuPBwYsFX/RXIFu+eoRLdUe+F/1cYxk4Px/aNKvSzQjtjNSILApSItMPNK3oal
+/0yijlSrVJQtTlA55PyhrwIECUItFgIxi6unbvPz8lOuUAh631NMt3bJf/ZkvoUB
+jAOc80b1cstCYnooBwMqndI8mkJiDdZmf3/IU6V3eWZdhtiTSk4Oz4GbpYJr/n4N
+9VfxPOWEO8H0NDa9QJSvtw/HX/albYYkO14aAXwAfY95tkAC0Gu6R8Ccw94V5ZZS
+aG8nHHv8ZDUeNIHYHNcBF30lwPTPoKZ1r8WC3ahkERiYC8ZAUJO76zDqGyGPIdn0
+/CJg6W+96BREci2cwtKxF8tRYSS7t5gdAJVwuJrl/WXPX/5gG1tB6+juuhisa6WE
+29Z10sFUMvPkx5gS+bBBJ+864ZFySk9Fu9zkEMI33hoVjiOFuJErtSOBOy+UTHEH
+X8BJzv0PgMKHRxOuYNAXOXSnufg23OOu8Yjutfj2hK27hbMGEgljOPZifeTX4+pq
+6N7W328JGSx6ceD4/Ocg2RcjnURv/kps3w8G18w4kRz5sb/sC4HExwwNPLRocx30
+Qxl5SvGI7PTMXOo5O7G+
+=NZPz
 -----END PGP SIGNATURE-----
 
---LMlnQAhrlV1CnERw0ral6Mlhpc46cPLAi--
+--qlFUqBdDbEl9ajaH08x5aCJF68BrqCCTa--
