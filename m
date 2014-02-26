@@ -1,8 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 26 Feb 2014 14:12:20 +0100
-Message-Id: <1393420340-1590-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: use the name of the array as
+Date: Wed, 26 Feb 2014 14:13:32 +0100
+Message-Id: <1393420412-3931-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: use the name of the array as
 	pointer
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,7 +20,13 @@ Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 Introduced by fb4756fe5f6e58ca2ab208ca634ae4c8dd6e9499
 ("batman-adv: use ether_addr_copy instead of memcpy in multicast code")
+
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
+
+change from v1:
+- added Signed-off-by clause
+
  multicast.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
