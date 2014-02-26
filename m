@@ -1,9 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 26 Feb 2014 14:10:42 +0100
-Message-Id: <1393420242-1698-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: use the proper location in
-	ether_addr_copy()
+Date: Wed, 26 Feb 2014 14:12:20 +0100
+Message-Id: <1393420340-1590-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: use the name of the array as
+	pointer
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,48 +18,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Introduced by: 513b2d107a4d88f62b9394926e377d2c6250775f
-("batman-adv: prefer ether_addr_copy to memcpy")
-
-Reported-by: kbuild test robot <fengguang.wu@intel.com>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+Introduced by fb4756fe5f6e58ca2ab208ca634ae4c8dd6e9499
+("batman-adv: use ether_addr_copy instead of memcpy in multicast code")
 ---
+ multicast.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Changes from v2:
-- added another fix in routing.c
-
-Changes from v1:
-- added Reported-by clause
-
- icmp_socket.c | 2 +-
- routing.c     | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/icmp_socket.c b/icmp_socket.c
-index bf07dfd..161ef8f 100644
---- a/icmp_socket.c
-+++ b/icmp_socket.c
-@@ -230,7 +230,7 @@ static ssize_t batadv_socket_write(struct file *file, const char __user *buff,
- 		icmp_packet_rr = (struct batadv_icmp_packet_rr *)icmp_header;
- 		if (packet_len == sizeof(*icmp_packet_rr)) {
- 			addr = neigh_node->if_incoming->net_dev->dev_addr;
--			ether_addr_copy(icmp_packet_rr->rr, addr);
-+			ether_addr_copy(icmp_packet_rr->rr[0], addr);
+diff --git a/multicast.c b/multicast.c
+index e69143b..998b429 100644
+--- a/multicast.c
++++ b/multicast.c
+@@ -45,7 +45,7 @@ static int batadv_mcast_mla_softif_get(struct net_device *dev,
+ 			break;
  		}
  
- 		break;
-diff --git a/routing.c b/routing.c
-index 3855132..3514153 100644
---- a/routing.c
-+++ b/routing.c
-@@ -340,7 +340,7 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
- 		if (icmp_packet_rr->rr_cur >= BATADV_RR_LEN)
- 			goto out;
- 
--		ether_addr_copy(&(icmp_packet_rr->rr[icmp_packet_rr->rr_cur]),
-+		ether_addr_copy(icmp_packet_rr->rr[icmp_packet_rr->rr_cur],
- 				ethhdr->h_dest);
- 		icmp_packet_rr->rr_cur++;
+-		ether_addr_copy(&new->addr, &mc_list_entry->addr);
++		ether_addr_copy(new->addr, mc_list_entry->addr);
+ 		hlist_add_head(&new->list, mcast_list);
+ 		ret++;
  	}
 -- 
 1.8.4.5
