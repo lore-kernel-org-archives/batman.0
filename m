@@ -1,8 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 26 Feb 2014 13:00:49 +0100
-Message-Id: <1393416049-3916-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: use the proper location in
+Date: Wed, 26 Feb 2014 14:10:42 +0100
+Message-Id: <1393420242-1698-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: use the proper location in
 	ether_addr_copy()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -25,11 +25,15 @@ Reported-by: kbuild test robot <fengguang.wu@intel.com>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
 
-change from v1:
+Changes from v2:
+- added another fix in routing.c
+
+Changes from v1:
 - added Reported-by clause
 
  icmp_socket.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ routing.c     | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/icmp_socket.c b/icmp_socket.c
 index bf07dfd..161ef8f 100644
@@ -44,6 +48,19 @@ index bf07dfd..161ef8f 100644
  		}
  
  		break;
+diff --git a/routing.c b/routing.c
+index 3855132..3514153 100644
+--- a/routing.c
++++ b/routing.c
+@@ -340,7 +340,7 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
+ 		if (icmp_packet_rr->rr_cur >= BATADV_RR_LEN)
+ 			goto out;
+ 
+-		ether_addr_copy(&(icmp_packet_rr->rr[icmp_packet_rr->rr_cur]),
++		ether_addr_copy(icmp_packet_rr->rr[icmp_packet_rr->rr_cur],
+ 				ethhdr->h_dest);
+ 		icmp_packet_rr->rr_cur++;
+ 	}
 -- 
 1.8.4.5
 
