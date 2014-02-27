@@ -1,16 +1,14 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <530F2E61.5060203@meshcoding.com>
-Date: Thu, 27 Feb 2014 13:24:01 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Thu, 27 Feb 2014 14:12:15 +0100
+References: <1770254702.309936059.1393503657979.JavaMail.root@spooler5n-g27.priv.proxad.net>
+In-Reply-To: <1770254702.309936059.1393503657979.JavaMail.root@spooler5n-g27.priv.proxad.net>
 MIME-Version: 1.0
-References: <1393215104-28184-1-git-send-email-linus.luessing@web.de>
- <1393215104-28184-3-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1393215104-28184-3-git-send-email-linus.luessing@web.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="HVJT2oqOrGpKlBCSpQhp5UIcSFHUpURaU"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batctl: add unicast/multicast
- address filter option for TT output
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201402271412.15916.sw@simonwunderlich.de>
+Subject: Re: [B.A.T.M.A.N.] Question about batman adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,106 +20,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, =?UTF-8?B?TGludXMgTMO8c3Npbmc=?= <linus.luessing@web.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---HVJT2oqOrGpKlBCSpQhp5UIcSFHUpURaU
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On 24/02/14 05:11, Linus L=C3=BCssing wrote:
-> @@ -138,6 +143,26 @@ int handle_debug_table(char *mesh_iface, int debug=
-_table, int argc, char **argv)
->  		case 'H':
->  			read_opt |=3D SKIP_HEADER;
->  			break;
-> +		case 'u':
-> +			if (debug_table !=3D BATCTL_TABLE_TRANSLOCAL &&
-> +			    debug_table !=3D BATCTL_TABLE_TRANSGLOBAL) {
-> +				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
-> +				debug_table_usage(debug_table);
-> +				return EXIT_FAILURE;
-> +			}
-> +
-> +			read_opt |=3D UNICAST_ONLY;
-> +			break;
-> +		case 'm':
-> +			if (debug_table !=3D BATCTL_TABLE_TRANSLOCAL &&
-> +			    debug_table !=3D BATCTL_TABLE_TRANSGLOBAL) {
-> +				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
-> +				debug_table_usage(debug_table);
-> +				return EXIT_FAILURE;
-> +			}
-> +
-> +			read_opt |=3D MULTICAST_ONLY;
-> +			break;
+> Hello,
+> 1) I can't creat the 2 files:
+>  cat /sys/kernel/debug/batman_adv/bat0/log
+> echo 2 > /sys/class/net/bat0/mesh/log_level
+> 
+> then when i write this line, i have the result:
+> sudo batctl log
+> Error - can't open file '/sys/kernel/debug//batman_adv/bat0/log': No such
+> file or directory To read the debug log you need to compile the module
+> with debugging enabled (see the README)
+> 
+> WWW@ubuntu:~$ sudo batctl ll
+> Error - can't open file '/sys/class/net/bat0/mesh/log_level': No such file
+> or directory To increase the log level you need to compile the module with
+> debugging enabled (see the README)
+> 
+> How can i compile it ?
 
-do we really want to allow the user to specify both flags? Or should we
-throw an error in that case? I think the second option would be better, n=
-o?
+Read the README, it's documented there.
 
->  		case '?':
->  			if (optopt =3D=3D 't')
->  				fprintf(stderr, "Error - option '-t' needs a number as argument\n"=
-);
-> diff --git a/functions.c b/functions.c
-> index 36804bd..41eabb2 100644
-> --- a/functions.c
-> +++ b/functions.c
-> @@ -224,6 +224,22 @@ read:
->  			    && (last_seen > orig_timeout))
->  				continue;
-> =20
-> +		/* translation table: skip multicast */
-> +		if (line > header_lines &&
-> +		    read_opt & UNICAST_ONLY &&
-> +		    strlen(line_ptr) > strlen(" * xx:xx:xx:") &&
-> +		    (!strncmp(line_ptr+3, "33:33:", strlen("33:33:")) ||
-> +		     !strncmp(line_ptr+3, "01:00:5e:", strlen("01:00:5e:"))))
-> +			continue;
-> +
-> +		/* translation table: skip unicast */
-> +		if (line > header_lines &&
-> +		    read_opt & MULTICAST_ONLY &&
-> +		    strlen(line_ptr) > strlen(" * xx:xx:xx:") &&
-> +		    strncmp(line_ptr+3, "33:33:", strlen("33:33:")) &&
-> +		    strncmp(line_ptr+3, "01:00:5e:", strlen("01:00:5e:")))
-> +			continue;
-> +
+> 
+> 2) The MTU = 1528 is not need to be set on the computer ?
 
-why not just converting to an integer the first octect of the MAC
-address and checking for the multicast bit being set or not? Wouldn't
-that be more elegant and generic?
+No, batman-adv can also fragment the packets for you. But it's a good idea to 
+set this MTU value to the hard interface used by batman-adv.
+> 
+> 3) How can i lauch batman-adv in debug mode to see all node ?
 
+There is no such thing as debug mode. Compile batman-adv with debug turned on 
+(either set CONFIG_BATMAN_ADV_DEBUG=y in the Makefile if you compile the module 
+externally or select debug in "make menuconfig" when using the module from the 
+in-kernel tree).
 
+You can "see" other nodes e.g. by using "batctl o", which will print the local 
+originator table.
+
+The quick-start guide might also point you to a view interesting things:
+
+http://www.open-mesh.org/projects/batman-adv/wiki/Quick-start-guide
 
 Cheers,
-
---=20
-Antonio Quartulli
-
-
---HVJT2oqOrGpKlBCSpQhp5UIcSFHUpURaU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJTDy5kAAoJEEKTMo6mOh1V7fIP/03mW3sjMZVCd7koe0GzB8nt
-Iryw8an2ZmKj4iExdKu23U2p0MSpkghmASUn8WNcIy4CQgbQK1sxauKxcNoqNxlO
-OzEzTaNtWJnsk4TLOi1x37+kbxRYyToEsBr10zkg5Fyupw0fpyQWHi6sQOvqPMXT
-Qe3w1fseIe/FTz0kOR1S29cu9BXADcgXAr6XWOCbn+9A5pRdicSVLRwShns7gBKW
-0McodcJEd+lIhyx21Bgeo+sbjI3fWzDxVsPp2Bfbf8jq3hb+lerd8S5DPfu9ev5C
-kDGyT8DZb7zGBKkhJINpgXAdQdlIPJiFwRo3XZax91jFdsYQlvm49JmI1czG1ycH
-Vpm58m0tVEIULHjrAFF60PSWwAOWjHu7AX89eW6MsVz8fmPRy06lF/3yn8+1gjdw
-ebvPEZP2+rrlfhUbnojfeLBu1rwUCiHU+upp+LEfRpBazOOJjtYaqm1RBmK46Fo7
-4O7G9qA6TdfvZhT1u3qyjV/9v3svXViok46IASQJP1Q2C0/O9Q0zuhULzFyfLWlZ
-AFJYqyxiS/jKMLVTfjJzkzWYrV8olyJtU0BwEKmBhAegPxnknsAEVNzhPEFFFvSs
-TaY5rp59dFzuG4/1NMwAeRww2jvrziRHq84ArSm9yrHhczzJfs12zHE9wJIYhq2W
-mN9+L82RbaQroxOyq3Lz
-=RZEu
------END PGP SIGNATURE-----
-
---HVJT2oqOrGpKlBCSpQhp5UIcSFHUpURaU--
+     Simon
