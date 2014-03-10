@@ -1,15 +1,12 @@
-Return-Path: <cmsv@wirelesspt.net>
-Message-ID: <5313B316.701@wirelesspt.net>
-Date: Sun, 02 Mar 2014 17:39:18 -0500
-From: cmsv <cmsv@wirelesspt.net>
+Return-Path: <rsc@pengutronix.de>
+Date: Mon, 10 Mar 2014 22:25:25 +0100
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+Message-ID: <20140310212525.GU24339@pengutronix.de>
 MIME-Version: 1.0
-References: <CANHt3YGgN754sR4V2v0jpgMoTSSg0OVmGMOTRQ3zrF8dS5mA_Q@mail.gmail.com>
-In-Reply-To: <CANHt3YGgN754sR4V2v0jpgMoTSSg0OVmGMOTRQ3zrF8dS5mA_Q@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] Network coding multi-hop bandwidth loss
-Reply-To: cmsv@wirelesspt.net,
- The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] Line of Nodes
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -20,47 +17,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-I just found out /(the hard way) that using network coding (batman-adv
-2013.4) that i have a massive, unbelievable bandwidth loss if i have
-more than one hop to the destination
+Hi,
 
-I tested this in a real scenario with 11 nodes as well as 3 nodes in a
-house with 3 floors and having one per each floor.
+I have a little bit strange usecase for a wireless mesh network, and I'm
+wondering if B.A.T.M.A.N could be a good choice: my network stations,
+which are part of an industrial application, are located in a line:
 
-Here is the example with 3 nodes
+  Gateway - A1 - A2 - A3 - A4 - A5 - ... - A120
 
-A <------ B -----> C
+Any station generates data and wants to transmit it to the gateway, with
+the smallest possible latency. The distance of the stations is pretty
+small: about 3...4 m.
 
-From node B to iperf reports me 15 mbit
-From node B to node C iperf reports me 9 mbit
+It might happen that someone re-arranges the stations:
 
-Then, from node C to node A i get values bellow 1 mbit such as 647kbits
-or less.
-More than 3 nodes is to forget.
+  Gateway - A9 - A17 - A1 - A47 - A9 - ... - A6
 
-uci set batman-adv.bat0.network_coding=0 disables nc and solved the
-problem which brought the network bandwidth to a more realistic and
-mathematical acceptable bandwidth level.
+but the topology stays the same (a line).
 
-Is this finding known by others ?
+It is allowed that one station sends its data to the farest reachable
+hop, so i.e. for my first example, if A5 wants to send data and is able
+to reach A2, it could directly do so.
 
+- What do you think, could B.A.T.M.A.N be a solution?
+- Could the short distance be a problem?
+- Is it possible to regulate the transmission power in order to avoid
+  disturbance?
 
+Any hint, literature or link is appreciated.
 
+rsc
 -- 
-
-
-Site: http://wirelesspt.net
-Mesh: http://tinyurl.com/wirelesspt
-Admin: http://wirelesspt.net/wiki/Cmsv
-Twitter: http://twitter.com/wirelesspt
-Youtube: https://youtube.com/wirelesspt
-Facebook: https://www.facebook.com/wirelesspt
-Suporte técnico via sms: 91 19 11 798
-Donativos/Paypal: http://tinyurl.com/doar-verba
-Chave publica PGP/SSH: http://wirelesspt.net/arquivos/pk
-Email ao abrigo de: https://creativecommons.org/licenses/by-nc-sa/3.0/pt/
-
-
-
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
