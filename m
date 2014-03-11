@@ -1,15 +1,8 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <531F061A.2030401@meshcoding.com>
-Date: Tue, 11 Mar 2014 13:48:26 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
-References: <CAOyZXpRP_3vJ0SiHP40BreTaqOzkS9tsp-zVWBjThdzpFJxiPQ@mail.gmail.com>
-In-Reply-To: <CAOyZXpRP_3vJ0SiHP40BreTaqOzkS9tsp-zVWBjThdzpFJxiPQ@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="wh10oaReoS5GLekpN4weO6fsOxjsWA7El"
-Subject: Re: [B.A.T.M.A.N.] [B.A.T.M.A.N.A.D.V] Deploy batman-adv using
- Station - Access Point mode?
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 11 Mar 2014 18:47:15 +0100
+Message-Id: <1394560036-420-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] batctl: check for batman interface
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,83 +14,137 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: trandatnh@gmail.com
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---wh10oaReoS5GLekpN4weO6fsOxjsWA7El
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Simon Wunderlich <simon@open-mesh.com>
 
-Hi,
+Check if the interface supplied by -m (or bat0 by default) is actually a
+batman interface. The check is performed by testing if the sysfs path
+is available.
 
-On 11/03/14 09:06, Le Tran Dat wrote:
-> For example: What I am trying to do right now is to connect those
-> devices by using Station <-> Access Point mode. But I have no ideas
-> how the OGM message transmit between the Mesh Node so I worry that the
-> Station <-> Access Point can not take advance of batman-adv.
->=20
+This change is required since debugfs now contains originator tables per
+hard interface. This might be confusing for users as batctl -m eth0 o
+will now (accidently) print these tables without eth0 beeing a batman
+interface, assuming eth0 is a hard interface used by batman-adv.
 
-What you have to keep in mind is that everytime if a generic node A
-receives an OGM where the Ethernet MAC address is the same as the
-originator address then A thinks that there is a direct link between
-itself and the source (simplistic explanation).
+Some reordering of commands were required to first allow commands which
+don't depend on a (correctly set up) mesh interface, like bisect or
+interface.
 
-Therefore, to prevent the nodes from making wrong assumptions, you have
-to enable the isolation on the Access Point.
+Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+---
+ main.c |   32 +++++++++++++++++---------------
+ sys.c  |   30 ++++++++++++++++++++++++++++++
+ sys.h  |    1 +
+ 3 files changed, 48 insertions(+), 15 deletions(-)
 
-If you don't do so then you can end up in the following situation:
-1) STA1 sends an OGM as broadcast packet
-2) the AP rebroadcasts such packet as per 802.11 standard (to ensure
-that all the associated STAs can receive it)
-3) a generic STA2 receives the OGM and erroneously thinks to be directly
-connected to STA1, while this is not true because the packets must
-travel through the AP[1].
+diff --git a/main.c b/main.c
+index a37c0b7..44cf49b 100644
+--- a/main.c
++++ b/main.c
+@@ -137,7 +137,23 @@ int main(int argc, char **argv)
+ 		exit(EXIT_FAILURE);
+ 	}
+ 
+-	if ((strcmp(argv[1], "ping") == 0) || (strcmp(argv[1], "p") == 0)) {
++	if ((strcmp(argv[1], "interface") == 0) || (strcmp(argv[1], "if") == 0)) {
++
++		ret = interface(mesh_iface, argc - 1, argv + 1);
++
++	} else if ((strcmp(argv[1], "tcpdump") == 0) || (strcmp(argv[1], "td") == 0)) {
++
++		ret = tcpdump(argc - 1, argv + 1);
++
++#ifdef BATCTL_BISECT
++	} else if ((strcmp(argv[1], "bisect_iv") == 0)) {
++
++		ret = bisect_iv(argc - 1, argv + 1);
++#endif
++	} else if (check_mesh_iface(mesh_iface) < 0) {
++		fprintf(stderr, "Error - interface %s is not present or not a batman-adv interface\n", mesh_iface);
++		exit(EXIT_FAILURE);
++	} else if ((strcmp(argv[1], "ping") == 0) || (strcmp(argv[1], "p") == 0)) {
+ 
+ 		ret = ping(mesh_iface, argc - 1, argv + 1);
+ 
+@@ -145,14 +161,6 @@ int main(int argc, char **argv)
+ 
+ 		ret = traceroute(mesh_iface, argc - 1, argv + 1);
+ 
+-	} else if ((strcmp(argv[1], "tcpdump") == 0) || (strcmp(argv[1], "td") == 0)) {
+-
+-		ret = tcpdump(argc - 1, argv + 1);
+-
+-	} else if ((strcmp(argv[1], "interface") == 0) || (strcmp(argv[1], "if") == 0)) {
+-
+-		ret = interface(mesh_iface, argc - 1, argv + 1);
+-
+ 	} else if ((strcmp(argv[1], "loglevel") == 0) || (strcmp(argv[1], "ll") == 0)) {
+ 
+ 		ret = handle_loglevel(mesh_iface, argc - 1, argv + 1);
+@@ -179,12 +187,6 @@ int main(int argc, char **argv)
+ 
+ 		ret = translate(mesh_iface, argc - 1, argv + 1);
+ 
+-#ifdef BATCTL_BISECT
+-	} else if ((strcmp(argv[1], "bisect_iv") == 0)) {
+-
+-		ret = bisect_iv(argc - 1, argv + 1);
+-#endif
+-
+ 	} else {
+ 
+ 		for (i = 0; i < BATCTL_SETTINGS_NUM; i++) {
+diff --git a/sys.c b/sys.c
+index fd6e107..8ba7d4f 100644
+--- a/sys.c
++++ b/sys.c
+@@ -566,3 +566,33 @@ out:
+ 	free(path_buff);
+ 	return res;
+ }
++
++int check_mesh_iface(char *mesh_iface)
++{
++	char *base_dev = NULL;
++	char *check_iface;
++	char path_buff[PATH_BUFF_LEN];
++	DIR *dir;
++	int ret = -1;
++
++	/* use the parent interface if this is a VLAN */
++	vlan_get_link(mesh_iface, &base_dev);
++	check_iface = mesh_iface;
++	if (base_dev)
++		check_iface = mesh_iface;
++
++	/* try to open the mesh sys directory */
++	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, check_iface);
++	dir = opendir(path_buff);
++	if (!dir)
++		goto out;
++
++	closedir(dir);
++
++	ret = 0;
++out:
++	if (base_dev)
++		free(base_dev);
++
++	return ret;
++}
+diff --git a/sys.h b/sys.h
+index 5633822..5aec020 100644
+--- a/sys.h
++++ b/sys.h
+@@ -71,5 +71,6 @@ int interface(char *mesh_iface, int argc, char **argv);
+ int handle_loglevel(char *mesh_iface, int argc, char **argv);
+ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv);
+ int handle_gw_setting(char *mesh_iface, int argc, char **argv);
++int check_mesh_iface(char *mesh_iface);
+ 
+ #endif
+-- 
+1.7.10.4
 
-However, even if the isolation makes batman-adv work reasonably you will
-not have a nice setup because you cannot exploit direct links between
-nodes that may hear each other due to the AP-STA constraint.
-
-Moreover you need to decide which node has to act as AP and which as STA
-before deploying them, thus limiting the "dynamic part" of the mesh netwo=
-rk.
-
-
-I hope this clarified the problem.
-
-
-Cheers,
-
-
-[1] you could have direct links if you are use TDLS, but most of the
-drivers out there do not implement it.
-
---=20
-Antonio Quartulli
-
-
---wh10oaReoS5GLekpN4weO6fsOxjsWA7El
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBCAAGBQJTHwYiAAoJEEKTMo6mOh1V2xAP/3gyMMOM5XDzrx9aCic0SlEM
-qhRNESXufsn7/2PEEMTfMMnpL45fXeqWWbuPXt8jHwEUDKHfLKZPkXRm/3YQ+8cS
-rqS6qfnW6PuCtEf8sdGs/XHWLagDrZ71zuw+rtFQHYYD6k3edy7SeEDQjFixvEPl
-F10y/gymSCsEKH5WraBhjOAYNxdE1VOEZiBllmqeDZTSShKCJHqxW4i0ap8rg9w2
-yH5vHEDXsPFYN7aWcVMeS2sqKBTrtAglFuFWeXPA7lwBsrDFpAJ7wFvRT6NpbHNF
-F/MEIh4nqnoLyHxmr7WuZDqRoweIZ44vxTUUc1uI2FWOXgkfjcyC1z0JO9xNV22d
-+2glL251uQzxjm0y/JkwwWOtySy5xoVOLvAkPKwWYu5GSaYOzVLJ4D2aBmzkfuRa
-NxB85HgSUO2XG09/++j+2Y2Dt5B1POABecEixVU7ngDVrE9J/8MdtzUDcBUDuINU
-685kANDMZlXQM8En5FEVj2PTVTCG48jf2PTD0/1JBE4RFGbPf2SfCmN/yrorHtzb
-Z8znEqPpzEJPkcJqvVtbPpEIBXzbzlfe3xGOhEr8ABXEROLaQMNgbvdgmIeXXtM4
-B+X876Kw4a04L0QRTW2d27c37SkeuSu6EJO+WN4wkygemic19hfI2/6too+5dRP6
-4u5Y0rXIXxK3FSpdG+jW
-=eiXd
------END PGP SIGNATURE-----
-
---wh10oaReoS5GLekpN4weO6fsOxjsWA7El--
