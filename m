@@ -1,12 +1,14 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Tue, 11 Mar 2014 21:04:32 +0100
-Message-Id: <1394568273-1117-1-git-send-email-linus.luessing@web.de>
+Date: Tue, 11 Mar 2014 21:04:33 +0100
+Message-Id: <1394568273-1117-2-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1394568273-1117-1-git-send-email-linus.luessing@web.de>
+References: <1394568273-1117-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv3 1/2] batctl: add switch for setting
-	multicast_mode
+Subject: [B.A.T.M.A.N.] [PATCHv3 2/2] batctl: add unicast/multicast address
+	filter option for TT output
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,82 +22,150 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This patch adds a switch for the new multicast_mode setting in
-batman-adv.
+This patch adds the new "-u" and "-m" options for the local and global
+translation table output to only display announced unicast or multicast
+mac addresses to enhance readability.
 
 Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 ---
-v3: fix merge conflict
-    (ordex was quicker with his isolation mark support patch :P)
+v3: unchanged
 
- README       |    7 +++++++
- man/batctl.8 |    4 ++++
- sys.c        |    6 ++++++
- sys.h        |    1 +
- 4 files changed, 18 insertions(+)
+ debug.c      |   32 +++++++++++++++++++++++++++++++-
+ functions.c  |   22 ++++++++++++++++++++++
+ functions.h  |    2 ++
+ man/batctl.8 |    2 ++
+ 4 files changed, 57 insertions(+), 1 deletion(-)
 
-diff --git a/README b/README
-index a4507b7..fe8eed9 100644
---- a/README
-+++ b/README
-@@ -392,6 +392,13 @@ Usage: batctl network_coding|nc [0|1]
+diff --git a/debug.c b/debug.c
+index 6836857..acf452b 100644
+--- a/debug.c
++++ b/debug.c
+@@ -91,6 +91,10 @@ static void debug_table_usage(int debug_table)
  
- Note that network coding requires a working promiscuous mode on all interfaces.
+ 	if (debug_table == BATCTL_TABLE_ORIGINATORS)
+ 		fprintf(stderr, " \t -t timeout interval - don't print originators not seen for x.y seconds \n");
++	if (debug_table == BATCTL_TABLE_TRANSLOCAL ||
++	    debug_table == BATCTL_TABLE_TRANSGLOBAL) {
++		fprintf(stderr, " \t -u|-m print unicast or multicast mac addresses only\n");
++	}
+ }
  
-+batctl multicast_mode
-+=====================
-+
-+display or modify the multicast mode setting
-+
-+Usage: batctl multicast_mode|mm [0|1]
-+
- batctl aggregation
- ==================
+ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
+@@ -102,7 +106,7 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
+ 	float watch_interval = 1;
+ 	opterr = 0;
  
+-	while ((optchar = getopt(argc, argv, "hnw:t:H")) != -1) {
++	while ((optchar = getopt(argc, argv, "hnw:t:Hum")) != -1) {
+ 		switch (optchar) {
+ 		case 'h':
+ 			debug_table_usage(debug_table);
+@@ -138,6 +142,26 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
+ 		case 'H':
+ 			read_opt |= SKIP_HEADER;
+ 			break;
++		case 'u':
++			if (debug_table != BATCTL_TABLE_TRANSLOCAL &&
++			    debug_table != BATCTL_TABLE_TRANSGLOBAL) {
++				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
++				debug_table_usage(debug_table);
++				return EXIT_FAILURE;
++			}
++
++			read_opt |= UNICAST_ONLY;
++			break;
++		case 'm':
++			if (debug_table != BATCTL_TABLE_TRANSLOCAL &&
++			    debug_table != BATCTL_TABLE_TRANSGLOBAL) {
++				fprintf(stderr, "Error - unrecognised option '-%c'\n", optchar);
++				debug_table_usage(debug_table);
++				return EXIT_FAILURE;
++			}
++
++			read_opt |= MULTICAST_ONLY;
++			break;
+ 		case '?':
+ 			if (optopt == 't')
+ 				fprintf(stderr, "Error - option '-t' needs a number as argument\n");
+@@ -156,6 +180,12 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
+ 		}
+ 	}
+ 
++	if (read_opt & UNICAST_ONLY && read_opt & MULTICAST_ONLY) {
++		fprintf(stderr, "Error - '-u' and '-m' are exclusive options\n");
++		debug_table_usage(debug_table);
++		return EXIT_FAILURE;
++	}
++
+ 	debugfs_mnt = debugfs_mount(NULL);
+ 	if (!debugfs_mnt) {
+ 		fprintf(stderr, "Error - can't mount or find debugfs\n");
+diff --git a/functions.c b/functions.c
+index 36804bd..117dcff 100644
+--- a/functions.c
++++ b/functions.c
+@@ -175,6 +175,14 @@ static void file_open_problem_dbg(const char *dir, const char *fname,
+ 	}
+ }
+ 
++static int str_is_mcast_addr(char *addr)
++{
++	struct ether_addr *mac_addr = ether_aton(addr);
++
++	return !mac_addr ? 0 :
++		mac_addr->ether_addr_octet[0] & 0x01;
++}
++
+ int read_file(const char *dir, const char *fname, int read_opt,
+ 	      float orig_timeout, float watch_interval, size_t header_lines)
+ {
+@@ -224,6 +232,20 @@ read:
+ 			    && (last_seen > orig_timeout))
+ 				continue;
+ 
++		/* translation table: skip multicast */
++		if (line > header_lines &&
++		    read_opt & UNICAST_ONLY &&
++		    strlen(line_ptr) > strlen(" * xx:xx:xx:") &&
++		    str_is_mcast_addr(line_ptr+3))
++			continue;
++
++		/* translation table: skip unicast */
++		if (line > header_lines &&
++		    read_opt & MULTICAST_ONLY &&
++		    strlen(line_ptr) > strlen(" * xx:xx:xx:") &&
++		    !str_is_mcast_addr(line_ptr+3))
++			continue;
++
+ 		if (!(read_opt & USE_BAT_HOSTS)) {
+ 			printf("%s", line_ptr);
+ 			continue;
+diff --git a/functions.h b/functions.h
+index 14ba525..43c3d9c 100644
+--- a/functions.h
++++ b/functions.h
+@@ -57,6 +57,8 @@ enum {
+ 	NO_OLD_ORIGS = 0x40,
+ 	COMPAT_FILTER = 0x80,
+ 	SKIP_HEADER = 0x100,
++	UNICAST_ONLY = 0x200,
++	MULTICAST_ONLY = 0x400,
+ };
+ 
+ #endif
 diff --git a/man/batctl.8 b/man/batctl.8
-index b808293..f92bf3a 100644
+index f92bf3a..79d7887 100644
 --- a/man/batctl.8
 +++ b/man/batctl.8
-@@ -88,6 +88,10 @@ disable fragmentation.
- If no parameter is given the current network coding mode setting is displayed. Otherwise the parameter is used to enable or
- disable network coding.
- .br
-+.IP "\fBmulticast_mode\fP|\fBmm\fP [\fB0\fP|\fB1\fP]"
-+If no parameter is given the current multicast mode setting is displayed. Otherwise the parameter is used to enable or
-+disable multicast optimizations (i.e. disabling means always sending own multicast frames via classic flooding).
-+.br
- .IP "\fBloglevel\fP|\fBll\fP [\fBlevel\fP[ \fBlevel\fP[ \fBlevel\fP]] \fB...\fP]"
- If no parameter is given the current log level settings are displayed otherwise the parameter(s) is/are used to set the log
- level. Level 'none' disables all verbose logging. Level 'batman' enables messages related to routing / flooding / broadcasting.
-diff --git a/sys.c b/sys.c
-index fd6e107..d20696b 100644
---- a/sys.c
-+++ b/sys.c
-@@ -103,6 +103,12 @@ const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
- 		.sysfs_name = "isolation_mark",
- 		.params = NULL,
- 	},
-+	{
-+		.opt_long = "multicast_mode",
-+		.opt_short = "mm",
-+		.sysfs_name = "multicast_mode",
-+		.params = sysfs_param_enable,
-+	},
- };
+@@ -198,6 +198,8 @@ All of the debug tables support the following options:
+ The originator table also supports the "\-t" filter option to remove all originators from the output that have not been seen
+ for the specified amount of seconds (with optional decimal places).
  
- static void interface_usage(void)
-diff --git a/sys.h b/sys.h
-index 5633822..dd0bee5 100644
---- a/sys.h
-+++ b/sys.h
-@@ -47,6 +47,7 @@ enum batctl_settings_list {
- 	BATCTL_SETTINGS_FRAGMENTATION,
- 	BATCTL_SETTINGS_NETWORK_CODING,
- 	BATCTL_SETTINGS_ISOLATION_MARK,
-+	BATCTL_SETTINGS_MULTICAST_MODE,
- 	BATCTL_SETTINGS_NUM,
- };
- 
++The local and global translation tables also support the "\-u" and "\-m" option to only display unicast or multicast translation table announcements respectively.
++
+ List of debug tables:
+ .RS 10
+ \- originators|o
 -- 
 1.7.10.4
 
