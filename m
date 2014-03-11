@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 11 Mar 2014 18:43:40 +0800
-Message-ID: <1664196.Jt0tteyZgd@diderot>
-In-Reply-To: <1393798682-7703-2-git-send-email-linus.luessing@web.de>
+Date: Tue, 11 Mar 2014 18:46:58 +0800
+Message-ID: <2176162.zZ9NafHQfN@diderot>
+In-Reply-To: <1393798682-7703-3-git-send-email-linus.luessing@web.de>
 References: <1393798682-7703-1-git-send-email-linus.luessing@web.de>
- <1393798682-7703-2-git-send-email-linus.luessing@web.de>
+ <1393798682-7703-3-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2411238.LW8NTg6f00";
+Content-Type: multipart/signed; boundary="nextPart4305133.Tn44jBCHNt";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/3] batctl: fix wrong header lines
-	number for local translation table
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/3] batctl: add switch for setting
+	multicast_mode
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,32 +21,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart2411238.LW8NTg6f00
+--nextPart4305133.Tn44jBCHNt
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Sunday 02 March 2014 23:18:00 Linus L=FCssing wrote:
-> A commit in batman-adv has added a second header line to the local
-> translation table output.
->=20
-> Introduced by 59cb0861498776c62bd17584c31f34477fa301a0
-> ("batman-adv: improve local translation table output")
+On Sunday 02 March 2014 23:18:01 Linus L=FCssing wrote:
+> This patch adds a switch for the new multicast_mode setting in
+> batman-adv.
 >=20
 > Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
-> Acked-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
->  debug.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  README       |    7 +++++++
+>  man/batctl.8 |    4 ++++
+>  sys.c        |    6 ++++++
+>  sys.h        |    1 +
+>  4 files changed, 18 insertions(+)
 
-Applied in revision 795b0ba.
+I am unable to apply this patch. Not sure whether it is a simple merge =
+error=20
+or due to the encoding of your patch. Can you apply this mail using 'gi=
+t am'=20
+on the current master ?
 
-Thanks,
+Cheers,
 Marek
 
---nextPart2411238.LW8NTg6f00
+--nextPart4305133.Tn44jBCHNt
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -54,14 +57,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTHujgAAoJEFNVTo/uthzA5kEH+weuhu8lTiVNZ/szKKqP8Wqn
-3EgXDHQJc7AiXKK+/wpkhjTMQsgh6GIOtOv/XNRv8dREKh/19LUuwsWM69iMBZYb
-RmW/kEdXbGvIFc0knJ2j4F8nPCLewpkCkJf+tNRoSlCAdD0XIflWUplhHTj7o/ah
-E6NFzbA7ioc48sMtmy3IoQJ1sPPZ5zUPG6oApfkcghLYV17anpyJugAcinzVMzH1
-4qhnbkrod0Sp3FWeNe/oqLSWM+7ktdcp88D0Zj6UwfE5i2wrxe+/C3z0krrGQUTW
-c34rmlha6BnzxosqlpHNM93lSCAsVSB+DumPhbg8TbNZfkZl2Gu9kqeTTbqVTbo=
-=t5hy
+iQEcBAABAgAGBQJTHumjAAoJEFNVTo/uthzAHnEH/AsX5fYVe4s5REH1bmgJo57V
+5wAXHSgzKg4yRhcVQenvn7mE5ZSdS/8opL0a1WqHqHKvoTQBQy/vugEb5538gPPK
+0GBkme+00vV8yC95/TDrgDZWb4OCLbl11Ym4fX4TzNZuIWLCUUwaJk8NkRHILvo+
+A8cBLClEIX/r4MKUo/ZPrBLhArXmbEdwAUeBUtyfdiRsQrUvrvSp6fEup9ERBWe/
+EXYpv9p366QOQV2hYQ0hx/BT0VmfuTnW0xYIYDuY1yOO6BK320cIKI0yKJW+LS/s
+/oJXxtJ2favgnxiZs6cULVzuKf/B75RqcfSwD5jmM5X+uqsYLCdAykAXR1L5IlQ=
+=1IwM
 -----END PGP SIGNATURE-----
 
---nextPart2411238.LW8NTg6f00--
+--nextPart4305133.Tn44jBCHNt--
 
