@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 11 Mar 2014 17:55:29 +0800
-Message-ID: <5309736.xc4eGd75N6@diderot>
-In-Reply-To: <1393420412-3931-1-git-send-email-antonio@meshcoding.com>
-References: <1393420412-3931-1-git-send-email-antonio@meshcoding.com>
+Date: Tue, 11 Mar 2014 18:12:13 +0800
+Message-ID: <1829140.2fHYrOKtOG@diderot>
+In-Reply-To: <1393082406-3615-1-git-send-email-antonio@meshcoding.com>
+References: <1393082406-3615-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart10132721.d7f6VN7xpH";
+Content-Type: multipart/signed; boundary="nextPart1699520.tmCSJpazbU";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: use the name of the array
-	as pointer
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: properly align constant
+	assignments
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,29 +24,28 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart10132721.d7f6VN7xpH
+--nextPart1699520.tmCSJpazbU
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday 26 February 2014 14:13:32 Antonio Quartulli wrote:
-> Introduced by fb4756fe5f6e58ca2ab208ca634ae4c8dd6e9499
-> ("batman-adv: use ether_addr_copy instead of memcpy in multicast code")
+On Saturday 22 February 2014 16:20:06 Antonio Quartulli wrote:
+> All the assignments in packet.h are properly aligned.
+> Also the multicast constants have to have a similar shape.
+> 
+> Introduced by 1c090349e2f65d19a7f356cc0b61f13644c53bb6
+> ("batman-adv: Add IPv4 link-local/IPv6-ll-all-nodes multicast support")
 > 
 > Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
-> 
-> change from v1:
-> - added Signed-off-by clause
-> 
->  multicast.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  packet.h | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 
-Applied in revision f5129b2.
+Applied in revision c77850c.
 
 Thanks,
 Marek
 
---nextPart10132721.d7f6VN7xpH
+--nextPart1699520.tmCSJpazbU
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -54,14 +53,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTHt2RAAoJEFNVTo/uthzAYxsH/0fsLk8dDCTQSGOGLXc7itLE
-XaJmO67s7jQAzgoUlGnKM9j5pBfF+76sfeB68cO8PysV9peAgJ0pEzlLlEe0w1hX
-I+Gpk0zbnWjoqnQQMhXLeGuQ1y0FT8BCGWvVIXwSnwNuoIFDEb3fTqOCKHYH7Vmo
-MLwEVpMPdpP4HrSNtGotlx0J7u/YfRXXXtTE/cm4txwazSaTKpTUqLxLSz2MA+ih
-YL5GBPivlWGHmLq6DTJSNeELjulHgboRMkjWlgy6QSZEZrSxrd8Zmqr32MkwRLXu
-E2B6iNotOD7e8YVr+UZwrCk0MmBs2tcmxhtd/0LwDmiG2JmtOIrrBmJvN+vRnPk=
-=RXUZ
+iQEcBAABAgAGBQJTHuGAAAoJEFNVTo/uthzA3uwH/iFVnBhe8D2vHsyrSD3/EigZ
+DcVPEzhSrGUekiTLx4BwLrbYjX5UMrg0l2QZXhRhRKFmDD6diJ6G4lTwdSCiPZa5
+duvnq6J5z+4vDdQuuGGmYe6iMVb+wfvZYSkvVMtAsQ7rNOmYq1BemfHGqnDph2Us
+3zKerY8GaNXK+A1kYa4cv0tsgJw0L+p1Iv2EMrZ/221wejSCA0Tm2Ja62Ly0/FMU
+GAYsvHLsVbxhBUoCr9+PvTgxdJSnNaWPkZsP9p97cFcDULLOvR+8jJiFv8KU8ZtT
+f5Ol85YLtrGyGcDxXzu/GUEg89/gLP6PBNYRO4W1Ew8PXhEjeoaMAu9FzuZ+JcE=
+=qDIq
 -----END PGP SIGNATURE-----
 
---nextPart10132721.d7f6VN7xpH--
+--nextPart1699520.tmCSJpazbU--
 
