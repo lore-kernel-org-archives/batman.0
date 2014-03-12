@@ -1,15 +1,17 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 12 Mar 2014 12:16:40 +0800
-Message-ID: <4033922.juN9sdUF17@diderot>
-In-Reply-To: <1394568273-1117-1-git-send-email-linus.luessing@web.de>
-References: <1394568273-1117-1-git-send-email-linus.luessing@web.de>
+Return-Path: <tom_a_sparks@yahoo.com.au>
+References: <1394526073.90768.YahooMailNeo@web142501.mail.bf1.yahoo.com>
+ <1394540404.89540.YahooMailNeo@web142502.mail.bf1.yahoo.com>
+ <20140311230300.GP5090@Linus-Debian>
+Message-ID: <1394602556.77497.YahooMailNeo@web142503.mail.bf1.yahoo.com>
+Date: Tue, 11 Mar 2014 22:35:56 -0700 (PDT)
+From: Tom Sparks <tom_a_sparks@yahoo.com.au>
+In-Reply-To: <20140311230300.GP5090@Linus-Debian>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart20214855.a5ZYAmgOCR";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 1/2] batctl: add switch for setting
-	multicast_mode
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] batman over wireless bridges
+Reply-To: Tom Sparks <tom_a_sparks@yahoo.com.au>,
+ The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -20,49 +22,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: =?iso-8859-1?Q?Linus_L=FCssing?= <linus.luessing@web.de>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-
---nextPart20214855.a5ZYAmgOCR
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
-
-On Tuesday 11 March 2014 21:04:32 Linus L=FCssing wrote:
-> This patch adds a switch for the new multicast_mode setting in
-> batman-adv.
->=20
-> Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
-> ---
-> v3: fix merge conflict
->     (ordex was quicker with his isolation mark support patch :P)
->=20
->  README       |    7 +++++++
->  man/batctl.8 |    4 ++++
->  sys.c        |    6 ++++++
->  sys.h        |    1 +
->  4 files changed, 18 insertions(+)
-
-Applied in revision 42ffd4c.
-
-Thanks,
-Marek
-
---nextPart20214855.a5ZYAmgOCR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJTH9+sAAoJEFNVTo/uthzA3hwH/i94P5Td8u8N6qqxcSNcEOiT
-LLHee7xlJRmEzb0DQw4tEPM9mQy/eNBCxir0tN3ZkpV0pB2Ll3Zjn9RnYkUWFOF/
-0EXXCGESJ3+KweeJrp4nRhAy2S2ajhkXqtlucichLp3853yWCMCgsDd/oDsX9ffk
-lLVtXUwuyLDo1uHYMIo4CBimLLJXw85CdTnRFewAazem64VK+1XrcR6tcO3+hz/4
-GClop38KCR915tsWKsTwtc2ctDQpSw3KTNiuVcpx/Yu1pp1RX3Ldm77vH9EBl2Nn
-4IFRy68eeZPt7QduuvLg4r5RY3XM9xe+1SxJsKm/d15nfLYXUs9ifGWYViOxyXM=
-=4u5a
------END PGP SIGNATURE-----
-
---nextPart20214855.a5ZYAmgOCR--
-
+> On Wednesday, 12 March 2014 10:15 AM, Linus L=FCssing <linus.luessing@web=
+.de> wrote:=0A=0A> > Hi Tom,=0A> =0A> We are currently using batman-adv ove=
+r Ubiquiti Nanobridges M5 for=0A> Freifunk. That works just fine, these dev=
+ices are able to=0A> transparently forward the batman-adv ethernet frames.=
+=0A> =0A> Cheers, Linus=0A> =0Ap2p link distance is going to be my main iss=
+ue, but that for another thread=0A=0Atom =0A> =0A> =0A> On Tue, Mar 11, 201=
+4 at 05:20:04AM -0700, Tom Sparks wrote:=0A>> =0A>> =0A>>  I am wondering h=
+ow well batman works over wireless bridges=0A>>  like this:=0A>> =0A>>  bat=
+R <--> wifiB <--> wifiB <--> batR=0A>> =0A>> =0A>>  meanings:=0A>>  BatR: o=
+penwrt router with batman installed=0A>>  wifiB: wifi bridge=0A>> =0A>> =0A=
+>> =0A>>  ---=0A>>  tom_a_sparks "It's a nerdy thing I like to do"=0A>> =0A=
+> 
