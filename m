@@ -1,15 +1,18 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <5320965F.1030900@hundeboll.net>
-Date: Wed, 12 Mar 2014 10:16:15 -0700
-From: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
+Return-Path: <rsc@pengutronix.de>
+Date: Wed, 12 Mar 2014 19:20:46 +0100
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+Message-ID: <20140312182046.GT1629@pengutronix.de>
+References: <20140310212525.GU24339@pengutronix.de>
+ <201403121136.16430.sw@simonwunderlich.de>
+ <20140312125329.GJ1629@pengutronix.de>
+ <201403121451.09760.sw@simonwunderlich.de>
+ <20140312142507.GO1629@pengutronix.de>
+ <20140312145448.GC15090@lunn.ch>
 MIME-Version: 1.0
-References: <CANHt3YGgN754sR4V2v0jpgMoTSSg0OVmGMOTRQ3zrF8dS5mA_Q@mail.gmail.com>
- <5313B316.701@wirelesspt.net>
-In-Reply-To: <5313B316.701@wirelesspt.net>
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature";
- boundary="RDDCqEW5jsuCPdgD8oo22LC40hVO8A1K5"
-Subject: Re: [B.A.T.M.A.N.] Network coding multi-hop bandwidth loss
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20140312145448.GC15090@lunn.ch>
+Subject: Re: [B.A.T.M.A.N.] Line of Nodes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,92 +24,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: cmsv@wirelesspt.net, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---RDDCqEW5jsuCPdgD8oo22LC40hVO8A1K5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Wed, Mar 12, 2014 at 03:54:48PM +0100, Andrew Lunn wrote:
+> > > I'd definitely recommend to buy WiFi modules (e.g. pci-e) or off-the-shelf 
+> > > boards with WiFi SoCs on it. If you don't have experience in building WiFi 
+> > > routers, you might have a lot of fun otherwise. :)
+> > 
+> > The issue is that the stations need to be very low power, so I'd like to
+> > leave everything out which draws power but isn't absolutely needed. The
+> > HF part should be solvable, that's something the hardware developers
+> > have experience with. I'm aiming for a low power ARM cpu, which
+> > basically rules out anything that needs PCIe and leaves us with SDIO or
+> > USB for the connection of the transmitters.
+> 
+> I'm hoping i can get my hands on one of these soon:
+> 
+> http://www.logicpd.com/products/system-on-modules/dm3730-torpedo-wireless-som/
+> 
+> There is a kernel patch around for one of the Yocto kernels, which i
+> expect you guys would have no trouble cleaning up.
 
-Hi cmvs,
+Nice little system. I already have the TI WiLink chips on my list of
+possible devices (we have an older one on an SDIO card for testing).
 
-Thanks for testing NC.
+Thanks for the pointer!
 
-On 2014-03-02 14:39, cmsv wrote:
-> I just found out /(the hard way) that using network coding (batman-adv
-> 2013.4) that i have a massive, unbelievable bandwidth loss if i have
-> more than one hop to the destination
->=20
-> I tested this in a real scenario with 11 nodes as well as 3 nodes in a
-> house with 3 floors and having one per each floor.
->=20
-> Here is the example with 3 nodes
->=20
-> A <------ B -----> C
->=20
-> From node B to iperf reports me 15 mbit
-> From node B to node C iperf reports me 9 mbit
->=20
-> Then, from node C to node A i get values bellow 1 mbit such as 647kbits=
-
-> or less.
-> More than 3 nodes is to forget.
->=20
-> uci set batman-adv.bat0.network_coding=3D0 disables nc and solved the
-> problem which brought the network bandwidth to a more realistic and
-> mathematical acceptable bandwidth level.
->=20
-> Is this finding known by others ?
-
-Have you verified that both node A and C have working promiscuous mode?
-One way to do this is to transmit udp packets from B to A with iperf and
-count the number of received packets on C with tcpdump.
-
-In addition, you should note that NC doesn't bring a gain for
-unidirectional flows, so even though TCP sends ACKs in the reverse
-direction, the gain is probably eaten up by the delay added by node B,
-in order to increase the chance of coding opportunities.
-
-When you have verified the working promisc mode, can you repeat the test
-and tell us the results?
-
-And also test with two TCP flows: A -> C and C -> A ?
-
-Thanks!
-
---=20
-Kind Regards
-Martin Hundeb=C3=B8ll
-Frederiks All=C3=A9 99, 1.th
-8000 Aarhus C
-Denmark
-
-+45 61 65 54 61
-martin@hundeboll.net
-
-
---RDDCqEW5jsuCPdgD8oo22LC40hVO8A1K5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBCgAGBQJTIJZiAAoJEI7EM4tTnYEZW84P/2OlMfWpMPQ4SaPTLrNKdV+X
-NUWM5BZT+318VAlgE7H7GyABpODK3r4zmBcWAnWCLmHo0ChvaaN7kU4BXU9pLb2I
-0Z1RWG29ZsvQJYSQdOJZBBJfE4pdvxeIMmI4jF41BKo+FIp/XRjFkwcaGU6wS8ml
-NnDyvz60MLWqBF8jUoMXkqfh8WG/quopsN/6ba2mqxsWf2eC2TbeCSPMvh78RLMf
-N+bHqAAiMs9hZODE0jSdTS4lcBWexzDbBcnU8EM4szuGRmJayiqSwhyjrwQnbQBI
-MvrH6PAHVAEhv3gr1p0sHaAUcUVdttDP6lSLSHnQcvkpO2BQMXNN7FJ224rLlQC8
-UlnXnoMX7aq8ECOUpCjLxqsenqb9d9qMvT8kZiX6k5RXvd30EamNQNc5HeAaT/ZU
-exJV0eyKkd6dS/wQRVmBVKgi4tu0d977XFxFCHe8NCuXP3G3Deo/0oAyRQG/0SaU
-ap+YbmUuYYtqHUjkJ+36s51DLn33uzbhY70ciz9TuDWZfa4oeKXrf4UYGMAS41e+
-aK2blpILOnoYVF3sGwI8AS7e5YgIizuTY+FQDFuWXLC+8lA46FbrJYc23RQj7OMh
-s8U2RtPAwOl7yCYgugrsGw0sWui40wdbppuKBWhNaaq4FWUdFmpVqJg2NJa1QH0B
-NTFLF9YB/5k92f1v679a
-=QzZc
------END PGP SIGNATURE-----
-
---RDDCqEW5jsuCPdgD8oo22LC40hVO8A1K5--
+rsc 
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
