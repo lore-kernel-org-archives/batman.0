@@ -1,15 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 12 Mar 2014 15:32:37 +0800
-Message-ID: <1411989.q42HG6dQ0k@diderot>
-In-Reply-To: <1394568273-1117-2-git-send-email-linus.luessing@web.de>
-References: <1394568273-1117-1-git-send-email-linus.luessing@web.de>
- <1394568273-1117-2-git-send-email-linus.luessing@web.de>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 12 Mar 2014 11:36:16 +0100
+References: <20140310212525.GU24339@pengutronix.de>
+In-Reply-To: <20140310212525.GU24339@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6708146.GZnu4rnXZc";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/2] batctl: add unicast/multicast
-	address filter option for TT output
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201403121136.16430.sw@simonwunderlich.de>
+Subject: Re: [B.A.T.M.A.N.] Line of Nodes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,49 +22,51 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+Hey Robert,
 
---nextPart6708146.GZnu4rnXZc
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+> Hi,
+> 
+> I have a little bit strange usecase for a wireless mesh network, and I'm
+> wondering if B.A.T.M.A.N could be a good choice: my network stations,
+> which are part of an industrial application, are located in a line:
+> 
+>   Gateway - A1 - A2 - A3 - A4 - A5 - ... - A120
+> 
+> Any station generates data and wants to transmit it to the gateway, with
+> the smallest possible latency. The distance of the stations is pretty
+> small: about 3...4 m.
+> 
+> It might happen that someone re-arranges the stations:
+> 
+>   Gateway - A9 - A17 - A1 - A47 - A9 - ... - A6
+> 
+> but the topology stays the same (a line).
+> 
+> It is allowed that one station sends its data to the farest reachable
+> hop, so i.e. for my first example, if A5 wants to send data and is able
+> to reach A2, it could directly do so.
+> 
+> - What do you think, could B.A.T.M.A.N be a solution?
 
-On Tuesday 11 March 2014 21:04:33 Linus L=FCssing wrote:
-> This patch adds the new "-u" and "-m" options for the local and globa=
-l
-> translation table output to only display announced unicast or multica=
-st
-> mac addresses to enhance readability.
->=20
-> Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
-> ---
-> v3: unchanged
->=20
->  debug.c      |   32 +++++++++++++++++++++++++++++++-
->  functions.c  |   22 ++++++++++++++++++++++
->  functions.h  |    2 ++
->  man/batctl.8 |    2 ++
->  4 files changed, 57 insertions(+), 1 deletion(-)
+Yes, BATMAN could help in this situation - its better than doing it statically 
+at least, since batman can decide how many intermediate hops to skip.
 
-Applied in revision 6202831.
+> - Could the short distance be a problem?
 
-Thanks,
-Marek
+well you have interference between the nodes and the typical throughput 
+limitations because of the half-duplex nature of WiFi. But if you take that 
+into consideration and don't expect the same throughput as on a single link, 
+3-4 meter should be fine.
 
---nextPart6708146.GZnu4rnXZc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+It also depends on what kind of data you will send (many industrial 
+applications use broadcast, for example).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+> - Is it possible to regulate the transmission power in order to avoid
+>   disturbance?
 
-iQEcBAABAgAGBQJTIA2YAAoJEFNVTo/uthzANl0H/3OrXwJKXRcJsNoGzIzsy40H
-uLC6uj3DTFK5mS8GgX0e4tz910Pqq2KbhoQrnwYMqmuEuWtGqSl0fT276gAKTfL3
-hmT98awFs7orCdXJyRbnKf7aLHeAKKD2V9cFMANocMbeapqaESmbnYIAJMAFtG54
-QBISHrudK2qteLbF9mvulSfpWbeDminf8SnHuwv3cL7jAl3pdGbZWqr+Eh73M+O9
-REsfD6PAUU6PyhX/IlLTX2wl1C0nQQa5yWKlm9lTnbZpNE1Hau1OO66VFZNZ4qJO
-dog71uyzOpsRbeQvTirRNaIPbx11tUjePpmmdrsrbMCjS0qEhtCRP9NX1HVBYA4=
-=tzKj
------END PGP SIGNATURE-----
+There are WiFi driver which allow that, yes. However I'd recommend to keep it 
+as it is and change the broadcast rate to something higher (e.g. 18M or more) 
+to force to only use good links, even if they are a little shorter.
 
---nextPart6708146.GZnu4rnXZc--
-
+Cheers,
+    Simon
