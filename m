@@ -1,17 +1,16 @@
-Return-Path: <tom_a_sparks@yahoo.com.au>
-References: <1394526073.90768.YahooMailNeo@web142501.mail.bf1.yahoo.com>
- <1394540404.89540.YahooMailNeo@web142502.mail.bf1.yahoo.com>
- <20140311230300.GP5090@Linus-Debian>
-Message-ID: <1394602556.77497.YahooMailNeo@web142503.mail.bf1.yahoo.com>
-Date: Tue, 11 Mar 2014 22:35:56 -0700 (PDT)
-From: Tom Sparks <tom_a_sparks@yahoo.com.au>
-In-Reply-To: <20140311230300.GP5090@Linus-Debian>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Wed, 12 Mar 2014 15:32:37 +0800
+Message-ID: <1411989.q42HG6dQ0k@diderot>
+In-Reply-To: <1394568273-1117-2-git-send-email-linus.luessing@web.de>
+References: <1394568273-1117-1-git-send-email-linus.luessing@web.de>
+ <1394568273-1117-2-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] batman over wireless bridges
-Reply-To: Tom Sparks <tom_a_sparks@yahoo.com.au>,
- The list for a Better Approach To Mobile Ad-hoc Networking
+Content-Type: multipart/signed; boundary="nextPart6708146.GZnu4rnXZc";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/2] batctl: add unicast/multicast
+	address filter option for TT output
+Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -22,17 +21,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: =?iso-8859-1?Q?Linus_L=FCssing?= <linus.luessing@web.de>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-> On Wednesday, 12 March 2014 10:15 AM, Linus L=FCssing <linus.luessing@web=
-.de> wrote:=0A=0A> > Hi Tom,=0A> =0A> We are currently using batman-adv ove=
-r Ubiquiti Nanobridges M5 for=0A> Freifunk. That works just fine, these dev=
-ices are able to=0A> transparently forward the batman-adv ethernet frames.=
-=0A> =0A> Cheers, Linus=0A> =0Ap2p link distance is going to be my main iss=
-ue, but that for another thread=0A=0Atom =0A> =0A> =0A> On Tue, Mar 11, 201=
-4 at 05:20:04AM -0700, Tom Sparks wrote:=0A>> =0A>> =0A>>  I am wondering h=
-ow well batman works over wireless bridges=0A>>  like this:=0A>> =0A>>  bat=
-R <--> wifiB <--> wifiB <--> batR=0A>> =0A>> =0A>>  meanings:=0A>>  BatR: o=
-penwrt router with batman installed=0A>>  wifiB: wifi bridge=0A>> =0A>> =0A=
->> =0A>>  ---=0A>>  tom_a_sparks "It's a nerdy thing I like to do"=0A>> =0A=
-> 
+
+--nextPart6708146.GZnu4rnXZc
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
+
+On Tuesday 11 March 2014 21:04:33 Linus L=FCssing wrote:
+> This patch adds the new "-u" and "-m" options for the local and globa=
+l
+> translation table output to only display announced unicast or multica=
+st
+> mac addresses to enhance readability.
+>=20
+> Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
+> ---
+> v3: unchanged
+>=20
+>  debug.c      |   32 +++++++++++++++++++++++++++++++-
+>  functions.c  |   22 ++++++++++++++++++++++
+>  functions.h  |    2 ++
+>  man/batctl.8 |    2 ++
+>  4 files changed, 57 insertions(+), 1 deletion(-)
+
+Applied in revision 6202831.
+
+Thanks,
+Marek
+
+--nextPart6708146.GZnu4rnXZc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJTIA2YAAoJEFNVTo/uthzANl0H/3OrXwJKXRcJsNoGzIzsy40H
+uLC6uj3DTFK5mS8GgX0e4tz910Pqq2KbhoQrnwYMqmuEuWtGqSl0fT276gAKTfL3
+hmT98awFs7orCdXJyRbnKf7aLHeAKKD2V9cFMANocMbeapqaESmbnYIAJMAFtG54
+QBISHrudK2qteLbF9mvulSfpWbeDminf8SnHuwv3cL7jAl3pdGbZWqr+Eh73M+O9
+REsfD6PAUU6PyhX/IlLTX2wl1C0nQQa5yWKlm9lTnbZpNE1Hau1OO66VFZNZ4qJO
+dog71uyzOpsRbeQvTirRNaIPbx11tUjePpmmdrsrbMCjS0qEhtCRP9NX1HVBYA4=
+=tzKj
+-----END PGP SIGNATURE-----
+
+--nextPart6708146.GZnu4rnXZc--
+
