@@ -1,11 +1,16 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 13 Mar 2014 21:27:56 +0800
-Message-ID: <2620023.llp8cNp8dx@diderot>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <5321B5AE.9080005@meshcoding.com>
+Date: Thu, 13 Mar 2014 14:42:06 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8305181.nMeOxZnbf6";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: [B.A.T.M.A.N.] batman-adv 2014.1.0 released
+References: <CAMcTwKrV4OVZP6v3hD2_4t8DWsmymGYgu9xMZa6aexrWQuORtQ@mail.gmail.com>
+ <53218FEB.8000100@meshcoding.com>
+ <CAMcTwKqi+zDUmP-6877Wgs681Qx8jbuY2+gi_7LO0M63e+1nCw@mail.gmail.com>
+In-Reply-To: <CAMcTwKqi+zDUmP-6877Wgs681Qx8jbuY2+gi_7LO0M63e+1nCw@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="I0U6It4T2A47s6oHIdvepXtmK7IiS6jJu"
+Subject: Re: [B.A.T.M.A.N.] IP connection lost when a node is rebooted
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,162 +24,69 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-
---nextPart8305181.nMeOxZnbf6
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--I0U6It4T2A47s6oHIdvepXtmK7IiS6jJu
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
 
 
-The B.A.T.M.A.N. developers are happy to present batman-adv 2014.1.0,=20=
 
-stabilizing the feature-packed 2014.0.0 release while also pushing rout=
-ing=20
-improvements and other smaller features. As the kernel module always de=
-pends=20
-on the Linux kernel it is compiled against, it does not make sense to p=
-rovide=20
-binaries on our website. As usual, you will find the signed tarballs in=
- our=20
-download section:
+On 13/03/14 13:20, Itamar Landsman wrote:
+> Thanks Antonio,
+> I appreciate the quick reply.
+>=20
+> batctl -v returns: batctl debian-2012.1.0-1 [batman-adv: 2013.2.0]
+>=20
+> Should I compile and install from the latest git?
+> I see that the batctl command is from a much older release.. It
+> doesn't support the dat or dc parameters. Should I compile that one as
+> well?
 
-http://downloads.open-mesh.org/batman/releases/batman-adv-2014.1.0/
+The recommendation is to always run the same version of batctl and
+batman-adv, exactly to avoid this kind of situations where you have a
+feature in the kernel module that cannot be used by batctl (I have to
+say that you can use every feature *without* batctl, but if you want to
+use the tool it is better to get the right version).
 
-as well as prepackaged binaries in your distribution.
+The batman-adv version you run is also rather old. I'd personally
+recommend to wait one or two days for the next release and then download
+it (yes, the developers are in the process of releasing it).
 
-Thanks
-=2D-----
-
-Thanks to all people sending in patches:
-
- * Antonio Quartulli <antonio@meshcoding.com>
- * Linus L=FCssing <linus.luessing@web.de>
- * Marek Lindner <mareklindner@neomailbox.ch>
- * Simon Wunderlich <sw@simonwunderlich.de>
- * Stephen Hemminger <stephen@networkplumber.org>
- * Sven Eckelmann <sven@narfation.org>
- * Ying Xue <ying.xue@windriver.com>
-
-Special thanks to Russell Senior for his vigorous testing and debugging=
-=20
-efforts.
+However, here[1] you have a description of the sysfs interface that you
+can use to quickly check the DAT status without doing any upgrade.
 
 
-batman-adv
-=2D---------
-
-After having accomplished the heavy infrastructure lifting with the pre=
-vious=20
-release, the attention shifted towards batman-adv's core functionality =
-=2D=20
-routing packets - once more. The forwarding mechanism of the mesh proto=
-col=20
-messages (OGMs) was revamped to allow applying rules when packets are=20=
-
-forwarded from one interface to another. For example, when the same int=
-erface=20
-is used for sending and receiving, there might be throughput degradatio=
-n on=20
-half-duplex interfaces such as WiFi which is now reflected in the metri=
-c. At=20
-the same time, packets switching interfaces (incoming interface is not =
-equal=20
-to the outgoing one) do not get handicapped, effectively favoring inter=
-face=20
-switching. To pull all this together, batman-adv now maintains a routin=
-g table=20
-per interface (plus the default routing table) which essentially allows=
- the=20
-kernel module to route traffic based on network wide multi-interface=20=
-
-information.
-
-Also new on board is the extended AP isolation, aiming to grant fine-gr=
-ained=20
-isolation control by working with a user specified 'skb mark'. Incoming=
-=20
-broadcast packets carrying the specified skb mark are flagged as 'isola=
-ted'=20
-(translation table flag). Isolated packets received over the mesh are=20=
-
-transformed back to an skb with a mark before they are forwarded to the=
- upper=20
-layers. There, the packets can be filtered, dropped, etc by netfilter a=
-nd=20
-friends based on the skb mark.
-
-The DHCP packet handling scope was widened to force all DHCP packet typ=
-es to=20
-unicast transmission (with the gateway feature enabled), covering older=
- /=20
-unusual DHCP client implementations. Previously, only DHCP discover pac=
-kets=20
-were forwarded as unicast. The MTU overhead calculation did not conside=
-r the=20
-prepended Ethernet header before setting dev->hard_header_len leading t=
-o=20
-fragmented packets. Also removed was the 1500 bytes MTU limit on the ba=
-tX=20
-interface by improving the maximum MTU computation. A potential kernel =
-crash=20
-on skb reallocation was fixed along numerous problems in the translatio=
-n table=20
-component and a memory leak in the newly introduced TVLV infrastructure=
- code.
+Cheers,
 
 
-batctl
-=2D-----
+[1] http://www.open-mesh.org/projects/batman-adv/wiki/Tweaking
 
-The recent switch to the RTNL API was further enriched by replacing the=
- custom=20
-RTNL code with the libnl library to reduce maintenance burden and secur=
-ity=20
-risks. The batctl Makefile attempts to locate the libnl library by itse=
-lf as=20
-well as tries to determine the compiler options, thereby facilitating t=
-he=20
-build process.
-
-To monitor the per-interface routing tables, batctl gained the ability =
-to=20
-retrieve the routing table of a particular interface (the local routing=
- table=20
-is shown per default). Also, the extended AP isolation mark/mask pair c=
-an be=20
-configured through batctl.
+--=20
+Antonio Quartulli
 
 
-alfred
-=2D-----
-
-Fixed was a file descriptor leak in the batadv-vis component which is p=
-art of=20
-the alfred package. Over a longer period time file descriptors were ope=
-ned and=20
-'lost', leading batadv-vis to eventually hit the open file limit and st=
-op=20
-normal operation.
-
-
-Happy routing,
-The B.A.T.M.A.N. team
-
---nextPart8305181.nMeOxZnbf6
+--I0U6It4T2A47s6oHIdvepXtmK7IiS6jJu
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQEcBAABAgAGBQJTIbJgAAoJEFNVTo/uthzAQ9cIAIszeNSk+MJtwt3TkdmQ6ZpI
-IyERxG3djDvNs8NOFAHfMso9guCYSx3clS+y8XF7p8gXALd0CLJhq6+46B1+7SHT
-jHdsD2DsihSZzAcPlq5sM9zDGRqnUZAu1ZOrV3xs4mh7n1LwJ2rmyGmj/+Qt1peO
-ew5yE7oKVidjREnjl4LpnFWfp7gMv32kG97FkznyJbMDH0GMIjtzBTv388ymQlhj
-isWO3w3nHRz4YjUABV/QCsBkeRDiao30HjbbxBxpw6Dn5a5IdtY7yxzC9FYAi0vz
-0nO82aAWIQ9MoS/NOCFNmmoxkh1AQAgpPVqNG6LlwdPQV5BAPtx/5uIzF+2nGmo=
-=KDM9
+iQIcBAEBCAAGBQJTIbW9AAoJEEKTMo6mOh1VTj8P/j6Wj+Kbk0CkB5gyCa/+e0QZ
+/s6mmWqcc2A8aO9KoF+cMXPmBFGcNC0Z0EP4GqrK7bsUBhJUJBpPyGHs1v5Zxjlv
+xdxYuHk06omWw5tr/mFmtxI9eNJRsfN0JLNgSp7JmYB1IwIMJShPG5aYUyM2T1Og
++QbN8ldl/+vq65O/eum5ZKnWBsQpDtHc8Ku8aVVtJcjqMl1cAtERRhw3ji9Qhhyw
++TCR3olWdnGcPTVzLox+VeopXuHlOyRYPtWGyPfwJPRko0GTnu9oZ8XYldr6SNAk
++Q58aoDRShvPk4rDchWF2PTPaqSoVpA4E/lxqKIvP2X/gXtuf/sL9pN058dsI5yk
+XLwHqIFEHalHrCDDtTeHc18aKUhiXz+H+LElig2X+/NyVSAn7qyetK1sJMIOQ17z
+5AQIlCrQ/OlqsSFfYN4bzAE03Qj6Ts5gEYu+jddteZQ/QSjlDh0O6RiO3Jt3OJy2
+SXKEA/SRwTyMYQJW/zVj0q7/aq3QrCUrQTW5kLV+j0EiNIJ4vM0j7UlPu4ijlcjC
+sKCSz8XZ/qTgf5n4CjFWLRWDtuhfMrp6L2kBlEzLDsvfF8xhE9c/B1NGTZdPxvyR
+DJjhI/m/xZgCAXhUdfQJ5tzHmGyPcrSX+x91yLfiVxNiSgeWOvdXwQHIdPDdXIst
+ZSovew2dQX8JQHrnO/CC
+=4k5X
 -----END PGP SIGNATURE-----
 
---nextPart8305181.nMeOxZnbf6--
-
+--I0U6It4T2A47s6oHIdvepXtmK7IiS6jJu--
