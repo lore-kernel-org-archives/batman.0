@@ -1,12 +1,10 @@
-Return-Path: <amadeus@chemnitz.freifunk.net>
+Return-Path: <itamar@itamar.org>
 MIME-Version: 1.0
-Message-ID: <471684d.37bdb3843eeee0bd1ef9e777fc1aabfd@mail.chemnitz.freifunk.net>
-From: "Amadeus Alfa" <amadeus@chemnitz.freifunk.net>
-Date: Thu, 13 Mar 2014 08:27:57 +0000 (GMT)
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: Quoted-Printable
-Subject: Re: [B.A.T.M.A.N.] Anyone at CLT2014?
+Date: Thu, 13 Mar 2014 11:24:00 +0200
+Message-ID: <CAMcTwKrV4OVZP6v3hD2_4t8DWsmymGYgu9xMZa6aexrWQuORtQ@mail.gmail.com>
+From: Itamar Landsman <itamar@itamar.org>
+Content-Type: text/plain; charset=UTF-8
+Subject: [B.A.T.M.A.N.] IP connection lost when a node is rebooted
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,45 +18,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-That will be me talking about batman-adv and how we use it in Freifunk C=
-hemnitz.
+HI,
+I am running a project using Raspberry pi machines that create a
+batman-adv mesh.
+Each of the rpis has three wifi devices. each of the wifi devices
+hosts a separate ad-hoc network. This way I can get to work on three
+separate channels and let batman worry about paths.
 
-You can also meet us at our stand in the exhibition hall on Sat/Sun.
+My problem is that whenever I reboot a device, it comes back to life
+but IP connection is never regained until; I reboot all other devices.
 
-Best wishes,
-Amadeus
+I have tried to move the IP address from the bt0 interface to a bridge
+interface that hosts br0 with no success.
 
---
-Vorstand
-Freifunk Chemnitz e.V.
-Dipl.-Ing. Amadeus Alfa
-Mobil: +49 170 6763627
+Any ideas?
+
+I am using the "Out of the box" batman-adv modules and batctl that
+come with the most recent raspbian repo.
 
 
->---- Original Message ----
->From: Robert Schwebel <r.schwebel@pengutronix.de>
->To: b.a.t.m.a.n@lists.open-mesh.org
->Sent: Mi, Mar 12, 2014, 8:21 PM
->Subject: [B.A.T.M.A.N.] Anyone at CLT2014?
->
->Hi,
->
->Is there a chance to meet some of the B.A.T.M.A.N people next weekend a=
-t
->Chemnitzer Linux-Tag? I have seen that there is a talk:
->
->http://chemnitzer.linux-tage.de/2014/en/vortraege/detail/189
->
->so I'm wondering if some of the Freifunk people are there.
->
->rsc
->-- 
->Pengutronix e.K.                           |                           =
-  |
->Industrial Linux Solutions                 | http://www.pengutronix.de/=
-  |
->Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0  =
-  |
->Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-555=
-5 |
-
+Thanks in advance,
+Itamar
