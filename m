@@ -1,13 +1,13 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Mon, 17 Mar 2014 14:22:52 +0100
-Message-Id: <1395062574-28291-9-git-send-email-antonio@meshcoding.com>
+Date: Mon, 17 Mar 2014 14:22:53 +0100
+Message-Id: <1395062574-28291-10-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1395062574-28291-1-git-send-email-antonio@meshcoding.com>
 References: <1395062574-28291-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH next 09/11] batman-adv: fix code style
+Subject: [B.A.T.M.A.N.] [PATCH next 10/11] batman-adv: fix more code style
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,76 +22,64 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-- don't split lines if shorter than 80 chars
-- don't use goto if there is no cleanup to perform
+- keep variable declarations in ascendant line length order
+- use common iteration style pattern when looking up an
+  object
 
-Introduced by 90ad6a40c80323805be1e86504385de2bd861f0a
-("batman-adv: Modified forwarding behaviour for multicast packets")
+Introduced by 86cb16e5ec1e2d75821006e8f4abbec66fb741ac
+("batman-adv: Add IPv4 link-local/IPv6-ll-all-nodes multicast support")
 
 Cc: Linux Lüssing <linus.luessing@web.de>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- multicast.c         | 3 +--
- multicast.h         | 8 ++++----
- translation-table.c | 5 ++---
- 3 files changed, 7 insertions(+), 9 deletions(-)
+ multicast.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/multicast.c b/multicast.c
-index 425978d..5a39fc1 100644
+index 5a39fc1..166d0a3 100644
 --- a/multicast.c
 +++ b/multicast.c
-@@ -318,8 +318,7 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
- 	/* TODO: Implement Multicast Router Discovery (RFC4286),
- 	 * then allow scope > link local, too
- 	 */
--	if (IPV6_ADDR_MC_SCOPE(&ip6hdr->daddr) !=
--	    IPV6_ADDR_SCOPE_LINKLOCAL)
-+	if (IPV6_ADDR_MC_SCOPE(&ip6hdr->daddr) != IPV6_ADDR_SCOPE_LINKLOCAL)
- 		return -EINVAL;
- 
- 	/* link-local-all-nodes multicast listeners behind a bridge are
-diff --git a/multicast.h b/multicast.h
-index 2861899..73b5d45 100644
---- a/multicast.h
-+++ b/multicast.h
-@@ -20,10 +20,10 @@
- 
- /**
-  * batadv_forw_mode - the way a packet should be forwarded as
-- * @BATADV_FORW_ALL: forward the packet to all nodes
-- *  (currently via classic flooding)
-- * @BATADV_FORW_SINGLE: forward the packet to a single node
-- *  (currently via the BATMAN unicast routing protocol)
-+ * @BATADV_FORW_ALL: forward the packet to all nodes (currently via classic
-+ *  flooding)
-+ * @BATADV_FORW_SINGLE: forward the packet to a single node (currently via the
-+ *  BATMAN unicast routing protocol)
-  * @BATADV_FORW_NONE: don't forward, drop it
-  */
- enum batadv_forw_mode {
-diff --git a/translation-table.c b/translation-table.c
-index dab5c39..d636bde 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -206,16 +206,15 @@ int batadv_tt_global_hash_count(struct batadv_priv *bat_priv,
- 				const uint8_t *addr, unsigned short vid)
+@@ -493,20 +493,20 @@ batadv_mcast_forw_ip_node_get(struct batadv_priv *bat_priv,
+ static struct batadv_orig_node *
+ batadv_mcast_forw_unsnoop_node_get(struct batadv_priv *bat_priv)
  {
- 	struct batadv_tt_global_entry *tt_global_entry;
--	int count = 0;
-+	int count;
+-	struct batadv_orig_node *orig_node;
++	struct batadv_orig_node *tmp_orig_node, *orig_node = NULL;
  
- 	tt_global_entry = batadv_tt_global_hash_find(bat_priv, addr, vid);
- 	if (!tt_global_entry)
--		goto out;
-+		return 0;
+ 	rcu_read_lock();
+-	hlist_for_each_entry_rcu(orig_node,
++	hlist_for_each_entry_rcu(tmp_orig_node,
+ 				 &bat_priv->mcast.want_all_unsnoopables_list,
+ 				 mcast_want_all_unsnoopables_node) {
+-		if (atomic_inc_not_zero(&orig_node->refcount))
+-			goto unlock;
+-	}
+-
+-	orig_node = NULL;
++		if (!atomic_inc_not_zero(&orig_node->refcount))
++			continue;
  
- 	count = atomic_read(&tt_global_entry->orig_list_count);
- 	batadv_tt_global_entry_free_ref(tt_global_entry);
- 
--out:
- 	return count;
+-unlock:
++		orig_node = tmp_orig_node;
++		break;
++	}
+ 	rcu_read_unlock();
++
+ 	return orig_node;
  }
  
+@@ -524,9 +524,9 @@ enum batadv_forw_mode
+ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		       struct batadv_orig_node **orig)
+ {
+-	struct ethhdr *ethhdr;
+-	bool is_unsnoopable = false;
+ 	int ret, tt_count, ip_count, unsnoop_count, total_count;
++	bool is_unsnoopable = false;
++	struct ethhdr *ethhdr;
+ 
+ 	ret = batadv_mcast_forw_mode_check(bat_priv, skb, &is_unsnoopable);
+ 	if (ret == -ENOMEM)
 -- 
 1.8.3.2
 
