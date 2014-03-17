@@ -1,14 +1,15 @@
-Return-Path: <nicoechaniz@altermundi.net>
-Message-ID: <53263AE8.4050705@altermundi.net>
-Date: Sun, 16 Mar 2014 20:59:36 -0300
-From: =?UTF-8?B?Tmljb2zDoXMgRWNow6FuaXo=?= <nicoechaniz@altermundi.net>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <53267792.8080102@meshcoding.com>
+Date: Mon, 17 Mar 2014 05:18:26 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
 References: <CAMcTwKrV4OVZP6v3hD2_4t8DWsmymGYgu9xMZa6aexrWQuORtQ@mail.gmail.com>	<53218FEB.8000100@meshcoding.com>	<CAMcTwKqi+zDUmP-6877Wgs681Qx8jbuY2+gi_7LO0M63e+1nCw@mail.gmail.com>	<5321B5AE.9080005@meshcoding.com>
  <CAMcTwKrw+U7xZckqmcurrc8z4UZTkt50SqQ_esFHKo_D2Grf_A@mail.gmail.com>
  <5325A449.3080905@itamar.org>
 In-Reply-To: <5325A449.3080905@itamar.org>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="0jxRQ3F8tarsu7HfgjpjU28IsKaG1Thwb"
 Subject: Re: [B.A.T.M.A.N.] IP connection lost when a node is rebooted
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,86 +22,75 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Itamar,
-
-You should also consider a problem at your wifi driver level.
-
-We've seen a behavior very similar to what you are describing using
-ath9k hardware a while ago.
-
-
-Cheers,
-NicoEchániz
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--0jxRQ3F8tarsu7HfgjpjU28IsKaG1Thwb
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
 
 
-El 16/03/14 10:16, Itamar escribió:
-> I have compiled both the kernel module and batctl from source (2014.1.0).
-> The problem remains. Whenever I reboot a node, its IP is never reachable
+On 16/03/14 14:16, Itamar wrote:
+> I have compiled both the kernel module and batctl from source (2014.1.0=
+).
+> The problem remains. Whenever I reboot a node, its IP is never reachabl=
+e
 > from the network and the network can not be reached by it.
-> 
+>=20
 > Things I have tried:
-> 
+>=20
 > * DAT enabled
 > * DAT Disabled
 > * DAT not compiled (ticked "n" in the Makefile)
-> 
-> Of course, the tests were performed when all nodes in the mesh were with
+>=20
+> Of course, the tests were performed when all nodes in the mesh were wit=
+h
 > the consistent configuration and never mixed.
-> 
-> Another curious thing I have seen is that when looking at a tcpdump (via
+>=20
+> Another curious thing I have seen is that when looking at a tcpdump (vi=
+a
 > batctl) I could indeed see ARP requests to the pinged IP (the tcpdump
 > running on the node hosting the pinged IP) but the node never replies.
-> 
-> What else should I try?
-> 
-> Thanks,
-> Itamar
-> 
-> On 03/13/2014 04:51 PM, Itamar Landsman wrote:
->> Thanks,
->> I see that 2004.1 had just been released.. I will compile and give it
->> a go.
->>
->> Cheers,
->> Itamar
->>
->> On Thu, Mar 13, 2014 at 3:42 PM, Antonio Quartulli
->> <antonio@meshcoding.com> wrote:
->>>
->>> On 13/03/14 13:20, Itamar Landsman wrote:
->>>> Thanks Antonio,
->>>> I appreciate the quick reply.
->>>>
->>>> batctl -v returns: batctl debian-2012.1.0-1 [batman-adv: 2013.2.0]
->>>>
->>>> Should I compile and install from the latest git?
->>>> I see that the batctl command is from a much older release.. It
->>>> doesn't support the dat or dc parameters. Should I compile that one as
->>>> well?
->>> The recommendation is to always run the same version of batctl and
->>> batman-adv, exactly to avoid this kind of situations where you have a
->>> feature in the kernel module that cannot be used by batctl (I have to
->>> say that you can use every feature *without* batctl, but if you want to
->>> use the tool it is better to get the right version).
->>>
->>> The batman-adv version you run is also rather old. I'd personally
->>> recommend to wait one or two days for the next release and then download
->>> it (yes, the developers are in the process of releasing it).
->>>
->>> However, here[1] you have a description of the sysfs interface that you
->>> can use to quickly check the DAT status without doing any upgrade.
->>>
->>>
->>> Cheers,
->>>
->>>
->>> [1] http://www.open-mesh.org/projects/batman-adv/wiki/Tweaking
->>>
->>> -- 
->>> Antonio Quartulli
->>>
-> 
+>=20
 
+Have you seen if the ARP request makes its way to the other host? (e.g.
+using tcpdump on bat0 to check that the packet is getting delivered).
+
+Then check if the ARP reply is at least sent. If so, check where it gets
+lost.
+
+
+Cheers,
+
+
+
+--=20
+Antonio Quartulli
+
+
+--0jxRQ3F8tarsu7HfgjpjU28IsKaG1Thwb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBCAAGBQJTJneWAAoJEEKTMo6mOh1V/2AQAKDJbBzOjurU94GiRr4dF/D+
+o3ykg7LAOCLyJnSEYEHU00RZfRA6n5zc6gwx6istoeJk8DOYYMq19Oz24E1R7VYs
+MQrWJxm2rFgMZVpntw6K0qFXEVaX48iMlOg/dxAU8DRmPLPzwJu0G/JusNVfrDur
+AcNawzCiq+Hs8EA9I23ZcnmRw2YxRkLK6S7nCp/LPfQUPM8VNExSIXc7t+DkRchV
+K5RLCvgyEK4H/+k89tdItMdknKDFwcgkOJVy58/E4LidDIzQVtu0uavuAyT67XTe
+yhskOTxbYgoXnxhNzhqU+ipmDC48WRaYxCw3vi3yZTxkjGqJcz+iiDo1oBBW96Ll
+zGOq4eSl5Jnz3+Gp51KFNYkl+6qZ9xMYMEsSnz6p7gqyB8DsO/MDQ9gTvyrZmUMq
+bj1ZUy+PZCiFFmBzTsepeJW/V75662MoBc/GIXHp1OS4e12AgVPz2ewOhzuHBj+B
+TESK6vddAljQM7CWPC3Vbv28IzlFhqGhEOamXa1i/cpKTuKkGHQQCEIcvzDht9OH
+jYJqlzZLwe7ek80VZ/C/UqcKF1XvqWorF9DmyUie1oHjxmKb8tGBdtL7+1Ur3xgS
+v+HscmFZh2qNWwdUAwuUJxFBGY+gK1W9M0AQd1Bx2TxjVA57xsnNRRAb3+lYE1dT
+MDjRojH+yL5+bZxQW2eg
+=tvdK
+-----END PGP SIGNATURE-----
+
+--0jxRQ3F8tarsu7HfgjpjU28IsKaG1Thwb--
