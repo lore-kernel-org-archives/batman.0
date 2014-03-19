@@ -1,11 +1,11 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 19 Mar 2014 13:19:31 +0100
-Message-Id: <1395231571-15746-1-git-send-email-sw@simonwunderlich.de>
-In-Reply-To: <53298849.5060104@meshcoding.com>
-References: <53298849.5060104@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH-maintv2 3/3] batman-adv: always run
-	purge_orig_neighbors
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Wed, 19 Mar 2014 18:41:47 +0100
+Message-Id: <1395250917-19621-1-git-send-email-antonio@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv3 next 01/11] batman-adv: remove useless goto
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,54 +18,51 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-From: Simon Wunderlich <simon@open-mesh.com>
+There is no need to use a label and a goto for code that is
+used once only.
+Moreover having a goto for a single return statement should
+always be avoided.
 
-The current code will not execute batadv_purge_orig_neighbors() when an
-orig_ifinfo has already been purged. However we need to run it in any
-case. Fix that.
+Introduced by e368857f66620b8483166e8e6556d9c87f9b3e71
+("batman-adv: Multicast Listener Announcements via Translation Table")
 
-This is a regression introduced by
-de6bcc76ea84fecb136f8c8f5ba1862e4a13f06b ("batman-adv: split out router
-from orig_node")
-
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+Cc: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
-Changes to PATCHv1:
 
- * check two change variables separately
----
- originator.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Changes from v2:
+- added compat code change to 2/11 to accommodate new use of
+  netdev_master_upper_dev_get_rcu()
 
-diff --git a/originator.c b/originator.c
-index 2fd6678..9e29f02 100644
---- a/originator.c
-+++ b/originator.c
-@@ -854,7 +854,7 @@ static bool batadv_purge_orig_node(struct batadv_priv *bat_priv,
- {
- 	struct batadv_neigh_node *best_neigh_node;
- 	struct batadv_hard_iface *hard_iface;
--	bool changed;
-+	bool changed_ifinfo, changed_neigh;
+Changes from v1:
+- change "we are out of memory" to "in case of memory allocation failure" in
+  3/11
+- fix commit message in 10/11
+
+
+ multicast.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/multicast.c b/multicast.c
+index 998b429..d92de1e 100644
+--- a/multicast.c
++++ b/multicast.c
+@@ -194,12 +194,10 @@ static bool batadv_mcast_has_bridge(struct batadv_priv *bat_priv)
  
- 	if (batadv_has_timed_out(orig_node->last_seen,
- 				 2 * BATADV_PURGE_TIMEOUT)) {
-@@ -864,10 +864,10 @@ static bool batadv_purge_orig_node(struct batadv_priv *bat_priv,
- 			   jiffies_to_msecs(orig_node->last_seen));
- 		return true;
- 	}
--	changed = batadv_purge_orig_ifinfo(bat_priv, orig_node);
--	changed = changed || batadv_purge_orig_neighbors(bat_priv, orig_node);
-+	changed_ifinfo = batadv_purge_orig_ifinfo(bat_priv, orig_node);
-+	changed_neigh = batadv_purge_orig_neighbors(bat_priv, orig_node);
+ 	bridge = batadv_mcast_get_bridge(bat_priv);
+ 	if (!bridge)
+-		goto out;
++		return false;
  
--	if (!changed)
-+	if (!changed_ifinfo && !changed_neigh)
- 		return false;
+ 	dev_put(bridge);
+ 	return true;
+-out:
+-	return false;
+ }
  
- 	/* first for NULL ... */
+ /**
 -- 
-1.7.10.4
+1.8.3.2
 
