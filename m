@@ -1,15 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 19 Mar 2014 18:57:32 +0100
-Message-Id: <1395251855-30765-4-git-send-email-antonio@meshcoding.com>
+Date: Wed, 19 Mar 2014 18:57:33 +0100
+Message-Id: <1395251855-30765-5-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1395251855-30765-1-git-send-email-antonio@meshcoding.com>
 References: <1395251747-27289-1-git-send-email-antonio@meshcoding.com>
  <1395251855-30765-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv4 next 08/11] batman-adv: adjust copyright
-	disclaimer in multicast files
+Subject: [B.A.T.M.A.N.] [PATCHv4 next 09/11] batman-adv: fix code style
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,48 +23,76 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-The URL to the FSF address has to be always reported in the
-copyright disclaimer.
-This is the accepted style in the networking branch.
+- don't split lines if shorter than 80 chars
+- don't use goto if there is no cleanup to perform
 
-Introduced by e368857f66620b8483166e8e6556d9c87f9b3e71
-("batman-adv: Multicast Listener Announcements via Translation Table")
+Introduced by 90ad6a40c80323805be1e86504385de2bd861f0a
+("batman-adv: Modified forwarding behaviour for multicast packets")
 
-Cc: Linus Lüssing <linus.luessing@web.de>
+Cc: Linux Lüssing <linus.luessing@web.de>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- multicast.c | 3 +++
- multicast.h | 3 +++
- 2 files changed, 6 insertions(+)
+ multicast.c         | 3 +--
+ multicast.h         | 8 ++++----
+ translation-table.c | 5 ++---
+ 3 files changed, 7 insertions(+), 9 deletions(-)
 
 diff --git a/multicast.c b/multicast.c
-index 53d82e2..9a9e7f4 100644
+index 9a9e7f4..d67d75d 100644
 --- a/multicast.c
 +++ b/multicast.c
-@@ -10,6 +10,9 @@
-  * WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
-  */
+@@ -312,8 +312,7 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
+ 	/* TODO: Implement Multicast Router Discovery (RFC4286),
+ 	 * then allow scope > link local, too
+ 	 */
+-	if (IPV6_ADDR_MC_SCOPE(&ip6hdr->daddr) !=
+-	    IPV6_ADDR_SCOPE_LINKLOCAL)
++	if (IPV6_ADDR_MC_SCOPE(&ip6hdr->daddr) != IPV6_ADDR_SCOPE_LINKLOCAL)
+ 		return -EINVAL;
  
- #include "main.h"
+ 	/* link-local-all-nodes multicast listeners behind a bridge are
 diff --git a/multicast.h b/multicast.h
-index a76bc3a..2861899 100644
+index 2861899..73b5d45 100644
 --- a/multicast.h
 +++ b/multicast.h
-@@ -10,6 +10,9 @@
-  * WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
-  */
+@@ -20,10 +20,10 @@
  
- #ifndef _NET_BATMAN_ADV_MULTICAST_H_
+ /**
+  * batadv_forw_mode - the way a packet should be forwarded as
+- * @BATADV_FORW_ALL: forward the packet to all nodes
+- *  (currently via classic flooding)
+- * @BATADV_FORW_SINGLE: forward the packet to a single node
+- *  (currently via the BATMAN unicast routing protocol)
++ * @BATADV_FORW_ALL: forward the packet to all nodes (currently via classic
++ *  flooding)
++ * @BATADV_FORW_SINGLE: forward the packet to a single node (currently via the
++ *  BATMAN unicast routing protocol)
+  * @BATADV_FORW_NONE: don't forward, drop it
+  */
+ enum batadv_forw_mode {
+diff --git a/translation-table.c b/translation-table.c
+index dab5c39..d636bde 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -206,16 +206,15 @@ int batadv_tt_global_hash_count(struct batadv_priv *bat_priv,
+ 				const uint8_t *addr, unsigned short vid)
+ {
+ 	struct batadv_tt_global_entry *tt_global_entry;
+-	int count = 0;
++	int count;
+ 
+ 	tt_global_entry = batadv_tt_global_hash_find(bat_priv, addr, vid);
+ 	if (!tt_global_entry)
+-		goto out;
++		return 0;
+ 
+ 	count = atomic_read(&tt_global_entry->orig_list_count);
+ 	batadv_tt_global_entry_free_ref(tt_global_entry);
+ 
+-out:
+ 	return count;
+ }
+ 
 -- 
 1.8.3.2
 
