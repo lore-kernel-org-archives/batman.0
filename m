@@ -1,15 +1,15 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 19 Mar 2014 18:57:31 +0100
-Message-Id: <1395251855-30765-3-git-send-email-antonio@meshcoding.com>
+Date: Wed, 19 Mar 2014 18:57:32 +0100
+Message-Id: <1395251855-30765-4-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1395251855-30765-1-git-send-email-antonio@meshcoding.com>
 References: <1395251747-27289-1-git-send-email-antonio@meshcoding.com>
  <1395251855-30765-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv4 next 07/11] batman-adv: fix multicast
-	kerneldoc
+Subject: [B.A.T.M.A.N.] [PATCHv4 next 08/11] batman-adv: adjust copyright
+	disclaimer in multicast files
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,71 +24,48 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-The kerneldoc should always use the third person singular in
-the long function description.
-Moreover it should always try use up to 80 chars per line.
+The URL to the FSF address has to be always reported in the
+copyright disclaimer.
+This is the accepted style in the networking branch.
 
-Introduced by f2ed1502191a37abb39e3e2c80cca07f0f3bb411
-("batman-adv: Send multicast packets to nodes with a WANT_ALL flag")
+Introduced by e368857f66620b8483166e8e6556d9c87f9b3e71
+("batman-adv: Multicast Listener Announcements via Translation Table")
 
 Cc: Linus Lüssing <linus.luessing@web.de>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- multicast.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ multicast.c | 3 +++
+ multicast.h | 3 +++
+ 2 files changed, 6 insertions(+)
 
 diff --git a/multicast.c b/multicast.c
-index 25b2632..53d82e2 100644
+index 53d82e2..9a9e7f4 100644
 --- a/multicast.c
 +++ b/multicast.c
-@@ -363,9 +363,9 @@ static int batadv_mcast_forw_mode_check(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the soft interface information
-  * @ethhdr: ethernet header of a packet
-  *
-- * Return the number of nodes which want all IPv4 multicast traffic if
-- * the given ethhdr is from an IPv4 packet or the number of nodes which want
-- * all IPv6 traffic if it matches an IPv6 packet.
-+ * Returns the number of nodes which want all IPv4 multicast traffic if the
-+ * given ethhdr is from an IPv4 packet or the number of nodes which want all
-+ * IPv6 traffic if it matches an IPv6 packet.
+@@ -10,6 +10,9 @@
+  * WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see <http://www.gnu.org/licenses/>.
   */
- static int batadv_mcast_forw_want_all_ip_count(struct batadv_priv *bat_priv,
- 					       struct ethhdr *ethhdr)
-@@ -401,8 +401,8 @@ batadv_mcast_forw_tt_node_get(struct batadv_priv *bat_priv,
-  * batadv_mcast_want_forw_ipv4_node_get - get a node with an ipv4 flag
-  * @bat_priv: the bat priv with all the soft interface information
-  *
-- * Return an orig_node which has the BATADV_MCAST_WANT_ALL_IPV4 flag set
-- * and increase its refcount.
-+ * Returns an orig_node which has the BATADV_MCAST_WANT_ALL_IPV4 flag set and
-+ * increases its refcount.
+ 
+ #include "main.h"
+diff --git a/multicast.h b/multicast.h
+index a76bc3a..2861899 100644
+--- a/multicast.h
++++ b/multicast.h
+@@ -10,6 +10,9 @@
+  * WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see <http://www.gnu.org/licenses/>.
   */
- static struct batadv_orig_node *
- batadv_mcast_forw_ipv4_node_get(struct batadv_priv *bat_priv)
-@@ -428,8 +428,8 @@ unlock:
-  * batadv_mcast_want_forw_ipv6_node_get - get a node with an ipv6 flag
-  * @bat_priv: the bat priv with all the soft interface information
-  *
-- * Return an orig_node which has the BATADV_MCAST_WANT_ALL_IPV6 flag set
-- * and increase its refcount.
-+ * Returns an orig_node which has the BATADV_MCAST_WANT_ALL_IPV6 flag set
-+ * and increases its refcount.
-  */
- static struct batadv_orig_node *
- batadv_mcast_forw_ipv6_node_get(struct batadv_priv *bat_priv)
-@@ -456,9 +456,9 @@ unlock:
-  * @bat_priv: the bat priv with all the soft interface information
-  * @ethhdr: an ethernet header to determine the protocol family from
-  *
-- * Return an orig_node which has the BATADV_MCAST_WANT_ALL_IPV4 or
-- * BATADV_MCAST_WANT_ALL_IPV6 flag, depending on the provided ethhdr, set
-- * and increase its refcount.
-+ * Returns an orig_node which has the BATADV_MCAST_WANT_ALL_IPV4 or
-+ * BATADV_MCAST_WANT_ALL_IPV6 flag, depending on the provided ethhdr, set and
-+ * increases its refcount.
-  */
- static struct batadv_orig_node *
- batadv_mcast_forw_ip_node_get(struct batadv_priv *bat_priv,
+ 
+ #ifndef _NET_BATMAN_ADV_MULTICAST_H_
 -- 
 1.8.3.2
 
