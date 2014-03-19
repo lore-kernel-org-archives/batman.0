@@ -1,14 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 19 Mar 2014 18:57:34 +0100
-Message-Id: <1395251855-30765-6-git-send-email-antonio@meshcoding.com>
+Date: Wed, 19 Mar 2014 18:57:35 +0100
+Message-Id: <1395251855-30765-7-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1395251855-30765-1-git-send-email-antonio@meshcoding.com>
 References: <1395251747-27289-1-git-send-email-antonio@meshcoding.com>
  <1395251855-30765-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv4 next 10/11] batman-adv: fix more code style
+Subject: [B.A.T.M.A.N.] [PATCHv4 next 11/11] batman-adv: fix more code style
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,26 +23,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-- keep variable declarations in descending line length order
 - use common iteration style pattern when looking up an
   object
 
-Introduced by 86cb16e5ec1e2d75821006e8f4abbec66fb741ac
-("batman-adv: Add IPv4 link-local/IPv6-ll-all-nodes multicast support")
+Introduced by f2ed1502191a37abb39e3e2c80cca07f0f3bb411
+("batman-adv: Send multicast packets to nodes with a WANT_ALL flag")
 
 Cc: Linux Lüssing <linus.luessing@web.de>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- multicast.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ multicast.c | 32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
 diff --git a/multicast.c b/multicast.c
-index d67d75d..dfe4cd6 100644
+index dfe4cd6..8c7ca81 100644
 --- a/multicast.c
 +++ b/multicast.c
-@@ -487,20 +487,20 @@ batadv_mcast_forw_ip_node_get(struct batadv_priv *bat_priv,
+@@ -409,20 +409,20 @@ batadv_mcast_forw_tt_node_get(struct batadv_priv *bat_priv,
  static struct batadv_orig_node *
- batadv_mcast_forw_unsnoop_node_get(struct batadv_priv *bat_priv)
+ batadv_mcast_forw_ipv4_node_get(struct batadv_priv *bat_priv)
  {
 -	struct batadv_orig_node *orig_node;
 +	struct batadv_orig_node *tmp_orig_node, *orig_node = NULL;
@@ -50,8 +49,8 @@ index d67d75d..dfe4cd6 100644
  	rcu_read_lock();
 -	hlist_for_each_entry_rcu(orig_node,
 +	hlist_for_each_entry_rcu(tmp_orig_node,
- 				 &bat_priv->mcast.want_all_unsnoopables_list,
- 				 mcast_want_all_unsnoopables_node) {
+ 				 &bat_priv->mcast.want_all_ipv4_list,
+ 				 mcast_want_all_ipv4_node) {
 -		if (atomic_inc_not_zero(&orig_node->refcount))
 -			goto unlock;
 -	}
@@ -69,18 +68,35 @@ index d67d75d..dfe4cd6 100644
  	return orig_node;
  }
  
-@@ -518,9 +518,9 @@ enum batadv_forw_mode
- batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 		       struct batadv_orig_node **orig)
+@@ -436,20 +436,20 @@ unlock:
+ static struct batadv_orig_node *
+ batadv_mcast_forw_ipv6_node_get(struct batadv_priv *bat_priv)
  {
--	struct ethhdr *ethhdr;
--	bool is_unsnoopable = false;
- 	int ret, tt_count, ip_count, unsnoop_count, total_count;
-+	bool is_unsnoopable = false;
-+	struct ethhdr *ethhdr;
+-	struct batadv_orig_node *orig_node;
++	struct batadv_orig_node *tmp_orig_node, *orig_node = NULL;
  
- 	ret = batadv_mcast_forw_mode_check(bat_priv, skb, &is_unsnoopable);
- 	if (ret == -ENOMEM)
+ 	rcu_read_lock();
+-	hlist_for_each_entry_rcu(orig_node,
++	hlist_for_each_entry_rcu(tmp_orig_node,
+ 				 &bat_priv->mcast.want_all_ipv6_list,
+ 				 mcast_want_all_ipv6_node) {
+-		if (atomic_inc_not_zero(&orig_node->refcount))
+-			goto unlock;
+-	}
+-
+-	orig_node = NULL;
++		if (!atomic_inc_not_zero(&orig_node->refcount))
++			continue;
+ 
+-unlock:
++		orig_node = tmp_orig_node;
++		break;
++	}
+ 	rcu_read_unlock();
++
+ 	return orig_node;
+ }
+ 
 -- 
 1.8.3.2
 
