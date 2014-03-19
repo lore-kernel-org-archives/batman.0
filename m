@@ -1,13 +1,13 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 19 Mar 2014 09:08:44 +0100
-Message-Id: <1395216532-31099-3-git-send-email-antonio@meshcoding.com>
+Date: Wed, 19 Mar 2014 09:08:47 +0100
+Message-Id: <1395216532-31099-6-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1395216532-31099-1-git-send-email-antonio@meshcoding.com>
 References: <1395216532-31099-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 next 03/11] batman-adv: fix multicast
+Subject: [B.A.T.M.A.N.] [PATCHv2 next 06/11] batman-adv: fix multicast
 	kerneldoc
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -27,46 +27,69 @@ The kerneldoc should always use the third person singular in
 the long function description.
 Moreover it should always try use up to 80 chars per line.
 
-Introduced by 86cb16e5ec1e2d75821006e8f4abbec66fb741ac
-("batman-adv: Add IPv4 link-local/IPv6-ll-all-nodes multicast support")
+Introduced by 90ad6a40c80323805be1e86504385de2bd861f0a
+("batman-adv: Modified forwarding behaviour for multicast packets")
 
 Cc: Linus Lüssing <linus.luessing@web.de>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- multicast.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ multicast.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/multicast.c b/multicast.c
-index af3fe49..2d39938 100644
+index e56b578..99dff87 100644
 --- a/multicast.c
 +++ b/multicast.c
-@@ -256,11 +256,11 @@ out:
-  * @skb: the IPv4 packet to check
+@@ -294,11 +294,11 @@ static int batadv_mcast_forw_mode_check_ipv4(struct batadv_priv *bat_priv,
+  * @skb: the IPv6 packet to check
   * @is_unsnoopable: stores whether the destination is snoopable
   *
-- * Check whether the given IPv4 packet has the potential to
+- * Check whether the given IPv6 packet has the potential to
 - * be forwarded with a mode more optimal than classic flooding.
-+ * Checks whether the given IPv4 packet has the potential to be forwarded with a
++ * Checks whether the given IPv6 packet has the potential to be forwarded with a
 + * mode more optimal than classic flooding.
   *
 - * If so then return 0. Otherwise -EINVAL is returned or -ENOMEM if we are
 - * out of memory.
-+ * If so then returns 0. Otherwise -EINVAL is returned or -ENOMEM in case of
-+ * memory allocation failure.
++ * If so then returns 0. Otherwise -EINVAL is returned or -ENOMEM if we are out
++ * of memory.
   */
- static int batadv_mcast_forw_mode_check_ipv4(struct batadv_priv *bat_priv,
+ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
  					     struct sk_buff *skb,
-@@ -485,8 +485,8 @@ batadv_mcast_forw_ip_node_get(struct batadv_priv *bat_priv,
-  * batadv_mcast_want_forw_unsnoop_node_get - get a node with an unsnoopable flag
-  * @bat_priv: the bat priv with all the soft interface information
+@@ -334,11 +334,11 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
+  * @skb: the multicast frame to check
+  * @is_unsnoopable: stores whether the destination is snoopable
   *
-- * Return an orig_node which has the BATADV_MCAST_WANT_ALL_UNSNOOPABLES flag set
-- * and increase its refcount.
-+ * Returns an orig_node which has the BATADV_MCAST_WANT_ALL_UNSNOOPABLES flag
-+ * set and increases its refcount.
+- * Check whether the given multicast ethernet frame has the potential to
+- * be forwarded with a mode more optimal than classic flooding.
++ * Checks whether the given multicast ethernet frame has the potential to be
++ * forwarded with a mode more optimal than classic flooding.
+  *
+- * If so then return 0. Otherwise -EINVAL is returned or -ENOMEM if we are
+- * out of memory.
++ * If so then returns 0. Otherwise -EINVAL is returned or -ENOMEM if we are out
++ * of memory.
+  */
+ static int batadv_mcast_forw_mode_check(struct batadv_priv *bat_priv,
+ 					struct sk_buff *skb,
+@@ -392,7 +392,7 @@ static int batadv_mcast_forw_want_all_ip_count(struct batadv_priv *bat_priv,
+  * @bat_priv: the bat priv with all the soft interface information
+  * @ethhdr: the ether header containing the multicast destination
+  *
+- * Return an orig_node matching the multicast address provided by ethhdr
++ * Returns an orig_node matching the multicast address provided by ethhdr
+  * via a translation table lookup. This increases the returned nodes refcount.
   */
  static struct batadv_orig_node *
- batadv_mcast_forw_unsnoop_node_get(struct batadv_priv *bat_priv)
+@@ -514,7 +514,7 @@ unlock:
+  * @skb: The multicast packet to check
+  * @orig: an originator to be set to forward the skb to
+  *
+- * Return the forwarding mode as enum batadv_forw_mode and in case of
++ * Returns the forwarding mode as enum batadv_forw_mode and in case of
+  * BATADV_FORW_SINGLE set the orig to the single originator the skb
+  * should be forwarded to.
+  */
 -- 
 1.8.3.2
 
