@@ -1,15 +1,8 @@
-Return-Path: <linus.luessing@web.de>
-Date: Wed, 19 Mar 2014 11:02:07 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20140319100207.GJ5208@Linus-Debian>
-References: <1395216532-31099-1-git-send-email-antonio@meshcoding.com>
- <1395216532-31099-2-git-send-email-antonio@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1395216532-31099-2-git-send-email-antonio@meshcoding.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next 02/11] batman-adv: don't mess up
- with the netdev refcounting if not needed
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 19 Mar 2014 11:33:02 +0100
+Message-Id: <1395225186-18597-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH-maint 0/3] fix multiif regressions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,24 +14,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <antonio@meshcoding.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
-On Wed, Mar 19, 2014 at 09:08:43AM +0100, Antonio Quartulli wrote:
-> Looking for an interface and increasing its refcounter only
-> to check if it really exists is not really useful and makes
-> the code look more complex without a real gain.
+From: Simon Wunderlich <simon@open-mesh.com>
 
-Hm, I was intending to use it somewhere else as well with the
-next series of patches. See:
-http://git.open-mesh.org/batman-adv.git/commitdiff/bd774bd7e00bbe062cb0ab591d50be77e30a557a?hp=c9c3d53851f832b32188c9dd9a3dace96a33a0c3
+There are some regressions introduced my network wide multi interface
+optimization patchset which are adressed by this patchset. All of them
+fix some kind of leaks caused reference counter imbalances, which may
+lead to problems when an interface is removed which was previously used
+by batman-adv.
 
-But ok, since it is not in a yet scheduled patchset, I guess
-you're right, then it should better be introduced when it is
-needed.
+Thanks Antonio for your help tracking that down!
 
-On another note, I think you're introducing a bug/memoryleak
-here for the compat-code case for
-netdev_master_upper_dev_get_rcu().
+Cheers,
+	Simon
 
-Cheers, Linus
+Simon Wunderlich (3):
+  batman-adv: fix neigh_ifinfo imbalance
+  batman-adv: fix neigh reference imbalance
+  batman-adv: always run purge_orig_neighbors
+
+ bat_iv_ogm.c |    2 ++
+ originator.c |    7 +++++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+-- 
+1.7.10.4
+
