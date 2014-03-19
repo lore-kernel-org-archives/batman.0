@@ -1,17 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <532723C8.4040805@meshcoding.com>
-Date: Mon, 17 Mar 2014 17:33:12 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Wed, 19 Mar 2014 09:08:46 +0100
+Message-Id: <1395216532-31099-5-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1395216532-31099-1-git-send-email-antonio@meshcoding.com>
+References: <1395216532-31099-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1395062574-28291-1-git-send-email-antonio@meshcoding.com>
- <1395062574-28291-10-git-send-email-antonio@meshcoding.com>
- <5327209D.2060707@hundeboll.net>
-In-Reply-To: <5327209D.2060707@hundeboll.net>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="ODdKWwKGHohbnQDUH5AiJjAqhcQsM7J0L"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next 10/11] batman-adv: fix more code
-	style
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv2 next 05/11] batman-adv: fix multicast
+	kerneldoc
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,54 +20,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---ODdKWwKGHohbnQDUH5AiJjAqhcQsM7J0L
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+The kerneldoc should always use the third person singular in
+the long function description.
+Moreover it should always try use up to 80 chars per line.
 
+Introduced by f70c60d236cddb28d9e576de774ad97f9b0fd1b7
+("batman-adv: Announce new capability via multicast TVLV")
 
+Cc: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ multicast.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-On 17/03/14 17:19, Martin Hundeb=C3=B8ll wrote:
-> On 2014-03-17 06:22, Antonio Quartulli wrote:
->> - keep variable declarations in ascendant line length order
->> - use common iteration style pattern when looking up an
->>   object
->=20
-> Do you mean descending line length?
+diff --git a/multicast.c b/multicast.c
+index afacf82..e56b578 100644
+--- a/multicast.c
++++ b/multicast.c
+@@ -185,11 +185,11 @@ static bool batadv_mcast_has_bridge(struct batadv_priv *bat_priv)
+  * batadv_mcast_mla_tvlv_update - update multicast tvlv
+  * @bat_priv: the bat priv with all the soft interface information
+  *
+- * Update the own multicast tvlv with our current multicast related settings,
++ * Updates the own multicast tvlv with our current multicast related settings,
+  * capabilities and inabilities.
+  *
+- * Return true if the tvlv container is registered afterwards. Otherwise return
+- * false.
++ * Returns true if the tvlv container is registered afterwards. Otherwise
++ * returns false.
+  */
+ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
+ {
+@@ -226,7 +226,7 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
+  * batadv_mcast_mla_update - update the own MLAs
+  * @bat_priv: the bat priv with all the soft interface information
+  *
+- * Update the own multicast listener announcements in the translation
++ * Updates the own multicast listener announcements in the translation
+  * table as well as the own, announced multicast tvlv container.
+  */
+ void batadv_mcast_mla_update(struct batadv_priv *bat_priv)
+-- 
+1.8.3.2
 
-Yes, you are right.
-
-Thanks!
-
-
---=20
-Antonio Quartulli
-
-
---ODdKWwKGHohbnQDUH5AiJjAqhcQsM7J0L
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBCAAGBQJTJyPNAAoJEEKTMo6mOh1Vm28P/09UkXP5J+/vDNiVU1niZFXd
-7O1d8cW0fJL/MNYlrmL5+YOAlQdcPu4CAuhoAWtXYsDcFHiLgZp9HwImWeAomr2K
-NzerIHn5l4nh0EVNz5lsy5kxxV5VMcNO0ziUuhjV8yIq86gV3dh1Crg/xEDXWK8e
-hQXmAnBWIYUY2fbJ3S/26tmze6v4FznezgFEpk9SOtKfznyoDLh2vcTz5rt+CnDM
-HYP/8XJhl0D+hRSshfhhELgLXT78tyKcg0eUGrhFxXH3LmIJTQ3Oh2gFN4IMRbev
-33HfGMPuJfz6pOMUVkJbGw7Uy/D6fd/hL7TUgYViTrTn56cNEcqAoffdYLDlVvpo
-bxbTKZpKz9YctF9lEQaOr5zs/B62Xdz2xC3kVmR6gx+GP001KblZPYJGKLau4Y3l
-od/WILfEioZ7sbnJigCebmfbjM52pgdxBMSgzzXxIWkRQtJq4XjbMh9C/zyC43wK
-OhLaKZoUi+1NcHwqEWz6ZeSnLRr32ZoP68dx8UlI9Uk7bBQTNsAQT6U6UMOGZ2d4
-ug09zX5TbbBqTUU/LsOEC2tvSZ6vtaEb34GWup5dbvtRW17HiiTgLYeQnPYYt2/g
-RqDITMh2hKKvGOsABW4WyWMKKyDPfjUDbobY44Jn6Gr4jk354PR/X2UE/1L55HD9
-8+UMMI3Zx7ohCk+2phnm
-=peOi
------END PGP SIGNATURE-----
-
---ODdKWwKGHohbnQDUH5AiJjAqhcQsM7J0L--
