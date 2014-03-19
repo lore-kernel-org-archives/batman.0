@@ -1,13 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 19 Mar 2014 09:08:52 +0100
-Message-Id: <1395216532-31099-11-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1395216532-31099-1-git-send-email-antonio@meshcoding.com>
+Return-Path: <linus.luessing@web.de>
+Date: Wed, 19 Mar 2014 10:03:16 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20140319090316.GH5208@Linus-Debian>
 References: <1395216532-31099-1-git-send-email-antonio@meshcoding.com>
+ <1395216532-31099-3-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 next 11/11] batman-adv: fix more code style
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1395216532-31099-3-git-send-email-antonio@meshcoding.com>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next 03/11] batman-adv: fix multicast
+	kerneldoc
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,83 +21,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+To: Antonio Quartulli <antonio@meshcoding.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-- use common iteration style pattern when looking up an
-  object
+Hi Antonio,
 
-Introduced by f2ed1502191a37abb39e3e2c80cca07f0f3bb411
-("batman-adv: Send multicast packets to nodes with a WANT_ALL flag")
+Two things are confusing me, firstly:
 
-Cc: Linux Lüssing <linus.luessing@web.de>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- multicast.c | 32 ++++++++++++++++----------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
+On Wed, Mar 19, 2014 at 09:08:44AM +0100, Antonio Quartulli wrote:
+> The kerneldoc should always use the third person singular in
+> the long function description.
+> Moreover it should always try use up to 80 chars per line.
 
-diff --git a/multicast.c b/multicast.c
-index 79a18a0..de47018 100644
---- a/multicast.c
-+++ b/multicast.c
-@@ -415,20 +415,20 @@ batadv_mcast_forw_tt_node_get(struct batadv_priv *bat_priv,
- static struct batadv_orig_node *
- batadv_mcast_forw_ipv4_node_get(struct batadv_priv *bat_priv)
- {
--	struct batadv_orig_node *orig_node;
-+	struct batadv_orig_node *tmp_orig_node, *orig_node = NULL;
- 
- 	rcu_read_lock();
--	hlist_for_each_entry_rcu(orig_node,
-+	hlist_for_each_entry_rcu(tmp_orig_node,
- 				 &bat_priv->mcast.want_all_ipv4_list,
- 				 mcast_want_all_ipv4_node) {
--		if (atomic_inc_not_zero(&orig_node->refcount))
--			goto unlock;
--	}
--
--	orig_node = NULL;
-+		if (!atomic_inc_not_zero(&orig_node->refcount))
-+			continue;
- 
--unlock:
-+		orig_node = tmp_orig_node;
-+		break;
-+	}
- 	rcu_read_unlock();
-+
- 	return orig_node;
- }
- 
-@@ -442,20 +442,20 @@ unlock:
- static struct batadv_orig_node *
- batadv_mcast_forw_ipv6_node_get(struct batadv_priv *bat_priv)
- {
--	struct batadv_orig_node *orig_node;
-+	struct batadv_orig_node *tmp_orig_node, *orig_node = NULL;
- 
- 	rcu_read_lock();
--	hlist_for_each_entry_rcu(orig_node,
-+	hlist_for_each_entry_rcu(tmp_orig_node,
- 				 &bat_priv->mcast.want_all_ipv6_list,
- 				 mcast_want_all_ipv6_node) {
--		if (atomic_inc_not_zero(&orig_node->refcount))
--			goto unlock;
--	}
--
--	orig_node = NULL;
-+		if (!atomic_inc_not_zero(&orig_node->refcount))
-+			continue;
- 
--unlock:
-+		orig_node = tmp_orig_node;
-+		break;
-+	}
- 	rcu_read_unlock();
-+
- 	return orig_node;
- }
- 
--- 
-1.8.3.2
+vs.
 
+On Sun, May 12, 2013 at 12:55:25AM +0200, Antonio Quartulli wrote:
+> For some reason we agreed on not using the third person while describing the
+> function. For consistency I'd suggest you to do the same your kernel doc.
+>
+
+Secondly:
+
+Why do you only change it in multicast.{c,h}, why not changing
+things everywhere? For instance translation-table.c sometimes uses
+"Returns", sometimes "Return".
+
+Or functions in translation-table.c using first person in their
+description:
+* batadv_tt_prepare_tvlv_global_data()
+* batadv_tt_prepare_tvlv_local_data()
+* batadv_tt_global_add()
+* batadv_tt_global_del_orig_entry()
+* batadv_tt_global_del_orig_node()
+* batadv_send_roam_adv()
+* batadv_tt_local_resize_to_mtu()
+
+While these using the third one:
+* batadv_transtable_best_orig()
+* batadv_tt_global_print_entry()
+* batadv_tt_global_crc()
+* batadv_tt_check_roam_count()
+
+
+Cheers, Linus
