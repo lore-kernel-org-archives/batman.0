@@ -1,14 +1,11 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 19 Mar 2014 18:57:35 +0100
-Message-Id: <1395251855-30765-7-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1395251855-30765-1-git-send-email-antonio@meshcoding.com>
-References: <1395251747-27289-1-git-send-email-antonio@meshcoding.com>
- <1395251855-30765-1-git-send-email-antonio@meshcoding.com>
+Return-Path: <christof.schulze@gmx.net>
+From: Christof Schulze <christof.schulze@gmx.net>
+Date: Thu, 20 Mar 2014 19:59:16 +0100
+Message-ID: <1629001.Cx5dbnsKCT@lappi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv4 next 11/11] batman-adv: fix more code style
+Content-Type: multipart/signed; boundary="nextPart4156369.0Y5P3iMNZE";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: [B.A.T.M.A.N.] Batman-adv  + lxc
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,82 +18,51 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-- use common iteration style pattern when looking up an
-  object
 
-Introduced by f2ed1502191a37abb39e3e2c80cca07f0f3bb411
-("batman-adv: Send multicast packets to nodes with a WANT_ALL flag")
+--nextPart4156369.0Y5P3iMNZE
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
 
-Cc: Linux Lüssing <linus.luessing@web.de>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- multicast.c | 32 ++++++++++++++++----------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
+Hello,
 
-diff --git a/multicast.c b/multicast.c
-index dfe4cd6..8c7ca81 100644
---- a/multicast.c
-+++ b/multicast.c
-@@ -409,20 +409,20 @@ batadv_mcast_forw_tt_node_get(struct batadv_priv *bat_priv,
- static struct batadv_orig_node *
- batadv_mcast_forw_ipv4_node_get(struct batadv_priv *bat_priv)
- {
--	struct batadv_orig_node *orig_node;
-+	struct batadv_orig_node *tmp_orig_node, *orig_node = NULL;
- 
- 	rcu_read_lock();
--	hlist_for_each_entry_rcu(orig_node,
-+	hlist_for_each_entry_rcu(tmp_orig_node,
- 				 &bat_priv->mcast.want_all_ipv4_list,
- 				 mcast_want_all_ipv4_node) {
--		if (atomic_inc_not_zero(&orig_node->refcount))
--			goto unlock;
--	}
--
--	orig_node = NULL;
-+		if (!atomic_inc_not_zero(&orig_node->refcount))
-+			continue;
- 
--unlock:
-+		orig_node = tmp_orig_node;
-+		break;
-+	}
- 	rcu_read_unlock();
-+
- 	return orig_node;
- }
- 
-@@ -436,20 +436,20 @@ unlock:
- static struct batadv_orig_node *
- batadv_mcast_forw_ipv6_node_get(struct batadv_priv *bat_priv)
- {
--	struct batadv_orig_node *orig_node;
-+	struct batadv_orig_node *tmp_orig_node, *orig_node = NULL;
- 
- 	rcu_read_lock();
--	hlist_for_each_entry_rcu(orig_node,
-+	hlist_for_each_entry_rcu(tmp_orig_node,
- 				 &bat_priv->mcast.want_all_ipv6_list,
- 				 mcast_want_all_ipv6_node) {
--		if (atomic_inc_not_zero(&orig_node->refcount))
--			goto unlock;
--	}
--
--	orig_node = NULL;
-+		if (!atomic_inc_not_zero(&orig_node->refcount))
-+			continue;
- 
--unlock:
-+		orig_node = tmp_orig_node;
-+		break;
-+	}
- 	rcu_read_unlock();
-+
- 	return orig_node;
- }
- 
--- 
-1.8.3.2
+This is my first post to this list. I would like to run batman-adv
+inside an lxc-container just as described in [1]. I do not want to do i=
+t
+to simulate a network having multiple nodes but to separate duties of
+different "virtual machines" - linux containers in my case and to be
+able to easily migrate the configuration to a differen machine lateron.=
+
+
+I started by loading batman-adv on the host and bridging it into the
+container.  After adding the interfaces inside the container where
+meshing should happen I cannot add a gateway because batctl complains
+that /sys/class/net/bat0/mesh does not exist. Indeed, in the container
+it does not exist.
+
+How can batman-adv be used from an lxc-container?
+
+
+Christof
+
+[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2011-September/00=
+5355.html
+=2D-=20
+()  ascii ribbon campaign - against html e-mail
+/\  www.asciiribbon.org   - against proprietary attachments
+
+--nextPart4156369.0Y5P3iMNZE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.14 (GNU/Linux)
+
+iEYEABECAAYFAlMrOoUACgkQpZfyPAmdZJmV+ACfQdPChr5ebGVK5MeehTxMoNm2
+nTIAoL0hxKSLFhYoQQQTSgyMs7xnYq2c
+=UcDz
+-----END PGP SIGNATURE-----
+
+--nextPart4156369.0Y5P3iMNZE--
 
