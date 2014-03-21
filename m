@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 21 Mar 2014 16:27:05 +0800
-Message-ID: <2312292.LyzPD9iOC6@diderot>
-In-Reply-To: <1395251747-27289-1-git-send-email-antonio@meshcoding.com>
+Date: Fri, 21 Mar 2014 16:29:39 +0800
+Message-ID: <4207604.yrUcTBJjN3@diderot>
+In-Reply-To: <1395251747-27289-2-git-send-email-antonio@meshcoding.com>
 References: <1395251747-27289-1-git-send-email-antonio@meshcoding.com>
+ <1395251747-27289-2-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3111234.gE4qTDOtJz";
+Content-Type: multipart/signed; boundary="nextPart2342892.digcU2lRAY";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 next 01/11] batman-adv: remove useless
-	goto
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 next 02/11] batman-adv: don't mess up
+	with the netdev refcounting if not needed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,15 +25,18 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart3111234.gE4qTDOtJz
+--nextPart2342892.digcU2lRAY
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Wednesday 19 March 2014 18:55:37 Antonio Quartulli wrote:
-> There is no need to use a label and a goto for code that is
-> used once only.
-> Moreover having a goto for a single return statement should
-> always be avoided.
+On Wednesday 19 March 2014 18:55:38 Antonio Quartulli wrote:
+> Looking for an interface and increasing its refcounter only
+> to check if it really exists is not really useful and makes
+> the code look more complex without a real gain.
+>=20
+> Change batadv_mcast_has_bridge() accordingly and avoid to
+> use the pointer to the interface outside of the
+> rcu_read_lock/unlock context.
 >=20
 > Introduced by e368857f66620b8483166e8e6556d9c87f9b3e71
 > ("batman-adv: Multicast Listener Announcements via Translation Table"=
@@ -41,30 +45,16 @@ On Wednesday 19 March 2014 18:55:37 Antonio Quartulli wrote:
 > Cc: Linus L=FCssing <linus.luessing@web.de>
 > Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
->=20
-> Changes from v3:
-> - simply has_bridge() function even more
->=20
-> Changes from v2:
-> - added compat code change to 2/11 to accommodate new use of
->   netdev_master_upper_dev_get_rcu()
->=20
-> Changes from v1:
-> - change "we are out of memory" to "in case of memory allocation fail=
-ure" in
-> 3/11
-> - fix commit message in 10/11
->=20
->=20
->  multicast.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
+>  compat.h    | 19 ++++---------------
+>  multicast.c | 33 ++++-----------------------------
+>  2 files changed, 8 insertions(+), 44 deletions(-)
 
-Applied in revision 6f54268.
+Applied in revision 9ef7aad.
 
 Thanks,
 Marek
 
---nextPart3111234.gE4qTDOtJz
+--nextPart2342892.digcU2lRAY
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -72,14 +62,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTK/fcAAoJEFNVTo/uthzAGJQH/3h7ZZbJkKysRqLq+VUM6+gw
-CfviOEPFrnWtX47NIQzOukMiXatnLYNCNsYEz528rzmE1uJNZHTmP8mfZOZyTiKv
-3vCK37kl6A1DjEHS2aeUTpXZc/bNPm4+cqhqTOF4NK2vnVNjr23rF9+exP5PEe6/
-syfunl4UIC2sjYIL63ENpKFv1Yvo0E++u40wRttPC5coLWISvDVwBlbO9FfxEey+
-3PhDnfF7DRM4zipUJhh/vi6bxNcrghW4NXTpa/QOIUHBdnTALgq23RVQbQT6wyG2
-u8b3dyLr4mPMyuAOPJeGeFDSaFFHOyL2z3FaRC71RHWWumZ7Via9M4yszv5aNYY=
-=CU/X
+iQEcBAABAgAGBQJTK/hzAAoJEFNVTo/uthzADJAH/R/YQx0tpJjAJ4tEwdBI9VWi
+Zjh43Iv2kIWKTcluQ0nNtBkedIXriKL6ZzTUoNywCYZin960105yESpeB2/ePz4T
+cztNzNQEFOZ5KR0jgNYmfPGkbCRnfyvMOSe1/LQI5YrEI8T7DSBL5HSP+toDbjoB
+A2SqsH6dVIYMMjfwz+hE3UH8ZGJfDYVN+61TQKes1GrM8SiZj2qtxJlTTXqWfqsP
+hC99J37rCy7+T3gU3O+MXD0BxkDHNWdZ5MmHhNAcALxdSmyiq3P1R7NOO6OtWnAx
+EGhnnrUKWotdlDACZHvcy2cOEcKWiTLy1Zo8yqJrDGq5w7UP8zjaZTACy6BxN5w=
+=z+XE
 -----END PGP SIGNATURE-----
 
---nextPart3111234.gE4qTDOtJz--
+--nextPart2342892.digcU2lRAY--
 
