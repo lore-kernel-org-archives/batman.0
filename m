@@ -1,12 +1,13 @@
-Return-Path: <linus.luessing@web.de>
-Date: Fri, 21 Mar 2014 11:12:06 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20140321101205.GA6008@Linus-Debian>
-References: <1629001.Cx5dbnsKCT@lappi>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <532C10A0.4040102@meshcoding.com>
+Date: Fri, 21 Mar 2014 11:12:48 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+References: <1629001.Cx5dbnsKCT@lappi>
 In-Reply-To: <1629001.Cx5dbnsKCT@lappi>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="gMdr164nWR517E5u8W0i4DCMRdpG6soLF"
 Subject: Re: [B.A.T.M.A.N.] Batman-adv  + lxc
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -19,38 +20,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--gMdr164nWR517E5u8W0i4DCMRdpG6soLF
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
 Hi Christof,
 
-On Thu, Mar 20, 2014 at 07:59:16PM +0100, Christof Schulze wrote:
-> Hello,
-> 
-> This is my first post to this list. I would like to run batman-adv
-> inside an lxc-container just as described in [1]. I do not want to do it
-> to simulate a network having multiple nodes but to separate duties of
-> different "virtual machines" - linux containers in my case and to be
-> able to easily migrate the configuration to a differen machine lateron.
-
-lxc-container support has not been properly implemented in
-batman-adv yet. So things are not always working "naturely" and can
-even make your system crash (e.g. rebooting an lxc-container makes
-your system crash [0]).
-
-> 
-> I started by loading batman-adv on the host and bridging it into the
-> container.  After adding the interfaces inside the container where
-> meshing should happen I cannot add a gateway because batctl complains
-> that /sys/class/net/bat0/mesh does not exist. Indeed, in the container
-> it does not exist.
-> 
+On 20/03/14 19:59, Christof Schulze wrote:
 > How can batman-adv be used from an lxc-container?
-> 
 
-What I usually did was configuring batman-adv properly on the host
-via batctl. And only in the end adding it to the lxc-container.
-That seemed to work for me (except the reboot crash noted above).
+I never used LXC, therefore I might say something terribly wrong:
 
-Cheers, Linus
+what about bridging the real interface that you want to use for the mesh
+in the container and then load batman-adv inside LXC ?
 
-[0]: http://www.open-mesh.org/issues/179
+If I understood correctly after bridging you should have an interface
+(inside LXC) that you can give to batman-adv (inside LXC).
+
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+
+--gMdr164nWR517E5u8W0i4DCMRdpG6soLF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBCAAGBQJTLBCoAAoJEEKTMo6mOh1VMzIP/jdi4H6Cio1gUxYn/aXURRAc
+chFw0WQgZKCJ/0Alt3OnoWtEdOdp5qWrqTF6q0zIg4s/OF+JJqSudQDto+XbZ0y2
+DVIyj17KFmjLg7N0hpD4pFq//S4E1Me8ef5eVYbGo4fChyXYUkAzP0A2ceSWg7Ip
+bZrZxDYYT13KfG2mbxuktNS6368ZmrwwoPeOB01RCZNQPlO0u/pklK0e8OP16oP4
+aqboUs/drF3sELZrYP/cNzHUIwHKhVuYLdNHI4BP87BNudWnDrCV/+JnYzQLeMA0
+TZRNHcc8SAlYRoxr2XNPKQilQ5P9u9Xma4ORBcj4ILC141Ezy+/u96s1msvgRfMs
+gYqA48a0YWCXL4j22wZbmbl6fwDPmZbxbx9sZa7rPvv1Hp1UsxqG8GB1Wnl/Ozv4
+L2VW7t0+jdCN+jIl4yhknyBOTQeldsJrMHSoon7o8yeOJ6MNen6CKd9t1gBF30as
+t9NKHtO2+I0ZfXMi0MeuZgA+EAAdA0lGpa1ythDYMqaoi/NpFiXEfHLhdowQ6rG1
++l1JZIJuuHcDx9WX0Rr4MgJkaV9LK3nZ56mxYFkt54KkPNHL+GSeo0sLJuHOAqn7
+bRgz1Jfx7/N/urkpMlK1XG2AhjByEzlbzux9PD1QLfN/EIYNHAgkxJ+6H3lF4dDu
+Nu0EHJwZ9Hkc05wZw7l/
+=LJrQ
+-----END PGP SIGNATURE-----
+
+--gMdr164nWR517E5u8W0i4DCMRdpG6soLF--
