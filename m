@@ -1,16 +1,13 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 21 Mar 2014 16:40 +0800
-Message-ID: <1522518.ri0JWGFlKW@diderot>
-In-Reply-To: <1395251855-30765-7-git-send-email-antonio@meshcoding.com>
-References: <1395251747-27289-1-git-send-email-antonio@meshcoding.com>
- <1395251855-30765-1-git-send-email-antonio@meshcoding.com>
- <1395251855-30765-7-git-send-email-antonio@meshcoding.com>
+Return-Path: <linus.luessing@web.de>
+Date: Fri, 21 Mar 2014 11:12:06 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20140321101205.GA6008@Linus-Debian>
+References: <1629001.Cx5dbnsKCT@lappi>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4518503.xxrTRBiIif";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 next 11/11] batman-adv: fix more code
-	style
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1629001.Cx5dbnsKCT@lappi>
+Subject: Re: [B.A.T.M.A.N.] Batman-adv  + lxc
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,48 +19,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi Christof,
 
---nextPart4518503.xxrTRBiIif
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+On Thu, Mar 20, 2014 at 07:59:16PM +0100, Christof Schulze wrote:
+> Hello,
+> 
+> This is my first post to this list. I would like to run batman-adv
+> inside an lxc-container just as described in [1]. I do not want to do it
+> to simulate a network having multiple nodes but to separate duties of
+> different "virtual machines" - linux containers in my case and to be
+> able to easily migrate the configuration to a differen machine lateron.
 
-On Wednesday 19 March 2014 18:57:35 Antonio Quartulli wrote:
-> - use common iteration style pattern when looking up an
->   object
->=20
-> Introduced by f2ed1502191a37abb39e3e2c80cca07f0f3bb411
-> ("batman-adv: Send multicast packets to nodes with a WANT_ALL flag")
->=20
-> Cc: Linux L=FCssing <linus.luessing@web.de>
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-> ---
->  multicast.c | 32 ++++++++++++++++----------------
->  1 file changed, 16 insertions(+), 16 deletions(-)
+lxc-container support has not been properly implemented in
+batman-adv yet. So things are not always working "naturely" and can
+even make your system crash (e.g. rebooting an lxc-container makes
+your system crash [0]).
 
-Applied in revision b08dc3d.
+> 
+> I started by loading batman-adv on the host and bridging it into the
+> container.  After adding the interfaces inside the container where
+> meshing should happen I cannot add a gateway because batctl complains
+> that /sys/class/net/bat0/mesh does not exist. Indeed, in the container
+> it does not exist.
+> 
+> How can batman-adv be used from an lxc-container?
+> 
 
-Thanks,
-Marek
+What I usually did was configuring batman-adv properly on the host
+via batctl. And only in the end adding it to the lxc-container.
+That seemed to work for me (except the reboot crash noted above).
 
---nextPart4518503.xxrTRBiIif
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Cheers, Linus
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJTK/rgAAoJEFNVTo/uthzA8RYH/2sJ2Y44AhQgPnnJh5ZiXQWY
-850eZygVjRlCx3c8hmJGZU9WdZqhik/uvxhXPzVku1VImADlr25VDX/Cw/2Po24P
-BUcKQvqKHxsgGqkx0Hzv2iG3cck0D7KkQMXESngqDOYJXbBaO8sFZXMeiJ1nPDxH
-bdFkPiBEzU8vCPonECYI4v1HsUBy5xveY4hNtc0fcnbkxejsIoyhZNCXXpS7NTR+
-76hGSypcyn0I3r3Tth8ubCaPebi0SZyBOahD19isPJP1WyaveHCDLkRhrllpC1rd
-TFCXSG4DQpoHIsTcSIXnVEktSQ8wYs3FEdHtXXNFDcIjl5F9t3QCiaU62+EEKe8=
-=dc3W
------END PGP SIGNATURE-----
-
---nextPart4518503.xxrTRBiIif--
-
+[0]: http://www.open-mesh.org/issues/179
