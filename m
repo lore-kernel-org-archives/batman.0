@@ -1,13 +1,12 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <532C10A0.4040102@meshcoding.com>
-Date: Fri, 21 Mar 2014 11:12:48 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
-References: <1629001.Cx5dbnsKCT@lappi>
+Return-Path: <christof.schulze@gmx.net>
+From: Christof Schulze <christof.schulze@gmx.net>
+Date: Fri, 21 Mar 2014 11:39:44 +0100
+Message-ID: <17243029.zoeb9UDcFZ@lappi>
 In-Reply-To: <1629001.Cx5dbnsKCT@lappi>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="gMdr164nWR517E5u8W0i4DCMRdpG6soLF"
+References: <1629001.Cx5dbnsKCT@lappi>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1527696.fCjirOQTMj";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] Batman-adv  + lxc
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,53 +21,67 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---gMdr164nWR517E5u8W0i4DCMRdpG6soLF
-Content-Type: text/plain; charset=ISO-8859-1
+
+--nextPart1527696.fCjirOQTMj
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="ISO-8859-1"
 
-Hi Christof,
+Hi,
 
-On 20/03/14 19:59, Christof Schulze wrote:
-> How can batman-adv be used from an lxc-container?
+I only saw your replies in the mailing archives, I probably was not
+signed up to the list correctly when you answered. The issue is resolve=
+d
+now but that is why I am breaking my own thread.
 
-I never used LXC, therefore I might say something terribly wrong:
+> what about bridging the real interface that you want to use for the m=
+esh
+> in the container and then load batman-adv inside LXC ?
+this is in fact what I tried first. But bridiging the interface causes
+the batman-adv information in /sys/class/net to get lost. Maybe because=
 
-what about bridging the real interface that you want to use for the mesh
-in the container and then load batman-adv inside LXC ?
+I have to do things in a different order or because veth is really not
+the right interface type.
 
-If I understood correctly after bridging you should have an interface
-(inside LXC) that you can give to batman-adv (inside LXC).
+> > I started by loading batman-adv on the host and bridging it into th=
+e
+> > container. After adding the interfaces inside the container where
+> > meshing should happen I cannot add a gateway because batctl
+> > complains that /sys/class/net/bat0/mesh does not exist. Indeed, in
+> > the container it does not exist.
+> >=20
+> > How can batman-adv be used from an lxc-container?
 
+> What I usually did was configuring batman-adv properly on the host vi=
+a
+> batctl. And only in the end adding it to the lxc-container.  That
+> seemed to work for me (except the reboot crash noted above).
+what do you mean by "adding it to the lxc container"?  I tried bridging=
 
-Cheers,
+the bat0 interface into the container as a separate nic. That did not
+yield positive results.
 
---=20
-Antonio Quartulli
+Unfortunately if I risk crashing the host, this option is not viable fo=
+r
+me yet as I cannot simply restart the machine once it crashed.
 
+Christof
 
---gMdr164nWR517E5u8W0i4DCMRdpG6soLF
+=2D-=20
+()  ascii ribbon campaign - against html e-mail
+/\  www.asciiribbon.org   - against proprietary attachments
+
+--nextPart1527696.fCjirOQTMj
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+Version: GnuPG v1.4.14 (GNU/Linux)
 
-iQIcBAEBCAAGBQJTLBCoAAoJEEKTMo6mOh1VMzIP/jdi4H6Cio1gUxYn/aXURRAc
-chFw0WQgZKCJ/0Alt3OnoWtEdOdp5qWrqTF6q0zIg4s/OF+JJqSudQDto+XbZ0y2
-DVIyj17KFmjLg7N0hpD4pFq//S4E1Me8ef5eVYbGo4fChyXYUkAzP0A2ceSWg7Ip
-bZrZxDYYT13KfG2mbxuktNS6368ZmrwwoPeOB01RCZNQPlO0u/pklK0e8OP16oP4
-aqboUs/drF3sELZrYP/cNzHUIwHKhVuYLdNHI4BP87BNudWnDrCV/+JnYzQLeMA0
-TZRNHcc8SAlYRoxr2XNPKQilQ5P9u9Xma4ORBcj4ILC141Ezy+/u96s1msvgRfMs
-gYqA48a0YWCXL4j22wZbmbl6fwDPmZbxbx9sZa7rPvv1Hp1UsxqG8GB1Wnl/Ozv4
-L2VW7t0+jdCN+jIl4yhknyBOTQeldsJrMHSoon7o8yeOJ6MNen6CKd9t1gBF30as
-t9NKHtO2+I0ZfXMi0MeuZgA+EAAdA0lGpa1ythDYMqaoi/NpFiXEfHLhdowQ6rG1
-+l1JZIJuuHcDx9WX0Rr4MgJkaV9LK3nZ56mxYFkt54KkPNHL+GSeo0sLJuHOAqn7
-bRgz1Jfx7/N/urkpMlK1XG2AhjByEzlbzux9PD1QLfN/EIYNHAgkxJ+6H3lF4dDu
-Nu0EHJwZ9Hkc05wZw7l/
-=LJrQ
+iEYEABECAAYFAlMsFvAACgkQpZfyPAmdZJmpfgCg1vRnH6kDvzxZyBNZ2/yVld7w
+VFwAoMZNBEQ41a6f3d7Y53PBE7BqhV7J
+=qFOa
 -----END PGP SIGNATURE-----
 
---gMdr164nWR517E5u8W0i4DCMRdpG6soLF--
+--nextPart1527696.fCjirOQTMj--
+
