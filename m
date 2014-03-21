@@ -1,15 +1,16 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 21 Mar 2014 16:37:02 +0800
-Message-ID: <1843670.KWHXdhPAui@diderot>
-In-Reply-To: <1395251855-30765-5-git-send-email-antonio@meshcoding.com>
+Date: Fri, 21 Mar 2014 16:39:04 +0800
+Message-ID: <17906872.lVEFMZROIM@diderot>
+In-Reply-To: <1395251855-30765-6-git-send-email-antonio@meshcoding.com>
 References: <1395251747-27289-1-git-send-email-antonio@meshcoding.com>
  <1395251855-30765-1-git-send-email-antonio@meshcoding.com>
- <1395251855-30765-5-git-send-email-antonio@meshcoding.com>
+ <1395251855-30765-6-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1422469.ArBXOBPEAG";
+Content-Type: multipart/signed; boundary="nextPart1482989.dkT16YJbUy";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 next 09/11] batman-adv: fix code style
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 next 10/11] batman-adv: fix more code
+	style
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,31 +26,31 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart1422469.ArBXOBPEAG
+--nextPart1482989.dkT16YJbUy
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Wednesday 19 March 2014 18:57:33 Antonio Quartulli wrote:
-> - don't split lines if shorter than 80 chars
-> - don't use goto if there is no cleanup to perform
+On Wednesday 19 March 2014 18:57:34 Antonio Quartulli wrote:
+> - keep variable declarations in descending line length order
+> - use common iteration style pattern when looking up an
+>   object
 >=20
-> Introduced by 90ad6a40c80323805be1e86504385de2bd861f0a
-> ("batman-adv: Modified forwarding behaviour for multicast packets")
+> Introduced by 86cb16e5ec1e2d75821006e8f4abbec66fb741ac
+> ("batman-adv: Add IPv4 link-local/IPv6-ll-all-nodes multicast support=
+")
 >=20
 > Cc: Linux L=FCssing <linus.luessing@web.de>
 > Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
->  multicast.c         | 3 +--
->  multicast.h         | 8 ++++----
->  translation-table.c | 5 ++---
->  3 files changed, 7 insertions(+), 9 deletions(-)
+>  multicast.c | 20 ++++++++++----------
+>  1 file changed, 10 insertions(+), 10 deletions(-)
 
-Applied in revision bc45afd.
+Applied in revision 45dab5f.
 
 Thanks,
 Marek
 
---nextPart1422469.ArBXOBPEAG
+--nextPart1482989.dkT16YJbUy
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -57,14 +58,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTK/ouAAoJEFNVTo/uthzAkUYH/i6BNj79OgFD8F+G/AqzqQEA
-DFP9nf2nwH7g3W7whN8yr6wSro7YyzSrt2/mz1geC5xWt1MDOWw4c8pQFyJ5VyEM
-/ci73ns/K3H+2cLEWAwX58ozUTHaivdLJMZocyqnOdM6CSaA29oKRREJ4B61olQj
-5q5ixeWoMHlBiNWyxJ8T67//FUPZZzLiWZV1d2yHu5MaEAQP5+IUjbPOZwgr1sED
-5D7kynQ6ThHl/0LtBhD5XgMAoUPBQN92C8/mfbeuoAWmQdUlu3wOreyV/9GyvWEY
-2py2DdZjUH7iWecJ+V4Q1J7iHQ+rlQHYJjGkoc+0FLhULpbG+1Bp4QznT3mCP38=
-=Muyj
+iQEcBAABAgAGBQJTK/qoAAoJEFNVTo/uthzAJZEH/3G5r/Au65oTe+pqmSLz5mEx
+7usPq6zM/Z1sbDknG4oRgfoe3etKl733IT+JL0v3dcdA/xXeE4YFwrEOBiTr80B8
+UJ9tHfAThdYDt68HBhBMWe5zaPYMe0LuqGiILZxT4hP0+xppEaLhSIf06BWnh2Ki
+wrJWn35ml0tnaR/DM7l35tqPcrjkEBDiy+5s9NKQ1XymgvqtLi9qLVbA4CH8VPZI
+gyCOU+AxCRcBFRokpaEc6W88qilF2tsuZOxsd5xuCcPWlTQboFKXH0eGrfomYrZl
+2Ps9yu1SjS9MOih2bhSyUGZIR4DOurolLxGxs4gFS6kS5YKCXOuLCWgkQ0Ua2Zc=
+=lfFp
 -----END PGP SIGNATURE-----
 
---nextPart1422469.ArBXOBPEAG--
+--nextPart1482989.dkT16YJbUy--
 
