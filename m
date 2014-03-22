@@ -1,11 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 22 Mar 2014 09:56:07 +0100
-Message-Id: <1395478576-10999-8-git-send-email-antonio@meshcoding.com>
+Date: Sat, 22 Mar 2014 09:56:09 +0100
+Message-Id: <1395478576-10999-10-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1395478576-10999-1-git-send-email-antonio@meshcoding.com>
 References: <1395478576-10999-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 07/16] batman-adv: add kerneldoc for dst_hint
-	argument
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 09/16] batman-adv: introduce capability
+	initialization bitfield
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,48 +23,129 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-Some helper functions used along the TX path have now a new
-"dst_hint" argument but the kerneldoc was missing.
+From: Linus Lüssing <linus.luessing@web.de>
 
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+The new bitfield allows us to keep track whether capability subsets of
+an originator have gone through their initialization phase yet.
+
+The translation table is the only user right now, but a new one will be
+added soon.
+
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/send.c | 1 +
- net/batman-adv/send.h | 2 ++
- 2 files changed, 3 insertions(+)
+ net/batman-adv/originator.c        |  1 -
+ net/batman-adv/translation-table.c | 12 +++++++-----
+ net/batman-adv/types.h             |  7 ++++---
+ 3 files changed, 11 insertions(+), 9 deletions(-)
 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 0e4831f..ce163d5 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -311,6 +311,7 @@ out:
-  * @packet_type: the batman unicast packet type to use
-  * @packet_subtype: the unicast 4addr packet subtype (only relevant for unicast
-  *  4addr packets)
-+ * @dst_hint: can be used to override the destination contained in the skb
-  * @vid: the vid to be used to search the translation table
-  *
-  * Look up the recipient node for the destination address in the ethernet
-diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
-index aaddaa9..31e8781 100644
---- a/net/batman-adv/send.h
-+++ b/net/batman-adv/send.h
-@@ -47,6 +47,7 @@ int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
-  * batadv_send_skb_via_tt - send an skb via TT lookup
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: the payload to send
-+ * @dst_hint: can be used to override the destination contained in the skb
-  * @vid: the vid to be used to search the translation table
-  *
-  * Look up the recipient node for the destination address in the ethernet
-@@ -68,6 +69,7 @@ static inline int batadv_send_skb_via_tt(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: the payload to send
-  * @packet_subtype: the unicast 4addr packet subtype to use
-+ * @dst_hint: can be used to override the destination contained in the skb
-  * @vid: the vid to be used to search the translation table
-  *
-  * Look up the recipient node for the destination address in the ethernet
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 9f2da37..24a9300 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -664,7 +664,6 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
+ 	/* extra reference for return */
+ 	atomic_set(&orig_node->refcount, 2);
+ 
+-	orig_node->tt_initialised = false;
+ 	orig_node->bat_priv = bat_priv;
+ 	ether_addr_copy(orig_node->orig, addr);
+ 	batadv_dat_init_orig_node_addr(orig_node);
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 4082d05..f641dfe 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1774,7 +1774,7 @@ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
+ 		}
+ 		spin_unlock_bh(list_lock);
+ 	}
+-	orig_node->tt_initialised = false;
++	orig_node->capa_initialized &= ~BATADV_ORIG_CAPA_HAS_TT;
+ }
+ 
+ static bool batadv_tt_global_to_purge(struct batadv_tt_global_entry *tt_global,
+@@ -2734,7 +2734,7 @@ static void _batadv_tt_update_changes(struct batadv_priv *bat_priv,
+ 				return;
+ 		}
+ 	}
+-	orig_node->tt_initialised = true;
++	orig_node->capa_initialized |= BATADV_ORIG_CAPA_HAS_TT;
+ }
+ 
+ static void batadv_tt_fill_gtable(struct batadv_priv *bat_priv,
+@@ -3224,13 +3224,15 @@ static void batadv_tt_update_orig(struct batadv_priv *bat_priv,
+ 	uint8_t orig_ttvn = (uint8_t)atomic_read(&orig_node->last_ttvn);
+ 	struct batadv_tvlv_tt_vlan_data *tt_vlan;
+ 	bool full_table = true;
++	bool has_tt_init;
+ 
+ 	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)tt_buff;
++	has_tt_init = orig_node->capa_initialized & BATADV_ORIG_CAPA_HAS_TT;
++
+ 	/* orig table not initialised AND first diff is in the OGM OR the ttvn
+ 	 * increased by one -> we can apply the attached changes
+ 	 */
+-	if ((!orig_node->tt_initialised && ttvn == 1) ||
+-	    ttvn - orig_ttvn == 1) {
++	if ((!has_tt_init && ttvn == 1) || ttvn - orig_ttvn == 1) {
+ 		/* the OGM could not contain the changes due to their size or
+ 		 * because they have already been sent BATADV_TT_OGM_APPEND_MAX
+ 		 * times.
+@@ -3270,7 +3272,7 @@ static void batadv_tt_update_orig(struct batadv_priv *bat_priv,
+ 		/* if we missed more than one change or our tables are not
+ 		 * in sync anymore -> request fresh tt data
+ 		 */
+-		if (!orig_node->tt_initialised || ttvn != orig_ttvn ||
++		if (!has_tt_init || ttvn != orig_ttvn ||
+ 		    !batadv_tt_global_check_crc(orig_node, tt_vlan,
+ 						tt_num_vlan)) {
+ request_table:
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index d553264..b46117c 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -205,13 +205,12 @@ struct batadv_orig_bat_iv {
+  * @last_seen: time when last packet from this node was received
+  * @bcast_seqno_reset: time when the broadcast seqno window was reset
+  * @capabilities: announced capabilities of this originator
++ * @capa_initialized: bitfield to remember whether a capability was initialized
+  * @last_ttvn: last seen translation table version number
+  * @tt_buff: last tt changeset this node received from the orig node
+  * @tt_buff_len: length of the last tt changeset this node received from the
+  *  orig node
+  * @tt_buff_lock: lock that protects tt_buff and tt_buff_len
+- * @tt_initialised: bool keeping track of whether or not this node have received
+- *  any translation table information from the orig node yet
+  * @tt_lock: prevents from updating the table while reading it. Table update is
+  *  made up by two operations (data structure update and metdata -CRC/TTVN-
+  *  recalculation) and they have to be executed atomically in order to avoid
+@@ -248,11 +247,11 @@ struct batadv_orig_node {
+ 	unsigned long last_seen;
+ 	unsigned long bcast_seqno_reset;
+ 	uint8_t capabilities;
++	uint8_t capa_initialized;
+ 	atomic_t last_ttvn;
+ 	unsigned char *tt_buff;
+ 	int16_t tt_buff_len;
+ 	spinlock_t tt_buff_lock; /* protects tt_buff & tt_buff_len */
+-	bool tt_initialised;
+ 	/* prevents from changing the table while reading it */
+ 	spinlock_t tt_lock;
+ 	DECLARE_BITMAP(bcast_bits, BATADV_TQ_LOCAL_WINDOW_SIZE);
+@@ -282,10 +281,12 @@ struct batadv_orig_node {
+  * enum batadv_orig_capabilities - orig node capabilities
+  * @BATADV_ORIG_CAPA_HAS_DAT: orig node has distributed arp table enabled
+  * @BATADV_ORIG_CAPA_HAS_NC: orig node has network coding enabled
++ * @BATADV_ORIG_CAPA_HAS_TT: orig node has tt capability
+  */
+ enum batadv_orig_capabilities {
+ 	BATADV_ORIG_CAPA_HAS_DAT = BIT(0),
+ 	BATADV_ORIG_CAPA_HAS_NC = BIT(1),
++	BATADV_ORIG_CAPA_HAS_TT = BIT(2),
+ };
+ 
+ /**
 -- 
 1.8.3.2
 
