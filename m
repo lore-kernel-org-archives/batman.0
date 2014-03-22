@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 22 Mar 2014 09:56:05 +0100
-Message-Id: <1395478576-10999-6-git-send-email-antonio@meshcoding.com>
+Date: Sat, 22 Mar 2014 09:56:06 +0100
+Message-Id: <1395478576-10999-7-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1395478576-10999-1-git-send-email-antonio@meshcoding.com>
 References: <1395478576-10999-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 05/16] batman-adv: fix a few kerneldoc
-	inconsistencies
+Subject: [B.A.T.M.A.N.] [PATCH 06/16] batman-adv: call unregister_netdev()
+	to have it handle the locking for us
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,58 +20,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
+From: Marek Lindner <mareklindner@neomailbox.ch>
 
-Reported-by: Antonio Quartulli <antonio@meshcoding.com>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Reported-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/types.h | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ net/batman-adv/soft-interface.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 78370ab..9f52517 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -163,7 +163,7 @@ struct batadv_vlan_tt {
- };
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index db3e467..633e9d6 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -652,10 +652,7 @@ static void batadv_softif_destroy_finish(struct work_struct *work)
+ 	}
+ 
+ 	batadv_sysfs_del_meshif(soft_iface);
+-
+-	rtnl_lock();
+-	unregister_netdevice(soft_iface);
+-	rtnl_unlock();
++	unregister_netdev(soft_iface);
+ }
  
  /**
-- * batadv_orig_node_vlan - VLAN specific data per orig_node
-+ * struct batadv_orig_node_vlan - VLAN specific data per orig_node
-  * @vid: the VLAN identifier
-  * @tt: VLAN specific TT attributes
-  * @list: list node for orig_node::vlan_list
-@@ -334,7 +334,7 @@ struct batadv_neigh_node {
- };
- 
- /**
-- * struct batadv_neigh_node_bat_iv - neighbor information per outgoing
-+ * struct batadv_neigh_ifinfo_bat_iv - neighbor information per outgoing
-  *  interface for BATMAN IV
-  * @tq_recv: ring buffer of received TQ values from this neigh node
-  * @tq_index: ring buffer index
-@@ -544,7 +544,7 @@ struct batadv_priv_bla {
- #endif
- 
- /**
-- * struct batadv_debug_log - debug logging data
-+ * struct batadv_priv_debug_log - debug logging data
-  * @log_buff: buffer holding the logs (ring bufer)
-  * @log_start: index of next character to read
-  * @log_end: index of next character to write
-@@ -1004,8 +1004,8 @@ struct batadv_nc_packet {
- };
- 
- /**
-- * batadv_skb_cb - control buffer structure used to store private data relevant
-- *  to batman-adv in the skb->cb buffer in skbs.
-+ * struct batadv_skb_cb - control buffer structure used to store private data
-+ *  relevant to batman-adv in the skb->cb buffer in skbs.
-  * @decoded: Marks a skb as decoded, which is checked when searching for coding
-  *  opportunities in network-coding.c
-  */
 -- 
 1.8.3.2
 
