@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 22 Mar 2014 09:56:06 +0100
-Message-Id: <1395478576-10999-7-git-send-email-antonio@meshcoding.com>
+Date: Sat, 22 Mar 2014 09:56:07 +0100
+Message-Id: <1395478576-10999-8-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1395478576-10999-1-git-send-email-antonio@meshcoding.com>
 References: <1395478576-10999-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 06/16] batman-adv: call unregister_netdev()
-	to have it handle the locking for us
+Subject: [B.A.T.M.A.N.] [PATCH 07/16] batman-adv: add kerneldoc for dst_hint
+	argument
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,31 +20,48 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Marek Lindner <mareklindner@neomailbox.ch>
+Some helper functions used along the TX path have now a new
+"dst_hint" argument but the kerneldoc was missing.
 
-Reported-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/soft-interface.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ net/batman-adv/send.c | 1 +
+ net/batman-adv/send.h | 2 ++
+ 2 files changed, 3 insertions(+)
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index db3e467..633e9d6 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -652,10 +652,7 @@ static void batadv_softif_destroy_finish(struct work_struct *work)
- 	}
- 
- 	batadv_sysfs_del_meshif(soft_iface);
--
--	rtnl_lock();
--	unregister_netdevice(soft_iface);
--	rtnl_unlock();
-+	unregister_netdev(soft_iface);
- }
- 
- /**
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 0e4831f..ce163d5 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -311,6 +311,7 @@ out:
+  * @packet_type: the batman unicast packet type to use
+  * @packet_subtype: the unicast 4addr packet subtype (only relevant for unicast
+  *  4addr packets)
++ * @dst_hint: can be used to override the destination contained in the skb
+  * @vid: the vid to be used to search the translation table
+  *
+  * Look up the recipient node for the destination address in the ethernet
+diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
+index aaddaa9..31e8781 100644
+--- a/net/batman-adv/send.h
++++ b/net/batman-adv/send.h
+@@ -47,6 +47,7 @@ int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
+  * batadv_send_skb_via_tt - send an skb via TT lookup
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: the payload to send
++ * @dst_hint: can be used to override the destination contained in the skb
+  * @vid: the vid to be used to search the translation table
+  *
+  * Look up the recipient node for the destination address in the ethernet
+@@ -68,6 +69,7 @@ static inline int batadv_send_skb_via_tt(struct batadv_priv *bat_priv,
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: the payload to send
+  * @packet_subtype: the unicast 4addr packet subtype to use
++ * @dst_hint: can be used to override the destination contained in the skb
+  * @vid: the vid to be used to search the translation table
+  *
+  * Look up the recipient node for the destination address in the ethernet
 -- 
 1.8.3.2
 
