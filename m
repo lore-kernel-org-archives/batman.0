@@ -1,13 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Date: Sat, 22 Mar 2014 15:00:54 -0400 (EDT)
-Message-Id: <20140322.150054.1510542767128325330.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1395478576-10999-1-git-send-email-antonio@meshcoding.com>
-References: <1395478576-10999-1-git-send-email-antonio@meshcoding.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 20140322
+Return-Path: <itamar@itamar.org>
+Message-ID: <532E98EB.6070201@itamar.org>
+Date: Sun, 23 Mar 2014 10:18:51 +0200
+From: Itamar <itamar@itamar.org>
+MIME-Version: 1.0
+References: <CAMcTwKrV4OVZP6v3hD2_4t8DWsmymGYgu9xMZa6aexrWQuORtQ@mail.gmail.com>	<53218FEB.8000100@meshcoding.com>	<CAMcTwKqi+zDUmP-6877Wgs681Qx8jbuY2+gi_7LO0M63e+1nCw@mail.gmail.com>	<5321B5AE.9080005@meshcoding.com>
+ <CAMcTwKrw+U7xZckqmcurrc8z4UZTkt50SqQ_esFHKo_D2Grf_A@mail.gmail.com>
+ <5325A449.3080905@itamar.org> <53267792.8080102@meshcoding.com>
+In-Reply-To: <53267792.8080102@meshcoding.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] IP connection lost when a node is rebooted
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,44 +21,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: antonio@meshcoding.com
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 22 Mar 2014 09:56:00 +0100
+Thanks all for your support,
+U have figured out the issue. I is indeed related to a driver issue (so 
+I now understand).
+grinding my teeth trying to debug I have realized that when I power 
+cycle the raspberry-pi the link returns. Whereas I do a reboot via 
+console, the link refuses to start. The issue is probably related to the 
+wifi card not being initialized properly when the driver is loaded. What 
+I did to resolve is simple. I have added some extra lines to to 
+initialization script of the wireless device;
 
-> here you have our patchset for net-next/linux-3.15.
-> They are 16 patches but most of them are just small cleanups and kern=
-eldoc
-> improvements.
-> =
+ifconfig ra0 up
+ifconfig ra0 down
+ifconfig ra0 up
+iwconfig ra0 mode monitor
 
-> The only big change is the one from patch 8 to 13 by Linus L=FCssing =
-that
-> introduces a new multicast packets optimisation. This new component a=
-ims to
-> reduce the air overhead by sending multicast packets as bat-unicast
-> when only one destination exists or by dropping them directly at the =
-source if
-> the multicast group is totally empty.
-> =
+And after this "morning sport activity" to the interface I continued as 
+usual, setting it to ad-hoc and adding it to the bat0 device.
 
-> In patch 11 Linus introduces an atomic_t variable, that like others t=
-hat we
-> already have is only object of write and read, thus making the atomic=
+The interface I use is a cheap ralink 7601 chipset usb wifi 
+(idVendor=148f, idProduct=7601). But maybe this may help whoever 
+stumbles into something similar.
 
-> characteristic totally useless.
-> Unfortunately this is part of our sysfs framework, that helps the dev=
-eloper to
-> introduce new knobs by using few macros only. For this reason we deci=
-ded to keep
-> Linus' new knob for now, but I'd like to let you know that we are in =
-the process
-> of re-working such framework in order to convert all the current (use=
-less)
-> atomic_t to boolean in one go.
-> =
+Thanks for the help!
+Itamar
 
-> Please pull or let me know of any problem!
+On 14-03-17 06:18 AM, Antonio Quartulli wrote:
+>
+> On 16/03/14 14:16, Itamar wrote:
+>> I have compiled both the kernel module and batctl from source (2014.1.0).
+>> The problem remains. Whenever I reboot a node, its IP is never reachable
+>> from the network and the network can not be reached by it.
+>>
+>> Things I have tried:
+>>
+>> * DAT enabled
+>> * DAT Disabled
+>> * DAT not compiled (ticked "n" in the Makefile)
+>>
+>> Of course, the tests were performed when all nodes in the mesh were with
+>> the consistent configuration and never mixed.
+>>
+>> Another curious thing I have seen is that when looking at a tcpdump (via
+>> batctl) I could indeed see ARP requests to the pinged IP (the tcpdump
+>> running on the node hosting the pinged IP) but the node never replies.
+>>
+> Have you seen if the ARP request makes its way to the other host? (e.g.
+> using tcpdump on bat0 to check that the packet is getting delivered).
+>
+> Then check if the ARP reply is at least sent. If so, check where it gets
+> lost.
+>
+>
+> Cheers,
+>
+>
+>
 
-Pulled, thanks Antonio.
