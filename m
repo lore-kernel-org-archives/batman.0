@@ -1,8 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Mon, 24 Mar 2014 01:47:24 +0100
-Message-Id: <1395622044-18279-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: change the MAC of each
+Date: Mon, 24 Mar 2014 01:54:25 +0100
+Message-Id: <1395622465-1197-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: change the MAC of each
 	VLAN upon ndo_set_mac_address
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -28,14 +28,26 @@ belonging to the non-tagged network.
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- soft-interface.c | 16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+
+Changes from v1:
+- declare vlan variable
+
+ soft-interface.c | 17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
 
 diff --git a/soft-interface.c b/soft-interface.c
-index f82c267..d0cfe06 100644
+index f82c267..cbe9e33 100644
 --- a/soft-interface.c
 +++ b/soft-interface.c
-@@ -115,12 +115,22 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
+@@ -105,6 +105,7 @@ static struct net_device_stats *batadv_interface_stats(struct net_device *dev)
+ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
++	struct batadv_softif_vlan *vlan;
+ 	struct sockaddr *addr = p;
+ 	uint8_t old_addr[ETH_ALEN];
+ 
+@@ -115,12 +116,22 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
  	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
  
  	/* only modify transtable if it has been initialized before */
