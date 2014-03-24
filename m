@@ -1,15 +1,9 @@
-Return-Path: <itamar@itamar.org>
-Message-ID: <532E98EB.6070201@itamar.org>
-Date: Sun, 23 Mar 2014 10:18:51 +0200
-From: Itamar <itamar@itamar.org>
-MIME-Version: 1.0
-References: <CAMcTwKrV4OVZP6v3hD2_4t8DWsmymGYgu9xMZa6aexrWQuORtQ@mail.gmail.com>	<53218FEB.8000100@meshcoding.com>	<CAMcTwKqi+zDUmP-6877Wgs681Qx8jbuY2+gi_7LO0M63e+1nCw@mail.gmail.com>	<5321B5AE.9080005@meshcoding.com>
- <CAMcTwKrw+U7xZckqmcurrc8z4UZTkt50SqQ_esFHKo_D2Grf_A@mail.gmail.com>
- <5325A449.3080905@itamar.org> <53267792.8080102@meshcoding.com>
-In-Reply-To: <53267792.8080102@meshcoding.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] IP connection lost when a node is rebooted
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Mon, 24 Mar 2014 01:47:24 +0100
+Message-Id: <1395622044-18279-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: change the MAC of each
+	VLAN upon ndo_set_mac_address
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,62 +15,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-Thanks all for your support,
-U have figured out the issue. I is indeed related to a driver issue (so 
-I now understand).
-grinding my teeth trying to debug I have realized that when I power 
-cycle the raspberry-pi the link returns. Whereas I do a reboot via 
-console, the link refuses to start. The issue is probably related to the 
-wifi card not being initialized properly when the driver is loaded. What 
-I did to resolve is simple. I have added some extra lines to to 
-initialization script of the wireless device;
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-ifconfig ra0 up
-ifconfig ra0 down
-ifconfig ra0 up
-iwconfig ra0 mode monitor
+The MAC address of the soft-interface is used to initialise
+the "non-purge" TT entry of each existing VLAN. Therefore
+when the user invokes ndo_set_mac_address() all the
+"non-purge" TT entries have to be updated, not only the one
+belonging to the non-tagged network.
 
-And after this "morning sport activity" to the interface I continued as 
-usual, setting it to ad-hoc and adding it to the bat0 device.
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
+ soft-interface.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-The interface I use is a cheap ralink 7601 chipset usb wifi 
-(idVendor=148f, idProduct=7601). But maybe this may help whoever 
-stumbles into something similar.
-
-Thanks for the help!
-Itamar
-
-On 14-03-17 06:18 AM, Antonio Quartulli wrote:
->
-> On 16/03/14 14:16, Itamar wrote:
->> I have compiled both the kernel module and batctl from source (2014.1.0).
->> The problem remains. Whenever I reboot a node, its IP is never reachable
->> from the network and the network can not be reached by it.
->>
->> Things I have tried:
->>
->> * DAT enabled
->> * DAT Disabled
->> * DAT not compiled (ticked "n" in the Makefile)
->>
->> Of course, the tests were performed when all nodes in the mesh were with
->> the consistent configuration and never mixed.
->>
->> Another curious thing I have seen is that when looking at a tcpdump (via
->> batctl) I could indeed see ARP requests to the pinged IP (the tcpdump
->> running on the node hosting the pinged IP) but the node never replies.
->>
-> Have you seen if the ARP request makes its way to the other host? (e.g.
-> using tcpdump on bat0 to check that the packet is getting delivered).
->
-> Then check if the ARP reply is at least sent. If so, check where it gets
-> lost.
->
->
-> Cheers,
->
->
->
+diff --git a/soft-interface.c b/soft-interface.c
+index f82c267..d0cfe06 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -115,12 +115,22 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
+ 	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
+ 
+ 	/* only modify transtable if it has been initialized before */
+-	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_ACTIVE) {
+-		batadv_tt_local_remove(bat_priv, old_addr, BATADV_NO_FLAGS,
++	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
++		return 0;
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
++		if (!atomic_inc_not_zero(&vlan->refcount))
++			continue;
++
++		batadv_tt_local_remove(bat_priv, old_addr, vlan->vid,
+ 				       "mac address changed", false);
+-		batadv_tt_local_add(dev, addr->sa_data, BATADV_NO_FLAGS,
++		batadv_tt_local_add(dev, addr->sa_data, vlan->vid,
+ 				    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
++
++		batadv_softif_vlan_free_ref(vlan);
+ 	}
++	rcu_read_unlock();
+ 
+ 	return 0;
+ }
+-- 
+1.8.3.2
 
