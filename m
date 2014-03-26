@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 26 Mar 2014 15:46:22 +0100
-Message-Id: <1395845184-15186-3-git-send-email-sw@simonwunderlich.de>
+Date: Wed, 26 Mar 2014 15:46:23 +0100
+Message-Id: <1395845184-15186-4-git-send-email-sw@simonwunderlich.de>
 In-Reply-To: <1395845184-15186-1-git-send-email-sw@simonwunderlich.de>
 References: <1395845184-15186-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH-maintv3 2/4] batman-adv: fix neigh reference
-	imbalance
+Subject: [B.A.T.M.A.N.] [PATCH-maintv3 3/4] batman-adv: always run
+	purge_orig_neighbors
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,47 +22,50 @@ Cc: Simon Wunderlich <simon@open-mesh.com>
 
 From: Simon Wunderlich <simon@open-mesh.com>
 
-When an interface is removed from batman-adv, the orig_ifinfo of a
-orig_node may be removed without releasing the router first.
-This will prevent the reference for the neighbor pointed at by the
-orig_ifinfo->router to be released, and this leak may result in
-reference leaks for the interface used by this neighbor. Fix that.
+The current code will not execute batadv_purge_orig_neighbors() when an
+orig_ifinfo has already been purged. However we need to run it in any
+case. Fix that.
 
 This is a regression introduced by
 de6bcc76ea84fecb136f8c8f5ba1862e4a13f06b ("batman-adv: split out router
-from orig_node").
+from orig_node")
 
-Reported-by: Antonio Quartulli <antonio@meshcoding.com>
 Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-
-Changes to PATCHv2:
- * take care of the rcu sparse warning
 ---
- originator.c |    5 +++++
- 1 file changed, 5 insertions(+)
+Changes to PATCHv1:
+
+ * check two change variables separately
+---
+ originator.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/originator.c b/originator.c
-index 8539416..25df60d 100644
+index 25df60d..47b0886 100644
 --- a/originator.c
 +++ b/originator.c
-@@ -500,12 +500,17 @@ batadv_neigh_node_get(const struct batadv_orig_node *orig_node,
- static void batadv_orig_ifinfo_free_rcu(struct rcu_head *rcu)
+@@ -857,7 +857,7 @@ static bool batadv_purge_orig_node(struct batadv_priv *bat_priv,
  {
- 	struct batadv_orig_ifinfo *orig_ifinfo;
-+	struct batadv_neigh_node *router;
+ 	struct batadv_neigh_node *best_neigh_node;
+ 	struct batadv_hard_iface *hard_iface;
+-	bool changed;
++	bool changed_ifinfo, changed_neigh;
  
- 	orig_ifinfo = container_of(rcu, struct batadv_orig_ifinfo, rcu);
+ 	if (batadv_has_timed_out(orig_node->last_seen,
+ 				 2 * BATADV_PURGE_TIMEOUT)) {
+@@ -867,10 +867,10 @@ static bool batadv_purge_orig_node(struct batadv_priv *bat_priv,
+ 			   jiffies_to_msecs(orig_node->last_seen));
+ 		return true;
+ 	}
+-	changed = batadv_purge_orig_ifinfo(bat_priv, orig_node);
+-	changed = changed || batadv_purge_orig_neighbors(bat_priv, orig_node);
++	changed_ifinfo = batadv_purge_orig_ifinfo(bat_priv, orig_node);
++	changed_neigh = batadv_purge_orig_neighbors(bat_priv, orig_node);
  
- 	if (orig_ifinfo->if_outgoing != BATADV_IF_DEFAULT)
- 		batadv_hardif_free_ref_now(orig_ifinfo->if_outgoing);
+-	if (!changed)
++	if (!changed_ifinfo && !changed_neigh)
+ 		return false;
  
-+	/* this is the last reference to this object */
-+	router = rcu_dereference_protected(orig_ifinfo->router, true);
-+	if (router)
-+		batadv_neigh_node_free_ref_now(router);
- 	kfree(orig_ifinfo);
- }
- 
+ 	/* first for NULL ... */
 -- 
 1.7.10.4
 
