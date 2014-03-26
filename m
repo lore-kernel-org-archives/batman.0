@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 26 Mar 2014 15:46:23 +0100
-Message-Id: <1395845184-15186-4-git-send-email-sw@simonwunderlich.de>
+Date: Wed, 26 Mar 2014 15:46:24 +0100
+Message-Id: <1395845184-15186-5-git-send-email-sw@simonwunderlich.de>
 In-Reply-To: <1395845184-15186-1-git-send-email-sw@simonwunderlich.de>
 References: <1395845184-15186-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH-maintv3 3/4] batman-adv: always run
-	purge_orig_neighbors
+Subject: [B.A.T.M.A.N.] [PATCH-maintv3 4/4] batman-adv: fix removing
+	neigh_ifinfo
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,50 +22,85 @@ Cc: Simon Wunderlich <simon@open-mesh.com>
 
 From: Simon Wunderlich <simon@open-mesh.com>
 
-The current code will not execute batadv_purge_orig_neighbors() when an
-orig_ifinfo has already been purged. However we need to run it in any
-case. Fix that.
+When an interface is removed separately, all neighbors need to be
+checked if they have a neigh_ifinfo structure for that particular
+interface. If that is the case, remove that ifinfo so any references to
+a hard interface can be freed.
 
 This is a regression introduced by
-de6bcc76ea84fecb136f8c8f5ba1862e4a13f06b ("batman-adv: split out router
-from orig_node")
+9bb33b8d88e318c4879d37d06ad28e3e018b9036 ("batman-adv: split tq
+information in neigh_node struct")
 
+Reported-by: Antonio Quartulli <antonio@meshcoding.com>
 Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 ---
-Changes to PATCHv1:
-
- * check two change variables separately
----
- originator.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ originator.c |   46 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
 
 diff --git a/originator.c b/originator.c
-index 25df60d..47b0886 100644
+index 47b0886..aa2468b 100644
 --- a/originator.c
 +++ b/originator.c
-@@ -857,7 +857,7 @@ static bool batadv_purge_orig_node(struct batadv_priv *bat_priv,
- {
- 	struct batadv_neigh_node *best_neigh_node;
- 	struct batadv_hard_iface *hard_iface;
--	bool changed;
-+	bool changed_ifinfo, changed_neigh;
+@@ -702,6 +702,47 @@ free_orig_node:
+ }
  
- 	if (batadv_has_timed_out(orig_node->last_seen,
- 				 2 * BATADV_PURGE_TIMEOUT)) {
-@@ -867,10 +867,10 @@ static bool batadv_purge_orig_node(struct batadv_priv *bat_priv,
- 			   jiffies_to_msecs(orig_node->last_seen));
- 		return true;
+ /**
++ * batadv_purge_neigh_ifinfo - purge obsolete ifinfo entries from neighbor
++ * @bat_priv: the bat priv with all the soft interface information
++ * @neigh_node: orig node which is to be checked
++ */
++static void
++batadv_purge_neigh_ifinfo(struct batadv_priv *bat_priv,
++			  struct batadv_neigh_node *neigh)
++{
++	struct batadv_neigh_ifinfo *neigh_ifinfo;
++	struct batadv_hard_iface *if_outgoing;
++	struct hlist_node *node_tmp;
++
++	spin_lock_bh(&neigh->ifinfo_lock);
++
++	/* for all ifinfo objects for this neighinator */
++	hlist_for_each_entry_safe(neigh_ifinfo, node_tmp,
++				  &neigh->ifinfo_list, list) {
++		if_outgoing = neigh_ifinfo->if_outgoing;
++
++		/* always keep the default interface */
++		if (if_outgoing == BATADV_IF_DEFAULT)
++			continue;
++
++		/* don't purge if the interface is not (going) down */
++		if ((if_outgoing->if_status != BATADV_IF_INACTIVE) &&
++		    (if_outgoing->if_status != BATADV_IF_NOT_IN_USE) &&
++		    (if_outgoing->if_status != BATADV_IF_TO_BE_REMOVED))
++			continue;
++
++		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++			   "neighbor/ifinfo purge: neighbor %pM, iface: %s\n",
++			   neigh->addr, if_outgoing->net_dev->name);
++
++		hlist_del_rcu(&neigh_ifinfo->list);
++		batadv_neigh_ifinfo_free_ref(neigh_ifinfo);
++	}
++
++	spin_unlock_bh(&neigh->ifinfo_lock);
++}
++
++/**
+  * batadv_purge_orig_ifinfo - purge obsolete ifinfo entries from originator
+  * @bat_priv: the bat priv with all the soft interface information
+  * @orig_node: orig node which is to be checked
+@@ -800,6 +841,11 @@ batadv_purge_orig_neighbors(struct batadv_priv *bat_priv,
+ 
+ 			hlist_del_rcu(&neigh_node->list);
+ 			batadv_neigh_node_free_ref(neigh_node);
++		} else {
++			/* only neccesary if not the whole neighbor is to be deleted,
++			 * but some interface has been removed.
++			 */
++			batadv_purge_neigh_ifinfo(bat_priv, neigh_node);
+ 		}
  	}
--	changed = batadv_purge_orig_ifinfo(bat_priv, orig_node);
--	changed = changed || batadv_purge_orig_neighbors(bat_priv, orig_node);
-+	changed_ifinfo = batadv_purge_orig_ifinfo(bat_priv, orig_node);
-+	changed_neigh = batadv_purge_orig_neighbors(bat_priv, orig_node);
  
--	if (!changed)
-+	if (!changed_ifinfo && !changed_neigh)
- 		return false;
- 
- 	/* first for NULL ... */
 -- 
 1.7.10.4
 
