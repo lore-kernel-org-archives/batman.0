@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sun, 30 Mar 2014 22:34:59 +0200
-Message-Id: <1396211704-4677-2-git-send-email-antonio@meshcoding.com>
+Date: Sun, 30 Mar 2014 22:35:03 +0200
+Message-Id: <1396211704-4677-6-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1396211704-4677-1-git-send-email-antonio@meshcoding.com>
 References: <1396211704-4677-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [RFCv2 1/6] cfg80211: export expected throughput
-	through get_station()
+Subject: [B.A.T.M.A.N.] [RFCv2 5/6] mac80211: minstrel_ht - implement
+	get_expected_throughput() API
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,112 +18,53 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: Johannes Berg <johannes@sipsolutions.net>
-Cc: devel@lists.open80211s.org, b.a.t.m.a.n@lists.open-mesh.org, linux-wireless@vger.kernel.org, Antonio Quartulli <antonio@open-mesh.com>
+Cc: devel@lists.open80211s.org, Felix Fietkau <nbd@openwrt.org>, b.a.t.m.a.n@lists.open-mesh.org, linux-wireless@vger.kernel.org, Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-Users may need information about the expected throughput
-towards a given peer computed by the RC algorithm.
-Export such value through the get_station() API.
-
-This information is useful to the batman-adv module which
-will use it for its new metric computation.
-
+Cc: Felix Fietkau <nbd@openwrt.org>
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- include/net/cfg80211.h | 63 ++++++++++++++++++++++++++++----------------------
- 1 file changed, 35 insertions(+), 28 deletions(-)
+ net/mac80211/rc80211_minstrel_ht.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/include/net/cfg80211.h b/include/net/cfg80211.h
-index fb8afce..4c8ebe9 100644
---- a/include/net/cfg80211.h
-+++ b/include/net/cfg80211.h
-@@ -862,36 +862,38 @@ int cfg80211_check_station_change(struct wiphy *wiphy,
-  * @STATION_INFO_NONPEER_PM: @nonpeer_pm filled
-  * @STATION_INFO_CHAIN_SIGNAL: @chain_signal filled
-  * @STATION_INFO_CHAIN_SIGNAL_AVG: @chain_signal_avg filled
-+ * @STATION_INFO_EXPECTED_THROUGHPUT: @expected_throughput filled
-  */
- enum station_info_flags {
--	STATION_INFO_INACTIVE_TIME	= 1<<0,
--	STATION_INFO_RX_BYTES		= 1<<1,
--	STATION_INFO_TX_BYTES		= 1<<2,
--	STATION_INFO_LLID		= 1<<3,
--	STATION_INFO_PLID		= 1<<4,
--	STATION_INFO_PLINK_STATE	= 1<<5,
--	STATION_INFO_SIGNAL		= 1<<6,
--	STATION_INFO_TX_BITRATE		= 1<<7,
--	STATION_INFO_RX_PACKETS		= 1<<8,
--	STATION_INFO_TX_PACKETS		= 1<<9,
--	STATION_INFO_TX_RETRIES		= 1<<10,
--	STATION_INFO_TX_FAILED		= 1<<11,
--	STATION_INFO_RX_DROP_MISC	= 1<<12,
--	STATION_INFO_SIGNAL_AVG		= 1<<13,
--	STATION_INFO_RX_BITRATE		= 1<<14,
--	STATION_INFO_BSS_PARAM          = 1<<15,
--	STATION_INFO_CONNECTED_TIME	= 1<<16,
--	STATION_INFO_ASSOC_REQ_IES	= 1<<17,
--	STATION_INFO_STA_FLAGS		= 1<<18,
--	STATION_INFO_BEACON_LOSS_COUNT	= 1<<19,
--	STATION_INFO_T_OFFSET		= 1<<20,
--	STATION_INFO_LOCAL_PM		= 1<<21,
--	STATION_INFO_PEER_PM		= 1<<22,
--	STATION_INFO_NONPEER_PM		= 1<<23,
--	STATION_INFO_RX_BYTES64		= 1<<24,
--	STATION_INFO_TX_BYTES64		= 1<<25,
--	STATION_INFO_CHAIN_SIGNAL	= 1<<26,
--	STATION_INFO_CHAIN_SIGNAL_AVG	= 1<<27,
-+	STATION_INFO_INACTIVE_TIME		= 1<<0,
-+	STATION_INFO_RX_BYTES			= 1<<1,
-+	STATION_INFO_TX_BYTES			= 1<<2,
-+	STATION_INFO_LLID			= 1<<3,
-+	STATION_INFO_PLID			= 1<<4,
-+	STATION_INFO_PLINK_STATE		= 1<<5,
-+	STATION_INFO_SIGNAL			= 1<<6,
-+	STATION_INFO_TX_BITRATE			= 1<<7,
-+	STATION_INFO_RX_PACKETS			= 1<<8,
-+	STATION_INFO_TX_PACKETS			= 1<<9,
-+	STATION_INFO_TX_RETRIES			= 1<<10,
-+	STATION_INFO_TX_FAILED			= 1<<11,
-+	STATION_INFO_RX_DROP_MISC		= 1<<12,
-+	STATION_INFO_SIGNAL_AVG			= 1<<13,
-+	STATION_INFO_RX_BITRATE			= 1<<14,
-+	STATION_INFO_BSS_PARAM			= 1<<15,
-+	STATION_INFO_CONNECTED_TIME		= 1<<16,
-+	STATION_INFO_ASSOC_REQ_IES		= 1<<17,
-+	STATION_INFO_STA_FLAGS			= 1<<18,
-+	STATION_INFO_BEACON_LOSS_COUNT		= 1<<19,
-+	STATION_INFO_T_OFFSET			= 1<<20,
-+	STATION_INFO_LOCAL_PM			= 1<<21,
-+	STATION_INFO_PEER_PM			= 1<<22,
-+	STATION_INFO_NONPEER_PM			= 1<<23,
-+	STATION_INFO_RX_BYTES64			= 1<<24,
-+	STATION_INFO_TX_BYTES64			= 1<<25,
-+	STATION_INFO_CHAIN_SIGNAL		= 1<<26,
-+	STATION_INFO_CHAIN_SIGNAL_AVG		= 1<<27,
-+	STATION_INFO_EXPECTED_THROUGHPUT	= 1<<28,
+diff --git a/net/mac80211/rc80211_minstrel_ht.c b/net/mac80211/rc80211_minstrel_ht.c
+index bccaf85..480f657 100644
+--- a/net/mac80211/rc80211_minstrel_ht.c
++++ b/net/mac80211/rc80211_minstrel_ht.c
+@@ -1031,6 +1031,24 @@ minstrel_ht_free(void *priv)
+ 	mac80211_minstrel.free(priv);
+ }
+ 
++static u32
++minstrel_ht_get_expected_throughput(void *priv, void *priv_sta,
++				    struct ieee80211_supported_band *sband)
++{
++	struct minstrel_ht_sta_priv *msp = priv_sta;
++	struct minstrel_ht_sta *mi = &msp->ht;
++	int i, j;
++
++	if (!msp->is_ht)
++		return mac80211_minstrel.get_expected_throughput(priv, priv_sta,
++								 sband);
++
++	i = mi->max_tp_rate / MCS_GROUP_RATES;
++	j = mi->max_tp_rate % MCS_GROUP_RATES;
++
++	return mi->groups[i].rates[j].cur_tp;
++}
++
+ static const struct rate_control_ops mac80211_minstrel_ht = {
+ 	.name = "minstrel_ht",
+ 	.tx_status = minstrel_ht_tx_status,
+@@ -1045,6 +1063,7 @@ static const struct rate_control_ops mac80211_minstrel_ht = {
+ 	.add_sta_debugfs = minstrel_ht_add_sta_debugfs,
+ 	.remove_sta_debugfs = minstrel_ht_remove_sta_debugfs,
+ #endif
++	.get_expected_throughput = minstrel_ht_get_expected_throughput,
  };
  
- /**
-@@ -1013,6 +1015,9 @@ struct sta_bss_parameters {
-  * @local_pm: local mesh STA power save mode
-  * @peer_pm: peer mesh STA power save mode
-  * @nonpeer_pm: non-peer mesh STA power save mode
-+ * @expected_throughput: expected throughput as reported by the RC algorithm
-+ *  about the bitrate having the maximum throughput. This field can be filled
-+ *  only by drivers using Minstrel
-  */
- struct station_info {
- 	u32 filled;
-@@ -1051,6 +1056,8 @@ struct station_info {
- 	enum nl80211_mesh_power_mode peer_pm;
- 	enum nl80211_mesh_power_mode nonpeer_pm;
  
-+	u32 expected_throughput;
-+
- 	/*
- 	 * Note: Add a new enum station_info_flags value for each new field and
- 	 * use it to check which fields are initialized.
 -- 
 1.8.3.2
 
