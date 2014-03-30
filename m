@@ -1,9 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 29 Mar 2014 17:27:38 +0100
-Message-Id: <1396110458-8608-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: fix local TT check for
-	outgoing arp requests in DAT
+Date: Sun, 30 Mar 2014 22:35:00 +0200
+Message-Id: <1396211704-4677-3-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1396211704-4677-1-git-send-email-antonio@meshcoding.com>
+References: <1396211704-4677-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [RFCv2 2/6] mac80211: add new RC API to retrieve
+	expected throughput
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,49 +17,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: devel@lists.open80211s.org, b.a.t.m.a.n@lists.open-mesh.org, linux-wireless@vger.kernel.org, Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-Change introduced by d6bd8b36fa1f3d72a6fd5942a6e9bde6ddafcd0d
-("batman-adv: make DAT drop ARP requests targeting local clients")
-implements a check that prevents DAT from using the caching
-mechanism when the client that is supposed to provide a reply
-to an arp request is local.
+In order to make get_station() export the expected
+throughput, we need a new API which extracts such
+information from the Rate Control algorithm.
+Therefore add the get_expected_throughput() member
+to the rate_control_ops structure.
 
-However change brought by 3e26722bc9f248ec4316749fc1957365c0fa5e4b
-("batman-adv: make the Distributed ARP Table vlan aware")
-has not converted the above check into its vlan aware version
-thus making it useless when the local client is behind a vlan.
-
-Fix the behaviour by properly specifying the vlan when
-checking for a client being local or not.
-
-Reported-by: Simon Wunderlich <simon@open-mesh.com>
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
+ include/net/mac80211.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Changes from v2:
-- added reported-by clause
-
- distributed-arp-table.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index 5bb37a8..a5d75be 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -940,8 +940,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 		 * additional DAT answer may trigger kernel warnings about
- 		 * a packet coming from the wrong port.
- 		 */
--		if (batadv_is_my_client(bat_priv, dat_entry->mac_addr,
--					BATADV_NO_FLAGS)) {
-+		if (batadv_is_my_client(bat_priv, dat_entry->mac_addr, vid)) {
- 			ret = true;
- 			goto out;
- 		}
+diff --git a/include/net/mac80211.h b/include/net/mac80211.h
+index 604e279..209e004 100644
+--- a/include/net/mac80211.h
++++ b/include/net/mac80211.h
+@@ -4476,6 +4476,9 @@ struct rate_control_ops {
+ 	void (*add_sta_debugfs)(void *priv, void *priv_sta,
+ 				struct dentry *dir);
+ 	void (*remove_sta_debugfs)(void *priv, void *priv_sta);
++
++	u32 (*get_expected_throughput)(void *priv, void *priv_sta,
++				       struct ieee80211_supported_band *sband);
+ };
+ 
+ static inline int rate_supported(struct ieee80211_sta *sta,
 -- 
 1.8.3.2
 
