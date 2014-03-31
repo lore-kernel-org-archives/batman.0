@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 31 Mar 2014 17:28:54 +0800
-Message-ID: <2653301.pzRrpynKvb@diderot>
-In-Reply-To: <1395845184-15186-4-git-send-email-sw@simonwunderlich.de>
+Date: Mon, 31 Mar 2014 17:32:29 +0800
+Message-ID: <2811984.s0Lsuv0XOW@diderot>
+In-Reply-To: <1395845184-15186-5-git-send-email-sw@simonwunderlich.de>
 References: <1395845184-15186-1-git-send-email-sw@simonwunderlich.de>
- <1395845184-15186-4-git-send-email-sw@simonwunderlich.de>
+ <1395845184-15186-5-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1831916.E96jDTf5Lq";
+Content-Type: multipart/signed; boundary="nextPart1676084.3bQHQKfMVP";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-maintv3 3/4] batman-adv: always run
-	purge_orig_neighbors
+Subject: Re: [B.A.T.M.A.N.] [PATCH-maintv3 4/4] batman-adv: fix removing
+	neigh_ifinfo
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,36 +25,34 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <simon@open-mesh.com>
 
 
---nextPart1831916.E96jDTf5Lq
+--nextPart1676084.3bQHQKfMVP
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday 26 March 2014 15:46:23 Simon Wunderlich wrote:
+On Wednesday 26 March 2014 15:46:24 Simon Wunderlich wrote:
 > From: Simon Wunderlich <simon@open-mesh.com>
 > 
-> The current code will not execute batadv_purge_orig_neighbors() when an
-> orig_ifinfo has already been purged. However we need to run it in any
-> case. Fix that.
+> When an interface is removed separately, all neighbors need to be
+> checked if they have a neigh_ifinfo structure for that particular
+> interface. If that is the case, remove that ifinfo so any references to
+> a hard interface can be freed.
 > 
 > This is a regression introduced by
-> de6bcc76ea84fecb136f8c8f5ba1862e4a13f06b ("batman-adv: split out router
-> from orig_node")
+> 9bb33b8d88e318c4879d37d06ad28e3e018b9036 ("batman-adv: split tq
+> information in neigh_node struct")
 > 
+> Reported-by: Antonio Quartulli <antonio@meshcoding.com>
 > Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 > ---
-> Changes to PATCHv1:
-> 
->  * check two change variables separately
-> ---
->  originator.c |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+>  originator.c |   46 ++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 46 insertions(+)
 
-Applied in revision 7212515.
+Applied in revision 9b9cdbe.
 
 Thanks,
 Marek
 
---nextPart1831916.E96jDTf5Lq
+--nextPart1676084.3bQHQKfMVP
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -62,14 +60,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTOTVWAAoJEFNVTo/uthzAAPMIALnJ/hgv5wDXEYSvg6shpFs6
-sJpr80f4CCX4FdxabyCg6brHdfNLhnL4EfxLTQkCOOXJqoH70cGH4pnKc+jP3cHu
-GAtB3ELNBnaRtGmzWBYqj5d9EYI2atNNJR4ud33wBkyJtQwYc3TBBa3S9wdeuDFB
-gOIzvS5gjFnT+NuIAULywROw44K/pqyCzez3UKSsKhyK/ZjSGAmd/B+SM8SNvvc4
-0G37m6iiEMWp4WK1yk+Jbiw28KOgTEVe4MaREY1v70yh4UbDuDYECqWbmz3R2DGX
-KXVdekq/bEoNtEHerL1O0HXh66Nr27+VXKW2CJGoVQP0dJP0QWT56KxIIgDEnas=
-=hlHA
+iQEcBAABAgAGBQJTOTYtAAoJEFNVTo/uthzAvtkIAKe6l2G4XaYqWNrXxTeuzaom
+sPkLCROCaY5EUMqZ3vIzhOkb1qE9sFJOCsBboPCGB6sBcIOfpDJWqTyyif3iyJKv
+D6XpWcsGRToT6q77iAoq4pejY1lsgYTtvh6IRvcdCnDfjI0GrN62L4N8cszZHrLr
+DX2yUl/odLtg4V8HzNXBSDjXmJx+jWhRq5ujujEQP6eDzus7eVL6xxx7LIESwdKr
+bevIpfYJQxT2QAMYeR4iO17vUqCpaeR0ska5ZXWQotBRjMbFnpCz94/RMhnSL5Ll
+TvdNtdd3qNxUTxvCsNVnYh3KoOu1V8zj4ynXUspNIsl48aYnQX8bEE5TujTeXTg=
+=MQCN
 -----END PGP SIGNATURE-----
 
---nextPart1831916.E96jDTf5Lq--
+--nextPart1676084.3bQHQKfMVP--
 
