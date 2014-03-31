@@ -1,9 +1,15 @@
 Return-Path: <antonio@meshcoding.com>
+Message-ID: <5339240C.5070400@meshcoding.com>
+Date: Mon, 31 Mar 2014 10:15:08 +0200
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Mon, 31 Mar 2014 09:44:47 +0200
-Message-Id: <1396251887-5665-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: tcpdump - fix IP header
-	parsing
+MIME-Version: 1.0
+References: <1396251887-5665-1-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1396251887-5665-1-git-send-email-antonio@meshcoding.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="deQ1HKSRx7wXgk1fUFTrPo792qNfq6HTc"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: tcpdump - fix IP
+ header parsing
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,200 +22,43 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--deQ1HKSRx7wXgk1fUFTrPo792qNfq6HTc
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Fix the IP header parsing by properly converting the source
-and the destination addresses to strings.
-The problem is given by the fact that inet_ntoa() uses a
-static buffer to store its result, therefore it cannot be
-invoked twice in a row without saving the first outcome.
-Moreover inet_ntoa() is deprecated in favor of inet_pton().
+The subject says "batman-adv", but this patch is (obviously) for batctl.
 
-Introduced by 35b37756f4a3a230bf7941034d9da178ee5b4948
-("add IPv6 support to tcpdump parser")
+Cheers,
 
-This patch also slightly beautifies the code.
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
----
+--=20
+Antonio Quartulli
 
-Change since v1:
-- print all errors on stderr
 
- tcpdump.c | 73 ++++++++++++++++++++++++++++++++++++---------------------------
- 1 file changed, 42 insertions(+), 31 deletions(-)
+--deQ1HKSRx7wXgk1fUFTrPo792qNfq6HTc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-diff --git a/tcpdump.c b/tcpdump.c
-index e9fac70..94e2a84 100644
---- a/tcpdump.c
-+++ b/tcpdump.c
-@@ -258,20 +258,27 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
- 	struct ip6_hdr *iphdr;
- 	struct icmp6_hdr *icmphdr;
- 
--	char ipv6_addr_src[40], ipv6_addr_dst[40];
--	char ip_saddr[40], ip_daddr[40], nd_nas_target[40];
-+	char ipsrc[INET6_ADDRSTRLEN], ipdst[INET6_ADDRSTRLEN];
- 	struct nd_neighbor_solicit *nd_neigh_sol;
- 	struct nd_neighbor_advert *nd_advert;
-+	char nd_nas_target[INET6_ADDRSTRLEN];
- 	const char ip_string[] = "IP6";
- 
- 	iphdr = (struct ip6_hdr *)packet_buff;
--	LEN_CHECK((size_t)buff_len, (size_t)(sizeof(struct ip6_hdr)), "IP6");
-+	LEN_CHECK((size_t)buff_len, (size_t)(sizeof(struct ip6_hdr)), ip_string);
- 
- 	if (!time_printed)
- 		print_time();
- 
--	inet_ntop(AF_INET6, &(iphdr->ip6_src), ipv6_addr_src, 40);
--	inet_ntop(AF_INET6, &(iphdr->ip6_dst), ipv6_addr_dst, 40);
-+	if (!inet_ntop(AF_INET6, &iphdr->ip6_src, ipsrc, sizeof(ipsrc))) {
-+		fprintf(stderr, "Cannot decode source IPv6\n");
-+		return;
-+	}
-+
-+	if (!inet_ntop(AF_INET6, &iphdr->ip6_dst, ipdst, sizeof(ipdst))) {
-+		fprintf(stderr, "Cannot decode destination IPv6\n");
-+		return;
-+	}
- 
- 	switch (iphdr->ip6_nxt) {
- 	case IPPROTO_ICMPV6:
-@@ -280,7 +287,7 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
- 		icmphdr = (struct icmp6_hdr *)(packet_buff +
- 					       sizeof(struct ip6_hdr));
- 
--		printf("IP6 %s > %s ", ipv6_addr_src, ipv6_addr_dst);
-+		printf("%s %s > %s ", ip_string, ipsrc, ipdst);
- 		if (icmphdr->icmp6_type < ICMP6_INFOMSG_MASK &&
- 		    (size_t)(buff_len) > IPV6_MIN_MTU) {
- 			fprintf(stderr,
-@@ -348,16 +355,12 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
- 		}
- 		break;
- 	case IPPROTO_TCP:
--		inet_ntop(AF_INET6, &(iphdr->ip6_src), ip_saddr, 40);
--		inet_ntop(AF_INET6, &(iphdr->ip6_dst), ip_daddr, 40);
- 		dump_tcp(ip_string, packet_buff, buff_len,
--			 sizeof(struct ip6_hdr), ip_saddr, ip_daddr);
-+			 sizeof(struct ip6_hdr), ipsrc, ipdst);
- 		break;
- 	case IPPROTO_UDP:
--		inet_ntop(AF_INET6, &(iphdr->ip6_src), ip_saddr, 40);
--		inet_ntop(AF_INET6, &(iphdr->ip6_dst), ip_daddr, 40);
- 		dump_udp(ip_string, packet_buff, buff_len,
--			 sizeof(struct ip6_hdr), ip_saddr, ip_daddr);
-+			 sizeof(struct ip6_hdr), ipsrc, ipdst);
- 		break;
- 	default:
- 		printf(" IPv6 unknown protocol: %i\n", iphdr->ip6_nxt);
-@@ -367,29 +370,40 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
- static void dump_ip(unsigned char *packet_buff, ssize_t buff_len,
- 		    int time_printed)
- {
-+	char ipsrc[INET_ADDRSTRLEN], ipdst[INET_ADDRSTRLEN];
- 	struct iphdr *iphdr, *tmp_iphdr;
-+	const char ip_string[] = "IP";
- 	struct udphdr *tmp_udphdr;
- 	struct icmphdr *icmphdr;
--	const char ip_string[] = "IP";
- 
- 	iphdr = (struct iphdr *)packet_buff;
--	LEN_CHECK((size_t)buff_len, (size_t)(iphdr->ihl * 4), "IP");
-+	LEN_CHECK((size_t)buff_len, (size_t)(iphdr->ihl * 4), ip_string);
- 
- 	if (!time_printed)
- 		print_time();
- 
-+	if (!inet_ntop(AF_INET, &iphdr->saddr, ipsrc, sizeof(ipsrc))) {
-+		fprintf(stderr, "Cannot decode source IP\n");
-+		return;
-+	}
-+
-+	if (!inet_ntop(AF_INET, &iphdr->daddr, ipdst, sizeof(ipdst))) {
-+		fprintf(stderr, "Cannot decode destination IP\n");
-+		return;
-+	}
-+
- 	switch (iphdr->protocol) {
- 	case IPPROTO_ICMP:
- 		LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4), sizeof(struct icmphdr), "ICMP");
- 
- 		icmphdr = (struct icmphdr *)(packet_buff + (iphdr->ihl * 4));
--		printf("IP %s > ", inet_ntoa(*(struct in_addr *)&iphdr->saddr));
-+		printf("%s %s > ", ip_string, ipsrc);
- 
- 		switch (icmphdr->type) {
- 		case ICMP_ECHOREPLY:
- 			printf("%s: ICMP echo reply, id %hu, seq %hu, length %zu\n",
--				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
--				ntohs(icmphdr->un.echo.id), ntohs(icmphdr->un.echo.sequence),
-+				ipdst, ntohs(icmphdr->un.echo.id),
-+				ntohs(icmphdr->un.echo.sequence),
- 				(size_t)buff_len - (iphdr->ihl * 4));
- 			break;
- 		case ICMP_DEST_UNREACH:
-@@ -401,46 +415,43 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len,
- 				tmp_iphdr = (struct iphdr *)(((char *)icmphdr) + sizeof(struct icmphdr));
- 				tmp_udphdr = (struct udphdr *)(((char *)tmp_iphdr) + (tmp_iphdr->ihl * 4));
- 
--				printf("%s: ICMP ", inet_ntoa(*(struct in_addr *)&iphdr->daddr));
-+				printf("%s: ICMP ", ipdst);
- 				printf("%s udp port %hu unreachable, length %zu\n",
--					inet_ntoa(*(struct in_addr *)&tmp_iphdr->daddr),
--					ntohs(tmp_udphdr->dest), (size_t)buff_len - (iphdr->ihl * 4));
-+					ipdst, ntohs(tmp_udphdr->dest),
-+					(size_t)buff_len - (iphdr->ihl * 4));
- 				break;
- 			default:
- 				printf("%s: ICMP unreachable %hhu, length %zu\n",
--					inet_ntoa(*(struct in_addr *)&iphdr->daddr),
--					icmphdr->code, (size_t)buff_len - (iphdr->ihl * 4));
-+					ipdst, icmphdr->code,
-+					(size_t)buff_len - (iphdr->ihl * 4));
- 				break;
- 			}
- 
- 			break;
- 		case ICMP_ECHO:
- 			printf("%s: ICMP echo request, id %hu, seq %hu, length %zu\n",
--				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
--				ntohs(icmphdr->un.echo.id), ntohs(icmphdr->un.echo.sequence),
-+				ipdst, ntohs(icmphdr->un.echo.id),
-+				ntohs(icmphdr->un.echo.sequence),
- 				(size_t)buff_len - (iphdr->ihl * 4));
- 			break;
- 		case ICMP_TIME_EXCEEDED:
- 			printf("%s: ICMP time exceeded in-transit, length %zu\n",
--				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
--				(size_t)buff_len - (iphdr->ihl * 4));
-+				ipdst, (size_t)buff_len - (iphdr->ihl * 4));
- 			break;
- 		default:
- 			printf("%s: ICMP type %hhu, length %zu\n",
--				inet_ntoa(*(struct in_addr *)&iphdr->daddr), icmphdr->type,
-+				ipdst, icmphdr->type,
- 				(size_t)buff_len - (iphdr->ihl * 4));
- 			break;
- 		}
- 		break;
- 	case IPPROTO_TCP:
- 		dump_tcp(ip_string, packet_buff, buff_len, iphdr->ihl * 4,
--			 inet_ntoa(*(struct in_addr *)&iphdr->saddr),
--			 inet_ntoa(*(struct in_addr *)&iphdr->daddr));
-+			 ipsrc, ipdst);
- 		break;
- 	case IPPROTO_UDP:
- 		dump_udp(ip_string, packet_buff, buff_len, iphdr->ihl * 4,
--			 inet_ntoa(*(struct in_addr *)&iphdr->saddr),
--			 inet_ntoa(*(struct in_addr *)&iphdr->daddr));
-+			 ipsrc, ipdst);
- 		break;
- 	default:
- 		printf("IP unknown protocol: %i\n", iphdr->protocol);
--- 
-1.8.3.2
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
+iQIcBAEBCAAGBQJTOSQQAAoJEEKTMo6mOh1VgPcP/2+EMdn1gNVvpS6ySF1FZV3M
+Y1Z5ljOuVEkJkYCdXU8ttMbg2hAsKvs6fFX4r1nZY35Lo9Y1yGlp+ITZPyJ71iiX
++Gu/ArJr9fSQjLPL0k9kqXLE1L0RkiocQ6cHgXL9TDwflZ9qTEy1TrbNFlUy42cC
+VYOWyT2P7GluzK6RiwYv32OfNwFv0wehRgSNSymwlTZUE3za4GeQYatFCWCItf1r
+QRu8eIfm6xsuucnO9OjiuZ/2DKN0VE7It7RIF5sCmCCBcSzH2FHujXuYZVbwuY0h
+d2hh6SehxAR/2SbR7p4f2FJoqG5tDL6BIyMXNY74AZpAwZvJdsGp0xm9TdpaWRxR
+f98mEWy6zI/39e0xKZzCSJD/2/A/YJ9oxEDR09YEhpzsw21QLpsytkzBRzXA2+VA
+aS6uLQg8r/pbrf8o4ftwQ5Pd7d7E7Otf03dABLc5h5k4P3B1V3IxUvmPtpcU5DVg
+5eAlBsqrn0+hjmrgoZKH1RwpARXG2R1aoxXyFZc/qorKRbpo5kucTmLKcf97bQWG
+i1pXNsYH+2dXJ0Tyd5JmH835uT6DDHMiBdc1EswehJTZt849ejUr+tgc7cWYv2hk
+FpkumhELb5JN3d+O3WIdG9N3uMWhaGyAQYZqVns7mCQS9O41hllqgMQEwx9aOejF
+ydaX6KDxbTYbv1Ab5bZd
+=ErLD
+-----END PGP SIGNATURE-----
+
+--deQ1HKSRx7wXgk1fUFTrPo792qNfq6HTc--
