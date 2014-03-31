@@ -1,8 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Mon, 31 Mar 2014 09:40:41 +0200
-Message-Id: <1396251641-20510-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: tcpdump - fix IP header
+Date: Mon, 31 Mar 2014 09:44:47 +0200
+Message-Id: <1396251887-5665-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: tcpdump - fix IP header
 	parsing
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -34,11 +34,15 @@ This patch also slightly beautifies the code.
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
+
+Change since v1:
+- print all errors on stderr
+
  tcpdump.c | 73 ++++++++++++++++++++++++++++++++++++---------------------------
  1 file changed, 42 insertions(+), 31 deletions(-)
 
 diff --git a/tcpdump.c b/tcpdump.c
-index e9fac70..c37943e 100644
+index e9fac70..94e2a84 100644
 --- a/tcpdump.c
 +++ b/tcpdump.c
 @@ -258,20 +258,27 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
@@ -63,12 +67,12 @@ index e9fac70..c37943e 100644
 -	inet_ntop(AF_INET6, &(iphdr->ip6_src), ipv6_addr_src, 40);
 -	inet_ntop(AF_INET6, &(iphdr->ip6_dst), ipv6_addr_dst, 40);
 +	if (!inet_ntop(AF_INET6, &iphdr->ip6_src, ipsrc, sizeof(ipsrc))) {
-+		printf("Cannot decode source IPv6\n");
++		fprintf(stderr, "Cannot decode source IPv6\n");
 +		return;
 +	}
 +
 +	if (!inet_ntop(AF_INET6, &iphdr->ip6_dst, ipdst, sizeof(ipdst))) {
-+		printf("Cannot decode destination IPv6\n");
++		fprintf(stderr, "Cannot decode destination IPv6\n");
 +		return;
 +	}
  
