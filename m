@@ -1,12 +1,9 @@
-Return-Path: <baantunes@gmail.com>
-From: Bruno Antunes <baantunes@gmail.com>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <0643725B-CC5E-4AAA-8908-C6A0EA4CE631@gmail.com>
-Date: Mon, 31 Mar 2014 12:23:52 +0100
-Mime-Version: 1.0 (Mac OS X Mail 6.6 \(1510\))
-Subject: [B.A.T.M.A.N.] Batman-adv 2014.1.0 and 2014.0.0 issues with 3.10
-	and 3.8 kernels
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Mon, 31 Mar 2014 13:48:10 +0200
+Message-Id: <1396266490-3525-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv3 maint] batman-adv: change the MAC of each
+	VLAN upon ndo_set_mac_address
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,58 +15,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-Hi,
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-Are recent batman-acv versions unusable with 3.10 or 3.8 kernels?
+The MAC address of the soft-interface is used to initialise
+the "non-purge" TT entry of each existing VLAN. Therefore
+when the user invokes ndo_set_mac_address() all the
+"non-purge" TT entries have to be updated, not only the one
+belonging to the non-tagged network.
 
-The reason i'm asking is that with 2104.1.0 with two connected sta after =
-restarting the wifi
-(also the same if restarting all the network) it gives the following =
-message:=20
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
 
-root@Laguna1:/etc/config# wifi
-[37620.920000] batman_adv: bat0: Interface deactivated: adhoc0
-[37621.140000] batman_adv: bat0: Removing interface: adhoc0
-[37621.250000] br-mesh: port 2(bat0) entered disabled state
-[37621.250000] device bat0 left promiscuous mode
-[37621.260000] br-mesh: port 2(bat0) entered disabled state
-[37631.340000] unregister_netdevice: waiting for adhoc0 to become free. =
-Usage count =3D 1
-[37641.390000] unregister_netdevice: waiting for adhoc0 to become free. =
-Usage count =3D 1
-[37651.410000] unregister_netdevice: waiting for adhoc0 to become free. =
-Usage count =3D 1
-=85
+Changes from v2:
+- don't increment/decrement vlan->refcounter because we never use the vlan
+  object outside of the rcu_read_lock/unlock area
 
-And only restarting is possible to get the device back to work.
-
-Going back to 2014.0.0 it's worst with the system being very unstable =
-and continuously restarting.
-
-After following the instructions from cmsv <cmsv@wirelesspt.net>
-and replacing the feeds.conf with
-src-git routing https://github.com/libre-mesh/openwrt-routing-packages
-
-I was able to compile the 2013.4.0 release which is very stable.
-
-But I really would like the vlan support from recent releases.
-
-My systems are:=20
-Laguna board
-OpenWrt trunk r38938
-batctl 2013.4.0 [batman-adv: 2013.4.0]
-Linux Laguna1 3.8.13 #6 SMP Thu Mar 27 16:10:18 WET 2014 armv6l =
-GNU/Linux
-
-Router station
-OpenWrt trunk r38938
-batctl 2013.4.0 [batman-adv: 2013.4.0]
-Linux RSPro2 3.10.18 #2 Thu Mar 27 18:24:29 WET 2014 mips GNU/Linux
-
-Thanks in advance,
-Bruno
+changes from v1:
+- declare vlan variable
 
 
+ soft-interface.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/soft-interface.c b/soft-interface.c
+index f82c267..d962363 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -105,6 +105,7 @@ static struct net_device_stats *batadv_interface_stats(struct net_device *dev)
+ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
++	struct batadv_softif_vlan *vlan;
+ 	struct sockaddr *addr = p;
+ 	uint8_t old_addr[ETH_ALEN];
+ 
+@@ -115,12 +116,17 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
+ 	memcpy(dev->dev_addr, addr->sa_data, ETH_ALEN);
+ 
+ 	/* only modify transtable if it has been initialized before */
+-	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_ACTIVE) {
+-		batadv_tt_local_remove(bat_priv, old_addr, BATADV_NO_FLAGS,
++	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
++		return 0;
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(vlan, &bat_priv->softif_vlan_list, list) {
++		batadv_tt_local_remove(bat_priv, old_addr, vlan->vid,
+ 				       "mac address changed", false);
+-		batadv_tt_local_add(dev, addr->sa_data, BATADV_NO_FLAGS,
++		batadv_tt_local_add(dev, addr->sa_data, vlan->vid,
+ 				    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
+ 	}
++	rcu_read_unlock();
+ 
+ 	return 0;
+ }
+-- 
+1.8.3.2
 
