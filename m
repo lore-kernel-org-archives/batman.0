@@ -1,15 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <5339240C.5070400@meshcoding.com>
-Date: Mon, 31 Mar 2014 10:15:08 +0200
-From: Antonio Quartulli <antonio@meshcoding.com>
+Return-Path: <andrew@lunn.ch>
+Date: Mon, 31 Mar 2014 10:22:45 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20140331082245.GC4311@lunn.ch>
+References: <1396211704-4677-1-git-send-email-antonio@meshcoding.com>
+ <1396211704-4677-2-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1396251887-5665-1-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1396251887-5665-1-git-send-email-antonio@meshcoding.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="deQ1HKSRx7wXgk1fUFTrPo792qNfq6HTc"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: tcpdump - fix IP
- header parsing
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1396211704-4677-2-git-send-email-antonio@meshcoding.com>
+Subject: Re: [B.A.T.M.A.N.] [RFCv2 1/6] cfg80211: export expected throughput
+ through get_station()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,44 +21,116 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: devel@lists.open80211s.org, Johannes Berg <johannes@sipsolutions.net>, linux-wireless@vger.kernel.org, Antonio Quartulli <antonio@open-mesh.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---deQ1HKSRx7wXgk1fUFTrPo792qNfq6HTc
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Sun, Mar 30, 2014 at 10:34:59PM +0200, Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+> 
+> Users may need information about the expected throughput
+> towards a given peer computed by the RC algorithm.
+> Export such value through the get_station() API.
+> 
+> This information is useful to the batman-adv module which
+> will use it for its new metric computation.
+> 
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+>  include/net/cfg80211.h | 63 ++++++++++++++++++++++++++++----------------------
+>  1 file changed, 35 insertions(+), 28 deletions(-)
+> 
+> diff --git a/include/net/cfg80211.h b/include/net/cfg80211.h
+> index fb8afce..4c8ebe9 100644
+> --- a/include/net/cfg80211.h
+> +++ b/include/net/cfg80211.h
+> @@ -862,36 +862,38 @@ int cfg80211_check_station_change(struct wiphy *wiphy,
+>   * @STATION_INFO_NONPEER_PM: @nonpeer_pm filled
+>   * @STATION_INFO_CHAIN_SIGNAL: @chain_signal filled
+>   * @STATION_INFO_CHAIN_SIGNAL_AVG: @chain_signal_avg filled
+> + * @STATION_INFO_EXPECTED_THROUGHPUT: @expected_throughput filled
+>   */
+>  enum station_info_flags {
+> -	STATION_INFO_INACTIVE_TIME	= 1<<0,
+> -	STATION_INFO_RX_BYTES		= 1<<1,
+> -	STATION_INFO_TX_BYTES		= 1<<2,
+> -	STATION_INFO_LLID		= 1<<3,
+> -	STATION_INFO_PLID		= 1<<4,
+> -	STATION_INFO_PLINK_STATE	= 1<<5,
+> -	STATION_INFO_SIGNAL		= 1<<6,
+> -	STATION_INFO_TX_BITRATE		= 1<<7,
+> -	STATION_INFO_RX_PACKETS		= 1<<8,
+> -	STATION_INFO_TX_PACKETS		= 1<<9,
+> -	STATION_INFO_TX_RETRIES		= 1<<10,
+> -	STATION_INFO_TX_FAILED		= 1<<11,
+> -	STATION_INFO_RX_DROP_MISC	= 1<<12,
+> -	STATION_INFO_SIGNAL_AVG		= 1<<13,
+> -	STATION_INFO_RX_BITRATE		= 1<<14,
+> -	STATION_INFO_BSS_PARAM          = 1<<15,
+> -	STATION_INFO_CONNECTED_TIME	= 1<<16,
+> -	STATION_INFO_ASSOC_REQ_IES	= 1<<17,
+> -	STATION_INFO_STA_FLAGS		= 1<<18,
+> -	STATION_INFO_BEACON_LOSS_COUNT	= 1<<19,
+> -	STATION_INFO_T_OFFSET		= 1<<20,
+> -	STATION_INFO_LOCAL_PM		= 1<<21,
+> -	STATION_INFO_PEER_PM		= 1<<22,
+> -	STATION_INFO_NONPEER_PM		= 1<<23,
+> -	STATION_INFO_RX_BYTES64		= 1<<24,
+> -	STATION_INFO_TX_BYTES64		= 1<<25,
+> -	STATION_INFO_CHAIN_SIGNAL	= 1<<26,
+> -	STATION_INFO_CHAIN_SIGNAL_AVG	= 1<<27,
+> +	STATION_INFO_INACTIVE_TIME		= 1<<0,
+> +	STATION_INFO_RX_BYTES			= 1<<1,
+> +	STATION_INFO_TX_BYTES			= 1<<2,
+> +	STATION_INFO_LLID			= 1<<3,
+> +	STATION_INFO_PLID			= 1<<4,
+> +	STATION_INFO_PLINK_STATE		= 1<<5,
+> +	STATION_INFO_SIGNAL			= 1<<6,
+> +	STATION_INFO_TX_BITRATE			= 1<<7,
+> +	STATION_INFO_RX_PACKETS			= 1<<8,
+> +	STATION_INFO_TX_PACKETS			= 1<<9,
+> +	STATION_INFO_TX_RETRIES			= 1<<10,
+> +	STATION_INFO_TX_FAILED			= 1<<11,
+> +	STATION_INFO_RX_DROP_MISC		= 1<<12,
+> +	STATION_INFO_SIGNAL_AVG			= 1<<13,
+> +	STATION_INFO_RX_BITRATE			= 1<<14,
+> +	STATION_INFO_BSS_PARAM			= 1<<15,
+> +	STATION_INFO_CONNECTED_TIME		= 1<<16,
+> +	STATION_INFO_ASSOC_REQ_IES		= 1<<17,
+> +	STATION_INFO_STA_FLAGS			= 1<<18,
+> +	STATION_INFO_BEACON_LOSS_COUNT		= 1<<19,
+> +	STATION_INFO_T_OFFSET			= 1<<20,
+> +	STATION_INFO_LOCAL_PM			= 1<<21,
+> +	STATION_INFO_PEER_PM			= 1<<22,
+> +	STATION_INFO_NONPEER_PM			= 1<<23,
+> +	STATION_INFO_RX_BYTES64			= 1<<24,
+> +	STATION_INFO_TX_BYTES64			= 1<<25,
+> +	STATION_INFO_CHAIN_SIGNAL		= 1<<26,
+> +	STATION_INFO_CHAIN_SIGNAL_AVG		= 1<<27,
+> +	STATION_INFO_EXPECTED_THROUGHPUT	= 1<<28,
+>  };
 
-The subject says "batman-adv", but this patch is (obviously) for batctl.
 
-Cheers,
+Hi Antonio
 
+>  /**
+> @@ -1013,6 +1015,9 @@ struct sta_bss_parameters {
+>   * @local_pm: local mesh STA power save mode
+>   * @peer_pm: peer mesh STA power save mode
+>   * @nonpeer_pm: non-peer mesh STA power save mode
+> + * @expected_throughput: expected throughput as reported by the RC algorithm
+> + *  about the bitrate having the maximum throughput. This field can be filled
+> + *  only by drivers using Minstrel
+>   */
+>  struct station_info {
+>  	u32 filled;
+> @@ -1051,6 +1056,8 @@ struct station_info {
+>  	enum nl80211_mesh_power_mode peer_pm;
+>  	enum nl80211_mesh_power_mode nonpeer_pm;
+>  
+> +	u32 expected_throughput;
+> +
 
---=20
-Antonio Quartulli
+It would be nice to comment on what the units are. I known from our
+BATMAN V discussions, it is something odd.
 
-
---deQ1HKSRx7wXgk1fUFTrPo792qNfq6HTc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBCAAGBQJTOSQQAAoJEEKTMo6mOh1VgPcP/2+EMdn1gNVvpS6ySF1FZV3M
-Y1Z5ljOuVEkJkYCdXU8ttMbg2hAsKvs6fFX4r1nZY35Lo9Y1yGlp+ITZPyJ71iiX
-+Gu/ArJr9fSQjLPL0k9kqXLE1L0RkiocQ6cHgXL9TDwflZ9qTEy1TrbNFlUy42cC
-VYOWyT2P7GluzK6RiwYv32OfNwFv0wehRgSNSymwlTZUE3za4GeQYatFCWCItf1r
-QRu8eIfm6xsuucnO9OjiuZ/2DKN0VE7It7RIF5sCmCCBcSzH2FHujXuYZVbwuY0h
-d2hh6SehxAR/2SbR7p4f2FJoqG5tDL6BIyMXNY74AZpAwZvJdsGp0xm9TdpaWRxR
-f98mEWy6zI/39e0xKZzCSJD/2/A/YJ9oxEDR09YEhpzsw21QLpsytkzBRzXA2+VA
-aS6uLQg8r/pbrf8o4ftwQ5Pd7d7E7Otf03dABLc5h5k4P3B1V3IxUvmPtpcU5DVg
-5eAlBsqrn0+hjmrgoZKH1RwpARXG2R1aoxXyFZc/qorKRbpo5kucTmLKcf97bQWG
-i1pXNsYH+2dXJ0Tyd5JmH835uT6DDHMiBdc1EswehJTZt849ejUr+tgc7cWYv2hk
-FpkumhELb5JN3d+O3WIdG9N3uMWhaGyAQYZqVns7mCQS9O41hllqgMQEwx9aOejF
-ydaX6KDxbTYbv1Ab5bZd
-=ErLD
------END PGP SIGNATURE-----
-
---deQ1HKSRx7wXgk1fUFTrPo792qNfq6HTc--
+       Andrew
