@@ -1,18 +1,12 @@
 Return-Path: <baantunes@gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 6.6 \(1510\))
 From: Bruno Antunes <baantunes@gmail.com>
-In-Reply-To: <20140312182046.GT1629@pengutronix.de>
-Date: Mon, 31 Mar 2014 12:06:24 +0100
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
-Message-Id: <233537AD-6FBF-4ACB-A224-8B5B889E4627@gmail.com>
-References: <20140310212525.GU24339@pengutronix.de>
- <201403121136.16430.sw@simonwunderlich.de>
- <20140312125329.GJ1629@pengutronix.de>
- <201403121451.09760.sw@simonwunderlich.de>
- <20140312142507.GO1629@pengutronix.de> <20140312145448.GC15090@lunn.ch>
- <20140312182046.GT1629@pengutronix.de>
-Subject: Re: [B.A.T.M.A.N.] Line of Nodes
+Message-Id: <0643725B-CC5E-4AAA-8908-C6A0EA4CE631@gmail.com>
+Date: Mon, 31 Mar 2014 12:23:52 +0100
+Mime-Version: 1.0 (Mac OS X Mail 6.6 \(1510\))
+Subject: [B.A.T.M.A.N.] Batman-adv 2014.1.0 and 2014.0.0 issues with 3.10
+	and 3.8 kernels
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -28,57 +22,54 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 
 Hi,
 
-On 12 Mar, 2014, at 18:20 , Robert Schwebel <r.schwebel@pengutronix.de> =
-wrote:
+Are recent batman-acv versions unusable with 3.10 or 3.8 kernels?
 
-> On Wed, Mar 12, 2014 at 03:54:48PM +0100, Andrew Lunn wrote:
->>>> I'd definitely recommend to buy WiFi modules (e.g. pci-e) or =
-off-the-shelf=20
->>>> boards with WiFi SoCs on it. If you don't have experience in =
-building WiFi=20
->>>> routers, you might have a lot of fun otherwise. :)
->>>=20
->>> The issue is that the stations need to be very low power, so I'd =
-like to
->>> leave everything out which draws power but isn't absolutely needed. =
-The
->>> HF part should be solvable, that's something the hardware developers
->>> have experience with. I'm aiming for a low power ARM cpu, which
->>> basically rules out anything that needs PCIe and leaves us with SDIO =
-or
->>> USB for the connection of the transmitters.
->>=20
->> I'm hoping i can get my hands on one of these soon:
->>=20
->> =
-http://www.logicpd.com/products/system-on-modules/dm3730-torpedo-wireless-=
-som/
->>=20
->> There is a kernel patch around for one of the Yocto kernels, which i
->> expect you guys would have no trouble cleaning up.
->=20
-> Nice little system. I already have the TI WiLink chips on my list of
-> possible devices (we have an older one on an SDIO card for testing).
->=20
-> Thanks for the pointer!
+The reason i'm asking is that with 2104.1.0 with two connected sta after =
+restarting the wifi
+(also the same if restarting all the network) it gives the following =
+message:=20
 
-For an complete solution you can have this nice device:
+root@Laguna1:/etc/config# wifi
+[37620.920000] batman_adv: bat0: Interface deactivated: adhoc0
+[37621.140000] batman_adv: bat0: Removing interface: adhoc0
+[37621.250000] br-mesh: port 2(bat0) entered disabled state
+[37621.250000] device bat0 left promiscuous mode
+[37621.260000] br-mesh: port 2(bat0) entered disabled state
+[37631.340000] unregister_netdevice: waiting for adhoc0 to become free. =
+Usage count =3D 1
+[37641.390000] unregister_netdevice: waiting for adhoc0 to become free. =
+Usage count =3D 1
+[37651.410000] unregister_netdevice: waiting for adhoc0 to become free. =
+Usage count =3D 1
+=85
 
-http://8devices.com/carambola-2
+And only restarting is possible to get the device back to work.
 
-Appart from GPS it has all the features
+Going back to 2014.0.0 it's worst with the system being very unstable =
+and continuously restarting.
 
+After following the instructions from cmsv <cmsv@wirelesspt.net>
+and replacing the feeds.conf with
+src-git routing https://github.com/libre-mesh/openwrt-routing-packages
+
+I was able to compile the 2013.4.0 release which is very stable.
+
+But I really would like the vlan support from recent releases.
+
+My systems are:=20
+Laguna board
+OpenWrt trunk r38938
+batctl 2013.4.0 [batman-adv: 2013.4.0]
+Linux Laguna1 3.8.13 #6 SMP Thu Mar 27 16:10:18 WET 2014 armv6l =
+GNU/Linux
+
+Router station
+OpenWrt trunk r38938
+batctl 2013.4.0 [batman-adv: 2013.4.0]
+Linux RSPro2 3.10.18 #2 Thu Mar 27 18:24:29 WET 2014 mips GNU/Linux
+
+Thanks in advance,
 Bruno
 
->=20
-> rsc=20
-> --=20
-> Pengutronix e.K.                           |                           =
-  |
-> Industrial Linux Solutions                 | =
-http://www.pengutronix.de/  |
-> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0  =
-  |
-> Amtsgericht Hildesheim, HRA 2686           | Fax:   =
-+49-5121-206917-5555 |
+
 
