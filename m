@@ -1,14 +1,18 @@
-Return-Path: <ilario.gelmetti@sns.it>
-Message-ID: <5339CBBD.9050708@sns.it>
-Date: Mon, 31 Mar 2014 22:10:37 +0200
-From: Ilario Gelmetti <ilario.gelmetti@sns.it>
+Return-Path: <cmsv@wirelesspt.net>
+Message-ID: <533A078C.7060803@wirelesspt.net>
+Date: Mon, 31 Mar 2014 20:25:48 -0400
+From: cmsv <cmsv@wirelesspt.net>
 MIME-Version: 1.0
+References: <0643725B-CC5E-4AAA-8908-C6A0EA4CE631@gmail.com>
+ <26865236.GIsAj78OZH@diderot>
+In-Reply-To: <26865236.GIsAj78OZH@diderot>
 Content-Type: multipart/signed; micalg=pgp-sha1;
  protocol="application/pgp-signature";
- boundary="quvb3Ricj58vCrkXxGEkA1PhqXwE7TXJv"
-Subject: [B.A.T.M.A.N.] br-lan: received packet on bat0 with own address as
-	source address
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
+ boundary="QO6NIX0dcAqcoIwKEwXPNGJvFsn6WBQHH"
+Subject: Re: [B.A.T.M.A.N.] Batman-adv 2014.1.0 and 2014.0.0 issues with
+ 3.10 and 3.8 kernels
+Reply-To: cmsv@wirelesspt.net,
+ The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -22,1440 +26,670 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---quvb3Ricj58vCrkXxGEkA1PhqXwE7TXJv
+--QO6NIX0dcAqcoIwKEwXPNGJvFsn6WBQHH
 Content-Type: multipart/mixed;
- boundary="------------090903090602080604000102"
+ boundary="------------090102070107020606080308"
 
 This is a multi-part message in MIME format.
---------------090903090602080604000102
-Content-Type: text/plain; charset=ISO-8859-1
+--------------090102070107020606080308
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-Hi all,
-I have two devices (Ubiquiti PicoStation M2 and Ubiquiti NanoStation M5)
-mounted on the same pole both running libre-mesh [1] firmware
-(batman-adv: 2014.1.0) and both attached to a Mikrotik RB250GS gigabit
-switch (latest 1.11 firmware, default configuration) which is attached
-to my pc [2].
-When isolated (turning off the port of the other device via the switch
-interface), both Ubiquiti devices doesn't see any other device with
-batman neither have any client connected.
-Both the devices independently (also when are isolated) print the same
-error in dmesg:
-br-lan: received packet on bat0 with own address as source address
+Inline:
 
-This error is an indication that batman loop avoidance has some
-problems, right?
-Obviously loop avoidance is enabled.
-# batctl bl
-enabled
+On 03/31/2014 09:02 AM, Marek Lindner wrote:
+> On Monday 31 March 2014 12:23:52 Bruno Antunes wrote:
+>> root@Laguna1:/etc/config# wifi
+>> [37620.920000] batman_adv: bat0: Interface deactivated: adhoc0
+>> [37621.140000] batman_adv: bat0: Removing interface: adhoc0
+>> [37621.250000] br-mesh: port 2(bat0) entered disabled state
+>> [37621.250000] device bat0 left promiscuous mode
+>> [37621.260000] br-mesh: port 2(bat0) entered disabled state
+>> [37631.340000] unregister_netdevice: waiting for adhoc0 to become free=
+=2E
+>> Usage count =3D 1 [37641.390000] unregister_netdevice: waiting for adh=
+oc0 to
+>> become free. Usage count =3D 1 [37651.410000] unregister_netdevice: wa=
+iting
+>> for adhoc0 to become free. Usage count =3D 1
+>=20
+> This is a known 2014.1.0 regression which recently has been fixed. You =
+can=20
+> either update your openwrt package to fetch these fixes or extract the =
+patches=20
+> from our batman-adv git repository or wait for the next release.
+>=20
+>=20
+>> And only restarting is possible to get the device back to work.
+>>
+>> Going back to 2014.0.0 it's worst with the system being very unstable =
+and
+>> continuously restarting.
+>>
+>> After following the instructions from cmsv <cmsv@wirelesspt.net>
+>> and replacing the feeds.conf with
+>> src-git routing https://github.com/libre-mesh/openwrt-routing-packages=
 
-Various interfaces are bridged, for example in PicoStation I have:
-# brctl show
-bridge name	bridge id		STP enabled	interfaces
-br-lan		7fff.dc9fdb31c136	no		eth0
-							bat0
-							wlan0_ap
+>=20
+> Note that this is not the official openwrt-routing repository but a for=
+k=20
+> maintained by 'people on the internet'. If you do experience problems w=
+ith the=20
+> code coming from this repository, please contact the people maintaining=
+ this=20
+> fork.
+>=20
 
-I noticed that I'm not the first to ask here about this message [3][4].
-I attach to this email dmesg form both isolated devices,
-/etc/config/network, ip a, ifconfig, brctl and info from batctl.
-Thanks,
-Ilario
+As far as i know; it is a clone of the batman-adv 2013.* without any
+modification. Perhaps the maintainer could shed some light into this
+subject.
+https://github.com/libre-mesh/openwrt-routing-packages/tree/master/batman=
+-adv
+I have it fully working without any problems as a clone of batman-adv
+2013.* without any modifications from "people on the internet".
 
+There are also other ways to use the current official
+openwrt-routing-packages repository and selecting only the 2013.* release=
+s.
 
-[1] http://libre-mesh.org/projects/libre-mesh
-[2] https://github.com/ilario/configurazione-ilario-fisso
-[3]
-https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-February/006234.ht=
-ml
-[4]
-https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2013-October/010770.htm=
-l
+>=20
+> Cheers,
+> Marek
+>=20
 
-
---------------090903090602080604000102
-Content-Type: text/plain; charset=UTF-8;
- name="nano-batctl"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="nano-batctl"
-
-root@ef8bda:~# batctl s
-	tx: 45
-	tx_bytes: 3399
-	tx_dropped: 7
-	rx: 26
-	rx_bytes: 1092
-	forward: 0
-	forward_bytes: 0
-	mgmt_tx: 775
-	mgmt_tx_bytes: 42138
-	mgmt_rx: 0
-	mgmt_rx_bytes: 0
-	frag_tx: 0
-	frag_tx_bytes: 0
-	frag_rx: 0
-	frag_rx_bytes: 0
-	frag_fwd: 0
-	frag_fwd_bytes: 0
-	tt_request_tx: 0
-	tt_request_rx: 0
-	tt_response_tx: 0
-	tt_response_rx: 0
-	tt_roam_adv_tx: 0
-	tt_roam_adv_rx: 0
-	dat_get_tx: 0
-	dat_get_rx: 0
-	dat_put_tx: 0
-	dat_put_rx: 0
-	dat_cached_reply_tx: 0
-
-root@ef8bda:~# batctl if
-eth0.11: active
-eth1.11: active
-root@ef8bda:~# batctl dat
-disabled
-root@ef8bda:~# batctl bl
-enabled
-root@ef8bda:~# batctl ap
-disabled
-root@ef8bda:~# batctl ag
-enabled
-root@ef8bda:~# batctl b
-disabled
-root@ef8bda:~# batctl f
-enabled
-root@ef8bda:~# batctl mark
-0x00000000/0x00000000
-root@ef8bda:~# batctl gw
-off
-root@ef8bda:~# batctl o
-[B.A.T.M.A.N. adv 2014.1.0, MainIF/MAC: eth0.11/dc:9f:db:ef:8b:da (bat0 B=
-ATMAN_IV)]
-  Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Pot=
-ential nexthops ...
-No batman nodes in range ...
-root@ef8bda:~# batctl gwl
-      Gateway      (#/255)           Nexthop [outgoingIF]: advertised upl=
-ink bandwidth ... [B.A.T.M.A.N. adv 2014.1.0, MainIF/MAC: eth0.11/dc:9f:d=
-b:ef:8b:da (bat0)]
-No gateways in range ...
-root@ef8bda:~# batctl tl
-Locally retrieved addresses (from bat0) announced via TT (TTVN: 5):
-       Client         VID Flags    Last seen (CRC       )
- * 1e:d2:cb:8b:cb:24    0 [.P....]   0.000   (0xb7d000e8)
- * 00:1e:8c:65:ef:0b   -1 [......]  17.890   (0x514be548)
- * 1e:d2:cb:8b:cb:24   -1 [.P....]   0.000   (0x514be548)
- * 00:0c:42:ee:fe:e9   -1 [......]  34.960   (0x514be548)
- * dc:9f:db:ef:8b:da   -1 [......] 506.810   (0x514be548)
-root@ef8bda:~# batctl tg
-Globally announced TT entries received via the mesh bat0
-       Client         VID  (TTVN)       Originator      (Curr TTVN) (CRC =
-      ) Flags
-root@ef8bda:~# batctl cl
-Claims announced for the mesh bat0 (orig dc:9f:db:ef:8b:da, group id 0x3a=
-6b)
-   Client               VID      Originator        [o] (CRC   )
-root@ef8bda:~# batctl bbt
-Backbones announced for the mesh bat0 (orig dc:9f:db:ef:8b:da, group id 0=
-x3a6b)
-   Originator           VID   last seen (CRC   )
-root@ef8bda:~# batctl dc
-Distributed ARP Table (bat0):
-          IPv4             MAC        VID   last-seen
-
-
---------------090903090602080604000102
-Content-Type: text/plain; charset=UTF-8;
- name="nano-brctl"
+--------------090102070107020606080308
+Content-Type: application/pgp-keys;
+ name="0x15C4B382.asc"
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: attachment;
- filename="nano-brctl"
-
-root@ef8bda:~# brctl show
-bridge name	bridge id		STP enabled	interfaces
-br-lan		7fff.dc9fdbef8bda	no		eth0
-							eth1
-							bat0
-							wlan0_ap
-
-
---------------090903090602080604000102
-Content-Type: text/plain; charset=UTF-8;
- name="nano-dmesg"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="nano-dmesg"
-
-BusyBox v1.19.4 (2014-03-30 12:23:28 CEST) built-in shell (ash)
-Enter 'help' for a list of built-in commands.
-
-  _______                     ________        __
- |       |.-----.-----.-----.|  |  |  |.----.|  |_
- |   -   ||  _  |  -__|     ||  |  |  ||   _||   _|
- |_______||   __|_____|__|__||________||__|  |____|
-          |__| W I R E L E S S   F R E E D O M
- -----------------------------------------------------
- BARRIER BREAKER (Bleeding Edge, r38505)
- -----------------------------------------------------
-  * 1/2 oz Galliano         Pour all ingredients into
-  * 4 oz cold Coffee        an irish coffee mug filled
-  * 1 1/2 oz Dark Rum       with crushed ice. Stir.
-  * 2 tsp. Creme de Cacao
- -----------------------------------------------------
-  ___   __ __                   _______             __
- |   |_|__|  |--.----.-----. _ |   |   |-----.-----|  |--.
- |     |  |  _  |   _|  -__||_||       |  -__|__ --|     |
- |_____|__|_____|__| |_____|   |__|_|__|_____|_____|__|__|
-
- ---------------------------------------------------------
-  (,  rev.-)
- ---------------------------------------------------------
-
- http://libre-mesh.org
- ---------------------------------------------------------
-root@ef8bda:~# dmesg
-[    0.000000] Linux version 3.10.15 (ilario@ilario-fisso) (gcc version 4=
-=2E6.4 (OpenWrt/Linaro GCC 4.6-2013.05 r38505) ) #1 Sun Mar 30 12:34:05 C=
-EST 2014
-[    0.000000] MyLoader: sysp=3Daaaaaaaa, boardp=3Daaaaa2aa, parts=3Daaaa=
-aaaa
-[    0.000000] bootconsole [early0] enabled
-[    0.000000] CPU revision is: 00019374 (MIPS 24Kc)
-[    0.000000] SoC: Atheros AR7241 rev 1
-[    0.000000] Clocks: CPU:390.000MHz, DDR:390.000MHz, AHB:195.000MHz, Re=
-f:5.000MHz
-[    0.000000] Determined physical RAM map:
-[    0.000000]  memory: 02000000 @ 00000000 (usable)
-[    0.000000] Initrd not found or empty - disabling initrd
-[    0.000000] Zone ranges:
-[    0.000000]   Normal   [mem 0x00000000-0x01ffffff]
-[    0.000000] Movable zone start for each node
-[    0.000000] Early memory node ranges
-[    0.000000]   node   0: [mem 0x00000000-0x01ffffff]
-[    0.000000] On node 0 totalpages: 8192
-[    0.000000] free_area_init_node: node 0, pgdat 8030aa90, node_mem_map =
-81000000
-[    0.000000]   Normal zone: 64 pages used for memmap
-[    0.000000]   Normal zone: 0 pages reserved
-[    0.000000]   Normal zone: 8192 pages, LIFO batch:0
-[    0.000000] Primary instruction cache 64kB, VIPT, 4-way, linesize 32 b=
-ytes.
-[    0.000000] Primary data cache 32kB, 4-way, VIPT, cache aliases, lines=
-ize 32 bytes
-[    0.000000] pcpu-alloc: s0 r0 d32768 u32768 alloc=3D1*32768
-[    0.000000] pcpu-alloc: [0] 0=20
-[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  To=
-tal pages: 8128
-[    0.000000] Kernel command line:  board=3DUBNT-NM console=3DttyS0,1152=
-00 mtdparts=3Dspi0.0:256k(u-boot)ro,64k(u-boot-env)ro,7552k(firmware),256=
-k(cfg)ro,64k(EEPROM)ro rootfstype=3Dsquashfs,jffs2 noinitrd
-[    0.000000] PID hash table entries: 128 (order: -3, 512 bytes)
-[    0.000000] Dentry cache hash table entries: 4096 (order: 2, 16384 byt=
-es)
-[    0.000000] Inode-cache hash table entries: 2048 (order: 1, 8192 bytes=
-)
-[    0.000000] Writing ErrCtl register=3D00000000
-[    0.000000] Readback ErrCtl register=3D00000000
-[    0.000000] Memory: 28784k/32768k available (2223k kernel code, 3984k =
-reserved, 594k data, 252k init, 0k highmem)
-[    0.000000] SLUB: HWalign=3D32, Order=3D0-3, MinObjects=3D0, CPUs=3D1,=
- Nodes=3D1
-[    0.000000] NR_IRQS:51
-[    0.060000] Calibrating delay loop... 259.27 BogoMIPS (lpj=3D1296384)
-[    0.070000] pid_max: default: 32768 minimum: 301
-[    0.070000] Mount-cache hash table entries: 512
-[    0.080000] NET: Registered protocol family 16
-[    0.090000] MIPS: machine is Ubiquiti Nanostation M
-[    0.090000] registering PCI controller with io_map_base unset
-[    0.500000] bio: create slab <bio-0> at 0
-[    0.510000] PCI host bridge to bus 0000:00
-[    0.510000] pci_bus 0000:00: root bus resource [mem 0x10000000-0x13fff=
-fff]
-[    0.520000] pci_bus 0000:00: root bus resource [io  0x0000]
-[    0.520000] pci_bus 0000:00: No busn resource found for root bus, will=
- use [bus 00-ff]
-[    0.530000] pci 0000:00:00.0: [168c:002a] type 00 class 0x028000
-[    0.530000] pci 0000:00:00.0: fixup device configuration
-[    0.530000] pci 0000:00:00.0: reg 10: [mem 0x10000000-0x1000ffff 64bit=
-]
-[    0.530000] pci 0000:00:00.0: supports D1
-[    0.530000] pci 0000:00:00.0: PME# supported from D0 D1 D3hot
-[    0.530000] pci_bus 0000:00: busn_res: [bus 00-ff] end is updated to 0=
-0
-[    0.530000] pci 0000:00:00.0: BAR 0: assigned [mem 0x10000000-0x1000ff=
-ff 64bit]
-[    0.540000] pci 0000:00:00.0: using irq 40 for pin 1
-[    0.540000] Switching to clocksource MIPS
-[    0.550000] NET: Registered protocol family 2
-[    0.550000] TCP established hash table entries: 512 (order: 0, 4096 by=
-tes)
-[    0.560000] TCP bind hash table entries: 512 (order: -1, 2048 bytes)
-[    0.570000] TCP: Hash tables configured (established 512 bind 512)
-[    0.570000] TCP: reno registered
-[    0.580000] UDP hash table entries: 256 (order: 0, 4096 bytes)
-[    0.580000] UDP-Lite hash table entries: 256 (order: 0, 4096 bytes)
-[    0.590000] NET: Registered protocol family 1
-[    0.590000] PCI: CLS 0 bytes, default 32
-[    0.610000] squashfs: version 4.0 (2009/01/31) Phillip Lougher
-[    0.620000] jffs2: version 2.2 (NAND) (SUMMARY) (LZMA) (RTIME) (CMODE_=
-PRIORITY) (c) 2001-2006 Red Hat, Inc.
-[    0.630000] msgmni has been set to 56
-[    0.630000] io scheduler noop registered
-[    0.640000] io scheduler deadline registered (default)
-[    0.640000] Serial: 8250/16550 driver, 1 ports, IRQ sharing disabled
-[    0.670000] serial8250.0: ttyS0 at MMIO 0x18020000 (irq =3D 11) is a 1=
-6550A
-[    0.680000] console [ttyS0] enabled, bootconsole disabled
-[    0.690000] ath79-spi ath79-spi: master is unqueued, this is deprecate=
-d
-[    0.700000] m25p80 spi0.0: found s25fl064k, expected m25p80
-[    0.700000] m25p80 spi0.0: s25fl064k (8192 Kbytes)
-[    0.710000] 5 cmdlinepart partitions found on MTD device spi0.0
-[    0.710000] Creating 5 MTD partitions on "spi0.0":
-[    0.720000] 0x000000000000-0x000000040000 : "u-boot"
-[    0.730000] 0x000000040000-0x000000050000 : "u-boot-env"
-[    0.730000] 0x000000050000-0x0000007b0000 : "firmware"
-[    0.750000] 2 uimage-fw partitions found on MTD device firmware
-[    0.750000] 0x000000050000-0x00000014b37e : "kernel"
-[    0.760000] mtd: partition "kernel" must either start or end on erase =
-block boundary or be smaller than an erase block -- forcing read-only
-[    0.770000] 0x00000014b37e-0x0000007b0000 : "rootfs"
-[    0.780000] mtd: partition "rootfs" must either start or end on erase =
-block boundary or be smaller than an erase block -- forcing read-only
-[    0.790000] mtd: partition "rootfs" set to be root filesystem
-[    0.800000] 1 squashfs-split partitions found on MTD device rootfs
-[    0.810000] 0x0000003e0000-0x0000007b0000 : "rootfs_data"
-[    0.810000] 0x0000007b0000-0x0000007f0000 : "cfg"
-[    0.820000] 0x0000007f0000-0x000000800000 : "EEPROM"
-[    0.830000] libphy: ag71xx_mdio: probed
-[    0.840000] eth0: Atheros AG71xx at 0xb9000000, irq 4, mode:MII
-[    1.400000] ag71xx ag71xx.0 eth0: connected to PHY at ag71xx-mdio.1:04=
- [uid=3D004dd041, driver=3DGeneric PHY]
-[    1.410000] eth1: Atheros AG71xx at 0xba000000, irq 5, mode:GMII
-[    1.960000] eth1: Found an AR7240/AR9330 built-in switch
-[    3.000000] TCP: cubic registered
-[    3.000000] NET: Registered protocol family 17
-[    3.000000] Bridge firewalling registered
-[    3.010000] 8021q: 802.1Q VLAN Support v1.8
-[    3.020000] VFS: Mounted root (squashfs filesystem) readonly on device=
- 31:4.
-[    3.030000] Freeing unused kernel memory: 252K (80321000 - 80360000)
-[    6.150000] usbcore: registered new interface driver usbfs
-[    6.160000] usbcore: registered new interface driver hub
-[    6.170000] usbcore: registered new device driver usb
-[    6.180000] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver=
-
-[    6.180000] ehci-platform: EHCI generic platform driver
-[    6.200000] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
-[    8.430000] eth0: link up (100Mbps/Full duplex)
-[    9.720000] jffs2: notice: (295) jffs2_build_xattr_subsystem: complete=
- building xattr subsystem, 1 of xdatum (0 unchecked, 0 orphan) and 25 of =
-xref (0 dead, 9 orphan) found.
-[    9.750000] eth0: link down
-[   11.980000] NET: Registered protocol family 10
-[   12.000000] tun: Universal TUN/TAP device driver, 1.6
-[   12.000000] tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
-[   12.030000] nf_conntrack version 0.5.0 (453 buckets, 1812 max)
-[   12.040000] ip6_tables: (C) 2000-2006 Netfilter Core Team
-[   12.100000] batman_adv: B.A.T.M.A.N. advanced 2014.1.0 (compatibility =
-version 15) loaded
-[   12.160000] Loading modules backported from Linux version master-2013-=
-06-27-0-gdcfa6d5
-[   12.160000] Backport generated by backports.git backports-20130617-4-g=
-e3220f5
-[   12.200000] Ebtables v2.0 registered
-[   12.220000] ip_tables: (C) 2000-2006 Netfilter Core Team
-[   12.280000] xt_time: kernel timezone is -0000
-[   12.460000] cfg80211: Calling CRDA to update world regulatory domain
-[   12.470000] cfg80211: World regulatory domain updated:
-[   12.480000] cfg80211:   (start_freq - end_freq @ bandwidth), (max_ante=
-nna_gain, max_eirp)
-[   12.480000] cfg80211:   (2400000 KHz - 2483000 KHz @ 40000 KHz), (N/A,=
- 3000 mBm)
-[   12.490000] cfg80211:   (5140000 KHz - 5860000 KHz @ 40000 KHz), (N/A,=
- 3000 mBm)
-[   12.560000] PCI: Enabling device 0000:00:00.0 (0000 -> 0002)
-[   12.570000] ath: EEPROM regdomain: 0x0
-[   12.570000] ath: EEPROM indicates default country code should be used
-[   12.570000] ath: doing EEPROM country->regdmn map search
-[   12.570000] ath: country maps to regdmn code: 0x3a
-[   12.570000] ath: Country alpha2 being used: US
-[   12.570000] ath: Regpair used: 0x3a
-[   12.590000] ieee80211 phy0: Selected rate control algorithm 'minstrel_=
-ht'
-[   12.600000] cfg80211: Calling CRDA for country: US
-[   12.600000] cfg80211: Regulatory domain changed to country: US
-[   12.610000] cfg80211:   (start_freq - end_freq @ bandwidth), (max_ante=
-nna_gain, max_eirp)
-[   12.620000] cfg80211:   (2400000 KHz - 2483000 KHz @ 40000 KHz), (N/A,=
- 3000 mBm)
-[   12.630000] cfg80211:   (5140000 KHz - 5860000 KHz @ 40000 KHz), (N/A,=
- 3000 mBm)
-[   12.630000] ieee80211 phy0: Atheros AR9280 Rev:2 mem=3D0xb0000000, irq=
-=3D40
-[   17.010000] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
-[   17.010000] device eth0 entered promiscuous mode
-[   17.040000] IPv6: ADDRCONF(NETDEV_UP): br-lan: link is not ready
-[   17.180000] device br-lan entered promiscuous mode
-[   17.180000] IPv6: ADDRCONF(NETDEV_UP): anygw: link is not ready
-[   18.240000] IPv6: ADDRCONF(NETDEV_UP): eth1: link is not ready
-[   18.240000] device eth1 entered promiscuous mode
-[   18.250000] br-lan: port 2(eth1) entered forwarding state
-[   18.250000] br-lan: port 2(eth1) entered forwarding state
-[   18.260000] br-lan: port 2(eth1) entered disabled state
-[   18.270000] IPv6: ADDRCONF(NETDEV_UP): eth0.11: link is not ready
-[   18.300000] IPv6: ADDRCONF(NETDEV_UP): eth0.12: link is not ready
-[   18.350000] IPv6: ADDRCONF(NETDEV_UP): eth1.11: link is not ready
-[   18.410000] IPv6: ADDRCONF(NETDEV_UP): eth1.12: link is not ready
-[   18.590000] batman_adv: bat0: Adding interface: eth0.11
-[   18.590000] batman_adv: bat0: The MTU of interface eth0.11 is too smal=
-l (1496) to handle the transport of batman-adv packets. Packets going ove=
-r this interface will be fragmented on layer2 which could impact the perf=
-ormance. Setting the MTU to 1532 would solve the problem.
-[   18.620000] batman_adv: bat0: Interface activated: eth0.11
-[   18.660000] 8021q: adding VLAN 0 to HW filter on device bat0
-[   18.660000] device bat0 entered promiscuous mode
-[   18.670000] br-lan: port 3(bat0) entered forwarding state
-[   18.670000] br-lan: port 3(bat0) entered forwarding state
-[   18.680000] IPv6: ADDRCONF(NETDEV_CHANGE): br-lan: link becomes ready
-[   18.710000] br-lan: received packet on bat0 with own address as source=
- address
-[   18.730000] IPv6: ADDRCONF(NETDEV_CHANGE): anygw: link becomes ready
-[   18.810000] batman_adv: bat0: Adding interface: eth1.11
-[   18.820000] batman_adv: bat0: The MTU of interface eth1.11 is too smal=
-l (1496) to handle the transport of batman-adv packets. Packets going ove=
-r this interface will be fragmented on layer2 which could impact the perf=
-ormance. Setting the MTU to 1532 would solve the problem.
-[   18.840000] batman_adv: bat0: Interface activated: eth1.11
-[   19.910000] eth0: link up (100Mbps/Full duplex)
-[   19.950000] br-lan: port 1(eth0) entered forwarding state
-[   19.950000] br-lan: port 1(eth0) entered forwarding state
-[   19.960000] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
-[   19.980000] IPv6: ADDRCONF(NETDEV_CHANGE): eth0.11: link becomes ready=
-
-[   19.980000] IPv6: ADDRCONF(NETDEV_CHANGE): eth0.12: link becomes ready=
-
-[   20.450000] batman_adv: bat0: bridge_loop_avoidance: Changing from: di=
-sabled to: enabled
-[   20.480000] batman_adv: bat0: distributed_arp_table: Changing from: en=
-abled to: disabled
-[   20.670000] br-lan: port 3(bat0) entered forwarding state
-[   21.950000] br-lan: port 1(eth0) entered forwarding state
-[   22.480000] IPv6: ADDRCONF(NETDEV_UP): wlan0_ap: link is not ready
-[   22.520000] IPv6: ADDRCONF(NETDEV_UP): wlan0_ap.12: link is not ready
-[   27.770000] device wlan0_ap entered promiscuous mode
-[   27.790000] IPv6: ADDRCONF(NETDEV_UP): wlan0_ap.12: link is not ready
-[   27.800000] IPv6: ADDRCONF(NETDEV_UP): wlan0_ap: link is not ready
-[   27.830000] IPv6: ADDRCONF(NETDEV_CHANGE): wlan0_ap: link becomes read=
-y
-[   27.830000] br-lan: port 4(wlan0_ap) entered forwarding state
-[   27.840000] br-lan: port 4(wlan0_ap) entered forwarding state
-[   27.850000] IPv6: ADDRCONF(NETDEV_CHANGE): wlan0_ap.12: link becomes r=
-eady
-[   28.600000] br-lan: received packet on bat0 with own address as source=
- address
-[   29.840000] br-lan: port 4(wlan0_ap) entered forwarding state
-[   31.900000] IPv6: ADDRCONF(NETDEV_UP): wlan0_adhoc: link is not ready
-[   31.920000] wlan0_adhoc: Created IBSS using preconfigured BSSID ca:fe:=
-00:c0:ff:ee
-[   31.920000] wlan0_adhoc: Creating new IBSS network, BSSID ca:fe:00:c0:=
-ff:ee
-[   31.930000] IPv6: ADDRCONF(NETDEV_CHANGE): wlan0_adhoc: link becomes r=
-eady
-[   38.620000] br-lan: received packet on bat0 with own address as source=
- address
-[   48.640000] br-lan: received packet on bat0 with own address as source=
- address
-[   58.660000] br-lan: received packet on bat0 with own address as source=
- address
-[   68.680000] br-lan: received packet on bat0 with own address as source=
- address
-[   78.700000] br-lan: received packet on bat0 with own address as source=
- address
-[   88.720000] br-lan: received packet on bat0 with own address as source=
- address
-[   98.740000] br-lan: received packet on bat0 with own address as source=
- address
-[  108.760000] br-lan: received packet on bat0 with own address as source=
- address
-[  118.780000] br-lan: received packet on bat0 with own address as source=
- address
-[  128.800000] br-lan: received packet on bat0 with own address as source=
- address
-[  138.820000] br-lan: received packet on bat0 with own address as source=
- address
-[  148.840000] br-lan: received packet on bat0 with own address as source=
- address
-[  158.860000] br-lan: received packet on bat0 with own address as source=
- address
-[  168.880000] br-lan: received packet on bat0 with own address as source=
- address
-
---------------090903090602080604000102
-Content-Type: text/plain; charset=UTF-8;
- name="nano-etc-config-network"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="nano-etc-config-network"
-
-root@ef8bda:/etc/config# cat network=20
-
-config interface 'loopback'
-	option ifname 'lo'
-	option proto 'static'
-	option ipaddr '127.0.0.1'
-	option netmask '255.0.0.0'
-
-config globals 'globals'
-
-config interface 'lan'
-	option type 'bridge'
-	option proto 'static'
-	option netmask '255.255.255.0'
-	option ip6assign '60'
-	option ip6addr '2001:DB8:0:0:0:0:0:8BDA/64'
-	option ipaddr '192.0.2.218'
-	option mtu '1500'
-	list ifname 'bat0'
-	list ifname 'eth0'
-	list ifname 'eth1'
-	list ifname 'wlan0_ap'
-
-config interface 'wan'
-	option ifname 'eth1'
-	option proto 'dhcp'
-
-config interface 'wan6'
-	option ifname '@wan'
-	option proto 'dhcpv6'
-
-config device 'lm_anygw_dev'
-	option type 'macvlan'
-	option name 'anygw'
-	option ifname '@lan'
-	option macaddr 'aa:aa:aa:8a:15:ad'
-
-config interface 'lm_anygw_if'
-	option proto 'static'
-	option ifname 'anygw'
-	option ip6addr '2001:DB8:0:0:0:0:0:1/64'
-	option ipaddr '192.0.2.1'
-	option netmask '255.255.255.0'
-
-config interface 'lm_eth0_batadv'
-	option ifname 'eth0.11'
-	option proto 'batadv'
-	option mesh 'bat0'
-	option mtu '1496'
-
-config interface 'lm_eth0_bmx6'
-	option ifname 'eth0.12'
-	option proto 'none'
-	option auto '1'
-	option mtu '1398'
-
-config interface 'lm_eth1_batadv'
-	option ifname 'eth1.11'
-	option proto 'batadv'
-	option mesh 'bat0'
-	option mtu '1496'
-
-config interface 'lm_eth1_bmx6'
-	option ifname 'eth1.12'
-	option proto 'none'
-	option auto '1'
-	option mtu '1398'
-
-config interface 'lm_wlan0_ap_bmx6'
-	option ifname 'wlan0_ap.12'
-	option proto 'none'
-	option auto '1'
-	option mtu '1398'
-
-config interface 'lm_wlan0_adhoc'
-	option proto 'none'
-	option mtu '1536'
-	option auto '1'
-
-config interface 'lm_wlan0_adhoc_batadv'
-	option ifname '@lm_wlan0_adhoc.11'
-	option proto 'batadv'
-	option mesh 'bat0'
-	option mtu '1532'
-
-config interface 'lm_wlan0_adhoc_bmx6'
-	option ifname 'wlan0_adhoc.12'
-	option proto 'none'
-	option auto '1'
-	option mtu '1398'
-
-
---------------090903090602080604000102
-Content-Type: text/plain; charset=UTF-8;
- name="nano-ifconfig"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="nano-ifconfig"
-
-root@ef8bda:~# ifconfig=20
-anygw     Link encap:Ethernet  HWaddr AA:AA:AA:8A:15:AD =20
-          inet addr:192.0.2.1  Bcast:192.0.2.255  Mask:255.255.255.0
-          inet6 addr: 2001:db8::1/64 Scope:Global
-          inet6 addr: fe80::a8aa:aaff:fe8a:15ad/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:113 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:6 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:6348 (6.1 KiB)  TX bytes:596 (596.0 B)
-
-bat0      Link encap:Ethernet  HWaddr 1E:D2:CB:8B:CB:24 =20
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:48 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:72 errors:0 dropped:7 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:2016 (1.9 KiB)  TX bytes:5180 (5.0 KiB)
-
-bmxmain   Link encap:UNSPEC  HWaddr FD-66-00-66-00-66-00-09-00-00-00-00-0=
-0-00-00-00 =20
-          inet addr:192.0.2.218  P-t-P:192.0.2.218  Mask:255.255.255.255
-          inet6 addr: 2001:db8::8bda/128 Scope:Global
-          inet6 addr: fe80::de9f:dbff:feef:8bda/64 Scope:Link
-          UP POINTOPOINT RUNNING NOARP  MTU:1452  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
-
-br-lan    Link encap:Ethernet  HWaddr DC:9F:DB:EF:8B:DA =20
-          inet addr:192.0.2.218  Bcast:192.0.2.255  Mask:255.255.255.0
-          inet6 addr: 2001:db8::8bda/64 Scope:Global
-          inet6 addr: fe80::de9f:dbff:feef:8bda/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:263 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:130 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:21626 (21.1 KiB)  TX bytes:38290 (37.3 KiB)
-
-eth0      Link encap:Ethernet  HWaddr DC:9F:DB:EF:8B:DA =20
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:215 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:1532 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000=20
-          RX bytes:23292 (22.7 KiB)  TX bytes:149303 (145.8 KiB)
-          Interrupt:4=20
-
-eth0.11   Link encap:Ethernet  HWaddr DC:9F:DB:EF:8B:DA =20
-          inet6 addr: fe80::de9f:dbff:feef:8bda/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1496  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:536 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:0 (0.0 B)  TX bytes:35632 (34.7 KiB)
-
-eth0.12   Link encap:Ethernet  HWaddr DC:9F:DB:EF:8B:DA =20
-          inet6 addr: fd66:66:66:9:de9f:dbff:feef:8bda/64 Scope:Global
-          inet6 addr: fe80::de9f:dbff:feef:8bda/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1398  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:828 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:0 (0.0 B)  TX bytes:68893 (67.2 KiB)
-
-eth1      Link encap:Ethernet  HWaddr DE:9F:DB:EF:8B:DA =20
-          UP BROADCAST MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000=20
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
-          Interrupt:5=20
-
-eth1.11   Link encap:Ethernet  HWaddr DE:9F:DB:EF:8B:DA =20
-          UP BROADCAST MULTICAST  MTU:1496  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
-
-eth1.12   Link encap:Ethernet  HWaddr DE:9F:DB:EF:8B:DA =20
-          inet6 addr: fd66:66:66:b:de9f:dbff:feef:8bda/64 Scope:Global
-          UP BROADCAST MULTICAST  MTU:1398  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
-
-lo        Link encap:Local Loopback =20
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          inet6 addr: ::1/128 Scope:Host
-          UP LOOPBACK RUNNING  MTU:65536  Metric:1
-          RX packets:3312 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:3312 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:225216 (219.9 KiB)  TX bytes:225216 (219.9 KiB)
-
-wlan0_adhoc Link encap:Ethernet  HWaddr DE:9F:DB:EE:8B:DA =20
-          inet6 addr: fe80::dc9f:dbff:feee:8bda/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1536  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:833 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000=20
-          RX bytes:0 (0.0 B)  TX bytes:87677 (85.6 KiB)
-
-wlan0_adhoc.12 Link encap:Ethernet  HWaddr DE:9F:DB:EE:8B:DA =20
-          inet6 addr: fd66:66:66:10:de9f:dbff:feee:8bda/64 Scope:Global
-          inet6 addr: fe80::dc9f:dbff:feee:8bda/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:828 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:0 (0.0 B)  TX bytes:68893 (67.2 KiB)
-
-wlan0_ap  Link encap:Ethernet  HWaddr DC:9F:DB:EE:8B:DA =20
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:941 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000=20
-          RX bytes:0 (0.0 B)  TX bytes:95868 (93.6 KiB)
-
-wlan0_ap.12 Link encap:Ethernet  HWaddr DC:9F:DB:EE:8B:DA =20
-          inet6 addr: fd66:66:66:e:de9f:dbff:feee:8bda/64 Scope:Global
-          inet6 addr: fe80::de9f:dbff:feee:8bda/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:828 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:0 (0.0 B)  TX bytes:68893 (67.2 KiB)
-
-
---------------090903090602080604000102
-Content-Type: text/plain; charset=UTF-8;
- name="nano-ip_a"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="nano-ip_a"
-
-root@ef8bda:~# ip a
-1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group=
- default=20
-    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-    inet 127.0.0.1/8 scope host lo
-       valid_lft forever preferred_lft forever
-    inet6 ::1/128 scope host=20
-       valid_lft forever preferred_lft forever
-2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel master=
- br-lan state UP group default qlen 1000
-    link/ether dc:9f:db:ef:8b:da brd ff:ff:ff:ff:ff:ff
-3: eth1: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc fq_codel mast=
-er br-lan state DOWN group default qlen 1000
-    link/ether de:9f:db:ef:8b:da brd ff:ff:ff:ff:ff:ff
-4: ip6tnl0: <NOARP> mtu 1452 qdisc noop state DOWN group default=20
-    link/tunnel6 :: brd ::
-6: br-lan: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state=
- UP group default=20
-    link/ether dc:9f:db:ef:8b:da brd ff:ff:ff:ff:ff:ff
-    inet 192.0.2.218/24 brd 192.0.2.255 scope global br-lan
-       valid_lft forever preferred_lft forever
-    inet6 2001:db8::8bda/64 scope global=20
-       valid_lft forever preferred_lft forever
-    inet6 fe80::de9f:dbff:feef:8bda/64 scope link=20
-       valid_lft forever preferred_lft forever
-7: anygw@br-lan: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue=
- state UP group default=20
-    link/ether aa:aa:aa:8a:15:ad brd ff:ff:ff:ff:ff:ff
-    inet 192.0.2.1/24 brd 192.0.2.255 scope global anygw
-       valid_lft forever preferred_lft forever
-    inet6 2001:db8::1/64 scope global=20
-       valid_lft forever preferred_lft forever
-    inet6 fe80::a8aa:aaff:fe8a:15ad/64 scope link=20
-       valid_lft forever preferred_lft forever
-8: eth0.11@eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1496 qdisc noqueue=
- master bat0 state UP group default=20
-    link/ether dc:9f:db:ef:8b:da brd ff:ff:ff:ff:ff:ff
-    inet6 fe80::de9f:dbff:feef:8bda/64 scope link=20
-       valid_lft forever preferred_lft forever
-9: eth0.12@eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1398 qdisc noqueue=
- state UP group default=20
-    link/ether dc:9f:db:ef:8b:da brd ff:ff:ff:ff:ff:ff
-    inet6 fd66:66:66:9:de9f:dbff:feef:8bda/64 scope global=20
-       valid_lft forever preferred_lft forever
-    inet6 fe80::de9f:dbff:feef:8bda/64 scope link=20
-       valid_lft forever preferred_lft forever
-10: eth1.11@eth1: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1496 qdisc noqu=
-eue master bat0 state LOWERLAYERDOWN group default=20
-    link/ether de:9f:db:ef:8b:da brd ff:ff:ff:ff:ff:ff
-11: eth1.12@eth1: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1398 qdisc noqu=
-eue state LOWERLAYERDOWN group default=20
-    link/ether de:9f:db:ef:8b:da brd ff:ff:ff:ff:ff:ff
-    inet6 fd66:66:66:b:de9f:dbff:feef:8bda/64 scope global tentative=20
-       valid_lft forever preferred_lft forever
-12: bat0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master=
- br-lan state UNKNOWN group default=20
-    link/ether 1e:d2:cb:8b:cb:24 brd ff:ff:ff:ff:ff:ff
-13: wlan0_ap: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq master =
-br-lan state UP group default qlen 1000
-    link/ether dc:9f:db:ee:8b:da brd ff:ff:ff:ff:ff:ff
-14: wlan0_ap.12@wlan0_ap: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdis=
-c noqueue state UP group default=20
-    link/ether dc:9f:db:ee:8b:da brd ff:ff:ff:ff:ff:ff
-    inet6 fd66:66:66:e:de9f:dbff:feee:8bda/64 scope global=20
-       valid_lft forever preferred_lft forever
-    inet6 fe80::de9f:dbff:feee:8bda/64 scope link=20
-       valid_lft forever preferred_lft forever
-15: wlan0_adhoc: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1536 qdisc mq stat=
-e UP group default qlen 1000
-    link/ether de:9f:db:ee:8b:da brd ff:ff:ff:ff:ff:ff
-    inet6 fe80::dc9f:dbff:feee:8bda/64 scope link=20
-       valid_lft forever preferred_lft forever
-16: wlan0_adhoc.12@wlan0_adhoc: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 150=
-0 qdisc noqueue state UP group default=20
-    link/ether de:9f:db:ee:8b:da brd ff:ff:ff:ff:ff:ff
-    inet6 fd66:66:66:10:de9f:dbff:feee:8bda/64 scope global=20
-       valid_lft forever preferred_lft forever
-    inet6 fe80::dc9f:dbff:feee:8bda/64 scope link=20
-       valid_lft forever preferred_lft forever
-17: bmxmain: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1452 qdisc noqueue state=
- UNKNOWN group default=20
-    link/tunnel6 fd66:66:66:9:de9f:dbff:feef:8bda peer fd66:66:66:ff00:de=
-9f:dbff:feef:8bda
-    inet 192.0.2.218/32 scope global bmxmain
-       valid_lft forever preferred_lft forever
-    inet6 2001:db8::8bda/128 scope global=20
-       valid_lft forever preferred_lft forever
-    inet6 fe80::de9f:dbff:feef:8bda/64 scope link=20
-       valid_lft forever preferred_lft forever
-
---------------090903090602080604000102
-Content-Type: text/plain; charset=UTF-8;
- name="pico-batctl"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="pico-batctl"
-
-root@31c136:~# batctl s
-	tx: 25
-	tx_bytes: 1872
-	tx_dropped: 12
-	rx: 15
-	rx_bytes: 630
-	forward: 0
-	forward_bytes: 0
-	mgmt_tx: 139
-	mgmt_tx_bytes: 8870
-	mgmt_rx: 0
-	mgmt_rx_bytes: 0
-	frag_tx: 0
-	frag_tx_bytes: 0
-	frag_rx: 0
-	frag_rx_bytes: 0
-	frag_fwd: 0
-	frag_fwd_bytes: 0
-	tt_request_tx: 0
-	tt_request_rx: 0
-	tt_response_tx: 0
-	tt_response_rx: 0
-	tt_roam_adv_tx: 0
-	tt_roam_adv_rx: 0
-	dat_get_tx: 0
-	dat_get_rx: 0
-	dat_put_tx: 0
-	dat_put_rx: 0
-	dat_cached_reply_tx: 0
-
-root@31c136:~# batctl if
-eth0.11: active
-root@31c136:~# batctl dat
-disabled
-root@31c136:~# batctl bl
-enabled
-root@31c136:~# batctl ap
-disabled
-root@31c136:~# batctl ag
-enabled
-root@31c136:~# batctl b
-disabled
-root@31c136:~# batctl f
-enabled
-root@31c136:~# batctl mark
-0x00000000/0x00000000
-root@31c136:~# batctl gw
-off
-root@31c136:~# batctl o
-[B.A.T.M.A.N. adv 2014.1.0, MainIF/MAC: eth0.11/dc:9f:db:31:c1:36 (bat0 B=
-ATMAN_IV)]
-  Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Pot=
-ential nexthops ...
-No batman nodes in range ...
-root@31c136:~# batctl gwl
-      Gateway      (#/255)           Nexthop [outgoingIF]: advertised upl=
-ink bandwidth ... [B.A.T.M.A.N. adv 2014.1.0, MainIF/MAC: eth0.11/dc:9f:d=
-b:31:c1:36 (bat0)]
-No gateways in range ...
-root@31c136:~# batctl tl
-Locally retrieved addresses (from bat0) announced via TT (TTVN: 3):
-       Client         VID Flags    Last seen (CRC       )
- * dc:9f:db:31:c1:36   -1 [......] 219.070   (0xf61bea85)
- * 00:1e:8c:65:ef:0b   -1 [......]   8.760   (0xf61bea85)
- * be:17:45:43:f2:e1   -1 [.P....]   0.000   (0xf61bea85)
- * aa:aa:aa:8a:15:ad   -1 [......] 218.710   (0xf61bea85)
- * 00:0c:42:ee:fe:e9   -1 [......]  55.070   (0xf61bea85)
- * be:17:45:43:f2:e1    0 [.P....]   0.000   (0x83bdc53d)
-root@31c136:~# batctl tg
-Globally announced TT entries received via the mesh bat0
-       Client         VID  (TTVN)       Originator      (Curr TTVN) (CRC =
-      ) Flags
-root@31c136:~# batctl cl
-Claims announced for the mesh bat0 (orig dc:9f:db:31:c1:36, group id 0xed=
-3d)
-   Client               VID      Originator        [o] (CRC   )
-root@31c136:~# batctl bbt
-Backbones announced for the mesh bat0 (orig dc:9f:db:31:c1:36, group id 0=
-xed3d)
-   Originator           VID   last seen (CRC   )
-root@31c136:~# batctl dc
-Distributed ARP Table (bat0):
-          IPv4             MAC        VID   last-seen
- *     10.37.133.1 00:1e:8c:65:ef:0b   -1      4:07
-
---------------090903090602080604000102
-Content-Type: text/plain; charset=UTF-8;
- name="pico-brctl"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="pico-brctl"
-
-root@31c136:~# brctl show
-bridge name	bridge id		STP enabled	interfaces
-br-lan		7fff.dc9fdb31c136	no		eth0
-							bat0
-							wlan0_ap
-
---------------090903090602080604000102
-Content-Type: text/plain; charset=UTF-8;
- name="pico-dmesg"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="pico-dmesg"
-
-root@31c136:~# dmesg=20
-[    0.000000] Linux version 3.10.15 (ilario@ilario-fisso) (gcc version 4=
-=2E6.4 (OpenWrt/Linaro GCC 4.6-2013.05 r38505) ) #1 Sun Mar 30 12:34:05 C=
-EST 2014
-[    0.000000] MyLoader: sysp=3Dd7bf7fa7, boardp=3D5fe05eaf, parts=3D57ed=
-58e6
-[    0.000000] bootconsole [early0] enabled
-[    0.000000] CPU revision is: 00019374 (MIPS 24Kc)
-[    0.000000] SoC: Atheros AR7241 rev 1
-[    0.000000] Clocks: CPU:390.000MHz, DDR:390.000MHz, AHB:195.000MHz, Re=
-f:5.000MHz
-[    0.000000] Determined physical RAM map:
-[    0.000000]  memory: 02000000 @ 00000000 (usable)
-[    0.000000] Initrd not found or empty - disabling initrd
-[    0.000000] Zone ranges:
-[    0.000000]   Normal   [mem 0x00000000-0x01ffffff]
-[    0.000000] Movable zone start for each node
-[    0.000000] Early memory node ranges
-[    0.000000]   node   0: [mem 0x00000000-0x01ffffff]
-[    0.000000] On node 0 totalpages: 8192
-[    0.000000] free_area_init_node: node 0, pgdat 8030aa90, node_mem_map =
-81000000
-[    0.000000]   Normal zone: 64 pages used for memmap
-[    0.000000]   Normal zone: 0 pages reserved
-[    0.000000]   Normal zone: 8192 pages, LIFO batch:0
-[    0.000000] Primary instruction cache 64kB, VIPT, 4-way, linesize 32 b=
-ytes.
-[    0.000000] Primary data cache 32kB, 4-way, VIPT, cache aliases, lines=
-ize 32 bytes
-[    0.000000] pcpu-alloc: s0 r0 d32768 u32768 alloc=3D1*32768
-[    0.000000] pcpu-alloc: [0] 0=20
-[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  To=
-tal pages: 8128
-[    0.000000] Kernel command line:  board=3DUBNT-BM console=3DttyS0,1152=
-00 mtdparts=3Dspi0.0:256k(u-boot)ro,64k(u-boot-env)ro,7552k(firmware),256=
-k(cfg)ro,64k(EEPROM)ro rootfstype=3Dsquashfs,jffs2 noinitrd
-[    0.000000] PID hash table entries: 128 (order: -3, 512 bytes)
-[    0.000000] Dentry cache hash table entries: 4096 (order: 2, 16384 byt=
-es)
-[    0.000000] Inode-cache hash table entries: 2048 (order: 1, 8192 bytes=
-)
-[    0.000000] Writing ErrCtl register=3D00000000
-[    0.000000] Readback ErrCtl register=3D00000000
-[    0.000000] Memory: 28784k/32768k available (2223k kernel code, 3984k =
-reserved, 594k data, 252k init, 0k highmem)
-[    0.000000] SLUB: HWalign=3D32, Order=3D0-3, MinObjects=3D0, CPUs=3D1,=
- Nodes=3D1
-[    0.000000] NR_IRQS:51
-[    0.060000] Calibrating delay loop... 259.27 BogoMIPS (lpj=3D1296384)
-[    0.070000] pid_max: default: 32768 minimum: 301
-[    0.070000] Mount-cache hash table entries: 512
-[    0.080000] NET: Registered protocol family 16
-[    0.090000] MIPS: machine is Ubiquiti Bullet M
-[    0.090000] registering PCI controller with io_map_base unset
-[    0.300000] bio: create slab <bio-0> at 0
-[    0.310000] PCI host bridge to bus 0000:00
-[    0.310000] pci_bus 0000:00: root bus resource [mem 0x10000000-0x13fff=
-fff]
-[    0.320000] pci_bus 0000:00: root bus resource [io  0x0000]
-[    0.320000] pci_bus 0000:00: No busn resource found for root bus, will=
- use [bus 00-ff]
-[    0.330000] pci 0000:00:00.0: [168c:002a] type 00 class 0x028000
-[    0.330000] pci 0000:00:00.0: fixup device configuration
-[    0.330000] pci 0000:00:00.0: reg 10: [mem 0x10000000-0x1000ffff 64bit=
-]
-[    0.330000] pci 0000:00:00.0: supports D1
-[    0.330000] pci 0000:00:00.0: PME# supported from D0 D1 D3hot
-[    0.330000] pci_bus 0000:00: busn_res: [bus 00-ff] end is updated to 0=
-0
-[    0.330000] pci 0000:00:00.0: BAR 0: assigned [mem 0x10000000-0x1000ff=
-ff 64bit]
-[    0.340000] pci 0000:00:00.0: using irq 40 for pin 1
-[    0.340000] Switching to clocksource MIPS
-[    0.350000] NET: Registered protocol family 2
-[    0.350000] TCP established hash table entries: 512 (order: 0, 4096 by=
-tes)
-[    0.360000] TCP bind hash table entries: 512 (order: -1, 2048 bytes)
-[    0.370000] TCP: Hash tables configured (established 512 bind 512)
-[    0.370000] TCP: reno registered
-[    0.380000] UDP hash table entries: 256 (order: 0, 4096 bytes)
-[    0.380000] UDP-Lite hash table entries: 256 (order: 0, 4096 bytes)
-[    0.390000] NET: Registered protocol family 1
-[    0.390000] PCI: CLS 0 bytes, default 32
-[    0.410000] squashfs: version 4.0 (2009/01/31) Phillip Lougher
-[    0.420000] jffs2: version 2.2 (NAND) (SUMMARY) (LZMA) (RTIME) (CMODE_=
-PRIORITY) (c) 2001-2006 Red Hat, Inc.
-[    0.430000] msgmni has been set to 56
-[    0.430000] io scheduler noop registered
-[    0.440000] io scheduler deadline registered (default)
-[    0.440000] Serial: 8250/16550 driver, 1 ports, IRQ sharing disabled
-[    0.470000] serial8250.0: ttyS0 at MMIO 0x18020000 (irq =3D 11) is a 1=
-6550A
-[    0.480000] console [ttyS0] enabled, bootconsole disabled
-[    0.490000] ath79-spi ath79-spi: master is unqueued, this is deprecate=
-d
-[    0.500000] m25p80 spi0.0: found s25fl064k, expected m25p80
-[    0.500000] m25p80 spi0.0: s25fl064k (8192 Kbytes)
-[    0.510000] 5 cmdlinepart partitions found on MTD device spi0.0
-[    0.510000] Creating 5 MTD partitions on "spi0.0":
-[    0.520000] 0x000000000000-0x000000040000 : "u-boot"
-[    0.530000] 0x000000040000-0x000000050000 : "u-boot-env"
-[    0.530000] 0x000000050000-0x0000007b0000 : "firmware"
-[    0.550000] 2 uimage-fw partitions found on MTD device firmware
-[    0.550000] 0x000000050000-0x00000014b34a : "kernel"
-[    0.560000] mtd: partition "kernel" must either start or end on erase =
-block boundary or be smaller than an erase block -- forcing read-only
-[    0.570000] 0x00000014b34a-0x0000007b0000 : "rootfs"
-[    0.580000] mtd: partition "rootfs" must either start or end on erase =
-block boundary or be smaller than an erase block -- forcing read-only
-[    0.590000] mtd: partition "rootfs" set to be root filesystem
-[    0.600000] 1 squashfs-split partitions found on MTD device rootfs
-[    0.610000] 0x0000003e0000-0x0000007b0000 : "rootfs_data"
-[    0.610000] 0x0000007b0000-0x0000007f0000 : "cfg"
-[    0.620000] 0x0000007f0000-0x000000800000 : "EEPROM"
-[    0.630000] libphy: ag71xx_mdio: probed
-[    0.640000] eth0: Atheros AG71xx at 0xb9000000, irq 4, mode:MII
-[    1.200000] ag71xx ag71xx.0 eth0: connected to PHY at ag71xx-mdio.1:04=
- [uid=3D004dd041, driver=3DGeneric PHY]
-[    1.210000] TCP: cubic registered
-[    1.210000] NET: Registered protocol family 17
-[    1.220000] Bridge firewalling registered
-[    1.220000] 8021q: 802.1Q VLAN Support v1.8
-[    1.230000] VFS: Mounted root (squashfs filesystem) readonly on device=
- 31:4.
-[    1.240000] Freeing unused kernel memory: 252K (80321000 - 80360000)
-[    4.370000] usbcore: registered new interface driver usbfs
-[    4.370000] usbcore: registered new interface driver hub
-[    4.380000] usbcore: registered new device driver usb
-[    4.390000] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver=
-
-[    4.400000] ehci-platform: EHCI generic platform driver
-[    4.410000] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
-[    7.240000] eth0: link up (100Mbps/Full duplex)
-[    7.930000] jffs2: notice: (292) jffs2_build_xattr_subsystem: complete=
- building xattr subsystem, 1 of xdatum (0 unchecked, 0 orphan) and 24 of =
-xref (0 dead, 8 orphan) found.
-[    7.960000] eth0: link down
-[   10.220000] NET: Registered protocol family 10
-[   10.230000] tun: Universal TUN/TAP device driver, 1.6
-[   10.240000] tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
-[   10.270000] nf_conntrack version 0.5.0 (453 buckets, 1812 max)
-[   10.290000] ip6_tables: (C) 2000-2006 Netfilter Core Team
-[   10.350000] batman_adv: B.A.T.M.A.N. advanced 2014.1.0 (compatibility =
-version 15) loaded
-[   10.390000] Loading modules backported from Linux version master-2013-=
-06-27-0-gdcfa6d5
-[   10.400000] Backport generated by backports.git backports-20130617-4-g=
-e3220f5
-[   10.440000] Ebtables v2.0 registered
-[   10.460000] ip_tables: (C) 2000-2006 Netfilter Core Team
-[   10.650000] xt_time: kernel timezone is -0000
-[   10.770000] cfg80211: Calling CRDA to update world regulatory domain
-[   10.770000] cfg80211: World regulatory domain updated:
-[   10.780000] cfg80211:   (start_freq - end_freq @ bandwidth), (max_ante=
-nna_gain, max_eirp)
-[   10.790000] cfg80211:   (2400000 KHz - 2483000 KHz @ 40000 KHz), (N/A,=
- 3000 mBm)
-[   10.790000] cfg80211:   (5140000 KHz - 5860000 KHz @ 40000 KHz), (N/A,=
- 3000 mBm)
-[   10.850000] PCI: Enabling device 0000:00:00.0 (0000 -> 0002)
-[   10.860000] ath: EEPROM regdomain: 0x0
-[   10.860000] ath: EEPROM indicates default country code should be used
-[   10.860000] ath: doing EEPROM country->regdmn map search
-[   10.860000] ath: country maps to regdmn code: 0x3a
-[   10.860000] ath: Country alpha2 being used: US
-[   10.860000] ath: Regpair used: 0x3a
-[   10.880000] ieee80211 phy0: Selected rate control algorithm 'minstrel_=
-ht'
-[   10.880000] cfg80211: Calling CRDA for country: US
-[   10.890000] ieee80211 phy0: Atheros AR9280 Rev:2 mem=3D0xb0000000, irq=
-=3D40
-[   10.900000] cfg80211: Regulatory domain changed to country: US
-[   10.900000] cfg80211:   (start_freq - end_freq @ bandwidth), (max_ante=
-nna_gain, max_eirp)
-[   10.910000] cfg80211:   (2400000 KHz - 2483000 KHz @ 40000 KHz), (N/A,=
- 3000 mBm)
-[   10.920000] cfg80211:   (5140000 KHz - 5860000 KHz @ 40000 KHz), (N/A,=
- 3000 mBm)
-[   15.790000] IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
-[   15.790000] device eth0 entered promiscuous mode
-[   15.800000] IPv6: ADDRCONF(NETDEV_UP): br-lan: link is not ready
-[   15.830000] device br-lan entered promiscuous mode
-[   15.840000] IPv6: ADDRCONF(NETDEV_UP): anygw: link is not ready
-[   15.910000] IPv6: ADDRCONF(NETDEV_UP): eth0.11: link is not ready
-[   15.950000] IPv6: ADDRCONF(NETDEV_UP): eth0.12: link is not ready
-[   16.210000] batman_adv: bat0: Adding interface: eth0.11
-[   16.220000] batman_adv: bat0: The MTU of interface eth0.11 is too smal=
-l (1496) to handle the transport of batman-adv packets. Packets going ove=
-r this interface will be fragmented on layer2 which could impact the perf=
-ormance. Setting the MTU to 1532 would solve the problem.
-[   16.240000] batman_adv: bat0: Interface activated: eth0.11
-[   16.250000] 8021q: adding VLAN 0 to HW filter on device bat0
-[   16.290000] device bat0 entered promiscuous mode
-[   16.290000] br-lan: port 2(bat0) entered forwarding state
-[   16.300000] br-lan: port 2(bat0) entered forwarding state
-[   16.300000] IPv6: ADDRCONF(NETDEV_CHANGE): br-lan: link becomes ready
-[   16.340000] IPv6: ADDRCONF(NETDEV_CHANGE): anygw: link becomes ready
-[   16.400000] eth0: link up (100Mbps/Full duplex)
-[   16.400000] br-lan: port 1(eth0) entered forwarding state
-[   16.410000] br-lan: port 1(eth0) entered forwarding state
-[   16.410000] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
-[   16.440000] IPv6: ADDRCONF(NETDEV_CHANGE): eth0.11: link becomes ready=
-
-[   16.440000] IPv6: ADDRCONF(NETDEV_CHANGE): eth0.12: link becomes ready=
-
-[   17.360000] batman_adv: bat0: bridge_loop_avoidance: Changing from: di=
-sabled to: enabled
-[   17.400000] batman_adv: bat0: distributed_arp_table: Changing from: en=
-abled to: disabled
-[   18.300000] br-lan: port 2(bat0) entered forwarding state
-[   18.410000] br-lan: port 1(eth0) entered forwarding state
-[   21.330000] IPv6: ADDRCONF(NETDEV_UP): wlan0_ap: link is not ready
-[   21.330000] IPv6: ADDRCONF(NETDEV_UP): wlan0_ap.12: link is not ready
-[   26.240000] br-lan: received packet on bat0 with own address as source=
- address
-[   29.270000] device wlan0_ap entered promiscuous mode
-[   29.310000] IPv6: ADDRCONF(NETDEV_UP): wlan0_ap.12: link is not ready
-[   29.310000] IPv6: ADDRCONF(NETDEV_UP): wlan0_ap: link is not ready
-[   29.330000] IPv6: ADDRCONF(NETDEV_CHANGE): wlan0_ap: link becomes read=
-y
-[   29.360000] br-lan: port 3(wlan0_ap) entered forwarding state
-[   29.360000] br-lan: port 3(wlan0_ap) entered forwarding state
-[   29.380000] IPv6: ADDRCONF(NETDEV_CHANGE): wlan0_ap.12: link becomes r=
-eady
-[   31.360000] br-lan: port 3(wlan0_ap) entered forwarding state
-[   32.940000] device wlan0_adhoc entered promiscuous mode
-[   32.940000] IPv6: ADDRCONF(NETDEV_UP): wlan0_adhoc: link is not ready
-[   32.960000] wlan0_adhoc: Created IBSS using preconfigured BSSID ca:fe:=
-00:c0:ff:ee
-[   32.970000] wlan0_adhoc: Creating new IBSS network, BSSID ca:fe:00:c0:=
-ff:ee
-[   32.980000] IPv6: ADDRCONF(NETDEV_CHANGE): wlan0_adhoc: link becomes r=
-eady
-[   36.260000] br-lan: received packet on bat0 with own address as source=
- address
-[   46.280000] br-lan: received packet on bat0 with own address as source=
- address
-[   56.300000] br-lan: received packet on bat0 with own address as source=
- address
-[   66.320000] br-lan: received packet on bat0 with own address as source=
- address
-[   76.340000] br-lan: received packet on bat0 with own address as source=
- address
-[   86.360000] br-lan: received packet on bat0 with own address as source=
- address
-[   96.380000] br-lan: received packet on bat0 with own address as source=
- address
-[  106.400000] br-lan: received packet on bat0 with own address as source=
- address
-[  116.420000] br-lan: received packet on bat0 with own address as source=
- address
-[  126.440000] br-lan: received packet on bat0 with own address as source=
- address
-
---------------090903090602080604000102
-Content-Type: text/plain; charset=UTF-8;
- name="pico-etc-config-network"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="pico-etc-config-network"
-
-root@31c136:~# cat /etc/config/network=20
-
-config interface 'loopback'
-	option ifname 'lo'
-	option proto 'static'
-	option ipaddr '127.0.0.1'
-	option netmask '255.0.0.0'
-
-config globals 'globals'
-
-config interface 'lan'
-	option type 'bridge'
-	option proto 'static'
-	option netmask '255.255.255.0'
-	option ip6assign '60'
-	option ip6addr '2001:DB8:0:0:0:0:0:C136/64'
-	option ipaddr '192.0.2.54'
-	option mtu '1500'
-	list ifname 'bat0'
-	list ifname 'eth0'
-	list ifname 'wlan0_ap'
-
-config device 'lm_anygw_dev'
-	option type 'macvlan'
-	option name 'anygw'
-	option ifname '@lan'
-	option macaddr 'aa:aa:aa:8a:15:ad'
-
-config interface 'lm_anygw_if'
-	option proto 'static'
-	option ifname 'anygw'
-	option ip6addr '2001:DB8:0:0:0:0:0:1/64'
-	option ipaddr '192.0.2.1'
-	option netmask '255.255.255.0'
-
-config interface 'lm_eth0_batadv'
-	option ifname 'eth0.11'
-	option proto 'batadv'
-	option mesh 'bat0'
-	option mtu '1496'
-
-config interface 'lm_eth0_bmx6'
-	option ifname 'eth0.12'
-	option proto 'none'
-	option auto '1'
-	option mtu '1398'
-
-config interface 'lm_wlan0_ap_bmx6'
-	option ifname 'wlan0_ap.12'
-	option proto 'none'
-	option auto '1'
-	option mtu '1398'
-
-config interface 'lm_wlan0_adhoc'
-	option proto 'none'
-	option mtu '1536'
-	option auto '1'
-
-config interface 'lm_wlan0_adhoc_batadv'
-	option ifname '@lm_wlan0_adhoc.11'
-	option proto 'batadv'
-	option mesh 'bat0'
-	option mtu '1532'
-
-config interface 'lm_wlan0_adhoc_bmx6'
-	option ifname 'wlan0_adhoc.12'
-	option proto 'none'
-	option auto '1'
-	option mtu '1398'
-
-
-
---------------090903090602080604000102
-Content-Type: text/plain; charset=UTF-8;
- name="pico-ifconfig"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="pico-ifconfig"
-
-root@31c136:~# ifconfig=20
-anygw     Link encap:Ethernet  HWaddr AA:AA:AA:8A:15:AD =20
-          inet addr:192.0.2.1  Bcast:192.0.2.255  Mask:255.255.255.0
-          inet6 addr: 2001:db8::1/64 Scope:Global
-          inet6 addr: fe80::a8aa:aaff:fe8a:15ad/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:85 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:5 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:4799 (4.6 KiB)  TX bytes:526 (526.0 B)
-
-bat0      Link encap:Ethernet  HWaddr BE:17:45:43:F2:E1 =20
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:33 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:55 errors:0 dropped:12 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:1386 (1.3 KiB)  TX bytes:3837 (3.7 KiB)
-
-br-lan    Link encap:Ethernet  HWaddr DC:9F:DB:31:C1:36 =20
-          inet addr:192.0.2.54  Bcast:192.0.2.255  Mask:255.255.255.0
-          inet6 addr: fe80::de9f:dbff:fe31:c136/64 Scope:Link
-          inet6 addr: 2001:db8::c136/64 Scope:Global
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:496 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:307 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:47337 (46.2 KiB)  TX bytes:78580 (76.7 KiB)
-
-eth0      Link encap:Ethernet  HWaddr DC:9F:DB:31:C1:36 =20
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:464 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:719 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000=20
-          RX bytes:52937 (51.6 KiB)  TX bytes:107147 (104.6 KiB)
-          Interrupt:4=20
-
-eth0.11   Link encap:Ethernet  HWaddr DC:9F:DB:31:C1:36 =20
-          inet6 addr: fe80::de9f:dbff:fe31:c136/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1496  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:378 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:0 (0.0 B)  TX bytes:25547 (24.9 KiB)
-
-eth0.12   Link encap:Ethernet  HWaddr DC:9F:DB:31:C1:36 =20
-          inet6 addr: fe80::de9f:dbff:fe31:c136/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1398  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:4 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:0 (0.0 B)  TX bytes:408 (408.0 B)
-
-lo        Link encap:Local Loopback =20
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          inet6 addr: ::1/128 Scope:Host
-          UP LOOPBACK RUNNING  MTU:65536  Metric:1
-          RX packets:2112 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:2112 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:143616 (140.2 KiB)  TX bytes:143616 (140.2 KiB)
-
-wlan0_adhoc Link encap:Ethernet  HWaddr DE:9F:DB:30:C1:36 =20
-          inet6 addr: fe80::dc9f:dbff:fe30:c136/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1536  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:7 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000=20
-          RX bytes:0 (0.0 B)  TX bytes:844 (844.0 B)
-
-wlan0_adhoc.12 Link encap:Ethernet  HWaddr DC:9F:DB:30:C1:36 =20
-          inet6 addr: fe80::de9f:dbff:fe30:c136/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:3 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:0 (0.0 B)  TX bytes:298 (298.0 B)
-
-wlan0_ap  Link encap:Ethernet  HWaddr DC:9F:DB:30:C1:36 =20
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:83 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000=20
-          RX bytes:0 (0.0 B)  TX bytes:6389 (6.2 KiB)
-
-wlan0_ap.12 Link encap:Ethernet  HWaddr DC:9F:DB:30:C1:36 =20
-          inet6 addr: fe80::de9f:dbff:fe30:c136/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:5 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0=20
-          RX bytes:0 (0.0 B)  TX bytes:478 (478.0 B)
-
-
---------------090903090602080604000102
-Content-Type: text/plain; charset=UTF-8;
- name="pico-ip_a"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="pico-ip_a"
-
-root@31c136:~# ip a
-1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group=
- default=20
-    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-    inet 127.0.0.1/8 scope host lo
-       valid_lft forever preferred_lft forever
-    inet6 ::1/128 scope host=20
-       valid_lft forever preferred_lft forever
-2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel master=
- br-lan state UP group default qlen 1000
-    link/ether dc:9f:db:31:c1:36 brd ff:ff:ff:ff:ff:ff
-3: ip6tnl0: <NOARP> mtu 1452 qdisc noop state DOWN group default=20
-    link/tunnel6 :: brd ::
-5: br-lan: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state=
- UP group default=20
-    link/ether dc:9f:db:31:c1:36 brd ff:ff:ff:ff:ff:ff
-    inet 192.0.2.54/24 brd 192.0.2.255 scope global br-lan
-       valid_lft forever preferred_lft forever
-    inet6 2001:db8::c136/64 scope global=20
-       valid_lft forever preferred_lft forever
-    inet6 fe80::de9f:dbff:fe31:c136/64 scope link=20
-       valid_lft forever preferred_lft forever
-6: anygw@br-lan: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue=
- state UP group default=20
-    link/ether aa:aa:aa:8a:15:ad brd ff:ff:ff:ff:ff:ff
-    inet 192.0.2.1/24 brd 192.0.2.255 scope global anygw
-       valid_lft forever preferred_lft forever
-    inet6 2001:db8::1/64 scope global=20
-       valid_lft forever preferred_lft forever
-    inet6 fe80::a8aa:aaff:fe8a:15ad/64 scope link=20
-       valid_lft forever preferred_lft forever
-7: eth0.11@eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1496 qdisc noqueue=
- master bat0 state UP group default=20
-    link/ether dc:9f:db:31:c1:36 brd ff:ff:ff:ff:ff:ff
-    inet6 fe80::de9f:dbff:fe31:c136/64 scope link=20
-       valid_lft forever preferred_lft forever
-8: eth0.12@eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1398 qdisc noqueue=
- state UP group default=20
-    link/ether dc:9f:db:31:c1:36 brd ff:ff:ff:ff:ff:ff
-    inet6 fe80::de9f:dbff:fe31:c136/64 scope link=20
-       valid_lft forever preferred_lft forever
-9: bat0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master =
-br-lan state UNKNOWN group default=20
-    link/ether be:17:45:43:f2:e1 brd ff:ff:ff:ff:ff:ff
-10: wlan0_ap: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq master =
-br-lan state UP group default qlen 1000
-    link/ether dc:9f:db:30:c1:36 brd ff:ff:ff:ff:ff:ff
-11: wlan0_ap.12@wlan0_ap: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdis=
-c noqueue state UP group default=20
-    link/ether dc:9f:db:30:c1:36 brd ff:ff:ff:ff:ff:ff
-    inet6 fe80::de9f:dbff:fe30:c136/64 scope link=20
-       valid_lft forever preferred_lft forever
-12: wlan0_adhoc: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1536 qdisc mq stat=
-e UP group default qlen 1000
-    link/ether de:9f:db:30:c1:36 brd ff:ff:ff:ff:ff:ff
-    inet6 fe80::dc9f:dbff:fe30:c136/64 scope link=20
-       valid_lft forever preferred_lft forever
-13: wlan0_adhoc.12@wlan0_adhoc: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 150=
-0 qdisc noqueue state UP group default=20
-    link/ether dc:9f:db:30:c1:36 brd ff:ff:ff:ff:ff:ff
-    inet6 fe80::de9f:dbff:fe30:c136/64 scope link=20
-       valid_lft forever preferred_lft forever
-
-
---------------090903090602080604000102--
-
---quvb3Ricj58vCrkXxGEkA1PhqXwE7TXJv
+ filename="0x15C4B382.asc"
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+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
+AAAAswAAAHUAAAAwAAAAAAAAABUAAAAABAAAkAEAAGMEAADgAAAAbAQAANAAAAAA
+AAAAAAAAAGwEAADQAAAAxAAAAI0BAAAxBAAAxAAAAAAAAAAAAAAAAwAAAAEAAAAA
+AAAAAAAAAAAEAABnAwAAswQAAN8FAAAIAAAALwQAAMQAAAB5AAAAbwMAACgEAAB1
+DAAAbwMAAAAAAAAAAAAAAAAAAAEAAABAAgAAJAEAALwAAACTAgAAFQAAAP3////A
+AAAAfwEAAIAAAAAAAAAAAAAAAAAAAAAWAgAABQAAAAAAAAAAAAAAAAAAAAAAAAAB
+AAAAAAAAAEcCAAClAgAAAAAAAMAAAAB/AQAAgAAAAGDR//8DAAAACQAAABECAAAQ
+AgAADwIAABECAAAUAgAAFAIAABECAAAUAgAAEgIAAD8JAABABAAA9QAAAPwAAAA5
+AAAAxAAAACwAAAAAAAAAAAAAAAMAAAADAAAAAAAAAAAAAAAbAAAACgAAAC8RD+AA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAEAAkACQDA
+DJAJZABkABIAEgASABIAEgASABIAEgASABIAEgASABIAEgASABIAEgASAO7/AAAS
+AO7/AAASAO7/AAASAO7/7v/u/wAAAAAAABIAEgASAJAAAAAAAAcAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAIAABAAAAAgACAAIAAgAAAAAAAAAAAAAAAAAAAAAAAACK
+AAEAAAAEAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACgAQAAAAAQ
+AAgAGAAQAIAC4AHo/ib/GAHaAAAACACAAQAAAAAAAAAACwwMDQ0MDAsAAAAAAAAA
+AAAAAAAAAAsMDQ4PDw8PDg0MCwoJAAAAAAAAAAAACw0PEBITExMTEhAPDQsKCQAA
+AAAAAAAADQ8RExYYGhoYFhMRDw0LCggHAAAAAAAMDxEUGBwgIiIgHBgUEQ8MCwkH
+AAAAAAAOEBMYHiQnKSknJB4YExAOCwoIBgAAAAwOERUbIygsLS0sKCMbFREODAoI
+BwAAAAAAABYeJSouLy8uKiUeFhIPDAoJBwAAAAAAAAAAJSouLy8uKiUeFhIPDAoJ
+BwAAAAAAAAAAAAAsLS0sKCMbFREODAoIBwAAAAAAAAAAAAAAACknJB4YExAOCwoI
+AAAAAAAAABEUGBwgIiIgHBgUEQ8MCwkHAAAAAAAADQ8RExYYGhoYFhMRDw0LCgAA
+AAAAAAAAAA0PEBITExMTEhAPDQAAAAAAAAAAAAAAAAAMDQ4PDw8PDg0MCwAAAAAA
+AAAAAAAAAAAAAAwMDQ0MDAsAAAAAAAAAAAgAAAAAAAAACAABAAAAAABEavD2J9aj
+3ERq8PYn1qPciv6Lj4cqnD4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAzjEA4QAA
+AIBaJQCpAAAAwAwAAMAMAAAEAAEAAgAEAAAAUjk4AAIABwAEAAAAMDEwMAEQAwAB
+AAAAwAwAAAIQAwABAAAAkAkAAAAAAAAGAAMBAwABAAAABgAAABoBBQABAAAAFA0A
+ABsBBQABAAAAHA0AACgBAwABAAAAAgAAAAECBAABAAAAJA0AAAICBAABAAAAfxcA
+AAAAAAC0AAAAAQAAALQAAAABAAAA/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgG
+BgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAx
+NDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIy
+MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCADEAKMDASIA
+AhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgED
+AwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2Jy
+ggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1
+dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJ
+ytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAA
+AAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJB
+UQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNE
+RUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJma
+oqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP0
+9fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigAooooAKKKKACiiigArI17xLpnhy2Et/
+PtZh+7hQZeT6CmeJteXQdLMqJ5t3KfLt4v7zn19h1Nee6f4dm1K7bUtZuGuL52BY
+sfuj+6voB6VDkk7FRi2F/wDErX9QY/2TZQ2cHZpvncj6dBWY/jvxdYYme9glHdJI
+Rg/lW9daVBZTOY4/k6qK525tRdvIhXgeorKUmmbxpJo6rw58XtP1CeO01i3+wTvw
+Jg26Fj9eq/jXpCsrqGVgykZBByCK+eW8LJcExgDB7V1fgHW77wzqUPh3WJmexuDt
+s5XbPlN/cz6Ht71cJ3Mp03E9cooorUzCiiigAooooAKKKKACiiigAooooAKKKKAC
+iiigDyzxjqyzfECKwLZFrbggejtz/LFMXUJ0kIi61z3i7ePjJegZG6KJh9PLUVYu
+PFul6TuRpUaQcE9a46l+c66LSjqbUtzdNy/NZ07yEfdrOTxvbXoyjIV6VXufFdss
+fzFVAFK9zZNF8XUkLbsdKzNfuxcWTkth4wHRvRgciqUXjHTZZNjZbPtVLX51bTpJ
+oHLxt39KdmmjKbTTsfQ/hnVF1rw3p+oKc+dCC3+8OD+oNa1cR8JJGk+G+mluzSAf
+Tea7euxHGFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFNkDGJwv3ipx9aAPH/HcV
+vP4om1eylWRzZm3YDs6n/wCvj8K8V1DTr97hy8LFic816bHZTaXqFytwpxuy2T1b
+JzWmk1ndgFoUDL0OOTXIqlpa7nb7BWsmeXeG9DvJtWt4mUiJmG7PTFa3i/SH+1H7
+IpCKAMCuyiubW3vfNJRUjYe2az76+tp74yxurLnkZ7ZpOprctUko2PM4NMu1n2iH
+I67uhrp7eCf+w7mGZTkp8oPrmunYwL82xD6VTupFmhkVFAO0gZpyncz9lynrXw2v
+9NHhy30azk3TWUQ83jG5mOSR7ZJrta8o+D2l3GbvVpcKrIINo7sDkn8iK9Xrog24
+3ZzVIqMrIKKKKsgKKKKACiiigAooooAKKKKACiiigAooooA8s8d6fd2Uk07wg2bP
+lJV9T2PvXBW7uRtV9oP3mJ6CvbvHVm194O1BEUs6J5gA/wBk5P6Zr51uJme1WCKT
+aWPJ9K5akLSOqlVZa8RafFdLFLbSsGjBzgn5qydNgC3AnkL+YvBGaAstoyrLqcqK
+BwVFMXEsmU1CV3PsP1qraWNLO9zpXkUqCrbozxj+7T7OB7qYW8CmSWQ7VUclieAK
+wLbfbsyyTFwea7b4d2xu/FtiAMrG5lPsFBP88VlyapEzqaHrvhDR5NF0JIZ1CzyM
+ZJFHYkAY/ICt+iiuxKyscjd3dhRRRTEFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAI
+yh1KsAQRgg96+XPEtrFpvie/t1G2NLhgoHYZr6jZgilmICgZJPavm/x5HFf6teX1
+q25TK3PqM1E+jHF6+ZiCbT5Yisq7vTBqEHT0B8pcN7msFyxfBzkUASHkA81HJbqa
+e0bNvfGxypJzXf8Aw0vrPStbW5v51hjdTErP03EjArzzTYGZgW/KukyhiWMYJDBu
+OxHSlTi51VCJNaap0nUkfSoORkUVzHgbX/7b0NUlP+lW2I5P9odm/wA+ldPXTKLi
+7MxhNTipLqFFFFSWFFFFABRRRQAUUUUAFFFFABRRXK6l46sbK6kggie5MTbXZSAA
+fQetXCnOo7RVzOrWp0lebsdVWXqHiHTNNO2a5Uyf880+ZvyrzzxN48ur1ks7Dfbq
+65fB+bH1rAs4mXBd2Z25Ynqa76OXykr1NDycTm8YPlpK/mdr4k8XLeWDwWavHEVz
+IzcEj0+leN6Td/bIbqKTkNK+M+5rpfEGr22nRRWz8y3TeUij37/SuY8M2TSxTtg4
+EpI+lY4+nCnBQh0N8rq1K1V1KnVaGXc2JinZf50iwY6gV1+q6Xhg2ME1gtb+XuLH
+Cjkn0FeYnzaI9tpR1Yy2LDEcYy57+grUhjZFAHPPX1NZOh6tZ3M8lqV8ubPylj98
+V0Rj2/h/OvdwOGjThzbtnzGZ4udSpybJf1c1PDHiNvDGoveNGZICNkkYOCw9vevZ
+9H17T9ctxNZThuMlG4ZfqK+fLqPeqR+py34VYhvJ7babeV4nXkOjYK1pXwiqO60Z
+nhcfKguVq6Po6ivPfD/xClu7m1tb2OIK2Eebdg59T2r0EEMAQQQehFeTUpSpu0j3
+aNeFaPNBi0UUVmbBRRRQAUUUUAFYGt+MdI0C9hs7ySQ3EoyqRpu4963mZUUsxAUD
+JJ7V4/r97FqWv3N3tB2sVRv9kcZ/SurCUFWnaWxw4/FPD0047s3Ne8ZyXu62sN0M
+OPmc/eb/AAriLN2K3JY8mVifp/kU2WU7CScEvnr19qyrOeSRdjNw8jOx9gM/1r26
+VKFJcsUfN1q1TENzmy1Yr5895cse+0Z7CtCS/t9P0+S+unCRqOM9/YVQt0dLNIQD
+vncsR321X1LRpNTl33cv7iJQEgXoD7+pq5c3LaO5lBRcrzehwV5eXniTxEl0QwXe
+BCo/hUGur8P+JdP0aVortJQuTvGwnn2rQg0aCwYSKg/djP41FeWw2O8MKs3TBHeu
+X6ouVqTvfc9JY9c8eRWS2OztZtK161W5triNoNvJJwQfQjtXC+NZ7HTrXyI3Jlkb
+gDuKw30XUkkeVJnhJPRDj8Kmt/DV1e3gn1GV5PTcclv/AK1cNPL3CV0vQ9OrminG
+zat17nJra3EmJ4gyup3LjqK7nw7rf9pW/wBnuDtuovvg/wAQ9aP7LEUhjVfdvYel
+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3D=3D
+=3DOEVJ
+-----END PGP PUBLIC KEY BLOCK-----
+
+--------------090102070107020606080308--
+
+--QO6NIX0dcAqcoIwKEwXPNGJvFsn6WBQHH
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2.0.22 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iEYEARECAAYFAlM5y8EACgkQifrzB0y7qpb2TwCgq1V8t7qDzsIwKOc2HOMrg2CN
-qB0AnRqmPOjxRWl9tWcr4PJqsoGouvOK
-=ND7C
+iQIcBAEBAgAGBQJTOgebAAoJENmyd4cVxLOCl2sQAJqvzmgrO1/SvzGkX/CF+VB7
+52F6YO9Vf4AJpuTMg08k3894t9BAPt04UnBYMZuS02vpxg4jdPuYY6mZ4g/OBoiD
+EqKZfaL3QAzHhQbLWxfAKSJuQme4X6DZFoLBeZC0Nvj7tR3Bh6gxzAB95wUS3Ntw
+WcbjktbMVeCpZTWGkc3xXp8ZrJ6k4NeC4Ao+E++gWyFuHrctpa29n41YdjfviaQU
+4np9JXWJNy4QAhqEnBuv+JsdI0m3iCqkgaVNvmEKRZf2nOM3ExqjKanwWZGAic2k
+4VsVnwjmSUOJBAmS6E/LWUoMB3/OUMqVYefgCKxDeBO8b6rVYHPx+vl5T9w+weIc
+pgVCJOBWoTxOFTWlKsDN/sIywxhYUlcix/Y4FaDD+3826zGtggrVmq2P/TTP2Ecb
+O7OvFt9bEbHQBLkF30edYn4A837uP4TrNCAi+vJlJyRoNrs0QwfrdM0lGFEwq53E
+tbSm4tpP3YKobc6uxOO48IDY+kO5u90hO2FWZWbKKYYqUOckBvomlcHbmI0n6ZRG
+hCQ+JliMV9GXhxix0EW6tqkCUTh8y/AILWMiRiaex8/ZckUwmxu4HzzR4mIUNzBh
+w9WIpea6KYsCc1qyEwIRxtIc2hDwFXJen2qsEvg93zhwxBX+ecvei+M2YgX/109M
+d+RDtSZnnQ50cYhxQggi
+=CuVa
 -----END PGP SIGNATURE-----
 
---quvb3Ricj58vCrkXxGEkA1PhqXwE7TXJv--
+--QO6NIX0dcAqcoIwKEwXPNGJvFsn6WBQHH--
