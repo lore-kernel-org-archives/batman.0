@@ -1,14 +1,16 @@
-Return-Path: <gio@eigenlab.org>
-From: Gioacchino Mazzurco <gio@eigenlab.org>
-Date: Tue, 01 Apr 2014 12:35:39 +0200
-Message-ID: <1732522.mMifORosKp@vaio-gio>
-In-Reply-To: <web-133442820@sns.it>
-References: <5339CBBD.9050708@sns.it> <web-133442820@sns.it>
+Return-Path: <bittorf@bluebottle.com>
+Date: Tue, 1 Apr 2014 13:16:39 +0200
+From: Bastian Bittorf <bittorf@bluebottle.com>
+Message-ID: <20140401111639.GG26159@medion.lan>
+References: <0643725B-CC5E-4AAA-8908-C6A0EA4CE631@gmail.com>
+ <26865236.GIsAj78OZH@diderot> <533A078C.7060803@wirelesspt.net>
+ <533A2A75.4000602@altermundi.net>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-Subject: Re: [B.A.T.M.A.N.] br-lan: received packet on bat0 with own address
-	as source address
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <533A2A75.4000602@altermundi.net>
+Subject: Re: [B.A.T.M.A.N.] Batman-adv 2014.1.0 and 2014.0.0 issues with
+ 3.10 and 3.8 kernels
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,17 +22,16 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tuesday 01 April 2014 11:33:01 Ilario GELMETTI wrote:
-> I tried changing the mac address
-> config interface 'lm_eth0_batadv'
->         option ifname 'eth0.11'
->         option proto 'batadv'
->         option mesh 'bat0'
->         option mtu '1496'
->         option macaddr 'dc:9f:db:31:c1:38'
-> and that error in dmesg went away.
+* Gui Iribarren <gui@altermundi.net> [01.04.2014 10:08]:
+> something like
+> 
+>     $ cd feeds/routing
+>     $ git log batman-adv # find your favorite old version
+>     $ git checkout e2cfab7f287673b1d6854c59db6e710668d145f3
 
-Why a packet form eth0.11 should arrive periodically to the bridge ?
-Someone can make some sense out of this ?
+IMHO this does not work, because 'scripts/feeds' throws away
+the history ("git clone --depth 1").
+
+bye, bastian
