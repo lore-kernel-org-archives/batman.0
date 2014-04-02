@@ -1,9 +1,10 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed,  2 Apr 2014 14:40:02 +0200
-Message-Id: <1396442402-13847-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH openwrt-routing-feed] batman-adv: add support
-	for the isolation_mark option
+Return-Path: <fabrice.dossin@gmail.com>
+MIME-Version: 1.0
+From: Fabrice Dossin <fabrice.dossin@gmail.com>
+Date: Wed, 2 Apr 2014 13:50:51 +0200
+Message-ID: <CAPXi+9-j-u6YbvhMjhLPxVOcdYPd0HVThH=SH7PacvakeYenDw@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [B.A.T.M.A.N.]  batctl oops on batctl gateways call
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,51 +16,96 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+Dear all,
 
-With the introduction of the Extended Isolation component[1]
-a new option is required by batman-adv: the isolation_mark.
-This patch adds support for it in the configuration file
+Hello.
+I am not sure it has been notified so I post this issue here.
+It is my first post, so tell me if I do it bad...
 
-[1] http://www.open-mesh.org/projects/batman-adv/wiki/Extended-isolation
+I have oops on "batctl gateways" call :
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
----
- batman-adv/files/lib/batman-adv/config.sh | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.500226] Unable to handle
+kernel NULL pointer dereference at virtual address 00000022
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.508175] pgd = d4918000
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.514355] [00000022]
+*pgd=138f9831, *pte=00000000, *ppte=00000000
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.521733] Internal error: Oops:
+17 [#5] PREEMPT ARM
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.527131] Modules linked in:
+tun ipt_MASQUERADE iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4
+nf_nat_ipv4 nf_nat nf_conntrack iptable_filter ip_tables x_tables ipv6
+bcm2708_rng bcm2708_wdog batman_adv(O) rtc_ds1307 qmi_wwan option
+usb_wwan arc4 usbserial cdc_wdm rt2800usb rt2800lib rt2x00usb
+rt2x00lib mac80211 cfg80211 crc_ccitt sr_mod cdrom leds_gpio led_class
+rt5572sta(O) spi_bcm2708 i2c_bcm2708 btusb bluetooth rfkill
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.544610] CPU: 0 PID: 7261
+Comm: batctl Tainted: G      D    O 3.10.30+ #1
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.550263] task: d49f3180 ti:
+d38d0000 task.ti: d38d0000
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.556017] PC is at
+batadv_orig_router_get+0x50/0x9c [batman_adv]
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.561587] LR is at
+batadv_orig_router_get+0x10/0x9c [batman_adv]
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.566974] pc : [<bf35e218>]
+lr : [<bf35e1d8>]    psr: 20000013
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.566974] sp : d38d1ea8  ip :
+0000000a  fp : dda60600
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.577350] r10: cccccccd  r9 :
+ddab7000  r8 : dda60600
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.582439] r7 : 00000000  r6 :
+00000000  r5 : d4826e00  r4 : 00000000
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.587535] r3 : d4ac0000  r2 :
+00000000  r1 : 00000000  r0 : 00000002
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.592468] Flags: nzCv  IRQs on
+FIQs on  Mode SVC_32  ISA ARM  Segment user
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.597357] Control: 00c5387d
+Table: 14918008  DAC: 00000015
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.602319] Process batctl (pid:
+7261, stack limit = 0xd38d01b0)
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.607230] Stack: (0xd38d1ea8 to
+0xd38d2000)
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.611903] 1ea0:
+  d49f3180 d49c2580 00000000 bf35a62c 000000ff bf368ed8
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.616816] 1ec0: bf368ee0
+bf368eec dc89b000 dbe3cd08 ddab7000 dc83bba0 dbd10900 00000000
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.621720] 1ee0: 00100073
+00000000 d25a0aa0 00000000 00000000 00000001 d38d1f20 00000001
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.626477] 1f00: dda60600
+c00f653c d1f20790 d38d1f80 00001000 b6f18000 dda60628 00000000
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.631263] 1f20: 00000000
+00000000 00001000 dc83bba0 00000001 d25a0aa0 b6f18000 d38d0000
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.636092] 1f40: d38d1f80
+00001000 d38d0000 00001000 bea8eb54 c00d7530 00000000 00000003
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.640834] 1f60: 00000000
+00000000 00000000 d25a0aa0 b6f18000 00000000 00001000 c00d77c4
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.645450] 1f80: 00000000
+00000000 ffffffff 00916008 fbad2488 00000000 00000003 c000dd68
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.650123] 1fa0: 00000000
+c000dbc0 00916008 fbad2488 00000003 b6f18000 00001000 00000000
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.654758] 1fc0: 00916008
+fbad2488 00000000 00000003 00000000 00021450 b6f1f000 bea8eb54
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.659333] 1fe0: 00000000
+bea8e8c8 b6d945f8 b6de52bc 60000010 00000003 00000000 00000000
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.664121] [<bf35e218>]
+(batadv_orig_router_get+0x50/0x9c [batman_adv]) from [<bf35a62c>]
+(batadv_gw_client_seq_print_text+0xac/0x220 [batman_adv])
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.673531] [<bf35a62c>]
+(batadv_gw_client_seq_print_text+0xac/0x220 [batman_adv]) from
+[<c00f653c>] (seq_read+0x1d0/0x4cc)
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.678287] [<c00f653c>]
+(seq_read+0x1d0/0x4cc) from [<c00d7530>] (vfs_read+0x98/0x17c)
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.683071] [<c00d7530>]
+(vfs_read+0x98/0x17c) from [<c00d77c4>] (SyS_read+0x3c/0x70)
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.687982] [<c00d77c4>]
+(SyS_read+0x3c/0x70) from [<c000dbc0>] (ret_fast_syscall+0x0/0x30)
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.692822] Code: e8bd8038
+e593000c e3500000 0afffff8 (e5902020)
+Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.718781] ---[ end trace
+1e5ba977f5516301 ]---
 
-diff --git a/batman-adv/files/lib/batman-adv/config.sh b/batman-adv/files/lib/batman-adv/config.sh
-index 471c1f2..3b735d5 100644
---- a/batman-adv/files/lib/batman-adv/config.sh
-+++ b/batman-adv/files/lib/batman-adv/config.sh
-@@ -12,7 +12,7 @@ bat_config()
- {
- 	local mesh="$1"
- 	local aggregated_ogms ap_isolation bonding bridge_loop_avoidance distributed_arp_table fragmentation
--	local gw_bandwidth gw_mode gw_sel_class hop_penalty network_coding log_level orig_interval vis_mode
-+	local gw_bandwidth gw_mode gw_sel_class hop_penalty isolation_mark network_coding log_level orig_interval vis_mode
- 
- 	config_get aggregated_ogms "$mesh" aggregated_ogms
- 	config_get ap_isolation "$mesh" ap_isolation
-@@ -24,6 +24,7 @@ bat_config()
- 	config_get gw_mode "$mesh" gw_mode
- 	config_get gw_sel_class "$mesh" gw_sel_class
- 	config_get hop_penalty "$mesh" hop_penalty
-+	config_get isolation_mark "$mesh" isolation_mark
- 	config_get network_coding "$mesh" network_coding
- 	config_get log_level "$mesh" log_level
- 	config_get orig_interval "$mesh" orig_interval
-@@ -41,6 +42,7 @@ bat_config()
- 	[ -n "$gw_mode" ] && echo $gw_mode > /sys/class/net/$mesh/mesh/gw_mode
- 	[ -n "$gw_sel_class" ] && echo $gw_sel_class > /sys/class/net/$mesh/mesh/gw_sel_class
- 	[ -n "$hop_penalty" ] && echo $hop_penalty > /sys/class/net/$mesh/mesh/hop_penalty
-+	[ -n "$isolation_mark" ] && echo $isolation_mark > /sys/class/net/$mesh/mesh/isolation_mark
- 	[ -n "$network_coding" ] && echo $network_coding > /sys/class/net/$mesh/mesh/network_coding 2>&-
- 	[ -n "$log_level" ] && echo $log_level > /sys/class/net/$mesh/mesh/log_level 2>&-
- 	[ -n "$orig_interval" ] && echo $orig_interval > /sys/class/net/$mesh/mesh/orig_interval
--- 
-1.8.3.2
+It is the 2014.1.0 version (batctl 2014.1.0 [batman-adv: 2014.1.0])
 
+Regards,
+Fabrice
