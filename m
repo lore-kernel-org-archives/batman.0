@@ -1,9 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed,  2 Apr 2014 08:27:35 +0200
-Message-Id: <1396420055-19598-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv3 maint] batctl: tcpdump - fix IP header
-	parsing
+Date: Wed,  2 Apr 2014 14:40:02 +0200
+Message-Id: <1396442402-13847-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH openwrt-routing-feed] batman-adv: add support
+	for the isolation_mark option
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,200 +20,46 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-Fix the IP header parsing by properly converting the source
-and the destination addresses to strings.
-The problem is given by the fact that inet_ntoa() uses a
-static buffer to store its result, therefore it cannot be
-invoked twice in a row without saving the first outcome.
-Moreover inet_ntoa() is deprecated in favor of inet_pton().
+With the introduction of the Extended Isolation component[1]
+a new option is required by batman-adv: the isolation_mark.
+This patch adds support for it in the configuration file
 
-Introduced by 35b37756f4a3a230bf7941034d9da178ee5b4948
-("add IPv6 support to tcpdump parser")
-
-This patch also slightly beautifies the code.
+[1] http://www.open-mesh.org/projects/batman-adv/wiki/Extended-isolation
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
+ batman-adv/files/lib/batman-adv/config.sh | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Change since v2:
-- fix commit subject
-
-Change since v1:
-- print all errors on stderr
-
-
- tcpdump.c | 73 ++++++++++++++++++++++++++++++++++++---------------------------
- 1 file changed, 42 insertions(+), 31 deletions(-)
-
-diff --git a/tcpdump.c b/tcpdump.c
-index e9fac70..94e2a84 100644
---- a/tcpdump.c
-+++ b/tcpdump.c
-@@ -258,20 +258,27 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
- 	struct ip6_hdr *iphdr;
- 	struct icmp6_hdr *icmphdr;
- 
--	char ipv6_addr_src[40], ipv6_addr_dst[40];
--	char ip_saddr[40], ip_daddr[40], nd_nas_target[40];
-+	char ipsrc[INET6_ADDRSTRLEN], ipdst[INET6_ADDRSTRLEN];
- 	struct nd_neighbor_solicit *nd_neigh_sol;
- 	struct nd_neighbor_advert *nd_advert;
-+	char nd_nas_target[INET6_ADDRSTRLEN];
- 	const char ip_string[] = "IP6";
- 
- 	iphdr = (struct ip6_hdr *)packet_buff;
--	LEN_CHECK((size_t)buff_len, (size_t)(sizeof(struct ip6_hdr)), "IP6");
-+	LEN_CHECK((size_t)buff_len, (size_t)(sizeof(struct ip6_hdr)), ip_string);
- 
- 	if (!time_printed)
- 		print_time();
- 
--	inet_ntop(AF_INET6, &(iphdr->ip6_src), ipv6_addr_src, 40);
--	inet_ntop(AF_INET6, &(iphdr->ip6_dst), ipv6_addr_dst, 40);
-+	if (!inet_ntop(AF_INET6, &iphdr->ip6_src, ipsrc, sizeof(ipsrc))) {
-+		fprintf(stderr, "Cannot decode source IPv6\n");
-+		return;
-+	}
-+
-+	if (!inet_ntop(AF_INET6, &iphdr->ip6_dst, ipdst, sizeof(ipdst))) {
-+		fprintf(stderr, "Cannot decode destination IPv6\n");
-+		return;
-+	}
- 
- 	switch (iphdr->ip6_nxt) {
- 	case IPPROTO_ICMPV6:
-@@ -280,7 +287,7 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
- 		icmphdr = (struct icmp6_hdr *)(packet_buff +
- 					       sizeof(struct ip6_hdr));
- 
--		printf("IP6 %s > %s ", ipv6_addr_src, ipv6_addr_dst);
-+		printf("%s %s > %s ", ip_string, ipsrc, ipdst);
- 		if (icmphdr->icmp6_type < ICMP6_INFOMSG_MASK &&
- 		    (size_t)(buff_len) > IPV6_MIN_MTU) {
- 			fprintf(stderr,
-@@ -348,16 +355,12 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
- 		}
- 		break;
- 	case IPPROTO_TCP:
--		inet_ntop(AF_INET6, &(iphdr->ip6_src), ip_saddr, 40);
--		inet_ntop(AF_INET6, &(iphdr->ip6_dst), ip_daddr, 40);
- 		dump_tcp(ip_string, packet_buff, buff_len,
--			 sizeof(struct ip6_hdr), ip_saddr, ip_daddr);
-+			 sizeof(struct ip6_hdr), ipsrc, ipdst);
- 		break;
- 	case IPPROTO_UDP:
--		inet_ntop(AF_INET6, &(iphdr->ip6_src), ip_saddr, 40);
--		inet_ntop(AF_INET6, &(iphdr->ip6_dst), ip_daddr, 40);
- 		dump_udp(ip_string, packet_buff, buff_len,
--			 sizeof(struct ip6_hdr), ip_saddr, ip_daddr);
-+			 sizeof(struct ip6_hdr), ipsrc, ipdst);
- 		break;
- 	default:
- 		printf(" IPv6 unknown protocol: %i\n", iphdr->ip6_nxt);
-@@ -367,29 +370,40 @@ static void dump_ipv6(unsigned char *packet_buff, ssize_t buff_len,
- static void dump_ip(unsigned char *packet_buff, ssize_t buff_len,
- 		    int time_printed)
+diff --git a/batman-adv/files/lib/batman-adv/config.sh b/batman-adv/files/lib/batman-adv/config.sh
+index 471c1f2..3b735d5 100644
+--- a/batman-adv/files/lib/batman-adv/config.sh
++++ b/batman-adv/files/lib/batman-adv/config.sh
+@@ -12,7 +12,7 @@ bat_config()
  {
-+	char ipsrc[INET_ADDRSTRLEN], ipdst[INET_ADDRSTRLEN];
- 	struct iphdr *iphdr, *tmp_iphdr;
-+	const char ip_string[] = "IP";
- 	struct udphdr *tmp_udphdr;
- 	struct icmphdr *icmphdr;
--	const char ip_string[] = "IP";
+ 	local mesh="$1"
+ 	local aggregated_ogms ap_isolation bonding bridge_loop_avoidance distributed_arp_table fragmentation
+-	local gw_bandwidth gw_mode gw_sel_class hop_penalty network_coding log_level orig_interval vis_mode
++	local gw_bandwidth gw_mode gw_sel_class hop_penalty isolation_mark network_coding log_level orig_interval vis_mode
  
- 	iphdr = (struct iphdr *)packet_buff;
--	LEN_CHECK((size_t)buff_len, (size_t)(iphdr->ihl * 4), "IP");
-+	LEN_CHECK((size_t)buff_len, (size_t)(iphdr->ihl * 4), ip_string);
- 
- 	if (!time_printed)
- 		print_time();
- 
-+	if (!inet_ntop(AF_INET, &iphdr->saddr, ipsrc, sizeof(ipsrc))) {
-+		fprintf(stderr, "Cannot decode source IP\n");
-+		return;
-+	}
-+
-+	if (!inet_ntop(AF_INET, &iphdr->daddr, ipdst, sizeof(ipdst))) {
-+		fprintf(stderr, "Cannot decode destination IP\n");
-+		return;
-+	}
-+
- 	switch (iphdr->protocol) {
- 	case IPPROTO_ICMP:
- 		LEN_CHECK((size_t)buff_len - (iphdr->ihl * 4), sizeof(struct icmphdr), "ICMP");
- 
- 		icmphdr = (struct icmphdr *)(packet_buff + (iphdr->ihl * 4));
--		printf("IP %s > ", inet_ntoa(*(struct in_addr *)&iphdr->saddr));
-+		printf("%s %s > ", ip_string, ipsrc);
- 
- 		switch (icmphdr->type) {
- 		case ICMP_ECHOREPLY:
- 			printf("%s: ICMP echo reply, id %hu, seq %hu, length %zu\n",
--				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
--				ntohs(icmphdr->un.echo.id), ntohs(icmphdr->un.echo.sequence),
-+				ipdst, ntohs(icmphdr->un.echo.id),
-+				ntohs(icmphdr->un.echo.sequence),
- 				(size_t)buff_len - (iphdr->ihl * 4));
- 			break;
- 		case ICMP_DEST_UNREACH:
-@@ -401,46 +415,43 @@ static void dump_ip(unsigned char *packet_buff, ssize_t buff_len,
- 				tmp_iphdr = (struct iphdr *)(((char *)icmphdr) + sizeof(struct icmphdr));
- 				tmp_udphdr = (struct udphdr *)(((char *)tmp_iphdr) + (tmp_iphdr->ihl * 4));
- 
--				printf("%s: ICMP ", inet_ntoa(*(struct in_addr *)&iphdr->daddr));
-+				printf("%s: ICMP ", ipdst);
- 				printf("%s udp port %hu unreachable, length %zu\n",
--					inet_ntoa(*(struct in_addr *)&tmp_iphdr->daddr),
--					ntohs(tmp_udphdr->dest), (size_t)buff_len - (iphdr->ihl * 4));
-+					ipdst, ntohs(tmp_udphdr->dest),
-+					(size_t)buff_len - (iphdr->ihl * 4));
- 				break;
- 			default:
- 				printf("%s: ICMP unreachable %hhu, length %zu\n",
--					inet_ntoa(*(struct in_addr *)&iphdr->daddr),
--					icmphdr->code, (size_t)buff_len - (iphdr->ihl * 4));
-+					ipdst, icmphdr->code,
-+					(size_t)buff_len - (iphdr->ihl * 4));
- 				break;
- 			}
- 
- 			break;
- 		case ICMP_ECHO:
- 			printf("%s: ICMP echo request, id %hu, seq %hu, length %zu\n",
--				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
--				ntohs(icmphdr->un.echo.id), ntohs(icmphdr->un.echo.sequence),
-+				ipdst, ntohs(icmphdr->un.echo.id),
-+				ntohs(icmphdr->un.echo.sequence),
- 				(size_t)buff_len - (iphdr->ihl * 4));
- 			break;
- 		case ICMP_TIME_EXCEEDED:
- 			printf("%s: ICMP time exceeded in-transit, length %zu\n",
--				inet_ntoa(*(struct in_addr *)&iphdr->daddr),
--				(size_t)buff_len - (iphdr->ihl * 4));
-+				ipdst, (size_t)buff_len - (iphdr->ihl * 4));
- 			break;
- 		default:
- 			printf("%s: ICMP type %hhu, length %zu\n",
--				inet_ntoa(*(struct in_addr *)&iphdr->daddr), icmphdr->type,
-+				ipdst, icmphdr->type,
- 				(size_t)buff_len - (iphdr->ihl * 4));
- 			break;
- 		}
- 		break;
- 	case IPPROTO_TCP:
- 		dump_tcp(ip_string, packet_buff, buff_len, iphdr->ihl * 4,
--			 inet_ntoa(*(struct in_addr *)&iphdr->saddr),
--			 inet_ntoa(*(struct in_addr *)&iphdr->daddr));
-+			 ipsrc, ipdst);
- 		break;
- 	case IPPROTO_UDP:
- 		dump_udp(ip_string, packet_buff, buff_len, iphdr->ihl * 4,
--			 inet_ntoa(*(struct in_addr *)&iphdr->saddr),
--			 inet_ntoa(*(struct in_addr *)&iphdr->daddr));
-+			 ipsrc, ipdst);
- 		break;
- 	default:
- 		printf("IP unknown protocol: %i\n", iphdr->protocol);
+ 	config_get aggregated_ogms "$mesh" aggregated_ogms
+ 	config_get ap_isolation "$mesh" ap_isolation
+@@ -24,6 +24,7 @@ bat_config()
+ 	config_get gw_mode "$mesh" gw_mode
+ 	config_get gw_sel_class "$mesh" gw_sel_class
+ 	config_get hop_penalty "$mesh" hop_penalty
++	config_get isolation_mark "$mesh" isolation_mark
+ 	config_get network_coding "$mesh" network_coding
+ 	config_get log_level "$mesh" log_level
+ 	config_get orig_interval "$mesh" orig_interval
+@@ -41,6 +42,7 @@ bat_config()
+ 	[ -n "$gw_mode" ] && echo $gw_mode > /sys/class/net/$mesh/mesh/gw_mode
+ 	[ -n "$gw_sel_class" ] && echo $gw_sel_class > /sys/class/net/$mesh/mesh/gw_sel_class
+ 	[ -n "$hop_penalty" ] && echo $hop_penalty > /sys/class/net/$mesh/mesh/hop_penalty
++	[ -n "$isolation_mark" ] && echo $isolation_mark > /sys/class/net/$mesh/mesh/isolation_mark
+ 	[ -n "$network_coding" ] && echo $network_coding > /sys/class/net/$mesh/mesh/network_coding 2>&-
+ 	[ -n "$log_level" ] && echo $log_level > /sys/class/net/$mesh/mesh/log_level 2>&-
+ 	[ -n "$orig_interval" ] && echo $orig_interval > /sys/class/net/$mesh/mesh/orig_interval
 -- 
 1.8.3.2
 
