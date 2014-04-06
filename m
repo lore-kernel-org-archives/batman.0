@@ -1,14 +1,14 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <534011FF.40801@meshcoding.com>
-Date: Sat, 05 Apr 2014 16:23:59 +0200
-From: Antonio Quartulli <antonio@meshcoding.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 06 Apr 2014 21:52:29 +0800
+Message-ID: <7868056.JTuzNk4An1@diderot>
+In-Reply-To: <1396442402-13847-1-git-send-email-antonio@meshcoding.com>
+References: <1396442402-13847-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <533FF536.6060806@jluehr.de>
-In-Reply-To: <533FF536.6060806@jluehr.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="4kCnrkeQGkCR6d5qWcaOOBFchoDiGdoKp"
-Subject: Re: [B.A.T.M.A.N.] DAT (DNT) IPv6?
+Content-Type: multipart/signed; boundary="nextPart2871504.C105i3cGzW";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH openwrt-routing-feed] batman-adv: add
+	support for the isolation_mark option
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,59 +20,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, ff@jluehr.de
-
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---4kCnrkeQGkCR6d5qWcaOOBFchoDiGdoKp
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
-
-Hi Jan,
-
-On 05/04/14 14:21, Jan L=FChr wrote:
-> Hello,
->=20
-> just wondering: Is there a DAT implementation for IPv6?
-> I distributed neighbor table would certainly be nice :)
->=20
-
-Some time ago a guy started to work on a generalization of DAT which
-should have been used to implement an IPv6 extension. Unfortunately the
-work has never been complete (mostly because of lack of time).
-
-If somebody is willing to continue his work, he could search the mailing
-list archive for the last patchset version and continue from there...it
-would be really nice! :)
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <antonio@meshcoding.com>
 
 
-Cheers,
+--nextPart2871504.C105i3cGzW
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---=20
-Antonio Quartulli
+On Wednesday 02 April 2014 14:40:02 Antonio Quartulli wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
+> 
+> With the introduction of the Extended Isolation component[1]
+> a new option is required by batman-adv: the isolation_mark.
+> This patch adds support for it in the configuration file
+> 
+> [1] http://www.open-mesh.org/projects/batman-adv/wiki/Extended-isolation
+> 
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+>  batman-adv/files/lib/batman-adv/config.sh | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
+Applied with minor modifications in revision 73764a0.
 
---4kCnrkeQGkCR6d5qWcaOOBFchoDiGdoKp
+Thanks,
+Marek
+
+--nextPart2871504.C105i3cGzW
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBCAAGBQJTQBISAAoJEEKTMo6mOh1VetcQAJCUIBbMG+plBoJJvAd+cHiS
-1e4uTKqHSBoimLgEdbska4hsEGm3axe2WLrPRu5pehytH5XrQvqjd691eZz3cqsw
-A2SQBNK7UKkyn5LUGvgUTubTBJ4Bzbu6TtowAEsIUPIgyhXZa4FYFDVFzCIYfcOA
-BDibvLW65ZjBI3faui90NF6m4xHlYCLNJEk0aS9svCo2qqzvOSisdnzD68+F6mAv
-RSbP1z2qO+rofWs/UYgweO2FjOBNbM52vW697cG2B0G6x7oHAiQxEczgVbOVv6ru
-V28tvq8v3ySEvP5+uQJsA25egmX0b4lR/VpJwgNPPAeXOtAm1W4UqzjLOvPLtgYT
-P2xiMXm7bpKBQ11RicFyXsYl/Im0CadjKKj90k/O+3SpdSiavrtZVSLr+5nU2Bmh
-30uS4nfhfTTw7fXWv/gIs+OsVlzwXBdDrW67MUJhYjIG/l6gz2L/ADYb6kPbVgp8
-vi6PsBQ0rMBxpTeVvGczs0By6ZEsJLH5dh9hgLCZ1zWOX01CHO3QJkGcBHCx/zdm
-BTuSZWpFXAhWz5oUSUXePQjuQbZvYP1FBeeyEAbotlgted1mnAZpyWJGO2pBeJJ6
-NYgFkJE1tgq1D0iLoRq7np2Ydkh5FxxcXkiVQAdEycJcX9BvRZnWZHQaBj5t08Ok
-Y0X/mhzc33m7onNFlKaf
-=cCyZ
+iQEcBAABAgAGBQJTQVwhAAoJEFNVTo/uthzAAtoIALwNl4KPeC3IHbBJDQLXzrdv
+NhBczAUM+U0gplPzhIevkpDghitqSFqM2unjUcLWzuqm/PK+f66hu/BMzOcQqFB5
+sENwMIOARm+ZNq8ogJGN1nyEXUbltBHOx3bkYFkgbLdeKGo6iIzEd7fIglT2gTr9
+TwCNTJ5EfSpb+RHibvSuLPQlkE6oC6y4SY1AiWsiR5pkKOwo+espkJ0VUwWUzLzW
+LiWAEpXOEX3buz1FluIFliJ8rjADpgGJNPoHafv4yOdBzvET5qsdxg+mvQH1om1/
+fdRuICnOH6gwDVOQXRrQOy4CaVynt5P4n2vtyI3noqhg7xAtOCLmqpsmP//cHpA=
+=5EFl
 -----END PGP SIGNATURE-----
 
---4kCnrkeQGkCR6d5qWcaOOBFchoDiGdoKp--
+--nextPart2871504.C105i3cGzW--
+
