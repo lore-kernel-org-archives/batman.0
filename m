@@ -1,17 +1,17 @@
 Return-Path: <antonio@open-mesh.com>
-Message-ID: <5346BCEB.1010700@open-mesh.com>
-Date: Thu, 10 Apr 2014 17:46:51 +0200
+Message-ID: <5346C0B3.4050704@open-mesh.com>
+Date: Thu, 10 Apr 2014 18:02:59 +0200
 From: Antonio Quartulli <antonio@open-mesh.com>
 MIME-Version: 1.0
 References: <1396211704-4677-1-git-send-email-antonio@meshcoding.com>	
- <1396211704-4677-3-git-send-email-antonio@meshcoding.com>
- <1396951430.5936.16.camel@jlt4.sipsolutions.net>
-In-Reply-To: <1396951430.5936.16.camel@jlt4.sipsolutions.net>
+ <1396211704-4677-7-git-send-email-antonio@meshcoding.com>
+ <1396951582.5936.20.camel@jlt4.sipsolutions.net>
+In-Reply-To: <1396951582.5936.20.camel@jlt4.sipsolutions.net>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="Pbx75SHwfRNxpuLFsrelQIUVUw9BrPG4v"
-Subject: Re: [B.A.T.M.A.N.] [RFCv2 2/6] mac80211: add new RC API to retrieve
-	expected throughput
+ boundary="ccBXlIt2soEErnVWhD91DO3kuBhL2Ught"
+Subject: Re: [B.A.T.M.A.N.] [RFCv2 6/6] cfg80211: implement
+ cfg80211_get_station cfg80211 API
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,29 +27,45 @@ To: Johannes Berg <johannes@sipsolutions.net>
 Cc: devel@lists.open80211s.org, b.a.t.m.a.n@lists.open-mesh.org, linux-wireless@vger.kernel.org
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---Pbx75SHwfRNxpuLFsrelQIUVUw9BrPG4v
+--ccBXlIt2soEErnVWhD91DO3kuBhL2Ught
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
 
 
-On 08/04/14 12:03, Johannes Berg wrote:
+On 08/04/14 12:06, Johannes Berg wrote:
 > On Sun, 2014-03-30 at 22:35 +0200, Antonio Quartulli wrote:
->> From: Antonio Quartulli <antonio@open-mesh.com>
->>
->> In order to make get_station() export the expected
->> throughput, we need a new API which extracts such
->> information from the Rate Control algorithm.
->> Therefore add the get_expected_throughput() member
->> to the rate_control_ops structure.
 >=20
-> What about drivers with HW rate control?
+>>  /**
+>> + * cfg80211_get_station - retrieve information about a given station
+>> + * @dev: the device where the station is supposed to be connected to
+>> + * @mac_addr: the mac address of the station of interest
+>> + * @sinfo: pointer to the structure to fill with the information
+>> + *
+>> + * Returns 0 on success or a negative error code otherwise.
+>> + */
+>> +int cfg80211_get_station(struct net_device *dev, u8 *mac_addr,
+>> +			 struct station_info *sinfo);
 >=20
+> mac_addr should be const
 
-True, they do not implement the rate_control_ops API.
+True
 
-Therefore, as discussed on IRC, I need to move this new API at the
-mac80211 level, so that each driver can implement it the way it prefer.
+>=20
+> Any thoughts about clearing/filling/partially filling *sinfo when
+> returning an error?
+
+At the moment this function relies on what rdev_get_station() does and I
+always assumed that in case of error the content of *sinfo should be
+considered "undefined".
+
+An option can be to set the object to 0 in case of error, but is it
+really needed?
+
+Any other change should be applied to rdev->ops->get_station(), not
+here. I.e. fill the object as much as possible and never return an error
+- just flag what was filled.
+
 
 Cheers,
 
@@ -57,7 +73,7 @@ Cheers,
 Antonio Quartulli
 
 
---Pbx75SHwfRNxpuLFsrelQIUVUw9BrPG4v
+--ccBXlIt2soEErnVWhD91DO3kuBhL2Ught
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -66,19 +82,19 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v2.0.22 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBCAAGBQJTRrzvAAoJEEKTMo6mOh1VxU8P/3ts4WAVnEJWSsWTnUzrdkwX
-7AAa+Q8UrA9i4497c7zakCSXg4KAdXDglGFanjOn4Av7UEUIUNUDaT+axvzKDSlq
-vsKA4qcf4WPNRyVFxZd6FZCNuVNWT7qh01i1g2BTZFuI1oHzYBk77JsLh7Ndf5U/
-oFKD9CWilfo96g+ThbuB0ob/TA5x+yFtoYmIZ/HrV9e71jSEv0Zwks/wXcTfiwdZ
-I38kHw1acu3oCPs3t+52Z6G5XIM0uq5m0Y7gH5hYd2DQYID/O/s3rfm8n6mjvjrQ
-s/c+fe2dZnX9oVAfEeQ6IqMdchOYXzVKfpafb0zeYPH+1fP5jZkg8cA8q2I5pjVL
-919tnPYeMx59tN1L4RkRxsGk1O1BYuMn6Yi7eXHBQBxqX9Vn1JwPcmiHTmsS6iyx
-pZm6Y92SjgMklpt4kDQHKr5mqwH/TxgdZ6Md0laSS6k+SF+0ONvfDroCw+VgECaZ
-zr4WGBCwrgDbgPCFihpbxeYab6P56XHGOYVvrnRVOqol67g9z1TIj52+JhakwYEX
-2pkCZ9uFHVbmTxgkYNziL2n6eEqcztZRIb9hzpEQPRYSyOWs/qZx1/nr1n+/T4FT
-Pz3A5jirNe4U8p6N/4xeydIDnlBL7JAZcpRR0NXZHXtAuHBua6GPhacKbf57TQj9
-c73te3oACnO8XprZSPuJ
-=KTfn
+iQIcBAEBCAAGBQJTRsC3AAoJEEKTMo6mOh1VfasP/0FF7jc/MRcjgPhQjYtF6Z/P
+Gxv6wOOGt/yDmpUAh139WA1D9aSOLJFw5XU+4i3ksSN0rCeu0EcWl02Lpd6Re2h1
+NsMAC/oBKUVJKnQlOFYmLY62TCNT/Zt7yziPRTaOT2tAPHd4C98WzUoWvZksFCk7
+Vik358bMCv3vwuDiFXqoUEEjLYIDXz61/0FTQfQh/TClszcJ4ark0pZM6vn5sx+y
+FQdfPf2idJn29vDj0jyPpyZP+C5vwTjCc0mv9KFl/bxjmTLFKiXhRnFSowzTKa5g
+uzBiuOz8LA0IZt+xOuMVP8GNh4OMc7XsorryRS6pPwfXsArq6V6CaAfgz67UmpzF
+lbEoCpEjOIphO/o2wMO6sBJkqeFPhYdRw/WQJNaqZvCun29O5yJ+BlHCZowt2i1T
+0/Aumngrz5SDttrwhvpkKFnlLtcOhAriq0YyEkZvYzjkIXP4tXR9nxp31Ps6ZXYc
+1iAsAgEuxITLKV/amgDrkb7yfUFTMbPnbJDBKYoKkHmgl47Bz7TD5+xdBdgcnvnK
+cexMEpqyuGrMqdu3Pr3pl3fxFPEKgLR1+PAcvCOTz0+twNSCpb+sayeQfgU8L9Vu
+pGLn5xXXtULhfu0EgA1Z3ZViBZKof0DFomcgiwhkff7kV8kgQT6j5DAQ0aKO3zhX
+/ZjRXzuGYtEQF1zdAwRH
+=1RFW
 -----END PGP SIGNATURE-----
 
---Pbx75SHwfRNxpuLFsrelQIUVUw9BrPG4v--
+--ccBXlIt2soEErnVWhD91DO3kuBhL2Ught--
