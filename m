@@ -1,10 +1,10 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Mon, 14 Apr 2014 16:03:23 +0200
-Message-Id: <1397484205-20905-5-git-send-email-antonio@meshcoding.com>
+Date: Mon, 14 Apr 2014 16:03:24 +0200
+Message-Id: <1397484205-20905-6-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1397484205-20905-1-git-send-email-antonio@meshcoding.com>
 References: <1397484205-20905-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 5/7] mac80211: minstrel - implement
+Subject: [B.A.T.M.A.N.] [PATCH 6/7] mac80211: minstrel_ht - implement
 	get_expected_throughput() API
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -25,40 +25,46 @@ From: Antonio Quartulli <antonio@open-mesh.com>
 Cc: Felix Fietkau <nbd@openwrt.org>
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- net/mac80211/rc80211_minstrel.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ net/mac80211/rc80211_minstrel_ht.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/net/mac80211/rc80211_minstrel.c b/net/mac80211/rc80211_minstrel.c
-index 26fd94f..cd40bc0 100644
---- a/net/mac80211/rc80211_minstrel.c
-+++ b/net/mac80211/rc80211_minstrel.c
-@@ -657,6 +657,18 @@ minstrel_free(void *priv)
- 	kfree(priv);
+diff --git a/net/mac80211/rc80211_minstrel_ht.c b/net/mac80211/rc80211_minstrel_ht.c
+index bccaf85..480f657 100644
+--- a/net/mac80211/rc80211_minstrel_ht.c
++++ b/net/mac80211/rc80211_minstrel_ht.c
+@@ -1031,6 +1031,24 @@ minstrel_ht_free(void *priv)
+ 	mac80211_minstrel.free(priv);
  }
  
 +static u32
-+minstrel_get_expected_throughput(void *priv, void *priv_sta,
-+				 struct ieee80211_supported_band *sband)
++minstrel_ht_get_expected_throughput(void *priv, void *priv_sta,
++				    struct ieee80211_supported_band *sband)
 +{
-+	struct minstrel_sta_info *mi = priv_sta;
-+	int idx = mi->max_tp_rate[0];
-+	u32 bitrate, ret;
++	struct minstrel_ht_sta_priv *msp = priv_sta;
++	struct minstrel_ht_sta *mi = &msp->ht;
++	int i, j;
 +
-+	bitrate = sband->bitrates[mi->r[idx].rix].bitrate;
-+	return bitrate * MINSTREL_TRUNC(mi->r[idx].probability * 1000) / 100;
++	if (!msp->is_ht)
++		return mac80211_minstrel.get_expected_throughput(priv, priv_sta,
++								 sband);
++
++	i = mi->max_tp_rate / MCS_GROUP_RATES;
++	j = mi->max_tp_rate % MCS_GROUP_RATES;
++
++	return mi->groups[i].rates[j].cur_tp;
 +}
 +
- const struct rate_control_ops mac80211_minstrel = {
- 	.name = "minstrel",
- 	.tx_status = minstrel_tx_status,
-@@ -670,6 +682,7 @@ const struct rate_control_ops mac80211_minstrel = {
- 	.add_sta_debugfs = minstrel_add_sta_debugfs,
- 	.remove_sta_debugfs = minstrel_remove_sta_debugfs,
+ static const struct rate_control_ops mac80211_minstrel_ht = {
+ 	.name = "minstrel_ht",
+ 	.tx_status = minstrel_ht_tx_status,
+@@ -1045,6 +1063,7 @@ static const struct rate_control_ops mac80211_minstrel_ht = {
+ 	.add_sta_debugfs = minstrel_ht_add_sta_debugfs,
+ 	.remove_sta_debugfs = minstrel_ht_remove_sta_debugfs,
  #endif
-+	.get_expected_throughput = minstrel_get_expected_throughput,
++	.get_expected_throughput = minstrel_ht_get_expected_throughput,
  };
  
- int __init
+ 
 -- 
 1.8.3.2
 
