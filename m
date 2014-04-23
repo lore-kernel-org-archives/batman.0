@@ -1,9 +1,9 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 24 Apr 2014 03:41:26 +0800
-Message-Id: <1398282086-3648-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: fix NULL pointer
-	dereferences
+Date: Thu, 24 Apr 2014 03:46:30 +0800
+Message-Id: <1398282390-4677-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix indirect hard_iface
+	NULL dereference
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,47 +18,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
+If hard_iface is NULL and goto out is made batadv_hardif_free_ref()
+doesn't check for NULL before dereferencing it to get to refcount.
+
 Reported-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
+ originator.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Changes from v1:
-- add next branch indication
-
- multicast.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/multicast.c b/multicast.c
-index 8c7ca81..96b66fd 100644
---- a/multicast.c
-+++ b/multicast.c
-@@ -415,7 +415,7 @@ batadv_mcast_forw_ipv4_node_get(struct batadv_priv *bat_priv)
- 	hlist_for_each_entry_rcu(tmp_orig_node,
- 				 &bat_priv->mcast.want_all_ipv4_list,
- 				 mcast_want_all_ipv4_node) {
--		if (!atomic_inc_not_zero(&orig_node->refcount))
-+		if (!atomic_inc_not_zero(&tmp_orig_node->refcount))
- 			continue;
+diff --git a/originator.c b/originator.c
+index aa2468b..35b42f8 100644
+--- a/originator.c
++++ b/originator.c
+@@ -1074,7 +1074,8 @@ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
+ 	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq, hard_iface);
  
- 		orig_node = tmp_orig_node;
-@@ -442,7 +442,7 @@ batadv_mcast_forw_ipv6_node_get(struct batadv_priv *bat_priv)
- 	hlist_for_each_entry_rcu(tmp_orig_node,
- 				 &bat_priv->mcast.want_all_ipv6_list,
- 				 mcast_want_all_ipv6_node) {
--		if (!atomic_inc_not_zero(&orig_node->refcount))
-+		if (!atomic_inc_not_zero(&tmp_orig_node->refcount))
- 			continue;
+ out:
+-	batadv_hardif_free_ref(hard_iface);
++	if (hard_iface)
++		batadv_hardif_free_ref(hard_iface);
+ 	return 0;
+ }
  
- 		orig_node = tmp_orig_node;
-@@ -493,7 +493,7 @@ batadv_mcast_forw_unsnoop_node_get(struct batadv_priv *bat_priv)
- 	hlist_for_each_entry_rcu(tmp_orig_node,
- 				 &bat_priv->mcast.want_all_unsnoopables_list,
- 				 mcast_want_all_unsnoopables_node) {
--		if (!atomic_inc_not_zero(&orig_node->refcount))
-+		if (!atomic_inc_not_zero(&tmp_orig_node->refcount))
- 			continue;
- 
- 		orig_node = tmp_orig_node;
 -- 
 2.0.0.rc0
 
