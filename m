@@ -1,17 +1,12 @@
-Return-Path: <linus.luessing@web.de>
-Date: Mon, 21 Apr 2014 12:42:57 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20140421104257.GQ5762@Linus-Debian>
-References: <1394568273-1117-1-git-send-email-linus.luessing@web.de>
- <1411989.q42HG6dQ0k@diderot> <20140421015821.GP5762@Linus-Debian>
- <1673142.EzxFvMW6vz@diderot>
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Wed, 23 Apr 2014 14:05:16 +0200
+Message-Id: <1398254716-22089-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <1673142.EzxFvMW6vz@diderot>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/2] batctl: add unicast/multicast
- address filter option for TT output
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix reference counting
+	imbalance while sending fragment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,29 +18,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>, Antonio Quartulli <antonio@open-mesh.com>
 
+From: Antonio Quartulli <antonio@open-mesh.com>
 
+In the new fragmentation code the batadv_frag_send_packet()
+function obtains a reference to the primary_if, but it does
+not release it upon return.
 
-On Mon, Apr 21, 2014 at 11:27:23AM +0800, Marek Lindner wrote:
-> On Monday 21 April 2014 03:58:21 Linus Lüssing wrote:
-> > Hm, was it? Can't find it - am I looking at the wrong places?
-> 
-> Where are you looking ? 
-> 
-> git show 6202831
-> 
-> 
+This reference imbalance prevents the primary_if (and then
+the related netdevice) to be properly released on shut down.
 
-git show 6202831 does indeed show it for me. However this one
-doesn't:
+Fix this by releasing the primary_if in batadv_frag_send_packet().
 
-$ git branch --contains 6202831
+Introduced by db56e4ecf5c2b179a0101138eacc2ec52b6ef45d
+("batman-adv: Fragment and send skbs larger than mtu")
 
-Also on http://git.open-mesh.org/batctl.git I don't seem to be
-able to find it, like:
+Cc: Martin Hundebøll <martin@hundeboll.net>
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
+ fragmentation.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-http://git.open-mesh.org/batctl.git?a=search&h=HEAD&st=commit&s=multicast+address+filter+option
+diff --git a/fragmentation.c b/fragmentation.c
+index 88df9b1..cc1cfd6 100644
+--- a/fragmentation.c
++++ b/fragmentation.c
+@@ -418,12 +418,13 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+ 			     struct batadv_neigh_node *neigh_node)
+ {
+ 	struct batadv_priv *bat_priv;
+-	struct batadv_hard_iface *primary_if;
++	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_frag_packet frag_header;
+ 	struct sk_buff *skb_fragment;
+ 	unsigned mtu = neigh_node->if_incoming->net_dev->mtu;
+ 	unsigned header_size = sizeof(frag_header);
+ 	unsigned max_fragment_size, max_packet_size;
++	bool ret = false;
+ 
+ 	/* To avoid merge and refragmentation at next-hops we never send
+ 	 * fragments larger than BATADV_FRAG_MAX_FRAG_SIZE
+@@ -483,7 +484,11 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+ 			   skb->len + ETH_HLEN);
+ 	batadv_send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
+ 
+-	return true;
++	ret = true;
++
+ out_err:
+-	return false;
++	if (primary_if)
++		batadv_hardif_free_ref(primary_if);
++
++	return ret;
+ }
+-- 
+1.8.3.2
 
-Cheers, Linus
