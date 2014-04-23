@@ -1,8 +1,9 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 24 Apr 2014 03:39:08 +0800
-Message-Id: <1398281948-3415-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix NULL pointer dereferences
+Date: Thu, 24 Apr 2014 03:41:26 +0800
+Message-Id: <1398282086-3648-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: fix NULL pointer
+	dereferences
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,6 +21,10 @@ Cc: Marek Lindner <mareklindner@neomailbox.ch>
 Reported-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
+
+Changes from v1:
+- add next branch indication
+
  multicast.c | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 
