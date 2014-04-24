@@ -1,14 +1,15 @@
-Return-Path: <dicht@operamail.com>
-Message-Id: <1398340673.9414.109890229.7C3D1C45@webmail.messagingengine.com>
-From: Thijs van Veen <dicht@operamail.com>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <5358FD91.8090107@meshcoding.com>
+Date: Thu, 24 Apr 2014 14:03:29 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain
-Date: Thu, 24 Apr 2014 13:57:53 +0200
-In-Reply-To: <201404241148.19217.sw@simonwunderlich.de>
-References: <5358CCA4.2050203@wirelesspt.net>
- <201404241148.19217.sw@simonwunderlich.de>
-Subject: Re: [B.A.T.M.A.N.] Batman-adv high TQ and Low throughput
+References: <1398282390-4677-1-git-send-email-mareklindner@neomailbox.ch>
+In-Reply-To: <1398282390-4677-1-git-send-email-mareklindner@neomailbox.ch>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="KJCccHGnFKAIXb2c7kA3Lx3ea89rcBiq5"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix indirect
+ hard_iface NULL dereference
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,95 +21,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, cmsv@wirelesspt.net
-Cc: openwrt-users <openwrt-users@lists.openwrt.org>, Battlemesh Ninux <battlemesh@ml.ninux.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-Hi,
-
-I would like to add some additional insights I gained while working on
-my bachelor thesis (which of course used batman :D ).
-
-The dBm you see is the power at which packets are received (Prx).
-The value of Prx depends on a lot of factors, primarily distance and
-interferrence caused by re/deflections [1]. 
-There is a minimum Prx at which the signal must arrive in order for your
-Wi-Fi module to be able to see it as a proper signal rather than noise. 
-This minimum, combined with (thermal) noise (N) gives you a
-signal-to-noise ratio, which should at least be about 15 dB (SNR = Prx -
-N >= 15).
-N is usually somewhere around -100 dBm, meaning that a Prx of about -85
-dBm is generally the minimum you need for succesful transmissions.
-Note that these numbers don't take into account any antennae you might
-be using, these are only really relevant for calculating the Prx.
-A higher number means the signal is clearer, but that's really all it
-means.
-Because the Prx can only be determined if a packet arrives, the number
-in itself is meaningless without a time reference, which in turn would
-only indicate when the last packet was received.
-
-Like Simon said, the transmission quality batman-adv returns is based on
-the probability of packets arriving properly on the other side of the
-Wi-Fi link.
-Batman-adv uses counters to determine how many packets were lost and as
-a result gives a more informative view of how well the link behaves.
-Because the counters are based on packet reception, this means the Prx
-also has to be above the minimum.
-
-In summary: 
-high dBm = the things that are received, are received very clearly
-high TQ = nearly everything you send is received.
-High chance of proper reception => less retransmissions => higher
-throughput => happy you.
-
-[1]: http://en.wikipedia.org/wiki/Path_loss
-
--- 
-  Thijs van Veen
-  dicht@operamail.com
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--KJCccHGnFKAIXb2c7kA3Lx3ea89rcBiq5
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
 
-On Thu, Apr 24, 2014, at 11:48, Simon Wunderlich wrote:
-> > Recently i have experienced something quite usual to my experience and
-> > that was not happening previously in the same scenario where it is
-> > happening now.
-> > 
-> > Here is the example:
-> > 2 nodes at with adhoc at 2.4ghz at a distance of 415 meters
-> > one uses an omni 15 dbi antenna at 18dbi and another 24 dbi grid at 16 dbi.
-> > 
-> > This link was previously providing up to 21 mbit being 17 mbit a the
-> > lowest. Batman-adv TQ value was always around 230 being many times above
-> > 250.
-> > 
-> > However this has recently changed the same link with 230~250 TQ and the
-> > same txpower is now outputting 1.93 Mbits/sec
-> > 
-> > I have used iperf for bandwidth tests. Batman-adv version is 2013.4.
-> > Although i have considered several types of scenarios that can be
-> > causing this issue i have also tested against some which leaves me
-> > puzzled in regards to the presented TQ quality and dBm values as the
-> > nodes dBm are sometimes bad (ie: -80 ~ -90)
-> > 
-> > One of the main questions is: shouldn't batman-adv TQ reflect or be
-> > influenced by dBm values ? How come with -90 dBm i get batman-adv to
-> > show me 230 TQ ?
-> 
-> The current implementation in batman-adv counts broadcast packets to
-> compute 
-> the TQ. Therefore this number reflects (more or less) the transmit
-> success 
-> probability on whatever wifi broadcast modulation rate you have
-> configured 
-> (default the lowest, e.g. 1M in 2.4 GHz). A common tweak is to set the 
-> broadcast rate (also called multicast rate) to something higher, e.g. 18M
-> or 
-> 36M, to get a better analysis on these modulation rates. This should also
-> help 
-> in your scenario, but might affect the range of your batman-adv network.
-> 
-> Cheers,
->     Simon
 
--- 
-http://www.fastmail.fm - Choose from over 50 domains or use your own
+On 23/04/14 21:46, Marek Lindner wrote:
+> If hard_iface is NULL and goto out is made batadv_hardif_free_ref()
+> doesn't check for NULL before dereferencing it to get to refcount.
+>=20
+> Reported-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 
+ACK for the change, but shouldn't we have an Introduced-by in each
+patch? Later I will change it to point to the "proper" patch before
+sending these changes to David.
+
+Cheers,
+
+
+
+--=20
+Antonio Quartulli
+
+
+--KJCccHGnFKAIXb2c7kA3Lx3ea89rcBiq5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBCAAGBQJTWP2VAAoJEEKTMo6mOh1VuUsP/jIxOTMFRQC7R1fl0c+THNtD
+Jdz4nzZuJLieN4hJI+kqJdVswcTr5Z8NlXPTw65xCXU6aTvdDTEvkDj/KHxoNqPL
+1MDsZVxh8lnRVTp+mqi0cXFVx0T1zxs61cgP0AZov5/PkcxpDIHetcuf9/P3BgpK
+BJqzgHkEG9B/ix9jbmkvw7FCvHMR6c1L99nKo8gv/xu8WoUrZmPL0PiW+e2CJR3O
+fwaWTn/Rtg91LVxn44guuukWppoM2fGYItx5/8J85vK+vOpH3flO/Y2Tpocz1p0B
+1MaYllqcVHfqzCvOJV+WcDcEGhw58p6dAemIZEJ6OGat4eO0zyosuQiLJIvkcOBl
+51Qvy50se9if2TvWvXVthrSeDDZg/H5MvcEx+RFKsB8sznrPir/FiqfdfDxNVHKY
+7BRCG8nmV7IH+P2/+1WwxQrfFmYQmN3IaXKSUDUCyR8DJnGNLVsm7H/uv5d98YWp
+eoTTn5leWq7GdUkcvIHHVQWxYHDdySSAXbpqppJcEFUCcCkH+xC4qGps+n1o1jU9
+zq3c55RGbJ5AE7dqJmxiecAf5bfSHoU7VCBnn/pD5lR4hhTlrCO2li7fCMHl+uT3
+Ds7/iPReaTLNsRyfMySYVqdz3+9OPQt4DRz7e+2IJ6CoG/HYGeQpJHewgnLbL3Kt
+tZfKAECm6Tft8Swn9h7D
+=je20
+-----END PGP SIGNATURE-----
+
+--KJCccHGnFKAIXb2c7kA3Lx3ea89rcBiq5--
