@@ -1,14 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 24 Apr 2014 11:48:19 +0200
-References: <5358CCA4.2050203@wirelesspt.net>
-In-Reply-To: <5358CCA4.2050203@wirelesspt.net>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <5358FCAA.1050902@meshcoding.com>
+Date: Thu, 24 Apr 2014 13:59:38 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201404241148.19217.sw@simonwunderlich.de>
-Subject: Re: [B.A.T.M.A.N.] Batman-adv high TQ and Low throughput
+References: <1398281948-3415-1-git-send-email-mareklindner@neomailbox.ch>
+In-Reply-To: <1398281948-3415-1-git-send-email-mareklindner@neomailbox.ch>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="TgV0qoqD1IpPkv8JEJEm33fA17UEWhHCr"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix NULL pointer dereferences
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,41 +20,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, cmsv@wirelesspt.net
-Cc: openwrt-users <openwrt-users@lists.openwrt.org>, Battlemesh Ninux <battlemesh@ml.ninux.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-> Recently i have experienced something quite usual to my experience and
-> that was not happening previously in the same scenario where it is
-> happening now.
-> 
-> Here is the example:
-> 2 nodes at with adhoc at 2.4ghz at a distance of 415 meters
-> one uses an omni 15 dbi antenna at 18dbi and another 24 dbi grid at 16 dbi.
-> 
-> This link was previously providing up to 21 mbit being 17 mbit a the
-> lowest. Batman-adv TQ value was always around 230 being many times above
-> 250.
-> 
-> However this has recently changed the same link with 230~250 TQ and the
-> same txpower is now outputting 1.93 Mbits/sec
-> 
-> I have used iperf for bandwidth tests. Batman-adv version is 2013.4.
-> Although i have considered several types of scenarios that can be
-> causing this issue i have also tested against some which leaves me
-> puzzled in regards to the presented TQ quality and dBm values as the
-> nodes dBm are sometimes bad (ie: -80 ~ -90)
-> 
-> One of the main questions is: shouldn't batman-adv TQ reflect or be
-> influenced by dBm values ? How come with -90 dBm i get batman-adv to
-> show me 230 TQ ?
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--TgV0qoqD1IpPkv8JEJEm33fA17UEWhHCr
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-The current implementation in batman-adv counts broadcast packets to compute 
-the TQ. Therefore this number reflects (more or less) the transmit success 
-probability on whatever wifi broadcast modulation rate you have configured 
-(default the lowest, e.g. 1M in 2.4 GHz). A common tweak is to set the 
-broadcast rate (also called multicast rate) to something higher, e.g. 18M or 
-36M, to get a better analysis on these modulation rates. This should also help 
-in your scenario, but might affect the range of your batman-adv network.
 
-Cheers,
-    Simon
+On 23/04/14 21:39, Marek Lindner wrote:
+> Reported-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+
+Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+
+
+--=20
+Antonio Quartulli
+
+
+--TgV0qoqD1IpPkv8JEJEm33fA17UEWhHCr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBCAAGBQJTWPyyAAoJEEKTMo6mOh1VYRAQAKJbTGmOM6F0fx3LBPKQBPK8
+XfoZkoQjtnC5UaRXmjrns4twaupv+s3gZf6RbucnnFiJO+wdeznzfP6myeJjkMJQ
+uz2cbAkw4MxVr9bln8JQx3vcNYIJJ+LWm3GQ80jYnH5XoWe68Fcg1WgPSNJjrN5Z
+3yR/F27Ddg9O+jicOELR9uxMkUdXS8HD5MRdBnwtYRbGcfsyPjsJ7ZBdjLVuEkDX
+YSLVQpyXc7+sAD8J3wIX8nujtOjdmQtRStT4W+qbpCMTco2ZJ5+04Us2AdBLHKJP
+77y/TV3AXmL2ulEeaz0vwHGvEk6Uk0hU9tlbYRBeTea/UJbGJJ/q4G+jVMvI4CA0
+oEWAEchxbng69vgvS7VozwYb5MU4ykEfnW6lUYNWaYqvdarvpOpqjqaWcovl6nNn
+TjbpTSPkZ7lxea0UoTYbyia932nWBZ7GTFSaMdLP7EOg0vaygOGFtp7qRa33PzY6
+1OLTXnDbKPbvwFwlO/eAa0xLbtFd0lIdWh1j8x1l2xA3/5nVnWWDEOcnDyUl9bsy
+l1PLQMjMDaLi4VAWxc/ctlzR0WaW/NX3+sUGnH3v/WhFcu0a2EAICj7IiNcGxkX2
+ojG8rEz4TGSUV4tXf+0SaOP81trfkg/Mxjyf04fbFi3fXMSen3G8sNWPBvjhJcoY
++y+SoqKRj9lpxO0CEeAW
+=yRTf
+-----END PGP SIGNATURE-----
+
+--TgV0qoqD1IpPkv8JEJEm33fA17UEWhHCr--
