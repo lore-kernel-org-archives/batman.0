@@ -1,10 +1,12 @@
 Return-Path: <cmsv@wirelesspt.net>
-Message-ID: <5358CCA4.2050203@wirelesspt.net>
-Date: Thu, 24 Apr 2014 04:34:44 -0400
+Message-ID: <5358D61B.9090706@wirelesspt.net>
+Date: Thu, 24 Apr 2014 05:15:07 -0400
 From: cmsv <cmsv@wirelesspt.net>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------090104060700090201060400"
-Subject: [B.A.T.M.A.N.] Batman-adv high TQ and Low throughput
+References: <5358CC9E.3040506@amideeptech.com>
+In-Reply-To: <5358CC9E.3040506@amideeptech.com>
+Content-Type: multipart/mixed; boundary="------------090709060207050506060209"
+Subject: Re: [B.A.T.M.A.N.] MTU issue
 Reply-To: cmsv@wirelesspt.net,
  The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -17,64 +19,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: openwrt-users <openwrt-users@lists.openwrt.org>, Battlemesh Ninux <battlemesh@ml.ninux.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 This is a multi-part message in MIME format.
---------------090104060700090201060400
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+--------------090709060207050506060209
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Recently i have experienced something quite usual to my experience and
-that was not happening previously in the same scenario where it is
-happening now.
+https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2014-January/011276.html
 
-Here is the example:
-2 nodes at with adhoc at 2.4ghz at a distance of 415 meters
-one uses an omni 15 dbi antenna at 18dbi and another 24 dbi grid at 16 dbi.
+On 04/24/2014 04:34 AM, Saurabh Chakrabarti wrote:
+> Following the Troubleshooting guide, I have changed the MTU for bat0
+> interface to 1524. I'm getting this message in my syslog:
+> 
+> Jan  1 00:00:53 localhost kernel: [   26.899762] batman_adv: bat0: The
+> MTU of interface wlan0 is too small (1524) to handle the transport of
+> batman-adv packets. Packets going over this interface will be fragmented
+> on layer2 which could impact the performance. Setting the MTU to 1560
+> would solve the problem.
+> 
+> I'm not seeing any apparent performance issues, but do I really need to
+> make the MTU 1560?
+> 
+> -saurabh
+> 
 
-This link was previously providing up to 21 mbit being 17 mbit a the
-lowest. Batman-adv TQ value was always around 230 being many times above
-250.
-
-However this has recently changed the same link with 230~250 TQ and the
-same txpower is now outputting 1.93 Mbits/sec
-
-I have used iperf for bandwidth tests. Batman-adv version is 2013.4.
-Although i have considered several types of scenarios that can be
-causing this issue i have also tested against some which leaves me
-puzzled in regards to the presented TQ quality and dBm values as the
-nodes dBm are sometimes bad (ie: -80 ~ -90)
-
-One of the main questions is: shouldn't batman-adv TQ reflect or be
-influenced by dBm values ? How come with -90 dBm i get batman-adv to
-show me 230 TQ ?
-
-Also any feedback based on your experience regarding this type of
-scenario is welcome. This situation happened overnight without any
-access point new configurations or physical setup changes.
-
-
-
-
-
-
--- 
-
-
-Site: http://wirelesspt.net
-Mesh: http://tinyurl.com/wirelesspt
-Admin: http://wirelesspt.net/wiki/Cmsv
-Twitter: http://twitter.com/wirelesspt
-Youtube: https://youtube.com/wirelesspt
-Facebook: https://www.facebook.com/wirelesspt
-Suporte técnico via sms: 91 19 11 798
-Donativos/Paypal: http://tinyurl.com/doar-verba
-Chave publica PGP/SSH: http://wirelesspt.net/arquivos/pk
-Email ao abrigo de: https://creativecommons.org/licenses/by-nc-sa/3.0/pt/
-
-
---------------090104060700090201060400
+--------------090709060207050506060209
 Content-Type: application/pgp-keys;
  name="0x15C4B382.asc"
 Content-Transfer-Encoding: 7bit
@@ -643,4 +613,4 @@ soO/AqPQd/chuSTbmpUFzJ7Z71XBs5PUVKa+vZkOSaoD2w==
 =OEVJ
 -----END PGP PUBLIC KEY BLOCK-----
 
---------------090104060700090201060400--
+--------------090709060207050506060209--
