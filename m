@@ -1,9 +1,11 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 24 Apr 2014 03:46:30 +0800
-Message-Id: <1398282390-4677-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix indirect hard_iface
-	NULL dereference
+Return-Path: <saurabh.chakrabarti@amideeptech.com>
+Message-ID: <5358CC9E.3040506@amideeptech.com>
+Date: Thu, 24 Apr 2014 14:04:38 +0530
+From: Saurabh Chakrabarti <saurabh.chakrabarti@amideeptech.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] MTU issue
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,31 +18,17 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-If hard_iface is NULL and goto out is made batadv_hardif_free_ref()
-doesn't check for NULL before dereferencing it to get to refcount.
+Following the Troubleshooting guide, I have changed the MTU for bat0 
+interface to 1524. I'm getting this message in my syslog:
 
-Reported-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
- originator.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Jan  1 00:00:53 localhost kernel: [   26.899762] batman_adv: bat0: The 
+MTU of interface wlan0 is too small (1524) to handle the transport of 
+batman-adv packets. Packets going over this interface will be fragmented 
+on layer2 which could impact the performance. Setting the MTU to 1560 
+would solve the problem.
 
-diff --git a/originator.c b/originator.c
-index aa2468b..35b42f8 100644
---- a/originator.c
-+++ b/originator.c
-@@ -1074,7 +1074,8 @@ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
- 	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq, hard_iface);
- 
- out:
--	batadv_hardif_free_ref(hard_iface);
-+	if (hard_iface)
-+		batadv_hardif_free_ref(hard_iface);
- 	return 0;
- }
- 
--- 
-2.0.0.rc0
+I'm not seeing any apparent performance issues, but do I really need to 
+make the MTU 1560?
 
+-saurabh
