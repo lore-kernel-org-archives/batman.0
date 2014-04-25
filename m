@@ -1,14 +1,15 @@
 Return-Path: <johannes@sipsolutions.net>
-Message-ID: <1398440652.4152.25.camel@jlt4.sipsolutions.net>
+Message-ID: <1398440716.4152.27.camel@jlt4.sipsolutions.net>
 From: Johannes Berg <johannes@sipsolutions.net>
-Date: Fri, 25 Apr 2014 17:44:12 +0200
-In-Reply-To: <1397484205-20905-1-git-send-email-antonio@meshcoding.com>
+Date: Fri, 25 Apr 2014 17:45:16 +0200
+In-Reply-To: <1397484205-20905-3-git-send-email-antonio@meshcoding.com>
 References: <1397484205-20905-1-git-send-email-antonio@meshcoding.com>
+ <1397484205-20905-3-git-send-email-antonio@meshcoding.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/7] cfg80211: export expected throughput
- through get_station()
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/7] mac80211: add new RC API to retrieve
+ expected throughput
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,29 +27,17 @@ Cc: devel@lists.open80211s.org, b.a.t.m.a.n@lists.open-mesh.org, linux-wireless@
 On Mon, 2014-04-14 at 16:03 +0200, Antonio Quartulli wrote:
 > From: Antonio Quartulli <antonio@open-mesh.com>
 > 
-> Users may need information about the expected throughput
+> In order to make mac80211 export the expected throughput,
+> a new API which extracts such information from any mac80211
+> SW RC algorithm is needed.
+> Therefore add the new get_expected_throughput() member
+> to the rate_control_ops structure.
+> 
+> The exported value is expressed in Mbps/100. Such unit has
+> been chosen because it is the highest precision that
+> MinstrelHT can return.
 
-I think this "expected throughput" should be a bit clarified.
-
-Are you talking about "expected PHY rate" or rather "expected (payload)
-throughput"?
-
-> towards a given peer computed by the RC algorithm.
-> Export such value in Mbps/100 through the get_station() API.
-
-"units of 10Kbps" might be a better description :-)
-
-> This unit has been chosen because it is the same of the
-> throughput returned by MinstrelHT.
-
-Since it's unlikely we'll ever reach the limit of a u32, maybe just
-multiply by 10 to get the nicer Kbps?
-
-> + * @expected_throughput: expected throughput in Mbps/100 reported by the RC
-> + *	algorithm towards this station. The unit of this value has been chosen
-> + *	because it is the same of the throughput returned by MinstrelHT
-
-I think the rationale shouldn't be here now.
+Same as in patch 2 - and realistically 2/3/4 could just be squashed.
 
 johannes
 
