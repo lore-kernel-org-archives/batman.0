@@ -1,8 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri,  2 May 2014 00:16:05 +0200
-Message-Id: <1398982565-21171-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: increase orig refcount
+Date: Fri,  2 May 2014 01:35:13 +0200
+Message-Id: <1398987313-11934-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: increase orig refcount
 	when storing ref in gw_node
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -31,11 +31,15 @@ and decreasing it on gw_node free.
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- gateway_client.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+
+Change since v1:
+- properly release orig_node in case of gw_node allocation failure
+
+ gateway_client.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
 diff --git a/gateway_client.c b/gateway_client.c
-index d7fafc1..cfaa2fc 100644
+index d7fafc1..d5a40ab 100644
 --- a/gateway_client.c
 +++ b/gateway_client.c
 @@ -42,8 +42,10 @@
@@ -50,7 +54,7 @@ index d7fafc1..cfaa2fc 100644
  }
  
  static struct batadv_gw_node *
-@@ -406,6 +408,9 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
+@@ -406,9 +408,14 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
  	if (gateway->bandwidth_down == 0)
  		return;
  
@@ -58,8 +62,14 @@ index d7fafc1..cfaa2fc 100644
 +		return;
 +
  	gw_node = kzalloc(sizeof(*gw_node), GFP_ATOMIC);
- 	if (!gw_node)
+-	if (!gw_node)
++	if (!gw_node) {
++		batadv_orig_node_free_ref(orig_node);
  		return;
++	}
+ 
+ 	INIT_HLIST_NODE(&gw_node->list);
+ 	gw_node->orig_node = orig_node;
 -- 
 1.8.3.2
 
