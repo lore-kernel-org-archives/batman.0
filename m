@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 02 May 2014 13:06:27 +0800
-Message-ID: <6095777.gs8bG3sZPE@diderot>
-In-Reply-To: <5358FD91.8090107@meshcoding.com>
-References: <1398282390-4677-1-git-send-email-mareklindner@neomailbox.ch>
- <5358FD91.8090107@meshcoding.com>
+Date: Fri, 02 May 2014 13:11:53 +0800
+Message-ID: <2028998.VT1DVKEpIA@diderot>
+In-Reply-To: <1398282086-3648-1-git-send-email-mareklindner@neomailbox.ch>
+References: <1398282086-3648-1-git-send-email-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2031907.zqZ8vakE8a";
+Content-Type: multipart/signed; boundary="nextPart25920684.pQBb6b2ZA1";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix indirect
-	hard_iface NULL dereference
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: fix NULL pointer
+	dereferences
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,32 +20,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
+To: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
 
 
---nextPart2031907.zqZ8vakE8a
+--nextPart25920684.pQBb6b2ZA1
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Thursday 24 April 2014 14:03:29 Antonio Quartulli wrote:
-> On 23/04/14 21:46, Marek Lindner wrote:
-> > If hard_iface is NULL and goto out is made batadv_hardif_free_ref()
-> > doesn't check for NULL before dereferencing it to get to refcount.
-> > 
-> > Reported-by: Sven Eckelmann <sven@narfation.org>
-> > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+On Thursday 24 April 2014 03:41:26 Marek Lindner wrote:
+> Reported-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> ---
 > 
-> ACK for the change, but shouldn't we have an Introduced-by in each
-> patch? Later I will change it to point to the "proper" patch before
-> sending these changes to David.
+> Changes from v1:
+> - add next branch indication
+> 
+>  multicast.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 
-Applied in revision 2ac2c94 (with Introduced-by).
+Applied in revision be45ab5.
 
 Regards,
 Marek
 
---nextPart2031907.zqZ8vakE8a
+--nextPart25920684.pQBb6b2ZA1
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -54,14 +51,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTYyfXAAoJEFNVTo/uthzA/vMIAIZj0N9CEic8IKtw3ITwBQLZ
-HLTDK9MdvWPWBWbXbO9BpgWvwDj7SxHpVZusw36Fce7zmeZ7eUk+QMHVOh40BgLj
-nuJpIT9gujjfWt/Wbf82hngzDzahE9fJmq9XrkOGvTFYHKKjcsEsp9VbaonOSEy2
-tzlP7RLgV43LIlr7B3nl8LkSYWnrgVrRorrE81s5nSXgZIUF03PG/69RELLqcovr
-oWh4wewm9kBnJnVst8YJze6jBDjDUw2O6rVjFC0ssmRvJLtE4bf36JCi54ZdSgf2
-KOu8GixS8eIsqZyOfNquDI0fC/mE1Tz5QPB85EzvsWTMRp2fyTiV4PZzlyB+no0=
-=cTcq
+iQEcBAABAgAGBQJTYykZAAoJEFNVTo/uthzAg4gH/3XxXEbpA48rMt/3sUmrf2Cb
+A6nbb6gxMwEDKGmo79izINo/tC+CcueNno9wudT7Zo2wfGzxgXOMLXh+iZ7wJGMJ
+lJ9v+8OjsG5WNUxgZvq6eMh36wpSFru4U4W0/dukKwQ2UM6eVuEoCQQ7s2PM1YFu
+3yMnNxkQG9778XiSaZ7Dp2c61P/ha2nzePA/w9K6fajeecZMhRM0Euj9T9o8DEGY
+1GScKQUDd8Hqe2/O2oT7tqcBB5qdImm9QBTnQew2hmB/IwM0+Hacxt9U4fET3sOx
+JSJFBDPCMzj00wXXcgULt2G3/pbKkpEjajJKPD/3H5eLZK6YxSXYnKtHqjyf3Tg=
+=IQ32
 -----END PGP SIGNATURE-----
 
---nextPart2031907.zqZ8vakE8a--
+--nextPart25920684.pQBb6b2ZA1--
 
