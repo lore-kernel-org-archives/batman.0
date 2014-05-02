@@ -1,14 +1,15 @@
 Return-Path: <linus.luessing@web.de>
-Date: Fri, 2 May 2014 06:50:27 +0200
+Date: Fri, 2 May 2014 06:52:55 +0200
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20140502045026.GS4593@Linus-Debian>
-References: <1398281948-3415-1-git-send-email-mareklindner@neomailbox.ch>
+Message-ID: <20140502045255.GT4593@Linus-Debian>
+References: <1398282086-3648-1-git-send-email-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <1398281948-3415-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix NULL pointer dereferences
+In-Reply-To: <1398282086-3648-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: fix NULL pointer
+ dereferences
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,10 +26,14 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 
 
-On Thu, Apr 24, 2014 at 03:39:08AM +0800, Marek Lindner wrote:
+On Thu, Apr 24, 2014 at 03:41:26AM +0800, Marek Lindner wrote:
 > Reported-by: Sven Eckelmann <sven@narfation.org>
 > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 > ---
+> 
+> Changes from v1:
+> - add next branch indication
+> 
 >  multicast.c | 6 +++---
 >  1 file changed, 3 insertions(+), 3 deletions(-)
 > 
