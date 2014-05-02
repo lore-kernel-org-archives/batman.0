@@ -1,15 +1,15 @@
-Return-Path: <linus.luessing@web.de>
-Date: Fri, 2 May 2014 06:52:55 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20140502045255.GT4593@Linus-Debian>
-References: <1398282086-3648-1-git-send-email-mareklindner@neomailbox.ch>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Fri, 02 May 2014 13:06:27 +0800
+Message-ID: <6095777.gs8bG3sZPE@diderot>
+In-Reply-To: <5358FD91.8090107@meshcoding.com>
+References: <1398282390-4677-1-git-send-email-mareklindner@neomailbox.ch>
+ <5358FD91.8090107@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1398282086-3648-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next] batman-adv: fix NULL pointer
- dereferences
+Content-Type: multipart/signed; boundary="nextPart2031907.zqZ8vakE8a";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix indirect
+	hard_iface NULL dereference
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,53 +21,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 
+--nextPart2031907.zqZ8vakE8a
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Thu, Apr 24, 2014 at 03:41:26AM +0800, Marek Lindner wrote:
-> Reported-by: Sven Eckelmann <sven@narfation.org>
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> ---
+On Thursday 24 April 2014 14:03:29 Antonio Quartulli wrote:
+> On 23/04/14 21:46, Marek Lindner wrote:
+> > If hard_iface is NULL and goto out is made batadv_hardif_free_ref()
+> > doesn't check for NULL before dereferencing it to get to refcount.
+> > 
+> > Reported-by: Sven Eckelmann <sven@narfation.org>
+> > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 > 
-> Changes from v1:
-> - add next branch indication
-> 
->  multicast.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/multicast.c b/multicast.c
-> index 8c7ca81..96b66fd 100644
-> --- a/multicast.c
-> +++ b/multicast.c
-> @@ -415,7 +415,7 @@ batadv_mcast_forw_ipv4_node_get(struct batadv_priv *bat_priv)
->  	hlist_for_each_entry_rcu(tmp_orig_node,
->  				 &bat_priv->mcast.want_all_ipv4_list,
->  				 mcast_want_all_ipv4_node) {
-> -		if (!atomic_inc_not_zero(&orig_node->refcount))
-> +		if (!atomic_inc_not_zero(&tmp_orig_node->refcount))
->  			continue;
->  
->  		orig_node = tmp_orig_node;
-> @@ -442,7 +442,7 @@ batadv_mcast_forw_ipv6_node_get(struct batadv_priv *bat_priv)
->  	hlist_for_each_entry_rcu(tmp_orig_node,
->  				 &bat_priv->mcast.want_all_ipv6_list,
->  				 mcast_want_all_ipv6_node) {
-> -		if (!atomic_inc_not_zero(&orig_node->refcount))
-> +		if (!atomic_inc_not_zero(&tmp_orig_node->refcount))
->  			continue;
->  
->  		orig_node = tmp_orig_node;
-> @@ -493,7 +493,7 @@ batadv_mcast_forw_unsnoop_node_get(struct batadv_priv *bat_priv)
->  	hlist_for_each_entry_rcu(tmp_orig_node,
->  				 &bat_priv->mcast.want_all_unsnoopables_list,
->  				 mcast_want_all_unsnoopables_node) {
-> -		if (!atomic_inc_not_zero(&orig_node->refcount))
-> +		if (!atomic_inc_not_zero(&tmp_orig_node->refcount))
->  			continue;
->  
->  		orig_node = tmp_orig_node;
-> -- 
-> 2.0.0.rc0
-> 
+> ACK for the change, but shouldn't we have an Introduced-by in each
+> patch? Later I will change it to point to the "proper" patch before
+> sending these changes to David.
+
+Applied in revision 2ac2c94 (with Introduced-by).
+
+Regards,
+Marek
+
+--nextPart2031907.zqZ8vakE8a
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJTYyfXAAoJEFNVTo/uthzA/vMIAIZj0N9CEic8IKtw3ITwBQLZ
+HLTDK9MdvWPWBWbXbO9BpgWvwDj7SxHpVZusw36Fce7zmeZ7eUk+QMHVOh40BgLj
+nuJpIT9gujjfWt/Wbf82hngzDzahE9fJmq9XrkOGvTFYHKKjcsEsp9VbaonOSEy2
+tzlP7RLgV43LIlr7B3nl8LkSYWnrgVrRorrE81s5nSXgZIUF03PG/69RELLqcovr
+oWh4wewm9kBnJnVst8YJze6jBDjDUw2O6rVjFC0ssmRvJLtE4bf36JCi54ZdSgf2
+KOu8GixS8eIsqZyOfNquDI0fC/mE1Tz5QPB85EzvsWTMRp2fyTiV4PZzlyB+no0=
+=cTcq
+-----END PGP SIGNATURE-----
+
+--nextPart2031907.zqZ8vakE8a--
+
