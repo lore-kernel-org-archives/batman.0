@@ -1,15 +1,17 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 02 May 2014 13:15:52 +0800
-Message-ID: <2040685.FpVyDFGQG7@diderot>
-In-Reply-To: <2f36d18abb7317500c72ae4acf388e9f@hundeboll.net>
-References: <1398254716-22089-1-git-send-email-antonio@meshcoding.com>
- <2f36d18abb7317500c72ae4acf388e9f@hundeboll.net>
+Return-Path: <linus.luessing@web.de>
+Date: Fri, 2 May 2014 07:34:25 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20140502053425.GU4593@Linus-Debian>
+References: <1394568273-1117-1-git-send-email-linus.luessing@web.de>
+ <1411989.q42HG6dQ0k@diderot> <20140421015821.GP5762@Linus-Debian>
+ <1673142.EzxFvMW6vz@diderot> <20140421104257.GQ5762@Linus-Debian>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1731820.FIjhaXYUxs";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix reference counting
-	imbalance while sending fragment
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20140421104257.GQ5762@Linus-Debian>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/2] batctl: add unicast/multicast
+ address filter option for TT output
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,55 +24,33 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: martin@hundeboll.net, Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <antonio@meshcoding.com>
 
+On Mon, Apr 21, 2014 at 12:42:57PM +0200, Linus Lüssing wrote:
+> 
+> 
+> On Mon, Apr 21, 2014 at 11:27:23AM +0800, Marek Lindner wrote:
+> > On Monday 21 April 2014 03:58:21 Linus Lüssing wrote:
+> > > Hm, was it? Can't find it - am I looking at the wrong places?
+> > 
+> > Where are you looking ? 
+> > 
+> > git show 6202831
+> > 
+> > 
+> 
+> git show 6202831 does indeed show it for me. However this one
+> doesn't:
+> 
+> $ git branch --contains 6202831
+> 
+> Also on http://git.open-mesh.org/batctl.git I don't seem to be
+> able to find it, like:
+> 
+> http://git.open-mesh.org/batctl.git?a=search&h=HEAD&st=commit&s=multicast+address+filter+option
+> 
+> Cheers, Linus
 
---nextPart1731820.FIjhaXYUxs
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
-
-On Wednesday 23 April 2014 09:40:05 martin@hundeboll.net wrote:
-> On 2014-04-23 05:05, Antonio Quartulli wrote:
-> > From: Antonio Quartulli <antonio@open-mesh.com>
-> >
-> > In the new fragmentation code the batadv_frag_send_packet()
-> > function obtains a reference to the primary_if, but it does
-> > not release it upon return.
-> >
-> > This reference imbalance prevents the primary_if (and then
-> > the related netdevice) to be properly released on shut down.
-> >
-> > Fix this by releasing the primary_if in batadv_frag_send_packet().
-> >
-> > Introduced by db56e4ecf5c2b179a0101138eacc2ec52b6ef45d
-> > ("batman-adv: Fragment and send skbs larger than mtu")
-> >
-> > Cc: Martin Hundeb=F8ll <martin@hundeboll.net>
-> > Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
->=20
-> Acked-by: Martin Hundeb=F8ll <martin@hundeboll.net>
-
-Applied in revision 113f264.
-
-Thanks,
-Marek
-
---nextPart1731820.FIjhaXYUxs
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJTYyoIAAoJEFNVTo/uthzA2jAH/3SO6o+g/7MxCPW6MTx4nCsG
-13NkO6AV6zru3jPAmWS/o0CsFFdHV++ud/tO/8wwN3qIqJvEv+UzbXa/A7wMJrzO
-Cu41HHCLpDk+XfwFPBKJ2O76nRWLrvG9gjht5l1UOLWqwmIxh7LiOmzOgmVDTBmW
-yVpFCPbRQc05kFiPUNjeK1kvxVxm2ayk65ywSouN+XJDpFtLsL1Z5EDxj9WiSVZh
-ToGyWzgZ/W+B3sUxZbtSBoZV9XPROqsDEuMV0L5rNjQ1HNDkvNGlENpqI7u1sLEU
-XY4WmSRxPYuUTDgT5TTMMR+6soTR9OhvybBkPHxzXyXZoZ0q0dxv0fZL8+SSnXM=
-=bgkY
------END PGP SIGNATURE-----
-
---nextPart1731820.FIjhaXYUxs--
-
+Doing a clean git clone: The change is there, but - git blame/diff
+tell me it's actually in 6a0489b4. Did this patch accidentally
+get squashed into 6a0489b4 ("batctl: add switch for setting
+multicast_mode")?
