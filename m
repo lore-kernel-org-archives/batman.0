@@ -1,18 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <5364ABB1.6050109@meshcoding.com>
-Date: Sat, 03 May 2014 10:41:21 +0200
 From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
-References: <CAPXi+9-j-u6YbvhMjhLPxVOcdYPd0HVThH=SH7PacvakeYenDw@mail.gmail.com>
- <533CF7F5.1000801@meshcoding.com>
- <CAPXi+9_ovpYZMDreNBFCffakiCMWnzHHC_1MaOxYy5A_veqJ7w@mail.gmail.com>
- <CAPXi+9-4y3wG3=0OoL8hbWQAO6Gummaa4tM=cKMapNQRjxiO9w@mail.gmail.com>
- <CAPXi+99VgVyf7O8j8J+fLAF4AaKOFRxJTX1xpdnP3Q1JkBZE4Q@mail.gmail.com>
-In-Reply-To: <CAPXi+99VgVyf7O8j8J+fLAF4AaKOFRxJTX1xpdnP3Q1JkBZE4Q@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="x6abI2Aixwokb0VMBctPwPdc9sA0RMlV2"
-Subject: Re: [B.A.T.M.A.N.] batctl oops on batctl gateways call
+Date: Sun,  4 May 2014 17:22:33 +0200
+Message-Id: <1399216953-10143-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv4 maint] batman-adv: fix TT VLAN
+	inconsistency on VLAN re-add
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,204 +15,282 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---x6abI2Aixwokb0VMBctPwPdc9sA0RMlV2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-FYI, we are rather confident that this patch
-https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2014-May/011920.html
-fixes the problem you have seen.
+When a VLAN interface (on top of batX) is removed and
+re-added within a short timeframe TT does not have enough
+time to properly cleanup. This creates an internal TT state
+mismatch as the newly created softif_vlan will be
+initialized from scratch with a TT client count of zero
+(even if TT entries for this VLAN still exist). The
+resulting TT messages are bogus due to the counter / tt
+client listing mismatch, thus creating inconsistencies on
+every node in the network
 
-Cheers,
+To fix this issue destroy_vlan() has to not free the VLAN
+object immediately but it has to be kept alive until all the
+TT entries for this VLAN have been removed. destroy_vlan()
+still removes the sysfs folder so that the user has the
+feeling that everything went fine.
 
-On 12/04/14 23:15, Fabrice Dossin wrote:
-> Hi,
-> I could not reproduce this. I keep you update if I see this again.
-> Best regards,
-> Fabrice
->=20
-> On 3 April 2014 10:21, Fabrice Dossin <fabrice.dossin@gmail.com> wrote:=
+If the same VLAN is re-added before the old object is free'd,
+then the latter is resurrected and re-used.
 
->> (Sorry, reformatting again, leaving text mode)
->>
->>
->> Hi,
->>
->> Sorry, my mail client did this behind my  back. I did resend the stack=
+Implement such behaviour by increasing the reference counter
+of a softif_vlan object every time a new local TT entry for
+such VLAN is created and remove the object from the list
+only when all the TT entries have been destroyed.
 
->> here under for readability.
->>
->> For now, it has append only one time on one node. This particular node=
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
 
->> does not have any other node in his range. I execute a "batctl
->> gateways" each 5 minutes for monitoring. I will let you know if it
->> appends again today or if I found information for reproducibility.
->>
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.500226] Unable to handle kern=
-el
->> NULL pointer dereference at virtual address 00000022
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.508175] pgd =3D d4918000
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.514355] [00000022] *pgd=3D138=
-f9831,
->> *pte=3D00000000, *ppte=3D00000000
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.521733] Internal error: Oops:=
- 17
->> [#5] PREEMPT ARM
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.527131] Modules linked in: tu=
-n
->> ipt_MASQUERADE iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv=
-4
->> nf_nat nf_conntrack iptable_filter ip_tables x_tables ipv6 bcm2708_rng=
+Changes since v3:
+- always re-add NO_PURGE local entry on add_vid()
 
->> bcm2708_wdog batman_adv(O) rtc_ds1307 qmi_wwan option usb_wwan arc4
->> usbserial cdc_wdm rt2800usb rt2800lib rt2x00usb rt2x00lib mac80211 cfg=
-80211
->> crc_ccitt sr_mod cdrom leds_gpio led_class rt5572sta(O) spi_bcm2708
->> i2c_bcm2708 btusb bluetooth rfkill
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.544610] CPU: 0 PID: 7261 Comm=
-:
->> batctl Tainted: G      D    O 3.10.30+ #1
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.550263] task: d49f3180 ti: d3=
-8d0000
->> task.ti: d38d0000
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.556017] PC is at
->> batadv_orig_router_get+0x50/0x9c [batman_adv]
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.561587] LR is at
->> batadv_orig_router_get+0x10/0x9c [batman_adv]
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.566974] pc : [<bf35e218>]    =
-lr :
->> [<bf35e1d8>]    psr: 20000013
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.566974] sp : d38d1ea8  ip :
->> 0000000a  fp : dda60600
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.577350] r10: cccccccd  r9 :
->> ddab7000  r8 : dda60600
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.582439] r7 : 00000000  r6 :
->> 00000000  r5 : d4826e00  r4 : 00000000
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.587535] r3 : d4ac0000  r2 :
->> 00000000  r1 : 00000000  r0 : 00000002
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.592468] Flags: nzCv  IRQs on =
- FIQs
->> on  Mode SVC_32  ISA ARM  Segment user
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.597357] Control: 00c5387d  Ta=
-ble:
->> 14918008  DAC: 00000015
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.602319] Process batctl (pid: =
-7261,
->> stack limit =3D 0xd38d01b0)
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.607230] Stack: (0xd38d1ea8 to=
+Changes since v2:
+- remove cleanup_work member that is not needed anymore in this approach
+- reword commit subject
+- reword commit message (Thanks Marek!)
 
->> 0xd38d2000)
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.611903] 1ea0:
->> d49f3180 d49c2580 00000000 bf35a62c 000000ff bf368ed8
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.616816] 1ec0: bf368ee0 bf368e=
-ec
->> dc89b000 dbe3cd08 ddab7000 dc83bba0 dbd10900 00000000
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.621720] 1ee0: 00100073 000000=
-00
->> d25a0aa0 00000000 00000000 00000001 d38d1f20 00000001
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.626477] 1f00: dda60600 c00f65=
-3c
->> d1f20790 d38d1f80 00001000 b6f18000 dda60628 00000000
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.631263] 1f20: 00000000 000000=
-00
->> 00001000 dc83bba0 00000001 d25a0aa0 b6f18000 d38d0000
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.636092] 1f40: d38d1f80 000010=
-00
->> d38d0000 00001000 bea8eb54 c00d7530 00000000 00000003
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.640834] 1f60: 00000000 000000=
-00
->> 00000000 d25a0aa0 b6f18000 00000000 00001000 c00d77c4
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.645450] 1f80: 00000000 000000=
-00
->> ffffffff 00916008 fbad2488 00000000 00000003 c000dd68
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.650123] 1fa0: 00000000 c000db=
-c0
->> 00916008 fbad2488 00000003 b6f18000 00001000 00000000
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.654758] 1fc0: 00916008 fbad24=
-88
->> 00000000 00000003 00000000 00021450 b6f1f000 bea8eb54
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.659333] 1fe0: 00000000 bea8e8=
-c8
->> b6d945f8 b6de52bc 60000010 00000003 00000000 00000000
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.664121] [<bf35e218>]
->> (batadv_orig_router_get+0x50/0x9c [batman_adv]) from [<bf35a62c>]
->> (batadv_gw_client_seq_print_text+0xac/0x220 [batman_adv])
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.673531] [<bf35a62c>]
->> (batadv_gw_client_seq_print_text+0xac/0x220 [batman_adv]) from [<c00f6=
-53c>]
->> (seq_read+0x1d0/0x4cc)
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.678287] [<c00f653c>]
->> (seq_read+0x1d0/0x4cc) from [<c00d7530>] (vfs_read+0x98/0x17c)
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.683071] [<c00d7530>]
->> (vfs_read+0x98/0x17c) from [<c00d77c4>] (SyS_read+0x3c/0x70)
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.687982] [<c00d77c4>]
->> (SyS_read+0x3c/0x70) from [<c000dbc0>] (ret_fast_syscall+0x0/0x30)
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.692822] Code: e8bd8038 e59300=
-0c
->> e3500000 0afffff8 (e5902020)
->> Apr  2 11:45:08 pv2-1dnci kernel: [ 7432.718781] ---[ end trace
->> 1e5ba977f5516301 ]---
->>
->> Regards,
->> Fabrice
->>
->>>
->>>> Hi Fabrice,
->>>>
->>>> On 02/04/14 13:50, Fabrice Dossin wrote:
->>>>> Dear all,
->>>>>
->>>>> Hello.
->>>>> I am not sure it has been notified so I post this issue here.
->>>>> It is my first post, so tell me if I do it bad...
->>>>>
->>>>
->>>> no problem, it's fine! Maybe sending the stack trace without adding =
-new
->>>> lines is better, but this is fine anyway :)
->>>>
->>>> Are you able to reproduce this problem somehow? Or it happened only =
-once
->>>> under no particular conditions?
->>>>
->>>> Cheers,
->>>>
->>>>
->>>> --
->>>> Antonio Quartulli
->>>>
->>
->=20
-
---=20
-Antonio Quartulli
+Changes since v1:
+- destroy and create vlan sysfs folder within softif_vlan_destroy/create() to
+  avoid lock troubles with soft-interface destruction and delayed jobs.
 
 
---x6abI2Aixwokb0VMBctPwPdc9sA0RMlV2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+ soft-interface.c    | 53 ++++++++++++++++++++++++++++++++++++++++-------------
+ translation-table.c | 26 ++++++++++++++++++++++++++
+ types.h             |  2 ++
+ 3 files changed, 68 insertions(+), 13 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+diff --git a/soft-interface.c b/soft-interface.c
+index d962363..321c6bd 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -437,10 +437,15 @@ out:
+  *  possibly free it
+  * @softif_vlan: the vlan object to release
+  */
+-void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *softif_vlan)
++void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *vlan)
+ {
+-	if (atomic_dec_and_test(&softif_vlan->refcount))
+-		kfree_rcu(softif_vlan, rcu);
++	if (atomic_dec_and_test(&vlan->refcount)) {
++		spin_lock_bh(&vlan->bat_priv->softif_vlan_list_lock);
++		hlist_del_rcu(&vlan->list);
++		spin_unlock_bh(&vlan->bat_priv->softif_vlan_list_lock);
++
++		kfree_rcu(vlan, rcu);
++	}
+ }
+ 
+ /**
+@@ -494,6 +499,7 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 	if (!vlan)
+ 		return -ENOMEM;
+ 
++	vlan->bat_priv = bat_priv;
+ 	vlan->vid = vid;
+ 	atomic_set(&vlan->refcount, 1);
+ 
+@@ -505,6 +511,10 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 		return err;
+ 	}
+ 
++	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
++	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
++	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
++
+ 	/* add a new TT local entry. This one will be marked with the NOPURGE
+ 	 * flag
+ 	 */
+@@ -512,10 +522,6 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 			    bat_priv->soft_iface->dev_addr, vid,
+ 			    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
+ 
+-	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
+-	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
+-	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+-
+ 	return 0;
+ }
+ 
+@@ -527,18 +533,13 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ static void batadv_softif_destroy_vlan(struct batadv_priv *bat_priv,
+ 				       struct batadv_softif_vlan *vlan)
+ {
+-	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
+-	hlist_del_rcu(&vlan->list);
+-	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
+-
+-	batadv_sysfs_del_vlan(bat_priv, vlan);
+-
+ 	/* explicitly remove the associated TT local entry because it is marked
+ 	 * with the NOPURGE flag
+ 	 */
+ 	batadv_tt_local_remove(bat_priv, bat_priv->soft_iface->dev_addr,
+ 			       vlan->vid, "vlan interface destroyed", false);
+ 
++	batadv_sysfs_del_vlan(bat_priv, vlan);
+ 	batadv_softif_vlan_free_ref(vlan);
+ }
+ 
+@@ -556,6 +557,8 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ 				    unsigned short vid)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
++	struct batadv_softif_vlan *vlan;
++	int ret;
+ 
+ 	/* only 802.1Q vlans are supported.
+ 	 * batman-adv does not know how to handle other types
+@@ -565,6 +568,30 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ 
+ 	vid |= BATADV_VLAN_HAS_TAG;
+ 
++	/* if a new vlan is getting created, but it is found in the list, it
++	 * means that it was not deleted yet. Make batadv_softif_vlan_get()
++	 * increase the refcounter by one and return
++	 */
++	vlan = batadv_softif_vlan_get(bat_priv, vid);
++	if (vlan) {
++		/* add a new TT local entry. This one will be marked with the
++		 * NOPURGE flag. This must be added again, even if the vlan
++		 * object already exists, because the entry was deleted by
++		 * kill_vid()
++		 */
++		batadv_tt_local_add(bat_priv->soft_iface,
++				    bat_priv->soft_iface->dev_addr, vid,
++				    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
++		ret = 0;
++		if (!vlan->kobj) {
++			ret = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
++			if (ret)
++				batadv_softif_vlan_free_ref(vlan);
++		}
++
++		return ret;
++	}
++
+ 	return batadv_softif_create_vlan(bat_priv, vid);
+ }
+ 
+diff --git a/translation-table.c b/translation-table.c
+index 959dde7..b689981 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -485,6 +485,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
+ 	struct batadv_tt_local_entry *tt_local;
+ 	struct batadv_tt_global_entry *tt_global;
++	struct batadv_softif_vlan *vlan;
+ 	struct net_device *in_dev = NULL;
+ 	struct hlist_head *head;
+ 	struct batadv_tt_orig_list_entry *orig_entry;
+@@ -544,6 +545,9 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 	if (!tt_local)
+ 		goto out;
+ 
++	/* increase the refcounter of the related vlan */
++	vlan = batadv_softif_vlan_get(bat_priv, vid);
++
+ 	batadv_dbg(BATADV_DBG_TT, bat_priv,
+ 		   "Creating new local tt entry: %pM (vid: %d, ttvn: %d)\n",
+ 		   addr, BATADV_PRINT_VID(vid),
+@@ -573,6 +577,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ 	if (unlikely(hash_added != 0)) {
+ 		/* remove the reference for the hash */
+ 		batadv_tt_local_entry_free_ref(tt_local);
++		batadv_softif_vlan_free_ref(vlan);
+ 		goto out;
+ 	}
+ 
+@@ -978,6 +983,7 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
+ {
+ 	struct batadv_tt_local_entry *tt_local_entry;
+ 	uint16_t flags, curr_flags = BATADV_NO_FLAGS;
++	struct batadv_softif_vlan *vlan;
+ 
+ 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr, vid);
+ 	if (!tt_local_entry)
+@@ -1008,6 +1014,11 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
+ 	hlist_del_rcu(&tt_local_entry->common.hash_entry);
+ 	batadv_tt_local_entry_free_ref(tt_local_entry);
+ 
++	/* decrease the reference held for this vlan */
++	vlan = batadv_softif_vlan_get(bat_priv, vid);
++	batadv_softif_vlan_free_ref(vlan);
++	batadv_softif_vlan_free_ref(vlan);
++
+ out:
+ 	if (tt_local_entry)
+ 		batadv_tt_local_entry_free_ref(tt_local_entry);
+@@ -1080,6 +1091,7 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
+ 	spinlock_t *list_lock; /* protects write access to the hash lists */
+ 	struct batadv_tt_common_entry *tt_common_entry;
+ 	struct batadv_tt_local_entry *tt_local;
++	struct batadv_softif_vlan *vlan;
+ 	struct hlist_node *node_tmp;
+ 	struct hlist_head *head;
+ 	uint32_t i;
+@@ -1100,6 +1112,13 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
+ 			tt_local = container_of(tt_common_entry,
+ 						struct batadv_tt_local_entry,
+ 						common);
++
++			/* decrease the reference held for this vlan */
++			vlan = batadv_softif_vlan_get(bat_priv,
++						      tt_common_entry->vid);
++			batadv_softif_vlan_free_ref(vlan);
++			batadv_softif_vlan_free_ref(vlan);
++
+ 			batadv_tt_local_entry_free_ref(tt_local);
+ 		}
+ 		spin_unlock_bh(list_lock);
+@@ -3078,6 +3097,7 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
+ 	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
+ 	struct batadv_tt_common_entry *tt_common;
+ 	struct batadv_tt_local_entry *tt_local;
++	struct batadv_softif_vlan *vlan;
+ 	struct hlist_node *node_tmp;
+ 	struct hlist_head *head;
+ 	spinlock_t *list_lock; /* protects write access to the hash lists */
+@@ -3106,6 +3126,12 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
+ 			tt_local = container_of(tt_common,
+ 						struct batadv_tt_local_entry,
+ 						common);
++
++			/* decrease the reference held for this vlan */
++			vlan = batadv_softif_vlan_get(bat_priv, tt_common->vid);
++			batadv_softif_vlan_free_ref(vlan);
++			batadv_softif_vlan_free_ref(vlan);
++
+ 			batadv_tt_local_entry_free_ref(tt_local);
+ 		}
+ 		spin_unlock_bh(list_lock);
+diff --git a/types.h b/types.h
+index 78370ab..c4aba2f 100644
+--- a/types.h
++++ b/types.h
+@@ -638,6 +638,7 @@ struct batadv_priv_nc {
+ 
+ /**
+  * struct batadv_softif_vlan - per VLAN attributes set
++ * @bat_priv: pointer to the mesh object
+  * @vid: VLAN identifier
+  * @kobj: kobject for sysfs vlan subdirectory
+  * @ap_isolation: AP isolation state
+@@ -647,6 +648,7 @@ struct batadv_priv_nc {
+  * @rcu: struct used for freeing in a RCU-safe manner
+  */
+ struct batadv_softif_vlan {
++	struct batadv_priv *bat_priv;
+ 	unsigned short vid;
+ 	struct kobject *kobj;
+ 	atomic_t ap_isolation;		/* boolean */
+-- 
+1.8.3.2
 
-iQIcBAEBCAAGBQJTZKu7AAoJEEKTMo6mOh1VajIP/3NWNXgwwTQ6E2Feyv5f5mV4
-5Z1zkYgE1wsuboBgSpKNb2cEHb3FWl82Dp+wEUEtabJB21R0K559XWampg013YVo
-Z9t2G3a55aSTnZxeDjnYLEPVCrblIE17mSfTlDDcwEixSx/LecLV27NqFp0OlmPA
-sU93RV+RBSbHweS3oDYIU7aslzWWGXLXZ/6HIzl7lhLBNUhJoE0ZQomnIqwDELVR
-Nhui0xTchMKxVXzwt1Z6LyEX9mmgUTBCW/nWKcB2Hvs+JBzagzqnpnDSr3HCa1ke
-0XQKxuy5tIuo+HIsh/krayKJa8qWCQpjhXUYV1qpeW4UBdH4pTU0t9TFT8VivNLs
-I+IFUN8euDNZfOfsCCizMwgP9KUZN2KXGoJ4hPaQYmjzHUhebyWm9rh4wKBBONU8
-AdMnSmehKbXi63Lrta2FN4YgnzIwyHL09J5MtKB4NnP+nbYlUb37FgtPG4i1cTC0
-VU5O5PkFyRgkPQG+r65Ka7KnvC2a1VZEwIhX6aK3cOQqA50MA3jaTUUs2psRtmIT
-CCvD93jtSLddjFQ5iwTcmnyNNjVUvi6230lBinL+4g1wcDeHnA9Q/J1+9wP6MKHD
-6SP87YOqwnYQ0y73JNDi+9tbwTNGsdFpzYEat8Xs5bA5LLPFzQYDQWu/iCqbDpBn
-PlNNKeAEq8eU2kf2TEQX
-=YYJO
------END PGP SIGNATURE-----
-
---x6abI2Aixwokb0VMBctPwPdc9sA0RMlV2--
