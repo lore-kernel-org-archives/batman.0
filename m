@@ -1,8 +1,10 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 10 May 2014 17:35:06 +0200
-Message-Id: <1399736110-22333-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] pull request net: batman-adv 20140510
+Date: Sat, 10 May 2014 17:35:07 +0200
+Message-Id: <1399736110-22333-2-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1399736110-22333-1-git-send-email-antonio@meshcoding.com>
+References: <1399736110-22333-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: fix neigh_ifinfo imbalance
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,68 +17,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, Simon Wunderlich <simon@open-mesh.com>, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-Hello David,
+From: Simon Wunderlich <simon@open-mesh.com>
 
-here you have 4 small but important patches from Simon Wunderlich intended
-for net/linux-3.15 and *stable/linux-3.14* (please enqueue them).
+The neigh_ifinfo object must be freed if it has been used in
+batadv_iv_ogm_process_per_outif().
 
-I know it's rather late in the rc cycle but these 4 changes are addressing
-some severe reference counting imbalances in different parts of code.
+This is a regression introduced by
+89652331c00f43574515059ecbf262d26d885717
+("batman-adv: split tq information in neigh_node struct")
 
-All these reference counting problems are rather important because they prevent
-the netdev object used by batman-adv from being released and then the
-system from properly shutdown/reboot/reconfigure by holding the networking stack
-with the following (sad) message:
+Reported-by: Antonio Quartulli <antonio@open-mesh.com>
+Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ net/batman-adv/bat_iv_ogm.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-unregister_netdevice: waiting for mesh0 to become free. Usage count = 1
-
-
-Please pull or let me know of any problem!
-
-Thanks a lot,
-	Antonio
-
-
-The following changes since commit 1448eb566970c6d3cade522419848fdaee24c684:
-
-  Merge branch 'for-davem' of git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless (2014-05-09 16:46:53 -0400)
-
-are available in the git repository at:
-
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
-
-for you to fetch changes up to 29bcc8064fc0b82bc708c09577d550923b954e5a:
-
-  batman-adv: fix removing neigh_ifinfo (2014-05-10 10:59:05 +0200)
-
-----------------------------------------------------------------
-Included changes:
-- properly release neigh_ifinfo in batadv_iv_ogm_process_per_outif()
-- properly release orig_ifinfo->router when freeing orig_ifinfo
-- properly release neigh_node objects during periodic check
-- properly release neigh_info objects when the related hard_iface
-  is free'd
-
-These changes are all very important because they fix some
-reference counting imbalances that lead to the
-impossibility of releasing the netdev object used by
-batman-adv on shutdown.
-The consequence is that such object cannot be destroyed by
-the networking stack (the refcounter does not reach zero)
-thus bringing the system in hanging state during a normal
-reboot operation or a network reconfiguration.
-
-----------------------------------------------------------------
-Simon Wunderlich (4):
-      batman-adv: fix neigh_ifinfo imbalance
-      batman-adv: fix neigh reference imbalance
-      batman-adv: always run purge_orig_neighbors
-      batman-adv: fix removing neigh_ifinfo
-
- net/batman-adv/bat_iv_ogm.c |  2 ++
- net/batman-adv/originator.c | 59 ++++++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 57 insertions(+), 4 deletions(-)
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index b3bd4ec..f04224c 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1545,6 +1545,8 @@ out_neigh:
+ 	if ((orig_neigh_node) && (!is_single_hop_neigh))
+ 		batadv_orig_node_free_ref(orig_neigh_node);
+ out:
++	if (router_ifinfo)
++		batadv_neigh_ifinfo_free_ref(router_ifinfo);
+ 	if (router)
+ 		batadv_neigh_node_free_ref(router);
+ 	if (router_router)
+-- 
+1.8.5.5
 
