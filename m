@@ -1,10 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
+Message-ID: <536E4882.4020106@meshcoding.com>
+Date: Sat, 10 May 2014 17:40:50 +0200
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 10 May 2014 17:35:10 +0200
-Message-Id: <1399736110-22333-5-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1399736110-22333-1-git-send-email-antonio@meshcoding.com>
+MIME-Version: 1.0
 References: <1399736110-22333-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: fix removing neigh_ifinfo
+In-Reply-To: <1399736110-22333-1-git-send-email-antonio@meshcoding.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="2kLlMcJgsxaLlXuULMLgMnVTpgWRV0NxX"
+Subject: Re: [B.A.T.M.A.N.] pull request net: batman-adv 20140510
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,91 +21,61 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, Simon Wunderlich <simon@open-mesh.com>, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Simon Wunderlich <simon@open-mesh.com>
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--2kLlMcJgsxaLlXuULMLgMnVTpgWRV0NxX
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-When an interface is removed separately, all neighbors need to be
-checked if they have a neigh_ifinfo structure for that particular
-interface. If that is the case, remove that ifinfo so any references to
-a hard interface can be freed.
+On 10/05/14 17:35, Antonio Quartulli wrote:
+> The following changes since commit 1448eb566970c6d3cade522419848fdaee24=
+c684:
+>=20
+>   Merge branch 'for-davem' of git://git.kernel.org/pub/scm/linux/kernel=
+/git/linville/wireless (2014-05-09 16:46:53 -0400)
+>=20
+> are available in the git repository at:
+>=20
+>=20
+>   git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem=
 
-This is a regression introduced by
-89652331c00f43574515059ecbf262d26d885717
-("batman-adv: split tq information in neigh_node struct")
+>=20
+> for you to fetch changes up to 29bcc8064fc0b82bc708c09577d550923b954e5a=
+:
 
-Reported-by: Antonio Quartulli <antonio@open-mesh.com>
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- net/batman-adv/originator.c | 46 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 46 insertions(+)
+The tag points now to 05191f523653461ca6a4e4fb38012e0d8f3c5641 because I
+fixed a too long line.
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 8104c3c..427c07d 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -707,6 +707,47 @@ free_orig_node:
- }
- 
- /**
-+ * batadv_purge_neigh_ifinfo - purge obsolete ifinfo entries from neighbor
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @neigh_node: orig node which is to be checked
-+ */
-+static void
-+batadv_purge_neigh_ifinfo(struct batadv_priv *bat_priv,
-+			  struct batadv_neigh_node *neigh)
-+{
-+	struct batadv_neigh_ifinfo *neigh_ifinfo;
-+	struct batadv_hard_iface *if_outgoing;
-+	struct hlist_node *node_tmp;
-+
-+	spin_lock_bh(&neigh->ifinfo_lock);
-+
-+	/* for all ifinfo objects for this neighinator */
-+	hlist_for_each_entry_safe(neigh_ifinfo, node_tmp,
-+				  &neigh->ifinfo_list, list) {
-+		if_outgoing = neigh_ifinfo->if_outgoing;
-+
-+		/* always keep the default interface */
-+		if (if_outgoing == BATADV_IF_DEFAULT)
-+			continue;
-+
-+		/* don't purge if the interface is not (going) down */
-+		if ((if_outgoing->if_status != BATADV_IF_INACTIVE) &&
-+		    (if_outgoing->if_status != BATADV_IF_NOT_IN_USE) &&
-+		    (if_outgoing->if_status != BATADV_IF_TO_BE_REMOVED))
-+			continue;
-+
-+		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+			   "neighbor/ifinfo purge: neighbor %pM, iface: %s\n",
-+			   neigh->addr, if_outgoing->net_dev->name);
-+
-+		hlist_del_rcu(&neigh_ifinfo->list);
-+		batadv_neigh_ifinfo_free_ref(neigh_ifinfo);
-+	}
-+
-+	spin_unlock_bh(&neigh->ifinfo_lock);
-+}
-+
-+/**
-  * batadv_purge_orig_ifinfo - purge obsolete ifinfo entries from originator
-  * @bat_priv: the bat priv with all the soft interface information
-  * @orig_node: orig node which is to be checked
-@@ -805,6 +846,11 @@ batadv_purge_orig_neighbors(struct batadv_priv *bat_priv,
- 
- 			hlist_del_rcu(&neigh_node->list);
- 			batadv_neigh_node_free_ref(neigh_node);
-+		} else {
-+			/* only neccesary if not the whole neighbor is to be deleted,
-+			 * but some interface has been removed.
-+			 */
-+			batadv_purge_neigh_ifinfo(bat_priv, neigh_node);
- 		}
- 	}
- 
--- 
-1.8.5.5
 
+Cheers,
+
+--=20
+Antonio Quartulli
+
+
+--2kLlMcJgsxaLlXuULMLgMnVTpgWRV0NxX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBCAAGBQJTbkiLAAoJEEKTMo6mOh1V5xcP/RdJSQcxTHSMKAfa39Dgz6hu
+GtCebNPAM2h24MIVprba9ZTPnlRiHaLirGTCdZE+WM9to+oqEAu/BmK4IBcruwIS
+YISgbpJtdAR3X0sWpw/wg9n72R5YFqACACIXnbvxjErc5DrBAiOLC5aUla759g2/
+guxqaRq5k2hHDUXOWkerOxt/9zYWUgHL32+d+zUHUqb055txV15nWDVFxngMW+z1
+/5RkBDtucR7CVH6LKbut2YGFjNP/RA++pdsVurxU2gA+LwjEQdvjnULcUK04J/R9
+ExyWyx0bh/ts3GO3TKkdgISci3eS/IIIY3WW0dDFCpuUnhqrwT6I1xEXWMu000Dy
+eIJGopGfWommalIlSnhQSMgBgBry5LPmKEybX0sFpz5ORoS0aHzH8lDsKTrVZCy6
+FEI9zETF79ALRVKDcgtsZk11TEshmEPyT4DR74uLGRdyFr0v0SSpGqM5SprcDR/V
+gvYSazOy83kiUe56OHsu9P8A1roecUMKtYag5NWtlRJwM668NwSauKoX9ymDqwEF
+VtD9y/l/lAZlbHH3ew30LaLku+s6VY+qK+3/EKJ2KmIVMssULjKqF5B1Oz2wwzXw
+9wYdLcbdcUDc3U96gULZMPQU5ubLs7Uf/ufNHBnuLlNPuOhTvwN+FXRdoh10HGDY
+lHYR5n49pqHX/AVgrIp4
+=qXs3
+-----END PGP SIGNATURE-----
+
+--2kLlMcJgsxaLlXuULMLgMnVTpgWRV0NxX--
