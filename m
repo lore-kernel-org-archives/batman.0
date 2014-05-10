@@ -1,9 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu,  8 May 2014 17:13:15 +0200
-Message-Id: <1399561995-10066-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv5 maint] batman-adv: fix TT VLAN
-	inconsistency on VLAN re-add
+Date: Sat, 10 May 2014 17:35:06 +0200
+Message-Id: <1399736110-22333-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] pull request net: batman-adv 20140510
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,293 +14,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+Hello David,
 
-When a VLAN interface (on top of batX) is removed and
-re-added within a short timeframe TT does not have enough
-time to properly cleanup. This creates an internal TT state
-mismatch as the newly created softif_vlan will be
-initialized from scratch with a TT client count of zero
-(even if TT entries for this VLAN still exist). The
-resulting TT messages are bogus due to the counter / tt
-client listing mismatch, thus creating inconsistencies on
-every node in the network
+here you have 4 small but important patches from Simon Wunderlich intended
+for net/linux-3.15 and *stable/linux-3.14* (please enqueue them).
 
-To fix this issue destroy_vlan() has to not free the VLAN
-object immediately but it has to be kept alive until all the
-TT entries for this VLAN have been removed. destroy_vlan()
-still removes the sysfs folder so that the user has the
-feeling that everything went fine.
+I know it's rather late in the rc cycle but these 4 changes are addressing
+some severe reference counting imbalances in different parts of code.
 
-If the same VLAN is re-added before the old object is free'd,
-then the latter is resurrected and re-used.
+All these reference counting problems are rather important because they prevent
+the netdev object used by batman-adv from being released and then the
+system from properly shutdown/reboot/reconfigure by holding the networking stack
+with the following (sad) message:
 
-Implement such behaviour by increasing the reference counter
-of a softif_vlan object every time a new local TT entry for
-such VLAN is created and remove the object from the list
-only when all the TT entries have been destroyed.
-
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
----
-
-Changes since v4:
-- improved code in add_vid()
-- don't leak TT entries in case of vlan re-add failure
-
-Changes since v3:
-- always re-add NO_PURGE local entry on add_vid()
-
-Changes since v2:
-- remove cleanup_work member that is not needed anymore in this approach
-- reword commit subject
-- reword commit message (Thanks Marek!)
-
-Changes since v1:
-- destroy and create vlan sysfs folder within softif_vlan_destroy/create() to
-  avoid lock troubles with soft-interface destruction and delayed jobs.
+unregister_netdevice: waiting for mesh0 to become free. Usage count = 1
 
 
- soft-interface.c    | 60 ++++++++++++++++++++++++++++++++++++++++-------------
- translation-table.c | 26 +++++++++++++++++++++++
- types.h             |  2 ++
- 3 files changed, 74 insertions(+), 14 deletions(-)
+Please pull or let me know of any problem!
 
-diff --git a/soft-interface.c b/soft-interface.c
-index d962363..5a9dc2f 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -437,10 +437,15 @@ out:
-  *  possibly free it
-  * @softif_vlan: the vlan object to release
-  */
--void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *softif_vlan)
-+void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *vlan)
- {
--	if (atomic_dec_and_test(&softif_vlan->refcount))
--		kfree_rcu(softif_vlan, rcu);
-+	if (atomic_dec_and_test(&vlan->refcount)) {
-+		spin_lock_bh(&vlan->bat_priv->softif_vlan_list_lock);
-+		hlist_del_rcu(&vlan->list);
-+		spin_unlock_bh(&vlan->bat_priv->softif_vlan_list_lock);
-+
-+		kfree_rcu(vlan, rcu);
-+	}
- }
- 
- /**
-@@ -494,6 +499,7 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- 	if (!vlan)
- 		return -ENOMEM;
- 
-+	vlan->bat_priv = bat_priv;
- 	vlan->vid = vid;
- 	atomic_set(&vlan->refcount, 1);
- 
-@@ -505,6 +511,10 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- 		return err;
- 	}
- 
-+	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
-+	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
-+	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
-+
- 	/* add a new TT local entry. This one will be marked with the NOPURGE
- 	 * flag
- 	 */
-@@ -512,10 +522,6 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- 			    bat_priv->soft_iface->dev_addr, vid,
- 			    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
- 
--	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
--	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
--	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
--
- 	return 0;
- }
- 
-@@ -527,18 +533,13 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
- static void batadv_softif_destroy_vlan(struct batadv_priv *bat_priv,
- 				       struct batadv_softif_vlan *vlan)
- {
--	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
--	hlist_del_rcu(&vlan->list);
--	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
--
--	batadv_sysfs_del_vlan(bat_priv, vlan);
--
- 	/* explicitly remove the associated TT local entry because it is marked
- 	 * with the NOPURGE flag
- 	 */
- 	batadv_tt_local_remove(bat_priv, bat_priv->soft_iface->dev_addr,
- 			       vlan->vid, "vlan interface destroyed", false);
- 
-+	batadv_sysfs_del_vlan(bat_priv, vlan);
- 	batadv_softif_vlan_free_ref(vlan);
- }
- 
-@@ -556,6 +557,8 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
- 				    unsigned short vid)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(dev);
-+	struct batadv_softif_vlan *vlan;
-+	int ret;
- 
- 	/* only 802.1Q vlans are supported.
- 	 * batman-adv does not know how to handle other types
-@@ -565,7 +568,36 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
- 
- 	vid |= BATADV_VLAN_HAS_TAG;
- 
--	return batadv_softif_create_vlan(bat_priv, vid);
-+	/* if a new vlan is getting created and it already exists, it means that
-+	 * it was not deleted yet. batadv_softif_vlan_get() increases the
-+	 * refcount in order to revive the object.
-+	 *
-+	 * if it does not exist then create it.
-+	 */
-+	vlan = batadv_softif_vlan_get(bat_priv, vid);
-+	if (!vlan)
-+		return batadv_softif_create_vlan(bat_priv, vid);
-+
-+	/* recreate the sysfs object if it was already destroyed (and it should
-+	 * be since we received a kill_vid() for this vlan
-+	 */
-+	if (!vlan->kobj) {
-+		ret = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
-+		if (ret) {
-+			batadv_softif_vlan_free_ref(vlan);
-+			return ret;
-+		}
-+	}
-+
-+	/* add a new TT local entry. This one will be marked with the NOPURGE
-+	 * flag. This must be added again, even if the vlan object already
-+	 * exists, because the entry was deleted by kill_vid()
-+	 */
-+	batadv_tt_local_add(bat_priv->soft_iface,
-+			     bat_priv->soft_iface->dev_addr, vid,
-+			     BATADV_NULL_IFINDEX, BATADV_NO_MARK);
-+
-+	return 0;
- }
- 
- /**
-diff --git a/translation-table.c b/translation-table.c
-index 959dde7..b689981 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -485,6 +485,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
- 	struct batadv_tt_local_entry *tt_local;
- 	struct batadv_tt_global_entry *tt_global;
-+	struct batadv_softif_vlan *vlan;
- 	struct net_device *in_dev = NULL;
- 	struct hlist_head *head;
- 	struct batadv_tt_orig_list_entry *orig_entry;
-@@ -544,6 +545,9 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 	if (!tt_local)
- 		goto out;
- 
-+	/* increase the refcounter of the related vlan */
-+	vlan = batadv_softif_vlan_get(bat_priv, vid);
-+
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
- 		   "Creating new local tt entry: %pM (vid: %d, ttvn: %d)\n",
- 		   addr, BATADV_PRINT_VID(vid),
-@@ -573,6 +577,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
- 	if (unlikely(hash_added != 0)) {
- 		/* remove the reference for the hash */
- 		batadv_tt_local_entry_free_ref(tt_local);
-+		batadv_softif_vlan_free_ref(vlan);
- 		goto out;
- 	}
- 
-@@ -978,6 +983,7 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
- {
- 	struct batadv_tt_local_entry *tt_local_entry;
- 	uint16_t flags, curr_flags = BATADV_NO_FLAGS;
-+	struct batadv_softif_vlan *vlan;
- 
- 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr, vid);
- 	if (!tt_local_entry)
-@@ -1008,6 +1014,11 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
- 	hlist_del_rcu(&tt_local_entry->common.hash_entry);
- 	batadv_tt_local_entry_free_ref(tt_local_entry);
- 
-+	/* decrease the reference held for this vlan */
-+	vlan = batadv_softif_vlan_get(bat_priv, vid);
-+	batadv_softif_vlan_free_ref(vlan);
-+	batadv_softif_vlan_free_ref(vlan);
-+
- out:
- 	if (tt_local_entry)
- 		batadv_tt_local_entry_free_ref(tt_local_entry);
-@@ -1080,6 +1091,7 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
- 	spinlock_t *list_lock; /* protects write access to the hash lists */
- 	struct batadv_tt_common_entry *tt_common_entry;
- 	struct batadv_tt_local_entry *tt_local;
-+	struct batadv_softif_vlan *vlan;
- 	struct hlist_node *node_tmp;
- 	struct hlist_head *head;
- 	uint32_t i;
-@@ -1100,6 +1112,13 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
- 			tt_local = container_of(tt_common_entry,
- 						struct batadv_tt_local_entry,
- 						common);
-+
-+			/* decrease the reference held for this vlan */
-+			vlan = batadv_softif_vlan_get(bat_priv,
-+						      tt_common_entry->vid);
-+			batadv_softif_vlan_free_ref(vlan);
-+			batadv_softif_vlan_free_ref(vlan);
-+
- 			batadv_tt_local_entry_free_ref(tt_local);
- 		}
- 		spin_unlock_bh(list_lock);
-@@ -3078,6 +3097,7 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
- 	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
- 	struct batadv_tt_common_entry *tt_common;
- 	struct batadv_tt_local_entry *tt_local;
-+	struct batadv_softif_vlan *vlan;
- 	struct hlist_node *node_tmp;
- 	struct hlist_head *head;
- 	spinlock_t *list_lock; /* protects write access to the hash lists */
-@@ -3106,6 +3126,12 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
- 			tt_local = container_of(tt_common,
- 						struct batadv_tt_local_entry,
- 						common);
-+
-+			/* decrease the reference held for this vlan */
-+			vlan = batadv_softif_vlan_get(bat_priv, tt_common->vid);
-+			batadv_softif_vlan_free_ref(vlan);
-+			batadv_softif_vlan_free_ref(vlan);
-+
- 			batadv_tt_local_entry_free_ref(tt_local);
- 		}
- 		spin_unlock_bh(list_lock);
-diff --git a/types.h b/types.h
-index 78370ab..c4aba2f 100644
---- a/types.h
-+++ b/types.h
-@@ -638,6 +638,7 @@ struct batadv_priv_nc {
- 
- /**
-  * struct batadv_softif_vlan - per VLAN attributes set
-+ * @bat_priv: pointer to the mesh object
-  * @vid: VLAN identifier
-  * @kobj: kobject for sysfs vlan subdirectory
-  * @ap_isolation: AP isolation state
-@@ -647,6 +648,7 @@ struct batadv_priv_nc {
-  * @rcu: struct used for freeing in a RCU-safe manner
-  */
- struct batadv_softif_vlan {
-+	struct batadv_priv *bat_priv;
- 	unsigned short vid;
- 	struct kobject *kobj;
- 	atomic_t ap_isolation;		/* boolean */
--- 
-1.8.5.5
+Thanks a lot,
+	Antonio
+
+
+The following changes since commit 1448eb566970c6d3cade522419848fdaee24c684:
+
+  Merge branch 'for-davem' of git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless (2014-05-09 16:46:53 -0400)
+
+are available in the git repository at:
+
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to 29bcc8064fc0b82bc708c09577d550923b954e5a:
+
+  batman-adv: fix removing neigh_ifinfo (2014-05-10 10:59:05 +0200)
+
+----------------------------------------------------------------
+Included changes:
+- properly release neigh_ifinfo in batadv_iv_ogm_process_per_outif()
+- properly release orig_ifinfo->router when freeing orig_ifinfo
+- properly release neigh_node objects during periodic check
+- properly release neigh_info objects when the related hard_iface
+  is free'd
+
+These changes are all very important because they fix some
+reference counting imbalances that lead to the
+impossibility of releasing the netdev object used by
+batman-adv on shutdown.
+The consequence is that such object cannot be destroyed by
+the networking stack (the refcounter does not reach zero)
+thus bringing the system in hanging state during a normal
+reboot operation or a network reconfiguration.
+
+----------------------------------------------------------------
+Simon Wunderlich (4):
+      batman-adv: fix neigh_ifinfo imbalance
+      batman-adv: fix neigh reference imbalance
+      batman-adv: always run purge_orig_neighbors
+      batman-adv: fix removing neigh_ifinfo
+
+ net/batman-adv/bat_iv_ogm.c |  2 ++
+ net/batman-adv/originator.c | 59 ++++++++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 57 insertions(+), 4 deletions(-)
 
