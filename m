@@ -1,14 +1,8 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 14 May 2014 19:48:32 +0800
-Message-ID: <1687384.Tb3u5fGUpi@diderot>
-In-Reply-To: <1399737483-3079-1-git-send-email-antonio@meshcoding.com>
-References: <1399737483-3079-1-git-send-email-antonio@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8386226.tg3pZdSZZs";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: break line longer than
-	80chars
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Wed, 14 May 2014 14:23:15 +0200
+Message-Id: <1400070195-26148-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix typ0 in kerneldoc and comment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,41 +17,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
+Introduced by 9b9cdbe28e2b9c8bdf9c761f22ba9655963d13d4
+("batman-adv: fix removing neigh_ifinfo")
 
---nextPart8386226.tg3pZdSZZs
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+Reported-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+---
+ originator.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-On Saturday 10 May 2014 17:58:03 Antonio Quartulli wrote:
-> Introduced by 9b9cdbe28e2b9c8bdf9c761f22ba9655963d13d4
-> ("batman-adv: fix removing neigh_ifinfo")
-> 
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-> ---
->  originator.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-
-Applied in revision f8d343a.
-
-Thanks,
-Marek
-
---nextPart8386226.tg3pZdSZZs
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJTc1gQAAoJEFNVTo/uthzAL8gH/3mzRsxf4bA2sabKit7fyLcS
-aMW7LcPl53haNE5JcrNIOkF4yFbRlXIm8JXEjvKJBIaPIg3mSwL/52wb1KMGKbXM
-MDuzHkQ9TfzHbR9SR/o4YKqn1K7R0fJxCiy+ytR6dsI4miGd04F1v79nHUmbVKrf
-IvsfqPN8k0tNQVcFIz6zJ1pHpatEet/yBhMIst/CbwhEphvdkOjjWXt0+TWWVTA5
-2EqQdqbZz+H0LxcNGNRKodGuD26vpbA/x2YsaJKZQ4TtX+16+2ILlfchoDnkTjUr
-zaQsPyH6R/R2UOmQtVCiA+iHCCVFaCs0Zg0m8C7WJrOdbN642BsER19AszWorUg=
-=NBHK
------END PGP SIGNATURE-----
-
---nextPart8386226.tg3pZdSZZs--
+diff --git a/originator.c b/originator.c
+index 9ebc40e..abf612d 100644
+--- a/originator.c
++++ b/originator.c
+@@ -704,7 +704,7 @@ free_orig_node:
+ /**
+  * batadv_purge_neigh_ifinfo - purge obsolete ifinfo entries from neighbor
+  * @bat_priv: the bat priv with all the soft interface information
+- * @neigh_node: orig node which is to be checked
++ * @neigh: orig node which is to be checked
+  */
+ static void
+ batadv_purge_neigh_ifinfo(struct batadv_priv *bat_priv,
+@@ -842,7 +842,7 @@ batadv_purge_orig_neighbors(struct batadv_priv *bat_priv,
+ 			hlist_del_rcu(&neigh_node->list);
+ 			batadv_neigh_node_free_ref(neigh_node);
+ 		} else {
+-			/* only neccesary if not the whole neighbor is to be
++			/* only necessary if not the whole neighbor is to be
+ 			 * deleted, but some interface has been removed.
+ 			 */
+ 			batadv_purge_neigh_ifinfo(bat_priv, neigh_node);
+-- 
+1.8.5.5
 
