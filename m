@@ -1,17 +1,17 @@
 Return-Path: <antonio@open-mesh.com>
-Message-ID: <5373DB83.2080006@open-mesh.com>
-Date: Wed, 14 May 2014 23:09:23 +0200
+Message-ID: <5373DCC7.9070708@open-mesh.com>
+Date: Wed, 14 May 2014 23:14:47 +0200
 From: Antonio Quartulli <antonio@open-mesh.com>
 MIME-Version: 1.0
 References: <1397484205-20905-1-git-send-email-antonio@meshcoding.com>	
- <1397484205-20905-2-git-send-email-antonio@meshcoding.com>
- <1398440696.4152.26.camel@jlt4.sipsolutions.net>
-In-Reply-To: <1398440696.4152.26.camel@jlt4.sipsolutions.net>
+ <1397484205-20905-3-git-send-email-antonio@meshcoding.com>
+ <1398440716.4152.27.camel@jlt4.sipsolutions.net>
+In-Reply-To: <1398440716.4152.27.camel@jlt4.sipsolutions.net>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="ORNF4T3Ao6Kb63UtdaHlwbCU0hE1I7DmI"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/7] mac80211: add
-	get_expected_throughput API
+ boundary="a34WJAWs3KVtFjMOFwIWUd0nAvmqTHGtJ"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/7] mac80211: add new RC API to retrieve
+	expected throughput
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,31 +27,37 @@ To: Johannes Berg <johannes@sipsolutions.net>, Antonio Quartulli <antonio@meshco
 Cc: devel@lists.open80211s.org, b.a.t.m.a.n@lists.open-mesh.org, linux-wireless@vger.kernel.org
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---ORNF4T3Ao6Kb63UtdaHlwbCU0hE1I7DmI
+--a34WJAWs3KVtFjMOFwIWUd0nAvmqTHGtJ
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On 25/04/14 17:44, Johannes Berg wrote:
+
+
+On 25/04/14 17:45, Johannes Berg wrote:
 > On Mon, 2014-04-14 at 16:03 +0200, Antonio Quartulli wrote:
+>> From: Antonio Quartulli <antonio@open-mesh.com>
+>>
+>> In order to make mac80211 export the expected throughput,
+>> a new API which extracts such information from any mac80211
+>> SW RC algorithm is needed.
+>> Therefore add the new get_expected_throughput() member
+>> to the rate_control_ops structure.
+>>
+>> The exported value is expressed in Mbps/100. Such unit has
+>> been chosen because it is the highest precision that
+>> MinstrelHT can return.
 >=20
->> +	u32 (*get_expected_throughput)(struct ieee80211_sta *sta);
+> Same as in patch 2 - and realistically 2/3/4 could just be squashed.
 >=20
-> This isn't nice - it forces drivers to conjure up a value.
->=20
-> You should probably at least allow returning 0 for "no idea" or
-> something.
 
-Yeah, I think so too. Returning 0 as "I don't know what to provide"
-should be fine. I will specify this in the doc.
-
-
-Cheers,
+Yeah, I will specify the 0 value as "I don't know what to provide" and I
+think it is fine to have just one patch.
 
 --=20
 Antonio Quartulli
 
 
---ORNF4T3Ao6Kb63UtdaHlwbCU0hE1I7DmI
+--a34WJAWs3KVtFjMOFwIWUd0nAvmqTHGtJ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -60,19 +66,19 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v2.0.22 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBCAAGBQJTc9uLAAoJEEKTMo6mOh1Vfr4P/0n0mFbSxtiUpVl1EQ6dBUct
-+G3Qs1ToZQNQHrqzynWNEc/XIhFZBLX86aYHN8g1jF3ngbDPcbmt/gtSrt/CRZ6P
-uifzzAJVbPmN7kWSoU97CtFGrB06lL2jiG2NIflrwl0qbL7/4lphE4KY8Mm8vdWa
-45FLAEOvtsO8D6R0YDaNlNFtSAlCopZ0UNcllzoW8bgodoXbfN7ClrM1sIkiJ9gy
-aTDI9+C6qNJV8rw3tyxhczuo2VGVGvORExpldwIemogX12lsx2j2zQ7seP7tP/MW
-+XHM7wW2XQbBGNHIIEoNV8ultU4MCeJsozIXxnqPVnmgY43yx/rx9LqvhFECQVdZ
-XFAoStiboR9cQtDXtHvI/U3Nc40npOIbwL40r1IPV4MlDBUk8dgP1Ji33Ls/uVRQ
-89IG+EMPDh2QD0LfrBcfQku9HLjqQ0A6wdO0wLfwPU/U0Cdr6iBdjCaUzbe4BNfn
-romgB8B8f7lEn3ClKLEHpXBOttuNA3VXYxHoZ01H64l0p4h7aZSkbJ9FcDKATi8s
-Gf67rE71NHwISPSQMbo/MwZ97SmIEdwERlgX730OGAGTVa/FV+LNpO5XSCBKfCBX
-BsyFTDtOhlpS6E2vGKquN6ENUWLaFrGe+7Wtffz5h8EjCDj0xmA5cL/Dy/ScUYTC
-8wVj62CWtkfAg2LQWz/F
-=TpMe
+iQIcBAEBCAAGBQJTc9zRAAoJEEKTMo6mOh1VnfEP/R9WGHaPpFYW5QNjxxORMXc3
+bjI9zs6MQTFiRr1IplNjuMZ26U+6zSIotK9PskGySus3iBBFvBHTp5wu7jIh2ykf
+WjLi+pdZOtJ6RPsDMshW8fPNSuzHjV93UOOdWzvE0KtUPqmsHL/DSWbqPbRSgH2i
+BlBI+gshfwkc03JESurBYN4ok3xGqzSSHiI1EKQtHt2oq9fUDg2wxoSEQcI24lbP
+4YJs7sGDkyeF91QhwTxnMmViKHQaYl3GViyETW2qpacAbhStwwn66hC1MzThPyxi
+8JbjZN89rtgljvYMt8Y6bMtzW2tYDjFqa0Q+gspMu8eauA4c4b9xyVh0uApG3Klu
+FFFXC0fFDVE/0z1E7HV1bUKCh7mKk5Qyf/+pJXp/bluJcxxGFC6I/YqzGfNdbYfA
+tDr5XBnIWMPs/86qT0kzHUSztwfr7+8UtevQJK1TxgijC6j0L3qVJHI4C+6A798j
+fj9xb1PcGrzrZrYCCSlLCKQ8d7K3QEwX75l6LofH/JuWogZPXbyECSUp4UnD8fxi
+wxeFZGz58wH9mbutZDZ5yNw5+mrVBEmRihWHTouqDQ4L4CpwP+sCOuv93D9JDpvb
+CNo9ZN1glUizV95DoEvJkt3JwCta6qJtlDE9tyDqF4T8ONunXT6ecRLnUZU8OAU5
+xFhaTeNOZbxU6mjWk+8S
+=yoLI
 -----END PGP SIGNATURE-----
 
---ORNF4T3Ao6Kb63UtdaHlwbCU0hE1I7DmI--
+--a34WJAWs3KVtFjMOFwIWUd0nAvmqTHGtJ--
