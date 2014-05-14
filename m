@@ -1,17 +1,14 @@
-Return-Path: <antonio@open-mesh.com>
-Message-ID: <5373DCC7.9070708@open-mesh.com>
-Date: Wed, 14 May 2014 23:14:47 +0200
-From: Antonio Quartulli <antonio@open-mesh.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Thu, 15 May 2014 05:15:49 +0800
+Message-ID: <2297834.Rh9VFD6oMo@diderot>
+In-Reply-To: <1400070195-26148-1-git-send-email-antonio@meshcoding.com>
+References: <1400070195-26148-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1397484205-20905-1-git-send-email-antonio@meshcoding.com>	
- <1397484205-20905-3-git-send-email-antonio@meshcoding.com>
- <1398440716.4152.27.camel@jlt4.sipsolutions.net>
-In-Reply-To: <1398440716.4152.27.camel@jlt4.sipsolutions.net>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="a34WJAWs3KVtFjMOFwIWUd0nAvmqTHGtJ"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/7] mac80211: add new RC API to retrieve
-	expected throughput
+Content-Type: multipart/signed; boundary="nextPart2173286.YmeK41cIdP";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix typ0 in kerneldoc and
+	comment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,62 +20,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Johannes Berg <johannes@sipsolutions.net>, Antonio Quartulli <antonio@meshcoding.com>
-Cc: devel@lists.open80211s.org, b.a.t.m.a.n@lists.open-mesh.org, linux-wireless@vger.kernel.org
-
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---a34WJAWs3KVtFjMOFwIWUd0nAvmqTHGtJ
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
+--nextPart2173286.YmeK41cIdP
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On 25/04/14 17:45, Johannes Berg wrote:
-> On Mon, 2014-04-14 at 16:03 +0200, Antonio Quartulli wrote:
->> From: Antonio Quartulli <antonio@open-mesh.com>
->>
->> In order to make mac80211 export the expected throughput,
->> a new API which extracts such information from any mac80211
->> SW RC algorithm is needed.
->> Therefore add the new get_expected_throughput() member
->> to the rate_control_ops structure.
->>
->> The exported value is expressed in Mbps/100. Such unit has
->> been chosen because it is the highest precision that
->> MinstrelHT can return.
->=20
-> Same as in patch 2 - and realistically 2/3/4 could just be squashed.
->=20
+On Wednesday 14 May 2014 14:23:15 Antonio Quartulli wrote:
+> Introduced by 9b9cdbe28e2b9c8bdf9c761f22ba9655963d13d4
+> ("batman-adv: fix removing neigh_ifinfo")
+> 
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> Reported-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+> ---
+>  originator.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Yeah, I will specify the 0 value as "I don't know what to provide" and I
-think it is fine to have just one patch.
+Applied in revision 236e603.
 
---=20
-Antonio Quartulli
+Thanks,
+Marek
 
-
---a34WJAWs3KVtFjMOFwIWUd0nAvmqTHGtJ
+--nextPart2173286.YmeK41cIdP
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBCAAGBQJTc9zRAAoJEEKTMo6mOh1VnfEP/R9WGHaPpFYW5QNjxxORMXc3
-bjI9zs6MQTFiRr1IplNjuMZ26U+6zSIotK9PskGySus3iBBFvBHTp5wu7jIh2ykf
-WjLi+pdZOtJ6RPsDMshW8fPNSuzHjV93UOOdWzvE0KtUPqmsHL/DSWbqPbRSgH2i
-BlBI+gshfwkc03JESurBYN4ok3xGqzSSHiI1EKQtHt2oq9fUDg2wxoSEQcI24lbP
-4YJs7sGDkyeF91QhwTxnMmViKHQaYl3GViyETW2qpacAbhStwwn66hC1MzThPyxi
-8JbjZN89rtgljvYMt8Y6bMtzW2tYDjFqa0Q+gspMu8eauA4c4b9xyVh0uApG3Klu
-FFFXC0fFDVE/0z1E7HV1bUKCh7mKk5Qyf/+pJXp/bluJcxxGFC6I/YqzGfNdbYfA
-tDr5XBnIWMPs/86qT0kzHUSztwfr7+8UtevQJK1TxgijC6j0L3qVJHI4C+6A798j
-fj9xb1PcGrzrZrYCCSlLCKQ8d7K3QEwX75l6LofH/JuWogZPXbyECSUp4UnD8fxi
-wxeFZGz58wH9mbutZDZ5yNw5+mrVBEmRihWHTouqDQ4L4CpwP+sCOuv93D9JDpvb
-CNo9ZN1glUizV95DoEvJkt3JwCta6qJtlDE9tyDqF4T8ONunXT6ecRLnUZU8OAU5
-xFhaTeNOZbxU6mjWk+8S
-=yoLI
+iQEcBAABAgAGBQJTc90MAAoJEFNVTo/uthzA+GYH/RgEzLL0EwCrGUFH5NxRajFd
+en94hixxk2vmiKMZzEKe7KGzeZaNSIOmZUdaHCJJz8dT4HAc2Grnx49ENc/FiLe/
+QKLLZOFDErAJfsYY8IA11mjIdq56GsMZMycOFVtGYaOkohpjj0IesjR0X2WLTAGS
+Jl4n00geeICKPLebS2EBRHRINcpCfSPJpbcUETx7Yo9H25OSCFEcLw/GWoCsE2Rb
+JE+AnOSbr/YxlIGPKZPWzfJ4Sg0mdWwZzX+y9joPD8j6vEbK3v/nKAdEgRp2iwAx
+nuRYjBf4wXjkIVXfENW+wzkNkQLtXp9Nyw5/yDqLc+shsdz5nVCgBmTAMSdEGb0=
+=fYsM
 -----END PGP SIGNATURE-----
 
---a34WJAWs3KVtFjMOFwIWUd0nAvmqTHGtJ--
+--nextPart2173286.YmeK41cIdP--
+
