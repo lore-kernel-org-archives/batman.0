@@ -1,13 +1,14 @@
-Return-Path: <davem@davemloft.net>
-Date: Tue, 13 May 2014 17:43:45 -0400 (EDT)
-Message-Id: <20140513.174345.406760552060437774.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20140511001231.GC7875@kaos.lebenslange-mailadresse.de>
-References: <20140511001231.GC7875@kaos.lebenslange-mailadresse.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] [resend] net: get rid of SET_ETHTOOL_OPS
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Wed, 14 May 2014 19:46:21 +0800
+Message-ID: <1777069.zHZEjYMbUp@diderot>
+In-Reply-To: <1399740997-30784-1-git-send-email-antonio@meshcoding.com>
+References: <1399740997-30784-1-git-send-email-antonio@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart23337051.ivkVNVaaHh";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add blank line between
+	declarations and the rest of the code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,28 +20,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: w-lkml@lebenslange-mailadresse.de
-Cc: devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, trivial@kernel.org, xen-devel@lists.xenproject.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org, e1000-devel@lists.sourceforge.net, bridge@lists.linux-foundation.org, devel@linuxdriverproject.org, nios2-dev@lists.rocketboards.org, dev@openvswitch.org, linuxppc-dev@lists.ozlabs.org, linux-acenic@sunsite.dk
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-From: Wilfried Klaebe <w-lkml@lebenslange-mailadresse.de>
-Date: Sun, 11 May 2014 00:12:32 +0000
 
-> net: get rid of SET_ETHTOOL_OPS
-> 
-> Dave Miller mentioned he'd like to see SET_ETHTOOL_OPS gone.
-> This does that.
-> 
-> Mostly done via coccinelle script:
-> @@
-> struct ethtool_ops *ops;
-> struct net_device *dev;
-> @@
-> -       SET_ETHTOOL_OPS(dev, ops);
-> +       dev->ethtool_ops = ops;
-> 
-> Compile tested only, but I'd seriously wonder if this broke anything.
-> 
-> Suggested-by: Dave Miller <davem@davemloft.net>
-> Signed-off-by: Wilfried Klaebe <w-lkml@lebenslange-mailadresse.de>
+--nextPart23337051.ivkVNVaaHh
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Applied to net-next, thanks.
+On Saturday 10 May 2014 18:56:37 Antonio Quartulli wrote:
+> Reported by checkpatch with the following message:
+> "WARNING: Missing a blank line after declarations"
+> 
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> ---
+>  debugfs.c               |  9 +++++++++
+>  distributed-arp-table.c |  1 +
+>  network-coding.c        |  1 +
+>  sysfs.c                 | 10 ++++++++++
+>  4 files changed, 21 insertions(+)
+
+Applied in revision 869a0e5.
+
+Thanks,
+Marek
+
+--nextPart23337051.ivkVNVaaHh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJTc1eRAAoJEFNVTo/uthzAeAwH/j99GersbzR4I86zj7RYZAgA
+btbx1kTUbAmfNaEry8RwCWqnn8+7cMlN8gXT2CarK5Rs+ACHsM1/x2K3x3JHqyPS
+uOTPEjpXFbpU0MkplGBUFbnfRnQZIH3eC/svpkIZmsX+aODXD2Cl9YxxrcyaE94X
+SGX3Rya9KenapFnscyEKvovZaJskgqieaHY1azYs+cBNO9c9Fttr7DEf4qfjDYjj
+jzqeAESv6V9ZiUUNwoX3t23RBoB0FeY/9uUKaxWkydPUCd+ht/EiweY/UvWnz7qZ
+sHjlvuOVtYj1O31qEzTZnIAAK+SZbqhfpUD5lsWoPlD04xAQ+3250bg03eunXXU=
+=cIWh
+-----END PGP SIGNATURE-----
+
+--nextPart23337051.ivkVNVaaHh--
+
