@@ -1,14 +1,17 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 15 May 2014 05:15:49 +0800
-Message-ID: <2297834.Rh9VFD6oMo@diderot>
-In-Reply-To: <1400070195-26148-1-git-send-email-antonio@meshcoding.com>
-References: <1400070195-26148-1-git-send-email-antonio@meshcoding.com>
+Return-Path: <antonio@open-mesh.com>
+Message-ID: <5373DCED.90209@open-mesh.com>
+Date: Wed, 14 May 2014 23:15:25 +0200
+From: Antonio Quartulli <antonio@open-mesh.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2173286.YmeK41cIdP";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix typ0 in kerneldoc and
-	comment
+References: <1397484205-20905-1-git-send-email-antonio@meshcoding.com>	
+ <1397484205-20905-7-git-send-email-antonio@meshcoding.com>
+ <1398440818.4152.29.camel@jlt4.sipsolutions.net>
+In-Reply-To: <1398440818.4152.29.camel@jlt4.sipsolutions.net>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="BiBKvhn1MwhRKuMLxUV1VSdPaBI1cq5jn"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 7/7] cfg80211: implement
+ cfg80211_get_station cfg80211 API
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,45 +23,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+To: Johannes Berg <johannes@sipsolutions.net>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: devel@lists.open80211s.org, b.a.t.m.a.n@lists.open-mesh.org, linux-wireless@vger.kernel.org
+
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--BiBKvhn1MwhRKuMLxUV1VSdPaBI1cq5jn
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
 
---nextPart2173286.YmeK41cIdP
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday 14 May 2014 14:23:15 Antonio Quartulli wrote:
-> Introduced by 9b9cdbe28e2b9c8bdf9c761f22ba9655963d13d4
-> ("batman-adv: fix removing neigh_ifinfo")
-> 
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-> Reported-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-> ---
->  originator.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+On 25/04/14 17:46, Johannes Berg wrote:
+>=20
+>> +	rdev =3D wiphy_to_dev(wdev->wiphy);
+>=20
+> That's _to_rdev() now.
 
-Applied in revision 236e603.
+Thanks, will fix that.
 
-Thanks,
-Marek
+--=20
+Antonio Quartulli
 
---nextPart2173286.YmeK41cIdP
+
+--BiBKvhn1MwhRKuMLxUV1VSdPaBI1cq5jn
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQEcBAABAgAGBQJTc90MAAoJEFNVTo/uthzA+GYH/RgEzLL0EwCrGUFH5NxRajFd
-en94hixxk2vmiKMZzEKe7KGzeZaNSIOmZUdaHCJJz8dT4HAc2Grnx49ENc/FiLe/
-QKLLZOFDErAJfsYY8IA11mjIdq56GsMZMycOFVtGYaOkohpjj0IesjR0X2WLTAGS
-Jl4n00geeICKPLebS2EBRHRINcpCfSPJpbcUETx7Yo9H25OSCFEcLw/GWoCsE2Rb
-JE+AnOSbr/YxlIGPKZPWzfJ4Sg0mdWwZzX+y9joPD8j6vEbK3v/nKAdEgRp2iwAx
-nuRYjBf4wXjkIVXfENW+wzkNkQLtXp9Nyw5/yDqLc+shsdz5nVCgBmTAMSdEGb0=
-=fYsM
+iQIcBAEBCAAGBQJTc9zxAAoJEEKTMo6mOh1VQegP/RQW53TDyxonlo3wUFGFZ8eT
+DqE/3yjAv6jXy1aIq0xikeBlUMUCd5h1QnNj6NPhxuIRJkQeP+oahURcklva/UbX
+6jLIe4+6j5JaBAs5m1xw0kf6ebue/zmLctRF5GIOqjeRf6EHK/J2oAw2Kw70qhZZ
+JiS+4r7l5HnF62H2VReMIvR179GgVQ/Wzaz6D4UwMGbzh3VC9xufyOa/RBAS5HKP
+ILzX0qQvz2chahWRXm5ltnRYJQcUkMWEl4Jb6gojYZDSewx5U9zTlPjl0wSfMhv8
+oerUzSL45hjWiakDFeA72bhYXjbTePbWynH7BJGk648nFM+2QJpyscm2oj56m48g
+2xPTU3wXGOYZhg62NQe6w/E5LriGpGVTPtz3VqNkFZroNzkmv/7EreGotNCjaDL3
+RU2mlbkCMQoHx/krtG6IsCKWPUxzkwUOMZ5CzP41J2uo+o4OoNYdI6poSzyrO5TJ
+Ztq4P+soNbWfSKGG5fhoTQWbgWb2CPraIqGX5moVxCQlOO3iPVzDmVUXq7Kl52aY
+1pLtK/QXTZHjm7HuD/VqcJF83RaTDty4mdRljpl0tQyp+6VK5rrEV110y8630trk
+7UvWK3vxwm/yTwr8MSUY7L5JQ5/V9FQ/cdIewzo0dKAIxSJJYklPSqyWFc2flCC7
+DKUnBQiptwHNVilqgLH6
+=AEvm
 -----END PGP SIGNATURE-----
 
---nextPart2173286.YmeK41cIdP--
-
+--BiBKvhn1MwhRKuMLxUV1VSdPaBI1cq5jn--
