@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 14 May 2014 19:46:21 +0800
-Message-ID: <1777069.zHZEjYMbUp@diderot>
-In-Reply-To: <1399740997-30784-1-git-send-email-antonio@meshcoding.com>
-References: <1399740997-30784-1-git-send-email-antonio@meshcoding.com>
+Date: Wed, 14 May 2014 19:48:32 +0800
+Message-ID: <1687384.Tb3u5fGUpi@diderot>
+In-Reply-To: <1399737483-3079-1-git-send-email-antonio@meshcoding.com>
+References: <1399737483-3079-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart23337051.ivkVNVaaHh";
+Content-Type: multipart/signed; boundary="nextPart8386226.tg3pZdSZZs";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: add blank line between
-	declarations and the rest of the code
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: break line longer than
+	80chars
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,28 +24,25 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart23337051.ivkVNVaaHh
+--nextPart8386226.tg3pZdSZZs
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 10 May 2014 18:56:37 Antonio Quartulli wrote:
-> Reported by checkpatch with the following message:
-> "WARNING: Missing a blank line after declarations"
+On Saturday 10 May 2014 17:58:03 Antonio Quartulli wrote:
+> Introduced by 9b9cdbe28e2b9c8bdf9c761f22ba9655963d13d4
+> ("batman-adv: fix removing neigh_ifinfo")
 > 
 > Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
->  debugfs.c               |  9 +++++++++
->  distributed-arp-table.c |  1 +
->  network-coding.c        |  1 +
->  sysfs.c                 | 10 ++++++++++
->  4 files changed, 21 insertions(+)
+>  originator.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Applied in revision 869a0e5.
+Applied in revision f8d343a.
 
 Thanks,
 Marek
 
---nextPart23337051.ivkVNVaaHh
+--nextPart8386226.tg3pZdSZZs
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +50,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTc1eRAAoJEFNVTo/uthzAeAwH/j99GersbzR4I86zj7RYZAgA
-btbx1kTUbAmfNaEry8RwCWqnn8+7cMlN8gXT2CarK5Rs+ACHsM1/x2K3x3JHqyPS
-uOTPEjpXFbpU0MkplGBUFbnfRnQZIH3eC/svpkIZmsX+aODXD2Cl9YxxrcyaE94X
-SGX3Rya9KenapFnscyEKvovZaJskgqieaHY1azYs+cBNO9c9Fttr7DEf4qfjDYjj
-jzqeAESv6V9ZiUUNwoX3t23RBoB0FeY/9uUKaxWkydPUCd+ht/EiweY/UvWnz7qZ
-sHjlvuOVtYj1O31qEzTZnIAAK+SZbqhfpUD5lsWoPlD04xAQ+3250bg03eunXXU=
-=cIWh
+iQEcBAABAgAGBQJTc1gQAAoJEFNVTo/uthzAL8gH/3mzRsxf4bA2sabKit7fyLcS
+aMW7LcPl53haNE5JcrNIOkF4yFbRlXIm8JXEjvKJBIaPIg3mSwL/52wb1KMGKbXM
+MDuzHkQ9TfzHbR9SR/o4YKqn1K7R0fJxCiy+ytR6dsI4miGd04F1v79nHUmbVKrf
+IvsfqPN8k0tNQVcFIz6zJ1pHpatEet/yBhMIst/CbwhEphvdkOjjWXt0+TWWVTA5
+2EqQdqbZz+H0LxcNGNRKodGuD26vpbA/x2YsaJKZQ4TtX+16+2ILlfchoDnkTjUr
+zaQsPyH6R/R2UOmQtVCiA+iHCCVFaCs0Zg0m8C7WJrOdbN642BsER19AszWorUg=
+=NBHK
 -----END PGP SIGNATURE-----
 
---nextPart23337051.ivkVNVaaHh--
+--nextPart8386226.tg3pZdSZZs--
 
