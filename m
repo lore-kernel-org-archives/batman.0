@@ -1,17 +1,16 @@
 Return-Path: <antonio@open-mesh.com>
-Message-ID: <5373DCED.90209@open-mesh.com>
-Date: Wed, 14 May 2014 23:15:25 +0200
+Message-ID: <5373DFDA.800@open-mesh.com>
+Date: Wed, 14 May 2014 23:27:54 +0200
 From: Antonio Quartulli <antonio@open-mesh.com>
 MIME-Version: 1.0
-References: <1397484205-20905-1-git-send-email-antonio@meshcoding.com>	
- <1397484205-20905-7-git-send-email-antonio@meshcoding.com>
- <1398440818.4152.29.camel@jlt4.sipsolutions.net>
-In-Reply-To: <1398440818.4152.29.camel@jlt4.sipsolutions.net>
+References: <1397484205-20905-1-git-send-email-antonio@meshcoding.com>
+ <1398440652.4152.25.camel@jlt4.sipsolutions.net>
+In-Reply-To: <1398440652.4152.25.camel@jlt4.sipsolutions.net>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="BiBKvhn1MwhRKuMLxUV1VSdPaBI1cq5jn"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 7/7] cfg80211: implement
- cfg80211_get_station cfg80211 API
+ boundary="Af7KlnqGHtRUAhmOr5lvF5XMNMnGea4sN"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/7] cfg80211: export expected throughput
+	through get_station()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,25 +26,62 @@ To: Johannes Berg <johannes@sipsolutions.net>, Antonio Quartulli <antonio@meshco
 Cc: devel@lists.open80211s.org, b.a.t.m.a.n@lists.open-mesh.org, linux-wireless@vger.kernel.org
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---BiBKvhn1MwhRKuMLxUV1VSdPaBI1cq5jn
+--Af7KlnqGHtRUAhmOr5lvF5XMNMnGea4sN
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-
-
-On 25/04/14 17:46, Johannes Berg wrote:
+On 25/04/14 17:44, Johannes Berg wrote:
+> On Mon, 2014-04-14 at 16:03 +0200, Antonio Quartulli wrote:
+>> From: Antonio Quartulli <antonio@open-mesh.com>
+>>
+>> Users may need information about the expected throughput
 >=20
->> +	rdev =3D wiphy_to_dev(wdev->wiphy);
+> I think this "expected throughput" should be a bit clarified.
 >=20
-> That's _to_rdev() now.
+> Are you talking about "expected PHY rate" or rather "expected (payload)=
 
-Thanks, will fix that.
+> throughput"?
+
+It is not payload throughput because in this "number" we also consider
+the bytes being part of the 802.11 Header. Maybe we can call it
+"expected MAC throughput" ?
+
+
+>=20
+>> towards a given peer computed by the RC algorithm.
+>> Export such value in Mbps/100 through the get_station() API.
+>=20
+> "units of 10Kbps" might be a better description :-)
+>=20
+>> This unit has been chosen because it is the same of the
+>> throughput returned by MinstrelHT.
+>=20
+> Since it's unlikely we'll ever reach the limit of a u32, maybe just
+> multiply by 10 to get the nicer Kbps?
+
+At least we are safe in the near future :) Ok, I can change it to Kbps
+because it seems that a lot of people will be happier :)
+
+>=20
+>> + * @expected_throughput: expected throughput in Mbps/100 reported by =
+the RC
+>> + *	algorithm towards this station. The unit of this value has been ch=
+osen
+>> + *	because it is the same of the throughput returned by MinstrelHT
+>=20
+> I think the rationale shouldn't be here now.
+>=20
+
+I think I will just remove the last sentence.
+
+
+Thanks a lot!
 
 --=20
 Antonio Quartulli
 
 
---BiBKvhn1MwhRKuMLxUV1VSdPaBI1cq5jn
+--Af7KlnqGHtRUAhmOr5lvF5XMNMnGea4sN
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -54,19 +90,19 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v2.0.22 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBCAAGBQJTc9zxAAoJEEKTMo6mOh1VQegP/RQW53TDyxonlo3wUFGFZ8eT
-DqE/3yjAv6jXy1aIq0xikeBlUMUCd5h1QnNj6NPhxuIRJkQeP+oahURcklva/UbX
-6jLIe4+6j5JaBAs5m1xw0kf6ebue/zmLctRF5GIOqjeRf6EHK/J2oAw2Kw70qhZZ
-JiS+4r7l5HnF62H2VReMIvR179GgVQ/Wzaz6D4UwMGbzh3VC9xufyOa/RBAS5HKP
-ILzX0qQvz2chahWRXm5ltnRYJQcUkMWEl4Jb6gojYZDSewx5U9zTlPjl0wSfMhv8
-oerUzSL45hjWiakDFeA72bhYXjbTePbWynH7BJGk648nFM+2QJpyscm2oj56m48g
-2xPTU3wXGOYZhg62NQe6w/E5LriGpGVTPtz3VqNkFZroNzkmv/7EreGotNCjaDL3
-RU2mlbkCMQoHx/krtG6IsCKWPUxzkwUOMZ5CzP41J2uo+o4OoNYdI6poSzyrO5TJ
-Ztq4P+soNbWfSKGG5fhoTQWbgWb2CPraIqGX5moVxCQlOO3iPVzDmVUXq7Kl52aY
-1pLtK/QXTZHjm7HuD/VqcJF83RaTDty4mdRljpl0tQyp+6VK5rrEV110y8630trk
-7UvWK3vxwm/yTwr8MSUY7L5JQ5/V9FQ/cdIewzo0dKAIxSJJYklPSqyWFc2flCC7
-DKUnBQiptwHNVilqgLH6
-=AEvm
+iQIcBAEBCAAGBQJTc9/eAAoJEEKTMo6mOh1V2ScP/1HVQEhjlJCs+A28RR3vgqJm
+FwOZU4eUKR4c7kOHkI48Rl0f4IwbfKyrPpbxkTXq90FRoF0EsNSMv2pwz0D1lDU4
+5SpZbhblRSsPMTS8QgOVKYI/wF+0Qq2Q3gmUUGSWsgCx8zJSFHkmobYMTMLZS7nZ
+VreCmU8dvv7g1GYSMZXbb8ALdqCsnNeMhGmqUl2IeTU3K3tE9+wnbpAL+f2aPb3S
+CBFTLZ3Yf/TgGpjxm2wXujbR8FTDXxNol2PvzW3BRQ0Gju1M2ytVFNKYrc2gW9Tp
+v8c7sKXxtvm4DOrfoOPUHhESDSutPKtviPT4kiKXqnw42RZnVWTAK6Sqm4aNqnLf
+B8Dls5lfwMdaAwT++DiZ8SnIVy1B7laqp4XLVvFDJiFWBiR8v5+TqnhICQu5ExPa
+WAYefEH2K7sr3DeGTdS0vL4dycTFe2YAXhqxrjG0lHUqcwhP1ie8imw4FI/k5F1+
+5eOoye93yyOVrMFDbAMCBoV26wlwUuObjMV1gYnFvJXoo7pDNb/1Jgxc8HVBxI6t
+5gsdgvWMX0Im99X7+TalME/GMse/VdK+J527C6DU448Yfex+BZDEH7Qqf1vjprGu
+ygRiqa/rdSAPx01Vnkwfo7pOa8VBpy4/lfr38vva0WbEjfJ5yqt7/uESZsjjfNQ9
+conaJ5G2Z0Fvr3eCzEvg
+=QVsi
 -----END PGP SIGNATURE-----
 
---BiBKvhn1MwhRKuMLxUV1VSdPaBI1cq5jn--
+--Af7KlnqGHtRUAhmOr5lvF5XMNMnGea4sN--
