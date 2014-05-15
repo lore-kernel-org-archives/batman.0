@@ -1,11 +1,13 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu, 15 May 2014 20:50:52 +0200
-Message-Id: <1400179852-4064-5-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1400179852-4064-1-git-send-email-antonio@meshcoding.com>
-References: <1400179852-4064-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: fix local TT check for
-	outgoing arp requests in DAT
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Fri, 16 May 2014 02:55:41 +0800
+Message-ID: <7612259.s3IjAD1SqJ@diderot>
+In-Reply-To: <1400144887-24455-1-git-send-email-antonio@meshcoding.com>
+References: <1400144887-24455-1-git-send-email-antonio@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2363765.MO7klRPrT8";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: fix alignment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,46 +19,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@open-mesh.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
 
-Change introduced by 88e48d7b3340ef07b108eb8a8b3813dd093cc7f7
-("batman-adv: make DAT drop ARP requests targeting local clients")
-implements a check that prevents DAT from using the caching
-mechanism when the client that is supposed to provide a reply
-to an arp request is local.
+--nextPart2363765.MO7klRPrT8
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-However change brought by be1db4f6615b5e6156c807ea8985171c215c2d57
-("batman-adv: make the Distributed ARP Table vlan aware")
-has not converted the above check into its vlan aware version
-thus making it useless when the local client is behind a vlan.
+On Thursday 15 May 2014 11:08:06 Antonio Quartulli wrote:
+> Introduced by 9729d2085c0fa4398eb1ee518b0097866dfdcd77
+> ("batman-adv: fix TT VLAN inconsistency on VLAN re-add")
+> 
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> ---
+>  soft-interface.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Fix the behaviour by properly specifying the vlan when
-checking for a client being local or not.
+Applied in revision bc089ef.
 
-Reported-by: Simon Wunderlich <simon@open-mesh.com>
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
- net/batman-adv/distributed-arp-table.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Thanks,
+Marek
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index b25fd64..aa5d494 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -940,8 +940,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 		 * additional DAT answer may trigger kernel warnings about
- 		 * a packet coming from the wrong port.
- 		 */
--		if (batadv_is_my_client(bat_priv, dat_entry->mac_addr,
--					BATADV_NO_FLAGS)) {
-+		if (batadv_is_my_client(bat_priv, dat_entry->mac_addr, vid)) {
- 			ret = true;
- 			goto out;
- 		}
--- 
-1.8.5.5
+--nextPart2363765.MO7klRPrT8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAABAgAGBQJTdQ2yAAoJEFNVTo/uthzA3LIIALLgi/ftr7k53cj5GZN6MO0z
+pZmoFF4qPL8zWCc0+zUMiFysPGJEy7G8EqptnHdsmws4zQPPxO5VBiv0IdoTlp3N
+ai7QLgs1OnxjK6uhD/GmYjb0OdProgioJjHZyIVPz69fCCVi5KO26wxdM4eTD42O
+HPhJWGxSsqdUhE0nMiXtLPIyPfPgDVx2epSLS5AGHloJsAnOx7m/UjxhVckWDOME
+RKdnrPu291h4xoYoDHkI1HwiBgSlncwO99Qx+PRpMs0fspdi3y6pgq8AVzGmYN6l
+QDxv3MCoF+q4oBWFFNN/oeX+6MDshvBVK5rwzxcSmctv7zvhVcGq+87lk+3LdHo=
+=VPbN
+-----END PGP SIGNATURE-----
+
+--nextPart2363765.MO7klRPrT8--
 
