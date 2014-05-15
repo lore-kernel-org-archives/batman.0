@@ -1,8 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu, 15 May 2014 20:50:48 +0200
-Message-Id: <1400179852-4064-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] pull request net: 20140515
+Date: Thu, 15 May 2014 20:50:49 +0200
+Message-Id: <1400179852-4064-2-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1400179852-4064-1-git-send-email-antonio@meshcoding.com>
+References: <1400179852-4064-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: fix indirect hard_iface NULL
+	dereference
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,75 +18,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-Hello David,
+From: Marek Lindner <mareklindner@neomailbox.ch>
 
-our debugging campaign continues..
+If hard_iface is NULL and goto out is made batadv_hardif_free_ref()
+doesn't check for NULL before dereferencing it to get to refcount.
 
-Here I have another small set of fixes intended for net/linux-3.15 and *stable*
-(please enqueue them).
+Introduced in cb1c92ec37fb70543d133a1fa7d9b54d6f8a1ecd
+("batman-adv: add debugfs support to view multiif tables").
 
-I know we already sent some fixes and we are running late in the rc cycle, but,
-as you can see from the stats below, the changes are very very small.
+Reported-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ net/batman-adv/originator.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Patch 1 prevents a NULL dereference in batadv_orig_hardif_seq_print_text() along
-the failure path.
-
-Patch 2 fixes a reference counting imbalance that gets triggered everytime the
-batman packet fragmentation mechanism is used; this imbalance prevents the
-netdev object held by batman-adv from being released on shutdown.
-
-Patch 3 fixes the reference counting for the orig_node objects in order to avoid
-any access after they have been free'd.
-
-Patch 4 fixes the TT local check in DAT (Distributed ARP Table) that is used to
-avoid sending (self-forged) ARP replies on behalf of other host in the LAN.
-
-
-
-
-
-Please pull or let me know of any problem!
-
-Thanks a lot,
-	Antonio
-
-
-
-
-
-The following changes since commit e84d2f8d2ae33c8215429824e1ecf24cbca9645e:
-
-  net: filter: s390: fix JIT address randomization (2014-05-14 16:10:16 -0400)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
-
-for you to fetch changes up to cc2f33860cea0e48ebec096130bd0f7c4bf6e0bc:
-
-  batman-adv: fix local TT check for outgoing arp requests in DAT (2014-05-15 20:23:47 +0200)
-
-----------------------------------------------------------------
-Include changes:
-- fix NULL dereference in batadv_orig_hardif_seq_print_text()
-- fix reference counting imbalance when using fragmentation
-- avoid access to orig_node objects after they have been free'd
-- fix local TT check for outgoing arp requests in DAT
-
-----------------------------------------------------------------
-Antonio Quartulli (3):
-      batman-adv: fix reference counting imbalance while sending fragment
-      batman-adv: increase orig refcount when storing ref in gw_node
-      batman-adv: fix local TT check for outgoing arp requests in DAT
-
-Marek Lindner (1):
-      batman-adv: fix indirect hard_iface NULL dereference
-
- net/batman-adv/distributed-arp-table.c |  3 +--
- net/batman-adv/fragmentation.c         | 11 ++++++++---
- net/batman-adv/gateway_client.c        | 11 +++++++++--
- net/batman-adv/originator.c            |  3 ++-
- 4 files changed, 20 insertions(+), 8 deletions(-)
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 1785da3..6a48451 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -1079,7 +1079,8 @@ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
+ 	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq, hard_iface);
+ 
+ out:
+-	batadv_hardif_free_ref(hard_iface);
++	if (hard_iface)
++		batadv_hardif_free_ref(hard_iface);
+ 	return 0;
+ }
+ 
+-- 
+1.8.5.5
 
