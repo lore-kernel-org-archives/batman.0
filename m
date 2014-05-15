@@ -1,9 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu, 15 May 2014 11:24:26 +0200
-Message-Id: <1400145866-22473-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove semi-colon after macro
-	definition
+Date: Thu, 15 May 2014 20:50:48 +0200
+Message-Id: <1400179852-4064-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] pull request net: 20140515
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,62 +14,76 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Reported by checkpatch with the following warning:
-"WARNING: macros should not use a trailing semicolon"
+Hello David,
 
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- debugfs.c | 4 ++--
- sysfs.c   | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+our debugging campaign continues..
 
-diff --git a/debugfs.c b/debugfs.c
-index 99f2ba0..a12e25e 100644
---- a/debugfs.c
-+++ b/debugfs.c
-@@ -342,7 +342,7 @@ struct batadv_debuginfo batadv_debuginfo_##_name = {	\
- 		  .llseek = seq_lseek,			\
- 		  .release = single_release,		\
- 		}					\
--};
-+}
- 
- /* the following attributes are general and therefore they will be directly
-  * placed in the BATADV_DEBUGFS_SUBDIR subdirectory of debugfs
-@@ -404,7 +404,7 @@ struct batadv_debuginfo batadv_hardif_debuginfo_##_name = {	\
- 		.llseek = seq_lseek,				\
- 		.release = single_release,			\
- 	},							\
--};
-+}
- static BATADV_HARDIF_DEBUGINFO(originators, S_IRUGO,
- 			       batadv_originators_hardif_open);
- 
-diff --git a/sysfs.c b/sysfs.c
-index f51b484..fc47baa 100644
---- a/sysfs.c
-+++ b/sysfs.c
-@@ -108,7 +108,7 @@ struct batadv_attribute batadv_attr_vlan_##_name = {	\
- 		 .mode = _mode },			\
- 	.show   = _show,				\
- 	.store  = _store,				\
--};
-+}
- 
- /* Use this, if you have customized show and store functions */
- #define BATADV_ATTR(_name, _mode, _show, _store)	\
-@@ -117,7 +117,7 @@ struct batadv_attribute batadv_attr_##_name = {		\
- 		 .mode = _mode },			\
- 	.show   = _show,				\
- 	.store  = _store,				\
--};
-+}
- 
- #define BATADV_ATTR_SIF_STORE_BOOL(_name, _post_func)			\
- ssize_t batadv_store_##_name(struct kobject *kobj,			\
--- 
-1.8.5.5
+Here I have another small set of fixes intended for net/linux-3.15 and *stable*
+(please enqueue them).
+
+I know we already sent some fixes and we are running late in the rc cycle, but,
+as you can see from the stats below, the changes are very very small.
+
+Patch 1 prevents a NULL dereference in batadv_orig_hardif_seq_print_text() along
+the failure path.
+
+Patch 2 fixes a reference counting imbalance that gets triggered everytime the
+batman packet fragmentation mechanism is used; this imbalance prevents the
+netdev object held by batman-adv from being released on shutdown.
+
+Patch 3 fixes the reference counting for the orig_node objects in order to avoid
+any access after they have been free'd.
+
+Patch 4 fixes the TT local check in DAT (Distributed ARP Table) that is used to
+avoid sending (self-forged) ARP replies on behalf of other host in the LAN.
+
+
+
+
+
+Please pull or let me know of any problem!
+
+Thanks a lot,
+	Antonio
+
+
+
+
+
+The following changes since commit e84d2f8d2ae33c8215429824e1ecf24cbca9645e:
+
+  net: filter: s390: fix JIT address randomization (2014-05-14 16:10:16 -0400)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to cc2f33860cea0e48ebec096130bd0f7c4bf6e0bc:
+
+  batman-adv: fix local TT check for outgoing arp requests in DAT (2014-05-15 20:23:47 +0200)
+
+----------------------------------------------------------------
+Include changes:
+- fix NULL dereference in batadv_orig_hardif_seq_print_text()
+- fix reference counting imbalance when using fragmentation
+- avoid access to orig_node objects after they have been free'd
+- fix local TT check for outgoing arp requests in DAT
+
+----------------------------------------------------------------
+Antonio Quartulli (3):
+      batman-adv: fix reference counting imbalance while sending fragment
+      batman-adv: increase orig refcount when storing ref in gw_node
+      batman-adv: fix local TT check for outgoing arp requests in DAT
+
+Marek Lindner (1):
+      batman-adv: fix indirect hard_iface NULL dereference
+
+ net/batman-adv/distributed-arp-table.c |  3 +--
+ net/batman-adv/fragmentation.c         | 11 ++++++++---
+ net/batman-adv/gateway_client.c        | 11 +++++++++--
+ net/batman-adv/originator.c            |  3 ++-
+ 4 files changed, 20 insertions(+), 8 deletions(-)
 
