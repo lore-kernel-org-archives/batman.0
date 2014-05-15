@@ -1,16 +1,11 @@
-Return-Path: <antonio@open-mesh.com>
-Message-ID: <5373DFDA.800@open-mesh.com>
-Date: Wed, 14 May 2014 23:27:54 +0200
-From: Antonio Quartulli <antonio@open-mesh.com>
-MIME-Version: 1.0
-References: <1397484205-20905-1-git-send-email-antonio@meshcoding.com>
- <1398440652.4152.25.camel@jlt4.sipsolutions.net>
-In-Reply-To: <1398440652.4152.25.camel@jlt4.sipsolutions.net>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="Af7KlnqGHtRUAhmOr5lvF5XMNMnGea4sN"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/7] cfg80211: export expected throughput
-	through get_station()
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Thu, 15 May 2014 11:08:07 +0200
+Message-Id: <1400144887-24455-2-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1400144887-24455-1-git-send-email-antonio@meshcoding.com>
+References: <1400144887-24455-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: fix var name to keep
+	compatibility with old kernels
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,87 +17,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Johannes Berg <johannes@sipsolutions.net>, Antonio Quartulli <antonio@meshcoding.com>
-Cc: devel@lists.open80211s.org, b.a.t.m.a.n@lists.open-mesh.org, linux-wireless@vger.kernel.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---Af7KlnqGHtRUAhmOr5lvF5XMNMnGea4sN
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+The first argument of kfree_rcu() is used in compat.h to forge
+a function name used by old kernels. Keep it as it was before
+to avoid breaking this compat mechanism.
 
-On 25/04/14 17:44, Johannes Berg wrote:
-> On Mon, 2014-04-14 at 16:03 +0200, Antonio Quartulli wrote:
->> From: Antonio Quartulli <antonio@open-mesh.com>
->>
->> Users may need information about the expected throughput
->=20
-> I think this "expected throughput" should be a bit clarified.
->=20
-> Are you talking about "expected PHY rate" or rather "expected (payload)=
+Introduced by 9729d2085c0fa4398eb1ee518b0097866dfdcd77
+("batman-adv: fix TT VLAN inconsistency on VLAN re-add")
 
-> throughput"?
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ soft-interface.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-It is not payload throughput because in this "number" we also consider
-the bytes being part of the 802.11 Header. Maybe we can call it
-"expected MAC throughput" ?
+diff --git a/soft-interface.c b/soft-interface.c
+index 82804e7..a4e6e5e 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -437,14 +437,14 @@ out:
+  *  possibly free it
+  * @softif_vlan: the vlan object to release
+  */
+-void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *vlan)
++void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *softif_vlan)
+ {
+-	if (atomic_dec_and_test(&vlan->refcount)) {
+-		spin_lock_bh(&vlan->bat_priv->softif_vlan_list_lock);
+-		hlist_del_rcu(&vlan->list);
+-		spin_unlock_bh(&vlan->bat_priv->softif_vlan_list_lock);
++	if (atomic_dec_and_test(&softif_vlan->refcount)) {
++		spin_lock_bh(&softif_vlan->bat_priv->softif_vlan_list_lock);
++		hlist_del_rcu(&softif_vlan->list);
++		spin_unlock_bh(&softif_vlan->bat_priv->softif_vlan_list_lock);
+ 
+-		kfree_rcu(vlan, rcu);
++		kfree_rcu(softif_vlan, rcu);
+ 	}
+ }
+ 
+-- 
+1.8.5.5
 
-
->=20
->> towards a given peer computed by the RC algorithm.
->> Export such value in Mbps/100 through the get_station() API.
->=20
-> "units of 10Kbps" might be a better description :-)
->=20
->> This unit has been chosen because it is the same of the
->> throughput returned by MinstrelHT.
->=20
-> Since it's unlikely we'll ever reach the limit of a u32, maybe just
-> multiply by 10 to get the nicer Kbps?
-
-At least we are safe in the near future :) Ok, I can change it to Kbps
-because it seems that a lot of people will be happier :)
-
->=20
->> + * @expected_throughput: expected throughput in Mbps/100 reported by =
-the RC
->> + *	algorithm towards this station. The unit of this value has been ch=
-osen
->> + *	because it is the same of the throughput returned by MinstrelHT
->=20
-> I think the rationale shouldn't be here now.
->=20
-
-I think I will just remove the last sentence.
-
-
-Thanks a lot!
-
---=20
-Antonio Quartulli
-
-
---Af7KlnqGHtRUAhmOr5lvF5XMNMnGea4sN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBCAAGBQJTc9/eAAoJEEKTMo6mOh1V2ScP/1HVQEhjlJCs+A28RR3vgqJm
-FwOZU4eUKR4c7kOHkI48Rl0f4IwbfKyrPpbxkTXq90FRoF0EsNSMv2pwz0D1lDU4
-5SpZbhblRSsPMTS8QgOVKYI/wF+0Qq2Q3gmUUGSWsgCx8zJSFHkmobYMTMLZS7nZ
-VreCmU8dvv7g1GYSMZXbb8ALdqCsnNeMhGmqUl2IeTU3K3tE9+wnbpAL+f2aPb3S
-CBFTLZ3Yf/TgGpjxm2wXujbR8FTDXxNol2PvzW3BRQ0Gju1M2ytVFNKYrc2gW9Tp
-v8c7sKXxtvm4DOrfoOPUHhESDSutPKtviPT4kiKXqnw42RZnVWTAK6Sqm4aNqnLf
-B8Dls5lfwMdaAwT++DiZ8SnIVy1B7laqp4XLVvFDJiFWBiR8v5+TqnhICQu5ExPa
-WAYefEH2K7sr3DeGTdS0vL4dycTFe2YAXhqxrjG0lHUqcwhP1ie8imw4FI/k5F1+
-5eOoye93yyOVrMFDbAMCBoV26wlwUuObjMV1gYnFvJXoo7pDNb/1Jgxc8HVBxI6t
-5gsdgvWMX0Im99X7+TalME/GMse/VdK+J527C6DU448Yfex+BZDEH7Qqf1vjprGu
-ygRiqa/rdSAPx01Vnkwfo7pOa8VBpy4/lfr38vva0WbEjfJ5yqt7/uESZsjjfNQ9
-conaJ5G2Z0Fvr3eCzEvg
-=QVsi
------END PGP SIGNATURE-----
-
---Af7KlnqGHtRUAhmOr5lvF5XMNMnGea4sN--
