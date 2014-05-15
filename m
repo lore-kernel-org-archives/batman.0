@@ -1,11 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu, 15 May 2014 20:50:49 +0200
-Message-Id: <1400179852-4064-2-git-send-email-antonio@meshcoding.com>
+Date: Thu, 15 May 2014 20:50:50 +0200
+Message-Id: <1400179852-4064-3-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1400179852-4064-1-git-send-email-antonio@meshcoding.com>
 References: <1400179852-4064-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: fix indirect hard_iface NULL
-	dereference
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: fix reference counting
+	imbalance while sending fragment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,38 +21,63 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@open-mesh.com>
 
-From: Marek Lindner <mareklindner@neomailbox.ch>
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-If hard_iface is NULL and goto out is made batadv_hardif_free_ref()
-doesn't check for NULL before dereferencing it to get to refcount.
+In the new fragmentation code the batadv_frag_send_packet()
+function obtains a reference to the primary_if, but it does
+not release it upon return.
 
-Introduced in cb1c92ec37fb70543d133a1fa7d9b54d6f8a1ecd
-("batman-adv: add debugfs support to view multiif tables").
+This reference imbalance prevents the primary_if (and then
+the related netdevice) to be properly released on shut down.
 
-Reported-by: Sven Eckelmann <sven@narfation.org>
+Fix this by releasing the primary_if in batadv_frag_send_packet().
+
+Introduced by ee75ed88879af88558818a5c6609d85f60ff0df4
+("batman-adv: Fragment and send skbs larger than mtu")
+
+Cc: Martin Hundebøll <martin@hundeboll.net>
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Acked-by: Antonio Quartulli <antonio@meshcoding.com>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+Acked-by: Martin Hundebøll <martin@hundeboll.net>
 ---
- net/batman-adv/originator.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ net/batman-adv/fragmentation.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 1785da3..6a48451 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -1079,7 +1079,8 @@ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
- 	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq, hard_iface);
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index bcc4bea..f14e54a 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -418,12 +418,13 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+ 			     struct batadv_neigh_node *neigh_node)
+ {
+ 	struct batadv_priv *bat_priv;
+-	struct batadv_hard_iface *primary_if;
++	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_frag_packet frag_header;
+ 	struct sk_buff *skb_fragment;
+ 	unsigned mtu = neigh_node->if_incoming->net_dev->mtu;
+ 	unsigned header_size = sizeof(frag_header);
+ 	unsigned max_fragment_size, max_packet_size;
++	bool ret = false;
  
- out:
--	batadv_hardif_free_ref(hard_iface);
-+	if (hard_iface)
-+		batadv_hardif_free_ref(hard_iface);
- 	return 0;
+ 	/* To avoid merge and refragmentation at next-hops we never send
+ 	 * fragments larger than BATADV_FRAG_MAX_FRAG_SIZE
+@@ -483,7 +484,11 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+ 			   skb->len + ETH_HLEN);
+ 	batadv_send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
+ 
+-	return true;
++	ret = true;
++
+ out_err:
+-	return false;
++	if (primary_if)
++		batadv_hardif_free_ref(primary_if);
++
++	return ret;
  }
- 
 -- 
 1.8.5.5
 
