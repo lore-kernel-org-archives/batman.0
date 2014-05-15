@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 16 May 2014 02:57:12 +0800
-Message-ID: <3648887.FFZtOA1qDo@diderot>
-In-Reply-To: <1400144887-24455-2-git-send-email-antonio@meshcoding.com>
-References: <1400144887-24455-1-git-send-email-antonio@meshcoding.com>
- <1400144887-24455-2-git-send-email-antonio@meshcoding.com>
+Date: Fri, 16 May 2014 03:01:50 +0800
+Message-ID: <2166697.h3OPWJ6Wsa@diderot>
+In-Reply-To: <1400145866-22473-1-git-send-email-antonio@meshcoding.com>
+References: <1400145866-22473-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2819849.NNUsbkDnnj";
+Content-Type: multipart/signed; boundary="nextPart2705636.71M6bS52kM";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: fix var name to
-	keep compatibility with old kernels
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove semi-colon after
+	macro definition
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,29 +24,26 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart2819849.NNUsbkDnnj
+--nextPart2705636.71M6bS52kM
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Thursday 15 May 2014 11:08:07 Antonio Quartulli wrote:
-> The first argument of kfree_rcu() is used in compat.h to forge
-> a function name used by old kernels. Keep it as it was before
-> to avoid breaking this compat mechanism.
-> 
-> Introduced by 9729d2085c0fa4398eb1ee518b0097866dfdcd77
-> ("batman-adv: fix TT VLAN inconsistency on VLAN re-add")
+On Thursday 15 May 2014 11:24:26 Antonio Quartulli wrote:
+> Reported by checkpatch with the following warning:
+> "WARNING: macros should not use a trailing semicolon"
 > 
 > Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
->  soft-interface.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+>  debugfs.c | 4 ++--
+>  sysfs.c   | 4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
 
-Applied in revision b539153.
+Applied in revision f95ce71.
 
 Thanks,
 Marek
 
---nextPart2819849.NNUsbkDnnj
+--nextPart2705636.71M6bS52kM
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -55,14 +51,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTdQ4IAAoJEFNVTo/uthzAGYEH/2fOaRveiCQlkW+d8UnGJ7Se
-F9zL1FO4PDBCwUs+DQeKk+NDNmVExSqXOVv/G0R4TXImkszTblF8z0cmPsPTe+7F
-v8ovnk7iQWOf/mccUmsqCQZyD6CibKP6oo2G8g2svDFvgULVjt41ozn9rPY4xCki
-u5FC4GuEVS9l/KzKb1axbpz1OGbtI4JPR9h3LeVF8kNxMxM6CNa5gHjDxC+QuaHt
-NExNWZN51gzQWge7oKtFqJxolbQVGwo9LMn9kwH7IMrzj26b8LZFg1e3M5o7D3Rs
-9sUFyuf68cgo7bzL6jXqrfh0EIGM2s+OFX1RfTHk6kRKn949GoNpDmoK9QQoRAc=
-=22C+
+iQEcBAABAgAGBQJTdQ8eAAoJEFNVTo/uthzAoVoIALpUSM2gH7ZT2JvSYOajcg1f
+9jiFFSQtLSwnA0OYnx2YQ4ESzb88eLGhKJc32q9Y+yzRzbcD05ncZ65skBXlFSH3
+6vgffoNwr50WhGIYiUMPE53khXAf3ifagOzt9V2pdtOcno1nIxAaoTLVXFrAI1/a
+5W7+OOIbCRwfXhnypmHZ08HjeTdpk+SeSUoFsBvJr5lo345qa+id9p7fRQmAGSBh
+YFNA56eadq8oARzevSd6UX5RWmpbR9Q+TZZeDjgUWyi9qpmBweOaJZtN9M9jZIh/
+KH2iNurc8/RrDrASq+LaQtbBQSk76DEyLHNwu0eDKuBOlc38V1QJHm1cWJcBuJ0=
+=y+lW
 -----END PGP SIGNATURE-----
 
---nextPart2819849.NNUsbkDnnj--
+--nextPart2705636.71M6bS52kM--
 
