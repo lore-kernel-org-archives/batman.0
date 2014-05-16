@@ -1,14 +1,13 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 16 May 2014 03:01:50 +0800
-Message-ID: <2166697.h3OPWJ6Wsa@diderot>
-In-Reply-To: <1400145866-22473-1-git-send-email-antonio@meshcoding.com>
-References: <1400145866-22473-1-git-send-email-antonio@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2705636.71M6bS52kM";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove semi-colon after
-	macro definition
+Return-Path: <davem@davemloft.net>
+Date: Fri, 16 May 2014 16:29:17 -0400 (EDT)
+Message-Id: <20140516.162917.1542289762915928469.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1400179852-4064-1-git-send-email-antonio@meshcoding.com>
+References: <1400179852-4064-1-git-send-email-antonio@meshcoding.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request net: 20140515
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,45 +19,12 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+To: antonio@meshcoding.com
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Thu, 15 May 2014 20:50:48 +0200
 
---nextPart2705636.71M6bS52kM
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+> Please pull or let me know of any problem!
 
-On Thursday 15 May 2014 11:24:26 Antonio Quartulli wrote:
-> Reported by checkpatch with the following warning:
-> "WARNING: macros should not use a trailing semicolon"
-> 
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-> ---
->  debugfs.c | 4 ++--
->  sysfs.c   | 4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
-
-Applied in revision f95ce71.
-
-Thanks,
-Marek
-
---nextPart2705636.71M6bS52kM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJTdQ8eAAoJEFNVTo/uthzAoVoIALpUSM2gH7ZT2JvSYOajcg1f
-9jiFFSQtLSwnA0OYnx2YQ4ESzb88eLGhKJc32q9Y+yzRzbcD05ncZ65skBXlFSH3
-6vgffoNwr50WhGIYiUMPE53khXAf3ifagOzt9V2pdtOcno1nIxAaoTLVXFrAI1/a
-5W7+OOIbCRwfXhnypmHZ08HjeTdpk+SeSUoFsBvJr5lo345qa+id9p7fRQmAGSBh
-YFNA56eadq8oARzevSd6UX5RWmpbR9Q+TZZeDjgUWyi9qpmBweOaJZtN9M9jZIh/
-KH2iNurc8/RrDrASq+LaQtbBQSk76DEyLHNwu0eDKuBOlc38V1QJHm1cWJcBuJ0=
-=y+lW
------END PGP SIGNATURE-----
-
---nextPart2705636.71M6bS52kM--
-
+Pulled, thanks Antonio.
