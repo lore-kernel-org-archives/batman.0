@@ -1,12 +1,12 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 17 May 2014 17:05:29 +0200
-Message-Id: <1400339131-15636-4-git-send-email-antonio@meshcoding.com>
+Date: Sat, 17 May 2014 17:05:31 +0200
+Message-Id: <1400339131-15636-6-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1400339131-15636-1-git-send-email-antonio@meshcoding.com>
 References: <1400339060-13544-1-git-send-email-antonio@meshcoding.com>
  <1400339131-15636-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv2 4/6] mac80211: minstrel_ht - implement
-	get_expected_throughput() API
+Subject: [B.A.T.M.A.N.] [PATCHv2 6/6] cfg80211: export expected throughput
+	via nl80211 (GET_STATION)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,51 +19,55 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: Johannes Berg <johannes@sipsolutions.net>
-Cc: devel@lists.open80211s.org, Felix Fietkau <nbd@openwrt.org>, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@open-mesh.com>
+Cc: devel@lists.open80211s.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-Cc: Felix Fietkau <nbd@openwrt.org>
+Send the expected throughput when replying to a GET_STATION
+command via nl80211.
+
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- net/mac80211/rc80211_minstrel_ht.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ include/uapi/linux/nl80211.h | 3 +++
+ net/wireless/nl80211.c       | 4 ++++
+ 2 files changed, 7 insertions(+)
 
-diff --git a/net/mac80211/rc80211_minstrel_ht.c b/net/mac80211/rc80211_minstrel_ht.c
-index bccaf85..949fb01 100644
---- a/net/mac80211/rc80211_minstrel_ht.c
-+++ b/net/mac80211/rc80211_minstrel_ht.c
-@@ -1031,6 +1031,22 @@ minstrel_ht_free(void *priv)
- 	mac80211_minstrel.free(priv);
- }
+diff --git a/include/uapi/linux/nl80211.h b/include/uapi/linux/nl80211.h
+index 0cfa827..2964948 100644
+--- a/include/uapi/linux/nl80211.h
++++ b/include/uapi/linux/nl80211.h
+@@ -2199,6 +2199,8 @@ enum nl80211_sta_bss_param {
+  *	Contains a nested array of signal strength attributes (u8, dBm)
+  * @NL80211_STA_INFO_CHAIN_SIGNAL_AVG: per-chain signal strength average
+  *	Same format as NL80211_STA_INFO_CHAIN_SIGNAL.
++ * @NL80211_STA_EXPECTED_THROUGHPUT: expected throughput (considering also the
++ *	802.11 header) expressed in kbps
+  * @__NL80211_STA_INFO_AFTER_LAST: internal
+  * @NL80211_STA_INFO_MAX: highest possible station info attribute
+  */
+@@ -2230,6 +2232,7 @@ enum nl80211_sta_info {
+ 	NL80211_STA_INFO_TX_BYTES64,
+ 	NL80211_STA_INFO_CHAIN_SIGNAL,
+ 	NL80211_STA_INFO_CHAIN_SIGNAL_AVG,
++	NL80211_STA_INFO_EXPECTED_THROUGHPUT,
  
-+static u32 minstrel_ht_get_expected_throughput(void *priv_sta)
-+{
-+	struct minstrel_ht_sta_priv *msp = priv_sta;
-+	struct minstrel_ht_sta *mi = &msp->ht;
-+	int i, j;
-+
-+	if (!msp->is_ht)
-+		return mac80211_minstrel.get_expected_throughput(priv_sta);
-+
-+	i = mi->max_tp_rate / MCS_GROUP_RATES;
-+	j = mi->max_tp_rate % MCS_GROUP_RATES;
-+
-+	/* convert cur_tp from pkt per second in kbps */
-+	return mi->groups[i].rates[j].cur_tp * AVG_PKT_SIZE * 8 / 1024;
-+}
-+
- static const struct rate_control_ops mac80211_minstrel_ht = {
- 	.name = "minstrel_ht",
- 	.tx_status = minstrel_ht_tx_status,
-@@ -1045,6 +1061,7 @@ static const struct rate_control_ops mac80211_minstrel_ht = {
- 	.add_sta_debugfs = minstrel_ht_add_sta_debugfs,
- 	.remove_sta_debugfs = minstrel_ht_remove_sta_debugfs,
- #endif
-+	.get_expected_throughput = minstrel_ht_get_expected_throughput,
- };
- 
- 
+ 	/* keep last */
+ 	__NL80211_STA_INFO_AFTER_LAST,
+diff --git a/net/wireless/nl80211.c b/net/wireless/nl80211.c
+index ca19b15..9631648 100644
+--- a/net/wireless/nl80211.c
++++ b/net/wireless/nl80211.c
+@@ -3650,6 +3650,10 @@ static int nl80211_send_station(struct sk_buff *msg, u32 portid, u32 seq,
+ 	    nla_put_u32(msg, NL80211_STA_INFO_TX_FAILED,
+ 			sinfo->tx_failed))
+ 		goto nla_put_failure;
++	if ((sinfo->filled & STATION_INFO_EXPECTED_THROUGHPUT) &&
++	    nla_put_u32(msg, NL80211_STA_INFO_EXPECTED_THROUGHPUT,
++			sinfo->expected_throughput))
++		goto nla_put_failure;
+ 	if ((sinfo->filled & STATION_INFO_BEACON_LOSS_COUNT) &&
+ 	    nla_put_u32(msg, NL80211_STA_INFO_BEACON_LOSS,
+ 			sinfo->beacon_loss_count))
 -- 
 1.8.5.5
 
