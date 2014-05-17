@@ -1,12 +1,12 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 17 May 2014 17:05:31 +0200
-Message-Id: <1400339131-15636-6-git-send-email-antonio@meshcoding.com>
+Date: Sat, 17 May 2014 17:05:30 +0200
+Message-Id: <1400339131-15636-5-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1400339131-15636-1-git-send-email-antonio@meshcoding.com>
 References: <1400339060-13544-1-git-send-email-antonio@meshcoding.com>
  <1400339131-15636-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv2 6/6] cfg80211: export expected throughput
-	via nl80211 (GET_STATION)
+Subject: [B.A.T.M.A.N.] [PATCHv2 5/6] cfg80211: implement
+	cfg80211_get_station cfg80211 API
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,51 +23,72 @@ Cc: devel@lists.open80211s.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartul
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-Send the expected throughput when replying to a GET_STATION
-command via nl80211.
+Implement and export the new cfg80211_get_station() API.
+This utility can be used by other kernel modules to obtain
+detailed information about a given wireless station.
+
+It will be in particular useful to batman-adv which will
+implement a wireless rate based metric.
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- include/uapi/linux/nl80211.h | 3 +++
- net/wireless/nl80211.c       | 4 ++++
- 2 files changed, 7 insertions(+)
+ include/net/cfg80211.h | 13 +++++++++++++
+ net/wireless/util.c    | 18 ++++++++++++++++++
+ 2 files changed, 31 insertions(+)
 
-diff --git a/include/uapi/linux/nl80211.h b/include/uapi/linux/nl80211.h
-index 0cfa827..2964948 100644
---- a/include/uapi/linux/nl80211.h
-+++ b/include/uapi/linux/nl80211.h
-@@ -2199,6 +2199,8 @@ enum nl80211_sta_bss_param {
-  *	Contains a nested array of signal strength attributes (u8, dBm)
-  * @NL80211_STA_INFO_CHAIN_SIGNAL_AVG: per-chain signal strength average
-  *	Same format as NL80211_STA_INFO_CHAIN_SIGNAL.
-+ * @NL80211_STA_EXPECTED_THROUGHPUT: expected throughput (considering also the
-+ *	802.11 header) expressed in kbps
-  * @__NL80211_STA_INFO_AFTER_LAST: internal
-  * @NL80211_STA_INFO_MAX: highest possible station info attribute
-  */
-@@ -2230,6 +2232,7 @@ enum nl80211_sta_info {
- 	NL80211_STA_INFO_TX_BYTES64,
- 	NL80211_STA_INFO_CHAIN_SIGNAL,
- 	NL80211_STA_INFO_CHAIN_SIGNAL_AVG,
-+	NL80211_STA_INFO_EXPECTED_THROUGHPUT,
+diff --git a/include/net/cfg80211.h b/include/net/cfg80211.h
+index 394189e..5917919 100644
+--- a/include/net/cfg80211.h
++++ b/include/net/cfg80211.h
+@@ -1075,6 +1075,19 @@ struct station_info {
+ };
  
- 	/* keep last */
- 	__NL80211_STA_INFO_AFTER_LAST,
-diff --git a/net/wireless/nl80211.c b/net/wireless/nl80211.c
-index ca19b15..9631648 100644
---- a/net/wireless/nl80211.c
-+++ b/net/wireless/nl80211.c
-@@ -3650,6 +3650,10 @@ static int nl80211_send_station(struct sk_buff *msg, u32 portid, u32 seq,
- 	    nla_put_u32(msg, NL80211_STA_INFO_TX_FAILED,
- 			sinfo->tx_failed))
- 		goto nla_put_failure;
-+	if ((sinfo->filled & STATION_INFO_EXPECTED_THROUGHPUT) &&
-+	    nla_put_u32(msg, NL80211_STA_INFO_EXPECTED_THROUGHPUT,
-+			sinfo->expected_throughput))
-+		goto nla_put_failure;
- 	if ((sinfo->filled & STATION_INFO_BEACON_LOSS_COUNT) &&
- 	    nla_put_u32(msg, NL80211_STA_INFO_BEACON_LOSS,
- 			sinfo->beacon_loss_count))
+ /**
++ * cfg80211_get_station - retrieve information about a given station
++ * @dev: the device where the station is supposed to be connected to
++ * @mac_addr: the mac address of the station of interest
++ * @sinfo: pointer to the structure to fill with the information
++ *
++ * Returns 0 on success and sinfo is filled with the available information
++ * otherwise returns a negative error code and the content of sinfo has to be
++ * considered undefined.
++ */
++int cfg80211_get_station(struct net_device *dev, u8 *mac_addr,
++			 struct station_info *sinfo);
++
++/**
+  * enum monitor_flags - monitor flags
+  *
+  * Monitor interface configuration flags. Note that these must be the bits
+diff --git a/net/wireless/util.c b/net/wireless/util.c
+index 8c61d5c..6380e55 100644
+--- a/net/wireless/util.c
++++ b/net/wireless/util.c
+@@ -1545,6 +1545,24 @@ unsigned int ieee80211_get_num_supported_channels(struct wiphy *wiphy)
+ }
+ EXPORT_SYMBOL(ieee80211_get_num_supported_channels);
+ 
++int cfg80211_get_station(struct net_device *dev, u8 *mac_addr,
++			 struct station_info *sinfo)
++{
++	struct cfg80211_registered_device *rdev;
++	struct wireless_dev *wdev;
++
++	wdev = dev->ieee80211_ptr;
++	if (!wdev)
++		return -EOPNOTSUPP;
++
++	rdev = wiphy_to_rdev(wdev->wiphy);
++	if (!rdev->ops->get_station)
++		return -EOPNOTSUPP;
++
++	return rdev_get_station(rdev, dev, mac_addr, sinfo);
++}
++EXPORT_SYMBOL(cfg80211_get_station);
++
+ /* See IEEE 802.1H for LLC/SNAP encapsulation/decapsulation */
+ /* Ethernet-II snap header (RFC1042 for most EtherTypes) */
+ const unsigned char rfc1042_header[] __aligned(2) =
 -- 
 1.8.5.5
 
