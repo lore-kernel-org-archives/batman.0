@@ -1,9 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 17 May 2014 18:41:42 +0200
-Message-Id: <1400344906-27984-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv3 0/6] Export the expected throughput towards
-	a peer
+Date: Sat, 17 May 2014 18:41:44 +0200
+Message-Id: <1400344906-27984-3-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1400344906-27984-1-git-send-email-antonio@meshcoding.com>
+References: <1400344906-27984-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv3 2/4] cfg80211: export expected throughput
+	via nl80211 (GET_STATION)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,44 +18,55 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: Johannes Berg <johannes@sipsolutions.net>
-Cc: devel@lists.open80211s.org, b.a.t.m.a.n@lists.open-mesh.org, linux-wireless@vger.kernel.org, Antonio Quartulli <antonio@meshcoding.com>
+Cc: devel@lists.open80211s.org, b.a.t.m.a.n@lists.open-mesh.org, linux-wireless@vger.kernel.org, Antonio Quartulli <antonio@open-mesh.com>
 
-Changes since v2:
-- fix throughput computation in minstrel
-- squash minstrel patches
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-Changes since v1:
-- add expected throughput nl80211 attribute to the GET_STATION reply
-  message
-- the unit of the exported value has been changed to kbps
-- the way the exported value was computed in minstrel and minstrel_ht has been
-  changed after having really understood what minstrel is doing (thanks
-  Johannes!)
-- the number of arguments of the RC api have been reduced
-- allow the API result to be 0 if the underlying layer does not know what to
-  report
-- squash ex patch 2/3/4
-- use wiphy_to_rdev() where needed
+Send the expected throughput when replying to a GET_STATION
+command via nl80211.
 
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
+ include/uapi/linux/nl80211.h | 3 +++
+ net/wireless/nl80211.c       | 4 ++++
+ 2 files changed, 7 insertions(+)
 
-Antonio Quartulli (4):
-  cfg80211: export expected throughput through get_station()
-  cfg80211: export expected throughput via nl80211 (GET_STATION)
-  mac80211: export the expected throughput
-  cfg80211: implement cfg80211_get_station cfg80211 API
-
- include/net/cfg80211.h             | 75 ++++++++++++++++++++++++--------------
- include/net/mac80211.h             |  7 ++++
- include/uapi/linux/nl80211.h       |  3 ++
- net/mac80211/cfg.c                 | 19 ++++++++++
- net/mac80211/driver-ops.h          | 13 +++++++
- net/mac80211/rc80211_minstrel.c    | 12 ++++++
- net/mac80211/rc80211_minstrel_ht.c | 17 +++++++++
- net/mac80211/trace.h               | 32 ++++++++++++++++
- net/wireless/nl80211.c             |  4 ++
- net/wireless/util.c                | 18 +++++++++
- 10 files changed, 172 insertions(+), 28 deletions(-)
-
+diff --git a/include/uapi/linux/nl80211.h b/include/uapi/linux/nl80211.h
+index 0cfa827..2964948 100644
+--- a/include/uapi/linux/nl80211.h
++++ b/include/uapi/linux/nl80211.h
+@@ -2199,6 +2199,8 @@ enum nl80211_sta_bss_param {
+  *	Contains a nested array of signal strength attributes (u8, dBm)
+  * @NL80211_STA_INFO_CHAIN_SIGNAL_AVG: per-chain signal strength average
+  *	Same format as NL80211_STA_INFO_CHAIN_SIGNAL.
++ * @NL80211_STA_EXPECTED_THROUGHPUT: expected throughput (considering also the
++ *	802.11 header) expressed in kbps
+  * @__NL80211_STA_INFO_AFTER_LAST: internal
+  * @NL80211_STA_INFO_MAX: highest possible station info attribute
+  */
+@@ -2230,6 +2232,7 @@ enum nl80211_sta_info {
+ 	NL80211_STA_INFO_TX_BYTES64,
+ 	NL80211_STA_INFO_CHAIN_SIGNAL,
+ 	NL80211_STA_INFO_CHAIN_SIGNAL_AVG,
++	NL80211_STA_INFO_EXPECTED_THROUGHPUT,
+ 
+ 	/* keep last */
+ 	__NL80211_STA_INFO_AFTER_LAST,
+diff --git a/net/wireless/nl80211.c b/net/wireless/nl80211.c
+index ca19b15..9631648 100644
+--- a/net/wireless/nl80211.c
++++ b/net/wireless/nl80211.c
+@@ -3650,6 +3650,10 @@ static int nl80211_send_station(struct sk_buff *msg, u32 portid, u32 seq,
+ 	    nla_put_u32(msg, NL80211_STA_INFO_TX_FAILED,
+ 			sinfo->tx_failed))
+ 		goto nla_put_failure;
++	if ((sinfo->filled & STATION_INFO_EXPECTED_THROUGHPUT) &&
++	    nla_put_u32(msg, NL80211_STA_INFO_EXPECTED_THROUGHPUT,
++			sinfo->expected_throughput))
++		goto nla_put_failure;
+ 	if ((sinfo->filled & STATION_INFO_BEACON_LOSS_COUNT) &&
+ 	    nla_put_u32(msg, NL80211_STA_INFO_BEACON_LOSS,
+ 			sinfo->beacon_loss_count))
 -- 
 1.8.5.5
 
