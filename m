@@ -1,11 +1,10 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sun, 18 May 2014 19:58:09 +0200
-Message-Id: <1400435890-6667-3-git-send-email-antonio@meshcoding.com>
+Date: Sun, 18 May 2014 19:58:10 +0200
+Message-Id: <1400435890-6667-4-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1400435890-6667-1-git-send-email-antonio@meshcoding.com>
 References: <1400435890-6667-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: remove semi-colon after
-	macro definition
+Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Start new development cycle
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,62 +17,29 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>
 
-Reported by checkpatch with the following warning:
-"WARNING: macros should not use a trailing semicolon"
+From: Simon Wunderlich <sw@simonwunderlich.de>
 
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/debugfs.c | 4 ++--
- net/batman-adv/sysfs.c   | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ net/batman-adv/main.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index 99f2ba0..a12e25e 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -342,7 +342,7 @@ struct batadv_debuginfo batadv_debuginfo_##_name = {	\
- 		  .llseek = seq_lseek,			\
- 		  .release = single_release,		\
- 		}					\
--};
-+}
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 770dc89..118b990 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -24,7 +24,7 @@
+ #define BATADV_DRIVER_DEVICE "batman-adv"
  
- /* the following attributes are general and therefore they will be directly
-  * placed in the BATADV_DEBUGFS_SUBDIR subdirectory of debugfs
-@@ -404,7 +404,7 @@ struct batadv_debuginfo batadv_hardif_debuginfo_##_name = {	\
- 		.llseek = seq_lseek,				\
- 		.release = single_release,			\
- 	},							\
--};
-+}
- static BATADV_HARDIF_DEBUGINFO(originators, S_IRUGO,
- 			       batadv_originators_hardif_open);
+ #ifndef BATADV_SOURCE_VERSION
+-#define BATADV_SOURCE_VERSION "2014.2.0"
++#define BATADV_SOURCE_VERSION "2014.3.0"
+ #endif
  
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index f51b484..fc47baa 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -108,7 +108,7 @@ struct batadv_attribute batadv_attr_vlan_##_name = {	\
- 		 .mode = _mode },			\
- 	.show   = _show,				\
- 	.store  = _store,				\
--};
-+}
- 
- /* Use this, if you have customized show and store functions */
- #define BATADV_ATTR(_name, _mode, _show, _store)	\
-@@ -117,7 +117,7 @@ struct batadv_attribute batadv_attr_##_name = {		\
- 		 .mode = _mode },			\
- 	.show   = _show,				\
- 	.store  = _store,				\
--};
-+}
- 
- #define BATADV_ATTR_SIF_STORE_BOOL(_name, _post_func)			\
- ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ /* B.A.T.M.A.N. parameters */
 -- 
 1.8.5.5
 
