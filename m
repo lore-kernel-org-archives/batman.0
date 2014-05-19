@@ -1,7 +1,7 @@
 Return-Path: <johannes@sipsolutions.net>
-Message-ID: <1400511574.4273.17.camel@jlt4.sipsolutions.net>
+Message-ID: <1400511606.4273.18.camel@jlt4.sipsolutions.net>
 From: Johannes Berg <johannes@sipsolutions.net>
-Date: Mon, 19 May 2014 16:59:34 +0200
+Date: Mon, 19 May 2014 17:00:06 +0200
 In-Reply-To: <1400344906-27984-3-git-send-email-antonio@meshcoding.com>
 References: <1400344906-27984-1-git-send-email-antonio@meshcoding.com>
  <1400344906-27984-3-git-send-email-antonio@meshcoding.com>
@@ -29,25 +29,9 @@ On Sat, 2014-05-17 at 18:41 +0200, Antonio Quartulli wrote:
 > 
 > Send the expected throughput when replying to a GET_STATION
 > command via nl80211.
-> 
-> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-> ---
->  include/uapi/linux/nl80211.h | 3 +++
->  net/wireless/nl80211.c       | 4 ++++
->  2 files changed, 7 insertions(+)
-> 
-> diff --git a/include/uapi/linux/nl80211.h b/include/uapi/linux/nl80211.h
-> index 0cfa827..2964948 100644
-> --- a/include/uapi/linux/nl80211.h
-> +++ b/include/uapi/linux/nl80211.h
-> @@ -2199,6 +2199,8 @@ enum nl80211_sta_bss_param {
->   *	Contains a nested array of signal strength attributes (u8, dBm)
->   * @NL80211_STA_INFO_CHAIN_SIGNAL_AVG: per-chain signal strength average
->   *	Same format as NL80211_STA_INFO_CHAIN_SIGNAL.
-> + * @NL80211_STA_EXPECTED_THROUGHPUT: expected throughput (considering also the
-> + *	802.11 header) expressed in kbps
 
-This should say it's a u32.
+Since both are pretty short I think you might also just squash patches 1
+and 2.
 
 johannes
 
