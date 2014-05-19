@@ -1,11 +1,9 @@
-Return-Path: <dirkvanderwalt@gmail.com>
-MIME-Version: 1.0
-Date: Mon, 19 May 2014 13:22:09 +0200
-Message-ID: <CACgQMVKxWMetWR1O4kw9PBGhbe7k9dcga8uM=E1ofrTrzCyh_A@mail.gmail.com>
-From: Dirk van der Walt <dirkvanderwalt@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: [B.A.T.M.A.N.] AR9331 Ad-hoc connection speed on OpenWRT Barrier
-	Breaker
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 19 May 2014 13:50:08 +0200
+Message-Id: <1400500208-4250-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: Avoid overoptimization of signal
+	related check
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,26 +15,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: B.A.T.M.A.N@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-Hi list,
+According to C99, it is not safe to use a simple char for checks because the
+compiler may optimizes it away when it only gets modified in a signal handler.
+It is also undefined when the signal is modifying an object with static
+storage duration not from type volatile sig_atomic_t.
 
-I'm sorry for posting a non-Batman-adv matter but I figured this place
-is the most likely to also have someone with the same equipment and
-the same goal.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ ping.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I have a few Dragino MS14's (same as the Village Telco MP2s) [Atheros
-AR9331] running the latest build of Barrier Breaker.
-Somehow the ad-hoc connection speed refuse to go above 1Mb/s. This
-have a ripple effect on the throughput of the batman-adv mesh.
+diff --git a/ping.c b/ping.c
+index c52ad13..bc5184d 100644
+--- a/ping.c
++++ b/ping.c
+@@ -44,7 +44,7 @@
+ #include "debugfs.h"
+ 
+ 
+-char is_aborted = 0;
++static volatile sig_atomic_t is_aborted = 0;
+ 
+ 
+ static void ping_usage(void)
+-- 
+2.0.0.rc2
 
-The same firmware build works fine with OM2Ps so I suspect it is
-probably chipset related.
-
-The same equipment works just fine with AA but I really would like to
-run the latest versions of the software.
-
-Anyone who experienced the same problem and (hopefully) have a fix to
-this issue?
-
-Kind regards
