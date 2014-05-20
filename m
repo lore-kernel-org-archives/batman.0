@@ -1,11 +1,16 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Mon, 19 May 2014 21:53:21 +0200
-Message-Id: <1400529201-31500-4-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1400529201-31500-1-git-send-email-antonio@meshcoding.com>
-References: <1400529201-31500-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv4 3/3] cfg80211: implement
-	cfg80211_get_station cfg80211 API
+Return-Path: <antonio@open-mesh.com>
+Message-ID: <537B162A.60505@open-mesh.com>
+Date: Tue, 20 May 2014 10:45:30 +0200
+From: Antonio Quartulli <antonio@open-mesh.com>
+MIME-Version: 1.0
+References: <1400529201-31500-1-git-send-email-antonio@meshcoding.com>	<1400529201-31500-3-git-send-email-antonio@meshcoding.com>
+ <CAEbDFcSH7p+P6i=utpNT35+JoQ+ADwnbuX8TBgE+1fLYvG9Lqw@mail.gmail.com>
+In-Reply-To: <CAEbDFcSH7p+P6i=utpNT35+JoQ+ADwnbuX8TBgE+1fLYvG9Lqw@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="hgONlCcbE5l0WULt6ffw7UPCpFlTLpKNE"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 2/3] mac80211: export the expected
+	throughput
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,91 +22,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: devel@lists.open80211s.org, b.a.t.m.a.n@lists.open-mesh.org, linux-wireless@vger.kernel.org, Antonio Quartulli <antonio@open-mesh.com>
+To: Krishnathiepan Rasanayagam <r.krishnathiepan@gmail.com>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--hgONlCcbE5l0WULt6ffw7UPCpFlTLpKNE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Implement and export the new cfg80211_get_station() API.
-This utility can be used by other kernel modules to obtain
-detailed information about a given wireless station.
+On 20/05/14 10:42, Krishnathiepan Rasanayagam wrote:
+> Dear all,
+> Sorry if I'm disturbing you. please let me know how to ask a question
+> and getting answer about batman-adv
 
-It will be in particular useful to batman-adv which will
-implement a wireless rate based metric.
+By writing a *new* email to the batman-adv mailing list *only* for
+example? :)
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
----
- include/net/cfg80211.h  | 13 +++++++++++++
- net/wireless/rdev-ops.h |  2 +-
- net/wireless/util.c     | 18 ++++++++++++++++++
- 3 files changed, 32 insertions(+), 1 deletion(-)
+In case you want to know more, I think that you can just visit this link:=
 
-diff --git a/include/net/cfg80211.h b/include/net/cfg80211.h
-index 857d647..a75fabd 100644
---- a/include/net/cfg80211.h
-+++ b/include/net/cfg80211.h
-@@ -1075,6 +1075,19 @@ struct station_info {
- };
- 
- /**
-+ * cfg80211_get_station - retrieve information about a given station
-+ * @dev: the device where the station is supposed to be connected to
-+ * @mac_addr: the mac address of the station of interest
-+ * @sinfo: pointer to the structure to fill with the information
-+ *
-+ * Returns 0 on success and sinfo is filled with the available information
-+ * otherwise returns a negative error code and the content of sinfo has to be
-+ * considered undefined.
-+ */
-+int cfg80211_get_station(struct net_device *dev, const u8 *mac_addr,
-+			 struct station_info *sinfo);
-+
-+/**
-  * enum monitor_flags - monitor flags
-  *
-  * Monitor interface configuration flags. Note that these must be the bits
-diff --git a/net/wireless/rdev-ops.h b/net/wireless/rdev-ops.h
-index 00cdf73..d95bbe3 100644
---- a/net/wireless/rdev-ops.h
-+++ b/net/wireless/rdev-ops.h
-@@ -199,7 +199,7 @@ static inline int rdev_change_station(struct cfg80211_registered_device *rdev,
- }
- 
- static inline int rdev_get_station(struct cfg80211_registered_device *rdev,
--				   struct net_device *dev, u8 *mac,
-+				   struct net_device *dev, const u8 *mac,
- 				   struct station_info *sinfo)
- {
- 	int ret;
-diff --git a/net/wireless/util.c b/net/wireless/util.c
-index fa61ac9..728f1c0 100644
---- a/net/wireless/util.c
-+++ b/net/wireless/util.c
-@@ -1546,6 +1546,24 @@ unsigned int ieee80211_get_num_supported_channels(struct wiphy *wiphy)
- }
- EXPORT_SYMBOL(ieee80211_get_num_supported_channels);
- 
-+int cfg80211_get_station(struct net_device *dev, const u8 *mac_addr,
-+			 struct station_info *sinfo)
-+{
-+	struct cfg80211_registered_device *rdev;
-+	struct wireless_dev *wdev;
-+
-+	wdev = dev->ieee80211_ptr;
-+	if (!wdev)
-+		return -EOPNOTSUPP;
-+
-+	rdev = wiphy_to_rdev(wdev->wiphy);
-+	if (!rdev->ops->get_station)
-+		return -EOPNOTSUPP;
-+
-+	return rdev_get_station(rdev, dev, mac_addr, sinfo);
-+}
-+EXPORT_SYMBOL(cfg80211_get_station);
-+
- /* See IEEE 802.1H for LLC/SNAP encapsulation/decapsulation */
- /* Ethernet-II snap header (RFC1042 for most EtherTypes) */
- const unsigned char rfc1042_header[] __aligned(2) =
--- 
-1.8.5.5
 
+http://www.open-mesh.org/projects/open-mesh/wiki
+
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+
+--hgONlCcbE5l0WULt6ffw7UPCpFlTLpKNE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBCAAGBQJTexYuAAoJEJgn97Bh2u9eQ5EQAIpyHHipZruVQaK/MRJX+iEY
+b1Q1jRBxO+sp54jUSoNyndtaSbaiA7uRJ/8vXN+KC6PZSJ3P7QJoYLKzbdWMb0iX
+oAC1bGsIBqYv/C63BVw2Yu9yjkUNYiT4hAOPEMcVpcj/CQkNmkadE9Uv8P87UtI/
+YsrDj3ozBVHJOxTnNn/St+Q2wdgmoTNvG7yLAg1pyL1jz9M/wy6Xw8Wvah88Gjqp
+G+5DMwuF854c+nHgeRiJ2OdUdPWSaXSXfSESuSx3GD3yit938mL45YntWSYWtIbu
+8DZxQTkz/oLFCWdGfo/buYMKKzuPQyY1Zxehe+OeXJLF/qA4c+H+DpZ649vSw70l
+hK7W2FvaPb0XJcIR58s8+XaPpEGI4r5WANdykfa49N02GEkUn/YFDzV/sSMlPE/e
+TrgoBuEICkRnI8hOkTsTSugtQLpY30mQgA83Wz8pJHUYr597ZIuYt4bkHoQVVQ86
+4yO9tdOkK6qM2N7399DhHizHd9gwTnfLZqWvVIpQqF07wf3H1W7PBYBtPGaOWtwK
+6p1wFvv4ennLE2IdLEavnyuc5mV5oslqJXXVtJ9o3nWeLMhdr89b5CJH8AkpyVW3
+9mN5wZA/eH62CQphCoP3oMLaITXTGc2Q/K/ptugTRAZ+1AT8wJlF0B8TURHu4Nr8
+UZcrWv9WdtHIXAhGxiKq
+=CNu5
+-----END PGP SIGNATURE-----
+
+--hgONlCcbE5l0WULt6ffw7UPCpFlTLpKNE--
