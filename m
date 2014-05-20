@@ -1,11 +1,13 @@
-Return-Path: <sebastien.bindel@gmail.com>
-Message-ID: <537B636F.4010209@gmail.com>
-Date: Tue, 20 May 2014 16:15:11 +0200
-From: seb gmail <sebastien.bindel@gmail.com>
+Return-Path: <andrew@lunn.ch>
+Date: Tue, 20 May 2014 16:01:57 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20140520140157.GE9873@lunn.ch>
+References: <CAEbDFcQh8b8jmTNFGdwG0Me1vV7O-1G=r8F0Ki53=OwhhwgM5Q@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.]  BATMAN-ADV emulated in DCE module of ns-3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAEbDFcQh8b8jmTNFGdwG0Me1vV7O-1G=r8F0Ki53=OwhhwgM5Q@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Adding security on BATMAN-ADV
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,20 +19,14 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello,
+On Tue, May 20, 2014 at 06:49:28PM +0530, Krishnathiepan Rasanayagam wrote:
+> Hello all,
+> I'm researching on batman-adv about adding security on node authentication.
 
-I have developed a module to emulate BATMAN-ADV and Batctl with the=20
-framework of ns-3 called DCE.
+The EU funded SecFutur project did a bit of work in this direction.
+However, as Antonio suggested, it was not in BATMAN itself, it was in
+a layer below.
 
-With DCE, you can emulate a Linux TCP/IP stack and run existing=20
-implementation of userpsace and kernelspace network protocols or=20
-applications.
-
-We continue our effort to push this module to be available for the next=20
-version of DCE.
-
-Best regards,
-S=E9bastien Bindel
-
+  Andrew
