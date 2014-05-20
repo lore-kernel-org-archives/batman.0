@@ -1,13 +1,13 @@
-Return-Path: <andrew@lunn.ch>
-Date: Tue, 20 May 2014 16:01:57 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20140520140157.GE9873@lunn.ch>
-References: <CAEbDFcQh8b8jmTNFGdwG0Me1vV7O-1G=r8F0Ki53=OwhhwgM5Q@mail.gmail.com>
+Return-Path: <r.krishnathiepan@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAEbDFcQh8b8jmTNFGdwG0Me1vV7O-1G=r8F0Ki53=OwhhwgM5Q@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] Adding security on BATMAN-ADV
+In-Reply-To: <CAEbDFcSCbFme_q6FX7TX5AZR1eSyTBXBP2souUzaHVb8rPwOeg@mail.gmail.com>
+References: <537B636F.4010209@gmail.com>
+ <CAEbDFcSCbFme_q6FX7TX5AZR1eSyTBXBP2souUzaHVb8rPwOeg@mail.gmail.com>
+Date: Wed, 21 May 2014 00:13:29 +0530
+Message-ID: <CAEbDFcRTG2rO7FGtssUbbQmwtYf59cRju=CGtwMRbE5Betz+dg@mail.gmail.com>
+From: Krishnathiepan Rasanayagam <r.krishnathiepan@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] BATMAN-ADV emulated in DCE module of ns-3
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,12 +21,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tue, May 20, 2014 at 06:49:28PM +0530, Krishnathiepan Rasanayagam wrote:
-> Hello all,
-> I'm researching on batman-adv about adding security on node authentication.
+hello,
+I dint get the meaning of the message. did you developed a framework
+of batman-adv on ns-3? or something else?
 
-The EU funded SecFutur project did a bit of work in this direction.
-However, as Antonio suggested, it was not in BATMAN itself, it was in
-a layer below.
+regards,
+krishna
 
-  Andrew
+On Tue, May 20, 2014 at 10:10 PM, Krishnathiepan Rasanayagam
+<r.krishnathiepan@gmail.com> wrote:
+> hello,
+> I dint get the meaning of the message. did you developed a framework of
+> batman-adv on ns-3? or something else?
+>
+> regards,
+> krishna
+
+
+
+-- 
+Best regards,
+Krishna.
