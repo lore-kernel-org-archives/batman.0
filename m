@@ -1,14 +1,15 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Wed, 21 May 2014 10:59:01 +0200
-Message-Id: <1400662742-31999-4-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1400662742-31999-1-git-send-email-linus.luessing@web.de>
-References: <1400662742-31999-1-git-send-email-linus.luessing@web.de>
+Return-Path: <sebastien.bindel@gmail.com>
+Message-ID: <537C70E3.6080308@gmail.com>
+Date: Wed, 21 May 2014 11:24:51 +0200
+From: seb gmail <sebastien.bindel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+References: <537B636F.4010209@gmail.com>
+ <CAEbDFcSCbFme_q6FX7TX5AZR1eSyTBXBP2souUzaHVb8rPwOeg@mail.gmail.com>
+ <CAEbDFcRTG2rO7FGtssUbbQmwtYf59cRju=CGtwMRbE5Betz+dg@mail.gmail.com>
+In-Reply-To: <CAEbDFcRTG2rO7FGtssUbbQmwtYf59cRju=CGtwMRbE5Betz+dg@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH net-next 3/4] bridge: add export of multicast
-	database adjacent to net_dev
+Subject: Re: [B.A.T.M.A.N.] BATMAN-ADV emulated in DCE module of ns-3
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,154 +21,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: netdev@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Stephen Hemminger <stephen@networkplumber.org>, "David S. Miller" <davem@davemloft.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-With this new, exported function br_multicast_list_adjacent(net_dev) a
-list of IPv4/6 addresses is returned. This list contains all multicast
-addresses sensed by the bridge multicast snooping feature on all bridge
-ports of the bridge interface of net_dev, excluding addresses from the
-specified net_device itself.
+Hi,
 
-Adding bridge support to the batman-adv multicast optimization requires
-batman-adv knowing about the existence of bridged-in multicast
-listeners to be able to reliably serve them with multicast packets.
+I have extended the DCE framework for supporting the module batman-adv 
+kernel module and the batctl program.
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
- include/linux/if_bridge.h |   18 ++++++++++++++
- net/bridge/br_multicast.c |   58 +++++++++++++++++++++++++++++++++++++++++++++
- net/bridge/br_private.h   |   12 ----------
- 3 files changed, 76 insertions(+), 12 deletions(-)
+Now, we can emulate a network with batman-adv as routing protocol. In 
+the same way, we develop a simulation model of batman-adv for ns-3.
 
-diff --git a/include/linux/if_bridge.h b/include/linux/if_bridge.h
-index 1085ffe..44d6eb0 100644
---- a/include/linux/if_bridge.h
-+++ b/include/linux/if_bridge.h
-@@ -16,9 +16,27 @@
- #include <linux/netdevice.h>
- #include <uapi/linux/if_bridge.h>
- 
-+struct br_ip {
-+	union {
-+		__be32	ip4;
-+#if IS_ENABLED(CONFIG_IPV6)
-+		struct in6_addr ip6;
-+#endif
-+	} u;
-+	__be16		proto;
-+	__u16           vid;
-+};
-+
-+struct br_ip_list {
-+	struct list_head list;
-+	struct br_ip addr;
-+};
-+
- extern void brioctl_set(int (*ioctl_hook)(struct net *, unsigned int, void __user *));
- 
- typedef int br_should_route_hook_t(struct sk_buff *skb);
- extern br_should_route_hook_t __rcu *br_should_route_hook;
-+int br_multicast_list_adjacent(struct net_device *dev,
-+			       struct list_head *br_ip_list);
- 
- #endif
-diff --git a/net/bridge/br_multicast.c b/net/bridge/br_multicast.c
-index 05c6593..f583bf6 100644
---- a/net/bridge/br_multicast.c
-+++ b/net/bridge/br_multicast.c
-@@ -11,6 +11,7 @@
-  */
- 
- #include <linux/err.h>
-+#include <linux/export.h>
- #include <linux/if_ether.h>
- #include <linux/igmp.h>
- #include <linux/jhash.h>
-@@ -2141,3 +2142,60 @@ unlock:
- 
- 	return err;
- }
-+
-+/**
-+ * br_multicast_list_adjacent - Returns snooped multicast addresses
-+ * @dev:	The bridge port adjacent to which to retrieve addresses
-+ * @br_ip_list:	The list to store found, snooped multicast IP addresses in
-+ *
-+ * Creates a list of IP addresses (struct br_ip_list) sensed by the multicast
-+ * snooping feature on all bridge ports of dev's bridge device, excluding
-+ * the addresses from dev itself.
-+ *
-+ * Returns the number of items added to br_ip_list.
-+ *
-+ * Notes:
-+ * - br_ip_list needs to be initialized by caller
-+ * - br_ip_list might contain duplicates in the end
-+ *   (needs to be taken care of by caller)
-+ * - br_ip_list needs to be freed by caller
-+ */
-+int br_multicast_list_adjacent(struct net_device *dev,
-+			       struct list_head *br_ip_list)
-+{
-+	struct net_bridge *br;
-+	struct net_bridge_port *port;
-+	struct net_bridge_port_group *group;
-+	struct br_ip_list *entry;
-+	int count = 0;
-+
-+	rcu_read_lock();
-+	if (!br_ip_list || !br_port_exists(dev))
-+		goto unlock;
-+
-+	port = br_port_get_rcu(dev);
-+	if (!port || !port->br)
-+		goto unlock;
-+
-+	br = port->br;
-+
-+	list_for_each_entry_rcu(port, &br->port_list, list) {
-+		if (!port->dev || port->dev == dev)
-+			continue;
-+
-+		hlist_for_each_entry_rcu(group, &port->mglist, mglist) {
-+			entry = kmalloc(sizeof(*entry), GFP_ATOMIC);
-+			if (!entry)
-+				goto unlock;
-+
-+			entry->addr = group->addr;
-+			list_add(&entry->list, br_ip_list);
-+			count++;
-+		}
-+	}
-+
-+unlock:
-+	rcu_read_unlock();
-+	return count;
-+}
-+EXPORT_SYMBOL(br_multicast_list_adjacent);
-diff --git a/net/bridge/br_private.h b/net/bridge/br_private.h
-index bc1803b..cb704a6 100644
---- a/net/bridge/br_private.h
-+++ b/net/bridge/br_private.h
-@@ -54,18 +54,6 @@ struct mac_addr
- 	unsigned char	addr[ETH_ALEN];
- };
- 
--struct br_ip
--{
--	union {
--		__be32	ip4;
--#if IS_ENABLED(CONFIG_IPV6)
--		struct in6_addr ip6;
--#endif
--	} u;
--	__be16		proto;
--	__u16		vid;
--};
--
- #ifdef CONFIG_BRIDGE_IGMP_SNOOPING
- /* our own querier */
- struct bridge_mcast_own_query {
--- 
-1.7.10.4
+regards,
+Seb
+
+
+
+Le 20/05/2014 20:43, Krishnathiepan Rasanayagam a écrit :
+> hello,
+> I dint get the meaning of the message. did you developed a framework
+> of batman-adv on ns-3? or something else?
+>
+> regards,
+> krishna
+>
+> On Tue, May 20, 2014 at 10:10 PM, Krishnathiepan Rasanayagam
+> <r.krishnathiepan@gmail.com> wrote:
+>> hello,
+>> I dint get the meaning of the message. did you developed a framework of
+>> batman-adv on ns-3? or something else?
+>>
+>> regards,
+>> krishna
+>
+>
 
