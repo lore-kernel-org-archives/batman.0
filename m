@@ -1,15 +1,11 @@
-Return-Path: <andrew@lunn.ch>
-Date: Tue, 20 May 2014 23:41:34 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20140520214134.GB11248@lunn.ch>
-References: <CAEbDFcQh8b8jmTNFGdwG0Me1vV7O-1G=r8F0Ki53=OwhhwgM5Q@mail.gmail.com>
- <20140520140157.GE9873@lunn.ch>
- <CAEbDFcRM68JXcZ=rq2-i05EL4yO8iv5kq3Bf6GaJQuH_LWQRVQ@mail.gmail.com>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Wed, 21 May 2014 10:58:58 +0200
+Message-Id: <1400662742-31999-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAEbDFcRM68JXcZ=rq2-i05EL4yO8iv5kq3Bf6GaJQuH_LWQRVQ@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] Adding security on BATMAN-ADV
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] bridge: multicast snooping patches / exports
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,32 +17,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: netdev@vger.kernel.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Stephen Hemminger <stephen@networkplumber.org>, "David S. Miller" <davem@davemloft.net>
 
-On Wed, May 21, 2014 at 12:59:29AM +0530, Krishnathiepan Rasanayagam wrote:
-> hello,
-> layer below does it mean layer 2?
+Hi,
 
-Layer above and layer below does not always map to ISO OSI 7 layer
-model. BATMAN is a layer two mesh, and it runs on top of a L2
-network. See what i mean?
+The first patch is simply a cosmetic patch. So far I (and maybe others
+too?) have been regularly confusing these two structs, therefore I'd
+suggest renaming them and therefore making the follow-up patches easier
+to understand and nicer to fit in.
 
-Are you interested in transitive trust, or end to end trust of BATMAN
-peers? If transitive trust is sufficient, then you can do it at L2,
-trust the one hop neighbors. However if you want end-to-end trust of
-the mesh, you need to be inside the mesh, so inside BATMAN. If you
-want end-to-end application trust, you need to be inside the
-application, L7, or maybe L4 if you use TLS.
+The second patch fixes a minor issue, but probably not worth for stable.
 
-It comes down the basic security questions you should always be
-considering:
 
-What are your assets you need to protect.
-Who are the attackers.
-What compromises are you willing to take.
+On the other hand the first two patches are also preparations for the
+third and fourth patch:
 
-First figure out your security model, then figure out how to implement
-it.
+These two patches are exporting functionality needed to marry the bridge
+multicast snooping with the batman-adv multicast optimizations recently
+added for the 3.15 kernel, allowing to use these optimzations in common
+setups having a bridge on top of e.g. bat0, too. So far these bridged
+setups would fall back to simple flooding through the batman-adv mesh
+network for any multicast packet entering bat0.
 
-	Andrew
+More information about the batman-adv multicast optimizations currently
+implemented can be found here:
+
+http://www.open-mesh.org/projects/batman-adv/wiki/Basic-multicast-optimizations
+
+The integration on the batman-adv side could afterwards look like this,
+for instance:
+
+http://git.open-mesh.org/batman-adv.git/commitdiff/576b59dd3e34737c702e548b21fa72059262f796?hp=f95ce7131746c65fbcdffcf2089cab59e2c2f7ac
+
+Cheers, Linus
 
