@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 24 May 2014 14:16:43 +0200
-Message-Id: <1400933804-9661-5-git-send-email-sven@narfation.org>
+Date: Sat, 24 May 2014 14:16:44 +0200
+Message-Id: <1400933804-9661-6-git-send-email-sven@narfation.org>
 In-Reply-To: <1400933804-9661-1-git-send-email-sven@narfation.org>
 References: <1400933804-9661-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 5/6] batctl: Initialize complete ping packet
-	before write
+Subject: [B.A.T.M.A.N.] [PATCH 6/6] batctl: Don't provide uninitialized
+	parameter to read_file
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,40 +20,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-The data structure for ping packets is not completely initialized by the
-userspace because the kernel sets the originator address of the packet. This
-is not only a bad practice but also irritate tools like valgrind.
+The debug table function uses a parameter to filter out old originator nodes
+when read_file processes the file. The variable is by default not initialized
+and still given to this function. This is bad practice and irritates checker
+tools.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- ping.c       | 1 +
- traceroute.c | 1 +
- 2 files changed, 2 insertions(+)
+ debug.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/ping.c b/ping.c
-index 6642188..bdca222 100644
---- a/ping.c
-+++ b/ping.c
-@@ -176,6 +176,7 @@ int ping(char *mesh_iface, int argc, char **argv)
+diff --git a/debug.c b/debug.c
+index e7f463d..dfcf3c3 100644
+--- a/debug.c
++++ b/debug.c
+@@ -107,7 +107,7 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
+ 	char full_path[MAX_PATH+1];
+ 	char *debugfs_mnt;
+ 	char *orig_iface = NULL;
+-	float orig_timeout;
++	float orig_timeout = 0.0f;
+ 	float watch_interval = 1;
+ 	opterr = 0;
  
- 	packet_len = sizeof(struct batadv_icmp_packet);
- 
-+	memset(&icmp_packet_out, 0, sizeof(icmp_packet_out));
- 	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
- 	icmp_packet_out.packet_type = BATADV_ICMP;
- 	icmp_packet_out.version = BATADV_COMPAT_VERSION;
-diff --git a/traceroute.c b/traceroute.c
-index 22b90f2..4ebfec2 100644
---- a/traceroute.c
-+++ b/traceroute.c
-@@ -133,6 +133,7 @@ int traceroute(char *mesh_iface, int argc, char **argv)
- 		goto out;
- 	}
- 
-+	memset(&icmp_packet_out, 0, sizeof(icmp_packet_out));
- 	memcpy(&icmp_packet_out.dst, dst_mac, ETH_ALEN);
- 	icmp_packet_out.version = BATADV_COMPAT_VERSION;
- 	icmp_packet_out.packet_type = BATADV_ICMP;
 -- 
 2.0.0.rc2
 
