@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 24 May 2014 14:16:41 +0200
-Message-Id: <1400933804-9661-3-git-send-email-sven@narfation.org>
+Date: Sat, 24 May 2014 14:16:42 +0200
+Message-Id: <1400933804-9661-4-git-send-email-sven@narfation.org>
 In-Reply-To: <1400933804-9661-1-git-send-email-sven@narfation.org>
 References: <1400933804-9661-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 3/6] batctl: Use strncpy instead of strcpy
-	for string copy
+Subject: [B.A.T.M.A.N.] [PATCH 4/6] batctl: Return success only with valid
+	line_ptr in read_file
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,45 +20,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-The data used in strcpy is partially provided by the user. This can be larger
-than the destination buffer and thus overwrite data after the actual string
-buffer. This can easily be avoided by using strncpy.
+The read_file function is rather complex and cluttered with different
+functionality. One of it is to provide a line_ptr of a single line to the
+caller. The caller trusts the return code for a SUCCESS of this function
+and tries to access the line_ptr. But a failed getline may lead to an
+NULL-line_ptr. The caller tries to dereference this NULL pointer and
+causes an segfault.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- debugfs.c | 4 +++-
- ioctl.c   | 3 ++-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ functions.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/debugfs.c b/debugfs.c
-index 8dd78b1..7bac044 100644
---- a/debugfs.c
-+++ b/debugfs.c
-@@ -74,7 +74,9 @@ const char *debugfs_find_mountpoint(void)
- 	while (*ptr) {
- 		if (debugfs_valid_mountpoint(*ptr) == 0) {
- 			debugfs_found = 1;
--			strcpy(debugfs_mountpoint, *ptr);
-+			strncpy(debugfs_mountpoint, *ptr,
-+				sizeof(debugfs_mountpoint));
-+			debugfs_mountpoint[sizeof(debugfs_mountpoint) - 1] = 0;
- 			return debugfs_mountpoint;
- 		}
- 		ptr++;
-diff --git a/ioctl.c b/ioctl.c
-index 1f827e8..d3d182f 100644
---- a/ioctl.c
-+++ b/ioctl.c
-@@ -105,7 +105,8 @@ int ioctl_statistics_get(char *mesh_iface)
- 	int fd = -1, ret = EXIT_FAILURE;
+diff --git a/functions.c b/functions.c
+index 84f0d14..251e616 100644
+--- a/functions.c
++++ b/functions.c
+@@ -320,7 +320,8 @@ written:
+ 		goto open;
+ 	}
  
- 	memset(&ifr, 0, sizeof(ifr));
--	strcpy(ifr.ifr_name, mesh_iface);
-+	strncpy(ifr.ifr_name, mesh_iface, sizeof(ifr.ifr_name));
-+	ifr.ifr_name[sizeof(ifr.ifr_name) - 1] = '\0';
+-	res = EXIT_SUCCESS;
++	if (line_ptr)
++		res = EXIT_SUCCESS;
  
- 	fd = socket(AF_INET, SOCK_DGRAM, 0);
- 	if (fd < 0) {
+ out:
+ 	if (fp)
 -- 
 2.0.0.rc2
 
