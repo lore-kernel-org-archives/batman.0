@@ -1,16 +1,15 @@
-Return-Path: <nicoechaniz@altermundi.net>
-Message-ID: <537ECEDA.806@altermundi.net>
-Date: Fri, 23 May 2014 01:30:18 -0300
-From: =?UTF-8?B?Tmljb2zDoXMgRWNow6FuaXo=?= <nicoechaniz@altermundi.net>
-MIME-Version: 1.0
-References: <537B636F.4010209@gmail.com>
- <CAEbDFcSCbFme_q6FX7TX5AZR1eSyTBXBP2souUzaHVb8rPwOeg@mail.gmail.com>
- <CAEbDFcRTG2rO7FGtssUbbQmwtYf59cRju=CGtwMRbE5Betz+dg@mail.gmail.com>
- <537C70E3.6080308@gmail.com>
-In-Reply-To: <537C70E3.6080308@gmail.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] BATMAN-ADV emulated in DCE module of ns-3
+Return-Path: <davem@davemloft.net>
+Date: Fri, 23 May 2014 23:36:37 -0400 (EDT)
+Message-Id: <20140523.233637.1826798421419100755.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1400662742-31999-3-git-send-email-linus.luessing@web.de>
+References: <1400662742-31999-1-git-send-email-linus.luessing@web.de>
+ <1400662742-31999-3-git-send-email-linus.luessing@web.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] [PATCH net-next 2/4] bridge: adhere to querier
+ election mechanism specified by RFCs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,25 +21,18 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: linus.luessing@web.de
+Cc: stephen@networkplumber.org, netdev@vger.kernel.org, bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-El 21/05/14 06:24, seb gmail escribió:
-> Hi,
-> 
-> I have extended the DCE framework for supporting the module batman-adv
-> kernel module and the batctl program.
-> 
-> Now, we can emulate a network with batman-adv as routing protocol. In
-> the same way, we develop a simulation model of batman-adv for ns-3.
+From: Linus L=FCssing <linus.luessing@web.de>
+Date: Wed, 21 May 2014 10:59:00 +0200
 
+> +	if (saddr <=3D br->ip4_querier.addr.u.ip4)
+> +		goto update;
 
-Hi seb,
+It is clear to me that you should be making these comparisons in cpu
+endianness.
 
-Is your work available somewhere?
-The Networks team at the National University of Cordoba here in
-Argentina was working on something similar. I guess they'd be interested
-in looking at your solution and maybe collaborate, if it's open to
-collaboration.
+Otherwise the code will handle the same situations differently
+on big-endian vs. little-endian machines.
 
-Cheers,
-NicoEchániz
