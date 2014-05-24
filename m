@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 24 May 2014 13:44:14 +0200
-Message-Id: <1400931855-7961-9-git-send-email-sven@narfation.org>
+Date: Sat, 24 May 2014 13:44:15 +0200
+Message-Id: <1400931855-7961-10-git-send-email-sven@narfation.org>
 In-Reply-To: <1400931855-7961-1-git-send-email-sven@narfation.org>
 References: <1400931855-7961-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 09/10] alfred: Handle fcntl error return codes
+Subject: [B.A.T.M.A.N.] [PATCH 10/10] alfred: Fix length check for push_data
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,48 +19,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-fcntl doesn't return non-error return values when starting a F_GETFL operation.
-These have to be handled or otherwise a garbage value is given to fcntl for
-the F_SETFL operation.
+The client receives the push_data header and the header of a data_block when
+it tries to parse the answer of an request. The remaining buffer size to store
+the actual data has to remove these two headers from its available, original
+buffer size. The read of the data would otherwise (potentially) overflow
+the output buffer.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 ---
- netsock.c | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+ client.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/netsock.c b/netsock.c
-index 8712c11..305983f 100644
---- a/netsock.c
-+++ b/netsock.c
-@@ -48,6 +48,7 @@ int netsock_open(struct globals *globals)
- 	int sock;
- 	struct sockaddr_in6 sin6;
- 	struct ifreq ifr;
-+	int ret;
+diff --git a/client.c b/client.c
+index 3670f4f..0283f57 100644
+--- a/client.c
++++ b/client.c
+@@ -38,6 +38,7 @@ int alfred_client_request_data(struct globals *globals)
+ 	struct alfred_tlv *tlv;
+ 	struct alfred_data *data;
+ 	int ret, len, data_len, i;
++	const size_t buf_data_len = sizeof(buf) - sizeof(*push) + sizeof(*data);
  
- 	globals->netsock = -1;
+ 	if (unix_sock_open_client(globals, ALFRED_SOCK_PATH))
+ 		return -1;
+@@ -88,7 +89,7 @@ int alfred_client_request_data(struct globals *globals)
+ 		data_len = ntohs(data->header.length);
  
-@@ -86,7 +87,18 @@ int netsock_open(struct globals *globals)
- 		goto err;
- 	}
+ 		/* would it fit? it should! */
+-		if (data_len > (int)(sizeof(buf) - sizeof(*push)))
++		if (data_len > (int)buf_data_len)
+ 			break;
  
--	fcntl(sock, F_SETFL, fcntl(sock, F_GETFL, 0) | O_NONBLOCK);
-+	ret = fcntl(sock, F_GETFL, 0);
-+	if (ret < 0) {
-+		fprintf(stderr, "failed to get file status flags\n");
-+		goto err;
-+	}
-+
-+	ret = fcntl(sock, F_SETFL, ret | O_NONBLOCK);
-+	if (ret < 0) {
-+		fprintf(stderr, "failed to set file status flags\n");
-+		goto err;
-+	}
-+
- 	globals->netsock = sock;
- 
- 	return 0;
+ 		/* read the data */
 -- 
 2.0.0.rc2
 
