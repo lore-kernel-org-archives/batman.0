@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 24 May 2014 13:44:10 +0200
-Message-Id: <1400931855-7961-5-git-send-email-sven@narfation.org>
+Date: Sat, 24 May 2014 13:44:11 +0200
+Message-Id: <1400931855-7961-6-git-send-email-sven@narfation.org>
 In-Reply-To: <1400931855-7961-1-git-send-email-sven@narfation.org>
 References: <1400931855-7961-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 05/10] batadv-vis: Avoid invalid access in
-	orig_list
+Subject: [B.A.T.M.A.N.] [PATCH 06/10] alfred-gpsd: Fix altitute verification
+	check
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,30 +20,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-The orig list parsing tries to gather information from 4 columns for each line.
-The second part of the parsing routine should only be started when all
-columns could be found. Otherwise parts of the variables are uninitialized.
-Dereferencing iface in such a situation can cause a segfault.
-
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 ---
- vis/vis.c | 2 +-
+ gpsd/alfred-gpsd.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/vis/vis.c b/vis/vis.c
-index 31f60d7..2928d65 100644
---- a/vis/vis.c
-+++ b/vis/vis.c
-@@ -350,7 +350,7 @@ static int parse_orig_list(struct globals *globals)
- 			default: break;
- 			}
- 		}
--		if (tnum >= 4) {
-+		if (tnum > 4) {
- 			if (strcmp(dest, neigh) == 0) {
- 				tq_val = strtol(tq, NULL, 10);
- 				if (tq_val < 1 || tq_val > 255)
+diff --git a/gpsd/alfred-gpsd.c b/gpsd/alfred-gpsd.c
+index ef20f28..089f2af 100644
+--- a/gpsd/alfred-gpsd.c
++++ b/gpsd/alfred-gpsd.c
+@@ -370,7 +370,7 @@ static void gpsd_parse_location(struct globals *globals,
+ 		exit(EXIT_FAILURE);
+ 	}
+ 
+-	if ((alt < -1000) || (lon > 9000)) {
++	if ((alt < -1000) || (alt > 9000)) {
+ 		/* No support for aircraft or submarines! */
+ 		printf("Invalid altitude\n");
+ 		gpsd_usage();
 -- 
 2.0.0.rc2
 
