@@ -1,10 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 24 May 2014 15:56:18 +0200
-Message-Id: <1400939778-12886-3-git-send-email-sven@narfation.org>
-In-Reply-To: <1400939778-12886-1-git-send-email-sven@narfation.org>
-References: <1400939778-12886-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 3/3] batctl: Use memleak/error path free
+Date: Sat, 24 May 2014 16:00:34 +0200
+Message-Id: <1400940034-13406-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] alfred: Use memleak/error path free
 	implementation of hash_resize
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -35,7 +33,7 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
  1 file changed, 44 insertions(+), 28 deletions(-)
 
 diff --git a/hash.c b/hash.c
-index 2f4aa9f..14debcb 100644
+index 4b3106e..fd85a0f 100644
 --- a/hash.c
 +++ b/hash.c
 @@ -63,6 +63,40 @@ void hash_delete(struct hashtable_t *hash, hashdata_free_cb free_cb)
