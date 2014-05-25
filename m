@@ -1,15 +1,12 @@
-Return-Path: <andrew@lunn.ch>
-Date: Sat, 24 May 2014 16:45:45 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20140524144545.GE31314@lunn.ch>
-References: <1400931855-7961-1-git-send-email-sven@narfation.org>
- <1400931855-7961-6-git-send-email-sven@narfation.org>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Sun, 25 May 2014 07:03:21 +0200
+Message-Id: <1400994205-31165-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1400931855-7961-6-git-send-email-sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 06/10] alfred-gpsd: Fix altitute
- verification check
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv2 net-next 0/4] bridge: multicast snooping
+	patches / exports
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,38 +18,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Sven Eckelmann <sven@narfation.org>
+To: netdev@vger.kernel.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Stephen Hemminger <stephen@networkplumber.org>, "David S. Miller" <davem@davemloft.net>
 
-On Sat, May 24, 2014 at 01:44:11PM +0200, Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Changes in v2:
 
-Duh!
+* fix a nasty typo in PATCH 1/4, br_multicast_update_query_timer():
+  "br->multicast_query_interval" vs. "br->multicast_querier_interval"
+  => this accidentally reduced the other querier present timer 
+     from 255 to 125 seconds
+* fix a typo in PATCH 2/4, br_ip{4,6}_multicast_query():
+  ntohs(ETH_P_{IP,IPV6}) vs. htons(ETH_P_{IP,IPV6})
+* add missing ntohl()s before address comparison in PATCH 2/4,
+  br_ip4_multicast_select_querier() (thanks David!)
 
-Thanks Sven
+Cheers, Linus
 
-Acked-by: Andrew Lunn <andrew@lunn.ch>
 
-	  Andrew
-
-> 
-> ---
->  gpsd/alfred-gpsd.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/gpsd/alfred-gpsd.c b/gpsd/alfred-gpsd.c
-> index ef20f28..089f2af 100644
-> --- a/gpsd/alfred-gpsd.c
-> +++ b/gpsd/alfred-gpsd.c
-> @@ -370,7 +370,7 @@ static void gpsd_parse_location(struct globals *globals,
->  		exit(EXIT_FAILURE);
->  	}
->  
-> -	if ((alt < -1000) || (lon > 9000)) {
-> +	if ((alt < -1000) || (alt > 9000)) {
->  		/* No support for aircraft or submarines! */
->  		printf("Invalid altitude\n");
->  		gpsd_usage();
-> -- 
-> 2.0.0.rc2
-> 
