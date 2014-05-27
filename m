@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 27 May 2014 16:19:42 +0200
-Message-Id: <1401200382-19453-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1400940034-13406-1-git-send-email-sven@narfation.org>
-References: <1400940034-13406-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2] alfred: Use memleak/error path free
+Date: Tue, 27 May 2014 16:23:32 +0200
+Message-Id: <1401200612-19725-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1400939778-12886-3-git-send-email-sven@narfation.org>
+References: <1400939778-12886-3-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 3/3] batctl: Use memleak/error path free
 	implementation of hash_resize
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,7 +22,7 @@ Cc: Sven Eckelmann <sven@narfation.org>
 
 The current implementation of hash_resize uses hash_add directly to initialize
 a new hash table. But hash_add has two possible situations when it returns an
-error
+error and hash_resize would leak the data:
 
  * data already exists
  * malloc fails
@@ -34,14 +34,14 @@ old hash table can be re-used.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-v2
- * fixed comit message
+v2:
+ * fixed commit message
 
  hash.c | 72 ++++++++++++++++++++++++++++++++++++++++--------------------------
  1 file changed, 44 insertions(+), 28 deletions(-)
 
 diff --git a/hash.c b/hash.c
-index 4b3106e..fd85a0f 100644
+index 2f4aa9f..14debcb 100644
 --- a/hash.c
 +++ b/hash.c
 @@ -63,6 +63,40 @@ void hash_delete(struct hashtable_t *hash, hashdata_free_cb free_cb)
@@ -114,16 +114,16 @@ index 4b3106e..fd85a0f 100644
 -	/* init the new bucket */
 -	bucket->data = data;
 -	bucket->next = NULL;
--
++	ret = hash_add_bucket(hash, data, bucket, 1);
++	if (ret < 0)
++		debugFree(bucket, 1307);
+ 
 -	/* and link it */
 -	if (prev_bucket == NULL)
 -		hash->table[index] = bucket;
 -	else
 -		prev_bucket->next = bucket;
-+	ret = hash_add_bucket(hash, data, bucket, 1);
-+	if (ret < 0)
-+		debugFree(bucket, 1307);
- 
+-
 -	hash->elements++;
 -	return 0;
 +	return ret;
@@ -146,5 +146,6 @@ index 4b3106e..fd85a0f 100644
  	}
  	/* remove hash and eventual overflow buckets but not the
 -- 
-2.0.0.rc4
+2.0.0.rc2
+
 
