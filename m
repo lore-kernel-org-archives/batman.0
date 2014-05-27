@@ -1,8 +1,13 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 27 May 2014 04:25:46 +0200
-Message-Id: <1401157547-25199-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] pull request net: batman-adv 20140527
+Date: Tue, 27 May 2014 04:25:47 +0200
+Message-Id: <1401157547-25199-2-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1401157547-25199-1-git-send-email-antonio@meshcoding.com>
+References: <1401157547-25199-1-git-send-email-antonio@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix NULL pointer dereferences
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,42 +20,53 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-Hello David,
+From: Marek Lindner <mareklindner@neomailbox.ch>
 
-here you have another very small fix intended for net/linux-3.15.
-It prevents some multicast functions from dereferencing a NULL pointer.
-(Actually it was nothing more than a typ0)
-I hope it is not too late for such a small patch.
+Was introduced with 4c8755d69cbde2ec464a39c932aed0a83f9ff89f
+("batman-adv: Send multicast packets to nodes with a WANT_ALL flag")
 
-
-Please pull or let me know of any problem
-
-Thanks a lot,
-	Antonio
-
-
-
-The following changes since commit b6ed5498601df40489606dbc14a9c7011c16630b:
-
-  batman: fix a bogus warning from batadv_is_on_batman_iface() (2014-05-22 17:23:00 -0400)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git 
-
-for you to fetch changes up to 9d4190df6a21d96238133a9a64866a9c796f4ec8:
-
-  batman-adv: fix NULL pointer dereferences (2014-05-23 16:32:32 +0200)
-
-----------------------------------------------------------------
-Included changes:
-- prevent NULL dereference in multicast code
-
-----------------------------------------------------------------
-Marek Lindner (1):
-      batman-adv: fix NULL pointer dereferences
-
+Reported-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
  net/batman-adv/multicast.c | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 8c7ca81..96b66fd 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -415,7 +415,7 @@ batadv_mcast_forw_ipv4_node_get(struct batadv_priv *bat_priv)
+ 	hlist_for_each_entry_rcu(tmp_orig_node,
+ 				 &bat_priv->mcast.want_all_ipv4_list,
+ 				 mcast_want_all_ipv4_node) {
+-		if (!atomic_inc_not_zero(&orig_node->refcount))
++		if (!atomic_inc_not_zero(&tmp_orig_node->refcount))
+ 			continue;
+ 
+ 		orig_node = tmp_orig_node;
+@@ -442,7 +442,7 @@ batadv_mcast_forw_ipv6_node_get(struct batadv_priv *bat_priv)
+ 	hlist_for_each_entry_rcu(tmp_orig_node,
+ 				 &bat_priv->mcast.want_all_ipv6_list,
+ 				 mcast_want_all_ipv6_node) {
+-		if (!atomic_inc_not_zero(&orig_node->refcount))
++		if (!atomic_inc_not_zero(&tmp_orig_node->refcount))
+ 			continue;
+ 
+ 		orig_node = tmp_orig_node;
+@@ -493,7 +493,7 @@ batadv_mcast_forw_unsnoop_node_get(struct batadv_priv *bat_priv)
+ 	hlist_for_each_entry_rcu(tmp_orig_node,
+ 				 &bat_priv->mcast.want_all_unsnoopables_list,
+ 				 mcast_want_all_unsnoopables_node) {
+-		if (!atomic_inc_not_zero(&orig_node->refcount))
++		if (!atomic_inc_not_zero(&tmp_orig_node->refcount))
+ 			continue;
+ 
+ 		orig_node = tmp_orig_node;
+-- 
+1.8.5.5
+
