@@ -1,15 +1,16 @@
-Return-Path: <stephen@networkplumber.org>
-Date: Fri, 30 May 2014 07:38:34 -0700
-From: Stephen Hemminger <stephen@networkplumber.org>
-Message-ID: <20140530073834.0986af33@nehalam.linuxnetplumber.net>
-In-Reply-To: <1400994205-31165-4-git-send-email-linus.luessing@web.de>
-References: <1400994205-31165-1-git-send-email-linus.luessing@web.de>
- <1400994205-31165-4-git-send-email-linus.luessing@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <prvs=2200761ee=david.moffatt@nokia.com>
+From: "Moffatt David (Nokia-CTO/SiliconValley)" <david.moffatt@nokia.com>
+Date: Fri, 30 May 2014 16:35:12 +0000
+Message-ID: <CFAE00F7.D720%david.moffatt@nokia.com>
+References: <53889421.7040000@udio.cujae.edu.cu>
+In-Reply-To: <53889421.7040000@udio.cujae.edu.cu>
+Content-Language: en-US
+Content-Type: text/plain; charset="Windows-1252"
+Content-ID: <C18F78594C3D1D4797699FE47AFF1D9B@nnok.nokia.com>
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 net-next 3/4] bridge: add export of
- multicast database adjacent to net_dev
+MIME-Version: 1.0
+Subject: Re: [B.A.T.M.A.N.] [SUSPECTED SPAM] I need some help with BATMAN
+ configuration
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,23 +22,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Linus =?ISO-8859-1?B?TPxzc2luZw==?= <linus.luessing@web.de>
-Cc: netdev@vger.kernel.org, bridge@lists.linux-foundation.org, "David S.
- Miller" <davem@davemloft.net>, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sun, 25 May 2014 07:03:24 +0200
-Linus L=FCssing <linus.luessing@web.de> wrote:
+I am in a similar boat.   I can ping the local interfaces but not the
+remote ones.
+Please CC me on your email with Lucy.
 
-> With this new, exported function br_multicast_list_adjacent(net_dev) a
-> list of IPv4/6 addresses is returned. This list contains all multicast
-> addresses sensed by the bridge multicast snooping feature on all bridge
-> ports of the bridge interface of net_dev, excluding addresses from the
-> specified net_device itself.
->=20
-> Adding bridge support to the batman-adv multicast optimization requires
-> batman-adv knowing about the existence of bridged-in multicast
-> listeners to be able to reliably serve them with multicast packets.
->=20
-> Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
+=8BDavid.
 
-Please use EXPORT_SYMBOL_GPL
+On 5/30/14, 7:22 AM, "ext Lucy Coya" <lucy.cr@udio.cujae.edu.cu> wrote:
+
+>Hi everyone,
+>My name is Lucy Coya, I=B4m a telecommunications engineer and I need some
+>help with my BATMAN configuration. I=B4m using batman-adv-2014-2.0 and
+>batctl-2014-2.0
+>I=B4m trying to use BATMAN protocol in a very very simple routing scenario
+>at first to study the protocol. I have:
+>-Two Laptops using two wireless interfaces each (wlan0 in AP mode and
+>wlan1 in Ad Hoc mode).
+>
+>I meshed the two wireless interfaces in ad hoc mode according to the
+>wiki steps and it worked fine,so I can ping the interfaces. Now I=B4m
+>trying to make that two clients connected to the AP interfaces can ping
+>each other through the mesh network. I tried creating a bridge between
+>wlan0 and wlan1 as the wiki says but no ping :-(. I don=B4t know what to
+>do so any help would be awesome!!! Thanks
+>Sorry if my English is bad :-)
+>
+>Lucy
+>
+>
+>
+>50 Aniversario de la Cujae. Inaugurada por Fidel el 2 de diciembre de
+>1964  http://cujae.edu.cu
+>
+>
+
