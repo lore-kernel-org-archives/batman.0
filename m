@@ -1,11 +1,15 @@
-Return-Path: <lucy.cr@udio.cujae.edu.cu>
-Message-ID: <53889421.7040000@udio.cujae.edu.cu>
-Date: Fri, 30 May 2014 10:22:25 -0400
-From: Lucy Coya <lucy.cr@udio.cujae.edu.cu>
+Return-Path: <stephen@networkplumber.org>
+Date: Fri, 30 May 2014 07:37:18 -0700
+From: Stephen Hemminger <stephen@networkplumber.org>
+Message-ID: <20140530073718.27e21e38@nehalam.linuxnetplumber.net>
+In-Reply-To: <20140529.153622.764478286337271648.davem@davemloft.net>
+References: <1400994205-31165-1-git-send-email-linus.luessing@web.de>
+ <20140529.153622.764478286337271648.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] I need some help with BATMAN configuration
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 net-next 0/4] bridge: multicast
+ snooping patches / exports
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,31 +21,18 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, bridge@lists.linux-foundation.org
 
-Hi everyone,
-My name is Lucy Coya, I=B4m a telecommunications engineer and I need some=20
-help with my BATMAN configuration. I=B4m using batman-adv-2014-2.0 and=20
-batctl-2014-2.0
-I=B4m trying to use BATMAN protocol in a very very simple routing scenario =
+On Thu, 29 May 2014 15:36:22 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-at first to study the protocol. I have:
--Two Laptops using two wireless interfaces each (wlan0 in AP mode and=20
-wlan1 in Ad Hoc mode).
+> From: Linus L=FCssing <linus.luessing@web.de>
+> Date: Sun, 25 May 2014 07:03:21 +0200
+>=20
+> > Changes in v2:
+>=20
+> I really need a bridging expert to review this series, thank you.
 
-I meshed the two wireless interfaces in ad hoc mode according to the=20
-wiki steps and it worked fine,so I can ping the interfaces. Now I=B4m=20
-trying to make that two clients connected to the AP interfaces can ping=20
-each other through the mesh network. I tried creating a bridge between=20
-wlan0 and wlan1 as the wiki says but no ping :-(. I don=B4t know what to=20
-do so any help would be awesome!!! Thanks
-Sorry if my English is bad :-)
-
-Lucy
-
-
-
-50 Aniversario de la Cujae. Inaugurada por Fidel el 2 de diciembre de 1964 =
- http://cujae.edu.cu
-
-
+I am fine with these, but would like original author of IGMP snooping
+to weigh in.
