@@ -1,13 +1,13 @@
-Return-Path: <gui@altermundi.net>
-Message-ID: <5388C01D.1030202@altermundi.net>
-Date: Fri, 30 May 2014 14:30:05 -0300
-From: Gui Iribarren <gui@altermundi.net>
-MIME-Version: 1.0
-References: <53889421.7040000@udio.cujae.edu.cu>
-In-Reply-To: <53889421.7040000@udio.cujae.edu.cu>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] I need some help with BATMAN configuration
+Return-Path: <davem@davemloft.net>
+Date: Fri, 30 May 2014 16:47:57 -0700 (PDT)
+Message-Id: <20140530.164757.984109840722396912.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1401157547-25199-1-git-send-email-antonio@meshcoding.com>
+References: <1401157547-25199-1-git-send-email-antonio@meshcoding.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request net: batman-adv 20140527
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,63 +19,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: antonio@meshcoding.com
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On 30/05/14 11:22, Lucy Coya wrote:
-> Hi everyone,
-> My name is Lucy Coya, I´m a telecommunications engineer and I need some
-> help with my BATMAN configuration. I´m using batman-adv-2014-2.0 and
-> batctl-2014-2.0
-> I´m trying to use BATMAN protocol in a very very simple routing scenario
-> at first to study the protocol. I have:
-> -Two Laptops using two wireless interfaces each (wlan0 in AP mode and
-> wlan1 in Ad Hoc mode).
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Tue, 27 May 2014 04:25:46 +0200
+
+> Hello David,
 > 
-> I meshed the two wireless interfaces in ad hoc mode according to the
-> wiki steps and it worked fine,so I can ping the interfaces. Now I´m
-> trying to make that two clients connected to the AP interfaces can ping
-> each other through the mesh network. I tried creating a bridge between
-> wlan0 and wlan1 as the wiki says but no ping :-(. I don´t know what to
-
-you should bridge wlan0 (the AP interface) with bat0
-and add wlan1 (adhoc) to bat0 with "batctl if add"
-
-in ascii art that'd be:
-br-lan
- \ wlan0
- \ bat0
-    \ wlan1
-
-in bash commands that'd be
-
-# add adhoc interface to bat0
-batctl if add wlan1
-
-# remove addresses from slave interfaces
-ip addr flush dev wlan0
-ip addr flush dev wlan1
-ip addr flush dev bat0
-
-# bridge ap interface with bat0
-brctl addif br-lan wlan0
-brctl addif br-lan bat0
-
-# add the ip address to the bridge
-ip addr add dev br-lan 2001:db8::1/64
-
-
-cheers!
-
-gui
-
-> do so any help would be awesome!!! Thanks
-> Sorry if my English is bad :-)
-> 
-> Lucy
+> here you have another very small fix intended for net/linux-3.15.
+> It prevents some multicast functions from dereferencing a NULL pointer.
+> (Actually it was nothing more than a typ0)
+> I hope it is not too late for such a small patch.
 > 
 > 
+> Please pull or let me know of any problem
+ ...
+> are available in the git repository at:
 > 
-> 50 Aniversario de la Cujae. Inaugurada por Fidel el 2 de diciembre de
-> 1964  http://cujae.edu.cu
-> 
-> 
+>   git://git.open-mesh.org/linux-merge.git 
+
+This doesn't work:
+
+[davem@dokdo net]$ git pull git://git.open-mesh.org/linux-merge.git 
+remote: Counting objects: 10335, done.        
+remote: Compressing objects: 100% (2687/2687), done.        
+remote: Total 9894 (delta 7726), reused 9123 (delta 7189)        
+Receiving objects: 100% (9894/9894), 1.98 MiB | 399 KiB/s, done.
+Resolving deltas: 100% (7726/7726), completed with 236 local objects.
+From git://git.open-mesh.org/linux-merge
+ * branch            HEAD       -> FETCH_HEAD
+Auto-merging net/batman-adv/types.h
+Auto-merging net/batman-adv/translation-table.c
+CONFLICT (content): Merge conflict in net/batman-adv/translation-table.c
+Auto-merging net/batman-adv/sysfs.c
+Auto-merging net/batman-adv/soft-interface.c
+Auto-merging net/batman-adv/send.c
+CONFLICT (content): Merge conflict in net/batman-adv/send.c
+Auto-merging net/batman-adv/network-coding.c
+Auto-merging net/batman-adv/multicast.c
+CONFLICT (add/add): Merge conflict in net/batman-adv/multicast.c
+Auto-merging net/batman-adv/main.h
+CONFLICT (content): Merge conflict in net/batman-adv/main.h
+Auto-merging net/batman-adv/distributed-arp-table.c
+warning: inexact rename detection was skipped due to too many files.
+warning: you may want to set your merge.renamelimit variable to at least 1268 and retry the command.
+Automatic merge failed; fix conflicts and then commit the result.
+
+You seem to have a bunch of unrelated things in this tree.
