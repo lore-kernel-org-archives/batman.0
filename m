@@ -1,16 +1,11 @@
-Return-Path: <antonio@open-mesh.com>
-Message-ID: <538CCD25.3010708@open-mesh.com>
-Date: Mon, 02 Jun 2014 21:14:45 +0200
-From: Antonio Quartulli <antonio@open-mesh.com>
+Return-Path: <gaul@web-yard.de>
+From: =?UTF-8?q?Andr=C3=A9=20Gaul?= <gaul@web-yard.de>
+Date: Wed,  4 Jun 2014 21:53:36 +0200
+Message-Id: <1401911616-18318-1-git-send-email-gaul@web-yard.de>
 MIME-Version: 1.0
-References: <1400489521-22006-1-git-send-email-antonio@meshcoding.com>
- <1660663.6gT1Y85jok@diderot>
-In-Reply-To: <1660663.6gT1Y85jok@diderot>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="KoFHSoiI24XdtkccSmvGfA35t3kJHKK9j"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] openwrt-feed-batman-adv: enable
- batadv_vlan protocol
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] remove unnecessary logspam
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,50 +17,79 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Andr=C3=A9=20Gaul?= <gaul@web-yard.de>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---KoFHSoiI24XdtkccSmvGfA35t3kJHKK9j
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+This patch removes unnecessary logspam which resulted from superfluous
+calls to net_ratelimit(). With the supplied patch, net_ratelimit() is
+called after the loglevel has been checked.
 
-On 02/06/14 18:20, Marek Lindner wrote:
-> How about moving this documentation to the OpenWrt config page in our w=
-iki ?
-> http://www.open-mesh.org/projects/batman-adv/wiki/Batman-adv-openwrt-co=
-nfig
->=20
+Signed-off-by: André Gaul <gaul@web-yard.de>
+---
+ main.h    | 16 ++++++++++++----
+ routing.c |  4 ++--
+ 2 files changed, 14 insertions(+), 6 deletions(-)
 
-Yeah, good suggestion. I'll do it soon.
+diff --git a/main.h b/main.h
+index 87e7196..df57639 100644
+--- a/main.h
++++ b/main.h
+@@ -239,21 +239,29 @@ enum batadv_dbg_level {
+ int batadv_debug_log(struct batadv_priv *bat_priv, const char *fmt, ...)
+ __printf(2, 3);
+ 
+-#define batadv_dbg(type, bat_priv, fmt, arg...)			\
++/* possibly ratelimited debug output */
++#define _batadv_dbg(type, bat_priv, ratelimited, fmt, arg...)			\
+ 	do {							\
+-		if (atomic_read(&bat_priv->log_level) & type)	\
++		if (atomic_read(&bat_priv->log_level) & type && \
++		    (!ratelimited || net_ratelimit()))	\
+ 			batadv_debug_log(bat_priv, fmt, ## arg);\
+ 	}							\
+ 	while (0)
+ #else /* !CONFIG_BATMAN_ADV_DEBUG */
+-__printf(3, 4)
+-static inline void batadv_dbg(int type __always_unused,
++__printf(4, 5)
++static inline void _batadv_dbg(int type __always_unused,
+ 			      struct batadv_priv *bat_priv __always_unused,
++			      int ratelimited __always_unused,
+ 			      const char *fmt __always_unused, ...)
+ {
+ }
+ #endif
+ 
++#define batadv_dbg(type, bat_priv, arg...) \
++	_batadv_dbg(type, bat_priv, 0, ## arg)
++#define batadv_dbg_ratelimited(type, bat_priv, arg...) \
++	_batadv_dbg(type, bat_priv, 1, ## arg)
++
+ #define batadv_info(net_dev, fmt, arg...)				\
+ 	do {								\
+ 		struct net_device *_netdev = (net_dev);                 \
+diff --git a/routing.c b/routing.c
+index 3514153..c679c6f 100644
+--- a/routing.c
++++ b/routing.c
+@@ -706,7 +706,7 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
+ 	if (batadv_tt_local_client_is_roaming(bat_priv, ethhdr->h_dest, vid)) {
+ 		if (batadv_reroute_unicast_packet(bat_priv, unicast_packet,
+ 						  ethhdr->h_dest, vid))
+-			net_ratelimited_function(batadv_dbg, BATADV_DBG_TT,
++			batadv_dbg_ratelimited(BATADV_DBG_TT,
+ 						 bat_priv,
+ 						 "Rerouting unicast packet to %pM (dst=%pM): Local Roaming\n",
+ 						 unicast_packet->dest,
+@@ -752,7 +752,7 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
+ 	 */
+ 	if (batadv_reroute_unicast_packet(bat_priv, unicast_packet,
+ 					  ethhdr->h_dest, vid)) {
+-		net_ratelimited_function(batadv_dbg, BATADV_DBG_TT, bat_priv,
++		batadv_dbg_ratelimited(BATADV_DBG_TT, bat_priv,
+ 					 "Rerouting unicast packet to %pM (dst=%pM): TTVN mismatch old_ttvn=%u new_ttvn=%u\n",
+ 					 unicast_packet->dest, ethhdr->h_dest,
+ 					 old_ttvn, curr_ttvn);
+-- 
+1.9.1
 
-Cheers,
-
---=20
-Antonio Quartulli
-
-
---KoFHSoiI24XdtkccSmvGfA35t3kJHKK9j
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBCAAGBQJTjM0pAAoJEJgn97Bh2u9eiVsP/iVGxpT8JBIPeyeHeLxSnonN
-xE7ViqniJiQ/j89ZWJZQicSXrn8sntiueUSo761Gw6c/kbgZFc8G2ct2tkvutequ
-ZuWgn5G+s+mc/A8AN4/XzwWunMd/os1kcrynzimQtaKChdFqSCMsuDtDAmlQXyJ+
-udWcRsDDcvm1kKElmbeOjjSNCLAt1bMnPWKl8slpfldV93ZJs0jygfFC5S0AvGmq
-v2K0WzHMUOfOWRE/tZBON2YOjRtF+mrG1QfaKAh6M/Wu4I/Fhq/ml0pfvTIDg7B9
-MiwFgg0pZZT/Z67OL8XoL5krJbEZeEQOEdkMyd0uGMt7jQkCzFYhoXcJYC6CxXdJ
-HNDYfC/25v1PB0DQSUSVegfHG4rZBGgyNtrd+337jF0jW2Qqne9I+2ytRVk5/dz6
-hwnMJ3bPe/cHd2QULosgu9kWUks8NFpj1emEKcMxKUalKBx27MIVnA1rMuAfoJH1
-qRpIW+L2gUBiMUvVhzNXYzif52UHcozwnBd99W/cdjptPvgOECQiEapBdCKkSDyU
-bKZu8Toln1F7fk2CsdxPWY3da1jvX9QXXk1oGi4nWS0X++seF30MQDyxYzi+5y+Z
-bCmmoV7glf5pEUNvCBm+9lalr5UCki0oPAUCgXr39fG9pUx7zThxja0RnK1hzFq4
-MQN14uX9hwyVcX+Rt0yr
-=jHID
------END PGP SIGNATURE-----
-
---KoFHSoiI24XdtkccSmvGfA35t3kJHKK9j--
