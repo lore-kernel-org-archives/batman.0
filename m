@@ -1,11 +1,15 @@
-Return-Path: <gaul@web-yard.de>
-From: =?UTF-8?q?Andr=C3=A9=20Gaul?= <gaul@web-yard.de>
-Date: Wed,  4 Jun 2014 21:53:36 +0200
-Message-Id: <1401911616-18318-1-git-send-email-gaul@web-yard.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] remove unnecessary logspam
+Return-Path: <davem@davemloft.net>
+Date: Thu, 05 Jun 2014 00:43:11 -0700 (PDT)
+Message-Id: <20140605.004311.19890338095820543.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20140602184215.GA2460@Linus-Debian>
+References: <1401732466-3027-1-git-send-email-linus.luessing@web.de>
+ <20140602184215.GA2460@Linus-Debian>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 net-next 0/4] bridge: multicast
+ snooping patches / exports
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,79 +21,18 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Andr=C3=A9=20Gaul?= <gaul@web-yard.de>
+To: linus.luessing@web.de
+Cc: b.a.t.m.a.n@lists.open-mesh.org, herbert@gondor.apana.org.au, netdev@vger.kernel.org, bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org, stephen@networkplumber.org
 
-This patch removes unnecessary logspam which resulted from superfluous
-calls to net_ratelimit(). With the supplied patch, net_ratelimit() is
-called after the loglevel has been checked.
+From: Linus L=FCssing <linus.luessing@web.de>
+Date: Mon, 2 Jun 2014 20:42:15 +0200
 
-Signed-off-by: André Gaul <gaul@web-yard.de>
----
- main.h    | 16 ++++++++++++----
- routing.c |  4 ++--
- 2 files changed, 14 insertions(+), 6 deletions(-)
+> Changes in v3:
+> =
 
-diff --git a/main.h b/main.h
-index 87e7196..df57639 100644
---- a/main.h
-+++ b/main.h
-@@ -239,21 +239,29 @@ enum batadv_dbg_level {
- int batadv_debug_log(struct batadv_priv *bat_priv, const char *fmt, ...)
- __printf(2, 3);
- 
--#define batadv_dbg(type, bat_priv, fmt, arg...)			\
-+/* possibly ratelimited debug output */
-+#define _batadv_dbg(type, bat_priv, ratelimited, fmt, arg...)			\
- 	do {							\
--		if (atomic_read(&bat_priv->log_level) & type)	\
-+		if (atomic_read(&bat_priv->log_level) & type && \
-+		    (!ratelimited || net_ratelimit()))	\
- 			batadv_debug_log(bat_priv, fmt, ## arg);\
- 	}							\
- 	while (0)
- #else /* !CONFIG_BATMAN_ADV_DEBUG */
--__printf(3, 4)
--static inline void batadv_dbg(int type __always_unused,
-+__printf(4, 5)
-+static inline void _batadv_dbg(int type __always_unused,
- 			      struct batadv_priv *bat_priv __always_unused,
-+			      int ratelimited __always_unused,
- 			      const char *fmt __always_unused, ...)
- {
- }
- #endif
- 
-+#define batadv_dbg(type, bat_priv, arg...) \
-+	_batadv_dbg(type, bat_priv, 0, ## arg)
-+#define batadv_dbg_ratelimited(type, bat_priv, arg...) \
-+	_batadv_dbg(type, bat_priv, 1, ## arg)
-+
- #define batadv_info(net_dev, fmt, arg...)				\
- 	do {								\
- 		struct net_device *_netdev = (net_dev);                 \
-diff --git a/routing.c b/routing.c
-index 3514153..c679c6f 100644
---- a/routing.c
-+++ b/routing.c
-@@ -706,7 +706,7 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 	if (batadv_tt_local_client_is_roaming(bat_priv, ethhdr->h_dest, vid)) {
- 		if (batadv_reroute_unicast_packet(bat_priv, unicast_packet,
- 						  ethhdr->h_dest, vid))
--			net_ratelimited_function(batadv_dbg, BATADV_DBG_TT,
-+			batadv_dbg_ratelimited(BATADV_DBG_TT,
- 						 bat_priv,
- 						 "Rerouting unicast packet to %pM (dst=%pM): Local Roaming\n",
- 						 unicast_packet->dest,
-@@ -752,7 +752,7 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 	 */
- 	if (batadv_reroute_unicast_packet(bat_priv, unicast_packet,
- 					  ethhdr->h_dest, vid)) {
--		net_ratelimited_function(batadv_dbg, BATADV_DBG_TT, bat_priv,
-+		batadv_dbg_ratelimited(BATADV_DBG_TT, bat_priv,
- 					 "Rerouting unicast packet to %pM (dst=%pM): TTVN mismatch old_ttvn=%u new_ttvn=%u\n",
- 					 unicast_packet->dest, ethhdr->h_dest,
- 					 old_ttvn, curr_ttvn);
--- 
-1.9.1
+> * use EXPORT_SYMBOL_GPL() instead of EXPORT_SYMBOL()
 
+This is not a sufficient header posting.
+
+You must also describe at a high level what this patch series is
+doing, and why you are doing it.
