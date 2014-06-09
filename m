@@ -1,15 +1,14 @@
-Return-Path: <jeffrey.t.kirsher@intel.com>
-Message-ID: <1402217625.3039.1.camel@jtkirshe-mobl>
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Sun, 08 Jun 2014 01:53:45 -0700
-In-Reply-To: <1402159211-12629-2-git-send-email-kenhelias@web.de>
-References: <1402159211-12629-1-git-send-email-kenhelias@web.de>
- <1402159211-12629-2-git-send-email-kenhelias@web.de>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-o0coTsBl9GGr9ZZ4GW3Z"
-Mime-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] [linux-nics] [PATCHv3 2/3] list: Fix order of
- arguments for hlist_add_after(_rcu)
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <53957653.5000406@meshcoding.com>
+Date: Mon, 09 Jun 2014 10:54:43 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
+MIME-Version: 1.0
+References: <1401911616-18318-1-git-send-email-gaul@web-yard.de>
+In-Reply-To: <1401911616-18318-1-git-send-email-gaul@web-yard.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="nINbrqEQCjTcHrVr0Q6DVSNNqBtppogRO"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] remove unnecessary logspam
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,92 +20,126 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Ken Helias <kenhelias@web.de>
-Cc: devel@driverdev.osuosl.org, b.a.t.m.a.n@lists.open-mesh.org, NICS <linux.nics@intel.com>, Linux@isotope.jf.intel.com, e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org, bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fsdevel@vger.kernel.org, Ken Helias <kenhelias@firemail.de>, Andrew Morton <akpm@linux-foundation.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: =?UTF-8?B?QW5kcsOpIEdhdWw=?= <gaul@web-yard.de>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-
---=-o0coTsBl9GGr9ZZ4GW3Z
-Content-Type: text/plain; charset="UTF-8"
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--nINbrqEQCjTcHrVr0Q6DVSNNqBtppogRO
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, 2014-06-07 at 18:40 +0200, Ken Helias wrote:
-> From: Ken Helias <kenhelias@firemail.de>
->=20
-> All other add functions for lists have the new item as first argument
-> and the
-> position where it is added as second argument. This was changed for no
-> good
-> reason in this function and makes using it unnecessary confusing.
->=20
-> The name was changed to let old code generate a compile errors instead
-> of
-> using the wrong parameter order.
->=20
-> Signed-off-by: Ken Helias <kenhelias@firemail.de>
-> Cc: Linux NICS <linux.nics@intel.com>
-> Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: e1000-devel@lists.sourceforge.net
-> Cc: netdev@vger.kernel.org
-> Cc: devel@driverdev.osuosl.org
-> Cc: linux-fsdevel@vger.kernel.org
-> Cc: b.a.t.m.a.n@lists.open-mesh.org
-> Cc: bridge@lists.linux-foundation.org
+Hi Andr=C3=A9,
 
-For the Intel driver changes...
-Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+On 04/06/14 21:53, Andr=C3=A9 Gaul wrote:
+> This patch removes unnecessary logspam which resulted from superfluous
+> calls to net_ratelimit(). With the supplied patch, net_ratelimit() is
+> called after the loglevel has been checked.
 
-> ---
-> Patch based on "Add linux-next specific files for 20140606"
->=20
-> v3:
-> renamed from hlist_add_after* to hlist_add_behind
->=20
-> v2:
-> Splitted into two patches
-> reduced number of Cc
->=20
->  Documentation/RCU/whatisRCU.txt                  | 2 +-
->  drivers/gpu/drm/drm_hashtab.c                    | 2 +-
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c   | 2 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 2 +-
->  drivers/staging/lustre/lustre/libcfs/hash.c      | 4 ++--
->  fs/namespace.c                                   | 2 +-
->  fs/notify/inode_mark.c                           | 2 +-
->  fs/notify/vfsmount_mark.c                        | 2 +-
->  include/linux/list.h                             | 4 ++--
->  include/linux/rculist.h                          | 8 ++++----
->  net/batman-adv/fragmentation.c                   | 2 +-
->  net/bridge/br_multicast.c                        | 2 +-
->  net/ipv4/fib_trie.c                              | 2 +-
->  net/ipv6/addrlabel.c                             | 2 +-
->  net/xfrm/xfrm_policy.c                           | 4 ++--
->  15 files changed, 21 insertions(+), 21 deletions(-)
+good catch!
+
+> -#define batadv_dbg(type, bat_priv, fmt, arg...)			\
+> +/* possibly ratelimited debug output */
+> +#define _batadv_dbg(type, bat_priv, ratelimited, fmt, arg...)			\
+
+can you please put the ending "\" at the same position of the ones below
+? (This way the entire macro definition looks better).
+
+>  	do {							\
+> -		if (atomic_read(&bat_priv->log_level) & type)	\
+> +		if (atomic_read(&bat_priv->log_level) & type && \
+> +		    (!ratelimited || net_ratelimit()))	\
+
+same here
+
+>  			batadv_debug_log(bat_priv, fmt, ## arg);\
+>  	}							\
+>  	while (0)
+>  #else /* !CONFIG_BATMAN_ADV_DEBUG */
+> -__printf(3, 4)
+> -static inline void batadv_dbg(int type __always_unused,
+> +__printf(4, 5)
+> +static inline void _batadv_dbg(int type __always_unused,
+>  			      struct batadv_priv *bat_priv __always_unused,
+> +			      int ratelimited __always_unused,
+>  			      const char *fmt __always_unused, ...)
+>  {
+>  }
+>  #endif
+> =20
+> +#define batadv_dbg(type, bat_priv, arg...) \
+> +	_batadv_dbg(type, bat_priv, 0, ## arg)
+> +#define batadv_dbg_ratelimited(type, bat_priv, arg...) \
+> +	_batadv_dbg(type, bat_priv, 1, ## arg)
+> +
+>  #define batadv_info(net_dev, fmt, arg...)				\
+>  	do {								\
+>  		struct net_device *_netdev =3D (net_dev);                 \
+> diff --git a/routing.c b/routing.c
+> index 3514153..c679c6f 100644
+> --- a/routing.c
+> +++ b/routing.c
+> @@ -706,7 +706,7 @@ static int batadv_check_unicast_ttvn(struct batadv_=
+priv *bat_priv,
+>  	if (batadv_tt_local_client_is_roaming(bat_priv, ethhdr->h_dest, vid))=
+ {
+>  		if (batadv_reroute_unicast_packet(bat_priv, unicast_packet,
+>  						  ethhdr->h_dest, vid))
+> -			net_ratelimited_function(batadv_dbg, BATADV_DBG_TT,
+> +			batadv_dbg_ratelimited(BATADV_DBG_TT,
+>  						 bat_priv,
+>  						 "Rerouting unicast packet to %pM (dst=3D%pM): Local Roaming\n",=
+
+>  						 unicast_packet->dest,
+
+The arguments on a new line must be lined up to the first column after
+the opening parenthesis. (I think that checkpatch would have suggested
+the same)
+
+> @@ -752,7 +752,7 @@ static int batadv_check_unicast_ttvn(struct batadv_=
+priv *bat_priv,
+>  	 */
+>  	if (batadv_reroute_unicast_packet(bat_priv, unicast_packet,
+>  					  ethhdr->h_dest, vid)) {
+> -		net_ratelimited_function(batadv_dbg, BATADV_DBG_TT, bat_priv,
+> +		batadv_dbg_ratelimited(BATADV_DBG_TT, bat_priv,
+>  					 "Rerouting unicast packet to %pM (dst=3D%pM): TTVN mismatch old_=
+ttvn=3D%u new_ttvn=3D%u\n",
+>  					 unicast_packet->dest, ethhdr->h_dest,
+>  					 old_ttvn, curr_ttvn);
+
+same here.
+
+
+The rest looks good!
 
 
 
---=-o0coTsBl9GGr9ZZ4GW3Z
+--=20
+Antonio Quartulli
+
+
+--nINbrqEQCjTcHrVr0Q6DVSNNqBtppogRO
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAABCgAGBQJTlCSZAAoJEOVv75VaS+3Ok5UQAKJkXA4phG5ywUso5FFKUi7c
-GmuypU0v+yAQqOtyIApE0pzTbn4Sdm1Dr9ihhYSCM5om/iAEyzVFsyGBtW7SHMOE
-s9HxS+g6XBITslWreVlKpc/78cjvUNldUF1zbbySP7D+BrOWZNufXhJAlmQMt+rp
-cA5jAIELq1FrRDSWCaiWQio99Mp9I8b5WPLM1ruBgIBiHUkDUO7bkSi8pN4ph87Z
-/2QRmwTt4P1TLRSQe++4LXIl/fBFebr+dGWNSVHrehJPBorRejORRfGH++wsjzqS
-vR+lmTreMbWOY6LegOifBji0PBRuMcgqaCknb0bFsmsa/HKUokLgL7DoUhfRKPIQ
-EQznC+AJZop5QGbcIEiqr16UhySit/4kKBYOqMccz20wegL6Kpza4TUKzJdhZZ6a
-7toLQQSjcQGp26kJE0qQqh0qGIfc0cV3vX7shN66cjA/GwFhFUzHLvnnRRf5JbTd
-hJf7JJ4DDXBtr/qtOQTVwxwfaWqgOu41pO7/SZpBysL6KC5smifJFdKtPCW1/xet
-kbO9p7vMAJND78bCC45wjebJd6ir0Ul/W5QhNOSyWSLfSG69vBB3aiJYf+24wUn4
-3q6TvLgRPYeOqqwT1rRRNl00UWbPeoWEcbGIddU83D7xXhwbFRjqzDPXZjIMezyL
-7YK2Y4ACs689I34gyeKD
-=NPkK
+iQIcBAEBCAAGBQJTlXZbAAoJEJgn97Bh2u9eiv4QALz5ADcj/08vo0wwA2309kAB
+zgO6Hh0Tw1G16taO8lyMGPfXwMiCM34H+xkLlcpGc3rMPgPurGOVlCfn8qQ7XFRZ
+pqhZ5kZmnh3VNrrdpFDNwmx8mUJ4xpSF5voclBlH6v9D7actzIEL7d1w7bo+6zlP
+AT91AXVhUZMCoTGMG/i9Afe/nxlZUG6nquI6knDOhZxl5CmGDjKmeuopEIi0Fetg
+06thQC/Q7qf/0zJTlx9tY3VdVYCJ8PitsAzb0/u+ZkVvzNQ5jWYfKpA7cGu1Mv9Z
+0PL6FV082hIKkkC3rDMqoEOMi2ehpjOTDEW88ZSiuWX0wZuGJWOjaBTWJhuZpuLc
+kp3WPFEiad6NHr6LRasi8FhVzGvMFhbvaYWTLJWKw3PVUMHDIfXQlrMhi+wpsGaE
+I51Gcbng6EZ1l5OpVooDg9GmAFESvFdF7cA6pTIJWnIRqBUtAfdk/gXxkDN5vuvn
+khkiOcmwLMhrEyJ+HShOhut9Lv7ry5XhVaFAcLq4ZmkB/zNI98zoCc9KTI8u0+XQ
+oEe150VhmgShuOJprYtRU1I52A3N6eXtJevYmyal2RpThgWgoB8YTy2PU2o/7Gy1
+rFQebUnQiCoOJFPzXXeB1LE4UCG3QFhuyE+g7QSHivktuQ2db/GiUarwzdRCQGZn
+19qwVihMdCTw4ZzKDJAf
+=8rEe
 -----END PGP SIGNATURE-----
 
---=-o0coTsBl9GGr9ZZ4GW3Z--
-
+--nINbrqEQCjTcHrVr0Q6DVSNNqBtppogRO--
