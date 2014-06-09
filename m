@@ -1,13 +1,15 @@
-Return-Path: <gaul@web-yard.de>
-From: =?UTF-8?q?Andr=C3=A9=20Gaul?= <gaul@web-yard.de>
-Date: Mon,  9 Jun 2014 19:14:19 +0200
-Message-Id: <1402334059-28681-1-git-send-email-gaul@web-yard.de>
-In-Reply-To: <53957653.5000406@meshcoding.com>
-References: <53957653.5000406@meshcoding.com>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <53962199.4060202@meshcoding.com>
+Date: Mon, 09 Jun 2014 23:05:29 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] remove unnecessary logspam
+References: <53957653.5000406@meshcoding.com>
+ <1402334059-28681-1-git-send-email-gaul@web-yard.de>
+In-Reply-To: <1402334059-28681-1-git-send-email-gaul@web-yard.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="OE0tMmpdgA7VV97e5oXmD6eSF4cWmeNF4"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] remove unnecessary logspam
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,95 +21,78 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Andr=C3=A9=20Gaul?= <gaul@web-yard.de>
+To: =?UTF-8?B?QW5kcsOpIEdhdWw=?= <gaul@web-yard.de>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This patch removes unnecessary logspam which resulted from superfluous
-calls to net_ratelimit(). With the supplied patch, net_ratelimit() is
-called after the loglevel has been checked.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--OE0tMmpdgA7VV97e5oXmD6eSF4cWmeNF4
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: André Gaul <gaul@web-yard.de>
----
- main.h    | 20 ++++++++++++++------
- routing.c | 18 +++++++++---------
- 2 files changed, 23 insertions(+), 15 deletions(-)
 
-diff --git a/main.h b/main.h
-index 87e7196..4bb500b 100644
---- a/main.h
-+++ b/main.h
-@@ -239,21 +239,29 @@ enum batadv_dbg_level {
- int batadv_debug_log(struct batadv_priv *bat_priv, const char *fmt, ...)
- __printf(2, 3);
- 
--#define batadv_dbg(type, bat_priv, fmt, arg...)			\
-+/* possibly ratelimited debug output */
-+#define _batadv_dbg(type, bat_priv, ratelimited, fmt, arg...)	\
- 	do {							\
--		if (atomic_read(&bat_priv->log_level) & type)	\
-+		if (atomic_read(&bat_priv->log_level) & type && \
-+		    (!ratelimited || net_ratelimit()))		\
- 			batadv_debug_log(bat_priv, fmt, ## arg);\
- 	}							\
- 	while (0)
- #else /* !CONFIG_BATMAN_ADV_DEBUG */
--__printf(3, 4)
--static inline void batadv_dbg(int type __always_unused,
--			      struct batadv_priv *bat_priv __always_unused,
--			      const char *fmt __always_unused, ...)
-+__printf(4, 5)
-+static inline void _batadv_dbg(int type __always_unused,
-+			       struct batadv_priv *bat_priv __always_unused,
-+			       int ratelimited __always_unused,
-+			       const char *fmt __always_unused, ...)
- {
- }
- #endif
- 
-+#define batadv_dbg(type, bat_priv, arg...) \
-+	_batadv_dbg(type, bat_priv, 0, ## arg)
-+#define batadv_dbg_ratelimited(type, bat_priv, arg...) \
-+	_batadv_dbg(type, bat_priv, 1, ## arg)
-+
- #define batadv_info(net_dev, fmt, arg...)				\
- 	do {								\
- 		struct net_device *_netdev = (net_dev);                 \
-diff --git a/routing.c b/routing.c
-index 3514153..35f76f2 100644
---- a/routing.c
-+++ b/routing.c
-@@ -706,11 +706,11 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 	if (batadv_tt_local_client_is_roaming(bat_priv, ethhdr->h_dest, vid)) {
- 		if (batadv_reroute_unicast_packet(bat_priv, unicast_packet,
- 						  ethhdr->h_dest, vid))
--			net_ratelimited_function(batadv_dbg, BATADV_DBG_TT,
--						 bat_priv,
--						 "Rerouting unicast packet to %pM (dst=%pM): Local Roaming\n",
--						 unicast_packet->dest,
--						 ethhdr->h_dest);
-+			batadv_dbg_ratelimited(BATADV_DBG_TT,
-+					       bat_priv,
-+					       "Rerouting unicast packet to %pM (dst=%pM): Local Roaming\n",
-+					       unicast_packet->dest,
-+					       ethhdr->h_dest);
- 		/* at this point the mesh destination should have been
- 		 * substituted with the originator address found in the global
- 		 * table. If not, let the packet go untouched anyway because
-@@ -752,10 +752,10 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 	 */
- 	if (batadv_reroute_unicast_packet(bat_priv, unicast_packet,
- 					  ethhdr->h_dest, vid)) {
--		net_ratelimited_function(batadv_dbg, BATADV_DBG_TT, bat_priv,
--					 "Rerouting unicast packet to %pM (dst=%pM): TTVN mismatch old_ttvn=%u new_ttvn=%u\n",
--					 unicast_packet->dest, ethhdr->h_dest,
--					 old_ttvn, curr_ttvn);
-+		batadv_dbg_ratelimited(BATADV_DBG_TT, bat_priv,
-+				       "Rerouting unicast packet to %pM (dst=%pM): TTVN mismatch old_ttvn=%u new_ttvn=%u\n",
-+				       unicast_packet->dest, ethhdr->h_dest,
-+				       old_ttvn, curr_ttvn);
- 		return 1;
- 	}
- 
--- 
-1.9.1
 
+On 09/06/14 19:14, Andr=C3=A9 Gaul wrote:
+> This patch removes unnecessary logspam which resulted from superfluous
+> calls to net_ratelimit(). With the supplied patch, net_ratelimit() is
+> called after the loglevel has been checked.
+>=20
+> Signed-off-by: Andr=C3=A9 Gaul <gaul@web-yard.de>
+
+Andr=C3=A9,
+
+I'd suggest you to check this patch with checkpatch.pl --strict. Here I
+get many errors due to non-printable chars at the end of various lines.
+
+Here[1] you find our guidelines (which is a set of complementary rules
+to the guidelines you find in the kernel tree[2]).
+
+Moreover, the subject must start with "batman-adv: ", because this patch
+will end up in the kernel and it requires this format to easily
+distinguish the subsystem that the patch is touching.
+
+A couple of things to keep in mind while sending new versions of the
+same patch:
+- don't reply to an existing thread
+- write [PATCHvN] (with N =3D version of the patch - 2 in this case) in
+the subject
+
+
+Cheers,
+
+
+[1]
+http://www.open-mesh.org/projects/open-mesh/wiki/Contribute#Submitting-pa=
+tches
+[2]
+https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Docu=
+mentation/SubmittingPatches
+
+--=20
+Antonio Quartulli
+
+
+--OE0tMmpdgA7VV97e5oXmD6eSF4cWmeNF4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBCAAGBQJTliGiAAoJEJgn97Bh2u9eRkQP+wYyFL3flo6aPXBAw8dBqjfY
+/mMRRK33U8KW30CpFcCo10Hv5YYGGzixupwIBla1J9wkQRkyLy61mkJyE7U5Pt2d
+SSGAF5M23HY/mxL0jZ7McbL9cHSHIgXYdxUFG9ds9izUy6Zdij+HNBx3rFwHk+lJ
+i9wIGByPdu6dnuM7BX+qsMh1/bQmkSFQ29NIRxOC0Ol28Tjd+ZoG7CYDY9Y2kmM0
+8WlH7WvbGAot8itllKqmLBoGdmJNBLesVfQnuznXqVqhoD/jKlbZO8tkMiNIOCXE
+UDKmnTaaCxnBaVJhV9K+N85YRxMZgkxv2Nd5iw0gyZriL/MRT3CbFwumYwLKGrbY
+Zb1yqjn3Rx34KZqnirSjX4ivgLUSr4NZ0uhchuNM/Mp8tSokIYiuVpXKFkXjmvtk
+cRmIRyBoj8Z59W1fH23shMVyxSyNVdduuOll54XCHOo5hFEVDXIZ2VmG/aQAN0TZ
+ygdBBwjhUWrTzPhXKHj3lIyMvRd6fgyhrDrEgD1+WBOiOrqQScHhRjkaFv0Nn19Y
+KZ5nSarLgsCr7ylBYCi+ASoYkQhwWZft4BSXx54w90UXB54OXnlig1D6/4PPwYfY
+depmmqEuXT0OTkKLg9BT+TwqSIRAY8sNYgrZAEVWvlpyesByBmNxlQ0hfGxqMrbC
+QOMznrJY3jFNadifqJf1
+=Tp7A
+-----END PGP SIGNATURE-----
+
+--OE0tMmpdgA7VV97e5oXmD6eSF4cWmeNF4--
