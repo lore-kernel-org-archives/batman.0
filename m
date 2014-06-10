@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 10 Jun 2014 22:58:09 +0800
-Message-ID: <1540170.akMPSsn7dY@diderot>
-In-Reply-To: <1400933804-9661-5-git-send-email-sven@narfation.org>
+Date: Tue, 10 Jun 2014 22:59:53 +0800
+Message-ID: <20061782.ulKJ9MBCko@diderot>
+In-Reply-To: <1400933804-9661-6-git-send-email-sven@narfation.org>
 References: <1400933804-9661-1-git-send-email-sven@narfation.org>
- <1400933804-9661-5-git-send-email-sven@narfation.org>
+ <1400933804-9661-6-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5463026.OSVjB2Z2DK";
+Content-Type: multipart/signed; boundary="nextPart3669949.eERVfW5sgg";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 5/6] batctl: Initialize complete ping
-	packet before write
+Subject: Re: [B.A.T.M.A.N.] [PATCH 6/6] batctl: Don't provide uninitialized
+	parameter to read_file
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,27 +25,27 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
 
---nextPart5463026.OSVjB2Z2DK
+--nextPart3669949.eERVfW5sgg
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 24 May 2014 14:16:43 Sven Eckelmann wrote:
-> The data structure for ping packets is not completely initialized by the
-> userspace because the kernel sets the originator address of the packet. This
-> is not only a bad practice but also irritate tools like valgrind.
+On Saturday 24 May 2014 14:16:44 Sven Eckelmann wrote:
+> The debug table function uses a parameter to filter out old originator nodes
+> when read_file processes the file. The variable is by default not
+> initialized and still given to this function. This is bad practice and
+> irritates checker tools.
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  ping.c       | 1 +
->  traceroute.c | 1 +
->  2 files changed, 2 insertions(+)
+>  debug.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision 7e53633.
+Applied in revision cc9e48b.
 
 Thanks,
 Marek
 
---nextPart5463026.OSVjB2Z2DK
+--nextPart3669949.eERVfW5sgg
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +53,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTlx0BAAoJEFNVTo/uthzAA5sIALveSeINAMxtLRg+nwdVAUsz
-VF933blA+oDNEv0i9YRBcu8dixjph3Y4vSzO/NJ03GH95fTRhmwM4WxBEtCvUDlJ
-V7VWQS0zR1NP1GKjMEcVm8hQGu+dMgvKR7PWTWgpgG3KKSBkCCr8CuS3Flpwq5Db
-HumET2u9eNsbYCzz9FR3bs7BWFjNw4RYlfwHtx98JQmW2ycW2GZavh0MYaT/z2BH
-WJAuN5bwyIu6Tf0AMZKo4wOcxCzF6vkT+wqrOZWd+0AVfhhHPhzK1dNSxgucWLUX
-I67TRmwwV03buUvUXl7qwHXNbTl05fbCMexWs/lJJmpHsHEku2mmNY+DsPp/ydE=
-=CSRQ
+iQEcBAABAgAGBQJTlx1pAAoJEFNVTo/uthzAaZ0H/2aMbpKiEiBOkQuB17qda0yr
+WnE8ovfafLfxNZVkEArzmdLp0lfRbNPhPvSbHIsb2rnnPYAjB43ZbDwHAgaFO4lr
+wailwgVHZfPN5tPa23qYThNnSmCMdWki8dviPt4cKIsxY3Bw2phxDsDOuCWIGwSP
+1MrBwpYB/zvbT4Ih1cVXxgnPDMmDQjCuDSHlnQlxSvL3p8qmq8/J3Hl89jmQugoZ
+sKbJyKF5QpsCBomf6pqCT9egRmWaTMP/gTmLay2Ks9NrVWVDqJUEGqUkBKoCKITc
+OgnMxhkaKaDyI0TItmokug+Ka3bT59eXdJMP4gQloNkbU40ZOV7IdBb14y4yPE4=
+=nI1/
 -----END PGP SIGNATURE-----
 
---nextPart5463026.OSVjB2Z2DK--
+--nextPart3669949.eERVfW5sgg--
 
