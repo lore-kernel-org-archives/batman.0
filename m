@@ -1,15 +1,16 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 10 Jun 2014 22:59:53 +0800
-Message-ID: <20061782.ulKJ9MBCko@diderot>
-In-Reply-To: <1400933804-9661-6-git-send-email-sven@narfation.org>
-References: <1400933804-9661-1-git-send-email-sven@narfation.org>
- <1400933804-9661-6-git-send-email-sven@narfation.org>
+Return-Path: <gaul@web-yard.de>
+Message-ID: <5397267F.4040107@web-yard.de>
+Date: Tue, 10 Jun 2014 17:38:39 +0200
+From: =?UTF-8?B?QW5kcsOpIEdhdWw=?= <gaul@web-yard.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3669949.eERVfW5sgg";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 6/6] batctl: Don't provide uninitialized
-	parameter to read_file
+References: <53957653.5000406@meshcoding.com>
+ <1402334059-28681-1-git-send-email-gaul@web-yard.de>
+ <53962199.4060202@meshcoding.com> <539628F6.9070706@web-yard.de>
+ <53969F3D.5040306@meshcoding.com>
+In-Reply-To: <53969F3D.5040306@meshcoding.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH] remove unnecessary logspam
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,46 +22,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+To: Antonio Quartulli <antonio@meshcoding.com>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+
+Hi Antonio!
+
+Am 10.06.2014 08:01, schrieb Antonio Quartulli:
+> maybe it's the mail client that messes the patch up? Are you using
+> git-send-email ?
+
+Yep, it's git-send-email. Maybe you are running into this mbox/eml issue
+[1]? Thunderbird seems to save plain text files with DOS line endings
+when saved as .eml. I can reproduce the errors you got with an .eml
+file. When saving as .txt it has the correct line endings and the
+checkpatch script gives no errors or warnings.
+
+If this resolves the issue with the DOS line endings, I'd resubmit with
+the corrected subject line.
 
 
---nextPart3669949.eERVfW5sgg
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Cheers,
+André
 
-On Saturday 24 May 2014 14:16:44 Sven Eckelmann wrote:
-> The debug table function uses a parameter to filter out old originator nodes
-> when read_file processes the file. The variable is by default not
-> initialized and still given to this function. This is bad practice and
-> irritates checker tools.
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  debug.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision cc9e48b.
+[1] https://bugzilla.mozilla.org/show_bug.cgi?id=523577
 
-Thanks,
-Marek
-
---nextPart3669949.eERVfW5sgg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAABAgAGBQJTlx1pAAoJEFNVTo/uthzAaZ0H/2aMbpKiEiBOkQuB17qda0yr
-WnE8ovfafLfxNZVkEArzmdLp0lfRbNPhPvSbHIsb2rnnPYAjB43ZbDwHAgaFO4lr
-wailwgVHZfPN5tPa23qYThNnSmCMdWki8dviPt4cKIsxY3Bw2phxDsDOuCWIGwSP
-1MrBwpYB/zvbT4Ih1cVXxgnPDMmDQjCuDSHlnQlxSvL3p8qmq8/J3Hl89jmQugoZ
-sKbJyKF5QpsCBomf6pqCT9egRmWaTMP/gTmLay2Ks9NrVWVDqJUEGqUkBKoCKITc
-OgnMxhkaKaDyI0TItmokug+Ka3bT59eXdJMP4gQloNkbU40ZOV7IdBb14y4yPE4=
-=nI1/
------END PGP SIGNATURE-----
-
---nextPart3669949.eERVfW5sgg--
-
+-- 
+Homepage   http://page.math.tu-berlin.de/~gaul
+github     https://github.com/andrenarchy
+Twitter    https://twitter.com/#!/andrenarchy
+Diaspora   https://diasp.org/u/andrenarchy
+           (you won't find me on facebook!)
+Jabber     gaul@web-yard.de
+PGP Key    0x0FA9170E
