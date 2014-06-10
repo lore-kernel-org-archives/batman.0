@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 10 Jun 2014 22:49:14 +0800
-Message-ID: <2703678.tX0ZXICNkm@diderot>
-In-Reply-To: <1400933804-9661-3-git-send-email-sven@narfation.org>
+Date: Tue, 10 Jun 2014 22:53:21 +0800
+Message-ID: <1690916.HdFE0f7G5K@diderot>
+In-Reply-To: <1400933804-9661-4-git-send-email-sven@narfation.org>
 References: <1400933804-9661-1-git-send-email-sven@narfation.org>
- <1400933804-9661-3-git-send-email-sven@narfation.org>
+ <1400933804-9661-4-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1800280.V6z4jec8jo";
+Content-Type: multipart/signed; boundary="nextPart2719089.hTt80JF1yL";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/6] batctl: Use strncpy instead of
-	strcpy for string copy
+Subject: Re: [B.A.T.M.A.N.] [PATCH 4/6] batctl: Return success only with
+	valid line_ptr in read_file
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,27 +25,29 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
 
---nextPart1800280.V6z4jec8jo
+--nextPart2719089.hTt80JF1yL
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 24 May 2014 14:16:41 Sven Eckelmann wrote:
-> The data used in strcpy is partially provided by the user. This can be
-> larger than the destination buffer and thus overwrite data after the actual
-> string buffer. This can easily be avoided by using strncpy.
+On Saturday 24 May 2014 14:16:42 Sven Eckelmann wrote:
+> The read_file function is rather complex and cluttered with different
+> functionality. One of it is to provide a line_ptr of a single line to the
+> caller. The caller trusts the return code for a SUCCESS of this function
+> and tries to access the line_ptr. But a failed getline may lead to an
+> NULL-line_ptr. The caller tries to dereference this NULL pointer and
+> causes an segfault.
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  debugfs.c | 4 +++-
->  ioctl.c   | 3 ++-
->  2 files changed, 5 insertions(+), 2 deletions(-)
+>  functions.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
-Applied with minor modification in revision a9e88d8.
+Applied in revision 51b3e92.
 
 Thanks,
 Marek
 
---nextPart1800280.V6z4jec8jo
+--nextPart2719089.hTt80JF1yL
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +55,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTlxrqAAoJEFNVTo/uthzAuioIALj0CY3P7W0PskPjnrMrQRL6
-NnF9P835ekGsuECYj2weEXvbvRzL7IYV1ce7oBWn2Nzy6Y4pDjcjUC/1MnB1FNuJ
-irXSNMBE7nca3qY97CzIQkidFk93zIbkgyZUaGtM5UvjVEQRr9Er1G/vb5nUuw2D
-enduN3Yt4dbp1vttqQ7CR7UIP1MCvsyfc7kQDHD7KMqyjaalUIgyXicmkiBQYajq
-sLdvOu81Rr9nVetbeJVejtSwlCpfjHS1ZiMSKM9BWmyYGupcJ/dwqBJVHVkCank4
-MshvFyleVxg38rYTGHCFpbIKJGammLbP8MMRdUWAlRy/5/09UEM6LlcRIyGMRNw=
-=vnM/
+iQEcBAABAgAGBQJTlxvhAAoJEFNVTo/uthzAqDoH/iq0yYAORSN/6lBX15RtjX+Y
++Jl5G796hNL7zk+VN09aO5ToRKrr2j4HI9ci6Tn+6EXloWag3J/FOaTXXacSeR9f
+OOs4zb/THYTT2R55UVsBno1//Trry/WpSQ364CjomSBd0ym1XJKOYVn71HyFYWVA
+16CnYui4kkjYtwsqwjRfuoxC3phfJ9MZ4Z40CpFEEEEMVLp5xAExGqzLpFnYpR6V
+Lp1Y8TQLJ4FFvCF6j7Eb6Yo2otJ1DZZkXB/UTFc5SWt2x9tWymwAlsj3otTDggJm
+W5F7w0Cq879kEcMkxmZ//Fay+GZDmcfGP6c6eiesGEeKnksT7pBZik1X34aert8=
+=KR2N
 -----END PGP SIGNATURE-----
 
---nextPart1800280.V6z4jec8jo--
+--nextPart2719089.hTt80JF1yL--
 
