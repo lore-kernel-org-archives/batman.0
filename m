@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 10 Jun 2014 22:41:11 +0800
-Message-ID: <2208363.6InVyE7g70@diderot>
-In-Reply-To: <1400933804-9661-2-git-send-email-sven@narfation.org>
+Date: Tue, 10 Jun 2014 22:49:14 +0800
+Message-ID: <2703678.tX0ZXICNkm@diderot>
+In-Reply-To: <1400933804-9661-3-git-send-email-sven@narfation.org>
 References: <1400933804-9661-1-git-send-email-sven@narfation.org>
- <1400933804-9661-2-git-send-email-sven@narfation.org>
+ <1400933804-9661-3-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3334893.MFc2qAnVMp";
+Content-Type: multipart/signed; boundary="nextPart1800280.V6z4jec8jo";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/6] batctl: Force null termination of
-	string after strncpy
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/6] batctl: Use strncpy instead of
+	strcpy for string copy
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,36 +25,27 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
 
---nextPart3334893.MFc2qAnVMp
+--nextPart1800280.V6z4jec8jo
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 24 May 2014 14:16:40 Sven Eckelmann wrote:
-> strncpy doesn't terminate the string with a '\0' character when the length
-> of the destination memory location was shorter than the source string.
-> Accessing it again with string related functions isn't safe after such a
-> semi-failed copy and the caller has to handle it. The easiest way is to
-> always set the last character in the destination buffer to '\0' after the
-> strncpy was called.
-> 
-> Also the length provided as argument of strncpy should not be the length of
-> the source buffer but the maximum number of bytes in the destination buffer.
+On Saturday 24 May 2014 14:16:41 Sven Eckelmann wrote:
+> The data used in strcpy is partially provided by the user. This can be
+> larger than the destination buffer and thus overwrite data after the actual
+> string buffer. This can easily be avoided by using strncpy.
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  bat-hosts.c | 6 ++++--
->  bisect_iv.c | 2 ++
->  debugfs.c   | 1 +
->  functions.c | 8 ++++----
->  tcpdump.c   | 2 ++
->  5 files changed, 13 insertions(+), 6 deletions(-)
+>  debugfs.c | 4 +++-
+>  ioctl.c   | 3 ++-
+>  2 files changed, 5 insertions(+), 2 deletions(-)
 
-Applied with a slight modification in revision 4faf653.
+Applied with minor modification in revision a9e88d8.
 
 Thanks,
 Marek
 
---nextPart3334893.MFc2qAnVMp
+--nextPart1800280.V6z4jec8jo
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -62,14 +53,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTlxkIAAoJEFNVTo/uthzAhn8H/16JOmw6yHLvZPtHOucmunx/
-+llXPauwiKUra5EckObpLWT2EpQgAgfC7abtO8b/rjZJRZfDbyoJSkQzMwDCZgOA
-RukRLzVWEdDULUV7OTC6NSWVlf5mrsMxcQdiCujNpU6nvL0AStq8qhyiy+FK7I9Y
-72Dx8sjw3/MivNe3+w9fgseb1bKjdTm3+d0GZcMwlFVDh4skwJ0SzZ+sDCV1JuvE
-8ixCygMoGQM4wWYUgCBkxj+ErtYwUHt8JJaUb589BPcWLfwlypxOQ3y+PDt0E1e5
-m0Zb/I4CkN0ITCnCtjFQ0xtM4YMKeK36+QSmFI7FZc3AdSfACFDH8epXDzD4rWY=
-=hmMO
+iQEcBAABAgAGBQJTlxrqAAoJEFNVTo/uthzAuioIALj0CY3P7W0PskPjnrMrQRL6
+NnF9P835ekGsuECYj2weEXvbvRzL7IYV1ce7oBWn2Nzy6Y4pDjcjUC/1MnB1FNuJ
+irXSNMBE7nca3qY97CzIQkidFk93zIbkgyZUaGtM5UvjVEQRr9Er1G/vb5nUuw2D
+enduN3Yt4dbp1vttqQ7CR7UIP1MCvsyfc7kQDHD7KMqyjaalUIgyXicmkiBQYajq
+sLdvOu81Rr9nVetbeJVejtSwlCpfjHS1ZiMSKM9BWmyYGupcJ/dwqBJVHVkCank4
+MshvFyleVxg38rYTGHCFpbIKJGammLbP8MMRdUWAlRy/5/09UEM6LlcRIyGMRNw=
+=vnM/
 -----END PGP SIGNATURE-----
 
---nextPart3334893.MFc2qAnVMp--
+--nextPart1800280.V6z4jec8jo--
 
