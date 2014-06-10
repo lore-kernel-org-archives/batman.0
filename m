@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 10 Jun 2014 22:53:21 +0800
-Message-ID: <1690916.HdFE0f7G5K@diderot>
-In-Reply-To: <1400933804-9661-4-git-send-email-sven@narfation.org>
+Date: Tue, 10 Jun 2014 22:58:09 +0800
+Message-ID: <1540170.akMPSsn7dY@diderot>
+In-Reply-To: <1400933804-9661-5-git-send-email-sven@narfation.org>
 References: <1400933804-9661-1-git-send-email-sven@narfation.org>
- <1400933804-9661-4-git-send-email-sven@narfation.org>
+ <1400933804-9661-5-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2719089.hTt80JF1yL";
+Content-Type: multipart/signed; boundary="nextPart5463026.OSVjB2Z2DK";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 4/6] batctl: Return success only with
-	valid line_ptr in read_file
+Subject: Re: [B.A.T.M.A.N.] [PATCH 5/6] batctl: Initialize complete ping
+	packet before write
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,29 +25,27 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
 
---nextPart2719089.hTt80JF1yL
+--nextPart5463026.OSVjB2Z2DK
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 24 May 2014 14:16:42 Sven Eckelmann wrote:
-> The read_file function is rather complex and cluttered with different
-> functionality. One of it is to provide a line_ptr of a single line to the
-> caller. The caller trusts the return code for a SUCCESS of this function
-> and tries to access the line_ptr. But a failed getline may lead to an
-> NULL-line_ptr. The caller tries to dereference this NULL pointer and
-> causes an segfault.
+On Saturday 24 May 2014 14:16:43 Sven Eckelmann wrote:
+> The data structure for ping packets is not completely initialized by the
+> userspace because the kernel sets the originator address of the packet. This
+> is not only a bad practice but also irritate tools like valgrind.
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  functions.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  ping.c       | 1 +
+>  traceroute.c | 1 +
+>  2 files changed, 2 insertions(+)
 
-Applied in revision 51b3e92.
+Applied in revision 7e53633.
 
 Thanks,
 Marek
 
---nextPart2719089.hTt80JF1yL
+--nextPart5463026.OSVjB2Z2DK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -55,14 +53,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAABAgAGBQJTlxvhAAoJEFNVTo/uthzAqDoH/iq0yYAORSN/6lBX15RtjX+Y
-+Jl5G796hNL7zk+VN09aO5ToRKrr2j4HI9ci6Tn+6EXloWag3J/FOaTXXacSeR9f
-OOs4zb/THYTT2R55UVsBno1//Trry/WpSQ364CjomSBd0ym1XJKOYVn71HyFYWVA
-16CnYui4kkjYtwsqwjRfuoxC3phfJ9MZ4Z40CpFEEEEMVLp5xAExGqzLpFnYpR6V
-Lp1Y8TQLJ4FFvCF6j7Eb6Yo2otJ1DZZkXB/UTFc5SWt2x9tWymwAlsj3otTDggJm
-W5F7w0Cq879kEcMkxmZ//Fay+GZDmcfGP6c6eiesGEeKnksT7pBZik1X34aert8=
-=KR2N
+iQEcBAABAgAGBQJTlx0BAAoJEFNVTo/uthzAA5sIALveSeINAMxtLRg+nwdVAUsz
+VF933blA+oDNEv0i9YRBcu8dixjph3Y4vSzO/NJ03GH95fTRhmwM4WxBEtCvUDlJ
+V7VWQS0zR1NP1GKjMEcVm8hQGu+dMgvKR7PWTWgpgG3KKSBkCCr8CuS3Flpwq5Db
+HumET2u9eNsbYCzz9FR3bs7BWFjNw4RYlfwHtx98JQmW2ycW2GZavh0MYaT/z2BH
+WJAuN5bwyIu6Tf0AMZKo4wOcxCzF6vkT+wqrOZWd+0AVfhhHPhzK1dNSxgucWLUX
+I67TRmwwV03buUvUXl7qwHXNbTl05fbCMexWs/lJJmpHsHEku2mmNY+DsPp/ydE=
+=CSRQ
 -----END PGP SIGNATURE-----
 
---nextPart2719089.hTt80JF1yL--
+--nextPart5463026.OSVjB2Z2DK--
 
