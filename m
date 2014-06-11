@@ -1,14 +1,9 @@
-Return-Path: <davem@davemloft.net>
-Date: Tue, 10 Jun 2014 23:51:23 -0700 (PDT)
-Message-Id: <20140610.235123.310487202447168937.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1402158389-13239-1-git-send-email-linus.luessing@web.de>
-References: <1402158389-13239-1-git-send-email-linus.luessing@web.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 net-next 0/4] bridge: multicast
- snooping patches / exports
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 11 Jun 2014 20:43:11 +0200
+Message-Id: <1402512191-14922-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: drop QinQ claim frames in bridge
+	loop avoidance
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,39 +15,125 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: linus.luessing@web.de
-Cc: b.a.t.m.a.n@lists.open-mesh.org, herbert@gondor.apana.org.au, netdev@vger.kernel.org, bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org, stephen@networkplumber.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
-From: Linus L=FCssing <linus.luessing@web.de>
-Date: Sat,  7 Jun 2014 18:26:25 +0200
+From: Simon Wunderlich <simon@open-mesh.com>
 
-> The first patch is simply a cosmetic patch. So far I (and maybe other=
-s
-> too?) have been regularly confusing these two structs, therefore I'd
-> suggest renaming them and therefore making the follow-up patches easi=
-er
-> to understand and nicer to fit in.
-> =
+Since bridge loop avoidance only supports untagged or simple 802.1q
+tagged VLAN claim frames, claim frames with stacked VLAN headers (QinQ)
+should be detected and dropped. Transporting the over the mesh may cause
+problems on the receivers, or create bogus entries in the local tt
+tables.
 
-> The second patch fixes a minor issue, but probably not worth for stab=
-le.
-> =
+Reported-by: Antonio Quartulli <antonio@open-mesh.com>
+Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+---
+ bridge_loop_avoidance.c | 84 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 84 insertions(+)
 
-> On the other hand the first two patches are also preparations for the=
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 6f0d9ec..75274f7 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -851,6 +851,75 @@ static int batadv_check_claim_group(struct batadv_priv *bat_priv,
+ 	return 2;
+ }
+ 
++/**
++ * batadv_is_encapsulated_claim
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: skb to be checked
++ *
++ * Check if this frame is a claim frame encapsulated in at least
++ * two layers of VLANs.
++ *
++ * returns 1 if this is an encapsulated claim frame, 0 otherwise.
++ */
++static int batadv_is_encapsulated_claim(struct batadv_priv *bat_priv,
++					struct sk_buff *skb)
++{
++	struct batadv_bla_claim_dst *bla_dst, *bla_dst_own;
++	struct vlan_hdr vhdr, *vhdr_ptr;
++	uint8_t *hw_src, *hw_dst;
++	struct ethhdr *ethhdr;
++	struct arphdr *arphdr;
++	int headlen;
++
++	/* Traverse the VLAN/Ethertypes until an ARP header is found.
++	 *
++	 * At this point it is known that the first two protocols
++	 * are VLAN headers, so start checking at the encapsulated protocol
++	 * of the second header.
++	 */
++	headlen = VLAN_ETH_HLEN;
++	do {
++		vhdr_ptr = skb_header_pointer(skb, headlen, VLAN_HLEN, &vhdr);
++		if (!vhdr_ptr)
++			return 0;
++
++		headlen += VLAN_HLEN;
++	} while (vhdr_ptr->h_vlan_encapsulated_proto == htons(ETH_P_8021Q));
++
++	if (vhdr_ptr->h_vlan_encapsulated_proto != htons(ETH_P_ARP))
++		return 0;
++
++	if (unlikely(!pskb_may_pull(skb, headlen + arp_hdr_len(skb->dev))))
++		return 0;
++
++	/* pskb_may_pull() may have modified the pointers, get ethhdr again */
++	ethhdr = eth_hdr(skb);
++	arphdr = (struct arphdr *)((uint8_t *)ethhdr + headlen);
++
++	/* Check whether the ARP frame carries a valid IP information */
++	if (arphdr->ar_hrd != htons(ARPHRD_ETHER))
++		return 0;
++	if (arphdr->ar_pro != htons(ETH_P_IP))
++		return 0;
++	if (arphdr->ar_hln != ETH_ALEN)
++		return 0;
++	if (arphdr->ar_pln != 4)
++		return 0;
++
++	hw_src = (uint8_t *)arphdr + sizeof(struct arphdr);
++	hw_dst = hw_src + ETH_ALEN + 4;
++	bla_dst = (struct batadv_bla_claim_dst *)hw_dst;
++	bla_dst_own = &bat_priv->bla.claim_dest;
++
++	/* check if it is a claim frame in general */
++	if (memcmp(bla_dst->magic, bla_dst_own->magic,
++		   sizeof(bla_dst->magic)) != 0)
++		return 0;
++
++	batadv_dbg(BATADV_DBG_BLA, bat_priv, "Dropping encapsulated claim frame\n");
++
++	return 1;
++}
+ 
+ /**
+  * batadv_bla_process_claim
+@@ -885,6 +954,21 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
+ 		vhdr = vlan_eth_hdr(skb);
+ 		proto = vhdr->h_vlan_encapsulated_proto;
+ 		headlen += VLAN_HLEN;
++
++		if (proto == htons(ETH_P_8021Q)) {
++			/* check if there is a claim frame encapsulated
++			 * deeper in (QinQ) and drop that, as this is
++			 * not supported by BLA but should also not be
++			 * sent via the mesh.
++			 *
++			 * if its not, let the frame pass without further
++			 * checks, as it is not a claim frame anyway.
++			 */
++			if (batadv_is_encapsulated_claim(bat_priv, skb))
++				return 1;
++			else
++				return 0;
++		}
+ 	}
+ 
+ 	if (proto != htons(ETH_P_ARP))
+-- 
+1.9.1
 
-> third and fourth patch:
-> =
-
-> These two patches are exporting functionality needed to marry the bri=
-dge
-> multicast snooping with the batman-adv multicast optimizations recent=
-ly
-> added for the 3.15 kernel, allowing to use these optimzations in comm=
-on
-> setups having a bridge on top of e.g. bat0, too. So far these bridged=
-
-> setups would fall back to simple flooding through the batman-adv mesh=
-
-> network for any multicast packet entering bat0.
-
-Series applied, thank you.
