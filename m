@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 12 Jun 2014 17:29:12 +0800
-Message-ID: <7231419.EVfXckXZaM@diderot>
-In-Reply-To: <1400939778-12886-2-git-send-email-sven@narfation.org>
-References: <1400939778-12886-1-git-send-email-sven@narfation.org>
- <1400939778-12886-2-git-send-email-sven@narfation.org>
+Date: Thu, 12 Jun 2014 17:30:51 +0800
+Message-ID: <350643063.kDBGdMaN5Y@diderot>
+In-Reply-To: <1401200612-19725-1-git-send-email-sven@narfation.org>
+References: <1400939778-12886-3-git-send-email-sven@narfation.org>
+ <1401200612-19725-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5797425.4HoEBn8xdE";
+Content-Type: multipart/signed; boundary="nextPart1590110.ELGKqOOXRY";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batctl: Free hash iterator when
-	breaking out of loop
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 3/3] batctl: Use memleak/error path
+	free implementation of hash_resize
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,27 +25,38 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
 
---nextPart5797425.4HoEBn8xdE
+--nextPart1590110.ELGKqOOXRY
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 24 May 2014 15:56:17 Sven Eckelmann wrote:
-> The hash iterator is automatically allocated and freed by the hash_iterate
-> function. But when using break (or goto outside of loop) during the
-> iteration loop, the caller has to handle the free-operation of the
-> hash_iterator to avoid memory leaks.
+On Tuesday 27 May 2014 16:23:32 Sven Eckelmann wrote:
+> The current implementation of hash_resize uses hash_add directly to
+> initialize a new hash table. But hash_add has two possible situations when
+> it returns an error and hash_resize would leak the data:
+> 
+>  * data already exists
+>  * malloc fails
+> 
+> The check for the duplicated data is not really harmful (beside increasing
+> the time to re-add elements) but the malloc can potentially return an
+> error. This malloc is unnecessary and just takes extra time. Instead the
+> bucket from the old hash table can be re-used.
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  bisect_iv.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+> v2:
+>  * fixed commit message
+> 
+>  hash.c | 72
+> ++++++++++++++++++++++++++++++++++++++++-------------------------- 1 file
+> changed, 44 insertions(+), 28 deletions(-)
 
-Applied in revision 690d846.
+Applied in revision 6f03fcf.
 
 Thanks,
 Marek
 
---nextPart5797425.4HoEBn8xdE
+--nextPart1590110.ELGKqOOXRY
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +64,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABAgAGBQJTmXLoAAoJEFNVTo/uthzAqU0IAMKIg6NO1Td2nF/s2ko+IIF8
-wH7WCMTw+ejRz4ySXJuNKxzuvU8no//GGJjkIhSuVIQTvQO5ZZrhuyR01fD5QiOr
-LPQHtIgxojurnLJk4vPuxSuBBgHBG4fsRlLtPc82X8rCP2t2MWy++BdzICmq/DXG
-atSjioG9LGbICUikTbhR8kEZB/CJTrCHkwBx+CZwRr4eTgX8l7SCxmW2ep0YMx3k
-gccPKSx1EEGDW41PuB++68oNjCocE8vhyCOxOR6YT1r2GraRvZtY04f6ER3WnBDX
-M+8YowkaeYvadpjjNtgOh285pg0DuxgIbdFD6Pyt9I988ZBP7xK9tHeyZB1WSF0=
-=zita
+iQEcBAABAgAGBQJTmXNLAAoJEFNVTo/uthzAn8kH/jPQQe61kgrgJIDMieOrh+RV
+vWh0iDwnpOBK2PxDYnSp8E7lBSwAEMR3E/1fgTzVQewwDeNBiEgr2je8ZM1rwgcU
+r2DBl78coyNEB9nleKMKOBXHoa/KdeGCd9yVqe5i2i0h5utP66fZ9H+eNadTU4NN
+hY26GznSwWRbvz4YkeL6or/YQN638YcxpSz3kx1lHgB5SDa+JkSnOG45J0WN0KzJ
+oWa8BDnvy1ummP6NirS3PVEl8Q4GWyi6vQRZR8PV2NCKdEFjJrAxG5eVpEZcsu4t
+XovKpKi2x0NCeA55Qan0Nz8C4ZKacnXs3VDovMS24Ue4oSSAS7WxLUUn1lJb81U=
+=Cjof
 -----END PGP SIGNATURE-----
 
---nextPart5797425.4HoEBn8xdE--
+--nextPart1590110.ELGKqOOXRY--
 
