@@ -1,9 +1,9 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 13 Jun 2014 11:21:09 +0200
-Message-Id: <1402651269-19233-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: add compat code for
-	kmalloc_array()
+Date: Fri, 13 Jun 2014 11:27:14 +0200
+Message-Id: <1402651634-30966-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH] net: add __pskb_copy_fclone and
+	pskb_copy_for_clone
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,36 +16,85 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: antonio@meshcoding.com
+
+From: Octavian Purdila <octavian.purdila@intel.com>
+
+There are several instances where a pskb_copy or __pskb_copy is
+immediately followed by an skb_clone.
+
+Add a couple of new functions to allow the copy skb to be allocated
+from the fclone cache and thus speed up subsequent skb_clone calls.
+
+Cc: Alexander Smirnov <alex.bluesman.smirnov@gmail.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>
 Cc: Antonio Quartulli <antonio@meshcoding.com>
-
-kmalloc_array() was introduced with linux-3.4 therefore
-we need some compat code in order to be able to compile
-batman-adv against older kernels.
-
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+Cc: Marcel Holtmann <marcel@holtmann.org>
+Cc: Gustavo Padovan <gustavo@padovan.org>
+Cc: Johan Hedberg <johan.hedberg@gmail.com>
+Cc: Arvid Brodin <arvid.brodin@alten.se>
+Cc: Patrick McHardy <kaber@trash.net>
+Cc: Pablo Neira Ayuso <pablo@netfilter.org>
+Cc: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+Cc: Lauro Ramos Venancio <lauro.venancio@openbossa.org>
+Cc: Aloisio Almeida Jr <aloisio.almeida@openbossa.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Jon Maloy <jon.maloy@ericsson.com>
+Cc: Allan Stephens <allan.stephens@windriver.com>
+Cc: Andrew Hendry <andrew.hendry@gmail.com>
+Cc: Eric Dumazet <edumazet@google.com>
+Reviewed-by: Christoph Paasch <christoph.paasch@uclouvain.be>
+Signed-off-by: Octavian Purdila <octavian.purdila@intel.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
-
-Changes from v2:
-- fix linux version in commit message
-
-
-
- compat.h | 2 ++
- 1 file changed, 2 insertions(+)
+ compat.h                | 6 ++++++
+ distributed-arp-table.c | 2 +-
+ network-coding.c        | 2 +-
+ 3 files changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/compat.h b/compat.h
-index 5eb5fe6..28f4cfe 100644
+index 28f4cfe..ed5b815 100644
 --- a/compat.h
 +++ b/compat.h
-@@ -274,6 +274,8 @@ static inline void batadv_eth_hw_addr_random(struct net_device *dev)
- 	random_ether_addr(dev->dev_addr);
- }
+@@ -440,4 +440,10 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
  
-+#define kmalloc_array(n, size, flags) kmalloc(n * size, flags)
+ #endif /* < KERNEL_VERSION(3, 14, 0) */
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 16, 0)
 +
- #endif /* < KERNEL_VERSION(3, 4, 0) */
++#define pskb_copy_for_clone pskb_copy
++
++#endif /* < KERNEL_VERSION(3, 16, 0) */
++
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
+diff --git a/distributed-arp-table.c b/distributed-arp-table.c
+index b7406e0..b598111 100644
+--- a/distributed-arp-table.c
++++ b/distributed-arp-table.c
+@@ -595,7 +595,7 @@ static bool batadv_dat_send_data(struct batadv_priv *bat_priv,
+ 		if (!neigh_node)
+ 			goto free_orig;
  
- #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0)
+-		tmp_skb = pskb_copy(skb, GFP_ATOMIC);
++		tmp_skb = pskb_copy_for_clone(skb, GFP_ATOMIC);
+ 		if (!batadv_send_skb_prepare_unicast_4addr(bat_priv, tmp_skb,
+ 							   cand[i].orig_node,
+ 							   packet_subtype)) {
+diff --git a/network-coding.c b/network-coding.c
+index 40a2fc4..8d04d17 100644
+--- a/network-coding.c
++++ b/network-coding.c
+@@ -1344,7 +1344,7 @@ static void batadv_nc_skb_store_before_coding(struct batadv_priv *bat_priv,
+ 	struct ethhdr *ethhdr;
+ 
+ 	/* Copy skb header to change the mac header */
+-	skb = pskb_copy(skb, GFP_ATOMIC);
++	skb = pskb_copy_for_clone(skb, GFP_ATOMIC);
+ 	if (!skb)
+ 		return;
+ 
 -- 
 1.8.5.5
 
