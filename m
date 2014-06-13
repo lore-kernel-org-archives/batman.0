@@ -1,8 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 13 Jun 2014 11:18:04 +0200
-Message-Id: <1402651084-13042-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: add compat code for
+Date: Fri, 13 Jun 2014 11:21:09 +0200
+Message-Id: <1402651269-19233-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: add compat code for
 	kmalloc_array()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -18,12 +18,18 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-kmalloc_array() was introduced with linux-3.3 therefore
+kmalloc_array() was introduced with linux-3.4 therefore
 we need some compat code in order to be able to compile
 batman-adv against older kernels.
 
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
+
+Changes from v2:
+- fix linux version in commit message
+
+
+
  compat.h | 2 ++
  1 file changed, 2 insertions(+)
 
