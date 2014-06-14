@@ -1,13 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 14 Jun 2014 09:52:56 +0800
-Message-ID: <1415723.SePSTUQJgy@diderot>
-In-Reply-To: <1402415431-30190-1-git-send-email-gaul@web-yard.de>
-References: <1402415431-30190-1-git-send-email-gaul@web-yard.de>
+Date: Sat, 14 Jun 2014 09:54:50 +0800
+Message-ID: <1795448.yfdzlp1HKX@diderot>
+In-Reply-To: <1402590823-3605-1-git-send-email-sven@narfation.org>
+References: <1402590823-3605-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2133480.SjckAxclOm";
+Content-Type: multipart/signed; boundary="nextPart1977350.tp0znIuYis";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: remove unnecessary logspam
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Force \0 termination of string
+	in bisect_iv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,32 +21,29 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?ISO-8859-1?Q?Andr=E9?= Gaul <gaul@web-yard.de>
+Cc: Sven Eckelmann <sven@narfation.org>
 
 
---nextPart2133480.SjckAxclOm
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart1977350.tp0znIuYis
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday 10 June 2014 17:50:31 Andr=E9 Gaul wrote:
-> This patch removes unnecessary logspam which resulted from superfluou=
-s
-> calls to net_ratelimit(). With the supplied patch, net_ratelimit() is=
-
-> called after the loglevel has been checked.
->=20
-> Signed-off-by: Andr=E9 Gaul <gaul@web-yard.de>
+On Thursday 12 June 2014 18:33:43 Sven Eckelmann wrote:
+> This is a part of patch 4faf653307789150f1d40383e95c85a086630378 ("batctl:
+> Force null termination of string after strncpy") but was forgotten before it
+> was submitted to the maintainers.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  main.h    | 20 ++++++++++++++------
->  routing.c | 18 +++++++++---------
->  2 files changed, 23 insertions(+), 15 deletions(-)
+>  bisect_iv.c | 1 +
+>  1 file changed, 1 insertion(+)
 
-Applied in revision 11b7925.
+Applied in revision c861e47.
 
 Thanks,
 Marek
 
---nextPart2133480.SjckAxclOm
+--nextPart1977350.tp0znIuYis
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +51,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABAgAGBQJTm6r4AAoJEFNVTo/uthzAVjIH/3sGx952Eb3Z7dmgH2Unt//U
-un48ED1/QoFkBR350xeRziAr25X7Iq6Vdt44jRU/lR40WUwUEskOBzX2bTZegqLW
-eWvRGlecCrneLXV9RDFZKJ1lWTJR/F/3KL8IeXdPj5Er8VA3o1cPcssNOtu23Azg
-5VIUg/VNXIEpioQOh92uVlLE72phXTBQTyuj1bvWTZpSP3v8ZsW+68G2yrrjSf+I
-bUK/spWY6XGybZRTZC/LHZ9E+ng7cxXSOavl91KcFRWu0lt3yHtHHmYLg/RzU+wo
-M4Hx8b+GvOSY3lBw3hOM/C1jZYPCQKaMGr/cAfBGvxEes9gDiWC3eZ3mfgtGKpQ=
-=MZhT
+iQEcBAABAgAGBQJTm6tqAAoJEFNVTo/uthzAo2cH/3uK7UbRgt3RSxBYvD5xXe4M
+p4+pStjPSbB3BpvPZFy8qbL5Wuj/SaowrEb5bM0eFcxr1jpi0BsNtsKifZfsESiU
+7B7y5ZwS9WGa3kiw3aLr/IEaAEa1sHhcGRQG2yfWG5PpBjBjXa7UYJ76uulz1ZxD
+bYTLWMkDkbylj0E5WxhYBFPYLnzTvLX3Cj+9bUVLNWxsmNIIc6vbV2Ie+SAZA31B
+lsBT/b2hCXNJ4l/d1M67UeNZtjbsT34FaB0A907gYZXDmIiql3GXjynkUnvTppbJ
+RWqoctHJqg06Pnx9kqlngRylWD1UdMXjW+3afJvFLRtiXv+zb7z+YtaDokfqiyk=
+=JnTg
 -----END PGP SIGNATURE-----
 
---nextPart2133480.SjckAxclOm--
+--nextPart1977350.tp0znIuYis--
 
