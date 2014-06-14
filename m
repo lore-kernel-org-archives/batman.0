@@ -1,14 +1,13 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 14 Jun 2014 09:44:55 +0800
-Message-ID: <3526098.vVitn7FrQj@diderot>
-In-Reply-To: <5397280D.5050608@web-yard.de>
-References: <53957653.5000406@meshcoding.com>
- <539726E7.9070500@meshcoding.com> <5397280D.5050608@web-yard.de>
+Date: Sat, 14 Jun 2014 09:52:56 +0800
+Message-ID: <1415723.SePSTUQJgy@diderot>
+In-Reply-To: <1402415431-30190-1-git-send-email-gaul@web-yard.de>
+References: <1402415431-30190-1-git-send-email-gaul@web-yard.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8252938.vKBAQ0E4YQ";
+Content-Type: multipart/signed; boundary="nextPart2133480.SjckAxclOm";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] remove unnecessary logspam
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: remove unnecessary logspam
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,31 +20,32 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?ISO-8859-1?Q?Andr=E9?= Gaul <gaul@web-yard.de>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: =?ISO-8859-1?Q?Andr=E9?= Gaul <gaul@web-yard.de>
 
 
---nextPart8252938.vKBAQ0E4YQ
+--nextPart2133480.SjckAxclOm
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Tuesday 10 June 2014 17:45:17 Andr=E9 Gaul wrote:
-> btw: do you have any pointers to documentation that can help me
-> understand why the kernel developers still use email as the primary
-> channel for submitting patches? Given the fact that git gracefully
-> handles the transmission of code, the handling of all code via email
-> appears archaic and too complicated to me. (no flame war intended, I
-> just want to learn about the reasons!) ;)
+On Tuesday 10 June 2014 17:50:31 Andr=E9 Gaul wrote:
+> This patch removes unnecessary logspam which resulted from superfluou=
+s
+> calls to net_ratelimit(). With the supplied patch, net_ratelimit() is=
 
-Traditionally, patches on the mailing list make it easy to review & com=
-ment=20
-patches by everyone.
+> called after the loglevel has been checked.
+>=20
+> Signed-off-by: Andr=E9 Gaul <gaul@web-yard.de>
+> ---
+>  main.h    | 20 ++++++++++++++------
+>  routing.c | 18 +++++++++---------
+>  2 files changed, 23 insertions(+), 15 deletions(-)
 
-What is the alternative you have in mind (no vendor lock-in please) ?
+Applied in revision 11b7925.
 
-Cheers,
+Thanks,
 Marek
 
---nextPart8252938.vKBAQ0E4YQ
+--nextPart2133480.SjckAxclOm
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +53,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABAgAGBQJTm6kXAAoJEFNVTo/uthzA8VsH/3Qp4aNr/1uGR5wgilfiwsoc
-husyfnHjeNQZaaRUBBYlexvk5g2q/6t2JjbHFzA5SKEMAbm9yj528PvJW8Vqx1WJ
-QrOAFXd+HbllmHG5keRMZbS+L27dlenkQPIEuK0nNQVoMeHdsz8eXTk4blyAmv/Z
-OaNwW419/b3EK0A7zWUXzoMMhro5PmXd4kQHndICauOz+5i8RzUFlcmbr193NzdC
-DyFf3Yw46qUAcTGn/McZf63q3QqR0euyfdUWBc93fqK6nZHxJhdU6HXjeIaifqPT
-qBstKN961OOnojsQWpaMNBylBI3U1fqm80GyEZwXJJ2xz9mARSmFV7ej+MxkPQI=
-=Jys+
+iQEcBAABAgAGBQJTm6r4AAoJEFNVTo/uthzAVjIH/3sGx952Eb3Z7dmgH2Unt//U
+un48ED1/QoFkBR350xeRziAr25X7Iq6Vdt44jRU/lR40WUwUEskOBzX2bTZegqLW
+eWvRGlecCrneLXV9RDFZKJ1lWTJR/F/3KL8IeXdPj5Er8VA3o1cPcssNOtu23Azg
+5VIUg/VNXIEpioQOh92uVlLE72phXTBQTyuj1bvWTZpSP3v8ZsW+68G2yrrjSf+I
+bUK/spWY6XGybZRTZC/LHZ9E+ng7cxXSOavl91KcFRWu0lt3yHtHHmYLg/RzU+wo
+M4Hx8b+GvOSY3lBw3hOM/C1jZYPCQKaMGr/cAfBGvxEes9gDiWC3eZ3mfgtGKpQ=
+=MZhT
 -----END PGP SIGNATURE-----
 
---nextPart8252938.vKBAQ0E4YQ--
+--nextPart2133480.SjckAxclOm--
 
