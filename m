@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 17 Jun 2014 21:56:03 +0200
-Message-Id: <1403034964-6737-6-git-send-email-sven@narfation.org>
+Date: Tue, 17 Jun 2014 21:56:04 +0200
+Message-Id: <1403034964-6737-7-git-send-email-sven@narfation.org>
 In-Reply-To: <1403034964-6737-1-git-send-email-sven@narfation.org>
 References: <1403034964-6737-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 6/7] batmand: Don't try to
-	schedule_own_packet with no if_incoming
+Subject: [B.A.T.M.A.N.] [PATCH 7/7] batmand: Don't dereference orig_node
+	before checking for NULL
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,31 +20,44 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-send_outstanding_packets checks if a forw_node has a correct if_incoming.
-Otherwise it jumps to packet_free to deallocate the packet infrastructure. But
-this also schedules packets with the batman interfaces as target incoming_if.
-This is known to be NULL but is dereferenced in schedule_own_packet.
+The update_route functions first stores the orig_node->router in an extra
+variable and later checks if orig_node is NULL. This is not only a potential
+cause of a crash but can also cause new compilers to drop the NULL check
+completely [1].
 
-This NULL dereference should be avoided.
+[1] https://gcc.gnu.org/onlinedocs/gcc-3.4.3/gcc/Optimize-Options.html#index-fdelete_002dnull_002dpointer_002dchecks-399
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- schedule.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ batman.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/schedule.c b/schedule.c
-index 3e65d68..03cdb78 100644
---- a/schedule.c
-+++ b/schedule.c
-@@ -359,7 +359,7 @@ void send_outstanding_packets(uint32_t curr_time)
+diff --git a/batman.c b/batman.c
+index 89b3bf1..c3dfa7f 100644
+--- a/batman.c
++++ b/batman.c
+@@ -353,10 +353,9 @@ void update_routes(struct orig_node *orig_node, struct neigh_node *neigh_node, u
+ 	prof_start(PROF_update_routes);
+ 	debug_output(4, "update_routes() \n");
  
- packet_free:	list_del((struct list_head *)&forw_list, forw_pos, &forw_list);
+-	old_router = orig_node->router;
+-
+ 	/* also handles orig_node->router == NULL and neigh_node == NULL */
+ 	if ((orig_node != NULL) && (orig_node->router != neigh_node)) {
++		old_router = orig_node->router;
  
--		if (forw_node->own)
-+		if (forw_node->own && forw_node->if_incoming)
- 			schedule_own_packet(forw_node->if_incoming);
+ 		if ( ( orig_node != NULL ) && ( neigh_node != NULL ) ) {
+ 			addr_to_string( orig_node->orig, orig_str, ADDR_STR_LEN );
+@@ -415,7 +414,8 @@ void update_routes(struct orig_node *orig_node, struct neigh_node *neigh_node, u
+ 		orig_node->router = neigh_node;
  
- 		debugFree(forw_node->pack_buff, 1501);
+ 	} else if (orig_node != NULL) {
+-		hna_global_update(orig_node, hna_recv_buff, hna_buff_len, old_router);
++		hna_global_update(orig_node, hna_recv_buff, hna_buff_len,
++				  orig_node->router);
+ 	}
+ 
+ 	prof_stop(PROF_update_routes);
 -- 
 2.0.0
 
