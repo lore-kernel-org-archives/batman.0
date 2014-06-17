@@ -1,10 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 17 Jun 2014 21:56:00 +0200
-Message-Id: <1403034964-6737-3-git-send-email-sven@narfation.org>
+Date: Tue, 17 Jun 2014 21:56:01 +0200
+Message-Id: <1403034964-6737-4-git-send-email-sven@narfation.org>
 In-Reply-To: <1403034964-6737-1-git-send-email-sven@narfation.org>
 References: <1403034964-6737-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 3/7] batmand: Fix bitarray 1 bit shift type
+Subject: [B.A.T.M.A.N.] [PATCH 4/7] batmand: Free socket when setsockopt
+	failed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,38 +20,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-The default type of an integer constant is int. This reduced the possible bits
-for a shift to 32. But the size of uintmax_t is most likely larger (64 bit).
-Thus the upper 32 bit cannot be accessed correctly with this bitarray
-implementation.
+client_to_gw_tun calls setsockopt which can fail. In this case it jumps to the
+error handling and cleanup code but doesn't close the udp_sock. This has to be
+done to avoid leaking of file descriptors.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- bitarray.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ posix/tunnel.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/bitarray.c b/bitarray.c
-index 133f6e7..354eddd 100644
---- a/bitarray.c
-+++ b/bitarray.c
-@@ -49,7 +49,7 @@ uint8_t get_bit_status( TYPE_OF_WORD *seq_bits, uint16_t last_seqno, uint16_t cu
- 		word_offset= ( last_seqno - curr_seqno ) % WORD_BIT_SIZE;	/* which position in the selected word */
- 		word_num   = ( last_seqno - curr_seqno ) / WORD_BIT_SIZE;	/* which word */
+diff --git a/posix/tunnel.c b/posix/tunnel.c
+index 08c56a2..8e7611b 100644
+--- a/posix/tunnel.c
++++ b/posix/tunnel.c
+@@ -201,7 +201,7 @@ void *client_to_gw_tun(void *arg)
+ 	sock_opts = 1;
+         if (setsockopt(udp_sock, SOL_SOCKET, SO_REUSEADDR, &sock_opts, sizeof(sock_opts)) < 0) {
+                debug_output(0, "Error - can't set options on udp socket: %s\n", strerror(errno));
+-		goto out;
++		goto udp_out;
+         }
  
--		if ( seq_bits[word_num] & 1<<word_offset )   /* get position status */
-+		if ( seq_bits[word_num] & (1ULL << word_offset))   /* get position status */
- 			return 1;
- 		else
- 			return 0;
-@@ -72,7 +72,7 @@ void bit_mark( TYPE_OF_WORD *seq_bits, int32_t n ) {
- 	word_offset= n%WORD_BIT_SIZE;	/* which position in the selected word */
- 	word_num   = n/WORD_BIT_SIZE;	/* which word */
- 
--	seq_bits[word_num]|= 1<<word_offset;	/* turn the position on */
-+	seq_bits[word_num] |= 1ULL << word_offset;	/* turn the position on */
- }
- 
- /* shift the packet array p by n places. */
+ 	if (bind(udp_sock, (struct sockaddr *)&my_addr, sizeof(struct sockaddr_in)) < 0) {
 -- 
 2.0.0
 
