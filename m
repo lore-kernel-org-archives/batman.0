@@ -1,16 +1,12 @@
-Return-Path: <linus.luessing@web.de>
-Date: Sun, 22 Jun 2014 12:29:38 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20140622102938.GY29033@Linus-Debian>
-References: <1403000163-8148-1-git-send-email-sw@simonwunderlich.de>
- <201406181121.14252.simon@open-mesh.com>
- <20140618195657.GM29033@Linus-Debian>
- <201406191818.12149.simon@simonwunderlich.de>
+Return-Path: <ilario.gelmetti@sns.it>
+Message-ID: <53A6B0E4.6070503@sns.it>
+Date: Sun, 22 Jun 2014 12:33:08 +0200
+From: Ilario Gelmetti <ilario.gelmetti@sns.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <201406191818.12149.simon@simonwunderlich.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: increase default hop penalty
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="s8u5OJt02cT04wRcpmoWUAMTtHb2MvL76"
+Subject: [B.A.T.M.A.N.] Bad link via ethernet using two tl-wr1043nd ports
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,90 +18,89 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <simon@simonwunderlich.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Simon,
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--s8u5OJt02cT04wRcpmoWUAMTtHb2MvL76
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-first of all, sorry for me getting so emotional about it. My bad,
-I know, it's usually not very constructive to get emotional on a
-mailing list.
+Hi all!
+I'm using OpenWrt trunk (r41296) with batman-adv (2014.2.0) on a TP-Link
+WR1043ND using this network configuration file:
+http://sprunge.us/SVCI
+as you can see batman is running on ports number 1 (eth0.3) and number 3
+(eth0.4).
+
+ root@OpenWrt:~# batctl if
+ eth0.3: active
+ eth0.4: active
+
+I connect this router via ethernet cable to another device running
+batman-adv (2014.2.0).
+Looking at the link quality with "batctl o" I noticed that sometimes the
+link quality is poor using a port and good using the other one port. The
+good and the bad port aren't fixed, they switch randomly, so I tend to
+exclude an hardware problem. I connected the batman device to port 1
+(eth0.3) and laptop on port 3 (eth0.4) and the quality of the batman
+link changes from one boot to another:
+
+ root@OpenWrt:~# batctl o
+ [B.A.T.M.A.N. adv 2014.2.0, MainIF/MAC: eth0.3/10:fe:ed:7f:3e:80 (bat0
+BATMAN_IV)]
+   Originator      last-seen (#/255)           Nexthop [outgoingIF]:
+Potential nexthops ...
+ dc:9f:db:2c:e4:34    0.700s   (255) dc:9f:db:2d:e4:34 [    eth0.3]:
+dc:9f:db:2d:e4:34 (255)
+ dc:9f:db:2d:e4:34    0.360s   (255) dc:9f:db:2d:e4:34 [    eth0.3]:
+dc:9f:db:2d:e4:34 (255)
+
+-----reboot & wait some minutes-----
+good, 255
+-----reboot & wait some minutes-----
+
+ root@OpenWrt:~# batctl o
+ [B.A.T.M.A.N. adv 2014.2.0, MainIF/MAC: eth0.4/10:fe:ed:7f:3e:80 (bat0
+BATMAN_IV)]
+   Originator      last-seen (#/255)           Nexthop [outgoingIF]:
+Potential nexthops ...
+ dc:9f:db:2c:e4:34    0.680s   (119) dc:9f:db:2d:e4:34 [    eth0.3]:
+dc:9f:db:2d:e4:34 (119)
+ dc:9f:db:2d:e4:34    0.580s   (119) dc:9f:db:2d:e4:34 [    eth0.3]:
+dc:9f:db:2d:e4:34 (119)
+
+-----reboot & wait some minutes-----
+good, 255
+-----reboot & wait some minutes-----
+bad, ~129
+-----reboot & wait some minutes-----
+bad, ~139
+-----reboot & wait some minutes-----
+bad, ~131
+-----reboot & wait some minutes-----
+good, 255
+
+Thanks,
+Ilario
+
+--=20
+Ilario Gelmetti
+iochesonome@gmail.com
+ilario.gelmetti@sns.it
 
 
-On Thu, Jun 19, 2014 at 06:18:11PM +0200, Simon Wunderlich wrote:
-> > 
-> > Damn it, why don't we have the stupid hop count in the
-> > measurements from the last WBM? Would have been very easy to
-> > verify with that.
-> 
-> Very easy ...? Well, if you think so, please propose/perform/evaluate these 
-> tests in the next battlemesh. :)
+--s8u5OJt02cT04wRcpmoWUAMTtHb2MvL76
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-What I ment was, that actually we sort of had these tests/the data
-:). If I remember correctly, then there were non-dynamic
-environment tests on the slides Axel and others presented. Where
-you could see the number of hops each layer 3 routing protocol
-took and what throughput they had. If there had been hop-count
-information for batman-adv too, we could have compared it to the
-other protocols and might have been able to deduce whether more or
-less hops would have resulted in higher throughput.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-I will see whether I can help setting up logging data from batctl-ping
-next year :).
+iEYEARECAAYFAlOmsOgACgkQifrzB0y7qpbHkwCeM8p2XnPNWmLmwsY8chA6GGLV
+0pIAnjTaJaXQAq6nYVBBQgF87GfwGgfQ
+=SrWt
+-----END PGP SIGNATURE-----
 
-> 
-> > 
-> > Maybe we could try using the WBM to transparently find better
-> > default values in the future (again; I remember that you had made
-> > nice graphs for the decision of having interface-alternating or
-> > interface-bonding as the default back then at WBMv3 in Italy -
-> > that was awesome!)?
-> 
-> Yeah, that wasn't so bad, but the tests were not very extensive too - 3 
-> devices with special hardware and setup. We could show the gains of 
-> alternating/bonding after all ... ;)
-> 
-> In any case, feel free to propose these kind of tests for next WBM.
-> 
-> > 
-> > > But I can certainly explain how I tested: We were running
-> > > Antonios throughput meter on these devices and saw some unusual slow
-> > > throughput and too long paths (4 hops were 2 were possible). We then
-> > > increase the hop penalty to the suggested value, and both the hopcount
-> > > decreased and the throughput increase. We repeated that with other 6
-> > > networks and had either similar improvement or no change at all (since
-> > > all hopcounts were already one).
-> > 
-> > What mcast-rate were you using? Will this make things worse for
-> > setups with a different mcast-rate?
-> 
-> The mcast rate was 18M. I don't know if it gets "worse" for different MCS 
-> rates, and it depends what we think is "worse". In general, I'd expect that 
-> the protocol chooses longer links /shorter paths, for all mcast rates.
-
-Thanks, 18MBit/s is a valuable information! Hm, I would kind of
-guess then, that everyone using an mcast rate lower or equal to
-18MBit/s should be good to go, right? If nodes are using a lower
-mcast rate then they mostly have a lower packet loss and would
-need a higher hop penalty to select the same "good" path.
-
-On the other hand, people using an mcast rate higher than 18MBit/s
-might want to have a hop penalty lower than 60. But right now, I'm
-not aware of any such mesh networks, so probably it shouldn't make
-things worse for other people if your measurements in your mesh
-were correct (which I believe they were - I never wanted to
-discredit your capabilities, you, Marek and Antonio are probably
-the best people to perform such tests in a reliable way).
-
-> 
-> Cheers,
->     Simon
-
-PS: Somebody noted on IRC, that it might seem that I would have a
-problem with commercial, non-public mesh networks.
-While I would certainly love it if everyone were setting
-up their commercial network on top of a free community mesh
-network Freifunk, Ninux etc., I don't have an issue if someone
-decides to not do that, that's everyone's free choice :). And
-people making a living with a commercial mesh network didn't get
-me emotional at all, that wasn't it.
+--s8u5OJt02cT04wRcpmoWUAMTtHb2MvL76--
