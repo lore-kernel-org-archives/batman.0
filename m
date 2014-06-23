@@ -1,12 +1,9 @@
-Return-Path: <ilario.gelmetti@sns.it>
-Message-ID: <53A6B0E4.6070503@sns.it>
-Date: Sun, 22 Jun 2014 12:33:08 +0200
-From: Ilario Gelmetti <ilario.gelmetti@sns.it>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="s8u5OJt02cT04wRcpmoWUAMTtHb2MvL76"
-Subject: [B.A.T.M.A.N.] Bad link via ethernet using two tl-wr1043nd ports
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 23 Jun 2014 15:55:36 +0200
+Message-Id: <1403531736-12460-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: drop QinQ claim frames in
+	bridge loop avoidance
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,88 +16,109 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---s8u5OJt02cT04wRcpmoWUAMTtHb2MvL76
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+From: Simon Wunderlich <simon@open-mesh.com>
 
-Hi all!
-I'm using OpenWrt trunk (r41296) with batman-adv (2014.2.0) on a TP-Link
-WR1043ND using this network configuration file:
-http://sprunge.us/SVCI
-as you can see batman is running on ports number 1 (eth0.3) and number 3
-(eth0.4).
+Since bridge loop avoidance only supports untagged or simple 802.1q
+tagged VLAN claim frames, claim frames with stacked VLAN headers (QinQ)
+should be detected and dropped. Transporting the over the mesh may cause
+problems on the receivers, or create bogus entries in the local tt
+tables.
 
- root@OpenWrt:~# batctl if
- eth0.3: active
- eth0.4: active
+Reported-by: Antonio Quartulli <antonio@open-mesh.com>
+Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+---
+Changes to PATCHv2 (thanks Marek):
+ * move check into bla_process_claim() to avoid code duplication
 
-I connect this router via ethernet cable to another device running
-batman-adv (2014.2.0).
-Looking at the link quality with "batctl o" I noticed that sometimes the
-link quality is poor using a port and good using the other one port. The
-good and the bad port aren't fixed, they switch randomly, so I tend to
-exclude an hardware problem. I connected the batman device to port 1
-(eth0.3) and laptop on port 3 (eth0.4) and the quality of the batman
-link changes from one boot to another:
+Changes to PATCHv1 (thanks Antonio):
+ * add short description, fix capitalization for return
+ * move drop debug message to batadv_bla_process_claim()
+---
+ bridge_loop_avoidance.c | 44 ++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 34 insertions(+), 10 deletions(-)
 
- root@OpenWrt:~# batctl o
- [B.A.T.M.A.N. adv 2014.2.0, MainIF/MAC: eth0.3/10:fe:ed:7f:3e:80 (bat0
-BATMAN_IV)]
-   Originator      last-seen (#/255)           Nexthop [outgoingIF]:
-Potential nexthops ...
- dc:9f:db:2c:e4:34    0.700s   (255) dc:9f:db:2d:e4:34 [    eth0.3]:
-dc:9f:db:2d:e4:34 (255)
- dc:9f:db:2d:e4:34    0.360s   (255) dc:9f:db:2d:e4:34 [    eth0.3]:
-dc:9f:db:2d:e4:34 (255)
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 6f0d9ec..a957c81 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -800,11 +800,6 @@ static int batadv_check_claim_group(struct batadv_priv *bat_priv,
+ 	bla_dst = (struct batadv_bla_claim_dst *)hw_dst;
+ 	bla_dst_own = &bat_priv->bla.claim_dest;
+ 
+-	/* check if it is a claim packet in general */
+-	if (memcmp(bla_dst->magic, bla_dst_own->magic,
+-		   sizeof(bla_dst->magic)) != 0)
+-		return 0;
+-
+ 	/* if announcement packet, use the source,
+ 	 * otherwise assume it is in the hw_src
+ 	 */
+@@ -866,12 +861,13 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
+ 				    struct batadv_hard_iface *primary_if,
+ 				    struct sk_buff *skb)
+ {
+-	struct batadv_bla_claim_dst *bla_dst;
++	struct batadv_bla_claim_dst *bla_dst, *bla_dst_own;
+ 	uint8_t *hw_src, *hw_dst;
+-	struct vlan_ethhdr *vhdr;
++	struct vlan_hdr *vhdr, vhdr_buf;
+ 	struct ethhdr *ethhdr;
+ 	struct arphdr *arphdr;
+ 	unsigned short vid;
++	int vlan_depth = 0;
+ 	__be16 proto;
+ 	int headlen;
+ 	int ret;
+@@ -882,9 +878,24 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
+ 	proto = ethhdr->h_proto;
+ 	headlen = ETH_HLEN;
+ 	if (vid & BATADV_VLAN_HAS_TAG) {
+-		vhdr = vlan_eth_hdr(skb);
+-		proto = vhdr->h_vlan_encapsulated_proto;
+-		headlen += VLAN_HLEN;
++		/* Traverse the VLAN/Ethertypes.
++		 *
++		 * At this point it is known that the first protocol is a VLAN
++		 * header, so start checking at the encapsulated protocol.
++		 *
++		 * The depth of the VLAN headers is recorded to drop BLA claim
++		 * frames encapsulated into multiple VLAN headers (QinQ).
++		 */
++		do {
++			vhdr = skb_header_pointer(skb, headlen, VLAN_HLEN,
++						  &vhdr_buf);
++			if (!vhdr)
++				return 0;
++
++			proto = vhdr->h_vlan_encapsulated_proto;
++			headlen += VLAN_HLEN;
++			vlan_depth++;
++		} while (proto == htons(ETH_P_8021Q));
+ 	}
+ 
+ 	if (proto != htons(ETH_P_ARP))
+@@ -914,6 +925,19 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
+ 	hw_src = (uint8_t *)arphdr + sizeof(struct arphdr);
+ 	hw_dst = hw_src + ETH_ALEN + 4;
+ 	bla_dst = (struct batadv_bla_claim_dst *)hw_dst;
++	bla_dst_own = &bat_priv->bla.claim_dest;
++
++	/* check if it is a claim frame in general */
++	if (memcmp(bla_dst->magic, bla_dst_own->magic,
++		   sizeof(bla_dst->magic)) != 0)
++		return 0;
++
++	/* check if there is a claim frame encapsulated deeper in (QinQ) and
++	 * drop that, as this is not supported by BLA but should also not be
++	 * sent via the mesh.
++	 */
++	if (vlan_depth > 1)
++		return 1;
+ 
+ 	/* check if it is a claim frame. */
+ 	ret = batadv_check_claim_group(bat_priv, primary_if, hw_src, hw_dst,
+-- 
+1.9.1
 
------reboot & wait some minutes-----
-good, 255
------reboot & wait some minutes-----
-
- root@OpenWrt:~# batctl o
- [B.A.T.M.A.N. adv 2014.2.0, MainIF/MAC: eth0.4/10:fe:ed:7f:3e:80 (bat0
-BATMAN_IV)]
-   Originator      last-seen (#/255)           Nexthop [outgoingIF]:
-Potential nexthops ...
- dc:9f:db:2c:e4:34    0.680s   (119) dc:9f:db:2d:e4:34 [    eth0.3]:
-dc:9f:db:2d:e4:34 (119)
- dc:9f:db:2d:e4:34    0.580s   (119) dc:9f:db:2d:e4:34 [    eth0.3]:
-dc:9f:db:2d:e4:34 (119)
-
------reboot & wait some minutes-----
-good, 255
------reboot & wait some minutes-----
-bad, ~129
------reboot & wait some minutes-----
-bad, ~139
------reboot & wait some minutes-----
-bad, ~131
------reboot & wait some minutes-----
-good, 255
-
-Thanks,
-Ilario
-
---=20
-Ilario Gelmetti
-iochesonome@gmail.com
-ilario.gelmetti@sns.it
-
-
---s8u5OJt02cT04wRcpmoWUAMTtHb2MvL76
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iEYEARECAAYFAlOmsOgACgkQifrzB0y7qpbHkwCeM8p2XnPNWmLmwsY8chA6GGLV
-0pIAnjTaJaXQAq6nYVBBQgF87GfwGgfQ
-=SrWt
------END PGP SIGNATURE-----
-
---s8u5OJt02cT04wRcpmoWUAMTtHb2MvL76--
