@@ -1,13 +1,9 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 24 Jun 2014 23:31:14 +0800
-Message-ID: <30521554.OoFrEXheTJ@diderot>
-In-Reply-To: <1403000163-8148-1-git-send-email-sw@simonwunderlich.de>
-References: <1403000163-8148-1-git-send-email-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4898667.KPlocqWRq1";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: increase default hop penalty
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 24 Jun 2014 18:54:03 +0200
+Message-Id: <1403628843-6936-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] alfred: Calculate size of global buffer and
+	not of a single char
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,57 +16,42 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+Cc: Sven Eckelmann <sven@narfation.org>
 
+The global buffer is 65536 bytes in size and not only 1 byte. This statement
+evaluated to a negative value which was casted to an unsigned value (aka...
+very large value).
 
---nextPart4898667.KPlocqWRq1
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This is a regression was introduced in 71dbc00fd879f1e592b07d8397f724fb3f69ac64
+("alfred: Use strncpy instead of strcpy for string").
 
-On Tuesday 17 June 2014 12:16:03 Simon Wunderlich wrote:
-> From: Simon Wunderlich <simon@open-mesh.com>
-> 
-> The default hop penalty is currently set to 15, which is applied like
-> that for multi interface devices (e.g. dual band APs). Single band
-> devices will still use an effective penalty of 30 (hop penalty + wifi
-> penalty).
-> 
-> After receiving reports of too long paths in mesh networks with dual
-> band APs which were fixed by increasing the hop penalty, we'd like to
-> suggest to increase that default value in the default setting as well.
-> We've evaluated that increase in a handful of medium sized mesh
-> networks (5-20 nodes) with single and dual band devices, with changes
-> for the better (shorter routes, higher throughput) or no change at all.
-> 
-> This patch changes the hop penalty to 30, which will give an effective
-> penalty of 60 on single band devices (hop penalty + wifi penalty).
-> 
-> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-> ---
->  soft-interface.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ gpsd/alfred-gpsd.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Applied in revision 7644650.
-
-Thanks,
-Marek
-
---nextPart4898667.KPlocqWRq1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABAgAGBQJTqZnCAAoJEFNVTo/uthzASeAH/2sHx9MHRw+VBhR1UjKJZ2Z+
-e6wt//xhjpBHrSCqHVXeq6sqMk8pQa2zCbZRhoDB8RtZh2dqp3Rch4Mw9D3hXOY4
-Lu+5KUeaJb1pzZ8xSdU6k0k5Yy3CjlajkE/dkD0RZYHmnZ1KSMGYTgPoBq1d8Srl
-f1j8qwRnoyoMPBG/5tg3xncni80+aEKji9ZY/w+xp8a9gAsZVMYBVLoB8p9b7S4a
-UJNKH+B4krxFSKD6YTJbnGSyU4CVgxgJrmPvMNTZvNiYXFU6DXqrPVjG9AvRmsHL
-I/xqT/O1zbiqrp+k4vrKkDNp1dGx7DiMtuAO/GcSceCr78G1GLFHaNv7xu2lG0w=
-=hq7/
------END PGP SIGNATURE-----
-
---nextPart4898667.KPlocqWRq1--
+diff --git a/gpsd/alfred-gpsd.c b/gpsd/alfred-gpsd.c
+index 84a0ded..d6cdfd6 100644
+--- a/gpsd/alfred-gpsd.c
++++ b/gpsd/alfred-gpsd.c
+@@ -301,7 +301,7 @@ static void gpsd_read_gpsd(struct globals *globals)
+ 	size_t cnt;
+ 	bool eol = false;
+ 	char buf[4096];
+-	const size_t tpv_size = sizeof(*globals->buf) -
++	const size_t tpv_size = sizeof(globals->buf) -
+ 				sizeof(*globals->push) -
+ 				sizeof(struct alfred_data) -
+ 				sizeof(*globals->gpsd_data);
+@@ -450,7 +450,7 @@ static int gpsd_server(struct globals *globals)
+ 	int max_fd, ret;
+ 	const size_t overhead = sizeof(*globals->push) +
+ 		sizeof(struct alfred_data);
+-	const size_t tpv_size = sizeof(*globals->buf) -
++	const size_t tpv_size = sizeof(globals->buf) -
+ 				sizeof(*globals->push) -
+ 				sizeof(struct alfred_data) -
+ 				sizeof(*globals->gpsd_data);
+-- 
+2.0.0
 
