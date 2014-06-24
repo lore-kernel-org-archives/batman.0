@@ -1,14 +1,13 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 24 Jun 2014 23:22:41 +0800
-Message-ID: <4594996.Z6hYgccWMK@diderot>
-In-Reply-To: <1403531736-12460-1-git-send-email-sw@simonwunderlich.de>
-References: <1403531736-12460-1-git-send-email-sw@simonwunderlich.de>
+Date: Tue, 24 Jun 2014 23:31:14 +0800
+Message-ID: <30521554.OoFrEXheTJ@diderot>
+In-Reply-To: <1403000163-8148-1-git-send-email-sw@simonwunderlich.de>
+References: <1403000163-8148-1-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8514800.DF6HfxcZpm";
+Content-Type: multipart/signed; boundary="nextPart4898667.KPlocqWRq1";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: drop QinQ claim frames in
-	bridge loop avoidance
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: increase default hop penalty
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,38 +23,39 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <simon@open-mesh.com>
 
 
---nextPart8514800.DF6HfxcZpm
+--nextPart4898667.KPlocqWRq1
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday 23 June 2014 15:55:36 Simon Wunderlich wrote:
+On Tuesday 17 June 2014 12:16:03 Simon Wunderlich wrote:
 > From: Simon Wunderlich <simon@open-mesh.com>
 > 
-> Since bridge loop avoidance only supports untagged or simple 802.1q
-> tagged VLAN claim frames, claim frames with stacked VLAN headers (QinQ)
-> should be detected and dropped. Transporting the over the mesh may cause
-> problems on the receivers, or create bogus entries in the local tt
-> tables.
+> The default hop penalty is currently set to 15, which is applied like
+> that for multi interface devices (e.g. dual band APs). Single band
+> devices will still use an effective penalty of 30 (hop penalty + wifi
+> penalty).
 > 
-> Reported-by: Antonio Quartulli <antonio@open-mesh.com>
+> After receiving reports of too long paths in mesh networks with dual
+> band APs which were fixed by increasing the hop penalty, we'd like to
+> suggest to increase that default value in the default setting as well.
+> We've evaluated that increase in a handful of medium sized mesh
+> networks (5-20 nodes) with single and dual band devices, with changes
+> for the better (shorter routes, higher throughput) or no change at all.
+> 
+> This patch changes the hop penalty to 30, which will give an effective
+> penalty of 60 on single band devices (hop penalty + wifi penalty).
+> 
 > Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 > ---
-> Changes to PATCHv2 (thanks Marek):
->  * move check into bla_process_claim() to avoid code duplication
-> 
-> Changes to PATCHv1 (thanks Antonio):
->  * add short description, fix capitalization for return
->  * move drop debug message to batadv_bla_process_claim()
-> ---
->  bridge_loop_avoidance.c | 44 ++++++++++++++++++++++++++++++++++----------
->  1 file changed, 34 insertions(+), 10 deletions(-)
+>  soft-interface.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision 8cd753e.
+Applied in revision 7644650.
 
 Thanks,
 Marek
 
---nextPart8514800.DF6HfxcZpm
+--nextPart4898667.KPlocqWRq1
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -63,14 +63,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABAgAGBQJTqZfMAAoJEFNVTo/uthzA6PQIAJMLA2WQO/KOEkCpttPSzqrQ
-0m/NCPd51hwPk8MqD7LuKHD1CD07ZCJB5RTmlGt23PyUtGVig6a77/wX/bpUk+lE
-6lpveVPZYD7WKiYGXA+Bu5tZFykTojWVdGUZgb0D95HDiuvwxQlL/ey8Lk/eyrtY
-WK6+9RB58QP9QFNHURwSCydfBjEzx4oTWVeWJZOsCnPmwKuAMJe60umKAvLHgJd6
-TVh2Ev6H7Y9x+sfJEYnFtPy/k4f2owbySc0iXYbkJtwiKoPysbfQHQ+kNKuG5r7D
-CKswegPdHxyVhvW2tu4s7bdUAuNSTs8e9LFP/Z7BcAnGFa76DQZqAVcWpLHNr/E=
-=XY0K
+iQEcBAABAgAGBQJTqZnCAAoJEFNVTo/uthzASeAH/2sHx9MHRw+VBhR1UjKJZ2Z+
+e6wt//xhjpBHrSCqHVXeq6sqMk8pQa2zCbZRhoDB8RtZh2dqp3Rch4Mw9D3hXOY4
+Lu+5KUeaJb1pzZ8xSdU6k0k5Yy3CjlajkE/dkD0RZYHmnZ1KSMGYTgPoBq1d8Srl
+f1j8qwRnoyoMPBG/5tg3xncni80+aEKji9ZY/w+xp8a9gAsZVMYBVLoB8p9b7S4a
+UJNKH+B4krxFSKD6YTJbnGSyU4CVgxgJrmPvMNTZvNiYXFU6DXqrPVjG9AvRmsHL
+I/xqT/O1zbiqrp+k4vrKkDNp1dGx7DiMtuAO/GcSceCr78G1GLFHaNv7xu2lG0w=
+=hq7/
 -----END PGP SIGNATURE-----
 
---nextPart8514800.DF6HfxcZpm--
+--nextPart4898667.KPlocqWRq1--
 
