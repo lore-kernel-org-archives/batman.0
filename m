@@ -1,9 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 25 Jun 2014 13:35:57 +0200
-Message-Id: <1403696158-20329-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] alfred-gpsd: Calculate size of global
-	buffer and not of a single char
+Date: Wed, 25 Jun 2014 13:35:58 +0200
+Message-Id: <1403696158-20329-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1403696158-20329-1-git-send-email-sven@narfation.org>
+References: <1403696158-20329-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 2/2] alfred-gpsd: Avoid underrun when
+	reading from gpsd
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,42 +20,50 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-The global buffer is 65536 bytes in size and not only 1 byte. This statement
-evaluated to a negative value which was casted to an unsigned value (aka...
-very large value).
+The gpsd output reading function is ignoring \r characters. This is done by
+moving the current position (cnt) one position back in the character buffer. It
+is jumping to the -1 character (max number for size_t) when it was reading the
+first character at position 0. This is not problematic when the cnt is
+increased directly after it by 1. Overflows/underflows are defined for
+*unsigned* types and thus it just jumps back to 0.
 
-This is a regression was introduced in 71dbc00fd879f1e592b07d8397f724fb3f69ac64
-("alfred: Use strncpy instead of strcpy for string").
+Unfortunatelly, it is trying to access the memory for another check before
+increasing the position again. This check is done on memory outside of the
+buffer and therefore invalid.
+
+Instead doing two check after each other, it is in this situation better to do
+both at once and just handle the current character.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-v2: Fixed prefix of the commit subject
-
- gpsd/alfred-gpsd.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ gpsd/alfred-gpsd.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/gpsd/alfred-gpsd.c b/gpsd/alfred-gpsd.c
-index 84a0ded..d6cdfd6 100644
+index d6cdfd6..87943bd 100644
 --- a/gpsd/alfred-gpsd.c
 +++ b/gpsd/alfred-gpsd.c
-@@ -301,7 +301,7 @@ static void gpsd_read_gpsd(struct globals *globals)
- 	size_t cnt;
- 	bool eol = false;
- 	char buf[4096];
--	const size_t tpv_size = sizeof(*globals->buf) -
-+	const size_t tpv_size = sizeof(globals->buf) -
- 				sizeof(*globals->push) -
- 				sizeof(struct alfred_data) -
- 				sizeof(*globals->gpsd_data);
-@@ -450,7 +450,7 @@ static int gpsd_server(struct globals *globals)
- 	int max_fd, ret;
- 	const size_t overhead = sizeof(*globals->push) +
- 		sizeof(struct alfred_data);
--	const size_t tpv_size = sizeof(*globals->buf) -
-+	const size_t tpv_size = sizeof(globals->buf) -
- 				sizeof(*globals->push) -
- 				sizeof(struct alfred_data) -
- 				sizeof(*globals->gpsd_data);
+@@ -315,15 +315,16 @@ static void gpsd_read_gpsd(struct globals *globals)
+ 			return;
+ 		}
+ 
+-		if (buf[cnt] == '\r')
++		switch (buf[cnt]) {
++		case '\r':
+ 			cnt--;
+-
+-		if (buf[cnt] == '\n') {
++			break;
++		case '\n':
+ 			eol = true;
+ 			buf[cnt] = '\0';
+ 			break;
+ 		}
+-	} while (cnt++ < sizeof(buf) - 1);
++	} while (cnt++ < sizeof(buf) - 1 && !eol);
+ 
+ 	if (!eol) {
+ 		gps_close(&globals->gpsdata);
 -- 
 2.0.0
 
