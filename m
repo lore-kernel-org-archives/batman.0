@@ -1,9 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 24 Jun 2014 18:54:03 +0200
-Message-Id: <1403628843-6936-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] alfred: Calculate size of global buffer and
-	not of a single char
+Date: Wed, 25 Jun 2014 13:35:57 +0200
+Message-Id: <1403696158-20329-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] alfred-gpsd: Calculate size of global
+	buffer and not of a single char
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -27,6 +27,8 @@ This is a regression was introduced in 71dbc00fd879f1e592b07d8397f724fb3f69ac64
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
+v2: Fixed prefix of the commit subject
+
  gpsd/alfred-gpsd.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
