@@ -1,16 +1,15 @@
-Return-Path: <linus.luessing@web.de>
-Date: Fri, 27 Jun 2014 02:12:23 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20140627001223.GA28373@Linus-Debian>
-References: <1400994205-31165-1-git-send-email-linus.luessing@web.de>
- <1400994205-31165-3-git-send-email-linus.luessing@web.de>
- <CADAe=+KViC7uej0KM4TrQXxrk-amU7CX73buviMU17jpQm61bw@mail.gmail.com>
+Return-Path: <andrew@lunn.ch>
+Date: Fri, 27 Jun 2014 03:58:23 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20140627015823.GA6079@lunn.ch>
+References: <1403696158-20329-1-git-send-email-sven@narfation.org>
+ <1403696158-20329-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CADAe=+KViC7uej0KM4TrQXxrk-amU7CX73buviMU17jpQm61bw@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 net-next 2/4] bridge: adhere to querier
- election mechanism specified by RFCs
+In-Reply-To: <1403696158-20329-2-git-send-email-sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] alfred-gpsd: Avoid underrun when
+	reading from gpsd
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,111 +21,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Ajith Adapa <adapa.ajith@gmail.com>
-Cc: netdev@vger.kernel.org, bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Ajith,
-
-
-On Mon, Jun 23, 2014 at 07:58:21AM +0530, Ajith Adapa wrote:
-> Hi Luessing,
+On Wed, Jun 25, 2014 at 01:35:58PM +0200, Sven Eckelmann wrote:
+> The gpsd output reading function is ignoring \r characters. This is done by
+> moving the current position (cnt) one position back in the character buffer. It
+> is jumping to the -1 character (max number for size_t) when it was reading the
+> first character at position 0. This is not problematic when the cnt is
+> increased directly after it by 1. Overflows/underflows are defined for
+> *unsigned* types and thus it just jumps back to 0.
 > 
-> As per RFC 4541, snooping switches send query with source address as
-> 0.0.0.0 since port in a L2 switch doesn't have ip-address configured.
-
-Hm, I'm not quite sure whether this is true. Do you have a
-section/paragraph in RFC4541 which says that?
-
-To me, it seems that 0.0.0.0/:: should only be used when the
-topology changes, on links becoming active (the RFC uses the example
-of STP). As a performance optimization but not as the source
-address for General Queries.
-
-In section 2.1.1 1) b) says:
-
-     "The 0.0.0.0 address represents a special case where the switch
-      is proxying IGMP Queries for faster network convergence,
-      but is not itself the Querier."
-
-In section 2.1.1 4) it says:
-
-     "If the switch is not the Querier, it should use the 'all-zeros' IP
-      Source Address in these proxy queries (even though some hosts may
-      elect to not process queries with a 0.0.0.0 IP Source Address)."
-
-(which seems to imply that if a switch is the selected Querier, that
-it should use something other than the 'all-zeros' IP Source
-Address?)
-
-Also, section 2.1.1 4) says:
-
-"[...] even though some hosts may elect to not process queries with a
- 0.0.0.0 IP Source Address"
-
-Which seems to indicate that 0.0.0.0 might be a bad choice to get
-reliable IGMP Reports and might only make sense for performance
-optimizations (at least for IPv4 - for IPv6 it doesn't make sense
-to me to send General Queries with '::' source address at all
-since '::' is ignored by hosts per RFC).
-
-(*)
-
+> Unfortunatelly, it is trying to access the memory for another check before
+> increasing the position again. This check is done on memory outside of the
+> buffer and therefore invalid.
 > 
-> With current changes linux bridge will always select a querier who sends a
-> query message with 0.0.0.0. Right ?
+> Instead doing two check after each other, it is in this situation better to do
+> both at once and just handle the current character.
 > 
-> +       if (ntohl(saddr) <= ntohl(br->ip4_querier.addr.u.ip4))
-> +               goto update;
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-Yes. Which is what the querier election mechanism in the RFCs for
-IGMPv2/IGMPv3 (RFC2236/RFC3376) specifies, I think. (**)
+Hi Sven
 
+Thanks for the patch. I've now tested it. Works fine.
+
+Tested-by: Andrew Lunn <andrew@lunn.ch>
+
+   Andrew
+
+
+> ---
+>  gpsd/alfred-gpsd.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
 > 
-> Currently linux bridge sends a query message with source address as
-> 0.0.0.0. Right ?
-
-For IPv4, this is currently the default, yes. (there's a sysfs switch
-to change that, if desired) (***)
-
+> diff --git a/gpsd/alfred-gpsd.c b/gpsd/alfred-gpsd.c
+> index d6cdfd6..87943bd 100644
+> --- a/gpsd/alfred-gpsd.c
+> +++ b/gpsd/alfred-gpsd.c
+> @@ -315,15 +315,16 @@ static void gpsd_read_gpsd(struct globals *globals)
+>  			return;
+>  		}
+>  
+> -		if (buf[cnt] == '\r')
+> +		switch (buf[cnt]) {
+> +		case '\r':
+>  			cnt--;
+> -
+> -		if (buf[cnt] == '\n') {
+> +			break;
+> +		case '\n':
+>  			eol = true;
+>  			buf[cnt] = '\0';
+>  			break;
+>  		}
+> -	} while (cnt++ < sizeof(buf) - 1);
+> +	} while (cnt++ < sizeof(buf) - 1 && !eol);
+>  
+>  	if (!eol) {
+>  		gps_close(&globals->gpsdata);
+> -- 
+> 2.0.0
 > 
-> What should be the expected behaviour ?
-
-Hm, good question.
-
-Regarding (***): After rereading RFC4541 a few more times, I think
-(*) would be the right choice: The bridge code should probably be
-changed to always use an available, non-zero IPv4 source address
-for General Queries. If none is available it, doesn't make sense
-to me to become the selected Querier at all (should be changed for
-IPv6, too: Currently it refrains from sending Query messages
-then, but thinks a valid querier were in the network, enabling
-the multicast snooping of the bridge).
-
-
-Regarding (**): Now that you're mentioning that, you're right, my
-change isn't quite straightforward in that regard, a few lines
-earlier there is:
-
-> +       if (!br->ip4_querier.addr.u.ip4)
-> +               goto update;
-
-So it would select the all-zeros Querier if it receives such
-messages. But would happily switch to a non-all-zeros Querier as
-well if receiving such messages...
-
-And now, this baffles me, section 2.1.1 4) again:
-
-     "When such proxy queries are received, they must not be included in
-      the Querier election process."
-
-If we were following that, a snooping switch and a true multicast
-router could potentially have an argument about which becomes the
-selected IGMP querier? (for IPv6/MLD this dilemma should not
-exist, I think)
-
-I'm currently unsure, whether we should follow
-RFC2236(IGMPv2)+RFC3376(IGMPv3) or the informational (!) RFC4541.
-
-Or am I overlooking something? What do others think?
-
-Cheers, Linus
