@@ -1,11 +1,13 @@
-Return-Path: <christof.schulze@gmx.net>
-From: Christof Schulze <christof.schulze@gmx.net>
-Date: Mon, 30 Jun 2014 00:41:04 +0200
-Message-ID: <2867594.eVPB0e8mVU@lappi>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 30 Jun 2014 14:08:15 +0800
+Message-ID: <1461028.mFLOuFgffd@diderot>
+In-Reply-To: <2867594.eVPB0e8mVU@lappi>
+References: <2867594.eVPB0e8mVU@lappi>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7152642.nGf3rgOV3u";
+Content-Type: multipart/signed; boundary="nextPart25082369.YSBlmrSiQk";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: [B.A.T.M.A.N.] increasing BATADV_FRAG_MAX_FRAGMENTS
+Subject: Re: [B.A.T.M.A.N.] increasing BATADV_FRAG_MAX_FRAGMENTS
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,42 +19,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, info@ffm.freifunk.net, "d. theisen" <d.theisen@gmx.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: "d. theisen" <d.theisen@gmx.net>, info@ffm.freifunk.net
 
 
---nextPart7152642.nGf3rgOV3u
-Content-Transfer-Encoding: quoted-printable
+--nextPart25082369.YSBlmrSiQk
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-Hello world,
 
-During an experiment it was found, that BATADV_FRAG_MAX_FRAGMENTS=3D16
-allows ~72 clients to be connected to one single access point.
+Hi,
 
-This parameter is defined in batman-adv/main.h [1]
+> During an experiment it was found, that BATADV_FRAG_MAX_FRAGMENTS=16
+> allows ~72 clients to be connected to one single access point.
 
-What negative side-effects should I expect when doubling that value at
-compile-time?
+would you mind sharing some details regarding the experiments you performed ?
+The reason for this question is that there is no 72 client limit we know of 
+(unless fragmentation was disabled).
 
-Christof
+Cheers,
+Marek
 
-[1] http://lxr.free-electrons.com/source/net/batman-adv/main.h#L149
-=2D-=20
-()  ascii ribbon campaign - against html e-mail
-/\  against proprietary attachments
-
---nextPart7152642.nGf3rgOV3u
+--nextPart25082369.YSBlmrSiQk
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Version: GnuPG v2
 
-iEYEABECAAYFAlOwlgEACgkQpZfyPAmdZJnzaQCbB9a+/ytByubv73jNKEEczKOq
-Ql4Anj/EsihrFUUS8EHyx7FdsdtUuYfh
-=4QZT
+iQEcBAABAgAGBQJTsP7QAAoJEFNVTo/uthzAb5gH/2XzWqNVrJjqzsHg7qsk9ZDE
+/CIO1gtDU9LkbbWnAl+KXlqW4NiO282Krko+5vV0wG8e7pL2jXMl5YODKQ48K5W7
+vN3bBNyXALGb0mLqdCPjIZxzi+VIDQXBdJ4NtoDW6ycKcG7XLTDge/PDr5C5XuNZ
+fxLrS+KUh6QsWif2guxUpI1OG9nKGW2kZz7naTtiL1gYSKDaLE54uo1LHFhgEiy6
+BOhZPJ4LttnOoJ2jvnu+6Lre1mKseemnWYL2Ayr4SIO52HE+ymngtTCsTKbuRbHs
+z7UEyAPSI40tPOin8l2AOCXrwNVmlIFhwDgHT2Rgynin4/dafEMRYd452cLOX3U=
+=H7oA
 -----END PGP SIGNATURE-----
 
---nextPart7152642.nGf3rgOV3u--
+--nextPart25082369.YSBlmrSiQk--
 
