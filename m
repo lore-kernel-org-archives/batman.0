@@ -1,10 +1,13 @@
-Return-Path: <locborgtus@gmail.com>
+Return-Path: <linus.luessing@web.de>
+Date: Tue, 1 Jul 2014 10:50:28 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20140701085027.GA2341@Linus-Debian>
+References: <CAHxBzxWTprWsPASmNNGXQqj58LRuAHUkNVtXcWHc1PdoD_4+KA@mail.gmail.com>
 MIME-Version: 1.0
-Date: Mon, 30 Jun 2014 19:22:51 -0700
-Message-ID: <CAHxBzxWTprWsPASmNNGXQqj58LRuAHUkNVtXcWHc1PdoD_4+KA@mail.gmail.com>
-From: Simon Wong <locborgtus@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: [B.A.T.M.A.N.] Roaming issues in basic network
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <CAHxBzxWTprWsPASmNNGXQqj58LRuAHUkNVtXcWHc1PdoD_4+KA@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Roaming issues in basic network
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,43 +19,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi list,
+Hi Simon,
 
-I'm new to batman-adv, and I'm setting up some basic tests to verify
-my use case. I'm running into a roaming issue.
+On Mon, Jun 30, 2014 at 07:22:51PM -0700, Simon Wong wrote:
+> Let there be 2 wifi clients, client 1 and 2. Initially, both clients
+> are wirelessly attached to node A. Client 2 can ping 1 and the nodes.
+> Client 2 can also Telnet into node A and B, so all is fine.
+> 
+> I take client 2 and roam to node B. Client 2 can no longer ping client
+> 1 and that is the issue.
 
-Consider a basic 2 node network running batman-adv 2014.2 with default
-settings on OpenWRT AA. Let the routing nodes be A and B. Each node
-has 2 wireless interfaces. wlan0 is for the mesh, and wlan0 is AP. The
-interfaces are bridged per the batman start guide.
+At the Wireless Battle Mesh a few months ago we've been discussing
+just such a (until now?) hypothetical problem. Maybe it applies here,
+maybe it doesn't:
 
-Let there be 2 wifi clients, client 1 and 2. Initially, both clients
-are wirelessly attached to node A. Client 2 can ping 1 and the nodes.
-Client 2 can also Telnet into node A and B, so all is fine.
+It could be a problem with a not yet updated MAC address table in
+the bridge, therefore the bridge on node A not forwarding ICMP
+requests from client 1 towards client 2.
 
-I take client 2 and roam to node B. Client 2 can no longer ping client
-1 and that is the issue.
+Questions: Are your clients using IPv4, IPv6 or both? Are your
+clients issuing gratuitous ARP replies or ICMPv6 unsolicited
+Neighbor Advertisements upon roaming? Is this a permanent problem
+or are clients 1 and 2 able to reach each other again after a
+while? In your tests, did client 1 ping client 2 or the other way
+round?
 
-If 2 roamed back to A, pings to 1 is good again. A few more
-observations while pings are no good:
+What you could try to check whether it is a problem with the
+learning of the bridge is transforming them to stupid hubs on node
+A and node B:
 
-1) Client 2 can ping the nodes and the Telnet sessions to the nodes are fine.
-2) Node B local translation table says 2 is at B, node A local
-translation table says 1 is at A. So the local translation tables
-check out.
-3) Both nodes A and B can ping client 1, so client 1 is still up.
-4) Running 'batctl td wlan1' on node 1 shows ICMP requests and
-replies, but 'batctl td bat0' shows only requests. So client 1 is
-getting the ICMP packets and is responding.
-5) If I ran 'iw wlan1 station del <client 2 mac>' on node 1, pings
-will work again.
+$ brctl setageing br0 0
 
-It almost looks like the wifi driver (ath5k) is blocking data for
-roamed clients that was once attached to it. So this issue might not
-be a batman but a driver thing. Has anyone ran into this problem?
 
-Thanks,
-
-Simon
+Cheers, Linus
