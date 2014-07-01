@@ -1,15 +1,14 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <53B29AFF.2070405@meshcoding.com>
-Date: Tue, 01 Jul 2014 13:26:55 +0200
-From: Antonio Quartulli <antonio@meshcoding.com>
+Return-Path: <ff@jluehr.de>
+Message-ID: <53B2A8CF.60202@jluehr.de>
+Date: Tue, 01 Jul 2014 14:25:51 +0200
+From: =?UTF-8?B?SmFuIEzDvGhy?= <ff@jluehr.de>
 MIME-Version: 1.0
-References: <CAHxBzxWTprWsPASmNNGXQqj58LRuAHUkNVtXcWHc1PdoD_4+KA@mail.gmail.com>
- <20140701085027.GA2341@Linus-Debian>
-In-Reply-To: <20140701085027.GA2341@Linus-Debian>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="2EfFLXSvoaN9VVapKHu3XJ4iqjFO25bvQ"
-Subject: Re: [B.A.T.M.A.N.] Roaming issues in basic network
+References: <1543341.WcWe2c7VXj@lappi>
+ <20140701112142.3c8ab7cd16f81b51da706026@gmx.net>
+In-Reply-To: <20140701112142.3c8ab7cd16f81b51da706026@gmx.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] Fwd: Re:  increasing BATADV_FRAG_MAX_FRAGMENTS
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,76 +20,71 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: locborgtus@gmail.com, =?UTF-8?B?TGludXMgTMO8c3Npbmc=?= <linus.luessing@web.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: =?UTF-8?B?IkFsbGdlbWVpbmUgTWFpbGluZ2xpc3RlIHp1bSBGcmVpZnVuayBLw7Zsbiwg?= =?UTF-8?B?Qm9ubiB1bmQgVW1nZWJ1bmci?= <freifunk-bonn@lists.bonn.freifunk.net>, firmware-devel@freifunk.net
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---2EfFLXSvoaN9VVapKHu3XJ4iqjFO25bvQ
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hello,
 
 
+Am 07/01/2014 11:21 AM, schrieb elektra:
+> Hi –
+> 
+>>>> During an experiment it was found, that
+>>>> BATADV_FRAG_MAX_FRAGMENTS=16 allows ~72 clients to be connected to
+>>>> one single access point.
+>>> would you mind sharing some details regarding the experiments you
+>>> performed ?  The reason for this question is that there is no 72
+>>> client limit we know of (unless fragmentation was disabled).
+>
+> you are very likely looking in the wrong direction. The number of clients allowed to connect to an AP is configurable and 72 is already way beyond what I would consider useful in real life – if your clients are actually supposed to be able to communicate unicast traffic.
+> 
+> Since you are probably using OpenWRT for your tests, look at the configuration parameter maxassoc: http://wiki.openwrt.org/doc/uci/wireless
+> 
+> I don't know the default that OpenWRT uses if you don't set it explicitly. But there is a default limit set somewhere (take a look at hostapd.conf) and you might have discovered that by pushing it to the limit. It might as well be the limitation of your WiFi driver / hardware, though.
 
-On 01/07/14 10:50, Linus L=C3=BCssing wrote:
-> It could be a problem with a not yet updated MAC address table in
-> the bridge, therefore the bridge on node A not forwarding ICMP
-> requests from client 1 towards client 2.
->=20
+After a lively discussion on irc, I'd like to finalize this thread. To
+summarize, where we are so far:
 
-Hey Linus,
+-> batman-adv is not restricted to 72 clients. Pre-2014 versions (which
+have been used here), support > 200 non-clients in their tt-table.
 
-I agree that the problem is probably in the bridge, but how can it be an
-inconsistency in the table given that the bridge is receiving the Echo
-requests from client 2 through bat0?
+-> Initially posted by g3ntleman on the Freifunk-KBU mailinglist, an
+observation (why can we handle 72 clients), became a rumor (there might
+be a limit in batman-adv), became a fact (we observed a limit in
+batman-adv) - without any support.
 
-Shouldn't this immediately update the bridge table to reflect the client
-movement (client2 --is-behind--> bat0)?
+-> G3ntlemans setup was not meant to be in experiment in a sane setting.
+It was an emergency fix for a broken down conference wifi. Which -
+nevertheless - showed some interesting findings. I hope, that we can
+document this for future reference, but the relevance of the findings in
+general is probably rather poor.
 
+-> The aftermath of the discovery was motivated by the idea of running
+an experiment at this year's FrOSCon. If you like to join us here,
+you're welcome :-).
 
-@Simon: are you sure that the client is not associated anymore with node
-A at that moment (maybe it was jumping here and there)? You said that
-you can fix situation this by deleting the station entry, but is this
-station entry obsolete at that point? (meaning: is the inactivity time
-high? - you can see this through the "iw dev wlan0 station get <client2
-mac>" command before deleting it)
-If not, it can be that something wrong is happening at the wifi layer
-and given the driver you are using (ath5k) it would not be totally
-unexpected.
+-> It's still unclear, what we observed in detail and we'll probably
+never know for sure. The reason is simple: No measurements / logs were
+taken and we cannot reproduce the setting.
 
-I am asking this because I expect the station to disappear immediately
-in case of roaming (the client usually deauthenticates itself before
-associating with the new AP). Still, we can have cases when this does
-not happen, but the AP should be able to react properly.
+-> To emphasis this: It's neither evident nor even probable that any
+property of batman-adv is a bottleneck in this scenario.
 
+-> The used setup was not meant to be suitable for a conference wifi or
+even high density wifi coverage. It suffers from obvious design flaws.
+G3ntlemen just remembered having his box with him, the moment the
+conference wifi was down. There was not a single thought spent on
+scaling issues here.
 
-Cheers,
+-> I don't know, if 72 clients on a single wifi channel is sane or not (
+Ubiquity claims, that the can handle 100) - and - if pre 802.11n
+experiences (aka gut feelings) are applicable. However, getting a gut
+feeling is the idea for this year's FrOSCon. Thus: Join, if you're
+interested.
 
---=20
-Antonio Quartulli
+I'd like to excuse for all anger, frustration or hassle generated by
+this discussion, and, I'd like to thank marec and ordex for their
+helpful comments. Keep calm, carry one and thanks for your commitment to
+batman-adv.
 
-
---2EfFLXSvoaN9VVapKHu3XJ4iqjFO25bvQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBCAAGBQJTspsDAAoJEJgn97Bh2u9elcoP/RzcsBtmG8W49S2G7hWGdgJZ
-p1Q4ZBogWOUtFqAVxmY5SyKE0oh197zNQLvke9pMG/c68BymzxQna1j5L84vmqgn
-T/gPMav8ivSzbGuXWkYVrzSGcc3aC3wwO/oE93d7su4TtSBdyWP8WIhWrL4xNpMo
-VfX60/fVkiTQCPHfCqS2uEgbFOTTLFbRH+IMbNo1AJ8+ms6u/EUatknCHGV7m0sm
-KC/YrnQp5iPn+UFpg54cOCD/f2fPskg/Js/VX4NYLf51428HK5SxwvKWVIIELNyJ
-OT/7Yp8L6HWwv9SNfDhKCwGa5cI7QYYi9YPA75FdvbkEvDa8GnJiN2gGsF5dBxqR
-K/7/Nwi4UgedDwF1nS7XXJapTYn0vwiDRKktQOm/f0wLeSaRCgTunO1QH6ceiv4V
-CI0whHu2LOWeQN1uh2QWLM5FqqSjdFqLXogMrKkMAPIelvkAhkBbBDpqKpfC8P4M
-g6mtyM4ZGuw7rpQ+G3wOm+xKa7Jg4jPDZBZ/14YyJYqXPNrZ9t1pzWgmktuIDDx3
-+cCdRVaUkxjxHwOeQbV3Z95n2vplDjxHR4v606gjGzn1EjOivu1Ortl+3wQ5m4Dm
-neyLqPYJehozvsThWe7q1UDuk8v5ulYWqrhbmEVcaxgvD1c5Uiypvsjs/j/5jxyd
-8yy+BNYqULlG9aMB/wb1
-=RbfD
------END PGP SIGNATURE-----
-
---2EfFLXSvoaN9VVapKHu3XJ4iqjFO25bvQ--
+Greetz, Jan
