@@ -1,10 +1,12 @@
-Return-Path: <daniel@makrotopia.org>
-Date: Tue, 01 Jul 2014 01:52:27 +0200
-From: Daniel <daniel@makrotopia.org>
+Return-Path: <gui@altermundi.net>
+Message-ID: <53B20803.6010005@altermundi.net>
+Date: Mon, 30 Jun 2014 21:59:47 -0300
+From: Gui Iribarren <gui@altermundi.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Message-Id: <E1X1lN3-00041p-KL@fudo.makrotopia.org>
+References: <E1X1lN3-00041p-KL@fudo.makrotopia.org>
+In-Reply-To: <E1X1lN3-00041p-KL@fudo.makrotopia.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Subject: Re: [B.A.T.M.A.N.] Need a recommendation for a USB wifi dongle that
  is known to work with batman.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,27 +20,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: cmsv <cmsv@wirelesspt.net>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-aGkKCk9uIEp1biAzMCwgMjAxNCAxMTo0NSBQTSwgY21zdiA8Y21zdkB3aXJlbGVzc3B0Lm5ldD4g
-d3JvdGU6Cj4KPiBUcC1MaW5rIFRMLVdOIDcyMiBOIHdvcmtzIGJ1dCBoYXMgbm90aGluZyB0byBk
-byB3aXRoIGJhdG1hbi1hZHYuIFRoZSAKPiBzdXBwb3J0IGNvbWVzIGZyb20gb3BlbndydCBvciB3
-aGF0ZXZlciBsaW51eCBkaXN0cm8gb25lIHdhbnRzIHRvIHVzZS4KCi4uLndpdGggdXAgdG8gNyBh
-ZC1ob2MgcGVlcnMgb3IgYXAgY2xpZW50cyBhc3NvY2lhdGVkIGFuZCBubyBtb3JlLCBkdWUgdG8g
-ZmlybXdhcmUgbGltaXRhdGlvbnMgb2YgdGhlIGF0aDlrX2h0YyBjaGlwc2V0Li4uIGFuZCB5ZXMs
-IHRoaXMgYXBwbGllcyB0byBhbGwgYXRoOWtfaHRjLWJhc2VkIGRvbmdsZXMuIHNvcnJ5IHRvIG5h
-bWUgYSBjaGlwc2V0IGFuZCBub3QgYSBwcm9kdWN0IG5hbWUsIGJ1dCBpIGdvdCBubyBpZGVhIHdo
-YXQgcHJvZHVjdHMgYXJlIGF2YWlsYWJsZSBpbiB0aGUgbWFya2V0cyBhcm91bmQgeW91LiBpJ2Qg
-Z28gd2l0aCBzb21ldGhpbmcgY29udGFpbmluZyBydDI4MDB1c2IgaWYgaXQgcmVhbGx5IGdvdCB0
-byBiZSB1c2Igd2lmaSAod2hpY2ggZ2VuZXJhbGx5IHNob3VsZCBiZSBhdm9pZGVkIGltaG8pLiBw
-ZXJmb3JtYW5jZSBpcyBub3QgZ3JlYXQsIGJ1dCBhdCBsZWFzdCBpdCB3b3Jrcy4KCj4KPiBPbiAw
-Ni8zMC8yMDE0IDA1OjE3IFBNLCBkYXZpZC5tb2ZmYXR0QG5va2lhLmNvbSB3cm90ZTogCj4gPiAK
-PiA+IEhJIGFsbCwgCj4gPiAKPiA+IElmIGFueW9uZSBpcyB1c2luZyBiYXRtYW4gd2l0aCBhIFVT
-QiB3aWZpIGRvbmdsZSBjb3VsZCB5b3UgcG9zdCB0aGUgbmFtZSAKPiA+IG9mIHRoZSBkb25nbGUg
-eW91IGFyZSB1c2luZz8gCj4gPiBJZiBpdCByZXF1aXJlZCBhIHNwZWNpYWwgZHJpdmVyIG9yIGZp
-cm13YXJlIHBsZWFzZSBsZXQgbWUga25vdyB3aGVyZSB5b3UgCj4gPiBnb3QgaXQuIAo+ID4gQWxz
-byBwbGVhc2UgZ2l2ZSBkb25nbGVzIG5hbWVzIG5vdCBjaGlwc2V0cyBhcyBpdCBpcyBoYXJkIHRv
-IGtub3cgd2hhdCAKPiA+IGNoaXBzZXQgaXMgaW4gd2hhdCBkb25nbGVzLiAKPiA+IAo+ID4g4oC5
-VGhhbmsgaW4gYWR2YW5jZS4gCj4gPiAKPiA+IERhdmlkLiAKPiA+IAo+ID4gCg==
+On 30/06/14 20:52, Daniel wrote:
+> hi
+> 
+> On Jun 30, 2014 11:45 PM, cmsv <cmsv@wirelesspt.net> wrote:
+>>
+>> Tp-Link TL-WN 722 N works but has nothing to do with batman-adv. The 
+>> support comes from openwrt or whatever linux distro one wants to use.
+> 
+> ...with up to 7 ad-hoc peers or ap clients associated and no more, due to firmware limitations of the ath9k_htc chipset... and yes, this applies to all ath9k_htc-based dongles. sorry to name a chipset and not a product name, but i got no idea what products are available in the markets around you. i'd go with something containing rt2800usb if it really got to be usb wifi (which generally should be avoided imho). performance is not great, but at least it works.
+> 
 
++1, we had mild success with those dongles (tl-wn722n = ath9k_htc),
+since the limitations don't become apparent in small meshes (~5 nodes)
+but abandoned them in favour of multiband routers (tl-wdr3500) which use
+ath9k on both radios, which is a lot more stable and doesn't have such
+7-peers limitation.
+
+based on our first-hand experience (we even bought a lot of 20 at some
+point), i'd advise against trying to use ath9k_htc USB dongles for
+meshing :(
+
+cheers!
+
+
+>>
+>> On 06/30/2014 05:17 PM, david.moffatt@nokia.com wrote: 
+>>>
+>>> HI all, 
+>>>
+>>> If anyone is using batman with a USB wifi dongle could you post the name 
+>>> of the dongle you are using? 
+>>> If it required a special driver or firmware please let me know where you 
+>>> got it. 
+>>> Also please give dongles names not chipsets as it is hard to know what 
+>>> chipset is in what dongles. 
+>>>
+>>> ‹Thank in advance. 
+>>>
+>>> David. 
+>>>
+>>>
