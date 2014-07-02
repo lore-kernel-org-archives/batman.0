@@ -1,14 +1,15 @@
-Return-Path: <ff@jluehr.de>
-Message-ID: <53B2A8CF.60202@jluehr.de>
-Date: Tue, 01 Jul 2014 14:25:51 +0200
-From: =?UTF-8?B?SmFuIEzDvGhy?= <ff@jluehr.de>
+Return-Path: <locborgtus@gmail.com>
 MIME-Version: 1.0
-References: <1543341.WcWe2c7VXj@lappi>
- <20140701112142.3c8ab7cd16f81b51da706026@gmx.net>
-In-Reply-To: <20140701112142.3c8ab7cd16f81b51da706026@gmx.net>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] Fwd: Re:  increasing BATADV_FRAG_MAX_FRAGMENTS
+In-Reply-To: <53B29AFF.2070405@meshcoding.com>
+References: <CAHxBzxWTprWsPASmNNGXQqj58LRuAHUkNVtXcWHc1PdoD_4+KA@mail.gmail.com>
+ <20140701085027.GA2341@Linus-Debian>
+ <53B29AFF.2070405@meshcoding.com>
+Date: Tue, 1 Jul 2014 18:24:02 -0700
+Message-ID: <CAHxBzxW7PCytsQKk-RyuaXVkAz4oqEJGvJE-HFBh=sn56UQP-g@mail.gmail.com>
+From: Simon Wong <locborgtus@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] Roaming issues in basic network
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,71 +21,104 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: =?UTF-8?B?IkFsbGdlbWVpbmUgTWFpbGluZ2xpc3RlIHp1bSBGcmVpZnVuayBLw7Zsbiwg?= =?UTF-8?B?Qm9ubiB1bmQgVW1nZWJ1bmci?= <freifunk-bonn@lists.bonn.freifunk.net>, firmware-devel@freifunk.net
+To: Antonio Quartulli <antonio@meshcoding.com>
+Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello,
+A few more observations:
 
+- Client 1 is a Win 7 machine, and Client 2 I have tried a Win 7 and
+OSX machine. In both cases the behavior is repeatable.
 
-Am 07/01/2014 11:21 AM, schrieb elektra:
-> Hi –
-> 
->>>> During an experiment it was found, that
->>>> BATADV_FRAG_MAX_FRAGMENTS=16 allows ~72 clients to be connected to
->>>> one single access point.
->>> would you mind sharing some details regarding the experiments you
->>> performed ?  The reason for this question is that there is no 72
->>> client limit we know of (unless fragmentation was disabled).
+- All clients are on IPv4 only.
+
+- I ran a Wireshark cap on the roaming client - no gratuitous ARP
+replies seen during the roam
+
+- Client 2 is doing the pinging to Client 1
+
+- The problem is permanent, and can be fixed by one of the below:
+  - Manually delete the roaming client via 'iw station del'
+  - Restart node A network stack (/etc/init.d/network restart), but
+which client attaches to which AP is not deterministic.
+  - Client 2 roams back to A
+
+- I tried 'brctl setaging 0' on node A's bridge, that didn't affect the beh=
+avior
+
+- Running 'iw station get' on the 2 nodes during the problem yields
+some interesting results. On both nodes, the inactive time resets to 0
+while the ping is running. If I stopped the ping, the inactive time on
+both nodes will rise as expected.
+
+- Even more strange with 'iw station get' during the problem:
+interacting with the Telnet connection from Client 2 to Node A will
+also reset the inactive time count for Client 2, and this is while
+Client 2 is roamed to node B. On node A, only the tx {bytes, packets}
+counters will increase. rx counts do not. On node B, the tx/rx counts
+increase as expected.
+
+- I am in a relatively small area, so even if Client 2 roamed to B, it
+is still within RF range of both nodes.
+
+I mentioned before that both nodes' local translation tables were
+accurate after the roam. I also mentioned that doing a 'iw station
+del' will fix the problem. So, I took advantage of this and wrote a
+quick hack script to verify. The pseudo code is as follows:
+
+while true
+  run batctl tl and get current local client list
+  compare current local client list with the last client list
+  if (old list has clients that the new list doesn't have)
+    run iw station del for those clients
+  save current list to last client list
+  sleep
+done
+
+Terrible hack, but I was able to roam successfully while this script is run=
+ning.
+
+Thanks,
+
+- Simon
+
+On Tue, Jul 1, 2014 at 4:26 AM, Antonio Quartulli
+<antonio@meshcoding.com> wrote:
 >
-> you are very likely looking in the wrong direction. The number of clients allowed to connect to an AP is configurable and 72 is already way beyond what I would consider useful in real life – if your clients are actually supposed to be able to communicate unicast traffic.
-> 
-> Since you are probably using OpenWRT for your tests, look at the configuration parameter maxassoc: http://wiki.openwrt.org/doc/uci/wireless
-> 
-> I don't know the default that OpenWRT uses if you don't set it explicitly. But there is a default limit set somewhere (take a look at hostapd.conf) and you might have discovered that by pushing it to the limit. It might as well be the limitation of your WiFi driver / hardware, though.
-
-After a lively discussion on irc, I'd like to finalize this thread. To
-summarize, where we are so far:
-
--> batman-adv is not restricted to 72 clients. Pre-2014 versions (which
-have been used here), support > 200 non-clients in their tt-table.
-
--> Initially posted by g3ntleman on the Freifunk-KBU mailinglist, an
-observation (why can we handle 72 clients), became a rumor (there might
-be a limit in batman-adv), became a fact (we observed a limit in
-batman-adv) - without any support.
-
--> G3ntlemans setup was not meant to be in experiment in a sane setting.
-It was an emergency fix for a broken down conference wifi. Which -
-nevertheless - showed some interesting findings. I hope, that we can
-document this for future reference, but the relevance of the findings in
-general is probably rather poor.
-
--> The aftermath of the discovery was motivated by the idea of running
-an experiment at this year's FrOSCon. If you like to join us here,
-you're welcome :-).
-
--> It's still unclear, what we observed in detail and we'll probably
-never know for sure. The reason is simple: No measurements / logs were
-taken and we cannot reproduce the setting.
-
--> To emphasis this: It's neither evident nor even probable that any
-property of batman-adv is a bottleneck in this scenario.
-
--> The used setup was not meant to be suitable for a conference wifi or
-even high density wifi coverage. It suffers from obvious design flaws.
-G3ntlemen just remembered having his box with him, the moment the
-conference wifi was down. There was not a single thought spent on
-scaling issues here.
-
--> I don't know, if 72 clients on a single wifi channel is sane or not (
-Ubiquity claims, that the can handle 100) - and - if pre 802.11n
-experiences (aka gut feelings) are applicable. However, getting a gut
-feeling is the idea for this year's FrOSCon. Thus: Join, if you're
-interested.
-
-I'd like to excuse for all anger, frustration or hassle generated by
-this discussion, and, I'd like to thank marec and ordex for their
-helpful comments. Keep calm, carry one and thanks for your commitment to
-batman-adv.
-
-Greetz, Jan
+>
+> On 01/07/14 10:50, Linus L=C3=BCssing wrote:
+>> It could be a problem with a not yet updated MAC address table in
+>> the bridge, therefore the bridge on node A not forwarding ICMP
+>> requests from client 1 towards client 2.
+>>
+>
+> Hey Linus,
+>
+> I agree that the problem is probably in the bridge, but how can it be an
+> inconsistency in the table given that the bridge is receiving the Echo
+> requests from client 2 through bat0?
+>
+> Shouldn't this immediately update the bridge table to reflect the client
+> movement (client2 --is-behind--> bat0)?
+>
+>
+> @Simon: are you sure that the client is not associated anymore with node
+> A at that moment (maybe it was jumping here and there)? You said that
+> you can fix situation this by deleting the station entry, but is this
+> station entry obsolete at that point? (meaning: is the inactivity time
+> high? - you can see this through the "iw dev wlan0 station get <client2
+> mac>" command before deleting it)
+> If not, it can be that something wrong is happening at the wifi layer
+> and given the driver you are using (ath5k) it would not be totally
+> unexpected.
+>
+> I am asking this because I expect the station to disappear immediately
+> in case of roaming (the client usually deauthenticates itself before
+> associating with the new AP). Still, we can have cases when this does
+> not happen, but the AP should be able to react properly.
+>
+>
+> Cheers,
+>
+> --
+> Antonio Quartulli
+>
