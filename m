@@ -1,14 +1,16 @@
-Return-Path: <christof.schulze@gmx.net>
-From: Christof Schulze <christof.schulze@gmx.net>
-Date: Wed, 02 Jul 2014 19:25:59 +0200
-Message-ID: <2115088.IOMlxmsL1n@lappi>
-In-Reply-To: <20140701112142.3c8ab7cd16f81b51da706026@gmx.net>
-References: <1543341.WcWe2c7VXj@lappi>
- <20140701112142.3c8ab7cd16f81b51da706026@gmx.net>
+Return-Path: <locborgtus@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1637633.c0v29X6icj";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Fwd: Re:  increasing BATADV_FRAG_MAX_FRAGMENTS
+In-Reply-To: <53B3A519.6000400@meshcoding.com>
+References: <CAHxBzxWTprWsPASmNNGXQqj58LRuAHUkNVtXcWHc1PdoD_4+KA@mail.gmail.com>
+ <20140701085027.GA2341@Linus-Debian>
+ <53B29AFF.2070405@meshcoding.com>
+ <CAHxBzxW7PCytsQKk-RyuaXVkAz4oqEJGvJE-HFBh=sn56UQP-g@mail.gmail.com>
+ <53B39F7D.6050001@meshcoding.com> <53B3A519.6000400@meshcoding.com>
+Date: Fri, 4 Jul 2014 00:36:09 -0700
+Message-ID: <CAHxBzxU-Ly7f3avbANrDw-WJ3dxh4TdW78f1qX+zmpoTg0wu3g@mail.gmail.com>
+From: Simon Wong <locborgtus@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] Roaming issues in basic network
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,77 +22,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: elektra <onelektra@gmx.net>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+
+Antonio,
+
+I haven't tried monitoring for deauths yet, but I have tried another
+device for the AP interface (a USB stick using ath9k_htc, on wlan2). I
+am able to repeat the same inter-AP roaming problem.
+
+I was thinking this could have been a problem with the ath5k drivers,
+but that seems less likely.
+
+Another observation:
+Let's say I'm roaming client 2 is attached to node A. I am monitoring
+client 2 on node A via `iw wlan1 station dump`. If I turned off client
+2 WiFi or switched SSID, client 2 disappears from the station list as
+expected - a deauth probably got sent. I am guessing roaming might not
+trigger a deauth on the client. In any case, we can't count on deauth
+being received anyways.
+
+Hypothesis:
+It seems as if the wireless driver/hardware has an internal forwarding
+rule. If the AP interface thinks it's got the client, it'll forward
+data internally to it and batman never sees the data and thus can't
+route it. But since the roam happened and another node has picked up
+the roaming client, translation tables updates are still triggered and
+states are still synchronized.
+
+What do you think?
+
+Thanks,
+- Simon
 
 
---nextPart1637633.c0v29X6icj
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
-
-Hi=20
-
-> > During an experiment it was found, that
-> > BATADV_FRAG_MAX_FRAGMENTS=3D16 allows ~72 clients to be connected t=
-o
-> > one single access point.
-
-> > would you mind sharing some details regarding the experiments you
-> > performed ?  The reason for this question is that there is no 72
-> > client limit we know of (unless fragmentation was disabled).
-
-> you are very likely looking in the wrong direction. The number of
-> clients allowed to connect to an AP is configurable and 72 is
-> already way beyond what I would consider useful in real life =E2=80=93=
- if
-> your clients are actually supposed to be able to communicate unicast
-> traffic.
-
-> Since you are probably using OpenWRT for your tests, look at the
-> configuration parameter maxassoc:
-> http://wiki.openwrt.org/doc/uci/wireless
-
-> I don't know the default that OpenWRT uses if you don't set it
-> explicitly.  But there is a default limit set somewhere (take a look
-> at hostapd.conf) and you might have discovered that by pushing it to
-> the limit. It might as well be the limitation of your WiFi driver /
-> hardware, though.
-Thank you for your response.
-
-maybe it is indeed a little far-fetched to point at batman at first.
-On the other hand - the investigation has to start somewhere.
-
-From=20your feedback and from feedback on IRC I gathered the following
-list of possible issues and things to look at:
-* there might be an issue with not enough multicast-traffic being
-  allowed - hypothesis: The client could associate with the AP but
-  no IP was received.=20
-* the bandwidth of the air (airtime) might be saturated.=20
-* There might be a driver issue
-
-If it is known that no more than 70 clients per device is sensible,
-then we have to consider actually setting some limits and using
-maxassoc.
-
-Christof
-
-
-=2D-=20
-()  ascii ribbon campaign - against html e-mail
-/\  against proprietary attachments
-
---nextPart1637633.c0v29X6icj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iEYEABECAAYFAlO0QKsACgkQpZfyPAmdZJmIlACg+T0xab9riuatGSFN5ohWZvg9
-AAkAoKuzFSFDhl0yDCPiYaNnP7WYqfPp
-=xJoO
------END PGP SIGNATURE-----
-
---nextPart1637633.c0v29X6icj--
-
+On Tue, Jul 1, 2014 at 11:22 PM, Antonio Quartulli
+<antonio@meshcoding.com> wrote:
+>
+>
+> On 02/07/14 07:58, Antonio Quartulli wrote:
+>> Simon,
+>>
+>> On 02/07/14 03:24, Simon Wong wrote:
+>>>
+>>> - Even more strange with 'iw station get' during the problem:
+>>> interacting with the Telnet connection from Client 2 to Node A will
+>>> also reset the inactive time count for Client 2, and this is while
+>>> Client 2 is roamed to node B. On node A, only the tx {bytes, packets}
+>>> counters will increase. rx counts do not. On node B, the tx/rx counts
+>>> increase as expected.
+>>
+>>
+>> very stupid question: but the two nodes have different MAC addresses for
+>> wlan1, right ?
+>
+> ehm, here I meant wlan0 (the AP interface where client connect to).
+>
+> --
+> Antonio Quartulli
+>
