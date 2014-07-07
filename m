@@ -1,18 +1,12 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <53B66226.7030304@meshcoding.com>
-Date: Fri, 04 Jul 2014 10:13:26 +0200
-From: Antonio Quartulli <antonio@meshcoding.com>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Mon,  7 Jul 2014 05:41:15 +0200
+Message-Id: <1404704477-19448-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-References: <CAHxBzxWTprWsPASmNNGXQqj58LRuAHUkNVtXcWHc1PdoD_4+KA@mail.gmail.com>
- <20140701085027.GA2341@Linus-Debian> <53B29AFF.2070405@meshcoding.com>
- <CAHxBzxW7PCytsQKk-RyuaXVkAz4oqEJGvJE-HFBh=sn56UQP-g@mail.gmail.com>
- <53B39F7D.6050001@meshcoding.com> <53B3A519.6000400@meshcoding.com>
- <CAHxBzxU-Ly7f3avbANrDw-WJ3dxh4TdW78f1qX+zmpoTg0wu3g@mail.gmail.com>
-In-Reply-To: <CAHxBzxU-Ly7f3avbANrDw-WJ3dxh4TdW78f1qX+zmpoTg0wu3g@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="H30im264oCqH26JHM3Es2ru55vX8NNoT4"
-Subject: Re: [B.A.T.M.A.N.] Roaming issues in basic network
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH net-next 0/4] bridge: multicast snooping
+	exports #2
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,89 +18,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wong <locborgtus@gmail.com>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: netdev@vger.kernel.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Stephen Hemminger <stephen@networkplumber.org>, "David S. Miller" <davem@davemloft.net>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---H30im264oCqH26JHM3Es2ru55vX8NNoT4
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Simon,
+Some people pointed out to me that it might be helpful to add stubs for
+the newly added multicast exports. That way e.g. batman-adv should continue
+to be compile and useable without having to have a kernel compiled
+with bridge code in the future. This is what the first patch is supposed
+to do.
 
-On 04/07/14 09:36, Simon Wong wrote:
-> I am guessing roaming might not
-> trigger a deauth on the client.=20
-
-at least a disassoc should be sent.
-
-> In any case, we can't count on deauth
-> being received anyways.
-
-of course, but we should rely on the layer below being working consistent=
-ly.
-
->=20
-> Hypothesis:
-> It seems as if the wireless driver/hardware has an internal forwarding
-> rule. If the AP interface thinks it's got the client, it'll forward
-> data internally to it and batman never sees the data and thus can't
-> route it.=20
-
-this is exactly how AP mode is supposed to work: if source and
-destination are connected to the same interface unicast traffic will not
-be delivered to the upper layer but will directly be forwarded to the
-destination.
-
-> But since the roam happened and another node has picked up
-> the roaming client, translation tables updates are still triggered and
-> states are still synchronized.
->=20
-> What do you think?
->=20
-
-Looks like there is a problem at the wifi layer. batman-adv here is only
-playing the role of a generic Distribution System. The current behaviour
-would break any other backbone that you would have instead of
-batman-adv. The inactivity time getting reset when the client is
-connected to another AP is definitely a bogus behaviour and points
-towards a wifi problem.
+The second patch adds a third multicast export for the bridge which
+e.g. batman-adv is supposed to use, too, soon: Just like the bridge
+disables its multicast snooping activities if no querier is present,
+batman-adv needs to do the same if bridges are involved.
 
 
-At this point I would suggest you to involve the linux-wireless guys
-(they also have their own mailing list) and to try describing the
-problem to them. What I can say here is that batman-adv seems to be
-unrelated..
+These three exports should be the final ones needed to marry the bridge
+multicast snooping with the batman-adv multicast optimizations recently
+added for the 3.15 kernel, allowing to use these optimzations in common
+setups having a bridge on top of e.g. bat0, too. So far these bridged
+setups would fall back to simple flooding through the batman-adv mesh
+network for any multicast packet entering bat0.
 
-Cheers,
+More information about the batman-adv multicast optimizations currently
+implemented can be found here:
 
+http://www.open-mesh.org/projects/batman-adv/wiki/Basic-multicast-optimizations
 
---=20
-Antonio Quartulli
+The integration on the batman-adv side could afterwards look like this,
+for instance (now including the third export):
 
+http://git.open-mesh.org/batman-adv.git/commitdiff/61e4f6af4b7a21ed4040f2e711d50c778e5b6d93?hp=6ae4281474675fbca5bedcf768972a32db586eb6
 
---H30im264oCqH26JHM3Es2ru55vX8NNoT4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Cheers, Linus
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBCAAGBQJTtmI0AAoJEJgn97Bh2u9e9uAQAI7oSkQlkbS8CnF0rqiVt+OB
-IBpF6rez8iy70rdmv4sKk8cb7Tzg0DdZCCfRnJfjQFrh1tEq535Slq4wC6IoUQzM
-AR6qmfH/jZUWKMAIdIon6NJzPyG+P60JG5PuZvuAtktmdSU3VndwdRklAgZgpW56
-wUlUi3q0cCTJNRcFUZC8ErxJ1sWMw+1bpTYe/qbPbNUjwFAUd+bAzsMQTCXNKzyh
-p/5YF28Xb03UiJs+uhvHqdHOcn/+BUfQNDPFz/ikZLMwWI13BE2q8oUj9R29KihA
-FCJ7qF3ZV+JMCrphbC2KhKhoUwq84C0MLp8yHclt1x/w7iDOTBjGRwDSaDsAloJf
-bx/SxmtRIMqgjLMuh2dB4Z+AjCwVMqkUHbqUqRsdv04kBTEXj2QNg7WB/Bmk7syy
-GjiCo2fvg084Sh0/zJw2htWEtlDHj+jhMfXII3QDZLFpGxr6ZlL8KPkn9oVCz9bZ
-vPdtzxPTpikKuM+DEzvOkK26cC/nM7A+SpK6s9tV7dEO61JLjSYL0m2nE9QvbTSS
-OixJKswY996NAkeYijmqFLQqTjLNH0HihgPncKzdii47+643iEjCj6KXR7gqwj83
-gvCDi5du2MMzYQVIRsPy2tPienAMBd6DNQEg+yOR44loPrb2DRoT6X+ywVclhhQO
-gh8uoeagpQ6vuT1j0oB5
-=KRDr
------END PGP SIGNATURE-----
-
---H30im264oCqH26JHM3Es2ru55vX8NNoT4--
