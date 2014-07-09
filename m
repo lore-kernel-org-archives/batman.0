@@ -1,14 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Date: Tue, 08 Jul 2014 16:13:41 -0700 (PDT)
-Message-Id: <20140708.161341.103939871003850198.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1404704477-19448-1-git-send-email-linus.luessing@web.de>
-References: <1404704477-19448-1-git-send-email-linus.luessing@web.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] [PATCH net-next 0/4] bridge: multicast snooping
-	exports #2
+Return-Path: <linus.luessing@web.de>
+Date: Wed, 9 Jul 2014 03:17:55 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20140709011755.GT2675@Linus-Debian>
+References: <1404708673-20135-1-git-send-email-linus.luessing@web.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1404708673-20135-1-git-send-email-linus.luessing@web.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH RFC v2] batman-adv: Add multicast
+ optimization support for bridged setups
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,61 +21,16 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: linus.luessing@web.de
-Cc: stephen@networkplumber.org, netdev@vger.kernel.org, bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Linus L=FCssing <linus.luessing@web.de>
-Date: Mon,  7 Jul 2014 05:41:15 +0200
+On Mon, Jul 07, 2014 at 06:51:13AM +0200, Linus Lüssing wrote:
+> * using new, third bridge multicast export (because this export is
+>   not upstream yet, I've added the "RFC" in the title):
+>   br_multicast_has_querier_anywhere()
 
+Ok, third export is upstream in net-next, so will be in 3.17. I'm
+therefore lifting the RFC, from my side could be added to
+batman-adv master. Let me know if you'd like a resend without the
+"RFC" tag in the title.
 
-"0/4"?  Surely you meant "0/2" :-)
-
-> Some people pointed out to me that it might be helpful to add stubs f=
-or
-> the newly added multicast exports. That way e.g. batman-adv should co=
-ntinue
-> to be compile and useable without having to have a kernel compiled
-> with bridge code in the future. This is what the first patch is suppo=
-sed
-> to do.
-> =
-
-> The second patch adds a third multicast export for the bridge which
-> e.g. batman-adv is supposed to use, too, soon: Just like the bridge
-> disables its multicast snooping activities if no querier is present,
-> batman-adv needs to do the same if bridges are involved.
-> =
-
-> =
-
-> These three exports should be the final ones needed to marry the brid=
-ge
-> multicast snooping with the batman-adv multicast optimizations recent=
-ly
-> added for the 3.15 kernel, allowing to use these optimzations in comm=
-on
-> setups having a bridge on top of e.g. bat0, too. So far these bridged=
-
-> setups would fall back to simple flooding through the batman-adv mesh=
-
-> network for any multicast packet entering bat0.
-> =
-
-> More information about the batman-adv multicast optimizations current=
-ly
-> implemented can be found here:
-> =
-
-> http://www.open-mesh.org/projects/batman-adv/wiki/Basic-multicast-opt=
-imizations
-> =
-
-> The integration on the batman-adv side could afterwards look like thi=
-s,
-> for instance (now including the third export):
-> =
-
-> http://git.open-mesh.org/batman-adv.git/commitdiff/61e4f6af4b7a21ed40=
-40f2e711d50c778e5b6d93?hp=3D6ae4281474675fbca5bedcf768972a32db586eb6
-
-Series applied, thanks.
+Cheers, Linus
