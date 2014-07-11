@@ -1,12 +1,14 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Fri, 11 Jul 2014 14:26:23 +0200
-Message-Id: <1405081595-23371-1-git-send-email-martin@hundeboll.net>
+Date: Fri, 11 Jul 2014 14:26:24 +0200
+Message-Id: <1405081595-23371-2-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1405081595-23371-1-git-send-email-martin@hundeboll.net>
+References: <1405081595-23371-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 01/13] batman-adv: kernel doc fixes for
-	bat_iv_ogm.c
+Subject: [B.A.T.M.A.N.] [PATCH 02/13] batman-adv: kernel doc fixes for
+	bridge_loop_avoidance.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,52 +25,54 @@ Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
 Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 ---
- bat_iv_ogm.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ bridge_loop_avoidance.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 1e80539..73209f3 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -28,7 +28,7 @@
- 
- 
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index a957c81..9946006 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -252,7 +252,7 @@ batadv_bla_del_backbone_claims(struct batadv_bla_backbone_gw *backbone_gw)
  /**
-- * batadv_dup_status - duplicate status
-+ * enum batadv_dup_status - duplicate status
-  * @BATADV_NO_DUP: the packet is a duplicate
-  * @BATADV_ORIG_DUP: OGM is a duplicate in the originator (but not for the
-  *  neighbor)
-@@ -517,7 +517,7 @@ out:
+  * batadv_bla_send_claim - sends a claim frame according to the provided info
   * @bat_priv: the bat priv with all the soft interface information
-  * @packet_len: (total) length of the OGM
-  * @send_time: timestamp (jiffies) when the packet is to be sent
-- * @direktlink: true if this is a direct link packet
-+ * @directlink: true if this is a direct link packet
-  * @if_incoming: interface where the packet was received
-  * @if_outgoing: interface for which the retransmission should be considered
-  * @forw_packet: the forwarded packet which should be checked
-@@ -1366,6 +1366,7 @@ out:
- /**
-  * batadv_iv_ogm_process_per_outif - process a batman iv OGM for an outgoing if
-  * @skb: the skb containing the OGM
-+ * @ogm_offset: offset from skb->data to start of ogm header
-  * @orig_node: the (cached) orig node for the originator of this OGM
-  * @if_incoming: the interface where this packet was received
-  * @if_outgoing: the interface for which the packet should be considered
-@@ -1902,10 +1903,10 @@ out:
-  * batadv_iv_ogm_neigh_is_eob - check if neigh1 is equally good or better than
-  *  neigh2 from the metric prospective
-  * @neigh1: the first neighbor object of the comparison
-- * @if_outgoing: outgoing interface for the first neighbor
-+ * @if_outgoing1: outgoing interface for the first neighbor
-  * @neigh2: the second neighbor object of the comparison
-  * @if_outgoing2: outgoing interface for the second neighbor
--
-+ *
-  * Returns true if the metric via neigh1 is equally good or better than
-  * the metric via neigh2, false otherwise.
+- * @orig: the mac address to be announced within the claim
++ * @mac: the mac address to be announced within the claim
+  * @vid: the VLAN ID
+  * @claimtype: the type of the claim (CLAIM, UNCLAIM, ANNOUNCE, ...)
   */
+@@ -364,6 +364,7 @@ out:
+  * @bat_priv: the bat priv with all the soft interface information
+  * @orig: the mac address of the originator
+  * @vid: the VLAN ID
++ * @own_backbone: set if the requested backbone  is local
+  *
+  * searches for the backbone gw or creates a new one if it could not
+  * be found.
+@@ -454,6 +455,7 @@ batadv_bla_update_own_backbone_gw(struct batadv_priv *bat_priv,
+ /**
+  * batadv_bla_answer_request - answer a bla request by sending own claims
+  * @bat_priv: the bat priv with all the soft interface information
++ * @primary_if: interface where the request came on
+  * @vid: the vid where the request came on
+  *
+  * Repeat all of our own claims, and finally send an ANNOUNCE frame
+@@ -775,6 +777,7 @@ static int batadv_handle_claim(struct batadv_priv *bat_priv,
+ /**
+  * batadv_check_claim_group
+  * @bat_priv: the bat priv with all the soft interface information
++ * @primary_if: the primary interface of this batman interface
+  * @hw_src: the Hardware source in the ARP Header
+  * @hw_dst: the Hardware destination in the ARP Header
+  * @ethhdr: pointer to the Ethernet header of the claim frame
+@@ -850,6 +853,7 @@ static int batadv_check_claim_group(struct batadv_priv *bat_priv,
+ /**
+  * batadv_bla_process_claim
+  * @bat_priv: the bat priv with all the soft interface information
++ * @primary_if: the primary hard interface of this batman soft interface
+  * @skb: the frame to be checked
+  *
+  * Check if this is a claim frame, and process it accordingly.
 -- 
 2.0.1
 
