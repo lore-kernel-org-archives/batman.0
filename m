@@ -1,11 +1,15 @@
-Return-Path: <teg@jklm.no>
-From: Tom Gundersen <teg@jklm.no>
-Date: Thu, 10 Jul 2014 10:17:26 +0200
-Message-Id: <1404980258-30853-22-git-send-email-teg@jklm.no>
-In-Reply-To: <1404980258-30853-1-git-send-email-teg@jklm.no>
-References: <1404980258-30853-1-git-send-email-teg@jklm.no>
-Subject: [B.A.T.M.A.N.] [PATCH v7 21/33] net: batman-adv - set name assign
-	type
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Fri, 11 Jul 2014 12:42:16 +0200
+References: <1405043659-9086-1-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1405043659-9086-1-git-send-email-linus.luessing@web.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart3465980.n7SW8pkDN5";
+ protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <201407111242.21030.sw@simonwunderlich.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Add multicast optimization
+	support for bridged setups
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,117 +21,93 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: netdev@vger.kernel.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, b.a.t.m.a.n@lists.open-mesh.org, Kay Sievers <kay@vrfy.org>, linux-kernel@vger.kernel.org, Tom Gundersen <teg@jklm.no>, Antonio Quartulli <antonio@meshcoding.com>, David Herrmann <dh.herrmann@gmail.com>, David Miller <davem@davemloft.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Signed-off-by: Tom Gundersen <teg@jklm.no>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: Antonio Quartulli <antonio@meshcoding.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
----
- net/batman-adv/hard-interface.c | 5 +++--
- net/batman-adv/hard-interface.h | 3 ++-
- net/batman-adv/soft-interface.c | 9 ++++++---
- net/batman-adv/soft-interface.h | 2 +-
- net/batman-adv/sysfs.c          | 2 +-
- 5 files changed, 13 insertions(+), 8 deletions(-)
+--nextPart3465980.n7SW8pkDN5
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index fbda6b5..b25241f 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -365,7 +365,8 @@ static int batadv_master_del_slave(struct batadv_hard_iface *slave,
- }
- 
- int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
--				   const char *iface_name)
-+				   const char *iface_name,
-+				   unsigned char name_assign_type)
- {
- 	struct batadv_priv *bat_priv;
- 	struct net_device *soft_iface, *master;
-@@ -382,7 +383,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	soft_iface = dev_get_by_name(&init_net, iface_name);
- 
- 	if (!soft_iface) {
--		soft_iface = batadv_softif_create(iface_name);
-+		soft_iface = batadv_softif_create(iface_name, name_assign_type);
- 
- 		if (!soft_iface) {
- 			ret = -ENOMEM;
-diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
-index 1918cd5..45dc1ba 100644
---- a/net/batman-adv/hard-interface.h
-+++ b/net/batman-adv/hard-interface.h
-@@ -44,7 +44,8 @@ bool batadv_is_wifi_iface(int ifindex);
- struct batadv_hard_iface*
- batadv_hardif_get_by_netdev(const struct net_device *net_dev);
- int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
--				   const char *iface_name);
-+				   const char *iface_name,
-+				   unsigned char name_assign_type);
- void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
- 				     enum batadv_hard_if_cleanup autodel);
- void batadv_hardif_remove_interfaces(void);
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index d551e63..6de7ae3 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -790,7 +790,8 @@ static int batadv_softif_slave_add(struct net_device *dev,
- 	if (!hard_iface || hard_iface->soft_iface != NULL)
- 		goto out;
- 
--	ret = batadv_hardif_enable_interface(hard_iface, dev->name);
-+	ret = batadv_hardif_enable_interface(hard_iface, dev->name,
-+					     dev->name_assign_type);
- 
- out:
- 	if (hard_iface)
-@@ -889,13 +890,15 @@ static void batadv_softif_init_early(struct net_device *dev)
- 	memset(priv, 0, sizeof(*priv));
- }
- 
--struct net_device *batadv_softif_create(const char *name)
-+struct net_device *batadv_softif_create(const char *name,
-+					unsigned char name_assign_type)
- {
- 	struct net_device *soft_iface;
- 	int ret;
- 
- 	soft_iface = alloc_netdev(sizeof(struct batadv_priv), name,
--				  NET_NAME_UNKNOWN, batadv_softif_init_early);
-+				  name_assign_type,
-+				  batadv_softif_init_early);
- 	if (!soft_iface)
- 		return NULL;
- 
-diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
-index dbab22f..1ea6f05 100644
---- a/net/batman-adv/soft-interface.h
-+++ b/net/batman-adv/soft-interface.h
-@@ -22,7 +22,7 @@ int batadv_skb_head_push(struct sk_buff *skb, unsigned int len);
- void batadv_interface_rx(struct net_device *soft_iface,
- 			 struct sk_buff *skb, struct batadv_hard_iface *recv_if,
- 			 int hdr_size, struct batadv_orig_node *orig_node);
--struct net_device *batadv_softif_create(const char *name);
-+struct net_device *batadv_softif_create(const char *name, unsigned char name_assign_type);
- void batadv_softif_destroy_sysfs(struct net_device *soft_iface);
- int batadv_softif_is_valid(const struct net_device *net_dev);
- extern struct rtnl_link_ops batadv_link_ops;
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index fc47baa..f2295c1 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -797,7 +797,7 @@ static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
- 		batadv_hardif_disable_interface(hard_iface,
- 						BATADV_IF_CLEANUP_AUTO);
- 
--	ret = batadv_hardif_enable_interface(hard_iface, buff);
-+	ret = batadv_hardif_enable_interface(hard_iface, buff, NET_NAME_USER);
- 
- unlock:
- 	rtnl_unlock();
--- 
-1.9.3
 
+> So far, the recently added multicast optimizations did not support
+> a configuration where a bridge is on top of the soft-interface (e.g.
+> bat0).
+>=20
+> Now the Linux bridge code is able to provide us with the missing bits:
+>=20
+> Multicast Listeners: The bridge hands us a list of multicast listeners
+> it has detected behind the bridge which we will announce through the
+> mesh via the translation table, allowing other nodes to direct multicast
+> packets to these clients behind the bridge even with enabled multicast
+> optimizations.
+>=20
+> Queriers: The bridge informs us whether there is a selected IGMP or
+> MLD querier behind the bridge or if there is no querier at all. In these
+> cases we need all according IPv4 or IPv6 multicast traffic directed to us.
+>=20
+> These two parts together allow us to serve all multicast listeners with
+> IPv6 link-local multicast packets even when bridges are involved and
+> our multicast optimizations enabled.
+>=20
+> Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
+> ---
+> Changes in v3:
+> * Removed "RFC" tag in title again: The stubs and new export are upstream
+>   in net-next and therefore going to be included in 3.17
+> * Added some debug output:
+>   * Two warning messages:
+>     -> Old kernel version or no bridge IGMP/MLD snooping compiled
+>   * New batman-adv log-level "mcast":
+>     -> Logging mcast flag changes
+>   (a third debugging facility, a new table for debugfs for a global
+>    mcast flag overview will be added in a separate patch later
+>    as discussed with Simon)
+
+I've tested the previous version (PATCH RFC v2), but since the changes are=
+=20
+minimal you can add for this patch:
+
+Tested-by: Simon Wunderlich <sw@simonwunderlich.de>
+
+The test included 3 hosts bridged together=20
+
+host1 ---[LAN]--- host2 ---[Mesh]--- host 3
+
+with the recent net-next kernel and patches as sent by Linus previously. I =
+was=20
+using his listener tool [1] which creates a multicast socket on the bridged=
+=2Din=20
+host 1, and enabled the multicast querier [2] on host2 or host3 (only one a=
+t a=20
+time). Then I could verify that the desired multicast MAC address showed up=
+ in=20
+batctl tl on host 2, so the announcement, snooping and list retrieval of=20
+batman-adv for the multicast address worked correctly. Also the "bridge" to=
+ol=20
+of iproute2 proved useful, "bridge mdb show" gives us the list of snooped=20
+multicast listeners on the bridge.
+
+Linus, please don't forget the batctl patch since you've added a loglevel=20
+here. I'm also looking forward to the debugfs files patch, which would make=
+=20
+monitoring the status of the multicast operation a lot easier. :)
+
+Cheers,
+    Simon
+
+[1] https://github.com/T-X/sm-listener
+[2] echo 1 > /sys/class/net/br0/bridge/multicast_querier
+
+--nextPart3465980.n7SW8pkDN5
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iEYEABECAAYFAlO/v4gACgkQrzg/fFk7axYIQwCfcbTDeBBm06h3Q8SIFj2uCKVo
+9EQAn2Ney+7F0YSvmChcE3lxDlxjaD8O
+=8IH4
+-----END PGP SIGNATURE-----
+
+--nextPart3465980.n7SW8pkDN5--
