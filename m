@@ -1,14 +1,16 @@
-Return-Path: <martin@hundeboll.net>
-From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Fri, 11 Jul 2014 14:26:35 +0200
-Message-Id: <1405081595-23371-13-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1405081595-23371-1-git-send-email-martin@hundeboll.net>
-References: <1405081595-23371-1-git-send-email-martin@hundeboll.net>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <53BFE10A.3060506@meshcoding.com>
+Date: Fri, 11 Jul 2014 15:05:14 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 13/13] batman-adv: kernel doc fixes for
-	types.h
+References: <1405081595-23371-1-git-send-email-martin@hundeboll.net>
+ <1405081595-23371-3-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1405081595-23371-3-git-send-email-martin@hundeboll.net>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="rbCkswwk0afGWF0b4bIEkkoKdCBLj2PFg"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 03/13] batman-adv: kernel doc fix for
+	distributed-arp-table.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,196 +22,68 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
 
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
----
- types.h | 46 +++++++++++++++++++++-------------------------
- 1 file changed, 21 insertions(+), 25 deletions(-)
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--rbCkswwk0afGWF0b4bIEkkoKdCBLj2PFg
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/types.h b/types.h
-index 8854c05..4018479 100644
---- a/types.h
-+++ b/types.h
-@@ -24,9 +24,8 @@
- 
- #ifdef CONFIG_BATMAN_ADV_DAT
- 
--/**
-- * batadv_dat_addr_t - it is the type used for all DHT addresses. If it is
-- *  changed, BATADV_DAT_ADDR_MAX is changed as well.
-+/* batadv_dat_addr_t - it is the type used for all DHT addresses. If it is
-+ * changed, BATADV_DAT_ADDR_MAX is changed as well.
-  *
-  * *Please be careful: batadv_dat_addr_t must be UNSIGNED*
-  */
-@@ -46,15 +45,13 @@ enum batadv_dhcp_recipient {
- 	BATADV_DHCP_TO_CLIENT,
- };
- 
--/**
-- * BATADV_TT_REMOTE_MASK - bitmask selecting the flags that are sent over the
-- *  wire only
-+/* BATADV_TT_REMOTE_MASK - bitmask selecting the flags that are sent over the
-+ * wire only
-  */
- #define BATADV_TT_REMOTE_MASK	0x00FF
- 
--/**
-- * BATADV_TT_SYNC_MASK - bitmask of the flags that need to be kept in sync
-- *  among the nodes. These flags are used to compute the global/local CRC
-+/* BATADV_TT_SYNC_MASK - bitmask of the flags that need to be kept in sync
-+ * among the nodes. These flags are used to compute the global/local CRC
-  */
- #define BATADV_TT_SYNC_MASK	0x00F0
- 
-@@ -202,11 +199,11 @@ struct batadv_orig_bat_iv {
-  * @primary_addr: hosts primary interface address
-  * @ifinfo_list: list for routers per outgoing interface
-  * @last_bonding_candidate: pointer to last ifinfo of last used router
-- * @batadv_dat_addr_t:  address of the orig node in the distributed hash
-+ * @dat_addr: address of the orig node in the distributed hash
-  * @last_seen: time when last packet from this node was received
-  * @bcast_seqno_reset: time when the broadcast seqno window was reset
-  * @mcast_flags: multicast flags announced by the orig node
-- * @mcast_want_all_unsnoop_node: a list node for the
-+ * @mcast_want_all_unsnoopables_node: a list node for the
-  *  mcast.want_all_unsnoopables list
-  * @mcast_want_all_ipv4_node: a list node for the mcast.want_all_ipv4 list
-  * @mcast_want_all_ipv6_node: a list node for the mcast.want_all_ipv6 list
-@@ -333,9 +330,8 @@ struct batadv_gw_node {
-  * @ifinfo_lock: lock protecting private ifinfo members and list
-  * @if_incoming: pointer to incoming hard interface
-  * @last_seen: when last packet via this neighbor was received
-- * @last_ttl: last received ttl from this neigh node
-+ * @refcount: number of contexts the object is used
-  * @rcu: struct used for freeing in an RCU-safe manner
-- * @bat_iv: B.A.T.M.A.N. IV private structure
-  */
- struct batadv_neigh_node {
- 	struct hlist_node list;
-@@ -385,13 +381,13 @@ struct batadv_neigh_ifinfo {
- 	struct rcu_head rcu;
- };
- 
-+#ifdef CONFIG_BATMAN_ADV_BLA
- /**
-  * struct batadv_bcast_duplist_entry - structure for LAN broadcast suppression
-- * @orig[ETH_ALEN]: mac address of orig node orginating the broadcast
-+ * @orig: mac address of orig node orginating the broadcast
-  * @crc: crc32 checksum of broadcast payload
-  * @entrytime: time when the broadcast packet was received
-  */
--#ifdef CONFIG_BATMAN_ADV_BLA
- struct batadv_bcast_duplist_entry {
- 	uint8_t orig[ETH_ALEN];
- 	__be32 crc;
-@@ -533,9 +529,10 @@ struct batadv_priv_tt {
- 	struct delayed_work work;
- };
- 
-+#ifdef CONFIG_BATMAN_ADV_BLA
- /**
-  * struct batadv_priv_bla - per mesh interface bridge loope avoidance data
-- * @num_requests; number of bla requests in flight
-+ * @num_requests: number of bla requests in flight
-  * @claim_hash: hash table containing mesh nodes this host has claimed
-  * @backbone_hash: hash table containing all detected backbone gateways
-  * @bcast_duplist: recently received broadcast packets array (for broadcast
-@@ -545,7 +542,6 @@ struct batadv_priv_tt {
-  * @claim_dest: local claim data (e.g. claim group)
-  * @work: work queue callback item for cleanups & bla announcements
-  */
--#ifdef CONFIG_BATMAN_ADV_BLA
- struct batadv_priv_bla {
- 	atomic_t num_requests;
- 	struct batadv_hashtable *claim_hash;
-@@ -559,6 +555,7 @@ struct batadv_priv_bla {
- };
- #endif
- 
-+#ifdef CONFIG_BATMAN_ADV_DEBUG
- /**
-  * struct batadv_priv_debug_log - debug logging data
-  * @log_buff: buffer holding the logs (ring bufer)
-@@ -567,7 +564,6 @@ struct batadv_priv_bla {
-  * @lock: lock protecting log_buff, log_start & log_end
-  * @queue_wait: log reader's wait queue
-  */
--#ifdef CONFIG_BATMAN_ADV_DEBUG
- struct batadv_priv_debug_log {
- 	char log_buff[BATADV_LOG_BUF_LEN];
- 	unsigned long log_start;
-@@ -609,13 +605,13 @@ struct batadv_priv_tvlv {
- 	spinlock_t handler_list_lock; /* protects handler_list */
- };
- 
-+#ifdef CONFIG_BATMAN_ADV_DAT
- /**
-  * struct batadv_priv_dat - per mesh interface DAT private data
-  * @addr: node DAT address
-  * @hash: hashtable representing the local ARP cache
-  * @work: work queue callback item for cache purging
-  */
--#ifdef CONFIG_BATMAN_ADV_DAT
- struct batadv_priv_dat {
- 	batadv_dat_addr_t addr;
- 	struct batadv_hashtable *hash;
-@@ -730,6 +726,8 @@ struct batadv_softif_vlan {
-  * @orig_interval: OGM broadcast interval in milliseconds
-  * @hop_penalty: penalty which will be applied to an OGM's tq-field on every hop
-  * @log_level: configured log level (see batadv_dbg_level)
-+ * @isolation_mark: mark to use in ap isolation when filtering packets
-+ * @isolation_mark_mask: mask of bits to check when filtering packets
-  * @bcast_seqno: last sent broadcast packet sequence number
-  * @bcast_queue_left: number of remaining buffered broadcast packet slots
-  * @batman_queue_left: number of remaining OGM packet slots
-@@ -757,7 +755,7 @@ struct batadv_softif_vlan {
-  * @dat: distributed arp table data
-  * @mcast: multicast data
-  * @network_coding: bool indicating whether network coding is enabled
-- * @batadv_priv_nc: network coding data
-+ * @nc: network coding data
-  */
- struct batadv_priv {
- 	atomic_t mesh_state;
-@@ -855,6 +853,7 @@ struct batadv_socket_packet {
- 	uint8_t icmp_packet[BATADV_ICMP_MAX_PACKET_SIZE];
- };
- 
-+#ifdef CONFIG_BATMAN_ADV_BLA
- /**
-  * struct batadv_bla_backbone_gw - batman-adv gateway bridged into the LAN
-  * @orig: originator address of backbone node (mac address of primary iface)
-@@ -871,7 +870,6 @@ struct batadv_socket_packet {
-  * @refcount: number of contexts the object is used
-  * @rcu: struct used for freeing in an RCU-safe manner
-  */
--#ifdef CONFIG_BATMAN_ADV_BLA
- struct batadv_bla_backbone_gw {
- 	uint8_t orig[ETH_ALEN];
- 	unsigned short vid;
-@@ -889,7 +887,7 @@ struct batadv_bla_backbone_gw {
-  * struct batadv_bla_claim - claimed non-mesh client structure
-  * @addr: mac address of claimed non-mesh client
-  * @vid: vlan id this client was detected on
-- * @batadv_bla_backbone_gw: pointer to backbone gw claiming this client
-+ * @backbone_gw: pointer to backbone gw claiming this client
-  * @lasttime: last time we heard of claim (locals only)
-  * @hash_entry: hlist node for batadv_priv_bla::claim_hash
-  * @refcount: number of contexts the object is used
-@@ -1204,9 +1202,7 @@ struct batadv_dat_candidate {
-  * struct batadv_tvlv_container - container for tvlv appended to OGMs
-  * @list: hlist node for batadv_priv_tvlv::container_list
-  * @tvlv_hdr: tvlv header information needed to construct the tvlv
-- * @value_len: length of the buffer following this struct which contains
-- *  the actual tvlv payload
-- * @refcount: number of contexts the object is used
-+ * @refcount: number of contexts the object is used in
-  */
- struct batadv_tvlv_container {
- 	struct hlist_node list;
--- 
-2.0.1
 
+
+On 11/07/14 14:26, Martin Hundeb=C3=B8ll wrote:
+> Signed-off-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
+> ---
+>  distributed-arp-table.h | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+>=20
+> diff --git a/distributed-arp-table.h b/distributed-arp-table.h
+> index d76e1d0..2fe0764 100644
+> --- a/distributed-arp-table.h
+> +++ b/distributed-arp-table.h
+> @@ -25,9 +25,7 @@
+> =20
+>  #include <linux/if_arp.h>
+> =20
+> -/**
+> - * BATADV_DAT_ADDR_MAX - maximum address value in the DHT space
+> - */
+> +/* BATADV_DAT_ADDR_MAX - maximum address value in the DHT space */
+
+How can this be detected as kernel doc if you removed the starting  /** ?=
+
+
+
+Cheers,
+
+
+--=20
+Antonio Quartulli
+
+
+--rbCkswwk0afGWF0b4bIEkkoKdCBLj2PFg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iQIcBAEBCAAGBQJTv+EOAAoJEJgn97Bh2u9etjAP/Au9jdbWyBUpEDHBHwV6AFhi
+DfOprjhd10AaJSF80+VHnG07ZWflCDqtskHj+BUL4mskTV1gXItC6yyae8ZvRz8S
+SYjrPlFMVt7EuasCPmszOX5KA9Ihj1X//fnUBl7JT664ol3INig1CKd90VY4KGl5
+iWwnHM/8A3qPuDLlhs1JY84rKUJTfg4UlXlsISatFESIn3CEZx+0U09pvBK/OeDb
+NjD0c2hM3rF6y7brDRqlnew9NUIVDFgXI+R19ia3aUyD7jU+cB5sF7lLCVN6aJsN
+jVhuKiHGNv/2u2tozMspDJQ+WabN0MmYUw8hMuXelpQHu1aPscT0dQzzGfhH6zhX
+v2UmPDpPynk73y6jBnkUmddUNIUCZrRTd3qH0r21zo6B/OZ2PZryuQdMZPeObxnA
+F2m82bYrMrDr2ovUOYdj+ZNN6Lh3BeeZhL++21CpbQqOraAE9dYOhRWGRvyh6Ag4
+WnjR6SBOF0Ahz14pMqYjSffJegVI1+HKuKOSzVYgS+IL3jIqS+spY1ggB1Mt33U7
+BZ49DH71SQbwqgGeMNCduWbhYG2nC+Pd8+Qu3xqumgeWraAuvu3qjyZwWeSPS3f0
+IadNJWXKyaqripy2f5cv9cpk/b+ZcPUGsuq61YGD/pxWJBSy9bSM+VfIQyP6ENca
+Gwpncvd7g1kcIVtNresE
+=MzYJ
+-----END PGP SIGNATURE-----
+
+--rbCkswwk0afGWF0b4bIEkkoKdCBLj2PFg--
