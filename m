@@ -1,14 +1,14 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Fri, 11 Jul 2014 14:26:28 +0200
-Message-Id: <1405081595-23371-6-git-send-email-martin@hundeboll.net>
+Date: Fri, 11 Jul 2014 14:26:29 +0200
+Message-Id: <1405081595-23371-7-git-send-email-martin@hundeboll.net>
 In-Reply-To: <1405081595-23371-1-git-send-email-martin@hundeboll.net>
 References: <1405081595-23371-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 06/13] batman-adv: kernel doc fixes for
-	originator.c
+Subject: [B.A.T.M.A.N.] [PATCH 07/13] batman-adv: kernel doc fixes for
+	packet.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,58 +25,91 @@ Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
 Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 ---
- originator.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ packet.h | 21 +++++++++++++--------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
 
-diff --git a/originator.c b/originator.c
-index 6a48451..3c2413e 100644
---- a/originator.c
-+++ b/originator.c
-@@ -166,7 +166,7 @@ static void batadv_neigh_ifinfo_free_rcu(struct rcu_head *rcu)
- }
+diff --git a/packet.h b/packet.h
+index 34e096d..cfbaf4d 100644
+--- a/packet.h
++++ b/packet.h
+@@ -156,7 +156,7 @@ enum batadv_tt_client_flags {
+ };
  
  /**
-- * batadv_neigh_ifinfo_free_now - decrement the refcounter and possibly free
-+ * batadv_neigh_ifinfo_free_ref_now - decrement the refcounter and possibly free
-  *  the neigh_ifinfo (without rcu callback)
-  * @neigh_ifinfo: the neigh_ifinfo object to release
+- * batadv_vlan_flags - flags for the four MSB of any vlan ID field
++ * enum batadv_vlan_flags - flags for the four MSB of any vlan ID field
+  * @BATADV_VLAN_HAS_TAG: whether the field contains a valid vlan tag or not
   */
-@@ -233,7 +233,7 @@ void batadv_neigh_node_free_ref(struct batadv_neigh_node *neigh_node)
- }
- 
+ enum batadv_vlan_flags {
+@@ -203,9 +203,14 @@ struct batadv_bla_claim_dst {
  /**
-- * batadv_orig_node_get_router - router to the originator depending on iface
-+ * batadv_orig_router_get - router to the originator depending on iface
-  * @orig_node: the orig node for the router
-  * @if_outgoing: the interface where the payload packet has been received or
-  *  the OGM should be sent to
-@@ -347,7 +347,7 @@ out:
- 
- /**
-  * batadv_neigh_ifinfo_get - find the ifinfo from an neigh_node
-- * @neigh_node: the neigh node to be queried
-+ * @neigh: the neigh node to be queried
-  * @if_outgoing: the interface for which the ifinfo should be acquired
-  *
-  * The object is returned with refcounter increased by 1.
-@@ -380,7 +380,7 @@ batadv_neigh_ifinfo_get(struct batadv_neigh_node *neigh,
- 
- /**
-  * batadv_neigh_ifinfo_new - search and possibly create an neigh_ifinfo object
-- * @neigh_node: the neigh node to be queried
-+ * @neigh: the neigh node to be queried
-  * @if_outgoing: the interface for which the ifinfo should be acquired
-  *
-  * Returns NULL in case of failure or the neigh_ifinfo object for the
-@@ -516,7 +516,7 @@ static void batadv_orig_ifinfo_free_rcu(struct rcu_head *rcu)
- }
- 
- /**
-- * batadv_orig_ifinfo_free_ref - decrement the refcounter and possibly free
-+ * batadv_orig_ifinfo_free_ref_now - decrement the refcounter and possibly free
-  *  the orig_ifinfo (without rcu callback)
-  * @orig_ifinfo: the orig_ifinfo object to release
+  * struct batadv_ogm_packet - ogm (routing protocol) packet
+  * @packet_type: batman-adv packet type, part of the general header
+- * @version: batman-adv protocol version, part of the genereal header
+- * @ttl: time to live for this packet, part of the genereal header
++ * @version: batman-adv protocol version, part of the general header
++ * @ttl: time to live for this packet, part of the general header
+  * @flags: contains routing relevant flags - see enum batadv_iv_flags
++ * @seqno: inremental sequence number for this ogm packet
++ * @orig: address of the originator of this ogm packet
++ * @prev_sender: address of the previous sender of this ogm packet
++ * @reserved: reserved byte for alignment
++ * @tq: accumulated TQ value towards the originator of this ogm packet
+  * @tvlv_len: length of tvlv data following the ogm header
   */
+ struct batadv_ogm_packet {
+@@ -227,7 +232,7 @@ struct batadv_ogm_packet {
+ #define BATADV_OGM_HLEN sizeof(struct batadv_ogm_packet)
+ 
+ /**
+- * batadv_icmp_header - common members among all the ICMP packets
++ * struct batadv_icmp_header - common members among all the ICMP packets
+  * @packet_type: batman-adv packet type, part of the general header
+  * @version: batman-adv protocol version, part of the genereal header
+  * @ttl: time to live for this packet, part of the genereal header
+@@ -253,7 +258,7 @@ struct batadv_icmp_header {
+ };
+ 
+ /**
+- * batadv_icmp_packet - ICMP packet
++ * struct batadv_icmp_packet - ICMP packet
+  * @packet_type: batman-adv packet type, part of the general header
+  * @version: batman-adv protocol version, part of the genereal header
+  * @ttl: time to live for this packet, part of the genereal header
+@@ -279,7 +284,7 @@ struct batadv_icmp_packet {
+ #define BATADV_RR_LEN 16
+ 
+ /**
+- * batadv_icmp_packet_rr - ICMP RouteRecord packet
++ * struct batadv_icmp_packet_rr - ICMP RouteRecord packet
+  * @packet_type: batman-adv packet type, part of the general header
+  * @version: batman-adv protocol version, part of the genereal header
+  * @ttl: time to live for this packet, part of the genereal header
+@@ -342,6 +347,7 @@ struct batadv_unicast_packet {
+  * @u: common unicast packet header
+  * @src: address of the source
+  * @subtype: packet subtype
++ * @reserved: reserved byte for alignment
+  */
+ struct batadv_unicast_4addr_packet {
+ 	struct batadv_unicast_packet u;
+@@ -410,7 +416,6 @@ struct batadv_bcast_packet {
+  * @packet_type: batman-adv packet type, part of the general header
+  * @version: batman-adv protocol version, part of the genereal header
+  * @ttl: time to live for this packet, part of the genereal header
+- * @reserved: Align following fields to 2-byte boundaries
+  * @first_source: original source of first included packet
+  * @first_orig_dest: original destinal of first included packet
+  * @first_crc: checksum of first included packet
+@@ -492,7 +497,7 @@ struct batadv_tvlv_gateway_data {
+  * struct batadv_tvlv_tt_data - tt data propagated through the tt tvlv container
+  * @flags: translation table flags (see batadv_tt_data_flags)
+  * @ttvn: translation table version number
+- * @vlan_num: number of announced VLANs. In the TVLV this struct is followed by
++ * @num_vlan: number of announced VLANs. In the TVLV this struct is followed by
+  *  one batadv_tvlv_tt_vlan_data object per announced vlan
+  */
+ struct batadv_tvlv_tt_data {
 -- 
 2.0.1
 
