@@ -1,14 +1,13 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Tue, 15 Jul 2014 09:41:06 +0200
-Message-Id: <1405410077-28764-2-git-send-email-martin@hundeboll.net>
+Date: Tue, 15 Jul 2014 09:41:13 +0200
+Message-Id: <1405410077-28764-9-git-send-email-martin@hundeboll.net>
 In-Reply-To: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
 References: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 02/13] batman-adv: kernel doc fixes for
-	bridge_loop_avoidance.c
+Subject: [B.A.T.M.A.N.] [PATCHv2 09/13] batman-adv: kernel doc fix for send.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,59 +23,23 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
 Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
-Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
-
 ---
-v2: removed duplicate white space
+ send.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- bridge_loop_avoidance.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index a957c81..0f0ca43 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -252,7 +252,7 @@ batadv_bla_del_backbone_claims(struct batadv_bla_backbone_gw *backbone_gw)
- /**
-  * batadv_bla_send_claim - sends a claim frame according to the provided info
+diff --git a/send.c b/send.c
+index d27161e..ed77eae 100644
+--- a/send.c
++++ b/send.c
+@@ -193,7 +193,7 @@ static bool batadv_send_skb_prepare_unicast(struct sk_buff *skb,
+  *  unicast 4addr header
   * @bat_priv: the bat priv with all the soft interface information
-- * @orig: the mac address to be announced within the claim
-+ * @mac: the mac address to be announced within the claim
-  * @vid: the VLAN ID
-  * @claimtype: the type of the claim (CLAIM, UNCLAIM, ANNOUNCE, ...)
-  */
-@@ -364,6 +364,7 @@ out:
-  * @bat_priv: the bat priv with all the soft interface information
-  * @orig: the mac address of the originator
-  * @vid: the VLAN ID
-+ * @own_backbone: set if the requested backbone is local
+  * @skb: the skb containing the payload to encapsulate
+- * @orig_node: the destination node
++ * @orig: the destination node
+  * @packet_subtype: the unicast 4addr packet subtype to use
   *
-  * searches for the backbone gw or creates a new one if it could not
-  * be found.
-@@ -454,6 +455,7 @@ batadv_bla_update_own_backbone_gw(struct batadv_priv *bat_priv,
- /**
-  * batadv_bla_answer_request - answer a bla request by sending own claims
-  * @bat_priv: the bat priv with all the soft interface information
-+ * @primary_if: interface where the request came on
-  * @vid: the vid where the request came on
-  *
-  * Repeat all of our own claims, and finally send an ANNOUNCE frame
-@@ -775,6 +777,7 @@ static int batadv_handle_claim(struct batadv_priv *bat_priv,
- /**
-  * batadv_check_claim_group
-  * @bat_priv: the bat priv with all the soft interface information
-+ * @primary_if: the primary interface of this batman interface
-  * @hw_src: the Hardware source in the ARP Header
-  * @hw_dst: the Hardware destination in the ARP Header
-  * @ethhdr: pointer to the Ethernet header of the claim frame
-@@ -850,6 +853,7 @@ static int batadv_check_claim_group(struct batadv_priv *bat_priv,
- /**
-  * batadv_bla_process_claim
-  * @bat_priv: the bat priv with all the soft interface information
-+ * @primary_if: the primary hard interface of this batman soft interface
-  * @skb: the frame to be checked
-  *
-  * Check if this is a claim frame, and process it accordingly.
+  * Returns false if the payload could not be encapsulated or true otherwise.
 -- 
 2.0.1
 
