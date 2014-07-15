@@ -1,14 +1,14 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Tue, 15 Jul 2014 09:41:08 +0200
-Message-Id: <1405410077-28764-4-git-send-email-martin@hundeboll.net>
+Date: Tue, 15 Jul 2014 09:41:11 +0200
+Message-Id: <1405410077-28764-7-git-send-email-martin@hundeboll.net>
 In-Reply-To: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
 References: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 04/13] batman-adv: kernel doc fixes for
-	main.{c, h}
+Subject: [B.A.T.M.A.N.] [PATCHv2 07/13] batman-adv: kernel doc fixes for
+	packet.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,48 +25,91 @@ Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
 Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 ---
- main.c | 4 ++--
- main.h | 5 ++---
- 2 files changed, 4 insertions(+), 5 deletions(-)
+ packet.h | 21 +++++++++++++--------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
 
-diff --git a/main.c b/main.c
-index d1183e8..2cdd25a 100644
---- a/main.c
-+++ b/main.c
-@@ -651,7 +651,7 @@ static struct batadv_tvlv_handler
+diff --git a/packet.h b/packet.h
+index 34e096d..cfbaf4d 100644
+--- a/packet.h
++++ b/packet.h
+@@ -156,7 +156,7 @@ enum batadv_tt_client_flags {
+ };
+ 
  /**
-  * batadv_tvlv_container_free_ref - decrement the tvlv container refcounter and
-  *  possibly free it
-- * @tvlv_handler: the tvlv container to free
-+ * @tvlv: the tvlv container to free
+- * batadv_vlan_flags - flags for the four MSB of any vlan ID field
++ * enum batadv_vlan_flags - flags for the four MSB of any vlan ID field
+  * @BATADV_VLAN_HAS_TAG: whether the field contains a valid vlan tag or not
   */
- static void batadv_tvlv_container_free_ref(struct batadv_tvlv_container *tvlv)
- {
-@@ -800,7 +800,7 @@ void batadv_tvlv_container_register(struct batadv_priv *bat_priv,
-  *  requested packet size
-  * @packet_buff: packet buffer
-  * @packet_buff_len: packet buffer size
-- * @packet_min_len: requested packet minimum size
-+ * @min_packet_len: requested packet minimum size
-  * @additional_packet_len: requested additional packet size on top of minimum
-  *  size
-  *
-diff --git a/main.h b/main.h
-index 4bb500b..9a8a1d5 100644
---- a/main.h
-+++ b/main.h
-@@ -92,9 +92,8 @@
- /* numbers of originator to contact for any PUT/GET DHT operation */
- #define BATADV_DAT_CANDIDATES_NUM 3
- 
--/**
-- * BATADV_TQ_SIMILARITY_THRESHOLD - TQ points that a secondary metric can differ
-- *  at most from the primary one in order to be still considered acceptable
-+/* BATADV_TQ_SIMILARITY_THRESHOLD - TQ points that a secondary metric can differ
-+ * at most from the primary one in order to be still considered acceptable
+ enum batadv_vlan_flags {
+@@ -203,9 +203,14 @@ struct batadv_bla_claim_dst {
+ /**
+  * struct batadv_ogm_packet - ogm (routing protocol) packet
+  * @packet_type: batman-adv packet type, part of the general header
+- * @version: batman-adv protocol version, part of the genereal header
+- * @ttl: time to live for this packet, part of the genereal header
++ * @version: batman-adv protocol version, part of the general header
++ * @ttl: time to live for this packet, part of the general header
+  * @flags: contains routing relevant flags - see enum batadv_iv_flags
++ * @seqno: inremental sequence number for this ogm packet
++ * @orig: address of the originator of this ogm packet
++ * @prev_sender: address of the previous sender of this ogm packet
++ * @reserved: reserved byte for alignment
++ * @tq: accumulated TQ value towards the originator of this ogm packet
+  * @tvlv_len: length of tvlv data following the ogm header
   */
- #define BATADV_TQ_SIMILARITY_THRESHOLD 50
+ struct batadv_ogm_packet {
+@@ -227,7 +232,7 @@ struct batadv_ogm_packet {
+ #define BATADV_OGM_HLEN sizeof(struct batadv_ogm_packet)
  
+ /**
+- * batadv_icmp_header - common members among all the ICMP packets
++ * struct batadv_icmp_header - common members among all the ICMP packets
+  * @packet_type: batman-adv packet type, part of the general header
+  * @version: batman-adv protocol version, part of the genereal header
+  * @ttl: time to live for this packet, part of the genereal header
+@@ -253,7 +258,7 @@ struct batadv_icmp_header {
+ };
+ 
+ /**
+- * batadv_icmp_packet - ICMP packet
++ * struct batadv_icmp_packet - ICMP packet
+  * @packet_type: batman-adv packet type, part of the general header
+  * @version: batman-adv protocol version, part of the genereal header
+  * @ttl: time to live for this packet, part of the genereal header
+@@ -279,7 +284,7 @@ struct batadv_icmp_packet {
+ #define BATADV_RR_LEN 16
+ 
+ /**
+- * batadv_icmp_packet_rr - ICMP RouteRecord packet
++ * struct batadv_icmp_packet_rr - ICMP RouteRecord packet
+  * @packet_type: batman-adv packet type, part of the general header
+  * @version: batman-adv protocol version, part of the genereal header
+  * @ttl: time to live for this packet, part of the genereal header
+@@ -342,6 +347,7 @@ struct batadv_unicast_packet {
+  * @u: common unicast packet header
+  * @src: address of the source
+  * @subtype: packet subtype
++ * @reserved: reserved byte for alignment
+  */
+ struct batadv_unicast_4addr_packet {
+ 	struct batadv_unicast_packet u;
+@@ -410,7 +416,6 @@ struct batadv_bcast_packet {
+  * @packet_type: batman-adv packet type, part of the general header
+  * @version: batman-adv protocol version, part of the genereal header
+  * @ttl: time to live for this packet, part of the genereal header
+- * @reserved: Align following fields to 2-byte boundaries
+  * @first_source: original source of first included packet
+  * @first_orig_dest: original destinal of first included packet
+  * @first_crc: checksum of first included packet
+@@ -492,7 +497,7 @@ struct batadv_tvlv_gateway_data {
+  * struct batadv_tvlv_tt_data - tt data propagated through the tt tvlv container
+  * @flags: translation table flags (see batadv_tt_data_flags)
+  * @ttvn: translation table version number
+- * @vlan_num: number of announced VLANs. In the TVLV this struct is followed by
++ * @num_vlan: number of announced VLANs. In the TVLV this struct is followed by
+  *  one batadv_tvlv_tt_vlan_data object per announced vlan
+  */
+ struct batadv_tvlv_tt_data {
 -- 
 2.0.1
 
