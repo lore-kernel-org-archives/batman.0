@@ -1,12 +1,14 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Tue, 15 Jul 2014 09:41:05 +0200
-Message-Id: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
+Date: Tue, 15 Jul 2014 09:41:08 +0200
+Message-Id: <1405410077-28764-4-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
+References: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 01/13] batman-adv: kernel doc fixes for
-	bat_iv_ogm.c
+Subject: [B.A.T.M.A.N.] [PATCHv2 04/13] batman-adv: kernel doc fixes for
+	main.{c, h}
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,52 +25,48 @@ Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
 Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 ---
- bat_iv_ogm.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ main.c | 4 ++--
+ main.h | 5 ++---
+ 2 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 1e80539..73209f3 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -28,7 +28,7 @@
- 
- 
+diff --git a/main.c b/main.c
+index d1183e8..2cdd25a 100644
+--- a/main.c
++++ b/main.c
+@@ -651,7 +651,7 @@ static struct batadv_tvlv_handler
  /**
-- * batadv_dup_status - duplicate status
-+ * enum batadv_dup_status - duplicate status
-  * @BATADV_NO_DUP: the packet is a duplicate
-  * @BATADV_ORIG_DUP: OGM is a duplicate in the originator (but not for the
-  *  neighbor)
-@@ -517,7 +517,7 @@ out:
-  * @bat_priv: the bat priv with all the soft interface information
-  * @packet_len: (total) length of the OGM
-  * @send_time: timestamp (jiffies) when the packet is to be sent
-- * @direktlink: true if this is a direct link packet
-+ * @directlink: true if this is a direct link packet
-  * @if_incoming: interface where the packet was received
-  * @if_outgoing: interface for which the retransmission should be considered
-  * @forw_packet: the forwarded packet which should be checked
-@@ -1366,6 +1366,7 @@ out:
- /**
-  * batadv_iv_ogm_process_per_outif - process a batman iv OGM for an outgoing if
-  * @skb: the skb containing the OGM
-+ * @ogm_offset: offset from skb->data to start of ogm header
-  * @orig_node: the (cached) orig node for the originator of this OGM
-  * @if_incoming: the interface where this packet was received
-  * @if_outgoing: the interface for which the packet should be considered
-@@ -1902,10 +1903,10 @@ out:
-  * batadv_iv_ogm_neigh_is_eob - check if neigh1 is equally good or better than
-  *  neigh2 from the metric prospective
-  * @neigh1: the first neighbor object of the comparison
-- * @if_outgoing: outgoing interface for the first neighbor
-+ * @if_outgoing1: outgoing interface for the first neighbor
-  * @neigh2: the second neighbor object of the comparison
-  * @if_outgoing2: outgoing interface for the second neighbor
--
-+ *
-  * Returns true if the metric via neigh1 is equally good or better than
-  * the metric via neigh2, false otherwise.
+  * batadv_tvlv_container_free_ref - decrement the tvlv container refcounter and
+  *  possibly free it
+- * @tvlv_handler: the tvlv container to free
++ * @tvlv: the tvlv container to free
   */
+ static void batadv_tvlv_container_free_ref(struct batadv_tvlv_container *tvlv)
+ {
+@@ -800,7 +800,7 @@ void batadv_tvlv_container_register(struct batadv_priv *bat_priv,
+  *  requested packet size
+  * @packet_buff: packet buffer
+  * @packet_buff_len: packet buffer size
+- * @packet_min_len: requested packet minimum size
++ * @min_packet_len: requested packet minimum size
+  * @additional_packet_len: requested additional packet size on top of minimum
+  *  size
+  *
+diff --git a/main.h b/main.h
+index 4bb500b..9a8a1d5 100644
+--- a/main.h
++++ b/main.h
+@@ -92,9 +92,8 @@
+ /* numbers of originator to contact for any PUT/GET DHT operation */
+ #define BATADV_DAT_CANDIDATES_NUM 3
+ 
+-/**
+- * BATADV_TQ_SIMILARITY_THRESHOLD - TQ points that a secondary metric can differ
+- *  at most from the primary one in order to be still considered acceptable
++/* BATADV_TQ_SIMILARITY_THRESHOLD - TQ points that a secondary metric can differ
++ * at most from the primary one in order to be still considered acceptable
+  */
+ #define BATADV_TQ_SIMILARITY_THRESHOLD 50
+ 
 -- 
 2.0.1
 
