@@ -1,14 +1,14 @@
 Return-Path: <martin@hundeboll.net>
 From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Tue, 15 Jul 2014 09:41:15 +0200
-Message-Id: <1405410077-28764-11-git-send-email-martin@hundeboll.net>
+Date: Tue, 15 Jul 2014 09:41:09 +0200
+Message-Id: <1405410077-28764-5-git-send-email-martin@hundeboll.net>
 In-Reply-To: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
 References: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 11/13] batman-adv: kernel doc fixes for
-	sysfs.{c, h}
+Subject: [B.A.T.M.A.N.] [PATCHv2 05/13] batman-adv: kernel doc fix for
+	multicast.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,56 +24,25 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
 Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+Acked-by: Linus Lüssing <linus.luessing@web.de>
 
 ---
-v2: better description for @bat_priv
+ multicast.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- sysfs.c | 5 ++---
- sysfs.h | 8 ++++----
- 2 files changed, 6 insertions(+), 7 deletions(-)
-
-diff --git a/sysfs.c b/sysfs.c
-index fc47baa..66fd565 100644
---- a/sysfs.c
-+++ b/sysfs.c
-@@ -62,6 +62,7 @@ static struct batadv_priv *batadv_vlan_kobj_to_batpriv(struct kobject *obj)
+diff --git a/multicast.h b/multicast.h
+index 73b5d45..d790a71 100644
+--- a/multicast.h
++++ b/multicast.h
+@@ -19,7 +19,7 @@
+ #define _NET_BATMAN_ADV_MULTICAST_H_
  
  /**
-  * batadv_kobj_to_vlan - convert a kobj in the associated softif_vlan struct
-+ * @bat_priv: the bat priv with all the soft interface information
-  * @obj: kobject to covert
-  *
-  * Returns the associated softif_vlan struct if found, NULL otherwise.
-@@ -593,9 +594,7 @@ static struct batadv_attribute *batadv_mesh_attrs[] = {
- 
- BATADV_ATTR_VLAN_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
- 
--/**
-- * batadv_vlan_attrs - array of vlan specific sysfs attributes
-- */
-+/* struct batadv_vlan_attrs - array of vlan specific sysfs attributes */
- static struct batadv_attribute *batadv_vlan_attrs[] = {
- 	&batadv_attr_vlan_ap_isolation,
- 	NULL,
-diff --git a/sysfs.h b/sysfs.h
-index b715b60..68b8c99 100644
---- a/sysfs.h
-+++ b/sysfs.h
-@@ -20,10 +20,10 @@
- 
- #define BATADV_SYSFS_IF_MESH_SUBDIR "mesh"
- #define BATADV_SYSFS_IF_BAT_SUBDIR "batman_adv"
--/**
-- * BATADV_SYSFS_VLAN_SUBDIR_PREFIX - prefix of the subfolder that will be
-- *  created in the sysfs hierarchy for each VLAN interface. The subfolder will
-- *  be named "BATADV_SYSFS_VLAN_SUBDIR_PREFIX%vid".
-+
-+/* BATADV_SYSFS_VLAN_SUBDIR_PREFIX - prefix of the subfolder that will be
-+ * created in the sysfs hierarchy for each VLAN interface. The subfolder will
-+ * be named "BATADV_SYSFS_VLAN_SUBDIR_PREFIX%vid".
-  */
- #define BATADV_SYSFS_VLAN_SUBDIR_PREFIX "vlan"
- 
+- * batadv_forw_mode - the way a packet should be forwarded as
++ * enum batadv_forw_mode - the way a packet should be forwarded as
+  * @BATADV_FORW_ALL: forward the packet to all nodes (currently via classic
+  *  flooding)
+  * @BATADV_FORW_SINGLE: forward the packet to a single node (currently via the
 -- 
 2.0.1
 
