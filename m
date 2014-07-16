@@ -1,14 +1,12 @@
-Return-Path: <martin@hundeboll.net>
-From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Tue, 15 Jul 2014 09:41:10 +0200
-Message-Id: <1405410077-28764-6-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
-References: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 16 Jul 2014 12:23:10 +0200
+Message-Id: <1405506190-9733-1-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 06/13] batman-adv: kernel doc fixes for
-	originator.c
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove obsolete variable
+	primary_iface from orig_node
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,62 +19,37 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+This variable became obsolete when changing to the new bonding mechanism
+based on the multi interface optimization. Since its not used anywhere,
+remove it.
+
+Reported-by: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- originator.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ types.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/originator.c b/originator.c
-index 6a48451..3c2413e 100644
---- a/originator.c
-+++ b/originator.c
-@@ -166,7 +166,7 @@ static void batadv_neigh_ifinfo_free_rcu(struct rcu_head *rcu)
- }
- 
+diff --git a/types.h b/types.h
+index 8854c05..462a70c 100644
+--- a/types.h
++++ b/types.h
+@@ -199,7 +199,6 @@ struct batadv_orig_bat_iv {
  /**
-- * batadv_neigh_ifinfo_free_now - decrement the refcounter and possibly free
-+ * batadv_neigh_ifinfo_free_ref_now - decrement the refcounter and possibly free
-  *  the neigh_ifinfo (without rcu callback)
-  * @neigh_ifinfo: the neigh_ifinfo object to release
+  * struct batadv_orig_node - structure for orig_list maintaining nodes of mesh
+  * @orig: originator ethernet address
+- * @primary_addr: hosts primary interface address
+  * @ifinfo_list: list for routers per outgoing interface
+  * @last_bonding_candidate: pointer to last ifinfo of last used router
+  * @batadv_dat_addr_t:  address of the orig node in the distributed hash
+@@ -244,7 +243,6 @@ struct batadv_orig_bat_iv {
   */
-@@ -233,7 +233,7 @@ void batadv_neigh_node_free_ref(struct batadv_neigh_node *neigh_node)
- }
- 
- /**
-- * batadv_orig_node_get_router - router to the originator depending on iface
-+ * batadv_orig_router_get - router to the originator depending on iface
-  * @orig_node: the orig node for the router
-  * @if_outgoing: the interface where the payload packet has been received or
-  *  the OGM should be sent to
-@@ -347,7 +347,7 @@ out:
- 
- /**
-  * batadv_neigh_ifinfo_get - find the ifinfo from an neigh_node
-- * @neigh_node: the neigh node to be queried
-+ * @neigh: the neigh node to be queried
-  * @if_outgoing: the interface for which the ifinfo should be acquired
-  *
-  * The object is returned with refcounter increased by 1.
-@@ -380,7 +380,7 @@ batadv_neigh_ifinfo_get(struct batadv_neigh_node *neigh,
- 
- /**
-  * batadv_neigh_ifinfo_new - search and possibly create an neigh_ifinfo object
-- * @neigh_node: the neigh node to be queried
-+ * @neigh: the neigh node to be queried
-  * @if_outgoing: the interface for which the ifinfo should be acquired
-  *
-  * Returns NULL in case of failure or the neigh_ifinfo object for the
-@@ -516,7 +516,7 @@ static void batadv_orig_ifinfo_free_rcu(struct rcu_head *rcu)
- }
- 
- /**
-- * batadv_orig_ifinfo_free_ref - decrement the refcounter and possibly free
-+ * batadv_orig_ifinfo_free_ref_now - decrement the refcounter and possibly free
-  *  the orig_ifinfo (without rcu callback)
-  * @orig_ifinfo: the orig_ifinfo object to release
-  */
+ struct batadv_orig_node {
+ 	uint8_t orig[ETH_ALEN];
+-	uint8_t primary_addr[ETH_ALEN];
+ 	struct hlist_head ifinfo_list;
+ 	struct batadv_orig_ifinfo *last_bonding_candidate;
+ #ifdef CONFIG_BATMAN_ADV_DAT
 -- 
-2.0.1
+1.9.1
 
