@@ -1,14 +1,8 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 19 Jul 2014 18:11:50 +0800
-Message-ID: <21319292.8F7hNISJSU@diderot>
-In-Reply-To: <1405391898-5258-1-git-send-email-linus.luessing@web.de>
-References: <1405391898-5258-1-git-send-email-linus.luessing@web.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3244057.jG4jWnFnqa";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv5 1/2] batman-adv: Add multicast
-	optimization support for bridged setups
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Mon, 21 Jul 2014 09:53:29 +0200
+Message-Id: <1405929211-30187-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] pull request [net]: batman-adv 20140721
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,83 +14,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+
+Hello David,
+
+here you have two fixes that we have been testing for quite some time
+(this is why they arrived a bit late in the rc cycle).
+
+Patch 1) ensures that BLA packets get dropped and not forwarded to the
+mesh even if they reach batman-adv within QinQ frames. Forwarding them
+into the mesh means messing up with the TT database of other nodes which
+can generate all kind of unexpected behaviours during route computation.
+
+Patch 2) avoids a couple of race conditions triggered upon fast VLAN
+deletion-addition. Such race conditions are pretty dangerous because
+they not only create inconsistencies in the TT database of the nodes
+in the network, but such scenario is also unrecoverable (unless
+nodes are rebooted).
 
 
---nextPart3244057.jG4jWnFnqa
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
-
-On Tuesday 15 July 2014 04:38:17 Linus L=FCssing wrote:
->  /**
-> + * batadv_mcast_get_bridge - get the bridge on top of the softif if =
-it exists
-> + * @soft_iface: netdev struct of the mesh interface
-> + *
-> + * Returns either a bridge interface on top of our soft interface or=
-
-> + * NULL if no such bridge exists.
-> + */
-
-The kernel doc should mention that the bridge object's refcount is incr=
-eased=20
-(if found).
+Please pull or let me know of any problem!
 
 
-> +update:
->  =09if (!bat_priv->mcast.enabled ||
->  =09    mcast_data.flags !=3D bat_priv->mcast.flags) {
-> +=09=09if (!bat_priv->mcast.enabled)
-> +=09=09=09sprintf(str_flags_old, "<undefined>");
-> +=09=09else
-> +=09=09=09sprintf(str_flags_old, "[%c%c%c]",
-> +=09=09=09=09(bat_priv->mcast.flags &
-> +=09=09=09=09 BATADV_MCAST_WANT_ALL_UNSNOOPABLES ?
-> +=09=09=09=09 'U' : '.'),
-> +=09=09=09=09(bat_priv->mcast.flags &
-> +=09=09=09=09 BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.'),
-> +=09=09=09=09(bat_priv->mcast.flags &
-> +=09=09=09=09 BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.'));
-> +
-> +=09=09sprintf(str_flags_new, "[%c%c%c]",
-> +=09=09=09(mcast_data.flags &
-> +=09=09=09 BATADV_MCAST_WANT_ALL_UNSNOOPABLES ? 'U' : '.'),
-> +=09=09=09(mcast_data.flags &
-> +=09=09=09 BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.'),
-> +=09=09=09(mcast_data.flags &
-> +=09=09=09 BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.'));
-> +
-> +=09=09batadv_dbg(BATADV_DBG_MCAST, bat_priv,
-> +=09=09=09   "Changing multicast flags from '%s' to '%s'\n",
-> +=09=09=09   str_flags_old, str_flags_new);
+Thanks a lot,
+	Antonio
 
-IMHO the debug log should be more verbose about why a given flag was en=
-abled or=20
-disabled. As it is now, one can't learn anything from this log that isn=
-'t already
-part of the mcast table. If you think that is too big of a change you c=
-an also
-move this chunk into a separate patch.
 
-Cheers,
-Marek
 
---nextPart3244057.jG4jWnFnqa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+The following changes since commit 640d7efe4c08f06c4ae5d31b79bd8740e7f6790a:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+  dns_resolver: Null-terminate the right string (2014-07-20 22:33:32 -0700)
 
-iQEcBAABAgAGBQJTykRnAAoJEFNVTo/uthzAOn8IAIPlOywqNCwu7KEamJ/B/d3l
-Lz2XLFppAHYovSqUIA8YT6mpmD0KmTsUe4IsqeaEQoAbClN4CYJ3K82nO4GdffiT
-PNXCzfbW7vXJahAhmZYqtCrl9oFKfZrHZ/PX4o+p5YjIqsiWVF9xhiUSf93C3fnr
-Lb9dy5QynHhWGbiLSyzy7YEQOsemVBc0MYT8DNxBpmfC21WRWysDOkUjt1SnNjsD
-U1+lm1UFnUx+8PNVuuMBtLXnW5Z3LlLFs83oeTSc8/FYv9FZiQGFGKsf8ViNVtoz
-8qEjOanAaT+C4NP80Gh3oeZZGS53fAVE2BDvsDgG7TjGBrUOi2zudfLjd+hxsp0=
-=abuP
------END PGP SIGNATURE-----
+are available in the git repository at:
 
---nextPart3244057.jG4jWnFnqa--
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
 
+for you to fetch changes up to 35df3b298fc8779f7edf4b0228c683f7e98edcd5:
+
+  batman-adv: fix TT VLAN inconsistency on VLAN re-add (2014-07-21 09:49:30 +0200)
+
+----------------------------------------------------------------
+Included fixes:
+- recognise and drop Bridge Loop Avoidance packets even if
+  they are encapsulated in the 802.1q header multiple times.
+  Forwarding them into the mesh creates issues on other
+  nodes.
+- properly handle VLAN private objects in order to avoid race
+  conditions upon fast VLAN deletion-addition. Such conditions
+  create an unrecoverable inconsistency in the TT database of
+  the nodes.
+
+----------------------------------------------------------------
+Antonio Quartulli (1):
+      batman-adv: fix TT VLAN inconsistency on VLAN re-add
+
+Simon Wunderlich (1):
+      batman-adv: drop QinQ claim frames in bridge loop avoidance
+
+ net/batman-adv/bridge_loop_avoidance.c | 44 +++++++++++++++++++------
+ net/batman-adv/soft-interface.c        | 60 ++++++++++++++++++++++++++--------
+ net/batman-adv/translation-table.c     | 26 +++++++++++++++
+ net/batman-adv/types.h                 |  2 ++
+ 4 files changed, 108 insertions(+), 24 deletions(-)
