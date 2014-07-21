@@ -1,8 +1,17 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 21 Jul 2014 15:42:05 +0200
-Message-Id: <1405950125-13983-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] net: set name_assign_type in alloc_netdev()
+Return-Path: <linus.luessing@web.de>
+Date: Mon, 21 Jul 2014 17:29:12 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
+Message-ID: <20140721152912.GW2675@Linus-Debian>
+References: <1405391898-5258-1-git-send-email-linus.luessing@web.de>
+ <1405391898-5258-2-git-send-email-linus.luessing@web.de>
+ <1438357.7uXdXc9RPK@diderot>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1438357.7uXdXc9RPK@diderot>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv5 2/2] batman-adv: Add debugfs table for
+ mcast flags
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -14,79 +23,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Tom Gundersen <teg@jklm.no>, "David S. Miller" <davem@davemloft.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Tom Gundersen <teg@jklm.no>
+Hi Marek,
 
-Extend alloc_netdev{,_mq{,s}}() to take name_assign_type as argument, and convert
-all users to pass NET_NAME_UNKNOWN.
+On Sat, Jul 19, 2014 at 06:02:47PM +0800, Marek Lindner wrote:
+> On Tuesday 15 July 2014 04:38:18 Linus Lüssing wrote:
+> > +#ifdef CONFIG_BATMAN_ADV_MCAST
+> > +/**
+> > + * batadv_mcast_flags_open - Prepare file handler for reads from mcast_flags
+> 
+> No upper case please.
 
-Coccinelle patch:
+k, right
 
-@@
-expression sizeof_priv, name, setup, txqs, rxqs, count;
-@@
+> 
+> 
+> > +		rcu_read_lock();
+> > +		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
+> > +			if (!(orig_node->capa_initialized &
+> > +			      BATADV_ORIG_CAPA_HAS_MCAST))
+> > +				continue;
+> 
+> Why not printing '-' in this case as well ?
 
-(
--alloc_netdev_mqs(sizeof_priv, name, setup, txqs, rxqs)
-+alloc_netdev_mqs(sizeof_priv, name, NET_NAME_UNKNOWN, setup, txqs, rxqs)
-|
--alloc_netdev_mq(sizeof_priv, name, setup, count)
-+alloc_netdev_mq(sizeof_priv, name, NET_NAME_UNKNOWN, setup, count)
-|
--alloc_netdev(sizeof_priv, name, setup)
-+alloc_netdev(sizeof_priv, name, NET_NAME_UNKNOWN, setup)
-)
+Hm, my intention was to only list primary originators. Which the
+capa_initialized can provide.
 
-v9: move comments here from the wrong commit
+Every other, secondary interface originator is ignored in the
+calculations, too, since these will never provide (and don't need
+to) provide a TVLV anyways.
 
-Signed-off-by: Tom Gundersen <teg@jklm.no>
-Reviewed-by: David Herrmann <dh.herrmann@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-[sw: added compat code]
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- compat.h         | 14 ++++++++++++++
- soft-interface.c |  2 +-
- 2 files changed, 15 insertions(+), 1 deletion(-)
+Does this make sense?
 
-diff --git a/compat.h b/compat.h
-index ed5b815..d218426 100644
---- a/compat.h
-+++ b/compat.h
-@@ -446,4 +446,18 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
- 
- #endif /* < KERNEL_VERSION(3, 16, 0) */
- 
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
-+
-+/* alloc_netdev() was defined differently before 2.6.38 */
-+#undef alloc_netdev
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 38)
-+#define alloc_netdev(sizeof_priv, name, name_assign_type, setup) \
-+	alloc_netdev_mq(sizeof_priv, name, setup, 1)
-+#else
-+#define alloc_netdev(sizeof_priv, name, name_assign_type, setup) \
-+	alloc_netdev_mqs(sizeof_priv, name, setup, 1, 1)
-+#endif /* nested < KERNEL_VERSION(2, 6, 38) */
-+
-+#endif /* < KERNEL_VERSION(3, 17, 0) */
-+
- #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
-diff --git a/soft-interface.c b/soft-interface.c
-index 9bf382d..cfc2cd2 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -933,7 +933,7 @@ struct net_device *batadv_softif_create(const char *name)
- 	int ret;
- 
- 	soft_iface = alloc_netdev(sizeof(struct batadv_priv), name,
--				  batadv_softif_init_early);
-+				  NET_NAME_UNKNOWN, batadv_softif_init_early);
- 	if (!soft_iface)
- 		return NULL;
- 
--- 
-1.9.1
+> 
+> Cheers,
+> Marek
 
+Cheers, Linus
