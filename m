@@ -1,11 +1,14 @@
-Return-Path: <dhruvesh_r@hotmail.com>
-Message-ID: <BLU402-EAS15F34D695A5F704F712449E1FE0@phx.gbl>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-From: Dhruvesh Rathore <dhruvesh_r@hotmail.com>
-MIME-Version: 1.0 (1.0)
-Date: Wed, 23 Jul 2014 22:49:03 +0530
-Subject: [B.A.T.M.A.N.] Opportunity to contribute in B.A.T.M.A.N
+Return-Path: <tobias@hachmer.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date: Thu, 24 Jul 2014 06:40:24 +0200
+From: Tobias Hachmer <tobias@hachmer.de>
+In-Reply-To: <53D05D84.20700@altermundi.net>
+References: <53D00BAF.9070506@hachmer.de> <53D05D84.20700@altermundi.net>
+Message-ID: <88409a9ed363089a1dfc08d0baa9dea5@hachmer.de>
+Subject: Re: [B.A.T.M.A.N.] alfred - one gateway - multiple interfaces
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,52 +20,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hello,
-=09
-	We are a group of students that are currently pursuing our undergra=
-duate degrees in Computer Science form Pune Institute of Computer Technology=
- (PICT), Maharashtra, India. We will be graduating in June 2015 and are curr=
-ently in our final year. For our final year B.E project we have selected the=
- domain as Computer Networks and would be very interested in working in the f=
-ield of routing protocols for multihop ad-hoc mesh networks, which is where w=
-e stumbled upon the B.A.T.M.A.N protocol.
-     Over the past few weeks we have been extensively studying the various f=
-eatures and working principles which has allowed this protocol to prosper. I=
-t will be a great learning opportunity for us to work with B.A.T.M.A.N and i=
-n turn work with you. As per given on the open-mesh.org website for contribu=
-tions, we would appreciate if you could steer us towards the direction of ch=
-oosing the right topic and working towards culminating a project in the same=
-, which would be helpful for the community.
-     	Following are a few details which includes information about us, wh=
-ich would help you in making an informed decision:
+Hallo Gui,
 
-1) Group name: A-DRS
-     It is our constant belief that inquisitiveness is the best teacher. For=
- each one of us, coming together as a group has allowed us to begin the jour=
-ney of learning and innovating. We have been working together since December=
- 2012 and have completed numerous projects in our college and for organizati=
-ons, some of which you can view at out GitHub account link : ( https://githu=
-b.com/a-drs?tab=3Dcontributions&from=3D2014-07-18 ).
+thanks for your reply.
 
-2) Group members:
-      Amey Ruikar ( ameyruikar@yahoo.com , in.linkedin.com/pub/amey-ruikar/9=
-a/315/1b7/ )
-     	Dhruvesh Rathore (dhruvesh_r@outlook.com , in.linkedin.com/pub/dhru=
-vesh-rathore/9a/550/56a/ )
-      Somdeep Dey (somdeepdey10@gmail.com , in.linkedin.com/pub/somdeep-dey/=
-a0/124/bb7/)
+On 24.07.2014 03:12, Gui Iribarren wrote:
+> On 23/07/14 16:23, Tobias Hachmer wrote:
+>> Guess what: We have the requirement to run one alfred instance for
+>> each batman domain. What is the suggested way to achieve this?
+> 
+> a tangential question:
+> 
+> given you have a big enough hardware (since you mention ubuntu 14.04)
+> have you considered turning it into a "hardnode" and using any kind of
+> virtualization technology? openvz, lxc...
+> 
+> it would help with isolation and simplify things in the long run
+> (including having two alfred instances)
 
-3) We have two mentors working with us, who will be guiding us throughout th=
-e process
-     	Nafisa Mandliwala (nafisa.madliwala@gmail.com)
-     	Swapnil Pimpale (pimplae.swapnil@gmail.com)
+Yeah, this could be an approach later. But for now our gates are either 
+a VM or just small hardware (Atom). But I don't want to discuss this 
+here.
 
-4) Development time ( 6 to 7 months from August'14 to February'15 )
+It is possible to create multiple batman interfaces wich are serving 
+different domains. Corollary, alfred has to also.
 
-We would love to hear from you about any ideas that you see fit for us to pu=
-rsue and which are feasible in the specified time frame. Hoping to hear from=
- you soon, and thanking you in anticipation.
+As I said, a workaround could be to just simply duplicate the init 
+script (adjusting all relevant names like pid and so on, of course).
 
-Regards.=
+But there could be more communities out there which will stumble over 
+the same issue, sooner or later. So I just wanted the developer to know, 
+that there is such a requirement.
+
+And, maybe, this could be achieved in a way we don't know about?
+Anybody here?
+
+Greetings,
+Tobias
