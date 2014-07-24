@@ -1,10 +1,14 @@
-Return-Path: <Treasach@web.de>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Thu, 24 Jul 2014 11:01:30 +0200
+References: <53D00BAF.9070506@hachmer.de> <53D05D84.20700@altermundi.net>
+ <88409a9ed363089a1dfc08d0baa9dea5@hachmer.de>
+In-Reply-To: <88409a9ed363089a1dfc08d0baa9dea5@hachmer.de>
 MIME-Version: 1.0
-Message-ID: <trinity-81c0c32c-d583-4093-bfed-f4207f7fa84a-1406191832784@3capp-webde-bs58>
-From: Treasach@web.de
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 24 Jul 2014 10:50:32 +0200
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="nextPart703101406.ZCTHEYG3ZC";
+ protocol="application/pgp-signature"; micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <201407241101.34652.sw@simonwunderlich.de>
 Subject: Re: [B.A.T.M.A.N.] alfred - one gateway - multiple interfaces
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -18,87 +22,52 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: max@rfc2324.org
 
+--nextPart703101406.ZCTHEYG3ZC
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Did you try to contact the author of this init-script/deb-file? Because th=
-is Maximilian Wilhelm is not the maintainer of this package in Debian https=
-://qa.debian.org/developer.php?login=3Dmax@rfc2324.org nor an alfred/batman=
- developer.
+Hey Tobias,
 
-https://qa.debian.org/developer.php?login=3Dmax@rfc2324.org[https://qa.deb=
-ian.org/developer.php?login=3Dmax@rfc2324.org]
-http://git.open-mesh.org/alfred.git/search?s=3DMaximilian+Wilhelm;st=3Daut=
-hor
-http://git.open-mesh.org/batman-adv.git/search?s=3DMaximilian+Wilhelm;st=
-=3Dauthor
-http://git.open-mesh.org/batctl.git/search?s=3DMaximilian+Wilhelm;st=3Daut=
-hor
-=C2=A0
+thank you very much for stating your requirement - even if that it's not=20
+implemented yet, maybe there are people out there who want that too and can=
+=20
+help implenting it. It shouldn't be too hard ...
 
-Gesendet:=C2=A0Mittwoch, 23. Juli 2014 um 21:23 Uhr
-Von:=C2=A0"Tobias Hachmer" <tobias-MiV4+CnmVYKELgA04lAiVw@public.gmane.org=
->
-An:=C2=A0b.a.t.m.a.n-ZwoEplunGu2X36UT3dwllkB+6BGkLq7r@public.gmane.org
-Betreff:=C2=A0alfred - one gateway - multiple interfaces
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA512
+> As I said, a workaround could be to just simply duplicate the init
+> script (adjusting all relevant names like pid and so on, of course).
 
-Hello list,
+I'd like to point out that you'd also need to add an option in alfred and i=
+ts=20
+clients to duplicate the unix socket used to communicate between alfred=20
+clients and the server - currently that is hardcoded:
 
-running here 3 gateways serving two communities. Nearly everything is
-duplicated/separated logically: fastd, bridges, routing tables, batman
-domains, etc.
+#define ALFRED_SOCK_PATH		"/var/run/alfred.sock"
 
-Operating System is currently Ubuntu 14.04.
+>=20
+> But there could be more communities out there which will stumble over
+> the same issue, sooner or later. So I just wanted the developer to know,
+> that there is such a requirement.
+>=20
+> And, maybe, this could be achieved in a way we don't know about?
+> Anybody here?
 
-alfred:
-Installed: 2014.1.0-1
-Candidate: 2014.1.0-1
-Version table:
-*** 2014.1.0-1 0
-500 http://apt.rfc2324.org/debian/[http://apt.rfc2324.org/debian/] wheezy/=
-main amd64 Packages
-100 /var/lib/dpkg/status
+In any case, if someone wants to work on that, patches are welcome :)
 
-Guess what: We have the requirement to run one alfred instance for
-each batman domain. What is the suggested way to achieve this? For
-instance, I assume that this isn't intended by design because
-/etc/default/alfred in conjunction with the init script aren't
-multiple interface aware.
+Cheers,
+    Simon
 
-- From our POV the preferred solution for this would be to patch the
-init script in order to support multiple interfaces by reading this
-from /etc/default/alfred, like:
+--nextPart703101406.ZCTHEYG3ZC
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-INTERFACES=3D"bridge_one bridge_two"
-BATMANIFS=3D"bat_one bat_two"
-
-Just to fork multiple separated processes.
-
-Maybe this is solved elsewhere and we didn't get it, yet.
-
-Please give us your thoughts and hopefully a solution to this issue.
-
-Regards,
-Tobias Hachmer
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/[http://ww=
-w.enigmail.net/][http://www.enigmail.net/[http://www.enigmail.net/]]
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCgAGBQJT0AuvAAoJEHXGlTiIv2V4QPUP/13h9qrMX79NMUBbIDnLGt41
-b1tViUzs1v8zGeYfshgER4cTNk1j7B1iikjCchojxwhGdZpXh5CuWaTzJnbSVBjA
-5SxSKsRdhVetp3EBErhezhv4jW1E7QlzjIQ9BW/kBV7bxyMxvaYhn6sfTlviCH2h
-WTYNxtU0ACxVJ63h8c720qneTkiS8O+SGLUHSxy7v8BuCRRTJtiMBYJf3zv7jJ2D
-0Zskla7ASW9leWkMgescjcYL4c2m3N+BR1m01tML5C3En49NVddAEawwcoU/RTmR
-WH8NdRTG/SExwZqWGiya+wIvORsAqMZTmgjAqoAJsX5MbK9vzuOqQQv0VVxCerr/
-r+l9mtOGluzLr5hMB4/1rpvAdd1VH5xlqtu9UArTJWANFStMQCr70g/jMknghkhj
-aUjo8Qg6hunP6y7npWFQmv/TR6fEF9BNETHIeGDVvUh5SvwtEIzg6PjbEU3poRKK
-h64fRdqdSe0UEuiC6fiaMWE+ryke3Mf2lPTJUsjrnOerwS4QCctL0MHsuuEtmJlv
-OVlfRWWAWJHcf9/oykGIpwmxgTbeLqoAn9fOZVab4o3yHkeELJlTHX3pK7F7jxzw
-1Y1yk8fxxE5cx/7BHkQsDOubzZyrr5gt3uh66YbtYuwO5Envh7GxhzLBvzQJn+MD
-QjGkA6b7zn4g/+g5jnO2
-=3DYiHt
+iEYEABECAAYFAlPQy2oACgkQrzg/fFk7axZUXgCgtwQYiZn5Q+APM6NUC9uELCny
+rA4AoOWCAuQsx9WChXIM+TIevcSbwn91
+=ykDf
 -----END PGP SIGNATURE-----
-=C2=A0
+
+--nextPart703101406.ZCTHEYG3ZC--
