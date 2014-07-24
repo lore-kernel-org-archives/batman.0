@@ -1,15 +1,13 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 24 Jul 2014 11:01:30 +0200
-References: <53D00BAF.9070506@hachmer.de> <53D05D84.20700@altermundi.net>
- <88409a9ed363089a1dfc08d0baa9dea5@hachmer.de>
-In-Reply-To: <88409a9ed363089a1dfc08d0baa9dea5@hachmer.de>
+Return-Path: <gtolon@inti.gob.ar>
+Message-ID: <53D0FE56.1080503@inti.gob.ar>
+Date: Thu, 24 Jul 2014 09:38:46 -0300
+From: =?UTF-8?B?R2FicmllbCBUb2zDs24=?= <gtolon@inti.gob.ar>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart703101406.ZCTHEYG3ZC";
- protocol="application/pgp-signature"; micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <201407241101.34652.sw@simonwunderlich.de>
-Subject: Re: [B.A.T.M.A.N.] alfred - one gateway - multiple interfaces
+References: <53C91BDF.3080907@inti.gob.ar> <53CFDBC0.3020906@altermundi.net>
+In-Reply-To: <53CFDBC0.3020906@altermundi.net>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] non DHCP batman-adv gateway
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,51 +21,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart703101406.ZCTHEYG3ZC
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Hi Gui, thanks for your answer!
 
-Hey Tobias,
 
-thank you very much for stating your requirement - even if that it's not=20
-implemented yet, maybe there are people out there who want that too and can=
-=20
-help implenting it. It shouldn't be too hard ...
+El 23/07/14 12:58, Gui Iribarren escribió:
+> On 18/07/14 10:06, Gabriel Tolón wrote:
+>> Hi,
+>>
+>> I'd like to use a configuration in a batman-adv openwrt mesh network in
+>> which the batman gateway relays the DHCP messages to and from a non
+>> batman-adv router. I think that's not a typical configuration right?
+>> Should it work? Do I need some additional packages? Thanks in advance!
+>
+> Yes, it should work just fine, you should set gw_mode=master in the
+> correspondent batman-adv gateway, but turn its dhcp server off.
 
-> As I said, a workaround could be to just simply duplicate the init
-> script (adjusting all relevant names like pid and so on, of course).
+you mean gw_mode=server? Or it's a new option?
 
-I'd like to point out that you'd also need to add an option in alfred and i=
-ts=20
-clients to duplicate the unix socket used to communicate between alfred=20
-clients and the server - currently that is hardcoded:
+>
+> So, when dhcp packets get to that node, it will naturally relay them
+> over br-lan and they will reach the non-batman-adv router.
+>
+> That setup is more typical than what you might think of :)
+>
+> (we have used it this way in at least 4 or 5 different cases)
+>
+> cheers!
 
-#define ALFRED_SOCK_PATH		"/var/run/alfred.sock"
+That's good to know. Other option I had thought was to turn off gw_mode 
+and use the mesh just as the L2 switch it is, but that way the 
+possibility to choose the best batman-adv gateway would be lost i guess.
 
->=20
-> But there could be more communities out there which will stumble over
-> the same issue, sooner or later. So I just wanted the developer to know,
-> that there is such a requirement.
->=20
-> And, maybe, this could be achieved in a way we don't know about?
-> Anybody here?
+Regards
 
-In any case, if someone wants to work on that, patches are welcome :)
-
-Cheers,
-    Simon
-
---nextPart703101406.ZCTHEYG3ZC
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iEYEABECAAYFAlPQy2oACgkQrzg/fFk7axZUXgCgtwQYiZn5Q+APM6NUC9uELCny
-rA4AoOWCAuQsx9WChXIM+TIevcSbwn91
-=ykDf
------END PGP SIGNATURE-----
-
---nextPart703101406.ZCTHEYG3ZC--
+Gabriel
