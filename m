@@ -1,14 +1,13 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Wed, 30 Jul 2014 00:39:37 +0200
-Message-Id: <1406673579-20110-2-git-send-email-linus.luessing@web.de>
+Date: Wed, 30 Jul 2014 00:39:38 +0200
+Message-Id: <1406673579-20110-3-git-send-email-linus.luessing@web.de>
 In-Reply-To: <1406673579-20110-1-git-send-email-linus.luessing@web.de>
 References: <1406673579-20110-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv6 1/3] batman-adv: Add multicast optimization
-	support for bridged setups
+Subject: [B.A.T.M.A.N.] [PATCHv6 2/3] batman-adv: Adding 'mcast' log level
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,410 +21,277 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-So far, the recently added multicast optimizations did not support
-a configuration where a bridge is on top of the soft-interface (e.g.
-bat0).
-
-Now the Linux bridge code is able to provide us with the missing bits:
-
-Multicast Listeners: The bridge hands us a list of multicast listeners
-it has detected behind the bridge which we will announce through the
-mesh via the translation table, allowing other nodes to direct multicast
-packets to these clients behind the bridge even with enabled multicast
-optimizations.
-
-Queriers: The bridge informs us whether there is a selected IGMP or
-MLD querier behind the bridge or if there is no querier at all. In these
-cases we need all according IPv4 or IPv6 multicast traffic directed to us.
-
-These two parts together allow us to serve all multicast listeners with
-IPv6 link-local multicast packets even when bridges are involved and
-our multicast optimizations enabled.
+This patch adds an 'mcast' log level. Currently, it will print changes
+relevant to a nodes own multicast flag changes.
 
 Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 ---
- compat.c    |   39 ++++++++++++++
- compat.h    |   32 +++++++++++
- main.h      |    6 ++-
- multicast.c |  169 ++++++++++++++++++++++++++++++++++++++++++++++++++++-------
- 4 files changed, 227 insertions(+), 19 deletions(-)
+ multicast.c      |  152 ++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ soft-interface.c |    5 ++
+ types.h          |   17 ++++++
+ 3 files changed, 169 insertions(+), 5 deletions(-)
 
-diff --git a/compat.c b/compat.c
-index 3dbf9d2..31546f5 100644
---- a/compat.c
-+++ b/compat.c
-@@ -109,3 +109,42 @@ void batadv_free_rcu_tvlv_handler(struct rcu_head *rcu)
- }
- 
- #endif /* < KERNEL_VERSION(3, 0, 0) */
-+
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 16, 0)
-+
-+int br_multicast_list_adjacent(struct net_device *dev,
-+			       struct list_head *br_ip_list)
-+{
-+	return 0;
-+}
-+
-+bool br_multicast_has_querier_adjacent(struct net_device *dev, int proto)
-+{
-+	return false;
-+}
-+
-+#endif /* < KERNEL_VERSION(3, 16, 0) */
-+
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
-+
-+bool br_multicast_has_querier_anywhere(struct net_device *dev, int proto)
-+{
-+	pr_warn_once("Old kernel detected (< 3.17) - multicast optimizations disabled\n");
-+
-+	return false;
-+}
-+
-+#if !(IS_ENABLED(CONFIG_BRIDGE) && IS_ENABLED(CONFIG_BRIDGE_IGMP_SNOOPING))
-+int br_multicast_list_adjacent(struct net_device *dev,
-+			       struct list_head *br_ip_list)
-+{
-+	return 0;
-+}
-+
-+bool br_multicast_has_querier_adjacent(struct net_device *dev, int proto)
-+{
-+	return false;
-+}
-+#endif
-+
-+#endif /* < KERNEL_VERSION(3, 17, 0) */
-diff --git a/compat.h b/compat.h
-index ed5b815..14de948 100644
---- a/compat.h
-+++ b/compat.h
-@@ -240,6 +240,12 @@ static inline void skb_reset_mac_len(struct sk_buff *skb)
- 
- #endif /* < KERNEL_VERSION(3, 0, 0) */
- 
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 1, 0)
-+
-+#define IS_ENABLED(x) defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
-+
-+#endif /* < KERNEL_VERSION(3, 1, 0) */
-+
- #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 3, 0)
- 
- #define batadv_interface_add_vid(x, y, z) \
-@@ -444,6 +450,32 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
- 
- #define pskb_copy_for_clone pskb_copy
- 
-+int br_multicast_list_adjacent(struct net_device *dev,
-+			       struct list_head *br_ip_list);
-+bool br_multicast_has_querier_adjacent(struct net_device *dev, int proto);
-+
-+struct br_ip {
-+	union {
-+		__be32  ip4;
-+#if IS_ENABLED(CONFIG_IPV6)
-+		struct in6_addr ip6;
-+#endif
-+	} u;
-+	__be16          proto;
-+	__u16           vid;
-+};
-+
-+struct br_ip_list {
-+	struct list_head list;
-+	struct br_ip addr;
-+};
-+
- #endif /* < KERNEL_VERSION(3, 16, 0) */
- 
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
-+
-+bool br_multicast_has_querier_anywhere(struct net_device *dev, int proto);
-+
-+#endif /* < KERNEL_VERSION(3, 17, 0) */
-+
- #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
-diff --git a/main.h b/main.h
-index 4bb500b..1e1e000 100644
---- a/main.h
-+++ b/main.h
-@@ -169,6 +169,7 @@ enum batadv_uev_type {
- #include <linux/netdevice.h>	/* netdevice */
- #include <linux/etherdevice.h>  /* ethernet address classification */
- #include <linux/if_ether.h>	/* ethernet header */
-+#include <linux/if_bridge.h>	/* bridge / multicast-snooping communication */
- #include <linux/poll.h>		/* poll_table */
- #include <linux/kthread.h>	/* kernel threads */
- #include <linux/pkt_sched.h>	/* schedule types */
-@@ -177,6 +178,7 @@ enum batadv_uev_type {
- #include <linux/slab.h>
- #include <net/sock.h>		/* struct sock */
- #include <net/addrconf.h>	/* ipv6 address stuff */
-+#include <net/ip.h>
- #include <linux/ip.h>
- #include <net/rtnetlink.h>
- #include <linux/jiffies.h>
-@@ -223,6 +225,7 @@ __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr);
-  * @BATADV_DBG_BLA: bridge loop avoidance messages
-  * @BATADV_DBG_DAT: ARP snooping and DAT related messages
-  * @BATADV_DBG_NC: network coding related messages
-+ * @BATADV_DBG_MCAST: multicast related messages
-  * @BATADV_DBG_ALL: the union of all the above log levels
-  */
- enum batadv_dbg_level {
-@@ -232,7 +235,8 @@ enum batadv_dbg_level {
- 	BATADV_DBG_BLA    = BIT(3),
- 	BATADV_DBG_DAT    = BIT(4),
- 	BATADV_DBG_NC	  = BIT(5),
--	BATADV_DBG_ALL    = 63,
-+	BATADV_DBG_MCAST  = BIT(6),
-+	BATADV_DBG_ALL    = 127,
- };
- 
- #ifdef CONFIG_BATMAN_ADV_DEBUG
 diff --git a/multicast.c b/multicast.c
-index 96b66fd..c05f64a 100644
+index c05f64a..2a80997 100644
 --- a/multicast.c
 +++ b/multicast.c
-@@ -23,12 +23,44 @@
- #include "multicast.h"
- 
- /**
-+ * batadv_mcast_get_bridge - get the bridge on top of the softif if it exists
-+ * @soft_iface: netdev struct of the mesh interface
-+ *
-+ * Returns either a bridge interface on top of our soft interface or
-+ * NULL if no such bridge exists.
-+ *
-+ * If found then the refcount of the bridge interface is incremented.
-+ */
-+static struct net_device *batadv_mcast_get_bridge(struct net_device *soft_iface)
-+{
-+	struct net_device *upper = soft_iface;
-+
-+	rcu_read_lock();
-+	do {
-+		upper = netdev_master_upper_dev_get_rcu(upper);
-+	} while (upper && !(upper->priv_flags & IFF_EBRIDGE));
-+
-+	if (upper)
-+		dev_hold(upper);
-+	rcu_read_unlock();
-+
-+	return upper;
-+}
-+
-+/**
-  * batadv_mcast_mla_softif_get - get softif multicast listeners
-  * @dev: the device to collect multicast addresses from
-  * @mcast_list: a list to put found addresses into
-  *
-- * Collect multicast addresses of the local multicast listeners
-- * on the given soft interface, dev, in the given mcast_list.
-+ * Collects multicast addresses of multicast listeners residing
-+ * on this kernel on the given soft interface, dev, in
-+ * the given mcast_list. In general, multicast listeners provided by
-+ * your multicast receiving applications run directly on this node.
-+ *
-+ * If there is a bridge interface on top of dev, collects from that one
-+ * instead. Just like with IP addresses and routes, multicast listeners
-+ * will(/should) register to the bridge interface instead of an
-+ * enslaved bat0.
-  *
-  * Returns -ENOMEM on memory allocation error or the number of
-  * items added to the mcast_list otherwise.
-@@ -36,12 +68,13 @@
- static int batadv_mcast_mla_softif_get(struct net_device *dev,
- 				       struct hlist_head *mcast_list)
- {
-+	struct net_device *bridge = batadv_mcast_get_bridge(dev);
- 	struct netdev_hw_addr *mc_list_entry;
- 	struct batadv_hw_addr *new;
- 	int ret = 0;
- 
--	netif_addr_lock_bh(dev);
--	netdev_for_each_mc_addr(mc_list_entry, dev) {
-+	netif_addr_lock_bh(bridge ? bridge : dev);
-+	netdev_for_each_mc_addr(mc_list_entry, bridge ? bridge : dev) {
- 		new = kmalloc(sizeof(*new), GFP_ATOMIC);
- 		if (!new) {
- 			ret = -ENOMEM;
-@@ -52,7 +85,10 @@ static int batadv_mcast_mla_softif_get(struct net_device *dev,
- 		hlist_add_head(&new->list, mcast_list);
- 		ret++;
- 	}
--	netif_addr_unlock_bh(dev);
-+	netif_addr_unlock_bh(bridge ? bridge : dev);
-+
-+	if (bridge)
-+		dev_put(bridge);
- 
- 	return ret;
- }
-@@ -78,6 +114,83 @@ static bool batadv_mcast_mla_is_duplicate(uint8_t *mcast_addr,
+@@ -292,6 +292,123 @@ static bool batadv_mcast_has_bridge(struct batadv_priv *bat_priv)
  }
  
  /**
-+ * batadv_mcast_mla_br_addr_cpy - copy a bridge multicast address
-+ * @dst: destination to write to - a multicast MAC address
-+ * @src: source to read from - a multicast IP address
++ * batadv_mcast_querier_log - debug output regarding the querier status on link
++ * @bat_priv: the bat priv with all the soft interface information
++ * @str_proto: a string for the querier protocol (e.g. "IGMP" or "MLD")
++ * @old_querier: the previous querier state on our link
++ * @new_querier: the new querier state on our link
 + *
-+ * Converts a given multicast IPv4/IPv6 address from a bridge
-+ * to its matching multicast MAC address and copies it into the given
-+ * destination buffer.
++ * Outputs debug messages to the logging facility with log level 'mcast'
++ * regarding changes to the querier status on the link which are relevant
++ * to our multicast optimizations.
 + *
-+ * Caller needs to make sure the destination buffer can hold
-+ * at least ETH_ALEN bytes.
++ * Usually this is about whether a querier appeared or vanished in
++ * our mesh or whether the querier is in the suboptimal position of being
++ * behind our local bridge segment.
++ *
++ * This is only interesting for nodes with a bridge on top of their
++ * soft interface.
 + */
-+static void batadv_mcast_mla_br_addr_cpy(char *dst, const struct br_ip *src)
++static void
++batadv_mcast_querier_log(struct batadv_priv *bat_priv, char *str_proto,
++			 struct batadv_mcast_querier_state *old_querier,
++			 struct batadv_mcast_querier_state *new_querier)
 +{
-+	if (src->proto == htons(ETH_P_IP))
-+		ip_eth_mc_map(src->u.ip4, dst);
-+#if IS_ENABLED(CONFIG_IPV6)
-+	else if (src->proto == htons(ETH_P_IPV6))
-+		ipv6_eth_mc_map(&src->u.ip6, dst);
-+#endif
-+	else
-+		memset(dst, 0, ETH_ALEN);
++	if (!old_querier->exists && new_querier->exists)
++		batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++			   "%s Querier appeared (good!)\n", str_proto);
++	else if (old_querier->exists && !new_querier->exists)
++		batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++			   "%s Querier disappeared (bad)\n", str_proto);
++	else if (!bat_priv->mcast.bridged && !new_querier->exists)
++		batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++			   "Note: No %s Querier present\n", str_proto);
++
++	if (!new_querier->exists)
++		return;
++
++	if (!old_querier->shadowing && new_querier->shadowing)
++		batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++			   "%s Querier is behind our bridged segment: Might shadow listeners (bad)\n",
++			   str_proto);
++	else if (old_querier->shadowing && !new_querier->shadowing)
++		batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++			   "%s Querier is not behind our bridged segment (good!)\n",
++			   str_proto);
 +}
 +
 +/**
-+ * batadv_mcast_mla_bridge_get - get bridged-in multicast listeners
-+ * @dev: a bridge slave whose bridge to collect multicast addresses from
-+ * @mcast_list: a list to put found addresses into
++ * batadv_mcast_bridge_log - debug output for topology changes in bridged setups
++ * @bat_priv: the bat priv with all the soft interface information
++ * @bridged: a flag about whether the soft interface is currently bridged or not
++ * @querier_ipv4: (maybe) new status of a potential, selected IGMP querier
++ * @querier_ipv6: (maybe) new status of a potential, selected MLD querier
 + *
-+ * Collects multicast addresses of multicast listeners residing
-+ * on foreign, non-mesh devices which we gave access to our mesh via
-+ * a bridge on top of the given soft interface, dev, in the given
-+ * mcast_list.
++ * If no bridges are ever used on this node, then this function does nothing.
 + *
-+ * Returns -ENOMEM on memory allocation error or the number of
-+ * items added to the mcast_list otherwise.
++ * Otherwise this function outputs debug information to the 'mcast' log level
++ * which might be relevant to our multicast optimizations.
++ *
++ * More precisely, it outputs information when a bridge interface is added or
++ * removed from a soft interface. And when a bridge is present, it further
++ * outputs information about the querier state which is relevant for the
++ * multicast flags this node is going to set.
 + */
-+static int batadv_mcast_mla_bridge_get(struct net_device *dev,
-+				       struct hlist_head *mcast_list)
++static void
++batadv_mcast_bridge_log(struct batadv_priv *bat_priv, bool bridged,
++			struct batadv_mcast_querier_state *querier_ipv4,
++			struct batadv_mcast_querier_state *querier_ipv6)
 +{
-+	struct list_head bridge_mcast_list = LIST_HEAD_INIT(bridge_mcast_list);
-+	struct br_ip_list *br_ip_entry, *tmp;
-+	struct batadv_hw_addr *new;
-+	uint8_t mcast_addr[ETH_ALEN];
-+	int ret;
++	if (!bat_priv->mcast.bridged && bridged)
++		batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++			   "Bridge added: Setting U-flag\n");
++	else if (bat_priv->mcast.bridged && !bridged)
++		batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++			   "Bridge removed: Unsetting U-flag\n");
++	if (!bridged)
++		return;
 +
-+	/* we don't need to detect these devices/listeners, the IGMP/MLD
-+	 * snooping code of the Linux bridge already does that for us
-+	 */
-+	ret = br_multicast_list_adjacent(dev, &bridge_mcast_list);
-+	if (ret < 0)
-+		goto out;
-+
-+	list_for_each_entry(br_ip_entry, &bridge_mcast_list, list) {
-+		batadv_mcast_mla_br_addr_cpy(mcast_addr, &br_ip_entry->addr);
-+		if (batadv_mcast_mla_is_duplicate(mcast_addr, mcast_list))
-+			continue;
-+
-+		new = kmalloc(sizeof(*new), GFP_ATOMIC);
-+		if (!new) {
-+			ret = -ENOMEM;
-+			break;
-+		}
-+
-+		ether_addr_copy(new->addr, mcast_addr);
-+		hlist_add_head(&new->list, mcast_list);
-+	}
-+
-+out:
-+	list_for_each_entry_safe(br_ip_entry, tmp, &bridge_mcast_list, list) {
-+		list_del(&br_ip_entry->list);
-+		kfree(br_ip_entry);
-+	}
-+
-+	return ret;
++	batadv_mcast_querier_log(bat_priv, "IGMP",
++				 &bat_priv->mcast.querier_ipv4, querier_ipv4);
++	batadv_mcast_querier_log(bat_priv, "MLD",
++				 &bat_priv->mcast.querier_ipv6, querier_ipv6);
 +}
 +
 +/**
-  * batadv_mcast_mla_list_free - free a list of multicast addresses
-  * @mcast_list: the list to free
++ * batadv_mcast_flags_logs - output debug information about mcast flag changes
++ * @bat_priv: the bat priv with all the soft interface information
++ * @mcast_flags: flags indicating the new multicast state
++ *
++ * Whenever the multicast flags this nodes announces changes (@mcast_flags vs.
++ * bat_priv->mcast.flags), this notifies userspace via the 'mcast' log level.
++ */
++static void batadv_mcast_flags_log(struct batadv_priv *bat_priv, uint8_t flags)
++{
++	char str_undefined[] = "<undefined>";
++	char str_flags[] = "[...]";
++	char *str_flags_old = str_undefined;
++	uint8_t old_flags = bat_priv->mcast.flags;
++
++	if (!bat_priv->mcast.enabled)
++		goto print;
++
++	str_flags_old = str_flags;
++
++	sprintf(str_flags_old, "[%c%c%c]",
++		old_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ? 'U' : '.',
++		old_flags & BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.',
++		old_flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.');
++
++print:
++	batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++		   "Changing multicast flags from '%s' to '[%c%c%c]'\n",
++		   str_flags_old,
++		   flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ? 'U' : '.',
++		   flags & BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.',
++		   flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.');
++}
++
++/**
+  * batadv_mcast_mla_tvlv_update - update multicast tvlv
+  * @bat_priv: the bat priv with all the soft interface information
   *
-@@ -185,29 +298,44 @@ static bool batadv_mcast_has_bridge(struct batadv_priv *bat_priv)
-  * Updates the own multicast tvlv with our current multicast related settings,
-  * capabilities and inabilities.
-  *
-- * Returns true if the tvlv container is registered afterwards. Otherwise
-- * returns false.
-+ * Returns false if we want all IPv4 && IPv6 multicast traffic and true
-+ * otherwise.
-  */
+@@ -304,18 +421,33 @@ static bool batadv_mcast_has_bridge(struct batadv_priv *bat_priv)
  static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
  {
  	struct batadv_tvlv_mcast_data mcast_data;
-+	struct net_device *dev = bat_priv->soft_iface;
++	struct batadv_mcast_querier_state querier_ipv4, querier_ipv6;
+ 	struct net_device *dev = bat_priv->soft_iface;
++	bool bridged;
  
  	mcast_data.flags = BATADV_NO_FLAGS;
  	memset(mcast_data.reserved, 0, sizeof(mcast_data.reserved));
++	memset(&querier_ipv4, 0, sizeof(querier_ipv4));
++	memset(&querier_ipv6, 0, sizeof(querier_ipv6));
  
--	/* Avoid attaching MLAs, if there is a bridge on top of our soft
--	 * interface, we don't support that yet (TODO)
-+	if (!batadv_mcast_has_bridge(bat_priv))
-+		goto update;
+-	if (!batadv_mcast_has_bridge(bat_priv))
++	bridged = batadv_mcast_has_bridge(bat_priv);
++	if (!bridged)
+ 		goto update;
+ 
+ #if !IS_ENABLED(CONFIG_BRIDGE_IGMP_SNOOPING)
+ 	pr_warn_once("No bridge IGMP snooping compiled - multicast optimizations disabled\n");
+ #endif
+ 
++	querier_ipv4 = (struct batadv_mcast_querier_state){
++		.exists = br_multicast_has_querier_anywhere(dev, ETH_P_IP),
++		.shadowing = br_multicast_has_querier_adjacent(dev, ETH_P_IP),
++	};
 +
-+#if !IS_ENABLED(CONFIG_BRIDGE_IGMP_SNOOPING)
-+	pr_warn_once("No bridge IGMP snooping compiled - multicast optimizations disabled\n");
-+#endif
++	querier_ipv6 = (struct batadv_mcast_querier_state){
++		.exists = br_multicast_has_querier_anywhere(dev, ETH_P_IPV6),
++		.shadowing = br_multicast_has_querier_adjacent(dev, ETH_P_IPV6),
++	};
 +
-+	mcast_data.flags |= BATADV_MCAST_WANT_ALL_UNSNOOPABLES;
-+
-+	/* 1) If no querier exists at all, then multicast listeners on
-+	 *    our local TT clients behind the bridge will keep silent.
-+	 * 2) If the selected querier is on one of our local TT clients,
-+	 *    behind the bridge, then this querier might shadow multicast
-+	 *    listeners on our local TT clients, behind this bridge.
-+	 *
-+	 * In both cases, we will signalize other batman nodes that
-+	 * we need all multicast traffic of the according protocol.
+ 	mcast_data.flags |= BATADV_MCAST_WANT_ALL_UNSNOOPABLES;
+ 
+ 	/* 1) If no querier exists at all, then multicast listeners on
+@@ -327,21 +459,31 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
+ 	 * In both cases, we will signalize other batman nodes that
+ 	 * we need all multicast traffic of the according protocol.
  	 */
--	if (batadv_mcast_has_bridge(bat_priv)) {
--		if (bat_priv->mcast.enabled) {
--			batadv_tvlv_container_unregister(bat_priv,
--							 BATADV_TVLV_MCAST, 1);
--			bat_priv->mcast.enabled = false;
--		}
-+	if (!br_multicast_has_querier_anywhere(dev, ETH_P_IP) ||
-+	    br_multicast_has_querier_adjacent(dev, ETH_P_IP))
-+		mcast_data.flags |= BATADV_MCAST_WANT_ALL_IPV4;
+-	if (!br_multicast_has_querier_anywhere(dev, ETH_P_IP) ||
+-	    br_multicast_has_querier_adjacent(dev, ETH_P_IP))
++	if (!querier_ipv4.exists || querier_ipv4.shadowing)
+ 		mcast_data.flags |= BATADV_MCAST_WANT_ALL_IPV4;
  
--		return false;
--	}
-+	if (!br_multicast_has_querier_anywhere(dev, ETH_P_IPV6) ||
-+	    br_multicast_has_querier_adjacent(dev, ETH_P_IPV6))
-+		mcast_data.flags |= BATADV_MCAST_WANT_ALL_IPV6;
+-	if (!br_multicast_has_querier_anywhere(dev, ETH_P_IPV6) ||
+-	    br_multicast_has_querier_adjacent(dev, ETH_P_IPV6))
++	if (!querier_ipv6.exists || querier_ipv6.shadowing)
+ 		mcast_data.flags |= BATADV_MCAST_WANT_ALL_IPV6;
  
-+update:
+ update:
++	batadv_mcast_bridge_log(bat_priv, bridged, &querier_ipv4,
++				&querier_ipv6);
++
++	if (memcmp(&bat_priv->mcast.querier_ipv4, &querier_ipv4,
++		   sizeof(querier_ipv4)))
++		bat_priv->mcast.querier_ipv4 = querier_ipv4;
++	if (memcmp(&bat_priv->mcast.querier_ipv6, &querier_ipv6,
++		   sizeof(querier_ipv6)))
++		bat_priv->mcast.querier_ipv6 = querier_ipv6;
++
  	if (!bat_priv->mcast.enabled ||
  	    mcast_data.flags != bat_priv->mcast.flags) {
++		batadv_mcast_flags_log(bat_priv, mcast_data.flags);
  		batadv_tvlv_container_register(bat_priv, BATADV_TVLV_MCAST, 1,
-@@ -216,7 +344,8 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
+ 					       &mcast_data, sizeof(mcast_data));
+ 		bat_priv->mcast.flags = mcast_data.flags;
  		bat_priv->mcast.enabled = true;
++		bat_priv->mcast.bridged = bridged;
  	}
  
--	return true;
-+	return !(mcast_data.flags &
-+		 (BATADV_MCAST_WANT_ALL_IPV4 + BATADV_MCAST_WANT_ALL_IPV6));
- }
+ 	return !(mcast_data.flags &
+diff --git a/soft-interface.c b/soft-interface.c
+index 9bf382d..0265a58 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -745,7 +745,12 @@ static int batadv_softif_init_late(struct net_device *dev)
+ 	atomic_set(&bat_priv->distributed_arp_table, 1);
+ #endif
+ #ifdef CONFIG_BATMAN_ADV_MCAST
++	bat_priv->mcast.querier_ipv4 = (struct batadv_mcast_querier_state){
++		.exists = false, .shadowing = false };
++	bat_priv->mcast.querier_ipv6 = (struct batadv_mcast_querier_state){
++		.exists = false, .shadowing = false };
+ 	bat_priv->mcast.flags = BATADV_NO_FLAGS;
++	bat_priv->mcast.bridged = false;
+ 	atomic_set(&bat_priv->multicast_mode, 1);
+ 	atomic_set(&bat_priv->mcast.num_disabled, 0);
+ 	atomic_set(&bat_priv->mcast.num_want_all_unsnoopables, 0);
+diff --git a/types.h b/types.h
+index 8854c05..b27c79d 100644
+--- a/types.h
++++ b/types.h
+@@ -625,14 +625,28 @@ struct batadv_priv_dat {
  
+ #ifdef CONFIG_BATMAN_ADV_MCAST
  /**
-@@ -239,6 +368,10 @@ void batadv_mcast_mla_update(struct batadv_priv *bat_priv)
- 	if (ret < 0)
- 		goto out;
- 
-+	ret = batadv_mcast_mla_bridge_get(soft_iface, &mcast_list);
-+	if (ret < 0)
-+		goto out;
++ * struct batadv_mcast_querier_state - IGMP/MLD querier state when bridged
++ * @exists: whether a querier exists in the mesh
++ * @shadowing: if a querier exists, whether it is potentially shadowing
++ *  multicast listeners (i.e. querier is behind our own bridge segment)
++ */
++struct batadv_mcast_querier_state {
++	bool exists;
++	bool shadowing;
++};
 +
- update:
- 	batadv_mcast_mla_tt_retract(bat_priv, &mcast_list);
- 	batadv_mcast_mla_tt_add(bat_priv, &mcast_list);
++/**
+  * struct batadv_priv_mcast - per mesh interface mcast data
+  * @mla_list: list of multicast addresses we are currently announcing via TT
+  * @want_all_unsnoopables_list: a list of orig_nodes wanting all unsnoopable
+  *  multicast traffic
+  * @want_all_ipv4_list: a list of orig_nodes wanting all IPv4 multicast traffic
+  * @want_all_ipv6_list: a list of orig_nodes wanting all IPv6 multicast traffic
++ * @querier_ipv4: the current state of an IGMP querier in the mesh (if bridged)
++ * @querier_ipv6: the current state of an MLD querier in the mesh (if bridged)
+  * @flags: the flags we have last sent in our mcast tvlv
+  * @enabled: whether the multicast tvlv is currently enabled
++ * @bridged: whether the soft interface currently has a bridge on top
+  * @num_disabled: number of nodes that have no mcast tvlv
+  * @num_want_all_unsnoopables: number of nodes wanting unsnoopable IP traffic
+  * @num_want_all_ipv4: counter for items in want_all_ipv4_list
+@@ -645,8 +659,11 @@ struct batadv_priv_mcast {
+ 	struct hlist_head want_all_unsnoopables_list;
+ 	struct hlist_head want_all_ipv4_list;
+ 	struct hlist_head want_all_ipv6_list;
++	struct batadv_mcast_querier_state querier_ipv4;
++	struct batadv_mcast_querier_state querier_ipv6;
+ 	uint8_t flags;
+ 	bool enabled;
++	bool bridged;
+ 	atomic_t num_disabled;
+ 	atomic_t num_want_all_unsnoopables;
+ 	atomic_t num_want_all_ipv4;
 -- 
 1.7.10.4
 
