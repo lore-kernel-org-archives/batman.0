@@ -1,14 +1,11 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Wed, 30 Jul 2014 00:39:39 +0200
-Message-Id: <1406673579-20110-4-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1406673579-20110-1-git-send-email-linus.luessing@web.de>
-References: <1406673579-20110-1-git-send-email-linus.luessing@web.de>
+Date: Wed, 30 Jul 2014 01:14:57 +0200
+Message-Id: <1406675698-20416-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv6 3/3] batman-adv: Add debugfs table for
-	mcast flags
+Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] batctl: adding multicast debug level
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,204 +19,79 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This patch adds a debugfs table with originators and their according
-multicast flags to help users figure out why multicast optimizations
-might be enabled or disabled for them.
+This patch adds the multicast debug level to check for own
+multicast flag changes for instance.
 
 Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 ---
- debugfs.c   |   21 ++++++++++++
- multicast.c |  110 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- multicast.h |    2 ++
- 3 files changed, 133 insertions(+)
 
-diff --git a/debugfs.c b/debugfs.c
-index a12e25e..cd7c282 100644
---- a/debugfs.c
-+++ b/debugfs.c
-@@ -30,6 +30,7 @@
- #include "bridge_loop_avoidance.h"
- #include "distributed-arp-table.h"
- #include "network-coding.h"
-+#include "multicast.h"
+Changes in v2:
+* added a sentence about 'mcast' log level to manpage
+
+ README       |    1 +
+ man/batctl.8 |    6 +++---
+ sys.c        |    5 +++++
+ 3 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/README b/README
+index b5fd259..c5e3575 100644
+--- a/README
++++ b/README
+@@ -389,6 +389,7 @@ $  batctl loglevel
+ [ ] messages related to bridge loop avoidance (bla)
+ [ ] messages related to arp snooping and distributed arp table (dat)
+ [ ] messages related to network coding (nc)
++[ ] messages related to multicast (mcast)
  
- static struct dentry *batadv_debugfs;
- 
-@@ -332,6 +333,20 @@ static int batadv_nc_nodes_open(struct inode *inode, struct file *file)
- }
- #endif
- 
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+/**
-+ * batadv_mcast_flags_open - prepare file handler for reads from mcast_flags
-+ * @inode: inode which was opened
-+ * @file: file handle to be initialized
-+ */
-+static int batadv_mcast_flags_open(struct inode *inode, struct file *file)
-+{
-+	struct net_device *net_dev = (struct net_device *)inode->i_private;
-+
-+	return single_open(file, batadv_mcast_flags_seq_print_text, net_dev);
-+}
-+#endif
-+
- #define BATADV_DEBUGINFO(_name, _mode, _open)		\
- struct batadv_debuginfo batadv_debuginfo_##_name = {	\
- 	.attr = { .name = __stringify(_name),		\
-@@ -372,6 +387,9 @@ static BATADV_DEBUGINFO(transtable_local, S_IRUGO,
- #ifdef CONFIG_BATMAN_ADV_NC
- static BATADV_DEBUGINFO(nc_nodes, S_IRUGO, batadv_nc_nodes_open);
- #endif
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+static BATADV_DEBUGINFO(mcast_flags, S_IRUGO, batadv_mcast_flags_open);
-+#endif
- 
- static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- 	&batadv_debuginfo_originators,
-@@ -388,6 +406,9 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- #ifdef CONFIG_BATMAN_ADV_NC
- 	&batadv_debuginfo_nc_nodes,
- #endif
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+	&batadv_debuginfo_mcast_flags,
-+#endif
- 	NULL,
- };
- 
-diff --git a/multicast.c b/multicast.c
-index 2a80997..6746f73 100644
---- a/multicast.c
-+++ b/multicast.c
-@@ -995,6 +995,116 @@ void batadv_mcast_init(struct batadv_priv *bat_priv)
+ batctl nc_nodes
+ ===============
+diff --git a/man/batctl.8 b/man/batctl.8
+index 110020e..66c28bb 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -98,9 +98,9 @@ level. Level 'none' disables all verbose logging. Level 'batman' enables message
+ Level 'routes' enables messages related to routes being added / changed / deleted. Level 'tt' enables messages related to
+ translation table operations. Level 'bla' enables messages related to the bridge loop avoidance. Level 'dat' enables
+ messages related to ARP snooping and the Distributed Arp Table. Level 'nc' enables messages related to network coding.
+-Level 'all' enables all messages. The messages are sent to the batman-adv debug log. Use \fBbatctl log\fP to retrieve it.
+-Make sure to have debugging output enabled when compiling the module otherwise the output as well as the loglevel options
+-won't be available.
++Level 'mcast' enables messages related to multicast optimizations. Level 'all' enables all messages. The messages
++are sent to the batman-adv debug log. Use \fBbatctl log\fP to retrieve it. Make sure to have debugging output enabled
++when compiling the module otherwise the output as well as the loglevel options won't be available.
+ .br
+ .IP "\fBlog\fP|\fBl\fP [\fB\-n\fP]\fP"
+ batctl will read the batman-adv debug log which has to be compiled into the kernel module. If "\-n" is given batctl will not
+diff --git a/sys.c b/sys.c
+index 676bef1..4fa0e24 100644
+--- a/sys.c
++++ b/sys.c
+@@ -280,6 +280,7 @@ static void log_level_usage(void)
+ 	fprintf(stderr, " \t bla     Messages related to bridge loop avoidance\n");
+ 	fprintf(stderr, " \t dat     Messages related to arp snooping and distributed arp table\n");
+ 	fprintf(stderr, " \t nc      Messages related to network coding\n");
++	fprintf(stderr, " \t mcast   Messages related to multicast\n");
  }
  
- /**
-+ * batadv_mcast_flags_print_header - print own mcast flags to debugfs table
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @seq: debugfs table seq_file struct
-+ *
-+ * Prints our own multicast flags including a more specific reason why
-+ * they are set, that is prints the bridge and querier state too, to
-+ * the debugfs table specified via @seq.
-+ */
-+static void batadv_mcast_flags_print_header(struct batadv_priv *bat_priv,
-+					    struct seq_file *seq)
-+{
-+	struct net_device *dev = bat_priv->soft_iface;
-+	uint8_t flags = bat_priv->mcast.flags;
-+	char ip4_querier_c, ip6_querier_c, ip4_shadowed_c, ip6_shadowed_c;
-+	bool bridged = batadv_mcast_has_bridge(bat_priv);
-+
-+	if (bridged) {
-+		bool ip4_querier, ip6_querier, ip4_shadowed, ip6_shadowed;
-+
-+		ip4_querier = br_multicast_has_querier_anywhere(dev, ETH_P_IP);
-+		ip6_querier = br_multicast_has_querier_anywhere(dev,
-+								ETH_P_IPV6);
-+		ip4_shadowed = br_multicast_has_querier_adjacent(dev, ETH_P_IP);
-+		ip6_shadowed = br_multicast_has_querier_adjacent(dev,
-+								 ETH_P_IPV6);
-+
-+		ip4_querier_c = !ip4_querier ? '+' : '-';
-+		ip6_querier_c = !ip6_querier ? '+' : '-';
-+		ip4_shadowed_c = ip4_shadowed ? '+' : '-';
-+		ip6_shadowed_c = ip6_shadowed ? '+' : '-';
-+	} else {
-+		ip4_querier_c = '?';
-+		ip6_querier_c = '?';
-+		ip4_shadowed_c = '?';
-+		ip6_shadowed_c = '?';
-+	}
-+
-+	seq_printf(seq, "Multicast flags (own flags: [%c%c%c])\n",
-+		   flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ? 'U' : '.',
-+		   flags & BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.',
-+		   flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.');
-+	seq_printf(seq, "* Bridged [U]\t\t\t\t%c\n", bridged ? '+' : '-');
-+	seq_printf(seq, "* No IGMP/MLD Querier [4/6]:\t\t%c/%c\n",
-+		   ip4_querier_c, ip6_querier_c);
-+	seq_printf(seq, "* Shadowing IGMP/MLD Querier [4/6]:\t%c/%c\n",
-+		   ip4_shadowed_c, ip6_shadowed_c);
-+	seq_puts(seq, "-------------------------------------------\n");
-+	seq_printf(seq, "       %-10s %s\n", "Originator", "Flags");
-+}
-+
-+/**
-+ * batadv_mcast_flags_seq_print_text - print the mcast flags of other nodes
-+ * @seq: seq file to print on
-+ * @offset: not used
-+ *
-+ * This prints a table of (primary) originators and their according
-+ * multicast flags, including (in the header) our own.
-+ */
-+int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset)
-+{
-+	struct net_device *net_dev = (struct net_device *)seq->private;
-+	struct batadv_priv *bat_priv = netdev_priv(net_dev);
-+	struct batadv_hard_iface *primary_if;
-+	struct batadv_hashtable *hash = bat_priv->orig_hash;
-+	struct batadv_orig_node *orig_node;
-+	struct hlist_head *head;
-+	uint8_t flags;
-+	uint32_t i;
-+
-+	primary_if = batadv_seq_print_text_primary_if_get(seq);
-+	if (!primary_if)
-+		return 0;
-+
-+	batadv_mcast_flags_print_header(bat_priv, seq);
-+
-+	for (i = 0; i < hash->size; i++) {
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
-+			if (!(orig_node->capa_initialized &
-+			      BATADV_ORIG_CAPA_HAS_MCAST))
-+				continue;
-+
-+			flags = orig_node->mcast_flags;
-+
-+			if (!(orig_node->capabilities &
-+			      BATADV_ORIG_CAPA_HAS_MCAST)) {
-+				seq_printf(seq, "%pM -\n", orig_node->orig);
-+				continue;
-+			}
-+
-+			seq_printf(seq, "%pM [%c%c%c]\n", orig_node->orig,
-+				   (flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ?
-+				    'U' : '.'),
-+				   (flags & BATADV_MCAST_WANT_ALL_IPV4 ?
-+				    '4' : '.'),
-+				   (flags & BATADV_MCAST_WANT_ALL_IPV6 ?
-+				    '6' : '.'));
-+		}
-+		rcu_read_unlock();
-+	}
-+
-+	batadv_hardif_free_ref(primary_if);
-+
-+	return 0;
-+}
-+
-+
-+/**
-  * batadv_mcast_free - free the multicast optimizations structures
-  * @bat_priv: the bat priv with all the soft interface information
-  */
-diff --git a/multicast.h b/multicast.h
-index 73b5d45..5344160 100644
---- a/multicast.h
-+++ b/multicast.h
-@@ -42,6 +42,8 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ int handle_loglevel(char *mesh_iface, int argc, char **argv)
+@@ -325,6 +326,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
+ 				log_level |= BIT(4);
+ 			else if (strcmp(argv[i], "nc") == 0)
+ 				log_level |= BIT(5);
++			else if (strcmp(argv[i], "mcast") == 0)
++				log_level |= BIT(6);
+ 			else {
+ 				log_level_usage();
+ 				goto out;
+@@ -359,6 +362,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
+ 	       "messages related to arp snooping and distributed arp table", "dat");
+ 	printf("[%c] %s (%s)\n", (log_level & BIT(5)) ? 'x' : ' ',
+ 	       "messages related to network coding", "nc");
++	printf("[%c] %s (%s)\n", (log_level & BIT(6)) ? 'x' : ' ',
++	       "messages related to multicast", "mcast");
  
- void batadv_mcast_init(struct batadv_priv *bat_priv);
- 
-+int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset);
-+
- void batadv_mcast_free(struct batadv_priv *bat_priv);
- 
- void batadv_mcast_purge_orig(struct batadv_orig_node *orig_node);
+ out:
+ 	free(path_buff);
 -- 
 1.7.10.4
 
