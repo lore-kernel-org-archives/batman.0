@@ -1,14 +1,8 @@
-Return-Path: <gui@altermundi.net>
-Message-ID: <53D7BD9E.7030007@altermundi.net>
-Date: Tue, 29 Jul 2014 12:28:30 -0300
-From: Gui Iribarren <gui@altermundi.net>
-MIME-Version: 1.0
-References: <53C91BDF.3080907@inti.gob.ar> <53CFDBC0.3020906@altermundi.net>
- <53D0FE56.1080503@inti.gob.ar>
-In-Reply-To: <53D0FE56.1080503@inti.gob.ar>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] non DHCP batman-adv gateway
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 29 Jul 2014 18:06:22 +0200
+Message-Id: <1406649982-3577-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] alfred: add more debug output for libc errors
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,28 +14,81 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-On 24/07/14 09:38, Gabriel Tolón wrote:
-> Hi Gui, thanks for your answer!
-> 
-> 
-> El 23/07/14 12:58, Gui Iribarren escribió:
->> On 18/07/14 10:06, Gabriel Tolón wrote:
->>> Hi,
->>>
->>> I'd like to use a configuration in a batman-adv openwrt mesh network in
->>> which the batman gateway relays the DHCP messages to and from a non
->>> batman-adv router. I think that's not a typical configuration right?
->>> Should it work? Do I need some additional packages? Thanks in advance!
->>
->> Yes, it should work just fine, you should set gw_mode=master in the
->> correspondent batman-adv gateway, but turn its dhcp server off.
-> 
-> you mean gw_mode=server? Or it's a new option?
+perror(..) can automatically decode the errno variable and print more
+information for an error.
 
-yes, definitely. my mistake. It's gw_mode=server.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ gpsd/alfred-gpsd.c | 2 +-
+ main.c             | 2 +-
+ send.c             | 2 +-
+ vis/vis.c          | 4 ++--
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
-cheers!
+diff --git a/gpsd/alfred-gpsd.c b/gpsd/alfred-gpsd.c
+index 6e88dc7..d736ad1 100644
+--- a/gpsd/alfred-gpsd.c
++++ b/gpsd/alfred-gpsd.c
+@@ -443,7 +443,7 @@ static struct globals *gpsd_init(int argc, char *argv[])
+ 		gpsd_source_spec(NULL, &globals->gpsdsource);
+ 
+ 	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
+-		fprintf(stderr, "could not register SIGPIPE handler\n");
++		perror("could not register SIGPIPE handler");
+ 	return globals;
+ }
+ 
+diff --git a/main.c b/main.c
+index 0a79e08..1add44e 100644
+--- a/main.c
++++ b/main.c
+@@ -150,7 +150,7 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 	}
+ 
+ 	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
+-		fprintf(stderr, "could not register SIGPIPE handler\n");
++		perror("could not register SIGPIPE handler");
+ 	return globals;
+ }
+ 
+diff --git a/send.c b/send.c
+index dc0e428..32b7cbb 100644
+--- a/send.c
++++ b/send.c
+@@ -170,7 +170,7 @@ ssize_t send_alfred_packet(struct globals *globals, const struct in6_addr *dest,
+ 		     (struct sockaddr *)&dest_addr,
+ 		     sizeof(struct sockaddr_in6));
+ 	if (ret == -EPERM) {
+-		fprintf(stderr, "Error during sent\n");
++		perror("Error during sent");
+ 		netsock_close(globals->netsock);
+ 		globals->netsock = -1;
+ 	}
+diff --git a/vis/vis.c b/vis/vis.c
+index 6cc4034..00372ab 100644
+--- a/vis/vis.c
++++ b/vis/vis.c
+@@ -258,7 +258,7 @@ static int register_interfaces(struct globals *globals)
+ 
+ 	path_buff = malloc(PATH_BUFF_LEN);
+ 	if (!path_buff) {
+-		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
++		perror("Error - could not allocate path buffer");
+ 		goto err;
+ 	}
+ 
+@@ -880,7 +880,7 @@ static struct globals *vis_init(int argc, char *argv[])
+ 	}
+ 
+ 	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
+-		fprintf(stderr, "could not register SIGPIPE handler\n");
++		perror("could not register SIGPIPE handler");
+ 	return globals;
+ }
+ 
+-- 
+2.0.1
 
-gui
