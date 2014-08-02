@@ -1,15 +1,12 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 1 Aug 2014 15:00:01 +0200
-References: <53DB84A3.8070309@aliyun.com>
-In-Reply-To: <53DB84A3.8070309@aliyun.com>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Sat,  2 Aug 2014 21:18:49 +0200
+Message-Id: <1407007130-23077-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201408011500.02247.sw@simonwunderlich.de>
-Subject: Re: [B.A.T.M.A.N.] How to set up the communication in layer 3 in
-	mesh node with batman.adv
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] Enhancements for Unsolicited Neigh. Adv. / grat ARP
+	Reply
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,25 +20,34 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+Hi there,
 
-> hello, eveyone.I am a b.a.t.m.a.n. beginner.I work on openwrt with
-> batman-adv 2012.3.0.
-> 
-> There are three mesh nodes. Node A  is far from node C. A can't communicate
-> with C directly, but it can commuticate with C via node B, which is 
-> between A and C. The path is A <--> B <--> C.
-> 
-> On node A, I can run the command 'batctl ping' to node B and node C
-> successfully. I can also 'ping'  the node B, but I can't 'ping' node C. It
-> shows that I have set up the commuication with all the nodes in layer 2,
-> but I can only communicate with the neighbor in layer 3.
-> 
-> How can I fix this? Thanks.
+Here's a little, rough patch to illustrate the idea we discussed a little
+at the last Wireless Battle Mesh, that is forwarding the noisy IPv6
+Unsolicited Neighbor Advertisements and gratuitous ARP Replies via unicast.
 
-Can you ping the node C from node B? What kind of IP addresses have you 
-configured? Also, the version you use is pretty old, although this kind of 
-basic network should still work ... You can also try "batctl td" to find out 
-where the packets get lost.
+Currently these ugly unsol. NAs cause about 40% of ICMPv6 multicast
+overhead in our networks here.
 
-Cheers,
-    Simon
+A little more detailed explanation with some pictures can be found here:
+
+https://www.open-mesh.org/projects/batman-adv/wiki/Unicasting-unsolicited-neighbor-advertisements
+
+In the few, simple scenarios with bridged-in hosts in VMs, the patch
+seemed to do what it was supposed to do uppon roaming. Unsol. NAs did only
+appear on the node the host roamed away from.
+
+If I remember correctly, there were also some worries about how this
+might work together with BLA-II. I gave it a little more thought and
+had a look at the BLA-II source code, but couldn't find any issues.
+
+The only BLA-II related non-ideal thing I could think of so far is
+noted in the code of this patch at the according place (but I think
+that might not matter much in practice).
+
+Looking forward to hear about what you think about it, especially
+conceptually.
+
+Cheers, Linus
+
+
