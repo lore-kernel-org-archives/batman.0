@@ -1,17 +1,8 @@
-Return-Path: <linus.luessing@web.de>
-Date: Sat, 2 Aug 2014 21:43:32 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@web.de>
-Message-ID: <20140802194331.GE2392@Linus-Debian>
-References: <1405391898-5258-1-git-send-email-linus.luessing@web.de>
- <1405391898-5258-2-git-send-email-linus.luessing@web.de>
- <1438357.7uXdXc9RPK@diderot>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1438357.7uXdXc9RPK@diderot>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv5 2/2] batman-adv: Add debugfs table for
- mcast flags
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Mon,  4 Aug 2014 17:47:00 +0200
+Message-Id: <1407167221-10575-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] pull request net: batman-adv 2014-08-04
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,28 +14,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Sat, Jul 19, 2014 at 06:02:47PM +0800, Marek Lindner wrote:
-> On Tuesday 15 July 2014 04:38:18 Linus Lüssing wrote:
-> > +		rcu_read_lock();
-> > +		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
-> > +			if (!(orig_node->capa_initialized &
-> > +			      BATADV_ORIG_CAPA_HAS_MCAST))
-> > +				continue;
-> 
-> Why not printing '-' in this case as well ?
+Hello David,
 
-Had been giving a reason on IRC already, but maybe it's better to
-write it here again so that the reason doesn't get lost:
+this is a pull request intended for net.
 
-The idea was, to only have one entry per batman-adv node. Not per
-originator. Secondary interface originators aren't considered in
-the multicast logic anyways, so they might be confusing for the
-user when doing manual checking and counting.
+It just contains a patch by Sven Eckelmann that fixes the
+reception of out-of-order fragments. As explained in the
+commit message, the issue was due to a wrong assumption
+about hlist_for_each_entry() in batadv_frag_insert_packet().
 
-In other words, '-' is supposed to mean that this is an outdated
-node not supporting multicast optimizations and not having the
-according TVLV and that people should consider upgrading it.
 
-Cheers, Linus
+Please pull or let me know of any problem.
+*If possible, this patch should also be enqueued for stable*
+
+Thanks a lot,
+	Antonio
+
+
+
+The following changes since commit 4f933f414bf629852f361edf0fc5e765e3e78388:
+
+  r8152: add missing Makefile rule (2014-08-02 20:53:55 -0700)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to 9d2155fb59e21f4a38838035d2a26a8a02fec16c:
+
+  batman-adv: Fix out-of-order fragmentation support (2014-08-04 16:05:43 +0200)
+
+----------------------------------------------------------------
+Fix out-of-order fragments reception.
+
+----------------------------------------------------------------
+Sven Eckelmann (1):
+      batman-adv: Fix out-of-order fragmentation support
+
+ net/batman-adv/fragmentation.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
