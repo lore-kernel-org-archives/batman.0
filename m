@@ -1,11 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Mon,  4 Aug 2014 17:47:01 +0200
-Message-Id: <1407167221-10575-2-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1407167221-10575-1-git-send-email-antonio@meshcoding.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 04 Aug 2014 18:26:32 +0200
+Message-ID: <5564567.83o54DtWyR@bentobox>
+In-Reply-To: <1407167221-10575-2-git-send-email-antonio@meshcoding.com>
 References: <1407167221-10575-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix out-of-order fragmentation
-	support
+ <1407167221-10575-2-git-send-email-antonio@meshcoding.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix out-of-order
+	fragmentation support
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,73 +21,17 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>, Sven Eckelmann <sven@narfation.org>
+To: Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Sven Eckelmann <sven@narfation.org>
+On Monday 04 August 2014 17:47:01 Antonio Quartulli wrote:
+> This problem was introduced in 9b3eab61754d74a93c9840c296013fe3b4a1b606
+> ("batman-adv: Receive fragmented packets and merge").
 
-batadv_frag_insert_packet was unable to handle out-of-order packets because it
-dropped them directly. This is caused by the way the fragmentation lists is
-checked for the correct place to insert a fragmentation entry.
+This is not a commit id from the kernel tree but the one from your out-of-tree 
+repository at http://git.open-mesh.org/batman-adv.git . 
+610bfc6bc99bc83680d190ebc69359a05fc7f605 seems to be the one of Martin's 
+commit when it was applied in the kernel repository.
 
-The fragmentation code keeps the fragments in lists. The fragmentation entries
-are kept in descending order of sequence number. The list is traversed and each
-entry is compared with the new fragment. If the current entry has a smaller
-sequence number than the new fragment then the new one has to be inserted
-before the current entry. This ensures that the list is still in descending
-order.
-
-An out-of-order packet with a smaller sequence number than all entries in the
-list still has to be added to the end of the list. The used hlist has no
-information about the last entry in the list inside hlist_head and thus the
-last entry has to be calculated differently. Currently the code assumes that
-the iterator variable of hlist_for_each_entry can be used for this purpose
-after the hlist_for_each_entry finished. This is obviously wrong because the
-iterator variable is always NULL when the list was completely traversed.
-
-Instead the information about the last entry has to be stored in a different
-variable.
-
-This problem was introduced in 9b3eab61754d74a93c9840c296013fe3b4a1b606
-("batman-adv: Receive fragmented packets and merge").
-
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- net/batman-adv/fragmentation.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index f14e54a..022d18a 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -128,6 +128,7 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
- {
- 	struct batadv_frag_table_entry *chain;
- 	struct batadv_frag_list_entry *frag_entry_new = NULL, *frag_entry_curr;
-+	struct batadv_frag_list_entry *frag_entry_last = NULL;
- 	struct batadv_frag_packet *frag_packet;
- 	uint8_t bucket;
- 	uint16_t seqno, hdr_size = sizeof(struct batadv_frag_packet);
-@@ -180,11 +181,14 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
- 			ret = true;
- 			goto out;
- 		}
-+
-+		/* store current entry because it could be the last in list */
-+		frag_entry_last = frag_entry_curr;
- 	}
- 
--	/* Reached the end of the list, so insert after 'frag_entry_curr'. */
--	if (likely(frag_entry_curr)) {
--		hlist_add_after(&frag_entry_curr->list, &frag_entry_new->list);
-+	/* Reached the end of the list, so insert after 'frag_entry_last'. */
-+	if (likely(frag_entry_last)) {
-+		hlist_add_after(&frag_entry_last->list, &frag_entry_new->list);
- 		chain->size += skb->len - hdr_size;
- 		chain->timestamp = jiffies;
- 		ret = true;
--- 
-1.8.5.5
-
+Kind regards,
+	Sven
