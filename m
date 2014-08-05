@@ -1,13 +1,13 @@
 Return-Path: <davem@davemloft.net>
-Date: Tue, 05 Aug 2014 16:22:49 -0700 (PDT)
-Message-Id: <20140805.162249.1442705693919283325.davem@davemloft.net>
+Date: Tue, 05 Aug 2014 16:40:09 -0700 (PDT)
+Message-Id: <20140805.164009.1703458407190401181.davem@davemloft.net>
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1407167221-10575-1-git-send-email-antonio@meshcoding.com>
-References: <1407167221-10575-1-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1407224188-28626-1-git-send-email-antonio@meshcoding.com>
+References: <1407224188-28626-1-git-send-email-antonio@meshcoding.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request net: batman-adv 2014-08-04
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2014-08-05
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,17 +23,21 @@ To: antonio@meshcoding.com
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Mon,  4 Aug 2014 17:47:00 +0200
+Date: Tue,  5 Aug 2014 09:36:24 +0200
 
-> this is a pull request intended for net.
+> this is a pull request intended for net-next/linux-3.17 (yeah..it's really
+> late).
 > 
-> It just contains a patch by Sven Eckelmann that fixes the
-> reception of out-of-order fragments. As explained in the
-> commit message, the issue was due to a wrong assumption
-> about hlist_for_each_entry() in batadv_frag_insert_packet().
+> Patches 1, 2 and 4 are really minor changes:
+> - kmalloc_array is substituted to kmalloc when possible (as suggested by
+>   checkpatch);
+> - net_ratelimited() is now used properly and the "suppressed" message is not
+>   printed anymore if not needed;
+> - the internal version number has been increased to reflect our current version.
 > 
-> Please pull or let me know of any problem.
-> *If possible, this patch should also be enqueued for stable*
+> Patch 3 instead is introducing a change in the metric computation function
+> by changing the penalty applied at each mesh hop from 15/255 (~6%) to
+> 30/255 (~11%). This change is introduced by Simon Wunderlich after having
+> observed a performance improvement in several networks when using the new value.
 
-As you can see this didn't make it in time for the 3.16 release,
-I've pulled and queued this patch up for -stable.
+Pulled, thanks Antonio.
