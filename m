@@ -1,10 +1,13 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue,  5 Aug 2014 09:36:28 +0200
-Message-Id: <1407224188-28626-5-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1407224188-28626-1-git-send-email-antonio@meshcoding.com>
-References: <1407224188-28626-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: Start new development cycle
+Return-Path: <davem@davemloft.net>
+Date: Tue, 05 Aug 2014 16:22:49 -0700 (PDT)
+Message-Id: <20140805.162249.1442705693919283325.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1407167221-10575-1-git-send-email-antonio@meshcoding.com>
+References: <1407167221-10575-1-git-send-email-antonio@meshcoding.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request net: batman-adv 2014-08-04
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,29 +19,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
+To: antonio@meshcoding.com
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Mon,  4 Aug 2014 17:47:00 +0200
 
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/main.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> this is a pull request intended for net.
+> 
+> It just contains a patch by Sven Eckelmann that fixes the
+> reception of out-of-order fragments. As explained in the
+> commit message, the issue was due to a wrong assumption
+> about hlist_for_each_entry() in batadv_frag_insert_packet().
+> 
+> Please pull or let me know of any problem.
+> *If possible, this patch should also be enqueued for stable*
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 257840e..a1fcd88 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -24,7 +24,7 @@
- #define BATADV_DRIVER_DEVICE "batman-adv"
- 
- #ifndef BATADV_SOURCE_VERSION
--#define BATADV_SOURCE_VERSION "2014.3.0"
-+#define BATADV_SOURCE_VERSION "2014.4.0"
- #endif
- 
- /* B.A.T.M.A.N. parameters */
--- 
-1.8.5.5
-
+As you can see this didn't make it in time for the 3.16 release,
+I've pulled and queued this patch up for -stable.
