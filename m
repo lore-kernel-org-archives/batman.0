@@ -1,11 +1,13 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue,  5 Aug 2014 09:36:25 +0200
-Message-Id: <1407224188-28626-2-git-send-email-antonio@meshcoding.com>
+Date: Tue,  5 Aug 2014 09:36:26 +0200
+Message-Id: <1407224188-28626-3-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1407224188-28626-1-git-send-email-antonio@meshcoding.com>
 References: <1407224188-28626-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: prefer kmalloc_array to
-	kmalloc when possible
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: remove unnecessary logspam
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,102 +20,96 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, =?UTF-8?q?Andr=C3=A9=20Gaul?= <gaul@web-yard.de>, Marek Lindner <mareklindner@neomailbox.ch>
 
-Reported by checkpatch with the following warning:
-WARNING: Prefer kmalloc_array over kmalloc with multiply
+From: André Gaul <gaul@web-yard.de>
 
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+This patch removes unnecessary logspam which resulted from superfluous
+calls to net_ratelimit(). With the supplied patch, net_ratelimit() is
+called after the loglevel has been checked.
+
+Signed-off-by: André Gaul <gaul@web-yard.de>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/bat_iv_ogm.c            | 13 +++++++------
- net/batman-adv/distributed-arp-table.c |  3 ++-
- net/batman-adv/hash.c                  |  6 +++---
- 3 files changed, 12 insertions(+), 10 deletions(-)
+ net/batman-adv/main.h    | 20 ++++++++++++++------
+ net/batman-adv/routing.c | 18 +++++++++---------
+ 2 files changed, 23 insertions(+), 15 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index f04224c..1e80539 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -108,14 +108,15 @@ static int batadv_iv_ogm_orig_add_if(struct batadv_orig_node *orig_node,
- 				     int max_if_num)
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 118b990..257840e 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -238,21 +238,29 @@ enum batadv_dbg_level {
+ int batadv_debug_log(struct batadv_priv *bat_priv, const char *fmt, ...)
+ __printf(2, 3);
+ 
+-#define batadv_dbg(type, bat_priv, fmt, arg...)			\
++/* possibly ratelimited debug output */
++#define _batadv_dbg(type, bat_priv, ratelimited, fmt, arg...)	\
+ 	do {							\
+-		if (atomic_read(&bat_priv->log_level) & type)	\
++		if (atomic_read(&bat_priv->log_level) & type && \
++		    (!ratelimited || net_ratelimit()))		\
+ 			batadv_debug_log(bat_priv, fmt, ## arg);\
+ 	}							\
+ 	while (0)
+ #else /* !CONFIG_BATMAN_ADV_DEBUG */
+-__printf(3, 4)
+-static inline void batadv_dbg(int type __always_unused,
+-			      struct batadv_priv *bat_priv __always_unused,
+-			      const char *fmt __always_unused, ...)
++__printf(4, 5)
++static inline void _batadv_dbg(int type __always_unused,
++			       struct batadv_priv *bat_priv __always_unused,
++			       int ratelimited __always_unused,
++			       const char *fmt __always_unused, ...)
  {
- 	void *data_ptr;
--	size_t data_size, old_size;
-+	size_t old_size;
- 	int ret = -ENOMEM;
+ }
+ #endif
  
- 	spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
- 
--	data_size = max_if_num * sizeof(unsigned long) * BATADV_NUM_WORDS;
- 	old_size = (max_if_num - 1) * sizeof(unsigned long) * BATADV_NUM_WORDS;
--	data_ptr = kmalloc(data_size, GFP_ATOMIC);
-+	data_ptr = kmalloc_array(max_if_num,
-+				 BATADV_NUM_WORDS * sizeof(unsigned long),
-+				 GFP_ATOMIC);
- 	if (!data_ptr)
- 		goto unlock;
- 
-@@ -123,7 +124,7 @@ static int batadv_iv_ogm_orig_add_if(struct batadv_orig_node *orig_node,
- 	kfree(orig_node->bat_iv.bcast_own);
- 	orig_node->bat_iv.bcast_own = data_ptr;
- 
--	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
-+	data_ptr = kmalloc_array(max_if_num, sizeof(uint8_t), GFP_ATOMIC);
- 	if (!data_ptr) {
- 		kfree(orig_node->bat_iv.bcast_own);
- 		goto unlock;
-@@ -164,7 +165,7 @@ static int batadv_iv_ogm_orig_del_if(struct batadv_orig_node *orig_node,
- 		goto free_bcast_own;
- 
- 	chunk_size = sizeof(unsigned long) * BATADV_NUM_WORDS;
--	data_ptr = kmalloc(max_if_num * chunk_size, GFP_ATOMIC);
-+	data_ptr = kmalloc_array(max_if_num, chunk_size, GFP_ATOMIC);
- 	if (!data_ptr)
- 		goto unlock;
- 
-@@ -183,7 +184,7 @@ free_bcast_own:
- 	if (max_if_num == 0)
- 		goto free_own_sum;
- 
--	data_ptr = kmalloc(max_if_num * sizeof(uint8_t), GFP_ATOMIC);
-+	data_ptr = kmalloc_array(max_if_num, sizeof(uint8_t), GFP_ATOMIC);
- 	if (!data_ptr) {
- 		kfree(orig_node->bat_iv.bcast_own);
- 		goto unlock;
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index f2c066b..b598111 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -537,7 +537,8 @@ batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst)
- 	if (!bat_priv->orig_hash)
- 		return NULL;
- 
--	res = kmalloc(BATADV_DAT_CANDIDATES_NUM * sizeof(*res), GFP_ATOMIC);
-+	res = kmalloc_array(BATADV_DAT_CANDIDATES_NUM, sizeof(*res),
-+			    GFP_ATOMIC);
- 	if (!res)
- 		return NULL;
- 
-diff --git a/net/batman-adv/hash.c b/net/batman-adv/hash.c
-index 63bdf7e..7c1c630 100644
---- a/net/batman-adv/hash.c
-+++ b/net/batman-adv/hash.c
-@@ -46,12 +46,12 @@ struct batadv_hashtable *batadv_hash_new(uint32_t size)
- 	if (!hash)
- 		return NULL;
- 
--	hash->table = kmalloc(sizeof(*hash->table) * size, GFP_ATOMIC);
-+	hash->table = kmalloc_array(size, sizeof(*hash->table), GFP_ATOMIC);
- 	if (!hash->table)
- 		goto free_hash;
- 
--	hash->list_locks = kmalloc(sizeof(*hash->list_locks) * size,
--				   GFP_ATOMIC);
-+	hash->list_locks = kmalloc_array(size, sizeof(*hash->list_locks),
-+					 GFP_ATOMIC);
- 	if (!hash->list_locks)
- 		goto free_table;
++#define batadv_dbg(type, bat_priv, arg...) \
++	_batadv_dbg(type, bat_priv, 0, ## arg)
++#define batadv_dbg_ratelimited(type, bat_priv, arg...) \
++	_batadv_dbg(type, bat_priv, 1, ## arg)
++
+ #define batadv_info(net_dev, fmt, arg...)				\
+ 	do {								\
+ 		struct net_device *_netdev = (net_dev);                 \
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 3514153..35f76f2 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -706,11 +706,11 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
+ 	if (batadv_tt_local_client_is_roaming(bat_priv, ethhdr->h_dest, vid)) {
+ 		if (batadv_reroute_unicast_packet(bat_priv, unicast_packet,
+ 						  ethhdr->h_dest, vid))
+-			net_ratelimited_function(batadv_dbg, BATADV_DBG_TT,
+-						 bat_priv,
+-						 "Rerouting unicast packet to %pM (dst=%pM): Local Roaming\n",
+-						 unicast_packet->dest,
+-						 ethhdr->h_dest);
++			batadv_dbg_ratelimited(BATADV_DBG_TT,
++					       bat_priv,
++					       "Rerouting unicast packet to %pM (dst=%pM): Local Roaming\n",
++					       unicast_packet->dest,
++					       ethhdr->h_dest);
+ 		/* at this point the mesh destination should have been
+ 		 * substituted with the originator address found in the global
+ 		 * table. If not, let the packet go untouched anyway because
+@@ -752,10 +752,10 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
+ 	 */
+ 	if (batadv_reroute_unicast_packet(bat_priv, unicast_packet,
+ 					  ethhdr->h_dest, vid)) {
+-		net_ratelimited_function(batadv_dbg, BATADV_DBG_TT, bat_priv,
+-					 "Rerouting unicast packet to %pM (dst=%pM): TTVN mismatch old_ttvn=%u new_ttvn=%u\n",
+-					 unicast_packet->dest, ethhdr->h_dest,
+-					 old_ttvn, curr_ttvn);
++		batadv_dbg_ratelimited(BATADV_DBG_TT, bat_priv,
++				       "Rerouting unicast packet to %pM (dst=%pM): TTVN mismatch old_ttvn=%u new_ttvn=%u\n",
++				       unicast_packet->dest, ethhdr->h_dest,
++				       old_ttvn, curr_ttvn);
+ 		return 1;
+ 	}
  
 -- 
 1.8.5.5
