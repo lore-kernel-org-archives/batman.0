@@ -1,9 +1,11 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed,  6 Aug 2014 16:34:03 +0200
-Message-Id: <1407335643-2124-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: fix backbone address in tcpdump for
-	bla request frames
+Return-Path: <ff@jluehr.de>
+Message-ID: <53E274D5.1070008@jluehr.de>
+Date: Wed, 06 Aug 2014 20:32:53 +0200
+From: =?ISO-8859-15?Q?Jan_L=FChr?= <ff@jluehr.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] alfred: IPC issues
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,36 +17,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Simon Wunderlich <simon@open-mesh.com>
+Hei folks,
 
-hw_src just contains another copy of the destination. The backbone
-sending the request is setting its mac address into Ethernet source, so
-print that instead.
+I'm using alfred 2014.0.0 on OpenWRT Barrier Breaker.
 
-For reference, see the documentation:
-http://www.open-mesh.org/projects/batman-adv/wiki/Bridge-loop-avoidance-Protocol
+Alfred is running:
+root@6466b34ffcac:~# ps -w | grep alfred
+ 1718 root      1100 S    /usr/sbin/alfred -i br-freifunk -b bat0
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
----
- tcpdump.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+But cannot be queried using the client:
+root@6466b34ffcac:~# alfred -r 94
+can't connect to unix socket: Connection refused
 
-diff --git a/tcpdump.c b/tcpdump.c
-index e84617e..ada8938 100644
---- a/tcpdump.c
-+++ b/tcpdump.c
-@@ -148,7 +148,7 @@ static int dump_bla2_claim(struct ether_header *eth_hdr,
- 		break;
- 	case BATADV_CLAIM_TYPE_REQUEST:
- 		printf("BLA REQUEST, src backbone %s, ",
--		       get_name_by_macaddr((struct ether_addr *)hw_src, read_opt));
-+		       get_name_by_macaddr((struct ether_addr *)eth_hdr->ether_shost, read_opt));
- 		printf("dst backbone %s\n",
- 		       get_name_by_macaddr((struct ether_addr *)eth_hdr->ether_dhost, read_opt));
- 		break;
--- 
-1.9.1
+What's wrong here?
 
+Configuration is
+config 'alfred' 'alfred'
+  option interface 'br-freifunk'
+  option mode 'server'
+  option batmanif 'bat0'
+  option start_vis '0'
+  option run_facters '0'
+
+
+Thanks,
+Keep smiling
+yanosz
