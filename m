@@ -1,13 +1,9 @@
-Return-Path: <davem@davemloft.net>
-Date: Tue, 05 Aug 2014 16:40:09 -0700 (PDT)
-Message-Id: <20140805.164009.1703458407190401181.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1407224188-28626-1-git-send-email-antonio@meshcoding.com>
-References: <1407224188-28626-1-git-send-email-antonio@meshcoding.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2014-08-05
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed,  6 Aug 2014 16:34:03 +0200
+Message-Id: <1407335643-2124-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: fix backbone address in tcpdump for
+	bla request frames
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,25 +15,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: antonio@meshcoding.com
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue,  5 Aug 2014 09:36:24 +0200
+From: Simon Wunderlich <simon@open-mesh.com>
 
-> this is a pull request intended for net-next/linux-3.17 (yeah..it's really
-> late).
-> 
-> Patches 1, 2 and 4 are really minor changes:
-> - kmalloc_array is substituted to kmalloc when possible (as suggested by
->   checkpatch);
-> - net_ratelimited() is now used properly and the "suppressed" message is not
->   printed anymore if not needed;
-> - the internal version number has been increased to reflect our current version.
-> 
-> Patch 3 instead is introducing a change in the metric computation function
-> by changing the penalty applied at each mesh hop from 15/255 (~6%) to
-> 30/255 (~11%). This change is introduced by Simon Wunderlich after having
-> observed a performance improvement in several networks when using the new value.
+hw_src just contains another copy of the destination. The backbone
+sending the request is setting its mac address into Ethernet source, so
+print that instead.
 
-Pulled, thanks Antonio.
+For reference, see the documentation:
+http://www.open-mesh.org/projects/batman-adv/wiki/Bridge-loop-avoidance-Protocol
+
+Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+---
+ tcpdump.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tcpdump.c b/tcpdump.c
+index e84617e..ada8938 100644
+--- a/tcpdump.c
++++ b/tcpdump.c
+@@ -148,7 +148,7 @@ static int dump_bla2_claim(struct ether_header *eth_hdr,
+ 		break;
+ 	case BATADV_CLAIM_TYPE_REQUEST:
+ 		printf("BLA REQUEST, src backbone %s, ",
+-		       get_name_by_macaddr((struct ether_addr *)hw_src, read_opt));
++		       get_name_by_macaddr((struct ether_addr *)eth_hdr->ether_shost, read_opt));
+ 		printf("dst backbone %s\n",
+ 		       get_name_by_macaddr((struct ether_addr *)eth_hdr->ether_dhost, read_opt));
+ 		break;
+-- 
+1.9.1
+
