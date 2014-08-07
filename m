@@ -1,15 +1,14 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <53E33F72.5070404@meshcoding.com>
-Date: Thu, 07 Aug 2014 10:57:22 +0200
-From: Antonio Quartulli <antonio@meshcoding.com>
+Return-Path: <ff@jluehr.de>
+Message-ID: <53E33BE5.30007@jluehr.de>
+Date: Thu, 07 Aug 2014 10:42:13 +0200
+From: =?ISO-8859-1?Q?Jan_L=FChr?= <ff@jluehr.de>
 MIME-Version: 1.0
-References: <53E32F6D.3010207@aliyun.com> <53E337A3.3060801@meshcoding.com>
-In-Reply-To: <53E337A3.3060801@meshcoding.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="lNUN7o7fmbKKoVuGxbbv2cBCveqFFVcX8"
-Subject: Re: [B.A.T.M.A.N.] how to make IP layer handle the change of
- network topology
+References: <53E274D5.1070008@jluehr.de>
+ <201408071037.36351.sw@simonwunderlich.de>
+In-Reply-To: <201408071037.36351.sw@simonwunderlich.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] alfred: IPC issues
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,48 +20,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, liudows@aliyun.com
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---lNUN7o7fmbKKoVuGxbbv2cBCveqFFVcX8
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hello,
+
+thanks for your feedback.
+
+Am 08/07/2014 10:37 AM, schrieb Simon Wunderlich:
+> Hello Jan,
+> 
+>> Hei folks,
+>>
+>> I'm using alfred 2014.0.0 on OpenWRT Barrier Breaker.
+>>
+>> Alfred is running:
+>> root@6466b34ffcac:~# ps -w | grep alfred
+>>  1718 root      1100 S    /usr/sbin/alfred -i br-freifunk -b bat0
+>>
+>> But cannot be queried using the client:
+>> root@6466b34ffcac:~# alfred -r 94
+>> can't connect to unix socket: Connection refused
+>>
+>> What's wrong here?
+>>
+(...)
 
 
-On 07/08/14 10:24, Antonio Quartulli wrote:
-> Hi Lui,
+> I don't see a problem right from your configuration. Can you please check:
+> 
+>  * do you see the socket file /var/run/alfred.sock after starting alfred? 
 
-Sorry I misspelled your name. I meant Liu :)
+Looks nice..
+root@6466b34ffcac:~# ls -lh /var/run/alfred.sock
+srwxr-xr-x    1 root     root           0 Aug  6 20:47 /var/run/alfred.sock
 
-Cheers,
+>  * does the same problem happen if you restart alfred or start it manually?
+/etc/init.d/alfred restart made it disappear
 
+For some reason, this is persistent:
+* Before restarting, alfred was unusable after rebooting the machine
+* After a restarting once, alfred is usable - even after reboots
 
---=20
-Antonio Quartulli
-
-
---lNUN7o7fmbKKoVuGxbbv2cBCveqFFVcX8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQIcBAEBCAAGBQJT4z92AAoJEJgn97Bh2u9e2AcQAK345HG2FfkliL2W2aX34akr
-pq/ipoxlmxBA0IwVWP0izq2xuXHoZPh9UFt3sWL7/LV9GvpGui/CzkS8qRA7JZJQ
-Smh7FD1q8voGYO21DpxA1nG1QfR8JMDQgLCa1169wS+5nRnvS2kt8uhNVjgS7/NQ
-9/jHSMLOfi320P8j6sqWkJsyr8SHPSJdMrDQCb6OxJccu9C0PdXwM+8r08Urao6+
-+d2KG7cihYnRgIzqVE+OoDVg9immTQgqb1JbLVEp7N+c2009yg0y862Dw5QbZspA
-NsZrWCE10qjjaTbcE7SG/ERLlemxUTbHyqwpVN0B5rLCy0N4Ugpu1Q46yvxg0Bu6
-FN66TIOvKgSYLjNU8CGZnY0dM8L3twgcSlLh55Yx0hIQLbrunWWT/2DA2BU1MDni
-25anECFRKW9PPHKKTWNooT2FSHE4J2sUOzG992VXNO3lOUYhiR7Y+4QIEgJtt6I0
-xwBjZtSHXc1SFabV1QermMzFgqRCjqEvqrJsAMVIu1YMLa98XawlPU0DVDj3bkg0
-ftBsYWLBm4tkF9FtEv9JY4LjJJgfiFoFpADRkoCDarwx3e75QnTREy3T5Y8NRIBl
-udWLrQsydaIfSpcEyl02b0wMzsLa/uTKaOPeqBi+anbxrp722HN9YTzmG6IehGJX
-s832Q5iMc/hDNHQ0dLvF
-=+u7m
------END PGP SIGNATURE-----
-
---lNUN7o7fmbKKoVuGxbbv2cBCveqFFVcX8--
+Greetu, Jan
