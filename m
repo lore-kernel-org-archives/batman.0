@@ -1,14 +1,9 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 7 Aug 2014 18:04:32 +0200
-References: <53E390D5.10009@jluehr.de>
-In-Reply-To: <53E390D5.10009@jluehr.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201408071804.32979.sw@simonwunderlich.de>
-Subject: Re: [B.A.T.M.A.N.] Running alfred as non-root user?
+Return-Path: <sakiwit@gmail.com>
+From: Jean Sacren <sakiwit@gmail.com>
+Date: Thu,  7 Aug 2014 06:50:46 -0600
+Message-Id: <1407415846-10277-4-git-send-email-sakiwit@gmail.com>
+Subject: [B.A.T.M.A.N.] [PATCH net 2/3] batman: fix duplicate #include of
+	multicast.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,23 +15,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: netdev@vger.kernel.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-> Hello,
-> 
-> everytime I try to start alfred 2014.3.0 using a dedicated non-root user
-> it fails with: can't bind unix socket: Address already in use
-> 
-> Running as root is successful. Is it possible to start alfred as non-root?
+The header multicast.h was included twice, so delete one of them.
 
-You are most probably having another alfred instance already running? 
-Otherwise you should get "permission denied" or something.
+Signed-off-by: Jean Sacren <sakiwit@gmail.com>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: Antonio Quartulli <antonio@meshcoding.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
+---
+ net/batman-adv/multicast.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-In any case, even if you have the sufficient rights, alfred also needs to bind 
-to the interface which is only possible as superuser. We currently don't 
-support running alfred as non-root. If someone is interested in that and know 
-how to support that while maintaining all current features, I'd be looking 
-forward to patches. :)
-
-Cheers,
-     Simon
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 96b66fd30f96..ab6bb2af1d45 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -19,9 +19,8 @@
+ #include "multicast.h"
+ #include "originator.h"
+ #include "hard-interface.h"
+ #include "translation-table.h"
+-#include "multicast.h"
+ 
+ /**
+  * batadv_mcast_mla_softif_get - get softif multicast listeners
+  * @dev: the device to collect multicast addresses from
