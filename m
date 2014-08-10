@@ -1,15 +1,10 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 8 Aug 2014 16:06:00 +0200
-References: <1407007130-23077-1-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1407007130-23077-1-git-send-email-linus.luessing@web.de>
+Return-Path: <booray@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201408081606.01045.sw@simonwunderlich.de>
-Subject: Re: [B.A.T.M.A.N.] Enhancements for Unsolicited Neigh. Adv. / grat
-	ARP Reply
+Date: Sun, 10 Aug 2014 15:00:51 -0700
+Message-ID: <CAA51LVr2ogEGnJNCepYRm2eAZvE_TpPFTeLf6BXkVpjyFfHSFg@mail.gmail.com>
+From: Ray Gibson <booray@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: [B.A.T.M.A.N.] Testing example of interface bonding
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,55 +18,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hello Linus,
+Hello,
 
-thank you very much for the patch proposal.
+Are there any documented cases (aside from the aging graph on the
+wiki) on batman-adv bonding setups?
 
-> Hi there,
-> 
-> Here's a little, rough patch to illustrate the idea we discussed a little
-> at the last Wireless Battle Mesh, that is forwarding the noisy IPv6
-> Unsolicited Neighbor Advertisements and gratuitous ARP Replies via unicast.
-> 
-> Currently these ugly unsol. NAs cause about 40% of ICMPv6 multicast
-> overhead in our networks here.
+I'm testing batman-adv 2014.3.0 in an effort to experiment and test
+with multi-link optimizations.  There is no wifi in the picture at the
+moment, this is being done with tap interfaces right now.
 
-I think it's quite a good idea - to motivate your proposal, I'd suggest to add 
-some information on how many broadcasts you think you can save in your 
-networks - 40% of ICMPv6 traffic is a little vague, since we don't know how 
-much of your traffic is ICMPv6 and what you have already blocked.
+My two nodes have this network config:
+lan0: bridge of eth0 and bat0, 192.168.100.1 on node1, 192.168.100.2 on node2
+bat0: includes tap0 and tap1 active, no IP.
+eth1: "wan" link, 10.10.10.1 on node1, 10.10.10.2 on node2
+tap0/1: openvpn bridge links over eth1, no IPs assigned to these interfaces.
 
-> 
-> A little more detailed explanation with some pictures can be found here:
-> 
-> https://www.open-mesh.org/projects/batman-adv/wiki/Unicasting-unsolicited-n
-> eighbor-advertisements
+This is a VMware environment for testing.  With the above setup, I can
+ping/iperf/whatever back and forth on the 192.168.100.x network.  It
+works great just extending a lan transparently on a wan link.  This
+was the original idea, with redundant connections (hence the multi tap
+interfaces).
 
-Nice page. :)
+Now, I'm trying to isolate the test down to bonding.  However,
+enabling bonding in batctl on both nodes has no apparent effect
+whatsoever.  Watching an iperf session in ifstat, I will see constant
+traffic on bat0, and then either tap0 or tap1 depending on how it's
+feeling at the time.  Sometimes it will shift all the traffic to the
+other tap interface.  Sometimes the incoming traffic will be on one
+interface and the outgoing traffic will be on the other.
 
-> 
-> In the few, simple scenarios with bridged-in hosts in VMs, the patch
-> seemed to do what it was supposed to do uppon roaming. Unsol. NAs did only
-> appear on the node the host roamed away from.
-> 
-> If I remember correctly, there were also some worries about how this
-> might work together with BLA-II. I gave it a little more thought and
-> had a look at the BLA-II source code, but couldn't find any issues.
+Note: I'm running iperf/etc on the nodes themselves, not on separate
+devices on the lan bridge.
 
-I don't see any issues either - as you've implemented, it should be similarly 
-working as the DHCP requests from client.
+Ultimately I am looking to try bonding several 3G or 4G devices
+together with batman-adv to achieve higher throughput to a single
+destination.
 
-> 
-> The only BLA-II related non-ideal thing I could think of so far is
-> noted in the code of this patch at the according place (but I think
-> that might not matter much in practice).
+Thank you for any comments or suggestions.  I find batman-adv very
+useful in other projects and look to extend its use into this one.
 
-You describe that this feature could be used for hot-swapping, and as far as I 
-understand, turning on that feature could break IPv6 hotswapping? I don't know 
-how much this is actually used and its probably not the most common thing for 
-our networks (and isn't reliable anyway), but you should make you feature 
-optional with a sysfs option or similar. Then users or firmware engineers can 
-turn that feature on as required, just as BLA and others. 
-
-Thanks,
-     Simon
+Ray
