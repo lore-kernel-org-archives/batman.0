@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 11 Aug 2014 13:11:37 +0800
-Message-ID: <4855803.l9Dr34QtGF@diderot>
-In-Reply-To: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
+Date: Mon, 11 Aug 2014 13:13:16 +0800
+Message-ID: <3795980.ZnKgUgJhLs@diderot>
+In-Reply-To: <1405410077-28764-2-git-send-email-martin@hundeboll.net>
 References: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
+ <1405410077-28764-2-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1922059.ESW6ajk6nu";
+Content-Type: multipart/signed; boundary="nextPart8282337.Io0cDGnXC3";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 01/13] batman-adv: kernel doc fixes for
-	bat_iv_ogm.c
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 02/13] batman-adv: kernel doc fixes for
+	bridge_loop_avoidance.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,22 +25,26 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Martin =?ISO-8859-1?Q?Hundeb=F8ll?= <martin@hundeboll.net>
 
 
---nextPart1922059.ESW6ajk6nu
+--nextPart8282337.Io0cDGnXC3
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Tuesday 15 July 2014 09:41:05 Martin Hundeb=F8ll wrote:
+On Tuesday 15 July 2014 09:41:06 Martin Hundeb=F8ll wrote:
 > Signed-off-by: Martin Hundeb=F8ll <martin@hundeboll.net>
+> Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
+>=20
 > ---
->  bat_iv_ogm.c | 9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
+> v2: removed duplicate white space
+>=20
+>  bridge_loop_avoidance.c | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
 
-Applied in revision 21b6fec.
+Applied in revision 69f6547.
 
 Thanks,
 Marek
 
---nextPart1922059.ESW6ajk6nu
+--nextPart8282337.Io0cDGnXC3
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -47,14 +52,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABAgAGBQJT6FCJAAoJEFNVTo/uthzA940H/2d3djh+d1HX+tM32OwwPFrP
-C3ffNlycnlCR0kZvmnk4FJybejl3fwrofhZCB42gapmb6NSkWHPPEStS/qDwgXu2
-Eh+hgcMNBeTdqZ+mQDUMfht+X7iwViXCHvLQtvRjPO+nQDl9YL+kjWdcYuqUhTKR
-yaH7CazCluQAyAWmZ8CkAsdPTNf13VDOhEx5gDeufqNoSbbKMcBr8ZkAeXroPe2K
-4Sy+9xHrgyiCA6cIex6e0R7rpps4WQlPWj4z7qCgmQMrPAA4pMNvpP2nZXILu266
-LXWHDZ7lUNut8glK679L9W4lekI/f0vXRUgMfXSuOpqXSv8gNBM4G4UDa0UCNVM=
-=2/su
+iQEcBAABAgAGBQJT6FDsAAoJEFNVTo/uthzApX4IAL9GhVR2t4z9aeODwAxSNLmB
+3PavLKdDid2N3jdYWzJ+sfxIyoBKJ+Opk19qcbS8VV1pEwppUFVnEfZ6ieR/MroD
+jcjn+rp8Va88NO5Nvd2ghCp3i4qESOYocjfBx2qhvAEsiultSRS8Ar8MsItHXJoN
+1VUWamNbXzG6x98QXVdTXB5pmvvHgSdIzzioEP4YTMNItC21eK75u1cYuD0OORVg
+XaLhfG5dvOPFSOT79Fc1Kym/DtO1uNffhNivh5xxqB92PmC3rNrpZmpFWZ+m+SPz
+cBhXvqIRngc2K06HzpCE9rcz5r+z9wfDK/SxUToJLMx9Ao5Eg7vcbKgLwSZgrsM=
+=qZAz
 -----END PGP SIGNATURE-----
 
---nextPart1922059.ESW6ajk6nu--
+--nextPart8282337.Io0cDGnXC3--
 
