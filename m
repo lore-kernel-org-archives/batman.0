@@ -1,10 +1,14 @@
-Return-Path: <booray@gmail.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 11 Aug 2014 12:52:52 +0800
+Message-ID: <1815637.PGfB9BjSzh@diderot>
+In-Reply-To: <1407335643-2124-1-git-send-email-sw@simonwunderlich.de>
+References: <1407335643-2124-1-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Date: Sun, 10 Aug 2014 15:00:51 -0700
-Message-ID: <CAA51LVr2ogEGnJNCepYRm2eAZvE_TpPFTeLf6BXkVpjyFfHSFg@mail.gmail.com>
-From: Ray Gibson <booray@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: [B.A.T.M.A.N.] Testing example of interface bonding
+Content-Type: multipart/signed; boundary="nextPart2137714.YuepJK3R4x";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: fix backbone address in tcpdump
+	for bla request frames
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,44 +21,50 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
-Hello,
 
-Are there any documented cases (aside from the aging graph on the
-wiki) on batman-adv bonding setups?
+--nextPart2137714.YuepJK3R4x
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-I'm testing batman-adv 2014.3.0 in an effort to experiment and test
-with multi-link optimizations.  There is no wifi in the picture at the
-moment, this is being done with tap interfaces right now.
+On Wednesday 06 August 2014 16:34:03 Simon Wunderlich wrote:
+> From: Simon Wunderlich <simon@open-mesh.com>
+> 
+> hw_src just contains another copy of the destination. The backbone
+> sending the request is setting its mac address into Ethernet source, so
+> print that instead.
+> 
+> For reference, see the documentation:
+> http://www.open-mesh.org/projects/batman-adv/wiki/Bridge-loop-avoidance-Prot
+> ocol
+> 
+> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+> ---
+>  tcpdump.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-My two nodes have this network config:
-lan0: bridge of eth0 and bat0, 192.168.100.1 on node1, 192.168.100.2 on node2
-bat0: includes tap0 and tap1 active, no IP.
-eth1: "wan" link, 10.10.10.1 on node1, 10.10.10.2 on node2
-tap0/1: openvpn bridge links over eth1, no IPs assigned to these interfaces.
+Applied in revision b904124.
 
-This is a VMware environment for testing.  With the above setup, I can
-ping/iperf/whatever back and forth on the 192.168.100.x network.  It
-works great just extending a lan transparently on a wan link.  This
-was the original idea, with redundant connections (hence the multi tap
-interfaces).
+Thanks,
+Marek
 
-Now, I'm trying to isolate the test down to bonding.  However,
-enabling bonding in batctl on both nodes has no apparent effect
-whatsoever.  Watching an iperf session in ifstat, I will see constant
-traffic on bat0, and then either tap0 or tap1 depending on how it's
-feeling at the time.  Sometimes it will shift all the traffic to the
-other tap interface.  Sometimes the incoming traffic will be on one
-interface and the outgoing traffic will be on the other.
+--nextPart2137714.YuepJK3R4x
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-Note: I'm running iperf/etc on the nodes themselves, not on separate
-devices on the lan bridge.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Ultimately I am looking to try bonding several 3G or 4G devices
-together with batman-adv to achieve higher throughput to a single
-destination.
+iQEcBAABAgAGBQJT6EwnAAoJEFNVTo/uthzANJYH/jq+OIPWNzvg5LAoB6JhDXoZ
+eD5CPKdeUAqBs8F/pTta6r9x1cA7rM1h8oQBW/Hwzl2fnlq/Dj4NP7XPfTZ307C6
+wlhlCwUpaKXX87c+0xkFiGNLkMvgqcTWUHttWSJGWgcoroVhtHBXdhLHGYzezY0F
+BQtSCP5U+L+GjE6W1NmNDKw9SGVDQYzgExXla1QM/HjBTUfNirRnTgxBbTfRKKHL
+8WypJl7M3cqGnc7blXqnBCxytAipXJFfKSb2bQsWE07qTt/hX9isSHihFYf/ul9v
+G1NjmowVe5WLoAr7eYGuwHnx0DhPJsL6Ua1G6ZsgcXEniKyQHlAHZiOKxu0Fe2o=
+=JQr0
+-----END PGP SIGNATURE-----
 
-Thank you for any comments or suggestions.  I find batman-adv very
-useful in other projects and look to extend its use into this one.
+--nextPart2137714.YuepJK3R4x--
 
-Ray
