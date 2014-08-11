@@ -1,15 +1,13 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 11 Aug 2014 13:18:22 +0800
-Message-ID: <1739492.UKJfEnUcuH@diderot>
-In-Reply-To: <1405410077-28764-4-git-send-email-martin@hundeboll.net>
-References: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
- <1405410077-28764-4-git-send-email-martin@hundeboll.net>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 11 Aug 2014 23:38:20 +0200
+Message-ID: <1463029.4iWUHdE7x7@prime>
+In-Reply-To: <CAA51LVr2ogEGnJNCepYRm2eAZvE_TpPFTeLf6BXkVpjyFfHSFg@mail.gmail.com>
+References: <CAA51LVr2ogEGnJNCepYRm2eAZvE_TpPFTeLf6BXkVpjyFfHSFg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1943251.UlUVxqX2C2";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 04/13] batman-adv: kernel doc fixes for
-	main.{c, h}
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [B.A.T.M.A.N.] Testing example of interface bonding
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,41 +20,75 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Martin =?ISO-8859-1?Q?Hundeb=F8ll?= <martin@hundeboll.net>
 
+Hello Ray,
 
---nextPart1943251.UlUVxqX2C2
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+thanks a lot for your mail.
 
-On Tuesday 15 July 2014 09:41:08 Martin Hundeb=F8ll wrote:
-> Signed-off-by: Martin Hundeb=F8ll <martin@hundeboll.net>
-> ---
->  main.c | 4 ++--
->  main.h | 5 ++---
->  2 files changed, 4 insertions(+), 5 deletions(-)
+On Sunday 10 August 2014 15:00:51 Ray Gibson wrote:
+> Hello,
+> 
+> Are there any documented cases (aside from the aging graph on the
+> wiki) on batman-adv bonding setups?
 
-Applied in revision 84f23ea.
+Not as far as I know. The bonding feature does not seem to be the most popular 
+one. :) (If there is anyone, please tell us!)
+
+> 
+> I'm testing batman-adv 2014.3.0 in an effort to experiment and test
+> with multi-link optimizations.  There is no wifi in the picture at the
+> moment, this is being done with tap interfaces right now.
+> 
+> My two nodes have this network config:
+> lan0: bridge of eth0 and bat0, 192.168.100.1 on node1, 192.168.100.2 on
+> node2 bat0: includes tap0 and tap1 active, no IP.
+> eth1: "wan" link, 10.10.10.1 on node1, 10.10.10.2 on node2
+> tap0/1: openvpn bridge links over eth1, no IPs assigned to these interfaces.
+> 
+> This is a VMware environment for testing.  With the above setup, I can
+> ping/iperf/whatever back and forth on the 192.168.100.x network.  It
+> works great just extending a lan transparently on a wan link.  This
+> was the original idea, with redundant connections (hence the multi tap
+> interfaces).
+> 
+> Now, I'm trying to isolate the test down to bonding.  However,
+> enabling bonding in batctl on both nodes has no apparent effect
+> whatsoever.  Watching an iperf session in ifstat, I will see constant
+> traffic on bat0, and then either tap0 or tap1 depending on how it's
+> feeling at the time.  Sometimes it will shift all the traffic to the
+> other tap interface.  Sometimes the incoming traffic will be on one
+> interface and the outgoing traffic will be on the other.
+> 
+> Note: I'm running iperf/etc on the nodes themselves, not on separate
+> devices on the lan bridge.
+
+Hmm. What you should see after enabling bonding would be a similar usage of 
+both interfaces. I guess each tap interfaces of node1 is "directly connected" 
+to  the other tap interface of node2, right? Could you please share your 
+outputs of:
+
+batctl originators
+batctl originators -i tap0
+batctl originators -i tap1
+
+> 
+> Ultimately I am looking to try bonding several 3G or 4G devices
+> together with batman-adv to achieve higher throughput to a single
+> destination.
+
+Please note that the bonding will only benefit under some circumstances, as far 
+as my experiments have shown:
+
+ * since its round robin, you'll only see a benefit if the worst link does not 
+have less than 50% throughput of the best one - otherwise it will slow the 
+other links down.
+ * different latencies or buffering delays in the links may lead to out of order 
+packets, and not every payload traffic likes that.
+
+I could see some improvement when having two equal wifi links though. In any 
+case, please thoroughly test it before applying that to your 3g/4g 
+application, there may be some pitfalls. I'd be also very interested in your 
+findings. :)
 
 Thanks,
-Marek
-
---nextPart1943251.UlUVxqX2C2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABAgAGBQJT6FIfAAoJEFNVTo/uthzA5VwH/1nXoTfbRYz3Bw3J1zUNsTb4
-SvpOe/B/RnYvuGcVakk+GA2MzIOVB22soMDoGQjATrkwaVvgu3t42ekTcrw4fnyL
-+mGJJY136FJIIWPB9PraxUrZntkNjsE1NZ4SAfTXc9XYpSXXeXCgFPOxtJwwO+tn
-GkIHMHPzXhP1U8LcNffVZnNBnzFE7ks7XGF0gEr0Ke5QQHVrels+Fe1GRtxdR2zF
-n/ZndyINxPBWmqUlnebx4X5HYj8wfdUAk036MoXvLrEKZWdBjFX0Ahj8xjJIb+ej
-vH9ET+fTCKzwgpL1ZOx+i2vDKVlPfMQdLyBmXJ7fEfejj8e1WAbqJzO6yh6R9WM=
-=gM2O
------END PGP SIGNATURE-----
-
---nextPart1943251.UlUVxqX2C2--
-
+    Simon
