@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 11 Aug 2014 13:00:37 +0800
-Message-ID: <2458326.X8uHuyWsd1@diderot>
-In-Reply-To: <1405506190-9733-1-git-send-email-sw@simonwunderlich.de>
-References: <1405506190-9733-1-git-send-email-sw@simonwunderlich.de>
+Date: Mon, 11 Aug 2014 13:11:37 +0800
+Message-ID: <4855803.l9Dr34QtGF@diderot>
+In-Reply-To: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
+References: <1405410077-28764-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3648526.BlnnZivu0i";
+Content-Type: multipart/signed; boundary="nextPart1922059.ESW6ajk6nu";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove obsolete variable
-	primary_iface from orig_node
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 01/13] batman-adv: kernel doc fixes for
+	bat_iv_ogm.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,31 +21,25 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Martin =?ISO-8859-1?Q?Hundeb=F8ll?= <martin@hundeboll.net>
 
 
---nextPart3648526.BlnnZivu0i
+--nextPart1922059.ESW6ajk6nu
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Wednesday 16 July 2014 12:23:10 Simon Wunderlich wrote:
-> This variable became obsolete when changing to the new bonding mechan=
-ism
-> based on the multi interface optimization. Since its not used anywher=
-e,
-> remove it.
->=20
-> Reported-by: Linus L=FCssing <linus.luessing@web.de>
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+On Tuesday 15 July 2014 09:41:05 Martin Hundeb=F8ll wrote:
+> Signed-off-by: Martin Hundeb=F8ll <martin@hundeboll.net>
 > ---
->  types.h | 2 --
->  1 file changed, 2 deletions(-)
+>  bat_iv_ogm.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
 
-Applied in revision be0f6de.
+Applied in revision 21b6fec.
 
 Thanks,
 Marek
 
---nextPart3648526.BlnnZivu0i
+--nextPart1922059.ESW6ajk6nu
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +47,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABAgAGBQJT6E31AAoJEFNVTo/uthzANiIH+gNhT+gOeDuyB7lANdRGdy72
-3jMX8r5hmWdtX8XpU6JWEOFPa1E70hUrylB9ScRoN4LxdpenQyeMTMnq9zJh4OhS
-2pSEgt6l3Foex746pBHszp9r7ivNqriAcqi+v/m0KKmFbU5Kwqaw1ievzX22LANF
-i86JptfgdH/qZrq/8e4M3GuDkfdb41NnH1HJIc8A236m3NsR1oDDVmxPlpMivnph
-ceR+7tTLMAGZnpNozaw4E3tRkprqZSc5oyIN+tyoHbmd1nOFh0unMlIy8fhW+5c4
-A0iP0asFNSDv+2Qq04jZ0jyoFlhIZRoJtCt1B2g3O2beOEVfBZfPNVZswcJ1P4A=
-=zDDW
+iQEcBAABAgAGBQJT6FCJAAoJEFNVTo/uthzA940H/2d3djh+d1HX+tM32OwwPFrP
+C3ffNlycnlCR0kZvmnk4FJybejl3fwrofhZCB42gapmb6NSkWHPPEStS/qDwgXu2
+Eh+hgcMNBeTdqZ+mQDUMfht+X7iwViXCHvLQtvRjPO+nQDl9YL+kjWdcYuqUhTKR
+yaH7CazCluQAyAWmZ8CkAsdPTNf13VDOhEx5gDeufqNoSbbKMcBr8ZkAeXroPe2K
+4Sy+9xHrgyiCA6cIex6e0R7rpps4WQlPWj4z7qCgmQMrPAA4pMNvpP2nZXILu266
+LXWHDZ7lUNut8glK679L9W4lekI/f0vXRUgMfXSuOpqXSv8gNBM4G4UDa0UCNVM=
+=2/su
 -----END PGP SIGNATURE-----
 
---nextPart3648526.BlnnZivu0i--
+--nextPart1922059.ESW6ajk6nu--
 
