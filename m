@@ -1,13 +1,13 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 11 Aug 2014 23:43:53 +0200
-Message-ID: <8591300.0q9XWxSvcJ@prime>
-In-Reply-To: <1407465989-8763-1-git-send-email-linus.luessing@web.de>
-References: <1407465989-8763-1-git-send-email-linus.luessing@web.de>
+Return-Path: <booray@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv7 0/3] Multicast optimizations for bridges
+In-Reply-To: <1463029.4iWUHdE7x7@prime>
+References: <CAA51LVr2ogEGnJNCepYRm2eAZvE_TpPFTeLf6BXkVpjyFfHSFg@mail.gmail.com>
+ <1463029.4iWUHdE7x7@prime>
+Date: Tue, 12 Aug 2014 11:21:18 -0700
+Message-ID: <CAA51LVpzYaMEkrsKwo2yXkMg9+zTtBtqGO7=96mB0Pyv+NSB6w@mail.gmail.com>
+From: Ray Gibson <booray@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] Testing example of interface bonding
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,45 +19,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-On Friday 08 August 2014 04:46:26 Linus L=C3=BCssing wrote:
-> This patchset enables the usage of the batman-adv multicast optimizat=
-ions
-> for scenarios involving bridges on top of e.g. bat0, too.
->=20
-> Along come two more patches adding according debugging facilities
-> to make it possible for the user to check why the multicast
-> optimizations might not work ideally to give hints about
-> what they might change about their topology.
->=20
-> Cheers, Linus
+Simon,
 
-As discussed in private, here are some things which I've noticed during=
- my=20
-tests which should get fixed:
+Thank you for looking at this with me.
 
- * With batctl mf, in the own flag section, it reports "no querier pres=
-ent +"=20
-when there is actually a querier present, and "no querier present -" if=
- there=20
-is no querier -> reversed logic?
- * As a beautification suggestion, you could use the flag names (U/4/6)=
- instead=20
-of "+" and "." instead of "-" in the batctl mf output to make the conne=
-ction=20
-to the reported flags more clear
- * I didn't get any log output (from batctl log) when a querier was sha=
-dowed,=20
-even if batctl mf was showing that correctly. All what was reported was=
-=20
-IGMP/MLD querier appearing or disappearing. We've discussed that this m=
-ight be=20
-due to some delay in the bridge code to report that ...
+On Mon, Aug 11, 2014 at 2:38 PM, Simon Wunderlich <sw@simonwunderlich.de> wrote:
 
-In general, the tests went fine, if you can resolve these quirks then w=
-e can=20
-add my Reviewed/Tested by, I guess. :)
+> Hmm. What you should see after enabling bonding would be a similar usage of
+> both interfaces. I guess each tap interfaces of node1 is "directly connected"
+> to  the other tap interface of node2, right? Could you please share your
+> outputs of:
 
-Thanks!
-    Simon
+Yes, the tap interfaces behave as if they are directly connected together.
+
+> batctl originators
+> batctl originators -i tap0
+> batctl originators -i tap1
+
+I've put all the output in a pastebin as to not clog up everyone's inbox:
+
+http://pastebin.com/6fqUUUYq
+
+> Please note that the bonding will only benefit under some circumstances, as far
+> as my experiments have shown:
+>
+>  * since its round robin, you'll only see a benefit if the worst link does not
+> have less than 50% throughput of the best one - otherwise it will slow the
+> other links down.
+>  * different latencies or buffering delays in the links may lead to out of order
+> packets, and not every payload traffic likes that.
+>
+> I could see some improvement when having two equal wifi links though. In any
+> case, please thoroughly test it before applying that to your 3g/4g
+> application, there may be some pitfalls. I'd be also very interested in your
+> findings. :)
+>
+> Thanks,
+>     Simon
+
+Regardless of its potential impact on performance, I think it's worth
+a look and test to see if there may be some potential benefit.
+Currently this setup is working nice in that it's a true case of point
+to point redundant links.  If additional links could be added or
+removed at will to enhance throughput I would see this useful in a
+variety of applications.  Currently, I'd like to just reproduce what
+the function was originally designed to do and then go from there.
+
+Thanks again for the help.
+
+Ray
