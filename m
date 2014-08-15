@@ -1,15 +1,9 @@
-Return-Path: <liudows@aliyun.com>
-Message-ID: <53EDA50D.4030602@aliyun.com>
-Date: Fri, 15 Aug 2014 14:13:33 +0800
-From: liu <liudows@aliyun.com>
-MIME-Version: 1.0
-References: <53EC5D49.5000705@aliyun.com> <53EC7E6C.7000900@aliyun.com>
- <3486850.VCLybl6GSa@diderot>
-In-Reply-To: <3486850.VCLybl6GSa@diderot>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] how to compile the latest version of batctl in
- OpenWrt 12.09
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 15 Aug 2014 13:38:47 +0200
+Message-Id: <1408102727-12671-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] list: fix order of arguments for
+	hlist_add_after(_rcu)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,33 +15,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: sven@narfation.org
 
-Yes, I have tried. On a OpenWrt 12.09 with kernel 3.3.8, 
-batman.adv-2014.3 CAN NOT creates a 'bat0' interface.
-You know, kernel '3.3.8' is a rather old kernel version, and '2014.3' is 
-the latest batman.adv version.
+From: Ken Helias <kenhelias@firemail.de>
 
-Besides,  I want to know that from which version the feature of non-mesh 
-client roaming is available?
+All other add functions for lists have the new item as first argument
+and the position where it is added as second argument.  This was changed
+for no good reason in this function and makes using it unnecessary
+confusing.
 
-Thanks.
+The name was changed to hlist_add_behind() to cause unconverted code to
+generate a compile error instead of using the wrong parameter order.
 
-Best regards,
-Liu
+[akpm@linux-foundation.org: coding-style fixes]
+Signed-off-by: Ken Helias <kenhelias@firemail.de>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>	[intel driver bits]
+Cc: Hugh Dickins <hughd@google.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+[sven@narfation.org: fix parameter order, add compat code]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+The patch to fix the order of arguments was already submitted to davem via
+http://article.gmane.org/gmane.linux.network/326598
 
+ compat.h        | 6 ++++++
+ fragmentation.c | 2 +-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
-On 2014/8/15 13:13, Marek Lindner wrote:
-> On Thursday 14 August 2014 17:16:28 liu wrote:
->> Now I switch to version '2013.4.0' of batman-adv.But when I run this
->> command 'batctl if add wlan0-1', the system crash. And it works well in
->> version '2012.3.0'. I want to know which version is suitable for OpenWrt
->> 12.09?
-> We don't track which OpenWrt versions work with batman-adv. Technically, you
-> have to check for kernel compatibilities. If the kernel is newer than batman-
-> adv it probably won't work. Newer batman-adv on older kernel has a good chance
-> of success.
->
-> Cheers,
-> Marek
+diff --git a/compat.h b/compat.h
+index ed5b815..eb837ae 100644
+--- a/compat.h
++++ b/compat.h
+@@ -446,4 +446,10 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
+ 
+ #endif /* < KERNEL_VERSION(3, 16, 0) */
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
++
++#define hlist_add_behind(n, prev) hlist_add_after(prev, n)
++
++#endif /* < KERNEL_VERSION(3, 17, 0) */
++
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
+diff --git a/fragmentation.c b/fragmentation.c
+index 022d18a..fc1835c 100644
+--- a/fragmentation.c
++++ b/fragmentation.c
+@@ -188,7 +188,7 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
+ 
+ 	/* Reached the end of the list, so insert after 'frag_entry_last'. */
+ 	if (likely(frag_entry_last)) {
+-		hlist_add_after(&frag_entry_last->list, &frag_entry_new->list);
++		hlist_add_behind(&frag_entry_new->list, &frag_entry_last->list);
+ 		chain->size += skb->len - hdr_size;
+ 		chain->timestamp = jiffies;
+ 		ret = true;
+-- 
+2.1.0.rc1
 
