@@ -1,14 +1,11 @@
-Return-Path: <liudows@aliyun.com>
-Message-ID: <53EC7E6C.7000900@aliyun.com>
-Date: Thu, 14 Aug 2014 17:16:28 +0800
-From: liu <liudows@aliyun.com>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Fri, 15 Aug 2014 05:29:23 +0200
+Message-Id: <1408073366-12008-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-References: <53EC5D49.5000705@aliyun.com>
-In-Reply-To: <53EC5D49.5000705@aliyun.com>
-Content-Type: text/plain; charset=gbk; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] how to compile the latest version of batctl in
- OpenWrt 12.09
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv8 0/3] Multicast optimizations for bridges
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,33 +19,89 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+This patchset enables the usage of the batman-adv multicast optimizations
+for scenarios involving bridges on top of e.g. bat0, too.
 
-On 2014/8/14 14:55, liu wrote:
-> Hello, I try to test the latest version of batman-adv in OpenWrt 
-> 12.09. I failed to compile 'batctl' because of the old version of 
-> 'libnl' in OpenWrt.The version '2014.3' and the development version of 
-> 'batctl' require 'libnl-3.0', but OpenWrt 12.09 only contain the 
-> 'libnl-2.0.1'. That's the problem. How to fix this? Anyone have built 
-> it in OpenWrt 12.09 yet?
->
-> Thanks.
->
-> Best regards
->
-> liu
->
->
->
+Along come two more patches adding according debugging facilities
+to make it possible for the user to check why the multicast
+optimizations might not work ideally to give hints about
+what they might change about their topology.
 
-Now I switch to version '2013.4.0' of batman-adv.But when I run this 
-command 'batctl if add wlan0-1', the system crash. And it works well in 
-version '2012.3.0'. I want to know which version is suitable for OpenWrt 
-12.09?
+Cheers, Linus
 
-Thanks.
+Changes in v8 (thanks to Simon's suggestions):
+- PATCH 2/3:
+* print shadowing status log of an appearing and shadowing querier, too
+  (the bridge-querier-existence call has an additional 10s delay
+   to ensure reports had their time to arrive -
+   the bridge-querier-port call doesn't have that)
+- PATCH 3/3:
+* changing debugfs output from "+" and "-" to "U/4/6" and "."
+* fixing "no querier present" logic (introduced in [PATCHv7 3/3])
 
-Best regards
+Changes in v7 (thanks to Simon's suggestions):
+- PATCH 2/3:
+* renaming old/new_querier to old/new_state
+* slightly extended kerneldoc of batadv_mcast_querier_log()
+* removing words "good" and "bad" from debug output
+* simplified batadv_mcast_flags_log()
+* assignment instead of memset in batadv_mcast_mla_tvlv_update()
+  and batadv_softif_init_late()
+* simple struct member assignments instead of one complex struct
+  assigment
+* removing unnecessary memcmp's
+* substituting return statement for an if-block in
+  batadv_mcast_querier_log() and batadv_mcast_bridge_log()
+* print "Unsnoopables(U)-flag" instead of just "U-flag"
+- PATCH 3/3:
+* use bat_priv values instead of querying bridge ABI in
+  batadv_mcast_flags_print_header()
 
-Liu
+Changes in v6:
+* New PATCH 2/3 inserted, moving logging to separate patch
+* More verbose logging added to PATCH 2/3:
+  Bridge and querier state changes are logged too
+* upper case to lower case for kernel doc of batadv_mcast_flags_open
+  (PATCH 2/3)
+* Adding note to kernel doc of batadv_mcast_get_bridge about
+  increased refcount (PATCH 1/3)
+* Printing some lines about current bridge and querier state to
+  debugfs too (PATCH 3/3)
 
+Changes in v5 (PATCH 2/2 only):
+* s/dat_cache/mcast_flags/ in kerneldoc (copy&paste error)
 
+Changes in v4 (PATCH 2/2 only):
+* initial {ad,e}dition of this patch
+
+Changes in v3 (PATCH 1/2 only):
+* Removed "RFC" tag in title again: The stubs and new export are upstream
+  in net-next and therefore going to be included in 3.17
+* Added some debug output:
+  * Two warning messages:
+    -> Old kernel version or no bridge IGMP/MLD snooping compiled
+  * New batman-adv log-level "mcast":
+    -> Logging mcast flag changes
+  (a third debugging facility, a new table for debugfs for a global
+   mcast flag overview will be added in a separate patch later
+   as discussed with Simon)
+
+Changes in v2 (PATCH 1/2 only):
+* fetching local (= on this same kernel) multicast listeners from
+  the bridge instead of the bat0 interface if a bridge is present
+  - just like ip addresses and routes should be used from br0, the
+  same goes for multicast listeners
+* beautification of batadv_mcast_mla_br_addr_cpy(), now using already
+  present functions from the kernel instead of own, hackish approach
+* changed names of some goto-labels (not using "skip" anymore)
+* using new, third bridge multicast export (because this export is
+  not upstream yet, I've added the "RFC" in the title):
+  br_multicast_has_querier_anywhere()
+* adding compat stubs for two bridge multicast exports, to make
+  batman-adv compile- and usable even if a 3.16 kernel was compiled
+  without bridge code - the stubs are supposed to be upstream in the
+  bridge code in 3.17 (therefore just 'compat')
+* updated kerneldocs for batadv_mcast_mla_bridge_get() and
+  batadv_mcast_mla_softif_get()
+* The two sentences in the commit message starting with "Queriers: ..."
+  were slightly modified to include the third bridge multicast export
