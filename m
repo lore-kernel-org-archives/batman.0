@@ -1,14 +1,14 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Fri, 15 Aug 2014 05:29:26 +0200
-Message-Id: <1408073366-12008-4-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1408073366-12008-1-git-send-email-linus.luessing@web.de>
-References: <1408073366-12008-1-git-send-email-linus.luessing@web.de>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Fri, 15 Aug 2014 13:13:13 +0800
+Message-ID: <3486850.VCLybl6GSa@diderot>
+In-Reply-To: <53EC7E6C.7000900@aliyun.com>
+References: <53EC5D49.5000705@aliyun.com> <53EC7E6C.7000900@aliyun.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv8 3/3] batman-adv: Add debugfs table for
-	mcast flags
+Content-Type: multipart/signed; boundary="nextPart2258042.RPhkZY56ky";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] how to compile the latest version of batctl in
+	OpenWrt 12.09
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,195 +20,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This patch adds a debugfs table with originators and their according
-multicast flags to help users figure out why multicast optimizations
-might be enabled or disabled for them.
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
- debugfs.c   |   21 +++++++++++++
- multicast.c |   99 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- multicast.h |    2 ++
- 3 files changed, 122 insertions(+)
+--nextPart2258042.RPhkZY56ky
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-diff --git a/debugfs.c b/debugfs.c
-index a12e25e..cd7c282 100644
---- a/debugfs.c
-+++ b/debugfs.c
-@@ -30,6 +30,7 @@
- #include "bridge_loop_avoidance.h"
- #include "distributed-arp-table.h"
- #include "network-coding.h"
-+#include "multicast.h"
- 
- static struct dentry *batadv_debugfs;
- 
-@@ -332,6 +333,20 @@ static int batadv_nc_nodes_open(struct inode *inode, struct file *file)
- }
- #endif
- 
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+/**
-+ * batadv_mcast_flags_open - prepare file handler for reads from mcast_flags
-+ * @inode: inode which was opened
-+ * @file: file handle to be initialized
-+ */
-+static int batadv_mcast_flags_open(struct inode *inode, struct file *file)
-+{
-+	struct net_device *net_dev = (struct net_device *)inode->i_private;
-+
-+	return single_open(file, batadv_mcast_flags_seq_print_text, net_dev);
-+}
-+#endif
-+
- #define BATADV_DEBUGINFO(_name, _mode, _open)		\
- struct batadv_debuginfo batadv_debuginfo_##_name = {	\
- 	.attr = { .name = __stringify(_name),		\
-@@ -372,6 +387,9 @@ static BATADV_DEBUGINFO(transtable_local, S_IRUGO,
- #ifdef CONFIG_BATMAN_ADV_NC
- static BATADV_DEBUGINFO(nc_nodes, S_IRUGO, batadv_nc_nodes_open);
- #endif
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+static BATADV_DEBUGINFO(mcast_flags, S_IRUGO, batadv_mcast_flags_open);
-+#endif
- 
- static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- 	&batadv_debuginfo_originators,
-@@ -388,6 +406,9 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- #ifdef CONFIG_BATMAN_ADV_NC
- 	&batadv_debuginfo_nc_nodes,
- #endif
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+	&batadv_debuginfo_mcast_flags,
-+#endif
- 	NULL,
- };
- 
-diff --git a/multicast.c b/multicast.c
-index b34ae3a..75dd9a0 100644
---- a/multicast.c
-+++ b/multicast.c
-@@ -982,6 +982,105 @@ void batadv_mcast_init(struct batadv_priv *bat_priv)
- }
- 
- /**
-+ * batadv_mcast_flags_print_header - print own mcast flags to debugfs table
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @seq: debugfs table seq_file struct
-+ *
-+ * Prints our own multicast flags including a more specific reason why
-+ * they are set, that is prints the bridge and querier state too, to
-+ * the debugfs table specified via @seq.
-+ */
-+static void batadv_mcast_flags_print_header(struct batadv_priv *bat_priv,
-+					    struct seq_file *seq)
-+{
-+	uint8_t flags = bat_priv->mcast.flags;
-+	char querier4, querier6, shadowing4, shadowing6;
-+	bool bridged = bat_priv->mcast.bridged;
-+
-+	if (bridged) {
-+		querier4 = bat_priv->mcast.querier_ipv4.exists ? '.' : '4';
-+		querier6 = bat_priv->mcast.querier_ipv6.exists ? '.' : '6';
-+		shadowing4 = bat_priv->mcast.querier_ipv4.shadowing ? '4' : '.';
-+		shadowing6 = bat_priv->mcast.querier_ipv6.shadowing ? '6' : '.';
-+	} else {
-+		querier4 = '?';
-+		querier6 = '?';
-+		shadowing4 = '?';
-+		shadowing6 = '?';
-+	}
-+
-+	seq_printf(seq, "Multicast flags (own flags: [%c%c%c])\n",
-+		   flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ? 'U' : '.',
-+		   flags & BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.',
-+		   flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.');
-+	seq_printf(seq, "* Bridged [U]\t\t\t\t%c\n", bridged ? 'U' : '.');
-+	seq_printf(seq, "* No IGMP/MLD Querier [4/6]:\t\t%c/%c\n",
-+		   querier4, querier6);
-+	seq_printf(seq, "* Shadowing IGMP/MLD Querier [4/6]:\t%c/%c\n",
-+		   shadowing4, shadowing6);
-+	seq_puts(seq, "-------------------------------------------\n");
-+	seq_printf(seq, "       %-10s %s\n", "Originator", "Flags");
-+}
-+
-+/**
-+ * batadv_mcast_flags_seq_print_text - print the mcast flags of other nodes
-+ * @seq: seq file to print on
-+ * @offset: not used
-+ *
-+ * This prints a table of (primary) originators and their according
-+ * multicast flags, including (in the header) our own.
-+ */
-+int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset)
-+{
-+	struct net_device *net_dev = (struct net_device *)seq->private;
-+	struct batadv_priv *bat_priv = netdev_priv(net_dev);
-+	struct batadv_hard_iface *primary_if;
-+	struct batadv_hashtable *hash = bat_priv->orig_hash;
-+	struct batadv_orig_node *orig_node;
-+	struct hlist_head *head;
-+	uint8_t flags;
-+	uint32_t i;
-+
-+	primary_if = batadv_seq_print_text_primary_if_get(seq);
-+	if (!primary_if)
-+		return 0;
-+
-+	batadv_mcast_flags_print_header(bat_priv, seq);
-+
-+	for (i = 0; i < hash->size; i++) {
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
-+			if (!(orig_node->capa_initialized &
-+			      BATADV_ORIG_CAPA_HAS_MCAST))
-+				continue;
-+
-+			flags = orig_node->mcast_flags;
-+
-+			if (!(orig_node->capabilities &
-+			      BATADV_ORIG_CAPA_HAS_MCAST)) {
-+				seq_printf(seq, "%pM -\n", orig_node->orig);
-+				continue;
-+			}
-+
-+			seq_printf(seq, "%pM [%c%c%c]\n", orig_node->orig,
-+				   (flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ?
-+				    'U' : '.'),
-+				   (flags & BATADV_MCAST_WANT_ALL_IPV4 ?
-+				    '4' : '.'),
-+				   (flags & BATADV_MCAST_WANT_ALL_IPV6 ?
-+				    '6' : '.'));
-+		}
-+		rcu_read_unlock();
-+	}
-+
-+	batadv_hardif_free_ref(primary_if);
-+
-+	return 0;
-+}
-+
-+/**
-  * batadv_mcast_free - free the multicast optimizations structures
-  * @bat_priv: the bat priv with all the soft interface information
-  */
-diff --git a/multicast.h b/multicast.h
-index 73b5d45..5344160 100644
---- a/multicast.h
-+++ b/multicast.h
-@@ -42,6 +42,8 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 
- void batadv_mcast_init(struct batadv_priv *bat_priv);
- 
-+int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset);
-+
- void batadv_mcast_free(struct batadv_priv *bat_priv);
- 
- void batadv_mcast_purge_orig(struct batadv_orig_node *orig_node);
--- 
-1.7.10.4
+On Thursday 14 August 2014 17:16:28 liu wrote:
+> Now I switch to version '2013.4.0' of batman-adv.But when I run this
+> command 'batctl if add wlan0-1', the system crash. And it works well in
+> version '2012.3.0'. I want to know which version is suitable for OpenWrt
+> 12.09?
+
+We don't track which OpenWrt versions work with batman-adv. Technically, you 
+have to check for kernel compatibilities. If the kernel is newer than batman-
+adv it probably won't work. Newer batman-adv on older kernel has a good chance 
+of success.
+
+Cheers,
+Marek
+
+--nextPart2258042.RPhkZY56ky
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABAgAGBQJT7ZbpAAoJEFNVTo/uthzA6vEIALYxdVFAVB6SHD7DdexHhopD
+RQZ4xt4A/lAw/YIm6Q1jNc2/mAmvUYzGW5t6Mozp5ATukpPtLck7O4BdDyk4slMA
+/JHNbakCIFGWTiOXVL51xakQUUrGNeyPOyiPbA/NKUDZzhMc3s3looO1wA8PViYl
+RSuNNzfN+1KVZ4sqDURkUivBScZz/KpBfZ3WUr5q8oWCCrwY270CeEgDTuB0/QVY
++H2Mw2JpO1JXBmdsjX6WZdyuWa4/hRi9ZJSg7JT76XoO/DDwihcfhvLLx4E06qGw
+zJURG7DVpA1LDL3ebxK+FMkwRJMYFsMj2fkJHfrbBjzgxMklMg2YLwE6yNQaHHE=
+=Qvfs
+-----END PGP SIGNATURE-----
+
+--nextPart2258042.RPhkZY56ky--
 
