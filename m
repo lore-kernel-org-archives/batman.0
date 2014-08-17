@@ -1,9 +1,13 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 15 Aug 2014 13:38:47 +0200
-Message-Id: <1408102727-12671-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] list: fix order of arguments for
-	hlist_add_after(_rcu)
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Sun, 17 Aug 2014 21:10:47 +0200
+Message-ID: <2012653.G3xfvbBHvG@prime>
+In-Reply-To: <1408073366-12008-1-git-send-email-linus.luessing@web.de>
+References: <1408073366-12008-1-git-send-email-linus.luessing@web.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2481572.Gqjn98aX8L";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv8 0/3] Multicast optimizations for bridges
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,64 +20,58 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: sven@narfation.org
 
-From: Ken Helias <kenhelias@firemail.de>
 
-All other add functions for lists have the new item as first argument
-and the position where it is added as second argument.  This was changed
-for no good reason in this function and makes using it unnecessary
-confusing.
+--nextPart2481572.Gqjn98aX8L
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 
-The name was changed to hlist_add_behind() to cause unconverted code to
-generate a compile error instead of using the wrong parameter order.
+On Friday 15 August 2014 05:29:23 Linus L=C3=BCssing wrote:
+> This patchset enables the usage of the batman-adv multicast optimizat=
+ions
+> for scenarios involving bridges on top of e.g. bat0, too.
+>=20
+> Along come two more patches adding according debugging facilities
+> to make it possible for the user to check why the multicast
+> optimizations might not work ideally to give hints about
+> what they might change about their topology.
+>=20
+> Cheers, Linus
+>=20
+> Changes in v8 (thanks to Simon's suggestions):
+> - PATCH 2/3:
+> * print shadowing status log of an appearing and shadowing querier, t=
+oo
+>   (the bridge-querier-existence call has an additional 10s delay
+>    to ensure reports had their time to arrive -
+>    the bridge-querier-port call doesn't have that)
+> - PATCH 3/3:
+> * changing debugfs output from "+" and "-" to "U/4/6" and "."
+> * fixing "no querier present" logic (introduced in [PATCHv7 3/3])
+>=20
 
-[akpm@linux-foundation.org: coding-style fixes]
-Signed-off-by: Ken Helias <kenhelias@firemail.de>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>	[intel driver bits]
-Cc: Hugh Dickins <hughd@google.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-[sven@narfation.org: fix parameter order, add compat code]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-The patch to fix the order of arguments was already submitted to davem via
-http://article.gmane.org/gmane.linux.network/326598
+Looks good now! I gave it another round in my emulator setup, and could=
+n't find=20
+anything to complain about. ;)
 
- compat.h        | 6 ++++++
- fragmentation.c | 2 +-
- 2 files changed, 7 insertions(+), 1 deletion(-)
+Tested/Reviewed-by: Simon Wunderlich <sw@simonwunderlich.de>
 
-diff --git a/compat.h b/compat.h
-index ed5b815..eb837ae 100644
---- a/compat.h
-+++ b/compat.h
-@@ -446,4 +446,10 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
- 
- #endif /* < KERNEL_VERSION(3, 16, 0) */
- 
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
-+
-+#define hlist_add_behind(n, prev) hlist_add_after(prev, n)
-+
-+#endif /* < KERNEL_VERSION(3, 17, 0) */
-+
- #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
-diff --git a/fragmentation.c b/fragmentation.c
-index 022d18a..fc1835c 100644
---- a/fragmentation.c
-+++ b/fragmentation.c
-@@ -188,7 +188,7 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
- 
- 	/* Reached the end of the list, so insert after 'frag_entry_last'. */
- 	if (likely(frag_entry_last)) {
--		hlist_add_after(&frag_entry_last->list, &frag_entry_new->list);
-+		hlist_add_behind(&frag_entry_new->list, &frag_entry_last->list);
- 		chain->size += skb->len - hdr_size;
- 		chain->timestamp = jiffies;
- 		ret = true;
--- 
-2.1.0.rc1
+for this series.
+
+Thanks!
+    Simon
+--nextPart2481572.Gqjn98aX8L
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iEYEABECAAYFAlPw/jsACgkQrzg/fFk7axYgXgCgghG911qjrxoHhMsFVza3nE4a
+PSwAn0hKnu312zRYQQ8yjjDIqfIpON17
+=DSKo
+-----END PGP SIGNATURE-----
+
+--nextPart2481572.Gqjn98aX8L--
 
