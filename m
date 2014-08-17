@@ -1,13 +1,15 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Sun, 17 Aug 2014 21:10:47 +0200
-Message-ID: <2012653.G3xfvbBHvG@prime>
-In-Reply-To: <1408073366-12008-1-git-send-email-linus.luessing@web.de>
-References: <1408073366-12008-1-git-send-email-linus.luessing@web.de>
+Date: Sun, 17 Aug 2014 21:14:22 +0200
+Message-ID: <2277980.eEMmOJuA1H@prime>
+In-Reply-To: <1406675698-20416-2-git-send-email-linus.luessing@web.de>
+References: <1406675698-20416-1-git-send-email-linus.luessing@web.de>
+ <1406675698-20416-2-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2481572.Gqjn98aX8L";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv8 0/3] Multicast optimizations for bridges
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] batctl: adding mcast flags debugfs
+	table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,57 +23,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-
---nextPart2481572.Gqjn98aX8L
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
-
-On Friday 15 August 2014 05:29:23 Linus L=C3=BCssing wrote:
-> This patchset enables the usage of the batman-adv multicast optimizat=
-ions
-> for scenarios involving bridges on top of e.g. bat0, too.
+On Wednesday 30 July 2014 01:14:58 Linus L=C3=BCssing wrote:
+[...]
+> diff --git a/README b/README
+> index c5e3575..08c8e98 100644
+> --- a/README
+> +++ b/README
+> @@ -425,6 +425,40 @@ display or modify the multicast mode setting
 >=20
-> Along come two more patches adding according debugging facilities
-> to make it possible for the user to check why the multicast
-> optimizations might not work ideally to give hints about
-> what they might change about their topology.
+>  Usage: batctl multicast_mode|mm [0|1]
 >=20
-> Cheers, Linus
->=20
-> Changes in v8 (thanks to Simon's suggestions):
-> - PATCH 2/3:
-> * print shadowing status log of an appearing and shadowing querier, t=
-oo
->   (the bridge-querier-existence call has an additional 10s delay
->    to ensure reports had their time to arrive -
->    the bridge-querier-port call doesn't have that)
-> - PATCH 3/3:
-> * changing debugfs output from "+" and "-" to "U/4/6" and "."
-> * fixing "no querier present" logic (introduced in [PATCHv7 3/3])
->=20
+> +batctl mcast_flags
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +display the local D.A.T. cache
+> +
+> +Usage batctl mcast_flags|mf
+> +
+> +Example:
+> +
+> +Multicast flags (own flags: [U..])
+> +* Bridged [U]=09=09=09=09+
+> +* No IGMP/MLD Querier [4/6]:=09=09-
+> +* Shadowing IGMP/MLD Querier [4/6]:=09-
 
-Looks good now! I gave it another round in my emulator setup, and could=
-n't find=20
-anything to complain about. ;)
-
-Tested/Reviewed-by: Simon Wunderlich <sw@simonwunderlich.de>
-
-for this series.
+I guess that section in the README needs an update now? Linus, can you =
+update=20
+and resend please? Otherwise, these patches are fine.
 
 Thanks!
     Simon
---nextPart2481572.Gqjn98aX8L
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iEYEABECAAYFAlPw/jsACgkQrzg/fFk7axYgXgCgghG911qjrxoHhMsFVza3nE4a
-PSwAn0hKnu312zRYQQ8yjjDIqfIpON17
-=DSKo
------END PGP SIGNATURE-----
-
---nextPart2481572.Gqjn98aX8L--
-
