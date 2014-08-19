@@ -1,15 +1,9 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Sun, 17 Aug 2014 21:14:22 +0200
-Message-ID: <2277980.eEMmOJuA1H@prime>
-In-Reply-To: <1406675698-20416-2-git-send-email-linus.luessing@web.de>
-References: <1406675698-20416-1-git-send-email-linus.luessing@web.de>
- <1406675698-20416-2-git-send-email-linus.luessing@web.de>
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] batctl: adding mcast flags debugfs
-	table
+Date: Tue, 19 Aug 2014 15:42:36 +0200
+Message-Id: <1408455756-10794-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: add detection for complex bridge
+	loops
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,34 +16,365 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
-On Wednesday 30 July 2014 01:14:58 Linus L=C3=BCssing wrote:
-[...]
-> diff --git a/README b/README
-> index c5e3575..08c8e98 100644
-> --- a/README
-> +++ b/README
-> @@ -425,6 +425,40 @@ display or modify the multicast mode setting
->=20
->  Usage: batctl multicast_mode|mm [0|1]
->=20
-> +batctl mcast_flags
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +
-> +display the local D.A.T. cache
-> +
-> +Usage batctl mcast_flags|mf
-> +
-> +Example:
-> +
-> +Multicast flags (own flags: [U..])
-> +* Bridged [U]=09=09=09=09+
-> +* No IGMP/MLD Querier [4/6]:=09=09-
-> +* Shadowing IGMP/MLD Querier [4/6]:=09-
+From: Simon Wunderlich <simon@open-mesh.com>
 
-I guess that section in the README needs an update now? Linus, can you =
-update=20
-and resend please? Otherwise, these patches are fine.
+There are network setups where the current bridge loop avoidance can't
+detect bridge loops. The minimal setup affected would consist of two
+LANs and two separate meshes, connected in a ring like that:
 
-Thanks!
-    Simon
+   A...(mesh1)...B
+   |             |
+ (LAN1)        (LAN2)
+   |             |
+   C...(mesh2)...D
+
+Since both the meshes and backbones are separate, the bridge loop
+avoidance has not enough information to detect and avoid the loop
+in this case. Even if these scenarios can't be fixed easily,
+these kind of loops can be detected.
+
+This patch implements a periodic check (running every 60 seconds for
+now) which sends a broadcast frame with a random MAC address on
+each backbone VLAN. If a broadcast frame with the same MAC address
+is received shortly after on the mesh, we know that there must be a
+loop and report that incident as well as throw an uevent to let others
+handle that problem.
+
+Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+---
+ bridge_loop_avoidance.c | 138 ++++++++++++++++++++++++++++++++++++++++++++++++
+ main.h                  |   4 ++
+ packet.h                |   1 +
+ sysfs.c                 |   6 ++-
+ types.h                 |   8 +++
+ 5 files changed, 155 insertions(+), 2 deletions(-)
+
+diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
+index 0f0ca43..db88b5f 100644
+--- a/bridge_loop_avoidance.c
++++ b/bridge_loop_avoidance.c
+@@ -22,6 +22,7 @@
+ #include "bridge_loop_avoidance.h"
+ #include "translation-table.h"
+ #include "send.h"
++#include "sysfs.h"
+ 
+ #include <linux/etherdevice.h>
+ #include <linux/crc16.h>
+@@ -340,6 +341,14 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, uint8_t *mac,
+ 			   ethhdr->h_source, ethhdr->h_dest,
+ 			   BATADV_PRINT_VID(vid));
+ 		break;
++	case BATADV_CLAIM_TYPE_LOOPDETECT:
++		ether_addr_copy(ethhdr->h_source, mac);
++		batadv_dbg(BATADV_DBG_BLA, bat_priv,
++			   "bla_send_claim(): LOOPDETECT of %pM to %pM on vid %d\n",
++			   ethhdr->h_source, ethhdr->h_dest,
++			   BATADV_PRINT_VID(vid));
++
++		break;
+ 	}
+ 
+ 	if (vid & BATADV_VLAN_HAS_TAG)
+@@ -360,6 +369,36 @@ out:
+ }
+ 
+ /**
++ * batadv_bla_loopdetect_report - worker for reporting the loop
++ * @work: work queue item
++ *
++ * Throws an uevent, as the loopdetect check function can't do that itself
++ * since the kernel may sleep while throwing uevents.
++ */
++static void batadv_bla_loopdetect_report(struct work_struct *work)
++{
++	struct batadv_bla_backbone_gw *backbone_gw;
++	struct batadv_priv *bat_priv;
++	char vid_str[6] = { '\0' };
++
++	backbone_gw = container_of(work, struct batadv_bla_backbone_gw,
++				   report_work);
++	bat_priv = backbone_gw->bat_priv;
++
++	batadv_info(bat_priv->soft_iface,
++		   "Possible loop on VLAN %d detected which can't be handled by BLA - please check your network setup!\n",
++		   BATADV_PRINT_VID(backbone_gw->vid));
++	snprintf(vid_str, sizeof(vid_str), "%d",
++		 BATADV_PRINT_VID(backbone_gw->vid));
++	vid_str[sizeof(vid_str) - 1] = 0;
++
++	batadv_throw_uevent(bat_priv, BATADV_UEV_BLA, BATADV_UEV_LOOPDETECT,
++			    vid_str);
++
++	batadv_backbone_gw_free_ref(backbone_gw);
++}
++
++/**
+  * batadv_bla_get_backbone_gw
+  * @bat_priv: the bat priv with all the soft interface information
+  * @orig: the mac address of the originator
+@@ -397,6 +436,7 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, uint8_t *orig,
+ 	atomic_set(&entry->request_sent, 0);
+ 	atomic_set(&entry->wait_periods, 0);
+ 	ether_addr_copy(entry->orig, orig);
++	INIT_WORK(&entry->report_work, batadv_bla_loopdetect_report);
+ 
+ 	/* one for the hash, one for returning */
+ 	atomic_set(&entry->refcount, 2);
+@@ -943,6 +983,10 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
+ 	if (vlan_depth > 1)
+ 		return 1;
+ 
++	/* Let the loopdetect frames on the mesh in any case. */
++	if (bla_dst->type == BATADV_CLAIM_TYPE_LOOPDETECT)
++		return 0;
++
+ 	/* check if it is a claim frame. */
+ 	ret = batadv_check_claim_group(bat_priv, primary_if, hw_src, hw_dst,
+ 				       ethhdr);
+@@ -1142,6 +1186,26 @@ void batadv_bla_update_orig_address(struct batadv_priv *bat_priv,
+ 	}
+ }
+ 
++/**
++ * batadv_bla_send_loopdetect - send a loopdetect frame
++ * @bat_priv: the bat priv with all the soft interface information
++ * @backbone_gw: the backbone gateway for which a loop should be detected
++ *
++ * To detect loops that the bridge loop avoidance can't handle, send a loop
++ * detection packet on the backbone. Unlike other BLA frames, this frame will
++ * be allowed on the mesh by other nodes. If it is received on the mesh, this
++ * indicates that there is a loop.
++ */
++static void
++batadv_bla_send_loopdetect(struct batadv_priv *bat_priv,
++			   struct batadv_bla_backbone_gw *backbone_gw)
++{
++	batadv_dbg(BATADV_DBG_BLA, bat_priv, "Send loopdetect frame for vid %d\n",
++		   backbone_gw->vid);
++	batadv_bla_send_claim(bat_priv, bat_priv->bla.loopdetect_addr,
++			      backbone_gw->vid, BATADV_CLAIM_TYPE_LOOPDETECT);
++}
++
+ /* periodic work to do:
+  *  * purge structures when they are too old
+  *  * send announcements
+@@ -1155,6 +1219,7 @@ static void batadv_bla_periodic_work(struct work_struct *work)
+ 	struct batadv_bla_backbone_gw *backbone_gw;
+ 	struct batadv_hashtable *hash;
+ 	struct batadv_hard_iface *primary_if;
++	bool send_loopdetect = false;
+ 	int i;
+ 
+ 	delayed_work = container_of(work, struct delayed_work, work);
+@@ -1170,6 +1235,22 @@ static void batadv_bla_periodic_work(struct work_struct *work)
+ 	if (!atomic_read(&bat_priv->bridge_loop_avoidance))
+ 		goto out;
+ 
++	if (atomic_dec_and_test(&bat_priv->bla.loopdetect_next)) {
++		/* set a new random mac address for the next bridge loop
++		 * detection frames. Set the locally administered bit to avoid
++		 * collisions with users mac addresses.
++		 */
++		random_ether_addr(bat_priv->bla.loopdetect_addr);
++		bat_priv->bla.loopdetect_addr[0] = 0xba;
++		bat_priv->bla.loopdetect_addr[1] = 0xbe;
++		bat_priv->bla.loopdetect_lasttime = jiffies;
++		atomic_set(&bat_priv->bla.loopdetect_next,
++			   BATADV_BLA_LOOPDETECT_PERIODS);
++
++		/* mark for sending loop detect on all VLANs */
++		send_loopdetect = true;
++	}
++
+ 	hash = bat_priv->bla.backbone_hash;
+ 	if (!hash)
+ 		goto out;
+@@ -1186,6 +1267,9 @@ static void batadv_bla_periodic_work(struct work_struct *work)
+ 			backbone_gw->lasttime = jiffies;
+ 
+ 			batadv_bla_send_announce(bat_priv, backbone_gw);
++			if (send_loopdetect)
++				batadv_bla_send_loopdetect(bat_priv,
++							   backbone_gw);
+ 
+ 			/* request_sent is only set after creation to avoid
+ 			 * problems when we are not yet known as backbone gw
+@@ -1254,6 +1338,9 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
+ 		bat_priv->bla.bcast_duplist[i].entrytime = entrytime;
+ 	bat_priv->bla.bcast_duplist_curr = 0;
+ 
++	atomic_set(&bat_priv->bla.loopdetect_next,
++		   BATADV_BLA_LOOPDETECT_PERIODS);
++
+ 	if (bat_priv->bla.claim_hash)
+ 		return 0;
+ 
+@@ -1449,6 +1536,55 @@ void batadv_bla_free(struct batadv_priv *bat_priv)
+ }
+ 
+ /**
++ * batadv_bla_loopdetect_check - check and handle a detected loop
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the packet to check
++ * @primary_if: interface where the request came on
++ * @vid: the VLAN ID of the frame
++ *
++ * Checks if this packet is a loop detect frame which has been sent by us,
++ * throw an uevent and log the event if that is the case.
++ *
++ * Returns true if it is a loop detect frame which is to be dropped, false
++ * otherwise.
++ */
++static bool
++batadv_bla_loopdetect_check(struct batadv_priv *bat_priv, struct sk_buff *skb,
++			    struct batadv_hard_iface *primary_if,
++			    unsigned short vid)
++{
++	struct batadv_bla_backbone_gw *backbone_gw;
++	struct ethhdr *ethhdr;
++
++	ethhdr = eth_hdr(skb);
++
++	/* Only check for the MAC address and skip more checks here for
++	 * performance reasons - this function is on the hotpath, after all.
++	 */
++	if (!batadv_compare_eth(ethhdr->h_source,
++				bat_priv->bla.loopdetect_addr))
++		return false;
++
++	/* If the packet came too late, don't forward it on the mesh
++	 * but don't consider that as loop. It might be a coincidence.
++	 */
++	if (batadv_has_timed_out(bat_priv->bla.loopdetect_lasttime,
++				 BATADV_BLA_LOOPDETECT_TIMEOUT))
++		return true;
++
++	backbone_gw = batadv_bla_get_backbone_gw(bat_priv,
++						 primary_if->net_dev->dev_addr,
++						 vid, true);
++	if (unlikely(!backbone_gw))
++		return true;
++
++	queue_work(batadv_event_workqueue, &backbone_gw->report_work);
++	/* backbone_gw is unreferenced in the report work function function */
++
++	return true;
++}
++
++/**
+  * batadv_bla_rx
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: the frame to be checked
+@@ -1480,6 +1616,8 @@ int batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 	if (!atomic_read(&bat_priv->bridge_loop_avoidance))
+ 		goto allow;
+ 
++	if (batadv_bla_loopdetect_check(bat_priv, skb, primary_if, vid))
++		goto handled;
+ 
+ 	if (unlikely(atomic_read(&bat_priv->bla.num_requests)))
+ 		/* don't allow broadcasts while requests are in flight */
+diff --git a/main.h b/main.h
+index 4c557eb..d109434 100644
+--- a/main.h
++++ b/main.h
+@@ -112,6 +112,8 @@
+ #define BATADV_BLA_BACKBONE_TIMEOUT	(BATADV_BLA_PERIOD_LENGTH * 3)
+ #define BATADV_BLA_CLAIM_TIMEOUT	(BATADV_BLA_PERIOD_LENGTH * 10)
+ #define BATADV_BLA_WAIT_PERIODS		3
++#define BATADV_BLA_LOOPDETECT_PERIODS	6
++#define BATADV_BLA_LOOPDETECT_TIMEOUT	3000	/* 3 seconds */
+ 
+ #define BATADV_DUPLIST_SIZE		16
+ #define BATADV_DUPLIST_TIMEOUT		500	/* 500 ms */
+@@ -134,10 +136,12 @@ enum batadv_uev_action {
+ 	BATADV_UEV_ADD = 0,
+ 	BATADV_UEV_DEL,
+ 	BATADV_UEV_CHANGE,
++	BATADV_UEV_LOOPDETECT,
+ };
+ 
+ enum batadv_uev_type {
+ 	BATADV_UEV_GW = 0,
++	BATADV_UEV_BLA,
+ };
+ 
+ #define BATADV_GW_THRESHOLD	50
+diff --git a/packet.h b/packet.h
+index 34e096d..9df747a 100644
+--- a/packet.h
++++ b/packet.h
+@@ -169,6 +169,7 @@ enum batadv_bla_claimframe {
+ 	BATADV_CLAIM_TYPE_UNCLAIM	= 0x01,
+ 	BATADV_CLAIM_TYPE_ANNOUNCE	= 0x02,
+ 	BATADV_CLAIM_TYPE_REQUEST	= 0x03,
++	BATADV_CLAIM_TYPE_LOOPDETECT	= 0x04,
+ };
+ 
+ /**
+diff --git a/sysfs.c b/sysfs.c
+index fc47baa..8150f77 100644
+--- a/sysfs.c
++++ b/sysfs.c
+@@ -94,11 +94,13 @@ batadv_kobj_to_vlan(struct batadv_priv *bat_priv, struct kobject *obj)
+ static char *batadv_uev_action_str[] = {
+ 	"add",
+ 	"del",
+-	"change"
++	"change",
++	"loopdetect",
+ };
+ 
+ static char *batadv_uev_type_str[] = {
+-	"gw"
++	"gw",
++	"bla",
+ };
+ 
+ /* Use this, if you have customized show and store functions for vlan attrs */
+diff --git a/types.h b/types.h
+index 462a70c..7456928 100644
+--- a/types.h
++++ b/types.h
+@@ -536,6 +536,9 @@ struct batadv_priv_tt {
+  * @num_requests; number of bla requests in flight
+  * @claim_hash: hash table containing mesh nodes this host has claimed
+  * @backbone_hash: hash table containing all detected backbone gateways
++ * @loopdetect_addr: MAC address used for own loopdetection frames
++ * @loopdetect_lasttime: time when the loopdetection frames were sent
++ * @loopdetect_next: how many periods to wait for the next loopdetect process
+  * @bcast_duplist: recently received broadcast packets array (for broadcast
+  *  duplicate suppression)
+  * @bcast_duplist_curr: index of last broadcast packet added to bcast_duplist
+@@ -548,6 +551,9 @@ struct batadv_priv_bla {
+ 	atomic_t num_requests;
+ 	struct batadv_hashtable *claim_hash;
+ 	struct batadv_hashtable *backbone_hash;
++	uint8_t loopdetect_addr[ETH_ALEN];
++	unsigned long loopdetect_lasttime;
++	atomic_t loopdetect_next;
+ 	struct batadv_bcast_duplist_entry bcast_duplist[BATADV_DUPLIST_SIZE];
+ 	int bcast_duplist_curr;
+ 	/* protects bcast_duplist & bcast_duplist_curr */
+@@ -866,6 +872,7 @@ struct batadv_socket_packet {
+  *  backbone gateway - no bcast traffic is formwared until the situation was
+  *  resolved
+  * @crc: crc16 checksum over all claims
++ * @report_work: work struct for reporting detected loops
+  * @refcount: number of contexts the object is used
+  * @rcu: struct used for freeing in an RCU-safe manner
+  */
+@@ -879,6 +886,7 @@ struct batadv_bla_backbone_gw {
+ 	atomic_t wait_periods;
+ 	atomic_t request_sent;
+ 	uint16_t crc;
++	struct work_struct report_work;
+ 	atomic_t refcount;
+ 	struct rcu_head rcu;
+ };
+-- 
+2.1.0.rc1
+
