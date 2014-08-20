@@ -1,9 +1,8 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 19 Aug 2014 15:42:36 +0200
-Message-Id: <1408455756-10794-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: add detection for complex bridge
-	loops
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Wed, 20 Aug 2014 16:47:25 +0200
+Message-Id: <1408546045-25211-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batctl: tcpdump - parse TVLV containers
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,365 +15,315 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-From: Simon Wunderlich <simon@open-mesh.com>
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-There are network setups where the current bridge loop avoidance can't
-detect bridge loops. The minimal setup affected would consist of two
-LANs and two separate meshes, connected in a ring like that:
+OGMs and unicast TVLV packets carry TVLV containers as
+payload.
+With this patch such containers are now parsed and the
+relevant information is printed to screen.
 
-   A...(mesh1)...B
-   |             |
- (LAN1)        (LAN2)
-   |             |
-   C...(mesh2)...D
+Moreover, the parts of code that have been touched by this
+patch have also been re-arranged a bit from the style point
+of view.
 
-Since both the meshes and backbones are separate, the bridge loop
-avoidance has not enough information to detect and avoid the loop
-in this case. Even if these scenarios can't be fixed easily,
-these kind of loops can be detected.
-
-This patch implements a periodic check (running every 60 seconds for
-now) which sends a broadcast frame with a random MAC address on
-each backbone VLAN. If a broadcast frame with the same MAC address
-is received shortly after on the mesh, we know that there must be a
-loop and report that incident as well as throw an uevent to let others
-handle that problem.
-
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- bridge_loop_avoidance.c | 138 ++++++++++++++++++++++++++++++++++++++++++++++++
- main.h                  |   4 ++
- packet.h                |   1 +
- sysfs.c                 |   6 ++-
- types.h                 |   8 +++
- 5 files changed, 155 insertions(+), 2 deletions(-)
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index 0f0ca43..db88b5f 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -22,6 +22,7 @@
- #include "bridge_loop_avoidance.h"
- #include "translation-table.h"
- #include "send.h"
-+#include "sysfs.h"
- 
- #include <linux/etherdevice.h>
- #include <linux/crc16.h>
-@@ -340,6 +341,14 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, uint8_t *mac,
- 			   ethhdr->h_source, ethhdr->h_dest,
- 			   BATADV_PRINT_VID(vid));
- 		break;
-+	case BATADV_CLAIM_TYPE_LOOPDETECT:
-+		ether_addr_copy(ethhdr->h_source, mac);
-+		batadv_dbg(BATADV_DBG_BLA, bat_priv,
-+			   "bla_send_claim(): LOOPDETECT of %pM to %pM on vid %d\n",
-+			   ethhdr->h_source, ethhdr->h_dest,
-+			   BATADV_PRINT_VID(vid));
-+
-+		break;
- 	}
- 
- 	if (vid & BATADV_VLAN_HAS_TAG)
-@@ -360,6 +369,36 @@ out:
- }
- 
- /**
-+ * batadv_bla_loopdetect_report - worker for reporting the loop
-+ * @work: work queue item
-+ *
-+ * Throws an uevent, as the loopdetect check function can't do that itself
-+ * since the kernel may sleep while throwing uevents.
-+ */
-+static void batadv_bla_loopdetect_report(struct work_struct *work)
-+{
-+	struct batadv_bla_backbone_gw *backbone_gw;
-+	struct batadv_priv *bat_priv;
-+	char vid_str[6] = { '\0' };
-+
-+	backbone_gw = container_of(work, struct batadv_bla_backbone_gw,
-+				   report_work);
-+	bat_priv = backbone_gw->bat_priv;
-+
-+	batadv_info(bat_priv->soft_iface,
-+		   "Possible loop on VLAN %d detected which can't be handled by BLA - please check your network setup!\n",
-+		   BATADV_PRINT_VID(backbone_gw->vid));
-+	snprintf(vid_str, sizeof(vid_str), "%d",
-+		 BATADV_PRINT_VID(backbone_gw->vid));
-+	vid_str[sizeof(vid_str) - 1] = 0;
-+
-+	batadv_throw_uevent(bat_priv, BATADV_UEV_BLA, BATADV_UEV_LOOPDETECT,
-+			    vid_str);
-+
-+	batadv_backbone_gw_free_ref(backbone_gw);
-+}
-+
-+/**
-  * batadv_bla_get_backbone_gw
-  * @bat_priv: the bat priv with all the soft interface information
-  * @orig: the mac address of the originator
-@@ -397,6 +436,7 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, uint8_t *orig,
- 	atomic_set(&entry->request_sent, 0);
- 	atomic_set(&entry->wait_periods, 0);
- 	ether_addr_copy(entry->orig, orig);
-+	INIT_WORK(&entry->report_work, batadv_bla_loopdetect_report);
- 
- 	/* one for the hash, one for returning */
- 	atomic_set(&entry->refcount, 2);
-@@ -943,6 +983,10 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
- 	if (vlan_depth > 1)
- 		return 1;
- 
-+	/* Let the loopdetect frames on the mesh in any case. */
-+	if (bla_dst->type == BATADV_CLAIM_TYPE_LOOPDETECT)
-+		return 0;
-+
- 	/* check if it is a claim frame. */
- 	ret = batadv_check_claim_group(bat_priv, primary_if, hw_src, hw_dst,
- 				       ethhdr);
-@@ -1142,6 +1186,26 @@ void batadv_bla_update_orig_address(struct batadv_priv *bat_priv,
- 	}
- }
- 
-+/**
-+ * batadv_bla_send_loopdetect - send a loopdetect frame
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @backbone_gw: the backbone gateway for which a loop should be detected
-+ *
-+ * To detect loops that the bridge loop avoidance can't handle, send a loop
-+ * detection packet on the backbone. Unlike other BLA frames, this frame will
-+ * be allowed on the mesh by other nodes. If it is received on the mesh, this
-+ * indicates that there is a loop.
-+ */
-+static void
-+batadv_bla_send_loopdetect(struct batadv_priv *bat_priv,
-+			   struct batadv_bla_backbone_gw *backbone_gw)
-+{
-+	batadv_dbg(BATADV_DBG_BLA, bat_priv, "Send loopdetect frame for vid %d\n",
-+		   backbone_gw->vid);
-+	batadv_bla_send_claim(bat_priv, bat_priv->bla.loopdetect_addr,
-+			      backbone_gw->vid, BATADV_CLAIM_TYPE_LOOPDETECT);
-+}
-+
- /* periodic work to do:
-  *  * purge structures when they are too old
-  *  * send announcements
-@@ -1155,6 +1219,7 @@ static void batadv_bla_periodic_work(struct work_struct *work)
- 	struct batadv_bla_backbone_gw *backbone_gw;
- 	struct batadv_hashtable *hash;
- 	struct batadv_hard_iface *primary_if;
-+	bool send_loopdetect = false;
- 	int i;
- 
- 	delayed_work = container_of(work, struct delayed_work, work);
-@@ -1170,6 +1235,22 @@ static void batadv_bla_periodic_work(struct work_struct *work)
- 	if (!atomic_read(&bat_priv->bridge_loop_avoidance))
- 		goto out;
- 
-+	if (atomic_dec_and_test(&bat_priv->bla.loopdetect_next)) {
-+		/* set a new random mac address for the next bridge loop
-+		 * detection frames. Set the locally administered bit to avoid
-+		 * collisions with users mac addresses.
-+		 */
-+		random_ether_addr(bat_priv->bla.loopdetect_addr);
-+		bat_priv->bla.loopdetect_addr[0] = 0xba;
-+		bat_priv->bla.loopdetect_addr[1] = 0xbe;
-+		bat_priv->bla.loopdetect_lasttime = jiffies;
-+		atomic_set(&bat_priv->bla.loopdetect_next,
-+			   BATADV_BLA_LOOPDETECT_PERIODS);
-+
-+		/* mark for sending loop detect on all VLANs */
-+		send_loopdetect = true;
-+	}
-+
- 	hash = bat_priv->bla.backbone_hash;
- 	if (!hash)
- 		goto out;
-@@ -1186,6 +1267,9 @@ static void batadv_bla_periodic_work(struct work_struct *work)
- 			backbone_gw->lasttime = jiffies;
- 
- 			batadv_bla_send_announce(bat_priv, backbone_gw);
-+			if (send_loopdetect)
-+				batadv_bla_send_loopdetect(bat_priv,
-+							   backbone_gw);
- 
- 			/* request_sent is only set after creation to avoid
- 			 * problems when we are not yet known as backbone gw
-@@ -1254,6 +1338,9 @@ int batadv_bla_init(struct batadv_priv *bat_priv)
- 		bat_priv->bla.bcast_duplist[i].entrytime = entrytime;
- 	bat_priv->bla.bcast_duplist_curr = 0;
- 
-+	atomic_set(&bat_priv->bla.loopdetect_next,
-+		   BATADV_BLA_LOOPDETECT_PERIODS);
-+
- 	if (bat_priv->bla.claim_hash)
- 		return 0;
- 
-@@ -1449,6 +1536,55 @@ void batadv_bla_free(struct batadv_priv *bat_priv)
- }
- 
- /**
-+ * batadv_bla_loopdetect_check - check and handle a detected loop
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: the packet to check
-+ * @primary_if: interface where the request came on
-+ * @vid: the VLAN ID of the frame
-+ *
-+ * Checks if this packet is a loop detect frame which has been sent by us,
-+ * throw an uevent and log the event if that is the case.
-+ *
-+ * Returns true if it is a loop detect frame which is to be dropped, false
-+ * otherwise.
-+ */
-+static bool
-+batadv_bla_loopdetect_check(struct batadv_priv *bat_priv, struct sk_buff *skb,
-+			    struct batadv_hard_iface *primary_if,
-+			    unsigned short vid)
-+{
-+	struct batadv_bla_backbone_gw *backbone_gw;
-+	struct ethhdr *ethhdr;
-+
-+	ethhdr = eth_hdr(skb);
-+
-+	/* Only check for the MAC address and skip more checks here for
-+	 * performance reasons - this function is on the hotpath, after all.
-+	 */
-+	if (!batadv_compare_eth(ethhdr->h_source,
-+				bat_priv->bla.loopdetect_addr))
-+		return false;
-+
-+	/* If the packet came too late, don't forward it on the mesh
-+	 * but don't consider that as loop. It might be a coincidence.
-+	 */
-+	if (batadv_has_timed_out(bat_priv->bla.loopdetect_lasttime,
-+				 BATADV_BLA_LOOPDETECT_TIMEOUT))
-+		return true;
-+
-+	backbone_gw = batadv_bla_get_backbone_gw(bat_priv,
-+						 primary_if->net_dev->dev_addr,
-+						 vid, true);
-+	if (unlikely(!backbone_gw))
-+		return true;
-+
-+	queue_work(batadv_event_workqueue, &backbone_gw->report_work);
-+	/* backbone_gw is unreferenced in the report work function function */
-+
-+	return true;
-+}
-+
-+/**
-  * batadv_bla_rx
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: the frame to be checked
-@@ -1480,6 +1616,8 @@ int batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 	if (!atomic_read(&bat_priv->bridge_loop_avoidance))
- 		goto allow;
- 
-+	if (batadv_bla_loopdetect_check(bat_priv, skb, primary_if, vid))
-+		goto handled;
- 
- 	if (unlikely(atomic_read(&bat_priv->bla.num_requests)))
- 		/* don't allow broadcasts while requests are in flight */
+changes since v2:
+- extended doc in README and manpage
+
+
+changes since v1:
+- remove all the style changes
+- make tvlv_len of type ssize_t in dump_batman_iv_ogm()
+
+
+ README       |   1 +
+ main.h       |   7 +++
+ man/batctl.8 |   3 ++
+ tcpdump.c    | 170 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ tcpdump.h    |   1 +
+ 5 files changed, 177 insertions(+), 5 deletions(-)
+
+diff --git a/README b/README
+index b5fd259..f87c551 100644
+--- a/README
++++ b/README
+@@ -161,6 +161,7 @@ packet types:
+                   2 - batman icmp packets
+                   4 - batman unicast packets
+                   8 - batman broadcast packets
++                 16 - batman unicast tvlv packets
+                  32 - batman fragmented packets
+                  64 - batman tt / roaming packets
+                 128 - non batman packets
 diff --git a/main.h b/main.h
-index 4c557eb..d109434 100644
+index 839c1c7..b16afb6 100644
 --- a/main.h
 +++ b/main.h
-@@ -112,6 +112,8 @@
- #define BATADV_BLA_BACKBONE_TIMEOUT	(BATADV_BLA_PERIOD_LENGTH * 3)
- #define BATADV_BLA_CLAIM_TIMEOUT	(BATADV_BLA_PERIOD_LENGTH * 10)
- #define BATADV_BLA_WAIT_PERIODS		3
-+#define BATADV_BLA_LOOPDETECT_PERIODS	6
-+#define BATADV_BLA_LOOPDETECT_TIMEOUT	3000	/* 3 seconds */
+@@ -49,4 +49,11 @@
  
- #define BATADV_DUPLIST_SIZE		16
- #define BATADV_DUPLIST_TIMEOUT		500	/* 500 ms */
-@@ -134,10 +136,12 @@ enum batadv_uev_action {
- 	BATADV_UEV_ADD = 0,
- 	BATADV_UEV_DEL,
- 	BATADV_UEV_CHANGE,
-+	BATADV_UEV_LOOPDETECT,
- };
+ extern char module_ver_path[];
  
- enum batadv_uev_type {
- 	BATADV_UEV_GW = 0,
-+	BATADV_UEV_BLA,
- };
++#ifndef VLAN_VID_MASK
++#define VLAN_VID_MASK   0xfff
++#endif
++
++#define BATADV_PRINT_VID(vid) (vid & BATADV_VLAN_HAS_TAG ? \
++			       (int)(vid & VLAN_VID_MASK) : -1)
++
+ #endif
+diff --git a/man/batctl.8 b/man/batctl.8
+index 110020e..8d2de19 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -288,6 +288,9 @@ except specified). The following packet types are available:
+ 8 - batman broadcast packets
+ .RE
+ .RS 16
++16 - batman unicast tvlv packets
++.RE
++.RS 16
+ 32 - batman fragmented packets
+ .RE
+ .RS 16
+diff --git a/tcpdump.c b/tcpdump.c
+index e84617e..59b46d6 100644
+--- a/tcpdump.c
++++ b/tcpdump.c
+@@ -62,8 +62,7 @@ if ((size_t)(buff_len) < (check_len)) { \
+ 	return; \
+ }
  
- #define BATADV_GW_THRESHOLD	50
-diff --git a/packet.h b/packet.h
-index 34e096d..9df747a 100644
---- a/packet.h
-+++ b/packet.h
-@@ -169,6 +169,7 @@ enum batadv_bla_claimframe {
- 	BATADV_CLAIM_TYPE_UNCLAIM	= 0x01,
- 	BATADV_CLAIM_TYPE_ANNOUNCE	= 0x02,
- 	BATADV_CLAIM_TYPE_REQUEST	= 0x03,
-+	BATADV_CLAIM_TYPE_LOOPDETECT	= 0x04,
- };
+-static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP | DUMP_TYPE_BATUCAST |
+-		DUMP_TYPE_BATBCAST | DUMP_TYPE_BATFRAG | DUMP_TYPE_NONBAT;
++static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP | DUMP_TYPE_BATUCAST | DUMP_TYPE_BATBCAST | DUMP_TYPE_BATUTVLV | DUMP_TYPE_BATFRAG | DUMP_TYPE_NONBAT;
+ static unsigned short dump_level;
  
- /**
-diff --git a/sysfs.c b/sysfs.c
-index fc47baa..8150f77 100644
---- a/sysfs.c
-+++ b/sysfs.c
-@@ -94,11 +94,13 @@ batadv_kobj_to_vlan(struct batadv_priv *bat_priv, struct kobject *obj)
- static char *batadv_uev_action_str[] = {
- 	"add",
- 	"del",
--	"change"
-+	"change",
-+	"loopdetect",
- };
+ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed);
+@@ -83,6 +82,7 @@ static void tcpdump_usage(void)
+ 	fprintf(stderr, " \t\t%3d - batman unicast packets\n", DUMP_TYPE_BATUCAST);
+ 	fprintf(stderr, " \t\t%3d - batman broadcast packets\n", DUMP_TYPE_BATBCAST);
+ 	fprintf(stderr, " \t\t%3d - batman fragmented packets\n", DUMP_TYPE_BATFRAG);
++	fprintf(stderr, " \t\t%3d - batman unicast tvlv packets\n", DUMP_TYPE_BATUTVLV);
+ 	fprintf(stderr, " \t\t%3d - non batman packets\n", DUMP_TYPE_NONBAT);
+ 	fprintf(stderr, " \t\t%3d - batman ogm & non batman packets\n", DUMP_TYPE_BATOGM | DUMP_TYPE_NONBAT);
+ }
+@@ -99,6 +99,138 @@ static int print_time(void)
+ 	return 1;
+ }
  
- static char *batadv_uev_type_str[] = {
--	"gw"
-+	"gw",
-+	"bla",
- };
++static void batctl_tvlv_parse_gw_v1(void *buff,
++				    ssize_t (buff_len)__attribute__((unused)))
++{
++	struct batadv_tvlv_gateway_data *tvlv = buff;
++	uint32_t down, up;
++
++	down = ntohl(tvlv->bandwidth_down);
++	up = ntohl(tvlv->bandwidth_up);
++
++	printf("\tTVLV GWv1: down %d.%.1dMbps, up %d.%1dMbps\n",
++	       down / 10, down % 10, up / 10, up % 10);
++}
++
++static void batctl_tvlv_parse_dat_v1(void (*buff)__attribute__((unused)),
++				     ssize_t (buff_len)__attribute__((unused)))
++{
++	printf("\tTVLV DATv1: enabled\n");
++}
++
++static void batctl_tvlv_parse_nc_v1(void (*buff)__attribute__((unused)),
++				    ssize_t (buff_len)__attribute__((unused)))
++{
++	printf("\tTVLV NCv1: enabled\n");
++}
++
++static void batctl_tvlv_parse_tt_v1(void *buff,
++				    ssize_t (buff_len)__attribute__((unused)))
++{
++	struct batadv_tvlv_tt_data *tvlv = buff;
++	struct batadv_tvlv_tt_vlan_data *vlan;
++	int i, num_vlan, num_entry;
++	const char *type;
++
++	if (tvlv->flags & BATADV_TT_OGM_DIFF)
++		type = "OGM DIFF";
++	else if (tvlv->flags & BATADV_TT_REQUEST)
++		type = "TT REQUEST";
++	else if (tvlv->flags & BATADV_TT_RESPONSE)
++		type = "TT RESPONSE";
++	else
++		type = "UNKNOWN";
++
++	num_vlan = ntohs(tvlv->num_vlan);
++	buff_len -= sizeof(*tvlv) + sizeof(*vlan) * num_vlan;
++	num_entry = buff_len / sizeof(struct batadv_tvlv_tt_change);
++
++	printf("\tTVLV TTv1: %s [%c] ttvn=%hhu vlan_num=%hu entry_num=%hu\n",
++	       type, tvlv->flags & BATADV_TT_FULL_TABLE ? 'F' : '.',
++	       tvlv->ttvn, num_vlan, num_entry);
++
++	vlan = (struct batadv_tvlv_tt_vlan_data *)(tvlv + 1);
++	for (i = 0; i < num_vlan; i++) {
++		printf("\t\tVLAN ID %hd, crc %#.8x\n",
++		       BATADV_PRINT_VID(ntohs(vlan->vid)),
++		       ntohl(vlan->crc));
++		vlan++;
++	}
++}
++
++static void batctl_tvlv_parse_roam_v1(void *buff,
++				      ssize_t (buff_len)__attribute__((unused)))
++{
++	struct batadv_tvlv_roam_adv *tvlv = buff;
++
++	printf("\tTVLV ROAMv1: client %s, VLAN ID %d\n",
++	       get_name_by_macaddr((struct ether_addr *)tvlv->client, NO_FLAGS),
++	       BATADV_PRINT_VID(ntohs(tvlv->vid)));
++}
++
++typedef void (*batctl_tvlv_parser_t)(void *buff, ssize_t buff_len);
++
++/* location [i][j] contains the parsing function for TVLV of type 'i' and
++ * version 'j + 1'
++ */
++batctl_tvlv_parser_t tvlv_parsers[][1] = {
++	[BATADV_TVLV_GW][0] = batctl_tvlv_parse_gw_v1,
++	[BATADV_TVLV_DAT][0] = batctl_tvlv_parse_dat_v1,
++	[BATADV_TVLV_NC][0] = batctl_tvlv_parse_nc_v1,
++	[BATADV_TVLV_TT][0] = batctl_tvlv_parse_tt_v1,
++	[BATADV_TVLV_ROAM][0] = batctl_tvlv_parse_roam_v1,
++};
++
++static void dump_batman_ucast_tvlv(unsigned char *packet_buff, ssize_t buff_len,
++				   int read_opt, int time_printed)
++{
++	struct batadv_unicast_tvlv_packet *tvlv_packet;
++	struct batadv_tvlv_hdr *tvlv_hdr;
++	struct ether_header *ether_header;
++	struct ether_addr *src, *dst;
++	batctl_tvlv_parser_t parser;
++	ssize_t check_len, tvlv_len, len;
++	uint8_t *ptr;
++
++	check_len = (size_t)buff_len - sizeof(struct ether_header);
++
++	LEN_CHECK(check_len, sizeof(*tvlv_packet), "BAT TVLV");
++	check_len -= sizeof(*tvlv_packet);
++
++	ether_header = (struct ether_header *)packet_buff;
++	tvlv_packet = (struct batadv_unicast_tvlv_packet *)(ether_header + 1);
++
++	LEN_CHECK(check_len, (size_t)ntohs(tvlv_packet->tvlv_len),
++		  "BAT TVLV (containers)");
++
++	if (!time_printed)
++		time_printed = print_time();
++
++	src = (struct ether_addr *)tvlv_packet->src;
++	printf("BAT %s > ", get_name_by_macaddr(src, read_opt));
++
++	dst = (struct ether_addr *)tvlv_packet->dst;
++	tvlv_len = ntohs(tvlv_packet->tvlv_len);
++	printf("%s: TVLV, len %zu, tvlv_len %zu, ttl %hhu\n",
++	       get_name_by_macaddr(dst, read_opt),
++	       buff_len - sizeof(struct ether_header), tvlv_len,
++	       tvlv_packet->ttl);
++
++	ptr = (uint8_t *)(tvlv_packet + 1);
++
++	while (tvlv_len > 0) {
++		tvlv_hdr = (struct batadv_tvlv_hdr *)ptr;
++		len = ntohs(tvlv_hdr->len);
++
++		parser = tvlv_parsers[tvlv_hdr->type][tvlv_hdr->version - 1];
++		parser(tvlv_hdr + 1, len);
++
++		/* go to the next container */
++		ptr = (uint8_t *)(tvlv_hdr + 1) + len;
++		tvlv_len -= sizeof(*tvlv_hdr) + len;
++	}
++}
++
+ static int dump_bla2_claim(struct ether_header *eth_hdr,
+ 			   struct ether_arp *arphdr, int read_opt)
+ {
+@@ -482,8 +614,13 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
+ {
+ 	struct ether_header *ether_header;
+ 	struct batadv_ogm_packet *batman_ogm_packet;
++	struct batadv_tvlv_hdr *tvlv_hdr;
++	ssize_t tvlv_len, len, check_len;
++	batctl_tvlv_parser_t parser;
++	uint8_t *ptr;
  
- /* Use this, if you have customized show and store functions for vlan attrs */
-diff --git a/types.h b/types.h
-index 462a70c..7456928 100644
---- a/types.h
-+++ b/types.h
-@@ -536,6 +536,9 @@ struct batadv_priv_tt {
-  * @num_requests; number of bla requests in flight
-  * @claim_hash: hash table containing mesh nodes this host has claimed
-  * @backbone_hash: hash table containing all detected backbone gateways
-+ * @loopdetect_addr: MAC address used for own loopdetection frames
-+ * @loopdetect_lasttime: time when the loopdetection frames were sent
-+ * @loopdetect_next: how many periods to wait for the next loopdetect process
-  * @bcast_duplist: recently received broadcast packets array (for broadcast
-  *  duplicate suppression)
-  * @bcast_duplist_curr: index of last broadcast packet added to bcast_duplist
-@@ -548,6 +551,9 @@ struct batadv_priv_bla {
- 	atomic_t num_requests;
- 	struct batadv_hashtable *claim_hash;
- 	struct batadv_hashtable *backbone_hash;
-+	uint8_t loopdetect_addr[ETH_ALEN];
-+	unsigned long loopdetect_lasttime;
-+	atomic_t loopdetect_next;
- 	struct batadv_bcast_duplist_entry bcast_duplist[BATADV_DUPLIST_SIZE];
- 	int bcast_duplist_curr;
- 	/* protects bcast_duplist & bcast_duplist_curr */
-@@ -866,6 +872,7 @@ struct batadv_socket_packet {
-  *  backbone gateway - no bcast traffic is formwared until the situation was
-  *  resolved
-  * @crc: crc16 checksum over all claims
-+ * @report_work: work struct for reporting detected loops
-  * @refcount: number of contexts the object is used
-  * @rcu: struct used for freeing in an RCU-safe manner
-  */
-@@ -879,6 +886,7 @@ struct batadv_bla_backbone_gw {
- 	atomic_t wait_periods;
- 	atomic_t request_sent;
- 	uint16_t crc;
-+	struct work_struct report_work;
- 	atomic_t refcount;
- 	struct rcu_head rcu;
- };
+-	LEN_CHECK((size_t)buff_len - sizeof(struct ether_header), sizeof(struct batadv_ogm_packet), "BAT IV OGM");
++	check_len = (size_t)buff_len - sizeof(struct ether_header);
++	LEN_CHECK(check_len, sizeof(struct batadv_ogm_packet), "BAT IV OGM");
+ 
+ 	ether_header = (struct ether_header *)packet_buff;
+ 	batman_ogm_packet = (struct batadv_ogm_packet *)(packet_buff + sizeof(struct ether_header));
+@@ -494,14 +631,32 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
+ 	printf("BAT %s: ",
+ 	       get_name_by_macaddr((struct ether_addr *)batman_ogm_packet->orig, read_opt));
+ 
+-	printf("OGM IV via neigh %s, seq %u, tq %3d, ttl %2d, v %d, flags [%c%c%c], length %zu\n",
++	tvlv_len = ntohs(batman_ogm_packet->tvlv_len);
++	printf("OGM IV via neigh %s, seq %u, tq %3d, ttl %2d, v %d, flags [%c%c%c], length %zu, tvlv_len %zu\n",
+ 	       get_name_by_macaddr((struct ether_addr *)ether_header->ether_shost, read_opt),
+ 	       ntohl(batman_ogm_packet->seqno), batman_ogm_packet->tq,
+ 	       batman_ogm_packet->ttl, batman_ogm_packet->version,
+ 	       (batman_ogm_packet->flags & BATADV_NOT_BEST_NEXT_HOP ? 'N' : '.'),
+ 	       (batman_ogm_packet->flags & BATADV_DIRECTLINK ? 'D' : '.'),
+ 	       (batman_ogm_packet->flags & BATADV_PRIMARIES_FIRST_HOP ? 'F' : '.'),
+-	       (size_t)buff_len - sizeof(struct ether_header));
++	       check_len, tvlv_len);
++
++	check_len -= sizeof(struct batadv_ogm_packet);
++	LEN_CHECK(check_len, tvlv_len, "BAT OGM TVLV (containers)");
++
++	ptr = (uint8_t *)(batman_ogm_packet + 1);
++
++	while (tvlv_len > 0) {
++		tvlv_hdr = (struct batadv_tvlv_hdr *)ptr;
++		len = ntohs(tvlv_hdr->len);
++
++		parser = tvlv_parsers[tvlv_hdr->type][tvlv_hdr->version - 1];
++		parser(tvlv_hdr + 1, len);
++
++		/* go to the next container */
++		ptr = (uint8_t *)(tvlv_hdr + 1) + len;
++		tvlv_len -= sizeof(*tvlv_hdr) + len;
++	}
+ }
+ 
+ static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
+@@ -683,6 +838,11 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
+ 		case BATADV_UNICAST_4ADDR:
+ 			if (dump_level & DUMP_TYPE_BATUCAST)
+ 				dump_batman_4addr(packet_buff, buff_len, read_opt, time_printed);
++		case BATADV_UNICAST_TVLV:
++			if ((dump_level & DUMP_TYPE_BATUCAST) ||
++			    (dump_level & DUMP_TYPE_BATUTVLV))
++				dump_batman_ucast_tvlv(packet_buff, buff_len,
++						       read_opt, time_printed);
+ 			break;
+ 		default:
+ 			fprintf(stderr, "Warning - packet contains unknown batman packet type: 0x%02x\n", batman_ogm_packet->packet_type);
+diff --git a/tcpdump.h b/tcpdump.h
+index cfb1c69..5d936f2 100644
+--- a/tcpdump.h
++++ b/tcpdump.h
+@@ -41,6 +41,7 @@
+ #define DUMP_TYPE_BATICMP 2
+ #define DUMP_TYPE_BATUCAST 4
+ #define DUMP_TYPE_BATBCAST 8
++#define DUMP_TYPE_BATUTVLV 16
+ #define DUMP_TYPE_BATFRAG 32
+ #define DUMP_TYPE_NONBAT 128
+ 
 -- 
-2.1.0.rc1
+1.8.5.5
 
