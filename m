@@ -1,8 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 20 Aug 2014 16:47:25 +0200
-Message-Id: <1408546045-25211-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batctl: tcpdump - parse TVLV containers
+Date: Wed, 20 Aug 2014 17:04:57 +0200
+Message-Id: <1408547097-23491-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCHv4] batctl: tcpdump - parse TVLV containers
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,12 +24,13 @@ payload.
 With this patch such containers are now parsed and the
 relevant information is printed to screen.
 
-Moreover, the parts of code that have been touched by this
-patch have also been re-arranged a bit from the style point
-of view.
-
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
+
+changes since v3:
+- undo unneeded style change in tcpdump.c
+- remove unneeded sentence about style change sin commit message
+
 
 changes since v2:
 - extended doc in README and manpage
@@ -43,9 +44,9 @@ changes since v1:
  README       |   1 +
  main.h       |   7 +++
  man/batctl.8 |   3 ++
- tcpdump.c    | 170 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ tcpdump.c    | 169 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
  tcpdump.h    |   1 +
- 5 files changed, 177 insertions(+), 5 deletions(-)
+ 5 files changed, 177 insertions(+), 4 deletions(-)
 
 diff --git a/README b/README
 index b5fd259..f87c551 100644
@@ -90,20 +91,19 @@ index 110020e..8d2de19 100644
  .RE
  .RS 16
 diff --git a/tcpdump.c b/tcpdump.c
-index e84617e..59b46d6 100644
+index e84617e..d510ae4 100644
 --- a/tcpdump.c
 +++ b/tcpdump.c
-@@ -62,8 +62,7 @@ if ((size_t)(buff_len) < (check_len)) { \
- 	return; \
+@@ -63,7 +63,7 @@ if ((size_t)(buff_len) < (check_len)) { \
  }
  
--static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP | DUMP_TYPE_BATUCAST |
+ static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP | DUMP_TYPE_BATUCAST |
 -		DUMP_TYPE_BATBCAST | DUMP_TYPE_BATFRAG | DUMP_TYPE_NONBAT;
-+static unsigned short dump_level_all = DUMP_TYPE_BATOGM | DUMP_TYPE_BATICMP | DUMP_TYPE_BATUCAST | DUMP_TYPE_BATBCAST | DUMP_TYPE_BATUTVLV | DUMP_TYPE_BATFRAG | DUMP_TYPE_NONBAT;
++		DUMP_TYPE_BATBCAST | DUMP_TYPE_BATUTVLV | DUMP_TYPE_BATFRAG | DUMP_TYPE_NONBAT;
  static unsigned short dump_level;
  
  static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed);
-@@ -83,6 +82,7 @@ static void tcpdump_usage(void)
+@@ -83,6 +83,7 @@ static void tcpdump_usage(void)
  	fprintf(stderr, " \t\t%3d - batman unicast packets\n", DUMP_TYPE_BATUCAST);
  	fprintf(stderr, " \t\t%3d - batman broadcast packets\n", DUMP_TYPE_BATBCAST);
  	fprintf(stderr, " \t\t%3d - batman fragmented packets\n", DUMP_TYPE_BATFRAG);
@@ -111,7 +111,7 @@ index e84617e..59b46d6 100644
  	fprintf(stderr, " \t\t%3d - non batman packets\n", DUMP_TYPE_NONBAT);
  	fprintf(stderr, " \t\t%3d - batman ogm & non batman packets\n", DUMP_TYPE_BATOGM | DUMP_TYPE_NONBAT);
  }
-@@ -99,6 +99,138 @@ static int print_time(void)
+@@ -99,6 +100,138 @@ static int print_time(void)
  	return 1;
  }
  
@@ -250,7 +250,7 @@ index e84617e..59b46d6 100644
  static int dump_bla2_claim(struct ether_header *eth_hdr,
  			   struct ether_arp *arphdr, int read_opt)
  {
-@@ -482,8 +614,13 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
+@@ -482,8 +615,13 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
  {
  	struct ether_header *ether_header;
  	struct batadv_ogm_packet *batman_ogm_packet;
@@ -265,7 +265,7 @@ index e84617e..59b46d6 100644
  
  	ether_header = (struct ether_header *)packet_buff;
  	batman_ogm_packet = (struct batadv_ogm_packet *)(packet_buff + sizeof(struct ether_header));
-@@ -494,14 +631,32 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
+@@ -494,14 +632,32 @@ static void dump_batman_iv_ogm(unsigned char *packet_buff, ssize_t buff_len, int
  	printf("BAT %s: ",
  	       get_name_by_macaddr((struct ether_addr *)batman_ogm_packet->orig, read_opt));
  
@@ -300,7 +300,7 @@ index e84617e..59b46d6 100644
  }
  
  static void dump_batman_icmp(unsigned char *packet_buff, ssize_t buff_len, int read_opt, int time_printed)
-@@ -683,6 +838,11 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
+@@ -683,6 +839,11 @@ static void parse_eth_hdr(unsigned char *packet_buff, ssize_t buff_len, int read
  		case BATADV_UNICAST_4ADDR:
  			if (dump_level & DUMP_TYPE_BATUCAST)
  				dump_batman_4addr(packet_buff, buff_len, read_opt, time_printed);
