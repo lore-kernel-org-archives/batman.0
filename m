@@ -1,14 +1,11 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <53F59FA7.2040205@meshcoding.com>
-Date: Thu, 21 Aug 2014 09:28:39 +0200
-From: Antonio Quartulli <antonio@meshcoding.com>
+Return-Path: <linus.luessing@web.de>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
+Date: Thu, 21 Aug 2014 21:48:58 +0200
+Message-Id: <1408650539-4986-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-References: <53F59DD3.7060703@aliyun.com>
-In-Reply-To: <53F59DD3.7060703@aliyun.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="Wdk5RP2qgTCEC9c391v0AVnpEV3ug50JO"
-Subject: Re: [B.A.T.M.A.N.] How to test the non-mesh client roaming feature?
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv3 1/2] batctl: adding multicast debug level
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,66 +17,84 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: liudows@aliyun.com
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---Wdk5RP2qgTCEC9c391v0AVnpEV3ug50JO
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+This patch adds the multicast debug level to check for own
+multicast flag changes for instance.
 
-Liu,
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+---
 
-On 21/08/14 09:20, liu wrote:
-> Hello, everyone. I want to test the non-mesh client roaming feature. An=
-d
-> I have connected my notebook to the mesh node A via the access point on=
+Changes in v3:
+* none
 
-> node A. What should I do next? When the notebook move to the mesh node
-> B, should I connect it to the access point on node B manually?How to
-> make the non-mesh client move to another mesh node automatically? Thank=
-s.
->=20
+Changes in v2:
+* added a sentence about 'mcast' log level to manpage
 
-this behaviour depends on the client OS (each OS implements a different
-logic), but in general, if all the APs have the same ESSID, the client
-should just switch from one to the other without any user intervention.
+ README       |    1 +
+ man/batctl.8 |    6 +++---
+ sys.c        |    5 +++++
+ 3 files changed, 9 insertions(+), 3 deletions(-)
 
-The client should switch when the signal from the new AP gets much
-better than the old one (at least in principle...then each OS may apply
-more robust/smart rules).
+diff --git a/README b/README
+index b5fd259..c5e3575 100644
+--- a/README
++++ b/README
+@@ -389,6 +389,7 @@ $  batctl loglevel
+ [ ] messages related to bridge loop avoidance (bla)
+ [ ] messages related to arp snooping and distributed arp table (dat)
+ [ ] messages related to network coding (nc)
++[ ] messages related to multicast (mcast)
+ 
+ batctl nc_nodes
+ ===============
+diff --git a/man/batctl.8 b/man/batctl.8
+index 110020e..66c28bb 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -98,9 +98,9 @@ level. Level 'none' disables all verbose logging. Level 'batman' enables message
+ Level 'routes' enables messages related to routes being added / changed / deleted. Level 'tt' enables messages related to
+ translation table operations. Level 'bla' enables messages related to the bridge loop avoidance. Level 'dat' enables
+ messages related to ARP snooping and the Distributed Arp Table. Level 'nc' enables messages related to network coding.
+-Level 'all' enables all messages. The messages are sent to the batman-adv debug log. Use \fBbatctl log\fP to retrieve it.
+-Make sure to have debugging output enabled when compiling the module otherwise the output as well as the loglevel options
+-won't be available.
++Level 'mcast' enables messages related to multicast optimizations. Level 'all' enables all messages. The messages
++are sent to the batman-adv debug log. Use \fBbatctl log\fP to retrieve it. Make sure to have debugging output enabled
++when compiling the module otherwise the output as well as the loglevel options won't be available.
+ .br
+ .IP "\fBlog\fP|\fBl\fP [\fB\-n\fP]\fP"
+ batctl will read the batman-adv debug log which has to be compiled into the kernel module. If "\-n" is given batctl will not
+diff --git a/sys.c b/sys.c
+index 676bef1..4fa0e24 100644
+--- a/sys.c
++++ b/sys.c
+@@ -280,6 +280,7 @@ static void log_level_usage(void)
+ 	fprintf(stderr, " \t bla     Messages related to bridge loop avoidance\n");
+ 	fprintf(stderr, " \t dat     Messages related to arp snooping and distributed arp table\n");
+ 	fprintf(stderr, " \t nc      Messages related to network coding\n");
++	fprintf(stderr, " \t mcast   Messages related to multicast\n");
+ }
+ 
+ int handle_loglevel(char *mesh_iface, int argc, char **argv)
+@@ -325,6 +326,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
+ 				log_level |= BIT(4);
+ 			else if (strcmp(argv[i], "nc") == 0)
+ 				log_level |= BIT(5);
++			else if (strcmp(argv[i], "mcast") == 0)
++				log_level |= BIT(6);
+ 			else {
+ 				log_level_usage();
+ 				goto out;
+@@ -359,6 +362,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
+ 	       "messages related to arp snooping and distributed arp table", "dat");
+ 	printf("[%c] %s (%s)\n", (log_level & BIT(5)) ? 'x' : ' ',
+ 	       "messages related to network coding", "nc");
++	printf("[%c] %s (%s)\n", (log_level & BIT(6)) ? 'x' : ' ',
++	       "messages related to multicast", "mcast");
+ 
+ out:
+ 	free(path_buff);
+-- 
+1.7.10.4
 
-Keep in mind that this has nothing to do with batman-adv but is more
-about the lower layers (wifi stack/driver) and their implementations.
-
-
-Cheers,
-
---=20
-Antonio Quartulli
-
-
---Wdk5RP2qgTCEC9c391v0AVnpEV3ug50JO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJT9Z+sAAoJEJgn97Bh2u9eLhgQAJqHZysAOu7EK/AZ7SlZf4Hw
-q4vv6Vk53EPD+o65iKft0XNuWYP6vgEdw9BT8r8CvtQKHS44HeuWKaNeiQ5l0V9b
-W26lNLJQBnNgeh5lD2Rgh1jjiVNuBoFCPEeRJ9bZJ2u4kaXSQbTwOFd069Zrqe2K
-k7GtQ25ch+HycvIyXKI4ht2e77RJEkKSxNowZ6AwjimgvW41Oh7Av8OUyisaMvUx
-K4AoKjrNi2u/yCl+vaySEnl2yEJhWtYH05MPM7HL+l1NnK/UVf/qHa3aSOOaVfgG
-UjBiF85qIpHsJVVixcyBjzycHZJ/Fv8FoiliSsXQa3puvEY0YCaXvYYI6YL1z6wd
-587uzSuzkMapeSCmulZ/0w6f0UzA55xg0PeTiCw4fbyTw0NZl6Mwi99nU7P3kwSV
-0foGHa+DuAYPE4pTtRE+1dm0t0cHLBRxqjKY7OQpobYwh+TRsrhaa2tvkag7XLcd
-9shKssiC9G5GBl9qqtQmMkVRrKvwE0Xdw74rSM6aZSa/35CH8hKu4XmKfg7dz8cS
-u0+d8oG3M+Ogyl6nov4AY7sjuxNWOAzoKOG4W4T8ubvsMr7AMTQ/BtSblJlO2FdN
-XmqMz/R9HbppqnQtfufuLh2mhoVUDCZqkuv17GBlEBilWG1jErLOohznwRn6G8sx
-QeZliiu5Lf2Nse58C1dM
-=eIe+
------END PGP SIGNATURE-----
-
---Wdk5RP2qgTCEC9c391v0AVnpEV3ug50JO--
