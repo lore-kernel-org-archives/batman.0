@@ -1,11 +1,14 @@
 Return-Path: <linus.luessing@web.de>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Thu, 21 Aug 2014 21:48:58 +0200
-Message-Id: <1408650539-4986-1-git-send-email-linus.luessing@web.de>
+Date: Thu, 21 Aug 2014 21:48:59 +0200
+Message-Id: <1408650539-4986-2-git-send-email-linus.luessing@web.de>
+In-Reply-To: <1408650539-4986-1-git-send-email-linus.luessing@web.de>
+References: <1408650539-4986-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv3 1/2] batctl: adding multicast debug level
+Subject: [B.A.T.M.A.N.] [PATCHv3 2/2] batctl: adding mcast flags debugfs
+	table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,82 +22,129 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This patch adds the multicast debug level to check for own
-multicast flag changes for instance.
+This patch adds an option to retrieve the per originator multicast
+flags table.
 
 Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 ---
 
 Changes in v3:
-* none
+* updated mcast_flags example in README file
 
-Changes in v2:
-* added a sentence about 'mcast' log level to manpage
+Changes in v2: 
+* header_lines for 'mcast_flags' increased from 2 to 6
+* Example updated to more verbose, 6 lines debugfs header output
+* (kept order for the noted manpage section as it wasn't alphabetically
+   orderd in the first place - instead keeping the previous "logical"
+   order - 'mcast' after 'nc')
 
- README       |    1 +
- man/batctl.8 |    6 +++---
- sys.c        |    5 +++++
- 3 files changed, 9 insertions(+), 3 deletions(-)
+ README       |   34 ++++++++++++++++++++++++++++++++++
+ debug.c      |    6 ++++++
+ debug.h      |    1 +
+ functions.c  |    1 +
+ man/batctl.8 |    3 +++
+ 5 files changed, 45 insertions(+)
 
 diff --git a/README b/README
-index b5fd259..c5e3575 100644
+index c5e3575..ca69866 100644
 --- a/README
 +++ b/README
-@@ -389,6 +389,7 @@ $  batctl loglevel
- [ ] messages related to bridge loop avoidance (bla)
- [ ] messages related to arp snooping and distributed arp table (dat)
- [ ] messages related to network coding (nc)
-+[ ] messages related to multicast (mcast)
+@@ -425,6 +425,40 @@ display or modify the multicast mode setting
  
- batctl nc_nodes
- ===============
+ Usage: batctl multicast_mode|mm [0|1]
+ 
++batctl mcast_flags
++=================
++
++display the local D.A.T. cache
++
++Usage batctl mcast_flags|mf
++
++Example:
++
++Multicast flags (own flags: [U46])
++* Bridged [U]                           U
++* No IGMP/MLD Querier [4/6]:            ./.
++* Shadowing IGMP/MLD Querier [4/6]:     4/6
++-------------------------------------------
++       Originator Flags
++02:04:64:a4:39:c1 [U..]
++02:04:64:a4:39:c2 [U..]
++02:04:64:a4:39:c3 [...]
++
++where:
++- Originator: the MAC address of the originating (primary interface)
++		batman-adv node
++- Flags: multicast flags of the according node
++- U: wants all unsnoopable multicast traffic, meaning other nodes need to always
++	forward any multicast traffic destined to ff02::1 or 224.0.0.0/24 to it
++- 4: wants all IPv4 multicast traffic, meaning other nodes need to always
++	forward any IPv4 multicast traffic to it
++- 6: wants all IPv6 multicast traffic, meaning other nodes need to always
++	forward any IPv6 multicast traffic to it
++
++If a node does not have multicast optimizations available (e.g. old batman-adv
++version or optimizations not compiled in), therefore not announcing any
++multicast tvlv/flags, a '-' will be displayed instead of '[...]'.
++
+ batctl aggregation
+ ==================
+ 
+diff --git a/debug.c b/debug.c
+index dfcf3c3..6be3506 100644
+--- a/debug.c
++++ b/debug.c
+@@ -78,6 +78,12 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
+ 		.debugfs_name = "nc_nodes",
+ 		.header_lines = 0,
+ 	},
++	{
++		.opt_long = "mcast_flags",
++		.opt_short = "mf",
++		.debugfs_name = "mcast_flags",
++		.header_lines = 6,
++	},
+ };
+ 
+ static void debug_table_usage(int debug_table)
+diff --git a/debug.h b/debug.h
+index 76d5e68..6ea32a4 100644
+--- a/debug.h
++++ b/debug.h
+@@ -38,6 +38,7 @@ enum batctl_debug_tables {
+ 	BATCTL_TABLE_BLA_BACKBONES,
+ 	BATCTL_TABLE_DAT,
+ 	BATCTL_TABLE_NETWORK_CODING_NODES,
++	BATCTL_TABLE_MCAST_FLAGS,
+ 	BATCTL_TABLE_NUM,
+ };
+ 
+diff --git a/functions.c b/functions.c
+index 251e616..7636e85 100644
+--- a/functions.c
++++ b/functions.c
+@@ -68,6 +68,7 @@ const char *fs_compile_out_param[] = {
+ 	batctl_debug_tables[BATCTL_TABLE_BLA_BACKBONES].debugfs_name,
+ 	batctl_debug_tables[BATCTL_TABLE_DAT].debugfs_name,
+ 	batctl_debug_tables[BATCTL_TABLE_NETWORK_CODING_NODES].debugfs_name,
++	batctl_debug_tables[BATCTL_TABLE_MCAST_FLAGS].debugfs_name,
+ 	NULL,
+ };
+ 
 diff --git a/man/batctl.8 b/man/batctl.8
-index 110020e..66c28bb 100644
+index 66c28bb..6c5b244 100644
 --- a/man/batctl.8
 +++ b/man/batctl.8
-@@ -98,9 +98,9 @@ level. Level 'none' disables all verbose logging. Level 'batman' enables message
- Level 'routes' enables messages related to routes being added / changed / deleted. Level 'tt' enables messages related to
- translation table operations. Level 'bla' enables messages related to the bridge loop avoidance. Level 'dat' enables
- messages related to ARP snooping and the Distributed Arp Table. Level 'nc' enables messages related to network coding.
--Level 'all' enables all messages. The messages are sent to the batman-adv debug log. Use \fBbatctl log\fP to retrieve it.
--Make sure to have debugging output enabled when compiling the module otherwise the output as well as the loglevel options
--won't be available.
-+Level 'mcast' enables messages related to multicast optimizations. Level 'all' enables all messages. The messages
-+are sent to the batman-adv debug log. Use \fBbatctl log\fP to retrieve it. Make sure to have debugging output enabled
-+when compiling the module otherwise the output as well as the loglevel options won't be available.
+@@ -227,6 +227,9 @@ List of debug tables:
+ .RS 10
+ \- nc_nodes|nn (compile time option)
+ .RE
++.RS 10
++\- mcast_flags|mf (compile time option)
++.RE
+ .RE
  .br
- .IP "\fBlog\fP|\fBl\fP [\fB\-n\fP]\fP"
- batctl will read the batman-adv debug log which has to be compiled into the kernel module. If "\-n" is given batctl will not
-diff --git a/sys.c b/sys.c
-index 676bef1..4fa0e24 100644
---- a/sys.c
-+++ b/sys.c
-@@ -280,6 +280,7 @@ static void log_level_usage(void)
- 	fprintf(stderr, " \t bla     Messages related to bridge loop avoidance\n");
- 	fprintf(stderr, " \t dat     Messages related to arp snooping and distributed arp table\n");
- 	fprintf(stderr, " \t nc      Messages related to network coding\n");
-+	fprintf(stderr, " \t mcast   Messages related to multicast\n");
- }
- 
- int handle_loglevel(char *mesh_iface, int argc, char **argv)
-@@ -325,6 +326,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
- 				log_level |= BIT(4);
- 			else if (strcmp(argv[i], "nc") == 0)
- 				log_level |= BIT(5);
-+			else if (strcmp(argv[i], "mcast") == 0)
-+				log_level |= BIT(6);
- 			else {
- 				log_level_usage();
- 				goto out;
-@@ -359,6 +362,8 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
- 	       "messages related to arp snooping and distributed arp table", "dat");
- 	printf("[%c] %s (%s)\n", (log_level & BIT(5)) ? 'x' : ' ',
- 	       "messages related to network coding", "nc");
-+	printf("[%c] %s (%s)\n", (log_level & BIT(6)) ? 'x' : ' ',
-+	       "messages related to multicast", "mcast");
- 
- out:
- 	free(path_buff);
+ .IP "\fBtranslate\fP|\fBt\fP \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIP_address\fP"
 -- 
 1.7.10.4
 
