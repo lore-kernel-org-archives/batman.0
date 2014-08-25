@@ -1,14 +1,8 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Thu, 21 Aug 2014 21:48:59 +0200
-Message-Id: <1408650539-4986-2-git-send-email-linus.luessing@web.de>
-In-Reply-To: <1408650539-4986-1-git-send-email-linus.luessing@web.de>
-References: <1408650539-4986-1-git-send-email-linus.luessing@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv3 2/2] batctl: adding mcast flags debugfs
-	table
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 25 Aug 2014 19:41:43 +0200
+Message-Id: <1408988503-27906-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH] alfred: support for changing interfaces
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,130 +15,353 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
-This patch adds an option to retrieve the per originator multicast
-flags table.
+From: Simon Wunderlich <simon@open-mesh.com>
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
+This patch adds support for changing the interface alfreds listens to on
+the fly without restarting alfred.
+
+Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 ---
+ alfred.h     |  2 ++
+ client.c     | 54 +++++++++++++++++++++++++++++++++++++++++++++++++
+ main.c       | 66 +++++++++++++++++++++++++++++++++++-------------------------
+ man/alfred.8 |  3 +++
+ packet.h     | 17 ++++++++++++++++
+ unix_sock.c  | 38 ++++++++++++++++++++++++++++++++++
+ vis/vis.c    |  2 +-
+ 7 files changed, 154 insertions(+), 28 deletions(-)
 
-Changes in v3:
-* updated mcast_flags example in README file
-
-Changes in v2: 
-* header_lines for 'mcast_flags' increased from 2 to 6
-* Example updated to more verbose, 6 lines debugfs header output
-* (kept order for the noted manpage section as it wasn't alphabetically
-   orderd in the first place - instead keeping the previous "logical"
-   order - 'mcast' after 'nc')
-
- README       |   34 ++++++++++++++++++++++++++++++++++
- debug.c      |    6 ++++++
- debug.h      |    1 +
- functions.c  |    1 +
- man/batctl.8 |    3 +++
- 5 files changed, 45 insertions(+)
-
-diff --git a/README b/README
-index c5e3575..ca69866 100644
---- a/README
-+++ b/README
-@@ -425,6 +425,40 @@ display or modify the multicast mode setting
- 
- Usage: batctl multicast_mode|mm [0|1]
- 
-+batctl mcast_flags
-+=================
-+
-+display the local D.A.T. cache
-+
-+Usage batctl mcast_flags|mf
-+
-+Example:
-+
-+Multicast flags (own flags: [U46])
-+* Bridged [U]                           U
-+* No IGMP/MLD Querier [4/6]:            ./.
-+* Shadowing IGMP/MLD Querier [4/6]:     4/6
-+-------------------------------------------
-+       Originator Flags
-+02:04:64:a4:39:c1 [U..]
-+02:04:64:a4:39:c2 [U..]
-+02:04:64:a4:39:c3 [...]
-+
-+where:
-+- Originator: the MAC address of the originating (primary interface)
-+		batman-adv node
-+- Flags: multicast flags of the according node
-+- U: wants all unsnoopable multicast traffic, meaning other nodes need to always
-+	forward any multicast traffic destined to ff02::1 or 224.0.0.0/24 to it
-+- 4: wants all IPv4 multicast traffic, meaning other nodes need to always
-+	forward any IPv4 multicast traffic to it
-+- 6: wants all IPv6 multicast traffic, meaning other nodes need to always
-+	forward any IPv6 multicast traffic to it
-+
-+If a node does not have multicast optimizations available (e.g. old batman-adv
-+version or optimizations not compiled in), therefore not announcing any
-+multicast tvlv/flags, a '-' will be displayed instead of '[...]'.
-+
- batctl aggregation
- ==================
- 
-diff --git a/debug.c b/debug.c
-index dfcf3c3..6be3506 100644
---- a/debug.c
-+++ b/debug.c
-@@ -78,6 +78,12 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
- 		.debugfs_name = "nc_nodes",
- 		.header_lines = 0,
- 	},
-+	{
-+		.opt_long = "mcast_flags",
-+		.opt_short = "mf",
-+		.debugfs_name = "mcast_flags",
-+		.header_lines = 6,
-+	},
+diff --git a/alfred.h b/alfred.h
+index 35ac4dd..f0989ea 100644
+--- a/alfred.h
++++ b/alfred.h
+@@ -86,6 +86,7 @@ enum clientmode {
+ 	CLIENT_REQUEST_DATA,
+ 	CLIENT_SET_DATA,
+ 	CLIENT_MODESWITCH,
++	CLIENT_CHANGE_INTERFACE,
  };
  
- static void debug_table_usage(int debug_table)
-diff --git a/debug.h b/debug.h
-index 76d5e68..6ea32a4 100644
---- a/debug.h
-+++ b/debug.h
-@@ -38,6 +38,7 @@ enum batctl_debug_tables {
- 	BATCTL_TABLE_BLA_BACKBONES,
- 	BATCTL_TABLE_DAT,
- 	BATCTL_TABLE_NETWORK_CODING_NODES,
-+	BATCTL_TABLE_MCAST_FLAGS,
- 	BATCTL_TABLE_NUM,
+ struct globals {
+@@ -125,6 +126,7 @@ int set_best_server(struct globals *globals);
+ int alfred_client_request_data(struct globals *globals);
+ int alfred_client_set_data(struct globals *globals);
+ int alfred_client_modeswitch(struct globals *globals);
++int alfred_client_change_interface(struct globals *globals);
+ /* recv.c */
+ int recv_alfred_packet(struct globals *globals);
+ struct transaction_head *
+diff --git a/client.c b/client.c
+index b868719..48313db 100644
+--- a/client.c
++++ b/client.c
+@@ -22,6 +22,7 @@
+ #include <ctype.h>
+ #include <errno.h>
+ #include <netinet/in.h>
++#include <sys/ioctl.h>
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <string.h>
+@@ -218,3 +219,56 @@ int alfred_client_modeswitch(struct globals *globals)
+ 	unix_sock_close(globals);
+ 	return 0;
+ }
++
++int alfred_client_change_interface(struct globals *globals)
++{
++	unsigned char buf[MAX_PAYLOAD];
++	struct alfred_change_interface_v0 *change_interface;
++	struct ifreq ifr;
++	int ret, len;
++	int sock = -1;
++
++	if (unix_sock_open_client(globals))
++		return -1;
++
++	if (strlen(globals->interface) > IFNAMSIZ) {
++		fprintf(stderr, "%s: interface name too long, not changing\n",
++			__func__);
++		return 0;
++	}
++
++	sock = socket(PF_INET6, SOCK_DGRAM, 0);
++	if (sock < 0) {
++		perror("can't open socket");
++		return -1;
++	}
++
++	strncpy(ifr.ifr_name, globals->interface, IFNAMSIZ);
++	ifr.ifr_name[IFNAMSIZ - 1] = '\0';
++	if (ioctl(sock, SIOCGIFINDEX, &ifr) == -1) {
++		fprintf(stderr, "%s: can't find interface, not changing\n",
++			__func__);
++		close(sock);
++		return -1;
++	}
++
++	close(sock);
++
++	change_interface = (struct alfred_change_interface_v0 *)buf;
++	len = sizeof(*change_interface);
++
++	change_interface->header.type = ALFRED_CHANGE_INTERFACE;
++	change_interface->header.version = ALFRED_VERSION;
++	change_interface->header.length = htons(len - sizeof(change_interface->header));
++	memcpy(change_interface->iface, globals->interface,
++	       sizeof(change_interface->iface));
++
++	ret = write(globals->unix_sock, buf, len);
++	if (ret != len)
++		fprintf(stderr, "%s: only wrote %d of %d bytes: %s\n",
++			__func__, ret, len, strerror(errno));
++
++	unix_sock_close(globals);
++
++	return 0;
++}
+diff --git a/main.c b/main.c
+index 1add44e..5a4f1e6 100644
+--- a/main.c
++++ b/main.c
+@@ -33,25 +33,29 @@ static void alfred_usage(void)
+ {
+ 	printf("Usage: alfred [options]\n");
+ 	printf("client mode options:\n");
+-	printf("  -s, --set-data [data type]  sets new data to distribute from stdin\n");
+-	printf("                              for the supplied data type (0-255)\n");
+-	printf("  -r, --request [data type]   collect data from the network and prints\n");
+-	printf("                              it on the network\n");
+-	printf("  -V, --req-version           specify the data version set for -s\n");
+-	printf("  -M, --modeswitch master     switch daemon to mode master\n");
+-	printf("                   slave      switch daemon to mode slave\n");
++	printf("  -s, --set-data [data type]          sets new data to distribute from stdin\n");
++	printf("                                      for the supplied data type (0-255)\n");
++	printf("  -r, --request [data type]           collect data from the network and prints\n");
++	printf("                                      it on the network\n");
++	printf("  -V, --req-version                   specify the data version set for -s\n");
++	printf("  -M, --modeswitch master             switch daemon to mode master\n");
++	printf("                   slave              switch daemon to mode slave\n");
++	printf("  -I, --change-interface [interface]  change to the specified interface\n");
+ 	printf("\n");
+ 	printf("server mode options:\n");
+-	printf("  -i, --interface             specify the interface to listen on\n");
+-	printf("  -b                          specify the batman-adv interface configured on the system (default: bat0)\n");
+-	printf("                              use 'none' to disable the batman-adv based best server selection\n");
+-	printf("  -m, --master                start up the daemon in master mode, which\n");
+-	printf("                              accepts data from slaves and synces it with\n");
+-	printf("                              other masters\n");
++	printf("  -i, --interface                     specify the interface to listen on\n");
++	printf("  -b                                  specify the batman-adv interface\n");
++	printf("                                      configured on the system (default: bat0)\n");
++	printf("                                      use 'none' to disable the batman-adv\n");
++	printf("                                      based best server selection\n");
++	printf("  -m, --master                        start up the daemon in master mode, which\n");
++	printf("                                      accepts data from slaves and synces it with\n");
++	printf("                                      other masters\n");
+ 	printf("\n");
+-	printf("  -u, --unix-path [path]      path to unix socket used for client-server communication (default: \""ALFRED_SOCK_PATH_DEFAULT"\")\n");
+-	printf("  -v, --version               print the version\n");
+-	printf("  -h, --help                  this help\n");
++	printf("  -u, --unix-path [path]              path to unix socket used for client-server\n");
++	printf("                                      communication (default: \""ALFRED_SOCK_PATH_DEFAULT"\")\n");
++	printf("  -v, --version                       print the version\n");
++	printf("  -h, --help                          this help\n");
+ 	printf("\n");
+ }
+ 
+@@ -60,16 +64,17 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 	int opt, opt_ind, i;
+ 	struct globals *globals;
+ 	struct option long_options[] = {
+-		{"set-data",	required_argument,	NULL,	's'},
+-		{"request",	required_argument,	NULL,	'r'},
+-		{"interface",	required_argument,	NULL,	'i'},
+-		{"master",	no_argument,		NULL,	'm'},
+-		{"help",	no_argument,		NULL,	'h'},
+-		{"req-version", required_argument,	NULL,	'V'},
+-		{"modeswitch",  required_argument,	NULL,	'M'},
+-		{"unix-path", 	required_argument,	NULL,	'u'},
+-		{"version",	no_argument,		NULL,	'v'},
+-		{NULL,		0,			NULL,	0},
++		{"set-data",		required_argument,	NULL,	's'},
++		{"request",		required_argument,	NULL,	'r'},
++		{"interface",		required_argument,	NULL,	'i'},
++		{"master",		no_argument,		NULL,	'm'},
++		{"help",		no_argument,		NULL,	'h'},
++		{"req-version", 	required_argument,	NULL,	'V'},
++		{"modeswitch",  	required_argument,	NULL,	'M'},
++		{"change-interface",	required_argument,	NULL,	'I'},
++		{"unix-path",		required_argument,	NULL,	'u'},
++		{"version",		no_argument,		NULL,	'v'},
++		{NULL,			0,			NULL,	0},
+ 	};
+ 
+ 	globals = &alfred_globals;
+@@ -85,7 +90,7 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 
+ 	time_random_seed();
+ 
+-	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:u:", long_options,
++	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:", long_options,
+ 				  &opt_ind)) != -1) {
+ 		switch (opt) {
+ 		case 'r':
+@@ -135,6 +140,10 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 			}
+ 			globals->clientmode = CLIENT_MODESWITCH;
+ 			break;
++		case 'I':
++			globals->clientmode = CLIENT_CHANGE_INTERFACE;
++			globals->interface = strdup(optarg);
++			break;
+ 		case 'u':
+ 			globals->unix_path = optarg;
+ 			break;
+@@ -176,6 +185,9 @@ int main(int argc, char *argv[])
+ 	case CLIENT_MODESWITCH:
+ 		return alfred_client_modeswitch(globals);
+ 		break;
++	case CLIENT_CHANGE_INTERFACE:
++		return alfred_client_change_interface(globals);
++		break;
+ 	}
+ 
+ 	return 0;
+diff --git a/man/alfred.8 b/man/alfred.8
+index c90caa8..35dee45 100644
+--- a/man/alfred.8
++++ b/man/alfred.8
+@@ -80,6 +80,9 @@ to 0 ('\fB\-V\fP 0').
+ \fBslave\fP
+     Switch daemon to mode slave
+ .fi
++.TP
++\fB\-I\fP, \fB\-\-change\-interface\fP \fIinterface\fP
++Change the alfred server to use the new \fBinterface\fP
+ .
+ .SH SERVER OPTIONS
+ .TP
+diff --git a/packet.h b/packet.h
+index ba8c5f6..dc06d65 100644
+--- a/packet.h
++++ b/packet.h
+@@ -20,6 +20,8 @@
+ #ifndef _ALFRED_PACKET_H
+ #define _ALFRED_PACKET_H
+ 
++#include <net/if.h>	/* IFNAMSIZ */
++
+ #define __packed __attribute__ ((packed))
+ 
+ /* basic blocks */
+@@ -67,6 +69,7 @@ struct alfred_transaction_mgmt {
+  * @ALFRED_STATUS_TXEND: Transaction was finished by sender
+  * @ALFRED_STATUS_ERROR: Error was detected during the transaction
+  * @ALFRED_MODESWITCH: Switch between different operation modes
++ * @ALFRED_CHANGE_INTERFACE: Change the listening interface
+  */
+ enum alfred_packet_type {
+ 	ALFRED_PUSH_DATA = 0,
+@@ -75,6 +78,7 @@ enum alfred_packet_type {
+ 	ALFRED_STATUS_TXEND = 3,
+ 	ALFRED_STATUS_ERROR = 4,
+ 	ALFRED_MODESWITCH = 5,
++	ALFRED_CHANGE_INTERFACE = 6,
  };
  
-diff --git a/functions.c b/functions.c
-index 251e616..7636e85 100644
---- a/functions.c
-+++ b/functions.c
-@@ -68,6 +68,7 @@ const char *fs_compile_out_param[] = {
- 	batctl_debug_tables[BATCTL_TABLE_BLA_BACKBONES].debugfs_name,
- 	batctl_debug_tables[BATCTL_TABLE_DAT].debugfs_name,
- 	batctl_debug_tables[BATCTL_TABLE_NETWORK_CODING_NODES].debugfs_name,
-+	batctl_debug_tables[BATCTL_TABLE_MCAST_FLAGS].debugfs_name,
- 	NULL,
- };
+ /* packets */
+@@ -143,6 +147,19 @@ struct alfred_modeswitch_v0 {
+ } __packed;
  
-diff --git a/man/batctl.8 b/man/batctl.8
-index 66c28bb..6c5b244 100644
---- a/man/batctl.8
-+++ b/man/batctl.8
-@@ -227,6 +227,9 @@ List of debug tables:
- .RS 10
- \- nc_nodes|nn (compile time option)
- .RE
-+.RS 10
-+\- mcast_flags|mf (compile time option)
-+.RE
- .RE
- .br
- .IP "\fBtranslate\fP|\fBt\fP \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIP_address\fP"
+ /**
++ * struct alfred_change_interface_v0 - Request to change the interface
++ * @header: TLV header describing the complete packet
++ * @iface: interface name to be changed to
++ *
++ * Sent to the daemon by client
++ */
++struct alfred_change_interface_v0 {
++	struct alfred_tlv header;
++	char iface[IFNAMSIZ];
++} __packed;
++
++
++/**
+  * struct alfred_status_v0 - Status info of a transaction
+  * @header: TLV header describing the complete packet
+  * @tx: Transaction identificator and sequence number of packet
+diff --git a/unix_sock.c b/unix_sock.c
+index cc0d25c..516c0a5 100644
+--- a/unix_sock.c
++++ b/unix_sock.c
+@@ -298,6 +298,38 @@ err:
+ 	return ret;
+ }
+ 
++static int
++unix_sock_change_iface(struct globals *globals,
++		       struct alfred_change_interface_v0 *change_iface,
++		       int client_sock)
++{
++	int len, ret = -1;
++	char *iface;
++
++	len = ntohs(change_iface->header.length);
++
++	if (len < (int)(sizeof(*change_iface) - sizeof(change_iface->header)))
++		goto err;
++
++	iface = malloc(IFNAMSIZ + 1);
++	if (!iface)
++		goto err;
++
++	memcpy(iface, change_iface->iface, IFNAMSIZ);
++	iface[IFNAMSIZ] = 0;
++
++	netsock_close(globals->netsock);
++
++	free(globals->interface);
++	globals->interface = iface;
++	netsock_open(globals);
++
++	ret = 0;
++err:
++	close(client_sock);
++	return ret;
++}
++
+ int unix_sock_read(struct globals *globals)
+ {
+ 	int client_sock;
+@@ -350,6 +382,12 @@ int unix_sock_read(struct globals *globals)
+ 				       (struct alfred_modeswitch_v0 *)packet,
+ 					client_sock);
+ 		break;
++	case ALFRED_CHANGE_INTERFACE:
++		ret = unix_sock_change_iface(globals,
++					     (struct alfred_change_interface_v0 *)packet,
++					     client_sock);
++		break;
++
+ 	default:
+ 		/* unknown packet type */
+ 		ret = -1;
+diff --git a/vis/vis.c b/vis/vis.c
+index 00372ab..3dd5c8c 100644
+--- a/vis/vis.c
++++ b/vis/vis.c
+@@ -23,7 +23,7 @@
+ #include <dirent.h>
+ #include <errno.h>
+ #include <getopt.h>
+-#include <linux/if.h>
++#include <net/if.h>
+ #include <netinet/in.h>
+ #include <signal.h>
+ #include <stdbool.h>
 -- 
-1.7.10.4
+2.1.0
 
