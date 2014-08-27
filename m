@@ -1,13 +1,12 @@
 Return-Path: <ufo@rund.freifunk.net>
-Message-ID: <53FDD5D0.4030302@rund.freifunk.net>
-Date: Wed, 27 Aug 2014 14:57:52 +0200
+Message-ID: <53FDD9D1.9080303@rund.freifunk.net>
+Date: Wed, 27 Aug 2014 15:14:57 +0200
 From: Ufo <ufo@rund.freifunk.net>
 MIME-Version: 1.0
-References: <53F59DD3.7060703@aliyun.com> <53F59FA7.2040205@meshcoding.com>
-In-Reply-To: <53F59FA7.2040205@meshcoding.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] How to test the non-mesh client roaming feature?
+Subject: [B.A.T.M.A.N.] new alfred packet type *3* for solar tracer charging
+	units
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,60 +18,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Am 21.08.14 09:28, schrieb Antonio Quartulli:
-> Liu,
-> 
-> On 21/08/14 09:20, liu wrote:
->> Hello, everyone. I want to test the non-mesh client roaming feature.
+at Solarfestival in Germany we were reverse engineering some solar
+tracer charge controllers. so they were part of the local wifi mesh
+https://twitter.com/rundfreifunk/status/502788487549288448
+https://twitter.com/rundfreifunk/status/503888938973802496
+https://twitter.com/rundfreifunk/status/503942726292103168
 
-> this behaviour depends on the client OS (each OS implements a different
-> logic), but in general, if all the APs have the same ESSID, the client
-> should just switch from one to the other without any user intervention.
-> 
-> The client should switch when the signal from the new AP gets much
-> better than the old one (at least in principle...then each OS may apply
-> more robust/smart rules).
-> 
-> Keep in mind that this has nothing to do with batman-adv but is more
-> about the lower layers (wifi stack/driver) and their implementations.
-> 
+best way for distributing the detailed data (about local sun impact..)
+was alfred. we used nr. 160 but now simon choosed nr. 3 for that.
 
-so practically within wifi-field i prefer two ways for testing:
+https://twitter.com/rundfreifunk/status/503548243452899328
 
-* via wifi-client (Android Smartphone)
+so, plug your solar systems into your mesh-nodes!
 
-The nicest App i found is
-https://play.google.com/store/apps/details?id=com.arubanetworks.arubautilities
-there you can see the ping to your default gateway and all your APs.
-That one you are connected to is marked, the client-switching too..
+https://twitter.com/rundfreifunk/status/503875891735560192
+https://twitter.com/rundfreifunk/status/504575102965792768
 
-https://twitter.com/rundfreifunk/status/504611193324326912
+greetings, ufo
 
-* on your mesh-node, best used on your local dhcp-server (openwrt with
-batman-adv)
+p.s.
 
--> cat /tmp/dhcp.leases; arp -a
+code: https://gitorious.org/tracertools/pages/Home
 
-get the mac-adress or ip-adress of your test-client (the smartphone) and
-open two ssh windows:
+p.p.s.
 
--> ping <ip-adress>
+anyone with CRC expierence?? please! we need help with that dump CRC,
+please have a look if there is a new idea about used crc
 
--> batctl -m bat12 tr <that-adress>
+http://pad.freifunk.net/p/solartracer
 
-that shows the batman-adv route to your client and all the actually
-involved batman-nodes. unfortunatly that traceroute is only to the last
-batman-node (that one, your smartphone is connected to) and NOT up to
-your client. so maybe that batman-traceroute is working, but the ping
-wont. and last but not least, dont get confused with all of these
-mac-adresses!
-
-https://twitter.com/rundfreifunk/status/429992988602032129
-
-good luck and greetings
-ufo
 
 -- 
 ---
