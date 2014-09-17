@@ -1,16 +1,15 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <5419238A.8030001@meshcoding.com>
-Date: Wed, 17 Sep 2014 08:00:42 +0200
+Message-ID: <5419252D.7080809@meshcoding.com>
+Date: Wed, 17 Sep 2014 08:07:41 +0200
 From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1410900696-6481-1-git-send-email-linux@rasmusvillemoes.dk>
- <1410900696-6481-10-git-send-email-linux@rasmusvillemoes.dk>
-In-Reply-To: <1410900696-6481-10-git-send-email-linux@rasmusvillemoes.dk>
+References: <1410866367-14479-1-git-send-email-martin@hundeboll.net>
+In-Reply-To: <1410866367-14479-1-git-send-email-martin@hundeboll.net>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="SOcx18Pxa3dtFqOhd25HGjq8DjMx6bgaw"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 09/22] batman-adv: Replace strnicmp with
- strncasecmp
+ boundary="BHwdHBfTgDNo31PFWgaUIKg59CkPcBJwX"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: clear control block of
+ received socket buffers
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,41 +21,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: netdev@vger.kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-kernel@vger.kernel.org, Marek Lindner <mareklindner@neomailbox.ch>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---SOcx18Pxa3dtFqOhd25HGjq8DjMx6bgaw
+--BHwdHBfTgDNo31PFWgaUIKg59CkPcBJwX
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On 16/09/14 22:51, Rasmus Villemoes wrote:
-> The kernel used to contain two functions for length-delimited,
-> case-insensitive string comparison, strnicmp with correct semantics
-> and a slightly buggy strncasecmp. The latter is the POSIX name, so
-> strnicmp was renamed to strncasecmp, and strnicmp made into a wrapper
-> for the new strncasecmp to avoid breaking existing users.
+Hi Martin,
+
+On 16/09/14 13:19, Martin Hundeb=C3=B8ll wrote:
+> Since other network components (and some drivers) uses the control bloc=
+k
+> provided in skb's, the network coding feature might wrongly assume that=
+
+> an SKB has been decoded, and thus not try to code it with another packe=
+t
+> again. This happens for instance when batman-adv is running on a bridge=
+ device.
 >=20
-> To allow the compat wrapper strnicmp to be removed at some point in
-> the future, and to avoid the extra indirection cost, do
-> s/strnicmp/strncasecmp/g.
+> Fix this by clearing the control block for every received SKB.
 >=20
-> Cc: Marek Lindner <mareklindner@neomailbox.ch>
-> Cc: b.a.t.m.a.n@lists.open-mesh.org
-> Cc: netdev@vger.kernel.org
-> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+> Signed-off-by: Martin Hundeb=C3=B8ll <martin@hundeboll.net>
 
-Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+thanks for this patch.
+I guess this patch has to go into maint, but do you have any commit ID
+we could specify as Introduced-by ? (if you are about to send v2 with
+this info, please write "maint" right after PATCH)
 
-Thank you
 
+Thanks!
 
 
 --=20
 Antonio Quartulli
 
 
---SOcx18Pxa3dtFqOhd25HGjq8DjMx6bgaw
+--BHwdHBfTgDNo31PFWgaUIKg59CkPcBJwX
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -64,19 +66,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJUGSOOAAoJEJgn97Bh2u9eVvMQAJVCB7XfWcFSKT4CaiV5BIf9
-FmoWMmk0GFHOOhjCzmBSPZ0OY62r75rleJBfd8j4gCpJZnrekX6RODUf1OGK9U2q
-DnQjTdPVneI3EM72c9v7tQBH+HWsMffPX7xIAfHpUXNbSH97860tdddAIMBVAf3I
-ESEPOTwW/Nz1DnAI8/qVzErJAo28/BNjCL/19pwjmudj4AgTx8IxmXyAdGW+Kib6
-NvBGMt7Wh528yatvh/VrcFRr14XgFZHFYXkKXBEtYFW/Vu/TbxXsZIunk9if61On
-noV1isZ2o73+/kucMfjSWfciMyaDEwZCqTVEv57DVeSNkJ8bC3f8tx5ad8GDL7UF
-bvR7XV+mKZAJiA0rH0KS+Pof1l9l6fdQxqtw0yPSKm3T3vCXvz+9F2Axk4ievd7C
-Zuy5z46PLnO2ZzX3W6bgjYAkEA/cXvn+DM7j/03Rcn6RqCbRHLofsyPfNnFAuUvN
-3/YC2nxjilogX9bi1Wx3s05hZdUNqboxLzby0mOMo8oHxR/TTWjKi68HZ7YG8UiD
-Rg1GNJc/8/KmFCZuYKXZYjPkEj1kJ/8sgovSLHytJ2Xqb35GWmkRpcDemO+VGB/H
-a8BkB8IsdrncBRRpgPvoBNAkujJKPg4WENPB2ORumrLNBMjXDdk9IkkK1b9SBPWm
-Oi5cA2z0uaoNw5HwBRrI
-=sDAN
+iQIcBAEBCAAGBQJUGSUxAAoJEJgn97Bh2u9e8soP/j3K9/N1Xz0CVs+7SUa6dIqM
+ixxbu1rIMSWOnzWUskQvXEmGe5wULaO3WZr13zfLkftDPhGTXCnof4ViD6QpF3Oe
+/x5EQLR0ALaqEwQ7jgxA/Hjpp4BqbZ9oItbKaw3UnR9JRQqtRVOeUWl0HwG6f7BV
+buP+lz9ATJqXxVN2qj/uGznkq+fnIewXOYD0OBShB3cgmforo8DTzHhUkBUQ2CL/
+LU0lyQ7Vpr+Qi97VaRN5PQRK/v7UJCWmMg9tPmwn7uPK+A6Z3T3Dfcl4ueZQu0/z
+Trlv5vagf/6/9u01Y4AbFmebs3Q2BIu3ON/tsGlKCIbnH9O4DYvaqDmKWw2g6sPY
+K0zoidwUotNhmmeJJtL3vCUke5Lg/VDgNpZm2DuakXE6gr2tywkugFum2IWgjxAy
+cGH2qdwepUPJV5kcJEqXVq3SIR5+TtC59LP1iDknFFNlBf9DmvNHHOhcfVu79Elq
+hKDq+3rP1Z75StARuVnfsAADlPtQuqTS7bgMvA8/51CqtgUShZq8hW/PCLSTiFYD
+KzD/EPN67yYssh7suW9gsOhilsRHWUe4xTaZQ3WN7JmrnWFZCULdRe4cTDuQ9hX4
+u29izCpX0zmsSm33dY3EZzZlbfnmYuCx/tCayDM7hJUM9Lq5OVcLdeMTpoO4fx+I
+J/SPY4ZeXR126zKq0WLG
+=35Qs
 -----END PGP SIGNATURE-----
 
---SOcx18Pxa3dtFqOhd25HGjq8DjMx6bgaw--
+--BHwdHBfTgDNo31PFWgaUIKg59CkPcBJwX--
