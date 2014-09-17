@@ -1,12 +1,9 @@
-Return-Path: <martin@hundeboll.net>
-From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
-Date: Wed, 17 Sep 2014 08:56:19 +0200
-Message-Id: <1410936979-2219-1-git-send-email-martin@hundeboll.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: clear control block of
-	received socket buffers
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Wed, 17 Sep 2014 09:01:56 +0200
+Message-Id: <1410937316-23199-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: avoid NULL dereferences
+	and clarify if check
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,35 +16,37 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Since other network components (and some drivers) uses the control block
-provided in skb's, the network coding feature might wrongly assume that
-an SKB has been decoded, and thus not try to code it with another packet
-again. This happens for instance when batman-adv is running on a bridge device.
+Due to a typ0 in an if-condition used in the gateway-client
+code it is possible to run in a NULL pointer dereference.
 
-Fix this by clearing the control block for every received SKB.
+At the same type the same if-condition is not clear.
 
-Introduced-by: 3c12de9a5c756b23fe7c9ab332474ece1568914c ("batman-adv: network coding - code and transmit packets if possible")
-Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+Fix this by rewriting the if-condition properly.
+
+Introduced by 0853ec7fafe0a195754454832993c6b35e22b842
+("batman-adv: tvlv - gateway download/upload bandwidth container")
+
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+Reported-by: David Binderman <dcb314@hotmail.com>
 ---
- main.c | 3 +++
- 1 file changed, 3 insertions(+)
+ gateway_client.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/main.c b/main.c
-index 2cdd25a..61e3ffd 100644
---- a/main.c
-+++ b/main.c
-@@ -403,6 +403,9 @@ int batadv_batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 		goto err_free;
- 	}
+diff --git a/gateway_client.c b/gateway_client.c
+index bcc3e0c..5f09536 100644
+--- a/gateway_client.c
++++ b/gateway_client.c
+@@ -811,7 +811,7 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
+ 		goto out;
  
-+	/* reset control block to avoid left overs from previous users */
-+	memset(skb->cb, 0, sizeof(struct batadv_skb_cb));
-+
- 	/* all receive handlers return whether they received or reused
- 	 * the supplied skb. if not, we have to free the skb.
- 	 */
+ 	gw_node = batadv_gw_node_get(bat_priv, orig_dst_node);
+-	if (!gw_node->bandwidth_down == 0)
++	if (!gw_node || (gw_node->bandwidth_down == 0))
+ 		goto out;
+ 
+ 	switch (atomic_read(&bat_priv->gw_mode)) {
 -- 
-2.1.0
+1.8.5.5
 
