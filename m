@@ -1,15 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <5419358C.4030500@meshcoding.com>
-Date: Wed, 17 Sep 2014 09:17:32 +0200
+Message-ID: <541938E5.8010701@meshcoding.com>
+Date: Wed, 17 Sep 2014 09:31:49 +0200
 From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1410936979-2219-1-git-send-email-martin@hundeboll.net>
-In-Reply-To: <1410936979-2219-1-git-send-email-martin@hundeboll.net>
+References: <CABQkniB+rTunkzArRbkfxp07zwj_CKP4_VysZkzUpzwPpGt2mw@mail.gmail.com>
+In-Reply-To: <CABQkniB+rTunkzArRbkfxp07zwj_CKP4_VysZkzUpzwPpGt2mw@mail.gmail.com>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="tkL0emQmVfNfI5O9N35CQtQNuVjRdtpcb"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: clear control block of
- received socket buffers
+ boundary="c7fb0v1ADNosGf9r823P5s31N4h3CWXmR"
+Subject: Re: [B.A.T.M.A.N.] IBSS key in batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,42 +20,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: =?UTF-8?B?TWFydGluIEh1bmRlYsO4bGw=?= <martin@hundeboll.net>
+To: zaki.bm@gmail.com
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---tkL0emQmVfNfI5O9N35CQtQNuVjRdtpcb
+--c7fb0v1ADNosGf9r823P5s31N4h3CWXmR
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
+Hi Zaki,
 
-
-On 17/09/14 08:56, Martin Hundeb=C3=B8ll wrote:
-> Since other network components (and some drivers) uses the control bloc=
-k
-> provided in skb's, the network coding feature might wrongly assume that=
-
-> an SKB has been decoded, and thus not try to code it with another packe=
-t
-> again. This happens for instance when batman-adv is running on a bridge=
- device.
+On 17/09/14 09:04, Zaki wrote:
+> Hi,
 >=20
-> Fix this by clearing the control block for every received SKB.
 >=20
-> Introduced-by: 3c12de9a5c756b23fe7c9ab332474ece1568914c ("batman-adv: n=
-etwork coding - code and transmit packets if possible")
+> I have a short question.  I am using IBSS to create batman-adv mesh
+> network.  To secure the IBSS, i am using the IBSS key.  I noticed that
+> when i am on the mesh network, any device that is not having the key
+> also can ping and iperf to me.  I thought IBSS key is supposed to
+> allow only legitimate device.  Does anybody know where i do wrong
+> here?.
 
-maybe the maintainer can split this line before pushing the patch, but
-next time split this it in two of them :-) (like other patches we have)
+This is more a linux-wireless question other than a batman-adv one.
+batman-adv itself can't do much in this case since it does not know
+anything about what is happening on the layers below.
+
+In my opinion you are doing something wrong while setting up the
+IBSS-RSN mechanism. (I guess you are using IBSS-RSN right ?)
+
+A station not having the correct key should show up in the "station
+dump" output of the other nodes with the "Authorized" attribute set to
+"no". Is this the case? If not, then something i wrong with the
+wpa_supplicant setup.
 
 
 Cheers,
+
+p.s. I'd recommend CC'ing the linux wireledd mailing list if you have
+further questions.
 
 --=20
 Antonio Quartulli
 
 
---tkL0emQmVfNfI5O9N35CQtQNuVjRdtpcb
+--c7fb0v1ADNosGf9r823P5s31N4h3CWXmR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -64,19 +71,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJUGTWQAAoJEJgn97Bh2u9eP2sP/j4r9ZjXXzAcIWIBVa16EQZz
-hoHLU4EKSnG92TIjJ9S6BQ8W95lNdi+RoTDUILC5kYlFpCti42CAHzIIxDvayXlO
-7/0WcZ6cZSq9kfofAL+yH+Gc4A+MNZPoVBTlrFp86GPrgQs3TAWcAcgPpg+Ecz3K
-4F2MYPF7HQnVbhwq1ZhmvkjskW5fVhEr9HAOFixyCSjhTAIXwuaDehv+g94hcMAj
-x+E5JqCaXNWtRBTdpo5zA8jmK66VzBtrVXVDkRMYltrPUYOjEH2CDe+Alhoe09wM
-kwOY8sa5JDt3k7OrrKmc2WWwrdoFW0o6sNFnBW3gLFgpY2YNg1XqIMQNckQMRfSy
-8czEgTCTu8mhQrLmRgsSuGtxUUINp8kcEbxcvWeg465FD5B7rRdUxq9kA2Qg3rhf
-3Q7VGNbMInNLHGVL2zmjCEAts1cRwx5dqF6XD/jottoG90pPJnL1OPC75TQv1O2Q
-zaPQPDoUWtPQCcEUHGonkPo8IzMm62/O/AjKtuTeEVY1VmyRUex2N99TQvJpNn6E
-t2+XZxrRzbTpC2FX9rGJ5n/W6QxFXyoHgv2yZmCnDWHBhC2zPufRQiAPnFfu+xCL
-vCdz6dfO3Y/hnvBddtFuQO0WJJAFiTucckSQJnK9ATNdAcegSFVKULZ5Xatgte05
-+OYGK+e708QDGp4qemPx
-=LPzj
+iQIcBAEBCAAGBQJUGTjpAAoJEJgn97Bh2u9eMmkQAKvZt6UCJvnp2OsRqVL/Hj/H
+T6G2EoE7umFqjITMBupZwwxge0QsqnU81B9Y7m1mjoJpsqR+Yt/1G4N/04RmNLS+
+8W8BPPxsaeXh0XoHRRZEHL3T6Yqhyq7VyHtSz37Y66/CrvzvRWbR7+sNt/zPNsR6
+9+xVqy41aEjhfd2V7iFap/JUkoplE8H/Ij/8p0tHR6+l0E13H/isfuIykaycBXNQ
+qT+Q6e49P/+JxBU0Jigl5nXIS8kVgJ2Wa6u9g6ziRVzulTqXq4gcDvfqAma1rd4S
+/M9unq2HN5gvLsRKzjl/9SsodAxyjHB3RZDHWG4K1LXwHHdZSMI9wFQCg74IbUI+
+sj2iifzOfFrtYJ1/ofKMejaCXzwba95Dwbqg9OnWaAiXJ+LYIDQFNnYdz+6+XFxx
+cbDFGgN/TjFsO1iCsdwYHpshk1A/N7Fnn4HGVzeYD6gt6A7pwdhXym+0S6pqbT0r
+nXKHN+F3EfxrHrToQE0jsXULFS6RHrppNMM46TRRf6xit4CaOlqJ5O1O5V2w3cvC
+kZoAjxERQm38LmhaNjeNZbaH0qToWA5hoxXy6tZApjZl79YyrYbnGt4G8LYhqQL6
+eB/dtiBYXDxP7zRPT6VuZ/k7aFX1EuplSmt9hyjU3Cd/lOT/g2/pnXUQLtAlnS2t
+27D3kW+tm9/QPI8Yx3C1
+=3PWG
 -----END PGP SIGNATURE-----
 
---tkL0emQmVfNfI5O9N35CQtQNuVjRdtpcb--
+--c7fb0v1ADNosGf9r823P5s31N4h3CWXmR--
