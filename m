@@ -1,9 +1,10 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 17 Sep 2014 09:01:56 +0200
-Message-Id: <1410937316-23199-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: avoid NULL dereferences
-	and clarify if check
+Return-Path: <zaki.bm@gmail.com>
+MIME-Version: 1.0
+Date: Wed, 17 Sep 2014 15:04:59 +0800
+Message-ID: <CABQkniB+rTunkzArRbkfxp07zwj_CKP4_VysZkzUpzwPpGt2mw@mail.gmail.com>
+From: Zaki <zaki.bm@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: [B.A.T.M.A.N.] IBSS key in batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,38 +16,18 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Due to a typ0 in an if-condition used in the gateway-client
-code it is possible to run in a NULL pointer dereference.
+Hi,
 
-At the same type the same if-condition is not clear.
 
-Fix this by rewriting the if-condition properly.
+I have a short question.  I am using IBSS to create batman-adv mesh
+network.  To secure the IBSS, i am using the IBSS key.  I noticed that
+when i am on the mesh network, any device that is not having the key
+also can ping and iperf to me.  I thought IBSS key is supposed to
+allow only legitimate device.  Does anybody know where i do wrong
+here?.
 
-Introduced by 0853ec7fafe0a195754454832993c6b35e22b842
-("batman-adv: tvlv - gateway download/upload bandwidth container")
 
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-Reported-by: David Binderman <dcb314@hotmail.com>
----
- gateway_client.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/gateway_client.c b/gateway_client.c
-index bcc3e0c..5f09536 100644
---- a/gateway_client.c
-+++ b/gateway_client.c
-@@ -811,7 +811,7 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
- 		goto out;
- 
- 	gw_node = batadv_gw_node_get(bat_priv, orig_dst_node);
--	if (!gw_node->bandwidth_down == 0)
-+	if (!gw_node || (gw_node->bandwidth_down == 0))
- 		goto out;
- 
- 	switch (atomic_read(&bat_priv->gw_mode)) {
--- 
-1.8.5.5
-
+Rgds,
+Zack.
