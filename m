@@ -1,9 +1,13 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Sat, 20 Sep 2014 18:22:05 +0200
-Message-Id: <1411230125-21848-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: avoid NULL dereferences
-	and fix if check
+Return-Path: <r.krishnathiepan@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <541C2B58.8070703@altermundi.net>
+References: <CAEbDFcQQMaRNam=ZWBqV4yOke2SZjE8JbpDNTQKcTzzHEz=Vhg@mail.gmail.com>
+ <541C2B58.8070703@altermundi.net>
+Date: Sun, 21 Sep 2014 12:27:37 +0530
+Message-ID: <CAEbDFcQ=SXy4OrUrD99Fi4nN9kLdNBTyDwr0Sr6HS5tDmUm4Kg@mail.gmail.com>
+From: Krishnathiepan Rasanayagam <r.krishnathiepan@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] traceroute help
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,47 +19,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Gateway having bandwidth_down equal to zero are not accepted
-at all and so never added to the Gateway list.
-For this reason checking the bandwidth_down member in
-batadv_gw_out_of_range() is useless.
+hi all,
 
-This is probably a copy/paste error and this check was supposed
-to be "!gw_node" only. Moreover, the way the check is written
-now may also lead to a NULL dereference.
-
-Fix this by rewriting the if-condition properly.
-
-Introduced by 0853ec7fafe0a195754454832993c6b35e22b842
-("batman-adv: tvlv - gateway download/upload bandwidth container")
-
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-Reported-by: David Binderman <dcb314@hotmail.com>
----
-
-This patch makes "batman-adv: avoid NULL dereferences and clarify if check"
-obsolete.
+this is the error i'm getting for batctl commands like tr and p.
+batctl o is working fine though.
 
 
- gateway_client.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Error - can't write to batman adv kernel file
+'/sys/kernel/debug//batman_adv/bat0/socket': Invalid argument
+49: *   *   *   *
 
-diff --git a/gateway_client.c b/gateway_client.c
-index bcc3e0c..27649e8 100644
---- a/gateway_client.c
-+++ b/gateway_client.c
-@@ -811,7 +811,7 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
- 		goto out;
- 
- 	gw_node = batadv_gw_node_get(bat_priv, orig_dst_node);
--	if (!gw_node->bandwidth_down == 0)
-+	if (!gw_node)
- 		goto out;
- 
- 	switch (atomic_read(&bat_priv->gw_mode)) {
+cheers!
+
+On Fri, Sep 19, 2014 at 6:40 PM, Gui Iribarren <gui@altermundi.net> wrote:
+> On 19/09/14 09:43, Krishnathiepan Rasanayagam wrote:
+>> dear all,
+>>
+>> do we have to follow different way than batctl 2012 version when we
+>> are using batctl traceroute 2014 ?
+>>
+>>  I'm getting an error when trying to use batctl commands.
+>
+> *which* error?
+>
+> maybe you're trying to use batctl-2014 with a kernel module batadv-2012?
+> (not sure if that should work)
+>
+> maybe you're on openwrt, and installed only "kmod-batman-adv" (which
+> used to include batctl tool) , but not the (relatively new) "batctl"
+> package?
+>
+> cheers!
+
+
+
 -- 
-1.8.5.5
-
+Best regards,
+Krishna.
