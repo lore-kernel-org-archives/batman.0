@@ -1,15 +1,16 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 28 Sep 2014 12:48:17 +0800
-Message-ID: <1476633.P9Mkhp99xZ@diderot>
-In-Reply-To: <CAEbDFcQ=SXy4OrUrD99Fi4nN9kLdNBTyDwr0Sr6HS5tDmUm4Kg@mail.gmail.com>
-References: <CAEbDFcQQMaRNam=ZWBqV4yOke2SZjE8JbpDNTQKcTzzHEz=Vhg@mail.gmail.com>
- <541C2B58.8070703@altermundi.net>
- <CAEbDFcQ=SXy4OrUrD99Fi4nN9kLdNBTyDwr0Sr6HS5tDmUm4Kg@mail.gmail.com>
+Return-Path: <dandenson@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart10187442.YjBrRtJ0Yx";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] traceroute help
+In-Reply-To: <CAEbDFcQ3hoY+QTHMfawkKKPCLGWYsN1zJw068fr-7nsxnp4aVg@mail.gmail.com>
+References: <CAEbDFcS4qbcr6RPH_ihTx31QgGW-K4tHxPVKQAokTPiEgAJcrw@mail.gmail.com>
+ <7903470.eFDOnKYHmK@diderot>
+ <CAEbDFcR-LgU3+dBsuKyekNS03fOdPBFSRtxpA70AuB9=No2u_w@mail.gmail.com>
+ <3844641.7Py5KLv2R0@diderot>
+ <CAEbDFcQ3hoY+QTHMfawkKKPCLGWYsN1zJw068fr-7nsxnp4aVg@mail.gmail.com>
+Date: Thu, 2 Oct 2014 14:22:38 -0600
+Message-ID: <CAA_JP8VThaSQo1VgpWT8CGWXy=Ju4RdeJppfiKxrb8J0Ep+78w@mail.gmail.com>
+From: dan <dandenson@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] QoS in BATMAN-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,42 +24,19 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+How is your progress?  I'm wondering how you are doing the QoS w/
+batman-adv..  If this were routed you could use tc or tcng to
+prioritize DSCP tags, but I don't see that as an option w/ batman-adv.
 
---nextPart10187442.YjBrRtJ0Yx
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+I'd be really curious about this.  I'm exploring batman-adv mesh nodes
+for extremely dense forested neighborhoods* where my traditional fixed
+wireless systems can't reach.  The catch here is how to handle QoS.
+With so many potential radios and changing hops I want the radio's
+queue to prioritize and haven't gotten deep enough into batman-adv to
+figure out how this might be done.
 
-On Sunday 21 September 2014 12:27:37 Krishnathiepan Rasanayagam wrote:
-> this is the error i'm getting for batctl commands like tr and p.
-> batctl o is working fine though.
-> 
-> 
-> Error - can't write to batman adv kernel file
-> '/sys/kernel/debug//batman_adv/bat0/socket': Invalid argument
-> 49: *   *   *   *
 
-Try not mixing different batman-adv and batctl versions. Use batman-adv 2012 
-with batctl 2012 and batman-adv 2014 with batctl 2014.
-
-Cheers,
-Marek
-
---nextPart10187442.YjBrRtJ0Yx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABAgAGBQJUJ5MUAAoJEFNVTo/uthzAfhsH/0kbn6QkIxtleezg46TY7fyq
-ZgbSOa72WrWG8jEyu4Bnb/XfH8qLxni6Jo5/3O4N8e7yYi3IPF+H7w+1g8bLv2KF
-90pTxQxfqRYVlOPQZLLUXdUdjoiTODvqbrjbotsaD32RI38dY6kfUZyUEfgXCndi
-HTioJkMvdrhaG3YGoV0ImGTqNmUUX59lDiarorXrt8XAkSBSzzGa+mNQh+FrSsHs
-4trs5keZPrsTA/YO//kdw0mflDxgRe4jGQrBqIBgG2QWAj2odDtk63uH03SaDlZt
-zvpSWjkjrnTJZd5RcrFEyHWXlCYp5XAap5PzFYyNkM+DgJXFz8meQBVQh0tg0PI=
-=+hEy
------END PGP SIGNATURE-----
-
---nextPart10187442.YjBrRtJ0Yx--
-
+*looking at mikrotik's rb912 in 5Ghz + R11e-5GacD mini-pcie radios for
+a single device (running openwrt), two radio node and running the
+ethernet into the client w/ POE injector.  No clients would be on the
+wireless interfaces, just backhaul.
