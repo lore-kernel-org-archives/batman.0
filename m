@@ -1,11 +1,12 @@
 Return-Path: <ufo@rund.freifunk.net>
-Message-ID: <5432800F.7030008@rund.freifunk.net>
-Date: Mon, 06 Oct 2014 13:42:07 +0200
+Message-ID: <54329ED1.8020801@rund.freifunk.net>
+Date: Mon, 06 Oct 2014 15:53:21 +0200
 From: Ufo <ufo@rund.freifunk.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] alfred packet types for node statistics?
+Subject: [B.A.T.M.A.N.] how to compile the latest versions of batman-adv in
+	OpenWrt
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,20 +18,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-i read about plans about using alfred for distributing detailed node
-statistics on the next "freifunk gluon" firmware release. that firmware
-is used by dozens of german communities and is batman-adv only..
+i still have problems building batman-adv on openwrt BB release and with
+CC. its still 2014.02, also the official BB release is with this version.
+http://downloads.openwrt.org/barrier_breaker/14.07/ar71xx/generic/packages/routing/
 
-we want to try to include that in our own firmware (we are still using
-"freifunk meshkit" with both olsr + batman-adv)
+i saw that 2014.3 seems to be released in july?
+http://git.open-mesh.org/batman-adv.git/tag/refs/tags/v2014.3.0
+are there worries about that version within openwrt, so we still shell
+use version 2014.2?
+or, should we better change to a nowadays trunk version of batman-adv,
+to avoid 2014-3 problems?
 
-is anyone involved and could send me more details? i only found
-http://gluon.readthedocs.org/en/v2014.3/features/announce.html#accessing-node-information
+see also:
+https://github.com/openwrt-routing/packages/tree/for-14.07
+https://github.com/openwrt-routing/packages/
 
-why datatype 158 and 159 is used? i think, that should be one of the
-registered numbers?
+p.s. some weeks ago there was a thread about multicasting.
+and now, it seems that developers from "freifunk-gluon" communities have
+problems with that. maybe someone of you can help these guys please?
+
+https://github.com/freifunk-gluon/gluon/issues/198
 
 
 -- 
