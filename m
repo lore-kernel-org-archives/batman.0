@@ -1,11 +1,14 @@
-Return-Path: <dandenson@gmail.com>
+Return-Path: <ufo@rund.freifunk.net>
+Message-ID: <54327CCB.20406@rund.freifunk.net>
+Date: Mon, 06 Oct 2014 13:28:11 +0200
+From: Ufo <ufo@rund.freifunk.net>
 MIME-Version: 1.0
-Date: Thu, 2 Oct 2014 15:12:12 -0600
-Message-ID: <CAA_JP8US55s-QhJD=iVymGOHpkJjT1OY4Tth06NB1dNkvAY9UQ@mail.gmail.com>
-From: dan <dandenson@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: [B.A.T.M.A.N.] mikrotik routers + openwrt + batman-adv *or* alix
-	apu1c
+References: <53FDD9D1.9080303@rund.freifunk.net>
+In-Reply-To: <53FDD9D1.9080303@rund.freifunk.net>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] new alfred packet type *3* for solar tracer
+ charging units
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,44 +20,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-mikrotik)
-Is anyone running/testing any mikrotik gear such as the rb911 or
-rb912, rb922, rb433, etc w/ openwrt and batman-adv?
+Am 27.08.14 15:14, schrieb Ufo:
+> best way for distributing the detailed data (about local sun impact..)
+> was alfred. we used nr. 160 but now simon choosed nr. 3 for that.
 
-I'm considering a multi-radio mesh node and I think this platform
-might be priced well enough.  I do fixed wireless broadband but am
-looking at reaching into some heavily wooded areas that nothing else
-can penetrate.
+all the different values from solar units are now defined on our test
+systems. and meanwhile EP Solar China gave us some additional hints..
 
-The rb922 in particular has an 5Ghz 'ac radio and mini-pcie that can
-take a second 5Ghz 'ac radio.  That makes for a really great dual
-802.11'ac radio w/ gigabit port and PoE ethernet to run a cable into
-the customer's house.  An RB433 can take 2 'ac radios and a 900Mhz
-radio which you could artificially increase the cost on for a lower
-throughput tree-penetrating backup link to be placed every x number of
-hops.
+https://twitter.com/rundfreifunk/status/519083918436630528
+https://gitorious.org/tracertools/tracertools/source/4a6eb477a850e102f37b6f6690b0797ec664f36d:tracerstat.c#L26
 
-The rb922 version would be a sub $200 high performance mesh node.
+so the next step should be to include these into alfred?
 
-alix)
-now, the alix apu1c is a 2 mini-pcie box with dual 1Ghz x86 CPUs ready
-to run debian and has 3 gigabit ethernet ports.  This would be a nice
-'edge' node with 1 or 2 of those gigabit ports dedicated to backhaul
-radios.
-
-***
-
-So, the concept is that clients wouldn't actually be on wireless and
-batman-adv would just be handling distribution. Clients would be wired
-up ethernet to a PoE injector.  This dual radio mesh should only add
-latency at each hop as a result, though the obvious link quality and
-capacity are taken into account.   I can bring in 20-200Mbps of
-service but can't penetrate the trees for more than a few houses on
-the edge.  I could do two links to reachable homes and have any number
-(throughput limited) of clients connect w/ the redundant path.
-
-
-
-Thoughts?
+-- 
+---
+Freifunk Leipzig http://leipzig.freifunk.net
