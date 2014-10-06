@@ -1,14 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 06 Oct 2014 16:53:18 +0200
-Message-ID: <1917557.CdpaRSNIN5@prime>
-In-Reply-To: <5432A9D7.5080604@rund.freifunk.net>
-References: <5432800F.7030008@rund.freifunk.net>
- <20141006143301.GH10428@odroid> <5432A9D7.5080604@rund.freifunk.net>
+Return-Path: <daniel@makrotopia.org>
+Date: Mon, 6 Oct 2014 23:04:28 +0200
+From: Daniel Golle <daniel@makrotopia.org>
+Message-ID: <20141006210421.GA11864@makrotopia.org>
+References: <53FDD9D1.9080303@rund.freifunk.net>
+ <54327CCB.20406@rund.freifunk.net> <1461254.rz0spk34lf@prime>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-Subject: Re: [B.A.T.M.A.N.] alfred packet types for gluon node statistics?
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1461254.rz0spk34lf@prime>
+Subject: Re: [B.A.T.M.A.N.] new alfred packet type *3* for solar tracer
+ charging units
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,31 +21,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Monday 06 October 2014 16:40:23 Ufo wrote:
-> ah nice. but its a question to the batman-adv developers instead of the
-> gluon people..
-> freifunk-gluon is used by many freifunk communities, so maybe it would
-> be better to "register" these datatypes?
+On Mon, Oct 06, 2014 at 04:39:15PM +0200, Simon Wunderlich wrote:
+> > so the next step should be to include these into alfred?
+> We basically have two options here:
 > 
-> see http://git.open-mesh.org/alfred.git/blob_plain/refs/heads/master:/README
+>  * integrat the tracetools into the alfred repository, similar to vis and 
+> gpsd. Please note that the quality should also be similar and you or your 
+> colleagues should be able to maintain that code
+>  * keep the package external (e.g. on gitorious), then since we have an 
+> external software package now we should start using a number assignment table 
+> in wiki to show which software uses which packet type. We could then link from 
+> there your software
 > 
-> cite:
-> --
-> This will set the hostname as data for datatype 64. Note that 0 - 63 are
-> reserved (please send us an e-mail if you want to register a datatype)
-> --
+> Any preferences? :)
 
-As long as the datatypes are only used in a specific firmware or community, all 
-people know about the assignment and there is no need to register the number - 
-its like using the private LAN 192.168.0.0/16 network in your home network, 
-you know that you use it and you don't have to tell anyone.
+I will definitely keep tracertools a standalone software package as there are
+many potential use-cases which do not involve alfred.
+Basically I'm still in the prototyping progress of a bigger system in,
+tracertools was a part of that effort. Now that other things (using PCF8574A
+and LTC4151 to monitor and control consumer-grade DC-to-AC inverters via I2C)
+also work, I will re-work the whole design, both, in terms of hardware I will
+move away from breadboard and loose wires to a proper shield targetting the
+WrtNode; in terms of software, tracertools will become a small lib and
+include handling serial port stuff instead of depending on socat to do that
+(though using socat has a couple of advantages as well and I may keep the
+option to pipe stuff through socat).
+Packages like collectd and alfred can then use libsolartracer to acquire
+(cached) stats or execute control commands on the charge controller, similar
+to how libgps is used by alfred.
+I'm planning to suggest a patch to alfred to optionally use libsolartracer
+when the time has come for that...
 
-However if you write up some software potentially used in many *different* 
-communities, like vis, its a good thing to register.
+Cheers
 
-In any case, please choose and feel free to let us know. :)
+Daniel
 
-Cheers,
-    Simon
