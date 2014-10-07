@@ -1,15 +1,14 @@
-Return-Path: <daniel@makrotopia.org>
-Date: Mon, 6 Oct 2014 23:04:28 +0200
-From: Daniel Golle <daniel@makrotopia.org>
-Message-ID: <20141006210421.GA11864@makrotopia.org>
-References: <53FDD9D1.9080303@rund.freifunk.net>
- <54327CCB.20406@rund.freifunk.net> <1461254.rz0spk34lf@prime>
+Return-Path: <devil_eddie01@hotmail.com>
+Message-ID: <BLU182-W6143FFCB0F3DF09663246A8AA20@phx.gbl>
+From: MingAnn Ng <devil_eddie01@hotmail.com>
+Date: Tue, 7 Oct 2014 17:10:26 +0800
+In-Reply-To: <BLU182-W8782C810EEA0F5B35A10F08AA20@phx.gbl>
+References: <BLU182-W625D2EA8376C93F5232A848AA20@phx.gbl>,
+ <BLU182-W8782C810EEA0F5B35A10F08AA20@phx.gbl>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1461254.rz0spk34lf@prime>
-Subject: Re: [B.A.T.M.A.N.] new alfred packet type *3* for solar tracer
- charging units
+Subject: [B.A.T.M.A.N.] Inquiry on interface alternating
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,40 +20,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Mon, Oct 06, 2014 at 04:39:15PM +0200, Simon Wunderlich wrote:
-> > so the next step should be to include these into alfred?
-> We basically have two options here:
-> 
->  * integrat the tracetools into the alfred repository, similar to vis and 
-> gpsd. Please note that the quality should also be similar and you or your 
-> colleagues should be able to maintain that code
->  * keep the package external (e.g. on gitorious), then since we have an 
-> external software package now we should start using a number assignment table 
-> in wiki to show which software uses which packet type. We could then link from 
-> there your software
-> 
-> Any preferences? :)
-
-I will definitely keep tracertools a standalone software package as there are
-many potential use-cases which do not involve alfred.
-Basically I'm still in the prototyping progress of a bigger system in,
-tracertools was a part of that effort. Now that other things (using PCF8574A
-and LTC4151 to monitor and control consumer-grade DC-to-AC inverters via I2C)
-also work, I will re-work the whole design, both, in terms of hardware I will
-move away from breadboard and loose wires to a proper shield targetting the
-WrtNode; in terms of software, tracertools will become a small lib and
-include handling serial port stuff instead of depending on socat to do that
-(though using socat has a couple of advantages as well and I may keep the
-option to pipe stuff through socat).
-Packages like collectd and alfred can then use libsolartracer to acquire
-(cached) stats or execute control commands on the charge controller, similar
-to how libgps is used by alfred.
-I'm planning to suggest a patch to alfred to optionally use libsolartracer
-when the time has come for that...
-
-Cheers
-
-Daniel
-
+Hello=2C=0A=
+=0A=
+I am currently running some powerpc machines with buildroot environment. Th=
+e Linux kernel version I am using is 3.8.13 and BATMAN-adv within the kerne=
+l without any modification. I am running interface alternating test with th=
+e topology below:=0A=
+=0A=
+A=3D=3D=3D=3D=3D=3D=3D=3DB=3D=3D=3D=3D=3D=3D=3D=3D=3DC=0A=
+=0A=
+There are two wireless links between A and B and two wireless links between=
+ B and C. The two wireless link is using two different channel and ESSID. T=
+Q of the 4 links are vary from 250-255 at the initial state. I run udp iper=
+f from A to C and observe tcpdump on node B for the two wireless interfaces=
+ (wlan0 and wlan1).=0A=
+=0A=
+I observed that interface alternation is not happening always. Sometime the=
+ route will be using wlan0 or wlan1 all the way from A to C=2C as we observ=
+ed at node B=2C only 1 interface has traffic on tcpdump. Sometime when inte=
+rface alternation happened=2C tcpdump for wlan0 and wlan1 will show traffic=
+.=0A=
+=0A=
+I changed the topology to the below to test further:=0A=
+=0A=
+A---------------B=3D=3D=3D=3D=3D=3D=3D=3D=3DC=0A=
+=0A=
+There is only 1 wireless link from A to B while there are two link from B t=
+o C. In this case=2C I observed that interface alternation will always happ=
+ened=2C as I observed both wlan0 and wlan1 has traffic on tcpdump.=0A=
+=0A=
+Could you please explain to me what has caused interface alternation not ha=
+ppening in the 1st topology and why the interface alternation will always h=
+appen in the second topology.=0A=
+=0A=
+Thank you in advance=2C=0A=
+Ming Ann 		 	   		  =
