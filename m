@@ -1,12 +1,14 @@
-Return-Path: <ufo@rund.freifunk.net>
-Message-ID: <54379A9D.6010101@rund.freifunk.net>
-Date: Fri, 10 Oct 2014 10:36:45 +0200
-From: Ufo <ufo@rund.freifunk.net>
-MIME-Version: 1.0
+Return-Path: <prvs=353607e6b=david.moffatt@nokia.com>
+From: <david.moffatt@nokia.com>
+Date: Fri, 10 Oct 2014 17:02:16 +0000
+Message-ID: <D05D5F01.15409%david.moffatt@nokia.com>
 References: <CAAxzKbS7XLd53jM_o8CnSPAMhco0B2UzD1Qp-eCNMksYw_BtTQ@mail.gmail.com>
 In-Reply-To: <CAAxzKbS7XLd53jM_o8CnSPAMhco0B2UzD1Qp-eCNMksYw_BtTQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-ID: <870F60063494ED469DD93462B4F5ECC0@nnok.nokia.com>
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
 Subject: Re: [B.A.T.M.A.N.] Mobile voice communication over mesh networks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,23 +23,14 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Am 10.10.14 07:12, schrieb tjhowse:
-> Has anyone looked into either a piece of hardware or a smarphone app
-> that would allow for functionality similar to CB radios but over a
-> wifi mesh fabric?
-> 
 
-you have to try "mumble", its great fun!
-install a server f.i. on one of your proper openwrt meshnodes:
-opkg install umurmur-openssl
+http://lmgtfy.com/?q=3Dpush+to+talk+androidOn
 
-and on your androids "plumble" seems to be the best app. for other OS
-the application is called mumble (also for osx and windows, ios..)
+:-)
 
-try server "mumble.freifunk.net" and afterwards your own server.
+10/9/14, 10:12 PM, "ext tjhowse" <tjhowse@gmail.com> wrote:
 
-greetings, ufo
+>Has anyone looked into either a piece of hardware or a smarphone app
+>that would allow for functionality similar to CB radios but over a
+>wifi mesh fabric?
 
--- 
----
-Freifunk Leipzig http://leipzig.freifunk.net
