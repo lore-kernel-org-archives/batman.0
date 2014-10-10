@@ -1,12 +1,14 @@
-Return-Path: <linus.luessing@web.de>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@web.de>
-Date: Fri, 10 Oct 2014 23:15:46 +0200
-Message-Id: <1412975746-6856-1-git-send-email-linus.luessing@web.de>
+Return-Path: <booray@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix counter for multicast
-	supporting nodes
+In-Reply-To: <5383000.xXB04C6BSt@prime>
+References: <CAKKX4kEYFJoSQLndrvP7E1pYP7PehPitWkTjv38bEG9iT-tjng@mail.gmail.com>
+ <5383000.xXB04C6BSt@prime>
+Date: Fri, 10 Oct 2014 14:28:53 -0700
+Message-ID: <CAA51LVqTsRA_mKTHDDycgTp6xfcUq4-5zM806BgQfZDV4MhagA@mail.gmail.com>
+From: Ray Gibson <booray@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] batman-adv bonding feature - unable to get data
+ packets fragmented into multiple wireless interfaces
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,48 +20,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-A miscounting of nodes having multicast optimizations enabled can lead
-to multicast packet loss in the following scenario:
+On Fri, Oct 10, 2014 at 12:03 PM, Simon Wunderlich
+<sw@simonwunderlich.de> wrote:
+> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2014-August/012382.html
 
-If the first OGM a node receives from another one has no multicast
-optimizations support (no multicast tvlv) then we are missing to
-increase the counter. This potentially leads to the wrong assumption
-that we could safely use multicast optimizations.
+Previously rejected, trying again, not from mobile device this time!
 
-Fixings this by increasing the counter if the initial OGM has the
-multicast TVLV unset, too.
+Related to this, I had some great success testing the patches in my
+experimental VM setup but have not yet had a chance to test in real
+world conditions.
 
-Introduced by 77ec494490d60d89b42cd01d5dbf8dee04503623
-("batman-adv: Announce new capability via multicast TVLV")
+Simon, I did want to note that watching ifstat on iperf testing with
+batman-adv sitting on top of two equally matched Ethernet adapters
+split the outgoing traffic fantastically, though the
+response/ack/whatever packets to that session consistently came in on
+a single adapter that occasionally bounced around, much like what the
+sending traffic was doing previously.  I would imagine the other side,
+running on the same software, should have equally split that traffic
+as well.
 
-Signed-off-by: Linus Lüssing <linus.luessing@web.de>
----
- multicast.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+Thanks,
 
-diff --git a/multicast.c b/multicast.c
-index 96b66fd..02c2e0c 100644
---- a/multicast.c
-+++ b/multicast.c
-@@ -686,11 +686,13 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- 		if (orig_initialized)
- 			atomic_dec(&bat_priv->mcast.num_disabled);
- 		orig->capabilities |= BATADV_ORIG_CAPA_HAS_MCAST;
--	/* If mcast support is being switched off increase the disabled
--	 * mcast node counter.
-+	/* If mcast support is being switched off or if this is an initial
-+	 * OGM without mcast support then increase the disabled mcast
-+	 * node counter.
- 	 */
- 	} else if (!orig_mcast_enabled &&
--		   orig->capabilities & BATADV_ORIG_CAPA_HAS_MCAST) {
-+		   (orig->capabilities & BATADV_ORIG_CAPA_HAS_MCAST ||
-+		    !orig_initialized)) {
- 		atomic_inc(&bat_priv->mcast.num_disabled);
- 		orig->capabilities &= ~BATADV_ORIG_CAPA_HAS_MCAST;
- 	}
--- 
-1.7.10.4
-
+Ray
