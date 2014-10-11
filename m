@@ -1,14 +1,10 @@
-Return-Path: <booray@gmail.com>
+Return-Path: <dirkvanderwalt@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <5383000.xXB04C6BSt@prime>
-References: <CAKKX4kEYFJoSQLndrvP7E1pYP7PehPitWkTjv38bEG9iT-tjng@mail.gmail.com>
- <5383000.xXB04C6BSt@prime>
-Date: Fri, 10 Oct 2014 14:28:53 -0700
-Message-ID: <CAA51LVqTsRA_mKTHDDycgTp6xfcUq4-5zM806BgQfZDV4MhagA@mail.gmail.com>
-From: Ray Gibson <booray@gmail.com>
+Date: Sat, 11 Oct 2014 09:07:20 +0200
+Message-ID: <CACgQMVKxKvYoo1TY_Cz7iAxD1VYMhC+77ZZ+a5ZsNohp8k5huA@mail.gmail.com>
+From: Dirk van der Walt <dirkvanderwalt@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] batman-adv bonding feature - unable to get data
- packets fragmented into multiple wireless interfaces
+Subject: Re: [B.A.T.M.A.N.] help for batman-adv with monitor WiFi card
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,27 +16,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Fri, Oct 10, 2014 at 12:03 PM, Simon Wunderlich
-<sw@simonwunderlich.de> wrote:
-> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2014-August/012382.html
+Hi Jammy,
 
-Previously rejected, trying again, not from mobile device this time!
+I can also confirm what Antonio replied.
 
-Related to this, I had some great success testing the patches in my
-experimental VM setup but have not yet had a chance to test in real
-world conditions.
+When I was building firmware for MESHdesk using the then trunk
+(Barrier Breaker) I nearly gave up on the Dragino hardware (AR9331)
+because the adhoc connections between nodes refused to connect beyond
+1Mbps unless you restart the WiFi a one or more times.
 
-Simon, I did want to note that watching ifstat on iperf testing with
-batman-adv sitting on top of two equally matched Ethernet adapters
-split the outgoing traffic fantastically, though the
-response/ack/whatever packets to that session consistently came in on
-a single adapter that occasionally bounced around, much like what the
-sending traffic was doing previously.  I would imagine the other side,
-running on the same software, should have equally split that traffic
-as well.
+Other Atheros based hardware like the OM2P's did not have the same issue though.
 
-Thanks,
+On advise from Steve Song (Village Telco) I tried Attitude Adjustment
+and all that problems disappeared and there is now proper speed
+between the adhoc connections.
 
-Ray
+I haven't tried again on Barrier Breaker, but will probably in the
+near future do another attempt and see if the problem still exists now
+that it has been released.
+
+Cheers
