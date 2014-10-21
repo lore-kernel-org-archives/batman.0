@@ -1,10 +1,10 @@
-Return-Path: <r.krishnathiepan@gmail.com>
+Return-Path: <jon.fink@gmail.com>
 MIME-Version: 1.0
-Date: Mon, 20 Oct 2014 20:04:41 +0530
-Message-ID: <CAEbDFcTNs2p_zwUSJJf79nKr3kSHKPWM_Xgk2psezaxyf__XKQ@mail.gmail.com>
-From: Krishnathiepan Rasanayagam <r.krishnathiepan@gmail.com>
+Date: Tue, 21 Oct 2014 09:55:23 -0400
+Message-ID: <CAEBHRFHrcUUK0e84R6Xh7FhCOqN=1v=Eokmaf4aEhBPj-09nrg@mail.gmail.com>
+From: Jon Fink <jon.fink@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Subject: [B.A.T.M.A.N.] QoS tagging
+Subject: [B.A.T.M.A.N.] Local Clients Expiring from Translation Table
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,13 +16,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Guys,
+I'm experiencing some issues where clients connected to a batman node
+(through a wired interface) are expiring from the local translation
+table after a period of inactivity. I'm guessing this is an
+intentional feature to support roaming but I'm wondering if there is a
+way to stop this behavior for certain MAC addresses. Some more detail
+of my setup:
 
-is anyone working in batman-adv for tagging packets for QoS. Lke
-tagging VOIP packets?
+* I have multiple mesh nodes named pico9, pico17, pico24, pico41, etc...
+* Each node is running BATMAN 2014.2.0 attached to a wireless device.
+* Each node is also bridging the batman device with its local ethernet device.
+* A subset of the nodes are then connected to the same wired backbone,
+lets say pico9/17/24 are all on this backbone.
+* I have my laptop also connected to the backbone and I am able to
+successfully connect to any of the BATMAN nodes (over the wired
+backbone or to other nodes via the wireless mesh).
 
--- 
-Best regards,
-Krishna.
+pico41 (not on the backbone) has a wired client connected to it, lets
+call it clientA
+
+I can initially connect to clientA from my laptop and it shows up
+correctly in pico41's local translation table. However if I do not
+continually send data (ping, ssh, etc) between my laptop and clientA,
+I see the "last seen" column of pico41's local translation table entry
+increase. Eventually, clientA is removed from the table and I am not
+able to connect to it (ping or ssh) until I "do something" to trigger
+some traffic from clientA onto the mesh network. This is problematic
+because it requires either physically accessing clientA (not practical
+in our application) or manually ssh'ing into the node running batman
+and then connecting to clientA (makes for a challenging use-case)
+
+Is this expiration from the local translation expected?
+
+I've thought of a few hacks (make certain entries in the local
+translation table permanent, have a script on clientA which
+continually generates traffic) but I'm hoping someone else has thought
+about this same problem.
+
+Thanks!
