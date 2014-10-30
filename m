@@ -1,14 +1,12 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Thu, 30 Oct 2014 05:40:46 +0100
-Message-Id: <1414644048-5792-2-git-send-email-linus.luessing@c0d3.blue>
-In-Reply-To: <1414644048-5792-1-git-send-email-linus.luessing@c0d3.blue>
-References: <1414644048-5792-1-git-send-email-linus.luessing@c0d3.blue>
+Date: Thu, 30 Oct 2014 06:23:40 +0100
+Message-Id: <1414646620-6022-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: fix counter for multicast
-	supporting nodes
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix delayed foreign originator
+	recognition
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,47 +20,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-A miscounting of nodes having multicast optimizations enabled can lead
-to multicast packet loss in the following scenario:
+Currently it can happen that the reception of an OGM from a new
+originator is not being accepted. More precisely it can happen that
+an originator struct gets allocated and initialized
+(batadv_orig_node_new()), even the TQ gets calculated and set correctly
+(batadv_iv_ogm_calc_tq()) but still the periodic orig_node purging
+thread will decide to delete it if it has a chance to jump between
+these two function calls.
 
-If the first OGM a node receives from another one has no multicast
-optimizations support (no multicast tvlv) then we are missing to
-increase the counter. This potentially leads to the wrong assumption
-that we could safely use multicast optimizations.
+This is because batadv_orig_node_new() initializes the last_seen value
+to zero and its caller (batadv_iv_ogm_orig_get()) makes it visible to
+other threads by adding it to the hash table already.
+batadv_iv_ogm_calc_tq() will set the last_seen variable to the correct,
+current time a few lines later but if the purging thread jumps in between
+that it will think that the orig_node timed out and will wrongly
+schedule it for deletion already.
 
-Fixings this by increasing the counter if the initial OGM has the
-multicast TVLV unset, too.
+If the purging interval is the same as the originator interval (which is
+the default: 1 second), then this game can continue for several rounds
+until the random OGM jitter added enough difference between these
+two (in tests, two to about four rounds seemed common).
 
-Introduced by 77ec494490d60d89b42cd01d5dbf8dee04503623
-("batman-adv: Announce new capability via multicast TVLV")
+Fixing this by initializing the last_seen variable of an orig_node
+to the current time before adding it to the hash table.
 
-Reported-by: Tobias Hachmer <tobias@hachmer.de>
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
- multicast.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ originator.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/multicast.c b/multicast.c
-index 96b66fd..02c2e0c 100644
---- a/multicast.c
-+++ b/multicast.c
-@@ -686,11 +686,13 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- 		if (orig_initialized)
- 			atomic_dec(&bat_priv->mcast.num_disabled);
- 		orig->capabilities |= BATADV_ORIG_CAPA_HAS_MCAST;
--	/* If mcast support is being switched off increase the disabled
--	 * mcast node counter.
-+	/* If mcast support is being switched off or if this is an initial
-+	 * OGM without mcast support then increase the disabled mcast
-+	 * node counter.
- 	 */
- 	} else if (!orig_mcast_enabled &&
--		   orig->capabilities & BATADV_ORIG_CAPA_HAS_MCAST) {
-+		   (orig->capabilities & BATADV_ORIG_CAPA_HAS_MCAST ||
-+		    !orig_initialized)) {
- 		atomic_inc(&bat_priv->mcast.num_disabled);
- 		orig->capabilities &= ~BATADV_ORIG_CAPA_HAS_MCAST;
- 	}
+diff --git a/originator.c b/originator.c
+index 6a48451..648bdba 100644
+--- a/originator.c
++++ b/originator.c
+@@ -678,6 +678,7 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
+ 	atomic_set(&orig_node->last_ttvn, 0);
+ 	orig_node->tt_buff = NULL;
+ 	orig_node->tt_buff_len = 0;
++	orig_node->last_seen = jiffies;
+ 	reset_time = jiffies - 1 - msecs_to_jiffies(BATADV_RESET_PROTECTION_MS);
+ 	orig_node->bcast_seqno_reset = reset_time;
+ #ifdef CONFIG_BATMAN_ADV_MCAST
 -- 
 1.7.10.4
 
