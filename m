@@ -1,12 +1,13 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Thu, 30 Oct 2014 06:23:40 +0100
-Message-Id: <1414646620-6022-1-git-send-email-linus.luessing@c0d3.blue>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sat, 01 Nov 2014 21:59:41 +0800
+Message-ID: <6288964.lM668JhyGs@diderot>
+In-Reply-To: <1408547097-23491-1-git-send-email-antonio@meshcoding.com>
+References: <1408547097-23491-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix delayed foreign originator
-	recognition
+Content-Type: multipart/signed; boundary="nextPart2510758.uRVFHmiyIM";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4] batctl: tcpdump - parse TVLV containers
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,48 +20,69 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>, Antonio Quartulli <antonio@meshcoding.com>
 
-Currently it can happen that the reception of an OGM from a new
-originator is not being accepted. More precisely it can happen that
-an originator struct gets allocated and initialized
-(batadv_orig_node_new()), even the TQ gets calculated and set correctly
-(batadv_iv_ogm_calc_tq()) but still the periodic orig_node purging
-thread will decide to delete it if it has a chance to jump between
-these two function calls.
 
-This is because batadv_orig_node_new() initializes the last_seen value
-to zero and its caller (batadv_iv_ogm_orig_get()) makes it visible to
-other threads by adding it to the hash table already.
-batadv_iv_ogm_calc_tq() will set the last_seen variable to the correct,
-current time a few lines later but if the purging thread jumps in between
-that it will think that the orig_node timed out and will wrongly
-schedule it for deletion already.
+--nextPart2510758.uRVFHmiyIM
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
 
-If the purging interval is the same as the originator interval (which is
-the default: 1 second), then this game can continue for several rounds
-until the random OGM jitter added enough difference between these
-two (in tests, two to about four rounds seemed common).
+On Wednesday 20 August 2014 17:04:57 Antonio Quartulli wrote:
+> @@ -494,14 +632,32 @@ static void dump_batman_iv_ogm(unsigned char
+> *packet_buff, ssize_t buff_len, int printf("BAT %s: ",
+>                get_name_by_macaddr((struct ether_addr
+> *)batman_ogm_packet->orig, read_opt));=20
+> -       printf("OGM IV via neigh %s, seq %u, tq %3d, ttl %2d, v %d, f=
+lags
+> [%c%c%c], length %zu\n", +       tvlv_len =3D
+> ntohs(batman_ogm_packet->tvlv_len);
+> +       printf("OGM IV via neigh %s, seq %u, tq %3d, ttl %2d, v %d, f=
+lags
+> [%c%c%c], length %zu, tvlv_len %zu\n", get_name_by_macaddr((struct
+> ether_addr *)ether_header->ether_shost, read_opt),
+> ntohl(batman_ogm_packet->seqno), batman_ogm_packet->tq,
+> batman_ogm_packet->ttl, batman_ogm_packet->version,
+> (batman_ogm_packet->flags & BATADV_NOT_BEST_NEXT_HOP ? 'N' : '.'),
+> (batman_ogm_packet->flags & BATADV_DIRECTLINK ? 'D' : '.'),
+> (batman_ogm_packet->flags & BATADV_PRIMARIES_FIRST_HOP ? 'F' : '.'),
+> -              (size_t)buff_len - sizeof(struct ether_header));
+> +              check_len, tvlv_len);
+> +
+> +       check_len -=3D sizeof(struct batadv_ogm_packet);
+> +       LEN_CHECK(check_len, tvlv_len, "BAT OGM TVLV (containers)");
 
-Fixing this by initializing the last_seen variable of an orig_node
-to the current time before adding it to the hash table.
+    CC tcpdump.o
+tcpdump.c: In function =E2=80=98dump_batman_iv_ogm=E2=80=99:
+tcpdump.c:59:24: warning: comparison between signed and unsigned intege=
+r=20
+expressions [-Wsign-compare]
+ if ((size_t)(buff_len) < (check_len)) { \
+                        ^
+tcpdump.c:646:2: note: in expansion of macro =E2=80=98LEN_CHECK=E2=80=99=
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- originator.c |    1 +
- 1 file changed, 1 insertion(+)
+  LEN_CHECK(check_len, tvlv_len, "BAT OGM TVLV (containers)");
+  ^
 
-diff --git a/originator.c b/originator.c
-index 6a48451..648bdba 100644
---- a/originator.c
-+++ b/originator.c
-@@ -678,6 +678,7 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
- 	atomic_set(&orig_node->last_ttvn, 0);
- 	orig_node->tt_buff = NULL;
- 	orig_node->tt_buff_len = 0;
-+	orig_node->last_seen = jiffies;
- 	reset_time = jiffies - 1 - msecs_to_jiffies(BATADV_RESET_PROTECTION_MS);
- 	orig_node->bcast_seqno_reset = reset_time;
- #ifdef CONFIG_BATMAN_ADV_MCAST
--- 
-1.7.10.4
+Cheers,
+Marek
+
+
+--nextPart2510758.uRVFHmiyIM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABAgAGBQJUVOdRAAoJEFNVTo/uthzAX4IH/j0z8km50tcEHd6Se+XWKvmc
+rzWDWjJ0gSdNfA/pfuydjxgVPZAkz9ACuvOrVnKq8a80S/Xm8vJcV9VsxdI8Lpdk
+A924Q9RvpZ6fkLrqmJ1C3Jor/eog2ZnWfMil3g7g5yf7J/XL5UvTygU8LPKHMkb4
+6RDRjWdMsz64R4hxLUurkr7PYB+1BEAJ7QoA6HY1lOsDNzRiOTvx7C6mKevVVFqY
+JauNRiSqs3cxcj7/V4xrdyaSo2f2e62IslLogK2qalumVs9/mV+ZFvKut0I7KR4/
+ez2wkDtu4ZYyX8HtfJDra/osCZ5FQggAp21XywfVhvmysdfEBen2h5RZvz9kk2c=
+=sgSS
+-----END PGP SIGNATURE-----
+
+--nextPart2510758.uRVFHmiyIM--
 
