@@ -1,11 +1,11 @@
 Return-Path: <Tobias.Hardes@autistici.org>
-Message-ID: <545CF3AF.2010009@autistici.org>
+Message-ID: <545CF3AF.6010702@autistici.org>
 Date: Fri, 07 Nov 2014 17:30:39 +0100
 From: Tobias Hardes <Tobias.Hardes@autistici.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
  protocol="application/pgp-signature";
- boundary="8oUInUugiJouT1llwiLFKNClicPK9fdfL"
+ boundary="fCQJU85vhkviMArR4xOj2ck9gUD4FRTmN"
 Subject: [B.A.T.M.A.N.] Master thesis with B.A.T.M.A.N.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,7 +21,7 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---8oUInUugiJouT1llwiLFKNClicPK9fdfL
+--fCQJU85vhkviMArR4xOj2ck9gUD4FRTmN
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
@@ -52,7 +52,7 @@ BR
 Tobias
 
 
---8oUInUugiJouT1llwiLFKNClicPK9fdfL
+--fCQJU85vhkviMArR4xOj2ck9gUD4FRTmN
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -69,4 +69,4 @@ ccEC+f9tKkCpwB5NR7gyUCnjUFiVaOT4ulobSir+Fzg4x6XQgKUJol/NTGtAOEDG
 =30vf
 -----END PGP SIGNATURE-----
 
---8oUInUugiJouT1llwiLFKNClicPK9fdfL--
+--fCQJU85vhkviMArR4xOj2ck9gUD4FRTmN--
