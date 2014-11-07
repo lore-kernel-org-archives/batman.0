@@ -1,11 +1,10 @@
-Return-Path: <christian@solvare.se>
-Message-ID: <5458F780.10707@solvare.se>
-Date: Tue, 04 Nov 2014 16:57:52 +0100
-From: Christian Huldt <christian@solvare.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] Completely out of context
+Return-Path: <r.krishnathiepan@gmail.com>
+MIME-Version: 1.0
+Date: Fri, 7 Nov 2014 09:37:06 +0530
+Message-ID: <CAEbDFcSO2jVkSKwS5KirqNLmfT69X5jDA0qW_nP3KaZRkFnNuw@mail.gmail.com>
+From: Krishnathiepan Rasanayagam <r.krishnathiepan@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: [B.A.T.M.A.N.] Queues in batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,18 +16,14 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Please feel free to disregard!
+hi All,
 
-As processors (even the small ones) get faster and each and every device
-gets more RAM, is there consequences as code is doing more?
+Can any one explain me how the tcp buffers were handled in batman-adv.
+or which files it handled ?
+We are trying to modify the way batman-adv handles the data buffer.
 
-Error handling is said to be 90% of good code, maybe a separate error
-handling daemon that could be chosen as per the device?
-
-You guys deliver so much changes (which is good) but I try to consider
-the consequences, as in
-for-profit-companies-find-it-cheeper-to-give-the-developers-better-computers-than-a-rise
-which usually equates to bloatware that needs and uses so much more
-resources than the actual task requires...
+-- 
+Best regards,
+Krishna.
