@@ -1,13 +1,12 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Tue, 11 Nov 2014 15:15:20 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20141111141520.GJ799@odroid>
-References: <5458F780.10707@solvare.se>
+Return-Path: <martin@hundeboll.net>
+From: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
+Date: Tue, 11 Nov 2014 16:22:23 +0100
+Message-Id: <1415719343-2989-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <5458F780.10707@solvare.se>
-Subject: Re: [B.A.T.M.A.N.] Completely out of context
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix lock class for decoding hash
+	in network-coding.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,25 +18,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-On Tue, Nov 04, 2014 at 04:57:52PM +0100, Christian Huldt wrote:
-> Error handling is said to be 90% of good code, maybe a separate error
-> handling daemon that could be chosen as per the device?
+batadv_has_set_lock_class() is called with the wrong hash table as first
+argument (probably due to a copy-paste error), which leads to false
+positives when running with lockdep.
 
-Not sure you're asking on the right mailing list for that.
-batman-adv is a kernel module. In networking. With the informel
-policy of being transparent, staying out of a users sight as much
-as possible, with an assessable amount of configuration options.
-So I believe batman-adv is one of the worst pieces of
-software pieces you could have chosen for such an argument ;).
+Introduced-by: 612d2b4fe0a1ff2f8389462a6f8be34e54124c05
+('batman-adv: network coding - save overheard and tx packets for decoding')
 
-> 
-> You guys deliver so much changes (which is good) but I try to consider
-> the consequences, as in
-> for-profit-companies-find-it-cheeper-to-give-the-developers-better-computers-than-a-rise
-> which usually equates to bloatware that needs and uses so much more
-> resources than the actual task requires...
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
+---
+ network-coding.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Ehm. batman-adv is written in C, capable of handling Gigabit links
-on tiny embedded devices... not Java or such.
+diff --git a/network-coding.c b/network-coding.c
+index bd33894..127cc4d 100644
+--- a/network-coding.c
++++ b/network-coding.c
+@@ -133,7 +133,7 @@ int batadv_nc_mesh_init(struct batadv_priv *bat_priv)
+ 	if (!bat_priv->nc.decoding_hash)
+ 		goto err;
+ 
+-	batadv_hash_set_lock_class(bat_priv->nc.coding_hash,
++	batadv_hash_set_lock_class(bat_priv->nc.decoding_hash,
+ 				   &batadv_nc_decoding_hash_lock_class_key);
+ 
+ 	INIT_DELAYED_WORK(&bat_priv->nc.work, batadv_nc_worker);
+-- 
+2.1.3
+
