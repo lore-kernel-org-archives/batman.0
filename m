@@ -1,12 +1,12 @@
-Return-Path: <andrew@lunn.ch>
-Date: Wed, 12 Nov 2014 05:29:05 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20141112042905.GB31881@lunn.ch>
-References: <CAEbDFcT3xFoJee3LFDxXEazJ1QS4DCkzoUSFipC6HAudHZ+O-Q@mail.gmail.com>
+Return-Path: <r.krishnathiepan@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAEbDFcT3xFoJee3LFDxXEazJ1QS4DCkzoUSFipC6HAudHZ+O-Q@mail.gmail.com>
+In-Reply-To: <20141112042905.GB31881@lunn.ch>
+References: <CAEbDFcT3xFoJee3LFDxXEazJ1QS4DCkzoUSFipC6HAudHZ+O-Q@mail.gmail.com>
+ <20141112042905.GB31881@lunn.ch>
+Date: Wed, 12 Nov 2014 11:06:51 +0530
+Message-ID: <CAEbDFcSO7RpyBmVmXk9dbfiLpQ8srbrHgksCtkDRB_9iAifWCQ@mail.gmail.com>
+From: Krishnathiepan Rasanayagam <r.krishnathiepan@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Subject: Re: [B.A.T.M.A.N.] Tcp filtering in batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,16 +21,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wed, Nov 12, 2014 at 07:51:25AM +0530, Krishnathiepan Rasanayagam wrote:
-> hi all,
-> 
-> i am currently experimenting with QoS services which can be provided
-> by batman-adv, for that thinking about creating a queue inside send.c
-> with packet filtering. thats why i wanna know where to read the data.
+Hi Andrew,
 
-Hi Krishha
+i don't understand you, can you rephrase it?
 
-What can you do inside BATMAN which is not possible using TC on the
-hard interfaces?
 
-     Andrew
+On Wed, Nov 12, 2014 at 9:59 AM, Andrew Lunn <andrew@lunn.ch> wrote:
+> On Wed, Nov 12, 2014 at 07:51:25AM +0530, Krishnathiepan Rasanayagam wrote:
+>> hi all,
+>>
+>> i am currently experimenting with QoS services which can be provided
+>> by batman-adv, for that thinking about creating a queue inside send.c
+>> with packet filtering. thats why i wanna know where to read the data.
+>
+> Hi Krishha
+>
+> What can you do inside BATMAN which is not possible using TC on the
+> hard interfaces?
+>
+>      Andrew
+
+
+
+-- 
+Best regards,
+Krishna.
