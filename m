@@ -1,14 +1,16 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 13 Nov 2014 11:29:16 +0100
-Message-ID: <8586269.W9iEt8U751@prime>
-In-Reply-To: <1415800470-10114-1-git-send-email-sven@open-mesh.com>
-References: <1415800470-10114-1-git-send-email-sven@open-mesh.com>
+Return-Path: <jay@dslx.net>
+From: "Jay Brussels" <jay@dslx.net>
+References: <069201cffe76$c6b720c0$54256240$@dslx.net>
+ <20141112135424.GV9205@medion.lan>
+In-Reply-To: <20141112135424.GV9205@medion.lan>
+Date: Thu, 13 Nov 2014 10:30:14 -0500
+Message-ID: <019301cfff56$b8cb3830$2a61a890$@dslx.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4973192.d3TT15ddEg";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] alfred: Add support for multiple
-	interfaces per master
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Language: en-us
+Subject: Re: [B.A.T.M.A.N.] Current OpenWrt build
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,45 +22,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@open-mesh.com>
+To: 'The list for a Better Approach To Mobile Ad-hoc Networking' <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hello Bastian,
 
---nextPart4973192.d3TT15ddEg
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+I was referring to the BATMAN patches, not OpenWRT.  The bugtraker does have
+162 BATMAN issues, most closed and none that are open that will affect my
+application.
 
-On Wednesday 12 November 2014 14:54:29 Sven Eckelmann wrote:
-> It may required in some situations that all alfred master servers are
-> potentially connected to the same backbone network but cannot see each other
-> through the mesh. The data may still be exchanged and thus a master
-> instance must listen for requests on the mesh and synchronize data over the
-> backbone network.
-> 
-> The limitation that data can only be synchronized over one master hop and
-> not more still holds true. Also alfred servers in slave mode are not
-> allowed to operate on multiple interfaces. This is especially important
-> when switching from master to slave mode because this can fail now when
-> multiple interfaces are configured.
-> 
-> Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
+I have seen some patches on the listserver  that states certain mesh traffic
+can cause a crash.  This is my primary concern.
 
-Series applied in a822b86 and eb8b960.
+Jay
+ 
 
-Thank you!!
-    Simon
---nextPart4973192.d3TT15ddEg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+-----Original Message-----
+From: B.A.T.M.A.N [mailto:b.a.t.m.a.n-bounces@lists.open-mesh.org] On Behalf
+Of Bastian Bittorf
+Sent: Wednesday, November 12, 2014 8:54 AM
+To: The list for a Better Approach To Mobile Ad-hoc Networking
+Subject: Re: [B.A.T.M.A.N.] Current OpenWrt build
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+* Jay Brussels <jay@dslx.net> [12.11.2014 14:50]:
+> Is the current OpenWrt release stable enough for deployment or are there
+some "must have" patches requiring a build from scratch for a successful
+deployment?
 
-iEYEABECAAYFAlRkiAAACgkQrzg/fFk7axZwiwCgmerIu5foAVfHiJ+xoBDnW6zA
-uncAoMxHt8xy78bVTI4UGIm5ue4pIL0k
-=rCTi
------END PGP SIGNATURE-----
+Hi Mr. President,
 
---nextPart4973192.d3TT15ddEg--
+Define 'stable'.
+There are >2700 open issues in the bugtracker:
+https://dev.openwrt.org/report/1
+
+bye, bastian
 
