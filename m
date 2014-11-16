@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 16 Nov 2014 13:26:29 +0800
-Message-ID: <4554378.gaC6ESIVH8@diderot>
-In-Reply-To: <1415815109-17111-3-git-send-email-sven@narfation.org>
+Date: Sun, 16 Nov 2014 13:27:14 +0800
+Message-ID: <54466937.WmcY3Eb2fn@diderot>
+In-Reply-To: <1415815109-17111-4-git-send-email-sven@narfation.org>
 References: <1415815109-17111-1-git-send-email-sven@narfation.org>
- <1415815109-17111-3-git-send-email-sven@narfation.org>
+ <1415815109-17111-4-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart23602878.nbDpV0b1Gq";
+Content-Type: multipart/signed; boundary="nextPart1959618.y5is59yJ7h";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/5] batctl: Only parse TVLV data when
-	length is valid
+Subject: Re: [B.A.T.M.A.N.] [PATCH 4/5] batctl: Parse non-variable TVLV only
+	with correct length
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,29 +25,31 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
 
---nextPart23602878.nbDpV0b1Gq
+--nextPart1959618.y5is59yJ7h
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday 12 November 2014 18:58:27 Sven Eckelmann wrote:
-> The length in a TVLV field must be smaller or equal to the length of the
-> remaining read data. Otherwise the parser can read outside of the
-> valid data region.
+On Wednesday 12 November 2014 18:58:28 Sven Eckelmann wrote:
+> The TVLV length has to be verified before the tvlv parser can start.
+> Otherwise the tvlv parser might access invalid data.
+> 
+> Doing the same for zero length TVLVs is just good practice and might help
+> finding problems easier.
 > 
 > This regression was introduced by 4c39fb823b86036df40187f8bd342fe5398c28ef
 > ("batctl: tcpdump - parse TVLV containers").
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  tcpdump.c | 24 ++++++++++++++++++------
->  1 file changed, 18 insertions(+), 6 deletions(-)
+>  tcpdump.c | 34 ++++++++++++++++++++++++++++------
+>  1 file changed, 28 insertions(+), 6 deletions(-)
 
-Applied in revision 79f3061.
+Applied in revision 0505524.
 
 Thanks,
 Marek
 
---nextPart23602878.nbDpV0b1Gq
+--nextPart1959618.y5is59yJ7h
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -55,14 +57,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABAgAGBQJUaDWFAAoJEFNVTo/uthzAMpMIAKraznJ43KU/5NvbrvOOS8rl
-CjvcR41yl5YA1ssK8Gken/XsYhmAtmCZwIALOSrLyd3VHFPilnENPpdRZZC1TTtO
-vjSq0PpZUU+TPwixEuozAL1HwNR+C1zwhTHjLVEecXCrOQ8n82NIJs18/mdlsU/s
-OvMOHwxeWFqu/fTRUdaRdegb9+agjH5IrXkFRyJsi+wbO3b+J8Xq8nlwOTAZ4STU
-E5+fozZp+4ASBPb8j0QFlU3/ghO9fn+0QukVSp6g63QAax9nDQSfaWtmN12XO2+Q
-DAOwX0yaPsZS82ibrWxrpp59zprW++wT08wTJmZesQtsFhReHDaroz694Ez2Jsc=
-=9WMv
+iQEcBAABAgAGBQJUaDWyAAoJEFNVTo/uthzAiDIIAKlf/uUZ2IUJmc6En9EPMvlF
+Ik+1jz/fEclwLST0TirOxjIuoOkwVi7a9QIiGIN0pwHEJed7AG+UYfolNjIzph96
+V1+eiZniLGrkWeaopUZyx7RiHBP4f7cFJNzLUW6SaOp0G2uql9cPKkLhzNBygXcT
+Usz31gMG4IH72oAPAJFUKecKCa+3QsoYi3U510PbWsRNl5gjhywzYu27a+nGXXut
+rD/adOx0ILwzmJ2dju015Tporfh2cI8/nQ41AnQLLdHOyUvas+aWCm/XiFAh0sdC
+JjbmvcWR0UtgYHd+vaG6zN+sVr0tRiQsB+pElo7U4qteuiwTn5tj8+3MmHSu880=
+=K8QQ
 -----END PGP SIGNATURE-----
 
---nextPart23602878.nbDpV0b1Gq--
+--nextPart1959618.y5is59yJ7h--
 
