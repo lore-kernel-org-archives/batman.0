@@ -1,15 +1,12 @@
 Return-Path: <linus.luessing@c0d3.blue>
-Date: Sun, 16 Nov 2014 07:28:26 +0100
+Date: Sun, 16 Nov 2014 07:51:23 +0100
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20141116062826.GA2469@odroid>
+Message-ID: <20141116065123.GB2469@odroid>
 References: <069201cffe76$c6b720c0$54256240$@dslx.net>
- <20141112135424.GV9205@medion.lan>
- <019301cfff56$b8cb3830$2a61a890$@dslx.net>
- <21787558.pbjUVs1b2F@sven-edge>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <21787558.pbjUVs1b2F@sven-edge>
+In-Reply-To: <069201cffe76$c6b720c0$54256240$@dslx.net>
 Subject: Re: [B.A.T.M.A.N.] Current OpenWrt build
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,13 +21,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Sat, Nov 15, 2014 at 07:58:23PM +0100, Sven Eckelmann wrote:
->  * can it be deployed?: yes, people already do it
+On Wed, Nov 12, 2014 at 07:47:10AM -0500, Jay Brussels wrote:
+> Antonio,
+> 
+> I am planning to start programming Ubiquiti and TP-Link Routers in two weeks for a very large BATMAN mesh deployment.
+> 
+> Although many patches I have seen on this list involves multicast traffic I have seen some others.  
+> 
+> Is the current OpenWrt release stable enough for deployment or are there some "must have" patches requiring a build from scratch for a successful deployment?
 
-Is anyone using the latest batman-adv release with bridges?
+Regarding Barrier-Breaker: The default settings in OpenWRT with
+bridges are unfortunately broken (in that breakes multicast, which
+means broken IPv6):
 
-Maybe I didn't make it clear enough that the outstanding multicast
-issues and patches are severe (as in makes common setups
-unusable).
+https://lists.openwrt.org/pipermail/openwrt-devel/2014-September/027859.html
+https://lists.openwrt.org/pipermail/openwrt-devel/2014-September/027876.html
+
+(the first one is my "favourite", a typical OpenWRT feature patch:
+awesome idea, good intention, but being applied to the repo without any
+peer-reviewing and broken; instead of going through upstream first...)
+
+
+You'll probably want to disable the multicast-to-unicast feature
+or even the bridge snooping as a whole for now.
 
 Cheers, Linus
