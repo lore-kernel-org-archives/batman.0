@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 16 Nov 2014 13:28:08 +0800
-Message-ID: <6776625.hHL0P2fD0I@diderot>
-In-Reply-To: <1415815109-17111-5-git-send-email-sven@narfation.org>
-References: <1415815109-17111-1-git-send-email-sven@narfation.org>
- <1415815109-17111-5-git-send-email-sven@narfation.org>
+Date: Sun, 16 Nov 2014 13:40:26 +0800
+Message-ID: <1840064.G6OQvTfxZn@diderot>
+In-Reply-To: <1415719343-2989-1-git-send-email-martin@hundeboll.net>
+References: <1415719343-2989-1-git-send-email-martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6131322.GMQJSn8aTB";
+Content-Type: multipart/signed; boundary="nextPart1798054.LiSf4lT2I7";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 5/5] batctl: Only parse big enough TVLV
-	TTv1
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix lock class for decoding
+	hash in network-coding.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,34 +21,34 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Martin =?ISO-8859-1?Q?Hundeb=F8ll?= <martin@hundeboll.net>
 
 
---nextPart6131322.GMQJSn8aTB
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart1798054.LiSf4lT2I7
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Wednesday 12 November 2014 18:58:29 Sven Eckelmann wrote:
-> A TTv1 has a constant header part and two variable parts. One is the defined
-> by the number of VLANs and the rest are the changes. The TVLV can only be
-> parsed when there is enough room for the constant header. Also the number
-> of VLANs must be validated. Otherwise the TVLV parser can read invalid data
-> outside of the buffer.
-> 
-> This regression was introduced by 4c39fb823b86036df40187f8bd342fe5398c28ef
-> ("batctl: tcpdump - parse TVLV containers").
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+On Tuesday 11 November 2014 16:22:23 Martin Hundeb=F8ll wrote:
+> batadv_has_set_lock_class() is called with the wrong hash table as fi=
+rst
+> argument (probably due to a copy-paste error), which leads to false
+> positives when running with lockdep.
+>=20
+> Introduced-by: 612d2b4fe0a1ff2f8389462a6f8be34e54124c05
+> ('batman-adv: network coding - save overheard and tx packets for deco=
+ding')
+>=20
+> Signed-off-by: Martin Hundeb=F8ll <martin@hundeboll.net>
 > ---
->  tcpdump.c | 11 ++++++++---
->  1 file changed, 8 insertions(+), 3 deletions(-)
+>  network-coding.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision 5fda4d5.
+Merged in revision e7ba36c.
 
 Thanks,
 Marek
 
---nextPart6131322.GMQJSn8aTB
+--nextPart1798054.LiSf4lT2I7
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -57,14 +56,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABAgAGBQJUaDXoAAoJEFNVTo/uthzAvocH/j6SWbSvwMPaAIud34rlNSWt
-C0mtCkgsP1zn9JHDxZZKE05OdWG+cxsd2IPwC3fwQBQoJj/rO+Bkvap4KVUlVaE3
-GaxdtO8WRkaxoen/tgk1LY3isIKFAJ1iYZn5atjjKpfskb2US+gp8CShM6t9D2i1
-/kCzw6INHunsLzJpr7yhbTN/UQbFqTlWBKegzLt7C8NNNVugTX050o+/+M2mM7Qt
-VTQdvMe4gD5V+5ovhxxMOT9kkKd0hZsHnUSTXT08R08+KLE9a5kdztoLHoC6NjiM
-A8BAAzNWC4vr75gzbn6XblRe5v3tkQTvxQnwFBwrw0QKcz19Ty5TJu2ECeg7rZ8=
-=2IhW
+iQEcBAABAgAGBQJUaDjNAAoJEFNVTo/uthzAiE0IAID+ULX7e8X7XDtV2fao44vW
+xUG/GSLOsVKasCcMff/23eD8ve65IjNb6R73jWxzdgRyWIrjOCOkwod+KYdHN5Fs
+T+4wfoxHE3nGywCAeexJdA9/qw9lqqzMBQxArrgaoEXFcTpqDoAyKaooo6Mjr5ym
+cC8DwQ9SuVjl6AWUavQQ1CDNMK71jGxj6oVCSqgmzMDvhXqYKaBktOv25wAcybj5
+kMhtBAmIb3VJJP3M95GpvlWDk72ZCqyst2mssmB6q0t/ndeSS2Q2c8mk/p1WuvuH
++0mFlWElIbWvxQJZKvtTxMNtuLHRmGVaYAlHubwF6lUy2UQWN5NOZBd5vJDecbI=
+=GiX6
 -----END PGP SIGNATURE-----
 
---nextPart6131322.GMQJSn8aTB--
+--nextPart1798054.LiSf4lT2I7--
 
