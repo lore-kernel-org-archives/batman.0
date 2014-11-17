@@ -1,15 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Sun, 16 Nov 2014 11:19:55 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20141116101955.GC2469@odroid>
-References: <069201cffe76$c6b720c0$54256240$@dslx.net>
- <20141116062826.GA2469@odroid> <2704279.HXZgGAggkv@sven-edge>
- <1448250.Hgypd91p29@sven-edge>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 17 Nov 2014 19:07:30 +0800
+Message-ID: <2137664.mQR8JuzZmq@diderot>
+In-Reply-To: <1411230125-21848-1-git-send-email-antonio@meshcoding.com>
+References: <1411230125-21848-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1448250.Hgypd91p29@sven-edge>
-Subject: Re: [B.A.T.M.A.N.] Current OpenWrt build
+Content-Type: multipart/signed; boundary="nextPart1860141.sbOsBRTG4N";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: avoid NULL
+	dereferences and fix if check
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,45 +20,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-On Sun, Nov 16, 2014 at 10:14:43AM +0100, Sven Eckelmann wrote:
-> Yes, there are at least two known problems in batman-adv which are now fixed
-> in maint and can be cherry picked by you. Otherwise these problems
-> would enable multicast optimization when some nodes have bridges (which they
-> shouldn't). This is a bug a not missing feature. So it is still valid that
-> multicast_mode is enabled by default.
+
+--nextPart1860141.sbOsBRTG4N
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Saturday 20 September 2014 18:22:05 Antonio Quartulli wrote:
+> Gateway having bandwidth_down equal to zero are not accepted
+> at all and so never added to the Gateway list.
+> For this reason checking the bandwidth_down member in
+> batadv_gw_out_of_range() is useless.
 > 
-> I would guess that you can either disable multicast_mode  or apply the
-> patches.
-
-Correct.
-
+> This is probably a copy/paste error and this check was supposed
+> to be "!gw_node" only. Moreover, the way the check is written
+> now may also lead to a NULL dereference.
 > 
-> > Are there "only" missing patches/issues in the bridge code (the ones you've
-> > linked to in the other mail [1]) of OpenWrt which breaks batman-adv with
-> > multicast_mode? If yes, why is multicast_mode enabled by default in
-> > batman-adv?
+> Fix this by rewriting the if-condition properly.
 > 
-> I cannot really answer this and will leave it to Linus.
-
-Turning off multicast_mode is only intended for debugging
-purposes at the moment. batman-adv should never break anything by
-having multicast_mode enabled (which unfortunately, currently is
-not the case for a release / OpenWRT but should be again after the two
-multicast counter fixes which just hit the maint-branch trickled
-through).
-
+> Introduced by 0853ec7fafe0a195754454832993c6b35e22b842
+> ("batman-adv: tvlv - gateway download/upload bandwidth container")
 > 
-> > Are there "only" missing patches/issues in the bridge code (the ones you've
-> > linked to in the other mail [1]) of OpenWrt which breaks batman-adv even
-> > without multicast_mode?
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> Reported-by: David Binderman <dcb314@hotmail.com>
+> ---
 > 
-> I cannot really answer this and will leave it to Linus.
+> This patch makes "batman-adv: avoid NULL dereferences and clarify if check"
+> obsolete.
+> 
+> 
+>  gateway_client.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Nope, the bridge patches in OpenWRT don't break the concept of the
-multicast optimizations or multicast handling in general in
-batman-adv. The issues of the state of the bridge code in BB are
-unrelated to batman-adv and happen with any other enslaved network
-device, too.
+Applied in revision cb2b79e.
+
+Thanks,
+Marek
+
+--nextPart1860141.sbOsBRTG4N
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABAgAGBQJUadb1AAoJEFNVTo/uthzAbucH/i9AT/1MfAy7YWmNRRcqKd/H
+6CkkOIMOjLvHnDcu7TIHPj888BI3aoikC3MprkkPoiokApCu6GmstOTUFTNugxym
+srNtSScPFod4ZF6um8FhqwbgCjllQzSjBDOHJ2onPq8uDyG/WKhOJyBNb2mbvIp3
+4jW1p2R6x/nIOk1LcBCLBoBgiBjTmxmVs1EXy0KR3n/UqSLqxT6ISyYrnIgOoz8I
+jP+TsaWtbQUrN071mRuuQzogaXRuqi0HsVmFs2Pb74I5/uEIpfxOI1Qz06Bt75AL
+HpDnn/o1lKFmmFcUNrRwczBLAcCz0SZt4WOMwiMQuI9kvux7q83h5sADboRwxs4=
+=x+v6
+-----END PGP SIGNATURE-----
+
+--nextPart1860141.sbOsBRTG4N--
+
