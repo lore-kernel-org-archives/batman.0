@@ -1,12 +1,14 @@
-Return-Path: <martin@hundeboll.net>
-Message-ID: <5474CCF8.9030008@hundeboll.net>
-Date: Tue, 25 Nov 2014 19:39:52 +0100
-From: =?windows-1252?Q?Martin_Hundeb=F8ll?= <martin@hundeboll.net>
-MIME-Version: 1.0
+Return-Path: <philipp.psurek@gmail.com>
+Message-ID: <1416950188.2605.3.camel@gmail.com>
+From: Philipp Psurek <philipp.psurek@gmail.com>
+Date: Tue, 25 Nov 2014 22:16:28 +0100
+In-Reply-To: <5474CCF8.9030008@hundeboll.net>
 References: <1416938767-29156-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1416938767-29156-1-git-send-email-sven@narfation.org>
-Content-Type: text/plain; charset="windows-1252"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
+ <5474CCF8.9030008@hundeboll.net>
+Content-Type: multipart/signed; micalg="pgp-sha1";
+ protocol="application/pgp-signature"; 
+ boundary="=-pCKA5RbuN+0yzAxIENWd"
+Mime-Version: 1.0
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Check size information when
  reassembling fragments
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,110 +22,74 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Martin =?ISO-8859-1?Q?Hundeb=F8ll?= <martin@hundeboll.net>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Acked-by: Martin Hundeb=F8ll <martin@hundeboll.net>
 
-Philipp:
-Can you please test this patch, and report back if it fixes your crash?
+--=-pCKA5RbuN+0yzAxIENWd
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Thanks!
+Hi Martin, hi Sven, hi all,
 
-// Martin
+thanks for working on my bug.=20
 
-On 2014-11-25 19:06, Sven Eckelmann wrote:
-> The fragmentation code doesn't check if the the total_size information of=
- the
-> packets inside one chain is consistent. This allows an attacker to inject
-> packets belonging to the same fragmentation sequence number with different
-> total_size. This can cause a crash when these are assembled because the
-> total_size information is only parsed from the first packet in
-> batadv_frag_merge_packets but the queueing function always uses the total=
-_size
-> of the latest packet.
->
-> Assume two packets with the size x and y.
->
-> 1. first packet is sent with a size x and the total_size x+y' (y' < y)
-> 2. second packet is sent with a size y and the total_size x+y
->
-> The fragmentation code would try to assemble the two packets because the
-> accumulated packets have a combined size of x+y and the second packet had=
- the
-> total_size of x+y.
->
-> The fragmentation assembling code only took the information from the first
-> packet with the total_size x+y' and create a packet with enough space for=
- x+y'
-> bytes. But the second packet cannot be copied inside the prepared free sp=
-ace
-> because it is y-y' bytes larger than the remaining space.
->
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> This is only build tested. I've never spend time in creation of these pac=
-kets
-> to verify my claim.
->
->   fragmentation.c | 7 +++++--
->   types.h         | 2 ++
->   2 files changed, 7 insertions(+), 2 deletions(-)
->
-> diff --git a/fragmentation.c b/fragmentation.c
-> index 362e91a..3a19d4d 100644
-> --- a/fragmentation.c
-> +++ b/fragmentation.c
-> @@ -161,6 +161,7 @@ static bool batadv_frag_insert_packet(struct batadv_o=
-rig_node *orig_node,
->   		hlist_add_head(&frag_entry_new->list, &chain->head);
->   		chain->size =3D skb->len - hdr_size;
->   		chain->timestamp =3D jiffies;
-> +		chain->total_size =3D ntohs(frag_packet->total_size);
->   		ret =3D true;
->   		goto out;
->   	}
-> @@ -195,9 +196,11 @@ static bool batadv_frag_insert_packet(struct batadv_=
-orig_node *orig_node,
->
->   out:
->   	if (chain->size > batadv_frag_size_limit() ||
-> -	    ntohs(frag_packet->total_size) > batadv_frag_size_limit()) {
-> +	    chain->total_size !=3D ntohs(frag_packet->total_size) ||
-> +	    chain->total_size > batadv_frag_size_limit()) {
->   		/* Clear chain if total size of either the list or the packet
-> -		 * exceeds the maximum size of one merged packet.
-> +		 * exceeds the maximum size of one merged packet. Don't allow
-> +		 * packets to have different total_size.
->   		 */
->   		batadv_frag_clear_chain(&chain->head);
->   		chain->size =3D 0;
-> diff --git a/types.h b/types.h
-> index 462a70c..c4d7d24 100644
-> --- a/types.h
-> +++ b/types.h
-> @@ -132,6 +132,7 @@ struct batadv_orig_ifinfo {
->    * @timestamp: time (jiffie) of last received fragment
->    * @seqno: sequence number of the fragments in the list
->    * @size: accumulated size of packets in list
-> + * @total_size: expected size of the assembled packet
->    */
->   struct batadv_frag_table_entry {
->   	struct hlist_head head;
-> @@ -139,6 +140,7 @@ struct batadv_frag_table_entry {
->   	unsigned long timestamp;
->   	uint16_t seqno;
->   	uint16_t size;
-> +	uint16_t total_size;
->   };
->
->   /**
->
+Am Dienstag, den 25.11.2014, 19:39 +0100 schrieb Martin Hundeb=C3=B8ll:
+> Can you please test this patch, and report back if it fixes your crash?
 
---=20
-Kind Regards,
-Martin Hundeb=F8ll
-Frederiks All=E9 99A, 1.th
-8000 Aarhus C
+After I tweeted about this bug in my Community with link to my thread in
+this ML telling there is no gateway for now and switching the VM to
+3.17.4 8,5 hours from now; the VM didn't crush. It might be the attacker
+is sleeping because there were no gateway announced through DHCP or some
+changes in the new version prevent the kernel panic:
+35e95fae72ddb67ef94395d99abc48589ce17875
+dd8aaf1f380e008044857d7d2293e8e2824772b8
+5a282822a9e472a41a7e2db71903a1c6654c634a
 
-+45 61 65 54 61
-martin@hundeboll.net
+dmesg screams =E2=80=9CUDP: bad checksum.=E2=80=9D all the time, but it's t=
+o soon to
+tell.
+
+I test this patch if the VM crashes again. If the VM didn't crash until
+Sunday I do a kernel downgrade to 3.17.3 or 3.16.7 with your patch and
+report. Or should I implement your patch immediately on the old kernel
+to prove your work without waiting? It would be much convenient to
+implement this during an actual attack and it would much more prove your
+work.
+
+I'll report soon. Thanks for your work and Batman-adv.
+
+Best regards
+
+Philipp
+
+________________________
+Freifunk Rheinland e. V.
+=E2=80=93 Funkzelle Wuppertal =E2=80=93
+
+
+--=-pCKA5RbuN+0yzAxIENWd
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABAgAGBQJUdPGsAAoJENpWdD1eHU4J0jIP/i89UcPGxQCzEOjD8YDl7wsD
+4aemk5bHzsG6NnGmf0XBGBMOlW7TECqqFNu2cL4TI+Yo5T1+gHcwqupKQMi1RkIY
+6PETuFWz7uh7fXWOzEvL1cnF2oUmWbEm3IT6lPnNDIhLhrcjQbUgcA28u+tzr9bt
+KZwP78JvBeXhXYqNblLjSD+Y9bF+i53FWY9SbqD3Zg60XSOyygNGkP+pwWZbm90z
+Hi+CmussygCjGdzeejWR+mmp15NEYqoXRdXhVDX7xJU08pAq78jjYZkM2BhEQk1r
+qdjFt7Llh871/H42+H2uWLQn8FNBfB4AAwdWJ0AyokjjT/Rg/TeGwIkkQ4xOHlnL
+/kpa+hqNuKT71gS6saH6gNVSNsMC7GWTdRdHTx01tnxtDdX1m7OIKamybMuiF2uK
+otHu8yodaLQhi9iVNZVSL05ESa0uwaRTEKh4xqC5AZbyNGicipeZLVQG+iFBU8i5
+MGU5kdJKKBsIuqIVWhZlFUoqo/5BA7n4TnivftYMxZi2QHpzYuYA1r559kLZt9Ta
+il7dl/fw/Of+7H0cGtWkQMNEEC9t9J1u/Fqy0sqa5pTAvHEmqDTcOy9GT36kqqtj
+nGpp+047D7oHIYmTyLlMDyRMdnaG8cmfzLr8aYkgS9jfBKeHI/q9syiZ612+mHxD
+eSQH4Uptw3DsTMNT2nbg
+=hLEY
+-----END PGP SIGNATURE-----
+
+--=-pCKA5RbuN+0yzAxIENWd--
+
