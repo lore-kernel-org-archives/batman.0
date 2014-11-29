@@ -1,14 +1,9 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <547883C2.4030003@meshcoding.com>
-Date: Fri, 28 Nov 2014 15:16:34 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
-References: <CAHmnjeBwBO7WYbor7CUkfHFwAZ+P-tfcSYEPpUbdFwi0r3dcjQ@mail.gmail.com>
-In-Reply-To: <CAHmnjeBwBO7WYbor7CUkfHFwAZ+P-tfcSYEPpUbdFwi0r3dcjQ@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="L8fXA1SSTclArVRUC6EecEbHthIi9hmFb"
-Subject: Re: [B.A.T.M.A.N.] mib for batman-adv
+Return-Path: <mpa@pengutronix.de>
+From: Markus Pargmann <mpa@pengutronix.de>
+Date: Sat, 29 Nov 2014 19:07:46 +0100
+Message-Id: <1417284466-32016-1-git-send-email-mpa@pengutronix.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Kconfig,
+	Add missing DEBUG_FS dependency
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,51 +15,29 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---L8fXA1SSTclArVRUC6EecEbHthIi9hmFb
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+BATMAN_ADV_DEBUG is using debugfs files for the debugging log. So it
+depends on DEBUG_FS which is missing as dependency in the Kconfig file.
 
-On 24/11/14 22:53, Lucas Aimaretto wrote:
-> Hi All,
->=20
-> A simple question: is there any snmp MIB for batman-adv so we can
-> gather routing information, that otherwise can only obtained by using
-> batctl?
+Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+---
+ net/batman-adv/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-There is no MIB for batman-adv.
-You can use batctl or you can also directly read the tables from debugfs
-(which is what batctl  does).
+diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
+index 11660a3aab5a..c6fc8f756c9a 100644
+--- a/net/batman-adv/Kconfig
++++ b/net/batman-adv/Kconfig
+@@ -62,6 +62,7 @@ config BATMAN_ADV_MCAST
+ config BATMAN_ADV_DEBUG
+ 	bool "B.A.T.M.A.N. debugging"
+ 	depends on BATMAN_ADV
++	depends on DEBUG_FS
+ 	help
+ 	  This is an option for use by developers; most people should
+ 	  say N here. This enables compilation of support for
+-- 
+2.1.3
 
-Cheers,
-
---=20
-Antonio Quartulli
-
-
---L8fXA1SSTclArVRUC6EecEbHthIi9hmFb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJUeIPKAAoJEJgn97Bh2u9eTB0QAL8m8bG08uNFECWEUxHU6hIK
-0sG+FLb90De34eYotGHYjmJcgC8fUL3CGDoGcirxQj3pTi9GsSs8hCYMt7YVSAAn
-8jvv0zLmpWg+rNi55XSG2NT06/AbiknpzyAUaXaMn3e7QKlFk1OIw3Lx5DW8xqhO
-i4nXYGoaVZRbBaMsX2hDQ60i6dPCYp8s6e6SlLMP6LDAgOkyeRc4FgK8PKMKnJ1v
-Yul+9XbLWl0g8UFdvx6be4JXyvv07ZQAKF5+g1kBZs48Ql2qunwCeS3sMAfHnB0K
-lP3AQuW0n5fGhlbgBDSs28/QgaOAeQvBnJ1BGi+cjUarzAwT6QWCTCjRH8S/szLp
-KZ0YxPnODwVF8+bwtbekuFe/OcfXTZBshxmUERKPfewFGfEEUtHtOTyDyn27Wpbo
-61WjDp7+8zzV9PFWSnZaS3xRDAX0y6SCswMRdDMpIXyyQGnHIszNoGn3Lu2DDX8L
-I3BHI8esZgTQe+1l1EmHlLvYoppOAH1uiNzQlBw7k08ISuxhAgF/dAOOqt++JXGe
-Rcb9HNk7m3x97vUlv2qpRuB0iFzyp3nJoGMBtPpHmOuBN3Hg5lnRrOm2k67tKoFv
-AeZriC9rl+72ow0DqhvcJA75i7A13n+BftBGNFC5rC6/ns3GwMPubSaPexGgYagy
-pLWJvDXJUxv5XFDhFpNZ
-=x2mi
------END PGP SIGNATURE-----
-
---L8fXA1SSTclArVRUC6EecEbHthIi9hmFb--
