@@ -1,9 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon,  1 Dec 2014 10:37:27 +0100
-Message-Id: <1417426648-9319-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 1/2] batman-adv: Check total_size when
-	queueing fragments
+Date: Mon,  1 Dec 2014 10:37:28 +0100
+Message-Id: <1417426648-9319-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1417426648-9319-1-git-send-email-sven@narfation.org>
+References: <1417426648-9319-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCHv3 2/2] batman-adv: Use only queued fragments
+	when merging
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,77 +20,64 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-The fragmentation code was replaced in 9b3eab61754d74a93c9840c296013fe3b4a1b606
-("batman-adv: Receive fragmented packets and merge") by an implementation which
-handles the queueing+merging of fragments based on their size and the
-total_size of the non-fragmented packet. This total_size is announced by each
-fragment. The new implementation doesn't check if the the total_size
-information of the packets inside one chain is consistent.
+The fragment queueing code now validates the total_size of each fragment,
+checks when enough fragments are queued to allow to merge them into a single
+packet and if the fragments have the correct size. Therefore, it is not
+required to have any other parameter for the merging function than a list of
+queued fragments.
 
-This is consistency check is recommended to allow using any of the packets in
-the queue to decide whether all fragments of a packet are received or not.
+This change should avoid problems like in the past when the different skb from
+the list and the function parameter were mixed incorrectly.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-This is only compile tested
-
-v3.
- - withdrawing from inclusion in maint
- - remove wrong example from the commit message
-v2:
- - proposed for maint
- - changed commit message slightly
----
- fragmentation.c | 7 +++++--
- types.h         | 2 ++
- 2 files changed, 7 insertions(+), 2 deletions(-)
+ fragmentation.c | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
 
 diff --git a/fragmentation.c b/fragmentation.c
-index 5251aa1..6e4c957 100644
+index 6e4c957..0ab228f 100644
 --- a/fragmentation.c
 +++ b/fragmentation.c
-@@ -161,6 +161,7 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
- 		hlist_add_head(&frag_entry_new->list, &chain->head);
- 		chain->size = skb->len - hdr_size;
- 		chain->timestamp = jiffies;
-+		chain->total_size = ntohs(frag_packet->total_size);
- 		ret = true;
- 		goto out;
- 	}
-@@ -195,9 +196,11 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
- 
- out:
- 	if (chain->size > batadv_frag_size_limit() ||
--	    ntohs(frag_packet->total_size) > batadv_frag_size_limit()) {
-+	    chain->total_size != ntohs(frag_packet->total_size) ||
-+	    chain->total_size > batadv_frag_size_limit()) {
- 		/* Clear chain if total size of either the list or the packet
--		 * exceeds the maximum size of one merged packet.
-+		 * exceeds the maximum size of one merged packet. Don't allow
-+		 * packets to have different total_size.
- 		 */
- 		batadv_frag_clear_chain(&chain->head);
- 		chain->size = 0;
-diff --git a/types.h b/types.h
-index 462a70c..c4d7d24 100644
---- a/types.h
-+++ b/types.h
-@@ -132,6 +132,7 @@ struct batadv_orig_ifinfo {
-  * @timestamp: time (jiffie) of last received fragment
-  * @seqno: sequence number of the fragments in the list
-  * @size: accumulated size of packets in list
-+ * @total_size: expected size of the assembled packet
+@@ -231,19 +231,13 @@ err:
+  * Returns the merged skb or NULL on error.
   */
- struct batadv_frag_table_entry {
- 	struct hlist_head head;
-@@ -139,6 +140,7 @@ struct batadv_frag_table_entry {
- 	unsigned long timestamp;
- 	uint16_t seqno;
- 	uint16_t size;
-+	uint16_t total_size;
- };
+ static struct sk_buff *
+-batadv_frag_merge_packets(struct hlist_head *chain, struct sk_buff *skb)
++batadv_frag_merge_packets(struct hlist_head *chain)
+ {
+ 	struct batadv_frag_packet *packet;
+ 	struct batadv_frag_list_entry *entry;
+ 	struct sk_buff *skb_out = NULL;
+ 	int size, hdr_size = sizeof(struct batadv_frag_packet);
  
- /**
+-	/* Make sure incoming skb has non-bogus data. */
+-	packet = (struct batadv_frag_packet *)skb->data;
+-	size = ntohs(packet->total_size);
+-	if (size > batadv_frag_size_limit())
+-		goto free;
+-
+ 	/* Remove first entry, as this is the destination for the rest of the
+ 	 * fragments.
+ 	 */
+@@ -252,6 +246,9 @@ batadv_frag_merge_packets(struct hlist_head *chain, struct sk_buff *skb)
+ 	skb_out = entry->skb;
+ 	kfree(entry);
+ 
++	packet = (struct batadv_frag_packet *)skb_out->data;
++	size = ntohs(packet->total_size);
++
+ 	/* Make room for the rest of the fragments. */
+ 	if (pskb_expand_head(skb_out, 0, size - skb_out->len, GFP_ATOMIC) < 0) {
+ 		kfree_skb(skb_out);
+@@ -307,7 +304,7 @@ bool batadv_frag_skb_buffer(struct sk_buff **skb,
+ 	if (hlist_empty(&head))
+ 		goto out;
+ 
+-	skb_out = batadv_frag_merge_packets(&head, *skb);
++	skb_out = batadv_frag_merge_packets(&head);
+ 	if (!skb_out)
+ 		goto out_err;
+ 
 -- 
 2.1.3
 
