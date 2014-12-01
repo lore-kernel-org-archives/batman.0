@@ -1,11 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon,  1 Dec 2014 10:37:28 +0100
-Message-Id: <1417426648-9319-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1417426648-9319-1-git-send-email-sven@narfation.org>
-References: <1417426648-9319-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3 2/2] batman-adv: Use only queued fragments
-	when merging
+Return-Path: <martin@hundeboll.net>
+Message-ID: <547C52EF.2060908@hundeboll.net>
+Date: Mon, 01 Dec 2014 12:37:19 +0100
+From: =?windows-1252?Q?Martin_Hundeb=F8ll?= <martin@hundeboll.net>
+MIME-Version: 1.0
+References: <1417426330-9178-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1417426330-9178-1-git-send-email-sven@narfation.org>
+Content-Type: text/plain; charset="windows-1252"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: Calculate extra tail
+ size based on queued fragments
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,67 +20,85 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 Cc: Sven Eckelmann <sven@narfation.org>
 
-The fragment queueing code now validates the total_size of each fragment,
-checks when enough fragments are queued to allow to merge them into a single
-packet and if the fragments have the correct size. Therefore, it is not
-required to have any other parameter for the merging function than a list of
-queued fragments.
+Hi Sven,
 
-This change should avoid problems like in the past when the different skb from
-the list and the function parameter were mixed incorrectly.
+Thanks for looking into this!
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- fragmentation.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+On 2014-12-01 10:32, Sven Eckelmann wrote:
+> The fragmentation code was replaced in 9b3eab61754d74a93c9840c296013fe3b4=
+a1b606
+> ("batman-adv: Receive fragmented packets and merge"). The new code provid=
+ed a
+> mostly unused parameter skb for the merging function. It is used inside t=
+he
+> function to calculate the additionally needed skb tailroom. But instead of
+> increasing its own tailroom, it is only increasing the tailroom of the fi=
+rst
+> queued skb. This is not correct in some situations because the first queu=
+ed
+> entry can be a different one than the parameter.
+>
+> An observed problem was:
+>
+> 1. packet with size 104, total_size 1464, fragno 1 was received
+>     - packet is queued
+> 2. packet with size 1400, total_size 1464, fragno 0 was received
+>     - packet is queued at the end of the list
+> 3. enough data was received and can be given to the merge function
+>     (1464 =3D=3D (1400 - 20) + (104 - 20))
+>     - merge functions gets 1400 byte large packet as skb argument
+> 4. merge function gets first entry in queue (104 byte)
+>     - stored as skb_out
+> 5. merge function calculates the required extra tail as total_size - skb-=
+>len
+>     - pskb_expand_head tail of skb_out with 64 bytes
+> 6. merge function tries to squeeze the extra 1380 bytes from the second q=
+ueued
+>     skb (1400 byte aka skb parameter) in the 64 extra tail bytes of skb_o=
+ut
+>
+> Instead calculate the extra required tail bytes for skb_out also using sk=
+b_out
+> instead of using the parameter skb. The skb parameter is only used to get=
+ the
+> total_size from the last received packet. This is also the total_size use=
+d to
+> decide that all fragments were received.
+>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Reported-by: Philipp Psurek <philipp.psurek@gmail.com>
+> ---
+> This is a minimized version which doesn't require the patch
+> "[PATCH-maint] batman-adv: Check total_size when reassembling fragments".
+> ---
+>   fragmentation.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/fragmentation.c b/fragmentation.c
+> index f14e54a..af16844 100644
+> --- a/fragmentation.c
+> +++ b/fragmentation.c
+> @@ -247,7 +247,7 @@ batadv_frag_merge_packets(struct hlist_head *chain, s=
+truct sk_buff *skb)
+>   	kfree(entry);
+>
+>   	/* Make room for the rest of the fragments. */
+> -	if (pskb_expand_head(skb_out, 0, size - skb->len, GFP_ATOMIC) < 0) {
+> +	if (pskb_expand_head(skb_out, 0, size - skb_out->len, GFP_ATOMIC) < 0) {
+>   		kfree_skb(skb_out);
+>   		skb_out =3D NULL;
+>   		goto free;
+>
 
-diff --git a/fragmentation.c b/fragmentation.c
-index 6e4c957..0ab228f 100644
---- a/fragmentation.c
-+++ b/fragmentation.c
-@@ -231,19 +231,13 @@ err:
-  * Returns the merged skb or NULL on error.
-  */
- static struct sk_buff *
--batadv_frag_merge_packets(struct hlist_head *chain, struct sk_buff *skb)
-+batadv_frag_merge_packets(struct hlist_head *chain)
- {
- 	struct batadv_frag_packet *packet;
- 	struct batadv_frag_list_entry *entry;
- 	struct sk_buff *skb_out = NULL;
- 	int size, hdr_size = sizeof(struct batadv_frag_packet);
- 
--	/* Make sure incoming skb has non-bogus data. */
--	packet = (struct batadv_frag_packet *)skb->data;
--	size = ntohs(packet->total_size);
--	if (size > batadv_frag_size_limit())
--		goto free;
--
- 	/* Remove first entry, as this is the destination for the rest of the
- 	 * fragments.
- 	 */
-@@ -252,6 +246,9 @@ batadv_frag_merge_packets(struct hlist_head *chain, struct sk_buff *skb)
- 	skb_out = entry->skb;
- 	kfree(entry);
- 
-+	packet = (struct batadv_frag_packet *)skb_out->data;
-+	size = ntohs(packet->total_size);
-+
- 	/* Make room for the rest of the fragments. */
- 	if (pskb_expand_head(skb_out, 0, size - skb_out->len, GFP_ATOMIC) < 0) {
- 		kfree_skb(skb_out);
-@@ -307,7 +304,7 @@ bool batadv_frag_skb_buffer(struct sk_buff **skb,
- 	if (hlist_empty(&head))
- 		goto out;
- 
--	skb_out = batadv_frag_merge_packets(&head, *skb);
-+	skb_out = batadv_frag_merge_packets(&head);
- 	if (!skb_out)
- 		goto out_err;
- 
--- 
-2.1.3
+I noticed the same mistake, when looking into Philipp's issue, but=20
+couldn't make wrap my head around it (as to why it should cause the=20
+crash). Your description makes sense, and I think my mistake was to=20
+forget the inverse tx/rx of fragments.
 
+Anyways:
+Acked-by: Martin Hundeb=F8ll <martin@hundeboll.net>
++45 61 65 54 61
+martin@hundeboll.net
