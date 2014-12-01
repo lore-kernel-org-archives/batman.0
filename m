@@ -1,15 +1,13 @@
 Return-Path: <martin@hundeboll.net>
-Message-ID: <547C53C5.7090205@hundeboll.net>
-Date: Mon, 01 Dec 2014 12:40:53 +0100
+Message-ID: <547C5E2A.2050300@hundeboll.net>
+Date: Mon, 01 Dec 2014 13:25:14 +0100
 From: =?windows-1252?Q?Martin_Hundeb=F8ll?= <martin@hundeboll.net>
 MIME-Version: 1.0
-References: <1417426648-9319-1-git-send-email-sven@narfation.org>
- <1417426648-9319-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1417426648-9319-2-git-send-email-sven@narfation.org>
-Content-Type: text/plain; charset="windows-1252"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/2] batman-adv: Use only queued
- fragments when merging
+References: <4472936.imSdHEx948@sven-edge>
+In-Reply-To: <4472936.imSdHEx948@sven-edge>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] Fragmentation and padding in batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,70 +24,73 @@ Cc: Sven Eckelmann <sven@narfation.org>
 
 Hi Sven,
 
-On 2014-12-01 10:37, Sven Eckelmann wrote:
-> The fragment queueing code now validates the total_size of each fragment,
-> checks when enough fragments are queued to allow to merge them into a sin=
-gle
-> packet and if the fragments have the correct size. Therefore, it is not
-> required to have any other parameter for the merging function than a list=
- of
-> queued fragments.
+On 2014-12-01 08:49, Sven Eckelmann wrote:
+> Hi,
 >
-> This change should avoid problems like in the past when the different skb=
- from
-> the list and the function parameter were mixed incorrectly.
+> I've just noticed that the padding by the underlying network protocol seems
+> not to be handled by the fragmentation. Maybe Martin can correct me. I will
+> now use following assumptions:
 >
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->   fragmentation.c | 13 +++++--------
->   1 file changed, 5 insertions(+), 8 deletions(-)
+>   * the fragmentation code is sending first the last part of the packet and
+>     tries to fill the complete skb (max 1400 byte)
+>   * the mtu of the underlying device is 1400
+>   * the minimum packet size (user data + eth header) of the underlying device
+>     is 70
+>   * the packet send by the user would end up to be 1401 bytes before
+>     fragmentation
 >
-> diff --git a/fragmentation.c b/fragmentation.c
-> index 6e4c957..0ab228f 100644
-> --- a/fragmentation.c
-> +++ b/fragmentation.c
-> @@ -231,19 +231,13 @@ err:
->    * Returns the merged skb or NULL on error.
->    */
->   static struct sk_buff *
-> -batadv_frag_merge_packets(struct hlist_head *chain, struct sk_buff *skb)
-> +batadv_frag_merge_packets(struct hlist_head *chain)
->   {
->   	struct batadv_frag_packet *packet;
->   	struct batadv_frag_list_entry *entry;
->   	struct sk_buff *skb_out =3D NULL;
->   	int size, hdr_size =3D sizeof(struct batadv_frag_packet);
+> Ok, then I would guess that the fragmentation code would try to generate
+> fragments with the max_fragment_size 1366 (+headers of course, not sure why
+> the code assumes that the ethernet header is part of the MTU). This would mean
+> that the 1401 byte packet is split into a 1366 byte fragment (+header) and a
+> 35 byte fragment (+header).
 >
-> -	/* Make sure incoming skb has non-bogus data. */
-> -	packet =3D (struct batadv_frag_packet *)skb->data;
-> -	size =3D ntohs(packet->total_size);
-> -	if (size > batadv_frag_size_limit())
-> -		goto free;
-> -
->   	/* Remove first entry, as this is the destination for the rest of the
->   	 * fragments.
->   	 */
-> @@ -252,6 +246,9 @@ batadv_frag_merge_packets(struct hlist_head *chain, s=
-truct sk_buff *skb)
->   	skb_out =3D entry->skb;
->   	kfree(entry);
+> But the 35 byte fragment containing the first part of the packet is (even with
+> the headers) still smaller than the required packet size of the underlying
+> device. Now some extra bytes are added as padding to the last fragment
+> (containing the first part of the original packet).
 >
-> +	packet =3D (struct batadv_frag_packet *)skb_out->data;
-> +	size =3D ntohs(packet->total_size);
-> +
->   	/* Make room for the rest of the fragments. */
->   	if (pskb_expand_head(skb_out, 0, size - skb_out->len, GFP_ATOMIC) < 0)=
- {
->   		kfree_skb(skb_out);
-> @@ -307,7 +304,7 @@ bool batadv_frag_skb_buffer(struct sk_buff **skb,
->   	if (hlist_empty(&head))
->   		goto out;
+> The receiving node cannot merge the fragments anymore because the length of
+> the last fragment skb will be too large and therefore the
+> total_size < chain->size.
 >
-> -	skb_out =3D batadv_frag_merge_packets(&head, *skb);
-> +	skb_out =3D batadv_frag_merge_packets(&head);
->   	if (!skb_out)
->   		goto out_err;
+> Even when it could be merged (because of some bug in the size check) then the
+> resulting packet would have a padding byte in the middle of of the original
+> byte.
 >
+> And just in case somebody has something against the imaginary 70 bytes padding
+> (802.3 has 60): I had to work with virtual devices in the past which had a
+> fixed MTU of ~1400 and a minimum packet size of ~1400.
 >
+> And yes, I am fully aware of the workaround of using an extra virtual device
+> between batman-adv and the actual device which only adds a header with the
+> payload length and restores this length on the receiver site. This (or at
+> least something similar) was used by me in the other project with the MTU/min
+> packet size of ~1400 device.
+>
+> Any comments, corrections?
 
-Acked-by: Martin Hundeb=F8ll <martin@hundeboll.net>
+Your deduction looks correct to me, and padding wasn't considered when 
+developing the fragmentation code.
+
+We can fix this by transmitting the fragments in correct (non-reverse) 
+order. This would make the check on total_size fail, and thus we would 
+need to try to merge anything with chain->size >= total_size, but only 
+merge total_size bytes.
+
+The tx order can be changed without breaking compatibility, as each 
+fragment still carries its frag number.
+
+Changing the tx-order might also increase chances that no alloc of 
+memory is needed upon merge. Take Sven's example:
+1) Currently, the first fragment in the chain is the smallest, and it is 
+increased by ~MTU bytes to make room for the other fragment.
+2) By changing the order, the first fragment is the largest, and would 
+only need to have 35 bytes of tailroom in order to allow a merge without 
+allocating memory.
+
+Initially, the reverse tx order was chosen to allow the use of 
+skb_split() when creating fragments. This is not strictly needed, so 
+changing the order shouldn't be too hard.
+
+// Martin
