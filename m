@@ -1,11 +1,12 @@
-Return-Path: <mpa@pengutronix.de>
-From: Markus Pargmann <mpa@pengutronix.de>
-Date: Tue,  2 Dec 2014 12:16:31 +0100
-Message-Id: <1417519009-20699-14-git-send-email-mpa@pengutronix.de>
-In-Reply-To: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
-References: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
-Subject: [B.A.T.M.A.N.] [PATCH 13/31] batman-adv: Makefile,
-	Sort alphabetically
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 02 Dec 2014 14:03:11 +0100
+Message-ID: <14767493.K4YkPYhOVo@sven-edge>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2696519.xjYZpl8Pfu";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 08/31] batman-adv: hash,
+	remove function implementations from header
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,34 +18,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-The whole Makefile is sorted, just the multicast rule is not at the
-right position.
 
-Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
----
- Makefile.kbuild | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+--nextPart2696519.xjYZpl8Pfu
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-diff --git a/Makefile.kbuild b/Makefile.kbuild
-index a8c34baddd63..6fb243c5b13c 100644
---- a/Makefile.kbuild
-+++ b/Makefile.kbuild
-@@ -29,6 +29,7 @@ batman-adv-y += hard-interface.o
- batman-adv-y += hash.o
- batman-adv-y += icmp_socket.o
- batman-adv-y += main.o
-+batman-adv-$(CONFIG_BATMAN_ADV_MCAST) += multicast.o
- batman-adv-$(CONFIG_BATMAN_ADV_NC) += network-coding.o
- batman-adv-y += originator.o
- batman-adv-y += routing.o
-@@ -37,4 +38,3 @@ batman-adv-y += soft-interface.o
- batman-adv-y += sysfs.o
- batman-adv-y += translation-table.o
- batman-adv-y += tvlv.o
--batman-adv-$(CONFIG_BATMAN_ADV_MCAST) += multicast.o
--- 
-2.1.3
+Hi,
+
+just for your information about the hashtable helper functions and why I think 
+all related patches should be rejected:
+
+https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2010-September/003458.html
+https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2010-October/003495.html
+
+Kind regards,
+	Sven
+--nextPart2696519.xjYZpl8Pfu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJUfbiSAAoJEF2HCgfBJntGwXYQALQg712e2dTp4QG0qVd2ktR6
+mgNIuyFMauYEWQh/BCiA3Nfzd7AnbAGrLq5KDLCRHBFVVKlwm4q/jQekvZVN17fO
++OkHB8izS6GcJKcpY9P4Qs5mt+o+r0v42lraXKEVgzZSyGdSCNkECSt3gkg3e5SU
+N2a2IsGTthebMW3i86lmslloELjrCyXLcbSu75P0U1OMVrb/eAzAxDeKBUmuljaE
+N+Ca+lFl3OlyR6v55BTCiNFRieEnpzzGgN80BCPGR6oyKoSzQG6OP3brKGMDOrAA
+E5TfkgbaJdGXpam8pV+Wo8P/hiazhxNS3PE3pV1sohjvILXkC3F0mW/QJt9cYkNU
+C7z8f+WuWH7ZiegWmPpJ342gGN/aKJuC1cs9hWSCJfUFEDd+wphrkEDnfIYrQvuJ
+RvpN9J6JTrdyeWzQqIPCndgQOk14ie4EhjbL0tEmrvimD4LwR70/P4Fia8o+5GJ9
+D4jJwGraM9IsdNMnPCKRHopczKIITKZvVIaFPGSvjnlWkuJDht6e/FlQ5H0Nm4kw
+bkEDm18bcnKBnQ0Cw0ki1SlYzb1iQG5O/At1A9yN/HxOj+w52+q6eB3qX4/95HgG
+boGOH9dGOcOhCsnCASivfgDOwpIXmJ+ZcD1rWG2r8cRX9GbhsU+Kj/g+PqwIOa/q
+U1W2Au8LJ3nJdnWcdwRq
+=Q0DT
+-----END PGP SIGNATURE-----
+
+--nextPart2696519.xjYZpl8Pfu--
 
