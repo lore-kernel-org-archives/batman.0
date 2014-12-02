@@ -1,15 +1,15 @@
 Return-Path: <mpa@pengutronix.de>
-Date: Tue, 2 Dec 2014 14:53:48 +0100
+Date: Tue, 2 Dec 2014 14:57:03 +0100
 From: Markus Pargmann <mpa@pengutronix.de>
-Message-ID: <20141202135348.GB24653@pengutronix.de>
-References: <14767493.K4YkPYhOVo@sven-edge>
+Message-ID: <20141202135703.GC24653@pengutronix.de>
+References: <3895904.RefSiyY2EJ@sven-edge>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="KsGdsel6WgEHnImy"
+ protocol="application/pgp-signature"; boundary="ftEhullJWpWg/VHq"
 Content-Disposition: inline
-In-Reply-To: <14767493.K4YkPYhOVo@sven-edge>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 08/31] batman-adv: hash,
- remove function implementations from header
+In-Reply-To: <3895904.RefSiyY2EJ@sven-edge>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 30/31] batman-adv: packet.h,
+ add some missing includes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,27 +25,29 @@ To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 
---KsGdsel6WgEHnImy
+--ftEhullJWpWg/VHq
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Sven,
-
-On Tue, Dec 02, 2014 at 02:03:11PM +0100, Sven Eckelmann wrote:
+On Tue, Dec 02, 2014 at 02:03:16PM +0100, Sven Eckelmann wrote:
 > Hi,
 >=20
-> just for your information about the hashtable helper functions and why I =
-think=20
-> all related patches should be rejected:
->=20
-> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2010-September/003458.h=
-tml
-> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2010-October/003495.html
+> please explain how this file can now be used unmodified in userspace (bat=
+ctl)=20
+> and kernel. If it cannot be done without modifying the file then please=
+=20
+> provide patches to modify the daily checks which make sure that the files=
+ in=20
+> both repos are the same. I think the batman-adv developers can give you t=
+he=20
+> original scripts.
 
-Thanks for the links, I will have a look into this.
+I wasn't aware that this file is also used in batctl. Why is it needed
+there?
+Probably I should have a look into the batctl sources.
 
-Best regards,
+Thanks,
 
 Markus
 
@@ -55,26 +57,26 @@ Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
 Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
 
---KsGdsel6WgEHnImy
+--ftEhullJWpWg/VHq
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBAgAGBQJUfcRrAAoJEEpcgKtcEGQQFzkP/jzg0gbGRAfUz2tRqx8ultvS
-0Bq+3lVWi3nAcHc76yTKuxSQTisQnUcW8vxQccq6CCDDRxUaHgI582XQqFjixYyv
-2JSLh6GnZXgVscjL2+3FgOHQNzQG+f77B/6z/xdOV+LurhEzp2M7I7Q6qkk1lI6t
-Dkdco76QauqpThfNn8pqrhymyxab7F4tlpt6BHtV0U5wsIXMGGQS4EpHovdrsXDb
-9CFetiaDjOTPeX0MN2dOM4tmjOzTmL/o+Jn6KukWauUY/soNeAiWYjGapXq5tUPB
-Y63Ebga+iBTRfEDTZqR6qxwyEzgS2+MQW0TcVe0canZ3uv6pPAVuYUyZobHr7F6K
-XCz9gKzx6if4wdBaPx+53ovpE69O5DkAcAXRU7b9cFxLmW/gXc+7eu/tWYm58cbx
-4GiMNoX1CHHEjjHb6/O+xsUlLsV8xMsMMfWqvITpVIMJ1uy2oRkesYkDvJoXqu5x
-G6+Irs8PXWerq4IXfjJt18fhsLJi0fF8ZkpaPUDPj/ifOZrH6+iekQtjwMYE1J9R
-BXJxgr5sCr9dkSirXaP9MryR19T8N0C+HlQX84qEAO9ZRUF//NS3QuAZHw/09EIN
-rSc4aorGydfUntCTyVa2wyD5ZK6gqFoYcFy74ocZMaoVQ9AFUjSxY9/vu3mGEU/H
-Tfj87feTKDBTZOTJkW3l
-=U7/F
+iQIcBAEBAgAGBQJUfcUuAAoJEEpcgKtcEGQQ5ZMP/iQhQOKG/18cvtHl7KNFjcnn
+JyucSibiegHcpuDMuOEnb+IU1FHvkzoazOeb9TenVTrMiuq3u0lBykTRAQ2yfB67
+LcoOUI4ORL0OxSxaIQnMOx4k4hqhHAmFe7FwWxcqoPTxd8KliHnHh8uMEdGp7AMR
+MJnIHYQ8YjTRzd9BecAbNhngcmzZ4Ad0eyN3moE4l1esLyYgVdXHdNHPwzVYIB6W
+SX3F7L3MhsMZa9kztI+pgsgcjbb9p/2aomr6wDQNufIz1Ymoi7tDM+HienbHiVjo
+pHxsAuowOymN9pL319zJx3tfcOe44D4Jz8SAuxu8SboBxbFenBKCy/7DGDetDXp3
+ZpFW18vsKwnMcGDHkw6IHykGpOuHAAR4IK6pwCZbz7f5YY+YBitu9MoRA3/noP1S
+/fVSLqQJ51Kp2szC8PdsNA6yk4wJNUZ1xZYvNvg9qnbuBLrKVwPGQBFFwV8x6f9e
+CXyl03+ube4WCqo5q0yU4pa9tizB9n3q+lYesnVgSWE8QFKMN3QnWt9ofFdDIA2M
+Qe1v6Gd/K5EhKYi6hNg6ogohu0nLWQZ/7WjfPtRhLtye8xY/E9UkPX7jkShZxr/f
+/EIG8pBwuOYZkizK/pODgHmogXB+k4apyi23XlGYkAg6VyritzWLdIDMBylj6B82
+ZoQ9E5qh4czCwlENXkbs
+=Jeut
 -----END PGP SIGNATURE-----
 
---KsGdsel6WgEHnImy--
+--ftEhullJWpWg/VHq--
