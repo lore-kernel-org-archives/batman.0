@@ -1,11 +1,11 @@
 Return-Path: <mpa@pengutronix.de>
 From: Markus Pargmann <mpa@pengutronix.de>
-Date: Tue,  2 Dec 2014 12:16:49 +0100
-Message-Id: <1417519009-20699-32-git-send-email-mpa@pengutronix.de>
+Date: Tue,  2 Dec 2014 12:16:34 +0100
+Message-Id: <1417519009-20699-17-git-send-email-mpa@pengutronix.de>
 In-Reply-To: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
 References: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
-Subject: [B.A.T.M.A.N.] [PATCH 31/31] batman-adv: types.h,
-	add missing include
+Subject: [B.A.T.M.A.N.] [PATCH 16/31] batman-adv: iv_ogm_send_to_if,
+	declare char* as const
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,23 +20,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
+This string pointer is later assigned to a constant string, so it should
+be defined constant at the beginning.
+
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 ---
- types.h | 1 +
- 1 file changed, 1 insertion(+)
+ bat_iv_ogm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/types.h b/types.h
-index cd331974321b..7c22dfadff5e 100644
---- a/types.h
-+++ b/types.h
-@@ -21,6 +21,7 @@
- #include "packet.h"
- #include "bitarray.h"
- #include <linux/kernel.h>
-+#include <linux/netdevice.h>
- 
- #ifdef CONFIG_BATMAN_ADV_DAT
- 
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index c421a550b303..8ebbd2eb81ee 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -411,7 +411,7 @@ static void batadv_iv_ogm_send_to_if(struct batadv_forw_packet *forw_packet,
+ 				     struct batadv_hard_iface *hard_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+-	char *fwd_str;
++	const char *fwd_str;
+ 	uint8_t packet_num;
+ 	int16_t buff_pos;
+ 	struct batadv_ogm_packet *batadv_ogm_packet;
 -- 
 2.1.3
 
