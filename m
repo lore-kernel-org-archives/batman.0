@@ -1,11 +1,11 @@
 Return-Path: <mpa@pengutronix.de>
 From: Markus Pargmann <mpa@pengutronix.de>
-Date: Tue,  2 Dec 2014 12:16:45 +0100
-Message-Id: <1417519009-20699-28-git-send-email-mpa@pengutronix.de>
+Date: Tue,  2 Dec 2014 12:16:44 +0100
+Message-Id: <1417519009-20699-27-git-send-email-mpa@pengutronix.de>
 In-Reply-To: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
 References: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
-Subject: [B.A.T.M.A.N.] [PATCH 27/31] batman-adv: main,
-	batadv_compare_eth return bool
+Subject: [B.A.T.M.A.N.] [PATCH 26/31] batman-adv: main,
+	Convert is_my_mac() to bool
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,29 +20,63 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Declare the returntype of batadv_compare_eth as bool.
-The function called inside this helper function
-(ether_addr_equal_unaligned) also uses bool as return value, so there is
-no need to return int.
+It is much clearer to see a bool type as return value than 'int' for
+functions that are supposed to return true or false.
 
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 ---
- main.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ main.c | 11 +++++++----
+ main.h |  2 +-
+ 2 files changed, 8 insertions(+), 5 deletions(-)
 
+diff --git a/main.c b/main.c
+index cff31bb9bb14..d5c79ae1db6f 100644
+--- a/main.c
++++ b/main.c
+@@ -228,10 +228,13 @@ void batadv_mesh_free(struct net_device *soft_iface)
+  * interfaces in the current mesh
+  * @bat_priv: the bat priv with all the soft interface information
+  * @addr: the address to check
++ *
++ * Returns 'true' if the mac address was found, false otherwise.
+  */
+-int batadv_is_my_mac(struct batadv_priv *bat_priv, const uint8_t *addr)
++bool batadv_is_my_mac(struct batadv_priv *bat_priv, const uint8_t *addr)
+ {
+ 	const struct batadv_hard_iface *hard_iface;
++	bool is_my_mac = false;
+ 
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
+@@ -242,12 +245,12 @@ int batadv_is_my_mac(struct batadv_priv *bat_priv, const uint8_t *addr)
+ 			continue;
+ 
+ 		if (batadv_compare_eth(hard_iface->net_dev->dev_addr, addr)) {
+-			rcu_read_unlock();
+-			return 1;
++			is_my_mac = true;
++			break;
+ 		}
+ 	}
+ 	rcu_read_unlock();
+-	return 0;
++	return is_my_mac;
+ }
+ 
+ /**
 diff --git a/main.h b/main.h
-index 6cd339090658..2e70d4dc748d 100644
+index 013de2f7ee11..6cd339090658 100644
 --- a/main.h
 +++ b/main.h
-@@ -218,7 +218,7 @@ __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr);
-  *
-  * note: can't use ether_addr_equal() as it requires aligned memory
-  */
--static inline int batadv_compare_eth(const void *data1, const void *data2)
-+static inline bool batadv_compare_eth(const void *data1, const void *data2)
- {
- 	return ether_addr_equal_unaligned(data1, data2);
- }
+@@ -196,7 +196,7 @@ extern struct workqueue_struct *batadv_event_workqueue;
+ 
+ int batadv_mesh_init(struct net_device *soft_iface);
+ void batadv_mesh_free(struct net_device *soft_iface);
+-int batadv_is_my_mac(struct batadv_priv *bat_priv, const uint8_t *addr);
++bool batadv_is_my_mac(struct batadv_priv *bat_priv, const uint8_t *addr);
+ struct batadv_hard_iface *
+ batadv_seq_print_text_primary_if_get(struct seq_file *seq);
+ int batadv_max_header_len(void);
 -- 
 2.1.3
 
