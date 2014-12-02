@@ -1,11 +1,11 @@
 Return-Path: <mpa@pengutronix.de>
 From: Markus Pargmann <mpa@pengutronix.de>
-Date: Tue,  2 Dec 2014 12:16:44 +0100
-Message-Id: <1417519009-20699-27-git-send-email-mpa@pengutronix.de>
+Date: Tue,  2 Dec 2014 12:16:33 +0100
+Message-Id: <1417519009-20699-16-git-send-email-mpa@pengutronix.de>
 In-Reply-To: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
 References: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
-Subject: [B.A.T.M.A.N.] [PATCH 26/31] batman-adv: main,
-	Convert is_my_mac() to bool
+Subject: [B.A.T.M.A.N.] [PATCH 15/31] batman-adv: iv_ogm_aggr_packet,
+	bool return value
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,63 +20,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-It is much clearer to see a bool type as return value than 'int' for
-functions that are supposed to return true or false.
+This function returns bool values, so it should be defined to return
+them instead of the whole int range.
 
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 ---
- main.c | 11 +++++++----
- main.h |  2 +-
- 2 files changed, 8 insertions(+), 5 deletions(-)
+ bat_iv_ogm.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/main.c b/main.c
-index cff31bb9bb14..d5c79ae1db6f 100644
---- a/main.c
-+++ b/main.c
-@@ -228,10 +228,13 @@ void batadv_mesh_free(struct net_device *soft_iface)
-  * interfaces in the current mesh
-  * @bat_priv: the bat priv with all the soft interface information
-  * @addr: the address to check
-+ *
-+ * Returns 'true' if the mac address was found, false otherwise.
-  */
--int batadv_is_my_mac(struct batadv_priv *bat_priv, const uint8_t *addr)
-+bool batadv_is_my_mac(struct batadv_priv *bat_priv, const uint8_t *addr)
- {
- 	const struct batadv_hard_iface *hard_iface;
-+	bool is_my_mac = false;
- 
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-@@ -242,12 +245,12 @@ int batadv_is_my_mac(struct batadv_priv *bat_priv, const uint8_t *addr)
- 			continue;
- 
- 		if (batadv_compare_eth(hard_iface->net_dev->dev_addr, addr)) {
--			rcu_read_unlock();
--			return 1;
-+			is_my_mac = true;
-+			break;
- 		}
- 	}
- 	rcu_read_unlock();
--	return 0;
-+	return is_my_mac;
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index d583a1b4aec9..c421a550b303 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -394,8 +394,8 @@ static uint8_t batadv_hop_penalty(uint8_t tq,
  }
  
- /**
-diff --git a/main.h b/main.h
-index 013de2f7ee11..6cd339090658 100644
---- a/main.h
-+++ b/main.h
-@@ -196,7 +196,7 @@ extern struct workqueue_struct *batadv_event_workqueue;
+ /* is there another aggregated packet here? */
+-static int batadv_iv_ogm_aggr_packet(int buff_pos, int packet_len,
+-				     __be16 tvlv_len)
++static bool batadv_iv_ogm_aggr_packet(int buff_pos, int packet_len,
++				      __be16 tvlv_len)
+ {
+ 	int next_buff_pos = 0;
  
- int batadv_mesh_init(struct net_device *soft_iface);
- void batadv_mesh_free(struct net_device *soft_iface);
--int batadv_is_my_mac(struct batadv_priv *bat_priv, const uint8_t *addr);
-+bool batadv_is_my_mac(struct batadv_priv *bat_priv, const uint8_t *addr);
- struct batadv_hard_iface *
- batadv_seq_print_text_primary_if_get(struct seq_file *seq);
- int batadv_max_header_len(void);
 -- 
 2.1.3
 
