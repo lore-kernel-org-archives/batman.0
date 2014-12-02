@@ -1,11 +1,11 @@
 Return-Path: <mpa@pengutronix.de>
 From: Markus Pargmann <mpa@pengutronix.de>
-Date: Tue,  2 Dec 2014 12:16:47 +0100
-Message-Id: <1417519009-20699-30-git-send-email-mpa@pengutronix.de>
+Date: Tue,  2 Dec 2014 12:16:48 +0100
+Message-Id: <1417519009-20699-31-git-send-email-mpa@pengutronix.de>
 In-Reply-To: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
 References: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
-Subject: [B.A.T.M.A.N.] [PATCH 29/31] batman-adv: Remove unnecessary ret
-	variable in algo_register
+Subject: [B.A.T.M.A.N.] [PATCH 30/31] batman-adv: packet.h,
+	add some missing includes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,37 +20,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Remove ret variable and all jumps.
-
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 ---
- main.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ packet.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/main.c b/main.c
-index 2e2ad071a085..d67be132e5df 100644
---- a/main.c
-+++ b/main.c
-@@ -563,17 +563,14 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
- int batadv_algo_select(struct batadv_priv *bat_priv, char *name)
- {
- 	struct batadv_algo_ops *bat_algo_ops;
--	int ret = -EINVAL;
+diff --git a/packet.h b/packet.h
+index facd1feddd4e..cbf1a9140d5e 100644
+--- a/packet.h
++++ b/packet.h
+@@ -18,6 +18,9 @@
+ #ifndef _NET_BATMAN_ADV_PACKET_H_
+ #define _NET_BATMAN_ADV_PACKET_H_
  
- 	bat_algo_ops = batadv_algo_get(name);
- 	if (!bat_algo_ops)
--		goto out;
-+		return -EINVAL;
- 
- 	bat_priv->bat_algo_ops = bat_algo_ops;
--	ret = 0;
- 
--out:
--	return ret;
-+	return 0;
- }
- 
- int batadv_algo_seq_print_text(struct seq_file *seq, void *offset)
++#include <linux/bitops.h>
++#include <uapi/linux/if_ether.h>
++
+ /**
+  * enum batadv_packettype - types for batman-adv encapsulated packets
+  * @BATADV_IV_OGM: originator messages for B.A.T.M.A.N. IV
 -- 
 2.1.3
 
