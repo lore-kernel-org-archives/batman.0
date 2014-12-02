@@ -1,11 +1,11 @@
 Return-Path: <mpa@pengutronix.de>
 From: Markus Pargmann <mpa@pengutronix.de>
-Date: Tue,  2 Dec 2014 12:16:38 +0100
-Message-Id: <1417519009-20699-21-git-send-email-mpa@pengutronix.de>
+Date: Tue,  2 Dec 2014 12:16:47 +0100
+Message-Id: <1417519009-20699-30-git-send-email-mpa@pengutronix.de>
 In-Reply-To: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
 References: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
-Subject: [B.A.T.M.A.N.] [PATCH 20/31] batman-adv: iv_ogm_queue_add,
-	Simplify expressions
+Subject: [B.A.T.M.A.N.] [PATCH 29/31] batman-adv: Remove unnecessary ret
+	variable in algo_register
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,31 +20,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
+Remove ret variable and all jumps.
+
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 ---
- bat_iv_ogm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ main.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 1f3ed3173005..9482a0889201 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -750,13 +750,13 @@ static void batadv_iv_ogm_queue_add(struct batadv_priv *bat_priv,
- 	unsigned long max_aggregation_jiffies;
+diff --git a/main.c b/main.c
+index 2e2ad071a085..d67be132e5df 100644
+--- a/main.c
++++ b/main.c
+@@ -563,17 +563,14 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
+ int batadv_algo_select(struct batadv_priv *bat_priv, char *name)
+ {
+ 	struct batadv_algo_ops *bat_algo_ops;
+-	int ret = -EINVAL;
  
- 	batadv_ogm_packet = (struct batadv_ogm_packet *)packet_buff;
--	direct_link = batadv_ogm_packet->flags & BATADV_DIRECTLINK ? 1 : 0;
-+	direct_link = !!(batadv_ogm_packet->flags & BATADV_DIRECTLINK);
- 	max_aggregation_jiffies = msecs_to_jiffies(BATADV_MAX_AGGREGATION_MS);
+ 	bat_algo_ops = batadv_algo_get(name);
+ 	if (!bat_algo_ops)
+-		goto out;
++		return -EINVAL;
  
- 	/* find position for the packet in the forward queue */
- 	spin_lock_bh(&bat_priv->forw_bat_list_lock);
- 	/* own packets are not to be aggregated */
--	if ((atomic_read(&bat_priv->aggregated_ogms)) && (!own_packet)) {
-+	if (atomic_read(&bat_priv->aggregated_ogms) && !own_packet) {
- 		hlist_for_each_entry(forw_packet_pos,
- 				     &bat_priv->forw_bat_list, list) {
- 			if (batadv_iv_ogm_can_aggregate(batadv_ogm_packet,
+ 	bat_priv->bat_algo_ops = bat_algo_ops;
+-	ret = 0;
+ 
+-out:
+-	return ret;
++	return 0;
+ }
+ 
+ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset)
 -- 
 2.1.3
 
