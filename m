@@ -1,11 +1,11 @@
 Return-Path: <mpa@pengutronix.de>
 From: Markus Pargmann <mpa@pengutronix.de>
-Date: Tue,  2 Dec 2014 12:16:33 +0100
-Message-Id: <1417519009-20699-16-git-send-email-mpa@pengutronix.de>
+Date: Tue,  2 Dec 2014 12:16:37 +0100
+Message-Id: <1417519009-20699-20-git-send-email-mpa@pengutronix.de>
 In-Reply-To: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
 References: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
-Subject: [B.A.T.M.A.N.] [PATCH 15/31] batman-adv: iv_ogm_aggr_packet,
-	bool return value
+Subject: [B.A.T.M.A.N.] [PATCH 19/31] batman-adv: iv_ogm_aggregate_new,
+	simplify error handling
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,29 +20,64 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-This function returns bool values, so it should be defined to return
-them instead of the whole int range.
+It is just a bit easier to put the error handling at one place and let
+multiple error paths use the same calls.
 
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 ---
- bat_iv_ogm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ bat_iv_ogm.c | 24 +++++++++++-------------
+ 1 file changed, 11 insertions(+), 13 deletions(-)
 
 diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index d583a1b4aec9..c421a550b303 100644
+index 232cd9ab3e6e..1f3ed3173005 100644
 --- a/bat_iv_ogm.c
 +++ b/bat_iv_ogm.c
-@@ -394,8 +394,8 @@ static uint8_t batadv_hop_penalty(uint8_t tq,
- }
+@@ -647,14 +647,11 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 	}
  
- /* is there another aggregated packet here? */
--static int batadv_iv_ogm_aggr_packet(int buff_pos, int packet_len,
--				     __be16 tvlv_len)
-+static bool batadv_iv_ogm_aggr_packet(int buff_pos, int packet_len,
-+				      __be16 tvlv_len)
- {
- 	int next_buff_pos = 0;
+ 	forw_packet_aggr = kmalloc(sizeof(*forw_packet_aggr), GFP_ATOMIC);
+-	if (!forw_packet_aggr) {
+-		if (!own_packet)
+-			atomic_inc(&bat_priv->batman_queue_left);
+-		goto out;
+-	}
++	if (!forw_packet_aggr)
++		goto out_nomem;
  
+-	if ((atomic_read(&bat_priv->aggregated_ogms)) &&
+-	    (packet_len < BATADV_MAX_AGGREGATION_BYTES))
++	if (atomic_read(&bat_priv->aggregated_ogms) &&
++	    packet_len < BATADV_MAX_AGGREGATION_BYTES)
+ 		skb_size = BATADV_MAX_AGGREGATION_BYTES;
+ 	else
+ 		skb_size = packet_len;
+@@ -662,12 +659,8 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 	skb_size += ETH_HLEN;
+ 
+ 	forw_packet_aggr->skb = netdev_alloc_skb_ip_align(NULL, skb_size);
+-	if (!forw_packet_aggr->skb) {
+-		if (!own_packet)
+-			atomic_inc(&bat_priv->batman_queue_left);
+-		kfree(forw_packet_aggr);
+-		goto out;
+-	}
++	if (!forw_packet_aggr->skb)
++		goto out_free_forw_packet;
+ 	forw_packet_aggr->skb->priority = TC_PRIO_CONTROL;
+ 	skb_reserve(forw_packet_aggr->skb, ETH_HLEN);
+ 
+@@ -699,6 +692,11 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 			   send_time - jiffies);
+ 
+ 	return;
++out_free_forw_packet:
++	kfree(forw_packet_aggr);
++out_nomem:
++	if (!own_packet)
++		atomic_inc(&bat_priv->batman_queue_left);
+ out:
+ 	batadv_hardif_free_ref(if_outgoing);
+ out_free_incoming:
 -- 
 2.1.3
 
