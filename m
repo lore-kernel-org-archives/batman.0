@@ -1,11 +1,11 @@
 Return-Path: <mpa@pengutronix.de>
 From: Markus Pargmann <mpa@pengutronix.de>
-Date: Tue,  2 Dec 2014 12:16:46 +0100
-Message-Id: <1417519009-20699-29-git-send-email-mpa@pengutronix.de>
+Date: Tue,  2 Dec 2014 12:16:24 +0100
+Message-Id: <1417519009-20699-7-git-send-email-mpa@pengutronix.de>
 In-Reply-To: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
 References: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
-Subject: [B.A.T.M.A.N.] [PATCH 28/31] batman-adv: Remove unnecessary ret
-	variable
+Subject: [B.A.T.M.A.N.] [PATCH 06/31] batman-adv: tvlv realloc,
+	move error handling into if block
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,53 +20,42 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-We can avoid this indirect return variable by directly returning the
-error values.
+Instead of hiding the normal function flow inside an if block, we should
+just put the error handling into the if block.
 
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 ---
- main.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ main.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/main.c b/main.c
-index d5c79ae1db6f..2e2ad071a085 100644
+index 65021ea567e8..00a1107109e8 100644
 --- a/main.c
 +++ b/main.c
-@@ -532,14 +532,12 @@ static struct batadv_algo_ops *batadv_algo_get(char *name)
- int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
- {
- 	struct batadv_algo_ops *bat_algo_ops_tmp;
--	int ret;
+@@ -838,15 +838,15 @@ static bool batadv_tvlv_realloc_packet_buff(unsigned char **packet_buff,
+ 	new_buff = kmalloc(min_packet_len + additional_packet_len, GFP_ATOMIC);
  
- 	bat_algo_ops_tmp = batadv_algo_get(bat_algo_ops->name);
- 	if (bat_algo_ops_tmp) {
- 		pr_info("Trying to register already registered routing algorithm: %s\n",
- 			bat_algo_ops->name);
--		ret = -EEXIST;
--		goto out;
-+		return -EEXIST;
- 	}
+ 	/* keep old buffer if kmalloc should fail */
+-	if (new_buff) {
+-		memcpy(new_buff, *packet_buff, min_packet_len);
+-		kfree(*packet_buff);
+-		*packet_buff = new_buff;
+-		*packet_buff_len = min_packet_len + additional_packet_len;
+-		return true;
+-	}
++	if (!new_buff)
++		return false;
++
++	memcpy(new_buff, *packet_buff, min_packet_len);
++	kfree(*packet_buff);
++	*packet_buff = new_buff;
++	*packet_buff_len = min_packet_len + additional_packet_len;
  
- 	/* all algorithms must implement all ops (for now) */
-@@ -553,16 +551,13 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
- 	    !bat_algo_ops->bat_neigh_is_equiv_or_better) {
- 		pr_info("Routing algo '%s' does not implement required ops\n",
- 			bat_algo_ops->name);
--		ret = -EINVAL;
--		goto out;
-+		return -EINVAL;
- 	}
- 
- 	INIT_HLIST_NODE(&bat_algo_ops->list);
- 	hlist_add_head(&bat_algo_ops->list, &batadv_algo_list);
--	ret = 0;
- 
--out:
--	return ret;
-+	return 0;
+-	return false;
++	return true;
  }
  
- int batadv_algo_select(struct batadv_priv *bat_priv, char *name)
+ /**
 -- 
 2.1.3
 
