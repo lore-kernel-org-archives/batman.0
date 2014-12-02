@@ -1,11 +1,11 @@
 Return-Path: <mpa@pengutronix.de>
 From: Markus Pargmann <mpa@pengutronix.de>
-Date: Tue,  2 Dec 2014 12:16:34 +0100
-Message-Id: <1417519009-20699-17-git-send-email-mpa@pengutronix.de>
+Date: Tue,  2 Dec 2014 12:16:19 +0100
+Message-Id: <1417519009-20699-2-git-send-email-mpa@pengutronix.de>
 In-Reply-To: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
 References: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
-Subject: [B.A.T.M.A.N.] [PATCH 16/31] batman-adv: iv_ogm_send_to_if,
-	declare char* as const
+Subject: [B.A.T.M.A.N.] [PATCH 01/31] batman-adv: debugfs,
+	avoid compiling for !DEBUG_FS
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,27 +20,111 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-This string pointer is later assigned to a constant string, so it should
-be defined constant at the beginning.
+Normally the debugfs framework will return error pointer with -ENODEV
+for function calls when DEBUG_FS is not set.
+
+batman does not notice this error code and continues trying to create
+debugfs files and executes more code. We can avoid this code execution
+by disabling compiling debugfs.c when DEBUG_FS is not set.
 
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 ---
- bat_iv_ogm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Makefile.kbuild |  2 +-
+ debugfs.c       |  8 --------
+ debugfs.h       | 34 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 35 insertions(+), 9 deletions(-)
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index c421a550b303..8ebbd2eb81ee 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -411,7 +411,7 @@ static void batadv_iv_ogm_send_to_if(struct batadv_forw_packet *forw_packet,
- 				     struct batadv_hard_iface *hard_iface)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
--	char *fwd_str;
-+	const char *fwd_str;
- 	uint8_t packet_num;
- 	int16_t buff_pos;
- 	struct batadv_ogm_packet *batadv_ogm_packet;
+diff --git a/Makefile.kbuild b/Makefile.kbuild
+index eb7d8c0388e4..96fa99b3a409 100644
+--- a/Makefile.kbuild
++++ b/Makefile.kbuild
+@@ -20,7 +20,7 @@ obj-$(CONFIG_BATMAN_ADV) += batman-adv.o
+ batman-adv-y += bat_iv_ogm.o
+ batman-adv-y += bitarray.o
+ batman-adv-$(CONFIG_BATMAN_ADV_BLA) += bridge_loop_avoidance.o
+-batman-adv-y += debugfs.o
++batman-adv-$(CONFIG_DEBUG_FS) += debugfs.o
+ batman-adv-$(CONFIG_BATMAN_ADV_DAT) += distributed-arp-table.o
+ batman-adv-y += fragmentation.o
+ batman-adv-y += gateway_client.o
+diff --git a/debugfs.c b/debugfs.c
+index d9b9a8eb17fb..026a25ce364c 100644
+--- a/debugfs.c
++++ b/debugfs.c
+@@ -483,11 +483,7 @@ rem_attr:
+ 	debugfs_remove_recursive(hard_iface->debug_dir);
+ 	hard_iface->debug_dir = NULL;
+ out:
+-#ifdef CONFIG_DEBUG_FS
+ 	return -ENOMEM;
+-#else
+-	return 0;
+-#endif /* CONFIG_DEBUG_FS */
+ }
+ 
+ /**
+@@ -542,11 +538,7 @@ rem_attr:
+ 	debugfs_remove_recursive(bat_priv->debug_dir);
+ 	bat_priv->debug_dir = NULL;
+ out:
+-#ifdef CONFIG_DEBUG_FS
+ 	return -ENOMEM;
+-#else
+-	return 0;
+-#endif /* CONFIG_DEBUG_FS */
+ }
+ 
+ void batadv_debugfs_del_meshif(struct net_device *dev)
+diff --git a/debugfs.h b/debugfs.h
+index 37c4d6ddd04d..5db336a6ef57 100644
+--- a/debugfs.h
++++ b/debugfs.h
+@@ -20,6 +20,8 @@
+ 
+ #define BATADV_DEBUGFS_SUBDIR "batman_adv"
+ 
++#if IS_ENABLED(CONFIG_DEBUG_FS)
++
+ void batadv_debugfs_init(void);
+ void batadv_debugfs_destroy(void);
+ int batadv_debugfs_add_meshif(struct net_device *dev);
+@@ -27,4 +29,36 @@ void batadv_debugfs_del_meshif(struct net_device *dev);
+ int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface);
+ void batadv_debugfs_del_hardif(struct batadv_hard_iface *hard_iface);
+ 
++#else
++
++static inline void batadv_debugfs_init(void)
++{
++}
++
++static inline void batadv_debugfs_destroy(void)
++{
++}
++
++static inline int batadv_debugfs_add_meshif(struct net_device *dev)
++{
++	return 0;
++}
++
++static inline void batadv_debugfs_del_meshif(struct net_device *dev)
++{
++}
++
++static inline int batadv_debugfs_add_hardif(
++		struct batadv_hard_iface *hard_iface)
++{
++	return 0;
++}
++
++static inline void batadv_debugfs_del_hardif(
++		struct batadv_hard_iface *hard_iface)
++{
++}
++
++#endif
++
+ #endif /* _NET_BATMAN_ADV_DEBUGFS_H_ */
 -- 
 2.1.3
 
