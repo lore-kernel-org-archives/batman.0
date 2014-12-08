@@ -1,14 +1,14 @@
-Return-Path: <booray@gmail.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 08 Dec 2014 11:39:12 +0800
+Message-ID: <2140309.TXRIvSsL9G@diderot>
+In-Reply-To: <1417426330-9178-1-git-send-email-sven@narfation.org>
+References: <1417426330-9178-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-In-Reply-To: <CAAxzKbSs+HGDsR1jacP1GWWzFDSHyDiCVJNBv=sabeRbupa0gw@mail.gmail.com>
-References: <CAAxzKbSv9+vcOVCcoqg9FDOskuZd=_GK2pmq7jk4E4eAQbqWYg@mail.gmail.com>
- <CAA51LVoFGGgaefVXr01YXxJf+VnBFBGjjxr1ftKjkFkP9UMHHw@mail.gmail.com>
- <CAAxzKbSs+HGDsR1jacP1GWWzFDSHyDiCVJNBv=sabeRbupa0gw@mail.gmail.com>
-Date: Tue, 2 Dec 2014 15:49:11 -0800
-Message-ID: <CAA51LVpZmv8UmH5WY-oC1C-+9DkXVpq1ZYMHTDvAun4ft-JxNQ@mail.gmail.com>
-From: Ray Gibson <booray@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] Bridging multiple mesh segments across WAN
+Content-Type: multipart/signed; boundary="nextPart15584057.UdFph5Zzc9";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: Calculate extra tail
+	size based on queued fragments
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,107 +20,76 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-Travis,
-
-Here are my configurations.  This was done on two dual interface
-ubuntu computers acting as routers, with eth0 being plugged into the
-local lan and eth1 being the "wan" connection".  lan0 is a bridge of
-eth0 and bat0 on each, and bat0 contains tap0 (and tap1.. tap2... etc
-for ring/star topologies)
-
-Site "A" interfaces file:
-# vpn server interface
-auto tap0
-iface tap0 inet static
-  address 0.0.0.0
-  pre-up /usr/sbin/tunctl -u root -t tap0
-  pre-up /sbin/ifconfig tap0 mtu 1500
-  post-down /usr/sbin/tunctl -d tap0
-
-# local network
-auto lan0
-iface lan0 inet static
-  address 192.168.100.1
-  netmask 255.255.255.0
-  bridge_ports bat0 eth0
-  pre-up /sbin/ifconfig eth0 mtu 1468
-  pre-up /sbin/modprobe batman-adv
-  pre-up /usr/local/sbin/batctl if add tap0
-  pre-up /sbin/ifconfig/bat0 mtu 1468
-  post-down /usr/local/sbin/batctl if del tap0
-  post-down /sbin/rmmod batman-adv
-
-The only difference about Site "B"'s interfaces file would be a
-different address line (192.168.100.2)
-
-Site "A" openvpn conf:
-mode server
-local 10.10.10.1    # (this would be your wan interface IP that it's
-listening on)
-port 1194
-dev tap0
-proto udp
-server-bridge
-ca ca.crt
-cert server.crt
-key server.key
-dh dh1024.pem
-keepalive 10 60
-persist-tun
-persist-key
-status /var/log/openvpn1194.status
-log-append /var/log/openvpn1194.log
-verb 3
-
-On the client, Site "B", replace the first three lines of the above file with:
-client
-daemon
-remote 10.10.10.1 1194
-
-Of course, set appropriate encryption values for openvpn if you need
-extra security.  I was doing the above in a lab setup with virtual
-machines, and at one point succeeded in doing it over a wan link, but
-those VM's are long gone, this is the closest thing I have.  Same idea
-though.  The key part is that openvpn is set up in a server-bridge
-configuration without ever setting any IP addresses on the tap
-interfaces.  When everything is up successfully, you should be able to
-ping back and forth between 192.168.100.1 and 192.168.100.2 and
-because of the lan0 bridge, anything in the same subnet on either side
-of the equation.
-
-Good luck.
-
-Ray
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
 
-On Tue, Dec 2, 2014 at 2:37 PM, tjhowse <tjhowse@gmail.com> wrote:
-> Hi Ray,
->
-> That sounds like it would save me a lot of legwork. If you could post
-> something up that would be brilliant. Feel free to email me directly
-> if the list doesn't accept attachments.
->
-> Thanks,
-> Travis.
->
-> On 27 November 2014 at 09:21, Ray Gibson <booray@gmail.com> wrote:
->> On Wed, Nov 26, 2014 at 3:05 PM, tjhowse <tjhowse@gmail.com> wrote:
->>
->>> I would like to join up the separate mesh segments, via the site
->>> network, such that a client to one segment can ping a client of
->>> another network, having the traffic transparently tunnel via the WAN.
->>> Has anyone looked at doing this in the past?
->>
->> I've successfully added tap interfaces into bat0, with openvpn
->> connecting the sites in a ring, with no problems.  It took a little
->> while to get the MTU's right as each layer has its own overhead, but
->> it worked great and clients in one state acted as if they were on the
->> same switched network as clients in the other.
->>
->> I can dig up some example configs if it's useful to you or the group.
->>
->> Thanks,
->>
->> Ray
+--nextPart15584057.UdFph5Zzc9
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Monday 01 December 2014 10:32:10 Sven Eckelmann wrote:
+> The fragmentation code was replaced in
+> 9b3eab61754d74a93c9840c296013fe3b4a1b606 ("batman-adv: Receive fragmented
+> packets and merge"). The new code provided a mostly unused parameter skb
+> for the merging function. It is used inside the function to calculate the
+> additionally needed skb tailroom. But instead of increasing its own
+> tailroom, it is only increasing the tailroom of the first queued skb. This
+> is not correct in some situations because the first queued entry can be a
+> different one than the parameter.
+> 
+> An observed problem was:
+> 
+> 1. packet with size 104, total_size 1464, fragno 1 was received
+>    - packet is queued
+> 2. packet with size 1400, total_size 1464, fragno 0 was received
+>    - packet is queued at the end of the list
+> 3. enough data was received and can be given to the merge function
+>    (1464 == (1400 - 20) + (104 - 20))
+>    - merge functions gets 1400 byte large packet as skb argument
+> 4. merge function gets first entry in queue (104 byte)
+>    - stored as skb_out
+> 5. merge function calculates the required extra tail as total_size -
+> skb->len - pskb_expand_head tail of skb_out with 64 bytes
+> 6. merge function tries to squeeze the extra 1380 bytes from the second
+> queued skb (1400 byte aka skb parameter) in the 64 extra tail bytes of
+> skb_out
+> 
+> Instead calculate the extra required tail bytes for skb_out also using
+> skb_out instead of using the parameter skb. The skb parameter is only used
+> to get the total_size from the last received packet. This is also the
+> total_size used to decide that all fragments were received.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Reported-by: Philipp Psurek <philipp.psurek@gmail.com>
+> ---
+> This is a minimized version which doesn't require the patch
+> "[PATCH-maint] batman-adv: Check total_size when reassembling fragments".
+> ---
+>  fragmentation.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+
+Applied in revision 210a3cb.
+
+Thanks,
+Marek
+
+--nextPart15584057.UdFph5Zzc9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABAgAGBQJUhR1kAAoJEFNVTo/uthzAzHkH/1SXAqLuV3v0VsZJzdpFgRMD
+UJaDmMx7AQDWlXsxCnAGtx32swvoeyIVHprB2igTnYC9SgtAfcQZqiiOBQ6871SD
+a2ucsx3CL0GHa8CwEXvq2W+XNhb9aawLEJ5r438Fk/uVoUSfSnlYVtipZyH/aR/R
+GQFxQTPU7dT5rP7hcrA6ek9eWqY4J9RzhtiDrxbqOCehqCQeRO2WUnyF6Lw9959b
+BvmGc8+4Yhpx7Re/vEE4acQvvKNJ2V+J+NCI6yglDDcHOP//HNVLmZMv5z9VMQEe
+I5nBM+EgBMAaz0WkJuYy9sCZcpJPXTKT9Y5Sv0Z/6/IJNTj8EfJG823UEb2daqY=
+=Z86r
+-----END PGP SIGNATURE-----
+
+--nextPart15584057.UdFph5Zzc9--
+
