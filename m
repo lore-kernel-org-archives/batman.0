@@ -1,11 +1,11 @@
 Return-Path: <mpa@pengutronix.de>
 From: Markus Pargmann <mpa@pengutronix.de>
-Date: Fri, 26 Dec 2014 12:41:26 +0100
-Message-Id: <1419594103-10928-10-git-send-email-mpa@pengutronix.de>
+Date: Fri, 26 Dec 2014 12:41:23 +0100
+Message-Id: <1419594103-10928-7-git-send-email-mpa@pengutronix.de>
 In-Reply-To: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
 References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
-Subject: [B.A.T.M.A.N.] [PATCH v2 09/26] batman-adv: iv_ogm_iface_enable,
-	direct return values
+Subject: [B.A.T.M.A.N.] [PATCH v2 06/26] batman-adv: tvlv realloc,
+	move error handling into if block
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,46 +20,42 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
 
-Directly return error values. No need to use a return variable.
+Instead of hiding the normal function flow inside an if block, we should
+just put the error handling into the if block.
 
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 ---
- bat_iv_ogm.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ main.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 20295c5e5121..92eeed406663 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -310,7 +310,6 @@ static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
- 	struct batadv_ogm_packet *batadv_ogm_packet;
- 	unsigned char *ogm_buff;
- 	uint32_t random_seqno;
--	int res = -ENOMEM;
+diff --git a/main.c b/main.c
+index 65021ea567e8..00a1107109e8 100644
+--- a/main.c
++++ b/main.c
+@@ -838,15 +838,15 @@ static bool batadv_tvlv_realloc_packet_buff(unsigned char **packet_buff,
+ 	new_buff = kmalloc(min_packet_len + additional_packet_len, GFP_ATOMIC);
  
- 	/* randomize initial seqno to avoid collision */
- 	get_random_bytes(&random_seqno, sizeof(random_seqno));
-@@ -319,7 +318,7 @@ static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
- 	hard_iface->bat_iv.ogm_buff_len = BATADV_OGM_HLEN;
- 	ogm_buff = kmalloc(hard_iface->bat_iv.ogm_buff_len, GFP_ATOMIC);
- 	if (!ogm_buff)
--		goto out;
-+		return -ENOMEM;
+ 	/* keep old buffer if kmalloc should fail */
+-	if (new_buff) {
+-		memcpy(new_buff, *packet_buff, min_packet_len);
+-		kfree(*packet_buff);
+-		*packet_buff = new_buff;
+-		*packet_buff_len = min_packet_len + additional_packet_len;
+-		return true;
+-	}
++	if (!new_buff)
++		return false;
++
++	memcpy(new_buff, *packet_buff, min_packet_len);
++	kfree(*packet_buff);
++	*packet_buff = new_buff;
++	*packet_buff_len = min_packet_len + additional_packet_len;
  
- 	hard_iface->bat_iv.ogm_buff = ogm_buff;
- 
-@@ -331,10 +330,7 @@ static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
- 	batadv_ogm_packet->reserved = 0;
- 	batadv_ogm_packet->tq = BATADV_TQ_MAX_VALUE;
- 
--	res = 0;
--
--out:
--	return res;
-+	return 0;
+-	return false;
++	return true;
  }
  
- static void batadv_iv_ogm_iface_disable(struct batadv_hard_iface *hard_iface)
+ /**
 -- 
 2.1.3
 
