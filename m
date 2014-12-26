@@ -1,11 +1,11 @@
 Return-Path: <mpa@pengutronix.de>
 From: Markus Pargmann <mpa@pengutronix.de>
-Date: Fri, 26 Dec 2014 12:41:23 +0100
-Message-Id: <1419594103-10928-7-git-send-email-mpa@pengutronix.de>
+Date: Fri, 26 Dec 2014 12:41:21 +0100
+Message-Id: <1419594103-10928-5-git-send-email-mpa@pengutronix.de>
 In-Reply-To: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
 References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
-Subject: [B.A.T.M.A.N.] [PATCH v2 06/26] batman-adv: tvlv realloc,
-	move error handling into if block
+Subject: [B.A.T.M.A.N.] [PATCH v2 04/26] batman-adv: iv_ogm,
+	divide and round for ring buffer avg
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,39 +20,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
 
-Instead of hiding the normal function flow inside an if block, we should
-just put the error handling into the if block.
+Instead of the normal division which looses precision, use a division
+with rounding.
 
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 ---
- main.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ bat_iv_ogm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/main.c b/main.c
-index 65021ea567e8..00a1107109e8 100644
---- a/main.c
-+++ b/main.c
-@@ -838,15 +838,15 @@ static bool batadv_tvlv_realloc_packet_buff(unsigned char **packet_buff,
- 	new_buff = kmalloc(min_packet_len + additional_packet_len, GFP_ATOMIC);
+diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+index 1458ecfa66b8..10eada270015 100644
+--- a/bat_iv_ogm.c
++++ b/bat_iv_ogm.c
+@@ -82,7 +82,7 @@ static uint8_t batadv_ring_buffer_avg(const uint8_t lq_recv[])
+ 	if (count == 0)
+ 		return 0;
  
- 	/* keep old buffer if kmalloc should fail */
--	if (new_buff) {
--		memcpy(new_buff, *packet_buff, min_packet_len);
--		kfree(*packet_buff);
--		*packet_buff = new_buff;
--		*packet_buff_len = min_packet_len + additional_packet_len;
--		return true;
--	}
-+	if (!new_buff)
-+		return false;
-+
-+	memcpy(new_buff, *packet_buff, min_packet_len);
-+	kfree(*packet_buff);
-+	*packet_buff = new_buff;
-+	*packet_buff_len = min_packet_len + additional_packet_len;
- 
--	return false;
-+	return true;
+-	return (uint8_t)(sum / count);
++	return (uint8_t)DIV_ROUND_CLOSEST(sum, count);
  }
  
  /**
