@@ -1,11 +1,11 @@
 Return-Path: <mpa@pengutronix.de>
 From: Markus Pargmann <mpa@pengutronix.de>
-Date: Fri, 26 Dec 2014 12:41:39 +0100
-Message-Id: <1419594103-10928-23-git-send-email-mpa@pengutronix.de>
+Date: Fri, 26 Dec 2014 12:41:25 +0100
+Message-Id: <1419594103-10928-9-git-send-email-mpa@pengutronix.de>
 In-Reply-To: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
 References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
-Subject: [B.A.T.M.A.N.] [PATCH v2 22/26] batman-adv: main,
-	batadv_compare_eth return bool
+Subject: [B.A.T.M.A.N.] [PATCH v2 08/26] batman-adv: Makefile,
+	Sort alphabetically
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,29 +20,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
 
-Declare the returntype of batadv_compare_eth as bool.
-The function called inside this helper function
-(ether_addr_equal_unaligned) also uses bool as return value, so there is
-no need to return int.
+The whole Makefile is sorted, just the multicast rule is not at the
+right position.
 
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 ---
- main.h | 2 +-
+ Makefile.kbuild | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/main.h b/main.h
-index 6cd339090658..2e70d4dc748d 100644
---- a/main.h
-+++ b/main.h
-@@ -218,7 +218,7 @@ __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr);
-  *
-  * note: can't use ether_addr_equal() as it requires aligned memory
-  */
--static inline int batadv_compare_eth(const void *data1, const void *data2)
-+static inline bool batadv_compare_eth(const void *data1, const void *data2)
- {
- 	return ether_addr_equal_unaligned(data1, data2);
- }
+diff --git a/Makefile.kbuild b/Makefile.kbuild
+index a8c34baddd63..6fb243c5b13c 100644
+--- a/Makefile.kbuild
++++ b/Makefile.kbuild
+@@ -29,6 +29,7 @@ batman-adv-y += hard-interface.o
+ batman-adv-y += hash.o
+ batman-adv-y += icmp_socket.o
+ batman-adv-y += main.o
++batman-adv-$(CONFIG_BATMAN_ADV_MCAST) += multicast.o
+ batman-adv-$(CONFIG_BATMAN_ADV_NC) += network-coding.o
+ batman-adv-y += originator.o
+ batman-adv-y += routing.o
+@@ -37,4 +38,3 @@ batman-adv-y += soft-interface.o
+ batman-adv-y += sysfs.o
+ batman-adv-y += translation-table.o
+ batman-adv-y += tvlv.o
+-batman-adv-$(CONFIG_BATMAN_ADV_MCAST) += multicast.o
 -- 
 2.1.3
 
