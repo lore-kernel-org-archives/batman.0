@@ -1,11 +1,11 @@
 Return-Path: <mpa@pengutronix.de>
 From: Markus Pargmann <mpa@pengutronix.de>
-Date: Fri, 26 Dec 2014 12:41:29 +0100
-Message-Id: <1419594103-10928-13-git-send-email-mpa@pengutronix.de>
+Date: Fri, 26 Dec 2014 12:41:34 +0100
+Message-Id: <1419594103-10928-18-git-send-email-mpa@pengutronix.de>
 In-Reply-To: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
 References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
-Subject: [B.A.T.M.A.N.] [PATCH v2 12/26] batman-adv: iv_ogm_can_aggregate,
-	code readability
+Subject: [B.A.T.M.A.N.] [PATCH v2 17/26] batman-adv: iv_ogm,
+	Fix dup_status comment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,129 +20,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
 Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
 
-This patch tries to increase code readability by negating the first if
-block and rearranging some of the other conditional blocks. This way we
-save an indentation level, we also save some allocation that is not
-necessary for one of the conditions.
-
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 ---
- bat_iv_ogm.c | 98 +++++++++++++++++++++++++++++++-----------------------------
- 1 file changed, 50 insertions(+), 48 deletions(-)
+ bat_iv_ogm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 4801619c4da5..1f3880ac8376 100644
+index 32640e0997ed..ab48865130b0 100644
 --- a/bat_iv_ogm.c
 +++ b/bat_iv_ogm.c
-@@ -546,58 +546,60 @@ batadv_iv_ogm_can_aggregate(const struct batadv_ogm_packet *new_bat_ogm_packet,
- 	 * - the send time is within our MAX_AGGREGATION_MS time
- 	 * - the resulting packet wont be bigger than
- 	 *   MAX_AGGREGATION_BYTES
-+	 * otherwise aggregation is not possible
- 	 */
--	if (time_before(send_time, forw_packet->send_time) &&
--	    time_after_eq(aggregation_end_time, forw_packet->send_time) &&
--	    (aggregated_bytes <= BATADV_MAX_AGGREGATION_BYTES)) {
--		/* check aggregation compatibility
--		 * -> direct link packets are broadcasted on
--		 *    their interface only
--		 * -> aggregate packet if the current packet is
--		 *    a "global" packet as well as the base
--		 *    packet
--		 */
--		primary_if = batadv_primary_if_get_selected(bat_priv);
--		if (!primary_if)
--			goto out;
-+	if (!time_before(send_time, forw_packet->send_time) ||
-+	    !time_after_eq(aggregation_end_time, forw_packet->send_time) ||
-+	    aggregated_bytes > BATADV_MAX_AGGREGATION_BYTES)
-+		return false;
+@@ -30,7 +30,7 @@
  
--		/* packet is not leaving on the same interface. */
--		if (forw_packet->if_outgoing != if_outgoing)
--			goto out;
-+	/* packet is not leaving on the same interface. */
-+	if (forw_packet->if_outgoing != if_outgoing)
-+		return false;
- 
--		/* packets without direct link flag and high TTL
--		 * are flooded through the net
--		 */
--		if ((!directlink) &&
--		    (!(batadv_ogm_packet->flags & BATADV_DIRECTLINK)) &&
--		    (batadv_ogm_packet->ttl != 1) &&
--
--		    /* own packets originating non-primary
--		     * interfaces leave only that interface
--		     */
--		    ((!forw_packet->own) ||
--		     (forw_packet->if_incoming == primary_if))) {
--			res = true;
--			goto out;
--		}
-+	/* check aggregation compatibility
-+	 * -> direct link packets are broadcasted on
-+	 *    their interface only
-+	 * -> aggregate packet if the current packet is
-+	 *    a "global" packet as well as the base
-+	 *    packet
-+	 */
-+	primary_if = batadv_primary_if_get_selected(bat_priv);
-+	if (!primary_if)
-+		return false;
- 
--		/* if the incoming packet is sent via this one
--		 * interface only - we still can aggregate
--		 */
--		if ((directlink) &&
--		    (new_bat_ogm_packet->ttl == 1) &&
--		    (forw_packet->if_incoming == if_incoming) &&
--
--		    /* packets from direct neighbors or
--		     * own secondary interface packets
--		     * (= secondary interface packets in general)
--		     */
--		    (batadv_ogm_packet->flags & BATADV_DIRECTLINK ||
--		     (forw_packet->own &&
--		      forw_packet->if_incoming != primary_if))) {
--			res = true;
--			goto out;
--		}
-+	/* packets without direct link flag and high TTL
-+	 * are flooded through the net
-+	 */
-+	if (!directlink &&
-+	    !(batadv_ogm_packet->flags & BATADV_DIRECTLINK) &&
-+	    batadv_ogm_packet->ttl != 1 &&
-+
-+	    /* own packets originating non-primary
-+	     * interfaces leave only that interface
-+	     */
-+	    (!forw_packet->own ||
-+	     forw_packet->if_incoming == primary_if)) {
-+		res = true;
-+		goto out;
-+	}
-+
-+	/* if the incoming packet is sent via this one
-+	 * interface only - we still can aggregate
-+	 */
-+	if (directlink &&
-+	    new_bat_ogm_packet->ttl == 1 &&
-+	    forw_packet->if_incoming == if_incoming &&
-+
-+	    /* packets from direct neighbors or
-+	     * own secondary interface packets
-+	     * (= secondary interface packets in general)
-+	     */
-+	    (batadv_ogm_packet->flags & BATADV_DIRECTLINK ||
-+	     (forw_packet->own &&
-+	      forw_packet->if_incoming != primary_if))) {
-+		res = true;
-+		goto out;
- 	}
- 
- out:
+ /**
+  * enum batadv_dup_status - duplicate status
+- * @BATADV_NO_DUP: the packet is a duplicate
++ * @BATADV_NO_DUP: the packet is no duplicate
+  * @BATADV_ORIG_DUP: OGM is a duplicate in the originator (but not for the
+  *  neighbor)
+  * @BATADV_NEIGH_DUP: OGM is a duplicate for the neighbor
 -- 
 2.1.3
 
