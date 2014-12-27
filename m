@@ -1,11 +1,16 @@
-Return-Path: <mpa@pengutronix.de>
-From: Markus Pargmann <mpa@pengutronix.de>
-Date: Fri, 26 Dec 2014 12:41:40 +0100
-Message-Id: <1419594103-10928-24-git-send-email-mpa@pengutronix.de>
-In-Reply-To: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <549EC29D.1070408@meshcoding.com>
+Date: Sat, 27 Dec 2014 15:30:53 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
+MIME-Version: 1.0
 References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
-Subject: [B.A.T.M.A.N.] [PATCH v2 23/26] batman-adv: Remove unnecessary ret
-	variable
+ <1419594103-10928-26-git-send-email-mpa@pengutronix.de>
+In-Reply-To: <1419594103-10928-26-git-send-email-mpa@pengutronix.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="DBLduExj3Wm9vrIDqEib6J55N3OoCdwFx"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 25/26] batman-adv: packet.h,
+ add some missing includes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,56 +22,103 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <antonio@meshcoding.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: Sven Eckelmann <sven@narfation.org>
 
-We can avoid this indirect return variable by directly returning the
-error values.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--DBLduExj3Wm9vrIDqEib6J55N3OoCdwFx
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
----
- main.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+Hi Markus,
 
-diff --git a/main.c b/main.c
-index d5c79ae1db6f..2e2ad071a085 100644
---- a/main.c
-+++ b/main.c
-@@ -532,14 +532,12 @@ static struct batadv_algo_ops *batadv_algo_get(char *name)
- int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
- {
- 	struct batadv_algo_ops *bat_algo_ops_tmp;
--	int ret;
- 
- 	bat_algo_ops_tmp = batadv_algo_get(bat_algo_ops->name);
- 	if (bat_algo_ops_tmp) {
- 		pr_info("Trying to register already registered routing algorithm: %s\n",
- 			bat_algo_ops->name);
--		ret = -EEXIST;
--		goto out;
-+		return -EEXIST;
- 	}
- 
- 	/* all algorithms must implement all ops (for now) */
-@@ -553,16 +551,13 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
- 	    !bat_algo_ops->bat_neigh_is_equiv_or_better) {
- 		pr_info("Routing algo '%s' does not implement required ops\n",
- 			bat_algo_ops->name);
--		ret = -EINVAL;
--		goto out;
-+		return -EINVAL;
- 	}
- 
- 	INIT_HLIST_NODE(&bat_algo_ops->list);
- 	hlist_add_head(&bat_algo_ops->list, &batadv_algo_list);
--	ret = 0;
- 
--out:
--	return ret;
-+	return 0;
- }
- 
- int batadv_algo_select(struct batadv_priv *bat_priv, char *name)
--- 
-2.1.3
+first of all you should know that I really appreciate your hard work.
+Thank you very much for this!
 
+On 26/12/14 12:41, Markus Pargmann wrote:
+> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+> ---
+>  packet.h | 5 +++++
+>  1 file changed, 5 insertions(+)
+>=20
+> diff --git a/packet.h b/packet.h
+> index facd1feddd4e..5fd0d814b6de 100644
+> --- a/packet.h
+> +++ b/packet.h
+> @@ -18,6 +18,11 @@
+>  #ifndef _NET_BATMAN_ADV_PACKET_H_
+>  #define _NET_BATMAN_ADV_PACKET_H_
+> =20
+> +#ifdef __KERNEL__
+> +#include <linux/bitops.h>
+> +#include <uapi/linux/if_ether.h>
+> +#endif /* __KERNEL__ */
+
+Unfortunately we can't do this :-(
+
+Patches sent to the kernel cannot contain conditional code on being in
+the kernel or not (same is true for checks against a particular kernel
+version - such code can't be in the kernel).
+
+Patches sent to the kernel must assume that they are only for the kernel
+(and for that particular version we are sending the patches against).
+
+Of course this makes everything a bit trickier for us since we share
+files between kernel and userspace .....
+
+This is one of the reasons why we have compat.c/h in the batman-adv
+package: you will see that in those files we had to implement all sort
+of hackish/dirty tricks in order to keep the code in the other files
+clean (compat.h/c are not sent to the kernel but are part of the
+batman-adv out-of-the-tree package).
+
+
+However, as far as I know, you should be able to simply do:
+
+#include <linux/if_ether.h> (without the uapi subfolder)
+
+and this should happily work for both the kernel and the userspace. Have
+you tried that? I might be wrong - it's quite some time I haven't used
+uapi headers.
+
+
+Otherwise we might need to find a different solution - or live we what
+we have now :)
+
+Cheers,
+
+
+> +
+>  /**
+>   * enum batadv_packettype - types for batman-adv encapsulated packets
+>   * @BATADV_IV_OGM: originator messages for B.A.T.M.A.N. IV
+>=20
+
+--=20
+Antonio Quartulli
+
+
+--DBLduExj3Wm9vrIDqEib6J55N3OoCdwFx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJUnsKgAAoJEJgn97Bh2u9em84QALZepDxQO9A/L1qS+uCQP+jQ
+EopAKZ7V+9LjSCYdR972ScgwFVJuvbIEvA6t3XPJ/PmLAnHpRgABDCmlV5mCI5bE
+iuCjgbFyENj2FnLIpGs7XGL1qdaGQ1RMT0CijiECISoA5aQtxx+semfrTylzmvrA
+2SMdxFOWm9Wg937GTy1RoybijjrSRRbyAXbQT81bnkZzf+7VHCk1A9pXxnZNjvD9
+fha37368R3/koLXcMW3qM0AhOe4Yzwlhlcb1O0vyo+Myq4PQPH2R9+Tx2fyEHWOY
+viymGpA9Do6Rp4Ua+aaPdWyixQTcYEuryEHHRb/gxZSyo9ZVsV+BOZvVZH5eu9Eg
+ozgnTmpC/p3UITtOL5GsZiqZswQLbwVrzaLrmG3EUHb0ay3UwAaaj4wJu3e2QwRj
+UhUQMX9qU59ZP0vWym8jWahquP1mrCgnC2wb1lvXMBpXxR1hrSdt9+EDTpoOhfgZ
+W7dqdqwE4vl0YNYChqgT4sisVXWHTxwfKDQ0W3pnHkgNmVjaLgZBWe3hKMdYdNRN
+Qv89SA8L77Bw2tMftPKUFynaoeVWTtUeAe2FYipf4ARDFmvLtX/4ximhK5iIYeNx
+4JynxkhMWHjsMtNT/B8MCshof16FAyT7FFPT2G4WxDP+Wpuu+1I87FBePK9L41uA
+Ig0nTMRdJbEzOubzlMKo
+=rmNP
+-----END PGP SIGNATURE-----
+
+--DBLduExj3Wm9vrIDqEib6J55N3OoCdwFx--
