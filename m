@@ -1,17 +1,14 @@
-Return-Path: <mpa@pengutronix.de>
-Date: Sun, 28 Dec 2014 12:11:10 +0100
-From: Markus Pargmann <mpa@pengutronix.de>
-Message-ID: <20141228111110.GD10331@pengutronix.de>
-References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
- <1419594103-10928-26-git-send-email-mpa@pengutronix.de>
- <2175702.tFymAKUbUX@diderot>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 29 Dec 2014 11:52:53 +0800
+Message-ID: <1869722.k5Ufm3Cai9@diderot>
+In-Reply-To: <1418509935-11849-1-git-send-email-linus.luessing@c0d3.blue>
+References: <1418509935-11849-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="bajzpZikUji1w+G9"
-Content-Disposition: inline
-In-Reply-To: <2175702.tFymAKUbUX@diderot>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 25/26] batman-adv: packet.h,
-	add some missing includes
+Content-Type: multipart/signed; boundary="nextPart2807509.uKbImGGr0F";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix potential TT
+	client + orig-node memory leak
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,61 +20,80 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---bajzpZikUji1w+G9
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+--nextPart2807509.uKbImGGr0F
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Sun, Dec 28, 2014 at 10:35:03AM +0800, Marek Lindner wrote:
-> On Friday 26 December 2014 12:41:42 Markus Pargmann wrote:
-> > Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
-> > ---
-> >  packet.h | 5 +++++
-> >  1 file changed, 5 insertions(+)
->=20
-> Again, why is it a problem if these headers are missing ? Something not=
-=20
-> compiling ? Something else broken ? What are we fixing ?
+On Saturday 13 December 2014 23:32:15 Linus L=FCssing wrote:
+> This patch fixes a potential memory leak which can occur once an
+> originator times out. On timeout the according global translation tab=
+le
+> entry might not get purged correctly. Furthermore, the non purged TT
+> entry will cause its orig-node to leak, too. Which additionally can l=
+ead
+> to the new multicast optimization feature not kicking in because of a=
 
-This is fixing missing includes that I discovered when removing other
-includes from c files. As this header uses defines from that include file
-I think it should be explicitly listed. Will add more description to the
-commit message.
+> therefore bogus counter.
 
-Best regards,
+So far, I am with you ..
 
-Markus
 
---=20
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+> In the wild with larger mesh networks we saw this leak quite regularl=
+y,
+> resulting in routers to reboot or killed processes. This was because
+> of a combination of two bugs: The bug fixed by commit
+> "batman-adv: fix delayed foreign originator recognition" (8a2ad520467=
+4)
+> amplified this memory leak heavily. Since that commit I'd expect
+> it to happen rarely, probably only in paused and resumed VMs and
+> devices previously in stand-by.
 
---bajzpZikUji1w+G9
+This section shouldn't be part of the official commit message. It is ha=
+rdly=20
+relevant to the reviewer how often a memleak occurs and whether or not =
+you=20
+need a VM to trigger it. The provided commit id isn't valid in the Linu=
+x tree.
+
+
+> The issue this patch fixes is caused by batadv_orig_node_free_rcu()
+> never being called because of not yet released references to the
+> orig-node. References which were supposed to be released through
+> batadv_orig_node_free_rcu()->batadv_tt_global_del_orig().
+
+Could you please provide addition insight as to which references are st=
+ill=20
+held ? I did look around but nothing obvious jumped at me.=20
+
+Generally, it wouldn't be bad if the commit message went into deeper de=
+tail=20
+describing the nature of the bug instead of the middle section above to=
+ make=20
+it easy to understand what is being fixed.
+
+
+Cheers,
+Marek
+
+--nextPart2807509.uKbImGGr0F
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Version: GnuPG v2
 
-iQIcBAEBAgAGBQJUn+VOAAoJEEpcgKtcEGQQ1ZMQAI9O+cRy47TalG068dzWhhkv
-sqZCHk1aFjXFHCGP5MqEdOiwSTAt7Klsg/jHmUYkDFSgWHTGaioVfr6rxixGljIv
-BYFMECHHnkNPNY2xItLGEX7XTuzLc7mwXFR3Z8MUuBuDYm+bmVVO9u8Z5O8FpQRe
-BNQNEGU8R0d222B/gxgYrhLerW2cZ0Of4JQJEv4zSGIBjXK0ecoEDFeKWx5748qa
-qHqaPqQ3KE9WOthJJcBxR1vVfZUEqh+dl0cmrZgQe0DrpgPP5NuucFYb3reH3WFY
-5AolwUkJCtUoZOBpgGh+ztNl+jwn0T6Y14c5TYUBu8grScU/m7bnAMrKofU2Q6Rx
-/aSHnX6z9RiARLo2yp4g6xTP645Lfy5gBl26tggoy2BxCNOvKBodcB38W33To2E8
-mt2Tz8jUNNX5JCCowcRopzsJV3Hz0ynkK1hCpSz4UeRWTAnyfmN5fpJKzentC/+/
-Y3Sdf/s0Rv9ff2yxsq//q1VSOPemoQUhCLGNF0Z3yW0+/hPG6tmjynkIaOLw8G7s
-GINJ/j7qZSauKEZbRTNDtOGQigkq+igvsekB1p8+ep5saf79jFwkNmW+g6FQGF0W
-rO92X16xiBrHdGBtmWiZZWlqhTzKWhBgwy6gJcCg03XZaQSTj9DskPF8j2ttQ7c0
-QTDoqp9ZJ7YAgmDgnKFo
-=wZGi
+iQEcBAABAgAGBQJUoNAcAAoJEFNVTo/uthzApgYH+gLZdZIBNAJVr4fYKKx4aYf9
+eLb2zkfmktUidf6iuqSbOk4Qx8RjRpqstMPkH0otSGm+GuzB2wL+nhkNIhfdWEki
+htHmX/9HEKq9DpO/SWLaNjErb6tQzBbsiDjlI1X3M1CJETLw3yo/pahF6di7w+PN
+xkzo17DHYpF/nXGS5F+tZ0usRl30RvQSzgOZBbzwtTRFNkFQ6pLo6cvI+cpspxb0
+cPuPrLiILGEyp2/5pPihbxLIwEj4GEhxzfXIZxHDhMhw3NhmoVTVinqC1SiTzK5o
+fBvQSuIdWVer/r0Lw82zxFn0pGiuwS2xsmNmJM+P7J9DhSgPTp89iDdadOSg/Uw=
+=Ksju
 -----END PGP SIGNATURE-----
 
---bajzpZikUji1w+G9--
+--nextPart2807509.uKbImGGr0F--
+
