@@ -1,13 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 29 Dec 2014 12:02:55 +0800
-Message-ID: <3490046.0Sa9VZTKO2@diderot>
-In-Reply-To: <1414924197-24141-1-git-send-email-antonio@meshcoding.com>
-References: <1414924197-24141-1-git-send-email-antonio@meshcoding.com>
+Return-Path: <martin@hundeboll.net>
+Message-ID: <54A136A9.9020606@hundeboll.net>
+Date: Mon, 29 Dec 2014 12:10:33 +0100
+From: =?windows-1252?Q?Martin_Hundeb=F8ll?= <martin@hundeboll.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1882094.Ar0MKm5Jc6";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: fix misspelled words
+References: <1417438784-20880-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1417438784-20880-1-git-send-email-sven@narfation.org>
+Content-Type: text/plain; charset="windows-1252"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Unify fragment size
+	calculation
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,48 +20,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Sven Eckelmann <sven@narfation.org>
 
+Acked-by: Martin Hundeb=F8ll <martin@hundeboll.net>
 
---nextPart1882094.Ar0MKm5Jc6
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Sunday 02 November 2014 11:29:56 Antonio Quartulli wrote:
-> Reported-by: checkpatch
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+On 2014-12-01 13:59, Sven Eckelmann wrote:
+> The fragmentation code was replaced in 9b3eab61754d74a93c9840c296013fe3b4=
+a1b606
+> ("batman-adv: Receive fragmented packets and merge") by an implementation=
+ which
+> can handle up to 16 fragments of a packet. The packet is prepared for the=
+ split
+> in fragments by the function batadv_frag_send_packet and the actual split=
+ is
+> done by batadv_frag_create.
+>
+> Both functions calculate the size of a fragment themself. But their calcu=
+lation
+> differs because batadv_frag_send_packet also subtracts ETH_HLEN. Therefor=
+e,
+> the check in batadv_frag_send_packet if a full fragment can be created may
+> return true even when batadv_frag_create cannot create a full fragment.
+>
+> The function batadv_frag_create doesn't check the size of the skb before
+> splitting it and therefore might try to create a larger fragment than the
+> remaining buffer. This creates an integer underflow and an invalid len is=
+ given
+> to skb_split.
+>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  CHANGELOG               | 2 +-
->  bridge_loop_avoidance.c | 4 ++--
->  main.c                  | 2 +-
->  packet.h                | 4 ++--
->  routing.c               | 2 +-
->  translation-table.c     | 2 +-
->  types.h                 | 2 +-
->  7 files changed, 9 insertions(+), 9 deletions(-)
+>   fragmentation.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/fragmentation.c b/fragmentation.c
+> index 0ab228f..9e06457 100644
+> --- a/fragmentation.c
+> +++ b/fragmentation.c
+> @@ -433,7 +433,7 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+>   	 * fragments larger than BATADV_FRAG_MAX_FRAG_SIZE
+>   	 */
+>   	mtu =3D min_t(unsigned, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
+> -	max_fragment_size =3D (mtu - header_size - ETH_HLEN);
+> +	max_fragment_size =3D mtu - header_size;
+>   	max_packet_size =3D max_fragment_size * BATADV_FRAG_MAX_FRAGMENTS;
+>
+>   	/* Don't even try to fragment, if we need more than 16 fragments */
+>
 
-Applied in revision ecf7f49.
+--=20
+Kind Regards,
+Martin Hundeb=F8ll
+Frederiks All=E9 99A, 1.th
+8000 Aarhus C
 
-Thanks,
-Marek
-
---nextPart1882094.Ar0MKm5Jc6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABAgAGBQJUoNJwAAoJEFNVTo/uthzAW80IAKk5OJYRVFx72j7IK6z1bKaD
-1xxW7HrA7psX11WKKNmBuDNrdoDSgAqUOtalWWicmtyf0/TUxOpejd591lmiP3J+
-QVPgcscgkYzYW+iS3/61/CGvovia/uACGTDbOqkqmB0qIJidKKe9ge/wa4kCztfk
-uowNwge8hEtpdlSA2mWAY9wIrpgd1i0+7vftYsn7BbyM+u1X1t+J7TU5E3VqTCRK
-bhAOdAAld91XrX+Xj504ZfYXKCnSmEnXGtGARqnaJGf6x4kKR/Nysuz2KvzH3DdA
-ELWdWbSwJCY0dUu73SOx7PN3VfDknFBsAqtVd3B6rUi+WgCzOtjjfFYQ0pkirVA=
-=OY9Z
------END PGP SIGNATURE-----
-
---nextPart1882094.Ar0MKm5Jc6--
-
++45 61 65 54 61
+martin@hundeboll.net
