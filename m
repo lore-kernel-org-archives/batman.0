@@ -1,17 +1,16 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <54A4388D.40202@meshcoding.com>
-Date: Wed, 31 Dec 2014 18:55:25 +0100
+Message-ID: <54A964D7.5070107@meshcoding.com>
+Date: Sun, 04 Jan 2015 17:05:43 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
- <1419594103-10928-26-git-send-email-mpa@pengutronix.de>
- <549EC29D.1070408@meshcoding.com> <20141227170317.GB10331@pengutronix.de>
-In-Reply-To: <20141227170317.GB10331@pengutronix.de>
+References: <1418509935-11849-1-git-send-email-linus.luessing@c0d3.blue>
+ <1869722.k5Ufm3Cai9@diderot>
+In-Reply-To: <1869722.k5Ufm3Cai9@diderot>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="FpTA12FdlhCigeE0Nik5xCqn44EJjt7R3"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 25/26] batman-adv: packet.h,
- add some missing includes
+ boundary="DxVhQJIvN8BQ24ghnod0kvEF1cKmScObQ"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix potential TT
+ client + orig-node memory leak
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,77 +22,81 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Markus Pargmann <mpa@pengutronix.de>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, Sven Eckelmann <sven@narfation.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---FpTA12FdlhCigeE0Nik5xCqn44EJjt7R3
-Content-Type: text/plain; charset=utf-8
+--DxVhQJIvN8BQ24ghnod0kvEF1cKmScObQ
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-Markus,
 
-On 27/12/14 18:03, Markus Pargmann wrote:
-> Hi Antonio,
+
+On 29/12/14 04:52, Marek Lindner wrote:
+> On Saturday 13 December 2014 23:32:15 Linus L=FCssing wrote:
+>> This patch fixes a potential memory leak which can occur once an
+>> originator times out. On timeout the according global translation tabl=
+e
+>> entry might not get purged correctly. Furthermore, the non purged TT
+>> entry will cause its orig-node to leak, too. Which additionally can le=
+ad
+>> to the new multicast optimization feature not kicking in because of a
+>> therefore bogus counter.
 >=20
-> On Sat, Dec 27, 2014 at 03:30:53PM +0100, Antonio Quartulli wrote:
->> Hi Markus,
->>
->> first of all you should know that I really appreciate your hard work.
->> Thank you very much for this!
->>
->> On 26/12/14 12:41, Markus Pargmann wrote:
->>> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
->>> ---
->>>  packet.h | 5 +++++
->>>  1 file changed, 5 insertions(+)
->>>
->>> diff --git a/packet.h b/packet.h
->>> index facd1feddd4e..5fd0d814b6de 100644
->>> --- a/packet.h
->>> +++ b/packet.h
->>> @@ -18,6 +18,11 @@
->>>  #ifndef _NET_BATMAN_ADV_PACKET_H_
->>>  #define _NET_BATMAN_ADV_PACKET_H_
->>> =20
->>> +#ifdef __KERNEL__
->>> +#include <linux/bitops.h>
->>> +#include <uapi/linux/if_ether.h>
->>> +#endif /* __KERNEL__ */
->>
->> Unfortunately we can't do this :-(
->>
->> Patches sent to the kernel cannot contain conditional code on being in=
-
->> the kernel or not (same is true for checks against a particular kernel=
-
->> version - such code can't be in the kernel).
->>
->> Patches sent to the kernel must assume that they are only for the kern=
-el
->> (and for that particular version we are sending the patches against).
+> So far, I am with you ..
 >=20
-> Oh, I checked by grepping through the kernel before changing the patch
-> like this.
-> 	git grep "^#if.*def.*__KERNEL__" | grep -v include | wc -l
-> 	145
 >=20
-> So there are 145 uses of an ifdef __KERNEL__ outside of include
-> directories (I excluded include directories as they may be exported to
-> userspace). So I thought it would be ok.
+>> In the wild with larger mesh networks we saw this leak quite regularly=
+,
+>> resulting in routers to reboot or killed processes. This was because
+>> of a combination of two bugs: The bug fixed by commit
+>> "batman-adv: fix delayed foreign originator recognition" (8a2ad5204674=
+)
+>> amplified this memory leak heavily. Since that commit I'd expect
+>> it to happen rarely, probably only in paused and resumed VMs and
+>> devices previously in stand-by.
+>=20
+> This section shouldn't be part of the official commit message. It is ha=
+rdly=20
+> relevant to the reviewer how often a memleak occurs and whether or not =
+you=20
+> need a VM to trigger it. The provided commit id isn't valid in the Linu=
+x tree.
+>=20
+>=20
+>> The issue this patch fixes is caused by batadv_orig_node_free_rcu()
+>> never being called because of not yet released references to the
+>> orig-node. References which were supposed to be released through
+>> batadv_orig_node_free_rcu()->batadv_tt_global_del_orig().
+>=20
+> Could you please provide addition insight as to which references are st=
+ill=20
+> held ? I did look around but nothing obvious jumped at me.=20
+>=20
+> Generally, it wouldn't be bad if the commit message went into deeper de=
+tail=20
+> describing the nature of the bug instead of the middle section above to=
+ make=20
+> it easy to understand what is being fixed.
+>=20
 
-these are probably pieces of code that have not yet been cleaned up.
-Still, this does not allow us to introduce more code like this: David
-(the networking tree maintainer) would refuse such additions.
 
+Hi Linus and thanks for fixing this TT bug!
+
+I agree with Marek about extending the commit message with a better
+explanation of the actual bug, but at the same time I think it is good
+to keep the commit message and ID of the other involved patches.
+
+Moreover, please keep the commit ID of our batman-adv.git tree - I'll
+then take care of converting them when sending the patches upstream.
 
 Cheers,
+
 
 --=20
 Antonio Quartulli
 
 
---FpTA12FdlhCigeE0Nik5xCqn44EJjt7R3
+--DxVhQJIvN8BQ24ghnod0kvEF1cKmScObQ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -101,19 +104,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJUpDiWAAoJEJgn97Bh2u9edbMQALFLMhQ4qTFFNDbIbTiBzCaf
-ropj721bf/D5iIlCDQmY1caE6qSQ0QjEzRMaZpAZQ5QKfwf8ryRccpzGkyW77Rqy
-JPhv6UBZr6nmnaOsldUy0GKFo6jWDFazfJiIwYF6gNEG0DSjaP66bbEPRbtMlnDI
-yskZawgfznCnagQ4dJLk8k0/ffewG2vUjePkWn9ShcKPowRcr1BkMA3sdZtkQwi2
-o+rLZX30/jACZN2JJiODDlEUVCIaKZwuq5uqXXF5tYEgINWtUJfw4ZyScVDRnNPT
-7Yt5n9mhwa9ayqgTTwV+EhDmOqt3ZSPOt1XeMWKsUHl+nUfUfnooetNIILu+YjyX
-lqItKKuUo5I2zEihT/+Hy0MhDnD5USpvXuhgr22y2RwgwaW9+/xUMq0ghx8eedHG
-fJiGXwWNWiD4rAyoiRewiP/VRYlYUHZN6ZQP45Ku6AMnRVPbN4UJHx+/zc1xoIwl
-OOnv6OWEeaG4pT9CtZyeQxwuleHoEn0iTxhCphKZ5WVxXMVdUXYtBSOcajwDJeyd
-e7CbqSj5EZp60a5J3S1TPn5UwmpGl1jldArOI+ZoC71I9wDVbcbsPWtCh/lyrIP3
-og9/fR6dLt6P3Da3krywbxdb/CCsdpepJdyHRILU+zxFNV4CVK2HqNfxVfBidl1M
-8z+4lkJv+TLReNvh5Qv3
-=70R6
+iQIcBAEBCAAGBQJUqWTmAAoJEJgn97Bh2u9eAwcP/08JZy1gGgvuKOt/jNlIvhzG
+fxd78NRDG9ITM+Rmi4qPAhUdt446/ZSRmKInGnAFKJtteFDsLVpKzEXMxRbrC3MT
+x/hRxEoeU+1wb66MMRotMOV4bsPrV+BPUACoCVL8kj8QfyLU+sYP3fLT8TwuVQq6
+GVxDjRiycGXhUF/zSuY4ysY7D2IkwmAzuJiAO6epctstIRzSjAImcdvRCD8kOQeu
+IjsThg/mFYHf++7kWdqROrKg0TJXlggPq2A64W2g0F4ypr2Z5GscuBNLpg6wc6Sk
+UMX/1oJ07bPy0YNJrksaWM4Y+1pYCMbyO9h9eJgUM21oVbDyfhx5X5kr+zgcvVmq
+RIalAmaGXM5v+CkWn5293fmUrYHpNqrkLz7ok2TSEaPCmLsd5RSZP60wIU03o8W2
+QKH5kmxqLMldY8JObXLlL78Om/iDg7bgLcitPiYrWB+4jIgPE76l1GCjddeScbK1
+tx9gUioOTIlDMEWWnvmKXGozQxKBc9tx/+eCpIlnbdchd2LzyfQvApSlhmjMJzd5
+yvVJKWlLYHMZT+Jvxd99AmSE/PemfNhlDlaBkkLt2f+1bqPSY6tskzirv4f0u9PJ
+lTvN6571vxkBk99DXjUd2D42CBORaJ4Q3QY7WS5KGlvPuyg8XQEVi49hXU9Yu0uB
+HVFP0xc0uz57xvjgP0OE
+=yRRE
 -----END PGP SIGNATURE-----
 
---FpTA12FdlhCigeE0Nik5xCqn44EJjt7R3--
+--DxVhQJIvN8BQ24ghnod0kvEF1cKmScObQ--
