@@ -1,15 +1,12 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 06 Jan 2015 01:22:33 +0800
-Message-ID: <2417501.hlFk6DQ6tc@diderot>
-In-Reply-To: <54A9663F.9070008@meshcoding.com>
-References: <1418509935-11849-1-git-send-email-linus.luessing@c0d3.blue>
- <54A964D7.5070107@meshcoding.com> <54A9663F.9070008@meshcoding.com>
+Return-Path: <moritzwarning@web.de>
+Message-ID: <54AADBED.4030509@web.de>
+Date: Mon, 05 Jan 2015 19:46:05 +0100
+From: Moritz Warning <moritzwarning@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1574787.ekj28pNach";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix potential TT
-	client + orig-node memory leak
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="jeCwTot8qulBpChhd4VxSmBvggXoxEmaN"
+Subject: [B.A.T.M.A.N.] get a list of IP addresses to all neighbor nodes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,49 +19,56 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
+
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--jeCwTot8qulBpChhd4VxSmBvggXoxEmaN
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+I try to display a list of IPv6-Addresses of all neighbors on each node s=
+o users
+can jump/click from a nodes HTTP status page to another (sounds like fun!=
+).
+
+The basic approach would be to use an IPv6 ULA address (prefix+ some MAC =
+address) for the node
+and to somehow get the MAC part from batman.
+
+A list might generate by this:
+
+for mac in $(batctl o -H | grep 'No' -v | cut -b 37-53 | sort | uniq); do=
+
+	addr=3D"$(ula_addr $prefix $mac)"
+	echo "	<li><h3><a href=3D\"http://[$addr]\">$mac</a></h3></li>"
+done
+
+The problem is now to understand where this MAC comes from. Does it belon=
+g to a node or client (we do not want clients displayed)?
+Afaik, the MAC is the address of the interface of the neighbor node, whic=
+h might be one of several belonging to that node.
+A solution might be to give a node an ULA-address for each interface batm=
+an-adv uses.
+
+Is there a nicer solution?
 
 
---nextPart1574787.ekj28pNach
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Sunday 04 January 2015 17:11:43 Antonio Quartulli wrote:
-> On 04/01/15 17:05, Antonio Quartulli wrote:
-> > Hi Linus and thanks for fixing this TT bug!
-> > 
-> > I agree with Marek about extending the commit message with a better
-> > explanation of the actual bug, but at the same time I think it is good
-> > to keep the commit message and ID of the other involved patches.
-> > 
-> > Moreover, please keep the commit ID of our batman-adv.git tree - I'll
-> > then take care of converting them when sending the patches upstream.
-> 
-> I forgot..for the patch:
-> 
-> Acked-by: Antonio Quartulli <antonio@meshcoding.com>
-
-Applied in revision 21fa264 with commit message beautifications.
-
-Thanks,
-Marek
-
---nextPart1574787.ekj28pNach
+--jeCwTot8qulBpChhd4VxSmBvggXoxEmaN
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1
 
-iQEcBAABAgAGBQJUqshkAAoJEFNVTo/uthzAc+kH/3Sk3CWOq6Ik/Qgj2E3es+Og
-PzMS5I5osiIfKgNBgjwgNJfnVzGUEcKw4Fpgj0jxsT+pcmEEX7uv/Tt+q9vtec5S
-LtWwi2H959jFqzv9jIJ3PMhjI4jYDRN9gEZ3v30ytFNG3gIUmTIaDJNmQDF4kyl7
-Uu6PYf/Ma+0tW+MOMcHjp5aRkN0tFD676wwmDFD6Of0AKHaBhDheg8MgRksEjcwn
-qUTwqB8f3+r8oMQCfAGCX8KMl9z9aF+ph6ZVlCug9yFJxmLx9tKoloqAOwvMYXCB
-1cxGvlFiuzuA5B1r+6YsMFVSoAUxR1gjCXcUnlMKH5Hdj90EVXgo4t1jzeZqf0o=
-=epz6
+iQEcBAEBCAAGBQJUqtvtAAoJECHrh56PP4wp0MUH/RUMTsKyz7uziPCpnbQRMbDX
+lI5ScVl2BzdHVG93oH2Bde3O0/QzYlkdZO9tcm2yonfW4462QZK1quNi2Nd10MHx
+wJV8kIEGlx4X1o/kHp+MS2NkrHsfXH0W7aa1shEjLMKWhdB23P1GOu5Qf+h47iQ1
+6Hb0NsPTiBk/JiV2Cfc6HwnUVrAcSrUDvYFH86dMyRVR0ol9ClwgdbfObsPRAqbX
+R5QdRp1VplmYHP2LmJlhKtSVWxW+ea/IX9NeMkzIhXGSWadBC3BQTPu9zZXscAG1
+LdTIHgRXWS4tzNGzJ3FTamEkfkhVEp+olnh95TkVaDpeXfEMYdm0beSJdCCvwz0=
+=zVkq
 -----END PGP SIGNATURE-----
 
---nextPart1574787.ekj28pNach--
-
+--jeCwTot8qulBpChhd4VxSmBvggXoxEmaN--
