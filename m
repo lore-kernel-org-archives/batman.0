@@ -1,16 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <54A9663F.9070008@meshcoding.com>
-Date: Sun, 04 Jan 2015 17:11:43 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Tue, 06 Jan 2015 01:22:33 +0800
+Message-ID: <2417501.hlFk6DQ6tc@diderot>
+In-Reply-To: <54A9663F.9070008@meshcoding.com>
 References: <1418509935-11849-1-git-send-email-linus.luessing@c0d3.blue>
- <1869722.k5Ufm3Cai9@diderot> <54A964D7.5070107@meshcoding.com>
-In-Reply-To: <54A964D7.5070107@meshcoding.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="GfqOO31hSV0n4UKgCBw5QJadWpiUuN6C4"
+ <54A964D7.5070107@meshcoding.com> <54A9663F.9070008@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1574787.ekj28pNach";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix potential TT
- client + orig-node memory leak
+	client + orig-node memory leak
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,55 +21,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---GfqOO31hSV0n4UKgCBw5QJadWpiUuN6C4
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
+--nextPart1574787.ekj28pNach
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On 04/01/15 17:05, Antonio Quartulli wrote:
->=20
-> Hi Linus and thanks for fixing this TT bug!
->=20
-> I agree with Marek about extending the commit message with a better
-> explanation of the actual bug, but at the same time I think it is good
-> to keep the commit message and ID of the other involved patches.
->=20
-> Moreover, please keep the commit ID of our batman-adv.git tree - I'll
-> then take care of converting them when sending the patches upstream.
+On Sunday 04 January 2015 17:11:43 Antonio Quartulli wrote:
+> On 04/01/15 17:05, Antonio Quartulli wrote:
+> > Hi Linus and thanks for fixing this TT bug!
+> > 
+> > I agree with Marek about extending the commit message with a better
+> > explanation of the actual bug, but at the same time I think it is good
+> > to keep the commit message and ID of the other involved patches.
+> > 
+> > Moreover, please keep the commit ID of our batman-adv.git tree - I'll
+> > then take care of converting them when sending the patches upstream.
+> 
+> I forgot..for the patch:
+> 
+> Acked-by: Antonio Quartulli <antonio@meshcoding.com>
 
-I forgot..for the patch:
+Applied in revision 21fa264 with commit message beautifications.
 
-Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+Thanks,
+Marek
 
---=20
-Antonio Quartulli
-
-
---GfqOO31hSV0n4UKgCBw5QJadWpiUuN6C4
+--nextPart1574787.ekj28pNach
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJUqWZDAAoJEJgn97Bh2u9eW1wQALxL5pTvWUON+skdd6CDrCsS
-GSpt3DMuiGQWJwfHJv3d+Hh1eNCIcU6kVvvV2JHedPEtz8VcGTLoKgjGrsUm/tp4
-RJwCWXhdhnAPJ4aYA3XfIjWStRImOBGgNc/sh9K/MvUbIJ3JN9DOkrKH0iUYsyoc
-J603+IoRHrNP0n6B9B8+Z4qX1DQa/tpITTqdvxUaPEoaSxG7N/ZhyMCMvyhgwrGg
-NbfhZTNQ9+n0OZSAgSPOJEe6PD7uFJmPZsk8EP3i2+aB+YmXuvkpdRGDm2eAZxTv
-pbRMz0kA53FiaszwcPHY1sumylNj+e/KRxbQExOTH8NIzZW/v3r+olbvYlatbDMd
-XHZduk78fLdgE6r4FBrsP1YykIHGnewNJVNAfS3MVuEESwPNw18Uus4wvBFP9L7p
-yM+GMVHhmRHDG0r6g/7C3/CjRXdlm8rqbTdMpM5GciLX9uCInvq0y+aXZkC1TdZb
-xEqlIMyniiByeW6eOJ1iVSFIm7DxU0iebxPY11APny95uwMYnXX88tWSP2hszhaZ
-1hLEWdwr1c0C2TSVui/tDj2JYbXHqbZgLb+ju9vzrdpkwLDcQmcoqMWgjwfldHR0
-uB3ZPM69AsA2K/2fcXK9PsdKfqx4djl+rgYNeeoVvxrJZDX4Zf7iXustYqAqdtoQ
-rFLFOkWo5FEgfhq5+Vxm
-=CWas
+iQEcBAABAgAGBQJUqshkAAoJEFNVTo/uthzAc+kH/3Sk3CWOq6Ik/Qgj2E3es+Og
+PzMS5I5osiIfKgNBgjwgNJfnVzGUEcKw4Fpgj0jxsT+pcmEEX7uv/Tt+q9vtec5S
+LtWwi2H959jFqzv9jIJ3PMhjI4jYDRN9gEZ3v30ytFNG3gIUmTIaDJNmQDF4kyl7
+Uu6PYf/Ma+0tW+MOMcHjp5aRkN0tFD676wwmDFD6Of0AKHaBhDheg8MgRksEjcwn
+qUTwqB8f3+r8oMQCfAGCX8KMl9z9aF+ph6ZVlCug9yFJxmLx9tKoloqAOwvMYXCB
+1cxGvlFiuzuA5B1r+6YsMFVSoAUxR1gjCXcUnlMKH5Hdj90EVXgo4t1jzeZqf0o=
+=epz6
 -----END PGP SIGNATURE-----
 
---GfqOO31hSV0n4UKgCBw5QJadWpiUuN6C4--
+--nextPart1574787.ekj28pNach--
+
