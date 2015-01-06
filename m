@@ -1,11 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue,  6 Jan 2015 12:10:00 +0100
-Message-Id: <1420542605-28865-2-git-send-email-antonio@meshcoding.com>
+Date: Tue,  6 Jan 2015 12:10:01 +0100
+Message-Id: <1420542605-28865-3-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1420542605-28865-1-git-send-email-antonio@meshcoding.com>
 References: <1420542605-28865-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 1/6] batman-adv: fix and simplify condition
-	when bonding should be used
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 2/6] batman-adv: fix delayed foreign
+	originator recognition
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,43 +21,53 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-The current condition actually does NOT consider bonding when the
-interface the packet came in from is the soft interface, which is the
-opposite of what it should do (and the comment describes). Fix that and
-slightly simplify the condition.
+Currently it can happen that the reception of an OGM from a new
+originator is not being accepted. More precisely it can happen that
+an originator struct gets allocated and initialized
+(batadv_orig_node_new()), even the TQ gets calculated and set correctly
+(batadv_iv_ogm_calc_tq()) but still the periodic orig_node purging
+thread will decide to delete it if it has a chance to jump between
+these two function calls.
 
-Reported-by: Ray Gibson <booray@gmail.com>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+This is because batadv_orig_node_new() initializes the last_seen value
+to zero and its caller (batadv_iv_ogm_orig_get()) makes it visible to
+other threads by adding it to the hash table already.
+batadv_iv_ogm_calc_tq() will set the last_seen variable to the correct,
+current time a few lines later but if the purging thread jumps in between
+that it will think that the orig_node timed out and will wrongly
+schedule it for deletion already.
+
+If the purging interval is the same as the originator interval (which is
+the default: 1 second), then this game can continue for several rounds
+until the random OGM jitter added enough difference between these
+two (in tests, two to about four rounds seemed common).
+
+Fixing this by initializing the last_seen variable of an orig_node
+to the current time before adding it to the hash table.
+
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/routing.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ net/batman-adv/originator.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 35f76f2..6648f32 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -443,11 +443,13 @@ batadv_find_router(struct batadv_priv *bat_priv,
- 
- 	router = batadv_orig_router_get(orig_node, recv_if);
- 
-+	if (!router)
-+		return router;
-+
- 	/* only consider bonding for recv_if == BATADV_IF_DEFAULT (first hop)
- 	 * and if activated.
- 	 */
--	if (recv_if == BATADV_IF_DEFAULT || !atomic_read(&bat_priv->bonding) ||
--	    !router)
-+	if (!(recv_if == BATADV_IF_DEFAULT && atomic_read(&bat_priv->bonding)))
- 		return router;
- 
- 	/* bonding: loop through the list of possible routers found
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 6a48451..648bdba 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -678,6 +678,7 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
+ 	atomic_set(&orig_node->last_ttvn, 0);
+ 	orig_node->tt_buff = NULL;
+ 	orig_node->tt_buff_len = 0;
++	orig_node->last_seen = jiffies;
+ 	reset_time = jiffies - 1 - msecs_to_jiffies(BATADV_RESET_PROTECTION_MS);
+ 	orig_node->bcast_seqno_reset = reset_time;
+ #ifdef CONFIG_BATMAN_ADV_MCAST
 -- 
 2.2.1
 
