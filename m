@@ -1,12 +1,11 @@
-Return-Path: <moritzwarning@web.de>
-Message-ID: <54AADBED.4030509@web.de>
-Date: Mon, 05 Jan 2015 19:46:05 +0100
-From: Moritz Warning <moritzwarning@web.de>
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Tue,  6 Jan 2015 12:09:59 +0100
+Message-Id: <1420542605-28865-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="jeCwTot8qulBpChhd4VxSmBvggXoxEmaN"
-Subject: [B.A.T.M.A.N.] get a list of IP addresses to all neighbor nodes
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] pull request [net]: batman-adv 20150106
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,57 +17,82 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---jeCwTot8qulBpChhd4VxSmBvggXoxEmaN
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hello David,
 
-Hi,
-
-I try to display a list of IPv6-Addresses of all neighbors on each node s=
-o users
-can jump/click from a nodes HTTP status page to another (sounds like fun!=
-).
-
-The basic approach would be to use an IPv6 ULA address (prefix+ some MAC =
-address) for the node
-and to somehow get the MAC part from batman.
-
-A list might generate by this:
-
-for mac in $(batctl o -H | grep 'No' -v | cut -b 37-53 | sort | uniq); do=
-
-	addr=3D"$(ula_addr $prefix $mac)"
-	echo "	<li><h3><a href=3D\"http://[$addr]\">$mac</a></h3></li>"
-done
-
-The problem is now to understand where this MAC comes from. Does it belon=
-g to a node or client (we do not want clients displayed)?
-Afaik, the MAC is the address of the interface of the neighbor node, whic=
-h might be one of several belonging to that node.
-A solution might be to give a node an ULA-address for each interface batm=
-an-adv uses.
-
-Is there a nicer solution?
+here you have some small fixes for your 'net' tree.
 
 
---jeCwTot8qulBpChhd4VxSmBvggXoxEmaN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Patch 1 fixes a regression in the "bonding" code introduced while
+implementing the multi-interface optimization feature, by Simon
+Wunderlich.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Patch 2 ensures that the "last-seen" timestamp for a newly created
+originator object is properly initialised in order to avoid a non-critical
+race condition, by Linus Lüssing.
 
-iQEcBAEBCAAGBQJUqtvtAAoJECHrh56PP4wp0MUH/RUMTsKyz7uziPCpnbQRMbDX
-lI5ScVl2BzdHVG93oH2Bde3O0/QzYlkdZO9tcm2yonfW4462QZK1quNi2Nd10MHx
-wJV8kIEGlx4X1o/kHp+MS2NkrHsfXH0W7aa1shEjLMKWhdB23P1GOu5Qf+h47iQ1
-6Hb0NsPTiBk/JiV2Cfc6HwnUVrAcSrUDvYFH86dMyRVR0ol9ClwgdbfObsPRAqbX
-R5QdRp1VplmYHP2LmJlhKtSVWxW+ea/IX9NeMkzIhXGSWadBC3BQTPu9zZXscAG1
-LdTIHgRXWS4tzNGzJ3FTamEkfkhVEp+olnh95TkVaDpeXfEMYdm0beSJdCCvwz0=
-=zVkq
------END PGP SIGNATURE-----
+Patch 3 avoids false positive splats when lockdep is enabled by assigning
+the proper lock class to locks used by the network coding feature, by
+Martin Hundebøll.
 
---jeCwTot8qulBpChhd4VxSmBvggXoxEmaN--
+Patches 4 and 5 fix the code counting the amount of multicast-disabled
+nodes in the network (used to avoid to enable the multicast optimisation
+when not possible), by Linus Lüssing.
+
+Patch 6 fixes a memory leak in the Translation Table code that can be
+triggered by doubling the current originator interval, by Linus Lüssing.
+
+
+
+Please pull or let me know of any problem!
+
+Thanks a lot,
+	Antonio
+
+
+
+The following changes since commit 7ce67a38f799d1fb332f672b117efbadedaa5352:
+
+  net: ethernet: cpsw: fix hangs with interrupts (2015-01-04 22:18:34 -0500)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to 9d31b3ce81683ce3c9fd10afa70892e373b21067:
+
+  batman-adv: fix potential TT client + orig-node memory leak (2015-01-06 11:07:01 +0100)
+
+----------------------------------------------------------------
+Included changes:
+- ensure bonding is used (if enabled) for packets coming in the soft
+  interface
+- fix race condition to avoid orig_nodes to be deleted right after
+  being added
+- avoid false positive lockdep splats by assigning lockclass to
+  the proper hashtable lock objects
+- avoid miscounting of multicast 'disabled' nodes in the network
+- fix memory leak in the Global Translation Table in case of
+  originator interval change
+
+----------------------------------------------------------------
+Linus Lüssing (4):
+      batman-adv: fix delayed foreign originator recognition
+      batman-adv: fix counter for multicast supporting nodes
+      batman-adv: fix multicast counter when purging originators
+      batman-adv: fix potential TT client + orig-node memory leak
+
+Martin Hundebøll (1):
+      batman-adv: fix lock class for decoding hash in network-coding.c
+
+Simon Wunderlich (1):
+      batman-adv: fix and simplify condition when bonding should be used
+
+ net/batman-adv/multicast.c      | 11 +++++++----
+ net/batman-adv/network-coding.c |  2 +-
+ net/batman-adv/originator.c     |  7 ++++---
+ net/batman-adv/routing.c        |  6 ++++--
+ 4 files changed, 16 insertions(+), 10 deletions(-)
+
