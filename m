@@ -1,13 +1,15 @@
-Return-Path: <davem@davemloft.net>
-Date: Tue, 06 Jan 2015 14:25:14 -0500 (EST)
-Message-Id: <20150106.142514.108109720918651317.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1420542605-28865-1-git-send-email-antonio@meshcoding.com>
-References: <1420542605-28865-1-git-send-email-antonio@meshcoding.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] pull request [net]: batman-adv 20150106
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <54ADA227.1040806@meshcoding.com>
+Date: Wed, 07 Jan 2015 22:16:23 +0100
+From: Antonio Quartulli <antonio@meshcoding.com>
+MIME-Version: 1.0
+References: <1417284466-32016-1-git-send-email-mpa@pengutronix.de>
+In-Reply-To: <1417284466-32016-1-git-send-email-mpa@pengutronix.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="oeEaKrNSNKesLVoUedGbG5s43B8itNEd9"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Kconfig,
+ Add missing DEBUG_FS dependency
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,43 +21,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: antonio@meshcoding.com
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: "mpa@pengutronix.de >> Markus Pargmann" <mpa@pengutronix.de>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue,  6 Jan 2015 12:09:59 +0100
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--oeEaKrNSNKesLVoUedGbG5s43B8itNEd9
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-> here you have some small fixes for your 'net' tree.
-> =
 
-> Patch 1 fixes a regression in the "bonding" code introduced while
-> implementing the multi-interface optimization feature, by Simon
-> Wunderlich.
-> =
 
-> Patch 2 ensures that the "last-seen" timestamp for a newly created
-> originator object is properly initialised in order to avoid a non-cri=
-tical
-> race condition, by Linus L=FCssing.
-> =
+On 29/11/14 19:07, Markus Pargmann wrote:
+> BATMAN_ADV_DEBUG is using debugfs files for the debugging log. So it
+> depends on DEBUG_FS which is missing as dependency in the Kconfig file.=
 
-> Patch 3 avoids false positive splats when lockdep is enabled by assig=
-ning
-> the proper lock class to locks used by the network coding feature, by=
+>=20
+> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 
-> Martin Hundeb=F8ll.
-> =
+Applied to my tree and queued for being sent upstream.
+Thanks!
 
-> Patches 4 and 5 fix the code counting the amount of multicast-disable=
-d
-> nodes in the network (used to avoid to enable the multicast optimisat=
-ion
-> when not possible), by Linus L=FCssing.
-> =
 
-> Patch 6 fixes a memory leak in the Translation Table code that can be=
+--=20
+Antonio Quartulli
 
-> triggered by doubling the current originator interval, by Linus L=FCs=
-sing.
 
-Pulled, thanks Antonio.
+--oeEaKrNSNKesLVoUedGbG5s43B8itNEd9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIbBAEBCAAGBQJUraIsAAoJEJgn97Bh2u9ewgIP9jg6Zs/vPr+qpqRoZU6qMWVk
+qDqDTP32F7L8hVo02S3iAQArEJEl5UjktV/RUmK5lHDv/1HRQfwglhTvJE/KUt/6
+wcFBpXXvZl1rAyYi0nVk7/T19tmLibnBRJAVlFZF7bxRdPpTJPTpg5NvYjLFU5NI
+asimvyKWk519nljbyMn18ydMGNlOO5UldyC8o3Duj+QJsVtw9Hb4tdOkBoK5Xgo9
+iNqZWwHPH+rXndHTEws2mg+K5gtaE1y9GxojWLvyxaVtZZ8ZGiolnv6CJHRNVmHE
+ZcgCt2be3gl2tcQTqqNuQmPCVo4R6937rGdK4Xvv+Lbfspr0Vm7bpbZ4E9ohRGlQ
+RYiijU2w+3XMByLdYFtiewkEWhAck+U4LGcJldgtexVSOehgt+dEwPwB/cfs52Ck
+CvY+MolLoWklTuVhbinduoPZNs+u+xBo9zEUbkDSzROQFePpqTt66gQxg8+A8eZf
+xN6hq8VjqEeFNyaQpX+ew8AHWnQ547v6thi5QI+ag7SHEGlLF99FOD8iMjhiLc7h
+wjJ3UsBa179/jcYXA1o2C9gcRZgnc1H1ByLic4mZL6Q7MeBZeCvLzvq7QKM81LSp
+wt0QUF2buiKeHLBjvdai5uSyCpiYfMAPPZxLaEuW2Cr8GUbuY4e3YPbKfRgl0E17
+RS64YIqrdfPMfx78/14=
+=uzFj
+-----END PGP SIGNATURE-----
+
+--oeEaKrNSNKesLVoUedGbG5s43B8itNEd9--
