@@ -1,14 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu,  8 Jan 2015 16:15:07 +0100
-Message-Id: <1420730120-9844-3-git-send-email-antonio@meshcoding.com>
+Date: Thu,  8 Jan 2015 16:15:08 +0100
+Message-Id: <1420730120-9844-4-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1420730120-9844-1-git-send-email-antonio@meshcoding.com>
 References: <1420730120-9844-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 02/15] batman-adv: remove obsolete variable
-	primary_iface from orig_node
+Subject: [B.A.T.M.A.N.] [PATCH 03/15] batman-adv: kernel doc fixes for
+	bat_iv_ogm.c
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,42 +21,60 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
+From: Martin Hundebøll <martin@hundeboll.net>
 
-This variable became obsolete when changing to the new bonding mechanism
-based on the multi interface optimization. Since its not used anywhere,
-remove it.
-
-Reported-by: Linus Lüssing <linus.luessing@web.de>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/types.h | 2 --
- 1 file changed, 2 deletions(-)
+ net/batman-adv/bat_iv_ogm.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 8854c05..462a70c 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -199,7 +199,6 @@ struct batadv_orig_bat_iv {
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 1e80539..73209f3 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -28,7 +28,7 @@
+ 
+ 
  /**
-  * struct batadv_orig_node - structure for orig_list maintaining nodes of mesh
-  * @orig: originator ethernet address
-- * @primary_addr: hosts primary interface address
-  * @ifinfo_list: list for routers per outgoing interface
-  * @last_bonding_candidate: pointer to last ifinfo of last used router
-  * @batadv_dat_addr_t:  address of the orig node in the distributed hash
-@@ -244,7 +243,6 @@ struct batadv_orig_bat_iv {
+- * batadv_dup_status - duplicate status
++ * enum batadv_dup_status - duplicate status
+  * @BATADV_NO_DUP: the packet is a duplicate
+  * @BATADV_ORIG_DUP: OGM is a duplicate in the originator (but not for the
+  *  neighbor)
+@@ -517,7 +517,7 @@ out:
+  * @bat_priv: the bat priv with all the soft interface information
+  * @packet_len: (total) length of the OGM
+  * @send_time: timestamp (jiffies) when the packet is to be sent
+- * @direktlink: true if this is a direct link packet
++ * @directlink: true if this is a direct link packet
+  * @if_incoming: interface where the packet was received
+  * @if_outgoing: interface for which the retransmission should be considered
+  * @forw_packet: the forwarded packet which should be checked
+@@ -1366,6 +1366,7 @@ out:
+ /**
+  * batadv_iv_ogm_process_per_outif - process a batman iv OGM for an outgoing if
+  * @skb: the skb containing the OGM
++ * @ogm_offset: offset from skb->data to start of ogm header
+  * @orig_node: the (cached) orig node for the originator of this OGM
+  * @if_incoming: the interface where this packet was received
+  * @if_outgoing: the interface for which the packet should be considered
+@@ -1902,10 +1903,10 @@ out:
+  * batadv_iv_ogm_neigh_is_eob - check if neigh1 is equally good or better than
+  *  neigh2 from the metric prospective
+  * @neigh1: the first neighbor object of the comparison
+- * @if_outgoing: outgoing interface for the first neighbor
++ * @if_outgoing1: outgoing interface for the first neighbor
+  * @neigh2: the second neighbor object of the comparison
+  * @if_outgoing2: outgoing interface for the second neighbor
+-
++ *
+  * Returns true if the metric via neigh1 is equally good or better than
+  * the metric via neigh2, false otherwise.
   */
- struct batadv_orig_node {
- 	uint8_t orig[ETH_ALEN];
--	uint8_t primary_addr[ETH_ALEN];
- 	struct hlist_head ifinfo_list;
- 	struct batadv_orig_ifinfo *last_bonding_candidate;
- #ifdef CONFIG_BATMAN_ADV_DAT
 -- 
 2.2.1
 
