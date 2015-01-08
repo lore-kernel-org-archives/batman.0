@@ -1,11 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu,  8 Jan 2015 16:15:05 +0100
-Message-Id: <1420730120-9844-1-git-send-email-antonio@meshcoding.com>
+Date: Thu,  8 Jan 2015 16:15:06 +0100
+Message-Id: <1420730120-9844-2-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1420730120-9844-1-git-send-email-antonio@meshcoding.com>
+References: <1420730120-9844-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] pull request: batman-adv 20150108
+Subject: [B.A.T.M.A.N.] [PATCH 01/15] batman-adv: avoid useless return in
+	void functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,95 +21,53 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-Hello David,
+Cc: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+---
+ net/batman-adv/debugfs.c   | 1 -
+ net/batman-adv/multicast.h | 3 ---
+ 2 files changed, 4 deletions(-)
 
-this is a batch of patches intended for net-next.
-
-In this patchset you have mostly cleanups and small corrections to issues
-reported by checkpatch.
-
-One notable change is the addition of the DEBUG_FS dependency to the
-BATMAN_ADV_DEBUG symbol by Markus Pargmann. We add this dependency because all
-the information provided by the DEBUG feature is accessible only through
-debugfs.
-
-
-Please pull or let me know of any problem!
-
-Thanks a lot,
-	Antonio
-
-
-
-The following changes since commit 44d84d7272e5848878a96029b8a8b6e86854f146:
-
-  Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net (2015-01-06 22:29:20 -0500)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
-
-for you to fetch changes up to 9535395640edb23ba5cec2abb026c4ee51899722:
-
-  batman-adv: Kconfig, Add missing DEBUG_FS dependency (2015-01-07 22:17:11 +0100)
-
-----------------------------------------------------------------
-Included changes:
-- remove useless return in void functions
-- remove unused member 'primary_iface' from 'struct orig_node'
-- improve existing kernel doc
-- fix several checkpatch complaints
-- ensure socket's control block is cleared for received skbs
-- add missing DEBUG_FS dependency to BATMAN_ADV_DEBUG symbol
-
-----------------------------------------------------------------
-Antonio Quartulli (7):
-      batman-adv: avoid useless return in void functions
-      batman-adv: checkpatch - else is not generally useful after a break or return
-      batman-adv: checkpatch - No space is necessary after a cast
-      batman-adv: checkpatch - Please use a blank line after declarations
-      batman-adv: checkpatch - Please don't use multiple blank lines
-      batman-adv: checkpatch - remove unnecessary parentheses
-      batman-adv: fix misspelled words
-
-Markus Pargmann (1):
-      batman-adv: Kconfig, Add missing DEBUG_FS dependency
-
-Martin Hundebøll (5):
-      batman-adv: kernel doc fixes for bat_iv_ogm.c
-      batman-adv: kernel doc fixes for bridge_loop_avoidance.c
-      batman-adv: kernel doc fix for distributed-arp-table.h
-      batman-adv: kernel doc fixes for main.{c, h}
-      batman-adv: clear control block of received socket buffers
-
-Simon Wunderlich (2):
-      batman-adv: remove obsolete variable primary_iface from orig_node
-      batman-adv: Start new development cycle
-
- net/batman-adv/Kconfig                 |  1 +
- net/batman-adv/bat_iv_ogm.c            | 15 +++++++--------
- net/batman-adv/bitarray.c              |  1 -
- net/batman-adv/bitarray.h              |  3 +--
- net/batman-adv/bridge_loop_avoidance.c | 17 +++++++----------
- net/batman-adv/debugfs.c               |  2 +-
- net/batman-adv/distributed-arp-table.c |  1 +
- net/batman-adv/distributed-arp-table.h |  4 +---
- net/batman-adv/fragmentation.c         |  1 -
- net/batman-adv/fragmentation.h         |  3 +--
- net/batman-adv/gateway_client.c        |  1 +
- net/batman-adv/main.c                  | 10 ++++++----
- net/batman-adv/main.h                  | 15 +++++++--------
- net/batman-adv/multicast.h             |  3 ---
- net/batman-adv/network-coding.c        |  3 +--
- net/batman-adv/originator.c            |  1 -
- net/batman-adv/originator.h            |  1 -
- net/batman-adv/packet.h                |  5 +++--
- net/batman-adv/routing.c               |  3 +--
- net/batman-adv/soft-interface.c        |  1 -
- net/batman-adv/sysfs.c                 |  1 -
- net/batman-adv/translation-table.c     |  8 +++-----
- net/batman-adv/types.h                 |  4 +---
- 23 files changed, 43 insertions(+), 61 deletions(-)
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index a12e25e..1485091 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -233,7 +233,6 @@ static int batadv_debug_log_setup(struct batadv_priv *bat_priv)
+ 
+ static void batadv_debug_log_cleanup(struct batadv_priv *bat_priv)
+ {
+-	return;
+ }
+ #endif
+ 
+diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
+index 73b5d45..3a44ebd 100644
+--- a/net/batman-adv/multicast.h
++++ b/net/batman-adv/multicast.h
+@@ -50,7 +50,6 @@ void batadv_mcast_purge_orig(struct batadv_orig_node *orig_node);
+ 
+ static inline void batadv_mcast_mla_update(struct batadv_priv *bat_priv)
+ {
+-	return;
+ }
+ 
+ static inline enum batadv_forw_mode
+@@ -67,12 +66,10 @@ static inline int batadv_mcast_init(struct batadv_priv *bat_priv)
+ 
+ static inline void batadv_mcast_free(struct batadv_priv *bat_priv)
+ {
+-	return;
+ }
+ 
+ static inline void batadv_mcast_purge_orig(struct batadv_orig_node *orig_node)
+ {
+-	return;
+ }
+ 
+ #endif /* CONFIG_BATMAN_ADV_MCAST */
+-- 
+2.2.1
 
