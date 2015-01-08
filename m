@@ -1,14 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Thu,  8 Jan 2015 16:15:06 +0100
-Message-Id: <1420730120-9844-2-git-send-email-antonio@meshcoding.com>
+Date: Thu,  8 Jan 2015 16:15:07 +0100
+Message-Id: <1420730120-9844-3-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1420730120-9844-1-git-send-email-antonio@meshcoding.com>
 References: <1420730120-9844-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 01/15] batman-adv: avoid useless return in
-	void functions
+Subject: [B.A.T.M.A.N.] [PATCH 02/15] batman-adv: remove obsolete variable
+	primary_iface from orig_node
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,51 +23,40 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-Cc: Linus Lüssing <linus.luessing@web.de>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
- net/batman-adv/debugfs.c   | 1 -
- net/batman-adv/multicast.h | 3 ---
- 2 files changed, 4 deletions(-)
+From: Simon Wunderlich <sw@simonwunderlich.de>
 
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index a12e25e..1485091 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -233,7 +233,6 @@ static int batadv_debug_log_setup(struct batadv_priv *bat_priv)
- 
- static void batadv_debug_log_cleanup(struct batadv_priv *bat_priv)
- {
--	return;
- }
- #endif
- 
-diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
-index 73b5d45..3a44ebd 100644
---- a/net/batman-adv/multicast.h
-+++ b/net/batman-adv/multicast.h
-@@ -50,7 +50,6 @@ void batadv_mcast_purge_orig(struct batadv_orig_node *orig_node);
- 
- static inline void batadv_mcast_mla_update(struct batadv_priv *bat_priv)
- {
--	return;
- }
- 
- static inline enum batadv_forw_mode
-@@ -67,12 +66,10 @@ static inline int batadv_mcast_init(struct batadv_priv *bat_priv)
- 
- static inline void batadv_mcast_free(struct batadv_priv *bat_priv)
- {
--	return;
- }
- 
- static inline void batadv_mcast_purge_orig(struct batadv_orig_node *orig_node)
- {
--	return;
- }
- 
- #endif /* CONFIG_BATMAN_ADV_MCAST */
+This variable became obsolete when changing to the new bonding mechanism
+based on the multi interface optimization. Since its not used anywhere,
+remove it.
+
+Reported-by: Linus Lüssing <linus.luessing@web.de>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ net/batman-adv/types.h | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 8854c05..462a70c 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -199,7 +199,6 @@ struct batadv_orig_bat_iv {
+ /**
+  * struct batadv_orig_node - structure for orig_list maintaining nodes of mesh
+  * @orig: originator ethernet address
+- * @primary_addr: hosts primary interface address
+  * @ifinfo_list: list for routers per outgoing interface
+  * @last_bonding_candidate: pointer to last ifinfo of last used router
+  * @batadv_dat_addr_t:  address of the orig node in the distributed hash
+@@ -244,7 +243,6 @@ struct batadv_orig_bat_iv {
+  */
+ struct batadv_orig_node {
+ 	uint8_t orig[ETH_ALEN];
+-	uint8_t primary_addr[ETH_ALEN];
+ 	struct hlist_head ifinfo_list;
+ 	struct batadv_orig_ifinfo *last_bonding_candidate;
+ #ifdef CONFIG_BATMAN_ADV_DAT
 -- 
 2.2.1
 
