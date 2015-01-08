@@ -1,15 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <54ADA227.1040806@meshcoding.com>
-Date: Wed, 07 Jan 2015 22:16:23 +0100
 From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Thu,  8 Jan 2015 16:15:05 +0100
+Message-Id: <1420730120-9844-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1417284466-32016-1-git-send-email-mpa@pengutronix.de>
-In-Reply-To: <1417284466-32016-1-git-send-email-mpa@pengutronix.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="oeEaKrNSNKesLVoUedGbG5s43B8itNEd9"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Kconfig,
- Add missing DEBUG_FS dependency
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 20150108
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,52 +17,96 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "mpa@pengutronix.de >> Markus Pargmann" <mpa@pengutronix.de>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---oeEaKrNSNKesLVoUedGbG5s43B8itNEd9
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hello David,
 
+this is a batch of patches intended for net-next.
 
+In this patchset you have mostly cleanups and small corrections to issues
+reported by checkpatch.
 
-On 29/11/14 19:07, Markus Pargmann wrote:
-> BATMAN_ADV_DEBUG is using debugfs files for the debugging log. So it
-> depends on DEBUG_FS which is missing as dependency in the Kconfig file.=
-
->=20
-> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
-
-Applied to my tree and queued for being sent upstream.
-Thanks!
+One notable change is the addition of the DEBUG_FS dependency to the
+BATMAN_ADV_DEBUG symbol by Markus Pargmann. We add this dependency because all
+the information provided by the DEBUG feature is accessible only through
+debugfs.
 
 
---=20
-Antonio Quartulli
+Please pull or let me know of any problem!
+
+Thanks a lot,
+	Antonio
 
 
---oeEaKrNSNKesLVoUedGbG5s43B8itNEd9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+The following changes since commit 44d84d7272e5848878a96029b8a8b6e86854f146:
 
-iQIbBAEBCAAGBQJUraIsAAoJEJgn97Bh2u9ewgIP9jg6Zs/vPr+qpqRoZU6qMWVk
-qDqDTP32F7L8hVo02S3iAQArEJEl5UjktV/RUmK5lHDv/1HRQfwglhTvJE/KUt/6
-wcFBpXXvZl1rAyYi0nVk7/T19tmLibnBRJAVlFZF7bxRdPpTJPTpg5NvYjLFU5NI
-asimvyKWk519nljbyMn18ydMGNlOO5UldyC8o3Duj+QJsVtw9Hb4tdOkBoK5Xgo9
-iNqZWwHPH+rXndHTEws2mg+K5gtaE1y9GxojWLvyxaVtZZ8ZGiolnv6CJHRNVmHE
-ZcgCt2be3gl2tcQTqqNuQmPCVo4R6937rGdK4Xvv+Lbfspr0Vm7bpbZ4E9ohRGlQ
-RYiijU2w+3XMByLdYFtiewkEWhAck+U4LGcJldgtexVSOehgt+dEwPwB/cfs52Ck
-CvY+MolLoWklTuVhbinduoPZNs+u+xBo9zEUbkDSzROQFePpqTt66gQxg8+A8eZf
-xN6hq8VjqEeFNyaQpX+ew8AHWnQ547v6thi5QI+ag7SHEGlLF99FOD8iMjhiLc7h
-wjJ3UsBa179/jcYXA1o2C9gcRZgnc1H1ByLic4mZL6Q7MeBZeCvLzvq7QKM81LSp
-wt0QUF2buiKeHLBjvdai5uSyCpiYfMAPPZxLaEuW2Cr8GUbuY4e3YPbKfRgl0E17
-RS64YIqrdfPMfx78/14=
-=uzFj
------END PGP SIGNATURE-----
+  Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net (2015-01-06 22:29:20 -0500)
 
---oeEaKrNSNKesLVoUedGbG5s43B8itNEd9--
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to 9535395640edb23ba5cec2abb026c4ee51899722:
+
+  batman-adv: Kconfig, Add missing DEBUG_FS dependency (2015-01-07 22:17:11 +0100)
+
+----------------------------------------------------------------
+Included changes:
+- remove useless return in void functions
+- remove unused member 'primary_iface' from 'struct orig_node'
+- improve existing kernel doc
+- fix several checkpatch complaints
+- ensure socket's control block is cleared for received skbs
+- add missing DEBUG_FS dependency to BATMAN_ADV_DEBUG symbol
+
+----------------------------------------------------------------
+Antonio Quartulli (7):
+      batman-adv: avoid useless return in void functions
+      batman-adv: checkpatch - else is not generally useful after a break or return
+      batman-adv: checkpatch - No space is necessary after a cast
+      batman-adv: checkpatch - Please use a blank line after declarations
+      batman-adv: checkpatch - Please don't use multiple blank lines
+      batman-adv: checkpatch - remove unnecessary parentheses
+      batman-adv: fix misspelled words
+
+Markus Pargmann (1):
+      batman-adv: Kconfig, Add missing DEBUG_FS dependency
+
+Martin Hundebøll (5):
+      batman-adv: kernel doc fixes for bat_iv_ogm.c
+      batman-adv: kernel doc fixes for bridge_loop_avoidance.c
+      batman-adv: kernel doc fix for distributed-arp-table.h
+      batman-adv: kernel doc fixes for main.{c, h}
+      batman-adv: clear control block of received socket buffers
+
+Simon Wunderlich (2):
+      batman-adv: remove obsolete variable primary_iface from orig_node
+      batman-adv: Start new development cycle
+
+ net/batman-adv/Kconfig                 |  1 +
+ net/batman-adv/bat_iv_ogm.c            | 15 +++++++--------
+ net/batman-adv/bitarray.c              |  1 -
+ net/batman-adv/bitarray.h              |  3 +--
+ net/batman-adv/bridge_loop_avoidance.c | 17 +++++++----------
+ net/batman-adv/debugfs.c               |  2 +-
+ net/batman-adv/distributed-arp-table.c |  1 +
+ net/batman-adv/distributed-arp-table.h |  4 +---
+ net/batman-adv/fragmentation.c         |  1 -
+ net/batman-adv/fragmentation.h         |  3 +--
+ net/batman-adv/gateway_client.c        |  1 +
+ net/batman-adv/main.c                  | 10 ++++++----
+ net/batman-adv/main.h                  | 15 +++++++--------
+ net/batman-adv/multicast.h             |  3 ---
+ net/batman-adv/network-coding.c        |  3 +--
+ net/batman-adv/originator.c            |  1 -
+ net/batman-adv/originator.h            |  1 -
+ net/batman-adv/packet.h                |  5 +++--
+ net/batman-adv/routing.c               |  3 +--
+ net/batman-adv/soft-interface.c        |  1 -
+ net/batman-adv/sysfs.c                 |  1 -
+ net/batman-adv/translation-table.c     |  8 +++-----
+ net/batman-adv/types.h                 |  4 +---
+ 23 files changed, 43 insertions(+), 61 deletions(-)
+
