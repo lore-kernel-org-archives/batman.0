@@ -1,16 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 11 Jan 2015 18:29:33 +0800
-Message-ID: <2264416.eIYjFu77aT@diderot>
-In-Reply-To: <547C53C5.7090205@hundeboll.net>
-References: <1417426648-9319-1-git-send-email-sven@narfation.org>
- <1417426648-9319-2-git-send-email-sven@narfation.org>
- <547C53C5.7090205@hundeboll.net>
+Date: Sun, 11 Jan 2015 18:32 +0800
+Message-ID: <5897872.LvVFKCtQ2N@diderot>
+In-Reply-To: <1419594103-10928-2-git-send-email-mpa@pengutronix.de>
+References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
+ <1419594103-10928-2-git-send-email-mpa@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1786862.Mh1ydEHUdG";
+Content-Type: multipart/signed; boundary="nextPart284196186.krGTJBaXP6";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/2] batman-adv: Use only queued
-	fragments when merging
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 01/26] batman-adv: debugfs,
+	avoid compiling for !DEBUG_FS
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,39 +22,34 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Martin =?ISO-8859-1?Q?Hundeb=F8ll?= <martin@hundeboll.net>, Sven Eckelmann <sven@narfation.org>
+Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart1786862.Mh1ydEHUdG
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart284196186.krGTJBaXP6
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Monday 01 December 2014 12:40:53 Martin Hundeb=F8ll wrote:
-> On 2014-12-01 10:37, Sven Eckelmann wrote:
-> > The fragment queueing code now validates the total_size of each fra=
-gment,
-> > checks when enough fragments are queued to allow to merge them into=
- a
-> > single packet and if the fragments have the correct size. Therefore=
-, it
-> > is not required to have any other parameter for the merging functio=
-n than
-> > a list of queued fragments.
-> >=20
-> > This change should avoid problems like in the past when the differe=
-nt skb
-> > from the list and the function parameter were mixed incorrectly.
-> >=20
-> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
->=20
-> Acked-by: Martin Hundeb=F8ll <martin@hundeboll.net>
+On Friday 26 December 2014 12:41:18 Markus Pargmann wrote:
+> Normally the debugfs framework will return error pointer with -ENODEV
+> for function calls when DEBUG_FS is not set.
+> 
+> batman does not notice this error code and continues trying to create
+> debugfs files and executes more code. We can avoid this code execution
+> by disabling compiling debugfs.c when DEBUG_FS is not set.
+> 
+> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+> ---
+>  Makefile.kbuild |  2 +-
+>  debugfs.c       |  8 --------
+>  debugfs.h       | 34 ++++++++++++++++++++++++++++++++++
+>  3 files changed, 35 insertions(+), 9 deletions(-)
 
-Applied in revision 939717c.
+Applied in revision fe67bb4.
 
 Thanks,
 Marek
 
---nextPart1786862.Mh1ydEHUdG
+--nextPart284196186.krGTJBaXP6
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -63,14 +57,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABAgAGBQJUslCNAAoJEFNVTo/uthzAIDUH/1Gj5DvRE8TjLeGsAPH1LQrY
-70L+jJttGAjjlfnTi68mtCzjsavOByzHbLJYebCM7/1a7KRpQG0tVo6sDUYne/K7
-3OaNw9Vc7P7xzCeL21FX0sxbt5pWDRtRerB1dtZpnHiwhOFfBrkL4Scv9ecFtlll
-ZMk8FRFuJoTGMKtpbefnRAerrygmGZHEfHZNKrBQQFXxTB8um+Sw+E2LP8m44mX4
-12u3yZCEvhbcEVime6yIt8hAGQX7+crf4hBaR5WoKq0kAHWd0Xr/xrPILptp6uqo
-J9Md3ZeqRcHDyRRxu+v2a43XsRJ4q1Z7tVybgcnb3WJw4KT/fVkWuzcHgJIOywk=
-=ua+9
+iQEcBAABAgAGBQJUslEgAAoJEFNVTo/uthzAqTMH/2SJetviMhACxZ5HuG2gei6S
+thYbOhWGcWyewlND6O6V+8oOHkEu9QC7ULhFaCJynHd0ZHwXKZGAxZiTKRqAiu/t
+8dZp3ZCcexQbTYBTnYD5Pu0Y+aEa6nb1/Ry0Q0jzuN813iuwfBnH/YObvEm3xxzH
+Ve9I3gZlU+/wpaJNAAIxpYDi5PChJQDzN6SwrcYi3AMoyGtVIOu67A+pL7es8c+K
+TyJ9KWtZzkSPiB56slSnhv8Q+H+F9MwythNO3UJWx7Nf7LZI8ax3Ka0oTcOCAfcG
+TrBNwEN91i7APklU+WhzHQNKI7A5D+E+T/mLVD0sh6oP4Ab5uL2lsgwR7/b0QqY=
+=BTjz
 -----END PGP SIGNATURE-----
 
---nextPart1786862.Mh1ydEHUdG--
+--nextPart284196186.krGTJBaXP6--
 
