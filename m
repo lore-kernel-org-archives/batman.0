@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 11 Jan 2015 18:38:17 +0800
-Message-ID: <13038168.FmPfxN5Dug@diderot>
-In-Reply-To: <1419594103-10928-4-git-send-email-mpa@pengutronix.de>
+Date: Sun, 11 Jan 2015 20:32:49 +0800
+Message-ID: <8409885.k5P06c4CWh@diderot>
+In-Reply-To: <1419594103-10928-5-git-send-email-mpa@pengutronix.de>
 References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
- <1419594103-10928-4-git-send-email-mpa@pengutronix.de>
+ <1419594103-10928-5-git-send-email-mpa@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1809575.7HNrFF0m4u";
+Content-Type: multipart/signed; boundary="nextPart6519976.ytYPFccuOp";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 03/26] batman-adv: iv_ogm,
-	Reduce code duplication
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 04/26] batman-adv: iv_ogm,
+	divide and round for ring buffer avg
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,30 +25,38 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart1809575.7HNrFF0m4u
+--nextPart6519976.ytYPFccuOp
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday 26 December 2014 12:41:20 Markus Pargmann wrote:
-> +static int batadv_iv_ogm_neigh_diff(struct batadv_neigh_node *neigh1,
-> +                                   struct batadv_hard_iface *if_outgoing1,
-> +                                   struct batadv_neigh_node *neigh2,
-> +                                   struct batadv_hard_iface *if_outgoing2,
-> +                                   int *diff)
->  {
->         struct batadv_neigh_ifinfo *neigh1_ifinfo, *neigh2_ifinfo;
->         uint8_t tq1, tq2;
-> -       int diff;
-> +       int ret;
+On Friday 26 December 2014 12:41:21 Markus Pargmann wrote:
+> Instead of the normal division which looses precision, use a division
+> with rounding.
+> 
+> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+> ---
+>  bat_iv_ogm.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
+> index 1458ecfa66b8..10eada270015 100644
+> --- a/bat_iv_ogm.c
+> +++ b/bat_iv_ogm.c
+> @@ -82,7 +82,7 @@ static uint8_t batadv_ring_buffer_avg(const uint8_t
+> lq_recv[]) if (count == 0)
+>                 return 0;
+>  
+> -       return (uint8_t)(sum / count);
+> +       return (uint8_t)DIV_ROUND_CLOSEST(sum, count);
+>  }
 
-In the success case 'ret' is never initialized or set to any specific value.
-We do lack kernel doc for the newly created function 
-'batadv_iv_ogm_neigh_diff'.
+Is DIV_ROUND_CLOSEST available in 2.6.29 ? I could not find a conclusive hint 
+whether or not we need compat code for the out-of-tree module ?
 
 Cheers,
 Marek
 
---nextPart1809575.7HNrFF0m4u
+--nextPart6519976.ytYPFccuOp
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -56,14 +64,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABAgAGBQJUslKZAAoJEFNVTo/uthzAK00H/RhyfmGwLqB0y5B6rHS/hO/a
-WBgPniJ2+YZI9B0+8xrLx0yPxf97tvklcKS9WzIfAQ4uoiqvCoMojZZ942PzxyCm
-nmoL17zyYPWFOXXqC6uZ3c8mf0FK60HF1U0kbQKdMXYrjjjGpuuxUjQNU5CV3Irx
-jcn4iHLSKTpTYdPUdoe7uZAoBgiGeu3EMUN03BNypOGO2wpLFepuhYTN1DIXLrPH
-zbmmPl3H7K5g32Jw7XwqmuZsoL+lO+ix5eVZ8t3WBFcS3v2e1+V6xl0l1E8W6/1S
-vrQb7NubVp5UP2hpN4SXOc2q+K8AAno9Z7GHoobAYed0JiGPUs1k64uwrleIAqk=
-=1E4w
+iQEcBAABAgAGBQJUsm11AAoJEFNVTo/uthzAj5wH/jmjAvc6Ga7i5haWXNW23QCh
+GgWWxPrtyHfUkISJFtaSpi9vVZRwuA7JH0SufW2Vrig4cvkjepJt+4jfBc5tOMVN
+tniW6THXOyObDEkS4YWCHkXBKM7t26yCNzWlSnXtM4typuAIBu3qKRQyzF24O+6B
+YUm5nYmpK8thtEcArrO/xpaqevHFzW78+lkL0Hs+avYOZWuJxZ7/8ojleZPQK319
+8PStOw8dOpti1C4KYmWWcgZP7ay2sYrWjlo6i4v/LYeq/cExjbnXWLFqa3vyiaW7
+0Id9zPs+p92yoY5p0Q75LeNYewkm7L6LRBBuSgs9u3/Q8BgHU2lWhux75/fPqxc=
+=1BYU
 -----END PGP SIGNATURE-----
 
---nextPart1809575.7HNrFF0m4u--
+--nextPart6519976.ytYPFccuOp--
 
