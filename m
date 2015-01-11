@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 11 Jan 2015 18:32 +0800
-Message-ID: <5897872.LvVFKCtQ2N@diderot>
-In-Reply-To: <1419594103-10928-2-git-send-email-mpa@pengutronix.de>
+Date: Sun, 11 Jan 2015 18:38:17 +0800
+Message-ID: <13038168.FmPfxN5Dug@diderot>
+In-Reply-To: <1419594103-10928-4-git-send-email-mpa@pengutronix.de>
 References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
- <1419594103-10928-2-git-send-email-mpa@pengutronix.de>
+ <1419594103-10928-4-git-send-email-mpa@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart284196186.krGTJBaXP6";
+Content-Type: multipart/signed; boundary="nextPart1809575.7HNrFF0m4u";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 01/26] batman-adv: debugfs,
-	avoid compiling for !DEBUG_FS
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 03/26] batman-adv: iv_ogm,
+	Reduce code duplication
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,31 +25,30 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart284196186.krGTJBaXP6
+--nextPart1809575.7HNrFF0m4u
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday 26 December 2014 12:41:18 Markus Pargmann wrote:
-> Normally the debugfs framework will return error pointer with -ENODEV
-> for function calls when DEBUG_FS is not set.
-> 
-> batman does not notice this error code and continues trying to create
-> debugfs files and executes more code. We can avoid this code execution
-> by disabling compiling debugfs.c when DEBUG_FS is not set.
-> 
-> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
-> ---
->  Makefile.kbuild |  2 +-
->  debugfs.c       |  8 --------
->  debugfs.h       | 34 ++++++++++++++++++++++++++++++++++
->  3 files changed, 35 insertions(+), 9 deletions(-)
+On Friday 26 December 2014 12:41:20 Markus Pargmann wrote:
+> +static int batadv_iv_ogm_neigh_diff(struct batadv_neigh_node *neigh1,
+> +                                   struct batadv_hard_iface *if_outgoing1,
+> +                                   struct batadv_neigh_node *neigh2,
+> +                                   struct batadv_hard_iface *if_outgoing2,
+> +                                   int *diff)
+>  {
+>         struct batadv_neigh_ifinfo *neigh1_ifinfo, *neigh2_ifinfo;
+>         uint8_t tq1, tq2;
+> -       int diff;
+> +       int ret;
 
-Applied in revision fe67bb4.
+In the success case 'ret' is never initialized or set to any specific value.
+We do lack kernel doc for the newly created function 
+'batadv_iv_ogm_neigh_diff'.
 
-Thanks,
+Cheers,
 Marek
 
---nextPart284196186.krGTJBaXP6
+--nextPart1809575.7HNrFF0m4u
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -57,14 +56,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABAgAGBQJUslEgAAoJEFNVTo/uthzAqTMH/2SJetviMhACxZ5HuG2gei6S
-thYbOhWGcWyewlND6O6V+8oOHkEu9QC7ULhFaCJynHd0ZHwXKZGAxZiTKRqAiu/t
-8dZp3ZCcexQbTYBTnYD5Pu0Y+aEa6nb1/Ry0Q0jzuN813iuwfBnH/YObvEm3xxzH
-Ve9I3gZlU+/wpaJNAAIxpYDi5PChJQDzN6SwrcYi3AMoyGtVIOu67A+pL7es8c+K
-TyJ9KWtZzkSPiB56slSnhv8Q+H+F9MwythNO3UJWx7Nf7LZI8ax3Ka0oTcOCAfcG
-TrBNwEN91i7APklU+WhzHQNKI7A5D+E+T/mLVD0sh6oP4Ab5uL2lsgwR7/b0QqY=
-=BTjz
+iQEcBAABAgAGBQJUslKZAAoJEFNVTo/uthzAK00H/RhyfmGwLqB0y5B6rHS/hO/a
+WBgPniJ2+YZI9B0+8xrLx0yPxf97tvklcKS9WzIfAQ4uoiqvCoMojZZ942PzxyCm
+nmoL17zyYPWFOXXqC6uZ3c8mf0FK60HF1U0kbQKdMXYrjjjGpuuxUjQNU5CV3Irx
+jcn4iHLSKTpTYdPUdoe7uZAoBgiGeu3EMUN03BNypOGO2wpLFepuhYTN1DIXLrPH
+zbmmPl3H7K5g32Jw7XwqmuZsoL+lO+ix5eVZ8t3WBFcS3v2e1+V6xl0l1E8W6/1S
+vrQb7NubVp5UP2hpN4SXOc2q+K8AAno9Z7GHoobAYed0JiGPUs1k64uwrleIAqk=
+=1E4w
 -----END PGP SIGNATURE-----
 
---nextPart284196186.krGTJBaXP6--
+--nextPart1809575.7HNrFF0m4u--
 
