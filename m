@@ -1,8 +1,13 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri,  9 Jan 2015 11:22:17 +0100
-Message-Id: <1420798937-28761-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH next] batctl: fix misspelled words
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 11 Jan 2015 18:23:54 +0800
+Message-ID: <2204779.thuXfKejMu@diderot>
+In-Reply-To: <1420798937-28761-1-git-send-email-antonio@meshcoding.com>
+References: <1420798937-28761-1-git-send-email-antonio@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1635022.vjTp5bZEB5";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH next] batctl: fix misspelled words
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,34 +22,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@meshcoding.com>
 
-Reported-by: checkpatch
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- packet.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/packet.h b/packet.h
-index facd1fe..b81fbbf 100644
---- a/packet.h
-+++ b/packet.h
-@@ -377,7 +377,7 @@ struct batadv_frag_packet {
- 	uint8_t reserved:4;
- 	uint8_t no:4;
- #else
--#error "unknown bitfield endianess"
-+#error "unknown bitfield endianness"
- #endif
- 	uint8_t dest[ETH_ALEN];
- 	uint8_t orig[ETH_ALEN];
-@@ -453,7 +453,7 @@ struct batadv_coded_packet {
-  * @src: address of the source
-  * @dst: address of the destination
-  * @tvlv_len: length of tvlv data following the unicast tvlv header
-- * @align: 2 bytes to align the header to a 4 byte boundry
-+ * @align: 2 bytes to align the header to a 4 byte boundary
-  */
- struct batadv_unicast_tvlv_packet {
- 	uint8_t  packet_type;
--- 
-2.2.1
+--nextPart1635022.vjTp5bZEB5
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Friday 09 January 2015 11:22:17 Antonio Quartulli wrote:
+> Reported-by: checkpatch
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> ---
+>  packet.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+
+Applied in revision 19ddb13.
+
+Thanks,
+Marek
+
+--nextPart1635022.vjTp5bZEB5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABAgAGBQJUsk8+AAoJEFNVTo/uthzA410H/2jdbeTC5yexrKtNBm3fi4UJ
+SuCyb7mMCMseOUQpfqFXXMA7LJKoKuZGmz3J5bLnVYJUh7OaijS3GWFW3l9yMqmw
+henFhgDUutiPSwI/yZmFifMu2QPEe08pN+9c7KGuqWKYBDSG0vkIYglZyhe+EcCL
+PdzuX0rxE2YyobEatywcWfVkaVYI/piMiynGu3qewkCmhNZ6EoXG3Olitx9+YC9x
+lN3DFNyjNvUicIuZ8MAEHtlIsw3cPtSZ9j+HGhl5pH4QJDzC2bzLhJzAjFksMQPD
+77QjHj7oPwHm0dmWEl5TOBl9oaG88oegM/hYeZT3hoK0FxOjRpS8S92OOHTlnLc=
+=NEa2
+-----END PGP SIGNATURE-----
+
+--nextPart1635022.vjTp5bZEB5--
 
