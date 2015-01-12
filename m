@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 12 Jan 2015 16:52:22 +0100
-Message-ID: <4348694.8SUG3NZNcb@prime>
-In-Reply-To: <1417519009-20699-5-git-send-email-mpa@pengutronix.de>
-References: <1417519009-20699-1-git-send-email-mpa@pengutronix.de>
- <1417519009-20699-5-git-send-email-mpa@pengutronix.de>
+Date: Mon, 12 Jan 2015 16:56:03 +0100
+Message-ID: <1489373.Kb2PgzetXz@prime>
+In-Reply-To: <1419594103-10928-5-git-send-email-mpa@pengutronix.de>
+References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
+ <1419594103-10928-5-git-send-email-mpa@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2033001.4Qumbg2dr4";
+Content-Type: multipart/signed; boundary="nextPart3732753.pGgGZlDoh5";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 04/31] batman-adv: iv_ogm,
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 04/26] batman-adv: iv_ogm,
 	divide and round for ring buffer avg
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -22,18 +22,21 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: Markus Pargmann <mpa@pengutronix.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart2033001.4Qumbg2dr4
+--nextPart3732753.pGgGZlDoh5
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="ISO-8859-1"
 
-On Tuesday 02 December 2014 12:16:22 Markus Pargmann wrote:
+On Friday 26 December 2014 12:41:21 Markus Pargmann wrote:
 > Instead of the normal division which looses precision, use a division
 > with rounding.
 > 
 > Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+
+(sorry for the duplicate, sent the reply for the first patch version, so I'm 
+replying another time on v2 ...)
 
 Why do we need to have more precise rounding here? In doubt, we should rather 
 always round down to avoid any spurious routing loops - the loop free property 
@@ -61,7 +64,7 @@ please explain further.
 > 
 >  /**
 
---nextPart2033001.4Qumbg2dr4
+--nextPart3732753.pGgGZlDoh5
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -69,10 +72,10 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iEYEABECAAYFAlSz7b8ACgkQrzg/fFk7axY6ZACgyVzwmkIa/2a01eTsLItLwyhs
-KMQAoMXJnOXJVXsJktQvZeCOi7/wgKSx
-=qksw
+iEYEABECAAYFAlSz7pMACgkQrzg/fFk7axYyOwCfWgUFESWI1RMdCI0d+x3DZkA4
+wIgAmgJzKpTn5bWkFjDIttBzQT2zdS0F
+=T2hZ
 -----END PGP SIGNATURE-----
 
---nextPart2033001.4Qumbg2dr4--
+--nextPart3732753.pGgGZlDoh5--
 
