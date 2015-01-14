@@ -1,15 +1,17 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 12 Jan 2015 16:56:03 +0100
-Message-ID: <1489373.Kb2PgzetXz@prime>
-In-Reply-To: <1419594103-10928-5-git-send-email-mpa@pengutronix.de>
+Return-Path: <mpa@pengutronix.de>
+Date: Wed, 14 Jan 2015 16:24:17 +0100
+From: Markus Pargmann <mpa@pengutronix.de>
+Message-ID: <20150114152417.GB11698@pengutronix.de>
 References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
- <1419594103-10928-5-git-send-email-mpa@pengutronix.de>
+ <1419594103-10928-6-git-send-email-mpa@pengutronix.de>
+ <3044505.BN7NZDCpey@diderot>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3732753.pGgGZlDoh5";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 04/26] batman-adv: iv_ogm,
-	divide and round for ring buffer avg
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="QTprm0S8XgL7H0Dt"
+Content-Disposition: inline
+In-Reply-To: <3044505.BN7NZDCpey@diderot>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 05/26] batman-adv: init,
+ Add some error handling
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,61 +23,101 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Markus Pargmann <mpa@pengutronix.de>
-Cc: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+To: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart3732753.pGgGZlDoh5
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+--QTprm0S8XgL7H0Dt
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Friday 26 December 2014 12:41:21 Markus Pargmann wrote:
-> Instead of the normal division which looses precision, use a division
-> with rounding.
-> 
-> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+On Sun, Jan 11, 2015 at 08:38:10PM +0800, Marek Lindner wrote:
+> On Friday 26 December 2014 12:41:22 Markus Pargmann wrote:
+> >  static int __init batadv_init(void)
+> >  {
+> > +       int ret;
+> > +
+> >         INIT_LIST_HEAD(&batadv_hardif_list);
+> >         INIT_HLIST_HEAD(&batadv_algo_list);
+> > =20
+> >         batadv_recv_handler_init();
+> > =20
+> > -       batadv_iv_init();
+> > -       batadv_nc_init();
+> > +       ret =3D batadv_iv_init();
+> > +       if (ret)
+> > +               return ret;
+> > +
+> > +       ret =3D batadv_nc_init();
+> > +       if (ret)
+> > +               return ret;
+> > =20
+> >         batadv_event_workqueue =3D
+> > create_singlethread_workqueue("bat_events"); -
+> >         if (!batadv_event_workqueue)
+> >                 return -ENOMEM;
+> > =20
+> >         batadv_socket_init();
+> >         batadv_debugfs_init();
+> > =20
+> > -       register_netdevice_notifier(&batadv_hard_if_notifier);
+> > -       rtnl_link_register(&batadv_link_ops);
+> > +       ret =3D register_netdevice_notifier(&batadv_hard_if_notifier);
+> > +       if (ret)
+> > +               goto err_netdev_notifier;
+> > +
+> > +       ret =3D rtnl_link_register(&batadv_link_ops);
+> > +       if (ret)
+> > +               goto err_link_register;
+> > =20
+> >         pr_info("B.A.T.M.A.N. advanced %s (compatibility version %i)
+> > loaded\n", BATADV_SOURCE_VERSION, BATADV_COMPAT_VERSION);
+> > =20
+> >         return 0;
+> > +
+> > +err_link_register:
+> > +       unregister_netdevice_notifier(&batadv_hard_if_notifier);
+> > +err_netdev_notifier:
+> > +       batadv_debugfs_destroy();
+> > +
+> > +       return ret;
+> >  }
+>=20
+> To be truely clean, I guess the workqueue should be destroyed as well ?
 
-(sorry for the duplicate, sent the reply for the first patch version, so I'm 
-replying another time on v2 ...)
+Yes, thanks, added destroy_workqueue() for v3.
 
-Why do we need to have more precise rounding here? In doubt, we should rather 
-always round down to avoid any spurious routing loops - the loop free property 
-depends on monotonicity after all, and therefore its better to always round 
-down.
+Best Regards,
 
-I'm not convinced that this change is safe in that regard, if you think it is 
-please explain further.
+Markus
 
-> ---
->  bat_iv_ogm.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-> index 1458ecfa66b8..10eada270015 100644
-> --- a/bat_iv_ogm.c
-> +++ b/bat_iv_ogm.c
-> @@ -82,7 +82,7 @@ static uint8_t batadv_ring_buffer_avg(const uint8_t
-> lq_recv[]) if (count == 0)
->  		return 0;
-> 
-> -	return (uint8_t)(sum / count);
-> +	return (uint8_t)DIV_ROUND_CLOSEST(sum, count);
->  }
-> 
->  /**
+--=20
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
 
---nextPart3732753.pGgGZlDoh5
+--QTprm0S8XgL7H0Dt
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1
 
-iEYEABECAAYFAlSz7pMACgkQrzg/fFk7axYyOwCfWgUFESWI1RMdCI0d+x3DZkA4
-wIgAmgJzKpTn5bWkFjDIttBzQT2zdS0F
-=T2hZ
+iQIcBAEBAgAGBQJUtoohAAoJEEpcgKtcEGQQQNoP/10Z26nok1L0WE6aZb3H/0G7
+ILSwAOAyw0YZLBPBmyJU8CRA4wztOMKERUY0Hke7y6GuAeRYUZhbxDeS3OYUwwVQ
+1momMBTh116uu+ndrMSWP0dY2K/2Rp2b3FhLBqKqptqoW6n0bL9/2dJPbNZOFGJ2
+lCV6IhGevPP1lpJohf9txEsMwDyzLkW5zbLGYwEM+s2wLOcEKMA1mz1EvH6bpC7d
+DmmHW05fplAUyzf7lOTAx7XUNg8fI2cYFb0oe3+PR20Thfqw9XgAhbHHo2V4jh8M
+aKjAPwkaEaHHCFF9xTAYEnlE9TcLc21k8HURltWkIKkRYBt1U2iccp3XImTCXjkF
+dYy5IHxctCcEof9jszue983Gb+8Pbck75YYfvSBZ4DaBv4CsOSKV5zW817Yx7ADs
+/wX3hzUmfyV9NQZOvky9uI07YYSaTUmaviJ6trdYDoIvWmoRjUk32kOQHD9GwgQC
+guXfcyEi8YDhXt9aJhDdlNow9tad6RgcPhADeEfxzJLLRETXCwFrtvGX2AwPJ0p3
+1JAztg4v27U0btiLkyLxtzr36oNMJbjaUqqwExps6Yqe54ow0DDpnrDiS0pzoPyT
+b3DsD4hIdMfIil7+Kq3isrboYqoxW80SgPvnCINK9jKd9Zex9nGWTYQHTm8nY+Fq
+fjovr79NmF1JI6GvR/wC
+=J4aN
 -----END PGP SIGNATURE-----
 
---nextPart3732753.pGgGZlDoh5--
-
+--QTprm0S8XgL7H0Dt--
