@@ -1,17 +1,19 @@
 Return-Path: <mpa@pengutronix.de>
-Date: Wed, 14 Jan 2015 16:24:17 +0100
+Date: Wed, 14 Jan 2015 17:27:49 +0100
 From: Markus Pargmann <mpa@pengutronix.de>
-Message-ID: <20150114152417.GB11698@pengutronix.de>
+Message-ID: <20150114162749.GE11698@pengutronix.de>
 References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
- <1419594103-10928-6-git-send-email-mpa@pengutronix.de>
- <3044505.BN7NZDCpey@diderot>
+ <1419594103-10928-26-git-send-email-mpa@pengutronix.de>
+ <549EC29D.1070408@meshcoding.com>
+ <20141227170317.GB10331@pengutronix.de>
+ <54A4388D.40202@meshcoding.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="QTprm0S8XgL7H0Dt"
+ protocol="application/pgp-signature"; boundary="2hMgfIw2X+zgXrFs"
 Content-Disposition: inline
-In-Reply-To: <3044505.BN7NZDCpey@diderot>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 05/26] batman-adv: init,
- Add some error handling
+In-Reply-To: <54A4388D.40202@meshcoding.com>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 25/26] batman-adv: packet.h,
+ add some missing includes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,72 +25,74 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
+To: Antonio Quartulli <antonio@meshcoding.com>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>, Sven Eckelmann <sven@narfation.org>
 
 
---QTprm0S8XgL7H0Dt
+--2hMgfIw2X+zgXrFs
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Jan 11, 2015 at 08:38:10PM +0800, Marek Lindner wrote:
-> On Friday 26 December 2014 12:41:22 Markus Pargmann wrote:
-> >  static int __init batadv_init(void)
-> >  {
-> > +       int ret;
-> > +
-> >         INIT_LIST_HEAD(&batadv_hardif_list);
-> >         INIT_HLIST_HEAD(&batadv_algo_list);
-> > =20
-> >         batadv_recv_handler_init();
-> > =20
-> > -       batadv_iv_init();
-> > -       batadv_nc_init();
-> > +       ret =3D batadv_iv_init();
-> > +       if (ret)
-> > +               return ret;
-> > +
-> > +       ret =3D batadv_nc_init();
-> > +       if (ret)
-> > +               return ret;
-> > =20
-> >         batadv_event_workqueue =3D
-> > create_singlethread_workqueue("bat_events"); -
-> >         if (!batadv_event_workqueue)
-> >                 return -ENOMEM;
-> > =20
-> >         batadv_socket_init();
-> >         batadv_debugfs_init();
-> > =20
-> > -       register_netdevice_notifier(&batadv_hard_if_notifier);
-> > -       rtnl_link_register(&batadv_link_ops);
-> > +       ret =3D register_netdevice_notifier(&batadv_hard_if_notifier);
-> > +       if (ret)
-> > +               goto err_netdev_notifier;
-> > +
-> > +       ret =3D rtnl_link_register(&batadv_link_ops);
-> > +       if (ret)
-> > +               goto err_link_register;
-> > =20
-> >         pr_info("B.A.T.M.A.N. advanced %s (compatibility version %i)
-> > loaded\n", BATADV_SOURCE_VERSION, BATADV_COMPAT_VERSION);
-> > =20
-> >         return 0;
-> > +
-> > +err_link_register:
-> > +       unregister_netdevice_notifier(&batadv_hard_if_notifier);
-> > +err_netdev_notifier:
-> > +       batadv_debugfs_destroy();
-> > +
-> > +       return ret;
-> >  }
+On Wed, Dec 31, 2014 at 06:55:25PM +0100, Antonio Quartulli wrote:
+> Markus,
 >=20
-> To be truely clean, I guess the workqueue should be destroyed as well ?
+> On 27/12/14 18:03, Markus Pargmann wrote:
+> > Hi Antonio,
+> >=20
+> > On Sat, Dec 27, 2014 at 03:30:53PM +0100, Antonio Quartulli wrote:
+> >> Hi Markus,
+> >>
+> >> first of all you should know that I really appreciate your hard work.
+> >> Thank you very much for this!
+> >>
+> >> On 26/12/14 12:41, Markus Pargmann wrote:
+> >>> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+> >>> ---
+> >>>  packet.h | 5 +++++
+> >>>  1 file changed, 5 insertions(+)
+> >>>
+> >>> diff --git a/packet.h b/packet.h
+> >>> index facd1feddd4e..5fd0d814b6de 100644
+> >>> --- a/packet.h
+> >>> +++ b/packet.h
+> >>> @@ -18,6 +18,11 @@
+> >>>  #ifndef _NET_BATMAN_ADV_PACKET_H_
+> >>>  #define _NET_BATMAN_ADV_PACKET_H_
+> >>> =20
+> >>> +#ifdef __KERNEL__
+> >>> +#include <linux/bitops.h>
+> >>> +#include <uapi/linux/if_ether.h>
+> >>> +#endif /* __KERNEL__ */
+> >>
+> >> Unfortunately we can't do this :-(
+> >>
+> >> Patches sent to the kernel cannot contain conditional code on being in
+> >> the kernel or not (same is true for checks against a particular kernel
+> >> version - such code can't be in the kernel).
+> >>
+> >> Patches sent to the kernel must assume that they are only for the kern=
+el
+> >> (and for that particular version we are sending the patches against).
+> >=20
+> > Oh, I checked by grepping through the kernel before changing the patch
+> > like this.
+> > 	git grep "^#if.*def.*__KERNEL__" | grep -v include | wc -l
+> > 	145
+> >=20
+> > So there are 145 uses of an ifdef __KERNEL__ outside of include
+> > directories (I excluded include directories as they may be exported to
+> > userspace). So I thought it would be ok.
+>=20
+> these are probably pieces of code that have not yet been cleaned up.
+> Still, this does not allow us to introduce more code like this: David
+> (the networking tree maintainer) would refuse such additions.
 
-Yes, thanks, added destroy_workqueue() for v3.
+Okay, thanks. I removed the bitops.h include for the moment as I don't
+have an idea how to keep the header usable for the userspace
+application.
 
-Best Regards,
+Best regards,
 
 Markus
 
@@ -98,26 +102,26 @@ Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
 Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
 
---QTprm0S8XgL7H0Dt
+--2hMgfIw2X+zgXrFs
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJUtoohAAoJEEpcgKtcEGQQQNoP/10Z26nok1L0WE6aZb3H/0G7
-ILSwAOAyw0YZLBPBmyJU8CRA4wztOMKERUY0Hke7y6GuAeRYUZhbxDeS3OYUwwVQ
-1momMBTh116uu+ndrMSWP0dY2K/2Rp2b3FhLBqKqptqoW6n0bL9/2dJPbNZOFGJ2
-lCV6IhGevPP1lpJohf9txEsMwDyzLkW5zbLGYwEM+s2wLOcEKMA1mz1EvH6bpC7d
-DmmHW05fplAUyzf7lOTAx7XUNg8fI2cYFb0oe3+PR20Thfqw9XgAhbHHo2V4jh8M
-aKjAPwkaEaHHCFF9xTAYEnlE9TcLc21k8HURltWkIKkRYBt1U2iccp3XImTCXjkF
-dYy5IHxctCcEof9jszue983Gb+8Pbck75YYfvSBZ4DaBv4CsOSKV5zW817Yx7ADs
-/wX3hzUmfyV9NQZOvky9uI07YYSaTUmaviJ6trdYDoIvWmoRjUk32kOQHD9GwgQC
-guXfcyEi8YDhXt9aJhDdlNow9tad6RgcPhADeEfxzJLLRETXCwFrtvGX2AwPJ0p3
-1JAztg4v27U0btiLkyLxtzr36oNMJbjaUqqwExps6Yqe54ow0DDpnrDiS0pzoPyT
-b3DsD4hIdMfIil7+Kq3isrboYqoxW80SgPvnCINK9jKd9Zex9nGWTYQHTm8nY+Fq
-fjovr79NmF1JI6GvR/wC
-=J4aN
+iQIcBAEBAgAGBQJUtpkFAAoJEEpcgKtcEGQQDxwP/2ptRGwGln6pWAeN+vDfa96Y
+fTkv73YATXqDtvORmVtH49+JJ4nPi5glI0yeWU92xN+Et/BA52W6VBgAu8n1/bC8
+iy4p35zbevnVDbNp4a5up5+YAWU0bSd7mjZnHDanZ3bNjOw797voz5PVq0J7HGq/
+3C0dLoWxvL2MkN40PHDyc8qaJC4a0bFEKsdoxupZXcBjcHIWuxpr7FFPRQuo1VKc
+NePlOt/8NgDjyFOgHLgL889tIgwOiaQY4J0lg6yQTltr8Yim2cDPNy1z5oCDT2A6
+tszgqUwVzG4jCvwWl5PwIl0t+k0JyssMkjKOI5WWFvyRFQoMO57DrZzvsHzomgXz
+whfK6gXDxZGm5kf/LyxlBPFrnTSkt6IU3cfhsjm1X3f90N6Jc+ny5DhsB2F1hDGA
+EMNOi4gOELw/RCbqEW6+woIIhTnd11v+p6yGJRxHpnWRZuVGQ0IMcuFY6TJbXDqE
+DdSWFNsY39oVD2w378d4d47+dmMl48fhUKZXjvqBE3ZrwHND9Z2+2uM4ZKSoOPfp
+E9i1b/JbFh9RZv1AKkSLRdLen01D28D4WwpLYWVS+JeBsRE3zQ9nvjfSq27CkKb/
+/3pp/ep9ty5pZpd2n6W8LeX0yWZ/17CojVKRNNv2/STIQBL7HCbp2Rmf++q+3f/t
+g5uaeMSU7FR2SiWTMBNy
+=99tZ
 -----END PGP SIGNATURE-----
 
---QTprm0S8XgL7H0Dt--
+--2hMgfIw2X+zgXrFs--
