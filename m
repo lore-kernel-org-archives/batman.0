@@ -1,14 +1,11 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 23 Jan 2015 17:32:02 +0100
-Message-ID: <3471179.FAUhTczCdE@prime>
-In-Reply-To: <1421705011.612946.10937.nullmailer@sylar.jplitza.de>
-References: <1421705011.612946.10937.nullmailer@sylar.jplitza.de>
+Return-Path: <ff@jluehr.de>
+Message-ID: <54C4EE81.1050902@jluehr.de>
+Date: Sun, 25 Jan 2015 14:24:17 +0100
+From: =?ISO-8859-15?Q?Jan_L=FChr?= <ff@jluehr.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3920252.pzyt6fdFV0";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Tighten size check on received
-	packet
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] Understanding MAC-Adresses in iptables-Logs
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,40 +17,26 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Jan-Philipp Litza <janphilipp@litza.de>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hello folks,
 
---nextPart3920252.pzyt6fdFV0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+there appears to be some misconfiguration in our network. A gateway is
+blocking unknown ip-addresses:
 
-On Monday 19 January 2015 21:59:32 Jan-Philipp Litza wrote:
-> When first checking if a received packet is truncated, the size of the
-> alfred_tlv structure is ignored, thus allowing packets that are
-> truncated by 4 bytes or less to pass the check unnoticed.
-> 
-> Even the check itself might access memory after the packet if its size
-> was only 2 bytes or less.
-> 
-> Signed-off-by: Jan-Philipp Litza <janphilipp@litza.de>
+[658047.514011] FORWARD DROPPEDIN=bat0 OUT=backbone
+MAC=3a:81:5b:64:fa:32:08:fc:88:9b:8a:60:08:00:45:00:00:4f:6c:b1:40:00:3f:06:b8:8e:0a:a6
+SRC=10.166.28.69 DST=173.194.65.188 LEN=79 TOS=0x00 PREC=0x00 TTL=63
+ID=27825 DF PROTO=TCP SPT=45173 DPT=5228 WINDOW=9131 RES=0x00 ACK PSH
+URGP=0
+[658047.519455] FORWARD DROPPEDIN=bat0 OUT=backbone
+MAC=3a:81:5b:64:fa:32:08:fc:88:9b:8a:60:08:00:45:00:00:34:6c:b2:40:00:3f:06:b8:a8:0a:a6
+SRC=10.166.28.69 DST=173.194.65.188 LEN=52 TOS=0x00 PREC=0x00 TTL=63
+ID=27826 DF PROTO=TCP SPT=45173 DPT=5228 WINDOW=9131 RES=0x00 ACK FIN
+URGP=0
 
-applied in commit 0e2728c.
+I'm somewhat confused by the mac-address here - it's very long.
+Can I somehow derive, which originator or client is propagating or using
+this address?
 
-Thanks!
-    Simon
---nextPart3920252.pzyt6fdFV0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iEYEABECAAYFAlTCd4YACgkQrzg/fFk7axbljACeK0xT3FrEyFOuB37Y1wE/XYeQ
-swEAoIQoJu+LR9nlovrqhzoctJIlVdgg
-=P0/0
------END PGP SIGNATURE-----
-
---nextPart3920252.pzyt6fdFV0--
-
+Greetz, Jan
