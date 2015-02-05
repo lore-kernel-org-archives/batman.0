@@ -1,10 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu,  5 Feb 2015 16:45:24 +0100
-Message-Id: <1423151124-16054-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1423151124-16054-1-git-send-email-sven@narfation.org>
-References: <1423151124-16054-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batctl: Update copyright years for 2015
+Date: Thu,  5 Feb 2015 17:22:53 +0100
+Message-Id: <1423153373-17033-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Use safer default config for
+	optional features
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,348 +18,77 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- Makefile      | 2 +-
- allocate.h    | 2 +-
- bat-hosts.c   | 2 +-
- bat-hosts.h   | 2 +-
- bisect_iv.c   | 2 +-
- bisect_iv.h   | 2 +-
- debug.c       | 2 +-
- debug.h       | 2 +-
- functions.c   | 2 +-
- functions.h   | 2 +-
- hash.c        | 2 +-
- hash.h        | 2 +-
- ioctl.c       | 2 +-
- ioctl.h       | 2 +-
- list-batman.c | 2 +-
- list-batman.h | 2 +-
- main.c        | 2 +-
- main.h        | 2 +-
- ping.c        | 2 +-
- ping.h        | 2 +-
- sys.c         | 2 +-
- sys.h         | 2 +-
- tcpdump.c     | 2 +-
- tcpdump.h     | 2 +-
- traceroute.c  | 2 +-
- traceroute.h  | 2 +-
- translate.c   | 2 +-
- translate.h   | 2 +-
- 28 files changed, 28 insertions(+), 28 deletions(-)
+The current default settings for optional features in batman-adv seems to be
+based around the idea that the user only compiles what he requires. They will
+automatically enabled when they are compiled in. For example the network coding
+part of batman-adv is by default disabled in the out-of-tree module but will be
+enabled when the code is compiled during the module build.
 
-diff --git a/Makefile b/Makefile
-index 0eb71a1..d83d2e8 100755
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- #!/usr/bin/make -f
- # -*- makefile -*-
- #
--# Copyright (C) 2006-2014 B.A.T.M.A.N. contributors
-+# Copyright (C) 2006-2015  B.A.T.M.A.N. contributors
- #
- # This program is free software; you can redistribute it and/or
- # modify it under the terms of version 2 of the GNU General Public
-diff --git a/allocate.h b/allocate.h
-index c2f7777..02edf5c 100644
---- a/allocate.h
-+++ b/allocate.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/bat-hosts.c b/bat-hosts.c
-index 1d62bb8..72bec80 100644
---- a/bat-hosts.c
-+++ b/bat-hosts.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
-  *
-  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/bat-hosts.h b/bat-hosts.h
-index 327208b..f402455 100644
---- a/bat-hosts.h
-+++ b/bat-hosts.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/bisect_iv.c b/bisect_iv.c
-index b748813..9aeee16 100644
---- a/bisect_iv.c
-+++ b/bisect_iv.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/bisect_iv.h b/bisect_iv.h
-index a7ea706..ec575d2 100644
---- a/bisect_iv.h
-+++ b/bisect_iv.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/debug.c b/debug.c
-index dfcf3c3..a050345 100644
---- a/debug.c
-+++ b/debug.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/debug.h b/debug.h
-index 76d5e68..2bc0ff9 100644
---- a/debug.h
-+++ b/debug.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/functions.c b/functions.c
-index 251e616..3fcd2ad 100644
---- a/functions.c
-+++ b/functions.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
-  *
-  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/functions.h b/functions.h
-index 43c3d9c..02ed5ea 100644
---- a/functions.h
-+++ b/functions.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
-  *
-  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/hash.c b/hash.c
-index 14debcb..069a424 100644
---- a/hash.c
-+++ b/hash.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2006-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2006-2015  B.A.T.M.A.N. contributors:
-  *
-  * Simon Wunderlich, Marek Lindner
-  *
-diff --git a/hash.h b/hash.h
-index c9c8fb1..aa27f25 100644
---- a/hash.h
-+++ b/hash.h
-@@ -1,5 +1,5 @@
- /* 
-- * Copyright (C) 2006-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2006-2015  B.A.T.M.A.N. contributors:
-  *
-  * Simon Wunderlich, Marek Lindner
-  *
-diff --git a/ioctl.c b/ioctl.c
-index d3d182f..068f894 100644
---- a/ioctl.c
-+++ b/ioctl.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/ioctl.h b/ioctl.h
-index d47ad08..55c9aab 100644
---- a/ioctl.h
-+++ b/ioctl.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/list-batman.c b/list-batman.c
-index b31a324..1beafaf 100644
---- a/list-batman.c
-+++ b/list-batman.c
-@@ -1,5 +1,5 @@
- /* 
-- * Copyright (C) 2006-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2006-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/list-batman.h b/list-batman.h
-index 0ee1367..c7372c8 100644
---- a/list-batman.h
-+++ b/list-batman.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2006-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2006-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner
-  *
-diff --git a/main.c b/main.c
-index 44cf49b..d127cdc 100644
---- a/main.c
-+++ b/main.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
-  *
-  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/main.h b/main.h
-index 461f3e3..d96ce94 100644
---- a/main.h
-+++ b/main.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
-  *
-  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/ping.c b/ping.c
-index bdca222..d080aa4 100644
---- a/ping.c
-+++ b/ping.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
-  *
-  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/ping.h b/ping.h
-index 6258534..a6c1e36 100644
---- a/ping.h
-+++ b/ping.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/sys.c b/sys.c
-index 676bef1..e3da552 100644
---- a/sys.c
-+++ b/sys.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/sys.h b/sys.h
-index 3859253..9addd90 100644
---- a/sys.h
-+++ b/sys.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/tcpdump.c b/tcpdump.c
-index b994977..0bbfefc 100644
---- a/tcpdump.c
-+++ b/tcpdump.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
-  *
-  * Andreas Langer <an.langer@gmx.de>
-  *
-diff --git a/tcpdump.h b/tcpdump.h
-index 5d936f2..e0172f7 100644
---- a/tcpdump.h
-+++ b/tcpdump.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
-  *
-  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/traceroute.c b/traceroute.c
-index 4ebfec2..cedce80 100644
---- a/traceroute.c
-+++ b/traceroute.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
-  *
-  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/traceroute.h b/traceroute.h
-index 396088a..2f1512d 100644
---- a/traceroute.h
-+++ b/traceroute.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/translate.c b/translate.c
-index 1cc83f9..cefa9da 100644
---- a/translate.c
-+++ b/translate.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
-  *
-  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
-  *
-diff --git a/translate.h b/translate.h
-index c6259d0..e349a70 100644
---- a/translate.h
-+++ b/translate.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
-  *
-  * Marek Lindner <mareklindner@neomailbox.ch>
-  *
+But distributions like Debian just enable all features of the batman-adv kernel
+module and hope that more experimental features or features with possible
+negative effects have to be enabled using some runtime configuration interface.
+
+The network_coding feature can help in specific setups but also has drawbacks
+and is not disabled by default in the out-of-tree module. Disabling by default
+in the runtime config seems to be also quite sane.
+
+The distributed_arp_table is in theory a good solution to reduce connection
+problems in large networks caused by ARP packet loss. Unfortunatelly, it seems
+to also break ARP resolution in simple mesh setups. The only solution which
+seems to be used by AP firmwares seems to be the deactivation of this feature.
+Disabling this feature by default until the problem was understood and fixed
+may help new deployments to create a working mesh. Tuning of the mesh can still
+be done by them in case DAT works in their setup.
+
+The bridge_loop_avoidance is the only feature which is disabled by default but
+may be necessary even in simple setups. Packet loops may even be created
+during the initial node setup when this is not enabled. This is different than
+STP on bridges because mesh is usually used on Adhoc WiFi. Having two nodes
+(by accident) in the same LAN segment and in the same mesh network is rather
+common in this situation.
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+--
+This patchset is based on my comments in
+ https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2014-November/012543.html
+
+The patch doesn't touch the multicast feature because I have no idea how well
+it works and what the current multicast mode is actual doing.
+---
+ network-coding.c | 2 +-
+ soft-interface.c | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/network-coding.c b/network-coding.c
+index 127cc4d..be005b2 100644
+--- a/network-coding.c
++++ b/network-coding.c
+@@ -155,7 +155,7 @@ err:
+  */
+ void batadv_nc_init_bat_priv(struct batadv_priv *bat_priv)
+ {
+-	atomic_set(&bat_priv->network_coding, 1);
++	atomic_set(&bat_priv->network_coding, 0);
+ 	bat_priv->nc.min_tq = 200;
+ 	bat_priv->nc.max_fwd_delay = 10;
+ 	bat_priv->nc.max_buffer_time = 200;
+diff --git a/soft-interface.c b/soft-interface.c
+index 8748987..ae96cee 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -738,10 +738,10 @@ static int batadv_softif_init_late(struct net_device *dev)
+ 	atomic_set(&bat_priv->aggregated_ogms, 1);
+ 	atomic_set(&bat_priv->bonding, 0);
+ #ifdef CONFIG_BATMAN_ADV_BLA
+-	atomic_set(&bat_priv->bridge_loop_avoidance, 0);
++	atomic_set(&bat_priv->bridge_loop_avoidance, 1);
+ #endif
+ #ifdef CONFIG_BATMAN_ADV_DAT
+-	atomic_set(&bat_priv->distributed_arp_table, 1);
++	atomic_set(&bat_priv->distributed_arp_table, 0);
+ #endif
+ #ifdef CONFIG_BATMAN_ADV_MCAST
+ 	bat_priv->mcast.flags = BATADV_NO_FLAGS;
 -- 
 2.1.4
 
