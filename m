@@ -1,8 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu,  5 Feb 2015 16:45:23 +0100
-Message-Id: <1423151124-16054-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] alfred: Update copyright years for 2015
+Date: Thu,  5 Feb 2015 16:45:24 +0100
+Message-Id: <1423151124-16054-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1423151124-16054-1-git-send-email-sven@narfation.org>
+References: <1423151124-16054-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batctl: Update copyright years for 2015
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,123 +21,150 @@ Cc: Sven Eckelmann <sven@narfation.org>
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile           | 2 +-
- alfred.h           | 2 +-
- batadv_query.c     | 2 +-
- batadv_query.h     | 2 +-
- client.c           | 2 +-
- gpsd/Makefile      | 2 +-
- gpsd/alfred-gpsd.c | 2 +-
- gpsd/alfred-gpsd.h | 2 +-
- hash.c             | 2 +-
- hash.h             | 2 +-
- main.c             | 2 +-
- netsock.c          | 2 +-
- packet.h           | 2 +-
- recv.c             | 2 +-
- send.c             | 2 +-
- server.c           | 2 +-
- unix_sock.c        | 2 +-
- util.c             | 2 +-
- vis/Makefile       | 2 +-
- vis/vis.c          | 2 +-
- vis/vis.h          | 2 +-
- 21 files changed, 21 insertions(+), 21 deletions(-)
+ Makefile      | 2 +-
+ allocate.h    | 2 +-
+ bat-hosts.c   | 2 +-
+ bat-hosts.h   | 2 +-
+ bisect_iv.c   | 2 +-
+ bisect_iv.h   | 2 +-
+ debug.c       | 2 +-
+ debug.h       | 2 +-
+ functions.c   | 2 +-
+ functions.h   | 2 +-
+ hash.c        | 2 +-
+ hash.h        | 2 +-
+ ioctl.c       | 2 +-
+ ioctl.h       | 2 +-
+ list-batman.c | 2 +-
+ list-batman.h | 2 +-
+ main.c        | 2 +-
+ main.h        | 2 +-
+ ping.c        | 2 +-
+ ping.h        | 2 +-
+ sys.c         | 2 +-
+ sys.h         | 2 +-
+ tcpdump.c     | 2 +-
+ tcpdump.h     | 2 +-
+ traceroute.c  | 2 +-
+ traceroute.h  | 2 +-
+ translate.c   | 2 +-
+ translate.h   | 2 +-
+ 28 files changed, 28 insertions(+), 28 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 531339a..8e944c9 100644
+index 0eb71a1..d83d2e8 100755
 --- a/Makefile
 +++ b/Makefile
 @@ -1,7 +1,7 @@
  #!/usr/bin/make -f
  # -*- makefile -*-
  #
--# Copyright (C) 2012-2014 B.A.T.M.A.N. contributors
-+# Copyright (C) 2012-2015  B.A.T.M.A.N. contributors
+-# Copyright (C) 2006-2014 B.A.T.M.A.N. contributors
++# Copyright (C) 2006-2015  B.A.T.M.A.N. contributors
  #
  # This program is free software; you can redistribute it and/or
  # modify it under the terms of version 2 of the GNU General Public
-diff --git a/alfred.h b/alfred.h
-index f758fc9..ef00551 100644
---- a/alfred.h
-+++ b/alfred.h
+diff --git a/allocate.h b/allocate.h
+index c2f7777..02edf5c 100644
+--- a/allocate.h
++++ b/allocate.h
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+  * Marek Lindner <mareklindner@neomailbox.ch>
   *
-diff --git a/batadv_query.c b/batadv_query.c
-index cf90554..473ab40 100644
---- a/batadv_query.c
-+++ b/batadv_query.c
+diff --git a/bat-hosts.c b/bat-hosts.c
+index 1d62bb8..72bec80 100644
+--- a/bat-hosts.c
++++ b/bat-hosts.c
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
   *
-diff --git a/batadv_query.h b/batadv_query.h
-index 463c8e1..6b938ea 100644
---- a/batadv_query.h
-+++ b/batadv_query.h
+diff --git a/bat-hosts.h b/bat-hosts.h
+index 327208b..f402455 100644
+--- a/bat-hosts.h
++++ b/bat-hosts.h
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2006-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2006-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich, Marek Lindner
+  * Marek Lindner <mareklindner@neomailbox.ch>
   *
-diff --git a/client.c b/client.c
-index cff5270..32fdd54 100644
---- a/client.c
-+++ b/client.c
+diff --git a/bisect_iv.c b/bisect_iv.c
+index b748813..9aeee16 100644
+--- a/bisect_iv.c
++++ b/bisect_iv.c
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+  * Marek Lindner <mareklindner@neomailbox.ch>
   *
-diff --git a/gpsd/Makefile b/gpsd/Makefile
-index 7ac6288..5055987 100644
---- a/gpsd/Makefile
-+++ b/gpsd/Makefile
-@@ -1,7 +1,7 @@
- #!/usr/bin/make -f
- # -*- makefile -*-
- #
--# Copyright (C) 2013-2014 B.A.T.M.A.N. contributors
-+# Copyright (C) 2013-2015  B.A.T.M.A.N. contributors
- #
- # This program is free software; you can redistribute it and/or
- # modify it under the terms of version 2 of the GNU General Public
-diff --git a/gpsd/alfred-gpsd.c b/gpsd/alfred-gpsd.c
-index d736ad1..86414cf 100644
---- a/gpsd/alfred-gpsd.c
-+++ b/gpsd/alfred-gpsd.c
+diff --git a/bisect_iv.h b/bisect_iv.h
+index a7ea706..ec575d2 100644
+--- a/bisect_iv.h
++++ b/bisect_iv.h
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2013-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2013-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
   *
-  * Andrew Lunn, Simon Wunderlich
+  * Marek Lindner <mareklindner@neomailbox.ch>
   *
-diff --git a/gpsd/alfred-gpsd.h b/gpsd/alfred-gpsd.h
-index e287110..297f4e4 100644
---- a/gpsd/alfred-gpsd.h
-+++ b/gpsd/alfred-gpsd.h
+diff --git a/debug.c b/debug.c
+index dfcf3c3..a050345 100644
+--- a/debug.c
++++ b/debug.c
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2013-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2013-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
   *
-  * Andrew Lunn, Simon Wunderlich
+  * Marek Lindner <mareklindner@neomailbox.ch>
+  *
+diff --git a/debug.h b/debug.h
+index 76d5e68..2bc0ff9 100644
+--- a/debug.h
++++ b/debug.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner <mareklindner@neomailbox.ch>
+  *
+diff --git a/functions.c b/functions.c
+index 251e616..3fcd2ad 100644
+--- a/functions.c
++++ b/functions.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
+  *
+  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
+  *
+diff --git a/functions.h b/functions.h
+index 43c3d9c..02ed5ea 100644
+--- a/functions.h
++++ b/functions.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
+  *
+  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
   *
 diff --git a/hash.c b/hash.c
-index fd85a0f..87e8484 100644
+index 14debcb..069a424 100644
 --- a/hash.c
 +++ b/hash.c
 @@ -1,5 +1,5 @@
@@ -156,128 +185,181 @@ index c9c8fb1..aa27f25 100644
   *
   * Simon Wunderlich, Marek Lindner
   *
+diff --git a/ioctl.c b/ioctl.c
+index d3d182f..068f894 100644
+--- a/ioctl.c
++++ b/ioctl.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner <mareklindner@neomailbox.ch>
+  *
+diff --git a/ioctl.h b/ioctl.h
+index d47ad08..55c9aab 100644
+--- a/ioctl.h
++++ b/ioctl.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner <mareklindner@neomailbox.ch>
+  *
+diff --git a/list-batman.c b/list-batman.c
+index b31a324..1beafaf 100644
+--- a/list-batman.c
++++ b/list-batman.c
+@@ -1,5 +1,5 @@
+ /* 
+- * Copyright (C) 2006-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2006-2015  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner
+  *
+diff --git a/list-batman.h b/list-batman.h
+index 0ee1367..c7372c8 100644
+--- a/list-batman.h
++++ b/list-batman.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2006-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2006-2015  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner
+  *
 diff --git a/main.c b/main.c
-index 7eb8baa..d298d65 100644
+index 44cf49b..d127cdc 100644
 --- a/main.c
 +++ b/main.c
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
   *
-diff --git a/netsock.c b/netsock.c
-index 45c03e9..cc2e9a5 100644
---- a/netsock.c
-+++ b/netsock.c
+diff --git a/main.h b/main.h
+index 461f3e3..d96ce94 100644
+--- a/main.h
++++ b/main.h
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
   *
-diff --git a/packet.h b/packet.h
-index 87ad263..27ee6e5 100644
---- a/packet.h
-+++ b/packet.h
+diff --git a/ping.c b/ping.c
+index bdca222..d080aa4 100644
+--- a/ping.c
++++ b/ping.c
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich, Sven Eckelmann
+  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
   *
-diff --git a/recv.c b/recv.c
-index 870485f..34a16fc 100644
---- a/recv.c
-+++ b/recv.c
+diff --git a/ping.h b/ping.h
+index 6258534..a6c1e36 100644
+--- a/ping.h
++++ b/ping.h
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+  * Marek Lindner <mareklindner@neomailbox.ch>
   *
-diff --git a/send.c b/send.c
-index 19cc867..f1843fe 100644
---- a/send.c
-+++ b/send.c
+diff --git a/sys.c b/sys.c
+index 676bef1..e3da552 100644
+--- a/sys.c
++++ b/sys.c
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+  * Marek Lindner <mareklindner@neomailbox.ch>
   *
-diff --git a/server.c b/server.c
-index 66809d9..1a3d876 100644
---- a/server.c
-+++ b/server.c
+diff --git a/sys.h b/sys.h
+index 3859253..9addd90 100644
+--- a/sys.h
++++ b/sys.h
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+  * Marek Lindner <mareklindner@neomailbox.ch>
   *
-diff --git a/unix_sock.c b/unix_sock.c
-index 8a99327..d203c50 100644
---- a/unix_sock.c
-+++ b/unix_sock.c
+diff --git a/tcpdump.c b/tcpdump.c
+index b994977..0bbfefc 100644
+--- a/tcpdump.c
++++ b/tcpdump.c
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+  * Andreas Langer <an.langer@gmx.de>
   *
-diff --git a/util.c b/util.c
-index 9f357cd..84d4b2d 100644
---- a/util.c
-+++ b/util.c
+diff --git a/tcpdump.h b/tcpdump.h
+index 5d936f2..e0172f7 100644
+--- a/tcpdump.h
++++ b/tcpdump.h
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2012-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2012-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
   *
-diff --git a/vis/Makefile b/vis/Makefile
-index 9421ae2..32a578e 100644
---- a/vis/Makefile
-+++ b/vis/Makefile
-@@ -1,7 +1,7 @@
- #!/usr/bin/make -f
- # -*- makefile -*-
- #
--# Copyright (C) 2013-2014 B.A.T.M.A.N. contributors
-+# Copyright (C) 2013-2015  B.A.T.M.A.N. contributors
- #
- # This program is free software; you can redistribute it and/or
- # modify it under the terms of version 2 of the GNU General Public
-diff --git a/vis/vis.c b/vis/vis.c
-index 3dd5c8c..038d89d 100644
---- a/vis/vis.c
-+++ b/vis/vis.c
+diff --git a/traceroute.c b/traceroute.c
+index 4ebfec2..cedce80 100644
+--- a/traceroute.c
++++ b/traceroute.c
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2013-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2013-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
   *
-diff --git a/vis/vis.h b/vis/vis.h
-index ac2afb5..a23dc83 100644
---- a/vis/vis.h
-+++ b/vis/vis.h
+diff --git a/traceroute.h b/traceroute.h
+index 396088a..2f1512d 100644
+--- a/traceroute.h
++++ b/traceroute.h
 @@ -1,5 +1,5 @@
  /*
-- * Copyright (C) 2013-2014 B.A.T.M.A.N. contributors:
-+ * Copyright (C) 2013-2015  B.A.T.M.A.N. contributors:
+- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
   *
-  * Simon Wunderlich
+  * Marek Lindner <mareklindner@neomailbox.ch>
+  *
+diff --git a/translate.c b/translate.c
+index 1cc83f9..cefa9da 100644
+--- a/translate.c
++++ b/translate.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2007-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2007-2015  B.A.T.M.A.N. contributors:
+  *
+  * Andreas Langer <an.langer@gmx.de>, Marek Lindner <mareklindner@neomailbox.ch>
+  *
+diff --git a/translate.h b/translate.h
+index c6259d0..e349a70 100644
+--- a/translate.h
++++ b/translate.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2009-2014 B.A.T.M.A.N. contributors:
++ * Copyright (C) 2009-2015  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner <mareklindner@neomailbox.ch>
   *
 -- 
 2.1.4
