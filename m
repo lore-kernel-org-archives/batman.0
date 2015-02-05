@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 05 Feb 2015 19:09:55 +0100
-Message-ID: <1525155.WDXWpZloLX@prime>
-In-Reply-To: <1423147633-13147-1-git-send-email-sven@narfation.org>
-References: <1423147633-13147-1-git-send-email-sven@narfation.org>
+Date: Thu, 05 Feb 2015 19:10:21 +0100
+Message-ID: <1715646.juFfg74W4D@prime>
+In-Reply-To: <1423151124-16054-1-git-send-email-sven@narfation.org>
+References: <1423151124-16054-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2195909.letYPVLsPG";
+Content-Type: multipart/signed; boundary="nextPart1450830.gVZOkJgG6H";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Close socket after connect
-	failure
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] alfred: Update copyright years for
+	2015
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,26 +24,18 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
 
---nextPart2195909.letYPVLsPG
+--nextPart1450830.gVZOkJgG6H
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="ISO-8859-1"
 
-On Thursday 05 February 2015 15:47:13 Sven Eckelmann wrote:
-> The socket is still using one file descriptor of the process when the
-> connection fails. This fd leak is non-problematic in the current client
-> process code because the client would be closed in this situation anyway
-> and therefore the socket would be closed when the process is stopped. But
-> people using this as example code may not stop the process on this error.
-> The unclosed and unused sockets would accumulate and the process would hit
-> the limit for open file descriptors.
-> 
+On Thursday 05 February 2015 16:45:23 Sven Eckelmann wrote:
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-applied in revision 26a7b5e.
+Applied in revision dfb1ea4.
 
 Thanks!
     Simon
---nextPart2195909.letYPVLsPG
+--nextPart1450830.gVZOkJgG6H
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -51,10 +43,10 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iEYEABECAAYFAlTTsfgACgkQrzg/fFk7axZRdwCgyPzwnLp7KhJQK+P1aKM7BqHw
-CdwAoLxGyhzhrRlzTy9hH16eLE0OMi0z
-=r/p/
+iEYEABECAAYFAlTTsg0ACgkQrzg/fFk7axZuiACgxGH532XaN5zm6GBmgwmr4poz
+JfwAoId5j7RVvoazaNpypvs3p/nxF8lj
+=CvcR
 -----END PGP SIGNATURE-----
 
---nextPart2195909.letYPVLsPG--
+--nextPart1450830.gVZOkJgG6H--
 
