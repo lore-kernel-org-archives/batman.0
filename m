@@ -1,15 +1,14 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <54E330F3.7030602@meshcoding.com>
-Date: Tue, 17 Feb 2015 13:15:47 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Tue, 17 Feb 2015 19:56:17 +0800
+Message-ID: <21610639.c5g6WDhZkb@voltaire>
+In-Reply-To: <CACgQMVJdCtyUR__FLMV-6uX=5fM+VavY78CVkVMhpsYKF5Rbfg@mail.gmail.com>
+References: <CACgQMVJdCtyUR__FLMV-6uX=5fM+VavY78CVkVMhpsYKF5Rbfg@mail.gmail.com>
 MIME-Version: 1.0
-References: <1424136699.8287.10.camel@perches.com>
-In-Reply-To: <1424136699.8287.10.camel@perches.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="Hua2GoXgDPv89FdQt8o2giUhOKxdOXGjo"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove uses of return value
-	of seq_printf
+Content-Type: multipart/signed; boundary="nextPart1928613.SMAM2laXyI";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Suggestion: List of projects / products which
+	make use of Batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,55 +20,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Joe Perches <joe@perches.com>, Marek Lindner <mareklindner@neomailbox.ch>
-Cc: netdev <netdev@vger.kernel.org>, "b.a.t.m.a.n" <b.a.t.m.a.n@lists.open-mesh.org>, LKML <linux-kernel@vger.kernel.org>
-
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---Hua2GoXgDPv89FdQt8o2giUhOKxdOXGjo
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
-
-Hi Joe,
-
-thank you very much for this patch.
-
-On 17/02/15 02:31, Joe Perches wrote:
-> This function is soon going to return void so remove the
-> return value use.
->=20
-> Convert the return value to test seq_has_overflowed() instead.
->=20
-> Signed-off-by: Joe Perches <joe@perches.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Dirk van der Walt <dirkvanderwalt@gmail.com>
 
 
-Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+--nextPart1928613.SMAM2laXyI
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
+On Monday, February 09, 2015 08:22:39 Dirk van der Walt wrote:
+> I was wondering if it would be possible to include a section which
+> lists projects / products that implement Batman-adv.
+> 
+> I'm sure this can benefit visitors to the Batman-adv Wiki and also
+> encourage communication and collaboration between developers of these
+> projects where there is a common goal.
 
---=20
-Antonio Quartulli
+The experience page in the wiki contains a list of projects using batman-adv. 
+Again, not a complete list but feel free to extend the list.
 
+I do agree a more complete list might be interesting. Do you mind sharing how 
+do you wish to find the missing batman-adv users ?
 
---Hua2GoXgDPv89FdQt8o2giUhOKxdOXGjo
+Cheers,
+Marek
+
+--nextPart1928613.SMAM2laXyI
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJU4zD3AAoJEJgn97Bh2u9ejZMP/2auH6FTeHEdEEPnUl0e+6Zg
-gWsTCft0qbwhHyMBDaqrMYNprohYHSeceyq8+1Oa9JTOGrfHhItBht3UjUKmwXgV
-dppsks9MfsZfqtXKQkc5BUj+ho21fYkHL4Tnvu0ASPekIO/zhcKJELBRcvq3ECCu
-dUINtvv+qMNhZRottD4g5nhxSM7fjr0ioogOVTg6bLBfCPgUVwFeZpfB5CohpsbA
-AsZY3+YNbdGuzOchXnhV9+FUkezGBhLVNaq4wXhodIANWpzRCE1l0WsCXcEn8XnY
-Fck70SjSIUEGHdSPvk4zh2nl1ecjp5mIL7oe1b7dATQ1tIajBGc/NmCJwXYBvBWW
-mfkfDGwhorAdFRnT9fOqaFeO4RCUaxI2ddc5Pg9k/uEsIHp8Tur5A6IdpGg99WTY
-DrZKA7WReS/ZMSlSvGVhqSFQXLf+6oHvyEbKZ+nZfkmKgcUTHsHluWusB8F86TaM
-JQVtE4PvKA5ehb66Lx2g+JyEt1wnLGidba8ojqI6zLNMUowaIb0K72SbB5DEM5mo
-iLFCGCEZ6hk7lpv1FFaqqE8+t2U2PyE65kK0TmAM4Exddc92AsgYdUtdM0N1DAFO
-BlQEyCxmij+POIimnVcI8Af5KjVyG0x1JT49jNuW5dlg2ssSpeLQatpc/HOFMWE1
-rmT/VWCvkzrvC2Vpqx5F
-=h/ly
+iQEcBAABCAAGBQJU4yxlAAoJEFNVTo/uthzAoSoIALSDhsR4j7kBlD0K2GFde8Bx
+QkNa16NdBXKLb6wAvny1AufmotcQdzCWxxssmVpTIQN+9UsH8oNbOxOK2wL4CuqZ
+KS87/goyER9WQ208AbnJ7QBUPkmVSCjCn41IZdhZfdX3MWZUJlNDa77/ba/ccpP9
+F4UNu6XnZ0QWoNcmQP/KU8h7Gt/937yuk7bsykvivwmZFfwaRPslsO+6DqWd1LQO
+pr2eizRHl5aW2/dcmVFmh/s4EoSPwenbtmtJo7jLWEYlqFCwuimWqoIsBw523N/D
+wsCZi6bOJ9Q3UykKyCSdYVsJhcyL9gdBp6M0NVY0Pkh24H471zwsnWq0Ad3adbI=
+=r8Z+
 -----END PGP SIGNATURE-----
 
---Hua2GoXgDPv89FdQt8o2giUhOKxdOXGjo--
+--nextPart1928613.SMAM2laXyI--
+
