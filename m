@@ -1,9 +1,16 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 18 Feb 2015 22:19:20 +0800
-Message-Id: <1424269160-29866-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: checkpatch - spaces preferred
-	around that '*'
+Return-Path: <APape@phoenixcontact.com>
+In-Reply-To: <6979890.dWcEGHjvn6@voltaire>
+References: <OF6F534CD3.B9570448-ONC1257DF0.00289AC2-C1257DF0.0029BB69@phoenixcontact.com>
+ <2282256.5kOumjqyC5@voltaire>
+ <OF6FAED1E7.E0D6E49C-ONC1257DF0.0042D59F-C1257DF0.00448642@phoenixcontact.com>
+ <6979890.dWcEGHjvn6@voltaire>
+MIME-Version: 1.0
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OFDE6F3C6C.B8D7D72A-ONC1257DF0.0050412D-C1257DF0.00521AC2@phoenixcontact.com>
+Date: Wed, 18 Feb 2015 15:56:47 +0100
+Content-Type: text/plain; charset="US-ASCII"
+Subject: [B.A.T.M.A.N.] Antwort: Re: Antwort: Re: Question concerning
+	batman-adv bug	#173 "Mesh	packets on bat0"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,41 +22,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
- main.h           | 2 +-
- network-coding.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+>At this point the mesh is working to your expectation ? Can you transport 
 
-diff --git a/main.h b/main.h
-index 515bf5a..b6c9ece 100644
---- a/main.h
-+++ b/main.h
-@@ -44,7 +44,7 @@
- #define BATADV_TT_CLIENT_TEMP_TIMEOUT 600000 /* in milliseconds */
- #define BATADV_TT_WORK_PERIOD 5000 /* 5 seconds */
- #define BATADV_ORIG_WORK_PERIOD 1000 /* 1 second */
--#define BATADV_DAT_ENTRY_TIMEOUT (5*60000) /* 5 mins in milliseconds */
-+#define BATADV_DAT_ENTRY_TIMEOUT (5 * 60000) /* 5 mins in milliseconds */
- /* sliding packet range of received originator messages in sequence numbers
-  * (should be a multiple of our word size)
-  */
-diff --git a/network-coding.c b/network-coding.c
-index 127cc4d..ec6d6e5 100644
---- a/network-coding.c
-+++ b/network-coding.c
-@@ -275,7 +275,7 @@ static bool batadv_nc_to_purge_nc_path_decoding(struct batadv_priv *bat_priv,
- 	 * max_buffer time
- 	 */
- 	return batadv_has_timed_out(nc_path->last_valid,
--				    bat_priv->nc.max_buffer_time*10);
-+				    bat_priv->nc.max_buffer_time * 10);
- }
- 
- /**
--- 
-2.1.4
+>payload across the mesh ? If so, this is a deviation from #173 - wouldn't 
+you 
+>agree ?
+
+Before adding bat0 to the bridge br0 I can communicate via the mesh 
+interface. I configured ip addresses for the bat0 interfaces on my devices 
+and the ping worked without problems. But I understood from #173 that 
+pinging was possible in that case, too. I'm referring to #173 because I 
+can see the ogm messages received via wlan also at the bat0 interface, 
+which was not the case in 2013.1.0 and earlier - if I remember my tests 
+correctly...
+
+In the meantime I found out that not only batman-adv stops receiving the 
+ogm messages at ath0 but also the wpa_supplicant does not receive EAPOL 
+frames any more as soon as bat0 is attached to the bridge br0 if I try to 
+use WPA with the mesh interface (wpa_supplicant -i ath0). But I can see 
+the EAPOL frames at the bridge interface br0 (via batctl td br0). Strange.
+
+I'll come back to you as soon as I have tested your latest patches.
+
+Thanks for your support,
+Andreas
+
+
 
