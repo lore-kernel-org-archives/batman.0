@@ -1,14 +1,15 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 18 Feb 2015 19:26:43 +0800
-Message-ID: <2282256.5kOumjqyC5@voltaire>
-In-Reply-To: <OF6F534CD3.B9570448-ONC1257DF0.00289AC2-C1257DF0.0029BB69@phoenixcontact.com>
+Return-Path: <APape@phoenixcontact.com>
+In-Reply-To: <2282256.5kOumjqyC5@voltaire>
 References: <OF6F534CD3.B9570448-ONC1257DF0.00289AC2-C1257DF0.0029BB69@phoenixcontact.com>
+ <2282256.5kOumjqyC5@voltaire>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1865265.8DpRGocF1h";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Question concerning batman-adv bug #173 "Mesh
-	packets on bat0"
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OF6FAED1E7.E0D6E49C-ONC1257DF0.0042D59F-C1257DF0.00448642@phoenixcontact.com>
+Date: Wed, 18 Feb 2015 13:28:27 +0100
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] Antwort: Re: Question concerning batman-adv bug #173
+	"Mesh	packets on bat0"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,190 +23,92 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi,
 
---nextPart1865265.8DpRGocF1h
-Content-Type: multipart/mixed; boundary="nextPart2394197.oXrfbe7zVp"
-Content-Transfer-Encoding: quoted-printable
+I adapted your patch to batman-adv-2014.4.0 without success. I got the=20
+additional issue that with the patched version of batman-adv I was not=20
+able to destroy the virtual wireless interface anymore used fot the adhoc=20
+connection over which I try to use batman-adv (error message was:=20
+unregister=5Fnetdevice: waiting for ath0 to become free).=20
 
-This is a multi-part message in MIME format.
+With the unpatched 2014.4.0 I did the following test on two of my devices:
 
-=2D-nextPart2394197.oXrfbe7zVp
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+1. created a virtual wireless interface ath0 in adhoc mode
+2. iwconfig ath0 essid TEST
+3. iwconfig ath0 channel 40
+4. ifconfig ath0 up
+5. batctl if add ath0
+
+After this the two devices connected and I could see the repective=20
+neighbor via the batctl o command on both devices. So far so good.=20
+But I can see via batctl td bat0 OGM packets sent with the MAC address of=20
+the wlan interface of the device itself and also from the neigbour this=20
+device is connected to via wlan. Is this OK?
+
+6. Generating a bridge interface via brctl addbr br0
+7. add bat0 interface to bridge via brctl addif br0 bat0
+
+As soon as I do this, the batadv=5Fbatman=5Fskb=5Frecv isn't called anymore=
+=20
+(I've put a printk at the beginning of that function for debugging).=20
+Furthermore batctl o shows that the mesh communication starts timing out=20
+(last seen time for the originator/neighbor exceeds the ogm send interval=20
+and increases continuously).
+
+The interesting point in this state is, that batctl td bat0 still shows=20
+the reception of ogm messages from the neighbour and from the own wlan=20
+interface as mentioned above.
+
+As mentioned I use a kernel version 2.6.32.26 and batman-adv/batctl=20
+versions up to 2013.1.0 work with the same configuration steps.=20
+
+Thanks for the support,
+Andreas
+
+
+
+
+
+Von:    Marek Lindner <mareklindner@neomailbox.ch>
+An:     The list for a Better Approach To Mobile Ad-hoc Networking=20
+<b.a.t.m.a.n@lists.open-mesh.org>,=20
+Datum:  18.02.2015 12:28
+Betreff:        Re: [B.A.T.M.A.N.] Question concerning batman-adv bug #173 =
+
+"Mesh   packets on bat0"
+Gesendet von:   "B.A.T.M.A.N" <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+
+
 
 On Wednesday, February 18, 2015 08:35:49 Andreas Pape wrote:
 > I'm interested if there is any progress concerning the bug entry #173 (
-> http://www.open-mesh.org/issues/173). 
-> 
-> I'm currently observing something similiar on an embedded system running 
-> an older kernel 2.6.32.26. Batman-adv versions up to 2013.1.0 work 
-> flawlessly out of the box. All newer versions show the phenomenon 
-> described in bug #173. 
-> In my case I found out, that the batadv_batman_skb_recv function is never 
-> called again as soon as I add bat0 to the bridge interface I use. 
-> If I use the bat0 interface outside a bridge, everything works fine up to 
-> the latest version I tested (which was 2014.4.0) even with the old kernel 
-> version. 
+> http://www.open-mesh.org/issues/173).=20
+>=20
+> I'm currently observing something similiar on an embedded system running =
 
-Can you please try the attached patch and check whether it makes any 
-difference? If the symptoms are the same, please provide step-by-step 
+
+> an older kernel 2.6.32.26. Batman-adv versions up to 2013.1.0 work=20
+> flawlessly out of the box. All newer versions show the phenomenon=20
+> described in bug #173.=20
+> In my case I found out, that the batadv=5Fbatman=5Fskb=5Frecv function is=
+=20
+never=20
+> called again as soon as I add bat0 to the bridge interface I use.=20
+> If I use the bat0 interface outside a bridge, everything works fine up=20
+to=20
+> the latest version I tested (which was 2014.4.0) even with the old=20
+kernel=20
+> version.=20
+
+Can you please try the attached patch and check whether it makes any=20
+difference? If the symptoms are the same, please provide step-by-step=20
 instructions how you create / configure your interfaces.
 
 Thanks,
 Marek
-
-=2D-nextPart2394197.oXrfbe7zVp
-Content-Disposition: attachment; filename="0001-do-not-call-master-netdev_ops-ndo_init.patch"
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/x-patch; charset="UTF-8"; name="0001-do-not-call-master-netdev_ops-ndo_init.patch"
-
-From=2097dd927aca3747e1a054303638011f93373c96bf Mon Sep 17 00:00:00 2001
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 18 Feb 2015 19:24:06 +0800
-Subject: [PATCH] do not call master->netdev_ops->ndo_init
-
-=2D--
- hard-interface.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/hard-interface.c b/hard-interface.c
-index fbda6b5..010a403 100644
-=2D-- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -349,7 +349,7 @@ batadv_hardif_deactivate_interface(struct batadv_hard_iface *hard_iface)
-  * is free'd and master can correctly change its internal state.
-  * Return 0 on success, a negative value representing the error otherwise
-  */
-=2Dstatic int batadv_master_del_slave(struct batadv_hard_iface *slave,
-+/*tatic int batadv_master_del_slave(struct batadv_hard_iface *slave,
- 				   struct net_device *master)
- {
- 	int ret;
-@@ -362,7 +362,7 @@ static int batadv_master_del_slave(struct batadv_hard_iface *slave,
- 		ret = master->netdev_ops->ndo_del_slave(master, slave->net_dev);
- 
- 	return ret;
-=2D}
-+}*/
- 
- int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 				   const char *iface_name)
-@@ -403,10 +403,10 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	/* check if the interface is enslaved in another virtual one and
- 	 * in that case unlink it first
- 	 */
-=2D	master = netdev_master_upper_dev_get(hard_iface->net_dev);
-+	/* master = netdev_master_upper_dev_get(hard_iface->net_dev);
- 	ret = batadv_master_del_slave(hard_iface, master);
- 	if (ret)
-=2D		goto err_dev;
-+		goto err_dev; */
- 
- 	hard_iface->soft_iface = soft_iface;
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
-=2D- 
-2.1.4
-
-
-=2D-nextPart2394197.oXrfbe7zVp--
-This is a multi-part message in MIME format.
-
---nextPart2394197.oXrfbe7zVp
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Wednesday, February 18, 2015 08:35:49 Andreas Pape wrote:
-> I'm interested if there is any progress concerning the bug entry #173 (
-> http://www.open-mesh.org/issues/173). 
-> 
-> I'm currently observing something similiar on an embedded system running 
-> an older kernel 2.6.32.26. Batman-adv versions up to 2013.1.0 work 
-> flawlessly out of the box. All newer versions show the phenomenon 
-> described in bug #173. 
-> In my case I found out, that the batadv_batman_skb_recv function is never 
-> called again as soon as I add bat0 to the bridge interface I use. 
-> If I use the bat0 interface outside a bridge, everything works fine up to 
-> the latest version I tested (which was 2014.4.0) even with the old kernel 
-> version. 
-
-Can you please try the attached patch and check whether it makes any 
-difference? If the symptoms are the same, please provide step-by-step 
-instructions how you create / configure your interfaces.
-
-Thanks,
-Marek
-
---nextPart2394197.oXrfbe7zVp
-Content-Disposition: attachment; filename="0001-do-not-call-master-netdev_ops-ndo_init.patch"
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/x-patch; charset="UTF-8"; name="0001-do-not-call-master-netdev_ops-ndo_init.patch"
-
-From 97dd927aca3747e1a054303638011f93373c96bf Mon Sep 17 00:00:00 2001
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 18 Feb 2015 19:24:06 +0800
-Subject: [PATCH] do not call master->netdev_ops->ndo_init
-
----
- hard-interface.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/hard-interface.c b/hard-interface.c
-index fbda6b5..010a403 100644
---- a/hard-interface.c
-+++ b/hard-interface.c
-@@ -349,7 +349,7 @@ batadv_hardif_deactivate_interface(struct batadv_hard_iface *hard_iface)
-  * is free'd and master can correctly change its internal state.
-  * Return 0 on success, a negative value representing the error otherwise
-  */
--static int batadv_master_del_slave(struct batadv_hard_iface *slave,
-+/*tatic int batadv_master_del_slave(struct batadv_hard_iface *slave,
- 				   struct net_device *master)
- {
- 	int ret;
-@@ -362,7 +362,7 @@ static int batadv_master_del_slave(struct batadv_hard_iface *slave,
- 		ret = master->netdev_ops->ndo_del_slave(master, slave->net_dev);
- 
- 	return ret;
--}
-+}*/
- 
- int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 				   const char *iface_name)
-@@ -403,10 +403,10 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	/* check if the interface is enslaved in another virtual one and
- 	 * in that case unlink it first
- 	 */
--	master = netdev_master_upper_dev_get(hard_iface->net_dev);
-+	/* master = netdev_master_upper_dev_get(hard_iface->net_dev);
- 	ret = batadv_master_del_slave(hard_iface, master);
- 	if (ret)
--		goto err_dev;
-+		goto err_dev; */
- 
- 	hard_iface->soft_iface = soft_iface;
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
--- 
-2.1.4
-
-
---nextPart2394197.oXrfbe7zVp--
-
---nextPart1865265.8DpRGocF1h
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJU5Hb2AAoJEFNVTo/uthzAZc4IAJbwXRTySMaEfCJnnIqeW9Pt
-9WtsMdk2iJ7nqlzg19Up8+BCQ55gDKCXy4a1VvW3w41hOXgccEw8zKYXS29YV+X6
-Gmq3y8VpiXcfGrAYdCOWd73mfBfvdVtTJSlyTY7ldbeaiL1o54bAA5jhzxAHaI5w
-qKtrtw44JhFhW+3GR8xa5iwqTe3KdPE0qBcUD9G+XzsCCS9XgyFL4eU7gemPUG0c
-SrJoQ92Znr2FhYymS96Z/1GBrdCDRXSDVylMre/XWZo8iwymxLVf6Zh8YrtBlkxX
-WMwxS1C65mGiJXu1fX5nocOQTgR326I737rzCWtCVtbWCL0m0y6OoeuMJ9xbIX0=
-=xejZ
------END PGP SIGNATURE-----
-
---nextPart1865265.8DpRGocF1h--
+[Anhang "0001-do-not-call-master-netdev=5Fops-ndo=5Finit.patch" gel=F6scht =
+von=20
+Andreas Pape/Phoenix Contact] [Anhang "signature.asc" gel=F6scht von Andrea=
+s=20
+Pape/Phoenix Contact]=20
 
