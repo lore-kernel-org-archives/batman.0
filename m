@@ -1,14 +1,11 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 18 Feb 2015 15:33:48 +0800
-Message-ID: <3583975.lz5Xt4SSRR@voltaire>
-In-Reply-To: <1423153373-17033-1-git-send-email-sven@narfation.org>
-References: <1423153373-17033-1-git-send-email-sven@narfation.org>
+Return-Path: <APape@phoenixcontact.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5047189.lHEJWBdUH2";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Use safer default config for
-	optional features
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OF6F534CD3.B9570448-ONC1257DF0.00289AC2-C1257DF0.0029BB69@phoenixcontact.com>
+Date: Wed, 18 Feb 2015 08:35:49 +0100
+Content-Type: text/plain; charset="US-ASCII"
+Subject: [B.A.T.M.A.N.] Question concerning batman-adv bug #173 "Mesh
+ packets on bat0"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,78 +18,23 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
 
+Hello everybody, 
 
---nextPart5047189.lHEJWBdUH2
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+I'm interested if there is any progress concerning the bug entry #173 (
+http://www.open-mesh.org/issues/173). 
 
-On Thursday, February 05, 2015 17:22:53 Sven Eckelmann wrote:
-> The current default settings for optional features in batman-adv seems to be
-> based around the idea that the user only compiles what he requires. They
-> will automatically enabled when they are compiled in. For example the
-> network coding part of batman-adv is by default disabled in the out-of-tree
-> module but will be enabled when the code is compiled during the module
-> build.
-> 
-> But distributions like Debian just enable all features of the batman-adv
-> kernel module and hope that more experimental features or features with
-> possible negative effects have to be enabled using some runtime
-> configuration interface.
+I'm currently observing something similiar on an embedded system running 
+an older kernel 2.6.32.26. Batman-adv versions up to 2013.1.0 work 
+flawlessly out of the box. All newer versions show the phenomenon 
+described in bug #173. 
+In my case I found out, that the batadv_batman_skb_recv function is never 
+called again as soon as I add bat0 to the bridge interface I use. 
+If I use the bat0 interface outside a bridge, everything works fine up to 
+the latest version I tested (which was 2014.4.0) even with the old kernel 
+version. 
 
-Interesting point. Based on what you are saying we definitely should review our 
-policy and agree on sane defaults.
+Regards, 
+Andreas Pape 
 
-
-> The network_coding feature can help in specific setups but also has
-> drawbacks and is not disabled by default in the out-of-tree module.
-> Disabling by default in the runtime config seems to be also quite sane.
-
-This feature requires the wifi driver to support promisc mode. We should keep 
-it disabled.
-
-
-> The distributed_arp_table is in theory a good solution to reduce connection
-> problems in large networks caused by ARP packet loss. Unfortunatelly, it
-> seems to also break ARP resolution in simple mesh setups. The only solution
-> which seems to be used by AP firmwares seems to be the deactivation of this
-> feature. Disabling this feature by default until the problem was understood
-> and fixed may help new deployments to create a working mesh. Tuning of the
-> mesh can still be done by them in case DAT works in their setup.
-
-I vote for keeping DAT enabled. 
-
-
-> The bridge_loop_avoidance is the only feature which is disabled by default
-> but may be necessary even in simple setups. Packet loops may even be
-> created during the initial node setup when this is not enabled. This is
-> different than STP on bridges because mesh is usually used on Adhoc WiFi.
-> Having two nodes (by accident) in the same LAN segment and in the same mesh
-> network is rather common in this situation.
-
-Agreed.
-
-
-Cheers,
-Marek
-
---nextPart5047189.lHEJWBdUH2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJU5EBkAAoJEFNVTo/uthzA1Z0H/23hmXNHVqbwSs7XiwULjWDH
-vqlplSD/pCni2s8pz9940HWC1e4ks4M8WO40RNndpzcNwKywjeuMlmz+5TdysvAp
-4p8QzabG1Xky61Hq2LoTTwSdgWxZWIjCrthgtXWyfYyeqkJDE/P0J9A24+53Fjc+
-YEtFz5ppUh/QG58tXUGH0dKS3eMHEFDLmNr9kZpce9ORgvuEuYYvaUWHqM7TKu4/
-hq8RcG9HS44L3QjNMZ/bxgCl12xy9jOqoAxk+1XxtGQ2ppp8b6lkiteLVrMn+WcR
-f7E8SxXXxv0P2ZzCS33zKItBDE+kjJFRXHZpsnBXbeYlDXEf3PFN+a1rHeeDiF8=
-=4ufe
------END PGP SIGNATURE-----
-
---nextPart5047189.lHEJWBdUH2--
 
