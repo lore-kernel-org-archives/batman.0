@@ -1,13 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 18 Feb 2015 16:54:06 +0800
-Message-ID: <18772369.TCV0Di1s1y@voltaire>
-In-Reply-To: <54C4EE81.1050902@jluehr.de>
-References: <54C4EE81.1050902@jluehr.de>
+Date: Wed, 18 Feb 2015 17:14:39 +0800
+Message-ID: <2046742.HvVA89XMWn@voltaire>
+In-Reply-To: <1419594103-10928-12-git-send-email-mpa@pengutronix.de>
+References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
+ <1419594103-10928-12-git-send-email-mpa@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart19813488.hUGWEksKG4";
+Content-Type: multipart/signed; boundary="nextPart2038230.EuAZWU43j9";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Understanding MAC-Adresses in iptables-Logs
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 11/26] batman-adv: iv_ogm_send_to_if,
+	declare char* as const
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,48 +21,29 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart19813488.hUGWEksKG4
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart2038230.EuAZWU43j9
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, January 25, 2015 14:24:17 Jan L=FChr wrote:
-> there appears to be some misconfiguration in our network. A gateway i=
-s
-> blocking unknown ip-addresses:
->=20
-> [658047.514011] FORWARD DROPPEDIN=3Dbat0 OUT=3Dbackbone
-> MAC=3D3a:81:5b:64:fa:32:08:fc:88:9b:8a:60:08:00:45:00:00:4f:6c:b1:40:=
-00:3f:06:
-> b8:8e:0a:a6 SRC=3D10.166.28.69 DST=3D173.194.65.188 LEN=3D79 TOS=3D0x=
-00 PREC=3D0x00
-> TTL=3D63 ID=3D27825 DF PROTO=3DTCP SPT=3D45173 DPT=3D5228 WINDOW=3D91=
-31 RES=3D0x00 ACK
-> PSH URGP=3D0
-> [658047.519455] FORWARD DROPPEDIN=3Dbat0 OUT=3Dbackbone
-> MAC=3D3a:81:5b:64:fa:32:08:fc:88:9b:8a:60:08:00:45:00:00:34:6c:b2:40:=
-00:3f:06:
-> b8:a8:0a:a6 SRC=3D10.166.28.69 DST=3D173.194.65.188 LEN=3D52 TOS=3D0x=
-00 PREC=3D0x00
-> TTL=3D63 ID=3D27826 DF PROTO=3DTCP SPT=3D45173 DPT=3D5228 WINDOW=3D91=
-31 RES=3D0x00 ACK
-> FIN URGP=3D0
->=20
-> I'm somewhat confused by the mac-address here - it's very long.
-> Can I somehow derive, which originator or client is propagating or us=
-ing
-> this address?
+On Friday, December 26, 2014 12:41:28 Markus Pargmann wrote:
+> This string pointer is later assigned to a constant string, so it should
+> be defined constant at the beginning.
+> 
+> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+> ---
+>  bat_iv_ogm.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-If you posted the iptables rules with which you generate these logs we =
-might=20
-be able to help you.
+Applied in revision 3de1d1b.
 
-Cheers,
+Thanks,
 Marek
 
---nextPart19813488.hUGWEksKG4
+--nextPart2038230.EuAZWU43j9
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -68,14 +51,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJU5FMxAAoJEFNVTo/uthzA5fIH/A2aJ/hD3y5wqrUkAhnwh0wO
-aBPItO1pqeAZd/f+0G//cNSUZFttDgL4NRhbir1jJJ3tPmvCf6US8OS2Ys5XHNnL
-m6+3NIFyEuq0HET9YVW3JrXcf5IDkci14irhCdK2AVEURHIYYzmGnasBNPqTXk0b
-WNTB+Qc/kG4i9BKnNwPebjDcZhPGjx8H9hv8GiyuBHVvEYqn9/FBgq9PAy41iiSM
-k4uQcmjzBq2MqtSaqO06NkxZvu1pCxAZkNIuS/LrWHrPyFZQRMb5QuUOi9zFQ5ub
-Ro1SgrYOBnaHBSeDdTzA36quirxddsJWRrEJBkzJcWsUR/j9W5H/z/BqTH7liKQ=
-=xtBm
+iQEcBAABCAAGBQJU5FgDAAoJEFNVTo/uthzAE40IAI9HtRgrA+pdSGACxu4trI1h
+7PPdf+78nzJmF0zgs0erSeSygV7ihCycBChzd6yQQ4h5HRw7SZrc44dSDK3JFdGi
+Pgkbs/rnwWwX3xUlUhqPth8jGJp5gqCR++u2AT5zLR43nocCi+3adfWxQAZusYx8
+P6z1Wn4BLf/ZDvjoe0oFIOIVwzioHxORjyCB0XdQ2mm4NmrLVHfzkgTJbbNmhKlo
+F2mbFrRxQ+UW1hADmZ1Ih4CjtG/CqjOSsAA0hC/7Mc1AnCo9RQUFXfD+BE/aIoYz
+s2/qvONacw8sHejrTwZrWL5qV7R37kjXorqdprAOkZYsZXxrh7dqsDtr3X/8D5U=
+=aGwp
 -----END PGP SIGNATURE-----
 
---nextPart19813488.hUGWEksKG4--
+--nextPart2038230.EuAZWU43j9--
 
