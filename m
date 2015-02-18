@@ -1,16 +1,9 @@
-Return-Path: <APape@phoenixcontact.com>
-In-Reply-To: <23381002.yeogTpj88W@voltaire>
-References: <OF6F534CD3.B9570448-ONC1257DF0.00289AC2-C1257DF0.0029BB69@phoenixcontact.com>
- <OFDE6F3C6C.B8D7D72A-ONC1257DF0.0050412D-C1257DF0.00521AC2@phoenixcontact.com>
- <OFC2424D81.A822433D-ONC1257DF0.005393B1-C1257DF0.005470B6@phoenixcontact.com>
- <23381002.yeogTpj88W@voltaire>
-MIME-Version: 1.0
-From: Andreas Pape <APape@phoenixcontact.com>
-Message-ID: <OF9D4BC429.65445525-ONC1257DF0.0057EC95-C1257DF0.0058D385@phoenixcontact.com>
-Date: Wed, 18 Feb 2015 17:10:12 +0100
-Content-Type: text/plain; charset="US-ASCII"
-Subject: [B.A.T.M.A.N.] Antwort: Re: Antwort: Antwort: Re: Antwort: Re:
-	Question	concerning	batman-adv bug	#173 "Mesh	packets on bat0"
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 18 Feb 2015 18:20:24 +0100
+Message-Id: <1424280024-4262-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Use safer default config for
+	optional features
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,25 +15,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@narfation.org>
 
-Hi Marek,
+The current default settings for optional features in batman-adv seems to be
+based around the idea that the user only compiles what he requires. They will
+automatically enabled when they are compiled in. For example the network coding
+part of batman-adv is by default disabled in the out-of-tree module but will be
+enabled when the code is compiled during the module build.
 
-I reverted the changes step by step starting with patch 
-0002-remove-netdev_calls.patch, as patch 1 did not help and patch 3 
-containes in compat.h and soft-interface.c, I tried out myself earlier 
-today.
+But distributions like Debian just enable all features of the batman-adv kernel
+module and hope that more experimental features or features with possible
+negative effects have to be enabled using some runtime configuration interface.
 
-The essential call is in patch 2 as assumed. As soon as I add the 
-netdev_master_upper_dev_link call again to the compilable code, the 
-problem starts to occur (mesh doesn't work as soon as bat0 is added to the 
-bridge, ogm packets can be seen at bat0). It seems that this call behaves 
-in older kernels different compared to newer ones.
+The network_coding feature can help in specific setups but also has drawbacks
+and is not disabled by default in the out-of-tree module. Disabling by default
+in the runtime config seems to be also quite sane.
 
-I haven't tried to add all the other excluded parts again except for the 
-netdev_master_upper_dev_link call. If you are interested I can test this 
-tomorrow, too.
+The bridge_loop_avoidance is the only feature which is disabled by default but
+may be necessary even in simple setups. Packet loops may even be created
+during the initial node setup when this is not enabled. This is different than
+STP on bridges because mesh is usually used on Adhoc WiFi. Having two nodes
+(by accident) in the same LAN segment and in the same mesh network is rather
+common in this situation.
 
-Regards,
-Andreas
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+DAT is now removed from this patch because the discussion showed that it is
+preferred to have DAT enabled by default.
+
+ network-coding.c | 2 +-
+ soft-interface.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/network-coding.c b/network-coding.c
+index 127cc4d..be005b2 100644
+--- a/network-coding.c
++++ b/network-coding.c
+@@ -155,7 +155,7 @@ err:
+  */
+ void batadv_nc_init_bat_priv(struct batadv_priv *bat_priv)
+ {
+-	atomic_set(&bat_priv->network_coding, 1);
++	atomic_set(&bat_priv->network_coding, 0);
+ 	bat_priv->nc.min_tq = 200;
+ 	bat_priv->nc.max_fwd_delay = 10;
+ 	bat_priv->nc.max_buffer_time = 200;
+diff --git a/soft-interface.c b/soft-interface.c
+index 8748987..22254fb 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -738,7 +738,7 @@ static int batadv_softif_init_late(struct net_device *dev)
+ 	atomic_set(&bat_priv->aggregated_ogms, 1);
+ 	atomic_set(&bat_priv->bonding, 0);
+ #ifdef CONFIG_BATMAN_ADV_BLA
+-	atomic_set(&bat_priv->bridge_loop_avoidance, 0);
++	atomic_set(&bat_priv->bridge_loop_avoidance, 1);
+ #endif
+ #ifdef CONFIG_BATMAN_ADV_DAT
+ 	atomic_set(&bat_priv->distributed_arp_table, 1);
+-- 
+2.1.4
 
