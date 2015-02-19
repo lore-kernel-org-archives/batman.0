@@ -1,11 +1,16 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 19 Feb 2015 13:35:23 +0800
-Message-ID: <2621923.3aVJ40SYcy@voltaire>
+Return-Path: <APape@phoenixcontact.com>
+In-Reply-To: <1549090.s6anOn0kWk@voltaire>
+References: <OF6F534CD3.B9570448-ONC1257DF0.00289AC2-C1257DF0.0029BB69@phoenixcontact.com>
+ <23381002.yeogTpj88W@voltaire>
+ <OF9D4BC429.65445525-ONC1257DF0.0057EC95-C1257DF0.0058D385@phoenixcontact.com>
+ <1549090.s6anOn0kWk@voltaire>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7118432.r3sj3hsGxB";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: [B.A.T.M.A.N.] checkpatch: CHECK: No space is necessary after a cast
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OF7D539C0F.7F2029AA-ONC1257DF1.002DB2B5-C1257DF1.002ECBFC@phoenixcontact.com>
+Date: Thu, 19 Feb 2015 09:31:08 +0100
+Content-Type: text/plain; charset="US-ASCII"
+Subject: Re: [B.A.T.M.A.N.] Antwort: Re: Antwort: Antwort: Re: Antwort: Re:
+ Question concerning batman-adv bug #173 "Mesh packets on bat0"
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,72 +22,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Joe Perches <joe@perches.com>, "b.a.t.m.a.n" <b.a.t.m.a.n@lists.open-mesh.org>, linux-kernel@vger.kernel.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi Marek,
 
---nextPart7118432.r3sj3hsGxB
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+the problem seems to be a little bit more complex. Your latest patch does 
+not solve the problem.
 
+But I found out, that commenting out the following line in your patch 
+makes bat0 work:
 
-Hi Joe,
+slave->master = master;
 
-we have come across a checkpatch false-positive:
+But as this is the core of "enslaving" a device to a master device, this 
+breaks the complete concept behind this I guess (I'm not a skilled kernel 
+developer). From this I conclude that there might be a bug somewhere 
+deeper in the kernel version I use.  I don't want to give up too early, 
+but it looks a little bit as if this "enslaving concept using rtnl" might 
+not be usable in these older kernels. What do you think?
 
->>>>
-static void batadv_recv_handler_init(void)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(batadv_rx_handler); i++)
-		batadv_rx_handler[i] = batadv_recv_unhandled_packet;
-
-	for (i = BATADV_UNICAST_MIN; i <= BATADV_UNICAST_MAX; i++)
-		batadv_rx_handler[i] = batadv_recv_unhandled_unicast_packet;
-
-	/* compile time checks for sizes */
-	BUILD_BUG_ON(sizeof(struct batadv_bla_claim_dst) != 6);
-	BUILD_BUG_ON(sizeof(struct batadv_ogm_packet) != 24);
-	BUILD_BUG_ON(sizeof(struct batadv_icmp_header) != 20);
-        ..
-}
-<<<<<
-
-The following warnings are triggered:
-
-CHECK: No space is necessary after a cast
-#440: FILE: main.c:440:
-+       BUILD_BUG_ON(sizeof(struct batadv_bla_claim_dst) != 6);
-
-CHECK: No space is necessary after a cast
-#441: FILE: main.c:441:
-+       BUILD_BUG_ON(sizeof(struct batadv_ogm_packet) != 24);
-
-CHECK: No space is necessary after a cast
-#442: FILE: main.c:442:
-+       BUILD_BUG_ON(sizeof(struct batadv_icmp_header) != 20);
-
-Can you make a suggestion / patch for checkpatch to better handle this case ?
-
-Thanks,
-Marek
-
---nextPart7118432.r3sj3hsGxB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJU5XYkAAoJEFNVTo/uthzABk4H/3K5BYigogqfUPD/yztgTAUJ
-iaOWKmpHTkVvRnnBiB+hDXTmERMpBuIWvnndCO4ewU25DtgJCr9siK+3m4UM9gr7
-jdgPYGcKwxVfokJ/4Qb3jNYV1N8j9NFbir9PT1Q202s2Sgmf0RStbx0DmWIfxnx3
-h6AX62ZXtx6LBjmVRmFVaih/ZCRYtti840w1uLwlWVbPzXrCXyHUc3Zj8PouiUIt
-GUI9R8troDfDUGMp8SnJvqSaVoNttqtwQZe/JXoKCycCUUF5W/UESCHRurUT79YF
-JXO0lVjwkQw6agYc0x61xmlVYZhuPXCfSgpXnNntpsbdPalNaoeZGFnGlE5YKyc=
-=FOGe
------END PGP SIGNATURE-----
-
---nextPart7118432.r3sj3hsGxB--
+Regards,
+Andreas
 
