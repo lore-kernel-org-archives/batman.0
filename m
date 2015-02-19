@@ -1,15 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 20 Feb 2015 00:20:21 +0800
-Message-ID: <2446417.y7QTPJMH7o@voltaire>
-In-Reply-To: <1419594103-10928-13-git-send-email-mpa@pengutronix.de>
-References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
- <1419594103-10928-13-git-send-email-mpa@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3030901.b09IVET663";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 12/26] batman-adv:
-	iv_ogm_can_aggregate, code readability
+Return-Path: <joe@perches.com>
+Message-ID: <1424375741.18211.4.camel@perches.com>
+From: Joe Perches <joe@perches.com>
+Date: Thu, 19 Feb 2015 11:55:41 -0800
+In-Reply-To: <2621923.3aVJ40SYcy@voltaire>
+References: <2621923.3aVJ40SYcy@voltaire>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] checkpatch: CHECK: No space is necessary after a
+	cast
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,47 +20,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
+To: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: "b.a.t.m.a.n" <b.a.t.m.a.n@lists.open-mesh.org>, linux-kernel@vger.kernel.org, Dan Carpenter <dan.carpenter@oracle.com>
 
+On Thu, 2015-02-19 at 13:35 +0800, Marek Lindner wrote:
+> Hi Joe,
 
---nextPart3030901.b09IVET663
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi Marek
 
-On Friday, December 26, 2014 12:41:29 Markus Pargmann wrote:
-> This patch tries to increase code readability by negating the first if
-> block and rearranging some of the other conditional blocks. This way we
-> save an indentation level, we also save some allocation that is not
-> necessary for one of the conditions.
-> 
-> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
-> ---
->  bat_iv_ogm.c | 98
-> +++++++++++++++++++++++++++++++----------------------------- 1 file
-> changed, 50 insertions(+), 48 deletions(-)
+> we have come across a checkpatch false-positive:
+[]
+> 	BUILD_BUG_ON(sizeof(struct batadv_bla_claim_dst) != 6);
+> CHECK: No space is necessary after a cast
+> #440: FILE: main.c:440:
+> +       BUILD_BUG_ON(sizeof(struct batadv_bla_claim_dst) != 6);
+[]
+> Can you make a suggestion / patch for checkpatch to better handle this case ?
 
-Applied in revision f7ac9a4.
+The "sizeof" test in the current script doesn't work.
 
-Thanks,
-Marek
+I believe the patch below works with no false positives
+but <shrug> it's perl regexes against odd coding styles
+and weird macros, who knows for sure...
 
---nextPart3030901.b09IVET663
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+I did run it against drivers/, net/ and include/
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Give this a try:
+---
+ scripts/checkpatch.pl | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-iQEcBAABCAAGBQJU5g1IAAoJEFNVTo/uthzAC+8H/RumtaRUojInw0mBdalVIPhM
-oihXbrQDO1ej/7LIhpZZf9dVLKuC9hjnJqWYOYP0SMHHBbmKiHxqx7X40gsap/PL
-M0IFZBFzmxJs+Xrw84Tz3votatxr9oYexn9vCzIBccHCvUJMWis+G4iu26IMZmse
-ISDZW2Grq34cBYccx4G38OEHr9N+LrSIlLSwHtvaBqgDhxAvwFr8VN+XXMK8PvPv
-2H9N05NIxhtkm6krXkdMhaG5UrSDweiPQNK8wNuBB0A5yqbSxtw55vaN0Dg5bITW
-RTKEcnyF2nJY1durTLID6NJ9kXCl4UMc8dMHq4KqeY7h+OKhpQFbFMknDV6sQPE=
-=IchU
------END PGP SIGNATURE-----
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index d124359..2f5bb27 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -2552,9 +2552,15 @@ sub process {
+ 			}
+ 		}
+ 
+-		if ($line =~ /^\+.*(\w+\s*)?\(\s*$Type\s*\)[ \t]+(?!$Assignment|$Arithmetic|[,;:\?\(\{\}\[\<\>]|&&|\|\||\\$)/ &&
+-		    (!defined($1) || $1 !~ /sizeof\s*/)) {
+-			if (CHK("SPACING",
++# check for space after cast like "(int) foo" or "(struct foo) bar"
++# avoid checking a few false positives:
++#   "sizeof(<type>)" or "__alignof__(<type>)"
++#   function pointer declarations like "(*foo)(int) = bar;"
++#   structure definitions like "(struct foo) { 0 };"
++#   multiline macros that define functions
++		if ($line =~ /^\+(.*)\(\s*$Type\s*\)([ \t]++)((?![={]|\\$))/ &&
++		    (!defined($1) || $1 !~ /\b(?:sizeof|__alignof__)\s*$/)) {
++			if (CHK("SPACING",
+ 				"No space is necessary after a cast\n" . $herecurr) &&
+ 			    $fix) {
+ 				$fixed[$fixlinenr] =~
 
---nextPart3030901.b09IVET663--
 
