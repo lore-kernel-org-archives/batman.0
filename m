@@ -1,15 +1,13 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 20 Feb 2015 19:56:12 +0800
-Message-ID: <7679509.IB7arj1Sb8@voltaire>
-In-Reply-To: <1424375741.18211.4.camel@perches.com>
-References: <2621923.3aVJ40SYcy@voltaire>
- <1424375741.18211.4.camel@perches.com>
+Date: Fri, 20 Feb 2015 19:57:51 +0800
+Message-ID: <2403261.tu6pC8yFJp@voltaire>
+In-Reply-To: <1424361765-25248-1-git-send-email-mareklindner@neomailbox.ch>
+References: <1424361765-25248-1-git-send-email-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1729219.WsknuV7282";
+Content-Type: multipart/signed; boundary="nextPart18283233.ScdchBJ5An";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] checkpatch: CHECK: No space is necessary after a
-	cast
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: checkpatch - wrong alignment
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,31 +19,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org, Dan Carpenter <dan.carpenter@oracle.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart1729219.WsknuV7282
+--nextPart18283233.ScdchBJ5An
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Thursday, February 19, 2015 11:55:41 Joe Perches wrote:
-> > Can you make a suggestion / patch for checkpatch to better handle this
-> > case ?
-> The "sizeof" test in the current script doesn't work.
+On Friday, February 20, 2015 00:02:45 Marek Lindner wrote:
+> Introduced by fe67bb41f0e1647c3b05aeb4b736a1171bff496b
+> ("batman-adv: debugfs, avoid compiling for !DEBUG_FS")
 > 
-> I believe the patch below works with no false positives
-> but <shrug> it's perl regexes against odd coding styles
-> and weird macros, who knows for sure...
-> 
-> I did run it against drivers/, net/ and include/
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> ---
+>  debugfs.h | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 
-Your perl-regex-fu does the trick!
+Applied in revision 2f9d8a2.
 
-Thanks,
+Regards,
 Marek
 
---nextPart1729219.WsknuV7282
+--nextPart18283233.ScdchBJ5An
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +48,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJU5yDcAAoJEFNVTo/uthzAn3AIAIHu0D4OlH+tyWFp/ML0U8dx
-C6V2RJBlDrpfX4mL4lRgzVIbjnEoVnvX7u+F9gh1s9IVhI0CQg/R0mIdxg/U7QIF
-GkCwgarhdnrfJfeNpe8L4v8986HDH7oA0IKmGxMC1e/fOCO3QHaxMITuhqtlpOHP
-XWQC4q/wueVg4TXb5/AoVpi5YwsZL5nanCXTn1ILhhZ9u3JqjheWquO+4gCIApmL
-MSL+F1ZSLJXg0jHihiPEjffMcRPuNYPfFnZx1HLeTly7MYNvRWPXZbRpmzchpyw+
-EoIKAW//Uo1HivXHYMKRCIg8aWnCQe7CzSIy09mr7iQsCZhgsxbo4uKXYrJ+tW0=
-=YdWc
+iQEcBAABCAAGBQJU5yE/AAoJEFNVTo/uthzAqFAH/3cbEiwqc97a6yCUiV1cR0GL
+uLnLgRUR3YhSIH8H6St7vrpWds2/phZpFQZHSr4Y1QstImyL6vtgdWpgZIkwXp8R
+XWnn1s+kv8diG0wyJLhy+4b3IGk23tSVrl1X4hbARB/q+eRyEN8QH8Goj4qPaBRJ
+WkaS2EDzIh40sry1PWAfY98FL0LiS/S/0zOkud/pozrnRbbR+NwhGTh6rJkcv9SW
+Gb3WdblZHB+iRWaEOoOB341gBlzv/F1bqoaZ+cdf8HhPpnqLhS8Cn6yBQ0m6A0wo
+TRRWhbS27KNMijwlHAfbo769QkwMvryi8Yigl/DNPKSZtCIIKUFeDHjn5vT81mE=
+=eS//
 -----END PGP SIGNATURE-----
 
---nextPart1729219.WsknuV7282--
+--nextPart18283233.ScdchBJ5An--
 
