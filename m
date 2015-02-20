@@ -1,13 +1,15 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 20 Feb 2015 19:57:51 +0800
-Message-ID: <2403261.tu6pC8yFJp@voltaire>
-In-Reply-To: <1424361765-25248-1-git-send-email-mareklindner@neomailbox.ch>
-References: <1424361765-25248-1-git-send-email-mareklindner@neomailbox.ch>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart18283233.ScdchBJ5An";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: checkpatch - wrong alignment
+Return-Path: <joe@perches.com>
+Message-ID: <1424461955.18211.15.camel@perches.com>
+From: Joe Perches <joe@perches.com>
+Date: Fri, 20 Feb 2015 11:52:35 -0800
+In-Reply-To: <7679509.IB7arj1Sb8@voltaire>
+References: <2621923.3aVJ40SYcy@voltaire>
+ <1424375741.18211.4.camel@perches.com> <7679509.IB7arj1Sb8@voltaire>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] [PATCH] checkpatch: Improve "no space is necessary
+ after a cast" test
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,43 +21,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Dan Carpenter <dan.carpenter@oracle.com>, Marek Lindner <mareklindner@neomailbox.ch>
 
+The "no space is necessary after a cast" sizeof exclusion
+doesn't work properly.
 
---nextPart18283233.ScdchBJ5An
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+The test reports a false positive for code like:
 
-On Friday, February 20, 2015 00:02:45 Marek Lindner wrote:
-> Introduced by fe67bb41f0e1647c3b05aeb4b736a1171bff496b
-> ("batman-adv: debugfs, avoid compiling for !DEBUG_FS")
-> 
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> ---
->  debugfs.h | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+	BUILD_BUG_ON(sizeof(struct batadv_bla_claim_dst) != 6);
 
-Applied in revision 2f9d8a2.
+Make it work, simplify the exclusions, and add some comments.
 
-Regards,
-Marek
+Signed-off-by: Joe Perches <joe@perches.com>
+Reported-by: Marek Lindner <mareklindner@neomailbox.ch>
+---
+ scripts/checkpatch.pl | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
---nextPart18283233.ScdchBJ5An
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index d124359..2898e49 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -2552,9 +2552,16 @@ sub process {
+ 			}
+ 		}
+ 
+-		if ($line =~ /^\+.*(\w+\s*)?\(\s*$Type\s*\)[ \t]+(?!$Assignment|$Arithmetic|[,;:\?\(\{\}\[\<\>]|&&|\|\||\\$)/ &&
+-		    (!defined($1) || $1 !~ /sizeof\s*/)) {
+-			if (CHK("SPACING",
++# check for space after cast like "(int) foo" or "(struct foo) bar"
++# avoid checking a few false positives:
++#   "sizeof(<type>)" or "__alignof__(<type>)"
++#   function pointer declarations like "(*foo)(int) = bar;"
++#   structure definitions like "(struct foo) { 0 };"
++#   multiline macros that define functions
++#   known attributes or the __attribute__ keyword
++		if ($line =~ /^\+(.*)\(\s*$Type\s*\)([ \t]++)((?![={]|\\$|$Attribute|__attribute__))/ &&
++		    (!defined($1) || $1 !~ /\b(?:sizeof|__alignof__)\s*$/)) {
++			if (CHK("SPACING",
+ 				"No space is necessary after a cast\n" . $herecurr) &&
+ 			    $fix) {
+ 				$fixed[$fixlinenr] =~
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJU5yE/AAoJEFNVTo/uthzAqFAH/3cbEiwqc97a6yCUiV1cR0GL
-uLnLgRUR3YhSIH8H6St7vrpWds2/phZpFQZHSr4Y1QstImyL6vtgdWpgZIkwXp8R
-XWnn1s+kv8diG0wyJLhy+4b3IGk23tSVrl1X4hbARB/q+eRyEN8QH8Goj4qPaBRJ
-WkaS2EDzIh40sry1PWAfY98FL0LiS/S/0zOkud/pozrnRbbR+NwhGTh6rJkcv9SW
-Gb3WdblZHB+iRWaEOoOB341gBlzv/F1bqoaZ+cdf8HhPpnqLhS8Cn6yBQ0m6A0wo
-TRRWhbS27KNMijwlHAfbo769QkwMvryi8Yigl/DNPKSZtCIIKUFeDHjn5vT81mE=
-=eS//
------END PGP SIGNATURE-----
-
---nextPart18283233.ScdchBJ5An--
 
