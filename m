@@ -1,9 +1,10 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun,  1 Mar 2015 00:50:16 +0800
-Message-Id: <1425142217-18966-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: split name from variable for
-	uint mesh attributes
+Date: Sun,  1 Mar 2015 00:50:17 +0800
+Message-Id: <1425142217-18966-2-git-send-email-mareklindner@neomailbox.ch>
+In-Reply-To: <1425142217-18966-1-git-send-email-mareklindner@neomailbox.ch>
+References: <1425142217-18966-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: add bat_neigh_free API
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,91 +21,68 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-Some mesh attributes are behind substructs in the
-batadv_priv object and for this reason the name cannot be
-used anymore to refer to them.
-
-This patch allows to specify the variable name where the
-attribute is stored inside batadv_priv instead of using the
-name
+This API has to be used to let any routing protocol free
+neighbor specific allocated resources
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- sysfs.c | 29 +++++++++++++++--------------
- 1 file changed, 15 insertions(+), 14 deletions(-)
+ originator.c | 6 ++++++
+ types.h      | 4 ++++
+ 2 files changed, 10 insertions(+)
 
-diff --git a/sysfs.c b/sysfs.c
-index a63c3eb..97a6192 100644
---- a/sysfs.c
-+++ b/sysfs.c
-@@ -151,7 +151,7 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
- 	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
- 			   batadv_store_##_name)
+diff --git a/originator.c b/originator.c
+index 90e805a..9e04e60 100644
+--- a/originator.c
++++ b/originator.c
+@@ -197,13 +197,19 @@ static void batadv_neigh_node_free_rcu(struct rcu_head *rcu)
+ 	struct hlist_node *node_tmp;
+ 	struct batadv_neigh_node *neigh_node;
+ 	struct batadv_neigh_ifinfo *neigh_ifinfo;
++	struct batadv_algo_ops *bao;
  
--#define BATADV_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)	\
-+#define BATADV_ATTR_SIF_STORE_UINT(_name, _var, _min, _max, _post_func)	\
- ssize_t batadv_store_##_name(struct kobject *kobj,			\
- 			     struct attribute *attr, char *buff,	\
- 			     size_t count)				\
-@@ -161,24 +161,24 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
- 									\
- 	return __batadv_store_uint_attr(buff, count, _min, _max,	\
- 					_post_func, attr,		\
--					&bat_priv->_name, net_dev);	\
-+					&bat_priv->_var, net_dev);	\
- }
+ 	neigh_node = container_of(rcu, struct batadv_neigh_node, rcu);
++	bao = neigh_node->orig_node->bat_priv->bat_algo_ops;
  
--#define BATADV_ATTR_SIF_SHOW_UINT(_name)				\
-+#define BATADV_ATTR_SIF_SHOW_UINT(_name, _var)				\
- ssize_t batadv_show_##_name(struct kobject *kobj,			\
- 			    struct attribute *attr, char *buff)		\
- {									\
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);	\
- 									\
--	return sprintf(buff, "%i\n", atomic_read(&bat_priv->_name));	\
-+	return sprintf(buff, "%i\n", atomic_read(&bat_priv->_var));	\
- }									\
+ 	hlist_for_each_entry_safe(neigh_ifinfo, node_tmp,
+ 				  &neigh_node->ifinfo_list, list) {
+ 		batadv_neigh_ifinfo_free_ref_now(neigh_ifinfo);
+ 	}
++
++	if (bao->bat_neigh_free)
++		bao->bat_neigh_free(neigh_node);
++
+ 	batadv_hardif_free_ref_now(neigh_node->if_incoming);
  
- /* Use this, if you are going to set [name] in the soft-interface
-  * (bat_priv) to an unsigned integer value
-  */
--#define BATADV_ATTR_SIF_UINT(_name, _mode, _min, _max, _post_func)	\
--	static BATADV_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)\
--	static BATADV_ATTR_SIF_SHOW_UINT(_name)				\
-+#define BATADV_ATTR_SIF_UINT(_name, _var, _mode, _min, _max, _post_func)\
-+	static BATADV_ATTR_SIF_STORE_UINT(_name, _var, _min, _max, _post_func)\
-+	static BATADV_ATTR_SIF_SHOW_UINT(_name, _var)			\
- 	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
- 			   batadv_store_##_name)
- 
-@@ -540,19 +540,20 @@ BATADV_ATTR_SIF_BOOL(fragmentation, S_IRUGO | S_IWUSR, batadv_update_min_mtu);
- static BATADV_ATTR(routing_algo, S_IRUGO, batadv_show_bat_algo, NULL);
- static BATADV_ATTR(gw_mode, S_IRUGO | S_IWUSR, batadv_show_gw_mode,
- 		   batadv_store_gw_mode);
--BATADV_ATTR_SIF_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * BATADV_JITTER,
--		     INT_MAX, NULL);
--BATADV_ATTR_SIF_UINT(hop_penalty, S_IRUGO | S_IWUSR, 0, BATADV_TQ_MAX_VALUE,
--		     NULL);
--BATADV_ATTR_SIF_UINT(gw_sel_class, S_IRUGO | S_IWUSR, 1, BATADV_TQ_MAX_VALUE,
--		     batadv_post_gw_reselect);
-+BATADV_ATTR_SIF_UINT(orig_interval, orig_interval, S_IRUGO | S_IWUSR,
-+		     2 * BATADV_JITTER, INT_MAX, NULL);
-+BATADV_ATTR_SIF_UINT(hop_penalty, hop_penalty, S_IRUGO | S_IWUSR, 0,
-+		     BATADV_TQ_MAX_VALUE, NULL);
-+BATADV_ATTR_SIF_UINT(gw_sel_class, gw_sel_class, S_IRUGO | S_IWUSR, 1,
-+		     BATADV_TQ_MAX_VALUE, batadv_post_gw_reselect);
- static BATADV_ATTR(gw_bandwidth, S_IRUGO | S_IWUSR, batadv_show_gw_bwidth,
- 		   batadv_store_gw_bwidth);
- #ifdef CONFIG_BATMAN_ADV_MCAST
- BATADV_ATTR_SIF_BOOL(multicast_mode, S_IRUGO | S_IWUSR, NULL);
- #endif
- #ifdef CONFIG_BATMAN_ADV_DEBUG
--BATADV_ATTR_SIF_UINT(log_level, S_IRUGO | S_IWUSR, 0, BATADV_DBG_ALL, NULL);
-+BATADV_ATTR_SIF_UINT(log_level, log_level, S_IRUGO | S_IWUSR, 0,
-+		     BATADV_DBG_ALL, NULL);
- #endif
- #ifdef CONFIG_BATMAN_ADV_NC
- BATADV_ATTR_SIF_BOOL(network_coding, S_IRUGO | S_IWUSR,
+ 	kfree(neigh_node);
+diff --git a/types.h b/types.h
+index de09807..3b096c4 100644
+--- a/types.h
++++ b/types.h
+@@ -1120,6 +1120,8 @@ struct batadv_forw_packet {
+  * @bat_neigh_is_equiv_or_better: check if neigh1 is equally good or better
+  *  than neigh2 for their respective outgoing interface from the metric
+  *  prospective
++ * @bat_neigh_free: free the resources allocated by the routing algorithm for a
++ *  neigh_node object
+  * @bat_orig_print: print the originator table (optional)
+  * @bat_orig_free: free the resources allocated by the routing algorithm for an
+  *  orig_node object
+@@ -1137,6 +1139,7 @@ struct batadv_algo_ops {
+ 	void (*bat_primary_iface_set)(struct batadv_hard_iface *hard_iface);
+ 	void (*bat_ogm_schedule)(struct batadv_hard_iface *hard_iface);
+ 	void (*bat_ogm_emit)(struct batadv_forw_packet *forw_packet);
++	/* neigh_node handling API */
+ 	int (*bat_neigh_cmp)(struct batadv_neigh_node *neigh1,
+ 			     struct batadv_hard_iface *if_outgoing1,
+ 			     struct batadv_neigh_node *neigh2,
+@@ -1146,6 +1149,7 @@ struct batadv_algo_ops {
+ 		 struct batadv_hard_iface *if_outgoing1,
+ 		 struct batadv_neigh_node *neigh2,
+ 		 struct batadv_hard_iface *if_outgoing2);
++	void (*bat_neigh_free)(struct batadv_neigh_node *neigh);
+ 	/* orig_node handling API */
+ 	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq,
+ 			       struct batadv_hard_iface *hard_iface);
 -- 
 2.1.4
 
