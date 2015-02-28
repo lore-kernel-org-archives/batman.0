@@ -1,15 +1,9 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Sat, 28 Feb 2015 17:04:08 +0100
-Message-ID: <2759315.TAPnvSzPVZ@prime>
-In-Reply-To: <mcrs0o$da0$1@ger.gmane.org>
-References: <1424714928-29768-1-git-send-email-sven@narfation.org>
- <mcrs0o$da0$1@ger.gmane.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3361350.5F8DEu5pGr";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Add explanation how to run
-	alfred as non-root user
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun,  1 Mar 2015 00:50:16 +0800
+Message-Id: <1425142217-18966-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: split name from variable for
+	uint mesh attributes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,38 +16,95 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: MK <mailing.m1@kkk-web.de>
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
+From: Antonio Quartulli <antonio@open-mesh.com>
 
---nextPart3361350.5F8DEu5pGr
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Some mesh attributes are behind substructs in the
+batadv_priv object and for this reason the name cannot be
+used anymore to refer to them.
 
-On Saturday 28 February 2015 08:50:42 MK wrote:
-> Sven Eckelmann wrote:
-> > unix socket +can also be moved to a different directly which is accessible
-> 
-> typo: directly -> directory
+This patch allows to specify the variable name where the
+attribute is stored inside batadv_priv instead of using the
+name
 
-Hey,
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
+ sysfs.c | 29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
 
-did you try the patch Sven posted earlier this week? Would be great to add 
-your acked-by or tested-by tag if it resolves your issue. :)
-
-Thanks!
-    Simon
---nextPart3361350.5F8DEu5pGr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iEYEABECAAYFAlTx5vwACgkQrzg/fFk7axZJ/gCgvcaqeilcbhANK+bCgWGhdZ7M
-9pMAniq1NRU4F9MgjjQTq6bZbqU7qnxJ
-=y8hw
------END PGP SIGNATURE-----
-
---nextPart3361350.5F8DEu5pGr--
+diff --git a/sysfs.c b/sysfs.c
+index a63c3eb..97a6192 100644
+--- a/sysfs.c
++++ b/sysfs.c
+@@ -151,7 +151,7 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
+ 			   batadv_store_##_name)
+ 
+-#define BATADV_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)	\
++#define BATADV_ATTR_SIF_STORE_UINT(_name, _var, _min, _max, _post_func)	\
+ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 			     struct attribute *attr, char *buff,	\
+ 			     size_t count)				\
+@@ -161,24 +161,24 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
+ 									\
+ 	return __batadv_store_uint_attr(buff, count, _min, _max,	\
+ 					_post_func, attr,		\
+-					&bat_priv->_name, net_dev);	\
++					&bat_priv->_var, net_dev);	\
+ }
+ 
+-#define BATADV_ATTR_SIF_SHOW_UINT(_name)				\
++#define BATADV_ATTR_SIF_SHOW_UINT(_name, _var)				\
+ ssize_t batadv_show_##_name(struct kobject *kobj,			\
+ 			    struct attribute *attr, char *buff)		\
+ {									\
+ 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);	\
+ 									\
+-	return sprintf(buff, "%i\n", atomic_read(&bat_priv->_name));	\
++	return sprintf(buff, "%i\n", atomic_read(&bat_priv->_var));	\
+ }									\
+ 
+ /* Use this, if you are going to set [name] in the soft-interface
+  * (bat_priv) to an unsigned integer value
+  */
+-#define BATADV_ATTR_SIF_UINT(_name, _mode, _min, _max, _post_func)	\
+-	static BATADV_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)\
+-	static BATADV_ATTR_SIF_SHOW_UINT(_name)				\
++#define BATADV_ATTR_SIF_UINT(_name, _var, _mode, _min, _max, _post_func)\
++	static BATADV_ATTR_SIF_STORE_UINT(_name, _var, _min, _max, _post_func)\
++	static BATADV_ATTR_SIF_SHOW_UINT(_name, _var)			\
+ 	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
+ 			   batadv_store_##_name)
+ 
+@@ -540,19 +540,20 @@ BATADV_ATTR_SIF_BOOL(fragmentation, S_IRUGO | S_IWUSR, batadv_update_min_mtu);
+ static BATADV_ATTR(routing_algo, S_IRUGO, batadv_show_bat_algo, NULL);
+ static BATADV_ATTR(gw_mode, S_IRUGO | S_IWUSR, batadv_show_gw_mode,
+ 		   batadv_store_gw_mode);
+-BATADV_ATTR_SIF_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * BATADV_JITTER,
+-		     INT_MAX, NULL);
+-BATADV_ATTR_SIF_UINT(hop_penalty, S_IRUGO | S_IWUSR, 0, BATADV_TQ_MAX_VALUE,
+-		     NULL);
+-BATADV_ATTR_SIF_UINT(gw_sel_class, S_IRUGO | S_IWUSR, 1, BATADV_TQ_MAX_VALUE,
+-		     batadv_post_gw_reselect);
++BATADV_ATTR_SIF_UINT(orig_interval, orig_interval, S_IRUGO | S_IWUSR,
++		     2 * BATADV_JITTER, INT_MAX, NULL);
++BATADV_ATTR_SIF_UINT(hop_penalty, hop_penalty, S_IRUGO | S_IWUSR, 0,
++		     BATADV_TQ_MAX_VALUE, NULL);
++BATADV_ATTR_SIF_UINT(gw_sel_class, gw_sel_class, S_IRUGO | S_IWUSR, 1,
++		     BATADV_TQ_MAX_VALUE, batadv_post_gw_reselect);
+ static BATADV_ATTR(gw_bandwidth, S_IRUGO | S_IWUSR, batadv_show_gw_bwidth,
+ 		   batadv_store_gw_bwidth);
+ #ifdef CONFIG_BATMAN_ADV_MCAST
+ BATADV_ATTR_SIF_BOOL(multicast_mode, S_IRUGO | S_IWUSR, NULL);
+ #endif
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+-BATADV_ATTR_SIF_UINT(log_level, S_IRUGO | S_IWUSR, 0, BATADV_DBG_ALL, NULL);
++BATADV_ATTR_SIF_UINT(log_level, log_level, S_IRUGO | S_IWUSR, 0,
++		     BATADV_DBG_ALL, NULL);
+ #endif
+ #ifdef CONFIG_BATMAN_ADV_NC
+ BATADV_ATTR_SIF_BOOL(network_coding, S_IRUGO | S_IWUSR,
+-- 
+2.1.4
 
