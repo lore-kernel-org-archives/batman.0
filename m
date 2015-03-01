@@ -1,9 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  1 Mar 2015 09:46:18 +0100
-Message-Id: <1425199578-6392-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Use common Jenkins Hash
-	implementation
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 01 Mar 2015 17:00:59 +0800
+Message-ID: <1626004.cMbIiEQmnj@voltaire>
+In-Reply-To: <1419594103-10928-20-git-send-email-mpa@pengutronix.de>
+References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
+ <1419594103-10928-20-git-send-email-mpa@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1531745.oTrBCKrSCS";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 19/26] batman-adv: iv_ogm,
+	fix comment function name
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,203 +22,42 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
 
-An unoptimized version of the Jenkins one-at-a-time hash function is used and
-partially copied all over the code wherever an hashtable is used. Instead the
-optimized version shared between the whole kernel should be used to reduce code
-duplication and use better optimized code.
 
-Only the DAT code must use the old implementation because it is used as
-distributed hash function which has to be common for all nodes.
+--nextPart1531745.oTrBCKrSCS
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v3: rebased on top of current master
+On Friday, December 26, 2014 12:41:36 Markus Pargmann wrote:
+> This is a small copy paste fix for batadv_ing_buffer_avg.
+> 
+> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+> ---
+>  bat_iv_ogm.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
- bridge_loop_avoidance.c | 16 ++++------------
- distributed-arp-table.c | 17 +++++++++++++++--
- hash.h                  | 22 ----------------------
- main.h                  |  1 +
- network-coding.c        | 10 ++--------
- originator.h            | 13 +------------
- translation-table.c     |  8 ++------
- 7 files changed, 25 insertions(+), 62 deletions(-)
+Applied in revision 11c63fa.
 
-diff --git a/bridge_loop_avoidance.c b/bridge_loop_avoidance.c
-index ac4b96e..6927589 100644
---- a/bridge_loop_avoidance.c
-+++ b/bridge_loop_avoidance.c
-@@ -42,12 +42,8 @@ static inline uint32_t batadv_choose_claim(const void *data, uint32_t size)
- 	struct batadv_bla_claim *claim = (struct batadv_bla_claim *)data;
- 	uint32_t hash = 0;
- 
--	hash = batadv_hash_bytes(hash, &claim->addr, sizeof(claim->addr));
--	hash = batadv_hash_bytes(hash, &claim->vid, sizeof(claim->vid));
--
--	hash += (hash << 3);
--	hash ^= (hash >> 11);
--	hash += (hash << 15);
-+	hash = jhash(&claim->addr, sizeof(claim->addr), hash);
-+	hash = jhash(&claim->vid, sizeof(claim->vid), hash);
- 
- 	return hash % size;
- }
-@@ -59,12 +55,8 @@ static inline uint32_t batadv_choose_backbone_gw(const void *data,
- 	const struct batadv_bla_claim *claim = (struct batadv_bla_claim *)data;
- 	uint32_t hash = 0;
- 
--	hash = batadv_hash_bytes(hash, &claim->addr, sizeof(claim->addr));
--	hash = batadv_hash_bytes(hash, &claim->vid, sizeof(claim->vid));
--
--	hash += (hash << 3);
--	hash ^= (hash >> 11);
--	hash += (hash << 15);
-+	hash = jhash(&claim->addr, sizeof(claim->addr), hash);
-+	hash = jhash(&claim->vid, sizeof(claim->vid), hash);
- 
- 	return hash % size;
- }
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index aad022d..107ad62 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -206,9 +206,22 @@ static uint32_t batadv_hash_dat(const void *data, uint32_t size)
- {
- 	uint32_t hash = 0;
- 	const struct batadv_dat_entry *dat = data;
-+	const unsigned char *key;
-+	uint32_t i;
-+
-+	key = (const unsigned char *)&dat->ip;
-+	for (i = 0; i < sizeof(dat->ip); i++) {
-+		hash += key[i];
-+		hash += (hash << 10);
-+		hash ^= (hash >> 6);
-+	}
- 
--	hash = batadv_hash_bytes(hash, &dat->ip, sizeof(dat->ip));
--	hash = batadv_hash_bytes(hash, &dat->vid, sizeof(dat->vid));
-+	key = (const unsigned char *)&dat->vid;
-+	for (i = 0; i < sizeof(dat->vid); i++) {
-+		hash += key[i];
-+		hash += (hash << 10);
-+		hash ^= (hash >> 6);
-+	}
- 
- 	hash += (hash << 3);
- 	hash ^= (hash >> 11);
-diff --git a/hash.h b/hash.h
-index 539fc12..a1d0980 100644
---- a/hash.h
-+++ b/hash.h
-@@ -80,28 +80,6 @@ static inline void batadv_hash_delete(struct batadv_hashtable *hash,
- }
- 
- /**
-- *	batadv_hash_bytes - hash some bytes and add them to the previous hash
-- *	@hash: previous hash value
-- *	@data: data to be hashed
-- *	@size: number of bytes to be hashed
-- *
-- *	Returns the new hash value.
-- */
--static inline uint32_t batadv_hash_bytes(uint32_t hash, const void *data,
--					 uint32_t size)
--{
--	const unsigned char *key = data;
--	int i;
--
--	for (i = 0; i < size; i++) {
--		hash += key[i];
--		hash += (hash << 10);
--		hash ^= (hash >> 6);
--	}
--	return hash;
--}
--
--/**
-  *	batadv_hash_add - adds data to the hashtable
-  *	@hash: storage hash table
-  *	@compare: callback to determine if 2 hash elements are identical
-diff --git a/main.h b/main.h
-index b6c9ece..4deacfd 100644
---- a/main.h
-+++ b/main.h
-@@ -174,6 +174,7 @@ enum batadv_uev_type {
- #include <linux/workqueue.h>	/* workqueue */
- #include <linux/percpu.h>
- #include <linux/slab.h>
-+#include <linux/jhash.h>
- #include <net/sock.h>		/* struct sock */
- #include <net/addrconf.h>	/* ipv6 address stuff */
- #include <linux/ip.h>
-diff --git a/network-coding.c b/network-coding.c
-index 358e58c..d128c3b 100644
---- a/network-coding.c
-+++ b/network-coding.c
-@@ -453,14 +453,8 @@ static uint32_t batadv_nc_hash_choose(const void *data, uint32_t size)
- 	const struct batadv_nc_path *nc_path = data;
- 	uint32_t hash = 0;
- 
--	hash = batadv_hash_bytes(hash, &nc_path->prev_hop,
--				 sizeof(nc_path->prev_hop));
--	hash = batadv_hash_bytes(hash, &nc_path->next_hop,
--				 sizeof(nc_path->next_hop));
--
--	hash += (hash << 3);
--	hash ^= (hash >> 11);
--	hash += (hash << 15);
-+	hash = jhash(&nc_path->prev_hop, sizeof(nc_path->prev_hop), hash);
-+	hash = jhash(&nc_path->next_hop, sizeof(nc_path->next_hop), hash);
- 
- 	return hash % size;
- }
-diff --git a/originator.h b/originator.h
-index aa4a436..a179c03 100644
---- a/originator.h
-+++ b/originator.h
-@@ -75,20 +75,9 @@ void batadv_orig_node_vlan_free_ref(struct batadv_orig_node_vlan *orig_vlan);
-  */
- static inline uint32_t batadv_choose_orig(const void *data, uint32_t size)
- {
--	const unsigned char *key = data;
- 	uint32_t hash = 0;
--	size_t i;
--
--	for (i = 0; i < 6; i++) {
--		hash += key[i];
--		hash += (hash << 10);
--		hash ^= (hash >> 6);
--	}
--
--	hash += (hash << 3);
--	hash ^= (hash >> 11);
--	hash += (hash << 15);
- 
-+	hash = jhash(data, ETH_ALEN, hash);
- 	return hash % size;
- }
- 
-diff --git a/translation-table.c b/translation-table.c
-index 07b263a..b20812b 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -67,12 +67,8 @@ static inline uint32_t batadv_choose_tt(const void *data, uint32_t size)
- 	uint32_t hash = 0;
- 
- 	tt = (struct batadv_tt_common_entry *)data;
--	hash = batadv_hash_bytes(hash, &tt->addr, ETH_ALEN);
--	hash = batadv_hash_bytes(hash, &tt->vid, sizeof(tt->vid));
--
--	hash += (hash << 3);
--	hash ^= (hash >> 11);
--	hash += (hash << 15);
-+	hash = jhash(&tt->addr, ETH_ALEN, hash);
-+	hash = jhash(&tt->vid, sizeof(tt->vid), hash);
- 
- 	return hash % size;
- }
--- 
-2.1.4
+Thanks,
+Marek
+
+--nextPart1531745.oTrBCKrSCS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJU8tVSAAoJEFNVTo/uthzA3e4IAJyOHAdRgeR86iy0WXAzBNb4
+xXQwHb92j+CeubakMMMjvJnTIT75MyluW8xsfhsOaC5gdBJIghCsUP0Oox/VwnvZ
+aQv4bsvhEvfNjWwhNSt/1sOn4P5hf3Ltm5gOPafWdWKMisy3WDbTRNRfI/aVURRp
+VEOsGA4NkPfMs98AjjSSyHzPq3zWVNDthF9xF2XK7pC/1QJyFvPalcHKWbJ0z14C
+SeJQ2pkaJ/1cbBHKXEuffzryZ46ogNVML+AqVsh4W7Y3jBhA2hmEKOqV2JY3TDA6
+ELJdBu29j0J8jFwcHP2ueIedzJ5o0/Du+tcDdYi+5B6o9DS36DFf5hai3pRxepU=
+=hBLc
+-----END PGP SIGNATURE-----
+
+--nextPart1531745.oTrBCKrSCS--
 
