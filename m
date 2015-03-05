@@ -1,14 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 05 Mar 2015 09:05:49 +0100
-Message-ID: <4125628.0zdKZFIalx@bentobox>
-In-Reply-To: <mct705$mdf$1@ger.gmane.org>
-References: <1424719130-2661-1-git-send-email-sven@narfation.org>
- <mct705$mdf$1@ger.gmane.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Drop capabilities when not needed
+Date: Thu,  5 Mar 2015 09:12:31 +0100
+Message-Id: <1425543151-27763-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1424714928-29768-1-git-send-email-sven@narfation.org>
+References: <1424714928-29768-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCHv2] alfred: Add explanation how to run alfred
+	as non-root user
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,54 +18,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: MK <mailing.m1@kkk-web.de>
+Cc: Sven Eckelmann <sven@narfation.org>
 
-Hi,
+Reported-by: MK <mailing.m1@kkk-web.de>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+v2:
+ - fix typo 'directly' -> 'directory'
 
-Please Cc me when you want an answer from me (I am not subscribed to this 
-mailing list). I just found this mail by pure luck.
+ README | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-On Saturday 28 February 2015 21:04:19 MK wrote:
-> Thanks for the patch. Setup seems to be still working. How can I verify that
-> privileges really dropped?
+diff --git a/README b/README
+index 90a99de..2bb4f9b 100644
+--- a/README
++++ b/README
+@@ -256,6 +256,32 @@ To get JSON formatted output, use:
+ 
+ See gpsd_json(5) for documentation of the tpv object. 
+ 
++Running alfred as non-root user
++-------------------------------
++
++Alfred currently requires special capabilities and access rights to work
++correctly. The user root is normally the only user having these
++capabilities/rights on a standard Linux system.
++
++Operations requiring special capabilities:
++
++ * bind to device
++ * creating the unix socket
++ * accessing the debugfs filesystem
++
++The first operation can still be executed when the admin grants the special
++capability CAP_NET_RAW to anyone executing the alfred binary. The unix socket
++can also be moved using the parameter '-u' to a different directory which can
++be accessed by the user.
++
++ $ sudo setcap cap_net_raw+ep alfred
++ $ ./alfred -u alfred.sock -i eth0
++
++The user running alfred must still be in a group which is allowed to access
++/sys/kernel/debugfs to correctly choose best neighbors for communication.
++It is possible (but not recommended) to disable the neighbor
++selection/prioritization using the parameter '-b none'.
++
+ License
+ -------
+ 
+-- 
+2.1.4
 
-The privileges of a process can be found in
-
-$ cat /proc/`pidof alfred`/status
-
-The active capabilities are CapEff. The capabilities the process can request 
-can be found in CapPrm.
-
-> There are further questions:
-> 
-> Is _read_ access for the alfred user (resp. group) sufficient in
-> /sys/kernel/debug/batman_adv/* ?
-> Or is write access on the socket file in this directory mandatory for full
-> functionality?
-
-The process needs to access the path and read the files. For example my system 
-allows read of this files by default BUT disallows non-root access to 
-/sys/kernel/debug
-
-$ ls -ltrd /sys/kernel/debug
-drwx------ 27 root root 0 Mar  2 18:58 /sys/kernel/debug
-
-I would have to allow other users o+rx access to this path before being able 
-to access the batman-adv files:
-
-$ cat /sys/kernel/debug/batman_adv/bat0/originators
-cat: /sys/kernel/debug/batman_adv/bat0/originators: Permission denied
-$ sudo chmod o+rx /sys/kernel/debug
-$ cat /sys/kernel/debug/batman_adv/bat0/originators
-[B.A.T.M.A.N. adv 2014.3.0, MainIF/MAC: eth0/XX:XX:XX:XX:XX:XX (bat0 
-BATMAN_IV)]
-  Originator      last-seen (#/255)           Nexthop [outgoingIF]:   
-Potential nexthops ...
-No batman nodes in range ...
-
-
-!!!! WARNING !!!!
-I don't recommend to grant all users access to /sys/kernel/debug.
-
-Kind regards,
-	Sven
