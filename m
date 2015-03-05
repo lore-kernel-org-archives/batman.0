@@ -1,9 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  1 Mar 2015 16:56:26 +0100
-Message-Id: <1425225386-19712-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unnecessary check for
-	orig_ifinfo == NULL
+Date: Thu, 05 Mar 2015 09:05:49 +0100
+Message-ID: <4125628.0zdKZFIalx@bentobox>
+In-Reply-To: <mct705$mdf$1@ger.gmane.org>
+References: <1424719130-2661-1-git-send-email-sven@narfation.org>
+ <mct705$mdf$1@ger.gmane.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Drop capabilities when not needed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,32 +21,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: MK <mailing.m1@kkk-web.de>
 
-orig_ifinfo is dereferenced multiple times in batadv_iv_ogm_update_seqnos
-before the check for NULL is done. The function also exists at the beginning
-when orig_ifinfo would have been NULL. This makes the check at the end
-unnecessary and only confuses the reader/code analyzers.
+Hi,
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- bat_iv_ogm.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Please Cc me when you want an answer from me (I am not subscribed to this 
+mailing list). I just found this mail by pure luck.
 
-diff --git a/bat_iv_ogm.c b/bat_iv_ogm.c
-index 554e0e0..04bd220 100644
---- a/bat_iv_ogm.c
-+++ b/bat_iv_ogm.c
-@@ -1357,8 +1357,7 @@ batadv_iv_ogm_update_seqnos(const struct ethhdr *ethhdr,
- out:
- 	spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
- 	batadv_orig_node_free_ref(orig_node);
--	if (orig_ifinfo)
--		batadv_orig_ifinfo_free_ref(orig_ifinfo);
-+	batadv_orig_ifinfo_free_ref(orig_ifinfo);
- 	return ret;
- }
- 
--- 
-2.1.4
+On Saturday 28 February 2015 21:04:19 MK wrote:
+> Thanks for the patch. Setup seems to be still working. How can I verify that
+> privileges really dropped?
 
+The privileges of a process can be found in
+
+$ cat /proc/`pidof alfred`/status
+
+The active capabilities are CapEff. The capabilities the process can request 
+can be found in CapPrm.
+
+> There are further questions:
+> 
+> Is _read_ access for the alfred user (resp. group) sufficient in
+> /sys/kernel/debug/batman_adv/* ?
+> Or is write access on the socket file in this directory mandatory for full
+> functionality?
+
+The process needs to access the path and read the files. For example my system 
+allows read of this files by default BUT disallows non-root access to 
+/sys/kernel/debug
+
+$ ls -ltrd /sys/kernel/debug
+drwx------ 27 root root 0 Mar  2 18:58 /sys/kernel/debug
+
+I would have to allow other users o+rx access to this path before being able 
+to access the batman-adv files:
+
+$ cat /sys/kernel/debug/batman_adv/bat0/originators
+cat: /sys/kernel/debug/batman_adv/bat0/originators: Permission denied
+$ sudo chmod o+rx /sys/kernel/debug
+$ cat /sys/kernel/debug/batman_adv/bat0/originators
+[B.A.T.M.A.N. adv 2014.3.0, MainIF/MAC: eth0/XX:XX:XX:XX:XX:XX (bat0 
+BATMAN_IV)]
+  Originator      last-seen (#/255)           Nexthop [outgoingIF]:   
+Potential nexthops ...
+No batman nodes in range ...
+
+
+!!!! WARNING !!!!
+I don't recommend to grant all users access to /sys/kernel/debug.
+
+Kind regards,
+	Sven
