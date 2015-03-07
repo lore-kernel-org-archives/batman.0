@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  7 Mar 2015 23:41:18 +0100
-Message-Id: <1425768078-15380-2-git-send-email-sven@narfation.org>
+Date: Sat,  7 Mar 2015 23:45:53 +0100
+Message-Id: <1425768353-15667-1-git-send-email-sven@narfation.org>
 In-Reply-To: <1425768078-15380-1-git-send-email-sven@narfation.org>
 References: <1425768078-15380-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Add option to the client to
+Subject: [B.A.T.M.A.N.] [PATCHv2 2/2] alfred: Add option to the client to
 	print extra data information
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -26,11 +26,13 @@ in request mode.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
+v2: added missing info in usage/help output
+---
  alfred.h     | 1 +
  client.c     | 7 ++++++-
- main.c       | 7 ++++++-
+ main.c       | 8 +++++++-
  man/alfred.8 | 3 +++
- 4 files changed, 16 insertions(+), 2 deletions(-)
+ 4 files changed, 17 insertions(+), 2 deletions(-)
 
 diff --git a/alfred.h b/alfred.h
 index ef00551..f26c80c 100644
@@ -63,10 +65,18 @@ index 32fdd54..42dd4ad 100644
  
  	unix_sock_close(globals);
 diff --git a/main.c b/main.c
-index d298d65..65948d3 100644
+index d298d65..72a17fc 100644
 --- a/main.c
 +++ b/main.c
-@@ -75,6 +75,7 @@ static struct globals *alfred_init(int argc, char *argv[])
+@@ -38,6 +38,7 @@ static void alfred_usage(void)
+ 	printf("                                      for the supplied data type (0-255)\n");
+ 	printf("  -r, --request [data type]           collect data from the network and prints\n");
+ 	printf("                                      it on the network\n");
++	printf("  -d, --verbose                       Show extra information in the data output\n");
+ 	printf("  -V, --req-version                   specify the data version set for -s\n");
+ 	printf("  -M, --modeswitch master             switch daemon to mode master\n");
+ 	printf("                   slave              switch daemon to mode slave\n");
+@@ -75,6 +76,7 @@ static struct globals *alfred_init(int argc, char *argv[])
  		{"change-interface",	required_argument,	NULL,	'I'},
  		{"unix-path",		required_argument,	NULL,	'u'},
  		{"version",		no_argument,		NULL,	'v'},
@@ -74,7 +84,7 @@ index d298d65..65948d3 100644
  		{NULL,			0,			NULL,	0},
  	};
  
-@@ -89,10 +90,11 @@ static struct globals *alfred_init(int argc, char *argv[])
+@@ -89,10 +91,11 @@ static struct globals *alfred_init(int argc, char *argv[])
  	globals->clientmode_version = 0;
  	globals->mesh_iface = "bat0";
  	globals->unix_path = ALFRED_SOCK_PATH_DEFAULT;
@@ -87,7 +97,7 @@ index d298d65..65948d3 100644
  				  &opt_ind)) != -1) {
  		switch (opt) {
  		case 'r':
-@@ -149,6 +151,9 @@ static struct globals *alfred_init(int argc, char *argv[])
+@@ -149,6 +152,9 @@ static struct globals *alfred_init(int argc, char *argv[])
  		case 'u':
  			globals->unix_path = optarg;
  			break;
