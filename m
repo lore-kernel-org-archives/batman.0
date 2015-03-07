@@ -1,11 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  6 Mar 2015 16:57:18 +0100
-Message-Id: <1425657438-31206-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1425657438-31206-1-git-send-email-sven@narfation.org>
-References: <1425657438-31206-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv4 2/2] batman-adv: Define the size of
-	hashtables by hash bits
+Date: Sat,  7 Mar 2015 23:41:17 +0100
+Message-Id: <1425768078-15380-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] alfred: Update version when adding data
+	to dataset
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,106 +18,48 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-The common hashtable implementation in the kernel uses bits of the hash to
-compute the final size of the hastable. Similar can be done for the partially
-locked, concurrent hashtables in batman-adv.
+The dataset stores the source and the alfred_tlv of the send data next to the
+actual data buffer. The source and alfred_tlv::type was used to find an entry
+in the dataset hashtable when reading/updating the buffer. The
+alfred_tlv::length is always updated when the size of the associated buffer
+gets modified.
+
+But the alfred_tlv::version is only written when receiving the first data for a
+dataset. But this initial (maybe outdated) version is always propagated when a
+client asks over the unix socket or the dataset is exchanged between alfred
+servers. This has to also be updated when new data is added to the dataset to
+avoid clients to interpret the data using the wrong data format version.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- main.h  |  9 +++++++++
- types.h | 24 ++++++++++++++++--------
- 2 files changed, 25 insertions(+), 8 deletions(-)
+ recv.c      | 1 +
+ unix_sock.c | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/main.h b/main.h
-index 4deacfd..26a20ae 100644
---- a/main.h
-+++ b/main.h
-@@ -154,6 +154,15 @@ enum batadv_uev_type {
- #define BATADV_DAT_CANDIDATE_NOT_FOUND	0
- #define BATADV_DAT_CANDIDATE_ORIG	1
+diff --git a/recv.c b/recv.c
+index 34a16fc..e0252eb 100644
+--- a/recv.c
++++ b/recv.c
+@@ -91,6 +91,7 @@ static int finish_alfred_push_data(struct globals *globals,
+ 			goto err;
  
-+#define BATADV_BLA_CLAIM_HASH_BITS 7
-+#define BATADV_BLA_BACKBONE_HASH_BITS 5
-+#define BATADV_NC_CODING_HASH_BITS 7
-+#define BATADV_NC_DECODING_HASH_BITS 7
-+#define BATADV_DAT_HASH_BITS 10
-+#define BATADV_ORIG_HASH_BITS 10
-+#define BATADV_TT_LOCAL_HASH_BITS 10
-+#define BATADV_TT_GLOBAL_HASH_BITS 10
-+
- /* Debug Messages */
- #ifdef pr_fmt
- #undef pr_fmt
-diff --git a/types.h b/types.h
-index 213007c..a94a933 100644
---- a/types.h
-+++ b/types.h
-@@ -45,6 +45,14 @@ struct batadv_hashbucket {
- };
+ 		dataset->data.header.length = data_len;
++		dataset->data.header.version = data->header.version;
+ 		memcpy(dataset->buf, data->data, data_len);
  
- /**
-+ * BATADV_DECLARE_HASHTABLE - declare an array of buckets for an hashtable
-+ * @name: name of the declared array of buckets
-+ * @bits: number of bits used from a hash to find a bucket in the hashtable
-+ */
-+#define BATADV_DECLARE_HASHTABLE(name, bits) \
-+		struct batadv_hashbucket name[1u << bits]
-+
-+/**
-  * enum batadv_dhcp_recipient - dhcp destination
-  * @BATADV_DHCP_NO: packet is not a dhcp message
-  * @BATADV_DHCP_TO_SERVER: dhcp message is directed to a server
-@@ -527,8 +535,8 @@ struct batadv_priv_tt {
- 	atomic_t ogm_append_cnt;
- 	atomic_t local_changes;
- 	struct list_head changes_list;
--	struct batadv_hashbucket local_hash[1024];
--	struct batadv_hashbucket global_hash[1024];
-+	BATADV_DECLARE_HASHTABLE(local_hash, BATADV_TT_LOCAL_HASH_BITS);
-+	BATADV_DECLARE_HASHTABLE(global_hash, BATADV_TT_GLOBAL_HASH_BITS);
- 	struct list_head req_list;
- 	struct list_head roam_list;
- 	spinlock_t changes_list_lock; /* protects changes */
-@@ -558,8 +566,8 @@ struct batadv_priv_tt {
- #ifdef CONFIG_BATMAN_ADV_BLA
- struct batadv_priv_bla {
- 	atomic_t num_requests;
--	struct batadv_hashbucket claim_hash[128];
--	struct batadv_hashbucket backbone_hash[32];
-+	BATADV_DECLARE_HASHTABLE(claim_hash, BATADV_BLA_CLAIM_HASH_BITS);
-+	BATADV_DECLARE_HASHTABLE(backbone_hash, BATADV_BLA_BACKBONE_HASH_BITS);
- 	struct batadv_bcast_duplist_entry bcast_duplist[BATADV_DUPLIST_SIZE];
- 	int bcast_duplist_curr;
- 	/* protects bcast_duplist & bcast_duplist_curr */
-@@ -629,7 +637,7 @@ struct batadv_priv_tvlv {
- #ifdef CONFIG_BATMAN_ADV_DAT
- struct batadv_priv_dat {
- 	batadv_dat_addr_t addr;
--	struct batadv_hashbucket hash[1024];
-+	BATADV_DECLARE_HASHTABLE(hash, BATADV_DAT_HASH_BITS);
- 	struct delayed_work work;
- };
- #endif
-@@ -692,8 +700,8 @@ struct batadv_priv_nc {
- 	u32 max_buffer_time;
- 	unsigned long timestamp_fwd_flush;
- 	unsigned long timestamp_sniffed_purge;
--	struct batadv_hashbucket coding_hash[128];
--	struct batadv_hashbucket decoding_hash[128];
-+	BATADV_DECLARE_HASHTABLE(coding_hash, BATADV_NC_CODING_HASH_BITS);
-+	BATADV_DECLARE_HASHTABLE(decoding_hash, BATADV_NC_DECODING_HASH_BITS);
- };
+ 		/* if the sender is also the the source of the dataset, we
+diff --git a/unix_sock.c b/unix_sock.c
+index ae86956..0707252 100644
+--- a/unix_sock.c
++++ b/unix_sock.c
+@@ -151,6 +151,7 @@ static int unix_sock_add_data(struct globals *globals,
+ 		goto err;
  
- /**
-@@ -806,7 +814,7 @@ struct batadv_priv {
- 	struct dentry *debug_dir;
- 	struct hlist_head forw_bat_list;
- 	struct hlist_head forw_bcast_list;
--	struct batadv_hashbucket orig_hash[1024];
-+	BATADV_DECLARE_HASHTABLE(orig_hash, BATADV_ORIG_HASH_BITS);
- 	spinlock_t forw_bat_list_lock; /* protects forw_bat_list */
- 	spinlock_t forw_bcast_list_lock; /* protects forw_bcast_list */
- 	struct delayed_work orig_work;
+ 	dataset->data.header.length = data_len;
++	dataset->data.header.version = data->header.version;
+ 	memcpy(dataset->buf, data->data, data_len);
+ 
+ 	ret = 0;
 -- 
 2.1.4
 
