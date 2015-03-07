@@ -1,9 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  7 Mar 2015 23:41:17 +0100
-Message-Id: <1425768078-15380-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] alfred: Update version when adding data
-	to dataset
+Date: Sat,  7 Mar 2015 23:41:18 +0100
+Message-Id: <1425768078-15380-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1425768078-15380-1-git-send-email-sven@narfation.org>
+References: <1425768078-15380-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Add option to the client to
+	print extra data information
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,48 +20,97 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
-The dataset stores the source and the alfred_tlv of the send data next to the
-actual data buffer. The source and alfred_tlv::type was used to find an entry
-in the dataset hashtable when reading/updating the buffer. The
-alfred_tlv::length is always updated when the size of the associated buffer
-gets modified.
-
-But the alfred_tlv::version is only written when receiving the first data for a
-dataset. But this initial (maybe outdated) version is always propagated when a
-client asks over the unix socket or the dataset is exchanged between alfred
-servers. This has to also be updated when new data is added to the dataset to
-avoid clients to interpret the data using the wrong data format version.
+The version of a dataset can be queried using the parameter --verbose/-d. It is
+printed as third component of each dataset line when starting the unix client
+in request mode.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- recv.c      | 1 +
- unix_sock.c | 1 +
- 2 files changed, 2 insertions(+)
+ alfred.h     | 1 +
+ client.c     | 7 ++++++-
+ main.c       | 7 ++++++-
+ man/alfred.8 | 3 +++
+ 4 files changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/recv.c b/recv.c
-index 34a16fc..e0252eb 100644
---- a/recv.c
-+++ b/recv.c
-@@ -91,6 +91,7 @@ static int finish_alfred_push_data(struct globals *globals,
- 			goto err;
+diff --git a/alfred.h b/alfred.h
+index ef00551..f26c80c 100644
+--- a/alfred.h
++++ b/alfred.h
+@@ -113,6 +113,7 @@ struct globals {
+ 	enum clientmode clientmode;
+ 	int clientmode_arg;
+ 	int clientmode_version;
++	int verbose;
  
- 		dataset->data.header.length = data_len;
-+		dataset->data.header.version = data->header.version;
- 		memcpy(dataset->buf, data->data, data_len);
+ 	int unix_sock;
+ 	const char *unix_path;
+diff --git a/client.c b/client.c
+index 32fdd54..42dd4ad 100644
+--- a/client.c
++++ b/client.c
+@@ -121,7 +121,12 @@ int alfred_client_request_data(struct globals *globals)
+ 				printf("%c", pos[i]);
+ 		}
  
- 		/* if the sender is also the the source of the dataset, we
-diff --git a/unix_sock.c b/unix_sock.c
-index ae86956..0707252 100644
---- a/unix_sock.c
-+++ b/unix_sock.c
-@@ -151,6 +151,7 @@ static int unix_sock_add_data(struct globals *globals,
- 		goto err;
+-		printf("\" },\n");
++		printf("\"");
++
++		if (globals->verbose)
++			printf(", %u", data->header.version);
++
++		printf(" },\n");
+ 	}
  
- 	dataset->data.header.length = data_len;
-+	dataset->data.header.version = data->header.version;
- 	memcpy(dataset->buf, data->data, data_len);
+ 	unix_sock_close(globals);
+diff --git a/main.c b/main.c
+index d298d65..65948d3 100644
+--- a/main.c
++++ b/main.c
+@@ -75,6 +75,7 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 		{"change-interface",	required_argument,	NULL,	'I'},
+ 		{"unix-path",		required_argument,	NULL,	'u'},
+ 		{"version",		no_argument,		NULL,	'v'},
++		{"verbose",		no_argument,		NULL,	'd'},
+ 		{NULL,			0,			NULL,	0},
+ 	};
  
- 	ret = 0;
+@@ -89,10 +90,11 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 	globals->clientmode_version = 0;
+ 	globals->mesh_iface = "bat0";
+ 	globals->unix_path = ALFRED_SOCK_PATH_DEFAULT;
++	globals->verbose = 0;
+ 
+ 	time_random_seed();
+ 
+-	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:", long_options,
++	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:d", long_options,
+ 				  &opt_ind)) != -1) {
+ 		switch (opt) {
+ 		case 'r':
+@@ -149,6 +151,9 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 		case 'u':
+ 			globals->unix_path = optarg;
+ 			break;
++		case 'd':
++			globals->verbose++;
++			break;
+ 		case 'v':
+ 			printf("%s %s\n", argv[0], SOURCE_VERSION);
+ 			printf("A.L.F.R.E.D. - Almighty Lightweight Remote Fact Exchange Daemon\n");
+diff --git a/man/alfred.8 b/man/alfred.8
+index 0449189..a8050ab 100644
+--- a/man/alfred.8
++++ b/man/alfred.8
+@@ -67,6 +67,9 @@ alfred will forget about it (after 10 minutes).
+ \fB\-r\fP, \fB\-\-request\fP \fIdata\-type\fP
+ Collect data from the network and prints it on the network
+ .TP
++\fB\-d\fP, \fB\-\-verbose\fP
++Show extra information in the data output
++.TP
+ \fB\-V\fP, \fB\-\-req\-version\fP \fIversion\fP
+ Specify the data version set for \fB\-s\fP
+ 
 -- 
 2.1.4
 
