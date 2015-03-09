@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 09 Mar 2015 08:28:15 +0800
-Message-ID: <9972064.4O5yWsjnv4@voltaire>
-In-Reply-To: <1419594103-10928-21-git-send-email-mpa@pengutronix.de>
-References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
- <1419594103-10928-21-git-send-email-mpa@pengutronix.de>
+Date: Mon, 09 Mar 2015 08:31:11 +0800
+Message-ID: <9025446.ZzMPtjaoT0@voltaire>
+In-Reply-To: <1425225386-19712-1-git-send-email-sven@narfation.org>
+References: <1425225386-19712-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1805896.h6kWCPVxkU";
+Content-Type: multipart/signed; boundary="nextPart2264280.1yy8AgoFOL";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 20/26] batman-adv: types,
-	Fix comment on bcast_own
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unnecessary check for
+	orig_ifinfo == NULL
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,28 +21,30 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: Sven Eckelmann <sven@narfation.org>
 
 
---nextPart1805896.h6kWCPVxkU
+--nextPart2264280.1yy8AgoFOL
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, December 26, 2014 12:41:37 Markus Pargmann wrote:
-> batadv_orig_bat_iv->bcast_own is actually not a bitfield, it is an
-> array. Adjust the comment accordingly.
+On Sunday, March 01, 2015 16:56:26 Sven Eckelmann wrote:
+> orig_ifinfo is dereferenced multiple times in batadv_iv_ogm_update_seqnos
+> before the check for NULL is done. The function also exists at the beginning
+> when orig_ifinfo would have been NULL. This makes the check at the end
+> unnecessary and only confuses the reader/code analyzers.
 > 
-> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  types.h | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+>  bat_iv_ogm.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
-Applied in revision eb923e9 (with the modifications discussed on IRC).
+Applied in revision 8435e41.
 
 Thanks,
 Marek
 
---nextPart1805896.h6kWCPVxkU
+--nextPart2264280.1yy8AgoFOL
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -51,14 +52,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJU/OkfAAoJEFNVTo/uthzA9KsIAIHiwmJNVMNuctJ+eqf6rNaz
-vpYkE7u1Qd/oXrdWy4yg5YpK4I2QD2VMAur1iVkKor1fcRJF2z6ddrH0MdJsaz2O
-gl9K2JaFDEJP7C4+CV6AIuuAu/m6xtQ7NB4QVwZrnhRhrZqAZi3PPEH3JOqkhyER
-tKdiDyE2P+cCayG8qJRgJEWmeN+dVjsb7a3UTlDN0NoBk8eFVPhOFn6Htzk+rF5P
-pKnLWd8b1z+AUShCkg0nWPz7Le8XiA+4b+3NH+ZyF+dp4ZBdci9T66NCwJVn9ryZ
-hko5c2RE9vdeobTwrimHXLt5NIRdDLZxRwb8mMLMNgRnfprjD6dQmA6dMeyFn7s=
-=ALj9
+iQEcBAABCAAGBQJU/OnPAAoJEFNVTo/uthzAZLYIAIIIPRNhhuCQRJUYzlKBHcmJ
+9M5Bis58e7rkelzEGSpfALwel0WiAP3nSrZYSf3nBpUP16FJOK+rSUF43Tf96fNA
++1y5ophjf3Ql0CnP6+6OD9Y8AicgBBIFjFVwEyDW9SmcR6ih7usKhbYW4QRDBByH
+NDdKZIqkyxYilMSVDg8A2Y7CTpUoKNyojyUVV9cGHq+2Gcd/kIs8aIqG/RZcz5Zu
+woRxBG5toMAesPo71inZlo6iE62l40kAIhz2ygs2aMERVIyOTy2/2If0oM4uWZNR
+JlQMElK6x7d1aolIJQlPoRagH9e3EwojRMcVF29Zrkd36+Sg6iKW0pB3/Ul4MNs=
+=y9Wo
 -----END PGP SIGNATURE-----
 
---nextPart1805896.h6kWCPVxkU--
+--nextPart2264280.1yy8AgoFOL--
 
