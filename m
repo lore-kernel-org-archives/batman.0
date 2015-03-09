@@ -1,11 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  7 Mar 2015 23:45:53 +0100
-Message-Id: <1425768353-15667-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1425768078-15380-1-git-send-email-sven@narfation.org>
-References: <1425768078-15380-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCHv2 2/2] alfred: Add option to the client to
-	print extra data information
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 09 Mar 2015 08:28:15 +0800
+Message-ID: <9972064.4O5yWsjnv4@voltaire>
+In-Reply-To: <1419594103-10928-21-git-send-email-mpa@pengutronix.de>
+References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
+ <1419594103-10928-21-git-send-email-mpa@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1805896.h6kWCPVxkU";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 20/26] batman-adv: types,
+	Fix comment on bcast_own
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,109 +22,43 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
+Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
 
-The version of a dataset can be queried using the parameter --verbose/-d. It is
-printed as third component of each dataset line when starting the unix client
-in request mode.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v2: added missing info in usage/help output
----
- alfred.h     | 1 +
- client.c     | 7 ++++++-
- main.c       | 8 +++++++-
- man/alfred.8 | 3 +++
- 4 files changed, 17 insertions(+), 2 deletions(-)
+--nextPart1805896.h6kWCPVxkU
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-diff --git a/alfred.h b/alfred.h
-index ef00551..f26c80c 100644
---- a/alfred.h
-+++ b/alfred.h
-@@ -113,6 +113,7 @@ struct globals {
- 	enum clientmode clientmode;
- 	int clientmode_arg;
- 	int clientmode_version;
-+	int verbose;
- 
- 	int unix_sock;
- 	const char *unix_path;
-diff --git a/client.c b/client.c
-index 32fdd54..42dd4ad 100644
---- a/client.c
-+++ b/client.c
-@@ -121,7 +121,12 @@ int alfred_client_request_data(struct globals *globals)
- 				printf("%c", pos[i]);
- 		}
- 
--		printf("\" },\n");
-+		printf("\"");
-+
-+		if (globals->verbose)
-+			printf(", %u", data->header.version);
-+
-+		printf(" },\n");
- 	}
- 
- 	unix_sock_close(globals);
-diff --git a/main.c b/main.c
-index d298d65..72a17fc 100644
---- a/main.c
-+++ b/main.c
-@@ -38,6 +38,7 @@ static void alfred_usage(void)
- 	printf("                                      for the supplied data type (0-255)\n");
- 	printf("  -r, --request [data type]           collect data from the network and prints\n");
- 	printf("                                      it on the network\n");
-+	printf("  -d, --verbose                       Show extra information in the data output\n");
- 	printf("  -V, --req-version                   specify the data version set for -s\n");
- 	printf("  -M, --modeswitch master             switch daemon to mode master\n");
- 	printf("                   slave              switch daemon to mode slave\n");
-@@ -75,6 +76,7 @@ static struct globals *alfred_init(int argc, char *argv[])
- 		{"change-interface",	required_argument,	NULL,	'I'},
- 		{"unix-path",		required_argument,	NULL,	'u'},
- 		{"version",		no_argument,		NULL,	'v'},
-+		{"verbose",		no_argument,		NULL,	'd'},
- 		{NULL,			0,			NULL,	0},
- 	};
- 
-@@ -89,10 +91,11 @@ static struct globals *alfred_init(int argc, char *argv[])
- 	globals->clientmode_version = 0;
- 	globals->mesh_iface = "bat0";
- 	globals->unix_path = ALFRED_SOCK_PATH_DEFAULT;
-+	globals->verbose = 0;
- 
- 	time_random_seed();
- 
--	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:", long_options,
-+	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:d", long_options,
- 				  &opt_ind)) != -1) {
- 		switch (opt) {
- 		case 'r':
-@@ -149,6 +152,9 @@ static struct globals *alfred_init(int argc, char *argv[])
- 		case 'u':
- 			globals->unix_path = optarg;
- 			break;
-+		case 'd':
-+			globals->verbose++;
-+			break;
- 		case 'v':
- 			printf("%s %s\n", argv[0], SOURCE_VERSION);
- 			printf("A.L.F.R.E.D. - Almighty Lightweight Remote Fact Exchange Daemon\n");
-diff --git a/man/alfred.8 b/man/alfred.8
-index 0449189..a8050ab 100644
---- a/man/alfred.8
-+++ b/man/alfred.8
-@@ -67,6 +67,9 @@ alfred will forget about it (after 10 minutes).
- \fB\-r\fP, \fB\-\-request\fP \fIdata\-type\fP
- Collect data from the network and prints it on the network
- .TP
-+\fB\-d\fP, \fB\-\-verbose\fP
-+Show extra information in the data output
-+.TP
- \fB\-V\fP, \fB\-\-req\-version\fP \fIversion\fP
- Specify the data version set for \fB\-s\fP
- 
--- 
-2.1.4
+On Friday, December 26, 2014 12:41:37 Markus Pargmann wrote:
+> batadv_orig_bat_iv->bcast_own is actually not a bitfield, it is an
+> array. Adjust the comment accordingly.
+> 
+> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+> ---
+>  types.h | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
+
+Applied in revision eb923e9 (with the modifications discussed on IRC).
+
+Thanks,
+Marek
+
+--nextPart1805896.h6kWCPVxkU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJU/OkfAAoJEFNVTo/uthzA9KsIAIHiwmJNVMNuctJ+eqf6rNaz
+vpYkE7u1Qd/oXrdWy4yg5YpK4I2QD2VMAur1iVkKor1fcRJF2z6ddrH0MdJsaz2O
+gl9K2JaFDEJP7C4+CV6AIuuAu/m6xtQ7NB4QVwZrnhRhrZqAZi3PPEH3JOqkhyER
+tKdiDyE2P+cCayG8qJRgJEWmeN+dVjsb7a3UTlDN0NoBk8eFVPhOFn6Htzk+rF5P
+pKnLWd8b1z+AUShCkg0nWPz7Le8XiA+4b+3NH+ZyF+dp4ZBdci9T66NCwJVn9ryZ
+hko5c2RE9vdeobTwrimHXLt5NIRdDLZxRwb8mMLMNgRnfprjD6dQmA6dMeyFn7s=
+=ALj9
+-----END PGP SIGNATURE-----
+
+--nextPart1805896.h6kWCPVxkU--
 
