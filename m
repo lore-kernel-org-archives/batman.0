@@ -1,15 +1,13 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 11 Mar 2015 17:48:52 +0800
-Message-ID: <10359698.ZMgJnZYhvM@voltaire>
-In-Reply-To: <1419594103-10928-23-git-send-email-mpa@pengutronix.de>
-References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
- <1419594103-10928-23-git-send-email-mpa@pengutronix.de>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 11 Mar 2015 13:07:32 +0100
+Message-ID: <16026573.b6BZCNubOt@prime>
+In-Reply-To: <1424719130-2661-1-git-send-email-sven@narfation.org>
+References: <1424719130-2661-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5870415.3gP5g74giM";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 22/26] batman-adv: main,
-	batadv_compare_eth return bool
+Content-Type: multipart/signed; boundary="nextPart2224553.F0oZVTvcnO";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Drop capabilities when not needed
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,30 +20,27 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: Sven Eckelmann <sven@narfation.org>
 
 
---nextPart5870415.3gP5g74giM
+--nextPart2224553.F0oZVTvcnO
 Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="ISO-8859-1"
 
-On Friday, December 26, 2014 12:41:39 Markus Pargmann wrote:
-> Declare the returntype of batadv_compare_eth as bool.
-> The function called inside this helper function
-> (ether_addr_equal_unaligned) also uses bool as return value, so there is
-> no need to return int.
+On Monday 23 February 2015 20:18:50 Sven Eckelmann wrote:
+> The alfred process only requires the capability to bind to a raw socket
+> (CAP_NET_RAW). It is enough to mark this capability as permitted on program
+> startup and mark it again as effective whenever a new netsock is
+> initialized. All other capabilities can be dropped completely.
 > 
-> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
-> ---
->  main.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-Applied in revision 16af734.
+Applied in revision b0877b3 (just replaced that "B.A.T.M.A.N. debugging 
+comment).
 
-Thanks,
-Marek
-
---nextPart5870415.3gP5g74giM
+Thanks!
+     Simon
+--nextPart2224553.F0oZVTvcnO
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +48,10 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVAA+EAAoJEFNVTo/uthzA2xIH/0QR+FOuIGIPe7LkUNqMuh4s
-EXwLudCPnbPj4pM5bCz3+Jf6CeQ1Pjf7QlCV15ieVRe1CuSSesT9ryHsSc6EGLvy
-6ePLJtLav6Nmd7ddHmOcyEW3vervqScEBs+2BOtB8HVqE9zk774G7tXgnD5JR0Kf
-y/5/kVe2fi+Jk0jlLgCuD4/P+X0nN6ADUc3TBRpuaN/pkK9H5whLdCvurKAZedhd
-D/LDUqGYqQeRyu/gH+7GnGofFLJOPS2clKQnIR41Z3GPffRHHUB8mFz7B90+aURA
-dcdwEj3vBWB9GryvAxz/y7EPk7BwIUcMWEM6oOMqrMxP9Oo/iBKQzse9KRDbYaQ=
-=5Bxf
+iEYEABECAAYFAlUAMAcACgkQrzg/fFk7axYlHQCdHGEQQeQGgoZ9hzElr0WZdkxI
+MZMAoL2A2AL6BNhma/yg3DtoB4VZic45
+=ibjf
 -----END PGP SIGNATURE-----
 
---nextPart5870415.3gP5g74giM--
+--nextPart2224553.F0oZVTvcnO--
 
