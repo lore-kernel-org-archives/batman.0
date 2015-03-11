@@ -1,14 +1,15 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 11 Mar 2015 13:08:22 +0100
-Message-ID: <2170540.kuiCrXiOC1@prime>
-In-Reply-To: <1425768078-15380-1-git-send-email-sven@narfation.org>
+Date: Wed, 11 Mar 2015 13:08:44 +0100
+Message-ID: <1792556.rEvBEgFEbN@prime>
+In-Reply-To: <1425768353-15667-1-git-send-email-sven@narfation.org>
 References: <1425768078-15380-1-git-send-email-sven@narfation.org>
+ <1425768353-15667-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3816288.MWVTJ90K30";
+Content-Type: multipart/signed; boundary="nextPart1872289.NZNez9lt1K";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] alfred: Update version when adding
-	data to dataset
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] alfred: Add option to the client
+	to print extra data information
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,30 +25,24 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
 
---nextPart3816288.MWVTJ90K30
+--nextPart1872289.NZNez9lt1K
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="ISO-8859-1"
 
-On Saturday 07 March 2015 23:41:17 Sven Eckelmann wrote:
-> The dataset stores the source and the alfred_tlv of the send data next to
-> the actual data buffer. The source and alfred_tlv::type was used to find an
-> entry in the dataset hashtable when reading/updating the buffer. The
-> alfred_tlv::length is always updated when the size of the associated buffer
-> gets modified.
+On Saturday 07 March 2015 23:45:53 Sven Eckelmann wrote:
+> The version of a dataset can be queried using the parameter --verbose/-d. It
+> is printed as third component of each dataset line when starting the unix
+> client in request mode.
 > 
-> But the alfred_tlv::version is only written when receiving the first data
-> for a dataset. But this initial (maybe outdated) version is always
-> propagated when a client asks over the unix socket or the dataset is
-> exchanged between alfred servers. This has to also be updated when new data
-> is added to the dataset to avoid clients to interpret the data using the
-> wrong data format version.
-> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> v2: added missing info in usage/help output
 
-Applied in revision 17d1102.
+Applied in revision b8210c0.
 
 Thanks!
-    Simon
---nextPart3816288.MWVTJ90K30
+     Simon
+--nextPart1872289.NZNez9lt1K
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -55,10 +50,10 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iEYEABECAAYFAlUAMDYACgkQrzg/fFk7axYf9wCgyebtMDEhWb1n5WhgJSCHJJ7y
-MBQAoLZtsng/M/kcfPrdHR8tJLyMHmg1
-=u0rn
+iEYEABECAAYFAlUAMEwACgkQrzg/fFk7axaHCgCfUinutEpF/uZSYXGQLIHzOxaX
+eMIAn1yC9XNmbxlVLQVWJsKcC4BLvkTe
+=RQhq
 -----END PGP SIGNATURE-----
 
---nextPart3816288.MWVTJ90K30--
+--nextPart1872289.NZNez9lt1K--
 
