@@ -1,13 +1,15 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 11 Mar 2015 13:07:32 +0100
-Message-ID: <16026573.b6BZCNubOt@prime>
-In-Reply-To: <1424719130-2661-1-git-send-email-sven@narfation.org>
-References: <1424719130-2661-1-git-send-email-sven@narfation.org>
+Date: Wed, 11 Mar 2015 13:08:01 +0100
+Message-ID: <1465893.fFT8b6xZO7@prime>
+In-Reply-To: <1425543151-27763-1-git-send-email-sven@narfation.org>
+References: <1424714928-29768-1-git-send-email-sven@narfation.org>
+ <1425543151-27763-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2224553.F0oZVTvcnO";
+Content-Type: multipart/signed; boundary="nextPart4741044.qPX9EgXFHm";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Drop capabilities when not needed
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] alfred: Add explanation how to run
+	alfred as non-root user
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,24 +25,23 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>
 
 
---nextPart2224553.F0oZVTvcnO
+--nextPart4741044.qPX9EgXFHm
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="ISO-8859-1"
 
-On Monday 23 February 2015 20:18:50 Sven Eckelmann wrote:
-> The alfred process only requires the capability to bind to a raw socket
-> (CAP_NET_RAW). It is enough to mark this capability as permitted on program
-> startup and mark it again as effective whenever a new netsock is
-> initialized. All other capabilities can be dropped completely.
-> 
+On Thursday 05 March 2015 09:12:31 Sven Eckelmann wrote:
+> Reported-by: MK <mailing.m1@kkk-web.de>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> v2:
+>  - fix typo 'directly' -> 'directory'
+> 
 
-Applied in revision b0877b3 (just replaced that "B.A.T.M.A.N. debugging 
-comment).
+Applied in revision be4d727.
 
 Thanks!
      Simon
---nextPart2224553.F0oZVTvcnO
+--nextPart4741044.qPX9EgXFHm
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -48,10 +49,10 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iEYEABECAAYFAlUAMAcACgkQrzg/fFk7axYlHQCdHGEQQeQGgoZ9hzElr0WZdkxI
-MZMAoL2A2AL6BNhma/yg3DtoB4VZic45
-=ibjf
+iEYEABECAAYFAlUAMCEACgkQrzg/fFk7axYgKgCfSGxC/11q09Memf+ytOE8cdAq
+1CwAn3JrP5zqDriiWX3QcMc0qc2DRMMh
+=T9Fh
 -----END PGP SIGNATURE-----
 
---nextPart2224553.F0oZVTvcnO--
+--nextPart4741044.qPX9EgXFHm--
 
