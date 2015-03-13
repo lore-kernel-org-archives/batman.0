@@ -1,14 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <5502CF6D.3030408@meshcoding.com>
-Date: Fri, 13 Mar 2015 12:52:13 +0100
-From: Antonio Quartulli <antonio@meshcoding.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 13 Mar 2015 13:02:33 +0100
+Message-ID: <1501672.outaxq6BMD@bentobox>
+In-Reply-To: <5502BBBF.2030801@gmail.com>
+References: <1426158361-6090-1-git-send-email-anatoliy.lapitskiy@gmail.com>
+ <5077509.urIbKZALzi@bentobox> <5502BBBF.2030801@gmail.com>
 MIME-Version: 1.0
-References: <OFC7CC1C02.68EA7DC9-ONC1257E07.00275710-C1257E07.002916EB@phoenixcontact.com>
-In-Reply-To: <OFC7CC1C02.68EA7DC9-ONC1257E07.00275710-C1257E07.002916EB@phoenixcontact.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="klgOHOrQV7oo0c5TQNAnhri51n1MsQAf5"
-Subject: Re: [B.A.T.M.A.N.] DAT broken in 2014.4.0?
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] Added "--update-script" flag for
+	specifying a command for running when new data piece is receviced.
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,118 +21,74 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Anatoliy <anatoliy.lapitskiy@gmail.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---klgOHOrQV7oo0c5TQNAnhri51n1MsQAf5
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+On Friday 13 March 2015 12:28:15 Anatoliy wrote:
+[...]
+> >> --- a/recv.c
+> >> +++ b/recv.c
+> >> @@ -40,7 +40,7 @@ static int finish_alfred_push_data(struct globals *globals,
+> >>  				   struct ether_addr mac,
+> >>  				   struct alfred_push_data_v0 *push)
+> >>  {
+> >> -	int len, data_len;
+> >> +	int len, data_len, new_entry;
+> >>  	struct alfred_data *data;
+> >>  	struct dataset *dataset;
+> >>  	uint8_t *pos;
+> > Has anyone a better name for new_entry? I don't really like it because
+> > it sounds to me like a variable that stores the pointer to a new object.
+> "new_entry_created"?
+> btw, it could be bool as it's just a flag. can I use <stdbool.h> from C99?
 
-Hi Andreas,
+Yes, sounds good. I personally have nothing against bool.
+(At least not at the moment)
 
-so far we don't have any known DAT regression in 2014.4.0.
+[...]
+> >> +
+> >> +		if (globals->update_script && !list_empty(&globals->changed_data_types)) {
+> >> +			/* call update script with list of datatypes_changed */
+> >> +			char command[strlen(globals->update_script) + 7*globals->changed_data_type_count];
+> > Please don't use variable length arrays.
+> >
+> > Please fix your spacing around operands.
+> >
+> > The calculation of the command length is complete bogus.
+> Agree. it should be length of update_script + 4 * changed count (3 for data type as maximum is "255" + space) + 1 for NULL.
+> I will add a comment about it.
 
-Could you please provide a more detailed description about your setup
-including how the nodes have their bridges configured and what
-interfaces have been added to batman-adv?
+Please don't forget the change of the datatype of data_type to really
+have a range of 0-255.
 
-Thanks!
+I don't think the comment is important but we will see if it is helpful.
 
-On 13/03/15 08:28, Andreas Pape wrote:
-> Is there a known issue conerning the DAT functionality in batman-adv=20
-> 2014.4.0?
->=20
-> I have got a problem with looping ARP packets / multiplication of ARP=20
-> packets causing ARP storms in a setup with enabled DAT and BLA. My setu=
-p=20
-> consists of 6 mesh nodes of which 3 are connected to the same backbone =
+[...]
+> >> +			int pid = fork();
+> >> +			if (pid == 0) {
+> >> +				system(command);
+> > Why do you want to execute the command using the system shell? Maybe you
+> > wanted to use something from the exec* family instead.
+> In case if user will set shell script as "update-script" parameter, exec* won't work.
+> Of course, I can add "sh", "-c" to exec* parameters, but what advantages this method will have then?
 
-> network. I connected a PC to the backbone which has an open ssh connect=
-ion=20
-> to one ot the mesh nodes not connected to the backbone network directly=
-=2E=20
-> Using arp -d to delete the ARP cache of the Windows PC forces the PC to=
-=20
-> send an ARP request to the mesh node used for the ssh session. I can th=
-en=20
-> see multiple copies of that ARP request in the backbone in a wireshark =
+This was exactly the thing I wanted to know. If you really want to
+support shell scripts then please update your manpage entry to
+inform the user about this "feature". Otherwise he might
+accidentally forget the required escaping or similar things.
 
-> recording and also multiple ARP replies from the mesh node.=20
-> Sometimes also BLA gratuitous ARP telegrams seem to be looping, but it'=
-s=20
-> easier to force this behaviour with regular ARPs (via arp -d on a PC). =
+Currently the manpage says that you can specify a path and not a
+script which may be used to execute a file.
 
-> Non-ARP telegrams don't seem to be affected and except the waste of=20
-> bandwith in the mesh and backbone I don't have problems with normal=20
-> network communication in the mesh.
->=20
-> I could provide the mentioned wireshark recordings made in the backbone=
-=20
-> network with a switch using port mirroring if someone explains how to=20
-> provide such a file to the mailing list (I guess simple attachments are=
-=20
-> not allowed?).
->=20
-> If I disable DAT, everything looks fine again, i.e. no duplicated ARP=20
-> telegrams anymore (except for a few ARP replies from the mesh node whic=
-h=20
-> are received twice, which could be a race for claiming the device?)..
->=20
-> Regards,
-> Andreas
->=20
->=20
-> ..................................................................
-> PHOENIX CONTACT ELECTRONICS GmbH
->=20
-> Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyr=
-mont
-> USt-Id-Nr.: DE811742156
-> Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
-> Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin He=
-ubeck
-> ___________________________________________________________________
-> Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtz=
-te Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-=
-Mail irrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Abs=
-ender und vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche an=
-derweitige Verwendung sowie die unbefugte Weitergabe dieser Mail ist nich=
-t gestattet.
-> -----------------------------------------------------------------------=
------------------------------
-> This e-mail may contain confidential and/or privileged information. If =
-you are not the intended recipient (or have received this e-mail in error=
-) please notify the sender immediately and destroy this e-mail. Any unaut=
-horized copying, disclosure, distribution or other use of the material or=
- parts thereof is strictly forbidden.
-> ___________________________________________________________________
->=20
+[...]
+> >
+> > Maybe there are more thing but I have to stop the review now.
+> Again, thank you very much for review.
+> Is there a link for code style used?
 
---=20
-Antonio Quartulli
+ * http://www.open-mesh.org/projects/open-mesh/wiki/Contribute#Submitting-patches
+ * https://www.kernel.org/doc/Documentation/CodingStyle
+ * the mood of the person reviewing the code
 
-
---klgOHOrQV7oo0c5TQNAnhri51n1MsQAf5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVAs9wAAoJEJgn97Bh2u9eemIP/3G1BQiURgZTAZTAQqA2c5q1
-lGMkJI9Xe5E+5z3v1uVo0Bo5dgOShpDOQpbTn0bz2wbpi5p2S8YWNoGBRQn0Ope3
-E31R1mytQXFfxop7XYRysH8CldIIsoEKaP7mhIsw72y8YCVNJBrF+rMxhMd26Dx1
-YqSsFhnS8YAeeEDzb2g03ImBOknc2Hil25Dko8VmQngx4ygbKGeB3hJTGxsnfTwh
-H9g3+/B7JgOyn0GnqRJjgIaVDaVNC5iGT+VFJ3B2V/oSIqTg2GiVnayiUV29H0WP
-zwKK9FoLu2PZ1ujCm4bzFqLInuMy+aYq72nNEL88YRgd5vM3Ti+OQEfpMvZuACJW
-1j0J5geJgQ01zJGbn8gZb5x2jKW4Kda6B1Ka1/u/GGDl11nOB1t3qy+3wNp9D3dB
-zJj10LZWwHYbf0gWSBwh61HwSyQzcXseci+GcGs21LiWRaBPZD1fonUxq7CEvapU
-5PF0ieeJPffyAXklHl46YpG/BlmWbbmQKFXOd0InVbtcCAk2Cbq2ceZ2infdiZox
-AQq0xgVrkZfU+kLRZt5iXL40sTNeEHUJEJIvoK5XY7+g/HKpPXzaIZPrzUt/bSXn
-3x0OkXTqq8MG4uhySz1qqYOdQ3y3oFZmN46iCWhgUs5je0qrgSioWZ6wOfbiqdJY
-5otiL/knlSehm9hwHp9m
-=6qat
------END PGP SIGNATURE-----
-
---klgOHOrQV7oo0c5TQNAnhri51n1MsQAf5--
+Kind regards,
+	Sven
