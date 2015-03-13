@@ -1,15 +1,11 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 13 Mar 2015 14:06:15 +0800
-Message-ID: <3195269.J1ETID3QPh@voltaire>
-In-Reply-To: <1419594103-10928-25-git-send-email-mpa@pengutronix.de>
-References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
- <1419594103-10928-25-git-send-email-mpa@pengutronix.de>
+Return-Path: <APape@phoenixcontact.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3749706.PfWSoDCXOo";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 24/26] batman-adv: Remove unnecessary
-	ret variable in algo_register
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OFC7CC1C02.68EA7DC9-ONC1257E07.00275710-C1257E07.002916EB@phoenixcontact.com>
+Date: Fri, 13 Mar 2015 08:28:48 +0100
+Content-Type: text/plain; charset="utf-8"
+content-transfer-encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] DAT broken in 2014.4.0?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,42 +18,57 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
+
+Is there a known issue conerning the DAT functionality in batman-adv=20
+2014.4.0?
+
+I have got a problem with looping ARP packets / multiplication of ARP=20
+packets causing ARP storms in a setup with enabled DAT and BLA. My setup=20
+consists of 6 mesh nodes of which 3 are connected to the same backbone=20
+network. I connected a PC to the backbone which has an open ssh connection=
+=20
+to one ot the mesh nodes not connected to the backbone network directly.=20
+Using arp -d to delete the ARP cache of the Windows PC forces the PC to=20
+send an ARP request to the mesh node used for the ssh session. I can then=20
+see multiple copies of that ARP request in the backbone in a wireshark=20
+recording and also multiple ARP replies from the mesh node.=20
+Sometimes also BLA gratuitous ARP telegrams seem to be looping, but it's=20
+easier to force this behaviour with regular ARPs (via arp -d on a PC).=20
+Non-ARP telegrams don't seem to be affected and except the waste of=20
+bandwith in the mesh and backbone I don't have problems with normal=20
+network communication in the mesh.
+
+I could provide the mentioned wireshark recordings made in the backbone=20
+network with a switch using port mirroring if someone explains how to=20
+provide such a file to the mailing list (I guess simple attachments are=20
+not allowed?).
+
+If I disable DAT, everything looks fine again, i.e. no duplicated ARP=20
+telegrams anymore (except for a few ARP replies from the mesh node which=20
+are received twice, which could be a race for claiming the device?)..
+
+Regards,
+Andreas
 
 
---nextPart3749706.PfWSoDCXOo
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
 
-On Friday, December 26, 2014 12:41:41 Markus Pargmann wrote:
-> Remove ret variable and all jumps.
-> 
-> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
-> ---
->  main.c | 7 ++-----
->  1 file changed, 2 insertions(+), 5 deletions(-)
-
-Applied in revision 16b4833.
-
-Thanks,
-Marek
-
---nextPart3749706.PfWSoDCXOo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJVAn5YAAoJEFNVTo/uthzA8c4IAIyREYB2yMd7+zAOBcM5IEi8
-Xwv69dbdO0obvtyraP8rwOhY5HTSyJgKIx9KO96Asx7AGT0Ckf8/imyzWtqK6L1a
-Spo22S3EssMVojsNaXMlUwNFmEahLHtOrCwJGP8IAmrgKj4MYHA3BRBW/YdJhqLs
-JxXS21igrbzv6yYp5oFpzpgate4rCC4MCuKHo+h4Y8OIqRyZ8w5nwwo9cEhx9hXq
-i+mHvceW6R7pK5VmkBgl6hWfuJWMLCDXaFHC3tYL2kFo+uEyfCT9xqNui7Sn9yCx
-FIwTbywf3ghRtLxJ3lbYv8XjCu5smAGcT6cWZEtKRpOseJ59qtRbFyBp/VXslOY=
-=rbXs
------END PGP SIGNATURE-----
-
---nextPart3749706.PfWSoDCXOo--
-
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
+___________________________________________________________________
+Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
+nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
+rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
+d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
+ Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
