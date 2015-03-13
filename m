@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 13 Mar 2015 14:04:59 +0800
-Message-ID: <8175743.8Hpu4HdMqh@voltaire>
-In-Reply-To: <1419594103-10928-24-git-send-email-mpa@pengutronix.de>
+Date: Fri, 13 Mar 2015 14:06:15 +0800
+Message-ID: <3195269.J1ETID3QPh@voltaire>
+In-Reply-To: <1419594103-10928-25-git-send-email-mpa@pengutronix.de>
 References: <1419594103-10928-1-git-send-email-mpa@pengutronix.de>
- <1419594103-10928-24-git-send-email-mpa@pengutronix.de>
+ <1419594103-10928-25-git-send-email-mpa@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2173808.EKA8ibc9GZ";
+Content-Type: multipart/signed; boundary="nextPart3749706.PfWSoDCXOo";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 23/26] batman-adv: Remove unnecessary
-	ret variable
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 24/26] batman-adv: Remove unnecessary
+	ret variable in algo_register
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,25 +25,24 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@narfation.org>, Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart2173808.EKA8ibc9GZ
+--nextPart3749706.PfWSoDCXOo
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, December 26, 2014 12:41:40 Markus Pargmann wrote:
-> We can avoid this indirect return variable by directly returning the
-> error values.
+On Friday, December 26, 2014 12:41:41 Markus Pargmann wrote:
+> Remove ret variable and all jumps.
 > 
 > Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 > ---
->  main.c | 11 +++--------
->  1 file changed, 3 insertions(+), 8 deletions(-)
+>  main.c | 7 ++-----
+>  1 file changed, 2 insertions(+), 5 deletions(-)
 
-Applied in revision 32a451a.
+Applied in revision 16b4833.
 
 Thanks,
 Marek
 
---nextPart2173808.EKA8ibc9GZ
+--nextPart3749706.PfWSoDCXOo
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -51,14 +50,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVAn4SAAoJEFNVTo/uthzA3I8H/Ay6FQkAwX+ZLFu/sf8Kv7jU
-Y+z34cUIGSUPBlIt/I3BBkTnfYzIiBAWsQsrYEzgasR3ekuGOYyVZx8p8wNQYtEE
-3xvI7Xy5UDfVajz1RIJ2p6YWlWeQjEAOyJwPDTSFS5OBl57PK2JGt487Osz9zJSy
-uiAfAwZckhbs3zXDxIJiIpbXvI3w4C/cS41gU9LEBQ6I7D+LduM0r0TA8btZJBzY
-/I1RciUR9TUTyfHme9ieNww0mHYRiwzy5Ms/CgwUGIwI0l0SLkcUzZmbDe2SpqZL
-J31c2qkpr6deenpQ4pXLQAktNQG79OAQq+n4aFkexjPXf5dt5UTOKmHbFEDd1wE=
-=jEIf
+iQEcBAABCAAGBQJVAn5YAAoJEFNVTo/uthzA8c4IAIyREYB2yMd7+zAOBcM5IEi8
+Xwv69dbdO0obvtyraP8rwOhY5HTSyJgKIx9KO96Asx7AGT0Ckf8/imyzWtqK6L1a
+Spo22S3EssMVojsNaXMlUwNFmEahLHtOrCwJGP8IAmrgKj4MYHA3BRBW/YdJhqLs
+JxXS21igrbzv6yYp5oFpzpgate4rCC4MCuKHo+h4Y8OIqRyZ8w5nwwo9cEhx9hXq
+i+mHvceW6R7pK5VmkBgl6hWfuJWMLCDXaFHC3tYL2kFo+uEyfCT9xqNui7Sn9yCx
+FIwTbywf3ghRtLxJ3lbYv8XjCu5smAGcT6cWZEtKRpOseJ59qtRbFyBp/VXslOY=
+=rbXs
 -----END PGP SIGNATURE-----
 
---nextPart2173808.EKA8ibc9GZ--
+--nextPart3749706.PfWSoDCXOo--
 
