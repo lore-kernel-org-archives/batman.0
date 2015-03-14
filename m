@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 14 Mar 2015 12:42:55 +0100
-Message-Id: <1426333379-17777-11-git-send-email-sven@narfation.org>
+Date: Sat, 14 Mar 2015 12:42:56 +0100
+Message-Id: <1426333379-17777-12-git-send-email-sven@narfation.org>
 In-Reply-To: <1426333379-17777-1-git-send-email-sven@narfation.org>
 References: <1426333379-17777-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 10/14] alfred: Fix alignment of multi-line
-	statements
+Subject: [B.A.T.M.A.N.] [PATCH 11/14] alfred: Simplify comparison of pointer
+	with NULL
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,64 +22,130 @@ Cc: Sven Eckelmann <sven@narfation.org>
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- hash.h      | 2 +-
- send.c      | 2 +-
- server.c    | 2 +-
- unix_sock.c | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ hash.c | 32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/hash.h b/hash.h
-index ee01c0f..6e027bb 100644
---- a/hash.h
-+++ b/hash.h
-@@ -57,7 +57,7 @@ void hash_init(struct hashtable_t *hash);
+diff --git a/hash.c b/hash.c
+index 20034d6..13372fa 100644
+--- a/hash.c
++++ b/hash.c
+@@ -46,9 +46,9 @@ void hash_delete(struct hashtable_t *hash, hashdata_free_cb free_cb)
+ 	for (i = 0; i < hash->size; i++) {
  
- /* allocates and clears the hash */
- struct hashtable_t *hash_new(int size, hashdata_compare_cb compare,
--				 hashdata_choose_cb choose);
-+			     hashdata_choose_cb choose);
+ 		bucket = hash->table[i];
+-		while (bucket != NULL) {
++		while (bucket) {
  
- /* remove bucket (this might be used in hash_iterate() if you already found
-  * the bucket you want to delete and don't need the overhead to find it again
-diff --git a/send.c b/send.c
-index 3228d5c..cc55489 100644
---- a/send.c
-+++ b/send.c
-@@ -120,7 +120,7 @@ int push_data(struct globals *globals, struct interface *interface,
- 		status_end.tx.seqno = htons(seqno);
+-			if (free_cb != NULL)
++			if (free_cb)
+ 				free_cb(bucket->data);
  
- 		send_alfred_packet(interface, destination, &status_end,
--				sizeof(status_end));
-+				   sizeof(status_end));
+ 			last_bucket = bucket;
+@@ -73,7 +73,7 @@ static int hash_add_bucket(struct hashtable_t *hash, void *data,
+ 	index = hash->choose(data, hash->size);
+ 	bucket_it = hash->table[index];
+ 
+-	while (bucket_it != NULL) {
++	while (bucket_it) {
+ 		if (check_duplicate &&
+ 		    hash->compare(bucket_it->data, data))
+ 			return -1;
+@@ -87,7 +87,7 @@ static int hash_add_bucket(struct hashtable_t *hash, void *data,
+ 	bucket->next = NULL;
+ 
+ 	/* and link it */
+-	if (prev_bucket == NULL)
++	if (!prev_bucket)
+ 		hash->table[index] = bucket;
+ 	else
+ 		prev_bucket->next = bucket;
+@@ -117,7 +117,7 @@ struct hash_it_t *hash_iterate(struct hashtable_t *hash,
+ {
+ 	struct hash_it_t *iter;
+ 
+-	if (iter_in == NULL) {
++	if (!iter_in) {
+ 		iter = debugMalloc(sizeof(struct hash_it_t), 301);
+ 		iter->index =  -1;
+ 		iter->bucket = NULL;
+@@ -128,15 +128,15 @@ struct hash_it_t *hash_iterate(struct hashtable_t *hash,
+ 
+ 	/* sanity checks first (if our bucket got deleted in the last
+ 	 * iteration): */
+-	if (iter->bucket != NULL) {
+-		if (iter->first_bucket != NULL) {
++	if (iter->bucket) {
++		if (iter->first_bucket) {
+ 
+ 			/* we're on the first element and it got removed after
+ 			 * the last iteration. */
+ 			if ((*iter->first_bucket) != iter->bucket) {
+ 
+ 				/* there are still other elements in the list */
+-				if ((*iter->first_bucket) != NULL) {
++				if (*iter->first_bucket) {
+ 					iter->prev_bucket = NULL;
+ 					iter->bucket = (*iter->first_bucket);
+ 					iter->first_bucket = &hash->table[iter->index];
+@@ -146,7 +146,7 @@ struct hash_it_t *hash_iterate(struct hashtable_t *hash,
+ 				iter->bucket = NULL;
+ 			}
+ 
+-		} else if (iter->prev_bucket != NULL) {
++		} else if (iter->prev_bucket) {
+ 
+ 			/* we're not on the first element, and the bucket got
+ 			 * removed after the last iteration. The last bucket's
+@@ -160,8 +160,8 @@ struct hash_it_t *hash_iterate(struct hashtable_t *hash,
  	}
  
- 	return 0;
-diff --git a/server.c b/server.c
-index ab6f4ec..83dfc9b 100644
---- a/server.c
-+++ b/server.c
-@@ -72,7 +72,7 @@ static int tx_compare(void *d1, void *d2)
+ 	/* now as we are sane, select the next one if there is some */
+-	if (iter->bucket != NULL) {
+-		if (iter->bucket->next != NULL) {
++	if (iter->bucket) {
++		if (iter->bucket->next) {
+ 			iter->prev_bucket = iter->bucket;
+ 			iter->bucket = iter->bucket->next;
+ 			iter->first_bucket = NULL;
+@@ -175,7 +175,7 @@ struct hash_it_t *hash_iterate(struct hashtable_t *hash,
+ 	/* go through the entries of the hash table */
+ 	while (iter->index < hash->size) {
  
- 	if (memcmp(&txh1->server_addr, &txh2->server_addr,
- 		   sizeof(txh1->server_addr)) == 0 &&
--	   txh1->id == txh2->id)
-+	    txh1->id == txh2->id)
- 		return 1;
- 	else
- 		return 0;
-diff --git a/unix_sock.c b/unix_sock.c
-index a3affdc..2c862d5 100644
---- a/unix_sock.c
-+++ b/unix_sock.c
-@@ -389,7 +389,7 @@ int unix_sock_read(struct globals *globals)
- 	case ALFRED_MODESWITCH:
- 		ret = unix_sock_modesw(globals,
- 				       (struct alfred_modeswitch_v0 *)packet,
--					client_sock);
-+				       client_sock);
- 		break;
- 	case ALFRED_CHANGE_INTERFACE:
- 		ret = unix_sock_change_iface(globals,
+-		if ((hash->table[iter->index]) == NULL) {
++		if (!hash->table[iter->index]) {
+ 			iter->index++;
+ 			continue;
+ 		}
+@@ -244,7 +244,7 @@ void *hash_find(struct hashtable_t *hash, void *keydata)
+ 	index = hash->choose(keydata , hash->size);
+ 	bucket = hash->table[index];
+ 
+-	while (bucket != NULL) {
++	while (bucket) {
+ 		if (hash->compare(bucket->data, keydata))
+ 			return bucket->data;
+ 
+@@ -265,9 +265,9 @@ void *hash_remove_bucket(struct hashtable_t *hash, struct hash_it_t *hash_it_t)
+ 	/* save the pointer to the data */
+ 	data_save = hash_it_t->bucket->data;
+ 
+-	if (hash_it_t->prev_bucket != NULL)
++	if (hash_it_t->prev_bucket)
+ 		hash_it_t->prev_bucket->next = hash_it_t->bucket->next;
+-	else if (hash_it_t->first_bucket != NULL)
++	else if (hash_it_t->first_bucket)
+ 		(*hash_it_t->first_bucket) = hash_it_t->bucket->next;
+ 
+ 	debugFree(hash_it_t->bucket, 1306);
+@@ -288,7 +288,7 @@ void *hash_remove(struct hashtable_t *hash, void *data)
+ 	hash_it_t.bucket = hash->table[hash_it_t.index];
+ 	hash_it_t.prev_bucket = NULL;
+ 
+-	while (hash_it_t.bucket != NULL) {
++	while (hash_it_t.bucket) {
+ 		if (hash->compare(hash_it_t.bucket->data, data)) {
+ 			struct element_t **first_bucket = NULL;
+ 
 -- 
 2.1.4
 
