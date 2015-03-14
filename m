@@ -1,10 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 14 Mar 2015 12:42:51 +0100
-Message-Id: <1426333379-17777-7-git-send-email-sven@narfation.org>
+Date: Sat, 14 Mar 2015 12:42:52 +0100
+Message-Id: <1426333379-17777-8-git-send-email-sven@narfation.org>
 In-Reply-To: <1426333379-17777-1-git-send-email-sven@narfation.org>
 References: <1426333379-17777-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 06/14] alfred: Remove spaces before tabs
+Subject: [B.A.T.M.A.N.] [PATCH 07/14] alfred: Remove else and break after
+	return
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,24 +22,50 @@ Cc: Sven Eckelmann <sven@narfation.org>
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ hash.c | 3 +--
+ main.c | 5 -----
+ 2 files changed, 1 insertion(+), 7 deletions(-)
 
+diff --git a/hash.c b/hash.c
+index a53bb9c..87588cd 100644
+--- a/hash.c
++++ b/hash.c
+@@ -142,10 +142,9 @@ struct hash_it_t *hash_iterate(struct hashtable_t *hash,
+ 					iter->bucket = (*iter->first_bucket);
+ 					iter->first_bucket = &hash->table[iter->index];
+ 					return iter;
+-				} else {
+-					iter->bucket = NULL;
+ 				}
+ 
++				iter->bucket = NULL;
+ 			}
+ 
+ 		} else if (iter->prev_bucket != NULL) {
 diff --git a/main.c b/main.c
-index e9821be..7ad4625 100644
+index 7ad4625..02553c0 100644
 --- a/main.c
 +++ b/main.c
-@@ -149,8 +149,8 @@ static struct globals *alfred_init(int argc, char *argv[])
- 		{"interface",		required_argument,	NULL,	'i'},
- 		{"master",		no_argument,		NULL,	'm'},
- 		{"help",		no_argument,		NULL,	'h'},
--		{"req-version", 	required_argument,	NULL,	'V'},
--		{"modeswitch",  	required_argument,	NULL,	'M'},
-+		{"req-version",		required_argument,	NULL,	'V'},
-+		{"modeswitch",		required_argument,	NULL,	'M'},
- 		{"change-interface",	required_argument,	NULL,	'I'},
- 		{"unix-path",		required_argument,	NULL,	'u'},
- 		{"version",		no_argument,		NULL,	'v'},
+@@ -265,19 +265,14 @@ int main(int argc, char *argv[])
+ 	switch (globals->clientmode) {
+ 	case CLIENT_NONE:
+ 		return alfred_server(globals);
+-		break;
+ 	case CLIENT_REQUEST_DATA:
+ 		return alfred_client_request_data(globals);
+-		break;
+ 	case CLIENT_SET_DATA:
+ 		return alfred_client_set_data(globals);
+-		break;
+ 	case CLIENT_MODESWITCH:
+ 		return alfred_client_modeswitch(globals);
+-		break;
+ 	case CLIENT_CHANGE_INTERFACE:
+ 		return alfred_client_change_interface(globals);
+-		break;
+ 	}
+ 
+ 	return 0;
 -- 
 2.1.4
 
