@@ -1,14 +1,14 @@
-Return-Path: <APape@phoenixcontact.com>
-In-Reply-To: <5502CF6D.3030408@meshcoding.com>
-References: <OFC7CC1C02.68EA7DC9-ONC1257E07.00275710-C1257E07.002916EB@phoenixcontact.com>
- <5502CF6D.3030408@meshcoding.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 14 Mar 2015 02:07:29 +0100
+Message-ID: <4259215.0z9X6lndZN@sven-edge>
+In-Reply-To: <1426253971-12677-1-git-send-email-anatoliy.lapitskiy@gmail.com>
+References: <1426253971-12677-1-git-send-email-anatoliy.lapitskiy@gmail.com>
 MIME-Version: 1.0
-From: Andreas Pape <APape@phoenixcontact.com>
-Message-ID: <OFF07BA093.8D744C20-ONC1257E07.004BE977-C1257E07.00503089@phoenixcontact.com>
-Date: Fri, 13 Mar 2015 15:35:53 +0100
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] DAT broken in 2014.4.0?
+Content-Type: multipart/signed; boundary="nextPart18055988.AjioGDWQcz";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3] alfred: Add "--update-script"
+	parameter
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,195 +20,159 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-Hello Antonio,
-
-my mesh nodes use a wlan interface in adhoc mode as the only hard_if in=20
-bat0. bat0 is bridged to a Linux bridge br0 together with the Ethernet=20
-interface eth0. The wlan interface ath0 is not part of that bridge. The=20
-only interface having an ip address assigned is the bridge br0.
-
-As mentioned I use 6 mesh nodes of that described setup of which 3 are=20
-only accessible via the mesh (eth0 interface not connected to any other=20
-Ethernet device) and 3 devices are connected with their eth Interfaces to=20
-the same Ethernet switch. The Windows PC is also connected to that same=20
-switch.
-
-I am using batman-adv 2014.4.0 in combination with a fairly old Linux=20
-kernel 2.6.32.26 on an embedded device. If I enable BLA and DAT and send a=
-=20
-ping from the Windows PC to one of the mesh nodes which is not connected=20
-to the Ethernet backbone, I see a multiplication of the ARP request sent=20
-by the PC and even a higher amount of corresponding ARP replies in the=20
-backbone network of which I am not sure, how much of them are really sent=20
-by the mesh node being the original destination for the ARP request.=20
-Furthermore I get lots of "bat0: received packet with own address as=20
-source address" and some "eth0: received ...." kernel log messages in that=
-=20
-case as soon as the PC sends the first broadcast ARP request (after the=20
-mentioned arp -d command).=20
-
-If I disable DAT on all of my 6 devices the ARP telegrams being visible in=
-=20
-the backbone network look normal to me. There is only one broadcast ARP=20
-request from the PC and only one ARP reply.
-
-In the meantime I enabled dat debug messages on one of my gateways between=
-=20
-the ethernet backbone and the mesh. After clearing the ARP cache of the PC=
-=20
-by the arp -d command, I see the following output of batctl l
-
-Parsing outgoing ARP REQUEST
-ARP MSG : [src: <mac of the PC> - 192.168.0.50 dst: 00:00:00:00:00:00 -=20
-192.168.0.101]
-Entry updated 192.168.0.50 <mac of the PC>
-ARP request replied locally
-ARP Request for 192.168.0.101: fallback prevented
-Parsing incoming ARP REPLY
-ARP MSG: [src: <mac of the mesh node> - 192.168.0.101 dst: <mac of the PC>=
-=20
-- 192.168.0.50]
-* encapsulated within a UNICAST packet
-Entry updated: 192.168.0.101 <mac of the mesh node>
-Entry updated: 192.168.0.50 <mac of the PC>
-
-followed by a flood of additional messages of similiar kind. From this=20
-logging and from what I understood so far about bla and dat from=20
-open-mesh.org and a short look into the source code I conclude, that the=20
-gateway knew already the mac the PC was looking for ("ARP request replied=20
-locally") and did not forward it as a broadcast into the mesh.=20
-Nevertheless the gateway received an ARP reply from the mesh. I guess the=20
-original ARP request broadcast was forwarded at least by one of the=20
-remaining two backbone gateways into the mesh and a reply was sent by=20
-someone else (another mesh node with enabled dat or the mesh node being=20
-searched for).
-
-This leads me to the question if using dat and a bla setup in combination=20
-is considered by design and if this should work or if dat is only=20
-reasonable to be used when a backbone network has a single gateway into=20
-the mesh (as depicted in the dat wiki on open-mesh.org) only.=20
-
-Thanks for the support and regards,
-Andreas
+To: Anatoliy Lapitskiy <anatoliy.lapitskiy@gmail.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 
+--nextPart18055988.AjioGDWQcz
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Von:    Antonio Quartulli <antonio@meshcoding.com>
-An:     The list for a Better Approach To Mobile Ad-hoc Networking=20
-<b.a.t.m.a.n@lists.open-mesh.org>,=20
-Datum:  13.03.2015 13:22
-Betreff:        Re: [B.A.T.M.A.N.] DAT broken in 2014.4.0?
-Gesendet von:   "B.A.T.M.A.N" <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+> --- a/man/alfred.8
+> +++ b/man/alfred.8
+> @@ -114,6 +114,10 @@ still keeping redundancy (by having multiple masters). Obviously, at least one
+>  master must be present in the network to let any data exchange happen. Also
+>  having all nodes in master mode is possible (for maximum decentrality and
+>  overhead).
+> +.TP
+> +\fB\-c\fP, \fB\-\-update-script\fP \fIscriptname\fP
+> +Specify script (or binary) to call on data change. It will be called
+> +with data-type list as arguments.
 
-
-
-Hi Andreas,
-
-so far we don't have any known DAT regression in 2014.4.0.
-
-Could you please provide a more detailed description about your setup
-including how the nodes have their bridges configured and what
-interfaces have been added to batman-adv?
-
-Thanks!
-
-On 13/03/15 08:28, Andreas Pape wrote:
-> Is there a known issue conerning the DAT functionality in batman-adv=20
-> 2014.4.0?
->=20
-> I have got a problem with looping ARP packets / multiplication of ARP=20
-> packets causing ARP storms in a setup with enabled DAT and BLA. My setup=
-=20
-
-> consists of 6 mesh nodes of which 3 are connected to the same backbone=20
-> network. I connected a PC to the backbone which has an open ssh=20
-connection=20
-> to one ot the mesh nodes not connected to the backbone network directly.=
-=20
-
-> Using arp -d to delete the ARP cache of the Windows PC forces the PC to=20
-> send an ARP request to the mesh node used for the ssh session. I can=20
-then=20
-> see multiple copies of that ARP request in the backbone in a wireshark=20
-> recording and also multiple ARP replies from the mesh node.=20
-> Sometimes also BLA gratuitous ARP telegrams seem to be looping, but it's=
-=20
-
-> easier to force this behaviour with regular ARPs (via arp -d on a PC).=20
-> Non-ARP telegrams don't seem to be affected and except the waste of=20
-> bandwith in the mesh and backbone I don't have problems with normal=20
-> network communication in the mesh.
->=20
-> I could provide the mentioned wireshark recordings made in the backbone=20
-> network with a switch using port mirroring if someone explains how to=20
-> provide such a file to the mailing list (I guess simple attachments are=20
-> not allowed?).
->=20
-> If I disable DAT, everything looks fine again, i.e. no duplicated ARP=20
-> telegrams anymore (except for a few ARP replies from the mesh node which=
-=20
-
-> are received twice, which could be a race for claiming the device?)..
->=20
-> Regards,
-> Andreas
->=20
->=20
-> ..................................................................
-> PHOENIX CONTACT ELECTRONICS GmbH
->=20
-> Sitz der Gesellschaft / registered office of the company: 31812 Bad=20
-Pyrmont
-> USt-Id-Nr.: DE811742156
-> Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
-> Gesch=E4ftsf=FChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
-> ___________________________________________________________________
-> Diese E-Mail enth=E4lt vertrauliche und/oder rechtlich gesch=FCtzte=20
-Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail=
-=20
-irrt=FCmlich erhalten haben, informieren Sie bitte sofort den Absender und=
-=20
-vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=20
-Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
->=20
----------------------------------------------------------------------------=
--------------------------
-> This e-mail may contain confidential and/or privileged information. If=20
-you are not the intended recipient (or have received this e-mail in error)=
-=20
-please notify the sender immediately and destroy this e-mail. Any=20
-unauthorized copying, disclosure, distribution or other use of the=20
-material or parts thereof is strictly forbidden.
-> ___________________________________________________________________
->=20
-
---=20
-Antonio Quartulli
-
-[Anhang "signature.asc" gel=F6scht von Andreas Pape/Phoenix Contact]=20
+Maybe it can be changed to use the term "command". At least this is how it
+is described in the manpage for ssh, bash, git-filter-branch or even
+system(3).
 
 
+> @@ -78,6 +82,11 @@ static int finish_alfred_push_data(struct globals *globals,
+>  
+>  		clock_gettime(CLOCK_MONOTONIC, &dataset->last_seen);
+>  
+> +		/* check that data was changed */
+> +		if (new_entry_created || dataset->data.header.length != data_len
+> +		    || memcmp(dataset->buf, data->data, data_len) != 0)
+> +			changed_data_type(globals, data->header.type);
+> +
 
-..................................................................
-PHOENIX CONTACT ELECTRONICS GmbH
+Logical continuations should be on the previous line
 
-Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
-USt-Id-Nr.: DE811742156
-Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
-Gesch=E4ftsf=FChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
-___________________________________________________________________
-Diese E-Mail enth=E4lt vertrauliche und/oder rechtlich gesch=FCtzte Informa=
-tionen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail irrt=FC=
-mlich erhalten haben, informieren Sie bitte sofort den Absender und vernich=
-ten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige Verwendu=
-ng sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
----------------------------------------------------------------------------=
--------------------------
-This e-mail may contain confidential and/or privileged information. If you =
-are not the intended recipient (or have received this e-mail in error) plea=
-se notify the sender immediately and destroy this e-mail. Any unauthorized =
-copying, disclosure, distribution or other use of the material or parts the=
-reof is strictly forbidden.
-___________________________________________________________________
+> +static void execute_script(struct globals *globals)
+> +{
+> +	pid_t script_pid;
+> +	int command_len;
+
+I think this should be size_t and not int.
+
+> +	char *command;
+> +	struct changed_data_type *data_type, *is;
+> +	char buf[5]; /* data type is uint8_t, so 255 is maximum (3 chars) 
+
+Please remove trailing whitespace
+
+> +		        + space for appending + NULL */
+
+Please replace the 8 spaces used for indentation with a single tab
+
+I personally would prefer to have the long comment on a separate line.
+And I think alfred uses the David-Miller-block-comment-style:
+
+	/* data type is uint8_t, so 255 is maximum (3 chars) + space for
+	 * appending + NULL
+	 */
+	char buf[5]; 
+
+> +
+> +	/* length of script +4 bytes per data type (space +3 chars) +1 for NULL */
+> +	command_len = strlen(globals->update_script)
+> +	            + 4 * globals->changed_data_type_count + 1;
+
+Please replace the 8 spaces used for indentation with a single tab.
+
+Please move the + to the previous line. Or better write it like:
+
+command_len = strlen(globals->update_script);
+command_len += 4 * globals->changed_data_type_count + 1;
+
+> +	command = malloc(command_len);
+> +	if (!command)
+> +		return;
+> +
+> +	strncpy(command, globals->update_script, sizeof(command));
+
+Sry, this doesn't work. Why do you limit the length to sizeof(char *)? This is
+8 byte on my 64-bit system and 4 byte on my 32 bit system.
+
+Even when the length calculation would be correct, could you please add the
+\0 byte which isn't automatically added by strncpy:
+
+command[command_len - 1] = '\0';
+
+This is just in case someone will play around with the code in the future
+and messes up the command_len calculation.
+
+> +	list_for_each_entry_safe(data_type, is, &globals->changed_data_types, list) {
+> +		/* append the datatype to command line */
+> +		snprintf(buf, sizeof(buf), " %d", data_type->data_type);
+
+See \0 comment from before.
+
+> @@ -294,6 +356,9 @@ int alfred_server(struct globals *globals)
+>  		return -1;
+>  	}
+>  
+> +	/* don't let zombies to eat brains */
+> +	signal(SIGCHLD, SIG_IGN);
+> +
+
+Could you implement it like the signal(...) already in main.c?
+
+> @@ -345,6 +410,12 @@ int alfred_server(struct globals *globals)
+>  		}
+>  		purge_data(globals);
+>  		check_if_sockets(globals);
+> +
+> +		if (globals->update_script && !list_empty(&globals->changed_data_types)) {
+> +			/* call update script with list of datatypes_changed */
+> +			execute_script(globals);
+> +			globals->changed_data_type_count = 0;
+
+This = 0 looks wrong here. What happens when the execute_script
+returns before the list_for_each_entry_safe finishes (possible
+in your current implementation)? Now changed_data_type_count is 0
+and globals->changed_data_types is not empty.
+
+The next call of execute_script will not allocate enough room to store
+the command + its arguments. As result the arguments added to the command
+are incorrect.
+
+You could move this completely inside the execute_script function.
+Including the if-precondition-check (you can even split it in two smaller
+checks inside the function).
+
+Kind regards,
+	Sven
+--nextPart18055988.AjioGDWQcz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJVA4nXAAoJEF2HCgfBJntGXw0QAIUW9wQ5ZWqEBplIPdCDmFyS
+/30RWZ1qSejmGcJhhQmS8uNrDgXIQsouYZKY9YPTQgDMelga+yEitmLkrt8VYtOd
+2PP62p4nyxslvgCLQgmqi1ik08YRgtwuMiY69fwICvd4GeURb0CyYsE8NKzUEKgl
+WVMDantl4GVia7MYeyL0XNEcazRlGsh5NV26SrKmdNrzc1NyMdXPXpST8UeGOl0g
+AUoekDAjn5KfwGbJKoF6POFvXLKKtMs7hjtmZIzbfY3jvTNPMSX3SoXWDfsv94Ch
+0tBibJxnL/LWgQDQBQqal9M+yfiwCpGMaTN7NWDoRFK6YKTGbGrWV9lORDN2S/X8
+Ho95ZQQOYuXSeqtl26v17cr8NRr9HICHGItB4mmWN4HYxVd3AgfU1k9chcMnj4l6
+yqLHiy1AQ6gz4oqXXRb1ryTNvMKJ/QC2gLbUBmLFiYJKTs+9zJdXfzicNZSHRVN0
+i1EXSwTLMhRI6urKzDpq0/hZ5aOAMoXNTXJ5/fOd9fqvyLaqNs1tK9P5/bK4ryLu
+FVBGmPxfI09ORDmFooe4gmqunJUL/n0f5C0bmTHmaq8XdxYVPOKKyCTeExkSns9G
+4q4r4Ch4YA6IKMagQbuwmJvxY6TCEDfKpqMgLfMv4Uj5VAqD/2cAOJ+vseXG9eE6
+wu7TxmuDIQ2MR5GYLz/+
+=vJ9c
+-----END PGP SIGNATURE-----
+
+--nextPart18055988.AjioGDWQcz--
+
