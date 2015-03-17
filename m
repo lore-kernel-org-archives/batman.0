@@ -1,9 +1,8 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 17 Mar 2015 08:50:25 +0100
-Message-Id: <1426578625-3113-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: Remove manual \0 terminator after
-	snprintf
+Return-Path: <anatoliy.lapitskiy@gmail.com>
+From: Anatoliy Lapitskiy <anatoliy.lapitskiy@gmail.com>
+Date: Tue, 17 Mar 2015 10:11:15 +0200
+Message-Id: <1426579875-28365-1-git-send-email-anatoliy.lapitskiy@gmail.com>
+Subject: [B.A.T.M.A.N.] [PATCH v5] alfred: Add "--update-command" parameter
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,156 +15,289 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>
 
-snprintf already guarantees \0 terminated strings for size arguments is > 0.
+The "--update-command" parameter is created for adding a hook to run when
+new information is received.
 
-Reported-by: Anatoliy Lapitskiy <anatoliy.lapitskiy@gmail.com>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+At the moment "alfred-facters" are run by cron once per every 5 minutes.
+For some tasks (like sharing dhcp leases) it can be too slow.
+
+Signed-off-by: Anatoliy Lapitskiy <anatoliy.lapitskiy@gmail.com>
 ---
- bisect_iv.c |  4 ----
- debugfs.c   |  1 -
- sys.c       | 14 +-------------
- 3 files changed, 1 insertion(+), 18 deletions(-)
+ alfred.h     | 11 +++++++++
+ main.c       | 12 +++++++++-
+ man/alfred.8 |  4 ++++
+ recv.c       | 10 ++++++++
+ server.c     | 74 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 110 insertions(+), 1 deletion(-)
 
-diff --git a/bisect_iv.c b/bisect_iv.c
-index b748813..fea6358 100644
---- a/bisect_iv.c
-+++ b/bisect_iv.c
-@@ -644,7 +644,6 @@ static int print_rt_path_at_seqno(struct bat_node *src_node, struct bat_node *ds
+diff --git a/alfred.h b/alfred.h
+index f26c80c..621805d 100644
+--- a/alfred.h
++++ b/alfred.h
+@@ -55,6 +55,11 @@ struct dataset {
+ 	uint8_t local_data;
+ };
  
- 	snprintf(curr_loop_magic, sizeof(curr_loop_magic), "%s%s%lli%lli", src_node->name,
- 	         dst_node->name, seqno, seqno_rand);
--	curr_loop_magic[sizeof(curr_loop_magic) - 1] = '\0';
++struct changed_data_type {
++	uint8_t data_type;
++	struct list_head list;
++};
++
+ struct transaction_packet {
+ 	struct alfred_push_data_v0 *push;
+ 	struct list_head list;
+@@ -118,6 +123,10 @@ struct globals {
+ 	int unix_sock;
+ 	const char *unix_path;
  
- 	printf("Path towards %s (seqno %lli ",
- 	       get_name_by_macstr(dst_node->name, read_opt), seqno);
-@@ -725,7 +724,6 @@ static int find_rt_table_change(struct bat_node *src_node, struct bat_node *dst_
- 	snprintf(curr_loop_magic, sizeof(curr_loop_magic), "%s%s%lli%lli",
- 	         src_node->name, dst_node->name,
- 	         seqno_min_tmp, seqno_rand);
--	curr_loop_magic[sizeof(curr_loop_magic) - 1] = '\0';
++	const char *update_command;
++	struct list_head changed_data_types;
++	uint16_t changed_data_type_count; /* maximum is 256 */
++
+ 	struct timespec if_check;
  
- 	orig_event = orig_event_get_by_ptr(curr_node, dst_node);
- 	if (!orig_event)
-@@ -982,7 +980,6 @@ static void seqno_trace_print_neigh(struct seqno_trace_neigh *seqno_trace_neigh,
- 		         (strlen(head) > 1 ? head : num_sisters == 0 ? " " : head),
- 		         (strlen(head) == 1 ? "   " :
- 		         num_sisters == 0 ? "    " : "|   "));
--		new_head[sizeof(new_head) - 1] = '\0';
+ 	struct hashtable_t *data_hash;
+@@ -134,6 +143,8 @@ extern const struct in6_addr in6addr_localmcast;
+ /* server.c */
+ int alfred_server(struct globals *globals);
+ int set_best_server(struct globals *globals);
++void changed_data_type(struct globals *globals, uint8_t arg);
++
+ /* client.c */
+ int alfred_client_request_data(struct globals *globals);
+ int alfred_client_set_data(struct globals *globals);
+diff --git a/main.c b/main.c
+index 02553c0..db1f8b0 100644
+--- a/main.c
++++ b/main.c
+@@ -61,6 +61,7 @@ static void alfred_usage(void)
+ 	printf("\n");
+ 	printf("  -u, --unix-path [path]              path to unix socket used for client-server\n");
+ 	printf("                                      communication (default: \""ALFRED_SOCK_PATH_DEFAULT"\")\n");
++	printf("  -c, --update-command                command to call on data change\n");
+ 	printf("  -v, --version                       print the version\n");
+ 	printf("  -h, --help                          this help\n");
+ 	printf("\n");
+@@ -153,6 +154,7 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 		{"modeswitch",		required_argument,	NULL,	'M'},
+ 		{"change-interface",	required_argument,	NULL,	'I'},
+ 		{"unix-path",		required_argument,	NULL,	'u'},
++		{"update-command",	required_argument,	NULL,	'c'},
+ 		{"version",		no_argument,		NULL,	'v'},
+ 		{"verbose",		no_argument,		NULL,	'd'},
+ 		{NULL,			0,			NULL,	0},
+@@ -174,10 +176,13 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 	globals->mesh_iface = "bat0";
+ 	globals->unix_path = ALFRED_SOCK_PATH_DEFAULT;
+ 	globals->verbose = 0;
++	globals->update_command = NULL;
++	INIT_LIST_HEAD(&globals->changed_data_types);
++	globals->changed_data_type_count = 0;
  
- 		seqno_trace_print_neigh(seqno_trace_neigh->seqno_trace_neigh[i], seqno_trace_neigh->seqno_event,
- 		                        seqno_trace_neigh->num_neighbors - i - 1, new_head, read_opt);
-@@ -1028,7 +1025,6 @@ static void seqno_trace_print(struct list_head_first *trace_list, char *trace_or
+ 	time_random_seed();
  
- 			snprintf(head, sizeof(head), "%c",
- 			         (seqno_trace->seqno_trace_neigh.num_neighbors == i + 1 ? '\\' : '|'));
--			head[sizeof(head) - 1] = '\0';
+-	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:d", long_options,
++	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:dc:", long_options,
+ 				  &opt_ind)) != -1) {
+ 		switch (opt) {
+ 		case 'r':
+@@ -237,6 +242,9 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 		case 'd':
+ 			globals->verbose++;
+ 			break;
++		case 'c':
++			globals->update_command = optarg;
++			break;
+ 		case 'v':
+ 			printf("%s %s\n", argv[0], SOURCE_VERSION);
+ 			printf("A.L.F.R.E.D. - Almighty Lightweight Remote Fact Exchange Daemon\n");
+@@ -250,6 +258,8 @@ static struct globals *alfred_init(int argc, char *argv[])
  
- 			seqno_trace_print_neigh(seqno_trace->seqno_trace_neigh.seqno_trace_neigh[i],
- 			                        NULL,
-diff --git a/debugfs.c b/debugfs.c
-index 7b3a4b2..04e47e9 100644
---- a/debugfs.c
-+++ b/debugfs.c
-@@ -54,7 +54,6 @@ int debugfs_make_path(const char *fmt, char *mesh_iface, char *buffer, int size)
- 		return len+1;
+ 	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
+ 		perror("could not register SIGPIPE handler");
++	if (signal(SIGCHLD, SIG_IGN) == SIG_ERR)
++		perror("could not register SIGCHLD handler");
+ 	return globals;
+ }
  
- 	snprintf(buffer, size-1, fmt, debugfs_mountpoint, mesh_iface);
--	buffer[size - 1] = '\0';
+diff --git a/man/alfred.8 b/man/alfred.8
+index a8050ab..e21bb55 100644
+--- a/man/alfred.8
++++ b/man/alfred.8
+@@ -114,6 +114,10 @@ still keeping redundancy (by having multiple masters). Obviously, at least one
+ master must be present in the network to let any data exchange happen. Also
+ having all nodes in master mode is possible (for maximum decentrality and
+ overhead).
++.TP
++\fB\-c\fP, \fB\-\-update-command\fP \fIcommand\fP
++Specify command to execute on data change. It will be called with data-type list
++as arguments.
+ .
+ .SH EXAMPLES
+ Start an alfred server listening on bridge br0 (assuming that this bridge
+diff --git a/recv.c b/recv.c
+index 02d96c9..59c69b4 100644
+--- a/recv.c
++++ b/recv.c
+@@ -22,6 +22,7 @@
+ #include <errno.h>
+ #include <net/ethernet.h>
+ #include <netinet/in.h>
++#include <stdbool.h>
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -41,6 +42,7 @@ static int finish_alfred_push_data(struct globals *globals,
+ 				   struct alfred_push_data_v0 *push)
+ {
+ 	int len, data_len;
++	bool new_entry_created;
+ 	struct alfred_data *data;
+ 	struct dataset *dataset;
+ 	uint8_t *pos;
+@@ -57,6 +59,7 @@ static int finish_alfred_push_data(struct globals *globals,
+ 		if ((int)(data_len + sizeof(*data)) > len)
+ 			break;
+ 
++		new_entry_created = false;
+ 		dataset = hash_find(globals->data_hash, data);
+ 		if (!dataset) {
+ 			dataset = malloc(sizeof(*dataset));
+@@ -71,6 +74,7 @@ static int finish_alfred_push_data(struct globals *globals,
+ 				free(dataset);
+ 				goto err;
+ 			}
++			new_entry_created = true;
+ 		}
+ 		/* don't overwrite our own data */
+ 		if (dataset->data_source == SOURCE_LOCAL)
+@@ -78,6 +82,12 @@ static int finish_alfred_push_data(struct globals *globals,
+ 
+ 		clock_gettime(CLOCK_MONOTONIC, &dataset->last_seen);
+ 
++		/* check that data was changed */
++		if (new_entry_created ||
++		    dataset->data.header.length != data_len ||
++		    memcmp(dataset->buf, data->data, data_len) != 0)
++			changed_data_type(globals, data->header.type);
++
+ 		/* free old buffer */
+ 		if (dataset->buf) {
+ 			free(dataset->buf);
+diff --git a/server.c b/server.c
+index 83dfc9b..c9c77b9 100644
+--- a/server.c
++++ b/server.c
+@@ -23,6 +23,7 @@
+ #include <inttypes.h>
+ #include <net/ethernet.h>
+ #include <net/if.h>
++#include <signal.h>
+ #include <stddef.h>
+ #include <stdint.h>
+ #include <stdio.h>
+@@ -136,6 +137,27 @@ int set_best_server(struct globals *globals)
  	return 0;
  }
  
-diff --git a/sys.c b/sys.c
-index 676bef1..0d7f55f 100644
---- a/sys.c
-+++ b/sys.c
-@@ -146,7 +146,6 @@ static int print_interfaces(char *mesh_iface)
- 
- 	while ((iface_dir = readdir(iface_base_dir)) != NULL) {
- 		snprintf(path_buff, PATH_BUFF_LEN, SYS_MESH_IFACE_FMT, iface_dir->d_name);
--		path_buff[PATH_BUFF_LEN - 1] = '\0';
- 		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
- 		if (res != EXIT_SUCCESS)
++void changed_data_type(struct globals *globals, uint8_t arg)
++{
++	struct changed_data_type *data_type = NULL;
++
++	if (!globals->update_command)
++		return;
++
++	list_for_each_entry(data_type, &globals->changed_data_types, list) {
++		if (data_type->data_type == arg)
++			return;
++	}
++
++	data_type = malloc(sizeof(*data_type));
++	if (!data_type)
++		return;
++
++	data_type->data_type = arg;
++	list_add(&data_type->list, &globals->changed_data_types);
++	globals->changed_data_type_count++;
++}
++
+ static int purge_data(struct globals *globals)
+ {
+ 	struct hash_it_t *hashit = NULL;
+@@ -151,6 +173,8 @@ static int purge_data(struct globals *globals)
+ 		if (diff.tv_sec < ALFRED_DATA_TIMEOUT)
  			continue;
-@@ -164,7 +163,6 @@ static int print_interfaces(char *mesh_iface)
- 		line_ptr = NULL;
  
- 		snprintf(path_buff, PATH_BUFF_LEN, SYS_IFACE_STATUS_FMT, iface_dir->d_name);
--		path_buff[PATH_BUFF_LEN - 1] = '\0';
- 		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
- 		if (res != EXIT_SUCCESS) {
- 			fprintf(stderr, "<error reading status>\n");
-@@ -228,11 +226,9 @@ int interface(char *mesh_iface, int argc, char **argv)
++		changed_data_type(globals, dataset->data.header.type);
++
+ 		hash_remove_bucket(globals->data_hash, hashit);
+ 		free(dataset->buf);
+ 		free(dataset);
+@@ -259,6 +283,55 @@ static void check_if_sockets(struct globals *globals)
+ 		check_if_socket(interface);
+ }
  
- 	for (i = 2; i < argc; i++) {
- 		snprintf(path_buff, PATH_BUFF_LEN, SYS_MESH_IFACE_FMT, argv[i]);
--		path_buff[PATH_BUFF_LEN - 1] = '\0';
- 
- 		if (!file_exists(path_buff)) {
- 			snprintf(path_buff, PATH_BUFF_LEN, SYS_IFACE_DIR, argv[i]);
--			path_buff[PATH_BUFF_LEN - 1] = '\0';
- 
- 			if (!file_exists(path_buff)) {
- 				fprintf(stderr, "Error - interface does not exist: %s\n", argv[i]);
-@@ -303,7 +299,6 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
- 
- 	path_buff = malloc(PATH_BUFF_LEN);
- 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
--	path_buff[PATH_BUFF_LEN - 1] = '\0';
- 
- 	if (argc != 1) {
- 		for (i = 1; i < argc; i++) {
-@@ -332,7 +327,6 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
++static void execute_update_command(struct globals *globals)
++{
++	pid_t script_pid;
++	size_t command_len;
++	char *command;
++	struct changed_data_type *data_type, *is;
++	/* data type is uint8_t, so 255 is maximum (3 chars)
++	 * space for appending + terminating null byte
++	 */
++	char buf[5];
++
++	if (!globals->update_command || !globals->changed_data_type_count)
++		return;
++
++	/* length of script + 4 bytes per data type (space +3 chars)
++	 * + 1 for terminating null byte
++	 */
++	command_len = strlen(globals->update_command);
++	command_len += 4 * globals->changed_data_type_count + 1;
++	command = malloc(command_len);
++	if (!command)
++		return;
++
++	strncpy(command, globals->update_command, command_len - 1);
++	command[command_len - 1] = '\0';
++
++	list_for_each_entry_safe(data_type, is, &globals->changed_data_types,
++				 list) {
++		/* append the datatype to command line */
++		snprintf(buf, sizeof(buf), " %d", data_type->data_type);
++		strncat(command, buf, command_len - strlen(command) - 1);
++
++		/* clean the list */
++		list_del(&data_type->list);
++		free(data_type);
++	}
++	globals->changed_data_type_count = 0;
++
++	printf("executing: %s\n", command);
++
++	script_pid = fork();
++	if (script_pid == 0) {
++		system(command);
++		exit(0);
++	}
++
++	free(command);
++}
++
+ int alfred_server(struct globals *globals)
+ {
+ 	int maxsock, ret, recvs;
+@@ -343,6 +416,7 @@ int alfred_server(struct globals *globals)
  		}
- 
- 		snprintf(str, sizeof(str), "%i", log_level);
--		str[sizeof(str) - 1] = '\0';
- 		res = write_file(path_buff, SYS_LOG_LEVEL, str, NULL);
- 		goto out;
+ 		purge_data(globals);
+ 		check_if_sockets(globals);
++		execute_update_command(globals);
  	}
-@@ -401,16 +395,13 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
- 	/* prepare the classic path */
- 	path_buff = malloc(PATH_BUFF_LEN);
- 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
--	path_buff[PATH_BUFF_LEN - 1] = '\0';
  
- 	/* if the specified interface is a VLAN then change the path to point
- 	 * to the proper "vlan%{vid}" subfolder in the sysfs tree.
- 	 */
- 	vid = vlan_get_link(mesh_iface, &base_dev);
--	if (vid >= 0) {
-+	if (vid >= 0)
- 		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
--		path_buff[PATH_BUFF_LEN - 1] = '\0';
--	}
- 
- 	if (argc == 1) {
- 		res = read_file(path_buff, (char *)batctl_settings[setting].sysfs_name,
-@@ -476,7 +467,6 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
- 
- 	path_buff = malloc(PATH_BUFF_LEN);
- 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
--	path_buff[PATH_BUFF_LEN - 1] = '\0';
- 
- 	if (argc == 1) {
- 		res = read_file(path_buff, SYS_GW_MODE, USE_READ_BUFF, 0, 0, 0);
-@@ -586,7 +576,6 @@ int check_mesh_iface(char *mesh_iface)
- 		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
- 	else
- 		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
--	path_buff[PATH_BUFF_LEN - 1] = '\0';
- 
- 	/* try to open the mesh sys directory */
- 	dir = opendir(path_buff);
-@@ -610,7 +599,6 @@ int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface)
- 
- 	/* check if this device actually belongs to the mesh interface */
- 	snprintf(path_buff, sizeof(path_buff), SYS_MESH_IFACE_FMT, hard_iface);
--	path_buff[sizeof(path_buff) - 1] = '\0';
- 	res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
- 	if (res != EXIT_SUCCESS) {
- 		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
+ 	netsock_close_all(globals);
 -- 
 2.1.4
 
