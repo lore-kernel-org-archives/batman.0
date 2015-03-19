@@ -1,15 +1,12 @@
-Return-Path: <anatoliy.lapitskiy@gmail.com>
-Message-ID: <550A8AAE.4000802@gmail.com>
-Date: Thu, 19 Mar 2015 10:37:02 +0200
-From: Anatoliy <anatoliy.lapitskiy@gmail.com>
+Return-Path: <APape@phoenixcontact.com>
 MIME-Version: 1.0
-References: <1426579875-28365-1-git-send-email-anatoliy.lapitskiy@gmail.com>
- <1970447.8TMetPNtZg@sven-edge>
-In-Reply-To: <1970447.8TMetPNtZg@sven-edge>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH v5] alfred: Add "--update-command"
-	parameter
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OF5389A718.644E8229-ONC1257E0D.00566F9A-C1257E0D.0056A5A0@phoenixcontact.com>
+Date: Thu, 19 Mar 2015 16:46:24 +0100
+Content-Type: text/plain; charset="utf-8"
+content-transfer-encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: bugfix for kernel crash in
+	batadv_tt_local_table_free
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,33 +18,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Thank you for your patience :)
+This missing check lead to a kernel crash when a hard_if is removed on a=20
+node forwarding
+untagged and tagged traffic (VLANID 0) to and from the mesh network.
 
-Anatoliy
+Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
+---
+ translation-table.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-On 03/18/2015 09:17 PM, Sven Eckelmann wrote:
-> On Tuesday 17 March 2015 10:11:15 Anatoliy Lapitskiy wrote:
->> The "--update-command" parameter is created for adding a hook to run when
->> new information is received.
->>
->> At the moment "alfred-facters" are run by cron once per every 5 minutes.
->> For some tasks (like sharing dhcp leases) it can be too slow.
->>
->> Signed-off-by: Anatoliy Lapitskiy <anatoliy.lapitskiy@gmail.com>
->> ---
->>  alfred.h     | 11 +++++++++
->>  main.c       | 12 +++++++++-
->>  man/alfred.8 |  4 ++++
->>  recv.c       | 10 ++++++++
->>  server.c     | 74
->> ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 5 files
->> changed, 110 insertions(+), 1 deletion(-)
-> Reviewed-by: Sven Eckelmann <sven@narfation.org>
->
-> Thanks for your contribution
->
-> Kind regards,
-> 	Sven
+diff --git a/translation-table.c b/translation-table.c
+index b20812b..4d3ab8d 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1143,8 +1143,10 @@ static void batadv_tt_local_table_free(struct=20
+batadv_priv *bat_priv)
+                        /* decrease the reference held for this vlan */
+                        vlan =3D batadv_softif_vlan_get(bat_priv,
+ tt_common_entry->vid);
+-                       batadv_softif_vlan_free_ref(vlan);
+-                       batadv_softif_vlan_free_ref(vlan);
++                       if (vlan) {
++                               batadv_softif_vlan_free_ref(vlan);
++                               batadv_softif_vlan_free_ref(vlan);
++                       }
+=20
+                        batadv_tt_local_entry_free_ref(tt_local);
+                }
+--=20
+1.7.0.4
 
+
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
+
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
+___________________________________________________________________
+Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
+nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
+rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
+d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
+ Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
