@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 19 Mar 2015 18:21:15 +0100
-Message-ID: <18777523.9ZBWag5W97@prime>
-In-Reply-To: <1426578449-2780-1-git-send-email-sven@narfation.org>
-References: <1426578449-2780-1-git-send-email-sven@narfation.org>
+Date: Thu, 19 Mar 2015 18:21:21 +0100
+Message-ID: <2763768.JyN6RsZky9@prime>
+In-Reply-To: <1426579875-28365-1-git-send-email-anatoliy.lapitskiy@gmail.com>
+References: <1426579875-28365-1-git-send-email-anatoliy.lapitskiy@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8703940.4Aubrf28cW";
+Content-Type: multipart/signed; boundary="nextPart4237813.86upcqzjBD";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Remove manual \0 terminator
-	after snprintf
+Subject: Re: [B.A.T.M.A.N.] [PATCH v5] alfred: Add "--update-command"
+	parameter
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,22 +23,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart8703940.4Aubrf28cW
+--nextPart4237813.86upcqzjBD
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="ISO-8859-1"
 
-On Tuesday 17 March 2015 08:47:29 Sven Eckelmann wrote:
-> snprintf already guarantees \0 terminated strings for size arguments is > 0.
+On Tuesday 17 March 2015 10:11:15 Anatoliy Lapitskiy wrote:
+> The "--update-command" parameter is created for adding a hook to run when
+> new information is received.
 > 
-> Reported-by: Anatoliy Lapitskiy <anatoliy.lapitskiy@gmail.com>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> At the moment "alfred-facters" are run by cron once per every 5 minutes.
+> For some tasks (like sharing dhcp leases) it can be too slow.
+> 
+> Signed-off-by: Anatoliy Lapitskiy <anatoliy.lapitskiy@gmail.com>
 
-Applied in revision f7914a8.
+Applied in revision 4ae4c74.
 
-Thanks!
+Thanks a lot for your contribution and the fast reworks, and thanks to Sven 
+for the review!!
     Simon
-
---nextPart8703940.4Aubrf28cW
+--nextPart4237813.86upcqzjBD
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -46,10 +49,10 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iEYEABECAAYFAlULBY8ACgkQrzg/fFk7axZxdACdHXeI6ipA+oEMG8naIBiTYor7
-mYAAn0ShRILgynS6Sn0i6sBy6QD8fU0f
-=eTfW
+iEYEABECAAYFAlULBZEACgkQrzg/fFk7axaD9ACfVGg0hIgEPfa/VAJl8cO3UJ7T
+fysAmwVcjkJLTWg+p3fuNrs/cd0NKwfH
+=QHRI
 -----END PGP SIGNATURE-----
 
---nextPart8703940.4Aubrf28cW--
+--nextPart4237813.86upcqzjBD--
 
