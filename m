@@ -1,11 +1,11 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Wed,  1 Apr 2015 10:04:39 +0200
-Message-Id: <1427875479-9240-5-git-send-email-linus.luessing@c0d3.blue>
-In-Reply-To: <1427875479-9240-1-git-send-email-linus.luessing@c0d3.blue>
-References: <1427875479-9240-1-git-send-email-linus.luessing@c0d3.blue>
-Subject: [B.A.T.M.A.N.] [PATCH RFCv2 4/4] batman-adv: Increase
- BATADV_TVLV_MCAST version number to 2
+Return-Path: <alex.suykov@gmail.com>
+Date: Wed, 1 Apr 2015 20:18:21 +0300
+From: Alex Suykov <alex.suykov@gmail.com>
+Message-ID: <20150401171821.GA21008@vostro>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] musl build fixes
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,57 +17,202 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, bridge@lists.linux-foundation.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-The multicast optimizations bridge integration will require the just
-implemented IGMP/MLD report handling later. Therefore bumping the
-version number.
----
- net/batman-adv/multicast.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+batctl-2014.4.0 fails to build with musl, mostly because of somewhat
+weird netinet/*.h headers musl provides, but the problem turns out
+to be easy to fix.
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 055f55b..3d29d6d 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -200,7 +200,7 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
- 	if (batadv_mcast_has_bridge(bat_priv)) {
- 		if (bat_priv->mcast.enabled) {
- 			batadv_tvlv_container_unregister(bat_priv,
--							 BATADV_TVLV_MCAST, 1);
-+							 BATADV_TVLV_MCAST, 2);
- 			bat_priv->mcast.enabled = false;
- 		}
+musl does not allow including netinet/* and linux/* headers together.
+batctl includes netinet/if_ether.h indirectly via net/ethernet.h,
+so netinet/if_ether.h must be used instead of linux/if_ether.h.
+
+__be16 and __be32 are linux-specific typedefs for uint16_t and
+uint32_t with __attribute__((bitwise)) that has no effect
+outside of the kernel. Replacing them with uint16_t and uint32_t
+removes dependency on linux/types.h.
+
+Signed-off-by: Alex Suykov <alex.suykov@gmail.com>
+
+--- batctl-2014.4.0/ping.c
++++ batctl-2014.4.0/ping.c
+@@ -34,7 +34,7 @@
+ #include <stdint.h>
+ #include <sys/select.h>
+ #include <sys/time.h>
+-#include <linux/if_ether.h>
++#include <netinet/if_ether.h>
  
-@@ -209,7 +209,7 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
+ #include "main.h"
+ #include "ping.h"
+--- batctl-2014.4.0/tcpdump.h
++++ batctl-2014.4.0/tcpdump.h
+@@ -23,7 +23,7 @@
+ #define _BATCTL_TCPDUMP_H
  
- 	if (!bat_priv->mcast.enabled ||
- 	    mcast_data.flags != bat_priv->mcast.flags) {
--		batadv_tvlv_container_register(bat_priv, BATADV_TVLV_MCAST, 1,
-+		batadv_tvlv_container_register(bat_priv, BATADV_TVLV_MCAST, 2,
- 					       &mcast_data, sizeof(mcast_data));
- 		bat_priv->mcast.flags = mcast_data.flags;
- 		bat_priv->mcast.enabled = true;
-@@ -952,7 +952,7 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- void batadv_mcast_init(struct batadv_priv *bat_priv)
- {
- 	batadv_tvlv_handler_register(bat_priv, batadv_mcast_tvlv_ogm_handler_v1,
--				     NULL, BATADV_TVLV_MCAST, 1,
-+				     NULL, BATADV_TVLV_MCAST, 2,
- 				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
- }
+ #include <netpacket/packet.h>
+-#include <linux/if_ether.h>
++#include <netinet/if_ether.h>
+ #include <net/if_arp.h>
+ #include <sys/types.h>
+ #include "main.h"
+--- batctl-2014.4.0/traceroute.c
++++ batctl-2014.4.0/traceroute.c
+@@ -28,7 +28,7 @@
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <string.h>
+-#include <linux/if_ether.h>
++#include <netinet/if_ether.h>
+ #include <stddef.h>
+ #include <sys/select.h>
+ #include <sys/time.h>
+--- batctl-2014.4.0/packet.h
++++ batctl-2014.4.0/packet.h
+@@ -196,7 +196,7 @@
+ struct batadv_bla_claim_dst {
+ 	uint8_t magic[3];	/* FF:43:05 */
+ 	uint8_t type;		/* bla_claimframe */
+-	__be16 group;		/* group id */
++	uint16_t group;		/* group id */
+ };
+ #pragma pack()
  
-@@ -962,8 +962,8 @@ void batadv_mcast_init(struct batadv_priv *bat_priv)
+@@ -213,12 +213,12 @@
+ 	uint8_t  version;
+ 	uint8_t  ttl;
+ 	uint8_t  flags;
+-	__be32   seqno;
++	uint32_t   seqno;
+ 	uint8_t  orig[ETH_ALEN];
+ 	uint8_t  prev_sender[ETH_ALEN];
+ 	uint8_t  reserved;
+ 	uint8_t  tq;
+-	__be16   tvlv_len;
++	uint16_t   tvlv_len;
+ 	/* __packed is not needed as the struct size is divisible by 4,
+ 	 * and the largest data type in this struct has a size of 4.
+ 	 */
+@@ -273,7 +273,7 @@
+ 	uint8_t  orig[ETH_ALEN];
+ 	uint8_t  uid;
+ 	uint8_t  reserved;
+-	__be16   seqno;
++	uint16_t   seqno;
+ };
+ 
+ #define BATADV_RR_LEN 16
+@@ -300,7 +300,7 @@
+ 	uint8_t  orig[ETH_ALEN];
+ 	uint8_t  uid;
+ 	uint8_t  rr_cur;
+-	__be16   seqno;
++	uint16_t   seqno;
+ 	uint8_t  rr[BATADV_RR_LEN][ETH_ALEN];
+ };
+ 
+@@ -380,8 +380,8 @@
+ #endif
+ 	uint8_t dest[ETH_ALEN];
+ 	uint8_t orig[ETH_ALEN];
+-	__be16  seqno;
+-	__be16  total_size;
++	uint16_t  seqno;
++	uint16_t  total_size;
+ };
+ 
+ /**
+@@ -398,7 +398,7 @@
+ 	uint8_t  version;  /* batman version field */
+ 	uint8_t  ttl;
+ 	uint8_t  reserved;
+-	__be32   seqno;
++	uint32_t   seqno;
+ 	uint8_t  orig[ETH_ALEN];
+ 	/* "4 bytes boundary + 2 bytes" long to make the payload after the
+ 	 * following ethernet header again 4 bytes boundary aligned
+@@ -431,14 +431,14 @@
+ 	/* uint8_t  first_dest[ETH_ALEN]; - saved in mac header destination */
+ 	uint8_t  first_source[ETH_ALEN];
+ 	uint8_t  first_orig_dest[ETH_ALEN];
+-	__be32   first_crc;
++	uint32_t   first_crc;
+ 	uint8_t  second_ttl;
+ 	uint8_t  second_ttvn;
+ 	uint8_t  second_dest[ETH_ALEN];
+ 	uint8_t  second_source[ETH_ALEN];
+ 	uint8_t  second_orig_dest[ETH_ALEN];
+-	__be32   second_crc;
+-	__be16   coded_len;
++	uint32_t   second_crc;
++	uint16_t   coded_len;
+ };
+ 
+ #pragma pack()
+@@ -461,7 +461,7 @@
+ 	uint8_t  reserved;
+ 	uint8_t  dst[ETH_ALEN];
+ 	uint8_t  src[ETH_ALEN];
+-	__be16   tvlv_len;
++	uint16_t   tvlv_len;
+ 	uint16_t align;
+ };
+ 
+@@ -474,7 +474,7 @@
+ struct batadv_tvlv_hdr {
+ 	uint8_t type;
+ 	uint8_t version;
+-	__be16  len;
++	uint16_t  len;
+ };
+ 
+ /**
+@@ -484,8 +484,8 @@
+  * @bandwidth_up: advertised uplink upload bandwidth
   */
- void batadv_mcast_free(struct batadv_priv *bat_priv)
- {
--	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_MCAST, 1);
--	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_MCAST, 1);
-+	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_MCAST, 2);
-+	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_MCAST, 2);
+ struct batadv_tvlv_gateway_data {
+-	__be32 bandwidth_down;
+-	__be32 bandwidth_up;
++	uint32_t bandwidth_down;
++	uint32_t bandwidth_up;
+ };
  
- 	batadv_mcast_mla_tt_retract(bat_priv, NULL);
- }
--- 
-1.7.10.4
-
+ /**
+@@ -498,7 +498,7 @@
+ struct batadv_tvlv_tt_data {
+ 	uint8_t flags;
+ 	uint8_t ttvn;
+-	__be16  num_vlan;
++	uint16_t  num_vlan;
+ };
+ 
+ /**
+@@ -509,8 +509,8 @@
+  * @reserved: unused, useful for alignment purposes
+  */
+ struct batadv_tvlv_tt_vlan_data {
+-	__be32	crc;
+-	__be16	vid;
++	uint32_t	crc;
++	uint16_t	vid;
+ 	uint16_t reserved;
+ };
+ 
+@@ -526,7 +526,7 @@
+ 	uint8_t flags;
+ 	uint8_t reserved[3];
+ 	uint8_t addr[ETH_ALEN];
+-	__be16 vid;
++	uint16_t vid;
+ };
+ 
+ /**
+@@ -536,7 +536,7 @@
+  */
+ struct batadv_tvlv_roam_adv {
+ 	uint8_t  client[ETH_ALEN];
+-	__be16 vid;
++	uint16_t vid;
+ };
+ 
+ /**
