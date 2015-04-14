@@ -1,12 +1,15 @@
-Return-Path: <philipp.psurek@gmail.com>
-Message-ID: <1429023208.9533.12.camel@gmail.com>
-From: Philipp Psurek <philipp.psurek@gmail.com>
-Date: Tue, 14 Apr 2015 16:53:28 +0200
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <davem@davemloft.net>
+Date: Tue, 14 Apr 2015 14:27:07 -0400 (EDT)
+Message-Id: <20150414.142707.472821254273583286.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1428993462-6079-3-git-send-email-linus.luessing@c0d3.blue>
+References: <1428993462-6079-1-git-send-email-linus.luessing@c0d3.blue>
+ <1428993462-6079-3-git-send-email-linus.luessing@c0d3.blue>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] gateway_common.c:47:3: error: implicit declaration
- of function 'strnicmp'
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 net-next 2/2] net: Export IGMP/MLD
+ message validation code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,124 +21,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: linus.luessing@c0d3.blue
+Cc: bridge@lists.linux-foundation.org, herbert@gondor.apana.org.au, yoshfuji@linux-ipv6.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, stephen@networkplumber.org, therbert@google.com
 
-Hi all
+From: Linus L=FCssing <linus.luessing@c0d3.blue>
+Date: Tue, 14 Apr 2015 08:37:42 +0200
 
-Sorry if this is something You already know.
+> +int skb_checksum_trimmed(struct sk_buff *skb, unsigned int transport=
+_len,
+> +			 __sum16(*skb_check_func)(struct sk_buff *skb),
+> +			 struct sk_buff **skb_trimmed)
+> +{
 
-I'm on 16b4833 and try to compile the module
+This is a really terrible interface.
 
-LANG=C make \
-CONFIG_BATMAN_ADV_DEBUG=n \
-CONFIG_BATMAN_ADV_BLA=y \
-CONFIG_BATMAN_ADV_DAT=y \
-CONFIG_BATMAN_ADV_NC=y \
-CONFIG_BATMAN_ADV_MCAST=y \
-KERNELPATH=/usr/src/linux-4.0.0-gentoo
+It is designed in such a way that it is completely ambiguous who is
+resonsible for managing the lifetimes of 'skb' and 'skb_trimmed'.
 
-and got this:
+I would suggest changing this such that:
 
-  CC [M]  /usr/src/batman-adv/gateway_common.o
-/usr/src/batman-adv/gateway_common.c: In function
-'batadv_parse_gw_bandwidth':
-/usr/src/batman-adv/gateway_common.c:47:3: error: implicit declaration
-of function 'strnicmp' [-Werror=implicit-function-declaration]
-   if (strnicmp(tmp_ptr, "mbit", 4) == 0)
-   ^
-cc1: some warnings being treated as errors
-scripts/Makefile.build:258: recipe for target
-'/usr/src/batman-adv/gateway_common.o' failed
-make[2]: *** [/usr/src/batman-adv/gateway_common.o] Error 1
-Makefile:1390: recipe for target '_module_/usr/src/batman-adv' failed
-make[1]: *** [_module_/usr/src/batman-adv] Error 2
-make[1]: Leaving directory '/usr/src/linux-4.0.0-gentoo'
-Makefile:53: recipe for target 'all' failed
-make: *** [all] Error 2
+1) If you clone successfully, 'skb' is released.
 
-the kernel is already compiled with this config
+2) whatever SKB ends up being used is returned as an error pointer.
 
-$ grep BATMAN .config
-CONFIG_BATMAN_ADV=m
-CONFIG_BATMAN_ADV_BLA=y
-CONFIG_BATMAN_ADV_DAT=y
-CONFIG_BATMAN_ADV_NC=y
-CONFIG_BATMAN_ADV_MCAST=y
-# CONFIG_BATMAN_ADV_DEBUG is not set
+3) The caller is responsible for freeing or grabbing a reference
+   to the skb returned.
 
-there was no error
+Also, this is taking too long to finalize and we are past the openning
+of the merge window so you will have to submit a fixed up version when
+the net-next tree opens up for submissions as it is very strongly
+closed right now.
 
-also there was no error in March with 3.19.2
-
-Again, thanx for Batman-adv
-
-Best regards
-
-Philipp
-
-________________________
-Freifunk Rheinland e. V.
-– Funkzelle Wuppertal –
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-debug information:
-
-# LANG=C gcc -v
-Using built-in specs.
-COLLECT_GCC=/usr/x86_64-pc-linux-gnu/gcc-bin/4.8.4/gcc
-COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-pc-linux-gnu/4.8.4/lto-wrapper
-Target: x86_64-pc-linux-gnu
-Configured
-with: /var/tmp/portage/sys-devel/gcc-4.8.4/work/gcc-4.8.4/configure
---host=x86_64-pc-linux-gnu --build=x86_64-pc-linux-gnu --prefix=/usr
---bindir=/usr/x86_64-pc-linux-gnu/gcc-bin/4.8.4
---includedir=/usr/lib/gcc/x86_64-pc-linux-gnu/4.8.4/include
---datadir=/usr/share/gcc-data/x86_64-pc-linux-gnu/4.8.4
---mandir=/usr/share/gcc-data/x86_64-pc-linux-gnu/4.8.4/man
---infodir=/usr/share/gcc-data/x86_64-pc-linux-gnu/4.8.4/info
---with-gxx-include-dir=/usr/lib/gcc/x86_64-pc-linux-gnu/4.8.4/include/g
-++-v4 --with-python-dir=/share/gcc-data/x86_64-pc-linux-gnu/4.8.4/python
---enable-languages=c,c++,fortran --enable-obsolete --enable-secureplt
---disable-werror --with-system-zlib --enable-nls
---without-included-gettext --enable-checking=release
---with-bugurl=https://bugs.gentoo.org/ --with-pkgversion='Gentoo 4.8.4
-p1.4, pie-0.6.1' --enable-libstdcxx-time --enable-shared
---enable-threads=posix --enable-__cxa_atexit --enable-clocale=gnu
---enable-multilib --with-multilib-list=m32,m64 --disable-altivec
---disable-fixed-point --enable-targets=all --disable-libgcj
---enable-libgomp --disable-libmudflap --disable-libssp --enable-lto
---without-cloog --enable-libsanitizer
-Thread model: posix
-gcc version 4.8.4 (Gentoo 4.8.4 p1.4, pie-0.6.1) 
-
-
-# /lib64/libc-2.20.so 
-GNU C Library (Gentoo 2.20-r2 p4) stable release version 2.20, by Roland
-McGrath et al.
-Copyright (C) 2014 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.
-There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.
-Compiled by GNU CC version 4.8.3.
-Available extensions:
-	C stubs add-on version 2.1.2
-	crypt add-on version 2.1 by Michael Glad and others
-	GNU Libidn by Simon Josefsson
-	Native POSIX Threads Library by Ulrich Drepper et al
-	BIND-8.2.3-T5B
-libc ABIs: UNIQUE IFUNC
-
+Thanks.
 
