@@ -1,15 +1,14 @@
-Return-Path: <davem@davemloft.net>
-Date: Tue, 14 Apr 2015 14:27:07 -0400 (EDT)
-Message-Id: <20150414.142707.472821254273583286.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1428993462-6079-3-git-send-email-linus.luessing@c0d3.blue>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Tue, 14 Apr 2015 08:37:41 +0200
+Message-Id: <1428993462-6079-2-git-send-email-linus.luessing@c0d3.blue>
+In-Reply-To: <1428993462-6079-1-git-send-email-linus.luessing@c0d3.blue>
 References: <1428993462-6079-1-git-send-email-linus.luessing@c0d3.blue>
- <1428993462-6079-3-git-send-email-linus.luessing@c0d3.blue>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 net-next 2/2] net: Export IGMP/MLD
- message validation code
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv2 net-next 1/2] bridge: multicast: call
+ skb_checksum_{simple_, }validate
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,36 +20,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: linus.luessing@c0d3.blue
-Cc: bridge@lists.linux-foundation.org, herbert@gondor.apana.org.au, yoshfuji@linux-ipv6.org, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, stephen@networkplumber.org, therbert@google.com
+To: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Stephen Hemminger <stephen@networkplumber.org>, Herbert Xu <herbert@gondor.apana.org.au>, Tom Herbert <therbert@google.com>, "David S. Miller" <davem@davemloft.net>
 
-From: Linus L=FCssing <linus.luessing@c0d3.blue>
-Date: Tue, 14 Apr 2015 08:37:42 +0200
+Let's use these new, neat helpers.
 
-> +int skb_checksum_trimmed(struct sk_buff *skb, unsigned int transport=
-_len,
-> +			 __sum16(*skb_check_func)(struct sk_buff *skb),
-> +			 struct sk_buff **skb_trimmed)
-> +{
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+ net/bridge/br_multicast.c |   28 ++++------------------------
+ 1 file changed, 4 insertions(+), 24 deletions(-)
 
-This is a really terrible interface.
-
-It is designed in such a way that it is completely ambiguous who is
-resonsible for managing the lifetimes of 'skb' and 'skb_trimmed'.
-
-I would suggest changing this such that:
-
-1) If you clone successfully, 'skb' is released.
-
-2) whatever SKB ends up being used is returned as an error pointer.
-
-3) The caller is responsible for freeing or grabbing a reference
-   to the skb returned.
-
-Also, this is taking too long to finalize and we are past the openning
-of the merge window so you will have to submit a fixed up version when
-the net-next tree opens up for submissions as it is very strongly
-closed right now.
-
-Thanks.
+diff --git a/net/bridge/br_multicast.c b/net/bridge/br_multicast.c
+index 4b6722f..b52f4cb 100644
+--- a/net/bridge/br_multicast.c
++++ b/net/bridge/br_multicast.c
+@@ -1610,16 +1610,8 @@ static int br_multicast_ipv4_rcv(struct net_bridge *br,
+ 	if (!pskb_may_pull(skb2, sizeof(*ih)))
+ 		goto out;
+ 
+-	switch (skb2->ip_summed) {
+-	case CHECKSUM_COMPLETE:
+-		if (!csum_fold(skb2->csum))
+-			break;
+-		/* fall through */
+-	case CHECKSUM_NONE:
+-		skb2->csum = 0;
+-		if (skb_checksum_complete(skb2))
+-			goto out;
+-	}
++	if (skb_checksum_simple_validate(skb2))
++		goto out;
+ 
+ 	err = 0;
+ 
+@@ -1737,20 +1729,8 @@ static int br_multicast_ipv6_rcv(struct net_bridge *br,
+ 
+ 	ip6h = ipv6_hdr(skb2);
+ 
+-	switch (skb2->ip_summed) {
+-	case CHECKSUM_COMPLETE:
+-		if (!csum_ipv6_magic(&ip6h->saddr, &ip6h->daddr, skb2->len,
+-					IPPROTO_ICMPV6, skb2->csum))
+-			break;
+-		/*FALLTHROUGH*/
+-	case CHECKSUM_NONE:
+-		skb2->csum = ~csum_unfold(csum_ipv6_magic(&ip6h->saddr,
+-							&ip6h->daddr,
+-							skb2->len,
+-							IPPROTO_ICMPV6, 0));
+-		if (__skb_checksum_complete(skb2))
+-			goto out;
+-	}
++	if (skb_checksum_validate(skb2, IPPROTO_ICMPV6, ip6_compute_pseudo))
++		goto out;
+ 
+ 	err = 0;
+ 
+-- 
+1.7.10.4
 
