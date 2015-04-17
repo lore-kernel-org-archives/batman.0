@@ -1,10 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 17 Apr 2015 18:40:54 +0200
-Message-Id: <1429288854-26431-1-git-send-email-sven@narfation.org>
+Date: Fri, 17 Apr 2015 19:15:10 +0200
+Message-Id: <1429290910-27079-1-git-send-email-sven@narfation.org>
 In-Reply-To: <1429288461-26260-4-git-send-email-sven@narfation.org>
 References: <1429288461-26260-4-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH-nextv2 4/6] dev: introduce dev_get_iflink()
+Subject: [B.A.T.M.A.N.] [PATCH-nextv2 4/6] batman-adv: introduce
+	dev_get_iflink()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -36,6 +37,8 @@ https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2015-April/012960.html
 
 v2:
  - Fix the comment in the compat code which still said "3, 19, 0"
+v3
+ - use batman-adv: prefix instead of dev:
 
  compat.h         | 6 ++++++
  hard-interface.c | 5 +++--
