@@ -1,12 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 17 Apr 2015 18:34:17 +0200
-Message-Id: <1429288461-26260-2-git-send-email-sven@narfation.org>
+Date: Fri, 17 Apr 2015 18:34:18 +0200
+Message-Id: <1429288461-26260-3-git-send-email-sven@narfation.org>
 In-Reply-To: <1429288461-26260-1-git-send-email-sven@narfation.org>
 References: <13114664.Eg4ODy7KEo@bentobox>
  <1429288461-26260-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH-next 2/6] batman-adv: replace strnicmp with
-	strncasecmp
+Subject: [B.A.T.M.A.N.] [PATCH-next 3/6] batman-adv: Use kasprintf
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,58 +19,82 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+From: Himangi Saraogi <himangi774@gmail.com>
 
-The kernel used to contain two functions for length-delimited,
-case-insensitive string comparison, strnicmp with correct semantics and
-a slightly buggy strncasecmp.  The latter is the POSIX name, so strnicmp
-was renamed to strncasecmp, and strnicmp made into a wrapper for the new
-strncasecmp to avoid breaking existing users.
+kasprintf combines kmalloc and sprintf, and takes care of the size
+calculation itself.
 
-To allow the compat wrapper strnicmp to be removed at some point in the
-future, and to avoid the extra indirection cost, do
-s/strnicmp/strncasecmp/g.
+The semantic patch that makes this change is as follows:
 
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Acked-by: Antonio Quartulli <antonio@meshcoding.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+// <smpl>
+@@
+expression a,flag;
+expression list args;
+statement S;
+@@
+
+  a =
+-  \(kmalloc\|kzalloc\)(...,flag)
++  kasprintf(flag,args)
+  <... when != a
+  if (a == NULL || ...) S
+  ...>
+- sprintf(a,args);
+// </smpl>
+
+Signed-off-by: Himangi Saraogi <himangi774@gmail.com>
+Acked-by: Julia Lawall <julia.lawall@lip6.fr>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- gateway_common.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ sysfs.c | 24 ++++++++----------------
+ 1 file changed, 8 insertions(+), 16 deletions(-)
 
-diff --git a/gateway_common.c b/gateway_common.c
-index 6f5e621..88a1bc3 100644
---- a/gateway_common.c
-+++ b/gateway_common.c
-@@ -44,10 +44,10 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 	if (strlen(buff) > 4) {
- 		tmp_ptr = buff + strlen(buff) - 4;
+diff --git a/sysfs.c b/sysfs.c
+index a63c3eb..a75dc12 100644
+--- a/sysfs.c
++++ b/sysfs.c
+@@ -899,32 +899,24 @@ int batadv_throw_uevent(struct batadv_priv *bat_priv, enum batadv_uev_type type,
  
--		if (strnicmp(tmp_ptr, "mbit", 4) == 0)
-+		if (strncasecmp(tmp_ptr, "mbit", 4) == 0)
- 			bw_unit_type = BATADV_BW_UNIT_MBIT;
+ 	bat_kobj = &bat_priv->soft_iface->dev.kobj;
  
--		if ((strnicmp(tmp_ptr, "kbit", 4) == 0) ||
-+		if ((strncasecmp(tmp_ptr, "kbit", 4) == 0) ||
- 		    (bw_unit_type == BATADV_BW_UNIT_MBIT))
- 			*tmp_ptr = '\0';
+-	uevent_env[0] = kmalloc(strlen(BATADV_UEV_TYPE_VAR) +
+-				strlen(batadv_uev_type_str[type]) + 1,
+-				GFP_ATOMIC);
++	uevent_env[0] = kasprintf(GFP_ATOMIC,
++				  "%s%s", BATADV_UEV_TYPE_VAR,
++				  batadv_uev_type_str[type]);
+ 	if (!uevent_env[0])
+ 		goto out;
+ 
+-	sprintf(uevent_env[0], "%s%s", BATADV_UEV_TYPE_VAR,
+-		batadv_uev_type_str[type]);
+-
+-	uevent_env[1] = kmalloc(strlen(BATADV_UEV_ACTION_VAR) +
+-				strlen(batadv_uev_action_str[action]) + 1,
+-				GFP_ATOMIC);
++	uevent_env[1] = kasprintf(GFP_ATOMIC,
++				  "%s%s", BATADV_UEV_ACTION_VAR,
++				  batadv_uev_action_str[action]);
+ 	if (!uevent_env[1])
+ 		goto out;
+ 
+-	sprintf(uevent_env[1], "%s%s", BATADV_UEV_ACTION_VAR,
+-		batadv_uev_action_str[action]);
+-
+ 	/* If the event is DEL, ignore the data field */
+ 	if (action != BATADV_UEV_DEL) {
+-		uevent_env[2] = kmalloc(strlen(BATADV_UEV_DATA_VAR) +
+-					strlen(data) + 1, GFP_ATOMIC);
++		uevent_env[2] = kasprintf(GFP_ATOMIC,
++					  "%s%s", BATADV_UEV_DATA_VAR, data);
+ 		if (!uevent_env[2])
+ 			goto out;
+-
+-		sprintf(uevent_env[2], "%s%s", BATADV_UEV_DATA_VAR, data);
  	}
-@@ -77,10 +77,10 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 		if (strlen(slash_ptr + 1) > 4) {
- 			tmp_ptr = slash_ptr + 1 - 4 + strlen(slash_ptr + 1);
  
--			if (strnicmp(tmp_ptr, "mbit", 4) == 0)
-+			if (strncasecmp(tmp_ptr, "mbit", 4) == 0)
- 				bw_unit_type = BATADV_BW_UNIT_MBIT;
- 
--			if ((strnicmp(tmp_ptr, "kbit", 4) == 0) ||
-+			if ((strncasecmp(tmp_ptr, "kbit", 4) == 0) ||
- 			    (bw_unit_type == BATADV_BW_UNIT_MBIT))
- 				*tmp_ptr = '\0';
- 		}
+ 	ret = kobject_uevent_env(bat_kobj, KOBJ_CHANGE, uevent_env);
 -- 
 2.1.4
 
