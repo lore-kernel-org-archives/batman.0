@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 20 Apr 2015 11:23:15 +0800
-Message-ID: <6809018.15Hlry5Imp@voltaire>
-In-Reply-To: <13114664.Eg4ODy7KEo@bentobox>
-References: <13114664.Eg4ODy7KEo@bentobox>
+Date: Mon, 20 Apr 2015 12:02:14 +0800
+Message-ID: <2006787.hhLOXWT3gY@voltaire>
+In-Reply-To: <1426578625-3113-1-git-send-email-sven@narfation.org>
+References: <1426578625-3113-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6412189.9ggbdjYxox";
+Content-Type: multipart/signed; boundary="nextPart3273047.yMnej0BVht";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-next 0/6] Patches for batman-adv 2015.0
-	release
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Remove manual \0 terminator
+	after snprintf
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,58 +20,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, antonio@meshcoding.com
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart6412189.9ggbdjYxox
+--nextPart3273047.yMnej0BVht
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-
-Sven,
-
-thanks for the thorough cleanup review.
-
-
-> Patches which are in batman-adv master but should be in this release:
+On Tuesday, March 17, 2015 08:50:25 Sven Eckelmann wrote:
+> snprintf already guarantees \0 terminated strings for size arguments is > 0.
 > 
->  *
-> http://git.open-mesh.org/batman-adv.git/commit/3f74f359cb7e96bbc68d62e1fc48
-> b04b6efb4ca7
+> Reported-by: Anatoliy Lapitskiy <anatoliy.lapitskiy@gmail.com>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  bisect_iv.c |  4 ----
+>  debugfs.c   |  1 -
+>  sys.c       | 14 +-------------
+>  3 files changed, 1 insertion(+), 18 deletions(-)
 
-I moved the patch to main (not strictly necessary as maint will be replaced 
-soon) and merge my way up to master.
+Applied in revision 8c596e1.
 
-
-> A patch which should never ever have existed in the first place (please
-> correct me when I've missed the actual problem):
-> 
->  *
-> http://git.open-mesh.org/linux-merge.git/commit/b53915310227cc9b029ba0fa5aa
-> e44e50a461f80
-
-This (subtle) problem is about compat.h. Specifically, the kfree_rcu macro 
-requires a pre-defined variable name:
-#define kfree_rcu(ptr, rcu_head) call_rcu(&ptr->rcu_head, 
-batadv_free_rcu_##ptr)
-
-void batadv_free_rcu_softif_vlan(struct rcu_head *rcu);
-
-
-> The weirdest commit is one which is in batman-adv next but can nowhere be
-> found in the kernel trees. It is already part of the release v2014.2.0:
-> 
->  *
-> http://git.open-mesh.org/batman-adv.git/commit/31f391475cc08724e96ab060ef4a
-> a6503d11da8e (havent touched this commit because this is just too weird)
-
-Antonio, can you comment ? Was it forgotten or was there a reason ?
-
-Cheers,
+Thanks,
 Marek
 
-
---nextPart6412189.9ggbdjYxox
+--nextPart3273047.yMnej0BVht
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -79,14 +51,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVNHErAAoJEFNVTo/uthzAcJ4H/iWnYoQLjmzhM/0HL41VqU3w
-Ij9iXpwPyEWWtwWn08WaPug64siExf3GwFUvBBWKMlVqfv24xFeMh7ZPP9fEqM4b
-WSX5lo1c93T+5CScop/rGbGWD71c16OK4DEuXAnivQFZbxDM1QBBPAx5u6kosfyA
-dS7sduW0SW4BYi8plj8jjewt2/vA0b69+4V1vlS34o9bLCT8BsKPGTZt19CBhty7
-IfoTgw7vTb163/3V9lRnmpwJM43N9VHxClNlh1BTg8tkBfQGSI8qrv0gza5Gd0ph
-lb9T9xz6oBS9DsC694aDamD14PJeEe8X/2KbMBlvpjj/qldGp0inZwAN5tdHUAQ=
-=Ix5m
+iQEcBAABCAAGBQJVNHpOAAoJEFNVTo/uthzA1rwIALo9JX7gUgCkGRVq50BJpwcm
+Bn3j2vHmP/9Df1hqM/Vadd443LUAw4XbVmmTYQ0HX5o23BUMYYUYFmnuigrGqg/i
+OAT4kN3wNznS3km1YtQsLYxSkB7P0HdWf+ZGBw7Hk84tusoLkLFBQufqhKLYTIlN
+1WdB1otsuRvFtXkt5+F4ACQErDmYVJm5ZoZuOVQtWLzHb8IYRSa2hFW1qF5odDDA
+l5+C+OsTCGOeMCwWYsHGK/n8Kf5p2dnuNE8xQcW4HNTPqbaDyfppXlA9EuS/MqYG
+syh36czEp+d+E6wYHjn/khuiRrfCmG0FyMWnUl0RtcIewzOCdwZvpDXJoh4agFg=
+=Lr16
 -----END PGP SIGNATURE-----
 
---nextPart6412189.9ggbdjYxox--
+--nextPart3273047.yMnej0BVht--
 
