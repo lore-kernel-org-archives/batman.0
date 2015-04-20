@@ -1,15 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 20 Apr 2015 14:12:12 +0200
-Message-ID: <7605822.cxC5KnHP44@bentobox>
-In-Reply-To: <5534EB7E.2060809@meshcoding.com>
-References: <13114664.Eg4ODy7KEo@bentobox> <28031511.vQmOOoKVTs@voltaire>
- <5534EB7E.2060809@meshcoding.com>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <5534EF84.8090402@meshcoding.com>
+Date: Mon, 20 Apr 2015 14:22:28 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1687697.a61UiaMTR0";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+References: <13114664.Eg4ODy7KEo@bentobox> <28031511.vQmOOoKVTs@voltaire>
+ <5534EB7E.2060809@meshcoding.com> <7605822.cxC5KnHP44@bentobox>
+In-Reply-To: <7605822.cxC5KnHP44@bentobox>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="V2vBb7c9B3evuH6kIfQsq5PnNKSMeeJhr"
 Subject: Re: [B.A.T.M.A.N.] [PATCH-next 0/6] Patches for batman-adv 2015.0
-	release
+ release
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,61 +22,70 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <antonio@meshcoding.com>
+To: Sven Eckelmann <sven@narfation.org>
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
 
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--V2vBb7c9B3evuH6kIfQsq5PnNKSMeeJhr
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
---nextPart1687697.a61UiaMTR0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+On 20/04/15 14:12, Sven Eckelmann wrote:
+> Can you also check the "weird" patch which is in the release since 2014=
+=2E2.0
+> but doesn't seem to be in net-next.git/linux.git?
+>=20
+> http://git.open-mesh.org/batman-adv.git/commit/31f391475cc08724e96ab060=
+ef4aa6503d11da8e
 
-On Monday 20 April 2015 14:05:18 Antonio Quartulli wrote:
-> On 20/04/15 08:30, Marek Lindner wrote:
-> > I hope Antonio is going to shed some light on the question whether that
-> > patch made it upstream or not. Depending on that question we can pick the
-> > appropriate solution.
-> 
-> This patch was never sent upstream, probably because it looked like some
-> change made for "compat.* only" and therefore it got accidentally discarded.
-> 
-> By the way, when I created this patch I thought that the name of the
-> function was supposed to match the type of the object to free because I
-> observed a compilation failure - this is why I created this change.
-> 
-> But if this is not really required then I am ok with Sven's patch.
+Why this patch is not upstream I don't know - it made its way through my
+pipe to net-next, but probably was never sent.
 
-Ok, also thought that this was the reason why this patch was never sent
-upstream/should not be sent upstream.
+However, after re-reading this patch and quickly testing the current
+behaviour with linux-4.0 I have some doubts about its usefulness.
 
-Can you also check the "weird" patch which is in the release since 2014.2.0
-but doesn't seem to be in net-next.git/linux.git?
+The problem I tried to fix with this patch started by observing that
+when changing the MAC address of a soft-iface VLAN (e.g. bat0.2)
+ndo_set_mac_address() seemed not to be called.
+Therefore with this patch I change the no-purge MAC addresses in the
+local translation table when the MAC address of bat0 got changed.
 
-http://git.open-mesh.org/batman-adv.git/commit/31f391475cc08724e96ab060ef4aa6503d11da8e
 
-Thanks,
-	Sven
---nextPart1687697.a61UiaMTR0
+I think we would need to investigate a bit more if this is still true or
+not and then decide to revert or not this patch (in the latter case I
+will send it to net-next).
+
+A test that could be done consists in checking if ndo_set_mac_address()
+gets invoked when changing the MAC address of any bat0.x interface.
+
+Cheers,
+
+
+--=20
+Antonio Quartulli
+
+
+--V2vBb7c9B3evuH6kIfQsq5PnNKSMeeJhr
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJVNO0fAAoJEF2HCgfBJntGl6QQANk4e8Zgf8j8dnhXYKtrMHnV
-3uqdX9l6jr/O1OymOLxEINGklwmIouAWTddkH2Y0qSKbuwJC7MP35IRpntExQjt1
-1s460oWGpoopflMhWKbTuAEV8xQG5BJK+CN6YNINtH7W/kIyJPAfrcupZJe/Inmo
-mWUd7oU0QTKZ5qXSh2hzwL/E7+xVtDohIYwl/ou8AHjsDD+MfgewNEVzbjBVe1Jy
-Fp1ZIy0Fc6YILXg54NtrDMJcNiWksUsn/TPlxfpyUEwfh/jMlfZlsWTAgiehcpla
-p8PcrfiUaTG28FUm1O717eKlnJMmm2IONv31XGx2RRdJx3mhsbA5rdRNbpk8QSAq
-Xrm8Qve6TmSEYSLB2F+PAgbAvtAXrEmD5K6ItztAz3bCNzWOtEtflhXLzQSbzLwp
-4Pg/i6Ec6UALCFOPAH+K6K/IUwtUdH5gKpuN+bP06mZ2PnNMTXYQfz0GQhSjbZ1B
-tnqlUpKJX5X33gKIv7/rXrYNKEb0oAzlYFj+eesz3DUmfu2LFO3ZpQ4sY7wQTUMS
-KUfpIzOePW+1QUNplqI1W0Y7FQfx4yf3pFmLxi0+PlEzT+vCYC8u4/GNI1kJZRPx
-bijyTQAguuwG0fA615lN3n5l3Jj4JPloCr+YvvJUjBZBmiV4i8cxMYiWQFadEZXb
-y1BYYJpKueak1/SCEE/G
-=iGKi
+iQIcBAEBCAAGBQJVNO+IAAoJEJgn97Bh2u9ef9sP/idWkdzjpQcoHEWIMOc1Osrh
+zQV9Q2tjvmtl2kWifFKyTvUw4S0uv6lz0NaNEKHGo801OdSWuYfPzI10cAopYR6B
+GlL52qtT84ustRgIwr43dVJIWo7zvDchXyTxa+SbypahXuyDQ3QtrsCu3+NxD3p/
+6z4Yhan5FGgsrm3PicWqQUP0LQevPIfjoVimPhVYWTMQ15MWS1UvLQf8w0q2XKtr
+eaygaxuiSf11NpeXOlbhHECMYdY8pLgfGcl4UuRzH2B4UHaOlDjDNGln8ArsMo5I
+TD6hf6+f3WWf2NkLhvA2Q3tkgz+SCpgBcZUSmrQHOebcQU3Gv1SwlOz9vbdU1AS4
+TyHdVs1fLBvrBqQ0pCnfOueGmavXbBLvoV/jhf6We1Xy7rw63PtMmuex53ViedQG
+qStuKr2VoVzOssUMyAZ6I08nJpa5fZJJ79likpZHQ5fodswagXPvNtE9mStjGaqf
+Yy7BkBCv6S3515HXEN1/2/tCfz6kMuQYYDH7SOwwBByHoXfJG9FQ30NOiMP1Ku4R
+5Km3S0G5mI0ogmxBGHnJd00p65VASbD185PEZCI+K5Z8uz/ueFUpJSvbM/RSF3GG
+geMPBSTN+3xsWPJWibCnQeLESfnfJXFpLJ9YOtuDSFK5X0iisUQShKuhjk6bQ/sg
+nShNxgUqnjs4PcoP1//J
+=dHjX
 -----END PGP SIGNATURE-----
 
---nextPart1687697.a61UiaMTR0--
-
+--V2vBb7c9B3evuH6kIfQsq5PnNKSMeeJhr--
