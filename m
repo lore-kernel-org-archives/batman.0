@@ -1,15 +1,15 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Sun, 19 Apr 2015 20:25:36 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20150419182536.GJ2396@odroid>
-References: <20150330212726.46ff30c5@i3.local>
- <2776853.MalcVFtyXS@prime>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 20 Apr 2015 11:32:23 +0800
+Message-ID: <10750000.oymJvT72oN@voltaire>
+In-Reply-To: <1429288461-26260-1-git-send-email-sven@narfation.org>
+References: <13114664.Eg4ODy7KEo@bentobox>
+ <1429288461-26260-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2776853.MalcVFtyXS@prime>
-Subject: Re: [B.A.T.M.A.N.] batman-adv: increased default hop penalty
+Content-Type: multipart/signed; boundary="nextPart3185618.A8mY72z7NR";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH-next 1/6] batman-adv: ignore
+	netdev_set_master() calls on kernels older than 2.6.39
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,114 +21,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, felix@freifunk-nrw.de
-
-Hi,
-
-at the last Wireless Battle Mesh there were some nice graphs for
-the throughput and number of hops chosen - except for batman-adv
-because they used the layer 3 ping-tool for that.
-
-We should probably look into having a graph about that for
-batman-adv at the next WBM, I think. Then we can compare with
-the other routing protocols via the throughput statistics whether
-batman-adv chooses too short routes and therefore.
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
-For my current experiences with the number of hops, I can't say
-anything for sure yet. Years ago I had issues with batman-adv
-selecting too short routes in a specific indoor setup. But that
-turned out to be a mean hidden-node problem instead: batman-adv
-switched to a shorter - and unusable - route a few seconds after
-starting iperf.
+--nextPart3185618.A8mY72z7NR
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-From the Freifunk community mesh in Lübeck, I had been playing a
-little with increasing the hop penalty on the VPN gateways a few
-weeks ago, with the intent to make the wifi-mesh more preferable
-compared to the VPN uplinks.
-
-I wasn't able to get a workable route from this node:
-http://map.luebeck.freifunk.net/#!n:24a43c99ac30
-to this node:
-http://map.luebeck.freifunk.net/#!n:647002d15c36
-
-It'd take about six hops to get there. All links on this path
-are green, meaning they have a TQ above 200.
-
-Unfortunately with the last hop the TQ dropped too low, the nodes
-aren't within each others horizon.
-
-Also, we are still using batman-adv 2013.4.0 here, so we actually
-still have the hop penalty of 15.
-
-Cheers, Linus
-
-
-PS: Though I guess it doesn't make much sense to fiddle some more
-with the hop penalty now. The new throughput metric with BATMAN V
-is probably the better approach to mobile adhoc networking :).
-
-
-On Tue, Mar 31, 2015 at 02:18:56PM +0200, Simon Wunderlich wrote:
-> Hi,
+On Friday, April 17, 2015 18:34:16 Sven Eckelmann wrote:
+> From: Marek Lindner <mareklindner@neomailbox.ch>
 > 
-> to cite from my original answer:
+> batman-adv calls netdev_master_upper_dev_link() which is replaced with with
+> netdev_set_master() for kernels older than 3.9 via compat.h.
+> Prior to 2.6.39 netdev_set_master() contained Linux bonding calls needed to
+> setup bonding devices. Calling this function from batman-adv leads to
+> unexpected behavior when current batman-adv versions are used on these
+> older kernels.
 > 
-> We did have some discussion on that patch too:
+> To fix the situation compat.h now ships its own implementation of
+> netdev_set_master() which does not change the net_dev->master state
+> on kernels older than 2.6.39.
 > 
-> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2014-June/012155.html
-> 
-> I wrote that patch because we had problems in commercial installations and 
-> dual radio access points, which were fixed by this patch (as described in the 
-> mail). I didn't hear any practical problems so far, you are the first one.
-> 
-> I guess its not easy to have a "one value fixes all problems" hop penalty, but 
-> its at least worth to discuss it - so thank you very much for your input.
-> 
-> Since we got this mail on the mailing list now, I'd like to hear opinions from 
-> other people and/or communities.
-> 
-> Thanks,
->      Simon
-> 
-> On Monday 30 March 2015 21:27:26 Ruben Wisniewski wrote:
-> > Forwarded private message, on request by Simon.
-> > 
-> > On Friday 27 March 2015 16:52:14 Ruben Wisniewski wrote:
-> > > Hello Simon,
-> > > 
-> > > 
-> > > we just updated our mesh, to the batman-adv-version 2014.4. Now your
-> > > patch batman-adv: increase default hop penalty[1] is included.
-> > > 
-> > > Since we got very large mesh-networks, we have some troubles with your
-> > > patch, which makes long (needed) pathes unusable, because they TQ drop
-> > > to lower zero.
-> > > 
-> > > Else, we got some old and some new batman-adv versions, this change
-> > > overloads the old nodes, because their TQ are better, and similiar
-> > > links over new nodes got ignored.
-> > > 
-> > > Else I see no improvement overall, because the usual urban link-wide
-> > > is about 30-50 meteres, and we got parts of the net where we need 4-5
-> > > hops to reach the last node. Your Patch seem to limit these pathes to
-> > > something around 3 hops. So parts of our net are now offline, and the
-> > > speed overall doesn't seem to be improved.
-> > > 
-> > > After these experience I like to ask you, if you mind reverting this
-> > > patch again. Else we have to work around with resetting to 15 again on
-> > > boot, which I think is not the prefered solution.
-> > > 
-> > > 
-> > > [1]
-> > > http://www.open-mesh.org/projects/batman-adv/repository/revisions/7644650b
-> > > b7 66bd4c7b6be5d97e6b1c3ed93a38d7
-> > > 
-> > > 
-> > > Best regards,
-> > > 
-> > > 
-> > > Ruben
+> Reported-by: Andreas Pape <APape@phoenixcontact.com>
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  compat.h | 9 +++++++++
+>  1 file changed, 9 insertions(+)
 
+I have already cherry-picked that patch myself.
+
+Thanks,
+Marek
+
+--nextPart3185618.A8mY72z7NR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJVNHNHAAoJEFNVTo/uthzAI7UH/3hRsovC3j1Pf/UMXqccesW0
+7WQUjhnVtqzXksNdKP1D21mnDaQoSvGk3PDhMCJDGVct15vp5+wrC87pyDQ3IUEG
+vSLLOFh1rJb5f3407HU32zQUwPpK8R86PP6NZz04UMbrXYcrMCmADsaR/okwDPgE
+BlupuW9PdwBN1F2IS6mcVEE6T2ocm//ICS6wkVYJQnMT/RwZXQODJsqTJoC41Xu3
+xTKvtFp1dqjH4BUS9DXRtQ1MoKwoEITfi8M64nlNqAENcvXBiczlqBQcnxDvnQIu
+ulXLcVBU4BuKZgF8FaHlD6rR73NIx+u9bJ3G1uoqCWLnU2Vm7RqeFooDaQKH1LY=
+=2X4I
+-----END PGP SIGNATURE-----
+
+--nextPart3185618.A8mY72z7NR--
 
