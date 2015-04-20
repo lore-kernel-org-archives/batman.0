@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 20 Apr 2015 11:37:08 +0800
-Message-ID: <2514179.t8iz1bT8cA@voltaire>
-In-Reply-To: <1429288461-26260-3-git-send-email-sven@narfation.org>
-References: <13114664.Eg4ODy7KEo@bentobox>
- <1429288461-26260-1-git-send-email-sven@narfation.org>
- <1429288461-26260-3-git-send-email-sven@narfation.org>
+Date: Mon, 20 Apr 2015 11:38:50 +0800
+Message-ID: <1548954.2IfMJZdx7R@voltaire>
+In-Reply-To: <1429290910-27079-1-git-send-email-sven@narfation.org>
+References: <1429288461-26260-4-git-send-email-sven@narfation.org>
+ <1429290910-27079-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2889755.ULTbVkJ0Jr";
+Content-Type: multipart/signed; boundary="nextPart1766691.6YvDbMDylc";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-next 3/6] batman-adv: Use kasprintf
+Subject: Re: [B.A.T.M.A.N.] [PATCH-nextv2 4/6] batman-adv: introduce
+	dev_get_iflink()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,48 +24,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart2889755.ULTbVkJ0Jr
+--nextPart1766691.6YvDbMDylc
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, April 17, 2015 18:34:18 Sven Eckelmann wrote:
-> From: Himangi Saraogi <himangi774@gmail.com>
+On Friday, April 17, 2015 19:15:10 Sven Eckelmann wrote:
+> From: Nicolas Dichtel <nicolas.dichtel@6wind.com>
 > 
-> kasprintf combines kmalloc and sprintf, and takes care of the size
-> calculation itself.
+> The goal of this patch is to prepare the removal of the iflink field. It
+> introduces a new ndo function, which will be implemented by virtual
+> interfaces.
 > 
-> The semantic patch that makes this change is as follows:
+> There is no functional change into this patch. All readers of iflink field
+> now call dev_get_iflink().
 > 
-> // <smpl>
-> @@
-> expression a,flag;
-> expression list args;
-> statement S;
-> @@
-> 
->   a =
-> -  \(kmalloc\|kzalloc\)(...,flag)
-> +  kasprintf(flag,args)
->   <... when != a
->   if (a == NULL || ...) S
->   ...>
-> - sprintf(a,args);
-> // </smpl>
-> 
-> Signed-off-by: Himangi Saraogi <himangi774@gmail.com>
-> Acked-by: Julia Lawall <julia.lawall@lip6.fr>
+> Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
 > Signed-off-by: David S. Miller <davem@davemloft.net>
+> [sven@narfation.org: added compat code]
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  sysfs.c | 24 ++++++++----------------
->  1 file changed, 8 insertions(+), 16 deletions(-)
+> This has to be moved to linux/netdevice.h for
+> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2015-April/012960.html
+> 
+> v2:
+>  - Fix the comment in the compat code which still said "3, 19, 0"
+> v3
+>  - use batman-adv: prefix instead of dev:
+> 
+>  compat.h         | 6 ++++++
+>  hard-interface.c | 5 +++--
+>  2 files changed, 9 insertions(+), 2 deletions(-)
 
-Applied in revision aeb0f1d.
+Applied in revision f8a8f60.
 
 Thanks,
 Marek
 
---nextPart2889755.ULTbVkJ0Jr
+--nextPart1766691.6YvDbMDylc
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -73,14 +68,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVNHRkAAoJEFNVTo/uthzAfWoH/j7SoynNt+zLZA3GgrcbMzGd
-68U/QktMhrwpBeiELSEVMDNisxq9gsph21kZksjKsR3ZJRo6Es1lr4OfPMty+Li0
-ISqcCJuETUTFlsvQQg7qd2hSmju6xAqXbeW4nBkcfV2jsNIqx6rRWAiRHPE76lU8
-OtkLqp1pil7GdLp2nmUnjxI4kHKoG/Zamu5ReEtqE9eCNOnqvt1pUxFr5ky88U9o
-/H6M/7HCU7pBnu/i8EyABxQFv9y5kWaM5bGelKWucGjd+tRBaFo9s/ZWyr5gBuZY
-YSKZHnMuuXSl5U8+2TGL1P3RlMjpGDMc2M7Sin4yLDQzh6ZZePAan/AtKi8CPMo=
-=tOI2
+iQEcBAABCAAGBQJVNHTKAAoJEFNVTo/uthzAg4UH/2LfutwtcqSEF4e73PGHZEpx
+IH3aTmmVOTdx4S0YYDe8HkTWJfdBuZ0dKvUbUhYtVtlwb/pyG6ulGj58Q17LYb5e
+J+Dn6U9NbBUvRe0nqTSVN8jPGRjo+biFTLMmUTcopzFtLpgipA1EUYSpUMO8FyMQ
+leMAJtQxqqZzYTmmj1Bis//hutORquNAhD2gTaSzwC7BZa2OlJMWiu08oDzKSvqS
+0kqvOHz5HKy8cUucUvYTfXpA5ukXgWrQxX2qdHt2Qol9hgJ5eniJeIg7Kn5fea12
+pvNITqyR18yVJDae12+5DCzbMFGvOSnMQsj0jbIwHxNG62Aulz9gD5OQKYvWt3M=
+=Jess
 -----END PGP SIGNATURE-----
 
---nextPart2889755.ULTbVkJ0Jr--
+--nextPart1766691.6YvDbMDylc--
 
