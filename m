@@ -1,16 +1,16 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 20 Apr 2015 23:23:09 +0800
-Message-ID: <1442946.1AUKn4CUEG@voltaire>
-In-Reply-To: <553507F1.1010606@meshcoding.com>
-References: <1429288461-26260-5-git-send-email-sven@narfation.org>
- <1429291088-27181-1-git-send-email-sven@narfation.org>
- <553507F1.1010606@meshcoding.com>
+Date: Mon, 20 Apr 2015 23:27 +0800
+Message-ID: <3471641.Affe8L3RIT@voltaire>
+In-Reply-To: <1429288461-26260-6-git-send-email-sven@narfation.org>
+References: <13114664.Eg4ODy7KEo@bentobox>
+ <1429288461-26260-1-git-send-email-sven@narfation.org>
+ <1429288461-26260-6-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8410953.Qq0nleNzmx";
+Content-Type: multipart/signed; boundary="nextPart1477152.0XRRnhpKXM";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-nextv2 5/6] batman-adv: Revert "fix var
-	name to keep compatibility with old kernels"
+Subject: Re: [B.A.T.M.A.N.] [PATCH-next 6/6] batman-adv: Use kernel variable
+	declaration order in batadv_send_skb_unicast
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,30 +22,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart8410953.Qq0nleNzmx
+--nextPart1477152.0XRRnhpKXM
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, April 20, 2015 16:06:41 Antonio Quartulli wrote:
-> On 17/04/15 19:18, Sven Eckelmann wrote:
-> > The original patch b53915310227cc9b029ba0fa5aae44e50a461f80 should not be
-> > submitted to net-next. It can be better implemented using compat code.
-> >
-> > 
-> >
-> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> 
-> Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+On Friday, April 17, 2015 18:34:21 Sven Eckelmann wrote:
+> The patches currently in the kernel for Linux 4.1 have a different variable
+> order in batadv_send_skb_unicast than the out-of-tree module. Fix the
+> order in the out-of-tree module because it is easier to get merged.
 
-Applied in revision e78c16c.
+We know about this discrepancy but decided to live with it because we prefer 
+the variable order you can find in the out-of-tree repos but can't imagine 
+David is going to accept such a trivial patch ? In fact, we were hoping some 
+other change would come along allowing us to get this into the kernel.
 
-Thanks,
+Cheers,
 Marek
 
---nextPart8410953.Qq0nleNzmx
+--nextPart1477152.0XRRnhpKXM
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +50,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVNRnhAAoJEFNVTo/uthzAtxgH/1luuNpJR/O+hiZqMfiqVad1
-9vNBgV35jqr2dfX9Q0VwFR7x3KvQrwm9Zoj3q52kjr8dAwnDzZUJUtSwqfgBKyFj
-C2tnI9y7TNSy0wKCKm8Q8kfinZbfx9GRcPG7ZY3lvo5FiLuFipisw6lbPa6AZ7Yt
-3UJDnFLzWB6UQzL8ztNeohJQOrfax2u/UyCxKTSvFKugPIMsPvC1nXm58X0D2fbm
-hootvB43vvllA2dsILa/SIh/CGBhb4vwaW1S5y+nNqRO3Tq+2Icb+w8SnKOvK7u0
-F0mY0tieZYPTU0acJrmF/HqOQT2qUXNu3HL1Az4SdLgzKh7MSFO1ErcnbmmqWnA=
-=YRQO
+iQEcBAABCAAGBQJVNRrEAAoJEFNVTo/uthzAY08IAIEEkkZONLZvIYMPWkGxGGxn
+vbFmqLlF5C9Lbg8W1W+Mal80QkMw0dMoEOGmvMpq/1EoclsarWH2ajAcuauxy6l6
+wkXfSiIkus7jb73nQdLPLssvzh7cNtzet88EUeYvwOtmUY/DzIapOj0cUK9qOqq6
+qIl68bVa3+qCaPeSfUePe9yaglINszmobJc8GBNhmmAGG/dBHyEynHl1okHEYOmv
+ovusv0siLoCMvWsWQWUvHxZg+wr6gtU9FD9k1PnDt+41BP+0QbFUvBdhJMJfmbMZ
+vdy5LmrKcJ0FfaqH64UVGxnDJbR9/2rVaarYuI+kH8ksUGYpcf1Ht1Ay5M6xPRQ=
+=FDPc
 -----END PGP SIGNATURE-----
 
---nextPart8410953.Qq0nleNzmx--
+--nextPart1477152.0XRRnhpKXM--
 
