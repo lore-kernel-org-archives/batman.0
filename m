@@ -1,15 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 20 Apr 2015 14:30:52 +0800
-Message-ID: <28031511.vQmOOoKVTs@voltaire>
-In-Reply-To: <7856073.VVMjEpdh4f@sven-edge>
-References: <13114664.Eg4ODy7KEo@bentobox> <6809018.15Hlry5Imp@voltaire>
- <7856073.VVMjEpdh4f@sven-edge>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 20 Apr 2015 09:27:52 +0200
+Message-ID: <4145450.XzhjfAJEYi@bentobox>
+In-Reply-To: <0516b7e4ce841146f759473be197ce252878f8ec.1428329893.git.alex.suykov@gmail.com>
+References: <0516b7e4ce841146f759473be197ce252878f8ec.1428329893.git.alex.suykov@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2091804.bLm6R6KjQQ";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-next 0/6] Patches for batman-adv 2015.0
-	release
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 2/2] batctl: use netinet/if_ether.h
+	instead of linux/if_ether.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,53 +21,69 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: antonio@meshcoding.com
 
-
---nextPart2091804.bLm6R6KjQQ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Monday, April 20, 2015 08:05:20 Sven Eckelmann wrote:
-> > This (subtle) problem is about compat.h. Specifically, the kfree_rcu macro
-> > requires a pre-defined variable name:
-> > #define kfree_rcu(ptr, rcu_head) call_rcu(&ptr->rcu_head,
-> > batadv_free_rcu_##ptr)
-> >
-> > 
-> >
-> > void batadv_free_rcu_softif_vlan(struct rcu_head *rcu);
+On Monday 06 April 2015 17:29:13 Alex Suykov wrote:
+> musl does not allow including netinet/* and linux/* headers together.
+> batctl includes netinet/if_ether.h indirectly via net/ethernet.h,
+> so netinet/if_ether.h must be used instead of linux/if_ether.h.
 > 
-> I still don't get it. I wrote the compat code for batadv_free_rcu_* and I
-> was  always under the impression that it is not a problem until we have two
-> functions which call kfree_rcu with the same variable name and different
-> types (something which I've now hopefully solved in my kfree_rcu patch for
-> master). And the patch I gave should also show that for this works fine
-> after adding batadv_free_rcu_softif_vlan.
+> Signed-off-by: Alex Suykov <alex.suykov at gmail.com>
 
-I hope Antonio is going to shed some light on the question whether that patch 
-made it upstream or not. Depending on that question we can pick the 
-appropriate solution.
+Acked-by: Sven Eckelmann <sven@narfation.org>
 
-Cheers,
-Marek
-
---nextPart2091804.bLm6R6KjQQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJVNJ0cAAoJEFNVTo/uthzAwMMH/2f6Swud0r3egZH+cfpllkGB
-9kAVR6RWT649g+I37oY98j6vvRkk/l4d3Rmo3C2VcexZt+eKtuZvgyQU3Nt+1nH3
-+gVvuy1WbkuEFRUj/X9rgLQIPpLjBuQV+0+/S2TK77Eppiuryaz2il7o8g14QJ9a
-yWAYjGCrkFa38vVKHWNUcAbJnypcstGVAR77mCCq7rX5AfC1DoqOZ6INUr4JEzYk
-V5XMv+2l5r2pObojFWFButbfRFUzl0aKgZwuVcSXZvEjTmTP85BR0QJp6/Y0W1Pm
-SU0Wiy+MfcVXRqAeofTVIq8VWX5mjqhef3KCuCgTWmeGYXf64+iWph7Fsm/c5Ow=
-=04Fp
------END PGP SIGNATURE-----
-
---nextPart2091804.bLm6R6KjQQ--
+> ---
+> v2: updated to work with #include <linux/types.h> in packet.h introduced by
+> https://lists.open-mesh.org:443/pipermail/b.a.t.m.a.n/2015-April/012961.html
+> and ported to batctl by patch 1/2 in this set.
+> 
+>  ping.c       | 2 +-
+>  tcpdump.h    | 2 +-
+>  traceroute.c | 2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/ping.c b/ping.c
+> index bdca222..7880a82 100644
+> --- a/ping.c
+> +++ b/ping.c
+> @@ -34,7 +34,7 @@
+>  #include <stdint.h>
+>  #include <sys/select.h>
+>  #include <sys/time.h>
+> -#include <linux/if_ether.h>
+> +#include <netinet/if_ether.h>
+> 
+>  #include "main.h"
+>  #include "ping.h"
+> diff --git a/tcpdump.h b/tcpdump.h
+> index 5d936f2..3c9126c 100644
+> --- a/tcpdump.h
+> +++ b/tcpdump.h
+> @@ -23,7 +23,7 @@
+>  #define _BATCTL_TCPDUMP_H
+> 
+>  #include <netpacket/packet.h>
+> -#include <linux/if_ether.h>
+> +#include <netinet/if_ether.h>
+>  #include <net/if_arp.h>
+>  #include <sys/types.h>
+>  #include "main.h"
+> diff --git a/traceroute.c b/traceroute.c
+> index 4ebfec2..373fe90 100644
+> --- a/traceroute.c
+> +++ b/traceroute.c
+> @@ -22,13 +22,13 @@
+> 
+> 
+>  #include <netinet/in.h>
+> +#include <netinet/if_ether.h>
+>  #include <errno.h>
+>  #include <stdio.h>
+>  #include <stdlib.h>
+>  #include <unistd.h>
+>  #include <fcntl.h>
+>  #include <string.h>
+> -#include <linux/if_ether.h>
+>  #include <stddef.h>
+>  #include <sys/select.h>
+>  #include <sys/time.h>
 
