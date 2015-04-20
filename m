@@ -1,15 +1,16 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 20 Apr 2015 11:32:23 +0800
-Message-ID: <10750000.oymJvT72oN@voltaire>
-In-Reply-To: <1429288461-26260-1-git-send-email-sven@narfation.org>
+Date: Mon, 20 Apr 2015 11:34:52 +0800
+Message-ID: <1454619.2gVXbJ0sFs@voltaire>
+In-Reply-To: <1429288461-26260-2-git-send-email-sven@narfation.org>
 References: <13114664.Eg4ODy7KEo@bentobox>
  <1429288461-26260-1-git-send-email-sven@narfation.org>
+ <1429288461-26260-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3185618.A8mY72z7NR";
+Content-Type: multipart/signed; boundary="nextPart4965419.XED8Y2J4ST";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-next 1/6] batman-adv: ignore
-	netdev_set_master() calls on kernels older than 2.6.39
+Subject: Re: [B.A.T.M.A.N.] [PATCH-next 2/6] batman-adv: replace strnicmp
+	with strncasecmp
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,37 +25,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart3185618.A8mY72z7NR
+--nextPart4965419.XED8Y2J4ST
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, April 17, 2015 18:34:16 Sven Eckelmann wrote:
-> From: Marek Lindner <mareklindner@neomailbox.ch>
+On Friday, April 17, 2015 18:34:17 Sven Eckelmann wrote:
+> From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 > 
-> batman-adv calls netdev_master_upper_dev_link() which is replaced with with
-> netdev_set_master() for kernels older than 3.9 via compat.h.
-> Prior to 2.6.39 netdev_set_master() contained Linux bonding calls needed to
-> setup bonding devices. Calling this function from batman-adv leads to
-> unexpected behavior when current batman-adv versions are used on these
-> older kernels.
+> The kernel used to contain two functions for length-delimited,
+> case-insensitive string comparison, strnicmp with correct semantics and
+> a slightly buggy strncasecmp.  The latter is the POSIX name, so strnicmp
+> was renamed to strncasecmp, and strnicmp made into a wrapper for the new
+> strncasecmp to avoid breaking existing users.
 > 
-> To fix the situation compat.h now ships its own implementation of
-> netdev_set_master() which does not change the net_dev->master state
-> on kernels older than 2.6.39.
+> To allow the compat wrapper strnicmp to be removed at some point in the
+> future, and to avoid the extra indirection cost, do
+> s/strnicmp/strncasecmp/g.
 > 
-> Reported-by: Andreas Pape <APape@phoenixcontact.com>
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+> Cc: Marek Lindner <mareklindner@neomailbox.ch>
+> Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  compat.h | 9 +++++++++
->  1 file changed, 9 insertions(+)
+>  gateway_common.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 
-I have already cherry-picked that patch myself.
+Applied in revision 5ba0a63.
 
 Thanks,
 Marek
 
---nextPart3185618.A8mY72z7NR
+--nextPart4965419.XED8Y2J4ST
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -62,14 +65,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVNHNHAAoJEFNVTo/uthzAI7UH/3hRsovC3j1Pf/UMXqccesW0
-7WQUjhnVtqzXksNdKP1D21mnDaQoSvGk3PDhMCJDGVct15vp5+wrC87pyDQ3IUEG
-vSLLOFh1rJb5f3407HU32zQUwPpK8R86PP6NZz04UMbrXYcrMCmADsaR/okwDPgE
-BlupuW9PdwBN1F2IS6mcVEE6T2ocm//ICS6wkVYJQnMT/RwZXQODJsqTJoC41Xu3
-xTKvtFp1dqjH4BUS9DXRtQ1MoKwoEITfi8M64nlNqAENcvXBiczlqBQcnxDvnQIu
-ulXLcVBU4BuKZgF8FaHlD6rR73NIx+u9bJ3G1uoqCWLnU2Vm7RqeFooDaQKH1LY=
-=2X4I
+iQEcBAABCAAGBQJVNHPcAAoJEFNVTo/uthzAELAIAIGLtG+YlNbv5/42ObOutHir
+JLVuNwl08xgjFP3nxfEqWwFW7JOmuJvUVg3xTN1JQ1HjaLevoMDH1yQ+qrvD4AbD
+jTKd0k78SVf4W4k0Mhq/DMGZdcZMGkje80JtFwLmEnLtp9CvlMshbpjHdBEs1Nff
+0vT7pq9TCOLXKamKF/dn7gUUD2+OlWSHjKX/CfwogYjJXXPF2B1MnIyeeEhwxsEq
+98cRj7zx6x48Unq4k+VIvqlldS1uhnrbE/sN7suAsjibAPJoWBRPbugO9lRVqzb0
+CJVidEd1SCpE2t1C144Q0eGO+j6SWSHarG+CS8eKCryZ8sO05Atpt+f3OJqKsUw=
+=fzQZ
 -----END PGP SIGNATURE-----
 
---nextPart3185618.A8mY72z7NR--
+--nextPart4965419.XED8Y2J4ST--
 
