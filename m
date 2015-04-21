@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 21 Apr 2015 11:41:48 +0800
-Message-ID: <1834679.g60VTMDq3l@voltaire>
-In-Reply-To: <1429292430-30883-1-git-send-email-sven@narfation.org>
+Date: Tue, 21 Apr 2015 11:46:51 +0800
+Message-ID: <1595618.4CGjfVRuAA@voltaire>
+In-Reply-To: <1429292430-30883-2-git-send-email-sven@narfation.org>
 References: <1429292430-30883-1-git-send-email-sven@narfation.org>
+ <1429292430-30883-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2029658.IY51TkWUq8";
+Content-Type: multipart/signed; boundary="nextPart8217898.gWilCCNH7t";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 1/4] batman-adv: Remove explicit
-	compat.h include and split compat.h
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 2/4] batman-adv: Add required to
+	includes to all files
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,34 +24,46 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart2029658.IY51TkWUq8
+--nextPart8217898.gWilCCNH7t
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, April 17, 2015 19:40:27 Sven Eckelmann wrote:
-> The current approach for the compat layer is to include the compat.h file at
-> exactly the right time to provide additional functionality and to live
-> patch the batman-adv sources. This has the problem that the compat.h file
-> becomes harder to read over time. Also live patching and adding of missing
-> functionality partially conflict. This becomes obvious when the include
-> order in some files is different compared to the one the author of an
-> compat.h entry expected.
+On Friday, April 17, 2015 19:40:28 Sven Eckelmann wrote:
+> The header files could not be build indepdent from each other. This is
+> happened because headers didn't include the files for things they've used.
+> This was problematic because the success of a build depended on the
+> knowledge about the right order of local includes.
 > 
-> A different approach is to inject intermediate header files which add
-> additional features. This allows to reduce the size of compat.h and only
-> leaves the live patching part in it. The compat.h can then added
-> automatically to each compile run before anything else is included.
-> compat.h has therefore the control which headers must be included before
-> the live patching of the batman-adv source can begin.
+> Also source files were not including everything they've used explicitly.
+> Instead they required that transitive includes are always stable. This is
+> problematic because some transitive includes are not obvious, depend on
+> config settings and may not be stable in the future.
 > 
+> The order for include blocks are:
+> 
+>  * primary headers (main.h and the *.h file of a *.c file)
+>  * global linux headers
+>  * required local headers
+>  * extra forward declarations for pointers in function/struct declarations
+> 
+> The only exceptions are linux/bitops.h and linux/if_ether.h in packet.h.
+> This header file is shared with userspace applications like batctl and must
+> therefore build together with userspace applications. The header
+> linux/bitops.h is not part of the uapi headers and linux/if_ether.h
+> conflicts with the musl implementation of netinet/if_ether.h. The
+> maintainers rejected the use of __KERNEL__ preprocessor checks and thus
+> these two headers are only in main.h. All files using packet.h first have
+> to include main.h to work correctly.
+> 
+> Reported-by: Markus Pargmann <mpa@pengutronix.de>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-Applied in revision 8746f0f.
+Applied in revision 960339d.
 
 Thanks,
 Marek
 
---nextPart2029658.IY51TkWUq8
+--nextPart8217898.gWilCCNH7t
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -58,14 +71,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVNcb/AAoJEFNVTo/uthzAFgQH/iLiavvZBqTdGIb9hrCPiLzV
-W0mSkVSmfJZ9gkkaKKtQTtgK48vwHhDS3xV2EAW3be2Aar04nnI/2OH03ZjNc3u8
-izGB/3wheqPneBAwu38aIFm0sUzkvXuza9Lo49SGeNBiSbvZ2ieIZiCE6jXpXNIm
-sWcer1VDPa+iAwUn4lnzXRO6htZfdbZzuidizeH7iBqBJX/0oClqDsNTsMErn/Jr
-1O8Sd8pMimsaERbcEtIuQZRV3kqomb24aac0AdILYGcXiL+sp1Bxn0UH7+I887wz
-4iidU631USVV3G/oW2y0FXlu/gZ/cY4uZvYtZpIsoDy3eG96JcoxXwC9/XwUm0Y=
-=ygnz
+iQEcBAABCAAGBQJVNcgrAAoJEFNVTo/uthzAa2cH/28bQfn5Dok/3qfpV/HEsFhm
+ibze3ErWGp1bAgZqcQ7eLawgvxvvQ5CSSzabh96L5cCdGXwq6kPuZONXUtgE/Khp
+sYehuxyJ5hhX0gy/SmAiIRfModBkZvEzvl980fF2X5jWDRdefqTUpfDiOQkighuZ
+PeqCUvvYas7mkZ9Uke7kv7iw04peaJKoznbLeUMUzAKlg/y7OGJKgO5hEF9n7Qwz
+1ABKx7HsrZIIPFGiQg58GKHnLFWnbZTKaspNQnlkCxY5wh4XQi3I25XKXtvS66DX
+v4mpZtdiqTcAUj/nF49nKIohh2TvsPCpSPrdhhheAkbvBNL5i2f9jX7zzLGUNYc=
+=ppHA
 -----END PGP SIGNATURE-----
 
---nextPart2029658.IY51TkWUq8--
+--nextPart8217898.gWilCCNH7t--
 
