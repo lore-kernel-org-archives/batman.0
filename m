@@ -1,16 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 21 Apr 2015 08:35:37 +0200
-Message-ID: <1524181.VdC0CvID4i@sven-edge>
-In-Reply-To: <2239102.H9P5JOuLU8@voltaire>
-References: <1429292430-30883-1-git-send-email-sven@narfation.org>
- <1429292430-30883-4-git-send-email-sven@narfation.org>
- <2239102.H9P5JOuLU8@voltaire>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <5536076F.7050405@meshcoding.com>
+Date: Tue, 21 Apr 2015 10:16:47 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1717917.K3mbkasDQY";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 4/4] batman-adv: Automatically create
-	nested kfree_rcu helper functions
+References: <13114664.Eg4ODy7KEo@bentobox>
+ <1429288461-26260-6-git-send-email-sven@narfation.org>
+ <3471641.Affe8L3RIT@voltaire> <31769616.xjVq0iO3v5@bentobox>
+In-Reply-To: <31769616.xjVq0iO3v5@bentobox>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="rOeLvGoiVQCjwkANXJD9tk3QIhlb0qVIh"
+Subject: Re: [B.A.T.M.A.N.] [PATCH-next 6/6] batman-adv: Use kernel variable
+ declaration order in batadv_send_skb_unicast
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,74 +23,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
+
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--rOeLvGoiVQCjwkANXJD9tk3QIhlb0qVIh
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
 
---nextPart1717917.K3mbkasDQY
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday 21 April 2015 11:52:16 Marek Lindner wrote:
-> On Friday, April 17, 2015 19:40:30 Sven Eckelmann wrote:
-> > The kfree_rcu compat helper for old kernels require a special function
-> > that
-> > knows how to calculate the offsets to the actual data pointer to call
-> > kfree. These can either be manually provided or the GCC extension for
-> > nested functions can be used to automatically create a local function
-> > using a macro.
-> > 
-> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> > ---
-> > 
-> > v4:
-> >  * rebased on top of master with merged patches from
-> >  
-> >    https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2015-April/012985.htm
-> >    l
-> > 
-> > v3: no change
-> > v2: no change
-> > 
-> >  Makefile                        |   1 -
-> >  compat-include/linux/rcupdate.h |  15 +++++
-> >  compat.c                        | 120
-> > 
-> > ----------------------------------------
-> > compat.h                        |  20 -------
-> > 
-> >  4 files changed, 15 insertions(+), 141 deletions(-)
-> >  delete mode 100644 compat.c
-> 
-> Applied in revision 082c888.
+On 20/04/15 18:05, Sven Eckelmann wrote:
+> Ok, then maybe Antonio could try to put it in the same pull request as =
+Markus=20
+> Pargmann's stuff or his own cleanup patches. At least the patch would h=
+ave=20
+> some nice companions which don't look too different.
 
-The commit is also not the patch I've send you. compat-includes/ is also 
-missing in this commit.
 
-Kind regards,
-	Sven
---nextPart1717917.K3mbkasDQY
+Yeah, I will probably do that.
+
+Thanks,
+
+--=20
+Antonio Quartulli
+
+
+--rOeLvGoiVQCjwkANXJD9tk3QIhlb0qVIh
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJVNe+8AAoJEF2HCgfBJntGqPMQALURR9iNkl83OTQrAAs/VtyW
-GZi2aPWLtm0REJqjvEG+n/UcmMSHsXLNwJfCA/Pv8zQ0kCWRR60rR6/JzysmvUeY
-daBQzjL6UNYJTr85/kwKsExE91CSFs+oHa4DlKALuc8oBHFZduTiGMSlIapDRRal
-jfDHBjQIJYqHz0ibHjK3UiN4Mm7hGNGJfC+vuibAod1U+jkIiqAlhmfxe7MGXf0N
-ZmahmUVeaKeFTtTCQROyXpI3WSKO5713mhHE+Xqp3/VbfewR4M5cjB4S8QskcxCM
-9wE3Bko2FbThTgBy82O2H9L9hpAeI+q7eEVpol3pLvriSTfLsgTfcwAVl3t6tk2R
-YeqxOfo+ceNpmtcjrKd8Qle71h+0+zTlc5ld51JH7yBqUDdUXKNUkp9tC+ETPgjd
-HVi4wEfv8PCtOUX+kiERRr3eg8tG0D9ArGJLUygkkmO8L0G4fLqUxJWCw67dfDny
-4GNpM0Hzl2rLaXRlSGXDedFZ8EWEe5dlfroBc7sVETLfx7wYxyTXn616dIyCp/EW
-r7pQKiOoN1powYQisqj119vZ8TI8gPr3XmwcJ0Bf5ySt5ij3/lmn5g3FhGX+Hf4n
-VkD27NtFyNRQmEAajsn3Vd6H18C7Zewdhcl+LJ6Vqv1mmtfH9BIYAYqTZiCeHaqP
-gTn7gWzG03JO9eS+grKJ
-=99ly
+iQIcBAEBCAAGBQJVNgdzAAoJEJgn97Bh2u9evP4P+webVK0yazisqMvUmlQX14GH
+cdfPaE1c3H4FpUHKkkp8t91xQ9tPuqgoBvyVW6RH+IAE2vstl5vOty3nCG+Kq5GF
+oui8VYISnp8v0k9R0EOOvH+lmsh8m1YNgMtZCEANfsNH9JsYrrg6nSNOlkmKCaxK
+kSK9RDha7uFX70evBwM/u+zXcZXgvrvXGs8lI58A5acELkOREdRwf58n4c6tot4p
+ypkTjEjpzXebRkofpSN79TIYhA13IKel0AUTGYozejnsWYTjUeKwLL9Qf/zASKtY
+TmYREq6SGauzjD0+c5Us64nEA7nNOyn3YnSgeMWP0ycV0k3XzYnRV6qrmhs2gEJc
+ndQNuHMZBBuna1F0p1B0KrjSViXYuSN22A2M2zjWn/8FbG2+trMHw+pLN4AC7ukm
+cUlgA0/u6GtlieEmP30ZLvfxrbLY/LRi2bPe7qt94XnjKyaSo4o8ilxp/cSoN93x
+SjXXwArTXov+6EK85rbHklUvjRjp4Tnvj4cELzc2qoPNA2/kSohVj1+dTabhbu6o
+8930BI9eUc7PYbVKr0H2cAeIJAoSnEUmQGEbiM2kwWR7CxW7pjQPoYKrUzuU9Ba3
+wCG8U1uBlYAtQYqLTQ6bLto7debUThiVCx1PwbQSFodXC04xU1P0F2Ei5YLtM5iv
+xIELL/DJX0jcV8yA6se1
+=7VdO
 -----END PGP SIGNATURE-----
 
---nextPart1717917.K3mbkasDQY--
-
+--rOeLvGoiVQCjwkANXJD9tk3QIhlb0qVIh--
