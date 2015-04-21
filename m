@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 21 Apr 2015 16:53:18 +0800
-Message-ID: <3995188.NSgX7Lqqna@voltaire>
-In-Reply-To: <8826381.MUao5dBNO2@sven-edge>
+Date: Tue, 21 Apr 2015 17:01:25 +0800
+Message-ID: <4169825.U60o6nN43M@voltaire>
+In-Reply-To: <1524181.VdC0CvID4i@sven-edge>
 References: <1429292430-30883-1-git-send-email-sven@narfation.org>
- <2849660.eB6RnOYSlL@voltaire> <8826381.MUao5dBNO2@sven-edge>
+ <2239102.H9P5JOuLU8@voltaire> <1524181.VdC0CvID4i@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart11258618.edMe0jPaLm";
+Content-Type: multipart/signed; boundary="nextPart3783903.H3NNgmO6QD";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 3/4] batman-adv: Remove unused
-	IFF_BRIDGE_PORT live patching hack
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 4/4] batman-adv: Automatically create
+	nested kfree_rcu helper functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,37 +24,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart11258618.edMe0jPaLm
+--nextPart3783903.H3NNgmO6QD
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, April 21, 2015 08:04:41 Sven Eckelmann wrote:
-> > The macro is used in compat.h line 55, is it not ?
+On Tuesday, April 21, 2015 08:35:37 Sven Eckelmann wrote:
+> > >  4 files changed, 15 insertions(+), 141 deletions(-)
+> > >  delete mode 100644 compat.c
+> >
+> > 
+> >
+> > Applied in revision 082c888.
 > 
-> IFF_BRIDGE_PORT appears in this line but here is the context:
-> 
-> 
-> #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
-> 
-> HERE IT IS *NOT* USED
-> 
-> #elif LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
-> 
-> HERE IT IS USED
-> 
-> #endif /* < KERNEL_VERSION(2, 6, 36) */
-> 
-> 
-> The IFF_BRIDGE_PORT (which I call unused( is only required in this other 
-> compat hack when the kernel is >= 2.6.36 and < 3.9.0. But the one I want to 
-> remove is only for kernels < 2.6.36.
+> The commit is also not the patch I've send you. compat-includes/ is also 
+> missing in this commit.
 
-Good point. The patch was applied in revision 312ea8a.
+Thanks for letting me know! Should be fixed now.
 
-Thanks,
+Cheers,
 Marek
 
---nextPart11258618.edMe0jPaLm
+--nextPart3783903.H3NNgmO6QD
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -62,14 +52,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVNhABAAoJEFNVTo/uthzAbUoH/RJVwEsS+sWFYeKxfgrdErM+
-TvOQ6fgQ1ETtKhdzWKCZGSpq0HYfgRC2f5tgvxhS58RuVRSNGPP5dZxtf7xWuceq
-fbN2iOHrw76Fu2cpsFyNYYpMwlBNDp1ADtWCTV8444/JIeguSwPuBqnMXd7Mo/kw
-rr+9JOr8gu1udq7jxnGrUy0lhsGaLS7YHZpyzV55CocPdWRDFcH691QDyOH5BFH9
-kVqR4V94o4pABxlascVJo3DvQWjV0zNRRXRAVKsSRfcN2CAU9GH+XR97GHDkqPnY
-nanTzjSSN8QCmnurKSyp/vBnsiAKHCN8GgXdyO6pc+O9mfNtxVcyiXNrRFWy8DI=
-=wnQg
+iQEcBAABCAAGBQJVNhHlAAoJEFNVTo/uthzA4MUIAJKWeWGm1iE5IreRaj7IGgMB
+pzn/oA4LzxfDdOcp7TdGKl7qMj1Rwj2QbuPg5ThrYaFsf9fdk48FR04ZyC9Eu5gU
+O/2QgpJ9qE8XfwzYSqwcsIOO83Wqq3AbJx+JaBl+rVRBevkdfm5WrMEOFrK8WSvz
+e2EQ8PkeRZUcem/N6yUrAbtyGlbkXsvf64YGSvlc2/Q0iYq2RZtIqmHkkCaOL+zw
+x1x//aXIvJpUHmo2BUx4CWTNWkg+oX/NJVGbtfTeLHN2uhCMd9zlsL8Zja+in3jP
+M6ycngM0QEZNq+zgLjSwUnFoglvcm9AWYC7wx4LnXH8VkaChJBaY4Bjk5R5DytM=
+=7BMe
 -----END PGP SIGNATURE-----
 
---nextPart11258618.edMe0jPaLm--
+--nextPart3783903.H3NNgmO6QD--
 
