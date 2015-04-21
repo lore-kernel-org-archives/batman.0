@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 21 Apr 2015 11:52:16 +0800
-Message-ID: <2239102.H9P5JOuLU8@voltaire>
-In-Reply-To: <1429292430-30883-4-git-send-email-sven@narfation.org>
-References: <1429292430-30883-1-git-send-email-sven@narfation.org>
- <1429292430-30883-4-git-send-email-sven@narfation.org>
+Date: Tue, 21 Apr 2015 12:06:26 +0800
+Message-ID: <25530253.gmXp9rLdmH@voltaire>
+In-Reply-To: <0516b7e4ce841146f759473be197ce252878f8ec.1428329893.git.alex.suykov@gmail.com>
+References: <0516b7e4ce841146f759473be197ce252878f8ec.1428329893.git.alex.suykov@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8562284.0zxEU9Ntl3";
+Content-Type: multipart/signed; boundary="nextPart3844856.I5Xe9SoVXn";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 4/4] batman-adv: Automatically create
-	nested kfree_rcu helper functions
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 2/2] batctl: use netinet/if_ether.h
+	instead of linux/if_ether.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,39 +23,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart8562284.0zxEU9Ntl3
+--nextPart3844856.I5Xe9SoVXn
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, April 17, 2015 19:40:30 Sven Eckelmann wrote:
-> The kfree_rcu compat helper for old kernels require a special function that
-> knows how to calculate the offsets to the actual data pointer to call kfree.
-> These can either be manually provided or the GCC extension for nested
-> functions can be used to automatically create a local function using a
-> macro.
+On Monday, April 06, 2015 17:29:13 Alex Suykov wrote:
+> musl does not allow including netinet/* and linux/* headers together.
+> batctl includes netinet/if_ether.h indirectly via net/ethernet.h,
+> so netinet/if_ether.h must be used instead of linux/if_ether.h.
 > 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Alex Suykov <alex.suykov at gmail.com>
 > ---
-> v4:
->  * rebased on top of master with merged patches from 
->    https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2015-April/012985.html
-> v3: no change
-> v2: no change
+> v2: updated to work with #include <linux/types.h> in packet.h introduced by
+> https://lists.open-mesh.org:443/pipermail/b.a.t.m.a.n/2015-April/012961.html
+> and ported to batctl by patch 1/2 in this set.
 > 
->  Makefile                        |   1 -
->  compat-include/linux/rcupdate.h |  15 +++++
->  compat.c                        | 120
-> ----------------------------------------
-> compat.h                        |  20 -------
->  4 files changed, 15 insertions(+), 141 deletions(-)
->  delete mode 100644 compat.c
+>  ping.c       | 2 +-
+>  tcpdump.h    | 2 +-
+>  traceroute.c | 2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
 
-Applied in revision 082c888.
+Applied in revision 6423e3e.
 
 Thanks,
 Marek
 
---nextPart8562284.0zxEU9Ntl3
+--nextPart3844856.I5Xe9SoVXn
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -64,14 +56,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVNclwAAoJEFNVTo/uthzAolkH/jtfAd92T4znXvkxw1tKLN+/
-z0B9vbCdWc0LX4Ge4u8GqjlxdhwJBhLccB22n+cXD4Bik/4v18JByZVROjsTIoz4
-QZwHGkDFS18v7kgmQJD4xoLIb5yXXxmAXaIvJhCBf3DS2oNaYsgRWQ3AKAQi17e+
-NP5BuXn3IUh8F9iJn51udJA48b3U9MldP2YfPPuJ7xr1DdUjmsuYSrFwc6Zgk4um
-MsQSrs3lINavf1oRPLLOKO97cBEODyzYsdQwOlyIagISB1jKrPkRGdoWVaWoWkNs
-ekuGNdDxXusMO2xr6GRwGjiRTAelZEIqq0dRSlva6jW0fNzcVTHw1c/MBM/Przk=
-=8TCC
+iQEcBAABCAAGBQJVNczGAAoJEFNVTo/uthzAMv4H/AqIso0cg06IAWfIWt8P14WR
+88TUHwE5qqg8r8J3hKU/oIyt/CEsMucG0nz7isgQPGRA/pcPKwrAdf9a6QEtETUg
+xOT0OD1Ng3veQs8xI58w6ajpNuuiHKliyCQtwYaDLuKirtFRp5sjIuH98kLIemCO
+0tnLcwsc6GU6EYDGu02UKFZ05IU7sfMQGfsU0+8bXPME+duCFrEPhYUKp4dnwHyC
+s42fF2s5Mw4fnCAhUWwMjJypKnq/eMIw5bFjf41hXDWQdBRSjG/anvMHEj/ysV1S
+SaY6Ks8DI2Zs+f1ZA08rk4KkvQ/iLmkG642/KZ7TfKO1rBcAcjpjB5Nlz8lXSMg=
+=1Jj8
 -----END PGP SIGNATURE-----
 
---nextPart8562284.0zxEU9Ntl3--
+--nextPart3844856.I5Xe9SoVXn--
 
