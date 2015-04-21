@@ -1,15 +1,16 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 21 Apr 2015 08:19:56 +0200
-Message-ID: <2563715.j7ulvOLMgA@sven-edge>
-In-Reply-To: <1834679.g60VTMDq3l@voltaire>
+Date: Tue, 21 Apr 2015 08:35:37 +0200
+Message-ID: <1524181.VdC0CvID4i@sven-edge>
+In-Reply-To: <2239102.H9P5JOuLU8@voltaire>
 References: <1429292430-30883-1-git-send-email-sven@narfation.org>
- <1834679.g60VTMDq3l@voltaire>
+ <1429292430-30883-4-git-send-email-sven@narfation.org>
+ <2239102.H9P5JOuLU8@voltaire>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart64983403.MRGZrDqGeA";
+Content-Type: multipart/signed; boundary="nextPart1717917.K3mbkasDQY";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 1/4] batman-adv: Remove explicit
-	compat.h include and split compat.h
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 4/4] batman-adv: Automatically create
+	nested kfree_rcu helper functions
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,40 +26,49 @@ To: Marek Lindner <mareklindner@neomailbox.ch>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart64983403.MRGZrDqGeA
+--nextPart1717917.K3mbkasDQY
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday 21 April 2015 11:41:48 Marek Lindner wrote:
-> On Friday, April 17, 2015 19:40:27 Sven Eckelmann wrote:
-> > The current approach for the compat layer is to include the compat.h file
-> > at exactly the right time to provide additional functionality and to live
-> > patch the batman-adv sources. This has the problem that the compat.h file
-> > becomes harder to read over time. Also live patching and adding of
-> > missing functionality partially conflict. This becomes obvious when the
-> > include order in some files is different compared to the one the author
-> > of an compat.h entry expected.
-> > 
-> > A different approach is to inject intermediate header files which add
-> > additional features. This allows to reduce the size of compat.h and only
-> > leaves the live patching part in it. The compat.h can then added
-> > automatically to each compile run before anything else is included.
-> > compat.h has therefore the control which headers must be included before
-> > the live patching of the batman-adv source can begin.
+On Tuesday 21 April 2015 11:52:16 Marek Lindner wrote:
+> On Friday, April 17, 2015 19:40:30 Sven Eckelmann wrote:
+> > The kfree_rcu compat helper for old kernels require a special function
+> > that
+> > knows how to calculate the offsets to the actual data pointer to call
+> > kfree. These can either be manually provided or the GCC extension for
+> > nested functions can be used to automatically create a local function
+> > using a macro.
 > > 
 > > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> > ---
+> > 
+> > v4:
+> >  * rebased on top of master with merged patches from
+> >  
+> >    https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2015-April/012985.htm
+> >    l
+> > 
+> > v3: no change
+> > v2: no change
+> > 
+> >  Makefile                        |   1 -
+> >  compat-include/linux/rcupdate.h |  15 +++++
+> >  compat.c                        | 120
+> > 
+> > ----------------------------------------
+> > compat.h                        |  20 -------
+> > 
+> >  4 files changed, 15 insertions(+), 141 deletions(-)
+> >  delete mode 100644 compat.c
 > 
-> Applied in revision 8746f0f.
+> Applied in revision 082c888.
 
-The patch you've added is not the one I've send. All files in compat-include 
-are missing now in your commit.
-
-Btw. I had prepared a patch v5 which fixed some merge conflicts with the state 
-of the next from yesterday.
+The commit is also not the patch I've send you. compat-includes/ is also 
+missing in this commit.
 
 Kind regards,
 	Sven
---nextPart64983403.MRGZrDqGeA
+--nextPart1717917.K3mbkasDQY
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -66,20 +76,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJVNewQAAoJEF2HCgfBJntGYlEP/Rah2jnG0Ub15zZki0e52LAC
-Qyo0b6aOROeYcXzCMnpOthGy/Twv8q2REIpbD+FElI7+6NJShKA/ZzOSI3z0g7l1
-9eFw/fthItxH9q39UMQt5S6Uq4IV6FzJT/2A96O5jiDD5i+7tkxXbZiTps/45kus
-87af1R5A5XzGwlclJDRGad/8DXZmHyVQXZoaCijr0DC3wBN22+290fAC9QfD5AI4
-VatCVDw5kB9gjaNHBZmNfPPKT7V2cx0tdQZ5JbWq0/8snrWaTC081HQHuptcmICN
-eP0wBSglA7JD2PnDIVRuNwErbevScQelmNw/8dTsHwKq+gActcgD1EIz2Br3y5MR
-4XiEo14lsfg/eg09vtR0QpfhnxmcMMiexHWRjYPGuVieu3sKW5TgBT+fyK9V8iuq
-PNxPV6Q1Y1EAALU2uQ1zfVkvIUwqk+beX+c4h2aw3fgQW48HhVVzGmgUp4uW1mHu
-Xh1Tg3ZhbmRaC7fy61hPhWIM85wwNouYEY30Tp4VEaIaL5XXcYIVG7tdnjHiPdCJ
-QeZJFSCxMIZO93kHKa51kTaNri+DayKLFITIeRS2/5ucz7VtWOasJ+J49w2Jbsa7
-jBI8TsxiWynHvRafB1QqshDjAh3tdAtNSe721gMXs5f+sSpKiXuUPcF2AHSaH3mu
-kuJ5crixGh1McFsm1S8+
-=jMHi
+iQIcBAABCgAGBQJVNe+8AAoJEF2HCgfBJntGqPMQALURR9iNkl83OTQrAAs/VtyW
+GZi2aPWLtm0REJqjvEG+n/UcmMSHsXLNwJfCA/Pv8zQ0kCWRR60rR6/JzysmvUeY
+daBQzjL6UNYJTr85/kwKsExE91CSFs+oHa4DlKALuc8oBHFZduTiGMSlIapDRRal
+jfDHBjQIJYqHz0ibHjK3UiN4Mm7hGNGJfC+vuibAod1U+jkIiqAlhmfxe7MGXf0N
+ZmahmUVeaKeFTtTCQROyXpI3WSKO5713mhHE+Xqp3/VbfewR4M5cjB4S8QskcxCM
+9wE3Bko2FbThTgBy82O2H9L9hpAeI+q7eEVpol3pLvriSTfLsgTfcwAVl3t6tk2R
+YeqxOfo+ceNpmtcjrKd8Qle71h+0+zTlc5ld51JH7yBqUDdUXKNUkp9tC+ETPgjd
+HVi4wEfv8PCtOUX+kiERRr3eg8tG0D9ArGJLUygkkmO8L0G4fLqUxJWCw67dfDny
+4GNpM0Hzl2rLaXRlSGXDedFZ8EWEe5dlfroBc7sVETLfx7wYxyTXn616dIyCp/EW
+r7pQKiOoN1powYQisqj119vZ8TI8gPr3XmwcJ0Bf5ySt5ij3/lmn5g3FhGX+Hf4n
+VkD27NtFyNRQmEAajsn3Vd6H18C7Zewdhcl+LJ6Vqv1mmtfH9BIYAYqTZiCeHaqP
+gTn7gWzG03JO9eS+grKJ
+=99ly
 -----END PGP SIGNATURE-----
 
---nextPart64983403.MRGZrDqGeA--
+--nextPart1717917.K3mbkasDQY--
 
