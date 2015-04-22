@@ -1,15 +1,17 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <553703EA.7000405@meshcoding.com>
-Date: Wed, 22 Apr 2015 04:14:02 +0200
+Message-ID: <5537064E.4000803@meshcoding.com>
+Date: Wed, 22 Apr 2015 04:24:14 +0200
 From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <CACQgX2EGOT8WD0wTiSqMCoF=GeOJKeyTZtLBuKfHH3wkh4F40Q@mail.gmail.com>
-In-Reply-To: <CACQgX2EGOT8WD0wTiSqMCoF=GeOJKeyTZtLBuKfHH3wkh4F40Q@mail.gmail.com>
+References: <OF5389A718.644E8229-ONC1257E0D.00566F9A-C1257E0D.0056A5A0@phoenixcontact.com>
+ <550AF2DD.5000707@meshcoding.com>
+ <OF05EC2858.5AFC84BB-ONC1257E0D.0059D034-C1257E0D.005CE3EF@phoenixcontact.com>
+In-Reply-To: <OF05EC2858.5AFC84BB-ONC1257E0D.0059D034-C1257E0D.005CE3EF@phoenixcontact.com>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="Mh3ji9EWeHD7DGLkqmLsKV882MEQGsHTe"
-Subject: Re: [B.A.T.M.A.N.] Installing issue (Makefile configuration doesn't
- exist)
+ boundary="nwSwv41xuxfCl0rnaFj1n14XB8qKBun56"
+Subject: Re: [B.A.T.M.A.N.] Antwort: Re: [PATCH] batman-adv: bugfix for
+ kernel crash in batadv_tt_local_table_free
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,52 +23,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: odshrit@gmail.com
+To: APape@phoenixcontact.com
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---Mh3ji9EWeHD7DGLkqmLsKV882MEQGsHTe
-Content-Type: text/plain; charset=utf-8
+--nwSwv41xuxfCl0rnaFj1n14XB8qKBun56
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-Hi Omar,
+Hi Adreas,
 
-On 21/04/15 17:26, Omar Shrit wrote:
-> HI everybody:
+sorry for waiting so long before getting back to you, but this bug
+slipped away of my todo list..
+
+Anyhow, I have some questions inline:
+
+On 19/03/15 17:54, Andreas Pape wrote:
+> Hi Antonio,
 >=20
-> I have four Raspberry Pi's, connected as a mesh network, I am trying
-> to  use Batman as routing protocol (the batman-adv module is used),
-> however I need to have the log file, and debug folder, as they already
-> doesn=E2=80=99t exist in the installed module in the Linux kernel.
-> The FAQ page explained that I have to re-install the module and
-> modifying the Makefile Debug option to y ,
-> In fact I have found that only the module which exist in the website
-> of Batman have these options in the Makefile, the makefile of the
-> module that exist in the Linux kernel is different, and doesn=E2=80=99t=
- have
-> any option ,
-> by default the batman module in the Linux kernel doesn=E2=80=99t enable=
- the
-> Debug option as I'm using in my RPI's Raspian with kernel version
-> 3.18.5
-> Does anyone have any idea about how to change the options in the
-> module Makefile in Linux kernel before installing it ??, I need to use
-> cross-compile for compiling the kernel.
-> All suggestions are welcomed.
+> I saw the crash, but only in the case when I add the non-IP traffic
+
+What is this non-IP traffic? Can you mention what type of traffic are
+you sending?
+
+> using VLAN ID 0.=20
+
+Are you saying you are creating a bat0.0 ? If not, can you clarify the
+meaning of VLAN ID 0 ?
 
 
-have you just tried to search in the "make menuconfig" dialog ?
-There you should find all the batman-adv compile options and you can
-choose the one you prefer (including debug).
-
-
+Thanks!
 Cheers,
 
 --=20
 Antonio Quartulli
 
 
---Mh3ji9EWeHD7DGLkqmLsKV882MEQGsHTe
+--nwSwv41xuxfCl0rnaFj1n14XB8qKBun56
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -74,19 +67,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJVNwPuAAoJEJgn97Bh2u9eIoYP/RnKdJZZMDj2RJRAV2E8BNZl
-tvudW4c6AMqG+W1n5KZsSM7TU2RGiE/NYR9QQ22Feg/vyvE8SVxwzlqrLzwUHnpO
-8YyVNINUjJ9lZYzvlpFsm+r7W3dAYu/B6SQQdQNg0gJ6C7b8EdQCOnr8bCRh7rfW
-XiUIzIvYiVYdM+LxheDe3pxOh/m5UfHRB9DlL+ncvf1AW1iVYLsvbX+qaafFysc5
-IUlUFBEIGq1FeY4Uo+FxdgeRnlK5vnZD783y6sOCjSgrG8VF8EhCi5VNnFJbMauB
-ipY7XVQ45hcod3h2CFhH3Wle1GVJjnHRGDvxfMKFzvdGNPwvQj7es4b1FITTu76W
-DSRa0zg3nZYj0YZ9Cy/j0JQ03jDqfEXyWl5mFe+iOvkwrxg8qaUEmmUVjRcvwiRv
-/yV/VWDnNAIVkYfJIFJ8f867RBQEj5QODgeafJfSPXpr68ifn454lD8db2rGls4n
-sCQCqK4ijrl/dH9SCDTwY9lTqP4NwHEApQtltgnNRe8MGExCeFQVWG8GksW9V/0D
-GCD6t5qrk3dzeC1Q1oTKDSJ5XDc9SomtK47s+TKjBYqDqx3MX2pM4D5shAIFDIqM
-ezo5xLHYzoMTfqkE6TOKmt45EiD9ahZtv8FGGy2uzLcWTpQGotd/XfGBAwCvnKQw
-miorcZREFqsU2tNUe32e
-=Lj4q
+iQIcBAEBCAAGBQJVNwZSAAoJEJgn97Bh2u9ezJ0QAI0SLdMJtxA7nOoyU8SkUMr0
+4rybtixDggazM1gijFceFonh/GTwP9qcVsvSS4WKY4V+d0rXae/qtvZDYkV1kfEY
+3iWPRMVjVgcimmH0RFShg8QXOxmqCqiLX8Y2mwsKT0Lg6kPpC/W9cYusWZhqPg/I
+wVGHjfe+ooZAqxZX/gBLShjgec020W0btgdQCxDYXKYas2CW8viXO52cIev6j0Lw
+NkCJXT6h9V/m6RPE+G1+Df66RUpOUzluY2p3j/+1M8652eRzxyz+2vKFNplYE+u3
+62+sO/UCz5h4dffjh7Na94pIEG7PtvZLT4VeLFzxIhtmwHpyWlSm2hzNLpn8uElJ
+6kKeDBU6GPN+cn3D068Mh8qf8RJ/WWI/8aIPfdb6h0pBRXStiGNkeCW6h9Z62qqi
+8otAmJUWCNjytdBLvhMrVgK9A9FpI/jlEZpu+O1lSQ+h+yIuHQg0786lf1UI/qlh
+oUT7hgshtkMh4jz8PhpDcgQnvH8lqS7Ugk66XR+Ni+3jLNqUJsSHv3pdUzqXaz6c
+Dql6JvXtegpdMkWV6eZjqajd8bxjoROkVQNXGAu5k4q6J/6Cs/XVCTSyKXG12TVi
+8E1Y7MzbsVXubC7Q/qEm65FHGCwxcVJxGdUp6/MBI5UlGMSUD0IcCL57oKMeVjmi
+Km+xFIZjPZz2gvBFVNcu
+=yaQZ
 -----END PGP SIGNATURE-----
 
---Mh3ji9EWeHD7DGLkqmLsKV882MEQGsHTe--
+--nwSwv41xuxfCl0rnaFj1n14XB8qKBun56--
