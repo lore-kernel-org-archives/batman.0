@@ -1,17 +1,9 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <5537064E.4000803@meshcoding.com>
-Date: Wed, 22 Apr 2015 04:24:14 +0200
-From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
-References: <OF5389A718.644E8229-ONC1257E0D.00566F9A-C1257E0D.0056A5A0@phoenixcontact.com>
- <550AF2DD.5000707@meshcoding.com>
- <OF05EC2858.5AFC84BB-ONC1257E0D.0059D034-C1257E0D.005CE3EF@phoenixcontact.com>
-In-Reply-To: <OF05EC2858.5AFC84BB-ONC1257E0D.0059D034-C1257E0D.005CE3EF@phoenixcontact.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="nwSwv41xuxfCl0rnaFj1n14XB8qKBun56"
-Subject: Re: [B.A.T.M.A.N.] Antwort: Re: [PATCH] batman-adv: bugfix for
- kernel crash in batadv_tt_local_table_free
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 22 Apr 2015 21:12:42 +0200
+Message-Id: <1429729962-5365-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH-next] batman-adv: Remove unused compat
+	function batadv_free_rcu_softif_vlan
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,63 +15,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: APape@phoenixcontact.com
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---nwSwv41xuxfCl0rnaFj1n14XB8qKBun56
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+The commit e78c16c0550c ("batman-adv: Revert "fix var name to keep
+compatibility with old kernels"") should have renamed the function to
+batadv_free_rcu_softif_vlan instead of adding a new function
+batadv_free_rcu_vlan because it was only used in this single place.
 
-Hi Adreas,
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+This patch is complete optional and would only silence a build_test warning
+until the master branch becomes the next branch. But this would create a merge
+conflict because batadv_free_rcu_softif_vlan is already removed in master.
+---
+ compat.c | 9 ---------
+ compat.h | 1 -
+ 2 files changed, 10 deletions(-)
 
-sorry for waiting so long before getting back to you, but this bug
-slipped away of my todo list..
+diff --git a/compat.c b/compat.c
+index 516d06c..f8e213f 100644
+--- a/compat.c
++++ b/compat.c
+@@ -33,15 +33,6 @@ void batadv_free_rcu_orig_vlan(struct rcu_head *rcu)
+ 	kfree(vlan);
+ }
+ 
+-void batadv_free_rcu_softif_vlan(struct rcu_head *rcu)
+-{
+-	struct batadv_softif_vlan *vlan;
+-
+-	vlan = container_of(rcu, struct batadv_softif_vlan, rcu);
+-
+-	kfree(vlan);
+-}
+-
+ void batadv_free_rcu_vlan(struct rcu_head *rcu)
+ {
+ 	struct batadv_softif_vlan *vlan;
+diff --git a/compat.h b/compat.h
+index 94d0e85..d6ca427 100644
+--- a/compat.h
++++ b/compat.h
+@@ -226,7 +226,6 @@ static const struct { \
+ #define vlan_insert_tag(skb, proto, vid) __vlan_put_tag(skb, vid)
+ 
+ void batadv_free_rcu_orig_vlan(struct rcu_head *rcu);
+-void batadv_free_rcu_softif_vlan(struct rcu_head *rcu);
+ void batadv_free_rcu_tt_global_entry(struct rcu_head *rcu);
+ void batadv_free_rcu_gw_node(struct rcu_head *rcu);
+ void batadv_free_rcu_tt_local_entry(struct rcu_head *rcu);
+-- 
+2.1.4
 
-Anyhow, I have some questions inline:
-
-On 19/03/15 17:54, Andreas Pape wrote:
-> Hi Antonio,
->=20
-> I saw the crash, but only in the case when I add the non-IP traffic
-
-What is this non-IP traffic? Can you mention what type of traffic are
-you sending?
-
-> using VLAN ID 0.=20
-
-Are you saying you are creating a bat0.0 ? If not, can you clarify the
-meaning of VLAN ID 0 ?
-
-
-Thanks!
-Cheers,
-
---=20
-Antonio Quartulli
-
-
---nwSwv41xuxfCl0rnaFj1n14XB8qKBun56
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVNwZSAAoJEJgn97Bh2u9ezJ0QAI0SLdMJtxA7nOoyU8SkUMr0
-4rybtixDggazM1gijFceFonh/GTwP9qcVsvSS4WKY4V+d0rXae/qtvZDYkV1kfEY
-3iWPRMVjVgcimmH0RFShg8QXOxmqCqiLX8Y2mwsKT0Lg6kPpC/W9cYusWZhqPg/I
-wVGHjfe+ooZAqxZX/gBLShjgec020W0btgdQCxDYXKYas2CW8viXO52cIev6j0Lw
-NkCJXT6h9V/m6RPE+G1+Df66RUpOUzluY2p3j/+1M8652eRzxyz+2vKFNplYE+u3
-62+sO/UCz5h4dffjh7Na94pIEG7PtvZLT4VeLFzxIhtmwHpyWlSm2hzNLpn8uElJ
-6kKeDBU6GPN+cn3D068Mh8qf8RJ/WWI/8aIPfdb6h0pBRXStiGNkeCW6h9Z62qqi
-8otAmJUWCNjytdBLvhMrVgK9A9FpI/jlEZpu+O1lSQ+h+yIuHQg0786lf1UI/qlh
-oUT7hgshtkMh4jz8PhpDcgQnvH8lqS7Ugk66XR+Ni+3jLNqUJsSHv3pdUzqXaz6c
-Dql6JvXtegpdMkWV6eZjqajd8bxjoROkVQNXGAu5k4q6J/6Cs/XVCTSyKXG12TVi
-8E1Y7MzbsVXubC7Q/qEm65FHGCwxcVJxGdUp6/MBI5UlGMSUD0IcCL57oKMeVjmi
-Km+xFIZjPZz2gvBFVNcu
-=yaQZ
------END PGP SIGNATURE-----
-
---nwSwv41xuxfCl0rnaFj1n14XB8qKBun56--
