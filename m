@@ -1,12 +1,15 @@
-Return-Path: <odshrit@gmail.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Wed, 22 Apr 2015 09:59:13 +0800
+Message-ID: <2171325.LiyOQnCWoT@voltaire>
+In-Reply-To: <1423151124-16054-2-git-send-email-sven@narfation.org>
+References: <1423151124-16054-1-git-send-email-sven@narfation.org>
+ <1423151124-16054-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Date: Tue, 21 Apr 2015 17:26:17 +0200
-Message-ID: <CACQgX2EGOT8WD0wTiSqMCoF=GeOJKeyTZtLBuKfHH3wkh4F40Q@mail.gmail.com>
-From: Omar Shrit <odshrit@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] Installing issue (Makefile configuration doesn't
-	exist)
+Content-Type: multipart/signed; boundary="nextPart2694281.6JytlRclvk";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batctl: Update copyright years for
+	2015
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,25 +23,65 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-HI everybody:
 
-I have four Raspberry Pi's, connected as a mesh network, I am trying
-to  use Batman as routing protocol (the batman-adv module is used),
-however I need to have the log file, and debug folder, as they already
-doesn=E2=80=99t exist in the installed module in the Linux kernel.
-The FAQ page explained that I have to re-install the module and
-modifying the Makefile Debug option to y ,
-In fact I have found that only the module which exist in the website
-of Batman have these options in the Makefile, the makefile of the
-module that exist in the Linux kernel is different, and doesn=E2=80=99t hav=
-e
-any option ,
-by default the batman module in the Linux kernel doesn=E2=80=99t enable the
-Debug option as I'm using in my RPI's Raspian with kernel version
-3.18.5
-Does anyone have any idea about how to change the options in the
-module Makefile in Linux kernel before installing it ??, I need to use
-cross-compile for compiling the kernel.
-All suggestions are welcomed.
+--nextPart2694281.6JytlRclvk
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Thanks.
+On Thursday, February 05, 2015 16:45:24 Sven Eckelmann wrote:
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  Makefile      | 2 +-
+>  allocate.h    | 2 +-
+>  bat-hosts.c   | 2 +-
+>  bat-hosts.h   | 2 +-
+>  bisect_iv.c   | 2 +-
+>  bisect_iv.h   | 2 +-
+>  debug.c       | 2 +-
+>  debug.h       | 2 +-
+>  functions.c   | 2 +-
+>  functions.h   | 2 +-
+>  hash.c        | 2 +-
+>  hash.h        | 2 +-
+>  ioctl.c       | 2 +-
+>  ioctl.h       | 2 +-
+>  list-batman.c | 2 +-
+>  list-batman.h | 2 +-
+>  main.c        | 2 +-
+>  main.h        | 2 +-
+>  ping.c        | 2 +-
+>  ping.h        | 2 +-
+>  sys.c         | 2 +-
+>  sys.h         | 2 +-
+>  tcpdump.c     | 2 +-
+>  tcpdump.h     | 2 +-
+>  traceroute.c  | 2 +-
+>  traceroute.h  | 2 +-
+>  translate.c   | 2 +-
+>  translate.h   | 2 +-
+>  28 files changed, 28 insertions(+), 28 deletions(-)
+
+Applied in revision ba4adf1.
+
+Thanks,
+Marek
+
+--nextPart2694281.6JytlRclvk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJVNwBxAAoJEFNVTo/uthzANHEH/RDHozDuL/nV1NPzyT8WqS6n
+sFQl5DJ38z7m57yGJAY574MmO5c5DwaVTY+JBD3QHuhZT4V0DWulU5krSRwPn/LW
+U6tOX4yT668mcpQn5UzujCcJZAoq1TF2yMttfatujkacx1XywtLGoCjEBIfJERkW
+GVe5AGCiqw7cRyF/Z/2sFE5pIM0Mu2ehgUJjziGV80C7HYeHY5UNC0XFWOZs5Y2M
+iBT7/9JZzMFGLXNfztiXXAU7TrdDDtHAmFBNSWzvfurzlojijFSI2+4c6beveGE8
+VNcuzS+r3fEFKNSw2H2USKW0opBoCm96qdXqEqI5y9FgITH0LAiG92rwNVgmgxc=
+=B1eu
+-----END PGP SIGNATURE-----
+
+--nextPart2694281.6JytlRclvk--
+
