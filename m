@@ -1,11 +1,8 @@
 Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 23 Apr 2015 18:22:25 +0200
-Message-Id: <1429806145-28753-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1429806145-28753-1-git-send-email-sven@narfation.org>
-References: <1429806145-28753-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Remove unused post-VLAN
-	ethhdr in batadv_gw_dhcp_recipient_get
+From: Sven Eckelmann <sven@open-mesh.com>
+Date: Fri, 24 Apr 2015 16:19:21 +0200
+Message-Id: <1429885161-8762-1-git-send-email-sven@open-mesh.com>
+Subject: [B.A.T.M.A.N.] [PATCH] alfred: Fix dependency to IPv6
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,28 +15,29 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@open-mesh.com>
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+alfred always requires IPv6 support in the kernel and not only when
+"Enable IPv6 support in packages" is enabled.
+
+Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
 ---
- net/batman-adv/gateway_client.c | 5 -----
- 1 file changed, 5 deletions(-)
+ alfred/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 14f0a22..bb01586 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -753,11 +753,6 @@ batadv_gw_dhcp_recipient_get(struct sk_buff *skb, unsigned int *header_len,
- 	if (!pskb_may_pull(skb, *header_len + sizeof(*udphdr)))
- 		return BATADV_DHCP_NO;
- 
--	/* skb->data might have been reallocated by pskb_may_pull() */
--	ethhdr = eth_hdr(skb);
--	if (ntohs(ethhdr->h_proto) == ETH_P_8021Q)
--		ethhdr = (struct ethhdr *)(skb->data + VLAN_HLEN);
--
- 	udphdr = (struct udphdr *)(skb->data + *header_len);
- 	*header_len += sizeof(*udphdr);
- 
+diff --git a/alfred/Makefile b/alfred/Makefile
+index dade218..8f6855b 100644
+--- a/alfred/Makefile
++++ b/alfred/Makefile
+@@ -28,7 +28,7 @@ define Package/alfred
+   SECTION:=net
+   CATEGORY:=Network
+   TITLE:=A.L.F.R.E.D. - Almighty Lightweight Fact Remote Exchange Daemon
+-  DEPENDS:= +libc +IPV6:kmod-ipv6 +librt \
++  DEPENDS:= +libc +kmod-ipv6 +librt \
+ 	  +ALFRED_NEEDS_lua:lua \
+ 	  +ALFRED_NEEDS_libgps:libgps
+ endef
 -- 
 2.1.4
 
