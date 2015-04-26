@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 26 Apr 2015 19:42:32 +0800
-Message-ID: <1585538.8bjCKzOH1E@voltaire>
-In-Reply-To: <1429613108-19928-3-git-send-email-sven@narfation.org>
-References: <1429613108-19928-1-git-send-email-sven@narfation.org>
- <1429613108-19928-3-git-send-email-sven@narfation.org>
+Date: Sun, 26 Apr 2015 19:45:01 +0800
+Message-ID: <3343110.Fio24frDdK@voltaire>
+In-Reply-To: <1429806145-28753-1-git-send-email-sven@narfation.org>
+References: <1429806145-28753-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4076087.3g17TcYmLQ";
+Content-Type: multipart/signed; boundary="nextPart4660014.Yaz3vXlaYm";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 3/3] batman-adv: Add link to kernel
-	README
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Clarify calculation
+	precedence for '&' and '?'
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,27 +23,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart4076087.3g17TcYmLQ
+--nextPart4660014.Yaz3vXlaYm
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, April 21, 2015 12:45:08 Sven Eckelmann wrote:
-> The batman-adv out-of-tree module provided a README in the root folder. But
-> the kernel stores the same readme as
-> Documentation/networking/batman-adv.txt. Just link to the kernel README to
-> avoid having the same readme twice.
-> 
+On Thursday, April 23, 2015 18:22:24 Sven Eckelmann wrote:
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
-> v3: No change
-> v2: Moved from main patch to extra patch
+>  net/batman-adv/bat_iv_ogm.c        |  2 +-
+>  net/batman-adv/main.h              |  2 +-
+>  net/batman-adv/translation-table.c | 42
+> +++++++++++++++++++------------------- 3 files changed, 23 insertions(+),
+> 23 deletions(-)
 
-Applied in revision 098c0f1.
+Applied in revision e9d11c6.
 
 Thanks,
 Marek
 
---nextPart4076087.3g17TcYmLQ
+--nextPart4660014.Yaz3vXlaYm
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -52,14 +49,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVPM8oAAoJEFNVTo/uthzAwfUH/0bc+nOXq5tx4MKpUIpB5x0Z
-FLG94B1by3rl59aF2iAnYJ/2o3vM/nnMRQKtPI+fVz0qWW1zWebgzkrazjKgw09U
-BtB8kmScL5IagWGaWbkaVocK17BEb01M80Vi8PcvazGBH9ZkSrKGwJbcGy+AFreC
-BeczPgaeCMIf4ecW10Ns0Mi8z6BAEfahSsKjXNVn2Y7lg6cJCNXcCUQ7777yaMOW
-VBOlu4QjTxav0d+22HmyL45ZYY60GAveryvPxKHlTBml4vLKVDHsaRKDDo0NpIX0
-CmagdhnJI0RYnLwi1/yEFb5sN6C1RzbsFuS6D8qzOaJKPGfFKubKorYBMhW7wAw=
-=DwBf
+iQEcBAABCAAGBQJVPM+9AAoJEFNVTo/uthzAfa0H/1yFoGYlsSMGzK3UNaJQUoyx
+t8+bAk6P11i2hOUWy579zdVR8AyzxwMGIFawN15lnXqVSuU1KnImnOeQv8NbGkUJ
+0sxtA6b7JduKj5FHXHDU5kqiR06gsiaYklZxc+VMCP5MnxVz9b9Dk4/LqMQ/0PWp
+QCiDszaIaB9GFDCfXFTxSoVvbUSsFpikoPby0rwe43vdpm6pPHTTeEPW/d1rpjgL
+Qd2igMosqvgk9ZHQaU6EUZ0Mn7HO178fS2qC2Pgw61WYc064Od05qHWcYibrmXb1
+LThvUjNlPXGedyGkbCKmq15bTGwQCI3kd0+O5eVC68oQi5nFn0LL2GQJEeEYhA4=
+=/Pd7
 -----END PGP SIGNATURE-----
 
---nextPart4076087.3g17TcYmLQ--
+--nextPart4660014.Yaz3vXlaYm--
 
