@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 26 Apr 2015 19:39:58 +0800
-Message-ID: <4087727.bNIkVho8kq@voltaire>
-In-Reply-To: <1429613108-19928-1-git-send-email-sven@narfation.org>
+Date: Sun, 26 Apr 2015 19:41:16 +0800
+Message-ID: <1805214.Qm0AeeOjGh@voltaire>
+In-Reply-To: <1429613108-19928-2-git-send-email-sven@narfation.org>
 References: <1429613108-19928-1-git-send-email-sven@narfation.org>
+ <1429613108-19928-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6531776.tMQRdJRde5";
+Content-Type: multipart/signed; boundary="nextPart3012503.xKyRptyfcX";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 1/3] batman-adv: Use kernel-like folder
-	structure
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/3] batman-adv: Add Kconfig to the
+	sources
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,34 +24,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart6531776.tMQRdJRde5
+--nextPart3012503.xKyRptyfcX
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, April 21, 2015 12:45:06 Sven Eckelmann wrote:
-> The person submitting the patches to the Networking maintainer has to take
-> each patch and move files around and add some files to make it work in the
-> actual kernel tree. Having all files included and already  in the correct
-> kernel tree layout should make this a lot easier.
-> 
-> The only files not part of the kernel tree are compat-include and every
-> regular file in the top level directory.
+On Tuesday, April 21, 2015 12:45:07 Sven Eckelmann wrote:
+> The Kconfig file is not used by the out-of-tree module but it has to be
+> modified when new patches are added which would modify it in the kernel
+> tree. Otherwise the information has to be stored somewhere else until
+> someone submits it to the Networking maintainer.
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
-> v3: Rebased it on current master without the the hashtable patches
-> v2:
->  * Cleaned up the Makefile
->  * Rebased on top of 9f01c16a4409e43e86629418fae9184fabb59da5
->  * Use symlink to show the Documentation/networking/batman-adv.txt as README
-> in the root folder
+> v3: No change
+> v2: Moved from main patch to extra patch
+> 
+>  net/batman-adv/Kconfig | 70
+> ++++++++++++++++++++++++++++++++++++++++++++++++++ 1 file changed, 70
+> insertions(+)
+>  create mode 100644 net/batman-adv/Kconfig
 
-Applied in revision eb69667.
+Applied in revision c69c935.
 
 Thanks,
 Marek
 
---nextPart6531776.tMQRdJRde5
+--nextPart3012503.xKyRptyfcX
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -58,14 +57,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVPM6PAAoJEFNVTo/uthzAivgIAJp9PSfIULa8OWefGh5VA5rr
-5iNiNhHR2ockUPzPvCHgFwKePELCgS7fYWZBbatFf/qDp6mRfYGkeIlAg2LXfnD9
-eb6O4Cc0jZcwCIkwsXvggb4eABLUxMKxH5kN3FgkcyHthKxWSflhQzBw6K4ki5dq
-pS9TgV5tVamOXTolaaBTbMleEqndsNybiqnGYhhKUQhP/tWhvlg5YmXRAkRkHZrz
-0hgFzmgTyjy3xPY75UcHIhgVTrAMySFYLcDcdP+nXqA0fl5zxBMPU+2ie8dthi5+
-4CnFh/lEaxn/D9sjeUK45gN8mQrmrKJx4BV17t0FayASd8vkbIk+bu/Exysz9fM=
-=GMbO
+iQEcBAABCAAGBQJVPM7cAAoJEFNVTo/uthzAi9oH/A83hUO9vS28jiPWbmS12vH8
+4hMseY31fNToJf4g6akj1CymIchUguS5smhm5rjolXP2bUYuOFnPvINnSdpm+ZJa
+J8eq5YOXy0EjAx2lA2cBS30bjMoMQ30ai2IZjHkp+JhsF1wMeE1bMy70TrKAOP2q
++hbG/+Xirnh2aYBLSmxGkA3aNKYIN1Y7bRPWpK/qHtsgfrpKLjFhJutgPj1wwS+8
+tCDuchb4eZJdI/RYRBvAeLLYAtbaKt9r3kRrFF56DZxi6GDjvDrR5fmioCy7WT/7
+chT00Ixxlg6YGjMWjDSlwM/lxWDPq4BNvWoqiUWEVy0ygxS7Sjd7bk8LKyzA+Z0=
+=E4ec
 -----END PGP SIGNATURE-----
 
---nextPart6531776.tMQRdJRde5--
+--nextPart3012503.xKyRptyfcX--
 
