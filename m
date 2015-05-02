@@ -1,15 +1,12 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 26 Apr 2015 20:00:15 +0800
-Message-ID: <10516945.ahE7EP60dU@voltaire>
-In-Reply-To: <1429806145-28753-2-git-send-email-sven@narfation.org>
-References: <1429806145-28753-1-git-send-email-sven@narfation.org>
- <1429806145-28753-2-git-send-email-sven@narfation.org>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Sat,  2 May 2015 14:01:05 +0200
+Message-Id: <1430568067-6912-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart12329888.RciOgAa0aX";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Remove unused post-VLAN
-	ethhdr in batadv_gw_dhcp_recipient_get
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv3 net-next 0/2] Exporting IGMP/MLD checking
+	from bridge code
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,40 +18,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, bridge@lists.linux-foundation.org, linux-kernel@vger.kernel.org, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Stephen Hemminger <stephen@networkplumber.org>, Herbert Xu <herbert@gondor.apana.org.au>, Tom Herbert <tom@herbertland.com>, "David S. Miller" <davem@davemloft.net>
+
+The multicast optimizations in batman-adv are yet only usable and
+enabled in non-bridged scenarios. To be able to support bridged setups
+batman-adv needs to be able to detect IGMP/MLD queriers and reports on
+mesh nodes without bridges, too. See the following link for details:
+
+http://www.open-mesh.org/projects/batman-adv/wiki/Multicast-optimizations-listener-reports
+
+To avoid duplicate code between the bridge and batman-adv, the IGMP/MLD
+message validation code is moved from the bridge to the IPv4/IPv6 stack.
+
+On the way, some refactoring to increase readability and to iron out
+some subtle differences between the IGMP and MLD parsing code is done.
+
+Cheers, Linus
 
 
---nextPart12329888.RciOgAa0aX
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Changelog v3:
+* changed interface / restructuring of skb_checksum_trimmed()
+* kernel doc for skb_checksum_trimmed()/skb_checksum_maybe_trim()
+* fixed a memory leak in the cloned skb case in skb_checksum_trimmed()
+* fixed transport_len calculation in __ipv6_mc_check_mld(),
+  make it relative to the skb transport header offset
+  (= exclude the hop-by-hop option size in transport_len)
 
-On Thursday, April 23, 2015 18:22:25 Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/gateway_client.c | 5 -----
->  1 file changed, 5 deletions(-)
-
-Applied in revision e944023.
-
-Thanks,
-Marek
-
---nextPart12329888.RciOgAa0aX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJVPNNTAAoJEFNVTo/uthzAI2wH/15EU4Mb7ndT6q7P4DG6o2Yd
-RBhRkI3BSvWF4abNARqbI+aGgr3LCSh8qz/AgE3nT7rCDfjHcGKPuM9Y2MWNHbFM
-0bAGf6ywF+Kn20wZEglV8OjJyUVRHsA8T9T6C+umTF8ulRx5dzw9rRE7OxVNZT3e
-kXGybQv8teA+8Jv0PX6koBvbtU59oA6rl08wA+hCJh7v8A4FHRQQYSDzuYjYyS2W
-wElyB8t95MCMdiwcdx6/MakOILyhrIUZU+RnRq6lTnqNDDOXvsqdztXDyMEska/y
-hwvcNxLpt6lNWMy9xC2U8hsh9OSHi1JrXdHXg3ubHiv5k7vUNMvio2zxLA6yHac=
-=bI/q
------END PGP SIGNATURE-----
-
---nextPart12329888.RciOgAa0aX--
+Changelog v2:
+* Updated copyright for mcast_snoop.c
 
