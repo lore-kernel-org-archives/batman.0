@@ -1,14 +1,15 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Mon,  4 May 2015 00:13:50 +0200
-Message-Id: <1430691231-9120-3-git-send-email-linus.luessing@c0d3.blue>
-In-Reply-To: <1430691231-9120-1-git-send-email-linus.luessing@c0d3.blue>
-References: <1430691231-9120-1-git-send-email-linus.luessing@c0d3.blue>
+Return-Path: <stephen@networkplumber.org>
+Date: Mon, 4 May 2015 09:10:31 -0700
+From: Stephen Hemminger <stephen@networkplumber.org>
+Message-ID: <20150504091031.1ff55398@urahara>
+In-Reply-To: <1430568067-6912-2-git-send-email-linus.luessing@c0d3.blue>
+References: <1430568067-6912-1-git-send-email-linus.luessing@c0d3.blue>
+ <1430568067-6912-2-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH RFCv4 2/3] batman-adv: Increase
- BATADV_TVLV_MCAST version number to 2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 net-next 1/2] bridge: multicast: call
+ skb_checksum_{simple_, }validate
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,59 +21,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
+Cc: bridge@lists.linux-foundation.org, Herbert Xu <herbert@gondor.apana.org.au>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Tom Herbert <tom@herbertland.com>, "David S. Miller" <davem@davemloft.net>
 
-The multicast optimizations bridge integration will require the just
-implemented IGMP/MLD report handling later. Therefore bumping the
-version number.
+On Sat,  2 May 2015 14:01:06 +0200
+Linus L=C3=BCssing <linus.luessing@c0d3.blue> wrote:
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/multicast.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+> Let's use these new, neat helpers.
+>=20
+> Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 72d561c..87a5942 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -225,7 +225,7 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
- 	if (batadv_mcast_has_bridge(bat_priv)) {
- 		if (bat_priv->mcast.enabled) {
- 			batadv_tvlv_container_unregister(bat_priv,
--							 BATADV_TVLV_MCAST, 1);
-+							 BATADV_TVLV_MCAST, 2);
- 			bat_priv->mcast.enabled = false;
- 		}
- 
-@@ -234,7 +234,7 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
- 
- 	if (!bat_priv->mcast.enabled ||
- 	    mcast_data.flags != bat_priv->mcast.flags) {
--		batadv_tvlv_container_register(bat_priv, BATADV_TVLV_MCAST, 1,
-+		batadv_tvlv_container_register(bat_priv, BATADV_TVLV_MCAST, 2,
- 					       &mcast_data, sizeof(mcast_data));
- 		bat_priv->mcast.flags = mcast_data.flags;
- 		bat_priv->mcast.enabled = true;
-@@ -984,7 +984,7 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- void batadv_mcast_init(struct batadv_priv *bat_priv)
- {
- 	batadv_tvlv_handler_register(bat_priv, batadv_mcast_tvlv_ogm_handler_v1,
--				     NULL, BATADV_TVLV_MCAST, 1,
-+				     NULL, BATADV_TVLV_MCAST, 2,
- 				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
- }
- 
-@@ -994,8 +994,8 @@ void batadv_mcast_init(struct batadv_priv *bat_priv)
-  */
- void batadv_mcast_free(struct batadv_priv *bat_priv)
- {
--	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_MCAST, 1);
--	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_MCAST, 1);
-+	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_MCAST, 2);
-+	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_MCAST, 2);
- 
- 	batadv_mcast_mla_tt_retract(bat_priv, NULL);
- }
--- 
-1.7.10.4
+Acked-by: Stephen Hemminger <stephen@networkplumber.org>
 
