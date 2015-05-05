@@ -1,14 +1,13 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 05 May 2015 12:21 +0200
-Message-ID: <2479424.tFhBkT1Z6y@prime>
-In-Reply-To: <1427309467-31768-1-git-send-email-sven@narfation.org>
-References: <1427309467-31768-1-git-send-email-sven@narfation.org>
+Date: Tue, 05 May 2015 12:36:41 +0200
+Message-ID: <5704441.9Oy7THt0GQ@prime>
+In-Reply-To: <1429885161-8762-1-git-send-email-sven@open-mesh.com>
+References: <1429885161-8762-1-git-send-email-sven@open-mesh.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1972072.JD4iiX49l6";
+Content-Type: multipart/signed; boundary="nextPart2361157.VxLPu8jXa5";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Make sure only link-local EUI64
-	is used as source
+Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Fix dependency to IPv6
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,39 +20,23 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@open-mesh.com>
 
 
---nextPart1972072.JD4iiX49l6
+--nextPart2361157.VxLPu8jXa5
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="ISO-8859-1"
 
-On Wednesday 25 March 2015 19:51:07 Sven Eckelmann wrote:
-> The linux kernel automatically chooses the source address. This can make
-> problems when the metric prefers an address which is not the link-local
-> EUI64 address. For example an user can add an additional address which also
-> can be used for link-local communication but has a higher value in the
-> metric. This can cause alfred to send UDP link-local packets with an
-> address which cannot be decoded by the receiver to get the MAC address of
-> the device. The communication with this device would then fail.
+On Friday 24 April 2015 16:19:21 Sven Eckelmann wrote:
+> alfred always requires IPv6 support in the kernel and not only when
+> "Enable IPv6 support in packages" is enabled.
 > 
-> It is possible to define the source address when we directly bind to it.
-> This has the problem that this address cannot receive packets with a
-> multicast address as destination. The workaround is to create two sockets
-> for one netsock structure. One is the socket which can send all data and
-> receives unicast packets. The second one is receiving the multicast traffic
-> like the announcements from master alfred server processes.
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
+Applied in openwrt-routing and development feed.
 
-Applied in revision 986ca57, added Moritz Warnings "Tested-by" as per ticket 
-#208 [1]. 
-
-Thanks a lot!
+Thanks!
     Simon
-
-
-[1] http://www.open-mesh.org/issues/208
---nextPart1972072.JD4iiX49l6
+--nextPart2361157.VxLPu8jXa5
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -61,10 +44,10 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iEYEABECAAYFAlVImY8ACgkQrzg/fFk7axbRZQCg256ayHepC7HNwrD+bfZ2ZEFp
-qc8AoLhXCJ4mw6/G3hVF5XiozpB7lBiV
-=6D/+
+iEYEABECAAYFAlVInTkACgkQrzg/fFk7axaKIACcDD4h8Yn1JSD4NqgV6koQOgby
+5wQAoMqzYNJNSr46m0hgnFATAcBCjySW
+=mVto
 -----END PGP SIGNATURE-----
 
---nextPart1972072.JD4iiX49l6--
+--nextPart2361157.VxLPu8jXa5--
 
