@@ -1,12 +1,14 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Wed,  6 May 2015 21:29:19 +0200
-Message-Id: <1430940562-12148-1-git-send-email-linus.luessing@c0d3.blue>
+Date: Wed,  6 May 2015 21:29:21 +0200
+Message-Id: <1430940562-12148-3-git-send-email-linus.luessing@c0d3.blue>
+In-Reply-To: <1430940562-12148-1-git-send-email-linus.luessing@c0d3.blue>
+References: <1430940562-12148-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv5 0/3] batman-adv: Unicasting multicast
- reports to querier-node only
+Subject: [B.A.T.M.A.N.] [PATCHv5 2/3] batman-adv: Increase BATADV_TVLV_MCAST
+ version number to 2
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,45 +22,57 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The last round of multicast patches send to the batman-adv mailinglist
-to add support for the multicast optimizations in bridged scenarios, too,
-unfortunately had one major conceptual flaw: It could lead to packet loss.
-It's not sufficient to have the unicasting of reports implemented on
-bridge-nodes only. Nodes without bridges need to treat reports the same
-way.
+The multicast optimizations bridge integration will require the just
+implemented IGMP/MLD report handling later. Therefore bumping the
+version number.
 
-The issue is described in detail here:
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+ net/batman-adv/multicast.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-https://www.open-mesh.org/projects/batman-adv/wiki/Multicast-optimizations-listener-reports
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 72d561c..87a5942 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -225,7 +225,7 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
+ 	if (batadv_mcast_has_bridge(bat_priv)) {
+ 		if (bat_priv->mcast.enabled) {
+ 			batadv_tvlv_container_unregister(bat_priv,
+-							 BATADV_TVLV_MCAST, 1);
++							 BATADV_TVLV_MCAST, 2);
+ 			bat_priv->mcast.enabled = false;
+ 		}
+ 
+@@ -234,7 +234,7 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
+ 
+ 	if (!bat_priv->mcast.enabled ||
+ 	    mcast_data.flags != bat_priv->mcast.flags) {
+-		batadv_tvlv_container_register(bat_priv, BATADV_TVLV_MCAST, 1,
++		batadv_tvlv_container_register(bat_priv, BATADV_TVLV_MCAST, 2,
+ 					       &mcast_data, sizeof(mcast_data));
+ 		bat_priv->mcast.flags = mcast_data.flags;
+ 		bat_priv->mcast.enabled = true;
+@@ -984,7 +984,7 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ void batadv_mcast_init(struct batadv_priv *bat_priv)
+ {
+ 	batadv_tvlv_handler_register(bat_priv, batadv_mcast_tvlv_ogm_handler_v1,
+-				     NULL, BATADV_TVLV_MCAST, 1,
++				     NULL, BATADV_TVLV_MCAST, 2,
+ 				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
+ }
+ 
+@@ -994,8 +994,8 @@ void batadv_mcast_init(struct batadv_priv *bat_priv)
+  */
+ void batadv_mcast_free(struct batadv_priv *bat_priv)
+ {
+-	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_MCAST, 1);
+-	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_MCAST, 1);
++	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_MCAST, 2);
++	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_MCAST, 2);
+ 
+ 	batadv_mcast_mla_tt_retract(bat_priv, NULL);
+ }
+-- 
+1.7.10.4
 
-
-Cheers, Linus
-
------
-
-Changelog:
-v5:
- * Removed RFC tag: Needed exports got merged to net-next and are going to
-   be available with Linux 4.2
- * Redid compat solution - now fully backwards compatible down to 2.6.33
-v4:
- * excluded bridge part from this patchset, they should
-   hopefully be added to net-next soon
- * Added a compat solution (PATCH 3/3)
- * Removed Kconfig-depends as by David's suggestion the needed parsing
-   functions for MLD are going to be forced built-ins even if IPv6 is
-   going to be built as a module
- * Removed unused variable 'int ret' in batadv_mcast_is_report_ipv6()
- * Adjusted to new folder structure
-v3:
- * Adding Kconfig-depends and #if's
-   (so basically adding similar dependancy constraints as the bridge code
-    has, except that there are no depends if batman-adv gets compiled without
-    multicast optimizations)
-   -> the case of IPv6=M and batman-adv=y is still impossible if multicast
-      optimizations are enabled; but I don't see the practical demand for that
-      either - people who use IPv6 as a module will probably also want to
-      use batman-adv as a module
-v2:
- * various bugfixes (now runtime tested, too - should(tm) work)
- * added netdev+bridge mailinglists
