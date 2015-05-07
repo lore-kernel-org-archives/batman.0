@@ -1,15 +1,15 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Wed, 6 May 2015 21:38:57 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20150506193856.GJ2423@odroid>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 07 May 2015 09:33:17 +0200
+Message-ID: <1572715.c14tfryD1Z@bentobox>
+In-Reply-To: <1430940562-12148-4-git-send-email-linus.luessing@c0d3.blue>
 References: <1430940562-12148-1-git-send-email-linus.luessing@c0d3.blue>
+ <1430940562-12148-4-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1430940562-12148-1-git-send-email-linus.luessing@c0d3.blue>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv5 0/3] batman-adv: Unicasting multicast
- reports to querier-node only
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv5 3/3] compat: Compat code for IGMP/MLD
+	report unicast forwarding
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,56 +23,78 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-PS: If you like the new compat solution better, then please let me
-know what copyright header you'd like to have added.
+On Wednesday 06 May 2015 21:29:22 Linus L=FCssing wrote:
+> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+> ---
+>  Makefile                              |    4 +
+>  compat-include/linux/igmp.h           |   13 ++
+>  compat-include/linux/skbuff.h         |   14 +++
+>  compat-include/net/addrconf.h         |   13 ++
+>  compat-include/net/ip6_checksum.h     |   18 +++
+>  compat-include/net/ipv6.h             |   17 +++
+>  compat-include/net/mld.h              |   52 ++++++++
+>  compat-sources/Makefile               |    3 +
+>  compat-sources/net/core/skbuff.c      |  136 +++++++++++++++++++++
+>  compat-sources/net/ipv4/igmp.c        |  169 +++++++++++++++++++++++=
++++
+>  compat-sources/net/ipv6/mcast_snoop.c |  216
+> +++++++++++++++++++++++++++++++++ 11 files changed, 655 insertions(+)=
 
-Currently only compat-sources/net/ipv6/mcast_snoop.c has a header,
-identical to the one in the upstream kernel. For the other files
-I'm a little unsure about what to add. For instance
-compat-sources/net/ipv4/igmp.c is a lot based on Herbert Xu's
-work (similar to how mcast_snoop.c is based on Yoshifuji's work).
+>  create mode 100644 compat-include/linux/igmp.h
+>  create mode 100644 compat-include/net/addrconf.h
+>  create mode 100644 compat-include/net/ip6_checksum.h
+>  create mode 100644 compat-include/net/ipv6.h
+>  create mode 100644 compat-include/net/mld.h
+>  create mode 100644 compat-sources/Makefile
+>  create mode 100644 compat-sources/net/core/skbuff.c
+>  create mode 100644 compat-sources/net/ipv4/igmp.c
+>  create mode 100644 compat-sources/net/ipv6/mcast_snoop.c
+
+The split header files were only there to fix the problem of the header=
+ mess=20
+which couldn't be resolved with a single compat.h that forced a specifi=
+c=20
+include order. It is not really necessary to have the same for the sour=
+ce=20
+files. Maybe your solution is good or maybe not. Only the future will t=
+ell. :)
+
+The other solution would be more like backports [1]. They seem to use o=
+ne=20
+backport-/compat-*.c file for each kernel they support and introduced f=
+eatures=20
+which they require. So all kernel < 3.19 will build the content of=20
+backport-3.19.c to get the functions introduced by this version. But th=
+ere are=20
+also some larger ones for special stuff. Maybe you can check this out a=
+nd=20
+decide what you like more.
+
+To the copyright stuff... hm, if you didn't write it yourself then the=20=
+
+copyright stuff from the original source should be there. backports [1]=
+=20
+doesn't seem to do this very well. They have for example used larger po=
+rtions=20
+from files marked as copyright Yu Zhao <yu.zhao@intel.com> but have onl=
+y the=20
+copyright header with Copyright (c) 2013  Luis R. Rodriguez <mcgrof@do-=
+not-
+panic.com>. Not sure that I can give a good answer here. Maybe someone =
+else=20
+has an opinion about this part
+
+To the Makefile integration: I did it with compat.c similar before drop=
+ping=20
+it. The only difference was that I only had one file
+
+    export batman-adv-y +=3D ../../compat.o
+
+So you solution seems to be fine.
+
+Kind regards,
+=09Sven
 
 
-On Wed, May 06, 2015 at 09:29:19PM +0200, Linus Lüssing wrote:
-> The last round of multicast patches send to the batman-adv mailinglist
-> to add support for the multicast optimizations in bridged scenarios, too,
-> unfortunately had one major conceptual flaw: It could lead to packet loss.
-> It's not sufficient to have the unicasting of reports implemented on
-> bridge-nodes only. Nodes without bridges need to treat reports the same
-> way.
-> 
-> The issue is described in detail here:
-> 
-> https://www.open-mesh.org/projects/batman-adv/wiki/Multicast-optimizations-listener-reports
-> 
-> 
-> Cheers, Linus
-> 
-> -----
-> 
-> Changelog:
-> v5:
->  * Removed RFC tag: Needed exports got merged to net-next and are going to
->    be available with Linux 4.2
->  * Redid compat solution - now fully backwards compatible down to 2.6.33
-> v4:
->  * excluded bridge part from this patchset, they should
->    hopefully be added to net-next soon
->  * Added a compat solution (PATCH 3/3)
->  * Removed Kconfig-depends as by David's suggestion the needed parsing
->    functions for MLD are going to be forced built-ins even if IPv6 is
->    going to be built as a module
->  * Removed unused variable 'int ret' in batadv_mcast_is_report_ipv6()
->  * Adjusted to new folder structure
-> v3:
->  * Adding Kconfig-depends and #if's
->    (so basically adding similar dependancy constraints as the bridge code
->     has, except that there are no depends if batman-adv gets compiled without
->     multicast optimizations)
->    -> the case of IPv6=M and batman-adv=y is still impossible if multicast
->       optimizations are enabled; but I don't see the practical demand for that
->       either - people who use IPv6 as a module will probably also want to
->       use batman-adv as a module
-> v2:
->  * various bugfixes (now runtime tested, too - should(tm) work)
->  * added netdev+bridge mailinglists
+[1] https://www.kernel.org/pub/linux/kernel/projects/backports/stable/
+
