@@ -1,12 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 07 May 2015 20:19:45 +0200
-Message-ID: <1486395.xYm1ShFBoJ@bentobox>
-In-Reply-To: <841E254B092F4FC1839DD066D90CE802@telegridtech.com>
+Date: Fri, 08 May 2015 08:33:43 +0200
+Message-ID: <3376805.a4VXV4btx9@sven-edge>
+In-Reply-To: <4837729.AoYrTN5tco@prime>
 References: <841E254B092F4FC1839DD066D90CE802@telegridtech.com>
+ <4837729.AoYrTN5tco@prime>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/signed; boundary="nextPart2570888.rEQNEca43q";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] FW: using Batman-adv
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -21,54 +22,60 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thursday 07 May 2015 13:00:52 Joseph Zimmer wrote:
-> 1)       Is there a way to adjust BATMAN using batctl to select routes based
-> on the RSSI value?
 
-No
+--nextPart2570888.rEQNEca43q
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-> 2)       Does the algorithm for route selection use RSSI in the calculation
-> and if so can we modify the algorithm to increase the importance of RSSI in
-> the selection?
+On Thursday 07 May 2015 19:25:11 Simon Wunderlich wrote:
+[....]
+> There is another suggestion: You could increase the multicast rate to a high
+> value, e.g. 36 MBit/s or even higher. Higher rates only work with good
+> signals, and since batman-adv uses broadcasts (which is multicast for
+> WiFi), this will have a direct effect on your network.
+[...]
+> Batman-adv is open source, and so is mac80211 and hopefully the WiFi driver
+> you use. However, it'd really suggest to start with tuning the multicast
+> rate.
+> :)
 
-No.
+I definitely agree here. This should tested before trying to hack the TQ
+calculation with some own RSSI based submetric.
 
-> 3)       How do we gain access to the code to make these modifications?
-> a.       Can you give me a little guidance on how to modify BATMAN-adv to
-> suite my situation?
-
-But you could patch your wifi driver/framework (for example mac80211) to 
-provide an exported function which returns the rssi for a specific net_device 
-(net_dev of the if_incoming) + the mac address of the other station (mac orig 
-in orig_neigh_node). This function has to basically get the sinfo->signal_avg 
-when the sta exists for this bss.
-
-You have to make sure that this device is really a compatible ieee80211 device 
-- otherwise your kernel might just crash when accessing the private data of 
-the net_device. Maybe this is always true in your situation but I don't know 
-your setup well enough. If it is a mixed setup then you can try the 
-ieee80211_ptr trick from netdev_notify in net/mac80211/iface.c. This has to be 
-done before you are using IEEE80211_DEV_TO_SUB_IF. You can check to 
-ieee80211_get_station see a function which already does parts of what you want 
-(but it has not yet this check). And also keep in mind that sinfo->signal_avg 
-may not be set with correct data. You must check (sinfo->filled & 
-STATION_INFO_SIGNAL_AVG) when you are creating a function similar to 
-ieee80211_get_station for RSSI.
-
-
-This code would have to be called when the neighbor tq is calculated in 
-batadv_iv_ogm_calc_tq. It basically has to adjust batadv_ogm_packet->tq 
-somewhere at the end of the function. The percentage of reduction would have 
-to be chosen by you based on how "bad" the rssi value is. I don't have a good 
-metric for that.
-
-
-I am not sure if Antonio/Marek have some proof of concept in their BATMAN V 
-branch. But I think they wanted to use the bandwidth based approach which is 
-queries the mac80211 rate control information [1].
+The mcast_rate trick is currently only shown in an old OpenWrt wiki page [1].
+Maybe it should also be mentioned in the main OpenWrt configuration page [2].
+I will leave this to the interested reader... or I will change it when I
+have some time to confirm it with a current OpenWrt.
 
 Kind regards,
 	Sven
 
-[1] http://thread.gmane.org/gmane.linux.kernel.wireless.general/123514
+
+[1] http://www.open-mesh.org/projects/batman-adv/wiki/Batman-adv-openwrt-config-sophisticated
+[2] http://www.open-mesh.org/projects/batman-adv/wiki/Batman-adv-openwrt-config
+
+--nextPart2570888.rEQNEca43q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJVTFjKAAoJEF2HCgfBJntGC0kQAJJs1WyE9cbwcbPak8sHxS2q
+faAtM0L5soFSFEaDbkmFRMSQdZtIUKksHU8m08IKfyUnuuQiTuBy2QvzMESD+DqP
+malbLvAMkirozjFNfMG+znOCniq0uH+hpCJVVg3sRHuhUJmAYzU9Sc4F6YqdPxAK
+73CeBjToHDioqEFR29ZH2EgUOTJKmApT7fXtiTO+6YRpM+LINnwtRKVhqtfAwfVx
+I3FR+5PHjJ7bdDu/Qd6j30dDG6QEvS50ylCDnNz5eAoxCiAbaYrk57CU9Qy0TND9
+z6LjKp9ttoFvM90h93vPVAbxPuo9Pj3WSevB3ld8Pwx6CRlrfUq8U4I0XHIUalcc
+5E0xo/1+BNZSXr8ZORdpuhT52S/5fkQzAsZwG+N7DBVLKDdn7g36Aa4uxBFgXtoV
+HkwG48Fdf2cA4lLfc5s4ogBxxElVGweOzHyiE/e717vDsQiQSe/HOBZSXSDsm2L9
+pJMI826R7eR0njRuhImMT9z2bspVmwM2E4t1Fr63aUu0k8Sgee0qQwhYtoZfAJz/
+W8qCBBIVbtnKqms8RMUoVwHTKDrFr4GMIzgG5+9ppHi/P+RXoRrPJ+SyxWqqjg68
+3femZr3Fe5p4Xt1g2TKlYs19UsqmPO3RSfIBkZEJiEfLoCChyB2A3km1XX55yMqB
+LKbKJ/3KFT3EqWDB0Tc8
+=MMNt
+-----END PGP SIGNATURE-----
+
+--nextPart2570888.rEQNEca43q--
 
