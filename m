@@ -1,13 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 17 May 2015 09:11:18 +0200
-Message-ID: <29831806.Occmqno74R@sven-edge>
-In-Reply-To: <1823317.pnFH07jJni@sven-edge>
-References: <20150516220736.2d896b4b@i3.local> <1823317.pnFH07jJni@sven-edge>
+Date: Sun, 17 May 2015 10:26:42 +0200
+Message-ID: <1491626.gIFIcyJNig@sven-edge>
+In-Reply-To: <1941799.temDJMhclT@sven-edge>
+References: <20150516221537.2a6fad9a@i3.local> <1941799.temDJMhclT@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7020523.vbOEGnKXfS";
+Content-Type: multipart/signed; boundary="nextPart2026916.GPOGIRdPc4";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Patch to add mesh_no_rebroadcast
+Subject: Re: [B.A.T.M.A.N.] Patch which fixes a uint32overflow ;
+	fix algorithm which was unintented changed on 2014 update
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,40 +23,60 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart7020523.vbOEGnKXfS
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart2026916.GPOGIRdPc4
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Sunday 17 May 2015 00:00:27 Sven Eckelmann wrote:
-> On Saturday 16 May 2015 22:07:36 Ruben Wisniewski wrote:
-> > Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
-> > ---
->=20
-> Why are you sending a patch from Linus? And this patch doesn't apply =
-on
-> current master or next.
+On Sunday 17 May 2015 00:11:52 Sven Eckelmann wrote: 
+> And please also include the commit which caused the regression. This makes
+> it easier to find out which kernel versions must be patched in case the
+> problem is critical. Here is an example how this information should be
+> included:
 
-Just to make it more clear: I think it is not a problem to pick up some=
- old=20
-patch from someone else when the original author has no problem with it=
-. But=20
-taking a patch from someone else and then without any additional inform=
-ation=20
-claiming to be the author is a rather bad move.
+You are most likely want to fix the regression introduced in 0853ec7 ("batman-
+adv: tvlv - gateway download/upload bandwidth container"). The gateway client 
+code for fast node selection was previously using batadv_gw_bandwidth_to_kbit 
+to convert the input parameters to Kibit/s. After the TLV restructuring it 
+should have multiplied the TLV value by 100 to get the exact same result 
+because the batadv_tvlv_gateway_data bandwidth_down/bandwidth_up stores the 
+throughput with the base unit of 100 Kibit/s.
 
-It is even worse that the informative commit subject + message was drop=
-ped.=20
-There is also no information what you've changed before your signed-off=
-=2Dby=20
-(which is also missing).
+The problem here would be to decide if it changes the result of the algorithm. 
+The code goes through all gateways. For each gateway it calculates the formula 
+(gw_down is in 100 Kibit/s; gw_divisor is constant	):
 
-Btw. here is the original patch and the discussion
- http://thread.gmane.org/gmane.org.freifunk.batman/10503
+    gw_factor = |_ (tq_avg ** 2 * gw_down * 10 ** 4) / gw_divisor _|
+
+You want to change it to
+
+    gw_factor = |_ (tq_avg ** 2 * gw_down * 10 ** 6) / gw_divisor _|
+
+The rest of the algorithm is just comparing the gw_factor of each gateway. The 
+question which should have been answered by the commit message would be:
+
+   Why is this constant of 100 affecting your results? Is it rounding related?
+   How much does it affect the algorithm?
+
+tq_avg is a value <= 255. A realistic value for bandwidth_down is maybe 
+something like 20. gw_divisor is 2 ** 18.
+
+So each difference in "tq_avg ** 2 * gw_down * 10 ** 4" for each gateway must 
+be larger than 2 ** 18 to always be distinguishable by the algorithm. For a 
+fixed tq_avg value of 255 the algorithm could currently compare two gateways 
+with a gw_down difference of (1. / 2480) and still distinguish them. It would 
+still detect a difference when the tq_avg is 6 and the gw_down difference is 
+1.
+
+For a fixed gw_down value of 1, the current algorithm would have problems to 
+distinguish the tq_avg values < 14 when the tq_avg difference is small.
+
+Your change would make it 100x more precise for gw_down. But I am currently 
+not seeing the actual impact. Maybe you could explain it in more detail in the 
+commit message.
 
 Kind regards,
-=09Sven
-
---nextPart7020523.vbOEGnKXfS
+	Sven
+--nextPart2026916.GPOGIRdPc4
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -63,20 +84,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJVWD8YAAoJEF2HCgfBJntGOR4P/1jVhV+igDs2ky3ODlaJU+QI
-r1otv4ZnzSpBWbpToMu6KFCJhzY+MP2bw2SBi2bEEHNI+lz00eTHEO6eXAV8R9jp
-jncfYX5iHu4oVJ8M8adkyGhGCYeCcIS/1Xl2TrsdW6FCgxI5vtSbTAYVwYbvsS7I
-dYij+bMM3g3f+E2YQ/78teT/9lXiQukJ/HooSnd9F3A0eWOksv8ih4h2S8CY3CEn
-Ga61DVRFkeB54eRtwoVlWg9rPyIpb+aibE0ZlXAAnQNRutn0yZGN40BNZfb5Z5ZQ
-Ubdpl8GdbpxOdSPUN0B+f15ebqSNsdK8fagYVJNtfYSt1V8TvdMOlZnCO0UR/nn/
-90J3T4AnXpiHaMxiKm5mYzQTJEmPgQ4Ad8lnpqbpIdtdsMftohuQ2TRIKS4iBfne
-SIvseBjyY9WDewRndbzxvjpp1TTtvbIwUfzr/Uu6rqEpBuZ/l5XVSmM9pDsdQ7PO
-f2xvgQuLN/Igz4W2+DlKBF4FbBwEOF6qE0VM7jHv9jN0NuFn+FsZAX/8IwyvDIdZ
-LfegahE+mas9PJRH0THFURqzLXsX8Fmsh9TtwtFK26o4w3Ef8LV4/cFXpBrJTC/i
-/kQvtAcrdARKIvAIGulFwImmaJNPR5He8RjlfxmsdqOwBBRRw69Wo3RqI3/DXLpX
-c2OJy7aWQEdpXHLz0RQH
-=QrPI
+iQIcBAABCgAGBQJVWFDKAAoJEF2HCgfBJntGm6UP/1Fs2nJEoxTMJ64NOFKwDLeg
+7kmga5FSkDxkgSPXvZ09do/gyc2px49ztKn+lKpxry3kB5F+JsCk3zt5XSt3T35n
+AQ2vg4HmAbO4lFn02gGSf8alWQwxEWJo89DM3P3WHa+YVkyYYVeV0/8qNeGeTYye
+ndToEVzGnTHtRLQqKDhPLKXBASB8y9iJegcb/yoRdDh97kW18bgOsZoCGE4BgQBA
+K8t3yfk6fHKimOBFiyqD3zj5O3/C3m1kR+fimcJuQ0lMmCJ7RV34QFRfsyhRZ7Ma
+6ifpK8I3kPerW2R3CDQslBwN1IjYQbvSF7/3/S7Rmz8KKPQ5Dyqo3pEKA1ee8ZtF
+1oAH61vFb02bEIciRqbKFYKUh4rxuPndMV2SDMZ2NxoWipejpqq7I8i4UyTUlXNv
+9FX2jEz95Wke+PgexVMiQRgLxxh8TmAcG/gdBmFgzLtl0fev/7Hx6YsJXtU/8OXT
+pF4sIHe3y1oaqowxYxwBIlXZIDld+tRujMyE75u+tOPyHbEuF3XphOHLZt9GlEh5
+CNw2ZMOh5Xv/lCFUMr/JyLx6fpwp4F469Bn2GQ4cJ6QiMjZ8xfn3v62UlneS7HzI
+S6ctLnWIBL35sPeoAkdUVdsZscSaofV1nzv6hIp7qo+W6MNncBaHyypTpt9dHe+O
+VEGJqiyjJfL+mAScPlvc
+=HEIw
 -----END PGP SIGNATURE-----
 
---nextPart7020523.vbOEGnKXfS--
+--nextPart2026916.GPOGIRdPc4--
 
