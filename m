@@ -1,16 +1,13 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Sun, 17 May 2015 02:40:26 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20150517004026.GB2411@odroid>
-References: <1430940562-12148-1-git-send-email-linus.luessing@c0d3.blue>
- <1430940562-12148-4-git-send-email-linus.luessing@c0d3.blue>
- <1572715.c14tfryD1Z@bentobox>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 17 May 2015 09:11:18 +0200
+Message-ID: <29831806.Occmqno74R@sven-edge>
+In-Reply-To: <1823317.pnFH07jJni@sven-edge>
+References: <20150516220736.2d896b4b@i3.local> <1823317.pnFH07jJni@sven-edge>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1572715.c14tfryD1Z@bentobox>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv5 3/3] compat: Compat code for IGMP/MLD
- report unicast forwarding
+Content-Type: multipart/signed; boundary="nextPart7020523.vbOEGnKXfS";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Patch to add mesh_no_rebroadcast
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,56 +19,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Thu, May 07, 2015 at 09:33:17AM +0200, Sven Eckelmann wrote:
-> The split header files were only there to fix the problem of the header mess 
-> which couldn't be resolved with a single compat.h that forced a specific 
-> include order. It is not really necessary to have the same for the source 
-> files. Maybe your solution is good or maybe not. Only the future will tell. :)
-> 
-> The other solution would be more like backports [1]. They seem to use one 
-> backport-/compat-*.c file for each kernel they support and introduced features 
-> which they require. So all kernel < 3.19 will build the content of 
-> backport-3.19.c to get the functions introduced by this version. But there are 
-> also some larger ones for special stuff. Maybe you can check this out and 
-> decide what you like more.
 
-For the backport compat code I'm always getting confused with the
-kernel versions. But maybe that's more because their latest
-downloads, for instance the one with 4.0 in its name, is actually
-not just for 4.0 but older kernels, too (unless I'm again mixing
-things up...). With our current implementation I like it quite a
-lot that while reading it's always clear which code is being used
-thanks to the explicit #if's and #endifs. And by keeping the
-upstream folder structure, it's immediately clear where code came
-from, too (though that could be figured out via git-grep as well,
-of course).
+--nextPart7020523.vbOEGnKXfS
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-> 
-> To the copyright stuff... hm, if you didn't write it yourself then the 
-> copyright stuff from the original source should be there. backports [1] 
-> doesn't seem to do this very well. They have for example used larger portions 
-> from files marked as copyright Yu Zhao <yu.zhao@intel.com> but have only the 
-> copyright header with Copyright (c) 2013  Luis R. Rodriguez <mcgrof@do-not-
-> panic.com>. Not sure that I can give a good answer here. Maybe someone else 
-> has an opinion about this part
+On Sunday 17 May 2015 00:00:27 Sven Eckelmann wrote:
+> On Saturday 16 May 2015 22:07:36 Ruben Wisniewski wrote:
+> > Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
+> > ---
+>=20
+> Why are you sending a patch from Linus? And this patch doesn't apply =
+on
+> current master or next.
 
-Had some small discussions with Simon today, too. I now simply copied the
-copyright headers from the upstream files. Even though I know that
-ip_mc_check_igmp() in igmp.c was not written by Alan Cox (more by
-Herbert Xu with refactoring by me). Or the copied skbuff.c stuff
-wasn't written by Alan Cox/Florian La Roche either (where some
-stuff was written by me and some was moved from br_multicast.c
-where I don't know who actually wrote that - would need to do
-deeper git-blame analysis...).
+Just to make it more clear: I think it is not a problem to pick up some=
+ old=20
+patch from someone else when the original author has no problem with it=
+. But=20
+taking a patch from someone else and then without any additional inform=
+ation=20
+claiming to be the author is a rather bad move.
 
-But I guess if people didn't claim copyright for things in the
-header of the C file, then I'd assume they are okay with what we
-do. Otherwise they would need to complain in the upstream kernel
-too or everyone else would need to do hours of git history digging
-and analysis to find out where input might have come from.
+It is even worse that the informative commit subject + message was drop=
+ped.=20
+There is also no information what you've changed before your signed-off=
+=2Dby=20
+(which is also missing).
 
-As always, thanks for your valuable feedback!
+Btw. here is the original patch and the discussion
+ http://thread.gmane.org/gmane.org.freifunk.batman/10503
 
-Cheers, Linus
+Kind regards,
+=09Sven
+
+--nextPart7020523.vbOEGnKXfS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJVWD8YAAoJEF2HCgfBJntGOR4P/1jVhV+igDs2ky3ODlaJU+QI
+r1otv4ZnzSpBWbpToMu6KFCJhzY+MP2bw2SBi2bEEHNI+lz00eTHEO6eXAV8R9jp
+jncfYX5iHu4oVJ8M8adkyGhGCYeCcIS/1Xl2TrsdW6FCgxI5vtSbTAYVwYbvsS7I
+dYij+bMM3g3f+E2YQ/78teT/9lXiQukJ/HooSnd9F3A0eWOksv8ih4h2S8CY3CEn
+Ga61DVRFkeB54eRtwoVlWg9rPyIpb+aibE0ZlXAAnQNRutn0yZGN40BNZfb5Z5ZQ
+Ubdpl8GdbpxOdSPUN0B+f15ebqSNsdK8fagYVJNtfYSt1V8TvdMOlZnCO0UR/nn/
+90J3T4AnXpiHaMxiKm5mYzQTJEmPgQ4Ad8lnpqbpIdtdsMftohuQ2TRIKS4iBfne
+SIvseBjyY9WDewRndbzxvjpp1TTtvbIwUfzr/Uu6rqEpBuZ/l5XVSmM9pDsdQ7PO
+f2xvgQuLN/Igz4W2+DlKBF4FbBwEOF6qE0VM7jHv9jN0NuFn+FsZAX/8IwyvDIdZ
+LfegahE+mas9PJRH0THFURqzLXsX8Fmsh9TtwtFK26o4w3Ef8LV4/cFXpBrJTC/i
+/kQvtAcrdARKIvAIGulFwImmaJNPR5He8RjlfxmsdqOwBBRRw69Wo3RqI3/DXLpX
+c2OJy7aWQEdpXHLz0RQH
+=QrPI
+-----END PGP SIGNATURE-----
+
+--nextPart7020523.vbOEGnKXfS--
+
