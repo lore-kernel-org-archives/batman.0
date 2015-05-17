@@ -1,13 +1,13 @@
-Return-Path: <ruben@freifunk-nrw.de>
-Date: Sun, 17 May 2015 11:16:59 +0200
-From: Ruben Wisniewski <ruben@freifunk-nrw.de>
-Message-ID: <20150517111659.492f52ef@i3.local>
-In-Reply-To: <29831806.Occmqno74R@sven-edge>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 17 May 2015 11:18:21 +0200
+Message-ID: <1931389.mJnGpBFORV@sven-edge>
+In-Reply-To: <20150517111208.61efc0ae@i3.local>
 References: <20150516220736.2d896b4b@i3.local> <1823317.pnFH07jJni@sven-edge>
- <29831806.Occmqno74R@sven-edge>
+ <20150517111208.61efc0ae@i3.local>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- boundary="Sig_/G+rQYqxu9k1k/lhv3kAVCcH"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; boundary="nextPart9484145.2dizPxZMzX";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] Patch to add mesh_no_rebroadcast
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,64 +20,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-
---Sig_/G+rQYqxu9k1k/lhv3kAVCcH
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-
-Am Sun, 17 May 2015 09:11:18 +0200
-schrieb Sven Eckelmann <sven@narfation.org>:
-
-> > Why are you sending a patch from Linus? And this patch doesn't
-> > apply on current master or next.
->=20
-> Just to make it more clear: I think it is not a problem to pick up
-> some old patch from someone else when the original author has no
-> problem with it. But taking a patch from someone else and then
-> without any additional information claiming to be the author is a
-> rather bad move.
-It is a old patch which is fixed to apply to the latest stable version.
-
-I talk to Simon yesterday, that it would be nice if the freifunker does
-not need to ship this patch in any installation, since we start to setup
-custom repos with this patch included and so on...
-
-Else all freifunk-firmwares include this patch, this should be stable.
-
-> It is even worse that the informative commit subject + message was
-> dropped. There is also no information what you've changed before your
-> signed-off-by (which is also missing).
-Yes, I removed it, since the last patches I found on this mailinglist
-does not have this information-part. So I thought this is the given
-form for this mailinglist. (There is no information about that on the
-mailinglist site).
+To: Ruben Wisniewski <ruben@freifunk-nrw.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 
-> Btw. here is the original patch and the discussion
->  http://thread.gmane.org/gmane.org.freifunk.batman/10503
+--nextPart9484145.2dizPxZMzX
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-I know this patch and discussion, I've read it yesterday with Simon and
-he asked me to send our version of the patch to the mailinglist.
+Please don't drop the mailing list when replying (unless it is actually 
+private conversation).
+
+On Sunday 17 May 2015 11:12:08 Ruben Wisniewski wrote:
+> schrieb Sven Eckelmann <sven@narfation.org>:
+> > Why are you sending a patch from Linus?
+> 
+> Because Simon said to me to do so yesterday. :)
+
+See my other mail with a more detailed explanation.
 
 
-Best regards
+> > And this patch doesn't apply on current master or next.
+> 
+> We have this patch in our setup and it's applying to 2015.0.
 
+But v2015.0 is not master or next. And since it is a new feature, I would 
+guess it should be applied on master.
 
-Ruben
-
---Sig_/G+rQYqxu9k1k/lhv3kAVCcH
-Content-Type: application/pgp-signature
-Content-Description: Digitale Signatur von OpenPGP
+Kind regards,
+	Sven
+--nextPart9484145.2dizPxZMzX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iKIEARMKAAYFAlVYXIsACgkQgB++GrevraTjDAIJAWChm9v4L0rfd5bcUp3VYkZJ
-PoOWnNaSkup3dMc8mf9ZFyEzjYlQRhd+jUv8A4TXwrBA/Y+Rp89lZkv6i55lmQE7
-AgkB6Cou5nnBfmz4BE++qXUqT79sIzZ/fgno/RWQZ8YscZ/AjlX2e5fjpyAkNFj7
-t3ACOKFdFag9mVjxD5Wl6JGq4as=
-=/zDc
+iQIcBAABCgAGBQJVWFzgAAoJEF2HCgfBJntGw+oP/iSDkmzwqLPian9R32EtxN5w
+pT2p5haejvvcpIw7t2ixQhYEHpCnH2gg7omxvAvfSDPyr3gvEGF2qV/ax8Eg3It+
+YhpwbZ712FchpGjSfV7I+eFKU79G9SgWJTm2vUSbTtyDAUXCxvYFXLyPiA7oiFWT
+H1FdfYhgrCkFXdLPVGjwije+wBymoIxSy118whKWil+Ue5RWNgUWmZJ49hwJxB54
+fzDyu/PKu0dTbTEBsHS410jht+QBEF7vx+mFRSifpdgGQ5xpeaYm9g/Tn3gj4nMx
+MJAYmBP9rQr/vYW1LJO4OvS8zzS17IrB+yHA2kbJQfej8rK+ogb4jjxl42Dxi7MV
+lsLeE6hJGuLhamJFv9MnOn6oYkMDnskJ12hyhvs+6pvf5tkplqzwB9LPr5IzRewG
+jAHHI+OF69zNrojVXmQMWXCJxESUKjsOG1NzO53/pMF28Wik43Xtn+4InW5r7ESx
+gHzYIWktSi80nXXxw+6XIW5inbahItWZQigIYnUS2iY1IrLvsjyuu1daf4OjpwS4
+qC3FM6g/OuTwhHt0TQ+7Fx61SU6sJvZdNfGQKYzVCyDWpOxiduyadHbEIZRXgIlN
+ujfCHSSZqlYCykwalWgh1Pk7e+yaD3TluRpxvgJshiyeom5mA85GBWa3Qw6Ay/sf
+I71vjkj2sTEvsl2OYSwd
+=UXoy
 -----END PGP SIGNATURE-----
 
---Sig_/G+rQYqxu9k1k/lhv3kAVCcH--
+--nextPart9484145.2dizPxZMzX--
+
