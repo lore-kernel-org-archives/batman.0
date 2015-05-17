@@ -1,14 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 17 May 2015 10:26:42 +0200
-Message-ID: <1491626.gIFIcyJNig@sven-edge>
-In-Reply-To: <1941799.temDJMhclT@sven-edge>
-References: <20150516221537.2a6fad9a@i3.local> <1941799.temDJMhclT@sven-edge>
+Return-Path: <ruben@freifunk-nrw.de>
+Date: Sun, 17 May 2015 11:16:59 +0200
+From: Ruben Wisniewski <ruben@freifunk-nrw.de>
+Message-ID: <20150517111659.492f52ef@i3.local>
+In-Reply-To: <29831806.Occmqno74R@sven-edge>
+References: <20150516220736.2d896b4b@i3.local> <1823317.pnFH07jJni@sven-edge>
+ <29831806.Occmqno74R@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2026916.GPOGIRdPc4";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Patch which fixes a uint32overflow ;
-	fix algorithm which was unintented changed on 2014 update
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ boundary="Sig_/G+rQYqxu9k1k/lhv3kAVCcH"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Patch to add mesh_no_rebroadcast
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,82 +22,62 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+--Sig_/G+rQYqxu9k1k/lhv3kAVCcH
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
---nextPart2026916.GPOGIRdPc4
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Am Sun, 17 May 2015 09:11:18 +0200
+schrieb Sven Eckelmann <sven@narfation.org>:
 
-On Sunday 17 May 2015 00:11:52 Sven Eckelmann wrote: 
-> And please also include the commit which caused the regression. This makes
-> it easier to find out which kernel versions must be patched in case the
-> problem is critical. Here is an example how this information should be
-> included:
+> > Why are you sending a patch from Linus? And this patch doesn't
+> > apply on current master or next.
+>=20
+> Just to make it more clear: I think it is not a problem to pick up
+> some old patch from someone else when the original author has no
+> problem with it. But taking a patch from someone else and then
+> without any additional information claiming to be the author is a
+> rather bad move.
+It is a old patch which is fixed to apply to the latest stable version.
 
-You are most likely want to fix the regression introduced in 0853ec7 ("batman-
-adv: tvlv - gateway download/upload bandwidth container"). The gateway client 
-code for fast node selection was previously using batadv_gw_bandwidth_to_kbit 
-to convert the input parameters to Kibit/s. After the TLV restructuring it 
-should have multiplied the TLV value by 100 to get the exact same result 
-because the batadv_tvlv_gateway_data bandwidth_down/bandwidth_up stores the 
-throughput with the base unit of 100 Kibit/s.
+I talk to Simon yesterday, that it would be nice if the freifunker does
+not need to ship this patch in any installation, since we start to setup
+custom repos with this patch included and so on...
 
-The problem here would be to decide if it changes the result of the algorithm. 
-The code goes through all gateways. For each gateway it calculates the formula 
-(gw_down is in 100 Kibit/s; gw_divisor is constant	):
+Else all freifunk-firmwares include this patch, this should be stable.
 
-    gw_factor = |_ (tq_avg ** 2 * gw_down * 10 ** 4) / gw_divisor _|
+> It is even worse that the informative commit subject + message was
+> dropped. There is also no information what you've changed before your
+> signed-off-by (which is also missing).
+Yes, I removed it, since the last patches I found on this mailinglist
+does not have this information-part. So I thought this is the given
+form for this mailinglist. (There is no information about that on the
+mailinglist site).
 
-You want to change it to
 
-    gw_factor = |_ (tq_avg ** 2 * gw_down * 10 ** 6) / gw_divisor _|
+> Btw. here is the original patch and the discussion
+>  http://thread.gmane.org/gmane.org.freifunk.batman/10503
 
-The rest of the algorithm is just comparing the gw_factor of each gateway. The 
-question which should have been answered by the commit message would be:
+I know this patch and discussion, I've read it yesterday with Simon and
+he asked me to send our version of the patch to the mailinglist.
 
-   Why is this constant of 100 affecting your results? Is it rounding related?
-   How much does it affect the algorithm?
 
-tq_avg is a value <= 255. A realistic value for bandwidth_down is maybe 
-something like 20. gw_divisor is 2 ** 18.
+Best regards
 
-So each difference in "tq_avg ** 2 * gw_down * 10 ** 4" for each gateway must 
-be larger than 2 ** 18 to always be distinguishable by the algorithm. For a 
-fixed tq_avg value of 255 the algorithm could currently compare two gateways 
-with a gw_down difference of (1. / 2480) and still distinguish them. It would 
-still detect a difference when the tq_avg is 6 and the gw_down difference is 
-1.
 
-For a fixed gw_down value of 1, the current algorithm would have problems to 
-distinguish the tq_avg values < 14 when the tq_avg difference is small.
+Ruben
 
-Your change would make it 100x more precise for gw_down. But I am currently 
-not seeing the actual impact. Maybe you could explain it in more detail in the 
-commit message.
-
-Kind regards,
-	Sven
---nextPart2026916.GPOGIRdPc4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+--Sig_/G+rQYqxu9k1k/lhv3kAVCcH
+Content-Type: application/pgp-signature
+Content-Description: Digitale Signatur von OpenPGP
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJVWFDKAAoJEF2HCgfBJntGm6UP/1Fs2nJEoxTMJ64NOFKwDLeg
-7kmga5FSkDxkgSPXvZ09do/gyc2px49ztKn+lKpxry3kB5F+JsCk3zt5XSt3T35n
-AQ2vg4HmAbO4lFn02gGSf8alWQwxEWJo89DM3P3WHa+YVkyYYVeV0/8qNeGeTYye
-ndToEVzGnTHtRLQqKDhPLKXBASB8y9iJegcb/yoRdDh97kW18bgOsZoCGE4BgQBA
-K8t3yfk6fHKimOBFiyqD3zj5O3/C3m1kR+fimcJuQ0lMmCJ7RV34QFRfsyhRZ7Ma
-6ifpK8I3kPerW2R3CDQslBwN1IjYQbvSF7/3/S7Rmz8KKPQ5Dyqo3pEKA1ee8ZtF
-1oAH61vFb02bEIciRqbKFYKUh4rxuPndMV2SDMZ2NxoWipejpqq7I8i4UyTUlXNv
-9FX2jEz95Wke+PgexVMiQRgLxxh8TmAcG/gdBmFgzLtl0fev/7Hx6YsJXtU/8OXT
-pF4sIHe3y1oaqowxYxwBIlXZIDld+tRujMyE75u+tOPyHbEuF3XphOHLZt9GlEh5
-CNw2ZMOh5Xv/lCFUMr/JyLx6fpwp4F469Bn2GQ4cJ6QiMjZ8xfn3v62UlneS7HzI
-S6ctLnWIBL35sPeoAkdUVdsZscSaofV1nzv6hIp7qo+W6MNncBaHyypTpt9dHe+O
-VEGJqiyjJfL+mAScPlvc
-=HEIw
+iKIEARMKAAYFAlVYXIsACgkQgB++GrevraTjDAIJAWChm9v4L0rfd5bcUp3VYkZJ
+PoOWnNaSkup3dMc8mf9ZFyEzjYlQRhd+jUv8A4TXwrBA/Y+Rp89lZkv6i55lmQE7
+AgkB6Cou5nnBfmz4BE++qXUqT79sIzZ/fgno/RWQZ8YscZ/AjlX2e5fjpyAkNFj7
+t3ACOKFdFag9mVjxD5Wl6JGq4as=
+=/zDc
 -----END PGP SIGNATURE-----
 
---nextPart2026916.GPOGIRdPc4--
-
+--Sig_/G+rQYqxu9k1k/lhv3kAVCcH--
