@@ -1,14 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 17 May 2015 00:50:32 +0200
-Message-ID: <26516794.HyuHs5i0nG@sven-edge>
-In-Reply-To: <20150516222643.1c390606@i3.local>
-References: <20150516222643.1c390606@i3.local>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Sun, 17 May 2015 02:22:23 +0200
+Message-Id: <1431822145-3794-2-git-send-email-linus.luessing@c0d3.blue>
+In-Reply-To: <1431822145-3794-1-git-send-email-linus.luessing@c0d3.blue>
+References: <1431822145-3794-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart10931569.yCn4ZGO4xC";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] gw-bandwidth: fix potential overflow on
-	very large input values, limit them to 100 GBit/s
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv6 1/3] batman-adv: Forward IGMP/MLD reports
+ to selected querier (only)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,98 +22,521 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+With this patch IGMP or MLD reports are only forwarded to the selected
+IGMP/MLD querier as RFC4541 suggests. This is necessary to avoid
+multicast packet loss in bridged scenarios later:
 
---nextPart10931569.yCn4ZGO4xC
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+An IGMPv2/MLDv1 querier does not actively join the multicast group the
+reports are sent to. Because of this, this leads to snooping
+bridges/switches not being able to learn of multicast listeners in the
+mesh and wrongly shutting down ports for multicast traffic to the mesh.
 
-On Saturday 16 May 2015 22:26:43 Ruben Wisniewski wrote:
-> Signed-off-by: Ruben Wisniewsi <ruben@vfn-nrw.de>
-> ---
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+ net/batman-adv/main.h           |    4 +-
+ net/batman-adv/multicast.c      |  257 ++++++++++++++++++++++++++++++++++++++-
+ net/batman-adv/multicast.h      |    8 ++
+ net/batman-adv/soft-interface.c |   11 ++
+ net/batman-adv/types.h          |   14 +++
+ 5 files changed, 287 insertions(+), 7 deletions(-)
 
-
-Same commit message/topic problems as in the other patch. The
-patch also doesn't apply on master/next.
-
-    Applying: gw-bandwidth: fix potential overflow on very large input values, limit them to 100 GBit/s
-    fatal: corrupt patch at line 11
-    Patch failed at 0001 gw-bandwidth: fix potential overflow on very large input values, limit them to 100 GBit/s
-    The copy of the patch that failed is found in:
-       /home/sven/tmp/batman-adv/.git/rebase-apply/patch
-    When you have resolved this problem, run "git am --continue".
-    If you prefer to skip this patch, run "git am --skip" instead.
-    To restore the original branch and stop patching, run "git am --abort".
-
->  net/batman-adv/gateway_common.c | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/net/batman-adv/gateway_common.c
-> b/net/batman-adv/gateway_common.c index 39cf44c..6b0f4d3 100644
-> --- a/net/batman-adv/gateway_common.c
-> +++ b/net/batman-adv/gateway_common.c
-> @@ -71,10 +71,16 @@ static bool batadv_parse_gw_bandwidth(struct
-> net_device *net_dev, char *buff,
->  	switch (bw_unit_type) {
->  	case BATADV_BW_UNIT_MBIT:
-> +		/* limit input to 100 GBit/s */
-> +		if (ldown > 100000)
-> +			ldown = 100000
->  		*down = ldown * 10;
->  		break;
->  	case BATADV_BW_UNIT_KBIT:
->  	default:
-> +		/* limit input to 100 GBit/s */
-> +		if (ldown > 100000000)
-> +			ldown = 100000000
->  		*down = ldown / 100;
->  		break;
->  	}
-
-
-Wouldn't it be better to reject the input and inform the user
-about it with an error code (EINVAL or something like that)?
-
-The value looks a little bit randomly chosen. I've looked a little
-bit into the "new' TLV code and it seems store store this value inside a
-be32 variable when it is sent over the wire. This be32 can
-store 4294967295. The unit it represents seems to be in 100 Kib/s.
-So you would end up with a max of ~409 Tibit/s.
-
-Maybe you can emphasize more why 100 Gibit/s is a good choice.
-
-Btw. am I the only which gets a little bit sad about the fact
-that this function uses kstrtol to parse the input and then
-nobody check if ldown or lup is negative? ... sorry, got a little
-bit sidetracked.
-
-Also, why does this change not include the upload speed parsing
-part of this function?
-
-Kind regards,
-	Sven
-
---nextPart10931569.yCn4ZGO4xC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJVV8m7AAoJEF2HCgfBJntG6vEQAIBLj+aX7TK2lA87TDRJAZsU
-29PX2vE1z3K1ykc0NzdtFussCQ4/e1eXhQGDv6I22E4oncu7PbZleRIsa+qrldPb
-1dQkAxh/OioD5j+KyK/8e8BX+/pyzuUR01+lWffCo2PfBSNiKYhmnG23PM69tEOM
-Bb9XGAkCg3e1goOUw70/HJnC2p+GRMkaaylASJ+Gz4EmeydptL0okx6q48Csv8KH
-VPTZ4nJ+Og6TeWL4ktiGKrINq2HgC67GxU51crOl6I8GPpcAui1FmfqtQLhD/Gl7
-u6HKRB2VpvFG3d99qWX6qHZmK1wPlGL+jhW2OuvFPXNI5r5nz+MbdA5Dv7uQ2PCm
-iFQCLL+bKNpw0bfFye9hMESyvc7D/mepXE2EoP2DWmeaspueCD+ILxf4ww6zLNkH
-2CeSe9uqVXQxY+W5jqhcF65vhZBjVey3y59AYR/oZBrFciuUN9fhJ6qf+6Q2Ecqd
-t9FytdexmRelwkv5q/B1UcqUCHBBzjGZlVsVV3zElhAFWZHJEBMHgh1+jNRf6716
-q92gYmnhC6nyUboiyStYuitrEFFL0ZdbZ0JIzw5VGDFvSRAkY3Zqh2MIQ9wSbnZI
-Zlo2Aqc0uUoCkJwwS3+3T1fBhYvI2Lq7/x1D+o8xSGHHZAL2ggce7HLOXRPM8ZGW
-AoBP5Xzo8VtDqSfIkFBB
-=hJ54
------END PGP SIGNATURE-----
-
---nextPart10931569.yCn4ZGO4xC--
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 41d27c7..2832cf9 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -219,6 +219,7 @@ __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr);
+  * @BATADV_DBG_BLA: bridge loop avoidance messages
+  * @BATADV_DBG_DAT: ARP snooping and DAT related messages
+  * @BATADV_DBG_NC: network coding related messages
++ * @BATADV_DBG_MCAST: multicast related messages
+  * @BATADV_DBG_ALL: the union of all the above log levels
+  */
+ enum batadv_dbg_level {
+@@ -228,7 +229,8 @@ enum batadv_dbg_level {
+ 	BATADV_DBG_BLA    = BIT(3),
+ 	BATADV_DBG_DAT    = BIT(4),
+ 	BATADV_DBG_NC	  = BIT(5),
+-	BATADV_DBG_ALL    = 63,
++	BATADV_DBG_MCAST  = BIT(6),
++	BATADV_DBG_ALL    = 127,
+ };
+ 
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 7aa480b..72d561c 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -24,6 +24,7 @@
+ #include <linux/etherdevice.h>
+ #include <linux/fs.h>
+ #include <linux/if_ether.h>
++#include <linux/igmp.h>
+ #include <linux/in6.h>
+ #include <linux/in.h>
+ #include <linux/ip.h>
+@@ -40,6 +41,7 @@
+ #include <linux/types.h>
+ #include <net/addrconf.h>
+ #include <net/ipv6.h>
++#include <net/mld.h>
+ 
+ #include "packet.h"
+ #include "translation-table.h"
+@@ -270,10 +272,76 @@ out:
+ }
+ 
+ /**
++ * batadv_mcast_is_report_ipv4 - check for IGMP reports (and queries)
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the ethernet frame destined for the mesh
++ * @orig: if IGMP report: to be set to the querier to forward the skb to
++ *
++ * Checks whether the given frame is an IGMP report and if so sets the
++ * orig pointer to the originator of the selected IGMP querier if one exists
++ * and returns true. Otherwise returns false.
++ *
++ * If the packet is a general IGMP query instead then we delete the memorized,
++ * foreign IGMP querier (if one exists): We became the selected querier and
++ * therefore do not need to forward reports into the mesh.
++ *
++ * This call might reallocate skb data.
++ */
++static bool batadv_mcast_is_report_ipv4(struct batadv_priv *bat_priv,
++					struct sk_buff *skb,
++					struct batadv_orig_node **orig)
++{
++	struct batadv_mcast_querier_state *querier;
++	struct batadv_orig_node *orig_node;
++
++	if (ip_mc_check_igmp(skb, NULL) < 0)
++		return false;
++
++	querier = &bat_priv->mcast.querier_ipv4;
++
++	switch (igmp_hdr(skb)->type) {
++	case IGMP_HOST_MEMBERSHIP_REPORT:
++	case IGMPV2_HOST_MEMBERSHIP_REPORT:
++	case IGMPV3_HOST_MEMBERSHIP_REPORT:
++		rcu_read_lock();
++		orig_node = rcu_dereference(querier->orig);
++		if (orig_node && atomic_inc_not_zero(&orig_node->refcount)) {
++			/* TODO: include multicast routers via MRD (RFC4286) */
++			batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++				   "Redirecting IGMP Report to %pM\n",
++				   orig_node->orig);
++			*orig = orig_node;
++		}
++		rcu_read_unlock();
++
++		return true;
++	case IGMP_HOST_MEMBERSHIP_QUERY:
++		/* RFC4541, section 2.1.1.1.b) says:
++		 * ignore general queries from 0.0.0.0
++		 */
++		if (!ip_hdr(skb)->saddr || igmp_hdr(skb)->group)
++			break;
++
++		spin_lock_bh(&querier->orig_lock);
++		orig_node = rcu_dereference(querier->orig);
++		if (orig_node)
++			rcu_assign_pointer(querier->orig, NULL);
++		spin_unlock_bh(&querier->orig_lock);
++
++		batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++			   "Snooped own IGMP Query\n");
++		break;
++	}
++
++	return false;
++}
++
++/**
+  * batadv_mcast_forw_mode_check_ipv4 - check for optimized forwarding potential
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: the IPv4 packet to check
+  * @is_unsnoopable: stores whether the destination is snoopable
++ * @orig: for IGMP reports: to be set to the querier to forward the skb to
+  *
+  * Checks whether the given IPv4 packet has the potential to be forwarded with a
+  * mode more optimal than classic flooding.
+@@ -283,7 +351,8 @@ out:
+  */
+ static int batadv_mcast_forw_mode_check_ipv4(struct batadv_priv *bat_priv,
+ 					     struct sk_buff *skb,
+-					     bool *is_unsnoopable)
++					     bool *is_unsnoopable,
++					     struct batadv_orig_node **orig)
+ {
+ 	struct iphdr *iphdr;
+ 
+@@ -291,6 +360,9 @@ static int batadv_mcast_forw_mode_check_ipv4(struct batadv_priv *bat_priv,
+ 	if (!pskb_may_pull(skb, sizeof(struct ethhdr) + sizeof(*iphdr)))
+ 		return -ENOMEM;
+ 
++	if (batadv_mcast_is_report_ipv4(bat_priv, skb, orig))
++		return 0;
++
+ 	iphdr = ip_hdr(skb);
+ 
+ 	/* TODO: Implement Multicast Router Discovery (RFC4286),
+@@ -307,11 +379,73 @@ static int batadv_mcast_forw_mode_check_ipv4(struct batadv_priv *bat_priv,
+ 	return 0;
+ }
+ 
++#if IS_ENABLED(CONFIG_IPV6)
++/**
++ * batadv_mcast_is_report_ipv6 - check for MLD reports (and queries)
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the ethernet frame destined for the mesh
++ * @orig: if MLD report: to be set to the querier to forward the skb to
++ *
++ * Checks whether the given frame is an MLD report and if so sets the
++ * orig pointer to the originator of the selected MLD querier if one exists
++ * and returns true. Otherwise returns false.
++ *
++ * If the packet is a general MLD query instead then we delete the memorized,
++ * foreign MLD querier (if one exists): We became the selected querier and
++ * therefore do not need to forward reports into the mesh.
++ *
++ * This call might reallocate skb data.
++ */
++static bool batadv_mcast_is_report_ipv6(struct batadv_priv *bat_priv,
++					struct sk_buff *skb,
++					struct batadv_orig_node **orig)
++{
++	struct mld_msg *mld;
++	struct batadv_mcast_querier_state *querier;
++	struct batadv_orig_node *orig_node;
++
++	if (ipv6_mc_check_mld(skb, NULL) < 0)
++		return false;
++
++	querier = &bat_priv->mcast.querier_ipv6;
++	mld = (struct mld_msg *)icmp6_hdr(skb);
++
++	switch (mld->mld_type) {
++	case ICMPV6_MGM_REPORT:
++	case ICMPV6_MLD2_REPORT:
++		rcu_read_lock();
++		orig_node = rcu_dereference(querier->orig);
++		if (orig_node && atomic_inc_not_zero(&orig_node->refcount)) {
++			/* TODO: include multicast routers via MRD (RFC4286) */
++			batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++				   "Redirecting MLD Report to %pM\n",
++				   orig_node->orig);
++			*orig = orig_node;
++		}
++		rcu_read_unlock();
++
++		return true;
++	case ICMPV6_MGM_QUERY:
++		spin_lock_bh(&querier->orig_lock);
++		orig_node = rcu_dereference(querier->orig);
++		if (orig_node)
++			rcu_assign_pointer(querier->orig, NULL);
++		spin_unlock_bh(&querier->orig_lock);
++
++		batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++			   "Snooped own MLD Query\n");
++		break;
++	}
++
++	return false;
++}
++
+ /**
+  * batadv_mcast_forw_mode_check_ipv6 - check for optimized forwarding potential
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: the IPv6 packet to check
+  * @is_unsnoopable: stores whether the destination is snoopable
++ * @orig: for MLD reports: to be set to the querier to forward the skb to
+  *
+  * Checks whether the given IPv6 packet has the potential to be forwarded with a
+  * mode more optimal than classic flooding.
+@@ -321,7 +455,8 @@ static int batadv_mcast_forw_mode_check_ipv4(struct batadv_priv *bat_priv,
+  */
+ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
+ 					     struct sk_buff *skb,
+-					     bool *is_unsnoopable)
++					     bool *is_unsnoopable,
++					     struct batadv_orig_node **orig)
+ {
+ 	struct ipv6hdr *ip6hdr;
+ 
+@@ -329,6 +464,9 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
+ 	if (!pskb_may_pull(skb, sizeof(struct ethhdr) + sizeof(*ip6hdr)))
+ 		return -ENOMEM;
+ 
++	if (batadv_mcast_is_report_ipv6(bat_priv, skb, orig))
++		return 0;
++
+ 	ip6hdr = ipv6_hdr(skb);
+ 
+ 	/* TODO: Implement Multicast Router Discovery (RFC4286),
+@@ -345,6 +483,7 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
+ 
+ 	return 0;
+ }
++#endif
+ 
+ /**
+  * batadv_mcast_forw_mode_check - check for optimized forwarding potential
+@@ -360,7 +499,8 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
+  */
+ static int batadv_mcast_forw_mode_check(struct batadv_priv *bat_priv,
+ 					struct sk_buff *skb,
+-					bool *is_unsnoopable)
++					bool *is_unsnoopable,
++					struct batadv_orig_node **orig)
+ {
+ 	struct ethhdr *ethhdr = eth_hdr(skb);
+ 
+@@ -373,10 +513,12 @@ static int batadv_mcast_forw_mode_check(struct batadv_priv *bat_priv,
+ 	switch (ntohs(ethhdr->h_proto)) {
+ 	case ETH_P_IP:
+ 		return batadv_mcast_forw_mode_check_ipv4(bat_priv, skb,
+-							 is_unsnoopable);
++							 is_unsnoopable, orig);
++#if IS_ENABLED(CONFIG_IPV6)
+ 	case ETH_P_IPV6:
+ 		return batadv_mcast_forw_mode_check_ipv6(bat_priv, skb,
+-							 is_unsnoopable);
++							 is_unsnoopable, orig);
++#endif
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -544,12 +686,16 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 	bool is_unsnoopable = false;
+ 	struct ethhdr *ethhdr;
+ 
+-	ret = batadv_mcast_forw_mode_check(bat_priv, skb, &is_unsnoopable);
++	ret = batadv_mcast_forw_mode_check(bat_priv, skb, &is_unsnoopable,
++					   orig);
+ 	if (ret == -ENOMEM)
+ 		return BATADV_FORW_NONE;
+ 	else if (ret < 0)
+ 		return BATADV_FORW_ALL;
+ 
++	if (*orig)
++		return BATADV_FORW_SINGLE;
++
+ 	ethhdr = eth_hdr(skb);
+ 
+ 	tt_count = batadv_tt_global_hash_count(bat_priv, ethhdr->h_dest,
+@@ -581,6 +727,105 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ }
+ 
+ /**
++ * batadv_mcast_snoop_query_ipv4 - snoop for the selected MLD querier
++ * @skb: the unencapsulated ethernet frame coming from the mesh
++ * @orig_node: the originator this frame came from
++ *
++ * Checks whether the given frame is a general IGMP query from the selected
++ * querier and if so memorizes the originator this frame came from.
++ */
++static void batadv_mcast_snoop_query_ipv4(struct sk_buff *skb,
++					  struct batadv_orig_node *orig_node)
++{
++	struct batadv_mcast_querier_state *querier;
++
++	if (ip_mc_check_igmp(skb, NULL) < 0)
++		return;
++
++	/* we are only interested in general queries (group == 0.0.0.0) */
++	if (igmp_hdr(skb)->type != IGMP_HOST_MEMBERSHIP_QUERY ||
++	    igmp_hdr(skb)->group)
++		return;
++
++	/* RFC4541, section 2.1.1.1.b) says: ignore queries from 0.0.0.0 */
++	if (!ip_hdr(skb)->saddr)
++		return;
++
++	querier = &orig_node->bat_priv->mcast.querier_ipv4;
++
++	spin_lock_bh(&querier->orig_lock);
++	rcu_assign_pointer(querier->orig, orig_node);
++	spin_unlock_bh(&querier->orig_lock);
++
++	batadv_dbg(BATADV_DBG_MCAST, orig_node->bat_priv,
++		   "Snooped IGMP Query from originator %pM\n", orig_node->orig);
++}
++
++#if IS_ENABLED(CONFIG_IPV6)
++/**
++ * batadv_mcast_snoop_query_ipv6 - snoop for the selected MLD querier
++ * @skb: the unencapsulated ethernet frame coming from the mesh
++ * @orig_node: the originator this frame came from
++ *
++ * Checks whether the given frame is a general MLD query from the selected
++ * querier and if so memorizes the originator this frame came from.
++ */
++static void batadv_mcast_snoop_query_ipv6(struct sk_buff *skb,
++					  struct batadv_orig_node *orig_node)
++{
++	struct mld_msg *mld;
++	struct batadv_mcast_querier_state *querier;
++
++	if (ipv6_mc_check_mld(skb, NULL) < 0)
++		return;
++
++	mld = (struct mld_msg *)icmp6_hdr(skb);
++
++	/* we are only interested in general queries (mca == ::) */
++	if (mld->mld_type != ICMPV6_MGM_QUERY ||
++	    !ipv6_addr_any(&mld->mld_mca))
++		return;
++
++	querier = &orig_node->bat_priv->mcast.querier_ipv6;
++
++	spin_lock_bh(&querier->orig_lock);
++	rcu_assign_pointer(querier->orig, orig_node);
++	spin_unlock_bh(&querier->orig_lock);
++
++	batadv_dbg(BATADV_DBG_MCAST, orig_node->bat_priv,
++		   "Snooped MLD Query from originator %pM\n", orig_node->orig);
++}
++#endif
++
++/**
++ * batadv_mcast_snoop_query - snoop the selected IGMP/MLD querier
++ * @skb: the unencapsulated ethernet frame coming from the mesh
++ * @orig_node: the originator this frame came from
++ *
++ * Checks whether the given frame is a general IGMP or MLD query
++ * from the selected querier and if so memorizes the originator
++ * this frame came from.
++ *
++ * This call might reallocate skb data.
++ */
++void batadv_mcast_snoop_query(struct sk_buff *skb,
++			      struct batadv_orig_node *orig_node)
++{
++	struct ethhdr *ethhdr = eth_hdr(skb);
++
++	switch (ntohs(ethhdr->h_proto)) {
++	case ETH_P_IP:
++		batadv_mcast_snoop_query_ipv4(skb, orig_node);
++		break;
++#if IS_ENABLED(CONFIG_IPV6)
++	case ETH_P_IPV6:
++		batadv_mcast_snoop_query_ipv6(skb, orig_node);
++		break;
++#endif
++	}
++}
++
++/**
+  * batadv_mcast_want_unsnoop_update - update unsnoop counter and list
+  * @bat_priv: the bat priv with all the soft interface information
+  * @orig: the orig_node which multicast state might have changed of
+diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
+index beb6e56..fb61db9 100644
+--- a/net/batman-adv/multicast.h
++++ b/net/batman-adv/multicast.h
+@@ -46,6 +46,9 @@ enum batadv_forw_mode
+ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		       struct batadv_orig_node **mcast_single_orig);
+ 
++void batadv_mcast_snoop_query(struct sk_buff *skb,
++			      struct batadv_orig_node *orig_node);
++
+ void batadv_mcast_init(struct batadv_priv *bat_priv);
+ 
+ void batadv_mcast_free(struct batadv_priv *bat_priv);
+@@ -65,6 +68,11 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 	return BATADV_FORW_ALL;
+ }
+ 
++static inline void batadv_mcast_snoop_query(struct sk_buff *skb,
++					    struct batadv_orig_node *orig_node)
++{
++}
++
+ static inline int batadv_mcast_init(struct batadv_priv *bat_priv)
+ {
+ 	return 0;
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index c002961..0a8c2ae 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -206,6 +206,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+ 		goto dropped;
+ 
++	skb_set_network_header(skb, ETH_HLEN);
++
+ 	soft_iface->trans_start = jiffies;
+ 	vid = batadv_get_vid(skb, 0);
+ 	ethhdr = eth_hdr(skb);
+@@ -396,6 +398,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 
+ 	skb_pull_rcsum(skb, hdr_size);
+ 	skb_reset_mac_header(skb);
++	skb_set_network_header(skb, ETH_HLEN);
+ 
+ 	/* clean the netfilter state now that the batman-adv header has been
+ 	 * removed
+@@ -458,6 +461,9 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 			skb->mark &= ~bat_priv->isolation_mark_mask;
+ 			skb->mark |= bat_priv->isolation_mark;
+ 		}
++
++		if (orig_node)
++			batadv_mcast_snoop_query(skb, orig_node);
+ 	} else if (batadv_is_ap_isolated(bat_priv, ethhdr->h_source,
+ 					 ethhdr->h_dest, vid)) {
+ 		goto dropped;
+@@ -768,6 +774,11 @@ static int batadv_softif_init_late(struct net_device *dev)
+ 	atomic_set(&bat_priv->distributed_arp_table, 1);
+ #endif
+ #ifdef CONFIG_BATMAN_ADV_MCAST
++	rcu_assign_pointer(bat_priv->mcast.querier_ipv4.orig, NULL);
++	spin_lock_init(&bat_priv->mcast.querier_ipv4.orig_lock);
++	rcu_assign_pointer(bat_priv->mcast.querier_ipv6.orig, NULL);
++	spin_lock_init(&bat_priv->mcast.querier_ipv6.orig_lock);
++
+ 	bat_priv->mcast.flags = BATADV_NO_FLAGS;
+ 	atomic_set(&bat_priv->multicast_mode, 1);
+ 	atomic_set(&bat_priv->mcast.num_disabled, 0);
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 67d6348..3a5365f 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -640,12 +640,24 @@ struct batadv_priv_dat {
+ 
+ #ifdef CONFIG_BATMAN_ADV_MCAST
+ /**
++ * struct batadv_mcast_querier_state - IGMP/MLD querier state when bridged
++ * @orig: node on which the selected querier resides
++ * @orig_lock: protects updates of the selected querier in 'orig'
++ */
++struct batadv_mcast_querier_state {
++	struct batadv_orig_node __rcu *orig; /* rcu protected pointer */
++	spinlock_t orig_lock; /* protects updates of orig */
++};
++
++/**
+  * struct batadv_priv_mcast - per mesh interface mcast data
+  * @mla_list: list of multicast addresses we are currently announcing via TT
+  * @want_all_unsnoopables_list: a list of orig_nodes wanting all unsnoopable
+  *  multicast traffic
+  * @want_all_ipv4_list: a list of orig_nodes wanting all IPv4 multicast traffic
+  * @want_all_ipv6_list: a list of orig_nodes wanting all IPv6 multicast traffic
++ * @querier_ipv4: the current state of an IGMP querier in the mesh
++ * @querier_ipv6: the current state of an MLD querier in the mesh
+  * @flags: the flags we have last sent in our mcast tvlv
+  * @enabled: whether the multicast tvlv is currently enabled
+  * @num_disabled: number of nodes that have no mcast tvlv
+@@ -660,6 +672,8 @@ struct batadv_priv_mcast {
+ 	struct hlist_head want_all_unsnoopables_list;
+ 	struct hlist_head want_all_ipv4_list;
+ 	struct hlist_head want_all_ipv6_list;
++	struct batadv_mcast_querier_state querier_ipv4;
++	struct batadv_mcast_querier_state querier_ipv6;
+ 	uint8_t flags;
+ 	bool enabled;
+ 	atomic_t num_disabled;
+-- 
+1.7.10.4
 
