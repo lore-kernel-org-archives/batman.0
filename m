@@ -1,11 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 29 May 2015 11:05:27 +0200
-Message-Id: <1432890328-8247-16-git-send-email-antonio@meshcoding.com>
+Date: Fri, 29 May 2015 11:05:16 +0200
+Message-Id: <1432890328-8247-5-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
 References: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 15/16] batman-adv: iv_ogm_orig_update,
-	remove unnecessary brackets
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 04/16] batman-adv: Use only queued fragments
+	when merging
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,32 +21,71 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Markus Pargmann <mpa@pengutronix.de>
+From: Sven Eckelmann <sven@narfation.org>
 
-Remove these unnecessary brackets inside a condition.
+The fragment queueing code now validates the total_size of each fragment,
+checks when enough fragments are queued to allow to merge them into a
+single packet and if the fragments have the correct size. Therefore, it is
+not required to have any other parameter for the merging function than a
+list of queued fragments.
 
-Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+This change should avoid problems like in the past when the different skb
+from the list and the function parameter were mixed incorrectly.
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/bat_iv_ogm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/fragmentation.c | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index ce04cd7..c5ba7a7 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1081,7 +1081,7 @@ batadv_iv_ogm_orig_update(struct batadv_priv *bat_priv,
- 	 * won't consider it either
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index a9fc653..6ce3c84 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -231,19 +231,13 @@ err:
+  * Returns the merged skb or NULL on error.
+  */
+ static struct sk_buff *
+-batadv_frag_merge_packets(struct hlist_head *chain, struct sk_buff *skb)
++batadv_frag_merge_packets(struct hlist_head *chain)
+ {
+ 	struct batadv_frag_packet *packet;
+ 	struct batadv_frag_list_entry *entry;
+ 	struct sk_buff *skb_out = NULL;
+ 	int size, hdr_size = sizeof(struct batadv_frag_packet);
+ 
+-	/* Make sure incoming skb has non-bogus data. */
+-	packet = (struct batadv_frag_packet *)skb->data;
+-	size = ntohs(packet->total_size);
+-	if (size > batadv_frag_size_limit())
+-		goto free;
+-
+ 	/* Remove first entry, as this is the destination for the rest of the
+ 	 * fragments.
  	 */
- 	if (router_ifinfo &&
--	    (neigh_ifinfo->bat_iv.tq_avg == router_ifinfo->bat_iv.tq_avg)) {
-+	    neigh_ifinfo->bat_iv.tq_avg == router_ifinfo->bat_iv.tq_avg) {
- 		orig_node_tmp = router->orig_node;
- 		spin_lock_bh(&orig_node_tmp->bat_iv.ogm_cnt_lock);
- 		if_num = router->if_incoming->if_num;
+@@ -252,6 +246,9 @@ batadv_frag_merge_packets(struct hlist_head *chain, struct sk_buff *skb)
+ 	skb_out = entry->skb;
+ 	kfree(entry);
+ 
++	packet = (struct batadv_frag_packet *)skb_out->data;
++	size = ntohs(packet->total_size);
++
+ 	/* Make room for the rest of the fragments. */
+ 	if (pskb_expand_head(skb_out, 0, size - skb_out->len, GFP_ATOMIC) < 0) {
+ 		kfree_skb(skb_out);
+@@ -307,7 +304,7 @@ bool batadv_frag_skb_buffer(struct sk_buff **skb,
+ 	if (hlist_empty(&head))
+ 		goto out;
+ 
+-	skb_out = batadv_frag_merge_packets(&head, *skb);
++	skb_out = batadv_frag_merge_packets(&head);
+ 	if (!skb_out)
+ 		goto out_err;
+ 
 -- 
 2.4.2
 
