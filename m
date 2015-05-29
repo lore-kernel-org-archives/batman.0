@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 29 May 2015 11:05:24 +0200
-Message-Id: <1432890328-8247-13-git-send-email-antonio@meshcoding.com>
+Date: Fri, 29 May 2015 11:05:20 +0200
+Message-Id: <1432890328-8247-9-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
 References: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 12/16] batman-adv: checkpatch - comparison to
-	NULL could be rewritten
+Subject: [B.A.T.M.A.N.] [PATCH 08/16] batman-adv: iv_ogm_iface_enable,
+	direct return values
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,27 +20,50 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Marek Lindner <mareklindner@neomailbox.ch>
+From: Markus Pargmann <mpa@pengutronix.de>
 
+Directly return error values. No need to use a return variable.
+
+Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/soft-interface.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/bat_iv_ogm.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 9426b83..50cf722 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -818,7 +818,7 @@ static int batadv_softif_slave_add(struct net_device *dev,
- 	int ret = -EINVAL;
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index fc299c0..123aabb 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -308,7 +308,6 @@ static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
+ 	struct batadv_ogm_packet *batadv_ogm_packet;
+ 	unsigned char *ogm_buff;
+ 	uint32_t random_seqno;
+-	int res = -ENOMEM;
  
- 	hard_iface = batadv_hardif_get_by_netdev(slave_dev);
--	if (!hard_iface || hard_iface->soft_iface != NULL)
-+	if (!hard_iface || hard_iface->soft_iface)
- 		goto out;
+ 	/* randomize initial seqno to avoid collision */
+ 	get_random_bytes(&random_seqno, sizeof(random_seqno));
+@@ -317,7 +316,7 @@ static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
+ 	hard_iface->bat_iv.ogm_buff_len = BATADV_OGM_HLEN;
+ 	ogm_buff = kmalloc(hard_iface->bat_iv.ogm_buff_len, GFP_ATOMIC);
+ 	if (!ogm_buff)
+-		goto out;
++		return -ENOMEM;
  
- 	ret = batadv_hardif_enable_interface(hard_iface, dev->name);
+ 	hard_iface->bat_iv.ogm_buff = ogm_buff;
+ 
+@@ -329,10 +328,7 @@ static int batadv_iv_ogm_iface_enable(struct batadv_hard_iface *hard_iface)
+ 	batadv_ogm_packet->reserved = 0;
+ 	batadv_ogm_packet->tq = BATADV_TQ_MAX_VALUE;
+ 
+-	res = 0;
+-
+-out:
+-	return res;
++	return 0;
+ }
+ 
+ static void batadv_iv_ogm_iface_disable(struct batadv_hard_iface *hard_iface)
 -- 
 2.4.2
 
