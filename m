@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 29 May 2015 11:05:22 +0200
-Message-Id: <1432890328-8247-11-git-send-email-antonio@meshcoding.com>
+Date: Fri, 29 May 2015 11:05:21 +0200
+Message-Id: <1432890328-8247-10-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
 References: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 10/16] batman-adv: iv_ogm_send_to_if,
-	declare char* as const
+Subject: [B.A.T.M.A.N.] [PATCH 09/16] batman-adv: iv_ogm_aggr_packet,
+	bool return value
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,29 +22,31 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mare
 
 From: Markus Pargmann <mpa@pengutronix.de>
 
-This string pointer is later assigned to a constant string, so it should
-be defined constant at the beginning.
+This function returns bool values, so it should be defined to return
+them instead of the whole int range.
 
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/bat_iv_ogm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/bat_iv_ogm.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 0015138..f9c5610 100644
+index 123aabb..0015138 100644
 --- a/net/batman-adv/bat_iv_ogm.c
 +++ b/net/batman-adv/bat_iv_ogm.c
-@@ -409,7 +409,7 @@ static void batadv_iv_ogm_send_to_if(struct batadv_forw_packet *forw_packet,
- 				     struct batadv_hard_iface *hard_iface)
+@@ -392,8 +392,8 @@ static uint8_t batadv_hop_penalty(uint8_t tq,
+ }
+ 
+ /* is there another aggregated packet here? */
+-static int batadv_iv_ogm_aggr_packet(int buff_pos, int packet_len,
+-				     __be16 tvlv_len)
++static bool batadv_iv_ogm_aggr_packet(int buff_pos, int packet_len,
++				      __be16 tvlv_len)
  {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
--	char *fwd_str;
-+	const char *fwd_str;
- 	uint8_t packet_num;
- 	int16_t buff_pos;
- 	struct batadv_ogm_packet *batadv_ogm_packet;
+ 	int next_buff_pos = 0;
+ 
 -- 
 2.4.2
 
