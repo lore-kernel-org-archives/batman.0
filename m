@@ -1,8 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 29 May 2015 11:05:12 +0200
-Message-Id: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] pull request: batman-adv 2015-05-29
+Date: Fri, 29 May 2015 11:05:25 +0200
+Message-Id: <1432890328-8247-14-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
+References: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH 13/16] batman-adv: checkpatch - spaces
+	preferred around that '*'
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,124 +18,43 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-Hello David,
+From: Marek Lindner <mareklindner@neomailbox.ch>
 
-after quite some time of silence (mostly due to me being rather busy and not
-because we did not have any active development) here you have my first batch
-intended for net-next/linux-4.1.
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ net/batman-adv/main.h           | 2 +-
+ net/batman-adv/network-coding.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-In this patchset you have quite some code cleanup and style fixes. A big chunk
-of the cleanup work has been performed by Markus Pargmann, followed by a couple
-of checkpatch fixes brought by Marek Lindner.
-
-Then we have a patch by Sven Eckelmann that disables some of the features we had
-enabled by default, because not all the users having them enabled at compile
-time are aware of those.
-For example distributions like debian enables any compile-time option
-without asking the user, thus having him using all these features without his
-explicit consent with potentially unexpected behaviours. Therefore the decision
-to disable by default not-so-user-safe options.
-
-
-This is all for now.
-
-Please pull or let me know of any problem!
-
-
-Thanks a lot!
-
-
-The following changes since commit a74eab639ec502eb744528ef7c271576d670aa7a:
-
-  Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/klassert/ipsec-next (2015-05-28 20:23:01 -0700)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
-
-for you to fetch changes up to 8ea64e27080eb66dc26f64f28485c0bc9fc06b36:
-
-  batman-adv: Use common declaration order in *_send_skb_(packet|unicast) (2015-05-29 10:13:37 +0200)
-
-----------------------------------------------------------------
-Included changes:
-- checkpatch fixes
-- code cleanup
-- debugfs component is now compiled only if DEBUG_FS is selected
-- update copyright years
-- disable by default not-so-user-safe features
-
-----------------------------------------------------------------
-Antonio Quartulli (1):
-      batman-adv: Use common declaration order in *_send_skb_(packet|unicast)
-
-Marek Lindner (2):
-      batman-adv: checkpatch - comparison to NULL could be rewritten
-      batman-adv: checkpatch - spaces preferred around that '*'
-
-Markus Pargmann (8):
-      batman-adv: debugfs, avoid compiling for !DEBUG_FS
-      batman-adv: tvlv realloc, move error handling into if block
-      batman-adv: Makefile, Sort alphabetically
-      batman-adv: iv_ogm_iface_enable, direct return values
-      batman-adv: iv_ogm_aggr_packet, bool return value
-      batman-adv: iv_ogm_send_to_if, declare char* as const
-      batman-adv: iv_ogm_can_aggregate, code readability
-      batman-adv: iv_ogm_orig_update, remove unnecessary brackets
-
-Simon Wunderlich (1):
-      batman-adv: Start new development cycle
-
-Sven Eckelmann (4):
-      batman-adv: update copyright years for 2015
-      batman-adv: Check total_size when queueing fragments
-      batman-adv: Use only queued fragments when merging
-      batman-adv: Use safer default config for optional features
-
- net/batman-adv/Makefile                |   6 +-
- net/batman-adv/bat_algo.h              |   2 +-
- net/batman-adv/bat_iv_ogm.c            | 120 ++++++++++++++++-----------------
- net/batman-adv/bitarray.c              |   2 +-
- net/batman-adv/bitarray.h              |   2 +-
- net/batman-adv/bridge_loop_avoidance.c |   2 +-
- net/batman-adv/bridge_loop_avoidance.h |   2 +-
- net/batman-adv/debugfs.c               |  10 +--
- net/batman-adv/debugfs.h               |  36 +++++++++-
- net/batman-adv/distributed-arp-table.c |   2 +-
- net/batman-adv/distributed-arp-table.h |   2 +-
- net/batman-adv/fragmentation.c         |  22 +++---
- net/batman-adv/fragmentation.h         |   2 +-
- net/batman-adv/gateway_client.c        |   2 +-
- net/batman-adv/gateway_client.h        |   2 +-
- net/batman-adv/gateway_common.c        |   2 +-
- net/batman-adv/gateway_common.h        |   2 +-
- net/batman-adv/hard-interface.c        |   2 +-
- net/batman-adv/hard-interface.h        |   2 +-
- net/batman-adv/hash.c                  |   2 +-
- net/batman-adv/hash.h                  |   2 +-
- net/batman-adv/icmp_socket.c           |   2 +-
- net/batman-adv/icmp_socket.h           |   2 +-
- net/batman-adv/main.c                  |  18 ++---
- net/batman-adv/main.h                  |   6 +-
- net/batman-adv/multicast.c             |   2 +-
- net/batman-adv/multicast.h             |   2 +-
- net/batman-adv/network-coding.c        |   6 +-
- net/batman-adv/network-coding.h        |   2 +-
- net/batman-adv/originator.c            |   2 +-
- net/batman-adv/originator.h            |   2 +-
- net/batman-adv/packet.h                |   2 +-
- net/batman-adv/routing.c               |   2 +-
- net/batman-adv/routing.h               |   2 +-
- net/batman-adv/send.c                  |   4 +-
- net/batman-adv/send.h                  |   2 +-
- net/batman-adv/soft-interface.c        |   6 +-
- net/batman-adv/soft-interface.h        |   2 +-
- net/batman-adv/sysfs.c                 |   2 +-
- net/batman-adv/sysfs.h                 |   2 +-
- net/batman-adv/translation-table.c     |   2 +-
- net/batman-adv/translation-table.h     |   2 +-
- net/batman-adv/types.h                 |   4 +-
- 43 files changed, 165 insertions(+), 137 deletions(-)
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 11d2d9f..026ba37 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -44,7 +44,7 @@
+ #define BATADV_TT_CLIENT_TEMP_TIMEOUT 600000 /* in milliseconds */
+ #define BATADV_TT_WORK_PERIOD 5000 /* 5 seconds */
+ #define BATADV_ORIG_WORK_PERIOD 1000 /* 1 second */
+-#define BATADV_DAT_ENTRY_TIMEOUT (5*60000) /* 5 mins in milliseconds */
++#define BATADV_DAT_ENTRY_TIMEOUT (5 * 60000) /* 5 mins in milliseconds */
+ /* sliding packet range of received originator messages in sequence numbers
+  * (should be a multiple of our word size)
+  */
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 4cb70bb..b984bc4 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -275,7 +275,7 @@ static bool batadv_nc_to_purge_nc_path_decoding(struct batadv_priv *bat_priv,
+ 	 * max_buffer time
+ 	 */
+ 	return batadv_has_timed_out(nc_path->last_valid,
+-				    bat_priv->nc.max_buffer_time*10);
++				    bat_priv->nc.max_buffer_time * 10);
+ }
+ 
+ /**
+-- 
+2.4.2
 
