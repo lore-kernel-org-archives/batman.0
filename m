@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 29 May 2015 11:05:18 +0200
-Message-Id: <1432890328-8247-7-git-send-email-antonio@meshcoding.com>
+Date: Fri, 29 May 2015 11:05:28 +0200
+Message-Id: <1432890328-8247-17-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
 References: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 06/16] batman-adv: tvlv realloc,
-	move error handling into if block
+Subject: [B.A.T.M.A.N.] [PATCH 16/16] batman-adv: Use common declaration
+	order in *_send_skb_(packet|unicast)
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,48 +18,30 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Antonio Quartulli <antonio@open-mesh.com>
 
-From: Markus Pargmann <mpa@pengutronix.de>
+From: Antonio Quartulli <antonio@open-mesh.com>
 
-Instead of hiding the normal function flow inside an if block, we should
-just put the error handling into the if block.
-
-Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/main.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ net/batman-adv/send.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index ca63d48..fd9333d 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -819,15 +819,15 @@ static bool batadv_tvlv_realloc_packet_buff(unsigned char **packet_buff,
- 	new_buff = kmalloc(min_packet_len + additional_packet_len, GFP_ATOMIC);
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index fa70ae8..23635bd 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -255,8 +255,8 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ 			    struct batadv_orig_node *orig_node,
+ 			    unsigned short vid)
+ {
+-	struct ethhdr *ethhdr;
+ 	struct batadv_unicast_packet *unicast_packet;
++	struct ethhdr *ethhdr;
+ 	int ret = NET_XMIT_DROP;
  
- 	/* keep old buffer if kmalloc should fail */
--	if (new_buff) {
--		memcpy(new_buff, *packet_buff, min_packet_len);
--		kfree(*packet_buff);
--		*packet_buff = new_buff;
--		*packet_buff_len = min_packet_len + additional_packet_len;
--		return true;
--	}
-+	if (!new_buff)
-+		return false;
- 
--	return false;
-+	memcpy(new_buff, *packet_buff, min_packet_len);
-+	kfree(*packet_buff);
-+	*packet_buff = new_buff;
-+	*packet_buff_len = min_packet_len + additional_packet_len;
-+
-+	return true;
- }
- 
- /**
+ 	if (!orig_node)
 -- 
 2.4.2
 
