@@ -1,11 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 26 May 2015 18:34:27 +0200
-Message-Id: <1432658067-14370-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1432658067-14370-1-git-send-email-sven@narfation.org>
-References: <1432658067-14370-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Avoid u32 overflow during
-	gateway select
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Fri, 29 May 2015 11:05:23 +0200
+Message-Id: <1432890328-8247-12-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
+References: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 11/16] batman-adv: Use safer default config
+	for optional features
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,47 +20,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Ruben Wisniewsi <ruben@vfn-nrw.de>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Ruben Wisniewski <ruben@freifunk-nrw.de>
+From: Sven Eckelmann <sven@narfation.org>
 
-The gateway selection based on fast connections is using a single value
-calculated from the average tq (0-255) and the download bandwidth (in
-100Kibit). The formula for the first step (tq ** 2 * 10000 * bandwidth)
-tends to overflow a u32 with low bandwidth settings like 50 [100KiBit]
-and a tq value of over 92.
+The current default settings for optional features in batman-adv seems to
+be based around the idea that the user only compiles what he requires. They
+will automatically enabled when they are compiled in. For example the
+network coding part of batman-adv is by default disabled in the out-of-tree
+module but will be enabled when the code is compiled during the module
+build.
 
-Changing this to a 64 bit unsigned integer allows to support a
-bandwidth_down with up to ~2.8e10 [100KiBit] and a perfect tq of 255. This
-is ~6.6 times higher than the maximum possible value of the gateway
-announcement TVLV.
+But distributions like Debian just enable all features of the batman-adv
+kernel module and hope that more experimental features or features with
+possible negative effects have to be enabled using some runtime
+configuration interface.
 
-This problem only affects the non-default gw_sel_class 1.
+The network_coding feature can help in specific setups but also has
+drawbacks and is not disabled by default in the out-of-tree module.
+Disabling by default in the runtime config seems to be also quite sane.
 
-Signed-off-by: Ruben Wisniewsi <ruben@vfn-nrw.de>
-[sven@narfation.org: rewritten commit message, changed to kernel type]
+The bridge_loop_avoidance is the only feature which is disabled by default
+but may be necessary even in simple setups. Packet loops may even be
+created during the initial node setup when this is not enabled. This is
+different than STP on bridges because mesh is usually used on Adhoc WiFi.
+Having two nodes (by accident) in the same LAN segment and in the same mesh
+network is rather common in this situation.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Martin Hundebøll <martin@hundeboll.net>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
-I am sending this because Ruben Wisniewski didn't fix the commit message
-(yet) and my earlier patch broke his proposed one.
----
- net/batman-adv/gateway_client.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/network-coding.c | 2 +-
+ net/batman-adv/soft-interface.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index a404fa7..a145e5a 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -153,7 +153,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
- 	struct batadv_neigh_node *router;
- 	struct batadv_neigh_ifinfo *router_ifinfo;
- 	struct batadv_gw_node *gw_node, *curr_gw = NULL;
--	u32 max_gw_factor = 0, tmp_gw_factor = 0;
-+	u64 max_gw_factor = 0, tmp_gw_factor = 0;
- 	u32 gw_divisor;
- 	u8 max_tq = 0;
- 	u8 tq_avg;
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 89e1d47..4cb70bb 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -155,7 +155,7 @@ err:
+  */
+ void batadv_nc_init_bat_priv(struct batadv_priv *bat_priv)
+ {
+-	atomic_set(&bat_priv->network_coding, 1);
++	atomic_set(&bat_priv->network_coding, 0);
+ 	bat_priv->nc.min_tq = 200;
+ 	bat_priv->nc.max_fwd_delay = 10;
+ 	bat_priv->nc.max_buffer_time = 200;
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index d85a45c..9426b83 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -732,7 +732,7 @@ static int batadv_softif_init_late(struct net_device *dev)
+ 	atomic_set(&bat_priv->aggregated_ogms, 1);
+ 	atomic_set(&bat_priv->bonding, 0);
+ #ifdef CONFIG_BATMAN_ADV_BLA
+-	atomic_set(&bat_priv->bridge_loop_avoidance, 0);
++	atomic_set(&bat_priv->bridge_loop_avoidance, 1);
+ #endif
+ #ifdef CONFIG_BATMAN_ADV_DAT
+ 	atomic_set(&bat_priv->distributed_arp_table, 1);
 -- 
-2.1.4
+2.4.2
 
