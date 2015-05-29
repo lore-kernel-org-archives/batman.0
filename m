@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 29 May 2015 11:05:19 +0200
-Message-Id: <1432890328-8247-8-git-send-email-antonio@meshcoding.com>
+Date: Fri, 29 May 2015 11:05:22 +0200
+Message-Id: <1432890328-8247-11-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
 References: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 07/16] batman-adv: Makefile,
-	Sort alphabetically
+Subject: [B.A.T.M.A.N.] [PATCH 10/16] batman-adv: iv_ogm_send_to_if,
+	declare char* as const
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,33 +22,29 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mare
 
 From: Markus Pargmann <mpa@pengutronix.de>
 
-The whole Makefile is sorted, just the multicast rule is not at the
-right position.
+This string pointer is later assigned to a constant string, so it should
+be defined constant at the beginning.
 
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/Makefile | 2 +-
+ net/batman-adv/bat_iv_ogm.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/Makefile b/net/batman-adv/Makefile
-index bd7e343..21434ab 100644
---- a/net/batman-adv/Makefile
-+++ b/net/batman-adv/Makefile
-@@ -29,6 +29,7 @@ batman-adv-y += hard-interface.o
- batman-adv-y += hash.o
- batman-adv-y += icmp_socket.o
- batman-adv-y += main.o
-+batman-adv-$(CONFIG_BATMAN_ADV_MCAST) += multicast.o
- batman-adv-$(CONFIG_BATMAN_ADV_NC) += network-coding.o
- batman-adv-y += originator.o
- batman-adv-y += routing.o
-@@ -36,4 +37,3 @@ batman-adv-y += send.o
- batman-adv-y += soft-interface.o
- batman-adv-y += sysfs.o
- batman-adv-y += translation-table.o
--batman-adv-$(CONFIG_BATMAN_ADV_MCAST) += multicast.o
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 0015138..f9c5610 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -409,7 +409,7 @@ static void batadv_iv_ogm_send_to_if(struct batadv_forw_packet *forw_packet,
+ 				     struct batadv_hard_iface *hard_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+-	char *fwd_str;
++	const char *fwd_str;
+ 	uint8_t packet_num;
+ 	int16_t buff_pos;
+ 	struct batadv_ogm_packet *batadv_ogm_packet;
 -- 
 2.4.2
 
