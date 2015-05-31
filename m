@@ -1,13 +1,9 @@
-Return-Path: <davem@davemloft.net>
-Date: Sun, 31 May 2015 01:08:05 -0700 (PDT)
-Message-Id: <20150531.010805.867337412648153602.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
-References: <1432890328-8247-1-git-send-email-antonio@meshcoding.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 2015-05-29
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 31 May 2015 10:10:20 +0200
+Message-Id: <1433059821-8521-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Fix kerneldoc over 80 column
+	lines
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,26 +15,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: antonio@meshcoding.com
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 29 May 2015 11:05:12 +0200
+Kerneldoc required single line documentation in the past (before 2009).
+Therefore, the 80 columns limit per line check of checkpatch was disabled
+for kerneldoc. But kerneldoc is not excluded anymore from it and checkpatch
+now enabled the check again.
 
-> after quite some time of silence (mostly due to me being rather busy and not
-> because we did not have any active development) here you have my first batch
-> intended for net-next/linux-4.1.
-> 
-> In this patchset you have quite some code cleanup and style fixes. A big chunk
-> of the cleanup work has been performed by Markus Pargmann, followed by a couple
-> of checkpatch fixes brought by Marek Lindner.
-> 
-> Then we have a patch by Sven Eckelmann that disables some of the features we had
-> enabled by default, because not all the users having them enabled at compile
-> time are aware of those.
-> For example distributions like debian enables any compile-time option
-> without asking the user, thus having him using all these features without his
-> explicit consent with potentially unexpected behaviours. Therefore the decision
-> to disable by default not-so-user-safe options.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/icmp_socket.c    | 4 ++--
+ net/batman-adv/network-coding.c | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-Pulled, thanks Antonio.
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index 07061bc..8d8a7d2 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -337,8 +337,8 @@ err:
+ }
+ 
+ /**
+- * batadv_socket_receive_packet - schedule an icmp packet to be sent to userspace
+- *  on an icmp socket.
++ * batadv_socket_receive_packet - schedule an icmp packet to be sent to
++ *  userspace on an icmp socket.
+  * @socket_client: the socket this packet belongs to
+  * @icmph: pointer to the header of the icmp packet
+  * @icmp_len: total length of the icmp packet
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index f0a50f3..3c89119 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -872,8 +872,8 @@ free:
+ }
+ 
+ /**
+- * batadv_nc_update_nc_node - updates stored incoming and outgoing nc node structs
+- *  (best called on incoming OGMs)
++ * batadv_nc_update_nc_node - updates stored incoming and outgoing nc node
++ *  structs (best called on incoming OGMs)
+  * @bat_priv: the bat priv with all the soft interface information
+  * @orig_node: orig node originating the ogm packet
+  * @orig_neigh_node: neighboring orig node from which we received the ogm packet
+-- 
+2.1.4
+
