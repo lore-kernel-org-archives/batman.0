@@ -1,11 +1,10 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 31 May 2015 13:36:00 +0200
-Message-Id: <1433072160-3260-6-git-send-email-sven@narfation.org>
-In-Reply-To: <1433072160-3260-1-git-send-email-sven@narfation.org>
-References: <1433072160-3260-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 6/6] alfred: Drop small push_data packets
-	early
+Return-Path: <r.krishnathiepan@gmail.com>
+MIME-Version: 1.0
+Date: Mon, 1 Jun 2015 10:38:16 +0530
+Message-ID: <CAEbDFcTBM+Oq+xHKpnXhJZhePSDWYky0b794jeHLsJ7-3CGcgQ@mail.gmail.com>
+From: Krishnathiepan Rasanayagam <r.krishnathiepan@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: [B.A.T.M.A.N.] request to unsubscribe
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,29 +16,12 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The push_data packets which are too small can be dropped earlier in the
-transaction process. These cannot be parsed later when finishing the
-transaction and thus it is unnecessary to first enqueue them to the
-transaction list and allocate extra memory for the management structure.
+Dear Admin,
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- recv.c | 2 ++
- 1 file changed, 2 insertions(+)
+Please unsubscribe me from the mailing list. thank you.
 
-diff --git a/recv.c b/recv.c
-index 16242bc..f459190 100644
---- a/recv.c
-+++ b/recv.c
-@@ -189,4 +189,6 @@ static int process_alfred_push_data(struct globals *globals,
- 
- 	len = ntohs(push->header.length);
-+	if (len < (int)(sizeof(*push) - sizeof(push->header)))
-+		goto err;
- 
- 	search.server_addr = mac;
 -- 
-2.1.4
-
+Best regards,
+Krishna.
