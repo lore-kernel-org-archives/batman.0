@@ -1,9 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Mon,  1 Jun 2015 17:29:57 +0200
-Message-Id: <1433172597-21776-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: avoid DAT to mess up LAN
-	state
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 01 Jun 2015 19:23:55 +0200
+Message-ID: <7394365.ZOVSlEK3zK@bentobox>
+In-Reply-To: <1433072160-3260-2-git-send-email-sven@narfation.org>
+References: <1433072160-3260-1-git-send-email-sven@narfation.org>
+ <1433072160-3260-2-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2839213.sjIxP4J1WI";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/6] alfred: Make buffer size check
+	before sending explicit
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,77 +22,60 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
-
-When a node running DAT receives an ARP request from the LAN for the
-first time, it is likely that this node will request the ARP entry
-through the distributed ARP table (DAT) in the mesh.
-
-Once a DAT reply is received the asking node must check if the MAC
-address for which the IP address has been asked is local. If it is, the
-node must drop the ARP reply bceause the client should have replied on
-its own locally.
-
-Forwarding this reply means fooling any L2 bridge (e.g. Ethernet
-switches) lying between the batman-adv node and the LAN. This happens
-because the L2 bridge will think that the client sending the ARP reply
-lies somewhere in the mesh, while this node is sitting in the same LAN.
-
-Reported-by: Simon Wunderlich <sw@simonwunderlich.de>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
-
-Properly base this patch on top of maint.
 
 
- distributed-arp-table.c | 18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
+--nextPart2839213.sjIxP4J1WI
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index da1742d..0d791dc 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -1107,6 +1107,9 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: packet to check
-  * @hdr_size: size of the encapsulation header
-+ *
-+ * Returns true if the packet was snooped and consumed by DAT. False if the
-+ * packet has to be delivered to the interface
-  */
- bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb, int hdr_size)
-@@ -1114,7 +1117,7 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	uint16_t type;
- 	__be32 ip_src, ip_dst;
- 	uint8_t *hw_src, *hw_dst;
--	bool ret = false;
-+	bool dropped = false;
- 	unsigned short vid;
- 
- 	if (!atomic_read(&bat_priv->distributed_arp_table))
-@@ -1143,12 +1146,17 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	/* if this REPLY is directed to a client of mine, let's deliver the
- 	 * packet to the interface
- 	 */
--	ret = !batadv_is_my_client(bat_priv, hw_dst, vid);
-+	dropped = !batadv_is_my_client(bat_priv, hw_dst, vid);
-+
-+	/* if this REPLY is sent on behalf of a client of mine, let's drop the
-+	 * packet because the client will reply by itself
-+	 */
-+	dropped |= batadv_is_my_client(bat_priv, hw_src, vid);
- out:
--	if (ret)
-+	if (dropped)
- 		kfree_skb(skb);
--	/* if ret == false -> packet has to be delivered to the interface */
--	return ret;
-+	/* if dropped == false -> deliver to the interface */
-+	return dropped;
- }
- 
- /**
--- 
-2.4.2
+On Sunday 31 May 2015 13:35:56 Sven Eckelmann wrote:
+> It is checked when data is send by checking if the data would fit inside
+> the outgoing UDP packet. But it is not checked if the data would fit after
+> the sending was done. This doesn't have to be true just from the
+> restrictions which can be seen in this function. So just check if the data
+> and its headers would now fit in outgoing buffer before copying the data to
+> the output buffer.
+> 
+> This is not a problem by itself because the data + header in the dataset
+> cannot be larger than (MAX_PAYLOAD - sizeof(struct alfred_push_data_v0)).
+
+Alternative commit message:
+
+The sending code is automatically transmitting a packet when the next data
+block would not fit inside the outgoing, aggregated UDP packet. But the
+code does not check whether the data would then fit inside the new,
+complete empty push_data packet. It is currently no problem because alfred
+has the restriction that a dataset never stores a buffer larger than
+(MAX_PAYLOAD - sizeof(struct alfred_push_data_v0) - sizeof(struct alfred_data)).
+Therefore, the length check for the empty push_data packet + dataset buffer
+would never fail.
+
+Nonetheless, make this check explicit to avoid problems when the receiving
+code is changed or the sending code gets the ability to limit the size of
+outgoing UDP packets.
+
+--nextPart2839213.sjIxP4J1WI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJVbJUuAAoJEF2HCgfBJntGHiAP+QFzQh3waA5Y2//xXL5xhQfS
+5F10J50bpcHgaCi02Vzss0TPMSWmdx82iVGeEaw39dlcYniv0S2nTVUqhnI6twiQ
+qGAPRhTZDSVWsb55BaRa9FYvWbRim5k65cM+Zufy4QVbjxYiGZp3FnA8XfmtVaXo
+tlQW9gf8Zvsgg9E2bWrMtYm40NTuy783ngWBOa+a9uuUAPa9vqzzT9YBINNqVh7+
+OaSkl6CEItUT4hASfU9pFXQSsGzZ29AycyUIibNZioLcICGkRrzwHBS2yhRL3I5A
+zoXj4576/LnffJSvsVW3hM8+sEbBEaoXn+t1/qG8rUQdmRELx6JLPasDlbBfLC1O
+/W7QfZbhXcl9SHsdlXl9/ZwfrVYVBjK10YLqqw7ilC9Hx6e74a4EDs2kAZ5aUPcq
+XxIFYtK1vNlacb6BVpzmne5l7/XYOWScNY7r6kmjV7UER/Gczs+N8q9KrUBb7B7w
+CC00aIV0p/RKXsMynrjrcD0SCt3UhtLwb1q3ahHmlMmGEl7SF1rnxetGjhWp8Pko
+a8Rx6yM+eM/Py1iPWkwT/lHD+0K4cxBwbptPv3SIWsx2MJug1ajR5swtWkjQKID3
+h3P+OysBdxJCJVK9hXblyxa9i+7+JmNmTR9OIc4JyrzlBN2QMmHSJhCUBnF0zsb7
+qCcFwjQKvbZacsx1OonQ
+=iaiV
+-----END PGP SIGNATURE-----
+
+--nextPart2839213.sjIxP4J1WI--
 
