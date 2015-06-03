@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed,  3 Jun 2015 16:13:58 +0200
-Message-Id: <1433340848-1682-3-git-send-email-antonio@meshcoding.com>
+Date: Wed,  3 Jun 2015 16:13:59 +0200
+Message-Id: <1433340848-1682-4-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1433340848-1682-1-git-send-email-antonio@meshcoding.com>
 References: <1433340848-1682-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 02/12] batman-adv: iv_ogm_queue_add,
-	Simplify expressions
+Subject: [B.A.T.M.A.N.] [PATCH 03/12] batman-adv: iv_ogm_orig_update, style,
+	add missing brackets
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,33 +22,32 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mare
 
 From: Markus Pargmann <mpa@pengutronix.de>
 
+CodingStyle describes that either none or both branches of a conditional
+have to have brackets.
+
 Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/bat_iv_ogm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/bat_iv_ogm.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 190a642..159f30a 100644
+index 159f30a..66ac9e8 100644
 --- a/net/batman-adv/bat_iv_ogm.c
 +++ b/net/batman-adv/bat_iv_ogm.c
-@@ -750,13 +750,13 @@ static void batadv_iv_ogm_queue_add(struct batadv_priv *bat_priv,
- 	unsigned long max_aggregation_jiffies;
+@@ -1032,9 +1032,10 @@ batadv_iv_ogm_orig_update(struct batadv_priv *bat_priv,
+ 		batadv_orig_node_free_ref(orig_tmp);
+ 		if (!neigh_node)
+ 			goto unlock;
+-	} else
++	} else {
+ 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+ 			   "Updating existing last-hop neighbor of originator\n");
++	}
  
- 	batadv_ogm_packet = (struct batadv_ogm_packet *)packet_buff;
--	direct_link = batadv_ogm_packet->flags & BATADV_DIRECTLINK ? 1 : 0;
-+	direct_link = !!(batadv_ogm_packet->flags & BATADV_DIRECTLINK);
- 	max_aggregation_jiffies = msecs_to_jiffies(BATADV_MAX_AGGREGATION_MS);
- 
- 	/* find position for the packet in the forward queue */
- 	spin_lock_bh(&bat_priv->forw_bat_list_lock);
- 	/* own packets are not to be aggregated */
--	if ((atomic_read(&bat_priv->aggregated_ogms)) && (!own_packet)) {
-+	if (atomic_read(&bat_priv->aggregated_ogms) && !own_packet) {
- 		hlist_for_each_entry(forw_packet_pos,
- 				     &bat_priv->forw_bat_list, list) {
- 			if (batadv_iv_ogm_can_aggregate(batadv_ogm_packet,
+ 	rcu_read_unlock();
+ 	neigh_ifinfo = batadv_neigh_ifinfo_new(neigh_node, if_outgoing);
 -- 
 2.4.2
 
