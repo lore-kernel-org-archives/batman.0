@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed,  3 Jun 2015 16:14:04 +0200
-Message-Id: <1433340848-1682-9-git-send-email-antonio@meshcoding.com>
+Date: Wed,  3 Jun 2015 16:14:02 +0200
+Message-Id: <1433340848-1682-7-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1433340848-1682-1-git-send-email-antonio@meshcoding.com>
 References: <1433340848-1682-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 08/12] batman-adv: Remove unnecessary check
-	for orig_ifinfo not NULL
+Subject: [B.A.T.M.A.N.] [PATCH 06/12] batman-adv: iv_ogm,
+	fix comment function name
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,36 +18,32 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Markus Pargmann <mpa@pengutronix.de>
 
-orig_ifinfo is dereferenced multiple times in batadv_iv_ogm_update_seqnos
-before the check for NULL is done. The function also exists at the
-beginning when orig_ifinfo would have been NULL. This makes the check at
-the end unnecessary and only confuses the reader/code analyzers.
+This is a small copy paste fix for batadv_ing_buffer_avg.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/bat_iv_ogm.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ net/batman-adv/bat_iv_ogm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 9f83137..4e93d2d 100644
+index 0019f1b..9f83137 100644
 --- a/net/batman-adv/bat_iv_ogm.c
 +++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1357,8 +1357,7 @@ batadv_iv_ogm_update_seqnos(const struct ethhdr *ethhdr,
- out:
- 	spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
- 	batadv_orig_node_free_ref(orig_node);
--	if (orig_ifinfo)
--		batadv_orig_ifinfo_free_ref(orig_ifinfo);
-+	batadv_orig_ifinfo_free_ref(orig_ifinfo);
- 	return ret;
+@@ -55,7 +55,7 @@ static void batadv_ring_buffer_set(uint8_t lq_recv[], uint8_t *lq_index,
  }
  
+ /**
+- * batadv_ring_buffer_set - compute the average of all non-zero values stored
++ * batadv_ring_buffer_avg - compute the average of all non-zero values stored
+  * in the given ring buffer
+  * @lq_recv: pointer to the ring buffer
+  *
 -- 
 2.4.2
 
