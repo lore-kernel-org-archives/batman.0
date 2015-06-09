@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 09 Jun 2015 22:30:58 +0800
-Message-ID: <1676988.96CjocXmEM@voltaire>
-In-Reply-To: <1433059821-8521-1-git-send-email-sven@narfation.org>
+Date: Tue, 09 Jun 2015 22:37:24 +0800
+Message-ID: <1546064.rx4ZQj1ZtZ@voltaire>
+In-Reply-To: <1433059821-8521-2-git-send-email-sven@narfation.org>
 References: <1433059821-8521-1-git-send-email-sven@narfation.org>
+ <1433059821-8521-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2697540.DCGFTdjoA8";
+Content-Type: multipart/signed; boundary="nextPart4526423.7QNRhB0Wmx";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Fix kerneldoc over 80
-	column lines
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Remove multiple
+	assignment per line
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,28 +24,59 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart2697540.DCGFTdjoA8
+--nextPart4526423.7QNRhB0Wmx
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, May 31, 2015 10:10:20 Sven Eckelmann wrote:
-> Kerneldoc required single line documentation in the past (before 2009).
-> Therefore, the 80 columns limit per line check of checkpatch was disabled
-> for kerneldoc. But kerneldoc is not excluded anymore from it and checkpatch
-> now enabled the check again.
+On Sunday, May 31, 2015 10:10:21 Sven Eckelmann wrote:
+> The Linux CodingStyle disallows multiple assignments in a single line.
+> (see chapter 1)
 > 
+> Reported-by: Markus Pargmann <mpa@pengutronix.de>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/icmp_socket.c    | 4 ++--
->  net/batman-adv/network-coding.c | 4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
+>  net/batman-adv/bat_iv_ogm.c            |  6 ++++--
+>  net/batman-adv/bridge_loop_avoidance.c |  6 ++++--
+>  net/batman-adv/distributed-arp-table.c |  3 ++-
+>  net/batman-adv/gateway_client.c        | 15 ++++++++++-----
+>  net/batman-adv/gateway_common.c        |  5 ++++-
+>  net/batman-adv/network-coding.c        |  3 ++-
+>  net/batman-adv/translation-table.c     | 18 +++++++++++++-----
+>  7 files changed, 39 insertions(+), 17 deletions(-)
 
-Applied in revision 2c236a3.
+Tried to merge this patch but it greeted me with extensive complaints:
+
+patching file net/batman-adv/bat_iv_ogm.c
+Hunk #1 succeeded at 1004 (offset -2 lines).
+Hunk #2 succeeded at 1405 (offset -2 lines).
+patching file net/batman-adv/bridge_loop_avoidance.c
+Hunk #1 succeeded at 88 (offset -1 lines).
+Hunk #2 succeeded at 106 (offset -1 lines).
+patching file net/batman-adv/distributed-arp-table.c
+patching file net/batman-adv/gateway_client.c
+Hunk #1 FAILED at 153.
+Hunk #3 FAILED at 352.
+2 out of 4 hunks FAILED -- saving rejects to file net/batman-adv/gateway_client.c.rej
+patching file net/batman-adv/gateway_common.c
+Hunk #1 FAILED at 149.
+1 out of 1 hunk FAILED -- saving rejects to file net/batman-adv/gateway_common.c.rej
+patching file net/batman-adv/network-coding.c
+Hunk #1 succeeded at 886 (offset -1 lines).
+patching file net/batman-adv/translation-table.c
+Hunk #1 FAILED at 461.
+Hunk #2 FAILED at 535.
+Hunk #3 FAILED at 723.
+Hunk #4 FAILED at 796.
+Hunk #5 FAILED at 853.
+5 out of 5 hunks FAILED -- saving rejects to file net/batman-adv/translation-table.c.rej
+
+Maybe I messed up the patch merge order ? Do you mind
+resending a 'clean' version ?
 
 Thanks,
 Marek
 
---nextPart2697540.DCGFTdjoA8
+--nextPart4526423.7QNRhB0Wmx
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -52,14 +84,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVdvijAAoJEFNVTo/uthzArt8H/RGZNMClr0U0Wx/JPVz2Ax6z
-urId/EY/h1NX6hM2y3Mw9lkuJxREv8LbHcweJk12TK+K7lV7++BdNoElm27wBjJO
-nycqw0nVuNC3OCVat8Fsz5pr+oXdFwaVQR36Iq3zQOrTZNDEfZX/Vrx/+4QPfpQz
-Old9jedJf39S+ITK70ABV4WnoC4lODsJsxkT+CfY2G2OgGtlQs+xPm/vKnISfo8E
-RZkxkQ9MQhM1NwoA3UOG6kEn7yVJK9q8H8r54wIk6aEvqYo87INj9aAw2AUvhq/N
-Nnfb9OiU/hLP/P2zL+G/iD1ym/RD1S24O4p9PRQpmC5OYOPjVKAFrJBvx1s7uzk=
-=6s1p
+iQEcBAABCAAGBQJVdvokAAoJEFNVTo/uthzA+SMH/j050yDYWOdWBkLPt87C9ohm
+V/R/DZ7hCXPaPkyZ4dXqUPYSk52qSr//BJJzy0qX09hOdnRqJOEYlWFo3QkRe3Sr
+nc+O+7gznBES6G8YtOMVHAFTVE3Ok2/Ycg/R66vY0r9EDVh/fKZ1rk4pvMgg1kCl
+RHjqMu8af1XCANS4Aif3BPX/KHg5bAm1/zOa4az7NAh/IB3tuecE+zIa4ii/N9Qg
+IDtw6WuSSzGCsy9y1Ejau6CPGlUTo2puSmKDHGozH+i7LFdxquFBFaNekREgwKhZ
+Dzs+GyMIvBNsJ1r7dwEJg2J5QSMJQZM65kR7yVxsyN1VVnsTEsDd0kq5ew4aG3I=
+=/uca
 -----END PGP SIGNATURE-----
 
---nextPart2697540.DCGFTdjoA8--
+--nextPart4526423.7QNRhB0Wmx--
 
