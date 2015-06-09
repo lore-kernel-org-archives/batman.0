@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 09 Jun 2015 22:43:47 +0800
-Message-ID: <2189944.odvLXYXy1N@voltaire>
-In-Reply-To: <1432658067-14370-2-git-send-email-sven@narfation.org>
-References: <1432658067-14370-1-git-send-email-sven@narfation.org>
- <1432658067-14370-2-git-send-email-sven@narfation.org>
+Date: Tue, 09 Jun 2015 22:49:33 +0800
+Message-ID: <2564251.KYcHvgers4@voltaire>
+In-Reply-To: <1433172597-21776-1-git-send-email-antonio@meshcoding.com>
+References: <1433172597-21776-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4961776.GhFVKNDXy4";
+Content-Type: multipart/signed; boundary="nextPart1567548.KQIehUXeRD";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Avoid u32 overflow
-	during gateway select
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: avoid DAT to mess up
+	LAN state
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,45 +21,44 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Ruben Wisniewsi <ruben@vfn-nrw.de>
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart4961776.GhFVKNDXy4
+--nextPart1567548.KQIehUXeRD
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, May 26, 2015 18:34:27 Sven Eckelmann wrote:
-> From: Ruben Wisniewski <ruben@freifunk-nrw.de>
+On Monday, June 01, 2015 17:29:57 Antonio Quartulli wrote:
+> When a node running DAT receives an ARP request from the LAN for the
+> first time, it is likely that this node will request the ARP entry
+> through the distributed ARP table (DAT) in the mesh.
 > 
-> The gateway selection based on fast connections is using a single value
-> calculated from the average tq (0-255) and the download bandwidth (in
-> 100Kibit). The formula for the first step (tq ** 2 * 10000 * bandwidth)
-> tends to overflow a u32 with low bandwidth settings like 50 [100KiBit]
-> and a tq value of over 92.
+> Once a DAT reply is received the asking node must check if the MAC
+> address for which the IP address has been asked is local. If it is, the
+> node must drop the ARP reply bceause the client should have replied on
+> its own locally.
 > 
-> Changing this to a 64 bit unsigned integer allows to support a
-> bandwidth_down with up to ~2.8e10 [100KiBit] and a perfect tq of 255. This
-> is ~6.6 times higher than the maximum possible value of the gateway
-> announcement TVLV.
+> Forwarding this reply means fooling any L2 bridge (e.g. Ethernet
+> switches) lying between the batman-adv node and the LAN. This happens
+> because the L2 bridge will think that the client sending the ARP reply
+> lies somewhere in the mesh, while this node is sitting in the same LAN.
 > 
-> This problem only affects the non-default gw_sel_class 1.
-> 
-> Signed-off-by: Ruben Wisniewsi <ruben@vfn-nrw.de>
-> [sven@narfation.org: rewritten commit message, changed to kernel type]
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Reported-by: Simon Wunderlich <sw@simonwunderlich.de>
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
-> I am sending this because Ruben Wisniewski didn't fix the commit message
-> (yet) and my earlier patch broke his proposed one.
-> ---
->  net/batman-adv/gateway_client.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Properly base this patch on top of maint.
+> 
+> 
+>  distributed-arp-table.c | 18 +++++++++++++-----
+>  1 file changed, 13 insertions(+), 5 deletions(-)
 
-Applied in revision f63c54b.
+Applied in revision 9bbd794.
 
 Thanks,
 Marek
 
---nextPart4961776.GhFVKNDXy4
+--nextPart1567548.KQIehUXeRD
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -68,14 +66,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVdvujAAoJEFNVTo/uthzA8JgH/0oe+7e75ufCst9+hteBiwkx
-HTlOG/EDThcU7s/WFauUNYKviCJiG7iG4S6B5FSDFunKwErz9OmtNfSKUGef5ufH
-cri7Fwf7e+F7DpJmA+dxnaQ8XL71TNxyvpIs0tbF9N305/FOCPMMAMs6yMkEr+Aw
-cjatM1KkwqwkeZ6aiPa6DXv8AFDfwpKCGoUgkQvicGGxdZr79MGZF/WveDMXTrqg
-BQNdUmIa18+SSZG37u8k7kXGpaeHJ49DpZ+lhLp2Mbt3+V6hn8zIV5P12JmkR6hZ
-Ze7VI/jE1cmiXlOVq5Rh7S8CcoUFCoirMNqajL2PAnL8gG2KLxi9oK3ZJAIWwB8=
-=Zq4l
+iQEcBAABCAAGBQJVdvz9AAoJEFNVTo/uthzADAkH/i21jUL7umMi6y0EgDSDahBU
++p98Rcj5QSkli4Dn34A8qFAGzmspM70VLA67+xZhh0fGZECIcSddQFh8LeZujXW1
+3xz1zj5PpR7UUQew41gvqFsu4BLXuuKxdcr9UJnOxECqjHWPdCU2kN991Ac0TinL
+QLi4UXXKG7V8tnj81BZGL9Ztci6Y1nuBBCg8FsqhgnNHM2zfOKmEPYWieFArJ01z
+d/Mf8SxVjRjBFKTxnlJhUwFoiT4evk7zFSckAjpwqmRM2A5+C6sCRMGoSZoMqtEv
+mDpqY3Tu1NWlFQxWvROgIJlX2gdZSGO2ngQyFfrOysplvif22hu4fhduQo+Xwgg=
+=Tt2Q
 -----END PGP SIGNATURE-----
 
---nextPart4961776.GhFVKNDXy4--
+--nextPart1567548.KQIehUXeRD--
 
