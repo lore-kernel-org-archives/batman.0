@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 10 Jun 2015 10:52:13 +0200
-Message-ID: <4830012.jBltC4KZcc@bentobox>
-In-Reply-To: <1392482874-9024-6-git-send-email-linus.luessing@web.de>
-References: <1392482874-9024-1-git-send-email-linus.luessing@web.de>
- <1392482874-9024-6-git-send-email-linus.luessing@web.de>
+Date: Wed, 10 Jun 2015 10:57:14 +0200
+Message-ID: <1519360.DWtKWxiBrp@bentobox>
+In-Reply-To: <1366724403-29629-2-git-send-email-lindner_marek@yahoo.de>
+References: <1366724403-29629-1-git-send-email-lindner_marek@yahoo.de>
+ <1366724403-29629-2-git-send-email-lindner_marek@yahoo.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1520967.CMUzMLn37S";
+Content-Type: multipart/signed; boundary="nextPart1532315.X9hoJIdCou";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv14 5/6] batman-adv: Add IPv4
-	link-local/IPv6-ll-all-nodes multicast support
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/7] batman-adv: tvlv - basic
+	infrastructure
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,57 +22,51 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
 
---nextPart1520967.CMUzMLn37S
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart1532315.X9hoJIdCou
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 15 February 2014 17:47:53 Linus L=FCssing wrote:
-> +static void batadv_mcast_want_unsnoop_update(struct batadv_priv *bat=
-_priv,
-> +=09=09=09=09=09     struct batadv_orig_node *orig,
-> +=09=09=09=09=09     uint8_t mcast_flags)
+On Tuesday 23 April 2013 21:39:57 Marek Lindner wrote:
+> +/**
+> + * batadv_tvlv_handler_unregister - unregister tvlv handler based on the
+> + *  provided type and version (both need to match)
+> + * @bat_priv: the bat priv with all the soft interface information
+> + * @type: tvlv handler type to be unregistered
+> + * @version: tvlv handler version to be unregistered
+> + */
+> +void batadv_tvlv_handler_unregister(struct batadv_priv *bat_priv,
+> +				    uint8_t type, uint8_t version)
 > +{
-> +=09/* switched from flag unset to set */
-> +=09if (mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
-> +=09    !(orig->mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES)) {
-> +=09=09atomic_inc(&bat_priv->mcast.num_want_all_unsnoopables);
+> +	struct batadv_tvlv_handler *tvlv_handler;
 > +
-> +=09=09spin_lock_bh(&bat_priv->mcast.want_lists_lock);
-> +=09=09hlist_add_head_rcu(&orig->mcast_want_all_unsnoopables_node,
-> +=09=09=09=09   &bat_priv->mcast.want_all_unsnoopables_list);
-> +=09=09spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
-> +=09/* switched from flag set to unset */
-> +=09} else if (!(mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES) &&=
-
-> +=09=09   orig->mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES) {
-> +=09=09atomic_dec(&bat_priv->mcast.num_want_all_unsnoopables);
+> +	tvlv_handler = batadv_tvlv_handler_get(bat_priv, type, version);
+> +	if (!tvlv_handler)
+> +		return;
 > +
-> +=09=09spin_lock_bh(&bat_priv->mcast.want_lists_lock);
-> +=09=09hlist_del_rcu(&orig->mcast_want_all_unsnoopables_node);
-> +=09=09spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
-> +=09}
+> +	batadv_tvlv_handler_free_ref(tvlv_handler);
+> +	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
+> +	hlist_del_rcu(&tvlv_handler->list);
+> +	spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
+> +	batadv_tvlv_handler_free_ref(tvlv_handler);
+> +}
 
-Looks unsafe. How do you make sure that it is still in the list and not=
-=20
-already already removed in the meantime? hlist_del_rcu does not re-init=
-ialize=20
-the pointers (only POISON them when CONFIG_DEBUG_LIST is activated). Th=
-us=20
-calling hlist_del_rcu again on an object not in the list either kills o=
-ther=20
+Looks unsafe. How do you make sure that it is still in the list and not 
+already already removed in the meantime? hlist_del_rcu does not re-initialize 
+the pointers (only POISON them when CONFIG_DEBUG_LIST is activated). Thus 
+calling hlist_del_rcu again on an object not in the list either kills other 
 data structures or causes an Oops.
 
-There are more *list_del* related problems of that type in your code. T=
-his is=20
+There are more *list_del* related problems of that type in your code. This is 
 just one example I've picked.
 
 See http://www.open-mesh.org/issues/217#note-5
 
 Kind regards,
-=09Sven
---nextPart1520967.CMUzMLn37S
+        Sven
+--nextPart1532315.X9hoJIdCou
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -80,20 +74,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJVd/rAAAoJEF2HCgfBJntGRE4QANKKhn/EUoOJd9bqctkenFWw
-J5HEAgVF9Wc2G6vdDSrQXxp5/K3bqEKzXemrN31snC8OLzmA+S4k96+WAOI5rMEm
-KmXlvGgVE2K+3C5+85di/EpLsMnG/lXISERLgNHKOD958VXxBLBXAa2Jya+GGaYT
-P+bVhlyfcqzM0X3t/x2MKJ8jCIpa6KmvkQD6bAY8fAZ2DKQyDnpjnuA9BSjfAgzK
-m2CWw277MyAVMltWZC35uCnE3loWL0mEvMRuPh74NKxXCR2AzPkMBHKqywYUR/ld
-rhAPwOASgZDYi4GTuBMYNHxSsYOeOoSfpCwTulyybLyBwX877ADOU0P/9pEq4Cxw
-VJfvZj/tV/ESPYQ/RAhSHypFw0MbBanHvcF2p3tY4gRe3DcwC0KNDZTa9ns9OW2Y
-B8xM6lkpdmVIfD99JR7p8q5F5Oc4Yzh80+mSqNlqa/GeZH0Qdw02ddspWhTIjUlA
-aNE2fBfhDE8SORfZQ7oDQJWezMESkpBRtyQnrgT33nR60+0EICLFneaNAVuCH+1U
-Bdz77jFxAG8byrF3ZB6QFOv0xsrAJ9pecnEM03NNqyKQShGi/ERlA+XxzuiK6ZCY
-RrDr/YQG85+YhmOkYW4QrbZyWhqVxsRJWQIc5WUYerEeyi3V9AsGO+x+h8jHzs7y
-OJg0nnAfIi/Cfp8Id4Wu
-=jxKM
+iQIcBAABCgAGBQJVd/vqAAoJEF2HCgfBJntGgowP/idRBLKbU6XH55CgtT8fGmFI
+ObZIara4AVghPlZwU80OGaV9Wh226oHtH3c18hYrB1V2IpmO6BQ6uvMZe+UNHur3
+6Dwf7bm4MvPydgc1/weW9RBcjuZwl51iyWu6/TaGxJymhcR08HOJOjyDIiZFY03o
+2UZ9kl41w+Ik0kxVQO7HwK/CrGltpFNAavfOqjSvMhp25Haq1cSWiYaJyxtzTwhZ
+gyG8+62bSX8EsvJaFgwsc0AC0Xd3UCJpaJJKTNqIIsxhZDLimDll5qmAcsJny2qu
+mhuljMqI3RRpZ0YCyitcIBcV5XW+WY+mdwXly8p9xVRy/HVUN4rZIxrQTMZO020F
+nBw9irHZW4UhD4xbmAVqNOq0N8IBzzrh+UD4NVEdzkWhwnPvaQ+mAorVqoCNChJD
+Rzl9+n7L/MyBUdgIELoyRp3xXpj+9icyHLkg4D7Y2ko1ZkeGUqMlw2i+UwX6e2DZ
+KCj8h4WRg4V/27E1AmngSUl67cSXvdGdHrygVbxgngNQknFg3+yeabZ/R8MJ6dTi
+c1wyetGXKUtaNK7rP5tzOnyEq7imlA/E3M7pcjVY8R4og0k+KZOstpFvJQ5kjunb
+Rc9tEwQQG9+U5eeOJ8Rw5lhVkGdwGNlCWDUANeaAIlVtwMqQL43zfoKoe3qmZiyZ
+Vzj7S8FRMhPyOII76Pdj
+=0cmI
 -----END PGP SIGNATURE-----
 
---nextPart1520967.CMUzMLn37S--
+--nextPart1532315.X9hoJIdCou--
 
