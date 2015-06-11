@@ -1,16 +1,13 @@
-Return-Path: <xerofoify@gmail.com>
-In-Reply-To: <55792240.7040301@meshcoding.com>
-References: <1433989533-30587-1-git-send-email-xerofoify@gmail.com>
- <55792240.7040301@meshcoding.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Thu, 11 Jun 2015 21:20:49 +0800
+Message-ID: <1912783.F1ndSkPlnl@voltaire>
+In-Reply-To: <1434025163.1056.73.camel@nord-west.org>
+References: <1434025163.1056.73.camel@nord-west.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain;
- charset=UTF-8
-From: Nicholas Krause <xerofoify@gmail.com>
-Date: Thu, 11 Jun 2015 09:17:40 -0400
-Message-ID: <F9973545-FC13-4CDA-BF9E-F802B4876697@gmail.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv:Make the function
-	batadv_is_my_mac bool
+Content-Type: multipart/signed; boundary="nextPart1656707.vUdHzOO0Sr";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Mesh hickups with 2014.3
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,32 +19,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <antonio@meshcoding.com>
-Cc: mareklindner@neomailbox.ch, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, davem@davemloft.net
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: freifunk-ol-dev <freifunk-ol-dev@lists.nord-west.net>
 
 
+--nextPart1656707.vUdHzOO0Sr
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On June 11, 2015 1:53:04 AM EDT, Antonio Quartulli <antonio@meshcoding.com> wrote:
->Nicholas,
->
->On 11/06/15 04:25, Nicholas Krause wrote:
->> This makes the function batadv_is_my_mac bool now due
->> to this particular function only returning either one
->> or zero as its return value.
->> 
->> Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
->
->NAK.
->
->we already have ("batman-adv: main, Convert is_my_mac() to bool") in
->net-next that does exactly the same. I guess you did not pull the
->latest
->changes before writing this patch?
->
->Cheers,
-I was basing this patch off Linux's tree, 
-that's why. 
-Nick 
+On Thursday, June 11, 2015 14:19:23 Bjoern Franke wrote:
+> - ping via linklocal, ULA and public-IPv6 from gateway to router not
+> possible
+> - other routers in the same mesh can ping it via ULA etc (connected via
+> the same fastd-VPN)
+> 
+> Public-IPv6 is announced from a gateway via radvd into the mesh.
+> 
+> Unfortunately we are out of ideas where we can search for the reason.
 
--- 
-Sent from my Android device with K-9 Mail. Please excuse my brevity.
+Do you have the multicast optimizations enabled ? 2014.3.0 still has a known 
+bug causing these optimizations to harm multicast traffic. Either disable this 
+feature or upgrade to something newer than 2014.3.0.
+
+Cheers,
+Marek
+
+--nextPart1656707.vUdHzOO0Sr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJVeYs1AAoJEFNVTo/uthzA72IH/jhV75uZrquD5jg/lTbJMuaP
+4YXH+CUFMrYRtyqUWr86o1b+LTa1xJ8GL2g0Z7O3VwVvcLHkbsqE71dy9K5g2yEx
+7rCW+/4hU48pT8DYrKb8x3/g3EIprVxdp7/UnN839WpjlWrStEs081s7bHFlrTws
+Imw2MGcHwRLXq3yFHZaOHov6GoERSaeyA120M1mKk6k4wuKj5r42vWwUZDAcwGSz
+tHOooJ7WuW4zyw1rerEEBmnO1U99+CorQEBgELozln8FXokD0bQPztC/LaXjDk0j
+CLltvg4/SOUqS36duX1pmseOV+6pvSFOPdoAns/NO7fG0DNopRqMUwdVzpxA+gA=
+=hnUC
+-----END PGP SIGNATURE-----
+
+--nextPart1656707.vUdHzOO0Sr--
+
