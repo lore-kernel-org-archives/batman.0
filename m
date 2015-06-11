@@ -1,14 +1,9 @@
-Return-Path: <bjo@nord-west.org>
-Message-ID: <1434033854.25497.3.camel@nord-west.org>
-From: Bjoern Franke <bjo@nord-west.org>
-Date: Thu, 11 Jun 2015 16:44:14 +0200
-In-Reply-To: <1912783.F1ndSkPlnl@voltaire>
-References: <1434025163.1056.73.camel@nord-west.org>
- <1912783.F1ndSkPlnl@voltaire>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-rpJbRgnbDG5mRBjM5pyF"
-Mime-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] Mesh hickups with 2014.3
+Return-Path: <xerofoify@gmail.com>
+From: Nicholas Krause <xerofoify@gmail.com>
+Date: Thu, 11 Jun 2015 11:10:34 -0400
+Message-Id: <1434035434-31224-1-git-send-email-xerofoify@gmail.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv:Remove unnessary break statements
+	for switch statement in the function batadv_bla_proccess_claim
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,56 +15,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>, b.a.t.m.a.n@lists.open-mesh.org
-Cc: freifunk-ol-dev <freifunk-ol-dev@lists.nord-west.net>
+To: mareklindner@neomailbox.ch
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, antonio@meshcoding.com, davem@davemloft.net
 
+This removes the unnessary break statements for the switch
+statement in the function, batadv_blav_procces_claim for
+checking the structure pointer, bla_dst's variable member,
+type due to returning directly for the cases in this switch
+if they evaluate to be equal to the value of the member
+variable type of the structure pointer, bla_dst and thus
+no need to avoid fallthrough with break statements in
+this particular switch statement.
 
---=-rpJbRgnbDG5mRBjM5pyF
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
+---
+ net/batman-adv/bridge_loop_avoidance.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-Hi Marek,
-
-
-> Do you have the multicast optimizations enabled ? 2014.3.0 still has=20
-> a known=20
-> bug causing these optimizations to harm multicast traffic. Either=20
-> disable this=20
-> feature or upgrade to something newer than 2014.3.0.
->=20
-
-IThanks for your reply. Multicast optimizations are disabled, but we ha
-ve multicast related errors in the logs:
-br-mesh: Multicast hash table chain limit reached: bat0br-mesh: Cannot reha=
-sh multicast hash table, disabling snooping: bat0, 201, -22
-Regardsbjo
---
-xmpp bjo@schafweide.org=20
-
-
-
---=-rpJbRgnbDG5mRBjM5pyF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJVeZ6+AAoJEAowmQt8itv38tUP+wTIzpn9dAXfutFra7DBgx0Y
-DVxjdUcjTtpE79U2ZZZ4MvSYYLOkJALcyOiGTuxgiIG6YhCQYprBBRK98slwiLYh
-m5rWDaK/hJ3TOESfDpDfbUb8WpZZlAPZGWB55HiBPzMxFv9qHQEfikzRm6ChXKjd
-yPRKkTSCd1JAQb45BGfX9J2YLeFTQtHQhJfMv44PZ2ft3PYX3pcT91SXJ8fyLMoC
-f4BSVghj3IiOaVJYu/8qjotivVylNYH7RLRghobDPzDute2VUZpMubK3aaxf2GIa
-fSpu0IcrybJZhLF59ldnyKLSGRr6JlJLY9h8uT1EfZjr5fPmOSU0vdp/Qr/VUW+W
-LVTrMUHr6UBiUx/xOBabMMzYLjzVLs0NdpH6hnw2A1bU8ExFmX5LE8e7Dmk98CZa
-vsxAwdKcgDP8xIh9fnyT0zcN1jjDa/EDnmF2ligTgW8n7XqZfLKR+ouGftV/Glz7
-SAiyGiYUtCXtduSSUpcvwYu4JUp7w3Ouw++Jfvbe7xo1J6uqmNgPWTOgK85n8UlS
-whI2qIIeY5l5JgJ0DjceGwXvqgd6mQJ+QPZA2BKkKG3/KNDQbGU7fxr0y3DOVTXN
-wttfchlnRWiu3cvPOUk73WwRlGZ41NgNmNnUde9unGLRGi71k+uN3+jxzgz1gCMp
-QwswR9uXffNAuRpZe7WJ
-=kjUt
------END PGP SIGNATURE-----
-
---=-rpJbRgnbDG5mRBjM5pyF--
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index ac4b96e..c9a548a 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -961,23 +961,18 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
+ 		if (batadv_handle_claim(bat_priv, primary_if, hw_src,
+ 					ethhdr->h_source, vid))
+ 			return 1;
+-		break;
+ 	case BATADV_CLAIM_TYPE_UNCLAIM:
+ 		if (batadv_handle_unclaim(bat_priv, primary_if,
+ 					  ethhdr->h_source, hw_src, vid))
+ 			return 1;
+-		break;
+-
+ 	case BATADV_CLAIM_TYPE_ANNOUNCE:
+ 		if (batadv_handle_announce(bat_priv, hw_src, ethhdr->h_source,
+ 					   vid))
+ 			return 1;
+-		break;
+ 	case BATADV_CLAIM_TYPE_REQUEST:
+ 		if (batadv_handle_request(bat_priv, primary_if, hw_src, ethhdr,
+ 					  vid))
+ 			return 1;
+-		break;
+ 	}
+ 
+ 	batadv_dbg(BATADV_DBG_BLA, bat_priv,
+-- 
+2.1.4
 
