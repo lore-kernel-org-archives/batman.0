@@ -1,9 +1,14 @@
-Return-Path: <xerofoify@gmail.com>
-From: Nicholas Krause <xerofoify@gmail.com>
-Date: Thu, 11 Jun 2015 10:41:49 -0400
-Message-Id: <1434033709-4121-1-git-send-email-xerofoify@gmail.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman:Make the function
-	batadv_reroute_unicast packet bool
+Return-Path: <bjo@nord-west.org>
+Message-ID: <1434033854.25497.3.camel@nord-west.org>
+From: Bjoern Franke <bjo@nord-west.org>
+Date: Thu, 11 Jun 2015 16:44:14 +0200
+In-Reply-To: <1912783.F1ndSkPlnl@voltaire>
+References: <1434025163.1056.73.camel@nord-west.org>
+ <1912783.F1ndSkPlnl@voltaire>
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-rpJbRgnbDG5mRBjM5pyF"
+Mime-Version: 1.0
+Subject: Re: [B.A.T.M.A.N.] Mesh hickups with 2014.3
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,109 +20,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: mareklindner@neomailbox.ch
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, antonio@meshcoding.com, davem@davemloft.net
+To: Marek Lindner <mareklindner@neomailbox.ch>, b.a.t.m.a.n@lists.open-mesh.org
+Cc: freifunk-ol-dev <freifunk-ol-dev@lists.nord-west.net>
 
-This makes the function batadv_reroute_unicast_packet bool now
-due to this particular function only returning either one or
-zero as its return value.
 
-Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
----
- net/batman-adv/routing.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+--=-rpJbRgnbDG5mRBjM5pyF
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index da83982..fd2d1d4 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -677,8 +677,8 @@ out:
- 	return ret;
- }
- 
--static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
--				     struct sk_buff *skb, int hdr_len) {
-+static bool batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
-+				      struct sk_buff *skb, int hdr_len) {
- 	struct batadv_unicast_packet *unicast_packet;
- 	struct batadv_hard_iface *primary_if;
- 	struct batadv_orig_node *orig_node;
-@@ -689,11 +689,11 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 
- 	/* check if there is enough data before accessing it */
- 	if (!pskb_may_pull(skb, hdr_len + ETH_HLEN))
--		return 0;
-+		return false;
- 
- 	/* create a copy of the skb (in case of for re-routing) to modify it. */
- 	if (skb_cow(skb, sizeof(*unicast_packet)) < 0)
--		return 0;
-+		return false;
- 
- 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
- 	vid = batadv_get_vid(skb, hdr_len);
-@@ -717,7 +717,7 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 		 * table. If not, let the packet go untouched anyway because
- 		 * there is nothing the node can do
- 		 */
--		return 1;
-+		return true;
- 	}
- 
- 	/* retrieve the TTVN known by this node for the packet destination. This
-@@ -733,7 +733,7 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 		 * not be possible to deliver it
- 		 */
- 		if (!orig_node)
--			return 0;
-+			return false;
- 
- 		curr_ttvn = (uint8_t)atomic_read(&orig_node->last_ttvn);
- 		batadv_orig_node_free_ref(orig_node);
-@@ -744,7 +744,7 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 	 */
- 	is_old_ttvn = batadv_seq_before(unicast_packet->ttvn, curr_ttvn);
- 	if (!is_old_ttvn)
--		return 1;
-+		return true;
- 
- 	old_ttvn = unicast_packet->ttvn;
- 	/* the packet was forged based on outdated network information. Its
-@@ -757,7 +757,7 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 				       "Rerouting unicast packet to %pM (dst=%pM): TTVN mismatch old_ttvn=%u new_ttvn=%u\n",
- 				       unicast_packet->dest, ethhdr->h_dest,
- 				       old_ttvn, curr_ttvn);
--		return 1;
-+		return true;
- 	}
- 
- 	/* the packet has not been re-routed: either the destination is
-@@ -765,14 +765,14 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 	 * it is possible to drop the packet
- 	 */
- 	if (!batadv_is_my_client(bat_priv, ethhdr->h_dest, vid))
--		return 0;
-+		return false;
- 
- 	/* update the header in order to let the packet be delivered to this
- 	 * node's soft interface
- 	 */
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
- 	if (!primary_if)
--		return 0;
-+		return false;
- 
- 	ether_addr_copy(unicast_packet->dest, primary_if->net_dev->dev_addr);
- 
-@@ -780,7 +780,7 @@ static int batadv_check_unicast_ttvn(struct batadv_priv *bat_priv,
- 
- 	unicast_packet->ttvn = curr_ttvn;
- 
--	return 1;
-+	return true;
- }
- 
- /**
--- 
-2.1.4
+Hi Marek,
+
+
+> Do you have the multicast optimizations enabled ? 2014.3.0 still has=20
+> a known=20
+> bug causing these optimizations to harm multicast traffic. Either=20
+> disable this=20
+> feature or upgrade to something newer than 2014.3.0.
+>=20
+
+IThanks for your reply. Multicast optimizations are disabled, but we ha
+ve multicast related errors in the logs:
+br-mesh: Multicast hash table chain limit reached: bat0br-mesh: Cannot reha=
+sh multicast hash table, disabling snooping: bat0, 201, -22
+Regardsbjo
+--
+xmpp bjo@schafweide.org=20
+
+
+
+--=-rpJbRgnbDG5mRBjM5pyF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJVeZ6+AAoJEAowmQt8itv38tUP+wTIzpn9dAXfutFra7DBgx0Y
+DVxjdUcjTtpE79U2ZZZ4MvSYYLOkJALcyOiGTuxgiIG6YhCQYprBBRK98slwiLYh
+m5rWDaK/hJ3TOESfDpDfbUb8WpZZlAPZGWB55HiBPzMxFv9qHQEfikzRm6ChXKjd
+yPRKkTSCd1JAQb45BGfX9J2YLeFTQtHQhJfMv44PZ2ft3PYX3pcT91SXJ8fyLMoC
+f4BSVghj3IiOaVJYu/8qjotivVylNYH7RLRghobDPzDute2VUZpMubK3aaxf2GIa
+fSpu0IcrybJZhLF59ldnyKLSGRr6JlJLY9h8uT1EfZjr5fPmOSU0vdp/Qr/VUW+W
+LVTrMUHr6UBiUx/xOBabMMzYLjzVLs0NdpH6hnw2A1bU8ExFmX5LE8e7Dmk98CZa
+vsxAwdKcgDP8xIh9fnyT0zcN1jjDa/EDnmF2ligTgW8n7XqZfLKR+ouGftV/Glz7
+SAiyGiYUtCXtduSSUpcvwYu4JUp7w3Ouw++Jfvbe7xo1J6uqmNgPWTOgK85n8UlS
+whI2qIIeY5l5JgJ0DjceGwXvqgd6mQJ+QPZA2BKkKG3/KNDQbGU7fxr0y3DOVTXN
+wttfchlnRWiu3cvPOUk73WwRlGZ41NgNmNnUde9unGLRGi71k+uN3+jxzgz1gCMp
+QwswR9uXffNAuRpZe7WJ
+=kjUt
+-----END PGP SIGNATURE-----
+
+--=-rpJbRgnbDG5mRBjM5pyF--
 
