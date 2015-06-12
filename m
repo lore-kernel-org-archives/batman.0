@@ -1,9 +1,14 @@
-Return-Path: <xerofoify@gmail.com>
-From: Nicholas Krause <xerofoify@gmail.com>
-Date: Thu, 11 Jun 2015 11:10:34 -0400
-Message-Id: <1434035434-31224-1-git-send-email-xerofoify@gmail.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv:Remove unnessary break statements
-	for switch statement in the function batadv_bla_proccess_claim
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Fri, 12 Jun 2015 10:53:53 +0800
+Message-ID: <9335609.3RCpKXFmTj@voltaire>
+In-Reply-To: <1434033854.25497.3.camel@nord-west.org>
+References: <1434025163.1056.73.camel@nord-west.org>
+ <1912783.F1ndSkPlnl@voltaire> <1434033854.25497.3.camel@nord-west.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2770692.cn5kTRP6b0";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Mesh hickups with 2014.3
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,51 +20,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: mareklindner@neomailbox.ch
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, antonio@meshcoding.com, davem@davemloft.net
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: freifunk-ol-dev <freifunk-ol-dev@lists.nord-west.net>
 
-This removes the unnessary break statements for the switch
-statement in the function, batadv_blav_procces_claim for
-checking the structure pointer, bla_dst's variable member,
-type due to returning directly for the cases in this switch
-if they evaluate to be equal to the value of the member
-variable type of the structure pointer, bla_dst and thus
-no need to avoid fallthrough with break statements in
-this particular switch statement.
 
-Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
----
- net/batman-adv/bridge_loop_avoidance.c | 5 -----
- 1 file changed, 5 deletions(-)
+--nextPart2770692.cn5kTRP6b0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index ac4b96e..c9a548a 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -961,23 +961,18 @@ static int batadv_bla_process_claim(struct batadv_priv *bat_priv,
- 		if (batadv_handle_claim(bat_priv, primary_if, hw_src,
- 					ethhdr->h_source, vid))
- 			return 1;
--		break;
- 	case BATADV_CLAIM_TYPE_UNCLAIM:
- 		if (batadv_handle_unclaim(bat_priv, primary_if,
- 					  ethhdr->h_source, hw_src, vid))
- 			return 1;
--		break;
--
- 	case BATADV_CLAIM_TYPE_ANNOUNCE:
- 		if (batadv_handle_announce(bat_priv, hw_src, ethhdr->h_source,
- 					   vid))
- 			return 1;
--		break;
- 	case BATADV_CLAIM_TYPE_REQUEST:
- 		if (batadv_handle_request(bat_priv, primary_if, hw_src, ethhdr,
- 					  vid))
- 			return 1;
--		break;
- 	}
- 
- 	batadv_dbg(BATADV_DBG_BLA, bat_priv,
--- 
-2.1.4
+On Thursday, June 11, 2015 16:44:14 Bjoern Franke wrote:
+> Thanks for your reply. Multicast optimizations are disabled, but we ha
+> ve multicast related errors in the logs:
+> br-mesh: Multicast hash table chain limit reached: bat0br-mesh: Cannot
+> rehash multicast hash table, disabling snooping: bat0, 201, -22
+
+That message is not coming from batman-adv but the bridge code itself. To me 
+it looks like the bridge code disables multicast once the hash table limit is 
+reached. Use the search engine of your choice to get better info. Sounds 
+definitely related to your issue.
+
+Cheers,
+Marek
+
+--nextPart2770692.cn5kTRP6b0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJVeknBAAoJEFNVTo/uthzAEqAIAMBXzgzxj1GrS9nTKGDHMnBb
+GUs4gBPxtxedMZxiWfo0Eay0XxXXMnl2os4JITXwx0LTiAkIsunc/L2EPY5NMjWJ
+lffHE3nciqrXy160pTAuv49fxmDX+yQQCN4fWNc32bDJ+LH4j0sn9uMJffSZBopN
+91E9+6Ok4P9ix/zbMzEuFGNplEFMykCL3q3eHhiOGhZb1F8hY7luoja46D1ivUlk
+0lNXoEUR4BAt2s/bJp5X+EDXRlvLLywkRwP9Qaz+HiR/h3HasSCTha7h88FeGf1a
+kAi44kE6iRjmA2cJiUAOFJFOuk0rbBd8bsmPrjmQA0hqvNkUs2PO2f7pAGLzZGs=
+=RI9U
+-----END PGP SIGNATURE-----
+
+--nextPart2770692.cn5kTRP6b0--
 
