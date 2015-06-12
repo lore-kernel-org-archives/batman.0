@@ -1,10 +1,14 @@
-Return-Path: <carlosmeralto@gmail.com>
-MIME-Version: 1.0
-Date: Fri, 12 Jun 2015 13:31:54 +0100
-Message-ID: <CALaFpeVMwOE5DtHoDWVA+CBXq2jMuKLdmU-CcOWhCNRkHQ9F5w@mail.gmail.com>
-From: Carlos Meralto <carlosmeralto@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: [B.A.T.M.A.N.]  batman-adv: Force line topology
+Return-Path: <bjo@nord-west.org>
+Message-ID: <1434122431.24070.3.camel@nord-west.org>
+From: Bjoern Franke <bjo@nord-west.org>
+Date: Fri, 12 Jun 2015 17:20:31 +0200
+In-Reply-To: <2dca4d7a596a3a7f250b2ef62cf9c3ec@hilses.de>
+References: <1434025163.1056.73.camel@nord-west.org>
+ <2dca4d7a596a3a7f250b2ef62cf9c3ec@hilses.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] Mesh hickups with 2014.3
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,29 +20,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello, I am developing my thesis on mesh networks. And I'm currently
-doing some tests with batman-adv.
-So my question is:
-I need to create a line topology. For example:
-A-> B-> C-> D
+Hi hwh,
 
-Of all the options I tried, I could not find a solution to do this
-https://lists.open-mesh.org/pipermail/batman/2012-September/008019.html
-https://lists.open-mesh.org/pipermail/batman/2011-July/005169.html
 
-I can not use the ebtables because I am using the wlan0 interface. And
-when I try to create a bridge on the interface (wlan0) gives me an
-error.
 
-root@OpenWrt:~# batctl if del adhoc0
-root@OpenWrt:~# brctl addbr bridgeWlan
-root@OpenWrt:~# brctl addif bridgeWlan adhoc0
-brctl: bridge bridgeWlan: Operation not supported
 
-There is already a way to force a topology in batman-adv?
+> Continuously? So that directions seems fine then.
 
-I'm blocked with no solution.
+Yep.
 
-Thanks in advance.
+
+
+
+> What does "not possible" mean? There's no reply?
+
+No reply, yes.
+
+
+
+
+> So it's just the gateway that can't reach the "router"?
+
+Correct.
+
+> > Public-IPv6 is announced from a gateway via radvd into the mesh.
+> 
+> So even in that direction, NDP is fine. Seems only ICMPv6 echo 
+> requests 
+> are somewhat different then?
+
+ip -6 neigh show says "FAILED".
+
+> > Unfortunately we are out of ideas where we can search for the 
+> > reason.
+> 
+> Look what's actually on the wire on both ends? Tcpdump and batctl 
+> tcpdump?
+> 
+> 
+
+On the gateway, there are neighbor solicitations from the "router" and
+advertisements from the gateway.
+
+At the moment, it's not possible to access the "router" to take a look
+what's going wrong there.
+
+Regards
+bjo
+-- 
+xmpp bjo@schafweide.org 
+
+
+
