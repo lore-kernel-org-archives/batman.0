@@ -1,17 +1,15 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Fri, 12 Jun 2015 22:33:57 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20150612203356.GB2513@odroid>
-References: <1434025163.1056.73.camel@nord-west.org>
- <1912783.F1ndSkPlnl@voltaire>
- <1434033854.25497.3.camel@nord-west.org>
- <20150612043240.GA27325@odroid>
- <1434121488.3296.8.camel@nord-west.org>
+Return-Path: <hw@haveyouseenthiscat.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1434121488.3296.8.camel@nord-west.org>
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date: Fri, 12 Jun 2015 22:39:27 +0200
+From: Hans-Werner Hilse <hw@haveyouseenthiscat.de>
+In-Reply-To: <1434122431.24070.3.camel@nord-west.org>
+References: <1434025163.1056.73.camel@nord-west.org>
+ <2dca4d7a596a3a7f250b2ef62cf9c3ec@hilses.de>
+ <1434122431.24070.3.camel@nord-west.org>
+Message-ID: <ab2fa29c0bc05ca697c3a389bd4980cc@hilses.de>
 Subject: Re: [B.A.T.M.A.N.] Mesh hickups with 2014.3
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,55 +22,41 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Bjoern Franke <bjo@nord-west.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, freifunk-ol-dev <freifunk-ol-dev@lists.nord-west.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Fri, Jun 12, 2015 at 05:04:48PM +0200, Bjoern Franke wrote:
-> Hi Linus,
+Hi,
+
+Am 2015-06-12 17:20, schrieb Bjoern Franke:
+>> > Public-IPv6 is announced from a gateway via radvd into the mesh.
+>> 
+>> So even in that direction, NDP is fine. Seems only ICMPv6 echo
+>> requests
+>> are somewhat different then?
 > 
-> > There's a hash_max value for the bridge
-> > (/sys/class/net/<br>/bridge/hash_max). By default it's rather
-> > small, just 512 entries / multicast listeners, so it's expected that
-> > with 500 nodes the bridge multicast snooping will shut down.
+> ip -6 neigh show says "FAILED".
+
+My bad: I planned to write "RA" instead of NDP. In fact, NDP seems to be 
+failing, as you have determined.
+
+>> Look what's actually on the wire on both ends? Tcpdump and batctl
+>> tcpdump?
 > 
-> Thanks for your reply, I increased the value now to 4096 on the
-> gateways.
-> 
-> > Nevertheless, even if the bridge deactivates its multicast
-> > snooping that shouldn't cause trouble for ICMPv6.
-> > 
-> > Which firmware are you using, do you see ICMPv6 packets entering
-> > bat0 on the gateway and leaving bat0 on the router?
-> 
-> We are running gluon 2014.4 on the routers. 
+> On the gateway, there are neighbor solicitations from the "router" and
+> advertisements from the gateway.
 
-Okay. In Gluon both the batman-adv multicast optimizations and
-bridge multicast snooping are deactivated by default. So I think
-it's probably an issue with the bridge on your gateway. Does
-deactivating the batman-adv and bridge multicast stuff make a
-difference?
+The advertisements are fine then, good.
 
-Which kernel version and Linux distribution are you using on the
-gateway?
+I've seen the behaviour you're looking at with Linux bridge code and 
+icmp snooping. Mind you: with *activated* icmp snooping. The NDP does 
+not (does it?) register ICMP multicast with listener notices (or does it 
+once, too early?), and the bridge code does then not consider the 
+relevant end that should receive NDP traffic a destination for the 
+multicast traffic that should have gotten there.
 
-> 
-> I see solicitations and advertisements on the gateway:
-> 16:59:54.567582 IP6 fd74:fdaa:9dc4:0:fa1a:67ff:feeb:c77e >
-> ff02::1:ff40:1: ICMP6, neighbor solicitation, who has
-> fd74:fdaa:9dc4::40:1, length 32
-> 16:59:54.567661 IP6 fd74:fdaa:9dc4::40:1 >
-> fd74:fdaa:9dc4:0:fa1a:67ff:feeb:c77e: ICMP6, neighbor advertisement,
-> tgt is fd74:fdaa:9dc4::40:1, length 32
+Of course, the question that evolves it whether the solicitation is 
+actually received, then handled - answered to - by the gateway.
 
-Measured on bat0 or on the bridge on top?
+Did any network bridges come into play on the gateway(s) that hadn't 
+been there before?
 
-> 
-> Unfortunately it's not possible to access the router at the moment to
-> have look what's leaving on bat0 there.
-> 
-> Regards
-> Björn
-
-Cheers, Linus
-
-PS: Please keep the mailinglists.
+-hwh
