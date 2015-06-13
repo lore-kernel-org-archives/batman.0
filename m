@@ -1,14 +1,14 @@
-Return-Path: <ufo@rund.freifunk.net>
-Message-ID: <557C6B3A.4020305@rund.freifunk.net>
-Date: Sat, 13 Jun 2015 19:41:14 +0200
-From: Ufo <ufo@rund.freifunk.net>
+Return-Path: <carlosmeralto@gmail.com>
 MIME-Version: 1.0
-References: <557C4EF0.3060204@rund.freifunk.net> <5848467.YBQmR7qBth@voltaire>
-In-Reply-To: <5848467.YBQmR7qBth@voltaire>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] openwrt config changes when upgrading from
- 2014-4 to 2015-0 ?
+In-Reply-To: <7101665.y6bS5x8EtZ@sven-edge>
+References: <CALaFpeVMwOE5DtHoDWVA+CBXq2jMuKLdmU-CcOWhCNRkHQ9F5w@mail.gmail.com>
+ <7101665.y6bS5x8EtZ@sven-edge>
+Date: Sat, 13 Jun 2015 19:15:09 +0100
+Message-ID: <CALaFpeV2DNt9a8--P+CP2_=1fhHkMWJ2+4H6dMDqYAq0scpA0g@mail.gmail.com>
+From: Carlos Meralto <carlosmeralto@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] batman-adv: Force line topology
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,44 +20,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-ok, my '10 days older openwrt trunk' with batman-adv 2015.0 (compiled
-via sdk) is running without bridge-problems.
-so batman-adv is not the guilty one
+Thanks for the answer Sven.
 
-Am 13.06.15 um 18:21 schrieb Marek Lindner:
-> On Saturday, June 13, 2015 17:40:32 Ufo wrote:
->> thank you for upgrading batman-adv inside openwrt trunk to
->> 2015-0
->> 
->> im testing new version (yesterdays openwrt trunk) but have
->> problems: the bridge (br-mesh12) with bat-interface and wifi-vAP
->> isnt complete, the bat-interface is missing the "wifi" command
->> also doesnt repair that
->> 
->> but, when i delete vlan-setting (for interface, where batman-adv
->> is running on) problems are gone.
->> 
->> maybe config for openwrt/batman-adv has changed, or some of our
->> settings are outdated and now obsolete?
->> 
->> ufo
->> 
->> p.s. with 10 days old openwrt trunk (and batman-adv 2014-4) the
->> problem doesnt appear
-> 
-> The batman-adv uci config has not changed one bit. You can check
-> the package diff:
-> https://github.com/openwrt-routing/packages/commit/4dc2c500ffde0e248dbc83e5bd904ec0c9af0c42
->
->  Can you try the '10 days older openwrt trunk' with batman-adv
-> 2015.0 ? That way you can rule out batman-adv.
-> 
-> Cheers, Marek
-> 
+You can patch the driver to allow this (it is just a simple check which
+disallows it in most drivers... or actually in wireless core [1]). But you
+should make sure that you still use the same mac addresses for vif + bridge
+and don't end up with 4 address packets.
 
 
--- 
----
-Freifunk Leipzig http://leipzig.freifunk.net
+Can you explain how I can apply this "patch=E2=80=9D? I saw the file attach=
+ed
+but i don't know what parameters must change.
+
+There is already a way to force a topology in batman-adv?
+
+
+No. There were only different solutions (not acceptable for the linux kerne=
+l)
+which did this directly in batman-adv. A very prominent (and easy to find)
+solution was from Martin [2]
+
+The idea behind batman-adv is that it finds paths and thus automatically
+creates a good virtual topologies.
+
+
+If you can not use ebtables I will try to use the patch that Martin did.
+
+I'm blocked with no solution.
+
+Thanks in advance.
+
+
+I don't know why you want to use wlan and you also don't explain it in your
+mail. You could for example also use emulation + vde2 [3] since you already
+try to emulate a setup which is not there in reality.
+
+
+The first task of my thesis is to make a comparison between
+open802.11s and batman-adv for node discovery time and througput, in
+function of hops and recovery in case of failure. So i want make this
+tests in a real scenario...
+
+Thanks in advance.
+
+Best Regards,
+Carlos Meralto
