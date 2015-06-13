@@ -1,16 +1,9 @@
-Return-Path: <hw@haveyouseenthiscat.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Date: Fri, 12 Jun 2015 22:39:27 +0200
-From: Hans-Werner Hilse <hw@haveyouseenthiscat.de>
-In-Reply-To: <1434122431.24070.3.camel@nord-west.org>
-References: <1434025163.1056.73.camel@nord-west.org>
- <2dca4d7a596a3a7f250b2ef62cf9c3ec@hilses.de>
- <1434122431.24070.3.camel@nord-west.org>
-Message-ID: <ab2fa29c0bc05ca697c3a389bd4980cc@hilses.de>
-Subject: Re: [B.A.T.M.A.N.] Mesh hickups with 2014.3
+Return-Path: <xerofoify@gmail.com>
+From: Nicholas Krause <xerofoify@gmail.com>
+Date: Fri, 12 Jun 2015 23:37:14 -0400
+Message-Id: <1434166634-11050-1-git-send-email-xerofoify@gmail.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv:Make the function
+	batadv_softif_is_valid bool
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,41 +15,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: mareklindner@neomailbox.ch
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, antonio@meshcoding.com, davem@davemloft.net
 
-Hi,
+This makes the function batadv_softif_is_valid bool
+due to this particular function only returning either
+one or zero aas it s return value.
 
-Am 2015-06-12 17:20, schrieb Bjoern Franke:
->> > Public-IPv6 is announced from a gateway via radvd into the mesh.
->> 
->> So even in that direction, NDP is fine. Seems only ICMPv6 echo
->> requests
->> are somewhat different then?
-> 
-> ip -6 neigh show says "FAILED".
+Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
+---
+ net/batman-adv/soft-interface.c | 6 +++---
+ net/batman-adv/soft-interface.h | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-My bad: I planned to write "RA" instead of NDP. In fact, NDP seems to be 
-failing, as you have determined.
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 5ec31d7..dc683c8 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -974,12 +974,12 @@ static void batadv_softif_destroy_netlink(struct net_device *soft_iface,
+ 	unregister_netdevice_queue(soft_iface, head);
+ }
+ 
+-int batadv_softif_is_valid(const struct net_device *net_dev)
++bool batadv_softif_is_valid(const struct net_device *net_dev)
+ {
+ 	if (net_dev->netdev_ops->ndo_start_xmit == batadv_interface_tx)
+-		return 1;
++		return true;
+ 
+-	return 0;
++	return false;
+ }
+ 
+ struct rtnl_link_ops batadv_link_ops __read_mostly = {
+diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
+index dbab22f..48a7aa4 100644
+--- a/net/batman-adv/soft-interface.h
++++ b/net/batman-adv/soft-interface.h
+@@ -24,7 +24,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 			 int hdr_size, struct batadv_orig_node *orig_node);
+ struct net_device *batadv_softif_create(const char *name);
+ void batadv_softif_destroy_sysfs(struct net_device *soft_iface);
+-int batadv_softif_is_valid(const struct net_device *net_dev);
++bool batadv_softif_is_valid(const struct net_device *net_dev);
+ extern struct rtnl_link_ops batadv_link_ops;
+ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid);
+ void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *softif_vlan);
+-- 
+2.1.4
 
->> Look what's actually on the wire on both ends? Tcpdump and batctl
->> tcpdump?
-> 
-> On the gateway, there are neighbor solicitations from the "router" and
-> advertisements from the gateway.
-
-The advertisements are fine then, good.
-
-I've seen the behaviour you're looking at with Linux bridge code and 
-icmp snooping. Mind you: with *activated* icmp snooping. The NDP does 
-not (does it?) register ICMP multicast with listener notices (or does it 
-once, too early?), and the bridge code does then not consider the 
-relevant end that should receive NDP traffic a destination for the 
-multicast traffic that should have gotten there.
-
-Of course, the question that evolves it whether the solicitation is 
-actually received, then handled - answered to - by the gateway.
-
-Did any network bridges come into play on the gateway(s) that hadn't 
-been there before?
-
--hwh
