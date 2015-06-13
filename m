@@ -1,12 +1,14 @@
-Return-Path: <ufo@rund.freifunk.net>
-Message-ID: <557C4EF0.3060204@rund.freifunk.net>
-Date: Sat, 13 Jun 2015 17:40:32 +0200
-From: Ufo <ufo@rund.freifunk.net>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 14 Jun 2015 00:21 +0800
+Message-ID: <5848467.YBQmR7qBth@voltaire>
+In-Reply-To: <557C4EF0.3060204@rund.freifunk.net>
+References: <557C4EF0.3060204@rund.freifunk.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] openwrt config changes when upgrading from 2014-4 to
-	2015-0 ?
+Content-Type: multipart/signed; boundary="nextPart3753264.XgddEPVMqQ";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] openwrt config changes when upgrading from
+	2014-4 to 2015-0 ?
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,124 +20,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-thank you for upgrading batman-adv inside openwrt trunk to 2015-0
-
-im testing new version (yesterdays openwrt trunk) but have problems:
-the bridge (br-mesh12) with bat-interface and wifi-vAP isnt complete,
-the bat-interface is missing :-(
-the "wifi" command also doesnt repair that :-(
-
-but, when i delete vlan-setting (for interface, where batman-adv is
-running on) problems are gone.
-
-maybe config for openwrt/batman-adv has changed, or some of our settings
-are outdated and now obsolete?
-
- ufo
-
-p.s. with 10 days old openwrt trunk (and batman-adv 2014-4) the problem
-doesnt appear
-
-p.p.s. maybe my former firmware problems are related to that? some of
-them are gone when we only use one batman-adv on each node instead of two
-https://github.com/freifunk/meshkit-firmware/issues/23
-https://github.com/freifunk/meshkit-firmware/issues/12
-
-----
-
-tested with minimalized setup it looks like this:
-
-some config-files...
-
-config interface 'wireless0'
-        option dns '8.8.8.8 212.204.49.83 141.1.1.1'
-        option netmask '255.255.255.255'
-        option proto 'static'
-        option ipaddr '10.61.234.70'
-        option mtu '1536'
-
-config interface 'mesh12'
-        option type 'bridge'
-        option ifname 'bat12'
-        option proto 'none'
-
-config interface 'meshbat12'
-        option ifname '@wireless0.12'
-        option proto 'batadv'
-        option mesh 'bat12'
-        option mtu '1532'
-
-------
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
-config wifi-device 'radio0'
-        option type 'mac80211'
-        option path 'platform/ar934x_wmac'
-        option htmode 'HT20'
-        option diversity '1'
-        option distance '1000'
-        option disabled '0'
-        option country 'DE'
-        option channel '44'
-        option hwmode '11na'
+--nextPart3753264.XgddEPVMqQ
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-config wifi-iface 'radio0_iface'
-        option device 'radio0'
-        option encryption 'none'
-        option mode 'adhoc'
-        option mcast_rate '6000'
-        option network 'wireless0'
-        option ssid 'leipzig.freifunk.net'
-        option bssid '02:44:CA:FF:EE:EE'
+On Saturday, June 13, 2015 17:40:32 Ufo wrote:
+> thank you for upgrading batman-adv inside openwrt trunk to 2015-0
+> 
+> im testing new version (yesterdays openwrt trunk) but have problems:
+> the bridge (br-mesh12) with bat-interface and wifi-vAP isnt complete,
+> the bat-interface is missing
+> the "wifi" command also doesnt repair that
+> 
+> but, when i delete vlan-setting (for interface, where batman-adv is
+> running on) problems are gone.
+> 
+> maybe config for openwrt/batman-adv has changed, or some of our settings
+> are outdated and now obsolete?
+> 
+>  ufo
+> 
+> p.s. with 10 days old openwrt trunk (and batman-adv 2014-4) the problem
+> doesnt appear
 
-config wifi-iface 'radio0_meshap12'
-        option network 'mesh12'
-        option mode 'ap'
-        option device 'radio0'
-        option encryption 'none'
-        option ssid '012Freifunk-Test'
+The batman-adv uci config has not changed one bit. You can check the package 
+diff: https://github.com/openwrt-routing/packages/commit/4dc2c500ffde0e248dbc83e5bd904ec0c9af0c42
 
+Can you try the '10 days older openwrt trunk' with batman-adv 2015.0 ? That 
+way you can rule out batman-adv.
 
-root@234-70:~# cat /etc/config/batman-adv
+Cheers,
+Marek
 
-config mesh 'bat12'
-        option gw_mode 'client'
-        option multicast_mode '0'
-        option bridge_loop_avoidance '1'
+--nextPart3753264.XgddEPVMqQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-----
+iQEcBAABCAAGBQJVfFhwAAoJEFNVTo/uthzAP4wIAJhqnID9t0VcKR8biKLqTrz4
+JFiCHFJgjOhg83veKc147S5018zWc/5uKvfFnYBu8u8v2eM2e41s6Eix/D7yGMT+
+RexX0W3KNLXrTnIDee2+xWsCJ49CKqKDKbL3/7w4vKg9UF4HP5WWtvbqBL9jkxXJ
+9XPtQ6m9ncmsqoF5My5XTogGS0mg1pYMuAC4xCyDENksTroCsifjzRyGqojWM9Q8
+VV3yLabXqi+HKsYi0VXuaT4bfYWxzRzKMkRqOL355GDcpVEAFeQDOQR4HMt0KPBt
+vXwz9Ca/4zZCZjl7JSXDe9G9rcWVrppCQWohHDXk2KC72Z2H8yT7lGtfQ88NlxI=
+=lJPl
+-----END PGP SIGNATURE-----
 
+--nextPart3753264.XgddEPVMqQ--
 
-root@234-70:~# brctl show
-bridge name     bridge id               STP enabled     interfaces
-br-mesh12               7fff.16cc204886e0       no              wlan0-1
-
-
-
------------------------------
-#############################
-
-
-changing to test setting, its working in a proper way:
-
-
-config interface 'meshbat12'
-        option ifname '@wireless0'
-        option proto 'batadv'
-        option mesh 'bat12'
-        option mtu '1532'
-
----
-root@234-70:~# brctl show
-bridge name     bridge id               STP enabled     interfaces
-br-mesh12               7fff.16cc204886e0       no              wlan0-1
-                                                        bat12
-
-
-
--- 
----
-Freifunk Leipzig http://leipzig.freifunk.net
