@@ -1,16 +1,15 @@
-Return-Path: <bjo@nord-west.org>
-Message-ID: <1434277200.9779.3.camel@nord-west.org>
-From: Bjoern Franke <bjo@nord-west.org>
-Date: Sun, 14 Jun 2015 12:20:00 +0200
-In-Reply-To: <20150612203356.GB2513@odroid>
-References: <1434025163.1056.73.camel@nord-west.org>
- <1912783.F1ndSkPlnl@voltaire> <1434033854.25497.3.camel@nord-west.org>
- <20150612043240.GA27325@odroid> <1434121488.3296.8.camel@nord-west.org>
- <20150612203356.GB2513@odroid>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] Mesh hickups with 2014.3
+Return-Path: <gui@altermundi.net>
+Message-ID: <557D8FFF.4070601@altermundi.net>
+Date: Sun, 14 Jun 2015 11:30:23 -0300
+From: Gui Iribarren <gui@altermundi.net>
+MIME-Version: 1.0
+References: <CALaFpeVMwOE5DtHoDWVA+CBXq2jMuKLdmU-CcOWhCNRkHQ9F5w@mail.gmail.com>
+ <7101665.y6bS5x8EtZ@sven-edge>
+ <CALaFpeV2DNt9a8--P+CP2_=1fhHkMWJ2+4H6dMDqYAq0scpA0g@mail.gmail.com>
+In-Reply-To: <CALaFpeV2DNt9a8--P+CP2_=1fhHkMWJ2+4H6dMDqYAq0scpA0g@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: Re: [B.A.T.M.A.N.] batman-adv: Force line topology
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,43 +21,70 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, freifunk-ol-dev <freifunk-ol-dev@lists.nord-west.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
-
+On 13/06/15 15:15, Carlos Meralto wrote:
+> Thanks for the answer Sven.
 > 
-> Okay. In Gluon both the batman-adv multicast optimizations and
-> bridge multicast snooping are deactivated by default. So I think
-> it's probably an issue with the bridge on your gateway. Does
-> deactivating the batman-adv and bridge multicast stuff make a
-> difference?
-
-Unfortunately not.
-
-> Which kernel version and Linux distribution are you using on the
-> gateway?
-> > 
-
-3.16.0-4-amd64 / Debian Jessie. In the old setup (with 2013.4) it was
-3.2.0-4-amd64 / wheezy
-
+> You can patch the driver to allow this (it is just a simple check which
+> disallows it in most drivers... or actually in wireless core [1]). But you
+> should make sure that you still use the same mac addresses for vif + bridge
+> and don't end up with 4 address packets.
 > 
 > 
-> Measured on bat0 or on the bridge on top?
+> Can you explain how I can apply this "patch”? I saw the file attached
+> but i don't know what parameters must change.
+> 
+> There is already a way to force a topology in batman-adv?
+> 
+> 
+> No. There were only different solutions (not acceptable for the linux kernel)
+> which did this directly in batman-adv. A very prominent (and easy to find)
+> solution was from Martin [2]
+> 
+> The idea behind batman-adv is that it finds paths and thus automatically
+> creates a good virtual topologies.
+> 
+> 
+> If you can not use ebtables I will try to use the patch that Martin did.
+> 
+> I'm blocked with no solution.
+> 
+> Thanks in advance.
+> 
+> 
+> I don't know why you want to use wlan and you also don't explain it in your
+> mail. You could for example also use emulation + vde2 [3] since you already
+> try to emulate a setup which is not there in reality.
+> 
+> 
+> The first task of my thesis is to make a comparison between
+> open802.11s and batman-adv for node discovery time and througput, in
+> function of hops and recovery in case of failure. So i want make this
+> tests in a real scenario...
 
-On the bridge.
+then make it a real scenario :)
+
+the simulated line topology will not behave the same as a real-world
+line topology in terms of throughput, due to interferences that will
+happen in your simulated scenario, that wouldn't happen in real life
+
+if you still want to try it, an alternative (to patching batman-adv) is
+to use VLANs on top of the adhoc interfaces
+so instead of adding plain adhoc0 with "batctl if"
+first create some vlans over adhoc0
+say, on first node, create and add adhoc0.1 to batman
+then on second node, create adhoc0.1 and adhoc0.2 then add both
+interfaces to batman,
+on third node, adhoc0.2 and adhoc0.3... and so on
+this way, the third node will have no links with the first node.
+it won't help with the interference problem i mentioned above, tho.
+
+good luck!
 
 > 
-> PS: Please keep the mailinglists.
-
-Sorry, I thought it was sent off the list.
-
-Regards
-Bjoern
-
--- 
-xmpp bjo@schafweide.org 
-
-
-
+> Thanks in advance.
+> 
+> Best Regards,
+> Carlos Meralto
+> 
