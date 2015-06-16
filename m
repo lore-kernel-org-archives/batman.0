@@ -1,15 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 16 Jun 2015 15:07:48 +0800
-Message-ID: <4847167.bn6DxWQpdi@voltaire>
-In-Reply-To: <1434349345-12854-3-git-send-email-linus.luessing@c0d3.blue>
-References: <1434349345-12854-1-git-send-email-linus.luessing@c0d3.blue>
- <1434349345-12854-3-git-send-email-linus.luessing@c0d3.blue>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Tue, 16 Jun 2015 14:44:31 +0200
+Message-Id: <1434458675-3343-2-git-send-email-linus.luessing@c0d3.blue>
+In-Reply-To: <1434458675-3343-1-git-send-email-linus.luessing@c0d3.blue>
+References: <1434458675-3343-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3092554.FtTgkTSLTX";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: Fix potential
-	synchronization issues in mcast tvlv handler
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv2 maint 1/5] batman-adv: Make DAT capability
+	changes atomic
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,64 +22,48 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+Bitwise OR/AND assignments in C aren't guaranteed to be atomic. One
+OGM handler might undo the set/clear of a specific bit from another
+handler run in between.
 
---nextPart3092554.FtTgkTSLTX
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Fix this by using the atomic set_bit()/clear_bit() functions.
 
-On Monday, June 15, 2015 08:22:25 Linus L=FCssing wrote:
-> So far the mcast tvlv handler did not anticipate the processing of
-> multiple incoming OGMs from the same originator at the same time. Thi=
-s
-> can lead to various issues:
->=20
-> * Broken refcounting: For instance two mcast handlers might both assu=
-me
->   that an originator just got multicast capabilities and will togethe=
-r
->   wrongly decrease mcast.num_disabled by two, potentially leading to
->   an integer underflow.
->=20
-> * Potential kernel panic on hlist_del_rcu(): Two mcast handlers might=
+Fixes: 2b1c07b918d2 ("batman-adv: tvlv - add distributed arp table container")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+ distributed-arp-table.c |    4 ++--
+ types.h                 |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
->   one after another try to do an
->   hlist_del_rcu(&orig->mcast_want_all_*_node). The second one will
->   cause memory corruption / crashes.
->   (Reported by: Sven Eckelmann <sven@narfation.org>)
-
-As far as I can tell from looking at the code your patch does not addre=
-ss the=20
-issue raised by Sven.
-
-The first problem is that the mcast code calls hlist_del_rcu() without=20=
-
-verifying whether or not the element is still in the list. Adding a spi=
-nlock=20
-is not going to change that. You can still have a purge event going on =
-while=20
-we just receive a new OGM because the purge caller does not need to hol=
-d the=20
-newly added lock.
-
-Cheers,
-Marek
-
---nextPart3092554.FtTgkTSLTX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJVf8tOAAoJEFNVTo/uthzA+/IH/3xiyVbhW+46bhLX8RMuLX1h
-op/lCtZXZ9BwYPQr1q0DxZRcFrLZA7+KGw3F879tPJwG51mo4FUdDztMKN+agXjH
-jsxMYW5c9x6kRYDhoHoJtwiFMu5Al+1N7Uw1n8X11708txR0jQ/DcZCDMuU2u+b7
-bTz2WLy4gvENrQt/Q+6lyMUWWTICMV/zFVHI89jlTCjnh+0mMNMJF+QVdJGzQ0ii
-usUg64shKRbm2XEdMTgGOuESp/rGQ/hg/xiV42/AfnXmDv8Ue+ZuQ1Ghh+MWuskt
-1MbGfzw+oizU/qcCUxn6B2WH58OwqQpebrCUQWA0sU4icecrM5reoCdTRpb6W+Y=
-=v02B
------END PGP SIGNATURE-----
-
---nextPart3092554.FtTgkTSLTX--
+diff --git a/distributed-arp-table.c b/distributed-arp-table.c
+index 0d791dc..b2cc19b 100644
+--- a/distributed-arp-table.c
++++ b/distributed-arp-table.c
+@@ -682,9 +682,9 @@ static void batadv_dat_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ 					   uint16_t tvlv_value_len)
+ {
+ 	if (flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND)
+-		orig->capabilities &= ~BATADV_ORIG_CAPA_HAS_DAT;
++		clear_bit(BATADV_ORIG_CAPA_HAS_DAT, &orig->capabilities);
+ 	else
+-		orig->capabilities |= BATADV_ORIG_CAPA_HAS_DAT;
++		set_bit(BATADV_ORIG_CAPA_HAS_DAT, &orig->capabilities);
+ }
+ 
+ /**
+diff --git a/types.h b/types.h
+index 28f2461..e33b5aa 100644
+--- a/types.h
++++ b/types.h
+@@ -256,7 +256,7 @@ struct batadv_orig_node {
+ 	struct hlist_node mcast_want_all_ipv4_node;
+ 	struct hlist_node mcast_want_all_ipv6_node;
+ #endif
+-	uint8_t capabilities;
++	unsigned long capabilities;
+ 	uint8_t capa_initialized;
+ 	atomic_t last_ttvn;
+ 	unsigned char *tt_buff;
+-- 
+1.7.10.4
 
