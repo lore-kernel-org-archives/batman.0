@@ -1,14 +1,15 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Mon, 15 Jun 2015 08:22:25 +0200
-Message-Id: <1434349345-12854-3-git-send-email-linus.luessing@c0d3.blue>
-In-Reply-To: <1434349345-12854-1-git-send-email-linus.luessing@c0d3.blue>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Tue, 16 Jun 2015 14:38:20 +0800
+Message-ID: <18875259.tEm7X7ajAx@voltaire>
+In-Reply-To: <1434349345-12854-2-git-send-email-linus.luessing@c0d3.blue>
 References: <1434349345-12854-1-git-send-email-linus.luessing@c0d3.blue>
+ <1434349345-12854-2-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: Fix potential
- synchronization issues in mcast tvlv handler
+Content-Type: multipart/signed; boundary="nextPart40984998.MIqfa9In9G";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: Make originator
+	capability changes atomic
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,79 +23,42 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-So far the mcast tvlv handler did not anticipate the processing of
-multiple incoming OGMs from the same originator at the same time. This
-can lead to various issues:
 
-* Broken refcounting: For instance two mcast handlers might both assume
-  that an originator just got multicast capabilities and will together
-  wrongly decrease mcast.num_disabled by two, potentially leading to
-  an integer underflow.
+--nextPart40984998.MIqfa9In9G
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-* Potential kernel panic on hlist_del_rcu(): Two mcast handlers might
-  one after another try to do an
-  hlist_del_rcu(&orig->mcast_want_all_*_node). The second one will
-  cause memory corruption / crashes.
-  (Reported by: Sven Eckelmann <sven@narfation.org>)
+On Monday, June 15, 2015 08:22:24 Linus L=FCssing wrote:
+> Fix this by using the atomic set_bit()/clear_bit() functions.
+>=20
+> Fixes: 2b1c07b918d2 ("batman-adv: tvlv - add distributed arp table
+> container") Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>=
 
-Right in the beginning the code path makes assumptions about the current
-multicast related state of an originator and bases all updates on that. The
-easiest and least error prune way to fix the issues in this case is to
-serialize multiple mcast handler invocations with a spinlock.
 
-Fixes: 77ec494490d6 ("batman-adv: Announce new capability via multicast TVLV")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- multicast.c  |    2 ++
- originator.c |    1 +
- types.h      |    2 ++
- 3 files changed, 5 insertions(+)
+If I am not mistaken the referenced patch only touches the DAT capabili=
+ties.=20
+You should send separate patches for each regression.
 
-diff --git a/multicast.c b/multicast.c
-index 00612bf..e6db978 100644
---- a/multicast.c
-+++ b/multicast.c
-@@ -674,6 +674,7 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- 	uint8_t mcast_flags = BATADV_NO_FLAGS;
- 	bool orig_initialized;
- 
-+	spin_lock_bh(&orig->mcast_handler_lock);
- 	orig_initialized = orig->capa_initialized & BATADV_ORIG_CAPA_HAS_MCAST;
- 
- 	/* If mcast support is turned on decrease the disabled mcast node
-@@ -707,6 +708,7 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- 	batadv_mcast_want_ipv6_update(bat_priv, orig, mcast_flags);
- 
- 	orig->mcast_flags = mcast_flags;
-+	spin_unlock_bh(&orig->mcast_handler_lock);
- }
- 
- /**
-diff --git a/originator.c b/originator.c
-index e3900e4..78c027d 100644
---- a/originator.c
-+++ b/originator.c
-@@ -663,6 +663,7 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
- 	spin_lock_init(&orig_node->tt_buff_lock);
- 	spin_lock_init(&orig_node->tt_lock);
- 	spin_lock_init(&orig_node->vlan_list_lock);
-+	spin_lock_init(&orig_node->mcast_handler_lock);
- 
- 	batadv_nc_init_orig(orig_node);
- 
-diff --git a/types.h b/types.h
-index c6ec558..1d800c5 100644
---- a/types.h
-+++ b/types.h
-@@ -251,6 +251,8 @@ struct batadv_orig_node {
- 	unsigned long last_seen;
- 	unsigned long bcast_seqno_reset;
- #ifdef CONFIG_BATMAN_ADV_MCAST
-+	/* synchronizes mcast tvlv specific orig changes */
-+	spinlock_t mcast_handler_lock;
- 	uint8_t mcast_flags;
- 	struct hlist_node mcast_want_all_unsnoopables_node;
- 	struct hlist_node mcast_want_all_ipv4_node;
--- 
-1.7.10.4
+Cheers,
+Marek
+
+
+--nextPart40984998.MIqfa9In9G
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJVf8RnAAoJEFNVTo/uthzAfk4H/2ouJl/j5SmjGT20w2UIGBJc
+etD5kP06coFJaKuX1ld3Pi4XWBoTxz3ISBJs0tyN78CynnbGwuIeMGhDqMJ4N0gP
+3Lu0MK52O9lD6HxPLlXandIlMtJ/sL/OmF3dyVS4FxbnCq6GwhvT/FEfecxiluwx
+cVzI5bzvEjh8NCh7ZrIYKiwGhCmgHr2kZcTvSjgzbdScynaYFBY4v2+pCTw2kLZ+
+cl+C5i/CjBLNcXRztxAMLG8fGqejxH+6/TxCfrBLYc1EBCgiRlAjRMEobsCj4uVc
+5o+2Wpk3lQkOZ3Ge/jcsmn6wO3uEZW0vdlJuK1lE3dPFpFr0txLY4OtXIArNiU8=
+=kmqP
+-----END PGP SIGNATURE-----
+
+--nextPart40984998.MIqfa9In9G--
 
