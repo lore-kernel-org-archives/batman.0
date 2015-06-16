@@ -1,14 +1,14 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Tue, 16 Jun 2015 14:44:33 +0200
-Message-Id: <1434458675-3343-4-git-send-email-linus.luessing@c0d3.blue>
+Date: Tue, 16 Jun 2015 14:44:34 +0200
+Message-Id: <1434458675-3343-5-git-send-email-linus.luessing@c0d3.blue>
 In-Reply-To: <1434458675-3343-1-git-send-email-linus.luessing@c0d3.blue>
 References: <1434458675-3343-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 maint 3/5] batman-adv: Make TT capability
-	changes atomic
+Subject: [B.A.T.M.A.N.] [PATCHv2 maint 4/5] batman-adv: Make MCAST
+	capability changes atomic
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -28,48 +28,38 @@ handler run in between.
 
 Fix this by using the atomic set_bit()/clear_bit() functions.
 
-Fixes: 5d2121af6d31 ("batman-adv: introduce capability initialization bitfield")
+Fixes: 77ec494490d6 ("batman-adv: Announce new capability via multicast TVLV")
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
- translation-table.c |    4 ++--
- types.h             |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ multicast.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/translation-table.c b/translation-table.c
-index b098e53..e95a424 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1843,7 +1843,7 @@ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
- 		}
- 		spin_unlock_bh(list_lock);
+diff --git a/multicast.c b/multicast.c
+index 09f2838..00612bf 100644
+--- a/multicast.c
++++ b/multicast.c
+@@ -684,7 +684,7 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ 	    !(orig->capabilities & BATADV_ORIG_CAPA_HAS_MCAST)) {
+ 		if (orig_initialized)
+ 			atomic_dec(&bat_priv->mcast.num_disabled);
+-		orig->capabilities |= BATADV_ORIG_CAPA_HAS_MCAST;
++		set_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities);
+ 	/* If mcast support is being switched off or if this is an initial
+ 	 * OGM without mcast support then increase the disabled mcast
+ 	 * node counter.
+@@ -693,10 +693,10 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ 		   (orig->capabilities & BATADV_ORIG_CAPA_HAS_MCAST ||
+ 		    !orig_initialized)) {
+ 		atomic_inc(&bat_priv->mcast.num_disabled);
+-		orig->capabilities &= ~BATADV_ORIG_CAPA_HAS_MCAST;
++		clear_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities);
  	}
--	orig_node->capa_initialized &= ~BATADV_ORIG_CAPA_HAS_TT;
-+	clear_bit(BATADV_ORIG_CAPA_HAS_TT, &orig_node->capa_initialized);
- }
  
- static bool batadv_tt_global_to_purge(struct batadv_tt_global_entry *tt_global,
-@@ -2802,7 +2802,7 @@ static void _batadv_tt_update_changes(struct batadv_priv *bat_priv,
- 				return;
- 		}
- 	}
--	orig_node->capa_initialized |= BATADV_ORIG_CAPA_HAS_TT;
-+	set_bit(BATADV_ORIG_CAPA_HAS_TT, &orig_node->capa_initialized);
- }
+-	orig->capa_initialized |= BATADV_ORIG_CAPA_HAS_MCAST;
++	set_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capa_initialized);
  
- static void batadv_tt_fill_gtable(struct batadv_priv *bat_priv,
-diff --git a/types.h b/types.h
-index e33b5aa..c6ec558 100644
---- a/types.h
-+++ b/types.h
-@@ -257,7 +257,7 @@ struct batadv_orig_node {
- 	struct hlist_node mcast_want_all_ipv6_node;
- #endif
- 	unsigned long capabilities;
--	uint8_t capa_initialized;
-+	unsigned long capa_initialized;
- 	atomic_t last_ttvn;
- 	unsigned char *tt_buff;
- 	int16_t tt_buff_len;
+ 	if (orig_mcast_enabled && tvlv_value &&
+ 	    (tvlv_value_len >= sizeof(mcast_flags)))
 -- 
 1.7.10.4
 
