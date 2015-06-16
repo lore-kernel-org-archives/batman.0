@@ -1,8 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 16 Jun 2015 21:06:22 +0200
-Message-Id: <1434481584-1275-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] pull request [net]: batman-adv 20150616
+Date: Tue, 16 Jun 2015 21:06:23 +0200
+Message-Id: <1434481584-1275-2-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1434481584-1275-1-git-send-email-antonio@meshcoding.com>
+References: <1434481584-1275-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Avoid u32 overflow during
+	gateway select
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,60 +18,46 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: Ruben Wisniewsi <ruben@vfn-nrw.de>, Marek Lindner <mareklindner@neomailbox.ch>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>
 
-Hello David,
+From: Ruben Wisniewski <ruben@freifunk-nrw.de>
 
-this is a pull request intended for net/linux-4.1.
-I know it is rather late in the release cycle, but the fixes are
-pretty small and they were worth being sent now.
+The gateway selection based on fast connections is using a single value
+calculated from the average tq (0-255) and the download bandwidth (in
+100Kibit). The formula for the first step (tq ** 2 * 10000 * bandwidth)
+tends to overflow a u32 with low bandwidth settings like 50 [100KiBit]
+and a tq value of over 92.
 
-Patch 1/2 fixes an overflow of a u32 variable that may happen while
-computing the metric to select the best batman-GW in the network.
-** It would be great if this patch could be queued for inclusion in
-any stable release >= 3.2
+Changing this to a 64 bit unsigned integer allows to support a
+bandwidth_down with up to ~2.8e10 [100KiBit] and a perfect tq of 255. This
+is ~6.6 times higher than the maximum possible value of the gateway
+announcement TVLV.
 
+This problem only affects the non-default gw_sel_class 1.
 
-Patch 2/2 prevents the Distributed ARP Table from forging unwanted
-ARP replies on behalf of another host that may fool an Ethernet switch
-sitting behind batman-adv.
-** It would be great if this patch could be queued for inclusion in
-any stable release >= 3.8
+Signed-off-by: Ruben Wisniewsi <ruben@vfn-nrw.de>
+[sven@narfation.org: rewritten commit message, changed to kernel type]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ net/batman-adv/gateway_client.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Please pull or let me know if something is wrong
-
-Thanks a lot,
-	Antonio
-
-
-
-The following changes since commit ac0a72a3e6e8d817f60ce4d9a8f3b43dc256d847:
-
-  net/mlx4_core: Disable Granular QoS per VF under IB/Eth VPI configuration (2015-06-15 16:42:57 -0700)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
-
-for you to fetch changes up to c065d51055924f6daad8e16307c364602b0f9805:
-
-  batman-adv: avoid DAT to mess up LAN state (2015-06-16 11:13:12 +0200)
-
-----------------------------------------------------------------
-Included changes:
-- fix gateway selection metric overflow
-- avoid the Distriubted ARP Table to fool Ethernet switches by forging
-  unexpected packets
-
-----------------------------------------------------------------
-Antonio Quartulli (1):
-      batman-adv: avoid DAT to mess up LAN state
-
-Ruben Wisniewski (1):
-      batman-adv: Avoid u32 overflow during gateway select
-
- net/batman-adv/distributed-arp-table.c | 18 +++++++++++++-----
- net/batman-adv/gateway_client.c        |  2 +-
- 2 files changed, 14 insertions(+), 6 deletions(-)
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 090828c..ca734f8 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -133,7 +133,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
+ 	struct batadv_neigh_node *router;
+ 	struct batadv_neigh_ifinfo *router_ifinfo;
+ 	struct batadv_gw_node *gw_node, *curr_gw = NULL;
+-	uint32_t max_gw_factor = 0, tmp_gw_factor = 0;
++	uint64_t max_gw_factor = 0, tmp_gw_factor = 0;
+ 	uint32_t gw_divisor;
+ 	uint8_t max_tq = 0;
+ 	uint8_t tq_avg;
+-- 
+2.4.3
 
