@@ -1,14 +1,15 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Tue, 16 Jun 2015 15:17:23 +0200
-Message-Id: <1434460643-3681-6-git-send-email-linus.luessing@c0d3.blue>
-In-Reply-To: <1434460643-3681-1-git-send-email-linus.luessing@c0d3.blue>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Tue, 16 Jun 2015 22:12 +0800
+Message-ID: <1987884.ZZQIqrk8nR@voltaire>
+In-Reply-To: <1434460643-3681-6-git-send-email-linus.luessing@c0d3.blue>
 References: <1434460643-3681-1-git-send-email-linus.luessing@c0d3.blue>
+ <1434460643-3681-6-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv3 maint 5/5] batman-adv: Fix potential
- synchronization issues in mcast tvlv handler
+Content-Type: multipart/signed; boundary="nextPart2004533.5gfVRHcfjI";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 maint 5/5] batman-adv: Fix potential
+	synchronization issues in mcast tvlv handler
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,253 +23,49 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-So far the mcast tvlv handler did not anticipate the processing of
-multiple incoming OGMs from the same originator at the same time. This
-can lead to various issues:
 
-* Broken refcounting: For instance two mcast handlers might both assume
-  that an originator just got multicast capabilities and will together
-  wrongly decrease mcast.num_disabled by two, potentially leading to
-  an integer underflow.
+--nextPart2004533.5gfVRHcfjI
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-* Potential kernel panic on hlist_del_rcu(): Two mcast handlers might
-  one after another try to do an
-  hlist_del_rcu(&orig->mcast_want_all_*_node). The second one will
-  cause memory corruption / crashes.
-  (Reported by: Sven Eckelmann <sven@narfation.org>)
+On Tuesday, June 16, 2015 15:17:23 Linus L=FCssing wrote:
+> +               /* flag checks above + mcast_handler_lock prevents th=
+is */
+> +               if (unlikely(!hlist_unhashed(node)))
+> +                       BUG();
+> +
 
-Right in the beginning the code path makes assumptions about the current
-multicast related state of an originator and bases all updates on that. The
-easiest and least error prune way to fix the issues in this case is to
-serialize multiple mcast handler invocations with a spinlock.
+I don't think this will work because hlist_unhashed() checks for node->=
+pprev=20
+being NULL or not. hlist_del_rcu() sets node->pprev to LIST_POISON2.
 
-Fixes: 77ec494490d6 ("batman-adv: Announce new capability via multicast TVLV")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- multicast.c  |   68 +++++++++++++++++++++++++++++++++++++++++++++++-----------
- originator.c |    4 ++++
- types.h      |    3 +++
- 3 files changed, 62 insertions(+), 13 deletions(-)
+We could also use BUG_ON() for readability. Something like:
 
-diff --git a/multicast.c b/multicast.c
-index 00612bf..fcdb118 100644
---- a/multicast.c
-+++ b/multicast.c
-@@ -565,19 +565,27 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
-  *
-  * If the BATADV_MCAST_WANT_ALL_UNSNOOPABLES flag of this originator,
-  * orig, has toggled then this method updates counter and list accordingly.
-+ *
-+ * Caller needs to hold orig->mcast_handler_lock.
-  */
- static void batadv_mcast_want_unsnoop_update(struct batadv_priv *bat_priv,
- 					     struct batadv_orig_node *orig,
- 					     uint8_t mcast_flags)
- {
-+	struct hlist_node *node = &orig->mcast_want_all_unsnoopables_node;
-+	struct hlist_head *head = &bat_priv->mcast.want_all_unsnoopables_list;
-+
- 	/* switched from flag unset to set */
- 	if (mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
- 	    !(orig->mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES)) {
- 		atomic_inc(&bat_priv->mcast.num_want_all_unsnoopables);
- 
- 		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
--		hlist_add_head_rcu(&orig->mcast_want_all_unsnoopables_node,
--				   &bat_priv->mcast.want_all_unsnoopables_list);
-+		/* flag checks above + mcast_handler_lock prevents this */
-+		if (unlikely(!hlist_unhashed(node)))
-+			BUG();
-+
-+		hlist_add_head_rcu(node, head);
- 		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
- 	/* switched from flag set to unset */
- 	} else if (!(mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES) &&
-@@ -585,7 +593,11 @@ static void batadv_mcast_want_unsnoop_update(struct batadv_priv *bat_priv,
- 		atomic_dec(&bat_priv->mcast.num_want_all_unsnoopables);
- 
- 		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
--		hlist_del_rcu(&orig->mcast_want_all_unsnoopables_node);
-+		/* flag checks above + mcast_handler_lock prevents this */
-+		if (unlikely(hlist_unhashed(node)))
-+			BUG();
-+
-+		hlist_del_init_rcu(node);
- 		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
- 	}
- }
-@@ -598,19 +610,27 @@ static void batadv_mcast_want_unsnoop_update(struct batadv_priv *bat_priv,
-  *
-  * If the BATADV_MCAST_WANT_ALL_IPV4 flag of this originator, orig, has
-  * toggled then this method updates counter and list accordingly.
-+ *
-+ * Caller needs to hold orig->mcast_handler_lock.
-  */
- static void batadv_mcast_want_ipv4_update(struct batadv_priv *bat_priv,
- 					  struct batadv_orig_node *orig,
- 					  uint8_t mcast_flags)
- {
-+	struct hlist_node *node = &orig->mcast_want_all_ipv4_node;
-+	struct hlist_head *head = &bat_priv->mcast.want_all_ipv4_list;
-+
- 	/* switched from flag unset to set */
- 	if (mcast_flags & BATADV_MCAST_WANT_ALL_IPV4 &&
- 	    !(orig->mcast_flags & BATADV_MCAST_WANT_ALL_IPV4)) {
- 		atomic_inc(&bat_priv->mcast.num_want_all_ipv4);
- 
- 		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
--		hlist_add_head_rcu(&orig->mcast_want_all_ipv4_node,
--				   &bat_priv->mcast.want_all_ipv4_list);
-+		/* flag checks above + mcast_handler_lock prevents this */
-+		if (unlikely(!hlist_unhashed(node)))
-+			BUG();
-+
-+		hlist_add_head_rcu(node, head);
- 		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
- 	/* switched from flag set to unset */
- 	} else if (!(mcast_flags & BATADV_MCAST_WANT_ALL_IPV4) &&
-@@ -618,7 +638,11 @@ static void batadv_mcast_want_ipv4_update(struct batadv_priv *bat_priv,
- 		atomic_dec(&bat_priv->mcast.num_want_all_ipv4);
- 
- 		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
--		hlist_del_rcu(&orig->mcast_want_all_ipv4_node);
-+		/* flag checks above + mcast_handler_lock prevents this */
-+		if (unlikely(hlist_unhashed(node)))
-+			BUG();
-+
-+		hlist_del_init_rcu(node);
- 		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
- 	}
- }
-@@ -631,19 +655,27 @@ static void batadv_mcast_want_ipv4_update(struct batadv_priv *bat_priv,
-  *
-  * If the BATADV_MCAST_WANT_ALL_IPV6 flag of this originator, orig, has
-  * toggled then this method updates counter and list accordingly.
-+ *
-+ * Caller needs to hold orig->mcast_handler_lock.
-  */
- static void batadv_mcast_want_ipv6_update(struct batadv_priv *bat_priv,
- 					  struct batadv_orig_node *orig,
- 					  uint8_t mcast_flags)
- {
-+	struct hlist_node *node = &orig->mcast_want_all_ipv6_node;
-+	struct hlist_head *head = &bat_priv->mcast.want_all_ipv6_list;
-+
- 	/* switched from flag unset to set */
- 	if (mcast_flags & BATADV_MCAST_WANT_ALL_IPV6 &&
- 	    !(orig->mcast_flags & BATADV_MCAST_WANT_ALL_IPV6)) {
- 		atomic_inc(&bat_priv->mcast.num_want_all_ipv6);
- 
- 		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
--		hlist_add_head_rcu(&orig->mcast_want_all_ipv6_node,
--				   &bat_priv->mcast.want_all_ipv6_list);
-+		/* flag checks above + mcast_handler_lock prevents this */
-+		if (unlikely(!hlist_unhashed(node)))
-+			BUG();
-+
-+		hlist_add_head_rcu(node, head);
- 		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
- 	/* switched from flag set to unset */
- 	} else if (!(mcast_flags & BATADV_MCAST_WANT_ALL_IPV6) &&
-@@ -651,7 +683,11 @@ static void batadv_mcast_want_ipv6_update(struct batadv_priv *bat_priv,
- 		atomic_dec(&bat_priv->mcast.num_want_all_ipv6);
- 
- 		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
--		hlist_del_rcu(&orig->mcast_want_all_ipv6_node);
-+		/* flag checks above + mcast_handler_lock prevents this */
-+		if (unlikely(hlist_unhashed(node)))
-+			BUG();
-+
-+		hlist_del_init_rcu(node);
- 		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
- 	}
- }
-@@ -674,6 +710,11 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- 	uint8_t mcast_flags = BATADV_NO_FLAGS;
- 	bool orig_initialized;
- 
-+	if (orig_mcast_enabled && tvlv_value &&
-+	    (tvlv_value_len >= sizeof(mcast_flags)))
-+		mcast_flags = *(uint8_t *)tvlv_value;
-+
-+	spin_lock_bh(&orig->mcast_handler_lock);
- 	orig_initialized = orig->capa_initialized & BATADV_ORIG_CAPA_HAS_MCAST;
- 
- 	/* If mcast support is turned on decrease the disabled mcast node
-@@ -698,15 +739,12 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- 
- 	set_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capa_initialized);
- 
--	if (orig_mcast_enabled && tvlv_value &&
--	    (tvlv_value_len >= sizeof(mcast_flags)))
--		mcast_flags = *(uint8_t *)tvlv_value;
--
- 	batadv_mcast_want_unsnoop_update(bat_priv, orig, mcast_flags);
- 	batadv_mcast_want_ipv4_update(bat_priv, orig, mcast_flags);
- 	batadv_mcast_want_ipv6_update(bat_priv, orig, mcast_flags);
- 
- 	orig->mcast_flags = mcast_flags;
-+	spin_unlock_bh(&orig->mcast_handler_lock);
- }
- 
- /**
-@@ -740,6 +778,8 @@ void batadv_mcast_purge_orig(struct batadv_orig_node *orig)
- {
- 	struct batadv_priv *bat_priv = orig->bat_priv;
- 
-+	spin_lock_bh(&orig->mcast_handler_lock);
-+
- 	if (!(orig->capabilities & BATADV_ORIG_CAPA_HAS_MCAST) &&
- 	    orig->capa_initialized & BATADV_ORIG_CAPA_HAS_MCAST)
- 		atomic_dec(&bat_priv->mcast.num_disabled);
-@@ -747,4 +787,6 @@ void batadv_mcast_purge_orig(struct batadv_orig_node *orig)
- 	batadv_mcast_want_unsnoop_update(bat_priv, orig, BATADV_NO_FLAGS);
- 	batadv_mcast_want_ipv4_update(bat_priv, orig, BATADV_NO_FLAGS);
- 	batadv_mcast_want_ipv6_update(bat_priv, orig, BATADV_NO_FLAGS);
-+
-+	spin_unlock_bh(&orig->mcast_handler_lock);
- }
-diff --git a/originator.c b/originator.c
-index e3900e4..a2ba182 100644
---- a/originator.c
-+++ b/originator.c
-@@ -658,11 +658,15 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
- 	INIT_HLIST_HEAD(&orig_node->neigh_list);
- 	INIT_LIST_HEAD(&orig_node->vlan_list);
- 	INIT_HLIST_HEAD(&orig_node->ifinfo_list);
-+	INIT_HLIST_NODE(&orig_node->mcast_want_all_unsnoopables_node);
-+	INIT_HLIST_NODE(&orig_node->mcast_want_all_ipv4_node);
-+	INIT_HLIST_NODE(&orig_node->mcast_want_all_ipv6_node);
- 	spin_lock_init(&orig_node->bcast_seqno_lock);
- 	spin_lock_init(&orig_node->neigh_list_lock);
- 	spin_lock_init(&orig_node->tt_buff_lock);
- 	spin_lock_init(&orig_node->tt_lock);
- 	spin_lock_init(&orig_node->vlan_list_lock);
-+	spin_lock_init(&orig_node->mcast_handler_lock);
- 
- 	batadv_nc_init_orig(orig_node);
- 
-diff --git a/types.h b/types.h
-index c6ec558..65dc6bf 100644
---- a/types.h
-+++ b/types.h
-@@ -204,6 +204,7 @@ struct batadv_orig_bat_iv {
-  * @batadv_dat_addr_t:  address of the orig node in the distributed hash
-  * @last_seen: time when last packet from this node was received
-  * @bcast_seqno_reset: time when the broadcast seqno window was reset
-+ * @mcast_handler_lock: synchronizes mcast-capability and -flag changes
-  * @mcast_flags: multicast flags announced by the orig node
-  * @mcast_want_all_unsnoop_node: a list node for the
-  *  mcast.want_all_unsnoopables list
-@@ -251,6 +252,8 @@ struct batadv_orig_node {
- 	unsigned long last_seen;
- 	unsigned long bcast_seqno_reset;
- #ifdef CONFIG_BATMAN_ADV_MCAST
-+	/* synchronizes mcast tvlv specific orig changes */
-+	spinlock_t mcast_handler_lock;
- 	uint8_t mcast_flags;
- 	struct hlist_node mcast_want_all_unsnoopables_node;
- 	struct hlist_node mcast_want_all_ipv4_node;
--- 
-1.7.10.4
+BUG_ON(node->pprev =3D=3D LIST_POISON2);
+
+Though there are not many code sections working with LIST_POISON2 outsi=
+de the=20
+list handling code.
+
+Cheers,
+Marek
+
+--nextPart2004533.5gfVRHcfjI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJVgC64AAoJEFNVTo/uthzAW5kIAJkV8VyoEIqqG8PUZhz+y6mX
+hDFmWAZZ5L0GqvuKhDabafhejfW8ieH4sCmVbK7dU+rF61XhFK5dAWcJZqaN6x1E
+bgo96UuY9utXbKRppY2fiB5oIY+IqGr9a6U17ccQCJ/MuG0hLL1tdvkzaVWhURW2
+/Z3LbJAcHIV9uN7S1OSjFDi7xi7Xt9Z/K+cUHiAG/7dIuvwiZWFIeECTqfxOhdwv
+gimyKVB+u9aW1YNw+NIHalpiDk8Tsmjw7Nfpe7lpbhSCI3WP6VPfQPzIDbHOFviP
+mgY6D7guCww2yhvXPEj/zTAAHK0sF2H6rzs1XFsm+yVkseaqHm56ELdnpyu8EgA=
+=owK3
+-----END PGP SIGNATURE-----
+
+--nextPart2004533.5gfVRHcfjI--
 
