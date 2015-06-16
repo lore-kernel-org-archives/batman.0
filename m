@@ -1,13 +1,13 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Tue, 16 Jun 2015 17:10:23 +0200
-Message-Id: <1434467426-4281-3-git-send-email-linus.luessing@c0d3.blue>
+Date: Tue, 16 Jun 2015 17:10:24 +0200
+Message-Id: <1434467426-4281-4-git-send-email-linus.luessing@c0d3.blue>
 In-Reply-To: <1434467426-4281-1-git-send-email-linus.luessing@c0d3.blue>
 References: <1434467426-4281-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv4 maint 2/5] batman-adv: Make NC capability
+Subject: [B.A.T.M.A.N.] [PATCHv4 maint 3/5] batman-adv: Make TT capability
 	changes atomic
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -28,28 +28,48 @@ handler run in between.
 
 Fix this by using the atomic set_bit()/clear_bit() functions.
 
-Fixes: 7dd9d8992b0c ("batman-adv: tvlv - add network coding container")
+Fixes: 5d2121af6d31 ("batman-adv: introduce capability initialization bitfield")
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
- network-coding.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ translation-table.c |    4 ++--
+ types.h             |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/network-coding.c b/network-coding.c
-index 89e1d47..3ce493e 100644
---- a/network-coding.c
-+++ b/network-coding.c
-@@ -105,9 +105,9 @@ static void batadv_nc_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- 					  uint16_t tvlv_value_len)
- {
- 	if (flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND)
--		orig->capabilities &= ~BATADV_ORIG_CAPA_HAS_NC;
-+		clear_bit(BATADV_ORIG_CAPA_HAS_NC, &orig->capabilities);
- 	else
--		orig->capabilities |= BATADV_ORIG_CAPA_HAS_NC;
-+		set_bit(BATADV_ORIG_CAPA_HAS_NC, &orig->capabilities);
+diff --git a/translation-table.c b/translation-table.c
+index b098e53..e95a424 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -1843,7 +1843,7 @@ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
+ 		}
+ 		spin_unlock_bh(list_lock);
+ 	}
+-	orig_node->capa_initialized &= ~BATADV_ORIG_CAPA_HAS_TT;
++	clear_bit(BATADV_ORIG_CAPA_HAS_TT, &orig_node->capa_initialized);
  }
  
- /**
+ static bool batadv_tt_global_to_purge(struct batadv_tt_global_entry *tt_global,
+@@ -2802,7 +2802,7 @@ static void _batadv_tt_update_changes(struct batadv_priv *bat_priv,
+ 				return;
+ 		}
+ 	}
+-	orig_node->capa_initialized |= BATADV_ORIG_CAPA_HAS_TT;
++	set_bit(BATADV_ORIG_CAPA_HAS_TT, &orig_node->capa_initialized);
+ }
+ 
+ static void batadv_tt_fill_gtable(struct batadv_priv *bat_priv,
+diff --git a/types.h b/types.h
+index e33b5aa..c6ec558 100644
+--- a/types.h
++++ b/types.h
+@@ -257,7 +257,7 @@ struct batadv_orig_node {
+ 	struct hlist_node mcast_want_all_ipv6_node;
+ #endif
+ 	unsigned long capabilities;
+-	uint8_t capa_initialized;
++	unsigned long capa_initialized;
+ 	atomic_t last_ttvn;
+ 	unsigned char *tt_buff;
+ 	int16_t tt_buff_len;
 -- 
 1.7.10.4
 
