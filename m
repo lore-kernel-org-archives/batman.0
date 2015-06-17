@@ -1,16 +1,15 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <5581911D.1020604@meshcoding.com>
-Date: Wed, 17 Jun 2015 17:24:13 +0200
+Message-ID: <55819143.8050701@meshcoding.com>
+Date: Wed, 17 Jun 2015 17:24:51 +0200
 From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1434542995-22376-1-git-send-email-mareklindner@neomailbox.ch>
- <558169C5.7050700@meshcoding.com>
-In-Reply-To: <558169C5.7050700@meshcoding.com>
+References: <1434537770-15161-1-git-send-email-mareklindner@neomailbox.ch>
+In-Reply-To: <1434537770-15161-1-git-send-email-mareklindner@neomailbox.ch>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="SgmxhEDNSf4qJUrpimkQL9DoKUiWufJw8"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: protect tt_local_entry from
- concurrent delete events
+ boundary="fxV2cG87awfCjw8W3g1D8jrbHBacPPCg2"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix kernel crash due to
+ missing NULL checks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -26,45 +25,65 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---SgmxhEDNSf4qJUrpimkQL9DoKUiWufJw8
+--fxV2cG87awfCjw8W3g1D8jrbHBacPPCg2
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
 
 
-On 17/06/15 14:36, Antonio Quartulli wrote:
-> On 17/06/15 14:09, Marek Lindner wrote:
->> The tt_local_entry deletion performed batadv_tt_local_remove() was nei=
-ther
->> protecting against simultaneous deletes nor checking whether the eleme=
-nt
->> was still part of the list before calling hlist_del_rcu().
->>
->> Replacing the hlist_del_rcu() with batadv_hash_remove() provides adequ=
-ate
->> protection via hash spinlocks as well as a is-element-still-in-hash ch=
-eck.
->>
->> Reported-by: alfonsname@web.de
->> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+On 17/06/15 12:42, Marek Lindner wrote:
+> batadv_softif_vlan_get() may return NULL which has to be verified
+> by the caller.
 >=20
-> Acked-by: Antonio Quartulli <antonio@meshcoding.com>
->=20
+> Reported-by: Ryan Thompson <ryan@eero.com>
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 
-I was just going through your other TT patch and I realized that if the
-element can't be find in the list (because it was already removed) we
-should skip the batadv_softif_vlan_free_ref() below because the
-reference has already been decreased by whom already removed the TT entry=
-=2E
+one comment is inline:
+
+> ---
+>  soft-interface.c    |  3 +++
+>  translation-table.c | 17 +++++++++++++----
+>  2 files changed, 16 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/soft-interface.c b/soft-interface.c
+> index da89336..7841a4b 100644
+> --- a/soft-interface.c
+> +++ b/soft-interface.c
+> @@ -455,6 +455,9 @@ out:
+>   */
+>  void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *vlan)
+>  {
+> +	if (!vlan)
+> +		return;
+> +
+>  	if (atomic_dec_and_test(&vlan->refcount)) {
+>  		spin_lock_bh(&vlan->bat_priv->softif_vlan_list_lock);
+>  		hlist_del_rcu(&vlan->list);
+> diff --git a/translation-table.c b/translation-table.c
+> index e95a424..efbcb59 100644
+> --- a/translation-table.c
+> +++ b/translation-table.c
+> @@ -575,6 +575,8 @@ bool batadv_tt_local_add(struct net_device *soft_if=
+ace, const uint8_t *addr,
+> =20
+>  	/* increase the refcounter of the related vlan */
+>  	vlan =3D batadv_softif_vlan_get(bat_priv, vid);
+> +	if (!vlan)
+> +		goto out;
+
+In this case I'd use a WARN here because if we are adding a local client
+to a specific VLAN the assumption is that batman-adv is already aware of
+this VLAN, therefore this condition is not expected to be true.
 
 
 Cheers,
+
 
 --=20
 Antonio Quartulli
 
 
---SgmxhEDNSf4qJUrpimkQL9DoKUiWufJw8
+--fxV2cG87awfCjw8W3g1D8jrbHBacPPCg2
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -72,19 +91,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJVgZEgAAoJEOb/4TMchkvf4EMQAJcUg71TTOVblNINPD9o9m8B
-oo0dk53TALW7AkJE6Q9tX7nivvC4KcX0AemZm6rGwmL2jUEZj0T6nFh/bkLJRFQY
-UWkoCA+PJCWlJJFIIWweVmxspoXTnOFzIyQni90l+anAvwqccWwBb9axvwl/+JN1
-f4hkhVApCIXoYoeqhF1109hG444nUYPv0KVZLUxfhA0kb91Ug8GpKzEDLCDNCsGl
-OIyWbbe+3SUaZbnF855lLG1sWP4UJBQ5i2yaHhYP93cDP5PmZ3Z8xSJw9Do1hps5
-4MBySaspOkuvnuNl6Ceg0gau4jj6AoM7h/bKNnhM4GfSl46lG879+ArgtNmUrdAX
-QSpYF7VRVc8kfqr/EStN25JhPTfvpVM+41bfsWo8+tI9zeRzMwBtNcndOi3Q6rk9
-4yK4ch7+c/lQluvGKAQPBuX8lXh/BchiUJqmx0hSxTBhWbk2YJIQQpWjCb8jHnWp
-5KhyW54D7elqIQz+39nTP5mzLBbYBQmo1JRImjyRlIY7ZOcesbN/QwiY63TSMXuP
-8qdeiaWMv862BZs47jlmAn+fNEs5oND8nfEA5TodLdhpqht+yKbNNudA9ycI3fqe
-eyoA/xeUCg9smZty6f1dB+iYvRK6e6RrQw8LDPgtiiWPQF8mZSkAgfgMwlkUH0rA
-gTUfFjA4LrTSOO35tsBw
-=+Gz9
+iQIcBAEBCAAGBQJVgZFDAAoJEOb/4TMchkvf6xwQAJlK760u98LvnLM3jgNHkVoH
+kedfnTv+2wAsCzAEu4i/6YpYmQp4uefYQ2F9ZMvZAnNRE53/z1p66A3+8P6pK66W
+v8DMhDOWpvw5TqgTkSTJZUnkiGqWn2eoy+4mGP0ybuPZ3ZDZtpSBZlQOcDMa3z1j
+7ZEBYBOI9DngLMPRm5gqGEr4pweaQZILlpxOFOlCZTvgTmfXaW6h/Vp+TUc7SyfW
+7IUc1M3QyoP1caWCHO543BVDELuYdq49p0+ujGc1vdvUOXX4D5SwAtP1cS092dER
+mQvTux6OijCZshs5pay4whVzvs8KvthpVdv+nX6G5XaNIZDADa5xGNyCSiaXsb0/
+8rge6QDPsR4atxf0YnJr0OvKg7YHVqcHq24+1zpCY0NPiNIqJ/qewbbnVW7zRWuo
+nNeOkuTCSqdpjUbzV2YzSC2d3xtxYC6Sl0x3aZtBJuJPD35/IzpcBF/5vCMp22BO
+1x4aTtOlcBlk+ubajV0jrKEgYAhSnS5OfsHz6zxS+OKX/0bzVECgIsvpNAYnj5/E
+ifXwevp/e3PAZ9nd2Ode0uNZK+DlKZKuoRA6QMPJvP3U/outyR/tqLPyyQB8NLYV
+0WvbFDy9oYaqdKykrOI8cn/XUF1z0VgJQB2akgPqtAgPQn624az8Et5Vsws3I4N4
+F04GwGMCxMFlMeIjKj3A
+=YyWS
 -----END PGP SIGNATURE-----
 
---SgmxhEDNSf4qJUrpimkQL9DoKUiWufJw8--
+--fxV2cG87awfCjw8W3g1D8jrbHBacPPCg2--
