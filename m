@@ -1,11 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 16 Jun 2015 21:06:24 +0200
-Message-Id: <1434481584-1275-3-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1434481584-1275-1-git-send-email-antonio@meshcoding.com>
-References: <1434481584-1275-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: avoid DAT to mess up LAN
-	state
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Wed, 17 Jun 2015 18:35:12 +0800
+Message-ID: <1821570.YM9HADYYvt@voltaire>
+In-Reply-To: <1434467426-4281-2-git-send-email-linus.luessing@c0d3.blue>
+References: <1434467426-4281-1-git-send-email-linus.luessing@c0d3.blue>
+ <1434467426-4281-2-git-send-email-linus.luessing@c0d3.blue>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4719964.jmdzdFsGrT";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 maint 1/5] batman-adv: Make DAT
+	capability changes atomic
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,75 +21,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-When a node running DAT receives an ARP request from the LAN for the
-first time, it is likely that this node will request the ARP entry
-through the distributed ARP table (DAT) in the mesh.
 
-Once a DAT reply is received the asking node must check if the MAC
-address for which the IP address has been asked is local. If it is, the
-node must drop the ARP reply bceause the client should have replied on
-its own locally.
+--nextPart4719964.jmdzdFsGrT
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-Forwarding this reply means fooling any L2 bridge (e.g. Ethernet
-switches) lying between the batman-adv node and the LAN. This happens
-because the L2 bridge will think that the client sending the ARP reply
-lies somewhere in the mesh, while this node is sitting in the same LAN.
+On Tuesday, June 16, 2015 17:10:22 Linus L=FCssing wrote:
+> Bitwise OR/AND assignments in C aren't guaranteed to be atomic. One
+> OGM handler might undo the set/clear of a specific bit from another
+> handler run in between.
+>=20
+> Fix this by using the atomic set_bit()/clear_bit() functions.
+>=20
+> Fixes: 2b1c07b918d2 ("batman-adv: tvlv - add distributed arp table
+> container") Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>=
 
-Reported-by: Simon Wunderlich <sw@simonwunderlich.de>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
- net/batman-adv/distributed-arp-table.c | 18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
+> ---
+>  distributed-arp-table.c |    4 ++--
+>  types.h                 |    2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index aad022d..5a4d45a 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -1107,6 +1107,9 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: packet to check
-  * @hdr_size: size of the encapsulation header
-+ *
-+ * Returns true if the packet was snooped and consumed by DAT. False if the
-+ * packet has to be delivered to the interface
-  */
- bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb, int hdr_size)
-@@ -1114,7 +1117,7 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	uint16_t type;
- 	__be32 ip_src, ip_dst;
- 	uint8_t *hw_src, *hw_dst;
--	bool ret = false;
-+	bool dropped = false;
- 	unsigned short vid;
- 
- 	if (!atomic_read(&bat_priv->distributed_arp_table))
-@@ -1143,12 +1146,17 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	/* if this REPLY is directed to a client of mine, let's deliver the
- 	 * packet to the interface
- 	 */
--	ret = !batadv_is_my_client(bat_priv, hw_dst, vid);
-+	dropped = !batadv_is_my_client(bat_priv, hw_dst, vid);
-+
-+	/* if this REPLY is sent on behalf of a client of mine, let's drop the
-+	 * packet because the client will reply by itself
-+	 */
-+	dropped |= batadv_is_my_client(bat_priv, hw_src, vid);
- out:
--	if (ret)
-+	if (dropped)
- 		kfree_skb(skb);
--	/* if ret == false -> packet has to be delivered to the interface */
--	return ret;
-+	/* if dropped == false -> deliver to the interface */
-+	return dropped;
- }
- 
- /**
--- 
-2.4.3
+Applied in revision bfd0fba.
+
+Thanks,
+Marek
+
+--nextPart4719964.jmdzdFsGrT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJVgU1nAAoJEFNVTo/uthzA3wIH/2P1SpX+aO/QS8BIuAtEAsRK
+c3UkxEI1k7fFOb/Ef23QxK6E4CwA+yNIePRErAPt11AEr1leIkicMxvfEypvKZEg
+fvlZOVGE5UjSUJItuaVrAGimKnOTFPbKKp56mpOWG77jXJm/XL+dxUSvX6uAmbOa
+iwotWIKa8LcCwRrn1Z0XvXy5SKuBBBseXFz/pw7kQS0YSvuqdiUNJfxt/yMyuOoO
+fG7XaLRWPWyMf2sspEVJWpdlveravlDUzIwze/XBLqrGp2/JJ82HrY48P01LzFwJ
+61dsAH/R/BFjspahrwvKlYbQtiGUiTba8dc6gGsCTO2VDxludjmpamk9crj/+Wk=
+=/gjF
+-----END PGP SIGNATURE-----
+
+--nextPart4719964.jmdzdFsGrT--
 
