@@ -1,11 +1,14 @@
-Return-Path: <carlosmeralto@gmail.com>
+Return-Path: <hw@haveyouseenthiscat.de>
 MIME-Version: 1.0
-Date: Wed, 17 Jun 2015 20:50:26 +0100
-Message-ID: <CALaFpeXinpuqi_5tZoih9jm77Ed0WsP_soZm3RbTpOmpzqWPSg@mail.gmail.com>
-From: Carlos Meralto <carlosmeralto@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Subject: [B.A.T.M.A.N.] [BATMAN] batman-adv PING layer 3
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date: Wed, 17 Jun 2015 22:34:34 +0200
+From: Hans-Werner Hilse <hw@haveyouseenthiscat.de>
+In-Reply-To: <CALaFpeXinpuqi_5tZoih9jm77Ed0WsP_soZm3RbTpOmpzqWPSg@mail.gmail.com>
+References: <CALaFpeXinpuqi_5tZoih9jm77Ed0WsP_soZm3RbTpOmpzqWPSg@mail.gmail.com>
+Message-ID: <ba0c1c011cd6fb42c76276ec510c9acc@hilses.de>
+Subject: Re: [B.A.T.M.A.N.] [BATMAN] batman-adv PING layer 3
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,67 +20,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hello everyone.
+Hi,
 
-I have three mesh nodes. Node A don=E2=80=99t see node C. A can't communica=
-te
-with C directly, but it can commuticate with C via node B, which is
-between A and C. The path is A - B - C.
+Am 2015-06-17 21:50, schrieb Carlos Meralto:
+> My configurations:
+> [...]
 
-On node A, I can run the command 'batctl ping MAC' to node B and node
-C successfully.
-When i try the normal layer 3 ping [ping IP] it=E2=80=99s ok to node B for
-node C doesn't work.
-Maybe i have a wrong configuration at layer 3.
+a batman interface is being set up, but left unconfigured.
 
-My configurations:
+On the other hand, you set up IP adresses for the adhoc network, which 
+probably isn't needed and the point where the confusion arises.
 
-/etc/config/network
+What you probably want to do is to add bat0 to the bridge's interfaces, 
+and maybe get rid of the IPv4 addresses on the adhoc interface, too (not 
+that they matter, though).
 
-config interface 'lan'
-        option ifname 'eth0.1'
-        option type 'bridge'
-        option proto 'static'
-        option ipaddr '192.168.0.1'
-        option netmask =E2=80=98255.255.255.0'
+Of course, when you do not want to bridge the LAN interfaces, you need 
+another way to setup IP addresses for bat0.
 
-config interface 'mesh'
-        option ifname 'adhoc0'
-        option mtu '1528'
-        option proto 'static'
-        option mesh 'bat0'
-        option ipaddr '192.168.11.1'
-        option netmask =E2=80=98255.255.255.0'
+BTW, ping6 should work already with the link local IPv6 addresses of the 
+bat0 interfaces, I guess.
 
-/etc/config/wireless
-
-config wifi-iface
-        option device 'radio0'
-        option ifname 'adhoc0'
-        option network 'mesh'
-        option mode 'adhoc'
-        option ssid 'batman-mesh'
-        option encryption 'none'
-        option bssid '02:CA:FE:CA:CA:40=E2=80=99
-
-/etc/config/batman-adv
-
-config mesh 'bat0'
-        option interfaces 'adhoc0'
-        option 'aggregated_ogms'
-        option =E2=80=98ap_isolation'
-    [..]
-
-
-root@OpenWrt:~# batctl if
-adhoc0: active
-
-the difference between nodes is the ip address for interface
-lan(192.168.0.1, 192.168.2.1, 192.168.3.1) and mesh (192.168.11.1,
-192.168.11.2, 192.168.11.3)
-
-What i need to setup to can ping from node A to C?
-
-Best Regards.
+-hwh
