@@ -1,12 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Thu, 18 Jun 2015 06:47:19 +0200
-Message-Id: <1434602839-4468-1-git-send-email-linus.luessing@c0d3.blue>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Thu, 18 Jun 2015 13:15:01 +0800
+Message-ID: <65210387.gN7zAV2gST@voltaire>
+In-Reply-To: <1434602839-4468-1-git-send-email-linus.luessing@c0d3.blue>
+References: <1434602839-4468-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix compile error on
- deactivated MCAST feature
+Content-Type: multipart/signed; boundary="nextPart20206789.HSR5cCupO9";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix compile error on
+	deactivated MCAST feature
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,51 +22,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Some members of "struct batadv_orig_node" are not available if compiling
-without the multicast optimizations feature.
 
-Fix this by moving their initialization into the right #ifdef's.
+--nextPart20206789.HSR5cCupO9
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-Fixes: 7f220ed1f063 ("batman-adv: Fix potential synchronization issues in mcast tvlv handler")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- originator.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+On Thursday, June 18, 2015 06:47:19 Linus L=FCssing wrote:
+> Some members of "struct batadv_orig_node" are not available if compil=
+ing
+> without the multicast optimizations feature.
+>=20
+> Fix this by moving their initialization into the right #ifdef's.
+>=20
+> Fixes: 7f220ed1f063 ("batman-adv: Fix potential synchronization issue=
+s in
+> mcast tvlv handler") Signed-off-by: Linus L=FCssing
+> <linus.luessing@c0d3.blue>
+> ---
+>  originator.c |    9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/originator.c b/originator.c
-index a2ba182..a5276db 100644
---- a/originator.c
-+++ b/originator.c
-@@ -658,15 +658,11 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
- 	INIT_HLIST_HEAD(&orig_node->neigh_list);
- 	INIT_LIST_HEAD(&orig_node->vlan_list);
- 	INIT_HLIST_HEAD(&orig_node->ifinfo_list);
--	INIT_HLIST_NODE(&orig_node->mcast_want_all_unsnoopables_node);
--	INIT_HLIST_NODE(&orig_node->mcast_want_all_ipv4_node);
--	INIT_HLIST_NODE(&orig_node->mcast_want_all_ipv6_node);
- 	spin_lock_init(&orig_node->bcast_seqno_lock);
- 	spin_lock_init(&orig_node->neigh_list_lock);
- 	spin_lock_init(&orig_node->tt_buff_lock);
- 	spin_lock_init(&orig_node->tt_lock);
- 	spin_lock_init(&orig_node->vlan_list_lock);
--	spin_lock_init(&orig_node->mcast_handler_lock);
- 
- 	batadv_nc_init_orig(orig_node);
- 
-@@ -682,8 +678,13 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
- 	orig_node->last_seen = jiffies;
- 	reset_time = jiffies - 1 - msecs_to_jiffies(BATADV_RESET_PROTECTION_MS);
- 	orig_node->bcast_seqno_reset = reset_time;
-+
- #ifdef CONFIG_BATMAN_ADV_MCAST
- 	orig_node->mcast_flags = BATADV_NO_FLAGS;
-+	INIT_HLIST_NODE(&orig_node->mcast_want_all_unsnoopables_node);
-+	INIT_HLIST_NODE(&orig_node->mcast_want_all_ipv4_node);
-+	INIT_HLIST_NODE(&orig_node->mcast_want_all_ipv6_node);
-+	spin_lock_init(&orig_node->mcast_handler_lock);
- #endif
- 
- 	/* create a vlan object for the "untagged" LAN */
--- 
-1.7.10.4
+Applied in revision 256776e.
+
+Thanks,
+Marek
+
+--nextPart20206789.HSR5cCupO9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJVglPZAAoJEFNVTo/uthzAQfQIAJdHOOAEXVHfOj22DUcOV6OJ
+1LaJO3zrH4TktGYlP9AeG2enldJKymnnMIJKXVdiSkQnFWlQpJIn7pX78tArFWJw
+IauYojuEvHnuvIR4wWFi4m7p74UKc4WEojMbjiisTCuVo7nEC+NvHCla/Ym+ngKz
+4MunqRTJNTIA1TlQAsBA6DbzogrcOuGvJjQtg4I2Lun+bCp3XegLh/GPLiLyJUQL
+Hu/B2Emjv5JUk4hUk4uEIwubnsl0S5LQTdmFeZsax0HnoPEK/NYh2xHaXBT7P2lG
+u16L7fUdf2jNmV8rkbDIKM61zse68IyG6CwAZUmr7Y6tUWER4iNrzEAtNnkZVNw=
+=RfyT
+-----END PGP SIGNATURE-----
+
+--nextPart20206789.HSR5cCupO9--
 
