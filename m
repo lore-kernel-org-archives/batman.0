@@ -1,9 +1,12 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 18 Jun 2015 11:04:29 +0800
-Message-Id: <1434596669-9597-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: fix kernel crash due to
-	missing NULL checks
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Thu, 18 Jun 2015 06:47:19 +0200
+Message-Id: <1434602839-4468-1-git-send-email-linus.luessing@c0d3.blue>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix compile error on
+ deactivated MCAST feature
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -16,86 +19,52 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-batadv_softif_vlan_get() may return NULL which has to be verified
-by the caller.
+Some members of "struct batadv_orig_node" are not available if compiling
+without the multicast optimizations feature.
 
-Reported-by: Ryan Thompson <ryan@eero.com>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Fix this by moving their initialization into the right #ifdef's.
+
+Fixes: 7f220ed1f063 ("batman-adv: Fix potential synchronization issues in mcast tvlv handler")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
-v2: add WARN() in batadv_tt_local_add()
+ originator.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
- soft-interface.c    |  3 +++
- translation-table.c | 20 ++++++++++++++++----
- 2 files changed, 19 insertions(+), 4 deletions(-)
-
-diff --git a/soft-interface.c b/soft-interface.c
-index da89336..7841a4b 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -455,6 +455,9 @@ out:
-  */
- void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *vlan)
- {
-+	if (!vlan)
-+		return;
+diff --git a/originator.c b/originator.c
+index a2ba182..a5276db 100644
+--- a/originator.c
++++ b/originator.c
+@@ -658,15 +658,11 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
+ 	INIT_HLIST_HEAD(&orig_node->neigh_list);
+ 	INIT_LIST_HEAD(&orig_node->vlan_list);
+ 	INIT_HLIST_HEAD(&orig_node->ifinfo_list);
+-	INIT_HLIST_NODE(&orig_node->mcast_want_all_unsnoopables_node);
+-	INIT_HLIST_NODE(&orig_node->mcast_want_all_ipv4_node);
+-	INIT_HLIST_NODE(&orig_node->mcast_want_all_ipv6_node);
+ 	spin_lock_init(&orig_node->bcast_seqno_lock);
+ 	spin_lock_init(&orig_node->neigh_list_lock);
+ 	spin_lock_init(&orig_node->tt_buff_lock);
+ 	spin_lock_init(&orig_node->tt_lock);
+ 	spin_lock_init(&orig_node->vlan_list_lock);
+-	spin_lock_init(&orig_node->mcast_handler_lock);
+ 
+ 	batadv_nc_init_orig(orig_node);
+ 
+@@ -682,8 +678,13 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
+ 	orig_node->last_seen = jiffies;
+ 	reset_time = jiffies - 1 - msecs_to_jiffies(BATADV_RESET_PROTECTION_MS);
+ 	orig_node->bcast_seqno_reset = reset_time;
 +
- 	if (atomic_dec_and_test(&vlan->refcount)) {
- 		spin_lock_bh(&vlan->bat_priv->softif_vlan_list_lock);
- 		hlist_del_rcu(&vlan->list);
-diff --git a/translation-table.c b/translation-table.c
-index e95a424..ae82f69 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -575,6 +575,11 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+ #ifdef CONFIG_BATMAN_ADV_MCAST
+ 	orig_node->mcast_flags = BATADV_NO_FLAGS;
++	INIT_HLIST_NODE(&orig_node->mcast_want_all_unsnoopables_node);
++	INIT_HLIST_NODE(&orig_node->mcast_want_all_ipv4_node);
++	INIT_HLIST_NODE(&orig_node->mcast_want_all_ipv6_node);
++	spin_lock_init(&orig_node->mcast_handler_lock);
+ #endif
  
- 	/* increase the refcounter of the related vlan */
- 	vlan = batadv_softif_vlan_get(bat_priv, vid);
-+	if (!vlan) {
-+		WARN(1, "adding TT local entry %pM to non-existent VLAN %d",
-+		     addr, BATADV_PRINT_VID(vid));
-+		goto out;
-+	}
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
- 		   "Creating new local tt entry: %pM (vid: %d, ttvn: %d)\n",
-@@ -1047,6 +1052,9 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
- 
- 	/* decrease the reference held for this vlan */
- 	vlan = batadv_softif_vlan_get(bat_priv, vid);
-+	if (!vlan)
-+		goto out;
-+
- 	batadv_softif_vlan_free_ref(vlan);
- 	batadv_softif_vlan_free_ref(vlan);
- 
-@@ -1147,8 +1155,10 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
- 			/* decrease the reference held for this vlan */
- 			vlan = batadv_softif_vlan_get(bat_priv,
- 						      tt_common_entry->vid);
--			batadv_softif_vlan_free_ref(vlan);
--			batadv_softif_vlan_free_ref(vlan);
-+			if (vlan) {
-+				batadv_softif_vlan_free_ref(vlan);
-+				batadv_softif_vlan_free_ref(vlan);
-+			}
- 
- 			batadv_tt_local_entry_free_ref(tt_local);
- 		}
-@@ -3188,8 +3198,10 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
- 
- 			/* decrease the reference held for this vlan */
- 			vlan = batadv_softif_vlan_get(bat_priv, tt_common->vid);
--			batadv_softif_vlan_free_ref(vlan);
--			batadv_softif_vlan_free_ref(vlan);
-+			if (vlan) {
-+				batadv_softif_vlan_free_ref(vlan);
-+				batadv_softif_vlan_free_ref(vlan);
-+			}
- 
- 			batadv_tt_local_entry_free_ref(tt_local);
- 		}
+ 	/* create a vlan object for the "untagged" LAN */
 -- 
-2.1.4
+1.7.10.4
 
