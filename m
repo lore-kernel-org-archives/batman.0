@@ -1,8 +1,8 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 18 Jun 2015 16:13:06 +0800
-Message-Id: <1434615186-14871-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: update kernel doc of
+Date: Thu, 18 Jun 2015 16:26:39 +0800
+Message-Id: <1434615999-17185-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: update kernel doc of
 	batadv_tt_global_del_orig_entry()
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,14 +24,16 @@ precautions.
 
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- translation-table.c | 18 ++++++++++++------
+v2: rebased on master
+
+ net/batman-adv/translation-table.c | 18 ++++++++++++------
  1 file changed, 12 insertions(+), 6 deletions(-)
 
-diff --git a/translation-table.c b/translation-table.c
-index fa122a2..f6ac67c 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1630,20 +1630,26 @@ out:
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 3aca026..d304f9a 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1637,20 +1637,26 @@ out:
  }
  
  /**
@@ -61,7 +63,7 @@ index fa122a2..f6ac67c 100644
  	hlist_del_rcu(&orig_entry->list);
  	batadv_tt_orig_list_entry_free_ref(orig_entry);
  }
-@@ -1659,7 +1665,7 @@ batadv_tt_global_del_orig_list(struct batadv_tt_global_entry *tt_global_entry)
+@@ -1666,7 +1672,7 @@ batadv_tt_global_del_orig_list(struct batadv_tt_global_entry *tt_global_entry)
  	spin_lock_bh(&tt_global_entry->list_lock);
  	head = &tt_global_entry->orig_list;
  	hlist_for_each_entry_safe(orig_entry, safe, head, list)
@@ -70,7 +72,7 @@ index fa122a2..f6ac67c 100644
  	spin_unlock_bh(&tt_global_entry->list_lock);
  }
  
-@@ -1694,8 +1700,8 @@ batadv_tt_global_del_orig_node(struct batadv_priv *bat_priv,
+@@ -1701,8 +1707,8 @@ batadv_tt_global_del_orig_node(struct batadv_priv *bat_priv,
  				   orig_node->orig,
  				   tt_global_entry->common.addr,
  				   BATADV_PRINT_VID(vid), message);
