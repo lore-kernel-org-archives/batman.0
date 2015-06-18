@@ -1,9 +1,9 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 18 Jun 2015 16:26:39 +0800
-Message-Id: <1434615999-17185-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: update kernel doc of
-	batadv_tt_global_del_orig_entry()
+Date: Thu, 18 Jun 2015 16:27:49 +0800
+Message-Id: <1434616069-17317-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: rename batadv_new_tt_req_node to
+	batadv_tt_req_node_new
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,71 +18,44 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-The updated kernel doc & additional comment shall prevent accidental
-copy & paste errors or calling the function without the required
-precautions.
-
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
-v2: rebased on master
-
- net/batman-adv/translation-table.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+ net/batman-adv/translation-table.c | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 3aca026..d304f9a 100644
+index d304f9a..2de4784 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -1637,20 +1637,26 @@ out:
+@@ -2251,11 +2251,16 @@ static void batadv_tt_req_purge(struct batadv_priv *bat_priv)
+ 	spin_unlock_bh(&bat_priv->tt.req_list_lock);
  }
  
- /**
-- * batadv_tt_global_del_orig_entry - remove and free an orig_entry
-+ * _batadv_tt_global_del_orig_entry - remove and free an orig_entry
-  * @tt_global_entry: the global entry to remove the orig_entry from
-  * @orig_entry: the orig entry to remove and free
-  *
-  * Remove an orig_entry from its list in the given tt_global_entry and
-  * free this orig_entry afterwards.
+-/* returns the pointer to the new tt_req_node struct if no request
+- * has already been issued for this orig_node, NULL otherwise
++/**
++ * batadv_tt_req_node_new - search and possibly create a tt_req_node object
++ * @bat_priv: the bat priv with all the soft interface information
++ * @orig_node: orig node this request is being issued for
 + *
-+ * Caller must hold tt_global_entry->list_lock and ensure orig_entry->list is
-+ * part of a list.
++ * Returns the pointer to the new tt_req_node struct if no request
++ * has already been issued for this orig_node, NULL otherwise.
   */
- static void
--batadv_tt_global_del_orig_entry(struct batadv_tt_global_entry *tt_global_entry,
--				struct batadv_tt_orig_list_entry *orig_entry)
-+_batadv_tt_global_del_orig_entry(struct batadv_tt_global_entry *tt_global_entry,
-+				 struct batadv_tt_orig_list_entry *orig_entry)
+ static struct batadv_tt_req_node *
+-batadv_new_tt_req_node(struct batadv_priv *bat_priv,
++batadv_tt_req_node_new(struct batadv_priv *bat_priv,
+ 		       struct batadv_orig_node *orig_node)
  {
- 	batadv_tt_global_size_dec(orig_entry->orig_node,
- 				  tt_global_entry->common.vid);
- 	atomic_dec(&tt_global_entry->orig_list_count);
-+	/* requires holding tt_global_entry->list_lock and orig_entry->list
-+	 * being part of a list
-+	 */
- 	hlist_del_rcu(&orig_entry->list);
- 	batadv_tt_orig_list_entry_free_ref(orig_entry);
- }
-@@ -1666,7 +1672,7 @@ batadv_tt_global_del_orig_list(struct batadv_tt_global_entry *tt_global_entry)
- 	spin_lock_bh(&tt_global_entry->list_lock);
- 	head = &tt_global_entry->orig_list;
- 	hlist_for_each_entry_safe(orig_entry, safe, head, list)
--		batadv_tt_global_del_orig_entry(tt_global_entry, orig_entry);
-+		_batadv_tt_global_del_orig_entry(tt_global_entry, orig_entry);
- 	spin_unlock_bh(&tt_global_entry->list_lock);
- }
+ 	struct batadv_tt_req_node *tt_req_node_tmp, *tt_req_node = NULL;
+@@ -2484,7 +2489,7 @@ static int batadv_send_tt_request(struct batadv_priv *bat_priv,
+ 	/* The new tt_req will be issued only if I'm not waiting for a
+ 	 * reply from the same orig_node yet
+ 	 */
+-	tt_req_node = batadv_new_tt_req_node(bat_priv, dst_orig_node);
++	tt_req_node = batadv_tt_req_node_new(bat_priv, dst_orig_node);
+ 	if (!tt_req_node)
+ 		goto out;
  
-@@ -1701,8 +1707,8 @@ batadv_tt_global_del_orig_node(struct batadv_priv *bat_priv,
- 				   orig_node->orig,
- 				   tt_global_entry->common.addr,
- 				   BATADV_PRINT_VID(vid), message);
--			batadv_tt_global_del_orig_entry(tt_global_entry,
--							orig_entry);
-+			_batadv_tt_global_del_orig_entry(tt_global_entry,
-+							 orig_entry);
- 		}
- 	}
- 	spin_unlock_bh(&tt_global_entry->list_lock);
 -- 
 2.1.4
 
