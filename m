@@ -1,9 +1,9 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 19 Jun 2015 15:16:14 +0800
-Message-Id: <1434698174-8899-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCHv3 maint] batman-adv: fix kernel crash due to
-	missing NULL checks
+Date: Fri, 19 Jun 2015 15:18:54 +0800
+Message-Id: <1434698334-9399-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCHv3 maint] batman-adv: protect tt_local_entry
+	from concurrent delete events
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,85 +18,54 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-batadv_softif_vlan_get() may return NULL which has to be verified
-by the caller.
+The tt_local_entry deletion performed in batadv_tt_local_remove() was neither
+protecting against simultaneous deletes nor checking whether the element was
+still part of the list before calling hlist_del_rcu().
 
-Fixes: 9729d20 ("batman-adv: fix TT VLAN inconsistency on VLAN re-add")
+Replacing the hlist_del_rcu() call with batadv_hash_remove() provides adequate
+protection via hash spinlocks as well as an is-element-still-in-hash check to
+avoid 'blind' hash removal.
 
-Reported-by: Ryan Thompson <ryan@eero.com>
+Fixes: 2443ba3 ("batman-adv: roaming handling mechanism redesign")
+
+Reported-by: alfonsname@web.de
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
-v3: moved WARN() into if expression
-v2: added WARN() in batadv_tt_local_add()
+v3: added 'fixes' section
+v2: rebased on master
 
- soft-interface.c    |  3 +++
- translation-table.c | 18 ++++++++++++++----
- 2 files changed, 17 insertions(+), 4 deletions(-)
+ translation-table.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/soft-interface.c b/soft-interface.c
-index da89336..7841a4b 100644
---- a/soft-interface.c
-+++ b/soft-interface.c
-@@ -455,6 +455,9 @@ out:
-  */
- void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *vlan)
- {
-+	if (!vlan)
-+		return;
-+
- 	if (atomic_dec_and_test(&vlan->refcount)) {
- 		spin_lock_bh(&vlan->bat_priv->softif_vlan_list_lock);
- 		hlist_del_rcu(&vlan->list);
 diff --git a/translation-table.c b/translation-table.c
-index e95a424..f56b847 100644
+index f56b847..a65d10d 100644
 --- a/translation-table.c
 +++ b/translation-table.c
-@@ -575,6 +575,9 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+@@ -1018,6 +1018,7 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
+ 	struct batadv_tt_local_entry *tt_local_entry;
+ 	uint16_t flags, curr_flags = BATADV_NO_FLAGS;
+ 	struct batadv_softif_vlan *vlan;
++	void *tt_entry_exists;
  
- 	/* increase the refcounter of the related vlan */
- 	vlan = batadv_softif_vlan_get(bat_priv, vid);
-+	if (WARN(!vlan, "adding TT local entry %pM to non-existent VLAN %d",
-+		 addr, BATADV_PRINT_VID(vid)))
-+		goto out;
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
- 		   "Creating new local tt entry: %pM (vid: %d, ttvn: %d)\n",
-@@ -1047,6 +1050,9 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
- 
- 	/* decrease the reference held for this vlan */
- 	vlan = batadv_softif_vlan_get(bat_priv, vid);
-+	if (!vlan)
+ 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr, vid);
+ 	if (!tt_local_entry)
+@@ -1045,7 +1046,15 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
+ 	 * immediately purge it
+ 	 */
+ 	batadv_tt_local_event(bat_priv, tt_local_entry, BATADV_TT_CLIENT_DEL);
+-	hlist_del_rcu(&tt_local_entry->common.hash_entry);
++
++	tt_entry_exists = batadv_hash_remove(bat_priv->tt.local_hash,
++					     batadv_compare_tt,
++					     batadv_choose_tt,
++					     &tt_local_entry->common);
++	if (!tt_entry_exists)
 +		goto out;
 +
- 	batadv_softif_vlan_free_ref(vlan);
- 	batadv_softif_vlan_free_ref(vlan);
++	/* extra call to free the local tt entry */
+ 	batadv_tt_local_entry_free_ref(tt_local_entry);
  
-@@ -1147,8 +1153,10 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
- 			/* decrease the reference held for this vlan */
- 			vlan = batadv_softif_vlan_get(bat_priv,
- 						      tt_common_entry->vid);
--			batadv_softif_vlan_free_ref(vlan);
--			batadv_softif_vlan_free_ref(vlan);
-+			if (vlan) {
-+				batadv_softif_vlan_free_ref(vlan);
-+				batadv_softif_vlan_free_ref(vlan);
-+			}
- 
- 			batadv_tt_local_entry_free_ref(tt_local);
- 		}
-@@ -3188,8 +3196,10 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
- 
- 			/* decrease the reference held for this vlan */
- 			vlan = batadv_softif_vlan_get(bat_priv, tt_common->vid);
--			batadv_softif_vlan_free_ref(vlan);
--			batadv_softif_vlan_free_ref(vlan);
-+			if (vlan) {
-+				batadv_softif_vlan_free_ref(vlan);
-+				batadv_softif_vlan_free_ref(vlan);
-+			}
- 
- 			batadv_tt_local_entry_free_ref(tt_local);
- 		}
+ 	/* decrease the reference held for this vlan */
 -- 
 2.1.4
 
