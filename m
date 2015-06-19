@@ -1,9 +1,9 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 19 Jun 2015 15:09:18 +0800
-Message-Id: <1434697758-8399-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: convert tt request list into
-	hlist
+Date: Fri, 19 Jun 2015 15:16:14 +0800
+Message-Id: <1434698174-8899-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCHv3 maint] batman-adv: fix kernel crash due to
+	missing NULL checks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,145 +18,85 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-The tt request list does not require a double linked list, hence a
-conversion to hlist saves memory without losing functionality.
+batadv_softif_vlan_get() may return NULL which has to be verified
+by the caller.
 
-Also, the list_del() call was changed to hlist_del_init() to allow
-an adding an extra check prior to deletion in batadv_tt_req_node_new().
+Fixes: 9729d20 ("batman-adv: fix TT VLAN inconsistency on VLAN re-add")
 
+Reported-by: Ryan Thompson <ryan@eero.com>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/main.c              |  2 +-
- net/batman-adv/translation-table.c | 29 +++++++++++++++++------------
- net/batman-adv/types.h             |  4 ++--
- 3 files changed, 20 insertions(+), 15 deletions(-)
+v3: moved WARN() into if expression
+v2: added WARN() in batadv_tt_local_add()
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 40750cb..d277ba7 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -148,7 +148,7 @@ int batadv_mesh_init(struct net_device *soft_iface)
- 	INIT_HLIST_HEAD(&bat_priv->mcast.want_all_ipv6_list);
- #endif
- 	INIT_LIST_HEAD(&bat_priv->tt.changes_list);
--	INIT_LIST_HEAD(&bat_priv->tt.req_list);
-+	INIT_HLIST_HEAD(&bat_priv->tt.req_list);
- 	INIT_LIST_HEAD(&bat_priv->tt.roam_list);
- #ifdef CONFIG_BATMAN_ADV_MCAST
- 	INIT_HLIST_HEAD(&bat_priv->mcast.mla_list);
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 2de4784..9f43e44 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -2203,12 +2203,13 @@ static u32 batadv_tt_local_crc(struct batadv_priv *bat_priv,
- 
- static void batadv_tt_req_list_free(struct batadv_priv *bat_priv)
+ soft-interface.c    |  3 +++
+ translation-table.c | 18 ++++++++++++++----
+ 2 files changed, 17 insertions(+), 4 deletions(-)
+
+diff --git a/soft-interface.c b/soft-interface.c
+index da89336..7841a4b 100644
+--- a/soft-interface.c
++++ b/soft-interface.c
+@@ -455,6 +455,9 @@ out:
+  */
+ void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *vlan)
  {
--	struct batadv_tt_req_node *node, *safe;
-+	struct batadv_tt_req_node *node;
-+	struct hlist_node *safe;
++	if (!vlan)
++		return;
++
+ 	if (atomic_dec_and_test(&vlan->refcount)) {
+ 		spin_lock_bh(&vlan->bat_priv->softif_vlan_list_lock);
+ 		hlist_del_rcu(&vlan->list);
+diff --git a/translation-table.c b/translation-table.c
+index e95a424..f56b847 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -575,6 +575,9 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
  
- 	spin_lock_bh(&bat_priv->tt.req_list_lock);
+ 	/* increase the refcounter of the related vlan */
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid);
++	if (WARN(!vlan, "adding TT local entry %pM to non-existent VLAN %d",
++		 addr, BATADV_PRINT_VID(vid)))
++		goto out;
  
--	list_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
--		list_del(&node->list);
-+	hlist_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
-+		hlist_del_init(&node->list);
- 		kfree(node);
- 	}
+ 	batadv_dbg(BATADV_DBG_TT, bat_priv,
+ 		   "Creating new local tt entry: %pM (vid: %d, ttvn: %d)\n",
+@@ -1047,6 +1050,9 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
  
-@@ -2238,13 +2239,14 @@ static void batadv_tt_save_orig_buffer(struct batadv_priv *bat_priv,
+ 	/* decrease the reference held for this vlan */
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid);
++	if (!vlan)
++		goto out;
++
+ 	batadv_softif_vlan_free_ref(vlan);
+ 	batadv_softif_vlan_free_ref(vlan);
  
- static void batadv_tt_req_purge(struct batadv_priv *bat_priv)
- {
--	struct batadv_tt_req_node *node, *safe;
-+	struct batadv_tt_req_node *node;
-+	struct hlist_node *safe;
+@@ -1147,8 +1153,10 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
+ 			/* decrease the reference held for this vlan */
+ 			vlan = batadv_softif_vlan_get(bat_priv,
+ 						      tt_common_entry->vid);
+-			batadv_softif_vlan_free_ref(vlan);
+-			batadv_softif_vlan_free_ref(vlan);
++			if (vlan) {
++				batadv_softif_vlan_free_ref(vlan);
++				batadv_softif_vlan_free_ref(vlan);
++			}
  
- 	spin_lock_bh(&bat_priv->tt.req_list_lock);
--	list_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
-+	hlist_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
- 		if (batadv_has_timed_out(node->issued_at,
- 					 BATADV_TT_REQUEST_TIMEOUT)) {
--			list_del(&node->list);
-+			hlist_del_init(&node->list);
- 			kfree(node);
+ 			batadv_tt_local_entry_free_ref(tt_local);
  		}
- 	}
-@@ -2266,7 +2268,7 @@ batadv_tt_req_node_new(struct batadv_priv *bat_priv,
- 	struct batadv_tt_req_node *tt_req_node_tmp, *tt_req_node = NULL;
+@@ -3188,8 +3196,10 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
  
- 	spin_lock_bh(&bat_priv->tt.req_list_lock);
--	list_for_each_entry(tt_req_node_tmp, &bat_priv->tt.req_list, list) {
-+	hlist_for_each_entry(tt_req_node_tmp, &bat_priv->tt.req_list, list) {
- 		if (batadv_compare_eth(tt_req_node_tmp, orig_node) &&
- 		    !batadv_has_timed_out(tt_req_node_tmp->issued_at,
- 					  BATADV_TT_REQUEST_TIMEOUT))
-@@ -2280,7 +2282,7 @@ batadv_tt_req_node_new(struct batadv_priv *bat_priv,
- 	ether_addr_copy(tt_req_node->addr, orig_node->orig);
- 	tt_req_node->issued_at = jiffies;
+ 			/* decrease the reference held for this vlan */
+ 			vlan = batadv_softif_vlan_get(bat_priv, tt_common->vid);
+-			batadv_softif_vlan_free_ref(vlan);
+-			batadv_softif_vlan_free_ref(vlan);
++			if (vlan) {
++				batadv_softif_vlan_free_ref(vlan);
++				batadv_softif_vlan_free_ref(vlan);
++			}
  
--	list_add(&tt_req_node->list, &bat_priv->tt.req_list);
-+	hlist_add_head(&tt_req_node->list, &bat_priv->tt.req_list);
- unlock:
- 	spin_unlock_bh(&bat_priv->tt.req_list_lock);
- 	return tt_req_node;
-@@ -2531,7 +2533,9 @@ out:
- 		batadv_hardif_free_ref(primary_if);
- 	if (ret && tt_req_node) {
- 		spin_lock_bh(&bat_priv->tt.req_list_lock);
--		list_del(&tt_req_node->list);
-+		/* only remove tt_req_node if it still is in the list */
-+		if (!hlist_unhashed(&tt_req_node->list))
-+			hlist_del_init(&tt_req_node->list);
- 		spin_unlock_bh(&bat_priv->tt.req_list_lock);
- 		kfree(tt_req_node);
- 	}
-@@ -2927,7 +2931,8 @@ static void batadv_handle_tt_response(struct batadv_priv *bat_priv,
- 				      struct batadv_tvlv_tt_data *tt_data,
- 				      u8 *resp_src, u16 num_entries)
- {
--	struct batadv_tt_req_node *node, *safe;
-+	struct batadv_tt_req_node *node;
-+	struct hlist_node *safe;
- 	struct batadv_orig_node *orig_node = NULL;
- 	struct batadv_tvlv_tt_change *tt_change;
- 	u8 *tvlv_ptr = (u8 *)tt_data;
-@@ -2965,10 +2970,10 @@ static void batadv_handle_tt_response(struct batadv_priv *bat_priv,
- 
- 	/* Delete the tt_req_node from pending tt_requests list */
- 	spin_lock_bh(&bat_priv->tt.req_list_lock);
--	list_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
-+	hlist_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
- 		if (!batadv_compare_eth(node->addr, resp_src))
- 			continue;
--		list_del(&node->list);
-+		hlist_del_init(&node->list);
- 		kfree(node);
- 	}
- 
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index da4c738..76fe31f 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -537,7 +537,7 @@ struct batadv_priv_tt {
- 	struct list_head changes_list;
- 	struct batadv_hashtable *local_hash;
- 	struct batadv_hashtable *global_hash;
--	struct list_head req_list;
-+	struct hlist_head req_list;
- 	struct list_head roam_list;
- 	spinlock_t changes_list_lock; /* protects changes */
- 	spinlock_t req_list_lock; /* protects req_list */
-@@ -1006,7 +1006,7 @@ struct batadv_tt_change_node {
- struct batadv_tt_req_node {
- 	u8 addr[ETH_ALEN];
- 	unsigned long issued_at;
--	struct list_head list;
-+	struct hlist_node list;
- };
- 
- /**
+ 			batadv_tt_local_entry_free_ref(tt_local);
+ 		}
 -- 
 2.1.4
 
