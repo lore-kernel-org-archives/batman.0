@@ -1,15 +1,15 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <5583D639.2070403@meshcoding.com>
-Date: Fri, 19 Jun 2015 10:43:37 +0200
+Message-ID: <5583D6B5.7050706@meshcoding.com>
+Date: Fri, 19 Jun 2015 10:45:41 +0200
 From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1434698174-8899-1-git-send-email-mareklindner@neomailbox.ch>
-In-Reply-To: <1434698174-8899-1-git-send-email-mareklindner@neomailbox.ch>
+References: <1434698334-9399-1-git-send-email-mareklindner@neomailbox.ch>
+In-Reply-To: <1434698334-9399-1-git-send-email-mareklindner@neomailbox.ch>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="kNqBiSRkKPC3vaCUMEn1JFbTIAkg6lenv"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 maint] batman-adv: fix kernel crash due
- to missing NULL checks
+ boundary="6tU0ii4LCxpog9Mu4RotUtI6IuGbLWbbV"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 maint] batman-adv: protect
+ tt_local_entry from concurrent delete events
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,31 +25,38 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---kNqBiSRkKPC3vaCUMEn1JFbTIAkg6lenv
+--6tU0ii4LCxpog9Mu4RotUtI6IuGbLWbbV
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
 
 
-On 19/06/15 09:16, Marek Lindner wrote:
-> batadv_softif_vlan_get() may return NULL which has to be verified
-> by the caller.
+On 19/06/15 09:18, Marek Lindner wrote:
+> The tt_local_entry deletion performed in batadv_tt_local_remove() was n=
+either
+> protecting against simultaneous deletes nor checking whether the elemen=
+t was
+> still part of the list before calling hlist_del_rcu().
 >=20
-> Fixes: 9729d20 ("batman-adv: fix TT VLAN inconsistency on VLAN re-add")=
-
+> Replacing the hlist_del_rcu() call with batadv_hash_remove() provides a=
+dequate
+> protection via hash spinlocks as well as an is-element-still-in-hash ch=
+eck to
+> avoid 'blind' hash removal.
 >=20
-> Reported-by: Ryan Thompson <ryan@eero.com>
+> Fixes: 2443ba3 ("batman-adv: roaming handling mechanism redesign")
+>=20
+> Reported-by: alfonsname@web.de
 > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 
 Acked-by: Antonio Quartulli <antonio@meshcoding.com>
-
 
 
 --=20
 Antonio Quartulli
 
 
---kNqBiSRkKPC3vaCUMEn1JFbTIAkg6lenv
+--6tU0ii4LCxpog9Mu4RotUtI6IuGbLWbbV
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -57,19 +64,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJVg9Y8AAoJEOb/4TMchkvfFmAQAJU1io2SN24sX7rHyGdltJGM
-t1qMOICzPR+Ow1k+8qCx94l9BUXBx5BQ5FLNMaxWgZYny7YKwYgvmC+K8SAbPwl8
-zcuU1VZMY8bMr8k2bg34e2Exj0AbjOY4eRcY+3+QNkzzUvGeu5s+WRoz+ekN60nq
-euNW3peTPlSM5ZnP4scKinMCgsZFKXwm70s41v2l8klgmviHj/dWvbNO7snICI9T
-YufS+UkANn39u+cZS5pEZiHGhqEY5QywxuMYWWJEG+6CuFfuRLkhkeRRjNUHC2EM
-dIewokMUdSP9dnXOaNs+l5ije47dFOg7AnDrCk42xAypuEiygf27wS4OHijKVCU7
-xtR0LsLP2L0AKEfl6ufWTREY7zF9UayAlipNSgMN3eu0SkuUQZ9I2vKkXa1xOgtD
-8KYAsrurWPbgaSEYNJUJ6qOh3tDCidcvgv4JOWazPuMaFkkNtcrR28W/8YqtJeEv
-lu83trLZ2Yco5d7mX/GH6W/E7OIO50VxSElspe7ZZGqEgHHpThzsswgh8FTsGO6g
-Y2aRCYcv2MjpOURiYq/qoCfbB6d2t4XM3VpMsaOitPPzK7Yp7qVW9djNL/kRcaXh
-TwwukbAE2C65tjiDxLBK5LLVnCaWiUYg1pm8NJHtjs5xgaB37aKMGlVlAtDMuq8U
-mSe1aIuMEi8hMcpq5KDh
-=y01q
+iQIcBAEBCAAGBQJVg9a1AAoJEOb/4TMchkvf/fkP/jtCslUNS+9EhmOMApeD86Qf
+aIL1iQHzEQ3AoGer/luM6ouiHu8IVf8dDbzQ4midN1YyHwRNWPprY9ZuNcKtDVTA
+MlX+HRQG2SMCmuAWArGcncO3BOzsusFgWM7rKW/94GcWfCmqOH8ru+zrkQqDcm8L
+qQqLo4f75MeEwfe19CLukb2U2dh5CCTtC/4vTzVNveDunixk4cngjpI4Srh1aBPB
+GuqMhyyDQTMBN6NJjUHNkWHZL1DvgAMxKeAO+p4fPq1jsHJG7mZJhxoE3ZaHV+kC
+vvbgBItryuoBAYAYmYEOfQWwZeqdf/bsVDtz4d2evkcXxDp1pFmij1RKYhUOv1lO
+YapFA7q//ylRzsxR1QUs89CHFdwX3Kddwe7Ar/DZghBDGsNsrOnhMnSjvzy0TiHx
+s79Fw4SxyK1hmRqtZJrzJfD7AtAHtk0NlG1W8lTKSlTfv1b/Uxp7OUTyugwB5IBE
+ExtSWFVgxNryXmjIj048EEVBv0Px10fqyXwUzzCcZ5jqF6xiSfNLQp2/ZOD4Mljy
+NNZg43pbM5gXvc81zkFU3GGFHyByWj5tUhIM+w1W1UtJZWAxQtmE/EDDGN5/PZt6
+aocmE6U9lP8CXaELW+eJ+GeHzLgEHWVQ5qYUnBIZvgEVwIW+IxOIVW4HSjZdwjwB
+teFBMZqGq9gzpTl5Jd9x
+=Im53
 -----END PGP SIGNATURE-----
 
---kNqBiSRkKPC3vaCUMEn1JFbTIAkg6lenv--
+--6tU0ii4LCxpog9Mu4RotUtI6IuGbLWbbV--
