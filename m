@@ -1,15 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-Message-ID: <55831C89.9030707@meshcoding.com>
-Date: Thu, 18 Jun 2015 21:31:21 +0200
-From: Antonio Quartulli <antonio@meshcoding.com>
-MIME-Version: 1.0
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Fri, 19 Jun 2015 13:50:45 +0800
+Message-ID: <2071356.udBP3C0Di5@voltaire>
+In-Reply-To: <55831C89.9030707@meshcoding.com>
 References: <1434596669-9597-1-git-send-email-mareklindner@neomailbox.ch>
-In-Reply-To: <1434596669-9597-1-git-send-email-mareklindner@neomailbox.ch>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="jTe7A58j8bSLX3cemneXlb0OS3kqMnTcR"
+ <55831C89.9030707@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2330139.1sfiXgBfMV";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: fix kernel crash due
- to missing NULL checks
+	to missing NULL checks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,64 +21,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
-
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---jTe7A58j8bSLX3cemneXlb0OS3kqMnTcR
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
+--nextPart2330139.1sfiXgBfMV
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On 18/06/15 05:04, Marek Lindner wrote:
-> diff --git a/translation-table.c b/translation-table.c
-> index e95a424..ae82f69 100644
-> --- a/translation-table.c
-> +++ b/translation-table.c
-> @@ -575,6 +575,11 @@ bool batadv_tt_local_add(struct net_device *soft_i=
-face, const uint8_t *addr,
-> =20
->  	/* increase the refcounter of the related vlan */
->  	vlan =3D batadv_softif_vlan_get(bat_priv, vid);
-> +	if (!vlan) {
-> +		WARN(1, "adding TT local entry %pM to non-existent VLAN %d",
-> +		     addr, BATADV_PRINT_VID(vid));
+On Thursday, June 18, 2015 21:31:21 Antonio Quartulli wrote:
+> WARN returns the value of the expression passed as first argument,
+> therefore you can directly pass "!vlan" and use the whole macro
+> invocation as if condition.
 
-WARN returns the value of the expression passed as first argument,
-therefore you can directly pass "!vlan" and use the whole macro
-invocation as if condition.
+I am aware of this 'feature'  but I don't find it readable enough. In the Linux 
+kernel I found several code sections using the proposed style too which made 
+me favor it. Do you insist on changing that ?
 
-Note: if you are going to merge this patch before Sven's one you need to
-also include bug.h.
+
+> Note: if you are going to merge this patch before Sven's one you need to
+> also include bug.h.
+
+Ok.
 
 Cheers,
+Marek
 
---=20
-Antonio Quartulli
-
-
---jTe7A58j8bSLX3cemneXlb0OS3kqMnTcR
+--nextPart2330139.1sfiXgBfMV
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJVgxyNAAoJEOb/4TMchkvfdssQALIR50H0bTkA38a4cLdWfmNk
-NpenudYcT6ztUmcEqXM8jKpLU6/lVl/WgjYFYgFnNWIG6mEIOHXnEAsfmfHI7+dU
-Buhxu4kkaqLfE4MEYxvsx1wer7FIZiSnYQokOkZwSfN59SnHHKip47bvzhaK5MUt
-kwoCas8ft8Igt3h/bF5yURH7K3ponylnP74zl5H4tEhOi2MnY0nHZfvhSWYYuSfs
-OYfFNVFsaM0HeszaYPYkTdlTSt2wAESaLav1OOfTR0ScELYwrYC/ivqXi3LHEZe7
-KENbpLdClJ22lG/x4bXd0tPoWHRSxFjtfA7aV05FBzKq7AN6kpajOm+DVRe2G2AW
-uG+rvye33QW68YQVur6R20oTIjycWy9PnSfxnJkQQXxMlaXEpT30nYemDNbW9XVp
-vmZp9XnI81VwyyQZKu/28ogJiVIzqBXoIiR1mpL8CoWLdGCmsEE2QQXwi1kif6WR
-0Tkg0gpO3qCpm+KTQwzd3T96JNUnVxaNxpv5E4NeJd7gw3flXm+UL7Lkv2w19S0d
-LdiBK9Nk9jJ68ndBdrC00hue33VebAXgcoE5NGMTj2P1KAW5Rm3kLv7oL8QybyW0
-bkeCseU2yzeUUAE8kz2K2otFQILbT67Z7ZL8UPkH2wCMEhhnKrP0Kg53/+uF7ZAB
-9pJK3APZufwoZjPkGpeB
-=BIih
+iQEcBAABCAAGBQJVg625AAoJEFNVTo/uthzAnO0IAI/u88TEvIBOq9/zaz5dGVbx
+s1KtfoRkDDqTKX7pljDOGbPM70dKVH4bf9G/JO2rWvb6OxkZU3PmH5NzQyGGjANH
+EXCznjwP51b4d7iorLcRykj551ffxMzjxfAbEJLCKVzcQRaFMuQKp9sJRj7sVN+P
+4lpGwnk7J5ssZhWB6Uml4yp5TCagkFPpoohUj4VV2Kk6aa6vIoUw1whflgT9A1To
+lB7Od1yCuKdjbiPg5AlglxMJHJgUUsp33qD5unhcqZoFub/199WjCde4uxh8oM/W
+YmqtBRWbZNtUvT9uvSMX6tDAP7qC886zH6kGN7QV/3IFI/QGFvs/KavmIV9HpN8=
+=SVMv
 -----END PGP SIGNATURE-----
 
---jTe7A58j8bSLX3cemneXlb0OS3kqMnTcR--
+--nextPart2330139.1sfiXgBfMV--
+
