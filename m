@@ -1,15 +1,15 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <5583CC0A.9020802@meshcoding.com>
-Date: Fri, 19 Jun 2015 10:00:10 +0200
+Message-ID: <5583D639.2070403@meshcoding.com>
+Date: Fri, 19 Jun 2015 10:43:37 +0200
 From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1434697758-8399-1-git-send-email-mareklindner@neomailbox.ch>
-In-Reply-To: <1434697758-8399-1-git-send-email-mareklindner@neomailbox.ch>
+References: <1434698174-8899-1-git-send-email-mareklindner@neomailbox.ch>
+In-Reply-To: <1434698174-8899-1-git-send-email-mareklindner@neomailbox.ch>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="4DMAQt50rjMVfbWKwbakjHvhSoh44UKTm"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: convert tt request list into
- hlist
+ boundary="kNqBiSRkKPC3vaCUMEn1JFbTIAkg6lenv"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 maint] batman-adv: fix kernel crash due
+ to missing NULL checks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,32 +25,31 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---4DMAQt50rjMVfbWKwbakjHvhSoh44UKTm
+--kNqBiSRkKPC3vaCUMEn1JFbTIAkg6lenv
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
 
 
-On 19/06/15 09:09, Marek Lindner wrote:
-> The tt request list does not require a double linked list, hence a
-> conversion to hlist saves memory without losing functionality.
+On 19/06/15 09:16, Marek Lindner wrote:
+> batadv_softif_vlan_get() may return NULL which has to be verified
+> by the caller.
 >=20
-> Also, the list_del() call was changed to hlist_del_init() to allow
-> an adding an extra check prior to deletion in batadv_tt_req_node_new().=
+> Fixes: 9729d20 ("batman-adv: fix TT VLAN inconsistency on VLAN re-add")=
 
 >=20
+> Reported-by: Ryan Thompson <ryan@eero.com>
 > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 
-Nice one :)
-
 Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+
 
 
 --=20
 Antonio Quartulli
 
 
---4DMAQt50rjMVfbWKwbakjHvhSoh44UKTm
+--kNqBiSRkKPC3vaCUMEn1JFbTIAkg6lenv
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -58,19 +57,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJVg8wOAAoJEOb/4TMchkvfl+YP/ja+NfvE6kg2YcMgHEwQsAcY
-Kl9jRZ4XfOcUJZy0R2cNIrzDpjAM6pOSDKYJUtMY0e7cS/atnoEswaFRAaKEUEGL
-pXzieHF7kumK5Q/XjCYVk55UDoRWxTOsOW967WZ0Bmdf56CMZVBBA10ybVNxKqVG
-/IjAUTC1t+D69IHXhuqwHLbZyFFMY8oYMVoSWTB1qlMmsu69OdPQzb2OgDVr1+zG
-M3+RGrqVNUz9UEwSnee3/1HG8ABggutVu5gYWOvPbytn6F1hCJWaZyNwmPWG519s
-BCd/h2eGQdy2YGfntTqAyHF8YZfP9gNXpPVxFYxuF57PazmQ5TYE++SK/83gVfai
-MND2G7ZDzv1ykhZcYxvpyMRVvwbGu25d6iZ4b0TxFJjORVLpegPFNRv+mHMH4ywZ
-FZueDWYBduDyGB+oR0rGKWqywPnpBVwsRJvBugbxVovqxK06pxfawdlQIzJVX3Cw
-PBiNAlrQj2iPfiJjQwMf76y+hEBstfQpaRVKstbxJoLkXQDRsYn6tYrQlDpVaSTq
-KkqnyjTdKyVfhufKJIAUN+9YjBCuI9yVvwbdaHkhRwtTN8/AFgRa66EQCnSj3bd4
-3SR32HIMsSzqOIERo05hWx1VoXCR6segu94Kyuo2gzJdnNlh7qWLShOmGXSmIU06
-tv5TuJsthxtrGQpS7Ky3
-=iqt1
+iQIcBAEBCAAGBQJVg9Y8AAoJEOb/4TMchkvfFmAQAJU1io2SN24sX7rHyGdltJGM
+t1qMOICzPR+Ow1k+8qCx94l9BUXBx5BQ5FLNMaxWgZYny7YKwYgvmC+K8SAbPwl8
+zcuU1VZMY8bMr8k2bg34e2Exj0AbjOY4eRcY+3+QNkzzUvGeu5s+WRoz+ekN60nq
+euNW3peTPlSM5ZnP4scKinMCgsZFKXwm70s41v2l8klgmviHj/dWvbNO7snICI9T
+YufS+UkANn39u+cZS5pEZiHGhqEY5QywxuMYWWJEG+6CuFfuRLkhkeRRjNUHC2EM
+dIewokMUdSP9dnXOaNs+l5ije47dFOg7AnDrCk42xAypuEiygf27wS4OHijKVCU7
+xtR0LsLP2L0AKEfl6ufWTREY7zF9UayAlipNSgMN3eu0SkuUQZ9I2vKkXa1xOgtD
+8KYAsrurWPbgaSEYNJUJ6qOh3tDCidcvgv4JOWazPuMaFkkNtcrR28W/8YqtJeEv
+lu83trLZ2Yco5d7mX/GH6W/E7OIO50VxSElspe7ZZGqEgHHpThzsswgh8FTsGO6g
+Y2aRCYcv2MjpOURiYq/qoCfbB6d2t4XM3VpMsaOitPPzK7Yp7qVW9djNL/kRcaXh
+TwwukbAE2C65tjiDxLBK5LLVnCaWiUYg1pm8NJHtjs5xgaB37aKMGlVlAtDMuq8U
+mSe1aIuMEi8hMcpq5KDh
+=y01q
 -----END PGP SIGNATURE-----
 
---4DMAQt50rjMVfbWKwbakjHvhSoh44UKTm--
+--kNqBiSRkKPC3vaCUMEn1JFbTIAkg6lenv--
