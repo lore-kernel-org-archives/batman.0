@@ -1,14 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 19 Jun 2015 11:32 +0200
-Message-ID: <1674100.1XU1fCZBAt@bentobox>
-In-Reply-To: <1434697758-8399-1-git-send-email-mareklindner@neomailbox.ch>
-References: <1434697758-8399-1-git-send-email-mareklindner@neomailbox.ch>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Fri, 19 Jun 2015 17:34:49 +0800
+Message-ID: <1831074.NdRWzKrIfh@voltaire>
+In-Reply-To: <1434646404-19291-1-git-send-email-sven@narfation.org>
+References: <1434646404-19291-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3211582.DWLfaaR3Xa";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: convert tt request list into
-	hlist
+Content-Type: multipart/signed; boundary="nextPart1667417.GR41cBz4oq";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/6] batman-adv: Remove batadv_ types
+	forward declarations
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,32 +21,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 
---nextPart3211582.DWLfaaR3Xa
+--nextPart1667417.GR41cBz4oq
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday 19 June 2015 15:09:18 Marek Lindner wrote:
->  		spin_lock_bh(&bat_priv->tt.req_list_lock);
-> -		list_del(&tt_req_node->list);
-> +		/* only remove tt_req_node if it still is in the list */
-> +		if (!hlist_unhashed(&tt_req_node->list))
-> +			hlist_del_init(&tt_req_node->list);
->  		spin_unlock_bh(&bat_priv->tt.req_list_lock);
->  		kfree(tt_req_node);
->  	}
+On Thursday, June 18, 2015 18:53:19 Sven Eckelmann wrote:
+> main.h is included in every file and is the only way to access types.h.
+> This makes forward declarations for all types defined in types.h
+> unnecessary.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  net/batman-adv/bridge_loop_avoidance.h | 3 ---
+>  net/batman-adv/debugfs.h               | 1 -
+>  net/batman-adv/gateway_common.h        | 1 -
+>  net/batman-adv/icmp_socket.h           | 1 -
+>  net/batman-adv/multicast.h             | 2 --
+>  net/batman-adv/network-coding.h        | 4 ----
+>  net/batman-adv/routing.h               | 4 ----
+>  net/batman-adv/send.h                  | 3 ---
+>  net/batman-adv/soft-interface.h        | 4 ----
+>  net/batman-adv/sysfs.h                 | 2 --
+>  net/batman-adv/translation-table.h     | 2 --
+>  11 files changed, 27 deletions(-)
 
-hlist_del_init doesn't require the hlist_unhashed check because this is
-already done inside of this function [1].
+Applied in revision 31b0151.
 
-Kind regards,
-	Sven
+Thanks,
+Marek
 
-[1] https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/include/linux/list.h?id=a54acb3a6f853e8394c4cb7b6a4d93c88f13eefd#n588
-
---nextPart3211582.DWLfaaR3Xa
+--nextPart1667417.GR41cBz4oq
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -54,20 +60,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJVg+GQAAoJEF2HCgfBJntG6kUQAMl87TltDhORykYD9Z7Eu6NB
-xxqyoueNYbXbwZ5bbbJspKvk06UzSzP/3DSe3vINAED1st4+K4Zf6TGvMD2oMQxj
-MSNGIttmLlNEqIjK/LncuSxr8aH/Gg0mdcBdVj0gJAhN2y86Fi5aJB1RKtYSiswY
-jVLHM9IdLx4nTW4c1iHXdRmv/14pNBtBQGUEcSAoIklhCReWmnYcwmrFBiP/l1mB
-bRI/KF4lbKlt63JE/KKBrfuwCH1jFQZXEQE82yinoEkJ4ho9UDR9sSiTLYYBOcs0
-q+Ox1Vam+h3SXM6rkFhL8hHYw0zDKbXEFhHoiIJJP2caeeQIqm7Kmalivjjmuixf
-A88D/jD8PYu1p7tz1F5m5GwOvcmv/NM8EASURPECcxNJRcFuCftrKbo40INWIBrU
-tdkh5r/t3XYY60jZXPTbkOPVwaSpmIqoausfNIawhYWQS07SG6VbzbsmF+4uN9SA
-LszZ/jWvnYfjGhQilnQPiVFV5rAjUMIXvTkuMONhNWWOgbehuPLAPsIXgc1MMHHg
-igbwV5TfpSm1korzBEKvtpGpjBfeiyVHxSp2hOnr/x6sZScZ1KNg3ToXGwhnKent
-rXz1t1owTXpEKewB+veFvXGh2+f/FHnpvm6gymj5EvKei1GGWY9eBYiyvSOF22P0
-zgNjvtDlLO9GCkNPaoBr
-=+eVy
+iQEcBAABCAAGBQJVg+I6AAoJEFNVTo/uthzA3NoIAKnkbm6YKBwD+NXDeL7HEhUc
+HPx5W4XQ3H9lzci0sIFKo/zBGhdOyzHT6ec3vOUnmn3pOZaMRtIx+3nTTs/5d1xU
+fymGwiVqWXbsAikn2e1VprVwVE09+jSv2Lq7H2bpr6BuRwYtbfwojVs/7979Qx2u
+vkuTuWSB2tKgHFBb3evxEiQIct6bat7ovn/YgKIZt65+vuLoWyE8emmqKa3q11Es
+Y6YlHax+7i4xtbUolC12nVLDArWyVbz4Zac5S8JXGMWhUOJwzM30zgy44ixzqUTe
+kZKh3Ig2uh7TdsnClOtOjAvcqylJT0ZbOE/GrNxotGp5EZEFwwTVaf+AaPCqUH8=
+=hWVk
 -----END PGP SIGNATURE-----
 
---nextPart3211582.DWLfaaR3Xa--
+--nextPart1667417.GR41cBz4oq--
 
