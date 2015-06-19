@@ -1,9 +1,15 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 19 Jun 2015 15:18:54 +0800
-Message-Id: <1434698334-9399-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCHv3 maint] batman-adv: protect tt_local_entry
-	from concurrent delete events
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <5583CC0A.9020802@meshcoding.com>
+Date: Fri, 19 Jun 2015 10:00:10 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
+MIME-Version: 1.0
+References: <1434697758-8399-1-git-send-email-mareklindner@neomailbox.ch>
+In-Reply-To: <1434697758-8399-1-git-send-email-mareklindner@neomailbox.ch>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="4DMAQt50rjMVfbWKwbakjHvhSoh44UKTm"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: convert tt request list into
+ hlist
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,57 +21,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-The tt_local_entry deletion performed in batadv_tt_local_remove() was neither
-protecting against simultaneous deletes nor checking whether the element was
-still part of the list before calling hlist_del_rcu().
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--4DMAQt50rjMVfbWKwbakjHvhSoh44UKTm
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Replacing the hlist_del_rcu() call with batadv_hash_remove() provides adequate
-protection via hash spinlocks as well as an is-element-still-in-hash check to
-avoid 'blind' hash removal.
 
-Fixes: 2443ba3 ("batman-adv: roaming handling mechanism redesign")
 
-Reported-by: alfonsname@web.de
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
-v3: added 'fixes' section
-v2: rebased on master
+On 19/06/15 09:09, Marek Lindner wrote:
+> The tt request list does not require a double linked list, hence a
+> conversion to hlist saves memory without losing functionality.
+>=20
+> Also, the list_del() call was changed to hlist_del_init() to allow
+> an adding an extra check prior to deletion in batadv_tt_req_node_new().=
 
- translation-table.c | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+>=20
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 
-diff --git a/translation-table.c b/translation-table.c
-index f56b847..a65d10d 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -1018,6 +1018,7 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
- 	struct batadv_tt_local_entry *tt_local_entry;
- 	uint16_t flags, curr_flags = BATADV_NO_FLAGS;
- 	struct batadv_softif_vlan *vlan;
-+	void *tt_entry_exists;
- 
- 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr, vid);
- 	if (!tt_local_entry)
-@@ -1045,7 +1046,15 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
- 	 * immediately purge it
- 	 */
- 	batadv_tt_local_event(bat_priv, tt_local_entry, BATADV_TT_CLIENT_DEL);
--	hlist_del_rcu(&tt_local_entry->common.hash_entry);
-+
-+	tt_entry_exists = batadv_hash_remove(bat_priv->tt.local_hash,
-+					     batadv_compare_tt,
-+					     batadv_choose_tt,
-+					     &tt_local_entry->common);
-+	if (!tt_entry_exists)
-+		goto out;
-+
-+	/* extra call to free the local tt entry */
- 	batadv_tt_local_entry_free_ref(tt_local_entry);
- 
- 	/* decrease the reference held for this vlan */
--- 
-2.1.4
+Nice one :)
 
+Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+
+
+--=20
+Antonio Quartulli
+
+
+--4DMAQt50rjMVfbWKwbakjHvhSoh44UKTm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJVg8wOAAoJEOb/4TMchkvfl+YP/ja+NfvE6kg2YcMgHEwQsAcY
+Kl9jRZ4XfOcUJZy0R2cNIrzDpjAM6pOSDKYJUtMY0e7cS/atnoEswaFRAaKEUEGL
+pXzieHF7kumK5Q/XjCYVk55UDoRWxTOsOW967WZ0Bmdf56CMZVBBA10ybVNxKqVG
+/IjAUTC1t+D69IHXhuqwHLbZyFFMY8oYMVoSWTB1qlMmsu69OdPQzb2OgDVr1+zG
+M3+RGrqVNUz9UEwSnee3/1HG8ABggutVu5gYWOvPbytn6F1hCJWaZyNwmPWG519s
+BCd/h2eGQdy2YGfntTqAyHF8YZfP9gNXpPVxFYxuF57PazmQ5TYE++SK/83gVfai
+MND2G7ZDzv1ykhZcYxvpyMRVvwbGu25d6iZ4b0TxFJjORVLpegPFNRv+mHMH4ywZ
+FZueDWYBduDyGB+oR0rGKWqywPnpBVwsRJvBugbxVovqxK06pxfawdlQIzJVX3Cw
+PBiNAlrQj2iPfiJjQwMf76y+hEBstfQpaRVKstbxJoLkXQDRsYn6tYrQlDpVaSTq
+KkqnyjTdKyVfhufKJIAUN+9YjBCuI9yVvwbdaHkhRwtTN8/AFgRa66EQCnSj3bd4
+3SR32HIMsSzqOIERo05hWx1VoXCR6segu94Kyuo2gzJdnNlh7qWLShOmGXSmIU06
+tv5TuJsthxtrGQpS7Ky3
+=iqt1
+-----END PGP SIGNATURE-----
+
+--4DMAQt50rjMVfbWKwbakjHvhSoh44UKTm--
