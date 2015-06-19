@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 19 Jun 2015 16:51:51 +0800
-Message-ID: <2911241.LlF8i4O7m1@voltaire>
-In-Reply-To: <5583D639.2070403@meshcoding.com>
-References: <1434698174-8899-1-git-send-email-mareklindner@neomailbox.ch>
- <5583D639.2070403@meshcoding.com>
+Date: Fri, 19 Jun 2015 16:53:48 +0800
+Message-ID: <1600539.cQqiUDHWci@voltaire>
+In-Reply-To: <5583D6B5.7050706@meshcoding.com>
+References: <1434698334-9399-1-git-send-email-mareklindner@neomailbox.ch>
+ <5583D6B5.7050706@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart14066816.RekGx64co1";
+Content-Type: multipart/signed; boundary="nextPart2648147.IgLpcKBT4r";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 maint] batman-adv: fix kernel crash due
-	to missing NULL checks
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 maint] batman-adv: protect
+	tt_local_entry from concurrent delete events
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,34 +25,39 @@ To: Antonio Quartulli <antonio@meshcoding.com>
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart14066816.RekGx64co1
+--nextPart2648147.IgLpcKBT4r
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, June 19, 2015 10:43:37 Antonio Quartulli wrote:
-> Signed by antonio@meshcoding.com.	Show Details
-> 
-> On 19/06/15 09:16, Marek Lindner wrote:
-> > batadv_softif_vlan_get() may return NULL which has to be verified
-> > by the caller.
+On Friday, June 19, 2015 10:45:41 Antonio Quartulli wrote:
+> On 19/06/15 09:18, Marek Lindner wrote:
+> > The tt_local_entry deletion performed in batadv_tt_local_remove() was
+> > neither protecting against simultaneous deletes nor checking whether the
+> > element was still part of the list before calling hlist_del_rcu().
 > >
 > > 
 > >
-> > Fixes: 9729d20 ("batman-adv: fix TT VLAN inconsistency on VLAN re-add")
+> > Replacing the hlist_del_rcu() call with batadv_hash_remove() provides
+> > adequate protection via hash spinlocks as well as an
+> > is-element-still-in-hash check to avoid 'blind' hash removal.
 > >
 > > 
 > >
-> > Reported-by: Ryan Thompson <ryan@eero.com>
+> > Fixes: 2443ba3 ("batman-adv: roaming handling mechanism redesign")
+> >
+> > 
+> >
+> > Reported-by: alfonsname@web.de
 > > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 > 
 > Acked-by: Antonio Quartulli <antonio@meshcoding.com>
 
-Applied in revision 2c2dfd8.
+Applied in revision af912d7.
 
 Regards,
 Marek
 
---nextPart14066816.RekGx64co1
+--nextPart2648147.IgLpcKBT4r
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -60,14 +65,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVg9grAAoJEFNVTo/uthzA/kgH/3HikYlhl2Ykb1lEUmR8ij95
-MhSiK7Rhu3zzWWsm/12isYwyaLhpV+mTlSQqN8/evtT1j3OXkUwqV029+PS5mZcZ
-+ZUmgvoXSHmKnnwhD0DKIp0f2lwDkKVqqk84sEvmdlRj9Qh9sp6lKRrVB3OW8qQF
-UAyUxNfSuQbNv08pItpP2MNomBs0+OzQ4ymYjgYWAqsDU8ISCloU/z0T2XO554Gn
-KByffBorr9ksUTQBa7IrhtWD4W+24C0YyhFJgkMW1A5r3Y6Comixwngfl3s0UWCk
-LTZAXvPVd9aSug7wUYf1KeN1BwmDFtn9S0nL+U7Xz1fhh8nrXCoqPp2imj+A1qA=
-=F+7B
+iQEcBAABCAAGBQJVg9icAAoJEFNVTo/uthzAXN8H/RzywNFDCl5RJuGEICgBKaQf
+8cIkYQMfBVKeVfbsdvJS7LE+BvIOTtglgT+BrKWnyirKItHgOPE91DdvIzXw43Is
+ZjedaPmHFcUGw9xZFAeTp3EMoGzZEizSANIwmGU9wMIG2QT5UuiIqsvEekpPeDqL
+gM2NRarUBJcuyOujdc1s7DKezQXkojnGLL6YBuIGMRo3SdY1mhqyGpSUfMkb0ZBA
+NGc8jxNuZETpK+4Q3tve90TPv+ReueLqDqE2IAQSclB3P0G/0q+bUE4OIDjNFCIm
+2aKguMQpAhdIf6Z4vze8YEyFqys8JFn4OnEjVbjgab7pFfC4awcaYvVHdBjBhpo=
+=7Qd/
 -----END PGP SIGNATURE-----
 
---nextPart14066816.RekGx64co1--
+--nextPart2648147.IgLpcKBT4r--
 
