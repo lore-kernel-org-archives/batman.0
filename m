@@ -1,14 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 20 Jun 2015 10:26:31 +0200
-Message-ID: <1847613.Lr5mR0jfaA@sven-edge>
-In-Reply-To: <1434721827-4935-1-git-send-email-mareklindner@neomailbox.ch>
-References: <1434721827-4935-1-git-send-email-mareklindner@neomailbox.ch>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart179352011.yekSNJPKLH";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: protect tt request from
-	double deletion
+Date: Sat, 20 Jun 2015 12:13:22 +0200
+Message-Id: <1434795203-21947-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Annotate deleting functions
+	with external lock via lockdep
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,113 +16,167 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
+Functions which use (h)list_del* are requiring correct locking when they
+operate on global lists. Most of the time the search in the list and the
+delete are done in the same function. All other cases should have it
+visible that they require a special lock to avoid race conditions.
 
---nextPart179352011.yekSNJPKLH
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Lockdep asserts can be used to check these problem during runtime when the
+lockdep functionality is enabled.
 
-On Friday 19 June 2015 21:50:27 Marek Lindner wrote:
-> The list_del() call was changed to hlist_del_init() to allow
-> take advantage of the hlist_unhashed() check prior to deletion
-> in batadv_tt_req_node_new().
-> 
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> ---
-> v2: removed redundant hlist_unhashed() check & reword commit message
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/main.c              | 11 ++++++++---
+ net/batman-adv/multicast.c         | 13 +++++++++++--
+ net/batman-adv/network-coding.c    |  4 ++++
+ net/batman-adv/translation-table.c |  2 ++
+ 4 files changed, 25 insertions(+), 5 deletions(-)
 
-list_del_init would also work. It is not necessary to switch to hlists for 
-this feature. It is not possible with RCU but this is not used here.
-
-list_del_init doesn't have a special "list_empty" or (not really existing) 
-"list_unhashed". It is not required because list_del_init on an initialized 
-list_head which is not in a list will only access this list_head and end up 
-with the same list_head.
-
-The problem with the old code is unknown state of the tt_req_node in 
-batadv_send_tt_request. This node could either be in the list (valid state) or 
-already be deleted from it. The deletion state had prev and next pointer of 
-this node in an undefined state (either pointing to nodes in its old list, 
-"random" memory regions or at poisoned addresses). This can be avoided by 
-using list_del_init  + locking for this list. All correctly initialized nodes 
-will then either be inside a list or have prev+next pointing to itself. 
-Calling again list_del_init on a node which has prev+next pointing to itself 
-is safe and will neither change the state of the node or other objects.
-
-Kind regards,
-	Sven
-
-[...]
-> -	list_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
-> -		list_del(&node->list);
-> +	hlist_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
-> +		hlist_del_init(&node->list);
-
-This would only need a change to list_del_init
-
-[...]
->  	spin_lock_bh(&bat_priv->tt.req_list_lock);
-> -	list_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
-> +	hlist_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
->  		if (batadv_has_timed_out(node->issued_at,
->  					 BATADV_TT_REQUEST_TIMEOUT)) {
-> -			list_del(&node->list);
-> +			hlist_del_init(&node->list);
-
-Same here
-
-[...]
-> @@ -2548,7 +2550,8 @@ out:
->  		batadv_hardif_free_ref(primary_if);
->  	if (ret && tt_req_node) {
->  		spin_lock_bh(&bat_priv->tt.req_list_lock);
-> -		list_del(&tt_req_node->list);
-> +		/* hlist_del_init() verifies tt_req_node still is in the list */
-> +		hlist_del_init(&tt_req_node->list);
->  		spin_unlock_bh(&bat_priv->tt.req_list_lock);
->  		kfree(tt_req_node);
->  	}
-
-And here (and this is most likely the only reason why you do all this).
-
-[...]
-> @@ -2982,10 +2986,10 @@ static void batadv_handle_tt_response(struct
-> batadv_priv *bat_priv,
-> 
->  	/* Delete the tt_req_node from pending tt_requests list */
->  	spin_lock_bh(&bat_priv->tt.req_list_lock);
-> -	list_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
-> +	hlist_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
->  		if (!batadv_compare_eth(node->addr, resp_src))
->  			continue;
-> -		list_del(&node->list);
-> +		hlist_del_init(&node->list);
-
-And here
-
---nextPart179352011.yekSNJPKLH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJVhSO6AAoJEF2HCgfBJntGWRYP/2xHcovH53grOrUVxkwVMGy8
-ZQh+t2BaVajxTbB24cnWyI/0Edl+qoU4qOI8jnj3K3DMgJocnOsN7u53Gez7ue7B
-MCUrUOFv4Ni8D+/vQ1jNXqR4LNpPwcYgo287AOz8vOhVZGLq6RDtMQx/jDYQCsBr
-Y3s/g3GnR82yOrFS/YZZaa2JTvJIFyMexcTFfPuzZLat2pLPtNvkediLLjXfeUzU
-ENIRn24L0fN2BdJaIzsJLgS3Grk055cengOjcEQJNQqG081EMbH8WcVF3nMCc57A
-SsNUZfIrK1rXunTLmxJgz7c73+35EfJPN3mNb4jwPDHP7gPbJ9gazZQLnagWBOt9
-PxUnz9z6OVxup+/dzI4uPQt9aXW5tr1SOpoFwRr+7PLKVQccChQpFgLx4pMSYoas
-Fz9QN+ChegrpTnodOuLObNFgpHdC7QVjm/OYxeyJ2tVeiOf6hsXIAa5ihmS+Abfi
-aDQxYjdPfxodThqKGqoMEk+J95OwVxRxvkyVmEJrZC4UygPY+7PFa/5RZJ+5eaxj
-+DVaZ0uwc9JXKy7OSF1wFxe0hAvJO6gCavVD5bF3lg0ZZvFvb00DqmaCzV8LpKjZ
-gULmmO+daEy+AHekUlaVD4JaQvOCpTZRJAyuRHRgYf1rr3zaIeSblxXdYcI3oTY9
-cSzyx7IXSboKx9WooMPC
-=v7y9
------END PGP SIGNATURE-----
-
---nextPart179352011.yekSNJPKLH--
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 40750cb..e71166a 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -30,6 +30,7 @@
+ #include <linux/ipv6.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
++#include <linux/lockdep.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/netdevice.h>
+@@ -737,13 +738,17 @@ static u16 batadv_tvlv_container_list_size(struct batadv_priv *bat_priv)
+ /**
+  * batadv_tvlv_container_remove - remove tvlv container from the tvlv container
+  *  list
++ * @bat_priv: the bat priv with all the soft interface information
+  * @tvlv: the to be removed tvlv container
+  *
+  * Has to be called with the appropriate locks being acquired
+  * (tvlv.container_list_lock).
+  */
+-static void batadv_tvlv_container_remove(struct batadv_tvlv_container *tvlv)
++static void batadv_tvlv_container_remove(struct batadv_priv *bat_priv,
++					 struct batadv_tvlv_container *tvlv)
+ {
++	lockdep_assert_held(&bat_priv->tvlv.handler_list_lock);
++
+ 	if (!tvlv)
+ 		return;
+ 
+@@ -768,7 +773,7 @@ void batadv_tvlv_container_unregister(struct batadv_priv *bat_priv,
+ 
+ 	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
+ 	tvlv = batadv_tvlv_container_get(bat_priv, type, version);
+-	batadv_tvlv_container_remove(tvlv);
++	batadv_tvlv_container_remove(bat_priv, tvlv);
+ 	spin_unlock_bh(&bat_priv->tvlv.container_list_lock);
+ }
+ 
+@@ -807,7 +812,7 @@ void batadv_tvlv_container_register(struct batadv_priv *bat_priv,
+ 
+ 	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
+ 	tvlv_old = batadv_tvlv_container_get(bat_priv, type, version);
+-	batadv_tvlv_container_remove(tvlv_old);
++	batadv_tvlv_container_remove(bat_priv, tvlv_old);
+ 	hlist_add_head(&tvlv_new->list, &bat_priv->tvlv.container_list);
+ 	spin_unlock_bh(&bat_priv->tvlv.container_list_lock);
+ }
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index c64d9b1..f9190ad 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -31,6 +31,7 @@
+ #include <linux/ip.h>
+ #include <linux/ipv6.h>
+ #include <linux/list.h>
++#include <linux/lockdep.h>
+ #include <linux/netdevice.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+@@ -103,15 +104,19 @@ static bool batadv_mcast_mla_is_duplicate(u8 *mcast_addr,
+ 
+ /**
+  * batadv_mcast_mla_list_free - free a list of multicast addresses
++ * @bat_priv: the bat priv with all the soft interface information
+  * @mcast_list: the list to free
+  *
+  * Removes and frees all items in the given mcast_list.
+  */
+-static void batadv_mcast_mla_list_free(struct hlist_head *mcast_list)
++static void batadv_mcast_mla_list_free(struct batadv_priv *bat_priv,
++				       struct hlist_head *mcast_list)
+ {
+ 	struct batadv_hw_addr *mcast_entry;
+ 	struct hlist_node *tmp;
+ 
++	lockdep_assert_held(&bat_priv->tt.commit_lock);
++
+ 	hlist_for_each_entry_safe(mcast_entry, tmp, mcast_list, list) {
+ 		hlist_del(&mcast_entry->list);
+ 		kfree(mcast_entry);
+@@ -134,6 +139,8 @@ static void batadv_mcast_mla_tt_retract(struct batadv_priv *bat_priv,
+ 	struct batadv_hw_addr *mcast_entry;
+ 	struct hlist_node *tmp;
+ 
++	lockdep_assert_held(&bat_priv->tt.commit_lock);
++
+ 	hlist_for_each_entry_safe(mcast_entry, tmp, &bat_priv->mcast.mla_list,
+ 				  list) {
+ 		if (mcast_list &&
+@@ -164,6 +171,8 @@ static void batadv_mcast_mla_tt_add(struct batadv_priv *bat_priv,
+ 	struct batadv_hw_addr *mcast_entry;
+ 	struct hlist_node *tmp;
+ 
++	lockdep_assert_held(&bat_priv->tt.commit_lock);
++
+ 	if (!mcast_list)
+ 		return;
+ 
+@@ -268,7 +277,7 @@ update:
+ 	batadv_mcast_mla_tt_add(bat_priv, &mcast_list);
+ 
+ out:
+-	batadv_mcast_mla_list_free(&mcast_list);
++	batadv_mcast_mla_list_free(bat_priv, &mcast_list);
+ }
+ 
+ /**
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 62defe0..9700223 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -586,6 +586,8 @@ static bool batadv_nc_sniffed_purge(struct batadv_priv *bat_priv,
+ 	unsigned long timeout = bat_priv->nc.max_buffer_time;
+ 	bool res = false;
+ 
++	lockdep_assert_held(&nc_path->packet_list_lock);
++
+ 	/* Packets are added to tail, so the remaining packets did not time
+ 	 * out and we can stop processing the current queue
+ 	 */
+@@ -622,6 +624,8 @@ static bool batadv_nc_fwd_flush(struct batadv_priv *bat_priv,
+ {
+ 	unsigned long timeout = bat_priv->nc.max_fwd_delay;
+ 
++	lockdep_assert_held(&nc_path->packet_list_lock);
++
+ 	/* Packets are added to tail, so the remaining packets did not time
+ 	 * out and we can stop processing the current queue
+ 	 */
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index e96710c..7490006 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1669,6 +1669,8 @@ static void
+ _batadv_tt_global_del_orig_entry(struct batadv_tt_global_entry *tt_global_entry,
+ 				 struct batadv_tt_orig_list_entry *orig_entry)
+ {
++	lockdep_assert_held(&tt_global_entry->list_lock);
++
+ 	batadv_tt_global_size_dec(orig_entry->orig_node,
+ 				  tt_global_entry->common.vid);
+ 	atomic_dec(&tt_global_entry->orig_list_count);
+-- 
+2.1.4
 
