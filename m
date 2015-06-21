@@ -1,15 +1,9 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 20 Jun 2015 18:14:16 +0800
-Message-ID: <2965545.uDBilNAQQ0@voltaire>
-In-Reply-To: <1847613.Lr5mR0jfaA@sven-edge>
-References: <1434721827-4935-1-git-send-email-mareklindner@neomailbox.ch>
- <1847613.Lr5mR0jfaA@sven-edge>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7211118.GMLtev6dXd";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: protect tt request from
-	double deletion
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 21 Jun 2015 14:42:49 +0200
+Message-Id: <1434890572-3199-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v2 1/4] batman-adv: Return EINVAL on invalid
+	gw_bandwidth change
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,50 +17,48 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+Invalid speed settings by the user are currently acknowledged as correct
+but not stored. Instead the return of the store operation of the file
+"gw_bandwidth" should indicate that the given value is not acceptable.
 
---nextPart7211118.GMLtev6dXd
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+v2:
+ * rebased on current master
+ * add missing header linux/errno.h
 
-On Saturday, June 20, 2015 10:26:31 Sven Eckelmann wrote:
-> On Friday 19 June 2015 21:50:27 Marek Lindner wrote:
-> > The list_del() call was changed to hlist_del_init() to allow
-> > take advantage of the hlist_unhashed() check prior to deletion
-> > in batadv_tt_req_node_new().
-> >
-> > 
-> >
-> > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> > ---
-> > v2: removed redundant hlist_unhashed() check & reword commit message
-> 
-> list_del_init would also work. It is not necessary to switch to hlists for 
-> this feature. It is not possible with RCU but this is not used here.
+ net/batman-adv/gateway_common.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-I am aware of that fact. Still, I'd like to convert the list to hlist. If you 
-prefer I can do this in 2 steps (first changing to list_del_init() and then 
-changing everything to hlist).
-
-
-Cheers,
-Marek
-
---nextPart7211118.GMLtev6dXd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJVhTz4AAoJEFNVTo/uthzA0JAIAMRI6JYp0nOdcQFwKeH+yLhg
-ZO+DOkurG64tJqtii64a/8cnugBA5GnT2jLs7EhaNd9i6CIq1+JUBoIfPpb2wvxI
-x610ikeBGnrvMmYj6EEKOi8TEWuNbGNilRQriSOwxH6min3TxWtjpOckdJz5bmaK
-jpMwydiPwVxzsGhLbNKzXx8xnMnvv6Lm+CXop2eIw0BrlO5mdGVQUneL5I6tCi2F
-lT7txt2GiFqlR/Kz2UswKC4W+VHn5v9HYn++jYtPhTtctuGOPjbUxFWpB2SjTA+w
-EVWMFOGId9ebn+GbPUWFQq7dBKLe/YJ7YZOeQaokFUVnrUfsFaLlnNXwuIRvEVc=
-=JBLp
------END PGP SIGNATURE-----
-
---nextPart7211118.GMLtev6dXd--
+diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
+index c50931c..6b930a6 100644
+--- a/net/batman-adv/gateway_common.c
++++ b/net/batman-adv/gateway_common.c
+@@ -19,6 +19,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
++#include <linux/errno.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/kernel.h>
+ #include <linux/netdevice.h>
+@@ -160,7 +161,7 @@ ssize_t batadv_gw_bandwidth_set(struct net_device *net_dev, char *buff,
+ 
+ 	ret = batadv_parse_gw_bandwidth(net_dev, buff, &down_new, &up_new);
+ 	if (!ret)
+-		goto end;
++		return -EINVAL;
+ 
+ 	if (!down_new)
+ 		down_new = 1;
+@@ -184,7 +185,6 @@ ssize_t batadv_gw_bandwidth_set(struct net_device *net_dev, char *buff,
+ 	atomic_set(&bat_priv->gw.bandwidth_up, up_new);
+ 	batadv_gw_tvlv_container_update(bat_priv);
+ 
+-end:
+ 	return count;
+ }
+ 
+-- 
+2.1.4
 
