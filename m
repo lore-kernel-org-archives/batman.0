@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 21 Jun 2015 14:42:51 +0200
-Message-Id: <1434890572-3199-3-git-send-email-sven@narfation.org>
+Date: Sun, 21 Jun 2015 14:42:52 +0200
+Message-Id: <1434890572-3199-4-git-send-email-sven@narfation.org>
 In-Reply-To: <1434890572-3199-1-git-send-email-sven@narfation.org>
 References: <1434890572-3199-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 3/4] batman-adv: Define (u|s)(8|16|32|64)
-	limits for Linux < 3.14
+Subject: [B.A.T.M.A.N.] [PATCH v2 4/4] batman-adv: Fix gw_bandwidth
+	calculation on 32 bit systems
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,40 +19,131 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+The TVLV for the gw_bandwidth stores everything as u32. But the
+gw_bandwidth reads the signed long which limits the maximum value to
+(2 ** 31 - 1) on systems with 4 byte long. Also the input value is always
+converted from either Mibit/s or Kibit/s to 100Kibit/s. This reduces the
+values even further when the user sets it via the default unit Kibit/s. It
+may even cause an integer overflow and end up with a value the user never
+intended.
+
+Instead read the values as u64, check for possible overflows, do the unit
+adjustments and then reduce the size to u32.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v2:
  * rebased on current master
 
- compat-include/linux/kernel.h | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ net/batman-adv/gateway_common.c | 49 +++++++++++++++++++++++++++++++++++------
+ 1 file changed, 42 insertions(+), 7 deletions(-)
 
-diff --git a/compat-include/linux/kernel.h b/compat-include/linux/kernel.h
-index 663f9e9..c39cbe8 100644
---- a/compat-include/linux/kernel.h
-+++ b/compat-include/linux/kernel.h
-@@ -53,4 +53,21 @@
+diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
+index 6b930a6..058b957 100644
+--- a/net/batman-adv/gateway_common.c
++++ b/net/batman-adv/gateway_common.c
+@@ -18,6 +18,7 @@
+ #include "gateway_common.h"
+ #include "main.h"
  
- #endif /* < KERNEL_VERSION(2, 6, 39) */
++#include <asm/div64.h>
+ #include <linux/atomic.h>
+ #include <linux/errno.h>
+ #include <linux/byteorder/generic.h>
+@@ -44,7 +45,7 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
+ {
+ 	enum batadv_bandwidth_units bw_unit_type = BATADV_BW_UNIT_KBIT;
+ 	char *slash_ptr, *tmp_ptr;
+-	long ldown, lup;
++	u64 ldown, lup;
+ 	int ret;
  
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0)
+ 	slash_ptr = strchr(buff, '/');
+@@ -62,7 +63,7 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
+ 			*tmp_ptr = '\0';
+ 	}
+ 
+-	ret = kstrtol(buff, 10, &ldown);
++	ret = kstrtou64(buff, 10, &ldown);
+ 	if (ret) {
+ 		batadv_err(net_dev,
+ 			   "Download speed of gateway mode invalid: %s\n",
+@@ -72,14 +73,31 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
+ 
+ 	switch (bw_unit_type) {
+ 	case BATADV_BW_UNIT_MBIT:
+-		*down = ldown * 10;
++		/* prevent overflow */
++		if (U64_MAX / 10 < ldown) {
++			batadv_err(net_dev,
++				   "Download speed of gateway mode too large: %s\n",
++				   buff);
++			return false;
++		}
 +
-+#define U8_MAX		((u8)~0U)
-+#define S8_MAX		((s8)(U8_MAX >> 1))
-+#define S8_MIN		((s8)(-S8_MAX - 1))
-+#define U16_MAX		((u16)~0U)
-+#define S16_MAX		((s16)(U16_MAX >> 1))
-+#define S16_MIN		((s16)(-S16_MAX - 1))
-+#define U32_MAX		((u32)~0U)
-+#define S32_MAX		((s32)(U32_MAX >> 1))
-+#define S32_MIN		((s32)(-S32_MAX - 1))
-+#define U64_MAX		((u64)~0ULL)
-+#define S64_MAX		((s64)(U64_MAX >> 1))
-+#define S64_MIN		((s64)(-S64_MAX - 1))
++		ldown *= 10;
+ 		break;
+ 	case BATADV_BW_UNIT_KBIT:
+ 	default:
+-		*down = ldown / 100;
++		do_div(ldown, 100);
+ 		break;
+ 	}
+ 
++	if (U32_MAX < ldown) {
++		batadv_err(net_dev,
++			   "Download speed of gateway mode too large: %s\n",
++			   buff);
++		return false;
++	}
 +
-+#endif /* < KERNEL_VERSION(3, 14, 0) */
++	*down = ldown;
 +
- #endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_KERNEL_H_ */
+ 	/* we also got some upload info */
+ 	if (slash_ptr) {
+ 		bw_unit_type = BATADV_BW_UNIT_KBIT;
+@@ -95,7 +113,7 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
+ 				*tmp_ptr = '\0';
+ 		}
+ 
+-		ret = kstrtol(slash_ptr + 1, 10, &lup);
++		ret = kstrtou64(slash_ptr + 1, 10, &lup);
+ 		if (ret) {
+ 			batadv_err(net_dev,
+ 				   "Upload speed of gateway mode invalid: %s\n",
+@@ -105,13 +123,30 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
+ 
+ 		switch (bw_unit_type) {
+ 		case BATADV_BW_UNIT_MBIT:
+-			*up = lup * 10;
++			/* prevent overflow */
++			if (U64_MAX / 10 < lup) {
++				batadv_err(net_dev,
++					   "Upload speed of gateway mode too large: %s\n",
++					   slash_ptr + 1);
++				return false;
++			}
++
++			lup *= 10;
+ 			break;
+ 		case BATADV_BW_UNIT_KBIT:
+ 		default:
+-			*up = lup / 100;
++			do_div(lup, 100);
+ 			break;
+ 		}
++
++		if (U32_MAX < lup) {
++			batadv_err(net_dev,
++				   "Upload speed of gateway mode too large: %s\n",
++				   slash_ptr + 1);
++			return false;
++		}
++
++		*up = lup;
+ 	}
+ 
+ 	return true;
 -- 
 2.1.4
 
