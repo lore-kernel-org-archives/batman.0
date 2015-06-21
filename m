@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 21 Jun 2015 14:45:15 +0200
-Message-Id: <1434890715-14370-2-git-send-email-sven@narfation.org>
+Date: Sun, 21 Jun 2015 15:23:04 +0200
+Message-Id: <1434892984-14142-1-git-send-email-sven@narfation.org>
 In-Reply-To: <1434890715-14370-1-git-send-email-sven@narfation.org>
 References: <1434890715-14370-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 2/2] batman-adv: Add lockdep_asserts for
-	documented external locks
+Subject: [B.A.T.M.A.N.] [PATCH v2 3/3] batman-adv: Add compat code for
+	lockdep_assert_held
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,85 +19,51 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Some functions already have documentation about looks they require inside
-their kerneldoc header. These can be directly tested during runtime using
-the lockdep asserts.
-
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-v2:
- * add missing header linux/lockdep.h in fragmentation.c
+ compat-include/linux/lockdep.h | 33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
+ create mode 100644 compat-include/linux/lockdep.h
 
- net/batman-adv/fragmentation.c     | 3 +++
- net/batman-adv/multicast.c         | 6 ++++++
- net/batman-adv/translation-table.c | 2 ++
- 3 files changed, 11 insertions(+)
-
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index ec5f7bc..700c96c 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -25,6 +25,7 @@
- #include <linux/if_ether.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
-+#include <linux/lockdep.h>
- #include <linux/netdevice.h>
- #include <linux/pkt_sched.h>
- #include <linux/skbuff.h>
-@@ -112,6 +113,8 @@ static int batadv_frag_size_limit(void)
- static bool batadv_frag_init_chain(struct batadv_frag_table_entry *chain,
- 				   u16 seqno)
- {
-+	lockdep_assert_held(&chain->lock);
+diff --git a/compat-include/linux/lockdep.h b/compat-include/linux/lockdep.h
+new file mode 100644
+index 0000000..e646114
+--- /dev/null
++++ b/compat-include/linux/lockdep.h
+@@ -0,0 +1,33 @@
++/* Copyright (C) 2007-2015 B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner, Simon Wunderlich
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see <http://www.gnu.org/licenses/>.
++ *
++ * This file contains macros for maintaining compatibility with older versions
++ * of the Linux kernel.
++ */
 +
- 	if (chain->seqno == seqno)
- 		return false;
- 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index f9190ad..cd8eaca 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -609,6 +609,8 @@ static void batadv_mcast_want_unsnoop_update(struct batadv_priv *bat_priv,
- 	struct hlist_node *node = &orig->mcast_want_all_unsnoopables_node;
- 	struct hlist_head *head = &bat_priv->mcast.want_all_unsnoopables_list;
- 
-+	lockdep_assert_held(&orig->mcast_handler_lock);
++#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_LOCKDEP_H_
++#define _NET_BATMAN_ADV_COMPAT_LINUX_LOCKDEP_H_
 +
- 	/* switched from flag unset to set */
- 	if (mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
- 	    !(orig->mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES)) {
-@@ -652,6 +654,8 @@ static void batadv_mcast_want_ipv4_update(struct batadv_priv *bat_priv,
- 	struct hlist_node *node = &orig->mcast_want_all_ipv4_node;
- 	struct hlist_head *head = &bat_priv->mcast.want_all_ipv4_list;
- 
-+	lockdep_assert_held(&orig->mcast_handler_lock);
++#include <linux/version.h>
++#include_next <linux/lockdep.h>
 +
- 	/* switched from flag unset to set */
- 	if (mcast_flags & BATADV_MCAST_WANT_ALL_IPV4 &&
- 	    !(orig->mcast_flags & BATADV_MCAST_WANT_ALL_IPV4)) {
-@@ -695,6 +699,8 @@ static void batadv_mcast_want_ipv6_update(struct batadv_priv *bat_priv,
- 	struct hlist_node *node = &orig->mcast_want_all_ipv6_node;
- 	struct hlist_head *head = &bat_priv->mcast.want_all_ipv6_list;
- 
-+	lockdep_assert_held(&orig->mcast_handler_lock);
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 32)
 +
- 	/* switched from flag unset to set */
- 	if (mcast_flags & BATADV_MCAST_WANT_ALL_IPV6 &&
- 	    !(orig->mcast_flags & BATADV_MCAST_WANT_ALL_IPV6)) {
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 7490006..a919b5d 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -3264,6 +3264,8 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
-  */
- static void batadv_tt_local_commit_changes_nolock(struct batadv_priv *bat_priv)
- {
-+	lockdep_assert_held(&bat_priv->tt.commit_lock);
++#define lockdep_assert_held(l)	do { (void)(l); } while (0)
 +
- 	/* Update multicast addresses in local translation table */
- 	batadv_mcast_mla_update(bat_priv);
- 
++#endif /* < KERNEL_VERSION(2, 6, 32) */
++
++#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_LOCKDEP_H_ */
 -- 
 2.1.4
 
