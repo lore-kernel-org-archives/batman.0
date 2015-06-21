@@ -1,11 +1,16 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 21 Jun 2015 19:40:09 +0200
-Message-Id: <1434908409-1922-4-git-send-email-sven@narfation.org>
-In-Reply-To: <1434908409-1922-1-git-send-email-sven@narfation.org>
-References: <1434908409-1922-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3 4/4] batman-adv: Fix gw_bandwidth
-	calculation on 32 bit systems
+Date: Sun, 21 Jun 2015 20:27:45 +0200
+Message-ID: <1534492.Qn5WYoJSum@sven-edge>
+In-Reply-To: <20150621.093713.572451264516042062.davem@davemloft.net>
+References: <1434481584-1275-1-git-send-email-antonio@meshcoding.com>
+ <1434481584-1275-2-git-send-email-antonio@meshcoding.com>
+ <20150621.093713.572451264516042062.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart3043306.pmRPLzhzjv";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Avoid u32 overflow
+	during gateway select
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,136 +22,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: antonio@meshcoding.com
+Cc: ruben@vfn-nrw.de, mareklindner@neomailbox.ch, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, David Miller <davem@davemloft.net>
 
-The TVLV for the gw_bandwidth stores everything as u32. But the
-gw_bandwidth reads the signed long which limits the maximum value to
-(2 ** 31 - 1) on systems with 4 byte long. Also the input value is always
-converted from either Mibit/s or Kibit/s to 100Kibit/s. This reduces the
-values even further when the user sets it via the default unit Kibit/s. It
-may even cause an integer overflow and end up with a value the user never
-intended.
 
-Instead read the values as u64, check for possible overflows, do the unit
-adjustments and then reduce the size to u32.
+--nextPart3043306.pmRPLzhzjv
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v3:
- * replaced do_div with faster div_u64
-v2:
- * rebased on current master
- * add missing header linux/errno.h
+On Sunday 21 June 2015 09:37:13 David Miller wrote:
+> From: Antonio Quartulli <antonio@meshcoding.com>
+> Date: Tue, 16 Jun 2015 21:06:23 +0200
+> 
+> > @@ -133,7 +133,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv
+> > *bat_priv)> 
+> >  	struct batadv_neigh_node *router;
+> >  	struct batadv_neigh_ifinfo *router_ifinfo;
+> >  	struct batadv_gw_node *gw_node, *curr_gw = NULL;
+> > 
+> > -	uint32_t max_gw_factor = 0, tmp_gw_factor = 0;
+> > +	uint64_t max_gw_factor = 0, tmp_gw_factor = 0;
+> > 
+> >  	uint32_t gw_divisor;
+> 
+> Divides are performed using these variables, so if you make
+> them 64-bit the build will fail.  You have to use one of the
+> routines in include/linux/math64.h in this situation, but
+> realize that this operation is now going to be quite expensive.
 
- net/batman-adv/gateway_common.c | 49 +++++++++++++++++++++++++++++++++++------
- 1 file changed, 42 insertions(+), 7 deletions(-)
+Just a minor comment: The division is currently "max_gw_factor >> 18" which 
+the compiler also outputs as such (shrd + shr on i586). This is the reason why 
+it currently also works on architectures without a native 64 bit div.
 
-diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
-index 6b930a6..0cb5e6b 100644
---- a/net/batman-adv/gateway_common.c
-+++ b/net/batman-adv/gateway_common.c
-@@ -22,6 +22,7 @@
- #include <linux/errno.h>
- #include <linux/byteorder/generic.h>
- #include <linux/kernel.h>
-+#include <linux/math64.h>
- #include <linux/netdevice.h>
- #include <linux/stddef.h>
- #include <linux/string.h>
-@@ -44,7 +45,7 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- {
- 	enum batadv_bandwidth_units bw_unit_type = BATADV_BW_UNIT_KBIT;
- 	char *slash_ptr, *tmp_ptr;
--	long ldown, lup;
-+	u64 ldown, lup;
- 	int ret;
- 
- 	slash_ptr = strchr(buff, '/');
-@@ -62,7 +63,7 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 			*tmp_ptr = '\0';
- 	}
- 
--	ret = kstrtol(buff, 10, &ldown);
-+	ret = kstrtou64(buff, 10, &ldown);
- 	if (ret) {
- 		batadv_err(net_dev,
- 			   "Download speed of gateway mode invalid: %s\n",
-@@ -72,14 +73,31 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 
- 	switch (bw_unit_type) {
- 	case BATADV_BW_UNIT_MBIT:
--		*down = ldown * 10;
-+		/* prevent overflow */
-+		if (U64_MAX / 10 < ldown) {
-+			batadv_err(net_dev,
-+				   "Download speed of gateway mode too large: %s\n",
-+				   buff);
-+			return false;
-+		}
-+
-+		ldown *= 10;
- 		break;
- 	case BATADV_BW_UNIT_KBIT:
- 	default:
--		*down = ldown / 100;
-+		ldown = div_u64(ldown, 100);
- 		break;
- 	}
- 
-+	if (U32_MAX < ldown) {
-+		batadv_err(net_dev,
-+			   "Download speed of gateway mode too large: %s\n",
-+			   buff);
-+		return false;
-+	}
-+
-+	*down = ldown;
-+
- 	/* we also got some upload info */
- 	if (slash_ptr) {
- 		bw_unit_type = BATADV_BW_UNIT_KBIT;
-@@ -95,7 +113,7 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 				*tmp_ptr = '\0';
- 		}
- 
--		ret = kstrtol(slash_ptr + 1, 10, &lup);
-+		ret = kstrtou64(slash_ptr + 1, 10, &lup);
- 		if (ret) {
- 			batadv_err(net_dev,
- 				   "Upload speed of gateway mode invalid: %s\n",
-@@ -105,13 +123,30 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 
- 		switch (bw_unit_type) {
- 		case BATADV_BW_UNIT_MBIT:
--			*up = lup * 10;
-+			/* prevent overflow */
-+			if (U64_MAX / 10 < lup) {
-+				batadv_err(net_dev,
-+					   "Upload speed of gateway mode too large: %s\n",
-+					   slash_ptr + 1);
-+				return false;
-+			}
-+
-+			lup *= 10;
- 			break;
- 		case BATADV_BW_UNIT_KBIT:
- 		default:
--			*up = lup / 100;
-+			lup = div_u64(lup, 100);
- 			break;
- 		}
-+
-+		if (U32_MAX < lup) {
-+			batadv_err(net_dev,
-+				   "Upload speed of gateway mode too large: %s\n",
-+				   slash_ptr + 1);
-+			return false;
-+		}
-+
-+		*up = lup;
- 	}
- 
- 	return true;
--- 
-2.1.4
+Kind regards,
+	Sven
+--nextPart3043306.pmRPLzhzjv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJVhwIkAAoJEF2HCgfBJntG9wUQAMfCAQwvAIaIe/xOQudm9ZE6
+tjv3CsAHV7XIU/kpcTsd9+kXgUpUMWlv2QLW8+MnAyem7rAohLA8BTgaJ8reOjBu
+OK+e8pv3Zq2CAMwvqviHXS3i6CASaFY53klFlwewSxKvcGygfhXDbdMyV2GHYIef
+v6PD6x0T0rMCSz7RY5aeN17QiNMJLOW2lkzS7hxEw5ZZZbr6UvEBIMcrclGOhznS
+9Ww9phZKkr09qPMcAasSjLSIs+ZZK/J425OXQ4nKMG9UOFpM5nFRyJVy98c9PAiG
+1ELzwXgV+KFPftL3KmbOV4tlZDQcw9X6DfC/qPVewzpiTbRl24ufOIGbxa9POVEQ
+meMXBIxbDgYTqeJHbH8E2RAIY8nSMAbgqj6Vx6lkhZI66SLh7fwWmlZlh69d6Bft
+i/4doemeW6SLovNgoLiT+Zspg1qpXXryNkCi4vjoUfZOzO+2z0qYi7V+KbFmh7NT
+WRiJ/6OjbbFNi+V4FVR11LIslnYG8dd+C0UYmND0KYQkv0tuMd7TqSQ9QX6fKUrC
+UAZI5hBg6cL7KfG7xz9Nt8nH305C3KQb78O+hoIQWSK25vKJCP3gmZ5SvcSOFJtq
+jTjZ8aZILYL7NyAE0SW6wACO4q4rM8YpPF098MF1SQlJXHE2U2PEA3/Ox3lVFz7f
+VG+ufCog2ydvbM141vG2
+=S3+s
+-----END PGP SIGNATURE-----
+
+--nextPart3043306.pmRPLzhzjv--
 
