@@ -1,10 +1,8 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 22 Jun 2015 00:30:23 +0800
-Message-Id: <1434904223-10227-2-git-send-email-mareklindner@neomailbox.ch>
-In-Reply-To: <1434904223-10227-1-git-send-email-mareklindner@neomailbox.ch>
-References: <1434904223-10227-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: prevent potential hlist
+Date: Mon, 22 Jun 2015 00:41:51 +0800
+Message-Id: <1434904911-12504-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCHv3 maint] batman-adv: protect tt request from
 	double deletion
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -20,30 +18,58 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-The hlist_del_rcu() call in batadv_tt_global_size_mod() does not check
-if the element still is part of the list prior to deletion. The atomic
-list counter should prevent the worst but converting to
-hlist_del_init_rcu() ensures the element can't be deleted more than
-once.
+The list_del() calls were changed to list_del_init() to prevent
+an accidental double deletion in batadv_tt_req_node_new().
 
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/translation-table.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+v3: rebase on maint & removed hlist conversion
+v2: removed redundant hlist_unhashed() check & reword commit message
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index ca0bcac..e29c9e1 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -315,7 +315,7 @@ static void batadv_tt_global_size_mod(struct batadv_orig_node *orig_node,
+ translation-table.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/translation-table.c b/translation-table.c
+index dfe8896..b6c0f52 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -2194,7 +2194,7 @@ static void batadv_tt_req_list_free(struct batadv_priv *bat_priv)
+ 	spin_lock_bh(&bat_priv->tt.req_list_lock);
  
- 	if (atomic_add_return(v, &vlan->tt.num_entries) == 0) {
- 		spin_lock_bh(&orig_node->vlan_list_lock);
--		hlist_del_rcu(&vlan->list);
-+		hlist_del_init_rcu(&vlan->list);
- 		spin_unlock_bh(&orig_node->vlan_list_lock);
- 		batadv_orig_node_vlan_free_ref(vlan);
+ 	list_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
+-		list_del(&node->list);
++		list_del_init(&node->list);
+ 		kfree(node);
  	}
+ 
+@@ -2230,7 +2230,7 @@ static void batadv_tt_req_purge(struct batadv_priv *bat_priv)
+ 	list_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
+ 		if (batadv_has_timed_out(node->issued_at,
+ 					 BATADV_TT_REQUEST_TIMEOUT)) {
+-			list_del(&node->list);
++			list_del_init(&node->list);
+ 			kfree(node);
+ 		}
+ 	}
+@@ -2512,7 +2512,8 @@ out:
+ 		batadv_hardif_free_ref(primary_if);
+ 	if (ret && tt_req_node) {
+ 		spin_lock_bh(&bat_priv->tt.req_list_lock);
+-		list_del(&tt_req_node->list);
++		/* list_del_init() verifies tt_req_node still is in the list */
++		list_del_init(&tt_req_node->list);
+ 		spin_unlock_bh(&bat_priv->tt.req_list_lock);
+ 		kfree(tt_req_node);
+ 	}
+@@ -2949,7 +2950,7 @@ static void batadv_handle_tt_response(struct batadv_priv *bat_priv,
+ 	list_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
+ 		if (!batadv_compare_eth(node->addr, resp_src))
+ 			continue;
+-		list_del(&node->list);
++		list_del_init(&node->list);
+ 		kfree(node);
+ 	}
+ 
 -- 
 2.1.4
 
