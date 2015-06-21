@@ -1,11 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 21 Jun 2015 14:42:52 +0200
-Message-Id: <1434890572-3199-4-git-send-email-sven@narfation.org>
-In-Reply-To: <1434890572-3199-1-git-send-email-sven@narfation.org>
-References: <1434890572-3199-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 4/4] batman-adv: Fix gw_bandwidth
-	calculation on 32 bit systems
+Date: Sun, 21 Jun 2015 14:45:14 +0200
+Message-Id: <1434890715-14370-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v2 1/2] batman-adv: Annotate deleting
+	functions with external lock via lockdep
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,131 +17,169 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The TVLV for the gw_bandwidth stores everything as u32. But the
-gw_bandwidth reads the signed long which limits the maximum value to
-(2 ** 31 - 1) on systems with 4 byte long. Also the input value is always
-converted from either Mibit/s or Kibit/s to 100Kibit/s. This reduces the
-values even further when the user sets it via the default unit Kibit/s. It
-may even cause an integer overflow and end up with a value the user never
-intended.
+Functions which use (h)list_del* are requiring correct locking when they
+operate on global lists. Most of the time the search in the list and the
+delete are done in the same function. All other cases should have it
+visible that they require a special lock to avoid race conditions.
 
-Instead read the values as u64, check for possible overflows, do the unit
-adjustments and then reduce the size to u32.
+Lockdep asserts can be used to check these problem during runtime when the
+lockdep functionality is enabled.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v2:
- * rebased on current master
+ * no change
 
- net/batman-adv/gateway_common.c | 49 +++++++++++++++++++++++++++++++++++------
- 1 file changed, 42 insertions(+), 7 deletions(-)
+ net/batman-adv/main.c              | 11 ++++++++---
+ net/batman-adv/multicast.c         | 13 +++++++++++--
+ net/batman-adv/network-coding.c    |  4 ++++
+ net/batman-adv/translation-table.c |  2 ++
+ 4 files changed, 25 insertions(+), 5 deletions(-)
 
-diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
-index 6b930a6..058b957 100644
---- a/net/batman-adv/gateway_common.c
-+++ b/net/batman-adv/gateway_common.c
-@@ -18,6 +18,7 @@
- #include "gateway_common.h"
- #include "main.h"
- 
-+#include <asm/div64.h>
- #include <linux/atomic.h>
- #include <linux/errno.h>
- #include <linux/byteorder/generic.h>
-@@ -44,7 +45,7 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 40750cb..e71166a 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -30,6 +30,7 @@
+ #include <linux/ipv6.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
++#include <linux/lockdep.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/netdevice.h>
+@@ -737,13 +738,17 @@ static u16 batadv_tvlv_container_list_size(struct batadv_priv *bat_priv)
+ /**
+  * batadv_tvlv_container_remove - remove tvlv container from the tvlv container
+  *  list
++ * @bat_priv: the bat priv with all the soft interface information
+  * @tvlv: the to be removed tvlv container
+  *
+  * Has to be called with the appropriate locks being acquired
+  * (tvlv.container_list_lock).
+  */
+-static void batadv_tvlv_container_remove(struct batadv_tvlv_container *tvlv)
++static void batadv_tvlv_container_remove(struct batadv_priv *bat_priv,
++					 struct batadv_tvlv_container *tvlv)
  {
- 	enum batadv_bandwidth_units bw_unit_type = BATADV_BW_UNIT_KBIT;
- 	char *slash_ptr, *tmp_ptr;
--	long ldown, lup;
-+	u64 ldown, lup;
- 	int ret;
- 
- 	slash_ptr = strchr(buff, '/');
-@@ -62,7 +63,7 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 			*tmp_ptr = '\0';
- 	}
- 
--	ret = kstrtol(buff, 10, &ldown);
-+	ret = kstrtou64(buff, 10, &ldown);
- 	if (ret) {
- 		batadv_err(net_dev,
- 			   "Download speed of gateway mode invalid: %s\n",
-@@ -72,14 +73,31 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 
- 	switch (bw_unit_type) {
- 	case BATADV_BW_UNIT_MBIT:
--		*down = ldown * 10;
-+		/* prevent overflow */
-+		if (U64_MAX / 10 < ldown) {
-+			batadv_err(net_dev,
-+				   "Download speed of gateway mode too large: %s\n",
-+				   buff);
-+			return false;
-+		}
++	lockdep_assert_held(&bat_priv->tvlv.handler_list_lock);
 +
-+		ldown *= 10;
- 		break;
- 	case BATADV_BW_UNIT_KBIT:
- 	default:
--		*down = ldown / 100;
-+		do_div(ldown, 100);
- 		break;
- 	}
+ 	if (!tvlv)
+ 		return;
  
-+	if (U32_MAX < ldown) {
-+		batadv_err(net_dev,
-+			   "Download speed of gateway mode too large: %s\n",
-+			   buff);
-+		return false;
-+	}
-+
-+	*down = ldown;
-+
- 	/* we also got some upload info */
- 	if (slash_ptr) {
- 		bw_unit_type = BATADV_BW_UNIT_KBIT;
-@@ -95,7 +113,7 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
- 				*tmp_ptr = '\0';
- 		}
+@@ -768,7 +773,7 @@ void batadv_tvlv_container_unregister(struct batadv_priv *bat_priv,
  
--		ret = kstrtol(slash_ptr + 1, 10, &lup);
-+		ret = kstrtou64(slash_ptr + 1, 10, &lup);
- 		if (ret) {
- 			batadv_err(net_dev,
- 				   "Upload speed of gateway mode invalid: %s\n",
-@@ -105,13 +123,30 @@ static bool batadv_parse_gw_bandwidth(struct net_device *net_dev, char *buff,
+ 	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
+ 	tvlv = batadv_tvlv_container_get(bat_priv, type, version);
+-	batadv_tvlv_container_remove(tvlv);
++	batadv_tvlv_container_remove(bat_priv, tvlv);
+ 	spin_unlock_bh(&bat_priv->tvlv.container_list_lock);
+ }
  
- 		switch (bw_unit_type) {
- 		case BATADV_BW_UNIT_MBIT:
--			*up = lup * 10;
-+			/* prevent overflow */
-+			if (U64_MAX / 10 < lup) {
-+				batadv_err(net_dev,
-+					   "Upload speed of gateway mode too large: %s\n",
-+					   slash_ptr + 1);
-+				return false;
-+			}
-+
-+			lup *= 10;
- 			break;
- 		case BATADV_BW_UNIT_KBIT:
- 		default:
--			*up = lup / 100;
-+			do_div(lup, 100);
- 			break;
- 		}
-+
-+		if (U32_MAX < lup) {
-+			batadv_err(net_dev,
-+				   "Upload speed of gateway mode too large: %s\n",
-+				   slash_ptr + 1);
-+			return false;
-+		}
-+
-+		*up = lup;
- 	}
+@@ -807,7 +812,7 @@ void batadv_tvlv_container_register(struct batadv_priv *bat_priv,
  
- 	return true;
+ 	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
+ 	tvlv_old = batadv_tvlv_container_get(bat_priv, type, version);
+-	batadv_tvlv_container_remove(tvlv_old);
++	batadv_tvlv_container_remove(bat_priv, tvlv_old);
+ 	hlist_add_head(&tvlv_new->list, &bat_priv->tvlv.container_list);
+ 	spin_unlock_bh(&bat_priv->tvlv.container_list_lock);
+ }
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index c64d9b1..f9190ad 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -31,6 +31,7 @@
+ #include <linux/ip.h>
+ #include <linux/ipv6.h>
+ #include <linux/list.h>
++#include <linux/lockdep.h>
+ #include <linux/netdevice.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+@@ -103,15 +104,19 @@ static bool batadv_mcast_mla_is_duplicate(u8 *mcast_addr,
+ 
+ /**
+  * batadv_mcast_mla_list_free - free a list of multicast addresses
++ * @bat_priv: the bat priv with all the soft interface information
+  * @mcast_list: the list to free
+  *
+  * Removes and frees all items in the given mcast_list.
+  */
+-static void batadv_mcast_mla_list_free(struct hlist_head *mcast_list)
++static void batadv_mcast_mla_list_free(struct batadv_priv *bat_priv,
++				       struct hlist_head *mcast_list)
+ {
+ 	struct batadv_hw_addr *mcast_entry;
+ 	struct hlist_node *tmp;
+ 
++	lockdep_assert_held(&bat_priv->tt.commit_lock);
++
+ 	hlist_for_each_entry_safe(mcast_entry, tmp, mcast_list, list) {
+ 		hlist_del(&mcast_entry->list);
+ 		kfree(mcast_entry);
+@@ -134,6 +139,8 @@ static void batadv_mcast_mla_tt_retract(struct batadv_priv *bat_priv,
+ 	struct batadv_hw_addr *mcast_entry;
+ 	struct hlist_node *tmp;
+ 
++	lockdep_assert_held(&bat_priv->tt.commit_lock);
++
+ 	hlist_for_each_entry_safe(mcast_entry, tmp, &bat_priv->mcast.mla_list,
+ 				  list) {
+ 		if (mcast_list &&
+@@ -164,6 +171,8 @@ static void batadv_mcast_mla_tt_add(struct batadv_priv *bat_priv,
+ 	struct batadv_hw_addr *mcast_entry;
+ 	struct hlist_node *tmp;
+ 
++	lockdep_assert_held(&bat_priv->tt.commit_lock);
++
+ 	if (!mcast_list)
+ 		return;
+ 
+@@ -268,7 +277,7 @@ update:
+ 	batadv_mcast_mla_tt_add(bat_priv, &mcast_list);
+ 
+ out:
+-	batadv_mcast_mla_list_free(&mcast_list);
++	batadv_mcast_mla_list_free(bat_priv, &mcast_list);
+ }
+ 
+ /**
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 62defe0..9700223 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -586,6 +586,8 @@ static bool batadv_nc_sniffed_purge(struct batadv_priv *bat_priv,
+ 	unsigned long timeout = bat_priv->nc.max_buffer_time;
+ 	bool res = false;
+ 
++	lockdep_assert_held(&nc_path->packet_list_lock);
++
+ 	/* Packets are added to tail, so the remaining packets did not time
+ 	 * out and we can stop processing the current queue
+ 	 */
+@@ -622,6 +624,8 @@ static bool batadv_nc_fwd_flush(struct batadv_priv *bat_priv,
+ {
+ 	unsigned long timeout = bat_priv->nc.max_fwd_delay;
+ 
++	lockdep_assert_held(&nc_path->packet_list_lock);
++
+ 	/* Packets are added to tail, so the remaining packets did not time
+ 	 * out and we can stop processing the current queue
+ 	 */
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index e96710c..7490006 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1669,6 +1669,8 @@ static void
+ _batadv_tt_global_del_orig_entry(struct batadv_tt_global_entry *tt_global_entry,
+ 				 struct batadv_tt_orig_list_entry *orig_entry)
+ {
++	lockdep_assert_held(&tt_global_entry->list_lock);
++
+ 	batadv_tt_global_size_dec(orig_entry->orig_node,
+ 				  tt_global_entry->common.vid);
+ 	atomic_dec(&tt_global_entry->orig_list_count);
 -- 
 2.1.4
 
