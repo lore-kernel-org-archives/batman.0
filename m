@@ -1,18 +1,15 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <55880538.1050109@meshcoding.com>
-Date: Mon, 22 Jun 2015 14:53:12 +0200
+Message-ID: <55882DC7.5090405@meshcoding.com>
+Date: Mon, 22 Jun 2015 17:46:15 +0200
 From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1434481584-1275-1-git-send-email-antonio@meshcoding.com>
- <1434481584-1275-2-git-send-email-antonio@meshcoding.com>
- <20150621.093713.572451264516042062.davem@davemloft.net>
- <1534492.Qn5WYoJSum@sven-edge>
-In-Reply-To: <1534492.Qn5WYoJSum@sven-edge>
+References: <1434957203-6939-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1434957203-6939-1-git-send-email-sven@narfation.org>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="TX1QbHjKQqkHSMUQDb8nJDLKNtPn5Il7B"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Avoid u32 overflow
-	during gateway select
+ boundary="FwEM4KBiaweQvg7EqmlKcRmcaqjObMi7m"
+Subject: Re: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: Replace gw_reselect 64
+ bit div with shift
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,58 +21,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: David Miller <davem@davemloft.net>
-Cc: ruben@vfn-nrw.de, mareklindner@neomailbox.ch, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---TX1QbHjKQqkHSMUQDb8nJDLKNtPn5Il7B
-Content-Type: text/plain; charset=windows-1252
+--FwEM4KBiaweQvg7EqmlKcRmcaqjObMi7m
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On 21/06/15 20:27, Sven Eckelmann wrote:
-> On Sunday 21 June 2015 09:37:13 David Miller wrote:
->> From: Antonio Quartulli <antonio@meshcoding.com>
->> Date: Tue, 16 Jun 2015 21:06:23 +0200
->>
->>> @@ -133,7 +133,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv
->>> *bat_priv)>=20
->>>  	struct batadv_neigh_node *router;
->>>  	struct batadv_neigh_ifinfo *router_ifinfo;
->>>  	struct batadv_gw_node *gw_node, *curr_gw =3D NULL;
->>>
->>> -	uint32_t max_gw_factor =3D 0, tmp_gw_factor =3D 0;
->>> +	uint64_t max_gw_factor =3D 0, tmp_gw_factor =3D 0;
->>>
->>>  	uint32_t gw_divisor;
->>
->> Divides are performed using these variables, so if you make
->> them 64-bit the build will fail.  You have to use one of the
->> routines in include/linux/math64.h in this situation, but
->> realize that this operation is now going to be quite expensive.
+On 22/06/15 09:13, Sven Eckelmann wrote:
+> -	gw_divisor =3D BATADV_TQ_LOCAL_WINDOW_SIZE * BATADV_TQ_LOCAL_WINDOW_S=
+IZE;
+> -	gw_divisor *=3D 64;
+
+Marek can you comment on why this constant was used in this computation?
+To me it looks like we only needed a "good enough number" and not a real
+reference to the local window size.
+
+The remaining change looks good to me.
+
+If you merge this patch I'll then squash it with the uint64_t change
+that we already have and I will re-send the pull request to David.
+
+Thanks,
+
+> -
+>  	rcu_read_lock();
+>  	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
+>  		if (gw_node->deleted)
+> @@ -167,7 +163,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_=
+priv)
+>  			tmp_gw_factor =3D tq_avg * tq_avg;
+>  			tmp_gw_factor *=3D gw_node->bandwidth_down;
+>  			tmp_gw_factor *=3D 100 * 100;
+> -			tmp_gw_factor /=3D gw_divisor;
+> +			tmp_gw_factor >>=3D 18;
+> =20
+>  			if ((tmp_gw_factor > max_gw_factor) ||
+>  			    ((tmp_gw_factor =3D=3D max_gw_factor) &&
 >=20
-> Just a minor comment: The division is currently "max_gw_factor >> 18" w=
-hich=20
-> the compiler also outputs as such (shrd + shr on i586). This is the rea=
-son why=20
-> it currently also works on architectures without a native 64 bit div.
-
-
-Thanks for the comment David and Sven.
-
-
-David you can drop this pull request.
-I'll send a new one later with a modified patch that explicitly
-introduces the shift.
-
-
-
-Thanks!
 
 --=20
 Antonio Quartulli
 
 
---TX1QbHjKQqkHSMUQDb8nJDLKNtPn5Il7B
+--FwEM4KBiaweQvg7EqmlKcRmcaqjObMi7m
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -83,19 +73,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJViAU8AAoJEOb/4TMchkvfk5QQAJqhTf9FPJQEe899Ru1uhxlF
-EhkJYGx/0N1iKkwfwaCkuYUEFGo0PrILoUgONZudso9atckueMnoq4IWt/+txU9A
-nVYm14DhwMrjuLT2SwUcY4U+zNJDYqY9zJuNHSeBGjMbERXq6o3RhMqIi87YMQMS
-qDhrHcf+Gjru8/D73drjMkd8soUlaL/YE2POUB+WKBP8yeKzqavd2xlipCVSA0C+
-Yq5mZAut1mM6eIaUhOeuvErNR5wV5m1dCvRj9cabbynQbgorujmEsf92iCwqz/kT
-MtN4P0fPZTrKWkxKAqPh/gntf2x51bdUOo75yM2gxVmiOqAyuix1Ky7zfuL18qYZ
-fj3gAcQRlIX16OneR6jlRA6RXM+4eKTiYxeAjoNb0G7lQvHYnhrDdZ5sUqEyQGiq
-L3RDAbhAgJIlOqj1RbzB/l4i+JyugWE8/0TEiCEjVJXLqMhKv7yiZUL+wWucQ6eU
-a1wlLA03SC3xx06Xn8omcOcQ3FpCwOqXqL8SehhEtWaUhm6CRPO1wes2mdT2dbqg
-Ys8Fa6PUti+YYuN15yUG0fdx+35EzTLUFd9SzK9vCZnuYbEHXrHVDC8OFy3vXk83
-HtLkXJ7k6HW+goRFamoN/7ZgyrcF2iaSkoInfC7I6SYh+rx/PS51vxeTvtYB5h/o
-zi4eQEclU+BkfFzsXriH
-=tjLa
+iQIcBAEBCAAGBQJViC3LAAoJEOb/4TMchkvfA/oP/Ai6f1eUcOvrMtlWHq2R37Mt
+jc7r3AGN7erv3Fa0sDVbEolanoR7xrWIustqo/nCuean4eJwZZ6JLae9tAlvsylY
+8we2eeLXcor567aC/+j1TYLBuWyptJiRljXVzGXCF0n1a7GeLNFlS4mkveXYVw5G
+AN+LwDS1aSoLWjMCi+WSAgT5grkFiElHdAhWGBSF3ibFTjFzF+GtqIc+7D2u5cAR
+u1e+Bz98H8KYvoG/rOGnnngC+c//Y7lscSb0NiYkk9QZbC3ZMhjOEGcdU2rsSoqu
+OCvb+OHQX7Cs+s50+XqPJBj0OdtrjNmO1l2VyVj/MFVVBpjl3DQZYAjeXSkPb2Gc
+x0UGl6qRRRHKMk/jcPNMJO0Ns2sFZU60r1YpFh9iFtktSyPkMp5HQ5VYmF55kEvC
+X/qY0WZIeMQ8HFE5xUZDSm/mO7kr+NzcpkGZmKaUOqc3uioQyQOxPC7kNlSahHQ2
+cjUrQ+SlISggl21ujPmd905C0EmKs9UUh1cVwGEANZf32BUB1bTbKyQM0hj0tW3j
+2Pt3aacH5i6orWCOcx+7a6XGp5TXIFSGxVdKiO/o5ClAYEMGwGnxiiOEs5YK8Owy
+Wrng628NGmbhlkctcXl6OBYm1loekCd2Zfn2uSrLCG5MJHJhjPYE1MXf8Zpy+ROt
+jEuLypDSkHnmUTDeDefi
+=XuO5
 -----END PGP SIGNATURE-----
 
---TX1QbHjKQqkHSMUQDb8nJDLKNtPn5Il7B--
+--FwEM4KBiaweQvg7EqmlKcRmcaqjObMi7m--
