@@ -1,15 +1,15 @@
 Return-Path: <antonio@meshcoding.com>
-Message-ID: <5588386B.50604@meshcoding.com>
-Date: Mon, 22 Jun 2015 18:31:39 +0200
+Message-ID: <558839E0.50201@meshcoding.com>
+Date: Mon, 22 Jun 2015 18:37:52 +0200
 From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-References: <1434904911-12504-1-git-send-email-mareklindner@neomailbox.ch>
-In-Reply-To: <1434904911-12504-1-git-send-email-mareklindner@neomailbox.ch>
+References: <1434904223-10227-1-git-send-email-mareklindner@neomailbox.ch>
+In-Reply-To: <1434904223-10227-1-git-send-email-mareklindner@neomailbox.ch>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="7jI740NgF5L7qPnhpi8A8mko0093p3cOR"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 maint] batman-adv: protect tt request
- from double deletion
+ boundary="8NW9LVp5M30DpxlwFK6xVrjwFtN9EtNPe"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: convert
+ orig_node->vlan_list to hlist
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,15 +25,16 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---7jI740NgF5L7qPnhpi8A8mko0093p3cOR
+--8NW9LVp5M30DpxlwFK6xVrjwFtN9EtNPe
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
 
 
-On 21/06/15 18:41, Marek Lindner wrote:
-> The list_del() calls were changed to list_del_init() to prevent
-> an accidental double deletion in batadv_tt_req_node_new().
+On 21/06/15 18:30, Marek Lindner wrote:
+> Since the list's tail is never accessed using a double linked list head=
+
+> wastes memory.
 >=20
 > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 
@@ -44,7 +45,7 @@ Acked-by: Antonio Quartulli <antonio@meshcoding.com>
 Antonio Quartulli
 
 
---7jI740NgF5L7qPnhpi8A8mko0093p3cOR
+--8NW9LVp5M30DpxlwFK6xVrjwFtN9EtNPe
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -52,19 +53,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJViDhwAAoJEOb/4TMchkvfR3EQALgxOuAbbRbB6UygBnaN9efy
-B+tDWzFV9tSG+jDtoeIKbgIVLKYrnTdMC92cYCYfjmAPNJ8/nqmWO8z2UbKtOlXF
-NL3qIbqWcTpnXsj/8ghaQHW4dMFVTJDyyNWLqI0/fz/cpgd8G2eOeGoG6Q8iubuI
-3TsiSVibIp0hFXieg8Q8Sq8wilAbhfC0mzdzC21d7gYju4O9sbPC+eElQ1xqlOlW
-rvuafwKy5Pkic7mlpKZkg9Tyc1MsfVmy2918VTaBpCQAtrVOwEux8XEPRozjLz7X
-HG51Yv4b8U0i/RLyghCP6eZpHMwspoBRyFQwnGaweZ/+STHJywx265N3Ss8rv6xg
-+8Nvi2lZChX8CM9YfzmyQoLOdlZ+ZmkqsrI4IJ1bMudh2hJzOhZ0u/pcAHuFtkjA
-CYTwxCe5FeF/e8XJFI/VXW9WODizZzdgcH5hCZWmU4FjIsw+5w2JdD/RF9yteYW9
-3WOuA19R+8FOuY2XI4/I9m6tBGsLmEHR/A9nyFgy86Bxsv+MUvj60+LA6V2dvoZQ
-N+CM5xGkQY/cKXVg8ewaYyAQ4JSGDNmaGT3Nb0bhlvaJmthJH2+it1uu+pFOvfkg
-clVOwhrTdXVgfiz7x2M8kjuhG81rijxiB1vYmF9CpLJD2ouacI4z7L61r7ED3LY4
-obxvrV0y2rpoowPHdHOl
-=9uur
+iQIcBAEBCAAGBQJViDnkAAoJEOb/4TMchkvfuCgP/AiBNYw7+v/tDLhlldg44H1r
+Xjbkm5IXdoZrFCtPi9l8uyJqBXQlo6arXHTiDyUfEKYneZUyEXKZvzrXWq2XnmqW
+JSf5+Fk8WUtY90JMNz9VL877UoNpD9WzIhK2w7wEQbBhng7DsQrsoFkvaQrnXP/N
+O9/mzVBzyNb5Ac4dMTv/3dMIBxCTchm3/qEST5W7I6YJxDi9Y+oN7ZNnVaY8XiZs
+MaeQxpYMzbvsKea9fnOEfEC63F+PgfJa1JVj023YBAGMpBwd2ah2JqJHNt1td7E6
+j14tE2rmuDYwSMCa7mYIwHry6iH/Yx3z7xGUayqpVS+8LdqUQuPg8MfxZ4+1Vk6b
+OkZtvQN86/f1a5suddoW3VtOQiuQxKvagfd7le7TcsxMGad7TmGxZcZ6mB6vXKbO
+8XF0268fr9/I2KxabpSrFcCJ5GMy/kBSicOODmirGfSzwuabXTM66NINVN5sQyat
+ZrBFjOxwfN9KGYy1gBK9W9jQRqmRaLKeI7THEgffHHDXA+vgthUT7Y0DPk0cJK/z
+U5pFL6a8vI1aA7S45UxIN2U1I0i03WQhoVqzYVDNz70AKLQ81R9Fgp5X4BA+qPBE
+GZEkYGbYM8AYVXQuO/BWJSkFhS4LYHc2XpIXHIFiafuZbXtwZVS5xS+YBtFuPZKX
+Wo2ufriX8hySy1fHxwcd
+=pbq2
 -----END PGP SIGNATURE-----
 
---7jI740NgF5L7qPnhpi8A8mko0093p3cOR--
+--8NW9LVp5M30DpxlwFK6xVrjwFtN9EtNPe--
