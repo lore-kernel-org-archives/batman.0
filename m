@@ -1,9 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 24 Jun 2015 14:50:49 +0200
-Message-Id: <1435150249-25322-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove obsolete deleted
-	attribute for gateway node
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <558AE222.4050806@meshcoding.com>
+Date: Wed, 24 Jun 2015 19:00:18 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
+MIME-Version: 1.0
+References: <1435150249-25322-1-git-send-email-sw@simonwunderlich.de>
+In-Reply-To: <1435150249-25322-1-git-send-email-sw@simonwunderlich.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="88WN3fBMVtJaFFCDTOO0aEgQwurFKJb1M"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove obsolete deleted
+ attribute for gateway node
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -15,155 +21,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 Cc: Simon Wunderlich <simon@open-mesh.com>
 
-From: Simon Wunderlich <simon@open-mesh.com>
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--88WN3fBMVtJaFFCDTOO0aEgQwurFKJb1M
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-With rcu, the gateway node deleted attribute is not needed anymore. In
-fact, it may delay the free of the gateway node and its referenced
-structures. Therefore remove it altogether and simplify purging as well.
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
----
- net/batman-adv/gateway_client.c | 39 +++++++++------------------------------
- net/batman-adv/originator.c     |  1 -
- net/batman-adv/types.h          |  2 --
- 3 files changed, 9 insertions(+), 33 deletions(-)
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 97f7c44..ca436ff 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -165,9 +165,6 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
- 
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
--		if (gw_node->deleted)
--			continue;
--
- 		orig_node = gw_node->orig_node;
- 		router = batadv_orig_router_get(orig_node, BATADV_IF_DEFAULT);
- 		if (!router)
-@@ -475,9 +472,6 @@ batadv_gw_node_get(struct batadv_priv *bat_priv,
- 		if (gw_node_tmp->orig_node != orig_node)
- 			continue;
- 
--		if (gw_node_tmp->deleted)
--			continue;
--
- 		if (!atomic_inc_not_zero(&gw_node_tmp->refcount))
- 			continue;
- 
-@@ -527,9 +521,7 @@ void batadv_gw_node_update(struct batadv_priv *bat_priv,
- 	gw_node->bandwidth_down = ntohl(gateway->bandwidth_down);
- 	gw_node->bandwidth_up = ntohl(gateway->bandwidth_up);
- 
--	gw_node->deleted = 0;
- 	if (ntohl(gateway->bandwidth_down) == 0) {
--		gw_node->deleted = jiffies;
- 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
- 			   "Gateway %pM removed from gateway list\n",
- 			   orig_node->orig);
-@@ -537,9 +529,15 @@ void batadv_gw_node_update(struct batadv_priv *bat_priv,
- 		/* Note: We don't need a NULL check here, since curr_gw never
- 		 * gets dereferenced.
- 		 */
-+		spin_lock_bh(&bat_priv->gw.list_lock);
-+		hlist_del_rcu(&gw_node->list);
-+		spin_unlock_bh(&bat_priv->gw.list_lock);
-+
- 		curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
- 		if (gw_node == curr_gw)
- 			batadv_gw_reselect(bat_priv);
-+
-+		batadv_gw_node_free_ref(gw_node);
- 	}
- 
- out:
-@@ -562,37 +560,21 @@ void batadv_gw_node_delete(struct batadv_priv *bat_priv,
- 
- void batadv_gw_node_purge(struct batadv_priv *bat_priv)
- {
--	struct batadv_gw_node *gw_node, *curr_gw;
-+	struct batadv_gw_node *gw_node;
- 	struct hlist_node *node_tmp;
--	unsigned long timeout = msecs_to_jiffies(2 * BATADV_PURGE_TIMEOUT);
--	int do_reselect = 0;
- 
--	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
-+	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_ACTIVE)
-+		return;
- 
- 	spin_lock_bh(&bat_priv->gw.list_lock);
--
- 	hlist_for_each_entry_safe(gw_node, node_tmp,
- 				  &bat_priv->gw.list, list) {
--		if (((!gw_node->deleted) ||
--		     (time_before(jiffies, gw_node->deleted + timeout))) &&
--		    atomic_read(&bat_priv->mesh_state) == BATADV_MESH_ACTIVE)
--			continue;
--
--		if (curr_gw == gw_node)
--			do_reselect = 1;
- 
- 		hlist_del_rcu(&gw_node->list);
- 		batadv_gw_node_free_ref(gw_node);
- 	}
- 
- 	spin_unlock_bh(&bat_priv->gw.list_lock);
--
--	/* gw_reselect() needs to acquire the gw_list_lock */
--	if (do_reselect)
--		batadv_gw_reselect(bat_priv);
--
--	if (curr_gw)
--		batadv_gw_node_free_ref(curr_gw);
- }
- 
- /* fails if orig_node has no router */
-@@ -656,9 +638,6 @@ int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset)
- 
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
--		if (gw_node->deleted)
--			continue;
--
- 		/* fails if orig_node has no router */
- 		if (batadv_write_buffer_text(bat_priv, seq, gw_node) < 0)
- 			continue;
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 4500e3a..016fc20 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -1009,7 +1009,6 @@ static void _batadv_purge_orig(struct batadv_priv *bat_priv)
- 		spin_unlock_bh(list_lock);
- 	}
- 
--	batadv_gw_node_purge(bat_priv);
- 	batadv_gw_election(bat_priv);
- }
- 
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index da4c738..002bca4 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -328,7 +328,6 @@ enum batadv_orig_capabilities {
-  * @orig_node: pointer to corresponding orig node
-  * @bandwidth_down: advertised uplink download bandwidth
-  * @bandwidth_up: advertised uplink upload bandwidth
-- * @deleted: this struct is scheduled for deletion
-  * @refcount: number of contexts the object is used
-  * @rcu: struct used for freeing in an RCU-safe manner
-  */
-@@ -337,7 +336,6 @@ struct batadv_gw_node {
- 	struct batadv_orig_node *orig_node;
- 	u32 bandwidth_down;
- 	u32 bandwidth_up;
--	unsigned long deleted;
- 	atomic_t refcount;
- 	struct rcu_head rcu;
- };
--- 
-2.1.4
+On 24/06/15 14:50, Simon Wunderlich wrote:
+> @@ -537,9 +529,15 @@ void batadv_gw_node_update(struct batadv_priv *bat=
+_priv,
+>  		/* Note: We don't need a NULL check here, since curr_gw never
+>  		 * gets dereferenced.
+>  		 */
+> +		spin_lock_bh(&bat_priv->gw.list_lock);
+> +		hlist_del_rcu(&gw_node->list);
+> +		spin_unlock_bh(&bat_priv->gw.list_lock);
+> +
 
+have you verified that we can't get to this point through two threads
+and enter the same problem that Sven and Marek have been discussing and
+fixing in these days: removing an element from a list twice
+
+If this is possible, you should check that this element is in the list
+before deleting it.
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+
+--88WN3fBMVtJaFFCDTOO0aEgQwurFKJb1M
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJViuImAAoJEOb/4TMchkvfMr8P/inWAEKue6zSvMbKOvYmJKay
+vRq4lZx/susadyffSyK0f4ADRrU7AqKcEO3kcUzsFVAWm2pFjS8LNL43q013cTOd
+bM/KwRaSN7hmstk/AluZHAPhC65HutWGdGB51Lueivm6fnP8Q1A1/AKdbqn54p8/
+e52BbbtGmnfsm0dZBWsPBZ0/BIbEh8pRV6d5+z6/HG+Xxzvkhky1KYCEMZwR+agv
+6sxd9L4FvBuIlN6/0D99uR+TPu+MWYPdjC9xfVM9ijc0ubNzl5TEJYj+X/0dfQhB
+Mmz6SnXIqv8KhdLlLCpWrMhBOWDUYa0x/IFDXOWk/Z8zN8R5yfFZblKr3c9LOap6
+e9Ucbv6qXOgpGb7WgkpENKKVnqshv6jjgv2CQWBbujHqPI96H+H7jLaWwjTqQMzN
+AVb2AiUUhY/ULTTfxfmBjyWlT0hByXGowJNi9w+MwkUfP1V0tu2IhnvwPBUGv9LT
+kzuAKtPj3i8y7EkbhZ7BpNPA0o4o2ZX5M8B6PcnEhTNZFHo63SXCl6p98LJ2hz+X
+iFLmSqvb0PQk+bTyQijzO1RNVTGrSB38iXHLvdrDDThSktdxBd9PDl33NPzMWFQU
+IFmxNisMUMg768IyWukbfL3x2l0lPxcZ27AOkYaWvAaKvx2AbfTclFqMq9wti7Xw
+IZ/ePnC36QBaKYUWDD1z
+=QIGC
+-----END PGP SIGNATURE-----
+
+--88WN3fBMVtJaFFCDTOO0aEgQwurFKJb1M--
