@@ -1,11 +1,9 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 24 Jun 2015 14:50:20 +0200
-Message-Id: <1435150220-25157-2-git-send-email-sw@simonwunderlich.de>
-In-Reply-To: <1435150220-25157-1-git-send-email-sw@simonwunderlich.de>
-References: <1435150220-25157-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: remove broadcast
-	packets scheduled for purged outgoing if
+Date: Wed, 24 Jun 2015 14:50:49 +0200
+Message-Id: <1435150249-25322-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove obsolete deleted
+	attribute for gateway node
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,28 +20,150 @@ Cc: Simon Wunderlich <simon@open-mesh.com>
 
 From: Simon Wunderlich <simon@open-mesh.com>
 
-When an interface is purged, the broadcast packets scheduled for this
-interface should get purged as well.
+With rcu, the gateway node deleted attribute is not needed anymore. In
+fact, it may delay the free of the gateway node and its referenced
+structures. Therefore remove it altogether and simplify purging as well.
 
 Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 ---
- send.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ net/batman-adv/gateway_client.c | 39 +++++++++------------------------------
+ net/batman-adv/originator.c     |  1 -
+ net/batman-adv/types.h          |  2 --
+ 3 files changed, 9 insertions(+), 33 deletions(-)
 
-diff --git a/send.c b/send.c
-index 23635bd..a7e84b2 100644
---- a/send.c
-+++ b/send.c
-@@ -598,7 +598,8 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- 		 * we delete only packets belonging to the given interface
- 		 */
- 		if ((hard_iface) &&
--		    (forw_packet->if_incoming != hard_iface))
-+		    (forw_packet->if_incoming != hard_iface) &&
-+		    (forw_packet->if_outgoing != hard_iface))
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 97f7c44..ca436ff 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -165,9 +165,6 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
+ 
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
+-		if (gw_node->deleted)
+-			continue;
+-
+ 		orig_node = gw_node->orig_node;
+ 		router = batadv_orig_router_get(orig_node, BATADV_IF_DEFAULT);
+ 		if (!router)
+@@ -475,9 +472,6 @@ batadv_gw_node_get(struct batadv_priv *bat_priv,
+ 		if (gw_node_tmp->orig_node != orig_node)
  			continue;
  
- 		spin_unlock_bh(&bat_priv->forw_bcast_list_lock);
+-		if (gw_node_tmp->deleted)
+-			continue;
+-
+ 		if (!atomic_inc_not_zero(&gw_node_tmp->refcount))
+ 			continue;
+ 
+@@ -527,9 +521,7 @@ void batadv_gw_node_update(struct batadv_priv *bat_priv,
+ 	gw_node->bandwidth_down = ntohl(gateway->bandwidth_down);
+ 	gw_node->bandwidth_up = ntohl(gateway->bandwidth_up);
+ 
+-	gw_node->deleted = 0;
+ 	if (ntohl(gateway->bandwidth_down) == 0) {
+-		gw_node->deleted = jiffies;
+ 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+ 			   "Gateway %pM removed from gateway list\n",
+ 			   orig_node->orig);
+@@ -537,9 +529,15 @@ void batadv_gw_node_update(struct batadv_priv *bat_priv,
+ 		/* Note: We don't need a NULL check here, since curr_gw never
+ 		 * gets dereferenced.
+ 		 */
++		spin_lock_bh(&bat_priv->gw.list_lock);
++		hlist_del_rcu(&gw_node->list);
++		spin_unlock_bh(&bat_priv->gw.list_lock);
++
+ 		curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
+ 		if (gw_node == curr_gw)
+ 			batadv_gw_reselect(bat_priv);
++
++		batadv_gw_node_free_ref(gw_node);
+ 	}
+ 
+ out:
+@@ -562,37 +560,21 @@ void batadv_gw_node_delete(struct batadv_priv *bat_priv,
+ 
+ void batadv_gw_node_purge(struct batadv_priv *bat_priv)
+ {
+-	struct batadv_gw_node *gw_node, *curr_gw;
++	struct batadv_gw_node *gw_node;
+ 	struct hlist_node *node_tmp;
+-	unsigned long timeout = msecs_to_jiffies(2 * BATADV_PURGE_TIMEOUT);
+-	int do_reselect = 0;
+ 
+-	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
++	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_ACTIVE)
++		return;
+ 
+ 	spin_lock_bh(&bat_priv->gw.list_lock);
+-
+ 	hlist_for_each_entry_safe(gw_node, node_tmp,
+ 				  &bat_priv->gw.list, list) {
+-		if (((!gw_node->deleted) ||
+-		     (time_before(jiffies, gw_node->deleted + timeout))) &&
+-		    atomic_read(&bat_priv->mesh_state) == BATADV_MESH_ACTIVE)
+-			continue;
+-
+-		if (curr_gw == gw_node)
+-			do_reselect = 1;
+ 
+ 		hlist_del_rcu(&gw_node->list);
+ 		batadv_gw_node_free_ref(gw_node);
+ 	}
+ 
+ 	spin_unlock_bh(&bat_priv->gw.list_lock);
+-
+-	/* gw_reselect() needs to acquire the gw_list_lock */
+-	if (do_reselect)
+-		batadv_gw_reselect(bat_priv);
+-
+-	if (curr_gw)
+-		batadv_gw_node_free_ref(curr_gw);
+ }
+ 
+ /* fails if orig_node has no router */
+@@ -656,9 +638,6 @@ int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
+-		if (gw_node->deleted)
+-			continue;
+-
+ 		/* fails if orig_node has no router */
+ 		if (batadv_write_buffer_text(bat_priv, seq, gw_node) < 0)
+ 			continue;
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 4500e3a..016fc20 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -1009,7 +1009,6 @@ static void _batadv_purge_orig(struct batadv_priv *bat_priv)
+ 		spin_unlock_bh(list_lock);
+ 	}
+ 
+-	batadv_gw_node_purge(bat_priv);
+ 	batadv_gw_election(bat_priv);
+ }
+ 
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index da4c738..002bca4 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -328,7 +328,6 @@ enum batadv_orig_capabilities {
+  * @orig_node: pointer to corresponding orig node
+  * @bandwidth_down: advertised uplink download bandwidth
+  * @bandwidth_up: advertised uplink upload bandwidth
+- * @deleted: this struct is scheduled for deletion
+  * @refcount: number of contexts the object is used
+  * @rcu: struct used for freeing in an RCU-safe manner
+  */
+@@ -337,7 +336,6 @@ struct batadv_gw_node {
+ 	struct batadv_orig_node *orig_node;
+ 	u32 bandwidth_down;
+ 	u32 bandwidth_up;
+-	unsigned long deleted;
+ 	atomic_t refcount;
+ 	struct rcu_head rcu;
+ };
 -- 
 2.1.4
 
