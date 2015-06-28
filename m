@@ -1,15 +1,17 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 28 Jun 2015 09:37:20 +0800
-Message-ID: <2472003.5ybaWVxMcq@voltaire>
-In-Reply-To: <1434893777-17618-2-git-send-email-linus.luessing@c0d3.blue>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Sun, 28 Jun 2015 05:59:14 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20150628035913.GB2398@odroid>
 References: <1434893777-17618-1-git-send-email-linus.luessing@c0d3.blue>
  <1434893777-17618-2-git-send-email-linus.luessing@c0d3.blue>
+ <2472003.5ybaWVxMcq@voltaire>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4646826.eGfNVXQpPi";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2472003.5ybaWVxMcq@voltaire>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 1/1] batman-adv: Always flood IGMP/MLD
-	reports
+ reports
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,116 +23,109 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Sun, Jun 28, 2015 at 09:37:20AM +0800, Marek Lindner wrote:
+> On Sunday, June 21, 2015 15:36:17 Linus Lüssing wrote:
+> > With this patch IGMP or MLD reports are always flooded. This is
+> > necessary for the upcoming bridge integration:
+> > 
+> > An IGMPv2/MLDv1 querier does not actively join the multicast group the
+> > reports are sent to. Because of this, this would lead to snooping
+> > bridges/switches not being able to learn of multicast listeners in the
+> > mesh and wrongly shutting down ports for multicast traffic to the mesh,
+> > leading to packet loss.
+> 
+> I am not quite clear on what the patch does. It helps to support a feature 
+> that is yet to come (upcoming bridge integration) or improves the situation 
+> today ?
 
---nextPart4646826.eGfNVXQpPi
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+The former. It's not fixing or improving anything for the current
+implementation.
 
-On Sunday, June 21, 2015 15:36:17 Linus L=FCssing wrote:
-> With this patch IGMP or MLD reports are always flooded. This is
-> necessary for the upcoming bridge integration:
->=20
-> An IGMPv2/MLDv1 querier does not actively join the multicast group th=
-e
-> reports are sent to. Because of this, this would lead to snooping
-> bridges/switches not being able to learn of multicast listeners in th=
-e
-> mesh and wrongly shutting down ports for multicast traffic to the mes=
-h,
-> leading to packet loss.
+> 
+> 
+> >  /**
+> >   * batadv_mcast_forw_mode_check - check for optimized forwarding potential
+> > @@ -376,9 +434,11 @@ static int batadv_mcast_forw_mode_check(struct
+> > batadv_priv *bat_priv, case ETH_P_IP:
+> >  		return batadv_mcast_forw_mode_check_ipv4(bat_priv, skb,
+> >  							 is_unsnoopable);
+> > +#if IS_ENABLED(CONFIG_IPV6)
+> >  	case ETH_P_IPV6:
+> >  		return batadv_mcast_forw_mode_check_ipv6(bat_priv, skb,
+> >  							 is_unsnoopable);
+> > +#endif
+> >  	default:
+> >  		return -EINVAL;
+> >  	}
+> 
+> This hunk seems not really related to the patch itself ?
 
-I am not quite clear on what the patch does. It helps to support a feat=
-ure=20
-that is yet to come (upcoming bridge integration) or improves the situa=
-tion=20
-today ?
+I think it's necessary for the new ipv6_mc_check_mld() which isn't
+there if building a kernel without any IPv6 support.
 
+> 
+> 
+> >  /**
+> > - * batadv_mcast_tvlv_ogm_handler_v1 - process incoming multicast tvlv
+> > container + * batadv_mcast_tvlv_ogm_handler_v2 - process incoming multicast
+> > tvlv container * @bat_priv: the bat priv with all the soft interface
+> > information * @orig: the orig_node of the ogm
+> >   * @flags: flags indicating the tvlv state (see batadv_tvlv_handler_flags)
+> >   * @tvlv_value: tvlv buffer containing the multicast data
+> >   * @tvlv_value_len: tvlv buffer length
+> >   */
+> > -static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+> > +static void batadv_mcast_tvlv_ogm_handler_v2(struct batadv_priv *bat_priv,
+> >  					     struct batadv_orig_node *orig,
+> >  					     u8 flags,
+> >  					     void *tvlv_value,
+> 
+> By removing mcast v1 you effectively are breaking compatibility with all nodes 
+> running v1 and require everyone to upgrade to v2.
 
->  /**
->   * batadv_mcast_forw_mode_check - check for optimized forwarding pot=
-ential
-> @@ -376,9 +434,11 @@ static int batadv_mcast_forw_mode_check(struct
-> batadv_priv *bat_priv, case ETH_P_IP:
->  =09=09return batadv_mcast_forw_mode_check_ipv4(bat_priv, skb,
->  =09=09=09=09=09=09=09 is_unsnoopable);
-> +#if IS_ENABLED(CONFIG_IPV6)
->  =09case ETH_P_IPV6:
->  =09=09return batadv_mcast_forw_mode_check_ipv6(bat_priv, skb,
->  =09=09=09=09=09=09=09 is_unsnoopable);
-> +#endif
->  =09default:
->  =09=09return -EINVAL;
->  =09}
+No, no v1 nodes are required to upgrade. v1 and v2 nodes are still
+able to communicate. v1 nodes (like any pre v1 node) might downgrade the mesh
+to a mcast-optimizations-disabled state for now though, yes.
 
-This hunk seems not really related to the patch itself ?
+> Is there a good reason for that ? The multicast optimizations can't easily
+> work with v1 and v2 ?
+> 
+> By reading your patch it does not become clear why v2 is needed in the first 
+> place. The tvlv's content seems to be identical ?
 
+We cannot safely use the multicast optimizations with bridges if
+there are nodes which do not handle reports properly. The bump
+isn't needed for any packet changes but the internal, local behaviour
+of a node.
 
->  /**
-> - * batadv_mcast_tvlv_ogm_handler_v1 - process incoming multicast tvl=
-v
-> container + * batadv_mcast_tvlv_ogm_handler_v2 - process incoming mul=
-ticast
-> tvlv container * @bat_priv: the bat priv with all the soft interface
-> information * @orig: the orig_node of the ogm
->   * @flags: flags indicating the tvlv state (see batadv_tvlv_handler_=
-flags)
->   * @tvlv_value: tvlv buffer containing the multicast data
->   * @tvlv_value_len: tvlv buffer length
->   */
-> -static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat=
-_priv,
-> +static void batadv_mcast_tvlv_ogm_handler_v2(struct batadv_priv *bat=
-_priv,
->  =09=09=09=09=09     struct batadv_orig_node *orig,
->  =09=09=09=09=09     u8 flags,
->  =09=09=09=09=09     void *tvlv_value,
+I haven't heard of anyone using the multicast optimization feature
+in practice yet (that is, a setup without bridges), so I think it
+is safe to do a version bump?
 
-By removing mcast v1 you effectively are breaking compatibility with al=
-l nodes=20
-running v1 and require everyone to upgrade to v2. Is there a good reaso=
-n for=20
-that ? The multicast optimizations can't easily work with v1 and v2 ?
+> 
+> 
+> > @@ -206,6 +206,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
+> >  	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+> >  		goto dropped;
+> > 
+> > +	skb_set_network_header(skb, ETH_HLEN);
+> > +
+> >  	soft_iface->trans_start = jiffies;
+> >  	vid = batadv_get_vid(skb, 0);
+> >  	ethhdr = eth_hdr(skb);
+> 
+> Why is this change part of the patch ?
 
-By reading your patch it does not become clear why v2 is needed in the =
-first=20
-place. The tvlv's content seems to be identical ?
+Hm, good question :). Need to recheck, I vaguely remember having
+had issues with the IP header parsing due to unset skb network
+headers.
 
+> 
+> Cheers,
+> Marek
+> 
 
-> @@ -206,6 +206,8 @@ static int batadv_interface_tx(struct sk_buff *sk=
-b,
->  =09if (atomic_read(&bat_priv->mesh_state) !=3D BATADV_MESH_ACTIVE)
->  =09=09goto dropped;
->=20
-> +=09skb_set_network_header(skb, ETH_HLEN);
-> +
->  =09soft_iface->trans_start =3D jiffies;
->  =09vid =3D batadv_get_vid(skb, 0);
->  =09ethhdr =3D eth_hdr(skb);
-
-Why is this change part of the patch ?
-
-Cheers,
-Marek
-
-
---nextPart4646826.eGfNVXQpPi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJVj0/bAAoJEFNVTo/uthzA8qMH/25CzrQW36iAWqEEXeu1VTu0
-2NJQgXvID+NdcVhqN62UE8nFjqvOR1HN//19qFw/FEOOb6FMqe6w/Sop7ImrSnYp
-i5m9Tb0n24Pj92YaSxW7Zq12y0auPG2YwF1Hm/sFa4Y4VWLn31ZioRr06F0sPKc4
-JduBMUsHW+fTOEB2t5YcBVfBeqzL7LXaO73LQdF2LV/XcR7gCJpxpfZxJ5wJeaq1
-51EeWHqno9cptzQRFBMYpoCUh/o5QDFMGvoPI9vRkpw9cSZFhzElrv+Sfo+OBL6P
-XWponATWEHgghP2O5T9w5fm4WTZEYA09DVt7K/3ELIGFGjUb5pNenw/QZyf+cl4=
-=iQjP
------END PGP SIGNATURE-----
-
---nextPart4646826.eGfNVXQpPi--
-
+Cheers, Linus
