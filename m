@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 28 Jun 2015 21:21:34 +0800
-Message-ID: <5065799.yHsM5BUa9O@voltaire>
-In-Reply-To: <20150628035913.GB2398@odroid>
-References: <1434893777-17618-1-git-send-email-linus.luessing@c0d3.blue>
- <2472003.5ybaWVxMcq@voltaire> <20150628035913.GB2398@odroid>
+Date: Sun, 28 Jun 2015 21:53:47 +0800
+Message-ID: <2022714.gP4Hb47QDf@voltaire>
+In-Reply-To: <1435150220-25157-1-git-send-email-sw@simonwunderlich.de>
+References: <1435150220-25157-1-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3254802.vnYeNfCHb1";
+Content-Type: multipart/signed; boundary="nextPart1510388.XsGbRyeHWF";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/1] batman-adv: Always flood IGMP/MLD
-	reports
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: initialize up/down
+	values when adding a gateway
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,99 +21,39 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
 
---nextPart3254802.vnYeNfCHb1
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart1510388.XsGbRyeHWF
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, June 28, 2015 05:59:14 Linus L=FCssing wrote:
-> > I am not quite clear on what the patch does. It helps to support a =
-feature
-> > that is yet to come (upcoming bridge integration) or improves the
-> > situation
-> > today ?
->=20
-> The former. It's not fixing or improving anything for the current
-> implementation.
+On Wednesday, June 24, 2015 14:50:19 Simon Wunderlich wrote:
+> From: Simon Wunderlich <simon@open-mesh.com>
+> 
+> Without this initialization, gateways which actually announce up/down
+> bandwidth of 0/0 could be added. If these nodes get purged later, the
+> gw_node structure does not get removed since batadv_gw_node_delete()
+> updates the gw_node with up/down bandwidth of 0/0, and the updating
+> function then discards the change and does not free gw_node.
+> 
+> This results in leaking the gw_node structures, which references other
+> structures: gw_node -> orig_node -> orig_node_ifinfo -> hardif. When
+> removing the interface later, the open reference on the hardif may cause
+> hangs with the infamous "unregister_netdevice: waiting for mesh1 to
+> become free. Usage count = 1" message.
+> 
+> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+> ---
+>  gateway_client.c | 2 ++
+>  1 file changed, 2 insertions(+)
 
-If this patch isn't doing anything (for now) maybe it should be merged =
-when it=20
-becomes useful ?
+Applied in revision 3c92b63.
 
-
-> > > +#if IS_ENABLED(CONFIG_IPV6)
-> > >=20
-> > >  =09case ETH_P_IPV6:
-> > >  =09=09return batadv_mcast_forw_mode_check_ipv6(bat_priv, skb,
-> > >  =09=09
-> > >  =09=09=09=09=09=09=09 is_unsnoopable);
-> > >=20
-> > > +#endif
-> > >=20
-> > >  =09default:
-> > >  =09=09return -EINVAL;
-> > >  =09
-> > >  =09}
-> >=20
-> > This hunk seems not really related to the patch itself ?
->=20
-> I think it's necessary for the new ipv6_mc_check_mld() which isn't
-> there if building a kernel without any IPv6 support.
-
-You may want to send a separate patch then ? This change seems unrelate=
-d to=20
-the rest.
-
-
-> > By removing mcast v1 you effectively are breaking compatibility wit=
-h all
-> > nodes running v1 and require everyone to upgrade to v2.
->=20
-> No, no v1 nodes are required to upgrade. v1 and v2 nodes are still
-> able to communicate. v1 nodes (like any pre v1 node) might downgrade =
-the
-> mesh to a mcast-optimizations-disabled state for now though, yes.
-
-I do understand that 'normal' packet exchange is not affected. However,=
- the=20
-TVLVs were introduced with the intend of maintaining best possible=20
-compatibility with future versions. With the first tvlv version bump we=
- already=20
-require upgrading everyone or compatibility is already broken ? Is ther=
-e=20
-really nothing we can do ? v2 could at least be compatible to v1 ?
-
-
-> We cannot safely use the multicast optimizations with bridges if
-> there are nodes which do not handle reports properly. The bump
-> isn't needed for any packet changes but the internal, local behaviour=
-
-> of a node.
->=20
-> I haven't heard of anyone using the multicast optimization feature
-> in practice yet (that is, a setup without bridges), so I think it
-> is safe to do a version bump?
-
-A version bump for a feature which does not do anything useful yet (see=
- my=20
-initial question) ? How likely is it that we will need another version =
-bump by=20
-the time this feature does become useful ?
-
-
-> Hm, good question :). Need to recheck, I vaguely remember having
-> had issues with the IP header parsing due to unset skb network
-> headers.
-
-If it is related to this patch please add a comment. The change is non-=
-
-obvious.
-
-Cheers,
+Thanks,
 Marek
 
---nextPart3254802.vnYeNfCHb1
+--nextPart1510388.XsGbRyeHWF
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -122,14 +61,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVj/TiAAoJEFNVTo/uthzAwY4IAIJeQ8l957hR9bEwmuZOYPd5
-m6U/Cpn1jeIiUoZ2esiGLfHsYlWrtb3ZhN+WuVM7fQVeQP5pBQBd7NQYFTxIJP8F
-1IFe9OplfI2makDB5ceC1xo2dTl84T63kytxd2Mfspjvy+69I3eivI1QTmxRJU8d
-84uxnPbtscE1ZjqwH8mCWBbC3eTZwiXH9KB2izBNctXLwUQzRISKK++jcLPKfWOl
-J82qLYZiL6LuEdLlKTYp6Awnq1Yxmg318iVVtqsuZfAdcWf/faevjvGkRUV/03Jd
-47SoIUXYJy+x2GcoSf/EYL7QKry8tX6y8YLdzIQUCQ1m8EdPYXdOlD0iMQvYl70=
-=urim
+iQEcBAABCAAGBQJVj/x0AAoJEFNVTo/uthzAsRcH/j6G+vzodYUFyH4YcKxYVWan
+UpWoMULW5wqcvMbT7jTsHVaS5gDbDI0allXCtF2/AXP6EaGIeoJVwIOZY5qQAKjr
+8ZpTawjn8yaxSg+MlFPnqk4IiS3pkMRkfz3ujJje+XFjNr32aBt3MKVzUUUjXwSK
+F7T3/s+YZHxx4iNsuYHzPBzXxEIK6kOMvF3ksVKQqrES2swLGyFGSykf4pVnNdeR
+WcYb6sm+9j1FwutL3Bj6HoVDlRNnPptK2rxPTZqhKB8du6jEIeH/zJQCODrucacH
+lwfa9xcUQkLYrTOx8PBj+J8kSwclsVj1/gmpB2nSHIM84x2/mOmi5rJMlsKydCA=
+=LePk
 -----END PGP SIGNATURE-----
 
---nextPart3254802.vnYeNfCHb1--
+--nextPart1510388.XsGbRyeHWF--
 
