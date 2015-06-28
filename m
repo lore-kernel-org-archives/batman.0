@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 28 Jun 2015 21:58:07 +0800
-Message-ID: <2296737.sKbHr8lXIe@voltaire>
-In-Reply-To: <1435150220-25157-2-git-send-email-sw@simonwunderlich.de>
-References: <1435150220-25157-1-git-send-email-sw@simonwunderlich.de>
- <1435150220-25157-2-git-send-email-sw@simonwunderlich.de>
+Date: Sun, 28 Jun 2015 22:09:36 +0800
+Message-ID: <2014442.qWOXX198dG@voltaire>
+In-Reply-To: <558839E0.50201@meshcoding.com>
+References: <1434904223-10227-1-git-send-email-mareklindner@neomailbox.ch>
+ <558839E0.50201@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2712142.x2lC9UY5v1";
+Content-Type: multipart/signed; boundary="nextPart1950652.mse8Jt6G9c";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: remove broadcast
-	packets scheduled for purged outgoing if
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: convert
+	orig_node->vlan_list to hlist
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,30 +22,30 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
---nextPart2712142.x2lC9UY5v1
+--nextPart1950652.mse8Jt6G9c
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday, June 24, 2015 14:50:20 Simon Wunderlich wrote:
-> From: Simon Wunderlich <simon@open-mesh.com>
+On Monday, June 22, 2015 18:37:52 Antonio Quartulli wrote:
+> On 21/06/15 18:30, Marek Lindner wrote:
+> > Since the list's tail is never accessed using a double linked list head
+> > wastes memory.
+> >
+> > 
+> >
+> > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 > 
-> When an interface is purged, the broadcast packets scheduled for this
-> interface should get purged as well.
-> 
-> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-> ---
->  send.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+> Acked-by: Antonio Quartulli <antonio@meshcoding.com>
 
-Applied in revision 07bec2d.
+Applied in revision 8d85d13.
 
-Thanks,
+Regards,
 Marek
 
---nextPart2712142.x2lC9UY5v1
+--nextPart1950652.mse8Jt6G9c
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +53,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVj/1vAAoJEFNVTo/uthzA4iIH/0nk+d2c2AuHUX6o3mSyO1RP
-5Avh59IQPHu+Dok7cJ69pmtGWqf0jLKt9EePXFbZLhiKW91dH3JJwiuWiVaGFnBA
-cJTj3VGeSuBEZb+VgJygk4WDMczTRYzczLO06ho6N0rDZes0axJICxtZ0kAZvzwH
-qt1oGEkH7K0csqF2LxH0q7piUPYbcH7oIihQsU4SgGjy/GFn27m8WsmgBycM9w9F
-hcgvoHqjuYa8fPuF7O+uwVSxY/rl+hpDhVxZJjhoKQw1rPaHbfuWbG85sLemPYMM
-T0K73KuPm/8NoOdk0MkHpQ0geQyw3azNIL0lwIY7/P6iyID6VPiZuO0a/VHvcrw=
-=Ac4u
+iQEcBAABCAAGBQJVkAAjAAoJEFNVTo/uthzA+nIIAKSWxF4YP+cEyjkhySi55h+v
+rvtawWFAnsYfqsH8B+S1/ybSZgqFwNLSK+m4gA7uUpK16jvpOUwf+Akg117QXJ2t
+JAQxsEZ5Pcsis3JzjeGau/H6WPhqg1cCH1c4rZHmF/QOZ7cbGxTh9arX0w+7DhsZ
+qvf7PLjL218gEKeLms9Xz0VxBdxj5Rf+AEu4DCnZPpMrfvsVEOl3PIywYh2OPWsf
+AADjbKvOJaxkDMaXweiCoChuJnBuPRinzCMXrqBnhKQ3+U3Qv45CIXbOQIDsL+69
+LdHgZxoqF8Ip6VchE/kBirvr+5cg8Tz66QdXfz5bSVgv05YKv536IBT7Otx0nfo=
+=cJrh
 -----END PGP SIGNATURE-----
 
---nextPart2712142.x2lC9UY5v1--
+--nextPart1950652.mse8Jt6G9c--
 
