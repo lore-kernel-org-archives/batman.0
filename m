@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 28 Jun 2015 21:53:47 +0800
-Message-ID: <2022714.gP4Hb47QDf@voltaire>
-In-Reply-To: <1435150220-25157-1-git-send-email-sw@simonwunderlich.de>
+Date: Sun, 28 Jun 2015 21:58:07 +0800
+Message-ID: <2296737.sKbHr8lXIe@voltaire>
+In-Reply-To: <1435150220-25157-2-git-send-email-sw@simonwunderlich.de>
 References: <1435150220-25157-1-git-send-email-sw@simonwunderlich.de>
+ <1435150220-25157-2-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1510388.XsGbRyeHWF";
+Content-Type: multipart/signed; boundary="nextPart2712142.x2lC9UY5v1";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: initialize up/down
-	values when adding a gateway
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: remove broadcast
+	packets scheduled for purged outgoing if
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,36 +25,27 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <simon@open-mesh.com>
 
 
---nextPart1510388.XsGbRyeHWF
+--nextPart2712142.x2lC9UY5v1
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday, June 24, 2015 14:50:19 Simon Wunderlich wrote:
+On Wednesday, June 24, 2015 14:50:20 Simon Wunderlich wrote:
 > From: Simon Wunderlich <simon@open-mesh.com>
 > 
-> Without this initialization, gateways which actually announce up/down
-> bandwidth of 0/0 could be added. If these nodes get purged later, the
-> gw_node structure does not get removed since batadv_gw_node_delete()
-> updates the gw_node with up/down bandwidth of 0/0, and the updating
-> function then discards the change and does not free gw_node.
-> 
-> This results in leaking the gw_node structures, which references other
-> structures: gw_node -> orig_node -> orig_node_ifinfo -> hardif. When
-> removing the interface later, the open reference on the hardif may cause
-> hangs with the infamous "unregister_netdevice: waiting for mesh1 to
-> become free. Usage count = 1" message.
+> When an interface is purged, the broadcast packets scheduled for this
+> interface should get purged as well.
 > 
 > Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 > ---
->  gateway_client.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  send.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
-Applied in revision 3c92b63.
+Applied in revision 07bec2d.
 
 Thanks,
 Marek
 
---nextPart1510388.XsGbRyeHWF
+--nextPart2712142.x2lC9UY5v1
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -61,14 +53,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVj/x0AAoJEFNVTo/uthzAsRcH/j6G+vzodYUFyH4YcKxYVWan
-UpWoMULW5wqcvMbT7jTsHVaS5gDbDI0allXCtF2/AXP6EaGIeoJVwIOZY5qQAKjr
-8ZpTawjn8yaxSg+MlFPnqk4IiS3pkMRkfz3ujJje+XFjNr32aBt3MKVzUUUjXwSK
-F7T3/s+YZHxx4iNsuYHzPBzXxEIK6kOMvF3ksVKQqrES2swLGyFGSykf4pVnNdeR
-WcYb6sm+9j1FwutL3Bj6HoVDlRNnPptK2rxPTZqhKB8du6jEIeH/zJQCODrucacH
-lwfa9xcUQkLYrTOx8PBj+J8kSwclsVj1/gmpB2nSHIM84x2/mOmi5rJMlsKydCA=
-=LePk
+iQEcBAABCAAGBQJVj/1vAAoJEFNVTo/uthzA4iIH/0nk+d2c2AuHUX6o3mSyO1RP
+5Avh59IQPHu+Dok7cJ69pmtGWqf0jLKt9EePXFbZLhiKW91dH3JJwiuWiVaGFnBA
+cJTj3VGeSuBEZb+VgJygk4WDMczTRYzczLO06ho6N0rDZes0axJICxtZ0kAZvzwH
+qt1oGEkH7K0csqF2LxH0q7piUPYbcH7oIihQsU4SgGjy/GFn27m8WsmgBycM9w9F
+hcgvoHqjuYa8fPuF7O+uwVSxY/rl+hpDhVxZJjhoKQw1rPaHbfuWbG85sLemPYMM
+T0K73KuPm/8NoOdk0MkHpQ0geQyw3azNIL0lwIY7/P6iyID6VPiZuO0a/VHvcrw=
+=Ac4u
 -----END PGP SIGNATURE-----
 
---nextPart1510388.XsGbRyeHWF--
+--nextPart2712142.x2lC9UY5v1--
 
