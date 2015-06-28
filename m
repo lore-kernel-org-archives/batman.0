@@ -1,11 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 26 Jun 2015 16:45:01 +0200
-Message-ID: <1898798.WP4bC1arXA@bentobox>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 28 Jun 2015 09:37:20 +0800
+Message-ID: <2472003.5ybaWVxMcq@voltaire>
+In-Reply-To: <1434893777-17618-2-git-send-email-linus.luessing@c0d3.blue>
+References: <1434893777-17618-1-git-send-email-linus.luessing@c0d3.blue>
+ <1434893777-17618-2-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1694866.T3S2MWd9xH";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: [B.A.T.M.A.N.] Missing list checks for *list_add*
+Content-Type: multipart/signed; boundary="nextPart4646826.eGfNVXQpPi";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/1] batman-adv: Always flood IGMP/MLD
+	reports
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,102 +21,101 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Martin =?ISO-8859-1?Q?Hundeb=F8ll?= <martin@hundeboll.net>, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart1694866.T3S2MWd9xH
+--nextPart4646826.eGfNVXQpPi
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="iso-8859-1"
 
-Hi,
+On Sunday, June 21, 2015 15:36:17 Linus L=FCssing wrote:
+> With this patch IGMP or MLD reports are always flooded. This is
+> necessary for the upcoming bridge integration:
+>=20
+> An IGMPv2/MLDv1 querier does not actively join the multicast group th=
+e
+> reports are sent to. Because of this, this would lead to snooping
+> bridges/switches not being able to learn of multicast listeners in th=
+e
+> mesh and wrongly shutting down ports for multicast traffic to the mes=
+h,
+> leading to packet loss.
 
-Simon debugged the refcnt problem and submitted some patches to fix the=
-m. I
-had a brief look and noticed that there are possible more problems simi=
-lar to
-the *list_del* ones - just with *list_add*. Basically some functions us=
-e some
-kind of get function, notice that the element does not exist and then c=
-reate
-a new one to add to the list. Only the "list_add" is protected. The res=
-ult may
-be that an element in twice in a list when only a single occurrence is =
-allowed.
-
-The problem I saw is batadv_gw_node_update. It first calls batadv_gw_no=
-de_get
-to check if an object with this value already exists and then uses
-batadv_gw_node_add to add a node (which may already be added between th=
-ese
-two calls). So it has to be made sure that nothing modifies the list be=
-tween
-these two calls).
-
-Similar looking functions are for example:
-
- * batadv_tvlv_handler_register
- * batadv_nc_get_nc_node
- * batadv_softif_create_vlan
- * batadv_tt_global_orig_entry_add
-
-Just for illustration what I meant with "nothing modifies the list betw=
-een
-these two calls":
-
-=2D-- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -30,6 +30,7 @@
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
- #include <linux/list.h>
-+#include <linux/lockdep.h>
- #include <linux/netdevice.h>
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
-@@ -425,6 +426,8 @@ static void batadv_gw_node_add(struct batadv_priv *=
-bat_priv,
- {
- =09struct batadv_gw_node *gw_node;
-=20
-+=09lockdep_assert_held(&bat_priv->gw.list_lock);
-+
- =09if (gateway->bandwidth_down =3D=3D 0)
- =09=09return;
-=20
-@@ -441,9 +444,7 @@ static void batadv_gw_node_add(struct batadv_priv *=
-bat_priv,
- =09gw_node->orig_node =3D orig_node;
- =09atomic_set(&gw_node->refcount, 1);
-=20
-=2D=09spin_lock_bh(&bat_priv->gw.list_lock);
- =09hlist_add_head_rcu(&gw_node->list, &bat_priv->gw.list);
-=2D=09spin_unlock_bh(&bat_priv->gw.list_lock);
-=20
- =09batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
- =09=09   "Found new gateway %pM -> gw bandwidth: %u.%u/%u.%u MBit\n",
-@@ -497,11 +498,14 @@ void batadv_gw_node_update(struct batadv_priv *ba=
-t_priv,
- =09struct batadv_gw_node *gw_node, *gw_node_tmp, *curr_gw =3D NULL;
- =09struct hlist_node *node_tmp;
-=20
-+=09spin_lock_bh(&bat_priv->gw.list_lock);
- =09gw_node =3D batadv_gw_node_get(bat_priv, orig_node);
- =09if (!gw_node) {
- =09=09batadv_gw_node_add(bat_priv, orig_node, gateway);
-+=09=09spin_unlock_bh(&bat_priv->gw.list_lock);
- =09=09goto out;
- =09}
-+=09spin_unlock_bh(&bat_priv->gw.list_lock);
-=20
- =09if ((gw_node->bandwidth_down =3D=3D ntohl(gateway->bandwidth_down))=
- &&
- =09    (gw_node->bandwidth_up =3D=3D ntohl(gateway->bandwidth_up)))
+I am not quite clear on what the patch does. It helps to support a feat=
+ure=20
+that is yet to come (upcoming bridge integration) or improves the situa=
+tion=20
+today ?
 
 
-Kind regards,
-=09Sven
---nextPart1694866.T3S2MWd9xH
+>  /**
+>   * batadv_mcast_forw_mode_check - check for optimized forwarding pot=
+ential
+> @@ -376,9 +434,11 @@ static int batadv_mcast_forw_mode_check(struct
+> batadv_priv *bat_priv, case ETH_P_IP:
+>  =09=09return batadv_mcast_forw_mode_check_ipv4(bat_priv, skb,
+>  =09=09=09=09=09=09=09 is_unsnoopable);
+> +#if IS_ENABLED(CONFIG_IPV6)
+>  =09case ETH_P_IPV6:
+>  =09=09return batadv_mcast_forw_mode_check_ipv6(bat_priv, skb,
+>  =09=09=09=09=09=09=09 is_unsnoopable);
+> +#endif
+>  =09default:
+>  =09=09return -EINVAL;
+>  =09}
+
+This hunk seems not really related to the patch itself ?
+
+
+>  /**
+> - * batadv_mcast_tvlv_ogm_handler_v1 - process incoming multicast tvl=
+v
+> container + * batadv_mcast_tvlv_ogm_handler_v2 - process incoming mul=
+ticast
+> tvlv container * @bat_priv: the bat priv with all the soft interface
+> information * @orig: the orig_node of the ogm
+>   * @flags: flags indicating the tvlv state (see batadv_tvlv_handler_=
+flags)
+>   * @tvlv_value: tvlv buffer containing the multicast data
+>   * @tvlv_value_len: tvlv buffer length
+>   */
+> -static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat=
+_priv,
+> +static void batadv_mcast_tvlv_ogm_handler_v2(struct batadv_priv *bat=
+_priv,
+>  =09=09=09=09=09     struct batadv_orig_node *orig,
+>  =09=09=09=09=09     u8 flags,
+>  =09=09=09=09=09     void *tvlv_value,
+
+By removing mcast v1 you effectively are breaking compatibility with al=
+l nodes=20
+running v1 and require everyone to upgrade to v2. Is there a good reaso=
+n for=20
+that ? The multicast optimizations can't easily work with v1 and v2 ?
+
+By reading your patch it does not become clear why v2 is needed in the =
+first=20
+place. The tvlv's content seems to be identical ?
+
+
+> @@ -206,6 +206,8 @@ static int batadv_interface_tx(struct sk_buff *sk=
+b,
+>  =09if (atomic_read(&bat_priv->mesh_state) !=3D BATADV_MESH_ACTIVE)
+>  =09=09goto dropped;
+>=20
+> +=09skb_set_network_header(skb, ETH_HLEN);
+> +
+>  =09soft_iface->trans_start =3D jiffies;
+>  =09vid =3D batadv_get_vid(skb, 0);
+>  =09ethhdr =3D eth_hdr(skb);
+
+Why is this change part of the patch ?
+
+Cheers,
+Marek
+
+
+--nextPart4646826.eGfNVXQpPi
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -120,20 +123,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJVjWVwAAoJEF2HCgfBJntGoVwP/1be4q0wYMiv3tevuWi7KXwD
-COZX7+g2P/TpuAimMONUBgVcno/U/hsKIMOxlyw/QM9KqiLPxea/FojW28z8E8WK
-9FMh808z7JzgPAcLjsonptClblQ6eERRJm0vWwVPiMFvA607Uqem3aMgbkCy8/je
-B/yJJiiTT8lVmGPEJfSkOIhTlgcW5ol4+E4fVab/0z7Kmm6q50f7PBgOHkswEM3Y
-LLXS6BZ65bURl82oXiLuozdrOkdbh6jeaHPPAHahyVvroFlfi3knRwKv7n0Hn+gp
-KnCp+Cgb+jYNTDaSR57JcZSh6Nw24IgIlZt6yw6Y+FD4HBvUHUrVuZ1fb83xDPbo
-5eST8wypDalaa553sougfXcjpBPPpDPGwlFuVe0iv+YhX9N5VHNljKm8F49XzYWa
-a9N1kig+BdgOIfFZ0vAaac0tOK6uQbsuwjU0eDzb6yQDwrKnu9fk1wadhqgS7huv
-LusL/q08xfbBppiIJ8HOA9AR6HEfPYX3o89Nx5S7ytA4V9XFeVCWH0NIvDrRD8eP
-iv61b8oxS9HgflEc+xmC6iYvBHDMaOwK2QWmul6SJb9+8SVzMO1vyJRvwsh664dE
-UBAFHDthYnAtXqW0zFl7wr5pM7A+lxn5QyAqKmUlpF0QsDGa/8a8B5dNs1MgxFnW
-YVcp3HBmipXGa07Y0s/8
-=uON7
+iQEcBAABCAAGBQJVj0/bAAoJEFNVTo/uthzA8qMH/25CzrQW36iAWqEEXeu1VTu0
+2NJQgXvID+NdcVhqN62UE8nFjqvOR1HN//19qFw/FEOOb6FMqe6w/Sop7ImrSnYp
+i5m9Tb0n24Pj92YaSxW7Zq12y0auPG2YwF1Hm/sFa4Y4VWLn31ZioRr06F0sPKc4
+JduBMUsHW+fTOEB2t5YcBVfBeqzL7LXaO73LQdF2LV/XcR7gCJpxpfZxJ5wJeaq1
+51EeWHqno9cptzQRFBMYpoCUh/o5QDFMGvoPI9vRkpw9cSZFhzElrv+Sfo+OBL6P
+XWponATWEHgghP2O5T9w5fm4WTZEYA09DVt7K/3ELIGFGjUb5pNenw/QZyf+cl4=
+=iQjP
 -----END PGP SIGNATURE-----
 
---nextPart1694866.T3S2MWd9xH--
+--nextPart4646826.eGfNVXQpPi--
 
