@@ -1,16 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 29 Jun 2015 18:16:16 +0200
-Message-ID: <43504885.6syhKky5ln@bentobox>
-In-Reply-To: <55911414.90404@meshcoding.com>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <559173F3.2030007@meshcoding.com>
+Date: Mon, 29 Jun 2015 18:36:03 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
+MIME-Version: 1.0
 References: <1434890572-3199-1-git-send-email-sven@narfation.org>
  <1434890572-3199-4-git-send-email-sven@narfation.org>
- <55911414.90404@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1650234.fN510GA2IV";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+ <55911414.90404@meshcoding.com> <43504885.6syhKky5ln@bentobox>
+In-Reply-To: <43504885.6syhKky5ln@bentobox>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="RKaaLk6wo4FLs9Ci8ht1PwlvPK49u4DJR"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v2 4/4] batman-adv: Fix gw_bandwidth
-	calculation on 32 bit systems
+ calculation on 32 bit systems
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,66 +23,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <antonio@meshcoding.com>
+To: Sven Eckelmann <sven@narfation.org>
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
 
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--RKaaLk6wo4FLs9Ci8ht1PwlvPK49u4DJR
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
---nextPart1650234.fN510GA2IV
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+On 29/06/15 18:16, Sven Eckelmann wrote:
+> Only the configuration for users is not correctly stored. For example=20
+> 4294967296Mbit would result in 0.1 Mbit instead of showing a failure. T=
+his is=20
+> hopefully not the biggest problem.
 
-On Monday 29 June 2015 11:47:00 Antonio Quartulli wrote:
-> 
-> On 21/06/15 14:42, Sven Eckelmann wrote:
-> > The TVLV for the gw_bandwidth stores everything as u32. But the
-> > gw_bandwidth reads the signed long which limits the maximum value to
-> > (2 ** 31 - 1) on systems with 4 byte long. Also the input value is always
-> > converted from either Mibit/s or Kibit/s to 100Kibit/s. This reduces the
-> > values even further when the user sets it via the default unit Kibit/s. It
-> > may even cause an integer overflow and end up with a value the user never
-> > intended.
-> > 
-> > Instead read the values as u64, check for possible overflows, do the unit
-> > adjustments and then reduce the size to u32.
-> > 
-> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> > ---
-> > v2:
-> >  * rebased on current master
-> 
-> shouldn't this patch be for maint as it is also fixing a potential
-> overflow issue?
+Thanks for the explanation. I don't think we should consider this as a
+fix then - it looks rather uncritical and rare.
 
-Only the configuration for users is not correctly stored. For example 
-4294967296Mbit would result in 0.1 Mbit instead of showing a failure. This is 
-hopefully not the biggest problem.
+>=20
+> Just tell me if you want it resubmitted against maint (Linux 4.1.x).
 
-Just tell me if you want it resubmitted against maint (Linux 4.1.x).
+No, thanks. This is not required at this point.
 
-Kind regards,
-	Sven
---nextPart1650234.fN510GA2IV
+Cheers,
+
+--=20
+Antonio Quartulli
+
+
+--RKaaLk6wo4FLs9Ci8ht1PwlvPK49u4DJR
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJVkW9UAAoJEF2HCgfBJntGLwIQAJOmo7WLqkdsUTL7NTp75juR
-hzpXMg4Z+41bq9lcqAZ9LcX4F7Yvp3QS4DNlin27ekFyph7X3DFGDKCoK3x/kow2
-7UqueuSupqrdlDtdzrgl7VTqCO7zfJW5aPITfN+W/v+RPdM3mmcNStA5elu/dSgK
-qy1dCUQLdREgu3jYoj5PzNXirzaYVwchLrZJci2e4lys5Gt9HQU4jpODQbBHo+NH
-mBe5OF4PMm33SaiLS9YMiVwpIp+i4HEWBdUSXf7y3MMHkFSVZeGJmtHRkF9+8JZI
-DFmYxgCWtwt8y3YTU9wM530wVjzK4/rTN6y95rRNFgb0Zd4MzxYuFuTLjY2VnlaR
-5f9Fzf3ejzf737oslNLxJlP63YtViUK0o8u1UGqAXSQh+6OIlLR+xjcx6KkQwnbR
-UgT4aMzydmwj2CRFB9nuq4oJQA8g+vLicCBVvw6vkWOXNFgldd1ZXRTnmZ7elhRj
-bLSlkpqg//qYUsIsuu1cJHN7UCJ27umfVPxA4QJXoF3lgACqem8KEs2KENaDNQBp
-G0vNoeBrvd871RuOyvl417VsEoJMmqxjT3fq9YSTJU5QMsoQ2YZpjSQWgY5i3YiR
-qocmkm5KBm3jmOVpK0rSkZKwpfoysihhwioDm/uOwvDwtOUkpeQOcu032+9JCVCR
-eioAWFgjrF+ONyqcsKWj
-=9cvM
+iQIcBAEBCAAGBQJVkXP3AAoJEOb/4TMchkvfj+AP/RbQ3j2Z+SItRGQfSKNhvadZ
+mkzc7xcIERlxFTI30rg1jGTC7IT44/k4TH+qhSsSTS7Dae8XPx3h+a1ldcEIbn3W
+rQTf35FfqqKGkTQ2TP4Oi9a3q1Gk1t124c12NZaTaQu6WLsNmGy2H1+gCoNKqp1L
+w045UZoyZTkY80R7sM0lumLDqYSdSn8k0Z8UrFKetgzFCtRP6ksimdHObEv0zLLP
+c3O4ygNdR9mAtvZCCUgdz3kFLwQ2RckLC02hRm56QxNGanX+glktzcvbgXSUoqQE
+/8yCZNQGI5GE9Oa+vS0e+MKTtuV0kKUg+tlxCtMT8uR8hQZXEykBZ/cXianMwYmr
+ZssXKOWJ7qDivq4RYNGPo+TI6GlZS9gbHvNwjqmQF6PKBQy3E0iRH5ORcqsjEiOx
+MuCAs3GhfSt9T0VT+5xbvd1j483c43Jx4qOmfnQUeCR+w4JPqIiXZB6x/KvUboKb
+yw4YLPPW8uWPo4D3ZcnZ08CKnqzWgt0/P1j9PDKLGWxXR9XvM/Ar3Ry1RAW3j+M1
+9WNmOZ0lDhxSL+7TpDF0c7Lv543vuCqA8VsweiC09rXfKmrhyAqk0qCT0kOvgBjL
+CfoHEgP1Lpm4u5e1tNKJIaBvHWM/PT/D0or2lRyVQKZAH9Wv42fy4O8Pu4N/2C5V
+umGTy9F7c8o/JYnESMvj
+=wUyt
 -----END PGP SIGNATURE-----
 
---nextPart1650234.fN510GA2IV--
-
+--RKaaLk6wo4FLs9Ci8ht1PwlvPK49u4DJR--
