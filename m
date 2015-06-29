@@ -1,17 +1,16 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Mon, 29 Jun 2015 06:42:46 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20150629044246.GD2527@odroid>
-References: <1434893777-17618-1-git-send-email-linus.luessing@c0d3.blue>
- <2472003.5ybaWVxMcq@voltaire> <20150628035913.GB2398@odroid>
- <5065799.yHsM5BUa9O@voltaire> <20150629025248.GC2527@odroid>
+Return-Path: <antonio@meshcoding.com>
+Message-ID: <55911414.90404@meshcoding.com>
+Date: Mon, 29 Jun 2015 11:47:00 +0200
+From: Antonio Quartulli <antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20150629025248.GC2527@odroid>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/1] batman-adv: Always flood IGMP/MLD
- reports
+References: <1434890572-3199-1-git-send-email-sven@narfation.org>
+ <1434890572-3199-4-git-send-email-sven@narfation.org>
+In-Reply-To: <1434890572-3199-4-git-send-email-sven@narfation.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="cOxeC0HO3I4P0Xmm8s2XP99fhr05ACBep"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 4/4] batman-adv: Fix gw_bandwidth
+ calculation on 32 bit systems
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,24 +22,67 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>, Marek Lindner <mareklindner@neomailbox.ch>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Mon, Jun 29, 2015 at 04:52:48AM +0200, Linus Lüssing wrote:
-> The alternative to bumping the version number would be to introduce
-> another flag into the mcast tvlv and keep counters and lists similar
-> to the num_disabled or want_* ones. So maybe about 80 more lines of
-> code and additional state and complexity to maintain.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--cOxeC0HO3I4P0Xmm8s2XP99fhr05ACBep
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Another alternative I just had to think about would be to register
-both a v1 and v2 TVLV container while only registering a handler
-for v2. That'd add just two or four extra lines of code with the same
-result. The disadvantage would be a few bytes extra overhead for
-dragging a v1 TVLV in the OGMs along.
 
-Actually, I think I'd kinda like that as it has a reasonable
-benefit-to-cost ratio. What do others think?
 
-(And maybe such legacy multicast v1 TVLV could then safely be
-obsoleted/removed in four years or after evaluating whether someone
-still needs it.)
+On 21/06/15 14:42, Sven Eckelmann wrote:
+> The TVLV for the gw_bandwidth stores everything as u32. But the
+> gw_bandwidth reads the signed long which limits the maximum value to
+> (2 ** 31 - 1) on systems with 4 byte long. Also the input value is alwa=
+ys
+> converted from either Mibit/s or Kibit/s to 100Kibit/s. This reduces th=
+e
+> values even further when the user sets it via the default unit Kibit/s.=
+ It
+> may even cause an integer overflow and end up with a value the user nev=
+er
+> intended.
+>=20
+> Instead read the values as u64, check for possible overflows, do the un=
+it
+> adjustments and then reduce the size to u32.
+>=20
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> v2:
+>  * rebased on current master
+
+shouldn't this patch be for maint as it is also fixing a potential
+overflow issue?
+
+
+--=20
+Antonio Quartulli
+
+
+--cOxeC0HO3I4P0Xmm8s2XP99fhr05ACBep
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJVkRQYAAoJEOb/4TMchkvftIEQAIoU5aukNCFTRJHw3zcW3vt8
+Bg6sklN43GiO6p4RCrSd7VsV4QJ1ejZbq3HGQOKeHRGxlpNDxuSweds8o1qBHPeD
+/0Tunh62x99vQWsM27DOTDx/JKp29yNI5Wkk5ZUO5S7euhA36PqM2mjAOgmHCoyL
+JA4DspWIkPdBou+lCttq3vKOmkgAVyTag195KMbTY8OxfxJOd5KgRFANdc1NhH5x
+iJGxLuCT/k7yPY+5j8XSmv7448DjvNPcRGPWlJ43Q+DXMx4AGYDrOUJ0jE1RA6/G
+Tkvx7s93xf/Klct4XJikhzKIXggYoxyJ7KH6MgagQKyNmB8RmL+/e6C9G3V/okJ/
+JjKyaVSg/nJXkLEvtx/mZAKHMs11Ys0d3RiJC7EL8s3f9JVrKFzUpst3t6hpDeln
+SNzMOskHhb9xggEaKlh8kQ++JilhLZfbTuROthw/NvoU+WQbvcHTjpCquD8PHwTA
+oN/LPRLjn2rSP+/Bka+HJHnj9iyzBSEbePQeqw64rPm2sciKCtqvuLtFuk4wpLCG
+84FXBAC6TLXBRNRWwXOr1AvQ/tffOBFpwhNqFkmXig5asfRULGRQd6af8eL/jrgW
+RdveUK1rIMlEn3LB5mJxxcyZ7c9nCWM5wYJcnF3o5s6IXtJlybNgegtATYWdffHS
+uQ+G7lMgjwgcgCQtVRhI
+=uS2y
+-----END PGP SIGNATURE-----
+
+--cOxeC0HO3I4P0Xmm8s2XP99fhr05ACBep--
