@@ -1,13 +1,13 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Fri,  3 Jul 2015 18:29:58 +0200
-Message-Id: <1435940999-3829-4-git-send-email-linus.luessing@c0d3.blue>
+Date: Fri,  3 Jul 2015 18:29:59 +0200
+Message-Id: <1435940999-3829-5-git-send-email-linus.luessing@c0d3.blue>
 In-Reply-To: <1435940999-3829-1-git-send-email-linus.luessing@c0d3.blue>
 References: <1435940999-3829-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 maint 3/4] batman-adv: Fix broken TT
+Subject: [B.A.T.M.A.N.] [PATCHv2 maint 4/4] batman-adv: Fix broken MCAST
 	capability check
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -29,41 +29,69 @@ This leads to broken capability checks.
 Fixing this by making the capability enum a non-bitmasked one and by
 that passing non-masked values to set_bit()/clear_bit().
 
-Fixes: a51fa16ecf3f ("batman-adv: Make TT capability changes atomic")
+Fixes: 201a54ba710a ("batman-adv: Make MCAST capability changes atomic")
 Reported-by: Def <def@laposte.net>
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
- translation-table.c |    3 ++-
- types.h             |    2 +-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ multicast.c |   11 ++++++-----
+ types.h     |    2 +-
+ 2 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/translation-table.c b/translation-table.c
-index b6c0f52..d73b103 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -3323,7 +3323,8 @@ static void batadv_tt_update_orig(struct batadv_priv *bat_priv,
- 	bool has_tt_init;
+diff --git a/multicast.c b/multicast.c
+index b75bcc3..ee8317f 100644
+--- a/multicast.c
++++ b/multicast.c
+@@ -709,14 +709,15 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ 		mcast_flags = *(uint8_t *)tvlv_value;
  
- 	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)tt_buff;
--	has_tt_init = orig_node->capa_initialized & BATADV_ORIG_CAPA_HAS_TT;
-+	has_tt_init = test_bit(BATADV_ORIG_CAPA_HAS_TT,
-+			       &orig_node->capa_initialized);
+ 	spin_lock_bh(&orig->mcast_handler_lock);
+-	orig_initialized = orig->capa_initialized & BATADV_ORIG_CAPA_HAS_MCAST;
++	orig_initialized = test_bit(BATADV_ORIG_CAPA_HAS_MCAST,
++				    &orig->capa_initialized);
  
- 	/* orig table not initialised AND first diff is in the OGM OR the ttvn
- 	 * increased by one -> we can apply the attached changes
+ 	/* If mcast support is turned on decrease the disabled mcast node
+ 	 * counter only if we had increased it for this node before. If this
+ 	 * is a completely new orig_node no need to decrease the counter.
+ 	 */
+ 	if (orig_mcast_enabled &&
+-	    !(orig->capabilities & BATADV_ORIG_CAPA_HAS_MCAST)) {
++	    !(test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities))) {
+ 		if (orig_initialized)
+ 			atomic_dec(&bat_priv->mcast.num_disabled);
+ 		set_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities);
+@@ -725,7 +726,7 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ 	 * node counter.
+ 	 */
+ 	} else if (!orig_mcast_enabled &&
+-		   (orig->capabilities & BATADV_ORIG_CAPA_HAS_MCAST ||
++		   (test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities) ||
+ 		    !orig_initialized)) {
+ 		atomic_inc(&bat_priv->mcast.num_disabled);
+ 		clear_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities);
+@@ -774,8 +775,8 @@ void batadv_mcast_purge_orig(struct batadv_orig_node *orig)
+ 
+ 	spin_lock_bh(&orig->mcast_handler_lock);
+ 
+-	if (!(orig->capabilities & BATADV_ORIG_CAPA_HAS_MCAST) &&
+-	    orig->capa_initialized & BATADV_ORIG_CAPA_HAS_MCAST)
++	if (!(test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities)) &&
++	    test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capa_initialized))
+ 		atomic_dec(&bat_priv->mcast.num_disabled);
+ 
+ 	batadv_mcast_want_unsnoop_update(bat_priv, orig, BATADV_NO_FLAGS);
 diff --git a/types.h b/types.h
-index cb7ccb1..6f4486c 100644
+index 6f4486c..3baf595 100644
 --- a/types.h
 +++ b/types.h
-@@ -301,7 +301,7 @@ struct batadv_orig_node {
- enum batadv_orig_capabilities {
+@@ -302,7 +302,7 @@ enum batadv_orig_capabilities {
  	BATADV_ORIG_CAPA_HAS_DAT,
  	BATADV_ORIG_CAPA_HAS_NC,
--	BATADV_ORIG_CAPA_HAS_TT = BIT(2),
-+	BATADV_ORIG_CAPA_HAS_TT,
- 	BATADV_ORIG_CAPA_HAS_MCAST = BIT(3),
+ 	BATADV_ORIG_CAPA_HAS_TT,
+-	BATADV_ORIG_CAPA_HAS_MCAST = BIT(3),
++	BATADV_ORIG_CAPA_HAS_MCAST,
  };
  
+ /**
 -- 
 1.7.10.4
 
