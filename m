@@ -1,13 +1,13 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Fri,  3 Jul 2015 18:29:57 +0200
-Message-Id: <1435940999-3829-3-git-send-email-linus.luessing@c0d3.blue>
+Date: Fri,  3 Jul 2015 18:29:58 +0200
+Message-Id: <1435940999-3829-4-git-send-email-linus.luessing@c0d3.blue>
 In-Reply-To: <1435940999-3829-1-git-send-email-linus.luessing@c0d3.blue>
 References: <1435940999-3829-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 maint 2/4] batman-adv: Fix broken NC
+Subject: [B.A.T.M.A.N.] [PATCHv2 maint 3/4] batman-adv: Fix broken TT
 	capability check
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -29,40 +29,41 @@ This leads to broken capability checks.
 Fixing this by making the capability enum a non-bitmasked one and by
 that passing non-masked values to set_bit()/clear_bit().
 
-Fixes: 586df9e2537b ("batman-adv: Make NC capability changes atomic")
+Fixes: a51fa16ecf3f ("batman-adv: Make TT capability changes atomic")
 Reported-by: Def <def@laposte.net>
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
- network-coding.c |    2 +-
- types.h          |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ translation-table.c |    3 ++-
+ types.h             |    2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/network-coding.c b/network-coding.c
-index 3ce493e..0309c2c 100644
---- a/network-coding.c
-+++ b/network-coding.c
-@@ -871,7 +871,7 @@ void batadv_nc_update_nc_node(struct batadv_priv *bat_priv,
- 		goto out;
+diff --git a/translation-table.c b/translation-table.c
+index b6c0f52..d73b103 100644
+--- a/translation-table.c
++++ b/translation-table.c
+@@ -3323,7 +3323,8 @@ static void batadv_tt_update_orig(struct batadv_priv *bat_priv,
+ 	bool has_tt_init;
  
- 	/* check if orig node is network coding enabled */
--	if (!(orig_node->capabilities & BATADV_ORIG_CAPA_HAS_NC))
-+	if (!(test_bit(BATADV_ORIG_CAPA_HAS_NC, &orig_node->capabilities)))
- 		goto out;
+ 	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)tt_buff;
+-	has_tt_init = orig_node->capa_initialized & BATADV_ORIG_CAPA_HAS_TT;
++	has_tt_init = test_bit(BATADV_ORIG_CAPA_HAS_TT,
++			       &orig_node->capa_initialized);
  
- 	/* accept ogms from 'good' neighbors and single hop neighbors */
+ 	/* orig table not initialised AND first diff is in the OGM OR the ttvn
+ 	 * increased by one -> we can apply the attached changes
 diff --git a/types.h b/types.h
-index 08a6343..cb7ccb1 100644
+index cb7ccb1..6f4486c 100644
 --- a/types.h
 +++ b/types.h
-@@ -300,7 +300,7 @@ struct batadv_orig_node {
-  */
+@@ -301,7 +301,7 @@ struct batadv_orig_node {
  enum batadv_orig_capabilities {
  	BATADV_ORIG_CAPA_HAS_DAT,
--	BATADV_ORIG_CAPA_HAS_NC = BIT(1),
-+	BATADV_ORIG_CAPA_HAS_NC,
- 	BATADV_ORIG_CAPA_HAS_TT = BIT(2),
+ 	BATADV_ORIG_CAPA_HAS_NC,
+-	BATADV_ORIG_CAPA_HAS_TT = BIT(2),
++	BATADV_ORIG_CAPA_HAS_TT,
  	BATADV_ORIG_CAPA_HAS_MCAST = BIT(3),
  };
+ 
 -- 
 1.7.10.4
 
