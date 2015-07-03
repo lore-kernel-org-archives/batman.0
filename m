@@ -1,12 +1,13 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 03 Jul 2015 19:13:02 +0800
-Message-ID: <2779160.PvUSbAU1eu@voltaire>
-In-Reply-To: <1435811430-6949-1-git-send-email-linus.luessing@c0d3.blue>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 03 Jul 2015 13:40:11 +0200
+Message-ID: <1467513.dHSoo3DKj0@bentobox>
+In-Reply-To: <2779160.PvUSbAU1eu@voltaire>
 References: <1435811430-6949-1-git-send-email-linus.luessing@c0d3.blue>
+ <2779160.PvUSbAU1eu@voltaire>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7853678.Nv38Ee9oT1";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; boundary="nextPart7041126.OHNRTSd7D2";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix broken capability
 	checks
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,60 +22,68 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 
---nextPart7853678.Nv38Ee9oT1
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart7041126.OHNRTSd7D2
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Thursday, July 02, 2015 06:30:30 Linus L=FCssing wrote:
-> Fixes: bfd0fbaef270 ("batman-adv: Make DAT capability changes atomic"=
-)
-> Fixes: 586df9e2537b ("batman-adv: Make NC capability changes atomic")=
+On Friday 03 July 2015 19:13:02 Marek Lindner wrote:
+> > @@ -299,10 +299,10 @@ struct batadv_orig_node {
+> >   *  (= orig node announces a tvlv of type BATADV_TVLV_MCAST)
+> >   */
+> >  enum batadv_orig_capabilities {
+> > -	BATADV_ORIG_CAPA_HAS_DAT = BIT(0),
+> > -	BATADV_ORIG_CAPA_HAS_NC = BIT(1),
+> > -	BATADV_ORIG_CAPA_HAS_TT = BIT(2),
+> > -	BATADV_ORIG_CAPA_HAS_MCAST = BIT(3),
+> > +	BATADV_ORIG_CAPA_HAS_DAT,
+> > +	BATADV_ORIG_CAPA_HAS_NC,
+> > +	BATADV_ORIG_CAPA_HAS_TT,
+> > +	BATADV_ORIG_CAPA_HAS_MCAST,
+> >  };
+> 
+> Do we need an initialization of the first element or can we rely on the 
+> compiler to start with 0 ?
 
-> Fixes: a51fa16ecf3f ("batman-adv: Make TT capability changes atomic")=
+Just discussed this with Marek on IRC. We came to the conclusion that ANSI C 
+"3.5.2.2 Enumeration specifiers" is enforcing a 0 as first entry (when not 
+specified otherwise):
 
-> Fixes: 201a54ba710a ("batman-adv: Make MCAST capability changes atomi=
-c")
+    If the first enumerator has no = , the value of
+    its enumeration constant is 0.  Each subsequent enumerator with no =
+    defines its enumeration constant as the value of the constant
+    expression obtained by adding 1 to the value of the previous
+    enumeration constant.
 
-Can we please split these patches too ? Antonio needs to merge the patc=
-h pairs=20
-before submitting them.
+But the code should maybe cleaned up to either use "= 0" everywhere or nowhere 
+in the internal representations.
 
+Places where = 0 is used:
 
-> @@ -422,7 +422,7 @@ static bool batadv_is_orig_node_eligible(struct
-> batadv_dat_candidate *res, int j;
->=20
->  =09/* check if orig node candidate is running DAT */
-> -=09if (!(candidate->capabilities & BATADV_ORIG_CAPA_HAS_DAT))
-> +=09if (!(candidate->capabilities & BIT(BATADV_ORIG_CAPA_HAS_DAT)))
->  =09=09goto out;
+ * net/batman-adv/bat_iv_ogm.c:enum batadv_dup_status
+ * net/batman-adv/main.h:enum batadv_uev_action (maybe not internal?)
+ * net/batman-adv/main.h:enum batadv_uev_type (maybe not internal?)
+ * net/batman-adv/types.h:enum batadv_dhcp_recipient
 
-How about using test_bit() to be consistent ?
+Not used:
 
+ * net/batman-adv/gateway_common.h:enum batadv_gw_modes
+ * net/batman-adv/gateway_common.h:enum batadv_bandwidth_units
+ * net/batman-adv/hard-interface.h:enum batadv_hard_if_state
+ * net/batman-adv/hard-interface.h:enum batadv_hard_if_cleanup
+ * net/batman-adv/main.h:enum batadv_mesh_state
+ * net/batman-adv/multicast.h:enum batadv_forw_mode
+ * net/batman-adv/types.h:enum batadv_counters
 
-> @@ -299,10 +299,10 @@ struct batadv_orig_node {
->   *  (=3D orig node announces a tvlv of type BATADV_TVLV_MCAST)
->   */
->  enum batadv_orig_capabilities {
-> -=09BATADV_ORIG_CAPA_HAS_DAT =3D BIT(0),
-> -=09BATADV_ORIG_CAPA_HAS_NC =3D BIT(1),
-> -=09BATADV_ORIG_CAPA_HAS_TT =3D BIT(2),
-> -=09BATADV_ORIG_CAPA_HAS_MCAST =3D BIT(3),
-> +=09BATADV_ORIG_CAPA_HAS_DAT,
-> +=09BATADV_ORIG_CAPA_HAS_NC,
-> +=09BATADV_ORIG_CAPA_HAS_TT,
-> +=09BATADV_ORIG_CAPA_HAS_MCAST,
->  };
+I don't count packet.h because this is clearly not internal and the packet 
+definitions should not be accidentally changed just because the enum constant 
+order is changed.
 
-Do we need an initialization of the first element or can we rely on the=
-=20
-compiler to start with 0 ?
-
-Cheers,
-Marek
-
---nextPart7853678.Nv38Ee9oT1
+Kind regards,
+	Sven
+--nextPart7041126.OHNRTSd7D2
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -82,14 +91,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVlm5CAAoJEFNVTo/uthzA9sMH/1JUyXywa0IdDztOzNSujrqv
-fZhXQ3qo5BEfoqwTyKgN3We5/NZ49kfE9MOnFZbSepW6uEVRK/r7kkyZC+unvmln
-V6Tg2qyHAwYfuxpaIucfFpGRtOmIkkL0XRwkZLF/LdDDKQ4S/w/YOTSUkLke42Pp
-2gnsIcUdTWiSt8b7xt7TvCPqQ6B9/Xo6cAB3lgcDTbTe9Pz1WPyW5SEwJN3vuUKC
-NcjW+1OlSrTrAvHwM2YrlB0dSvRTr6BsbVRIvxrVctbzpZDLSh41Wb/jpgdfLHQv
-V9hgntn25jJaHQbY0AQUy8Izrl5TYs9otmfaDwHnV0Hs5YOCgW2IXVmUPQn8g/k=
-=6Lvm
+iQIcBAABCgAGBQJVlnSeAAoJEF2HCgfBJntG+g0P/iGo+wFICwdDWw5oj5c/85cs
+qG7RmnRjx+E1aX1Xv9gAjZiwVS7HKAR62yk9/FTVpyhIbCskoN++0Tyd2zOQQ9FD
+plIstmcXwIyNE3yHrcH2uLrrJLkABxruYCldx/WO3GlEG68RSxTlkchX4bTNlB3J
+msGKF3cgTGlk0WfnNKiuJ8936jRh+uOx4fpHDid0mG2Sd0N6FdYei9uo5FoXJ0U0
+LFKPjiFtoYu4y3M3A942AJRmmzNomwg/u0IrJX+PQHBfnyrnGhD29xEydhIbxnpx
+RBYG4QVpiXBtbhrHY4C0F/xwiPRzcvxCAWfTN5YyZGswPVT62l4KS9sePA4nbsCj
+AQK7z2VFkMXTdEzxv9fjSPKyrZiyqxzFT4v5Majc5cbQKrKYDNmRPib7axiwvqNi
+TgR3sLJTYi/tfSk2aee/zKr8ZmpjcwWUjY8ckEIM87mE494/KRh5xJ/DeheD4+SW
+H9mWRn1+444PFZRpZWmMrW/NfV8bTAOdCjJXRU/RPHYDJAXzFsChcV0FnwEuayQz
+cgPQlvSm59ia0vPL0LzQQ1WVp9/0cPbQ3WWPK0FObx4euhlPB7aFBuLjTKAeM7j3
+jBYkn0g0sFEkDnSpblVvaHS9QlBEhuYoor7z7H2l0sPK3lOJuovuy1Vnn5dRn6MD
+HX75/kz0hgOGpkI30hwS
+=ufNd
 -----END PGP SIGNATURE-----
 
---nextPart7853678.Nv38Ee9oT1--
+--nextPart7041126.OHNRTSd7D2--
 
