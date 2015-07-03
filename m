@@ -1,13 +1,13 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Fri,  3 Jul 2015 18:29:56 +0200
-Message-Id: <1435940999-3829-2-git-send-email-linus.luessing@c0d3.blue>
+Date: Fri,  3 Jul 2015 18:29:57 +0200
+Message-Id: <1435940999-3829-3-git-send-email-linus.luessing@c0d3.blue>
 In-Reply-To: <1435940999-3829-1-git-send-email-linus.luessing@c0d3.blue>
 References: <1435940999-3829-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv2 maint 1/4] batman-adv: Fix broken DAT
+Subject: [B.A.T.M.A.N.] [PATCHv2 maint 2/4] batman-adv: Fix broken NC
 	capability check
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -29,40 +29,40 @@ This leads to broken capability checks.
 Fixing this by making the capability enum a non-bitmasked one and by
 that passing non-masked values to set_bit()/clear_bit().
 
-Fixes: bfd0fbaef270 ("batman-adv: Make DAT capability changes atomic")
+Fixes: 586df9e2537b ("batman-adv: Make NC capability changes atomic")
 Reported-by: Def <def@laposte.net>
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
- distributed-arp-table.c |    2 +-
- types.h                 |    2 +-
+ network-coding.c |    2 +-
+ types.h          |    2 +-
  2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/distributed-arp-table.c b/distributed-arp-table.c
-index b2cc19b..c0c514d 100644
---- a/distributed-arp-table.c
-+++ b/distributed-arp-table.c
-@@ -422,7 +422,7 @@ static bool batadv_is_orig_node_eligible(struct batadv_dat_candidate *res,
- 	int j;
- 
- 	/* check if orig node candidate is running DAT */
--	if (!(candidate->capabilities & BATADV_ORIG_CAPA_HAS_DAT))
-+	if (!(test_bit(BATADV_ORIG_CAPA_HAS_DAT, &candidate->capabilities)))
+diff --git a/network-coding.c b/network-coding.c
+index 3ce493e..0309c2c 100644
+--- a/network-coding.c
++++ b/network-coding.c
+@@ -871,7 +871,7 @@ void batadv_nc_update_nc_node(struct batadv_priv *bat_priv,
  		goto out;
  
- 	/* Check if this node has already been selected... */
+ 	/* check if orig node is network coding enabled */
+-	if (!(orig_node->capabilities & BATADV_ORIG_CAPA_HAS_NC))
++	if (!(test_bit(BATADV_ORIG_CAPA_HAS_NC, &orig_node->capabilities)))
+ 		goto out;
+ 
+ 	/* accept ogms from 'good' neighbors and single hop neighbors */
 diff --git a/types.h b/types.h
-index 65dc6bf..08a6343 100644
+index 08a6343..cb7ccb1 100644
 --- a/types.h
 +++ b/types.h
-@@ -299,7 +299,7 @@ struct batadv_orig_node {
-  *  (= orig node announces a tvlv of type BATADV_TVLV_MCAST)
+@@ -300,7 +300,7 @@ struct batadv_orig_node {
   */
  enum batadv_orig_capabilities {
--	BATADV_ORIG_CAPA_HAS_DAT = BIT(0),
-+	BATADV_ORIG_CAPA_HAS_DAT,
- 	BATADV_ORIG_CAPA_HAS_NC = BIT(1),
+ 	BATADV_ORIG_CAPA_HAS_DAT,
+-	BATADV_ORIG_CAPA_HAS_NC = BIT(1),
++	BATADV_ORIG_CAPA_HAS_NC,
  	BATADV_ORIG_CAPA_HAS_TT = BIT(2),
  	BATADV_ORIG_CAPA_HAS_MCAST = BIT(3),
+ };
 -- 
 1.7.10.4
 
