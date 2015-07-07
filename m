@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 07 Jul 2015 16:41:12 +0800
-Message-ID: <2499178.5J3uHqtEmg@voltaire>
-In-Reply-To: <1435940999-3829-2-git-send-email-linus.luessing@c0d3.blue>
+Date: Tue, 07 Jul 2015 16:45:25 +0800
+Message-ID: <2114095.OehcXO4okb@voltaire>
+In-Reply-To: <1435940999-3829-3-git-send-email-linus.luessing@c0d3.blue>
 References: <1435940999-3829-1-git-send-email-linus.luessing@c0d3.blue>
- <1435940999-3829-2-git-send-email-linus.luessing@c0d3.blue>
+ <1435940999-3829-3-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5314148.erHIZXBnJv";
+Content-Type: multipart/signed; boundary="nextPart7494816.ytdMllJhYn";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 maint 1/4] batman-adv: Fix broken DAT
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 maint 2/4] batman-adv: Fix broken NC
 	capability check
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
@@ -24,11 +24,11 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart5314148.erHIZXBnJv
+--nextPart7494816.ytdMllJhYn
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Friday, July 03, 2015 18:29:56 Linus L=FCssing wrote:
+On Friday, July 03, 2015 18:29:57 Linus L=FCssing wrote:
 > The introduction of set_bit() and clear_bit() calls in batman-adv
 > wrongly passed bitmasks and not the bit numbers to these functions.
 > This leads to broken capability checks.
@@ -36,21 +36,21 @@ On Friday, July 03, 2015 18:29:56 Linus L=FCssing wrote:
 > Fixing this by making the capability enum a non-bitmasked one and by
 > that passing non-masked values to set_bit()/clear_bit().
 >=20
-> Fixes: bfd0fbaef270 ("batman-adv: Make DAT capability changes atomic"=
-)
+> Fixes: 586df9e2537b ("batman-adv: Make NC capability changes atomic")=
+
 > Reported-by: Def <def@laposte.net>
 > Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
 > ---
->  distributed-arp-table.c |    2 +-
->  types.h                 |    2 +-
+>  network-coding.c |    2 +-
+>  types.h          |    2 +-
 >  2 files changed, 2 insertions(+), 2 deletions(-)
 
-Applied in revision de46667.
+Applied in revision 188ac4f.
 
 Thanks,
 Marek
 
---nextPart5314148.erHIZXBnJv
+--nextPart7494816.ytdMllJhYn
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -58,14 +58,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVm5CrAAoJEFNVTo/uthzABUoIAKH8WSX+bCTODIYJAHVD0qkp
-K+rT78dE9UBO+Yn6ZTF7AqR8x3Tc7feEIHaPMst+eRo6O+z3B8WeuVu5EcK3oNgw
-78wcx33eXqAcCPCB+/hoQYTwcPpzV4y3W9t/PNris2vbgd5Ok6jMLLzEG1QTfXdj
-KdNiq9j0t05iXQIgKq8pOng8kRux5gL5NMC1Yze07UVdCqKU0N62XsIk9UnNlonJ
-FYL2lgz6zng25OeMb7DtjP4M+gPYHj26DWj/rimqUYUe5tHcBewQTzcRXrCji74A
-7y1eaQ0D1w8IqzVSbuaBItkOOBC8V5it9+zo9tqfox5pWL64AKwUMvOI5lZgHhI=
-=wlTG
+iQEcBAABCAAGBQJVm5GlAAoJEFNVTo/uthzAvFIH/0s0FAoeJN64m7mVW6N/Jv5k
+LDqA1V2Xeh+W2g5zPoZXOvT0Ig3edbZjOagXVSGM/LOgSlGhLXTv3Cno1yBIeuyv
+qPuM+ryUeVSn2UyFuJNiO2uF4O0C+OxNTG0gnHQQY9SEBJaCNnKQVPLb4FwVWRDC
+yar/yn1nbclG790jdUmb/zLAyjflxQA6czlSyZhMVeMMoCxmc+WZLPQ07Yb/rWDj
++K2kM4JfrLd5XCRmAWqv76iUx+s5T9wpecj3n9Ez3ZGFrn/macrF1x5JvUOFZFIL
+mSPAGWFSBmTYVRFmoSN+jFmRqBXEny/0Ul6Q6mvyaKlLDOb4V/zNfL3wQxgPOuo=
+=6/px
 -----END PGP SIGNATURE-----
 
---nextPart5314148.erHIZXBnJv--
+--nextPart7494816.ytdMllJhYn--
 
