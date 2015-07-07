@@ -1,14 +1,15 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Sat,  4 Jul 2015 01:30:16 +0200
-Message-Id: <1435966216-6562-5-git-send-email-linus.luessing@c0d3.blue>
-In-Reply-To: <1435966216-6562-1-git-send-email-linus.luessing@c0d3.blue>
-References: <1435966216-6562-1-git-send-email-linus.luessing@c0d3.blue>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Tue, 07 Jul 2015 16:41:12 +0800
+Message-ID: <2499178.5J3uHqtEmg@voltaire>
+In-Reply-To: <1435940999-3829-2-git-send-email-linus.luessing@c0d3.blue>
+References: <1435940999-3829-1-git-send-email-linus.luessing@c0d3.blue>
+ <1435940999-3829-2-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv10 4/4] batman-adv: Add debugfs table for
-	mcast flags
+Content-Type: multipart/signed; boundary="nextPart5314148.erHIZXBnJv";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 maint 1/4] batman-adv: Fix broken DAT
+	capability check
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,202 +23,49 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This patch adds a debugfs table with originators and their according
-multicast flags to help users figure out why multicast optimizations
-might be enabled or disabled for them.
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/debugfs.c   |   21 +++++++++
- net/batman-adv/multicast.c |  101 ++++++++++++++++++++++++++++++++++++++++++++
- net/batman-adv/multicast.h |    2 +
- 3 files changed, 124 insertions(+)
+--nextPart5314148.erHIZXBnJv
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index c4c1e80..16d7aa7 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -48,6 +48,7 @@
- #include "distributed-arp-table.h"
- #include "gateway_client.h"
- #include "icmp_socket.h"
-+#include "multicast.h"
- #include "network-coding.h"
- #include "originator.h"
- #include "translation-table.h"
-@@ -352,6 +353,20 @@ static int batadv_nc_nodes_open(struct inode *inode, struct file *file)
- }
- #endif
- 
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+/**
-+ * batadv_mcast_flags_open - prepare file handler for reads from mcast_flags
-+ * @inode: inode which was opened
-+ * @file: file handle to be initialized
-+ */
-+static int batadv_mcast_flags_open(struct inode *inode, struct file *file)
-+{
-+	struct net_device *net_dev = (struct net_device *)inode->i_private;
-+
-+	return single_open(file, batadv_mcast_flags_seq_print_text, net_dev);
-+}
-+#endif
-+
- #define BATADV_DEBUGINFO(_name, _mode, _open)		\
- struct batadv_debuginfo batadv_debuginfo_##_name = {	\
- 	.attr = { .name = __stringify(_name),		\
-@@ -392,6 +407,9 @@ static BATADV_DEBUGINFO(transtable_local, S_IRUGO,
- #ifdef CONFIG_BATMAN_ADV_NC
- static BATADV_DEBUGINFO(nc_nodes, S_IRUGO, batadv_nc_nodes_open);
- #endif
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+static BATADV_DEBUGINFO(mcast_flags, S_IRUGO, batadv_mcast_flags_open);
-+#endif
- 
- static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- 	&batadv_debuginfo_originators,
-@@ -408,6 +426,9 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- #ifdef CONFIG_BATMAN_ADV_NC
- 	&batadv_debuginfo_nc_nodes,
- #endif
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+	&batadv_debuginfo_mcast_flags,
-+#endif
- 	NULL,
- };
- 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 25434be..1559647 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -48,6 +48,8 @@
- #include <net/ipv6.h>
- #include <net/mld.h>
- 
-+#include "hard-interface.h"
-+#include "hash.h"
- #include "packet.h"
- #include "translation-table.h"
- 
-@@ -1149,6 +1151,105 @@ void batadv_mcast_init(struct batadv_priv *bat_priv)
- }
- 
- /**
-+ * batadv_mcast_flags_print_header - print own mcast flags to debugfs table
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @seq: debugfs table seq_file struct
-+ *
-+ * Prints our own multicast flags including a more specific reason why
-+ * they are set, that is prints the bridge and querier state too, to
-+ * the debugfs table specified via @seq.
-+ */
-+static void batadv_mcast_flags_print_header(struct batadv_priv *bat_priv,
-+					    struct seq_file *seq)
-+{
-+	uint8_t flags = bat_priv->mcast.flags;
-+	char querier4, querier6, shadowing4, shadowing6;
-+	bool bridged = bat_priv->mcast.bridged;
-+
-+	if (bridged) {
-+		querier4 = bat_priv->mcast.querier_ipv4.exists ? '.' : '4';
-+		querier6 = bat_priv->mcast.querier_ipv6.exists ? '.' : '6';
-+		shadowing4 = bat_priv->mcast.querier_ipv4.shadowing ? '4' : '.';
-+		shadowing6 = bat_priv->mcast.querier_ipv6.shadowing ? '6' : '.';
-+	} else {
-+		querier4 = '?';
-+		querier6 = '?';
-+		shadowing4 = '?';
-+		shadowing6 = '?';
-+	}
-+
-+	seq_printf(seq, "Multicast flags (own flags: [%c%c%c])\n",
-+		   flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ? 'U' : '.',
-+		   flags & BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.',
-+		   flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.');
-+	seq_printf(seq, "* Bridged [U]\t\t\t\t%c\n", bridged ? 'U' : '.');
-+	seq_printf(seq, "* No IGMP/MLD Querier [4/6]:\t\t%c/%c\n",
-+		   querier4, querier6);
-+	seq_printf(seq, "* Shadowing IGMP/MLD Querier [4/6]:\t%c/%c\n",
-+		   shadowing4, shadowing6);
-+	seq_puts(seq, "-------------------------------------------\n");
-+	seq_printf(seq, "       %-10s %s\n", "Originator", "Flags");
-+}
-+
-+/**
-+ * batadv_mcast_flags_seq_print_text - print the mcast flags of other nodes
-+ * @seq: seq file to print on
-+ * @offset: not used
-+ *
-+ * This prints a table of (primary) originators and their according
-+ * multicast flags, including (in the header) our own.
-+ */
-+int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset)
-+{
-+	struct net_device *net_dev = (struct net_device *)seq->private;
-+	struct batadv_priv *bat_priv = netdev_priv(net_dev);
-+	struct batadv_hard_iface *primary_if;
-+	struct batadv_hashtable *hash = bat_priv->orig_hash;
-+	struct batadv_orig_node *orig_node;
-+	struct hlist_head *head;
-+	uint8_t flags;
-+	uint32_t i;
-+
-+	primary_if = batadv_seq_print_text_primary_if_get(seq);
-+	if (!primary_if)
-+		return 0;
-+
-+	batadv_mcast_flags_print_header(bat_priv, seq);
-+
-+	for (i = 0; i < hash->size; i++) {
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
-+			if (!(orig_node->capa_initialized &
-+			      BATADV_ORIG_CAPA_HAS_MCAST))
-+				continue;
-+
-+			flags = orig_node->mcast_flags;
-+
-+			if (!(orig_node->capabilities &
-+			      BATADV_ORIG_CAPA_HAS_MCAST)) {
-+				seq_printf(seq, "%pM -\n", orig_node->orig);
-+				continue;
-+			}
-+
-+			seq_printf(seq, "%pM [%c%c%c]\n", orig_node->orig,
-+				   (flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ?
-+				    'U' : '.'),
-+				   (flags & BATADV_MCAST_WANT_ALL_IPV4 ?
-+				    '4' : '.'),
-+				   (flags & BATADV_MCAST_WANT_ALL_IPV6 ?
-+				    '6' : '.'));
-+		}
-+		rcu_read_unlock();
-+	}
-+
-+	batadv_hardif_free_ref(primary_if);
-+
-+	return 0;
-+}
-+
-+/**
-  * batadv_mcast_free - free the multicast optimizations structures
-  * @bat_priv: the bat priv with all the soft interface information
-  */
-diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
-index 8f3cb04..561ad01 100644
---- a/net/batman-adv/multicast.h
-+++ b/net/batman-adv/multicast.h
-@@ -46,6 +46,8 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 
- void batadv_mcast_init(struct batadv_priv *bat_priv);
- 
-+int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset);
-+
- void batadv_mcast_free(struct batadv_priv *bat_priv);
- 
- void batadv_mcast_purge_orig(struct batadv_orig_node *orig_node);
--- 
-1.7.10.4
+On Friday, July 03, 2015 18:29:56 Linus L=FCssing wrote:
+> The introduction of set_bit() and clear_bit() calls in batman-adv
+> wrongly passed bitmasks and not the bit numbers to these functions.
+> This leads to broken capability checks.
+>=20
+> Fixing this by making the capability enum a non-bitmasked one and by
+> that passing non-masked values to set_bit()/clear_bit().
+>=20
+> Fixes: bfd0fbaef270 ("batman-adv: Make DAT capability changes atomic"=
+)
+> Reported-by: Def <def@laposte.net>
+> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+> ---
+>  distributed-arp-table.c |    2 +-
+>  types.h                 |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+
+Applied in revision de46667.
+
+Thanks,
+Marek
+
+--nextPart5314148.erHIZXBnJv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJVm5CrAAoJEFNVTo/uthzABUoIAKH8WSX+bCTODIYJAHVD0qkp
+K+rT78dE9UBO+Yn6ZTF7AqR8x3Tc7feEIHaPMst+eRo6O+z3B8WeuVu5EcK3oNgw
+78wcx33eXqAcCPCB+/hoQYTwcPpzV4y3W9t/PNris2vbgd5Ok6jMLLzEG1QTfXdj
+KdNiq9j0t05iXQIgKq8pOng8kRux5gL5NMC1Yze07UVdCqKU0N62XsIk9UnNlonJ
+FYL2lgz6zng25OeMb7DtjP4M+gPYHj26DWj/rimqUYUe5tHcBewQTzcRXrCji74A
+7y1eaQ0D1w8IqzVSbuaBItkOOBC8V5it9+zo9tqfox5pWL64AKwUMvOI5lZgHhI=
+=wlTG
+-----END PGP SIGNATURE-----
+
+--nextPart5314148.erHIZXBnJv--
 
