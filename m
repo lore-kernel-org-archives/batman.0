@@ -1,14 +1,13 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 10 Jul 2015 16:18:52 +0800
-Message-ID: <3207777.8ZijIqqf9V@voltaire>
-In-Reply-To: <1435500966-2584-1-git-send-email-mareklindner@neomailbox.ch>
-References: <1435500966-2584-1-git-send-email-mareklindner@neomailbox.ch>
+Date: Fri, 10 Jul 2015 16:20:14 +0800
+Message-ID: <2530346.cE5PXIuVig@voltaire>
+In-Reply-To: <1434957820-8418-1-git-send-email-sven@narfation.org>
+References: <1434957820-8418-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1974504.r7xHOY6ZvC";
+Content-Type: multipart/signed; boundary="nextPart2632250.bDCd0ZA5Nn";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: convert
-	bat_priv->tt.req_list to hlist
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Add missing include rculist.h
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,27 +22,26 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---nextPart1974504.r7xHOY6ZvC
+--nextPart2632250.bDCd0ZA5Nn
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, June 28, 2015 22:16:06 Marek Lindner wrote:
-> Since the list's tail is never accessed using a double linked list head
-> wastes memory.
+On Monday, June 22, 2015 09:23:40 Sven Eckelmann wrote:
+> originator.c is using hlist_for_each_entry_rcu but did not include the
+> required header for it.
 > 
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> Reported-by: Marek Lindner <mareklindner@neomailbox.ch>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/main.c              |  2 +-
->  net/batman-adv/translation-table.c | 29 ++++++++++++++++-------------
->  net/batman-adv/types.h             |  4 ++--
->  3 files changed, 19 insertions(+), 16 deletions(-)
+>  net/batman-adv/originator.c | 1 +
+>  1 file changed, 1 insertion(+)
 
-Applied in revision c5bcd65.
+Applied in revision 1bd0558.
 
-Regards,
+Thanks,
 Marek
 
---nextPart1974504.r7xHOY6ZvC
+--nextPart2632250.bDCd0ZA5Nn
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -51,14 +49,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVn3/sAAoJEFNVTo/uthzAsi0IAIWkWQ90VBbcmP60weA+RoFj
-bmwDewel1lVxWf4N9JN3jss/yu1yD+Hp4n0UZ5C9yhsU8joyGmcNNc8h8k4N8g7v
-yc2TJY4jZjH5Wp1gD9J1PReIry6mwHStqjLOTsfwnFO/mcrLSMLxIC/h+tuaNKsn
-rEMp/n8UvXerYBt8+NYCGjOrMfanonpHt9WOMqOgKJGTPwxBfGQi6FhWlH7kYHpN
-XC0jBCLN5S4iedJrNQnuD9+ANlYNGHu5Fbza4TYZzDCM+0yw5DStQ7S19l4tiog1
-flx3pRYNfhCre746ipn388Nh9+VsAMmbHJghykuceHnlE9F0OYUTTtQvqG7k7tg=
-=jC/n
+iQEcBAABCAAGBQJVn4A+AAoJEFNVTo/uthzArmwIAJ8TS8ks3Ma0DpXQazlmwV3P
+wRjLRAITno+VDJKWjUkxSMBOW6NgL7Xhw6VIcfMul7gxbMFm7kTc6bf96B+J4M1Z
+CxFixRXWeyPBhUGmbM4ZSJsFIBqMbJOwhJORVirm7urDTCJILAUdFWtSDaydjuXZ
+UOb9s/+25qE7uHd6tkWqbbXF++aSQnP58qaymBw/ehfPMkL01YMDSLf9ZrNNQl5r
+MhGzLFTdt1mfRnevhei42VVUqMRacDEzjzu/2if3a4NcMxB9wj2kDn4rvBPdLIaA
+zgRigFiXkt3Yvqbf2JXRd0VCf12wuJ0KPbzbO7qVyTB2mrCr3cZcBDHZEdgyEh8=
+=IThh
 -----END PGP SIGNATURE-----
 
---nextPart1974504.r7xHOY6ZvC--
+--nextPart2632250.bDCd0ZA5Nn--
 
