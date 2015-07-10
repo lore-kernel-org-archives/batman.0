@@ -1,13 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 10 Jul 2015 16:20:14 +0800
-Message-ID: <2530346.cE5PXIuVig@voltaire>
-In-Reply-To: <1434957820-8418-1-git-send-email-sven@narfation.org>
-References: <1434957820-8418-1-git-send-email-sven@narfation.org>
+Date: Fri, 10 Jul 2015 16:27:41 +0800
+Message-ID: <10046840.JiJO56dRcH@voltaire>
+In-Reply-To: <1434890715-14370-1-git-send-email-sven@narfation.org>
+References: <1434890715-14370-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2632250.bDCd0ZA5Nn";
+Content-Type: multipart/signed; boundary="nextPart44892419.9KjMnO258g";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Add missing include rculist.h
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 1/2] batman-adv: Annotate deleting
+	functions with external lock via lockdep
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,29 +20,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart2632250.bDCd0ZA5Nn
+--nextPart44892419.9KjMnO258g
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, June 22, 2015 09:23:40 Sven Eckelmann wrote:
-> originator.c is using hlist_for_each_entry_rcu but did not include the
-> required header for it.
+On Sunday, June 21, 2015 14:45:14 Sven Eckelmann wrote:
+> Functions which use (h)list_del* are requiring correct locking when they
+> operate on global lists. Most of the time the search in the list and the
+> delete are done in the same function. All other cases should have it
+> visible that they require a special lock to avoid race conditions.
 > 
-> Reported-by: Marek Lindner <mareklindner@neomailbox.ch>
+> Lockdep asserts can be used to check these problem during runtime when the
+> lockdep functionality is enabled.
+> 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/originator.c | 1 +
->  1 file changed, 1 insertion(+)
+> v2:
+>  * no change
+> 
+>  net/batman-adv/main.c              | 11 ++++++++---
+>  net/batman-adv/multicast.c         | 13 +++++++++++--
+>  net/batman-adv/network-coding.c    |  4 ++++
+>  net/batman-adv/translation-table.c |  2 ++
+>  4 files changed, 25 insertions(+), 5 deletions(-)
 
-Applied in revision 1bd0558.
+Applied in revision 5b95c42.
 
 Thanks,
 Marek
 
---nextPart2632250.bDCd0ZA5Nn
+--nextPart44892419.9KjMnO258g
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -49,14 +60,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVn4A+AAoJEFNVTo/uthzArmwIAJ8TS8ks3Ma0DpXQazlmwV3P
-wRjLRAITno+VDJKWjUkxSMBOW6NgL7Xhw6VIcfMul7gxbMFm7kTc6bf96B+J4M1Z
-CxFixRXWeyPBhUGmbM4ZSJsFIBqMbJOwhJORVirm7urDTCJILAUdFWtSDaydjuXZ
-UOb9s/+25qE7uHd6tkWqbbXF++aSQnP58qaymBw/ehfPMkL01YMDSLf9ZrNNQl5r
-MhGzLFTdt1mfRnevhei42VVUqMRacDEzjzu/2if3a4NcMxB9wj2kDn4rvBPdLIaA
-zgRigFiXkt3Yvqbf2JXRd0VCf12wuJ0KPbzbO7qVyTB2mrCr3cZcBDHZEdgyEh8=
-=IThh
+iQEcBAABCAAGBQJVn4H9AAoJEFNVTo/uthzAFQUIAICOYyckJza0q/U2SdWUNrFH
+o5d1wNfgJtCUIk6C/TkId0B/zrXH99m1gxl4zo1uvMcSC0JEB9b/iRnmKNFWlLPq
+pYWWSent7MgV5w4D22tqLqDjcTx+RAvrXSrM4LD7rXdP9CwgQqhbheymUNyhdv2k
+jg8yXOpHJ0bd9LqokeleAAXDYqCoz92X9NVLXcc7IVlaHUYi0c4dyZ0YUyCR+T+x
+O08hE6J/2NKsTQTpL8xXx85A5Wq2FLJKDptAhdC7btX/gtdh+/EI1TlMp+qvVE1B
+6UkoA5SjeP+V8V9VhHldXJ3a+eCzKEY+O0m0LWs5j7Xrl6amxd8T9ep+unU+cKs=
+=Xtcp
 -----END PGP SIGNATURE-----
 
---nextPart2632250.bDCd0ZA5Nn--
+--nextPart44892419.9KjMnO258g--
 
