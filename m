@@ -1,11 +1,12 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 14 Jul 2015 00:05:22 +0800
-Message-ID: <3846505.HTcyTpK9ms@voltaire>
-In-Reply-To: <1435317085-31015-1-git-send-email-sw@simonwunderlich.de>
+Date: Tue, 14 Jul 2015 00:50:27 +0800
+Message-ID: <4189875.r5OON8DARS@voltaire>
+In-Reply-To: <3846505.HTcyTpK9ms@voltaire>
 References: <1435317085-31015-1-git-send-email-sw@simonwunderlich.de>
+ <3846505.HTcyTpK9ms@voltaire>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2600136.nRvFsmIkOM";
+Content-Type: multipart/signed; boundary="nextPart2060356.qTF6V78Ern";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: remove obsolete deleted
 	attribute for gateway node
@@ -24,107 +25,43 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <simon@open-mesh.com>
 
 
---nextPart2600136.nRvFsmIkOM
-Content-Transfer-Encoding: 7Bit
+--nextPart2060356.qTF6V78Ern
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, June 26, 2015 13:11:25 Simon Wunderlich wrote:
-> @@ -537,14 +530,26 @@ void batadv_gw_node_update(struct batadv_priv
-> *bat_priv, /* Note: We don't need a NULL check here, since curr_gw never
->  		 * gets dereferenced.
->  		 */
-> +		spin_lock_bh(&bat_priv->gw.list_lock);
-> +		hlist_for_each_entry_safe(gw_node_tmp, node_tmp,
-> +					  &bat_priv->gw.list, list) {
-> +			if (gw_node_tmp != gw_node)
-> +				continue;
-> +
-> +			hlist_del_rcu(&gw_node->list);
-> +			batadv_gw_node_free_ref(gw_node);
-> +		}
-> +		spin_unlock_bh(&bat_priv->gw.list_lock);
+On Tuesday, July 14, 2015 00:05:22 Marek Lindner wrote:
+> >               curr_gw =3D batadv_gw_get_selected_gw_node(bat_priv);=
 
-An entire hlist_for_each_entry_safe() loop isn't necessary. 
-hlist_del_init_rcu() should suffice.
+> >               if (gw_node =3D=3D curr_gw)
+> >                       batadv_gw_reselect(bat_priv);
+> >
+> > +
+> > +             if (curr_gw)
+> > +                     batadv_gw_node_free_ref(curr_gw);
+> >
+> >       }
+> >=20
+> >
+> >  out:
+> > -     if (curr_gw)
+> > -             batadv_gw_node_free_ref(curr_gw);
+> >
+> >       if (gw_node)
+> >               batadv_gw_node_free_ref(gw_node);
+> >  }
+>=20
+> After the batadv_gw_node_free_ref() 'bat_priv->gw.curr_gw' points to =
+random=20
+> memory ...
 
-
->  		curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
->  		if (gw_node == curr_gw)
->  			batadv_gw_reselect(bat_priv);
-> +
-> +		if (curr_gw)
-> +			batadv_gw_node_free_ref(curr_gw);
->  	}
-> 
->  out:
-> -	if (curr_gw)
-> -		batadv_gw_node_free_ref(curr_gw);
->  	if (gw_node)
->  		batadv_gw_node_free_ref(gw_node);
->  }
-
-After the batadv_gw_node_free_ref() 'bat_priv->gw.curr_gw' points to random 
-memory ...
-
-
-
-> @@ -562,37 +567,21 @@ void batadv_gw_node_delete(struct batadv_priv
-> *bat_priv,
-> 
->  void batadv_gw_node_purge(struct batadv_priv *bat_priv)
->  {
-> -	struct batadv_gw_node *gw_node, *curr_gw;
-> +	struct batadv_gw_node *gw_node;
->  	struct hlist_node *node_tmp;
-> -	unsigned long timeout = msecs_to_jiffies(2 * BATADV_PURGE_TIMEOUT);
-> -	int do_reselect = 0;
-> 
-> -	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
-> +	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_ACTIVE)
-> +		return;
-
-Why checking for BATADV_MESH_ACTIVE if the function only ever gets called from 
-batadv_mesh_free() which sets BATADV_MESH_DEACTIVATING ?
-
-If you change the meaning of the function you could also rename it to 
-batadv_gw_node_free() to be consistent with the other cleanup functions we 
-have.
-
-
-
->  	spin_lock_bh(&bat_priv->gw.list_lock);
-> -
->  	hlist_for_each_entry_safe(gw_node, node_tmp,
->  				  &bat_priv->gw.list, list) {
-> -		if (((!gw_node->deleted) ||
-> -		     (time_before(jiffies, gw_node->deleted + timeout))) &&
-> -		    atomic_read(&bat_priv->mesh_state) == BATADV_MESH_ACTIVE)
-> -			continue;
-> -
-> -		if (curr_gw == gw_node)
-> -			do_reselect = 1;
-> 
->  		hlist_del_rcu(&gw_node->list);
->  		batadv_gw_node_free_ref(gw_node);
->  	}
-> 
->  	spin_unlock_bh(&bat_priv->gw.list_lock);
-> -
-> -	/* gw_reselect() needs to acquire the gw_list_lock */
-> -	if (do_reselect)
-> -		batadv_gw_reselect(bat_priv);
-> -
-> -	if (curr_gw)
-> -		batadv_gw_node_free_ref(curr_gw);
->  }
-
-At this point 'bat_priv->gw.curr_gw' points to random memory if I am not 
-mistaken.
+I stand corrected. bat_priv->gw.curr_gw has its own refcounter to prote=
+ct it=20
+from=20accidental deletion.
 
 Cheers,
 Marek
 
---nextPart2600136.nRvFsmIkOM
+--nextPart2060356.qTF6V78Ern
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -132,14 +69,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVo+HDAAoJEFNVTo/uthzAkiQIALXZoXGnZB89LcszwOFOL2+b
-c84lLurf0Q1ZcOIYCSs+4dPw0heRY3yfhAree0PyGHuhuCBoeYFcxWMs+jqSzAL6
-4K3XiEq1mYp8StS0+D14uCMDbktPzgDknaaxjua4BbiwdDNJ2FaU/MRnOn4EbhCR
-9Afa6ktm6EhWB+YoPM03+RoUoykCXNg0zEfG34VaZOFux+4Tf6QNhXjfgGb9FZZf
-dcNqDlI3WjVz/qP0XtOt7FIIrTbcBDWygumr/4pBFUlwa8lhdLMZ3eBvnRpPO7nB
-+JOjUNhJAE8KKS1ZNytQLNA8hrXch3zUb56Qu8yM/kKo8OqoLg7y52MqC7cqB3k=
-=UMKG
+iQEcBAABCAAGBQJVo+xbAAoJEFNVTo/uthzAgOsIAKEOrGsqq4/d+kuY6V6cCDst
+zVX00+5J/o0SX2jprTu2340LH7xAYRS5J815u5NX/OvzHGiExxV0bpGjBwKO/uaF
+4lM7x+hfl6jENLcWNhP+lMrhTuSkA+pGenr+4DkVC13NV1L9+X8gMEHjf27mAET2
+TT1Uz441uhiIx6fl/h6O8Y1GVCW/35mhUw5a3W4raJtrFnnFy/kFm3UJuux33n7I
+G+hLXX8QaFqBaqKEsoQzZ6aUdVqDiRzQYK2KQGOxD1g8KzVE8mRlqneQ+c46o+Vl
+WKBdR6gsupE2Ud7susbqP4IhP9nG34VE/T9vNv2Edfjw4YxxwrUNxwpuWXW5Wr0=
+=zI1o
 -----END PGP SIGNATURE-----
 
---nextPart2600136.nRvFsmIkOM--
+--nextPart2060356.qTF6V78Ern--
 
