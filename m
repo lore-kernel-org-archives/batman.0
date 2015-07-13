@@ -1,14 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 13 Jul 2015 11:16:30 +0800
-Message-ID: <1602341.t1WsWSYKaB@voltaire>
-In-Reply-To: <1435700726-6607-1-git-send-email-linus.luessing@c0d3.blue>
-References: <1435700726-6607-1-git-send-email-linus.luessing@c0d3.blue>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 13 Jul 2015 17:26:47 +0200
+Message-ID: <25210245.oCLoIMXecn@prime>
+In-Reply-To: <CANQCUfmMwMeqjrm2kz==e7EZDXavqqu2CChw9hytnMjx-zda=w@mail.gmail.com>
+References: <CANQCUfmMwMeqjrm2kz==e7EZDXavqqu2CChw9hytnMjx-zda=w@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2715776.X2JOZmzf9o";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix potentially broken
-	skb network header access
+Content-Type: multipart/signed; boundary="nextPart1571767.dvXlM0OflH";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Batman advanced receiving packets on bat0 with
+	same source and destination address and performance issues
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -23,33 +23,225 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart2715776.X2JOZmzf9o
+--nextPart1571767.dvXlM0OflH
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="UTF-8"
 
-On Tuesday, June 30, 2015 23:45:26 Linus L=FCssing wrote:
-> The two commits noted below added calls to ip_hdr() and ipv6_hdr(). T=
-hey
-> need a correctly set skb network header.
->=20
-> Unfortunately we cannot rely on the device drivers to set it for us.
-> Therefore setting it in the beginning of the according ndo_start_xmit=
+Hi Patrick,
 
-> handler.
->=20
-> Fixes: 405cc1e5 ("batman-adv: Modified forwarding behaviour for multi=
-cast
-> packets") Fixes: 1c090349 ("batman-adv: Add IPv4
-> link-local/IPv6-ll-all-nodes multicast support") Signed-off-by: Linus=
+after reading your text three times I still don't understand your setup=
+. :)
+Maybe its just me, but unless someone else answers, maybe you can help =
+me:
 
-> L=FCssing <linus.luessing@c0d3.blue>
+ * Where is that Linksys router you have in that network drawing?
+ * With Client/Gateway mode, are you referring to batman-adv gateway fe=
+ature?
+ * Could you perhaps simplify your explanation to one specific case whe=
+re it=20
+"slow" where you don't expect it to be? Also, it would be helpful to mi=
+nimize=20
+the network setup for this case and describe it one more time (includin=
+g all=20
+ports).
+ * Also, another helpful thing would be to post your "batctl if" output=
+ to see=20
+which devices are part of the the batman interface
 
-Applied in revision 02008ee.
+
+From=20your explanation, it sounds like you have some kind of bridge loop=
+ going=20
+on in your network. Maybe you can check whether you have lots of broadc=
+ast=20
+packets coming in (e.g. by using tcpdump or batctl td).
 
 Thanks,
-Marek
+    Simon
 
---nextPart2715776.X2JOZmzf9o
+On Thursday 09 July 2015 16:12:12 Patrick Bosch wrote:
+> Hello everyone
+>=20
+> I'm trying to set up a mesh, but I'm running into some issues, where
+> I'm not sure if I'm doing something wrong or if there is a bug hidden=
+
+> somewhere.
+>=20
+> I'm using the Nanostation M5 XW with OpenWRT Chaos Calmer RC2 and onl=
+y
+> OpenWRT packages.
+> The trouble occurs on a Nanostation in client mode, not in gateway mo=
+de.
+>=20
+> My setup:
+>=20
+> Laptop --- Client-mode --- Linksys router --- Gateway-mode
+>=20
+>                                      ----------WiFi-----------
+>=20
+> Laptop is connected to secondary port. The main port is connected
+> through a wire, the interface is not bridged to bat0. On the gateway,=
+
+> the main and secondary port are bridged to bat0. The main port is use=
+d
+> for the connection to the router.
+>=20
+> What I'm trying to do is set up a mesh through WiFi and bridged to it=
+
+> is the secondary port of the Nanostation. There will be clients
+> connected to it at some point. The main port is not bridged as this i=
+s
+> connected to a network that has to be completely isolated. The main
+> port is used for PoE and as a debugging connection with SSH. If I
+> bridge it, it simply uses the wired connection, which is not intended=
+.
+> But even so, I still see Batman messages on the interface for the mai=
+n
+> port, although it is not bridged.
+> If I don't connect any data to the main port, only power, it seems to=
+
+> work fine. As soon as I connect it to data, I see two things. First,
+> on the bat0 interface messages with the same source and destination
+> arrive. Second, the SSH connection to the client Nanostation becomes
+> really bad from time to time, but not consistently. My computer is
+> connected to the secondary port of the Nanostation. Both of these
+> occurrences seem to correlate, but both are not consistent.
+>=20
+> As far as I understand it, batman advanced should not use the wired
+> interface on the client Nanostation. But it sends packets on that
+> interface. I think the problem of the bad performance lies also there=
+,
+> but I am not sure.
+> I hope somebody can help me. Following are my configurations:
+>=20
+> Network:
+>=20
+> config interface 'loopback'
+>         option ifname 'lo'
+>         option proto 'static'
+>         option ipaddr '127.0.0.1'
+>         option netmask '255.0.0.0'
+>=20
+> config switch
+>         option name 'switch0'
+>         option reset '1'
+>         option enable_vlan '1'
+>=20
+> config switch_vlan
+>         option device 'switch0'
+>         option vlan '1'
+>         option ports '0t 1'
+>=20
+> config switch_vlan
+>         option device 'switch0'
+>         option vlan '2'
+>         option ports '0t 5'
+>=20
+> config interface 'mesh'
+>         option mtu '1532'
+>         option proto 'batadv'
+>         option mesh 'bat0'
+>=20
+> config interface 'bat0'
+>         option ifname 'bat0'
+>         option proto 'none'
+>         option mtu '1532'
+>=20
+> config interface 'br'
+>         option type 'bridge'
+>         option ifname 'eth0.1 bat0'
+>         option proto 'static'
+>         option ipaddr '10.123.0.2'
+>         option netmask '255.255.255.0'
+>=20
+> config interface 'wan'
+>         option proto 'dhcp'
+>         option ifname 'eth0.2'
+>         option hostname 'iFEST2'
+>         option defaultroute '0'
+>=20
+> config interface 'wan6'
+>         option proto 'dhcpv6'
+>         option reqaddress 'try'
+>         option reqprefix 'auto'
+>         option ifname 'eth0.2'
+>=20
+> Wireless:
+>=20
+> config wifi-device  radio0
+>         option type 'mac80211'
+>         option hwmode '11a'
+>         option path 'platform/ar934x_wmac'
+>         option htmode 'HT20'
+>         option channel '40'
+>         option txpower '17'
+>         option country 'BE'
+>         option disabled '0'
+>=20
+> config wifi-iface
+>         option device 'radio0'
+>         option ifname 'adhoc0'
+>         option encryption 'psk2'
+>         option network 'mesh'
+>         option ssid 'mySSID'
+>         option mode 'adhoc'
+>         option bssid '02:CA:FE:CA:CA:40'
+>         option mcast_rate '18000'
+>         option key 'myKey'
+>=20
+> Batman:
+>=20
+> config 'mesh' 'bat0'
+>         option 'aggregated_ogms'
+>         option 'ap_isolation'
+>         option 'bonding'
+>         option 'fragmentation'
+>         option 'gw_bandwidth'
+>         option 'gw_mode' 'client'
+>         option 'gw_sel_class'
+>         option 'log_level'
+>         option 'orig_interval'
+>         option 'vis_mode'
+>         option 'bridge_loop_avoidance' '1'
+>         option 'distributed_arp_table'
+>         option 'multicast_mode'
+>         option 'network_coding'
+>         option 'hop_penalty'
+>         option 'isolation_mark'
+>=20
+> These are two different translocal tables that I get,
+> 04:18:d6:61:81:54 is the MAC of the node in question:
+>=20
+> Locally retrieved addresses (from bat0) announced via TT (TTVN: 28):
+>        Client         VID Flags    Last seen (CRC       )
+>  * 9e:90:31:79:cd:b8   -1 [.P....]   0.000   (0x02c4aa75)
+>  * 9e:90:31:79:cd:b8    0 [.P....]   0.000   (0x4620303d)
+>  * e8:80:2e:e7:a4:df   -1 [......]   0.730   (0x02c4aa75)
+>=20
+> Locally retrieved addresses (from bat0) announced via TT (TTVN: 29):
+>        Client         VID Flags    Last seen (CRC       )
+>  * 9e:90:31:79:cd:b8   -1 [.P....]   0.000   (0xd3ed0426)
+>  * 04:18:d6:61:81:54   -1 [......]  30.370   (0xd3ed0426)
+>  * 9e:90:31:79:cd:b8    0 [.P....]   0.000   (0x4620303d)
+>  * e8:80:2e:e7:a4:df   -1 [......]   0.010   (0xd3ed0426)
+>=20
+> The transglobal one,  04:18:d6:61:81:68 is the MAC of the gateway
+>=20
+> Globally announced TT entries received via the mesh bat0
+>        Client         VID  (TTVN)       Originator      (Curr TTVN)
+> (CRC       ) Flags
+>  * da:2b:ea:63:42:38    0   ( 32) via 04:18:d6:60:81:68     ( 71)
+> (0x9079f118) [....]
+>  * 04:18:d6:61:81:54   -1   ( 71) via 04:18:d6:60:81:68     ( 71)
+> (0x4bb17292) [....]
+>  * 04:18:d6:61:81:68   -1   ( 32) via 04:18:d6:60:81:68     ( 71)
+> (0x4bb17292) [....]
+>  * da:2b:ea:63:42:38   -1   ( 32) via 04:18:d6:60:81:68     ( 71)
+> (0x4bb17292) [....]
+>=20
+> Kind regards
+> Patrick
+
+--nextPart1571767.dvXlM0OflH
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -57,14 +249,10 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVoy2SAAoJEFNVTo/uthzAjbkH/21rIPLq5DPT8T56yEtIebXi
-nMoN6qrrOihC4HholR3i/SSXIs8UYDwJjrwlHD9+8bdsJIO8JcOxLaCa15j430Hw
-ECwtXdS/eA7/EN35LEsMUzdaKRZJ+q9iEe7bhko1mkVH8LifV8MceEvrGQ/rcGdV
-afdADM/pfj2sCycBik4BEJl5Ph/lhLNGEpvjlpLDf7OItz4Z7gNPBcX1bGw7FQPu
-IONfeg0k5a26iKkz+HWgD3WW7z/3bcjUfcMihV7JvY1wZWU7JyFzmWrUDDVyWgwz
-IB35Xd8XwSSsHJGvqeabhw//AEtvNd8vvFJ4psm7Bc+Eq3DmMva8QsNM/P2XGb4=
-=t5iv
+iEUEABECAAYFAlWj2LsACgkQrzg/fFk7axZTOgCeJs73DnhuTnJ48d3yEBasz4cw
+wAMAmOtzRqbSg25qDfJ4QuvkrSPynsU=
+=E/Yn
 -----END PGP SIGNATURE-----
 
---nextPart2715776.X2JOZmzf9o--
+--nextPart1571767.dvXlM0OflH--
 
