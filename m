@@ -1,14 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 13 Jul 2015 17:26:47 +0200
-Message-ID: <25210245.oCLoIMXecn@prime>
-In-Reply-To: <CANQCUfmMwMeqjrm2kz==e7EZDXavqqu2CChw9hytnMjx-zda=w@mail.gmail.com>
-References: <CANQCUfmMwMeqjrm2kz==e7EZDXavqqu2CChw9hytnMjx-zda=w@mail.gmail.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Tue, 14 Jul 2015 00:05:22 +0800
+Message-ID: <3846505.HTcyTpK9ms@voltaire>
+In-Reply-To: <1435317085-31015-1-git-send-email-sw@simonwunderlich.de>
+References: <1435317085-31015-1-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1571767.dvXlM0OflH";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Batman advanced receiving packets on bat0 with
-	same source and destination address and performance issues
+Content-Type: multipart/signed; boundary="nextPart2600136.nRvFsmIkOM";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: remove obsolete deleted
+	attribute for gateway node
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,227 +21,110 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
 
---nextPart1571767.dvXlM0OflH
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
+--nextPart2600136.nRvFsmIkOM
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Hi Patrick,
+On Friday, June 26, 2015 13:11:25 Simon Wunderlich wrote:
+> @@ -537,14 +530,26 @@ void batadv_gw_node_update(struct batadv_priv
+> *bat_priv, /* Note: We don't need a NULL check here, since curr_gw never
+>  		 * gets dereferenced.
+>  		 */
+> +		spin_lock_bh(&bat_priv->gw.list_lock);
+> +		hlist_for_each_entry_safe(gw_node_tmp, node_tmp,
+> +					  &bat_priv->gw.list, list) {
+> +			if (gw_node_tmp != gw_node)
+> +				continue;
+> +
+> +			hlist_del_rcu(&gw_node->list);
+> +			batadv_gw_node_free_ref(gw_node);
+> +		}
+> +		spin_unlock_bh(&bat_priv->gw.list_lock);
 
-after reading your text three times I still don't understand your setup=
-. :)
-Maybe its just me, but unless someone else answers, maybe you can help =
-me:
-
- * Where is that Linksys router you have in that network drawing?
- * With Client/Gateway mode, are you referring to batman-adv gateway fe=
-ature?
- * Could you perhaps simplify your explanation to one specific case whe=
-re it=20
-"slow" where you don't expect it to be? Also, it would be helpful to mi=
-nimize=20
-the network setup for this case and describe it one more time (includin=
-g all=20
-ports).
- * Also, another helpful thing would be to post your "batctl if" output=
- to see=20
-which devices are part of the the batman interface
+An entire hlist_for_each_entry_safe() loop isn't necessary. 
+hlist_del_init_rcu() should suffice.
 
 
-From=20your explanation, it sounds like you have some kind of bridge loop=
- going=20
-on in your network. Maybe you can check whether you have lots of broadc=
-ast=20
-packets coming in (e.g. by using tcpdump or batctl td).
+>  		curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
+>  		if (gw_node == curr_gw)
+>  			batadv_gw_reselect(bat_priv);
+> +
+> +		if (curr_gw)
+> +			batadv_gw_node_free_ref(curr_gw);
+>  	}
+> 
+>  out:
+> -	if (curr_gw)
+> -		batadv_gw_node_free_ref(curr_gw);
+>  	if (gw_node)
+>  		batadv_gw_node_free_ref(gw_node);
+>  }
 
-Thanks,
-    Simon
+After the batadv_gw_node_free_ref() 'bat_priv->gw.curr_gw' points to random 
+memory ...
 
-On Thursday 09 July 2015 16:12:12 Patrick Bosch wrote:
-> Hello everyone
->=20
-> I'm trying to set up a mesh, but I'm running into some issues, where
-> I'm not sure if I'm doing something wrong or if there is a bug hidden=
 
-> somewhere.
->=20
-> I'm using the Nanostation M5 XW with OpenWRT Chaos Calmer RC2 and onl=
-y
-> OpenWRT packages.
-> The trouble occurs on a Nanostation in client mode, not in gateway mo=
-de.
->=20
-> My setup:
->=20
-> Laptop --- Client-mode --- Linksys router --- Gateway-mode
->=20
->                                      ----------WiFi-----------
->=20
-> Laptop is connected to secondary port. The main port is connected
-> through a wire, the interface is not bridged to bat0. On the gateway,=
 
-> the main and secondary port are bridged to bat0. The main port is use=
-d
-> for the connection to the router.
->=20
-> What I'm trying to do is set up a mesh through WiFi and bridged to it=
+> @@ -562,37 +567,21 @@ void batadv_gw_node_delete(struct batadv_priv
+> *bat_priv,
+> 
+>  void batadv_gw_node_purge(struct batadv_priv *bat_priv)
+>  {
+> -	struct batadv_gw_node *gw_node, *curr_gw;
+> +	struct batadv_gw_node *gw_node;
+>  	struct hlist_node *node_tmp;
+> -	unsigned long timeout = msecs_to_jiffies(2 * BATADV_PURGE_TIMEOUT);
+> -	int do_reselect = 0;
+> 
+> -	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
+> +	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_ACTIVE)
+> +		return;
 
-> is the secondary port of the Nanostation. There will be clients
-> connected to it at some point. The main port is not bridged as this i=
-s
-> connected to a network that has to be completely isolated. The main
-> port is used for PoE and as a debugging connection with SSH. If I
-> bridge it, it simply uses the wired connection, which is not intended=
-.
-> But even so, I still see Batman messages on the interface for the mai=
-n
-> port, although it is not bridged.
-> If I don't connect any data to the main port, only power, it seems to=
+Why checking for BATADV_MESH_ACTIVE if the function only ever gets called from 
+batadv_mesh_free() which sets BATADV_MESH_DEACTIVATING ?
 
-> work fine. As soon as I connect it to data, I see two things. First,
-> on the bat0 interface messages with the same source and destination
-> arrive. Second, the SSH connection to the client Nanostation becomes
-> really bad from time to time, but not consistently. My computer is
-> connected to the secondary port of the Nanostation. Both of these
-> occurrences seem to correlate, but both are not consistent.
->=20
-> As far as I understand it, batman advanced should not use the wired
-> interface on the client Nanostation. But it sends packets on that
-> interface. I think the problem of the bad performance lies also there=
-,
-> but I am not sure.
-> I hope somebody can help me. Following are my configurations:
->=20
-> Network:
->=20
-> config interface 'loopback'
->         option ifname 'lo'
->         option proto 'static'
->         option ipaddr '127.0.0.1'
->         option netmask '255.0.0.0'
->=20
-> config switch
->         option name 'switch0'
->         option reset '1'
->         option enable_vlan '1'
->=20
-> config switch_vlan
->         option device 'switch0'
->         option vlan '1'
->         option ports '0t 1'
->=20
-> config switch_vlan
->         option device 'switch0'
->         option vlan '2'
->         option ports '0t 5'
->=20
-> config interface 'mesh'
->         option mtu '1532'
->         option proto 'batadv'
->         option mesh 'bat0'
->=20
-> config interface 'bat0'
->         option ifname 'bat0'
->         option proto 'none'
->         option mtu '1532'
->=20
-> config interface 'br'
->         option type 'bridge'
->         option ifname 'eth0.1 bat0'
->         option proto 'static'
->         option ipaddr '10.123.0.2'
->         option netmask '255.255.255.0'
->=20
-> config interface 'wan'
->         option proto 'dhcp'
->         option ifname 'eth0.2'
->         option hostname 'iFEST2'
->         option defaultroute '0'
->=20
-> config interface 'wan6'
->         option proto 'dhcpv6'
->         option reqaddress 'try'
->         option reqprefix 'auto'
->         option ifname 'eth0.2'
->=20
-> Wireless:
->=20
-> config wifi-device  radio0
->         option type 'mac80211'
->         option hwmode '11a'
->         option path 'platform/ar934x_wmac'
->         option htmode 'HT20'
->         option channel '40'
->         option txpower '17'
->         option country 'BE'
->         option disabled '0'
->=20
-> config wifi-iface
->         option device 'radio0'
->         option ifname 'adhoc0'
->         option encryption 'psk2'
->         option network 'mesh'
->         option ssid 'mySSID'
->         option mode 'adhoc'
->         option bssid '02:CA:FE:CA:CA:40'
->         option mcast_rate '18000'
->         option key 'myKey'
->=20
-> Batman:
->=20
-> config 'mesh' 'bat0'
->         option 'aggregated_ogms'
->         option 'ap_isolation'
->         option 'bonding'
->         option 'fragmentation'
->         option 'gw_bandwidth'
->         option 'gw_mode' 'client'
->         option 'gw_sel_class'
->         option 'log_level'
->         option 'orig_interval'
->         option 'vis_mode'
->         option 'bridge_loop_avoidance' '1'
->         option 'distributed_arp_table'
->         option 'multicast_mode'
->         option 'network_coding'
->         option 'hop_penalty'
->         option 'isolation_mark'
->=20
-> These are two different translocal tables that I get,
-> 04:18:d6:61:81:54 is the MAC of the node in question:
->=20
-> Locally retrieved addresses (from bat0) announced via TT (TTVN: 28):
->        Client         VID Flags    Last seen (CRC       )
->  * 9e:90:31:79:cd:b8   -1 [.P....]   0.000   (0x02c4aa75)
->  * 9e:90:31:79:cd:b8    0 [.P....]   0.000   (0x4620303d)
->  * e8:80:2e:e7:a4:df   -1 [......]   0.730   (0x02c4aa75)
->=20
-> Locally retrieved addresses (from bat0) announced via TT (TTVN: 29):
->        Client         VID Flags    Last seen (CRC       )
->  * 9e:90:31:79:cd:b8   -1 [.P....]   0.000   (0xd3ed0426)
->  * 04:18:d6:61:81:54   -1 [......]  30.370   (0xd3ed0426)
->  * 9e:90:31:79:cd:b8    0 [.P....]   0.000   (0x4620303d)
->  * e8:80:2e:e7:a4:df   -1 [......]   0.010   (0xd3ed0426)
->=20
-> The transglobal one,  04:18:d6:61:81:68 is the MAC of the gateway
->=20
-> Globally announced TT entries received via the mesh bat0
->        Client         VID  (TTVN)       Originator      (Curr TTVN)
-> (CRC       ) Flags
->  * da:2b:ea:63:42:38    0   ( 32) via 04:18:d6:60:81:68     ( 71)
-> (0x9079f118) [....]
->  * 04:18:d6:61:81:54   -1   ( 71) via 04:18:d6:60:81:68     ( 71)
-> (0x4bb17292) [....]
->  * 04:18:d6:61:81:68   -1   ( 32) via 04:18:d6:60:81:68     ( 71)
-> (0x4bb17292) [....]
->  * da:2b:ea:63:42:38   -1   ( 32) via 04:18:d6:60:81:68     ( 71)
-> (0x4bb17292) [....]
->=20
-> Kind regards
-> Patrick
+If you change the meaning of the function you could also rename it to 
+batadv_gw_node_free() to be consistent with the other cleanup functions we 
+have.
 
---nextPart1571767.dvXlM0OflH
+
+
+>  	spin_lock_bh(&bat_priv->gw.list_lock);
+> -
+>  	hlist_for_each_entry_safe(gw_node, node_tmp,
+>  				  &bat_priv->gw.list, list) {
+> -		if (((!gw_node->deleted) ||
+> -		     (time_before(jiffies, gw_node->deleted + timeout))) &&
+> -		    atomic_read(&bat_priv->mesh_state) == BATADV_MESH_ACTIVE)
+> -			continue;
+> -
+> -		if (curr_gw == gw_node)
+> -			do_reselect = 1;
+> 
+>  		hlist_del_rcu(&gw_node->list);
+>  		batadv_gw_node_free_ref(gw_node);
+>  	}
+> 
+>  	spin_unlock_bh(&bat_priv->gw.list_lock);
+> -
+> -	/* gw_reselect() needs to acquire the gw_list_lock */
+> -	if (do_reselect)
+> -		batadv_gw_reselect(bat_priv);
+> -
+> -	if (curr_gw)
+> -		batadv_gw_node_free_ref(curr_gw);
+>  }
+
+At this point 'bat_priv->gw.curr_gw' points to random memory if I am not 
+mistaken.
+
+Cheers,
+Marek
+
+--nextPart2600136.nRvFsmIkOM
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -249,10 +132,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iEUEABECAAYFAlWj2LsACgkQrzg/fFk7axZTOgCeJs73DnhuTnJ48d3yEBasz4cw
-wAMAmOtzRqbSg25qDfJ4QuvkrSPynsU=
-=E/Yn
+iQEcBAABCAAGBQJVo+HDAAoJEFNVTo/uthzAkiQIALXZoXGnZB89LcszwOFOL2+b
+c84lLurf0Q1ZcOIYCSs+4dPw0heRY3yfhAree0PyGHuhuCBoeYFcxWMs+jqSzAL6
+4K3XiEq1mYp8StS0+D14uCMDbktPzgDknaaxjua4BbiwdDNJ2FaU/MRnOn4EbhCR
+9Afa6ktm6EhWB+YoPM03+RoUoykCXNg0zEfG34VaZOFux+4Tf6QNhXjfgGb9FZZf
+dcNqDlI3WjVz/qP0XtOt7FIIrTbcBDWygumr/4pBFUlwa8lhdLMZ3eBvnRpPO7nB
++JOjUNhJAE8KKS1ZNytQLNA8hrXch3zUb56Qu8yM/kKo8OqoLg7y52MqC7cqB3k=
+=UMKG
 -----END PGP SIGNATURE-----
 
---nextPart1571767.dvXlM0OflH--
+--nextPart2600136.nRvFsmIkOM--
 
