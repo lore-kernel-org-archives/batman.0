@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 10 Jul 2015 16:30:11 +0800
-Message-ID: <3592560.On8nZlICRS@voltaire>
-In-Reply-To: <1434892984-14142-1-git-send-email-sven@narfation.org>
-References: <1434890715-14370-1-git-send-email-sven@narfation.org>
- <1434892984-14142-1-git-send-email-sven@narfation.org>
+Date: Mon, 13 Jul 2015 11:16:30 +0800
+Message-ID: <1602341.t1WsWSYKaB@voltaire>
+In-Reply-To: <1435700726-6607-1-git-send-email-linus.luessing@c0d3.blue>
+References: <1435700726-6607-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3991593.SJq6j0hXPO";
+Content-Type: multipart/signed; boundary="nextPart2715776.X2JOZmzf9o";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 3/3] batman-adv: Add compat code for
-	lockdep_assert_held
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix potentially broken
+	skb network header access
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -24,23 +23,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart3991593.SJq6j0hXPO
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart2715776.X2JOZmzf9o
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Sunday, June 21, 2015 15:23:04 Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  compat-include/linux/lockdep.h | 33 +++++++++++++++++++++++++++++++++
->  1 file changed, 33 insertions(+)
->  create mode 100644 compat-include/linux/lockdep.h
+On Tuesday, June 30, 2015 23:45:26 Linus L=FCssing wrote:
+> The two commits noted below added calls to ip_hdr() and ipv6_hdr(). T=
+hey
+> need a correctly set skb network header.
+>=20
+> Unfortunately we cannot rely on the device drivers to set it for us.
+> Therefore setting it in the beginning of the according ndo_start_xmit=
 
-Applied in revision d5e1bbd.
+> handler.
+>=20
+> Fixes: 405cc1e5 ("batman-adv: Modified forwarding behaviour for multi=
+cast
+> packets") Fixes: 1c090349 ("batman-adv: Add IPv4
+> link-local/IPv6-ll-all-nodes multicast support") Signed-off-by: Linus=
+
+> L=FCssing <linus.luessing@c0d3.blue>
+
+Applied in revision 02008ee.
 
 Thanks,
 Marek
 
---nextPart3991593.SJq6j0hXPO
+--nextPart2715776.X2JOZmzf9o
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -48,14 +57,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVn4KTAAoJEFNVTo/uthzAnlYH/ApfjYko5eo/q3bNqvd+FYfA
-l4o7WhEUgj4XoR3Mk1G9j8i4tqO6hfja/e1PxclI9W0mvx8GPb9JayP5jFLLrdLz
-0/zenkga3f7gu1Wr8mieoLjA3y+i0gcROhKfsicLelyQeP7uA37toQNKXae4epqU
-3Utzb9poQS8/iX3N9MgqL/ct3BfN4nh3dFdlq0b4ieZHRNWzfS//kQvXTTQQppUC
-ShI9uAfaAzIgDD/w9WFk46jsrc+yKpa9m4jPl6BXPL0s/PxDUAIe6y2YI2rrAyNU
-0ZoOBKYbS8y1Z+Cq9x9jNhlU2AIVKmvoSzvi8ZdIfJEDxzcCD1WHQizxL/cyuvs=
-=031g
+iQEcBAABCAAGBQJVoy2SAAoJEFNVTo/uthzAjbkH/21rIPLq5DPT8T56yEtIebXi
+nMoN6qrrOihC4HholR3i/SSXIs8UYDwJjrwlHD9+8bdsJIO8JcOxLaCa15j430Hw
+ECwtXdS/eA7/EN35LEsMUzdaKRZJ+q9iEe7bhko1mkVH8LifV8MceEvrGQ/rcGdV
+afdADM/pfj2sCycBik4BEJl5Ph/lhLNGEpvjlpLDf7OItz4Z7gNPBcX1bGw7FQPu
+IONfeg0k5a26iKkz+HWgD3WW7z/3bcjUfcMihV7JvY1wZWU7JyFzmWrUDDVyWgwz
+IB35Xd8XwSSsHJGvqeabhw//AEtvNd8vvFJ4psm7Bc+Eq3DmMva8QsNM/P2XGb4=
+=t5iv
 -----END PGP SIGNATURE-----
 
---nextPart3991593.SJq6j0hXPO--
+--nextPart2715776.X2JOZmzf9o--
 
