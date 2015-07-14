@@ -1,14 +1,8 @@
-Return-Path: <patrick.bosch@uantwerpen.be>
-MIME-Version: 1.0
-In-Reply-To: <209e7d19833543a0981c27e181d5bdcb@CAS01.ad.ua.ac.be>
-References: <CANQCUfmMwMeqjrm2kz==e7EZDXavqqu2CChw9hytnMjx-zda=w@mail.gmail.com>
- <209e7d19833543a0981c27e181d5bdcb@CAS01.ad.ua.ac.be>
-Date: Mon, 13 Jul 2015 18:53:01 +0200
-Message-ID: <CANQCUfmhOKfp_J53aVhiMLawqEDyByvVuyN7u8GzhTbhvOy0zA@mail.gmail.com>
-From: Patrick Bosch <patrick.bosch@uantwerpen.be>
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] Batman advanced receiving packets on bat0 with
- same source and destination address and performance issues
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 14 Jul 2015 21:57:03 +0200
+Message-Id: <1436903824-24250-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [RFC 1/2] batman-adv: Drop support for Linux < 3.2
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -22,248 +16,786 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Simon
+The Linux Kernel 2.6.32 is reaching its end of life [1] after over 5 years.
+Instead it is recommended to use at least kernel 3.2 which is also already
+over 3 years old. All older kernels (v2.6.32 - v3.1) should therefore be
+dropped to reduce the support overhead.
 
-I hope I can make it a bit clearer and not more confusing. ;)
-I just saw that my drawing looks different in the mail then what is
-intended. It seems that the Linksys router and the gateway are
-connected via WiFi, which is not the case. The client and gateway are
-connected via WiFi.
+[1] https://lkml.org/lkml/2015/6/3/740
 
-The Linksys router serves as a DHCP server. There are cables from the
-router to the gateway and to the client. Both are connected to the
-main port of the Nanostation. The gateway/client notation means the
-batman-adv gateway feature notation.
-The gateway has one Vlan in the switch configuration, defined for both
-ports. So main port and secondary port are reached by eth0.1. This
-interface is bridged with the bat0 interface.
-This is what I found on both, the OpenWRT page and batman-adv page as
-a standard configuration if I want to add the ethernet ports to the
-mesh.
-The client has two Vlans, one for each port. Eth0.2 is the main port
-and eth0.1 is the secondary port. The secondary port is bridged to the
-bat0 interface and the main port is not. This seems to be the problem.
-When I tcpdump on the main port (eth0.2), I can see the batman-adv ARP
-replies broadcasting, which I would not expect to see as this
-interface is not bridged to bat0. What I would expect is nothing from
-batman-adv at all. The broadcast is every 10 seconds.
-I continuously ping both devices from my laptop that is connected to
-the client. For both devices, pings are lost. For the gateway more
-than for the client. For the client it is usually 1-3 and for the
-gateway from 1 up to 10-15. This does not happen regularly. It ranges
-from around 30 to 120 seconds. When I lose pings, the SSH session is
-also not responding at all. So, it is not really slow, but it seems
-that there is packet loss for a few seconds. I hope this example is a
-bit clearer.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ README.external                    |  2 +-
+ compat-include/linux/atomic.h      | 29 ---------------
+ compat-include/linux/bug.h         | 38 --------------------
+ compat-include/linux/compiler.h    | 40 ---------------------
+ compat-include/linux/if_vlan.h     | 15 ++------
+ compat-include/linux/kconfig.h     | 42 ----------------------
+ compat-include/linux/kernel.h      | 29 ---------------
+ compat-include/linux/lockdep.h     | 33 -----------------
+ compat-include/linux/moduleparam.h | 72 --------------------------------------
+ compat-include/linux/netdevice.h   | 55 -----------------------------
+ compat-include/linux/percpu.h      | 48 -------------------------
+ compat-include/linux/printk.h      | 39 ---------------------
+ compat-include/linux/rculist.h     | 10 ------
+ compat-include/linux/rcupdate.h    | 54 ----------------------------
+ compat-include/linux/skbuff.h      | 29 ---------------
+ compat.h                           | 55 ++---------------------------
+ 16 files changed, 5 insertions(+), 585 deletions(-)
+ delete mode 100644 compat-include/linux/atomic.h
+ delete mode 100644 compat-include/linux/bug.h
+ delete mode 100644 compat-include/linux/compiler.h
+ delete mode 100644 compat-include/linux/kconfig.h
+ delete mode 100644 compat-include/linux/lockdep.h
+ delete mode 100644 compat-include/linux/moduleparam.h
+ delete mode 100644 compat-include/linux/percpu.h
+ delete mode 100644 compat-include/linux/printk.h
+ delete mode 100644 compat-include/linux/rcupdate.h
 
-I will add the output tomorrow, right now I don't have access to the device.
-
-Kind regards
-Patrick
-
-On 13 July 2015 at 17:26, Simon Wunderlich <sw@simonwunderlich.de> wrote:
-> Hi Patrick,
->
-> after reading your text three times I still don't understand your setup. :)
-> Maybe its just me, but unless someone else answers, maybe you can help me:
->
->  * Where is that Linksys router you have in that network drawing?
->  * With Client/Gateway mode, are you referring to batman-adv gateway feature?
->  * Could you perhaps simplify your explanation to one specific case where it
-> "slow" where you don't expect it to be? Also, it would be helpful to minimize
-> the network setup for this case and describe it one more time (including all
-> ports).
->  * Also, another helpful thing would be to post your "batctl if" output to see
-> which devices are part of the the batman interface
->
->
-> From your explanation, it sounds like you have some kind of bridge loop going
-> on in your network. Maybe you can check whether you have lots of broadcast
-> packets coming in (e.g. by using tcpdump or batctl td).
->
-> Thanks,
->     Simon
->
-> On Thursday 09 July 2015 16:12:12 Patrick Bosch wrote:
->> Hello everyone
->>
->> I'm trying to set up a mesh, but I'm running into some issues, where
->> I'm not sure if I'm doing something wrong or if there is a bug hidden
->> somewhere.
->>
->> I'm using the Nanostation M5 XW with OpenWRT Chaos Calmer RC2 and only
->> OpenWRT packages.
->> The trouble occurs on a Nanostation in client mode, not in gateway mode.
->>
->> My setup:
->>
->> Laptop --- Client-mode --- Linksys router --- Gateway-mode
->>
->>                                      ----------WiFi-----------
->>
->> Laptop is connected to secondary port. The main port is connected
->> through a wire, the interface is not bridged to bat0. On the gateway,
->> the main and secondary port are bridged to bat0. The main port is used
->> for the connection to the router.
->>
->> What I'm trying to do is set up a mesh through WiFi and bridged to it
->> is the secondary port of the Nanostation. There will be clients
->> connected to it at some point. The main port is not bridged as this is
->> connected to a network that has to be completely isolated. The main
->> port is used for PoE and as a debugging connection with SSH. If I
->> bridge it, it simply uses the wired connection, which is not intended.
->> But even so, I still see Batman messages on the interface for the main
->> port, although it is not bridged.
->> If I don't connect any data to the main port, only power, it seems to
->> work fine. As soon as I connect it to data, I see two things. First,
->> on the bat0 interface messages with the same source and destination
->> arrive. Second, the SSH connection to the client Nanostation becomes
->> really bad from time to time, but not consistently. My computer is
->> connected to the secondary port of the Nanostation. Both of these
->> occurrences seem to correlate, but both are not consistent.
->>
->> As far as I understand it, batman advanced should not use the wired
->> interface on the client Nanostation. But it sends packets on that
->> interface. I think the problem of the bad performance lies also there,
->> but I am not sure.
->> I hope somebody can help me. Following are my configurations:
->>
->> Network:
->>
->> config interface 'loopback'
->>         option ifname 'lo'
->>         option proto 'static'
->>         option ipaddr '127.0.0.1'
->>         option netmask '255.0.0.0'
->>
->> config switch
->>         option name 'switch0'
->>         option reset '1'
->>         option enable_vlan '1'
->>
->> config switch_vlan
->>         option device 'switch0'
->>         option vlan '1'
->>         option ports '0t 1'
->>
->> config switch_vlan
->>         option device 'switch0'
->>         option vlan '2'
->>         option ports '0t 5'
->>
->> config interface 'mesh'
->>         option mtu '1532'
->>         option proto 'batadv'
->>         option mesh 'bat0'
->>
->> config interface 'bat0'
->>         option ifname 'bat0'
->>         option proto 'none'
->>         option mtu '1532'
->>
->> config interface 'br'
->>         option type 'bridge'
->>         option ifname 'eth0.1 bat0'
->>         option proto 'static'
->>         option ipaddr '10.123.0.2'
->>         option netmask '255.255.255.0'
->>
->> config interface 'wan'
->>         option proto 'dhcp'
->>         option ifname 'eth0.2'
->>         option hostname 'iFEST2'
->>         option defaultroute '0'
->>
->> config interface 'wan6'
->>         option proto 'dhcpv6'
->>         option reqaddress 'try'
->>         option reqprefix 'auto'
->>         option ifname 'eth0.2'
->>
->> Wireless:
->>
->> config wifi-device  radio0
->>         option type 'mac80211'
->>         option hwmode '11a'
->>         option path 'platform/ar934x_wmac'
->>         option htmode 'HT20'
->>         option channel '40'
->>         option txpower '17'
->>         option country 'BE'
->>         option disabled '0'
->>
->> config wifi-iface
->>         option device 'radio0'
->>         option ifname 'adhoc0'
->>         option encryption 'psk2'
->>         option network 'mesh'
->>         option ssid 'mySSID'
->>         option mode 'adhoc'
->>         option bssid '02:CA:FE:CA:CA:40'
->>         option mcast_rate '18000'
->>         option key 'myKey'
->>
->> Batman:
->>
->> config 'mesh' 'bat0'
->>         option 'aggregated_ogms'
->>         option 'ap_isolation'
->>         option 'bonding'
->>         option 'fragmentation'
->>         option 'gw_bandwidth'
->>         option 'gw_mode' 'client'
->>         option 'gw_sel_class'
->>         option 'log_level'
->>         option 'orig_interval'
->>         option 'vis_mode'
->>         option 'bridge_loop_avoidance' '1'
->>         option 'distributed_arp_table'
->>         option 'multicast_mode'
->>         option 'network_coding'
->>         option 'hop_penalty'
->>         option 'isolation_mark'
->>
->> These are two different translocal tables that I get,
->> 04:18:d6:61:81:54 is the MAC of the node in question:
->>
->> Locally retrieved addresses (from bat0) announced via TT (TTVN: 28):
->>        Client         VID Flags    Last seen (CRC       )
->>  * 9e:90:31:79:cd:b8   -1 [.P....]   0.000   (0x02c4aa75)
->>  * 9e:90:31:79:cd:b8    0 [.P....]   0.000   (0x4620303d)
->>  * e8:80:2e:e7:a4:df   -1 [......]   0.730   (0x02c4aa75)
->>
->> Locally retrieved addresses (from bat0) announced via TT (TTVN: 29):
->>        Client         VID Flags    Last seen (CRC       )
->>  * 9e:90:31:79:cd:b8   -1 [.P....]   0.000   (0xd3ed0426)
->>  * 04:18:d6:61:81:54   -1 [......]  30.370   (0xd3ed0426)
->>  * 9e:90:31:79:cd:b8    0 [.P....]   0.000   (0x4620303d)
->>  * e8:80:2e:e7:a4:df   -1 [......]   0.010   (0xd3ed0426)
->>
->> The transglobal one,  04:18:d6:61:81:68 is the MAC of the gateway
->>
->> Globally announced TT entries received via the mesh bat0
->>        Client         VID  (TTVN)       Originator      (Curr TTVN)
->> (CRC       ) Flags
->>  * da:2b:ea:63:42:38    0   ( 32) via 04:18:d6:60:81:68     ( 71)
->> (0x9079f118) [....]
->>  * 04:18:d6:61:81:54   -1   ( 71) via 04:18:d6:60:81:68     ( 71)
->> (0x4bb17292) [....]
->>  * 04:18:d6:61:81:68   -1   ( 32) via 04:18:d6:60:81:68     ( 71)
->> (0x4bb17292) [....]
->>  * da:2b:ea:63:42:38   -1   ( 32) via 04:18:d6:60:81:68     ( 71)
->> (0x4bb17292) [....]
->>
->> Kind regards
->> Patrick
-
-
-
+diff --git a/README.external b/README.external
+index c3fcf3a..b4985e9 100644
+--- a/README.external
++++ b/README.external
+@@ -6,7 +6,7 @@ and as external module. The external  module   allows   to    get
+ new    features without  upgrading  to  a  newer  kernel  version
+ and to get batman-adv specific bugfixes  for  kernels  that   are
+ not   supported   anymore.  It compiles  against  and should work
+-with Linux 2.6.29 -   4.1.  Supporting  older  versions  is  not
++with Linux 3.2     -   4.1.  Supporting  older  versions  is  not
+ planned,  but it's probably easy to backport it. If you work on a
+ backport, feel free to contact us.  :-)
+ 
+diff --git a/compat-include/linux/atomic.h b/compat-include/linux/atomic.h
+deleted file mode 100644
+index 025c8b1..0000000
+--- a/compat-include/linux/atomic.h
++++ /dev/null
+@@ -1,29 +0,0 @@
+-/* Copyright (C) 2007-2015 B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, see <http://www.gnu.org/licenses/>.
+- *
+- * This file contains macros for maintaining compatibility with older versions
+- * of the Linux kernel.
+- */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_ATOMIC_H_
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_ATOMIC_H_
+-
+-#include <linux/version.h>
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37)
+-#include_next <linux/atomic.h>
+-#endif
+-
+-#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_ATOMIC_H_ */
+diff --git a/compat-include/linux/bug.h b/compat-include/linux/bug.h
+deleted file mode 100644
+index 9b7b571..0000000
+--- a/compat-include/linux/bug.h
++++ /dev/null
+@@ -1,38 +0,0 @@
+-/* Copyright (C) 2007-2015 B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, see <http://www.gnu.org/licenses/>.
+- *
+- * This file contains macros for maintaining compatibility with older versions
+- * of the Linux kernel.
+- */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_BUG_H_
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_BUG_H_
+-
+-#include <linux/version.h>
+-#include_next <linux/bug.h>
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 0, 0)
+-
+-#undef BUILD_BUG_ON
+-#ifdef __CHECKER__
+-#define BUILD_BUG_ON(condition) (0)
+-#else /* __CHECKER__ */
+-#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2 * !!(condition)]))
+-#endif /* __CHECKER__ */
+-
+-#endif /* < KERNEL_VERSION(3, 0, 0) */
+-
+-#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_BUG_H_ */
+diff --git a/compat-include/linux/compiler.h b/compat-include/linux/compiler.h
+deleted file mode 100644
+index 29a02ae..0000000
+--- a/compat-include/linux/compiler.h
++++ /dev/null
+@@ -1,40 +0,0 @@
+-/* Copyright (C) 2007-2015 B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, see <http://www.gnu.org/licenses/>.
+- *
+- * This file contains macros for maintaining compatibility with older versions
+- * of the Linux kernel.
+- */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_COMPILER_H_
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_COMPILER_H_
+-
+-#include <linux/version.h>
+-#include_next <linux/compiler.h>
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
+-
+-#define __always_unused			__attribute__((unused))
+-#define __percpu
+-
+-#endif /* < KERNEL_VERSION(2, 6, 33) */
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
+-
+-#define __rcu
+-
+-#endif /* < KERNEL_VERSION(2, 6, 36) */
+-
+-#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_COMPILER_H_ */
+diff --git a/compat-include/linux/if_vlan.h b/compat-include/linux/if_vlan.h
+index 0cbd5c4..4f18fa6 100644
+--- a/compat-include/linux/if_vlan.h
++++ b/compat-include/linux/if_vlan.h
+@@ -24,21 +24,10 @@
+ #include <linux/version.h>
+ #include_next <linux/if_vlan.h>
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
+-
+-#define VLAN_PRIO_MASK          0xe000 /* Priority Code Point */
+-#define VLAN_PRIO_SHIFT         13
+-
+-#endif /* < KERNEL_VERSION(2, 6, 33) */
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 0, 0)
+-
+-#define vlan_insert_tag(skb, proto, vid) __vlan_put_tag(skb, vid)
+-
+-#elif LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 0)
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 0)
+ 
+ #define vlan_insert_tag(skb, proto, vid) vlan_insert_tag(skb, vid)
+ 
+-#endif /* < KERNEL_VERSION(3, 0, 0) */
++#endif /* < KERNEL_VERSION(3, 10, 0) */
+ 
+ #endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_IF_VLAN_H_ */
+diff --git a/compat-include/linux/kconfig.h b/compat-include/linux/kconfig.h
+deleted file mode 100644
+index a8d0766..0000000
+--- a/compat-include/linux/kconfig.h
++++ /dev/null
+@@ -1,42 +0,0 @@
+-/* Copyright (C) 2007-2015 B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, see <http://www.gnu.org/licenses/>.
+- *
+- * This file contains macros for maintaining compatibility with older versions
+- * of the Linux kernel.
+- */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_KCONFIG_H_
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_KCONFIG_H_
+-
+-#include <linux/version.h>
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 1, 0)
+-#include_next <linux/kconfig.h>
+-#endif
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 1, 0)
+-
+-#define __ARG_PLACEHOLDER_1 0,
+-#define config_enabled(cfg) _config_enabled(cfg)
+-#define _config_enabled(value) __config_enabled(__ARG_PLACEHOLDER_##value)
+-#define __config_enabled(arg1_or_junk) ___config_enabled(arg1_or_junk 1, 0)
+-#define ___config_enabled(__ignored, val, ...) val
+-
+-#define IS_ENABLED(option) \
+-	(config_enabled(option) || config_enabled(option##_MODULE))
+-
+-#endif /* < KERNEL_VERSION(3, 1, 0) */
+-
+-#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_KCONFIG_H_ */
+diff --git a/compat-include/linux/kernel.h b/compat-include/linux/kernel.h
+index c39cbe8..f98c8dc 100644
+--- a/compat-include/linux/kernel.h
++++ b/compat-include/linux/kernel.h
+@@ -24,35 +24,6 @@
+ #include <linux/version.h>
+ #include_next <linux/kernel.h>
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 39)
+-
+-#define kstrtou32(cp, base, v)\
+-({\
+-	unsigned long _v;\
+-	int _r;\
+-	_r = strict_strtoul(cp, base, &_v);\
+-	*(v) = (u32)_v;\
+-	if ((unsigned long)*(v) != _v)\
+-		_r = -ERANGE;\
+-	_r;\
+-})
+-
+-#define kstrtou64(cp, base, v)\
+-({\
+-	unsigned long long _v;\
+-	int _r;\
+-	_r = strict_strtoull(cp, base, &_v);\
+-	*(v) = (uint64_t)_v;\
+-	if ((unsigned long long)*(v) != _v)\
+-		_r = -ERANGE;\
+-	_r;\
+-})
+-
+-#define kstrtoul strict_strtoul
+-#define kstrtol  strict_strtol
+-
+-#endif /* < KERNEL_VERSION(2, 6, 39) */
+-
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0)
+ 
+ #define U8_MAX		((u8)~0U)
+diff --git a/compat-include/linux/lockdep.h b/compat-include/linux/lockdep.h
+deleted file mode 100644
+index e646114..0000000
+--- a/compat-include/linux/lockdep.h
++++ /dev/null
+@@ -1,33 +0,0 @@
+-/* Copyright (C) 2007-2015 B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, see <http://www.gnu.org/licenses/>.
+- *
+- * This file contains macros for maintaining compatibility with older versions
+- * of the Linux kernel.
+- */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_LOCKDEP_H_
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_LOCKDEP_H_
+-
+-#include <linux/version.h>
+-#include_next <linux/lockdep.h>
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 32)
+-
+-#define lockdep_assert_held(l)	do { (void)(l); } while (0)
+-
+-#endif /* < KERNEL_VERSION(2, 6, 32) */
+-
+-#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_LOCKDEP_H_ */
+diff --git a/compat-include/linux/moduleparam.h b/compat-include/linux/moduleparam.h
+deleted file mode 100644
+index c266b9c..0000000
+--- a/compat-include/linux/moduleparam.h
++++ /dev/null
+@@ -1,72 +0,0 @@
+-/* Copyright (C) 2007-2015 B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, see <http://www.gnu.org/licenses/>.
+- *
+- * This file contains macros for maintaining compatibility with older versions
+- * of the Linux kernel.
+- */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_MODULEPARAM_H_
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_MODULEPARAM_H_
+-
+-#include <linux/version.h>
+-#include_next <linux/moduleparam.h>
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 31)
+-
+-#define __compat__module_param_call(p1, p2, p3, p4, p5, p6, p7) \
+-	__module_param_call(p1, p2, p3, p4, p5, p7)
+-
+-#else
+-
+-#define __compat__module_param_call(p1, p2, p3, p4, p5, p6, p7) \
+-	__module_param_call(p1, p2, p3, p4, p5, p6, p7)
+-
+-#endif /* < KERNEL_VERSION(2, 6, 31) */
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
+-
+-struct kernel_param_ops {
+-	/* Returns 0, or -errno.  arg is in kp->arg. */
+-	int (*set)(const char *val, const struct kernel_param *kp);
+-	/* Returns length written or -errno.  Buffer is 4k (ie. be short!) */
+-	int (*get)(char *buffer, struct kernel_param *kp);
+-	/* Optional function to free kp->arg when module unloaded. */
+-	void (*free)(void *arg);
+-};
+-
+-#define module_param_cb(name, ops, arg, perm)				\
+-	static int __compat_set_param_##name(const char *val,		\
+-					     struct kernel_param *kp)	\
+-				{ return (ops)->set(val, kp); }		\
+-	static int __compat_get_param_##name(char *buffer,		\
+-					     struct kernel_param *kp)	\
+-				{ return (ops)->get(buffer, kp); }	\
+-	__compat__module_param_call(MODULE_PARAM_PREFIX, name,		\
+-				    __compat_set_param_##name,		\
+-				    __compat_get_param_##name, arg,	\
+-				    __same_type((arg), bool *), perm)
+-
+-static inline int batadv_param_set_copystring(const char *val,
+-					      const struct kernel_param *kp)
+-{
+-	return param_set_copystring(val, (struct kernel_param *)kp);
+-}
+-
+-#define param_set_copystring batadv_param_set_copystring
+-
+-#endif /* < KERNEL_VERSION(2, 6, 36) */
+-
+-#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_MODULEPARAM_H_ */
+diff --git a/compat-include/linux/netdevice.h b/compat-include/linux/netdevice.h
+index f19f624..5e8d05c 100644
+--- a/compat-include/linux/netdevice.h
++++ b/compat-include/linux/netdevice.h
+@@ -30,55 +30,6 @@
+ 
+ #endif /* < KERNEL_VERSION(3, 3, 0) */
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
+-
+-#define unregister_netdevice_queue(dev, head) unregister_netdevice(dev)
+-
+-#endif /* < KERNEL_VERSION(2, 6, 33) */
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 35)
+-
+-#include <linux/etherdevice.h>
+-
+-#undef  netdev_for_each_mc_addr
+-#define netdev_for_each_mc_addr(mclist, dev) \
+-	for (mclist = (struct batadv_dev_addr_list *)dev->mc_list; mclist; \
+-	     mclist = (struct batadv_dev_addr_list *)mclist->next)
+-
+-/* Note, that this breaks the usage of the normal 'struct netdev_hw_addr'
+- * for kernels < 2.6.35 in batman-adv!
+- */
+-#define netdev_hw_addr batadv_dev_addr_list
+-struct batadv_dev_addr_list {
+-	struct dev_addr_list *next;
+-	u8  addr[MAX_ADDR_LEN];
+-	u8  da_addrlen;
+-	u8  da_synced;
+-	int da_users;
+-	int da_gusers;
+-};
+-
+-#endif /* < KERNEL_VERSION(2, 6, 35) */
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
+-
+-#define NET_ADDR_RANDOM 0
+-
+-#endif /* < KERNEL_VERSION(2, 6, 36) */
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 39)
+-
+-/* On older kernels net_dev->master is reserved for iface bonding. */
+-static inline int batadv_netdev_set_master(struct net_device *slave,
+-					   struct net_device *master)
+-{
+-	return 0;
+-}
+-
+-#define netdev_set_master batadv_netdev_set_master
+-
+-#endif /* < KERNEL_VERSION(2, 6, 39) */
+-
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
+ 
+ #define netdev_master_upper_dev_link netdev_set_master
+@@ -99,15 +50,9 @@ static inline int batadv_netdev_set_master(struct net_device *slave,
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
+ 
+-/* alloc_netdev() was defined differently before 2.6.38 */
+ #undef alloc_netdev
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 38)
+-#define alloc_netdev(sizeof_priv, name, name_assign_type, setup) \
+-	alloc_netdev_mq(sizeof_priv, name, setup, 1)
+-#else
+ #define alloc_netdev(sizeof_priv, name, name_assign_type, setup) \
+ 	alloc_netdev_mqs(sizeof_priv, name, setup, 1, 1)
+-#endif /* nested < KERNEL_VERSION(2, 6, 38) */
+ 
+ #endif /* < KERNEL_VERSION(3, 17, 0) */
+ 
+diff --git a/compat-include/linux/percpu.h b/compat-include/linux/percpu.h
+deleted file mode 100644
+index 0fbcaae..0000000
+--- a/compat-include/linux/percpu.h
++++ /dev/null
+@@ -1,48 +0,0 @@
+-/* Copyright (C) 2007-2015 B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, see <http://www.gnu.org/licenses/>.
+- *
+- * This file contains macros for maintaining compatibility with older versions
+- * of the Linux kernel.
+- */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_PERCPU_H_
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_PERCPU_H_
+-
+-#include <linux/version.h>
+-#include_next <linux/percpu.h>
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 30)
+-
+-#undef __alloc_percpu
+-#define __alloc_percpu(size, align) \
+-	percpu_alloc_mask((size), GFP_KERNEL, cpu_possible_map)
+-
+-#endif /* < KERNEL_VERSION(2, 6, 30) */
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
+-
+-#define this_cpu_add(x, c)	batadv_this_cpu_add(&(x), c)
+-
+-static inline void batadv_this_cpu_add(u64 *count_ptr, size_t count)
+-{
+-	int cpu = get_cpu();
+-	*per_cpu_ptr(count_ptr, cpu) += count;
+-	put_cpu();
+-}
+-
+-#endif /* < KERNEL_VERSION(2, 6, 33) */
+-
+-#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_PERCPU_H_ */
+diff --git a/compat-include/linux/printk.h b/compat-include/linux/printk.h
+deleted file mode 100644
+index 2b31ed1..0000000
+--- a/compat-include/linux/printk.h
++++ /dev/null
+@@ -1,39 +0,0 @@
+-/* Copyright (C) 2007-2015 B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, see <http://www.gnu.org/licenses/>.
+- *
+- * This file contains macros for maintaining compatibility with older versions
+- * of the Linux kernel.
+- */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_PRINTK_H_
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_PRINTK_H_
+-
+-#include <linux/version.h>
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37)
+-#include_next <linux/printk.h>
+-#endif
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 35)
+-
+-#define pr_warn pr_warning
+-
+-#endif
+-
+-#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_PRINTK_H_ */
+-
+-#ifndef pr_fmt
+-#define pr_fmt(fmt) fmt
+-#endif
+diff --git a/compat-include/linux/rculist.h b/compat-include/linux/rculist.h
+index 0b8d7c6..b2f1798 100644
+--- a/compat-include/linux/rculist.h
++++ b/compat-include/linux/rculist.h
+@@ -24,16 +24,6 @@
+ #include <linux/version.h>
+ #include_next <linux/rculist.h>
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 37)
+-
+-#define hlist_first_rcu(head) \
+-	(*((struct hlist_node __rcu **)(&(head)->first)))
+-
+-#define hlist_next_rcu(node) \
+-	(*((struct hlist_node __rcu **)(&(node)->next)))
+-
+-#endif /* < KERNEL_VERSION(2, 6, 37) */
+-
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
+ 
+ #undef hlist_for_each_entry_rcu
+diff --git a/compat-include/linux/rcupdate.h b/compat-include/linux/rcupdate.h
+deleted file mode 100644
+index f0d0413..0000000
+--- a/compat-include/linux/rcupdate.h
++++ /dev/null
+@@ -1,54 +0,0 @@
+-/* Copyright (C) 2007-2015 B.A.T.M.A.N. contributors:
+- *
+- * Marek Lindner, Simon Wunderlich
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, see <http://www.gnu.org/licenses/>.
+- *
+- * This file contains macros for maintaining compatibility with older versions
+- * of the Linux kernel.
+- */
+-
+-#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_RCUPDATE_H_
+-#define _NET_BATMAN_ADV_COMPAT_LINUX_RCUPDATE_H_
+-
+-#include <linux/version.h>
+-#include_next <linux/rcupdate.h>
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 34)
+-
+-#define rcu_dereference_protected(p, c) (p)
+-
+-#define rcu_dereference_raw(p)	({ \
+-				 typeof(p) _________p1 = ACCESS_ONCE(p); \
+-				 smp_read_barrier_depends(); \
+-				 (_________p1); \
+-				 })
+-
+-#endif /* < KERNEL_VERSION(2, 6, 34) */
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 0, 0)
+-
+-#define kfree_rcu(ptr, rcuhead_name) \
+-	do { \
+-		void batadv_free_rcu_##ptr(struct rcu_head *rcu) \
+-		{ \
+-			void *container_ptr; \
+-			container_ptr = container_of(rcu, typeof(*(ptr)), rcuhead_name); \
+-			kfree(container_ptr); \
+-		} \
+-		call_rcu(&(ptr)->rcuhead_name, batadv_free_rcu_##ptr); \
+-	} while (0)
+-
+-#endif /* < KERNEL_VERSION(3, 0, 0) */
+-
+-#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_RCUPDATE_H_ */
+diff --git a/compat-include/linux/skbuff.h b/compat-include/linux/skbuff.h
+index d363cc0..1e7a3ef 100644
+--- a/compat-include/linux/skbuff.h
++++ b/compat-include/linux/skbuff.h
+@@ -24,35 +24,6 @@
+ #include <linux/version.h>
+ #include_next <linux/skbuff.h>
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 30)
+-
+-#define consume_skb(_skb) kfree_skb(_skb)
+-
+-#endif /* < KERNEL_VERSION(2, 6, 30) */
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
+-
+-static inline struct sk_buff *netdev_alloc_skb_ip_align(struct net_device *dev,
+-							unsigned int length)
+-{
+-	struct sk_buff *skb = netdev_alloc_skb(dev, length + NET_IP_ALIGN);
+-
+-	if (NET_IP_ALIGN && skb)
+-		skb_reserve(skb, NET_IP_ALIGN);
+-	return skb;
+-}
+-
+-#endif /* < KERNEL_VERSION(2, 6, 33) */
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 0, 0)
+-
+-static inline void skb_reset_mac_len(struct sk_buff *skb)
+-{
+-	skb->mac_len = skb->network_header - skb->mac_header;
+-}
+-
+-#endif /* < KERNEL_VERSION(3, 0, 0) */
+-
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
+ 
+ /* hack for not correctly set mac_len. This may happen for some special
+diff --git a/compat.h b/compat.h
+index 05fb4f1..4b81300 100644
+--- a/compat.h
++++ b/compat.h
+@@ -23,31 +23,11 @@
+ 
+ #include <linux/version.h>	/* LINUX_VERSION_CODE */
+ #include <linux/kconfig.h>
+-
+-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33))
+-#include <linux/autoconf.h>
+-#else
+ #include <generated/autoconf.h>
+-#endif
+ #include "compat-autoconf.h"
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
+-
+-#define skb_iif iif
+-
+-#define batadv_softif_destroy_netlink(dev, head) batadv_softif_destroy_netlink(dev)
+-
+-#endif /* < KERNEL_VERSION(2, 6, 33) */
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
+-
+-#include <linux/netdevice.h>
+-
+-#define netdev_master_upper_dev_get_rcu(dev) \
+-	(dev->br_port ? dev : NULL); \
+-	break;
+ 
+-#elif LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
+ 
+ #include <linux/netdevice.h>
+ 
+@@ -55,38 +35,7 @@
+ 	(dev->priv_flags & IFF_BRIDGE_PORT ? dev : NULL); \
+ 	break;
+ 
+-#endif /* < KERNEL_VERSION(2, 6, 36) */
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
+-
+-/* hack for dev->addr_assign_type &= ~NET_ADDR_RANDOM; */
+-#define addr_assign_type ifindex
+-
+-#endif /* < KERNEL_VERSION(2, 6, 36) */
+-
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 39)
+-
+-/* Hack for removing ndo_add/del_slave at the end of net_device_ops.
+- * This is somewhat ugly because it requires that ndo_validate_addr
+- * is at the end of this struct in soft-interface.c.
+- */
+-#include <linux/netdevice.h>
+-
+-#define ndo_validate_addr \
+-	ndo_validate_addr = eth_validate_addr, \
+-}; \
+-static const struct { \
+-	void *ndo_validate_addr; \
+-	void *ndo_add_slave; \
+-	void *ndo_del_slave; \
+-} __attribute__((unused)) __useless_ops1 = { \
+-	.ndo_validate_addr
+-
+-#define ndo_del_slave          ndo_init
+-#define ndo_init(x, y)         ndo_init - master->netdev_ops->ndo_init - EBUSY
+-
+-#endif /* < KERNEL_VERSION(2, 6, 39) */
+-
++#endif /* < KERNEL_VERSION(3, 9, 0) */
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 3, 0)
+ 
 -- 
-Patrick Bosch, PhD Student
-University of Antwerp - iMinds
-Dept. Mathematics and Computer Science
-MOSAIC research group
-Middelheimlaan 1 - Room M.G.215
-2020 Antwerpen - Belgium
-Email: patrick.bosch@uantwerpen.be
-Phone: +3232653858
+2.1.4
+
