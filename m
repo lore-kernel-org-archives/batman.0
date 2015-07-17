@@ -1,9 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 17 Jul 2015 09:39:46 +0200
-Message-Id: <1437118787-8415-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Fix conditional statements
-	indentation
+Date: Fri, 17 Jul 2015 09:39:47 +0200
+Message-Id: <1437118787-8415-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1437118787-8415-1-git-send-email-sven@narfation.org>
+References: <1437118787-8415-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Avoid crashing kernel with
+	multicast asserts
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -17,27 +19,74 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-29b9256e6631 ("batman-adv: consider outgoing interface in OGM sending")
-incorrectly indented the interface check code.
+The BUG_ON added to the multicast code in 7f220ed1f06 ("batman-adv: Fix
+potential synchronization issues in mcast tvlv handler") will crash the
+kernel when the statement is true. This is not strictly required and a
+WARN_ON is enough to raise attention.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_iv_ogm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/multicast.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index df54118..5c12200 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -968,7 +968,7 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(tmp_hard_iface, &batadv_hardif_list, list) {
- 		if (tmp_hard_iface->soft_iface != hard_iface->soft_iface)
--				continue;
-+			continue;
- 		batadv_iv_ogm_queue_add(bat_priv, *ogm_buff,
- 					*ogm_buff_len, hard_iface,
- 					tmp_hard_iface, 1, send_time);
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 25ed931..d71c70e 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -618,7 +618,7 @@ static void batadv_mcast_want_unsnoop_update(struct batadv_priv *bat_priv,
+ 
+ 		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
+ 		/* flag checks above + mcast_handler_lock prevents this */
+-		BUG_ON(!hlist_unhashed(node));
++		WARN_ON(!hlist_unhashed(node));
+ 
+ 		hlist_add_head_rcu(node, head);
+ 		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
+@@ -629,7 +629,7 @@ static void batadv_mcast_want_unsnoop_update(struct batadv_priv *bat_priv,
+ 
+ 		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
+ 		/* flag checks above + mcast_handler_lock prevents this */
+-		BUG_ON(hlist_unhashed(node));
++		WARN_ON(hlist_unhashed(node));
+ 
+ 		hlist_del_init_rcu(node);
+ 		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
+@@ -663,7 +663,7 @@ static void batadv_mcast_want_ipv4_update(struct batadv_priv *bat_priv,
+ 
+ 		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
+ 		/* flag checks above + mcast_handler_lock prevents this */
+-		BUG_ON(!hlist_unhashed(node));
++		WARN_ON(!hlist_unhashed(node));
+ 
+ 		hlist_add_head_rcu(node, head);
+ 		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
+@@ -674,7 +674,7 @@ static void batadv_mcast_want_ipv4_update(struct batadv_priv *bat_priv,
+ 
+ 		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
+ 		/* flag checks above + mcast_handler_lock prevents this */
+-		BUG_ON(hlist_unhashed(node));
++		WARN_ON(hlist_unhashed(node));
+ 
+ 		hlist_del_init_rcu(node);
+ 		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
+@@ -708,7 +708,7 @@ static void batadv_mcast_want_ipv6_update(struct batadv_priv *bat_priv,
+ 
+ 		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
+ 		/* flag checks above + mcast_handler_lock prevents this */
+-		BUG_ON(!hlist_unhashed(node));
++		WARN_ON(!hlist_unhashed(node));
+ 
+ 		hlist_add_head_rcu(node, head);
+ 		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
+@@ -719,7 +719,7 @@ static void batadv_mcast_want_ipv6_update(struct batadv_priv *bat_priv,
+ 
+ 		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
+ 		/* flag checks above + mcast_handler_lock prevents this */
+-		BUG_ON(hlist_unhashed(node));
++		WARN_ON(hlist_unhashed(node));
+ 
+ 		hlist_del_init_rcu(node);
+ 		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
 -- 
 2.1.4
 
