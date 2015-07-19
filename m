@@ -1,14 +1,16 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 19 Jul 2015 17:03:01 +0800
-Message-ID: <71865943.pb9oMPmvuo@voltaire>
-In-Reply-To: <1437144603-29020-1-git-send-email-mareklindner@neomailbox.ch>
-References: <1437144603-29020-1-git-send-email-mareklindner@neomailbox.ch>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Sun, 19 Jul 2015 15:28:23 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20150719132823.GA7888@odroid>
+References: <1437120223-11556-1-git-send-email-sven@narfation.org>
+ <1437120223-11556-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2275317.fFqoMFslNS";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: list supported and configured
-	routing algorithms
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1437120223-11556-2-git-send-email-sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 2/2] batman-adv: Avoid crashing kernel
+ with multicast asserts
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,53 +22,85 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+
+Sounds good, that'll probably spare us some discussions about
+BUG_ON()s on netdev :).
+
+Acked-by: Linus Lüssing <linus.luessing@c0d3.blue>
 
 
---nextPart2275317.fFqoMFslNS
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Friday, July 17, 2015 22:50:03 Marek Lindner wrote:
-> With this patch, batctl is able to:
->  * list supported routing algorithms
->  * list batX interfaces with their configured routing algorithm
->  * view and alter the selected routing algorithm
+On Fri, Jul 17, 2015 at 10:03:43AM +0200, Sven Eckelmann wrote:
+> The BUG_ON added to the multicast code in commit 7f220ed1f063 ("batman-adv:
+> Fix potential synchronization issues in mcast tvlv handler") will crash the
+> kernel when the statement is true. This is not strictly required and a
+> WARN_ON is enough to raise attention.
 > 
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
-> v2: man page entry added
+> v2: Change commit message to new git commit description style
 > 
->  debug.c      | 14 ++++++++++
->  debug.h      |  2 ++
->  main.c       |  5 ++++
->  man/batctl.8 |  8 +++++-
->  sys.c        | 91
-> ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-> sys.h        |  3 ++
->  6 files changed, 122 insertions(+), 1 deletion(-)
-
-Applied in revision 2c2cb26.
-
-Regards,
-Marek
-
---nextPart2275317.fFqoMFslNS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJVq2fFAAoJEFNVTo/uthzAVNsIAI/T0rd/8kR5+j8p+xSvOYvG
-zeKp4/NawrdX8zCiAmFsU6rigGKuJVmQy+EsvVh2TnKmJ5qEvEIU4c8VgyioWfWy
-1ybfU8ml0NPM9K+ptOoThTsRDN2aRZLHoRXVZkm9R3dDHNeJcAr9CGfykXLuBFs6
-cR9jjQ/RFibBNNUz3cbGiH3zN735qoHZaU5Q9jf8sjVZRcCXX+ahJsHKOCRIU3PH
-PfMW/WqWWHenKPR7pKSkgMdjKmhJk1N43dgo/HXYPI11IJE5oyldEAyOqafhr+6j
-izBXlXKIhbmWNixZcZKIQrjdL5tgzcTmsroh+kEqJd0nTaF+2/ZuCBjZSblR0FE=
-=/0OK
------END PGP SIGNATURE-----
-
---nextPart2275317.fFqoMFslNS--
-
+>  net/batman-adv/multicast.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+> index 25ed931..d71c70e 100644
+> --- a/net/batman-adv/multicast.c
+> +++ b/net/batman-adv/multicast.c
+> @@ -618,7 +618,7 @@ static void batadv_mcast_want_unsnoop_update(struct batadv_priv *bat_priv,
+>  
+>  		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
+>  		/* flag checks above + mcast_handler_lock prevents this */
+> -		BUG_ON(!hlist_unhashed(node));
+> +		WARN_ON(!hlist_unhashed(node));
+>  
+>  		hlist_add_head_rcu(node, head);
+>  		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
+> @@ -629,7 +629,7 @@ static void batadv_mcast_want_unsnoop_update(struct batadv_priv *bat_priv,
+>  
+>  		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
+>  		/* flag checks above + mcast_handler_lock prevents this */
+> -		BUG_ON(hlist_unhashed(node));
+> +		WARN_ON(hlist_unhashed(node));
+>  
+>  		hlist_del_init_rcu(node);
+>  		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
+> @@ -663,7 +663,7 @@ static void batadv_mcast_want_ipv4_update(struct batadv_priv *bat_priv,
+>  
+>  		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
+>  		/* flag checks above + mcast_handler_lock prevents this */
+> -		BUG_ON(!hlist_unhashed(node));
+> +		WARN_ON(!hlist_unhashed(node));
+>  
+>  		hlist_add_head_rcu(node, head);
+>  		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
+> @@ -674,7 +674,7 @@ static void batadv_mcast_want_ipv4_update(struct batadv_priv *bat_priv,
+>  
+>  		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
+>  		/* flag checks above + mcast_handler_lock prevents this */
+> -		BUG_ON(hlist_unhashed(node));
+> +		WARN_ON(hlist_unhashed(node));
+>  
+>  		hlist_del_init_rcu(node);
+>  		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
+> @@ -708,7 +708,7 @@ static void batadv_mcast_want_ipv6_update(struct batadv_priv *bat_priv,
+>  
+>  		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
+>  		/* flag checks above + mcast_handler_lock prevents this */
+> -		BUG_ON(!hlist_unhashed(node));
+> +		WARN_ON(!hlist_unhashed(node));
+>  
+>  		hlist_add_head_rcu(node, head);
+>  		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
+> @@ -719,7 +719,7 @@ static void batadv_mcast_want_ipv6_update(struct batadv_priv *bat_priv,
+>  
+>  		spin_lock_bh(&bat_priv->mcast.want_lists_lock);
+>  		/* flag checks above + mcast_handler_lock prevents this */
+> -		BUG_ON(hlist_unhashed(node));
+> +		WARN_ON(hlist_unhashed(node));
+>  
+>  		hlist_del_init_rcu(node);
+>  		spin_unlock_bh(&bat_priv->mcast.want_lists_lock);
+> -- 
+> 2.1.4
+> 
