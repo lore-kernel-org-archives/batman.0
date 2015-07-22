@@ -1,12 +1,13 @@
-Return-Path: <berat@autistici.org>
-From: Berat <berat@autistici.org>
-Message-ID: <55AFAFD9.808@autistici.org>
-Date: Wed, 22 Jul 2015 16:59:37 +0200
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 22 Jul 2015 17:58:25 +0200
+Message-ID: <7098754.rficnZ0CR1@prime>
+In-Reply-To: <55AFAFD9.808@autistici.org>
+References: <55AFAFD9.808@autistici.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="bUBTm1INfwURpOjnn3dk9qsPn4IWW4MHk"
-Subject: [B.A.T.M.A.N.] encapsulated ethernet frame format
+Content-Type: multipart/signed; boundary="nextPart2061998.hL7HSJMQlu";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] encapsulated ethernet frame format
 Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,276 +21,70 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---bUBTm1INfwURpOjnn3dk9qsPn4IWW4MHk
-Content-Type: multipart/mixed;
- boundary="------------060600040305040601080601"
 
-This is a multi-part message in MIME format.
---------------060600040305040601080601
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+--nextPart2061998.hL7HSJMQlu
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-Hi,
+Hi Berat,
 
-I was trying to understand how batman-adv encapsulates ethernet frames.
-Batman dissector of wireshark, shows an ethernet II section, then a
-batman section, then again an ethernet II section. Is this
-rappresentation respects the original capsulated header format? I
-couldn't find a scheme that shows fields of an encapsulated header in
-the documentation. So with wireshark, it tells me something like that:
+yes this is expected:
+ * the first Ethernet section is required for WiFi (or Ethernet) to send the 
+packet on the physical link between two neighbors - this will change with 
+every hop taken in the mesh
+ * The batman section includes a couple of control fields and also source and 
+destination (at least for unicast packets). These sources and destinations are 
+for the originators, that is mesh nodes within the mesh, which may be a couple 
+of hops away
+ * Finally, the second Ethernet section contains source and destination of the 
+devices which are actually talking to - these devices are not necessarily mesh 
+nodes, but might be devices only bridge into the batman-adv mesh network. 
+batman-adv takes these Ethernet frames as they are and encapsulates them by 
+adding its own batman section and the per-hop first ethernet section as you 
+saw.
 
------------------------------------------------------------------------
-Dst.Mac|Src.Mac|Type|Packt Type|Version|TTL|Seq.No|Dst.Mac|Src.Mac|Type
------------------------------------------------------------------------
-\___________________/\____________________________/\__________________/
-   First Ethernet 	   Batman Section	     Second Ethernet
-    II Section  					II Section
+So if you want to work on the "originator" layer, have a look at the batman 
+section source/destinations.
 
+Cheers,
+    Simon
 
-Why there are two times destination and source mac addresses? I want to
-retrieve mac addresses of originators of packets by working on raw
-packet data. But i'm a little bit confused with this scheme. Sorry if
-it's a banal question, i don't have much experience with networking.
-Thanks for any help.
+On Wednesday 22 July 2015 16:59:37 Berat wrote:
+> Hi,
+> 
+> I was trying to understand how batman-adv encapsulates ethernet frames.
+> Batman dissector of wireshark, shows an ethernet II section, then a
+> batman section, then again an ethernet II section. Is this
+> rappresentation respects the original capsulated header format? I
+> couldn't find a scheme that shows fields of an encapsulated header in
+> the documentation. So with wireshark, it tells me something like that:
+> 
+> -----------------------------------------------------------------------
+> Dst.Mac|Src.Mac|Type|Packt Type|Version|TTL|Seq.No|Dst.Mac|Src.Mac|Type
+> -----------------------------------------------------------------------
+> \___________________/\____________________________/\__________________/
+>    First Ethernet 	   Batman Section	     Second Ethernet
+>     II Section  					II Section
+> 
+> 
+> Why there are two times destination and source mac addresses? I want to
+> retrieve mac addresses of originators of packets by working on raw
+> packet data. But i'm a little bit confused with this scheme. Sorry if
+> it's a banal question, i don't have much experience with networking.
+> Thanks for any help.
 
---------------060600040305040601080601
-Content-Type: application/pgp-keys;
- name="0x9763E522.asc"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="0x9763E522.asc"
-
------BEGIN PGP PUBLIC KEY BLOCK-----
-Version: GnuPG v2
-
-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3D=3D
-=3DbV8o
------END PGP PUBLIC KEY BLOCK-----
-
---------------060600040305040601080601--
-
---bUBTm1INfwURpOjnn3dk9qsPn4IWW4MHk
+--nextPart2061998.hL7HSJMQlu
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBCAAGBQJVr6/cAAoJEA9l+h+XY+Uid14H/iZs3y8F4sVD5wqj7RLKpQPD
-HEFKrDD89zMVbtN7fuPQRim3zPzHJ0qWtrpq/Ue66JkzxXeqp2qDmtw3QG6vJ15k
-wms890YxykOVSvE3JJPWnFfJR1JCt+7aNWS98qzZz3aGOwectwLsxP82Ur+DOj7t
-vgMdQkzjdEI+cNkh5jFMYR0sGuGXO3Bh1pJxkgmy2OFKNj2/s5udH5nCrFxQ0WuZ
-GK27Th6YHc9Cymp6SGfU9WF0wKthE0SPW7tLFbfmKj+i2Eab+9HWs4OfUTSvf26c
-cqQHo8vQb+B494gcEgXNy5U3IW3O2JmaV/bWUSsiuuZHst6cZHDq12aggJ4kQms=
-=W5lB
+iEYEABECAAYFAlWvvaQACgkQrzg/fFk7axbAqQCgp0irhd2TFZaG2mm6dIWtgOrD
+h8sAoIuG8zJPoySD6khjvS5NPqizHNDG
+=8HdD
 -----END PGP SIGNATURE-----
 
---bUBTm1INfwURpOjnn3dk9qsPn4IWW4MHk--
+--nextPart2061998.hL7HSJMQlu--
+
