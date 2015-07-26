@@ -1,11 +1,13 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 26 Jul 2015 04:59:15 +0800
-Message-Id: <1437857955-28800-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: rearrange
-	batadv_neigh_node_new() arguments to follow convention
-Reply-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 26 Jul 2015 02:41:58 +0200
+Message-ID: <2843280.OVBCaG5TZN@sven-edge>
+In-Reply-To: <1898798.WP4bC1arXA@bentobox>
+References: <1898798.WP4bC1arXA@bentobox>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1620862.Eh3CeEXRZ1";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Missing list checks for *list_add*
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,71 +18,59 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
-v2: Fixing subject line.
 
- net/batman-adv/bat_iv_ogm.c | 2 +-
- net/batman-adv/originator.c | 7 ++++---
- net/batman-adv/originator.h | 5 +++--
- 3 files changed, 8 insertions(+), 6 deletions(-)
+--nextPart1620862.Eh3CeEXRZ1
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index b18184e..60ca3dc 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -299,7 +299,7 @@ batadv_iv_ogm_neigh_new(struct batadv_hard_iface *hard_iface,
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
- 	struct batadv_neigh_node *neigh_node, *tmp_neigh_node;
- 
--	neigh_node = batadv_neigh_node_new(hard_iface, neigh_addr, orig_node);
-+	neigh_node = batadv_neigh_node_new(orig_node, hard_iface, neigh_addr);
- 	if (!neigh_node)
- 		goto out;
- 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index f8317c1..67d3d8e 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -444,16 +444,17 @@ out:
- 
- /**
-  * batadv_neigh_node_new - create and init a new neigh_node object
-+ * @orig_node: originator object representing the neighbour
-  * @hard_iface: the interface where the neighbour is connected to
-  * @neigh_addr: the mac address of the neighbour interface
-- * @orig_node: originator object representing the neighbour
-  *
-  * Allocates a new neigh_node object and initialises all the generic fields.
-  * Returns the new object or NULL on failure.
-  */
- struct batadv_neigh_node *
--batadv_neigh_node_new(struct batadv_hard_iface *hard_iface,
--		      const u8 *neigh_addr, struct batadv_orig_node *orig_node)
-+batadv_neigh_node_new(struct batadv_orig_node *orig_node,
-+		      struct batadv_hard_iface *hard_iface,
-+		      const u8 *neigh_addr)
- {
- 	struct batadv_neigh_node *neigh_node;
- 
-diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
-index 3fc76f6..fde3438 100644
---- a/net/batman-adv/originator.h
-+++ b/net/batman-adv/originator.h
-@@ -46,8 +46,9 @@ batadv_neigh_node_get(const struct batadv_orig_node *orig_node,
- 		      const struct batadv_hard_iface *hard_iface,
- 		      const u8 *addr);
- struct batadv_neigh_node *
--batadv_neigh_node_new(struct batadv_hard_iface *hard_iface,
--		      const u8 *neigh_addr, struct batadv_orig_node *orig_node);
-+batadv_neigh_node_new(struct batadv_orig_node *orig_node,
-+		      struct batadv_hard_iface *hard_iface,
-+		      const u8 *neigh_addr);
- void batadv_neigh_node_free_ref(struct batadv_neigh_node *neigh_node);
- struct batadv_neigh_node *
- batadv_orig_router_get(struct batadv_orig_node *orig_node,
--- 
-2.1.4
+On Friday 26 June 2015 16:45:01 Sven Eckelmann wrote:
+> Hi,
+> 
+> Simon debugged the refcnt problem and submitted some patches to fix them. I
+> had a brief look and noticed that there are possible more problems similar
+> to the *list_del* ones - just with *list_add*. Basically some functions use
+> some kind of get function, notice that the element does not exist and then
+> create a new one to add to the list. Only the "list_add" is protected. The
+> result may be that an element in twice in a list when only a single
+> occurrence is allowed.
+> 
+> The problem I saw is batadv_gw_node_update. It first calls
+> batadv_gw_node_get to check if an object with this value already exists and
+> then uses batadv_gw_node_add to add a node (which may already be added
+> between these two calls). So it has to be made sure that nothing modifies
+> the list between these two calls).
+> 
+> Similar looking functions are for example:
+> 
+>  * batadv_tvlv_handler_register
+>  * batadv_nc_get_nc_node
+>  * batadv_softif_create_vlan
+>  * batadv_tt_global_orig_entry_add
+
+*push*
+--nextPart1620862.Eh3CeEXRZ1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJVtCzdAAoJEF2HCgfBJntGOkAQAJtw+n2udij3QrOQ926BP1Kf
+4ks5NDCvm2kFXYMhhc7Yi+xmeod/3LDZTdMqq2c6urES5XdjrsEixW0SVVNEc2xX
+X1vN4T46l1YNYvJHCnPifjRUg2qHaT39XzOEPoQIrnVgA3FM+dIlApCxcUXvYBeM
+cfaSFiEDayOUSGPeIQPIm43VIQZAl4jsOGXnmHs6eWhYw7AxFnuRuylnF0S0VhSF
+CftF0psCtndhS4wJo33g9Xo33PuN0lVCM4kuoqtpmv6pu2+So7xIWO5vCB/EN+TU
+MvXwqZCsrOV9BCFRBKaRLm4F7/VAIKq9gFzavWZIotaHpxjqrQ4I51PpuRfS8dwy
+lF+PkHZ4/jRB2JWw6O5P2n/KFiG8yIRpcSLv3PBPifXBYWkhTJv4AwBAia9Tyk9Y
+cRDgfbiEouX4y+/03EPljXq0GKEi+ShNhKiZcoWiZzxHxmdwFukE4q48pS175WK0
+JHc+ETr4kKE9ihilC22yePUC5es/MrLBctN0tAn4MPUL2vLnsr2H2gZxmJG/4IfS
+/D/vPREQmFYb/h9aGLQdztP78Bl9toYbAoaQSmRNtIAp0iMk5whGqh7F3UP/Rq5v
+RCXbUeP97cD6YV9+y4T4yhPq7536X4YUhfTZJUAcqGU5iAdkRaT//5QwqM+j7K/U
+WTzTxlm5LGZ9M7oO/g2+
+=orqf
+-----END PGP SIGNATURE-----
+
+--nextPart1620862.Eh3CeEXRZ1--
 
