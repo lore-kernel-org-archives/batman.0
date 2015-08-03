@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 03 Aug 2015 20:01:03 +0200
-Message-ID: <5452191.QYeD16rJZz@prime>
-In-Reply-To: <1437856667-27139-1-git-send-email-mareklindner@neomailbox.ch>
-References: <1437856667-27139-1-git-send-email-mareklindner@neomailbox.ch>
+Date: Mon, 03 Aug 2015 20:00:42 +0200
+Message-ID: <3503158.kbfCh64iFS@prime>
+In-Reply-To: <1437857863-28742-1-git-send-email-mareklindner@neomailbox.ch>
+References: <1437857863-28742-1-git-send-email-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart17763655.Q0AsuavjXO";
+Content-Type: multipart/signed; boundary="nextPart29362545.hSpDYM3RPH";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove redundant hard_iface
-	assignment
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: move neigh_node list add
+	into batadv_neigh_node_new()
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,12 +22,14 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 
---nextPart17763655.Q0AsuavjXO
+--nextPart29362545.hSpDYM3RPH
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="ISO-8859-1"
 
-On Sunday 26 July 2015 04:37:47 Marek Lindner wrote:
-> The batadv_neigh_node_new() function already sets the hard_iface pointer.
+On Sunday 26 July 2015 04:57:43 Marek Lindner wrote:
+> All batadv_neigh_node_* functions expect the neigh_node list item to be part
+> of the orig_node->neigh_list, therefore the constructor of said list item
+> should be adding the newly created neigh_node to the respective list.
 > 
 > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 
@@ -36,7 +38,7 @@ Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
 Cheers,
    Simon
 
---nextPart17763655.Q0AsuavjXO
+--nextPart29362545.hSpDYM3RPH
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -44,10 +46,10 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iEYEABECAAYFAlW/rF8ACgkQrzg/fFk7axYA4ACgg92eTtENmr6lv2ONhdYq/7BW
-us0AoISifuuAG+K7yAMeI/OC+yxam7ue
-=lzDp
+iEYEABECAAYFAlW/rEoACgkQrzg/fFk7axZUqwCgu8B0RDLwcZTy4/V/Xh8jgLj/
+2oMAnRoFKtGLfRuidsf9VNjN4dGYYBVB
+=SJKM
 -----END PGP SIGNATURE-----
 
---nextPart17763655.Q0AsuavjXO--
+--nextPart29362545.hSpDYM3RPH--
 
