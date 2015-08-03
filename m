@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 04 Aug 2015 03:59:22 +0800
-Message-ID: <1652760.0jMUkvcHug@voltaire>
-In-Reply-To: <3503158.kbfCh64iFS@prime>
-References: <1437857863-28742-1-git-send-email-mareklindner@neomailbox.ch>
- <3503158.kbfCh64iFS@prime>
+Date: Tue, 04 Aug 2015 03:55:23 +0800
+Message-ID: <2032768.UOYYEXcRd2@voltaire>
+In-Reply-To: <5452191.QYeD16rJZz@prime>
+References: <1437856667-27139-1-git-send-email-mareklindner@neomailbox.ch>
+ <5452191.QYeD16rJZz@prime>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2737905.GR4LfBPi55";
+Content-Type: multipart/signed; boundary="nextPart1669537.Rm3ZJ1qWTU";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: move neigh_node list add
-	into batadv_neigh_node_new()
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove redundant hard_iface
+	assignment
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,30 +22,26 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart2737905.GR4LfBPi55
+--nextPart1669537.Rm3ZJ1qWTU
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, August 03, 2015 20:00:42 Simon Wunderlich wrote:
-> Signed by sw@simonwunderlich.de.	Show Details
-> 
-> On Sunday 26 July 2015 04:57:43 Marek Lindner wrote:
-> > All batadv_neigh_node_* functions expect the neigh_node list item to be
-> > part of the orig_node->neigh_list, therefore the constructor of said list
-> > item should be adding the newly created neigh_node to the respective
-> > list.>
+On Monday, August 03, 2015 20:01:03 Simon Wunderlich wrote:
+> On Sunday 26 July 2015 04:37:47 Marek Lindner wrote:
+> > The batadv_neigh_node_new() function already sets the hard_iface pointer.
+> >
 > > 
 > >
 > > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 > 
 > Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
 
-Applied in revision c214ebe.
+Applied in revision f645ed9.
 
 Regards,
 Marek
 
---nextPart2737905.GR4LfBPi55
+--nextPart1669537.Rm3ZJ1qWTU
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +49,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVv8ghAAoJEFNVTo/uthzA39YH/1f4aDUHawpFfXCY1UqLz6zR
-d7sqTPCW77XPYW68IBChcveu7933Gl5ivYXBaA5X7AlrSFCtGKjZhrleCet0Dc+S
-eH6gF4Xdza3z903MthJpjQzqG1KTMnVDwB10SzE9BCNJ8e6/Plv9lZX1cu3ON/yO
-mNim97O6/7vUkgEIRI/0po0Cv3XVL/rAe943O/dpTWVNXJZZgNJMnBJJY0CEH1Kk
-vGKNpVLaELpeS57/yfcBFExoxy8NdMFOcqGy2jdBUw1hf+9H1CVvHAKiEZD5UvA7
-r5aye3mIIB4964JbKDf1PkWzQi9qqPQnVZLv17zrQesiOM9FoWqd3rCbAo9s78A=
-=025N
+iQEcBAABCAAGBQJVv8cvAAoJEFNVTo/uthzAifAIAIO3nDXj5ZjPXjPWVa4BDzIp
+oZwKIC0OMgk0ptp3YU0QRPcVxTiKK+fixv1Lm1+TiBuPf3MgqEe7cl5DRtEBhCw5
+dLbv79/W9RLOnc4vcJdrwKCbOkPzPJ61RqGzxRYFeyuUCrBqcWQ+a+CsQwFq1cCd
+iwkqeSZPlSH7G2qYuavpye9f63Tl1VbSWV2xV4x7HvlHFpWpoVptMoMBe0Rz1kva
+ulIpaFKoswS8EBq+mbCdoF1aR2V9DeqEfVUIpVZZaWpzNf9CqP6F/Y4/KpuGfdGN
+11webpFQDlRQ/LBIil5snxvvUGgBvNejEL3/96SDUYs+I9E3npaXawNF8G/HHQI=
+=/pNK
 -----END PGP SIGNATURE-----
 
---nextPart2737905.GR4LfBPi55--
+--nextPart1669537.Rm3ZJ1qWTU--
 
