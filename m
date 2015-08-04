@@ -1,9 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue,  4 Aug 2015 18:43:11 +0200
-Message-Id: <1438706591-28511-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add lower layer header length to
-	headroom
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Tue,  4 Aug 2015 18:35:34 +0200
+Message-Id: <1438706134-3492-15-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1438706134-3492-1-git-send-email-antonio@meshcoding.com>
+References: <1438706134-3492-1-git-send-email-antonio@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 14/14] batman-adv: Fix potentially broken skb
+	network header access
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,90 +18,59 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
 
-The maximum of hard_header_len and needed_headroom of all slave interfaces
-of a batman-adv device must be used to define the batman-adv device
-headroom/header_len. This is required to avoid too small headroom problems
-when these slave devices try to send the encapsulated packet.
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-The batman-adv therefore uses:
+The two commits noted below added calls to ip_hdr() and ipv6_hdr(). They
+need a correctly set skb network header.
 
-	needed_headroom = max(0, dev[0].needed_headroom, ...,
-			      dev[n].needed_headroom)
-	hard_header_len = max(ETH_HLEN, dev[0].hard_header_len, ...,
-			      dev[n].hard_header_len) + ETH_HLEN +
-			  max(sizeof(batadv_*cast_packet))
+Unfortunately we cannot rely on the device drivers to set it for us.
+Therefore setting it in the beginning of the according ndo_start_xmit
+handler.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Fixes: 1d8ab8d3c176 ("batman-adv: Modified forwarding behaviour for multicast packets")
+Fixes: ab49886e3da7 ("batman-adv: Add IPv4 link-local/IPv6-ll-all-nodes multicast support")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/hard-interface.c | 33 +++++++++++++++++++++++++++++++++
- net/batman-adv/soft-interface.c |  2 +-
- 2 files changed, 34 insertions(+), 1 deletion(-)
+ net/batman-adv/soft-interface.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index f4a15d2e5eaf..a501aae1077b 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -252,12 +252,45 @@ static void batadv_check_known_mac_addr(const struct net_device *net_dev)
- 	rcu_read_unlock();
- }
- 
-+/**
-+ * batadv_hardif_recalc_headroom() - Recalculate skbuff headroom parameters
-+ * @soft_iface: netdev struct of the mesh interface
-+ */
-+static void batadv_hardif_recalc_headroom(struct net_device *soft_iface)
-+{
-+	const struct batadv_hard_iface *hard_iface;
-+	unsigned short hard_header_len = ETH_HLEN;
-+	unsigned short needed_headroom = 0;
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-+		if ((hard_iface->if_status != BATADV_IF_ACTIVE) &&
-+		    (hard_iface->if_status != BATADV_IF_TO_BE_ACTIVATED))
-+			continue;
-+
-+		if (hard_iface->soft_iface != soft_iface)
-+			continue;
-+
-+		hard_header_len = max_t(unsigned short, hard_header_len,
-+					hard_iface->net_dev->hard_header_len);
-+
-+		needed_headroom = max_t(unsigned short, needed_headroom,
-+					hard_iface->net_dev->needed_headroom);
-+	}
-+	rcu_read_unlock();
-+
-+	soft_iface->needed_headroom = needed_headroom;
-+	soft_iface->hard_header_len = hard_header_len + batadv_max_header_len();
-+}
-+
- int batadv_hardif_min_mtu(struct net_device *soft_iface)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
- 	const struct batadv_hard_iface *hard_iface;
- 	int min_mtu = INT_MAX;
- 
-+	batadv_hardif_recalc_headroom(soft_iface);
-+
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
- 		if ((hard_iface->if_status != BATADV_IF_ACTIVE) &&
 diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 36b23f31df2a..b4c110791203 100644
+index a2fc843..51cda3a 100644
 --- a/net/batman-adv/soft-interface.c
 +++ b/net/batman-adv/soft-interface.c
-@@ -948,7 +948,7 @@ static void batadv_softif_init_early(struct net_device *dev)
- 	 */
- 	dev->mtu = ETH_DATA_LEN;
- 	/* reserve more space in the skbuff for our header */
--	dev->hard_header_len = batadv_max_header_len();
-+	dev->hard_header_len = ETH_HLEN + batadv_max_header_len();
+@@ -202,6 +202,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 	int gw_mode;
+ 	enum batadv_forw_mode forw_mode;
+ 	struct batadv_orig_node *mcast_single_orig = NULL;
++	int network_offset = ETH_HLEN;
  
- 	/* generate random address */
- 	eth_hw_addr_random(dev);
+ 	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+ 		goto dropped;
+@@ -214,14 +215,18 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 	case ETH_P_8021Q:
+ 		vhdr = vlan_eth_hdr(skb);
+ 
+-		if (vhdr->h_vlan_encapsulated_proto != ethertype)
++		if (vhdr->h_vlan_encapsulated_proto != ethertype) {
++			network_offset += VLAN_HLEN;
+ 			break;
++		}
+ 
+ 		/* fall through */
+ 	case ETH_P_BATMAN:
+ 		goto dropped;
+ 	}
+ 
++	skb_set_network_header(skb, network_offset);
++
+ 	if (batadv_bla_tx(bat_priv, skb, vid))
+ 		goto dropped;
+ 
 -- 
 2.5.0
 
