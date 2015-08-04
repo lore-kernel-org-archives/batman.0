@@ -1,11 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue,  4 Aug 2015 18:35:23 +0200
-Message-Id: <1438706134-3492-4-git-send-email-antonio@meshcoding.com>
+Date: Tue,  4 Aug 2015 18:35:24 +0200
+Message-Id: <1438706134-3492-5-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1438706134-3492-1-git-send-email-antonio@meshcoding.com>
 References: <1438706134-3492-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 03/14] batman-adv: avoid DAT to mess up LAN
-	state
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 04/14] batman-adv: Make DAT capability
+	changes atomic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,74 +19,80 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
 
-When a node running DAT receives an ARP request from the LAN for the
-first time, it is likely that this node will request the ARP entry
-through the distributed ARP table (DAT) in the mesh.
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-Once a DAT reply is received the asking node must check if the MAC
-address for which the IP address has been asked is local. If it is, the
-node must drop the ARP reply bceause the client should have replied on
-its own locally.
+Bitwise OR/AND assignments in C aren't guaranteed to be atomic. One
+OGM handler might undo the set/clear of a specific bit from another
+handler run in between.
 
-Forwarding this reply means fooling any L2 bridge (e.g. Ethernet
-switches) lying between the batman-adv node and the LAN. This happens
-because the L2 bridge will think that the client sending the ARP reply
-lies somewhere in the mesh, while this node is sitting in the same LAN.
+Fix this by using the atomic set_bit()/clear_bit()/test_bit() functions.
 
-Reported-by: Simon Wunderlich <sw@simonwunderlich.de>
+Fixes: 17cf0ea455f1 ("batman-adv: tvlv - add distributed arp table container")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/distributed-arp-table.c | 18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
+ net/batman-adv/distributed-arp-table.c | 7 ++++---
+ net/batman-adv/types.h                 | 4 ++--
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index fb54e6a..6d0b471 100644
+index 6d0b471..1aa4e7e 100644
 --- a/net/batman-adv/distributed-arp-table.c
 +++ b/net/batman-adv/distributed-arp-table.c
-@@ -1138,6 +1138,9 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: packet to check
-  * @hdr_size: size of the encapsulation header
-+ *
-+ * Returns true if the packet was snooped and consumed by DAT. False if the
-+ * packet has to be delivered to the interface
-  */
- bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb, int hdr_size)
-@@ -1145,7 +1148,7 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	uint16_t type;
- 	__be32 ip_src, ip_dst;
- 	uint8_t *hw_src, *hw_dst;
--	bool ret = false;
-+	bool dropped = false;
- 	unsigned short vid;
+@@ -19,6 +19,7 @@
+ #include "main.h"
  
- 	if (!atomic_read(&bat_priv->distributed_arp_table))
-@@ -1174,12 +1177,17 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	/* if this REPLY is directed to a client of mine, let's deliver the
- 	 * packet to the interface
- 	 */
--	ret = !batadv_is_my_client(bat_priv, hw_dst, vid);
-+	dropped = !batadv_is_my_client(bat_priv, hw_dst, vid);
-+
-+	/* if this REPLY is sent on behalf of a client of mine, let's drop the
-+	 * packet because the client will reply by itself
-+	 */
-+	dropped |= batadv_is_my_client(bat_priv, hw_src, vid);
- out:
--	if (ret)
-+	if (dropped)
- 		kfree_skb(skb);
--	/* if ret == false -> packet has to be delivered to the interface */
--	return ret;
-+	/* if dropped == false -> deliver to the interface */
-+	return dropped;
+ #include <linux/atomic.h>
++#include <linux/bitops.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+@@ -453,7 +454,7 @@ static bool batadv_is_orig_node_eligible(struct batadv_dat_candidate *res,
+ 	int j;
+ 
+ 	/* check if orig node candidate is running DAT */
+-	if (!(candidate->capabilities & BATADV_ORIG_CAPA_HAS_DAT))
++	if (!(test_bit(BATADV_ORIG_CAPA_HAS_DAT, &candidate->capabilities)))
+ 		goto out;
+ 
+ 	/* Check if this node has already been selected... */
+@@ -713,9 +714,9 @@ static void batadv_dat_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ 					   uint16_t tvlv_value_len)
+ {
+ 	if (flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND)
+-		orig->capabilities &= ~BATADV_ORIG_CAPA_HAS_DAT;
++		clear_bit(BATADV_ORIG_CAPA_HAS_DAT, &orig->capabilities);
+ 	else
+-		orig->capabilities |= BATADV_ORIG_CAPA_HAS_DAT;
++		set_bit(BATADV_ORIG_CAPA_HAS_DAT, &orig->capabilities);
  }
  
  /**
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 67d6348..29fd625 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -273,7 +273,7 @@ struct batadv_orig_node {
+ 	struct hlist_node mcast_want_all_ipv4_node;
+ 	struct hlist_node mcast_want_all_ipv6_node;
+ #endif
+-	uint8_t capabilities;
++	unsigned long capabilities;
+ 	uint8_t capa_initialized;
+ 	atomic_t last_ttvn;
+ 	unsigned char *tt_buff;
+@@ -313,7 +313,7 @@ struct batadv_orig_node {
+  *  (= orig node announces a tvlv of type BATADV_TVLV_MCAST)
+  */
+ enum batadv_orig_capabilities {
+-	BATADV_ORIG_CAPA_HAS_DAT = BIT(0),
++	BATADV_ORIG_CAPA_HAS_DAT,
+ 	BATADV_ORIG_CAPA_HAS_NC = BIT(1),
+ 	BATADV_ORIG_CAPA_HAS_TT = BIT(2),
+ 	BATADV_ORIG_CAPA_HAS_MCAST = BIT(3),
 -- 
 2.5.0
 
