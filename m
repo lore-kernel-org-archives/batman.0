@@ -1,11 +1,9 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue,  4 Aug 2015 18:35:29 +0200
-Message-Id: <1438706134-3492-10-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1438706134-3492-1-git-send-email-antonio@meshcoding.com>
-References: <1438706134-3492-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 09/14] batman-adv: fix kernel crash due to
-	missing NULL checks
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue,  4 Aug 2015 18:43:11 +0200
+Message-Id: <1438706591-28511-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add lower layer header length to
+	headroom
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,87 +13,90 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Marek Lindner <mareklindner@neomailbox.ch>
+The maximum of hard_header_len and needed_headroom of all slave interfaces
+of a batman-adv device must be used to define the batman-adv device
+headroom/header_len. This is required to avoid too small headroom problems
+when these slave devices try to send the encapsulated packet.
 
-batadv_softif_vlan_get() may return NULL which has to be verified
-by the caller.
+The batman-adv therefore uses:
 
-Fixes: 35df3b298fc8 ("batman-adv: fix TT VLAN inconsistency on VLAN re-add")
-Reported-by: Ryan Thompson <ryan@eero.com>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+	needed_headroom = max(0, dev[0].needed_headroom, ...,
+			      dev[n].needed_headroom)
+	hard_header_len = max(ETH_HLEN, dev[0].hard_header_len, ...,
+			      dev[n].hard_header_len) + ETH_HLEN +
+			  max(sizeof(batadv_*cast_packet))
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/soft-interface.c    |  3 +++
- net/batman-adv/translation-table.c | 18 ++++++++++++++----
- 2 files changed, 17 insertions(+), 4 deletions(-)
+ net/batman-adv/hard-interface.c | 33 +++++++++++++++++++++++++++++++++
+ net/batman-adv/soft-interface.c |  2 +-
+ 2 files changed, 34 insertions(+), 1 deletion(-)
 
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index f4a15d2e5eaf..a501aae1077b 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -252,12 +252,45 @@ static void batadv_check_known_mac_addr(const struct net_device *net_dev)
+ 	rcu_read_unlock();
+ }
+ 
++/**
++ * batadv_hardif_recalc_headroom() - Recalculate skbuff headroom parameters
++ * @soft_iface: netdev struct of the mesh interface
++ */
++static void batadv_hardif_recalc_headroom(struct net_device *soft_iface)
++{
++	const struct batadv_hard_iface *hard_iface;
++	unsigned short hard_header_len = ETH_HLEN;
++	unsigned short needed_headroom = 0;
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
++		if ((hard_iface->if_status != BATADV_IF_ACTIVE) &&
++		    (hard_iface->if_status != BATADV_IF_TO_BE_ACTIVATED))
++			continue;
++
++		if (hard_iface->soft_iface != soft_iface)
++			continue;
++
++		hard_header_len = max_t(unsigned short, hard_header_len,
++					hard_iface->net_dev->hard_header_len);
++
++		needed_headroom = max_t(unsigned short, needed_headroom,
++					hard_iface->net_dev->needed_headroom);
++	}
++	rcu_read_unlock();
++
++	soft_iface->needed_headroom = needed_headroom;
++	soft_iface->hard_header_len = hard_header_len + batadv_max_header_len();
++}
++
+ int batadv_hardif_min_mtu(struct net_device *soft_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
+ 	const struct batadv_hard_iface *hard_iface;
+ 	int min_mtu = INT_MAX;
+ 
++	batadv_hardif_recalc_headroom(soft_iface);
++
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
+ 		if ((hard_iface->if_status != BATADV_IF_ACTIVE) &&
 diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index c002961..a2fc843 100644
+index 36b23f31df2a..b4c110791203 100644
 --- a/net/batman-adv/soft-interface.c
 +++ b/net/batman-adv/soft-interface.c
-@@ -479,6 +479,9 @@ out:
-  */
- void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *vlan)
- {
-+	if (!vlan)
-+		return;
-+
- 	if (atomic_dec_and_test(&vlan->refcount)) {
- 		spin_lock_bh(&vlan->bat_priv->softif_vlan_list_lock);
- 		hlist_del_rcu(&vlan->list);
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 1573489..2db3093 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -595,6 +595,9 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
+@@ -948,7 +948,7 @@ static void batadv_softif_init_early(struct net_device *dev)
+ 	 */
+ 	dev->mtu = ETH_DATA_LEN;
+ 	/* reserve more space in the skbuff for our header */
+-	dev->hard_header_len = batadv_max_header_len();
++	dev->hard_header_len = ETH_HLEN + batadv_max_header_len();
  
- 	/* increase the refcounter of the related vlan */
- 	vlan = batadv_softif_vlan_get(bat_priv, vid);
-+	if (WARN(!vlan, "adding TT local entry %pM to non-existent VLAN %d",
-+		 addr, BATADV_PRINT_VID(vid)))
-+		goto out;
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
- 		   "Creating new local tt entry: %pM (vid: %d, ttvn: %d)\n",
-@@ -1067,6 +1070,9 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
- 
- 	/* decrease the reference held for this vlan */
- 	vlan = batadv_softif_vlan_get(bat_priv, vid);
-+	if (!vlan)
-+		goto out;
-+
- 	batadv_softif_vlan_free_ref(vlan);
- 	batadv_softif_vlan_free_ref(vlan);
- 
-@@ -1167,8 +1173,10 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
- 			/* decrease the reference held for this vlan */
- 			vlan = batadv_softif_vlan_get(bat_priv,
- 						      tt_common_entry->vid);
--			batadv_softif_vlan_free_ref(vlan);
--			batadv_softif_vlan_free_ref(vlan);
-+			if (vlan) {
-+				batadv_softif_vlan_free_ref(vlan);
-+				batadv_softif_vlan_free_ref(vlan);
-+			}
- 
- 			batadv_tt_local_entry_free_ref(tt_local);
- 		}
-@@ -3208,8 +3216,10 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
- 
- 			/* decrease the reference held for this vlan */
- 			vlan = batadv_softif_vlan_get(bat_priv, tt_common->vid);
--			batadv_softif_vlan_free_ref(vlan);
--			batadv_softif_vlan_free_ref(vlan);
-+			if (vlan) {
-+				batadv_softif_vlan_free_ref(vlan);
-+				batadv_softif_vlan_free_ref(vlan);
-+			}
- 
- 			batadv_tt_local_entry_free_ref(tt_local);
- 		}
+ 	/* generate random address */
+ 	eth_hw_addr_random(dev);
 -- 
 2.5.0
 
