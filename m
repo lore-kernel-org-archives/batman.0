@@ -1,11 +1,13 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue,  4 Aug 2015 18:35:33 +0200
-Message-Id: <1438706134-3492-14-git-send-email-antonio@meshcoding.com>
+Return-Path: <davem@davemloft.net>
+Date: Tue, 04 Aug 2015 12:40:40 -0700 (PDT)
+Message-Id: <20150804.124040.324026088945274161.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
 In-Reply-To: <1438706134-3492-1-git-send-email-antonio@meshcoding.com>
 References: <1438706134-3492-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 13/14] batman-adv: remove broadcast packets
-	scheduled for purged outgoing if
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request [net]: batman-adv 20150804
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,35 +17,16 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, Simon Wunderlich <simon@open-mesh.com>, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+To: antonio@meshcoding.com
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Simon Wunderlich <simon@open-mesh.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Tue,  4 Aug 2015 18:35:20 +0200
 
-When an interface is purged, the broadcast packets scheduled for this
-interface should get purged as well.
+> here you have our batch of fixes intended for net/linux-4.2.
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- net/batman-adv/send.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Sorry, you can't come to me this late in the -RC series with such
+a huge collection of bug fixes.
 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 0a01992..191076e 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -616,7 +616,8 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- 		 * we delete only packets belonging to the given interface
- 		 */
- 		if ((hard_iface) &&
--		    (forw_packet->if_incoming != hard_iface))
-+		    (forw_packet->if_incoming != hard_iface) &&
-+		    (forw_packet->if_outgoing != hard_iface))
- 			continue;
- 
- 		spin_unlock_bh(&bat_priv->forw_bcast_list_lock);
--- 
-2.5.0
-
+Break out the most important critical ones, and only submit those.
+The rest will have to go via net-next.
