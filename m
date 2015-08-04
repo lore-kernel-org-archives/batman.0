@@ -1,14 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue,  4 Aug 2015 18:35:34 +0200
-Message-Id: <1438706134-3492-15-git-send-email-antonio@meshcoding.com>
+Date: Tue,  4 Aug 2015 18:35:30 +0200
+Message-Id: <1438706134-3492-11-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1438706134-3492-1-git-send-email-antonio@meshcoding.com>
 References: <1438706134-3492-1-git-send-email-antonio@meshcoding.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 14/14] batman-adv: Fix potentially broken skb
-	network header access
+Subject: [B.A.T.M.A.N.] [PATCH 10/14] batman-adv: protect tt_local_entry
+	from concurrent delete events
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,58 +16,55 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+From: Marek Lindner <mareklindner@neomailbox.ch>
 
-The two commits noted below added calls to ip_hdr() and ipv6_hdr(). They
-need a correctly set skb network header.
+The tt_local_entry deletion performed in batadv_tt_local_remove() was neither
+protecting against simultaneous deletes nor checking whether the element was
+still part of the list before calling hlist_del_rcu().
 
-Unfortunately we cannot rely on the device drivers to set it for us.
-Therefore setting it in the beginning of the according ndo_start_xmit
-handler.
+Replacing the hlist_del_rcu() call with batadv_hash_remove() provides adequate
+protection via hash spinlocks as well as an is-element-still-in-hash check to
+avoid 'blind' hash removal.
 
-Fixes: 1d8ab8d3c176 ("batman-adv: Modified forwarding behaviour for multicast packets")
-Fixes: ab49886e3da7 ("batman-adv: Add IPv4 link-local/IPv6-ll-all-nodes multicast support")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Fixes: 068ee6e204e1 ("batman-adv: roaming handling mechanism redesign")
+Reported-by: alfonsname@web.de
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/soft-interface.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ net/batman-adv/translation-table.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index a2fc843..51cda3a 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -202,6 +202,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	int gw_mode;
- 	enum batadv_forw_mode forw_mode;
- 	struct batadv_orig_node *mcast_single_orig = NULL;
-+	int network_offset = ETH_HLEN;
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 2db3093..cb2a2d1 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1038,6 +1038,7 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
+ 	struct batadv_tt_local_entry *tt_local_entry;
+ 	uint16_t flags, curr_flags = BATADV_NO_FLAGS;
+ 	struct batadv_softif_vlan *vlan;
++	void *tt_entry_exists;
  
- 	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
- 		goto dropped;
-@@ -214,14 +215,18 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	case ETH_P_8021Q:
- 		vhdr = vlan_eth_hdr(skb);
- 
--		if (vhdr->h_vlan_encapsulated_proto != ethertype)
-+		if (vhdr->h_vlan_encapsulated_proto != ethertype) {
-+			network_offset += VLAN_HLEN;
- 			break;
-+		}
- 
- 		/* fall through */
- 	case ETH_P_BATMAN:
- 		goto dropped;
- 	}
- 
-+	skb_set_network_header(skb, network_offset);
+ 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr, vid);
+ 	if (!tt_local_entry)
+@@ -1065,7 +1066,15 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
+ 	 * immediately purge it
+ 	 */
+ 	batadv_tt_local_event(bat_priv, tt_local_entry, BATADV_TT_CLIENT_DEL);
+-	hlist_del_rcu(&tt_local_entry->common.hash_entry);
 +
- 	if (batadv_bla_tx(bat_priv, skb, vid))
- 		goto dropped;
++	tt_entry_exists = batadv_hash_remove(bat_priv->tt.local_hash,
++					     batadv_compare_tt,
++					     batadv_choose_tt,
++					     &tt_local_entry->common);
++	if (!tt_entry_exists)
++		goto out;
++
++	/* extra call to free the local tt entry */
+ 	batadv_tt_local_entry_free_ref(tt_local_entry);
  
+ 	/* decrease the reference held for this vlan */
 -- 
 2.5.0
 
