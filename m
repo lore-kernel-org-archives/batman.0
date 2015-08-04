@@ -1,14 +1,9 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 04 Aug 2015 23:10:35 +0800
-Message-ID: <35991031.gDMMvF6Rkz@voltaire>
-In-Reply-To: <1438695846-29578-1-git-send-email-sw@simonwunderlich.de>
-References: <1438695846-29578-1-git-send-email-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart13222598.HCrZTPBcp5";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix gateway client style
-	issues
+Date: Tue,  4 Aug 2015 23:31:44 +0800
+Message-Id: <1438702304-26197-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: turn batadv_neigh_node_get()
+	into local function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,42 +14,123 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
+commit c214ebe1eb29 ("batman-adv: move neigh_node list add into
+batadv_neigh_node_new()") removed external calls to
+batadv_neigh_node_get().
 
---nextPart13222598.HCrZTPBcp5
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+---
+ net/batman-adv/originator.c | 72 ++++++++++++++++++++++-----------------------
+ net/batman-adv/originator.h |  4 ---
+ 2 files changed, 36 insertions(+), 40 deletions(-)
 
-On Tuesday, August 04, 2015 15:44:06 Simon Wunderlich wrote:
-> Introduced by 0511575c4d034115f618056da65ee51eb25d314d
-> ("batman-adv: remove obsolete deleted attribute for gateway node")
-> 
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-> ---
->  net/batman-adv/gateway_client.c | 2 --
->  1 file changed, 2 deletions(-)
-
-Applied in revision 07269be.
-
-Thanks,
-Marek
-
---nextPart13222598.HCrZTPBcp5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJVwNXvAAoJEFNVTo/uthzAsQAIAMUSkv+jHbfZwpbPMa7DawOQ
-503jvS2BIC74j6GDPiISHPjt1eKQFoErG23RZDN821Q4UmLF5ZqFO8gYgFRHDyh1
-BHq9fJ10ClQXVCw5prk4fqlIHIvt5+oBOUNnZ6LVaVtKfrrbkJxOVEIurTDxTH94
-d2uuS2TGAjDmsBH6vN11UApZ9+YRFIBtI1ImBCfrmc2/WQ54jT6PJPv/CSWnEwiP
-dyNDu9LeBi0Iy9N3T6TGK63ycVfU7H6jorc9EaRX78Ek6PVFxwBKYhox77CjTM/5
-UF2aLctQwUXl3lmukh5AcMNp7ZS+/vpNWgbLQbUMY5hrWttVk+XaEx+0DJGTB8g=
-=OHN5
------END PGP SIGNATURE-----
-
---nextPart13222598.HCrZTPBcp5--
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 099a84a..7486df9 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -443,6 +443,42 @@ out:
+ }
+ 
+ /**
++ * batadv_neigh_node_get - retrieve a neighbour from the list
++ * @orig_node: originator which the neighbour belongs to
++ * @hard_iface: the interface where this neighbour is connected to
++ * @addr: the address of the neighbour
++ *
++ * Looks for and possibly returns a neighbour belonging to this originator list
++ * which is connected through the provided hard interface.
++ * Returns NULL if the neighbour is not found.
++ */
++static struct batadv_neigh_node *
++batadv_neigh_node_get(const struct batadv_orig_node *orig_node,
++		      const struct batadv_hard_iface *hard_iface,
++		      const u8 *addr)
++{
++	struct batadv_neigh_node *tmp_neigh_node, *res = NULL;
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(tmp_neigh_node, &orig_node->neigh_list, list) {
++		if (!batadv_compare_eth(tmp_neigh_node->addr, addr))
++			continue;
++
++		if (tmp_neigh_node->if_incoming != hard_iface)
++			continue;
++
++		if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
++			continue;
++
++		res = tmp_neigh_node;
++		break;
++	}
++	rcu_read_unlock();
++
++	return res;
++}
++
++/**
+  * batadv_neigh_node_new - create and init a new neigh_node object
+  * @orig_node: originator object representing the neighbour
+  * @hard_iface: the interface where the neighbour is connected to
+@@ -496,42 +532,6 @@ out:
+ }
+ 
+ /**
+- * batadv_neigh_node_get - retrieve a neighbour from the list
+- * @orig_node: originator which the neighbour belongs to
+- * @hard_iface: the interface where this neighbour is connected to
+- * @addr: the address of the neighbour
+- *
+- * Looks for and possibly returns a neighbour belonging to this originator list
+- * which is connected through the provided hard interface.
+- * Returns NULL if the neighbour is not found.
+- */
+-struct batadv_neigh_node *
+-batadv_neigh_node_get(const struct batadv_orig_node *orig_node,
+-		      const struct batadv_hard_iface *hard_iface,
+-		      const u8 *addr)
+-{
+-	struct batadv_neigh_node *tmp_neigh_node, *res = NULL;
+-
+-	rcu_read_lock();
+-	hlist_for_each_entry_rcu(tmp_neigh_node, &orig_node->neigh_list, list) {
+-		if (!batadv_compare_eth(tmp_neigh_node->addr, addr))
+-			continue;
+-
+-		if (tmp_neigh_node->if_incoming != hard_iface)
+-			continue;
+-
+-		if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
+-			continue;
+-
+-		res = tmp_neigh_node;
+-		break;
+-	}
+-	rcu_read_unlock();
+-
+-	return res;
+-}
+-
+-/**
+  * batadv_orig_ifinfo_free_rcu - free the orig_ifinfo object
+  * @rcu: rcu pointer of the orig_ifinfo object
+  */
+diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
+index fde3438..fa18f9b 100644
+--- a/net/batman-adv/originator.h
++++ b/net/batman-adv/originator.h
+@@ -42,10 +42,6 @@ void batadv_orig_node_free_ref_now(struct batadv_orig_node *orig_node);
+ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
+ 					      const u8 *addr);
+ struct batadv_neigh_node *
+-batadv_neigh_node_get(const struct batadv_orig_node *orig_node,
+-		      const struct batadv_hard_iface *hard_iface,
+-		      const u8 *addr);
+-struct batadv_neigh_node *
+ batadv_neigh_node_new(struct batadv_orig_node *orig_node,
+ 		      struct batadv_hard_iface *hard_iface,
+ 		      const u8 *neigh_addr);
+-- 
+2.5.0
 
