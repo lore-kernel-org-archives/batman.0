@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue,  4 Aug 2015 18:35:22 +0200
-Message-Id: <1438706134-3492-3-git-send-email-antonio@meshcoding.com>
+Date: Tue,  4 Aug 2015 18:35:23 +0200
+Message-Id: <1438706134-3492-4-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1438706134-3492-1-git-send-email-antonio@meshcoding.com>
 References: <1438706134-3492-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 02/14] batman-adv: Avoid u32 overflow during
-	gateway select
+Subject: [B.A.T.M.A.N.] [PATCH 03/14] batman-adv: avoid DAT to mess up LAN
+	state
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,45 +16,74 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: Ruben Wisniewsi <ruben@vfn-nrw.de>, Marek Lindner <mareklindner@neomailbox.ch>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Ruben Wisniewski <ruben@freifunk-nrw.de>
+When a node running DAT receives an ARP request from the LAN for the
+first time, it is likely that this node will request the ARP entry
+through the distributed ARP table (DAT) in the mesh.
 
-The gateway selection based on fast connections is using a single value
-calculated from the average tq (0-255) and the download bandwidth (in
-100Kibit). The formula for the first step (tq ** 2 * 10000 * bandwidth)
-tends to overflow a u32 with low bandwidth settings like 50 [100KiBit]
-and a tq value of over 92.
+Once a DAT reply is received the asking node must check if the MAC
+address for which the IP address has been asked is local. If it is, the
+node must drop the ARP reply bceause the client should have replied on
+its own locally.
 
-Changing this to a 64 bit unsigned integer allows to support a
-bandwidth_down with up to ~2.8e10 [100KiBit] and a perfect tq of 255. This
-is ~6.6 times higher than the maximum possible value of the gateway
-announcement TVLV.
+Forwarding this reply means fooling any L2 bridge (e.g. Ethernet
+switches) lying between the batman-adv node and the LAN. This happens
+because the L2 bridge will think that the client sending the ARP reply
+lies somewhere in the mesh, while this node is sitting in the same LAN.
 
-This problem only affects the non-default gw_sel_class 1.
-
-Signed-off-by: Ruben Wisniewsi <ruben@vfn-nrw.de>
-[sven@narfation.org: rewritten commit message]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Reported-by: Simon Wunderlich <sw@simonwunderlich.de>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/gateway_client.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/distributed-arp-table.c | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index e1e1f31..4ac24d8 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -153,7 +153,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
- 	struct batadv_neigh_node *router;
- 	struct batadv_neigh_ifinfo *router_ifinfo;
- 	struct batadv_gw_node *gw_node, *curr_gw = NULL;
--	uint32_t max_gw_factor = 0, tmp_gw_factor = 0;
-+	uint64_t max_gw_factor = 0, tmp_gw_factor = 0;
- 	uint8_t max_tq = 0;
- 	uint8_t tq_avg;
- 	struct batadv_orig_node *orig_node;
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index fb54e6a..6d0b471 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -1138,6 +1138,9 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: packet to check
+  * @hdr_size: size of the encapsulation header
++ *
++ * Returns true if the packet was snooped and consumed by DAT. False if the
++ * packet has to be delivered to the interface
+  */
+ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+ 					 struct sk_buff *skb, int hdr_size)
+@@ -1145,7 +1148,7 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+ 	uint16_t type;
+ 	__be32 ip_src, ip_dst;
+ 	uint8_t *hw_src, *hw_dst;
+-	bool ret = false;
++	bool dropped = false;
+ 	unsigned short vid;
+ 
+ 	if (!atomic_read(&bat_priv->distributed_arp_table))
+@@ -1174,12 +1177,17 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+ 	/* if this REPLY is directed to a client of mine, let's deliver the
+ 	 * packet to the interface
+ 	 */
+-	ret = !batadv_is_my_client(bat_priv, hw_dst, vid);
++	dropped = !batadv_is_my_client(bat_priv, hw_dst, vid);
++
++	/* if this REPLY is sent on behalf of a client of mine, let's drop the
++	 * packet because the client will reply by itself
++	 */
++	dropped |= batadv_is_my_client(bat_priv, hw_src, vid);
+ out:
+-	if (ret)
++	if (dropped)
+ 		kfree_skb(skb);
+-	/* if ret == false -> packet has to be delivered to the interface */
+-	return ret;
++	/* if dropped == false -> deliver to the interface */
++	return dropped;
+ }
+ 
+ /**
 -- 
 2.5.0
 
