@@ -1,11 +1,16 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed,  5 Aug 2015 14:51:47 +0200
-Message-Id: <1438779107-12665-5-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1438779107-12665-1-git-send-email-antonio@meshcoding.com>
+Return-Path: <David.Laight@ACULAB.COM>
+From: David Laight <David.Laight@ACULAB.COM>
+Date: Wed, 5 Aug 2015 13:15:14 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CB737B7@AcuExch.aculab.com>
 References: <1438779107-12665-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: initialize up/down values
-	when adding a gateway
+ <1438779107-12665-3-git-send-email-antonio@meshcoding.com>
+In-Reply-To: <1438779107-12665-3-git-send-email-antonio@meshcoding.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: fix kernel crash due to
+ missing NULL checks
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,44 +20,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, Simon Wunderlich <simon@open-mesh.com>, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+To: 'Antonio Quartulli' <antonio@meshcoding.com>, "davem@davemloft.net" <davem@davemloft.net>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Simon Wunderlich <simon@open-mesh.com>
+From: Of Antonio Quartulli
+> Sent: 05 August 2015 13:52
+> From: Marek Lindner <mareklindner@neomailbox.ch>
+>=20
+> batadv_softif_vlan_get() may return NULL which has to be verified
+> by the caller.
+>=20
+...
+> diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interf=
+ace.c
+> index c002961..a2fc843 100644
+> --- a/net/batman-adv/soft-interface.c
+> +++ b/net/batman-adv/soft-interface.c
+> @@ -479,6 +479,9 @@ out:
+>   */
+>  void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *vlan)
+>  {
+> +	if (!vlan)
+> +		return;
+> +
 
-Without this initialization, gateways which actually announce up/down
-bandwidth of 0/0 could be added. If these nodes get purged via
-_batadv_purge_orig() later, the gw_node structure does not get removed
-since batadv_gw_node_delete() updates the gw_node with up/down
-bandwidth of 0/0, and the updating function then discards the change
-and does not free gw_node.
+This bit doesn't look necessary.
+You've added checks to some callers, the others probably don't need the che=
+ck.
 
-This results in leaking the gw_node structures, which references other
-structures: gw_node -> orig_node -> orig_node_ifinfo -> hardif. When
-removing the interface later, the open reference on the hardif may cause
-hangs with the infamous "unregister_netdevice: waiting for mesh1 to
-become free. Usage count = 1" message.
+> @@ -1066,6 +1069,9 @@ uint16_t batadv_tt_local_remove(struct batadv_priv =
+*bat_priv,
+>=20
+>  	/* decrease the reference held for this vlan */
+>  	vlan =3D batadv_softif_vlan_get(bat_priv, vid);
+> +	if (!vlan)
+> +		goto out;
+> +
+>  	batadv_softif_vlan_free_ref(vlan);
+>  	batadv_softif_vlan_free_ref(vlan);
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- net/batman-adv/gateway_client.c | 2 ++
- 1 file changed, 2 insertions(+)
+That code is ringing alarm bells.
+If you expect to have a reference count the object better exist.
+If you can remove a reference count from a 'random' object then
+you can break the reference counting of objects.
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index bb015862..cffa92d 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -439,6 +439,8 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
- 
- 	INIT_HLIST_NODE(&gw_node->list);
- 	gw_node->orig_node = orig_node;
-+	gw_node->bandwidth_down = ntohl(gateway->bandwidth_down);
-+	gw_node->bandwidth_up = ntohl(gateway->bandwidth_up);
- 	atomic_set(&gw_node->refcount, 1);
- 
- 	spin_lock_bh(&bat_priv->gw.list_lock);
--- 
-2.5.0
+So is this test just hiding anoter bug somewhere??
+
+	David
 
