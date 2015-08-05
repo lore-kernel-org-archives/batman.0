@@ -1,16 +1,8 @@
 Return-Path: <antonio@meshcoding.com>
-References: <1438706134-3492-1-git-send-email-antonio@meshcoding.com>
- <20150804.124040.324026088945274161.davem@davemloft.net>
- <55C11772.90804@meshcoding.com> <1702615.bQe0nxSntn@bentobox>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <55C13C8C.4060806@meshcoding.com>
-Date: Wed, 5 Aug 2015 00:28:28 +0200
-MIME-Version: 1.0
-In-Reply-To: <1702615.bQe0nxSntn@bentobox>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="VidNP5dOT9KAEJeOHiIxHRuOfhdlB5fFD"
-Subject: Re: [B.A.T.M.A.N.] pull request [net]: batman-adv 20150804
+Date: Wed,  5 Aug 2015 14:51:43 +0200
+Message-Id: <1438779107-12665-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] pull request [net]: batman-adv fixes 20150805
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,54 +12,76 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---VidNP5dOT9KAEJeOHiIxHRuOfhdlB5fFD
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+Hello David,
 
-On 04/08/15 22:25, Sven Eckelmann wrote:
-> My vote for patches to send now:
->=20
-> 1. batman-adv: avoid DAT to mess up LAN state
-> 2. batman-adv: fix kernel crash due to missing NULL checks
-> 3. batman-adv: protect tt_local_entry from concurrent delete events
-> 4. batman-adv: initialize up/down values when adding a gateway
->=20
+here you have our patchset for net/linux-4.2 which contains only patches
+that we think to be important (meaning they fix critical
+crashes/misbehaviours actually reported by some users).
 
-Thanks for the suggestion Sven. After checking the patches I agree with
-you and I will take care of sending those patches only.
+Patch 1 (by me) is preventing DAT from injecting replies received from the
+mesh into the LAN which would confuse a L2 bridge.
 
+Patch 2 introduces several NULL checks in order to prevent spurious
+kernel crashes due to NULL pointer deferences, by Marek Lindnder.
 
-Cheers,
+Patches 3, still by Marek, prevent accidental double deletions
+of tt_local_entry objects from their own lists which would lead to a
+kernel crash.
 
---=20
-Antonio Quartulli
+Patch 4 by Simon Wunderlich fixes a memory leak which is triggered by
+the missing initialization of the bandwidth_up/down fields of the bat-GW
+struct.
 
 
---VidNP5dOT9KAEJeOHiIxHRuOfhdlB5fFD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+If possible, I'd recommend to consider all these patches for inclusion
+in the stable releases.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
 
-iQIcBAEBCAAGBQJVwTyQAAoJEOb/4TMchkvfCycP/35F2YAVIT257E9191Y1nNHZ
-N6pUCfJyJJ2TATGVYHxkiRIn1ep9yeVLYBbXYoVKLZujw5Y+0mVu/OofjpNksix/
-X5Ovmm44lo0pe+cHiZRkzg+2ldH/xI+ZV3C5HJrFEntciIgVdDf/qIj/RuHSceCs
-vS/9EWYy+tql5TcCaYST8Z5lWwR2v0E51w10JbQUlJI91MIdjEsknGx4sbBs/8fK
-K4aMk2UQnHHqdWuq4By7951ZIyWzbuMwRyiCH0qHymC9MwvK42pbcxpnOjj8UKAi
-/rTxcgILVvocDSQTbLwKu3V1mIBnTqeVxls7gUa5/21oiGiTmBC/q1moQ/AOuRFb
-dMVhyA1lIz/tjnC+0w8piMAD6rkD1C7Ui76xnQA+oGPNM5nPrUiONyLfCkaJHmLv
-SSn5SjKbaG7dMXTPjVK/FdTa/llCxNkWM2Y3NM4Wpq3TYH+fYJMvpBdk3gB2N6mF
-WSz3vMU5SU7HfCfN/GheatkAvV7R5JnIkrHn7Q9Pd5cYp+vglKM5VR0Y0BJnd05E
-LuAXzZhBfzDYNf50sCAu3xbEfPf0o5QH/lDhFVh9Bz57Wrfd0embJ+VJtWxvWh0u
-jlFSXTSX7Xb0ZBFTwSqq7+u20aCH6YRZ7sDzPAB8pocE+IR1PoY9Hfc9dzOEpP/Z
-mui+eBe76IrTLYT503Z7
-=Onu6
------END PGP SIGNATURE-----
 
---VidNP5dOT9KAEJeOHiIxHRuOfhdlB5fFD--
+Please pull or let me know if anything else is wrong!
+
+Thanks a lot David,
+	Antonio
+
+
+
+
+The following changes since commit 2475b22526d70234ecfe4a1ff88aed69badefba9:
+
+  xen-netback: Allocate fraglist early to avoid complex rollback (2015-08-03 22:23:03 -0700)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to 27a4d5efd417b6ef3190e9af357715532d4617a3:
+
+  batman-adv: initialize up/down values when adding a gateway (2015-08-05 00:31:47 +0200)
+
+----------------------------------------------------------------
+Included changes:
+- prevent DAT from replying on behalf of local clients and confuse L2
+  bridges
+- fix crash on double list removal of TT objects (tt_local_entry)
+- fix crash due to missing NULL checks
+- initialize bw values for new GWs objects to prevent memory leak
+
+----------------------------------------------------------------
+Antonio Quartulli (1):
+      batman-adv: avoid DAT to mess up LAN state
+
+Marek Lindner (2):
+      batman-adv: fix kernel crash due to missing NULL checks
+      batman-adv: protect tt_local_entry from concurrent delete events
+
+Simon Wunderlich (1):
+      batman-adv: initialize up/down values when adding a gateway
+
+ net/batman-adv/distributed-arp-table.c | 18 +++++++++++++-----
+ net/batman-adv/gateway_client.c        |  2 ++
+ net/batman-adv/soft-interface.c        |  3 +++
+ net/batman-adv/translation-table.c     | 29 ++++++++++++++++++++++++-----
+ 4 files changed, 42 insertions(+), 10 deletions(-)
