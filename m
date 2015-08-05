@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed,  5 Aug 2015 14:51:44 +0200
-Message-Id: <1438779107-12665-2-git-send-email-antonio@meshcoding.com>
+Date: Wed,  5 Aug 2015 14:51:45 +0200
+Message-Id: <1438779107-12665-3-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1438779107-12665-1-git-send-email-antonio@meshcoding.com>
 References: <1438779107-12665-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: avoid DAT to mess up LAN
-	state
+Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: fix kernel crash due to
+	missing NULL checks
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,72 +18,84 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-When a node running DAT receives an ARP request from the LAN for the
-first time, it is likely that this node will request the ARP entry
-through the distributed ARP table (DAT) in the mesh.
+From: Marek Lindner <mareklindner@neomailbox.ch>
 
-Once a DAT reply is received the asking node must check if the MAC
-address for which the IP address has been asked is local. If it is, the
-node must drop the ARP reply bceause the client should have replied on
-its own locally.
+batadv_softif_vlan_get() may return NULL which has to be verified
+by the caller.
 
-Forwarding this reply means fooling any L2 bridge (e.g. Ethernet
-switches) lying between the batman-adv node and the LAN. This happens
-because the L2 bridge will think that the client sending the ARP reply
-lies somewhere in the mesh, while this node is sitting in the same LAN.
-
-Reported-by: Simon Wunderlich <sw@simonwunderlich.de>
+Fixes: 35df3b298fc8 ("batman-adv: fix TT VLAN inconsistency on VLAN re-add")
+Reported-by: Ryan Thompson <ryan@eero.com>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/distributed-arp-table.c | 18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
+ net/batman-adv/soft-interface.c    |  3 +++
+ net/batman-adv/translation-table.c | 18 ++++++++++++++----
+ 2 files changed, 17 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index fb54e6a..6d0b471 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -1138,6 +1138,9 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: packet to check
-  * @hdr_size: size of the encapsulation header
-+ *
-+ * Returns true if the packet was snooped and consumed by DAT. False if the
-+ * packet has to be delivered to the interface
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index c002961..a2fc843 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -479,6 +479,9 @@ out:
   */
- bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 					 struct sk_buff *skb, int hdr_size)
-@@ -1145,7 +1148,7 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	uint16_t type;
- 	__be32 ip_src, ip_dst;
- 	uint8_t *hw_src, *hw_dst;
--	bool ret = false;
-+	bool dropped = false;
- 	unsigned short vid;
- 
- 	if (!atomic_read(&bat_priv->distributed_arp_table))
-@@ -1174,12 +1177,17 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	/* if this REPLY is directed to a client of mine, let's deliver the
- 	 * packet to the interface
- 	 */
--	ret = !batadv_is_my_client(bat_priv, hw_dst, vid);
-+	dropped = !batadv_is_my_client(bat_priv, hw_dst, vid);
+ void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *vlan)
+ {
++	if (!vlan)
++		return;
 +
-+	/* if this REPLY is sent on behalf of a client of mine, let's drop the
-+	 * packet because the client will reply by itself
-+	 */
-+	dropped |= batadv_is_my_client(bat_priv, hw_src, vid);
- out:
--	if (ret)
-+	if (dropped)
- 		kfree_skb(skb);
--	/* if ret == false -> packet has to be delivered to the interface */
--	return ret;
-+	/* if dropped == false -> deliver to the interface */
-+	return dropped;
- }
+ 	if (atomic_dec_and_test(&vlan->refcount)) {
+ 		spin_lock_bh(&vlan->bat_priv->softif_vlan_list_lock);
+ 		hlist_del_rcu(&vlan->list);
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index b482495..38b83c5 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -594,6 +594,9 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const uint8_t *addr,
  
- /**
+ 	/* increase the refcounter of the related vlan */
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid);
++	if (WARN(!vlan, "adding TT local entry %pM to non-existent VLAN %d",
++		 addr, BATADV_PRINT_VID(vid)))
++		goto out;
+ 
+ 	batadv_dbg(BATADV_DBG_TT, bat_priv,
+ 		   "Creating new local tt entry: %pM (vid: %d, ttvn: %d)\n",
+@@ -1066,6 +1069,9 @@ uint16_t batadv_tt_local_remove(struct batadv_priv *bat_priv,
+ 
+ 	/* decrease the reference held for this vlan */
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid);
++	if (!vlan)
++		goto out;
++
+ 	batadv_softif_vlan_free_ref(vlan);
+ 	batadv_softif_vlan_free_ref(vlan);
+ 
+@@ -1166,8 +1172,10 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
+ 			/* decrease the reference held for this vlan */
+ 			vlan = batadv_softif_vlan_get(bat_priv,
+ 						      tt_common_entry->vid);
+-			batadv_softif_vlan_free_ref(vlan);
+-			batadv_softif_vlan_free_ref(vlan);
++			if (vlan) {
++				batadv_softif_vlan_free_ref(vlan);
++				batadv_softif_vlan_free_ref(vlan);
++			}
+ 
+ 			batadv_tt_local_entry_free_ref(tt_local);
+ 		}
+@@ -3207,8 +3215,10 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
+ 
+ 			/* decrease the reference held for this vlan */
+ 			vlan = batadv_softif_vlan_get(bat_priv, tt_common->vid);
+-			batadv_softif_vlan_free_ref(vlan);
+-			batadv_softif_vlan_free_ref(vlan);
++			if (vlan) {
++				batadv_softif_vlan_free_ref(vlan);
++				batadv_softif_vlan_free_ref(vlan);
++			}
+ 
+ 			batadv_tt_local_entry_free_ref(tt_local);
+ 		}
 -- 
 2.5.0
 
