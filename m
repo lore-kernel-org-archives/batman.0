@@ -1,9 +1,9 @@
-Return-Path: <def@laposte.net>
-From: Def <def@laposte.net>
-Date: Thu,  6 Aug 2015 10:38:54 +0200
-Message-Id: <1438850334-26976-1-git-send-email-def@laposte.net>
-Subject: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: Fix batadv_compare_tt
-	function
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Thu,  6 Aug 2015 14:16:52 +0200
+Message-Id: <1438863412-19471-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: rename equiv/equal or better to
+	similar or better
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,49 +15,105 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Into the tt hash table implementation, batadv_compare_tt is used
-to compare two tt entries and deciding if they are the same
-object.
-batadv_compare_tt compare only mac addr.
+Since the function applies a threshold and also slightly worse
+values are accepted, ''equal or better'' does not represent the
+intention of the function. ''Similar or better'' represents that better.
 
-On a batman network, each node using vlans declare the bat0 mac
-addr on each vlan.
-
-In case of adding a new tt entry, sharing the same hash of
-another entry. If these two entries have the same MAC addr but
-a different vid. The insert fail because the two different
-object are considered identical.
-
-batadv_compare_tt must check vid.
-
-Signed-off-by: Def <def@laposte.net>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- translation-table.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ net/batman-adv/bat_iv_ogm.c | 8 ++++----
+ net/batman-adv/main.c       | 2 +-
+ net/batman-adv/routing.c    | 6 +++---
+ net/batman-adv/types.h      | 6 +++---
+ 4 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/translation-table.c b/translation-table.c
-index d73b103..d16433a 100644
---- a/translation-table.c
-+++ b/translation-table.c
-@@ -45,13 +45,16 @@ static void batadv_tt_global_del(struct batadv_priv *bat_priv,
- 				 unsigned short vid, const char *message,
- 				 bool roaming);
- 
--/* returns 1 if they are the same mac addr */
-+/* returns 1 if they are the same mac addr and vid */
- static int batadv_compare_tt(const struct hlist_node *node, const void *data2)
- {
- 	const void *data1 = container_of(node, struct batadv_tt_common_entry,
- 					 hash_entry);
- 
--	return batadv_compare_eth(data1, data2);
-+	struct batadv_tt_common_entry* tt1 = data1;
-+	struct batadv_tt_common_entry* tt2 = data2;
-+
-+	return (tt1->vid == tt2->vid) && batadv_compare_eth(data1, data2);
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 912d9c3..83b9e04 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1902,8 +1902,8 @@ out:
  }
  
  /**
+- * batadv_iv_ogm_neigh_is_eob - check if neigh1 is equally good or better than
+- *  neigh2 from the metric prospective
++ * batadv_iv_ogm_neigh_is_sob - check if neigh1 is similarly good or better
++ *  than neigh2 from the metric prospective
+  * @neigh1: the first neighbor object of the comparison
+  * @if_outgoing1: outgoing interface for the first neighbor
+  * @neigh2: the second neighbor object of the comparison
+@@ -1913,7 +1913,7 @@ out:
+  * the metric via neigh2, false otherwise.
+  */
+ static bool
+-batadv_iv_ogm_neigh_is_eob(struct batadv_neigh_node *neigh1,
++batadv_iv_ogm_neigh_is_sob(struct batadv_neigh_node *neigh1,
+ 			   struct batadv_hard_iface *if_outgoing1,
+ 			   struct batadv_neigh_node *neigh2,
+ 			   struct batadv_hard_iface *if_outgoing2)
+@@ -1953,7 +1953,7 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
+ 	.bat_ogm_schedule = batadv_iv_ogm_schedule,
+ 	.bat_ogm_emit = batadv_iv_ogm_emit,
+ 	.bat_neigh_cmp = batadv_iv_ogm_neigh_cmp,
+-	.bat_neigh_is_equiv_or_better = batadv_iv_ogm_neigh_is_eob,
++	.bat_neigh_is_similar_or_better = batadv_iv_ogm_neigh_is_sob,
+ 	.bat_orig_print = batadv_iv_ogm_orig_print,
+ 	.bat_orig_free = batadv_iv_ogm_orig_free,
+ 	.bat_orig_add_if = batadv_iv_ogm_orig_add_if,
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index d7f17c1..45952dc 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -552,7 +552,7 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
+ 	    !bat_algo_ops->bat_ogm_schedule ||
+ 	    !bat_algo_ops->bat_ogm_emit ||
+ 	    !bat_algo_ops->bat_neigh_cmp ||
+-	    !bat_algo_ops->bat_neigh_is_equiv_or_better) {
++	    !bat_algo_ops->bat_neigh_is_similar_or_better) {
+ 		pr_info("Routing algo '%s' does not implement required ops\n",
+ 			bat_algo_ops->name);
+ 		return -EINVAL;
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 8d990b0..a43f02e 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -497,9 +497,9 @@ batadv_find_router(struct batadv_priv *bat_priv,
+ 		/* alternative candidate should be good enough to be
+ 		 * considered
+ 		 */
+-		if (!bao->bat_neigh_is_equiv_or_better(cand_router,
+-						       cand->if_outgoing,
+-						       router, recv_if))
++		if (!bao->bat_neigh_is_similar_or_better(cand_router,
++							 cand->if_outgoing,
++							 router, recv_if))
+ 			goto next;
+ 
+ 		/* don't use the same router twice */
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index d260efd..9771c13 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1133,8 +1133,8 @@ struct batadv_forw_packet {
+  * @bat_ogm_emit: send scheduled OGM
+  * @bat_neigh_cmp: compare the metrics of two neighbors for their respective
+  *  outgoing interfaces
+- * @bat_neigh_is_equiv_or_better: check if neigh1 is equally good or better
+- *  than neigh2 for their respective outgoing interface from the metric
++ * @bat_neigh_is_similar_or_better: check if neigh1 is equally similar or
++ *  better than neigh2 for their respective outgoing interface from the metric
+  *  prospective
+  * @bat_neigh_free: free the resources allocated by the routing algorithm for a
+  *  neigh_node object
+@@ -1160,7 +1160,7 @@ struct batadv_algo_ops {
+ 			     struct batadv_hard_iface *if_outgoing1,
+ 			     struct batadv_neigh_node *neigh2,
+ 			     struct batadv_hard_iface *if_outgoing2);
+-	bool (*bat_neigh_is_equiv_or_better)
++	bool (*bat_neigh_is_similar_or_better)
+ 		(struct batadv_neigh_node *neigh1,
+ 		 struct batadv_hard_iface *if_outgoing1,
+ 		 struct batadv_neigh_node *neigh2,
 -- 
-1.7.10.4
+2.1.4
 
