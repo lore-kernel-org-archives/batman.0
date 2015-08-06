@@ -1,15 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 06 Aug 2015 21:01:35 +0800
-Message-ID: <1738390.3rY6IGzNAl@voltaire>
-In-Reply-To: <1438693798-21807-4-git-send-email-mareklindner@neomailbox.ch>
-References: <1438693798-21807-1-git-send-email-mareklindner@neomailbox.ch>
- <1438693798-21807-4-git-send-email-mareklindner@neomailbox.ch>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Thu, 6 Aug 2015 17:22:30 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20150806152230.GB3023@odroid>
+References: <1438850334-26976-1-git-send-email-def@laposte.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3418619.5dZMJYhbat";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 4/4] batman-adv: update last seen field
-	of single hop originators
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1438850334-26976-1-git-send-email-def@laposte.net>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: Fix
+ batadv_compare_tt function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,41 +20,12 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+On Thu, Aug 06, 2015 at 10:38:54AM +0200, Def wrote:
+> Signed-off-by: Def <def@laposte.net>
 
---nextPart3418619.5dZMJYhbat
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Documentation/SubmittingPatches, section 13:
 
-On Tuesday, August 04, 2015 21:09:58 Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> ---
-> v3: no change
-> v2: new patch
-> 
->  net/batman-adv/bat_iv_ogm.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
+"[...] using your real name (sorry, no pseudonyms or anonymous
+contributions.)"
 
-Applied in revision 6d9f616.
-
-Regards,
-Marek
-
---nextPart3418619.5dZMJYhbat
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJVw1qyAAoJEFNVTo/uthzA28AH/2g0fOt7o8e7uRDjFm/Hy1WJ
-hYNZHalgTEmVX1oUJGHRR8LZvtN82Fk9KtNO3oSir6hfd1QIT7ZHA6h4iK3lnCYw
-9zyZbgbeFMrrEM30secihUI97r+tfZjVNP3jtL8yMChevOw+7S3daCG2Xb0sN6nN
-QtKcgsp6NeLFK+4XKU8UkCrRG23HN+SZGgwWGV4PaElRb6HYsGqAcTbN/kdLmAp+
-vyMJlxHFwvsjoTjNAdhg4Jpt3tNJRhjcspzlWNw5LvriXjyiKMuwmW4Tk05E4J3r
-vVwp/zsdWudiNOn1cPFo3aR+3ZekW1VglqcITS/fNLxG3iA6l2LI6zl9HI/3CqI=
-=mkbk
------END PGP SIGNATURE-----
-
---nextPart3418619.5dZMJYhbat--
-
+So full, real name required :(.
