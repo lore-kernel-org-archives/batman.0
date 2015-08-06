@@ -1,9 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu,  6 Aug 2015 14:16:52 +0200
-Message-Id: <1438863412-19471-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: rename equiv/equal or better to
-	similar or better
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Thu, 06 Aug 2015 20:46:56 +0800
+Message-ID: <5338114.JDPsX0mrSU@voltaire>
+In-Reply-To: <1438702304-26197-1-git-send-email-mareklindner@neomailbox.ch>
+References: <1438702304-26197-1-git-send-email-mareklindner@neomailbox.ch>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart6237837.9eWhgS4eFh";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: turn batadv_neigh_node_get()
+	into local function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,107 +18,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Since the function applies a threshold and also slightly worse
-values are accepted, ''equal or better'' does not represent the
-intention of the function. ''Similar or better'' represents that better.
 
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/bat_iv_ogm.c | 8 ++++----
- net/batman-adv/main.c       | 2 +-
- net/batman-adv/routing.c    | 6 +++---
- net/batman-adv/types.h      | 6 +++---
- 4 files changed, 11 insertions(+), 11 deletions(-)
+--nextPart6237837.9eWhgS4eFh
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 912d9c3..83b9e04 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1902,8 +1902,8 @@ out:
- }
- 
- /**
-- * batadv_iv_ogm_neigh_is_eob - check if neigh1 is equally good or better than
-- *  neigh2 from the metric prospective
-+ * batadv_iv_ogm_neigh_is_sob - check if neigh1 is similarly good or better
-+ *  than neigh2 from the metric prospective
-  * @neigh1: the first neighbor object of the comparison
-  * @if_outgoing1: outgoing interface for the first neighbor
-  * @neigh2: the second neighbor object of the comparison
-@@ -1913,7 +1913,7 @@ out:
-  * the metric via neigh2, false otherwise.
-  */
- static bool
--batadv_iv_ogm_neigh_is_eob(struct batadv_neigh_node *neigh1,
-+batadv_iv_ogm_neigh_is_sob(struct batadv_neigh_node *neigh1,
- 			   struct batadv_hard_iface *if_outgoing1,
- 			   struct batadv_neigh_node *neigh2,
- 			   struct batadv_hard_iface *if_outgoing2)
-@@ -1953,7 +1953,7 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
- 	.bat_ogm_schedule = batadv_iv_ogm_schedule,
- 	.bat_ogm_emit = batadv_iv_ogm_emit,
- 	.bat_neigh_cmp = batadv_iv_ogm_neigh_cmp,
--	.bat_neigh_is_equiv_or_better = batadv_iv_ogm_neigh_is_eob,
-+	.bat_neigh_is_similar_or_better = batadv_iv_ogm_neigh_is_sob,
- 	.bat_orig_print = batadv_iv_ogm_orig_print,
- 	.bat_orig_free = batadv_iv_ogm_orig_free,
- 	.bat_orig_add_if = batadv_iv_ogm_orig_add_if,
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index d7f17c1..45952dc 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -552,7 +552,7 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
- 	    !bat_algo_ops->bat_ogm_schedule ||
- 	    !bat_algo_ops->bat_ogm_emit ||
- 	    !bat_algo_ops->bat_neigh_cmp ||
--	    !bat_algo_ops->bat_neigh_is_equiv_or_better) {
-+	    !bat_algo_ops->bat_neigh_is_similar_or_better) {
- 		pr_info("Routing algo '%s' does not implement required ops\n",
- 			bat_algo_ops->name);
- 		return -EINVAL;
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 8d990b0..a43f02e 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -497,9 +497,9 @@ batadv_find_router(struct batadv_priv *bat_priv,
- 		/* alternative candidate should be good enough to be
- 		 * considered
- 		 */
--		if (!bao->bat_neigh_is_equiv_or_better(cand_router,
--						       cand->if_outgoing,
--						       router, recv_if))
-+		if (!bao->bat_neigh_is_similar_or_better(cand_router,
-+							 cand->if_outgoing,
-+							 router, recv_if))
- 			goto next;
- 
- 		/* don't use the same router twice */
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index d260efd..9771c13 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1133,8 +1133,8 @@ struct batadv_forw_packet {
-  * @bat_ogm_emit: send scheduled OGM
-  * @bat_neigh_cmp: compare the metrics of two neighbors for their respective
-  *  outgoing interfaces
-- * @bat_neigh_is_equiv_or_better: check if neigh1 is equally good or better
-- *  than neigh2 for their respective outgoing interface from the metric
-+ * @bat_neigh_is_similar_or_better: check if neigh1 is equally similar or
-+ *  better than neigh2 for their respective outgoing interface from the metric
-  *  prospective
-  * @bat_neigh_free: free the resources allocated by the routing algorithm for a
-  *  neigh_node object
-@@ -1160,7 +1160,7 @@ struct batadv_algo_ops {
- 			     struct batadv_hard_iface *if_outgoing1,
- 			     struct batadv_neigh_node *neigh2,
- 			     struct batadv_hard_iface *if_outgoing2);
--	bool (*bat_neigh_is_equiv_or_better)
-+	bool (*bat_neigh_is_similar_or_better)
- 		(struct batadv_neigh_node *neigh1,
- 		 struct batadv_hard_iface *if_outgoing1,
- 		 struct batadv_neigh_node *neigh2,
--- 
-2.1.4
+On Tuesday, August 04, 2015 23:31:44 Marek Lindner wrote:
+> commit c214ebe1eb29 ("batman-adv: move neigh_node list add into
+> batadv_neigh_node_new()") removed external calls to
+> batadv_neigh_node_get().
+> 
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> ---
+>  net/batman-adv/originator.c | 72
+> ++++++++++++++++++++++----------------------- net/batman-adv/originator.h
+> |  4 ---
+>  2 files changed, 36 insertions(+), 40 deletions(-)
+
+Applied in revision c9bac8f.
+
+Regards,
+Marek
+
+--nextPart6237837.9eWhgS4eFh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJVw1dIAAoJEFNVTo/uthzA0MgIALkKs9zNUIdlp5qP8ALjb+nR
+hDuGce6qi0WmUIZ5e6IsJZWdiS6KizVtnNOsTcEJBukQCY9q8MtEocruFjaUO1Gs
+PLl9N3PkLUsnDUw4nbYXGrW0bP2FY5uNQjzb7Y/4P0jFRnI7GcWv2y5plCDeRv1l
+fYS41mCyYulK84fbc8HmN7K+BuReidT5GOzvbqzF+d1KlglBfs1Sw+V2dHyi0fSn
+pQYWNwqRnP7zjfHoKGRfEYRyEeGlWDrEuAsWt0hx/AEsbeiH7xhAM96Lsx4bZTfk
+uj7cQv+BF5jEIt1+mC5WidGJpVr+iU9xvcktuBoYVIa14YPmZbugpq+BslxaEEw=
+=mnps
+-----END PGP SIGNATURE-----
+
+--nextPart6237837.9eWhgS4eFh--
 
