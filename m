@@ -1,9 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  7 Aug 2015 19:28:42 +0200
-Message-Id: <1438968522-3470-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v4] batman-adv: Add lower layer
-	needed_(head|tail)room to own ones
+Return-Path: <mschiffer@universe-factory.net>
+References: <2ce4491cf3eb01922d0fec97147a1533cca30c41.1435170868.git.mschiffer@universe-factory.net>
+ <20150807161622.GB2893@odroid>
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+Message-ID: <55C4ECD3.3020608@universe-factory.net>
+Date: Fri, 7 Aug 2015 19:37:23 +0200
+MIME-Version: 1.0
+In-Reply-To: <20150807161622.GB2893@odroid>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature";
+ boundary="geNHxr7bT76WC6TX6qlwDLnhpGhBkJt88"
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: add generic netlink query API
+ to replace debugfs files
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,111 +22,125 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The maximum of hard_header_len and maximum of all needed_(head|tail)room of
-all slave interfaces of a batman-adv device must be used to define the
-batman-adv device needed_(head|tail)room. This is required to avoid too
-small buffer problems when these slave devices try to send the encapsulated
-packet in a tx path without the possibility to resize the skbuff.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--geNHxr7bT76WC6TX6qlwDLnhpGhBkJt88
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v4:
- - only check non-BATADV_IF_NOT_IN_USE interfaces
- - drop the batadv_hardif_disable_interface changes which are already
-   handled by the non-BATADV_IF_NOT_IN_USE check
-v3:
- - set hard_header_len always to ETH_HLEN and only modify needed_headroom
-   as done in mac80211/vxlan
- - do the same for needed_tailroom
-v2:
- - based on patch "batman-adv: don't access unregistered net_device object"
- - remove the function call from batadv_update_min_mtu
- - instead use batadv_hardif_disable_interface +
-   batadv_hardif_enable_interface
----
- net/batman-adv/hard-interface.c | 41 +++++++++++++++++++++++++++++++++++++++++
- net/batman-adv/soft-interface.c |  2 --
- 2 files changed, 41 insertions(+), 2 deletions(-)
+On 08/07/2015 06:16 PM, Linus L=C3=BCssing wrote:
+> Hi Matthias,
+>=20
+> here at the Wireless BattleMesh we finally had the chance to get
+> some initial discussions on your patch going. For the start a few
+> comprehension questions came up:
+>=20
+>=20
+> On Wed, Jun 24, 2015 at 08:34:28PM +0200, Matthias Schiffer wrote:
+>> * As batman-adv uses single_open, the whole content of the originators=
+/
+>>   transglobal files must fit into a single buffer; in large batman-adv=
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 0565b20bfa6d..f11345e163d7 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -252,6 +252,44 @@ static void batadv_check_known_mac_addr(const struct net_device *net_dev)
- 	rcu_read_unlock();
- }
- 
-+/**
-+ * batadv_hardif_recalc_extra_skbroom() - Recalculate skbuff extra head/tailroom
-+ * @soft_iface: netdev struct of the mesh interface
-+ */
-+static void batadv_hardif_recalc_extra_skbroom(struct net_device *soft_iface)
-+{
-+	const struct batadv_hard_iface *hard_iface;
-+	unsigned short lower_header_len = ETH_HLEN;
-+	unsigned short lower_headroom = 0;
-+	unsigned short lower_tailroom = 0;
-+	unsigned short needed_headroom;
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-+		if (hard_iface->if_status == BATADV_IF_NOT_IN_USE)
-+			continue;
-+
-+		if (hard_iface->soft_iface != soft_iface)
-+			continue;
-+
-+		lower_header_len = max_t(unsigned short, lower_header_len,
-+					 hard_iface->net_dev->hard_header_len);
-+
-+		lower_headroom = max_t(unsigned short, lower_headroom,
-+				       hard_iface->net_dev->needed_headroom);
-+
-+		lower_tailroom = max_t(unsigned short, lower_tailroom,
-+				       hard_iface->net_dev->needed_tailroom);
-+	}
-+	rcu_read_unlock();
-+
-+	needed_headroom = lower_headroom + (lower_header_len - ETH_HLEN);
-+	needed_headroom += batadv_max_header_len();
-+
-+	soft_iface->needed_headroom = needed_headroom;
-+	soft_iface->needed_tailroom = lower_tailroom;
-+}
-+
- int batadv_hardif_min_mtu(struct net_device *soft_iface)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
-@@ -474,6 +512,8 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 			   "Not using interface %s (retrying later): interface not active\n",
- 			   hard_iface->net_dev->name);
- 
-+	batadv_hardif_recalc_extra_skbroom(soft_iface);
-+
- 	/* begin scheduling originator messages on that interface */
- 	batadv_schedule_bat_ogm(hard_iface);
- 
-@@ -529,6 +569,7 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
- 	dev_put(hard_iface->soft_iface);
- 
- 	netdev_upper_dev_unlink(hard_iface->net_dev, hard_iface->soft_iface);
-+	batadv_hardif_recalc_extra_skbroom(hard_iface->soft_iface);
- 
- 	/* nobody uses this interface anymore */
- 	if (!bat_priv->num_ifaces) {
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 36b23f31df2a..cce8e896d511 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -947,8 +947,6 @@ static void batadv_softif_init_early(struct net_device *dev)
- 	 * have not been initialized yet
- 	 */
- 	dev->mtu = ETH_DATA_LEN;
--	/* reserve more space in the skbuff for our header */
--	dev->hard_header_len = batadv_max_header_len();
- 
- 	/* generate random address */
- 	eth_hw_addr_random(dev);
--- 
-2.5.0
+>>   networks this often fails (as an order-5 allocation or even more wou=
+ld be
+>>   necessary)
+>> * When originators or transglobal aren't just used for debugging, they=
+ are
+>>   first converted to text, and then parsed again in userspace by tools=
+ like
+>>   alfred/batadv-vis. Sending MAC address lists from the kernel to user=
+space
+>>   as text makes the buffer size issue even worse.
+>=20
+> These two points can be addressed through debugfs too, for
+> instance using sequential debugfs writes, right? (In fact IIRC you
+> had started with that approach until you got the feedback from
+> Gregk, right?)
+I've had a look at the different functions the seq_file API provides,
+but I didn't write any code.
 
+>=20
+> Can you elaborate a little more on the "order-5 allocation"?
+> What amount of free RAM did the machines have where we observed
+> Out-of-Memory kernel panics upon debugfs access? Can you give some
+> numbers / calculations why we ended up with several Megabytes
+> memory allocations on debugfs access?
+An order-5 allocation are 2^5 =3D 32 pages of memory, i.e. 128K of RAM. A=
+s
+these are allocated by kmalloc, these 32 pages are allocated as one
+piece of physical RAM. As the RAM gets fragmented more and more the
+longer a system is running, 32 pages in one piece can be hard to find
+even when there are still tens of MB of free RAM.
+
+The fragmentation issue becomes a bit worse because the seq_file code
+starts with a single page and loops until the buffer is big enough to
+fit the whole output, always freeing the buffer in each loop iteration
+and allocation a new buffer twice the size.
+
+>=20
+>=20
+> The debugfs race conditions Gregk and you talked about are on
+> adding/removing debugfs files, right? Are there any known race
+> conditions on simple reads/writes in the abscene of removing
+> debugfs files?
+The race conditions only occur when files are removed, but that alone is
+bad enough - I'd really like to avoid enabling debugfs at all on
+critical systems.
+
+>=20
+>=20
+> Since you've had a look at both the netlink and sequential debugfs
+> approach already, can you give some estimation about the
+> complexity or rough number of lines of code to change for the
+> sequential debugfs approach?
+I guess that should be possible in 100~200 lines of code. Most of it
+would be similar to the code I've implemented for the netlink API:
+storing counters between the callback runs to keep track of the current
+position in the data structures. Of course, it will have the same
+drawbacks: when originator/tt entries are added or removed between the
+calls, entries will be duplicate or missing from the output.
+
+The main reason why I didn't consider fixing the debugfs code first was
+that returning to userspace in the middle of the read will make the race
+conditions much easier to hit: at the moment, the race can only occur
+when the file is removed between open() and read(), which is usually
+very short. The time between several read() calls can be much bigger,
+especially when the files are read and parsed line by line.
+
+>=20
+> One thought that popped up here was, whether it'd make sense to
+> first "fix" the debugfs approach to the extent possible with a
+> couple of lines instead of 800+ lines to get rid of the issues
+> we frequently observe. And then merge a complete fix but bigger
+> patchset implementing netlink support with a more thorough review
+> and discussions on what we'd need for its API now and upcoming
+> features.
+>=20
+> Cheers, Linus
+>=20
+
+
+
+--geNHxr7bT76WC6TX6qlwDLnhpGhBkJt88
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCgAGBQJVxOzTAAoJEBbvP2TLIB2cHHQP/Ap7WTlPD2LIH54kuI+8BJqH
+glxoyDLe12fsfolk51odsnjoW2IqL84AAHmRZZBCWsaM2iorNTdJovXOSxOWX1a6
+JpnATLYkbeMfyb/C6n7Vq4VSjbbzZAdSYuctcR9qLArDswpPXj73NqawOBUKbYw9
+McTgVOJXdwZeCrTX26rIXlYzqVKAY0B8tZ18Hn/+u3/cgG05sGEHAwgzx7VyW1y+
+Rw4iNGhH9EL145FDwVHB2+aQKa25BmEFHfcSkwI+F9JX9xcjHto+ihBVaZE3/NL6
+T+u3VB8O1IfNhiaSjjXFsfx3DktBz+mUGZtVVF/j6Ud+n8H76ApNXv9A6bSwekq8
+QDqocupo2ZSrnba7PAqMtq8foqHpbrsIFR0CEn82bvah1CeOM/h+hCAisN6be1Ex
+3W9Wg6x9LSfLuaELHG1CTf7ElmgVEKYvOD1xB6LuDI/4j9AcOovFNIAzlUGZQWV+
+w+RO568uXbwOQdnuivoe6ePOT6dw/M9Q5qDSomm4hASVILuanHqULt00kItGO4Vg
+avlD6zMJ5ZdVAt4b17wGwUSKl/UYd9cK0yCx0AM4Jvyp/0w05JOj0DHCmHp1qEPq
+1paROpTVlHvUMjy8pYFKzo3hAMyRsZW73x7ipW0skLlT93V6kSfAHlZ+AoIRtyo8
+Oi25Hf3TV633tzK1aNFs
+=CaOD
+-----END PGP SIGNATURE-----
+
+--geNHxr7bT76WC6TX6qlwDLnhpGhBkJt88--
