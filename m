@@ -1,8 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri,  7 Aug 2015 23:56:05 +0800
-Message-Id: <1438962965-30034-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: add neighbor table support
+Date: Sat, 08 Aug 2015 00:05:19 +0800
+Message-ID: <49623477.gbvZJGeD3Z@voltaire>
+In-Reply-To: <1438863412-19471-1-git-send-email-sw@simonwunderlich.de>
+References: <1438863412-19471-1-git-send-email-sw@simonwunderlich.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1622677.AScJ6xrrWb";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: rename equiv/equal or better
+	to similar or better
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -12,59 +18,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
- debug.c      | 6 ++++++
- debug.h      | 1 +
- man/batctl.8 | 3 +++
- 3 files changed, 10 insertions(+)
 
-diff --git a/debug.c b/debug.c
-index a050345..3fbe587 100644
---- a/debug.c
-+++ b/debug.c
-@@ -31,6 +31,12 @@
- 
- const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
- 	{
-+		.opt_long = "neighbors",
-+		.opt_short = "n",
-+		.debugfs_name = "neighbors",
-+		.header_lines = 2,
-+	},
-+	{
- 		.opt_long = "originators",
- 		.opt_short = "o",
- 		.debugfs_name = "originators",
-diff --git a/debug.h b/debug.h
-index 2bc0ff9..c9397e1 100644
---- a/debug.h
-+++ b/debug.h
-@@ -30,6 +30,7 @@
- #define DEBUG_LOG "log"
- 
- enum batctl_debug_tables {
-+	BATCTL_TABLE_NEIGHBORS,
- 	BATCTL_TABLE_ORIGINATORS,
- 	BATCTL_TABLE_GATEWAYS,
- 	BATCTL_TABLE_TRANSLOCAL,
-diff --git a/man/batctl.8 b/man/batctl.8
-index bc190c0..3720256 100644
---- a/man/batctl.8
-+++ b/man/batctl.8
-@@ -204,6 +204,9 @@ The local and global translation tables also support the "\-u" and "\-m" option
- 
- List of debug tables:
- .RS 10
-+\- neighbors|n
-+.RE
-+.RS 10
- \- originators|o
- .RE
- .RS 10
--- 
-2.5.0
+--nextPart1622677.AScJ6xrrWb
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Thursday, August 06, 2015 14:16:52 Simon Wunderlich wrote:
+> @@ -1953,7 +1953,7 @@ static struct batadv_algo_ops batadv_batman_iv
+> __read_mostly = { .bat_ogm_schedule = batadv_iv_ogm_schedule,
+>         .bat_ogm_emit = batadv_iv_ogm_emit,
+>         .bat_neigh_cmp = batadv_iv_ogm_neigh_cmp,
+> -       .bat_neigh_is_equiv_or_better = batadv_iv_ogm_neigh_is_eob,
+> +       .bat_neigh_is_similar_or_better = batadv_iv_ogm_neigh_is_sob,
+>         .bat_orig_print = batadv_iv_ogm_orig_print,
+>         .bat_orig_free = batadv_iv_ogm_orig_free,
+>         .bat_orig_add_if = batadv_iv_ogm_orig_add_if,
+
+What branch did you base the patch on ? I am unable to apply the patch mostly 
+because of this section.
+
+Cheers,
+Marek
+
+--nextPart1622677.AScJ6xrrWb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJVxNdGAAoJEFNVTo/uthzAuqsH/RZb2W6Jt3soLKki4R8/R51o
+Nt9HJHE6Uuw2MOkZJH6YXgYzPPKoctq6rgZknab1HDb+YM8EVBQfCfbmJQdjEI7s
+ngu88pzRhJpidBS1hm7xhWzyblOYlW1EHu9h5OjOci3XmDQvL7tfbldFELEBOEpj
+fJDJhxWNMvLq8oPNuZ+RffSRbSz0LxYIoRznLE6ja2eV3lNYCjbp+dKEdPUNksK/
+6s9s6NoHOuq40wjz/b2qK2sm80MRaW4Ut+b1YZda9b4D6zRBOxJDwy5k9/ba4RXa
+VxwPE96qEdKtS42u4MkMP1Tnu2ruF2vh5uBjG9a5gApR5gjUZPg9qj2FZgs+Nd4=
+=plqq
+-----END PGP SIGNATURE-----
+
+--nextPart1622677.AScJ6xrrWb--
 
