@@ -1,13 +1,13 @@
-Return-Path: <bjo@nord-west.org>
-Message-ID: <1438896208.1369.49.camel@nord-west.org>
-From: Bjoern Franke <bjo@nord-west.org>
-Date: Thu, 06 Aug 2015 23:23:28 +0200
-In-Reply-To: <1965971.qMo8ZFc46n@voltaire>
-References: <20150516220736.2d896b4b@i3.local> <5518681.hhA3VFM6WN@prime>
- <1965971.qMo8ZFc46n@voltaire>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-7ZkajgeSVBWxYZ6IBN8P"
-Mime-Version: 1.0
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Fri, 07 Aug 2015 02:25:22 +0200
+Message-ID: <2457781.aV3nu67AfV@prime>
+In-Reply-To: <1438896208.1369.49.camel@nord-west.org>
+References: <20150516220736.2d896b4b@i3.local> <1965971.qMo8ZFc46n@voltaire>
+ <1438896208.1369.49.camel@nord-west.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart5019287.lR2QcBvR56";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] Patch to add mesh_no_rebroadcast
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,53 +18,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---=-7ZkajgeSVBWxYZ6IBN8P
-Content-Type: text/plain; charset="UTF-8"
+--nextPart5019287.lR2QcBvR56
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="ISO-8859-1"
 
-Hi,
+Hi Bjoern,
+
+there wasn't any activity on this patch (at least from our side), and t=
+here=20
+wasn't any reaction on Mareks suggestion to add more explanation to the=
+ patch.
+
+If you want to get it adopted, please resend it (rebased on current mas=
+ter)=20
+with a proper commit message explaining what it does and why its useful=
+ - like=20
+we have for any other patch.
+
+Thanks,
+     Simon
+
+On Thursday 06 August 2015 23:23:28 Bjoern Franke wrote:
+> Hi,
 >=20
-> It might be a good idea to send an explanation with the patch to get=20
-> the=20
-> discussion started. What are the arguments in favor of this patch ? A=20
-> little=20
-> more than 'Patch to add mesh_no_rebroadcast' would be nice.
+> > It might be a good idea to send an explanation with the patch to ge=
+t
+> > the
+> > discussion started. What are the arguments in favor of this patch ?=
+ A
+> > little
+> > more than 'Patch to add mesh_no_rebroadcast' would be nice.
 >=20
+> Is there any advance towards including this patch?
+>=20
+> Regards
+> Bj=F6rn
 
-Is there any advance towards including this patch?
-
-Regards
-Bj=C3=B6rn
---=20
-xmpp bjo@schafweide.org=20
-
-
-
---=-7ZkajgeSVBWxYZ6IBN8P
+--nextPart5019287.lR2QcBvR56
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCAAGBQJVw9BQAAoJEAowmQt8itv3waAP/2HvlgQiOucXbTUy+YaQhX1l
-vysWLbVX2apf+dZY/ttKM0UGHauCcG24FO9RG+t85zwiAMc1pOfYqpnGVaITCtyn
-1SUx12RQ1ABao1WIuOXD4Jbxpk6BGp35/VRq4UNTfrsZWL+g/uI7/xBeoO8Ww+6D
-7esJLfz72kaLUKGrVlymezCQD/UsuCl+1RkmPkBFIbVRkSIlA8debew9yomAwCJI
-Ys3uBmeyKI5ovedpoGGCLJ8vs6yunF+EK9iUM6JKy5+sApPq2DPSEJHZTfmQy5he
-oNxrR/svhy76oRS/LdcBUSStlaU4izp8AlLNP/Nv+jSzDiqTK/iMTnnhE604LsAf
-hZIurAKsoC/BCh5zGjqPZVID9NAiw4UqL4wS+jIr7NKcB1D8r+w/T26deHA8IodT
-etM5R57o1/mXyUo5GcW+i36gKXqrb3uj0EOllsMUtQVK9AjHcQNUgoZTriP9aj0D
-tBa9s+l6/BzBfxcnNNhn/PCBXy9nG0C7ROR+AUHTDYgvws1GgWEkoDqOTiu5E0ov
-/KULg9TPvzyEv6YPXgDbnIVFDYmV2w6wDHvh4GtT+fDQAQ4HIAgI5987vkuYTpqX
-/X5BQaw//vflwDfhxHH7fwdA0TMErdC5hHYBguzlDgPoSx5YyIV0G+INeUIbG8c7
-CN9eUzuwQM32u/c2gsOd
-=q6C+
+iEYEABECAAYFAlXD+vYACgkQrzg/fFk7axbYMACfXsQT8elnQmLI70yoPdziiCNR
+QeAAn1h2vaqEo+whZtUMpZcw5kVkFJ4V
+=Orvi
 -----END PGP SIGNATURE-----
 
---=-7ZkajgeSVBWxYZ6IBN8P--
+--nextPart5019287.lR2QcBvR56--
 
