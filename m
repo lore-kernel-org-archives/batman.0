@@ -1,14 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Fri, 7 Aug 2015 18:16:22 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20150807161622.GB2893@odroid>
-References: <2ce4491cf3eb01922d0fec97147a1533cca30c41.1435170868.git.mschiffer@universe-factory.net>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sat, 08 Aug 2015 00:48:11 +0800
+Message-ID: <2129549.sqPbc6jJBU@voltaire>
+In-Reply-To: <1438719979-15778-1-git-send-email-antonio@meshcoding.com>
+References: <1438719979-15778-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <2ce4491cf3eb01922d0fec97147a1533cca30c41.1435170868.git.mschiffer@universe-factory.net>
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: add generic netlink query API
- to replace debugfs files
+Content-Type: multipart/signed; boundary="nextPart3125447.5E60klGhNB";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: don't access
+	unregistered net_device object
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,54 +18,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-Hi Matthias,
-
-here at the Wireless BattleMesh we finally had the chance to get
-some initial discussions on your patch going. For the start a few
-comprehension questions came up:
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@meshcoding.com>
 
 
-On Wed, Jun 24, 2015 at 08:34:28PM +0200, Matthias Schiffer wrote:
-> * As batman-adv uses single_open, the whole content of the originators/
->   transglobal files must fit into a single buffer; in large batman-adv
->   networks this often fails (as an order-5 allocation or even more would be
->   necessary)
-> * When originators or transglobal aren't just used for debugging, they are
->   first converted to text, and then parsed again in userspace by tools like
->   alfred/batadv-vis. Sending MAC address lists from the kernel to userspace
->   as text makes the buffer size issue even worse.
+--nextPart3125447.5E60klGhNB
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-These two points can be addressed through debugfs too, for
-instance using sequential debugfs writes, right? (In fact IIRC you
-had started with that approach until you got the feedback from
-Gregk, right?)
+On Tuesday, August 04, 2015 22:26:19 Antonio Quartulli wrote:
+> In batadv_hardif_disable_interface() there is a call to
+> batadv_softif_destroy_sysfs() which in turns invokes
+> unregister_netdevice() on the soft_iface.
+> After this point we cannot rely on the soft_iface object
+> anymore because it might get free'd by the netdev periodic
+> routine at any time.
+> 
+> For this reason the netdev_upper_dev_unlink(.., soft_iface) call
+> is moved before the invocation of batadv_softif_destroy_sysfs() so
+> that we can be sure that the soft_iface object is still valid.
+> 
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> ---
+>  net/batman-adv/hard-interface.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
-Can you elaborate a little more on the "order-5 allocation"?
-What amount of free RAM did the machines have where we observed
-Out-of-Memory kernel panics upon debugfs access? Can you give some
-numbers / calculations why we ended up with several Megabytes
-memory allocations on debugfs access?
+Applied in revision 958aafbb.
 
+Thanks,
+Marek
 
-The debugfs race conditions Gregk and you talked about are on
-adding/removing debugfs files, right? Are there any known race
-conditions on simple reads/writes in the abscene of removing
-debugfs files?
+--nextPart3125447.5E60klGhNB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Since you've had a look at both the netlink and sequential debugfs
-approach already, can you give some estimation about the
-complexity or rough number of lines of code to change for the
-sequential debugfs approach?
+iQEcBAABCAAGBQJVxOFPAAoJEFNVTo/uthzAMnsIALfpy+z8muXQJvAOpC++/qdU
+w+WR1KKBdr9FSVH00ORsuAMXSLItUhOBibbduw6M2/3CubQKpGetBQ2NqQNl5fch
+wjySgKmos7kQxI1QaTPKhZeRL6XEBEISuv3msPx0tlok2eo3bgB3xSHymkk3lV4f
+/8un2ipAkj8TKD+phXKgIyHp95e6GZNpwgIdZZGxUFBbUeqrGBYS6qbu94iew51i
+vWZcOirhhHEBA6OuwX3/rsba2wYUvLBYnqU4VKr+cESrala2yNmGoBXV/Vj6Tbaq
+LDd8s5qnODUbYNhSA8q+fzAikuizcW07sNnl0N4B5Bma89MjaYIIMAmpRno5jU8=
+=GVuk
+-----END PGP SIGNATURE-----
 
-One thought that popped up here was, whether it'd make sense to
-first "fix" the debugfs approach to the extent possible with a
-couple of lines instead of 800+ lines to get rid of the issues
-we frequently observe. And then merge a complete fix but bigger
-patchset implementing netlink support with a more thorough review
-and discussions on what we'd need for its API now and upcoming
-features.
+--nextPart3125447.5E60klGhNB--
 
-Cheers, Linus
