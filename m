@@ -1,14 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 08 Aug 2015 00:05:19 +0800
-Message-ID: <49623477.gbvZJGeD3Z@voltaire>
-In-Reply-To: <1438863412-19471-1-git-send-email-sw@simonwunderlich.de>
-References: <1438863412-19471-1-git-send-email-sw@simonwunderlich.de>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Fri, 7 Aug 2015 18:16:22 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20150807161622.GB2893@odroid>
+References: <2ce4491cf3eb01922d0fec97147a1533cca30c41.1435170868.git.mschiffer@universe-factory.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1622677.AScJ6xrrWb";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: rename equiv/equal or better
-	to similar or better
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <2ce4491cf3eb01922d0fec97147a1533cca30c41.1435170868.git.mschiffer@universe-factory.net>
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: add generic netlink query API
+ to replace debugfs files
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,44 +20,52 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi Matthias,
 
---nextPart1622677.AScJ6xrrWb
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+here at the Wireless BattleMesh we finally had the chance to get
+some initial discussions on your patch going. For the start a few
+comprehension questions came up:
 
-On Thursday, August 06, 2015 14:16:52 Simon Wunderlich wrote:
-> @@ -1953,7 +1953,7 @@ static struct batadv_algo_ops batadv_batman_iv
-> __read_mostly = { .bat_ogm_schedule = batadv_iv_ogm_schedule,
->         .bat_ogm_emit = batadv_iv_ogm_emit,
->         .bat_neigh_cmp = batadv_iv_ogm_neigh_cmp,
-> -       .bat_neigh_is_equiv_or_better = batadv_iv_ogm_neigh_is_eob,
-> +       .bat_neigh_is_similar_or_better = batadv_iv_ogm_neigh_is_sob,
->         .bat_orig_print = batadv_iv_ogm_orig_print,
->         .bat_orig_free = batadv_iv_ogm_orig_free,
->         .bat_orig_add_if = batadv_iv_ogm_orig_add_if,
 
-What branch did you base the patch on ? I am unable to apply the patch mostly 
-because of this section.
+On Wed, Jun 24, 2015 at 08:34:28PM +0200, Matthias Schiffer wrote:
+> * As batman-adv uses single_open, the whole content of the originators/
+>   transglobal files must fit into a single buffer; in large batman-adv
+>   networks this often fails (as an order-5 allocation or even more would be
+>   necessary)
+> * When originators or transglobal aren't just used for debugging, they are
+>   first converted to text, and then parsed again in userspace by tools like
+>   alfred/batadv-vis. Sending MAC address lists from the kernel to userspace
+>   as text makes the buffer size issue even worse.
 
-Cheers,
-Marek
+These two points can be addressed through debugfs too, for
+instance using sequential debugfs writes, right? (In fact IIRC you
+had started with that approach until you got the feedback from
+Gregk, right?)
 
---nextPart1622677.AScJ6xrrWb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Can you elaborate a little more on the "order-5 allocation"?
+What amount of free RAM did the machines have where we observed
+Out-of-Memory kernel panics upon debugfs access? Can you give some
+numbers / calculations why we ended up with several Megabytes
+memory allocations on debugfs access?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
 
-iQEcBAABCAAGBQJVxNdGAAoJEFNVTo/uthzAuqsH/RZb2W6Jt3soLKki4R8/R51o
-Nt9HJHE6Uuw2MOkZJH6YXgYzPPKoctq6rgZknab1HDb+YM8EVBQfCfbmJQdjEI7s
-ngu88pzRhJpidBS1hm7xhWzyblOYlW1EHu9h5OjOci3XmDQvL7tfbldFELEBOEpj
-fJDJhxWNMvLq8oPNuZ+RffSRbSz0LxYIoRznLE6ja2eV3lNYCjbp+dKEdPUNksK/
-6s9s6NoHOuq40wjz/b2qK2sm80MRaW4Ut+b1YZda9b4D6zRBOxJDwy5k9/ba4RXa
-VxwPE96qEdKtS42u4MkMP1Tnu2ruF2vh5uBjG9a5gApR5gjUZPg9qj2FZgs+Nd4=
-=plqq
------END PGP SIGNATURE-----
+The debugfs race conditions Gregk and you talked about are on
+adding/removing debugfs files, right? Are there any known race
+conditions on simple reads/writes in the abscene of removing
+debugfs files?
 
---nextPart1622677.AScJ6xrrWb--
 
+Since you've had a look at both the netlink and sequential debugfs
+approach already, can you give some estimation about the
+complexity or rough number of lines of code to change for the
+sequential debugfs approach?
+
+One thought that popped up here was, whether it'd make sense to
+first "fix" the debugfs approach to the extent possible with a
+couple of lines instead of 800+ lines to get rid of the issues
+we frequently observe. And then merge a complete fix but bigger
+patchset implementing netlink support with a more thorough review
+and discussions on what we'd need for its API now and upcoming
+features.
+
+Cheers, Linus
