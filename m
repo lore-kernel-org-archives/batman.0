@@ -1,9 +1,8 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Sat,  8 Aug 2015 02:01:50 +0200
-Message-Id: <1438992110-30581-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: rename equiv/equal or better
-	to similar or better
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat,  8 Aug 2015 02:31:49 +0200
+Message-Id: <1438993909-3424-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add missing include spinlock.h
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,108 +14,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Since the function applies a threshold and also slightly worse
-values are accepted, ''equal or better'' does not represent the
-intention of the function. ''Similar or better'' represents that better.
-
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Fixes: fed2826b490c ("batman-adv: add list of unique single hop neighbors per hard-interface")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Changes to PATCH:
- * rebase on current master
----
- net/batman-adv/bat_iv_ogm.c | 8 ++++----
- net/batman-adv/main.c       | 2 +-
- net/batman-adv/routing.c    | 6 +++---
- net/batman-adv/types.h      | 6 +++---
- 4 files changed, 11 insertions(+), 11 deletions(-)
+ net/batman-adv/hard-interface.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 154e36a..5f76d22 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1963,8 +1963,8 @@ out:
- }
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 5c2df842e484..a8cb985e72a4 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -32,6 +32,7 @@
+ #include <linux/rculist.h>
+ #include <linux/rtnetlink.h>
+ #include <linux/slab.h>
++#include <linux/spinlock.h>
+ #include <linux/workqueue.h>
+ #include <net/net_namespace.h>
  
- /**
-- * batadv_iv_ogm_neigh_is_eob - check if neigh1 is equally good or better than
-- *  neigh2 from the metric prospective
-+ * batadv_iv_ogm_neigh_is_sob - check if neigh1 is similarly good or better
-+ *  than neigh2 from the metric prospective
-  * @neigh1: the first neighbor object of the comparison
-  * @if_outgoing1: outgoing interface for the first neighbor
-  * @neigh2: the second neighbor object of the comparison
-@@ -1974,7 +1974,7 @@ out:
-  * the metric via neigh2, false otherwise.
-  */
- static bool
--batadv_iv_ogm_neigh_is_eob(struct batadv_neigh_node *neigh1,
-+batadv_iv_ogm_neigh_is_sob(struct batadv_neigh_node *neigh1,
- 			   struct batadv_hard_iface *if_outgoing1,
- 			   struct batadv_neigh_node *neigh2,
- 			   struct batadv_hard_iface *if_outgoing2)
-@@ -2014,7 +2014,7 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
- 	.bat_ogm_schedule = batadv_iv_ogm_schedule,
- 	.bat_ogm_emit = batadv_iv_ogm_emit,
- 	.bat_neigh_cmp = batadv_iv_ogm_neigh_cmp,
--	.bat_neigh_is_equiv_or_better = batadv_iv_ogm_neigh_is_eob,
-+	.bat_neigh_is_similar_or_better = batadv_iv_ogm_neigh_is_sob,
- 	.bat_neigh_print = batadv_iv_neigh_print,
- 	.bat_orig_print = batadv_iv_ogm_orig_print,
- 	.bat_orig_free = batadv_iv_ogm_orig_free,
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index d7f17c1..45952dc 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -552,7 +552,7 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
- 	    !bat_algo_ops->bat_ogm_schedule ||
- 	    !bat_algo_ops->bat_ogm_emit ||
- 	    !bat_algo_ops->bat_neigh_cmp ||
--	    !bat_algo_ops->bat_neigh_is_equiv_or_better) {
-+	    !bat_algo_ops->bat_neigh_is_similar_or_better) {
- 		pr_info("Routing algo '%s' does not implement required ops\n",
- 			bat_algo_ops->name);
- 		return -EINVAL;
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 8d990b0..a43f02e 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -497,9 +497,9 @@ batadv_find_router(struct batadv_priv *bat_priv,
- 		/* alternative candidate should be good enough to be
- 		 * considered
- 		 */
--		if (!bao->bat_neigh_is_equiv_or_better(cand_router,
--						       cand->if_outgoing,
--						       router, recv_if))
-+		if (!bao->bat_neigh_is_similar_or_better(cand_router,
-+							 cand->if_outgoing,
-+							 router, recv_if))
- 			goto next;
- 
- 		/* don't use the same router twice */
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 815c960..9bdb21c 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1156,8 +1156,8 @@ struct batadv_forw_packet {
-  * @bat_hardif_neigh_init: called on creation of single hop entry
-  * @bat_neigh_cmp: compare the metrics of two neighbors for their respective
-  *  outgoing interfaces
-- * @bat_neigh_is_equiv_or_better: check if neigh1 is equally good or better
-- *  than neigh2 for their respective outgoing interface from the metric
-+ * @bat_neigh_is_similar_or_better: check if neigh1 is equally similar or
-+ *  better than neigh2 for their respective outgoing interface from the metric
-  *  prospective
-  * @bat_neigh_print: print the single hop neighbor list (optional)
-  * @bat_neigh_free: free the resources allocated by the routing algorithm for a
-@@ -1185,7 +1185,7 @@ struct batadv_algo_ops {
- 			     struct batadv_hard_iface *if_outgoing1,
- 			     struct batadv_neigh_node *neigh2,
- 			     struct batadv_hard_iface *if_outgoing2);
--	bool (*bat_neigh_is_equiv_or_better)
-+	bool (*bat_neigh_is_similar_or_better)
- 		(struct batadv_neigh_node *neigh1,
- 		 struct batadv_hard_iface *if_outgoing1,
- 		 struct batadv_neigh_node *neigh2,
 -- 
-2.1.4
+2.5.0
 
