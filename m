@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 09 Aug 2015 08:25:30 +0800
-Message-ID: <1588104.6rWfEYkKHi@voltaire>
-In-Reply-To: <1438994221-3746-1-git-send-email-sven@narfation.org>
-References: <1438994221-3746-1-git-send-email-sven@narfation.org>
+Date: Sun, 09 Aug 2015 08:26:44 +0800
+Message-ID: <1883652.P2JEACJQeD@voltaire>
+In-Reply-To: <1438994805-5174-1-git-send-email-sven@narfation.org>
+References: <1438994805-5174-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart13329772.eRrSXPyT4f";
+Content-Type: multipart/signed; boundary="nextPart1657173.qU5POu8Onm";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Mark batadv_iv_neigh_print
-	as static
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Mark
+	batadv_hardif_neigh_free_now as static
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,26 +21,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart13329772.eRrSXPyT4f
+--nextPart1657173.qU5POu8Onm
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday, August 08, 2015 02:37:01 Sven Eckelmann wrote:
-> batadv_iv_neigh_print is not used outside of bat_iv_ogm.c and should thus
-> be marked as static.
+On Saturday, August 08, 2015 02:46:45 Sven Eckelmann wrote:
+> batadv_hardif_neigh_free_now is not used outside of originator.c and should
+> thus be marked as static.
 > 
-> Fixes: 2e1133841c44 ("batman-adv: export single hop neighbor list via
-> debugfs") Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Fixes: fed2826b490c ("batman-adv: add list of unique single hop neighbors
+> per hard-interface") Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/bat_iv_ogm.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  net/batman-adv/originator.c | 3 ++-
+>  net/batman-adv/originator.h | 2 --
+>  2 files changed, 2 insertions(+), 3 deletions(-)
 
-Applied in revision a0f15fc.
+Applied in revision e821b76.
 
 Thanks,
 Marek
 
---nextPart13329772.eRrSXPyT4f
+--nextPart1657173.qU5POu8Onm
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -48,14 +49,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJVxp4BAAoJEFNVTo/uthzAH4AIAKyst3fRucBlMJOZq/7hEA1E
-wl9MWprNb8Cr8SSVmAyyEiylTzsGYoMWJw48A1qFugm2AqGS//2uOxklWrzS9yNv
-iQRFe8RF2kc8q9R7gdakKUfXcpczTN5lCXymvdiBLAbonBUPLtceaxJbb987koNy
-WhniPMAK+osNiRUibMfmOeSSXCGECs3FVLN561g6kbPaYdwTbUBpCxb5aEVBp9wq
-KfYq43cDcgYJiG0nRbMjrpjpcCZRrOLKNS8RJUnhaySC8pO/+pkdDzi2Bgt7su5C
-jED/nbah5gnx0wLJ2YgMrYO0ta65IZaUC+3+K7gOhbDl3E/V4ei9dUNy50Qo+XY=
-=G2cW
+iQEcBAABCAAGBQJVxp6VAAoJEFNVTo/uthzAOWIIAI5xpt/cXixwLNCWgFQ3AayC
+UfJaQmLQlMUn+zMrkfo7gdGAsAKV+Afhpz24g/YU2hNjyiJvtrmw6mKFsTcWQr2i
+SxLLzwD6HRnFdiza/oEkNQjayXreBzFhoStCl3DwE3qPMtBOTibAws0suDNEb5Yc
+fZfVfGqzaDe3DCW1z8dHHvql6/vglY8yYpff95O6XJDxvM01c4WMAWnFIliLMNiA
+9W1eX7v+QbpYhodd8hm3YOX5bCQjQ80e20MRNJTwEHgy39OSPZxnyBbpyFHqymEd
+yIBaXRz3rzxkBAj+tSI9q0A5HECNBSPZo60Z/wKcxWQe9jpoehwEOwHUFwE0u7c=
+=kLy3
 -----END PGP SIGNATURE-----
 
---nextPart13329772.eRrSXPyT4f--
+--nextPart1657173.qU5POu8Onm--
 
