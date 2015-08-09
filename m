@@ -1,9 +1,13 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun,  9 Aug 2015 23:58:52 +0800
-Message-Id: <1439135932-17520-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove leftovers of unused
-	BATADV_PRIMARIES_FIRST_HOP flag
+Date: Mon, 10 Aug 2015 00:11:49 +0800
+Message-ID: <1699164.ONQCtgs9iS@voltaire>
+In-Reply-To: <1438962965-30034-1-git-send-email-mareklindner@neomailbox.ch>
+References: <1438962965-30034-1-git-send-email-mareklindner@neomailbox.ch>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart8009197.MP6CZNt3MC";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: add neighbor table support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,49 +18,41 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
- net/batman-adv/bat_iv_ogm.c | 3 ---
- net/batman-adv/packet.h     | 3 +--
- 2 files changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 5677169..2467024 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -361,7 +361,6 @@ batadv_iv_ogm_primary_iface_set(struct batadv_hard_iface *hard_iface)
- 	unsigned char *ogm_buff = hard_iface->bat_iv.ogm_buff;
- 
- 	batadv_ogm_packet = (struct batadv_ogm_packet *)ogm_buff;
--	batadv_ogm_packet->flags = BATADV_PRIMARIES_FIRST_HOP;
- 	batadv_ogm_packet->ttl = BATADV_TTL;
- }
- 
-@@ -842,8 +841,6 @@ static void batadv_iv_ogm_forward(struct batadv_orig_node *orig_node,
- 		   "Forwarding packet: tq: %i, ttl: %i\n",
- 		   batadv_ogm_packet->tq, batadv_ogm_packet->ttl);
- 
--	/* switch of primaries first hop flag when forwarding */
--	batadv_ogm_packet->flags &= ~BATADV_PRIMARIES_FIRST_HOP;
- 	if (is_single_hop_neigh)
- 		batadv_ogm_packet->flags |= BATADV_DIRECTLINK;
- 	else
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index 11f996b..0558e32 100644
---- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -72,8 +72,7 @@ enum batadv_subtype {
-  * enum batadv_iv_flags - flags used in B.A.T.M.A.N. IV OGM packets
-  * @BATADV_NOT_BEST_NEXT_HOP: flag is set when ogm packet is forwarded and was
-  *     previously received from someone else than the best neighbor.
-- * @BATADV_PRIMARIES_FIRST_HOP: flag is set when the primary interface address
-- *     is used, and the packet travels its first hop.
-+ * @BATADV_PRIMARIES_FIRST_HOP: flag unused.
-  * @BATADV_DIRECTLINK: flag is for the first hop or if rebroadcasted from a
-  *     one hop neighbor on the interface where it was originally received.
-  */
--- 
-2.5.0
+--nextPart8009197.MP6CZNt3MC
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Friday, August 07, 2015 23:56:05 Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> ---
+>  debug.c      | 6 ++++++
+>  debug.h      | 1 +
+>  man/batctl.8 | 3 +++
+>  3 files changed, 10 insertions(+)
+
+Applied in revision bf133f0.
+
+Regards,
+Marek
+
+--nextPart8009197.MP6CZNt3MC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJVx3vQAAoJEFNVTo/uthzA7vYH/0txB46IzlLfBCuHq4vD5IFN
+Cg2W9Pn5Ax5n+Pp8gnJ/cFp4QfFVv9rK+tbx+yu/1f+Lo2goX6r5QZCvKtVuHMxU
+nUH9Bdv4qYN9PduTt6TKLnBPY6gJ/xhOHScMOGUOZJ5kqCp+WpCqBYiigXWGNrVs
+H9M1UTfZMHb1ALFnzcsI3RYUEczTxHAzalVf6LafO5zLq1s2BxIJYn3xblzKNq1r
+R0A+sHq2qUl6i5INMl2UZ7L5WhUmtuY6T33lGp0fLcZnCbInnCFiUvyvXGwwzjKh
+Dd0xrPXkL2hM1yRzsDUiU470cp1RDVbnwiP+LX4KCKxYJRode7+xmXmkUtGkBx8=
+=etxS
+-----END PGP SIGNATURE-----
+
+--nextPart8009197.MP6CZNt3MC--
 
