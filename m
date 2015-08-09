@@ -1,14 +1,16 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 09 Aug 2015 08:26:44 +0800
-Message-ID: <1883652.P2JEACJQeD@voltaire>
-In-Reply-To: <1438994805-5174-1-git-send-email-sven@narfation.org>
-References: <1438994805-5174-1-git-send-email-sven@narfation.org>
+Return-Path: <moritzwarning@web.de>
+Message-ID: <55C72637.6060200@web.de>
+Date: Sun, 09 Aug 2015 12:06:47 +0200
+From: Moritz Warning <moritzwarning@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1657173.qU5POu8Onm";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Mark
-	batadv_hardif_neigh_free_now as static
+References: <CAL4ejvQpfAQUUupvDpAx3xek3QggQc_Gi81ucm=EERo+aBwFdQ@mail.gmail.com>
+ <CAF0yFe4xwGomt=gud+7YZ4jfd_qSX9U=B7QYUhaBUjeJjh_D5Q@mail.gmail.com>
+ <CAKLmikN+_G6R13LiZDXexnPoim7_w+XdnPUq0S3AxcW14saYow@mail.gmail.com>
+In-Reply-To: <CAKLmikN+_G6R13LiZDXexnPoim7_w+XdnPUq0S3AxcW14saYow@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="LDkPJWSwcvrBva9BpRuT5mieOC2hquLmG"
+Subject: Re: [B.A.T.M.A.N.] Fwd: [Babel-users] Fwd: Why we switched to Babel
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,43 +22,119 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--LDkPJWSwcvrBva9BpRuT5mieOC2hquLmG
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
---nextPart1657173.qU5POu8Onm
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+regarding MACs, would it be possible for batman-adv to use hashed MACs?
 
-On Saturday, August 08, 2015 02:46:45 Sven Eckelmann wrote:
-> batadv_hardif_neigh_free_now is not used outside of originator.c and should
-> thus be marked as static.
-> 
-> Fixes: fed2826b490c ("batman-adv: add list of unique single hop neighbors
-> per hard-interface") Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/originator.c | 3 ++-
->  net/batman-adv/originator.h | 2 --
->  2 files changed, 2 insertions(+), 3 deletions(-)
+On 08/08/2015 11:51 PM, Mitar wrote:
+> Hi!
+>=20
+> Comments?
+>=20
+>=20
+> Mitar
+>=20
+> ---------- Forwarded message ----------
+> From: Jenny Ryan <tunabananas@gmail.com>
+> Date: Fri, Aug 7, 2015 at 11:41 PM
+> Subject: [Babel-users] Fwd: Why we switched to Babel
+> To: babel-users@lists.alioth.debian.org
+>=20
+>=20
+> ---------- Forwarded message ----------
+> From: "Marc Juul" <juul@labitat.dk>
+> Date: Aug 6, 2015 9:58 AM
+> Subject: Why we switched to Babel
+> To: "Jenny Ryan" <tunabananas@gmail.com>
+> Cc:
+>=20
+> When people share their internet we use a tunnel to hide their IP (and
+> to connect them to the mesh through the Internet). This tunnel takes a
+> few bytes of overhead. All physical connections, whether they're
+> ethernet, wifi or even an abstraction like a tunnel, have an MTU
+> (Maximum Transfer Unit) which is the size of the largest packet that
+> can be sent over the connection. Normally the MTU is 1500 but since
+> the tunnel needs a few bytes for overhead the MTU of the tunnel will
+> be less than 1500.
+>=20
+> When people connect to the wifi network called peoplesopen.net they
+> will connect with an MTU of 1500 since this is the default for wifi.
+> We need a way to tell them that the MTU is actually less than 1500. In
+> an IP network (which is at layer 3) there is a built-in system for
+> dealing with this. If any router receives a packet larger than what it
+> can pass on through the next connection (in this case through the
+> tunnel) it can report back to the client using the ICMP protocol (a
+> companion protocol to IP, and the protocol used for ping) that the
+> packet was too big and the client can then adjust its MTU accordingly.
+>=20
+> For batman-adv, because it is a layer 2 protocol, we don't have this
+> system available. We tried different tactics such as using DHCP to
+> tell the clients the MTU they should use, but it turns out that many
+> operating systems completely ignore this. We tried something called
+> TCP MSS clamping, which is a bit of a dirty hack, but that only works
+> for TCP, which is a problem since UDP is widely used for e.g. VOIP,
+> video streaming, gaming, torrenting, etc.
+>=20
+> Even combining the different tricks we still had a problem where some
+> operating systems would get in trouble if they tried to send large UDP
+> packets. We had a moment where we realized that the only types of
+> common communication that wouldn't work on this mesh would be
+> torrenting and video streaming from windows computers, and joked about
+> that being a feature instead of a bug :) but in the end we switched to
+> Babel.
+>=20
+> There was another reason: In batman-adv the MAC address is the
+> identifier used for each device. It is possible to configure many
+> devices to randomize their MAC address but it needs the user to do
+> something, so most people will never know to do it. Having the MAC
+> address as the identifier makes it pretty easy for anyone to track
+> anyone else as they move about the city, as long as they know the MAC
+> address of e.g. their phone, which it is easy to discover if you are
+> ever in the same room with them, just by listening to network traffic.
+> We had some ideas for how this could be fixed, but the potential
+> solutions we came up with were never satisfactory.
+>=20
+> For mesh, each time a user connects to a new node they get a new IP
+> address. In the future we may implement roaming support which will let
+> people keep their IP as they move around the city, but it will still
+> switch after e.g. 10 minutes, so tracking people becomes much harder.
+>=20
+> That's a lot of text, but eh it's a complicated issue. It sounds like
+> you're having many late night conversations. Hope it is enjoyable!
+>=20
+> --
+> marc/juul
+>=20
+>=20
+>=20
+>=20
+> _______________________________________________
+> Babel-users mailing list
+> Babel-users@lists.alioth.debian.org
+> http://lists.alioth.debian.org/cgi-bin/mailman/listinfo/babel-users
+>=20
+>=20
 
-Applied in revision e821b76.
 
-Thanks,
-Marek
 
---nextPart1657173.qU5POu8Onm
+--LDkPJWSwcvrBva9BpRuT5mieOC2hquLmG
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1
 
-iQEcBAABCAAGBQJVxp6VAAoJEFNVTo/uthzAOWIIAI5xpt/cXixwLNCWgFQ3AayC
-UfJaQmLQlMUn+zMrkfo7gdGAsAKV+Afhpz24g/YU2hNjyiJvtrmw6mKFsTcWQr2i
-SxLLzwD6HRnFdiza/oEkNQjayXreBzFhoStCl3DwE3qPMtBOTibAws0suDNEb5Yc
-fZfVfGqzaDe3DCW1z8dHHvql6/vglY8yYpff95O6XJDxvM01c4WMAWnFIliLMNiA
-9W1eX7v+QbpYhodd8hm3YOX5bCQjQ80e20MRNJTwEHgy39OSPZxnyBbpyFHqymEd
-yIBaXRz3rzxkBAj+tSI9q0A5HECNBSPZo60Z/wKcxWQe9jpoehwEOwHUFwE0u7c=
-=kLy3
+iQEcBAEBCAAGBQJVxyY3AAoJECHrh56PP4wpXU8H/i0eg8unt1SZb+/hQrNN/kXD
+AV8bFuOkFmTsRJaIV2cfhp+M+9TFyLxkckHVLEGLRjsfOUJbYeInm6Z98IH3pBc2
+CEY/1aiRgASXPGfUJys3vuSQV4Oxj0+dVhmo6SJFyEv8cHTkj7zkl5HZcSByFAIt
+eRpLvtFQqF2Yt4hFOT7z4UaUr7ltUy6Td0w9DIbqyQhEGomN3ZQO2K0s6U9+g4Z8
+ln+CB6nBf5/1KGHMrknEfNr2lluPKtFtmrCVN2btef8FACSn0OB6I0yyWQHxAdMF
+rjEKJVYXs0g4oRcYniC7aP7Qa/8tWvMxughRWlE4GlCjH5dlefcIRsz7PjqsuQQ=
+=lXDA
 -----END PGP SIGNATURE-----
 
---nextPart1657173.qU5POu8Onm--
-
+--LDkPJWSwcvrBva9BpRuT5mieOC2hquLmG--
