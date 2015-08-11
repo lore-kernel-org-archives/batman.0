@@ -1,15 +1,11 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 10 Aug 2015 15:52:21 +0800
-Message-ID: <6739194.7XsaoRhMpp@voltaire>
-In-Reply-To: <CAKLmikN+_G6R13LiZDXexnPoim7_w+XdnPUq0S3AxcW14saYow@mail.gmail.com>
-References: <CAL4ejvQpfAQUUupvDpAx3xek3QggQc_Gi81ucm=EERo+aBwFdQ@mail.gmail.com>
- <CAF0yFe4xwGomt=gud+7YZ4jfd_qSX9U=B7QYUhaBUjeJjh_D5Q@mail.gmail.com>
- <CAKLmikN+_G6R13LiZDXexnPoim7_w+XdnPUq0S3AxcW14saYow@mail.gmail.com>
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Tue, 11 Aug 2015 18:35:38 +0200
+Message-Id: <1439310948-32426-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1859112.7qzyzWiuDL";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Fwd: [Babel-users] Fwd: Why we switched to Babel
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 20150811
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,48 +15,98 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Jernej Kos <jernej@kos.mx>, Jenny Ryan <tunabananas@gmail.com>, Marc Juul <juul@labitat.dk>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+
+Hi David,
+
+this is our first batch intended for net-next.
+
+Here you have all those non-critical fixes/changes that we couldn't
+merge into the net tree as it was already too late in the release
+cycle.
+
+This is a summary of what each patch does:
+
+- patch 1 by Sven Eckelmann is changing the way the GW metric is
+computed so that the resulting operation does not make use of
+divisions and also does not lead to any data type promotion. This is
+a requirement for patch 2;
+- patch 2 by Ruben Wisniewski is changing the type of the variable used
+in the same GW metric computation as patch 1 to uint64_t so that potential
+integer overflows are prevented. Thanks to Sven's patch above no 64bit
+division will be involved;
+- patches 3, 4, 5 and 6 by Linus Lüssing are converting plain bitwise
+operations on capability bits to set/clear/test_bit() in order to ensure
+their atomicity and prevent potential race conditions;
+- patch 7, also by Linus, is making the multicast TVLV parsing routine
+thread-safe in order to prevent potential race conditions upon reception
+of two OGMs from the same originator at the same time;
+- patch 8 by Marek Lindner prevents potential double deletions
+of TT Request objects from its lists which would lead to a kernel crash.
+- patch 9 by Simon Wunderlich is ensuring that no enqueued packet is leaked
+when an interface is deactivated;
+- patch 10 by Linus Lüssing is setting the network header in the skb struct
+right after a packet was delivered to the batman virtual interface so that
+subsequent call to ip/ipv6_hdr() do not crash.
 
 
---nextPart1859112.7qzyzWiuDL
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Please pull or let me know of any problem!
 
-On Saturday, August 08, 2015 23:51:42 Mitar wrote:
-> For batman-adv, because it is a layer 2 protocol, we don't have this
-> system available. We tried different tactics such as using DHCP to
-> tell the clients the MTU they should use, but it turns out that many
-> operating systems completely ignore this. We tried something called
-> TCP MSS clamping, which is a bit of a dirty hack, but that only works
-> for TCP, which is a problem since UDP is widely used for e.g. VOIP,
-> video streaming, gaming, torrenting, etc.
-
-What spoke against using the batman-adv layer2 fragmentation:
-http://www.open-mesh.org/projects/open-mesh/wiki/2012-09-24-GSoC-2012-Martin-Hundebolls-Final-Report ?
+Thanks a lot David,
+	Antonio
 
 
-Cheers,
-Marek
+The following changes since commit 07a51cd3794960548627a27aae68c1446341db32:
 
+  vxlan: fix fdb_dump index calculation (2015-08-10 21:15:18 -0700)
 
+are available in the git repository at:
 
---nextPart1859112.7qzyzWiuDL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+for you to fetch changes up to 125300dd5850a0489b4aacf06e1424a1e34eaefa:
 
-iQEcBAABCAAGBQJVyFg5AAoJEFNVTo/uthzAdDcH/1mJtCfX+Vw40LqMiPoY5kwN
-tlt9lqeatGyWVlDWze5/Sx5+ECZOPixfrr1mVTBKJZDMrKsWigkKblR3n9qyrh89
-8zpuLXiHTheroQlEtULjSQHsQrQ2xpaJblz1hMvcgSDegQVIXzZWSDNbRItFfS4a
-/BrNSY2TTEm6CLcntmHxAipCR8nOWcHeCDx9BtDGWdeXrWuXPfLusL1rhkmz9c/C
-70qmoJ1IY/dba+F3OiqtnAFJbbD1JkCS1jG7NLvyRjKK8i79uFsLRDudAwLqQj+w
-p40fE4CW8kJhwd2FmsE7SRPGG8z77egYwHVaNsPsfhWIN6U5iS5YaMrJquIV7EU=
-=KNTQ
------END PGP SIGNATURE-----
+  batman-adv: Fix potentially broken skb network header access (2015-08-11 18:11:19 +0200)
 
---nextPart1859112.7qzyzWiuDL--
+----------------------------------------------------------------
+Included changes:
+- avoid integer overflow in GW selection routine
+- prevent race condition by making capability bit changes atomic (use
+  clear/set/test_bit)
+- fix synchronization issue in mcast tvlv handler
+- fix crash on double list removal of TT Request objects
+- fix leak by puring packets enqueued for sending upon iface removal
+- ensure network header pointer is set in skb
 
+----------------------------------------------------------------
+Linus Lüssing (6):
+      batman-adv: Make DAT capability changes atomic
+      batman-adv: Make NC capability changes atomic
+      batman-adv: Make TT capability changes atomic
+      batman-adv: Make MCAST capability changes atomic
+      batman-adv: Fix potential synchronization issues in mcast tvlv handler
+      batman-adv: Fix potentially broken skb network header access
+
+Marek Lindner (1):
+      batman-adv: protect tt request from double deletion
+
+Ruben Wisniewski (1):
+      batman-adv: Avoid u32 overflow during gateway select
+
+Simon Wunderlich (1):
+      batman-adv: remove broadcast packets scheduled for purged outgoing if
+
+Sven Eckelmann (1):
+      batman-adv: Replace gw_reselect divisor with simple shift
+
+ net/batman-adv/distributed-arp-table.c |  7 +--
+ net/batman-adv/gateway_client.c        |  8 +---
+ net/batman-adv/multicast.c             | 81 +++++++++++++++++++++++++---------
+ net/batman-adv/network-coding.c        |  7 +--
+ net/batman-adv/originator.c            |  5 +++
+ net/batman-adv/send.c                  |  3 +-
+ net/batman-adv/soft-interface.c        |  7 ++-
+ net/batman-adv/translation-table.c     | 17 ++++---
+ net/batman-adv/types.h                 | 15 ++++---
+ 9 files changed, 102 insertions(+), 48 deletions(-)
