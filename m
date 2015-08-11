@@ -1,14 +1,15 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 11 Aug 2015 18:35:48 +0200
-Message-Id: <1439310948-32426-11-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1439310948-32426-1-git-send-email-antonio@meshcoding.com>
+Return-Path: <sergei.shtylyov@cogentembedded.com>
 References: <1439310948-32426-1-git-send-email-antonio@meshcoding.com>
+ <1439310948-32426-4-git-send-email-antonio@meshcoding.com>
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Message-ID: <55CA4ED2.9070207@cogentembedded.com>
+Date: Tue, 11 Aug 2015 22:36:50 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <1439310948-32426-4-git-send-email-antonio@meshcoding.com>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 10/10] batman-adv: Fix potentially broken skb
-	network header access
+Subject: Re: [B.A.T.M.A.N.] [PATCH 03/10] batman-adv: Make DAT capability
+	changes atomic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,59 +19,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
+To: Antonio Quartulli <antonio@meshcoding.com>, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+Hello.
 
-The two commits noted below added calls to ip_hdr() and ipv6_hdr(). They
-need a correctly set skb network header.
+On 08/11/2015 07:35 PM, Antonio Quartulli wrote:
 
-Unfortunately we cannot rely on the device drivers to set it for us.
-Therefore setting it in the beginning of the according ndo_start_xmit
-handler.
+> From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-Fixes: 1d8ab8d3c176 ("batman-adv: Modified forwarding behaviour for multicast packets")
-Fixes: ab49886e3da7 ("batman-adv: Add IPv4 link-local/IPv6-ll-all-nodes multicast support")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- net/batman-adv/soft-interface.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+> Bitwise OR/AND assignments in C aren't guaranteed to be atomic. One
+> OGM handler might undo the set/clear of a specific bit from another
+> handler run in between.
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index c002961..926292d 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -202,6 +202,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	int gw_mode;
- 	enum batadv_forw_mode forw_mode;
- 	struct batadv_orig_node *mcast_single_orig = NULL;
-+	int network_offset = ETH_HLEN;
- 
- 	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
- 		goto dropped;
-@@ -214,14 +215,18 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	case ETH_P_8021Q:
- 		vhdr = vlan_eth_hdr(skb);
- 
--		if (vhdr->h_vlan_encapsulated_proto != ethertype)
-+		if (vhdr->h_vlan_encapsulated_proto != ethertype) {
-+			network_offset += VLAN_HLEN;
- 			break;
-+		}
- 
- 		/* fall through */
- 	case ETH_P_BATMAN:
- 		goto dropped;
- 	}
- 
-+	skb_set_network_header(skb, network_offset);
-+
- 	if (batadv_bla_tx(bat_priv, skb, vid))
- 		goto dropped;
- 
--- 
-2.5.0
+> Fix this by using the atomic set_bit()/clear_bit()/test_bit() functions.
+
+> Fixes: 17cf0ea455f1 ("batman-adv: tvlv - add distributed arp table container")
+> Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> ---
+>   net/batman-adv/distributed-arp-table.c | 7 ++++---
+>   net/batman-adv/types.h                 | 4 ++--
+>   2 files changed, 6 insertions(+), 5 deletions(-)
+
+> diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+> index fb54e6a..244dcf6 100644
+> --- a/net/batman-adv/distributed-arp-table.c
+> +++ b/net/batman-adv/distributed-arp-table.c
+[...]
+> @@ -453,7 +454,7 @@ static bool batadv_is_orig_node_eligible(struct batadv_dat_candidate *res,
+>   	int j;
+>
+>   	/* check if orig node candidate is running DAT */
+> -	if (!(candidate->capabilities & BATADV_ORIG_CAPA_HAS_DAT))
+> +	if (!(test_bit(BATADV_ORIG_CAPA_HAS_DAT, &candidate->capabilities)))
+
+    () around the tst_bit() call not needed.
+
+[...]
+
+MBR, Sergei
 
