@@ -1,11 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 11 Aug 2015 18:35:40 +0200
-Message-Id: <1439310948-32426-3-git-send-email-antonio@meshcoding.com>
+Date: Tue, 11 Aug 2015 18:35:41 +0200
+Message-Id: <1439310948-32426-4-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1439310948-32426-1-git-send-email-antonio@meshcoding.com>
 References: <1439310948-32426-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 02/10] batman-adv: Avoid u32 overflow during
-	gateway select
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 03/10] batman-adv: Make DAT capability
+	changes atomic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,45 +19,80 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: Ruben Wisniewsi <ruben@vfn-nrw.de>, Marek Lindner <mareklindner@neomailbox.ch>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Ruben Wisniewski <ruben@freifunk-nrw.de>
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-The gateway selection based on fast connections is using a single value
-calculated from the average tq (0-255) and the download bandwidth (in
-100Kibit). The formula for the first step (tq ** 2 * 10000 * bandwidth)
-tends to overflow a u32 with low bandwidth settings like 50 [100KiBit]
-and a tq value of over 92.
+Bitwise OR/AND assignments in C aren't guaranteed to be atomic. One
+OGM handler might undo the set/clear of a specific bit from another
+handler run in between.
 
-Changing this to a 64 bit unsigned integer allows to support a
-bandwidth_down with up to ~2.8e10 [100KiBit] and a perfect tq of 255. This
-is ~6.6 times higher than the maximum possible value of the gateway
-announcement TVLV.
+Fix this by using the atomic set_bit()/clear_bit()/test_bit() functions.
 
-This problem only affects the non-default gw_sel_class 1.
-
-Signed-off-by: Ruben Wisniewsi <ruben@vfn-nrw.de>
-[sven@narfation.org: rewritten commit message]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Fixes: 17cf0ea455f1 ("batman-adv: tvlv - add distributed arp table container")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/gateway_client.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/distributed-arp-table.c | 7 ++++---
+ net/batman-adv/types.h                 | 4 ++--
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index e1e1f31..4ac24d8 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -153,7 +153,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
- 	struct batadv_neigh_node *router;
- 	struct batadv_neigh_ifinfo *router_ifinfo;
- 	struct batadv_gw_node *gw_node, *curr_gw = NULL;
--	uint32_t max_gw_factor = 0, tmp_gw_factor = 0;
-+	uint64_t max_gw_factor = 0, tmp_gw_factor = 0;
- 	uint8_t max_tq = 0;
- 	uint8_t tq_avg;
- 	struct batadv_orig_node *orig_node;
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index fb54e6a..244dcf6 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -19,6 +19,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
++#include <linux/bitops.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+@@ -453,7 +454,7 @@ static bool batadv_is_orig_node_eligible(struct batadv_dat_candidate *res,
+ 	int j;
+ 
+ 	/* check if orig node candidate is running DAT */
+-	if (!(candidate->capabilities & BATADV_ORIG_CAPA_HAS_DAT))
++	if (!(test_bit(BATADV_ORIG_CAPA_HAS_DAT, &candidate->capabilities)))
+ 		goto out;
+ 
+ 	/* Check if this node has already been selected... */
+@@ -713,9 +714,9 @@ static void batadv_dat_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ 					   uint16_t tvlv_value_len)
+ {
+ 	if (flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND)
+-		orig->capabilities &= ~BATADV_ORIG_CAPA_HAS_DAT;
++		clear_bit(BATADV_ORIG_CAPA_HAS_DAT, &orig->capabilities);
+ 	else
+-		orig->capabilities |= BATADV_ORIG_CAPA_HAS_DAT;
++		set_bit(BATADV_ORIG_CAPA_HAS_DAT, &orig->capabilities);
+ }
+ 
+ /**
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 67d6348..29fd625 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -273,7 +273,7 @@ struct batadv_orig_node {
+ 	struct hlist_node mcast_want_all_ipv4_node;
+ 	struct hlist_node mcast_want_all_ipv6_node;
+ #endif
+-	uint8_t capabilities;
++	unsigned long capabilities;
+ 	uint8_t capa_initialized;
+ 	atomic_t last_ttvn;
+ 	unsigned char *tt_buff;
+@@ -313,7 +313,7 @@ struct batadv_orig_node {
+  *  (= orig node announces a tvlv of type BATADV_TVLV_MCAST)
+  */
+ enum batadv_orig_capabilities {
+-	BATADV_ORIG_CAPA_HAS_DAT = BIT(0),
++	BATADV_ORIG_CAPA_HAS_DAT,
+ 	BATADV_ORIG_CAPA_HAS_NC = BIT(1),
+ 	BATADV_ORIG_CAPA_HAS_TT = BIT(2),
+ 	BATADV_ORIG_CAPA_HAS_MCAST = BIT(3),
 -- 
 2.5.0
 
