@@ -1,15 +1,18 @@
-Return-Path: <sergei.shtylyov@cogentembedded.com>
-References: <1439310948-32426-1-git-send-email-antonio@meshcoding.com>
- <1439310948-32426-5-git-send-email-antonio@meshcoding.com>
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Message-ID: <55CA4F1A.1050606@cogentembedded.com>
-Date: Tue, 11 Aug 2015 22:38:02 +0300
+Return-Path: <David.Laight@ACULAB.COM>
+From: David Laight <David.Laight@ACULAB.COM>
+Date: Wed, 12 Aug 2015 08:44:53 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CB7939D@AcuExch.aculab.com>
+References: <1438779107-12665-1-git-send-email-antonio@meshcoding.com>
+ <1438779107-12665-3-git-send-email-antonio@meshcoding.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1CB737B7@AcuExch.aculab.com>
+ <55CA2605.1070201@meshcoding.com>
+In-Reply-To: <55CA2605.1070201@meshcoding.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-In-Reply-To: <1439310948-32426-5-git-send-email-antonio@meshcoding.com>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 04/10] batman-adv: Make NC capability
-	changes atomic
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: fix kernel crash due to
+ missing NULL checks
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,43 +22,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <antonio@meshcoding.com>, davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
+To: 'Antonio Quartulli' <antonio@meshcoding.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
 
-On 08/11/2015 07:35 PM, Antonio Quartulli wrote:
+From: Antonio Quartulli
+> Sent: 11 August 2015 17:43
+> On 05/08/15 15:15, David Laight wrote:
+> > So is this test just hiding anoter bug somewhere??
+>=20
+> Hi David and thanks for your feedback.
+>=20
+> The point is that we got several bug reports of kernel crashes due to
+> NULL pointer deferences in these lines and after having debugged this
+> problem for quite a while we preferred to move on and propose this patch.
 
-> From: Linus Lüssing <linus.luessing@c0d3.blue>
->
-> Bitwise OR/AND assignments in C aren't guaranteed to be atomic. One
-> OGM handler might undo the set/clear of a specific bit from another
-> handler run in between.
->
-> Fix this by using the atomic set_bit()/clear_bit()/test_bit() functions.
->
-> Fixes: 3f4841ffb336 ("batman-adv: tvlv - add network coding container")
-> Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-> ---
->   net/batman-adv/network-coding.c | 7 ++++---
->   net/batman-adv/types.h          | 2 +-
->   2 files changed, 5 insertions(+), 4 deletions(-)
->
-> diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-> index f0a50f3..cfdc80d 100644
-> --- a/net/batman-adv/network-coding.c
-> +++ b/net/batman-adv/network-coding.c
-[...]
-> @@ -894,7 +895,7 @@ void batadv_nc_update_nc_node(struct batadv_priv *bat_priv,
->   		goto out;
->
->   	/* check if orig node is network coding enabled */
-> -	if (!(orig_node->capabilities & BATADV_ORIG_CAPA_HAS_NC))
-> +	if (!(test_bit(BATADV_ORIG_CAPA_HAS_NC, &orig_node->capabilities)))
+That is what I thought.
 
-    Likewise, () around the call no needed.
+> Still, I am personally debugging this part of the code to understand if
+> we really have something wrong or if this NULL pointer is something we
+> should expect (and therefore check).
+>=20
+> For the time being we think this patch is better than having horrible
+> kernel crashes, but I hope to come to a definitive conclusion soon.
 
-[...]
+If you don't know why you are seeing the NULL pointer then you are
+just papering over some cracks and it is likely that something
+is really badly wrong somewhere (ie missing locking).
+This could easily mean that there are some much harder to find
+bugs lurking there.
 
-MBR, Sergei
+	David
+
 
