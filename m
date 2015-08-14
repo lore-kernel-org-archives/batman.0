@@ -1,11 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 14 Aug 2015 22:57:06 +0200
-Message-Id: <1439585834-26564-3-git-send-email-antonio@meshcoding.com>
+Date: Fri, 14 Aug 2015 22:57:14 +0200
+Message-Id: <1439585834-26564-11-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1439585834-26564-1-git-send-email-antonio@meshcoding.com>
 References: <1439585834-26564-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 02/10] batman-adv: Avoid u32 overflow during
-	gateway select
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 10/10] batman-adv: Fix potentially broken skb
+	network header access
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,45 +19,58 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: Ruben Wisniewsi <ruben@vfn-nrw.de>, Marek Lindner <mareklindner@neomailbox.ch>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Ruben Wisniewski <ruben@freifunk-nrw.de>
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-The gateway selection based on fast connections is using a single value
-calculated from the average tq (0-255) and the download bandwidth (in
-100Kibit). The formula for the first step (tq ** 2 * 10000 * bandwidth)
-tends to overflow a u32 with low bandwidth settings like 50 [100KiBit]
-and a tq value of over 92.
+The two commits noted below added calls to ip_hdr() and ipv6_hdr(). They
+need a correctly set skb network header.
 
-Changing this to a 64 bit unsigned integer allows to support a
-bandwidth_down with up to ~2.8e10 [100KiBit] and a perfect tq of 255. This
-is ~6.6 times higher than the maximum possible value of the gateway
-announcement TVLV.
+Unfortunately we cannot rely on the device drivers to set it for us.
+Therefore setting it in the beginning of the according ndo_start_xmit
+handler.
 
-This problem only affects the non-default gw_sel_class 1.
-
-Signed-off-by: Ruben Wisniewsi <ruben@vfn-nrw.de>
-[sven@narfation.org: rewritten commit message]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Fixes: 1d8ab8d3c176 ("batman-adv: Modified forwarding behaviour for multicast packets")
+Fixes: ab49886e3da7 ("batman-adv: Add IPv4 link-local/IPv6-ll-all-nodes multicast support")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/gateway_client.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/soft-interface.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index e1e1f31..4ac24d8 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -153,7 +153,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
- 	struct batadv_neigh_node *router;
- 	struct batadv_neigh_ifinfo *router_ifinfo;
- 	struct batadv_gw_node *gw_node, *curr_gw = NULL;
--	uint32_t max_gw_factor = 0, tmp_gw_factor = 0;
-+	uint64_t max_gw_factor = 0, tmp_gw_factor = 0;
- 	uint8_t max_tq = 0;
- 	uint8_t tq_avg;
- 	struct batadv_orig_node *orig_node;
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index c002961..926292d 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -202,6 +202,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 	int gw_mode;
+ 	enum batadv_forw_mode forw_mode;
+ 	struct batadv_orig_node *mcast_single_orig = NULL;
++	int network_offset = ETH_HLEN;
+ 
+ 	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
+ 		goto dropped;
+@@ -214,14 +215,18 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 	case ETH_P_8021Q:
+ 		vhdr = vlan_eth_hdr(skb);
+ 
+-		if (vhdr->h_vlan_encapsulated_proto != ethertype)
++		if (vhdr->h_vlan_encapsulated_proto != ethertype) {
++			network_offset += VLAN_HLEN;
+ 			break;
++		}
+ 
+ 		/* fall through */
+ 	case ETH_P_BATMAN:
+ 		goto dropped;
+ 	}
+ 
++	skb_set_network_header(skb, network_offset);
++
+ 	if (batadv_bla_tx(bat_priv, skb, vid))
+ 		goto dropped;
+ 
 -- 
 2.5.0
 
