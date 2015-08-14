@@ -1,18 +1,12 @@
-Return-Path: <David.Laight@ACULAB.COM>
-From: David Laight <David.Laight@ACULAB.COM>
-Date: Wed, 12 Aug 2015 08:44:53 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CB7939D@AcuExch.aculab.com>
-References: <1438779107-12665-1-git-send-email-antonio@meshcoding.com>
- <1438779107-12665-3-git-send-email-antonio@meshcoding.com>
- <063D6719AE5E284EB5DD2968C1650D6D1CB737B7@AcuExch.aculab.com>
- <55CA2605.1070201@meshcoding.com>
-In-Reply-To: <55CA2605.1070201@meshcoding.com>
-Content-Language: en-US
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: quoted-printable
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Fri, 14 Aug 2015 17:23:48 +0200
+Message-Id: <1439565830-9776-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: fix kernel crash due to
- missing NULL checks
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH maint 1/3] batman-adv: Remove unnecessary
+ braces for test_bit() in DAT
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,35 +16,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: 'Antonio Quartulli' <antonio@meshcoding.com>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli
-> Sent: 11 August 2015 17:43
-> On 05/08/15 15:15, David Laight wrote:
-> > So is this test just hiding anoter bug somewhere??
->=20
-> Hi David and thanks for your feedback.
->=20
-> The point is that we got several bug reports of kernel crashes due to
-> NULL pointer deferences in these lines and after having debugged this
-> problem for quite a while we preferred to move on and propose this patch.
+Fixes: de466678 ("batman-adv: Fix broken DAT capability check")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+ net/batman-adv/distributed-arp-table.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-That is what I thought.
-
-> Still, I am personally debugging this part of the code to understand if
-> we really have something wrong or if this NULL pointer is something we
-> should expect (and therefore check).
->=20
-> For the time being we think this patch is better than having horrible
-> kernel crashes, but I hope to come to a definitive conclusion soon.
-
-If you don't know why you are seeing the NULL pointer then you are
-just papering over some cracks and it is likely that something
-is really badly wrong somewhere (ie missing locking).
-This could easily mean that there are some much harder to find
-bugs lurking there.
-
-	David
-
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 1caf7d2..63243a3 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -453,7 +453,7 @@ static bool batadv_is_orig_node_eligible(struct batadv_dat_candidate *res,
+ 	int j;
+ 
+ 	/* check if orig node candidate is running DAT */
+-	if (!(test_bit(BATADV_ORIG_CAPA_HAS_DAT, &candidate->capabilities)))
++	if (!test_bit(BATADV_ORIG_CAPA_HAS_DAT, &candidate->capabilities))
+ 		goto out;
+ 
+ 	/* Check if this node has already been selected... */
+-- 
+1.7.10.4
 
