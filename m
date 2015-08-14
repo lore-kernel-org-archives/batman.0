@@ -1,11 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 14 Aug 2015 22:57:05 +0200
-Message-Id: <1439585834-26564-2-git-send-email-antonio@meshcoding.com>
+Date: Fri, 14 Aug 2015 22:57:07 +0200
+Message-Id: <1439585834-26564-4-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1439585834-26564-1-git-send-email-antonio@meshcoding.com>
 References: <1439585834-26564-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 01/10] batman-adv: Replace gw_reselect
-	divisor with simple shift
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 03/10] batman-adv: Make DAT capability
+	changes atomic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,51 +21,78 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-The gw_factor is divided by BATADV_TQ_LOCAL_WINDOW_SIZE ** 2 * 64. But the
-rest of the calculation has nothing to do with the tq window size and
-therefore the calculation is just (tmp_gw_factor / (64 ** 3)).
+Bitwise OR/AND assignments in C aren't guaranteed to be atomic. One
+OGM handler might undo the set/clear of a specific bit from another
+handler run in between.
 
-Replace it with a simple shift to avoid a costly 64-bit divide when the
-max_gw_factor is changed from u32 to u64. This type change is necessary
-to avoid an overflow bug.
+Fix this by using the atomic set_bit()/clear_bit()/test_bit() functions.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Fixes: 17cf0ea455f1 ("batman-adv: tvlv - add distributed arp table container")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/gateway_client.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ net/batman-adv/distributed-arp-table.c | 7 ++++---
+ net/batman-adv/types.h                 | 4 ++--
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index bb015862..e1e1f31 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -154,14 +154,10 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
- 	struct batadv_neigh_ifinfo *router_ifinfo;
- 	struct batadv_gw_node *gw_node, *curr_gw = NULL;
- 	uint32_t max_gw_factor = 0, tmp_gw_factor = 0;
--	uint32_t gw_divisor;
- 	uint8_t max_tq = 0;
- 	uint8_t tq_avg;
- 	struct batadv_orig_node *orig_node;
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index fb54e6a..1cfba20 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -19,6 +19,7 @@
+ #include "main.h"
  
--	gw_divisor = BATADV_TQ_LOCAL_WINDOW_SIZE * BATADV_TQ_LOCAL_WINDOW_SIZE;
--	gw_divisor *= 64;
--
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
- 		if (gw_node->deleted)
-@@ -187,7 +183,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
- 			tmp_gw_factor = tq_avg * tq_avg;
- 			tmp_gw_factor *= gw_node->bandwidth_down;
- 			tmp_gw_factor *= 100 * 100;
--			tmp_gw_factor /= gw_divisor;
-+			tmp_gw_factor >>= 18;
+ #include <linux/atomic.h>
++#include <linux/bitops.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+@@ -453,7 +454,7 @@ static bool batadv_is_orig_node_eligible(struct batadv_dat_candidate *res,
+ 	int j;
  
- 			if ((tmp_gw_factor > max_gw_factor) ||
- 			    ((tmp_gw_factor == max_gw_factor) &&
+ 	/* check if orig node candidate is running DAT */
+-	if (!(candidate->capabilities & BATADV_ORIG_CAPA_HAS_DAT))
++	if (!test_bit(BATADV_ORIG_CAPA_HAS_DAT, &candidate->capabilities))
+ 		goto out;
+ 
+ 	/* Check if this node has already been selected... */
+@@ -713,9 +714,9 @@ static void batadv_dat_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ 					   uint16_t tvlv_value_len)
+ {
+ 	if (flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND)
+-		orig->capabilities &= ~BATADV_ORIG_CAPA_HAS_DAT;
++		clear_bit(BATADV_ORIG_CAPA_HAS_DAT, &orig->capabilities);
+ 	else
+-		orig->capabilities |= BATADV_ORIG_CAPA_HAS_DAT;
++		set_bit(BATADV_ORIG_CAPA_HAS_DAT, &orig->capabilities);
+ }
+ 
+ /**
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 67d6348..29fd625 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -273,7 +273,7 @@ struct batadv_orig_node {
+ 	struct hlist_node mcast_want_all_ipv4_node;
+ 	struct hlist_node mcast_want_all_ipv6_node;
+ #endif
+-	uint8_t capabilities;
++	unsigned long capabilities;
+ 	uint8_t capa_initialized;
+ 	atomic_t last_ttvn;
+ 	unsigned char *tt_buff;
+@@ -313,7 +313,7 @@ struct batadv_orig_node {
+  *  (= orig node announces a tvlv of type BATADV_TVLV_MCAST)
+  */
+ enum batadv_orig_capabilities {
+-	BATADV_ORIG_CAPA_HAS_DAT = BIT(0),
++	BATADV_ORIG_CAPA_HAS_DAT,
+ 	BATADV_ORIG_CAPA_HAS_NC = BIT(1),
+ 	BATADV_ORIG_CAPA_HAS_TT = BIT(2),
+ 	BATADV_ORIG_CAPA_HAS_MCAST = BIT(3),
 -- 
 2.5.0
 
