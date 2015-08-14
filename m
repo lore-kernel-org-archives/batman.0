@@ -1,14 +1,8 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Fri, 14 Aug 2015 17:23:50 +0200
-Message-Id: <1439565830-9776-3-git-send-email-linus.luessing@c0d3.blue>
-In-Reply-To: <1439565830-9776-1-git-send-email-linus.luessing@c0d3.blue>
-References: <1439565830-9776-1-git-send-email-linus.luessing@c0d3.blue>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH maint 3/3] batman-adv: Remove unnecessary
- braces for test_bit() in MCAST
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Fri, 14 Aug 2015 18:25:16 +0200
+Message-Id: <1439569516-17290-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH] alfred: mention libcap in the README
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,36 +14,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Help! Help! \o/ I'm trapped in this commit message!!! :(
-
-Fixes: 1798ad3f ("batman-adv: Fix broken MCAST capability check")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Reported-by: Florian Steinel <alfred@open-mesh.org.flonet.net>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/multicast.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ README | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 8bdd69f..4541f08 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -740,7 +740,7 @@ static void batadv_mcast_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
- 	 * is a completely new orig_node no need to decrease the counter.
- 	 */
- 	if (orig_mcast_enabled &&
--	    !(test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities))) {
-+	    !test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities)) {
- 		if (orig_initialized)
- 			atomic_dec(&bat_priv->mcast.num_disabled);
- 		set_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities);
-@@ -798,7 +798,7 @@ void batadv_mcast_purge_orig(struct batadv_orig_node *orig)
+diff --git a/README b/README
+index 7cef9f6..938a275 100644
+--- a/README
++++ b/README
+@@ -29,8 +29,9 @@ alfred depends on:
+  * librt (usually part of libc)
+  * IPv6 support in the kernel/host system
  
- 	spin_lock_bh(&orig->mcast_handler_lock);
+-and if distributing GPS information:
+- * libgps
++and optionally:
++ * libgps - if you want to distribute GPS information
++ * libcap - if you want extra security by dropping unneeded privileges
  
--	if (!(test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities)) &&
-+	if (!test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capabilities) &&
- 	    test_bit(BATADV_ORIG_CAPA_HAS_MCAST, &orig->capa_initialized))
- 		atomic_dec(&bat_priv->mcast.num_disabled);
+ To compile alfred, simply type:
  
+@@ -53,6 +54,10 @@ CONFIG_ALFRED_GPSD=n:
+  $ make CONFIG_ALFRED_GPSD=n
+  $ make CONFIG_ALFRED_GPSD=n install
+ 
++If don't want to compile with libcap to drop privileges, use:
++
++ $ make CONFIG_ALFRED_CAPABILITIES=n
++ $ make CONFIG_ALFRED_CAPABILITIES=n install
+ 
+ Usage
+ -----
 -- 
-1.7.10.4
+2.1.4
 
