@@ -1,11 +1,16 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 21 Aug 2015 17:15:18 +0200
-Message-Id: <1440170118-10876-5-git-send-email-sw@simonwunderlich.de>
-In-Reply-To: <1440170118-10876-1-git-send-email-sw@simonwunderlich.de>
-References: <1440170118-10876-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH-maint 4/4] batman-adv: detect local excess
-	vlans in TT request
+Return-Path: <bjo@nord-west.org>
+Message-ID: <1440352754.3860.9.camel@nord-west.org>
+From: Bjoern Franke <bjo@nord-west.org>
+Date: Sun, 23 Aug 2015 19:59:14 +0200
+In-Reply-To: <78ccce3e5516b2613b09306a586f2584@hilses.de>
+References: <1439848023.1458.15.camel@nord-west.org>
+ <20150818080855.GD19496@medion.lan> <1439915717.1370.9.camel@nord-west.org>
+ <78ccce3e5516b2613b09306a586f2584@hilses.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] Kernel crashes when using more than one
+ interface in bat0
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,60 +20,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: alessandro@mediaspot.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-If the local representation of the global TT table of one originator has
-more VLAN entries than the respective TT update, there is some
-inconsistency present. By detecting and reporting this inconsistency,
-the global table gets updated and the excess VLAN will get removed in
-the process.
+Hi,
 
-Reported-by: Alessandro Bolletta <alessandro@mediaspot.net>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/translation-table.c | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+> We've seen these on our Goettingen Freifunk gateways, too. There,
+> too, 
+> batadv_frag_purge_orig was the smoking gun. However, I didn't report
+> it, 
+> because:
+> 
+> - first and foremost, we were using the outdated legacy 2013.4
+> version
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index dced2da..1adb72e 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -2392,6 +2392,7 @@ static bool batadv_tt_global_check_crc(struct batadv_orig_node *orig_node,
- 	struct batadv_tvlv_tt_vlan_data *tt_vlan_tmp;
- 	struct batadv_orig_node_vlan *vlan;
- 	uint32_t crc;
-+	bool found;
- 	int i;
- 
- 	/* check if each received CRC matches the locally stored one */
-@@ -2418,6 +2419,26 @@ static bool batadv_tt_global_check_crc(struct batadv_orig_node *orig_node,
- 			return false;
- 	}
- 
-+	/* check if any excess VLANs exist locally for the originator
-+	 * which are not mentioned in the TVLV from the originator.
-+	 */
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(vlan, &orig_node->vlan_list, list) {
-+		found = false;
-+
-+		for (i = 0; i < num_vlan; i++) {
-+			tt_vlan_tmp = tt_vlan + i;
-+			if (ntohs(tt_vlan_tmp->vid) == vlan->vid) {
-+				found = true;
-+				break;
-+			}
-+		}
-+
-+		if (!found)
-+			return false;
-+	}
-+	rcu_read_unlock();
-+
- 	return true;
- }
- 
+We had also some other issues with older versions, so we upgraded to
+2015.1 hoping the gateways will run stable.
+
+> - it was most probably an issue with RCU lists
+> - and either disabling SMP or using a much more current kernel fixed
+> it.
+
+Did you build own kernels with disabled smp?
+
+> So I blamed a buggy RCU implementation in older kernels, plus maybe
+> some 
+> ill behaviour in the old batman-adv codebase. The crashing kernel was
+> the old debian-wheezy one - pretty old, I'd say.
+> 
+
+We are running 3.16 and partially upgraded to 4.1 for testing purposes.
+But we have some "general protection fault: 0000 [#1] SMP" unrelated to
+batman also on the gateways - with different hardware. For the record,
+a KVM gateway (the other ones are dedicated servers without
+virtualization) does not crash.
+
+Regards
+Bjoern
+
 -- 
-2.5.0
+xmpp bjo@schafweide.org 
+
+
+
 
