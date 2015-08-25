@@ -1,11 +1,16 @@
-Return-Path: <antonio@meshcoding.com>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 25 Aug 2015 13:02:37 +0200
-Message-Id: <1440500559-28368-14-git-send-email-antonio@meshcoding.com>
-In-Reply-To: <1440500559-28368-1-git-send-email-antonio@meshcoding.com>
-References: <1440500559-28368-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 13/15] batman-adv: Add lockdep_asserts for
-	documented external locks
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 25 Aug 2015 17:24:01 +0200
+Message-ID: <1615647.59CK0EQaeA@prime>
+In-Reply-To: <55DC386D.70109@meshcoding.com>
+References: <1440170118-10876-1-git-send-email-sw@simonwunderlich.de>
+ <1440170118-10876-2-git-send-email-sw@simonwunderlich.de>
+ <55DC386D.70109@meshcoding.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart15165855.Li4XbfMoPS";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH-maint 1/4] batman-adv: fix speedy join
+	for DAT cache replies
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,89 +20,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
+To: Antonio Quartulli <antonio@meshcoding.com>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, alessandro@mediaspot.net
 
-From: Sven Eckelmann <sven@narfation.org>
 
-Some functions already have documentation about locks they require inside
-their kerneldoc header. These can be directly tested during runtime using
-the lockdep asserts.
+--nextPart15165855.Li4XbfMoPS
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
----
- net/batman-adv/fragmentation.c     | 3 +++
- net/batman-adv/multicast.c         | 6 ++++++
- net/batman-adv/translation-table.c | 2 ++
- 3 files changed, 11 insertions(+)
+Hi Antonio,
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index ec5f7bc..700c96c 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -25,6 +25,7 @@
- #include <linux/if_ether.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
-+#include <linux/lockdep.h>
- #include <linux/netdevice.h>
- #include <linux/pkt_sched.h>
- #include <linux/skbuff.h>
-@@ -112,6 +113,8 @@ static int batadv_frag_size_limit(void)
- static bool batadv_frag_init_chain(struct batadv_frag_table_entry *chain,
- 				   u16 seqno)
- {
-+	lockdep_assert_held(&chain->lock);
-+
- 	if (chain->seqno == seqno)
- 		return false;
- 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 410f34c..eb76386 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -609,6 +609,8 @@ static void batadv_mcast_want_unsnoop_update(struct batadv_priv *bat_priv,
- 	struct hlist_node *node = &orig->mcast_want_all_unsnoopables_node;
- 	struct hlist_head *head = &bat_priv->mcast.want_all_unsnoopables_list;
- 
-+	lockdep_assert_held(&orig->mcast_handler_lock);
-+
- 	/* switched from flag unset to set */
- 	if (mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES &&
- 	    !(orig->mcast_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES)) {
-@@ -652,6 +654,8 @@ static void batadv_mcast_want_ipv4_update(struct batadv_priv *bat_priv,
- 	struct hlist_node *node = &orig->mcast_want_all_ipv4_node;
- 	struct hlist_head *head = &bat_priv->mcast.want_all_ipv4_list;
- 
-+	lockdep_assert_held(&orig->mcast_handler_lock);
-+
- 	/* switched from flag unset to set */
- 	if (mcast_flags & BATADV_MCAST_WANT_ALL_IPV4 &&
- 	    !(orig->mcast_flags & BATADV_MCAST_WANT_ALL_IPV4)) {
-@@ -695,6 +699,8 @@ static void batadv_mcast_want_ipv6_update(struct batadv_priv *bat_priv,
- 	struct hlist_node *node = &orig->mcast_want_all_ipv6_node;
- 	struct hlist_head *head = &bat_priv->mcast.want_all_ipv6_list;
- 
-+	lockdep_assert_held(&orig->mcast_handler_lock);
-+
- 	/* switched from flag unset to set */
- 	if (mcast_flags & BATADV_MCAST_WANT_ALL_IPV6 &&
- 	    !(orig->mcast_flags & BATADV_MCAST_WANT_ALL_IPV6)) {
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 79cee7b..4228b10 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -3271,6 +3271,8 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
-  */
- static void batadv_tt_local_commit_changes_nolock(struct batadv_priv *bat_priv)
- {
-+	lockdep_assert_held(&bat_priv->tt.commit_lock);
-+
- 	/* Update multicast addresses in local translation table */
- 	batadv_mcast_mla_update(bat_priv);
- 
--- 
-2.5.0
+On Tuesday 25 August 2015 11:42:05 Antonio Quartulli wrote:
+> On 21/08/15 17:15, Simon Wunderlich wrote:
+> > +			/* Cache replies should not be considered for speedy
+> > +			 * join, since the clients do not actually reside at
+> > +			 * the originator.
+> > +			 */
+> > +			if (subtype != BATADV_P_DAT_CACHE_REPLY) {
+> 
+> Tha patch looks good but this should really be:
+> 
+> 			if (subtype == BATADV_P_DATA) {
+> 
+> because speedy join is supposed to work with any payload packet.
+> 
+
+OK, will make that change in PATCH v2.
+
+Thanks,
+   Simon
+--nextPart15165855.Li4XbfMoPS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iEYEABECAAYFAlXciJEACgkQrzg/fFk7axY2EACgsXvnTavu2vGSSjjICFbJQQNV
+bHgAoLwvzQixwNvHYq1BTxmkgrt+sBqC
+=mVHu
+-----END PGP SIGNATURE-----
+
+--nextPart15165855.Li4XbfMoPS--
 
