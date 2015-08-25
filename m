@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Tue, 25 Aug 2015 13:02:30 +0200
-Message-Id: <1440500559-28368-7-git-send-email-antonio@meshcoding.com>
+Date: Tue, 25 Aug 2015 13:02:31 +0200
+Message-Id: <1440500559-28368-8-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1440500559-28368-1-git-send-email-antonio@meshcoding.com>
 References: <1440500559-28368-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 06/15] batman-adv: Remove batadv_ types
-	forward declarations
+Subject: [B.A.T.M.A.N.] [PATCH 07/15] batman-adv: convert
+	orig_node->vlan_list to hlist
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,180 +16,122 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Marek Lindner <mareklindner@neomailbox.ch>
 
-main.h is included in every file and is the only way to access types.h.
-This makes forward declarations for all types defined in types.h
-unnecessary.
+Since the list's tail is never accessed using a double linked list head
+wastes memory.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/bridge_loop_avoidance.h | 3 ---
- net/batman-adv/debugfs.h               | 1 -
- net/batman-adv/gateway_common.h        | 1 -
- net/batman-adv/icmp_socket.h           | 1 -
- net/batman-adv/multicast.h             | 2 --
- net/batman-adv/network-coding.h        | 4 ----
- net/batman-adv/routing.h               | 4 ----
- net/batman-adv/send.h                  | 3 ---
- net/batman-adv/soft-interface.h        | 4 ----
- net/batman-adv/sysfs.h                 | 2 --
- net/batman-adv/translation-table.h     | 2 --
- 11 files changed, 27 deletions(-)
+ net/batman-adv/originator.c        | 7 ++++---
+ net/batman-adv/translation-table.c | 8 ++++----
+ net/batman-adv/types.h             | 4 ++--
+ 3 files changed, 10 insertions(+), 9 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge_loop_avoidance.h
-index 449f2f1..025152b 100644
---- a/net/batman-adv/bridge_loop_avoidance.h
-+++ b/net/batman-adv/bridge_loop_avoidance.h
-@@ -22,9 +22,6 @@
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 4500e3a..610620a 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -26,6 +26,7 @@
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+ #include <linux/netdevice.h>
++#include <linux/rculist.h>
+ #include <linux/seq_file.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+@@ -70,7 +71,7 @@ batadv_orig_node_vlan_get(struct batadv_orig_node *orig_node,
+ 	struct batadv_orig_node_vlan *vlan = NULL, *tmp;
  
- #include <linux/types.h>
+ 	rcu_read_lock();
+-	list_for_each_entry_rcu(tmp, &orig_node->vlan_list, list) {
++	hlist_for_each_entry_rcu(tmp, &orig_node->vlan_list, list) {
+ 		if (tmp->vid != vid)
+ 			continue;
  
--struct batadv_hard_iface;
--struct batadv_orig_node;
--struct batadv_priv;
- struct seq_file;
- struct sk_buff;
+@@ -118,7 +119,7 @@ batadv_orig_node_vlan_new(struct batadv_orig_node *orig_node,
+ 	atomic_set(&vlan->refcount, 2);
+ 	vlan->vid = vid;
  
-diff --git a/net/batman-adv/debugfs.h b/net/batman-adv/debugfs.h
-index 187acdc..80ab8d6 100644
---- a/net/batman-adv/debugfs.h
-+++ b/net/batman-adv/debugfs.h
-@@ -22,7 +22,6 @@
+-	list_add_rcu(&vlan->list, &orig_node->vlan_list);
++	hlist_add_head_rcu(&vlan->list, &orig_node->vlan_list);
  
- #include <linux/kconfig.h>
+ out:
+ 	spin_unlock_bh(&orig_node->vlan_list_lock);
+@@ -673,7 +674,7 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
+ 		return NULL;
  
--struct batadv_hard_iface;
- struct net_device;
+ 	INIT_HLIST_HEAD(&orig_node->neigh_list);
+-	INIT_LIST_HEAD(&orig_node->vlan_list);
++	INIT_HLIST_HEAD(&orig_node->vlan_list);
+ 	INIT_HLIST_HEAD(&orig_node->ifinfo_list);
+ 	spin_lock_init(&orig_node->bcast_seqno_lock);
+ 	spin_lock_init(&orig_node->neigh_list_lock);
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 3932df2..9e1f866 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -315,7 +315,7 @@ static void batadv_tt_global_size_mod(struct batadv_orig_node *orig_node,
  
- #define BATADV_DEBUGFS_SUBDIR "batman_adv"
-diff --git a/net/batman-adv/gateway_common.h b/net/batman-adv/gateway_common.h
-index bd5c812..ab893e3 100644
---- a/net/batman-adv/gateway_common.h
-+++ b/net/batman-adv/gateway_common.h
-@@ -22,7 +22,6 @@
+ 	if (atomic_add_return(v, &vlan->tt.num_entries) == 0) {
+ 		spin_lock_bh(&orig_node->vlan_list_lock);
+-		list_del_rcu(&vlan->list);
++		hlist_del_rcu(&vlan->list);
+ 		spin_unlock_bh(&orig_node->vlan_list_lock);
+ 		batadv_orig_node_vlan_free_ref(vlan);
+ 	}
+@@ -741,7 +741,7 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
+ 	u8 *tt_change_ptr;
  
- #include <linux/types.h>
+ 	rcu_read_lock();
+-	list_for_each_entry_rcu(vlan, &orig_node->vlan_list, list) {
++	hlist_for_each_entry_rcu(vlan, &orig_node->vlan_list, list) {
+ 		num_vlan++;
+ 		num_entries += atomic_read(&vlan->tt.num_entries);
+ 	}
+@@ -767,7 +767,7 @@ batadv_tt_prepare_tvlv_global_data(struct batadv_orig_node *orig_node,
+ 	(*tt_data)->num_vlan = htons(num_vlan);
  
--struct batadv_priv;
- struct net_device;
+ 	tt_vlan = (struct batadv_tvlv_tt_vlan_data *)(*tt_data + 1);
+-	list_for_each_entry_rcu(vlan, &orig_node->vlan_list, list) {
++	hlist_for_each_entry_rcu(vlan, &orig_node->vlan_list, list) {
+ 		tt_vlan->vid = htons(vlan->vid);
+ 		tt_vlan->crc = htonl(vlan->tt.crc);
  
- enum batadv_gw_modes {
-diff --git a/net/batman-adv/icmp_socket.h b/net/batman-adv/icmp_socket.h
-index 7de7fce..e937143 100644
---- a/net/batman-adv/icmp_socket.h
-+++ b/net/batman-adv/icmp_socket.h
-@@ -23,7 +23,6 @@
- #include <linux/types.h>
+@@ -2466,7 +2466,7 @@ static void batadv_tt_global_update_crc(struct batadv_priv *bat_priv,
  
- struct batadv_icmp_header;
--struct batadv_priv;
- 
- #define BATADV_ICMP_SOCKET "socket"
- 
-diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
-index beb6e56..8f3cb04 100644
---- a/net/batman-adv/multicast.h
-+++ b/net/batman-adv/multicast.h
-@@ -20,8 +20,6 @@
- 
- #include "main.h"
- 
--struct batadv_orig_node;
--struct batadv_priv;
- struct sk_buff;
- 
- /**
-diff --git a/net/batman-adv/network-coding.h b/net/batman-adv/network-coding.h
-index 5b79aa8..8f6d4ad 100644
---- a/net/batman-adv/network-coding.h
-+++ b/net/batman-adv/network-coding.h
-@@ -22,11 +22,7 @@
- 
- #include <linux/types.h>
- 
--struct batadv_nc_node;
--struct batadv_neigh_node;
- struct batadv_ogm_packet;
--struct batadv_orig_node;
--struct batadv_priv;
- struct net_device;
- struct seq_file;
- struct sk_buff;
-diff --git a/net/batman-adv/routing.h b/net/batman-adv/routing.h
-index 3c185a1f..204bbe4 100644
---- a/net/batman-adv/routing.h
-+++ b/net/batman-adv/routing.h
-@@ -22,10 +22,6 @@
- 
- #include <linux/types.h>
- 
--struct batadv_hard_iface;
--struct batadv_neigh_node;
--struct batadv_orig_node;
--struct batadv_priv;
- struct sk_buff;
- 
- bool batadv_check_management_packet(struct sk_buff *skb,
-diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
-index 33ef6fc..82059f2 100644
---- a/net/batman-adv/send.h
-+++ b/net/batman-adv/send.h
-@@ -25,9 +25,6 @@
- 
- #include "packet.h"
- 
--struct batadv_hard_iface;
--struct batadv_orig_node;
--struct batadv_priv;
- struct sk_buff;
- struct work_struct;
- 
-diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
-index 578e8a6..8e82176 100644
---- a/net/batman-adv/soft-interface.h
-+++ b/net/batman-adv/soft-interface.h
-@@ -22,10 +22,6 @@
- 
- #include <net/rtnetlink.h>
- 
--struct batadv_hard_iface;
--struct batadv_orig_node;
--struct batadv_priv;
--struct batadv_softif_vlan;
- struct net_device;
- struct sk_buff;
- 
-diff --git a/net/batman-adv/sysfs.h b/net/batman-adv/sysfs.h
-index 2294583..6197442 100644
---- a/net/batman-adv/sysfs.h
-+++ b/net/batman-adv/sysfs.h
-@@ -23,8 +23,6 @@
- #include <linux/sysfs.h>
- #include <linux/types.h>
- 
--struct batadv_priv;
--struct batadv_softif_vlan;
- struct kobject;
- struct net_device;
- 
-diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
-index 9b82d5d..abd8e11 100644
---- a/net/batman-adv/translation-table.h
-+++ b/net/batman-adv/translation-table.h
-@@ -22,8 +22,6 @@
- 
- #include <linux/types.h>
- 
--struct batadv_orig_node;
--struct batadv_priv;
- struct net_device;
- struct seq_file;
- 
+ 	/* recompute the global CRC for each VLAN */
+ 	rcu_read_lock();
+-	list_for_each_entry_rcu(vlan, &orig_node->vlan_list, list) {
++	hlist_for_each_entry_rcu(vlan, &orig_node->vlan_list, list) {
+ 		/* if orig_node is a backbone node for this VLAN, don't compute
+ 		 * the CRC as we ignore all the global entries over it
+ 		 */
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index f2ebe33..fe3695c 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -190,7 +190,7 @@ struct batadv_vlan_tt {
+ struct batadv_orig_node_vlan {
+ 	unsigned short vid;
+ 	struct batadv_vlan_tt tt;
+-	struct list_head list;
++	struct hlist_node list;
+ 	atomic_t refcount;
+ 	struct rcu_head rcu;
+ };
+@@ -302,7 +302,7 @@ struct batadv_orig_node {
+ 	spinlock_t out_coding_list_lock; /* Protects out_coding_list */
+ #endif
+ 	struct batadv_frag_table_entry fragments[BATADV_FRAG_BUFFER_COUNT];
+-	struct list_head vlan_list;
++	struct hlist_head vlan_list;
+ 	spinlock_t vlan_list_lock; /* protects vlan_list */
+ 	struct batadv_orig_bat_iv bat_iv;
+ };
 -- 
 2.5.0
 
