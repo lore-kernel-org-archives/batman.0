@@ -1,11 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 26 Aug 2015 16:41:53 +0200
-Message-Id: <1440600113-21305-4-git-send-email-sw@simonwunderlich.de>
-In-Reply-To: <1440600113-21305-1-git-send-email-sw@simonwunderlich.de>
-References: <1440600113-21305-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH-maintv2 3/3] batman-adv: detect local excess
-	vlans in TT request
+Return-Path: <martin@hundeboll.net>
+Message-ID: <55DE0498.3010806@hundeboll.net>
+Date: Wed, 26 Aug 2015 20:25:28 +0200
+From: =?windows-1252?Q?Martin_Hundeb=F8ll?= <martin@hundeboll.net>
+MIME-Version: 1.0
+References: <1440577911-16107-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1440577911-16107-1-git-send-email-sven@narfation.org>
+Content-Type: text/plain; charset="windows-1252"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Use chain pointer when
+ purging fragments
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,58 +18,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: alessandro@mediaspot.net
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-If the local representation of the global TT table of one originator has
-more VLAN entries than the respective TT update, there is some
-inconsistency present. By detecting and reporting this inconsistency,
-the global table gets updated and the excess VLAN will get removed in
-the process.
+On 2015-08-26 10:31, Sven Eckelmann wrote:
+> The chain pointer was already created in batadv_frag_purge_orig to make t=
+he
+> checks more readable. Just use the chain pointer everywhere instead of
+> having the same dereference + array access in the most lines of this
+> function.
+>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-Reported-by: Alessandro Bolletta <alessandro@mediaspot.net>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
-Changes to PATCH:
- * count instead of explicitly comparing VLANs, which makes it much
-   simpler (thank Antonio)
----
- net/batman-adv/translation-table.c | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+Acked-by: Martin Hundeb=F8ll <martin@hundeboll.net>
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index f629c21..e7f2998 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -2391,8 +2391,8 @@ static bool batadv_tt_global_check_crc(struct batadv_orig_node *orig_node,
- {
- 	struct batadv_tvlv_tt_vlan_data *tt_vlan_tmp;
- 	struct batadv_orig_node_vlan *vlan;
-+	int i, orig_num_vlan;
- 	uint32_t crc;
--	int i;
- 
- 	/* check if each received CRC matches the locally stored one */
- 	for (i = 0; i < num_vlan; i++) {
-@@ -2418,6 +2418,18 @@ static bool batadv_tt_global_check_crc(struct batadv_orig_node *orig_node,
- 			return false;
- 	}
- 
-+	/* check if any excess VLANs exist locally for the originator
-+	 * which are not mentioned in the TVLV from the originator.
-+	 */
-+	rcu_read_lock();
-+	orig_num_vlan = 0;
-+	list_for_each_entry_rcu(vlan, &orig_node->vlan_list, list)
-+		orig_num_vlan++;
-+	rcu_read_unlock();
-+
-+	if (orig_num_vlan > num_vlan)
-+		return false;
-+
- 	return true;
- }
- 
--- 
-2.5.0
+> ---
+>   net/batman-adv/fragmentation.c | 8 ++++----
+>   1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentatio=
+n.c
+> index 700c96c82a15..20d9282f895b 100644
+> --- a/net/batman-adv/fragmentation.c
+> +++ b/net/batman-adv/fragmentation.c
+> @@ -71,14 +71,14 @@ void batadv_frag_purge_orig(struct batadv_orig_node *=
+orig_node,
+>
+>   	for (i =3D 0; i < BATADV_FRAG_BUFFER_COUNT; i++) {
+>   		chain =3D &orig_node->fragments[i];
+> -		spin_lock_bh(&orig_node->fragments[i].lock);
+> +		spin_lock_bh(&chain->lock);
+>
+>   		if (!check_cb || check_cb(chain)) {
+> -			batadv_frag_clear_chain(&orig_node->fragments[i].head);
+> -			orig_node->fragments[i].size =3D 0;
+> +			batadv_frag_clear_chain(&chain->head);
+> +			chain->size =3D 0;
+>   		}
+>
+> -		spin_unlock_bh(&orig_node->fragments[i].lock);
+> +		spin_unlock_bh(&chain->lock);
+>   	}
+>   }
+>
+>
 
+--=20
+Kind Regards,
+Martin Hundeb=F8ll
+Frederiks All=E9 99A, 1.th
+8000 Aarhus C
+
++45 61 65 54 61
+martin@hundeboll.net
