@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 26 Aug 2015 16:41:51 +0200
-Message-Id: <1440600113-21305-2-git-send-email-sw@simonwunderlich.de>
+Date: Wed, 26 Aug 2015 16:41:52 +0200
+Message-Id: <1440600113-21305-3-git-send-email-sw@simonwunderlich.de>
 In-Reply-To: <1440600113-21305-1-git-send-email-sw@simonwunderlich.de>
 References: <1440600113-21305-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH-maintv2 1/3] batman-adv: fix speedy join for
-	DAT cache replies
+Subject: [B.A.T.M.A.N.] [PATCH-maintv2 2/3] batman-adv: avoid keeping false
+	temporary entry
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,58 +18,42 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: alessandro@mediaspot.net
 
-DAT Cache replies are answered on behalf of other clients which are not
-connected to the answering originator. Therefore, we shouldn't add these
-clients to the answering originators TT table through speed join to
-avoid bogus entries.
+In the case when a temporary entry is added first and a proper tt entry
+is added after that, the temporary tt entry is kept in the orig list.
+However the temporary flag is removed at this point, and therefore the
+purge function can not find this temporary entry anymore.
+
+Therefore, remove the previous temp entry before adding the new proper
+one.
 
 Reported-by: Alessandro Bolletta <alessandro@mediaspot.net>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
-Changes to PATCH:
- * only allow speedy join for BATADV_P_DATA to avoid adding more
-   corner cases in the future
----
- net/batman-adv/routing.c | 19 +++++++++++++++----
- 1 file changed, 15 insertions(+), 4 deletions(-)
+ net/batman-adv/translation-table.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index c360c0c..96b5daa 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -836,6 +836,7 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 	uint8_t *orig_addr;
- 	struct batadv_orig_node *orig_node = NULL;
- 	int check, hdr_size = sizeof(*unicast_packet);
-+	enum batadv_subtype subtype;
- 	bool is4addr;
- 
- 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
-@@ -863,10 +864,20 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- 	/* packet for me */
- 	if (batadv_is_my_mac(bat_priv, unicast_packet->dest)) {
- 		if (is4addr) {
--			batadv_dat_inc_counter(bat_priv,
--					       unicast_4addr_packet->subtype);
--			orig_addr = unicast_4addr_packet->src;
--			orig_node = batadv_orig_hash_find(bat_priv, orig_addr);
-+			subtype = unicast_4addr_packet->subtype;
-+			batadv_dat_inc_counter(bat_priv, subtype);
-+
-+			/* Only payload data should be considered for speedy
-+			 * join. For example, DAT also uses unicast 4addr
-+			 * types, but those packets should not be considered
-+			 * for speedy join, since the clients do not actually
-+			 * reside at the sending originator.
-+			 */
-+			if (subtype == BATADV_P_DATA) {
-+				orig_addr = unicast_4addr_packet->src;
-+				orig_node = batadv_orig_hash_find(bat_priv,
-+								  orig_addr);
-+			}
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 7986ec5..f629c21 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1416,9 +1416,15 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
  		}
  
- 		if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb,
+ 		/* if the client was temporary added before receiving the first
+-		 * OGM announcing it, we have to clear the TEMP flag
++		 * OGM announcing it, we have to clear the TEMP flag. Also,
++		 * remove the previous temporary orig node and re-add it
++		 * if required. If the orig entry changed, the new one which
++		 * is a non-temporary entry is preferred.
+ 		 */
+-		common->flags &= ~BATADV_TT_CLIENT_TEMP;
++		if (common->flags & BATADV_TT_CLIENT_TEMP) {
++			batadv_tt_global_del_orig_list(tt_global_entry);
++			common->flags &= ~BATADV_TT_CLIENT_TEMP;
++		}
+ 
+ 		/* the change can carry possible "attribute" flags like the
+ 		 * TT_CLIENT_WIFI, therefore they have to be copied in the
 -- 
 2.5.0
 
