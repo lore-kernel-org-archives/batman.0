@@ -1,11 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 26 Aug 2015 10:31:51 +0200
-Message-Id: <1440577911-16107-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1440577911-16107-1-git-send-email-sven@narfation.org>
-References: <1440577911-16107-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Fix typo 'wether' ->
-	'whether'
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 26 Aug 2015 16:33:34 +0200
+Message-Id: <1440599614-15912-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: unify flags access style in tt
+	global add
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,34 +14,28 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: alessandro@mediaspot.net
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+This should slightly improve readability
+
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/translation-table.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 45952dcb0b68..5dbcb2e2b497 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -908,7 +908,7 @@ end:
-  *  appropriate handlers
-  * @bat_priv: the bat priv with all the soft interface information
-  * @tvlv_handler: tvlv callback function handling the tvlv content
-- * @ogm_source: flag indicating wether the tvlv is an ogm or a unicast packet
-+ * @ogm_source: flag indicating whether the tvlv is an ogm or a unicast packet
-  * @orig_node: orig node emitting the ogm packet
-  * @src: source mac address of the unicast packet
-  * @dst: destination mac address of the unicast packet
-@@ -961,7 +961,7 @@ static int batadv_tvlv_call_handler(struct batadv_priv *bat_priv,
-  * batadv_tvlv_containers_process - parse the given tvlv buffer to call the
-  *  appropriate handlers
-  * @bat_priv: the bat priv with all the soft interface information
-- * @ogm_source: flag indicating wether the tvlv is an ogm or a unicast packet
-+ * @ogm_source: flag indicating whether the tvlv is an ogm or a unicast packet
-  * @orig_node: orig node emitting the ogm packet
-  * @src: source mac address of the unicast packet
-  * @dst: destination mac address of the unicast packet
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 75bc678..b436b35 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1432,7 +1432,7 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 		 * TT_CLIENT_WIFI, therefore they have to be copied in the
+ 		 * client entry
+ 		 */
+-		tt_global_entry->common.flags |= flags;
++		common->flags |= flags;
+ 
+ 		/* If there is the BATADV_TT_CLIENT_ROAM flag set, there is only
+ 		 * one originator left in the list and we previously received a
 -- 
 2.5.0
 
