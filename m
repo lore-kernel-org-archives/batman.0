@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 26 Aug 2015 16:41:52 +0200
-Message-Id: <1440600113-21305-3-git-send-email-sw@simonwunderlich.de>
+Date: Wed, 26 Aug 2015 16:41:53 +0200
+Message-Id: <1440600113-21305-4-git-send-email-sw@simonwunderlich.de>
 In-Reply-To: <1440600113-21305-1-git-send-email-sw@simonwunderlich.de>
 References: <1440600113-21305-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH-maintv2 2/3] batman-adv: avoid keeping false
-	temporary entry
+Subject: [B.A.T.M.A.N.] [PATCH-maintv2 3/3] batman-adv: detect local excess
+	vlans in TT request
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,42 +18,55 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: alessandro@mediaspot.net
 
-In the case when a temporary entry is added first and a proper tt entry
-is added after that, the temporary tt entry is kept in the orig list.
-However the temporary flag is removed at this point, and therefore the
-purge function can not find this temporary entry anymore.
-
-Therefore, remove the previous temp entry before adding the new proper
-one.
+If the local representation of the global TT table of one originator has
+more VLAN entries than the respective TT update, there is some
+inconsistency present. By detecting and reporting this inconsistency,
+the global table gets updated and the excess VLAN will get removed in
+the process.
 
 Reported-by: Alessandro Bolletta <alessandro@mediaspot.net>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/translation-table.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+Changes to PATCH:
+ * count instead of explicitly comparing VLANs, which makes it much
+   simpler (thank Antonio)
+---
+ net/batman-adv/translation-table.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 7986ec5..f629c21 100644
+index f629c21..e7f2998 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -1416,9 +1416,15 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
- 		}
+@@ -2391,8 +2391,8 @@ static bool batadv_tt_global_check_crc(struct batadv_orig_node *orig_node,
+ {
+ 	struct batadv_tvlv_tt_vlan_data *tt_vlan_tmp;
+ 	struct batadv_orig_node_vlan *vlan;
++	int i, orig_num_vlan;
+ 	uint32_t crc;
+-	int i;
  
- 		/* if the client was temporary added before receiving the first
--		 * OGM announcing it, we have to clear the TEMP flag
-+		 * OGM announcing it, we have to clear the TEMP flag. Also,
-+		 * remove the previous temporary orig node and re-add it
-+		 * if required. If the orig entry changed, the new one which
-+		 * is a non-temporary entry is preferred.
- 		 */
--		common->flags &= ~BATADV_TT_CLIENT_TEMP;
-+		if (common->flags & BATADV_TT_CLIENT_TEMP) {
-+			batadv_tt_global_del_orig_list(tt_global_entry);
-+			common->flags &= ~BATADV_TT_CLIENT_TEMP;
-+		}
+ 	/* check if each received CRC matches the locally stored one */
+ 	for (i = 0; i < num_vlan; i++) {
+@@ -2418,6 +2418,18 @@ static bool batadv_tt_global_check_crc(struct batadv_orig_node *orig_node,
+ 			return false;
+ 	}
  
- 		/* the change can carry possible "attribute" flags like the
- 		 * TT_CLIENT_WIFI, therefore they have to be copied in the
++	/* check if any excess VLANs exist locally for the originator
++	 * which are not mentioned in the TVLV from the originator.
++	 */
++	rcu_read_lock();
++	orig_num_vlan = 0;
++	list_for_each_entry_rcu(vlan, &orig_node->vlan_list, list)
++		orig_num_vlan++;
++	rcu_read_unlock();
++
++	if (orig_num_vlan > num_vlan)
++		return false;
++
+ 	return true;
+ }
+ 
 -- 
 2.5.0
 
