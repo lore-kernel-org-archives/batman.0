@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 28 Aug 2015 11:12:35 +0200
-Message-Id: <1440753156-7808-10-git-send-email-antonio@meshcoding.com>
+Date: Fri, 28 Aug 2015 11:12:36 +0200
+Message-Id: <1440753156-7808-11-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1440753156-7808-1-git-send-email-antonio@meshcoding.com>
 References: <1440753156-7808-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 09/10] batman-adv: Add lower layer
-	needed_(head|tail)room to own ones
+Subject: [B.A.T.M.A.N.] [PATCH 10/10] batman-adv: turn
+	batadv_neigh_node_get() into local function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,103 +16,126 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Marek Lindner <mareklindner@neomailbox.ch>
 
-The maximum of hard_header_len and maximum of all needed_(head|tail)room of
-all slave interfaces of a batman-adv device must be used to define the
-batman-adv device needed_(head|tail)room. This is required to avoid too
-small buffer problems when these slave devices try to send the encapsulated
-packet in a tx path without the possibility to resize the skbuff.
+commit c214ebe1eb29 ("batman-adv: move neigh_node list add into
+batadv_neigh_node_new()") removed external calls to
+batadv_neigh_node_get().
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/hard-interface.c | 41 +++++++++++++++++++++++++++++++++++++++++
- net/batman-adv/soft-interface.c |  2 --
- 2 files changed, 41 insertions(+), 2 deletions(-)
+ net/batman-adv/originator.c | 72 ++++++++++++++++++++++-----------------------
+ net/batman-adv/originator.h |  4 ---
+ 2 files changed, 36 insertions(+), 40 deletions(-)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 0565b20..f11345e 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -252,6 +252,44 @@ static void batadv_check_known_mac_addr(const struct net_device *net_dev)
- 	rcu_read_unlock();
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 099a84a..7486df9 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -443,6 +443,42 @@ out:
  }
  
-+/**
-+ * batadv_hardif_recalc_extra_skbroom() - Recalculate skbuff extra head/tailroom
-+ * @soft_iface: netdev struct of the mesh interface
+ /**
++ * batadv_neigh_node_get - retrieve a neighbour from the list
++ * @orig_node: originator which the neighbour belongs to
++ * @hard_iface: the interface where this neighbour is connected to
++ * @addr: the address of the neighbour
++ *
++ * Looks for and possibly returns a neighbour belonging to this originator list
++ * which is connected through the provided hard interface.
++ * Returns NULL if the neighbour is not found.
 + */
-+static void batadv_hardif_recalc_extra_skbroom(struct net_device *soft_iface)
++static struct batadv_neigh_node *
++batadv_neigh_node_get(const struct batadv_orig_node *orig_node,
++		      const struct batadv_hard_iface *hard_iface,
++		      const u8 *addr)
 +{
-+	const struct batadv_hard_iface *hard_iface;
-+	unsigned short lower_header_len = ETH_HLEN;
-+	unsigned short lower_headroom = 0;
-+	unsigned short lower_tailroom = 0;
-+	unsigned short needed_headroom;
++	struct batadv_neigh_node *tmp_neigh_node, *res = NULL;
 +
 +	rcu_read_lock();
-+	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-+		if (hard_iface->if_status == BATADV_IF_NOT_IN_USE)
++	hlist_for_each_entry_rcu(tmp_neigh_node, &orig_node->neigh_list, list) {
++		if (!batadv_compare_eth(tmp_neigh_node->addr, addr))
 +			continue;
 +
-+		if (hard_iface->soft_iface != soft_iface)
++		if (tmp_neigh_node->if_incoming != hard_iface)
 +			continue;
 +
-+		lower_header_len = max_t(unsigned short, lower_header_len,
-+					 hard_iface->net_dev->hard_header_len);
++		if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
++			continue;
 +
-+		lower_headroom = max_t(unsigned short, lower_headroom,
-+				       hard_iface->net_dev->needed_headroom);
-+
-+		lower_tailroom = max_t(unsigned short, lower_tailroom,
-+				       hard_iface->net_dev->needed_tailroom);
++		res = tmp_neigh_node;
++		break;
 +	}
 +	rcu_read_unlock();
 +
-+	needed_headroom = lower_headroom + (lower_header_len - ETH_HLEN);
-+	needed_headroom += batadv_max_header_len();
-+
-+	soft_iface->needed_headroom = needed_headroom;
-+	soft_iface->needed_tailroom = lower_tailroom;
++	return res;
 +}
 +
- int batadv_hardif_min_mtu(struct net_device *soft_iface)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
-@@ -474,6 +512,8 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 			   "Not using interface %s (retrying later): interface not active\n",
- 			   hard_iface->net_dev->name);
++/**
+  * batadv_neigh_node_new - create and init a new neigh_node object
+  * @orig_node: originator object representing the neighbour
+  * @hard_iface: the interface where the neighbour is connected to
+@@ -496,42 +532,6 @@ out:
+ }
  
-+	batadv_hardif_recalc_extra_skbroom(soft_iface);
-+
- 	/* begin scheduling originator messages on that interface */
- 	batadv_schedule_bat_ogm(hard_iface);
- 
-@@ -529,6 +569,7 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
- 	dev_put(hard_iface->soft_iface);
- 
- 	netdev_upper_dev_unlink(hard_iface->net_dev, hard_iface->soft_iface);
-+	batadv_hardif_recalc_extra_skbroom(hard_iface->soft_iface);
- 
- 	/* nobody uses this interface anymore */
- 	if (!bat_priv->num_ifaces) {
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index d5c5ad9..ac4d08d 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -947,8 +947,6 @@ static void batadv_softif_init_early(struct net_device *dev)
- 	 * have not been initialized yet
- 	 */
- 	dev->mtu = ETH_DATA_LEN;
--	/* reserve more space in the skbuff for our header */
--	dev->hard_header_len = batadv_max_header_len();
- 
- 	/* generate random address */
- 	eth_hw_addr_random(dev);
+ /**
+- * batadv_neigh_node_get - retrieve a neighbour from the list
+- * @orig_node: originator which the neighbour belongs to
+- * @hard_iface: the interface where this neighbour is connected to
+- * @addr: the address of the neighbour
+- *
+- * Looks for and possibly returns a neighbour belonging to this originator list
+- * which is connected through the provided hard interface.
+- * Returns NULL if the neighbour is not found.
+- */
+-struct batadv_neigh_node *
+-batadv_neigh_node_get(const struct batadv_orig_node *orig_node,
+-		      const struct batadv_hard_iface *hard_iface,
+-		      const u8 *addr)
+-{
+-	struct batadv_neigh_node *tmp_neigh_node, *res = NULL;
+-
+-	rcu_read_lock();
+-	hlist_for_each_entry_rcu(tmp_neigh_node, &orig_node->neigh_list, list) {
+-		if (!batadv_compare_eth(tmp_neigh_node->addr, addr))
+-			continue;
+-
+-		if (tmp_neigh_node->if_incoming != hard_iface)
+-			continue;
+-
+-		if (!atomic_inc_not_zero(&tmp_neigh_node->refcount))
+-			continue;
+-
+-		res = tmp_neigh_node;
+-		break;
+-	}
+-	rcu_read_unlock();
+-
+-	return res;
+-}
+-
+-/**
+  * batadv_orig_ifinfo_free_rcu - free the orig_ifinfo object
+  * @rcu: rcu pointer of the orig_ifinfo object
+  */
+diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
+index fde3438..fa18f9b 100644
+--- a/net/batman-adv/originator.h
++++ b/net/batman-adv/originator.h
+@@ -42,10 +42,6 @@ void batadv_orig_node_free_ref_now(struct batadv_orig_node *orig_node);
+ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
+ 					      const u8 *addr);
+ struct batadv_neigh_node *
+-batadv_neigh_node_get(const struct batadv_orig_node *orig_node,
+-		      const struct batadv_hard_iface *hard_iface,
+-		      const u8 *addr);
+-struct batadv_neigh_node *
+ batadv_neigh_node_new(struct batadv_orig_node *orig_node,
+ 		      struct batadv_hard_iface *hard_iface,
+ 		      const u8 *neigh_addr);
 -- 
 2.5.0
 
