@@ -1,10 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 28 Aug 2015 11:12:33 +0200
-Message-Id: <1440753156-7808-8-git-send-email-antonio@meshcoding.com>
+Date: Fri, 28 Aug 2015 11:12:34 +0200
+Message-Id: <1440753156-7808-9-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1440753156-7808-1-git-send-email-antonio@meshcoding.com>
 References: <1440753156-7808-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 07/10] batman-adv: Start new development cycle
+Subject: [B.A.T.M.A.N.] [PATCH 08/10] batman-adv: don't access unregistered
+	net_device object
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,29 +16,46 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
+In batadv_hardif_disable_interface() there is a call to
+batadv_softif_destroy_sysfs() which in turns invokes
+unregister_netdevice() on the soft_iface.
+After this point we cannot rely on the soft_iface object
+anymore because it might get free'd by the netdev periodic
+routine at any time.
 
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+For this reason the netdev_upper_dev_unlink(.., soft_iface) call
+is moved before the invocation of batadv_softif_destroy_sysfs() so
+that we can be sure that the soft_iface object is still valid.
+
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/main.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/hard-interface.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 78500ac..ebd8af0 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -24,7 +24,7 @@
- #define BATADV_DRIVER_DEVICE "batman-adv"
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index f4a15d2..0565b20 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -528,6 +528,8 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
+ 	batadv_purge_outstanding_packets(bat_priv, hard_iface);
+ 	dev_put(hard_iface->soft_iface);
  
- #ifndef BATADV_SOURCE_VERSION
--#define BATADV_SOURCE_VERSION "2015.1"
-+#define BATADV_SOURCE_VERSION "2015.2"
- #endif
++	netdev_upper_dev_unlink(hard_iface->net_dev, hard_iface->soft_iface);
++
+ 	/* nobody uses this interface anymore */
+ 	if (!bat_priv->num_ifaces) {
+ 		batadv_gw_check_client_stop(bat_priv);
+@@ -536,7 +538,6 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
+ 			batadv_softif_destroy_sysfs(hard_iface->soft_iface);
+ 	}
  
- /* B.A.T.M.A.N. parameters */
+-	netdev_upper_dev_unlink(hard_iface->net_dev, hard_iface->soft_iface);
+ 	hard_iface->soft_iface = NULL;
+ 	batadv_hardif_free_ref(hard_iface);
+ 
 -- 
 2.5.0
 
