@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Fri, 28 Aug 2015 11:12:34 +0200
-Message-Id: <1440753156-7808-9-git-send-email-antonio@meshcoding.com>
+Date: Fri, 28 Aug 2015 11:12:35 +0200
+Message-Id: <1440753156-7808-10-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1440753156-7808-1-git-send-email-antonio@meshcoding.com>
 References: <1440753156-7808-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 08/10] batman-adv: don't access unregistered
-	net_device object
+Subject: [B.A.T.M.A.N.] [PATCH 09/10] batman-adv: Add lower layer
+	needed_(head|tail)room to own ones
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,46 +16,103 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>, Marek Lindner <mareklindner@neomailbox.ch>
 
-In batadv_hardif_disable_interface() there is a call to
-batadv_softif_destroy_sysfs() which in turns invokes
-unregister_netdevice() on the soft_iface.
-After this point we cannot rely on the soft_iface object
-anymore because it might get free'd by the netdev periodic
-routine at any time.
+From: Sven Eckelmann <sven@narfation.org>
 
-For this reason the netdev_upper_dev_unlink(.., soft_iface) call
-is moved before the invocation of batadv_softif_destroy_sysfs() so
-that we can be sure that the soft_iface object is still valid.
+The maximum of hard_header_len and maximum of all needed_(head|tail)room of
+all slave interfaces of a batman-adv device must be used to define the
+batman-adv device needed_(head|tail)room. This is required to avoid too
+small buffer problems when these slave devices try to send the encapsulated
+packet in a tx path without the possibility to resize the skbuff.
 
-Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/hard-interface.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ net/batman-adv/hard-interface.c | 41 +++++++++++++++++++++++++++++++++++++++++
+ net/batman-adv/soft-interface.c |  2 --
+ 2 files changed, 41 insertions(+), 2 deletions(-)
 
 diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index f4a15d2..0565b20 100644
+index 0565b20..f11345e 100644
 --- a/net/batman-adv/hard-interface.c
 +++ b/net/batman-adv/hard-interface.c
-@@ -528,6 +528,8 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
- 	batadv_purge_outstanding_packets(bat_priv, hard_iface);
+@@ -252,6 +252,44 @@ static void batadv_check_known_mac_addr(const struct net_device *net_dev)
+ 	rcu_read_unlock();
+ }
+ 
++/**
++ * batadv_hardif_recalc_extra_skbroom() - Recalculate skbuff extra head/tailroom
++ * @soft_iface: netdev struct of the mesh interface
++ */
++static void batadv_hardif_recalc_extra_skbroom(struct net_device *soft_iface)
++{
++	const struct batadv_hard_iface *hard_iface;
++	unsigned short lower_header_len = ETH_HLEN;
++	unsigned short lower_headroom = 0;
++	unsigned short lower_tailroom = 0;
++	unsigned short needed_headroom;
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
++		if (hard_iface->if_status == BATADV_IF_NOT_IN_USE)
++			continue;
++
++		if (hard_iface->soft_iface != soft_iface)
++			continue;
++
++		lower_header_len = max_t(unsigned short, lower_header_len,
++					 hard_iface->net_dev->hard_header_len);
++
++		lower_headroom = max_t(unsigned short, lower_headroom,
++				       hard_iface->net_dev->needed_headroom);
++
++		lower_tailroom = max_t(unsigned short, lower_tailroom,
++				       hard_iface->net_dev->needed_tailroom);
++	}
++	rcu_read_unlock();
++
++	needed_headroom = lower_headroom + (lower_header_len - ETH_HLEN);
++	needed_headroom += batadv_max_header_len();
++
++	soft_iface->needed_headroom = needed_headroom;
++	soft_iface->needed_tailroom = lower_tailroom;
++}
++
+ int batadv_hardif_min_mtu(struct net_device *soft_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
+@@ -474,6 +512,8 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 			   "Not using interface %s (retrying later): interface not active\n",
+ 			   hard_iface->net_dev->name);
+ 
++	batadv_hardif_recalc_extra_skbroom(soft_iface);
++
+ 	/* begin scheduling originator messages on that interface */
+ 	batadv_schedule_bat_ogm(hard_iface);
+ 
+@@ -529,6 +569,7 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
  	dev_put(hard_iface->soft_iface);
  
-+	netdev_upper_dev_unlink(hard_iface->net_dev, hard_iface->soft_iface);
-+
+ 	netdev_upper_dev_unlink(hard_iface->net_dev, hard_iface->soft_iface);
++	batadv_hardif_recalc_extra_skbroom(hard_iface->soft_iface);
+ 
  	/* nobody uses this interface anymore */
  	if (!bat_priv->num_ifaces) {
- 		batadv_gw_check_client_stop(bat_priv);
-@@ -536,7 +538,6 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
- 			batadv_softif_destroy_sysfs(hard_iface->soft_iface);
- 	}
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index d5c5ad9..ac4d08d 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -947,8 +947,6 @@ static void batadv_softif_init_early(struct net_device *dev)
+ 	 * have not been initialized yet
+ 	 */
+ 	dev->mtu = ETH_DATA_LEN;
+-	/* reserve more space in the skbuff for our header */
+-	dev->hard_header_len = batadv_max_header_len();
  
--	netdev_upper_dev_unlink(hard_iface->net_dev, hard_iface->soft_iface);
- 	hard_iface->soft_iface = NULL;
- 	batadv_hardif_free_ref(hard_iface);
- 
+ 	/* generate random address */
+ 	eth_hw_addr_random(dev);
 -- 
 2.5.0
 
