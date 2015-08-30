@@ -1,15 +1,14 @@
-Return-Path: <antonio@meshcoding.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 30 Aug 2015 17:56:36 +0800
+Message-ID: <5610936.OWXkkxkm5r@voltaire>
+In-Reply-To: <1440577481-14719-1-git-send-email-sven@narfation.org>
 References: <4340969.K0PsB6WH4o@bentobox>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <55E0C8BF.1080203@meshcoding.com>
-Date: Fri, 28 Aug 2015 22:46:55 +0200
+ <1440577481-14719-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-In-Reply-To: <4340969.K0PsB6WH4o@bentobox>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="mpRQVas4GL6Jv3CTW3r4prG0f43QPSwbE"
-Subject: Re: [B.A.T.M.A.N.] Patches missing in batman-adv next/maint and
- net-next
+Content-Type: multipart/signed; boundary="nextPart1480571.izaqKQNXfe";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: convert to using IFF_NO_QUEUE
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,85 +18,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: mareklindner@neomailbox.ch
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---mpRQVas4GL6Jv3CTW3r4prG0f43QPSwbE
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
+--nextPart1480571.izaqKQNXfe
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On 26/08/15 10:23, Sven Eckelmann wrote:
-> Hi,
->=20
-> there seems to be 5 patches missing in batman-adv next which are alread=
-y
-> in net-next.git. Most likely the maintainers already know about them bu=
-t
-> at least one of them didn't reach the b.a.t.m.a.n mailing list.
->=20
->  * batman-adv: convert to using IFF_NO_QUEUE
->    next
->    (will be send as reply of this mail)
->  * batman-adv: Fix memory leak on tt add with invalid vlan
->    maint
->    https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2015-August/013560=
-=2Ehtml
->  * batman-adv: Remove unnecessary braces for test_bit() in DAT
->    maint
->    https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2015-August/013537=
-=2Ehtml
->  * batman-adv: Remove unnecessary braces for test_bit() in NC
->    maint
->    https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2015-August/013538=
-=2Ehtml
->  * batman-adv: Remove unnecessary braces for test_bit() in MCAST
->    maint
->    https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2015-August/013539=
-=2Ehtml
->=20
-> There are also a bunch of patches missing in net-next (see attachment).=
+On Wednesday, August 26, 2015 10:24:41 Sven Eckelmann wrote:
+> From: Phil Sutter <phil@nwl.cc>
+> 
+> Signed-off-by: Phil Sutter <phil@nwl.cc>
+> Cc: Marek Lindner <mareklindner@neomailbox.ch>
+> Cc: Simon Wunderlich <sw@simonwunderlich.de>
+> Cc: Antonio Quartulli <antonio@meshcoding.com>
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> [sven@narfation.org: added compat hack]
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> Yes, I go the "route of shame" and added this weird hack. But at least I
+> don't substract functions from each other.
+> ---
+>  compat.h                        | 6 ++++++
+>  net/batman-adv/soft-interface.c | 2 +-
+>  2 files changed, 7 insertions(+), 1 deletion(-)
 
-> I highly recommend to format these patches with the=20
-> git-format-patches option --histogram. Otherwise patch 4 ("batman-adv:
-> move neigh_node list add into batadv_neigh_node_new()") becomes
-> unreadable.
+Applied in revision 071aadb.
 
-All the patches in next and maint should have been merged net-next and
-net as of now.
+Thanks,
+Marek
 
-Marek, could you please take care of merging these patches mentioned by
-Sven in next when you have time?
-
-Thanks!
-
---=20
-Antonio Quartulli
-
-
---mpRQVas4GL6Jv3CTW3r4prG0f43QPSwbE
+--nextPart1480571.izaqKQNXfe
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJV4MjDAAoJEOb/4TMchkvfKxIP/3PZeYz2nsIivOjVFlw0d4kw
-DD4+/9+WEVJaozbslbOxybbhCseHD2umESYIfnkRxWPA3HYtJWOrFqsXSMlt3fDZ
-Y+xSBOrj7sMSOv2eFu5POukfyAUCddRf2dFFOzvGtH0GuOYSnlW/i8z9N0hPJGD2
-WNnvT7Q14haMqq5STQBR22uKTZHUkl53qnnp1ebbhcCTrVHvQX6SD4FAuJSwD6Tu
-bDuv6kEeTk9u3+PGMUjQv7fkmMPvtuWxGfkBQYK5OUOE5ejKciJyDkI2/2Dtv1rf
-Qcnynm/hcg3E9HyzZ+LECqCLtsne8fmA1TO4Vs/U4mZ2K+QEqeNQqwtfa4n//kH5
-9RYih4vPnVl1je/LdtIQg8sLMTqXjORE0kF2Frb88WU3ejcoBRqlAFHoZIYKBBcQ
-BntDScmsi0Gquxrj+lgWM1PxUY0PYTBbknpYXKgPW8OdrPPGlvkxMxFnDVIntLL0
-S3B3KIt8pSdipIHFzwikSCQ3vIhQWjzMZWyMEP0BSfTbCDSHr4kmpLd72cAbkMzg
-HDgOqpcIWaDXecxhChqh4NyJx1GubpJl41Eg+/2C8lhb+YL53J8WbbwYxoFZL+rP
-xDb6qqkgPzHeQUN4kOcFOMsehTmxMmKnTLzdZyO8PRzMrwlBImeyVLCuYROTdqLG
-/TYCPCmQ7Gn3L+efcw3o
-=C1D5
+iQEcBAABCAAGBQJV4tNYAAoJEFNVTo/uthzAfWcH/iCNpyEVDUVLez6MJGi3w7nD
+gsTzTovTRuL4GAL4PbDfMv+pc7EPWBiqrc/CmFofSBXlPRzkgKKrK8ut0f0DmsTl
+Ff9Qz8d3xASx7F5kkrwSmRwzdPCSLdhWXDmL/falv1eVhHKRoKr9jFVIKeOW4Hh/
+i6bwRH4hAeAGMjyaGoBH1jJPLsT3lKxmGK0s3iErpV0kxgf7FVR+ll5uQ1t3l9G4
+hkRCsWbdsmbdU9UePM9S0EuLEPEm/Jz6AzIBpZa3t3xwzbNN5fvCb39BujNtgouB
+zbx1tKq7O6PTGTHivQL/4ogQoadO9xpdBuUOLv0ciwPR/PkHJEj/4FbO29c0g8U=
+=+3yi
 -----END PGP SIGNATURE-----
 
---mpRQVas4GL6Jv3CTW3r4prG0f43QPSwbE--
+--nextPart1480571.izaqKQNXfe--
+
