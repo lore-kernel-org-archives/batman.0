@@ -1,16 +1,16 @@
-Return-Path: <antonio@meshcoding.com>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 01 Sep 2015 13:00:20 +0200
+Message-ID: <1647977.TX5clMHFCZ@prime>
+In-Reply-To: <55E5692D.8090909@meshcoding.com>
 References: <1440600113-21305-1-git-send-email-sw@simonwunderlich.de>
- <1440600113-21305-4-git-send-email-sw@simonwunderlich.de>
-From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <55E578E8.5010107@meshcoding.com>
-Date: Tue, 1 Sep 2015 12:07:36 +0200
+ <1440600113-21305-3-git-send-email-sw@simonwunderlich.de>
+ <55E5692D.8090909@meshcoding.com>
 MIME-Version: 1.0
-In-Reply-To: <1440600113-21305-4-git-send-email-sw@simonwunderlich.de>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="s9DsvHqWtBVTxDcWlkomKROmq8eU7k4kN"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-maintv2 3/3] batman-adv: detect local
- excess vlans in TT request
+Content-Type: multipart/signed; boundary="nextPart11350165.s8NQ7kvuHc";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH-maintv2 2/3] batman-adv: avoid keeping
+	false temporary entry
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,65 +20,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>
+To: Antonio Quartulli <antonio@meshcoding.com>
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, alessandro@mediaspot.net
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---s9DsvHqWtBVTxDcWlkomKROmq8eU7k4kN
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
 
+--nextPart11350165.s8NQ7kvuHc
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
+On Tuesday 01 September 2015 11:00:29 Antonio Quartulli wrote:
+> On 26/08/15 16:41, Simon Wunderlich wrote:
+> > In the case when a temporary entry is added first and a proper tt entry
+> > is added after that, the temporary tt entry is kept in the orig list.
+> > However the temporary flag is removed at this point, and therefore the
+> > purge function can not find this temporary entry anymore.
+> 
+> When can this really happen? When a temporary client has roamed to a new
+> originator before it could be claimed by the first one ? Or are there
+> other cases ? I think it is important to make this clear, because the
+> original logic was such as the expected behaviour was to receive an ADD
+> event from the same originator where the temporary client was seen.
+> 
+> Other than this, the patch looks good.
 
-On 26/08/15 16:41, Simon Wunderlich wrote:
-> If the local representation of the global TT table of one originator ha=
-s
-> more VLAN entries than the respective TT update, there is some
-> inconsistency present. By detecting and reporting this inconsistency,
-> the global table gets updated and the excess VLAN will get removed in
-> the process.
+I've seen the problem in that problematic case which was fixed in PATCHv1. 
+Practically, it is unlikely to happen unless there is a malicious attacker or 
+another bug like the one described earlier - that is, speedy join is triggered 
+without any actual TT update.
 
-This a nice catch, but I am not sure this is the right way of
-implementing the fix.
+The main problem I've perceived here was that the TT entry got the temporary 
+flag removed even if the original sender didn't supply a proper TT 
+announcement yet. The reason for this was that it got a proper reply from 
+another orig node.
 
-Imagine this sequence of events:
-1) originator O1 sends an OGM
-2) client C1 connects to O1 on a newly created VLAN and starts sending
-traffic
-3) originator O2 detects (speedy join) C1 before receiving the O1's OGM
-4) O2 receives O1's OGM and the check will kill C1 because its VLAN is
-not advertised in the OGM. O2 needs to wait for O1's next OGM before
-getting to know C1 again
+The roaming case you've described would also cause the temporary client to be 
+removed, but might be added later through a ''proper'' TT announcement.
 
-Maybe this scenario is rather unlikely? What do you think?
+Do you think I should include any of this in the commit message?
 
-
-
---=20
-Antonio Quartulli
-
-
---s9DsvHqWtBVTxDcWlkomKROmq8eU7k4kN
+Cheers,
+    Simon
+--nextPart11350165.s8NQ7kvuHc
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJV5XjsAAoJEOb/4TMchkvf9asQALq9ClIEhmOZaEfGVfISIKLs
-ZE+CUXFQOTlM6JE3YbU5MjXUTyzuNquA7bSCZMH5Gh5rgcLI3O0kkVYnZ1fLaXMq
-ovzRWzPf/P/WQQURETFDJ2/DNjswZH1C0b9OLSGb5J6e3hMW5Qv9M/rYFggcoNMy
-oN4AD84ObjOUq8WjQjU2Vi4tW3fXtRrLTdCMV8U8gyHHVnDtPEY6hprREbg79R9E
-qBTPreuEOTSFm0GgNSfQs/n8NS1CgTYU9pvaH+w2kxYnHo5vJVF9rOVda/aEcS/r
-Xs/FxCo0iVkopLc+q8BEqL0OJ+t3vMd3I5+PaGhvk5wWC3nBe5pMpovKjKQUCcOn
-5k9ZBiRx7ZRZrFUc7/1o/ASgSkAummm8BlhEpe2rVjPp5oVjG/IJEybd2AxxIzMN
-CKlyPntHSjE40VoBRygGssB5ONxMIXmrS1b2Xtt2NWCnvqZkSBa1HsOw2mz6ipYM
-LvJqTBqMG42AuHeAZTLGRUERXU5Eq0mtHvHI/Q10jLEgqZOxzGSDiYhM3PcCJnLT
-6jqpEcDSeDaChtJpNJttDVFX2byv3MQ2R9jdC8XrUCsSmeEfNKD/9L0wQo+AeKfw
-zrGxY3UwKKzJc8anDPgKDnl5bDplQWMmT2u0NNpOsNlRqXpaDTzrNrtwUODPZKAU
-H7zTBXcY/kqpppDsFoG7
-=5ofJ
+iEYEABECAAYFAlXlhUcACgkQrzg/fFk7axYVNACg8VHe54FnnEj3s92zKtve4q4u
+1nkAoIfgk00nJbuAqXchwmaFSFIwBwXN
+=xFkq
 -----END PGP SIGNATURE-----
 
---s9DsvHqWtBVTxDcWlkomKROmq8eU7k4kN--
+--nextPart11350165.s8NQ7kvuHc--
+
