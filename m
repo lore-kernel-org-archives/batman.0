@@ -1,16 +1,16 @@
 Return-Path: <antonio@meshcoding.com>
 References: <1440600113-21305-1-git-send-email-sw@simonwunderlich.de>
- <1440600113-21305-2-git-send-email-sw@simonwunderlich.de>
+ <1440600113-21305-3-git-send-email-sw@simonwunderlich.de>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <55E48290.3090902@meshcoding.com>
-Date: Mon, 31 Aug 2015 18:36:32 +0200
+Message-ID: <55E5692D.8090909@meshcoding.com>
+Date: Tue, 1 Sep 2015 11:00:29 +0200
 MIME-Version: 1.0
-In-Reply-To: <1440600113-21305-2-git-send-email-sw@simonwunderlich.de>
+In-Reply-To: <1440600113-21305-3-git-send-email-sw@simonwunderlich.de>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="fnSDd9B5KNG4GoP3pCguq3Bcf4nCSQKcX"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-maintv2 1/3] batman-adv: fix speedy join
- for DAT cache replies
+ boundary="AeV5K6od5T1ecbwcM7D0wjPTNtVhxLNA7"
+Subject: Re: [B.A.T.M.A.N.] [PATCH-maintv2 2/3] batman-adv: avoid keeping
+ false temporary entry
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -24,24 +24,26 @@ To: Simon Wunderlich <sw@simonwunderlich.de>
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, alessandro@mediaspot.net
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---fnSDd9B5KNG4GoP3pCguq3Bcf4nCSQKcX
+--AeV5K6od5T1ecbwcM7D0wjPTNtVhxLNA7
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
 
 
 On 26/08/15 16:41, Simon Wunderlich wrote:
-> DAT Cache replies are answered on behalf of other clients which are not=
+> In the case when a temporary entry is added first and a proper tt entry=
 
-> connected to the answering originator. Therefore, we shouldn't add thes=
-e
-> clients to the answering originators TT table through speed join to
-> avoid bogus entries.
->=20
-> Reported-by: Alessandro Bolletta <alessandro@mediaspot.net>
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+> is added after that, the temporary tt entry is kept in the orig list.
+> However the temporary flag is removed at this point, and therefore the
+> purge function can not find this temporary entry anymore.
 
-Acked-by: Antonio Quartulli <antonio@meshcoding.com>
+When can this really happen? When a temporary client has roamed to a new
+originator before it could be claimed by the first one ? Or are there
+other cases ? I think it is important to make this clear, because the
+original logic was such as the expected behaviour was to receive an ADD
+event from the same originator where the temporary client was seen.
+
+Other than this, the patch looks good.
 
 
 
@@ -49,7 +51,7 @@ Acked-by: Antonio Quartulli <antonio@meshcoding.com>
 Antonio Quartulli
 
 
---fnSDd9B5KNG4GoP3pCguq3Bcf4nCSQKcX
+--AeV5K6od5T1ecbwcM7D0wjPTNtVhxLNA7
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -57,19 +59,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJV5IKUAAoJEOb/4TMchkvfj5QP/3y2G/Wt8wXojZH0e0AAmMhD
-mN/WQ5D3iOhEF6W1ib5WZXcGy/Afjc2/gJVgOd+PO0cwe2woYMBbxXVHN+pJUSuv
-UrlkaVKw49+qCVFv6XGCJBQCJs/QQazhPvmZPbyRsGZ5YUEbORsE7GDZF6V/n+oH
-3QxXMrLMfu6UYGT/S5i7unSdnTb4gIeYe26nhgHFXgw1Cv08AWQ35nxymyzG4Qpq
-xCqxRhZsSlFKfu/8HRkqsD6TUhy4JjMBHtKLe4a+ek7yIDScZenAb5qW+iCLNZDN
-DCUWZWYfxAMMi8VtZB3qD0yT+hy+kU7X9AOmv3wvXclTMnsqYeyu6RQ0Ra+AGDUV
-iB4p0f2FxbCXHDhLShZIguGwfxygr4tQVpWxEzngAUSZ9URrdZjXbNk3uoyOqAwg
-Jjx7r2SGWAY1DnzO8Tfq2PIZvoe9IRMwPr7uXYJ295RMvppTZkq9YgmK0UnOXriB
-Wm3K+kF4jlxyrk4u1Ku14s3BV2n4TIveaDXymT6ImdLweDbMTrCdabbvrYATBTCA
-kWpudfy4p7ycKH/gFivxm4A5bvdn8viaAnvyDS3/dEkRo/wI2X0Ps6gH5Eda8jVB
-gnXFSXBhv64RpgZwj+u52YghiFC6p5gkCU10GM1A5cZgu/A5N7QzWXLEc/1t5PpM
-UQV3XGyPtQXVsZx9g0tt
-=XkM9
+iQIcBAEBCAAGBQJV5WkzAAoJEOb/4TMchkvfYI0P/29yWcmDdOUpKH0k/tZScYhq
+Nm+OEYJ/fiRV5Qk2ypeG+PUFX/iR9B9hg8PsBq+b2x2s4vRg9K1oIaw9WkfxZAiy
+zQ9EHVSlmg0I2ewnWjfXhiWAsTu2XoMyc58gaYyqxl+OPmchLPkGwB3rge5MrQ05
+pU7Tv1jKjenZ7fSEYhSXwkWDUgxI/tuQsQLzQ01w6AjvU0yaG+GNtyyY+EO+ouB6
+VIF6I7Tg2h2LqaxJb5YnfS45873SbQdfQtlYY8y2moDsr2wwZLU8p7MO2URNfK3w
+O56guHoXN0T9ELJwLO+JosrDkwHG14MBcs/HCeXOWpO85iS8/hgB2tYPxvMLRNeF
+0T8R48St+/1zBQXQEeE+CIJ1OhfVusRErhdY83M/OZQ0N5OawdTDwrJu9eAOLZA5
+56nb0fon27zl0fTdJVqzLn2iJyxN8BjxpBrdrg75pIK93lmGHI1IgKg4Z6EtvF25
+FmbKDnx586C5SC9IpAU3zVxaqaz+Vyfm+mqlNsMRSVnUKYoKVgrElC1ps4073yp3
+5n77HMCuA58gAfNAlet1HLMWClCZojEdaKXCBstvDl+1bAexIo650LSk9xm/ZLhJ
+wqxTk8GjN+nFQWHGUvwwbcja59apGv3gjck+497oKTf5oixLdqV1hY6WEWp23ITa
+QU95BTSOsKhItyTkFG99
+=0elf
 -----END PGP SIGNATURE-----
 
---fnSDd9B5KNG4GoP3pCguq3Bcf4nCSQKcX--
+--AeV5K6od5T1ecbwcM7D0wjPTNtVhxLNA7--
