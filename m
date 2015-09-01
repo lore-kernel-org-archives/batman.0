@@ -1,16 +1,16 @@
 Return-Path: <antonio@meshcoding.com>
 References: <1440600113-21305-1-git-send-email-sw@simonwunderlich.de>
- <1440600113-21305-3-git-send-email-sw@simonwunderlich.de>
+ <1440600113-21305-4-git-send-email-sw@simonwunderlich.de>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Message-ID: <55E5692D.8090909@meshcoding.com>
-Date: Tue, 1 Sep 2015 11:00:29 +0200
+Message-ID: <55E578E8.5010107@meshcoding.com>
+Date: Tue, 1 Sep 2015 12:07:36 +0200
 MIME-Version: 1.0
-In-Reply-To: <1440600113-21305-3-git-send-email-sw@simonwunderlich.de>
+In-Reply-To: <1440600113-21305-4-git-send-email-sw@simonwunderlich.de>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="AeV5K6od5T1ecbwcM7D0wjPTNtVhxLNA7"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-maintv2 2/3] batman-adv: avoid keeping
- false temporary entry
+ boundary="s9DsvHqWtBVTxDcWlkomKROmq8eU7k4kN"
+Subject: Re: [B.A.T.M.A.N.] [PATCH-maintv2 3/3] batman-adv: detect local
+ excess vlans in TT request
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -24,26 +24,33 @@ To: Simon Wunderlich <sw@simonwunderlich.de>
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, alessandro@mediaspot.net
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---AeV5K6od5T1ecbwcM7D0wjPTNtVhxLNA7
+--s9DsvHqWtBVTxDcWlkomKROmq8eU7k4kN
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
 
 
 On 26/08/15 16:41, Simon Wunderlich wrote:
-> In the case when a temporary entry is added first and a proper tt entry=
+> If the local representation of the global TT table of one originator ha=
+s
+> more VLAN entries than the respective TT update, there is some
+> inconsistency present. By detecting and reporting this inconsistency,
+> the global table gets updated and the excess VLAN will get removed in
+> the process.
 
-> is added after that, the temporary tt entry is kept in the orig list.
-> However the temporary flag is removed at this point, and therefore the
-> purge function can not find this temporary entry anymore.
+This a nice catch, but I am not sure this is the right way of
+implementing the fix.
 
-When can this really happen? When a temporary client has roamed to a new
-originator before it could be claimed by the first one ? Or are there
-other cases ? I think it is important to make this clear, because the
-original logic was such as the expected behaviour was to receive an ADD
-event from the same originator where the temporary client was seen.
+Imagine this sequence of events:
+1) originator O1 sends an OGM
+2) client C1 connects to O1 on a newly created VLAN and starts sending
+traffic
+3) originator O2 detects (speedy join) C1 before receiving the O1's OGM
+4) O2 receives O1's OGM and the check will kill C1 because its VLAN is
+not advertised in the OGM. O2 needs to wait for O1's next OGM before
+getting to know C1 again
 
-Other than this, the patch looks good.
+Maybe this scenario is rather unlikely? What do you think?
 
 
 
@@ -51,7 +58,7 @@ Other than this, the patch looks good.
 Antonio Quartulli
 
 
---AeV5K6od5T1ecbwcM7D0wjPTNtVhxLNA7
+--s9DsvHqWtBVTxDcWlkomKROmq8eU7k4kN
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -59,19 +66,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJV5WkzAAoJEOb/4TMchkvfYI0P/29yWcmDdOUpKH0k/tZScYhq
-Nm+OEYJ/fiRV5Qk2ypeG+PUFX/iR9B9hg8PsBq+b2x2s4vRg9K1oIaw9WkfxZAiy
-zQ9EHVSlmg0I2ewnWjfXhiWAsTu2XoMyc58gaYyqxl+OPmchLPkGwB3rge5MrQ05
-pU7Tv1jKjenZ7fSEYhSXwkWDUgxI/tuQsQLzQ01w6AjvU0yaG+GNtyyY+EO+ouB6
-VIF6I7Tg2h2LqaxJb5YnfS45873SbQdfQtlYY8y2moDsr2wwZLU8p7MO2URNfK3w
-O56guHoXN0T9ELJwLO+JosrDkwHG14MBcs/HCeXOWpO85iS8/hgB2tYPxvMLRNeF
-0T8R48St+/1zBQXQEeE+CIJ1OhfVusRErhdY83M/OZQ0N5OawdTDwrJu9eAOLZA5
-56nb0fon27zl0fTdJVqzLn2iJyxN8BjxpBrdrg75pIK93lmGHI1IgKg4Z6EtvF25
-FmbKDnx586C5SC9IpAU3zVxaqaz+Vyfm+mqlNsMRSVnUKYoKVgrElC1ps4073yp3
-5n77HMCuA58gAfNAlet1HLMWClCZojEdaKXCBstvDl+1bAexIo650LSk9xm/ZLhJ
-wqxTk8GjN+nFQWHGUvwwbcja59apGv3gjck+497oKTf5oixLdqV1hY6WEWp23ITa
-QU95BTSOsKhItyTkFG99
-=0elf
+iQIcBAEBCAAGBQJV5XjsAAoJEOb/4TMchkvf9asQALq9ClIEhmOZaEfGVfISIKLs
+ZE+CUXFQOTlM6JE3YbU5MjXUTyzuNquA7bSCZMH5Gh5rgcLI3O0kkVYnZ1fLaXMq
+ovzRWzPf/P/WQQURETFDJ2/DNjswZH1C0b9OLSGb5J6e3hMW5Qv9M/rYFggcoNMy
+oN4AD84ObjOUq8WjQjU2Vi4tW3fXtRrLTdCMV8U8gyHHVnDtPEY6hprREbg79R9E
+qBTPreuEOTSFm0GgNSfQs/n8NS1CgTYU9pvaH+w2kxYnHo5vJVF9rOVda/aEcS/r
+Xs/FxCo0iVkopLc+q8BEqL0OJ+t3vMd3I5+PaGhvk5wWC3nBe5pMpovKjKQUCcOn
+5k9ZBiRx7ZRZrFUc7/1o/ASgSkAummm8BlhEpe2rVjPp5oVjG/IJEybd2AxxIzMN
+CKlyPntHSjE40VoBRygGssB5ONxMIXmrS1b2Xtt2NWCnvqZkSBa1HsOw2mz6ipYM
+LvJqTBqMG42AuHeAZTLGRUERXU5Eq0mtHvHI/Q10jLEgqZOxzGSDiYhM3PcCJnLT
+6jqpEcDSeDaChtJpNJttDVFX2byv3MQ2R9jdC8XrUCsSmeEfNKD/9L0wQo+AeKfw
+zrGxY3UwKKzJc8anDPgKDnl5bDplQWMmT2u0NNpOsNlRqXpaDTzrNrtwUODPZKAU
+H7zTBXcY/kqpppDsFoG7
+=5ofJ
 -----END PGP SIGNATURE-----
 
---AeV5K6od5T1ecbwcM7D0wjPTNtVhxLNA7--
+--s9DsvHqWtBVTxDcWlkomKROmq8eU7k4kN--
