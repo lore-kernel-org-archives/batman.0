@@ -1,15 +1,16 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 02 Sep 2015 19:35:26 +0200
-Message-ID: <51474855.ZTugXQXYdU@prime>
-In-Reply-To: <55E58C63.1090500@meshcoding.com>
+Date: Wed, 02 Sep 2015 19:39:18 +0200
+Message-ID: <1775592.Epjag6J6MN@prime>
+In-Reply-To: <55E578E8.5010107@meshcoding.com>
 References: <1440600113-21305-1-git-send-email-sw@simonwunderlich.de>
- <1647977.TX5clMHFCZ@prime> <55E58C63.1090500@meshcoding.com>
+ <1440600113-21305-4-git-send-email-sw@simonwunderlich.de>
+ <55E578E8.5010107@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3984137.phoqO871aG";
+Content-Type: multipart/signed; boundary="nextPart6553859.pIh0QgYnxk";
  micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-maintv2 2/3] batman-adv: avoid keeping
-	false temporary entry
+Subject: Re: [B.A.T.M.A.N.] [PATCH-maintv2 3/3] batman-adv: detect local
+	excess vlans in TT request
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,54 +24,46 @@ To: Antonio Quartulli <antonio@meshcoding.com>
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, alessandro@mediaspot.net
 
 
---nextPart3984137.phoqO871aG
+--nextPart6553859.pIh0QgYnxk
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="ISO-8859-1"
 
-On Tuesday 01 September 2015 13:30:43 Antonio Quartulli wrote:
-> On 01/09/15 13:00, Simon Wunderlich wrote:
-> > On Tuesday 01 September 2015 11:00:29 Antonio Quartulli wrote:
-> >> On 26/08/15 16:41, Simon Wunderlich wrote:
-> >>> In the case when a temporary entry is added first and a proper tt entry
-> >>> is added after that, the temporary tt entry is kept in the orig list.
-> >>> However the temporary flag is removed at this point, and therefore the
-> >>> purge function can not find this temporary entry anymore.
-> >> 
-> >> When can this really happen? When a temporary client has roamed to a new
-> >> originator before it could be claimed by the first one ? Or are there
-> >> other cases ? I think it is important to make this clear, because the
-> >> original logic was such as the expected behaviour was to receive an ADD
-> >> event from the same originator where the temporary client was seen.
-> >> 
-> >> Other than this, the patch looks good.
-> > 
-> > I've seen the problem in that problematic case which was fixed in PATCHv1.
-> > Practically, it is unlikely to happen unless there is a malicious attacker
-> > or another bug like the one described earlier - that is, speedy join is
-> > triggered without any actual TT update.
-> > 
-> > The main problem I've perceived here was that the TT entry got the
-> > temporary flag removed even if the original sender didn't supply a proper
-> > TT announcement yet. The reason for this was that it got a proper reply
-> > from another orig node.
-> > 
-> > The roaming case you've described would also cause the temporary client to
-> > be removed, but might be added later through a ''proper'' TT
-> > announcement.
-> > 
-> > Do you think I should include any of this in the commit message?
+On Tuesday 01 September 2015 12:07:36 Antonio Quartulli wrote:
+> On 26/08/15 16:41, Simon Wunderlich wrote:
+> > If the local representation of the global TT table of one originator has
+> > more VLAN entries than the respective TT update, there is some
+> > inconsistency present. By detecting and reporting this inconsistency,
+> > the global table gets updated and the excess VLAN will get removed in
+> > the process.
 > 
-> I think you should mention something that makes this case "real": I'd
-> just say that it is possible that a client detected behind a given
-> originator moves before an actual claim is made, so triggering this
-> particular configuration.
+> This a nice catch, but I am not sure this is the right way of
+> implementing the fix.
+> 
+> Imagine this sequence of events:
+> 1) originator O1 sends an OGM
+> 2) client C1 connects to O1 on a newly created VLAN and starts sending
+> traffic
+> 3) originator O2 detects (speedy join) C1 before receiving the O1's OGM
+> 4) O2 receives O1's OGM and the check will kill C1 because its VLAN is
+> not advertised in the OGM. O2 needs to wait for O1's next OGM before
+> getting to know C1 again
+> 
+> Maybe this scenario is rather unlikely? What do you think?
 
-Sounds good, I'll extend the commit message.
+Mhm, I'd argue its rather unlikely. This would imply that the data frame is 
+reaching O2 faster the OGM. I don't think its very likely that it overtakes 
+it, and even if it happens, its probably a very tight race.
 
-Thanks!
+Also, I'd think that nodes typically just use or don't use a VLAN, and don't 
+create VLANs all the time ...
+
+Even if that happens, the race is resolved with one originator interval.
+
+I'm open for better ideas, though. :)
+
+Cheers,
     Simon
-
---nextPart3984137.phoqO871aG
+--nextPart6553859.pIh0QgYnxk
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -78,10 +71,10 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iEYEABECAAYFAlXnM2EACgkQrzg/fFk7axYyewCfSoWWOxRINOzS0KLTzQhBPwOj
-SJsAoIcLJFg4KwL3qcae1CPltOZ+3mhD
-=Iz6g
+iEYEABECAAYFAlXnNEYACgkQrzg/fFk7axY65ACfcJ2Tpg1/W3q/SJTpFXkVgdTL
+9s0An006864qPvPLPlQd3UPIOy1BVJ+4
+=qa18
 -----END PGP SIGNATURE-----
 
---nextPart3984137.phoqO871aG--
+--nextPart6553859.pIh0QgYnxk--
 
