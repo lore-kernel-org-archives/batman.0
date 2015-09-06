@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 06 Sep 2015 16:04:17 +0800
-Message-ID: <2022068.2T8H1vD5AL@voltaire>
-In-Reply-To: <1439897821-7480-1-git-send-email-sven@narfation.org>
-References: <1439897821-7480-1-git-send-email-sven@narfation.org>
+Date: Sun, 06 Sep 2015 16:06:07 +0800
+Message-ID: <53398643.pfAyzpVJ8B@voltaire>
+In-Reply-To: <1439565830-9776-1-git-send-email-linus.luessing@c0d3.blue>
+References: <1439565830-9776-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7972998.1PuJcDEeky";
+Content-Type: multipart/signed; boundary="nextPart1980755.K0MfyvMCTn";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH net] batman-adv: Fix memory leak on tt
-	add with invalid vlan
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/3] batman-adv: Remove unnecessary
+	braces for test_bit() in DAT
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,27 +21,23 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart7972998.1PuJcDEeky
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart1980755.K0MfyvMCTn
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Tuesday, August 18, 2015 13:37:01 Sven Eckelmann wrote:
-> The object tt_local is allocated with kmalloc and not initialized when the
-> function batadv_tt_local_add checks for the vlan. But this function can
-> only cleanup the object when the (not yet initialized) reference counter of
-> the object is 1. This is unlikely and thus the object would leak when the
-> vlan could not be found.
-> 
-> Instead the uninitialized object tt_local has to be freed manually and the
-> pointer has to set to NULL to avoid calling the function which would try to
-> decrement the reference counter of the not existing object.
+On Friday, August 14, 2015 17:23:48 Linus L=FCssing wrote:
+> Fixes: de466678 ("batman-adv: Fix broken DAT capability check")
+> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+> ---
+>  net/batman-adv/distributed-arp-table.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision dba67bc.
+Applied in revision af35586.
 
 Thanks,
 Marek
 
---nextPart7972998.1PuJcDEeky
+--nextPart1980755.K0MfyvMCTn
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -49,14 +45,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJV6/OFAAoJEFNVTo/uthzAKa0H+QGN9n0RA5pQbLYRbJCTdYin
-j0+6d7q0RxXBinLj/ztoy1FoNaO45Nx1v9wcp6EyMJd2kaoh8KGxbDG8+zxGWykh
-lk3RVPUpUfaJUmWYIa0gRvXVcM/3vGrjSF0Hv+oEomXEAAJ/D7VjR2cYs/oOmPSb
-Y2+dGxlJA9KnvNF/MgBZvqjq4c23C/L7an8JPK9H5GB84myEb6S/H8VtDmILVzKA
-+hE+yjC7epNVQgibYS9Z91Wyg357MTnr/GdWT/ud+qOhstaIIXjoUT+P7r7+jUY4
-0CruKrHXD300foMajpzJw7Pa6FU9IGF0Ik+R9ir3A5qXAk10SfSDDBSH6sfpkfQ=
-=kEU0
+iQEcBAABCAAGBQJV6/PvAAoJEFNVTo/uthzAllkH/isUHd/5jOKrmG/WlOwk7GX2
+dlv4QYHVL2YFzxa5Ey5a7jsZY737XpSJZgivk/Z7Gq8XKzyQiYBR0wZosa7hwq1A
+wFr1Vci3j2P3BG9Y00As74NNw5xM5KOE7sy8EzgbTFA2V/SadZlem6WxwRuTTyK7
+Ezyvp3vx8e5z+JgLkKCH/snfrm1uqZ0Rrfyf0obv5Jayeg8Zbh0Y1n/FLVDc2w+v
+shMx5S0sVQtDcDBYZ5hYTr08P8pNWeDpuulsFodf8JEVCaooyKYJmaXe85tF4PWQ
+/53gAHKsrEGK9cLqH3vlkTw9KNKEWncAoWu702gR6Ca9e2YUg765dSHz7NP8zBc=
+=ezBU
 -----END PGP SIGNATURE-----
 
---nextPart7972998.1PuJcDEeky--
+--nextPart1980755.K0MfyvMCTn--
 
