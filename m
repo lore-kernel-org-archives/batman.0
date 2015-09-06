@@ -1,9 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  4 Sep 2015 18:55:23 +0200
-Message-Id: <1441385723-5565-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: lock crc access in bridge loop
-	avoidance
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 06 Sep 2015 16:04:17 +0800
+Message-ID: <2022068.2T8H1vD5AL@voltaire>
+In-Reply-To: <1439897821-7480-1-git-send-email-sven@narfation.org>
+References: <1439897821-7480-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart7972998.1PuJcDEeky";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH net] batman-adv: Fix memory leak on tt
+	add with invalid vlan
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,174 +20,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-To avoid multiple functions changing a backbone gateways crc entry, lock
-it using a spinlock.
 
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-Tested-by: Alfons Name <AlfonsName@web.de>
----
- net/batman-adv/bridge_loop_avoidance.c | 35 +++++++++++++++++++++++++++++-----
- net/batman-adv/types.h                 |  2 ++
- 2 files changed, 32 insertions(+), 5 deletions(-)
+--nextPart7972998.1PuJcDEeky
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 191a702..c80b015 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -260,7 +260,9 @@ batadv_bla_del_backbone_claims(struct batadv_bla_backbone_gw *backbone_gw)
- 	}
- 
- 	/* all claims gone, initialize CRC */
-+	spin_lock_bh(&backbone_gw->crc_lock);
- 	backbone_gw->crc = BATADV_BLA_CRC_INIT;
-+	spin_unlock_bh(&backbone_gw->crc_lock);
- }
- 
- /**
-@@ -408,6 +410,7 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, u8 *orig,
- 	entry->lasttime = jiffies;
- 	entry->crc = BATADV_BLA_CRC_INIT;
- 	entry->bat_priv = bat_priv;
-+	spin_lock_init(&entry->crc_lock);
- 	atomic_set(&entry->request_sent, 0);
- 	atomic_set(&entry->wait_periods, 0);
- 	ether_addr_copy(entry->orig, orig);
-@@ -557,7 +560,9 @@ static void batadv_bla_send_announce(struct batadv_priv *bat_priv,
- 	__be16 crc;
- 
- 	memcpy(mac, batadv_announce_mac, 4);
-+	spin_lock_bh(&backbone_gw->crc_lock);
- 	crc = htons(backbone_gw->crc);
-+	spin_unlock_bh(&backbone_gw->crc_lock);
- 	memcpy(&mac[4], &crc, 2);
- 
- 	batadv_bla_send_claim(bat_priv, mac, backbone_gw->vid,
-@@ -618,14 +623,18 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
- 			   "bla_add_claim(): changing ownership for %pM, vid %d\n",
- 			   mac, BATADV_PRINT_VID(vid));
- 
-+		spin_lock_bh(&claim->backbone_gw->crc_lock);
- 		claim->backbone_gw->crc ^= crc16(0, claim->addr, ETH_ALEN);
-+		spin_unlock_bh(&claim->backbone_gw->crc_lock);
- 		batadv_backbone_gw_free_ref(claim->backbone_gw);
- 	}
- 	/* set (new) backbone gw */
- 	atomic_inc(&backbone_gw->refcount);
- 	claim->backbone_gw = backbone_gw;
- 
-+	spin_lock_bh(&backbone_gw->crc_lock);
- 	backbone_gw->crc ^= crc16(0, claim->addr, ETH_ALEN);
-+	spin_unlock_bh(&backbone_gw->crc_lock);
- 	backbone_gw->lasttime = jiffies;
- 
- claim_free_ref:
-@@ -653,7 +662,9 @@ static void batadv_bla_del_claim(struct batadv_priv *bat_priv,
- 			   batadv_choose_claim, claim);
- 	batadv_claim_free_ref(claim); /* reference from the hash is gone */
- 
-+	spin_lock_bh(&claim->backbone_gw->crc_lock);
- 	claim->backbone_gw->crc ^= crc16(0, claim->addr, ETH_ALEN);
-+	spin_unlock_bh(&claim->backbone_gw->crc_lock);
- 
- 	/* don't need the reference from hash_find() anymore */
- 	batadv_claim_free_ref(claim);
-@@ -664,7 +675,7 @@ static int batadv_handle_announce(struct batadv_priv *bat_priv, u8 *an_addr,
- 				  u8 *backbone_addr, unsigned short vid)
- {
- 	struct batadv_bla_backbone_gw *backbone_gw;
--	u16 crc;
-+	u16 backbone_crc, crc;
- 
- 	if (memcmp(an_addr, batadv_announce_mac, 4) != 0)
- 		return 0;
-@@ -683,12 +694,16 @@ static int batadv_handle_announce(struct batadv_priv *bat_priv, u8 *an_addr,
- 		   "handle_announce(): ANNOUNCE vid %d (sent by %pM)... CRC = %#.4x\n",
- 		   BATADV_PRINT_VID(vid), backbone_gw->orig, crc);
- 
--	if (backbone_gw->crc != crc) {
-+	spin_lock_bh(&backbone_gw->crc_lock);
-+	backbone_crc = backbone_gw->crc;
-+	spin_unlock_bh(&backbone_gw->crc_lock);
-+
-+	if (backbone_crc != crc) {
- 		batadv_dbg(BATADV_DBG_BLA, backbone_gw->bat_priv,
- 			   "handle_announce(): CRC FAILED for %pM/%d (my = %#.4x, sent = %#.4x)\n",
- 			   backbone_gw->orig,
- 			   BATADV_PRINT_VID(backbone_gw->vid),
--			   backbone_gw->crc, crc);
-+			   backbone_crc, crc);
- 
- 		batadv_bla_send_request(backbone_gw);
- 	} else {
-@@ -1647,6 +1662,7 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
- 	struct batadv_bla_claim *claim;
- 	struct batadv_hard_iface *primary_if;
- 	struct hlist_head *head;
-+	u16 backbone_crc;
- 	u32 i;
- 	bool is_own;
- 	u8 *primary_addr;
-@@ -1669,11 +1685,15 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
- 		hlist_for_each_entry_rcu(claim, head, hash_entry) {
- 			is_own = batadv_compare_eth(claim->backbone_gw->orig,
- 						    primary_addr);
-+
-+			spin_lock_bh(&claim->backbone_gw->crc_lock);
-+			backbone_crc = claim->backbone_gw->crc;
-+			spin_lock_bh(&claim->backbone_gw->crc_lock);
- 			seq_printf(seq, " * %pM on %5d by %pM [%c] (%#.4x)\n",
- 				   claim->addr, BATADV_PRINT_VID(claim->vid),
- 				   claim->backbone_gw->orig,
- 				   (is_own ? 'x' : ' '),
--				   claim->backbone_gw->crc);
-+				   backbone_crc);
- 		}
- 		rcu_read_unlock();
- 	}
-@@ -1692,6 +1712,7 @@ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
- 	struct batadv_hard_iface *primary_if;
- 	struct hlist_head *head;
- 	int secs, msecs;
-+	u16 backbone_crc;
- 	u32 i;
- 	bool is_own;
- 	u8 *primary_addr;
-@@ -1722,10 +1743,14 @@ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
- 			if (is_own)
- 				continue;
- 
-+			spin_lock_bh(&backbone_gw->crc_lock);
-+			backbone_crc = backbone_gw->crc;
-+			spin_unlock_bh(&backbone_gw->crc_lock);
-+
- 			seq_printf(seq, " * %pM on %5d %4i.%03is (%#.4x)\n",
- 				   backbone_gw->orig,
- 				   BATADV_PRINT_VID(backbone_gw->vid), secs,
--				   msecs, backbone_gw->crc);
-+				   msecs, backbone_crc);
- 		}
- 		rcu_read_unlock();
- 	}
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 9bdb21c..7c386db 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -906,6 +906,7 @@ struct batadv_socket_packet {
-  *  backbone gateway - no bcast traffic is formwared until the situation was
-  *  resolved
-  * @crc: crc16 checksum over all claims
-+ * @crc_lock: lock protecting crc
-  * @refcount: number of contexts the object is used
-  * @rcu: struct used for freeing in an RCU-safe manner
-  */
-@@ -919,6 +920,7 @@ struct batadv_bla_backbone_gw {
- 	atomic_t wait_periods;
- 	atomic_t request_sent;
- 	u16 crc;
-+	spinlock_t crc_lock; /* protects crc */
- 	atomic_t refcount;
- 	struct rcu_head rcu;
- };
--- 
-2.5.0
+On Tuesday, August 18, 2015 13:37:01 Sven Eckelmann wrote:
+> The object tt_local is allocated with kmalloc and not initialized when the
+> function batadv_tt_local_add checks for the vlan. But this function can
+> only cleanup the object when the (not yet initialized) reference counter of
+> the object is 1. This is unlikely and thus the object would leak when the
+> vlan could not be found.
+> 
+> Instead the uninitialized object tt_local has to be freed manually and the
+> pointer has to set to NULL to avoid calling the function which would try to
+> decrement the reference counter of the not existing object.
+
+Applied in revision dba67bc.
+
+Thanks,
+Marek
+
+--nextPart7972998.1PuJcDEeky
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJV6/OFAAoJEFNVTo/uthzAKa0H+QGN9n0RA5pQbLYRbJCTdYin
+j0+6d7q0RxXBinLj/ztoy1FoNaO45Nx1v9wcp6EyMJd2kaoh8KGxbDG8+zxGWykh
+lk3RVPUpUfaJUmWYIa0gRvXVcM/3vGrjSF0Hv+oEomXEAAJ/D7VjR2cYs/oOmPSb
+Y2+dGxlJA9KnvNF/MgBZvqjq4c23C/L7an8JPK9H5GB84myEb6S/H8VtDmILVzKA
++hE+yjC7epNVQgibYS9Z91Wyg357MTnr/GdWT/ud+qOhstaIIXjoUT+P7r7+jUY4
+0CruKrHXD300foMajpzJw7Pa6FU9IGF0Ik+R9ir3A5qXAk10SfSDDBSH6sfpkfQ=
+=kEU0
+-----END PGP SIGNATURE-----
+
+--nextPart7972998.1PuJcDEeky--
 
