@@ -1,12 +1,13 @@
-Return-Path: <stephen@networkplumber.org>
-Date: Tue, 8 Sep 2015 08:52:56 -0700
-From: Stephen Hemminger <stephen@networkplumber.org>
-Message-ID: <20150908085256.0f3f6b00@urahara>
-In-Reply-To: <20150908031122.GB1562@odroid>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Thu, 10 Sep 2015 16:42:54 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20150910144254.GD8386@odroid>
 References: <20150908031122.GB1562@odroid>
+ <20150908085256.0f3f6b00@urahara>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20150908085256.0f3f6b00@urahara>
 Subject: Re: [B.A.T.M.A.N.] [Bridge] Roaming trouble with bridge & multicast
 	snooping
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,77 +19,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Linus =?UTF-8?B?TMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
+To: Stephen Hemminger <stephen@networkplumber.org>
 Cc: bridge@lists.linux-foundation.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Tue, 8 Sep 2015 05:11:22 +0200
-Linus L=C3=BCssing <linus.luessing@c0d3.blue> wrote:
+On Tue, Sep 08, 2015 at 08:52:56AM -0700, Stephen Hemminger wrote:
+> Why doesn't the client resend a IGMP when it notes
+> a connection change?
+> 
 
-> Hi bridge folks,
->=20
-> I'm currently stuck with a simple scenario where enabling bridge
-> multicast snooping causes packetloss for some time:
->=20
-> ----------
->=20
-> (c) <~~~> (A) <---> (B)
->=20
-> (c) is a wifi client, connected to a wifi access point (A).
-> (B) is another AP connected to (A) via ethernet cable.
-> The wifi-ap and ethernet interface are bridged on both (A) and (B).
->=20
->=20
-> Now (c) roams from (A) to (B):
->=20
->           (A) <---> (B) <~~~> (c)
->=20
-> ----------
->=20
-> Until the next multicast query is send (up to 125 seconds), (c)
-> will experience multicast packet loss: (B) does not know which
-> multicast traffic (c) wants yet and blocks forwarding multicast
-> traffic to it.
->=20
-> I couldn't find an IETF standard or discussion saying something
-> about how to deal with multicast snooping and roaming yet (I still
-> have the feeling I must have overlooked something as this scenario
-> seems common to me). Does anyone know anything about that or how
-> vendors implement that on their snooping switches?
->=20
->=20
-> The behaviour of (c) running a 3.16 kernel is:
-> After setting its wifi interface up, it stays quiet. After getting
-> a link / wifi connects, it sends an IGMP/MLD report first, without
-> waiting for a query. It then sends the IPv6 Neighbor Solicitation
-> messages for Duplicate Address Detection to be able to claim its
-> own IPv6 addresses.
->=20
-> However it does not resend reports / Neighbor Solicitations after
-> the link goes down and up again while the interface itself stays up.
->=20
->=20
-> I could think of two ways to solve the issue:
->=20
-> Either let mac80211 (hostapd?) notify the bridge once a new client
-> connects. Then let the bridge send a query to the client
-> immediately and directly.
->=20
-> Or once the bridge adds an fdb entry for a new host, send a query
-> to this host (no matter if it's wireless or not) immediately,
-> directly.
->=20
->=20
-> The "directly" could be implemented by setting the ethernet
-> destination to the according unicast MAC instead.
->=20
->=20
-> Even though slightly more latency, I'd opt (and would going to
-> provide a patch) for the second case.
->=20
->=20
-> What do others think about this?
+Good question, I actually had expected that too. My guess is that the
+network stack might be interpreting the RFCs in a "conservative
+way". RFC3376 ("Internet Group Management Protocol, Version 3" in
+section 5 only describes the following two cases where a report should
+be send:
 
-The only entity in this scenario that knows that it has changed
-state is (c). Why doesn't the client resend a IGMP when it notes
-a connection change?
+-----
+* a change of the interface reception state, caused by a local
+  invocation of IPMulticastListen [!= interface link state].
 
+* reception of a Query.
+-----
+
+Seems like another case where no one @IETF had thought about
+layer 2 multicast snooping :(.
+
+
+> The only entity in this scenario that knows that it has changed
+> state is (c).
+
+Hm, (B) should know so too as (c) authenticates to an 802.11
+access point first before using it. So the mac80211 on (B) should
+be aware of the new host immediately.
+
+
+I'm wondering whether it'd be sufficient to change multicast
+listener behaviour in Linux or whether the majority of wifi capable
+devices would still experience multicast packetloss on roaming.
+Anyone having an Apple or Microsoft device :)?
+
+Cheers, Linus
