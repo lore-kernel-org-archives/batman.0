@@ -1,15 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 11 Sep 2015 17:43:48 +0200
-Message-ID: <3031965.xR9RMR6qaB@prime>
-In-Reply-To: <20150911151956.GF19674@ibawizard.net>
-References: <1441980723-3805-1-git-send-email-sw@simonwunderlich.de>
- <20150911151956.GF19674@ibawizard.net>
+Return-Path: <hw@haveyouseenthiscat.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3371709.ZM735Ugx8Z";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: lock crc access
-	in	bridge loop avoidance
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date: Fri, 11 Sep 2015 17:46:57 +0200
+From: Hans-Werner Hilse <hw@haveyouseenthiscat.de>
+In-Reply-To: <2577570.dDtkYHOgor@prime>
+References: <CAGa=++S6fv_+JvpuQ_OJj7XfnF6M7xBOAJN_rQhbGYLB8nH2+A@mail.gmail.com>
+ <2577570.dDtkYHOgor@prime>
+Message-ID: <4506fd8b11ebc894a73df0b1a75d5e8e@hilses.de>
+Subject: Re: [B.A.T.M.A.N.] Quickly setup a virtual B.A.T.M.A.N. network
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,50 +19,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, Petr =?utf-8?B?xaB0ZXRpYXI=?= <ynezz@true.cz>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+Hi,
 
---nextPart3371709.ZM735Ugx8Z
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+also, I humbly point at my approach to run batman-adv in, errr, 
+userland. Well, sorta. I use user mode linux (UML).
 
+https://github.com/hwhw/usermode-batman-adv
 
-On Friday 11 September 2015 17:19:56 Petr =C5 tetiar wrote:
-> Hi,
->=20
-> Simon Wunderlich <sw@simonwunderlich.de> [2015-09-11 16:12:03]:
-> > @@ -1669,11 +1685,15 @@ int batadv_bla_claim_table_seq_print_text(s=
-truct
-> > seq_file *seq, void *offset)>=20
-> >  =09=09hlist_for_each_entry_rcu(claim, head, hash_entry) {
-> >  =09=09
-> >  =09=09=09is_own =3D batadv_compare_eth(claim->backbone_gw->orig,
-> >  =09=09=09
-> >  =09=09=09=09=09=09    primary_addr);
-> >=20
-> > +
-> > +=09=09=09spin_lock_bh(&claim->backbone_gw->crc_lock);
-> > +=09=09=09backbone_crc =3D claim->backbone_gw->crc;
-> > +=09=09=09spin_lock_bh(&claim->backbone_gw->crc_lock);
->=20
-> shouldn't this be spin_unlock_bh?
+It builds a UML kernel with a very basic userland (errr, the one inside 
+the UML, that is). The kernel is targeted at providing networking 
+support, batman-adv, and not really much more.
 
-Oh my, good catch! Yes, that's right!! I'll send a revised version!
+VDE networking is possible, too.
 
-Thanks,
-    Simon
---nextPart3371709.ZM735Ugx8Z
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+I'm currently busy with my exams, so it is slightly outdated (as in 1-2 
+months behind current development), but it should work fine.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+I worked on this with the aim to maybe even bring this into production 
+use, as we're using KVM based servers in the first place in our 
+"Freifunk" mesh project here, and isolating B.A.T.M.A.N. in a userspace 
+instance has its own merits (none of that being "performance").
 
-iEYEABECAAYFAlXy9rgACgkQrzg/fFk7axbRCgCfXSaavBjd4CozL9Penv7/VHQ5
-c7YAnjD7gVfgWTmPEQ/13tVkX2wGNLwc
-=+kCC
------END PGP SIGNATURE-----
+I sucessfully ran, I think, about 80-100 instances? As a single instance 
+needs about 20-32 MByte of memory, that is the limiting factor.
 
---nextPart3371709.ZM735Ugx8Z--
+-hwh
+
+Am 2015-09-11 13:27, schrieb Simon Wunderlich:
+> Hey Germano,
+> 
+> please check out this webpage:
+> 
+> https://www.open-mesh.org/projects/open-mesh/wiki/Emulation
+> 
+> we use this for developing stuff, too. The idea is to interconnect a 
+> couple of
+> KVM virtual machines running OpenWRT using vde_switch. With that, you 
+> can
+> easily run ~20 nodes on one PC with arbitrary topologies.
+> 
+> Cheers,
+>     Simon
+> 
+> On Friday 11 September 2015 13:15:15 Germano Massullo wrote:
+>> Hello, I need to setup a virtual environment with various nodes that
+>> is ready for testing B.A.T.M.A.N. and Alfred. Is there anything that I
+>> can use to quickly create such network?
+>> I successfully created and runned Alfred and B.A.T.M.A.N. on a Fedora
+>> virtual machine, but I cannot setup a real batman-adv network with
+>> real nodes right now but I would still like to be able to test and
+>> work on Alfred.
+>> 
+>> 
+>> Best regards
+>> Germano Massullo
 
