@@ -1,9 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 13 Sep 2015 09:42:48 +0200
-Message-Id: <1442130168-3628-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Place constant on right side of
-	comparison
+Date: Sun, 13 Sep 2015 09:44:45 +0200
+Message-Id: <1442130285-3725-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Place constant on right side
+	of comparison
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,11 +15,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-checkpatch warns when the constant is on the right side of a comparison.
+checkpatch warns when the constant is on the left side of a comparison.
 
 Fixes: 56fd0bab9c18 ("batman-adv: Fix gw_bandwidth calculation on 32 bit systems")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
+v2: fix stupid error in the commit message
+
  net/batman-adv/gateway_common.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
