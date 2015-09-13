@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 13 Sep 2015 18:20:12 +0800
-Message-ID: <2662065.oem7IOexWu@voltaire>
-In-Reply-To: <1441987453-5553-1-git-send-email-sw@simonwunderlich.de>
-References: <1441987453-5553-1-git-send-email-sw@simonwunderlich.de>
+Date: Sun, 13 Sep 2015 18:24:32 +0800
+Message-ID: <1770787.C9qRAE2RKP@voltaire>
+In-Reply-To: <1441568333-15947-2-git-send-email-sven@narfation.org>
+References: <1441568333-15947-1-git-send-email-sven@narfation.org>
+ <1441568333-15947-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3030996.fV2LtNDfqc";
+Content-Type: multipart/signed; boundary="nextPart1745111.pWKMC4mExG";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-maint v2] batman-adv: lock crc access in
-	bridge loop avoidance
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/9] batman-adv: Fix kernel-doc parsing
+	of main structs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,38 +22,26 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart3030996.fV2LtNDfqc
+--nextPart1745111.pWKMC4mExG
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, September 11, 2015 18:04:13 Simon Wunderlich wrote:
-> We have found some networks in which nodes were constantly requesting
-> other nodes BLA claim tables to synchronize, just to ask for that again
-> once completed. The reason was that the crc checksum of the asked nodes
-> were out of sync due to missing locking and multiple writes to the same
-> crc checksum when adding/removing entries. Therefore the asked nodes
-> constantly reported the wrong crc, which caused repeating requests.
+On Sunday, September 06, 2015 21:38:45 Sven Eckelmann wrote:
+> kernel-doc is not able to skip an #ifdef between the kernel documentation
+> block and the start of the struct. Moving the #ifdef before the kernel doc
+> block avoids this problem
 > 
-> To avoid multiple functions changing a backbone gateways crc entry at
-> the same time, lock it using a spinlock.
-> 
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-> Tested-by: Alfons Name <AlfonsName@web.de>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
-> Changes to PATCH-maint:
->  * fix spin_lock -> spin_unlock in claim table printing (thanks Petr)
-> ---
->  net/batman-adv/bridge_loop_avoidance.c | 35
-> +++++++++++++++++++++++++++++-----
-> net/batman-adv/types.h                 |  2 ++
->  2 files changed, 32 insertions(+), 5 deletions(-)
+>  net/batman-adv/types.h | 15 ++++++++++-----
+>  1 file changed, 10 insertions(+), 5 deletions(-)
 
-Applied in revision b307e72.
+Applied in revision af45ff7.
 
 Thanks,
 Marek
 
---nextPart3030996.fV2LtNDfqc
+--nextPart1745111.pWKMC4mExG
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -60,14 +49,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJV9U3cAAoJEFNVTo/uthzA74MH/1bq/h6Ji3w6egQjDzvHSEgk
-RstAuabfYUeWqETl9U4rulpCgUvP/lUHUct1JXbaD45rXWp9jO2byO4FqgWXw8ec
-iyYyRg1hUzjDEkprVWyjyzraYYyqjB83QNfedWWamB96amIxGlfNmgWJf7BPt1fO
-R0oyeFaXrpfTksUzzaethKvZmaOqVwbgLrxaO6tdrybTSwMRbTB2vwBM1mRvlRGU
-nbpT/GPOf0/nnLID/XrSUf+JpyjHz9+t9kB29TXgmXgBO/zHDrjdkDOoUJulwdJ5
-qa0x36PQrPqhUhxIOPH7bVUgQMiciZxVMzACcw64mE539Ww0UYcF9KyIamy3ElI=
-=h34I
+iQEcBAABCAAGBQJV9U7gAAoJEFNVTo/uthzAs7cIAKQPY5VyQHFxNau9GXzF0/96
+6X+3S5XWOLx4nfdOzUVd3yJDDFZ+3OPgEqoe6sbt49KygmyaFYgY7p3LGbRO9KLN
+JXpoeP8MdRoGKcIfg/CdVf+PYgFc8jIbsscwm1sxXP0x4cfob51oClXKDiJzXvit
+4isRc0f15EddB4VwzSBhJmBVqW9XYAS7/wMozKT7gbtlWMmc98OonkD7G3va+gnb
+FQ0bY4Diy8W/6aEsv8KijcqsYfr6QQPu2joscgYsSOrdgTLTToZYf4UD1KsUGqPd
+LT7njcmvA0FZU4bU3p1TXFwzVZwUqi3r7yjPv2beSRfdFsnyejAboWrmKnp17X4=
+=+Qbz
 -----END PGP SIGNATURE-----
 
---nextPart3030996.fV2LtNDfqc--
+--nextPart1745111.pWKMC4mExG--
 
