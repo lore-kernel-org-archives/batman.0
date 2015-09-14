@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 14 Sep 2015 16:52:11 +0800
-Message-ID: <1701596.5ay5Z7nDyd@voltaire>
-In-Reply-To: <1441568333-15947-10-git-send-email-sven@narfation.org>
-References: <1441568333-15947-1-git-send-email-sven@narfation.org>
- <1441568333-15947-10-git-send-email-sven@narfation.org>
+Date: Mon, 14 Sep 2015 16:53:14 +0800
+Message-ID: <48086839.DUD6itolVk@voltaire>
+In-Reply-To: <1442130285-3725-1-git-send-email-sven@narfation.org>
+References: <1442130285-3725-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5145271.ELBYvLBtoQ";
+Content-Type: multipart/signed; boundary="nextPart5947877.aGNESqiCaX";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 9/9] batman-adv: Drop invalid kerneldoc
-	for variable batadv_vlan_attrs
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Place constant on right
+	side of comparison
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,25 +18,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
 
---nextPart5145271.ELBYvLBtoQ
+--nextPart5947877.aGNESqiCaX
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, September 06, 2015 21:38:53 Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+On Sunday, September 13, 2015 09:44:45 Sven Eckelmann wrote:
+> checkpatch warns when the constant is on the left side of a comparison.
+> 
+> Fixes: 56fd0bab9c18 ("batman-adv: Fix gw_bandwidth calculation on 32 bit
+> systems") Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/sysfs.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
+> v2: fix stupid error in the commit message
+> 
+>  net/batman-adv/gateway_common.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Applied in revision cb6dfb4.
+Applied in revision cef7403.
 
 Thanks,
 Marek
- 
---nextPart5145271.ELBYvLBtoQ
+
+--nextPart5947877.aGNESqiCaX
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -45,14 +49,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJV9oq7AAoJEFNVTo/uthzAzFQIAMV/d2fRKpIjYgBMvhvHW48s
-1z3wBcVghuFawpXl40S3W7oq++L9ooC88F50VQQuUA9oY6YNuGm9Jhlqvi9XpcxU
-4xHbmVK9XEzISua+mYO8s6ttg+WECyJnYf8He0AzxKFj6z9UMzsh6a3BibpEPqQs
-A2UnE1BTxZMfOd+oqy9drOMf/3HBgXaaCdJLc1g/bElGaNCpBYP4/dvzjRXiqRmn
-Kb1j2WVlZJd26UBMf5ZRZSmeGs4pDR8Z/7DTnOuwJXpot6bGXe2xL3PGpzTlR7R7
-F1OJu3tXwxt5FjTD5QopBB68MpKXWY3D7EibnYqQ3iBZeigpC5+dZioH5yj6n9o=
-=s5gK
+iQEcBAABCAAGBQJV9or6AAoJEFNVTo/uthzAIeYH/3FvRQ8wmuFCGhVxYnvwwjDt
+/csu5LD6QX/78YgBEAz9qD2nyNNUO8xm9Fp/A234jqk0/McC1w0KNXtadWiVESiw
+jWFOsPhqD2I6yEFAUekbNkg7ulQj14rN0Eajp4EPPdBYL+PhvilXD3NwKo4BULvU
+8xaSjEGnnAje7n5yrrkHeHNwNTyXaJ5/AFNFwXfPY66d7QCfJJ5wqj1k1t9RMc8R
+cIGC4Xd+qSZY1FrfnmEFYM1qDN+Q2GUkn43aoATRdnvvMhtN8zEt9I2I0ualazJ4
+hFKEImGyl/n2xNbK38VKr5MtIGiEOLLC5C4V3kJzPVWaKmLdTB8xmxOD2QBl8gs=
+=xsp1
 -----END PGP SIGNATURE-----
 
---nextPart5145271.ELBYvLBtoQ--
+--nextPart5947877.aGNESqiCaX--
 
