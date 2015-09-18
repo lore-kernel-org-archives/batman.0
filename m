@@ -1,11 +1,14 @@
-Return-Path: <uol@pengutronix.de>
-From: =?UTF-8?q?Ulrich=20=C3=96lmann?= <u.oelmann@pengutronix.de>
-Date: Wed, 16 Sep 2015 15:01:49 +0200
-Message-Id: <1442408509-14706-1-git-send-email-u.oelmann@pengutronix.de>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Fri, 18 Sep 2015 16:13:05 +0800
+Message-ID: <4817897.SOAbMYHa4j@voltaire>
+In-Reply-To: <1442336448-23306-1-git-send-email-sven@narfation.org>
+References: <1442336448-23306-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] alfred: Fix typos
+Content-Type: multipart/signed; boundary="nextPart3114328.r19NPoAUMT";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Fix kerneldoc parsing of
+	return description
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,68 +20,62 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Signed-off-by: Ulrich Ölmann <u.oelmann@pengutronix.de>
----
- README       | 2 +-
- main.c       | 4 ++--
- man/alfred.8 | 4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
+--nextPart3114328.r19NPoAUMT
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-diff --git a/README b/README
-index 938a275..6bbf915 100644
---- a/README
-+++ b/README
-@@ -74,7 +74,7 @@ list of options, run alfred -h):
-                               the system (default: bat0). use 'none' to disable
-                               the batman-adv based best server selection
-   -m, --master                start up the daemon in master mode, which
--                              accepts data from slaves and synces it with
-+                              accepts data from slaves and syncs it with
-                               other masters
- 
- The -b option is optional, and only needed if you run alfred on a batman-adv
-diff --git a/main.c b/main.c
-index db1f8b0..452d9ae 100644
---- a/main.c
-+++ b/main.c
-@@ -50,13 +50,13 @@ static void alfred_usage(void)
- 	printf("  -I, --change-interface [interface]  change to the specified interface(s)\n");
- 	printf("\n");
- 	printf("server mode options:\n");
--	printf("  -i, --interface                     specify the interface (or comma separated list of interfaes) to listen on\n");
-+	printf("  -i, --interface                     specify the interface (or comma separated list of interfaces) to listen on\n");
- 	printf("  -b                                  specify the batman-adv interface\n");
- 	printf("                                      configured on the system (default: bat0)\n");
- 	printf("                                      use 'none' to disable the batman-adv\n");
- 	printf("                                      based best server selection\n");
- 	printf("  -m, --master                        start up the daemon in master mode, which\n");
--	printf("                                      accepts data from slaves and synces it with\n");
-+	printf("                                      accepts data from slaves and syncs it with\n");
- 	printf("                                      other masters\n");
- 	printf("\n");
- 	printf("  -u, --unix-path [path]              path to unix socket used for client-server\n");
-diff --git a/man/alfred.8 b/man/alfred.8
-index e21bb55..95241a7 100644
---- a/man/alfred.8
-+++ b/man/alfred.8
-@@ -90,7 +90,7 @@ Change the alfred server to use the new \fBinterface\fP(s)
- .SH SERVER OPTIONS
- .TP
- \fB\-i\fP, \fB\-\-interface\fP \fiface\fP
--Specify the interface (or comma separated list of interfaes) to listen on
-+Specify the interface (or comma separated list of interfaces) to listen on
- .TP
- \fB\-b\fP \fIbatmanif\fP
- Specify the batman-adv interface configured on the system (default: bat0).
-@@ -102,7 +102,7 @@ batman-adv interface not called bat0, or if you don't use batman-adv at all
- able to find the best next master server based on metrics.
- .TP
- \fB\-m\fP, \fB\-\-master\fP
--Start up the daemon in master mode, which accepts data from slaves and synces
-+Start up the daemon in master mode, which accepts data from slaves and syncs
- it with other masters.
- 
- alfred servers may either run as master or slave in the network. Masters will
--- 
-2.5.0
+On Tuesday, September 15, 2015 19:00:48 Sven Eckelmann wrote:
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> v2:
+>  - More comments changed
+> 
+>  net/batman-adv/bat_iv_ogm.c            | 18 +++----
+>  net/batman-adv/bitarray.c              |  2 +-
+>  net/batman-adv/bitarray.h              | 11 +++--
+>  net/batman-adv/bridge_loop_avoidance.c | 68 ++++++++++++++++++--------
+>  net/batman-adv/distributed-arp-table.c | 37 +++++++-------
+>  net/batman-adv/fragmentation.c         | 17 ++++---
+>  net/batman-adv/fragmentation.h         |  2 +-
+>  net/batman-adv/gateway_client.c        | 14 +++---
+>  net/batman-adv/gateway_common.c        |  2 +-
+>  net/batman-adv/hard-interface.c        |  7 +--
+>  net/batman-adv/hash.h                  | 22 +++++----
+>  net/batman-adv/main.c                  | 26 +++++-----
+>  net/batman-adv/main.h                  | 13 +++--
+>  net/batman-adv/multicast.c             | 35 +++++++-------
+>  net/batman-adv/network-coding.c        | 42 ++++++++--------
+>  net/batman-adv/originator.c            | 48 +++++++++++--------
+>  net/batman-adv/routing.c               | 30 +++++++-----
+>  net/batman-adv/send.c                  | 24 +++++-----
+>  net/batman-adv/send.h                  |  4 +-
+>  net/batman-adv/soft-interface.c        | 14 +++---
+>  net/batman-adv/sysfs.c                 | 10 ++--
+>  net/batman-adv/translation-table.c     | 88
+> ++++++++++++++++++++-------------- 22 files changed, 305 insertions(+), 229
+> deletions(-)
+
+Applied in revision b615fba.
+
+Thanks,
+Marek
+
+--nextPart3114328.r19NPoAUMT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJV+8eRAAoJEFNVTo/uthzAVcgIAKST+0Vz95edTdhSeL4nL1l+
+WO2BTceoYBy007G/J7GC+iSNN2N6cN0toUl3eQlMrfQ+gIv7kwkfxkXVvdVtmLfj
+Lj5akjlcrsg9ZZTVv1Xxlnf1M6sPCFrsfdKJ/KahkTBe4UvJmObmb8lQtvBUB5Md
+hQPtHzCiOPuVwKuLa6GcO450m2X0KGkklVX2hSOhIkaejU6aIcz81s5keJsewqaf
+b71UPFNm0MByHBdCVcymO62M5SY64BOekN230VlA/LyxkJo8AO9ehrYG3SXlmvgN
+pUYsY2wSYg9RFXGjjXmit6bnbEU86x6Cu5MTdqSe4SNnRf38VCVCvcHASoCSGNo=
+=reC5
+-----END PGP SIGNATURE-----
+
+--nextPart3114328.r19NPoAUMT--
 
