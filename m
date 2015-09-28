@@ -1,14 +1,11 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 26 Sep 2015 22:12:56 +0800
-Message-ID: <7637660.lmaZFmOlyF@voltaire>
-In-Reply-To: <1442130168-3628-1-git-send-email-sven@narfation.org>
-References: <1442130168-3628-1-git-send-email-sven@narfation.org>
+Return-Path: <germano.massullo@gmail.com>
+From: Germano Massullo <germano.massullo@gmail.com>
+Message-ID: <5609712B.6020308@gmail.com>
+Date: Mon, 28 Sep 2015 18:56:11 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1967592.NxLJckCU26";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Place constant on right side
-	of comparison
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] Suggestions to get extended jsondoc alfred output
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,40 +17,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1967592.NxLJckCU26
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+I created three Fedora virtual machines to get some alfred jsondoc
+format output. I followed [1] and [2] but I edited some commands because
+virtual machines obviously do not own wireless network interfaces. Since
+it is the first time I use batman+alfred I want to show you the entire
+list of commands (that have been runned on all the virtual machines.) I
+used before asking my question
 
-On Sunday, September 13, 2015 09:42:48 Sven Eckelmann wrote:
-> checkpatch warns when the constant is on the right side of a comparison.
-> 
-> Fixes: 56fd0bab9c18 ("batman-adv: Fix gw_bandwidth calculation on 32 bit
-> systems") Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/gateway_common.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+# ip link set dev enp0s3 mtu 1532
+# batctl if add enp0s3
+# ip link set bat0 up
+# alfred -i enp0s3 -m
 
-Applied in revision cef7403c.
+The    # ip addr     of all virtual machines is [3]
+Then I opened a new console
 
-Thanks,
-Marek
+# cat /etc/hostname | alfred -s 65
+# alfred -r 65
+then I got [4] as the Examples paragraph [2] suggested
+# batadv-vis --format=3Djsondoc
+and I got [5]
 
---nextPart1967592.NxLJckCU26
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Question: do you have any suggestion how I can extend the jsondoc
+output, to get an output similar to [6]?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Thank you for your time
 
-iQEcBAABCAAGBQJWBqfoAAoJEFNVTo/uthzAUcgIAMJCm7jcIC1JoEr6strPO7zc
-30AB83w06oKfkUbiCf2JGjMCUWq4lZ+4z1mjrZyg/+mCEGEpRhpoSqqODKYsba3t
-XIYGqeFPpos6LvEml/vbut6MloQi3aeC1IE9rEDXumHBWbVE5LasgFTd5V+zIKpX
-V3Uls3iC++d6DPBrSzw2SJcAUekFySKK3qwpSwQt+MVII67UNeZUyhQXf5ErVyQE
-fBxTaxT/wpmhJdfFaxOp+h+Vu6h2YVkkiTdRSrpss5mnANAZDMWmiBBgCds4bovr
-QqAbCC2jI6SZbnov2M4f/UbVxII3Z4wLiOLRakh8eO7MUDqy7lSI6vHiytF3Io4=
-=14zW
------END PGP SIGNATURE-----
 
---nextPart1967592.NxLJckCU26--
+[1] http://www.open-mesh.org/projects/batman-adv/wiki/Quick-start-guide
+[2] http://downloads.open-mesh.org/batman/manpages/alfred.8.html
+[3] http://i.imgur.com/IR9pSJg.jpg
+[4] http://i.imgur.com/hEP4oV7.jpg
+[5] http://i.imgur.com/Tb1hRHl.jpg
+[6]
+https://github.com/ninuxorg/netdiff/blob/master/tests/static/batman-1%2B1=
+=2Ejson
 
