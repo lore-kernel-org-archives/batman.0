@@ -1,10 +1,13 @@
-Return-Path: <germano.massullo@gmail.com>
-From: Germano Massullo <germano.massullo@gmail.com>
-Message-ID: <56161A83.9060904@gmail.com>
-Date: Thu, 8 Oct 2015 09:25:55 +0200
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 08 Oct 2015 11:07:04 +0200
+Message-ID: <1999902.gZ2UANlGb6@bentobox>
+In-Reply-To: <56161A83.9060904@gmail.com>
+References: <56161A83.9060904@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------080900020001080300080308"
-Subject: [B.A.T.M.A.N.] Questions arised while iplementing NetJSON
+Content-Type: multipart/signed; boundary="nextPart1520972.JAR80To2IQ";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Questions arised while iplementing NetJSON
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,144 +18,117 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: antonio@meshcoding.com
 
-This is a multi-part message in MIME format.
---------------080900020001080300080308
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+--nextPart1520972.JAR80To2IQ
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
 
-I have some questions about JSONDoc created by command <<batadv-vis
---format=jsondoc>>
-In jsondoc_commented file there are a few addresses that are not shown
-in ip_addr file. I commented them using
-
-    # non existing in file ip_addr
-
-What are exactly the addresses in "clients"? What do they represent?
-The procedure I followed to create the interfaces is available at [1]
-
-Thank you for your time
-
-[1]
-https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2015-September/013700.html
+On Thursday 08 October 2015 09:25:55 Germano Massullo wrote:
+> I have some questions about JSONDoc created by command <<batadv-vis
+> --format=3Djsondoc>>
+> In jsondoc_commented file there are a few addresses that are not show=
+n
+> in ip_addr file. I commented them using
+>=20
+>     # non existing in file ip_addr
+>=20
+> What are exactly the addresses in "clients"? What do they represent?
+> The procedure I followed to create the interfaces is available at [1]=
 
 
+These are "clients" from the local translation table. It is like a swit=
+ch
+lookup table but in this case for "client" which are "above" the bat0
+device.
 
---------------080900020001080300080308
-Content-Type: text/plain; charset=UTF-8;
- name="ip_addr"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="ip_addr"
 
-MTogbG86IDxMT09QQkFDSyxVUCxMT1dFUl9VUD4gbXR1IDY1NTM2IHFkaXNjIG5vcXVldWUg
-c3RhdGUgVU5LTk9XTiBncm91cCBkZWZhdWx0IAogICAgbGluay9sb29wYmFjayAwMDowMDow
-MDowMDowMDowMCBicmQgMDA6MDA6MDA6MDA6MDA6MDAKICAgIGluZXQgMTI3LjAuMC4xLzgg
-c2NvcGUgaG9zdCBsbwogICAgICAgdmFsaWRfbGZ0IGZvcmV2ZXIgcHJlZmVycmVkX2xmdCBm
-b3JldmVyCiAgICBpbmV0NiA6OjEvMTI4IHNjb3BlIGhvc3QgCiAgICAgICB2YWxpZF9sZnQg
-Zm9yZXZlciBwcmVmZXJyZWRfbGZ0IGZvcmV2ZXIKMjogZW5wMHMzOiA8QlJPQURDQVNULE1V
-TFRJQ0FTVCxVUCxMT1dFUl9VUD4gbXR1IDE1MzIgcWRpc2MgZnFfY29kZWwgbWFzdGVyIGJh
-dDAgc3RhdGUgVVAgZ3JvdXAgZGVmYXVsdCBxbGVuIDEwMDAKICAgIGxpbmsvZXRoZXIgMDg6
-MDA6Mjc6ODM6ZTU6NTkgYnJkIGZmOmZmOmZmOmZmOmZmOmZmCiAgICBpbmV0IDE5Mi4xNjgu
-MS4xMTkvMjQgYnJkIDE5Mi4xNjguMS4yNTUgc2NvcGUgZ2xvYmFsIGR5bmFtaWMgZW5wMHMz
-CiAgICAgICB2YWxpZF9sZnQgNDIwMDBzZWMgcHJlZmVycmVkX2xmdCA0MjAwMHNlYwogICAg
-aW5ldDYgZmRkNzo0Nzc4OmRmMjI6OmQ5OS8xMjggc2NvcGUgZ2xvYmFsIGR5bmFtaWMgCiAg
-ICAgICB2YWxpZF9sZnQgODUyMDJzZWMgcHJlZmVycmVkX2xmdCA4NTIwMnNlYwogICAgaW5l
-dDYgZmRkNzo0Nzc4OmRmMjI6MDphMDA6MjdmZjpmZTgzOmU1NTkvNjQgc2NvcGUgZ2xvYmFs
-IG5vcHJlZml4cm91dGUgZHluYW1pYyAKICAgICAgIHZhbGlkX2xmdCA3MTA4c2VjIHByZWZl
-cnJlZF9sZnQgMTcwOHNlYwogICAgaW5ldDYgZmU4MDo6YTAwOjI3ZmY6ZmU4MzplNTU5LzY0
-IHNjb3BlIGxpbmsgCiAgICAgICB2YWxpZF9sZnQgZm9yZXZlciBwcmVmZXJyZWRfbGZ0IGZv
-cmV2ZXIKMzogYmF0MEBOT05FOiA8QlJPQURDQVNULE1VTFRJQ0FTVD4gbXR1IDE1MDAgcWRp
-c2Mgbm9vcCBzdGF0ZSBET1dOIGdyb3VwIGRlZmF1bHQgCiAgICBsaW5rL2V0aGVyIDJhOmQ3
-OjM3OmM2Ojg0OmZhIGJyZCBmZjpmZjpmZjpmZjpmZjpmZgoKCgoxOiBsbzogPExPT1BCQUNL
-LFVQLExPV0VSX1VQPiBtdHUgNjU1MzYgcWRpc2Mgbm9xdWV1ZSBzdGF0ZSBVTktOT1dOIGdy
-b3VwIGRlZmF1bHQgCiAgICBsaW5rL2xvb3BiYWNrIDAwOjAwOjAwOjAwOjAwOjAwIGJyZCAw
-MDowMDowMDowMDowMDowMAogICAgaW5ldCAxMjcuMC4wLjEvOCBzY29wZSBob3N0IGxvCiAg
-ICAgICB2YWxpZF9sZnQgZm9yZXZlciBwcmVmZXJyZWRfbGZ0IGZvcmV2ZXIKICAgIGluZXQ2
-IDo6MS8xMjggc2NvcGUgaG9zdCAKICAgICAgIHZhbGlkX2xmdCBmb3JldmVyIHByZWZlcnJl
-ZF9sZnQgZm9yZXZlcgoyOiBlbnAwczM6IDxCUk9BRENBU1QsTVVMVElDQVNULFVQLExPV0VS
-X1VQPiBtdHUgMTUzMiBxZGlzYyBmcV9jb2RlbCBtYXN0ZXIgYmF0MCBzdGF0ZSBVUCBncm91
-cCBkZWZhdWx0IHFsZW4gMTAwMAogICAgbGluay9ldGhlciAwODowMDoyNzo4ZjpiMTpjMiBi
-cmQgZmY6ZmY6ZmY6ZmY6ZmY6ZmYKICAgIGluZXQgMTkyLjE2OC4xLjIzNy8yNCBicmQgMTky
-LjE2OC4xLjI1NSBzY29wZSBnbG9iYWwgZHluYW1pYyBlbnAwczMKICAgICAgIHZhbGlkX2xm
-dCA0MTY3OHNlYyBwcmVmZXJyZWRfbGZ0IDQxNjc4c2VjCiAgICBpbmV0NiBmZGQ3OjQ3Nzg6
-ZGYyMjo6YTNkLzEyOCBzY29wZSBnbG9iYWwgZHluYW1pYyAKICAgICAgIHZhbGlkX2xmdCA4
-NDg3OXNlYyBwcmVmZXJyZWRfbGZ0IDg0ODc5c2VjCiAgICBpbmV0NiBmZGQ3OjQ3Nzg6ZGYy
-MjowOmEwMDoyN2ZmOmZlOGY6YjFjMi82NCBzY29wZSBnbG9iYWwgbm9wcmVmaXhyb3V0ZSBk
-eW5hbWljIAogICAgICAgdmFsaWRfbGZ0IDY5NjZzZWMgcHJlZmVycmVkX2xmdCAxNTY2c2Vj
-CiAgICBpbmV0NiBmZTgwOjphMDA6MjdmZjpmZThmOmIxYzIvNjQgc2NvcGUgbGluayAKICAg
-ICAgIHZhbGlkX2xmdCBmb3JldmVyIHByZWZlcnJlZF9sZnQgZm9yZXZlcgozOiBiYXQwQE5P
-TkU6IDxCUk9BRENBU1QsTVVMVElDQVNUPiBtdHUgMTUwMCBxZGlzYyBub29wIHN0YXRlIERP
-V04gZ3JvdXAgZGVmYXVsdCAKICAgIGxpbmsvZXRoZXIgYzY6ODQ6YWU6Nzc6M2U6ZjEgYnJk
-IGZmOmZmOmZmOmZmOmZmOmZmCgoKCjE6IGxvOiA8TE9PUEJBQ0ssVVAsTE9XRVJfVVA+IG10
-dSA2NTUzNiBxZGlzYyBub3F1ZXVlIHN0YXRlIFVOS05PV04gZ3JvdXAgZGVmYXVsdCAKICAg
-IGxpbmsvbG9vcGJhY2sgMDA6MDA6MDA6MDA6MDA6MDAgYnJkIDAwOjAwOjAwOjAwOjAwOjAw
-CiAgICBpbmV0IDEyNy4wLjAuMS84IHNjb3BlIGhvc3QgbG8KICAgICAgIHZhbGlkX2xmdCBm
-b3JldmVyIHByZWZlcnJlZF9sZnQgZm9yZXZlcgogICAgaW5ldDYgOjoxLzEyOCBzY29wZSBo
-b3N0IAogICAgICAgdmFsaWRfbGZ0IGZvcmV2ZXIgcHJlZmVycmVkX2xmdCBmb3JldmVyCjI6
-IGVucDBzMzogPEJST0FEQ0FTVCxNVUxUSUNBU1QsVVAsTE9XRVJfVVA+IG10dSAxNTMyIHFk
-aXNjIGZxX2NvZGVsIG1hc3RlciBiYXQwIHN0YXRlIFVQIGdyb3VwIGRlZmF1bHQgcWxlbiAx
-MDAwCiAgICBsaW5rL2V0aGVyIDA4OjAwOjI3OmE5OjhkOmFmIGJyZCBmZjpmZjpmZjpmZjpm
-ZjpmZgogICAgaW5ldCAxOTIuMTY4LjEuMTgyLzI0IGJyZCAxOTIuMTY4LjEuMjU1IHNjb3Bl
-IGdsb2JhbCBkeW5hbWljIGVucDBzMwogICAgICAgdmFsaWRfbGZ0IDM5MjE3c2VjIHByZWZl
-cnJlZF9sZnQgMzkyMTdzZWMKICAgIGluZXQ2IGZkZDc6NDc3ODpkZjIyOjoxZGQvMTI4IHNj
-b3BlIGdsb2JhbCBkeW5hbWljIAogICAgICAgdmFsaWRfbGZ0IDg2MDE5c2VjIHByZWZlcnJl
-ZF9sZnQgODYwMTlzZWMKICAgIGluZXQ2IGZkZDc6NDc3ODpkZjIyOjA6YTAwOjI3ZmY6ZmVh
-OTo4ZGFmLzY0IHNjb3BlIGdsb2JhbCBub3ByZWZpeHJvdXRlIGR5bmFtaWMgCiAgICAgICB2
-YWxpZF9sZnQgNjg4M3NlYyBwcmVmZXJyZWRfbGZ0IDE0ODNzZWMKICAgIGluZXQ2IGZlODA6
-OmEwMDoyN2ZmOmZlYTk6OGRhZi82NCBzY29wZSBsaW5rIAogICAgICAgdmFsaWRfbGZ0IGZv
-cmV2ZXIgcHJlZmVycmVkX2xmdCBmb3JldmVyCjM6IGJhdDBATk9ORTogPEJST0FEQ0FTVCxN
-VUxUSUNBU1QsVVAsTE9XRVJfVVA+IG10dSAxNTAwIHFkaXNjIG5vcXVldWUgc3RhdGUgVU5L
-Tk9XTiBncm91cCBkZWZhdWx0IAogICAgbGluay9ldGhlciBhMjo3ZjphYTo3NToxNTpmMiBi
-cmQgZmY6ZmY6ZmY6ZmY6ZmY6ZmYKICAgIGluZXQ2IGZlODA6OmEwN2Y6YWFmZjpmZTc1OjE1
-ZjIvNjQgc2NvcGUgbGluayAKICAgICAgIHZhbGlkX2xmdCBmb3JldmVyIHByZWZlcnJlZF9s
-ZnQgZm9yZXZlcgoK
---------------080900020001080300080308
-Content-Type: text/plain; charset=UTF-8;
- name="jsondoc_commented"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="jsondoc_commented"
+=2D--------------------------------------
+|   bridge (mac 00:11:22:33:44:55)    |          =20
+|                                     |
+| bat0                        eth0    |
+|   |                          |      |
+=2D---|--------------------------|-------
+    |                          |
+=2D---|------                    |
+| adhoc0  |                    |
+=2D---|------                   /|\
+    |                        / | \
+ ~~~~~~~~~~                 /  |  \
+(mesh cloud)               /   |   \
+ ~~~~~~~~~~           -----    |    -----------
+                     /         |               \
+ --------------------    --------------------   --------------------
+ | device 1         |    | device 2         |   | device 3         |
+ | mac:             |    | mac:             |   | mac:             |
+ | 02:ba:de:af:fe:01|    | 02:ba:de:af:fe:02|   | 02:ba:de:af:fe:03|
+ --------------------    --------------------   --------------------
 
-ewogICJzb3VyY2VfdmVyc2lvbiIgOiAiMjAxNS4xLTItZzQzODRjMmItZGlydHkiLAogICJh
-bGdvcml0aG0iIDogNCwKICAidmlzIiA6IFsKICAgIHsgInByaW1hcnkiIDogIjA4OjAwOjI3
-OjhmOmIxOmMyIiwgICAgICAgICMgZW5wMHMzIDJuZCB2aXJ0dWFsIG1hY2hpbmUKICAgICAg
-Im5laWdoYm9ycyIgOiBbCiAgICAgICAgIHsgInJvdXRlciIgOiAiMDg6MDA6Mjc6OGY6YjE6
-YzIiLCAgICAjIGVucDBzMyAybmQgdmlydHVhbCBtYWNoaW5lCiAgICAgICAgICAgIm5laWdo
-Ym9yIiA6ICIwODowMDoyNzphOTo4ZDphZiIsICAjIGVucDBzMyAzcmQgdmlydHVhbCBtYWNo
-aW5lCiAgICAgICAgICAgIm1ldHJpYyIgOiAiMS4wMDAiIH0sCiAgICAgICAgIHsgInJvdXRl
-ciIgOiAiMDg6MDA6Mjc6OGY6YjE6YzIiLCAgICAjIGVucDBzMyAybmQgdmlydHVhbCBtYWNo
-aW5lCiAgICAgICAgICAgIm5laWdoYm9yIiA6ICIwODowMDoyNzo4MzplNTo1OSIsICAjIGVu
-cDBzMyAxc3QgdmlydHVhbCBtYWNoaW5lCiAgICAgICAgICAgIm1ldHJpYyIgOiAiMS4wMDAi
-IH0KICAgICAgXSwKICAgICAgImNsaWVudHMiIDogWwogICAgICAgICIzMzozMzowMDowMDow
-MDowMSIsICAgICAgICAgICAgICAgICAgIyBub24gZXhpc3RpbmcgaW4gZmlsZSBpcF9hZGRy
-CiAgICAgICAgImM2Ojg0OmFlOjc3OjNlOmYxIiAgICAgICAgICAgICAgICAgICAjIGJhdDAg
-Mm5kIHZpcnR1YWwgbWFjaGluZQogICAgICBdCiAgICB9LAogICAgeyAicHJpbWFyeSIgOiAi
-MDg6MDA6Mjc6ODM6ZTU6NTkiLCAgICAgICAgIyBlbnAwczMgMXN0IHZpcnR1YWwgbWFjaGlu
-ZQogICAgICAibmVpZ2hib3JzIiA6IFsKICAgICAgICAgeyAicm91dGVyIiA6ICIwODowMDoy
-Nzo4MzplNTo1OSIsICAgICMgZW5wMHMzIDFzdCB2aXJ0dWFsIG1hY2hpbmUKICAgICAgICAg
-ICAibmVpZ2hib3IiIDogIjA4OjAwOjI3OmE5OjhkOmFmIiwgICMgZW5wMHMzIDNyZCB2aXJ0
-dWFsIG1hY2hpbmUKICAgICAgICAgICAibWV0cmljIiA6ICIxLjAwMCIgfSwKICAgICAgICAg
-eyAicm91dGVyIiA6ICIwODowMDoyNzo4MzplNTo1OSIsICAgICMgZW5wMHMzIDFzdCB2aXJ0
-dWFsIG1hY2hpbmUKICAgICAgICAgICAibmVpZ2hib3IiIDogIjA4OjAwOjI3OjhmOmIxOmMy
-IiwgICMgZW5wMHMzIDJuZCB2aXJ0dWFsIG1hY2hpbmUKICAgICAgICAgICAibWV0cmljIiA6
-ICIxLjAwMCIgfQogICAgICBdLAogICAgICAiY2xpZW50cyIgOiBbCiAgICAgICAgIjMzOjMz
-OjAwOjAwOjAwOjAxIiwKICAgICAgICAiMm5kOmQ3OjM3OmM2Ojg0OmZhIiAgICAgICAgICAg
-ICAgICAgICAjIGJhdDAgMXN0IHZpcnR1YWwgbWFjaGluZQogICAgICBdCiAgICB9LAogICAg
-eyAicHJpbWFyeSIgOiAiMDg6MDA6Mjc6YTk6OGQ6YWYiLCAgICAgICAgIyBlbnAwczMgM3Jk
-IHZpcnR1YWwgbWFjaGluZQogICAgICAibmVpZ2hib3JzIiA6IFsKICAgICAgICAgeyAicm91
-dGVyIiA6ICIwODowMDoyNzphOTo4ZDphZiIsICAgICMgZW5wMHMzIDNyZCB2aXJ0dWFsIG1h
-Y2hpbmUKICAgICAgICAgICAibmVpZ2hib3IiIDogIjA4OjAwOjI3OjhmOmIxOmMyIiwgICMg
-ZW5wMHMzIDJuZCB2aXJ0dWFsIG1hY2hpbmUKICAgICAgICAgICAibWV0cmljIiA6ICIxLjAw
-MCIgfSwKICAgICAgICAgeyAicm91dGVyIiA6ICIwODowMDoyNzphOTo4ZDphZiIsICAgICMg
-ZW5wMHMzIDNyZCB2aXJ0dWFsIG1hY2hpbmUKICAgICAgICAgICAibmVpZ2hib3IiIDogIjA4
-OjAwOjI3OjgzOmU1OjU5IiwgICMgZW5wMHMzIDFzdCB2aXJ0dWFsIG1hY2hpbmUKICAgICAg
-ICAgICAibWV0cmljIiA6ICIxLjAxNiIgfQogICAgICBdLAogICAgICAiY2xpZW50cyIgOiBb
-CiAgICAgICAgIjMzOjMzOmZmOjc1OjE1OmYyIiwgICAgICAgICAgICAgICAgICAjIG5vbiBl
-eGlzdGluZyBpbiBmaWxlIGlwX2FkZHIKICAgICAgICAiMzM6MzM6MDA6MDA6MDA6MDEiLCAg
-ICAgICAgICAgICAgICAgICMgbm9uIGV4aXN0aW5nIGluIGZpbGUgaXBfYWRkcgogICAgICAg
-ICJhMjo3ZjphYTo3NToxNTpmMiIsICAgICAgICAgICAgICAgICAgIyBiYXQwIDNyZCB2aXJ0
-dWFsIG1hY2hpbmUKICAgICAgICAiMDE6MDA6NWU6MDA6MDA6MDEiICAgICAgICAgICAgICAg
-ICAgICMgbm9uIGV4aXN0aW5nIGluIGZpbGUgaXBfYWRkcgogICAgICBdCiAgICB9CiAgXQp9
-Cgo=
---------------080900020001080300080308--
+So the device below bat0 is adhoc0. The devices "above" bat0 (from whic=
+h it
+gets non-batman-adv traffic) are the bridge and device1, device2, devic=
+e3.
+
+So the clients should contain:
+
+ * 00:11:22:33:44:55
+ * 02:ba:de:af:fe:01
+ * 02:ba:de:af:fe:02
+ * 02:ba:de:af:fe:03
+
+You can check this also with the command: batctl tl
+
+There is also a global translation table which you can get via: batctl =
+tg.
+
+But now you may say: "hey, I don't use a bridge on top of bat0 - there =
+are no=20
+other devices above bat0". That may be correct but batman-adv can only =
+find=20
+these devices by looking at packets coming from "above" and just has to=
+ accept=20
+everything which is coming from there (even forged stuff). But don't fo=
+rget=20
+the other source of addresses in there is the multicast table (otherwis=
+e the=20
+multicast optimization from Linus doesn't work). So I would guess that =
+this is=20
+the result of the other entries.
+
+I think Antonio and Linus can help you to understand it better when you=
+ give=20
+them the output of `batctl tl` + `batctl tg` + `ip maddr show dev bat0`=
+. But=20
+here is my interpretation:
+
+33:33:00:00:00:01 - (mcast) IPv6 neighbor discovery protocol
+33:33:ff:xx:xx:xx - (mcast) some other IPv6 multicast
+01:00:5e:00:00:01 - (mcast) IP multicast
+
+Kind regards,
+=09Sven
+--nextPart1520972.JAR80To2IQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJWFjI4AAoJEF2HCgfBJntGdCgP/Rtea/Lrz8IgmEkqIh0kiVMk
+7w6K/MugwKfsK84xSrHk7GNGUcTygMMhGM8QEiQtncg9Q+ttmZKRudDoZs3qnPMh
+D5BjnHk5pUqQynrN6g1pPojrmFtFF1Fznwk2uoYUMWmFl7gLPDxb7r5F0aqqCd2G
+KtN8cLH75JR69Sd7RcUkW0kAPItEdrowzm63Vpy9SKLwWVgMWDH0JTBo+Fe9e69D
+91kPINFoLAUiOpKQbKkFQhW14TJtxc4YmZ5Ha/JHPRBfejGu5rtw1nNa88SS+8mS
+rL8cSss8LLz76cxmrsMXOHvlDlAUVh4Tt6D5c6mJmvo0pzacFQicnf3NCS6shhkS
+xy8YHNBA6NRBQ0db69dfknzwiJP2SzGfXC8s/wVWLQOjr/DcztHKLCmQnFOMklN6
+qF89H7jdK8WmnXuHG3OSz7amNj1dWqW1TqQ2wLr58S+oMbe/rVdE5a4QvKvP4szZ
+xdlkrKJ5vQjT1SHfdg9QKvD/SWwhEHfgfF0cYKPAco3mE2/LcxRfBJMMTLMMhlnY
+DsXOzY56jwWHWQ4wisYuUJI1zuINsZ8f58ucKjeh9f0idwXYkBcE9qfrPW7i8UEx
+PlgyxVN2Cq5KoZGLEup7SDXhYUoQMhbfv17p5uLS//tvWw24nq8lzFd0JuZbbmP6
+BtSmLDdDXXeZ4xWCMor2
+=YAdb
+-----END PGP SIGNATURE-----
+
+--nextPart1520972.JAR80To2IQ--
+
