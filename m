@@ -1,14 +1,10 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Wed,  7 Oct 2015 10:06:54 +0200
-Message-Id: <1444205214-5307-5-git-send-email-linus.luessing@c0d3.blue>
-In-Reply-To: <1444205214-5307-1-git-send-email-linus.luessing@c0d3.blue>
-References: <1444205214-5307-1-git-send-email-linus.luessing@c0d3.blue>
+Return-Path: <germano.massullo@gmail.com>
+From: Germano Massullo <germano.massullo@gmail.com>
+Message-ID: <56161A83.9060904@gmail.com>
+Date: Thu, 8 Oct 2015 09:25:55 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv11 4/4] batman-adv: Add debugfs table for
-	mcast flags
+Content-Type: multipart/mixed; boundary="------------080900020001080300080308"
+Subject: [B.A.T.M.A.N.] Questions arised while iplementing NetJSON
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,202 +16,143 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This patch adds a debugfs table with originators and their according
-multicast flags to help users figure out why multicast optimizations
-might be enabled or disabled for them.
+This is a multi-part message in MIME format.
+--------------080900020001080300080308
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/debugfs.c   |   21 +++++++++
- net/batman-adv/multicast.c |  101 ++++++++++++++++++++++++++++++++++++++++++++
- net/batman-adv/multicast.h |    2 +
- 3 files changed, 124 insertions(+)
+I have some questions about JSONDoc created by command <<batadv-vis
+--format=jsondoc>>
+In jsondoc_commented file there are a few addresses that are not shown
+in ip_addr file. I commented them using
 
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index 037ad0a..02897fa 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -48,6 +48,7 @@
- #include "distributed-arp-table.h"
- #include "gateway_client.h"
- #include "icmp_socket.h"
-+#include "multicast.h"
- #include "network-coding.h"
- #include "originator.h"
- #include "translation-table.h"
-@@ -359,6 +360,20 @@ static int batadv_nc_nodes_open(struct inode *inode, struct file *file)
- }
- #endif
- 
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+/**
-+ * batadv_mcast_flags_open - prepare file handler for reads from mcast_flags
-+ * @inode: inode which was opened
-+ * @file: file handle to be initialized
-+ */
-+static int batadv_mcast_flags_open(struct inode *inode, struct file *file)
-+{
-+	struct net_device *net_dev = (struct net_device *)inode->i_private;
-+
-+	return single_open(file, batadv_mcast_flags_seq_print_text, net_dev);
-+}
-+#endif
-+
- #define BATADV_DEBUGINFO(_name, _mode, _open)		\
- struct batadv_debuginfo batadv_debuginfo_##_name = {	\
- 	.attr = { .name = __stringify(_name),		\
-@@ -400,6 +415,9 @@ static BATADV_DEBUGINFO(transtable_local, S_IRUGO,
- #ifdef CONFIG_BATMAN_ADV_NC
- static BATADV_DEBUGINFO(nc_nodes, S_IRUGO, batadv_nc_nodes_open);
- #endif
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+static BATADV_DEBUGINFO(mcast_flags, S_IRUGO, batadv_mcast_flags_open);
-+#endif
- 
- static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- 	&batadv_debuginfo_neighbors,
-@@ -417,6 +435,9 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- #ifdef CONFIG_BATMAN_ADV_NC
- 	&batadv_debuginfo_nc_nodes,
- #endif
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+	&batadv_debuginfo_mcast_flags,
-+#endif
- 	NULL,
- };
- 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index ae13e02..493a8db 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -49,6 +49,8 @@
- #include <net/ipv6.h>
- #include <net/mld.h>
- 
-+#include "hard-interface.h"
-+#include "hash.h"
- #include "packet.h"
- #include "translation-table.h"
- 
-@@ -1168,6 +1170,105 @@ void batadv_mcast_init(struct batadv_priv *bat_priv)
- }
- 
- /**
-+ * batadv_mcast_flags_print_header - print own mcast flags to debugfs table
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @seq: debugfs table seq_file struct
-+ *
-+ * Prints our own multicast flags including a more specific reason why
-+ * they are set, that is prints the bridge and querier state too, to
-+ * the debugfs table specified via @seq.
-+ */
-+static void batadv_mcast_flags_print_header(struct batadv_priv *bat_priv,
-+					    struct seq_file *seq)
-+{
-+	u8 flags = bat_priv->mcast.flags;
-+	char querier4, querier6, shadowing4, shadowing6;
-+	bool bridged = bat_priv->mcast.bridged;
-+
-+	if (bridged) {
-+		querier4 = bat_priv->mcast.querier_ipv4.exists ? '.' : '4';
-+		querier6 = bat_priv->mcast.querier_ipv6.exists ? '.' : '6';
-+		shadowing4 = bat_priv->mcast.querier_ipv4.shadowing ? '4' : '.';
-+		shadowing6 = bat_priv->mcast.querier_ipv6.shadowing ? '6' : '.';
-+	} else {
-+		querier4 = '?';
-+		querier6 = '?';
-+		shadowing4 = '?';
-+		shadowing6 = '?';
-+	}
-+
-+	seq_printf(seq, "Multicast flags (own flags: [%c%c%c])\n",
-+		   flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ? 'U' : '.',
-+		   flags & BATADV_MCAST_WANT_ALL_IPV4 ? '4' : '.',
-+		   flags & BATADV_MCAST_WANT_ALL_IPV6 ? '6' : '.');
-+	seq_printf(seq, "* Bridged [U]\t\t\t\t%c\n", bridged ? 'U' : '.');
-+	seq_printf(seq, "* No IGMP/MLD Querier [4/6]:\t\t%c/%c\n",
-+		   querier4, querier6);
-+	seq_printf(seq, "* Shadowing IGMP/MLD Querier [4/6]:\t%c/%c\n",
-+		   shadowing4, shadowing6);
-+	seq_puts(seq, "-------------------------------------------\n");
-+	seq_printf(seq, "       %-10s %s\n", "Originator", "Flags");
-+}
-+
-+/**
-+ * batadv_mcast_flags_seq_print_text - print the mcast flags of other nodes
-+ * @seq: seq file to print on
-+ * @offset: not used
-+ *
-+ * This prints a table of (primary) originators and their according
-+ * multicast flags, including (in the header) our own.
-+ */
-+int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset)
-+{
-+	struct net_device *net_dev = (struct net_device *)seq->private;
-+	struct batadv_priv *bat_priv = netdev_priv(net_dev);
-+	struct batadv_hard_iface *primary_if;
-+	struct batadv_hashtable *hash = bat_priv->orig_hash;
-+	struct batadv_orig_node *orig_node;
-+	struct hlist_head *head;
-+	u8 flags;
-+	u32 i;
-+
-+	primary_if = batadv_seq_print_text_primary_if_get(seq);
-+	if (!primary_if)
-+		return 0;
-+
-+	batadv_mcast_flags_print_header(bat_priv, seq);
-+
-+	for (i = 0; i < hash->size; i++) {
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
-+			if (!(orig_node->capa_initialized &
-+			      BATADV_ORIG_CAPA_HAS_MCAST))
-+				continue;
-+
-+			flags = orig_node->mcast_flags;
-+
-+			if (!(orig_node->capabilities &
-+			      BATADV_ORIG_CAPA_HAS_MCAST)) {
-+				seq_printf(seq, "%pM -\n", orig_node->orig);
-+				continue;
-+			}
-+
-+			seq_printf(seq, "%pM [%c%c%c]\n", orig_node->orig,
-+				   (flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES ?
-+				    'U' : '.'),
-+				   (flags & BATADV_MCAST_WANT_ALL_IPV4 ?
-+				    '4' : '.'),
-+				   (flags & BATADV_MCAST_WANT_ALL_IPV6 ?
-+				    '6' : '.'));
-+		}
-+		rcu_read_unlock();
-+	}
-+
-+	batadv_hardif_free_ref(primary_if);
-+
-+	return 0;
-+}
-+
-+/**
-  * batadv_mcast_free - free the multicast optimizations structures
-  * @bat_priv: the bat priv with all the soft interface information
-  */
-diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
-index 685219f..f1f2901 100644
---- a/net/batman-adv/multicast.h
-+++ b/net/batman-adv/multicast.h
-@@ -46,6 +46,8 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 
- void batadv_mcast_init(struct batadv_priv *bat_priv);
- 
-+int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset);
-+
- void batadv_mcast_free(struct batadv_priv *bat_priv);
- 
- void batadv_mcast_purge_orig(struct batadv_orig_node *orig_node);
--- 
-1.7.10.4
+    # non existing in file ip_addr
 
+What are exactly the addresses in "clients"? What do they represent?
+The procedure I followed to create the interfaces is available at [1]
+
+Thank you for your time
+
+[1]
+https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2015-September/013700.html
+
+
+
+--------------080900020001080300080308
+Content-Type: text/plain; charset=UTF-8;
+ name="ip_addr"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="ip_addr"
+
+MTogbG86IDxMT09QQkFDSyxVUCxMT1dFUl9VUD4gbXR1IDY1NTM2IHFkaXNjIG5vcXVldWUg
+c3RhdGUgVU5LTk9XTiBncm91cCBkZWZhdWx0IAogICAgbGluay9sb29wYmFjayAwMDowMDow
+MDowMDowMDowMCBicmQgMDA6MDA6MDA6MDA6MDA6MDAKICAgIGluZXQgMTI3LjAuMC4xLzgg
+c2NvcGUgaG9zdCBsbwogICAgICAgdmFsaWRfbGZ0IGZvcmV2ZXIgcHJlZmVycmVkX2xmdCBm
+b3JldmVyCiAgICBpbmV0NiA6OjEvMTI4IHNjb3BlIGhvc3QgCiAgICAgICB2YWxpZF9sZnQg
+Zm9yZXZlciBwcmVmZXJyZWRfbGZ0IGZvcmV2ZXIKMjogZW5wMHMzOiA8QlJPQURDQVNULE1V
+TFRJQ0FTVCxVUCxMT1dFUl9VUD4gbXR1IDE1MzIgcWRpc2MgZnFfY29kZWwgbWFzdGVyIGJh
+dDAgc3RhdGUgVVAgZ3JvdXAgZGVmYXVsdCBxbGVuIDEwMDAKICAgIGxpbmsvZXRoZXIgMDg6
+MDA6Mjc6ODM6ZTU6NTkgYnJkIGZmOmZmOmZmOmZmOmZmOmZmCiAgICBpbmV0IDE5Mi4xNjgu
+MS4xMTkvMjQgYnJkIDE5Mi4xNjguMS4yNTUgc2NvcGUgZ2xvYmFsIGR5bmFtaWMgZW5wMHMz
+CiAgICAgICB2YWxpZF9sZnQgNDIwMDBzZWMgcHJlZmVycmVkX2xmdCA0MjAwMHNlYwogICAg
+aW5ldDYgZmRkNzo0Nzc4OmRmMjI6OmQ5OS8xMjggc2NvcGUgZ2xvYmFsIGR5bmFtaWMgCiAg
+ICAgICB2YWxpZF9sZnQgODUyMDJzZWMgcHJlZmVycmVkX2xmdCA4NTIwMnNlYwogICAgaW5l
+dDYgZmRkNzo0Nzc4OmRmMjI6MDphMDA6MjdmZjpmZTgzOmU1NTkvNjQgc2NvcGUgZ2xvYmFs
+IG5vcHJlZml4cm91dGUgZHluYW1pYyAKICAgICAgIHZhbGlkX2xmdCA3MTA4c2VjIHByZWZl
+cnJlZF9sZnQgMTcwOHNlYwogICAgaW5ldDYgZmU4MDo6YTAwOjI3ZmY6ZmU4MzplNTU5LzY0
+IHNjb3BlIGxpbmsgCiAgICAgICB2YWxpZF9sZnQgZm9yZXZlciBwcmVmZXJyZWRfbGZ0IGZv
+cmV2ZXIKMzogYmF0MEBOT05FOiA8QlJPQURDQVNULE1VTFRJQ0FTVD4gbXR1IDE1MDAgcWRp
+c2Mgbm9vcCBzdGF0ZSBET1dOIGdyb3VwIGRlZmF1bHQgCiAgICBsaW5rL2V0aGVyIDJhOmQ3
+OjM3OmM2Ojg0OmZhIGJyZCBmZjpmZjpmZjpmZjpmZjpmZgoKCgoxOiBsbzogPExPT1BCQUNL
+LFVQLExPV0VSX1VQPiBtdHUgNjU1MzYgcWRpc2Mgbm9xdWV1ZSBzdGF0ZSBVTktOT1dOIGdy
+b3VwIGRlZmF1bHQgCiAgICBsaW5rL2xvb3BiYWNrIDAwOjAwOjAwOjAwOjAwOjAwIGJyZCAw
+MDowMDowMDowMDowMDowMAogICAgaW5ldCAxMjcuMC4wLjEvOCBzY29wZSBob3N0IGxvCiAg
+ICAgICB2YWxpZF9sZnQgZm9yZXZlciBwcmVmZXJyZWRfbGZ0IGZvcmV2ZXIKICAgIGluZXQ2
+IDo6MS8xMjggc2NvcGUgaG9zdCAKICAgICAgIHZhbGlkX2xmdCBmb3JldmVyIHByZWZlcnJl
+ZF9sZnQgZm9yZXZlcgoyOiBlbnAwczM6IDxCUk9BRENBU1QsTVVMVElDQVNULFVQLExPV0VS
+X1VQPiBtdHUgMTUzMiBxZGlzYyBmcV9jb2RlbCBtYXN0ZXIgYmF0MCBzdGF0ZSBVUCBncm91
+cCBkZWZhdWx0IHFsZW4gMTAwMAogICAgbGluay9ldGhlciAwODowMDoyNzo4ZjpiMTpjMiBi
+cmQgZmY6ZmY6ZmY6ZmY6ZmY6ZmYKICAgIGluZXQgMTkyLjE2OC4xLjIzNy8yNCBicmQgMTky
+LjE2OC4xLjI1NSBzY29wZSBnbG9iYWwgZHluYW1pYyBlbnAwczMKICAgICAgIHZhbGlkX2xm
+dCA0MTY3OHNlYyBwcmVmZXJyZWRfbGZ0IDQxNjc4c2VjCiAgICBpbmV0NiBmZGQ3OjQ3Nzg6
+ZGYyMjo6YTNkLzEyOCBzY29wZSBnbG9iYWwgZHluYW1pYyAKICAgICAgIHZhbGlkX2xmdCA4
+NDg3OXNlYyBwcmVmZXJyZWRfbGZ0IDg0ODc5c2VjCiAgICBpbmV0NiBmZGQ3OjQ3Nzg6ZGYy
+MjowOmEwMDoyN2ZmOmZlOGY6YjFjMi82NCBzY29wZSBnbG9iYWwgbm9wcmVmaXhyb3V0ZSBk
+eW5hbWljIAogICAgICAgdmFsaWRfbGZ0IDY5NjZzZWMgcHJlZmVycmVkX2xmdCAxNTY2c2Vj
+CiAgICBpbmV0NiBmZTgwOjphMDA6MjdmZjpmZThmOmIxYzIvNjQgc2NvcGUgbGluayAKICAg
+ICAgIHZhbGlkX2xmdCBmb3JldmVyIHByZWZlcnJlZF9sZnQgZm9yZXZlcgozOiBiYXQwQE5P
+TkU6IDxCUk9BRENBU1QsTVVMVElDQVNUPiBtdHUgMTUwMCBxZGlzYyBub29wIHN0YXRlIERP
+V04gZ3JvdXAgZGVmYXVsdCAKICAgIGxpbmsvZXRoZXIgYzY6ODQ6YWU6Nzc6M2U6ZjEgYnJk
+IGZmOmZmOmZmOmZmOmZmOmZmCgoKCjE6IGxvOiA8TE9PUEJBQ0ssVVAsTE9XRVJfVVA+IG10
+dSA2NTUzNiBxZGlzYyBub3F1ZXVlIHN0YXRlIFVOS05PV04gZ3JvdXAgZGVmYXVsdCAKICAg
+IGxpbmsvbG9vcGJhY2sgMDA6MDA6MDA6MDA6MDA6MDAgYnJkIDAwOjAwOjAwOjAwOjAwOjAw
+CiAgICBpbmV0IDEyNy4wLjAuMS84IHNjb3BlIGhvc3QgbG8KICAgICAgIHZhbGlkX2xmdCBm
+b3JldmVyIHByZWZlcnJlZF9sZnQgZm9yZXZlcgogICAgaW5ldDYgOjoxLzEyOCBzY29wZSBo
+b3N0IAogICAgICAgdmFsaWRfbGZ0IGZvcmV2ZXIgcHJlZmVycmVkX2xmdCBmb3JldmVyCjI6
+IGVucDBzMzogPEJST0FEQ0FTVCxNVUxUSUNBU1QsVVAsTE9XRVJfVVA+IG10dSAxNTMyIHFk
+aXNjIGZxX2NvZGVsIG1hc3RlciBiYXQwIHN0YXRlIFVQIGdyb3VwIGRlZmF1bHQgcWxlbiAx
+MDAwCiAgICBsaW5rL2V0aGVyIDA4OjAwOjI3OmE5OjhkOmFmIGJyZCBmZjpmZjpmZjpmZjpm
+ZjpmZgogICAgaW5ldCAxOTIuMTY4LjEuMTgyLzI0IGJyZCAxOTIuMTY4LjEuMjU1IHNjb3Bl
+IGdsb2JhbCBkeW5hbWljIGVucDBzMwogICAgICAgdmFsaWRfbGZ0IDM5MjE3c2VjIHByZWZl
+cnJlZF9sZnQgMzkyMTdzZWMKICAgIGluZXQ2IGZkZDc6NDc3ODpkZjIyOjoxZGQvMTI4IHNj
+b3BlIGdsb2JhbCBkeW5hbWljIAogICAgICAgdmFsaWRfbGZ0IDg2MDE5c2VjIHByZWZlcnJl
+ZF9sZnQgODYwMTlzZWMKICAgIGluZXQ2IGZkZDc6NDc3ODpkZjIyOjA6YTAwOjI3ZmY6ZmVh
+OTo4ZGFmLzY0IHNjb3BlIGdsb2JhbCBub3ByZWZpeHJvdXRlIGR5bmFtaWMgCiAgICAgICB2
+YWxpZF9sZnQgNjg4M3NlYyBwcmVmZXJyZWRfbGZ0IDE0ODNzZWMKICAgIGluZXQ2IGZlODA6
+OmEwMDoyN2ZmOmZlYTk6OGRhZi82NCBzY29wZSBsaW5rIAogICAgICAgdmFsaWRfbGZ0IGZv
+cmV2ZXIgcHJlZmVycmVkX2xmdCBmb3JldmVyCjM6IGJhdDBATk9ORTogPEJST0FEQ0FTVCxN
+VUxUSUNBU1QsVVAsTE9XRVJfVVA+IG10dSAxNTAwIHFkaXNjIG5vcXVldWUgc3RhdGUgVU5L
+Tk9XTiBncm91cCBkZWZhdWx0IAogICAgbGluay9ldGhlciBhMjo3ZjphYTo3NToxNTpmMiBi
+cmQgZmY6ZmY6ZmY6ZmY6ZmY6ZmYKICAgIGluZXQ2IGZlODA6OmEwN2Y6YWFmZjpmZTc1OjE1
+ZjIvNjQgc2NvcGUgbGluayAKICAgICAgIHZhbGlkX2xmdCBmb3JldmVyIHByZWZlcnJlZF9s
+ZnQgZm9yZXZlcgoK
+--------------080900020001080300080308
+Content-Type: text/plain; charset=UTF-8;
+ name="jsondoc_commented"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="jsondoc_commented"
+
+ewogICJzb3VyY2VfdmVyc2lvbiIgOiAiMjAxNS4xLTItZzQzODRjMmItZGlydHkiLAogICJh
+bGdvcml0aG0iIDogNCwKICAidmlzIiA6IFsKICAgIHsgInByaW1hcnkiIDogIjA4OjAwOjI3
+OjhmOmIxOmMyIiwgICAgICAgICMgZW5wMHMzIDJuZCB2aXJ0dWFsIG1hY2hpbmUKICAgICAg
+Im5laWdoYm9ycyIgOiBbCiAgICAgICAgIHsgInJvdXRlciIgOiAiMDg6MDA6Mjc6OGY6YjE6
+YzIiLCAgICAjIGVucDBzMyAybmQgdmlydHVhbCBtYWNoaW5lCiAgICAgICAgICAgIm5laWdo
+Ym9yIiA6ICIwODowMDoyNzphOTo4ZDphZiIsICAjIGVucDBzMyAzcmQgdmlydHVhbCBtYWNo
+aW5lCiAgICAgICAgICAgIm1ldHJpYyIgOiAiMS4wMDAiIH0sCiAgICAgICAgIHsgInJvdXRl
+ciIgOiAiMDg6MDA6Mjc6OGY6YjE6YzIiLCAgICAjIGVucDBzMyAybmQgdmlydHVhbCBtYWNo
+aW5lCiAgICAgICAgICAgIm5laWdoYm9yIiA6ICIwODowMDoyNzo4MzplNTo1OSIsICAjIGVu
+cDBzMyAxc3QgdmlydHVhbCBtYWNoaW5lCiAgICAgICAgICAgIm1ldHJpYyIgOiAiMS4wMDAi
+IH0KICAgICAgXSwKICAgICAgImNsaWVudHMiIDogWwogICAgICAgICIzMzozMzowMDowMDow
+MDowMSIsICAgICAgICAgICAgICAgICAgIyBub24gZXhpc3RpbmcgaW4gZmlsZSBpcF9hZGRy
+CiAgICAgICAgImM2Ojg0OmFlOjc3OjNlOmYxIiAgICAgICAgICAgICAgICAgICAjIGJhdDAg
+Mm5kIHZpcnR1YWwgbWFjaGluZQogICAgICBdCiAgICB9LAogICAgeyAicHJpbWFyeSIgOiAi
+MDg6MDA6Mjc6ODM6ZTU6NTkiLCAgICAgICAgIyBlbnAwczMgMXN0IHZpcnR1YWwgbWFjaGlu
+ZQogICAgICAibmVpZ2hib3JzIiA6IFsKICAgICAgICAgeyAicm91dGVyIiA6ICIwODowMDoy
+Nzo4MzplNTo1OSIsICAgICMgZW5wMHMzIDFzdCB2aXJ0dWFsIG1hY2hpbmUKICAgICAgICAg
+ICAibmVpZ2hib3IiIDogIjA4OjAwOjI3OmE5OjhkOmFmIiwgICMgZW5wMHMzIDNyZCB2aXJ0
+dWFsIG1hY2hpbmUKICAgICAgICAgICAibWV0cmljIiA6ICIxLjAwMCIgfSwKICAgICAgICAg
+eyAicm91dGVyIiA6ICIwODowMDoyNzo4MzplNTo1OSIsICAgICMgZW5wMHMzIDFzdCB2aXJ0
+dWFsIG1hY2hpbmUKICAgICAgICAgICAibmVpZ2hib3IiIDogIjA4OjAwOjI3OjhmOmIxOmMy
+IiwgICMgZW5wMHMzIDJuZCB2aXJ0dWFsIG1hY2hpbmUKICAgICAgICAgICAibWV0cmljIiA6
+ICIxLjAwMCIgfQogICAgICBdLAogICAgICAiY2xpZW50cyIgOiBbCiAgICAgICAgIjMzOjMz
+OjAwOjAwOjAwOjAxIiwKICAgICAgICAiMm5kOmQ3OjM3OmM2Ojg0OmZhIiAgICAgICAgICAg
+ICAgICAgICAjIGJhdDAgMXN0IHZpcnR1YWwgbWFjaGluZQogICAgICBdCiAgICB9LAogICAg
+eyAicHJpbWFyeSIgOiAiMDg6MDA6Mjc6YTk6OGQ6YWYiLCAgICAgICAgIyBlbnAwczMgM3Jk
+IHZpcnR1YWwgbWFjaGluZQogICAgICAibmVpZ2hib3JzIiA6IFsKICAgICAgICAgeyAicm91
+dGVyIiA6ICIwODowMDoyNzphOTo4ZDphZiIsICAgICMgZW5wMHMzIDNyZCB2aXJ0dWFsIG1h
+Y2hpbmUKICAgICAgICAgICAibmVpZ2hib3IiIDogIjA4OjAwOjI3OjhmOmIxOmMyIiwgICMg
+ZW5wMHMzIDJuZCB2aXJ0dWFsIG1hY2hpbmUKICAgICAgICAgICAibWV0cmljIiA6ICIxLjAw
+MCIgfSwKICAgICAgICAgeyAicm91dGVyIiA6ICIwODowMDoyNzphOTo4ZDphZiIsICAgICMg
+ZW5wMHMzIDNyZCB2aXJ0dWFsIG1hY2hpbmUKICAgICAgICAgICAibmVpZ2hib3IiIDogIjA4
+OjAwOjI3OjgzOmU1OjU5IiwgICMgZW5wMHMzIDFzdCB2aXJ0dWFsIG1hY2hpbmUKICAgICAg
+ICAgICAibWV0cmljIiA6ICIxLjAxNiIgfQogICAgICBdLAogICAgICAiY2xpZW50cyIgOiBb
+CiAgICAgICAgIjMzOjMzOmZmOjc1OjE1OmYyIiwgICAgICAgICAgICAgICAgICAjIG5vbiBl
+eGlzdGluZyBpbiBmaWxlIGlwX2FkZHIKICAgICAgICAiMzM6MzM6MDA6MDA6MDA6MDEiLCAg
+ICAgICAgICAgICAgICAgICMgbm9uIGV4aXN0aW5nIGluIGZpbGUgaXBfYWRkcgogICAgICAg
+ICJhMjo3ZjphYTo3NToxNTpmMiIsICAgICAgICAgICAgICAgICAgIyBiYXQwIDNyZCB2aXJ0
+dWFsIG1hY2hpbmUKICAgICAgICAiMDE6MDA6NWU6MDA6MDA6MDEiICAgICAgICAgICAgICAg
+ICAgICMgbm9uIGV4aXN0aW5nIGluIGZpbGUgaXBfYWRkcgogICAgICBdCiAgICB9CiAgXQp9
+Cgo=
+--------------080900020001080300080308--
