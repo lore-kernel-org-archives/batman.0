@@ -1,14 +1,11 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Fri, 16 Oct 2015 15:21:34 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20151016132134.GF25714@odroid>
-References: <001f01d107fd$2a0f9680$7e2ec380$@itelsis.com>
+Return-Path: <ki4jgt@gmail.com>
+From: Jesse <ki4jgt@gmail.com>
+Message-ID: <56215B00.1070808@gmail.com>
+Date: Fri, 16 Oct 2015 15:16:00 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <001f01d107fd$2a0f9680$7e2ec380$@itelsis.com>
-Subject: Re: [B.A.T.M.A.N.] video streaming over batman-adv
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] Starting a cellular network
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,86 +15,76 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Santiago,
+Hey guys,
 
-Simon already mentioned a few good points, for instance increasing
-the multicast rate to improve the route selection and that you'd
-need to take the half-duplex nature into account.
+I tried the IRC and didn't get a response. I have limited time on the 
+Internet each day so I thought I'd try here. I would like to develop a 
+cellular network which runs off of ad hoced 802.11 technology. I'm kind 
+of tired having to pay a $40 cellphone bill to keep in contact with two 
+other people (at most). I see no justification in this since there are 
+already so many more viable options available.
 
-Another thing to consider is, that most video codecs are
-very susceptible to packet loss. Unfortunately, especially the
-2.4GHz "crap band" with various devices with no
-CSMA-CA ("listen-before-talk") can have quite a lot of that, depending
-on your environment. Even with the retry-mechanism for unicast, I
-wouldn't be surprised if you had 1-3% packet loss. That of course
-multiplies per hop.
+I would like to develop an open standard which is free for everyone to 
+implement and utilize for their own needs. Before I get people 
+commenting on how it's already been done, I'd like to say, not like this.
 
-Even if the retry-mechanism could cope with your medium, then
-retries will introduce a good deal of jitter. Unfortunately, RTP
-doesn't like jitter and your receiver might consider packets too
-late and might drop them on the application layer.
+The system I'm proposing is built on top of 802.11 ad hoc. Messages are 
+chopped into 4096 byte segments before delivery (I'm considering upping 
+that to 10 kB). It's capable of delivering text messages, walkie-talkie, 
+and files.
 
+I have used avahi-autoipd to implement an IPv4 connection over this 
+network and have given all devices in the network, the same BSSID, SSID, 
+and channel.
 
-You should probably have a look what is creating your "decrease in
-efficency". Whether your medium is saturated (I can recommend
-H.O.R.S.T. (1) for that) or something else causing packet loss. Or
-whether actually all packets arrive and it's just jitter (check
-with Wireshark for instance).
+This network uses two ports 4100 and 4200. 4100 is for broadcasts. 4200 
+is for TCP connections with surrounding peers. Each json message is 
+stamped with a 30 character id. The first 15 characters are an sha512 
+hash of the message recipient's public key. The second are an sha512 
+hash of the message itself.
 
-If it isn't saturation but just general packet loss or jitter
-then you can easily send UDP packets redundantly with gstreamer
-(e.g. with the "tee" element). You should be able to tweak the
-buffering time and jitter resistance with gstreamer, too.
+Each node keeps up with the last 1000 segments it's been given (in RAM). 
+Anything older than that is deleted.
 
-Also, try simply configuring static routes over your adhoc
-interfaces and compare. If you have the same issues there then you
-know it isn't batman-adv's fault :).
+Every 30 seconds (timer starts when peer joins network) nodes send out a 
+get broadcast for their messages via UDP (GET SHA-KEY-HASH UNIQUE ID). 
+Each peer in the network rebroadcasts this message. Hashes of the last 
+1000 messages are kept in each server as well. If a message hash is 
+already in server, it isn't rebroadcast (no loops). After the broadcast 
+for messages, the network sends a json list back to them containing all 
+the messages the network has which are addressed to that user.
 
-Regards, Linus
+It is the user's discretion which messages to request from the group 
+from there. Basically, they pick out the ones they don't already have. 
+Another get request is sent GET HASHED-KEY-MESSAGE-HASH (the unique ID 
+for the entire message). The particular message is sent back to the user 
+(via TCP), using paths constructed from the GET requests.
 
-(1): http://br1.einfach.org/tech/horst/
+I would like to extend this to an online P2P network so recipients could 
+be part of a global community. Imagine texting your friends in country-x 
+for free because someone was kind enough to plug their tower into their 
+wifi network. By default, this will not share an Internet connection, 
+just texting, walkie-talkie, and file-sharing. I've heard so many people 
+complaining about the B.A.T.M.A.N. network sharing their Internet 
+connection and them routing it through a VPS to avoid any legal problems.
 
+I have a problem with my service though. If/When the numbers reach 
+10,000 users, I don't really see everyone in the network requesting 
+their messages from everyone else in the network.
 
-PS: Would you mind sharing your gstreamer pipeline? Just to check
-some basic things like having an "gstrtpjitterbuffer" element for
-instance. Also, are you using 2.4 or 5GHz wifi? Are these 802.11n
-devices?
+The possibilities of this network would be endless. No more texting fees 
+from major carriers for one. No Internet security risks from sharing the 
+network. If the power and Internet went out in areas, people would still 
+be able to chat via battery back-up towers they build themselves. Since 
+there will be online gateways, there's the possibility that any device 
+with wifi access can communicate with these open standard gateways and 
+deliver messages to anyone on the network (direct Internet access or 
+not). Friends could download your messages when you're offline. Then you 
+just request them from others on your friend's list.
 
-PPS: "We have been expecting a better behavior of this protocol,
-since level 2 routing should be transparent (just increasing delay
-when increasing the number of nodes)."
-=> I fail to see why for this three node setup it should matter
-whether it's a layer 2 or 3 routing protocol - a layer 3 routing
-protocol should be transparent for the application layer, too ;).
-It's probably actually a layer 1 problem you are observing, which
-your application currently can't cope with :).
-
-
-On Fri, Oct 16, 2015 at 12:26:48PM +0200, Santiago Álvarez Álvarez wrote:
-> Hi everybody,
-> Im an engineer working in a R&D Project using batman-adv protocol. Were
-> trying to develop a mesh network using linux devices with the objective of
-> transmitting video in streaming. Video is being generated with gstreamer
-> using UDP.
-> The application works relatively fine with 2 devices, but efficiency heavily
-> decreases when introducing a new node in the mesh network (information need
-> two jumps to arrive to destination). Introducing more jumps in the network
-> is exponentially worst. We have been expecting a better behavior of this
-> protocol, since level 2 routing should be transparent  (just increasing
-> delay when increasing the number of nodes).
-> We are using batman version 2015.0,  over wifi interfaces, and our streaming
-> applications is working only point-to-point (not multicast or broadcast).
-> The nodes in between server and client are working just as wireless
-> repeaters using batman-adv.
-> We also discovered that worst case happens when changes in batman routing
-> tables are happening (sometimes, client is able to reach server in just one
-> jump, but with low quality, and chooses that option instead of jumping
-> through the repeater node, with better quality). When that happens, we're
-> droping lots of packets.
-> Any of you haver tried batman-adv for video streaming? Which was the maximum
-> number of jumps between batman nodes that you can manage maintaining a good
-> video quality? 
-> Can you recommend any specific configuration for improving batman behavior?
-> 
+Any help with this would be extremely appreciated. I want this to work 
+out of the box. I have my own money making schemes for this service 
+worked up already and would like to make an entire industry from it. 
+Thank you all and sorry for the wall of text. Have a nice day guys.
