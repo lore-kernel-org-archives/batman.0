@@ -1,16 +1,18 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 01 Nov 2015 16:32:09 +0100
-Message-ID: <2794351.UgJrBE9pQk@sven-edge>
-In-Reply-To: <20151101151302.GA32213@pengutronix.de>
+Return-Path: <mpa@pengutronix.de>
+Date: Sun, 1 Nov 2015 16:35:14 +0100
+From: Markus Pargmann <mpa@pengutronix.de>
+Message-ID: <20151101153514.GB32213@pengutronix.de>
 References: <1787438.NkeQ2a2MeO@sven-edge>
  <1446290970-24053-1-git-send-email-sven@narfation.org>
  <20151101151302.GA32213@pengutronix.de>
+ <2794351.UgJrBE9pQk@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1863597.fn73MdoYj9";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="U+BazGySraz5kW0T"
+Content-Disposition: inline
+In-Reply-To: <2794351.UgJrBE9pQk@sven-edge>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Fix kerneldoc of main
-	functions
+ functions
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,73 +22,79 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Markus Pargmann <mpa@pengutronix.de>
+To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1863597.fn73MdoYj9
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
 
-On Sunday 01 November 2015 16:13:02 Markus Pargmann wrote:
-> > diff --git a/net/batman-adv/bitarray.c b/net/batman-adv/bitarray.c
-> > index 06bab51..3404195 100644
-> > --- a/net/batman-adv/bitarray.c
-> > +++ b/net/batman-adv/bitarray.c
-> > @@ -29,10 +29,16 @@ static void batadv_bitmap_shift_left(unsigned long
-> > *seq_bits, s32 n)> 
-> >  	bitmap_shift_left(seq_bits, seq_bits, n, BATADV_TQ_LOCAL_WINDOW_SIZE);
-> >  
-> >  }
-> > 
-> > -/* receive and process one packet within the sequence number window.
-> > +/**
-> > + * batadv_bit_get_packet - receive and process one packet within the
-> > sequence + *  number window
-> 
-> Are you sure this works? IIRC some time ago multi line function
-> descriptions were not supported.
+--U+BazGySraz5kW0T
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes, it works since 2009 [1,2,3].
+Hi,
 
-Here is the kerneldoc (text) output for the function you've quoted:
+On Sun, Nov 01, 2015 at 04:32:09PM +0100, Sven Eckelmann wrote:
+> On Sunday 01 November 2015 16:13:02 Markus Pargmann wrote:
+> > > diff --git a/net/batman-adv/bitarray.c b/net/batman-adv/bitarray.c
+> > > index 06bab51..3404195 100644
+> > > --- a/net/batman-adv/bitarray.c
+> > > +++ b/net/batman-adv/bitarray.c
+> > > @@ -29,10 +29,16 @@ static void batadv_bitmap_shift_left(unsigned long
+> > > *seq_bits, s32 n)>=20
+> > >  	bitmap_shift_left(seq_bits, seq_bits, n, BATADV_TQ_LOCAL_WINDOW_SIZ=
+E);
+> > > =20
+> > >  }
+> > >=20
+> > > -/* receive and process one packet within the sequence number window.
+> > > +/**
+> > > + * batadv_bit_get_packet - receive and process one packet within the
+> > > sequence + *  number window
+> >=20
+> > Are you sure this works? IIRC some time ago multi line function
+> > descriptions were not supported.
+>=20
+> Yes, it works since 2009 [1,2,3].
+>=20
+> Here is the kerneldoc (text) output for the function you've quoted:
+>=20
+>     Name:
+>    =20
+>     batadv_bit_get_packet - receive and process one packet within the seq=
+uence number window
 
-    Name:
-    
-    batadv_bit_get_packet - receive and process one packet within the sequence number window
-    
-    Synopsis:
-    [...]
+Ok, I am probably mixing it up with something else then. Thanks for
+clarifying.
 
+Best Regards,
 
-Kind regards,
-	Sven
+Markus
 
-[1] https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=6423133bdee0e07d1c2f8411cb3fe676c207ba33
-[2] https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=4c98ecaf350737cd424eb94140e9e9f1a3408956
-[3] https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=47e0c88b37a5c3d6732f4ec896dfa8aa55868b4f
+--=20
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
 
---nextPart1863597.fn73MdoYj9
+--U+BazGySraz5kW0T
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1
 
-iQIcBAABCgAGBQJWNjB5AAoJEF2HCgfBJntGZdoP/i41SN/bbkGuDawbK1QG/WK7
-wWjZaYk4l698GddZEZtaqobeYsYDvk+J5FZbt674fLqLYltJ1b5tqJuA9/KbsQMk
-GyV8TRIZ5rgOBcoVh5VkiVan8kMMcXVlEQSfbvgT8FO7pvxm1DD9ERHxNI2aDsZy
-fpdjU9O6dNYXvye8aeUkKxzQRx4lZ/HQbvooA7ZFSPS39pybrlvBlfm20UVJbEOy
-My4obZqQNm/gmPusg2/3045RM3yddge+B5SqmHoJAoq0SvjSNhTQmqDc0VZRfPUv
-Leu/9Gw8U/JzpLuS3zbN2R4D48WRRfs8WPz1gX9RO3h2TscrB3KLuihpspjn1n9+
-IwJJBd0GrsDEYCAUdg8xCItVjc0No0Tt8Uy+JtQ5R1F9FGWm/JhFnHw7a5mB7Yma
-kS7bjSQubHkr4VZaCAWZ7onRJpFSHKNGIfXAgjAeynO8+pU7bsWt9322t0Yb59TN
-Qde6XHTX2bmVCJgP1UahX7MYeemyq76PqZ/FZ1y9It6nueHUbpaz7n1yYs/ul+do
-bi8Q0aQdcB72LAGgM2k25sni8JE7M36ZpwD7UHZaKo0xea5bAXFI1ttrAvm8XPJS
-4OVVa/vQaJ2PMpUgWLJzf67F0soDsjbVADwKnTD0DC4GsgYIU4jBZLagboPd3rjV
-JykPTNf0Gs43pwESHgDC
-=RLY6
+iQIcBAEBAgAGBQJWNjEyAAoJEEpcgKtcEGQQKhAQAJp25OhKRs2vx+8QX3JeUjtl
+9p+Mxi98x64ly3J4E6FaxNAWSf3wxRT9jPD0xdgNgJa/mRMmpHKT+NPGVE4MQiKo
+MBYxCVIJD75hoaNcAWfhMd1sTZ/VDNu+kBNx/6nz0Ufs5ceZSgajTU4zt7Io90H6
+0IMDukB3Db4ERtx9dhuPwyw1eRfgxLB/YD6bCRc6VuUJwxxd1Qpes8Xr7pr6nNUt
+Efgv2Um/hMgltMon9idqI7T8/qmZfFFi9SbMxJyyVbiAf+e9BO2gx7VdSIXKXe32
+gNMGEPXctL8xpeDmbYhyx4lPJ6UDG/hOA4mpNCvR4EJn+HGXHfp4LBDZFOXgg5qk
+H7e+jradQu2pMjvUdsxmKO186L1g3BAFW0i1ZdgCnGzYQaqjiuCPU/WykcGiN/Dc
+edD/NfF/Wvw2dG3KWslNlbzdiNU/6W0ykV6SZmlS2nFwy+5wsnl3c+qv+csdfh9/
+vE5i0Fe1ALyXefJQMGJMGvB4xd+jS/+AM3aylT7oj8lg9Eb+GaJLJ+PwlqwE+vgG
+5EZhv6AhDSTvFgKz15VKeQnva08aIXJIMwLv9z5kRXSd13YvnRaMve5WHEtaawEN
+aWLMaITJszREpQgTLAyN8xtcHgxYwFS+gImbmsYMOu/bjpnbKOhY2ahQyb3qDYKp
+gjDskB+sEOW52e+lC9gf
+=ewt+
 -----END PGP SIGNATURE-----
 
---nextPart1863597.fn73MdoYj9--
-
+--U+BazGySraz5kW0T--
