@@ -1,30 +1,9 @@
-Return-Path: <elfring@users.sourceforge.net>
-References: <5307CAA2.8060406@users.sourceforge.net>
- <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
- <530A086E.8010901@users.sourceforge.net>
- <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
- <530A72AA.3000601@users.sourceforge.net>
- <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
- <530B5FB6.6010207@users.sourceforge.net>
- <alpine.DEB.2.10.1402241710370.2074@hadrien>
- <530C5E18.1020800@users.sourceforge.net>
- <alpine.DEB.2.10.1402251014170.2080@hadrien>
- <530CD2C4.4050903@users.sourceforge.net>
- <alpine.DEB.2.10.1402251840450.7035@hadrien>
- <530CF8FF.8080600@users.sourceforge.net>
- <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
- <530DD06F.4090703@users.sourceforge.net>
- <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
- <5317A59D.4@users.sourceforge.net> <56391CF7.9080400@users.sourceforge.net>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <56391F73.7090605@users.sourceforge.net>
-Date: Tue, 3 Nov 2015 21:56:19 +0100
-MIME-Version: 1.0
-In-Reply-To: <56391CF7.9080400@users.sourceforge.net>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Less function calls in
- batadv_is_ap_isolated() after error detection
+Return-Path: <sven@open-mesh.com>
+From: Sven Eckelmann <sven@open-mesh.com>
+Date: Tue,  3 Nov 2015 17:43:05 +0100
+Message-Id: <1446568985-4222-1-git-send-email-sven@open-mesh.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix lockdep annotation of
+	batadv_tlv_container_remove
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -34,63 +13,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <antonio@meshcoding.com>, "David S. Miller" <davem@davemloft.net>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
-Cc: Julia Lawall <julia.lawall@lip6.fr>, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@open-mesh.com>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 3 Nov 2015 21:10:51 +0100
+The function handles tlv containers and not tlv handlers. Thus the
+lockdep_assert_held has to check for the container_list lock.
 
-The variables "tt_local_entry" and "tt_global_entry" were eventually checked
-again despite of a corresponding null pointer test before.
-Let us avoid this double check by reordering a function call sequence
-and the better selection of jump targets.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Fixes: 5b95c427d187 ("batman-adv: Annotate deleting functions with external lock via lockdep")
+Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
 ---
- net/batman-adv/translation-table.c | 21 +++++++++------------
- 1 file changed, 9 insertions(+), 12 deletions(-)
+ net/batman-adv/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 965a004..3ac32d9 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -3323,27 +3323,24 @@ bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, u8 *src, u8 *dst,
- 		return false;
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 2fa168a..c898853 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -747,7 +747,7 @@ static u16 batadv_tvlv_container_list_size(struct batadv_priv *bat_priv)
+ static void batadv_tvlv_container_remove(struct batadv_priv *bat_priv,
+ 					 struct batadv_tvlv_container *tvlv)
+ {
+-	lockdep_assert_held(&bat_priv->tvlv.handler_list_lock);
++	lockdep_assert_held(&bat_priv->tvlv.container_list_lock);
  
- 	if (!atomic_read(&vlan->ap_isolation))
--		goto out;
-+		goto vlan_free;
- 
- 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, dst, vid);
- 	if (!tt_local_entry)
--		goto out;
-+		goto vlan_free;
- 
- 	tt_global_entry = batadv_tt_global_hash_find(bat_priv, src, vid);
- 	if (!tt_global_entry)
--		goto out;
-+		goto local_entry_free;
- 
--	if (!_batadv_is_ap_isolated(tt_local_entry, tt_global_entry))
--		goto out;
--
--	ret = true;
-+	if (_batadv_is_ap_isolated(tt_local_entry, tt_global_entry))
-+		ret = true;
- 
--out:
-+	batadv_tt_global_entry_free_ref(tt_global_entry);
-+local_entry_free:
-+	batadv_tt_local_entry_free_ref(tt_local_entry);
-+vlan_free:
- 	batadv_softif_vlan_free_ref(vlan);
--	if (tt_global_entry)
--		batadv_tt_global_entry_free_ref(tt_global_entry);
--	if (tt_local_entry)
--		batadv_tt_local_entry_free_ref(tt_local_entry);
- 	return ret;
- }
- 
+ 	if (!tvlv)
+ 		return;
 -- 
 2.6.2
 
