@@ -15,16 +15,16 @@ References: <5307CAA2.8060406@users.sourceforge.net>
  <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
  <530DD06F.4090703@users.sourceforge.net>
  <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
- <5317A59D.4@users.sourceforge.net>
+ <5317A59D.4@users.sourceforge.net> <56391CF7.9080400@users.sourceforge.net>
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <56391CF7.9080400@users.sourceforge.net>
-Date: Tue, 3 Nov 2015 21:45:43 +0100
+Message-ID: <56391EAA.2060002@users.sourceforge.net>
+Date: Tue, 3 Nov 2015 21:52:58 +0100
 MIME-Version: 1.0
-In-Reply-To: <5317A59D.4@users.sourceforge.net>
+In-Reply-To: <56391CF7.9080400@users.sourceforge.net>
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] [PATCH 0/3] batman-adv: Deletion of a few
-	unnecessary checks
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: Delete an unnecessary check
+ before the function call "batadv_softif_vlan_free_ref"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -38,19 +38,32 @@ To: Antonio Quartulli <antonio@meshcoding.com>, "David S. Miller" <davem@davemlo
 Cc: Julia Lawall <julia.lawall@lip6.fr>, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 3 Nov 2015 21:34:29 +0100
+Date: Tue, 3 Nov 2015 19:20:34 +0100
 
-Further update suggestions were taken into account after a patch
-was applied from static source code analysis.
+The batadv_softif_vlan_free_ref() function tests whether its argument is NULL
+and then returns immediately. Thus the test around the call is not needed.
 
-Markus Elfring (3):
-  Delete an unnecessary check before the function call "batadv_softif_vlan_free_ref"
-  Split a condition check
-  Less function calls in batadv_is_ap_isolated() after error detection
+This issue was detected by using the Coccinelle software.
 
- net/batman-adv/translation-table.c | 29 ++++++++++++++---------------
- 1 file changed, 14 insertions(+), 15 deletions(-)
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ net/batman-adv/translation-table.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 4228b10..48315de 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -3336,8 +3336,7 @@ bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, u8 *src, u8 *dst,
+ 	ret = true;
+ 
+ out:
+-	if (vlan)
+-		batadv_softif_vlan_free_ref(vlan);
++	batadv_softif_vlan_free_ref(vlan);
+ 	if (tt_global_entry)
+ 		batadv_tt_global_entry_free_ref(tt_global_entry);
+ 	if (tt_local_entry)
 -- 
 2.6.2
 
