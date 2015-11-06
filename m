@@ -1,14 +1,13 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 06 Nov 2015 10:54:05 +0100
-Message-ID: <1592067.XR9oX7XRdJ@prime>
-In-Reply-To: <1446803119-3392-1-git-send-email-sw@simonwunderlich.de>
-References: <1446803119-3392-1-git-send-email-sw@simonwunderlich.de>
+Return-Path: <salvarez@itelsis.com>
+From: =?iso-8859-1?Q?Santiago_=C1lvarez_=C1lvarez?= <salvarez@itelsis.com>
+Date: Fri, 6 Nov 2015 14:02:01 +0100
+Message-ID: <004201d11893$53de6d00$fb9b4700$@itelsis.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2126701.NfYTQSfb2A";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Update/repair bridge loop
-	avoidance kerneldoc
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Language: es
+Subject: [B.A.T.M.A.N.] 5Ghz ad-hoc network for batman-adv
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,24 +19,19 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2126701.NfYTQSfb2A
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Hi everybody, 
+I've been working for some time in testing batman-adv protocol with several
+network topologies, and different network communications.  Right now, I'm
+trying to build a batman mesh network over 5GHz wireless modules. However,
+I'm getting errors when trying to configure the module to use one of the 5
+GHz channels. 
 
-Sorry, that should have been PATCHv2.
+I'm using a module with Ralink RT5572N chipset. Searching in internet, I've
+read a few comments suggesting that it's not possible to configure a 5ghz
+module in ad-hoc mode due to some kind of regulatory reasons.
 
---nextPart2126701.NfYTQSfb2A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Any of you have managed to get batman-adv working over a 5 ghz wireless
+network?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iEYEABECAAYFAlY8eL0ACgkQrzg/fFk7axYZDACg5GJsuF+98xCD4VvhdlWveLc8
-Xp4AnjmGRrTHmsw03FEi0xy3z/dE+x1i
-=g17U
------END PGP SIGNATURE-----
-
---nextPart2126701.NfYTQSfb2A--
+Thanks!
 
