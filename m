@@ -1,15 +1,12 @@
-Return-Path: <bittorf@bluebottle.com>
-Date: Sun, 8 Nov 2015 19:22:38 +0100
-From: Bastian Bittorf <bittorf@bluebottle.com>
-Message-ID: <20151108182238.GH5582@medion.lan>
-References: <004201d11893$53de6d00$fb9b4700$@itelsis.com>
- <80380848.PJif3jmaAr@prime> <20151106132657.GM30520@medion.lan>
- <CAAxzKbQXO8EU5r4rc+QHtrp2MW4sX8DQrNqN1vTssCwWf3UqLg@mail.gmail.com>
+Return-Path: <alessandro@mediaspot.net>
+From: Alessandro Bolletta <alessandro@mediaspot.net>
+Date: Sun, 8 Nov 2015 23:45:14 +0000
+Message-ID: <F52F175DFC537F48A43937B50B44BCA2820C1278@EXCHANGE.mediaspot.local>
+Content-Language: it-IT
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAAxzKbQXO8EU5r4rc+QHtrp2MW4sX8DQrNqN1vTssCwWf3UqLg@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] 5Ghz ad-hoc network for batman-adv
+Subject: [B.A.T.M.A.N.] bridge detaching crash
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,13 +16,18 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-* tjhowse <tjhowse@gmail.com> [08.11.2015 19:08]:
-> I can't help with your specific issue, but I have personally
-> configured an ad-hoc batman-adv mesh on 5GHz in Australia using
-> TP-WDR3600 routers.
+Hi,
+in my Openwrt x86 testbed, I created a bridge between a vlan over eth0 and =
+a vlan over bat0.
+It works as expected but, when I try to restart network, bridge seems to be=
+ not correctly detached and networking stack gets hanged.
 
-it's all about 'ath9k_htc' which is for atheros _USB_ sticks.
+This is the dmesg: http://pastebin.com/rxUUGvgX
 
-bye, bastian
+Can you help me to debug this crash?
+
+Thanks,
+Alessandro
+
