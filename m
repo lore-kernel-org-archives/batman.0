@@ -1,11 +1,13 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon,  9 Nov 2015 16:20:53 +0100
-Message-Id: <1447082453-13117-3-git-send-email-sw@simonwunderlich.de>
-In-Reply-To: <1447082453-13117-1-git-send-email-sw@simonwunderlich.de>
-References: <1447082453-13117-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: increase BLA wait periods to
-	6
+Date: Mon, 09 Nov 2015 16:31:17 +0100
+Message-ID: <1899407.TVXecW4so9@prime>
+In-Reply-To: <F52F175DFC537F48A43937B50B44BCA2820C1278@EXCHANGE.mediaspot.local>
+References: <F52F175DFC537F48A43937B50B44BCA2820C1278@EXCHANGE.mediaspot.local>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart5152598.UeWgMjbqgY";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] bridge detaching crash
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,34 +18,44 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+Cc: Alessandro Bolletta <alessandro@mediaspot.net>
 
-From: Simon Wunderlich <simon@open-mesh.com>
+--nextPart5152598.UeWgMjbqgY
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-If networks take a long time to come up, e.g. due to lossy links, then
-the bridge loop avoidance wait time to suppress broadcasts may not wait
-long enough and detect a backbone before the mesh is brought up.
-Increasing the wait period further to 60 seconds makes this scenario
-less likely.
+Hi,
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
----
- net/batman-adv/main.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Sunday 08 November 2015 23:45:14 Alessandro Bolletta wrote:
+> Hi,
+> in my Openwrt x86 testbed, I created a bridge between a vlan over eth0 and a
+> vlan over bat0. It works as expected but, when I try to restart network,
+> bridge seems to be not correctly detached and networking stack gets hanged.
+> 
+> This is the dmesg: http://pastebin.com/rxUUGvgX
+> 
+> Can you help me to debug this crash?
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 79e2052..dcca44b 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -109,7 +109,7 @@
- #define BATADV_MAX_AGGREGATION_MS 100
- 
- #define BATADV_BLA_PERIOD_LENGTH	10000	/* 10 seconds */
--#define BATADV_BLA_BACKBONE_TIMEOUT	(BATADV_BLA_PERIOD_LENGTH * 3)
-+#define BATADV_BLA_BACKBONE_TIMEOUT	(BATADV_BLA_PERIOD_LENGTH * 6)
- #define BATADV_BLA_CLAIM_TIMEOUT	(BATADV_BLA_PERIOD_LENGTH * 10)
- #define BATADV_BLA_WAIT_PERIODS		3
- 
--- 
-2.6.2
+Could you please post:
+
+ * batman-adv version
+ * your network setup (batctl if, brctl show, etc)
+ * commands you use to restart network (OpenWRT or something else?)
+
+Thanks,
+    Simon
+--nextPart5152598.UeWgMjbqgY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iEYEABECAAYFAlZAvEUACgkQrzg/fFk7axbeSgCfT5rlVA2gkWSdv5eAggSkxoe0
+hy8An1XPJH8XFmRMJbVO2dS3tk9tRHbY
+=SQXq
+-----END PGP SIGNATURE-----
+
+--nextPart5152598.UeWgMjbqgY--
 
