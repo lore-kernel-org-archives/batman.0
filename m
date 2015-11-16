@@ -1,30 +1,14 @@
-Return-Path: <elfring@users.sourceforge.net>
-References: <5307CAA2.8060406@users.sourceforge.net>
- <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
- <530A086E.8010901@users.sourceforge.net>
- <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
- <530A72AA.3000601@users.sourceforge.net>
- <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
- <530B5FB6.6010207@users.sourceforge.net>
- <alpine.DEB.2.10.1402241710370.2074@hadrien>
- <530C5E18.1020800@users.sourceforge.net>
- <alpine.DEB.2.10.1402251014170.2080@hadrien>
- <530CD2C4.4050903@users.sourceforge.net>
- <alpine.DEB.2.10.1402251840450.7035@hadrien>
- <530CF8FF.8080600@users.sourceforge.net>
- <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
- <530DD06F.4090703@users.sourceforge.net>
- <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
- <5317A59D.4@users.sourceforge.net> <56484502.8000206@users.sourceforge.net>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <5648463F.3070403@users.sourceforge.net>
-Date: Sun, 15 Nov 2015 09:45:51 +0100
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 16 Nov 2015 10:13:23 +0800
+Message-ID: <9732868.d8RG61WZUP@voltaire>
+In-Reply-To: <CAJuY50zaR=aT6UB+Nk0T3KrQMTkGKR=nGxw_HsB2+haYCkbbMQ@mail.gmail.com>
+References: <511E55B5.60900@wirelesspt.net>
+ <CAJuY50zaR=aT6UB+Nk0T3KrQMTkGKR=nGxw_HsB2+haYCkbbMQ@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <56484502.8000206@users.sourceforge.net>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Less checks in
-	batadv_tvlv_unicast_send()
+Content-Type: multipart/signed; boundary="nextPart3084197.QoDyS6NLlN";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Classes and purposed classes (problem to solve)
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -34,65 +18,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <antonio@meshcoding.com>, "David S. Miller" <davem@davemloft.net>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
-Cc: Julia Lawall <julia.lawall@lip6.fr>, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 15 Nov 2015 09:00:42 +0100
+--nextPart3084197.QoDyS6NLlN
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
 
-* Let us return directly if a call of the batadv_orig_hash_find() function
-  returned a null pointer.
+On Saturday, November 14, 2015 20:04:49 3zl Trizonelabs wrote:
+> With multi-gateway there it seems the general problems how to
+> influence the batman-adv gateway announcement in respect of gateway
+> capabilities.
 
-* Omit the initialisation for the variable "skb" at the beginning.
+Can you explain in greater detail what you are trying to achieve ?
 
-* Replace an assignment by a call of the kfree_skb() function
-  and delete the affected variable "ret" then.
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- net/batman-adv/main.c | 15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
+> Additionally we encountered the problem that a gateway lost uptream
+> connection(internet) without switching itself from server to client,
+> so nodes with path to that gateway routes their resp.clients to a
+> "black hole".
+> Question is how generally control the batman-adv routing in those cas=
+es.
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 9e9b8f6..4eaa09a 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -1143,15 +1143,14 @@ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
- 	struct batadv_unicast_tvlv_packet *unicast_tvlv_packet;
- 	struct batadv_tvlv_hdr *tvlv_hdr;
- 	struct batadv_orig_node *orig_node;
--	struct sk_buff *skb = NULL;
-+	struct sk_buff *skb;
- 	unsigned char *tvlv_buff;
- 	unsigned int tvlv_len;
- 	ssize_t hdr_len = sizeof(*unicast_tvlv_packet);
--	bool ret = false;
- 
- 	orig_node = batadv_orig_hash_find(bat_priv, dst);
- 	if (!orig_node)
--		goto out;
-+		return;
- 
- 	tvlv_len = sizeof(*tvlv_hdr) + tvlv_value_len;
- 
-@@ -1180,14 +1179,10 @@ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
- 	tvlv_buff += sizeof(*tvlv_hdr);
- 	memcpy(tvlv_buff, tvlv_value, tvlv_value_len);
- 
--	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
--		ret = true;
--
--out:
--	if (!ret)
-+	if (batadv_send_skb_to_orig(skb, orig_node, NULL) == NET_XMIT_DROP)
- 		kfree_skb(skb);
--	if (orig_node)
--		batadv_orig_node_free_ref(orig_node);
-+out:
-+	batadv_orig_node_free_ref(orig_node);
- }
- 
- /**
--- 
-2.6.2
+If you control the gateways the gateway should detect the uplink failur=
+e and=20
+stop announcing themselves as gateway. That is how most people are doin=
+g it.
+
+If you don't control the gateways or wish to solve this on the clients =
+the=20
+batman-adv module would need to get extended to influence the selected =
+gateway=20
+from=20user space.
+
+Cheers,
+Marek
+
+--nextPart3084197.QoDyS6NLlN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJWSTvDAAoJEFNVTo/uthzAKasH/3Fo/TyhIf235kyEwLvsoWjT
+JUwhOpaA91NyfMU5DTZZ5nwoW1dX5DmmJZAExwM5as37hAAmIpRwXJl9yAbFDgF4
+cpVABMo9jtC146ao7fROj6QJ4OPsyvQzk7GusYHAueEXdo4nwOtS7qTExbnDYBTx
+AxcTnhR013I6i2R/OhI/e5djtjl2IUwZ8PyhA8p9/NO1PswNG67WYTMerCbxfGPu
+LeKW12BoPAo9u2IxhiHEXkibT0NKfW/hyUxWoBxfi4DDS65n4ZRQP3fZoMF1SH+p
+c+3ryWpko1eg6IEalHDASDE0uPFl0oMJhv7urW3oMZGq7myPp3NUb2DgW+57jzQ=
+=4yRc
+-----END PGP SIGNATURE-----
+
+--nextPart3084197.QoDyS6NLlN--
 
