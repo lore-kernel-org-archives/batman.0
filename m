@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 17 Nov 2015 16:01:27 +0800
-Message-ID: <1571436.PpFx5574Ye@voltaire>
-In-Reply-To: <1447082453-13117-2-git-send-email-sw@simonwunderlich.de>
-References: <1447082453-13117-1-git-send-email-sw@simonwunderlich.de>
- <1447082453-13117-2-git-send-email-sw@simonwunderlich.de>
+Date: Tue, 17 Nov 2015 16:06:59 +0800
+Message-ID: <6295766.E4lI2BmnDx@voltaire>
+In-Reply-To: <1447103060-8960-1-git-send-email-sven@narfation.org>
+References: <1447103060-8960-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2245781.k2azsYApXP";
+Content-Type: multipart/signed; boundary="nextPart1533220.6uxvslpeQy";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: purge bridge loop
-	avoidance when its disabled
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Add function to convert
+	string to batadv throughput
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,36 +18,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven@open-mesh.com>
 
---nextPart2245781.k2azsYApXP
+--nextPart1533220.6uxvslpeQy
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, November 09, 2015 16:20:52 Simon Wunderlich wrote:
-> -BATADV_ATTR_SIF_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR, NULL);
-> +BATADV_ATTR_SIF_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR,
-> +                    batadv_bla_status_update);
->  #endif
+On Monday, November 09, 2015 22:04:20 Sven Eckelmann wrote:
+> From: Sven Eckelmann <sven@open-mesh.com>
+> 
+> The code to convert the throughput information from a string to the
+> batman-adv internal (100Kibit/s) representation is duplicated in
+> batadv_parse_gw_bandwidth. Move this functionality to its own function
+> batadv_parse_throughput to reduce the code complexity.
+> 
+> Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
+> ---
+> v2: add kerneldoc for description
+> 
+>  net/batman-adv/gateway_common.c | 117
+> +++++++++++++++++----------------------- 1 file changed, 49 insertions(+),
+> 68 deletions(-)
 
-Are we sure this is correct ? The post function is called whether or not there 
-actually was a change in the setting. The check in __batadv_store_bool_attr() 
-is this:
+Applied in revision 348a5da.
 
-ret = batadv_store_bool_attr(buff, count, net_dev, attr->name,
-                                     attr_store);
-if (post_func && ret)
-            post_func(net_dev);
-
-Let's ignore for now that ret should be changed to check for '> 0' to avoid 
-calling post_func() in case of an error. The return value is always non-
-negative unless the input is broken. You could enable BLA while it already is 
-enabled which would reset all claim tables. Is that intended ?
-
-Cheers,
+Thanks,
 Marek
 
---nextPart2245781.k2azsYApXP
+--nextPart1533220.6uxvslpeQy
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -56,14 +54,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWSt7XAAoJEFNVTo/uthzAnXgIAJ1DmVe0JAXyBxy+xraM+B65
-4QyPqSVXzUdClpG4fcYsHhtU0khDfYDgjkUM3iCf+LNGULMSLbBHLsTz//CPgml5
-7Yvzgr3+BU/xxxLIWmrKLoKyVttX4bYTWYtLZ3TTAVb1M9pMVWuBbAqRHCDTgHOR
-s2oQzUVavWDSjg0r94a+Fuael5fsX0W4C0TRmWKXaa/coV+p977GZdncoLwjbJfG
-7KvKtvkNuos0xFdSVVgEInKHUxTkvHArh3YfHVot5eND8Hg+f6m0eCVWC58+j7ma
-B6RAFKMXLKT2Y+Xt3hh9a/wuYyGkxk63Hqy/RwcPCC4NZTghGuvS8Ny8/QlH1aQ=
-=lDPO
+iQEcBAABCAAGBQJWSuAjAAoJEFNVTo/uthzA3nsIALXypIqxLlpq1a+bArgDsYIw
+uuMRWue65EUGwlH1BoSEbn/d/gJ3eZjesbYToNkuNhG7zt1/ePKtuQrzm+eUlEb8
+yDfaopa/L9ZZ7r4I5kceSIxZghb77HiWKseq7hDH7dnTWJ2M2yTbfv6xc4Td8A7g
+EXfTPoT2bWZJo/QX4GOFJW79d5LJyuMwW306h6g/+X2VlHMkLnTJO7xJa/quil2C
+1mi08HkqVfZk1pvHpLEqN6aJ9eUrekYVhHAGI/t4g5y3eNv4GCj4+PgN2xfHg7/o
+Yr98E6fUR5CIe+sKa3uMgTosqWH09mdUou4/aAKMS/vRhFeWM2K8H63t9n+NHMA=
+=FTQv
 -----END PGP SIGNATURE-----
 
---nextPart2245781.k2azsYApXP--
+--nextPart1533220.6uxvslpeQy--
 
