@@ -1,9 +1,12 @@
-Return-Path: <trizonelabs@gmail.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Tue, 17 Nov 2015 09:15:30 +0800
+Message-ID: <2931985.8ZHTxnqmTu@voltaire>
+In-Reply-To: <CAJuY50zf45s0Tst+2R4NtciE22kRqONJUUJAADA_7TvMH47XdQ@mail.gmail.com>
+References: <CAJuY50zf45s0Tst+2R4NtciE22kRqONJUUJAADA_7TvMH47XdQ@mail.gmail.com>
 MIME-Version: 1.0
-Date: Mon, 16 Nov 2015 23:00:59 +0200
-Message-ID: <CAJuY50zf45s0Tst+2R4NtciE22kRqONJUUJAADA_7TvMH47XdQ@mail.gmail.com>
-From: 3zl Trizonelabs <trizonelabs@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; boundary="nextPart65806959.bQ52QlsHFq";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] Classes and purposed classes (problem to solve)
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -16,37 +19,52 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-2015-11-16 4:13 GMT+02:00 Marek Lindner <mareklindner@neomailbox.ch>:
-> On Saturday, November 14, 2015 20:04:49 3zl Trizonelabs wrote:
->> With multi-gateway there it seems the general problems how to
->> influence the batman-adv gateway announcement in respect of gateway
->> capabilities.
->
-> Can you explain in greater detail what you are trying to achieve ?
->
->
->> Additionally we encountered the problem that a gateway lost uptream
->> connection(internet) without switching itself from server to client,
->> so nodes with path to that gateway routes their resp.clients to a
->> "black hole".
->> Question is how generally control the batman-adv routing in those cases.
->
-> If you control the gateways the gateway should detect the uplink failure and
-> stop announcing themselves as gateway. That is how most people are doing it.
->
-in cases of gateway-router instabilites (short brownouts / blackouts )
- which we have alot with thunderstorms, it would be helpful if some
-other control instance could block the gateway to be used inside the
-batman-adv routing aside from the gateway anouncing itself.
+--nextPart65806959.bQ52QlsHFq
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-> If you don't control the gateways or wish to solve this on the clients the
-> batman-adv module would need to get extended to influence the selected gateway
-> from user space.
+On Monday, November 16, 2015 23:00:59 3zl Trizonelabs wrote:
+> in cases of gateway-router instabilites (short brownouts / blackouts )
+>  which we have alot with thunderstorms, it would be helpful if some
+> other control instance could block the gateway to be used inside the
+> batman-adv routing aside from the gateway anouncing itself.
 
-Is there any idea how to implement some kind of  'control instance'
-for the batman-adv routing ?
+Why does it matter how long the gateway is out ? What is the advantage of 
+doing long blackouts via the gateway announcement and short blackouts on the 
+client ? The clients have to switch their gateway either way.
 
-That also would help to achive some dynamic routing to gateways by
-adjusting the qualtiy of those in respect L3 parameters.
 
-tnx 3zl
+> Is there any idea how to implement some kind of  'control instance'
+> for the batman-adv routing ?
+
+That depends on your definition of 'control instance'. From a high level 
+perspective how should it work ?
+
+
+> That also would help to achive some dynamic routing to gateways by
+> adjusting the qualtiy of those in respect L3 parameters.
+
+This sentence does not compile. Do you mind explaining what you have in mind ?
+
+Cheers,
+Marek
+
+--nextPart65806959.bQ52QlsHFq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJWSn+yAAoJEFNVTo/uthzA/bUH/j+y9g5l1rl7R83dgX+0WtTG
+Z4EhtvFQN2qkF/wsU3duM7wUcO7Bv2jIjBOxMnaNWR6+iMfkYXUHQw5MxTcSm4Cj
+007XCetkTMlthX5Oh53A4rkI7qkyT1JqUSQd3aDL14kI+j27LyXv2NS1NkejUDbN
++I8Ta7MaXV52UDrFAfS3TeZPtDKN+gFrS8sHhrbM22rJZ4VGrPNgO27FhBIUVtIy
+s8fNGpehsNxQj4iIF7SYhYanzsfRIBsrXtwDWgIGN2l8ntX1IUIfzp8brhAvXobY
+OBUAIWYydLJljc3hqR73Ul3cfkkcT6bUfeJZmYIp6dvDSTrr+Lq0yP5EsNk/TlE=
+=WVN2
+-----END PGP SIGNATURE-----
+
+--nextPart65806959.bQ52QlsHFq--
+
