@@ -1,16 +1,9 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 17 Nov 2015 13:00:24 +0100
-Message-ID: <13532716.IlYpkySTOG@prime>
-In-Reply-To: <1571436.PpFx5574Ye@voltaire>
-References: <1447082453-13117-1-git-send-email-sw@simonwunderlich.de>
- <1447082453-13117-2-git-send-email-sw@simonwunderlich.de>
- <1571436.PpFx5574Ye@voltaire>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1909693.vO3g7lFSpO";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: purge bridge loop
-	avoidance when its disabled
+Date: Tue, 17 Nov 2015 14:11:26 +0100
+Message-Id: <1447765886-5743-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: only call post function if
+	something changed
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,81 +14,62 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
---nextPart1909693.vO3g7lFSpO
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="ISO-8859-1"
+From: Simon Wunderlich <simon@open-mesh.com>
 
-On Tuesday 17 November 2015 16:01:27 Marek Lindner wrote:
-> On Monday, November 09, 2015 16:20:52 Simon Wunderlich wrote:
-> > -BATADV_ATTR_SIF_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR, NUL=
-L);
-> > +BATADV_ATTR_SIF_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR,
-> > +                    batadv_bla_status_update);
-> >=20
-> >  #endif
->=20
-> Are we sure this is correct ? The post function is called whether or =
-not
-> there actually was a change in the setting. The check in
-> __batadv_store_bool_attr() is this:
->=20
-> ret =3D batadv_store_bool_attr(buff, count, net_dev, attr->name,
->                                      attr_store);
-> if (post_func && ret)
->             post_func(net_dev);
->=20
-> Let's ignore for now that ret should be changed to check for '> 0' to=
- avoid
-> calling post_func() in case of an error. The return value is always n=
-on-
-> negative unless the input is broken. You could enable BLA while it al=
-ready
-> is enabled which would reset all claim tables. Is that intended ?
+Currently, the post function is also called on errors or if there were
+no changes, which is redundant for the functions currently using these
+facilities.
 
-Its not intended, although my initial thought was that it didn't hurt t=
-oo much=20
-=2D the backbone gateway and claim tables would be dropped and the interf=
-ace=20
-would go into the "protected" state again, not allowing broadcasts for =
-30 (or=20
-60 seconds, if the second patch is applied).
+Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+---
+ net/batman-adv/sysfs.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-However, since you brought up this point, I think we should really chan=
-ge the=20
-behaviour of batadv_store_bool_attr() and friends, only calling post_fu=
-nc if=20
-there really was a change. I've checked the other functions which use t=
-hat,=20
-and there shouldn't be any problem with that as far as I see - they do =
-all=20
-some changes which depend on actual changes of the respective parameter=
-. The=20
-other update functions are:
-
- * batadv_dat_status_update
- * batadv_update_min_mtu
- * batadv_post_gw_reselect
- * batadv_nc_status_update
-
-If you agree, I'd send another patch to change the behaviour as propose=
-d.
-
-Cheers,
-    Simon
---nextPart1909693.vO3g7lFSpO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iEYEABECAAYFAlZLFtgACgkQrzg/fFk7axYELwCeIsdsqaLcH5naQFjz2iPZ4EdF
-nCMAoKdPk3PaGj9EnDBftJUPM7cXwNDw
-=JmWj
------END PGP SIGNATURE-----
-
---nextPart1909693.vO3g7lFSpO--
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index 6d6df12..f38d7b7 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -243,10 +243,13 @@ ssize_t batadv_show_vlan_##_name(struct kobject *kobj,			\
+ 
+ static int batadv_store_bool_attr(char *buff, size_t count,
+ 				  struct net_device *net_dev,
+-				  const char *attr_name, atomic_t *attr)
++				  const char *attr_name, atomic_t *attr,
++				  bool *changed)
+ {
+ 	int enabled = -1;
+ 
++	*changed = false;
++
+ 	if (buff[count - 1] == '\n')
+ 		buff[count - 1] = '\0';
+ 
+@@ -273,6 +276,8 @@ static int batadv_store_bool_attr(char *buff, size_t count,
+ 		    atomic_read(attr) == 1 ? "enabled" : "disabled",
+ 		    enabled == 1 ? "enabled" : "disabled");
+ 
++	*changed = true;
++
+ 	atomic_set(attr, (unsigned int)enabled);
+ 	return count;
+ }
+@@ -283,11 +288,12 @@ __batadv_store_bool_attr(char *buff, size_t count,
+ 			 struct attribute *attr,
+ 			 atomic_t *attr_store, struct net_device *net_dev)
+ {
++	bool changed;
+ 	int ret;
+ 
+ 	ret = batadv_store_bool_attr(buff, count, net_dev, attr->name,
+-				     attr_store);
+-	if (post_func && ret)
++				     attr_store, &changed);
++	if (post_func && changed)
+ 		post_func(net_dev);
+ 
+ 	return ret;
+-- 
+2.6.2
 
