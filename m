@@ -1,9 +1,9 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 17 Nov 2015 14:11:26 +0100
-Message-Id: <1447765886-5743-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: only call post function if
-	something changed
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 18 Nov 2015 09:41:41 +0100
+Message-Id: <1447836101-17282-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix variable declaration warning
+	in batadv_compare_tt
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,62 +14,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
 
-From: Simon Wunderlich <simon@open-mesh.com>
+checkpatch is warning about the wrong way a pointer is declared in
+batadv_compare_tt.
 
-Currently, the post function is also called on errors or if there were
-no changes, which is redundant for the functions currently using these
-facilities.
+    ERROR: "foo* bar" should be "foo *bar"
+    #80: FILE: ./net/batman-adv/translation-table.c:80:
+    +	const struct batadv_tt_common_entry* tt1 = data1;
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+Fixes: af5fa950cbb6 ("batman-adv: fix erroneous client entry duplicate detection")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/sysfs.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ net/batman-adv/translation-table.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 6d6df12..f38d7b7 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -243,10 +243,13 @@ ssize_t batadv_show_vlan_##_name(struct kobject *kobj,			\
- 
- static int batadv_store_bool_attr(char *buff, size_t count,
- 				  struct net_device *net_dev,
--				  const char *attr_name, atomic_t *attr)
-+				  const char *attr_name, atomic_t *attr,
-+				  bool *changed)
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 92af58b..c02f68e 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -77,8 +77,8 @@ static int batadv_compare_tt(const struct hlist_node *node, const void *data2)
  {
- 	int enabled = -1;
+ 	const void *data1 = container_of(node, struct batadv_tt_common_entry,
+ 					 hash_entry);
+-	const struct batadv_tt_common_entry* tt1 = data1;
+-	const struct batadv_tt_common_entry* tt2 = data2;
++	const struct batadv_tt_common_entry *tt1 = data1;
++	const struct batadv_tt_common_entry *tt2 = data2;
  
-+	*changed = false;
-+
- 	if (buff[count - 1] == '\n')
- 		buff[count - 1] = '\0';
- 
-@@ -273,6 +276,8 @@ static int batadv_store_bool_attr(char *buff, size_t count,
- 		    atomic_read(attr) == 1 ? "enabled" : "disabled",
- 		    enabled == 1 ? "enabled" : "disabled");
- 
-+	*changed = true;
-+
- 	atomic_set(attr, (unsigned int)enabled);
- 	return count;
+ 	return (tt1->vid == tt2->vid) && batadv_compare_eth(data1, data2);
  }
-@@ -283,11 +288,12 @@ __batadv_store_bool_attr(char *buff, size_t count,
- 			 struct attribute *attr,
- 			 atomic_t *attr_store, struct net_device *net_dev)
- {
-+	bool changed;
- 	int ret;
- 
- 	ret = batadv_store_bool_attr(buff, count, net_dev, attr->name,
--				     attr_store);
--	if (post_func && ret)
-+				     attr_store, &changed);
-+	if (post_func && changed)
- 		post_func(net_dev);
- 
- 	return ret;
 -- 
 2.6.2
 
