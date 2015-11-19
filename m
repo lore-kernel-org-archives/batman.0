@@ -1,15 +1,10 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 18 Nov 2015 16:58:34 +0800
-Message-ID: <5383506.TEpPWTENQs@voltaire>
-In-Reply-To: <1447749653-26430-3-git-send-email-antonio@meshcoding.com>
-References: <1447749653-26430-1-git-send-email-antonio@meshcoding.com>
- <1447749653-26430-3-git-send-email-antonio@meshcoding.com>
+Return-Path: <keinepostnurmuell@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1671151.5vdp2dtmjk";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: add kernel doc for AP
-	isolation attributes in bat_priv
+Date: Thu, 19 Nov 2015 15:04:56 +0100
+Message-ID: <CAKrZ8yf8rKK__5gNsUncjt59zR7T+wuVx2x+DHQELdqWVz6DxA@mail.gmail.com>
+From: no name <keinepostnurmuell@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: [B.A.T.M.A.N.] batctl file errors
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,40 +15,31 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@meshcoding.com>
 
---nextPart1671151.5vdp2dtmjk
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+I am using BATMAN on a raspberry pi b+ with a kernel version of
+4.1.13+ but my problem also occured on an older kernel (I tried
+updating, which did not help). My BATMAN is on batctl
+debian-2012.1.0-1 [batman-adv: 2015.0].
 
-On Tuesday, November 17, 2015 16:40:53 Antonio Quartulli wrote:
-> Cc: Sven Eckelmann <sven@narfation.org>
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
-> ---
->  net/batman-adv/types.h | 3 +++
->  1 file changed, 3 insertions(+)
 
-Applied in revision 6b9ec9f.
+I try to get the vis_mode up and running, which fails in multiple
+ways, because I can't even create logs.
 
-Thanks,
-Marek
+sudo batctl loglevel -> "Error - can't open file
+'/sys/class/net/bat0/mesh/log_level': No such file or directory"
 
---nextPart1671151.5vdp2dtmjk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+sudo batctl vm -> "Error - can't open file
+'/sys/class/net/bat0/mesh/log_level': No such file or directory"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+and so on. The thing is, when I try:
 
-iQEcBAABCAAGBQJWTD26AAoJEFNVTo/uthzAuOcH/jwsyfZBhRE5ewniBP5Pxk0Z
-qPo80uTIhGm9jrTKKaoJgswodAy47Q4tKwwS/hDWFUFI7YIMORUPjDd+1fmSL0QU
-Y0FvabiPoxb1UyQu1/YaZOGFCwBcnibQ13Pn4jcaIW8M9lkpkrTYaJnhSKGx/z8A
-yiFS/0QLe6BzUeUF6sOsc4zXWmR3r44eq8wTM+1i/2mPuWdf/9fC+wJD6uBT1Pkm
-wMGC3DRb3cgZt1h4PpKDyIpsSwPMImeFxvyNyX5zGG3mGtoEFP5k4CACax5LGFKQ
-Fn1obJDYpEEV0ZUQtK3jfiexGdfgzBb1UugVVEvejuj78ydIhOMKoQiaIWbjc78=
-=CO5y
------END PGP SIGNATURE-----
+sudo batmand s -> "Not using interface s (retrying later): interface
+not active" whereas if I try:
 
---nextPart1671151.5vdp2dtmjk--
+sudo batmand s IP bat0 -> batman cannot be pinged from any other
+interface any more
 
+did I forget to install something?
+
+Thanks
+Richard
