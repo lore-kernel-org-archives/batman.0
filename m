@@ -1,31 +1,10 @@
-Return-Path: <elfring@users.sourceforge.net>
-References: <5307CAA2.8060406@users.sourceforge.net>
- <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
- <530A086E.8010901@users.sourceforge.net>
- <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
- <530A72AA.3000601@users.sourceforge.net>
- <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
- <530B5FB6.6010207@users.sourceforge.net>
- <alpine.DEB.2.10.1402241710370.2074@hadrien>
- <530C5E18.1020800@users.sourceforge.net>
- <alpine.DEB.2.10.1402251014170.2080@hadrien>
- <530CD2C4.4050903@users.sourceforge.net>
- <alpine.DEB.2.10.1402251840450.7035@hadrien>
- <530CF8FF.8080600@users.sourceforge.net>
- <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
- <530DD06F.4090703@users.sourceforge.net>
- <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
- <5317A59D.4@users.sourceforge.net> <56391CF7.9080400@users.sourceforge.net>
- <56391F73.7090605@users.sourceforge.net> <564EDE1D.7070809@meshcoding.com>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <564EFC67.7050307@users.sourceforge.net>
-Date: Fri, 20 Nov 2015 11:56:39 +0100
+Return-Path: <patrick.bosch@uantwerpen.be>
 MIME-Version: 1.0
-In-Reply-To: <564EDE1D.7070809@meshcoding.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Less function calls in
- batadv_is_ap_isolated() after error detection
+Date: Fri, 20 Nov 2015 15:42:36 +0100
+Message-ID: <CANQCUf=qAPBc7qwTgYJ3KuPZVMm9crsoYLTXKePiCx1bQJkisw@mail.gmail.com>
+From: Patrick Bosch <patrick.bosch@uantwerpen.be>
+Content-Type: text/plain; charset=UTF-8
+Subject: [B.A.T.M.A.N.] Integrity checks for packets, who does it?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -35,42 +14,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <antonio@meshcoding.com>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, netdev@vger.kernel.org, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Julia Lawall <julia.lawall@lip6.fr>, "David S. Miller" <davem@davemloft.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
->> -out:
->> +	batadv_tt_global_entry_free_ref(tt_global_entry);
->> +local_entry_free:
->> +	batadv_tt_local_entry_free_ref(tt_local_entry);
->> +vlan_free:
->>  	batadv_softif_vlan_free_ref(vlan);
->> -	if (tt_global_entry)
->> -		batadv_tt_global_entry_free_ref(tt_global_entry);
->> -	if (tt_local_entry)
->> -		batadv_tt_local_entry_free_ref(tt_local_entry);
->>  	return ret;
+Hi everyone
 
-> if you really want to make this codestyle change, I'd suggest you to go
-> through the whole batman-adv code and apply the same change where needed.
+I have a little uncertainty regarding integrity checks in batman
+advanced. I was wondering which encapsulation does it.
 
-Thanks for your interest in similar source code changes.
+The situation:
+- Ping to a batman node
+- Normal ping, no batman ping (nodes have an IP)
+- WPA2 active
 
-I would prefer general acceptance for this specific update suggestion
-before I might invest further software development efforts for the
-affected network module.
+ICMP should be encapsulated by IP, which is encapsulated by the Wi-Fi
+mac header. Now I know that batman advanced inserts it's own header.
+The question is, where exactly? Does it encapsulate the Wi-Fi mac and
+takes over the integrity check or not? Also, how does it behave in the
+case of enabled encryption? WPA2 has it's own integrity check.
 
+The reason I ask, is that in Wireshark, it appears as ICMP when I
+sniff the traffic without encryption enabled.
 
-> It does not make sense to change the codestyle in one spot only.
+It would be great, if someone could shed light in this affair! Thank
+you in advance!
 
-I agree in the way that I would be nice if more places can still be improved.
+Kind regards
+Patrick
 
-
-> On top of that, by going through the batman-adv code you might agree
-> that the current style is actually not a bad idea.
-
-I got the impression that the current Linux coding style convention
-disagrees around the affected jump label selection to some degree,
-doesn't it?
-
-Regards,
-Markus
+-- 
+Patrick Bosch, PhD Student
+University of Antwerp - iMinds
+Dept. Mathematics and Computer Science
+MOSAIC research group
+Middelheimlaan 1 - Room M.G.215
+2020 Antwerpen - Belgium
+Email: patrick.bosch@uantwerpen.be
+Phone: +3232653858
