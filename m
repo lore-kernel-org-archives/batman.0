@@ -1,15 +1,9 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 22 Nov 2015 05:51:04 +0800
-Message-ID: <2723284.fvSBmu6aJ3@voltaire>
-In-Reply-To: <56391F0B.2060102@users.sourceforge.net>
-References: <5307CAA2.8060406@users.sourceforge.net>
- <56391CF7.9080400@users.sourceforge.net>
- <56391F0B.2060102@users.sourceforge.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5154744.fNLkcmSmS2";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Split a condition check
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 22 Nov 2015 00:59:30 +0100
+Message-Id: <1448150370-27754-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add missing forward declaration
+	for net_device
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,46 +14,29 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>, Julia Lawall <julia.lawall@lip6.fr>, Antonio Quartulli <antonio@meshcoding.com>, SF Markus Elfring <elfring@users.sourceforge.net>
 
---nextPart5154744.fNLkcmSmS2
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+A new function batadv_bla_status_update was introduced which uses the not
+yet defined struct net_device as parameter. Add the forward declaration to
+avoid compiler warnings about type declarations inside parameter list.
 
-On Tuesday, November 03, 2015 21:54:35 SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Tue, 3 Nov 2015 20:41:02 +0100
-> 
-> Let us split a check for a condition at the beginning of the
-> batadv_is_ap_isolated() function so that a direct return can be performed
-> in this function if the variable "vlan" contained a null pointer.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> ---
->  net/batman-adv/translation-table.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+Fixes: 07ed3c31d795 ("batman-adv: purge bridge loop avoidance when its disabled")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/bridge_loop_avoidance.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-Applied in revision b1199c6.
-
-Thanks,
-Marek
-
---nextPart5154744.fNLkcmSmS2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWUOdIAAoJEFNVTo/uthzAH6MH/1ZRFtHupThwVXcBfnoqGgUY
-qgd9VHY6TX1BEbSF79nydp8bqjIES8yXE8ltBXCwy3ixgkomZyxNyqnAXlFfZoOi
-QBwMQcS0LFKEoLFbP80P6JDU869DjqS8upKZ75klqne+kFxB6eA13joxpqJgVSYv
-lVeSL3i64JZSjqwFXmRFeDX7wUMfFfZoKDYeJoF3RU7Pu73vA0Jpa+d7SkoHrUKG
-g9PwApoZosqe/Wo46Wdm8DMr97iEynrOQBVkqcVO8wLXGMOGAmZ8/xEKd4gYAx9v
-CH5OJnMy06YH2B2Lil/c+mEmVl01rntn5I4mO3tCzqZ3PzQFDip9q/dzfZTCjYI=
-=6RRe
------END PGP SIGNATURE-----
-
---nextPart5154744.fNLkcmSmS2--
+diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge_loop_avoidance.h
+index db1aeb5..7ea199b 100644
+--- a/net/batman-adv/bridge_loop_avoidance.h
++++ b/net/batman-adv/bridge_loop_avoidance.h
+@@ -22,6 +22,7 @@
+ 
+ #include <linux/types.h>
+ 
++struct net_device;
+ struct seq_file;
+ struct sk_buff;
+ 
+-- 
+2.6.2
 
