@@ -1,16 +1,16 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 22 Nov 2015 05:45:33 +0800
-Message-ID: <2329415.lXFbWjXfj3@voltaire>
-In-Reply-To: <564845AE.8020008@users.sourceforge.net>
+Date: Sun, 22 Nov 2015 05:47:11 +0800
+Message-ID: <9988401.mi5Gfk0igO@voltaire>
+In-Reply-To: <5648463F.3070403@users.sourceforge.net>
 References: <5307CAA2.8060406@users.sourceforge.net>
  <56484502.8000206@users.sourceforge.net>
- <564845AE.8020008@users.sourceforge.net>
+ <5648463F.3070403@users.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1573570.N95rHCmhjF";
+Content-Type: multipart/signed; boundary="nextPart3115496.lf9YDrhiNn";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Delete unnecessary
-	checks before the function call "kfree_skb"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Less checks in
+	batadv_tvlv_unicast_send()
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,32 +23,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>, Julia Lawall <julia.lawall@lip6.fr>, Antonio Quartulli <antonio@meshcoding.com>, SF Markus Elfring <elfring@users.sourceforge.net>
 
---nextPart1573570.N95rHCmhjF
+--nextPart3115496.lf9YDrhiNn
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, November 15, 2015 09:43:26 SF Markus Elfring wrote:
+On Sunday, November 15, 2015 09:45:51 SF Markus Elfring wrote:
 > From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Sun, 15 Nov 2015 08:04:43 +0100
+> Date: Sun, 15 Nov 2015 09:00:42 +0100
 > 
-> The kfree_skb() function tests whether its argument is NULL and then
-> returns immediately. Thus the test around the calls is not needed.
+> * Let us return directly if a call of the batadv_orig_hash_find() function
+>   returned a null pointer.
 > 
-> This issue was detected by using the Coccinelle software.
+> * Omit the initialisation for the variable "skb" at the beginning.
+> 
+> * Replace an assignment by a call of the kfree_skb() function
+>   and delete the affected variable "ret" then.
 > 
 > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 > ---
->  net/batman-adv/main.c           | 2 +-
->  net/batman-adv/network-coding.c | 4 +---
->  net/batman-adv/send.c           | 3 +--
->  3 files changed, 3 insertions(+), 6 deletions(-)
+>  net/batman-adv/main.c | 15 +++++----------
+>  1 file changed, 5 insertions(+), 10 deletions(-)
 
-Applied in revision 77d84a6.
+Applied in revision 5a878b8.
 
 Thanks,
 Marek
 
---nextPart1573570.N95rHCmhjF
+--nextPart3115496.lf9YDrhiNn
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -56,14 +57,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWUOX9AAoJEFNVTo/uthzACYYH/A2iYbcxJ/MhlyXJslnVgmLf
-BfzckoTCJQUH4mjopK/cZcvuAQT6HUTHXi2oBV5+58NRAwHAXg2zv1yDCtBuav+9
-SPqYTWV4dNJb0cQFTuKbLXqXCGe/n1SlHgyvtttLgF3p0zjeNRQScqC5/2/urEBc
-yZr8HmGofBVZGj8drzcL+deGari5o0z1r8RojzKv33E/IMv6sBZ5+I4EmNQGDLDg
-zdWvHTRn/3MZGH4UsEw3HXVUVVOCeyjvAGEBORz63GZR42tM+0TCgHpo3Z7kTynE
-WX2wFI/FRhoSxhHS3APzSUxQ/7o1MCuzNKDS430OYKVW/WrV8CP2jqVGrRUGwvQ=
-=6jJq
+iQEcBAABCAAGBQJWUOZfAAoJEFNVTo/uthzAmIIIAIhojBp2a/my4W/0Q1Q5mhMr
+ZlWxOIdgKhWPsYJ/OGPNEgpLHa543ItCCyiF0lf4N3NUEvhCoMmLJhOWqS82KoUM
+X7oxaBJe4hjIOWkNSozWWYvERt+FlBUBUOQyWMxoEmnRvYcdyRG0DuB1s1tyWu88
+1KqGJY8n1a8ogQim3sBCsmMNZyF33W/5t26cyogrZjiKwheA8K0BX92pjjgxY/0J
+OzOhCNHn0O+bI3B/n9teKM80ZWbp74ffiChHl/v+Nf/K2U2fySiHnaRSSb7z/YjG
+meknJjGKc51xb+RkAt8oVtPnj/hYv1IS9PL0vo9C+fNiqrRytOs1jFP7XJ8yIyM=
+=Wl4b
 -----END PGP SIGNATURE-----
 
---nextPart1573570.N95rHCmhjF--
+--nextPart3115496.lf9YDrhiNn--
 
