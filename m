@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 27 Nov 2015 09:56:11 +0800
-Message-ID: <6965685.jAU4tEjgAj@voltaire>
-In-Reply-To: <1448305042-5806-3-git-send-email-sw@simonwunderlich.de>
+Date: Fri, 27 Nov 2015 09:59:36 +0800
+Message-ID: <2247189.JEYZehYVi5@voltaire>
+In-Reply-To: <1448305042-5806-4-git-send-email-sw@simonwunderlich.de>
 References: <1448305042-5806-1-git-send-email-sw@simonwunderlich.de>
- <1448305042-5806-3-git-send-email-sw@simonwunderlich.de>
+ <1448305042-5806-4-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1485524.H06GUXWapN";
+Content-Type: multipart/signed; boundary="nextPart2341523.c2znrlydzI";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: add kerneldoc for
-	batadv_iv_ogm_aggr_packet
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: add seqno maximum age
+	and protection start flag parameters
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,24 +22,34 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Simon Wunderlich <simon@open-mesh.com>
 
---nextPart1485524.H06GUXWapN
+--nextPart2341523.c2znrlydzI
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, November 23, 2015 19:57:21 Simon Wunderlich wrote:
+On Monday, November 23, 2015 19:57:22 Simon Wunderlich wrote:
 > From: Simon Wunderlich <simon@open-mesh.com>
+> 
+> To allow future use of the window protected function with different
+> maximum sequence numbers, add a parameter to set this value which
+> was previously hardcoded. Another parameter added for future use is a
+> flag to return whether the protection window has started.
+> 
+> While at it, also fix the kerneldoc.
 > 
 > Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 > ---
->  net/batman-adv/bat_iv_ogm.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
+>  net/batman-adv/bat_iv_ogm.c |  3 ++-
+>  net/batman-adv/main.h       |  3 +++
+>  net/batman-adv/routing.c    | 13 ++++++++++---
+>  net/batman-adv/routing.h    |  3 ++-
+>  4 files changed, 17 insertions(+), 5 deletions(-)
 
-Applied in revision 879ffa2.
+Applied in revision 544f94c.
 
 Thanks,
 Marek
 
---nextPart1485524.H06GUXWapN
+--nextPart2341523.c2znrlydzI
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -47,14 +57,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWV7g7AAoJEFNVTo/uthzAxWUH/i2LKdfR5CzkvBWs0Es5SoTz
-oIG6vUszXazcX6S9Rk1iHHRa8GY+Mhuv6dq7A3H0i5ZtAfj8SO8WaRpT6DMzOcYj
-7Jo2hMJc3cSTHvg6FW8/+/xPt4EuVTVpanOV1d5pM2eL+8TJqcUpAtRpyPKOd3Bw
-VoKT+erDvXndmvC1wBixiky3YYUdTs5eVdK/Ji1q6lGUGCdIFOA1Po3HTg+Sz3Ix
-p5E1IheAR4cBxekPjzsyuzr4IHnlopIUEsVAF+R/6y2N2GDoXPsb4FSs0snLY5za
-p8XsiYrmLVW7Vqw3ep0Bx8ORA58O2XdGvA3v2blyw05jyL1qXqjfq7MhYD//TpY=
-=RCIC
+iQEcBAABCAAGBQJWV7kIAAoJEFNVTo/uthzAOLMIALdSpo1cEd0NbcBPEbl7eZc0
+ShAfoHuz/7o9X+GeyyFT3bMeNB+2D7kvEyTHgD0B8v1EWsSwHFL40zumeJsTgHHs
+2afVBDv/Xe9+uKH6xFBfT16nVp/oqyHmbcLuVAJ6uai9tLhjOkoUzU1PYeAzL6lU
+TCzIJrhFd9+dCRYh8TPJDcASN5BTplziGcrhXM8Tlm7nBCHHjUVCTzMOU3hfV7oK
+hpOWxGgaBOORn0TK3O7IYLRBBQVrUhHj6YdWXbljrkg+t14UMPVKCjVxLAyjzZdw
+fPZyJRVZaHsJ+d64W6/AON/LR0uAdLoVhptmWaSyDdmL2v7QYYUelMDqGfWCEfE=
+=u5Hl
 -----END PGP SIGNATURE-----
 
---nextPart1485524.H06GUXWapN--
+--nextPart2341523.c2znrlydzI--
 
