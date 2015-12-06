@@ -1,8 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  6 Dec 2015 16:16:35 +0100
-Message-Id: <1449414995-21885-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batmand: Switch to HTTPS version of links
+Date: Sun,  6 Dec 2015 16:28:25 +0100
+Message-Id: <1449415705-23386-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv-doc: Fix external links
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,37 +15,98 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Cc: elektra <onelektra@gmx.net>
 ---
- README | 2 +-
- vis.c  | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ README             | 20 ++++++++++----------
+ batmand.docbook    |  4 ++--
+ copyright.docbook  |  2 +-
+ references.docbook |  2 +-
+ 4 files changed, 14 insertions(+), 14 deletions(-)
 
 diff --git a/README b/README
-index 1ddceed..b25dd77 100644
+index 8f4ff7d..59ebe63 100644
 --- a/README
 +++ b/README
-@@ -61,6 +61,6 @@ is part of the s3d tools [2] - debian packages are available) to the vis
- servers dot draw output (on port 2004).  If you have impressive screenshots
- don't hesitate to let us know.  :-)
+@@ -1,18 +1,18 @@
+ Requirements
+ ============
  
--[1] http://downloads.open-mesh.net/batman/misc/wbm2009/08-vis_zoomed.png
-+[1] https://downloads.open-mesh.org/batman/misc/wbm2009/08-vis_zoomed.png
- [2] http://s3d.sourceforge.net/
+- * GNU make - http://www.gnu.org/software/make/
++ * GNU make - https://www.gnu.org/software/make/
+  * xmlto - https://fedorahosted.org/xmlto/
+- * docbook-xml (>= 4.5) - http://www.oasis-open.org/docbook/xml/
+- * docbook-xsl - http://wiki.docbook.org/topic/DocBookXslStylesheets
+- * fop - http://xmlgraphics.apache.org/fop/
++ * docbook-xml (>= 4.5) - https://www.oasis-open.org/docbook/xml/
++ * docbook-xsl - http://wiki.docbook.org/DocBookXslStylesheets
++ * fop - https://xmlgraphics.apache.org/fop/
+  * ghostscript - http://www.ghostscript.com/
+- * coreutils - http://www.gnu.org/software/coreutils/
++ * coreutils - https://www.gnu.org/software/coreutils/coreutils.html
+  * gnuplot - http://gnuplot.sourceforge.net/
+- * dia - http://live.gnome.org/Dia
+- * texlive-latex-base - http://www.tug.org/texlive/
+- * texlive-base - http://www.tug.org/texlive/
+- * ps2eps - http://www.tm.uka.de/~bless/ps2eps
++ * dia - https://wiki.gnome.org/action/show/Apps/Dia
++ * texlive-latex-base - https://www.tug.org/texlive/
++ * texlive-base - https://www.tug.org/texlive/
++ * ps2eps - https://www.tm.uka.de/~bless/ps2eps
+  * imagemagick - http://www.imagemagick.org/
  
-diff --git a/vis.c b/vis.c
-index d92fbe8..774d24e 100644
---- a/vis.c
-+++ b/vis.c
-@@ -127,7 +127,7 @@ int32_t orig_comp(void *data1, void *data2)
- }
  
- /* hashfunction to choose an entry in a hash table of given size */
--/* hash algorithm from http://en.wikipedia.org/wiki/Hash_table */
-+/* hash algorithm from https://en.wikipedia.org/wiki/Hash_table */
- int32_t orig_choose(void *data, int32_t size) {
- 	unsigned char *key= data;
- 	uint32_t hash = 0;
+@@ -31,4 +31,4 @@ Troubleshooting
+  * "libjli.so: cannot open shared object file: No such file or directory"
+    Make sure that /proc is mounted and `/bin/ls -l /proc/self/exe` prints
+    [...] /proc/self/exe -> /bin/ls
+-   See http://bugs.debian.org/435293 for more informations
++   See https://bugs.debian.org/435293 for more informations
+diff --git a/batmand.docbook b/batmand.docbook
+index 9f6c68b..350e9ed 100644
+--- a/batmand.docbook
++++ b/batmand.docbook
+@@ -18,7 +18,7 @@
+         <listitem><para>libpthread</para></listitem>
+       </orderedlist></listitem>
+       <listitem><para>Download the B.A.T.M.A.N. daemon code from the website
+-      <ulink url="http://www.open-mesh.net/wiki/Download" /></para></listitem>
++      <ulink url="https://www.open-mesh.org/projects/open-mesh/wiki/Download" /></para></listitem>
+     </itemizedlist>
+   </section>
+   <section>
+@@ -26,7 +26,7 @@
+     <para>All you have to do is untar and make, then you will see the executable
+     file called <emphasis>batmand</emphasis>.</para>
+     <programlisting><userinput>$ wget \
+-http://downloads.open-mesh.net/batman/stable/sources/batman/batman-0.3.tar.gz
++https://downloads.open-mesh.org/batman/stable/sources/batman/batman-0.3.tar.gz
+ $ tar xzvf batman-0.3.tar.gz
+ $ cd batman-0.3
+ $ make</userinput></programlisting>
+diff --git a/copyright.docbook b/copyright.docbook
+index 4ec2dff..1cf1d6a 100644
+--- a/copyright.docbook
++++ b/copyright.docbook
+@@ -5,6 +5,6 @@
+   you can redistribute it and/or modify it under the terms of the
+   GNU General Public License as published by the Free Software
+   Foundation; version 2 of the License. To view a copy of this
+-  license, visit  <ulink url="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html" /> or write to the Free Software Foundation, Inc., 51 Franklin
++  license, visit  <ulink url="https://www.gnu.org/licenses/old-licenses/gpl-2.0.html" /> or write to the Free Software Foundation, Inc., 51 Franklin
+   Street, Fifth Floor, Boston, MA  02110-1301  USA.</para>
+ </chapter>
+diff --git a/references.docbook b/references.docbook
+index 0cd65d3..0cce1d4 100644
+--- a/references.docbook
++++ b/references.docbook
+@@ -2,7 +2,7 @@
+ <section>
+   <title>Reference Links</title>
+   <itemizedlist>
+-    <listitem><ulink url="http://www.open-mesh.net/" /></listitem>
++    <listitem><ulink url="https://www.open-mesh.org/" /></listitem>
+     <listitem><ulink url="http://www.olsr.org/" /></listitem>
+   </itemizedlist>
+ </section>
 -- 
 2.6.2
 
