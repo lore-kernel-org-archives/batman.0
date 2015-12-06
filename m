@@ -1,9 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  6 Dec 2015 16:16:16 +0100
-Message-Id: <1449414976-21770-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] openwrt-feed-batman-adv: Switch to HTTPS
-	version of links
+Date: Sun,  6 Dec 2015 16:16:35 +0100
+Message-Id: <1449414995-21885-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batmand: Switch to HTTPS version of links
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,60 +14,38 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-open-mesh.org and its subdomains can only be accessed via HTTPS. HTTP-only
-requests are currently redirected automatically to HTTPS but references
-to it should be only https.
-
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Cc: elektra <onelektra@gmx.net>
 ---
- batctl-devel/Makefile     | 4 ++--
- batman-adv-devel/Makefile | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ README | 2 +-
+ vis.c  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/batctl-devel/Makefile b/batctl-devel/Makefile
-index 05e2d41..1c93c0b 100644
---- a/batctl-devel/Makefile
-+++ b/batctl-devel/Makefile
-@@ -14,7 +14,7 @@ PKG_BATCTL_SHORTREV:=$(shell echo $(PKG_VERSION) | cut -c1-7)
- PKG_BATCTL_FNAME:=batctl-devel-$(PKG_BATCTL_SHORTREV).tar.gz
- PKG_BATCTL_DIR:=batctl-$(PKG_BATCTL_SHORTREV)
+diff --git a/README b/README
+index 1ddceed..b25dd77 100644
+--- a/README
++++ b/README
+@@ -61,6 +61,6 @@ is part of the s3d tools [2] - debian packages are available) to the vis
+ servers dot draw output (on port 2004).  If you have impressive screenshots
+ don't hesitate to let us know.  :-)
  
--PKG_SOURCE_URL:=http://git.open-mesh.org/snapshot/
-+PKG_SOURCE_URL:=https://git.open-mesh.org/snapshot/
- PKG_SOURCE:=$(PKG_BATCTL_FNAME)
+-[1] http://downloads.open-mesh.net/batman/misc/wbm2009/08-vis_zoomed.png
++[1] https://downloads.open-mesh.org/batman/misc/wbm2009/08-vis_zoomed.png
+ [2] http://s3d.sourceforge.net/
  
- PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(PKG_BATCTL_DIR)
-@@ -22,7 +22,7 @@ PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(PKG_BATCTL_DIR)
- include $(INCLUDE_DIR)/package.mk
+diff --git a/vis.c b/vis.c
+index d92fbe8..774d24e 100644
+--- a/vis.c
++++ b/vis.c
+@@ -127,7 +127,7 @@ int32_t orig_comp(void *data1, void *data2)
+ }
  
- define Package/batctl-devel
--  URL:=http://www.open-mesh.org/
-+  URL:=https://www.open-mesh.org/
-   SECTION:=net
-   CATEGORY:=Network
-   DEPENDS:=+kmod-batman-adv-devel +libnl-tiny +libc
-diff --git a/batman-adv-devel/Makefile b/batman-adv-devel/Makefile
-index 9971e22..0d63ab3 100644
---- a/batman-adv-devel/Makefile
-+++ b/batman-adv-devel/Makefile
-@@ -15,7 +15,7 @@ PKG_BATMAN_SHORTREV:=$(shell echo $(PKG_VERSION) | cut -c1-7)
- PKG_BATMAN_FNAME:=batman-adv-devel-$(PKG_BATMAN_SHORTREV).tar.gz
- PKG_BATMAN_DIR:=batman-adv-$(PKG_BATMAN_SHORTREV)
- 
--PKG_SOURCE_URL:=http://git.open-mesh.org/snapshot/
-+PKG_SOURCE_URL:=https://git.open-mesh.org/snapshot/
- PKG_SOURCE:=$(PKG_BATMAN_FNAME)
- 
- PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)/$(PKG_BATMAN_DIR)
-@@ -24,7 +24,7 @@ include $(INCLUDE_DIR)/package.mk
- include $(INCLUDE_DIR)/kernel.mk
- 
- define KernelPackage/batman-adv-devel
--  URL:=http://www.open-mesh.org/
-+  URL:=https://www.open-mesh.org/
-   MAINTAINER:=Marek Lindner <mareklindner@neomailbox.ch>
-   SUBMENU:=Network Support
-   DEPENDS:=+KMOD_BATMAN_ADV_DEVEL_BLA:kmod-lib-crc16 +kmod-crypto-core +kmod-crypto-crc32c +kmod-lib-crc32c
+ /* hashfunction to choose an entry in a hash table of given size */
+-/* hash algorithm from http://en.wikipedia.org/wiki/Hash_table */
++/* hash algorithm from https://en.wikipedia.org/wiki/Hash_table */
+ int32_t orig_choose(void *data, int32_t size) {
+ 	unsigned char *key= data;
+ 	uint32_t hash = 0;
 -- 
 2.6.2
 
