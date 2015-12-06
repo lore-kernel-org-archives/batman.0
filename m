@@ -1,12 +1,12 @@
 Return-Path: <onelektra@gmx.net>
-Date: Sun, 6 Dec 2015 22:46:55 +0100
+Date: Sun, 6 Dec 2015 22:47:46 +0100
 From: Elektra <onelektra@gmx.net>
-Message-Id: <20151206224655.febbb0d1f74ad970abae0c89@gmx.net>
-In-Reply-To: <1449414928-21480-1-git-send-email-sven@narfation.org>
-References: <1449414928-21480-1-git-send-email-sven@narfation.org>
+Message-Id: <20151206224746.004b99756e7eac09432514ad@gmx.net>
+In-Reply-To: <1449414995-21885-1-git-send-email-sven@narfation.org>
+References: <1449414995-21885-1-git-send-email-sven@narfation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batmand: Switch to HTTPS version of links
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -20,12 +20,9 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Sven -
+Hi Sven –
 
 commited. Thank you!
 
 Cheers,
 Elektra
-
--- 
-Elektra <onelektra@gmx.net>
