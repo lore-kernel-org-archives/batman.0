@@ -1,14 +1,8 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Mon, 7 Dec 2015 23:39:35 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20151207223935.GT27041@otheros>
-References: <1448901241-30844-1-git-send-email-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1448901241-30844-1-git-send-email-sw@simonwunderlich.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: fix lockdep splat when
- doing mcast_free
+Return-Path: <antonio@meshcoding.com>
+From: Antonio Quartulli <antonio@meshcoding.com>
+Date: Mon,  7 Dec 2015 23:12:11 +0800
+Message-Id: <1449501135-30438-1-git-send-email-antonio@meshcoding.com>
+Subject: [B.A.T.M.A.N.] pull request [net]: batman-adv 20151207
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,21 +12,76 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Simon Wunderlich <simon@open-mesh.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Mon, Nov 30, 2015 at 05:34:01PM +0100, Simon Wunderlich wrote:
-> diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-> index eb76386..75fa501 100644
-> --- a/net/batman-adv/multicast.c
-> +++ b/net/batman-adv/multicast.c
-> @@ -802,7 +802,9 @@ void batadv_mcast_free(struct batadv_priv *bat_priv)
->  	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_MCAST, 1);
->  	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_MCAST, 1);
->  
-> +	spin_lock_bh(&bat_priv->tt.commit_lock);
->  	batadv_mcast_mla_tt_retract(bat_priv, NULL);
-> +	spin_unlock_bh(&bat_priv->tt.commit_lock);
->  }
+Hello David,
 
-See comments in the other thread before applying.
+long time no see :)
+
+I know it starts to be a bit late in the release cycle, but I think that
+these 4 small bug-fixes are still worth being merged.
+
+Patch 1 fixes a compatibility issue between our Distributed ARP Table
+mechanism and the "early client detection" feature. Such issue creates
+an inconsistency in the global translation table leading to user clients
+not being reachable anymore. Fix provided by Simon Wunderlich.
+
+Patch 2 is again provided by Simon Wunderlich and fixes another bug
+related to the "early client detection" feature. The fix consists in
+ensuring that temporary client entries not claimed by any originator
+are properly purged instead of being stored all time long till
+shutdown.
+
+Patch 3 fixes the function used by the TT hash tables to detect
+duplicate entries. At the moment two clients with the same MAC address
+but lying in different VLANs are considered the same, while this should
+not be the case. Bugfix by Marek Lindner.
+
+Patch 4 fixes an invalid stack access in the batadv_dat_select_candidates()
+function where a u32 pointer is accessed as it was a pointer to a
+batadv_dat_entry struct (larger than u32). Bugfix provided by Sven
+Eckelmann.
+
+
+Please pull or let me know of any problem!
+
+Thanks a lot,
+	Antonio
+
+
+The following changes since commit 326fcfa5acca446b3f71e99f6d19881145556e5c:
+
+  net: remove unnecessary semicolon in netdev_alloc_pcpu_stats() (2015-12-06 22:32:32 -0500)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to b7fe3d4f4a65bc675e737d88071300ea9c4bcddd:
+
+  batman-adv: Fix invalid stack access in batadv_dat_select_candidates (2015-12-07 22:40:21 +0800)
+
+----------------------------------------------------------------
+Included changes:
+- prevent compatibility issue between DAT and speedy join from creating
+  inconsistencies in the global translation table
+- make sure temporary TT entries are purged out if not claimed
+- fix comparison function used for TT hash table
+- fix invalid stack access in batadv_dat_select_candidates()
+
+----------------------------------------------------------------
+Marek Lindner (1):
+      batman-adv: fix erroneous client entry duplicate detection
+
+Simon Wunderlich (2):
+      batman-adv: fix speedy join for DAT cache replies
+      batman-adv: avoid keeping false temporary entry
+
+Sven Eckelmann (1):
+      batman-adv: Fix invalid stack access in batadv_dat_select_candidates
+
+ net/batman-adv/distributed-arp-table.c |  5 ++++-
+ net/batman-adv/routing.c               | 19 +++++++++++++++----
+ net/batman-adv/translation-table.c     | 16 ++++++++++++----
+ 3 files changed, 31 insertions(+), 9 deletions(-)
