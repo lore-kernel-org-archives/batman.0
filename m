@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Mon,  7 Dec 2015 23:12:14 +0800
-Message-Id: <1449501135-30438-4-git-send-email-antonio@meshcoding.com>
+Date: Mon,  7 Dec 2015 23:12:12 +0800
+Message-Id: <1449501135-30438-2-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1449501135-30438-1-git-send-email-antonio@meshcoding.com>
 References: <1449501135-30438-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: fix erroneous client entry
-	duplicate detection
+Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: fix speedy join for DAT
+	cache replies
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,47 +18,59 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@meshcoding.com>
 
-From: Marek Lindner <mareklindner@neomailbox.ch>
+From: Simon Wunderlich <sw@simonwunderlich.de>
 
-The translation table implementation, namely batadv_compare_tt(),
-is used to compare two client entries and deciding if they are the
-holding the same information. Each client entry is identified by
-its mac address and its VLAN id (VID).
-Consequently, batadv_compare_tt() has to not only compare the mac
-addresses but also the VIDs.
+DAT Cache replies are answered on behalf of other clients which are not
+connected to the answering originator. Therefore, we shouldn't add these
+clients to the answering originators TT table through speed join to
+avoid bogus entries.
 
-Without this fix adding a new client entry that possesses the same
-mac address as another client but operates on a different VID will
-fail because both client entries will considered identical.
-
+Reported-by: Alessandro Bolletta <alessandro@mediaspot.net>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Acked-by: Antonio Quartulli <antonio@meshcoding.com>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/translation-table.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ net/batman-adv/routing.c | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index a3fc9033..76f19ba 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -68,13 +68,15 @@ static void batadv_tt_global_del(struct batadv_priv *bat_priv,
- 				 unsigned short vid, const char *message,
- 				 bool roaming);
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 8d990b0..3207667 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -836,6 +836,7 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 	u8 *orig_addr;
+ 	struct batadv_orig_node *orig_node = NULL;
+ 	int check, hdr_size = sizeof(*unicast_packet);
++	enum batadv_subtype subtype;
+ 	bool is4addr;
  
--/* returns 1 if they are the same mac addr */
-+/* returns 1 if they are the same mac addr and vid */
- static int batadv_compare_tt(const struct hlist_node *node, const void *data2)
- {
- 	const void *data1 = container_of(node, struct batadv_tt_common_entry,
- 					 hash_entry);
-+	const struct batadv_tt_common_entry *tt1 = data1;
-+	const struct batadv_tt_common_entry *tt2 = data2;
+ 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
+@@ -863,10 +864,20 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 	/* packet for me */
+ 	if (batadv_is_my_mac(bat_priv, unicast_packet->dest)) {
+ 		if (is4addr) {
+-			batadv_dat_inc_counter(bat_priv,
+-					       unicast_4addr_packet->subtype);
+-			orig_addr = unicast_4addr_packet->src;
+-			orig_node = batadv_orig_hash_find(bat_priv, orig_addr);
++			subtype = unicast_4addr_packet->subtype;
++			batadv_dat_inc_counter(bat_priv, subtype);
++
++			/* Only payload data should be considered for speedy
++			 * join. For example, DAT also uses unicast 4addr
++			 * types, but those packets should not be considered
++			 * for speedy join, since the clients do not actually
++			 * reside at the sending originator.
++			 */
++			if (subtype == BATADV_P_DATA) {
++				orig_addr = unicast_4addr_packet->src;
++				orig_node = batadv_orig_hash_find(bat_priv,
++								  orig_addr);
++			}
+ 		}
  
--	return batadv_compare_eth(data1, data2);
-+	return (tt1->vid == tt2->vid) && batadv_compare_eth(data1, data2);
- }
- 
- /**
+ 		if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb,
 -- 
 2.6.3
 
