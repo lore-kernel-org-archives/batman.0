@@ -1,15 +1,8 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 13 Dec 2015 14:30:38 +0800
-Message-ID: <36251051.0TfVRU6jZ7@voltaire>
-In-Reply-To: <1449606958-6548-1-git-send-email-sven@narfation.org>
-References: <1449606915-6457-1-git-send-email-sven@narfation.org>
- <1449606958-6548-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7632863.xnlfhL1jOb";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-next 3/3] batman-adv: Act on
-	NETDEV_*_TYPE_CHANGE events
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 14 Dec 2015 09:48:31 +0100
+Message-Id: <1450082911-3976-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix build with linux < 3.9.0
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,48 +14,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart7632863.xnlfhL1jOb
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+netdev_master_upper_dev_link already had a compat layer definition for
+linux < 3.9. Move these two different definitions to the same block to
+avoid using redefinitions which can break the build.
 
-On Tuesday, December 08, 2015 21:35:58 Sven Eckelmann wrote:
-> From: Andrew Lunn <andrew@lunn.ch>
-> 
-> A network interface can change type. It may change from a type which
-> batman does not support, e.g. hdlc, to one it does, e.g. hdlc-eth.
-> When an interface changes type, it sends two notifications. Handle
-> these notifications.
-> 
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> ---
->  compat-include/linux/netdevice.h | 3 +++
->  net/batman-adv/hard-interface.c  | 4 +++-
->  2 files changed, 6 insertions(+), 1 deletion(-)
+Fixes: e19f387b9538 ("batman-adv: add possibility to pass information about upper device via notifier")
+Fixes: d794c1cd9d4f ("batman-adv: propagate upper priv via netdev_master_upper_dev_link")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ compat-include/linux/netdevice.h | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-Applied in revision 399bf29.
-
-Thanks,
-Marek
-
-
-
---nextPart7632863.xnlfhL1jOb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWbRCOAAoJEFNVTo/uthzAEygH/jP5geC778is4FlCd7b8GTfd
-7jXpbxsLwV1VdA2HhNPsewXKHAoqgxdvWLfztbjx+j1bMa4a73vm4PeucbBcbFs8
-8kUu8uFBgG64gvYgNYQVaCJOuPX5fie3lxWFS6siu7WuCZIj+qURgxI3JP0yPsUy
-BciFerdl73yv+Ft/0rXeuJ8BuMzyeLDUk1SD5eouL15+6LhoXK8Q0VFEzqXyX5+A
-s93olcjH+0QqIdt9JFPF9nlLeYZAtCYNUiJXIQg2GyD+0Al0lv84B5gM5XqG5ctl
-RTl0EQ4MOeFk+JOz0b+HK3vgactPO6bZSTZYMM0mAfP5ewmY87aI00/J4LEz5mc=
-=dePD
------END PGP SIGNATURE-----
-
---nextPart7632863.xnlfhL1jOb--
+diff --git a/compat-include/linux/netdevice.h b/compat-include/linux/netdevice.h
+index 10253e0..eca7668 100644
+--- a/compat-include/linux/netdevice.h
++++ b/compat-include/linux/netdevice.h
+@@ -84,7 +84,6 @@ static inline int batadv_netdev_set_master(struct net_device *slave,
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
+ 
+-#define netdev_master_upper_dev_link netdev_set_master
+ #define netdev_upper_dev_unlink(slave, master) netdev_set_master(slave, NULL)
+ #define netdev_master_upper_dev_get(dev) \
+ ({\
+@@ -120,7 +119,12 @@ static inline int batadv_netdev_set_master(struct net_device *slave,
+ 
+ #endif /* < KERNEL_VERSION(3, 19, 0) */
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 5, 0)
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
++
++#define netdev_master_upper_dev_link(dev, upper_dev, upper_priv, upper_info) \
++	netdev_set_master(dev, upper_dev)
++
++#elif LINUX_VERSION_CODE < KERNEL_VERSION(4, 5, 0)
+ 
+ #define netdev_master_upper_dev_link(dev, upper_dev, upper_priv, upper_info) \
+ 	netdev_master_upper_dev_link(dev, upper_dev)
+-- 
+2.6.4
 
