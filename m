@@ -1,8 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 14 Dec 2015 15:00:26 +0100
-Message-Id: <1450101627-9692-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] alfred: Fix typo Retreive -> Retrieve
+Date: Mon, 14 Dec 2015 15:00:27 +0100
+Message-Id: <1450101627-9692-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1450101627-9692-1-git-send-email-sven@narfation.org>
+References: <1450101627-9692-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Remove bogus length check in
+	debugfs_make_path
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,24 +17,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+The length check never used the mesh_iface length in the size calculation.
+Instead it used the length of the mountpoint and the format string. But the
+length of the format string is not the length of the final string.
+
+Instead remove this check and depend completely on the return value of
+snprintf.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- man/alfred.8 | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ debugfs.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/man/alfred.8 b/man/alfred.8
-index 95241a7..49d42bc 100644
---- a/man/alfred.8
-+++ b/man/alfred.8
-@@ -130,7 +130,7 @@ Send data to the alfred server and store it under id 65:
- .br
- \fB     cat /etc/hostname | alfred -s 65\fP
+diff --git a/debugfs.c b/debugfs.c
+index 6404b49..fc39322 100644
+--- a/debugfs.c
++++ b/debugfs.c
+@@ -46,19 +46,12 @@ static const char *debugfs_known_mountpoints[] = {
+ int debugfs_make_path(const char *fmt, const char *mesh_iface, char *buffer,
+ 		      int size)
+ {
+-	int len;
+-
+ 	if (strlen(debugfs_mountpoint) == 0) {
+ 		buffer[0] = '\0';
+ 		return -1;
+ 	}
  
--Retreive all data stored as id 65 from all connected alfred servers:
-+Retrieve all data stored as id 65 from all connected alfred servers:
- .br
- \fB     alfred -r 65\fP
- .nf
+-	len = strlen(debugfs_mountpoint) + strlen(fmt) + 1;
+-	if (len >= size)
+-		return len+1;
+-
+-	snprintf(buffer, size-1, fmt, debugfs_mountpoint, mesh_iface);
+-	return 0;
++	return snprintf(buffer, size, fmt, debugfs_mountpoint, mesh_iface);
+ }
+ 
+ static int debugfs_found;
 -- 
 2.6.4
 
