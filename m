@@ -1,10 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 14 Dec 2015 15:00:27 +0100
-Message-Id: <1450101627-9692-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1450101627-9692-1-git-send-email-sven@narfation.org>
-References: <1450101627-9692-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Remove bogus length check in
+Date: Mon, 14 Dec 2015 15:00:47 +0100
+Message-Id: <1450101647-9762-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: Remove bogus length check in
 	debugfs_make_path
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -30,12 +28,12 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
  1 file changed, 1 insertion(+), 8 deletions(-)
 
 diff --git a/debugfs.c b/debugfs.c
-index 6404b49..fc39322 100644
+index 04e47e9..3c58195 100644
 --- a/debugfs.c
 +++ b/debugfs.c
-@@ -46,19 +46,12 @@ static const char *debugfs_known_mountpoints[] = {
- int debugfs_make_path(const char *fmt, const char *mesh_iface, char *buffer,
- 		      int size)
+@@ -42,19 +42,12 @@ static const char *debugfs_known_mountpoints[] = {
+ /* construct a full path to a debugfs element */
+ int debugfs_make_path(const char *fmt, char *mesh_iface, char *buffer, int size)
  {
 -	int len;
 -
