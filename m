@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 16 Dec 2015 00:31:42 +0100
-Message-Id: <1450222316-1764-9-git-send-email-sven@narfation.org>
+Date: Wed, 16 Dec 2015 00:31:43 +0100
+Message-Id: <1450222316-1764-10-git-send-email-sven@narfation.org>
 In-Reply-To: <1450222316-1764-1-git-send-email-sven@narfation.org>
 References: <1450222316-1764-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 09/23] batman-adv: Convert batadv_bla_claim
-	to kref
+Subject: [B.A.T.M.A.N.] [PATCH 10/23] batman-adv: Convert batadv_nc_node to
+	kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,137 +22,116 @@ implementation.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 36 ++++++++++++++++++----------------
- net/batman-adv/types.h                 |  2 +-
+ net/batman-adv/network-coding.c | 36 +++++++++++++++++++-----------------
+ net/batman-adv/types.h          |  2 +-
  2 files changed, 20 insertions(+), 18 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 4e5538a..3315b27 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -169,27 +169,28 @@ static void batadv_backbone_gw_put(struct batadv_bla_backbone_gw *backbone_gw)
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 56100c5..246cd90 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -32,6 +32,7 @@
+ #include <linux/jhash.h>
+ #include <linux/jiffies.h>
+ #include <linux/kernel.h>
++#include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+ #include <linux/netdevice.h>
+@@ -207,28 +208,28 @@ void batadv_nc_init_orig(struct batadv_orig_node *orig_node)
  }
  
  /**
-- * batadv_claim_free_rcu - finally deinitialize the claim
-- * @rcu: rcu pointer within the claim structure
-+ * batadv_claim_release - release claim from lists and queue for free after rcu
-+ *  grace period
-+ * * @ref: kref pointer of the claim
+- * batadv_nc_node_free_rcu - rcu callback to free an nc node and remove
+- *  its refcount on the orig_node
+- * @rcu: rcu pointer of the nc node
++ * batadv_nc_node_release - release nc_node from lists and queue for free after
++ *  rcu grace period
++ * * @ref: kref pointer of the nc_node
   */
--static void batadv_claim_free_rcu(struct rcu_head *rcu)
-+static void batadv_claim_release(struct kref *ref)
+-static void batadv_nc_node_free_rcu(struct rcu_head *rcu)
++static void batadv_nc_node_release(struct kref *ref)
  {
- 	struct batadv_bla_claim *claim;
+ 	struct batadv_nc_node *nc_node;
  
--	claim = container_of(rcu, struct batadv_bla_claim, rcu);
-+	claim = container_of(ref, struct batadv_bla_claim, refcount);
- 
- 	batadv_backbone_gw_put(claim->backbone_gw);
--	kfree(claim);
-+	kfree_rcu(claim, rcu);
+-	nc_node = container_of(rcu, struct batadv_nc_node, rcu);
++	nc_node = container_of(ref, struct batadv_nc_node, refcount);
++
+ 	batadv_orig_node_free_ref(nc_node->orig_node);
+-	kfree(nc_node);
++	kfree_rcu(nc_node, rcu);
  }
  
  /**
-- * batadv_claim_free_rcu - free a claim
-+ * batadv_claim_put - decrement the claim refcounter and possibly
+- * batadv_nc_node_free_ref - decrements the nc node refcounter and possibly
+- * frees it
+- * @nc_node: the nc node to free
++ * batadv_nc_node_put - decrement the nc_node refcounter and possibly
 + *  release it
-  * @claim: claim to be free'd
++ * @nc_node: nc_node to be free'd
   */
--static void batadv_claim_free_ref(struct batadv_bla_claim *claim)
-+static void batadv_claim_put(struct batadv_bla_claim *claim)
+-static void batadv_nc_node_free_ref(struct batadv_nc_node *nc_node)
++static void batadv_nc_node_put(struct batadv_nc_node *nc_node)
  {
--	if (atomic_dec_and_test(&claim->refcount))
--		call_rcu(&claim->rcu, batadv_claim_free_rcu);
-+	kref_put(&claim->refcount, batadv_claim_release);
+-	if (atomic_dec_and_test(&nc_node->refcount))
+-		call_rcu(&nc_node->rcu, batadv_nc_node_free_rcu);
++	kref_put(&nc_node->refcount, batadv_nc_node_release);
  }
  
  /**
-@@ -220,7 +221,7 @@ static struct batadv_bla_claim
- 		if (!batadv_compare_claim(&claim->hash_entry, data))
+@@ -342,7 +343,7 @@ batadv_nc_purge_orig_nc_nodes(struct batadv_priv *bat_priv,
+ 			   "Removing nc_node %pM -> %pM\n",
+ 			   nc_node->addr, nc_node->orig_node->orig);
+ 		list_del_rcu(&nc_node->list);
+-		batadv_nc_node_free_ref(nc_node);
++		batadv_nc_node_put(nc_node);
+ 	}
+ 	spin_unlock_bh(lock);
+ }
+@@ -800,7 +801,7 @@ static struct batadv_nc_node
+ 		if (!batadv_compare_eth(nc_node->addr, orig_node->orig))
  			continue;
  
--		if (!atomic_inc_not_zero(&claim->refcount))
-+		if (!kref_get_unless_zero(&claim->refcount))
+-		if (!atomic_inc_not_zero(&nc_node->refcount))
++		if (!kref_get_unless_zero(&nc_node->refcount))
  			continue;
  
- 		claim_tmp = claim;
-@@ -303,7 +304,7 @@ batadv_bla_del_backbone_claims(struct batadv_bla_backbone_gw *backbone_gw)
- 			if (claim->backbone_gw != backbone_gw)
- 				continue;
+ 		/* Found a match */
+@@ -851,7 +852,8 @@ static struct batadv_nc_node
+ 	INIT_LIST_HEAD(&nc_node->list);
+ 	ether_addr_copy(nc_node->addr, orig_node->orig);
+ 	nc_node->orig_node = orig_neigh_node;
+-	atomic_set(&nc_node->refcount, 2);
++	kref_init(&nc_node->refcount);
++	kref_get(&nc_node->refcount);
  
--			batadv_claim_free_ref(claim);
-+			batadv_claim_put(claim);
- 			hlist_del_rcu(&claim->hash_entry);
- 		}
- 		spin_unlock_bh(list_lock);
-@@ -652,7 +653,8 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
- 		claim->lasttime = jiffies;
- 		claim->backbone_gw = backbone_gw;
+ 	/* Select ingoing or outgoing coding node */
+ 	if (in_coding) {
+@@ -927,9 +929,9 @@ void batadv_nc_update_nc_node(struct batadv_priv *bat_priv,
  
--		atomic_set(&claim->refcount, 2);
-+		kref_init(&claim->refcount);
-+		kref_get(&claim->refcount);
- 		batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 			   "bla_add_claim(): adding new entry %pM, vid %d to hash ...\n",
- 			   mac, BATADV_PRINT_VID(vid));
-@@ -691,7 +693,7 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
- 	backbone_gw->lasttime = jiffies;
- 
- claim_free_ref:
--	batadv_claim_free_ref(claim);
-+	batadv_claim_put(claim);
+ out:
+ 	if (in_nc_node)
+-		batadv_nc_node_free_ref(in_nc_node);
++		batadv_nc_node_put(in_nc_node);
+ 	if (out_nc_node)
+-		batadv_nc_node_free_ref(out_nc_node);
++		batadv_nc_node_put(out_nc_node);
  }
  
  /**
-@@ -716,14 +718,14 @@ static void batadv_bla_del_claim(struct batadv_priv *bat_priv,
- 
- 	batadv_hash_remove(bat_priv->bla.claim_hash, batadv_compare_claim,
- 			   batadv_choose_claim, claim);
--	batadv_claim_free_ref(claim); /* reference from the hash is gone */
-+	batadv_claim_put(claim); /* reference from the hash is gone */
- 
- 	spin_lock_bh(&claim->backbone_gw->crc_lock);
- 	claim->backbone_gw->crc ^= crc16(0, claim->addr, ETH_ALEN);
- 	spin_unlock_bh(&claim->backbone_gw->crc_lock);
- 
- 	/* don't need the reference from hash_find() anymore */
--	batadv_claim_free_ref(claim);
-+	batadv_claim_put(claim);
- }
- 
- /**
-@@ -1691,7 +1693,7 @@ out:
- 	if (primary_if)
- 		batadv_hardif_free_ref(primary_if);
- 	if (claim)
--		batadv_claim_free_ref(claim);
-+		batadv_claim_put(claim);
- 	return ret;
- }
- 
-@@ -1780,7 +1782,7 @@ out:
- 	if (primary_if)
- 		batadv_hardif_free_ref(primary_if);
- 	if (claim)
--		batadv_claim_free_ref(claim);
-+		batadv_claim_put(claim);
- 	return ret;
- }
- 
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 098ec7f..c56b99c 100644
+index c56b99c..9a2371a 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -951,7 +951,7 @@ struct batadv_bla_claim {
- 	unsigned long lasttime;
- 	struct hlist_node hash_entry;
- 	struct rcu_head rcu;
+@@ -1067,7 +1067,7 @@ struct batadv_tt_roam_node {
+ struct batadv_nc_node {
+ 	struct list_head list;
+ 	u8 addr[ETH_ALEN];
 -	atomic_t refcount;
 +	struct kref refcount;
- };
- #endif
- 
+ 	struct rcu_head rcu;
+ 	struct batadv_orig_node *orig_node;
+ 	unsigned long last_seen;
 -- 
 2.6.4
 
