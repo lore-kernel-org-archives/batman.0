@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 16 Dec 2015 00:31:39 +0100
-Message-Id: <1450222316-1764-6-git-send-email-sven@narfation.org>
+Date: Wed, 16 Dec 2015 00:31:40 +0100
+Message-Id: <1450222316-1764-7-git-send-email-sven@narfation.org>
 In-Reply-To: <1450222316-1764-1-git-send-email-sven@narfation.org>
 References: <1450222316-1764-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 06/23] batman-adv: Convert batadv_gw_node to
-	kref
+Subject: [B.A.T.M.A.N.] [PATCH 07/23] batman-adv: Convert batadv_softif_vlan
+	to kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,233 +22,279 @@ implementation.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/gateway_client.c | 71 +++++++++++++++++++++++++----------------
- net/batman-adv/types.h          |  2 +-
- 2 files changed, 45 insertions(+), 28 deletions(-)
+ net/batman-adv/main.c              |  2 +-
+ net/batman-adv/soft-interface.c    | 45 ++++++++++++++++++++++++--------------
+ net/batman-adv/soft-interface.h    |  2 +-
+ net/batman-adv/sysfs.c             |  7 +++---
+ net/batman-adv/translation-table.c | 20 ++++++++---------
+ net/batman-adv/types.h             |  2 +-
+ 6 files changed, 46 insertions(+), 32 deletions(-)
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 8350775..a7b9698 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -28,6 +28,7 @@
- #include <linux/ip.h>
- #include <linux/ipv6.h>
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 9d34be6..cfcc448 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -1234,7 +1234,7 @@ bool batadv_vlan_ap_isola_get(struct batadv_priv *bat_priv, unsigned short vid)
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid);
+ 	if (vlan) {
+ 		ap_isolation_enabled = atomic_read(&vlan->ap_isolation);
+-		batadv_softif_vlan_free_ref(vlan);
++		batadv_softif_vlan_put(vlan);
+ 	}
+ 
+ 	return ap_isolation_enabled;
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 6c65de9..7268feb 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -30,6 +30,7 @@
+ #include <linux/if_vlan.h>
+ #include <linux/jiffies.h>
  #include <linux/kernel.h>
 +#include <linux/kref.h>
  #include <linux/list.h>
+ #include <linux/lockdep.h>
  #include <linux/netdevice.h>
- #include <linux/rculist.h>
-@@ -59,12 +60,28 @@
-  */
- #define BATADV_DHCP_CHADDR_OFFSET	28
+@@ -478,22 +479,34 @@ out:
+ }
  
--static void batadv_gw_node_free_ref(struct batadv_gw_node *gw_node)
-+/**
-+ * batadv_gw_node_release - release gw_node from lists and queue for free after
+ /**
+- * batadv_softif_vlan_free_ref - decrease the vlan object refcounter and
++ * batadv_softif_vlan_release - release vlan from lists and queue for free after
 + *  rcu grace period
-+ * * @ref: kref pointer of the gw_node
++ * * @ref: kref pointer of the vlan object
 + */
-+static void batadv_gw_node_release(struct kref *ref)
- {
--	if (atomic_dec_and_test(&gw_node->refcount)) {
--		batadv_orig_node_free_ref(gw_node->orig_node);
--		kfree_rcu(gw_node, rcu);
--	}
-+	struct batadv_gw_node *gw_node;
++static void batadv_softif_vlan_release(struct kref *ref)
++{
++	struct batadv_softif_vlan *vlan;
 +
-+	gw_node = container_of(ref, struct batadv_gw_node, refcount);
++	vlan = container_of(ref, struct batadv_softif_vlan, refcount);
 +
-+	batadv_orig_node_free_ref(gw_node->orig_node);
-+	kfree_rcu(gw_node, rcu);
++	spin_lock_bh(&vlan->bat_priv->softif_vlan_list_lock);
++	hlist_del_rcu(&vlan->list);
++	spin_unlock_bh(&vlan->bat_priv->softif_vlan_list_lock);
++
++	kfree_rcu(vlan, rcu);
 +}
 +
 +/**
-+ * batadv_gw_node_put - decrement the gw_node refcounter and possibly release it
-+ * @gw_node: gateway node to free
-+ */
-+static void batadv_gw_node_put(struct batadv_gw_node *gw_node)
-+{
-+	kref_put(&gw_node->refcount, batadv_gw_node_release);
++ * batadv_softif_vlan_put - decrease the vlan object refcounter and
+  *  possibly free it
+  * @vlan: the vlan object to release
+  */
+-void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *vlan)
++void batadv_softif_vlan_put(struct batadv_softif_vlan *vlan)
+ {
+ 	if (!vlan)
+ 		return;
+ 
+-	if (atomic_dec_and_test(&vlan->refcount)) {
+-		spin_lock_bh(&vlan->bat_priv->softif_vlan_list_lock);
+-		hlist_del_rcu(&vlan->list);
+-		spin_unlock_bh(&vlan->bat_priv->softif_vlan_list_lock);
+-
+-		kfree_rcu(vlan, rcu);
+-	}
++	kref_put(&vlan->refcount, batadv_softif_vlan_release);
  }
  
- static struct batadv_gw_node *
-@@ -77,7 +94,7 @@ batadv_gw_get_selected_gw_node(struct batadv_priv *bat_priv)
- 	if (!gw_node)
+ /**
+@@ -514,7 +527,7 @@ struct batadv_softif_vlan *batadv_softif_vlan_get(struct batadv_priv *bat_priv,
+ 		if (vlan_tmp->vid != vid)
+ 			continue;
+ 
+-		if (!atomic_inc_not_zero(&vlan_tmp->refcount))
++		if (!kref_get_unless_zero(&vlan_tmp->refcount))
+ 			continue;
+ 
+ 		vlan = vlan_tmp;
+@@ -539,7 +552,7 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid);
+ 	if (vlan) {
+-		batadv_softif_vlan_free_ref(vlan);
++		batadv_softif_vlan_put(vlan);
+ 		return -EEXIST;
+ 	}
+ 
+@@ -549,7 +562,7 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
+ 
+ 	vlan->bat_priv = bat_priv;
+ 	vlan->vid = vid;
+-	atomic_set(&vlan->refcount, 1);
++	kref_init(&vlan->refcount);
+ 
+ 	atomic_set(&vlan->ap_isolation, 0);
+ 
+@@ -588,7 +601,7 @@ static void batadv_softif_destroy_vlan(struct batadv_priv *bat_priv,
+ 			       vlan->vid, "vlan interface destroyed", false);
+ 
+ 	batadv_sysfs_del_vlan(bat_priv, vlan);
+-	batadv_softif_vlan_free_ref(vlan);
++	batadv_softif_vlan_put(vlan);
+ }
+ 
+ /**
+@@ -633,7 +646,7 @@ static int batadv_interface_add_vid(struct net_device *dev, __be16 proto,
+ 	if (!vlan->kobj) {
+ 		ret = batadv_sysfs_add_vlan(bat_priv->soft_iface, vlan);
+ 		if (ret) {
+-			batadv_softif_vlan_free_ref(vlan);
++			batadv_softif_vlan_put(vlan);
+ 			return ret;
+ 		}
+ 	}
+@@ -680,7 +693,7 @@ static int batadv_interface_kill_vid(struct net_device *dev, __be16 proto,
+ 	batadv_softif_destroy_vlan(bat_priv, vlan);
+ 
+ 	/* finally free the vlan object */
+-	batadv_softif_vlan_free_ref(vlan);
++	batadv_softif_vlan_put(vlan);
+ 
+ 	return 0;
+ }
+@@ -736,7 +749,7 @@ static void batadv_softif_destroy_finish(struct work_struct *work)
+ 	vlan = batadv_softif_vlan_get(bat_priv, BATADV_NO_FLAGS);
+ 	if (vlan) {
+ 		batadv_softif_destroy_vlan(bat_priv, vlan);
+-		batadv_softif_vlan_free_ref(vlan);
++		batadv_softif_vlan_put(vlan);
+ 	}
+ 
+ 	batadv_sysfs_del_meshif(soft_iface);
+diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
+index 8e82176..3fc7392 100644
+--- a/net/batman-adv/soft-interface.h
++++ b/net/batman-adv/soft-interface.h
+@@ -34,7 +34,7 @@ void batadv_softif_destroy_sysfs(struct net_device *soft_iface);
+ int batadv_softif_is_valid(const struct net_device *net_dev);
+ extern struct rtnl_link_ops batadv_link_ops;
+ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid);
+-void batadv_softif_vlan_free_ref(struct batadv_softif_vlan *softif_vlan);
++void batadv_softif_vlan_put(struct batadv_softif_vlan *softif_vlan);
+ struct batadv_softif_vlan *batadv_softif_vlan_get(struct batadv_priv *bat_priv,
+ 						  unsigned short vid);
+ 
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index f38d7b7..63a86c2 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -25,6 +25,7 @@
+ #include <linux/fs.h>
+ #include <linux/if.h>
+ #include <linux/if_vlan.h>
++#include <linux/kref.h>
+ #include <linux/kernel.h>
+ #include <linux/netdevice.h>
+ #include <linux/printk.h>
+@@ -97,7 +98,7 @@ batadv_kobj_to_vlan(struct batadv_priv *bat_priv, struct kobject *obj)
+ 		if (vlan_tmp->kobj != obj)
+ 			continue;
+ 
+-		if (!atomic_inc_not_zero(&vlan_tmp->refcount))
++		if (!kref_get_unless_zero(&vlan_tmp->refcount))
+ 			continue;
+ 
+ 		vlan = vlan_tmp;
+@@ -215,7 +216,7 @@ ssize_t batadv_store_vlan_##_name(struct kobject *kobj,			\
+ 					      attr, &vlan->_name,	\
+ 					      bat_priv->soft_iface);	\
+ 									\
+-	batadv_softif_vlan_free_ref(vlan);				\
++	batadv_softif_vlan_put(vlan);					\
+ 	return res;							\
+ }
+ 
+@@ -230,7 +231,7 @@ ssize_t batadv_show_vlan_##_name(struct kobject *kobj,			\
+ 			     atomic_read(&vlan->_name) == 0 ?		\
+ 			     "disabled" : "enabled");			\
+ 									\
+-	batadv_softif_vlan_free_ref(vlan);				\
++	batadv_softif_vlan_put(vlan);					\
+ 	return res;							\
+ }
+ 
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 1ca8831..3cac667 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -280,7 +280,7 @@ static void batadv_tt_local_size_mod(struct batadv_priv *bat_priv,
+ 
+ 	atomic_add(v, &vlan->tt.num_entries);
+ 
+-	batadv_softif_vlan_free_ref(vlan);
++	batadv_softif_vlan_put(vlan);
+ }
+ 
+ /**
+@@ -646,7 +646,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
+ 	if (unlikely(hash_added != 0)) {
+ 		/* remove the reference for the hash */
+ 		batadv_tt_local_entry_free_ref(tt_local);
+-		batadv_softif_vlan_free_ref(vlan);
++		batadv_softif_vlan_put(vlan);
+ 		goto out;
+ 	}
+ 
+@@ -1012,7 +1012,7 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 				   no_purge ? 0 : last_seen_msecs,
+ 				   vlan->tt.crc);
+ 
+-			batadv_softif_vlan_free_ref(vlan);
++			batadv_softif_vlan_put(vlan);
+ 		}
+ 		rcu_read_unlock();
+ 	}
+@@ -1102,8 +1102,8 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
+ 	if (!vlan)
  		goto out;
  
--	if (!atomic_inc_not_zero(&gw_node->refcount))
-+	if (!kref_get_unless_zero(&gw_node->refcount))
- 		gw_node = NULL;
+-	batadv_softif_vlan_free_ref(vlan);
+-	batadv_softif_vlan_free_ref(vlan);
++	batadv_softif_vlan_put(vlan);
++	batadv_softif_vlan_put(vlan);
  
  out:
-@@ -107,7 +124,7 @@ unlock:
- 	rcu_read_unlock();
- out:
- 	if (gw_node)
--		batadv_gw_node_free_ref(gw_node);
-+		batadv_gw_node_put(gw_node);
- 	return orig_node;
- }
- 
-@@ -118,14 +135,14 @@ static void batadv_gw_select(struct batadv_priv *bat_priv,
- 
- 	spin_lock_bh(&bat_priv->gw.list_lock);
- 
--	if (new_gw_node && !atomic_inc_not_zero(&new_gw_node->refcount))
-+	if (new_gw_node && !kref_get_unless_zero(&new_gw_node->refcount))
- 		new_gw_node = NULL;
- 
- 	curr_gw_node = rcu_dereference_protected(bat_priv->gw.curr_gw, 1);
- 	rcu_assign_pointer(bat_priv->gw.curr_gw, new_gw_node);
- 
- 	if (curr_gw_node)
--		batadv_gw_node_free_ref(curr_gw_node);
-+		batadv_gw_node_put(curr_gw_node);
- 
- 	spin_unlock_bh(&bat_priv->gw.list_lock);
- }
-@@ -170,7 +187,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
- 		if (!router_ifinfo)
- 			goto next;
- 
--		if (!atomic_inc_not_zero(&gw_node->refcount))
-+		if (!kref_get_unless_zero(&gw_node->refcount))
- 			goto next;
- 
- 		tq_avg = router_ifinfo->bat_iv.tq_avg;
-@@ -186,9 +203,9 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
- 			    ((tmp_gw_factor == max_gw_factor) &&
- 			     (tq_avg > max_tq))) {
- 				if (curr_gw)
--					batadv_gw_node_free_ref(curr_gw);
-+					batadv_gw_node_put(curr_gw);
- 				curr_gw = gw_node;
--				atomic_inc(&curr_gw->refcount);
-+				kref_get(&curr_gw->refcount);
+ 	if (tt_local_entry)
+@@ -1203,8 +1203,8 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
+ 			vlan = batadv_softif_vlan_get(bat_priv,
+ 						      tt_common_entry->vid);
+ 			if (vlan) {
+-				batadv_softif_vlan_free_ref(vlan);
+-				batadv_softif_vlan_free_ref(vlan);
++				batadv_softif_vlan_put(vlan);
++				batadv_softif_vlan_put(vlan);
  			}
- 			break;
  
-@@ -201,9 +218,9 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
- 			  */
- 			if (tq_avg > max_tq) {
- 				if (curr_gw)
--					batadv_gw_node_free_ref(curr_gw);
-+					batadv_gw_node_put(curr_gw);
- 				curr_gw = gw_node;
--				atomic_inc(&curr_gw->refcount);
-+				kref_get(&curr_gw->refcount);
+ 			batadv_tt_local_entry_free_ref(tt_local);
+@@ -3298,8 +3298,8 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
+ 			/* decrease the reference held for this vlan */
+ 			vlan = batadv_softif_vlan_get(bat_priv, tt_common->vid);
+ 			if (vlan) {
+-				batadv_softif_vlan_free_ref(vlan);
+-				batadv_softif_vlan_free_ref(vlan);
++				batadv_softif_vlan_put(vlan);
++				batadv_softif_vlan_put(vlan);
  			}
- 			break;
- 		}
-@@ -214,7 +231,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
- 		if (tmp_gw_factor > max_gw_factor)
- 			max_gw_factor = tmp_gw_factor;
  
--		batadv_gw_node_free_ref(gw_node);
-+		batadv_gw_node_put(gw_node);
- 
- next:
- 		batadv_neigh_node_free_ref(router);
-@@ -255,7 +272,7 @@ void batadv_gw_check_client_stop(struct batadv_priv *bat_priv)
- 	 */
- 	batadv_throw_uevent(bat_priv, BATADV_UEV_GW, BATADV_UEV_DEL, NULL);
- 
--	batadv_gw_node_free_ref(curr_gw);
-+	batadv_gw_node_put(curr_gw);
- }
- 
- void batadv_gw_election(struct batadv_priv *bat_priv)
-@@ -330,9 +347,9 @@ void batadv_gw_election(struct batadv_priv *bat_priv)
+ 			batadv_tt_local_entry_free_ref(tt_local);
+@@ -3385,7 +3385,7 @@ bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, u8 *src, u8 *dst,
+ 	ret = true;
  
  out:
- 	if (curr_gw)
--		batadv_gw_node_free_ref(curr_gw);
-+		batadv_gw_node_put(curr_gw);
- 	if (next_gw)
--		batadv_gw_node_free_ref(next_gw);
-+		batadv_gw_node_put(next_gw);
- 	if (router)
- 		batadv_neigh_node_free_ref(router);
- 	if (router_ifinfo)
-@@ -436,7 +453,7 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
- 	gw_node->orig_node = orig_node;
- 	gw_node->bandwidth_down = ntohl(gateway->bandwidth_down);
- 	gw_node->bandwidth_up = ntohl(gateway->bandwidth_up);
--	atomic_set(&gw_node->refcount, 1);
-+	kref_init(&gw_node->refcount);
- 
- 	spin_lock_bh(&bat_priv->gw.list_lock);
- 	hlist_add_head_rcu(&gw_node->list, &bat_priv->gw.list);
-@@ -469,7 +486,7 @@ batadv_gw_node_get(struct batadv_priv *bat_priv,
- 		if (gw_node_tmp->orig_node != orig_node)
- 			continue;
- 
--		if (!atomic_inc_not_zero(&gw_node_tmp->refcount))
-+		if (!kref_get_unless_zero(&gw_node_tmp->refcount))
- 			continue;
- 
- 		gw_node = gw_node_tmp;
-@@ -530,19 +547,19 @@ void batadv_gw_node_update(struct batadv_priv *bat_priv,
- 		hlist_del_init_rcu(&gw_node->list);
- 		spin_unlock_bh(&bat_priv->gw.list_lock);
- 
--		batadv_gw_node_free_ref(gw_node);
-+		batadv_gw_node_put(gw_node);
- 
- 		curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
- 		if (gw_node == curr_gw)
- 			batadv_gw_reselect(bat_priv);
- 
- 		if (curr_gw)
--			batadv_gw_node_free_ref(curr_gw);
-+			batadv_gw_node_put(curr_gw);
- 	}
- 
- out:
- 	if (gw_node)
--		batadv_gw_node_free_ref(gw_node);
-+		batadv_gw_node_put(gw_node);
- }
- 
- void batadv_gw_node_delete(struct batadv_priv *bat_priv,
-@@ -565,7 +582,7 @@ void batadv_gw_node_free(struct batadv_priv *bat_priv)
- 	hlist_for_each_entry_safe(gw_node, node_tmp,
- 				  &bat_priv->gw.list, list) {
- 		hlist_del_init_rcu(&gw_node->list);
--		batadv_gw_node_free_ref(gw_node);
-+		batadv_gw_node_put(gw_node);
- 	}
- 	spin_unlock_bh(&bat_priv->gw.list_lock);
- }
-@@ -602,7 +619,7 @@ static int batadv_write_buffer_text(struct batadv_priv *bat_priv,
- 	ret = seq_has_overflowed(seq) ? -1 : 0;
- 
- 	if (curr_gw)
--		batadv_gw_node_free_ref(curr_gw);
-+		batadv_gw_node_put(curr_gw);
- out:
- 	if (router_ifinfo)
- 		batadv_neigh_ifinfo_free_ref(router_ifinfo);
-@@ -862,9 +879,9 @@ out:
- 	if (orig_dst_node)
- 		batadv_orig_node_free_ref(orig_dst_node);
- 	if (curr_gw)
--		batadv_gw_node_free_ref(curr_gw);
-+		batadv_gw_node_put(curr_gw);
- 	if (gw_node)
--		batadv_gw_node_free_ref(gw_node);
-+		batadv_gw_node_put(gw_node);
- 	if (neigh_old)
- 		batadv_neigh_node_free_ref(neigh_old);
- 	if (neigh_curr)
+-	batadv_softif_vlan_free_ref(vlan);
++	batadv_softif_vlan_put(vlan);
+ 	if (tt_global_entry)
+ 		batadv_tt_global_entry_free_ref(tt_global_entry);
+ 	if (tt_local_entry)
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 091ad76..0b3cbdb 100644
+index 0b3cbdb..c6c3f0f 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -342,7 +342,7 @@ struct batadv_gw_node {
- 	struct batadv_orig_node *orig_node;
- 	u32 bandwidth_down;
- 	u32 bandwidth_up;
+@@ -746,7 +746,7 @@ struct batadv_softif_vlan {
+ 	atomic_t ap_isolation;		/* boolean */
+ 	struct batadv_vlan_tt tt;
+ 	struct hlist_node list;
 -	atomic_t refcount;
 +	struct kref refcount;
  	struct rcu_head rcu;
