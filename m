@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 16 Dec 2015 00:31:43 +0100
-Message-Id: <1450222316-1764-10-git-send-email-sven@narfation.org>
+Date: Wed, 16 Dec 2015 00:31:44 +0100
+Message-Id: <1450222316-1764-11-git-send-email-sven@narfation.org>
 In-Reply-To: <1450222316-1764-1-git-send-email-sven@narfation.org>
 References: <1450222316-1764-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 10/23] batman-adv: Convert batadv_nc_node to
+Subject: [B.A.T.M.A.N.] [PATCH 11/23] batman-adv: Convert batadv_nc_path to
 	kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -22,116 +22,116 @@ implementation.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/network-coding.c | 36 +++++++++++++++++++-----------------
+ net/batman-adv/network-coding.c | 38 ++++++++++++++++++++++++++------------
  net/batman-adv/types.h          |  2 +-
- 2 files changed, 20 insertions(+), 18 deletions(-)
+ 2 files changed, 27 insertions(+), 13 deletions(-)
 
 diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index 56100c5..246cd90 100644
+index 246cd90..a2655ad 100644
 --- a/net/batman-adv/network-coding.c
 +++ b/net/batman-adv/network-coding.c
-@@ -32,6 +32,7 @@
- #include <linux/jhash.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
-+#include <linux/kref.h>
- #include <linux/list.h>
- #include <linux/lockdep.h>
- #include <linux/netdevice.h>
-@@ -207,28 +208,28 @@ void batadv_nc_init_orig(struct batadv_orig_node *orig_node)
+@@ -233,14 +233,27 @@ static void batadv_nc_node_put(struct batadv_nc_node *nc_node)
  }
  
  /**
-- * batadv_nc_node_free_rcu - rcu callback to free an nc node and remove
-- *  its refcount on the orig_node
-- * @rcu: rcu pointer of the nc node
-+ * batadv_nc_node_release - release nc_node from lists and queue for free after
-+ *  rcu grace period
-+ * * @ref: kref pointer of the nc_node
-  */
--static void batadv_nc_node_free_rcu(struct rcu_head *rcu)
-+static void batadv_nc_node_release(struct kref *ref)
- {
- 	struct batadv_nc_node *nc_node;
- 
--	nc_node = container_of(rcu, struct batadv_nc_node, rcu);
-+	nc_node = container_of(ref, struct batadv_nc_node, refcount);
-+
- 	batadv_orig_node_free_ref(nc_node->orig_node);
--	kfree(nc_node);
-+	kfree_rcu(nc_node, rcu);
- }
- 
- /**
-- * batadv_nc_node_free_ref - decrements the nc node refcounter and possibly
+- * batadv_nc_path_free_ref - decrements the nc path refcounter and possibly
 - * frees it
-- * @nc_node: the nc node to free
-+ * batadv_nc_node_put - decrement the nc_node refcounter and possibly
-+ *  release it
-+ * @nc_node: nc_node to be free'd
+- * @nc_path: the nc node to free
++ * batadv_nc_path_release - release nc_path from lists and queue for free after
++ *  rcu grace period
++ * * @ref: kref pointer of the nc_path
   */
--static void batadv_nc_node_free_ref(struct batadv_nc_node *nc_node)
-+static void batadv_nc_node_put(struct batadv_nc_node *nc_node)
+-static void batadv_nc_path_free_ref(struct batadv_nc_path *nc_path)
++static void batadv_nc_path_release(struct kref *ref)
  {
--	if (atomic_dec_and_test(&nc_node->refcount))
--		call_rcu(&nc_node->rcu, batadv_nc_node_free_rcu);
-+	kref_put(&nc_node->refcount, batadv_nc_node_release);
+-	if (atomic_dec_and_test(&nc_path->refcount))
+-		kfree_rcu(nc_path, rcu);
++	struct batadv_nc_path *nc_path;
++
++	nc_path = container_of(ref, struct batadv_nc_path, refcount);
++
++	kfree_rcu(nc_path, rcu);
++}
++
++/**
++ * batadv_nc_path_put - decrement the nc_path refcounter and possibly
++ *  release it
++ * @nc_path: nc_path to be free'd
++ */
++static void batadv_nc_path_put(struct batadv_nc_path *nc_path)
++{
++	kref_put(&nc_path->refcount, batadv_nc_path_release);
  }
  
  /**
-@@ -342,7 +343,7 @@ batadv_nc_purge_orig_nc_nodes(struct batadv_priv *bat_priv,
- 			   "Removing nc_node %pM -> %pM\n",
- 			   nc_node->addr, nc_node->orig_node->orig);
- 		list_del_rcu(&nc_node->list);
--		batadv_nc_node_free_ref(nc_node);
-+		batadv_nc_node_put(nc_node);
+@@ -250,7 +263,7 @@ static void batadv_nc_path_free_ref(struct batadv_nc_path *nc_path)
+ static void batadv_nc_packet_free(struct batadv_nc_packet *nc_packet)
+ {
+ 	kfree_skb(nc_packet->skb);
+-	batadv_nc_path_free_ref(nc_packet->nc_path);
++	batadv_nc_path_put(nc_packet->nc_path);
+ 	kfree(nc_packet);
+ }
+ 
+@@ -454,7 +467,7 @@ static void batadv_nc_purge_paths(struct batadv_priv *bat_priv,
+ 				   "Remove nc_path %pM -> %pM\n",
+ 				   nc_path->prev_hop, nc_path->next_hop);
+ 			hlist_del_rcu(&nc_path->hash_entry);
+-			batadv_nc_path_free_ref(nc_path);
++			batadv_nc_path_put(nc_path);
+ 		}
+ 		spin_unlock_bh(lock);
  	}
- 	spin_unlock_bh(lock);
- }
-@@ -800,7 +801,7 @@ static struct batadv_nc_node
- 		if (!batadv_compare_eth(nc_node->addr, orig_node->orig))
+@@ -545,7 +558,7 @@ batadv_nc_hash_find(struct batadv_hashtable *hash,
+ 		if (!batadv_nc_hash_compare(&nc_path->hash_entry, data))
  			continue;
  
--		if (!atomic_inc_not_zero(&nc_node->refcount))
-+		if (!kref_get_unless_zero(&nc_node->refcount))
+-		if (!atomic_inc_not_zero(&nc_path->refcount))
++		if (!kref_get_unless_zero(&nc_path->refcount))
  			continue;
  
- 		/* Found a match */
-@@ -851,7 +852,8 @@ static struct batadv_nc_node
- 	INIT_LIST_HEAD(&nc_node->list);
- 	ether_addr_copy(nc_node->addr, orig_node->orig);
- 	nc_node->orig_node = orig_neigh_node;
--	atomic_set(&nc_node->refcount, 2);
-+	kref_init(&nc_node->refcount);
-+	kref_get(&nc_node->refcount);
+ 		nc_path_tmp = nc_path;
+@@ -972,7 +985,8 @@ static struct batadv_nc_path *batadv_nc_get_path(struct batadv_priv *bat_priv,
+ 	/* Initialize nc_path */
+ 	INIT_LIST_HEAD(&nc_path->packet_list);
+ 	spin_lock_init(&nc_path->packet_list_lock);
+-	atomic_set(&nc_path->refcount, 2);
++	kref_init(&nc_path->refcount);
++	kref_get(&nc_path->refcount);
+ 	nc_path->last_valid = jiffies;
+ 	ether_addr_copy(nc_path->next_hop, dst);
+ 	ether_addr_copy(nc_path->prev_hop, src);
+@@ -1541,7 +1555,7 @@ bool batadv_nc_skb_forward(struct sk_buff *skb,
+ 	return true;
  
- 	/* Select ingoing or outgoing coding node */
- 	if (in_coding) {
-@@ -927,9 +929,9 @@ void batadv_nc_update_nc_node(struct batadv_priv *bat_priv,
- 
+ free_nc_path:
+-	batadv_nc_path_free_ref(nc_path);
++	batadv_nc_path_put(nc_path);
  out:
- 	if (in_nc_node)
--		batadv_nc_node_free_ref(in_nc_node);
-+		batadv_nc_node_put(in_nc_node);
- 	if (out_nc_node)
--		batadv_nc_node_free_ref(out_nc_node);
-+		batadv_nc_node_put(out_nc_node);
+ 	/* Packet is not consumed */
+ 	return false;
+@@ -1603,7 +1617,7 @@ void batadv_nc_skb_store_for_decoding(struct batadv_priv *bat_priv,
+ free_skb:
+ 	kfree_skb(skb);
+ free_nc_path:
+-	batadv_nc_path_free_ref(nc_path);
++	batadv_nc_path_put(nc_path);
+ out:
+ 	return;
  }
- 
- /**
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index c56b99c..9a2371a 100644
+index 9a2371a..49f0270 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -1067,7 +1067,7 @@ struct batadv_tt_roam_node {
- struct batadv_nc_node {
- 	struct list_head list;
- 	u8 addr[ETH_ALEN];
+@@ -1087,7 +1087,7 @@ struct batadv_nc_node {
+ struct batadv_nc_path {
+ 	struct hlist_node hash_entry;
+ 	struct rcu_head rcu;
 -	atomic_t refcount;
 +	struct kref refcount;
- 	struct rcu_head rcu;
- 	struct batadv_orig_node *orig_node;
- 	unsigned long last_seen;
+ 	struct list_head packet_list;
+ 	spinlock_t packet_list_lock; /* Protects packet_list */
+ 	u8 next_hop[ETH_ALEN];
 -- 
 2.6.4
 
