@@ -1,14 +1,8 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 16 Dec 2015 19:04:15 +0100
-Message-ID: <1629771.2DNaLKYrNo@prime>
-In-Reply-To: <1449414952-21593-1-git-send-email-sven@narfation.org>
-References: <1449414952-21593-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9066368.XkyfZYGgRO";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] openwrt-feed-alfred: Switch to HTTPS
-	version of links
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 17 Dec 2015 00:20:32 +0100
+Message-Id: <1450308032-17634-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH-next] batman-adv: update email address
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,32 +14,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart9066368.XkyfZYGgRO
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+From: Antonio Quartulli <antonio@meshcoding.com>
 
-On Sunday 06 December 2015 16:15:52 Sven Eckelmann wrote:
-> open-mesh.org and its subdomains can only be accessed via HTTPS. HTTP-only
-> requests are currently redirected automatically to HTTPS but references to
-> it should be only https.
+My personal email address has changed. Update it in the doc files
 
-Applied in revision bc6fe02.
+Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+---
+ Documentation/ABI/testing/sysfs-class-net-mesh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Thanks!
-     Simon
-
---nextPart9066368.XkyfZYGgRO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iEYEABECAAYFAlZxp58ACgkQrzg/fFk7axYqLACdF3z6fuKEdYnNViyA8K+zGc4X
-77cAoOCTynKgNcYuLQ1JNGqccbH9mqTp
-=umh1
------END PGP SIGNATURE-----
-
---nextPart9066368.XkyfZYGgRO--
+diff --git a/Documentation/ABI/testing/sysfs-class-net-mesh b/Documentation/ABI/testing/sysfs-class-net-mesh
+index c464062..c2b956d 100644
+--- a/Documentation/ABI/testing/sysfs-class-net-mesh
++++ b/Documentation/ABI/testing/sysfs-class-net-mesh
+@@ -8,7 +8,7 @@ Description:
+ 
+ What:           /sys/class/net/<mesh_iface>/mesh/<vlan_subdir>/ap_isolation
+ Date:           May 2011
+-Contact:        Antonio Quartulli <antonio@meshcoding.com>
++Contact:        Antonio Quartulli <a@unstable.cc>
+ Description:
+                 Indicates whether the data traffic going from a
+                 wireless client to another wireless client will be
+@@ -70,7 +70,7 @@ Description:
+ 
+ What:		/sys/class/net/<mesh_iface>/mesh/isolation_mark
+ Date:		Nov 2013
+-Contact:	Antonio Quartulli <antonio@meshcoding.com>
++Contact:	Antonio Quartulli <a@unstable.cc>
+ Description:
+ 		Defines the isolation mark (and its bitmask) which
+ 		is used to classify clients as "isolated" by the
+-- 
+2.6.4
 
