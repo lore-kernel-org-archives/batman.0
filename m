@@ -1,11 +1,14 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 16 Dec 2015 15:49:32 +0800
-Message-Id: <1450252173-20949-12-git-send-email-antonio@meshcoding.com>
+Date: Wed, 16 Dec 2015 15:49:31 +0800
+Message-Id: <1450252173-20949-11-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1450252173-20949-1-git-send-email-antonio@meshcoding.com>
 References: <1450252173-20949-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 11/12] batman-adv: Fix typo 'wether' ->
-	'whether'
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 10/12] batman-adv: Use chain pointer when
+	purging fragments
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,35 +23,42 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <
 
 From: Sven Eckelmann <sven@narfation.org>
 
+The chain pointer was already created in batadv_frag_purge_orig to make the
+checks more readable. Just use the chain pointer everywhere instead of
+having the same dereference + array access in the most lines of this
+function.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Martin Hundebøll <martin@hundeboll.net>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/fragmentation.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 45952dc..5dbcb2e 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -908,7 +908,7 @@ end:
-  *  appropriate handlers
-  * @bat_priv: the bat priv with all the soft interface information
-  * @tvlv_handler: tvlv callback function handling the tvlv content
-- * @ogm_source: flag indicating wether the tvlv is an ogm or a unicast packet
-+ * @ogm_source: flag indicating whether the tvlv is an ogm or a unicast packet
-  * @orig_node: orig node emitting the ogm packet
-  * @src: source mac address of the unicast packet
-  * @dst: destination mac address of the unicast packet
-@@ -961,7 +961,7 @@ static int batadv_tvlv_call_handler(struct batadv_priv *bat_priv,
-  * batadv_tvlv_containers_process - parse the given tvlv buffer to call the
-  *  appropriate handlers
-  * @bat_priv: the bat priv with all the soft interface information
-- * @ogm_source: flag indicating wether the tvlv is an ogm or a unicast packet
-+ * @ogm_source: flag indicating whether the tvlv is an ogm or a unicast packet
-  * @orig_node: orig node emitting the ogm packet
-  * @src: source mac address of the unicast packet
-  * @dst: destination mac address of the unicast packet
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 700c96c..20d9282 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -71,14 +71,14 @@ void batadv_frag_purge_orig(struct batadv_orig_node *orig_node,
+ 
+ 	for (i = 0; i < BATADV_FRAG_BUFFER_COUNT; i++) {
+ 		chain = &orig_node->fragments[i];
+-		spin_lock_bh(&orig_node->fragments[i].lock);
++		spin_lock_bh(&chain->lock);
+ 
+ 		if (!check_cb || check_cb(chain)) {
+-			batadv_frag_clear_chain(&orig_node->fragments[i].head);
+-			orig_node->fragments[i].size = 0;
++			batadv_frag_clear_chain(&chain->head);
++			chain->size = 0;
+ 		}
+ 
+-		spin_unlock_bh(&orig_node->fragments[i].lock);
++		spin_unlock_bh(&chain->lock);
+ 	}
+ }
+ 
 -- 
 2.6.4
 
