@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 16 Dec 2015 15:49:24 +0800
-Message-Id: <1450252173-20949-4-git-send-email-antonio@meshcoding.com>
+Date: Wed, 16 Dec 2015 15:49:26 +0800
+Message-Id: <1450252173-20949-6-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1450252173-20949-1-git-send-email-antonio@meshcoding.com>
 References: <1450252173-20949-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 03/12] batman-adv: add list of unique single
-	hop neighbors per hard-interface
+Subject: [B.A.T.M.A.N.] [PATCH 05/12] batman-adv: export single hop neighbor
+	list via debugfs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,313 +23,196 @@ From: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/hard-interface.c |   4 +
- net/batman-adv/originator.c     | 157 ++++++++++++++++++++++++++++++++++++++++
- net/batman-adv/originator.h     |   5 ++
- net/batman-adv/types.h          |  22 ++++++
- 4 files changed, 188 insertions(+)
+ net/batman-adv/bat_iv_ogm.c | 53 +++++++++++++++++++++++++++++++++++++++++++++
+ net/batman-adv/debugfs.c    |  9 ++++++++
+ net/batman-adv/originator.c | 34 +++++++++++++++++++++++++++++
+ net/batman-adv/originator.h |  2 ++
+ net/batman-adv/types.h      |  2 ++
+ 5 files changed, 100 insertions(+)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index a58184f..01acccc 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -32,6 +32,7 @@
- #include <linux/rculist.h>
- #include <linux/rtnetlink.h>
- #include <linux/slab.h>
-+#include <linux/spinlock.h>
- #include <linux/workqueue.h>
- #include <net/net_namespace.h>
- 
-@@ -639,9 +640,12 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 		goto free_sysfs;
- 
- 	INIT_LIST_HEAD(&hard_iface->list);
-+	INIT_HLIST_HEAD(&hard_iface->neigh_list);
- 	INIT_WORK(&hard_iface->cleanup_work,
- 		  batadv_hardif_remove_interface_finish);
- 
-+	spin_lock_init(&hard_iface->neigh_list_lock);
-+
- 	hard_iface->num_bcasts = BATADV_NUM_BCASTS_DEFAULT;
- 	if (batadv_is_wifi_netdev(net_dev))
- 		hard_iface->num_bcasts = BATADV_NUM_BCASTS_WIRELESS;
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 7486df9..a8671c6 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -202,6 +202,47 @@ void batadv_neigh_ifinfo_free_ref(struct batadv_neigh_ifinfo *neigh_ifinfo)
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 912d9c3..1efdb5c 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1862,6 +1862,58 @@ next:
  }
  
  /**
-+ * batadv_hardif_neigh_free_rcu - free the hardif neigh_node
-+ * @rcu: rcu pointer of the neigh_node
-+ */
-+static void batadv_hardif_neigh_free_rcu(struct rcu_head *rcu)
-+{
-+	struct batadv_hardif_neigh_node *hardif_neigh;
-+
-+	hardif_neigh = container_of(rcu, struct batadv_hardif_neigh_node, rcu);
-+
-+	spin_lock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
-+	hlist_del_init_rcu(&hardif_neigh->list);
-+	spin_unlock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
-+
-+	batadv_hardif_free_ref_now(hardif_neigh->if_incoming);
-+	kfree(hardif_neigh);
-+}
-+
-+/**
-+ * batadv_hardif_neigh_free_now - decrement the hardif neighbors refcounter
-+ *  and possibly free it (without rcu callback)
-+ * @hardif_neigh: hardif neigh neighbor to free
++ * batadv_iv_hardif_neigh_print - print a single hop neighbour node
++ * @seq: neighbour table seq_file struct
++ * @hardif_neigh: hardif neighbour information
 + */
 +static void
-+batadv_hardif_neigh_free_now(struct batadv_hardif_neigh_node *hardif_neigh)
++batadv_iv_hardif_neigh_print(struct seq_file *seq,
++			     struct batadv_hardif_neigh_node *hardif_neigh)
 +{
-+	if (atomic_dec_and_test(&hardif_neigh->refcount))
-+		batadv_hardif_neigh_free_rcu(&hardif_neigh->rcu);
++	int last_secs, last_msecs;
++
++	last_secs = jiffies_to_msecs(jiffies - hardif_neigh->last_seen) / 1000;
++	last_msecs = jiffies_to_msecs(jiffies - hardif_neigh->last_seen) % 1000;
++
++	seq_printf(seq, "   %10s   %pM %4i.%03is\n",
++		   hardif_neigh->if_incoming->net_dev->name,
++		   hardif_neigh->addr, last_secs, last_msecs);
 +}
 +
 +/**
-+ * batadv_hardif_neigh_free_ref - decrement the hardif neighbors refcounter
-+ *  and possibly free it
-+ * @hardif_neigh: hardif neigh neighbor to free
++ * batadv_iv_ogm_neigh_print - print the single hop neighbour list
++ * @bat_priv: the bat priv with all the soft interface information
++ * @seq: neighbour table seq_file struct
 + */
-+void batadv_hardif_neigh_free_ref(struct batadv_hardif_neigh_node *hardif_neigh)
++static void batadv_iv_neigh_print(struct batadv_priv *bat_priv,
++				  struct seq_file *seq)
 +{
-+	if (atomic_dec_and_test(&hardif_neigh->refcount))
-+		call_rcu(&hardif_neigh->rcu, batadv_hardif_neigh_free_rcu);
-+}
-+
-+/**
-  * batadv_neigh_node_free_rcu - free the neigh_node
-  * @rcu: rcu pointer of the neigh_node
-  */
-@@ -209,6 +250,7 @@ static void batadv_neigh_node_free_rcu(struct rcu_head *rcu)
- {
- 	struct hlist_node *node_tmp;
- 	struct batadv_neigh_node *neigh_node;
++	struct net_device *net_dev = (struct net_device *)seq->private;
 +	struct batadv_hardif_neigh_node *hardif_neigh;
- 	struct batadv_neigh_ifinfo *neigh_ifinfo;
- 	struct batadv_algo_ops *bao;
- 
-@@ -220,6 +262,14 @@ static void batadv_neigh_node_free_rcu(struct rcu_head *rcu)
- 		batadv_neigh_ifinfo_free_ref_now(neigh_ifinfo);
- 	}
- 
-+	hardif_neigh = batadv_hardif_neigh_get(neigh_node->if_incoming,
-+					       neigh_node->addr);
-+	if (hardif_neigh) {
-+		/* batadv_hardif_neigh_get() increases refcount too */
-+		batadv_hardif_neigh_free_now(hardif_neigh);
-+		batadv_hardif_neigh_free_now(hardif_neigh);
-+	}
++	struct batadv_hard_iface *hard_iface;
++	int batman_count = 0;
 +
- 	if (bao->bat_neigh_free)
- 		bao->bat_neigh_free(neigh_node);
- 
-@@ -479,6 +529,102 @@ batadv_neigh_node_get(const struct batadv_orig_node *orig_node,
- }
- 
- /**
-+ * batadv_hardif_neigh_create - create a hardif neighbour node
-+ * @hard_iface: the interface this neighbour is connected to
-+ * @neigh_addr: the interface address of the neighbour to retrieve
-+ *
-+ * Returns the hardif neighbour node if found or created or NULL otherwise.
-+ */
-+static struct batadv_hardif_neigh_node *
-+batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
-+			   const u8 *neigh_addr)
-+{
-+	struct batadv_hardif_neigh_node *hardif_neigh = NULL;
-+
-+	spin_lock_bh(&hard_iface->neigh_list_lock);
-+
-+	/* check if neighbor hasn't been added in the meantime */
-+	hardif_neigh = batadv_hardif_neigh_get(hard_iface, neigh_addr);
-+	if (hardif_neigh)
-+		goto out;
-+
-+	if (!atomic_inc_not_zero(&hard_iface->refcount))
-+		goto out;
-+
-+	hardif_neigh = kzalloc(sizeof(*hardif_neigh), GFP_ATOMIC);
-+	if (!hardif_neigh) {
-+		batadv_hardif_free_ref(hard_iface);
-+		goto out;
-+	}
-+
-+	INIT_HLIST_NODE(&hardif_neigh->list);
-+	ether_addr_copy(hardif_neigh->addr, neigh_addr);
-+	hardif_neigh->if_incoming = hard_iface;
-+	hardif_neigh->last_seen = jiffies;
-+
-+	atomic_set(&hardif_neigh->refcount, 1);
-+
-+	hlist_add_head(&hardif_neigh->list, &hard_iface->neigh_list);
-+
-+out:
-+	spin_unlock_bh(&hard_iface->neigh_list_lock);
-+	return hardif_neigh;
-+}
-+
-+/**
-+ * batadv_hardif_neigh_get_or_create - retrieve or create a hardif neighbour
-+ *  node
-+ * @hard_iface: the interface this neighbour is connected to
-+ * @neigh_addr: the interface address of the neighbour to retrieve
-+ *
-+ * Returns the hardif neighbour node if found or created or NULL otherwise.
-+ */
-+static struct batadv_hardif_neigh_node *
-+batadv_hardif_neigh_get_or_create(struct batadv_hard_iface *hard_iface,
-+				  const u8 *neigh_addr)
-+{
-+	struct batadv_hardif_neigh_node *hardif_neigh = NULL;
-+
-+	/* first check without locking to avoid the overhead */
-+	hardif_neigh = batadv_hardif_neigh_get(hard_iface, neigh_addr);
-+	if (hardif_neigh)
-+		return hardif_neigh;
-+
-+	return batadv_hardif_neigh_create(hard_iface, neigh_addr);
-+}
-+
-+/**
-+ * batadv_hardif_neigh_get - retrieve a hardif neighbour from the list
-+ * @hard_iface: the interface where this neighbour is connected to
-+ * @neigh_addr: the address of the neighbour
-+ *
-+ * Looks for and possibly returns a neighbour belonging to this hard interface.
-+ * Returns NULL if the neighbour is not found.
-+ */
-+struct batadv_hardif_neigh_node *
-+batadv_hardif_neigh_get(const struct batadv_hard_iface *hard_iface,
-+			const u8 *neigh_addr)
-+{
-+	struct batadv_hardif_neigh_node *tmp_hardif_neigh, *hardif_neigh = NULL;
++	seq_printf(seq, "   %10s        %-13s %s\n",
++		   "IF", "Neighbor", "last-seen");
 +
 +	rcu_read_lock();
-+	hlist_for_each_entry_rcu(tmp_hardif_neigh,
-+				 &hard_iface->neigh_list, list) {
-+		if (!batadv_compare_eth(tmp_hardif_neigh->addr, neigh_addr))
++	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
++		if (hard_iface->soft_iface != net_dev)
 +			continue;
 +
-+		if (!atomic_inc_not_zero(&tmp_hardif_neigh->refcount))
-+			continue;
-+
-+		hardif_neigh = tmp_hardif_neigh;
-+		break;
++		hlist_for_each_entry_rcu(hardif_neigh,
++					 &hard_iface->neigh_list, list) {
++			batadv_iv_hardif_neigh_print(seq, hardif_neigh);
++			batman_count++;
++		}
 +	}
 +	rcu_read_unlock();
 +
-+	return hardif_neigh;
++	if (batman_count == 0)
++		seq_puts(seq, "No batman nodes in range ...\n");
 +}
 +
 +/**
-  * batadv_neigh_node_new - create and init a new neigh_node object
-  * @orig_node: originator object representing the neighbour
-  * @hard_iface: the interface where the neighbour is connected to
-@@ -493,11 +639,17 @@ batadv_neigh_node_new(struct batadv_orig_node *orig_node,
- 		      const u8 *neigh_addr)
- {
- 	struct batadv_neigh_node *neigh_node;
-+	struct batadv_hardif_neigh_node *hardif_neigh = NULL;
- 
- 	neigh_node = batadv_neigh_node_get(orig_node, hard_iface, neigh_addr);
- 	if (neigh_node)
- 		goto out;
- 
-+	hardif_neigh = batadv_hardif_neigh_get_or_create(hard_iface,
-+							 neigh_addr);
-+	if (!hardif_neigh)
-+		goto out;
-+
- 	neigh_node = kzalloc(sizeof(*neigh_node), GFP_ATOMIC);
- 	if (!neigh_node)
- 		goto out;
-@@ -523,11 +675,16 @@ batadv_neigh_node_new(struct batadv_orig_node *orig_node,
- 	hlist_add_head_rcu(&neigh_node->list, &orig_node->neigh_list);
- 	spin_unlock_bh(&orig_node->neigh_list_lock);
- 
-+	/* increment unique neighbor refcount */
-+	atomic_inc(&hardif_neigh->refcount);
-+
- 	batadv_dbg(BATADV_DBG_BATMAN, orig_node->bat_priv,
- 		   "Creating new neighbor %pM for orig_node %pM on interface %s\n",
- 		   neigh_addr, orig_node->orig, hard_iface->net_dev->name);
- 
- out:
-+	if (hardif_neigh)
-+		batadv_hardif_neigh_free_ref(hardif_neigh);
- 	return neigh_node;
+  * batadv_iv_ogm_neigh_cmp - compare the metrics of two neighbors
+  * @neigh1: the first neighbor object of the comparison
+  * @if_outgoing1: outgoing interface for the first neighbor
+@@ -1954,6 +2006,7 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
+ 	.bat_ogm_emit = batadv_iv_ogm_emit,
+ 	.bat_neigh_cmp = batadv_iv_ogm_neigh_cmp,
+ 	.bat_neigh_is_equiv_or_better = batadv_iv_ogm_neigh_is_eob,
++	.bat_neigh_print = batadv_iv_neigh_print,
+ 	.bat_orig_print = batadv_iv_ogm_orig_print,
+ 	.bat_orig_free = batadv_iv_ogm_orig_free,
+ 	.bat_orig_add_if = batadv_iv_ogm_orig_add_if,
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index c4c1e80..037ad0a 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -262,6 +262,13 @@ static int batadv_algorithms_open(struct inode *inode, struct file *file)
+ 	return single_open(file, batadv_algo_seq_print_text, NULL);
  }
  
-diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
-index fa18f9b..eae0557 100644
---- a/net/batman-adv/originator.h
-+++ b/net/batman-adv/originator.h
-@@ -41,6 +41,11 @@ void batadv_orig_node_free_ref(struct batadv_orig_node *orig_node);
- void batadv_orig_node_free_ref_now(struct batadv_orig_node *orig_node);
- struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
- 					      const u8 *addr);
-+struct batadv_hardif_neigh_node *
-+batadv_hardif_neigh_get(const struct batadv_hard_iface *hard_iface,
-+			const u8 *neigh_addr);
-+void
-+batadv_hardif_neigh_free_ref(struct batadv_hardif_neigh_node *hardif_neigh);
- struct batadv_neigh_node *
- batadv_neigh_node_new(struct batadv_orig_node *orig_node,
- 		      struct batadv_hard_iface *hard_iface,
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index d260efd..71c7d9f 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -100,6 +100,8 @@ struct batadv_hard_iface_bat_iv {
-  * @bat_iv: BATMAN IV specific per hard interface data
-  * @cleanup_work: work queue callback item for hard interface deinit
-  * @debug_dir: dentry for nc subdir in batman-adv directory in debugfs
-+ * @neigh_list: list of unique single hop neighbors via this interface
-+ * @neigh_list_lock: lock protecting neigh_list
-  */
- struct batadv_hard_iface {
- 	struct list_head list;
-@@ -115,6 +117,9 @@ struct batadv_hard_iface {
- 	struct batadv_hard_iface_bat_iv bat_iv;
- 	struct work_struct cleanup_work;
- 	struct dentry *debug_dir;
-+	struct hlist_head neigh_list;
-+	/* neigh_list_lock protects: neigh_list */
-+	spinlock_t neigh_list_lock;
++static int neighbors_open(struct inode *inode, struct file *file)
++{
++	struct net_device *net_dev = (struct net_device *)inode->i_private;
++
++	return single_open(file, batadv_hardif_neigh_seq_print_text, net_dev);
++}
++
+ static int batadv_originators_open(struct inode *inode, struct file *file)
+ {
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+@@ -375,6 +382,7 @@ static struct batadv_debuginfo *batadv_general_debuginfos[] = {
  };
  
- /**
-@@ -341,6 +346,23 @@ struct batadv_gw_node {
- };
+ /* The following attributes are per soft interface */
++static BATADV_DEBUGINFO(neighbors, S_IRUGO, neighbors_open);
+ static BATADV_DEBUGINFO(originators, S_IRUGO, batadv_originators_open);
+ static BATADV_DEBUGINFO(gateways, S_IRUGO, batadv_gateways_open);
+ static BATADV_DEBUGINFO(transtable_global, S_IRUGO,
+@@ -394,6 +402,7 @@ static BATADV_DEBUGINFO(nc_nodes, S_IRUGO, batadv_nc_nodes_open);
+ #endif
+ 
+ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
++	&batadv_debuginfo_neighbors,
+ 	&batadv_debuginfo_originators,
+ 	&batadv_debuginfo_gateways,
+ 	&batadv_debuginfo_transtable_global,
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 27dd326..3c782a33 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -693,6 +693,40 @@ out:
+ }
  
  /**
-+ * batadv_hardif_neigh_node - unique neighbor per hard interface
-+ * @list: list node for batadv_hard_iface::neigh_list
-+ * @addr: the MAC address of the neighboring interface
-+ * @if_incoming: pointer to incoming hard interface
-+ * @refcount: number of contexts the object is used
-+ * @rcu: struct used for freeing in a RCU-safe manner
++ * batadv_hardif_neigh_seq_print_text - print the single hop neighbour list
++ * @seq: neighbour table seq_file struct
++ * @offset: not used
++ *
++ * Always returns 0.
 + */
-+struct batadv_hardif_neigh_node {
-+	struct hlist_node list;
-+	u8 addr[ETH_ALEN];
-+	struct batadv_hard_iface *if_incoming;
-+	unsigned long last_seen;
-+	atomic_t refcount;
-+	struct rcu_head rcu;
-+};
++int batadv_hardif_neigh_seq_print_text(struct seq_file *seq, void *offset)
++{
++	struct net_device *net_dev = (struct net_device *)seq->private;
++	struct batadv_priv *bat_priv = netdev_priv(net_dev);
++	struct batadv_hard_iface *primary_if;
++
++	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	if (!primary_if)
++		return 0;
++
++	seq_printf(seq, "[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%pM (%s %s)]\n",
++		   BATADV_SOURCE_VERSION, primary_if->net_dev->name,
++		   primary_if->net_dev->dev_addr, net_dev->name,
++		   bat_priv->bat_algo_ops->name);
++
++	batadv_hardif_free_ref(primary_if);
++
++	if (!bat_priv->bat_algo_ops->bat_neigh_print) {
++		seq_puts(seq,
++			 "No printing function for this routing protocol\n");
++		return 0;
++	}
++
++	bat_priv->bat_algo_ops->bat_neigh_print(bat_priv, seq);
++	return 0;
++}
 +
 +/**
-  * struct batadv_neigh_node - structure for single hops neighbors
-  * @list: list node for batadv_orig_node::neigh_list
-  * @orig_node: pointer to corresponding orig_node
+  * batadv_orig_ifinfo_free_rcu - free the orig_ifinfo object
+  * @rcu: rcu pointer of the orig_ifinfo object
+  */
+diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
+index eae0557..2955775 100644
+--- a/net/batman-adv/originator.h
++++ b/net/batman-adv/originator.h
+@@ -62,6 +62,8 @@ batadv_neigh_ifinfo_get(struct batadv_neigh_node *neigh,
+ 			struct batadv_hard_iface *if_outgoing);
+ void batadv_neigh_ifinfo_free_ref(struct batadv_neigh_ifinfo *neigh_ifinfo);
+ 
++int batadv_hardif_neigh_seq_print_text(struct seq_file *seq, void *offset);
++
+ struct batadv_orig_ifinfo *
+ batadv_orig_ifinfo_get(struct batadv_orig_node *orig_node,
+ 		       struct batadv_hard_iface *if_outgoing);
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 838d55e..815c960 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1159,6 +1159,7 @@ struct batadv_forw_packet {
+  * @bat_neigh_is_equiv_or_better: check if neigh1 is equally good or better
+  *  than neigh2 for their respective outgoing interface from the metric
+  *  prospective
++ * @bat_neigh_print: print the single hop neighbor list (optional)
+  * @bat_neigh_free: free the resources allocated by the routing algorithm for a
+  *  neigh_node object
+  * @bat_orig_print: print the originator table (optional)
+@@ -1189,6 +1190,7 @@ struct batadv_algo_ops {
+ 		 struct batadv_hard_iface *if_outgoing1,
+ 		 struct batadv_neigh_node *neigh2,
+ 		 struct batadv_hard_iface *if_outgoing2);
++	void (*bat_neigh_print)(struct batadv_priv *priv, struct seq_file *seq);
+ 	void (*bat_neigh_free)(struct batadv_neigh_node *neigh);
+ 	/* orig_node handling API */
+ 	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq,
 -- 
 2.6.4
 
