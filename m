@@ -1,10 +1,10 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 16 Dec 2015 15:49:22 +0800
-Message-Id: <1450252173-20949-2-git-send-email-antonio@meshcoding.com>
+Date: Wed, 16 Dec 2015 15:49:23 +0800
+Message-Id: <1450252173-20949-3-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1450252173-20949-1-git-send-email-antonio@meshcoding.com>
 References: <1450252173-20949-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 01/12] MAINTAINERS: update email address
+Subject: [B.A.T.M.A.N.] [PATCH 02/12] Doc: update email address
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,27 +17,35 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <antonio@meshcoding.com>
 
-My personal email address has changed. Update it in the
-MAINTAINERS file
+My personal email address has changed. Update it in the doc files
 
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- MAINTAINERS | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/ABI/testing/sysfs-class-net-mesh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 04e8d18..2bd095b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2111,7 +2111,7 @@ F:	include/linux/backlight.h
- BATMAN ADVANCED
- M:	Marek Lindner <mareklindner@neomailbox.ch>
- M:	Simon Wunderlich <sw@simonwunderlich.de>
--M:	Antonio Quartulli <antonio@meshcoding.com>
-+M:	Antonio Quartulli <a@unstable.cc>
- L:	b.a.t.m.a.n@lists.open-mesh.org
- W:	http://www.open-mesh.org/
- S:	Maintained
+diff --git a/Documentation/ABI/testing/sysfs-class-net-mesh b/Documentation/ABI/testing/sysfs-class-net-mesh
+index c464062..c2b956d 100644
+--- a/Documentation/ABI/testing/sysfs-class-net-mesh
++++ b/Documentation/ABI/testing/sysfs-class-net-mesh
+@@ -8,7 +8,7 @@ Description:
+ 
+ What:           /sys/class/net/<mesh_iface>/mesh/<vlan_subdir>/ap_isolation
+ Date:           May 2011
+-Contact:        Antonio Quartulli <antonio@meshcoding.com>
++Contact:        Antonio Quartulli <a@unstable.cc>
+ Description:
+                 Indicates whether the data traffic going from a
+                 wireless client to another wireless client will be
+@@ -70,7 +70,7 @@ Description:
+ 
+ What:		/sys/class/net/<mesh_iface>/mesh/isolation_mark
+ Date:		Nov 2013
+-Contact:	Antonio Quartulli <antonio@meshcoding.com>
++Contact:	Antonio Quartulli <a@unstable.cc>
+ Description:
+ 		Defines the isolation mark (and its bitmask) which
+ 		is used to classify clients as "isolated" by the
 -- 
 2.6.4
 
