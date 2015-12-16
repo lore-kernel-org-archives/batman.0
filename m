@@ -1,13 +1,14 @@
-Return-Path: <davem@davemloft.net>
-Date: Wed, 16 Dec 2015 11:10:22 -0500 (EST)
-Message-Id: <20151216.111022.886656501693915984.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1450252173-20949-1-git-send-email-antonio@meshcoding.com>
-References: <1450252173-20949-1-git-send-email-antonio@meshcoding.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 20151216
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 16 Dec 2015 19:01:22 +0100
+Message-ID: <2352611.kbnebMM7Gn@prime>
+In-Reply-To: <1449414952-21593-1-git-send-email-sven@narfation.org>
+References: <1449414952-21593-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart51798093.RadF3SeVmE";
+ micalg="pgp-sha1"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] openwrt-feed-alfred: Switch to HTTPS
+	version of links
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,26 +18,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: antonio@meshcoding.com
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 16 Dec 2015 15:49:21 +0800
+--nextPart51798093.RadF3SeVmE
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-> here you have our batch of patches intended for net-next.
-> 
-> Marek Lindner is introducing a list of direct neighbours per interface
-> and is exporting it via debugfs. This comes very handy in case of
-> network debugging or simple topology analysis.
-> 
-> Add lock protection for CRC computation in the Bridge Loop Avoidance
-> code to prevent racy updates, by Simon Wunderlich.
-> 
-> Update my email address in the relevant files.
-> 
-> Other than those changes you also have some code restyling, cleanups
-> and minor fixes..
-> 
-> Please pull or let me know of any problem!
+On Sunday 06 December 2015 16:15:52 Sven Eckelmann wrote:
+> open-mesh.org and its subdomains can only be accessed via HTTPS. HTTP-only
+> requests are currently redirected automatically to HTTPS but references to
+> it should be only https.
 
-Pulled, thanks Antonio.
+Applied in revision ad56a32.
+
+Thanks!
+     Simon
+--nextPart51798093.RadF3SeVmE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iEYEABECAAYFAlZxpvIACgkQrzg/fFk7axbnKACeI9RBsuUaiOT1aAcMGaI2DZXk
+fmEAn1P55ChP3+wAvq4NXaSNRHut0M4B
+=NOf7
+-----END PGP SIGNATURE-----
+
+--nextPart51798093.RadF3SeVmE--
+
