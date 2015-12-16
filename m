@@ -1,11 +1,11 @@
 Return-Path: <antonio@meshcoding.com>
 From: Antonio Quartulli <antonio@meshcoding.com>
-Date: Wed, 16 Dec 2015 15:49:25 +0800
-Message-Id: <1450252173-20949-5-git-send-email-antonio@meshcoding.com>
+Date: Wed, 16 Dec 2015 15:49:27 +0800
+Message-Id: <1450252173-20949-7-git-send-email-antonio@meshcoding.com>
 In-Reply-To: <1450252173-20949-1-git-send-email-antonio@meshcoding.com>
 References: <1450252173-20949-1-git-send-email-antonio@meshcoding.com>
-Subject: [B.A.T.M.A.N.] [PATCH 04/12] batman-adv: add bat_hardif_neigh_init
-	algo ops call
+Subject: [B.A.T.M.A.N.] [PATCH 06/12] batman-adv: update last seen field of
+	single hop originators
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,52 +23,44 @@ From: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 ---
- net/batman-adv/originator.c | 4 ++++
- net/batman-adv/types.h      | 2 ++
- 2 files changed, 6 insertions(+)
+ net/batman-adv/bat_iv_ogm.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index a8671c6..27dd326 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -539,6 +539,7 @@ static struct batadv_hardif_neigh_node *
- batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
- 			   const u8 *neigh_addr)
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 1efdb5c..3738a2f 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1379,6 +1379,7 @@ batadv_iv_ogm_process_per_outif(const struct sk_buff *skb, int ogm_offset,
+ 				struct batadv_hard_iface *if_outgoing)
  {
-+	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
- 	struct batadv_hardif_neigh_node *hardif_neigh = NULL;
+ 	struct batadv_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
++	struct batadv_hardif_neigh_node *hardif_neigh = NULL;
+ 	struct batadv_neigh_node *router = NULL;
+ 	struct batadv_neigh_node *router_router = NULL;
+ 	struct batadv_orig_node *orig_neigh_node;
+@@ -1423,6 +1424,13 @@ batadv_iv_ogm_process_per_outif(const struct sk_buff *skb, int ogm_offset,
+ 		goto out;
+ 	}
  
- 	spin_lock_bh(&hard_iface->neigh_list_lock);
-@@ -564,6 +565,9 @@ batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
- 
- 	atomic_set(&hardif_neigh->refcount, 1);
- 
-+	if (bat_priv->bat_algo_ops->bat_hardif_neigh_init)
-+		bat_priv->bat_algo_ops->bat_hardif_neigh_init(hardif_neigh);
++	if (is_single_hop_neigh) {
++		hardif_neigh = batadv_hardif_neigh_get(if_incoming,
++						       ethhdr->h_source);
++		if (hardif_neigh)
++			hardif_neigh->last_seen = jiffies;
++	}
 +
- 	hlist_add_head(&hardif_neigh->list, &hard_iface->neigh_list);
+ 	router = batadv_orig_router_get(orig_node, if_outgoing);
+ 	if (router) {
+ 		router_router = batadv_orig_router_get(router->orig_node,
+@@ -1557,6 +1565,8 @@ out:
+ 		batadv_neigh_node_free_ref(router_router);
+ 	if (orig_neigh_router)
+ 		batadv_neigh_node_free_ref(orig_neigh_router);
++	if (hardif_neigh)
++		batadv_hardif_neigh_free_ref(hardif_neigh);
  
- out:
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 71c7d9f..838d55e 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1153,6 +1153,7 @@ struct batadv_forw_packet {
-  * @bat_primary_iface_set: called when primary interface is selected / changed
-  * @bat_ogm_schedule: prepare a new outgoing OGM for the send queue
-  * @bat_ogm_emit: send scheduled OGM
-+ * @bat_hardif_neigh_init: called on creation of single hop entry
-  * @bat_neigh_cmp: compare the metrics of two neighbors for their respective
-  *  outgoing interfaces
-  * @bat_neigh_is_equiv_or_better: check if neigh1 is equally good or better
-@@ -1178,6 +1179,7 @@ struct batadv_algo_ops {
- 	void (*bat_ogm_schedule)(struct batadv_hard_iface *hard_iface);
- 	void (*bat_ogm_emit)(struct batadv_forw_packet *forw_packet);
- 	/* neigh_node handling API */
-+	void (*bat_hardif_neigh_init)(struct batadv_hardif_neigh_node *neigh);
- 	int (*bat_neigh_cmp)(struct batadv_neigh_node *neigh1,
- 			     struct batadv_hard_iface *if_outgoing1,
- 			     struct batadv_neigh_node *neigh2,
+ 	kfree_skb(skb_priv);
+ }
 -- 
 2.6.4
 
