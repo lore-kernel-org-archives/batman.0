@@ -1,13 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 18 Dec 2015 22:16:34 +0800
-Message-ID: <1530490.OEBk0KCF9J@voltaire>
-In-Reply-To: <1450308032-17634-1-git-send-email-sven@narfation.org>
-References: <1450308032-17634-1-git-send-email-sven@narfation.org>
+Date: Fri, 18 Dec 2015 22:19:19 +0800
+Message-ID: <2118974.AZIkCmtkXL@voltaire>
+In-Reply-To: <1449414976-21770-1-git-send-email-sven@narfation.org>
+References: <1449414976-21770-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2495739.gAosmtgiMS";
+Content-Type: multipart/signed; boundary="nextPart1617652.mehQvADoIq";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-next] batman-adv: update email address
+Subject: Re: [B.A.T.M.A.N.] [PATCH] openwrt-feed-batman-adv: Switch to HTTPS
+	version of links
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,26 +20,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2495739.gAosmtgiMS
+--nextPart1617652.mehQvADoIq
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Thursday, December 17, 2015 00:20:32 Sven Eckelmann wrote:
-> From: Antonio Quartulli <antonio@meshcoding.com>
+On Sunday, December 06, 2015 16:16:16 Sven Eckelmann wrote:
+> open-mesh.org and its subdomains can only be accessed via HTTPS. HTTP-only
+> requests are currently redirected automatically to HTTPS but references
+> to it should be only https.
 > 
-> My personal email address has changed. Update it in the doc files
-> 
-> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  Documentation/ABI/testing/sysfs-class-net-mesh | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  batctl-devel/Makefile     | 4 ++--
+>  batman-adv-devel/Makefile | 4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
 
-Applied in revision 0e92483.
+Applied in revision a635b9b.
 
 Thanks,
 Marek
 
---nextPart2495739.gAosmtgiMS
+--nextPart1617652.mehQvADoIq
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -46,14 +48,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWdBVCAAoJEFNVTo/uthzAsiQH/1DKGFEZhp17YhPh8Ei0fF4j
-+/dHVBvY/XiTQh/gGeg+JVqT27vL32v6OLqsnX9xzyUM58OZh/imH3BvTVpcZPB5
-uA6UUm/8jsS1dK0viliMCWCZyNLnJLh7rgr/Y4F1vNd17llp8uXg8sgxDEVUyinU
-sy2uFgU0xLxFsWu+HbYk5TtGbeddawMsC0nnw/jhgMZaNTU+EEAa2J8XUbBWbwmN
-wHDoj/mJPZb9ZZC9aKcs4WBMhhd7kuDcKKE6lOk0rokk440ZwpGk1ODCiDCZKgs/
-4JOdJEVwsFWoiy+AICmMU9LO6Z5Sf/nh3n1XoudXIWBLSeG70WK26ni0xDqyukw=
-=HN7T
+iQEcBAABCAAGBQJWdBXnAAoJEFNVTo/uthzAw8EIAI4013PwFEgoB/v8m9z4iCjr
+vYomgtwTh2/BT+gxSwmDTcLYf1BAP1rO6Qlup7JUt0uhFrcrNabAjXMzstYmpEgI
+NbdoUlcB5ads0yGvXSXHtMMGzDPucUDcYB+TpvuiJ4LzsqKC7qcMbdkGB6bxYFnr
+sFFcV2LYLmH6J20a/mgWWw8vgzHN7K4vA1pS0sRLVPaU83ofkcwHjNTpdrd6WklX
+Jr/+1f06mUbieznLLSNGeyfwDELmqn2GIFCVYZPCn1J8RAthe4xM1aaUfpggJjqI
+1iF6QkmdOGHCkbps7uOJnvTlLO38gKedr9+82tlkpI+J8Hc/Jx6Sj2cB7BIrD+c=
+=P8nc
 -----END PGP SIGNATURE-----
 
---nextPart2495739.gAosmtgiMS--
+--nextPart1617652.mehQvADoIq--
 
