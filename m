@@ -1,13 +1,15 @@
-Return-Path: <geliangtang@163.com>
-From: Geliang Tang <geliangtang@163.com>
-Date: Fri, 18 Dec 2015 23:33:31 +0800
-Message-Id: <b01d3ee936833e94fffa53f7a82fc46e20d877c1.1450451516.git.geliangtang@163.com>
-In-Reply-To: <ab66a344512e064000357c6d3c2a6f3d0e948ddb.1450451516.git.geliangtang@163.com>
-References: <ab66a344512e064000357c6d3c2a6f3d0e948ddb.1450451516.git.geliangtang@163.com>
-In-Reply-To: <ab66a344512e064000357c6d3c2a6f3d0e948ddb.1450451516.git.geliangtang@163.com>
-References: <ab66a344512e064000357c6d3c2a6f3d0e948ddb.1450451516.git.geliangtang@163.com>
-Subject: [B.A.T.M.A.N.] [PATCH 07/14] batman-adv: use
-	list_for_each_entry_safe
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Sat, 19 Dec 2015 09:04:05 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20151219080405.GJ30160@otheros>
+References: <1448901241-30844-1-git-send-email-sw@simonwunderlich.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1448901241-30844-1-git-send-email-sw@simonwunderlich.de>
+Subject: Re: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: fix lockdep splat when
+ doing mcast_free
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,57 +19,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>
-Cc: Geliang Tang <geliangtang@163.com>, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
-Use list_for_each_entry_safe() instead of list_for_each_safe() to
-simplify the code.
+> From: Simon Wunderlich <simon@open-mesh.com>
+> 
+> While testing, we got something like this:
+> 
+> WARNING: CPU: 0 PID: 238 at net/batman-adv/multicast.c:142 batadv_mcast_mla_tt_retract+0x94/0x205 [batman_adv]()
+> [...]
+> Call Trace:
+> [<ffffffff815fc597>] dump_stack+0x4b/0x64
+> [<ffffffff810b34dc>] warn_slowpath_common+0xbc/0x120
+> [<ffffffffa0024ec5>] ? batadv_mcast_mla_tt_retract+0x94/0x205 [batman_adv]
+> [<ffffffff810b3705>] warn_slowpath_null+0x15/0x20
+> [<ffffffffa0024ec5>] batadv_mcast_mla_tt_retract+0x94/0x205 [batman_adv]
+> [<ffffffffa00273fe>] batadv_mcast_free+0x36/0x39 [batman_adv]
+> [<ffffffffa0020c77>] batadv_mesh_free+0x7d/0x13f [batman_adv]
+> [<ffffffffa0036a6b>] batadv_softif_free+0x15/0x25 [batman_adv]
+> [...]
+> 
+> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 
-Signed-off-by: Geliang Tang <geliangtang@163.com>
----
- net/batman-adv/icmp_socket.c | 22 +++++++++-------------
- 1 file changed, 9 insertions(+), 13 deletions(-)
-
-diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
-index bcabb5e..841239c 100644
---- a/net/batman-adv/icmp_socket.c
-+++ b/net/batman-adv/icmp_socket.c
-@@ -104,25 +104,21 @@ static int batadv_socket_open(struct inode *inode, struct file *file)
- 
- static int batadv_socket_release(struct inode *inode, struct file *file)
- {
--	struct batadv_socket_client *socket_client = file->private_data;
--	struct batadv_socket_packet *socket_packet;
--	struct list_head *list_pos, *list_pos_tmp;
-+	struct batadv_socket_client *client = file->private_data;
-+	struct batadv_socket_packet *packet, *tmp;
- 
--	spin_lock_bh(&socket_client->lock);
-+	spin_lock_bh(&client->lock);
- 
- 	/* for all packets in the queue ... */
--	list_for_each_safe(list_pos, list_pos_tmp, &socket_client->queue_list) {
--		socket_packet = list_entry(list_pos,
--					   struct batadv_socket_packet, list);
--
--		list_del(list_pos);
--		kfree(socket_packet);
-+	list_for_each_entry_safe(packet, tmp, &client->queue_list, list) {
-+		list_del(&packet->list);
-+		kfree(packet);
- 	}
- 
--	batadv_socket_client_hash[socket_client->index] = NULL;
--	spin_unlock_bh(&socket_client->lock);
-+	batadv_socket_client_hash[client->index] = NULL;
-+	spin_unlock_bh(&client->lock);
- 
--	kfree(socket_client);
-+	kfree(client);
- 	module_put(THIS_MODULE);
- 
- 	return 0;
--- 
-2.5.0
-
-
+Fixes: 5b95c427d187 ("batman-adv: Annotate deleting functions with external lock via lockdep")
+Acked-by: Linus Lüssing <linus.luessing@c0d3.blue>
