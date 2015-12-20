@@ -1,9 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 20 Dec 2015 09:04:03 +0100
-Message-Id: <1450598643-7185-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Add lockdep assert for
-	container_list_lock
+Date: Sun, 20 Dec 2015 14:17:41 +0100
+Message-Id: <1450617490-3544-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v2 01/30] batman-adv: Fix list removal of
+	batadv_hardif_neigh_node
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,38 +15,69 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The batadv_tvlv_container* functions state in their kernel-doc that they
-require tvlv.container_list_lock. Add an assert to automatically detect
-when this might have been ignored by the caller.
+The neigh_list with batadv_hardif_neigh_node objects is accessed with only
+rcu_read_lock in batadv_neigh_node_get and batadv_iv_neigh_print. Thus it
+is not allowed to kfree the object before the rcu grace period ends (which
+may still protects context accessing this object). Therefore the object has
+first to be removed from the neigh_list and then it has either wait with
+synchronize_rcu or call_rcu till the grace period ends before it can be
+freed.
 
+Fixes: fed2826b490c ("batman-adv: add list of unique single hop neighbors per hard-interface")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-v2: remove this from the kref patchset and instead submit it as standalone patch
- net/batman-adv/main.c | 4 ++++
- 1 file changed, 4 insertions(+)
+v2:
+ - split patchset into fixes and kref migration to make it easier when the
+   decision is made where each patch will be applied
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 19ad0bb..c9b8205 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -720,6 +720,8 @@ static struct batadv_tvlv_container
+ net/batman-adv/originator.c | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 00b0437..2681c7d 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -217,10 +217,6 @@ static void batadv_hardif_neigh_free_rcu(struct rcu_head *rcu)
+ 
+ 	hardif_neigh = container_of(rcu, struct batadv_hardif_neigh_node, rcu);
+ 
+-	spin_lock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
+-	hlist_del_init_rcu(&hardif_neigh->list);
+-	spin_unlock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
+-
+ 	batadv_hardif_free_ref_now(hardif_neigh->if_incoming);
+ 	kfree(hardif_neigh);
+ }
+@@ -233,8 +229,13 @@ static void batadv_hardif_neigh_free_rcu(struct rcu_head *rcu)
+ static void
+ batadv_hardif_neigh_free_now(struct batadv_hardif_neigh_node *hardif_neigh)
  {
- 	struct batadv_tvlv_container *tvlv_tmp, *tvlv = NULL;
- 
-+	lockdep_assert_held(&bat_priv->tvlv.container_list_lock);
+-	if (atomic_dec_and_test(&hardif_neigh->refcount))
++	if (atomic_dec_and_test(&hardif_neigh->refcount)) {
++		spin_lock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
++		hlist_del_init_rcu(&hardif_neigh->list);
++		spin_unlock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
 +
- 	hlist_for_each_entry(tvlv_tmp, &bat_priv->tvlv.container_list, list) {
- 		if (tvlv_tmp->tvlv_hdr.type != type)
- 			continue;
-@@ -752,6 +754,8 @@ static u16 batadv_tvlv_container_list_size(struct batadv_priv *bat_priv)
- 	struct batadv_tvlv_container *tvlv;
- 	u16 tvlv_len = 0;
+ 		batadv_hardif_neigh_free_rcu(&hardif_neigh->rcu);
++	}
+ }
  
-+	lockdep_assert_held(&bat_priv->tvlv.container_list_lock);
+ /**
+@@ -244,8 +245,13 @@ batadv_hardif_neigh_free_now(struct batadv_hardif_neigh_node *hardif_neigh)
+  */
+ void batadv_hardif_neigh_free_ref(struct batadv_hardif_neigh_node *hardif_neigh)
+ {
+-	if (atomic_dec_and_test(&hardif_neigh->refcount))
++	if (atomic_dec_and_test(&hardif_neigh->refcount)) {
++		spin_lock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
++		hlist_del_init_rcu(&hardif_neigh->list);
++		spin_unlock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
 +
- 	hlist_for_each_entry(tvlv, &bat_priv->tvlv.container_list, list) {
- 		tvlv_len += sizeof(struct batadv_tvlv_hdr);
- 		tvlv_len += ntohs(tvlv->tvlv_hdr.len);
+ 		call_rcu(&hardif_neigh->rcu, batadv_hardif_neigh_free_rcu);
++	}
+ }
+ 
+ /**
 -- 
 2.6.4
 
