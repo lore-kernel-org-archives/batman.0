@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 20 Dec 2015 14:17:55 +0100
-Message-Id: <1450617490-3544-15-git-send-email-sven@narfation.org>
+Date: Sun, 20 Dec 2015 14:17:56 +0100
+Message-Id: <1450617490-3544-16-git-send-email-sven@narfation.org>
 In-Reply-To: <1450617490-3544-1-git-send-email-sven@narfation.org>
 References: <1450617490-3544-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 15/30] batman-adv: Convert
-	batadv_bla_backbone_gw to kref
+Subject: [B.A.T.M.A.N.] [PATCH v2 16/30] batman-adv: Convert
+	batadv_bla_claim to kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -27,95 +27,77 @@ v2:
  - split patchset into fixes and kref migration to make it easier when the
    decision is made where each patch will be applied
 
- net/batman-adv/bridge_loop_avoidance.c | 29 +++++++++++++++++++++++------
+ net/batman-adv/bridge_loop_avoidance.c | 19 ++++++++++++-------
  net/batman-adv/types.h                 |  2 +-
- 2 files changed, 24 insertions(+), 7 deletions(-)
+ 2 files changed, 13 insertions(+), 8 deletions(-)
 
 diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 6e951dd..22fe700 100644
+index 22fe700..2988890 100644
 --- a/net/batman-adv/bridge_loop_avoidance.c
 +++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -31,6 +31,7 @@
- #include <linux/jhash.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
-+#include <linux/kref.h>
- #include <linux/list.h>
- #include <linux/lockdep.h>
- #include <linux/netdevice.h>
-@@ -143,14 +144,29 @@ static int batadv_compare_claim(const struct hlist_node *node,
- }
- 
+@@ -172,22 +172,26 @@ batadv_backbone_gw_free_ref(struct batadv_bla_backbone_gw *backbone_gw)
  /**
-- * batadv_compare_backbone_gw - free backbone gw
-+ * batadv_backbone_gw_release - release backbone gw from lists and queue for
-+ *  free after rcu grace period
-+ * @ref: kref pointer of the backbone gw
-+ */
-+static void batadv_backbone_gw_release(struct kref *ref)
-+{
-+	struct batadv_bla_backbone_gw *backbone_gw;
-+
-+	backbone_gw = container_of(ref, struct batadv_bla_backbone_gw,
-+				   refcount);
-+
-+	kfree_rcu(backbone_gw, rcu);
-+}
-+
-+/**
-+ * batadv_backbone_gw_free_ref - decrement the backbone gw refcounter and
-+ *  possibly release it
-  * @backbone_gw: backbone gateway to be free'd
+  * batadv_claim_release - release claim from lists and queue for free after rcu
+  *  grace period
+- * @claim: claim to be free'd
++ * @ref: kref pointer of the claim
   */
- static void
- batadv_backbone_gw_free_ref(struct batadv_bla_backbone_gw *backbone_gw)
+-static void batadv_claim_release(struct batadv_bla_claim *claim)
++static void batadv_claim_release(struct kref *ref)
  {
--	if (atomic_dec_and_test(&backbone_gw->refcount))
--		kfree_rcu(backbone_gw, rcu);
-+	kref_put(&backbone_gw->refcount, batadv_backbone_gw_release);
++	struct batadv_bla_claim *claim;
++
++	claim = container_of(ref, struct batadv_bla_claim, refcount);
++
+ 	batadv_backbone_gw_free_ref(claim->backbone_gw);
+ 	kfree_rcu(claim, rcu);
  }
  
  /**
-@@ -246,7 +262,7 @@ batadv_backbone_hash_find(struct batadv_priv *bat_priv, u8 *addr,
- 						&search_entry))
+- * batadv_claim_free_rcu - free a claim
++ * batadv_claim_free_ref - decrement the claim refcounter and possibly
++ *  release it
+  * @claim: claim to be free'd
+  */
+ static void batadv_claim_free_ref(struct batadv_bla_claim *claim)
+ {
+-	if (atomic_dec_and_test(&claim->refcount))
+-		batadv_claim_release(claim);
++	kref_put(&claim->refcount, batadv_claim_release);
+ }
+ 
+ /**
+@@ -218,7 +222,7 @@ static struct batadv_bla_claim
+ 		if (!batadv_compare_claim(&claim->hash_entry, data))
  			continue;
  
--		if (!atomic_inc_not_zero(&backbone_gw->refcount))
-+		if (!kref_get_unless_zero(&backbone_gw->refcount))
+-		if (!atomic_inc_not_zero(&claim->refcount))
++		if (!kref_get_unless_zero(&claim->refcount))
  			continue;
  
- 		backbone_gw_tmp = backbone_gw;
-@@ -447,7 +463,8 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, u8 *orig,
- 	ether_addr_copy(entry->orig, orig);
+ 		claim_tmp = claim;
+@@ -650,7 +654,8 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
+ 		claim->lasttime = jiffies;
+ 		claim->backbone_gw = backbone_gw;
  
- 	/* one for the hash, one for returning */
--	atomic_set(&entry->refcount, 2);
-+	kref_init(&entry->refcount);
-+	kref_get(&entry->refcount);
- 
- 	hash_added = batadv_hash_add(bat_priv->bla.backbone_hash,
- 				     batadv_compare_backbone_gw,
-@@ -663,7 +680,7 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
- 		batadv_backbone_gw_free_ref(claim->backbone_gw);
- 	}
- 	/* set (new) backbone gw */
--	atomic_inc(&backbone_gw->refcount);
-+	kref_get(&backbone_gw->refcount);
- 	claim->backbone_gw = backbone_gw;
- 
- 	spin_lock_bh(&backbone_gw->crc_lock);
+-		atomic_set(&claim->refcount, 2);
++		kref_init(&claim->refcount);
++		kref_get(&claim->refcount);
+ 		batadv_dbg(BATADV_DBG_BLA, bat_priv,
+ 			   "bla_add_claim(): adding new entry %pM, vid %d to hash ...\n",
+ 			   mac, BATADV_PRINT_VID(vid));
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index c6c3f0f..098ec7f 100644
+index 098ec7f..c56b99c 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -930,7 +930,7 @@ struct batadv_bla_backbone_gw {
- 	atomic_t request_sent;
- 	u16 crc;
- 	spinlock_t crc_lock; /* protects crc */
+@@ -951,7 +951,7 @@ struct batadv_bla_claim {
+ 	unsigned long lasttime;
+ 	struct hlist_node hash_entry;
+ 	struct rcu_head rcu;
 -	atomic_t refcount;
 +	struct kref refcount;
- 	struct rcu_head rcu;
  };
+ #endif
  
 -- 
 2.6.4
