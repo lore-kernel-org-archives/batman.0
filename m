@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 20 Dec 2015 14:17:59 +0100
-Message-Id: <1450617490-3544-19-git-send-email-sven@narfation.org>
+Date: Sun, 20 Dec 2015 14:18:01 +0100
+Message-Id: <1450617490-3544-21-git-send-email-sven@narfation.org>
 In-Reply-To: <1450617490-3544-1-git-send-email-sven@narfation.org>
 References: <1450617490-3544-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 19/30] batman-adv: Convert
-	batadv_dat_entry to kref
+Subject: [B.A.T.M.A.N.] [PATCH v2 21/30] batman-adv: Convert
+	batadv_tvlv_handler to kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -27,80 +27,71 @@ v2:
  - split patchset into fixes and kref migration to make it easier when the
    decision is made where each patch will be applied
 
- net/batman-adv/distributed-arp-table.c | 25 ++++++++++++++++++++-----
- net/batman-adv/types.h                 |  2 +-
- 2 files changed, 21 insertions(+), 6 deletions(-)
+ net/batman-adv/main.c  | 22 +++++++++++++++++-----
+ net/batman-adv/types.h |  2 +-
+ 2 files changed, 18 insertions(+), 6 deletions(-)
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 60df823..ffbc45d 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -30,6 +30,7 @@
- #include <linux/in.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
-+#include <linux/kref.h>
- #include <linux/list.h>
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
-@@ -62,14 +63,27 @@ static void batadv_dat_start_timer(struct batadv_priv *bat_priv)
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index d6c12a7..4949eca 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -625,15 +625,27 @@ __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr)
  }
  
  /**
-+ * batadv_dat_entry_release - release dat_entry from lists and queue for free
-+ *  after rcu grace period
-+ * @ref: kref pointer of the dat_entry
+- * batadv_tvlv_handler_free_ref - decrement the tvlv handler refcounter and
++ * batadv_tvlv_handler_release - release tvlv handler from lists and queue for
++ *  free after rcu grace period
++ * @ref: kref pointer of the tvlv
 + */
-+static void batadv_dat_entry_release(struct kref *ref)
++static void batadv_tvlv_handler_release(struct kref *ref)
 +{
-+	struct batadv_dat_entry *dat_entry;
++	struct batadv_tvlv_handler *tvlv_handler;
 +
-+	dat_entry = container_of(ref, struct batadv_dat_entry, refcount);
-+
-+	kfree_rcu(dat_entry, rcu);
++	tvlv_handler = container_of(ref, struct batadv_tvlv_handler, refcount);
++	kfree_rcu(tvlv_handler, rcu);
 +}
 +
 +/**
-  * batadv_dat_entry_free_ref - decrement the dat_entry refcounter and possibly
-  * free it
-- * @dat_entry: the entry to free
-+ * @dat_entry: dat_entry to be free'd
++ * batadv_tvlv_handler_free_ref - decrement the tvlv container refcounter and
+  *  possibly free it
+  * @tvlv_handler: the tvlv handler to free
   */
- static void batadv_dat_entry_free_ref(struct batadv_dat_entry *dat_entry)
+ static void
+ batadv_tvlv_handler_free_ref(struct batadv_tvlv_handler *tvlv_handler)
  {
--	if (atomic_dec_and_test(&dat_entry->refcount))
--		kfree_rcu(dat_entry, rcu);
-+	kref_put(&dat_entry->refcount, batadv_dat_entry_release);
+-	if (atomic_dec_and_test(&tvlv_handler->refcount))
+-		kfree_rcu(tvlv_handler, rcu);
++	kref_put(&tvlv_handler->refcount, batadv_tvlv_handler_release);
  }
  
  /**
-@@ -281,7 +295,7 @@ batadv_dat_entry_hash_find(struct batadv_priv *bat_priv, __be32 ip,
- 		if (dat_entry->ip != ip)
+@@ -659,7 +671,7 @@ static struct batadv_tvlv_handler
+ 		if (tvlv_handler_tmp->version != version)
  			continue;
  
--		if (!atomic_inc_not_zero(&dat_entry->refcount))
-+		if (!kref_get_unless_zero(&dat_entry->refcount))
+-		if (!atomic_inc_not_zero(&tvlv_handler_tmp->refcount))
++		if (!kref_get_unless_zero(&tvlv_handler_tmp->refcount))
  			continue;
  
- 		dat_entry_tmp = dat_entry;
-@@ -326,7 +340,8 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
- 	dat_entry->vid = vid;
- 	ether_addr_copy(dat_entry->mac_addr, mac_addr);
- 	dat_entry->last_update = jiffies;
--	atomic_set(&dat_entry->refcount, 2);
-+	kref_init(&dat_entry->refcount);
-+	kref_get(&dat_entry->refcount);
+ 		tvlv_handler = tvlv_handler_tmp;
+@@ -1108,7 +1120,7 @@ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
+ 	tvlv_handler->type = type;
+ 	tvlv_handler->version = version;
+ 	tvlv_handler->flags = flags;
+-	atomic_set(&tvlv_handler->refcount, 1);
++	kref_init(&tvlv_handler->refcount);
+ 	INIT_HLIST_NODE(&tvlv_handler->list);
  
- 	hash_added = batadv_hash_add(bat_priv->dat.hash, batadv_compare_dat,
- 				     batadv_hash_dat, dat_entry,
+ 	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 49f0270..a6ba6c0 100644
+index 0ebd5a4..60d304b 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -1230,7 +1230,7 @@ struct batadv_dat_entry {
- 	unsigned short vid;
- 	unsigned long last_update;
- 	struct hlist_node hash_entry;
+@@ -1293,7 +1293,7 @@ struct batadv_tvlv_handler {
+ 	u8 type;
+ 	u8 version;
+ 	u8 flags;
 -	atomic_t refcount;
 +	struct kref refcount;
  	struct rcu_head rcu;
