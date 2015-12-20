@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 20 Dec 2015 14:17:56 +0100
-Message-Id: <1450617490-3544-16-git-send-email-sven@narfation.org>
+Date: Sun, 20 Dec 2015 14:17:57 +0100
+Message-Id: <1450617490-3544-17-git-send-email-sven@narfation.org>
 In-Reply-To: <1450617490-3544-1-git-send-email-sven@narfation.org>
 References: <1450617490-3544-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 16/30] batman-adv: Convert
-	batadv_bla_claim to kref
+Subject: [B.A.T.M.A.N.] [PATCH v2 17/30] batman-adv: Convert batadv_nc_node
+	to kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -27,78 +27,88 @@ v2:
  - split patchset into fixes and kref migration to make it easier when the
    decision is made where each patch will be applied
 
- net/batman-adv/bridge_loop_avoidance.c | 19 ++++++++++++-------
- net/batman-adv/types.h                 |  2 +-
- 2 files changed, 13 insertions(+), 8 deletions(-)
+ net/batman-adv/network-coding.c | 23 ++++++++++++++---------
+ net/batman-adv/types.h          |  2 +-
+ 2 files changed, 15 insertions(+), 10 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 22fe700..2988890 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -172,22 +172,26 @@ batadv_backbone_gw_free_ref(struct batadv_bla_backbone_gw *backbone_gw)
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 31efa58..6f0cf96 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -32,6 +32,7 @@
+ #include <linux/jhash.h>
+ #include <linux/jiffies.h>
+ #include <linux/kernel.h>
++#include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+ #include <linux/netdevice.h>
+@@ -209,23 +210,26 @@ void batadv_nc_init_orig(struct batadv_orig_node *orig_node)
  /**
-  * batadv_claim_release - release claim from lists and queue for free after rcu
-  *  grace period
-- * @claim: claim to be free'd
-+ * @ref: kref pointer of the claim
+  * batadv_nc_node_release - release nc_node from lists and queue for free after
+  *  rcu grace period
+- * @nc_node: the nc node to free
++ * @ref: kref pointer of the nc_node
   */
--static void batadv_claim_release(struct batadv_bla_claim *claim)
-+static void batadv_claim_release(struct kref *ref)
+-static void batadv_nc_node_release(struct batadv_nc_node *nc_node)
++static void batadv_nc_node_release(struct kref *ref)
  {
-+	struct batadv_bla_claim *claim;
++	struct batadv_nc_node *nc_node;
 +
-+	claim = container_of(ref, struct batadv_bla_claim, refcount);
++	nc_node = container_of(ref, struct batadv_nc_node, refcount);
 +
- 	batadv_backbone_gw_free_ref(claim->backbone_gw);
- 	kfree_rcu(claim, rcu);
+ 	batadv_orig_node_free_ref(nc_node->orig_node);
+ 	kfree_rcu(nc_node, rcu);
  }
  
  /**
-- * batadv_claim_free_rcu - free a claim
-+ * batadv_claim_free_ref - decrement the claim refcounter and possibly
+- * batadv_nc_node_free_ref - decrements the nc node refcounter and possibly
+- * frees it
+- * @nc_node: the nc node to free
++ * batadv_nc_node_free_ref - decrement the nc_node refcounter and possibly
 + *  release it
-  * @claim: claim to be free'd
++ * @nc_node: nc_node to be free'd
   */
- static void batadv_claim_free_ref(struct batadv_bla_claim *claim)
+ static void batadv_nc_node_free_ref(struct batadv_nc_node *nc_node)
  {
--	if (atomic_dec_and_test(&claim->refcount))
--		batadv_claim_release(claim);
-+	kref_put(&claim->refcount, batadv_claim_release);
+-	if (atomic_dec_and_test(&nc_node->refcount))
+-		batadv_nc_node_release(nc_node);
++	kref_put(&nc_node->refcount, batadv_nc_node_release);
  }
  
  /**
-@@ -218,7 +222,7 @@ static struct batadv_bla_claim
- 		if (!batadv_compare_claim(&claim->hash_entry, data))
+@@ -797,7 +801,7 @@ static struct batadv_nc_node
+ 		if (!batadv_compare_eth(nc_node->addr, orig_node->orig))
  			continue;
  
--		if (!atomic_inc_not_zero(&claim->refcount))
-+		if (!kref_get_unless_zero(&claim->refcount))
+-		if (!atomic_inc_not_zero(&nc_node->refcount))
++		if (!kref_get_unless_zero(&nc_node->refcount))
  			continue;
  
- 		claim_tmp = claim;
-@@ -650,7 +654,8 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
- 		claim->lasttime = jiffies;
- 		claim->backbone_gw = backbone_gw;
+ 		/* Found a match */
+@@ -848,7 +852,8 @@ static struct batadv_nc_node
+ 	INIT_LIST_HEAD(&nc_node->list);
+ 	ether_addr_copy(nc_node->addr, orig_node->orig);
+ 	nc_node->orig_node = orig_neigh_node;
+-	atomic_set(&nc_node->refcount, 2);
++	kref_init(&nc_node->refcount);
++	kref_get(&nc_node->refcount);
  
--		atomic_set(&claim->refcount, 2);
-+		kref_init(&claim->refcount);
-+		kref_get(&claim->refcount);
- 		batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 			   "bla_add_claim(): adding new entry %pM, vid %d to hash ...\n",
- 			   mac, BATADV_PRINT_VID(vid));
+ 	/* Select ingoing or outgoing coding node */
+ 	if (in_coding) {
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 098ec7f..c56b99c 100644
+index c56b99c..9a2371a 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -951,7 +951,7 @@ struct batadv_bla_claim {
- 	unsigned long lasttime;
- 	struct hlist_node hash_entry;
- 	struct rcu_head rcu;
+@@ -1067,7 +1067,7 @@ struct batadv_tt_roam_node {
+ struct batadv_nc_node {
+ 	struct list_head list;
+ 	u8 addr[ETH_ALEN];
 -	atomic_t refcount;
 +	struct kref refcount;
- };
- #endif
- 
+ 	struct rcu_head rcu;
+ 	struct batadv_orig_node *orig_node;
+ 	unsigned long last_seen;
 -- 
 2.6.4
 
