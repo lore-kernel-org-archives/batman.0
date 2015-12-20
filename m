@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 20 Dec 2015 14:17:46 +0100
-Message-Id: <1450617490-3544-6-git-send-email-sven@narfation.org>
+Date: Sun, 20 Dec 2015 14:17:47 +0100
+Message-Id: <1450617490-3544-7-git-send-email-sven@narfation.org>
 In-Reply-To: <1450617490-3544-1-git-send-email-sven@narfation.org>
 References: <1450617490-3544-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 06/30] batman-adv: Drop immediate
-	batadv_neigh_node free function
+Subject: [B.A.T.M.A.N.] [PATCH v2 07/30] batman-adv: Drop immediate
+	batadv_hardif_neigh_node free function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -26,83 +26,92 @@ grace period is over and no one (allowedly) accesses it anymore.
 But the _now functions ignore this completely. They free the object
 directly even when a different context still tries to access it. This has
 to be avoided and thus these functions must be removed and all functions
-have to use batadv_neigh_node_free_ref.
+have to use batadv_hardif_neigh_free_ref.
 
-Fixes: 9bb33b8d88e3 ("batman-adv: split tq information in neigh_node struct")
+Fixes: fed2826b490c ("batman-adv: add list of unique single hop neighbors per hard-interface")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v2:
  - split patchset into fixes and kref migration to make it easier when the
    decision is made where each patch will be applied
 
- net/batman-adv/originator.c | 31 +++++++++----------------------
- 1 file changed, 9 insertions(+), 22 deletions(-)
+ net/batman-adv/originator.c | 44 ++++++++++++--------------------------------
+ 1 file changed, 12 insertions(+), 32 deletions(-)
 
 diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 1819767..b1bbe0d 100644
+index b1bbe0d..38da601 100644
 --- a/net/batman-adv/originator.c
 +++ b/net/batman-adv/originator.c
-@@ -291,18 +291,6 @@ static void batadv_neigh_node_free_rcu(struct rcu_head *rcu)
+@@ -208,34 +208,19 @@ void batadv_neigh_ifinfo_free_ref(struct batadv_neigh_ifinfo *neigh_ifinfo)
  }
  
  /**
-- * batadv_neigh_node_free_ref_now - decrement the neighbors refcounter
-- *  and possibly free it (without rcu callback)
-- * @neigh_node: neigh neighbor to free
+- * batadv_hardif_neigh_free_rcu - free the hardif neigh_node
+- * @rcu: rcu pointer of the neigh_node
 - */
--static void
--batadv_neigh_node_free_ref_now(struct batadv_neigh_node *neigh_node)
+-static void batadv_hardif_neigh_free_rcu(struct rcu_head *rcu)
 -{
--	if (atomic_dec_and_test(&neigh_node->refcount))
--		batadv_neigh_node_free_rcu(&neigh_node->rcu);
+-	struct batadv_hardif_neigh_node *hardif_neigh;
+-
+-	hardif_neigh = container_of(rcu, struct batadv_hardif_neigh_node, rcu);
+-
+-	batadv_hardif_free_ref_now(hardif_neigh->if_incoming);
+-	kfree(hardif_neigh);
 -}
 -
 -/**
-  * batadv_neigh_node_free_ref - decrement the neighbors refcounter
-  *  and possibly free it
-  * @neigh_node: neigh neighbor to free
-@@ -742,24 +730,23 @@ int batadv_hardif_neigh_seq_print_text(struct seq_file *seq, void *offset)
- }
- 
- /**
-- * batadv_orig_ifinfo_free_rcu - free the orig_ifinfo object
-- * @rcu: rcu pointer of the orig_ifinfo object
-+ * batadv_orig_ifinfo_release - release orig_ifinfo from lists and queue for
-+ *  free after rcu grace period
-+ * @orig_ifinfo: the orig_ifinfo object to release
+- * batadv_hardif_neigh_free_now - decrement the hardif neighbors refcounter
+- *  and possibly free it (without rcu callback)
++ * batadv_hardif_neigh_release - release hardif neigh node from lists and
++ *  queue for free after rcu grace period
+  * @hardif_neigh: hardif neigh neighbor to free
   */
--static void batadv_orig_ifinfo_free_rcu(struct rcu_head *rcu)
-+static void batadv_orig_ifinfo_release(struct batadv_orig_ifinfo *orig_ifinfo)
+ static void
+-batadv_hardif_neigh_free_now(struct batadv_hardif_neigh_node *hardif_neigh)
++batadv_hardif_neigh_release(struct batadv_hardif_neigh_node *hardif_neigh)
  {
--	struct batadv_orig_ifinfo *orig_ifinfo;
- 	struct batadv_neigh_node *router;
+-	if (atomic_dec_and_test(&hardif_neigh->refcount)) {
+-		spin_lock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
+-		hlist_del_init_rcu(&hardif_neigh->list);
+-		spin_unlock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
++	spin_lock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
++	hlist_del_init_rcu(&hardif_neigh->list);
++	spin_unlock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
  
--	orig_ifinfo = container_of(rcu, struct batadv_orig_ifinfo, rcu);
+-		batadv_hardif_neigh_free_rcu(&hardif_neigh->rcu);
+-	}
++	batadv_hardif_free_ref(hardif_neigh->if_incoming);
++	kfree_rcu(hardif_neigh, rcu);
+ }
+ 
+ /**
+@@ -245,13 +230,8 @@ batadv_hardif_neigh_free_now(struct batadv_hardif_neigh_node *hardif_neigh)
+  */
+ void batadv_hardif_neigh_free_ref(struct batadv_hardif_neigh_node *hardif_neigh)
+ {
+-	if (atomic_dec_and_test(&hardif_neigh->refcount)) {
+-		spin_lock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
+-		hlist_del_init_rcu(&hardif_neigh->list);
+-		spin_unlock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
 -
- 	if (orig_ifinfo->if_outgoing != BATADV_IF_DEFAULT)
--		batadv_hardif_free_ref_now(orig_ifinfo->if_outgoing);
-+		batadv_hardif_free_ref(orig_ifinfo->if_outgoing);
- 
- 	/* this is the last reference to this object */
- 	router = rcu_dereference_protected(orig_ifinfo->router, true);
- 	if (router)
--		batadv_neigh_node_free_ref_now(router);
--	kfree(orig_ifinfo);
-+		batadv_neigh_node_free_ref(router);
-+
-+	kfree_rcu(orig_ifinfo, rcu);
+-		call_rcu(&hardif_neigh->rcu, batadv_hardif_neigh_free_rcu);
+-	}
++	if (atomic_dec_and_test(&hardif_neigh->refcount))
++		batadv_hardif_neigh_release(hardif_neigh);
  }
  
  /**
-@@ -770,7 +757,7 @@ static void batadv_orig_ifinfo_free_rcu(struct rcu_head *rcu)
- void batadv_orig_ifinfo_free_ref(struct batadv_orig_ifinfo *orig_ifinfo)
- {
- 	if (atomic_dec_and_test(&orig_ifinfo->refcount))
--		call_rcu(&orig_ifinfo->rcu, batadv_orig_ifinfo_free_rcu);
-+		batadv_orig_ifinfo_release(orig_ifinfo);
- }
+@@ -278,8 +258,8 @@ static void batadv_neigh_node_free_rcu(struct rcu_head *rcu)
+ 					       neigh_node->addr);
+ 	if (hardif_neigh) {
+ 		/* batadv_hardif_neigh_get() increases refcount too */
+-		batadv_hardif_neigh_free_now(hardif_neigh);
+-		batadv_hardif_neigh_free_now(hardif_neigh);
++		batadv_hardif_neigh_free_ref(hardif_neigh);
++		batadv_hardif_neigh_free_ref(hardif_neigh);
+ 	}
  
- /**
+ 	if (bao->bat_neigh_free)
 -- 
 2.6.4
 
