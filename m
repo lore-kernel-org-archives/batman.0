@@ -1,16 +1,15 @@
-Return-Path: <a@unstable.cc>
-References: <ab66a344512e064000357c6d3c2a6f3d0e948ddb.1450451516.git.geliangtang@163.com>
- <b01d3ee936833e94fffa53f7a82fc46e20d877c1.1450451516.git.geliangtang@163.com>
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <56780FDF.10204@unstable.cc>
-Date: Mon, 21 Dec 2015 22:42:39 +0800
+Return-Path: <keinepostnurmuell@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <b01d3ee936833e94fffa53f7a82fc46e20d877c1.1450451516.git.geliangtang@163.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="6X948h2CMWjxusk3cplXFHpJDsWael4Ev"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 07/14] batman-adv: use
-	list_for_each_entry_safe
+In-Reply-To: <3922831.NrCxltvcVr@sven-edge>
+References: <CAKrZ8yfKQi8qBzmC7BrEA6Sfug9JB4hb5q_M6p20Ay-V35-F4A@mail.gmail.com>
+ <1911165.iLNu9IsRoq@sven-edge>
+ <CAKrZ8yffDYcr6UCw2Yv7hqUFEBNZQ+nTU09dovL=PO3+Zqy7ig@mail.gmail.com>
+ <3922831.NrCxltvcVr@sven-edge>
+Date: Mon, 21 Dec 2015 16:35:09 +0100
+Message-ID: <CAKrZ8yeAuYRFvFxgXWALZKGmqRo7qC8hEnt2YSMEW7n3m7_NMw@mail.gmail.com>
+From: no name <keinepostnurmuell@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] Super high package loss and weak connection
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,63 +19,59 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Geliang Tang <geliangtang@163.com>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+To: Sven Eckelmann <sven@narfation.org>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---6X948h2CMWjxusk3cplXFHpJDsWael4Ev
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hello
+I continued with testing:
+Raspberry Pi b+ with a LOGILINK WL0084B USB Stick on Jessie with
+Kernel 4.1.13+, batman2015-0
 
-Hi Geliang,
+I tested:
 
->  static int batadv_socket_release(struct inode *inode, struct file *fil=
-e)
->  {
-> -	struct batadv_socket_client *socket_client =3D file->private_data;
-> -	struct batadv_socket_packet *socket_packet;
-> -	struct list_head *list_pos, *list_pos_tmp;
-> +	struct batadv_socket_client *client =3D file->private_data;
-> +	struct batadv_socket_packet *packet, *tmp;
-> =20
+Batman + Ad-Hoc
+Batman + 802.11s
+only 802.11s
 
-[...]
+against each other. This lead to the following results:
 
+All of the above configurations show basically the same behaviour:
+When pinging, the reply times from directly connected nodes are really
+stable (1-4ms, depends on the range).
+When pinging via one hop in between, the network seems to take some
+breaks. A burst of pings (5-10) are replied pretty accurate, but
+always followed by a really long break of about 2-3 seconds
 
-> +	list_for_each_entry_safe(packet, tmp, &client->queue_list, list) {
+The problem is less intense when using the batman configurations
+(->actually does rout better (: ).
 
-I guess you renamed those variables to make sure that the statement
-above would fit in 80 chars.. in that case the patch looks good.
+Facing this results I think I might be staring at a driver's issue,
+but still wanted to see if anyone here can help me with ideas.
 
+Thanks everyone for the time and help!
 
-Acked-by: Antonio Quartulli <a@unstable.cc>
+Richard
 
-
---=20
-Antonio Quartulli
-
-
---6X948h2CMWjxusk3cplXFHpJDsWael4Ev
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWeA/jAAoJENpFlCjNi1MRrgsP/2Y3mG/Hcl8TNBl4fyhVPGaB
-JtgpLbjrHblGgb2NHfWnPl/a1N/yGLolFF/QCXf5IHN2p8QcZW44g33Bxfo84342
-2tJ5OA6RwT1OKEm8/D3yxE9edt0TPwxGoGEKx2HxZlZGUvm5XdH3BYDjrGsvNBpK
-xttL/RvS0QtjsofWJX4U5IaAIeeF9sVXE0758QDiStG6ZL6zVqYHLo1FqMQIfC7K
-neIrBeUC3B75SgwuLRgkzZZ8LQNitFcPmVexL6LKJ+MfB9unIBHk5dVkVtZUdk9J
-+3kQksWmUqjDpqK2kPgfUj5+wiIjbE/YRmmmp1UVVQYgDIUO9map1DpsnKgPiKWC
-P72FxQ5Wu1cALNCeuuAOlxTwB78RoQonjbf43PgbES7m/qXXyhgWmbZ+ulH04IqQ
-F1PygBJ8hgyhuSVcn6ECqJrVo4Q4Za2zC/0CZCmA+5jaj8EInXvEc6IX7Y8abkkQ
-AiBer0r8eHQVJEo/oUxh91hD2Qt28B2QAlNLhW6heZ+REO/ufcpINQ3KdswHWH1f
-YhggNdkiaqCwVfj96/OMwwu5hMXD4E7jZS2BGpi2aRzGqtGj3zVp7mWaUj0XqKX3
-I5A8it6ycUHBTNBU+66u0DUHtWQimLH9a+aX9Ek4zP9qwPR9RUEZwolD8P2duglS
-Xn8t9vzsBn82PoQ6pSN8
-=Of5E
------END PGP SIGNATURE-----
-
---6X948h2CMWjxusk3cplXFHpJDsWael4Ev--
+On 18 December 2015 at 18:30, Sven Eckelmann <sven@narfation.org> wrote:
+> On Friday 18 December 2015 18:22:40 no name wrote:
+>> I made a little table were I tried wheezy against jessy and 802.11 as
+>> someone suggested earlier in the mailing list to me. I placed the
+>> raspberries next to each other on my table and tested through different
+>> settings:
+>>
+>> ad-hoc+batman-2014.X@debian wheezy:          1m distance  .. 200 pings, 0%
+>> paket loss, reply time -> (min,avg,max,mdev 1.2ms, 1.8ms, 6.4ms, 0.8ms)
+>> ad-hoc+batman-2015.2@debian jessie:             1m distance  .. 200 pings,
+>> 6% paket loss, reply time -> (min,avg,max,mdev 1.1ms, 170ms, 1400ms, 370ms)
+>> 802.11s @debian jessie:                                  1m distance  ..
+>> 200 pings, 0% paket loss, reply time -> (min,avg,max,mdev 1.05ms, 1.8ms,
+>> 14ms, 1.5ms)
+>
+> Your "table" is incomplete. adhoc without batman-adv and meshpoint (802.11s
+> without fwding+ttl=1)+batman-adv are missing. You also mixed two different
+> batman-adv versions. Either you use the same batman-adv version everywhere or
+> make sure that the kernel+wifi driver doesn't change. Changing multiple
+> variables between two tests tests make the results more or less useless for
+> comparisons.
+>
+> Kind regards,
+>         Sven
