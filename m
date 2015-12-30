@@ -1,11 +1,8 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 30 Dec 2015 20:40:14 +0800
-Message-Id: <1451479214-28034-13-git-send-email-mareklindner@neomailbox.ch>
-In-Reply-To: <2457136.iz2mu7y0Mc@voltaire>
-References: <2457136.iz2mu7y0Mc@voltaire>
-Subject: [B.A.T.M.A.N.] [PATCH 13/13] batman-adv: B.A.T.M.A.N. V - implement
-	bat_neigh_print API
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 30 Dec 2015 19:35:36 +0100
+Message-Id: <1451500536-32028-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: Fix typo "preferrably"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,96 +13,25 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@open-mesh.com>
 
-From: Linus Luessing <linus.luessing@web.de>
-
-Lists all neighbours detected by the Echo Locating Protocol
-(ELP) and their throughput metric.
-
-Initially Developed by Linus during a 6 months trainee study
-period in Ascom (Switzerland) AG.
-
-Signed-off-by: Linus Luessing <linus.luessing@web.de>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_v.c | 55 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 55 insertions(+)
+ man/batctl.8 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 3042583..e06fb97 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -118,6 +118,60 @@ batadv_v_orig_print_neigh(struct batadv_orig_node *orig_node,
- }
+diff --git a/man/batctl.8 b/man/batctl.8
+index 73d15e7..e804a08 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -186,7 +186,7 @@ Example 3: 16 or 0x0F
+ .IP
+ The batman-adv kernel module comes with a variety of debug tables containing various information about the state of the mesh
+ seen by each individual node. These tables are exported via debugfs and easily accessible via batctl. You will need debugfs
+-support compiled into your kernel and preferrably have mounted the debugfs to a well-known mountpoint. If debugfs is not
++support compiled into your kernel and preferably have mounted the debugfs to a well-known mountpoint. If debugfs is not
+ mounted batctl will attempt to do this step for you.
  
- /**
-+ * batadv_v_hardif_neigh_print - print a single ELP neighbour node
-+ * @seq: neighbour table seq_file struct
-+ * @hardif_neigh: hardif neighbour information
-+ */
-+static void
-+batadv_v_hardif_neigh_print(struct seq_file *seq,
-+			    struct batadv_hardif_neigh_node *hardif_neigh)
-+{
-+	int last_secs, last_msecs;
-+	u32 throughput;
-+
-+	last_secs = jiffies_to_msecs(jiffies - hardif_neigh->last_seen) / 1000;
-+	last_msecs = jiffies_to_msecs(jiffies - hardif_neigh->last_seen) % 1000;
-+	throughput = ewma_throughput_read(&hardif_neigh->bat_v.throughput);
-+
-+	seq_printf(seq, "%pM %4i.%03is (%9u.%1u) [%10s]\n",
-+		   hardif_neigh->addr, last_secs, last_msecs, throughput / 10,
-+		   throughput % 10, hardif_neigh->if_incoming->net_dev->name);
-+}
-+
-+/**
-+ * batadv_v_neigh_print - print the single hop neighbour list
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @seq: neighbour table seq_file struct
-+ */
-+static void batadv_v_neigh_print(struct batadv_priv *bat_priv,
-+				 struct seq_file *seq)
-+{
-+	struct net_device *net_dev = (struct net_device *)seq->private;
-+	struct batadv_hardif_neigh_node *hardif_neigh;
-+	struct batadv_hard_iface *hard_iface;
-+	int batman_count = 0;
-+
-+	seq_printf(seq, "  %-15s %s (%11s) [%10s]\n", "Neighbor",
-+		   "last-seen", "throughput", "IF");
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-+		if (hard_iface->soft_iface != net_dev)
-+			continue;
-+
-+		hlist_for_each_entry_rcu(hardif_neigh,
-+					 &hard_iface->neigh_list, list) {
-+			batadv_v_hardif_neigh_print(seq, hardif_neigh);
-+			batman_count++;
-+		}
-+	}
-+	rcu_read_unlock();
-+
-+	if (batman_count == 0)
-+		seq_puts(seq, "No batman nodes in range ...\n");
-+}
-+
-+/**
-  * batadv_v_orig_print - print the originator table
-  * @bat_priv: the bat priv with all the soft interface information
-  * @seq: debugfs table seq_file struct
-@@ -230,6 +284,7 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.bat_orig_print = batadv_v_orig_print,
- 	.bat_neigh_cmp = batadv_v_neigh_cmp,
- 	.bat_neigh_is_similar_or_better = batadv_v_neigh_is_sob,
-+	.bat_neigh_print = batadv_v_neigh_print,
- };
- 
- /**
+ All of the debug tables support the following options:
 -- 
 2.6.4
 
