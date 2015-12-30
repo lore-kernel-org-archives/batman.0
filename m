@@ -1,14 +1,11 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 30 Dec 2015 20:00:12 +0800
-Message-ID: <3018788.DBHg4t7daR@voltaire>
-In-Reply-To: <1448901241-30844-1-git-send-email-sw@simonwunderlich.de>
-References: <1448901241-30844-1-git-send-email-sw@simonwunderlich.de>
+Date: Wed, 30 Dec 2015 20:38:42 +0800
+Message-ID: <2457136.iz2mu7y0Mc@voltaire>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3666510.ZH31JAS0VL";
+Content-Type: multipart/signed; boundary="nextPart5076266.HHdsYfbvHg";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: fix lockdep splat when
-	doing mcast_free
+Subject: [B.A.T.M.A.N.] B.A.T.M.A.N. V leaves the nest
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,45 +15,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart3666510.ZH31JAS0VL
+--nextPart5076266.HHdsYfbvHg
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, November 30, 2015 17:34:01 Simon Wunderlich wrote:
-> From: Simon Wunderlich <simon@open-mesh.com>
-> 
-> While testing, we got something like this:
-> 
-> WARNING: CPU: 0 PID: 238 at net/batman-adv/multicast.c:142
-> batadv_mcast_mla_tt_retract+0x94/0x205 [batman_adv]() [...]
-> Call Trace:
-> [<ffffffff815fc597>] dump_stack+0x4b/0x64
-> [<ffffffff810b34dc>] warn_slowpath_common+0xbc/0x120
-> [<ffffffffa0024ec5>] ? batadv_mcast_mla_tt_retract+0x94/0x205 [batman_adv]
-> [<ffffffff810b3705>] warn_slowpath_null+0x15/0x20
-> [<ffffffffa0024ec5>] batadv_mcast_mla_tt_retract+0x94/0x205 [batman_adv]
-> [<ffffffffa00273fe>] batadv_mcast_free+0x36/0x39 [batman_adv]
-> [<ffffffffa0020c77>] batadv_mesh_free+0x7d/0x13f [batman_adv]
-> [<ffffffffa0036a6b>] batadv_softif_free+0x15/0x25 [batman_adv]
-> [...]
-> 
-> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-> ---
-> Changes to PATCH:
->  * rebase on maint, add actual splat
-> ---
->  net/batman-adv/multicast.c | 2 ++
->  1 file changed, 2 insertions(+)
+Hi,
 
-Applied in revision 025b743.
+for those following the mailing list and other events around the B.A.T.M.A.N. 
+team the term 'B.A.T.M.A.N. V' probably sounds all too familiar. It has been 
+more than 5 years since the first ideas for improving the routing protocol 
+were exchanged. In the following years we had several GSoC projects dedicated 
+to pull this topic forward, countless hack & brainstorming sessions (including 
+sleepless nights at each battlemesh). Turns out, replacing a mature protocol 
+like B.A.T.M.A.N. IV takes more effort than you might think.
 
-Thanks,
-Marek
+Another hurdle we kept running into was the missing separation between routing 
+logic and feature code preventing any developer and/or tester to quickly 
+switch from one protocol to the other. Now we have finally completed hiding 
+all routing logic behind an internal API allowing to change the routing 
+protocol while still benefiting from all the layer2 features.
 
---nextPart3666510.ZH31JAS0VL
+With this mail the B.A.T.M.A.N. team announces the availability of the latest 
+protocol revision: B.A.T.M.A.N. V. Major features are its throughput based 
+path metric and packet type separation. For a high level overview about the 
+differences to B.A.T.M.A.N. IV feel invited to continue reading[1]. Technical 
+protocol specs also are available [2][3].
+
+The code has already undergone stability and performance testing[4], thus is 
+considered ready for a wider audience testing. In the coming weeks said 
+patches will be included in the main source tree and sent upstream to the 
+kernel maintainers. Comments and feedback are welcome!
+
+Next steps involve finishing the throughout meter[5] to enrich B.A.T.M.A.N. V 
+with an automatic link throughput detection when other mechanisms fail.
+
+
+Happy routing,
+The B.A.T.M.A.N. team
+
+
+[1] https://www.open-mesh.org/projects/batman-adv/wiki/BATMAN_V
+[2] https://www.open-mesh.org/projects/batman-adv/wiki/ELP
+[3] https://www.open-mesh.org/projects/batman-adv/wiki/Ogmv2
+[4] https://www.open-mesh.org/projects/batman-adv/wiki/BATMAN_V_Tests
+[5] https://www.open-mesh.org/projects/open-mesh/wiki/2012-10-06-GSoC-2012-Edo-Monticellis-Final-Report
+
+--nextPart5076266.HHdsYfbvHg
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -64,14 +70,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWg8dMAAoJEFNVTo/uthzAh0sH/R75KWK9erwtkvMOlm+THUjK
-2NFtVPA3w0VmqC+sQibESwHBuUuj5LNsESVh6vjZu7EebnCoYs/33IGwZH+bJFHV
-QklTTp+mCBvbKegM1lt06b9imL5xIs7wJMODpy/xp4lIvv8uMuV7tRqA3+ii0cu7
-2Jc1ULmuuEOiY8KbkXOa80t3m0lclOwaACYXdP/N9g8ZK0C38/ifIdhE0MQ8kIYM
-UnV8dq1sVfezjzbw1j/CUz3rfVdwSDG6G5asbABmQhdVZac7SAny/4Hq8fxIdJ2K
-XOvlQGlY6uP2uhrKq15p/Ub6zA6Rox2x7JGUWTKTgSRsiJVGl+4CxLCbemtTxb4=
-=QgMt
+iQEcBAABCAAGBQJWg9BSAAoJEFNVTo/uthzAnpkIAImZBe3h2vkDMVDZKfJDRfsI
+ZHzdyvW8kwphnXurGMZeEUAfXYfkAGlpHyYhFX+oKzVpf1rFzWcHuhBMUMmaVdxM
+yStmekXOAz0lVERioOHTJAPhhvEmRHHg/yviQUA89jBxv08Invd4BMs1/HWv58rf
+nuoqSCnV2r6fPeUqG6Sv8y/XeqdOoHA/DYQI5M/a2kT7y7/sCy2hYfJlxvbdSp/3
+TNG9dYHQr2nfB/i7h1fl2kJ7G7Anbj8DuMGkmeENKP37J5h2Apa7O+PEv5misiS+
+mgZc3sNRLP0FK5pWr71Mfro2gBx9y+6Y3ei7stJJetTviXdnQLKelSe+xYk07Rk=
+=q2ub
 -----END PGP SIGNATURE-----
 
---nextPart3666510.ZH31JAS0VL--
+--nextPart5076266.HHdsYfbvHg--
 
