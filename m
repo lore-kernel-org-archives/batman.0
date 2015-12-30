@@ -1,11 +1,11 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 30 Dec 2015 20:38:42 +0800
-Message-ID: <2457136.iz2mu7y0Mc@voltaire>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5076266.HHdsYfbvHg";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: [B.A.T.M.A.N.] B.A.T.M.A.N. V leaves the nest
+Date: Wed, 30 Dec 2015 20:40:02 +0800
+Message-Id: <1451479214-28034-1-git-send-email-mareklindner@neomailbox.ch>
+In-Reply-To: <2457136.iz2mu7y0Mc@voltaire>
+References: <2457136.iz2mu7y0Mc@voltaire>
+Subject: [B.A.T.M.A.N.] [PATCH 01/13] batman-adv: Add hard_iface specific
+	sysfs wrapper macros for UINT
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,69 +15,88 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@open-mesh.com>
 
---nextPart5076266.HHdsYfbvHg
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+From: Linus Luessing <linus.luessing@web.de>
 
-Hi,
+This allows us to easily add a sysfs parameter for an
+unsigned int later, which is not for a batman mesh interface
+(e.g. bat0), but for a common interface instead. It allows
+reading and writing an atomic_t in hard_iface (instead of
+bat_priv compared to the mesh variant).
 
-for those following the mailing list and other events around the B.A.T.M.A.N. 
-team the term 'B.A.T.M.A.N. V' probably sounds all too familiar. It has been 
-more than 5 years since the first ideas for improving the routing protocol 
-were exchanged. In the following years we had several GSoC projects dedicated 
-to pull this topic forward, countless hack & brainstorming sessions (including 
-sleepless nights at each battlemesh). Turns out, replacing a mature protocol 
-like B.A.T.M.A.N. IV takes more effort than you might think.
+Developed by Linus during a 6 months trainee study period in
+Ascom (Switzerland) AG.
 
-Another hurdle we kept running into was the missing separation between routing 
-logic and feature code preventing any developer and/or tester to quickly 
-switch from one protocol to the other. Now we have finally completed hiding 
-all routing logic behind an internal API allowing to change the routing 
-protocol while still benefiting from all the layer2 features.
+Signed-off-by: Linus Luessing <linus.luessing@web.de>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+[antonio@open-mesh.com: rename functions and move macros]
+Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+---
+ net/batman-adv/sysfs.c | 49 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 49 insertions(+)
 
-With this mail the B.A.T.M.A.N. team announces the availability of the latest 
-protocol revision: B.A.T.M.A.N. V. Major features are its throughput based 
-path metric and packet type separation. For a high level overview about the 
-differences to B.A.T.M.A.N. IV feel invited to continue reading[1]. Technical 
-protocol specs also are available [2][3].
-
-The code has already undergone stability and performance testing[4], thus is 
-considered ready for a wider audience testing. In the coming weeks said 
-patches will be included in the main source tree and sent upstream to the 
-kernel maintainers. Comments and feedback are welcome!
-
-Next steps involve finishing the throughout meter[5] to enrich B.A.T.M.A.N. V 
-with an automatic link throughput detection when other mechanisms fail.
-
-
-Happy routing,
-The B.A.T.M.A.N. team
-
-
-[1] https://www.open-mesh.org/projects/batman-adv/wiki/BATMAN_V
-[2] https://www.open-mesh.org/projects/batman-adv/wiki/ELP
-[3] https://www.open-mesh.org/projects/batman-adv/wiki/Ogmv2
-[4] https://www.open-mesh.org/projects/batman-adv/wiki/BATMAN_V_Tests
-[5] https://www.open-mesh.org/projects/open-mesh/wiki/2012-10-06-GSoC-2012-Edo-Monticellis-Final-Report
-
---nextPart5076266.HHdsYfbvHg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWg9BSAAoJEFNVTo/uthzAnpkIAImZBe3h2vkDMVDZKfJDRfsI
-ZHzdyvW8kwphnXurGMZeEUAfXYfkAGlpHyYhFX+oKzVpf1rFzWcHuhBMUMmaVdxM
-yStmekXOAz0lVERioOHTJAPhhvEmRHHg/yviQUA89jBxv08Invd4BMs1/HWv58rf
-nuoqSCnV2r6fPeUqG6Sv8y/XeqdOoHA/DYQI5M/a2kT7y7/sCy2hYfJlxvbdSp/3
-TNG9dYHQr2nfB/i7h1fl2kJ7G7Anbj8DuMGkmeENKP37J5h2Apa7O+PEv5misiS+
-mgZc3sNRLP0FK5pWr71Mfro2gBx9y+6Y3ei7stJJetTviXdnQLKelSe+xYk07Rk=
-=q2ub
------END PGP SIGNATURE-----
-
---nextPart5076266.HHdsYfbvHg--
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index f38d7b7..be65085 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -241,6 +241,55 @@ ssize_t batadv_show_vlan_##_name(struct kobject *kobj,			\
+ 	static BATADV_ATTR_VLAN(_name, _mode, batadv_show_vlan_##_name,	\
+ 				batadv_store_vlan_##_name)
+ 
++#define BATADV_ATTR_HIF_STORE_UINT(_name, _var, _min, _max, _post_func)	\
++ssize_t batadv_store_##_name(struct kobject *kobj,			\
++			     struct attribute *attr, char *buff,	\
++			     size_t count)				\
++{									\
++	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
++	struct batadv_hard_iface *hard_iface;				\
++	ssize_t length;							\
++									\
++	hard_iface = batadv_hardif_get_by_netdev(net_dev);		\
++	if (!hard_iface)						\
++		return 0;						\
++									\
++	length = __batadv_store_uint_attr(buff, count, _min, _max,	\
++					  _post_func, attr,		\
++					  &hard_iface->_var, net_dev);	\
++									\
++	batadv_hardif_free_ref(hard_iface);				\
++	return length;							\
++}
++
++#define BATADV_ATTR_HIF_SHOW_UINT(_name, _var)				\
++ssize_t batadv_show_##_name(struct kobject *kobj,			\
++			    struct attribute *attr, char *buff)		\
++{									\
++	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);	\
++	struct batadv_hard_iface *hard_iface;				\
++	ssize_t length;							\
++									\
++	hard_iface = batadv_hardif_get_by_netdev(net_dev);		\
++	if (!hard_iface)						\
++		return 0;						\
++									\
++	length = sprintf(buff, "%i\n", atomic_read(&hard_iface->_var));	\
++									\
++	batadv_hardif_free_ref(hard_iface);				\
++	return length;							\
++}
++
++/* Use this, if you are going to set [name] in hard_iface to an
++ * unsigned integer value
++ */
++#define BATADV_ATTR_HIF_UINT(_name, _var, _mode, _min, _max, _post_func)\
++	static BATADV_ATTR_HIF_STORE_UINT(_name, _var, _min,		\
++					  _max, _post_func)		\
++	static BATADV_ATTR_HIF_SHOW_UINT(_name, _var)			\
++	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
++			   batadv_store_##_name)
++
+ static int batadv_store_bool_attr(char *buff, size_t count,
+ 				  struct net_device *net_dev,
+ 				  const char *attr_name, atomic_t *attr,
+-- 
+2.6.4
 
