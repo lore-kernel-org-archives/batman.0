@@ -1,11 +1,11 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 30 Dec 2015 20:40:11 +0800
-Message-Id: <1451479214-28034-10-git-send-email-mareklindner@neomailbox.ch>
+Date: Wed, 30 Dec 2015 20:40:12 +0800
+Message-Id: <1451479214-28034-11-git-send-email-mareklindner@neomailbox.ch>
 In-Reply-To: <2457136.iz2mu7y0Mc@voltaire>
 References: <2457136.iz2mu7y0Mc@voltaire>
-Subject: [B.A.T.M.A.N.] [PATCH 10/13] batman-adv: ELP - send unicast ELP
-	packets for throughput sampling
+Subject: [B.A.T.M.A.N.] [PATCH 11/13] batman-adv: B.A.T.M.A.N. V - implement
+	neighbor comparison API calls
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,122 +20,80 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-In case of an unused wireless link, the mac80211 throughput estimation
-won't get updated further. Consequently, the reported throughput metric
-will become obsolete.
-
-With this patch unicast sampling is introduced by periodically sending
-unicast ELP packets to each neighbor on idle WiFi links. These sampling
-packets will fill an entire frame, so that the measurement is as
-reliable as possible
-
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- net/batman-adv/bat_v_elp.c | 69 ++++++++++++++++++++++++++++++++++++++++++++++
- net/batman-adv/main.h      |  3 ++
- 2 files changed, 72 insertions(+)
+ net/batman-adv/bat_v.c | 38 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
 
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index a6d7449..7046c59 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -162,6 +162,69 @@ void batadv_v_elp_throughput_metric_update(struct work_struct *work)
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index e669863..1ca7e65 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -19,12 +19,15 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
++#include <linux/bug.h>
+ #include <linux/cache.h>
+ #include <linux/init.h>
++#include <linux/types.h>
+ #include <linux/workqueue.h>
+ 
+ #include "bat_v_elp.h"
+ #include "bat_v_ogm.h"
++#include "originator.h"
+ #include "packet.h"
+ 
+ static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
+@@ -78,6 +81,39 @@ static void batadv_v_ogm_emit(struct batadv_forw_packet *forw_packet)
+ {
  }
  
- /**
-+ * batadv_v_elp_wifi_neigh_probe - send link probing packets to a neighbour
-+ * @neigh: the neighbour to probe
-+ *
-+ * Sends a predefined number of unicast wifi packets to a given neighbour in
-+ * order to trigger the throughput estimation on this link by the RC algorithm.
-+ * Packets are sent only if there there is not enough payload unicast traffic
-+ * towards this neighbour..
-+ *
-+ * Return: True on success and false in case of error during skb preparation.
-+ */
-+static bool
-+batadv_v_elp_wifi_neigh_probe(struct batadv_hardif_neigh_node *neigh)
++static int batadv_v_neigh_cmp(struct batadv_neigh_node *neigh1,
++			      struct batadv_hard_iface *if_outgoing1,
++			      struct batadv_neigh_node *neigh2,
++			      struct batadv_hard_iface *if_outgoing2)
 +{
-+	struct batadv_hard_iface *hard_iface = neigh->if_incoming;
-+	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	unsigned long last_tx_diff;
-+	struct sk_buff *skb;
-+	int probe_len, i;
-+	int elp_skb_len;
++	struct batadv_neigh_ifinfo *ifinfo1, *ifinfo2;
 +
-+	/* this probing routine is for Wifi neighbours only */
-+	if (!batadv_is_wifi_netdev(hard_iface->net_dev))
-+		return true;
++	ifinfo1 = batadv_neigh_ifinfo_get(neigh1, if_outgoing1);
++	ifinfo2 = batadv_neigh_ifinfo_get(neigh2, if_outgoing2);
 +
-+	/* probe the neighbor only if no unicast packets have been sent
-+	 * to it in the last 100 milliseconds: this is the rate control
-+	 * algorithm sampling interval (minstrel). In this way, if not
-+	 * enough traffic has been sent to the neighbor, batman-adv can
-+	 * generate 2 probe packets and push the RC algorithm to perform
-+	 * the sampling
-+	 */
-+	last_tx_diff = jiffies_to_msecs(jiffies - neigh->bat_v.last_unicast_tx);
-+	if (last_tx_diff <= BATADV_ELP_PROBE_MAX_TX_DIFF)
-+		return true;
++	if (WARN_ON(!ifinfo1 || !ifinfo2))
++		return 0;
 +
-+	probe_len = max_t(int, sizeof(struct batadv_elp_packet),
-+			  BATADV_ELP_MIN_PROBE_SIZE);
-+
-+	for (i = 0; i < BATADV_ELP_PROBES_PER_NODE; i++) {
-+		elp_skb_len = hard_iface->bat_v.elp_skb->len;
-+		skb = skb_copy_expand(hard_iface->bat_v.elp_skb, 0,
-+				      probe_len - elp_skb_len,
-+				      GFP_ATOMIC);
-+		if (!skb)
-+			return false;
-+
-+		/* Tell the skb to get as big as the allocated space (we want
-+		 * the packet to be exactly of that size to make the link
-+		 * throughput estimation effective.
-+		 */
-+		skb_put(skb, probe_len - hard_iface->bat_v.elp_skb->len);
-+
-+		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+			   "Sending unicast (probe) ELP packet on interface %s to %pM\n",
-+			   hard_iface->net_dev->name, neigh->addr);
-+
-+		batadv_send_skb_packet(skb, hard_iface, neigh->addr);
-+	}
-+
-+	return true;
++	return ifinfo1->bat_v.throughput - ifinfo2->bat_v.throughput;
 +}
 +
-+/**
-  * batadv_v_elp_periodic_work - ELP periodic task per interface
-  * @work: work queue item
-  *
-@@ -224,6 +287,12 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
- 	 */
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(hardif_neigh, &hard_iface->neigh_list, list) {
-+		if (!batadv_v_elp_wifi_neigh_probe(hardif_neigh))
-+			/* if something goes wrong while probing, better to stop
-+			 * sending packets immediately and reschedule the task
-+			 */
-+			break;
++static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *neigh1,
++				  struct batadv_hard_iface *if_outgoing1,
++				  struct batadv_neigh_node *neigh2,
++				  struct batadv_hard_iface *if_outgoing2)
++{
++	struct batadv_neigh_ifinfo *ifinfo1, *ifinfo2;
++	u32 threshold;
 +
- 		if (!atomic_inc_not_zero(&hardif_neigh->refcount))
- 			continue;
++	ifinfo1 = batadv_neigh_ifinfo_get(neigh1, if_outgoing1);
++	ifinfo2 = batadv_neigh_ifinfo_get(neigh2, if_outgoing2);
++
++	threshold = ifinfo1->bat_v.throughput / 4;
++	threshold = ifinfo1->bat_v.throughput - threshold;
++
++	return ifinfo2->bat_v.throughput > threshold;
++}
++
+ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+ 	.name = "BATMAN_V",
+ 	.bat_iface_enable = batadv_v_iface_enable,
+@@ -87,6 +123,8 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+ 	.bat_hardif_neigh_init = batadv_v_hardif_neigh_init,
+ 	.bat_ogm_emit = batadv_v_ogm_emit,
+ 	.bat_ogm_schedule = batadv_v_ogm_schedule,
++	.bat_neigh_cmp = batadv_v_neigh_cmp,
++	.bat_neigh_is_similar_or_better = batadv_v_neigh_is_sob,
+ };
  
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index a32312a..20ac264 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -63,6 +63,9 @@
- 
- /* B.A.T.M.A.N. V */
- #define BATADV_THROUGHPUT_DEFAULT_VALUE 10
-+#define BATADV_ELP_PROBES_PER_NODE 2
-+#define BATADV_ELP_MIN_PROBE_SIZE 200 /* bytes */
-+#define BATADV_ELP_PROBE_MAX_TX_DIFF 100 /* milliseconds */
- #define BATADV_ELP_MAX_AGE 64
- #define BATADV_OGM_MAX_ORIGDIFF 5
- #define BATADV_OGM_MAX_AGE 64
+ /**
 -- 
 2.6.4
 
