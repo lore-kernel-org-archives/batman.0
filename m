@@ -1,13 +1,13 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Thu, 31 Dec 2015 12:07:12 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20151231110712.GD30632@otheros>
-References: <2457136.iz2mu7y0Mc@voltaire>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Thu, 31 Dec 2015 20:51:09 +0800
+Message-ID: <2750284.l7yvreChzV@voltaire>
+In-Reply-To: <1451500536-32028-1-git-send-email-sven@narfation.org>
+References: <1451500536-32028-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <2457136.iz2mu7y0Mc@voltaire>
-Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N. V leaves the nest
+Content-Type: multipart/signed; boundary="nextPart2110940.a0QeDIxyMH";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Fix typo "preferrably"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,61 +17,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
+--nextPart2110940.a0QeDIxyMH
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-It's nice to see how the whole BATMAN V idea has matured over the
-years and both the documentation and code having become very
-clean and simple to read :).
+On Wednesday, December 30, 2015 19:35:36 Sven Eckelmann wrote:
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  man/batctl.8 | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
+Applied in revision 72caa60.
 
-However, I think there is at least one more bug in the
-specification that needs fixing, the one I had mentioned to Simon
-some days ago on IRC, that with the current writing, there would
-never be a selected router.
+Thanks,
+Marek
 
-There are also two more things I would (still) like to discuss
-regarding the OGMv2 specification in the wiki:
+--nextPart2110940.a0QeDIxyMH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-* Is the check "If the received neighbor is not (yet) a router,
-  drop the OGMv2" still necessary? If yes why?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-* Suggestion: Change "If the OGMv2 sequence number is not newer or equal
-  compared to the last received OGMV2 (from any neighbor for this
-  originator) and if the throughput is not better, drop the OGMv2"
-  to:
-  "[...] (from the currently selected router for this originator) [...]"
+iQEcBAABCAAGBQJWhSS9AAoJEFNVTo/uthzAGyAIAIFHogcWZ0yk1NkW8Vf6Ed/V
+0KCMiRyhJVXULvoB/WpjQo2s9Qof8eFuYZxrV7vh3++ZH/Mhnh+0cwD/18Pykl9E
+gH23QwGmVg4RY9SZdY5Nxc//RO46v1lkwI5i5UM1ufjkAw3eCpJqsS0PZLs+nasz
+I1orTc7030NVXYm3r3b9mkedUg/JyMMOb/kzjk1+7WRI0HThe1kYRA5QNvpSBnJ1
+Q6vgSntK33JrHhEub2PyVTbXg5OLw+OJFcWgr7z6ZX+r0aYTYdemGUHNsg62PvgG
+047iE5MUKMNTA8wogSW/c+vD7paWzAkILV/2hqjqLpiDNL6myM0NYnfH7eLqFbg=
+=Gmg8
+-----END PGP SIGNATURE-----
 
-  (-> is another sequence number check here redundant?
-      see "Age check above"? maybe some merging+reordering here?)
+--nextPart2110940.a0QeDIxyMH--
 
-* What does "is adopted"/"are applied" mean in section 3.2.2 and
-  section 4? Maybe clarify when the internal stats are updated and
-  when the OGMv2? ->
-
-* Suggestion:
-  * Move "forward penalties are applied" to section 4
-    and change it to "forward penalties are applied to the OGMv2"
-  * Change "Path Throughput is adopted if its lower than the link
-    throughput to the neighbor, otherwise the link throuput is
-    adopted" to:
-    "If the link throughput to the neighbor this OGMv2 was
-    received from is lower than the Path Throughput of the OGMv2
-    then set the Path Throughput of the OGMv2 to this link throughput."
-  * Remove "The Path throughput for the considered outoging
-    interface is adopted" from section 4.
-
-
-Also, I guess there is some awareness about potentially slow
-convergence speeds. One of the reasons the idea with "RIP"
-occured. But I think next to dead nodes, there are some more
-scenarios with slow convergence speeds which depends on the
-latency of links. Going to write a wiki page with pictures on
-that, I think it should at least be documented before a release
-(I'd have some ideas to fix it later in a backwards compatible
-way, ensuring a convergence within one sequence number - it fact
-that fix was in the original OGMv2 page I had written back then
-;) ).
-
-Cheers, Linus
