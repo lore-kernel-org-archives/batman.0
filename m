@@ -1,15 +1,14 @@
 Return-Path: <linus.luessing@c0d3.blue>
-Date: Mon, 4 Jan 2016 14:08:43 +0100
+Date: Mon, 4 Jan 2016 17:03:02 +0100
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20160104130843.GK2823@otheros>
-References: <2457136.iz2mu7y0Mc@voltaire>
- <20151231110712.GD30632@otheros>
+Message-ID: <20160104160302.GL2823@otheros>
+References: <1450617490-3544-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20151231110712.GD30632@otheros>
-Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N. V leaves the nest
+In-Reply-To: <1450617490-3544-1-git-send-email-sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 01/30] batman-adv: Fix list removal of
+ batadv_hardif_neigh_node
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,13 +20,17 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Thu, Dec 31, 2015 at 12:07:12PM +0100, Linus Lüssing wrote:
-> Also, I guess there is some awareness about potentially slow
-> convergence speeds. One of the reasons the idea with "RIP"
-> occured. But I think next to dead nodes, there are some more
-> scenarios with slow convergence speeds which depends on the
-> latency of links. Going to write a wiki page with pictures on
-> that, I think it should at least be documented before a release
+On Sun, Dec 20, 2015 at 02:17:41PM +0100, Sven Eckelmann wrote:
+> The neigh_list with batadv_hardif_neigh_node objects is accessed with only
+> rcu_read_lock in batadv_neigh_node_get and batadv_iv_neigh_print. Thus it
+> is not allowed to kfree the object before the rcu grace period ends (which
+> may still protects context accessing this object). Therefore the object has
+> first to be removed from the neigh_list and then it has either wait with
+> synchronize_rcu or call_rcu till the grace period ends before it can be
+> freed.
 
-Scratch that remark, I missed something (just noticed while making
-a wiki page describing it).
+Urgh, could catch, that's a nasty one! Should be put into maint at
+least thrice ;).
+
+Nit: I think you mean "batadv_hardif_neigh_get" instead of
+"batadv_neigh_node_get" in the commit message?
