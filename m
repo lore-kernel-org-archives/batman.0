@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue,  5 Jan 2016 12:06:28 +0100
-Message-Id: <1451992006-13191-13-git-send-email-sven@narfation.org>
+Date: Tue,  5 Jan 2016 12:06:29 +0100
+Message-Id: <1451992006-13191-14-git-send-email-sven@narfation.org>
 In-Reply-To: <1451992006-13191-1-git-send-email-sven@narfation.org>
 References: <1451992006-13191-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v4 13/31] batman-adv: Convert
-	batadv_hardif_neigh_node to kref
+Subject: [B.A.T.M.A.N.] [PATCH v4 14/31] batman-adv: Convert batadv_gw_node
+	to kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -34,94 +34,127 @@ v2:
  - split patchset into fixes and kref migration to make it easier when the
    decision is made where each patch will be applied
 
- net/batman-adv/originator.c | 20 ++++++++++++--------
- net/batman-adv/types.h      |  3 ++-
- 2 files changed, 14 insertions(+), 9 deletions(-)
+ net/batman-adv/gateway_client.c | 40 +++++++++++++++++++++++++++++-----------
+ net/batman-adv/types.h          |  2 +-
+ 2 files changed, 30 insertions(+), 12 deletions(-)
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index f6ca4e5..4517bc9 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -23,6 +23,7 @@
- #include <linux/fs.h>
- #include <linux/jiffies.h>
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 8350775..bf5a6ef 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -28,6 +28,7 @@
+ #include <linux/ip.h>
+ #include <linux/ipv6.h>
  #include <linux/kernel.h>
 +#include <linux/kref.h>
  #include <linux/list.h>
- #include <linux/lockdep.h>
  #include <linux/netdevice.h>
-@@ -196,11 +197,15 @@ void batadv_neigh_ifinfo_free_ref(struct batadv_neigh_ifinfo *neigh_ifinfo)
- /**
-  * batadv_hardif_neigh_release - release hardif neigh node from lists and
-  *  queue for free after rcu grace period
-- * @hardif_neigh: hardif neigh neighbor to free
-+ * @ref: kref pointer of the neigh_node
+ #include <linux/rculist.h>
+@@ -59,12 +60,29 @@
   */
--static void
--batadv_hardif_neigh_release(struct batadv_hardif_neigh_node *hardif_neigh)
-+static void batadv_hardif_neigh_release(struct kref *ref)
- {
-+	struct batadv_hardif_neigh_node *hardif_neigh;
+ #define BATADV_DHCP_CHADDR_OFFSET	28
+ 
++/**
++ * batadv_gw_node_release - release gw_node from lists and queue for free after
++ *  rcu grace period
++ * @ref: kref pointer of the gw_node
++ */
++static void batadv_gw_node_release(struct kref *ref)
++{
++	struct batadv_gw_node *gw_node;
 +
-+	hardif_neigh = container_of(ref, struct batadv_hardif_neigh_node,
-+				    refcount);
++	gw_node = container_of(ref, struct batadv_gw_node, refcount);
 +
- 	spin_lock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
- 	hlist_del_init_rcu(&hardif_neigh->list);
- 	spin_unlock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
-@@ -216,8 +221,7 @@ batadv_hardif_neigh_release(struct batadv_hardif_neigh_node *hardif_neigh)
-  */
- void batadv_hardif_neigh_free_ref(struct batadv_hardif_neigh_node *hardif_neigh)
++	batadv_orig_node_free_ref(gw_node->orig_node);
++	kfree_rcu(gw_node, rcu);
++}
++
++/**
++ * batadv_gw_node_free_ref - decrement the gw_node refcounter and possibly
++ *  release it
++ * @gw_node: gateway node to free
++ */
+ static void batadv_gw_node_free_ref(struct batadv_gw_node *gw_node)
  {
--	if (atomic_dec_and_test(&hardif_neigh->refcount))
--		batadv_hardif_neigh_release(hardif_neigh);
-+	kref_put(&hardif_neigh->refcount, batadv_hardif_neigh_release);
+-	if (atomic_dec_and_test(&gw_node->refcount)) {
+-		batadv_orig_node_free_ref(gw_node->orig_node);
+-		kfree_rcu(gw_node, rcu);
+-	}
++	kref_put(&gw_node->refcount, batadv_gw_node_release);
  }
  
- /**
-@@ -529,7 +533,7 @@ batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
- 	hardif_neigh->if_incoming = hard_iface;
- 	hardif_neigh->last_seen = jiffies;
+ static struct batadv_gw_node *
+@@ -77,7 +95,7 @@ batadv_gw_get_selected_gw_node(struct batadv_priv *bat_priv)
+ 	if (!gw_node)
+ 		goto out;
  
--	atomic_set(&hardif_neigh->refcount, 1);
-+	kref_init(&hardif_neigh->refcount);
+-	if (!atomic_inc_not_zero(&gw_node->refcount))
++	if (!kref_get_unless_zero(&gw_node->refcount))
+ 		gw_node = NULL;
  
- 	if (bat_priv->bat_algo_ops->bat_hardif_neigh_init)
- 		bat_priv->bat_algo_ops->bat_hardif_neigh_init(hardif_neigh);
-@@ -584,7 +588,7 @@ batadv_hardif_neigh_get(const struct batadv_hard_iface *hard_iface,
- 		if (!batadv_compare_eth(tmp_hardif_neigh->addr, neigh_addr))
+ out:
+@@ -118,7 +136,7 @@ static void batadv_gw_select(struct batadv_priv *bat_priv,
+ 
+ 	spin_lock_bh(&bat_priv->gw.list_lock);
+ 
+-	if (new_gw_node && !atomic_inc_not_zero(&new_gw_node->refcount))
++	if (new_gw_node && !kref_get_unless_zero(&new_gw_node->refcount))
+ 		new_gw_node = NULL;
+ 
+ 	curr_gw_node = rcu_dereference_protected(bat_priv->gw.curr_gw, 1);
+@@ -170,7 +188,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
+ 		if (!router_ifinfo)
+ 			goto next;
+ 
+-		if (!atomic_inc_not_zero(&gw_node->refcount))
++		if (!kref_get_unless_zero(&gw_node->refcount))
+ 			goto next;
+ 
+ 		tq_avg = router_ifinfo->bat_iv.tq_avg;
+@@ -188,7 +206,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
+ 				if (curr_gw)
+ 					batadv_gw_node_free_ref(curr_gw);
+ 				curr_gw = gw_node;
+-				atomic_inc(&curr_gw->refcount);
++				kref_get(&curr_gw->refcount);
+ 			}
+ 			break;
+ 
+@@ -203,7 +221,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
+ 				if (curr_gw)
+ 					batadv_gw_node_free_ref(curr_gw);
+ 				curr_gw = gw_node;
+-				atomic_inc(&curr_gw->refcount);
++				kref_get(&curr_gw->refcount);
+ 			}
+ 			break;
+ 		}
+@@ -436,7 +454,7 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
+ 	gw_node->orig_node = orig_node;
+ 	gw_node->bandwidth_down = ntohl(gateway->bandwidth_down);
+ 	gw_node->bandwidth_up = ntohl(gateway->bandwidth_up);
+-	atomic_set(&gw_node->refcount, 1);
++	kref_init(&gw_node->refcount);
+ 
+ 	spin_lock_bh(&bat_priv->gw.list_lock);
+ 	hlist_add_head_rcu(&gw_node->list, &bat_priv->gw.list);
+@@ -469,7 +487,7 @@ batadv_gw_node_get(struct batadv_priv *bat_priv,
+ 		if (gw_node_tmp->orig_node != orig_node)
  			continue;
  
--		if (!atomic_inc_not_zero(&tmp_hardif_neigh->refcount))
-+		if (!kref_get_unless_zero(&tmp_hardif_neigh->refcount))
+-		if (!atomic_inc_not_zero(&gw_node_tmp->refcount))
++		if (!kref_get_unless_zero(&gw_node_tmp->refcount))
  			continue;
  
- 		hardif_neigh = tmp_hardif_neigh;
-@@ -648,7 +652,7 @@ batadv_neigh_node_new(struct batadv_orig_node *orig_node,
- 	spin_unlock_bh(&orig_node->neigh_list_lock);
- 
- 	/* increment unique neighbor refcount */
--	atomic_inc(&hardif_neigh->refcount);
-+	kref_get(&hardif_neigh->refcount);
- 
- 	batadv_dbg(BATADV_DBG_BATMAN, orig_node->bat_priv,
- 		   "Creating new neighbor %pM for orig_node %pM on interface %s\n",
+ 		gw_node = gw_node_tmp;
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 5e8c8df..091ad76 100644
+index 091ad76..0b3cbdb 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -25,6 +25,7 @@
- #include <linux/bitops.h>
- #include <linux/compiler.h>
- #include <linux/if_ether.h>
-+#include <linux/kref.h>
- #include <linux/netdevice.h>
- #include <linux/sched.h> /* for linux/wait.h */
- #include <linux/spinlock.h>
-@@ -359,7 +360,7 @@ struct batadv_hardif_neigh_node {
- 	u8 addr[ETH_ALEN];
- 	struct batadv_hard_iface *if_incoming;
- 	unsigned long last_seen;
+@@ -342,7 +342,7 @@ struct batadv_gw_node {
+ 	struct batadv_orig_node *orig_node;
+ 	u32 bandwidth_down;
+ 	u32 bandwidth_up;
 -	atomic_t refcount;
 +	struct kref refcount;
  	struct rcu_head rcu;
