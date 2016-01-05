@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue,  5 Jan 2016 12:06:43 +0100
-Message-Id: <1451992006-13191-28-git-send-email-sven@narfation.org>
+Date: Tue,  5 Jan 2016 12:06:44 +0100
+Message-Id: <1451992006-13191-29-git-send-email-sven@narfation.org>
 In-Reply-To: <1451992006-13191-1-git-send-email-sven@narfation.org>
 References: <1451992006-13191-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v4 28/31] batman-adv: Convert
-	batadv_orig_node_vlan to kref
+Subject: [B.A.T.M.A.N.] [PATCH v4 29/31] batman-adv: Convert
+	batadv_orig_node to kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -34,78 +34,215 @@ v2:
  - split patchset into fixes and kref migration to make it easier when the
    decision is made where each patch will be applied
 
- net/batman-adv/originator.c | 26 ++++++++++++++++++++------
- net/batman-adv/types.h      |  2 +-
- 2 files changed, 21 insertions(+), 7 deletions(-)
+ net/batman-adv/distributed-arp-table.c |  2 +-
+ net/batman-adv/gateway_client.c        |  4 ++--
+ net/batman-adv/multicast.c             |  7 ++++---
+ net/batman-adv/network-coding.c        |  2 +-
+ net/batman-adv/originator.c            | 14 +++++++++-----
+ net/batman-adv/originator.h            |  4 ++--
+ net/batman-adv/translation-table.c     |  4 ++--
+ net/batman-adv/types.h                 |  2 +-
+ 8 files changed, 22 insertions(+), 17 deletions(-)
 
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 2ff969a..f9e7bd2 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -542,7 +542,7 @@ static void batadv_choose_next_candidate(struct batadv_priv *bat_priv,
+ 							  max_orig_node))
+ 				continue;
+ 
+-			if (!atomic_inc_not_zero(&orig_node->refcount))
++			if (!kref_get_unless_zero(&orig_node->refcount))
+ 				continue;
+ 
+ 			max = tmp_max;
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index bf5a6ef..17858f2 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -118,7 +118,7 @@ batadv_gw_get_selected_orig(struct batadv_priv *bat_priv)
+ 	if (!orig_node)
+ 		goto unlock;
+ 
+-	if (!atomic_inc_not_zero(&orig_node->refcount))
++	if (!kref_get_unless_zero(&orig_node->refcount))
+ 		orig_node = NULL;
+ 
+ unlock:
+@@ -441,7 +441,7 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
+ 	if (gateway->bandwidth_down == 0)
+ 		return;
+ 
+-	if (!atomic_inc_not_zero(&orig_node->refcount))
++	if (!kref_get_unless_zero(&orig_node->refcount))
+ 		return;
+ 
+ 	gw_node = kzalloc(sizeof(*gw_node), GFP_ATOMIC);
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 8abf488..288844f 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -30,6 +30,7 @@
+ #include <linux/in.h>
+ #include <linux/ip.h>
+ #include <linux/ipv6.h>
++#include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+ #include <linux/netdevice.h>
+@@ -447,7 +448,7 @@ batadv_mcast_forw_ipv4_node_get(struct batadv_priv *bat_priv)
+ 	hlist_for_each_entry_rcu(tmp_orig_node,
+ 				 &bat_priv->mcast.want_all_ipv4_list,
+ 				 mcast_want_all_ipv4_node) {
+-		if (!atomic_inc_not_zero(&tmp_orig_node->refcount))
++		if (!kref_get_unless_zero(&tmp_orig_node->refcount))
+ 			continue;
+ 
+ 		orig_node = tmp_orig_node;
+@@ -474,7 +475,7 @@ batadv_mcast_forw_ipv6_node_get(struct batadv_priv *bat_priv)
+ 	hlist_for_each_entry_rcu(tmp_orig_node,
+ 				 &bat_priv->mcast.want_all_ipv6_list,
+ 				 mcast_want_all_ipv6_node) {
+-		if (!atomic_inc_not_zero(&tmp_orig_node->refcount))
++		if (!kref_get_unless_zero(&tmp_orig_node->refcount))
+ 			continue;
+ 
+ 		orig_node = tmp_orig_node;
+@@ -525,7 +526,7 @@ batadv_mcast_forw_unsnoop_node_get(struct batadv_priv *bat_priv)
+ 	hlist_for_each_entry_rcu(tmp_orig_node,
+ 				 &bat_priv->mcast.want_all_unsnoopables_list,
+ 				 mcast_want_all_unsnoopables_node) {
+-		if (!atomic_inc_not_zero(&tmp_orig_node->refcount))
++		if (!kref_get_unless_zero(&tmp_orig_node->refcount))
+ 			continue;
+ 
+ 		orig_node = tmp_orig_node;
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 0ad2cc1..42206c4 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -858,7 +858,7 @@ static struct batadv_nc_node
+ 	if (!nc_node)
+ 		return NULL;
+ 
+-	if (!atomic_inc_not_zero(&orig_neigh_node->refcount))
++	if (!kref_get_unless_zero(&orig_neigh_node->refcount))
+ 		goto free;
+ 
+ 	/* Initialize nc_node */
 diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 41d0aef..4e7a090 100644
+index 4e7a090..217399f 100644
 --- a/net/batman-adv/originator.c
 +++ b/net/batman-adv/originator.c
-@@ -82,7 +82,7 @@ batadv_orig_node_vlan_get(struct batadv_orig_node *orig_node,
- 		if (tmp->vid != vid)
+@@ -18,6 +18,7 @@
+ #include "originator.h"
+ #include "main.h"
+ 
++#include <linux/atomic.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+ #include <linux/fs.h>
+@@ -775,14 +776,17 @@ static void batadv_orig_node_free_rcu(struct rcu_head *rcu)
+ /**
+  * batadv_orig_node_release - release orig_node from lists and queue for
+  *  free after rcu grace period
+- * @orig_node: the orig node to free
++ * @ref: kref pointer of the orig_node
+  */
+-static void batadv_orig_node_release(struct batadv_orig_node *orig_node)
++static void batadv_orig_node_release(struct kref *ref)
+ {
+ 	struct hlist_node *node_tmp;
+ 	struct batadv_neigh_node *neigh_node;
++	struct batadv_orig_node *orig_node;
+ 	struct batadv_orig_ifinfo *orig_ifinfo;
+ 
++	orig_node = container_of(ref, struct batadv_orig_node, refcount);
++
+ 	spin_lock_bh(&orig_node->neigh_list_lock);
+ 
+ 	/* for all neighbors towards this originator ... */
+@@ -812,8 +816,7 @@ static void batadv_orig_node_release(struct batadv_orig_node *orig_node)
+  */
+ void batadv_orig_node_free_ref(struct batadv_orig_node *orig_node)
+ {
+-	if (atomic_dec_and_test(&orig_node->refcount))
+-		batadv_orig_node_release(orig_node);
++	kref_put(&orig_node->refcount, batadv_orig_node_release);
+ }
+ 
+ void batadv_originator_free(struct batadv_priv *bat_priv)
+@@ -885,7 +888,8 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
+ 	batadv_nc_init_orig(orig_node);
+ 
+ 	/* extra reference for return */
+-	atomic_set(&orig_node->refcount, 2);
++	kref_init(&orig_node->refcount);
++	kref_get(&orig_node->refcount);
+ 
+ 	orig_node->bat_priv = bat_priv;
+ 	ether_addr_copy(orig_node->orig, addr);
+diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
+index cf07304..6ad7bf3 100644
+--- a/net/batman-adv/originator.h
++++ b/net/batman-adv/originator.h
+@@ -20,10 +20,10 @@
+ 
+ #include "main.h"
+ 
+-#include <linux/atomic.h>
+ #include <linux/compiler.h>
+ #include <linux/if_ether.h>
+ #include <linux/jhash.h>
++#include <linux/kref.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+ #include <linux/stddef.h>
+@@ -115,7 +115,7 @@ batadv_orig_hash_find(struct batadv_priv *bat_priv, const void *data)
+ 		if (!batadv_compare_eth(orig_node, data))
  			continue;
  
--		if (!atomic_inc_not_zero(&tmp->refcount))
-+		if (!kref_get_unless_zero(&tmp->refcount))
+-		if (!atomic_inc_not_zero(&orig_node->refcount))
++		if (!kref_get_unless_zero(&orig_node->refcount))
  			continue;
  
- 		vlan = tmp;
-@@ -123,7 +123,8 @@ batadv_orig_node_vlan_new(struct batadv_orig_node *orig_node,
- 	if (!vlan)
+ 		orig_node_tmp = orig_node;
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 0f61b03..19c1d66 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1334,7 +1334,7 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
  		goto out;
  
--	atomic_set(&vlan->refcount, 2);
-+	kref_init(&vlan->refcount);
-+	kref_get(&vlan->refcount);
- 	vlan->vid = vid;
+ 	INIT_HLIST_NODE(&orig_entry->list);
+-	atomic_inc(&orig_node->refcount);
++	kref_get(&orig_node->refcount);
+ 	batadv_tt_global_size_inc(orig_node, tt_global->common.vid);
+ 	orig_entry->orig_node = orig_node;
+ 	orig_entry->ttvn = ttvn;
+@@ -2097,7 +2097,7 @@ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
+ 	/* found anything? */
+ 	if (best_entry)
+ 		orig_node = best_entry->orig_node;
+-	if (orig_node && !atomic_inc_not_zero(&orig_node->refcount))
++	if (orig_node && !kref_get_unless_zero(&orig_node->refcount))
+ 		orig_node = NULL;
+ 	rcu_read_unlock();
  
- 	hlist_add_head_rcu(&vlan->list, &orig_node->vlan_list);
-@@ -135,14 +136,27 @@ out:
- }
- 
- /**
-- * batadv_orig_node_vlan_free_ref - decrement the refcounter and possibly free
-- *  the originator-vlan object
-+ * batadv_orig_node_vlan_release - release originator-vlan object from lists
-+ *  and queue for free after rcu grace period
-+ * @ref: kref pointer of the originator-vlan object
-+ */
-+static void batadv_orig_node_vlan_release(struct kref *ref)
-+{
-+	struct batadv_orig_node_vlan *orig_vlan;
-+
-+	orig_vlan = container_of(ref, struct batadv_orig_node_vlan, refcount);
-+
-+	kfree_rcu(orig_vlan, rcu);
-+}
-+
-+/**
-+ * batadv_orig_node_vlan_free_ref - decrement the refcounter and possibly
-+ *  release the originator-vlan object
-  * @orig_vlan: the originator-vlan object to release
-  */
- void batadv_orig_node_vlan_free_ref(struct batadv_orig_node_vlan *orig_vlan)
- {
--	if (atomic_dec_and_test(&orig_vlan->refcount))
--		kfree_rcu(orig_vlan, rcu);
-+	kref_put(&orig_vlan->refcount, batadv_orig_node_vlan_release);
- }
- 
- int batadv_originator_init(struct batadv_priv *bat_priv)
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index d69be62..441ebd9 100644
+index 441ebd9..c8c7ab8 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -197,7 +197,7 @@ struct batadv_orig_node_vlan {
- 	unsigned short vid;
- 	struct batadv_vlan_tt tt;
- 	struct hlist_node list;
+@@ -299,7 +299,7 @@ struct batadv_orig_node {
+ 	struct batadv_priv *bat_priv;
+ 	/* bcast_seqno_lock protects: bcast_bits & last_bcast_seqno */
+ 	spinlock_t bcast_seqno_lock;
 -	atomic_t refcount;
 +	struct kref refcount;
  	struct rcu_head rcu;
- };
- 
+ #ifdef CONFIG_BATMAN_ADV_NC
+ 	struct list_head in_coding_list;
 -- 
 2.6.4
 
