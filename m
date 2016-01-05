@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue,  5 Jan 2016 12:06:31 +0100
-Message-Id: <1451992006-13191-16-git-send-email-sven@narfation.org>
+Date: Tue,  5 Jan 2016 12:06:33 +0100
+Message-Id: <1451992006-13191-18-git-send-email-sven@narfation.org>
 In-Reply-To: <1451992006-13191-1-git-send-email-sven@narfation.org>
 References: <1451992006-13191-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v4 16/31] batman-adv: Convert
-	batadv_bla_backbone_gw to kref
+Subject: [B.A.T.M.A.N.] [PATCH v4 18/31] batman-adv: Convert batadv_nc_node
+	to kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -34,15 +34,15 @@ v2:
  - split patchset into fixes and kref migration to make it easier when the
    decision is made where each patch will be applied
 
- net/batman-adv/bridge_loop_avoidance.c | 29 +++++++++++++++++++++++------
- net/batman-adv/types.h                 |  2 +-
- 2 files changed, 24 insertions(+), 7 deletions(-)
+ net/batman-adv/network-coding.c | 21 +++++++++++++--------
+ net/batman-adv/types.h          |  2 +-
+ 2 files changed, 14 insertions(+), 9 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index a840d7d..2b2d03d 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -31,6 +31,7 @@
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 50af93f..6f0cf96 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -32,6 +32,7 @@
  #include <linux/jhash.h>
  #include <linux/jiffies.h>
  #include <linux/kernel.h>
@@ -50,80 +50,71 @@ index a840d7d..2b2d03d 100644
  #include <linux/list.h>
  #include <linux/lockdep.h>
  #include <linux/netdevice.h>
-@@ -143,14 +144,29 @@ static int batadv_compare_claim(const struct hlist_node *node,
- }
- 
+@@ -209,23 +210,26 @@ void batadv_nc_init_orig(struct batadv_orig_node *orig_node)
  /**
-- * batadv_compare_backbone_gw - free backbone gw
-+ * batadv_backbone_gw_release - release backbone gw from lists and queue for
-+ *  free after rcu grace period
-+ * @ref: kref pointer of the backbone gw
-+ */
-+static void batadv_backbone_gw_release(struct kref *ref)
-+{
-+	struct batadv_bla_backbone_gw *backbone_gw;
-+
-+	backbone_gw = container_of(ref, struct batadv_bla_backbone_gw,
-+				   refcount);
-+
-+	kfree_rcu(backbone_gw, rcu);
-+}
-+
-+/**
-+ * batadv_backbone_gw_free_ref - decrement the backbone gw refcounter and
-+ *  possibly release it
-  * @backbone_gw: backbone gateway to be free'd
+  * batadv_nc_node_release - release nc_node from lists and queue for free after
+  *  rcu grace period
+- * @nc_node: the nc node to free
++ * @ref: kref pointer of the nc_node
   */
- static void
- batadv_backbone_gw_free_ref(struct batadv_bla_backbone_gw *backbone_gw)
+-static void batadv_nc_node_release(struct batadv_nc_node *nc_node)
++static void batadv_nc_node_release(struct kref *ref)
  {
--	if (atomic_dec_and_test(&backbone_gw->refcount))
--		kfree_rcu(backbone_gw, rcu);
-+	kref_put(&backbone_gw->refcount, batadv_backbone_gw_release);
++	struct batadv_nc_node *nc_node;
++
++	nc_node = container_of(ref, struct batadv_nc_node, refcount);
++
+ 	batadv_orig_node_free_ref(nc_node->orig_node);
+ 	kfree_rcu(nc_node, rcu);
  }
  
  /**
-@@ -247,7 +263,7 @@ batadv_backbone_hash_find(struct batadv_priv *bat_priv, u8 *addr,
- 						&search_entry))
+- * batadv_nc_node_free_ref - decrements the nc node refcounter and possibly
++ * batadv_nc_node_free_ref - decrement the nc_node refcounter and possibly
+  *  release it
+- * @nc_node: the nc node to free
++ * @nc_node: nc_node to be free'd
+  */
+ static void batadv_nc_node_free_ref(struct batadv_nc_node *nc_node)
+ {
+-	if (atomic_dec_and_test(&nc_node->refcount))
+-		batadv_nc_node_release(nc_node);
++	kref_put(&nc_node->refcount, batadv_nc_node_release);
+ }
+ 
+ /**
+@@ -797,7 +801,7 @@ static struct batadv_nc_node
+ 		if (!batadv_compare_eth(nc_node->addr, orig_node->orig))
  			continue;
  
--		if (!atomic_inc_not_zero(&backbone_gw->refcount))
-+		if (!kref_get_unless_zero(&backbone_gw->refcount))
+-		if (!atomic_inc_not_zero(&nc_node->refcount))
++		if (!kref_get_unless_zero(&nc_node->refcount))
  			continue;
  
- 		backbone_gw_tmp = backbone_gw;
-@@ -448,7 +464,8 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, u8 *orig,
- 	ether_addr_copy(entry->orig, orig);
+ 		/* Found a match */
+@@ -848,7 +852,8 @@ static struct batadv_nc_node
+ 	INIT_LIST_HEAD(&nc_node->list);
+ 	ether_addr_copy(nc_node->addr, orig_node->orig);
+ 	nc_node->orig_node = orig_neigh_node;
+-	atomic_set(&nc_node->refcount, 2);
++	kref_init(&nc_node->refcount);
++	kref_get(&nc_node->refcount);
  
- 	/* one for the hash, one for returning */
--	atomic_set(&entry->refcount, 2);
-+	kref_init(&entry->refcount);
-+	kref_get(&entry->refcount);
- 
- 	hash_added = batadv_hash_add(bat_priv->bla.backbone_hash,
- 				     batadv_compare_backbone_gw,
-@@ -664,7 +681,7 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
- 		batadv_backbone_gw_free_ref(claim->backbone_gw);
- 	}
- 	/* set (new) backbone gw */
--	atomic_inc(&backbone_gw->refcount);
-+	kref_get(&backbone_gw->refcount);
- 	claim->backbone_gw = backbone_gw;
- 
- 	spin_lock_bh(&backbone_gw->crc_lock);
+ 	/* Select ingoing or outgoing coding node */
+ 	if (in_coding) {
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index c6c3f0f..098ec7f 100644
+index c56b99c..9a2371a 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -930,7 +930,7 @@ struct batadv_bla_backbone_gw {
- 	atomic_t request_sent;
- 	u16 crc;
- 	spinlock_t crc_lock; /* protects crc */
+@@ -1067,7 +1067,7 @@ struct batadv_tt_roam_node {
+ struct batadv_nc_node {
+ 	struct list_head list;
+ 	u8 addr[ETH_ALEN];
 -	atomic_t refcount;
 +	struct kref refcount;
  	struct rcu_head rcu;
- };
- 
+ 	struct batadv_orig_node *orig_node;
+ 	unsigned long last_seen;
 -- 
 2.6.4
 
