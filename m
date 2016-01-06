@@ -1,15 +1,13 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 07 Jan 2016 00:12:16 +0800
-Message-ID: <2479138.RDhDv8WkTO@voltaire>
-In-Reply-To: <1451992006-13191-3-git-send-email-sven@narfation.org>
-References: <1451992006-13191-1-git-send-email-sven@narfation.org>
- <1451992006-13191-3-git-send-email-sven@narfation.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 06 Jan 2016 20:05:07 +0100
+Message-ID: <3614408.8CNzbHmZCJ@sven-edge>
+In-Reply-To: <CA+HVqbtX5OX01kGjA7yhYnTFM18kN2ZetvKtkuK3Ptoxrtkp9A@mail.gmail.com>
+References: <CA+HVqbtX5OX01kGjA7yhYnTFM18kN2ZetvKtkuK3Ptoxrtkp9A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2317101.eDGVPmYztp";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v4 03/31] batman-adv: Avoid recursive
-	call_rcu for batadv_bla_claim
+Content-Type: multipart/signed; boundary="nextPart3402921.NsEXDmQCL7";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Compiling Batman-adv on Kernel 4.4+
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,21 +17,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: fred veldini <fred.veldini@gmail.com>
 
---nextPart2317101.eDGVPmYztp
+--nextPart3402921.NsEXDmQCL7
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, January 05, 2016 12:06:18 Sven Eckelmann wrote:
-> The batadv_hardif_neigh_free_ref function uses call_rcu to delay the free
+On Wednesday 06 January 2016 12:19:04 fred veldini wrote:
+> I sent an email to the list a while ago, not sure if anyone received the
+> message.
 
-batadv_hardif_neigh_free_ref() ? Not batadv_claim_free_ref() ?
+Usually I ignore mails which are send to me directly about batman-adv without 
+Cc'ing the mailing list. But I trust that you (at least) tried to send a mail.
 
-Cheers,
-Marek
+But I never saw your mail in the queue of pending mails (maybe Marek did). 
+Please send your mails next time as plain text and not with html content.
 
---nextPart2317101.eDGVPmYztp
+At least I could find that your mail bounced on Jan 4 17:17:17. So you should 
+have been informed that it was rejected (for whatever reason).
+
+> I'm running into an issue compiling the latest batman-adv code on the
+> latest kernel,
+
+[...]
+> /mnt/builds/batman-Jan-5-2016/batman-adv-6219a1b/net/batman-adv/hard-interfa
+> ce.c:469:2: error: too few arguments to function
+> 'netdev_master_upper_dev_link' In file included from
+> /mnt/builds/batman-Jan-5-2016/batman-adv-6219a1b/compat-include/linux/netdev
+> ice.h:25:0, from include/linux/etherdevice.h:26,
+>                  from
+
+You don't use an official kernel and the compat layer of batman-adv can only 
+support major releases or Linus' development tree. But you can try to change 
+the netdev_master_upper_dev_link compat layer under compat-
+include/linux/netdevice.h. Try replacing all "KERNEL_VERSION(4, 5, 0)" with 
+"KERNEL_VERSION(4, 4, 0)" or whatever the LINUX_VERSION_CODE of your 
+development kernel is.
+
+I guess this is causing the problem because you use changes which are for 
+Linux 4.5 but your kernel still uses the LINUX_VERSION_CODE for Linux 4.4
+
+Kind regards,
+	Sven
+--nextPart3402921.NsEXDmQCL7
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -41,14 +68,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWjTzgAAoJEFNVTo/uthzAREsH/iuAhczbf48Q/LqbvI8ZtdeV
-kFQ6Zf2knlQm5MmueLdZAGTs2dJomUMZ1nVDRnSQCWYCM+fGk88HT58nh/OFleJe
-wtp5U1ABJHiTjAsG9V78bqrDx5pysrZO889xvamu0JLg5h8keRpo/BxtB6r4ScXp
-coJ+8zi6EMqXb39KXvHuFjpJ/tWHlv2z35LKjtGmM/aKimY6apraBVPK0GOJlxXL
-A81kEL5Kl4Y6MjbevW49JMUYgicRrY+7VQdMbv1VO/v+kD4cDpNVKQdJ2BuHQqRR
-R0fZvtL3YdSM1obSU8xeK1XWNsu9d01AMvPgVm8Cqoo1MenpdAKILWHPSBB5M7Q=
-=W2gc
+iQIcBAABCgAGBQJWjWVjAAoJEF2HCgfBJntGFrQP/3CHjDHQRChKLf7Xl6BASeZC
+LwAV8wE0FwbeicftmE5j+jI/7CTkMtrVHVEYoEbnZ261Q/N7eGoqkBNbk8HKsnre
+ZazwXoDORyuUOa5iRfG/Fo+0qMaARlYYBtVc9AciivYm9wJIZsBAn0ucogMjRlZ/
+Sq0TBL0skE2rwdKbxb0Gf8DtWPOuLMJvYt4mKUatktTTk6pxsuNn9BytS3zzNZA/
+wgcQxnLSk5R92gP7Z8kdWAuqeC40kC25muE4Ty+VAWANs6QYgXmbWwcaIjSMQcEp
+mwTJ4n6HfVG8V2KtSsm+RYQD0PivJ/MfHfF3O/3Xj72guD+dpEKlsH5/oLI1VlEA
+JYA3TdijtF4i2b70e+35UQNsrILntu6eMjjKSYJ2Iw7P+ZlMr57EurRN3qqsT1zt
+p1Pz9uM4VoE0cylwrE5vxdBxY1AyY/Pl7u5jB6b80r8wfamWnrxUXkHGzmSqAX35
+rBTGgn3T1Lml2NJLqARAzsuIi3wKP1qIQe6A21z+v82VNl3AMJOA2IAzEn8Q2Fi8
+UW0qNJKx4RR1IljQJxX6tVzH+gqxC931Vj/Mgb5PQxspFFaOaf9DLzTrr+JAXyqi
+IXG9FvqQgEBNqSKmLexkcjNXPQVbKiVyhDxTgzBXnTv7Ts4MGXriz2jbA4hbo2aV
+sAChZ9O73PvubUSJknS3
+=4ZX1
 -----END PGP SIGNATURE-----
 
---nextPart2317101.eDGVPmYztp--
+--nextPart3402921.NsEXDmQCL7--
 
