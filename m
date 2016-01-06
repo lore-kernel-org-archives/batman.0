@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 06 Jan 2016 23:53:43 +0800
-Message-ID: <72605939.XplQXKZxHp@voltaire>
-In-Reply-To: <1451992006-13191-1-git-send-email-sven@narfation.org>
+Date: Thu, 07 Jan 2016 00:04:57 +0800
+Message-ID: <22690162.8jlU4TIMSR@voltaire>
+In-Reply-To: <1451992006-13191-2-git-send-email-sven@narfation.org>
 References: <1451992006-13191-1-git-send-email-sven@narfation.org>
+ <1451992006-13191-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4762127.KoQ1aO1ZHs";
+Content-Type: multipart/signed; boundary="nextPart4553184.PKRhkP3GbG";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v4 01/31] batman-adv: Fix kernel-doc for
-	batadv_claim_free_ref
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4 02/31] batman-adv: Fix list removal of
+	batadv_hardif_neigh_node
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,14 +19,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart4762127.KoQ1aO1ZHs
+--nextPart4553184.PKRhkP3GbG
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, January 05, 2016 12:06:16 Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+On Tuesday, January 05, 2016 12:06:17 Sven Eckelmann wrote:
+> The neigh_list with batadv_hardif_neigh_node objects is accessed with only
+> rcu_read_lock in batadv_hardif_neigh_get and batadv_iv_neigh_print. Thus it
+> is not allowed to kfree the object before the rcu grace period ends (which
+> may still protects context accessing this object). Therefore the object has
+> first to be removed from the neigh_list and then it has either wait with
+> synchronize_rcu or call_rcu till the grace period ends before it can be
+> freed.
+> 
+> Fixes: fed2826b490c ("batman-adv: add list of unique single hop neighbors
+> per hard-interface") Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
 > v4:
 >  - fix function names in commit messages
@@ -38,15 +48,15 @@ On Tuesday, January 05, 2016 12:06:16 Sven Eckelmann wrote:
 >  - split patchset into fixes and kref migration to make it easier when the
 >    decision is made where each patch will be applied
 > 
->  net/batman-adv/bridge_loop_avoidance.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  net/batman-adv/originator.c | 18 ++++++++++++------
+>  1 file changed, 12 insertions(+), 6 deletions(-)
 
-Applied in revision ab08dfe.
+Applied in revision 6219a1b.
 
 Thanks,
 Marek
 
---nextPart4762127.KoQ1aO1ZHs
+--nextPart4553184.PKRhkP3GbG
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -54,14 +64,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWjTiHAAoJEFNVTo/uthzAAJIIAJxnix3CkHU0hrnO+Dbg8gwv
-xRezVt4YpYIV4SQxuw9UaobYErFExf5VP7Rp+FcFlPg2qj+It+bwjc5pG4WjMtmb
-cqgZormW5JGlEduOZgbTTryUk7PRnVt5a4brYY6FTdIQZG6uYUsKkJZrjxZUXgDO
-SEyFwewFWwMCt+GJd3weG6OjJHfIiS3nfGeOi80dXL6GfXte6IVUZR0is0rUEU4e
-6oLoqqA3hZRP6XvBph79GK9cENHQB6pUlsrrKDMu/d0cJboRkCDRa/zyuyT9gE2O
-J5uBHkQ/7p2YRnN4J7Jrfr24lqqIvWag1EhvyfBNGf4KVHfVJVcVo7X/n7s314A=
-=CLjl
+iQEcBAABCAAGBQJWjTspAAoJEFNVTo/uthzAy+MIALZtO8cU4HR0XdLfPeSp+xay
+0x7URQx6VED8Thp3Ki9rua6VdCUUti2aGjXI1hnwdqH5D3s6JQRi++roXr/0MpLJ
+vRGEeJok//O264rsI5GS0Wl8LIdT1CQCwolmA5piwsTKzXn5lDGVfhDsiFt9wTNW
+8rPunzr8xnrBHQ+TnxCZ4xtryifpJXDyIJU8AD+3Z7XApRkN66C02mKULNld8ygL
+TlUiIW9Xu53JBE8c9BAdnd3T/+nrqOIzxCa0FIG3W5UlXIUGRXSqgYh0lR+JgyKE
+5IJ6Koh+tHuh4HRwrXx3PJZJZy4t6L3ms/VpCCwWvOkNBe8FHpZeIyx6HEdZjHQ=
+=UuSG
 -----END PGP SIGNATURE-----
 
---nextPart4762127.KoQ1aO1ZHs--
+--nextPart4553184.PKRhkP3GbG--
 
