@@ -1,14 +1,16 @@
-Return-Path: <jens@viisauksena.de>
-Message-ID: <568D7073.5010207@viisauksena.de>
-Date: Wed, 06 Jan 2016 20:52:19 +0100
-From: jens <jens@viisauksena.de>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Thu, 7 Jan 2016 04:39:33 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20160107033933.GA2893@otheros>
+References: <1451992006-13191-1-git-send-email-sven@narfation.org>
+ <1451992006-13191-12-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-References: <CA+HVqbtX5OX01kGjA7yhYnTFM18kN2ZetvKtkuK3Ptoxrtkp9A@mail.gmail.com>
- <3614408.8CNzbHmZCJ@sven-edge>
-In-Reply-To: <3614408.8CNzbHmZCJ@sven-edge>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] Compiling Batman-adv on Kernel 4.4+
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1451992006-13191-12-git-send-email-sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4 12/31] batman-adv: Add compatibility
+ code for kref_get_unless_zero
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,48 +20,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, fred.veldini@gmail.com
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-guess its something similar as described here ..
-https://cccfr.de/wiki/freifunk:batman-adv?s[]=batman#ab_kernel_317-rc1
-the call of your described function needs more arguments, which ones
-that are .. you have to find out
+On Tue, Jan 05, 2016 at 12:06:27PM +0100, Sven Eckelmann wrote:
+> +#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
+> +
+> +static inline int __must_check kref_get_unless_zero(struct kref *kref)
+> +{
+> +	return atomic_add_unless(&kref->refcount, 1, 0);
+> +}
+> +
+> +#endif /* < KERNEL_VERSION(3, 8, 0) */
+> +
+> +#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_KREF_H_ */
+> -- 
+> 2.6.4
+> 
 
-On 06.01.2016 20:05, Sven Eckelmann wrote:
-> On Wednesday 06 January 2016 12:19:04 fred veldini wrote:
->> I sent an email to the list a while ago, not sure if anyone received the
->> message.
-> Usually I ignore mails which are send to me directly about batman-adv without 
-> Cc'ing the mailing list. But I trust that you (at least) tried to send a mail.
->
-> But I never saw your mail in the queue of pending mails (maybe Marek did). 
-> Please send your mails next time as plain text and not with html content.
->
-> At least I could find that your mail bounced on Jan 4 17:17:17. So you should 
-> have been informed that it was rejected (for whatever reason).
->
->> I'm running into an issue compiling the latest batman-adv code on the
->> latest kernel,
-> [...]
->> /mnt/builds/batman-Jan-5-2016/batman-adv-6219a1b/net/batman-adv/hard-interfa
->> ce.c:469:2: error: too few arguments to function
->> 'netdev_master_upper_dev_link' In file included from
->> /mnt/builds/batman-Jan-5-2016/batman-adv-6219a1b/compat-include/linux/netdev
->> ice.h:25:0, from include/linux/etherdevice.h:26,
->>                  from
-> You don't use an official kernel and the compat layer of batman-adv can only 
-> support major releases or Linus' development tree. But you can try to change 
-> the netdev_master_upper_dev_link compat layer under compat-
-> include/linux/netdevice.h. Try replacing all "KERNEL_VERSION(4, 5, 0)" with 
-> "KERNEL_VERSION(4, 4, 0)" or whatever the LINUX_VERSION_CODE of your 
-> development kernel is.
->
-> I guess this is causing the problem because you use changes which are for 
-> Linux 4.5 but your kernel still uses the LINUX_VERSION_CODE for Linux 4.4
->
-> Kind regards,
-> 	Sven
+Does not compile for me on a 3.2 kernel:
 
--- 
-make the world nicer, please use PGP encryption
-
+-----
+/home/tux/dev/batman-adv-t_x/gen-compat-autoconf.sh /home/tux/dev/batman-adv-t_x/compat-autoconf.h
+make -C /lib/modules/3.2.0-4-amd64/build M=/home/tux/dev/batman-adv-t_x/net/batman-adv CONFIG_BATMAN_ADV=m CONFIG_BATMAN_ADV_DEBUG=n CONFIG_BATMAN_ADV_BLA=y CONFIG_BATMAN_ADV_DAT=y CONFIG_BATMAN_ADV_NC=n CONFIG_BATMAN_ADV_MCAST=y INSTALL_MOD_DIR=updates/net/batman-adv/   modules
+make[1]: Entering directory `/usr/src/linux-headers-3.2.0-4-amd64'
+  CC [M]  /home/tux/dev/batman-adv-t_x/net/batman-adv/bat_iv_ogm.o
+distcc[1604] ERROR: compile /home/tux/.ccache/tmp/bat_iv_ogm.tmp.krtek.1599.i on localhost failed
+In file included from /usr/src/linux-headers-3.2.0-4-common/include/linux/kobject.h:24:0,
+                 from /usr/src/linux-headers-3.2.0-4-common/include/linux/device.h:17,
+                 from /usr/src/linux-headers-3.2.0-4-common/include/linux/dmaengine.h:24,
+                 from /usr/src/linux-headers-3.2.0-4-common/include/linux/skbuff.h:30,
+                 from /home/tux/dev/batman-adv-t_x/compat-include/linux/skbuff.h:25,
+                 from /usr/src/linux-headers-3.2.0-4-common/include/linux/if_ether.h:133,
+                 from /home/tux/dev/batman-adv-t_x/compat-include/linux/if_ether.h:25,
+                 from /usr/src/linux-headers-3.2.0-4-common/include/linux/netdevice.h:29,
+                 from /home/tux/dev/batman-adv-t_x/compat-include/linux/netdevice.h:25,
+                 from /home/tux/dev/batman-adv-t_x/compat.h:52,
+                 from <command-line>:1:
+/home/tux/dev/batman-adv-t_x/compat-include/linux/kref.h:32:95: error: redefinition of ‘kref_get_unless_zero’
+/usr/src/linux-headers-3.2.0-4-common/include/linux/kref.h:47:95: note: previous definition of ‘kref_get_unless_zero’ was here
+make[4]: *** [/home/tux/dev/batman-adv-t_x/net/batman-adv/bat_iv_ogm.o] Error 1
+make[3]: *** [_module_/home/tux/dev/batman-adv-t_x/net/batman-adv] Error 2
+make[2]: *** [sub-make] Error 2
+make[1]: *** [all] Error 2
+make[1]: Leaving directory `/usr/src/linux-headers-3.2.0-4-amd64'
+make: *** [all] Error 2
+make  0,61s user 0,20s system 67% cpu 1,203 total
+-----
