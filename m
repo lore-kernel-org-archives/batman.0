@@ -1,11 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Sat,  9 Jan 2016 21:20:17 +0800
-Message-Id: <1452345621-15908-13-git-send-email-a@unstable.cc>
+Date: Sat,  9 Jan 2016 21:20:15 +0800
+Message-Id: <1452345621-15908-11-git-send-email-a@unstable.cc>
 In-Reply-To: <1452345621-15908-1-git-send-email-a@unstable.cc>
 References: <1452345621-15908-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 12/16] batman-adv: Change ifconfig examples
-	to iproute2
+Subject: [B.A.T.M.A.N.] [PATCH 10/16] batman-adv: Delete an unnecessary
+	check before the function call "batadv_softif_vlan_free_ref"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,42 +16,36 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Markus Elfring <elfring@users.sourceforge.net>, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Markus Elfring <elfring@users.sourceforge.net>
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+The batadv_softif_vlan_free_ref() function tests whether its argument is NULL
+and then returns immediately. Thus the test around the call is not needed.
+
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- Documentation/networking/batman-adv.txt | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ net/batman-adv/translation-table.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/Documentation/networking/batman-adv.txt b/Documentation/networking/batman-adv.txt
-index 58e49042fc20..ff23b755f5e4 100644
---- a/Documentation/networking/batman-adv.txt
-+++ b/Documentation/networking/batman-adv.txt
-@@ -115,14 +115,17 @@ The "bat0" interface can be used like any  other  regular  inter-
- face.  It needs an IP address which can be either statically con-
- figured or dynamically (by using DHCP or similar services):
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index ec67deff1621..5852fda9f175 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -3356,8 +3356,7 @@ bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, u8 *src, u8 *dst,
+ 	ret = true;
  
--# NodeA: ifconfig bat0 192.168.0.1
--# NodeB: ifconfig bat0 192.168.0.2
-+# NodeA: ip link set up dev bat0
-+# NodeA: ip addr add 192.168.0.1/24 dev bat0
-+
-+# NodeB: ip link set up dev bat0
-+# NodeB: ip addr add 192.168.0.2/24 dev bat0
- # NodeB: ping 192.168.0.1
- 
- Note:  In  order to avoid problems remove all IP addresses previ-
- ously assigned to interfaces now used by batman advanced, e.g.
- 
--# ifconfig eth0 0.0.0.0
-+# ip addr flush dev eth0
- 
- 
- LOGGING/DEBUGGING
+ out:
+-	if (vlan)
+-		batadv_softif_vlan_free_ref(vlan);
++	batadv_softif_vlan_free_ref(vlan);
+ 	if (tt_global_entry)
+ 		batadv_tt_global_entry_free_ref(tt_global_entry);
+ 	if (tt_local_entry)
 -- 
 2.7.0
 
