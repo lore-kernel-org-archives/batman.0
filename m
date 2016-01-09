@@ -1,15 +1,13 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Sat, 9 Jan 2016 03:29:25 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20160109022925.GG5675@otheros>
-References: <2457136.iz2mu7y0Mc@voltaire>
- <20151231110712.GD30632@otheros>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20151231110712.GD30632@otheros>
-Subject: Re: [B.A.T.M.A.N.] B.A.T.M.A.N. V leaves the nest
+Return-Path: <davem@davemloft.net>
+Date: Fri, 08 Jan 2016 21:47:18 -0500 (EST)
+Message-Id: <20160108.214718.227819472802633711.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1452151587-25547-1-git-send-email-a@unstable.cc>
+References: <1452151587-25547-1-git-send-email-a@unstable.cc>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request [net]: 20160107
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,25 +17,13 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: a@unstable.cc
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Thu, Dec 31, 2015 at 12:07:12PM +0100, Linus Lüssing wrote:
-> * Suggestion: Change "If the OGMv2 sequence number is not newer or equal
->   compared to the last received OGMV2 (from any neighbor for this
->   originator) and if the throughput is not better, drop the OGMv2"
->   to:
->   "[...] (from the currently selected router for this originator) [...]"
-> 
->   (-> is another sequence number check here redundant?
->       see "Age check above"? maybe some merging+reordering here?)
+From: Antonio Quartulli <a@unstable.cc>
+Date: Thu,  7 Jan 2016 15:26:26 +0800
 
-Another issue I just noticed with the according sentence we have
-in the spec right now:
+> I know it is extremely late in the release cycle, but please accept this
+> single (and small) change intended for net.
 
-Bad news never travells:
-
-We would ignore updates from our selected router if the path
-throughput got worse - even if it's a new sequence number.
-
-* Add a branch: If seqno is new + from currently selected router:
-  -> accept (even if path throughput is lower than with the previous seqno)
+Pulled, thanks Antonio.
