@@ -1,16 +1,16 @@
-Return-Path: <a@unstable.cc>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 11 Jan 2016 17:05:21 +0100
+Message-ID: <4025424.ueLjcNil9i@sven-edge>
+In-Reply-To: <5693D141.5080900@unstable.cc>
 References: <1451992006-13191-1-git-send-email-sven@narfation.org>
  <1451992006-13191-11-git-send-email-sven@narfation.org>
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <5693D141.5080900@unstable.cc>
-Date: Mon, 11 Jan 2016 23:58:57 +0800
+ <5693D141.5080900@unstable.cc>
 MIME-Version: 1.0
-In-Reply-To: <1451992006-13191-11-git-send-email-sven@narfation.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="IDeX5BIimAWc2jTw05faOQlvSC0FvGq3g"
+Content-Type: multipart/signed; boundary="nextPart18623958.TjNyXKJhZP";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v4 11/31] batman-adv: Drop reference to
- netdevice on last reference
+	netdevice on last reference
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,55 +20,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
+To: Antonio Quartulli <a@unstable.cc>
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---IDeX5BIimAWc2jTw05faOQlvSC0FvGq3g
-Content-Type: text/plain; charset=utf-8
+--nextPart18623958.TjNyXKJhZP
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On 05/01/16 19:06, Sven Eckelmann wrote:
-> +void batadv_hardif_release(struct batadv_hard_iface *hard_iface)
->  {
-> -	struct batadv_hard_iface *hard_iface;
-> -
-> -	hard_iface =3D container_of(rcu, struct batadv_hard_iface, rcu);
->  	dev_put(hard_iface->net_dev);
+On Monday 11 January 2016 23:58:57 Antonio Quartulli wrote:
+> what is wrong in releasing the releasing the reference to net_dev ins=
+ide
+> the RCU callback (except for introducing some delay) ?
 
-Sven,
+To quote my may to Linus about the same patch:
 
-what is wrong in releasing the releasing the reference to net_dev inside
-the RCU callback (except for introducing some delay) ?
+On Tuesday 05 January 2016 10:18:13 Sven Eckelmann wrote:
+> On Tuesday 05 January 2016 06:02:08 Linus L=FCssing wrote:
+> > PS: Just to clarify, patch 10 is only a style patch, right?
+>=20
+> Yes, it is more a style patch to make everything more consistent.
 
-Cheers,
-
-
---=20
-Antonio Quartulli
-
-
---IDeX5BIimAWc2jTw05faOQlvSC0FvGq3g
+Kind regards,
+=09Sven
+--nextPart18623958.TjNyXKJhZP
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJWk9FEAAoJENpFlCjNi1MRifoP/39yj2wGejY3bEcP99Yjtd8Q
-zwejd2AYphNFnbwz71X0QIeiQ+RAuQtfhytZGBo0J7KwRW5rPkyjnzkxRlQj4wRj
-sgUZNxrZbHEeQPVg04WqXNTWByhLgvYtt/9gJ6284D+AdF6F+pYt8xF8+5QHKKum
-fIiXgQPOQsk2gd4X7W3EdrQjUn4sWa2xP2JRMy5cXy6qWT8OU0dnhnnInEJZq9Lk
-9MsittC2t/CvvPPJ6GZ8IoHubfS4preRl4NjwsKY1lxZ4NmhMBLixl96q1sFAkFA
-u7ML03na2oiTohzqmhlXNnlZ37wZTjg6uzgy8jUr7MtKiLdtG1FOxbzjKpFOQcQR
-mff5BkKr9WXai4BRjAhjLb7KW2wU1KdD2beeTezDzQeGCSfSWZPGqgv/VvKbHSzc
-3RgB+iK3gmy1rP5XBUeSS9KrAWK8t2EpK5l0ECR1r0qXzwQEJ6JJtDhrxU+bjwzo
-x6bAGqL6TsbO4jwmdAQuxQ9g175po/hXhpygRjAE0iMVad8O0zcc8cEW78BhhXvh
-3akNuo2qqILITdIlTIn1B2tnAIxoHbkFPzbXQVtR8GBWPfvWLEjYENTEMs3F3+QD
-JVbecC9W21L7dPjTML8MyoW1tBUENEgpL7ptzRDLsYAG1XSOa5lPoGaTCQDe3RnG
-ZxHUDR1VoUVGPILGsfOx
-=eELH
+iQIcBAABCgAGBQJWk9LBAAoJEF2HCgfBJntGTfIP/jq6cBOop6h8FYmUo7t204El
+IA5lCgXx97qEcwRRWcfI7sdVV0HoMsU+xO/yZW3sMl1KD4v9qvl3A5wXljwVCTw+
+eueWtLR08/sprhf7sgZZahPN7hKuben7s9wKjLC2zDpwTbHpo2FPlyKEBrjjlnTV
+OL5PGxSQ6kfm5GXDMbtF3XgTGM/u4Uc3leDqku4p6OTh6BXDgS97aE0MFrdje+Lc
+BMjDcYtvzTlsXOMqaDU4aI6zSg/vrSe+BQ01doe8I6adMESw+tJf2bIgIzHunjBa
+FZnAvS6EPW3wyu25VPHnOOEVHLkqfyYQQbdrzFOGeA3LaoJ25fxvEaBab0HKz5pB
+mGJl6BKl0iJjspAWkWr6eNz1sHcGm1QYvIcO7S51oQdGAT9bJquCelGXhnqIhHOZ
+doQ7+ZGkUGjzXFJoqgdomoztOvgMKj0Jw+Vpnuq/o4rQ8qbDDoBqaZ8uETZ4i3Ti
+bYKqjDVDQQIjBnhBMgsWRE58UKg0hgCkAffe0+VEQKTnpsVKG+0OIejR93ukyN02
+Fi5uywliHwSlb3uYPBFfaguZvlJAE+Uvbfm7anSa+QcIhXADxKL/90BD75g10mkV
+dMDF3vxXzjsAbMG3GkkkEkidHbNiWACM9xk/U9o6C6XFSerdwoEbjhjet2ojkCdN
+Puk2AffHSiDKFREXUQXg
+=QAqO
 -----END PGP SIGNATURE-----
 
---IDeX5BIimAWc2jTw05faOQlvSC0FvGq3g--
+--nextPart18623958.TjNyXKJhZP--
+
