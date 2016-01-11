@@ -1,13 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 11 Jan 2016 11:03:51 +0100
-Message-ID: <6156489.uHiVaphWnp@sven-edge>
-In-Reply-To: <CAJuY50wv1F1OcJc-ne=JJB3xyLUMBVf=Uo8w36rM07vntXj=cQ@mail.gmail.com>
-References: <CAJuY50wv1F1OcJc-ne=JJB3xyLUMBVf=Uo8w36rM07vntXj=cQ@mail.gmail.com>
+Return-Path: <a@unstable.cc>
+References: <1451992006-13191-1-git-send-email-sven@narfation.org>
+ <1451992006-13191-5-git-send-email-sven@narfation.org>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <5693CF38.7090908@unstable.cc>
+Date: Mon, 11 Jan 2016 23:50:16 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4908917.MeCGboOY1Y";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] alfred dies without any log/dmesg entry
+In-Reply-To: <1451992006-13191-5-git-send-email-sven@narfation.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="9N3VtnKM6mdtknhjbsjbI758vWMJggm8J"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4 05/31] batman-adv: Drop immediate
+ orig_node free function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,77 +20,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: 3zl Trizonelabs <trizonelabs@gmail.com>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart4908917.MeCGboOY1Y
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--9N3VtnKM6mdtknhjbsjbI758vWMJggm8J
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On Wednesday 30 December 2015 13:32:39 3zl Trizonelabs wrote:
-> ref: alfred ver 2015.1 / .2 @openwrt CC
-> 
-> afred.facters disabled
-> 
-> alfred process dies (not listed in ps ) without leaving any log entry
-> 
-> does anybody have any hint or idea ?
 
-I don't use the new OpenWrt init scripts and therefore hoped that one of the 
-authors would answer here.
 
-But maybe it is an alfred crash. You can try to find more about the reasons of 
-a crash by enabling core dumps [1]. I think the netifd init script should then 
-enable the rest ("ulimit -c unlimited" and setting 
-/proc/sys/kernel/core_pattern).
+On 05/01/16 19:06, Sven Eckelmann wrote:
+> =20
+> +/**
+> + * batadv_tt_orig_list_entry_release - release tt orig entry from list=
+s and
+> + *  queue for free after rcu grace period
+> + * @orig_entry: tt orig entry to be free'd
+> + */
+> +static void
+> +batadv_tt_orig_list_entry_release(struct batadv_tt_orig_list_entry *or=
+ig_entry)
+> +{
+> +	batadv_orig_node_free_ref(orig_entry->orig_node);
+> +	kfree_rcu(orig_entry, rcu);
+> +}
 
-You should then check /tmp for *.core files when you've detected that alfred 
-isn't running anymore. If you find some from the alfred process then you can 
-assume that there was some crash. You can analyze these core dumps as 
-described in the OpenWrt wiki [2]. Just specify the core file instead of 
-"192.168.1.1:9000" as the first parameter for ./scripts/remote-gdb. 
+I really like this approach big time :) Scheduling the rcu calls one
+after the other instead of nesting them (or even worse using the _now()
+function) seems really clean and - of course - not buggy.
 
-You may also want to change the alfred/Makefile before compiling your image to 
-make debugging easier. Try replacing the lines
+thanks for these patches Sven!
 
-    TARGET_CFLAGS  += -ffunction-sections -fdata-sections -flto
-    TARGET_LDFLAGS += -Wl,--gc-sections -fuse-linker-plugin
+Cheers,
 
-With
+--=20
+Antonio Quartulli
 
-    TARGET_CFLAGS += -ggdb3 -O0
 
-to make the output of things like "bt full" in remote-gdb a lot better to 
-read.
-
-Kind regards,
-	Sven
-
-[1] OpenWrt config: CONFIG_KERNEL_ELF_CORE=y
-    under "Global build settings" as "Enable process core dump support"
-[2] https://wiki.openwrt.org/doc/devel/gdb
---nextPart4908917.MeCGboOY1Y
+--9N3VtnKM6mdtknhjbsjbI758vWMJggm8J
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJWk34HAAoJEF2HCgfBJntGRhEP/iM2SqBITICo6S1lvYNwXG+d
-9iK+3ogdpGIF6+s/Q89GayVkaXQTo7tIgdBiEXkG8gU7B3F+OtjRKahOJxi3tNzN
-uCXyn5WDdv+U9MNQQca/PtA++7zORFeHCqO/rXVUmgh02ZgSWcTpEGJuV1wRzT6c
-GwlyhBChL9Awv5U35WyrHrPHRZjO7xmHlYekCadADE3lGnbOEaaQL5UQ/Lz7o3q9
-ytQctui4CH4xOPu+i2+OGAIw25WCbUGgtMecm6SwY90ZaliuXRyxzAEJbS9BkZDR
-dXWyTEvdhXeLdwYr98gDxv2fNjeMwrgSsS0mUQGX1oja+hEBzj+jyj1VWsuHOshW
-trvjhxn2yljStXzoIbkVyVvPDDtCbNdqaK3SSvh++xFmE3Z7LzVpGNPIG9pWosZN
-7/m+BAIkGX5ojE4K7s/k2hB+uBmI1eAgHc7q0Xnn5aHBlK8l2V5xhuoh9D0oeXun
-44otbnairoUu5TdHjgL1+DLvBTPd90R0LDZ8xV0OlaQan4IZFj8u7/h4/rP0LEcI
-BC0+PQdVpwrI7MqyNpp0RSC7BLYOvIKbdmB79AHY2kts1egojqmGeZNal5UhWapS
-fFA1nrJOL3Itvo3YsIJcpGbOJ3A8UZYTO2TltMSvlNf1jW0JPph8J8HlPVmlvJIg
-akU3zPlSXvvGsMqb2een
-=FXKV
+iQIcBAEBCAAGBQJWk887AAoJENpFlCjNi1MRf74P/iFfn/ZvZMsSE1amN5dz0gt8
+ZQk907JhsfDGcjwb1UzUowxlM4tpJfiIsfhnGBpXDcE1VwqfV3FxN/pUyHPYQfdY
+Est85cNwCRTEXXPk13g+pm28/hQwQGU6Cl3CH3TpKA7rYtBDs0XXLzrI34v0xuAc
+cso48GN17ltTUG4at9KqC27tE9m+le4obLLtZbw3hbuxyIj2AaGDeIU4+1Yd27zK
+1l0MB6VF9bkUV2Kb3x8rvW4cqoI0XQFDl9PwUlpJ5bUvZVVsGvPUSzqsz9NegC2F
+VCfNs7Fqra5a+EMD2RwNrW418CI4T8CQ4GSyNKAmSfVuCyKqXGVhHCciq8teN9Pe
+6hUceaowpMn4g6TdBpl1tgDhkNfsB3+DpsUfaBXjavaOnSaG571Fj38/lmljhHCI
+UTLIwRJMslmlS9Y4zb3adYSTOkEx4NJ4gNFdMmCc22pvgbIDdxNt+YVL+8+mGSsH
+KOT/nfciKv2mceC2WFFfYck8/nE8djpceMu00ht2i7F1hn+Xsezyv9goUvt8NbFO
++FL6/tiyXKlNrM9FDaI2qcfP9xFpxuXdvISA0SFITzAi9Utv0N7M98wEQm9fxJtu
+Yzkrp3FtJw1ygI6cc2EvAACA46EkCiVwrQzV2zTdERRmLiTxn9QQItFffdKZO/jO
+1hm1TOobsS5EL9NeApsL
+=ILMv
 -----END PGP SIGNATURE-----
 
---nextPart4908917.MeCGboOY1Y--
-
+--9N3VtnKM6mdtknhjbsjbI758vWMJggm8J--
