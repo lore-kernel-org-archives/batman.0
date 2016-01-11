@@ -1,16 +1,16 @@
 Return-Path: <a@unstable.cc>
 References: <1451992006-13191-1-git-send-email-sven@narfation.org>
- <1451992006-13191-5-git-send-email-sven@narfation.org>
+ <1451992006-13191-11-git-send-email-sven@narfation.org>
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <5693CF38.7090908@unstable.cc>
-Date: Mon, 11 Jan 2016 23:50:16 +0800
+Message-ID: <5693D141.5080900@unstable.cc>
+Date: Mon, 11 Jan 2016 23:58:57 +0800
 MIME-Version: 1.0
-In-Reply-To: <1451992006-13191-5-git-send-email-sven@narfation.org>
+In-Reply-To: <1451992006-13191-11-git-send-email-sven@narfation.org>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="9N3VtnKM6mdtknhjbsjbI758vWMJggm8J"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v4 05/31] batman-adv: Drop immediate
- orig_node free function
+ boundary="IDeX5BIimAWc2jTw05faOQlvSC0FvGq3g"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4 11/31] batman-adv: Drop reference to
+ netdevice on last reference
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -24,41 +24,31 @@ To: Sven Eckelmann <sven@narfation.org>
 Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---9N3VtnKM6mdtknhjbsjbI758vWMJggm8J
+--IDeX5BIimAWc2jTw05faOQlvSC0FvGq3g
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-
-
 On 05/01/16 19:06, Sven Eckelmann wrote:
-> =20
-> +/**
-> + * batadv_tt_orig_list_entry_release - release tt orig entry from list=
-s and
-> + *  queue for free after rcu grace period
-> + * @orig_entry: tt orig entry to be free'd
-> + */
-> +static void
-> +batadv_tt_orig_list_entry_release(struct batadv_tt_orig_list_entry *or=
-ig_entry)
-> +{
-> +	batadv_orig_node_free_ref(orig_entry->orig_node);
-> +	kfree_rcu(orig_entry, rcu);
-> +}
+> +void batadv_hardif_release(struct batadv_hard_iface *hard_iface)
+>  {
+> -	struct batadv_hard_iface *hard_iface;
+> -
+> -	hard_iface =3D container_of(rcu, struct batadv_hard_iface, rcu);
+>  	dev_put(hard_iface->net_dev);
 
-I really like this approach big time :) Scheduling the rcu calls one
-after the other instead of nesting them (or even worse using the _now()
-function) seems really clean and - of course - not buggy.
+Sven,
 
-thanks for these patches Sven!
+what is wrong in releasing the releasing the reference to net_dev inside
+the RCU callback (except for introducing some delay) ?
 
 Cheers,
+
 
 --=20
 Antonio Quartulli
 
 
---9N3VtnKM6mdtknhjbsjbI758vWMJggm8J
+--IDeX5BIimAWc2jTw05faOQlvSC0FvGq3g
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -66,19 +56,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJWk887AAoJENpFlCjNi1MRf74P/iFfn/ZvZMsSE1amN5dz0gt8
-ZQk907JhsfDGcjwb1UzUowxlM4tpJfiIsfhnGBpXDcE1VwqfV3FxN/pUyHPYQfdY
-Est85cNwCRTEXXPk13g+pm28/hQwQGU6Cl3CH3TpKA7rYtBDs0XXLzrI34v0xuAc
-cso48GN17ltTUG4at9KqC27tE9m+le4obLLtZbw3hbuxyIj2AaGDeIU4+1Yd27zK
-1l0MB6VF9bkUV2Kb3x8rvW4cqoI0XQFDl9PwUlpJ5bUvZVVsGvPUSzqsz9NegC2F
-VCfNs7Fqra5a+EMD2RwNrW418CI4T8CQ4GSyNKAmSfVuCyKqXGVhHCciq8teN9Pe
-6hUceaowpMn4g6TdBpl1tgDhkNfsB3+DpsUfaBXjavaOnSaG571Fj38/lmljhHCI
-UTLIwRJMslmlS9Y4zb3adYSTOkEx4NJ4gNFdMmCc22pvgbIDdxNt+YVL+8+mGSsH
-KOT/nfciKv2mceC2WFFfYck8/nE8djpceMu00ht2i7F1hn+Xsezyv9goUvt8NbFO
-+FL6/tiyXKlNrM9FDaI2qcfP9xFpxuXdvISA0SFITzAi9Utv0N7M98wEQm9fxJtu
-Yzkrp3FtJw1ygI6cc2EvAACA46EkCiVwrQzV2zTdERRmLiTxn9QQItFffdKZO/jO
-1hm1TOobsS5EL9NeApsL
-=ILMv
+iQIcBAEBCAAGBQJWk9FEAAoJENpFlCjNi1MRifoP/39yj2wGejY3bEcP99Yjtd8Q
+zwejd2AYphNFnbwz71X0QIeiQ+RAuQtfhytZGBo0J7KwRW5rPkyjnzkxRlQj4wRj
+sgUZNxrZbHEeQPVg04WqXNTWByhLgvYtt/9gJ6284D+AdF6F+pYt8xF8+5QHKKum
+fIiXgQPOQsk2gd4X7W3EdrQjUn4sWa2xP2JRMy5cXy6qWT8OU0dnhnnInEJZq9Lk
+9MsittC2t/CvvPPJ6GZ8IoHubfS4preRl4NjwsKY1lxZ4NmhMBLixl96q1sFAkFA
+u7ML03na2oiTohzqmhlXNnlZ37wZTjg6uzgy8jUr7MtKiLdtG1FOxbzjKpFOQcQR
+mff5BkKr9WXai4BRjAhjLb7KW2wU1KdD2beeTezDzQeGCSfSWZPGqgv/VvKbHSzc
+3RgB+iK3gmy1rP5XBUeSS9KrAWK8t2EpK5l0ECR1r0qXzwQEJ6JJtDhrxU+bjwzo
+x6bAGqL6TsbO4jwmdAQuxQ9g175po/hXhpygRjAE0iMVad8O0zcc8cEW78BhhXvh
+3akNuo2qqILITdIlTIn1B2tnAIxoHbkFPzbXQVtR8GBWPfvWLEjYENTEMs3F3+QD
+JVbecC9W21L7dPjTML8MyoW1tBUENEgpL7ptzRDLsYAG1XSOa5lPoGaTCQDe3RnG
+ZxHUDR1VoUVGPILGsfOx
+=eELH
 -----END PGP SIGNATURE-----
 
---9N3VtnKM6mdtknhjbsjbI758vWMJggm8J--
+--IDeX5BIimAWc2jTw05faOQlvSC0FvGq3g--
