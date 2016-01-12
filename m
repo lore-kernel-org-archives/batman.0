@@ -1,12 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 12 Jan 2016 16:33:58 +0100
-Message-ID: <55871661.0vibtzJOD8@sven-edge>
-In-Reply-To: <1452609161-25243-1-git-send-email-a@unstable.cc>
+Return-Path: <a@unstable.cc>
 References: <1452609161-25243-1-git-send-email-a@unstable.cc>
+ <55871661.0vibtzJOD8@sven-edge>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <56951D09.1030403@unstable.cc>
+Date: Tue, 12 Jan 2016 23:34:33 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1779920.FTGYXdggIs";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+In-Reply-To: <55871661.0vibtzJOD8@sven-edge>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="PqwBv0A1DpKpimBsQcGFNFxis8vDSJ3u3"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove whitespace from
 	copyright line
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,73 +20,67 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <a@unstable.cc>
+To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1779920.FTGYXdggIs
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--PqwBv0A1DpKpimBsQcGFNFxis8vDSJ3u3
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-On Tuesday 12 January 2016 22:32:41 Antonio Quartulli wrote:
-> A whitespace has been accidentally added while updating the copyright
-> years in the file headers. Remove it.
-> 
-> Fixes: ee0e93f52a34 ("batman-adv: update copyright years for 2016")
-> Cc: Sven Eckelmann <sven@narfation.org>
-> Signed-off-by: Antonio Quartulli <a@unstable.cc>
+On 12/01/16 23:33, Sven Eckelmann wrote:
+> On Tuesday 12 January 2016 22:32:41 Antonio Quartulli wrote:
+>> A whitespace has been accidentally added while updating the copyright
+>> years in the file headers. Remove it.
+>>
+>> Fixes: ee0e93f52a34 ("batman-adv: update copyright years for 2016")
+>> Cc: Sven Eckelmann <sven@narfation.org>
+>> Signed-off-by: Antonio Quartulli <a@unstable.cc>
+>=20
+> Nacked-by: Sven Eckelmann <sven@narfation.org>
+>=20
+> This was on purpose to follow the the "How to Apply These Terms to Your=
+ New=20
+> Programs" section of the GPL2 [1]. The example given there is following=
+:
+>=20
+>     <one line to give the program's name and a brief idea of what it do=
+es.>
+>     Copyright (C) <year>  <name of author>
+>=20
 
-Nacked-by: Sven Eckelmann <sven@narfation.org>
+Thanks for the hint! This was not reported in the original patch and
+seemed accidental :)
 
-This was on purpose to follow the the "How to Apply These Terms to Your New 
-Programs" section of the GPL2 [1]. The example given there is following:
 
-    <one line to give the program's name and a brief idea of what it does.>
-    Copyright (C) <year>  <name of author>
+Cheers,
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+--=20
+Antonio Quartulli
 
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-This way of separating the year and the copyright holder is also used in other 
-parts of the kernel and other parts of the batman-adv related source code 
-(e.g. batctl and alfred).
-
-Kind regards,
-	Sven
-
-[1] https://www.gnu.org/licenses/gpl-2.0.txt
---nextPart1779920.FTGYXdggIs
+--PqwBv0A1DpKpimBsQcGFNFxis8vDSJ3u3
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJWlRzmAAoJEF2HCgfBJntGvKIP/30QF7HcOxwNhJtk/Zze3XMa
-g6cu7oRzZO6pgwokDznLDPriPlSI0qLdvmT4s+vtEiMI8hFwJFfOhlT2nUxyR5tZ
-eBm2X7RYpnaOSkv8YoPcJswVVVS3zIudmlz58r4mXmpye0MkVbnExvs52wXAbh81
-uWSwrc8xU24BZb9f1AMBRl02739EZ7mjSOriCSkW2Fi8YD5B7Du6ZBGWGdGPHI0n
-fawOZsDjbO8e8uFjyxVkCjB4LvzlZX88Vxz521DdFEzsVjGhMBjPVW9x/iDP1AbU
-PPZj8QNMB9ZIOM6u52c5cdCKhK+ltjpgROleC0z/meb+vXNdBwZm5qdibJ/EWitG
-vmTT4bkiF0ev3p1W8cFIGEbi24TfUmoZfY0HkAlaGJ3qBSFcgkHSF44rT2Nvsgto
-Jn3gXiAPsyYvP7wHgPOaoAArTHEyjncjbjkI2u8b9XZw0uT4iHk9oXOSaUhq3wNX
-Z/L2dm3pdaoPf0I7ozWdMKK+eZZSVqhkarTj6T/2aJ3gg/5yvQXah1g31UieXOaQ
-Uv+r0oScc21nsITxghw1M2xJQw4f2h811C3jrr6Th8QEJIS/3+odZxRjAyffAoSP
-3r9bxhdyZOBkalrwMQDT39XM/eXtefWWpbzqeRakbgP0a9gwjZz3WDlDmu/EWhD1
-nCyvpnleVZj46aQoSpyh
-=rfWG
+iQIcBAEBCAAGBQJWlR0MAAoJENpFlCjNi1MRXu4QALaJiUX68p2Ojzp9AuL32g2Q
+8oHdDh0gI4Q4H77M373S4sHpGn0c31JzoZy4XIvk/1EupdQ+YGjZrVOoMESU3my3
+Yfn9x5lWbED3BzHq0dpnw7e7W6leQX+t69fcBzs3r/VcbbBkcy3cVpLAc3GeUir+
+YMjyFCudO+fSR15gCjRDYVopsIC2UbxHsHMSsczWAiy2W7mZwHrKo3vU8iqao6m/
+wD8nQm0QfsBH1kNLF782caQqIJJv9lc9gjerIe1Z7CmIabEWDCLTqgRqXHhBawvm
+/sjna0Ld37zDeGguq+eV4c4MAbhKLz+uex4jSjksGwEi5wiu+eH/SWkncqfxpPJJ
+isRnlDUAVRo6vadwggHt2+wgJoIQe8GE5OowR8cHxI4l27BZDutg/mjsxtw0Yfu9
+6IwOuPlx+aeViz2vPdMGUsz52F0MlB5KlNUEF/9+lTOkRMnzMWUlYy2PQWsd2gL/
+wW93cWirnZDEW+iLFqmZKXYC7sIgjl0Hhn7/IYKeH2JTuWz2v95ecXMrbjUGNR4M
+BS/7JzI6fg2UWemrdbxbd6ToFlBmntU5RB7cA9aiQyLA+KQrJIaD47wCLdD8Xpl8
+SSeDzug5IctgfwHIJFFMAZF3iDcTecaUPnMcBkEUMS/4w08hXsNOdb1fSEHVZnps
+V0i+GB9qkawoLzvOh9Da
+=ocSg
 -----END PGP SIGNATURE-----
 
---nextPart1779920.FTGYXdggIs--
-
+--PqwBv0A1DpKpimBsQcGFNFxis8vDSJ3u3--
