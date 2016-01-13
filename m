@@ -1,14 +1,8 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove unused
- BATADV_BONDING_TQ_THRESHOLD constant
-Date: Wed, 13 Jan 2016 09:40:33 +0100
-Message-ID: <5342457.c8rZ44sIM3@sven-edge>
-In-Reply-To: <1452561325-12947-1-git-send-email-a@unstable.cc>
-References: <1452561325-12947-1-git-send-email-a@unstable.cc>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1868933.T1kRjTMnkn";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Return-Path: <a@unstable.cc>
+From: Antonio Quartulli <a@unstable.cc>
+Date: Thu, 14 Jan 2016 01:51:52 +0800
+Message-Id: <1452707514-5091-1-git-send-email-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] pull request [net]: batman-adv 20160114
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,54 +12,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1868933.T1kRjTMnkn
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hello David,
 
-On Tuesday 12 January 2016 09:15:25 Antonio Quartulli wrote:
-> BATADV_BONDING_TQ_THRESHOLD is not used anymore since the implementation
-> of the bat_neigh_is_similar_or_better() API function.
-> Such function uses the more generic BATADV_TQ_SIMILARITY_THRESHOLD
-> constant.
-> 
-> Therefore, remove definition of the unused BATADV_BONDING_TQ_THRESHOLD
-> constant.
-> 
-> Signed-off-by: Antonio Quartulli <a@unstable.cc>
+these are two small fixes intended for your net tree.
 
-Just in case somebody else is interested since when it is not used anymore:
+Patch 1 prevents a lockdep splat from appearing along the
+shutdown path due to a missing lock in mcast_free(), by Simon Wunderlich.
 
-a64108267584 ("batman-adv: adapt bonding to use the new API functions")
+Patch 2 fixes a new feature introduced in 4.5 by ensuring that a
+batadv_hardif_neigh_node object is free'd only when it is no
+longer used in any context, by Sven Eckelmann.
 
-This is in v2014.0.0/v3.13. So it should be fine to remove it :)
+Please pull or let me know of any issue.
+Thanks a lot,
+	Antonio
 
-Kind regards,
-	Sven
---nextPart1868933.T1kRjTMnkn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+The following changes since commit f1640c3ddeec12804bc9a21feee85fc15aca95f6:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+  bgmac: fix a missing check for build_skb (2016-01-13 00:24:14 -0500)
 
-iQIcBAABCgAGBQJWlg2BAAoJEF2HCgfBJntG06AQANCmTokftZTdnIKD8U6BwweE
-L+prjUIKBJusiMuG3jR1YU+AdQQITAyq5ZS1GlX5ZVu4TocYJi1BBL2lC49Yn96+
-OwU7zI+iUd5ZZYS7FKIHExC3z1icnuhYS7XFd3VNiKIb1CNmTvuORJMehCYr1N1T
-Uc7bHggix0IZmHalVNZ7nTQlfDSIhgcJ9sDBBOQFxsbpsS5eRbEkCPEO7XiNXTlF
-KEwGdMoRkh3z4Csh8yDvW3eCVgXXlsQbyjDW76D8pBFbKBj6YZGyZMnC2xpHCfJr
-/gqFJFJZZxCq4bRVKvJsFnF9zdsD4XWtitkRQbR3uO5as/OaCMZvtrwIkFJNGQ0T
-6/qLGqILN3IKa5/o8oUDgmffPlwUnP8pWZxEtskTHyvJYzv9lqtzcfqjR9s/ukan
-O6M1mC0/agRZdGzSjbVQm3+rKkISEc25O4tor5Qk7yaqUqKN2Uar6+9SGEHFGuZL
-2D2yvZaqIbtTqmNqyNcGjoHuWZ/YJSTq7Zi5eqAhr21L2ht2FkCFh3i57q729S4C
-lvB4XbeSHjjqX6xUsFM1kbRmnxH/pIsRCxKRNDUlrouSLTTDLQaatrLiDOxHeWAn
-aRXbHed7SjFahtk/xcwCbc6D8UDXSUuMRbavricTzSCvvtEkY+xVS982QiRpkcvQ
-f4p5wYwxs4qEUdPr8QZE
-=JgsE
------END PGP SIGNATURE-----
+are available in the git repository at:
 
---nextPart1868933.T1kRjTMnkn--
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to bab7c6c3deac70966a3000402c0ea6d0c20edd15:
+
+  batman-adv: Fix list removal of batadv_hardif_neigh_node (2016-01-13 19:28:27 +0800)
+
+----------------------------------------------------------------
+Included bugfixes:
+- avoid freeing batadv_hardif_neigh_node when still in use in other contexts
+- prevent lockdep splat in mcast_free during shutdown
+
+----------------------------------------------------------------
+Simon Wunderlich (1):
+      batman-adv: fix lockdep splat when doing mcast_free
+
+Sven Eckelmann (1):
+      batman-adv: Fix list removal of batadv_hardif_neigh_node
+
+ net/batman-adv/multicast.c  |  2 ++
+ net/batman-adv/originator.c | 18 ++++++++++++------
+ 2 files changed, 14 insertions(+), 6 deletions(-)
 
