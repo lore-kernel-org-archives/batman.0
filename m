@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 16 Jan 2016 13:23:18 +0800
-Message-ID: <1946991.QjZUrbKzPJ@voltaire>
-In-Reply-To: <1451992006-13191-8-git-send-email-sven@narfation.org>
+Date: Sat, 16 Jan 2016 13:25:52 +0800
+Message-ID: <1599302.E1FcRo4NDJ@voltaire>
+In-Reply-To: <1451992006-13191-9-git-send-email-sven@narfation.org>
 References: <1451992006-13191-1-git-send-email-sven@narfation.org>
- <1451992006-13191-8-git-send-email-sven@narfation.org>
+ <1451992006-13191-9-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1691986.WeFZ0o9tEz";
+Content-Type: multipart/signed; boundary="nextPart1843028.D8W7NvCDPA";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v4 08/31] batman-adv: Drop immediate
-	batadv_hardif_neigh_node free function
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4 09/31] batman-adv: Drop immediate
+	neigh_ifinfo free function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,11 +21,11 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1691986.WeFZ0o9tEz
+--nextPart1843028.D8W7NvCDPA
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, January 05, 2016 12:06:23 Sven Eckelmann wrote:
+On Tuesday, January 05, 2016 12:06:24 Sven Eckelmann wrote:
 > It is not allowed to free the memory of an object which is part of a list
 > which is protected by rcu-read-side-critical sections without making sure
 > that no other context is accessing the object anymore. This usually happens
@@ -35,17 +35,17 @@ On Tuesday, January 05, 2016 12:06:23 Sven Eckelmann wrote:
 > But the _now functions ignore this completely. They free the object
 > directly even when a different context still tries to access it. This has
 > to be avoided and thus these functions must be removed and all functions
-> have to use batadv_hardif_neigh_free_ref.
+> have to use batadv_neigh_ifinfo_free_ref.
 > 
-> Fixes: fed2826b490c ("batman-adv: add list of unique single hop neighbors
-> per hard-interface") Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Fixes: 9bb33b8d88e3 ("batman-adv: split tq information in neigh_node
+> struct") Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-Applied in revision 918a769.
+Applied in revision 2fe4d0b.
 
 Thanks,
 Marek
 
---nextPart1691986.WeFZ0o9tEz
+--nextPart1843028.D8W7NvCDPA
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +53,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWmdPGAAoJEFNVTo/uthzAOdUIALMtP9opyba3PWj8MBVL+G4H
-0FIWOe9dkql7Gt2dNta2gj4jfa8Dhr4fnzgvJWY38rAobHj+AxTXLi5kDn4O7aVs
-Ds5DtjhyIUuuDxS4Bl3kMOIlJ5E9rm9HkEYJUeJ4v0NOMJOpm7rLHolQIsfxKBUX
-VqLdYSso4F3n7hLQ4pM20T6uZZFZ1YNIk7pbMiIsEgv9ziohWnVCOuHamXCH4GWf
-PKtK3Vdlkh4dcA+Lwalrdq8HI301yFndg26U+Fb7blboWwmB208zLDymJwefFi9c
-VYmrDrErIgEh1T10+AaFJrKbhCTg0bE9eDdG6qGj0Gs/f75TxZfKGAf9joAuMh8=
-=X809
+iQEcBAABCAAGBQJWmdRgAAoJEFNVTo/uthzAUJwH/AokbstaGIPzGl6lCTSlLnJE
+milbMN0Em/OFgpqeTUqkYm+4q4fbY0A38GszcL+0X872be7ZBkIIIZerSj46bJv6
+C1JsAqPMWPe/pJgd2UMgioq+9QJDv+g5iAY+lEd8PLwbTx2zB7y14eVlAuI0QChy
+oo3ZbA+d1V2ns0N/vrYmsocEgi7/Xw9/H1pQea69n+ZVnjVrkm6l7IlfA8yFnaFK
+3vS8uvs3TIQ4zpB9D1SzLyEOXACA6XkK1jE2a643ZF+JIJMrw6IxK6DXgdldS0LO
+fR3HhZuXhJ/qDzKbPvDSQWtOwk4LoVhI8ivcDULqRH2IvfwLlkiOo+WRUCrPd2o=
+=sYsv
 -----END PGP SIGNATURE-----
 
---nextPart1691986.WeFZ0o9tEz--
+--nextPart1843028.D8W7NvCDPA--
 
