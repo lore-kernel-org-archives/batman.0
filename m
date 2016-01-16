@@ -1,9 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 16 Jan 2016 10:29:39 +0100
-Message-Id: <1452936598-28619-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v6 01/20] batman-adv: Add compatibility code
-	for kref_get_unless_zero
+Date: Sat, 16 Jan 2016 10:29:40 +0100
+Message-Id: <1452936598-28619-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1452936598-28619-1-git-send-email-sven@narfation.org>
+References: <1452936598-28619-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v6 02/20] batman-adv: Convert
+	batadv_hardif_neigh_node to kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,6 +16,10 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+
+batman-adv uses a self-written reference implementation which is just based
+on atomic_t. This is less obvious when reading the code than kref and
+therefore increases the change that the reference counting will be missed.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
@@ -37,62 +43,99 @@ v2:
  - split patchset into fixes and kref migration to make it easier when the
    decision is made where each patch will be applied
 
- compat-include/linux/kref.h | 46 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 46 insertions(+)
- create mode 100644 compat-include/linux/kref.h
+ net/batman-adv/originator.c | 20 ++++++++++++--------
+ net/batman-adv/types.h      |  3 ++-
+ 2 files changed, 14 insertions(+), 9 deletions(-)
 
-diff --git a/compat-include/linux/kref.h b/compat-include/linux/kref.h
-new file mode 100644
-index 0000000..bb3442c
---- /dev/null
-+++ b/compat-include/linux/kref.h
-@@ -0,0 +1,46 @@
-+/* Copyright (C) 2007-2016 B.A.T.M.A.N. contributors:
-+ *
-+ * Marek Lindner, Simon Wunderlich
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
-+ *
-+ * This file contains macros for maintaining compatibility with older versions
-+ * of the Linux kernel.
-+ */
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index d4a30db..7710595 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -23,6 +23,7 @@
+ #include <linux/fs.h>
+ #include <linux/jiffies.h>
+ #include <linux/kernel.h>
++#include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+ #include <linux/netdevice.h>
+@@ -196,11 +197,15 @@ void batadv_neigh_ifinfo_free_ref(struct batadv_neigh_ifinfo *neigh_ifinfo)
+ /**
+  * batadv_hardif_neigh_release - release hardif neigh node from lists and
+  *  queue for free after rcu grace period
+- * @hardif_neigh: hardif neigh neighbor to free
++ * @ref: kref pointer of the neigh_node
+  */
+-static void
+-batadv_hardif_neigh_release(struct batadv_hardif_neigh_node *hardif_neigh)
++static void batadv_hardif_neigh_release(struct kref *ref)
+ {
++	struct batadv_hardif_neigh_node *hardif_neigh;
 +
-+#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_KREF_H_
-+#define _NET_BATMAN_ADV_COMPAT_LINUX_KREF_H_
++	hardif_neigh = container_of(ref, struct batadv_hardif_neigh_node,
++				    refcount);
 +
-+#include <linux/version.h>
-+#include_next <linux/kref.h>
-+
-+#include <linux/atomic.h>
-+#include <linux/kernel.h>
-+
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
-+
-+/* some stable versions like Linux 3.2.44 also introduced this function
-+ * and would therefore break the build because they trigger a redefinition
-+ * of this function. Instead rename this function to be in the batadv_*
-+ * namespace
-+ */
-+#define kref_get_unless_zero(__kref) batadv_kref_get_unless_zero(__kref)
-+
-+static inline int __must_check batadv_kref_get_unless_zero(struct kref *kref)
-+{
-+	return atomic_add_unless(&kref->refcount, 1, 0);
-+}
-+
-+#endif /* < KERNEL_VERSION(3, 8, 0) */
-+
-+#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_KREF_H_ */
+ 	spin_lock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
+ 	hlist_del_init_rcu(&hardif_neigh->list);
+ 	spin_unlock_bh(&hardif_neigh->if_incoming->neigh_list_lock);
+@@ -216,8 +221,7 @@ batadv_hardif_neigh_release(struct batadv_hardif_neigh_node *hardif_neigh)
+  */
+ void batadv_hardif_neigh_free_ref(struct batadv_hardif_neigh_node *hardif_neigh)
+ {
+-	if (atomic_dec_and_test(&hardif_neigh->refcount))
+-		batadv_hardif_neigh_release(hardif_neigh);
++	kref_put(&hardif_neigh->refcount, batadv_hardif_neigh_release);
+ }
+ 
+ /**
+@@ -529,7 +533,7 @@ batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
+ 	hardif_neigh->if_incoming = hard_iface;
+ 	hardif_neigh->last_seen = jiffies;
+ 
+-	atomic_set(&hardif_neigh->refcount, 1);
++	kref_init(&hardif_neigh->refcount);
+ 
+ 	if (bat_priv->bat_algo_ops->bat_hardif_neigh_init)
+ 		bat_priv->bat_algo_ops->bat_hardif_neigh_init(hardif_neigh);
+@@ -584,7 +588,7 @@ batadv_hardif_neigh_get(const struct batadv_hard_iface *hard_iface,
+ 		if (!batadv_compare_eth(tmp_hardif_neigh->addr, neigh_addr))
+ 			continue;
+ 
+-		if (!atomic_inc_not_zero(&tmp_hardif_neigh->refcount))
++		if (!kref_get_unless_zero(&tmp_hardif_neigh->refcount))
+ 			continue;
+ 
+ 		hardif_neigh = tmp_hardif_neigh;
+@@ -648,7 +652,7 @@ batadv_neigh_node_new(struct batadv_orig_node *orig_node,
+ 	spin_unlock_bh(&orig_node->neigh_list_lock);
+ 
+ 	/* increment unique neighbor refcount */
+-	atomic_inc(&hardif_neigh->refcount);
++	kref_get(&hardif_neigh->refcount);
+ 
+ 	batadv_dbg(BATADV_DBG_BATMAN, orig_node->bat_priv,
+ 		   "Creating new neighbor %pM for orig_node %pM on interface %s\n",
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 8974bc0..ace7900 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -25,6 +25,7 @@
+ #include <linux/bitops.h>
+ #include <linux/compiler.h>
+ #include <linux/if_ether.h>
++#include <linux/kref.h>
+ #include <linux/netdevice.h>
+ #include <linux/sched.h> /* for linux/wait.h */
+ #include <linux/spinlock.h>
+@@ -359,7 +360,7 @@ struct batadv_hardif_neigh_node {
+ 	u8 addr[ETH_ALEN];
+ 	struct batadv_hard_iface *if_incoming;
+ 	unsigned long last_seen;
+-	atomic_t refcount;
++	struct kref refcount;
+ 	struct rcu_head rcu;
+ };
+ 
 -- 
 2.7.0.rc3
 
