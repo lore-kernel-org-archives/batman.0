@@ -1,11 +1,9 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 16 Jan 2016 16:40:19 +0800
-Message-Id: <1452933619-6712-12-git-send-email-mareklindner@neomailbox.ch>
-In-Reply-To: <8047297.0qIFjkW2bL@voltaire>
-References: <8047297.0qIFjkW2bL@voltaire>
-Subject: [B.A.T.M.A.N.] [PATCH v2 12/12] batman-adv: B.A.T.M.A.N. V -
-	implement bat_neigh_print API
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 16 Jan 2016 10:29:39 +0100
+Message-Id: <1452936598-28619-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v6 01/20] batman-adv: Add compatibility code
+	for kref_get_unless_zero
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,96 +14,85 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@open-mesh.com>
 
-From: Linus Luessing <linus.luessing@web.de>
-
-Lists all neighbours detected by the Echo Locating Protocol
-(ELP) and their throughput metric.
-
-Initially Developed by Linus during a 6 months trainee study
-period in Ascom (Switzerland) AG.
-
-Signed-off-by: Linus Luessing <linus.luessing@web.de>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_v.c | 55 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 55 insertions(+)
+v6:
+ - removed patches which are now applied in the branch next
+ - rebased remaining patches on the patch
+   "batman-adv: Avoid recursive call_rcu for batadv_nc_node" which was
+   modified by Marek while he applied the patches (this unfortunately made
+   some of the remaining patches "hard" to apply)
+v5:
+ - add hack which allows to compile against stable kernel like 3.2.44 which
+   also added the kref_get_unless_zero function
+v4:
+ - fix function names in commit messages
+ - fix double whitespace in batadv_tt_orig_list_entry_release kerneldoc
+ - add extra patch for batadv_claim_free_ref kerneldoc fix
+ - change the phrase "free it" in all *_free_ref/*_put functions to "release it"
+v3:
+ - update copyright year
+v2:
+ - split patchset into fixes and kref migration to make it easier when the
+   decision is made where each patch will be applied
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index a90117c..3315b9a 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -118,6 +118,60 @@ batadv_v_orig_print_neigh(struct batadv_orig_node *orig_node,
- }
- 
- /**
-+ * batadv_v_hardif_neigh_print - print a single ELP neighbour node
-+ * @seq: neighbour table seq_file struct
-+ * @hardif_neigh: hardif neighbour information
+ compat-include/linux/kref.h | 46 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
+ create mode 100644 compat-include/linux/kref.h
+
+diff --git a/compat-include/linux/kref.h b/compat-include/linux/kref.h
+new file mode 100644
+index 0000000..bb3442c
+--- /dev/null
++++ b/compat-include/linux/kref.h
+@@ -0,0 +1,46 @@
++/* Copyright (C) 2007-2016 B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner, Simon Wunderlich
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see <http://www.gnu.org/licenses/>.
++ *
++ * This file contains macros for maintaining compatibility with older versions
++ * of the Linux kernel.
 + */
-+static void
-+batadv_v_hardif_neigh_print(struct seq_file *seq,
-+			    struct batadv_hardif_neigh_node *hardif_neigh)
++
++#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_KREF_H_
++#define _NET_BATMAN_ADV_COMPAT_LINUX_KREF_H_
++
++#include <linux/version.h>
++#include_next <linux/kref.h>
++
++#include <linux/atomic.h>
++#include <linux/kernel.h>
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
++
++/* some stable versions like Linux 3.2.44 also introduced this function
++ * and would therefore break the build because they trigger a redefinition
++ * of this function. Instead rename this function to be in the batadv_*
++ * namespace
++ */
++#define kref_get_unless_zero(__kref) batadv_kref_get_unless_zero(__kref)
++
++static inline int __must_check batadv_kref_get_unless_zero(struct kref *kref)
 +{
-+	int last_secs, last_msecs;
-+	u32 throughput;
-+
-+	last_secs = jiffies_to_msecs(jiffies - hardif_neigh->last_seen) / 1000;
-+	last_msecs = jiffies_to_msecs(jiffies - hardif_neigh->last_seen) % 1000;
-+	throughput = ewma_throughput_read(&hardif_neigh->bat_v.throughput);
-+
-+	seq_printf(seq, "%pM %4i.%03is (%9u.%1u) [%10s]\n",
-+		   hardif_neigh->addr, last_secs, last_msecs, throughput / 10,
-+		   throughput % 10, hardif_neigh->if_incoming->net_dev->name);
++	return atomic_add_unless(&kref->refcount, 1, 0);
 +}
 +
-+/**
-+ * batadv_v_neigh_print - print the single hop neighbour list
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @seq: neighbour table seq_file struct
-+ */
-+static void batadv_v_neigh_print(struct batadv_priv *bat_priv,
-+				 struct seq_file *seq)
-+{
-+	struct net_device *net_dev = (struct net_device *)seq->private;
-+	struct batadv_hardif_neigh_node *hardif_neigh;
-+	struct batadv_hard_iface *hard_iface;
-+	int batman_count = 0;
++#endif /* < KERNEL_VERSION(3, 8, 0) */
 +
-+	seq_printf(seq, "  %-15s %s (%11s) [%10s]\n", "Neighbor",
-+		   "last-seen", "throughput", "IF");
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-+		if (hard_iface->soft_iface != net_dev)
-+			continue;
-+
-+		hlist_for_each_entry_rcu(hardif_neigh,
-+					 &hard_iface->neigh_list, list) {
-+			batadv_v_hardif_neigh_print(seq, hardif_neigh);
-+			batman_count++;
-+		}
-+	}
-+	rcu_read_unlock();
-+
-+	if (batman_count == 0)
-+		seq_puts(seq, "No batman nodes in range ...\n");
-+}
-+
-+/**
-  * batadv_v_orig_print - print the originator table
-  * @bat_priv: the bat priv with all the soft interface information
-  * @seq: debugfs table seq_file struct
-@@ -230,6 +284,7 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.bat_orig_print = batadv_v_orig_print,
- 	.bat_neigh_cmp = batadv_v_neigh_cmp,
- 	.bat_neigh_is_similar_or_better = batadv_v_neigh_is_sob,
-+	.bat_neigh_print = batadv_v_neigh_print,
- };
- 
- /**
++#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_KREF_H_ */
 -- 
 2.7.0.rc3
 
