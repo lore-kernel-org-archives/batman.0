@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 16 Jan 2016 13:30:24 +0800
-Message-ID: <1757985.heU4RESuMP@voltaire>
-In-Reply-To: <1451992006-13191-10-git-send-email-sven@narfation.org>
+Date: Sat, 16 Jan 2016 13:33:04 +0800
+Message-ID: <60558472.eeTT6oFW1f@voltaire>
+In-Reply-To: <1451992006-13191-11-git-send-email-sven@narfation.org>
 References: <1451992006-13191-1-git-send-email-sven@narfation.org>
- <1451992006-13191-10-git-send-email-sven@narfation.org>
+ <1451992006-13191-11-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2352178.Akec9Ph4vx";
+Content-Type: multipart/signed; boundary="nextPart5303394.frq4KvBhnE";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v4 10/31] batman-adv: Drop immediate
-	batadv_hard_iface free function
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4 11/31] batman-adv: Drop reference to
+	netdevice on last reference
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,31 +21,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2352178.Akec9Ph4vx
+--nextPart5303394.frq4KvBhnE
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, January 05, 2016 12:06:25 Sven Eckelmann wrote:
-> It is not allowed to free the memory of an object which is part of a list
-> which is protected by rcu-read-side-critical sections without making sure
-> that no other context is accessing the object anymore. This usually happens
-> by removing the references to this object and then waiting until the rcu
-> grace period is over and no one (allowedly) accesses it anymore.
+On Tuesday, January 05, 2016 12:06:26 Sven Eckelmann wrote:
+> The references to the network device should be dropped inside the release
+> function for batadv_hard_iface similar to what is done with the batman-adv
+> internal datastructures.
 > 
-> But the _now functions ignore this completely. They free the object
-> directly even when a different context still tries to access it. This has
-> to be avoided and thus these functions must be removed and all functions
-> have to use batadv_hardif_free_ref.
+> Fixes: b25cb3ddcccd ("batman-adv: use rcu callbacks when freeing batman_if")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> v4:
+>  - fix function names in commit messages
+>  - fix double whitespace in batadv_tt_orig_list_entry_release kerneldoc
+>  - add extra patch for batadv_claim_free_ref kerneldoc fix
+>  - change the phrase "free it" in all *_free_ref/*_put functions to "release
+> it" v3:
+>  - update copyright year
+> v2:
+>  - split patchset into fixes and kref migration to make it easier when the
+>    decision is made where each patch will be applied
 > 
-> Fixes: 9bb33b8d88e3 ("batman-adv: split tq information in neigh_node
-> struct") Signed-off-by: Sven Eckelmann <sven@narfation.org>
+>  net/batman-adv/hard-interface.c | 13 ++++++++-----
+>  net/batman-adv/hard-interface.h |  6 +++---
+>  2 files changed, 11 insertions(+), 8 deletions(-)
 
-Applied in revision 2b0f9c9.
+Applied in revision 42bf18a.
 
 Thanks,
 Marek
 
---nextPart2352178.Akec9Ph4vx
+--nextPart5303394.frq4KvBhnE
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +61,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWmdVwAAoJEFNVTo/uthzAh24H/iVKHt1bTGoLBNGyp+xHuDOx
-dcHXLxjZVGfsxAbJLsgsFW+RjEgLAPYMgU2bQ84ZLbZ8c1qfwsjyA2MkNCztSu61
-4a6NWKnNPeXuAACpCFMSYtptkZ4aS2DV8w/IqB/yGV+yw8m/p8agn4mfRM/M5VYO
-5lBUxnAaTfAZlfSi0hyQSke02YbDOoa2bfZBbkoIKxS40sCTIKw3ch/HfMeTFjsk
-bR59MMTqmeeLukG/FXv6bzFJrY8Q4HpImCGXFKy29saJWC+JoQgq3Zttpg0+2AmG
-b6OhUXuhvhfHVx6ubNi3Kk0tGLtf9+UoDNBFZF0UXjlYY4xjXkA1yh962SrKsBY=
-=UN2V
+iQEcBAABCAAGBQJWmdYQAAoJEFNVTo/uthzAJAEH/j0cds0de65dLAAmFUQMFDLb
+xQYvvtu272e2Hum7+QiyNojY+VLW0MWTaTC2RcIzpcl3ubHDSeMznP+cOWkFmdEN
+4aLlZk+t4eFEG+TH4xejLAJoDdm1L9YcC803x/l/txsg+8YWeJasZ30VsHJfMN3m
+vsWC9dCQmvCP6wMZEWTrDvMYHSpbaZI6gWGlendAUHd9+yTElh1YkTdonUYIIL4U
+r9+CYiEVZZpqU1lrfbu9yP3Ct5Ske2kR+oAV8d9aSbIavS68fAw3SS0OeJdlEM8s
+bM1oUFCbvn19sQMLTKKWxXCdJE6JD3+nLjzuc/XAZtY5evKUa1H4jFyxaRTrExY=
+=khmq
 -----END PGP SIGNATURE-----
 
---nextPart2352178.Akec9Ph4vx--
+--nextPart5303394.frq4KvBhnE--
 
