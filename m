@@ -1,14 +1,11 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 16 Jan 2016 16:40:14 +0800
-Message-Id: <1452933619-6712-7-git-send-email-mareklindner@neomailbox.ch>
+Date: Sat, 16 Jan 2016 16:40:15 +0800
+Message-Id: <1452933619-6712-8-git-send-email-mareklindner@neomailbox.ch>
 In-Reply-To: <8047297.0qIFjkW2bL@voltaire>
 References: <8047297.0qIFjkW2bL@voltaire>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v2 07/12] batman-adv: add throughput override
-	attribute to hard_ifaces
+Subject: [B.A.T.M.A.N.] [PATCH v2 08/12] batman-adv: keep track of when
+	unicast packets are sent
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,207 +20,340 @@ Cc: Antonio Quartulli <antonio@open-mesh.com>
 
 From: Antonio Quartulli <antonio@open-mesh.com>
 
-This attribute is exported to user space to disable the link
-throughput auto-detection by setting a fixed value.
-The throughput override value is used when batman-adv is
-computing the link throughput towards a neighbour.
+To enable ELP to send probing packets over wireless links
+only if needed, batman-adv must keep track of the last time
+it sent a unicast packet towards every neighbour.
 
-If the value is set to 0 then batman-adv will try to detect
-the throughput by itself.
+For this purpose a 2 main changes are introduced:
+1) a new member of the elp_neigh_node structure stores the
+   last time a unicast packet was sent towards this neighbour;
+2) a wrapper function for sending unicast packets is
+   implemented. This function will simply update the member
+   describe din point 1) and then forward the packet to the
+   real sending routine.
+
+Point 2) implies that any code-path leading to a unicast
+sending now has to use the new wrapper.
 
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- .../ABI/testing/sysfs-class-net-batman-adv         |  9 +++
- net/batman-adv/bat_v.c                             |  6 ++
- net/batman-adv/gateway_common.c                    |  4 +-
- net/batman-adv/gateway_common.h                    |  2 +
- net/batman-adv/sysfs.c                             | 74 ++++++++++++++++++++++
- net/batman-adv/types.h                             |  2 +
- 6 files changed, 95 insertions(+), 2 deletions(-)
+ net/batman-adv/bat_iv_ogm.c            |  2 +-
+ net/batman-adv/bat_v_elp.c             |  2 +-
+ net/batman-adv/bat_v_ogm.c             |  2 +-
+ net/batman-adv/distributed-arp-table.c |  4 +--
+ net/batman-adv/fragmentation.c         |  8 ++---
+ net/batman-adv/icmp_socket.c           |  2 +-
+ net/batman-adv/network-coding.c        | 22 +++++++-------
+ net/batman-adv/send.c                  | 55 +++++++++++++++++++++++++++++-----
+ net/batman-adv/send.h                  | 10 +++++--
+ net/batman-adv/types.h                 |  2 ++
+ 10 files changed, 75 insertions(+), 34 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-net-batman-adv b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-index aea78db..518f6a1 100644
---- a/Documentation/ABI/testing/sysfs-class-net-batman-adv
-+++ b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-@@ -1,4 +1,13 @@
- 
-+What:		/sys/class/net/<iface>/batman-adv/throughput_override
-+Date:		Feb 2014
-+Contact:	Antonio Quartulli <antonio@meshcoding.com>
-+description:
-+		Defines the throughput value to be used by B.A.T.M.A.N. V
-+		when estimating the link throughput using this interface.
-+		If the value is set to 0 then batman-adv will try to
-+		estimate the throughput by itself.
-+
- What:           /sys/class/net/<iface>/batman-adv/elp_interval
- Date:           Feb 2014
- Contact:        Linus Lüssing <linus.luessing@web.de>
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index b90a4df..d9cb5c4 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -18,6 +18,7 @@
- #include "bat_algo.h"
- #include "main.h"
- 
-+#include <linux/atomic.h>
- #include <linux/cache.h>
- #include <linux/init.h>
- 
-@@ -37,6 +38,11 @@ static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
- 	if (ret < 0)
- 		batadv_v_elp_iface_disable(hard_iface);
- 
-+	/* enable link throughput auto-detection by setting the throughput
-+	 * override to zero
-+	 */
-+	atomic_set(&hard_iface->bat_v.throughput_override, 0);
-+
- 	return ret;
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 5651e33..cb2d1b9 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -478,7 +478,7 @@ static void batadv_iv_ogm_send_to_if(struct batadv_forw_packet *forw_packet,
+ 		batadv_inc_counter(bat_priv, BATADV_CNT_MGMT_TX);
+ 		batadv_add_counter(bat_priv, BATADV_CNT_MGMT_TX_BYTES,
+ 				   skb->len + ETH_HLEN);
+-		batadv_send_skb_packet(skb, hard_iface, batadv_broadcast_addr);
++		batadv_send_broadcast_skb(skb, hard_iface);
+ 	}
  }
  
-diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
-index 5ee04f7..4423047 100644
---- a/net/batman-adv/gateway_common.c
-+++ b/net/batman-adv/gateway_common.c
-@@ -40,8 +40,8 @@
-  *
-  * Return: false on parse error and true otherwise.
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index fac5aee..1e4d13c 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -104,7 +104,7 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
+ 		   hard_iface->net_dev->name,
+ 		   atomic_read(&hard_iface->bat_v.elp_seqno));
+ 
+-	batadv_send_skb_packet(skb, hard_iface, batadv_broadcast_addr);
++	batadv_send_broadcast_skb(skb, hard_iface);
+ 
+ 	atomic_inc(&hard_iface->bat_v.elp_seqno);
+ 
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index 22dda0e..c800096 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -120,7 +120,7 @@ static void batadv_v_ogm_send_to_if(struct sk_buff *skb,
+ 	batadv_add_counter(bat_priv, BATADV_CNT_MGMT_TX_BYTES,
+ 			   skb->len + ETH_HLEN);
+ 
+-	batadv_send_skb_packet(skb, hard_iface, batadv_broadcast_addr);
++	batadv_send_broadcast_skb(skb, hard_iface);
+ }
+ 
+ /**
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 4c9b69d..e96d7c7 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -654,9 +654,7 @@ static bool batadv_dat_send_data(struct batadv_priv *bat_priv,
+ 			goto free_neigh;
+ 		}
+ 
+-		send_status = batadv_send_skb_packet(tmp_skb,
+-						     neigh_node->if_incoming,
+-						     neigh_node->addr);
++		send_status = batadv_send_unicast_skb(tmp_skb, neigh_node);
+ 		if (send_status == NET_XMIT_SUCCESS) {
+ 			/* count the sent packet */
+ 			switch (packet_subtype) {
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index adb9c39..e6956d0 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -378,8 +378,7 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+ 				   skb->len + ETH_HLEN);
+ 
+ 		packet->ttl--;
+-		batadv_send_skb_packet(skb, neigh_node->if_incoming,
+-				       neigh_node->addr);
++		batadv_send_unicast_skb(skb, neigh_node);
+ 		ret = true;
+ 	}
+ 
+@@ -486,8 +485,7 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+ 		batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_TX);
+ 		batadv_add_counter(bat_priv, BATADV_CNT_FRAG_TX_BYTES,
+ 				   skb_fragment->len + ETH_HLEN);
+-		batadv_send_skb_packet(skb_fragment, neigh_node->if_incoming,
+-				       neigh_node->addr);
++		batadv_send_unicast_skb(skb_fragment, neigh_node);
+ 		frag_header.no++;
+ 
+ 		/* The initial check in this function should cover this case */
+@@ -506,7 +504,7 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+ 	batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_TX);
+ 	batadv_add_counter(bat_priv, BATADV_CNT_FRAG_TX_BYTES,
+ 			   skb->len + ETH_HLEN);
+-	batadv_send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
++	batadv_send_unicast_skb(skb, neigh_node);
+ 
+ 	ret = true;
+ 
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index 6268f08..14d0013 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -278,7 +278,7 @@ static ssize_t batadv_socket_write(struct file *file, const char __user *buff,
+ 
+ 	ether_addr_copy(icmp_header->orig, primary_if->net_dev->dev_addr);
+ 
+-	batadv_send_skb_packet(skb, neigh_node->if_incoming, neigh_node->addr);
++	batadv_send_unicast_skb(skb, neigh_node);
+ 	goto out;
+ 
+ dst_unreach:
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index d253bb2..b41719b 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -575,9 +575,7 @@ batadv_nc_hash_find(struct batadv_hashtable *hash,
   */
--static bool batadv_parse_throughput(struct net_device *net_dev, char *buff,
--				    const char *description, u32 *throughput)
-+bool batadv_parse_throughput(struct net_device *net_dev, char *buff,
-+			     const char *description, u32 *throughput)
+ static void batadv_nc_send_packet(struct batadv_nc_packet *nc_packet)
  {
- 	enum batadv_bandwidth_units bw_unit_type = BATADV_BW_UNIT_KBIT;
- 	u64 lthroughput;
-diff --git a/net/batman-adv/gateway_common.h b/net/batman-adv/gateway_common.h
-index b583463..8a5e1dd 100644
---- a/net/batman-adv/gateway_common.h
-+++ b/net/batman-adv/gateway_common.h
-@@ -49,5 +49,7 @@ ssize_t batadv_gw_bandwidth_set(struct net_device *net_dev, char *buff,
- void batadv_gw_tvlv_container_update(struct batadv_priv *bat_priv);
- void batadv_gw_init(struct batadv_priv *bat_priv);
- void batadv_gw_free(struct batadv_priv *bat_priv);
-+bool batadv_parse_throughput(struct net_device *net_dev, char *buff,
-+			     const char *description, u32 *throughput);
+-	batadv_send_skb_packet(nc_packet->skb,
+-			       nc_packet->neigh_node->if_incoming,
+-			       nc_packet->nc_path->next_hop);
++	batadv_send_unicast_skb(nc_packet->skb, nc_packet->neigh_node);
+ 	nc_packet->skb = NULL;
+ 	batadv_nc_packet_free(nc_packet);
+ }
+@@ -1067,11 +1065,11 @@ static bool batadv_nc_code_packets(struct batadv_priv *bat_priv,
+ 	struct batadv_unicast_packet *packet1;
+ 	struct batadv_unicast_packet *packet2;
+ 	struct batadv_coded_packet *coded_packet;
+-	struct batadv_neigh_node *neigh_tmp, *router_neigh;
+-	struct batadv_neigh_node *router_coding = NULL;
++	struct batadv_neigh_node *neigh_tmp, *router_neigh, *first_dest;
++	struct batadv_neigh_node *router_coding = NULL, *second_dest;
+ 	struct batadv_neigh_ifinfo *router_neigh_ifinfo = NULL;
+ 	struct batadv_neigh_ifinfo *router_coding_ifinfo = NULL;
+-	u8 *first_source, *first_dest, *second_source, *second_dest;
++	u8 *first_source, *second_source;
+ 	__be32 packet_id1, packet_id2;
+ 	size_t count;
+ 	bool res = false;
+@@ -1114,9 +1112,9 @@ static bool batadv_nc_code_packets(struct batadv_priv *bat_priv,
+ 	 */
+ 	if (tq_weighted_neigh >= tq_weighted_coding) {
+ 		/* Destination from nc_packet is selected for MAC-header */
+-		first_dest = nc_packet->nc_path->next_hop;
++		first_dest = nc_packet->neigh_node;
+ 		first_source = nc_packet->nc_path->prev_hop;
+-		second_dest = neigh_node->addr;
++		second_dest = neigh_node;
+ 		second_source = ethhdr->h_source;
+ 		packet1 = (struct batadv_unicast_packet *)nc_packet->skb->data;
+ 		packet2 = (struct batadv_unicast_packet *)skb->data;
+@@ -1125,9 +1123,9 @@ static bool batadv_nc_code_packets(struct batadv_priv *bat_priv,
+ 					      skb->data + sizeof(*packet2));
+ 	} else {
+ 		/* Destination for skb is selected for MAC-header */
+-		first_dest = neigh_node->addr;
++		first_dest = neigh_node;
+ 		first_source = ethhdr->h_source;
+-		second_dest = nc_packet->nc_path->next_hop;
++		second_dest = nc_packet->neigh_node;
+ 		second_source = nc_packet->nc_path->prev_hop;
+ 		packet1 = (struct batadv_unicast_packet *)skb->data;
+ 		packet2 = (struct batadv_unicast_packet *)nc_packet->skb->data;
+@@ -1169,7 +1167,7 @@ static bool batadv_nc_code_packets(struct batadv_priv *bat_priv,
+ 	coded_packet->first_ttvn = packet1->ttvn;
  
- #endif /* _NET_BATMAN_ADV_GATEWAY_COMMON_H_ */
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index e860143..e7cf513 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -917,12 +917,85 @@ static ssize_t batadv_show_iface_status(struct kobject *kobj,
- 	return length;
+ 	/* Info about second unicast packet */
+-	ether_addr_copy(coded_packet->second_dest, second_dest);
++	ether_addr_copy(coded_packet->second_dest, second_dest->addr);
+ 	ether_addr_copy(coded_packet->second_source, second_source);
+ 	ether_addr_copy(coded_packet->second_orig_dest, packet2->dest);
+ 	coded_packet->second_crc = packet_id2;
+@@ -1224,7 +1222,7 @@ static bool batadv_nc_code_packets(struct batadv_priv *bat_priv,
+ 	batadv_nc_packet_free(nc_packet);
+ 
+ 	/* Send the coded packet and return true */
+-	batadv_send_skb_packet(skb_dest, neigh_node->if_incoming, first_dest);
++	batadv_send_unicast_skb(skb_dest, first_dest);
+ 	res = true;
+ out:
+ 	if (router_neigh)
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index caff32c..3ce06e0 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -49,16 +49,30 @@
+ 
+ static void batadv_send_outstanding_bcast_packet(struct work_struct *work);
+ 
+-/* send out an already prepared packet to the given address via the
+- * specified batman interface
++/**
++ * batadv_send_skb_packet - send an already prepared packet
++ * @skb: the packet to send
++ * @hard_iface: the interface to use to send the broadcast packet
++ * @dst_addr: the payload destination
++ *
++ * Send out an already prepared packet to the given neighbor or broadcast it
++ * using the specified interface. Either hard_iface or neigh_node must be not
++ * NULL.
++ * If neigh_node is NULL, then the packet is broadcasted using hard_iface,
++ * otherwise it is sent as unicast to the given neighbor.
++ *
++ * Return: NET_TX_DROP in case of error or the result of dev_queue_xmit(skb)
++ * otherwise
+  */
+ int batadv_send_skb_packet(struct sk_buff *skb,
+ 			   struct batadv_hard_iface *hard_iface,
+ 			   const u8 *dst_addr)
+ {
+-	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
++	struct batadv_priv *bat_priv;
+ 	struct ethhdr *ethhdr;
+ 
++	bat_priv = netdev_priv(hard_iface->soft_iface);
++
+ 	if (hard_iface->if_status != BATADV_IF_ACTIVE)
+ 		goto send_skb_err;
+ 
+@@ -100,6 +114,35 @@ send_skb_err:
+ 	return NET_XMIT_DROP;
  }
  
++int batadv_send_broadcast_skb(struct sk_buff *skb,
++			      struct batadv_hard_iface *hard_iface)
++{
++	return batadv_send_skb_packet(skb, hard_iface, batadv_broadcast_addr);
++}
++
++int batadv_send_unicast_skb(struct sk_buff *skb,
++			    struct batadv_neigh_node *neigh)
++{
 +#ifdef CONFIG_BATMAN_ADV_BATMAN_V
++	struct batadv_hardif_neigh_node *hardif_neigh;
++#endif
++	int ret;
 +
-+/**
-+ * batadv_store_throughput_override - parse and store throughput override
-+ *  entered by the user
-+ * @kobj: kobject representing the private mesh sysfs directory
-+ * @attr: the batman-adv attribute the user is interacting with
-+ * @buff: the buffer containing the user data
-+ * @count: number of bytes in the buffer
-+ *
-+ * Return: 'count' on success or a negative error code in case of failure
-+ */
-+static ssize_t batadv_store_throughput_override(struct kobject *kobj,
-+						struct attribute *attr,
-+						char *buff, size_t count)
-+{
-+	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
-+	struct batadv_hard_iface *hard_iface;
-+	u32 tp_override;
-+	u32 old_tp_override;
-+	bool ret;
++	ret = batadv_send_skb_packet(skb, neigh->if_incoming, neigh->addr);
 +
-+	hard_iface = batadv_hardif_get_by_netdev(net_dev);
-+	if (!hard_iface)
-+		return -EINVAL;
++#ifdef CONFIG_BATMAN_ADV_BATMAN_V
++	hardif_neigh = batadv_hardif_neigh_get(neigh->if_incoming, neigh->addr);
 +
-+	if (buff[count - 1] == '\n')
-+		buff[count - 1] = '\0';
++	if ((hardif_neigh) && (ret != NET_XMIT_DROP))
++		hardif_neigh->bat_v.last_unicast_tx = jiffies;
 +
-+	ret = batadv_parse_throughput(net_dev, buff, "throughput_override",
-+				      &tp_override);
-+	if (!ret)
-+		return count;
-+
-+	old_tp_override = atomic_read(&hard_iface->bat_v.throughput_override);
-+	if (old_tp_override == tp_override)
-+		goto out;
-+
-+	batadv_info(net_dev, "%s: Changing from: %u.%u MBit to: %u.%u MBit\n",
-+		    "throughput_override",
-+		    old_tp_override / 10, old_tp_override % 10,
-+		    tp_override / 10, tp_override % 10);
-+
-+	atomic_set(&hard_iface->bat_v.throughput_override, tp_override);
-+
-+out:
-+	batadv_hardif_put(hard_iface);
-+	return count;
-+}
-+
-+static ssize_t batadv_show_throughput_override(struct kobject *kobj,
-+					       struct attribute *attr,
-+					       char *buff)
-+{
-+	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
-+	struct batadv_hard_iface *hard_iface;
-+	u32 tp_override;
-+
-+	hard_iface = batadv_hardif_get_by_netdev(net_dev);
-+	if (!hard_iface)
-+		return -EINVAL;
-+
-+	tp_override = atomic_read(&hard_iface->bat_v.throughput_override);
-+
-+	return sprintf(buff, "%u.%u MBit\n", tp_override / 10,
-+		       tp_override % 10);
-+}
-+
++	if (hardif_neigh)
++		batadv_hardif_neigh_put(hardif_neigh);
 +#endif
 +
- static BATADV_ATTR(mesh_iface, S_IRUGO | S_IWUSR, batadv_show_mesh_iface,
- 		   batadv_store_mesh_iface);
- static BATADV_ATTR(iface_status, S_IRUGO, batadv_show_iface_status, NULL);
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- BATADV_ATTR_HIF_UINT(elp_interval, bat_v.elp_interval, S_IRUGO | S_IWUSR,
- 		     2 * BATADV_JITTER, INT_MAX, NULL);
-+static BATADV_ATTR(throughput_override, S_IRUGO | S_IWUSR,
-+		   batadv_show_throughput_override,
-+		   batadv_store_throughput_override);
- #endif
++	return ret;
++}
++
+ /**
+  * batadv_send_skb_to_orig - Lookup next-hop and transmit skb.
+  * @skb: Packet to be transmitted.
+@@ -146,8 +189,7 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 	if (recv_if && batadv_nc_skb_forward(skb, neigh_node)) {
+ 		ret = NET_XMIT_POLICED;
+ 	} else {
+-		batadv_send_skb_packet(skb, neigh_node->if_incoming,
+-				       neigh_node->addr);
++		batadv_send_unicast_skb(skb, neigh_node);
+ 		ret = NET_XMIT_SUCCESS;
+ 	}
  
- static struct batadv_attribute *batadv_batman_attrs[] = {
-@@ -930,6 +1003,7 @@ static struct batadv_attribute *batadv_batman_attrs[] = {
- 	&batadv_attr_iface_status,
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- 	&batadv_attr_elp_interval,
-+	&batadv_attr_throughput_override,
- #endif
- 	NULL,
- };
+@@ -538,8 +580,7 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
+ 		/* send a copy of the saved skb */
+ 		skb1 = skb_clone(forw_packet->skb, GFP_ATOMIC);
+ 		if (skb1)
+-			batadv_send_skb_packet(skb1, hard_iface,
+-					       batadv_broadcast_addr);
++			batadv_send_broadcast_skb(skb1, hard_iface);
+ 	}
+ 	rcu_read_unlock();
+ 
+diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
+index 7ff95ca..6fd7270 100644
+--- a/net/batman-adv/send.h
++++ b/net/batman-adv/send.h
+@@ -28,12 +28,16 @@
+ struct sk_buff;
+ struct work_struct;
+ 
+-int batadv_send_skb_packet(struct sk_buff *skb,
+-			   struct batadv_hard_iface *hard_iface,
+-			   const u8 *dst_addr);
+ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 			    struct batadv_orig_node *orig_node,
+ 			    struct batadv_hard_iface *recv_if);
++int batadv_send_skb_packet(struct sk_buff *skb,
++			   struct batadv_hard_iface *hard_iface,
++			   const u8 *dst_addr);
++int batadv_send_broadcast_skb(struct sk_buff *skb,
++			      struct batadv_hard_iface *hard_iface);
++int batadv_send_unicast_skb(struct sk_buff *skb,
++			    struct batadv_neigh_node *neigh_node);
+ void batadv_schedule_bat_ogm(struct batadv_hard_iface *hard_iface);
+ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
+ 				    const struct sk_buff *skb,
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index cf55cd0..a6f0952 100644
+index a6f0952..c56bb88 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -92,12 +92,14 @@ struct batadv_hard_iface_bat_iv {
-  * @elp_seqno: current ELP sequence number
-  * @elp_skb: base skb containing the ELP message to send
-  * @elp_wq: workqueue used to schedule ELP transmissions
-+ * @throughput_override: throughput override to disable link auto-detection
+@@ -377,11 +377,13 @@ DECLARE_EWMA(throughput, 1024, 8)
+  * @throughput: ewma link throughput towards this neighbor
+  * @elp_interval: time interval between two ELP transmissions
+  * @elp_latest_seqno: latest and best known ELP sequence number
++ * @last_unicast_tx: when the last unicast packet has been sent to this neighbor
   */
- struct batadv_hard_iface_bat_v {
- 	atomic_t elp_interval;
- 	atomic_t elp_seqno;
- 	struct sk_buff *elp_skb;
- 	struct delayed_work elp_wq;
-+	atomic_t throughput_override;
+ struct batadv_hardif_neigh_node_bat_v {
+ 	struct ewma_throughput throughput;
+ 	u32 elp_interval;
+ 	u32 elp_latest_seqno;
++	unsigned long last_unicast_tx;
  };
  
  /**
