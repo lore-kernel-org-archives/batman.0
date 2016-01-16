@@ -1,11 +1,11 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 16 Jan 2016 16:40:18 +0800
-Message-Id: <1452933619-6712-11-git-send-email-mareklindner@neomailbox.ch>
+Date: Sat, 16 Jan 2016 16:40:19 +0800
+Message-Id: <1452933619-6712-12-git-send-email-mareklindner@neomailbox.ch>
 In-Reply-To: <8047297.0qIFjkW2bL@voltaire>
 References: <8047297.0qIFjkW2bL@voltaire>
-Subject: [B.A.T.M.A.N.] [PATCH v2 11/12] batman-adv: B.A.T.M.A.N. V -
-	implement bat_orig_print API
+Subject: [B.A.T.M.A.N.] [PATCH v2 12/12] batman-adv: B.A.T.M.A.N. V -
+	implement bat_neigh_print API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,150 +16,96 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio@open-mesh.com>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@open-mesh.com>
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+From: Linus Luessing <linus.luessing@web.de>
 
+Lists all neighbours detected by the Echo Locating Protocol
+(ELP) and their throughput metric.
+
+Initially Developed by Linus during a 6 months trainee study
+period in Ascom (Switzerland) AG.
+
+Signed-off-by: Linus Luessing <linus.luessing@web.de>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 ---
- net/batman-adv/bat_v.c | 105 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 105 insertions(+)
+ net/batman-adv/bat_v.c | 55 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
 
 diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 953c0d1..a90117c 100644
+index a90117c..3315b9a 100644
 --- a/net/batman-adv/bat_v.c
 +++ b/net/batman-adv/bat_v.c
-@@ -22,11 +22,17 @@
- #include <linux/bug.h>
- #include <linux/cache.h>
- #include <linux/init.h>
-+#include <linux/jiffies.h>
-+#include <linux/netdevice.h>
-+#include <linux/rculist.h>
-+#include <linux/rcupdate.h>
-+#include <linux/seq_file.h>
- #include <linux/types.h>
- #include <linux/workqueue.h>
- 
- #include "bat_v_elp.h"
- #include "bat_v_ogm.h"
-+#include "hash.h"
- #include "originator.h"
- #include "packet.h"
- 
-@@ -81,6 +87,104 @@ static void batadv_v_ogm_emit(struct batadv_forw_packet *forw_packet)
- {
+@@ -118,6 +118,60 @@ batadv_v_orig_print_neigh(struct batadv_orig_node *orig_node,
  }
  
-+/**
-+ * batadv_v_orig_print_neigh - print neighbors for the originator table
-+ * @orig_node: the orig_node for which the neighbors are printed
-+ * @if_outgoing: outgoing interface for these entries
-+ * @seq: debugfs table seq_file struct
-+ *
-+ * Must be called while holding an rcu lock.
+ /**
++ * batadv_v_hardif_neigh_print - print a single ELP neighbour node
++ * @seq: neighbour table seq_file struct
++ * @hardif_neigh: hardif neighbour information
 + */
 +static void
-+batadv_v_orig_print_neigh(struct batadv_orig_node *orig_node,
-+			  struct batadv_hard_iface *if_outgoing,
-+			  struct seq_file *seq)
++batadv_v_hardif_neigh_print(struct seq_file *seq,
++			    struct batadv_hardif_neigh_node *hardif_neigh)
 +{
-+	struct batadv_neigh_node *neigh_node;
-+	struct batadv_neigh_ifinfo *n_ifinfo;
++	int last_secs, last_msecs;
++	u32 throughput;
 +
-+	hlist_for_each_entry_rcu(neigh_node, &orig_node->neigh_list, list) {
-+		n_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
-+		if (!n_ifinfo)
-+			continue;
++	last_secs = jiffies_to_msecs(jiffies - hardif_neigh->last_seen) / 1000;
++	last_msecs = jiffies_to_msecs(jiffies - hardif_neigh->last_seen) % 1000;
++	throughput = ewma_throughput_read(&hardif_neigh->bat_v.throughput);
 +
-+		seq_printf(seq, " %pM (%9u.%1u)",
-+			   neigh_node->addr,
-+			   n_ifinfo->bat_v.throughput / 10,
-+			   n_ifinfo->bat_v.throughput % 10);
-+
-+		batadv_neigh_ifinfo_put(n_ifinfo);
-+	}
++	seq_printf(seq, "%pM %4i.%03is (%9u.%1u) [%10s]\n",
++		   hardif_neigh->addr, last_secs, last_msecs, throughput / 10,
++		   throughput % 10, hardif_neigh->if_incoming->net_dev->name);
 +}
 +
 +/**
-+ * batadv_v_orig_print - print the originator table
++ * batadv_v_neigh_print - print the single hop neighbour list
 + * @bat_priv: the bat priv with all the soft interface information
-+ * @seq: debugfs table seq_file struct
-+ * @if_outgoing: the outgoing interface for which this should be printed
++ * @seq: neighbour table seq_file struct
 + */
-+static void batadv_v_orig_print(struct batadv_priv *bat_priv,
-+				struct seq_file *seq,
-+				struct batadv_hard_iface *if_outgoing)
++static void batadv_v_neigh_print(struct batadv_priv *bat_priv,
++				 struct seq_file *seq)
 +{
-+	struct batadv_neigh_node *neigh_node;
-+	struct batadv_hashtable *hash = bat_priv->orig_hash;
-+	int last_seen_msecs, last_seen_secs;
-+	struct batadv_orig_node *orig_node;
-+	struct batadv_neigh_ifinfo *n_ifinfo;
-+	unsigned long last_seen_jiffies;
-+	struct hlist_head *head;
++	struct net_device *net_dev = (struct net_device *)seq->private;
++	struct batadv_hardif_neigh_node *hardif_neigh;
++	struct batadv_hard_iface *hard_iface;
 +	int batman_count = 0;
-+	u32 i;
 +
-+	seq_printf(seq, "  %-15s %s (%11s) %17s [%10s]: %20s ...\n",
-+		   "Originator", "last-seen", "throughput", "Nexthop",
-+		   "outgoingIF", "Potential nexthops");
++	seq_printf(seq, "  %-15s %s (%11s) [%10s]\n", "Neighbor",
++		   "last-seen", "throughput", "IF");
 +
-+	for (i = 0; i < hash->size; i++) {
-+		head = &hash->table[i];
++	rcu_read_lock();
++	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
++		if (hard_iface->soft_iface != net_dev)
++			continue;
 +
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
-+			neigh_node = batadv_orig_router_get(orig_node,
-+							    if_outgoing);
-+			if (!neigh_node)
-+				continue;
-+
-+			n_ifinfo = batadv_neigh_ifinfo_get(neigh_node,
-+							   if_outgoing);
-+			if (!n_ifinfo)
-+				goto next;
-+
-+			last_seen_jiffies = jiffies - orig_node->last_seen;
-+			last_seen_msecs = jiffies_to_msecs(last_seen_jiffies);
-+			last_seen_secs = last_seen_msecs / 1000;
-+			last_seen_msecs = last_seen_msecs % 1000;
-+
-+			seq_printf(seq, "%pM %4i.%03is (%9u.%1u) %pM [%10s]:",
-+				   orig_node->orig, last_seen_secs,
-+				   last_seen_msecs,
-+				   n_ifinfo->bat_v.throughput / 10,
-+				   n_ifinfo->bat_v.throughput % 10,
-+				   neigh_node->addr,
-+				   neigh_node->if_incoming->net_dev->name);
-+
-+			batadv_v_orig_print_neigh(orig_node, if_outgoing, seq);
-+			seq_puts(seq, "\n");
++		hlist_for_each_entry_rcu(hardif_neigh,
++					 &hard_iface->neigh_list, list) {
++			batadv_v_hardif_neigh_print(seq, hardif_neigh);
 +			batman_count++;
-+
-+next:
-+			batadv_neigh_node_put(neigh_node);
-+			if (n_ifinfo)
-+				batadv_neigh_ifinfo_put(n_ifinfo);
 +		}
-+		rcu_read_unlock();
 +	}
++	rcu_read_unlock();
 +
 +	if (batman_count == 0)
 +		seq_puts(seq, "No batman nodes in range ...\n");
 +}
 +
- static int batadv_v_neigh_cmp(struct batadv_neigh_node *neigh1,
- 			      struct batadv_hard_iface *if_outgoing1,
- 			      struct batadv_neigh_node *neigh2,
-@@ -123,6 +227,7 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.bat_hardif_neigh_init = batadv_v_hardif_neigh_init,
- 	.bat_ogm_emit = batadv_v_ogm_emit,
- 	.bat_ogm_schedule = batadv_v_ogm_schedule,
-+	.bat_orig_print = batadv_v_orig_print,
++/**
+  * batadv_v_orig_print - print the originator table
+  * @bat_priv: the bat priv with all the soft interface information
+  * @seq: debugfs table seq_file struct
+@@ -230,6 +284,7 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+ 	.bat_orig_print = batadv_v_orig_print,
  	.bat_neigh_cmp = batadv_v_neigh_cmp,
  	.bat_neigh_is_similar_or_better = batadv_v_neigh_is_sob,
++	.bat_neigh_print = batadv_v_neigh_print,
  };
+ 
+ /**
 -- 
 2.7.0.rc3
 
