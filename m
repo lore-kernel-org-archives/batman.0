@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 17 Jan 2016 13:30:39 +0800
-Message-ID: <2056454.CrBvERFpYN@voltaire>
-In-Reply-To: <1452936598-28619-8-git-send-email-sven@narfation.org>
+Date: Sun, 17 Jan 2016 13:32:07 +0800
+Message-ID: <4749674.C1WtHlruJ6@voltaire>
+In-Reply-To: <1452936598-28619-9-git-send-email-sven@narfation.org>
 References: <1452936598-28619-1-git-send-email-sven@narfation.org>
- <1452936598-28619-8-git-send-email-sven@narfation.org>
+ <1452936598-28619-9-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3993061.FVfQcL6ayy";
+Content-Type: multipart/signed; boundary="nextPart3452607.YXDK4NhDmQ";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v6 08/20] batman-adv: Convert
-	batadv_nc_path to kref
+Subject: Re: [B.A.T.M.A.N.] [PATCH v6 09/20] batman-adv: Convert
+	batadv_dat_entry to kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,11 +21,11 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3993061.FVfQcL6ayy
+--nextPart3452607.YXDK4NhDmQ
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday, January 16, 2016 10:29:46 Sven Eckelmann wrote:
+On Saturday, January 16, 2016 10:29:47 Sven Eckelmann wrote:
 > batman-adv uses a self-written reference implementation which is just based
 > on atomic_t. This is less obvious when reading the code than kref and
 > therefore increases the change that the reference counting will be missed.
@@ -52,16 +52,16 @@ On Saturday, January 16, 2016 10:29:46 Sven Eckelmann wrote:
 >  - split patchset into fixes and kref migration to make it easier when the
 >    decision is made where each patch will be applied
 > 
->  net/batman-adv/network-coding.c | 28 +++++++++++++++++++++-------
->  net/batman-adv/types.h          |  2 +-
->  2 files changed, 22 insertions(+), 8 deletions(-)
+>  net/batman-adv/distributed-arp-table.c | 27 +++++++++++++++++++++------
+>  net/batman-adv/types.h                 |  2 +-
+>  2 files changed, 22 insertions(+), 7 deletions(-)
 
-Applied in revision 2d3c3d3.
+Applied in revision 4952250.
 
 Thanks,
 Marek
 
---nextPart3993061.FVfQcL6ayy
+--nextPart3452607.YXDK4NhDmQ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -69,14 +69,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWmyb/AAoJEFNVTo/uthzAXwAIAMJdDfZ82KNWgLA4m+s11qF8
-rkce1vsN2YMmhiktpQlCtVuInXN6qp3ihpPiA89B2DRV8JP09DEjpejbWhY9aWa4
-Hso+rKACVeWLf6DzxpqeL6DCoFAhxg7zOEwK2WMZUBXFXeuK8ta4fojGqflNpuic
-aEN5jp/LlXl053/OgFmNF+KNv86Y9iLgiViJdPVUfuTaZbWfyR8OtzvepVwqE4dT
-H/COieOcARX3+wc2xEyojCTiPfJ3ceL67aBt6tl1sbsyLvz13z7aN5y0kmxND4Mo
-NCgxNU4bemUY2n4CO6lWaZLlpLZT7ypXEjH1BLqwIZEfslQLdtJCdIrD3QMX5NI=
-=8+GE
+iQEcBAABCAAGBQJWmydXAAoJEFNVTo/uthzAAEsIAKtQH8pg7WlVVdKBgQIl9Zas
+RTn6tCaNs/OgGzz5ctmSV08q0WToVIZ1lVrO1XgacB0iv080yX1VGsvfr4XJtyyn
+Zuk4q23Pp58WBD5k/lgjEkf3w3z52lj0MQl9qWkRGE1rZzcP7/ojy/GsHQr2Rgm9
+gUk1qnaXF0+CeiEXYnb9FqzbBGQG+nTNpJwVzj8LTho3rwHUKi73yAc1oXx5/dxS
+YFzqvl2EpQlxZ0GPNa5B7s46tSAmJdKMyNvIng0lvrYgMceD3649Ky9eiU26WPMj
+kJwa8iqE4lK4hPyj/bNP29OGnxPyNtnCBza6xMIzbCcN5wqR67c6cfbDMZL7jMQ=
+=vj3W
 -----END PGP SIGNATURE-----
 
---nextPart3993061.FVfQcL6ayy--
+--nextPart3452607.YXDK4NhDmQ--
 
