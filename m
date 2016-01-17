@@ -1,15 +1,15 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 17 Jan 2016 20:12:53 +0800
-Message-ID: <8400313.UzXXZzmyYG@voltaire>
-In-Reply-To: <1453024887-7215-10-git-send-email-sven@narfation.org>
-References: <1453024887-7215-1-git-send-email-sven@narfation.org>
- <1453024887-7215-10-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4444805.SRQKmgEcSi";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v7 10/19] batman-adv: Rename
-	batadv_gw_node *_free_ref function to *_put
+Return-Path: <davem@davemloft.net>
+Date: Sun, 17 Jan 2016 11:39:31 -0500 (EST)
+Message-Id: <20160117.113931.1270444394545520569.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <569B30D0.2040406@unstable.cc>
+References: <1453008281-15396-1-git-send-email-a@unstable.cc>
+ <20160117.010446.1772166493922910087.davem@davemloft.net>
+ <569B30D0.2040406@unstable.cc>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request [net]: batman-adv 20160117
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,68 +19,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: a@unstable.cc
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart4444805.SRQKmgEcSi
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+From: Antonio Quartulli <a@unstable.cc>
+Date: Sun, 17 Jan 2016 14:12:32 +0800
 
-On Sunday, January 17, 2016 11:01:18 Sven Eckelmann wrote:
-> The batman-adv source code is the only place in the kernel which uses the
-> *_free_ref naming scheme for the *_put functions. Changing it to *_put
-> makes it more consistent and makes it easier to understand the connection
-> to the *_get functions.
+> On 17/01/16 14:04, David Miller wrote:
+>> Just let me include what you say in this email or put exactly this
+>> text into that merge commit.
+>> 
 > 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> v7:
->  - removed patches which are now applied in the branch master
->  - split *_get -> *_put rename patches into smaller patches only renaming
-> single functions
-> v6:
->  - removed patches which are now applied in the branch next
->  - rebased remaining patches on the patch
->    "batman-adv: Avoid recursive call_rcu for batadv_nc_node" which was
->    modified by Marek while he applied the patches (this unfortunately made
->    some of the remaining patches slightly harder to apply)
-> v5:
->  - add hack which allows to compile against stable kernel like 3.2.44 which
->    also added the kref_get_unless_zero function
-> v4:
->  - fix function names in commit messages
->  - fix double whitespace in batadv_tt_orig_list_entry_release kerneldoc
->  - add extra patch for batadv_claim_free_ref kerneldoc fix
->  - change the phrase "free it" in all *_free_ref/*_put functions to "release
-> it" v3:
->  - update copyright year
-> v2:
->  - split patchset into fixes and kref migration to make it easier when the
->    decision is made where each patch will be applied
+> Thanks for explaining this, David.
 > 
->  net/batman-adv/gateway_client.c | 35 +++++++++++++++++------------------
->  1 file changed, 17 insertions(+), 18 deletions(-)
+> Next time I'll put in the git tag the same text as the email (I'll just
+> drop references to patch numbers because those are not really useful in
+> the git log).
 
-Applied in revision d581bd3.
-
-Thanks,
-Marek
-
---nextPart4444805.SRQKmgEcSi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWm4VFAAoJEFNVTo/uthzAMDUH/2h96DgPACbt+t5XDcGnzq9X
-FaWtyJKLSu5LqeU6xd1HopEkMM6VXmiBmF9q4NBQ8sisOxqj8V0E1IzD0xMKu25b
-uEKv1gXrwDusod8ICPQiCEeiCH94AoB2FfsHyzF7VF4rgspTnbzfTE+XJA9p2GO1
-ci/UFqI54IydR31hmGAXy6gD2CPOe9Ufkm9tpdlAyAFGw1CqIn6rgykJcIM8fuCk
-BaPSuUXLPjasoaK1KblRp2/bZE6Vv5u86BPYQxTs71iq1drOkV5i60USU8IwyW9e
-nfgCOxLrOin53+3nxPSKHZR7ioLzJqm1gdTXEkjcf0p0SxO6EgAH8QpwSd1+UzA=
-=ptM5
------END PGP SIGNATURE-----
-
---nextPart4444805.SRQKmgEcSi--
-
+Thanks!
