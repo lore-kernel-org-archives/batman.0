@@ -1,11 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Sun, 17 Jan 2016 13:24:34 +0800
-Message-Id: <1453008281-15396-2-git-send-email-a@unstable.cc>
+Date: Sun, 17 Jan 2016 13:24:35 +0800
+Message-Id: <1453008281-15396-3-git-send-email-a@unstable.cc>
 In-Reply-To: <1453008281-15396-1-git-send-email-a@unstable.cc>
 References: <1453008281-15396-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 1/8] batman-adv: Avoid recursive call_rcu for
-	batadv_bla_claim
+Subject: [B.A.T.M.A.N.] [PATCH 2/8] batman-adv: Avoid recursive call_rcu for
+	batadv_nc_node
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,56 +20,67 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The batadv_claim_free_ref function uses call_rcu to delay the free of the
-batadv_bla_claim object until no (already started) rcu_read_lock is enabled
+The batadv_nc_node_free_ref function uses call_rcu to delay the free of the
+batadv_nc_node object until no (already started) rcu_read_lock is enabled
 anymore. This makes sure that no context is still trying to access the
-object which should be removed. But batadv_bla_claim also contains a
-reference to backbone_gw which must be removed.
+object which should be removed. But batadv_nc_node also contains a
+reference to orig_node which must be removed.
 
-The reference drop of backbone_gw was done in the call_rcu function
-batadv_claim_free_rcu but should actually be done in the
-batadv_claim_release function to avoid nested call_rcus. This is important
-because rcu_barrier (e.g. batadv_softif_free or batadv_exit) will not
-detect the inner call_rcu as relevant for its execution. Otherwise this
+The reference drop of orig_node was done in the call_rcu function
+batadv_nc_node_free_rcu but should actually be done in the
+batadv_nc_node_release function to avoid nested call_rcus. This is
+important because rcu_barrier (e.g. batadv_softif_free or batadv_exit) will
+not detect the inner call_rcu as relevant for its execution. Otherwise this
 barrier will most likely be inserted in the queue before the callback of
 the first call_rcu was executed. The caller of rcu_barrier will therefore
 continue to run before the inner call_rcu callback finished.
 
-Fixes: 23721387c409 ("batman-adv: add basic bridge loop avoidance code")
+Fixes: d56b1705e28c ("batman-adv: network coding - detect coding nodes and remove these after timeout")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
+ net/batman-adv/network-coding.c | 19 ++++++++-----------
+ 1 file changed, 8 insertions(+), 11 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index d5d71ac96c8a..c24c481b666f 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -127,21 +127,17 @@ batadv_backbone_gw_free_ref(struct batadv_bla_backbone_gw *backbone_gw)
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index c98b0ab85449..cc63b44f0d2e 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -203,28 +203,25 @@ void batadv_nc_init_orig(struct batadv_orig_node *orig_node)
  }
  
- /* finally deinitialize the claim */
--static void batadv_claim_free_rcu(struct rcu_head *rcu)
-+static void batadv_claim_release(struct batadv_bla_claim *claim)
+ /**
+- * batadv_nc_node_free_rcu - rcu callback to free an nc node and remove
+- *  its refcount on the orig_node
+- * @rcu: rcu pointer of the nc node
++ * batadv_nc_node_release - release nc_node from lists and queue for free after
++ *  rcu grace period
++ * @nc_node: the nc node to free
+  */
+-static void batadv_nc_node_free_rcu(struct rcu_head *rcu)
++static void batadv_nc_node_release(struct batadv_nc_node *nc_node)
  {
--	struct batadv_bla_claim *claim;
+-	struct batadv_nc_node *nc_node;
 -
--	claim = container_of(rcu, struct batadv_bla_claim, rcu);
--
- 	batadv_backbone_gw_free_ref(claim->backbone_gw);
--	kfree(claim);
-+	kfree_rcu(claim, rcu);
+-	nc_node = container_of(rcu, struct batadv_nc_node, rcu);
+ 	batadv_orig_node_free_ref(nc_node->orig_node);
+-	kfree(nc_node);
++	kfree_rcu(nc_node, rcu);
  }
  
- /* free a claim, call claim_free_rcu if its the last reference */
- static void batadv_claim_free_ref(struct batadv_bla_claim *claim)
+ /**
+- * batadv_nc_node_free_ref - decrements the nc node refcounter and possibly
+- * frees it
++ * batadv_nc_node_free_ref - decrement the nc node refcounter and possibly
++ *  release it
+  * @nc_node: the nc node to free
+  */
+ static void batadv_nc_node_free_ref(struct batadv_nc_node *nc_node)
  {
- 	if (atomic_dec_and_test(&claim->refcount))
--		call_rcu(&claim->rcu, batadv_claim_free_rcu);
-+		batadv_claim_release(claim);
+ 	if (atomic_dec_and_test(&nc_node->refcount))
+-		call_rcu(&nc_node->rcu, batadv_nc_node_free_rcu);
++		batadv_nc_node_release(nc_node);
  }
  
  /**
