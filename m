@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 17 Jan 2016 11:01:19 +0100
-Message-Id: <1453024887-7215-11-git-send-email-sven@narfation.org>
+Date: Sun, 17 Jan 2016 11:01:20 +0100
+Message-Id: <1453024887-7215-12-git-send-email-sven@narfation.org>
 In-Reply-To: <1453024887-7215-1-git-send-email-sven@narfation.org>
 References: <1453024887-7215-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v7 11/19] batman-adv: Rename
-	batadv_tvlv_handler *_free_ref function to *_put
+Subject: [B.A.T.M.A.N.] [PATCH v7 12/19] batman-adv: Rename
+	batadv_tvlv_container *_free_ref function to *_put
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -48,57 +48,35 @@ v2:
  - split patchset into fixes and kref migration to make it easier when the
    decision is made where each patch will be applied
 
- net/batman-adv/main.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ net/batman-adv/main.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 476554b..95aaff3 100644
+index 95aaff3..bf8a01b 100644
 --- a/net/batman-adv/main.c
 +++ b/net/batman-adv/main.c
-@@ -638,12 +638,11 @@ static void batadv_tvlv_handler_release(struct kref *ref)
+@@ -694,11 +694,11 @@ static void batadv_tvlv_container_release(struct kref *ref)
  }
  
  /**
-- * batadv_tvlv_handler_free_ref - decrement the tvlv container refcounter and
-+ * batadv_tvlv_handler_put - decrement the tvlv container refcounter and
+- * batadv_tvlv_container_free_ref - decrement the tvlv container refcounter and
++ * batadv_tvlv_container_put - decrement the tvlv container refcounter and
   *  possibly release it
-  * @tvlv_handler: the tvlv handler to free
+  * @tvlv: the tvlv container to free
   */
--static void
--batadv_tvlv_handler_free_ref(struct batadv_tvlv_handler *tvlv_handler)
-+static void batadv_tvlv_handler_put(struct batadv_tvlv_handler *tvlv_handler)
+-static void batadv_tvlv_container_free_ref(struct batadv_tvlv_container *tvlv)
++static void batadv_tvlv_container_put(struct batadv_tvlv_container *tvlv)
  {
- 	kref_put(&tvlv_handler->refcount, batadv_tvlv_handler_release);
+ 	kref_put(&tvlv->refcount, batadv_tvlv_container_release);
  }
-@@ -1031,7 +1030,7 @@ int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
- 						src, dst, tvlv_value,
- 						tvlv_value_cont_len);
- 		if (tvlv_handler)
--			batadv_tvlv_handler_free_ref(tvlv_handler);
-+			batadv_tvlv_handler_put(tvlv_handler);
- 		tvlv_value = (u8 *)tvlv_value + tvlv_value_cont_len;
- 		tvlv_value_len -= tvlv_value_cont_len;
- 	}
-@@ -1111,7 +1110,7 @@ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
+@@ -784,8 +784,8 @@ static void batadv_tvlv_container_remove(struct batadv_priv *bat_priv,
+ 	hlist_del(&tvlv->list);
  
- 	tvlv_handler = batadv_tvlv_handler_get(bat_priv, type, version);
- 	if (tvlv_handler) {
--		batadv_tvlv_handler_free_ref(tvlv_handler);
-+		batadv_tvlv_handler_put(tvlv_handler);
- 		return;
- 	}
- 
-@@ -1148,11 +1147,11 @@ void batadv_tvlv_handler_unregister(struct batadv_priv *bat_priv,
- 	if (!tvlv_handler)
- 		return;
- 
--	batadv_tvlv_handler_free_ref(tvlv_handler);
-+	batadv_tvlv_handler_put(tvlv_handler);
- 	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
- 	hlist_del_rcu(&tvlv_handler->list);
- 	spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
--	batadv_tvlv_handler_free_ref(tvlv_handler);
-+	batadv_tvlv_handler_put(tvlv_handler);
+ 	/* first call to decrement the counter, second call to free */
+-	batadv_tvlv_container_free_ref(tvlv);
+-	batadv_tvlv_container_free_ref(tvlv);
++	batadv_tvlv_container_put(tvlv);
++	batadv_tvlv_container_put(tvlv);
  }
  
  /**
