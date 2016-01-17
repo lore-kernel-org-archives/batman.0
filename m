@@ -1,11 +1,15 @@
-Return-Path: <a@unstable.cc>
-From: Antonio Quartulli <a@unstable.cc>
-Date: Sun, 17 Jan 2016 13:24:41 +0800
-Message-Id: <1453008281-15396-9-git-send-email-a@unstable.cc>
-In-Reply-To: <1453008281-15396-1-git-send-email-a@unstable.cc>
-References: <1453008281-15396-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 8/8] batman-adv: Drop immediate orig_node
-	free function
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 17 Jan 2016 13:28:44 +0800
+Message-ID: <2737642.DcbKTUbf8L@voltaire>
+In-Reply-To: <1452936598-28619-7-git-send-email-sven@narfation.org>
+References: <1452936598-28619-1-git-send-email-sven@narfation.org>
+ <1452936598-28619-7-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart12636136.7XH8TbhvgX";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v6 07/20] batman-adv: Convert
+	batadv_nc_node to kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,118 +19,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Sven Eckelmann <sven@narfation.org>
+--nextPart12636136.7XH8TbhvgX
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-It is not allowed to free the memory of an object which is part of a list
-which is protected by rcu-read-side-critical sections without making sure
-that no other context is accessing the object anymore. This usually happens
-by removing the references to this object and then waiting until the rcu
-grace period is over and no one (allowedly) accesses it anymore.
+On Saturday, January 16, 2016 10:29:45 Sven Eckelmann wrote:
+> batman-adv uses a self-written reference implementation which is just based
+> on atomic_t. This is less obvious when reading the code than kref and
+> therefore increases the change that the reference counting will be missed.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> v6:
+>  - removed patches which are now applied in the branch next
+>  - rebased remaining patches on the patch
+>    "batman-adv: Avoid recursive call_rcu for batadv_nc_node" which was
+>    modified by Marek while he applied the patches (this unfortunately made
+>    some of the remaining patches "hard" to apply)
+> v5:
+>  - add hack which allows to compile against stable kernel like 3.2.44 which
+>    also added the kref_get_unless_zero function
+> v4:
+>  - fix function names in commit messages
+>  - fix double whitespace in batadv_tt_orig_list_entry_release kerneldoc
+>  - add extra patch for batadv_claim_free_ref kerneldoc fix
+>  - change the phrase "free it" in all *_free_ref/*_put functions to "release
+> it" v3:
+>  - update copyright year
+> v2:
+>  - split patchset into fixes and kref migration to make it easier when the
+>    decision is made where each patch will be applied
+> 
+>  net/batman-adv/network-coding.c | 21 +++++++++++++--------
+>  net/batman-adv/types.h          |  2 +-
+>  2 files changed, 14 insertions(+), 9 deletions(-)
 
-But the _now functions ignore this completely. They free the object
-directly even when a different context still tries to access it. This has
-to be avoided and thus these functions must be removed and all functions
-have to use batadv_orig_node_free_ref.
+Applied in revision a3e8d4b.
 
-Fixes: 72822225bd41 ("batman-adv: Fix rcu_barrier() miss due to double call_rcu() in TT code")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
----
- net/batman-adv/originator.c        | 11 -----------
- net/batman-adv/originator.h        |  1 -
- net/batman-adv/translation-table.c | 28 +++++++++++++---------------
- 3 files changed, 13 insertions(+), 27 deletions(-)
+Thanks,
+Marek
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 6fdef842ba2a..fe578f75c391 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -781,17 +781,6 @@ void batadv_orig_node_free_ref(struct batadv_orig_node *orig_node)
- 		batadv_orig_node_release(orig_node);
- }
- 
--/**
-- * batadv_orig_node_free_ref_now - decrement the orig node refcounter and
-- * possibly free it (without rcu callback)
-- * @orig_node: the orig node to free
-- */
--void batadv_orig_node_free_ref_now(struct batadv_orig_node *orig_node)
--{
--	if (atomic_dec_and_test(&orig_node->refcount))
--		batadv_orig_node_free_rcu(&orig_node->rcu);
--}
--
- void batadv_originator_free(struct batadv_priv *bat_priv)
- {
- 	struct batadv_hashtable *hash = bat_priv->orig_hash;
-diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
-index 29557753d552..cf0730414ed2 100644
---- a/net/batman-adv/originator.h
-+++ b/net/batman-adv/originator.h
-@@ -38,7 +38,6 @@ int batadv_originator_init(struct batadv_priv *bat_priv);
- void batadv_originator_free(struct batadv_priv *bat_priv);
- void batadv_purge_orig_ref(struct batadv_priv *bat_priv);
- void batadv_orig_node_free_ref(struct batadv_orig_node *orig_node);
--void batadv_orig_node_free_ref_now(struct batadv_orig_node *orig_node);
- struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
- 					      const u8 *addr);
- struct batadv_hardif_neigh_node *
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index a22080c53401..cdfc85fa2743 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -240,20 +240,6 @@ int batadv_tt_global_hash_count(struct batadv_priv *bat_priv,
- 	return count;
- }
- 
--static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
--{
--	struct batadv_tt_orig_list_entry *orig_entry;
--
--	orig_entry = container_of(rcu, struct batadv_tt_orig_list_entry, rcu);
--
--	/* We are in an rcu callback here, therefore we cannot use
--	 * batadv_orig_node_free_ref() and its call_rcu():
--	 * An rcu_barrier() wouldn't wait for that to finish
--	 */
--	batadv_orig_node_free_ref_now(orig_entry->orig_node);
--	kfree(orig_entry);
--}
--
- /**
-  * batadv_tt_local_size_mod - change the size by v of the local table identified
-  *  by vid
-@@ -349,13 +335,25 @@ static void batadv_tt_global_size_dec(struct batadv_orig_node *orig_node,
- 	batadv_tt_global_size_mod(orig_node, vid, -1);
- }
- 
-+/**
-+ * batadv_tt_orig_list_entry_release - release tt orig entry from lists and
-+ *  queue for free after rcu grace period
-+ * @orig_entry: tt orig entry to be free'd
-+ */
-+static void
-+batadv_tt_orig_list_entry_release(struct batadv_tt_orig_list_entry *orig_entry)
-+{
-+	batadv_orig_node_free_ref(orig_entry->orig_node);
-+	kfree_rcu(orig_entry, rcu);
-+}
-+
- static void
- batadv_tt_orig_list_entry_free_ref(struct batadv_tt_orig_list_entry *orig_entry)
- {
- 	if (!atomic_dec_and_test(&orig_entry->refcount))
- 		return;
- 
--	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
-+	batadv_tt_orig_list_entry_release(orig_entry);
- }
- 
- /**
--- 
-2.7.0
+--nextPart12636136.7XH8TbhvgX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJWmyaMAAoJEFNVTo/uthzAxvMH/3G7QbhtsnJoMoFKGXAg7csP
+oP475LaEHFTsPpBZBiFMX9DxChFMizuO6/KWFVx0c38n3RXqA5ac3hf3by8CEagX
+rT/wORnvVtkwKEiWPkhpdxbE92PINd/YQUHlNXMUcGIs1lX+UivPI9jK5BjIHyqw
+yHCE4cgzppTGZSNiewFZCzJTG4T3h1Z7/OHtWpKp6DnwbubA6UaAR59XSC2m/hvA
+R1AFebHgx/cG258RX5I9lPgQrSfno27dWk3zBAKLPOk6ORdbobf2CJnBoQ8MX6sC
+1TuFm8F0mQvkUEvq/tBjCYyONa5R9zcDMw+9m7iJ+e2VkGgMmIoz2Bv9RNCyxlQ=
+=mJIp
+-----END PGP SIGNATURE-----
+
+--nextPart12636136.7XH8TbhvgX--
 
