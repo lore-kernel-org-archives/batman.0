@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 17 Jan 2016 11:01:16 +0100
-Message-Id: <1453024887-7215-8-git-send-email-sven@narfation.org>
+Date: Sun, 17 Jan 2016 11:01:17 +0100
+Message-Id: <1453024887-7215-9-git-send-email-sven@narfation.org>
 In-Reply-To: <1453024887-7215-1-git-send-email-sven@narfation.org>
 References: <1453024887-7215-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v7 08/19] batman-adv: Rename batadv_claim
+Subject: [B.A.T.M.A.N.] [PATCH v7 09/19] batman-adv: Rename batadv_dat_entry
 	*_free_ref function to *_put
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -48,80 +48,80 @@ v2:
  - split patchset into fixes and kref migration to make it easier when the
    decision is made where each patch will be applied
 
- net/batman-adv/bridge_loop_avoidance.c | 16 ++++++++--------
+ net/batman-adv/distributed-arp-table.c | 16 ++++++++--------
  1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index ce2d070..0a6c8b8 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -184,11 +184,11 @@ static void batadv_claim_release(struct kref *ref)
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 919f344..4c9b69d 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -77,11 +77,11 @@ static void batadv_dat_entry_release(struct kref *ref)
  }
  
  /**
-- * batadv_claim_free_ref - decrement the claim refcounter and possibly
-+ * batadv_claim_put - decrement the claim refcounter and possibly
+- * batadv_dat_entry_free_ref - decrement the dat_entry refcounter and possibly
++ * batadv_dat_entry_put - decrement the dat_entry refcounter and possibly
   *  release it
-  * @claim: claim to be free'd
+  * @dat_entry: dat_entry to be free'd
   */
--static void batadv_claim_free_ref(struct batadv_bla_claim *claim)
-+static void batadv_claim_put(struct batadv_bla_claim *claim)
+-static void batadv_dat_entry_free_ref(struct batadv_dat_entry *dat_entry)
++static void batadv_dat_entry_put(struct batadv_dat_entry *dat_entry)
  {
- 	kref_put(&claim->refcount, batadv_claim_release);
+ 	kref_put(&dat_entry->refcount, batadv_dat_entry_release);
  }
-@@ -304,7 +304,7 @@ batadv_bla_del_backbone_claims(struct batadv_bla_backbone_gw *backbone_gw)
- 			if (claim->backbone_gw != backbone_gw)
+@@ -135,7 +135,7 @@ static void __batadv_dat_purge(struct batadv_priv *bat_priv,
  				continue;
  
--			batadv_claim_free_ref(claim);
-+			batadv_claim_put(claim);
- 			hlist_del_rcu(&claim->hash_entry);
+ 			hlist_del_rcu(&dat_entry->hash_entry);
+-			batadv_dat_entry_free_ref(dat_entry);
++			batadv_dat_entry_put(dat_entry);
  		}
  		spin_unlock_bh(list_lock);
-@@ -693,7 +693,7 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
- 	backbone_gw->lasttime = jiffies;
+ 	}
+@@ -349,7 +349,7 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
  
- claim_free_ref:
--	batadv_claim_free_ref(claim);
-+	batadv_claim_put(claim);
+ 	if (unlikely(hash_added != 0)) {
+ 		/* remove the reference for the hash */
+-		batadv_dat_entry_free_ref(dat_entry);
++		batadv_dat_entry_put(dat_entry);
+ 		goto out;
+ 	}
+ 
+@@ -358,7 +358,7 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
+ 
+ out:
+ 	if (dat_entry)
+-		batadv_dat_entry_free_ref(dat_entry);
++		batadv_dat_entry_put(dat_entry);
  }
  
- /**
-@@ -718,14 +718,14 @@ static void batadv_bla_del_claim(struct batadv_priv *bat_priv,
- 
- 	batadv_hash_remove(bat_priv->bla.claim_hash, batadv_compare_claim,
- 			   batadv_choose_claim, claim);
--	batadv_claim_free_ref(claim); /* reference from the hash is gone */
-+	batadv_claim_put(claim); /* reference from the hash is gone */
- 
- 	spin_lock_bh(&claim->backbone_gw->crc_lock);
- 	claim->backbone_gw->crc ^= crc16(0, claim->addr, ETH_ALEN);
- 	spin_unlock_bh(&claim->backbone_gw->crc_lock);
- 
- 	/* don't need the reference from hash_find() anymore */
--	batadv_claim_free_ref(claim);
-+	batadv_claim_put(claim);
- }
- 
- /**
-@@ -1693,7 +1693,7 @@ out:
- 	if (primary_if)
- 		batadv_hardif_put(primary_if);
- 	if (claim)
--		batadv_claim_free_ref(claim);
-+		batadv_claim_put(claim);
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
+@@ -1029,7 +1029,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
+ 	}
+ out:
+ 	if (dat_entry)
+-		batadv_dat_entry_free_ref(dat_entry);
++		batadv_dat_entry_put(dat_entry);
  	return ret;
  }
  
-@@ -1782,7 +1782,7 @@ out:
- 	if (primary_if)
- 		batadv_hardif_put(primary_if);
- 	if (claim)
--		batadv_claim_free_ref(claim);
-+		batadv_claim_put(claim);
+@@ -1109,7 +1109,7 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
+ 	}
+ out:
+ 	if (dat_entry)
+-		batadv_dat_entry_free_ref(dat_entry);
++		batadv_dat_entry_put(dat_entry);
+ 	if (ret)
+ 		kfree_skb(skb);
+ 	return ret;
+@@ -1262,6 +1262,6 @@ bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
+ 
+ out:
+ 	if (dat_entry)
+-		batadv_dat_entry_free_ref(dat_entry);
++		batadv_dat_entry_put(dat_entry);
  	return ret;
  }
- 
 -- 
 2.7.0.rc3
 
