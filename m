@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 17 Jan 2016 11:01:23 +0100
-Message-Id: <1453024887-7215-15-git-send-email-sven@narfation.org>
+Date: Sun, 17 Jan 2016 11:01:25 +0100
+Message-Id: <1453024887-7215-17-git-send-email-sven@narfation.org>
 In-Reply-To: <1453024887-7215-1-git-send-email-sven@narfation.org>
 References: <1453024887-7215-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v7 15/19] batman-adv: Rename batadv_nc_path
-	*_free_ref function to *_put
+Subject: [B.A.T.M.A.N.] [PATCH v7 17/19] batman-adv: Rename
+	batadv_tt_local_entry *_free_ref function to *_put
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -48,62 +48,135 @@ v2:
  - split patchset into fixes and kref migration to make it easier when the
    decision is made where each patch will be applied
 
- net/batman-adv/network-coding.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ net/batman-adv/translation-table.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index 6105cfb..d253bb2 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -247,11 +247,11 @@ static void batadv_nc_path_release(struct kref *ref)
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index c4f12ef..df08cfd 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -219,12 +219,12 @@ static void batadv_tt_local_entry_release(struct kref *ref)
  }
  
  /**
-- * batadv_nc_path_free_ref - decrement the nc_path refcounter and possibly
-+ * batadv_nc_path_put - decrement the nc_path refcounter and possibly
-  *  release it
-  * @nc_path: nc_path to be free'd
+- * batadv_tt_local_entry_free_ref - decrement the tt_local_entry refcounter and
++ * batadv_tt_local_entry_put - decrement the tt_local_entry refcounter and
+  *  possibly release it
+  * @tt_local_entry: tt_local_entry to be free'd
   */
--static void batadv_nc_path_free_ref(struct batadv_nc_path *nc_path)
-+static void batadv_nc_path_put(struct batadv_nc_path *nc_path)
+ static void
+-batadv_tt_local_entry_free_ref(struct batadv_tt_local_entry *tt_local_entry)
++batadv_tt_local_entry_put(struct batadv_tt_local_entry *tt_local_entry)
  {
- 	kref_put(&nc_path->refcount, batadv_nc_path_release);
- }
-@@ -263,7 +263,7 @@ static void batadv_nc_path_free_ref(struct batadv_nc_path *nc_path)
- static void batadv_nc_packet_free(struct batadv_nc_packet *nc_packet)
- {
- 	kfree_skb(nc_packet->skb);
--	batadv_nc_path_free_ref(nc_packet->nc_path);
-+	batadv_nc_path_put(nc_packet->nc_path);
- 	kfree(nc_packet);
- }
+ 	kref_put(&tt_local_entry->common.refcount,
+ 		 batadv_tt_local_entry_release);
+@@ -685,7 +685,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
  
-@@ -467,7 +467,7 @@ static void batadv_nc_purge_paths(struct batadv_priv *bat_priv,
- 				   "Remove nc_path %pM -> %pM\n",
- 				   nc_path->prev_hop, nc_path->next_hop);
- 			hlist_del_rcu(&nc_path->hash_entry);
--			batadv_nc_path_free_ref(nc_path);
-+			batadv_nc_path_put(nc_path);
- 		}
- 		spin_unlock_bh(lock);
+ 	if (unlikely(hash_added != 0)) {
+ 		/* remove the reference for the hash */
+-		batadv_tt_local_entry_free_ref(tt_local);
++		batadv_tt_local_entry_put(tt_local);
+ 		batadv_softif_vlan_put(vlan);
+ 		goto out;
  	}
-@@ -1555,7 +1555,7 @@ bool batadv_nc_skb_forward(struct sk_buff *skb,
- 	return true;
+@@ -752,7 +752,7 @@ out:
+ 	if (in_dev)
+ 		dev_put(in_dev);
+ 	if (tt_local)
+-		batadv_tt_local_entry_free_ref(tt_local);
++		batadv_tt_local_entry_put(tt_local);
+ 	if (tt_global)
+ 		batadv_tt_global_entry_free_ref(tt_global);
+ 	return ret;
+@@ -1135,7 +1135,7 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
+ 		goto out;
  
- free_nc_path:
--	batadv_nc_path_free_ref(nc_path);
-+	batadv_nc_path_put(nc_path);
+ 	/* extra call to free the local tt entry */
+-	batadv_tt_local_entry_free_ref(tt_local_entry);
++	batadv_tt_local_entry_put(tt_local_entry);
+ 
+ 	/* decrease the reference held for this vlan */
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid);
+@@ -1147,7 +1147,7 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
+ 
  out:
- 	/* Packet is not consumed */
- 	return false;
-@@ -1617,7 +1617,7 @@ void batadv_nc_skb_store_for_decoding(struct batadv_priv *bat_priv,
- free_skb:
- 	kfree_skb(skb);
- free_nc_path:
--	batadv_nc_path_free_ref(nc_path);
-+	batadv_nc_path_put(nc_path);
+ 	if (tt_local_entry)
+-		batadv_tt_local_entry_free_ref(tt_local_entry);
++		batadv_tt_local_entry_put(tt_local_entry);
+ 
+ 	return curr_flags;
+ }
+@@ -1247,7 +1247,7 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
+ 				batadv_softif_vlan_put(vlan);
+ 			}
+ 
+-			batadv_tt_local_entry_free_ref(tt_local);
++			batadv_tt_local_entry_put(tt_local);
+ 		}
+ 		spin_unlock_bh(list_lock);
+ 	}
+@@ -1553,7 +1553,7 @@ out:
+ 	if (tt_global_entry)
+ 		batadv_tt_global_entry_free_ref(tt_global_entry);
+ 	if (tt_local_entry)
+-		batadv_tt_local_entry_free_ref(tt_local_entry);
++		batadv_tt_local_entry_put(tt_local_entry);
+ 	return ret;
+ }
+ 
+@@ -1909,7 +1909,7 @@ out:
+ 	if (tt_global_entry)
+ 		batadv_tt_global_entry_free_ref(tt_global_entry);
+ 	if (local_entry)
+-		batadv_tt_local_entry_free_ref(local_entry);
++		batadv_tt_local_entry_put(local_entry);
+ }
+ 
+ /**
+@@ -2141,7 +2141,7 @@ out:
+ 	if (tt_global_entry)
+ 		batadv_tt_global_entry_free_ref(tt_global_entry);
+ 	if (tt_local_entry)
+-		batadv_tt_local_entry_free_ref(tt_local_entry);
++		batadv_tt_local_entry_put(tt_local_entry);
+ 
+ 	return orig_node;
+ }
+@@ -3021,7 +3021,7 @@ bool batadv_is_my_client(struct batadv_priv *bat_priv, const u8 *addr,
+ 	ret = true;
  out:
- 	return;
+ 	if (tt_local_entry)
+-		batadv_tt_local_entry_free_ref(tt_local_entry);
++		batadv_tt_local_entry_put(tt_local_entry);
+ 	return ret;
+ }
+ 
+@@ -3344,7 +3344,7 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
+ 				batadv_softif_vlan_put(vlan);
+ 			}
+ 
+-			batadv_tt_local_entry_free_ref(tt_local);
++			batadv_tt_local_entry_put(tt_local);
+ 		}
+ 		spin_unlock_bh(list_lock);
+ 	}
+@@ -3431,7 +3431,7 @@ out:
+ 	if (tt_global_entry)
+ 		batadv_tt_global_entry_free_ref(tt_global_entry);
+ 	if (tt_local_entry)
+-		batadv_tt_local_entry_free_ref(tt_local_entry);
++		batadv_tt_local_entry_put(tt_local_entry);
+ 	return ret;
+ }
+ 
+@@ -3567,7 +3567,7 @@ bool batadv_tt_local_client_is_roaming(struct batadv_priv *bat_priv,
+ 		goto out;
+ 
+ 	ret = tt_local_entry->common.flags & BATADV_TT_CLIENT_ROAM;
+-	batadv_tt_local_entry_free_ref(tt_local_entry);
++	batadv_tt_local_entry_put(tt_local_entry);
+ out:
+ 	return ret;
  }
 -- 
 2.7.0.rc3
