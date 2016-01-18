@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 18 Jan 2016 12:50:13 +0800
-Message-ID: <6791432.kMpyoP6Pad@voltaire>
-In-Reply-To: <1453024887-7215-13-git-send-email-sven@narfation.org>
+Date: Mon, 18 Jan 2016 13:40:41 +0800
+Message-ID: <3519671.cCv2MJLJic@voltaire>
+In-Reply-To: <1453024887-7215-14-git-send-email-sven@narfation.org>
 References: <1453024887-7215-1-git-send-email-sven@narfation.org>
- <1453024887-7215-13-git-send-email-sven@narfation.org>
+ <1453024887-7215-14-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2033577.WAroCirpVk";
+Content-Type: multipart/signed; boundary="nextPart10380534.VuAkqV70FP";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v7 13/19] batman-adv: Rename
-	batadv_softif_vlan *_free_ref function to *_put
+Subject: Re: [B.A.T.M.A.N.] [PATCH v7 14/19] batman-adv: Rename
+	batadv_nc_node *_free_ref function to *_put
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,11 +21,11 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2033577.WAroCirpVk
+--nextPart10380534.VuAkqV70FP
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, January 17, 2016 11:01:21 Sven Eckelmann wrote:
+On Sunday, January 17, 2016 11:01:22 Sven Eckelmann wrote:
 > The batman-adv source code is the only place in the kernel which uses the
 > *_free_ref naming scheme for the *_put functions. Changing it to *_put
 > makes it more consistent and makes it easier to understand the connection
@@ -57,19 +57,15 @@ On Sunday, January 17, 2016 11:01:21 Sven Eckelmann wrote:
 >  - split patchset into fixes and kref migration to make it easier when the
 >    decision is made where each patch will be applied
 > 
->  net/batman-adv/main.c              |  2 +-
->  net/batman-adv/soft-interface.c    | 14 +++++++-------
->  net/batman-adv/soft-interface.h    |  2 +-
->  net/batman-adv/sysfs.c             |  4 ++--
->  net/batman-adv/translation-table.c | 20 ++++++++++----------
->  5 files changed, 21 insertions(+), 21 deletions(-)
+>  net/batman-adv/network-coding.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 
-Applied in revision 8747283.
+Applied in revision 71fc703.
 
 Thanks,
 Marek
 
---nextPart2033577.WAroCirpVk
+--nextPart10380534.VuAkqV70FP
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -77,14 +73,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWnG8FAAoJEFNVTo/uthzAO0wH/jrIRTFCNf/sqCy3TBSMgsk4
-HZoQzeXTwvxZLBaNN4b2fTRtOhK224FuXLSN3UoJuEx2TTbKcWrz53YKbwYKMoBR
-X2AiPxF6buLW272RWYt+fR7MePt+IdPeDgp//dvrJzluTbR8WN1jSnotc8qAoMZa
-wyN9lBgIkmeM+Z4PaavSlqXy9YF1RsajyS0zB4Sfj/LdyA/FsOfMvdrQ/A+nyCSN
-m3b7BIHzkhgU/RpNQON67Y54AlcAqGpi0mMVA6MCRtKK+yFk7je7vY14KSNlSu07
-wEMsF6D6GB+cILv+mBvod5Ww2zLREJWitKaf2g2PYB8Sc/T5Gywwc3WX/fWktpk=
-=ScPy
+iQEcBAABCAAGBQJWnHrZAAoJEFNVTo/uthzAVcMIAI+TR8SzGWBn3nxsLQt0DaMk
+SaXfl93479M8mVpWE14hvScpRcbHB0gP/o8e8s8cQV3XEI4/c7cqebPrt/P0Go5j
+glWxC0hr1+v0ULS29Ie2ZWGcg3PMGhebhC9fT5kC/LqRAPOqzIe+sXVk9IJXTQct
+VYM4+lGtUgFVS44kvIkeXATujy3DKjonmXq8rmWxxXjntrrjVXYvSxdsa/UIMmWv
+Z6mHfUTapb787xX0e7Xfp971J/lEiVjxEolGOxQaUvPsqQWYwwpyUwT7SARHkDbh
+CQ+F56xL+xtBihBMHgYpsNrRveUXB3o7Q0suyRCTwURg85DlXP3N2wO3/4AH+ys=
+=zAwl
 -----END PGP SIGNATURE-----
 
---nextPart2033577.WAroCirpVk--
+--nextPart10380534.VuAkqV70FP--
 
