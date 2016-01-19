@@ -1,16 +1,15 @@
-Return-Path: <andrew@lunn.ch>
-Date: Tue, 19 Jan 2016 15:40:03 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160119144003.GH6554@lunn.ch>
-References: <1447443981-28246-1-git-send-email-sven@narfation.org>
- <569D85AB.9080403@unstable.cc> <20160119012226.GE26877@lunn.ch>
- <569E2D72.4010304@unstable.cc>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Tue, 19 Jan 2016 23:08:51 +0800
+Message-ID: <1494821.Z9zhdATZLZ@voltaire>
+In-Reply-To: <1452933619-6712-1-git-send-email-mareklindner@neomailbox.ch>
+References: <8047297.0qIFjkW2bL@voltaire>
+ <1452933619-6712-1-git-send-email-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <569E2D72.4010304@unstable.cc>
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: Remove recursive bat-on-bat
- netdevice check
+Content-Type: multipart/signed; boundary="nextPart3950236.npuUjNyxr5";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 01/12] batman-adv: Add hard_iface
+	specific sysfs wrapper macros for UINT
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,65 +19,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <a@unstable.cc>
-Cc: Jetmir Gigollai <jetmir_gigollaj@web.de>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <antonio@open-mesh.com>
 
-> > One of the issues i had is in this piece of code and with veth. The
-> > other end of the veth can be in a different name space. Hence you
-> > cannot look it up using the ifindex in the current name space. So i
-> > made the code just exit with an O.K. if the parent device cannot be
-> > found.
+--nextPart3950236.npuUjNyxr5
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Saturday, January 16, 2016 16:40:08 Marek Lindner wrote:
+> From: Linus Luessing <linus.luessing@web.de>
 > 
-> Is this really ok ? Isn't it possible to create "loops" by jumping from
-> one namespace to the other ?
+> This allows us to easily add a sysfs parameter for an
+> unsigned int later, which is not for a batman mesh interface
+> (e.g. bat0), but for a common interface instead. It allows
+> reading and writing an atomic_t in hard_iface (instead of
+> bat_priv compared to the mesh variant).
+> 
+> Developed by Linus during a 6 months trainee study period in
+> Ascom (Switzerland) AG.
+> 
+> Signed-off-by: Linus Luessing <linus.luessing@web.de>
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> [antonio@open-mesh.com: rename functions and move macros]
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+>  net/batman-adv/sysfs.c | 49
+> +++++++++++++++++++++++++++++++++++++++++++++++++ 1 file changed, 49
+> insertions(+)
 
-Quite possible. I took the easy option:
+Applied in revision ec46535.
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index a5ce58a..a7a92ae 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -104,8 +104,12 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
- 
-        /* recurse over the parent device */
-        parent_dev = __dev_get_by_index(net, dev_get_iflink(net_dev));
--       /* if we got a NULL parent_dev there is something broken.. */
--       if (WARN(!parent_dev, "Cannot find parent device"))
-+       /* if we got a NULL parent_dev, it might mean the parent is in
-+        * a different network namespace. Things then get really
-+        * complex, so lets just assume the user knows what she is
-+        * doing.
-+        */
-+       if (!parent_dev)
-                return false;
- 
-        ret = batadv_is_on_batman_iface(parent_dev);
+Thanks,
+Marek
 
-I didn't spend the time to think all the possible loop situations
-though. It is not too bad in that the software interface cannot be
-moved into a different netns. Also, all the hard interfaces have to be
-in the same netns as the soft interface. If you move a hard interface
-into a different netns, it will automatically be removed from the soft
-interface using the notification mechanism.
+--nextPart3950236.npuUjNyxr5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-There are some other restrictions which help avoid loops. You cannot
-in general move 'soft interfaces' between netns. You cannot move
-bridge interfaces, tunnel interfaces, team/bonding interfaces, etc.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-> exactly my point above! :)
-> So this means that an interface A might have A.iflink pointing to a
-> device in another namespace ?
+iQEcBAABCAAGBQJWnlGDAAoJEFNVTo/uthzA0lMIAKL1lVp9/+sZRB42lJ+Gp8hr
+/jWWKmBevNdfJ3Ew3Lkg7DJxrxKumpE8t+lnDq7YQH5CeafYn4hYQtVAs3cv2Eoy
+3WH5yihZvoqdml5Cqz30QuSl9dS5nKwGHDwZ/27FTz4aJuUDwNNPT3cF4prZsUSb
++lI3SvBnayGg9b7BHsJwZuNi1uUfKLGwtLt4HrMXmysfT5s9iX76RPjrJUD8lssK
+tkTKu6gNEDCxzEFecoxBf0AMnLz6PnFPD5sa2IvnbbdLtUnH4r9w9jfxXlvwNW8E
+RfidYSl5bzEdqShmfnxGtk9C52WyfkyfXXvkHx4j5/CMRQXeMlCTrFx7W81ZwmE=
+=eEIB
+-----END PGP SIGNATURE-----
 
-Partly correct. The current code for getting the parent is:
+--nextPart3950236.npuUjNyxr5--
 
-parent_dev = __dev_get_by_index(net, dev_get_iflink(net_dev));
-
-This is actually totally broken, when used with veth. It possible can
-return a completely different interface than the parent, since the
-ifindex returned for a veth could be in a different namespace. ifindex
-is only unique within a namespace, not across name spaces.
-
-I need to look deeper into the code and see if there is a different
-parenting mechanism that can be used.
-
-	  Andrew
