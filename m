@@ -1,15 +1,15 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 18 Jan 2016 13:51:17 +0800
-Message-ID: <40365065.qp5bX4xiHF@voltaire>
-In-Reply-To: <1453024887-7215-19-git-send-email-sven@narfation.org>
-References: <1453024887-7215-1-git-send-email-sven@narfation.org>
- <1453024887-7215-19-git-send-email-sven@narfation.org>
+Return-Path: <a@unstable.cc>
+References: <1447443981-28246-1-git-send-email-sven@narfation.org>
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <569D85AB.9080403@unstable.cc>
+Date: Tue, 19 Jan 2016 08:39:07 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6346678.4OL4uWt8HH";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v7 19/19] batman-adv: Rename
-	batadv_tt_orig_list_entry *_free_ref function to *_put
+In-Reply-To: <1447443981-28246-1-git-send-email-sven@narfation.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="k4oUBxlWHkTCtcQieObVdV0xCPT3DwU0w"
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: Remove recursive bat-on-bat
+ netdevice check
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,68 +19,81 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: Jetmir Gigollai <jetmir_gigollaj@web.de>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart6346678.4OL4uWt8HH
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--k4oUBxlWHkTCtcQieObVdV0xCPT3DwU0w
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On Sunday, January 17, 2016 11:01:27 Sven Eckelmann wrote:
-> The batman-adv source code is the only place in the kernel which uses the
-> *_free_ref naming scheme for the *_put functions. Changing it to *_put
-> makes it more consistent and makes it easier to understand the connection
-> to the *_get functions.
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> v7:
->  - removed patches which are now applied in the branch master
->  - split *_get -> *_put rename patches into smaller patches only renaming
-> single functions
-> v6:
->  - removed patches which are now applied in the branch next
->  - rebased remaining patches on the patch
->    "batman-adv: Avoid recursive call_rcu for batadv_nc_node" which was
->    modified by Marek while he applied the patches (this unfortunately made
->    some of the remaining patches slightly harder to apply)
-> v5:
->  - add hack which allows to compile against stable kernel like 3.2.44 which
->    also added the kref_get_unless_zero function
-> v4:
->  - fix function names in commit messages
->  - fix double whitespace in batadv_tt_orig_list_entry_release kerneldoc
->  - add extra patch for batadv_claim_free_ref kerneldoc fix
->  - change the phrase "free it" in all *_free_ref/*_put functions to "release
-> it" v3:
->  - update copyright year
-> v2:
->  - split patchset into fixes and kref migration to make it easier when the
->    decision is made where each patch will be applied
-> 
->  net/batman-adv/translation-table.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+Hi Sven and thanks for this RFC. Sorry for taking soo long to comment.
 
-Applied in revision dcd61a7.
 
-Thanks,
-Marek
 
---nextPart6346678.4OL4uWt8HH
+On 14/11/15 03:46, Sven Eckelmann wrote:
+> batman-adv checks in different situation if a new device is already on =
+top
+> of a different batman-adv device. This is done by getting the iflink of=
+ a
+> device and all its parent. It assumes that this iflink is always a pare=
+nt
+> device in an acyclic graph. But this assumption is broken by devices li=
+ke
+> veth which are actually a pair of two devices linked to each other. The=
+
+> recursive check would therefore get veth0 when calling dev_get_iflink o=
+n
+> veth1. And it gets veth0 when calling dev_get_iflink with veth1.
+>=20
+
+I agree that this check implemented this way represents a problem.
+However I also believe that we should still have some kind of prevention
+against this particular scenario (chain of batman interfaces), because
+if ignored it could lead to troubles.
+
+Unfortunately I don't know how to implement this check in an elegant and
+extendible manner.
+
+First of all we should add a check that follows the master interface,
+but at the same time we should still follow the iflink, otherwise we
+can't check relationships like VLAN_DEV->REAL_DEV. But how to implement
+the latter without hitting the cyclic case is not clear to me ..
+
+An option is to add a specific check for veth and break the recursion,
+but this is not really nice, because the next time a cyclic interface
+type will be introduced our check will become troublesome again.
+
+Suggestions?
+
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+
+--k4oUBxlWHkTCtcQieObVdV0xCPT3DwU0w
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWnH1VAAoJEFNVTo/uthzALmsH/1nRGMSrXjDqrTjqRcPVtbwS
-tX1YgvCkCXB5WWxYRMWnGjtoH0YTOjxU/gCDICJe2gO5tuUdcOTICNgDcaDhrDYv
-5uo80F6BLxrEnSYC7b1XPM/vd4/TKqIqvkF10TyCFlOm3uQpndev4K8WVLP/IDy4
-od0GlEBVbB02BV0zzuBg4I6WfL378iEuWktD6CfkBEwkLM1Hqz4D1ZLxYOq2YS2T
-ye1OvSE5B1rL+LTt1eAkiZhlghhRJeLyj1JkSJYu/ohuCB73tcKg19/cYsXV9oqN
-7KhEaFuSiT9ymlZSrITI1XPX+C/uHjLSuI1ss28oxqadHseeitimXhfd+9fX4Sg=
-=3H6V
+iQIcBAEBCAAGBQJWnYWxAAoJENpFlCjNi1MRIMwP/30bafBOyL4GyB31WojzMA3I
+zifZTSIsPJQfEtymjt5XhsUFMLWOhooZLclO5vOH+4zQds5aGXxFWTgnE6+oZOYh
+VRk2LU9WA5z4Vros7ElBTcy/zMSJDyNlkqFSbJdZ1DfQ98sLrzvgB3q4yqnu6R20
+9H6T/Y1V8RoTTDFdUUlooVHXJ/ut96tpasyXylBptaIo5+1W9qRCJM35Ihz+esiT
+/WbB6teXLmS43JUhY/wIXHWHMUFqxY4mhG8vEIxF2PZcumM6DuW9byKYFXuD/YhK
+IbNion6w1+tCpKw51gKVbi/6ZiWVEEWYHSj0B/yP4FgOrOOqgem5vlhi5gMtM+BE
+n+Vu+6Xg7WXiOmI6mVyey5vo2ZhfAeolPfQv74fkRLSl0qamCVBFP34E3t7yF3Cm
+i/EzpOd8/EgDPGkHbgi/Atcw8mrHqr1xy76JYloD0UAvMOu4mCvDCqahHHa0qF30
+fp+3z4juR/uZ/Nkd45QQoiFAIZdBWuocNi+rOJ2UtVdzjBqbCaq/JwCfXP+Fb7E/
+tYNT94A8dpxR2I9FTG/lRzee9kAmA8gMM/4HXxM79XB2sjIj2rgZhoQStpS9uhU+
+ghJ+Ee+uwrroItdvO4f7YytgrwrQmzT4/x0HWeHsTtyUInUZhIPwydpVr7f3gkmx
+vOHc7u9LiPFQf3vWUB3z
+=Y8If
 -----END PGP SIGNATURE-----
 
---nextPart6346678.4OL4uWt8HH--
-
+--k4oUBxlWHkTCtcQieObVdV0xCPT3DwU0w--
