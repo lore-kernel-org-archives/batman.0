@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 19 Jan 2016 23:12:54 +0800
-Message-ID: <4391661.77fCcNH0tR@voltaire>
-In-Reply-To: <1452933619-6712-4-git-send-email-mareklindner@neomailbox.ch>
+Date: Tue, 19 Jan 2016 23:14:08 +0800
+Message-ID: <1643332.yH5ko5PfH0@voltaire>
+In-Reply-To: <1452933619-6712-5-git-send-email-mareklindner@neomailbox.ch>
 References: <8047297.0qIFjkW2bL@voltaire>
- <1452933619-6712-4-git-send-email-mareklindner@neomailbox.ch>
+ <1452933619-6712-5-git-send-email-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2391438.afZ2av3iJc";
+Content-Type: multipart/signed; boundary="nextPart2850724.G2Gc6ZWijl";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 04/12] batman-adv: ELP - adding sysfs
-	parameter for elp interval
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 05/12] batman-adv: OGMv2 - add basic
+	infrastructure
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,38 +22,49 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <antonio@open-mesh.com>
 
---nextPart2391438.afZ2av3iJc
+--nextPart2850724.G2Gc6ZWijl
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday, January 16, 2016 16:40:11 Marek Lindner wrote:
-> From: Linus Luessing <linus.luessing@web.de>
+On Saturday, January 16, 2016 16:40:12 Marek Lindner wrote:
+> From: Antonio Quartulli <antonio@open-mesh.com>
 > 
-> This parameter can be set individually on each interface and
-> allows the configuration of the elp interval for the link
-> quality measurements during runtime. Usually it is desirable
-> to set it to a higher (= slower) value on interfaces which
-> have a more static characteristic (e.g. wired interfaces)
-> or very dense neighbourhoods to reduce overhead.
+> This is the initial implementation of the new OGM protocol
+> (version 2). It has been designed to work on top of the
+> newly added ELP.
 > 
-> Developed by Linus during a 6 months trainee study period in
-> Ascom (Switzerland) AG.
+> In the previous version the OGM protocol was used to both
+> measure link qualities and flood the network with the metric
+> information. In this version the protocol is in charge of
+> the latter task only, leaving the former to ELP.
 > 
-> Signed-off-by: Linus Luessing <linus.luessing@web.de>
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> [antonio@open-mesh.com: respin on top of the latest master]
+> This means being able to decouple the interval used by the
+> neighbor discovery from the OGM broadcasting, which revealed
+> to be costly in dense networks and needed to be relaxed so
+> leading to a less responsive routing protocol.
+> 
 > Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
 > ---
->  Documentation/ABI/testing/sysfs-class-net-batman-adv | 8 +++++++-
->  net/batman-adv/sysfs.c                               | 7 +++++++
->  2 files changed, 14 insertions(+), 1 deletion(-)
+>  net/batman-adv/Makefile    |   1 +
+>  net/batman-adv/bat_algo.h  |  13 +++
+>  net/batman-adv/bat_v.c     |  51 ++++++++-
+>  net/batman-adv/bat_v_ogm.c | 279
+> +++++++++++++++++++++++++++++++++++++++++++++ net/batman-adv/bat_v_ogm.h
+> |  32 ++++++
+>  net/batman-adv/main.c      |   6 +
+>  net/batman-adv/main.h      |   1 +
+>  net/batman-adv/packet.h    |  29 +++++
+>  net/batman-adv/types.h     |  18 +++
+>  9 files changed, 427 insertions(+), 3 deletions(-)
+>  create mode 100644 net/batman-adv/bat_v_ogm.c
+>  create mode 100644 net/batman-adv/bat_v_ogm.h
 
-Applied in revision 82da7d6.
+Applied in revision 6328353.
 
 Thanks,
 Marek
 
---nextPart2391438.afZ2av3iJc
+--nextPart2850724.G2Gc6ZWijl
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -61,14 +72,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWnlJ3AAoJEFNVTo/uthzA5MoH/iOlTfytQ+hUUF82Y2FsWhu1
-t2bG0vhXwyFXTSCPlwfAVs+YPaEKBJqiVQ2Oex/ob7w1/r14VZV6U6WN2C2uybRq
-NsFIAjelpdsmtfoKJenbJE4HXatMKmX9Cn4H14tPVtQpsZkFHt1Qsqh7xfJ3E2P4
-oni/GuA5synysbyFind+tTELJ1vB7QvDgK5GTxV01jamP0anXDtx4La+ImnGKDgQ
-iR4nVH+dh4f53FC2tYun+ly0DaUVcY+GeLoF0HXKFFXz8NuUoXgXvFELNcWQAaUv
-ikbytKPfCdjeTqElWCTrkuAKKWb9yDGUIparTT+JYK5Zbv508Fpy5MdFRZ9KM7s=
-=QYyT
+iQEcBAABCAAGBQJWnlLAAAoJEFNVTo/uthzADRQH/13Y3OIogxdssYj6fvos3QC0
+9ivgSMbCysnXVfIPnTmtYd96dpG+Sb4l1BTksLPRo2ECGMfo3xzYy7ep8wPN0n1A
+AtHeaw2+f2iJvEeuVkN1bjSnBsgBpdq5XSLI3y0HjxBt5ZkedCpsufbmVXIoZn8B
+yPKwImwhEwtvhnNFST9KQhUJwAtBnDPcWOk8K1HEx0bxZSK0Lq2Yf+XST5hJRuPD
+4Qpd29YwvSYTAhjR4gnGofvywOgbaOrrSFeY3jy/fs6xaN0vOp4JiJ1vuVQZOrq0
+DCC2rpiRNkuWJXLZ15R7sd681gdT7CdMnt7nKroGMWfC/3s+Mi5gwssg4E+OGGI=
+=xwaO
 -----END PGP SIGNATURE-----
 
---nextPart2391438.afZ2av3iJc--
+--nextPart2850724.G2Gc6ZWijl--
 
