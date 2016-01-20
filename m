@@ -1,11 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 20 Jan 2016 14:32:15 +0100
-Message-Id: <1453296735-8319-2-git-send-email-sw@simonwunderlich.de>
-In-Reply-To: <1453296735-8319-1-git-send-email-sw@simonwunderlich.de>
+Return-Path: <a@unstable.cc>
 References: <1453296735-8319-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Merge
-	batadv_v_ogm_orig_update into batadv_v_ogm_route_update
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <569F9AF1.5080403@unstable.cc>
+Date: Wed, 20 Jan 2016 22:34:25 +0800
+MIME-Version: 1.0
+In-Reply-To: <1453296735-8319-1-git-send-email-sw@simonwunderlich.de>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="xpcaq828oLtilPuWk2wBH9dtUE5tQ08pu"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: move and restructure
+ batadv_v_ogm_forward
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,172 +19,91 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Simon Wunderlich <simon@open-mesh.com>
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--xpcaq828oLtilPuWk2wBH9dtUE5tQ08pu
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Since batadv_v_ogm_orig_update() was only called from one place and the
-calling function became very short, merge these two functions together.
 
-This should also reflect the protocol description of B.A.T.M.A.N. V
-better.
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
----
- net/batman-adv/bat_v_ogm.c | 117 ++++++++++++++++++---------------------------
- 1 file changed, 46 insertions(+), 71 deletions(-)
+On 20/01/16 21:32, Simon Wunderlich wrote:
+>  static void batadv_v_ogm_forward(struct batadv_priv *bat_priv,
+>  				 const struct batadv_ogm2_packet *ogm_received,
+> -				 u32 throughput,
+> +				 struct batadv_neigh_node *neigh_node,
+>  				 struct batadv_hard_iface *if_incoming,
+>  				 struct batadv_hard_iface *if_outgoing)
+>  {
+> +	struct batadv_neigh_ifinfo *neigh_ifinfo =3D NULL;
+> +	struct batadv_orig_ifinfo *orig_ifinfo =3D NULL;
+> +	struct batadv_neigh_node *router =3D NULL;
+>  	struct batadv_ogm2_packet *ogm_forward;
+>  	unsigned char *skb_buff;
+>  	struct sk_buff *skb;
+>  	size_t packet_len;
+>  	u16 tvlv_len;
+> =20
+> +	/* only forward for specific interfaces, not for the default one. */
+> +	if (if_outgoing !=3D BATADV_IF_DEFAULT)
+> +		goto out;
+> +
 
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index d6e89a7..c7eb6fb 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -234,73 +234,6 @@ void batadv_v_ogm_primary_iface_set(struct batadv_hard_iface *primary_iface)
- }
- 
- /**
-- * batadv_v_ogm_orig_update - update the originator status based on the received
-- *  OGM
-- * @bat_priv: the bat priv with all the soft interface information
-- * @orig_node: the originator to update
-- * @neigh_node: the neighbour the OGM has been received from (to update)
-- * @ogm2: the received OGM
-- * @if_outgoing: the interface where this OGM is going to be forwarded through
-- */
--static void
--batadv_v_ogm_orig_update(struct batadv_priv *bat_priv,
--			 struct batadv_orig_node *orig_node,
--			 struct batadv_neigh_node *neigh_node,
--			 const struct batadv_ogm2_packet *ogm2,
--			 struct batadv_hard_iface *if_outgoing)
--{
--	struct batadv_neigh_ifinfo *router_ifinfo = NULL, *neigh_ifinfo = NULL;
--	struct batadv_neigh_node *router = NULL;
--	s32 neigh_seq_diff;
--	u32 neigh_last_seqno;
--	u32 router_last_seqno;
--	u32 router_throughput, neigh_throughput;
--
--	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
--		   "Searching and updating originator entry of received packet\n");
--
--	/* if this neighbor already is our next hop there is nothing
--	 * to change
--	 */
--	router = batadv_orig_router_get(orig_node, if_outgoing);
--	if (router == neigh_node)
--		goto out;
--
--	/* don't consider neighbours with worse throughput.
--	 * also switch route if this seqno is BATADV_V_MAX_ORIGDIFF newer than
--	 * the last received seqno from our best next hop.
--	 */
--	if (router) {
--		router_ifinfo = batadv_neigh_ifinfo_get(router, if_outgoing);
--		neigh_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
--
--		/* if these are not allocated, something is wrong. */
--		if (!router_ifinfo || !neigh_ifinfo)
--			goto out;
--
--		neigh_last_seqno = neigh_ifinfo->bat_v.last_seqno;
--		router_last_seqno = router_ifinfo->bat_v.last_seqno;
--		neigh_seq_diff = neigh_last_seqno - router_last_seqno;
--		router_throughput = router_ifinfo->bat_v.throughput;
--		neigh_throughput = neigh_ifinfo->bat_v.throughput;
--
--		if ((neigh_seq_diff < BATADV_OGM_MAX_ORIGDIFF) &&
--		    (router_throughput >= neigh_throughput))
--			goto out;
--	}
--
--	batadv_update_route(bat_priv, orig_node, if_outgoing, neigh_node);
--
--out:
--	if (router_ifinfo)
--		batadv_neigh_ifinfo_put(router_ifinfo);
--	if (neigh_ifinfo)
--		batadv_neigh_ifinfo_put(neigh_ifinfo);
--	if (router)
--		batadv_neigh_node_put(router);
--}
--
--/**
-  * batadv_v_forward_penalty - apply a penalty to the throughput metric forwarded
-  *  with B.A.T.M.A.N. V OGMs
-  * @bat_priv: the bat priv with all the soft interface information
-@@ -543,6 +476,11 @@ static bool batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
- 	struct batadv_neigh_node *router = NULL;
- 	struct batadv_orig_node *orig_neigh_node = NULL;
- 	struct batadv_neigh_node *orig_neigh_router = NULL;
-+	struct batadv_neigh_ifinfo *router_ifinfo = NULL, *neigh_ifinfo = NULL;
-+	u32 router_throughput, neigh_throughput;
-+	u32 router_last_seqno;
-+	u32 neigh_last_seqno;
-+	s32 neigh_seq_diff;
- 	bool forward = false;
- 
- 	orig_neigh_node = batadv_v_ogm_orig_get(bat_priv, ethhdr->h_source);
-@@ -562,11 +500,44 @@ static bool batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
- 		goto out;
- 	}
- 
--	/* Update routes, and check if the OGM is from the best next hop */
--	batadv_v_ogm_orig_update(bat_priv, orig_node, neigh_node, ogm2,
--				 if_outgoing);
--
-+	/* Mark the OGM to be considered for forwarding, and update routes
-+	 * if needed.
-+	 */
- 	forward = true;
-+
-+	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+		   "Searching and updating originator entry of received packet\n");
-+
-+	/* if this neighbor already is our next hop there is nothing
-+	 * to change
-+	 */
-+	if (router == neigh_node)
-+		goto out;
-+
-+	/* don't consider neighbours with worse throughput.
-+	 * also switch route if this seqno is BATADV_V_MAX_ORIGDIFF newer than
-+	 * the last received seqno from our best next hop.
-+	 */
-+	if (router) {
-+		router_ifinfo = batadv_neigh_ifinfo_get(router, if_outgoing);
-+		neigh_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
-+
-+		/* if these are not allocated, something is wrong. */
-+		if (!router_ifinfo || !neigh_ifinfo)
-+			goto out;
-+
-+		neigh_last_seqno = neigh_ifinfo->bat_v.last_seqno;
-+		router_last_seqno = router_ifinfo->bat_v.last_seqno;
-+		neigh_seq_diff = neigh_last_seqno - router_last_seqno;
-+		router_throughput = router_ifinfo->bat_v.throughput;
-+		neigh_throughput = neigh_ifinfo->bat_v.throughput;
-+
-+		if ((neigh_seq_diff < BATADV_OGM_MAX_ORIGDIFF) &&
-+		    (router_throughput >= neigh_throughput))
-+			goto out;
-+	}
-+
-+	batadv_update_route(bat_priv, orig_node, if_outgoing, neigh_node);
- out:
- 	if (router)
- 		batadv_neigh_node_put(router);
-@@ -574,6 +545,10 @@ out:
- 		batadv_neigh_node_put(orig_neigh_router);
- 	if (orig_neigh_node)
- 		batadv_orig_node_put(orig_neigh_node);
-+	if (router_ifinfo)
-+		batadv_neigh_ifinfo_put(router_ifinfo);
-+	if (neigh_ifinfo)
-+		batadv_neigh_ifinfo_put(neigh_ifinfo);
- 
- 	return forward;
- }
--- 
-2.7.0.rc3
+personally I'd prefer the forward function to do what it says: forward
+the OGM. The checks whether or not we should do this should stay in
+ogm_process_per_outif().
 
+> +	orig_ifinfo =3D batadv_orig_ifinfo_new(orig_node, if_outgoing);
+> +	if (!orig_ifinfo)
+> +		goto out;
+> +	/* acquire possibly updated router */
+> +	router =3D batadv_orig_router_get(orig_node, if_outgoing);
+> +
+> +	/* strict rule: forward packets coming from the best next hop only */=
+
+> +	if (neigh_node !=3D router)
+> +		goto out;
+> +
+
+this is changing the behaviour.
+here now we get a router which potentially was elected during the
+previous update_route() call while processing this very OGM. We are
+still discussing if we want to do this or not, but this patch should be
+just a style change, while this is not.
+
+This check should be performed against the router which was selected
+before performing any route update.
+
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+
+--xpcaq828oLtilPuWk2wBH9dtUE5tQ08pu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWn5r1AAoJENpFlCjNi1MRyDwP/2gG6QyZLE5WYcbwGxihKPsv
+dq/r9K9FscUt27g6a2uBTo0j66q/hNvRYFAdbGODGn+Xaz+xVE44auTCE4aAxwGz
+CeI06wMU9WkGsqJdZieBs0rOdgb3KtxtNmyXuegq32htpfaPUIItAYAgOQWOm5I5
+2BICu0BVYbcc4ZOwBRzyT1kZ+lKcj1PVIZq5dMurvj3VmMhN3bij4CvKe8VfesSk
+/UP0dPl0YoRVVkxZ45Cnsy4EX7ahDShAXIDogl+BQMdoJq9A5Azz/imTjOtp/jaZ
+SNJhGTxwnCFnkuXHZzl7AewV9yhWQsW0ANqRxezyfX6gBY+KavuPLes9TOVAw7fO
+6I5ABWRKTMrAdsEhoil4X3zbTrk/pIlXdLigB7/9x1nRpApK1XTTG00OO28rU0yL
+BA0BHuIqq1R5Qehk9iI0XtrszXH61eD+TQCwZO394g3swFUbJGTm539bSbpZM+7n
+EvsDqnuqJ9rqrv+iBVoKUXKo9xEkDihP7vYR2cENugz0V8b5OLzjTIZ45uNISJwE
+vrGuHyFZlgAvCcKbzDJMZadEK1QO5rOCh3ZI9d5phC5pDGhWiVwMNBqeEpeCRT1F
+LtQSGWMzPQXNJa3CI8dfizDnGZ+jNDaByGe5nv/N6WISpJKUHvQ9M/BgNpoouMCS
+1DbILY4kpCJluQ1hK1W4
+=rbJ0
+-----END PGP SIGNATURE-----
+
+--xpcaq828oLtilPuWk2wBH9dtUE5tQ08pu--
