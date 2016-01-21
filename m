@@ -1,15 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 21 Jan 2016 15:34:08 +0100
-Message-ID: <6955990.FU2gLkkPUc@bentobox>
-In-Reply-To: <56A0E50A.5050209@unstable.cc>
-References: <8047297.0qIFjkW2bL@voltaire> <1664897.xQoZSmslHn@bentobox>
- <56A0E50A.5050209@unstable.cc>
+Return-Path: <nbd@openwrt.org>
+References: <8047297.0qIFjkW2bL@voltaire> <56A0E335.8040207@openwrt.org>
+ <1664897.xQoZSmslHn@bentobox> <132128022.hJazYISVSs@bentobox>
+From: Felix Fietkau <nbd@openwrt.org>
+Message-ID: <56A0EF66.9090003@openwrt.org>
+Date: Thu, 21 Jan 2016 15:47:02 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8307053.JBvfvZPPCn";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+In-Reply-To: <132128022.hJazYISVSs@bentobox>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Subject: Re: [B.A.T.M.A.N.] OpenWrt cfg80211.h station_info incompatibility
-	with kernel+mac80211 [was: B.A.T.M.A.N. V leaves the nest v2]
+ with kernel+mac80211 [was: B.A.T.M.A.N. V leaves the nest v2]
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,64 +19,38 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Felix Fietkau <nbd@openwrt.org>, openwrt-devel@lists.openwrt.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: openwrt-devel@lists.openwrt.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart8307053.JBvfvZPPCn
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Thursday 21 January 2016 22:02:50 Antonio Quartulli wrote:
+On 2016-01-21 15:26, Sven Eckelmann wrote:
+> On Thursday 21 January 2016 15:03:10 Sven Eckelmann wrote:
+>> On Thursday 21 January 2016 14:55:01 Felix Fietkau wrote:
+>> > > @Felix, would it be ok for you when I propose a
+>> > > "*-sync-cfg80211-station_info.patch" for the 3.18 generic kernel 
+> patches?
+>> > > Or do you have a good idea how to force the openwrt-routing batman-adv 
+> package
+>> > > against the cfg80211.h of compat-wireless?
+>> > The openwrt mac80211 package exports its headers to
+>> > $(STAGING_DIR)/usr/include/mac80211
+>> > 
+>> > You could just make the batman-adv package use those includes.
+>> 
+>> Thanks, missed that. I will prepare a pull request for openwrt-routing.
 > 
-> On 21/01/16 22:03, Sven Eckelmann wrote:
-> > On Thursday 21 January 2016 14:55:01 Felix Fietkau wrote:
-> >>> @Felix, would it be ok for you when I propose a
-> >>> "*-sync-cfg80211-station_info.patch" for the 3.18 generic kernel 
-patches?
-> >>> Or do you have a good idea how to force the openwrt-routing batman-adv 
-package
-> >>> against the cfg80211.h of compat-wireless?
-> >> The openwrt mac80211 package exports its headers to
-> >> $(STAGING_DIR)/usr/include/mac80211
-> >>
-> >> You could just make the batman-adv package use those includes.
-> > 
-> > Thanks, missed that. I will prepare a pull request for openwrt-routing.
-> 
-> In case this was missed: we also need to make sure that batman-adv
-> depends on mac80211 and that it gets compiled first.
+> Hm, didn't work out so well. It basically explodes right away because 
+> possible_net_t, possible_read_pnet, possible_write_pnet is not defined on 
+> v3.18 when not using the mac80211 backporting headers. And when usign the 
+> backporting headers then it will explode because it conflicts with batman-
+> adv's own backporting stuff. And without the batman-adv's backporting headers 
+> it will also not compile due to missing backporting hacks.
+I think in the short term it would be a good idea to identify what's
+missing in the mac80211 backport support and make patches for it.
+You should also rebase those on top of backports.git and submit them
+upstream.
 
-You are right. But the B.A.T.M.A.N. V patches cannot be build with the 
-official openwrt-routing package - so no need to get too eager. All we are 
-doing right now is to prepare the integration (for the next release which will 
-include B.A.T.M.A.N. V).
+For a long term solution, you guys should probably start pushing for
+full batman-adv integration in kernel backports. Might be useful for
+increasing adoption of the latest stuff even outside of OpenWrt.
 
-But if anyone is willing to prepare the changes for the internal branch...
-
-Kind regards,
-	Sven
---nextPart8307053.JBvfvZPPCn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJWoOxgAAoJEF2HCgfBJntG6MYQAMnF3c4NAdJwFXI1qfg6MwYh
-BM9Q5YtGkRA7IGzw9HsmbwQncAa04t0J5Jn6A/GyOw5SGFl8y7jQMiO4vTmbr31D
-YNnD4K5gnCO8pDw958gEB7tI3P6ywQ+mf8Qw3Hs6ZE6ZP7oYJ6kA1+jG3xnOblUw
-jEaaKlaIRtYlKj/SRZFBzvu1Bs8S89B2pl4R3ILeRRYfXrxxaoS4kUnPabZnFwfv
-M3TPPojBr4VJvWDFb+QZ8y9FvmqUAasOvi/mooNfGRnCJXwyL6tNZxvvqUwSidih
-jpceJV1vxxZ+N39XJBdOycDYo8cm4HPsQPq4yCPoyV/5fACjecNwrZHFIS8CEXd+
-s/Ddguku8GImGRYFwsxrxImnK9+EkdFzq3gUiFoHnqKlyb+EPaOVQW6VgFzvJ4bI
-RBse6KygOQG2UOp7G7rtv5RSg9+9WnL0hFnfajnkrAfW8jQ8dF1P+NuN8UUGY8Ip
-NdSC7WQ3awNRQzXfBF/S9UY/EXbMmhOBZ4she/w+dFG1g5QsckIdxRBgiUe8F/ro
-gGiYK7DnX0Lpqu1poNnusvF0wC/zt7gpmpXCL0A9nNRLuGfUFdTgCA+yWgZInhl6
-npb4vSBg2mENFhXw27frN95rAisqRqTs+nRXvIJ7C6v4y1wcLjf0XshgWxgbGq55
-zyk4PctQ6f3tSXurI521
-=0h9b
------END PGP SIGNATURE-----
-
---nextPart8307053.JBvfvZPPCn--
-
+- Felix
