@@ -1,16 +1,16 @@
-Return-Path: <a@unstable.cc>
-Date: Tue, 26 Jan 2016 20:53:14 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160126125314.GA25892@prodigo>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 26 Jan 2016 14:25:48 +0100
+Message-ID: <2491450.9MRC2rtVoA@bentobox>
+In-Reply-To: <20160126125314.GA25892@prodigo>
 References: <1453312110-32683-1-git-send-email-andrew@lunn.ch>
  <1453312110-32683-4-git-send-email-andrew@lunn.ch>
+ <20160126125314.GA25892@prodigo>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="Q68bSM7Ycu6FN28Q"
-Content-Disposition: inline
-In-Reply-To: <1453312110-32683-4-git-send-email-andrew@lunn.ch>
+Content-Type: multipart/signed; boundary="nextPart2449541.0MIbegyrYn";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: Handle parent interfaces
- in a different netns
+	in a different netns
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,58 +20,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
+--nextPart2449541.0MIbegyrYn
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---Q68bSM7Ycu6FN28Q
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tuesday 26 January 2016 20:53:14 Antonio Quartulli wrote:
+> On Wed, Jan 20, 2016 at 06:48:29PM +0100, Andrew Lunn wrote:
+> >  /**
+> > + * batadv_mutual_parents - check if two devices are each others parent
+> > + * @net_dev - 1st parent
+> > + * @parent_dev - 2nd parent
+> > + *
+> > + * veth devices come in pairs and each is the parent of the other!
+> > + *
+> > + * Return true if the devices are each others parent, otherwise false
+> 
+> Andrew, minor style issue: you should put the ':' after the word Return.
+> Please check the other comments in this file as example. Sven recently changed
+> all the comments to be coherent with this style.
 
-On Wed, Jan 20, 2016 at 06:48:29PM +0100, Andrew Lunn wrote:
->  /**
-> + * batadv_mutual_parents - check if two devices are each others parent
-> + * @net_dev - 1st parent
-> + * @parent_dev - 2nd parent
-> + *
-> + * veth devices come in pairs and each is the parent of the other!
-> + *
-> + * Return true if the devices are each others parent, otherwise false
+It is not about being coherent but about kernel-doc being able to parse it.
 
-Andrew, minor style issue: you should put the ':' after the word Return.
-Please check the other comments in this file as example. Sven recently chan=
-ged
-all the comments to be coherent with this style.
-
-Other than this, the patch looks good to me.
-You can add my
-
-Acked-by: Antonio Quartulli <a@untable.cc>
-
---=20
-Antonio Quartulli
-
---Q68bSM7Ycu6FN28Q
+Kind regards,
+	Sven
+--nextPart2449541.0MIbegyrYn
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJWp2w6AAoJENpFlCjNi1MRJ1UP/0E5B/pMK3N2so2GAFpm079U
-UMz32dtqm/l5EQgyOQbtcKafc1MwyRzi7L3KDL8CMXrSREgoGmlasb7701SC39WO
-9lbtlK0vfYR6A6CYzYHo3ACPe8zEVZGEgawY5vvJgqnNMeccpD786+Ju7PQ4R66d
-0DEEFGUvx2WzHkVSCq9INd8+NlkeixLg6N3bKRPSjJi2nmGF0bsMI+AsHn7nZh7z
-FMx+cRzKlm2wp5RuueFcjhGMaf+SXKhRNf0ArDvIArhQKlmzIYbA0yxDQUwybNwK
-oednEavs6Wqg4OuitVvSGF/p3/GH9Rbsa3nhfaG+nkimnHx/3A4NnaJQvaKmDsvU
-iBV1X7iKSimgKblWdaFku8qYeMtoPIo6Pksf9VUEBHq0t76B1pvma7Dfz8rEQZr9
-OgUCAgODbsvnZfbdqUmZkNXmPGZxgMs5oahWNwLbVYmzv6DKho56jrhCmuGz4k/4
-xsLTWqkHnltTH5kM+ICA0WRb1nXvmJ6EzME7LNfihzdANFKgaGuWfoPgUOgXSvWs
-epGeW/PRxr1tYNWSDfC6zvf2/t/ylQ9VK5xMU2ITvHAIdETrwtV64ggcmeTRRirn
-UQDPqBz1iBJ2WNzeVE2pRkVDXSvfIZ1PGQKi2Wfp1j0ynOg+coCZL0Aa7/uWgiHL
-0Cizk3BfEnqiIoWQxs69
-=iSzI
+iQIcBAABCgAGBQJWp3PcAAoJEF2HCgfBJntGZbgP/jGHQdxSavyFW1BGdaua01Yr
+nNzEhvEgf7Bw8Oawz4tF5xARHoVbZZbJwuO6vX/5mMPL58ZAVmzL5xV2A1rrOJzE
+/R0r7zkeYYiWmaEgBtaoW0UECsVPVb5DQumj+gsdsp8vb67d8ektZwQPpuNPcWlJ
+ESLTGyq6CqLp9qwqvf+arTJA9lj8oXCIDo8oyYWEoOuXE9FiRM9j+0y82BxtYLJK
+qp/YDh3/KXb7U9tUJpl3STbrvlI2J69Ae9fmshwBdLUwHII8GQdLvsaSoQozN6ts
+6/6mVnPX3NCzQtc7+aAZd1aI47p7cMsK9C7YWJQDzc/v3peywsY2j5DX1ND/DbjA
+ScM4oFP3++DVzn+SNMcNeYit9LHUc2Zityk7V+fUWEZn98FJEIJuzLAer3ac33v/
+i5z/FPjEt+W2fkZwDNVd8YvfzoHGnosFhz2kTM8ZkfCY4dg8WYqZSx+JdPQcJ+Zy
+Lw2BKnjW5etyOKB2RzBxiy2fPg1RN7KlZgMspKb9MU1ZjfVTHxK7IOx3+bk/V+qM
+LF3eRILc7wPV91GYWEO7KeawtVEBWHpJHIy42YMn05l3KpUSe8i/OaN4p7DGnB4t
+vlbubnuoY+J7Jwfi89lXWp5kuhKvcItd4SNNBTaShIS65N1sRF1AZBhy+ZqQ6z7W
+Z8P4nXh+fXV/gP3Q+tqz
+=gueU
 -----END PGP SIGNATURE-----
 
---Q68bSM7Ycu6FN28Q--
+--nextPart2449541.0MIbegyrYn--
+
