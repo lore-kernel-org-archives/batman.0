@@ -1,15 +1,8 @@
 Return-Path: <andrew@lunn.ch>
-Date: Thu, 28 Jan 2016 04:50:11 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160128035011.GC28633@lunn.ch>
-References: <1453312110-32683-1-git-send-email-andrew@lunn.ch>
- <20160128025934.GD22112@prodigo.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20160128025934.GD22112@prodigo.lan>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/4] batman-adv: Add network name space
-	support
+Date: Thu, 28 Jan 2016 04:53:13 +0100
+Message-Id: <1453953196-29943-1-git-send-email-andrew@lunn.ch>
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] alfred: vis: Use debugfs_make_path helper
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,12 +15,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Antonio Quartulli <a@unstable.cc>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-> Andrew,
-> 
-> I guess that after this patchset gets applied we need to change batctl and
-> provide some "netns" argument similar to ip ?
+By using the helper, knowledge of network namespaces can be kept to
+within the helper.
 
-I have patches already. No new arguments needed. batctl and alfred
-simply manipulate BATMAN in the current netns.
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+---
+ vis/vis.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-       Andrew
+diff --git a/vis/vis.c b/vis/vis.c
+index c1f8dad..d1640b6 100644
+--- a/vis/vis.c
++++ b/vis/vis.c
+@@ -325,7 +325,7 @@ static int parse_orig_list(struct globals *globals)
+ 	char path[1024];
+ 	struct vis_list_entry *v_entry;
+ 
+-	snprintf(path, sizeof(path), "/sys/kernel/debug/batman_adv/%s/originators", globals->interface);
++	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/" "originators", globals->interface, path, sizeof(path));
+ 	fbuf = read_file(path);
+ 	if (!fbuf)
+ 		return -1;
+-- 
+2.7.0.rc3
+
