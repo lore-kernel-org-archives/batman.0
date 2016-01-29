@@ -1,15 +1,15 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 29 Jan 2016 13:14:53 +0100
-Message-ID: <23082646.VzubcaWY7q@prime>
-In-Reply-To: <1453953196-29943-3-git-send-email-andrew@lunn.ch>
+Date: Fri, 29 Jan 2016 13:18:13 +0100
+Message-ID: <3299385.slEDhCLINf@prime>
+In-Reply-To: <1453953196-29943-2-git-send-email-andrew@lunn.ch>
 References: <1453953196-29943-1-git-send-email-andrew@lunn.ch>
- <1453953196-29943-3-git-send-email-andrew@lunn.ch>
+ <1453953196-29943-2-git-send-email-andrew@lunn.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8217258.tCM4Yg4TQU";
+Content-Type: multipart/signed; boundary="nextPart4531987.zjiQocGjN0";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] alfred: Mount debugfs before
-	reducing capabilities
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] alfred: Add support for network
+	namespaces
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,53 +22,96 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart8217258.tCM4Yg4TQU
+--nextPart4531987.zjiQocGjN0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="ISO-8859-1"
 
-On Thursday 28 January 2016 04:53:15 Andrew Lunn wrote:
-> The debugfs helper code has the ability to mount the debugfs file
-> system if it is not already mounted. However, it cannot do this
-> after the capabilities have been dropped. So perform the mount early.
-> 
-> This is especially important when using network name spaces. Each
-> namespace has its own /sys, so the mount of debugfs in the global
-> namespace is not visible in other namespaces.
+On Thursday 28 January 2016 04:53:14 Andrew Lunn wrote:
+> When running within a network namespace, access to files within
+> debugfs have to take into account the network name space. Each
+> namespace has its own directory under
+> /sys/kernel/debug/batman_adv/netns.
 > 
 > Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 > ---
->  main.c | 4 ++++
->  1 file changed, 4 insertions(+)
+>  batadv_query.c |  2 +-
+>  debugfs.c      | 49 ++++++++++++++++++++++++++++++++++++++++++++++++-
+>  vis/vis.h      |  2 +-
+>  3 files changed, 50 insertions(+), 3 deletions(-)
 > 
-> diff --git a/main.c b/main.c
-> index 452d9ae..b1c5ec5 100644
-> --- a/main.c
-> +++ b/main.c
-> @@ -30,6 +30,7 @@
->  #include <unistd.h>
->  #endif
->  #include "alfred.h"
-> +#include "debugfs.h"
->  #include "packet.h"
->  #include "list.h"
+> diff --git a/batadv_query.c b/batadv_query.c
+> index c289b80..fe7c007 100644
+> --- a/batadv_query.c
+> +++ b/batadv_query.c
+> @@ -31,7 +31,7 @@
+>  #include <sys/types.h>
+>  #include "debugfs.h"
 > 
-> @@ -160,6 +161,9 @@ static struct globals *alfred_init(int argc, char
-> *argv[]) {NULL,			0,			NULL,	0},
->  	};
+> -#define DEBUG_BATIF_PATH_FMT "%s/batman_adv/%s"
+> +#define DEBUG_BATIF_PATH_FMT "%s/batman_adv/%s%s"
+>  #define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
+>  #define DEBUG_ORIGINATORS "originators"
 > 
-> +	/* We need full capabilities to mount debugfs, so do that now */
-> +	debugfs_mount(NULL);
+> diff --git a/debugfs.c b/debugfs.c
+> index fc39322..35c1bdf 100644
+> --- a/debugfs.c
+> +++ b/debugfs.c
+> @@ -20,11 +20,15 @@
+> 
+>  #include "debugfs.h"
+>  #include <errno.h>
+> +#include <fcntl.h>
+> +#include <limits.h>
+>  #include <stdio.h>
+>  #include <string.h>
+>  #include <sys/mount.h>
+>  #include <sys/stat.h>
+>  #include <sys/statfs.h>
+> +#include <sys/types.h>
+> +#include <unistd.h>
+> 
+>  #ifndef DEBUGFS_MAGIC
+>  #define DEBUGFS_MAGIC          0x64626720
+> @@ -42,16 +46,59 @@ static const char *debugfs_known_mountpoints[] = {
+>  	NULL,
+>  };
+> 
+> +/* Return the current net namespace number. 0 is never a valid
+> + * namespace, so use it to return that there is no name space
+> + * support.
+> + */
 > +
->  	ret = reduce_capabilities();
->  	if (ret < 0)
->  		return NULL;
+> +static unsigned int debugfs_get_netns_inum(void)
+> +{
+> +	char net_path[] = "/proc/self/ns/net";
+> +	struct stat netst;
+> +	int netns;
+> +
+> +	netns = open(net_path, O_RDONLY);
+> +	if (netns < 0) {
+> +		if (errno == ENOENT)
+> +			/* Probably means no netns support in the kernel */
+> +			return 0;
+> +
+> +		fprintf(stderr,
+> +			"Error - can't open /proc/self/ns/net for read: %s\n",
+> +			strerror(errno));
+> +		return 0;
+> +	}
+> +
+> +	if (fstat(netns, &netst) < 0) {
+> +		fprintf(stderr, "Stat of netns failed: %s\n",
+> +			strerror(errno));
+> +		return 0;
 
-Can't we remove the other calls to debugfs_mount() ? I see 3 more calls in 
-alfred ...
+Aren't we leaking the netns file descriptor here? You could just set 
+netst.st_ino = 0 instead ...
+
+Rest looks good to me :)
 
 Cheers,
-     Simon
---nextPart8217258.tCM4Yg4TQU
+    Simon
+--nextPart4531987.zjiQocGjN0
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -76,20 +119,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJWq1e9AAoJEKEr45hCkp6hcbQQAK+kjV1obW2uiNW1UQ2wtNSw
-Bv24hEQT0w3ITv6hz4Vb7h/HCVnwcmermlVsdkM8fcOPAipFezFx74/eZgG/JzsV
-8rlOxaKyAVBYyP9pRrxHpUYBtXPNUF+UDJ/ZndeIV/b8CzahzTRjYa+UIFcvCb5O
-tXPB2oyk+PUL9PqJxJtRIMZjDN60FF28FJZHyVBMkLf1BEeKk3ZhOZ3xV+fRddDN
-fuuab2llhI8qv5cpJruZIekxlAIXLHQfwuN/slM9I3sSmkuvmNfaowyZSK7BEZFm
-IVSZ/fVoE6B4s2W0KC44EtBcfuc7zPpytbdS177HjXmqePWicm3Mdyonhttc0DD1
-j8q39A1tquQFRMceefBNJiHB8QxilfaoIJgzFrPPXYQY32KVSddaN+ALnVmaKjvy
-8meeYWtUY+C3cwQfyxz/u1IdvjAHnidxfqES3tGSBWpgpU9HOgbtLXjI/wvQT04B
-shrJHZAgtkPfCo+Iu+b/X61NFs0oUMZt/uRk8bLj8INcbQa1G6cdXe+D8dilzHmc
-41xl36RGBFYN/An5tMywTdR9gj0GCnXihFFuoEFiMan94n80PslHrySRQvN8y97x
-TZfq39Zr52RrY7Pj5Q6rCPILg9WTLGdn19EYAxWNwLineEkegD1ODrwCBvIGOH7k
-MsYPY0URk4RHtffg4Doh
-=mk6T
+iQIcBAABCgAGBQJWq1iFAAoJEKEr45hCkp6huVcQAMFcR8/9+5DW4jjnMyKK45Zz
+HRdVNJiKegRhFuW3WfUB4gfbhxrRHHooymMIIBcoAXjKcY18U7x9yakYmApSzqQO
+pnPy/YDUViemdIk+JrZ9E6tW4gJVIvN5cz3b4GLKBXW1RYykHaiJG9yxbhizGoJx
+had4WGkzbVdrsyTn7eEq/+pEqAk/VARtQmR5C0dLmEK/JMnCeP2xqgGl09RhJxNs
+xEBQZZ4LmimW6UPSkKrAWmimp6fndQdxfE/yeVm0gtTQGEpSEc+3gALj+s4pG48t
+smCWCAD1YcJJewfQMHYKVEldfSSv/T+pytGSPuuNWgZrlufAywSJRQt0NT/VtH7Q
+CCNyIwnvr8pKqAidy8uVydRRDCVa8mp7CMiovWD+ciyFv3PIV+TKqpyEv0Dp0H+y
+qf2hhGvZTOLhw6DRDoQ+TReb2+iDFobWU5s275JbgmSfJjP2NDsmNBLN6lHfKZOo
+0AW/F2AQ+U+KCenS76sXKR/i5Jov3coZUkPIL8RE+VlDFS5Pt5ghIHbro+8yG0kD
+1e+1hiepBTs38LLhLgirs9frVjPEImPvnLDG3QLTUeuulCEwJb8iEWEETvIfBDR0
++R2Sf2mLMlspiJ1pE/DYaOH1MkZCq6mQYsA8bJKj1inlxlP5W/p7ZMWiPSUQX+GQ
+5PXOtiBccAFILAEXBAjn
+=TmVo
 -----END PGP SIGNATURE-----
 
---nextPart8217258.tCM4Yg4TQU--
+--nextPart4531987.zjiQocGjN0--
 
