@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 30 Jan 2016 12:17:35 +0800
-Message-ID: <3030734.l0rD9cqonh@voltaire>
-In-Reply-To: <1453312815-20752-1-git-send-email-sven@open-mesh.com>
-References: <1453312815-20752-1-git-send-email-sven@open-mesh.com>
+Date: Sat, 30 Jan 2016 12:19:36 +0800
+Message-ID: <1554857.57muuFiZex@voltaire>
+In-Reply-To: <1453304637-28874-1-git-send-email-sven@open-mesh.com>
+References: <1453304637-28874-1-git-send-email-sven@open-mesh.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1814428.uAedzGneWt";
+Content-Type: multipart/signed; boundary="nextPart6925719.OdB2a5uFuZ";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Add compat code for
-	BUILD_BUG_ON_NOT_POWER_OF_2
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Ignore temporary files in
+	git-status/git-add/...
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,28 +21,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven@open-mesh.com>
 
---nextPart1814428.uAedzGneWt
+--nextPart6925719.OdB2a5uFuZ
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday, January 20, 2016 19:00:15 Sven Eckelmann wrote:
-> Fixes: 2c2fe0ba9ea5 ("batman-adv: ELP - creating neighbor structures")
+On Wednesday, January 20, 2016 16:43:57 Sven Eckelmann wrote:
 > Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
 > ---
-> v2:
->  - add missing include in average.h which is required to always defined
->    BUILD_BUG_ON_NOT_POWER_OF_2 correctly
-> 
->  compat-include/linux/average.h |  2 ++
->  compat-include/linux/bug.h     | 13 +++++++++++++
->  2 files changed, 15 insertions(+)
+>  .gitattributes | 2 ++
+>  .gitignore     | 3 +++
+>  2 files changed, 5 insertions(+)
+>  create mode 100644 .gitattributes
+>  create mode 100644 .gitignore
 
-Applied in revision a23e9a9.
+Applied in revision 7a3d563.
 
 Thanks,
 Marek
 
---nextPart1814428.uAedzGneWt
+--nextPart6925719.OdB2a5uFuZ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -50,14 +47,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWrDlfAAoJEFNVTo/uthzALz0IAKDEFmHPsUdc51crHpgYnu1I
-bD2GGbMY/w5lycCbjuOl92Zmu2vjPCGMbnoUhYzUX9u2tzddX3gEJDGYU8SBkPlj
-5yEWUCAQjkChdEVGrFfy2DikwVoFgwm2jqtd89pEiK4tB9T8OlsE1x5t2eJVlm/Z
-3JVQCbS+T3ZgjW5P3w+742VeHAQLmCQZtdsgVmvvWYZV60GaXdvYVZpp23svivLb
-XGYMqz2aUqXPtC3mnGzS0fiLz2rxHdW46eZo2YolwUPnjdiob9H89hABTQ03HHt5
-ozf3xe8pYjhdRiTjRauRS/plWcdmsx/3zc+McIg0QPqORh/EeisBljYP1ioODdE=
-=+FB6
+iQEcBAABCAAGBQJWrDnYAAoJEFNVTo/uthzAWRoIAI50iBhe/JgiCN2FeDKJm8PW
+JGky6mIfr+aW/g5ga99eCOZpBzEEhbRhVFF8OM1sLaUJhxc6giYEWb1ItwMUJj8/
+gENSdRmHQZduQ3MadT76UbT7ldcf1ylGFc7AUSqItCrQJPXd6LJbvHM+YAcCdB1x
+W6P+a8TQ9qVrlLA7i6ShLQdpOTy1Wq5sEGuJmzoSMI+E2Ha6EoWYLZTTD3e82qnX
+Xovq9d3OvRh9SJRsUB7icGNZY1z3MbKQKAqI9GwJNijXzLVEOmSy0FbeE4sxQSCL
+gEy9EbRzZmzpyHuGv23ALScdm348vV+0MWcaA+yGNWBPDgjCH93AcijvqH8knDM=
+=INS8
 -----END PGP SIGNATURE-----
 
---nextPart1814428.uAedzGneWt--
+--nextPart6925719.OdB2a5uFuZ--
 
