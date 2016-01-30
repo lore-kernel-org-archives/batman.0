@@ -1,15 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 29 Jan 2016 13:18:13 +0100
-Message-ID: <3299385.slEDhCLINf@prime>
-In-Reply-To: <1453953196-29943-2-git-send-email-andrew@lunn.ch>
-References: <1453953196-29943-1-git-send-email-andrew@lunn.ch>
- <1453953196-29943-2-git-send-email-andrew@lunn.ch>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sat, 30 Jan 2016 12:17:35 +0800
+Message-ID: <3030734.l0rD9cqonh@voltaire>
+In-Reply-To: <1453312815-20752-1-git-send-email-sven@open-mesh.com>
+References: <1453312815-20752-1-git-send-email-sven@open-mesh.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4531987.zjiQocGjN0";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] alfred: Add support for network
-	namespaces
+Content-Type: multipart/signed; boundary="nextPart1814428.uAedzGneWt";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Add compat code for
+	BUILD_BUG_ON_NOT_POWER_OF_2
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,98 +19,30 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+Cc: Sven Eckelmann <sven@open-mesh.com>
 
---nextPart4531987.zjiQocGjN0
+--nextPart1814428.uAedzGneWt
 Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 
-On Thursday 28 January 2016 04:53:14 Andrew Lunn wrote:
-> When running within a network namespace, access to files within
-> debugfs have to take into account the network name space. Each
-> namespace has its own directory under
-> /sys/kernel/debug/batman_adv/netns.
-> 
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+On Wednesday, January 20, 2016 19:00:15 Sven Eckelmann wrote:
+> Fixes: 2c2fe0ba9ea5 ("batman-adv: ELP - creating neighbor structures")
+> Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
 > ---
->  batadv_query.c |  2 +-
->  debugfs.c      | 49 ++++++++++++++++++++++++++++++++++++++++++++++++-
->  vis/vis.h      |  2 +-
->  3 files changed, 50 insertions(+), 3 deletions(-)
+> v2:
+>  - add missing include in average.h which is required to always defined
+>    BUILD_BUG_ON_NOT_POWER_OF_2 correctly
 > 
-> diff --git a/batadv_query.c b/batadv_query.c
-> index c289b80..fe7c007 100644
-> --- a/batadv_query.c
-> +++ b/batadv_query.c
-> @@ -31,7 +31,7 @@
->  #include <sys/types.h>
->  #include "debugfs.h"
-> 
-> -#define DEBUG_BATIF_PATH_FMT "%s/batman_adv/%s"
-> +#define DEBUG_BATIF_PATH_FMT "%s/batman_adv/%s%s"
->  #define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
->  #define DEBUG_ORIGINATORS "originators"
-> 
-> diff --git a/debugfs.c b/debugfs.c
-> index fc39322..35c1bdf 100644
-> --- a/debugfs.c
-> +++ b/debugfs.c
-> @@ -20,11 +20,15 @@
-> 
->  #include "debugfs.h"
->  #include <errno.h>
-> +#include <fcntl.h>
-> +#include <limits.h>
->  #include <stdio.h>
->  #include <string.h>
->  #include <sys/mount.h>
->  #include <sys/stat.h>
->  #include <sys/statfs.h>
-> +#include <sys/types.h>
-> +#include <unistd.h>
-> 
->  #ifndef DEBUGFS_MAGIC
->  #define DEBUGFS_MAGIC          0x64626720
-> @@ -42,16 +46,59 @@ static const char *debugfs_known_mountpoints[] = {
->  	NULL,
->  };
-> 
-> +/* Return the current net namespace number. 0 is never a valid
-> + * namespace, so use it to return that there is no name space
-> + * support.
-> + */
-> +
-> +static unsigned int debugfs_get_netns_inum(void)
-> +{
-> +	char net_path[] = "/proc/self/ns/net";
-> +	struct stat netst;
-> +	int netns;
-> +
-> +	netns = open(net_path, O_RDONLY);
-> +	if (netns < 0) {
-> +		if (errno == ENOENT)
-> +			/* Probably means no netns support in the kernel */
-> +			return 0;
-> +
-> +		fprintf(stderr,
-> +			"Error - can't open /proc/self/ns/net for read: %s\n",
-> +			strerror(errno));
-> +		return 0;
-> +	}
-> +
-> +	if (fstat(netns, &netst) < 0) {
-> +		fprintf(stderr, "Stat of netns failed: %s\n",
-> +			strerror(errno));
-> +		return 0;
+>  compat-include/linux/average.h |  2 ++
+>  compat-include/linux/bug.h     | 13 +++++++++++++
+>  2 files changed, 15 insertions(+)
 
-Aren't we leaking the netns file descriptor here? You could just set 
-netst.st_ino = 0 instead ...
+Applied in revision a23e9a9.
 
-Rest looks good to me :)
+Thanks,
+Marek
 
-Cheers,
-    Simon
---nextPart4531987.zjiQocGjN0
+--nextPart1814428.uAedzGneWt
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -119,20 +50,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJWq1iFAAoJEKEr45hCkp6huVcQAMFcR8/9+5DW4jjnMyKK45Zz
-HRdVNJiKegRhFuW3WfUB4gfbhxrRHHooymMIIBcoAXjKcY18U7x9yakYmApSzqQO
-pnPy/YDUViemdIk+JrZ9E6tW4gJVIvN5cz3b4GLKBXW1RYykHaiJG9yxbhizGoJx
-had4WGkzbVdrsyTn7eEq/+pEqAk/VARtQmR5C0dLmEK/JMnCeP2xqgGl09RhJxNs
-xEBQZZ4LmimW6UPSkKrAWmimp6fndQdxfE/yeVm0gtTQGEpSEc+3gALj+s4pG48t
-smCWCAD1YcJJewfQMHYKVEldfSSv/T+pytGSPuuNWgZrlufAywSJRQt0NT/VtH7Q
-CCNyIwnvr8pKqAidy8uVydRRDCVa8mp7CMiovWD+ciyFv3PIV+TKqpyEv0Dp0H+y
-qf2hhGvZTOLhw6DRDoQ+TReb2+iDFobWU5s275JbgmSfJjP2NDsmNBLN6lHfKZOo
-0AW/F2AQ+U+KCenS76sXKR/i5Jov3coZUkPIL8RE+VlDFS5Pt5ghIHbro+8yG0kD
-1e+1hiepBTs38LLhLgirs9frVjPEImPvnLDG3QLTUeuulCEwJb8iEWEETvIfBDR0
-+R2Sf2mLMlspiJ1pE/DYaOH1MkZCq6mQYsA8bJKj1inlxlP5W/p7ZMWiPSUQX+GQ
-5PXOtiBccAFILAEXBAjn
-=TmVo
+iQEcBAABCAAGBQJWrDlfAAoJEFNVTo/uthzALz0IAKDEFmHPsUdc51crHpgYnu1I
+bD2GGbMY/w5lycCbjuOl92Zmu2vjPCGMbnoUhYzUX9u2tzddX3gEJDGYU8SBkPlj
+5yEWUCAQjkChdEVGrFfy2DikwVoFgwm2jqtd89pEiK4tB9T8OlsE1x5t2eJVlm/Z
+3JVQCbS+T3ZgjW5P3w+742VeHAQLmCQZtdsgVmvvWYZV60GaXdvYVZpp23svivLb
+XGYMqz2aUqXPtC3mnGzS0fiLz2rxHdW46eZo2YolwUPnjdiob9H89hABTQ03HHt5
+ozf3xe8pYjhdRiTjRauRS/plWcdmsx/3zc+McIg0QPqORh/EeisBljYP1ioODdE=
+=+FB6
 -----END PGP SIGNATURE-----
 
---nextPart4531987.zjiQocGjN0--
+--nextPart1814428.uAedzGneWt--
 
