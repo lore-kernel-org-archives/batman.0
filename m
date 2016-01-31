@@ -1,15 +1,8 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 31 Jan 2016 14:26:42 +0100
-Message-ID: <2354902.ArQn63Zp4m@sven-edge>
-In-Reply-To: <1453312110-32683-5-git-send-email-andrew@lunn.ch>
-References: <1453312110-32683-1-git-send-email-andrew@lunn.ch>
- <1453312110-32683-5-git-send-email-andrew@lunn.ch>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6465071.DzeCJ1Qgr3";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: debugfs: Add netns
-	support
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon,  1 Feb 2016 00:21:18 +0800
+Message-Id: <1454257280-19649-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCH next 1/3] batman-adv: add missing kernel doc
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,68 +13,43 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart6465071.DzeCJ1Qgr3
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Fixes: 5c324517 ("ELP - compute the metric based on the estimated throughput")
 
-On Wednesday 20 January 2016 18:48:30 Andrew Lunn wrote:
-> Unlike sysfs, debugfs is not netns aware. So batman has to take care
-> to avoid namespace clashes.
-> 
-> Each namespace is given a directory within debugfs/batman-adv/netns,
-> using the namespaces inum as the directory name.
-> 
-> Files for namespaces other than the global namespace are placed within
-> the namespace specific directory. Additionally, a symbolic link is
-> used to link the global namespaces inum back to debugfs/batman-adv/ so
-> tools do not need to differentiate between the global namespace and
-> other namespaces.
-> 
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> ---
->  net/batman-adv/debugfs.c | 118
-> +++++++++++++++++++++++++++++++++++++++++++++-- 1 file changed, 115
-> insertions(+), 3 deletions(-)
-> 
-> diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-> index c4c1e80..b87ffad 100644
-> --- a/net/batman-adv/debugfs.c
-> +++ b/net/batman-adv/debugfs.c
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+---
+ net/batman-adv/bat_v_elp.c | 3 ++-
+ net/batman-adv/main.h      | 2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-Missing includes:
-
-#include <linux/kref.h>
-#include <linux/list.h>
-#include <linux/mutex.h>
-#include <linux/ns_common.h>
-#include <net/net_namespace.h>
-
-Kind regards,
-	Sven
---nextPart6465071.DzeCJ1Qgr3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJWrguSAAoJEF2HCgfBJntGiV4QANlamHNooEycd0v8uXjWsZQ8
-YQ+ZjNnN3I0PPoOo6U+3L9YEB405HPX0HteUm4qziaqP0MThIo4T63sqBnSJ2jhe
-COyFl75282Psqpfj84S3TPr3iEXTM0CYT/bJDPjGj5folQEEd0F3vmsgKsokCfDK
-uckb5HYK9kPL11c71WRkUtJprvHnxA43mJlLcR+PTPiIXH3DCmIkcV+k1vgFmME5
-FtL2To6GhNVPSkTABaVWeHoTATg3Cxl3TdvS2OlmAR3hTpnF+AcarQpQa74zQxHO
-ob4kRIq+dW7WwIGscP+YDz2uElZpzE0YEA7EOOMCTZoX7UGn7UipBIPGAWEIHXUh
-8dgohcJ/FOXK/YW4q4g7h9l4dU+NV/kT9ptt70lN5onAFPoZij33n1NtpDhiAO0j
-/O2s5nPaNMR8ZVf9w0PXmB+s7wJSfwldgA8zrbC7EwaTznRUqo/LlTvHDdpmEN9u
-EJG/4OOb6DpRjBtLBg4Q/s7iRm+Sg5bb7pbWoTQtj+ehSg5QpaHieN393BGx4Wb5
-t8N4vU5sv8+ZD+/hLx5Ldj8Z4+MlQx20tdVpagH2BMbGYFYYEMrdFRa8QPjdLiPL
-vPfvEFD4g89DPywt8kOfkTJk6QKNMdARJpXTzXDNLtodprdlAb4REdyrSFTmB/rX
-BozwUqKv/4ihobV9Zzxj
-=VrYB
------END PGP SIGNATURE-----
-
---nextPart6465071.DzeCJ1Qgr3--
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index f257897..46c6a00 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -67,7 +67,8 @@ static void batadv_v_elp_start_timer(struct batadv_hard_iface *hard_iface)
+  * batadv_v_elp_get_throughput - get the throughput towards a neighbour
+  * @neigh: the neighbour for which the throughput has to be obtained
+  *
+- * Return: the throughput towards the given neighbour.
++ * Return: The throughput towards the given neighbour in multiples of 100kpbs
++ *         (a value of '10' equals to 1Mbps).
+  */
+ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+ {
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 7b05f68..db45336 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -62,7 +62,7 @@
+ #define BATADV_TQ_TOTAL_BIDRECT_LIMIT 1
+ 
+ /* B.A.T.M.A.N. V */
+-#define BATADV_THROUGHPUT_DEFAULT_VALUE 10
++#define BATADV_THROUGHPUT_DEFAULT_VALUE 10 /* 1 Mbps */
+ #define BATADV_ELP_PROBES_PER_NODE 2
+ #define BATADV_ELP_MIN_PROBE_SIZE 200 /* bytes */
+ #define BATADV_ELP_PROBE_MAX_TX_DIFF 100 /* milliseconds */
+-- 
+2.7.0
 
