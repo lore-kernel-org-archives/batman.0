@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 31 Jan 2016 14:26:38 +0100
-Message-ID: <76541057.mOyc0Z9Mdy@sven-edge>
-In-Reply-To: <1453312110-32683-4-git-send-email-andrew@lunn.ch>
+Date: Sun, 31 Jan 2016 14:26:42 +0100
+Message-ID: <2354902.ArQn63Zp4m@sven-edge>
+In-Reply-To: <1453312110-32683-5-git-send-email-andrew@lunn.ch>
 References: <1453312110-32683-1-git-send-email-andrew@lunn.ch>
- <1453312110-32683-4-git-send-email-andrew@lunn.ch>
+ <1453312110-32683-5-git-send-email-andrew@lunn.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3383721.d52oLn0xu0";
+Content-Type: multipart/signed; boundary="nextPart6465071.DzeCJ1Qgr3";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: Handle parent interfaces
-	in a different netns
+Subject: Re: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: debugfs: Add netns
+	support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,65 +22,45 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart3383721.d52oLn0xu0
+--nextPart6465071.DzeCJ1Qgr3
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday 20 January 2016 18:48:29 Andrew Lunn wrote:
-> batman-adv tries to prevent the user from placing a batX soft
-> interface into another batman mesh as a hard interface. It does this
-> by walking up the devices list of parents and ensures they are all
-> none batX interfaces. iflink can point to an interface in a different
-> nameplace, so also retrieve the parents name space when finding the
-> parent.
+On Wednesday 20 January 2016 18:48:30 Andrew Lunn wrote:
+> Unlike sysfs, debugfs is not netns aware. So batman has to take care
+> to avoid namespace clashes.
 > 
-> Additionally, veth devices come in pairs and they are each others
-> parents. Don't infinitely recurse in this situation.
+> Each namespace is given a directory within debugfs/batman-adv/netns,
+> using the namespaces inum as the directory name.
+> 
+> Files for namespaces other than the global namespace are placed within
+> the namespace specific directory. Additionally, a symbolic link is
+> used to link the global namespaces inum back to debugfs/batman-adv/ so
+> tools do not need to differentiate between the global namespace and
+> other namespaces.
 > 
 > Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 > ---
->  net/batman-adv/hard-interface.c | 44
-> +++++++++++++++++++++++++++++++++++++++-- 1 file changed, 42 insertions(+),
-> 2 deletions(-)
+>  net/batman-adv/debugfs.c | 118
+> +++++++++++++++++++++++++++++++++++++++++++++-- 1 file changed, 115
+> insertions(+), 3 deletions(-)
 > 
-> diff --git a/net/batman-adv/hard-interface.c
-> b/net/batman-adv/hard-interface.c index a5ce58a..8d51a4a 100644
-> --- a/net/batman-adv/hard-interface.c
-> +++ b/net/batman-adv/hard-interface.c
+> diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+> index c4c1e80..b87ffad 100644
+> --- a/net/batman-adv/debugfs.c
+> +++ b/net/batman-adv/debugfs.c
 
-Include missing:
+Missing includes:
 
-#include <net/rtnetlink.h>
-
-> @@ -75,6 +75,39 @@ out:
->  }
-> 
->  /**
-> + * batadv_mutual_parents - check if two devices are each others parent
-> + * @net_dev - 1st parent
-> + * @parent_dev - 2nd parent
-> + *
-> + * veth devices come in pairs and each is the parent of the other!
-> + *
-> + * Return true if the devices are each others parent, otherwise false
-> + */
-> +static bool batadv_mutual_parents(const struct net_device *dev1,
-> +				  const struct net *dev1_net,
-> +				  const struct net_device *dev2,
-> +				  const struct net *dev2_net)
-
-
- * What is net_dev and parent_dev?
- * Missing parameter docs are:
-   - dev1
-   - dev1_net
-   - dev2
-   - dev2_net.
- * Return -> Return:
+#include <linux/kref.h>
+#include <linux/list.h>
+#include <linux/mutex.h>
+#include <linux/ns_common.h>
+#include <net/net_namespace.h>
 
 Kind regards,
 	Sven
---nextPart3383721.d52oLn0xu0
+--nextPart6465071.DzeCJ1Qgr3
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -88,20 +68,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJWrguOAAoJEF2HCgfBJntGh/wP/A4rErC/G6SOYxzpJpKgT2qM
-1gAbyGwO9VXBRjAnA7TKTQMSZLTDCS5OR+qEYsvfoaDAi3WKdPadoIGIUacecfEE
-+iSr4H/+9YkgkL8CZIQVB+Kc5xh7lKdgN4qIuGqDz4qZN6Wqo3jhhLgLCApDMEkk
-4KXXKONwj07ReLQPb0cJsjouacnfqznkhQg8Pza4V0PBSpUac7RfFEPcwIXdpd+L
-MRToc8lc8a5gSTTXSRso7Bz3tTZOqJ2sJWmi1CfC8DUTjytz0cn3PUcf795PSI4o
-/Fo5Myl6/UPJ/p+e7yPtRlgapVmeX9rk9DcmcASjv/e/UG0haQfX1JMJz6Jzx4KA
-FMQT+Im+tqc291s4HGn1coCtGkeBzsfmwmUMzPseFtB49+tH3GjEeoqAl9A+g8FM
-4nVChw4UHmYWks7jRtc9mJQF1jTWzrNHU5TUDPAxl0fwhZVuH9/TEyp/+F//Gnup
-l8rw/bsw5gtug9PUXsTmVkqoiBBbgoG8nmRMNReO9PK/AKcGv+uzFNtAcAwasHx4
-73ntODqPSBlmda7GQaVd/aBfRdGzQQ48kX6DOK0M6RVW9K/x5ypPHLmQaarjBs9m
-p9xJ4rKn44iynzi9aZXcbGqbl+UTEUbBtsDioPWnH1D3uNmzbKoHi0qyLJm0Cr2E
-NFNzTOpyDccXVk+S4JJh
-=iGpM
+iQIcBAABCgAGBQJWrguSAAoJEF2HCgfBJntGiV4QANlamHNooEycd0v8uXjWsZQ8
+YQ+ZjNnN3I0PPoOo6U+3L9YEB405HPX0HteUm4qziaqP0MThIo4T63sqBnSJ2jhe
+COyFl75282Psqpfj84S3TPr3iEXTM0CYT/bJDPjGj5folQEEd0F3vmsgKsokCfDK
+uckb5HYK9kPL11c71WRkUtJprvHnxA43mJlLcR+PTPiIXH3DCmIkcV+k1vgFmME5
+FtL2To6GhNVPSkTABaVWeHoTATg3Cxl3TdvS2OlmAR3hTpnF+AcarQpQa74zQxHO
+ob4kRIq+dW7WwIGscP+YDz2uElZpzE0YEA7EOOMCTZoX7UGn7UipBIPGAWEIHXUh
+8dgohcJ/FOXK/YW4q4g7h9l4dU+NV/kT9ptt70lN5onAFPoZij33n1NtpDhiAO0j
+/O2s5nPaNMR8ZVf9w0PXmB+s7wJSfwldgA8zrbC7EwaTznRUqo/LlTvHDdpmEN9u
+EJG/4OOb6DpRjBtLBg4Q/s7iRm+Sg5bb7pbWoTQtj+ehSg5QpaHieN393BGx4Wb5
+t8N4vU5sv8+ZD+/hLx5Ldj8Z4+MlQx20tdVpagH2BMbGYFYYEMrdFRa8QPjdLiPL
+vPfvEFD4g89DPywt8kOfkTJk6QKNMdARJpXTzXDNLtodprdlAb4REdyrSFTmB/rX
+BozwUqKv/4ihobV9Zzxj
+=VrYB
 -----END PGP SIGNATURE-----
 
---nextPart3383721.d52oLn0xu0--
+--nextPart6465071.DzeCJ1Qgr3--
 
