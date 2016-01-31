@@ -1,14 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 31 Jan 2016 09:56:32 +0100
-Message-ID: <13592692.pzjqqOP0sE@sven-edge>
-In-Reply-To: <56AD1CE4.6060604@rund.freifunk.net>
-References: <051.b1484c5bd8f6d13529de9799c03d6545@lists.openwrt.org>
- <56AD1CE4.6060604@rund.freifunk.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5367916.4JpY6SZAK6";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Fwd: [OpenWrt] #21756: batman-adv & batctl errors
+Date: Sun, 31 Jan 2016 13:27:59 +0100
+Message-Id: <1454243280-15126-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH-maint 1/2] batman-adv: Only put gw_node list
+	reference when removed
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,42 +15,44 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart5367916.4JpY6SZAK6
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+The batadv_gw_node reference counter in batadv_gw_node_update can only be
+reduced when the list entry was actually removed. Otherwise the reference
+counter may reach zero when batadv_gw_node_update is called from two
+different contexts for the same gw_node but only one context is actually
+removing the entry from the list.
 
-On Saturday 30 January 2016 21:28:20 Ufo wrote:
-> i am missing batman-adv inside openwrt since some weeks :-o
-> please someone may have a look on it.. i just created a ticket on
-> openwrt for that
+The release function for this gw_node is not called inside the list_lock
+spinlock protected region because the function batadv_gw_node_update still
+holds a gw_node reference for the object pointer on the stack. Thus the
+actual release function (when required) will be called only at the end of
+the function.
 
-You've looked in the wrong folder. Check 
-https://downloads.openwrt.org/snapshots/trunk/ar71xx/generic/packages/routing/
+Fixes: 0511575c4d03 ("batman-adv: remove obsolete deleted attribute for gateway node")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/gateway_client.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-Kind regards,
-	Sven
---nextPart5367916.4JpY6SZAK6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJWrcxAAAoJEF2HCgfBJntGZAUP/iqLJbyR7pg4AtEzz8qurJF8
-MFKHD9EgdGux2qSnhpHBbLbIZB/NoKlg7gGL6rwmKpHQvtlwJ5q4/s9+rxcx0MLh
-c0Yu7oFA/OllRezD+PPi6yZaMfYXiIqXnZTYPIR0hfvE6PB8lNECfRtmMyTGP2np
-NyQSbXLo1txEv/7XrIBHSZN3Si9i+N6vTJTXUcotTmPzlVsgPA0pvsZ9A9Xw5OIc
-0H8DqNEsxesawDJgmICL9kQs3xU4GdlS+sje46Yg01lBEhoYLM1emr5jh87KX8Dp
-bAgSNqNTzXLTccwas52uicRwwO/b3uIWcA+iWXikF5icSFQmbCoktKNuLnUhS5mY
-tyTOCvBqClDmmv3yatMtTiWf0XOSqp/FuHZCq9dc9zrN43bodBa+QVlunSaBN29G
-/z43SLYM0RDPZUIeUx0ErI8awnUe6mpO2snaoDWsv7ECT0Ts0aTeMUyqcfS5Gd2Z
-J6Dc7CqVCnEe3o0aMvJpJjK+8x10EwUMW5n83U6UxojXQcFW551orRym6UuY54Fb
-027TFMptQw9ukJ0k16MOFUV8CylgdPFUarUAlRszh2LOMcclpC9hkajst8H+StKX
-/dFG8fufKPfQ3xJaeEyeelReShJirMISFk6piPfa2lK1BKWu27YEQvg7yeimWjdR
-ESrIeVglVQEhAlohiNW/
-=FRry
------END PGP SIGNATURE-----
-
---nextPart5367916.4JpY6SZAK6--
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 8350775..c9b8b48 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -527,11 +527,12 @@ void batadv_gw_node_update(struct batadv_priv *bat_priv,
+ 		 * gets dereferenced.
+ 		 */
+ 		spin_lock_bh(&bat_priv->gw.list_lock);
+-		hlist_del_init_rcu(&gw_node->list);
++		if (!hlist_unhashed(&gw_node->list)) {
++			hlist_del_init_rcu(&gw_node->list);
++			batadv_gw_node_free_ref(gw_node);
++		}
+ 		spin_unlock_bh(&bat_priv->gw.list_lock);
+ 
+-		batadv_gw_node_free_ref(gw_node);
+-
+ 		curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
+ 		if (gw_node == curr_gw)
+ 			batadv_gw_reselect(bat_priv);
+-- 
+2.7.0
 
