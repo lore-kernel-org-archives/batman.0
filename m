@@ -1,8 +1,11 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon,  1 Feb 2016 14:34:32 +0800
-Message-Id: <1454308474-23211-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCHv2 next 1/3] batman-adv: add missing kernel doc
+Date: Mon,  1 Feb 2016 14:34:33 +0800
+Message-Id: <1454308474-23211-2-git-send-email-mareklindner@neomailbox.ch>
+In-Reply-To: <1454308474-23211-1-git-send-email-mareklindner@neomailbox.ch>
+References: <1454308474-23211-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCHv2 next 2/3] batman-adv: convert wifi driver
+	throughput to multiples of 100kbps
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,41 +18,30 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
+The expected throughout returned by the cfg80211 API is expressed in kbps
+while internally batman-adv stores multiples of 100kbps. Ensure the
+conversion is performed properly.
+
 Fixes: 5c324517 ("ELP - compute the metric based on the estimated throughput")
 
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/bat_v_elp.c | 3 ++-
- net/batman-adv/main.h      | 2 +-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ net/batman-adv/bat_v_elp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index f257897..46c6a00 100644
+index 46c6a00..461a765 100644
 --- a/net/batman-adv/bat_v_elp.c
 +++ b/net/batman-adv/bat_v_elp.c
-@@ -67,7 +67,8 @@ static void batadv_v_elp_start_timer(struct batadv_hard_iface *hard_iface)
-  * batadv_v_elp_get_throughput - get the throughput towards a neighbour
-  * @neigh: the neighbour for which the throughput has to be obtained
-  *
-- * Return: the throughput towards the given neighbour.
-+ * Return: The throughput towards the given neighbour in multiples of 100kpbs
-+ *         (a value of '1' equals to 0.1Mbps, '10' equals 1Mbps, etc).
-  */
- static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
- {
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 7b05f68..db45336 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -62,7 +62,7 @@
- #define BATADV_TQ_TOTAL_BIDRECT_LIMIT 1
+@@ -100,7 +100,7 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+ 				return 0;
+ 			}
+ 			if (!ret)
+-				return sinfo.expected_throughput / 10;
++				return sinfo.expected_throughput / 100;
+ 		}
  
- /* B.A.T.M.A.N. V */
--#define BATADV_THROUGHPUT_DEFAULT_VALUE 10
-+#define BATADV_THROUGHPUT_DEFAULT_VALUE 10 /* 1 Mbps */
- #define BATADV_ELP_PROBES_PER_NODE 2
- #define BATADV_ELP_MIN_PROBE_SIZE 200 /* bytes */
- #define BATADV_ELP_PROBE_MAX_TX_DIFF 100 /* milliseconds */
+ 		/* unsupported WiFi driver version */
 -- 
 2.7.0
 
