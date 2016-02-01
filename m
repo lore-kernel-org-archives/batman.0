@@ -1,16 +1,16 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 01 Feb 2016 09:39:33 +0800
-Message-ID: <8558486.MmMlQ1Pu2K@voltaire>
-In-Reply-To: <20160201004623.GK22112@prodigo.lan>
+Date: Mon, 01 Feb 2016 09:44:39 +0800
+Message-ID: <4194875.ui2pi6v3zm@voltaire>
+In-Reply-To: <20160201004826.GL22112@prodigo.lan>
 References: <1454257280-19649-1-git-send-email-mareklindner@neomailbox.ch>
- <1454257280-19649-2-git-send-email-mareklindner@neomailbox.ch>
- <20160201004623.GK22112@prodigo.lan>
+ <1454257280-19649-3-git-send-email-mareklindner@neomailbox.ch>
+ <20160201004826.GL22112@prodigo.lan>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1779525.ODFYOHCDqY";
+Content-Type: multipart/signed; boundary="nextPart8410141.Rf6EbNfV6x";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next 2/3] batman-adv: convert wifi driver
-	throughput to multiples of 100kbps
+Subject: Re: [B.A.T.M.A.N.] [PATCH next 3/3] batman-adv: fix misleading
+	default throughput warning
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,30 +22,30 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart1779525.ODFYOHCDqY
+--nextPart8410141.Rf6EbNfV6x
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, February 01, 2016 08:46:23 Antonio Quartulli wrote:
-> On Mon, Feb 01, 2016 at 12:21:19AM +0800, Marek Lindner wrote:
-> > Fixes: 5c324517 ("ELP - compute the metric based on the estimated
-> > throughput")>
-> > 
-> >
-> > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+On Monday, February 01, 2016 08:48:26 Antonio Quartulli wrote:
+> On Mon, Feb 01, 2016 at 12:21:20AM +0800, Marek Lindner wrote:
+> > The default throughput value represents Mbps and not kbps.
 > 
-> Maybe before merging this patch you add a one line commit message here
-> saying that expected_throughput is supposed to be expressed in kbps,
-> therefore this fix is required ?
+> Isn't this a bit confusing? The default throughput is expressed in multiples
+> of 100kbps, not Mbps.
 
-As we haven't sent the offending patch upstream yet, you can simply merge all 
-3 fixes into "ELP - compute the metric based on the estimated throughput" and 
-be done with it. This patch isn't for stable ...
+Prior to my patch the debug message said:
+"[..] therefore defaulting to hardcoded throughput values of 1 kbit/s."
+
+With the patch it says:
+"[..] therefore defaulting to hardcoded throughput values of 1.0 Mbps."
+
+FYI, I changed the text to "Mbps" because that is what batman-adv prints in 
+the neighbor table as well in the originator table.
 
 Cheers,
 Marek
 
---nextPart1779525.ODFYOHCDqY
+--nextPart8410141.Rf6EbNfV6x
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +53,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWrrdVAAoJEFNVTo/uthzAmyYH/iTq5k3SMfK91TEI4cXCdZpv
-+XcjxtM8IvYt4gEdxbYOx/ipEQJWe9/fV0GhRCVqYmqhCTgzVlcYsvIj7hbi+DZ7
-//FxTxT5uRCR0wIdK+Jzm2hIMfxP74xI+r3qbQNzny+0u/gRpF0PEzkkTIcX9gAd
-eFeG3CMNCJFo96bRn34ly9UoAo50/pcmZNfT23LbOCk2PTy4e10f7JdYLxAU0P0j
-ZqvzVQ84qc2QlR5JJ2l7taII2pi8esislhMt/5ZSwoasItR/CouM6dKjSLj/q5lh
-jmLn0hLethJO2gLg8WewKKMEjYTeHL1EpwXuyRnfpnKQnI/UyTkakjfop3rqESY=
-=J7ED
+iQEcBAABCAAGBQJWrriHAAoJEFNVTo/uthzAdogH/RkSBeSuOJ2uxzvCBqYLmtqd
+iMUMNjLwIx1sOSZjthL3bsHxuCa7BXF1urtKTJHZcj+sSu90pvdeWikytvLIQDwz
+dHvLJN80HC/GdtiwknKAuViwCOebsl6bKrjpXJJV9fw46WCdoz0f1fI77KiEV/5R
+SZ8gmNO5SOGT2WTT6hfkJVffUMRU364RexxgZV0ecH4pP6sAP0G52/BWYVfN9Hes
+bEgM1mFej/TvB8X83J6EaOOM3cE1EvoFAdT6XB+0bO8x6RmHJ9dHKfhgu2f8wgzw
+7GSgfRu3/uq0h4LlCNN0vFQPd3mko2IW5MWiLlBngjoJlcHGwFBU9d0cmG+MWkw=
+=a3M0
 -----END PGP SIGNATURE-----
 
---nextPart1779525.ODFYOHCDqY--
+--nextPart8410141.Rf6EbNfV6x--
 
