@@ -1,16 +1,16 @@
-Return-Path: <a@unstable.cc>
-Date: Mon, 1 Feb 2016 08:48:26 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160201004826.GL22112@prodigo.lan>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 01 Feb 2016 09:39:33 +0800
+Message-ID: <8558486.MmMlQ1Pu2K@voltaire>
+In-Reply-To: <20160201004623.GK22112@prodigo.lan>
 References: <1454257280-19649-1-git-send-email-mareklindner@neomailbox.ch>
- <1454257280-19649-3-git-send-email-mareklindner@neomailbox.ch>
+ <1454257280-19649-2-git-send-email-mareklindner@neomailbox.ch>
+ <20160201004623.GK22112@prodigo.lan>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="Ll0BBk1HBk/f94B0"
-Content-Disposition: inline
-In-Reply-To: <1454257280-19649-3-git-send-email-mareklindner@neomailbox.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCH next 3/3] batman-adv: fix misleading
- default throughput warning
+Content-Type: multipart/signed; boundary="nextPart1779525.ODFYOHCDqY";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH next 2/3] batman-adv: convert wifi driver
+	throughput to multiples of 100kbps
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,47 +21,46 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
+--nextPart1779525.ODFYOHCDqY
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---Ll0BBk1HBk/f94B0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Monday, February 01, 2016 08:46:23 Antonio Quartulli wrote:
+> On Mon, Feb 01, 2016 at 12:21:19AM +0800, Marek Lindner wrote:
+> > Fixes: 5c324517 ("ELP - compute the metric based on the estimated
+> > throughput")>
+> > 
+> >
+> > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> 
+> Maybe before merging this patch you add a one line commit message here
+> saying that expected_throughput is supposed to be expressed in kbps,
+> therefore this fix is required ?
 
-On Mon, Feb 01, 2016 at 12:21:20AM +0800, Marek Lindner wrote:
-> The default throughput value represents Mbps and not kbps.
+As we haven't sent the offending patch upstream yet, you can simply merge all 
+3 fixes into "ELP - compute the metric based on the estimated throughput" and 
+be done with it. This patch isn't for stable ...
 
-Isn't this a bit confusing? The default throughput is expressed in multiple=
-s of
-100kbps, not Mbps.
+Cheers,
+Marek
 
-the rest looks good:
-Acked-by: Antonio Quartulli <a@unstable.cc>
-
---=20
-Antonio Quartulli
-
---Ll0BBk1HBk/f94B0
+--nextPart1779525.ODFYOHCDqY
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJWrqtaAAoJENpFlCjNi1MRkukQALbcqNs+rCO2tRnA0J2xd+71
-Z/foSek5lFd9XTrFdvcQccZU41sanZfwxnjmSa7iVMtOUaeKPBmyAcDe3eZQBdIy
-blwe0Ln2J0Sffi8zLijm0MYPs7NzHULkJt8uZkmf5KOaGy2HfZK/I9KYQFsU7U5T
-6tHfNj6qW9njeAA1Tjh4w2IiwPrWULrcrqMvrDejeUT2HvY1B+9+my3rUEu9BdDV
-ikups/U/HY0Y5WPLkMpJJQdgWGCZsZ6o5pX/vJ459Alkwn5PHTWCI9/WJXECqzvm
-9/J5IqspJohEnY1pnTMbdXrR6iti5Zjt0Iw6LVLswLXCyJ2349zVAzOVdBzH6LVW
-DSqKV0uoa4QLnFhvaiQejL8t13A7bbubFLiHtZOFbUGH1HgOC078XF8e0m31am8j
-wkQF39hHS4MU6phM6TTo88UCw4Gdz8Qdqwey0kgoYE6/qDLtniN9gKZ7npODqL73
-iEBGOsuDdp5yWVtWb/6+O0SRZ4U5GgphUSNbYFp6c+zDZqOOFcTHozEnZRPgFI+8
-TIsHcC0bCRtW25KhRIGr3Q/mGdro8Bm2a+yE09oOyuQsfM3NWiDMjfRo3FJMoWBc
-DI3z4Z9AXBf4MqTnmOEJFw2hcI3hkAPAW6adY4GT6+1JoV7X547Y6Wd58MQuWgiT
-MWgCDFvH0Z9Zrtl5j2x3
-=zTpc
+iQEcBAABCAAGBQJWrrdVAAoJEFNVTo/uthzAmyYH/iTq5k3SMfK91TEI4cXCdZpv
++XcjxtM8IvYt4gEdxbYOx/ipEQJWe9/fV0GhRCVqYmqhCTgzVlcYsvIj7hbi+DZ7
+//FxTxT5uRCR0wIdK+Jzm2hIMfxP74xI+r3qbQNzny+0u/gRpF0PEzkkTIcX9gAd
+eFeG3CMNCJFo96bRn34ly9UoAo50/pcmZNfT23LbOCk2PTy4e10f7JdYLxAU0P0j
+ZqvzVQ84qc2QlR5JJ2l7taII2pi8esislhMt/5ZSwoasItR/CouM6dKjSLj/q5lh
+jmLn0hLethJO2gLg8WewKKMEjYTeHL1EpwXuyRnfpnKQnI/UyTkakjfop3rqESY=
+=J7ED
 -----END PGP SIGNATURE-----
 
---Ll0BBk1HBk/f94B0--
+--nextPart1779525.ODFYOHCDqY--
+
