@@ -1,17 +1,8 @@
-Return-Path: <a@unstable.cc>
-Date: Mon, 1 Feb 2016 10:57:55 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160201025755.GO22112@prodigo.lan>
-References: <1453312110-32683-1-git-send-email-andrew@lunn.ch>
- <1453312110-32683-4-git-send-email-andrew@lunn.ch>
- <1988230.TvXLEl4ULW@bentobox>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="tuFXEhzhBeitrIAu"
-Content-Disposition: inline
-In-Reply-To: <1988230.TvXLEl4ULW@bentobox>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: Handle parent interfaces
- in a different netns
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon,  1 Feb 2016 14:34:32 +0800
+Message-Id: <1454308474-23211-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCHv2 next 1/3] batman-adv: add missing kernel doc
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,61 +12,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>, Andrew Lunn <andrew@lunn.ch>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
+Fixes: 5c324517 ("ELP - compute the metric based on the estimated throughput")
 
---tuFXEhzhBeitrIAu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+---
+ net/batman-adv/bat_v_elp.c | 3 ++-
+ net/batman-adv/main.h      | 2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-On Wed, Jan 27, 2016 at 11:13:53AM +0100, Sven Eckelmann wrote:
-> On Wednesday 20 January 2016 18:48:29 Andrew Lunn wrote:
-> > nameplace, so also retrieve the parents name space when finding the
->=20
-> s/nameplace/namespace/ ?
->=20
-> > Additionally, veth devices come in pairs and they are each others
-> > parents. Don't infinitely recurse in this situation.
->=20
-> Can we have this part as extra patch so Antonio can ask David for a stabl=
-e=20
-> backport?
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index f257897..46c6a00 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -67,7 +67,8 @@ static void batadv_v_elp_start_timer(struct batadv_hard_iface *hard_iface)
+  * batadv_v_elp_get_throughput - get the throughput towards a neighbour
+  * @neigh: the neighbour for which the throughput has to be obtained
+  *
+- * Return: the throughput towards the given neighbour.
++ * Return: The throughput towards the given neighbour in multiples of 100kpbs
++ *         (a value of '1' equals to 0.1Mbps, '10' equals 1Mbps, etc).
+  */
+ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
+ {
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 7b05f68..db45336 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -62,7 +62,7 @@
+ #define BATADV_TQ_TOTAL_BIDRECT_LIMIT 1
+ 
+ /* B.A.T.M.A.N. V */
+-#define BATADV_THROUGHPUT_DEFAULT_VALUE 10
++#define BATADV_THROUGHPUT_DEFAULT_VALUE 10 /* 1 Mbps */
+ #define BATADV_ELP_PROBES_PER_NODE 2
+ #define BATADV_ELP_MIN_PROBE_SIZE 200 /* bytes */
+ #define BATADV_ELP_PROBE_MAX_TX_DIFF 100 /* milliseconds */
+-- 
+2.7.0
 
-Andrew,
-
-do you have any plan about resending this fix ?
-Sven also sent a pair of fixes and it would be nice I could send everything=
- in
-on pull request.
-
-Cheers,
-
-
---=20
-Antonio Quartulli
-
---tuFXEhzhBeitrIAu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWrsmzAAoJENpFlCjNi1MRQJIQAJIfvRPp4IkneKzVONBphepY
-BrGwg3CUmmRdgt3GHnKWacWXEqQ6ZrworLCEmcFZkJBEJXa8nAu4ZZeme6hXxI2u
-YUcZSgAv/cAUFiaBmkOasb+J7/M8DaT6N+Ao1oMzXOiQZ3MGnRnLbRksRWa3rbm+
-VAdvr1FNYA+NPGkVzTbmWnJ8HLqy02uKco/yAJ3xnvrSMPAleX2WDX3Dy2FjOWkc
-TMV/BKS8BD3ZfB/82Yb0lNioYo2iQtaq+uawokvUXUxCXrBre+YrRhEiWKSdASru
-P7rhyH36/0dON7V0JlGmUUZ9CbKm/eM8ViUgIONR61I4AM8fMVzP038yn62pylTT
-bbFbaICte6PXGrK8vBgg51KYOz32WPWXDpBKkgsPCwYrYNncOFSt+sxvrgPQfX/i
-rQSQj8YBBjg2012VVuE3JOKdAnrt7ClxiZfEwR9O0ozDmrui3MZynSctbeZnJMvR
-oqEOFIWFKwQK927AnfYgbkzKi5ahLEd0kqmIEYTitm52c9iokyPWlAfv9/xcqsCF
-UO6KIWtUXnkwStKWoFo58ddVC1JL6dFKk7+I54VFjTvyFNjxNXcjBDyUdfU9YhlY
-x4LLPTCzhZ4LIpMSE+tWSyYjW0eb3GYdZWpghNRG3cN58y5aD14NaoNOdaYFAI23
-7cfbwzVy2p19okCx7ouu
-=cQ/d
------END PGP SIGNATURE-----
-
---tuFXEhzhBeitrIAu--
