@@ -1,17 +1,17 @@
 Return-Path: <a@unstable.cc>
-Date: Mon, 1 Feb 2016 10:46:50 +0800
+Date: Mon, 1 Feb 2016 10:57:55 +0800
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160201024650.GN22112@prodigo.lan>
-References: <1454257280-19649-1-git-send-email-mareklindner@neomailbox.ch>
- <1454257280-19649-3-git-send-email-mareklindner@neomailbox.ch>
- <20160201004826.GL22112@prodigo.lan> <4194875.ui2pi6v3zm@voltaire>
+Message-ID: <20160201025755.GO22112@prodigo.lan>
+References: <1453312110-32683-1-git-send-email-andrew@lunn.ch>
+ <1453312110-32683-4-git-send-email-andrew@lunn.ch>
+ <1988230.TvXLEl4ULW@bentobox>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="Sk71+Upln2BLuDmg"
+ protocol="application/pgp-signature"; boundary="tuFXEhzhBeitrIAu"
 Content-Disposition: inline
-In-Reply-To: <4194875.ui2pi6v3zm@voltaire>
-Subject: Re: [B.A.T.M.A.N.] [PATCH next 3/3] batman-adv: fix misleading
- default throughput warning
+In-Reply-To: <1988230.TvXLEl4ULW@bentobox>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: Handle parent interfaces
+ in a different netns
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,68 +21,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Sven Eckelmann <sven@narfation.org>, Andrew Lunn <andrew@lunn.ch>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 
---Sk71+Upln2BLuDmg
+--tuFXEhzhBeitrIAu
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Feb 01, 2016 at 09:44:39AM +0800, Marek Lindner wrote:
-> On Monday, February 01, 2016 08:48:26 Antonio Quartulli wrote:
-> > On Mon, Feb 01, 2016 at 12:21:20AM +0800, Marek Lindner wrote:
-> > > The default throughput value represents Mbps and not kbps.
-> >=20
-> > Isn't this a bit confusing? The default throughput is expressed in mult=
-iples
-> > of 100kbps, not Mbps.
+On Wed, Jan 27, 2016 at 11:13:53AM +0100, Sven Eckelmann wrote:
+> On Wednesday 20 January 2016 18:48:29 Andrew Lunn wrote:
+> > nameplace, so also retrieve the parents name space when finding the
 >=20
-> Prior to my patch the debug message said:
-> "[..] therefore defaulting to hardcoded throughput values of 1 kbit/s."
+> s/nameplace/namespace/ ?
 >=20
-> With the patch it says:
-> "[..] therefore defaulting to hardcoded throughput values of 1.0 Mbps."
+> > Additionally, veth devices come in pairs and they are each others
+> > parents. Don't infinitely recurse in this situation.
 >=20
-> FYI, I changed the text to "Mbps" because that is what batman-adv prints =
-in=20
-> the neighbor table as well in the originator table.
+> Can we have this part as extra patch so Antonio can ask David for a stabl=
+e=20
+> backport?
 
-The patch is fixing the way you interpret the BATADV_THROUGHPUT_DEFAULT_VAL=
-UE
-constant, therefore I expected that with "The default throughput value
-represents Mbps" you were stating how to properly interpret such constant (=
-and
-this wouldn't be correct).
+Andrew,
 
+do you have any plan about resending this fix ?
+Sven also sent a pair of fixes and it would be nice I could send everything=
+ in
+on pull request.
 
 Cheers,
-
 
 
 --=20
 Antonio Quartulli
 
---Sk71+Upln2BLuDmg
+--tuFXEhzhBeitrIAu
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJWrscaAAoJENpFlCjNi1MRPLcP/2XRj7z1Jxnk9THTFqPkWJZZ
-HOTqeUO8KcmrysqR4gMpX6Ygewa/O+mMhcpE/8GRp5TN52uPo8BwFUVH4Br93Wep
-i74XJ+AGfUP3/qyZv0vj7i6rywbZl8OxjlIEAsgg5sGkk8a6Y8l5Wg5Tp4MoKujY
-P//au4pKsKzUvwj9tPfoyLicxPhJpji9HqSj4MqLvw7cY07BUKq4RHl7kpfd43kc
-LT/gsaLtOKmJS4kjXgsJYjHxM1XXRp5ir4Pmwo7h6t3OksIBgM9Ae72XUpxcOiRg
-VjDMJAC8GfwbFNFG/XEO9k6WfsHWM3QhHKIpkjRxYjHqE+TLuKH8rhEgcIVGXK5I
-jdIxVFtuyOK7JpvGjt6QyC99FgO9HlG7oi0aVXXLNdz29XJB4pIXjF8jvBjMEVKb
-WZm70n2RFqsdPboYfw2xNVUfopqR1koFXNART20falPhy8tCERiPlNDmgMD0iIIi
-xNkKAHhxn3r6Za1C+nxXt8DL4+HBSa/38MDDHwvbz5T5yERsIij/DOcADeo9wz+I
-WL5XIkKBOf5lA3yzebcbr7TQB1UbNNRqQvF3PSUK7TSvyhigFKBRb2lBE5dgFVJW
-QuNxzFqSq1lRBLwYzheTPbiRbP2pEdkAeBj3juxdv1qvEpCMLGdlCLNrWzGeZtQk
-SaRWHiq2gXTNaTQMEGU3
-=dpm3
+iQIcBAEBCAAGBQJWrsmzAAoJENpFlCjNi1MRQJIQAJIfvRPp4IkneKzVONBphepY
+BrGwg3CUmmRdgt3GHnKWacWXEqQ6ZrworLCEmcFZkJBEJXa8nAu4ZZeme6hXxI2u
+YUcZSgAv/cAUFiaBmkOasb+J7/M8DaT6N+Ao1oMzXOiQZ3MGnRnLbRksRWa3rbm+
+VAdvr1FNYA+NPGkVzTbmWnJ8HLqy02uKco/yAJ3xnvrSMPAleX2WDX3Dy2FjOWkc
+TMV/BKS8BD3ZfB/82Yb0lNioYo2iQtaq+uawokvUXUxCXrBre+YrRhEiWKSdASru
+P7rhyH36/0dON7V0JlGmUUZ9CbKm/eM8ViUgIONR61I4AM8fMVzP038yn62pylTT
+bbFbaICte6PXGrK8vBgg51KYOz32WPWXDpBKkgsPCwYrYNncOFSt+sxvrgPQfX/i
+rQSQj8YBBjg2012VVuE3JOKdAnrt7ClxiZfEwR9O0ozDmrui3MZynSctbeZnJMvR
+oqEOFIWFKwQK927AnfYgbkzKi5ahLEd0kqmIEYTitm52c9iokyPWlAfv9/xcqsCF
+UO6KIWtUXnkwStKWoFo58ddVC1JL6dFKk7+I54VFjTvyFNjxNXcjBDyUdfU9YhlY
+x4LLPTCzhZ4LIpMSE+tWSyYjW0eb3GYdZWpghNRG3cN58y5aD14NaoNOdaYFAI23
+7cfbwzVy2p19okCx7ouu
+=cQ/d
 -----END PGP SIGNATURE-----
 
---Sk71+Upln2BLuDmg--
+--tuFXEhzhBeitrIAu--
