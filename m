@@ -1,11 +1,17 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon,  1 Feb 2016 15:21:38 +0100
-Message-Id: <1454336498-2621-2-git-send-email-sw@simonwunderlich.de>
-In-Reply-To: <1454336498-2621-1-git-send-email-sw@simonwunderlich.de>
-References: <1454336498-2621-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: Merge
-	batadv_v_ogm_orig_update into batadv_v_ogm_route_update
+Return-Path: <antonio@open-mesh.com>
+Date: Mon, 1 Feb 2016 22:45:34 +0800
+From: Antonio Quartulli <antonio@open-mesh.com>
+Message-ID: <20160201144534.GB12011@prodigo>
+References: <1454308474-23211-1-git-send-email-mareklindner@neomailbox.ch>
+ <1454308474-23211-2-git-send-email-mareklindner@neomailbox.ch>
+ <2398211.sq1Z83hZa4@bentobox>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="TRYliJ5NKNqkz5bu"
+Content-Disposition: inline
+In-Reply-To: <2398211.sq1Z83hZa4@bentobox>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next 2/3] batman-adv: convert wifi
+ driver throughput to multiples of 100kbps
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,172 +21,92 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Thomas Huehn <thomas@net.t-labs.tu-berlin.de>, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Simon Wunderlich <simon@open-mesh.com>
 
-Since batadv_v_ogm_orig_update() was only called from one place and the
-calling function became very short, merge these two functions together.
+--TRYliJ5NKNqkz5bu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This should also reflect the protocol description of B.A.T.M.A.N. V
-better.
+On Mon, Feb 01, 2016 at 01:26:12PM +0100, Sven Eckelmann wrote:
+> On Monday 01 February 2016 14:34:33 Marek Lindner wrote:
+> > The expected throughout returned by the cfg80211 API is expressed in kb=
+ps
+> > while internally batman-adv stores multiples of 100kbps. Ensure the
+> > conversion is performed properly.
+> >=20
+> > Fixes: 5c324517 ("ELP - compute the metric based on the estimated throu=
+ghput")
+> >=20
+> > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> > ---
+> >  net/batman-adv/bat_v_elp.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >=20
+> > diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+> > index 46c6a00..461a765 100644
+> > --- a/net/batman-adv/bat_v_elp.c
+> > +++ b/net/batman-adv/bat_v_elp.c
+> > @@ -100,7 +100,7 @@ static u32 batadv_v_elp_get_throughput(struct batad=
+v_hardif_neigh_node *neigh)
+> >  				return 0;
+> >  			}
+> >  			if (!ret)
+> > -				return sinfo.expected_throughput / 10;
+> > +				return sinfo.expected_throughput / 100;
+> >  		}
+>=20
+> Just tested it here and can say that it now show the same value as
+> `iw dev adhoc0 station dump`. But the output of `iw dev adhoc0 station du=
+mp`
+> confuses me. I can get easily get over 40 Mbit/s but the output of
+> `iw dev adhoc0 station dump` show me 4.705Mbps. Also the output of
+> `cat /sys/kernel/debug/ieee80211/phy*/netdev\:adhoc0/stations/*/rc_stats`=
+ look
+> definitely more like ~40 Mbit/s.
+>=20
+> Antonio, can you please check my tests and my conclusion (+patch [1]).
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
----
- net/batman-adv/bat_v_ogm.c | 117 ++++++++++++++++++---------------------------
- 1 file changed, 46 insertions(+), 71 deletions(-)
+Sven,
 
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 341ff27..1b2399e 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -234,73 +234,6 @@ void batadv_v_ogm_primary_iface_set(struct batadv_hard_iface *primary_iface)
- }
- 
- /**
-- * batadv_v_ogm_orig_update - update the originator status based on the received
-- *  OGM
-- * @bat_priv: the bat priv with all the soft interface information
-- * @orig_node: the originator to update
-- * @neigh_node: the neighbour the OGM has been received from (to update)
-- * @ogm2: the received OGM
-- * @if_outgoing: the interface where this OGM is going to be forwarded through
-- */
--static void
--batadv_v_ogm_orig_update(struct batadv_priv *bat_priv,
--			 struct batadv_orig_node *orig_node,
--			 struct batadv_neigh_node *neigh_node,
--			 const struct batadv_ogm2_packet *ogm2,
--			 struct batadv_hard_iface *if_outgoing)
--{
--	struct batadv_neigh_ifinfo *router_ifinfo = NULL, *neigh_ifinfo = NULL;
--	struct batadv_neigh_node *router = NULL;
--	s32 neigh_seq_diff;
--	u32 neigh_last_seqno;
--	u32 router_last_seqno;
--	u32 router_throughput, neigh_throughput;
--
--	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
--		   "Searching and updating originator entry of received packet\n");
--
--	/* if this neighbor already is our next hop there is nothing
--	 * to change
--	 */
--	router = batadv_orig_router_get(orig_node, if_outgoing);
--	if (router == neigh_node)
--		goto out;
--
--	/* don't consider neighbours with worse throughput.
--	 * also switch route if this seqno is BATADV_V_MAX_ORIGDIFF newer than
--	 * the last received seqno from our best next hop.
--	 */
--	if (router) {
--		router_ifinfo = batadv_neigh_ifinfo_get(router, if_outgoing);
--		neigh_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
--
--		/* if these are not allocated, something is wrong. */
--		if (!router_ifinfo || !neigh_ifinfo)
--			goto out;
--
--		neigh_last_seqno = neigh_ifinfo->bat_v.last_seqno;
--		router_last_seqno = router_ifinfo->bat_v.last_seqno;
--		neigh_seq_diff = neigh_last_seqno - router_last_seqno;
--		router_throughput = router_ifinfo->bat_v.throughput;
--		neigh_throughput = neigh_ifinfo->bat_v.throughput;
--
--		if ((neigh_seq_diff < BATADV_OGM_MAX_ORIGDIFF) &&
--		    (router_throughput >= neigh_throughput))
--			goto out;
--	}
--
--	batadv_update_route(bat_priv, orig_node, if_outgoing, neigh_node);
--
--out:
--	if (router_ifinfo)
--		batadv_neigh_ifinfo_put(router_ifinfo);
--	if (neigh_ifinfo)
--		batadv_neigh_ifinfo_put(neigh_ifinfo);
--	if (router)
--		batadv_neigh_node_put(router);
--}
--
--/**
-  * batadv_v_forward_penalty - apply a penalty to the throughput metric forwarded
-  *  with B.A.T.M.A.N. V OGMs
-  * @bat_priv: the bat priv with all the soft interface information
-@@ -546,6 +479,11 @@ static bool batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
- 	struct batadv_neigh_node *router = NULL;
- 	struct batadv_orig_node *orig_neigh_node = NULL;
- 	struct batadv_neigh_node *orig_neigh_router = NULL;
-+	struct batadv_neigh_ifinfo *router_ifinfo = NULL, *neigh_ifinfo = NULL;
-+	u32 router_throughput, neigh_throughput;
-+	u32 router_last_seqno;
-+	u32 neigh_last_seqno;
-+	s32 neigh_seq_diff;
- 	bool forward = false;
- 
- 	orig_neigh_node = batadv_v_ogm_orig_get(bat_priv, ethhdr->h_source);
-@@ -565,11 +503,44 @@ static bool batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
- 		goto out;
- 	}
- 
--	/* Update routes, and check if the OGM is from the best next hop */
--	batadv_v_ogm_orig_update(bat_priv, orig_node, neigh_node, ogm2,
--				 if_outgoing);
--
-+	/* Mark the OGM to be considered for forwarding, and update routes
-+	 * if needed.
-+	 */
- 	forward = true;
-+
-+	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+		   "Searching and updating originator entry of received packet\n");
-+
-+	/* if this neighbor already is our next hop there is nothing
-+	 * to change
-+	 */
-+	if (router == neigh_node)
-+		goto out;
-+
-+	/* don't consider neighbours with worse throughput.
-+	 * also switch route if this seqno is BATADV_V_MAX_ORIGDIFF newer than
-+	 * the last received seqno from our best next hop.
-+	 */
-+	if (router) {
-+		router_ifinfo = batadv_neigh_ifinfo_get(router, if_outgoing);
-+		neigh_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
-+
-+		/* if these are not allocated, something is wrong. */
-+		if (!router_ifinfo || !neigh_ifinfo)
-+			goto out;
-+
-+		neigh_last_seqno = neigh_ifinfo->bat_v.last_seqno;
-+		router_last_seqno = router_ifinfo->bat_v.last_seqno;
-+		neigh_seq_diff = neigh_last_seqno - router_last_seqno;
-+		router_throughput = router_ifinfo->bat_v.throughput;
-+		neigh_throughput = neigh_ifinfo->bat_v.throughput;
-+
-+		if ((neigh_seq_diff < BATADV_OGM_MAX_ORIGDIFF) &&
-+		    (router_throughput >= neigh_throughput))
-+			goto out;
-+	}
-+
-+	batadv_update_route(bat_priv, orig_node, if_outgoing, neigh_node);
- out:
- 	if (router)
- 		batadv_neigh_node_put(router);
-@@ -577,6 +548,10 @@ out:
- 		batadv_neigh_node_put(orig_neigh_router);
- 	if (orig_neigh_node)
- 		batadv_orig_node_put(orig_neigh_node);
-+	if (router_ifinfo)
-+		batadv_neigh_ifinfo_put(router_ifinfo);
-+	if (neigh_ifinfo)
-+		batadv_neigh_ifinfo_put(neigh_ifinfo);
- 
- 	return forward;
- }
--- 
-2.7.0
+your test looks correct. By accident this bug in mac80211 was "balanced" by=
+ the
+bug that Marek is fixing with ("batman-adv: convert wifi driver throughput =
+to
+multiples of 100kbps").
 
+Your patch[1] looks sane to me. Thanks for sending it to linux-wireless.
+
+Cheers,
+
+
+[1]http://article.gmane.org/gmane.linux.kernel.wireless.general/148102
+
+--=20
+Antonio Quartulli
+
+--TRYliJ5NKNqkz5bu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWr2+OAAoJENpFlCjNi1MR4nQP/RGEu0BMktOJxFlU3IZ11EIx
+Ax/K7+AoJVl2BRFb8NT4XRL4O+0kgJq59AjVJgavcTxncDDj/nlGB2xCDKw3ZRmd
+PKTfw4v62kyhdf7CEXVq0p17iZJyGBtSe9RucyxY1kDlXtV05HGCH+3SGFDaGCev
+l73kSLKCnkSX++AYLL6nVIGLpn4czt+EZvtBqijBTqns2Q9fnctwUDq9kh7wP8IW
+Y9y9ZEpxZSmgblyCE3uhhSGpfwxll4oPAbxFvV+TCIoBPYjUowFLMXcqCBGxwNhe
+C3jq1kul4oAHMLakM0mBIblWdOQRWgF3WyTfszwcg9sHNwRL8i2OETPUAlYJoy0l
+XXczteYL2qbAFN/7f1RzoG/bggpExx/rC5/FCfaa66JI9vsSKworav8oDxBb634f
+EDHa6h9X9S6SZArraGKk2cMDFn8Go4LawlISCSp8lij/P38BplxmyiQrvOHrk4V5
+4idG5eujRRkmeZ4xL1gheoayhcS3tTPhkR+UEcxXCEwbHUbXiTxJ5hinexxvkNdP
+gXWg2pJQplB2g9oZSxAvSLomkbMeEvdA4Q1tv+pR4zir0Vd2kEbVs+XCNO4OWo8T
+j7841xmozQRrJCvp4U2+w7ra5Ge4rM8jnsaEBg73ODhueHcCxk5l7qz59CcoAtU+
+mz6czQRs0cYgluEPPI79
+=86VZ
+-----END PGP SIGNATURE-----
+
+--TRYliJ5NKNqkz5bu--
