@@ -1,15 +1,9 @@
-Return-Path: <sven@open-mesh.com>
-From: Sven Eckelmann <sven@open-mesh.com>
-Date: Mon, 01 Feb 2016 13:26:12 +0100
-Message-ID: <2398211.sq1Z83hZa4@bentobox>
-In-Reply-To: <1454308474-23211-2-git-send-email-mareklindner@neomailbox.ch>
-References: <1454308474-23211-1-git-send-email-mareklindner@neomailbox.ch>
- <1454308474-23211-2-git-send-email-mareklindner@neomailbox.ch>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next 2/3] batman-adv: convert wifi
-	driver throughput to multiples of 100kbps
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon,  1 Feb 2016 15:21:37 +0100
+Message-Id: <1454336498-2621-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: move and restructure
+	batadv_v_ogm_forward
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,145 +14,234 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Thomas Huehn <thomas@net.t-labs.tu-berlin.de>, Marek Lindner <mareklindner@neomailbox.ch>, antonio@open-mesh.com
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
-On Monday 01 February 2016 14:34:33 Marek Lindner wrote:
-> The expected throughout returned by the cfg80211 API is expressed in kbps
-> while internally batman-adv stores multiples of 100kbps. Ensure the
-> conversion is performed properly.
-> 
-> Fixes: 5c324517 ("ELP - compute the metric based on the estimated throughput")
-> 
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> ---
->  net/batman-adv/bat_v_elp.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-> index 46c6a00..461a765 100644
-> --- a/net/batman-adv/bat_v_elp.c
-> +++ b/net/batman-adv/bat_v_elp.c
-> @@ -100,7 +100,7 @@ static u32 batadv_v_elp_get_throughput(struct batadv_hardif_neigh_node *neigh)
->  				return 0;
->  			}
->  			if (!ret)
-> -				return sinfo.expected_throughput / 10;
-> +				return sinfo.expected_throughput / 100;
->  		}
+From: Simon Wunderlich <simon@open-mesh.com>
 
-Just tested it here and can say that it now show the same value as
-`iw dev adhoc0 station dump`. But the output of `iw dev adhoc0 station dump`
-confuses me. I can get easily get over 40 Mbit/s but the output of
-`iw dev adhoc0 station dump` show me 4.705Mbps. Also the output of
-`cat /sys/kernel/debug/ieee80211/phy*/netdev\:adhoc0/stations/*/rc_stats` look
-definitely more like ~40 Mbit/s.
+To match our code better to the protocol description of B.A.T.M.A.N. V,
+move batadv_v_ogm_forward() out into batadv_v_ogm_process_per_outif()
+and move all checks directly deciding whether the OGM should be
+forwarded into batadv_v_ogm_forward().
 
-Antonio, can you please check my tests and my conclusion (+patch [1]).
+Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+---
+Changes to PATCH:
+ * fix some embarassing compile issues and style issues (thanks Marek)
+---
+ net/batman-adv/bat_v_ogm.c | 110 ++++++++++++++++++++++++++-------------------
+ 1 file changed, 63 insertions(+), 47 deletions(-)
 
-    root@OpenWrt:/# batctl tp ac:86:74:00:99:02
-    Throughput meter called towards ac:86:74:00:99:02
-    Test duration 10100ms.
-    Sent 78082500 Bytes.
-    Throughput: 7.37 MB/s (61.84 Mbps)
-    root@OpenWrt:/# iw dev adhoc0 station dump; batctl o
-    Station ac:86:74:00:99:02 (on adhoc0)
-            inactive time:  130 ms
-            rx bytes:       127568010
-            rx packets:     322570
-            tx bytes:       352672038
-            tx packets:     310920
-            tx retries:     3732
-            tx failed:      0
-            signal:         -22 [-30, -22] dBm
-            signal avg:     -21 [-30, -22] dBm
-            tx bitrate:     144.4 MBit/s MCS 15 short GI
-            rx bitrate:     72.2 MBit/s MCS 7 short GI
-            expected throughput:    4.705Mbps
-            authorized:     yes
-            authenticated:  yes
-            preamble:       long
-            WMM/WME:        yes
-            MFP:            no
-            TDLS peer:      no
-    [B.A.T.M.A.N. adv 2016.0, MainIF/MAC: adhoc0/ac:86:74:08:39:92 (bat0 BATMAN_V)]
-      Originator      last-seen ( throughput)           Nexthop [outgoingIF]:   Potential nexthops ...
-    ac:86:74:00:99:02    0.290s (       8.1) ac:86:74:00:99:02 [    adhoc0]: ac:86:74:00:99:02 (       8.1)
-    root@OpenWrt:/# cat /sys/kernel/debug/ieee80211/phy0/netdev\:adhoc0/stations/ac:86\:74\:00\:99\:02/rc_stats
-    
-                  best   ____________rate__________    ________statistics________    ________last_______    ______sum-of________
-    mode guard #  rate  [name   idx airtime  max_tp]  [avg(tp) avg(prob) sd(prob)]  [prob.|retry|suc|att]  [#success | #attempts]
-    CCK    LP  1          1.0M  120   10548     0.7       0.7     100.0      0.0     100.0   2     0 0             5   5        
-    CCK    LP  1          2.0M  121    5476     1.5       1.5     100.0      0.0     100.0   0     0 0             1   1        
-    CCK    LP  1          5.5M  122    2411     3.6       3.6     100.0      0.0     100.0   0     0 0             1   1        
-    CCK    LP  1         11.0M  123    1535     5.7       5.7     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  LGI  1         MCS0     0    1477     5.6       5.6     100.0      0.0     100.0   1     0 0             1   1        
-    HT20  LGI  1         MCS1     1     739    10.5      10.5     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  LGI  1         MCS2     2     493    14.9      14.9     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  LGI  1         MCS3     3     369    18.7      18.7     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  LGI  1         MCS4     4     246    25.3      25.3     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  LGI  1         MCS5     5     185    30.6      30.6     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  LGI  1         MCS6     6     164    32.9      32.9     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  LGI  1         MCS7     7     148    35.0      35.0      97.2      1.6     100.0   2     0 0           428   523      
-    HT20  LGI  2         MCS8    10     739    10.5      10.5     100.0      0.0     100.0   4     0 0             1   1        
-    HT20  LGI  2         MCS9    11     369    18.7      18.7     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  LGI  2         MCS10   12     246    25.3      25.3     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  LGI  2         MCS11   13     185    30.6      30.6     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  LGI  2         MCS12   14     123    38.9      38.9     100.0      0.0     100.0   6     0 0            10   10       
-    HT20  LGI  2         MCS13   15      93    44.8      44.8      97.0      1.5     100.0   3     0 0            47   54       
-    HT20  LGI  2     D   MCS14   16      82    47.3      47.3      98.0      1.7     100.0   2     0 0          2352   3185     
-    HT20  LGI  2    C    MCS15   17      74    49.4      47.4      86.3      1.6     100.0   3     1 1         41363   50271    
-    HT20  SGI  1         MCS0    30    1329     6.2       6.2     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  SGI  1         MCS1    31     665    11.5      11.5     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  SGI  1         MCS2    32     443    16.1      16.1      95.0      1.3     100.0   0     0 0            17   19       
-    HT20  SGI  1         MCS3    33     332    20.2      20.2     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  SGI  1         MCS4    34     222    27.1      27.1     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  SGI  1         MCS5    35     166    32.8      32.8     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  SGI  1         MCS6    36     148    35.0      35.0     100.0      0.0     100.0   2     0 0            22   22       
-    HT20  SGI  1      P  MCS7    37     133    37.2      37.2      97.3      1.6     100.0   6     0 0           423   519      
-    HT20  SGI  2         MCS8    40     665    11.5      11.5     100.0      0.0     100.0   4     0 0             1   1        
-    HT20  SGI  2         MCS9    41     332    20.2      20.2      97.1      1.5     100.0   0     0 0            26   29       
-    HT20  SGI  2         MCS10   42     222    27.1      27.1      96.0      1.4     100.0   0     0 0            24   29       
-    HT20  SGI  2         MCS11   43     166    32.8      32.8     100.0      0.0     100.0   0     0 0             1   1        
-    HT20  SGI  2         MCS12   44     111    41.0      41.0      96.0      1.3     100.0   5     0 0           294   340      
-    HT20  SGI  2         MCS13   45      83    46.9      46.9      98.1      1.8     100.0   3     0 0          7364   8527     
-    HT20  SGI  2   B     MCS14   46      74    49.2      49.2      92.5      1.7     100.0   6     0 0         46910   56288    
-    HT20  SGI  2  A      MCS15   47      67    51.4      51.4      99.6      0.8     100.0   6     1 1        272870   330742
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index d9bcbe6..341ff27 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -347,10 +347,12 @@ static u32 batadv_v_forward_penalty(struct batadv_priv *bat_priv,
+ }
+ 
+ /**
+- * batadv_v_ogm_forward - forward an OGM to the given outgoing interface
++ * batadv_v_ogm_forward - check conditions and forward an OGM to the given
++ *  outgoing interface
+  * @bat_priv: the bat priv with all the soft interface information
+  * @ogm_received: previously received OGM to be forwarded
+- * @throughput: throughput to announce, may vary per outgoing interface
++ * @orig_node: the originator which has been updated
++ * @neigh_node: the neigh_node through with the OGM has been received
+  * @if_incoming: the interface on which this OGM was received on
+  * @if_outgoing: the interface to which the OGM has to be forwarded to
+  *
+@@ -359,28 +361,57 @@ static u32 batadv_v_forward_penalty(struct batadv_priv *bat_priv,
+  */
+ static void batadv_v_ogm_forward(struct batadv_priv *bat_priv,
+ 				 const struct batadv_ogm2_packet *ogm_received,
+-				 u32 throughput,
++				 struct batadv_orig_node *orig_node,
++				 struct batadv_neigh_node *neigh_node,
+ 				 struct batadv_hard_iface *if_incoming,
+ 				 struct batadv_hard_iface *if_outgoing)
+ {
++	struct batadv_neigh_ifinfo *neigh_ifinfo = NULL;
++	struct batadv_orig_ifinfo *orig_ifinfo = NULL;
++	struct batadv_neigh_node *router = NULL;
+ 	struct batadv_ogm2_packet *ogm_forward;
+ 	unsigned char *skb_buff;
+ 	struct sk_buff *skb;
+ 	size_t packet_len;
+ 	u16 tvlv_len;
+ 
++	/* only forward for specific interfaces, not for the default one. */
++	if (if_outgoing != BATADV_IF_DEFAULT)
++		goto out;
++
++	orig_ifinfo = batadv_orig_ifinfo_new(orig_node, if_outgoing);
++	if (!orig_ifinfo)
++		goto out;
++
++	/* acquire possibly updated router */
++	router = batadv_orig_router_get(orig_node, if_outgoing);
++
++	/* strict rule: forward packets coming from the best next hop only */
++	if (neigh_node != router)
++		goto out;
++
++	/* don't forward the same seqno twice on one interface */
++	if (orig_ifinfo->last_seqno_forwarded == ntohl(ogm_received->seqno))
++		goto out;
++
++	orig_ifinfo->last_seqno_forwarded = ntohl(ogm_received->seqno);
++
+ 	if (ogm_received->ttl <= 1) {
+ 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv, "ttl exceeded\n");
+-		return;
++		goto out;
+ 	}
+ 
++	neigh_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
++	if (!neigh_ifinfo)
++		goto out;
++
+ 	tvlv_len = ntohs(ogm_received->tvlv_len);
+ 
+ 	packet_len = BATADV_OGM2_HLEN + tvlv_len;
+ 	skb = netdev_alloc_skb_ip_align(if_outgoing->net_dev,
+ 					ETH_HLEN + packet_len);
+ 	if (!skb)
+-		return;
++		goto out;
+ 
+ 	skb_reserve(skb, ETH_HLEN);
+ 	skb_buff = skb_put(skb, packet_len);
+@@ -388,15 +419,23 @@ static void batadv_v_ogm_forward(struct batadv_priv *bat_priv,
+ 
+ 	/* apply forward penalty */
+ 	ogm_forward = (struct batadv_ogm2_packet *)skb_buff;
+-	ogm_forward->throughput = htonl(throughput);
++	ogm_forward->throughput = htonl(neigh_ifinfo->bat_v.throughput);
+ 	ogm_forward->ttl--;
+ 
+ 	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+ 		   "Forwarding OGM2 packet on %s: throughput %u, ttl %u, received via %s\n",
+-		   if_outgoing->net_dev->name, throughput, ogm_forward->ttl,
+-		   if_incoming->net_dev->name);
++		   if_outgoing->net_dev->name, ntohl(ogm_forward->throughput),
++		   ogm_forward->ttl, if_incoming->net_dev->name);
+ 
+ 	batadv_v_ogm_send_to_if(skb, if_outgoing);
++
++out:
++	if (orig_ifinfo)
++		batadv_orig_ifinfo_put(orig_ifinfo);
++	if (router)
++		batadv_neigh_node_put(router);
++	if (neigh_ifinfo)
++		batadv_neigh_ifinfo_put(neigh_ifinfo);
+ }
+ 
+ /**
+@@ -493,8 +532,10 @@ out:
+  * @neigh_node: the neigh_node through with the OGM has been received
+  * @if_incoming: the interface where this packet was received
+  * @if_outgoing: the interface for which the packet should be considered
++ *
++ * Return: true if the packet should be forwarded, false otherwise
+  */
+-static void batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
++static bool batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
+ 				      const struct ethhdr *ethhdr,
+ 				      const struct batadv_ogm2_packet *ogm2,
+ 				      struct batadv_orig_node *orig_node,
+@@ -503,14 +544,9 @@ static void batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
+ 				      struct batadv_hard_iface *if_outgoing)
+ {
+ 	struct batadv_neigh_node *router = NULL;
+-	struct batadv_neigh_ifinfo *neigh_ifinfo = NULL;
+ 	struct batadv_orig_node *orig_neigh_node = NULL;
+-	struct batadv_orig_ifinfo *orig_ifinfo = NULL;
+ 	struct batadv_neigh_node *orig_neigh_router = NULL;
+-
+-	neigh_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
+-	if (!neigh_ifinfo)
+-		goto out;
++	bool forward = false;
+ 
+ 	orig_neigh_node = batadv_v_ogm_orig_get(bat_priv, ethhdr->h_source);
+ 	if (!orig_neigh_node)
+@@ -529,47 +565,20 @@ static void batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
+ 		goto out;
+ 	}
+ 
+-	if (router)
+-		batadv_neigh_node_put(router);
+-
+ 	/* Update routes, and check if the OGM is from the best next hop */
+ 	batadv_v_ogm_orig_update(bat_priv, orig_node, neigh_node, ogm2,
+ 				 if_outgoing);
+ 
+-	orig_ifinfo = batadv_orig_ifinfo_new(orig_node, if_outgoing);
+-	if (!orig_ifinfo)
+-		goto out;
+-
+-	/* don't forward the same seqno twice on one interface */
+-	if (orig_ifinfo->last_seqno_forwarded == ntohl(ogm2->seqno))
+-		goto out;
+-
+-	/* acquire possibly updated router */
+-	router = batadv_orig_router_get(orig_node, if_outgoing);
+-
+-	/* strict rule: forward packets coming from the best next hop only */
+-	if (neigh_node != router)
+-		goto out;
+-
+-	/* only forward for specific interface, not for the default one. */
+-	if (if_outgoing != BATADV_IF_DEFAULT) {
+-		orig_ifinfo->last_seqno_forwarded = ntohl(ogm2->seqno);
+-		batadv_v_ogm_forward(bat_priv, ogm2,
+-				     neigh_ifinfo->bat_v.throughput,
+-				     if_incoming, if_outgoing);
+-	}
+-
++	forward = true;
+ out:
+-	if (orig_ifinfo)
+-		batadv_orig_ifinfo_put(orig_ifinfo);
+ 	if (router)
+ 		batadv_neigh_node_put(router);
+ 	if (orig_neigh_router)
+ 		batadv_neigh_node_put(orig_neigh_router);
+ 	if (orig_neigh_node)
+ 		batadv_orig_node_put(orig_neigh_node);
+-	if (neigh_ifinfo)
+-		batadv_neigh_ifinfo_put(neigh_ifinfo);
++
++	return forward;
+ }
+ 
+ /**
+@@ -592,6 +601,7 @@ batadv_v_ogm_process_per_outif(struct batadv_priv *bat_priv,
+ 			       struct batadv_hard_iface *if_outgoing)
+ {
+ 	int seqno_age;
++	bool forward;
+ 
+ 	/* first, update the metric with according sanity checks */
+ 	seqno_age = batadv_v_ogm_metric_update(bat_priv, ogm2, orig_node,
+@@ -610,8 +620,14 @@ batadv_v_ogm_process_per_outif(struct batadv_priv *bat_priv,
+ 					       ntohs(ogm2->tvlv_len));
+ 
+ 	/* if the metric update went through, update routes if needed */
+-	batadv_v_ogm_route_update(bat_priv, ethhdr, ogm2, orig_node,
+-				  neigh_node, if_incoming, if_outgoing);
++	forward = batadv_v_ogm_route_update(bat_priv, ethhdr, ogm2, orig_node,
++					    neigh_node, if_incoming,
++					    if_outgoing);
++
++	/* if the routes have been processed correctly, check and forward */
++	if (forward)
++		batadv_v_ogm_forward(bat_priv, ogm2, orig_node, neigh_node,
++				     if_incoming, if_outgoing);
+ }
+ 
+ /**
+-- 
+2.7.0
 
-
-Just for comparison the calculation of the TP in the table:
-
-    tp_avg = minstrel_ht_get_tp_avg(mi, i, j, mrs->prob_ewma);
-
-and the calculation of the TP in the minstrel_ht_get_expected_throughput:
-
-    /* convert tp_avg from pkt per second in kbps */
-    tp_avg = minstrel_ht_get_tp_avg(mi, i, j, prob) * AVG_PKT_SIZE * 8 / 1024;
-
-Your original patch (cca674d47e59665630f3005291b61bb883015fc5) was
-slightly different:
-
-    return mi->groups[i].rates[j].cur_tp * AVG_PKT_SIZE * 8 / 1024;
-
-I would guess that following commit mixed it up:
-
-    6a27b2c40b48 ("mac80211: restructure per-rate throughput calculation into function")
-
-It changed the code in debugfs to:
-
-    -               tp = mrs->cur_tp / 10;
-    +               tp_avg = minstrel_ht_get_tp_avg(mi, i, j);
-
-But the code in the minstrel_ht_get_expected_throughput/minstrel_get_expected_throughput to
-
-    -       /* convert cur_tp from pkt per second in kbps */
-    -       return mi->groups[i].rates[j].cur_tp * AVG_PKT_SIZE * 8 / 1024;
-    +       /* convert tp_avg from pkt per second in kbps */
-    +       tp_avg = minstrel_ht_get_tp_avg(mi, i, j) * AVG_PKT_SIZE * 8 / 1024;
-
-So there is at least a factor of 10 missing now (which perfectly matched with
-the factor 10 Marek just removed in this patch).
-
-Kind regards,
-	Sven
-
-[1] http://article.gmane.org/gmane.linux.kernel.wireless.general/148102
