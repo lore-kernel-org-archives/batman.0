@@ -1,16 +1,16 @@
 Return-Path: <andrew@lunn.ch>
-Date: Tue, 2 Feb 2016 03:11:40 +0100
+Date: Tue, 2 Feb 2016 03:22:38 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160202021140.GA12673@lunn.ch>
-References: <1453312110-32683-1-git-send-email-andrew@lunn.ch>
- <1453312110-32683-4-git-send-email-andrew@lunn.ch>
- <1988230.TvXLEl4ULW@bentobox> <20160201025755.GO22112@prodigo.lan>
+Message-ID: <20160202022238.GD12673@lunn.ch>
+References: <1453953196-29943-1-git-send-email-andrew@lunn.ch>
+ <1453953196-29943-2-git-send-email-andrew@lunn.ch>
+ <3299385.slEDhCLINf@prime>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20160201025755.GO22112@prodigo.lan>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: Handle parent interfaces
- in a different netns
+In-Reply-To: <3299385.slEDhCLINf@prime>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] alfred: Add support for network
+ namespaces
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,32 +20,92 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <a@unstable.cc>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>
 
-On Mon, Feb 01, 2016 at 10:57:55AM +0800, Antonio Quartulli wrote:
-> On Wed, Jan 27, 2016 at 11:13:53AM +0100, Sven Eckelmann wrote:
-> > On Wednesday 20 January 2016 18:48:29 Andrew Lunn wrote:
-> > > nameplace, so also retrieve the parents name space when finding the
+On Fri, Jan 29, 2016 at 01:18:13PM +0100, Simon Wunderlich wrote:
+> On Thursday 28 January 2016 04:53:14 Andrew Lunn wrote:
+> > When running within a network namespace, access to files within
+> > debugfs have to take into account the network name space. Each
+> > namespace has its own directory under
+> > /sys/kernel/debug/batman_adv/netns.
 > > 
-> > s/nameplace/namespace/ ?
+> > Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> > ---
+> >  batadv_query.c |  2 +-
+> >  debugfs.c      | 49 ++++++++++++++++++++++++++++++++++++++++++++++++-
+> >  vis/vis.h      |  2 +-
+> >  3 files changed, 50 insertions(+), 3 deletions(-)
 > > 
-> > > Additionally, veth devices come in pairs and they are each others
-> > > parents. Don't infinitely recurse in this situation.
+> > diff --git a/batadv_query.c b/batadv_query.c
+> > index c289b80..fe7c007 100644
+> > --- a/batadv_query.c
+> > +++ b/batadv_query.c
+> > @@ -31,7 +31,7 @@
+> >  #include <sys/types.h>
+> >  #include "debugfs.h"
 > > 
-> > Can we have this part as extra patch so Antonio can ask David for a stable 
-> > backport?
+> > -#define DEBUG_BATIF_PATH_FMT "%s/batman_adv/%s"
+> > +#define DEBUG_BATIF_PATH_FMT "%s/batman_adv/%s%s"
+> >  #define DEBUG_TRANSTABLE_GLOBAL "transtable_global"
+> >  #define DEBUG_ORIGINATORS "originators"
+> > 
+> > diff --git a/debugfs.c b/debugfs.c
+> > index fc39322..35c1bdf 100644
+> > --- a/debugfs.c
+> > +++ b/debugfs.c
+> > @@ -20,11 +20,15 @@
+> > 
+> >  #include "debugfs.h"
+> >  #include <errno.h>
+> > +#include <fcntl.h>
+> > +#include <limits.h>
+> >  #include <stdio.h>
+> >  #include <string.h>
+> >  #include <sys/mount.h>
+> >  #include <sys/stat.h>
+> >  #include <sys/statfs.h>
+> > +#include <sys/types.h>
+> > +#include <unistd.h>
+> > 
+> >  #ifndef DEBUGFS_MAGIC
+> >  #define DEBUGFS_MAGIC          0x64626720
+> > @@ -42,16 +46,59 @@ static const char *debugfs_known_mountpoints[] = {
+> >  	NULL,
+> >  };
+> > 
+> > +/* Return the current net namespace number. 0 is never a valid
+> > + * namespace, so use it to return that there is no name space
+> > + * support.
+> > + */
+> > +
+> > +static unsigned int debugfs_get_netns_inum(void)
+> > +{
+> > +	char net_path[] = "/proc/self/ns/net";
+> > +	struct stat netst;
+> > +	int netns;
+> > +
+> > +	netns = open(net_path, O_RDONLY);
+> > +	if (netns < 0) {
+> > +		if (errno == ENOENT)
+> > +			/* Probably means no netns support in the kernel */
+> > +			return 0;
+> > +
+> > +		fprintf(stderr,
+> > +			"Error - can't open /proc/self/ns/net for read: %s\n",
+> > +			strerror(errno));
+> > +		return 0;
+> > +	}
+> > +
+> > +	if (fstat(netns, &netst) < 0) {
+> > +		fprintf(stderr, "Stat of netns failed: %s\n",
+> > +			strerror(errno));
+> > +		return 0;
 > 
-> Andrew,
-> 
-> do you have any plan about resending this fix ?
-> Sven also sent a pair of fixes and it would be nice I could send everything in
-> on pull request.
+> Aren't we leaking the netns file descriptor here?
 
-Sorry, been in the wilderness the last few days.
+Yes, it is leaking. I will fix that in a v2.
 
-I will try to resend tomorrow. If not, it will be Thursday.  If you
-want it sooner, feel free to fix it up yourself and add your own
-Signed-off by, next to mine.
+Thanks
+     Andrew
 
-	   Andrew
