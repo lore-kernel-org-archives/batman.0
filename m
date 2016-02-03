@@ -1,11 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Wed,  3 Feb 2016 10:18:33 +0800
-Message-Id: <1454465917-13332-13-git-send-email-a@unstable.cc>
+Date: Wed,  3 Feb 2016 10:18:37 +0800
+Message-Id: <1454465917-13332-17-git-send-email-a@unstable.cc>
 In-Reply-To: <1454465917-13332-1-git-send-email-a@unstable.cc>
 References: <1454465917-13332-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 12/16] batman-adv: add kernel doc for AP
-	isolation attributes in bat_priv
+Subject: [B.A.T.M.A.N.] [PATCH 16/16] batman-adv: Switch to HTTPS version of
+	links
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,27 +16,62 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
 
+From: Sven Eckelmann <sven@narfation.org>
+
+open-mesh.org and its subdomains can only be accessed via HTTPS. HTTP-only
+requests are currently redirected automatically to HTTPS but references in
+the source code should be only https.
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/types.h | 3 +++
- 1 file changed, 3 insertions(+)
+ Documentation/networking/batman-adv.txt | 2 +-
+ MAINTAINERS                             | 2 +-
+ net/batman-adv/Kconfig                  | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 7f7a0f1eaf75..5e8c8df4c4ac 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -772,6 +772,9 @@ struct batadv_softif_vlan {
-  * @orig_interval: OGM broadcast interval in milliseconds
-  * @hop_penalty: penalty which will be applied to an OGM's tq-field on every hop
-  * @log_level: configured log level (see batadv_dbg_level)
-+ * @isolation_mark: the skb->mark value used to match packets for AP isolation
-+ * @isolation_mark_mask: bitmask identifying the bits in skb->mark to be used
-+ *  for the isolation mark
-  * @bcast_seqno: last sent broadcast packet sequence number
-  * @bcast_queue_left: number of remaining buffered broadcast packet slots
-  * @batman_queue_left: number of remaining OGM packet slots
+diff --git a/Documentation/networking/batman-adv.txt b/Documentation/networking/batman-adv.txt
+index ff23b755f5e4..1b5e7a7f2185 100644
+--- a/Documentation/networking/batman-adv.txt
++++ b/Documentation/networking/batman-adv.txt
+@@ -187,7 +187,7 @@ interfaces to the kernel module settings.
+ 
+ For more information, please see the manpage (man batctl).
+ 
+-batctl is available on http://www.open-mesh.org/
++batctl is available on https://www.open-mesh.org/
+ 
+ 
+ CONTACT
+diff --git a/MAINTAINERS b/MAINTAINERS
+index f678c37107f5..1e216aa4d25c 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2147,7 +2147,7 @@ M:	Marek Lindner <mareklindner@neomailbox.ch>
+ M:	Simon Wunderlich <sw@simonwunderlich.de>
+ M:	Antonio Quartulli <a@unstable.cc>
+ L:	b.a.t.m.a.n@lists.open-mesh.org
+-W:	http://www.open-mesh.org/
++W:	https://www.open-mesh.org/
+ S:	Maintained
+ F:	net/batman-adv/
+ 
+diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
+index c6fc8f756c9a..2dd40e5ea030 100644
+--- a/net/batman-adv/Kconfig
++++ b/net/batman-adv/Kconfig
+@@ -12,7 +12,7 @@ config BATMAN_ADV
+           B.A.T.M.A.N. (better approach to mobile ad-hoc networking) is
+           a routing protocol for multi-hop ad-hoc mesh networks. The
+           networks may be wired or wireless. See
+-          http://www.open-mesh.org/ for more information and user space
++          https://www.open-mesh.org/ for more information and user space
+           tools.
+ 
+ config BATMAN_ADV_BLA
 -- 
 2.7.0
 
