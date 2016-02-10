@@ -1,15 +1,8 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 10 Feb 2016 19:04:33 +0800
-Message-ID: <1800749.IPEkk1fdTQ@voltaire>
-In-Reply-To: <1454336498-2621-2-git-send-email-sw@simonwunderlich.de>
-References: <1454336498-2621-1-git-send-email-sw@simonwunderlich.de>
- <1454336498-2621-2-git-send-email-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2329489.9FJJ0dg5je";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: Merge
-	batadv_v_ogm_orig_update into batadv_v_ogm_route_update
+Return-Path: <a@unstable.cc>
+From: Antonio Quartulli <a@unstable.cc>
+Date: Wed, 10 Feb 2016 23:57:06 +0800
+Message-Id: <1455119847-5862-1-git-send-email-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] pull request [net-next]: batman-adv 20160210
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,49 +12,99 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon@open-mesh.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2329489.9FJJ0dg5je
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hello David,
 
-On Monday, February 01, 2016 15:21:38 Simon Wunderlich wrote:
-> From: Simon Wunderlich <simon@open-mesh.com>
-> 
-> Since batadv_v_ogm_orig_update() was only called from one place and the
-> calling function became very short, merge these two functions together.
-> 
-> This should also reflect the protocol description of B.A.T.M.A.N. V
-> better.
-> 
-> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-> ---
->  net/batman-adv/bat_v_ogm.c | 117
-> ++++++++++++++++++--------------------------- 1 file changed, 46
-> insertions(+), 71 deletions(-)
+this is another pull request intended for net-next.
 
-Applied in revision 507dba0.
+Here you have a batch of patches by Sven Eckelmann that
+drops our private reference counting implementation and
+substitutes it with the kref objects/functions.
 
-Thanks,
-Marek
+Then you have a patch, by Simon Wunderlich, that
+makes the broadcast protection window code more generic so
+that it can be re-used in the future by other components
+with different requirements.
 
---nextPart2329489.9FJJ0dg5je
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Lastly, Sven is also introducing two lockdep asserts in
+functions operating on our TVLV container list, to make
+sure that the proper lock is always acquired by the users.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Please pull or let me know of any problem!
+Thanks a lot,
+	Antonio
 
-iQEcBAABCAAGBQJWuxlBAAoJEFNVTo/uthzAIb0H/Rc5HlyqhII11MHG/CUlHm4T
-NVnS1ZCNT6I4KHld8eCvJZvPD0f6BoiTvvaygc9/0dmn6oDmBNtr+vjglY5SkStG
-wTROmQLvEoCUe6n4OIBozg9V4RZDpJ027hk8HkaN63uhtUjH8aOs3eKOj6LEs2iR
-CdhttXvsj7Rekz07rrcWbwIhjgy9qhOGRf/6ZpQfBVDPtla3Ir+0LC22jTn/5fKg
-igOsbAWfwV7eYxSBHdHhvY0eX7OnsmExkERB3JbicNvlx6x17e3zu+/9HlojzxvI
-yKYfw2PDD33ZmIlMU0ydXJt6BFym/pvmNNDDISIvF8rEvqoEizKmB+Ou01L95Fc=
-=g8ys
------END PGP SIGNATURE-----
 
---nextPart2329489.9FJJ0dg5je--
+The following changes since commit aaa5672052cb0f18a5ab0ab19e9ef71c50e018a8:
 
+  sxgbe: remove unused code (2016-02-10 06:10:17 -0500)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-for-davem
+
+for you to fetch changes up to 92dcdf09a139e51b7b043b9443b8fd69de298dff:
+
+  batman-adv: Convert batadv_tt_common_entry to kref (2016-02-10 23:24:06 +0800)
+
+----------------------------------------------------------------
+Here you have a batch of patches by Sven Eckelmann that
+drops our private reference counting implementation and
+substitutes it with the kref objects/functions.
+
+Then you have a patch, by Simon Wunderlich, that
+makes the broadcast protection window code more generic so
+that it can be re-used in the future by other components
+with different requirements.
+
+Lastly, Sven is also introducing two lockdep asserts in
+functions operating on our TVLV container list, to make
+sure that the proper lock is always acquired by the users.
+
+----------------------------------------------------------------
+Simon Wunderlich (1):
+      batman-adv: add seqno maximum age and protection start flag parameters
+
+Sven Eckelmann (20):
+      batman-adv: Drop reference to netdevice on last reference
+      batman-adv: Add lockdep assert for container_list_lock
+      batman-adv: Convert batadv_hardif_neigh_node to kref
+      batman-adv: Convert batadv_gw_node to kref
+      batman-adv: Convert batadv_softif_vlan to kref
+      batman-adv: Convert batadv_bla_backbone_gw to kref
+      batman-adv: Convert batadv_bla_claim to kref
+      batman-adv: Convert batadv_nc_node to kref
+      batman-adv: Convert batadv_nc_path to kref
+      batman-adv: Convert batadv_dat_entry to kref
+      batman-adv: Convert batadv_tvlv_container to kref
+      batman-adv: Convert batadv_tvlv_handler to kref
+      batman-adv: Convert batadv_tt_orig_list_entry to kref
+      batman-adv: Convert batadv_neigh_ifinfo to kref
+      batman-adv: Convert batadv_orig_ifinfo to kref
+      batman-adv: Convert batadv_neigh_node to kref
+      batman-adv: Convert batadv_hard_iface to kref
+      batman-adv: Convert batadv_orig_node_vlan to kref
+      batman-adv: Convert batadv_orig_node to kref
+      batman-adv: Convert batadv_tt_common_entry to kref
+
+ net/batman-adv/bat_iv_ogm.c            |  12 ++--
+ net/batman-adv/bridge_loop_avoidance.c |  43 +++++++++---
+ net/batman-adv/distributed-arp-table.c |  29 ++++++--
+ net/batman-adv/gateway_client.c        |  44 ++++++++----
+ net/batman-adv/hard-interface.c        |  25 ++++---
+ net/batman-adv/hard-interface.h        |  16 ++---
+ net/batman-adv/main.c                  |  50 +++++++++++---
+ net/batman-adv/main.h                  |   3 +
+ net/batman-adv/multicast.c             |   7 +-
+ net/batman-adv/network-coding.c        |  51 +++++++++-----
+ net/batman-adv/originator.c            | 122 ++++++++++++++++++++-------------
+ net/batman-adv/originator.h            |   4 +-
+ net/batman-adv/routing.c               |  26 ++++---
+ net/batman-adv/routing.h               |   3 +-
+ net/batman-adv/soft-interface.c        |  33 ++++++---
+ net/batman-adv/sysfs.c                 |   3 +-
+ net/batman-adv/translation-table.c     |  90 +++++++++++++++++-------
+ net/batman-adv/types.h                 |  37 +++++-----
+ 18 files changed, 405 insertions(+), 193 deletions(-)
