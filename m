@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 10 Feb 2016 18:21:31 +0800
-Message-ID: <3730234.4K1dvT2BxX@voltaire>
-In-Reply-To: <1454308474-23211-2-git-send-email-mareklindner@neomailbox.ch>
+Date: Wed, 10 Feb 2016 18:22:46 +0800
+Message-ID: <17331368.yIBrKbZIZt@voltaire>
+In-Reply-To: <1454308474-23211-3-git-send-email-mareklindner@neomailbox.ch>
 References: <1454308474-23211-1-git-send-email-mareklindner@neomailbox.ch>
- <1454308474-23211-2-git-send-email-mareklindner@neomailbox.ch>
+ <1454308474-23211-3-git-send-email-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1816329.tFKW2ituQp";
+Content-Type: multipart/signed; boundary="nextPart3941454.Kqo2UUSjtu";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next 2/3] batman-adv: convert wifi
-	driver throughput to multiples of 100kbps
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 next 3/3] batman-adv: fix misleading
+	default throughput warning
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,29 +21,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart1816329.tFKW2ituQp
+--nextPart3941454.Kqo2UUSjtu
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, February 01, 2016 14:34:33 Marek Lindner wrote:
-> The expected throughout returned by the cfg80211 API is expressed in kbps
-> while internally batman-adv stores multiples of 100kbps. Ensure the
-> conversion is performed properly.
+On Monday, February 01, 2016 14:34:34 Marek Lindner wrote:
+> BATADV_THROUGHPUT_DEFAULT_VALUE is expressed in multiples of 100kbps. Make
+> sure the warning text converts it properly.
 > 
 > Fixes: 5c324517 ("ELP - compute the metric based on the estimated
 > throughput")
 > 
 > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 > ---
->  net/batman-adv/bat_v_elp.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  net/batman-adv/bat_v_elp.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 
-Applied in revision c59b8c7.
+Applied in revision 41d1e61.
 
 Regards,
 Marek
 
---nextPart1816329.tFKW2ituQp
+--nextPart3941454.Kqo2UUSjtu
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -51,14 +50,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWuw8rAAoJEFNVTo/uthzAL+gH/jEL6oM+iH2Y6C5+Fq8Y0qUh
-B9joaVES1LHX9D2juT22673dPyIBCyTKzUfIs8oBVDv/Dd/bEbv75ARPuA+EtV4n
-mREvN07FE1kNq1OQQpAg2sukjA1K/OxmP6Wnp10LD7bghoVK4uIH4mQRUIKctgZh
-2NDURKtz5NuGR9OAnlu69DPAO9/IVx4gjZ0scddjHUFUKag7kIIMuNkNrGX0Fwwt
-6BMrWLw9ugSlEQGDoXNxLH1hCFk/KpuL7ZVBsjYMI0mV8Hr8rYyPunlmEQct9nrU
-IAnkGwLLchAW1buTpNXuorYAAJObFEEK0VsHtA7NiIR/rS27cqv4SMARL2EAd2k=
-=HJNy
+iQEcBAABCAAGBQJWuw92AAoJEFNVTo/uthzApYAIAMBlCbrNZ2GYpd4I75nq1g0X
+0wvs3g0f/XksEwg8VKAF0aA2utytSUqYbvQy3cRxjB82v3Ra3hsg26KEI4UItKsp
+n7fpr7WCykjsdgvwli2UK3XanBI35Bi4odSeSMxccHoipAI3hOAo7hJrx3YiUFDo
+y211/AmmHB2BT34BxocDipQnDR1KleLxxJ2DUBZcMD6nLF3LdgAl3FS/C0WbT39O
+lSEIlLlwtdkGeca1eZvMjMApm7h+cJAe6GhvGOt9jVMcP6kEOPFrE61XVgn/466x
+JUz9Pt06sqw9K+LLj0g3kkwTgX3uuTaa9EH3ma9gKpRwK4APRDOh94ok0UT9p6M=
+=9kL+
 -----END PGP SIGNATURE-----
 
---nextPart1816329.tFKW2ituQp--
+--nextPart3941454.Kqo2UUSjtu--
 
