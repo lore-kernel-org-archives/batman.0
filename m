@@ -1,11 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Wed, 10 Feb 2016 23:57:27 +0800
-Message-Id: <1455119847-5862-22-git-send-email-a@unstable.cc>
+Date: Wed, 10 Feb 2016 23:57:25 +0800
+Message-Id: <1455119847-5862-20-git-send-email-a@unstable.cc>
 In-Reply-To: <1455119847-5862-1-git-send-email-a@unstable.cc>
 References: <1455119847-5862-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 21/21] batman-adv: Convert
-	batadv_tt_common_entry to kref
+Subject: [B.A.T.M.A.N.] [PATCH 19/21] batman-adv: Convert
+	batadv_orig_node_vlan to kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -28,122 +28,73 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/translation-table.c | 64 +++++++++++++++++++++++++++++---------
- net/batman-adv/types.h             |  2 +-
- 2 files changed, 51 insertions(+), 15 deletions(-)
+ net/batman-adv/originator.c | 26 ++++++++++++++++++++------
+ net/batman-adv/types.h      |  2 +-
+ 2 files changed, 21 insertions(+), 7 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 96b1571213bd..11882793f0a4 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -142,7 +142,7 @@ batadv_tt_hash_find(struct batadv_hashtable *hash, const u8 *addr,
- 		if (tt->vid != vid)
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index bf27007a574a..8b2ef8de93e9 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -82,7 +82,7 @@ batadv_orig_node_vlan_get(struct batadv_orig_node *orig_node,
+ 		if (tmp->vid != vid)
  			continue;
  
--		if (!atomic_inc_not_zero(&tt->refcount))
-+		if (!kref_get_unless_zero(&tt->refcount))
+-		if (!atomic_inc_not_zero(&tmp->refcount))
++		if (!kref_get_unless_zero(&tmp->refcount))
  			continue;
  
- 		tt_tmp = tt;
-@@ -203,25 +203,59 @@ batadv_tt_global_hash_find(struct batadv_priv *bat_priv, const u8 *addr,
- 	return tt_global_entry;
- }
+ 		vlan = tmp;
+@@ -123,7 +123,8 @@ batadv_orig_node_vlan_new(struct batadv_orig_node *orig_node,
+ 	if (!vlan)
+ 		goto out;
  
--static void
--batadv_tt_local_entry_free_ref(struct batadv_tt_local_entry *tt_local_entry)
-+/**
-+ * batadv_tt_local_entry_release - release tt_local_entry from lists and queue
-+ *  for free after rcu grace period
-+ * @ref: kref pointer of the nc_node
-+ */
-+static void batadv_tt_local_entry_release(struct kref *ref)
- {
--	if (atomic_dec_and_test(&tt_local_entry->common.refcount))
--		kfree_rcu(tt_local_entry, common.rcu);
-+	struct batadv_tt_local_entry *tt_local_entry;
-+
-+	tt_local_entry = container_of(ref, struct batadv_tt_local_entry,
-+				      common.refcount);
-+
-+	kfree_rcu(tt_local_entry, common.rcu);
+-	atomic_set(&vlan->refcount, 2);
++	kref_init(&vlan->refcount);
++	kref_get(&vlan->refcount);
+ 	vlan->vid = vid;
+ 
+ 	hlist_add_head_rcu(&vlan->list, &orig_node->vlan_list);
+@@ -135,14 +136,27 @@ out:
  }
  
  /**
-- * batadv_tt_global_entry_free_ref - decrement the refcounter for a
-- *  tt_global_entry and possibly free it
-- * @tt_global_entry: the object to free
-+ * batadv_tt_local_entry_free_ref - decrement the tt_local_entry refcounter and
-+ *  possibly release it
-+ * @tt_local_entry: tt_local_entry to be free'd
+- * batadv_orig_node_vlan_free_ref - decrement the refcounter and possibly free
+- *  the originator-vlan object
++ * batadv_orig_node_vlan_release - release originator-vlan object from lists
++ *  and queue for free after rcu grace period
++ * @ref: kref pointer of the originator-vlan object
 + */
-+static void
-+batadv_tt_local_entry_free_ref(struct batadv_tt_local_entry *tt_local_entry)
++static void batadv_orig_node_vlan_release(struct kref *ref)
 +{
-+	kref_put(&tt_local_entry->common.refcount,
-+		 batadv_tt_local_entry_release);
++	struct batadv_orig_node_vlan *orig_vlan;
++
++	orig_vlan = container_of(ref, struct batadv_orig_node_vlan, refcount);
++
++	kfree_rcu(orig_vlan, rcu);
 +}
 +
 +/**
-+ * batadv_tt_global_entry_release - release tt_global_entry from lists and queue
-+ *  for free after rcu grace period
-+ * @ref: kref pointer of the nc_node
-+ */
-+static void batadv_tt_global_entry_release(struct kref *ref)
-+{
-+	struct batadv_tt_global_entry *tt_global_entry;
-+
-+	tt_global_entry = container_of(ref, struct batadv_tt_global_entry,
-+				       common.refcount);
-+
-+	batadv_tt_global_del_orig_list(tt_global_entry);
-+	kfree_rcu(tt_global_entry, common.rcu);
-+}
-+
-+/**
-+ * batadv_tt_global_entry_free_ref - decrement the tt_global_entry refcounter
-+ *  and possibly release it
-+ * @tt_global_entry: tt_global_entry to be free'd
++ * batadv_orig_node_vlan_free_ref - decrement the refcounter and possibly
++ *  release the originator-vlan object
+  * @orig_vlan: the originator-vlan object to release
   */
- static void
- batadv_tt_global_entry_free_ref(struct batadv_tt_global_entry *tt_global_entry)
+ void batadv_orig_node_vlan_free_ref(struct batadv_orig_node_vlan *orig_vlan)
  {
--	if (atomic_dec_and_test(&tt_global_entry->common.refcount)) {
--		batadv_tt_global_del_orig_list(tt_global_entry);
--		kfree_rcu(tt_global_entry, common.rcu);
--	}
-+	kref_put(&tt_global_entry->common.refcount,
-+		 batadv_tt_global_entry_release);
+-	if (atomic_dec_and_test(&orig_vlan->refcount))
+-		kfree_rcu(orig_vlan, rcu);
++	kref_put(&orig_vlan->refcount, batadv_orig_node_vlan_release);
  }
  
- /**
-@@ -633,7 +667,8 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
- 	tt_local->common.vid = vid;
- 	if (batadv_is_wifi_netdev(in_dev))
- 		tt_local->common.flags |= BATADV_TT_CLIENT_WIFI;
--	atomic_set(&tt_local->common.refcount, 2);
-+	kref_init(&tt_local->common.refcount);
-+	kref_get(&tt_local->common.refcount);
- 	tt_local->last_seen = jiffies;
- 	tt_local->common.added_at = tt_local->last_seen;
- 
-@@ -1415,7 +1450,8 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
- 		 */
- 		if (flags & BATADV_TT_CLIENT_ROAM)
- 			tt_global_entry->roam_at = jiffies;
--		atomic_set(&common->refcount, 2);
-+		kref_init(&common->refcount);
-+		kref_get(&common->refcount);
- 		common->added_at = jiffies;
- 
- 		INIT_HLIST_HEAD(&tt_global_entry->orig_list);
+ int batadv_originator_init(struct batadv_priv *bat_priv)
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index aea82a121c02..612de23178e6 100644
+index 74cb26372ed1..504f3dbdbcc1 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -972,7 +972,7 @@ struct batadv_tt_common_entry {
- 	struct hlist_node hash_entry;
- 	u16 flags;
- 	unsigned long added_at;
+@@ -197,7 +197,7 @@ struct batadv_orig_node_vlan {
+ 	unsigned short vid;
+ 	struct batadv_vlan_tt tt;
+ 	struct hlist_node list;
 -	atomic_t refcount;
 +	struct kref refcount;
  	struct rcu_head rcu;
