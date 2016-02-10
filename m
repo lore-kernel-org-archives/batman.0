@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 10 Feb 2016 18:43:41 +0800
-Message-ID: <5358388.271e7JeB5Y@voltaire>
-In-Reply-To: <1454243280-15126-1-git-send-email-sven@narfation.org>
+Date: Wed, 10 Feb 2016 18:45:43 +0800
+Message-ID: <1741015.0MXJ0zPZBk@voltaire>
+In-Reply-To: <1454243280-15126-2-git-send-email-sven@narfation.org>
 References: <1454243280-15126-1-git-send-email-sven@narfation.org>
+ <1454243280-15126-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart45480659.u1WpUfToFk";
+Content-Type: multipart/signed; boundary="nextPart90952573.xKVNDkrYo8";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-maint 1/2] batman-adv: Only put gw_node
-	list reference when removed
+Subject: Re: [B.A.T.M.A.N.] [PATCH-maint 2/2] batman-adv: Only put
+	orig_node_vlan list reference when removed
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,37 +19,37 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart45480659.u1WpUfToFk
+--nextPart90952573.xKVNDkrYo8
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, January 31, 2016 13:27:59 Sven Eckelmann wrote:
-> The batadv_gw_node reference counter in batadv_gw_node_update can only be
-> reduced when the list entry was actually removed. Otherwise the reference
-> counter may reach zero when batadv_gw_node_update is called from two
-> different contexts for the same gw_node but only one context is actually
-> removing the entry from the list.
+On Sunday, January 31, 2016 13:28:00 Sven Eckelmann wrote:
+> The batadv_orig_node_vlan reference counter in batadv_tt_global_size_mod
+> can only be reduced when the list entry was actually removed. Otherwise the
+> reference counter may reach zero when batadv_tt_global_size_mod is called
+> from two different contexts for the same orig_node_vlan but only one
+> context is actually removing the entry from the list.
 > 
-> The release function for this gw_node is not called inside the list_lock
-> spinlock protected region because the function batadv_gw_node_update still
-> holds a gw_node reference for the object pointer on the stack. Thus the
-> actual release function (when required) will be called only at the end of
-> the function.
+> The release function for this orig_node_vlan is not called inside the
+> vlan_list_lock spinlock protected region because the function
+> batadv_tt_global_size_mod still holds a orig_node_vlan reference for the
+> object pointer on the stack. Thus the actual release function (when
+> required) will be called only at the end of the function.
 > 
-> Fixes: 0511575c4d03 ("batman-adv: remove obsolete deleted attribute for
-> gateway node") Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/gateway_client.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+>  net/batman-adv/translation-table.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 
-Applied in revision c215e4e.
+Applied in revision ead9389.
 
 Thanks,
 Marek
 
---nextPart45480659.u1WpUfToFk
+--nextPart90952573.xKVNDkrYo8
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -56,14 +57,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWuxRdAAoJEFNVTo/uthzAofEH/i8eVUmGVooJXnhd7Mg1HRRE
-aYFwkksuy+xqdG1IBAfU5QTztiUEiFg7iXi3U6StItoxD11ZPVNyj1CUychuiX19
-K0AvAXdmUOxVqbMQDEZTMxPIVxF36WaXWpcVrHktWlW70WyB6UKnsSm/lwnLrUN0
-kxa4bCqZUgUxdrIpao1vDDwYjYPapnOtr4va/PMugQLRZPJo/mCgZ7Xi9t2Xo/Cy
-9H6nt6Yj0Mdj6m0Wl3spQ6ckQvysqVidz9vKqzJ3v9vfRMpLR7VfiYruRfor2ROp
-do+7JeUM95HTyKNbTS1sZmfaNapOL7s6BzrNih1IEcJqloKmRjCWsaFOO41+b14=
-=kZu+
+iQEcBAABCAAGBQJWuxTXAAoJEFNVTo/uthzANboH/1isjv1SKkC1UKXIY7sz/BIt
+FzuRjvWMngeDwkcsC1jJKjgSoldZH80QajNeazfi43voqzSYpmmxtq6HIsmkh4P6
+A/j9nU7CknDLxFKjUuU+2ZiJ9eS3rN4BCmGzww0jZUhBPH+TaQTgSIA4qzn8zEeQ
+Ehb7vsOrMn+MXAibYaAZyd+CMIYyC167uEJm9+lU+eULyPnmtJYrEWB6X9hUwAWh
+JsA402zYhSTlme/GWsYLGYk0jO60pFE7BvqE3/rlMh23xajgpiIQ77k1dNveGr59
+T+YZDv1KkolJ/xWwh1nJyjCYsRTewuFUqT4RCaofNKkcvy8l0SqBARVImsFUqEA=
+=2i7c
 -----END PGP SIGNATURE-----
 
---nextPart45480659.u1WpUfToFk--
+--nextPart90952573.xKVNDkrYo8--
 
