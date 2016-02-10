@@ -1,11 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Wed, 10 Feb 2016 23:57:21 +0800
-Message-Id: <1455119847-5862-16-git-send-email-a@unstable.cc>
+Date: Wed, 10 Feb 2016 23:57:27 +0800
+Message-Id: <1455119847-5862-22-git-send-email-a@unstable.cc>
 In-Reply-To: <1455119847-5862-1-git-send-email-a@unstable.cc>
 References: <1455119847-5862-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 15/21] batman-adv: Convert
-	batadv_neigh_ifinfo to kref
+Subject: [B.A.T.M.A.N.] [PATCH 21/21] batman-adv: Convert
+	batadv_tt_common_entry to kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -28,69 +28,122 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/originator.c | 17 ++++++++++-------
- net/batman-adv/types.h      |  2 +-
- 2 files changed, 11 insertions(+), 8 deletions(-)
+ net/batman-adv/translation-table.c | 64 +++++++++++++++++++++++++++++---------
+ net/batman-adv/types.h             |  2 +-
+ 2 files changed, 51 insertions(+), 15 deletions(-)
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 7710595ffc42..1c50abe52c6d 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -172,11 +172,14 @@ err:
- /**
-  * batadv_neigh_ifinfo_release - release neigh_ifinfo from lists and queue for
-  *  free after rcu grace period
-- * @neigh_ifinfo: the neigh_ifinfo object to release
-+ * @ref: kref pointer of the neigh_ifinfo
-  */
--static void
--batadv_neigh_ifinfo_release(struct batadv_neigh_ifinfo *neigh_ifinfo)
-+static void batadv_neigh_ifinfo_release(struct kref *ref)
- {
-+	struct batadv_neigh_ifinfo *neigh_ifinfo;
-+
-+	neigh_ifinfo = container_of(ref, struct batadv_neigh_ifinfo, refcount);
-+
- 	if (neigh_ifinfo->if_outgoing != BATADV_IF_DEFAULT)
- 		batadv_hardif_free_ref(neigh_ifinfo->if_outgoing);
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 96b1571213bd..11882793f0a4 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -142,7 +142,7 @@ batadv_tt_hash_find(struct batadv_hashtable *hash, const u8 *addr,
+ 		if (tt->vid != vid)
+ 			continue;
  
-@@ -190,8 +193,7 @@ batadv_neigh_ifinfo_release(struct batadv_neigh_ifinfo *neigh_ifinfo)
-  */
- void batadv_neigh_ifinfo_free_ref(struct batadv_neigh_ifinfo *neigh_ifinfo)
+-		if (!atomic_inc_not_zero(&tt->refcount))
++		if (!kref_get_unless_zero(&tt->refcount))
+ 			continue;
+ 
+ 		tt_tmp = tt;
+@@ -203,25 +203,59 @@ batadv_tt_global_hash_find(struct batadv_priv *bat_priv, const u8 *addr,
+ 	return tt_global_entry;
+ }
+ 
+-static void
+-batadv_tt_local_entry_free_ref(struct batadv_tt_local_entry *tt_local_entry)
++/**
++ * batadv_tt_local_entry_release - release tt_local_entry from lists and queue
++ *  for free after rcu grace period
++ * @ref: kref pointer of the nc_node
++ */
++static void batadv_tt_local_entry_release(struct kref *ref)
  {
--	if (atomic_dec_and_test(&neigh_ifinfo->refcount))
--		batadv_neigh_ifinfo_release(neigh_ifinfo);
-+	kref_put(&neigh_ifinfo->refcount, batadv_neigh_ifinfo_release);
+-	if (atomic_dec_and_test(&tt_local_entry->common.refcount))
+-		kfree_rcu(tt_local_entry, common.rcu);
++	struct batadv_tt_local_entry *tt_local_entry;
++
++	tt_local_entry = container_of(ref, struct batadv_tt_local_entry,
++				      common.refcount);
++
++	kfree_rcu(tt_local_entry, common.rcu);
  }
  
  /**
-@@ -405,7 +407,7 @@ batadv_neigh_ifinfo_get(struct batadv_neigh_node *neigh,
- 		if (tmp_neigh_ifinfo->if_outgoing != if_outgoing)
- 			continue;
+- * batadv_tt_global_entry_free_ref - decrement the refcounter for a
+- *  tt_global_entry and possibly free it
+- * @tt_global_entry: the object to free
++ * batadv_tt_local_entry_free_ref - decrement the tt_local_entry refcounter and
++ *  possibly release it
++ * @tt_local_entry: tt_local_entry to be free'd
++ */
++static void
++batadv_tt_local_entry_free_ref(struct batadv_tt_local_entry *tt_local_entry)
++{
++	kref_put(&tt_local_entry->common.refcount,
++		 batadv_tt_local_entry_release);
++}
++
++/**
++ * batadv_tt_global_entry_release - release tt_global_entry from lists and queue
++ *  for free after rcu grace period
++ * @ref: kref pointer of the nc_node
++ */
++static void batadv_tt_global_entry_release(struct kref *ref)
++{
++	struct batadv_tt_global_entry *tt_global_entry;
++
++	tt_global_entry = container_of(ref, struct batadv_tt_global_entry,
++				       common.refcount);
++
++	batadv_tt_global_del_orig_list(tt_global_entry);
++	kfree_rcu(tt_global_entry, common.rcu);
++}
++
++/**
++ * batadv_tt_global_entry_free_ref - decrement the tt_global_entry refcounter
++ *  and possibly release it
++ * @tt_global_entry: tt_global_entry to be free'd
+  */
+ static void
+ batadv_tt_global_entry_free_ref(struct batadv_tt_global_entry *tt_global_entry)
+ {
+-	if (atomic_dec_and_test(&tt_global_entry->common.refcount)) {
+-		batadv_tt_global_del_orig_list(tt_global_entry);
+-		kfree_rcu(tt_global_entry, common.rcu);
+-	}
++	kref_put(&tt_global_entry->common.refcount,
++		 batadv_tt_global_entry_release);
+ }
  
--		if (!atomic_inc_not_zero(&tmp_neigh_ifinfo->refcount))
-+		if (!kref_get_unless_zero(&tmp_neigh_ifinfo->refcount))
- 			continue;
+ /**
+@@ -633,7 +667,8 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
+ 	tt_local->common.vid = vid;
+ 	if (batadv_is_wifi_netdev(in_dev))
+ 		tt_local->common.flags |= BATADV_TT_CLIENT_WIFI;
+-	atomic_set(&tt_local->common.refcount, 2);
++	kref_init(&tt_local->common.refcount);
++	kref_get(&tt_local->common.refcount);
+ 	tt_local->last_seen = jiffies;
+ 	tt_local->common.added_at = tt_local->last_seen;
  
- 		neigh_ifinfo = tmp_neigh_ifinfo;
-@@ -450,7 +452,8 @@ batadv_neigh_ifinfo_new(struct batadv_neigh_node *neigh,
- 	}
+@@ -1415,7 +1450,8 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 		 */
+ 		if (flags & BATADV_TT_CLIENT_ROAM)
+ 			tt_global_entry->roam_at = jiffies;
+-		atomic_set(&common->refcount, 2);
++		kref_init(&common->refcount);
++		kref_get(&common->refcount);
+ 		common->added_at = jiffies;
  
- 	INIT_HLIST_NODE(&neigh_ifinfo->list);
--	atomic_set(&neigh_ifinfo->refcount, 2);
-+	kref_init(&neigh_ifinfo->refcount);
-+	kref_get(&neigh_ifinfo->refcount);
- 	neigh_ifinfo->if_outgoing = if_outgoing;
- 
- 	hlist_add_head_rcu(&neigh_ifinfo->list, &neigh->ifinfo_list);
+ 		INIT_HLIST_HEAD(&tt_global_entry->orig_list);
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 17f97ff5b4d1..81d9f8d6c54b 100644
+index aea82a121c02..612de23178e6 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -420,7 +420,7 @@ struct batadv_neigh_ifinfo {
- 	struct batadv_hard_iface *if_outgoing;
- 	struct batadv_neigh_ifinfo_bat_iv bat_iv;
- 	u8 last_ttl;
+@@ -972,7 +972,7 @@ struct batadv_tt_common_entry {
+ 	struct hlist_node hash_entry;
+ 	u16 flags;
+ 	unsigned long added_at;
 -	atomic_t refcount;
 +	struct kref refcount;
  	struct rcu_head rcu;
