@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 10 Feb 2016 18:45:43 +0800
-Message-ID: <1741015.0MXJ0zPZBk@voltaire>
-In-Reply-To: <1454243280-15126-2-git-send-email-sven@narfation.org>
-References: <1454243280-15126-1-git-send-email-sven@narfation.org>
- <1454243280-15126-2-git-send-email-sven@narfation.org>
+Date: Wed, 10 Feb 2016 19:01:37 +0800
+Message-ID: <2226895.tWGBQDvmUT@voltaire>
+In-Reply-To: <1454336498-2621-1-git-send-email-sw@simonwunderlich.de>
+References: <1454336498-2621-1-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart90952573.xKVNDkrYo8";
+Content-Type: multipart/signed; boundary="nextPart1677447.AofP5Aktx5";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-maint 2/2] batman-adv: Only put
-	orig_node_vlan list reference when removed
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: move and restructure
+	batadv_v_ogm_forward
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,37 +18,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart90952573.xKVNDkrYo8
+--nextPart1677447.AofP5Aktx5
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, January 31, 2016 13:28:00 Sven Eckelmann wrote:
-> The batadv_orig_node_vlan reference counter in batadv_tt_global_size_mod
-> can only be reduced when the list entry was actually removed. Otherwise the
-> reference counter may reach zero when batadv_tt_global_size_mod is called
-> from two different contexts for the same orig_node_vlan but only one
-> context is actually removing the entry from the list.
+On Monday, February 01, 2016 15:21:37 Simon Wunderlich wrote:
+> From: Simon Wunderlich <simon@open-mesh.com>
 > 
-> The release function for this orig_node_vlan is not called inside the
-> vlan_list_lock spinlock protected region because the function
-> batadv_tt_global_size_mod still holds a orig_node_vlan reference for the
-> object pointer on the stack. Thus the actual release function (when
-> required) will be called only at the end of the function.
+> To match our code better to the protocol description of B.A.T.M.A.N. V,
+> move batadv_v_ogm_forward() out into batadv_v_ogm_process_per_outif()
+> and move all checks directly deciding whether the OGM should be
+> forwarded into batadv_v_ogm_forward().
 > 
-> Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
 > ---
->  net/batman-adv/translation-table.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
+> Changes to PATCH:
+>  * fix some embarassing compile issues and style issues (thanks Marek)
+> ---
+>  net/batman-adv/bat_v_ogm.c | 110
+> ++++++++++++++++++++++++++------------------- 1 file changed, 63
+> insertions(+), 47 deletions(-)
 
-Applied in revision ead9389.
+Applied in revision 30c96bc.
 
 Thanks,
 Marek
 
---nextPart90952573.xKVNDkrYo8
+--nextPart1677447.AofP5Aktx5
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -57,14 +54,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWuxTXAAoJEFNVTo/uthzANboH/1isjv1SKkC1UKXIY7sz/BIt
-FzuRjvWMngeDwkcsC1jJKjgSoldZH80QajNeazfi43voqzSYpmmxtq6HIsmkh4P6
-A/j9nU7CknDLxFKjUuU+2ZiJ9eS3rN4BCmGzww0jZUhBPH+TaQTgSIA4qzn8zEeQ
-Ehb7vsOrMn+MXAibYaAZyd+CMIYyC167uEJm9+lU+eULyPnmtJYrEWB6X9hUwAWh
-JsA402zYhSTlme/GWsYLGYk0jO60pFE7BvqE3/rlMh23xajgpiIQ77k1dNveGr59
-T+YZDv1KkolJ/xWwh1nJyjCYsRTewuFUqT4RCaofNKkcvy8l0SqBARVImsFUqEA=
-=2i7c
+iQEcBAABCAAGBQJWuxiRAAoJEFNVTo/uthzAHZkH/1vnQo5ZH/K97QIy2Ilm0RC/
+X+XSUAEMRTryrPDKR5I7CxyIpNKKMzf0KAU0kh547G7HUb1koZWpghYJg7B1rmvW
+K2osKAtx0JsKk7hmTGSO5FkpqTAfOdJZmTYMWZX9W6JKsu7s0nmRepSYfhMGCL4P
+z0jAKJxcfu8L2UFnKrENxavg0/wPh0ttGJ0+CK05kw8EQS1ckIa8zzHlHoG6vlyD
++KPAv80ADdYrJiJ+xw9w1YtHtMVrqMUMzA0dofONInGXU8QskC7ebAii3FrjU+1K
+uV3N8HzZKb5D04GP0YVrW/5N6vmH6t8MEDRLA4AigSdZ7S6nm5msFHMNWhxPYNA=
+=T77a
 -----END PGP SIGNATURE-----
 
---nextPart90952573.xKVNDkrYo8--
+--nextPart1677447.AofP5Aktx5--
 
