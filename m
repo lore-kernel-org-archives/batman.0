@@ -1,11 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Wed, 10 Feb 2016 23:57:16 +0800
-Message-Id: <1455119847-5862-11-git-send-email-a@unstable.cc>
+Date: Wed, 10 Feb 2016 23:57:21 +0800
+Message-Id: <1455119847-5862-16-git-send-email-a@unstable.cc>
 In-Reply-To: <1455119847-5862-1-git-send-email-a@unstable.cc>
 References: <1455119847-5862-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 10/21] batman-adv: Convert batadv_nc_path to
-	kref
+Subject: [B.A.T.M.A.N.] [PATCH 15/21] batman-adv: Convert
+	batadv_neigh_ifinfo to kref
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -28,79 +28,74 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/network-coding.c | 28 +++++++++++++++++++++-------
- net/batman-adv/types.h          |  2 +-
- 2 files changed, 22 insertions(+), 8 deletions(-)
+ net/batman-adv/originator.c | 17 ++++++++++-------
+ net/batman-adv/types.h      |  2 +-
+ 2 files changed, 11 insertions(+), 8 deletions(-)
 
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index 7a1216eeb4cf..371fc6bbf9d6 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -233,14 +233,27 @@ static void batadv_nc_node_free_ref(struct batadv_nc_node *nc_node)
- }
- 
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 7710595ffc42..1c50abe52c6d 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -172,11 +172,14 @@ err:
  /**
-- * batadv_nc_path_free_ref - decrements the nc path refcounter and possibly
-- * frees it
-- * @nc_path: the nc node to free
-+ * batadv_nc_path_release - release nc_path from lists and queue for free after
-+ *  rcu grace period
-+ * @ref: kref pointer of the nc_path
-+ */
-+static void batadv_nc_path_release(struct kref *ref)
-+{
-+	struct batadv_nc_path *nc_path;
-+
-+	nc_path = container_of(ref, struct batadv_nc_path, refcount);
-+
-+	kfree_rcu(nc_path, rcu);
-+}
-+
-+/**
-+ * batadv_nc_path_free_ref - decrement the nc_path refcounter and possibly
-+ *  release it
-+ * @nc_path: nc_path to be free'd
+  * batadv_neigh_ifinfo_release - release neigh_ifinfo from lists and queue for
+  *  free after rcu grace period
+- * @neigh_ifinfo: the neigh_ifinfo object to release
++ * @ref: kref pointer of the neigh_ifinfo
   */
- static void batadv_nc_path_free_ref(struct batadv_nc_path *nc_path)
+-static void
+-batadv_neigh_ifinfo_release(struct batadv_neigh_ifinfo *neigh_ifinfo)
++static void batadv_neigh_ifinfo_release(struct kref *ref)
  {
--	if (atomic_dec_and_test(&nc_path->refcount))
--		kfree_rcu(nc_path, rcu);
-+	kref_put(&nc_path->refcount, batadv_nc_path_release);
++	struct batadv_neigh_ifinfo *neigh_ifinfo;
++
++	neigh_ifinfo = container_of(ref, struct batadv_neigh_ifinfo, refcount);
++
+ 	if (neigh_ifinfo->if_outgoing != BATADV_IF_DEFAULT)
+ 		batadv_hardif_free_ref(neigh_ifinfo->if_outgoing);
+ 
+@@ -190,8 +193,7 @@ batadv_neigh_ifinfo_release(struct batadv_neigh_ifinfo *neigh_ifinfo)
+  */
+ void batadv_neigh_ifinfo_free_ref(struct batadv_neigh_ifinfo *neigh_ifinfo)
+ {
+-	if (atomic_dec_and_test(&neigh_ifinfo->refcount))
+-		batadv_neigh_ifinfo_release(neigh_ifinfo);
++	kref_put(&neigh_ifinfo->refcount, batadv_neigh_ifinfo_release);
  }
  
  /**
-@@ -545,7 +558,7 @@ batadv_nc_hash_find(struct batadv_hashtable *hash,
- 		if (!batadv_nc_hash_compare(&nc_path->hash_entry, data))
+@@ -405,7 +407,7 @@ batadv_neigh_ifinfo_get(struct batadv_neigh_node *neigh,
+ 		if (tmp_neigh_ifinfo->if_outgoing != if_outgoing)
  			continue;
  
--		if (!atomic_inc_not_zero(&nc_path->refcount))
-+		if (!kref_get_unless_zero(&nc_path->refcount))
+-		if (!atomic_inc_not_zero(&tmp_neigh_ifinfo->refcount))
++		if (!kref_get_unless_zero(&tmp_neigh_ifinfo->refcount))
  			continue;
  
- 		nc_path_tmp = nc_path;
-@@ -972,7 +985,8 @@ static struct batadv_nc_path *batadv_nc_get_path(struct batadv_priv *bat_priv,
- 	/* Initialize nc_path */
- 	INIT_LIST_HEAD(&nc_path->packet_list);
- 	spin_lock_init(&nc_path->packet_list_lock);
--	atomic_set(&nc_path->refcount, 2);
-+	kref_init(&nc_path->refcount);
-+	kref_get(&nc_path->refcount);
- 	nc_path->last_valid = jiffies;
- 	ether_addr_copy(nc_path->next_hop, dst);
- 	ether_addr_copy(nc_path->prev_hop, src);
+ 		neigh_ifinfo = tmp_neigh_ifinfo;
+@@ -450,7 +452,8 @@ batadv_neigh_ifinfo_new(struct batadv_neigh_node *neigh,
+ 	}
+ 
+ 	INIT_HLIST_NODE(&neigh_ifinfo->list);
+-	atomic_set(&neigh_ifinfo->refcount, 2);
++	kref_init(&neigh_ifinfo->refcount);
++	kref_get(&neigh_ifinfo->refcount);
+ 	neigh_ifinfo->if_outgoing = if_outgoing;
+ 
+ 	hlist_add_head_rcu(&neigh_ifinfo->list, &neigh->ifinfo_list);
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 05421afb1d74..b3d9b5b566a2 100644
+index 17f97ff5b4d1..81d9f8d6c54b 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -1087,7 +1087,7 @@ struct batadv_nc_node {
- struct batadv_nc_path {
- 	struct hlist_node hash_entry;
- 	struct rcu_head rcu;
+@@ -420,7 +420,7 @@ struct batadv_neigh_ifinfo {
+ 	struct batadv_hard_iface *if_outgoing;
+ 	struct batadv_neigh_ifinfo_bat_iv bat_iv;
+ 	u8 last_ttl;
 -	atomic_t refcount;
 +	struct kref refcount;
- 	struct list_head packet_list;
- 	spinlock_t packet_list_lock; /* Protects packet_list */
- 	u8 next_hop[ETH_ALEN];
+ 	struct rcu_head rcu;
+ };
+ 
 -- 
 2.7.1
 
