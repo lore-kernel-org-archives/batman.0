@@ -1,8 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 11 Feb 2016 22:13:38 +0100
-Message-Id: <1455225218-13662-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: Avoid endless loop in
+Date: Thu, 11 Feb 2016 22:15:57 +0100
+Message-Id: <1455225357-15756-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH-maint v2] batman-adv: Avoid endless loop in
 	bat-on-bat netdevice check
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -62,11 +62,14 @@ Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 [sven@narfation.org: rewritten description, extracted fix]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
+v2:
+ - fix kernel-doc warning
+
  net/batman-adv/hard-interface.c | 25 +++++++++++++++++++++++++
  1 file changed, 25 insertions(+)
 
 diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index aea4d06..fbd3c91 100644
+index aea4d06..730cfa8 100644
 --- a/net/batman-adv/hard-interface.c
 +++ b/net/batman-adv/hard-interface.c
 @@ -79,6 +79,28 @@ out:
@@ -75,7 +78,7 @@ index aea4d06..fbd3c91 100644
  /**
 + * batadv_mutual_parents - check if two devices are each others parent
 + * @dev1: 1st net_device
-+ * @dev: 2nd net_device
++ * @dev2: 2nd net_device
 + *
 + * veth devices come in pairs and each is the parent of the other!
 + *
