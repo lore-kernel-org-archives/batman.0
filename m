@@ -1,16 +1,9 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 11 Feb 2016 12:08:25 +0100
-Message-ID: <3200137.NDelIOaaur@prime>
-In-Reply-To: <OF08AE6344.F52C14B1-ONC1257F56.002E1241-C1257F56.0033308C@phoenixcontact.com>
-References: <OF64B7E443.53DA160A-ONC1257F53.003E4656-C1257F53.003FAF34@phoenixcontact.com>
- <OFCA66B6A0.8D0726B0-ONC1257F54.00240C7B-C1257F54.0026962A@phoenixcontact.com>
- <OF08AE6344.F52C14B1-ONC1257F56.002E1241-C1257F56.0033308C@phoenixcontact.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2642916.lZ8J9AehcY";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Antwort: Re: Looping unicast packets when using
-	BLA
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 11 Feb 2016 22:13:38 +0100
+Message-Id: <1455225218-13662-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: Avoid endless loop in
+	bat-on-bat netdevice check
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,100 +13,101 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Andreas Pape <APape@phoenixcontact.com>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, "B.A.T.M.A.N" <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2642916.lZ8J9AehcY
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+From: Andrew Lunn <andrew@lunn.ch>
 
-Hi Andreas,
+batman-adv checks in different situation if a new device is already on top
+of a different batman-adv device. This is done by getting the iflink of a
+device and all its parent. It assumes that this iflink is always a parent
+device in an acyclic graph. But this assumption is broken by devices like
+veth which are actually a pair of two devices linked to each other. The
+recursive check would therefore get veth0 when calling dev_get_iflink on
+veth1. And it gets veth0 when calling dev_get_iflink with veth1.
 
-On Thursday 11 February 2016 10:19:07 Andreas Pape wrote:
-> Hi,
-> 
-> I want to give a short feedback concerning my attempt to use
-> batman-adv-2016.0 instead of to older version I used first.
-> 
-> Unfortunately, using batman-adv-2016.0 does not solve my problem. I can
-> still see claim frames sent by the mesh gateways into the common backbone
-> network for MAC addresses out of the common backbone network itself. I
-> enabled again both bla and dat support. Furthermore I have also still
-> problems with DAT, because there are multiple ARP replies visible in the
-> backbone network coming out of the mesh.
-> 
-> That reminds me that I have forgotten to mention in my earlier mail, that
-> I did not test with the original batman-adv-2014.4.0 first but with a
-> version having the patch applied I sent to the mailing list in March last
-> year concerning possible fixes for dat in bla setups. If I remember it
-> correctly I think there were two main issues in batman-adv-2014.4.0 when
-> using dat in combination with bla:
-> 1.Broadcast ARP requests from the backbone network are handled by each
-> gateway, leading to multiple dat adress resoultions in parallel.
+Creating a veth pair and loading batman-adv freezes parts of the system
 
-That shouldn't be a problem on its own.
+    ip link add veth0 type veth peer name veth1
+    modprobe batman-adv
 
-> 2. As dat uses tunneling of broadcasts in special batman-adv unicast
-> frames, the current bla code does not seem to prevent these broadcasts
-> from reaching the backone network as it is done for normal broadcast
-> coming from the mesh and heading for the backbone.
-> Both effects together lead to a multiplication of arp requests and
-> replies. My patch of last year tried to address this.
+An RCU stall will be detected on the system which cannot be fixed.
 
-Hm, I see. I just checked the code and it seems we fixed this issue for speedy 
-join in the mean time (affecting TT), but for bla the problem is still 
-present.
+    INFO: rcu_sched self-detected stall on CPU
+            1: (5264 ticks this GP) idle=3e9/140000000000001/0
+    softirq=144683/144686 fqs=5249
+             (t=5250 jiffies g=46 c=45 q=43)
+    Task dump for CPU 1:
+    insmod          R  running task        0   247    245 0x00000008
+     ffffffff8151f140 ffffffff8107888e ffff88000fd141c0 ffffffff8151f140
+     0000000000000000 ffffffff81552df0 ffffffff8107b420 0000000000000001
+     ffff88000e3fa700 ffffffff81540b00 ffffffff8107d667 0000000000000001
+    Call Trace:
+     <IRQ>  [<ffffffff8107888e>] ? rcu_dump_cpu_stacks+0x7e/0xd0
+     [<ffffffff8107b420>] ? rcu_check_callbacks+0x3f0/0x6b0
+     [<ffffffff8107d667>] ? hrtimer_run_queues+0x47/0x180
+     [<ffffffff8107cf9d>] ? update_process_times+0x2d/0x50
+     [<ffffffff810873fb>] ? tick_handle_periodic+0x1b/0x60
+     [<ffffffff810290ae>] ? smp_trace_apic_timer_interrupt+0x5e/0x90
+     [<ffffffff813bbae2>] ? apic_timer_interrupt+0x82/0x90
+     <EOI>  [<ffffffff812c3fd7>] ? __dev_get_by_index+0x37/0x40
+     [<ffffffffa0031f3e>] ? batadv_hard_if_event+0xee/0x3a0 [batman_adv]
+     [<ffffffff812c5801>] ? register_netdevice_notifier+0x81/0x1a0
+    [...]
 
-Wouldn't it be sufficient to add something like a check for backbones ( 
-batadv_bla_is_backbone_gw) into batadv_recv_unicast_packet() and drop packets 
-if they came from the same backbone?
+This can be avoided by checking if two devices are each others parent and
+stopping the check in this situation.
 
-I have found your patch from last year. Would you like to rebase/split your 
-patch to address the remaining issues? That would help us a lot. Please also 
-put a proper patch message. I promise to be more responsive this time. :)
+Fixes: 3d48811b27f5 ("batman-adv: prevent using any virtual device created on batman-adv as hard-interface")
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+[sven@narfation.org: rewritten description, extracted fix]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/hard-interface.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-> 
-> Good news is that disabling dat in batman-adv-2016.0 seems to solve my
-> observed issues (in strange ways even the observed erroneous claim frames
-> in the backbone network....). But I think dat is a clever feature to
-> reduce broadcast load in the mesh network. Wouldn't it be useful to dig a
-> little bit deeper into the combined use of dat and bla? I would volunteer
-> for testing and providing ideas for improving the behaviour.
-
-If you could help, that would be great! Your patch from last year already is a 
-good start, so I'm sure you are capable of working on that. I would be happy 
-to help with that, too.
-
-> 
-> Or do you think that I have an issue with my old 2.6.32 kernel?
-
-I don't think so. To me it looks like the issue could still be present in 
-current versions ...
-
-Cheers,
-     Simon
---nextPart2642916.lZ8J9AehcY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJWvGupAAoJEKEr45hCkp6hjSYP/A91PvOv2YlShVDUT7Ui0iXR
-ms7YKy37fJkAxrXFFyVW+AanEB1ln6V1G9Ex7/nwAsGlWzwwEiDc+5YwD8LX1IAQ
-o3AbjPDldUwPdq0sUu451skBiAyek5pzOeQhG36pbGmN1rdQXNQj6sLpk+ikmQ3n
-x2itsksWbp/LfVbD+U51VdGS/ILzwJiTgPBQGimEwDnR6HyPQUMVb/Ruw0g1ugsD
-idld5UKYdUvuOBkujRPV5K59AVbN1Hg8+jC/kw5dQWV3smJqtHOQIar4B4oUbHol
-Y43qgxK5ba80Qg+XefvH6z8NvwBsWyhq01ez7dXrGIFxpO36pN7TCXRWjkF6Iomr
-gP/J/fLSAjcRYPDi0ozA6metY7XsJpNko2ZQYI9Aymdg+liKELC886FWlJ+HfyCw
-w8Ua+C/zpbm2z0MSRsE8ZgZEtRQihHYQoYBAln49tM25uVQRGN9Xgo23OVOw7Cha
-nU0tchBKYQ457lPNwoz0jgpjeFsGteuPFinvGaoLt1rjtFMi7hT58M5ZdgKAbkez
-acgrWX4zQhXh02rrf755K4rDRa2kjsdnAXzH34W373w5Wk6RpwIfUUOGw9LJJvIV
-/ZMFlsTZDQjewnMxtlR1rjsd2qQxNQk2gaKb9FsjtEUqHAQ5DmSuZgJNB/beSHR6
-VlaTTSneLR5o6MPkepsX
-=RQrq
------END PGP SIGNATURE-----
-
---nextPart2642916.lZ8J9AehcY--
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index aea4d06..fbd3c91 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -79,6 +79,28 @@ out:
+ }
+ 
+ /**
++ * batadv_mutual_parents - check if two devices are each others parent
++ * @dev1: 1st net_device
++ * @dev: 2nd net_device
++ *
++ * veth devices come in pairs and each is the parent of the other!
++ *
++ * Return: true if the devices are each others parent, otherwise false
++ */
++static bool batadv_mutual_parents(const struct net_device *dev1,
++				  const struct net_device *dev2)
++{
++	int dev1_parent_iflink = dev_get_iflink(dev1);
++	int dev2_parent_iflink = dev_get_iflink(dev2);
++
++	if (!dev1_parent_iflink || !dev2_parent_iflink)
++		return false;
++
++	return (dev1_parent_iflink == dev2->ifindex) &&
++	       (dev2_parent_iflink == dev1->ifindex);
++}
++
++/**
+  * batadv_is_on_batman_iface - check if a device is a batman iface descendant
+  * @net_dev: the device to check
+  *
+@@ -111,6 +133,9 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
+ 	if (WARN(!parent_dev, "Cannot find parent device"))
+ 		return false;
+ 
++	if (batadv_mutual_parents(net_dev, parent_dev))
++		return false;
++
+ 	ret = batadv_is_on_batman_iface(parent_dev);
+ 
+ 	return ret;
+-- 
+2.7.0
 
