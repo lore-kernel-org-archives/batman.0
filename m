@@ -1,16 +1,12 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 12 Feb 2016 14:04:23 +0100
-Message-ID: <2193610.djA1bK6ZTb@prime>
-In-Reply-To: <OFE4164813.C8B92EEC-ONC1257F57.0038C5A8-C1257F57.003AA049@phoenixcontact.com>
-References: <OF64B7E443.53DA160A-ONC1257F53.003E4656-C1257F53.003FAF34@phoenixcontact.com>
- <3200137.NDelIOaaur@prime>
- <OFE4164813.C8B92EEC-ONC1257F57.0038C5A8-C1257F57.003AA049@phoenixcontact.com>
+Return-Path: <APape@phoenixcontact.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart12547456.jFqLRrd9nk";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Antwort: Re: Re: Antwort: Re: Looping unicast
-	packets when using BLA
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OF514CE6A6.70ACFF1A-ONC1257F57.004BE44C-C1257F57.004C213B@phoenixcontact.com>
+Date: Fri, 12 Feb 2016 14:51:32 +0100
+content-transfer-encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: Prevent mutliple ARP replies
+ sent by gateways in bla setups with dat enabled
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,140 +16,197 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Andreas Pape <APape@phoenixcontact.com>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart12547456.jFqLRrd9nk
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+From=202b90abdf53e9ab09d9acfd141c7225de1ae16719 Mon Sep 17 00:00:00 2001
+From: Andreas Pape <apape@phoenixcontact.com>
+Date: Fri, 12 Feb 2016 10:05:57 +0100
+Subject: [PATCH 1/4] batman-adv: Prevent mutliple ARP replies sent by
+gateways in bla setups with dat enabled
 
-Hi Andreas,
+This patch shall make sure that only the backbone gw which has claimed the
+remote
+destination for the ARP request answers the ARP request directly if the
+MAC address
+is known due to the local DAT table. This prevents multiple ARP replies in
+a common
+backbone if more than one gateway already knows the remote mac searched
+for in the
+ARP request.
 
-On Friday 12 February 2016 11:40:21 Andreas Pape wrote:
-> > > [...]
-> > > using dat in combination with bla:
-> > > 1.Broadcast ARP requests from the backbone network are handled by each
-> > > gateway, leading to multiple dat adress resoultions in parallel.
-> > 
-> > That shouldn't be a problem on its own.
-> 
-> I think I wasn't precise enough concerning this point. I meant the effect,
-> that
-> a broadcast ARP coming from a common backbone reaches all gateways. If now
-> accidentally
-> several gateways can already answer that request due to dat, then the
-> current code sends
-> an arp reply from each gateway being able to answer. This broadcast does
-> not even reach
-> the mesh if all gateways can answer the request (as far as I have
-> understood the code).
-> Therefore broadcast handling in the mesh layer does not solve this
-> problem.
+Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
+---
+ net/batman-adv/bridge_loop_avoidance.c |   58
+++++++++++++++++++++++++++++++++
+ net/batman-adv/bridge_loop_avoidance.h |    6 +++
+ net/batman-adv/distributed-arp-table.c |   14 ++++++++
+ 3 files changed, 78 insertions(+), 0 deletions(-)
 
-Yes, we may have multiple gateways answering with an ARP reply. But how is 
-this a problem? It is redundant, yes, but its just a unicast sent back. I 
-don't see this a s problem yet ...
+diff --git a/net/batman-adv/bridge_loop_avoidance.c
+b/net/batman-adv/bridge_loop_avoidance.c
+index 0a6c8b8..c70363d 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -1906,3 +1906,61 @@ out:
+                batadv_hardif_put(primary_if);
+        return 0;
+ }
++
++/**
++ * batadv_check_local_claim
++ * @bat_priv: the bat priv with all the soft interface information
++ * @addr: mac address of which the claim status is checked
++ * @vid: the VLAN ID
++ *
++ * batadv_check_local_claim:
++ * addr is checked if this address is claimed by the local device itself.
++ * If the address is not claimed at all, claim it.
++ * returns true if bla is disabled or the mac is claimed by the device
++ * returns false if the device addr is already claimed by another gateway
++ */
++bool batadv_bla_check_local_claim(struct batadv_priv *bat_priv, uint8_t
+*addr, unsigned short vid)
++{
++       struct batadv_bla_claim search_claim;
++       struct batadv_bla_claim *claim =3D NULL;
++       struct batadv_hard_iface *primary_if =3D NULL;
++       bool ret =3D true;
++
++       if (atomic_read(&bat_priv->bridge_loop_avoidance)) {
++
++               primary_if =3D batadv_primary_if_get_selected(bat_priv);
++               if (!primary_if)
++                       return ret;
++
++               /* First look if the mac address is claimed */
++               ether_addr_copy(search_claim.addr, addr);
++               search_claim.vid =3D vid;
++
++               claim =3D batadv_claim_hash_find(bat_priv,
++                                 &search_claim);
++
++               /* If there is a claim and we are not owner of the claim,
++                * return false;
++                */
++               if (claim) {
++                       if (!batadv_compare_eth(claim->backbone_gw->orig,
+primary_if->net_dev->dev_addr)) {
++                               ret =3D false;
++                       }
++               } else {
++                       /* If there is no claim, claim the device */
++                       batadv_dbg(BATADV_DBG_BLA, bat_priv, "No claim
+found for %pM. Claim mac for us.\n",
++                                       search_claim.addr);
++
++                       batadv_handle_claim(bat_priv,
++                                                      primary_if,
++ primary_if->net_dev->dev_addr, addr,
++                                                      vid);
++               }
++       }
++
++       if (claim)
++               batadv_claim_put(claim);
++       if (primary_if)
++               batadv_hardif_put(primary_if);
++       return ret;
++}
+diff --git a/net/batman-adv/bridge_loop_avoidance.h
+b/net/batman-adv/bridge_loop_avoidance.h
+index 579f0fa..84c31bc 100644
+--- a/net/batman-adv/bridge_loop_avoidance.h
++++ b/net/batman-adv/bridge_loop_avoidance.h
+@@ -46,6 +46,7 @@ void batadv_bla_update_orig_address(struct batadv_priv
+*bat_priv,
+ void batadv_bla_status_update(struct net_device *net_dev);
+ int batadv_bla_init(struct batadv_priv *bat_priv);
+ void batadv_bla_free(struct batadv_priv *bat_priv);
++bool batadv_bla_check_local_claim(struct batadv_priv *bat_priv, u8 *addr,
+unsigned short vid);
 
-> 
-> > > 2. As dat uses tunneling of broadcasts in special batman-adv unicast
-> > > frames, the current bla code does not seem to prevent these broadcasts
-> > > from reaching the backone network as it is done for normal broadcast
-> > > coming from the mesh and heading for the backbone.
-> > > Both effects together lead to a multiplication of arp requests and
-> > > replies. My patch of last year tried to address this.
-> > 
-> > Hm, I see. I just checked the code and it seems we fixed this issue
-> > for speedy
-> > join in the mean time (affecting TT), but for bla the problem is still
-> > present.
-> > 
-> > Wouldn't it be sufficient to add something like a check for backbones (
-> > batadv_bla_is_backbone_gw) into batadv_recv_unicast_packet() and drop
-> 
-> packets
-> 
-> > if they came from the same backbone?
-> 
-> That's a good question. This is something I did not dare to do last year
-> because
-> I cannot foresee possible negative implications. Perhaps someone more
-> experienced with
-> batman-adv routing should answer this. Therefore I focussed on fixing this
-> for the DAT ARP handling only.
-> But doing so as you propose would most likely have the positive side
-> effect that I will get rid
-> of the looping unicast packets in my backbone network, too. But as
-> mentioned in my prior mail
-> I think this looping unicast packets might have another cause. The
-> question is: why does
-> a gateway forward a unicast packet received via the mesh with a
-> destination mac behind
-> an originator somewhere else in the mesh (that originator is not connected
-> to the same backbone) to
-> its own backbone? If this only can happen if the entry in the global tt
-> expires (like a mac adress
-> table expires in a switch and the switch starts broadcasting incoming
-> packets to all ports), then
-> I would think blocking all unicast traffic coming from another backbone gw
-> of the same backbone network
-> is the smartest and easiest solution.
+ #define BATADV_BLA_CRC_INIT    0
+ #else /* ifdef CONFIG_BATMAN_ADV_BLA */
+@@ -111,6 +112,11 @@ static inline void batadv_bla_free(struct batadv_priv
+*bat_priv)
+ {
+ }
 
-Yeah, agreed. There shouldn't be any unicast messages to be sent among 
-gateways through the mesh. We probably should not only avoid the receiving (as 
-I suggested only), but also sending DAT requests to other gateways on the same 
-backbone. The check should be similar and simple ... After all, if there is 
-another gateway capable of answering, it will also receive the request and 
-doesn't need it passed from somebody else on the same backbone.
++bool batadv_bla_check_local_claim(struct batadv_priv *bat_priv, u8 *addr,
+unsigned short vid)
++{
++       return true;
++}
++
+ #endif /* ifdef CONFIG_BATMAN_ADV_BLA */
 
-Regarding the TT question/expiration, as a receiver we don't check the 
-destination address and just accept the packet for receiption. But as I said, 
-packets among gateways on the same backbone shouldn't be sent or received.
+ #endif /* ifndef _NET_BATMAN_ADV_BLA_H_ */
+diff --git a/net/batman-adv/distributed-arp-table.c
+b/net/batman-adv/distributed-arp-table.c
+index e96d7c7..93893bf 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -48,6 +48,7 @@
+ #include "originator.h"
+ #include "send.h"
+ #include "translation-table.h"
++#include "bridge_loop_avoidance.h"
 
-> 
-> > I have found your patch from last year. Would you like to rebase/split
-> 
-> your
-> 
-> > patch to address the remaining issues? That would help us a lot. Please
-> 
-> also
-> 
-> > put a proper patch message. I promise to be more responsive this time.
-> :
-> :)
-> 
-> I'm trying to split my last year's patch into logical seperate pieces,
-> update them
-> to be compliant to the latest master branch of the batman-adv.git
-> repositor and will
-> mail them for further discussion.
+ static void batadv_dat_purge(struct work_struct *work);
 
-Cool, thanks! I'm looking forward to it. :)
+@@ -1000,6 +1001,19 @@ bool batadv_dat_snoop_outgoing_arp_request(struct
+batadv_priv *bat_priv,
+                        goto out;
+                }
 
-Cheers,
-     Simon
---nextPart12547456.jFqLRrd9nk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
++               /* If BLA is enabled, only send ARP REPLYs if we have
+claimed
++                * the destination for the ARP REQUEST or if no one else
+of
++                * the backbone gws belonging to our backbone has claimed
+the
++                * destination.
++                */
++               if (!batadv_bla_check_local_claim(bat_priv,
+dat_entry->mac_addr, vid)) {
++                       batadv_dbg(BATADV_DBG_DAT, bat_priv, "Device %pM
+claimed by another "
++                                       "backbone gw. Don't send ARP reply
+into common backbone !",
++                                       dat_entry->mac_addr);
++                       ret =3D true;
++                       goto out;
++               }
++
+                skb_new =3D arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
+                                     bat_priv->soft_iface, ip_dst, hw_src,
+                                     dat_entry->mac_addr, hw_src);
+--
+1.7.0.4
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
 
-iQIcBAABCgAGBQJWvdhXAAoJEKEr45hCkp6hxhQP/A+vNcgXmXw2xodu2T+PtZzR
-mgGmI4TsH+8szsvNnFko5DOzj9H9VCnRsECy8n47XXKDqR89uRt4iv58PuBFe76m
-gRQxhN7TAndTI5Z0t77AXHugLGerwTLjaMBkv2FLscrUcHXTKqVyOrJOHn1izXZK
-DMI8PkUchFsloGP1lx05gqA7EyoIymU/CZaHOsdcO/InJ5Nla8lM7S2k1U2XAvL3
-UjXbji9DQZ7mudKY5rXNE2XvWCfHIZFrKh7nM/RZocVSCrQrAyYWipxXz5+HwSyz
-FaMmxtTi14xDFkzycqNA/M9TrnB/TrJH+n3N2I6NmIvc6z6xH/8C0tM4jfR/ZD2H
-WRR1iIRF1GhbzN7ZkM1OE8vINDCSG+kaLGcA7vdTnruX+sEPteMNr4wpzJ22S4ui
-6KKsAuSuQF6+rXkdPV7/P+hzFlv9qAbLIx2EqXo3FJGnIh3uwIqhMD/oJckh6XSv
-GaA5V9Ja/7VAGUGdFH2KCWt5ipHCndFSWVFaqN6CrujEsvD3nSmTUESqw3S4H6Bd
-PLauYqlTZ8WfkQS3UJZYf6TFUz6WmJS/OJ40kDfw0KUY44U9TEwm4v1QvtSCNsDX
-HgBfqWhUXrWo8k1iLwf71BeA2AWm3hFI/cmV5IYsSh8pcfRbIBE69VOsWGyr6zc5
-UjD/4tcz8QSD5wZ0zzdL
-=CPDO
------END PGP SIGNATURE-----
 
---nextPart12547456.jFqLRrd9nk--
 
+
+
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
+
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
+___________________________________________________________________
+Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
+nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
+rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
+d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
+ Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
