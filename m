@@ -1,17 +1,14 @@
-Return-Path: <APape@phoenixcontact.com>
-In-Reply-To: <2193610.djA1bK6ZTb@prime>
-References: <OF64B7E443.53DA160A-ONC1257F53.003E4656-C1257F53.003FAF34@phoenixcontact.com>
- <3200137.NDelIOaaur@prime>
- <OFE4164813.C8B92EEC-ONC1257F57.0038C5A8-C1257F57.003AA049@phoenixcontact.com>
- <2193610.djA1bK6ZTb@prime>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 12 Feb 2016 15:47:08 +0100
+Message-ID: <4371963.A8XJeSUaCP@sven-edge>
+In-Reply-To: <OF514CE6A6.70ACFF1A-ONC1257F57.004BE44C-C1257F57.004C213B@phoenixcontact.com>
+References: <OF514CE6A6.70ACFF1A-ONC1257F57.004BE44C-C1257F57.004C213B@phoenixcontact.com>
 MIME-Version: 1.0
-From: Andreas Pape <APape@phoenixcontact.com>
-Message-ID: <OF10684F8B.B1994E7A-ONC1257F57.004CBB7B-C1257F57.004DA2CF@phoenixcontact.com>
-Date: Fri, 12 Feb 2016 15:07:59 +0100
-content-transfer-encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
-Subject: [B.A.T.M.A.N.] Antwort: Re: Antwort: Re: Re: Antwort: Re: Looping
- unicast packets when using BLA
+Content-Type: multipart/signed; boundary="nextPart1855598.qGWMnJHOg7";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: Prevent mutliple ARP
+	replies sent by gateways in bla setups with dat enabled
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,182 +18,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Simon Wunderlich <sw@simonwunderlich.de> schrieb am 12.02.2016 14:04:23:
+--nextPart1855598.qGWMnJHOg7
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-> Von: Simon Wunderlich <sw@simonwunderlich.de>
-> An: Andreas Pape <APape@phoenixcontact.com>
-> Kopie: The list for a Better Approach To Mobile Ad-hoc Networking
-> <b.a.t.m.a.n@lists.open-mesh.org>
-> Datum: 12.02.2016 14:04
-> Betreff: Re: Antwort: Re: Re: [B.A.T.M.A.N.] Antwort: Re: Looping
-> unicast packets when using BLA
->
-> Hi Andreas,
->
-> On Friday 12 February 2016 11:40:21 Andreas Pape wrote:
-> > > > [...]
-> > > > using dat in combination with bla:
-> > > > 1.Broadcast ARP requests from the backbone network are handled by
-each
-> > > > gateway, leading to multiple dat adress resoultions in parallel.
-> > >
-> > > That shouldn't be a problem on its own.
-> >
-> > I think I wasn't precise enough concerning this point. I meant the
-effect,
-> > that
-> > a broadcast ARP coming from a common backbone reaches all gateways. If
-now
-> > accidentally
-> > several gateways can already answer that request due to dat, then the
-> > current code sends
-> > an arp reply from each gateway being able to answer. This broadcast
-does
-> > not even reach
-> > the mesh if all gateways can answer the request (as far as I have
-> > understood the code).
-> > Therefore broadcast handling in the mesh layer does not solve this
-> > problem.
->
-> Yes, we may have multiple gateways answering with an ARP reply. But how
-is
-> this a problem? It is redundant, yes, but its just a unicast sent back.
-I
-> don't see this a s problem yet ...
->
+On Friday 12 February 2016 14:51:32 Andreas Pape wrote:
+> From 2b90abdf53e9ab09d9acfd141c7225de1ae16719 Mon Sep 17 00:00:00 2001
+> From: Andreas Pape <apape@phoenixcontact.com>
+> Date: Fri, 12 Feb 2016 10:05:57 +0100
+> Subject: [PATCH 1/4] batman-adv: Prevent mutliple ARP replies sent by
+> gateways in bla setups with dat enabled
+> 
+This patch is corrupt:
 
-I would like to prevent duplicated packets as much as possible, even if
-they are unicast packets normally harmlexs for typical PC hardware. But I
-know of enough small embedded devices (sensors and stuff like that) which
-don't like that.....
+Applying: batman-adv: Prevent mutliple ARP replies sent by gateways in bla setups with dat enabled
+fatal: corrupt patch at line 32
+Patch failed at 0001 batman-adv: Prevent mutliple ARP replies sent by gateways in bla setups with dat enabled
+The copy of the patch that failed is found in: .git/rebase-apply/patch
+When you have resolved this problem, run "git am --continue".
+If you prefer to skip this patch, run "git am --skip" instead.
+To restore the original branch and stop patching, run "git am --abort".
 
-> >
-> > > > 2. As dat uses tunneling of broadcasts in special batman-adv
-unicast
-> > > > frames, the current bla code does not seem to prevent these
-broadcasts
-> > > > from reaching the backone network as it is done for normal
-broadcast
-> > > > coming from the mesh and heading for the backbone.
-> > > > Both effects together lead to a multiplication of arp requests and
-> > > > replies. My patch of last year tried to address this.
-> > >
-> > > Hm, I see. I just checked the code and it seems we fixed this issue
-> > > for speedy
-> > > join in the mean time (affecting TT), but for bla the problem is
-still
-> > > present.
-> > >
-> > > Wouldn't it be sufficient to add something like a check for
-backbones (
-> > > batadv_bla_is_backbone_gw) into batadv_recv_unicast_packet() and
-drop
-> >
-> > packets
-> >
-> > > if they came from the same backbone?
-> >
-> > That's a good question. This is something I did not dare to do last
-year
-> > because
-> > I cannot foresee possible negative implications. Perhaps someone more
-> > experienced with
-> > batman-adv routing should answer this. Therefore I focussed on fixing
-this
-> > for the DAT ARP handling only.
-> > But doing so as you propose would most likely have the positive side
-> > effect that I will get rid
-> > of the looping unicast packets in my backbone network, too. But as
-> > mentioned in my prior mail
-> > I think this looping unicast packets might have another cause. The
-> > question is: why does
-> > a gateway forward a unicast packet received via the mesh with a
-> > destination mac behind
-> > an originator somewhere else in the mesh (that originator is not
-connected
-> > to the same backbone) to
-> > its own backbone? If this only can happen if the entry in the global
-tt
-> > expires (like a mac adress
-> > table expires in a switch and the switch starts broadcasting incoming
-> > packets to all ports), then
-> > I would think blocking all unicast traffic coming from another
-backbone gw
-> > of the same backbone network
-> > is the smartest and easiest solution.
->
-> Yeah, agreed. There shouldn't be any unicast messages to be sent among
-> gateways through the mesh. We probably should not only avoid the
-> receiving (as
-> I suggested only), but also sending DAT requests to other gateways
-> on the same
-> backbone. The check should be similar and simple ... After all, if there
-is
-> another gateway capable of answering, it will also receive the request
-and
-> doesn't need it passed from somebody else on the same backbone.
->
-> Regarding the TT question/expiration, as a receiver we don't check the
-> destination address and just accept the packet for receiption. But as I
-said,
-> packets among gateways on the same backbone shouldn't be sent or
-received.
->
-> >
-> > > I have found your patch from last year. Would you like to
-rebase/split
-> >
-> > your
-> >
-> > > patch to address the remaining issues? That would help us a lot.
-Please
-> >
-> > also
-> >
-> > > put a proper patch message. I promise to be more responsive this
-time.
-> > :
-> > :)
-> >
-> > I'm trying to split my last year's patch into logical seperate pieces,
-> > update them
-> > to be compliant to the latest master branch of the batman-adv.git
-> > repositor and will
-> > mail them for further discussion.
->
-> Cool, thanks! I'm looking forward to it. :)
+Please read https://www.kernel.org/doc/Documentation/email-clients.txt
+and https://www.kernel.org/doc/Documentation/SubmittingPatches
 
-I've just sent the patches. They have the state of my "experiments" last
-year. That means that your latest proposal is not integrated yet.
-I quickly updated my devices in my test setup and it looks good (no
-looping arp requests or multiple replies seen so far).
+Kind regards,
+	Sven
+--nextPart1855598.qGWMnJHOg7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-Regards,
-Andreas
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
+iQIcBAABCgAGBQJWvfBsAAoJEF2HCgfBJntGblwP/A6safg8iL0zpEuIWjkv0i+A
+oRkA3stOrYnOAntEi8uQS/2i3AZCgB9VCUqBVNHnexJni2PJENxMdy6GMfGJ+3ka
+U8m5DP6tMWc5MalFXrEttlBoS6l1r9eozx61BzL7b54Nvh21HRLZpR5uF9iqSZsB
+MwCY+Sa/0++7cHUc3n4GrXU5QIId0swaYX3k+TmKMc0vTbYt5wHtiIDFZ8jdZTC5
+cxaYM1ov1ss4vWqzJcgwI329+N9nvyUHFOG0o2j0EHhtejAmfRJCsE+8mOPbqVA5
+PUeX/MApkTXxClkkkGEVU/SkHdcKNPVm9kqcDt5R0yoanm05rO08YlLtopl4BhNi
+bVv4a8ag0tIcZgSdjzqiuC8AbWWmVJHe6HdEk/zTUpQz+g6MrP1Wxy0yk8RHPraX
+YPnN60oMP6JeEvlrE844pHjhRhhbHZK6LO1/+eAm8lW1/S4OYJTfZ6U9XFZVRbCK
+ZfaGXzvcWBsxbfSRwrrC7GY/SRkbhfHWam4G1csDpKUPqW1aHACotQ+DdGf0TOKy
+vCHWHfjBwqt/K4uONewUb/2u65X2wM/WttPiEHX80eVov1kds9tOgMAtRQzCkfUo
+jo/KejP0gzQbFG7vxrRifVMMGJYCgPLVE1kRcFGDvXsCEv9ty7GSOaAZJiQHUCZs
+AEGsXcWq75LvAU7MHa4z
+=J+d9
+-----END PGP SIGNATURE-----
 
+--nextPart1855598.qGWMnJHOg7--
 
-..................................................................
-PHOENIX CONTACT ELECTRONICS GmbH
-
-Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
-USt-Id-Nr.: DE811742156
-Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
-Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
-___________________________________________________________________
-Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
-nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
-rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
-d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
- Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
----------------------------------------------------------------------------=
--------------------------
-This e-mail may contain confidential and/or privileged information. If you =
-are not the intended recipient (or have received this e-mail in error) plea=
-se notify the sender immediately and destroy this e-mail. Any unauthorized =
-copying, disclosure, distribution or other use of the material or parts the=
-reof is strictly forbidden.
-___________________________________________________________________
