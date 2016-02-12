@@ -1,13 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 11 Feb 2016 23:52:05 +0100
-Message-ID: <2360276.GhZ0sleNGR@sven-edge>
-In-Reply-To: <1674394.xTpvsLY2Zu@sven-edge>
-References: <1674394.xTpvsLY2Zu@sven-edge>
+Return-Path: <sven.eckelmann@open-mesh.com>
+From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+Date: Fri, 12 Feb 2016 09:51:59 +0100
+Message-ID: <103949657.7suUY09B7s@bentobox>
+In-Reply-To: <1454336498-2621-1-git-send-email-sw@simonwunderlich.de>
+References: <1454336498-2621-1-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart18422364.WjyFkKVKmC";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] mac80211 compat layer for OpenWrt
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: move and restructure
+	batadv_v_ogm_forward
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,178 +19,123 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Simon Wunderlich <simon@open-mesh.com>
 
---nextPart18422364.WjyFkKVKmC
-Content-Type: multipart/mixed; boundary="nextPart1949817.qKuBKHtrpB"
-Content-Transfer-Encoding: quoted-printable
+On Monday 01 February 2016 15:21:37 Simon Wunderlich wrote:
+> From: Simon Wunderlich <simon@open-mesh.com>
+>=20
+> To match our code better to the protocol description of B.A.T.M.A.N. =
+V,
+> move batadv_v_ogm_forward() out into batadv_v_ogm_process_per_outif()=
 
-This is a multi-part message in MIME format.
+> and move all checks directly deciding whether the OGM should be
+> forwarded into batadv_v_ogm_forward().
+>=20
+> Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
+> ---
+> Changes to PATCH:
+>  * fix some embarassing compile issues and style issues (thanks Marek=
+)
+> ---
 
-=2D-nextPart1949817.qKuBKHtrpB
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This patch crashes my two node test setup (2xOM2P-HS).
 
-On Thursday 11 February 2016 23:25:56 Sven Eckelmann wrote:
-[...]
-> I've also attached the patch to build the current state of B.A.T.M.A.N. V on
-> OpenWrt.
+/etc/config/wireless:
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 
-Btw. the previously proposed way to select the routing algorithm at runtime in 
-OpenWrt requires an additional patch. The setting in /etc/config/network would 
-look something like:
+config wifi-iface 'wmesh'
+        option device 'radio0'
+        option ifname 'adhoc0'
+        option network 'batnet'
+        option mode 'adhoc'
+        option ssid 'mesh'
+        option 'mcast_rate' '18000'
+        option bssid '02:CA:FE:CA:CA:40'
 
-    config interface 'batnet'
-            option mtu '1532'
-            option proto 'batadv'
-            option mesh 'bat0'
-            option routing_algo 'BATMAN_IV'
 
-Kind regards,
-	Sven
-=2D-nextPart1949817.qKuBKHtrpB
-Content-Disposition: attachment; filename="0003-openwrt-feed-batman-adv-Allow-to-select-routing-algo.patch"
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/x-patch; charset="UTF-8"; name="0003-openwrt-feed-batman-adv-Allow-to-select-routing-algo.patch"
+/etc/config/network
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 
-From: Sven Eckelmann <sven@open-mesh.com>
-Date: Tue, 19 Jan 2016 12:40:10 +0100
-Subject: [PATCH] openwrt-feed-batman-adv: Allow to select routing algorithm
+config interface 'batnet'
+        option mtu '1532'
+        option proto 'batadv'
+        option mesh 'bat0'
+        option routing_algo 'BATMAN_V'
 
-The network config section for proto batadv now allows to select the
-routing algorithm via the option routing_algo. This allows to chose between
-BATMAN_IV and BATMAN_V when BATMAN_V is released. This option is only
-useful when a new batman-adv device is created and not when only a device
-is added to an already existing batman-adv device.
 
-Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
-
-Forwarded: https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-January/014225.html
-=2D--
- batman-adv/files/lib/netifd/proto/batadv.sh | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/batman-adv/files/lib/netifd/proto/batadv.sh b/batman-adv/files/lib/netifd/proto/batadv.sh
-index 632a209..1e0c9d0 100644
-=2D-- a/batman-adv/files/lib/netifd/proto/batadv.sh
-+++ b/batman-adv/files/lib/netifd/proto/batadv.sh
-@@ -6,14 +6,18 @@ init_proto "$@"
- 
- proto_batadv_init_config() {
- 	proto_config_add_string "mesh"
-+	proto_config_add_string "routing_algo"
- }
- 
- proto_batadv_setup() {
- 	local config="$1"
- 	local iface="$2"
- 
-=2D	local mesh
-=2D	json_get_vars mesh
-+	local mesh routing_algo
-+	json_get_vars mesh routing_algo
-+
-+	[ -n "$routing_algo" ] || routing_algo="BATMAN_IV"
-+	echo "$routing_algo" > "/sys/module/batman_adv/parameters/routing_algo"
- 
- 	echo "$mesh" > "/sys/class/net/$iface/batman_adv/mesh_iface"
- 	proto_init_update "$iface" 1
-
-=2D-nextPart1949817.qKuBKHtrpB--
-This is a multi-part message in MIME format.
-
---nextPart1949817.qKuBKHtrpB
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Thursday 11 February 2016 23:25:56 Sven Eckelmann wrote:
-[...]
-> I've also attached the patch to build the current state of B.A.T.M.A.N. V on
-> OpenWrt.
-
-Btw. the previously proposed way to select the routing algorithm at runtime in 
-OpenWrt requires an additional patch. The setting in /etc/config/network would 
-look something like:
-
-    config interface 'batnet'
-            option mtu '1532'
-            option proto 'batadv'
-            option mesh 'bat0'
-            option routing_algo 'BATMAN_IV'
-
-Kind regards,
-	Sven
---nextPart1949817.qKuBKHtrpB
-Content-Disposition: attachment; filename="0003-openwrt-feed-batman-adv-Allow-to-select-routing-algo.patch"
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/x-patch; charset="UTF-8"; name="0003-openwrt-feed-batman-adv-Allow-to-select-routing-algo.patch"
-
-From: Sven Eckelmann <sven@open-mesh.com>
-Date: Tue, 19 Jan 2016 12:40:10 +0100
-Subject: [PATCH] openwrt-feed-batman-adv: Allow to select routing algorithm
-
-The network config section for proto batadv now allows to select the
-routing algorithm via the option routing_algo. This allows to chose between
-BATMAN_IV and BATMAN_V when BATMAN_V is released. This option is only
-useful when a new batman-adv device is created and not when only a device
-is added to an already existing batman-adv device.
-
-Signed-off-by: Sven Eckelmann <sven@open-mesh.com>
-
-Forwarded: https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-January/014225.html
----
- batman-adv/files/lib/netifd/proto/batadv.sh | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/batman-adv/files/lib/netifd/proto/batadv.sh b/batman-adv/files/lib/netifd/proto/batadv.sh
-index 632a209..1e0c9d0 100644
---- a/batman-adv/files/lib/netifd/proto/batadv.sh
-+++ b/batman-adv/files/lib/netifd/proto/batadv.sh
-@@ -6,14 +6,18 @@ init_proto "$@"
- 
- proto_batadv_init_config() {
- 	proto_config_add_string "mesh"
-+	proto_config_add_string "routing_algo"
- }
- 
- proto_batadv_setup() {
- 	local config="$1"
- 	local iface="$2"
- 
--	local mesh
--	json_get_vars mesh
-+	local mesh routing_algo
-+	json_get_vars mesh routing_algo
-+
-+	[ -n "$routing_algo" ] || routing_algo="BATMAN_IV"
-+	echo "$routing_algo" > "/sys/module/batman_adv/parameters/routing_algo"
- 
- 	echo "$mesh" > "/sys/class/net/$iface/batman_adv/mesh_iface"
- 	proto_init_update "$iface" 1
-
---nextPart1949817.qKuBKHtrpB--
-
---nextPart18422364.WjyFkKVKmC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJWvRCVAAoJEF2HCgfBJntGOLQQANGZuGJzmmP5rK0RfiKyhdzI
-V5a9P+nU/9MK32FSlwtaXqlqBU8ZuCphMVmOYd2YD6c9zBwzOU6LvnUlaUZlpu8c
-8sPQ0+EpyB8Evz8ayGWCKVWLPxeOEQ6p18O1u0rBROzwWf9AEyBiG0OvLmEyixea
-zu0MFJGneMiArRVb4vPm4wAG6jn28mZQYeK1z7y6sBMx1x9GmeF9n+4Z+NhaFa32
-G0gSSH68YtfpM6tHpCP/AqZJET1CWBsHa3iZGIXva3UI++YUbToTfa23/uI5caAc
-+lBv/KLOFhtybRlsdA0vpBrBlFTxdCAEpDh71S10VtVWmFF+UftCs2oQnfC425xK
-dO8hrkbkhiw5zeKekr2cJcg9Fj6JCrPlWAGu/ehIt0gePi5O7U8efn4J7HZiiPBA
-/GOtfo/2oZZtB3wUkbxqdDeKqW1WE2XGzH+y02+4O8RCf0qodC+ckuLSqD/w9djI
-dBaWHNx3VgoHdC6t2/qlqSYOXHngwfobqN+FHTUJ6QEpfcJqPJELbyJvrqf3ieTd
-Po08BHTJimPMbEMxkv+cbWQJuQVnJbJ1LVZ3jZXeJeGlaFxO7xVY5h9aDQd+4ZIS
-HnojhAFHLTLn8P42YTraMV6xhun3wP/3aor/NUbrWcOJB30ButnGWDiZOKp7hDoL
-kv1IoHPjYLUe7QjAIhkl
-=CGL6
------END PGP SIGNATURE-----
-
---nextPart18422364.WjyFkKVKmC--
-
+[   21.690000] CPU 0 Unable to handle kernel paging request at virtual =
+address 0000000c, epc =3D=3D 83183d04, ra =3D=3D 83183cf8
+[   21.700000] Oops[#1]:
+[   21.700000] CPU: 0 PID: 1152 Comm: udhcpc Tainted: P               3=
+.18.8 #1
+[   21.700000] task: 83987070 ti: 8298e000 task.ti: 8298e000
+[   21.700000] $ 0   : 00000000 00000001 8297b400 00000001
+[   21.700000] $ 4   : 00000001 00000000 00000002 82980100
+[   21.700000] $ 8   : 00000001 0000ed7e 8297b380 c881c661
+[   21.700000] $12   : 00000000 832cf499 00000000 7fc3a8d0
+[   21.700000] $16   : 82808090 00000000 82980100 8297b400
+[   21.700000] $20   : 82951a00 8297b680 0000001c 00000000
+[   21.700000] $24   : 00000000 8021f434                 =20
+[   21.700000] $28   : 8298e000 8298f968 82951a00 83183cf8
+[   21.700000] Hi    : 000003b7
+[   21.700000] Lo    : 003f2fb0
+[   21.700000] epc   : 83183d04 batadv_v_ogm_orig_get+0x65c/0x738 [batm=
+an_adv]
+[   21.700000]     Tainted: P             =20
+[   21.700000] ra    : 83183cf8 batadv_v_ogm_orig_get+0x650/0x738 [batm=
+an_adv]
+[   21.700000] Status: 1100f403 KERNEL EXL IE=20
+[   21.700000] Cause : 00800008
+[   21.700000] BadVA : 0000000c
+[   21.700000] PrId  : 0001974c (MIPS 74Kc)
+[   21.700000] Modules linked in: iptable_nat ath9k nf_nat_pptp nf_nat_=
+ipv4 nf_nat_amanda nf_conntrack_pptp nf_conntrack_ipv6 nf_conntrack_ipv=
+4 nf_conntrack_amanda ipt_REJECT ipt_MASQUERADE ath9k_common xt_time xt=
+_tcpudp xt_tcpmss xt_string xt_statistic xt_state xt_recent xt_quota xt=
+_pkttype xt_physdev xt_owner xt_nat xt_multiport xt_mark xt_mac xt_limi=
+t xt_length xt_id xt_hl xt_helper xt_ecn xt_dscp xt_conntrack xt_connma=
+rk xt_connlimit xt_connbytes xt_comment xt_addrtype xt_TCPMSS xt_REDIRE=
+CT xt_NETMAP xt_LOG xt_HL xt_DSCP xt_CT xt_CLASSIFY ts_kmp ts_fsm ts_bm=
+ nf_reject_ipv4 nf_nat_tftp nf_nat_snmp_basic nf_nat_sip nf_nat_proto_g=
+re nf_nat_masquerade_ipv4 nf_nat_irc nf_nat_h323 nf_nat_ftp nf_nat nf_l=
+og_ipv4 nf_defrag_ipv6 nf_defrag_ipv4 nf_conntrack_tftp nf_conntrack_sn=
+mp nf_conntrack_sip nf_conntrack_rtcache nf_conntrack_proto_gre nf_conn=
+track_irc nf_conntrack_h323 nf_conntrack_ftp nf_conntrack_broadcast ipt=
+able_raw iptable_mangle iptable_filter ipt_ECN ip_tables crc_ccitt ath9=
+k_hw em_nbyte sch_codel sch_prio sch_dsmark act_ipt sch_gred em_meta sc=
+h_htb cls_basic sch_netem act_police em_text sch_tbf sch_sfq em_cmp sch=
+_red act_skbedit act_mirred em_u32 cls_u32 cls_tcindex cls_flow cls_rou=
+te cls_fw sch_hfsc sch_ingress tmp421 hwmon batman_adv libcrc32c crc16 =
+ath10k_pci ath10k_core ath mac80211 cfg80211 compat UDSMARK udsmac i2c_=
+dev tc_classid_mapper(P) filter_group classifier_dns(P) classifier_netb=
+lock(P) classifier_bittorrent(P) classifier_rtmp(P) classifier_ssl(P) c=
+lassifier_content(P) classifier_skype(P) kernel_classifier nf_conntrack=
+ xt_set ip_set_list_set ip_set_hash_netport ip_set_hash_netiface ip_set=
+_hash_net ip_set_hash_ipportnet ip_set_hash_ipportip ip_set_hash_ipport=
+ ip_set_hash_ip ip_set_bitmap_port ip_set_bitmap_ipmac ip_set_bitmap_ip=
+ ip_set nfnetlink ip6t_REJECT nf_reject_ipv6 nf_log_ipv6 nf_log_common =
+ip6table_raw ip6table_mangle ip6table_filter ip6_tables x_tables ifb tu=
+n ipv6 arc4 crypto_blkcipher input_polldev gpio_button_hotplug button_h=
+otplug input_core ag71xx crc32c_generic crypto_hash
+[   21.700000] Process udhcpc (pid: 1152, threadinfo=3D8298e000, task=3D=
+83987070, tls=3D77051440)
+[   21.700000] Stack : 003617ec 80090cb4 80391000 839a8800 00000000 828=
+080a4 0000001c 8340c240
+          0140c280 8340c2c0 00000000 8340c4c0 832cf480 831aff00 000fcc6=
+6 82980100
+          82951a00 82808090 82980080 828d3420 82808082 83184088 839a885=
+8 82808082
+          00000d85 00000400 82980100 831aff00 00000000 80094034 0000100=
+0 00000000
+          82808090 828d3000 00000014 8340c580 832cf480 00000001 831aff1=
+c 00000001
+          ...
+[   21.700000] Call Trace:
+[   21.700000] [<83183d04>] batadv_v_ogm_orig_get+0x65c/0x738 [batman_a=
+dv]
+[   21.700000]=20
+[   21.700000]=20
+Code: 10400022  00409821  9616000e <8c04000c> 24060020  0c028338  26c50=
+022  1040001c  00408821=20
+[   22.050000] ---[ end trace 2f89500f9609fb9e ]---
+[   22.050000] Kernel panic - not syncing: Fatal exception in interrupt
