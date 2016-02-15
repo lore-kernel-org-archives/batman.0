@@ -1,16 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 15 Feb 2016 09:54:52 +0100
-Message-ID: <3485451.rMHW1YXhP4@prime>
-In-Reply-To: <OF10684F8B.B1994E7A-ONC1257F57.004CBB7B-C1257F57.004DA2CF@phoenixcontact.com>
-References: <OF64B7E443.53DA160A-ONC1257F53.003E4656-C1257F53.003FAF34@phoenixcontact.com>
- <2193610.djA1bK6ZTb@prime>
- <OF10684F8B.B1994E7A-ONC1257F57.004CBB7B-C1257F57.004DA2CF@phoenixcontact.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 15 Feb 2016 10:11:37 +0100
+Message-ID: <3296204.f5OVBeuHEA@bentobox>
+In-Reply-To: <10971950.7jXMiP8m2i@prime>
+References: <OF514CE6A6.70ACFF1A-ONC1257F57.004BE44C-C1257F57.004C213B@phoenixcontact.com>
+ <10971950.7jXMiP8m2i@prime>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart12684896.GMaK6UXxY7";
+Content-Type: multipart/signed; boundary="nextPart4031383.BxeCBqxsHI";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Antwort: Re: Antwort: Re: Re: Antwort: Re:
-	Looping unicast packets when using BLA
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: Prevent mutliple ARP
+	replies sent by gateways in bla setups with dat enabled
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,95 +19,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Andreas Pape <APape@phoenixcontact.com>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart12684896.GMaK6UXxY7
+--nextPart4031383.BxeCBqxsHI
 Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 
-Hi Andreas,
-
-On Friday 12 February 2016 15:07:59 Andreas Pape wrote:
-> Simon Wunderlich <sw@simonwunderlich.de> schrieb am 12.02.2016 14:04:23:
-> > Von: Simon Wunderlich <sw@simonwunderlich.de>
-> > An: Andreas Pape <APape@phoenixcontact.com>
-> > Kopie: The list for a Better Approach To Mobile Ad-hoc Networking
-> > <b.a.t.m.a.n@lists.open-mesh.org>
-> > Datum: 12.02.2016 14:04
-> > Betreff: Re: Antwort: Re: Re: [B.A.T.M.A.N.] Antwort: Re: Looping
-> > unicast packets when using BLA
+On Monday 15 February 2016 09:50:18 Simon Wunderlich wrote:
+> On Friday 12 February 2016 14:51:32 Andreas Pape wrote:
+> > From 2b90abdf53e9ab09d9acfd141c7225de1ae16719 Mon Sep 17 00:00:00 2001
+> > From: Andreas Pape <apape@phoenixcontact.com>
+> > Date: Fri, 12 Feb 2016 10:05:57 +0100
+> > Subject: [PATCH 1/4] batman-adv: Prevent mutliple ARP replies sent by
+> > gateways in bla setups with dat enabled
 > > 
-> > Hi Andreas,
-> > 
-> > On Friday 12 February 2016 11:40:21 Andreas Pape wrote:
-> > > > > [...]
-> > > > > using dat in combination with bla:
-> > > > > 1.Broadcast ARP requests from the backbone network are handled by
+> > This patch shall make sure that only the backbone gw which has claimed the
+> > remote
+> > destination for the ARP request answers the ARP request directly if the
+> > MAC address
+> > is known due to the local DAT table. This prevents multiple ARP replies in
+> > a common
+> > backbone if more than one gateway already knows the remote mac searched
+> > for in the
+> > ARP request.
 > 
-> each
-> 
-> > > > > gateway, leading to multiple dat adress resoultions in parallel.
-> > > > 
-> > > > That shouldn't be a problem on its own.
-> > > 
-> > > I think I wasn't precise enough concerning this point. I meant the
-> 
-> effect,
-> 
-> > > that
-> > > a broadcast ARP coming from a common backbone reaches all gateways. If
-> 
-> now
-> 
-> > > accidentally
-> > > several gateways can already answer that request due to dat, then the
-> > > current code sends
-> > > an arp reply from each gateway being able to answer. This broadcast
-> 
-> does
-> 
-> > > not even reach
-> > > the mesh if all gateways can answer the request (as far as I have
-> > > understood the code).
-> > > Therefore broadcast handling in the mesh layer does not solve this
-> > > problem.
-> > 
-> > Yes, we may have multiple gateways answering with an ARP reply. But how
-> 
-> is
-> 
-> > this a problem? It is redundant, yes, but its just a unicast sent back.
-> 
-> I
-> 
-> > don't see this a s problem yet ...
-> 
-> I would like to prevent duplicated packets as much as possible, even if
-> they are unicast packets normally harmlexs for typical PC hardware. But I
-> know of enough small embedded devices (sensors and stuff like that) which
-> don't like that.....
-> 
+> This patch looks good in general. I can not apply it though, please check the 
+> links that Sven posted how to set up your mail client to send patches. Also, 
+> the commit message seems to have too long lines. Usually your git client 
+> should limit those to ~72 characters per line (I'm not sure about the actual 
+> limit)
 
-Thats a good point. In general it could be debated whether we prefer redundant 
-replies to no replies at all. But I'd agree to your point, especially since 
-having answers from different devices may confuse a switch because it thinks 
-there is some mac flapping or worse, having answers from different ports.
+See SubmittingPatches:
 
->> [...]
-> 
-> I've just sent the patches. They have the state of my "experiments" last
-> year. That means that your latest proposal is not integrated yet.
-> I quickly updated my devices in my test setup and it looks good (no
-> looping arp requests or multiple replies seen so far).
+    - The body of the explanation, line wrapped at 75 columns, which will
+      be copied to the permanent changelog to describe this patch.
 
-Thanks a lot! I've reviewed them, we still have some formatting work to do so 
-please bear with us with the iterations. Splitting and cleaning them up was 
-definitely a great start, this is a very good contribution. :)
+This should also have been displayed when you've checked the patch with
+Linux's
 
-Thanks,
-     Simon
---nextPart12684896.GMaK6UXxY7
+     ./scripts/checkpatch.pl --strict 000*.patch
+
+Kind regards,
+	Sven
+--nextPart4031383.BxeCBqxsHI
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -116,20 +69,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJWwZJcAAoJEKEr45hCkp6hegoP+waqVM/mN54GLxOpPRu3W5Uf
-YjVWYxSH8LYPVN53KZPRdXOao5ogoJ3lhm9mmqzvaSqme5gD1xKANgaAS6uW6CST
-N1ZROq893KYW+nfGEjmZ9YPyeje/1IuPYS7gxF990eA6PUXNu0GYOzavgOyvbLxC
-rjZZGas3x5UGuLIM/4yXJQeXNmk1UiDiQLDFzwvToWzOyA6MoqTYkThAYooIAxdi
-uSdnK/u9h1BFnTz3ioGbDOK4FiZ9vrkK2omRa3eUlrk/4tONABQtQ81ov8ZvNMhi
-xYjlEAPGln7J0Fi4mpUdycXcArsM0mNVBBYW9J+Fj7y47qrWpnKcV4IQ/kcx1L81
-20XA201rjg1J5bo1+WfQJDyoU2J5BHQUTgjfCyUs39seioG0Gmvxo+lI0m20uIYZ
-6wvPRD3SoqNrihp0P+6SwEjfrvQBIX57yqOe0nCfbm7WtyJSqb4noZUAQEWsgf1b
-CUCAvkpyAM4WyLvQb4wsVOcHXWMtVZO8bd2RtfU+Y9ctUCTMh9uBysYsYkrGTb6V
-/6+rNZhgpAN2PWrsAchpR2h3Ilfce/fA3QHp+IxDnUbaKllaITxXwt/8gQ0kB5pL
-bFcRA+9eo4WWwL79d8lAyoGKo18odE8Ao5f28Vh4TYr9jQsG0r+Dyhlhs1ljnFiZ
-IpmWmhZs/0qxcI3vzJIG
-=Hypa
+iQIcBAABCgAGBQJWwZZJAAoJEF2HCgfBJntGxBgQAJIh7BUdlfOzEtVzD5VQiOa4
+Fh3VbdTodPKRmC8fsPbV1/ayfqxh8hmRlvooIEK/SpZswAFEt/3IN5KzpvOMLety
+YiyO9efa9gTtIZYWETv3zmWjBRJLOcAh1J8qsy1GKITQL2kK/52QUNMB2F3Uui1o
+VxOQwBHaASv+7rSA42FCGfBhWgStQVcRvbBxSyJk3GgJe84Luau4xDpgif5ob+aK
+U73jFxqDEcrDHpU8pLFw9tSFr3uReNUnmLqQDLiBu6/e5i69MZj5hhKmwb6DJGEQ
+ktrLTev1Q14FFSZEeaCYziq8TyCkCUpPobuCzpSGu7vwcyKyDFXi7CQukP6Egnbw
+H+pkAjzb5WDUjtMTfEw2UHHTCTxxr9KdC253CQEtjaBcUWTVrT7N0qfKexaN2aTf
+PTtVSAhQNE+uXqHxkbHj02BMk3GNR7NJyjP1ooNCcoLMtMrXsGgfWRdInNSUrh1M
+NQAK1EK7G14vWHbYOkj5KQR212oMQyVoANl0PlzM4Dmbk6eyeEH/XU91HIWIul0Q
+wJzYn4a0My12RDDNN5cPkrC/ZBMEP1GXjuBELUIwVLQlnDXg//per8Y/FbEC4RCs
+Z88tttUvsTiC+TLMNM9gBl4yGX/SCqtWsD7D/hdqO75l24pef+vdiPnZIoIotjDZ
+HvS9wxvd/qDmuofqMBkK
+=OdXC
 -----END PGP SIGNATURE-----
 
---nextPart12684896.GMaK6UXxY7--
+--nextPart4031383.BxeCBqxsHI--
 
