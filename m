@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 15 Feb 2016 09:18:07 +0100
-Message-ID: <2708667.9PEbVjxvIc@prime>
-In-Reply-To: <OF4C91F5B8.1DBDF49E-ONC1257F57.004C552D-C1257F57.004C60E3@phoenixcontact.com>
-References: <OF4C91F5B8.1DBDF49E-ONC1257F57.004C552D-C1257F57.004C60E3@phoenixcontact.com>
+Date: Mon, 15 Feb 2016 09:27:02 +0100
+Message-ID: <10278318.qWhkaFWykG@prime>
+In-Reply-To: <OFB1894E97.63E32850-ONC1257F57.004C41B6-C1257F57.004C4F9E@phoenixcontact.com>
+References: <OFB1894E97.63E32850-ONC1257F57.004C41B6-C1257F57.004C4F9E@phoenixcontact.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1963681.RgNP8UenBn";
+Content-Type: multipart/signed; boundary="nextPart2577224.aCydo9OkA2";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: free skb when dropping
-	broadcast packet received from another backbone gw
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: prevent duplication of
+	ARP replies in BLA setups when DAT does address resolution
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,51 +19,42 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart1963681.RgNP8UenBn
+--nextPart2577224.aCydo9OkA2
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="utf-8"
 
-Hi Andreas,
-
-On Friday 12 February 2016 14:54:15 Andreas Pape wrote:
-> From 1cf69fc5b7ffac3193ad8fa4439586c865c5acab Mon Sep 17 00:00:00 2001
+On Friday 12 February 2016 14:53:31 Andreas Pape wrote:
+> From 2cc1e9eb153d0c2d64cb0fb0747063ba63472925 Mon Sep 17 00:00:00 2001
 > From: Andreas Pape <apape@phoenixcontact.com>
-> Date: Fri, 12 Feb 2016 14:00:53 +0100
-> Subject: [PATCH 4/4] batman-adv: free skb when dropping broadcast packet
-> received from another backbone gw
+> Date: Fri, 12 Feb 2016 13:19:25 +0100
+> Subject: [PATCH 3/4] batman-adv: prevent duplication of ARP replies in BLA
+> setups when DAT does address resolution
 > 
-> skb should be freed in batadv_recv_bcast_packet if packet shall be dropped
-> due to
-> reception from another backbone gateway of the same backbone.
-> 
-> Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
-> ---
->  net/batman-adv/routing.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-> index 4dd646a..128ed28 100644
-> --- a/net/batman-adv/routing.c
-> +++ b/net/batman-adv/routing.c
-> @@ -1104,8 +1104,10 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
->         /* don't hand the broadcast up if it is from an originator
->          * from the same backbone.
->          */
-> -       if (batadv_bla_is_backbone_gw(skb, orig_node, hdr_size))
-> -               goto out;
-> +       if (batadv_bla_is_backbone_gw(skb, orig_node, hdr_size)) {
-> +               kfree_skb(skb);
-> +               goto rx_success;
-> +       }
+> This patch covers the case of a bla setup with enabled dat if none of the
+> common gateways of the
+> same backbone has already knowledge of the searched ip address and
+> therefore has to ask via DAT some
+> of the other mesh nodes. A broadcast arp request is coming
+> from the backbone and each backbone gateway starts an address resolution
+> via other DAT mesh nodes.
+> In this case it should be prevented, that multiple answers from DAT
+> enabled mesh nodes reach the
+> backbone gateways leading to multiple replies in a common backbone again.
 
-I disagree. In the original code, we return NET_RX_DROP, which makes the 
-calling code already free the skb. Check batadv_batman_skb_recv() in main.c. 
+I think this approach and its methods as implented are good. However I think 
+we should generalize this case and forbid UNICAST/UNICAST4ADDR between 
+backbone gateways, as discussed in the other thread. 
+
+What do you think, or does anyone else have opinions?
+
+@Antonio, in what way would be the DHT in DAT be affected? Basically, we would 
+exclude some orginators who are on the same backbone.
 
 Cheers,
-    Simon
-
---nextPart1963681.RgNP8UenBn
+     Simon
+--nextPart2577224.aCydo9OkA2
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -71,20 +62,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJWwYm/AAoJEKEr45hCkp6hlDQQAIsuZQZn0Slj/CYqq8bgkDn4
-DKUheTFs8cmQTFyAldCltItjfZHM9HJ2FsGkRUMbWBrwT17x4kpq7cSLOUAunsPi
-kJMWF43iGrNvL1wZUEcoUkU2dnDeswZiIBDUBpYE62myRcAXTgi0aRt4twpvFH6A
-t2Gt+iVHr69Uhcwy62voLfVoWrtxvy0v1C/6XUbmpJg+YOjzFNgQ1iGHgYeXaOOD
-oBBZjzhUfVzPqVt1xeHpcnvfBFIEviUSvs+WaEhuOlkxXNCokrzFD3+Z9Vz1jidx
-VBnsY6TnO0zTH8ME6fEKF30SNQ6/L3aJICTHPCrAX5hyq49zhPAHgDFAYZEGduQZ
-UBm0u5TJo7Wnjij1uyFh2ZMHyCDWkkS0y6CEZiI70F2IxbnwD4Sv5WVmU8i/VcCB
-PymTPuXrmmQgl+OXPivTNoNb+36mvTL10lZt7Fnn+Zj398aNm7R3IjiVtmFtxGOO
-+hVv7lGzs3uODdW7Uf9YBjeOPZWevullJoiED+kvUey7T6ZJ3weJ/90cUm6DPt1b
-VEZu18B8EAqeOW/gq6ux+x4rvxoHm5cQO+9Xjwd5jYMtd6ZXBjtv4yqUIWJdKfln
-57Tx+/zrTj9LAbqor57wLJw2vOOBbQHCVGAT84sk53NnmNb6nEaEIRZIEqK4OFiH
-H/PuCeBL3E7ZVhFgpzyt
-=mxTM
+iQIcBAABCgAGBQJWwYvWAAoJEKEr45hCkp6hpJYP/A7o2l/RnrdxO/l38ntPbR9t
+ov2/VVI6iklWZ+sdhy4BADtXa5qiry+VRNFTgvOYf0jtc3wCzAQ4EMogGCaGpRVl
+q1GAL6aHX6+mefGliun0EVREYCnFf+RIBcoFOQSWYus3A1SWVW9wJekqTD9eEWkk
+oRP3sROwTslEqoEVyfcf42+1Cnl5d/bsZyn20a3+QRq57t7X5cR7WvNh9F4EtCmw
+rEu/4xN/bB7JsTa1/VHL2/krZvPDlvBAhZdQB+9uv5IOyTpemkaOHd5SpnqbSk0b
+NF77HfiRMcQS2nkXLFb/KRsJ0S8OkoPmrPvh965YYsr1ARRyVUug7QW08m2tTovv
+i96I4Ercsrk+B2rzmpj6cUulkraMJ9ttNVzV1zsep6HG6C6hlWtaxy4PHYdESVIh
+Z5mOlQoVs5t+rW1Hd/48BzQl2M2kW58rC6TfIufS7Y6mWHHPacBbGZe8d4O2PAZ4
+iS35Cur/D7bU3tKnVrQKhNWm16P+SBgSmsUTsU3kqVwfPJrkbVYLtQI9Gv2KDpOM
+xMUcgXVhtBm2ZqKkTtg3ELIqYDSZlmzhOnZ5wwtTD3YIOdPWfG2cTxPmPPGIRYt4
+4AIayBa3gWpROi5odERmZL88EcGYS7almF94FcoLqw9KdfppMPOqppltBaA40a9W
+3B02+JEKj1+1TSljA4FT
+=Xklz
 -----END PGP SIGNATURE-----
 
---nextPart1963681.RgNP8UenBn--
+--nextPart2577224.aCydo9OkA2--
 
