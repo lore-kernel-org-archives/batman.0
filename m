@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 15 Feb 2016 09:33:02 +0100
-Message-ID: <5969063.Lf5LH4TAYi@prime>
-In-Reply-To: <OF8F259E43.DCC67654-ONC1257F57.004C278A-C1257F57.004C3956@phoenixcontact.com>
-References: <OF8F259E43.DCC67654-ONC1257F57.004C278A-C1257F57.004C3956@phoenixcontact.com>
+Date: Mon, 15 Feb 2016 09:50:18 +0100
+Message-ID: <10971950.7jXMiP8m2i@prime>
+In-Reply-To: <OF514CE6A6.70ACFF1A-ONC1257F57.004BE44C-C1257F57.004C213B@phoenixcontact.com>
+References: <OF514CE6A6.70ACFF1A-ONC1257F57.004BE44C-C1257F57.004C213B@phoenixcontact.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1825088.3mYHMOUlgF";
+Content-Type: multipart/signed; boundary="nextPart1531786.ALK9gtfh0f";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: Speed up dat by snooping
-	received ip traffic
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: Prevent mutliple ARP
+	replies sent by gateways in bla setups with dat enabled
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,156 +19,143 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart1825088.3mYHMOUlgF
+--nextPart1531786.ALK9gtfh0f
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="utf-8"
 
-On Friday 12 February 2016 14:52:34 Andreas Pape wrote:
-> From cc88159dcf18f4b8310414d2d71635fad76bf5bb Mon Sep 17 00:00:00 2001
+On Friday 12 February 2016 14:51:32 Andreas Pape wrote:
+> From 2b90abdf53e9ab09d9acfd141c7225de1ae16719 Mon Sep 17 00:00:00 2001
 > From: Andreas Pape <apape@phoenixcontact.com>
-> Date: Fri, 12 Feb 2016 11:03:10 +0100
-> Subject: [PATCH 2/4] batman-adv: Speed up dat by snooping received ip
-> traffic
+> Date: Fri, 12 Feb 2016 10:05:57 +0100
+> Subject: [PATCH 1/4] batman-adv: Prevent mutliple ARP replies sent by
+> gateways in bla setups with dat enabled
 > 
-> This patch shall speed up dat by snooping all incoming ip traffic instead
-> of only relying on ARP handling. This shall especially increase the
-> probability
-> that a gateway into a backbone network already has a fitting dat entry to
-> answer
-> incoming arp requests directly coming from the backbone network.
+> This patch shall make sure that only the backbone gw which has claimed the
+> remote
+> destination for the ARP request answers the ARP request directly if the
+> MAC address
+> is known due to the local DAT table. This prevents multiple ARP replies in
+> a common
+> backbone if more than one gateway already knows the remote mac searched
+> for in the
+> ARP request.
+
+This patch looks good in general. I can not apply it though, please check the 
+links that Sven posted how to set up your mail client to send patches. Also, 
+the commit message seems to have too long lines. Usually your git client 
+should limit those to ~72 characters per line (I'm not sure about the actual 
+limit)
+
 > 
 > Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
 > ---
->  net/batman-adv/distributed-arp-table.c |   18 ++++++++++++++++++
->  net/batman-adv/distributed-arp-table.h |    8 +++++++-
->  net/batman-adv/soft-interface.c        |   21 ++++++++++++++++++++-
->  3 files changed, 45 insertions(+), 2 deletions(-)
+>  net/batman-adv/bridge_loop_avoidance.c |   58
+> ++++++++++++++++++++++++++++++++
+>  net/batman-adv/bridge_loop_avoidance.h |    6 +++
+>  net/batman-adv/distributed-arp-table.c |   14 ++++++++
+>  3 files changed, 78 insertions(+), 0 deletions(-)
 > 
-> diff --git a/net/batman-adv/distributed-arp-table.c
-> b/net/batman-adv/distributed-arp-table.c
-> index 93893bf..4e64e6c 100644
-> --- a/net/batman-adv/distributed-arp-table.c
-> +++ b/net/batman-adv/distributed-arp-table.c
-> @@ -362,6 +362,24 @@ out:
->                 batadv_dat_entry_put(dat_entry);
+> diff --git a/net/batman-adv/bridge_loop_avoidance.c
+> b/net/batman-adv/bridge_loop_avoidance.c
+> index 0a6c8b8..c70363d 100644
+> --- a/net/batman-adv/bridge_loop_avoidance.c
+> +++ b/net/batman-adv/bridge_loop_avoidance.c
+> @@ -1906,3 +1906,61 @@ out:
+>                 batadv_hardif_put(primary_if);
+>         return 0;
 >  }
-> 
+> +
 > +/**
-> + * batadv_dat_entry_check - check and update a dat entry
+> + * batadv_check_local_claim
+
+You should put a short description here, like
+
+batadv_check_local_claim - check if the address has been claimed by the local 
+backbone
+
 > + * @bat_priv: the bat priv with all the soft interface information
-> + * @ip: ipv4 to add/edit
-> + * @mac_addr: mac address to assign to the given ipv4
-> + * @vid: VLAN identifier
+> + * @addr: mac address of which the claim status is checked
+> + * @vid: the VLAN ID
 > + *
-> + * checks additionally, if dat is enabled. can be called from other
-> modules.
+> + * batadv_check_local_claim:
+
+Please remove the repetition of the function name
+
+> + * addr is checked if this address is claimed by the local device itself.
+> + * If the address is not claimed at all, claim it.
+> + * returns true if bla is disabled or the mac is claimed by the device
+> + * returns false if the device addr is already claimed by another gateway
 > + */
-> +void batadv_dat_entry_check(struct batadv_priv *bat_priv, __be32 ip,
-> +                                u8 *mac_addr, unsigned short vid)
+
+Should put Return: and then describe the return values. Please check the other 
+functions for reference.
+
+kerneldoc is parsed automatically and must therefore be in the right format.
+
+> +bool batadv_bla_check_local_claim(struct batadv_priv *bat_priv, uint8_t
+> *addr, unsigned short vid)
 > +{
-> +       if(!atomic_read(&bat_priv->distributed_arp_table))
-> +               return;
+> +       struct batadv_bla_claim search_claim;
+> +       struct batadv_bla_claim *claim = NULL;
+> +       struct batadv_hard_iface *primary_if = NULL;
+> +       bool ret = true;
 > +
-> +       batadv_dat_entry_add(bat_priv, ip, mac_addr, vid);
-> +}
+> +       if (atomic_read(&bat_priv->bridge_loop_avoidance)) {
+
+You can save an intendation by doing a return here immediately
+
 > +
->  #ifdef CONFIG_BATMAN_ADV_DEBUG
-> 
->  /**
-> diff --git a/net/batman-adv/distributed-arp-table.h
-> b/net/batman-adv/distributed-arp-table.h
-> index 813ecea..a2ab16b 100644
-> --- a/net/batman-adv/distributed-arp-table.h
-> +++ b/net/batman-adv/distributed-arp-table.h
-> @@ -80,7 +80,8 @@ batadv_dat_init_own_addr(struct batadv_priv *bat_priv,
->  int batadv_dat_init(struct batadv_priv *bat_priv);
->  void batadv_dat_free(struct batadv_priv *bat_priv);
->  int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset);
-> -
-> +void batadv_dat_entry_check(struct batadv_priv *bat_priv, __be32 ip,
-> +                                u8 *mac_addr, unsigned short vid);
->  /**
->   * batadv_dat_inc_counter - increment the correct DAT packet counter
->   * @bat_priv: the bat priv with all the soft interface information
-> @@ -173,6 +174,11 @@ static inline void batadv_dat_inc_counter(struct
-> batadv_priv *bat_priv,
->  {
->  }
-> 
-> +void batadv_dat_entry_check(struct batadv_priv *bat_priv, __be32 ip,
-> +                                u8 *mac_addr, unsigned short vid)
-> +{
-> +}
+> +               primary_if = batadv_primary_if_get_selected(bat_priv);
+> +               if (!primary_if)
+> +                       return ret;
+
+I'd prefer a goto here. If we have other stuff to clean up when we change this 
+function later, we may forget that this is not done because we used return 
+here.
+
 > +
->  #endif /* CONFIG_BATMAN_ADV_DAT */
-> 
->  #endif /* _NET_BATMAN_ADV_DISTRIBUTED_ARP_TABLE_H_ */
-> diff --git a/net/batman-adv/soft-interface.c
-> b/net/batman-adv/soft-interface.c
-> index 0710379..41d7987 100644
-> --- a/net/batman-adv/soft-interface.c
-> +++ b/net/batman-adv/soft-interface.c
-> @@ -28,6 +28,7 @@
->  #include <linux/fs.h>
->  #include <linux/if_ether.h>
->  #include <linux/if_vlan.h>
-> +#include <linux/ip.h>
->  #include <linux/jiffies.h>
->  #include <linux/kernel.h>
->  #include <linux/kref.h>
-> @@ -390,6 +391,7 @@ void batadv_interface_rx(struct net_device
-> *soft_iface,
->         __be16 ethertype = htons(ETH_P_BATMAN);
->         struct vlan_ethhdr *vhdr;
->         struct ethhdr *ethhdr;
-> +       struct iphdr *iphdr;
->         unsigned short vid;
->         bool is_bcast;
-> 
-> @@ -412,11 +414,28 @@ void batadv_interface_rx(struct net_device
-> *soft_iface,
->         ethhdr = eth_hdr(skb);
-> 
->         switch (ntohs(ethhdr->h_proto)) {
-> +       case ETH_P_IP:
-> +               iphdr = (struct iphdr *)(skb->data + ETH_HLEN);
-> +               /* snoop incoming traffic for dat update using the source
-> mac
-> +                * and source ip to speed up dat.
-> +                * Question: does this break the fundamental idea of
-> dat????
+> +               /* First look if the mac address is claimed */
+> +               ether_addr_copy(search_claim.addr, addr);
+> +               search_claim.vid = vid;
+> +
+> +               claim = batadv_claim_hash_find(bat_priv,
+> +                                 &search_claim);
+> +
+> +               /* If there is a claim and we are not owner of the claim,
+> +                * return false;
 > +                */
+> +               if (claim) {
+> +                       if (!batadv_compare_eth(claim->backbone_gw->orig,
+> primary_if->net_dev->dev_addr)) {
+> +                               ret = false;
+> +                       }
 
-That is a really good question, although it doesn't belong in the code ;)
+braces not needed
 
-@Antonio, CC'ing you since this is more a design question/proposal and you may 
-have thought about this yet.
+> +               } else {
+> +                       /* If there is no claim, claim the device */
+> +                       batadv_dbg(BATADV_DBG_BLA, bat_priv, "No claim
+> found for %pM. Claim mac for us.\n",
+> +                                       search_claim.addr);
 
-Basically, doing this change means that we will put a lot of IP addresses in 
-our cache which are not in our local network - typically, all Internet IP 
-addresses along with the gateway backbone. Also these addresses will never be 
-requested by ARP and are therefore practically just littering our cache. They 
-are purged after 5 minutes so the impact may be reasonable, but still ...
+Maybe put something in the debug code where this was called from? This looks 
+like a very generic claim message.
 
-Maybe there is a way to limit the entries to local networks? Also (and in 
-general), should we have an upper limit how many entries we store in DAT? 
-After applying this patch, doing a subnet ping scan can deplete the RAM in 
-small routers I'm afraid. :)
+> +
+> +                       batadv_handle_claim(bat_priv,
+> +                                                      primary_if,
+> + primary_if->net_dev->dev_addr, addr,
+> +                                                      vid);
 
-(even now, that would be possible with fake ARP replies I guess)
+I wonder if we should rename the function somehow, since actively claiming 
+goes beyond "just checking". Maybe handle_local_claim.?
 
-Also, why don't you check the ip destination as well while at it?
+Also, primary_if can go on the line above I guess.
 
 Cheers,
-      Simon
-
-
-
-
-
---nextPart1825088.3mYHMOUlgF
+     Simon
+--nextPart1531786.ALK9gtfh0f
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -176,20 +163,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJWwY0+AAoJEKEr45hCkp6hT8sP/R+0xccsXwDUV1SKdPc6S8D9
-MYSL1bCGcKAWnKUa+32oTCzuYJ1xymxzjP949iArtGpB16k55HuDZdL3SgkF2PEQ
-1hl35VhPNF49vCZ2zGGcr2muqy/+469MMmA86LzODUVQjyFVd1CEE+xlsyhldOhQ
-C4/VApv4g380odvSqHJ6kM0Zwdy4NPZN2qsolCkzMPKd5yQkwIpP9A3pin/g/9Xr
-J8JyzmxuDSd22DllbVS1piMFMVRWVPrExyYMaVpuZSjFAjfZ/eNpdYLA1laaBsea
-dRP1OlhOpCnY4jxbpQYi+CBnyN826xneLi9zzL6Bm6wLgEBYCnXgSiTrUCmDdpc2
-s6AwqfMI6r7eigTRM60eYCSROtWeF0w6RN+f7SzVu34tIBBagUs3xi03kGn4Ht+M
-y18v0Bt6vfXtCMJOHsxb1A1OkfgXTnyPCDt7XHoc4hPG+gRtQ6LLp3J9wLEgXTRL
-2iXjJ29KpsapfIbpdM+BTJi8uFZTnHvOcI9jomtt7adCZsncl9XzD4KnmLx9ElvK
-CAHe07HDOiDVVYhvI3OgTTFsrQCa4aj+zZOwCiEr+aANLfL0sEOU+5HL7SfyQzo2
-l46kigH50DBQqcqDbNLjO46yS2KU85BdW5BuXjFrrALblw3f7skofw7Tlwj2b43O
-ibROzqg00HyEcjyr/3pb
-=JY3V
+iQIcBAABCgAGBQJWwZFLAAoJEKEr45hCkp6hRfEQANSV9z5nE0SfEi1qxY1ih48t
+C6WiCwADTfmVIBw5htLYgNQXZr9LnfZJ9XPMnVLDiAFMYyH7ZypRJWSZ2Si7sVwt
+nEe9L94vIxU6nERlhOTfAxvvfqPQ4f7TVdHS4Ua43XHG9WjDuBGHXJTwbehsi5yf
+wg3zPDCbbc5v/KHUrJbib/bm4zDzWy5cJnOlb3F0WevlG8sxi+TvNqE6teiHDmxB
+EZlqG9PCWv2NFhhJAxV4dfI/9uhm9CpV0yAdLPC+YpgacdVZF4h+93bLmvifmIFl
+fzH4CiN3OeTdqDkgfFSmApRvS0BzMxyDlXYum1Z2MUZ/82qCymTY0v7xGn9J90AP
+GSM08ykNIsbWrCK3RzAXpmbBwPKOvVQP+MtHbj7COcSjiS1/C1VfbPTEvHeUBQd0
+uOLUx/Ou9bUGqWZpbwj9BTlE03m6Zn6mkQeQNp4nidE6fqKcHJmntTvpHJkFcK0v
+HjZeDTetBGZ2dSx7HxzfreYt85ECTifDKTGQUDVS4eHW50lc8Go4bABMexUNOyi9
+bpI2KUMiGvZ0ev0ZKJYNPsgkk3Hfh6m01rhedSHHdGyj6gMWvgl0gZ5blY9t74/v
+nQwXs8jSrtintJ/tUIcOMuF8CW1QeU8vyhOtSlkMNZeMLprLA3Jx5ySq0PE6VOz2
+Nt0+se7ZHfjX77BUmnoY
+=bp03
 -----END PGP SIGNATURE-----
 
---nextPart1825088.3mYHMOUlgF--
+--nextPart1531786.ALK9gtfh0f--
 
