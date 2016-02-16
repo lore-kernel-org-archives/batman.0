@@ -1,15 +1,15 @@
 Return-Path: <APape@phoenixcontact.com>
-In-Reply-To: <10278318.qWhkaFWykG@prime>
-References: <OFB1894E97.63E32850-ONC1257F57.004C41B6-C1257F57.004C4F9E@phoenixcontact.com>
- <10278318.qWhkaFWykG@prime>
+In-Reply-To: <5969063.Lf5LH4TAYi@prime>
+References: <OF8F259E43.DCC67654-ONC1257F57.004C278A-C1257F57.004C3956@phoenixcontact.com>
+ <5969063.Lf5LH4TAYi@prime>
 MIME-Version: 1.0
 From: Andreas Pape <APape@phoenixcontact.com>
-Message-ID: <OF7120F97D.F4DD2637-ONC1257F5B.002EA998-C1257F5B.00302C8B@phoenixcontact.com>
-Date: Tue, 16 Feb 2016 09:46:10 +0100
+Message-ID: <OF76D2D1A1.0DC0CE5B-ONC1257F5B.00304864-C1257F5B.0031B32B@phoenixcontact.com>
+Date: Tue, 16 Feb 2016 10:02:50 +0100
 content-transfer-encoding: quoted-printable
 Content-Type: text/plain; charset="utf-8"
-Subject: [B.A.T.M.A.N.] Antwort: Re: [PATCH 3/4] batman-adv: prevent
- duplication of ARP replies in BLA setups when DAT does address resolution
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: Speed up dat by snooping
+ received ip traffic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,68 +22,77 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Simon Wunderlich <sw@simonwunderlich.de>
 Cc: b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>
 
-Simon Wunderlich <sw@simonwunderlich.de> schrieb am 15.02.2016 09:27:02:
-
-> Von: Simon Wunderlich <sw@simonwunderlich.de>
-> An: b.a.t.m.a.n@lists.open-mesh.org
-> Kopie: Andreas Pape <APape@phoenixcontact.com>, Antonio Quartulli
-> <a@unstable.cc>
-> Datum: 15.02.2016 09:27
-> Betreff: Re: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: prevent
-> duplication of ARP replies in BLA setups when DAT does address
-resolution
->
-> On Friday 12 February 2016 14:53:31 Andreas Pape wrote:
-> > From 2cc1e9eb153d0c2d64cb0fb0747063ba63472925 Mon Sep 17 00:00:00 2001
-> > From: Andreas Pape <apape@phoenixcontact.com>
-> > Date: Fri, 12 Feb 2016 13:19:25 +0100
-> > Subject: [PATCH 3/4] batman-adv: prevent duplication of ARP replies in
-BLA
-> > setups when DAT does address resolution
+> > @@ -412,11 +414,28 @@ void batadv_interface_rx(struct net_device
+> > *soft_iface,
+> >         ethhdr =3D eth_hdr(skb);
 > >
-> > This patch covers the case of a bla setup with enabled dat if none of
-the
-> > common gateways of the
-> > same backbone has already knowledge of the searched ip address and
-> > therefore has to ask via DAT some
-> > of the other mesh nodes. A broadcast arp request is coming
-> > from the backbone and each backbone gateway starts an address
-resolution
-> > via other DAT mesh nodes.
-> > In this case it should be prevented, that multiple answers from DAT
-> > enabled mesh nodes reach the
-> > backbone gateways leading to multiple replies in a common backbone
-again.
+> >         switch (ntohs(ethhdr->h_proto)) {
+> > +       case ETH_P_IP:
+> > +               iphdr =3D (struct iphdr *)(skb->data + ETH_HLEN);
+> > +               /* snoop incoming traffic for dat update using the
+source
+> > mac
+> > +                * and source ip to speed up dat.
+> > +                * Question: does this break the fundamental idea of
+> > dat????
+> > +                */
 >
-> I think this approach and its methods as implented are good. However I
-think
-> we should generalize this case and forbid UNICAST/UNICAST4ADDR between
-> backbone gateways, as discussed in the other thread.
+> That is a really good question, although it doesn't belong in the code
+;)
 >
-> What do you think, or does anyone else have opinions?
 
-From=20my limited experience with batman-adv I would welcome to forbid
-UNICAST/UNICAST4ADDR traffic between backbone gateways as this fixes a
-problem
-I see temporarily in my setup which is not covered by my proposed patches
-so far.
+I know, but I was myself unsure if this is a good idea and wanted to
+provoke a discussion about this ;-)
 
-However this patch tried to address also a possible multiplication of ARP
-replies, if
-several backbone gateways forward ARP requests to nodes deep in the mesh
-for dat
-address resolution. As far as I understand this process, these nodes
-answer the
-requests independently and more important, the replies then don't come
-from=20other
-backbone gateways but from the nodes in the mesh. Therefore blocking the
-unicast
-traffic between backbone gateways doesn't necessarily solve the ARP reply
-multiplication
-completely.
+> @Antonio, CC'ing you since this is more a design question/proposal
+> and you may
+> have thought about this yet.
+>
+> Basically, doing this change means that we will put a lot of IP
+addresses in
+> our cache which are not in our local network - typically, all Internet
+IP
+> addresses along with the gateway backbone. Also these addresses
+willnever be
+> requested by ARP and are therefore practically just littering our cache.
+They
+> are purged after 5 minutes so the impact may be reasonable, but still
+...
+>
 
+I agree that performance and especially consumption of RAM is an issue
+here
+depending on the network size....
+
+> Maybe there is a way to limit the entries to local networks? Also (and
+in
+> general), should we have an upper limit how many entries we store in
+DAT?
+> After applying this patch, doing a subnet ping scan can deplete the RAM
+in
+> small routers I'm afraid. :)
+>
+> (even now, that would be possible with fake ARP replies I guess)
+>
+> Also, why don't you check the ip destination as well while at it?
+>
+I only tried to check the source addresses with the gateways of a bla
+setup
+in mind. The goal was to increase the possiblity that already the gateway
+can
+answer the arp request. In this case only the traffic traveling from mesh
+to
+backbone is relevant. One could also snoop destination addresse for
+traffic from
+backbone to mesh, but do you think that this adds an extra benefit of
+addtional
+information except risking another decrease in forwarding performance ?
+
+> Cheers,
+>       Simon
 Kind regards,
 Andreas
+
 
 
 ..................................................................
