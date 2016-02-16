@@ -1,9 +1,8 @@
-Return-Path: <sven.eckelmann@open-mesh.com>
-From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-Date: Tue, 16 Feb 2016 10:47:07 +0100
-Message-Id: <1455616027-22089-1-git-send-email-sven@open-mesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix integer overflow in
-	batadv_iv_ogm_calc_tq
+Return-Path: <a@unstable.cc>
+From: Antonio Quartulli <a@unstable.cc>
+Date: Tue, 16 Feb 2016 23:01:25 +0800
+Message-Id: <1455634888-29400-1-git-send-email-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] pull request [net]: batman-adv 20160216
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,52 +12,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+Hello David,
 
-The undefined behavior sanatizer detected an signed integer overflow in a
-setup with near perfect link quality
+this pull request is intended for net.
 
-    UBSAN: Undefined behaviour in net/batman-adv/bat_iv_ogm.c:1246:25
-    signed integer overflow:
-    8713350 * 255 cannot be represented in type 'int'
+Two of the fixes included in this patchset prevent a wrong memory
+access - it was triggered when removing an object from a list
+after it was already free'd due to bad reference counting.
+This misbehaviour existed for both the gw_node and the
+orig_node_vlan object and has been fixed by Sven Eckelmann.
 
-The problems happens because the calculation of mixed unsigned and signed
-integers resulted in an integer multiplication.
+The last patch fixes our interface feasibility check and prevents
+it from looping indefinitely when two net_device objects
+reference each other via iflink index (i.e. veth pair), by
+Andrew Lunn
 
-      batadv_ogm_packet::tq (u8 255)
-    * tq_own (u8 255)
-    * tq_asym_penalty (int 134; max 255)
-    * tq_iface_penalty (int 255; max 255)
 
-The tq_iface_penalty, tq_asym_penalty and inv_asym_penalty can just be
-changed to unsigned int because they are not expected to become negative.
+Please pull or let me know of any problem!
+Thanks a lot,
+	Antonio
 
-Fixes: 46e44fdb96ef ("batman-adv: add WiFi penalty")
-Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
----
- net/batman-adv/bat_iv_ogm.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index cb2d1b9..b71b57e 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1147,9 +1147,10 @@ static int batadv_iv_ogm_calc_tq(struct batadv_orig_node *orig_node,
- 	u8 total_count;
- 	u8 orig_eq_count, neigh_rq_count, neigh_rq_inv, tq_own;
- 	unsigned int neigh_rq_inv_cube, neigh_rq_max_cube;
--	int tq_asym_penalty, inv_asym_penalty, if_num, ret = 0;
-+	int if_num, ret = 0;
-+	unsigned int tq_asym_penalty, inv_asym_penalty;
- 	unsigned int combined_tq;
--	int tq_iface_penalty;
-+	unsigned int tq_iface_penalty;
- 
- 	/* find corresponding one hop neighbor */
- 	rcu_read_lock();
--- 
-2.7.0
+The following changes since commit db92ea5d4df00271b57d79c2d03dae5a5d60fcc1:
+
+  dscc4: Undefined signed int shift (2016-02-13 06:10:21 -0500)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to 1bc4e2b000e7fa9773d6623bc8850561ce10a4fb:
+
+  batman-adv: Avoid endless loop in bat-on-bat netdevice check (2016-02-16 22:16:33 +0800)
+
+----------------------------------------------------------------
+Two of the fixes included in this patchset prevent wrong memory
+access - it was triggered when removing an object from a list
+after it was already free'd due to bad reference counting.
+This misbehaviour existed for both the gw_node and the
+orig_node_vlan object and has been fixed by Sven Eckelmann.
+
+The last patch fixes our interface feasibility check and prevents
+it from looping indefinitely when two net_device objects
+reference each other via iflink index (i.e. veth pair), by
+Andrew Lunn
+
+----------------------------------------------------------------
+Andrew Lunn (1):
+      batman-adv: Avoid endless loop in bat-on-bat netdevice check
+
+Sven Eckelmann (2):
+      batman-adv: Only put gw_node list reference when removed
+      batman-adv: Only put orig_node_vlan list reference when removed
+
+ net/batman-adv/gateway_client.c    |  7 ++++---
+ net/batman-adv/hard-interface.c    | 25 +++++++++++++++++++++++++
+ net/batman-adv/translation-table.c |  6 ++++--
+ 3 files changed, 33 insertions(+), 5 deletions(-)
 
