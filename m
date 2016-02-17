@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 17 Feb 2016 09:10 +0100
-Message-ID: <2117827.xyvgm9uY5o@bentobox>
+Date: Wed, 17 Feb 2016 09:39:21 +0100
+Message-ID: <11933942.EqGnTx1S2H@bentobox>
 In-Reply-To: <1455666670-32409-1-git-send-email-dominik@heidler.eu>
 References: <1455666670-32409-1-git-send-email-dominik@heidler.eu>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2372830.NqQE15tkBB";
+Content-Type: multipart/signed; boundary="nextPart1675205.9vhufxVAFv";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Allow setting the source mac via
 	unix sock
@@ -20,49 +20,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2372830.NqQE15tkBB
+--nextPart1675205.9vhufxVAFv
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
 On Wednesday 17 February 2016 00:51:10 Dominik Heidler wrote:
-> The server will only overwrite the mac if it is zero.
-> 
-> Signed-off-by: Dominik Heidler <dominik@heidler.eu>
-
-I think this breaks the forwarding/synchronization rules of alfred.
-
-@Simon, what do you say?
-
-kind regards,
-	Sven
-
-> ---
-> 
 > The alfred client sets the mac to zero by default
 > so this shouldn't break existing behaviour.
-> 
-> 
->  unix_sock.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/unix_sock.c b/unix_sock.c
-> index 3c7e583..12a10e6 100644
-> --- a/unix_sock.c
-> +++ b/unix_sock.c
-> @@ -119,7 +119,9 @@ static int unix_sock_add_data(struct globals *globals,
->  
->  	data = push->data;
->  	data_len = ntohs(data->header.length);
-> -	memcpy(data->source, &interface->hwaddr, sizeof(interface->hwaddr));
-> +	static const char zero[ETH_ALEN] = { 0 };
-> +	if (!memcmp(zero, data->source, sizeof(data->source)))
-> +		memcpy(data->source, &interface->hwaddr, sizeof(interface->hwaddr));
->  
->  	if ((int)(data_len + sizeof(*data)) > len)
->  		goto err;
-> 
 
---nextPart2372830.NqQE15tkBB
+This also may not to be true. Some users of alfred may not set the source in 
+alfred_data and thus they may end up with random bytes when reusing a buffer, 
+allocating a buffer without memset or using an uninitialized buffer on stack.
+
+It is bad practice to send uninitialized bytes around but I just wanted to 
+point out that potential problem.
+
+Your patch also doesn't explain why this feature may be required.
+
+Btw. you can grep for "data_source" to find the code related to the 
+sync/forwarded rules of alfred.
+
+Kind regards,
+	Sven
+--nextPart1675205.9vhufxVAFv
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -70,20 +50,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJWxCrYAAoJEF2HCgfBJntGoKMQAKW47BNa3+DeDnaUl3JKtZS7
-sX+I0flUAvslosPX15bpEHdtls/U9t4xz2YKUP+tEh7tnu12MEZ6vaiLjC46I8yC
-YqvhEM5bNlAvuoiUvgCsQQTHk8yEdU8Uz+VJy3hQa52ffIEbCTRNoJqtTB3o4xZ3
-gFQBLL3KUJlF1ff+2IQxGEcKKxFJvz0N1peP+n0wN50q7iPqQldW8mf/RRYUS1Y2
-hY2+13VCPd6gWsBt9e7l8LoWMXs7CKhp6X4iTFGS+DepA3xH5VgsnSJ5h8DtrwR0
-shh6Occ22ujKyWZhYsiItYc/k9vxAnfUt4rXEmVEaqKs/oOa1t7d/01BeZKez7pc
-PeYBAQidSahhms/ENYEXEkL+jJqVaBQD4iljJnqtNgi4VcfIsgAvMxYQEWxF5opB
-vhAkbQgu82fn19bE3dy/rGdSqfklTc7lw/Nqo9h6u3rc2xEWYVT4czpjDEW32RQj
-9fy92RS9F5zo9RMrs+bShfi3j3MqR8UMBkS5IGdT3VNGNVvou1PoKrqz74tnW/kd
-pJBXpwG4uGyrB6Jxl6AmRWNfV7mMCQmVeI4h1qrEaDaGNmcTxLlZHRA5RM+0yY9C
-DvH/EjmvtGKKoIkBW6CD9oXPGIDVoZAFrhGnFcNEJPrRR9HioKd5wm8oLoVE0ev4
-8gRaVy08W/CphJiV26iH
-=hAIx
+iQIcBAABCgAGBQJWxDG5AAoJEF2HCgfBJntG04sP/jA1xzGcufaVB/oO3+suMT1l
+VsoB1uVroaNBQ2aeJ77+TcHkTA7y6BnN5sgCFEEoFHANr2NIHhnQ9IyxB5OIovoR
+vqBuZFz+1KEkIzL3sHMIjiJHKb/mbz+KaEUK2v8spaxXWkWpvdzDQLHFU5T3E8O/
+Z0Zuhnyel+KofgoL6ffAunGvd44q67GFLZIH0vqTKqtn/P1q1XC1w0mtJEA70CK4
+wxYOCcEKHN40MndS8TqtBejYOlH1yW1WX67rIjgV7OLnJ0BWH6cTneW+wwCTZi5I
+mwuvjppNnIlAMi0asB2GcXViWwj9Tj96B901eU3cIfolmfaE0/JmjE/7/jJo1r3y
+3D/hRpXM05Z4Lvg/Md4PI9oYflE6USbMEVNMQgqqjTpndjQkSgc4w9EmNXCL03ct
+DDW8CtYSwFAdbUNIMwvfOXLtUHUi69UgNzsYijG9fAW8/MYUViqG6zl/s62C4XBQ
++Qi3huh88SJdrNk38SJ8mSksz5kUU4Oe8TT0DtQiUaYP6z9L6knOKqW+ERl0neaM
+55PkrxJs1vf217q2tEvZr8IpOg2NjBt/nzMoG84Fy3WVDcwJwiBDJ7UUa7rWhAOH
+ceCsqqDTjXd4rNKu9QFJdWKHiXCYD62rkFTCGp/Pk+u2MtJrinhCxYkm6K5pR6ht
+NzpTWpsEUxI+oY2Upmge
+=389e
 -----END PGP SIGNATURE-----
 
---nextPart2372830.NqQE15tkBB--
+--nextPart1675205.9vhufxVAFv--
 
