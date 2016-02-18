@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@open-mesh.com>
 From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-Date: Thu, 18 Feb 2016 18:25:52 +0100
-Message-ID: <6595687.FqdJJADTWg@bentobox>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-Subject: [B.A.T.M.A.N.] [RFC 0/5] batman-adv: Throughput meter
+Date: Thu, 18 Feb 2016 18:26:52 +0100
+Message-Id: <1455816416-24942-1-git-send-email-sven@open-mesh.com>
+In-Reply-To: <6595687.FqdJJADTWg@bentobox>
+References: <6595687.FqdJJADTWg@bentobox>
+Subject: [B.A.T.M.A.N.] [RFC 1/5] batman-adv: return netdev status in the TX
+	path
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,86 +16,339 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Edo Monticelli <montik@autistici.org>
+Cc: Edo Monticelli <montik@autistici.org>, Antonio Quartulli <antonio.quartulli@open-mesh.com>, Sven Eckelmann <sven.eckelmann@open-mesh.com>
 
-Hi,
+From: Antonio Quartulli <antonio.quartulli@open-mesh.com>
 
-do you still remember GSOC 2012? Yes, it is really long ago. It was a time
-when winters were still cold, summers still hot and it was still politically
-correct to say "bandwidth meter" when you actually meant "throughput meter".
+Return the proper netdev TX status along the TX path so that the tp_meter
+can understand when the queue is full and should stop sending packets.
 
-Three students tried their best to implement some of the ideas floating around
-in the B.A.T.M.A.N. advanced community. And after some more work, most of the
-features reached the finishing line. TVLV [1] and the fragmentation v2 [2]
-were both integrated as part of the COMPAT 15 bump. But the "bandwidth
-meter" [3] was never ready to being merged.
+Signed-off-by: Antonio Quartulli <antonio.quartulli@open-mesh.com>
+Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+---
+ compat-include/linux/netdevice.h | 17 +++++++++++++++++
+ net/batman-adv/fragmentation.c   | 41 ++++++++++++++++++++++++----------------
+ net/batman-adv/fragmentation.h   |  6 +++---
+ net/batman-adv/main.c            |  4 +++-
+ net/batman-adv/routing.c         | 24 +++++++++++++----------
+ net/batman-adv/send.c            | 25 ++++++++++++------------
+ 6 files changed, 75 insertions(+), 42 deletions(-)
 
-Nevertheless, the lessons learned in the first implementation [4] inspired
-different people to continue working on it. Especially Antonio Quartulli
-worked on his own version to increase its usefulness. And this feature makes
-even more sense since we reached the new "throughput based metric" time epoch
-with the introduction of B.A.T.M.A.N. V.
-
-I hope we can reignite interest in this feature with a rebased and refurbished
-version of this patchset. Both the batman-adv and batctl patches are based on
-the newest revision in their respective master branches. Also a branch called
-"tp_meter" was created in the batctl.git and batman-adv.git repository with
-these patches already applied.
-
-
-batman-adv
-==========
-
-Antonio Quartulli (2):
-      batman-adv: return netdev status in the TX path
-      batman-adv: use another ICMP packet when sending command from userspace
-      batman-adv: throughput meter implementation
-
-Sven Eckelmann (1):
-      batman-adv: Add compatibility code for to_delayed_work
-
-
- compat-include/linux/netdevice.h |   17 +
- compat-include/linux/workqueue.h |   46 ++
- net/batman-adv/Makefile          |    1 +
- net/batman-adv/fragmentation.c   |   41 +-
- net/batman-adv/fragmentation.h   |    6 +-
- net/batman-adv/icmp_socket.c     |  225 +++---
- net/batman-adv/icmp_socket.h     |    5 +-
- net/batman-adv/main.c            |    6 +-
- net/batman-adv/main.h            |   24 +-
- net/batman-adv/packet.h          |  120 ++++
- net/batman-adv/routing.c         |   33 +-
- net/batman-adv/send.c            |   25 +-
- net/batman-adv/soft-interface.c  |    2 +
- net/batman-adv/tp_meter.c        | 1451 ++++++++++++++++++++++++++++++++++++++
- net/batman-adv/tp_meter.h        |   34 +
- net/batman-adv/types.h           |  113 +++
- 16 files changed, 2005 insertions(+), 144 deletions(-)
-
-
-
-batctl
-======
-
-Antonio Quartulli (1):
-      batctl: introduce throughput meter support
-
-
- Makefile     |   2 +-
- main.c       |   6 ++
- man/batctl.8 |  24 ++++++-
- packet.h     | 120 +++++++++++++++++++++++++++++++
- tcpdump.c    |  14 +++-
- tp_meter.c   | 227 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- tp_meter.h   |  22 ++++++
- 7 files changed, 411 insertions(+), 4 deletions(-)
-
-Kind regards,
-	Sven
-
-[1] https://www.open-mesh.org/projects/open-mesh/wiki/2012-10-01-GSoC-2012-Spyros-Gasteros-Final-Report
-[2] https://www.open-mesh.org/projects/open-mesh/wiki/2012-09-24-GSoC-2012-Martin-Hundebolls-Final-Report
-[3] https://www.open-mesh.org/projects/open-mesh/wiki/2012-10-06-GSoC-2012-Edo-Monticellis-Final-Report
-[4] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2012-August/007924.html
+diff --git a/compat-include/linux/netdevice.h b/compat-include/linux/netdevice.h
+index 9ff91b5..3637438 100644
+--- a/compat-include/linux/netdevice.h
++++ b/compat-include/linux/netdevice.h
+@@ -32,6 +32,23 @@
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
+ 
++static inline bool dev_xmit_complete(int rc)
++{
++	/* successful transmission */
++	if (rc == NETDEV_TX_OK)
++		return true;
++
++	/* error while transmitting, driver consumed skb */
++	if (rc < 0)
++		return true;
++
++	/* error while queueing to a different device, driver consumed skb */
++	if (rc & NET_XMIT_MASK)
++		return true;
++
++	return false;
++}
++
+ #define unregister_netdevice_queue(dev, head) unregister_netdevice(dev)
+ 
+ #endif /* < KERNEL_VERSION(2, 6, 33) */
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index e6956d0..384b6bf 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -434,11 +434,12 @@ err:
+  * @orig_node: final destination of the created fragments
+  * @neigh_node: next-hop of the created fragments
+  *
+- * Return: true on success, false otherwise.
++ * Return: the netdev tx status or -1 in case of error.
++ * When -1 is returned the skb is not consumed.
+  */
+-bool batadv_frag_send_packet(struct sk_buff *skb,
+-			     struct batadv_orig_node *orig_node,
+-			     struct batadv_neigh_node *neigh_node)
++int batadv_frag_send_packet(struct sk_buff *skb,
++			    struct batadv_orig_node *orig_node,
++			    struct batadv_neigh_node *neigh_node)
+ {
+ 	struct batadv_priv *bat_priv;
+ 	struct batadv_hard_iface *primary_if = NULL;
+@@ -447,7 +448,7 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+ 	unsigned mtu = neigh_node->if_incoming->net_dev->mtu;
+ 	unsigned header_size = sizeof(frag_header);
+ 	unsigned max_fragment_size, max_packet_size;
+-	bool ret = false;
++	int ret = -1;
+ 
+ 	/* To avoid merge and refragmentation at next-hops we never send
+ 	 * fragments larger than BATADV_FRAG_MAX_FRAG_SIZE
+@@ -458,12 +459,12 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+ 
+ 	/* Don't even try to fragment, if we need more than 16 fragments */
+ 	if (skb->len > max_packet_size)
+-		goto out_err;
++		goto out;
+ 
+ 	bat_priv = orig_node->bat_priv;
+ 	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+-		goto out_err;
++		goto out;
+ 
+ 	/* Create one header to be copied to all fragments */
+ 	frag_header.packet_type = BATADV_UNICAST_FRAG;
+@@ -480,23 +481,33 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+ 	while (skb->len > max_fragment_size) {
+ 		skb_fragment = batadv_frag_create(skb, &frag_header, mtu);
+ 		if (!skb_fragment)
+-			goto out_err;
++			goto out;
+ 
+ 		batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_TX);
+ 		batadv_add_counter(bat_priv, BATADV_CNT_FRAG_TX_BYTES,
+ 				   skb_fragment->len + ETH_HLEN);
+-		batadv_send_unicast_skb(skb_fragment, neigh_node);
++		ret = batadv_send_unicast_skb(skb_fragment, neigh_node);
++		if (ret != NET_XMIT_SUCCESS) {
++			/* return -1 so that the caller can free the original
++			 * skb
++			 */
++			ret = -1;
++			goto out;
++		}
++
+ 		frag_header.no++;
+ 
+ 		/* The initial check in this function should cover this case */
+-		if (frag_header.no == BATADV_FRAG_MAX_FRAGMENTS - 1)
+-			goto out_err;
++		if (frag_header.no == BATADV_FRAG_MAX_FRAGMENTS - 1) {
++			ret = -1;
++			goto out;
++		}
+ 	}
+ 
+ 	/* Make room for the fragment header. */
+ 	if (batadv_skb_head_push(skb, header_size) < 0 ||
+ 	    pskb_expand_head(skb, header_size + ETH_HLEN, 0, GFP_ATOMIC) < 0)
+-		goto out_err;
++		goto out;
+ 
+ 	memcpy(skb->data, &frag_header, header_size);
+ 
+@@ -504,11 +515,9 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+ 	batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_TX);
+ 	batadv_add_counter(bat_priv, BATADV_CNT_FRAG_TX_BYTES,
+ 			   skb->len + ETH_HLEN);
+-	batadv_send_unicast_skb(skb, neigh_node);
++	ret = batadv_send_unicast_skb(skb, neigh_node);
+ 
+-	ret = true;
+-
+-out_err:
++out:
+ 	if (primary_if)
+ 		batadv_hardif_put(primary_if);
+ 
+diff --git a/net/batman-adv/fragmentation.h b/net/batman-adv/fragmentation.h
+index 9ff77c7..3202fe3 100644
+--- a/net/batman-adv/fragmentation.h
++++ b/net/batman-adv/fragmentation.h
+@@ -34,9 +34,9 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+ 			 struct batadv_orig_node *orig_node_src);
+ bool batadv_frag_skb_buffer(struct sk_buff **skb,
+ 			    struct batadv_orig_node *orig_node);
+-bool batadv_frag_send_packet(struct sk_buff *skb,
+-			     struct batadv_orig_node *orig_node,
+-			     struct batadv_neigh_node *neigh_node);
++int batadv_frag_send_packet(struct sk_buff *skb,
++			    struct batadv_orig_node *orig_node,
++			    struct batadv_neigh_node *neigh_node);
+ 
+ /**
+  * batadv_frag_check_entry - check if a list of fragments has timed out
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index d64ddb9..fe4d711 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -1183,6 +1183,7 @@ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
+ 	unsigned char *tvlv_buff;
+ 	unsigned int tvlv_len;
+ 	ssize_t hdr_len = sizeof(*unicast_tvlv_packet);
++	int res;
+ 
+ 	orig_node = batadv_orig_hash_find(bat_priv, dst);
+ 	if (!orig_node)
+@@ -1215,7 +1216,8 @@ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
+ 	tvlv_buff += sizeof(*tvlv_hdr);
+ 	memcpy(tvlv_buff, tvlv_value, tvlv_value_len);
+ 
+-	if (batadv_send_skb_to_orig(skb, orig_node, NULL) == NET_XMIT_DROP)
++	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
++	if (!(res != -1 && dev_xmit_complete(res)))
+ 		kfree_skb(skb);
+ out:
+ 	batadv_orig_node_put(orig_node);
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 4dd646a..e38c97f 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -259,7 +259,10 @@ static int batadv_recv_my_icmp_packet(struct batadv_priv *bat_priv,
+ 		icmph->ttl = BATADV_TTL;
+ 
+ 		res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-		if (res != NET_XMIT_DROP)
++		if (res == -1)
++			goto out;
++
++		if (dev_xmit_complete(res))
+ 			ret = NET_RX_SUCCESS;
+ 
+ 		break;
+@@ -281,7 +284,7 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_orig_node *orig_node = NULL;
+ 	struct batadv_icmp_packet *icmp_packet;
+-	int ret = NET_RX_DROP;
++	int res, ret = NET_RX_DROP;
+ 
+ 	icmp_packet = (struct batadv_icmp_packet *)skb->data;
+ 
+@@ -312,7 +315,8 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 	icmp_packet->msg_type = BATADV_TTL_EXCEEDED;
+ 	icmp_packet->ttl = BATADV_TTL;
+ 
+-	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
++	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
++	if (res != -1 && dev_xmit_complete(res))
+ 		ret = NET_RX_SUCCESS;
+ 
+ out:
+@@ -332,7 +336,7 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
+ 	struct ethhdr *ethhdr;
+ 	struct batadv_orig_node *orig_node = NULL;
+ 	int hdr_size = sizeof(struct batadv_icmp_header);
+-	int ret = NET_RX_DROP;
++	int res, ret = NET_RX_DROP;
+ 
+ 	/* drop packet if it has not necessary minimum size */
+ 	if (unlikely(!pskb_may_pull(skb, hdr_size)))
+@@ -398,7 +402,8 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
+ 	icmph->ttl--;
+ 
+ 	/* route it */
+-	if (batadv_send_skb_to_orig(skb, orig_node, recv_if) != NET_XMIT_DROP)
++	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
++	if (res != -1 && dev_xmit_complete(res))
+ 		ret = NET_RX_SUCCESS;
+ 
+ out:
+@@ -633,6 +638,8 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 		batadv_skb_set_priority(skb, hdr_len);
+ 
+ 	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
++	if (res == -1)
++		goto out;
+ 
+ 	/* translate transmit result into receive result */
+ 	if (res == NET_XMIT_SUCCESS) {
+@@ -640,12 +647,9 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 		batadv_inc_counter(bat_priv, BATADV_CNT_FORWARD);
+ 		batadv_add_counter(bat_priv, BATADV_CNT_FORWARD_BYTES,
+ 				   skb->len + ETH_HLEN);
+-
+-		ret = NET_RX_SUCCESS;
+-	} else if (res == NET_XMIT_POLICED) {
+-		/* skb was buffered and consumed */
+-		ret = NET_RX_SUCCESS;
+ 	}
++	if (dev_xmit_complete(res))
++		ret = NET_RX_SUCCESS;
+ 
+ out:
+ 	if (orig_node)
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 3ce06e0..efb9fe7 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -154,8 +154,11 @@ int batadv_send_unicast_skb(struct sk_buff *skb,
+  * host, NULL can be passed as recv_if and no interface alternating is
+  * attempted.
+  *
+- * Return: NET_XMIT_SUCCESS on success, NET_XMIT_DROP on failure, or
+- * NET_XMIT_POLICED if the skb is buffered for later transmit.
++ * Return: -1 on failure (and the skb is not consumed), NET_XMIT_POLICED if the
++ * skb is buffered for later transmit or the NET_XMIT status returned by the
++ * lower routine if the packet has been passed down.
++ *
++ * If the returning value is not -1 the skb has been consumed.
+  */
+ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 			    struct batadv_orig_node *orig_node,
+@@ -163,7 +166,7 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ {
+ 	struct batadv_priv *bat_priv = orig_node->bat_priv;
+ 	struct batadv_neigh_node *neigh_node;
+-	int ret = NET_XMIT_DROP;
++	int ret = -1;
+ 
+ 	/* batadv_find_router() increases neigh_nodes refcount if found. */
+ 	neigh_node = batadv_find_router(bat_priv, orig_node, recv_if);
+@@ -176,8 +179,7 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 	if (atomic_read(&bat_priv->fragmentation) &&
+ 	    skb->len > neigh_node->if_incoming->net_dev->mtu) {
+ 		/* Fragment and send packet. */
+-		if (batadv_frag_send_packet(skb, orig_node, neigh_node))
+-			ret = NET_XMIT_SUCCESS;
++		ret = batadv_frag_send_packet(skb, orig_node, neigh_node);
+ 
+ 		goto out;
+ 	}
+@@ -186,12 +188,10 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 	 * (i.e. being forwarded). If the packet originates from this node or if
+ 	 * network coding fails, then send the packet as usual.
+ 	 */
+-	if (recv_if && batadv_nc_skb_forward(skb, neigh_node)) {
++	if (recv_if && batadv_nc_skb_forward(skb, neigh_node))
+ 		ret = NET_XMIT_POLICED;
+-	} else {
+-		batadv_send_unicast_skb(skb, neigh_node);
+-		ret = NET_XMIT_SUCCESS;
+-	}
++	else
++		ret = batadv_send_unicast_skb(skb, neigh_node);
+ 
+ out:
+ 	if (neigh_node)
+@@ -317,7 +317,7 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ {
+ 	struct batadv_unicast_packet *unicast_packet;
+ 	struct ethhdr *ethhdr;
+-	int ret = NET_XMIT_DROP;
++	int res, ret = NET_XMIT_DROP;
+ 
+ 	if (!orig_node)
+ 		goto out;
+@@ -354,7 +354,8 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ 	if (batadv_tt_global_client_is_roaming(bat_priv, ethhdr->h_dest, vid))
+ 		unicast_packet->ttvn = unicast_packet->ttvn - 1;
+ 
+-	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
++	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
++	if (res != -1 && dev_xmit_complete(res))
+ 		ret = NET_XMIT_SUCCESS;
+ 
+ out:
+-- 
+2.7.0
 
