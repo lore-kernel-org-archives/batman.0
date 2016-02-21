@@ -1,15 +1,11 @@
-Return-Path: <a@unstable.cc>
-Date: Sat, 20 Feb 2016 13:28:40 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160220052840.GF5584@prodigo.lan>
-References: <1455634888-29400-1-git-send-email-a@unstable.cc>
- <20160219.153718.442738962662787470.davem@davemloft.net>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 21 Feb 2016 16:39:22 +0100
+Message-ID: <23488110.8Oiix784PY@sven-desktop>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="DqhR8hV3EnoxUkKN"
-Content-Disposition: inline
-In-Reply-To: <20160219.153718.442738962662787470.davem@davemloft.net>
-Subject: Re: [B.A.T.M.A.N.] pull request [net]: batman-adv 20160216
+Content-Type: multipart/signed; boundary="nextPart2215995.WfTHLC1UMt";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: [B.A.T.M.A.N.] Patchwork on open-mesh.org
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,59 +15,93 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
+--nextPart2215995.WfTHLC1UMt
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---DqhR8hV3EnoxUkKN
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Fri, Feb 19, 2016 at 03:37:18PM -0500, David Miller wrote:
-> And thanks for the heads up about the potential merge issues, I'll watch
-> for that.
->=20
+I've used my free time in the last week to look over the 5246 patches which 
+were sent to the B.A.T.M.A.N. mailing list. These patches were categorized as
 
-Hi David,
+ * Accepted:
+   committed to the respective repository at git.open-mesh.org
+ * Rejected:
+   Either rejected by the Maintainer(s) or withdrawn by the Author because
+   they turned out to be a bad idea
+ * RFC
+   patches which were just posted to get comments
+ * Not applicable
+   patches which were not really for a repository at git.open-mesh.org
+   (for example patches which are forwarded to net-next.git/net.git)
+ * Changes requested
+   Patch had flaws but these could be fixed but the author of the patch hasn't
+   sent a new version of the patch
+ * Superseded
+   New version of the patch(set) was sent which makes the old version obsolete
 
-actually I just realized that the patches that will create the conflict
-are not yet in net-next, but they are still pending in my queue.
+The result can now be found at https://patchwork.open-mesh.org/
 
-At this point I will wait for you to merge net into net-next first
-(there should be no conflict at that point) and then I will rebase
-my pending patches on top of that.
+You may wonder why are there patches with the state "New" + "Delegate" set to 
+some person. These are the patches which have not yet been applied in their 
+respective repository at git.open-mesh.org, not yet rejected and not yet 
+replaced by a different patch. Ok, these are most likely not all still waiting 
+to be applied but I just didn't know their state and thus the maintainer(s) 
+have to look over the remaining patches and change their state. Until then, 
+these are added to the TODO list of the maintainer [1].
 
+Patchwork is currently configured to read the mails which are sent to 
+b.a.t.m.a.n@lists.open-mesh.org and add each patch + its comments to the 
+patchwork database. Maintainers can then update their state, download the 
+patches and bundle them (which then can be downloaded again). A heuristic was 
+installed in the post-receive hook that tries to find the correct commit for a 
+newly applied patch in the master branch and automatically mark them as 
+Accepted.
 
-This should prevent you from dealing with any conflict.
+The author of an patch will be automatically informed about changes to the 
+state of his patch.
 
+I have already started to assign the patches with the state "New" to the 
+maintainers. This is also the reason why Marek, Simon and Elektra will not be 
+able to create their own account and instead will receive a mail from me with 
+their account data.
 
-Regards,
+But also other people can help here. They can register to set the state of 
+their own patches. This is for example helpful when they've just submitted a 
+new patchset and want to mark the old patchset as superseded. But they can of 
+course also disable the notification mails.
 
+I hope this helps to better keep track on the incoming patches and make it 
+harder to forget one.
 
---=20
-Antonio Quartulli
+Kind regards,
+	Sven
 
---DqhR8hV3EnoxUkKN
+[1] https://patchwork.open-mesh.org/user/todo/
+--nextPart2215995.WfTHLC1UMt
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJWx/mIAAoJENpFlCjNi1MRwBEQAIDXMq5STK4n8ASouQ1SHc0w
-xpvmSOEVPe9pdvw59quDCQvYefXJIwBf4rAAgw9qoJVcsMQSSXXz+LLSXI5nyrRj
-oBpIJ4W+yqjwpDI7bKNvJ25tVGFLSEHjOlPGzrOwMekLlr8CaqOW1m2I7WOccIEY
-uXRs2NfjTFlcIz0TE8iEmjyuMXx8z/q7jKC4KfEOtLHlrfCjfqajL4bMCvjKn+q4
-rAVCQcsEWh2pPegsEHVD1EoUbnuGK4GFU6gR3w614qIFtzVXzufdjCzA3ccDfe2I
-RmmhIteHAaaVQPp1PcFHE/R83bMDr5gsgPWGvOR2VUrLXK3TQl7XSaLRDCy6NHrh
-4wrB/y8iW/pK7qeVwB8rM7YJoRIxqTXtxrwwuuOaiJchxr3bz6Lzt9hWEEnxLsW9
-fmVnkJyX7sB87i+GhmmjtRsTqOQt+Z2rZZlq/gCV4L9Up2vfN6OS3JjKn11sbHYQ
-qfK68pVT/4vrzOfbFmuFMpsUs0uvjeWAUjibFpdOH8FKDLj4ap/VQdjIXbpuBIB3
-wxL0iclJS+gcqUjWLHdiAAiKU1ghB9f5mGcthcUjrvAeL0bjr2bff16ecofvrvJt
-VnKuTalksrhleeuXYcShUJQfhLQnH+8UvQtkoI0m59oPZWazYGSxhKHrdpoXhUlH
-s7sRhxpOZ5HkWmggR5FA
-=7l/N
+iQIcBAABCgAGBQJWydoqAAoJEF2HCgfBJntGH3wP/jDMQIpOdKcKa4A8oC+MMkJQ
+0/uGUojBC/ryUwNN6pEt0QPzYCipRD/8ISozxdB+nLk7UPOF7lWR/dm1jyduS2yf
+5P1zkm23el81cKQZvjPo3UcDEF5V7x96rQbUlDy4ofxK/sdyR4dnKGriYuKEjgtk
+6PtPgz7ibMJAQykdU/8/ArXYSRUOZSED9te1Rbbj3o1i3dnHV4lDW1btZGvpLPs6
+oEAQDG1ZJbutCkpCy7BArTlZlLZQmDASyWHTlP5XA+249qUl+D+DP6PqR5wP1Xmq
+i9YZN3x5+T77fmArvuooBfNxhtfv1W+veIuug35JAkJd+QQVo/lWCf0ANil5FRjF
+hBQwjcpFNpkE8dW7f4Qcp1Hic0QhvUP01Ftm4l6f29tnWD5KIh8xGxlTrtPxspdY
+aVcX2Z12sFl88tWfHxEmG1rO0Q3Qn8fNEBSok59iE7EiJpoZBcVYZ6u92fy6A7c3
+wH/i1RYOc2fDgmrJ4QNXE1Vrh44APsW4qqaEizin+rt5gJD8W+kdvrRP8zH7eaYz
+mS/QIB6qVIwOXrHKSlihM4v79+ISnzDgF3b1UH4e7/JnbgBBFWJniYPMsKOTkHqX
+1HLmsZGpwWoGr2eCA/4oJju0V4FjrG4txS34+gycnU73XsOwYT1pvoY/clYD4bEe
+Hl+znwqDlop3JDM9y1mm
+=4KIx
 -----END PGP SIGNATURE-----
 
---DqhR8hV3EnoxUkKN--
+--nextPart2215995.WfTHLC1UMt--
+
