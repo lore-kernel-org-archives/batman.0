@@ -1,11 +1,11 @@
-Return-Path: <a@unstable.cc>
-From: Antonio Quartulli <a@unstable.cc>
-Date: Tue, 23 Feb 2016 14:08:22 +0800
-Message-Id: <1456207703-903-20-git-send-email-a@unstable.cc>
-In-Reply-To: <1456207703-903-1-git-send-email-a@unstable.cc>
-References: <1456207703-903-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 19/20] batman-adv: Rename
-	batadv_tt_global_entry *_free_ref function to *_put
+Return-Path: <laurent@wifibot.com>
+From: laurent <laurent@wifibot.com>
+Message-ID: <56CAE7C9.1070006@wifibot.com>
+Date: Mon, 22 Feb 2016 11:49:45 +0100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] BATMAN-V for robotics
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,160 +15,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Sven Eckelmann <sven@narfation.org>
+Hello,
 
-The batman-adv source code is the only place in the kernel which uses the
-*_free_ref naming scheme for the *_put functions. Changing it to *_put
-makes it more consistent and makes it easier to understand the connection
-to the *_get functions.
+After some failure last year to us BATMAN-ADV on picostation plugged in 
+a mobile robot. I have re flashed last week the last open-wrt with the 
+last stable batman-adv (2006.0).
+I still have some problem making a single hop fast.  I have 3 nodes A B 
+C, I put the robot (nodeB) very close to node C and A is fare from B and 
+C.  B is still connecting directly to A. sometime If I wait for a very 
+long time
+the route became A - C - B , what I exactly want. I have this behavior 
+since 2010 and on each version I test on picostation.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
----
- net/batman-adv/translation-table.c | 32 ++++++++++++++++----------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
+To resume, when the robot along 2 nodes and it takes a very long time 
+before he got a new route to increase his range.
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index de3e731542e3..7f65a8f17f52 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -247,12 +247,12 @@ static void batadv_tt_global_entry_release(struct kref *ref)
- }
- 
- /**
-- * batadv_tt_global_entry_free_ref - decrement the tt_global_entry refcounter
-- *  and possibly release it
-+ * batadv_tt_global_entry_put - decrement the tt_global_entry refcounter and
-+ *  possibly release it
-  * @tt_global_entry: tt_global_entry to be free'd
-  */
- static void
--batadv_tt_global_entry_free_ref(struct batadv_tt_global_entry *tt_global_entry)
-+batadv_tt_global_entry_put(struct batadv_tt_global_entry *tt_global_entry)
- {
- 	kref_put(&tt_global_entry->common.refcount,
- 		 batadv_tt_global_entry_release);
-@@ -278,7 +278,7 @@ int batadv_tt_global_hash_count(struct batadv_priv *bat_priv,
- 		return 0;
- 
- 	count = atomic_read(&tt_global_entry->orig_list_count);
--	batadv_tt_global_entry_free_ref(tt_global_entry);
-+	batadv_tt_global_entry_put(tt_global_entry);
- 
- 	return count;
- }
-@@ -561,7 +561,7 @@ static void batadv_tt_global_free(struct batadv_priv *bat_priv,
- 
- 	batadv_hash_remove(bat_priv->tt.global_hash, batadv_compare_tt,
- 			   batadv_choose_tt, &tt_global->common);
--	batadv_tt_global_entry_free_ref(tt_global);
-+	batadv_tt_global_entry_put(tt_global);
- }
- 
- /**
-@@ -756,7 +756,7 @@ out:
- 	if (tt_local)
- 		batadv_tt_local_entry_put(tt_local);
- 	if (tt_global)
--		batadv_tt_global_entry_free_ref(tt_global);
-+		batadv_tt_global_entry_put(tt_global);
- 	return ret;
- }
- 
-@@ -1467,7 +1467,7 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
- 
- 		if (unlikely(hash_added != 0)) {
- 			/* remove the reference for the hash */
--			batadv_tt_global_entry_free_ref(tt_global_entry);
-+			batadv_tt_global_entry_put(tt_global_entry);
- 			goto out_remove;
- 		}
- 	} else {
-@@ -1553,7 +1553,7 @@ out_remove:
- 
- out:
- 	if (tt_global_entry)
--		batadv_tt_global_entry_free_ref(tt_global_entry);
-+		batadv_tt_global_entry_put(tt_global_entry);
- 	if (tt_local_entry)
- 		batadv_tt_local_entry_put(tt_local_entry);
- 	return ret;
-@@ -1909,7 +1909,7 @@ static void batadv_tt_global_del(struct batadv_priv *bat_priv,
- 
- out:
- 	if (tt_global_entry)
--		batadv_tt_global_entry_free_ref(tt_global_entry);
-+		batadv_tt_global_entry_put(tt_global_entry);
- 	if (local_entry)
- 		batadv_tt_local_entry_put(local_entry);
- }
-@@ -1965,7 +1965,7 @@ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
- 					   tt_global->common.addr,
- 					   BATADV_PRINT_VID(vid), message);
- 				hlist_del_rcu(&tt_common_entry->hash_entry);
--				batadv_tt_global_entry_free_ref(tt_global);
-+				batadv_tt_global_entry_put(tt_global);
- 			}
- 		}
- 		spin_unlock_bh(list_lock);
-@@ -2028,7 +2028,7 @@ static void batadv_tt_global_purge(struct batadv_priv *bat_priv)
- 
- 			hlist_del_rcu(&tt_common->hash_entry);
- 
--			batadv_tt_global_entry_free_ref(tt_global);
-+			batadv_tt_global_entry_put(tt_global);
- 		}
- 		spin_unlock_bh(list_lock);
- 	}
-@@ -2060,7 +2060,7 @@ static void batadv_tt_global_table_free(struct batadv_priv *bat_priv)
- 			tt_global = container_of(tt_common_entry,
- 						 struct batadv_tt_global_entry,
- 						 common);
--			batadv_tt_global_entry_free_ref(tt_global);
-+			batadv_tt_global_entry_put(tt_global);
- 		}
- 		spin_unlock_bh(list_lock);
- 	}
-@@ -2141,7 +2141,7 @@ struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
- 
- out:
- 	if (tt_global_entry)
--		batadv_tt_global_entry_free_ref(tt_global_entry);
-+		batadv_tt_global_entry_put(tt_global_entry);
- 	if (tt_local_entry)
- 		batadv_tt_local_entry_put(tt_local_entry);
- 
-@@ -3431,7 +3431,7 @@ bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, u8 *src, u8 *dst,
- out:
- 	batadv_softif_vlan_put(vlan);
- 	if (tt_global_entry)
--		batadv_tt_global_entry_free_ref(tt_global_entry);
-+		batadv_tt_global_entry_put(tt_global_entry);
- 	if (tt_local_entry)
- 		batadv_tt_local_entry_put(tt_local_entry);
- 	return ret;
-@@ -3543,7 +3543,7 @@ bool batadv_tt_global_client_is_roaming(struct batadv_priv *bat_priv,
- 		goto out;
- 
- 	ret = tt_global_entry->common.flags & BATADV_TT_CLIENT_ROAM;
--	batadv_tt_global_entry_free_ref(tt_global_entry);
-+	batadv_tt_global_entry_put(tt_global_entry);
- out:
- 	return ret;
- }
-@@ -3863,7 +3863,7 @@ bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
- 
- 	ret = tt->common.flags & BATADV_TT_CLIENT_ISOLA;
- 
--	batadv_tt_global_entry_free_ref(tt);
-+	batadv_tt_global_entry_put(tt);
- 
- 	return ret;
- }
--- 
-2.7.1
+I understand but I could be wrong, that the metric calculation in 
+BATMAN-IV is not good for mobile application because of some radio that 
+keeps the link until the last minute before beginning to increase their 
+packet errors ?
 
+BATMAN-V seems to be more promising because of the new metric 
+calculation based on link throughput we get from the driver, and also 
+because we can override the data throughput value to force a route (we 
+are imagining using GPS for that).
+
+I really want to test BATMAN-V,  I tried to switch to BATMAN-V but it 
+was not on the available routing algorithm list. Do I need to compile a 
+devel version on open-wrt ?
+
+Thank you,
+
+Best Regards,
+
+Laurent
