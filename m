@@ -1,11 +1,11 @@
 Return-Path: <davem@davemloft.net>
-Date: Tue, 23 Feb 2016 00:12:35 -0500 (EST)
-Message-Id: <20160223.001235.1512991847979085013.davem@davemloft.net>
+Date: Tue, 23 Feb 2016 00:36:00 -0500 (EST)
+Message-Id: <20160223.003600.1940244579243338481.davem@davemloft.net>
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20160223050750.GP5584@prodigo.lan>
-References: <20160219.153718.442738962662787470.davem@davemloft.net>
- <20160220052840.GF5584@prodigo.lan>
+In-Reply-To: <20160223.001235.1512991847979085013.davem@davemloft.net>
+References: <20160220052840.GF5584@prodigo.lan>
  <20160223050750.GP5584@prodigo.lan>
+ <20160223.001235.1512991847979085013.davem@davemloft.net>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -22,10 +22,15 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: a@unstable.cc
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <a@unstable.cc>
-Date: Tue, 23 Feb 2016 13:07:50 +0800
+From: David Miller <davem@davemloft.net>
+Date: Tue, 23 Feb 2016 00:12:35 -0500 (EST)
 
-> I know this kind of mails steal you some time, but do you have any plan
-> about merging net into net-next in the next days ?
+> From: Antonio Quartulli <a@unstable.cc>
+> Date: Tue, 23 Feb 2016 13:07:50 +0800
+> 
+>> I know this kind of mails steal you some time, but do you have any plan
+>> about merging net into net-next in the next days ?
+> 
+> It's what I'm working on right now.
 
-It's what I'm working on right now.
+And, done.
