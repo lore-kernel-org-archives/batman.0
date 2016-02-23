@@ -1,10 +1,10 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Tue, 23 Feb 2016 14:08:14 +0800
-Message-Id: <1456207703-903-12-git-send-email-a@unstable.cc>
+Date: Tue, 23 Feb 2016 14:08:18 +0800
+Message-Id: <1456207703-903-16-git-send-email-a@unstable.cc>
 In-Reply-To: <1456207703-903-1-git-send-email-a@unstable.cc>
 References: <1456207703-903-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 11/20] batman-adv: Rename batadv_gw_node
+Subject: [B.A.T.M.A.N.] [PATCH 15/20] batman-adv: Rename batadv_nc_node
 	*_free_ref function to *_put
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -29,147 +29,48 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/gateway_client.c | 35 +++++++++++++++++------------------
- 1 file changed, 17 insertions(+), 18 deletions(-)
+ net/batman-adv/network-coding.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 37972dfda400..c59aff5ccac8 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -76,11 +76,10 @@ static void batadv_gw_node_release(struct kref *ref)
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 9180ff114a26..6105cfb0574c 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -223,11 +223,11 @@ static void batadv_nc_node_release(struct kref *ref)
  }
  
  /**
-- * batadv_gw_node_free_ref - decrement the gw_node refcounter and possibly
-- *  release it
-+ * batadv_gw_node_put - decrement the gw_node refcounter and possibly release it
-  * @gw_node: gateway node to free
+- * batadv_nc_node_free_ref - decrement the nc_node refcounter and possibly
++ * batadv_nc_node_put - decrement the nc_node refcounter and possibly
+  *  release it
+  * @nc_node: nc_node to be free'd
   */
--static void batadv_gw_node_free_ref(struct batadv_gw_node *gw_node)
-+static void batadv_gw_node_put(struct batadv_gw_node *gw_node)
+-static void batadv_nc_node_free_ref(struct batadv_nc_node *nc_node)
++static void batadv_nc_node_put(struct batadv_nc_node *nc_node)
  {
- 	kref_put(&gw_node->refcount, batadv_gw_node_release);
+ 	kref_put(&nc_node->refcount, batadv_nc_node_release);
  }
-@@ -125,7 +124,7 @@ unlock:
- 	rcu_read_unlock();
- out:
- 	if (gw_node)
--		batadv_gw_node_free_ref(gw_node);
-+		batadv_gw_node_put(gw_node);
- 	return orig_node;
- }
- 
-@@ -143,7 +142,7 @@ static void batadv_gw_select(struct batadv_priv *bat_priv,
- 	rcu_assign_pointer(bat_priv->gw.curr_gw, new_gw_node);
- 
- 	if (curr_gw_node)
--		batadv_gw_node_free_ref(curr_gw_node);
-+		batadv_gw_node_put(curr_gw_node);
- 
- 	spin_unlock_bh(&bat_priv->gw.list_lock);
- }
-@@ -204,7 +203,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
- 			    ((tmp_gw_factor == max_gw_factor) &&
- 			     (tq_avg > max_tq))) {
- 				if (curr_gw)
--					batadv_gw_node_free_ref(curr_gw);
-+					batadv_gw_node_put(curr_gw);
- 				curr_gw = gw_node;
- 				kref_get(&curr_gw->refcount);
- 			}
-@@ -219,7 +218,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
- 			  */
- 			if (tq_avg > max_tq) {
- 				if (curr_gw)
--					batadv_gw_node_free_ref(curr_gw);
-+					batadv_gw_node_put(curr_gw);
- 				curr_gw = gw_node;
- 				kref_get(&curr_gw->refcount);
- 			}
-@@ -232,7 +231,7 @@ batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
- 		if (tmp_gw_factor > max_gw_factor)
- 			max_gw_factor = tmp_gw_factor;
- 
--		batadv_gw_node_free_ref(gw_node);
-+		batadv_gw_node_put(gw_node);
- 
- next:
- 		batadv_neigh_node_put(router);
-@@ -273,7 +272,7 @@ void batadv_gw_check_client_stop(struct batadv_priv *bat_priv)
- 	 */
- 	batadv_throw_uevent(bat_priv, BATADV_UEV_GW, BATADV_UEV_DEL, NULL);
- 
--	batadv_gw_node_free_ref(curr_gw);
-+	batadv_gw_node_put(curr_gw);
- }
- 
- void batadv_gw_election(struct batadv_priv *bat_priv)
-@@ -348,9 +347,9 @@ void batadv_gw_election(struct batadv_priv *bat_priv)
- 
- out:
- 	if (curr_gw)
--		batadv_gw_node_free_ref(curr_gw);
-+		batadv_gw_node_put(curr_gw);
- 	if (next_gw)
--		batadv_gw_node_free_ref(next_gw);
-+		batadv_gw_node_put(next_gw);
- 	if (router)
- 		batadv_neigh_node_put(router);
- 	if (router_ifinfo)
-@@ -547,7 +546,7 @@ void batadv_gw_node_update(struct batadv_priv *bat_priv,
- 		spin_lock_bh(&bat_priv->gw.list_lock);
- 		if (!hlist_unhashed(&gw_node->list)) {
- 			hlist_del_init_rcu(&gw_node->list);
--			batadv_gw_node_free_ref(gw_node);
-+			batadv_gw_node_put(gw_node);
- 		}
- 		spin_unlock_bh(&bat_priv->gw.list_lock);
- 
-@@ -556,12 +555,12 @@ void batadv_gw_node_update(struct batadv_priv *bat_priv,
- 			batadv_gw_reselect(bat_priv);
- 
- 		if (curr_gw)
--			batadv_gw_node_free_ref(curr_gw);
-+			batadv_gw_node_put(curr_gw);
+@@ -356,7 +356,7 @@ batadv_nc_purge_orig_nc_nodes(struct batadv_priv *bat_priv,
+ 			   "Removing nc_node %pM -> %pM\n",
+ 			   nc_node->addr, nc_node->orig_node->orig);
+ 		list_del_rcu(&nc_node->list);
+-		batadv_nc_node_free_ref(nc_node);
++		batadv_nc_node_put(nc_node);
  	}
+ 	spin_unlock_bh(lock);
+ }
+@@ -942,9 +942,9 @@ void batadv_nc_update_nc_node(struct batadv_priv *bat_priv,
  
  out:
- 	if (gw_node)
--		batadv_gw_node_free_ref(gw_node);
-+		batadv_gw_node_put(gw_node);
+ 	if (in_nc_node)
+-		batadv_nc_node_free_ref(in_nc_node);
++		batadv_nc_node_put(in_nc_node);
+ 	if (out_nc_node)
+-		batadv_nc_node_free_ref(out_nc_node);
++		batadv_nc_node_put(out_nc_node);
  }
  
- void batadv_gw_node_delete(struct batadv_priv *bat_priv,
-@@ -584,7 +583,7 @@ void batadv_gw_node_free(struct batadv_priv *bat_priv)
- 	hlist_for_each_entry_safe(gw_node, node_tmp,
- 				  &bat_priv->gw.list, list) {
- 		hlist_del_init_rcu(&gw_node->list);
--		batadv_gw_node_free_ref(gw_node);
-+		batadv_gw_node_put(gw_node);
- 	}
- 	spin_unlock_bh(&bat_priv->gw.list_lock);
- }
-@@ -621,7 +620,7 @@ static int batadv_write_buffer_text(struct batadv_priv *bat_priv,
- 	ret = seq_has_overflowed(seq) ? -1 : 0;
- 
- 	if (curr_gw)
--		batadv_gw_node_free_ref(curr_gw);
-+		batadv_gw_node_put(curr_gw);
- out:
- 	if (router_ifinfo)
- 		batadv_neigh_ifinfo_put(router_ifinfo);
-@@ -881,9 +880,9 @@ out:
- 	if (orig_dst_node)
- 		batadv_orig_node_put(orig_dst_node);
- 	if (curr_gw)
--		batadv_gw_node_free_ref(curr_gw);
-+		batadv_gw_node_put(curr_gw);
- 	if (gw_node)
--		batadv_gw_node_free_ref(gw_node);
-+		batadv_gw_node_put(gw_node);
- 	if (neigh_old)
- 		batadv_neigh_node_put(neigh_old);
- 	if (neigh_curr)
+ /**
 -- 
 2.7.1
 
