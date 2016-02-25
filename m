@@ -1,11 +1,11 @@
 Return-Path: <apape@phoenixcontact.com>
 From: Andreas Pape <apape@phoenixcontact.com>
-Message-ID: <1456381821-29796-1-git-send-email-apape@phoenixcontact.com>
-Date: Thu, 25 Feb 2016 07:30:21 +0100
+Message-ID: <1456381853-29832-1-git-send-email-apape@phoenixcontact.com>
+Date: Thu, 25 Feb 2016 07:30:53 +0100
 content-transfer-encoding: quoted-printable
 content-type: text/plain; charset="utf-8"
-Subject: [B.A.T.M.A.N.] [PATCH 5/7] batman-adv: changed debug messages for
-	easier bla debugging
+Subject: [B.A.T.M.A.N.] [PATCH 6/7] batman-adv: bugfix for dat optimization
+	patch
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,85 +17,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Some of the bla debug messages are changed and additional messages are
-added for easier bla debugging. Some debug messages introduced with
-the dat changes in prior patches have been changed to be more compliant
-to other existing debug messages.
+Make sure that claiming of devices due to dat handling is only done
+for non-local mac addresses. As dat is handled after the normal bla
+code this should not break the roaming client scenario for dat.
 
 Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
 ---
- net/batman-adv/bridge_loop_avoidance.c |   19 +++++++++++++------
- net/batman-adv/routing.c               |    3 ++-
- 2 files changed, 15 insertions(+), 7 deletions(-)
+ net/batman-adv/bridge_loop_avoidance.c |   18 ++++++++++++------
+ 1 files changed, 12 insertions(+), 6 deletions(-)
 
 diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge=
 _loop_avoidance.c
-index 6c29ec2..9e53fba 100644
+index 9e53fba..6311ca2 100644
 --- a/net/batman-adv/bridge_loop_avoidance.c
 +++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -675,8 +675,8 @@ static void batadv_bla_add_claim(struct batadv_priv *ba=
-t_priv,
- =09=09=09goto claim_free_ref;
-
- =09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
--=09=09=09   "bla_add_claim(): changing ownership for %pM, vid %d\n",
--=09=09=09   mac, BATADV_PRINT_VID(vid));
-+=09=09=09   "bla_add_claim(): changing ownership for %pM, vid %d to gw %pM=
-\n",
-+=09=09=09   mac, BATADV_PRINT_VID(vid), backbone_gw->orig);
-
- =09=09spin_lock_bh(&claim->backbone_gw->crc_lock);
- =09=09claim->backbone_gw->crc ^=3D crc16(0, claim->addr, ETH_ALEN);
-@@ -1196,10 +1196,13 @@ static void batadv_bla_purge_claims(struct batadv_p=
-riv *bat_priv,
- =09=09=09=09continue;
-
- =09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
--=09=09=09=09   "bla_purge_claims(): %pM, vid %d, time out\n",
--=09=09=09=09   claim->addr, claim->vid);
-+=09=09=09=09=09"bla_purge_claims(): timed out.\n");
-
- purge_now:
+@@ -1956,13 +1956,19 @@ bool batadv_bla_handle_local_claim(struct batadv_pr=
+iv *bat_priv, uint8_t *addr,
+ =09=09=09=09primary_if->net_dev->dev_addr))
+ =09=09=09ret =3D false;
+ =09} else {
+-=09=09/* If there is no claim, claim the device */
+-=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
+-=09=09=09=09"Handle claim locally for currently not claimed mac %pM.\n",
+-=09=09=09=09search_claim.addr);
++=09=09/* If there is no claim, claim the device
++=09=09 * but only if this isn't a mac address
++=09=09 * out of the local tt
++=09=09 */
++=09=09if (!batadv_is_my_client(bat_priv, addr, vid)) {
 +=09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
-+=09=09=09=09=09"bla_purge_claims(): %pM, vid %d\n",
-+=09=09=09=09=09claim->addr, claim->vid);
-+
- =09=09=09batadv_handle_unclaim(bat_priv, primary_if,
- =09=09=09=09=09      claim->backbone_gw->orig,
- =09=09=09=09=09      claim->addr, claim->vid);
-@@ -1647,9 +1650,13 @@ int batadv_bla_rx(struct batadv_priv *bat_priv, stru=
-ct sk_buff *skb,
- =09=09/* possible optimization: race for a claim */
- =09=09/* No claim exists yet, claim it for us!
- =09=09 */
-+
-+=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv, "bla_rx(): Unclaimed MAC %pM fo=
-und. "
-+=09=09=09"Claim it. Local: %s\n",
-+=09=09=09ethhdr->h_source, batadv_is_my_client(bat_priv, ethhdr->h_source,=
- vid) ? "yes" : "no");
- =09=09batadv_handle_claim(bat_priv, primary_if,
--=09=09=09=09    primary_if->net_dev->dev_addr,
--=09=09=09=09    ethhdr->h_source, vid);
-+=09=09=09=09primary_if->net_dev->dev_addr,
-+=09=09=09=09ethhdr->h_source, vid);
- =09=09goto allow;
++=09=09=09=09   "bla_handle_local_claim(): Handle claim "
++=09=09=09=09   "locally for currently not claimed mac %pM.\n",
++=09=09=09=09   search_claim.addr);
+
+-=09=09batadv_handle_claim(bat_priv, primary_if,
+-=09=09=09=09primary_if->net_dev->dev_addr, addr, vid);
++=09=09=09batadv_handle_claim(bat_priv, primary_if,
++=09=09=09=09=09primary_if->net_dev->dev_addr, addr, vid);
++=09=09}
  =09}
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 992b6cc..64b2e16 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -905,7 +905,8 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- =09=09orig_node =3D batadv_orig_hash_find(bat_priv, orig_addr);
- =09=09if (batadv_bla_is_backbone_gw(skb, orig_node, hdr_size)) {
- =09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
--=09=09=09=09"Dropped unicast pkt received from another backbone gw %pM.\n",
-+=09=09=09=09"recv_unicast_packet(): Dropped unicast pkt received "
-+=09=09=09=09"from another backbone gw %pM.\n",
- =09=09=09=09orig_addr);
-
- =09=09=09return NET_RX_DROP;
+ out:
 --
 1.7.0.4
 
