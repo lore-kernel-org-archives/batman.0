@@ -1,13 +1,11 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 25 Feb 2016 00:12:23 +0800
-Message-ID: <1623151.0bLTxGPOFY@voltaire>
-In-Reply-To: <56CAE7C9.1070006@wifibot.com>
-References: <56CAE7C9.1070006@wifibot.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2153411.SBMOCFfbgu";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] BATMAN-V for robotics
+Return-Path: <apape@phoenixcontact.com>
+From: Andreas Pape <apape@phoenixcontact.com>
+Message-ID: <1456381687-29637-1-git-send-email-apape@phoenixcontact.com>
+Date: Thu, 25 Feb 2016 07:28:07 +0100
+content-transfer-encoding: quoted-printable
+content-type: text/plain; charset="utf-8"
+Subject: [B.A.T.M.A.N.] [PATCH 1/7] batman-adv: prevent multiple ARP replies
+	sent by gateways if dat enabled
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,92 +16,178 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: laurent <laurent@wifibot.com>
 
---nextPart2153411.SBMOCFfbgu
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This patch makes sure that only the backbone gw which has claimed the
+remote destination for the ARP request answers the ARP request directly
+if the MAC address is known due to the local DAT table. This prevents
+multiple ARP replies in a common backbone if more than one gateway
+already knows the remote mac searched for in the ARP request.
 
-Hi,
+Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
+---
+ net/batman-adv/bridge_loop_avoidance.c |   59 ++++++++++++++++++++++++++++=
+++++
+ net/batman-adv/bridge_loop_avoidance.h |    8 ++++
+ net/batman-adv/distributed-arp-table.c |   15 ++++++++
+ 3 files changed, 82 insertions(+), 0 deletions(-)
 
-> After some failure last year to us BATMAN-ADV on picostation plugged in
-> a mobile robot. I have re flashed last week the last open-wrt with the
-> last stable batman-adv (2006.0).
-> I still have some problem making a single hop fast.  I have 3 nodes A B
-> C, I put the robot (nodeB) very close to node C and A is fare from B and
-> C.  B is still connecting directly to A. sometime If I wait for a very
-> long time
-> the route became A - C - B , what I exactly want. I have this behavior
-> since 2010 and on each version I test on picostation.
->
-> To resume, when the robot along 2 nodes and it takes a very long time
-> before he got a new route to increase his range.
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge=
+_loop_avoidance.c
+index 0a6c8b8..6c29ec2 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -1906,3 +1906,62 @@ out:
+ =09=09batadv_hardif_put(primary_if);
+ =09return 0;
+ }
++
++/**
++ * batadv_bla_handle_local_claim
++ * @bat_priv: the bat priv with all the soft interface information
++ * @addr: mac address of which the claim status is checked
++ * @vid: the VLAN ID
++ *
++ * addr is checked if this address is claimed by the local device itself.
++ * If the address is not claimed at all, claim it.
++ *
++ * Return: true if bla is disabled or the mac is claimed by the device,
++ * false if the device addr is already claimed by another gateway
++ */
++bool batadv_bla_handle_local_claim(struct batadv_priv *bat_priv, uint8_t *=
+addr,
++=09=09unsigned short vid)
++{
++=09struct batadv_bla_claim search_claim;
++=09struct batadv_bla_claim *claim =3D NULL;
++=09struct batadv_hard_iface *primary_if =3D NULL;
++=09bool ret =3D true;
++
++=09if (!atomic_read(&bat_priv->bridge_loop_avoidance))
++=09=09return ret;
++
++=09primary_if =3D batadv_primary_if_get_selected(bat_priv);
++=09if (!primary_if)
++=09=09goto out;
++
++=09/* First look if the mac address is claimed */
++=09ether_addr_copy(search_claim.addr, addr);
++=09search_claim.vid =3D vid;
++
++=09claim =3D batadv_claim_hash_find(bat_priv,
++=09=09=09  &search_claim);
++
++=09/* If there is a claim and we are not owner of the claim,
++=09 * return false;
++=09 */
++=09if (claim) {
++=09=09if (!batadv_compare_eth(claim->backbone_gw->orig,
++=09=09=09=09primary_if->net_dev->dev_addr))
++=09=09=09ret =3D false;
++=09} else {
++=09=09/* If there is no claim, claim the device */
++=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
++=09=09=09=09"Handle claim locally for currently not claimed mac %pM.\n",
++=09=09=09=09search_claim.addr);
++
++=09=09batadv_handle_claim(bat_priv, primary_if,
++=09=09=09=09primary_if->net_dev->dev_addr, addr, vid);
++=09}
++
++out:
++=09if (claim)
++=09=09batadv_claim_put(claim);
++=09if (primary_if)
++=09=09batadv_hardif_put(primary_if);
++=09return ret;
++}
+diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge=
+_loop_avoidance.h
+index 579f0fa..c6d498b 100644
+--- a/net/batman-adv/bridge_loop_avoidance.h
++++ b/net/batman-adv/bridge_loop_avoidance.h
+@@ -46,6 +46,8 @@ void batadv_bla_update_orig_address(struct batadv_priv *b=
+at_priv,
+ void batadv_bla_status_update(struct net_device *net_dev);
+ int batadv_bla_init(struct batadv_priv *bat_priv);
+ void batadv_bla_free(struct batadv_priv *bat_priv);
++bool batadv_bla_handle_local_claim(struct batadv_priv *bat_priv, u8 *addr,
++=09=09unsigned short vid);
 
-don't know what your definition of 'fast' is but did you play with the 
-originator interval ? Check our doc:
-https://www.open-mesh.org/projects/batman-adv/wiki/Tweaking#originator-interval
+ #define BATADV_BLA_CRC_INIT=090
+ #else /* ifdef CONFIG_BATMAN_ADV_BLA */
+@@ -111,6 +113,12 @@ static inline void batadv_bla_free(struct batadv_priv =
+*bat_priv)
+ {
+ }
 
-The default settings are tailored for wireless community networks with rather 
-static setups. 
++bool batadv_bla_handle_local_claim(struct batadv_priv *bat_priv, u8 *addr,
++=09=09unsigned short vid)
++{
++=09return true;
++}
++
+ #endif /* ifdef CONFIG_BATMAN_ADV_BLA */
+
+ #endif /* ifndef _NET_BATMAN_ADV_BLA_H_ */
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distri=
+buted-arp-table.c
+index e96d7c7..aab9548 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -48,6 +48,7 @@
+ #include "originator.h"
+ #include "send.h"
+ #include "translation-table.h"
++#include "bridge_loop_avoidance.h"
+
+ static void batadv_dat_purge(struct work_struct *work);
+
+@@ -1000,6 +1001,20 @@ bool batadv_dat_snoop_outgoing_arp_request(struct ba=
+tadv_priv *bat_priv,
+ =09=09=09goto out;
+ =09=09}
+
++=09=09/* If BLA is enabled, only send ARP replies if we have claimed
++=09=09 * the destination for the ARP request or if no one else of
++=09=09 * the backbone gws belonging to our backbone has claimed the
++=09=09 * destination.
++=09=09 */
++=09=09if (!batadv_bla_handle_local_claim(bat_priv,
++=09=09=09=09dat_entry->mac_addr, vid)) {
++=09=09=09batadv_dbg(BATADV_DBG_DAT, bat_priv,
++=09=09=09=09"Device %pM claimed by another backbone gw. Don't send ARP rep=
+ly!",
++=09=09=09=09dat_entry->mac_addr);
++=09=09=09ret =3D true;
++=09=09=09goto out;
++=09=09}
++
+ =09=09skb_new =3D arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
+ =09=09=09=09     bat_priv->soft_iface, ip_dst, hw_src,
+ =09=09=09=09     dat_entry->mac_addr, hw_src);
+--
+1.7.0.4
 
 
-> I understand but I could be wrong, that the metric calculation in
-> BATMAN-IV is not good for mobile application because of some radio that
-> keeps the link until the last minute before beginning to increase their
-> packet errors ?
 
-That assessment is not entirely correct. If you can live with the overhead of 
-faster originator intervals (read: increasing the protocol exchange rate) you 
-can run batman inside cars driving around.
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
 
-This problem is unrelated to the metric.
-
-
-> BATMAN-V seems to be more promising because of the new metric
-> calculation based on link throughput we get from the driver, and also
-> because we can override the data throughput value to force a route (we
-> are imagining using GPS for that).
-
-I don't see how you would force a route with BATMAN IV or BATMAN V. The latter 
-allows specifying a speed over an interface, not per neighbor. This interface 
-speed applies to everything routed over that interface.
-
-The reason why these overrides are missing is simple: It defeats the purpose 
-of an automatic protocol. If you want static routes there is no need for 
-batman.
-
-Furthermore, meshing based on location / proximity with the help of GPS or 
-coordinates only works as long as you don't have any obstacles anywhere. 
-Meaning: Not in real world setups.
-
-
-> I really want to test BATMAN-V,  I tried to switch to BATMAN-V but it
-> was not on the available routing algorithm list. Do I need to compile a
-> devel version on open-wrt ?
-
-Yes, you would need to compile the devel version hosted on git.open-mesh.org 
-(https://git.open-mesh.org/openwrt-feed-batman-adv.git) or wait for the next 
-stable release. Feedback is welcome!
-
-Cheers,
-Marek
-
---nextPart2153411.SBMOCFfbgu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWzdZnAAoJEFNVTo/uthzA5qQH+QH9HNxBBhGid1eTrRIbxl/5
-mI8Xvzyaym2v3zhD14xjsKP9S/J2h6FYHvlcITG9uRbIK6y70s487hswWh7voTUH
-TApWXQ3F2InFdGVBkvwgJ7sfzRN4imSJbvb4biqX3LQok6ba/b7lNJf7XhKQcRS/
-8jSF+7payExbBhxa+Z7DQZVO9I2auaHwiCX8twdiE1nHS+63Drq1bZTl+wnKHjIO
-JQT5wkUSY7s0sO/SaWZdFvjNzy6yY240FKsDq4kIj4TKyBmYCi+9DQNf+9bHDihb
-R/bz56p+RdGqF7XtS41jmrPuyl22YbYijK+Aifl4HCNAH52wyIHbyQ0eYltl3Ek=
-=qLr4
------END PGP SIGNATURE-----
-
---nextPart2153411.SBMOCFfbgu--
-
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
+___________________________________________________________________
+Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
+nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
+rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
+d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
+ Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
