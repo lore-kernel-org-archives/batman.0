@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 26 Feb 2016 17:07:20 +0100
-Message-ID: <6115028.oRNdbbxa5J@bentobox>
-In-Reply-To: <1456492734-29785-1-git-send-email-apape@phoenixcontact.com>
-References: <1456492734-29785-1-git-send-email-apape@phoenixcontact.com>
+Date: Fri, 26 Feb 2016 17:10:54 +0100
+Message-ID: <2122610.W8SJPdlrko@bentobox>
+In-Reply-To: <1456492768-29861-1-git-send-email-apape@phoenixcontact.com>
+References: <1456492768-29861-1-git-send-email-apape@phoenixcontact.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1927291.ppy6bNGlCC";
+Content-Type: multipart/signed; boundary="nextPart2536423.kDXE1mbPCx";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 4/7] batman-adv: drop unicast packets
-	from other backbone gw
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 6/7] batman-adv: bugfix for dat
+	optimiziation patch
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,36 +20,57 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1927291.ppy6bNGlCC
+--nextPart2536423.kDXE1mbPCx
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday 26 February 2016 14:18:54 Andreas Pape wrote:
-> @@ -896,6 +898,19 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
->  			}
->  		}
+On Friday 26 February 2016 14:19:28 Andreas Pape wrote:
+> Make sure that claiming of devices due to dat handling is only done
+> for non-local mac addresses. As dat is handled after the normal bla
+> code this does not break the roaming client scenario for bla.
 > 
-> +		/* If this is a unicast packet from another backgone gw,
-> +		 * drop it.
+> Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
+> ---
+>  net/batman-adv/bridge_loop_avoidance.c |   18 ++++++++++++------
+>  1 files changed, 12 insertions(+), 6 deletions(-)
+> 
+> diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+> index 739f80f..32a6168 100644
+> --- a/net/batman-adv/bridge_loop_avoidance.c
+> +++ b/net/batman-adv/bridge_loop_avoidance.c
+> @@ -1959,13 +1959,19 @@ bool batadv_bla_handle_local_claim(struct batadv_priv *bat_priv,
+>  					primary_if->net_dev->dev_addr))
+>  			ret = false;
+>  	} else {
+> -		/* If there is no claim, claim the device */
+> -		batadv_dbg(BATADV_DBG_BLA, bat_priv,
+> -			   "Handle claim locally for currently not claimed mac %pM.\n",
+> -			   search_claim.addr);
+> +		/* If there is no claim, claim the device
+> +		 * but only if this isn't a mac address
+> +		 * out of the local tt
 > +		 */
-> +		orig_addr = ethhdr->h_source;
-> +		orig_node = batadv_orig_hash_find(bat_priv, orig_addr);
-> +		if (batadv_bla_is_backbone_gw(skb, orig_node, hdr_size)) {
+> +		if (!batadv_is_my_client(bat_priv, addr, vid)) {
 > +			batadv_dbg(BATADV_DBG_BLA, bat_priv,
-> +				   "Dropped unicast pkt received from another backbone gw %pM.\n",
-> +				   orig_addr);
-> +
-> +			return NET_RX_DROP;
+> +				   "bla_handle_local_claim(): Handle claim locally for currently not claimed mac %pM.\n",
+> +				   search_claim.addr);
+> 
+> -		batadv_handle_claim(bat_priv, primary_if,
+> -				    primary_if->net_dev->dev_addr, addr, vid);
+> +			batadv_handle_claim(bat_priv, primary_if,
+> +					    primary_if->net_dev->dev_addr,
+> +					    addr, vid);
 > +		}
-> +
+>  	}
 
-The orig_node was previously assigned via batadv_orig_hash_find. But this 
-batadv_orig_hash_find already increased the reference pointer for orig_node. 
-So we would now have an imbalance at the end of the function.
+What do you think about inverting the check and as jump to out when
+batadv_is_my_client(bat_priv, addr, vid) is true?
+
+The debug output change looks like it should be in patch 5/7.
 
 Kind regards,
 	Sven
---nextPart1927291.ppy6bNGlCC
+--nextPart2536423.kDXE1mbPCx
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -57,20 +78,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJW0Hg4AAoJEF2HCgfBJntGTLAQALZiwRSYHprzTPiHgmHRgUUs
-77hHlDdj0p5xWwQxkp7Y6rEIBFU1Uuk/L/ctqKVe3RVrTMuLtza/5c3sxCfS82zu
-6hhW4JBVexHpzCSujbDWM174UIMcF0b7GUx7bezNVCm5OnwgoWA9NTsF2cQbD+FM
-goSlvLCLi3VfcbjzpzIbR8WG/FzxZPQSpDUkgVey9Q6yiwVPIVjXEt2j0vWIFR1Z
-G9LXwJiZCFbUFKOC+7oSQmkdfqmVX68Q/ImiUzV/n89EVZsVUhd1eE1KuGuLxH+9
-tms0KxYQyBPbLUMIR8ZZBti/IvbmO2bSz0vTirAS+Q2lmsQmopaaWlRU47cVfMO/
-/kBVdp+YOF1YAq70lzaw4643MUJi8u1ehVbaNABR84Bh+Kwp5y3+GrmrPIKYNSz+
-HC/W1xjHBN17YgVYN1jGUcHTqR8UN9c2Z/G0g1MtFPBIjrY4iJbGxl0dO1uqf1X+
-dnDMF/uRt3NrvVIWiT9ANgte9p/lUl/kADamqFtb7eNv6IgkIozjoVVNdC1ocWnd
-GQAG21851IM3RnVyOx5SgZbZqXtg3QJw7QyHXdDD7wHbS5nzStl+xXr9+aIGSZ9K
-2s3Tc+TpZFfkmaerwAuq53huqvLRXZMgR/cuLkB3E1+QZj8R9R8U6I55gZIhoeT4
-F6xK9oasIg9bQth8y6uc
-=dBEk
+iQIcBAABCgAGBQJW0HkPAAoJEF2HCgfBJntG8qIP+wTKhF4810X9xxC6rLRPvM8a
+k+rc1I9oNeC1a7Sk+yB0H0a1KiKQ/3kOo2XCp8RRb6JBXAz1xPEEkM9/mK/qM4Ut
+a7yNjZRcqyOUC06vxvP7nGXKdiDzYbLg8OrXuWouQ/b3y7/getODNOP4/7E6zd97
+LcYyYXt0NzX5K+4OPstiksx+iUlKELtaEPFGPlWDUYPWcGsJiKqK05vBLgdglVc2
+J4DdRYA2GS+L9blNu6mebZma/9uBGZkxUxM17pM2j1d6sOT1InUJRwIHoZ+nLTOe
+fsaeSstp0VFZQoGEIdBNdJlG8nf/ObHSvmUlsqgIKr1MwVPCQuUzqVLoM8lXrV5B
+iOeCUEjoo0gNi1DvcmnccoCv+WCm7rAENhcTYruXD1fjvmNetUfKZW7ePhY0h6vJ
+W2CKtrRe6W0xeDCPIbO8KANQ1oYPud5K/xMGkGAJmPzVG4MjvbaA8J0ZCH5P4Dx9
+rXvKDoXWOydEwaCVn0rHvu5cy21740m+5U1DO7Zf6nEkjCntSVXZ6mBWFLvSJK/M
+7BrFHBPtpRhrYYwwtYEmUdyxG4amTYRoHuEEyTYiILxK0Z495BnZgqO3jlaBvVWT
+WXEBY8Zx5MTVLF/4pPehp2e2KIiF7Jv9VOc5djcEO42kilZp9RzJD1ctJBAyJCFE
+qEPB4kz6OI3WiDk1kPzD
+=9ADA
 -----END PGP SIGNATURE-----
 
---nextPart1927291.ppy6bNGlCC--
+--nextPart2536423.kDXE1mbPCx--
 
