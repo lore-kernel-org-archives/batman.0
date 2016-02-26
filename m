@@ -1,11 +1,11 @@
 Return-Path: <apape@phoenixcontact.com>
 From: Andreas Pape <apape@phoenixcontact.com>
-Message-ID: <1456492697-29708-1-git-send-email-apape@phoenixcontact.com>
-Date: Fri, 26 Feb 2016 14:18:17 +0100
+Message-ID: <1456492719-29748-1-git-send-email-apape@phoenixcontact.com>
+Date: Fri, 26 Feb 2016 14:18:39 +0100
 content-transfer-encoding: quoted-printable
 content-type: text/plain; charset="utf-8"
-Subject: [B.A.T.M.A.N.] [PATCHv2 2/7] batman-adv: speed up dat by snooping
-	received ip traffic
+Subject: [B.A.T.M.A.N.] [PATCHv2 3/7] batman-adv: prevent duplication of ARP
+	replies when DAT is used
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,132 +17,137 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Speeding up dat address lookup is achieved by snooping all incoming ip
-traffic. This especially increases the propability in bla setups that
-a gateway into a common backbone network already has a fitting dat entry
-to answer incoming ARP requests directly coming from the backbone
-network thus further reducing ARP traffic in the mesh.
+If none of the backbone gateways in a bla setup has already knowledge of
+the mac address searched for in an incoming ARP request from the backbone
+it must be prevented that multiple ARP replies are generated and returned
+to the backbone by the dat address resolution mechanism of other dat
+enabled nodes of the mesh.
 
 Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
 ---
- net/batman-adv/distributed-arp-table.c |   18 ++++++++++++++++++
- net/batman-adv/distributed-arp-table.h |    9 ++++++++-
- net/batman-adv/soft-interface.c        |   22 +++++++++++++++++++++-
- 3 files changed, 47 insertions(+), 2 deletions(-)
+ net/batman-adv/distributed-arp-table.c |   65 ++++++++++++++++++++++++++++=
++++-
+ 1 files changed, 64 insertions(+), 1 deletions(-)
 
 diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distri=
 buted-arp-table.c
-index a9152e7..0f899b9 100644
+index 0f899b9..f60fccb 100644
 --- a/net/batman-adv/distributed-arp-table.c
 +++ b/net/batman-adv/distributed-arp-table.c
-@@ -362,6 +362,24 @@ out:
- =09=09batadv_dat_entry_put(dat_entry);
- }
-
-+/**
-+ * batadv_dat_entry_check - check and update a dat entry
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @ip: ipv4 to add/edit
-+ * @mac_addr: mac address to assign to the given ipv4
-+ * @vid: VLAN identifier
-+ *
-+ * checks additionally, if dat is enabled. can be called from other module=
-s.
-+ */
-+void batadv_dat_entry_check(struct batadv_priv *bat_priv, __be32 ip,
-+=09=09=09    u8 *mac_addr, unsigned short vid)
-+{
-+=09if (!atomic_read(&bat_priv->distributed_arp_table))
-+=09=09return;
-+
-+=09batadv_dat_entry_add(bat_priv, ip, mac_addr, vid);
-+}
-+
- #ifdef CONFIG_BATMAN_ADV_DEBUG
-
- /**
-diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distri=
-buted-arp-table.h
-index 813ecea..e1b4848 100644
---- a/net/batman-adv/distributed-arp-table.h
-+++ b/net/batman-adv/distributed-arp-table.h
-@@ -80,7 +80,8 @@ batadv_dat_init_own_addr(struct batadv_priv *bat_priv,
- int batadv_dat_init(struct batadv_priv *bat_priv);
- void batadv_dat_free(struct batadv_priv *bat_priv);
- int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset);
--
-+void batadv_dat_entry_check(struct batadv_priv *bat_priv, __be32 ip,
-+=09=09=09    u8 *mac_addr, unsigned short vid);
- /**
-  * batadv_dat_inc_counter - increment the correct DAT packet counter
-  * @bat_priv: the bat priv with all the soft interface information
-@@ -173,6 +174,12 @@ static inline void batadv_dat_inc_counter(struct batad=
-v_priv *bat_priv,
- {
- }
-
-+static inline
-+void batadv_dat_entry_check(struct batadv_priv *bat_priv, __be32 ip,
-+=09=09=09    u8 *mac_addr, unsigned short vid)
-+{
-+}
-+
- #endif /* CONFIG_BATMAN_ADV_DAT */
-
- #endif /* _NET_BATMAN_ADV_DISTRIBUTED_ARP_TABLE_H_ */
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interfac=
-e.c
-index 0710379..f031781 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -28,6 +28,7 @@
- #include <linux/fs.h>
- #include <linux/if_ether.h>
- #include <linux/if_vlan.h>
-+#include <linux/ip.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
- #include <linux/kref.h>
-@@ -390,6 +391,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
- =09__be16 ethertype =3D htons(ETH_P_BATMAN);
- =09struct vlan_ethhdr *vhdr;
- =09struct ethhdr *ethhdr;
-+=09struct iphdr *iphdr;
+@@ -1081,6 +1081,8 @@ bool batadv_dat_snoop_incoming_arp_request(struct bat=
+adv_priv *bat_priv,
+ =09u8 *hw_src;
+ =09struct sk_buff *skb_new;
+ =09struct batadv_dat_entry *dat_entry =3D NULL;
++=09struct batadv_unicast_4addr_packet *unicast_4addr_packet;
++=09struct batadv_orig_node *orig_node =3D NULL;
+ =09bool ret =3D false;
  =09unsigned short vid;
- =09bool is_bcast;
+ =09int err;
+@@ -1104,8 +1106,38 @@ bool batadv_dat_snoop_incoming_arp_request(struct ba=
+tadv_priv *bat_priv,
+ =09batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
 
-@@ -412,11 +414,29 @@ void batadv_interface_rx(struct net_device *soft_ifac=
-e,
- =09ethhdr =3D eth_hdr(skb);
-
- =09switch (ntohs(ethhdr->h_proto)) {
-+=09case ETH_P_IP:
-+=09=09iphdr =3D (struct iphdr *)(skb->data + ETH_HLEN);
-+=09=09/* snoop incoming traffic for dat update using the source mac
-+=09=09 * and source ip to speed up dat.
+ =09dat_entry =3D batadv_dat_entry_hash_find(bat_priv, ip_dst, vid);
+-=09if (!dat_entry)
++=09if (!dat_entry) {
++=09=09/* Check if this is a 4addr unicast DAT_DHT_GET frame from
++=09=09 * another backbone gw of the same backbone. If yes, drop
++=09=09 * it as this leads to multiplication of arp requests in bla
++=09=09 * setups as long as there is no dat_entry fo this answer.
++=09=09 * In this case better drop the DHT_GET. Normal bla code
++=09=09 * doesn't take care of these packets as they are tunneled
++=09=09 * via unicast.
 +=09=09 */
-+=09=09batadv_dat_entry_check(bat_priv, iphdr->saddr,
-+=09=09=09=09       ethhdr->h_source, vid);
-+=09=09break;
- =09case ETH_P_8021Q:
- =09=09vhdr =3D (struct vlan_ethhdr *)skb->data;
-
--=09=09if (vhdr->h_vlan_encapsulated_proto !=3D ethertype)
-+=09=09if (vhdr->h_vlan_encapsulated_proto !=3D ethertype) {
-+=09=09=09/* snoop incoming traffic for dat update also for vlan
-+=09=09=09 * tagged frames.
-+=09=09=09 */
-+=09=09=09if (vhdr->h_vlan_encapsulated_proto =3D=3D ETH_P_IP) {
-+=09=09=09=09iphdr =3D (struct iphdr *)(vhdr +
-+=09=09=09=09=09=09sizeof(struct vlan_ethhdr));
-+=09=09=09=09batadv_dat_entry_check(bat_priv, iphdr->saddr,
-+=09=09=09=09=09=09       vhdr->h_source, vid);
++=09=09unicast_4addr_packet =3D
++=09=09=09=09(struct batadv_unicast_4addr_packet *)skb->data;
++=09=09orig_node =3D
++=09=09=09batadv_orig_hash_find(bat_priv,
++=09=09=09=09=09      unicast_4addr_packet->src);
++=09=09if (orig_node) {
++=09=09=09if ((unicast_4addr_packet->u.packet_type =3D=3D
++=09=09=09     BATADV_UNICAST_4ADDR) &&
++=09=09=09     (unicast_4addr_packet->subtype =3D=3D
++=09=09=09      BATADV_P_DAT_DHT_GET) &&
++=09=09=09     (batadv_bla_is_backbone_gw(skb, orig_node,
++=09=09=09=09=09=09=09hdr_size))) {
++=09=09=09=09batadv_dbg(BATADV_DBG_DAT, bat_priv, "Doubled ARP request remo=
+ved: ARP MSG =3D [src: %pM-%pI4 dst: %pM-%pI4]; originator: %pM\n",
++=09=09=09=09=09   hw_src, &ip_src,
++=09=09=09=09=09   batadv_arp_hw_dst(skb, hdr_size),
++=09=09=09=09=09   &ip_dst, unicast_4addr_packet->src);
++=09=09=09=09ret =3D true;
 +=09=09=09}
- =09=09=09break;
++=09=09=09batadv_orig_node_put(orig_node);
 +=09=09}
++
+ =09=09goto out;
++=09}
 
- =09=09/* fall through */
- =09case ETH_P_BATMAN:
+ =09skb_new =3D arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
+ =09=09=09     bat_priv->soft_iface, ip_dst, hw_src,
+@@ -1204,6 +1236,7 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batad=
+v_priv *bat_priv,
+ =09__be32 ip_src, ip_dst;
+ =09u8 *hw_src, *hw_dst;
+ =09bool dropped =3D false;
++=09struct batadv_dat_entry *dat_entry =3D NULL;
+ =09unsigned short vid;
+
+ =09if (!atomic_read(&bat_priv->distributed_arp_table))
+@@ -1223,12 +1256,40 @@ bool batadv_dat_snoop_incoming_arp_reply(struct bat=
+adv_priv *bat_priv,
+ =09hw_dst =3D batadv_arp_hw_dst(skb, hdr_size);
+ =09ip_dst =3D batadv_arp_ip_dst(skb, hdr_size);
+
++=09/* If ip_dst is already in cache and has the right mac address,
++=09 * drop this frame if this ARP reply is destined for us. We have
++=09 * most probably received already a reply from someone else. Delivering
++=09 * this frame would lead to doubled receive of an ARP reply.
++=09 */
++=09dat_entry =3D batadv_dat_entry_hash_find(bat_priv, ip_src, vid);
++=09if ((dat_entry) && (batadv_compare_eth(hw_src, dat_entry->mac_addr))) {
++=09=09batadv_dbg(BATADV_DBG_DAT, bat_priv, "Doubled ARP reply removed: ARP=
+ MSG =3D [src: %pM-%pI4 dst: %pM-%pI4]; dat_entry: %pM-%pI4\n",
++=09=09=09   hw_src, &ip_src, hw_dst, &ip_dst,
++=09=09=09   dat_entry->mac_addr,=09&dat_entry->ip);
++=09=09dropped =3D true;
++=09=09goto out;
++=09}
++
+ =09/* Update our internal cache with both the IP addresses the node got
+ =09 * within the ARP reply
+ =09 */
+ =09batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
+ =09batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
+
++=09/* If BLA is enabled, only forward ARP replies if we have claimed the
++=09 * source of the ARP reply or if no one else of the same backbone has
++=09 * already claimed that client. This prevents that different gateways
++=09 * to the same backbone all forward the ARP reply leading to multiple
++=09 * replies in the backbone.
++=09 */
++=09if (!batadv_bla_handle_local_claim(bat_priv, hw_src, vid)) {
++=09=09batadv_dbg(BATADV_DBG_DAT, bat_priv,
++=09=09=09   "Device %pM claimed by another backbone gw. Drop ARP reply.\n",
++=09=09=09   hw_src);
++=09=09dropped =3D true;
++=09=09goto out;
++=09}
++
+ =09/* if this REPLY is directed to a client of mine, let's deliver the
+ =09 * packet to the interface
+ =09 */
+@@ -1241,6 +1302,8 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batad=
+v_priv *bat_priv,
+ out:
+ =09if (dropped)
+ =09=09kfree_skb(skb);
++=09if (dat_entry)
++=09=09batadv_dat_entry_put(dat_entry);
+ =09/* if dropped =3D=3D false -> deliver to the interface */
+ =09return dropped;
+ }
 --
 1.7.0.4
 
