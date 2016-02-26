@@ -1,11 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 26 Feb 2016 17:56:13 +0100
-Message-Id: <1456505773-1059-1-git-send-email-sven@narfation.org>
-In-Reply-To: <b.a.t.m.a.n@lists.open-mesh.org>
-References: <b.a.t.m.a.n@lists.open-mesh.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Check skb size before using
-	encapsulated ETH+VLAN header
+Date: Fri, 26 Feb 2016 22:17:29 +0100
+Message-ID: <1458257.UDBVY9kErm@sven-edge>
+In-Reply-To: <1456492697-29708-1-git-send-email-apape@phoenixcontact.com>
+References: <1456492697-29708-1-git-send-email-apape@phoenixcontact.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1491021.9QJbR40MZH";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/7] batman-adv: speed up dat by
+	snooping received ip traffic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,47 +20,46 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The encapsulated ethernet and VLAN header may be outside the received
-ethernet frame. Thus the skb buffer size has to be checked before it can be
-parsed to find out if it encapsulates another batman-adv packet.
+--nextPart1491021.9QJbR40MZH
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Fixes: 48628bb9419f ("batman-adv: softif bridge loop avoidance")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/soft-interface.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+On Friday 26 February 2016 14:18:17 Andreas Pape wrote:
+> +				iphdr = (struct iphdr *)(vhdr +
+> +						sizeof(struct vlan_ethhdr));
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 0710379..8a136b6 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -408,11 +408,17 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 	 */
- 	nf_reset(skb);
- 
-+	if (unlikely(!pskb_may_pull(skb, ETH_HLEN)))
-+		goto dropped;
-+
- 	vid = batadv_get_vid(skb, 0);
- 	ethhdr = eth_hdr(skb);
- 
- 	switch (ntohs(ethhdr->h_proto)) {
- 	case ETH_P_8021Q:
-+		if (!pskb_may_pull(skb, VLAN_ETH_HLEN))
-+			goto dropped;
-+
- 		vhdr = (struct vlan_ethhdr *)skb->data;
- 
- 		if (vhdr->h_vlan_encapsulated_proto != ethertype)
-@@ -424,8 +430,6 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 	}
- 
- 	/* skb->dev & skb->pkt_type are set here */
--	if (unlikely(!pskb_may_pull(skb, ETH_HLEN)))
--		goto dropped;
- 	skb->protocol = eth_type_trans(skb, soft_iface);
- 
- 	/* should not be necessary anymore as we use skb_pull_rcsum()
--- 
-2.7.0
+Forgot this one: sizeof(*vhdr) == 18. So you basically calculated
+
+    (u8 *)vhdr + 18 * 18
+
+But I would guess that you actually wanted to calculate
+
+    (u8 *)vhdr + 18
+
+Kind regards,
+	Sven
+--nextPart1491021.9QJbR40MZH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJW0MDpAAoJEF2HCgfBJntG9UcP/jYk6oz9Aj3CFctq9ZbdSehY
+6DeaLCw9aquejiL7Y69xUrKOAd7tk++VNNyjZ6Zax5QCsWvn5viQttgOSfNFtVxs
+Kl/9F3rbqQ2ZHYS65tzHFxx+hQhEtvBSBrOMAOxZDcwNjxhG0yP4uEChnxxp+noA
+hJL1xQLcdmz+l13r1hUTPyih+J5821AxqQLdNgMjQsSWqnMwNdgnVGjwWcER6bkb
+frNiHvQWD6GR7sw7lMJlQ5EmPCbOlpk09i5kKJqsWMIDtYFlVxGk4tQEaau/YkBN
+dmGpbcIwIyPC/YAZSWw4n9Balw+PKDMG0g979Kt3zok0L2iFxNpNZdISRAoE+5LK
+uV81VWmQroGUNiwNKHs0WB7fut0wSGCjbhA677pzcfb5rok42+6mpjIhE1ETyr//
+dmlRaF0bFd55/jmqFNONhSkzeCkaqwGO+evMs/I548OEpfk+6IBsipqe3wrCcoo9
+h/RGWh0uO7RnWoZVuMehh3MxWA2imQaDX5xPYAFDC1SpbINLTpMZhGzaSK7chaR2
+omMhkGMDNRqaaTTJ6i+aVq270hK/SZGiZSX8A3bsPE/VNR9NYbUjHC7tx5956PVb
+IHSZEoMJzOUOsmU8V+FPn5IeU3s4Iixtk6troiYUVEDyQAvSbDx3iy4enG68Gc+N
+tYgLxKPJ6bWcZ7Nhnuxw
+=2z2j
+-----END PGP SIGNATURE-----
+
+--nextPart1491021.9QJbR40MZH--
 
