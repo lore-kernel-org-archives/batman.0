@@ -1,11 +1,14 @@
-Return-Path: <apape@phoenixcontact.com>
-From: Andreas Pape <apape@phoenixcontact.com>
-Message-ID: <1456492790-29897-1-git-send-email-apape@phoenixcontact.com>
-Date: Fri, 26 Feb 2016 14:19:50 +0100
-content-transfer-encoding: quoted-printable
-content-type: text/plain; charset="utf-8"
-Subject: [B.A.T.M.A.N.] [PATCHv2 7/7] batman-adv: handle race condition for
-	claims between gateways
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 26 Feb 2016 17:00:49 +0100
+Message-ID: <2502138.exi8rd1dt9@bentobox>
+In-Reply-To: <1456492697-29708-1-git-send-email-apape@phoenixcontact.com>
+References: <1456492697-29708-1-git-send-email-apape@phoenixcontact.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart8639231.kb0ti4DAuP";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/7] batman-adv: speed up dat by
+	snooping received ip traffic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,91 +19,75 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <lindner_marek@yahoo.de>
 
-Consider the following situation which has been found in a test setup:
-Gateway B has claimed client C and gateway A has the same backbone
-network as B. C sends a broad- or multicast to B and directly after
-this packet decides to send another packet to A due to a better TQ
-value. B will forward the broad-/multicast into the backbone as it is
-the responsible gw and after that A will claim C as it has been
-chosen by C as the new gateway. If it now happens that A claims C
-before it has received the broad-/multicast forwarded by B (due to
-backbone topology or due to some delay in B when forwarding the
-packet) we get a critical situation: in the current code A will
-immediately unclaim C when receiving the multicast due to the
-roaming client scenario although the position of C has not changed
-in the mesh. If this happens the multi-/broadcast forwarded by B
-will be sent back into the mesh by A and we have looping packets
-until one of the gateways claims C again.
-In order to prevent this, unclaiming of a client due to the roaming
-client scenario is only done after a certain time is expired after
-the last claim of the client. 100 ms are used here, which should be
-slow enough for big backbones and slow gateways but fast enough not
-to break the roaming client use case.
+--nextPart8639231.kb0ti4DAuP
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
----
- net/batman-adv/bridge_loop_avoidance.c |   20 ++++++++++++++++----
- 1 files changed, 16 insertions(+), 4 deletions(-)
+On Friday 26 February 2016 14:18:17 Andreas Pape wrote:
+> Speeding up dat address lookup is achieved by snooping all incoming ip
+> traffic. This especially increases the propability in bla setups that
+> a gateway into a common backbone network already has a fitting dat entry
+> to answer incoming ARP requests directly coming from the backbone
+> network thus further reducing ARP traffic in the mesh.
+> 
+> Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
+> ---
+[...]
+>  	switch (ntohs(ethhdr->h_proto)) {
+> +	case ETH_P_IP:
+> +		iphdr = (struct iphdr *)(skb->data + ETH_HLEN);
+> +		/* snoop incoming traffic for dat update using the source mac
+> +		 * and source ip to speed up dat.
+> +		 */
+> +		batadv_dat_entry_check(bat_priv, iphdr->saddr,
+> +				       ethhdr->h_source, vid);
+> +		break;
+>  	case ETH_P_8021Q:
+>  		vhdr = (struct vlan_ethhdr *)skb->data;
+> 
+> -		if (vhdr->h_vlan_encapsulated_proto != ethertype)
+> +		if (vhdr->h_vlan_encapsulated_proto != ethertype) {
+> +			/* snoop incoming traffic for dat update also for vlan
+> +			 * tagged frames.
+> +			 */
+> +			if (vhdr->h_vlan_encapsulated_proto == ETH_P_IP) {
+> +				iphdr = (struct iphdr *)(vhdr +
+> +						sizeof(struct vlan_ethhdr));
+> +				batadv_dat_entry_check(bat_priv, iphdr->saddr,
+> +						       vhdr->h_source, vid);
+> +			}
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge=
-_loop_avoidance.c
-index 32a6168..98f0dd9 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1764,10 +1764,22 @@ int batadv_bla_tx(struct batadv_priv *bat_priv, str=
-uct sk_buff *skb,
- =09=09/* if yes, the client has roamed and we have
- =09=09 * to unclaim it.
- =09=09 */
--=09=09batadv_handle_unclaim(bat_priv, primary_if,
--=09=09=09=09      primary_if->net_dev->dev_addr,
--=09=09=09=09      ethhdr->h_source, vid);
--=09=09goto allow;
-+=09=09if (batadv_has_timed_out(claim->lasttime, 100)) {
-+=09=09=09/* only unclaim if the last claim entry is
-+=09=09=09 * older than 100 ms to make sure we really
-+=09=09=09 * have a roaming client here.
-+=09=09=09 */
-+=09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv, "bla_tx(): Roaming client %p=
-M detected. Unclaim it.\n",
-+=09=09=09=09   ethhdr->h_source);
-+=09=09=09batadv_handle_unclaim(bat_priv, primary_if,
-+=09=09=09=09=09      primary_if->net_dev->dev_addr,
-+=09=09=09=09=09      ethhdr->h_source, vid);
-+=09=09=09goto allow;
-+=09=09} else {
-+=09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv, "bla_tx(): Race for claim %p=
-M detected. Drop packet.\n",
-+=09=09=09=09   ethhdr->h_source);
-+=09=09=09goto handled;
-+=09=09}
- =09}
+Where is the code to check that there is enough data for the iphdr 
+(pskb_may_pull)? Same question goes to Marek for his initial change in 
+48628bb9419f ("batman-adv: softif bridge loop avoidance") that introduced the 
+vhdr->vlan_ethhdr check
 
- =09/* check if it is a multicast/broadcast frame */
---
-1.7.0.4
+Kind regards,
+	Sven
+--nextPart8639231.kb0ti4DAuP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
+iQIcBAABCgAGBQJW0HaxAAoJEF2HCgfBJntGnNsQAJxU3pifZBkIheRpbjGHN/f2
+/K9IqokxC/KUgjLaoSyCDcBllny2d0YYcR1tpGiUwFvdAR7STyHr2N4ZMsAXfU/1
+wtAaS/T5BnzXsIsKSlHyzftaG4xIYCrscrxgRKCS6kRqa3zgglMjFQzGvpNdsqXl
+BYNa0gRAloMmRiLwuc3u+BGyI+XOjvpUCZEsyilF9l78GIcP1/9NKGHnNrdKCaee
+xIf1KCTt2zzKWSb6KhR9Z+xXOBuDhh46VkMb/l2OdUSjb4YCkI/1W8HYKnbOmoLW
+x+j9pdeoc2bghzZYhqvW01W1ghEeHorvSH2KQyEnvqKqHomN7NhtHKgyTPlhZmLL
+U+G1C+Jw/4404iJsjOMOHjJ7T3FJ5zsD1pnYWmabsyWytHQK7pKxdnatcntN/XVB
+d9ua0E+SayB0uHmIjiBtWizwRnB6eLRCMzH1NkiUYJ2QXHeXoBfsqnM/24B/0Hg5
+bIc4ivx04NLKzxUcihcEj+L09KxXsARUv2xnef9t22F1YIjbEZSZWEQTziltY2do
+Nf/DVlh8XoOmcTzZtWIMK1SZEW4Ke2uvNr2g8+6PVxgm1qq2JCDJbsGCkK/jCDqU
+cuWFT7c6MMoytUwaBiCmNlPkOZUs9WcRgElPiOERE7yxNY9mwrgJmdLXphMj//uN
+SfNFs/FnaRbgak1ph9sh
+=SlhW
+-----END PGP SIGNATURE-----
 
-..................................................................
-PHOENIX CONTACT ELECTRONICS GmbH
+--nextPart8639231.kb0ti4DAuP--
 
-Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
-USt-Id-Nr.: DE811742156
-Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
-Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
-___________________________________________________________________
-Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
-nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
-rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
-d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
- Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
----------------------------------------------------------------------------=
--------------------------
-This e-mail may contain confidential and/or privileged information. If you =
-are not the intended recipient (or have received this e-mail in error) plea=
-se notify the sender immediately and destroy this e-mail. Any unauthorized =
-copying, disclosure, distribution or other use of the material or parts the=
-reof is strictly forbidden.
-___________________________________________________________________
