@@ -1,14 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 26 Feb 2016 22:24:54 +0100
-Message-ID: <1634608.JnebRjFf2I@sven-edge>
-In-Reply-To: <1456492697-29708-1-git-send-email-apape@phoenixcontact.com>
-References: <1456492697-29708-1-git-send-email-apape@phoenixcontact.com>
+Return-Path: <APape@phoenixcontact.com>
+In-Reply-To: <2279019.udanyR4lfT@bentobox>
+References: <20160226141638.169e15ae@ubuntu> <2279019.udanyR4lfT@bentobox>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2575096.JVd4Benq6q";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/7] batman-adv: speed up dat by
-	snooping received ip traffic
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OF34C428B5.B1B9DB61-ONC1257F66.00389705-C1257F66.003D570A@phoenixcontact.com>
+Date: Sat, 27 Feb 2016 12:10:00 +0100
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="ISO-8859-1"
+Subject: [B.A.T.M.A.N.] Antwort: Re: [Patchv2 0/7] batman-adv: Optimizations
+ for setups running dat and bla
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,43 +18,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2575096.JVd4Benq6q
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Sven Eckelmann <sven@narfation.org> schrieb am 26.02.2016 17:20:54:
 
-On Friday 26 February 2016 14:18:17 Andreas Pape wrote:
-> +                       if (vhdr->h_vlan_encapsulated_proto == ETH_P_IP) {
+> See my other comments directly to the patches. Please try to set the
+> in-reply-to of the patches to the message-id of the cover letter.
+Otherwise
+> the messages aren't correctly threaded on the mailinglist [1].
+>
 
-Either you htons the ETH_P_IP or you have to ntohs the
-vhdr->h_vlan_encapsulated_proto. But one of them has to converted to the byte 
-order of the other one.
+Is there a way to generate the cover letter also with git send-email? As I
+did
+not know how to generate it, I used claws as a separate e-mail client.
 
-Kind regards,
-	Sven
---nextPart2575096.JVd4Benq6q
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+> And you can set the version number of the patch directly using
+> git-format-patch:
+>
+>     git format-patch -v 2 origin/master
+>
+> I haven't done the complete build_test run but at least a quick test
+against
+> 4.4 only. The result is attached.
+>
+> Kind regards,
+>    Sven
+>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+I used checkpatch.pl of linux 4.5 rc5 and checked each patch seperately
+without open
+issues. These things with bracket alignment etc. start driving me crazy.
+Looks as if I don't
+use a proper editor. Can you recommend one to use before sending patches?
 
-iQIcBAABCgAGBQJW0MKmAAoJEF2HCgfBJntGcbAQAI1v8XKYJcoLffPutgvBMZRb
-o2M4xTQQUanFjc85dK8Yw9wCjmh8i3uK2J8EHGKcCMoPWxXHsR7biH8etc8sOcPe
-y3vB5Yj89oGgl2oEKmUncaRxpziHhpXB/LjG0pdXBu4kVSOALfl5JXYg4zl+NdoW
-CJWsz1nT2Xm0KeCMezbz/y4XtfNLrkObFqUxfciogQ8W+R/MHrLVTPvVPjwcdtYX
-CYpIdHdhlKrfUDo5w4DiT+K1k2XNqDQM8hu8fnJxE3rl/mW76ZmfiTwkJWtjMsRR
-h0hXZVr7iKX9UZ8bG/5ogW/+vugC7g4HARHDsqHcBjCOE6E4TlJMGG9jF3TdgQEX
-w44od0OaTOyQJXh1ncTdRQrac9UaOQEabsyHOWq7tjibzzTGIPQ9/7ajGKXc3xyW
-MZDO7VbsyrGi0eCeohVrnT5WoLR4Zlb8UJsOj7MqJqcuqREt7mH8ZJpjZY4a1rVb
-9DDq+tDWBiiiVckm09OmmRVEke7+lSdmhngXt9dRjF7ltMUA4GuwESsBJA6fMjUa
-DXeaBaRVOBzL7zCbaRnTZ0dDd4TzMa5iGXxr/V6DMbA0huqj9UePkE9EqwVoGN1N
-pKngptGl90leChsz/+iRuGjhW9JrxbS0NI7XaW3qdK7EBcuMU6XgoPnB9rlaSa+0
-hGMmr3e/1fiVEC37bgjN
-=q7mX
------END PGP SIGNATURE-----
+>
+> [1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-February/
+> thread.html
+> [Anhang "build-test_andreas-pape_bla-fixes.mbox" gel=F6scht von
+> Andreas Pape/Phoenix Contact] [Anhang "signature.asc" gel=F6scht von
+> Andreas Pape/Phoenix Contact]
 
---nextPart2575096.JVd4Benq6q--
 
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
+
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=E4ftsf=FChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
+___________________________________________________________________
+Diese E-Mail enth=E4lt vertrauliche und/oder rechtlich gesch=FCtzte Informa=
+tionen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail irrt=FC=
+mlich erhalten haben, informieren Sie bitte sofort den Absender und vernich=
+ten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige Verwendu=
+ng sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
