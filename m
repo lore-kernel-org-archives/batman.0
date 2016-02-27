@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 28 Feb 2016 07:41:38 +0800
-Message-ID: <33875999.jBEq8r4P9a@voltaire>
-In-Reply-To: <1456178194-29307-2-git-send-email-sven@narfation.org>
-References: <1456178194-29307-1-git-send-email-sven@narfation.org>
- <1456178194-29307-2-git-send-email-sven@narfation.org>
+Date: Sun, 28 Feb 2016 07:43:35 +0800
+Message-ID: <2786314.2rFtvtEH8x@voltaire>
+In-Reply-To: <1456163732-4022-1-git-send-email-sven@narfation.org>
+References: <1456163732-4022-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2231850.TIoZFGypsE";
+Content-Type: multipart/signed; boundary="nextPart3597781.yx4d5tHKse";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Split
-	batadv_iv_ogm_orig_del_if function
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix kerneldoc for
+	batadv_compare_claim
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,34 +20,22 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2231850.TIoZFGypsE
+--nextPart3597781.yx4d5tHKse
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, February 22, 2016 22:56:34 Sven Eckelmann wrote:
-> batadv_iv_ogm_orig_del_if handles two different buffers bcast_own and
-> bcast_own_sum which should be resized. The error handling two for
-> allocating these buffers causes the complexity of this function. This can
-> be avoided completely when the function is split into a main function
-> handling the locking, freeing and call of the subfunctions.
-> 
-> The subfunction can then independently handle the resize of the buffers.
-> This also allows to easily reuse the old buffer (which always is larger) in
-> case a smaller buffer could not be allocated without increasing the code
-> complexity.
-> 
+On Monday, February 22, 2016 18:55:32 Sven Eckelmann wrote:
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/bat_iv_ogm.c | 131
-> ++++++++++++++++++++++++++++---------------- 1 file changed, 84
-> insertions(+), 47 deletions(-)
+>  net/batman-adv/bridge_loop_avoidance.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision 1c5fc73.
+Applied in revision fb633a4.
 
 Thanks,
 Marek
 
---nextPart2231850.TIoZFGypsE
+--nextPart3597781.yx4d5tHKse
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -56,14 +43,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEbBAABCAAGBQJW0jQyAAoJEFNVTo/uthzA6/4H+PPzRAjHTmUxXYgaldv5mtxO
-u9xeIgJ33NZdjNwPYgyc8sUUte9SFnBk8nSGvPvpBpDYIYJxsV1JeHIBwGobNG+x
-258qFfkUsJZmz+sgdRcJ2OmrCrfb0PnLlwadrrlO/Sa2qKV8pu5ftnv6gsRUnPZ4
-gZh+oQ0xa3qXREJIYcA4l9b4klDvSkPqvOXp7j07QIPrTDgAZAQUG4UfkIAQXATw
-232ctaHMBNFNpf5OC8kGDTgAr67P+klhqtvnT+hp+seB0qC3YavPrkp4y2FDaQt+
-51bEVrduFZB7ZwB3DK0PLhqZE9yAq751JeUxzr6tuWVlqhM2n/EcHcUdc+DIYw==
-=tAtl
+iQEcBAABCAAGBQJW0jSnAAoJEFNVTo/uthzACCoH/j87rrhaaNkL3yH9wwbx8Mhn
+DFQ6Vgvrq1/xNTDLAz9YJn+RTyFwydJmzXwCFnNvcbhM7+Ame8uDp4ZKYNvQj8Q2
+CZ4sb3M2b66uv+6Lvdqwc5PFV/f6k4w/kiLQODPvQzt7v9MQ9GLYyFKRaFI2OWRW
+l6bBwwVhQ+7BiMkZGcchbEGJnIpSRsruSUDGECCcPC1i5OY0aniYR6Kyo2jhW2jw
+L131AScoyFvmMsfUf3fTD/+fDaRcemuN1DD7wOT507j3YIC1yukTif7MZf9DhAe+
+qjj7eE+PIn5saHOpohf6rBOcSGG87RaPD31lHIlnDjqJvifv013rKyM7jdOBFxY=
+=Ux/n
 -----END PGP SIGNATURE-----
 
---nextPart2231850.TIoZFGypsE--
+--nextPart3597781.yx4d5tHKse--
 
