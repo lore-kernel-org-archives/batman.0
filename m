@@ -1,13 +1,12 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Sun, 28 Feb 2016 14:27:36 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20160228132736.GI5481@otheros>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 28 Feb 2016 17:23:18 +0100
+Message-ID: <10118093.UzH4NL7sLW@sven-edge>
+In-Reply-To: <1456616348.1958.16.camel@gmail.com>
 References: <1456616348.1958.16.camel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1456616348.1958.16.camel@gmail.com>
+Content-Type: multipart/signed; boundary="nextPart3949917.JWKNhuEEDy";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] batctl: page allocation failure
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,285 +17,1431 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Philipp,
+--nextPart3949917.JWKNhuEEDy
+Content-Type: multipart/mixed; boundary="nextPart10333323.3IfEOG0bx7"
+Content-Transfer-Encoding: quoted-printable
 
-Unfortunately, this is a known issue. The only workaround available
-right now is increasing RAM. Which I guess is not possible for you
-with your ARM device.
+This is a multi-part message in MIME format.
 
-Matthias Schiffer has been working on a solution:
+=2D-nextPart10333323.3IfEOG0bx7
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2015-June/013339.html
-
-Not sure whether he would still be inclined to work on that after the
-lack of feedback he had gotten or whether he still has the time
-for that.
-
-Regards, Linus
-
-PS: How much (free and in total) RAM does your device have, which device is
-it exactly? Just that others know how much RAM is needed to read
-from debugfs with a 300+ nodes setup right now.
-
-
-On Sun, Feb 28, 2016 at 12:39:08AM +0100, Philipp Psurek wrote:
+On Sunday 28 February 2016 00:39:08 Philipp Psurek wrote:
 > Hi all,
 > 
 > I've got this error with
-> 
-> # batctl -v
-> batctl 2016.0-4-g7a3d563 [batman-adv: 2016.0-83-g884fb2d]
-> 
-> on
-> 
-> # uname -rmpio
-> 3.4.107-01996-g67bdc52 armv7l ARMv7 Processor rev 4 (v7l) sun7i GNU/Linux
-> 
-> I know the kernel is old, I can take a recent one if needed, but maybe
-> this is not necessary. 
-> 
-> The module has been compiled with
-> CONFIG_BATMAN_ADV_DEBUG=y
-> CONFIG_BATMAN_ADV_BLA=y
-> CONFIG_BATMAN_ADV_DAT=y
-> CONFIG_BATMAN_ADV_NC=y
-> CONFIG_BATMAN_ADV_MCAST=y
-> CONFIG_BATMAN_ADV_BATMAN_V=n
-> 
-> and batctl as usual but without stripping. The problem occurs while
-> calling “batctl o”. There should be an output of 336 lines …
-> 
-> Please tell me if you need more information. Thanx in advance and thank
-> you for B.A.T.M.A.N. advanced.
-> 
-> Best regards,
-> Philipp
+[..]
 > 
 > 
 > ----------------------------------
-> 
-> [Feb28 00:10] batman_adv: B.A.T.M.A.N. advanced 2016.0-83-g884fb2d (compatibility version 15) loaded
-> [ +11,632829] batman_adv: bat0: Adding interface: eth0
-> [  +0,277590] batman_adv: bat0: The MTU of interface eth0 is too small (1500) to handle the transport of batman-adv packets. Packets going over this interface will be fragmented on layer2 which could impact the performance. Setting the MTU to 1560 would solve the problem.
-> [  +0,058799] batman_adv: bat0: Interface activated: eth0
-> [  +3,173715] batman_adv: bat0: Adding interface: fastd-wup
-> [  +0,279096] batman_adv: bat0: The MTU of interface fastd-wup is too small (1426) to handle the transport of batman-adv packets. Packets going over this interface will be fragmented on layer2 which could impact the performance. Setting the MTU to 1560 would solve the problem.
-> [  +0,055496] batman_adv: bat0: Interface activated: fastd-wup
-> [ +23,247415] bat0: no IPv6 routers present
+[..]
 > [Feb28 00:13] batctl: page allocation failure: order:4, mode:0x40d0
-> [  +0,100723] [<c00153a4>] (unwind_backtrace+0x0/0x134) from [<c00af79c>] (warn_alloc_failed+0xe0/0x118)
-> [  +0,113138] [<c00af79c>] (warn_alloc_failed+0xe0/0x118) from [<c00b1ff0>] (__alloc_pages_nodemask+0x574/0x7cc)
-> [  +0,110864] [<c00b1ff0>] (__alloc_pages_nodemask+0x574/0x7cc) from [<c00b22ac>] (__get_free_pages+0x10/0x24)
-> [  +0,094211] [<c00b22ac>] (__get_free_pages+0x10/0x24) from [<c0108bd8>] (seq_read+0x238/0x490)
-> [  +0,084540] [<c0108bd8>] (seq_read+0x238/0x490) from [<c00eb3f4>] (vfs_read+0x98/0x174)
-> [  +0,082817] [<c00eb3f4>] (vfs_read+0x98/0x174) from [<c00eb8a0>] (sys_read+0x38/0x78)
-> [  +0,095673] [<c00eb8a0>] (sys_read+0x38/0x78) from [<c000ecc0>] (ret_fast_syscall+0x0/0x30)
-> [  +0,014683] Mem-info:
-> [  +0,015332] DMA per-cpu:
-> [  +0,042295] CPU    0: hi:   90, btch:  15 usd:   0
-> [  +0,043583] CPU    1: hi:   90, btch:  15 usd:   0
-> [  +0,019240] Normal per-cpu:
-> [  +0,042920] CPU    0: hi:  186, btch:  31 usd:   0
-> [  +0,046456] CPU    1: hi:  186, btch:  31 usd:   1
-> [  +0,030888] HighMem per-cpu:
-> [  +0,042776] CPU    0: hi:   90, btch:  15 usd:   0
-> [  +0,046066] CPU    1: hi:   90, btch:  15 usd:   0
-> [  +0,276204] active_anon:38221 inactive_anon:11325 isolated_anon:0
-> [  +0,000006]  active_file:95385 inactive_file:84158 isolated_file:0
-> [  +0,000006]  unevictable:0 dirty:4 writeback:0 unstable:0
-> [  +0,000004]  free:8954 slab_reclaimable:9981 slab_unreclaimable:2508
-> [  +0,000005]  mapped:2159 shmem:153 pagetables:326 bounce:0
-> [  +0,467038] DMA free:10956kB min:1180kB low:1472kB high:1768kB active_anon:41260kB inactive_anon:4176kB active_file:96108kB inactive_file:90808kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:260096kB mlocked:0kB dirty:0kB writeback:0kB mapped:3224kB shmem:488kB slab_reclaimable:7228kB slab_unreclaimable:1340kB kernel_stack:176kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,043062] lowmem_reserve[]: 0 500 762 762
-> [  +0,478788] Normal free:22160kB min:2324kB low:2904kB high:3484kB active_anon:64100kB inactive_anon:10132kB active_file:183792kB inactive_file:159760kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:512064kB mlocked:0kB dirty:16kB writeback:0kB mapped:1472kB shmem:4kB slab_reclaimable:32696kB slab_unreclaimable:8700kB kernel_stack:624kB pagetables:1304kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,041810] lowmem_reserve[]: 0 0 2095 2095
-> [  +0,485438] HighMem free:2692kB min:260kB low:564kB high:868kB active_anon:47524kB inactive_anon:30992kB active_file:101640kB inactive_file:86064kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:268224kB mlocked:0kB dirty:0kB writeback:0kB mapped:3940kB shmem:120kB slab_reclaimable:0kB slab_unreclaimable:0kB kernel_stack:0kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,041504] lowmem_reserve[]: 0 0 0 0
-> [  +0,019167] DMA: 1167*4kB 178*8kB 80*16kB 32*32kB 18*64kB 5*128kB 3*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 10956kB
-> [  +0,128889] Normal: 3738*4kB 576*8kB 112*16kB 21*32kB 2*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 22152kB
-> [  +0,141889] HighMem: 143*4kB 67*8kB 37*16kB 13*32kB 7*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 2692kB
-> [  +0,155726] 179706 total pagecache pages
-> [  +0,031546] 0 pages in swap cache
-> [  +0,075081] Swap cache stats: add 933557, delete 933557, find 273255/316856
-> [  +0,023894] Free swap  = 0kB
-> [  +0,027333] Total swap = 0kB
-> [  +0,039682] 262144 pages of RAM
-> [  +0,020541] 9168 free pages
-> [  +0,024887] 9338 reserved pages
-> [  +0,019097] 9130 slab pages
-> [  +0,025110] 116719 pages shared
-> [  +0,024278] 0 pages swap cached
-> [  +4,207166] batctl: page allocation failure: order:4, mode:0x40d0
-> [  +0,095872] [<c00153a4>] (unwind_backtrace+0x0/0x134) from [<c00af79c>] (warn_alloc_failed+0xe0/0x118)
-> [  +0,104340] [<c00af79c>] (warn_alloc_failed+0xe0/0x118) from [<c00b1ff0>] (__alloc_pages_nodemask+0x574/0x7cc)
-> [  +0,102166] [<c00b1ff0>] (__alloc_pages_nodemask+0x574/0x7cc) from [<c00b22ac>] (__get_free_pages+0x10/0x24)
-> [  +0,087528] [<c00b22ac>] (__get_free_pages+0x10/0x24) from [<c0108bd8>] (seq_read+0x238/0x490)
-> [  +0,080231] [<c0108bd8>] (seq_read+0x238/0x490) from [<c00eb3f4>] (vfs_read+0x98/0x174)
-> [  +0,078142] [<c00eb3f4>] (vfs_read+0x98/0x174) from [<c00eb8a0>] (sys_read+0x38/0x78)
-> [  +0,084396] [<c00eb8a0>] (sys_read+0x38/0x78) from [<c000ecc0>] (ret_fast_syscall+0x0/0x30)
-> [  +0,011576] Mem-info:
-> [  +0,014689] DMA per-cpu:
-> [  +0,041725] CPU    0: hi:   90, btch:  15 usd:   0
-> [  +0,041762] CPU    1: hi:   90, btch:  15 usd:   0
-> [  +0,017817] Normal per-cpu:
-> [  +0,041821] CPU    0: hi:  186, btch:  31 usd:   0
-> [  +0,041736] CPU    1: hi:  186, btch:  31 usd:   0
-> [  +0,018844] HighMem per-cpu:
-> [  +0,041736] CPU    0: hi:   90, btch:  15 usd:   0
-> [  +0,041724] CPU    1: hi:   90, btch:  15 usd:   0
-> [  +0,274703] active_anon:38228 inactive_anon:11330 isolated_anon:0
-> [  +0,000006]  active_file:95390 inactive_file:84151 isolated_file:0
-> [  +0,000006]  unevictable:0 dirty:1 writeback:0 unstable:0
-> [  +0,000004]  free:8958 slab_reclaimable:9981 slab_unreclaimable:2512
-> [  +0,000005]  mapped:2159 shmem:153 pagetables:326 bounce:0
-> [  +0,449747] DMA free:10956kB min:1180kB low:1472kB high:1768kB active_anon:41260kB inactive_anon:4176kB active_file:96108kB inactive_file:90808kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:260096kB mlocked:0kB dirty:0kB writeback:0kB mapped:3224kB shmem:488kB slab_reclaimable:7228kB slab_unreclaimable:1340kB kernel_stack:176kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,017854] lowmem_reserve[]: 0 500 762 762
-> [  +0,474747] Normal free:22180kB min:2324kB low:2904kB high:3484kB active_anon:64124kB inactive_anon:10152kB active_file:183800kB inactive_file:159744kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:512064kB mlocked:0kB dirty:0kB writeback:0kB mapped:1472kB shmem:4kB slab_reclaimable:32696kB slab_unreclaimable:8708kB kernel_stack:624kB pagetables:1304kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,017908] lowmem_reserve[]: 0 0 2095 2095
-> [  +0,460057] HighMem free:2696kB min:260kB low:564kB high:868kB active_anon:47528kB inactive_anon:30992kB active_file:101652kB inactive_file:86052kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:268224kB mlocked:0kB dirty:4kB writeback:0kB mapped:3940kB shmem:120kB slab_reclaimable:0kB slab_unreclaimable:0kB kernel_stack:0kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,017830] lowmem_reserve[]: 0 0 0 0
-> [  +0,015840] DMA: 1167*4kB 178*8kB 80*16kB 32*32kB 18*64kB 5*128kB 3*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 10956kB
-> [  +0,116928] Normal: 3745*4kB 582*8kB 111*16kB 20*32kB 2*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 22180kB
-> [  +0,117676] HighMem: 138*4kB 70*8kB 37*16kB 13*32kB 7*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 2696kB
-> [  +0,135363] 179706 total pagecache pages
-> [  +0,024050] 0 pages in swap cache
-> [  +0,067731] Swap cache stats: add 933557, delete 933557, find 273255/316856
-> [  +0,018842] Free swap  = 0kB
-> [  +0,018837] Total swap = 0kB
-> [  +0,034725] 262144 pages of RAM
-> [  +0,017828] 9175 free pages
-> [  +0,021957] 9338 reserved pages
-> [  +0,017803] 9130 slab pages
-> [  +0,021957] 116699 pages shared
-> [  +0,021958] 0 pages swap cached
-> [  +2,546832] batctl: page allocation failure: order:4, mode:0x40d0
-> [  +0,095887] [<c00153a4>] (unwind_backtrace+0x0/0x134) from [<c00af79c>] (warn_alloc_failed+0xe0/0x118)
-> [  +0,104208] [<c00af79c>] (warn_alloc_failed+0xe0/0x118) from [<c00b1ff0>] (__alloc_pages_nodemask+0x574/0x7cc)
-> [  +0,102153] [<c00b1ff0>] (__alloc_pages_nodemask+0x574/0x7cc) from [<c00b22ac>] (__get_free_pages+0x10/0x24)
-> [  +0,087828] [<c00b22ac>] (__get_free_pages+0x10/0x24) from [<c0108bd8>] (seq_read+0x238/0x490)
-> [  +0,080248] [<c0108bd8>] (seq_read+0x238/0x490) from [<c00eb3f4>] (vfs_read+0x98/0x174)
-> [  +0,078215] [<c00eb3f4>] (vfs_read+0x98/0x174) from [<c00eb8a0>] (sys_read+0x38/0x78)
-> [  +0,084403] [<c00eb8a0>] (sys_read+0x38/0x78) from [<c000ecc0>] (ret_fast_syscall+0x0/0x30)
-> [  +0,011576] Mem-info:
-> [  +0,014684] DMA per-cpu:
-> [  +0,041729] CPU    0: hi:   90, btch:  15 usd:   0
-> [  +0,041796] CPU    1: hi:   90, btch:  15 usd:   0
-> [  +0,017822] Normal per-cpu:
-> [  +0,041724] CPU    0: hi:  186, btch:  31 usd:   0
-> [  +0,041730] CPU    1: hi:  186, btch:  31 usd:   0
-> [  +0,018883] HighMem per-cpu:
-> [  +0,041723] CPU    0: hi:   90, btch:  15 usd:   0
-> [  +0,041867] CPU    1: hi:   90, btch:  15 usd:   0
-> [  +0,274716] active_anon:38235 inactive_anon:11327 isolated_anon:0
-> [  +0,000007]  active_file:95391 inactive_file:84152 isolated_file:0
-> [  +0,000006]  unevictable:0 dirty:2 writeback:0 unstable:0
-> [  +0,000004]  free:8953 slab_reclaimable:9981 slab_unreclaimable:2512
-> [  +0,000005]  mapped:2159 shmem:153 pagetables:326 bounce:0
-> [  +0,449493] DMA free:10956kB min:1180kB low:1472kB high:1768kB active_anon:41260kB inactive_anon:4176kB active_file:96108kB inactive_file:90808kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:260096kB mlocked:0kB dirty:0kB writeback:0kB mapped:3224kB shmem:488kB slab_reclaimable:7228kB slab_unreclaimable:1340kB kernel_stack:176kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,017933] lowmem_reserve[]: 0 500 762 762
-> [  +0,474739] Normal free:22160kB min:2324kB low:2904kB high:3484kB active_anon:64128kB inactive_anon:10140kB active_file:183804kB inactive_file:159748kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:512064kB mlocked:0kB dirty:4kB writeback:0kB mapped:1472kB shmem:4kB slab_reclaimable:32696kB slab_unreclaimable:8708kB kernel_stack:624kB pagetables:1304kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,017916] lowmem_reserve[]: 0 0 2095 2095
-> [  +0,460179] HighMem free:2696kB min:260kB low:564kB high:868kB active_anon:47552kB inactive_anon:30992kB active_file:101652kB inactive_file:86052kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:268224kB mlocked:0kB dirty:4kB writeback:0kB mapped:3940kB shmem:120kB slab_reclaimable:0kB slab_unreclaimable:0kB kernel_stack:0kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,017960] lowmem_reserve[]: 0 0 0 0
-> [  +0,015846] DMA: 1167*4kB 178*8kB 80*16kB 32*32kB 18*64kB 5*128kB 3*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 10956kB
-> [  +0,116798] Normal: 3742*4kB 583*8kB 112*16kB 19*32kB 2*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 22160kB
-> [  +0,117768] HighMem: 128*4kB 75*8kB 37*16kB 13*32kB 7*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 2696kB
-> [  +0,135597] 179708 total pagecache pages
-> [  +0,024101] 0 pages in swap cache
-> [  +0,067730] Swap cache stats: add 933557, delete 933557, find 273255/316856
-> [  +0,018843] Free swap  = 0kB
-> [  +0,018838] Total swap = 0kB
-> [  +0,034639] 262144 pages of RAM
-> [  +0,017816] 9170 free pages
-> [  +0,021964] 9338 reserved pages
-> [  +0,017874] 9130 slab pages
-> [  +0,021970] 116692 pages shared
-> [  +0,021963] 0 pages swap cached
-> [  +2,795628] batctl: page allocation failure: order:4, mode:0x40d0
-> [  +0,100163] [<c00153a4>] (unwind_backtrace+0x0/0x134) from [<c00af79c>] (warn_alloc_failed+0xe0/0x118)
-> [  +0,112606] [<c00af79c>] (warn_alloc_failed+0xe0/0x118) from [<c00b1ff0>] (__alloc_pages_nodemask+0x574/0x7cc)
-> [  +0,109882] [<c00b1ff0>] (__alloc_pages_nodemask+0x574/0x7cc) from [<c00b22ac>] (__get_free_pages+0x10/0x24)
-> [  +0,092898] [<c00b22ac>] (__get_free_pages+0x10/0x24) from [<c0108bd8>] (seq_read+0x238/0x490)
-> [  +0,081964] [<c0108bd8>] (seq_read+0x238/0x490) from [<c00eb3f4>] (vfs_read+0x98/0x174)
-> [  +0,080373] [<c00eb3f4>] (vfs_read+0x98/0x174) from [<c00eb8a0>] (sys_read+0x38/0x78)
-> [  +0,095661] [<c00eb8a0>] (sys_read+0x38/0x78) from [<c000ecc0>] (ret_fast_syscall+0x0/0x30)
-> [  +0,018246] Mem-info:
-> [  +0,016190] DMA per-cpu:
-> [  +0,042907] CPU    0: hi:   90, btch:  15 usd:   0
-> [  +0,045696] CPU    1: hi:   90, btch:  15 usd:   0
-> [  +0,021567] Normal per-cpu:
-> [  +0,043237] CPU    0: hi:  186, btch:  31 usd:   0
-> [  +0,042809] CPU    1: hi:  186, btch:  31 usd:   1
-> [  +0,027782] HighMem per-cpu:
-> [  +0,044187] CPU    0: hi:   90, btch:  15 usd:   0
-> [  +0,044017] CPU    1: hi:   90, btch:  15 usd:   0
-> [  +0,276192] active_anon:38230 inactive_anon:11333 isolated_anon:0
-> [  +0,000006]  active_file:95396 inactive_file:84156 isolated_file:0
-> [  +0,000005]  unevictable:0 dirty:2 writeback:0 unstable:0
-> [  +0,000005]  free:8953 slab_reclaimable:9981 slab_unreclaimable:2512
-> [  +0,000005]  mapped:2159 shmem:153 pagetables:326 bounce:0
-> [  +0,467447] DMA free:10956kB min:1180kB low:1472kB high:1768kB active_anon:41260kB inactive_anon:4176kB active_file:96108kB inactive_file:90808kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:260096kB mlocked:0kB dirty:0kB writeback:0kB mapped:3224kB shmem:488kB slab_reclaimable:7228kB slab_unreclaimable:1340kB kernel_stack:176kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,024492] lowmem_reserve[]: 0 500 762 762
-> [  +0,475389] Normal free:22176kB min:2324kB low:2904kB high:3484kB active_anon:64128kB inactive_anon:10164kB active_file:183824kB inactive_file:159764kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:512064kB mlocked:0kB dirty:4kB writeback:0kB mapped:1472kB shmem:4kB slab_reclaimable:32696kB slab_unreclaimable:8708kB kernel_stack:624kB pagetables:1304kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,024240] lowmem_reserve[]: 0 0 2095 2095
-> [  +0,461051] HighMem free:2680kB min:260kB low:564kB high:868kB active_anon:47532kB inactive_anon:30992kB active_file:101652kB inactive_file:86052kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:268224kB mlocked:0kB dirty:4kB writeback:0kB mapped:3940kB shmem:120kB slab_reclaimable:0kB slab_unreclaimable:0kB kernel_stack:0kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,023810] lowmem_reserve[]: 0 0 0 0
-> [  +0,016839] DMA: 1167*4kB 178*8kB 80*16kB 32*32kB 18*64kB 5*128kB 3*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 10956kB
-> [  +0,117735] Normal: 3738*4kB 584*8kB 113*16kB 22*32kB 1*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 22200kB
-> [  +0,118592] HighMem: 124*4kB 75*8kB 37*16kB 13*32kB 7*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 2680kB
-> [  +0,141032] 179710 total pagecache pages
-> [  +0,024246] 0 pages in swap cache
-> [  +0,067845] Swap cache stats: add 933557, delete 933557, find 273255/316856
-> [  +0,019040] Free swap  = 0kB
-> [  +0,018966] Total swap = 0kB
-> [  +0,035160] 262144 pages of RAM
-> [  +0,017932] 9177 free pages
-> [  +0,022041] 9338 reserved pages
-> [  +0,022998] 9127 slab pages
-> [  +0,022106] 116679 pages shared
-> [  +0,022100] 0 pages swap cached
-> [Feb28 00:14] batctl: page allocation failure: order:4, mode:0x40d0
-> [  +0,096010] [<c00153a4>] (unwind_backtrace+0x0/0x134) from [<c00af79c>] (warn_alloc_failed+0xe0/0x118)
-> [  +0,105164] [<c00af79c>] (warn_alloc_failed+0xe0/0x118) from [<c00b1ff0>] (__alloc_pages_nodemask+0x574/0x7cc)
-> [  +0,102095] [<c00b1ff0>] (__alloc_pages_nodemask+0x574/0x7cc) from [<c00b22ac>] (__get_free_pages+0x10/0x24)
-> [  +0,087646] [<c00b22ac>] (__get_free_pages+0x10/0x24) from [<c0108bd8>] (seq_read+0x238/0x490)
-> [  +0,080242] [<c0108bd8>] (seq_read+0x238/0x490) from [<c00eb3f4>] (vfs_read+0x98/0x174)
-> [  +0,078150] [<c00eb3f4>] (vfs_read+0x98/0x174) from [<c00eb8a0>] (sys_read+0x38/0x78)
-> [  +0,084499] [<c00eb8a0>] (sys_read+0x38/0x78) from [<c000ecc0>] (ret_fast_syscall+0x0/0x30)
-> [  +0,011602] Mem-info:
-> [  +0,014690] DMA per-cpu:
-> [  +0,041744] CPU    0: hi:   90, btch:  15 usd:   0
-> [  +0,041755] CPU    1: hi:   90, btch:  15 usd:   0
-> [  +0,017817] Normal per-cpu:
-> [  +0,041737] CPU    0: hi:  186, btch:  31 usd:   0
-> [  +0,041729] CPU    1: hi:  186, btch:  31 usd:   0
-> [  +0,018845] HighMem per-cpu:
-> [  +0,041735] CPU    0: hi:   90, btch:  15 usd:   0
-> [  +0,041725] CPU    1: hi:   90, btch:  15 usd:   0
-> [  +0,274696] active_anon:38218 inactive_anon:11333 isolated_anon:0
-> [  +0,000005]  active_file:95399 inactive_file:84165 isolated_file:0
-> [  +0,000006]  unevictable:0 dirty:3 writeback:0 unstable:0
-> [  +0,000004]  free:8965 slab_reclaimable:9971 slab_unreclaimable:2505
-> [  +0,000005]  mapped:2158 shmem:153 pagetables:326 bounce:0
-> [  +0,449546] DMA free:11020kB min:1180kB low:1472kB high:1768kB active_anon:41260kB inactive_anon:4176kB active_file:96108kB inactive_file:90808kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:260096kB mlocked:0kB dirty:0kB writeback:0kB mapped:3224kB shmem:488kB slab_reclaimable:7164kB slab_unreclaimable:1340kB kernel_stack:176kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,018135] lowmem_reserve[]: 0 500 762 762
-> [  +0,474663] Normal free:21940kB min:2324kB low:2904kB high:3484kB active_anon:64128kB inactive_anon:10164kB active_file:183836kB inactive_file:159796kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:512064kB mlocked:0kB dirty:4kB writeback:0kB mapped:1472kB shmem:4kB slab_reclaimable:32672kB slab_unreclaimable:8680kB kernel_stack:632kB pagetables:1304kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,017894] lowmem_reserve[]: 0 0 2095 2095
-> [  +0,460232] HighMem free:2632kB min:260kB low:564kB high:868kB active_anon:47508kB inactive_anon:30992kB active_file:101652kB inactive_file:86056kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:268224kB mlocked:0kB dirty:8kB writeback:0kB mapped:3936kB shmem:120kB slab_reclaimable:0kB slab_unreclaimable:0kB kernel_stack:0kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> [  +0,017921] lowmem_reserve[]: 0 0 0 0
-> [  +0,015956] DMA: 1167*4kB 186*8kB 80*16kB 32*32kB 18*64kB 5*128kB 3*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 11020kB
-> [  +0,116870] Normal: 3667*4kB 586*8kB 112*16kB 23*32kB 1*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 21948kB
-> [  +0,117813] HighMem: 110*4kB 76*8kB 37*16kB 13*32kB 7*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 2632kB
-> [  +0,135376] 179719 total pagecache pages
-> [  +0,024043] 0 pages in swap cache
-> [  +0,067725] Swap cache stats: add 933557, delete 933557, find 273255/316856
-> [  +0,018915] Free swap  = 0kB
-> [  +0,018849] Total swap = 0kB
-> [  +0,034626] 262144 pages of RAM
-> [  +0,017849] 9194 free pages
-> [  +0,022185] 9338 reserved pages
-> [  +0,017842] 9115 slab pages
-> [  +0,021995] 116689 pages shared
-> [  +0,021957] 0 pages swap cached
+
+Does this always happen when you use `batctl o` on a system with many entries 
+in the originator table? When yes, then you could try the attached (very 
+rough) proof-of-concept patch. It is based on v2016.0-92-gd7c9a9e
+
+Kind regards,
+	Sven
+=2D-nextPart10333323.3IfEOG0bx7
+Content-Disposition: attachment; filename="0001-TEST-speedup-originator-output-by-using-seq_operatio.patch"
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/x-patch; charset="UTF-8"; name="0001-TEST-speedup-originator-output-by-using-seq_operatio.patch"
+
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 28 Feb 2016 17:13:12 +0100
+Subject: [RFC] TEST: speedup originator output by using seq_operations
+=2D--
+ net/batman-adv/bat_iv_ogm.c            | 93 ++++++++++++++--------------------
+ net/batman-adv/bat_v.c                 | 91 +++++++++++++--------------------
+ net/batman-adv/bridge_loop_avoidance.c |  4 +-
+ net/batman-adv/debugfs.c               | 50 ++++++++++++++++--
+ net/batman-adv/distributed-arp-table.c |  2 +-
+ net/batman-adv/gateway_client.c        |  2 +-
+ net/batman-adv/main.c                  |  5 +-
+ net/batman-adv/main.h                  |  3 +-
+ net/batman-adv/network-coding.c        |  2 +-
+ net/batman-adv/originator.c            | 87 ++++++++++++++++++++++++++-----
+ net/batman-adv/originator.h            |  7 ++-
+ net/batman-adv/translation-table.c     |  4 +-
+ net/batman-adv/types.h                 | 30 ++++++++++-
+ 13 files changed, 241 insertions(+), 139 deletions(-)
+
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 2c65668..cddb3e8 100644
+=2D-- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1846,74 +1846,54 @@ batadv_iv_ogm_orig_print_neigh(struct batadv_orig_node *orig_node,
+ 	}
+ }
+ 
+=2D/**
+=2D * batadv_iv_ogm_orig_print - print the originator table
+=2D * @bat_priv: the bat priv with all the soft interface information
+=2D * @seq: debugfs table seq_file struct
+=2D * @if_outgoing: the outgoing interface for which this should be printed
+=2D */
+=2Dstatic void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
+=2D				     struct seq_file *seq,
+=2D				     struct batadv_hard_iface *if_outgoing)
++static void batadv_iv_ogm_oriq_seq_header(struct batadv_priv *bat_priv,
++					  struct seq_file *seq)
+ {
+=2D	struct batadv_neigh_node *neigh_node;
+=2D	struct batadv_hashtable *hash = bat_priv->orig_hash;
+=2D	int last_seen_msecs, last_seen_secs;
+=2D	struct batadv_orig_node *orig_node;
+=2D	struct batadv_neigh_ifinfo *n_ifinfo;
+=2D	unsigned long last_seen_jiffies;
+=2D	struct hlist_head *head;
+=2D	int batman_count = 0;
+=2D	u32 i;
+=2D
+ 	seq_printf(seq, "  %-15s %s (%s/%i) %17s [%10s]: %20s ...\n",
+ 		   "Originator", "last-seen", "#", BATADV_TQ_MAX_VALUE,
+ 		   "Nexthop", "outgoingIF", "Potential nexthops");
++}
+ 
+=2D	for (i = 0; i < hash->size; i++) {
+=2D		head = &hash->table[i];
++static void batadv_iv_ogm_orig_seq_show(struct batadv_priv *bat_priv,
++					struct seq_file *seq,
++					struct batadv_orig_node *orig_node,
++					struct batadv_hard_iface *if_outgoing)
++{
++	struct batadv_neigh_node *neigh_node;
++	int last_seen_msecs, last_seen_secs;
++	struct batadv_neigh_ifinfo *n_ifinfo;
++	unsigned long last_seen_jiffies;
+ 
+=2D		rcu_read_lock();
+=2D		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
+=2D			neigh_node = batadv_orig_router_get(orig_node,
+=2D							    if_outgoing);
+=2D			if (!neigh_node)
+=2D				continue;
++	neigh_node = batadv_orig_router_get(orig_node, if_outgoing);
++	if (!neigh_node)
++		return;
+ 
+=2D			n_ifinfo = batadv_neigh_ifinfo_get(neigh_node,
+=2D							   if_outgoing);
+=2D			if (!n_ifinfo)
+=2D				goto next;
++	n_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
++	if (!n_ifinfo)
++		goto next;
+ 
+=2D			if (n_ifinfo->bat_iv.tq_avg == 0)
+=2D				goto next;
++	if (n_ifinfo->bat_iv.tq_avg == 0)
++		goto next;
+ 
+=2D			last_seen_jiffies = jiffies - orig_node->last_seen;
+=2D			last_seen_msecs = jiffies_to_msecs(last_seen_jiffies);
+=2D			last_seen_secs = last_seen_msecs / 1000;
+=2D			last_seen_msecs = last_seen_msecs % 1000;
++	last_seen_jiffies = jiffies - orig_node->last_seen;
++	last_seen_msecs = jiffies_to_msecs(last_seen_jiffies);
++	last_seen_secs = last_seen_msecs / 1000;
++	last_seen_msecs = last_seen_msecs % 1000;
+ 
+=2D			seq_printf(seq, "%pM %4i.%03is   (%3i) %pM [%10s]:",
+=2D				   orig_node->orig, last_seen_secs,
+=2D				   last_seen_msecs, n_ifinfo->bat_iv.tq_avg,
+=2D				   neigh_node->addr,
+=2D				   neigh_node->if_incoming->net_dev->name);
++	seq_printf(seq, "%pM %4i.%03is   (%3i) %pM [%10s]:",
++			orig_node->orig, last_seen_secs,
++			last_seen_msecs, n_ifinfo->bat_iv.tq_avg,
++			neigh_node->addr,
++			neigh_node->if_incoming->net_dev->name);
+ 
+=2D			batadv_iv_ogm_orig_print_neigh(orig_node, if_outgoing,
+=2D						       seq);
+=2D			seq_puts(seq, "\n");
+=2D			batman_count++;
++	batadv_iv_ogm_orig_print_neigh(orig_node, if_outgoing,
++					seq);
++	seq_puts(seq, "\n");
+ 
+ next:
+=2D			batadv_neigh_node_put(neigh_node);
+=2D			if (n_ifinfo)
+=2D				batadv_neigh_ifinfo_put(n_ifinfo);
+=2D		}
+=2D		rcu_read_unlock();
+=2D	}
+=2D
+=2D	if (batman_count == 0)
+=2D		seq_puts(seq, "No batman nodes in range ...\n");
++	batadv_neigh_node_put(neigh_node);
++	if (n_ifinfo)
++		batadv_neigh_ifinfo_put(n_ifinfo);
+ }
+ 
+ /**
+@@ -2062,7 +2042,8 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
+ 	.bat_neigh_cmp = batadv_iv_ogm_neigh_cmp,
+ 	.bat_neigh_is_similar_or_better = batadv_iv_ogm_neigh_is_sob,
+ 	.bat_neigh_print = batadv_iv_neigh_print,
+=2D	.bat_orig_print = batadv_iv_ogm_orig_print,
++	.bat_orig_seq_header = batadv_iv_ogm_oriq_seq_header,
++	.bat_orig_seq_show = batadv_iv_ogm_orig_seq_show,
+ 	.bat_orig_free = batadv_iv_ogm_orig_free,
+ 	.bat_orig_add_if = batadv_iv_ogm_orig_add_if,
+ 	.bat_orig_del_if = batadv_iv_ogm_orig_del_if,
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 3315b9a..6d3ff2d 100644
+=2D-- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -171,72 +171,52 @@ static void batadv_v_neigh_print(struct batadv_priv *bat_priv,
+ 		seq_puts(seq, "No batman nodes in range ...\n");
+ }
+ 
+=2D/**
+=2D * batadv_v_orig_print - print the originator table
+=2D * @bat_priv: the bat priv with all the soft interface information
+=2D * @seq: debugfs table seq_file struct
+=2D * @if_outgoing: the outgoing interface for which this should be printed
+=2D */
+=2Dstatic void batadv_v_orig_print(struct batadv_priv *bat_priv,
+=2D				struct seq_file *seq,
+=2D				struct batadv_hard_iface *if_outgoing)
++static void batadv_v_orig_seq_header(struct batadv_priv *bat_priv,
++				     struct seq_file *seq)
+ {
+=2D	struct batadv_neigh_node *neigh_node;
+=2D	struct batadv_hashtable *hash = bat_priv->orig_hash;
+=2D	int last_seen_msecs, last_seen_secs;
+=2D	struct batadv_orig_node *orig_node;
+=2D	struct batadv_neigh_ifinfo *n_ifinfo;
+=2D	unsigned long last_seen_jiffies;
+=2D	struct hlist_head *head;
+=2D	int batman_count = 0;
+=2D	u32 i;
+=2D
+ 	seq_printf(seq, "  %-15s %s (%11s) %17s [%10s]: %20s ...\n",
+ 		   "Originator", "last-seen", "throughput", "Nexthop",
+ 		   "outgoingIF", "Potential nexthops");
++}
+ 
+=2D	for (i = 0; i < hash->size; i++) {
+=2D		head = &hash->table[i];
++static void batadv_v_orig_seq_show(struct batadv_priv *bat_priv,
++				   struct seq_file *seq,
++				   struct batadv_orig_node *orig_node,
++				   struct batadv_hard_iface *if_outgoing)
++{
++	struct batadv_neigh_node *neigh_node;
++	struct batadv_neigh_ifinfo *n_ifinfo;
++	int last_seen_msecs, last_seen_secs;
++	unsigned long last_seen_jiffies;
+ 
+=2D		rcu_read_lock();
+=2D		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
+=2D			neigh_node = batadv_orig_router_get(orig_node,
+=2D							    if_outgoing);
+=2D			if (!neigh_node)
+=2D				continue;
++	neigh_node = batadv_orig_router_get(orig_node, if_outgoing);
++	if (!neigh_node)
++		return;
+ 
+=2D			n_ifinfo = batadv_neigh_ifinfo_get(neigh_node,
+=2D							   if_outgoing);
+=2D			if (!n_ifinfo)
+=2D				goto next;
++	n_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
++	if (!n_ifinfo)
++		goto next;
+ 
+=2D			last_seen_jiffies = jiffies - orig_node->last_seen;
+=2D			last_seen_msecs = jiffies_to_msecs(last_seen_jiffies);
+=2D			last_seen_secs = last_seen_msecs / 1000;
+=2D			last_seen_msecs = last_seen_msecs % 1000;
++	last_seen_jiffies = jiffies - orig_node->last_seen;
++	last_seen_msecs = jiffies_to_msecs(last_seen_jiffies);
++	last_seen_secs = last_seen_msecs / 1000;
++	last_seen_msecs = last_seen_msecs % 1000;
+ 
+=2D			seq_printf(seq, "%pM %4i.%03is (%9u.%1u) %pM [%10s]:",
+=2D				   orig_node->orig, last_seen_secs,
+=2D				   last_seen_msecs,
+=2D				   n_ifinfo->bat_v.throughput / 10,
+=2D				   n_ifinfo->bat_v.throughput % 10,
+=2D				   neigh_node->addr,
+=2D				   neigh_node->if_incoming->net_dev->name);
++	seq_printf(seq, "%pM %4i.%03is (%9u.%1u) %pM [%10s]:",
++			orig_node->orig, last_seen_secs,
++			last_seen_msecs,
++			n_ifinfo->bat_v.throughput / 10,
++			n_ifinfo->bat_v.throughput % 10,
++			neigh_node->addr,
++			neigh_node->if_incoming->net_dev->name);
+ 
+=2D			batadv_v_orig_print_neigh(orig_node, if_outgoing, seq);
+=2D			seq_puts(seq, "\n");
+=2D			batman_count++;
++	batadv_v_orig_print_neigh(orig_node, if_outgoing, seq);
++	seq_puts(seq, "\n");
+ 
+ next:
+=2D			batadv_neigh_node_put(neigh_node);
+=2D			if (n_ifinfo)
+=2D				batadv_neigh_ifinfo_put(n_ifinfo);
+=2D		}
+=2D		rcu_read_unlock();
+=2D	}
+=2D
+=2D	if (batman_count == 0)
+=2D		seq_puts(seq, "No batman nodes in range ...\n");
++	batadv_neigh_node_put(neigh_node);
++	if (n_ifinfo)
++		batadv_neigh_ifinfo_put(n_ifinfo);
+ }
+ 
+ static int batadv_v_neigh_cmp(struct batadv_neigh_node *neigh1,
+@@ -281,7 +261,8 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+ 	.bat_hardif_neigh_init = batadv_v_hardif_neigh_init,
+ 	.bat_ogm_emit = batadv_v_ogm_emit,
+ 	.bat_ogm_schedule = batadv_v_ogm_schedule,
+=2D	.bat_orig_print = batadv_v_orig_print,
++	.bat_orig_seq_header = batadv_v_orig_seq_header,
++	.bat_orig_seq_show = batadv_v_orig_seq_show,
+ 	.bat_neigh_cmp = batadv_v_neigh_cmp,
+ 	.bat_neigh_is_similar_or_better = batadv_v_neigh_is_sob,
+ 	.bat_neigh_print = batadv_v_neigh_print,
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 642167f..c00b9b8 100644
+=2D-- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -1807,7 +1807,7 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
+ 	bool is_own;
+ 	u8 *primary_addr;
+ 
+=2D	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -1865,7 +1865,7 @@ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
+ 	bool is_own;
+ 	u8 *primary_addr;
+ 
+=2D	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		goto out;
+ 
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index 3dc5208..ddaae44 100644
+=2D-- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -269,11 +269,43 @@ static int neighbors_open(struct inode *inode, struct file *file)
+ 	return single_open(file, batadv_hardif_neigh_seq_print_text, net_dev);
+ }
+ 
+=2Dstatic int batadv_originators_open(struct inode *inode, struct file *file)
++static const struct seq_operations batadv_orig_seq_ops = {
++	.start  = batadv_orig_seq_start,
++	.next   = batadv_orig_seq_next,
++	.stop   = batadv_orig_seq_stop,
++	.show   = batadv_orig_seq_show,
++};
++
++/**
++ * batadv_seq_open - TODO
++ * @inode: TODO
++ * @f: TODO
++ * @ops: TODO
++ * @size: TODO
++ *
++ * Return: TODO
++ */
++static int batadv_seq_open(struct inode *inode, struct file *f,
++			   const struct seq_operations *ops, int size)
+ {
++	struct batadv_seq_private *p;
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+ 
+=2D	return single_open(file, batadv_orig_seq_print_text, net_dev);
++	BUG_ON(size < sizeof(*p));
++
++	p = __seq_open_private(f, ops, size);
++	if (p == NULL)
++		return -ENOMEM;
++
++	p->net_dev = net_dev;
++
++	return 0;
++}
++
++static int batadv_originators_open(struct inode *inode, struct file *file)
++{
++	return batadv_seq_open(inode, file, &batadv_orig_seq_ops,
++			       sizeof(struct batadv_seq_hash_iter));
+ }
+ 
+ /**
+@@ -375,6 +407,18 @@ struct batadv_debuginfo batadv_debuginfo_##_name = {	\
+ 		}					\
+ }
+ 
++#define BATADV_DEBUGINFO_SEQ(_name, _mode, _open)	\
++struct batadv_debuginfo batadv_debuginfo_##_name = {	\
++	.attr = { .name = __stringify(_name),		\
++		  .mode = _mode, },			\
++	.fops = { .owner = THIS_MODULE,			\
++		  .open = _open,			\
++		  .read	= seq_read,			\
++		  .llseek = seq_lseek,			\
++		  .release = seq_release_private,	\
++		}					\
++}
++
+ /* the following attributes are general and therefore they will be directly
+  * placed in the BATADV_DEBUGFS_SUBDIR subdirectory of debugfs
+  */
+@@ -387,7 +431,7 @@ static struct batadv_debuginfo *batadv_general_debuginfos[] = {
+ 
+ /* The following attributes are per soft interface */
+ static BATADV_DEBUGINFO(neighbors, S_IRUGO, neighbors_open);
+=2Dstatic BATADV_DEBUGINFO(originators, S_IRUGO, batadv_originators_open);
++static BATADV_DEBUGINFO_SEQ(originators, S_IRUGO, batadv_originators_open);
+ static BATADV_DEBUGINFO(gateways, S_IRUGO, batadv_gateways_open);
+ static BATADV_DEBUGINFO(transtable_global, S_IRUGO,
+ 			batadv_transtable_global_open);
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 919a8d2..dc553e5 100644
+=2D-- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -809,7 +809,7 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
+ 	int last_seen_msecs, last_seen_secs, last_seen_mins;
+ 	u32 i;
+ 
+=2D	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		goto out;
+ 
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index c59aff5..1c2360c 100644
+=2D-- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -637,7 +637,7 @@ int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct batadv_gw_node *gw_node;
+ 	int gw_count = 0;
+ 
+=2D	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		goto out;
+ 
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index d64ddb9..74c81eb 100644
+=2D-- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -269,13 +269,14 @@ bool batadv_is_my_mac(struct batadv_priv *bat_priv, const u8 *addr)
+  * batadv_seq_print_text_primary_if_get - called from debugfs table printing
+  *  function that requires the primary interface
+  * @seq: debugfs table seq_file struct
++ * @net_dev: batman-adv net_device
+  *
+  * Return: primary interface if found or NULL otherwise.
+  */
+ struct batadv_hard_iface *
+=2Dbatadv_seq_print_text_primary_if_get(struct seq_file *seq)
++batadv_seq_print_text_primary_if_get(struct seq_file *seq,
++				     struct net_device *net_dev)
+ {
+=2D	struct net_device *net_dev = (struct net_device *)seq->private;
+ 	struct batadv_priv *bat_priv = netdev_priv(net_dev);
+ 	struct batadv_hard_iface *primary_if;
+ 
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index e602408..94e9f57 100644
+=2D-- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -203,7 +203,8 @@ int batadv_mesh_init(struct net_device *soft_iface);
+ void batadv_mesh_free(struct net_device *soft_iface);
+ bool batadv_is_my_mac(struct batadv_priv *bat_priv, const u8 *addr);
+ struct batadv_hard_iface *
+=2Dbatadv_seq_print_text_primary_if_get(struct seq_file *seq);
++batadv_seq_print_text_primary_if_get(struct seq_file *seq,
++				     struct net_device *net_dev);
+ int batadv_max_header_len(void);
+ void batadv_skb_set_priority(struct sk_buff *skb, int offset);
+ int batadv_batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 32f9fa1..38fbecc 100644
+=2D-- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -1905,7 +1905,7 @@ int batadv_nc_nodes_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct batadv_nc_node *nc_node;
+ 	int i;
+ 
+=2D	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		goto out;
+ 
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index e63d6a5..1b9faef 100644
+=2D-- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -698,7 +698,7 @@ int batadv_hardif_neigh_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct batadv_priv *bat_priv = netdev_priv(net_dev);
+ 	struct batadv_hard_iface *primary_if;
+ 
+=2D	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		return 0;
+ 
+@@ -1235,35 +1235,95 @@ void batadv_purge_orig_ref(struct batadv_priv *bat_priv)
+ 	_batadv_purge_orig(bat_priv);
+ }
+ 
+=2Dint batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
++static void batadv_orig_seq_show_header(struct seq_file *seq)
+ {
+=2D	struct net_device *net_dev = (struct net_device *)seq->private;
+=2D	struct batadv_priv *bat_priv = netdev_priv(net_dev);
++	struct batadv_seq_hash_iter *iter = seq->private;
++	struct batadv_priv *bat_priv = netdev_priv(iter->p.net_dev);
+ 	struct batadv_hard_iface *primary_if;
+ 
+=2D	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, iter->p.net_dev);
+ 	if (!primary_if)
+=2D		return 0;
++		return;
+ 
+ 	seq_printf(seq, "[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%pM (%s %s)]\n",
+ 		   BATADV_SOURCE_VERSION, primary_if->net_dev->name,
+=2D		   primary_if->net_dev->dev_addr, net_dev->name,
++		   primary_if->net_dev->dev_addr, iter->p.net_dev->name,
+ 		   bat_priv->bat_algo_ops->name);
+ 
+ 	batadv_hardif_put(primary_if);
+ 
+=2D	if (!bat_priv->bat_algo_ops->bat_orig_print) {
+=2D		seq_puts(seq,
+=2D			 "No printing function for this routing protocol\n");
++	if (bat_priv->bat_algo_ops->bat_orig_seq_header)
++		bat_priv->bat_algo_ops->bat_orig_seq_header(bat_priv, seq);
++}
++
++void *batadv_orig_seq_start(struct seq_file *seq, loff_t *pos)
++	__acquires(RCU)
++{
++	rcu_read_lock();
++
++	if (*pos != 0)
++		return 0; // TODO some kind of index, hashbucket?
++	return SEQ_START_TOKEN;
++}
++
++void *batadv_orig_seq_next(struct seq_file *seq, void *v, loff_t *pos)
++{
++	struct batadv_seq_hash_iter *iter = seq->private;
++	struct batadv_priv *bat_priv = netdev_priv(iter->p.net_dev);
++	struct batadv_hashtable *hash = bat_priv->orig_hash;
++	struct hlist_head *head;
++
++	if (v == SEQ_START_TOKEN) {
++		iter->bucket = 0;
++		iter->entry = NULL;
++		/* TODO seq_puts(seq, "No batman nodes in range ...\n"); */
++	} else {
++		iter->entry = rcu_dereference_raw(hlist_next_rcu(iter->entry));
++		if (!iter->entry)
++			iter->bucket++;
++	}
++
++	if (iter->entry)
++		return iter->entry;
++
++	for (; iter->bucket < hash->size; iter->bucket++) {
++		head = &hash->table[iter->bucket];
++		iter->entry = rcu_dereference_raw(hlist_first_rcu(head));
++
++		if (iter->entry)
++			return iter->entry;
++	}
++
++	return NULL;
++}
++
++int batadv_orig_seq_show(struct seq_file *seq, void *v)
++{
++	struct batadv_seq_hash_iter *iter = seq->private;
++	struct batadv_priv *bat_priv = netdev_priv(iter->p.net_dev);
++	struct batadv_orig_node *orig_node;
++
++	if (v == SEQ_START_TOKEN) {
++		batadv_orig_seq_show_header(seq);
+ 		return 0;
+ 	}
+ 
+=2D	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq,
+=2D					       BATADV_IF_DEFAULT);
++	orig_node = hlist_entry(iter->entry, struct batadv_orig_node, hash_entry);
++
++	if (bat_priv->bat_algo_ops->bat_orig_seq_show)
++		bat_priv->bat_algo_ops->bat_orig_seq_show(bat_priv, seq,
++							  orig_node,
++							  BATADV_IF_DEFAULT);
+ 
+ 	return 0;
+ }
+ 
++void batadv_orig_seq_stop(struct seq_file *seq, void *v)
++	__releases(RCU)
++{
++	rcu_read_unlock();
++}
++
+ /**
+  * batadv_orig_hardif_seq_print_text - writes originator infos for a specific
+  *  outgoing interface
+@@ -1285,6 +1345,8 @@ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
+ 		goto out;
+ 	}
+ 
++	/*
++	TODO
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
+ 	if (!bat_priv->bat_algo_ops->bat_orig_print) {
+ 		seq_puts(seq,
+@@ -1303,6 +1365,7 @@ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
+ 		   hard_iface->soft_iface->name, bat_priv->bat_algo_ops->name);
+ 
+ 	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq, hard_iface);
++	*/
+ 
+ out:
+ 	if (hard_iface)
+diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
+index 64a8951..ba5a915 100644
+=2D-- a/net/batman-adv/originator.h
++++ b/net/batman-adv/originator.h
+@@ -29,6 +29,7 @@
+ #include <linux/stddef.h>
+ #include <linux/types.h>
+ 
++#include "hard-interface.h"
+ #include "hash.h"
+ 
+ struct seq_file;
+@@ -71,7 +72,11 @@ batadv_orig_ifinfo_new(struct batadv_orig_node *orig_node,
+ 		       struct batadv_hard_iface *if_outgoing);
+ void batadv_orig_ifinfo_put(struct batadv_orig_ifinfo *orig_ifinfo);
+ 
+=2Dint batadv_orig_seq_print_text(struct seq_file *seq, void *offset);
++void *batadv_orig_seq_start(struct seq_file *seq, loff_t *pos);
++void *batadv_orig_seq_next(struct seq_file *seq, void *v, loff_t *pos);
++int batadv_orig_seq_show(struct seq_file *seq, void *v);
++void batadv_orig_seq_stop(struct seq_file *seq, void *v);
++
+ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset);
+ int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
+ 			    int max_if_num);
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 2ed55f4..eab36a9 100644
+=2D-- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1001,7 +1001,7 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 	bool no_purge;
+ 	u16 np_flag = BATADV_TT_CLIENT_NOPURGE;
+ 
+=2D	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -1699,7 +1699,7 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct hlist_head *head;
+ 	u32 i;
+ 
+=2D	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		goto out;
+ 
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 9abfb3e..764332e 100644
+=2D-- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1297,8 +1297,12 @@ struct batadv_algo_ops {
+ 	void (*bat_neigh_print)(struct batadv_priv *priv, struct seq_file *seq);
+ 	void (*bat_neigh_free)(struct batadv_neigh_node *neigh);
+ 	/* orig_node handling API */
+=2D	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq,
+=2D			       struct batadv_hard_iface *hard_iface);
++	void (*bat_orig_seq_header)(struct batadv_priv *priv,
++				    struct seq_file *seq);
++	void (*bat_orig_seq_show)(struct batadv_priv *priv,
++				  struct seq_file *seq,
++				  struct batadv_orig_node *orig_node,
++				  struct batadv_hard_iface *if_outgoing);
+ 	void (*bat_orig_free)(struct batadv_orig_node *orig_node);
+ 	int (*bat_orig_add_if)(struct batadv_orig_node *orig_node,
+ 			       int max_if_num);
+@@ -1403,4 +1407,26 @@ enum batadv_tvlv_handler_flags {
+ 	BATADV_TVLV_HANDLER_OGM_CALLED = BIT(2),
+ };
+ 
++/**
++ * struct batadv_seq_private - private data of seq_open
++ * @net_dev: network device the seq private data belongs to
++ */
++struct batadv_seq_private {
++	struct net_device *net_dev;
++};
++
++/**
++ * struct batadv_seq_hash_iter - private data of seq_open for hash iterators
++ * @p: standard batadv_seq_private data
++ * @header_shown: whether header was already shown
++ * @bucket: current hash bucket
++ * @entry: current hash entry
++ */
++struct batadv_seq_hash_iter {
++	struct batadv_seq_private p;
++	int header_shown;
++	u32 bucket;
++	struct hlist_node *entry;
++};
++
+ #endif /* _NET_BATMAN_ADV_TYPES_H_ */
+
+=2D-nextPart10333323.3IfEOG0bx7--
+This is a multi-part message in MIME format.
+
+--nextPart10333323.3IfEOG0bx7
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Sunday 28 February 2016 00:39:08 Philipp Psurek wrote:
+> Hi all,
+> 
+> I've got this error with
+[..]
+> 
+> 
+> ----------------------------------
+[..]
+> [Feb28 00:13] batctl: page allocation failure: order:4, mode:0x40d0
+
+Does this always happen when you use `batctl o` on a system with many entries 
+in the originator table? When yes, then you could try the attached (very 
+rough) proof-of-concept patch. It is based on v2016.0-92-gd7c9a9e
+
+Kind regards,
+	Sven
+--nextPart10333323.3IfEOG0bx7
+Content-Disposition: attachment; filename="0001-TEST-speedup-originator-output-by-using-seq_operatio.patch"
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/x-patch; charset="UTF-8"; name="0001-TEST-speedup-originator-output-by-using-seq_operatio.patch"
+
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 28 Feb 2016 17:13:12 +0100
+Subject: [RFC] TEST: speedup originator output by using seq_operations
+---
+ net/batman-adv/bat_iv_ogm.c            | 93 ++++++++++++++--------------------
+ net/batman-adv/bat_v.c                 | 91 +++++++++++++--------------------
+ net/batman-adv/bridge_loop_avoidance.c |  4 +-
+ net/batman-adv/debugfs.c               | 50 ++++++++++++++++--
+ net/batman-adv/distributed-arp-table.c |  2 +-
+ net/batman-adv/gateway_client.c        |  2 +-
+ net/batman-adv/main.c                  |  5 +-
+ net/batman-adv/main.h                  |  3 +-
+ net/batman-adv/network-coding.c        |  2 +-
+ net/batman-adv/originator.c            | 87 ++++++++++++++++++++++++++-----
+ net/batman-adv/originator.h            |  7 ++-
+ net/batman-adv/translation-table.c     |  4 +-
+ net/batman-adv/types.h                 | 30 ++++++++++-
+ 13 files changed, 241 insertions(+), 139 deletions(-)
+
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 2c65668..cddb3e8 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1846,74 +1846,54 @@ batadv_iv_ogm_orig_print_neigh(struct batadv_orig_node *orig_node,
+ 	}
+ }
+ 
+-/**
+- * batadv_iv_ogm_orig_print - print the originator table
+- * @bat_priv: the bat priv with all the soft interface information
+- * @seq: debugfs table seq_file struct
+- * @if_outgoing: the outgoing interface for which this should be printed
+- */
+-static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
+-				     struct seq_file *seq,
+-				     struct batadv_hard_iface *if_outgoing)
++static void batadv_iv_ogm_oriq_seq_header(struct batadv_priv *bat_priv,
++					  struct seq_file *seq)
+ {
+-	struct batadv_neigh_node *neigh_node;
+-	struct batadv_hashtable *hash = bat_priv->orig_hash;
+-	int last_seen_msecs, last_seen_secs;
+-	struct batadv_orig_node *orig_node;
+-	struct batadv_neigh_ifinfo *n_ifinfo;
+-	unsigned long last_seen_jiffies;
+-	struct hlist_head *head;
+-	int batman_count = 0;
+-	u32 i;
+-
+ 	seq_printf(seq, "  %-15s %s (%s/%i) %17s [%10s]: %20s ...\n",
+ 		   "Originator", "last-seen", "#", BATADV_TQ_MAX_VALUE,
+ 		   "Nexthop", "outgoingIF", "Potential nexthops");
++}
+ 
+-	for (i = 0; i < hash->size; i++) {
+-		head = &hash->table[i];
++static void batadv_iv_ogm_orig_seq_show(struct batadv_priv *bat_priv,
++					struct seq_file *seq,
++					struct batadv_orig_node *orig_node,
++					struct batadv_hard_iface *if_outgoing)
++{
++	struct batadv_neigh_node *neigh_node;
++	int last_seen_msecs, last_seen_secs;
++	struct batadv_neigh_ifinfo *n_ifinfo;
++	unsigned long last_seen_jiffies;
+ 
+-		rcu_read_lock();
+-		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
+-			neigh_node = batadv_orig_router_get(orig_node,
+-							    if_outgoing);
+-			if (!neigh_node)
+-				continue;
++	neigh_node = batadv_orig_router_get(orig_node, if_outgoing);
++	if (!neigh_node)
++		return;
+ 
+-			n_ifinfo = batadv_neigh_ifinfo_get(neigh_node,
+-							   if_outgoing);
+-			if (!n_ifinfo)
+-				goto next;
++	n_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
++	if (!n_ifinfo)
++		goto next;
+ 
+-			if (n_ifinfo->bat_iv.tq_avg == 0)
+-				goto next;
++	if (n_ifinfo->bat_iv.tq_avg == 0)
++		goto next;
+ 
+-			last_seen_jiffies = jiffies - orig_node->last_seen;
+-			last_seen_msecs = jiffies_to_msecs(last_seen_jiffies);
+-			last_seen_secs = last_seen_msecs / 1000;
+-			last_seen_msecs = last_seen_msecs % 1000;
++	last_seen_jiffies = jiffies - orig_node->last_seen;
++	last_seen_msecs = jiffies_to_msecs(last_seen_jiffies);
++	last_seen_secs = last_seen_msecs / 1000;
++	last_seen_msecs = last_seen_msecs % 1000;
+ 
+-			seq_printf(seq, "%pM %4i.%03is   (%3i) %pM [%10s]:",
+-				   orig_node->orig, last_seen_secs,
+-				   last_seen_msecs, n_ifinfo->bat_iv.tq_avg,
+-				   neigh_node->addr,
+-				   neigh_node->if_incoming->net_dev->name);
++	seq_printf(seq, "%pM %4i.%03is   (%3i) %pM [%10s]:",
++			orig_node->orig, last_seen_secs,
++			last_seen_msecs, n_ifinfo->bat_iv.tq_avg,
++			neigh_node->addr,
++			neigh_node->if_incoming->net_dev->name);
+ 
+-			batadv_iv_ogm_orig_print_neigh(orig_node, if_outgoing,
+-						       seq);
+-			seq_puts(seq, "\n");
+-			batman_count++;
++	batadv_iv_ogm_orig_print_neigh(orig_node, if_outgoing,
++					seq);
++	seq_puts(seq, "\n");
+ 
+ next:
+-			batadv_neigh_node_put(neigh_node);
+-			if (n_ifinfo)
+-				batadv_neigh_ifinfo_put(n_ifinfo);
+-		}
+-		rcu_read_unlock();
+-	}
+-
+-	if (batman_count == 0)
+-		seq_puts(seq, "No batman nodes in range ...\n");
++	batadv_neigh_node_put(neigh_node);
++	if (n_ifinfo)
++		batadv_neigh_ifinfo_put(n_ifinfo);
+ }
+ 
+ /**
+@@ -2062,7 +2042,8 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
+ 	.bat_neigh_cmp = batadv_iv_ogm_neigh_cmp,
+ 	.bat_neigh_is_similar_or_better = batadv_iv_ogm_neigh_is_sob,
+ 	.bat_neigh_print = batadv_iv_neigh_print,
+-	.bat_orig_print = batadv_iv_ogm_orig_print,
++	.bat_orig_seq_header = batadv_iv_ogm_oriq_seq_header,
++	.bat_orig_seq_show = batadv_iv_ogm_orig_seq_show,
+ 	.bat_orig_free = batadv_iv_ogm_orig_free,
+ 	.bat_orig_add_if = batadv_iv_ogm_orig_add_if,
+ 	.bat_orig_del_if = batadv_iv_ogm_orig_del_if,
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 3315b9a..6d3ff2d 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -171,72 +171,52 @@ static void batadv_v_neigh_print(struct batadv_priv *bat_priv,
+ 		seq_puts(seq, "No batman nodes in range ...\n");
+ }
+ 
+-/**
+- * batadv_v_orig_print - print the originator table
+- * @bat_priv: the bat priv with all the soft interface information
+- * @seq: debugfs table seq_file struct
+- * @if_outgoing: the outgoing interface for which this should be printed
+- */
+-static void batadv_v_orig_print(struct batadv_priv *bat_priv,
+-				struct seq_file *seq,
+-				struct batadv_hard_iface *if_outgoing)
++static void batadv_v_orig_seq_header(struct batadv_priv *bat_priv,
++				     struct seq_file *seq)
+ {
+-	struct batadv_neigh_node *neigh_node;
+-	struct batadv_hashtable *hash = bat_priv->orig_hash;
+-	int last_seen_msecs, last_seen_secs;
+-	struct batadv_orig_node *orig_node;
+-	struct batadv_neigh_ifinfo *n_ifinfo;
+-	unsigned long last_seen_jiffies;
+-	struct hlist_head *head;
+-	int batman_count = 0;
+-	u32 i;
+-
+ 	seq_printf(seq, "  %-15s %s (%11s) %17s [%10s]: %20s ...\n",
+ 		   "Originator", "last-seen", "throughput", "Nexthop",
+ 		   "outgoingIF", "Potential nexthops");
++}
+ 
+-	for (i = 0; i < hash->size; i++) {
+-		head = &hash->table[i];
++static void batadv_v_orig_seq_show(struct batadv_priv *bat_priv,
++				   struct seq_file *seq,
++				   struct batadv_orig_node *orig_node,
++				   struct batadv_hard_iface *if_outgoing)
++{
++	struct batadv_neigh_node *neigh_node;
++	struct batadv_neigh_ifinfo *n_ifinfo;
++	int last_seen_msecs, last_seen_secs;
++	unsigned long last_seen_jiffies;
+ 
+-		rcu_read_lock();
+-		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
+-			neigh_node = batadv_orig_router_get(orig_node,
+-							    if_outgoing);
+-			if (!neigh_node)
+-				continue;
++	neigh_node = batadv_orig_router_get(orig_node, if_outgoing);
++	if (!neigh_node)
++		return;
+ 
+-			n_ifinfo = batadv_neigh_ifinfo_get(neigh_node,
+-							   if_outgoing);
+-			if (!n_ifinfo)
+-				goto next;
++	n_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
++	if (!n_ifinfo)
++		goto next;
+ 
+-			last_seen_jiffies = jiffies - orig_node->last_seen;
+-			last_seen_msecs = jiffies_to_msecs(last_seen_jiffies);
+-			last_seen_secs = last_seen_msecs / 1000;
+-			last_seen_msecs = last_seen_msecs % 1000;
++	last_seen_jiffies = jiffies - orig_node->last_seen;
++	last_seen_msecs = jiffies_to_msecs(last_seen_jiffies);
++	last_seen_secs = last_seen_msecs / 1000;
++	last_seen_msecs = last_seen_msecs % 1000;
+ 
+-			seq_printf(seq, "%pM %4i.%03is (%9u.%1u) %pM [%10s]:",
+-				   orig_node->orig, last_seen_secs,
+-				   last_seen_msecs,
+-				   n_ifinfo->bat_v.throughput / 10,
+-				   n_ifinfo->bat_v.throughput % 10,
+-				   neigh_node->addr,
+-				   neigh_node->if_incoming->net_dev->name);
++	seq_printf(seq, "%pM %4i.%03is (%9u.%1u) %pM [%10s]:",
++			orig_node->orig, last_seen_secs,
++			last_seen_msecs,
++			n_ifinfo->bat_v.throughput / 10,
++			n_ifinfo->bat_v.throughput % 10,
++			neigh_node->addr,
++			neigh_node->if_incoming->net_dev->name);
+ 
+-			batadv_v_orig_print_neigh(orig_node, if_outgoing, seq);
+-			seq_puts(seq, "\n");
+-			batman_count++;
++	batadv_v_orig_print_neigh(orig_node, if_outgoing, seq);
++	seq_puts(seq, "\n");
+ 
+ next:
+-			batadv_neigh_node_put(neigh_node);
+-			if (n_ifinfo)
+-				batadv_neigh_ifinfo_put(n_ifinfo);
+-		}
+-		rcu_read_unlock();
+-	}
+-
+-	if (batman_count == 0)
+-		seq_puts(seq, "No batman nodes in range ...\n");
++	batadv_neigh_node_put(neigh_node);
++	if (n_ifinfo)
++		batadv_neigh_ifinfo_put(n_ifinfo);
+ }
+ 
+ static int batadv_v_neigh_cmp(struct batadv_neigh_node *neigh1,
+@@ -281,7 +261,8 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+ 	.bat_hardif_neigh_init = batadv_v_hardif_neigh_init,
+ 	.bat_ogm_emit = batadv_v_ogm_emit,
+ 	.bat_ogm_schedule = batadv_v_ogm_schedule,
+-	.bat_orig_print = batadv_v_orig_print,
++	.bat_orig_seq_header = batadv_v_orig_seq_header,
++	.bat_orig_seq_show = batadv_v_orig_seq_show,
+ 	.bat_neigh_cmp = batadv_v_neigh_cmp,
+ 	.bat_neigh_is_similar_or_better = batadv_v_neigh_is_sob,
+ 	.bat_neigh_print = batadv_v_neigh_print,
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 642167f..c00b9b8 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -1807,7 +1807,7 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
+ 	bool is_own;
+ 	u8 *primary_addr;
+ 
+-	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -1865,7 +1865,7 @@ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
+ 	bool is_own;
+ 	u8 *primary_addr;
+ 
+-	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		goto out;
+ 
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index 3dc5208..ddaae44 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -269,11 +269,43 @@ static int neighbors_open(struct inode *inode, struct file *file)
+ 	return single_open(file, batadv_hardif_neigh_seq_print_text, net_dev);
+ }
+ 
+-static int batadv_originators_open(struct inode *inode, struct file *file)
++static const struct seq_operations batadv_orig_seq_ops = {
++	.start  = batadv_orig_seq_start,
++	.next   = batadv_orig_seq_next,
++	.stop   = batadv_orig_seq_stop,
++	.show   = batadv_orig_seq_show,
++};
++
++/**
++ * batadv_seq_open - TODO
++ * @inode: TODO
++ * @f: TODO
++ * @ops: TODO
++ * @size: TODO
++ *
++ * Return: TODO
++ */
++static int batadv_seq_open(struct inode *inode, struct file *f,
++			   const struct seq_operations *ops, int size)
+ {
++	struct batadv_seq_private *p;
+ 	struct net_device *net_dev = (struct net_device *)inode->i_private;
+ 
+-	return single_open(file, batadv_orig_seq_print_text, net_dev);
++	BUG_ON(size < sizeof(*p));
++
++	p = __seq_open_private(f, ops, size);
++	if (p == NULL)
++		return -ENOMEM;
++
++	p->net_dev = net_dev;
++
++	return 0;
++}
++
++static int batadv_originators_open(struct inode *inode, struct file *file)
++{
++	return batadv_seq_open(inode, file, &batadv_orig_seq_ops,
++			       sizeof(struct batadv_seq_hash_iter));
+ }
+ 
+ /**
+@@ -375,6 +407,18 @@ struct batadv_debuginfo batadv_debuginfo_##_name = {	\
+ 		}					\
+ }
+ 
++#define BATADV_DEBUGINFO_SEQ(_name, _mode, _open)	\
++struct batadv_debuginfo batadv_debuginfo_##_name = {	\
++	.attr = { .name = __stringify(_name),		\
++		  .mode = _mode, },			\
++	.fops = { .owner = THIS_MODULE,			\
++		  .open = _open,			\
++		  .read	= seq_read,			\
++		  .llseek = seq_lseek,			\
++		  .release = seq_release_private,	\
++		}					\
++}
++
+ /* the following attributes are general and therefore they will be directly
+  * placed in the BATADV_DEBUGFS_SUBDIR subdirectory of debugfs
+  */
+@@ -387,7 +431,7 @@ static struct batadv_debuginfo *batadv_general_debuginfos[] = {
+ 
+ /* The following attributes are per soft interface */
+ static BATADV_DEBUGINFO(neighbors, S_IRUGO, neighbors_open);
+-static BATADV_DEBUGINFO(originators, S_IRUGO, batadv_originators_open);
++static BATADV_DEBUGINFO_SEQ(originators, S_IRUGO, batadv_originators_open);
+ static BATADV_DEBUGINFO(gateways, S_IRUGO, batadv_gateways_open);
+ static BATADV_DEBUGINFO(transtable_global, S_IRUGO,
+ 			batadv_transtable_global_open);
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 919a8d2..dc553e5 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -809,7 +809,7 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
+ 	int last_seen_msecs, last_seen_secs, last_seen_mins;
+ 	u32 i;
+ 
+-	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		goto out;
+ 
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index c59aff5..1c2360c 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -637,7 +637,7 @@ int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct batadv_gw_node *gw_node;
+ 	int gw_count = 0;
+ 
+-	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		goto out;
+ 
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index d64ddb9..74c81eb 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -269,13 +269,14 @@ bool batadv_is_my_mac(struct batadv_priv *bat_priv, const u8 *addr)
+  * batadv_seq_print_text_primary_if_get - called from debugfs table printing
+  *  function that requires the primary interface
+  * @seq: debugfs table seq_file struct
++ * @net_dev: batman-adv net_device
+  *
+  * Return: primary interface if found or NULL otherwise.
+  */
+ struct batadv_hard_iface *
+-batadv_seq_print_text_primary_if_get(struct seq_file *seq)
++batadv_seq_print_text_primary_if_get(struct seq_file *seq,
++				     struct net_device *net_dev)
+ {
+-	struct net_device *net_dev = (struct net_device *)seq->private;
+ 	struct batadv_priv *bat_priv = netdev_priv(net_dev);
+ 	struct batadv_hard_iface *primary_if;
+ 
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index e602408..94e9f57 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -203,7 +203,8 @@ int batadv_mesh_init(struct net_device *soft_iface);
+ void batadv_mesh_free(struct net_device *soft_iface);
+ bool batadv_is_my_mac(struct batadv_priv *bat_priv, const u8 *addr);
+ struct batadv_hard_iface *
+-batadv_seq_print_text_primary_if_get(struct seq_file *seq);
++batadv_seq_print_text_primary_if_get(struct seq_file *seq,
++				     struct net_device *net_dev);
+ int batadv_max_header_len(void);
+ void batadv_skb_set_priority(struct sk_buff *skb, int offset);
+ int batadv_batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 32f9fa1..38fbecc 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -1905,7 +1905,7 @@ int batadv_nc_nodes_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct batadv_nc_node *nc_node;
+ 	int i;
+ 
+-	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		goto out;
+ 
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index e63d6a5..1b9faef 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -698,7 +698,7 @@ int batadv_hardif_neigh_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct batadv_priv *bat_priv = netdev_priv(net_dev);
+ 	struct batadv_hard_iface *primary_if;
+ 
+-	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		return 0;
+ 
+@@ -1235,35 +1235,95 @@ void batadv_purge_orig_ref(struct batadv_priv *bat_priv)
+ 	_batadv_purge_orig(bat_priv);
+ }
+ 
+-int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
++static void batadv_orig_seq_show_header(struct seq_file *seq)
+ {
+-	struct net_device *net_dev = (struct net_device *)seq->private;
+-	struct batadv_priv *bat_priv = netdev_priv(net_dev);
++	struct batadv_seq_hash_iter *iter = seq->private;
++	struct batadv_priv *bat_priv = netdev_priv(iter->p.net_dev);
+ 	struct batadv_hard_iface *primary_if;
+ 
+-	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, iter->p.net_dev);
+ 	if (!primary_if)
+-		return 0;
++		return;
+ 
+ 	seq_printf(seq, "[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%pM (%s %s)]\n",
+ 		   BATADV_SOURCE_VERSION, primary_if->net_dev->name,
+-		   primary_if->net_dev->dev_addr, net_dev->name,
++		   primary_if->net_dev->dev_addr, iter->p.net_dev->name,
+ 		   bat_priv->bat_algo_ops->name);
+ 
+ 	batadv_hardif_put(primary_if);
+ 
+-	if (!bat_priv->bat_algo_ops->bat_orig_print) {
+-		seq_puts(seq,
+-			 "No printing function for this routing protocol\n");
++	if (bat_priv->bat_algo_ops->bat_orig_seq_header)
++		bat_priv->bat_algo_ops->bat_orig_seq_header(bat_priv, seq);
++}
++
++void *batadv_orig_seq_start(struct seq_file *seq, loff_t *pos)
++	__acquires(RCU)
++{
++	rcu_read_lock();
++
++	if (*pos != 0)
++		return 0; // TODO some kind of index, hashbucket?
++	return SEQ_START_TOKEN;
++}
++
++void *batadv_orig_seq_next(struct seq_file *seq, void *v, loff_t *pos)
++{
++	struct batadv_seq_hash_iter *iter = seq->private;
++	struct batadv_priv *bat_priv = netdev_priv(iter->p.net_dev);
++	struct batadv_hashtable *hash = bat_priv->orig_hash;
++	struct hlist_head *head;
++
++	if (v == SEQ_START_TOKEN) {
++		iter->bucket = 0;
++		iter->entry = NULL;
++		/* TODO seq_puts(seq, "No batman nodes in range ...\n"); */
++	} else {
++		iter->entry = rcu_dereference_raw(hlist_next_rcu(iter->entry));
++		if (!iter->entry)
++			iter->bucket++;
++	}
++
++	if (iter->entry)
++		return iter->entry;
++
++	for (; iter->bucket < hash->size; iter->bucket++) {
++		head = &hash->table[iter->bucket];
++		iter->entry = rcu_dereference_raw(hlist_first_rcu(head));
++
++		if (iter->entry)
++			return iter->entry;
++	}
++
++	return NULL;
++}
++
++int batadv_orig_seq_show(struct seq_file *seq, void *v)
++{
++	struct batadv_seq_hash_iter *iter = seq->private;
++	struct batadv_priv *bat_priv = netdev_priv(iter->p.net_dev);
++	struct batadv_orig_node *orig_node;
++
++	if (v == SEQ_START_TOKEN) {
++		batadv_orig_seq_show_header(seq);
+ 		return 0;
+ 	}
+ 
+-	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq,
+-					       BATADV_IF_DEFAULT);
++	orig_node = hlist_entry(iter->entry, struct batadv_orig_node, hash_entry);
++
++	if (bat_priv->bat_algo_ops->bat_orig_seq_show)
++		bat_priv->bat_algo_ops->bat_orig_seq_show(bat_priv, seq,
++							  orig_node,
++							  BATADV_IF_DEFAULT);
+ 
+ 	return 0;
+ }
+ 
++void batadv_orig_seq_stop(struct seq_file *seq, void *v)
++	__releases(RCU)
++{
++	rcu_read_unlock();
++}
++
+ /**
+  * batadv_orig_hardif_seq_print_text - writes originator infos for a specific
+  *  outgoing interface
+@@ -1285,6 +1345,8 @@ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
+ 		goto out;
+ 	}
+ 
++	/*
++	TODO
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
+ 	if (!bat_priv->bat_algo_ops->bat_orig_print) {
+ 		seq_puts(seq,
+@@ -1303,6 +1365,7 @@ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
+ 		   hard_iface->soft_iface->name, bat_priv->bat_algo_ops->name);
+ 
+ 	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq, hard_iface);
++	*/
+ 
+ out:
+ 	if (hard_iface)
+diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
+index 64a8951..ba5a915 100644
+--- a/net/batman-adv/originator.h
++++ b/net/batman-adv/originator.h
+@@ -29,6 +29,7 @@
+ #include <linux/stddef.h>
+ #include <linux/types.h>
+ 
++#include "hard-interface.h"
+ #include "hash.h"
+ 
+ struct seq_file;
+@@ -71,7 +72,11 @@ batadv_orig_ifinfo_new(struct batadv_orig_node *orig_node,
+ 		       struct batadv_hard_iface *if_outgoing);
+ void batadv_orig_ifinfo_put(struct batadv_orig_ifinfo *orig_ifinfo);
+ 
+-int batadv_orig_seq_print_text(struct seq_file *seq, void *offset);
++void *batadv_orig_seq_start(struct seq_file *seq, loff_t *pos);
++void *batadv_orig_seq_next(struct seq_file *seq, void *v, loff_t *pos);
++int batadv_orig_seq_show(struct seq_file *seq, void *v);
++void batadv_orig_seq_stop(struct seq_file *seq, void *v);
++
+ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset);
+ int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
+ 			    int max_if_num);
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 2ed55f4..eab36a9 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1001,7 +1001,7 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 	bool no_purge;
+ 	u16 np_flag = BATADV_TT_CLIENT_NOPURGE;
+ 
+-	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		goto out;
+ 
+@@ -1699,7 +1699,7 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct hlist_head *head;
+ 	u32 i;
+ 
+-	primary_if = batadv_seq_print_text_primary_if_get(seq);
++	primary_if = batadv_seq_print_text_primary_if_get(seq, net_dev);
+ 	if (!primary_if)
+ 		goto out;
+ 
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 9abfb3e..764332e 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1297,8 +1297,12 @@ struct batadv_algo_ops {
+ 	void (*bat_neigh_print)(struct batadv_priv *priv, struct seq_file *seq);
+ 	void (*bat_neigh_free)(struct batadv_neigh_node *neigh);
+ 	/* orig_node handling API */
+-	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq,
+-			       struct batadv_hard_iface *hard_iface);
++	void (*bat_orig_seq_header)(struct batadv_priv *priv,
++				    struct seq_file *seq);
++	void (*bat_orig_seq_show)(struct batadv_priv *priv,
++				  struct seq_file *seq,
++				  struct batadv_orig_node *orig_node,
++				  struct batadv_hard_iface *if_outgoing);
+ 	void (*bat_orig_free)(struct batadv_orig_node *orig_node);
+ 	int (*bat_orig_add_if)(struct batadv_orig_node *orig_node,
+ 			       int max_if_num);
+@@ -1403,4 +1407,26 @@ enum batadv_tvlv_handler_flags {
+ 	BATADV_TVLV_HANDLER_OGM_CALLED = BIT(2),
+ };
+ 
++/**
++ * struct batadv_seq_private - private data of seq_open
++ * @net_dev: network device the seq private data belongs to
++ */
++struct batadv_seq_private {
++	struct net_device *net_dev;
++};
++
++/**
++ * struct batadv_seq_hash_iter - private data of seq_open for hash iterators
++ * @p: standard batadv_seq_private data
++ * @header_shown: whether header was already shown
++ * @bucket: current hash bucket
++ * @entry: current hash entry
++ */
++struct batadv_seq_hash_iter {
++	struct batadv_seq_private p;
++	int header_shown;
++	u32 bucket;
++	struct hlist_node *entry;
++};
++
+ #endif /* _NET_BATMAN_ADV_TYPES_H_ */
+
+--nextPart10333323.3IfEOG0bx7--
+
+--nextPart3949917.JWKNhuEEDy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJW0x72AAoJEF2HCgfBJntG2IYP/Ri90kCsHZqOWXt52RPK9RC1
+shTbOYGeQ+eB83vRvgEId7HJ1zrTDnk5FHt0hJLMCxOf2nwnsq2d4KF7UdjExqH5
+uarS6O+U1RMil63p97Bud4QegjHoyGtN+Mx/UFzPwkP0Rhecth9mi4Srh70bmTok
+aUjT9/NlksIIbtK7QgEDxmgqUOSDeIVLQSrn1ozQKfS9Zx7QxWghIPIfD0dA731c
+gnAvbfC5lK5Ml6w0SOG3D/j8q8XrbJi47k1yTRuHcJLWBvKfAh6Jehbe3h5MLN+F
+gWce7Kedd00TaOKAiOuldK18EpNw0tGlooZGCBibENY8/pqhoYr22thpaTNw52Th
+TBdDMo4rZ3vWZvnzUqqcOXRTdE9Br4Xwi3zFXI97FhUSHaUPOuqPIxVBsvlNyjIc
+8MH/QeFroRknZJEXT4TGuwiXExqa17J4FKjt0sAhzQUGwSS2a4PxxvWTvip35/jZ
+Wem9sKYDTnGKeqZn65Luzwufr4u3aQ8QhGMI3nPatZWTbc/zcN/wbwKbZbKJur4b
+dq/AjO4TSDEzeMuR393e9WrhmhUXwgOa9P6Or6X/lIIqMQ0i6aKTlJFSYJZnNQhd
+NOJPqxbiTsnIJq5DnR318Tt0jbffqy3l8qv8PeutQg/x5vl8bOBZ7haDsioKsoap
+n/U3B5MW7IcQPAiWe+KQ
+=MF5T
+-----END PGP SIGNATURE-----
+
+--nextPart3949917.JWKNhuEEDy--
+
