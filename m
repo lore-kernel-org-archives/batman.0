@@ -1,10 +1,11 @@
 Return-Path: <philipp.psurek@gmail.com>
-Message-ID: <1456681096.1958.61.camel@gmail.com>
+Message-ID: <1456681344.1958.64.camel@gmail.com>
 From: Philipp Psurek <philipp.psurek@gmail.com>
-Date: Sun, 28 Feb 2016 18:38:16 +0100
-In-Reply-To: <1802876.jh3TWRFVis@sven-edge>
+Date: Sun, 28 Feb 2016 18:42:24 +0100
+In-Reply-To: <1456681096.1958.61.camel@gmail.com>
 References: <1456616348.1958.16.camel@gmail.com>
  <10118093.UzH4NL7sLW@sven-edge> <1802876.jh3TWRFVis@sven-edge>
+ <1456681096.1958.61.camel@gmail.com>
 Content-Type: text/plain; charset="utf-8"
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -20,29 +21,45 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Sven,
+> this is interesting:
+> 
+> batctl o | wc -l
+> 9320
 
-I applied your patch. Besides a compilation warning
+more interesting:
 
-/root/git/batman-adv/net/batman-adv/originator.c: In function 'batadv_orig_hardif_seq_print_text':
-/root/git/batman-adv/net/batman-adv/originator.c:1364:22: warning: unused variable 'bat_priv' [-Wunused-variable]
-  struct batadv_priv *bat_priv;
-                      ^
+# while true; do batctl o | wc -l; done
+9474
+9474
+[…]
 
-there is no error. 
+# while true; do batctl o | sort -u | wc -l; done
+1764
+1427
+1705
+1746
+1568
+1559
+1558
+1543
+1429
+1441
+1506
+1415
+1429
+1544
+1605
+1457
+1497
+1428
+1447
+1443
+1423
+1422
+1495
+1424
+1427
+…
 
-# batctl -v
-batctl 2016.0-4-g7a3d563 [batman-adv: 2016.0-92-gd7c9a9e-dirty]
 
-this is interesting:
 
-batctl o | wc -l
-9320
-
-the other nodes tell me 335 or 341 or …
-
-I'm sorry I'm not able to reproduce this issue any more and thank you
-for your work for B.A.T.M.A.N. advanced.
-
-best regards,
-  Philipp
