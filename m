@@ -1,15 +1,16 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 28 Feb 2016 10:20:30 +0100
-Message-ID: <2289020.8mL0hEvS8q@sven-edge>
-In-Reply-To: <20160228090227.GJ28478@prodigo>
-References: <b.a.t.m.a.n@lists.open-mesh.org> <2655547.V2kIYkZTyH@sven-edge>
- <20160228090227.GJ28478@prodigo>
+Date: Sun, 28 Feb 2016 10:41:53 +0100
+Message-ID: <9221603.1jEaSktNfy@sven-edge>
+In-Reply-To: <20160228090838.GK28478@prodigo>
+References: <1456607048-24975-1-git-send-email-a@unstable.cc>
+ <1456644694-8497-1-git-send-email-sven@narfation.org>
+ <20160228090838.GK28478@prodigo>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3690008.1T42ARIhm4";
+Content-Type: multipart/signed; boundary="nextPart1538837.6FHYBNlR1Z";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Check skb size before using
-	encapsulated ETH+VLAN header
+Subject: Re: [B.A.T.M.A.N.] [RFC next v2] batman-adv: ELP - use new
+	ethtool_link_get_ksettings API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,44 +21,29 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: Antonio Quartulli <a@unstable.cc>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart3690008.1T42ARIhm4
+--nextPart1538837.6FHYBNlR1Z
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday 28 February 2016 17:02:27 Antonio Quartulli wrote:
-> On Sun, Feb 28, 2016 at 07:36:40AM +0100, Sven Eckelmann wrote:
-> > On Sunday 28 February 2016 08:49:02 Marek Lindner wrote:
-> > > On Friday, February 26, 2016 17:56:13 Sven Eckelmann wrote:
-> > > 
-> > > In its current form that check is useless because
-> > > batadv_recv_unicast_packet() already calls batadv_check_unicast_packet()
-> > > which does the same
-> > > pskb_may_pull(skb, hdr_size). Am I overlooking something ?
-> > 
-> > Looks like it also only checks the size of the batman-adv header and the
-> > content of the outer (not the encapsulated) ethernet header.
-> 
-> I think you are both right here :-) in batadv_check_unicast_packet() we
-> perform a may_pull with the same hdr_size, therefore it here once again
-> is not useful. It is not really related to this patch, but I think that
-> the removal of the useless pskb_may_pull() in interface_rx() could be
-> done here since you are cleaning up all the pulls in this function.
+On Sunday 28 February 2016 17:08:38 Antonio Quartulli wrote:
+[...]
+> I really like this approach! thanks a lot!
+> By the way, you should have added your name to the list of contributor of
+> this file though :)
 
-Ok, I misunderstood his comment. This one is not necessary when each path to 
-this function uses batadv_check_unicast_packet or does "if 
-(!pskb_may_pull(skb, hdr_size))" directly. The only callers are 
-batadv_recv_bcast_packet (does "if (unlikely(!pskb_may_pull(skb, hdr_size)))") 
-and batadv_recv_unicast_packet (calls batadv_check_unicast_packet). I would 
-say that an extra patch for that can be introduced later to remove it. But it 
-should not be part of this patch because this fix should not contain cleanup 
-stuff ("batman-adv header size check") which is not related to the 
-encapsulated ethernet (vlan) header.
+Maybe you never noticed but my name is nowhere in the batman-adv/batctl 
+sourcecode. The only reason why it is in alfred/packet.h: because Simon added 
+it.
+
+> How about re-sending this RFC as PATCH (with your sign-off as well) ?
+
+Yes, I will send it.
 
 Kind regards,
 	Sven
---nextPart3690008.1T42ARIhm4
+--nextPart1538837.6FHYBNlR1Z
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -65,20 +51,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJW0rveAAoJEF2HCgfBJntGdaUP+QH+V26n8a9Fyp2M0srcJ49Z
-LL2fjnPwFo2t1Drs0WyXBeBdCMvV0ytu0OfBJdx7USu6BKZY9F39lNOpMhVrdSKx
-4FzSKDte6rzW5JQonR98YK3T6dwvA4+zMw170l3U5dsXtygMwQ/mRR0P5sALM94L
-yM7OpfWp+4+ycgximawjpY51Cj1mVbvD7IVmhrXG8GyJbvLYMMvVnS3lXaT6+QPX
-cV3myOu1qcWr6xFQ41YM5itqVqroW8J4wXfQXtcG/938u7bkAh4AgKSGfFxOhY7U
-grakZRRTJ/qGdxZqSmPFcXuJQ4DAijd1RNGpR7mjRVpOZLkPskQBJEfSopZ80D/R
-32KmUSx+HO5syFl2icAppqJ/Eg3eVzNlpcRepL5CdBVmq61OPw0rIjGIPMhb3ouJ
-eU7OP98PW3Met+LBhtN9xhCoGV6bOb5nZaOHmb0IkXsWxQRWwub/GdGq2fHO3kqI
-29o6PQ5WxOQ/9oQr4oNqmLC8TsJ3ls7MZW9IwY+Rk10HK16JoQZMHzZX4aQeEk3U
-Si7H32Z76hEdDanwzt2J/76Ohxt5QzKZt6MFmmJmcM14Yw1csO5GLhKSTHigCCut
-w0/KtqG8V9pq5OjTvPXTAUzniv7oEIrDPlKf6M1ITeEP9FoUJZFNJNC+80nYxIjr
-G+Qihcmj+ntOm3sruAL2
-=njr7
+iQIcBAABCgAGBQJW0sDhAAoJEF2HCgfBJntG3hsQALLdefUMofQTg5YgxTnosd+S
+D51zKTcRIwaID9H0d+QH0f3vD2GRkRCrKFEu4tskZ9bc8G04btca3q19eeibozwf
+qvP1jvkUo6cINvphlHJan8EE60wqdsRQ25+J9JlQFJJ9do/XVYk0m1UmWss4E4Op
+LoCBUBrI17tDPeVPwODyOWP2lXqgAimNO4BXoke5Dbf5jgb7p2lvD5E0p4WmWVzC
+Br7zho3q7g1tmYIbTCNJVzGsSkl8E4bThpHtHms74Io/WP+jbwO5L69y8KTt7Odi
+Zltg2PyqbW8rD5H4tfM9ARApEfY5hJIPQNHgPgSocxkfbur6pPwp66Xp29A63rWG
+hVGvYj1ps6fx6n0yZDLoqFXMCEJqJrh4lzQnu7zlzOgTCCOjNZTeMhy0AVO6TxmN
+Q8Dodm9tClV5feAzLFqGeobQ6sPpTni1wruy7tD2giFp2+3fmY2sCN+eRdbRrgGF
+SoJ++fqQIgSgc40VtwhbV03VrhIh4/m/nvfct1bavHzZyzSFoEnqvFSIg0rsvwJO
+PTcbkQ2ufB5iYaQPOPs5FEDjoYh6bPUjw+O1U1lo+oMNt+pSNFgks909WrgkU6tQ
+h8D9WMWKE2Ab8bnIGBOd658SHraxnq9WTwH4Sby/f/8rIB2FgPpCXei1PMxlkmXk
+BvGvZUK1RHVzmaysp1GB
+=uifp
 -----END PGP SIGNATURE-----
 
---nextPart3690008.1T42ARIhm4--
+--nextPart1538837.6FHYBNlR1Z--
 
