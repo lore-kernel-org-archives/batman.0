@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 28 Feb 2016 08:33:06 +0800
-Message-ID: <13742891.BYD5Djd9JL@voltaire>
-In-Reply-To: <1456171359-19330-1-git-send-email-sven@narfation.org>
-References: <1456171359-19330-1-git-send-email-sven@narfation.org>
+Date: Sun, 28 Feb 2016 08:49:02 +0800
+Message-ID: <10633463.PgZ4eD0ZeI@voltaire>
+In-Reply-To: <1456505773-1059-1-git-send-email-sven@narfation.org>
+References: <b.a.t.m.a.n@lists.open-mesh.org>
+ <1456505773-1059-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2103101.NZMhGvLV6s";
+Content-Type: multipart/signed; boundary="nextPart42842977.yXQMj7TgWy";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Use bool as return type for
-	boolean functions
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Check skb size before using
+	encapsulated ETH+VLAN header
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,48 +20,55 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Nicholas Krause <xerofoify@gmail.com>
 
---nextPart2103101.NZMhGvLV6s
+--nextPart42842977.yXQMj7TgWy
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, February 22, 2016 21:02:39 Sven Eckelmann wrote:
-> It is easier to understand that the returned value of a specific function
-> doesn't have to be 0 when the functions was successful when the actual
-> return type is bool. This is especially true when all surrounding functions
-> with return type int use negative values to return the error code.
+On Friday, February 26, 2016 17:56:13 Sven Eckelmann wrote:
+> --- a/net/batman-adv/soft-interface.c
+> +++ b/net/batman-adv/soft-interface.c
+> @@ -408,11 +408,17 @@ void batadv_interface_rx(struct net_device
+> *soft_iface, */
+>  	nf_reset(skb);
 > 
-> Reported-by: Nicholas Krause <xerofoify@gmail.com>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/bat_iv_ogm.c            |  23 ++---
->  net/batman-adv/bitarray.c              |  16 +--
->  net/batman-adv/bitarray.h              |  14 +--
->  net/batman-adv/bridge_loop_avoidance.c | 175
-> +++++++++++++++++---------------- net/batman-adv/bridge_loop_avoidance.h
-> |  43 ++++----
->  net/batman-adv/debugfs.c               |   2 +-
->  net/batman-adv/distributed-arp-table.c |   6 +-
->  net/batman-adv/hard-interface.c        |  15 ++-
->  net/batman-adv/hash.h                  |   6 +-
->  net/batman-adv/main.h                  |   2 +-
->  net/batman-adv/network-coding.c        |  12 +--
->  net/batman-adv/originator.c            |   4 +-
->  net/batman-adv/originator.h            |   2 +-
->  net/batman-adv/routing.c               |  37 +++----
->  net/batman-adv/routing.h               |   6 +-
->  net/batman-adv/soft-interface.c        |   6 +-
->  net/batman-adv/soft-interface.h        |   2 +-
->  net/batman-adv/translation-table.c     |  31 +++---
->  18 files changed, 203 insertions(+), 199 deletions(-)
+> +	if (unlikely(!pskb_may_pull(skb, ETH_HLEN)))
+> +		goto dropped;
+> +
+>  	vid = batadv_get_vid(skb, 0);
 
-Applied in revision d58a135.
+batadv_get_vid() also calls pskb_may_pull() and checks for VLAN_ETH_HLEN 
+length. Isn't that sufficient ?
 
-Thanks,
+On a related note - a few lines before your check you'll find:
+
+/* check if enough space is available for pulling, and pull */
+if (!pskb_may_pull(skb, hdr_size))
+
+In its current form that check is useless because batadv_recv_unicast_packet() 
+already calls batadv_check_unicast_packet() which does the same 
+pskb_may_pull(skb, hdr_size). Am I overlooking something ?
+
+
+>  	switch (ntohs(ethhdr->h_proto)) {
+>  	case ETH_P_8021Q:
+> +		if (!pskb_may_pull(skb, VLAN_ETH_HLEN))
+> +			goto dropped;
+
+Shouldn't this memory access be covered by the earlier check inside 
+batadv_get_vid() ?
+
+
+>  	/* skb->dev & skb->pkt_type are set here */
+> -	if (unlikely(!pskb_may_pull(skb, ETH_HLEN)))
+> -		goto dropped;
+
+Agreed that this seems unnecessary.
+
+Cheers,
 Marek
 
---nextPart2103101.NZMhGvLV6s
+--nextPart42842977.yXQMj7TgWy
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -68,14 +76,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJW0kBCAAoJEFNVTo/uthzAodYIAKyVSd3VRPrnzqqTZKo5IoBb
-2z+SHfbn/HsE5773GGEmQU5v39QqE7mddT6TmjrgoErZ8QztAXnHwTEVKfZuh3tc
-ROrT/FGvuLHuXNsNBDdpSPwvwz17hAWn/vhB5IhjroMTKJa0NTuitVwYTxOGVxrA
-7w/h3YMTamNfLwrJJCpmNYwfFbf4UwaBXfM7Of6b8df8yCgfqPmmMnK0KK28HDku
-oysx05HSIILjJG5P4kbJAw5S3aq4YZhmVwoGyQbcDUpdgxWBv5hhzFOLgeKsN6o2
-h25aUClat8N6bD12jnr8cI4OVl8h/g313J9jZZ1x/TmCqhqWrDY8c81+hmVzz/o=
-=6r2O
+iQEcBAABCAAGBQJW0kP+AAoJEFNVTo/uthzA5HQH/R05fk///SaHKQYgTOAnXo7X
+T7iYxEKKLYwmnAfuORwjgmGDME+dd+zDEWPyeWA47P/Zj8PYCbdmVitICTs36x9Q
+a2yMZOYhPtGvpIGMC9ASvocABHsrbwHg/aaDgxhnBakMPehXY8ekuxLwCDpb9U8x
+EL1658fXBA4GuMYxNhc5MM51oQJwkRQgP8GDq5ZNuy2II1OwuphQWvHbBPCwvS3x
+Gx7QrNJEr+aw2O3+lEs6tEyAOUdrmzY+8o9X49Z6PwrDV7bFA41tlZy2mskFj+uQ
+kbIhEQnyXXWa9n87hKYHlhzbTQmpkkzyliYsuAEODbM7UZHEML6Zr3NfI2XuKl8=
+=QsDx
 -----END PGP SIGNATURE-----
 
---nextPart2103101.NZMhGvLV6s--
+--nextPart42842977.yXQMj7TgWy--
 
