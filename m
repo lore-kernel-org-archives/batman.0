@@ -1,14 +1,13 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 28 Feb 2016 12:38:13 +0800
-Message-ID: <2465891.8WB3Uyx6em@voltaire>
-In-Reply-To: <1455616027-22089-1-git-send-email-sven@open-mesh.com>
-References: <1455616027-22089-1-git-send-email-sven@open-mesh.com>
+Date: Sun, 28 Feb 2016 12:43:27 +0800
+Message-ID: <2259545.lEtA3AoCDO@voltaire>
+In-Reply-To: <23488110.8Oiix784PY@sven-desktop>
+References: <23488110.8Oiix784PY@sven-desktop>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2851753.YHBtyvCbeq";
+Content-Type: multipart/signed; boundary="nextPart6562614.BLmEXTe76o";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix integer overflow in
-	batadv_iv_ogm_calc_tq
+Subject: Re: [B.A.T.M.A.N.] Patchwork on open-mesh.org
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,45 +18,57 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 
---nextPart2851753.YHBtyvCbeq
+--nextPart6562614.BLmEXTe76o
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, February 16, 2016 10:47:07 Sven Eckelmann wrote:
-> From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+On Sunday, February 21, 2016 16:39:22 Sven Eckelmann wrote:
+> I've used my free time in the last week to look over the 5246 patches which 
+> were sent to the B.A.T.M.A.N. mailing list. These patches were categorized
+> as
 > 
-> The undefined behavior sanatizer detected an signed integer overflow in a
-> setup with near perfect link quality
+>  * Accepted:
+>    committed to the respective repository at git.open-mesh.org
+>  * Rejected:
+>    Either rejected by the Maintainer(s) or withdrawn by the Author because
+>    they turned out to be a bad idea
+>  * RFC
+>    patches which were just posted to get comments
+>  * Not applicable
+>    patches which were not really for a repository at git.open-mesh.org
+>    (for example patches which are forwarded to net-next.git/net.git)
+>  * Changes requested
+>    Patch had flaws but these could be fixed but the author of the patch
+> hasn't sent a new version of the patch
+>  * Superseded
+>    New version of the patch(set) was sent which makes the old version
+> obsolete
 > 
->     UBSAN: Undefined behaviour in net/batman-adv/bat_iv_ogm.c:1246:25
->     signed integer overflow:
->     8713350 * 255 cannot be represented in type 'int'
-> 
-> The problems happens because the calculation of mixed unsigned and signed
-> integers resulted in an integer multiplication.
-> 
->       batadv_ogm_packet::tq (u8 255)
->     * tq_own (u8 255)
->     * tq_asym_penalty (int 134; max 255)
->     * tq_iface_penalty (int 255; max 255)
-> 
-> The tq_iface_penalty, tq_asym_penalty and inv_asym_penalty can just be
-> changed to unsigned int because they are not expected to become negative.
-> 
-> Fixes: 46e44fdb96ef ("batman-adv: add WiFi penalty")
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-> ---
->  net/batman-adv/bat_iv_ogm.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+> The result can now be found at https://patchwork.open-mesh.org/
 
-Applied in revision 789b846.
+Thanks a lot for doing all this cleanup work! I doubt any mere mortal could 
+have reviewed the state for 5000+ patches on a rainy weekend ..  :-)
+
+A few questions as to how this works:
+
+* [PATCH] MAINTAINERS: Add patchwork URL for BATMAN ADVANCED
+ -> Manually marked as 'accepted' as it won't be easily detectable as merged. 
+Correct ?
+
+ * [B.A.T.M.A.N.,2/2] batman-adv: Split batadv_iv_ogm_orig_del_if function
+ -> Merged patch today but still shows up in patchwork. Should we wait for the 
+auto-detection or did I do something wrong ?
+
+ * [B.A.T.M.A.N.] batman-adv: Fix integer overflow in batadv_iv_ogm_calc_tq
+ -> Marked as opened but has been superseded by '[B.A.T.M.A.N.] [PATCH] 
+batman-adv: Fix integer overflow in batadv_iv_ogm_calc_tq' that was merged 
+today ? Shall I mark as 'accepted' ?
 
 Thanks,
 Marek
 
---nextPart2851753.YHBtyvCbeq
+--nextPart6562614.BLmEXTe76o
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -65,14 +76,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJW0nm1AAoJEFNVTo/uthzAaKsH/jnO3O0dD2W3vuQBvyZz+1C1
-6C6uQbqqkAiA1wA4PAOpAROyFLY4DfN+q4F7OwChbNC6HaGoUHWhO+aXFYeK00N/
-FIHwjHiE62Igq5M5s7wHwyQEfbkNcNSw8YVkc68atItI8N4E+30sAvioKeO9fy8/
-8aAuAcAf2uiVDJwNWWkYeQZczMyvYcQNVhdqpIW8PF7qzoRggdPaSUx0py7oxKXS
-+nJfkFhihLsxa/gxrELOlIq37L9XZq8lkBH2J2puVOseRSYjKNYFuyWGnB7Ud/iS
-XwXS3MDwkn3w8Fa5wK3A7tOQeNJNSpmYSZmWs62GPZR9x8mU4QXUMXYfOW9gdLQ=
-=KTJd
+iQEcBAABCAAGBQJW0nrvAAoJEFNVTo/uthzAdPMIALSnYlmiCBtFRonxr6K+iayD
+V1H4p+Vthhb8Tlr2DaRYDTXrGHFB4bt7YPZIJeY9xQzPki/qaMhSqFfht5uQhDt7
+ZBIfbKtK0yUxuISjQri1c+SpGPTkAtaNfImg5OIRehOkSGwNNyjcFFbqlMR+HkKJ
+N5PbjxdwvnOwhC40rsMyzIUHHnWP0pFXQzpVHPIIb/SZn/+SvAb8BuOxD79eQ6cu
+Jxmc++8L0wi/wreZXminWKZ/mniuXSbK2sNVLpHHKlKh2Rb5saXiPHcLiG1HVHbO
+0WsBlQKAU4td9UURebN45QmknqaLCpGe23zJVpwvRq1coJfpxaYCuJUEUY71R00=
+=MTCV
 -----END PGP SIGNATURE-----
 
---nextPart2851753.YHBtyvCbeq--
+--nextPart6562614.BLmEXTe76o--
 
