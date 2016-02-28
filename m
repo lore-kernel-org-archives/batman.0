@@ -1,13 +1,13 @@
 Return-Path: <philipp.psurek@gmail.com>
-Message-ID: <1456679847.1958.52.camel@gmail.com>
+Message-ID: <1456681096.1958.61.camel@gmail.com>
 From: Philipp Psurek <philipp.psurek@gmail.com>
-Date: Sun, 28 Feb 2016 18:17:27 +0100
-In-Reply-To: <10118093.UzH4NL7sLW@sven-edge>
+Date: Sun, 28 Feb 2016 18:38:16 +0100
+In-Reply-To: <1802876.jh3TWRFVis@sven-edge>
 References: <1456616348.1958.16.camel@gmail.com>
- <10118093.UzH4NL7sLW@sven-edge>
-Content-Type: text/plain; charset="UTF-8"
+ <10118093.UzH4NL7sLW@sven-edge> <1802876.jh3TWRFVis@sven-edge>
+Content-Type: text/plain; charset="utf-8"
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Subject: Re: [B.A.T.M.A.N.] batctl: page allocation failure
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -22,37 +22,27 @@ To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
 
 Hi Sven,
 
-as already mentioned the failure does not happen any more. I'm sorry
-bothering you with this unreproducible issue.
+I applied your patch. Besides a compilation warning
 
-Am Sonntag, den 28.02.2016, 17:23 +0100 schrieb Sven Eckelmann:
-> On Sunday 28 February 2016 00:39:08 Philipp Psurek wrote:
-> > Hi all,
-> > 
-> > I've got this error with
-> [..]
-> > 
-> > 
-> > ----------------------------------
-> [..]
-> > [Feb28 00:13] batctl: page allocation failure: order:4, mode:0x40d0
-> 
-> Does this always happen when you use `batctl o` on a system with many 
-> entries in the originator table?
+/root/git/batman-adv/net/batman-adv/originator.c: In function 'batadv_orig_hardif_seq_print_text':
+/root/git/batman-adv/net/batman-adv/originator.c:1364:22: warning: unused variable 'bat_priv' [-Wunused-variable]
+  struct batadv_priv *bat_priv;
+                      ^
 
-I never saw this failure before. Executing 
+there is no error. 
 
-# batctl o | wc -l
-338
+# batctl -v
+batctl 2016.0-4-g7a3d563 [batman-adv: 2016.0-92-gd7c9a9e-dirty]
 
-on an 32 MiB RAM router was never a problem.  I thought it would be the best reporting this issue.
+this is interesting:
 
-> When yes, then you could try the attached (very rough) proof-of
-> -concept patch. It is based on v2016.0-92-gd7c9a9e
+batctl o | wc -l
+9320
 
-You are a faster coder than me as email writer. I'll implement the
-Patch in your 2nd email and report.
+the other nodes tell me 335 or 341 or …
 
-Best regards,
+I'm sorry I'm not able to reproduce this issue any more and thank you
+for your work for B.A.T.M.A.N. advanced.
+
+best regards,
   Philipp
-
