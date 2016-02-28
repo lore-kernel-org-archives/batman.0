@@ -1,16 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 28 Feb 2016 10:41:53 +0100
-Message-ID: <9221603.1jEaSktNfy@sven-edge>
-In-Reply-To: <20160228090838.GK28478@prodigo>
-References: <1456607048-24975-1-git-send-email-a@unstable.cc>
- <1456644694-8497-1-git-send-email-sven@narfation.org>
- <20160228090838.GK28478@prodigo>
+Return-Path: <a@unstable.cc>
+Date: Sun, 28 Feb 2016 17:42:21 +0800
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <20160228094221.GL28478@prodigo>
+References: <b.a.t.m.a.n@lists.open-mesh.org> <2655547.V2kIYkZTyH@sven-edge>
+ <20160228090227.GJ28478@prodigo> <2289020.8mL0hEvS8q@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1538837.6FHYBNlR1Z";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC next v2] batman-adv: ELP - use new
-	ethtool_link_get_ksettings API
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="HuXIgs6JvY9hJs5C"
+Content-Disposition: inline
+In-Reply-To: <2289020.8mL0hEvS8q@sven-edge>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Check skb size before using
+ encapsulated ETH+VLAN header
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,51 +20,59 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <a@unstable.cc>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart1538837.6FHYBNlR1Z
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
 
-On Sunday 28 February 2016 17:08:38 Antonio Quartulli wrote:
-[...]
-> I really like this approach! thanks a lot!
-> By the way, you should have added your name to the list of contributor of
-> this file though :)
+--HuXIgs6JvY9hJs5C
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Maybe you never noticed but my name is nowhere in the batman-adv/batctl 
-sourcecode. The only reason why it is in alfred/packet.h: because Simon added 
-it.
+On Sun, Feb 28, 2016 at 10:20:30AM +0100, Sven Eckelmann wrote:
+> Ok, I misunderstood his comment. This one is not necessary when each path=
+ to=20
+> this function uses batadv_check_unicast_packet or does "if=20
+> (!pskb_may_pull(skb, hdr_size))" directly. The only callers are=20
+> batadv_recv_bcast_packet (does "if (unlikely(!pskb_may_pull(skb, hdr_size=
+)))")=20
+> and batadv_recv_unicast_packet (calls batadv_check_unicast_packet). I wou=
+ld=20
+> say that an extra patch for that can be introduced later to remove it. Bu=
+t it=20
+> should not be part of this patch because this fix should not contain clea=
+nup=20
+> stuff ("batman-adv header size check") which is not related to the=20
+> encapsulated ethernet (vlan) header.
 
-> How about re-sending this RFC as PATCH (with your sign-off as well) ?
+True.
+Better to keep the fix small and address that in a later patch.
 
-Yes, I will send it.
+Cheers,
 
-Kind regards,
-	Sven
---nextPart1538837.6FHYBNlR1Z
+--=20
+Antonio Quartulli
+
+--HuXIgs6JvY9hJs5C
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJW0sDhAAoJEF2HCgfBJntG3hsQALLdefUMofQTg5YgxTnosd+S
-D51zKTcRIwaID9H0d+QH0f3vD2GRkRCrKFEu4tskZ9bc8G04btca3q19eeibozwf
-qvP1jvkUo6cINvphlHJan8EE60wqdsRQ25+J9JlQFJJ9do/XVYk0m1UmWss4E4Op
-LoCBUBrI17tDPeVPwODyOWP2lXqgAimNO4BXoke5Dbf5jgb7p2lvD5E0p4WmWVzC
-Br7zho3q7g1tmYIbTCNJVzGsSkl8E4bThpHtHms74Io/WP+jbwO5L69y8KTt7Odi
-Zltg2PyqbW8rD5H4tfM9ARApEfY5hJIPQNHgPgSocxkfbur6pPwp66Xp29A63rWG
-hVGvYj1ps6fx6n0yZDLoqFXMCEJqJrh4lzQnu7zlzOgTCCOjNZTeMhy0AVO6TxmN
-Q8Dodm9tClV5feAzLFqGeobQ6sPpTni1wruy7tD2giFp2+3fmY2sCN+eRdbRrgGF
-SoJ++fqQIgSgc40VtwhbV03VrhIh4/m/nvfct1bavHzZyzSFoEnqvFSIg0rsvwJO
-PTcbkQ2ufB5iYaQPOPs5FEDjoYh6bPUjw+O1U1lo+oMNt+pSNFgks909WrgkU6tQ
-h8D9WMWKE2Ab8bnIGBOd658SHraxnq9WTwH4Sby/f/8rIB2FgPpCXei1PMxlkmXk
-BvGvZUK1RHVzmaysp1GB
-=uifp
+iQIcBAEBCAAGBQJW0sD9AAoJENpFlCjNi1MRq7QQAJH1kMO0YRT8hNibXsZE2UGV
+6GgAM3XOx7qnglTkERYGbF3SGaQJxz5WGBJMOJ2WR7Z1a5hL0HE4g0qijTPlQjFt
+IDWRVnfYEhxuK2I7lgqx7FMXDIMa7Gm9GG6LV+LqjErqgqi2Cefgnayq6AFdTl8G
+utMmuTdM0D7KLfpQmUqF6IORMiS2w9mH3IosAjwW39/Ahwmy/zhkoVarecOCsayq
+1rjlHd9BncXpb9aZgMNTBpMCP2XsJcB59RmMhm9qhD0ZJQao4MbhT1ELVWksvvMQ
+yYz8BjgNqu8iYrbiX8liKCO9OHLtdWZ3gvXG3s8SlZxlInJZT8Et6J4x76NOHppO
+t9sH2QFoszUE30BiYY89QXkh9Bj43FVWM9r+Gf/ux4Q4Jls+zFh9wP911lupH2Ad
+QcOqovVYgpmxh4sLVRRdHWFa7xdO8n0X9uvvonp51+K8Y45BrjFLdNno7Ek/tDmV
+DWFyLTWS1Nn5DFlF0Tr8SdBZyzSDYbioBS8971ttw5V/hSyuJ1Ltt32KsM3xCQLS
+g8qxbtVRp5//G1AEokXFD+g4nDpnh0a7nU5jdblbcOdKg5MLfyoxwURomvnef+vz
+vHLfCKCdK7MMJ9tMgy7LZ0WNLy7C/QhSjFqSAo3anlrJv/eBj/P6w5gFKU6Qy2ar
+hLqQBZFMm6adlSlpr4oT
+=Vrmr
 -----END PGP SIGNATURE-----
 
---nextPart1538837.6FHYBNlR1Z--
-
+--HuXIgs6JvY9hJs5C--
