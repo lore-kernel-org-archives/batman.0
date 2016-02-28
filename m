@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 28 Feb 2016 08:49:02 +0800
-Message-ID: <10633463.PgZ4eD0ZeI@voltaire>
-In-Reply-To: <1456505773-1059-1-git-send-email-sven@narfation.org>
-References: <b.a.t.m.a.n@lists.open-mesh.org>
- <1456505773-1059-1-git-send-email-sven@narfation.org>
+Date: Sun, 28 Feb 2016 12:38:13 +0800
+Message-ID: <2465891.8WB3Uyx6em@voltaire>
+In-Reply-To: <1455616027-22089-1-git-send-email-sven@open-mesh.com>
+References: <1455616027-22089-1-git-send-email-sven@open-mesh.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart42842977.yXQMj7TgWy";
+Content-Type: multipart/signed; boundary="nextPart2851753.YHBtyvCbeq";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Check skb size before using
-	encapsulated ETH+VLAN header
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix integer overflow in
+	batadv_iv_ogm_calc_tq
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,55 +19,45 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 
---nextPart42842977.yXQMj7TgWy
+--nextPart2851753.YHBtyvCbeq
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, February 26, 2016 17:56:13 Sven Eckelmann wrote:
-> --- a/net/batman-adv/soft-interface.c
-> +++ b/net/batman-adv/soft-interface.c
-> @@ -408,11 +408,17 @@ void batadv_interface_rx(struct net_device
-> *soft_iface, */
->  	nf_reset(skb);
+On Tuesday, February 16, 2016 10:47:07 Sven Eckelmann wrote:
+> From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 > 
-> +	if (unlikely(!pskb_may_pull(skb, ETH_HLEN)))
-> +		goto dropped;
-> +
->  	vid = batadv_get_vid(skb, 0);
+> The undefined behavior sanatizer detected an signed integer overflow in a
+> setup with near perfect link quality
+> 
+>     UBSAN: Undefined behaviour in net/batman-adv/bat_iv_ogm.c:1246:25
+>     signed integer overflow:
+>     8713350 * 255 cannot be represented in type 'int'
+> 
+> The problems happens because the calculation of mixed unsigned and signed
+> integers resulted in an integer multiplication.
+> 
+>       batadv_ogm_packet::tq (u8 255)
+>     * tq_own (u8 255)
+>     * tq_asym_penalty (int 134; max 255)
+>     * tq_iface_penalty (int 255; max 255)
+> 
+> The tq_iface_penalty, tq_asym_penalty and inv_asym_penalty can just be
+> changed to unsigned int because they are not expected to become negative.
+> 
+> Fixes: 46e44fdb96ef ("batman-adv: add WiFi penalty")
+> Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+> ---
+>  net/batman-adv/bat_iv_ogm.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 
-batadv_get_vid() also calls pskb_may_pull() and checks for VLAN_ETH_HLEN 
-length. Isn't that sufficient ?
+Applied in revision 789b846.
 
-On a related note - a few lines before your check you'll find:
-
-/* check if enough space is available for pulling, and pull */
-if (!pskb_may_pull(skb, hdr_size))
-
-In its current form that check is useless because batadv_recv_unicast_packet() 
-already calls batadv_check_unicast_packet() which does the same 
-pskb_may_pull(skb, hdr_size). Am I overlooking something ?
-
-
->  	switch (ntohs(ethhdr->h_proto)) {
->  	case ETH_P_8021Q:
-> +		if (!pskb_may_pull(skb, VLAN_ETH_HLEN))
-> +			goto dropped;
-
-Shouldn't this memory access be covered by the earlier check inside 
-batadv_get_vid() ?
-
-
->  	/* skb->dev & skb->pkt_type are set here */
-> -	if (unlikely(!pskb_may_pull(skb, ETH_HLEN)))
-> -		goto dropped;
-
-Agreed that this seems unnecessary.
-
-Cheers,
+Thanks,
 Marek
 
---nextPart42842977.yXQMj7TgWy
+--nextPart2851753.YHBtyvCbeq
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -76,14 +65,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJW0kP+AAoJEFNVTo/uthzA5HQH/R05fk///SaHKQYgTOAnXo7X
-T7iYxEKKLYwmnAfuORwjgmGDME+dd+zDEWPyeWA47P/Zj8PYCbdmVitICTs36x9Q
-a2yMZOYhPtGvpIGMC9ASvocABHsrbwHg/aaDgxhnBakMPehXY8ekuxLwCDpb9U8x
-EL1658fXBA4GuMYxNhc5MM51oQJwkRQgP8GDq5ZNuy2II1OwuphQWvHbBPCwvS3x
-Gx7QrNJEr+aw2O3+lEs6tEyAOUdrmzY+8o9X49Z6PwrDV7bFA41tlZy2mskFj+uQ
-kbIhEQnyXXWa9n87hKYHlhzbTQmpkkzyliYsuAEODbM7UZHEML6Zr3NfI2XuKl8=
-=QsDx
+iQEcBAABCAAGBQJW0nm1AAoJEFNVTo/uthzAaKsH/jnO3O0dD2W3vuQBvyZz+1C1
+6C6uQbqqkAiA1wA4PAOpAROyFLY4DfN+q4F7OwChbNC6HaGoUHWhO+aXFYeK00N/
+FIHwjHiE62Igq5M5s7wHwyQEfbkNcNSw8YVkc68atItI8N4E+30sAvioKeO9fy8/
+8aAuAcAf2uiVDJwNWWkYeQZczMyvYcQNVhdqpIW8PF7qzoRggdPaSUx0py7oxKXS
++nJfkFhihLsxa/gxrELOlIq37L9XZq8lkBH2J2puVOseRSYjKNYFuyWGnB7Ud/iS
+XwXS3MDwkn3w8Fa5wK3A7tOQeNJNSpmYSZmWs62GPZR9x8mU4QXUMXYfOW9gdLQ=
+=KTJd
 -----END PGP SIGNATURE-----
 
---nextPart42842977.yXQMj7TgWy--
+--nextPart2851753.YHBtyvCbeq--
 
