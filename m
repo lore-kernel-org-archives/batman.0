@@ -1,14 +1,8 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 29 Feb 2016 10:23:42 +0800
-Message-ID: <9978680.AHfZt94x15@voltaire>
-In-Reply-To: <1456652670-18226-1-git-send-email-sven@narfation.org>
-References: <1456652670-18226-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4761695.IrILrCov5q";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: ELP - use new
-	ethtool_link_get_ksettings API
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 29 Feb 2016 08:51:07 +0100
+Message-Id: <1456732267-7560-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Add missing headers for bool type
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,52 +13,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart4761695.IrILrCov5q
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Fixes: d58a13597ec2 ("batman-adv: Use bool as return type for boolean functions")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/bitarray.h       | 1 +
+ net/batman-adv/soft-interface.h | 1 +
+ 2 files changed, 2 insertions(+)
 
-On Sunday, February 28, 2016 10:44:30 Sven Eckelmann wrote:
-> From: Antonio Quartulli <a@unstable.cc>
-> 
-> The ethtool API is changing in linux-4.6 and the B.A.T.M.A.N. V
-> code has to be changed accordingly.
-> 
-> Fixes: 5c3245172c01 ("batman-adv: ELP - compute the metric based on the
-> estimated throughput") Signed-off-by: Antonio Quartulli <a@unstable.cc>
-> [sven@narfation.org: Added compat code for __ethtool_get_link_ksettings]
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> resend of "RFC v2" as patch with my Signed-off-by added
-> 
->  compat-include/linux/ethtool.h | 62
-> ++++++++++++++++++++++++++++++++++++++++++ net/batman-adv/bat_v_elp.c     |
-> 12 ++++----
->  2 files changed, 68 insertions(+), 6 deletions(-)
->  create mode 100644 compat-include/linux/ethtool.h
-
-Applied in revision 3515604.
-
-Thanks,
-Marek
-
---nextPart4761695.IrILrCov5q
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJW06uuAAoJEFNVTo/uthzAGnkH/0N3pXU4epHVDkHeNikFFlc/
-lE9nd6CTByec+4tRm1kt7lVbz6j/99v7XPKsxrLn28h5UvTkxq1UOmk8/x4iN5bK
-OPpo+3qZxahElZlddGCToHmNCy9BUxp1bT8RxlzJp/DHvnEAIq8rDQrSZTSDyxTt
-y7lyQaunYxmYKSLXtAz85t+I/gD7nlxSzGIXhPDJ1VcUXtdL5OZPm2eTcoGZCWml
-/EgtBNaldr4+ROQGubIb+gZ7otNjmVqvlCvDCWVTKZimnZTbpGd1DlzmCTooWIHM
-kzCJOXGGkFhEUuH+pPt1XJHfGb4LcI/Mwy4Ay3FeSzg6a90smc3NourbcW3Y/v0=
-=s2Ng
------END PGP SIGNATURE-----
-
---nextPart4761695.IrILrCov5q--
-
+diff --git a/net/batman-adv/bitarray.h b/net/batman-adv/bitarray.h
+index f93cbc7..0e6e9d0 100644
+--- a/net/batman-adv/bitarray.h
++++ b/net/batman-adv/bitarray.h
+@@ -22,6 +22,7 @@
+ 
+ #include <linux/bitops.h>
+ #include <linux/compiler.h>
++#include <linux/stddef.h>
+ #include <linux/types.h>
+ 
+ /**
+diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
+index 417d30a..0c5ab40 100644
+--- a/net/batman-adv/soft-interface.h
++++ b/net/batman-adv/soft-interface.h
+@@ -20,6 +20,7 @@
+ 
+ #include "main.h"
+ 
++#include <linux/types.h>
+ #include <net/rtnetlink.h>
+ 
+ struct net_device;
