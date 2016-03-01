@@ -1,11 +1,9 @@
-Return-Path: <a@unstable.cc>
-From: Antonio Quartulli <a@unstable.cc>
-Date: Mon, 29 Feb 2016 19:06:04 +0800
-Message-Id: <1456743968-17562-12-git-send-email-a@unstable.cc>
-In-Reply-To: <1456743968-17562-1-git-send-email-a@unstable.cc>
-References: <1456743968-17562-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 11/15] batman-adv: B.A.T.M.A.N. V - implement
-	neighbor comparison API calls
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue,  1 Mar 2016 08:28:59 +0100
+Message-Id: <1456817339-5498-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Disable
+	__ethtool_get_link_ksettings compat on < 3.2
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,86 +13,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>, Antonio Quartulli <antonio@open-mesh.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <antonio@open-mesh.com>
+The __ethtool_get_link_ksettings is currently used only for kernels >=
+3.15. But the compat code is read by the compiler for each kernel. But
+kernels up to 3.1 never had the function __ethtool_get_settings which is
+used to emulate this function for kernels < 4.6. Therefore, kernels < 3.2
+will fail to compile when this compatibility layer is enabled.
 
-Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Fixes: 3515604d82d5 ("batman-adv: ELP - use new ethtool_link_get_ksettings API")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_v.c | 38 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+ compat-include/linux/ethtool.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index ff31f2af9cfe..953c0d150231 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -19,12 +19,15 @@
- #include "main.h"
+diff --git a/compat-include/linux/ethtool.h b/compat-include/linux/ethtool.h
+index 87f7577..a24390a 100644
+--- a/compat-include/linux/ethtool.h
++++ b/compat-include/linux/ethtool.h
+@@ -24,7 +24,9 @@
+ #include <linux/version.h>
+ #include_next <linux/ethtool.h>
  
- #include <linux/atomic.h>
-+#include <linux/bug.h>
- #include <linux/cache.h>
- #include <linux/init.h>
-+#include <linux/types.h>
- #include <linux/workqueue.h>
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
++/* WARNING only enabled on kernels with __ethtool_get_settings support */
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0) && \
++    LINUX_VERSION_CODE >= KERNEL_VERSION(3, 1, 0)
  
- #include "bat_v_elp.h"
- #include "bat_v_ogm.h"
-+#include "originator.h"
- #include "packet.h"
+ #define ethtool_link_ksettings batadv_ethtool_link_ksettings
  
- static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
-@@ -78,6 +81,39 @@ static void batadv_v_ogm_emit(struct batadv_forw_packet *forw_packet)
- {
- }
- 
-+static int batadv_v_neigh_cmp(struct batadv_neigh_node *neigh1,
-+			      struct batadv_hard_iface *if_outgoing1,
-+			      struct batadv_neigh_node *neigh2,
-+			      struct batadv_hard_iface *if_outgoing2)
-+{
-+	struct batadv_neigh_ifinfo *ifinfo1, *ifinfo2;
-+
-+	ifinfo1 = batadv_neigh_ifinfo_get(neigh1, if_outgoing1);
-+	ifinfo2 = batadv_neigh_ifinfo_get(neigh2, if_outgoing2);
-+
-+	if (WARN_ON(!ifinfo1 || !ifinfo2))
-+		return 0;
-+
-+	return ifinfo1->bat_v.throughput - ifinfo2->bat_v.throughput;
-+}
-+
-+static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *neigh1,
-+				  struct batadv_hard_iface *if_outgoing1,
-+				  struct batadv_neigh_node *neigh2,
-+				  struct batadv_hard_iface *if_outgoing2)
-+{
-+	struct batadv_neigh_ifinfo *ifinfo1, *ifinfo2;
-+	u32 threshold;
-+
-+	ifinfo1 = batadv_neigh_ifinfo_get(neigh1, if_outgoing1);
-+	ifinfo2 = batadv_neigh_ifinfo_get(neigh2, if_outgoing2);
-+
-+	threshold = ifinfo1->bat_v.throughput / 4;
-+	threshold = ifinfo1->bat_v.throughput - threshold;
-+
-+	return ifinfo2->bat_v.throughput > threshold;
-+}
-+
- static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.name = "BATMAN_V",
- 	.bat_iface_enable = batadv_v_iface_enable,
-@@ -87,6 +123,8 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.bat_hardif_neigh_init = batadv_v_hardif_neigh_init,
- 	.bat_ogm_emit = batadv_v_ogm_emit,
- 	.bat_ogm_schedule = batadv_v_ogm_schedule,
-+	.bat_neigh_cmp = batadv_v_neigh_cmp,
-+	.bat_neigh_is_similar_or_better = batadv_v_neigh_is_sob,
- };
- 
- /**
 -- 
-2.7.2
+2.7.0
 
