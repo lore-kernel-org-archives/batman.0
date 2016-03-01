@@ -1,16 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 01 Mar 2016 17:02:57 +0100
-Message-ID: <1694240.jq4xBCUVhK@bentobox>
-In-Reply-To: <OF3D785311.F814DD90-ONC1257F69.0056D58F-C1257F69.00573B0A@phoenixcontact.com>
-References: <1456492697-29708-1-git-send-email-apape@phoenixcontact.com>
- <2502138.exi8rd1dt9@bentobox>
- <OF3D785311.F814DD90-ONC1257F69.0056D58F-C1257F69.00573B0A@phoenixcontact.com>
+Return-Path: <APape@phoenixcontact.com>
+In-Reply-To: <1813620.Dbl0AP6z0j@sven-edge>
+References: <20160226141638.169e15ae@ubuntu> <2279019.udanyR4lfT@bentobox>
+ <OF7031B429.657A2D2C-ONC1257F66.003F31B3-C1257F66.003F8748@phoenixcontact.com>
+ <1813620.Dbl0AP6z0j@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1855694.SPqzDbauWe";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Antwort: Re: [PATCHv2 2/7] batman-adv: speed up
-	dat by snooping received ip traffic
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OFE016DD95.2E454481-ONC1257F69.00578347-C1257F69.0058BF02@phoenixcontact.com>
+Date: Tue, 1 Mar 2016 17:09:20 +0100
+content-transfer-encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Subject: [B.A.T.M.A.N.] Antwort: Re: Antwort: Re: [Patchv2 0/7] batman-adv:
+ Optimizations for setups running dat and bla
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,59 +20,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Andreas Pape <APape@phoenixcontact.com>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <lindner_marek@yahoo.de>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1855694.SPqzDbauWe
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hello Sven,
 
-On Tuesday 01 March 2016 16:52:47 Andreas Pape wrote:
-[...]
-> > Where is the code to check that there is enough data for the iphdr
-> > (pskb_may_pull)? Same question goes to Marek for his initial change in
-> > 48628bb9419f ("batman-adv: softif bridge loop avoidance") that
-> introduced the
-> > vhdr->vlan_ethhdr check
-> >
-> 
-> I will leave this to the result of the discussion in [1] which you started
-> and will not handle this in the next version of my patchset. Correct?
+Sven Eckelmann <sven@narfation.org> schrieb am 27.02.2016 12:40:46:
 
-You definitely have to check the size for the IP header. The vlan ethernet
-header check is a different playground and mostly unrelated to your problem.
+>
+> Hopefully, Antonio+Simon will find some time next week to add some more
+> feedback about the way their batman-adv subfeatures (DAT+BLA) are
+affected by
+> your patchset.
+>
 
-Btw. you can skip this check when you just use skb_header_pointer to access
-the IPv4 header. It will return NULL when the data cannot be accessed. It
-will also take care of copying data out of the fragments in your temporary 
-"buffer" when the bytes are not in the main buffer of the skb. You just have 
-to prepare a large enough buffer on the stack and only use the returned 
-pointer.
+I will fix your findings in the next version of the patchset. But I think
+I will
+wait sending it until I get more feedback if the patches are a good idea
+or if
+they break something I have not understood so far. From my own tests I am
+pretty
+sure that the ideas behind patch 1/7, 4/7 and 7/7 bring a significant
+improvement.
 
 Kind regards,
-	Sven
---nextPart1855694.SPqzDbauWe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Andreas
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
 
-iQIcBAABCgAGBQJW1b0xAAoJEF2HCgfBJntGsXwQAKvZh0vVhCAWC+1PS3rp+3lB
-4HiclMCUU+dFwBn5ktL1Ofcxd6IrUr/DLnk6U648vd8/2tiSMZUJlyhm/Xt3rkbZ
-Td2Z893dK3C3dTxHS+Fp62jBRZJcKrvAMuQz8tyFB7kcJb9k+yngH9sPW+OFOLzb
-YQYA2mo3uYGGvE5oAoqr76Von/5NWlyDXOIbweBQebkxQOQON4R0CcxobLtv7wg8
-ubjqhRL3b1pFWHYEF0qGxA3vW5JhFIrPhdiMx797/ds/SsbnfcBAOwt36CosMxN8
-afkA2MqqJkMVWD+ot8O6oOsXdOp+FnHss08n6LfG8mC8iZf7YOtogN4mp/F1bUNe
-fixiKGxTkgxn6aIzuo4zRerm4luonhrd5p1OqHFP7W+HEs/IWX0siekQpd5ilNZx
-XsR0kCfbiAaQ0fmanOte0DuVHjuZj8rZ7zsYg7zpoMU0D0/TrrBYu7302oKpnjTS
-sFZFVAbcHO7/Wjoo8K1be+nUZKumzHKeabo0SrciUlUs7iENS2K+nbbwsx38EEey
-owLPMdAT8mjRSfJF+IiriWxyYFQxGfsDjsT9jrh2GV3zH8WHuK/H3trsjJC0tWoy
-38VRXPALy9RuPp6xJUK8y91c57gd3BMFXjLSvSaLERS3GIQQEGAD+bZxVFjERimx
-WqKibcm5DCBPHkYLjj94
-=vRW+
------END PGP SIGNATURE-----
 
---nextPart1855694.SPqzDbauWe--
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
 
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
+___________________________________________________________________
+Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
+nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
+rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
+d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
+ Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
