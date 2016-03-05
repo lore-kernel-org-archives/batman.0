@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  5 Mar 2016 16:09:17 +0100
-Message-Id: <1457190564-11419-2-git-send-email-sven@narfation.org>
+Date: Sat,  5 Mar 2016 16:09:18 +0100
+Message-Id: <1457190564-11419-3-git-send-email-sven@narfation.org>
 In-Reply-To: <1457190564-11419-1-git-send-email-sven@narfation.org>
 References: <1457190564-11419-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/9] batman-adv: Check hard_iface refcnt when
-	receiving skb
+Subject: [B.A.T.M.A.N.] [PATCH 3/9] batman-adv: Increase hard_iface refcnt
+	for ptype
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,63 +17,36 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The receive function may start processing an incoming packet while the
-hard_iface is shut down in a different context. All called functions called
-with the batadv_hard_iface object belonging to the incoming interface would
-have to check whether the reference counter is still > 0.
-
-This is rather error-prone because this check can be forgotten easily.
-Instead check the reference counter when receiving the object to make sure
-that all called functions have a valid reference.
+The hard_iface is referenced in the packet_type for batman-adv. Increase
+the refcounter of the hard_interface for it to have an explicit reference
+for it in case this functionality gets refactorted and the currently
+used implicit reference for it will be removed.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/main.c | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+ net/batman-adv/hard-interface.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index d64ddb9..bda5f13 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -401,11 +401,19 @@ int batadv_batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 3240a67..56b148a 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -519,6 +519,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 		goto err_upper;
+ 	}
  
- 	hard_iface = container_of(ptype, struct batadv_hard_iface,
- 				  batman_adv_ptype);
-+
-+	/* don't receive packet for interface which gets shut down by batman-adv
-+	 * or otherwise it may gets tried to be referenced again in other
-+	 * structures like batadv_forw_packet
-+	 */
-+	if (!kref_get_unless_zero(&hard_iface->refcount))
-+		goto err_out;
-+
- 	skb = skb_share_check(skb, GFP_ATOMIC);
- 
- 	/* skb was released by skb_share_check() */
- 	if (!skb)
--		goto err_out;
-+		goto err_put;
- 
- 	/* packet should hold at least type and version */
- 	if (unlikely(!pskb_may_pull(skb, 2)))
-@@ -448,6 +456,8 @@ int batadv_batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
- 	if (ret == NET_RX_DROP)
- 		kfree_skb(skb);
- 
++	kref_get(&hard_iface->refcount);
+ 	hard_iface->batman_adv_ptype.type = ethertype;
+ 	hard_iface->batman_adv_ptype.func = batadv_batman_skb_recv;
+ 	hard_iface->batman_adv_ptype.dev = hard_iface->net_dev;
+@@ -581,6 +582,7 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
+ 	batadv_info(hard_iface->soft_iface, "Removing interface: %s\n",
+ 		    hard_iface->net_dev->name);
+ 	dev_remove_pack(&hard_iface->batman_adv_ptype);
 +	batadv_hardif_put(hard_iface);
-+
- 	/* return NET_RX_SUCCESS in any case as we
- 	 * most probably dropped the packet for
- 	 * routing-logical reasons.
-@@ -456,6 +466,8 @@ int batadv_batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
  
- err_free:
- 	kfree_skb(skb);
-+err_put:
-+	batadv_hardif_put(hard_iface);
- err_out:
- 	return NET_RX_DROP;
- }
+ 	bat_priv->num_ifaces--;
+ 	batadv_orig_hash_del_if(hard_iface, bat_priv->num_ifaces);
 -- 
 2.7.0
 
