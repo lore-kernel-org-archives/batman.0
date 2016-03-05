@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  5 Mar 2016 16:09:24 +0100
-Message-Id: <1457190564-11419-9-git-send-email-sven@narfation.org>
-In-Reply-To: <1457190564-11419-1-git-send-email-sven@narfation.org>
-References: <1457190564-11419-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 9/9] batman-adv: Use kref_get for
+Date: Sat,  5 Mar 2016 19:05:24 +0100
+Message-Id: <1457201124-8495-1-git-send-email-sven@narfation.org>
+In-Reply-To: <1457190564-11419-9-git-send-email-sven@narfation.org>
+References: <1457190564-11419-9-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v2 9/9] batman-adv: Use kref_get for
 	_batadv_update_route
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -29,21 +29,24 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 This patch requires https://patchwork.open-mesh.org/patch/15888/
 
- net/batman-adv/routing.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+v2:
+ - 	Remove one of the empty lines around the removed block
+
+ net/batman-adv/routing.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index ffc4c09..acfd313 100644
+index ffc4c09..06581af 100644
 --- a/net/batman-adv/routing.c
 +++ b/net/batman-adv/routing.c
-@@ -100,13 +100,12 @@ static void _batadv_update_route(struct batadv_priv *bat_priv,
+@@ -100,13 +100,11 @@ static void _batadv_update_route(struct batadv_priv *bat_priv,
  	if (curr_router)
  		batadv_neigh_node_put(curr_router);
  
 -	/* increase refcount of new best neighbor */
 -	if (neigh_node && !kref_get_unless_zero(&neigh_node->refcount))
 -		neigh_node = NULL;
- 
+-
  	spin_lock_bh(&orig_node->neigh_list_lock);
  	curr_router = rcu_dereference_protected(orig_ifinfo->router, true);
  
