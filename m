@@ -1,9 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  5 Mar 2016 15:53:47 +0100
-Message-Id: <1457189627-8839-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Reduce refcnt of removed
-	router when updating route
+Date: Sat,  5 Mar 2016 15:56:01 +0100
+Message-Id: <1457189761-9275-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix function names on new line
+	starting with '*'
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,36 +15,99 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-_batadv_update_route rcu_derefences orig_ifinfo->router outside of a
-spinlock protected region to print some information messages to the debug
-log. But this pointer is not checked again when the new pointer is assigned
-in the spinlock protected region. Thus is can happen that the value of
-orig_ifinfo->router changed in the meantime and thus the reference counter
-of the wrong router gets reduced after the spinlock protected region.
+Some really long function names in batman-adv require a newline between
+return type and the function name. This has lead to some lines starting
+with *batadv_...
 
-Just rcu_dereferencing the value of orig_ifinfo->router inside the spinlock
-protected region (which also set the new pointer) is enough to get the
-correct old router object.
+This * belongs to the return type and thus should be on the same line as
+the return type.
 
-Fixes: d90ddb94423f ("batman-adv: Make orig_node->router an rcu protected pointer")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/routing.c | 2 ++
- 1 file changed, 2 insertions(+)
+ net/batman-adv/bridge_loop_avoidance.c |  6 +++---
+ net/batman-adv/main.c                  |  8 ++++----
+ net/batman-adv/network-coding.c        | 18 +++++++++---------
+ 3 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 1fb1be3..61fdefe 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -104,6 +104,8 @@ static void _batadv_update_route(struct batadv_priv *bat_priv,
- 		neigh_node = NULL;
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 642167f..943f9e2 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -200,9 +200,9 @@ static void batadv_claim_put(struct batadv_bla_claim *claim)
+  *
+  * Return: claim if found or NULL otherwise.
+  */
+-static struct batadv_bla_claim
+-*batadv_claim_hash_find(struct batadv_priv *bat_priv,
+-			struct batadv_bla_claim *data)
++static struct batadv_bla_claim *
++batadv_claim_hash_find(struct batadv_priv *bat_priv,
++		       struct batadv_bla_claim *data)
+ {
+ 	struct batadv_hashtable *hash = bat_priv->bla.claim_hash;
+ 	struct hlist_head *head;
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 1245a58..50d5bd4 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -675,8 +675,8 @@ static void batadv_tvlv_handler_put(struct batadv_tvlv_handler *tvlv_handler)
+  *
+  * Return: tvlv handler if found or NULL otherwise.
+  */
+-static struct batadv_tvlv_handler
+-*batadv_tvlv_handler_get(struct batadv_priv *bat_priv, u8 type, u8 version)
++static struct batadv_tvlv_handler *
++batadv_tvlv_handler_get(struct batadv_priv *bat_priv, u8 type, u8 version)
+ {
+ 	struct batadv_tvlv_handler *tvlv_handler_tmp, *tvlv_handler = NULL;
  
- 	spin_lock_bh(&orig_node->neigh_list_lock);
-+	curr_router = rcu_dereference_protected(orig_ifinfo->router, true);
-+
- 	rcu_assign_pointer(orig_ifinfo->router, neigh_node);
- 	spin_unlock_bh(&orig_node->neigh_list_lock);
- 	batadv_orig_ifinfo_free_ref(orig_ifinfo);
+@@ -734,8 +734,8 @@ static void batadv_tvlv_container_put(struct batadv_tvlv_container *tvlv)
+  *
+  * Return: tvlv container if found or NULL otherwise.
+  */
+-static struct batadv_tvlv_container
+-*batadv_tvlv_container_get(struct batadv_priv *bat_priv, u8 type, u8 version)
++static struct batadv_tvlv_container *
++batadv_tvlv_container_get(struct batadv_priv *bat_priv, u8 type, u8 version)
+ {
+ 	struct batadv_tvlv_container *tvlv_tmp, *tvlv = NULL;
+ 
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 4f7a558..fd5bcd0 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -793,10 +793,10 @@ static bool batadv_can_nc_with_orig(struct batadv_priv *bat_priv,
+  *
+  * Return: the nc_node if found, NULL otherwise.
+  */
+-static struct batadv_nc_node
+-*batadv_nc_find_nc_node(struct batadv_orig_node *orig_node,
+-			struct batadv_orig_node *orig_neigh_node,
+-			bool in_coding)
++static struct batadv_nc_node *
++batadv_nc_find_nc_node(struct batadv_orig_node *orig_node,
++		       struct batadv_orig_node *orig_neigh_node,
++		       bool in_coding)
+ {
+ 	struct batadv_nc_node *nc_node, *nc_node_out = NULL;
+ 	struct list_head *list;
+@@ -835,11 +835,11 @@ static struct batadv_nc_node
+  *
+  * Return: the nc_node if found or created, NULL in case of an error.
+  */
+-static struct batadv_nc_node
+-*batadv_nc_get_nc_node(struct batadv_priv *bat_priv,
+-		       struct batadv_orig_node *orig_node,
+-		       struct batadv_orig_node *orig_neigh_node,
+-		       bool in_coding)
++static struct batadv_nc_node *
++batadv_nc_get_nc_node(struct batadv_priv *bat_priv,
++		      struct batadv_orig_node *orig_node,
++		      struct batadv_orig_node *orig_neigh_node,
++		      bool in_coding)
+ {
+ 	struct batadv_nc_node *nc_node;
+ 	spinlock_t *lock; /* Used to lock list selected by "int in_coding" */
 -- 
 2.7.0
 
