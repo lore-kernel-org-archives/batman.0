@@ -1,15 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 06 Mar 2016 09:55:33 +0100
-Message-ID: <1718376.7aKDD05sGf@sven-edge>
-In-Reply-To: <20160306000823.GB1976@lunn.ch>
-References: <1457190564-11419-1-git-send-email-sven@narfation.org>
- <20160306000823.GB1976@lunn.ch>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2170473.TaTxVnKpjX";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/9] batman-adv: Check hard_iface refcnt
-	before calling function
+Date: Sun,  6 Mar 2016 11:07:21 +0100
+Message-Id: <1457258842-10389-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [RFC maint 1/2] batman-adv: Fix reference counting
+	of vlan object for tt_local_entry
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,73 +13,181 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2170473.TaTxVnKpjX
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+The batadv_tt_local_entry was specific to a batadv_softif_vlan and held an
+implicit reference to it. But this reference was never stored in form of a
+pointer in the tt_local_entry itself. Instead batadv_tt_local_remove,
+batadv_tt_local_table_free and batadv_tt_local_purge_pending_clients depend
+on a consistent state of bat_priv->softif_vlan_list and that
+batadv_softif_vlan_get always returns the batadv_softif_vlan object which
+it has a reference for. But batadv_softif_vlan_get cannot guarantee that
+because it is working only with rcu_read_lock on this list. It can
+therefore happen that an vid is in this list twice or that
+batadv_softif_vlan_get cannot find the batadv_softif_vlan for an vid due to
+some other list operations taking place at the same time.
 
-On Sunday 06 March 2016 01:08:23 Andrew Lunn wrote:
-> Hi Sven
-> 
-> Thanks for the patches. I will test them out of Monday and let you
-> know if it fixes the crash.
+Instead add a batadv_softif_vlan pointer directly in batadv_tt_local_entry
+which will be used for the reference counter decremented on release of
+batadv_tt_local_entry.
 
-The ones I've Cc'ed you are not really about fixing the crash. They are just 
-to clean up the reference counting (which you've complained about). You can 
-test them but I would doubt that they fix the problem. But they might help you 
-to detect situation when the refcounter gets 0 but shouldn't.
+Fixes: 9729d2085c0f ("batman-adv: fix TT VLAN inconsistency on VLAN re-add")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+See https://www.open-mesh.org/issues/243
 
-There are also some related problems which I've already mentioned on the 
-mailing list 9 months ago and never got an answer. I've moved them now to the 
-issue tracker in hope that the authors of the feature will now reply. The 
-unchecked double *_put with [2,3] together with the unchecked double list_adds 
-[1] are a good way to mess up the reference counting of several objects 
-(including the hard interfaces).
+ net/batman-adv/translation-table.c | 30 +++++++++++++++++++++---------
+ net/batman-adv/types.h             |  2 ++
+ 2 files changed, 23 insertions(+), 9 deletions(-)
 
-You may also want to add a real reference counting fix which I've also posted 
-yesterday (but for non-hard-interface objects) [4].
-
-And a small remark about your x86 without serial port. Two systems connected 
-via usb-serial+null-model-cable+usb-serial work quite well for this type of 
-tests. Add  "console=tty0 console=ttyUSB0,115200,n8" to the bootargs of your 
-test system and boot it up. The system used for gathering the kernel output 
-just has to run "screen /dev/ttyUSB0 115200" and dump all the data.
-
-Just a suggestion in case you didn't think about using this kind of setup.
-
-Thanks for debugging this problem and have a nice weekend.
-
-Kind regards,
-	Sven
-
-[1] https://www.open-mesh.org/issues/243
-[2] https://www.open-mesh.org/issues/242
-[3] https://www.open-mesh.org/issues/235
-[4] https://patchwork.open-mesh.org/patch/15888/
---nextPart2170473.TaTxVnKpjX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJW2/CFAAoJEF2HCgfBJntGwU0QAMgVy1c2eKjjrUgLuFjoZ/31
-zcxElr0S0MT1m9u4Koi5xITg50EoING88wSIKIFF4vWkt3+cw9eWZHSS3yZmhht+
-KyuLXfDz2CLJ95r6VKYRRLNTeKo5icoU9NUxhakIRC/IJ8zcee+8FQcQc47x6xJ+
-kTER2oZft0EfVGS4QE1asIeJCsz3nTD7UTyyla9RHnTt8oDZBG/ebNQHHzGOM0g4
-dbjoGfqGfsnmGI6HpZdUBzIoiutTOBTXqC6OjX9qS6ox+5LyDdSf9dL0LM+YNIFZ
-kWDYzgOVIHqCQePmiu8ZTPG8BQo+bxvzBLXRK7Vs1b3Y9CUciPaWERl67GNMl8zA
-oMupyKWTJpi5IumzM5JsSs8Dk7FuAFYesrrfW5kTJ/VCB6A8X2nmXVy/feCuHRQH
-Du3qx8XOmsg8sqAHw9fodGesmLx5HoPzgGVpes/7NncCdDZ3FB1WmYuIceMoSVHH
-8DtZGtaEl7RwPogInDJBTnzeKLDTkwDraLARv4TuY4kYZ1yq+LzjBx+oVhMNaFqS
-LokUQ51717NO8but/ThiejYTZxEQ2vp9wf6hFNCRenwHSei9gtTK1BergFBDSGFU
-dG0JBtbCBCJ4zqi9OXle3r98cyUtvrOPv+kbBVR/8mC6AUKM5wIqOq6qKFHj6DLG
-q5SUh0RfpWxq1xWQ4j81
-=HhFG
------END PGP SIGNATURE-----
-
---nextPart2170473.TaTxVnKpjX--
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 2ed55f4..8b89c8f 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -215,6 +215,9 @@ static void batadv_tt_local_entry_release(struct kref *ref)
+ 	tt_local_entry = container_of(ref, struct batadv_tt_local_entry,
+ 				      common.refcount);
+ 
++	if (tt_local_entry->vlan)
++		batadv_softif_vlan_put(tt_local_entry->vlan);
++
+ 	kfree_rcu(tt_local_entry, common.rcu);
+ }
+ 
+@@ -673,6 +676,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
+ 	kref_get(&tt_local->common.refcount);
+ 	tt_local->last_seen = jiffies;
+ 	tt_local->common.added_at = tt_local->last_seen;
++	tt_local->vlan = vlan;
+ 
+ 	/* the batman interface mac and multicast addresses should never be
+ 	 * purged
+@@ -991,7 +995,6 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct batadv_tt_common_entry *tt_common_entry;
+ 	struct batadv_tt_local_entry *tt_local;
+ 	struct batadv_hard_iface *primary_if;
+-	struct batadv_softif_vlan *vlan;
+ 	struct hlist_head *head;
+ 	unsigned short vid;
+ 	u32 i;
+@@ -1028,8 +1031,7 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 
+ 			no_purge = tt_common_entry->flags & np_flag;
+ 
+-			vlan = batadv_softif_vlan_get(bat_priv, vid);
+-			if (!vlan) {
++			if (!tt_local->vlan) {
+ 				seq_printf(seq, "Cannot retrieve VLAN %d\n",
+ 					   BATADV_PRINT_VID(vid));
+ 				continue;
+@@ -1052,9 +1054,7 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 				     BATADV_TT_CLIENT_ISOLA) ? 'I' : '.'),
+ 				   no_purge ? 0 : last_seen_secs,
+ 				   no_purge ? 0 : last_seen_msecs,
+-				   vlan->tt.crc);
+-
+-			batadv_softif_vlan_put(vlan);
++				   tt_local->vlan->tt.crc);
+ 		}
+ 		rcu_read_unlock();
+ 	}
+@@ -1099,7 +1099,6 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
+ {
+ 	struct batadv_tt_local_entry *tt_local_entry;
+ 	u16 flags, curr_flags = BATADV_NO_FLAGS;
+-	struct batadv_softif_vlan *vlan;
+ 	void *tt_entry_exists;
+ 
+ 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr, vid);
+@@ -1139,6 +1138,10 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
+ 	/* extra call to free the local tt entry */
+ 	batadv_tt_local_entry_put(tt_local_entry);
+ 
++#if 0
++	/* THIS IS BAD BECAUSE THIS MAY NOT BE THE REAL OBJECT THIS
++	 * tt_local_entry HAS THE REFERENCE FOR
++	 */
+ 	/* decrease the reference held for this vlan */
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid);
+ 	if (!vlan)
+@@ -1146,6 +1149,7 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
+ 
+ 	batadv_softif_vlan_put(vlan);
+ 	batadv_softif_vlan_put(vlan);
++#endif
+ 
+ out:
+ 	if (tt_local_entry)
+@@ -1219,7 +1223,6 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
+ 	spinlock_t *list_lock; /* protects write access to the hash lists */
+ 	struct batadv_tt_common_entry *tt_common_entry;
+ 	struct batadv_tt_local_entry *tt_local;
+-	struct batadv_softif_vlan *vlan;
+ 	struct hlist_node *node_tmp;
+ 	struct hlist_head *head;
+ 	u32 i;
+@@ -1241,6 +1244,10 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
+ 						struct batadv_tt_local_entry,
+ 						common);
+ 
++#if 0
++			/* THIS IS BAD BECAUSE THIS MAY NOT BE THE REAL OBJECT THIS
++			 * tt_local HAS THE REFERENCE FOR
++			 */
+ 			/* decrease the reference held for this vlan */
+ 			vlan = batadv_softif_vlan_get(bat_priv,
+ 						      tt_common_entry->vid);
+@@ -1248,6 +1255,7 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
+ 				batadv_softif_vlan_put(vlan);
+ 				batadv_softif_vlan_put(vlan);
+ 			}
++#endif
+ 
+ 			batadv_tt_local_entry_put(tt_local);
+ 		}
+@@ -3310,7 +3318,6 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
+ 	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
+ 	struct batadv_tt_common_entry *tt_common;
+ 	struct batadv_tt_local_entry *tt_local;
+-	struct batadv_softif_vlan *vlan;
+ 	struct hlist_node *node_tmp;
+ 	struct hlist_head *head;
+ 	spinlock_t *list_lock; /* protects write access to the hash lists */
+@@ -3340,12 +3347,17 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
+ 						struct batadv_tt_local_entry,
+ 						common);
+ 
++#if 0
++	/* THIS IS BAD BECAUSE THIS MAY NOT BE THE REAL OBJECT THIS
++	 * tt_local_entry HAS THE REFERENCE FOR
++	 */
+ 			/* decrease the reference held for this vlan */
+ 			vlan = batadv_softif_vlan_get(bat_priv, tt_common->vid);
+ 			if (vlan) {
+ 				batadv_softif_vlan_put(vlan);
+ 				batadv_softif_vlan_put(vlan);
+ 			}
++#endif
+ 
+ 			batadv_tt_local_entry_put(tt_local);
+ 		}
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 9abfb3e..1480538 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1073,10 +1073,12 @@ struct batadv_tt_common_entry {
+  * struct batadv_tt_local_entry - translation table local entry data
+  * @common: general translation table data
+  * @last_seen: timestamp used for purging stale tt local entries
++ * @vlan: soft-interface vlan of the entry
+  */
+ struct batadv_tt_local_entry {
+ 	struct batadv_tt_common_entry common;
+ 	unsigned long last_seen;
++	struct batadv_softif_vlan *vlan;
+ };
+ 
+ /**
+-- 
+2.7.0
 
