@@ -1,14 +1,15 @@
-Return-Path: <andrew@lunn.ch>
-Date: Sun, 6 Mar 2016 01:08:23 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160306000823.GB1976@lunn.ch>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 06 Mar 2016 09:55:33 +0100
+Message-ID: <1718376.7aKDD05sGf@sven-edge>
+In-Reply-To: <20160306000823.GB1976@lunn.ch>
 References: <1457190564-11419-1-git-send-email-sven@narfation.org>
+ <20160306000823.GB1976@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1457190564-11419-1-git-send-email-sven@narfation.org>
+Content-Type: multipart/signed; boundary="nextPart2170473.TaTxVnKpjX";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH 1/9] batman-adv: Check hard_iface refcnt
- before calling function
+	before calling function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,175 +19,73 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
+To: Andrew Lunn <andrew@lunn.ch>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Sven
+--nextPart2170473.TaTxVnKpjX
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Thanks for the patches. I will test them out of Monday and let you
-know if it fixes the crash.
+On Sunday 06 March 2016 01:08:23 Andrew Lunn wrote:
+> Hi Sven
+> 
+> Thanks for the patches. I will test them out of Monday and let you
+> know if it fixes the crash.
 
-     Andrew
+The ones I've Cc'ed you are not really about fixing the crash. They are just 
+to clean up the reference counting (which you've complained about). You can 
+test them but I would doubt that they fix the problem. But they might help you 
+to detect situation when the refcounter gets 0 but shouldn't.
 
-On Sat, Mar 05, 2016 at 04:09:16PM +0100, Sven Eckelmann wrote:
-> The batadv_hardif_list list is checked in many situations and the items
-> in this list are given to specialized functions to modify the routing
-> behavior. At the moment each of these called functions has to check
-> itself whether the received batadv_hard_iface has a refcount > 0 before
-> it can increase the reference counter and use it in other objects.
-> 
-> This can easily lead to problems because it is not easily visible where
-> all callers of a function got the batadv_hard_iface object from and
-> whether they already hold a valid reference.
-> 
-> Checking the reference counter directly before calling a subfunction
-> with a pointer from the batadv_hardif_list avoids this problem.
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/bat_iv_ogm.c | 11 +++++++++++
->  net/batman-adv/bat_v_ogm.c  | 14 +++++++++++++-
->  net/batman-adv/originator.c |  5 +++++
->  net/batman-adv/send.c       |  6 ++++++
->  4 files changed, 35 insertions(+), 1 deletion(-)
-> 
-> diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-> index 2c65668..b390ff9 100644
-> --- a/net/batman-adv/bat_iv_ogm.c
-> +++ b/net/batman-adv/bat_iv_ogm.c
-> @@ -985,9 +985,15 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
->  	list_for_each_entry_rcu(tmp_hard_iface, &batadv_hardif_list, list) {
->  		if (tmp_hard_iface->soft_iface != hard_iface->soft_iface)
->  			continue;
-> +
-> +		if (!kref_get_unless_zero(&tmp_hard_iface->refcount))
-> +			continue;
-> +
->  		batadv_iv_ogm_queue_add(bat_priv, *ogm_buff,
->  					*ogm_buff_len, hard_iface,
->  					tmp_hard_iface, 1, send_time);
-> +
-> +		batadv_hardif_put(tmp_hard_iface);
->  	}
->  	rcu_read_unlock();
->  
-> @@ -1767,8 +1773,13 @@ static void batadv_iv_ogm_process(const struct sk_buff *skb, int ogm_offset,
->  		if (hard_iface->soft_iface != bat_priv->soft_iface)
->  			continue;
->  
-> +		if (!kref_get_unless_zero(&hard_iface->refcount))
-> +			continue;
-> +
->  		batadv_iv_ogm_process_per_outif(skb, ogm_offset, orig_node,
->  						if_incoming, hard_iface);
-> +
-> +		batadv_hardif_put(hard_iface);
->  	}
->  	rcu_read_unlock();
->  
-> diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-> index 4155fa5..473ebb9 100644
-> --- a/net/batman-adv/bat_v_ogm.c
-> +++ b/net/batman-adv/bat_v_ogm.c
-> @@ -26,6 +26,7 @@
->  #include <linux/if_ether.h>
->  #include <linux/jiffies.h>
->  #include <linux/kernel.h>
-> +#include <linux/kref.h>
->  #include <linux/list.h>
->  #include <linux/netdevice.h>
->  #include <linux/random.h>
-> @@ -176,6 +177,9 @@ static void batadv_v_ogm_send(struct work_struct *work)
->  		if (hard_iface->soft_iface != bat_priv->soft_iface)
->  			continue;
->  
-> +		if (!kref_get_unless_zero(&hard_iface->refcount))
-> +			continue;
-> +
->  		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
->  			   "Sending own OGM2 packet (originator %pM, seqno %u, throughput %u, TTL %d) on interface %s [%pM]\n",
->  			   ogm_packet->orig, ntohl(ogm_packet->seqno),
-> @@ -185,10 +189,13 @@ static void batadv_v_ogm_send(struct work_struct *work)
->  
->  		/* this skb gets consumed by batadv_v_ogm_send_to_if() */
->  		skb_tmp = skb_clone(skb, GFP_ATOMIC);
-> -		if (!skb_tmp)
-> +		if (!skb_tmp) {
-> +			batadv_hardif_put(hard_iface);
->  			break;
-> +		}
->  
->  		batadv_v_ogm_send_to_if(skb_tmp, hard_iface);
-> +		batadv_hardif_put(hard_iface);
->  	}
->  	rcu_read_unlock();
->  
-> @@ -704,9 +711,14 @@ static void batadv_v_ogm_process(const struct sk_buff *skb, int ogm_offset,
->  		if (hard_iface->soft_iface != bat_priv->soft_iface)
->  			continue;
->  
-> +		if (!kref_get_unless_zero(&hard_iface->refcount))
-> +			continue;
-> +
->  		batadv_v_ogm_process_per_outif(bat_priv, ethhdr, ogm_packet,
->  					       orig_node, neigh_node,
->  					       if_incoming, hard_iface);
-> +
-> +		batadv_hardif_put(hard_iface);
->  	}
->  	rcu_read_unlock();
->  out:
-> diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-> index e63d6a5..44c508a 100644
-> --- a/net/batman-adv/originator.c
-> +++ b/net/batman-adv/originator.c
-> @@ -1165,6 +1165,9 @@ static bool batadv_purge_orig_node(struct batadv_priv *bat_priv,
->  		if (hard_iface->soft_iface != bat_priv->soft_iface)
->  			continue;
->  
-> +		if (!kref_get_unless_zero(&hard_iface->refcount))
-> +			continue;
-> +
->  		best_neigh_node = batadv_find_best_neighbor(bat_priv,
->  							    orig_node,
->  							    hard_iface);
-> @@ -1172,6 +1175,8 @@ static bool batadv_purge_orig_node(struct batadv_priv *bat_priv,
->  				    best_neigh_node);
->  		if (best_neigh_node)
->  			batadv_neigh_node_put(best_neigh_node);
-> +
-> +		batadv_hardif_put(hard_iface);
->  	}
->  	rcu_read_unlock();
->  
-> diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-> index 3ce06e0..43a950e 100644
-> --- a/net/batman-adv/send.c
-> +++ b/net/batman-adv/send.c
-> @@ -26,6 +26,7 @@
->  #include <linux/if.h>
->  #include <linux/jiffies.h>
->  #include <linux/kernel.h>
-> +#include <linux/kref.h>
->  #include <linux/list.h>
->  #include <linux/netdevice.h>
->  #include <linux/printk.h>
-> @@ -577,10 +578,15 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
->  		if (forw_packet->num_packets >= hard_iface->num_bcasts)
->  			continue;
->  
-> +		if (!kref_get_unless_zero(&hard_iface->refcount))
-> +			continue;
-> +
->  		/* send a copy of the saved skb */
->  		skb1 = skb_clone(forw_packet->skb, GFP_ATOMIC);
->  		if (skb1)
->  			batadv_send_broadcast_skb(skb1, hard_iface);
-> +
-> +		batadv_hardif_put(hard_iface);
->  	}
->  	rcu_read_unlock();
->  
-> -- 
-> 2.7.0
-> 
+There are also some related problems which I've already mentioned on the 
+mailing list 9 months ago and never got an answer. I've moved them now to the 
+issue tracker in hope that the authors of the feature will now reply. The 
+unchecked double *_put with [2,3] together with the unchecked double list_adds 
+[1] are a good way to mess up the reference counting of several objects 
+(including the hard interfaces).
+
+You may also want to add a real reference counting fix which I've also posted 
+yesterday (but for non-hard-interface objects) [4].
+
+And a small remark about your x86 without serial port. Two systems connected 
+via usb-serial+null-model-cable+usb-serial work quite well for this type of 
+tests. Add  "console=tty0 console=ttyUSB0,115200,n8" to the bootargs of your 
+test system and boot it up. The system used for gathering the kernel output 
+just has to run "screen /dev/ttyUSB0 115200" and dump all the data.
+
+Just a suggestion in case you didn't think about using this kind of setup.
+
+Thanks for debugging this problem and have a nice weekend.
+
+Kind regards,
+	Sven
+
+[1] https://www.open-mesh.org/issues/243
+[2] https://www.open-mesh.org/issues/242
+[3] https://www.open-mesh.org/issues/235
+[4] https://patchwork.open-mesh.org/patch/15888/
+--nextPart2170473.TaTxVnKpjX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJW2/CFAAoJEF2HCgfBJntGwU0QAMgVy1c2eKjjrUgLuFjoZ/31
+zcxElr0S0MT1m9u4Koi5xITg50EoING88wSIKIFF4vWkt3+cw9eWZHSS3yZmhht+
+KyuLXfDz2CLJ95r6VKYRRLNTeKo5icoU9NUxhakIRC/IJ8zcee+8FQcQc47x6xJ+
+kTER2oZft0EfVGS4QE1asIeJCsz3nTD7UTyyla9RHnTt8oDZBG/ebNQHHzGOM0g4
+dbjoGfqGfsnmGI6HpZdUBzIoiutTOBTXqC6OjX9qS6ox+5LyDdSf9dL0LM+YNIFZ
+kWDYzgOVIHqCQePmiu8ZTPG8BQo+bxvzBLXRK7Vs1b3Y9CUciPaWERl67GNMl8zA
+oMupyKWTJpi5IumzM5JsSs8Dk7FuAFYesrrfW5kTJ/VCB6A8X2nmXVy/feCuHRQH
+Du3qx8XOmsg8sqAHw9fodGesmLx5HoPzgGVpes/7NncCdDZ3FB1WmYuIceMoSVHH
+8DtZGtaEl7RwPogInDJBTnzeKLDTkwDraLARv4TuY4kYZ1yq+LzjBx+oVhMNaFqS
+LokUQ51717NO8but/ThiejYTZxEQ2vp9wf6hFNCRenwHSei9gtTK1BergFBDSGFU
+dG0JBtbCBCJ4zqi9OXle3r98cyUtvrOPv+kbBVR/8mC6AUKM5wIqOq6qKFHj6DLG
+q5SUh0RfpWxq1xWQ4j81
+=HhFG
+-----END PGP SIGNATURE-----
+
+--nextPart2170473.TaTxVnKpjX--
+
