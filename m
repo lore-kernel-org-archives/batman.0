@@ -1,9 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  6 Mar 2016 11:07:21 +0100
-Message-Id: <1457258842-10389-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [RFC maint 1/2] batman-adv: Fix reference counting
-	of vlan object for tt_local_entry
+Date: Sun,  6 Mar 2016 11:07:22 +0100
+Message-Id: <1457258842-10389-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1457258842-10389-1-git-send-email-sven@narfation.org>
+References: <1457258842-10389-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [RFC maint 2/2] batman-adv: Fix reference counting
+	of hardif_neigh_node object for neigh_node
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,179 +17,106 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The batadv_tt_local_entry was specific to a batadv_softif_vlan and held an
-implicit reference to it. But this reference was never stored in form of a
-pointer in the tt_local_entry itself. Instead batadv_tt_local_remove,
-batadv_tt_local_table_free and batadv_tt_local_purge_pending_clients depend
-on a consistent state of bat_priv->softif_vlan_list and that
-batadv_softif_vlan_get always returns the batadv_softif_vlan object which
-it has a reference for. But batadv_softif_vlan_get cannot guarantee that
-because it is working only with rcu_read_lock on this list. It can
-therefore happen that an vid is in this list twice or that
-batadv_softif_vlan_get cannot find the batadv_softif_vlan for an vid due to
-some other list operations taking place at the same time.
+The batadv_neigh_node was specific to a batadv_hardif_neigh_node and held
+an implicit reference to it. But this reference was never stored in form of
+a pointer in the batadv_neigh_node itself. Instead
+batadv_neigh_node_release depends on a consistent state of
+hard_iface->neigh_list and that batadv_hardif_neigh_get always returns the
+batadv_hardif_neigh_node object which it has a reference for. But
+batadv_hardif_neigh_get cannot guarantee that because it is working only
+with rcu_read_lock on this list. It can therefore happen that a neigh_addr
+is in this list twice or that batadv_hardif_neigh_get cannot find the
+batadv_hardif_neigh_node for an neigh_addr due to some other list
+operations taking place at the same time.
 
-Instead add a batadv_softif_vlan pointer directly in batadv_tt_local_entry
-which will be used for the reference counter decremented on release of
-batadv_tt_local_entry.
+Instead add a batadv_hardif_neigh_node pointer directly in
+batadv_neigh_node which will be used for the reference counter decremented
+on release of batadv_neigh_node.
 
-Fixes: 9729d2085c0f ("batman-adv: fix TT VLAN inconsistency on VLAN re-add")
+Fixes: fed2826b490c ("batman-adv: add list of unique single hop neighbors per hard-interface")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-See https://www.open-mesh.org/issues/243
+See https://www.open-mesh.org/issues/242
 
- net/batman-adv/translation-table.c | 30 +++++++++++++++++++++---------
- net/batman-adv/types.h             |  2 ++
- 2 files changed, 23 insertions(+), 9 deletions(-)
+ net/batman-adv/originator.c | 16 ++++++++++++----
+ net/batman-adv/types.h      |  2 ++
+ 2 files changed, 14 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 2ed55f4..8b89c8f 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -215,6 +215,9 @@ static void batadv_tt_local_entry_release(struct kref *ref)
- 	tt_local_entry = container_of(ref, struct batadv_tt_local_entry,
- 				      common.refcount);
- 
-+	if (tt_local_entry->vlan)
-+		batadv_softif_vlan_put(tt_local_entry->vlan);
-+
- 	kfree_rcu(tt_local_entry, common.rcu);
- }
- 
-@@ -673,6 +676,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
- 	kref_get(&tt_local->common.refcount);
- 	tt_local->last_seen = jiffies;
- 	tt_local->common.added_at = tt_local->last_seen;
-+	tt_local->vlan = vlan;
- 
- 	/* the batman interface mac and multicast addresses should never be
- 	 * purged
-@@ -991,7 +995,6 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 	struct batadv_tt_common_entry *tt_common_entry;
- 	struct batadv_tt_local_entry *tt_local;
- 	struct batadv_hard_iface *primary_if;
--	struct batadv_softif_vlan *vlan;
- 	struct hlist_head *head;
- 	unsigned short vid;
- 	u32 i;
-@@ -1028,8 +1031,7 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 
- 			no_purge = tt_common_entry->flags & np_flag;
- 
--			vlan = batadv_softif_vlan_get(bat_priv, vid);
--			if (!vlan) {
-+			if (!tt_local->vlan) {
- 				seq_printf(seq, "Cannot retrieve VLAN %d\n",
- 					   BATADV_PRINT_VID(vid));
- 				continue;
-@@ -1052,9 +1054,7 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 				     BATADV_TT_CLIENT_ISOLA) ? 'I' : '.'),
- 				   no_purge ? 0 : last_seen_secs,
- 				   no_purge ? 0 : last_seen_msecs,
--				   vlan->tt.crc);
--
--			batadv_softif_vlan_put(vlan);
-+				   tt_local->vlan->tt.crc);
- 		}
- 		rcu_read_unlock();
- 	}
-@@ -1099,7 +1099,6 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 2d288ea..2f754d7 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -250,7 +250,6 @@ static void batadv_neigh_node_release(struct kref *ref)
  {
- 	struct batadv_tt_local_entry *tt_local_entry;
- 	u16 flags, curr_flags = BATADV_NO_FLAGS;
--	struct batadv_softif_vlan *vlan;
- 	void *tt_entry_exists;
+ 	struct hlist_node *node_tmp;
+ 	struct batadv_neigh_node *neigh_node;
+-	struct batadv_hardif_neigh_node *hardif_neigh;
+ 	struct batadv_neigh_ifinfo *neigh_ifinfo;
+ 	struct batadv_algo_ops *bao;
  
- 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr, vid);
-@@ -1139,6 +1138,10 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
- 	/* extra call to free the local tt entry */
- 	batadv_tt_local_entry_put(tt_local_entry);
+@@ -262,6 +261,10 @@ static void batadv_neigh_node_release(struct kref *ref)
+ 		batadv_neigh_ifinfo_put(neigh_ifinfo);
+ 	}
  
 +#if 0
 +	/* THIS IS BAD BECAUSE THIS MAY NOT BE THE REAL OBJECT THIS
-+	 * tt_local_entry HAS THE REFERENCE FOR
++	 * neigh_node HAS THE REFERENCE FOR
 +	 */
- 	/* decrease the reference held for this vlan */
- 	vlan = batadv_softif_vlan_get(bat_priv, vid);
- 	if (!vlan)
-@@ -1146,6 +1149,7 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
- 
- 	batadv_softif_vlan_put(vlan);
- 	batadv_softif_vlan_put(vlan);
+ 	hardif_neigh = batadv_hardif_neigh_get(neigh_node->if_incoming,
+ 					       neigh_node->addr);
+ 	if (hardif_neigh) {
+@@ -269,6 +272,10 @@ static void batadv_neigh_node_release(struct kref *ref)
+ 		batadv_hardif_neigh_put(hardif_neigh);
+ 		batadv_hardif_neigh_put(hardif_neigh);
+ 	}
 +#endif
++
++	if (neigh_node->hardif_neigh)
++		batadv_hardif_neigh_put(neigh_node->hardif_neigh);
  
- out:
- 	if (tt_local_entry)
-@@ -1219,7 +1223,6 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
- 	spinlock_t *list_lock; /* protects write access to the hash lists */
- 	struct batadv_tt_common_entry *tt_common_entry;
- 	struct batadv_tt_local_entry *tt_local;
--	struct batadv_softif_vlan *vlan;
- 	struct hlist_node *node_tmp;
- 	struct hlist_head *head;
- 	u32 i;
-@@ -1241,6 +1244,10 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
- 						struct batadv_tt_local_entry,
- 						common);
+ 	if (bao->bat_neigh_free)
+ 		bao->bat_neigh_free(neigh_node);
+@@ -648,6 +655,10 @@ batadv_neigh_node_new(struct batadv_orig_node *orig_node,
+ 	neigh_node->if_incoming = hard_iface;
+ 	neigh_node->orig_node = orig_node;
  
-+#if 0
-+			/* THIS IS BAD BECAUSE THIS MAY NOT BE THE REAL OBJECT THIS
-+			 * tt_local HAS THE REFERENCE FOR
-+			 */
- 			/* decrease the reference held for this vlan */
- 			vlan = batadv_softif_vlan_get(bat_priv,
- 						      tt_common_entry->vid);
-@@ -1248,6 +1255,7 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
- 				batadv_softif_vlan_put(vlan);
- 				batadv_softif_vlan_put(vlan);
- 			}
-+#endif
++	/* increment unique neighbor refcount */
++	kref_get(&hardif_neigh->refcount);
++	neigh_node->hardif_neigh = hardif_neigh;
++
+ 	/* extra reference for return */
+ 	kref_init(&neigh_node->refcount);
+ 	kref_get(&neigh_node->refcount);
+@@ -656,9 +667,6 @@ batadv_neigh_node_new(struct batadv_orig_node *orig_node,
+ 	hlist_add_head_rcu(&neigh_node->list, &orig_node->neigh_list);
+ 	spin_unlock_bh(&orig_node->neigh_list_lock);
  
- 			batadv_tt_local_entry_put(tt_local);
- 		}
-@@ -3310,7 +3318,6 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
- 	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
- 	struct batadv_tt_common_entry *tt_common;
- 	struct batadv_tt_local_entry *tt_local;
--	struct batadv_softif_vlan *vlan;
- 	struct hlist_node *node_tmp;
- 	struct hlist_head *head;
- 	spinlock_t *list_lock; /* protects write access to the hash lists */
-@@ -3340,12 +3347,17 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
- 						struct batadv_tt_local_entry,
- 						common);
- 
-+#if 0
-+	/* THIS IS BAD BECAUSE THIS MAY NOT BE THE REAL OBJECT THIS
-+	 * tt_local_entry HAS THE REFERENCE FOR
-+	 */
- 			/* decrease the reference held for this vlan */
- 			vlan = batadv_softif_vlan_get(bat_priv, tt_common->vid);
- 			if (vlan) {
- 				batadv_softif_vlan_put(vlan);
- 				batadv_softif_vlan_put(vlan);
- 			}
-+#endif
- 
- 			batadv_tt_local_entry_put(tt_local);
- 		}
+-	/* increment unique neighbor refcount */
+-	kref_get(&hardif_neigh->refcount);
+-
+ 	batadv_dbg(BATADV_DBG_BATMAN, orig_node->bat_priv,
+ 		   "Creating new neighbor %pM for orig_node %pM on interface %s\n",
+ 		   neigh_addr, orig_node->orig, hard_iface->net_dev->name);
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 9abfb3e..1480538 100644
+index 1480538..58a3fa5 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -1073,10 +1073,12 @@ struct batadv_tt_common_entry {
-  * struct batadv_tt_local_entry - translation table local entry data
-  * @common: general translation table data
-  * @last_seen: timestamp used for purging stale tt local entries
-+ * @vlan: soft-interface vlan of the entry
+@@ -433,6 +433,7 @@ struct batadv_hardif_neigh_node {
+  * @ifinfo_lock: lock protecting private ifinfo members and list
+  * @if_incoming: pointer to incoming hard-interface
+  * @last_seen: when last packet via this neighbor was received
++ * @hardif_neigh: hardif_neigh of this neighbor
+  * @refcount: number of contexts the object is used
+  * @rcu: struct used for freeing in an RCU-safe manner
   */
- struct batadv_tt_local_entry {
- 	struct batadv_tt_common_entry common;
+@@ -444,6 +445,7 @@ struct batadv_neigh_node {
+ 	spinlock_t ifinfo_lock;	/* protects ifinfo_list and its members */
+ 	struct batadv_hard_iface *if_incoming;
  	unsigned long last_seen;
-+	struct batadv_softif_vlan *vlan;
++	struct batadv_hardif_neigh_node *hardif_neigh;
+ 	struct kref refcount;
+ 	struct rcu_head rcu;
  };
- 
- /**
 -- 
 2.7.0
 
