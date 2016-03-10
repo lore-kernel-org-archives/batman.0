@@ -1,14 +1,13 @@
-Return-Path: <a@unstable.cc>
-Date: Thu, 10 Mar 2016 09:15:45 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160310011545.GI13448@prodigo.lan>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 10 Mar 2016 08:20:52 +0100
+Message-ID: <5482073.1R4P3QZAZh@sven-edge>
+In-Reply-To: <20160310011545.GI13448@prodigo.lan>
 References: <1457484919-3935-1-git-send-email-a@unstable.cc>
- <13752331.CEKO7ckMJS@sven-edge>
+ <13752331.CEKO7ckMJS@sven-edge> <20160310011545.GI13448@prodigo.lan>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="PMULwz+zIGJzpDN9"
-Content-Disposition: inline
-In-Reply-To: <13752331.CEKO7ckMJS@sven-edge>
+Content-Type: multipart/signed; boundary="nextPart3619254.LGYCcL6C6t";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix typ0 in kerneldoc
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -19,69 +18,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
+To: Antonio Quartulli <a@unstable.cc>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
+--nextPart3619254.LGYCcL6C6t
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---PMULwz+zIGJzpDN9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thursday 10 March 2016 09:15:45 Antonio Quartulli wrote:
+> > You've missed some (see
+> > https://git.open-mesh.org/batman-adv.git/commit/94399934a5e050073e1146ecfc
+> > 48fe58ac3551b3
+> > for the update patch):
+> May I resend this patch with your sign-off as well ?
 
-On Wed, Mar 09, 2016 at 10:11:43PM +0100, Sven Eckelmann wrote:
-> On Wednesday 09 March 2016 08:55:19 Antonio Quartulli wrote:
-> > Signed-off-by: Antonio Quartulli <a@unstable.cc>
-> > ---
-> >  net/batman-adv/distributed-arp-table.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >=20
-> > diff --git a/net/batman-adv/distributed-arp-table.c
-> > b/net/batman-adv/distributed-arp-table.c index 919a8d2..ab79f3a 100644
-> > --- a/net/batman-adv/distributed-arp-table.c
-> > +++ b/net/batman-adv/distributed-arp-table.c
-> > @@ -717,7 +717,7 @@ void batadv_dat_status_update(struct net_device
-> > *net_dev) }
-> >=20
-> >  /**
-> > - * batadv_gw_tvlv_ogm_handler_v1 - process incoming dat tvlv container
-> > + * batadv_dat_tvlv_ogm_handler_v1 - process incoming dat tvlv container
-> >   * @bat_priv: the bat priv with all the soft interface information
-> >   * @orig: the orig_node of the ogm
-> >   * @flags: flags indicating the tvlv state (see batadv_tvlv_handler_fl=
-ags)
->=20
-> You've missed some (see
-> https://git.open-mesh.org/batman-adv.git/commit/94399934a5e050073e1146ecf=
-c48fe58ac3551b3
-> for the update patch):
+Yes:
 
-May I resend this patch with your sign-off as well ?
+https://git.open-mesh.org/batman-adv.git/commit/3d70bed1c1504d67174def5a1bef54053185889b
 
-Cheers,
-
---=20
-Antonio Quartulli
-
---PMULwz+zIGJzpDN9
+Kind regards,
+	Sven
+--nextPart3619254.LGYCcL6C6t
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJW4MrBAAoJENpFlCjNi1MR5NIQAKimu6Q7ZJWt2y9XxEM9Ax3t
-Tl/ZujKSqT2Inj7Pfk9Z8VhypOY79Ik4HgyVfpZ19HTiDcx4wUd+W6wT6mq0Q9Um
-2v+NJdg+28Q3IHiUxdvlHbEdkLc31wRhKt7x4ns/a5Ch8uazBWUpcSq0mllPaeph
-eqx7EcoMhKB22yOgZ8hnNzcLE9CRd5iCp/YQarl6WJoWjfk54afpRDaSFX0MuN16
-QcgLpCm4XjI4fTOKuyVfDGDgwoUYo4XAz2ZhbO0VCgOQq7r0ePCJUj2DjJTuBfkB
-RHCCMkbmtW3T3/B55XVy5f3PMpYvUX2P+3DtMYRVzzgygdg/VhO7Idard1B35T82
-cm2kyvAzxIdNjCD1DQVskufnJAbN7fcId6VSjhKvE9o/Oym3ajRgC77kY/+I82ZO
-QQkhkH4J4V4qTtVgA5Q6UKtuqK7O5miCSgbUx28XjDp1E77447Rul8wDlUvaXQvs
-A2anQZsWef+zK/jD29qU5HzPzZjdtHgsrTy9DFUsWTc0rZ991v8nRRGqREl9NrCk
-X3vrvKtmlZtSkC/4QJSpWdtqvp7g9d+xwxspBjEcmj56uNM3oGAkvgQe7JAlpy8/
-wQjAKrtZ1VBjphJ+tYmMPLzFBl4Igk3m9NHDFGvoS9z9JjtuqMy1PWCpJ7sMRymq
-YYpprBbQRuUJSUie9rU8
-=UmfI
+iQIcBAABCgAGBQJW4SBUAAoJEF2HCgfBJntGoYUQALic18ZzALyc8kVelkqbOoQZ
+F9cAxA03OadpoUizc1tu7HQ2n0Rq98i708cxOekqa1xJ6SJuUbveSgY7B0pQVty6
+4Mu1T1WR7qIHIF8wJEjrFUDoflKwRe3YMduVsQqqLeykRaD/IM24KdIaO+zvt3wX
+frBRx1qD1usrTYcovf2f1pxDP+Motl6syrNEwRk/o7p+QerekQI42WL/i5PlpBc3
+wx8dM56LeXEoednLT52QL3Ega910vFbC2dVjcn+9TJj76DzVTM2BHHFyJFkFEKsN
+mllnDdjh+o9i/gnwAjfHAwfWzdQm6ogKQVgzi64louek9ZWXfVoHupVb4alNUxLJ
+aY1EhL6rZVKNQoHPvXhulWas9MfsDUVuhh5oOxoM6vLRozKWSvP+LNQ0mpadOuzz
+JVKr09R4tvA+twDrlomd5+z3e2uqaLPRqkgjDJ/fHRnD4gbXXneswsdHOTPAUPDf
+b8gDeckN+zfKC6vV4K5lGXysMaTftXlhz+C9tGKoiWktQBbP/s9B9OWNaWXj4PHU
+VP9w5qkS/ZG91m3GFiIoC8EVty0Rt4vAABEozLIJash/i7k4BN4P8s9iORCm6xNx
+gj84DIcIzkzd0+RqoMuaeGWKlRzDo14lrrcXJO6tJMrMazZS4M7gEIIWVfbsmXpd
+792Pv1qFNMbNXKN6kGV1
+=Zbcr
 -----END PGP SIGNATURE-----
 
---PMULwz+zIGJzpDN9--
+--nextPart3619254.LGYCcL6C6t--
+
