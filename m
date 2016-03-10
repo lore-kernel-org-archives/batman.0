@@ -1,15 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 10 Mar 2016 18:44:39 +0100
-Message-ID: <1676205.nXJgt3zli3@bentobox>
-In-Reply-To: <1366236516-14512-1-git-send-email-linus.luessing@web.de>
-References: <1366235673-13763-1-git-send-email-linus.luessing@web.de>
- <1366236516-14512-1-git-send-email-linus.luessing@web.de>
+Date: Thu, 10 Mar 2016 18:48:23 +0100
+Message-ID: <2877704.F65L7Zjf4e@bentobox>
+In-Reply-To: <1379759294-1481-1-git-send-email-antonio@meshcoding.com>
+References: <1379759294-1481-1-git-send-email-antonio@meshcoding.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2855198.7W4jkA50Uz";
+Content-Type: multipart/signed; boundary="nextPart4191287.idDQlLLrEW";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: Fix broadcast/ogm
-	queue limit on a removed interface
+Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: fix DAT candidate
+	selection (must use vid)
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,42 +19,32 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart2855198.7W4jkA50Uz
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart4191287.idDQlLLrEW
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Thursday 18 April 2013 00:08:36 Linus L=FCssing wrote:
-> When removing a single interface while a broadcast or ogm packet is
-> still pending then we will free the forward packet without releasing =
-the
-> queue slots again.
->=20
-> This patch is supposed to fix this issue.
->=20
-> Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
+On Saturday 21 September 2013 12:28:14 Antonio Quartulli wrote:
+> Now that DAT is VLAN aware, it must use the VID when
+> computing the DHT address of the candidate nodes where
+> an entry is going to be stored/retrieved.
+> 
+> Introduced by: 3e26722bc9f248ec4316749fc1957365c0fa5e4b
+> ("batman-adv: make the Distributed ARP Table vlan aware")
+> 
+> Signed-off-by: Antonio Quartulli <antonio@meshcoding.com>
 > ---
 
-You are talking a batman-adv interface when it contains multiple slave
-interfaces, right? So batadv_purge_outstanding_packets would be called =
-in
-batadv_hardif_disable_interface and not in batadv_mesh_free (which is o=
-nly=20
-done when the batX interface will be removed).
+It looks like this patch doesn't apply anymore. Can you please resent it or
+mark it correctly in patchwork [1].
 
-This at least sounds legit and I cannot find where else this imbalance =
-would=20
-be fixed.
+Thanks,
+	Sven
 
-Acked-by: Sven Eckelmann <sven@narfation.org>
+[1] https://patchwork.open-mesh.org/patch/3427/
 
-Kind regards,
-=09Sven
-
-PS: This patch only requires the path change from / to /net/batman-adv/=
- to=20
-apply via git-am
---nextPart2855198.7W4jkA50Uz
+--nextPart4191287.idDQlLLrEW
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -63,20 +52,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJW4bKHAAoJEF2HCgfBJntG7hYQAJBx8J26Joq3vo/m/4rkqXMi
-oNtwdOjjd8bqJy2DtS2wH6GCe20TpnBdgDjvEIL22uLLGXgQQVUkr5ip5wS0V/ze
-N/2OgNZ96c5729xNRMDHg5p0Cu6f8IiW2mxjpw3gPBICWUOdTwL0L4EKaDqgvCwt
-2cW1Zu2qMfbZHoSgjWtnQPzZS9bPjqBo8NrG0Z6wCE3wli6uNX6zhYQXAYZTMabn
-M7FNG0YzYiLw69erom1zson91gZJto6bGuR+enIcQ2+L5DwCUGnmTzE0h7HVsCzJ
-aIwjnquyBCc98q23c2770FUd3zFcbTQ3T9QG7ujaZgmun1/RqsLW/sJmG1v0HxFx
-dngHgHQdP8i0FnfFY7xwe+C/va7tsuWCIEj9VQBe7e2wRYlWtQGgsHa5Mxn51EMO
-8TcEWgYQ+kX4V8yfFa2eUqpgW6tAeHwUnRFwki+LtttC9Ju9OhBYzsZtOFWsWxZL
-OSBIZoqSGyy/ZdkLZ9FOfkwm56VeKXJnvC6gqXQNbtglK18KGJqlxQzAZTX9NIHV
-2X19OTervjKW2vE3RAoecp6vnzfzy1O0N4tY3CPbVi1uuRzRBZ/T/BWILCebRlQi
-0xI3LXsxNIiypQ+AZUnkL/Y8q8YDs/k8KyDDnY/jRvSqPBeKGLYVRSB5NFm88JEh
-c/tKt7HjghHVxsUfMyy5
-=fMpg
+iQIcBAABCgAGBQJW4bNnAAoJEF2HCgfBJntGlhIP/3oWJKnqbH5BYNlJxvXwdmNj
+Gf0hc9D3ZhzWVvdF215E5Tt264iij5QH1IYQ2OfC40CODelXQ42MXlP5hRyW3iki
+RqUsPDLB33Mu6hsA7u7q2K1e4TO68XOOFiDjE95mNGE2pxTQdlREVffIAEGU0DVn
+mIkWGGu/eUDil9OuXGtJAsKN1XAHIX9XQAhFz5YcXz4utxQM2b1ZttMRdpcBxUpz
+ovZyzOhtiMTxf4mMgz1XNsLcdiEsPSmybauyWnkSk8w9wWcuMzTiKu3QZ7go01oo
+u49cpbBAKsltdFBIqWkv0DDeRtB0XvTZyTDER+8ZJbUhwgWYYt2rpiAyrcH0ykO9
+IUnWfqAUwAZGFhPzAQJqpZ9p8EF2hjOxQ8UV+uasDQiS8QfTAijJHhfSuUksxMki
+BNG7yKO3G9kG8fL6m+Xr+fLtxuHdXQUoQuRyIvkmKUaqAqiZ0jCBeUaRwdDuE5dS
+JghSApBTgxWvMw1KMD579g+uolFkzFGDy7DlFQLPWZutyoxlYfXWXt4zV1EqSqoD
+Vdyg1LySFXir9rZSqo/24R0Yix9HtudxsY/9cwP0XZ7UeuPSgBL8i0nN8sj3yKTM
+HuEPojk6Ezn5IkbxaaMNAbFCa6yXLs25tmde+EdlwS2a4KIw9j21qCIDVanPRuCZ
+dXydpbn0j+7HkHAQGHOe
+=cVP3
 -----END PGP SIGNATURE-----
 
---nextPart2855198.7W4jkA50Uz--
+--nextPart4191287.idDQlLLrEW--
 
