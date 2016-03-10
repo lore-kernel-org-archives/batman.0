@@ -1,16 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 10 Mar 2016 20:11:29 +0100
-Message-ID: <6878336.syOh2mTv3A@bentobox>
-In-Reply-To: <CAP5XTDMWzo8S086mdmHpgKnGCVWtiJvdHWA=KHa5gFV0H_D5QA@mail.gmail.com>
-References: <1373242365-763-1-git-send-email-mihail.costea2005@gmail.com>
- <20130810110303.GA849@ritirata.org>
- <CAP5XTDMWzo8S086mdmHpgKnGCVWtiJvdHWA=KHa5gFV0H_D5QA@mail.gmail.com>
+Date: Thu, 10 Mar 2016 20:30:13 +0100
+Message-ID: <1655341.WCvHHx7pqD@bentobox>
+In-Reply-To: <564EFC67.7050307@users.sourceforge.net>
+References: <5307CAA2.8060406@users.sourceforge.net>
+ <564EDE1D.7070809@meshcoding.com> <564EFC67.7050307@users.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1548434.vsevptizY8";
+Content-Type: multipart/signed; boundary="nextPart6025988.xOaW2VZJs2";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC 1/6] batman-adv: Generalize DAT in order to
-	support any type of data, not only IPv4
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Less function calls in
+	batadv_is_ap_isolated() after error detection
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,42 +19,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Mihail Costea <mihail.costea90@gmail.com>
+To: SF Markus Elfring <elfring@users.sourceforge.net>, kernel-janitors@vger.kernel.org
+Cc: Julia Lawall <julia.lawall@lip6.fr>, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart1548434.vsevptizY8
+--nextPart6025988.xOaW2VZJs2
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 10 August 2013 12:01:02 Mihail Costea wrote:
-> Hi Antonio,
+On Friday 20 November 2015 11:56:39 SF Markus Elfring wrote:
+> > On top of that, by going through the batman-adv code you might agree
+> > that the current style is actually not a bad idea.
 > 
-> Thanks for the update.
-> I will do the changes as soon as possible. I haven't sync in a while
-> with the code base, so I think the whole changes might take a while to
-> implement (+ I'm also working full time and trying to finish the paper
-> for my Diploma Project).
-> I hope that in 2 weeks I will finish everything because I can mostly
-> work on my weekends. I don't have to finish everything by the time I
-> present the Diploma Project, but once I have presented it, I can
-> dedicate all my time here (at that time I would have finished my
-> internship too).
-> 
-> But maybe that is done by then :).
+> I got the impression that the current Linux coding style convention
+> disagrees around the affected jump label selection to some degree,
+> doesn't it?
 
-What is the state here [1, 2, 3, 4, 5, 6]?
+Yes, see "Chapter 7: Centralized exiting of functions". But your patch
+doesn't seem to apply anymore. Can you please resent it or mark it
+correctly in patchwork [1].
+
+There was also another suggestion in the past:
+
+ * https://patchwork.open-mesh.org/patch/4081/ [2]
+
+I have prepared a overview of functions and their goto's [3] to make
+it easier to spot interesting places.
 
 Kind regards,
 	Sven
 
-[1] https://patchwork.open-mesh.org/patch/3177/
-[2] https://patchwork.open-mesh.org/patch/3195/
-[3] https://patchwork.open-mesh.org/patch/3194/
-[4] https://patchwork.open-mesh.org/patch/3166/
-[5] https://patchwork.open-mesh.org/patch/3156/
-[6] https://patchwork.open-mesh.org/patch/3205/
+[1] https://patchwork.open-mesh.org/patch/4724/
+    You can find an updated version at
+    https://git.open-mesh.org/batman-adv.git/patch/1b79cb12821da928b4cf2d116469dfdcbe66d8cd
+[2] Update version:
+    https://git.open-mesh.org/batman-adv.git/commit/28578c9dd0e592f1c69c44ab7723021b1e8c5b28
+[3] https://git.open-mesh.org/batman-adv.git/blob/783c827d01b3644ac09a0f32fe4a9dfa8d6debd3:/TODO
 
---nextPart1548434.vsevptizY8
+--nextPart6025988.xOaW2VZJs2
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -63,20 +63,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJW4cbhAAoJEF2HCgfBJntG4XEP/2j9LlC0Ga/O+dbD3XgiW7L1
-Vj9IRVbzjVFLQaK4/6MuKlOK8vupOcWHMLaE/lzLOGSdk6f3ueuvPqZEcj8LTgxg
-urF5lpWe1cdli9xjVTpREEGUIK02BIHgunDEK1eVl3bhUZlcxjAGjd3EKkMQ+a9E
-pMPbj5raLI6OKroIk/07ahKkA1m/DtcR+8dDkNDfue+UjZzQLYFoEvsDXd30+tUT
-EDFiIoxHJUp+7jDKy53m2DZhKex1GuBYB6k3JyJvIU6v6peAj5DL4ioXOhC1jpGi
-09Si0YBO2TFEaXU21PlDPtVcGWjCAXZv7qCaIdhy4BFNXGRPJRorxsWr4rYCG9TQ
-N3Y9odPIgVKUarzZQlsljmSgMJnxrNUvY8EA2QiojVYwI9AeNz6vlfrL2z+NsJE9
-HquPKq0v493QtXUMIiyqcjchCKdGiF9MU6e9WI0cNtDd3QIZdxNK9T3F+hGiAp2n
-peBbUnztniFbbjMdgztUvnnHZWUrXtbwwlzGRzKlFVIiN6YW2yr8ERtZmCTjPN8W
-wt2/JWtASXFPpDvM1KnMwxtsjGVgQ2bu267FayEOEVmdmUnWxrAixybQhaRHSdp0
-smIdI/Zvs6NoJHD7LiMoj4L/EfOqCuFRtLJrYb/6u0/RvtNxcJ5pIbzzW+mlZ3Xf
-iOa3yq9w8DFh7W2z39w2
-=GKpl
+iQIcBAABCgAGBQJW4ctGAAoJEF2HCgfBJntG5SEP/3HWwvv8rg4/TZNQbl+e0cOZ
+DtWBU0ASuQrvM9D6F4zG0e8Dm17I8EWv/2iLSKlL1hCXjBItWeEmAhfDYwjyCP8o
+FECxh35HdDC2s8vIu91mTwv97Bj5yNQr0ukMsEZrF5fF6PbWFiH/iI2yCTTOCF36
+JvT9GvTCU2yWnXIk0nuOzr7TF6BUmBmyd0TygU7nS8fELuhD908WalGr3OVSj9Vl
+PTOkI0nTN3QFKPE7wNox21+ErJ7gdQZMtUVJkouiFn78lX/69PwUta1c8+z9iQ/A
+VymjidKPuJOUyvgAu2RtSHi2VjeTyNg2lXZIvpfvCJ+ccMr4BPRlkX67kFoQ8rHv
+QJLGN6BwiPrNY65YgcKYQ4mWpprEZMgfxB8ZGvGlJd+NKigvcf8w20S+9TdpaMl2
+z+9a+A8KdjTbAEfb+q7GdyUfZI+52kYm0NltYsUfF4w8GEyug3UOam3nohtg48Ye
+axaZsfEfxsCi4a8Q4S6CgF4iKX8hkMlkeokeVeLhk/uRrSqkgl9BjrB6PI8noyg/
+piluzaPKWpDXMTn25nhxDdwT1jtLIXZyZgODy7V+acWCaKsYnvnx5lfxf0hMPEcH
+I6tF0Ob9H6OQMvczOhCpyNomMBqseqLBGYnxaXXiPocFp3lFzo1aMPPhRWL5OTnX
+xzgDoaAwu461oDZFIET8
+=DCHt
 -----END PGP SIGNATURE-----
 
---nextPart1548434.vsevptizY8--
+--nextPart6025988.xOaW2VZJs2--
 
