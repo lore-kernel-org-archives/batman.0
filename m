@@ -1,14 +1,16 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 10 Mar 2016 19:54:50 +0100
-Message-ID: <1890819.Y64XMdRy2X@bentobox>
-In-Reply-To: <1444205214-5307-1-git-send-email-linus.luessing@c0d3.blue>
-References: <1444205214-5307-1-git-send-email-linus.luessing@c0d3.blue>
+Date: Thu, 10 Mar 2016 20:11:29 +0100
+Message-ID: <6878336.syOh2mTv3A@bentobox>
+In-Reply-To: <CAP5XTDMWzo8S086mdmHpgKnGCVWtiJvdHWA=KHa5gFV0H_D5QA@mail.gmail.com>
+References: <1373242365-763-1-git-send-email-mihail.costea2005@gmail.com>
+ <20130810110303.GA849@ritirata.org>
+ <CAP5XTDMWzo8S086mdmHpgKnGCVWtiJvdHWA=KHa5gFV0H_D5QA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1838503.ce1GejcuZW";
+Content-Type: multipart/signed; boundary="nextPart1548434.vsevptizY8";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv11 0/4] Multicast optimizations for
-	bridges
+Subject: Re: [B.A.T.M.A.N.] [RFC 1/6] batman-adv: Generalize DAT in order to
+	support any type of data, not only IPv4
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,52 +21,41 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Mihail Costea <mihail.costea90@gmail.com>
 
---nextPart1838503.ce1GejcuZW
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart1548434.vsevptizY8
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday 07 October 2015 10:06:50 Linus L=FCssing wrote:
-> This patchset enables the usage of the batman-adv multicast optimizat=
-ions
-> for scenarios involving bridges on top of e.g. bat0, too.
->=20
-> The first one alters the forwarding behaviour for IGMP and MLD report=
-s
-> which is a prerequisite before enabling multicast optimizations in
-> bridged setups. It also increases the MCAST TVLV version number to 2.=
+On Saturday 10 August 2013 12:01:02 Mihail Costea wrote:
+> Hi Antonio,
+> 
+> Thanks for the update.
+> I will do the changes as soon as possible. I haven't sync in a while
+> with the code base, so I think the whole changes might take a while to
+> implement (+ I'm also working full time and trying to finish the paper
+> for my Diploma Project).
+> I hope that in 2 weeks I will finish everything because I can mostly
+> work on my weekends. I don't have to finish everything by the time I
+> present the Diploma Project, but once I have presented it, I can
+> dedicate all my time here (at that time I would have finished my
+> internship too).
+> 
+> But maybe that is done by then :).
 
-> More on the issue of insufficient report handling with the v1
-> MCAST TVLV can be found here:
->=20
-> http://www.open-mesh.org/projects/batman-adv/wiki/Multicast-optimizat=
-ions-listener-reports
->=20
-> The second patch finally enables the multicast optimizations for
-> bridged setups.
->=20
-> Along come two more patches adding according debugging facilities
-> to make it possible for the user to check why the multicast
-> optimizations might not work ideally to give hints about
-> what they might change about their topology.
->=20
->=20
-> This patchset can be found in the current linus/multicast-bridge
-> branch.
+What is the state here [1, 2, 3, 4, 5, 6]?
 
+Kind regards,
+	Sven
 
-It looks like these patches don't apply anymore. Can you please resent =
-it
-or mark it correctly in patchwork [1,2,3,4].
+[1] https://patchwork.open-mesh.org/patch/3177/
+[2] https://patchwork.open-mesh.org/patch/3195/
+[3] https://patchwork.open-mesh.org/patch/3194/
+[4] https://patchwork.open-mesh.org/patch/3166/
+[5] https://patchwork.open-mesh.org/patch/3156/
+[6] https://patchwork.open-mesh.org/patch/3205/
 
-Thanks,
-        Sven
-
-[1] https://patchwork.open-mesh.org/patch/4699/
-[2] https://patchwork.open-mesh.org/patch/4729/
-[3] https://patchwork.open-mesh.org/patch/4717/
-[4] https://patchwork.open-mesh.org/patch/4723/
---nextPart1838503.ce1GejcuZW
+--nextPart1548434.vsevptizY8
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -72,20 +63,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJW4cL6AAoJEF2HCgfBJntG2JYP/1rh3qYFXRATRX+kiQfRUYYc
-iX0kl7xLFj8egVx3393GYKUeVMz3jgs8sdkXguBFmuEOJNtZ7/TTaUUjadUZy7+v
-wYdPs+IqI8UDgQFw/B5uIGojcvrQvuDMcCsQ+LXj/k3rQtqYKDd8M6EQcFyF3pfk
-DFCbo8m3QEJ55OMMOo1FISlY4RPjwOzaw0ijbngELjZpkOH48SRZt0wyFtO5zewM
-M/G/xc2uvh8elE7fo1WUzkPhP/M+aZRetFuYlVulSkiAI6nOVrHfEd0T1beZ5lPc
-hQKRcXv2j3uvzRiyQdGh9ltDORUe2VmsLJydhK0iCm0IcVqJLPH9+Hljdr861bdK
-43y2F/iJVaYhoNebGS3NpImK5YmZq4abF7ID9da4CcKx7nu44HKB1oDUXpxhbt5N
-aWFo0VukveKEu9b7r8DZ7rOi4kwBT+oZ/eFVvSVdsgJ4a7ha6N14uqzokaCqTvZb
-QKbLY+XB3743iMESsoGLVGv3NtwESeeDKKgS0dCUrAnYlRYfTXHOxR/AaRuTm+2i
-3w6BMdSyTj3Efp+MTjYg8Mliiinn9r5Y8eCD055M3nvIqQ+TOutOItdHHgqmMXzN
-XmiM6qOlhz7wzQ3XdPQD2TxJvoO/kVu6k6nscnDtaaH0sRRWlmSSn2LQgBta9rRe
-fuol0Dksp5lBIz4lz/iQ
-=vKBJ
+iQIcBAABCgAGBQJW4cbhAAoJEF2HCgfBJntG4XEP/2j9LlC0Ga/O+dbD3XgiW7L1
+Vj9IRVbzjVFLQaK4/6MuKlOK8vupOcWHMLaE/lzLOGSdk6f3ueuvPqZEcj8LTgxg
+urF5lpWe1cdli9xjVTpREEGUIK02BIHgunDEK1eVl3bhUZlcxjAGjd3EKkMQ+a9E
+pMPbj5raLI6OKroIk/07ahKkA1m/DtcR+8dDkNDfue+UjZzQLYFoEvsDXd30+tUT
+EDFiIoxHJUp+7jDKy53m2DZhKex1GuBYB6k3JyJvIU6v6peAj5DL4ioXOhC1jpGi
+09Si0YBO2TFEaXU21PlDPtVcGWjCAXZv7qCaIdhy4BFNXGRPJRorxsWr4rYCG9TQ
+N3Y9odPIgVKUarzZQlsljmSgMJnxrNUvY8EA2QiojVYwI9AeNz6vlfrL2z+NsJE9
+HquPKq0v493QtXUMIiyqcjchCKdGiF9MU6e9WI0cNtDd3QIZdxNK9T3F+hGiAp2n
+peBbUnztniFbbjMdgztUvnnHZWUrXtbwwlzGRzKlFVIiN6YW2yr8ERtZmCTjPN8W
+wt2/JWtASXFPpDvM1KnMwxtsjGVgQ2bu267FayEOEVmdmUnWxrAixybQhaRHSdp0
+smIdI/Zvs6NoJHD7LiMoj4L/EfOqCuFRtLJrYb/6u0/RvtNxcJ5pIbzzW+mlZ3Xf
+iOa3yq9w8DFh7W2z39w2
+=GKpl
 -----END PGP SIGNATURE-----
 
---nextPart1838503.ce1GejcuZW--
+--nextPart1548434.vsevptizY8--
 
