@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 10 Mar 2016 18:08:27 +0100
-Message-ID: <10489234.ydKS6b2bn5@bentobox>
-In-Reply-To: <1366235673-13763-2-git-send-email-linus.luessing@web.de>
+Date: Thu, 10 Mar 2016 18:44:39 +0100
+Message-ID: <1676205.nXJgt3zli3@bentobox>
+In-Reply-To: <1366236516-14512-1-git-send-email-linus.luessing@web.de>
 References: <1366235673-13763-1-git-send-email-linus.luessing@web.de>
- <1366235673-13763-2-git-send-email-linus.luessing@web.de>
+ <1366236516-14512-1-git-send-email-linus.luessing@web.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1731788.memtTIaPIr";
+Content-Type: multipart/signed; boundary="nextPart2855198.7W4jkA50Uz";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Refactor forward packet
-	creation/destruction
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: Fix broadcast/ogm
+	queue limit on a removed interface
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,37 +21,41 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1731788.memtTIaPIr
+--nextPart2855198.7W4jkA50Uz
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Wednesday 17 April 2013 23:54:33 Linus L=FCssing wrote:
-> This patch abstracts the forward packet creation and destruction in t=
-he
-> functions batadv_forw_packet_alloc() and batadv_forw_packet_free().
+On Thursday 18 April 2013 00:08:36 Linus L=FCssing wrote:
+> When removing a single interface while a broadcast or ogm packet is
+> still pending then we will free the forward packet without releasing =
+the
+> queue slots again.
 >=20
-> That way there is less complexity to wrap the head around when freein=
-g a
-> forward packet.
->=20
-> For instance broadcast/ogm queue left counting will not need
-> to be done with "manual" atomic_inc/dec calls anymore, which should
-> greatly reduce the risk of having or reintroducing another
-> queue-left-miscounting again.
+> This patch is supposed to fix this issue.
 >=20
 > Signed-off-by: Linus L=FCssing <linus.luessing@web.de>
 > ---
 
-It looks like this patch doesn't apply anymore. Can you please resent i=
-t or
-mark it correctly in patchwork [1].
+You are talking a batman-adv interface when it contains multiple slave
+interfaces, right? So batadv_purge_outstanding_packets would be called =
+in
+batadv_hardif_disable_interface and not in batadv_mesh_free (which is o=
+nly=20
+done when the batX interface will be removed).
 
-Thanks,
-        Sven
+This at least sounds legit and I cannot find where else this imbalance =
+would=20
+be fixed.
 
-[1] https://patchwork.open-mesh.org/patch/2891/
+Acked-by: Sven Eckelmann <sven@narfation.org>
 
---nextPart1731788.memtTIaPIr
+Kind regards,
+=09Sven
+
+PS: This patch only requires the path change from / to /net/batman-adv/=
+ to=20
+apply via git-am
+--nextPart2855198.7W4jkA50Uz
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -59,20 +63,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJW4aoLAAoJEF2HCgfBJntGDrkP/08+w1gQJ8Mw5zwLXd/ZmlrZ
-EOg5yfkcRrfyvrzWPZPmrOEcQDvHLYmeeY0R3GegpWb6VTfU4IdsJENndDnD9w09
-esCqAIN2shDckPnlVlCsMlDVo5GLil0MAJMG3u4Fh5af9LadngfY38vHEcFHFTRm
-RsUni4hUtuPgUuKvuz/LT+2lKxkNfD5D82Gun26hrhlJfe44S8Q+j4jJGWYKd4gF
-hEUPHknQLf98x3Nd8T0Sgl2rOoFEP+coetHvOuIwADQlpNob8njfiqnKD7VaTVKD
-QG3mj8TSEZq7DuABJPZk+7Rz8TWQ/oxgGYdLr9nW1D+PWLc1bMAllNPwlntltycu
-b/bgKcK9I3teUQc7TIyUFmqq2K82C8xqfkmClKGZCzKyxPDeC4JSJ8chKjgOL+qd
-KYvYnHShcOvMKBOArqHmNqMFBk+Q6HdIkEDP5+ldvlgHmO73Zte4j+9Hy/26ni7C
-4LNWYxmwyEqmOFxu3aPt8dmBwMEDzJ7bLzqK0z8KATrntfYk6+hL9sJ8JbLEOkL3
-vHa8PFC+Pz2ECM35EGF7QbbWz3GSEB4g4l/EnIt7EFQAms8NEE6eoz3/nRql4HUD
-JY5yn5xoEpd7BA0BDl2ut5TEGzgM7zP9U9g90U8YncBXlArPKTs36r5AZxEqwxWY
-0zhYVYUcHo41aq0b4/d6
-=7QNv
+iQIcBAABCgAGBQJW4bKHAAoJEF2HCgfBJntG7hYQAJBx8J26Joq3vo/m/4rkqXMi
+oNtwdOjjd8bqJy2DtS2wH6GCe20TpnBdgDjvEIL22uLLGXgQQVUkr5ip5wS0V/ze
+N/2OgNZ96c5729xNRMDHg5p0Cu6f8IiW2mxjpw3gPBICWUOdTwL0L4EKaDqgvCwt
+2cW1Zu2qMfbZHoSgjWtnQPzZS9bPjqBo8NrG0Z6wCE3wli6uNX6zhYQXAYZTMabn
+M7FNG0YzYiLw69erom1zson91gZJto6bGuR+enIcQ2+L5DwCUGnmTzE0h7HVsCzJ
+aIwjnquyBCc98q23c2770FUd3zFcbTQ3T9QG7ujaZgmun1/RqsLW/sJmG1v0HxFx
+dngHgHQdP8i0FnfFY7xwe+C/va7tsuWCIEj9VQBe7e2wRYlWtQGgsHa5Mxn51EMO
+8TcEWgYQ+kX4V8yfFa2eUqpgW6tAeHwUnRFwki+LtttC9Ju9OhBYzsZtOFWsWxZL
+OSBIZoqSGyy/ZdkLZ9FOfkwm56VeKXJnvC6gqXQNbtglK18KGJqlxQzAZTX9NIHV
+2X19OTervjKW2vE3RAoecp6vnzfzy1O0N4tY3CPbVi1uuRzRBZ/T/BWILCebRlQi
+0xI3LXsxNIiypQ+AZUnkL/Y8q8YDs/k8KyDDnY/jRvSqPBeKGLYVRSB5NFm88JEh
+c/tKt7HjghHVxsUfMyy5
+=fMpg
 -----END PGP SIGNATURE-----
 
---nextPart1731788.memtTIaPIr--
+--nextPart2855198.7W4jkA50Uz--
 
