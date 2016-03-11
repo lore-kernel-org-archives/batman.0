@@ -1,14 +1,9 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 11 Mar 2016 14:48:48 +0100
-Message-ID: <1539981.Mf4IRzjGc5@prime>
-In-Reply-To: <1453953196-29943-1-git-send-email-andrew@lunn.ch>
-References: <1453953196-29943-1-git-send-email-andrew@lunn.ch>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6258559.ut2ZC54A0e";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] alfred: vis: Use debugfs_make_path
-	helper
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 11 Mar 2016 16:01:09 +0100
+Message-Id: <1457708469-32047-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: init neigh node last seen
+	field
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,45 +14,39 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart6258559.ut2ZC54A0e
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+From: Marek Lindner <mareklindner@neomailbox.ch>
 
-On Thursday 28 January 2016 04:53:13 Andrew Lunn wrote:
-> By using the helper, knowledge of network namespaces can be kept to
-> within the helper.
+Fixes: 58232977fbaf ("basic routing code complete (hases and ring buffer added) -> needs testing !")
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+[sven@narfation.org: fix conflicts with current version]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+v2:
+ - rebased patch
 
-I've applied this one, since its a good change even without the namespace 
-changes.
+Patch was resurrected from https://patchwork.open-mesh.org/patch/4634/
 
-Applied in revision dca3ebf
+I've requested an rebased version at
+https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-March/014641.html
+but done it myself because it was rather trivial.
+---
+ net/batman-adv/originator.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thanks!
-      Simon
---nextPart6258559.ut2ZC54A0e
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJW4szAAAoJEKEr45hCkp6hP4YQANKQDwuFgS5dpHUuNnQD7sHg
-/HVXNq+amMDcS2W9Qn+W1qSnEl1SBTLJTWW/nEVX+iEAQdmnAhNwV/DrbHjNsSJu
-vMykYsPY3XGEX70ohLIrWWBYIsTGnVlW5FkDet3RjXryw6jjFINZpCQPt4df3tgU
-7fcwEBwSgcQZ5npeoNvYP5aYPae3dOHp+O6KYooE2KLMN7Z3yiGBirYjyYhWzwLL
-hY4TXS1ggQM46oaIc9UbdMreuLSd1xI489i4dW+Tw/LsVgbkMInueKEiwNvJMOHg
-9JVga5b4oaLZRDNHX4NNmAAEzhsyx3VstIxrvDp+1XGhO/Rz8JJGYk+/nX6gZg5a
-MPhiS1vMZMhuyjndRD26v/Ry/DE4Vv7uJKlMnJsVWr/QwystQSH7dTgHIWQiYaOX
-wsYwCeUW0UWXcBe1fEJjDoFIOrpM8uj4jaWGMNq/l30ROSXVl4/5ohSq4aIknzDj
-AsXJyqWb/Z8DMU8RYLB3bQ1ycvQV3+ixv6k7sVxaVvIr81iYHNPfG5ZayyRahNxv
-A+8oc4cn+Ck9RK5z0GrpG06IUMpUEKmCsIbSwU9wXzpyEktFvnsRYRM4uOPvex/+
-BBvRObogwHjY/XlAzFhTN/2euON46X/6tDIcj2DF2SxeUlvhhSWlAKzrB8a2jUV0
-kFFEvzNVxU8fdKoJO4c1
-=B3Kf
------END PGP SIGNATURE-----
-
---nextPart6258559.ut2ZC54A0e--
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index e63d6a5..3ca98fc 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -663,6 +663,7 @@ batadv_neigh_node_new(struct batadv_orig_node *orig_node,
+ 	ether_addr_copy(neigh_node->addr, neigh_addr);
+ 	neigh_node->if_incoming = hard_iface;
+ 	neigh_node->orig_node = orig_node;
++	neigh_node->last_seen = jiffies;
+ 
+ 	/* extra reference for return */
+ 	kref_init(&neigh_node->refcount);
+-- 
+2.7.0
 
