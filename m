@@ -1,16 +1,9 @@
-Return-Path: <elfring@users.sourceforge.net>
-References: <5307CAA2.8060406@users.sourceforge.net>
- <564EDE1D.7070809@meshcoding.com> <564EFC67.7050307@users.sourceforge.net>
- <1655341.WCvHHx7pqD@bentobox>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Message-ID: <56E2BCD8.9010200@users.sourceforge.net>
-Date: Fri, 11 Mar 2016 13:40:56 +0100
-MIME-Version: 1.0
-In-Reply-To: <1655341.WCvHHx7pqD@bentobox>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Less function calls in
- batadv_is_ap_isolated() after error detection
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 11 Mar 2016 14:01:10 +0100
+Message-Id: <1457701271-24248-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: use batadv_compare_eth when
+	possible
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,77 +13,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>
-Cc: Julia Lawall <julia.lawall@lip6.fr>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Fri, 11 Mar 2016 13:10:20 +0100
+From: Antonio Quartulli <a@unstable.cc>
 
-The variables "tt_local_entry" and "tt_global_entry" were eventually
-checked again despite of a corresponding null pointer test before.
+When comparing Ethernet address it is better to use the more
+generic batadv_compare_eth. The latter is also optimised for
+architectures having a fast unaligned access.
 
-* Avoid this double check by reordering a function call sequence
-  and the better selection of jump targets.
-
-* Omit the initialisation for these variables at the beginning then.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
+[sven@narfation.org: fix conflicts with current version]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/translation-table.c | 25 +++++++++++--------------
- 1 file changed, 11 insertions(+), 14 deletions(-)
+Patch was resurrected from https://patchwork.open-mesh.org/patch/3668/
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 0b43e86..9c0193ee 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -3403,8 +3403,8 @@ void batadv_tt_local_commit_changes(struct batadv_priv *bat_priv)
- bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, u8 *src, u8 *dst,
- 			   unsigned short vid)
- {
--	struct batadv_tt_local_entry *tt_local_entry = NULL;
--	struct batadv_tt_global_entry *tt_global_entry = NULL;
-+	struct batadv_tt_local_entry *tt_local_entry;
-+	struct batadv_tt_global_entry *tt_global_entry;
- 	struct batadv_softif_vlan *vlan;
- 	bool ret = false;
+I've requested an rebased version at
+https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-March/014639.html
+but done it myself because it was rather trivial.
+---
+ net/batman-adv/network-coding.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 32f9fa1..cbc667a 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -521,12 +521,10 @@ static bool batadv_nc_hash_compare(const struct hlist_node *node,
+ 	nc_path2 = data2;
  
-@@ -3413,27 +3413,24 @@ bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, u8 *src, u8 *dst,
+ 	/* Return 1 if the two keys are identical */
+-	if (memcmp(nc_path1->prev_hop, nc_path2->prev_hop,
+-		   sizeof(nc_path1->prev_hop)) != 0)
++	if (!batadv_compare_eth(nc_path1->prev_hop, nc_path2->prev_hop))
  		return false;
  
- 	if (!atomic_read(&vlan->ap_isolation))
--		goto out;
-+		goto vlan_put;
+-	if (memcmp(nc_path1->next_hop, nc_path2->next_hop,
+-		   sizeof(nc_path1->next_hop)) != 0)
++	if (!batadv_compare_eth(nc_path1->next_hop, nc_path2->next_hop))
+ 		return false;
  
- 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, dst, vid);
- 	if (!tt_local_entry)
--		goto out;
-+		goto vlan_put;
- 
- 	tt_global_entry = batadv_tt_global_hash_find(bat_priv, src, vid);
- 	if (!tt_global_entry)
--		goto out;
--
--	if (!_batadv_is_ap_isolated(tt_local_entry, tt_global_entry))
--		goto out;
-+		goto local_entry_put;
- 
--	ret = true;
-+	if (_batadv_is_ap_isolated(tt_local_entry, tt_global_entry))
-+		ret = true;
- 
--out:
-+	batadv_tt_global_entry_put(tt_global_entry);
-+local_entry_put:
-+	batadv_tt_local_entry_put(tt_local_entry);
-+vlan_put:
- 	batadv_softif_vlan_put(vlan);
--	if (tt_global_entry)
--		batadv_tt_global_entry_put(tt_global_entry);
--	if (tt_local_entry)
--		batadv_tt_local_entry_put(tt_local_entry);
- 	return ret;
- }
- 
+ 	return true;
 -- 
-2.7.2
+2.7.0
 
