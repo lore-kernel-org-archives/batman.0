@@ -1,12 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 11 Mar 2016 14:04:49 +0100
-Message-Id: <1457701489-24562-1-git-send-email-sven@narfation.org>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Fri, 11 Mar 2016 14:48:48 +0100
+Message-ID: <1539981.Mf4IRzjGc5@prime>
+In-Reply-To: <1453953196-29943-1-git-send-email-andrew@lunn.ch>
+References: <1453953196-29943-1-git-send-email-andrew@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Fix broadcast/ogm queue limit
-	on a removed interface
+Content-Type: multipart/signed; boundary="nextPart6258559.ut2ZC54A0e";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] alfred: vis: Use debugfs_make_path
+	helper
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,56 +19,45 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+--nextPart6258559.ut2ZC54A0e
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-When removing a single interface while a broadcast or ogm packet is
-still pending then we will free the forward packet without releasing the
-queue slots again.
+On Thursday 28 January 2016 04:53:13 Andrew Lunn wrote:
+> By using the helper, knowledge of network namespaces can be kept to
+> within the helper.
 
-This patch is supposed to fix this issue.
+I've applied this one, since its a good change even without the namespace 
+changes.
 
-Fixes: d5bbce8465af ("batman-adv: Add missing hardif_free_ref in forw_packet_free")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
-[sven@narfation.org: fix conflicts with current version]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v2:
- - rebased patch
+Applied in revision dca3ebf
 
-Patch was resurrected from https://patchwork.open-mesh.org/patch/2921/
+Thanks!
+      Simon
+--nextPart6258559.ut2ZC54A0e
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-I've requested an rebased version at
-https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-March/014635.html
-but done it myself because it was rather trivial.
----
- net/batman-adv/send.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 3ce06e0..7641785 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -675,6 +675,9 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- 
- 		if (pending) {
- 			hlist_del(&forw_packet->list);
-+			if (!forw_packet->own)
-+				atomic_inc(&bat_priv->bcast_queue_left);
-+
- 			batadv_forw_packet_free(forw_packet);
- 		}
- 	}
-@@ -702,6 +705,9 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- 
- 		if (pending) {
- 			hlist_del(&forw_packet->list);
-+			if (!forw_packet->own)
-+				atomic_inc(&bat_priv->batman_queue_left);
-+
- 			batadv_forw_packet_free(forw_packet);
- 		}
- 	}
--- 
-2.7.0
+iQIcBAABCgAGBQJW4szAAAoJEKEr45hCkp6hP4YQANKQDwuFgS5dpHUuNnQD7sHg
+/HVXNq+amMDcS2W9Qn+W1qSnEl1SBTLJTWW/nEVX+iEAQdmnAhNwV/DrbHjNsSJu
+vMykYsPY3XGEX70ohLIrWWBYIsTGnVlW5FkDet3RjXryw6jjFINZpCQPt4df3tgU
+7fcwEBwSgcQZ5npeoNvYP5aYPae3dOHp+O6KYooE2KLMN7Z3yiGBirYjyYhWzwLL
+hY4TXS1ggQM46oaIc9UbdMreuLSd1xI489i4dW+Tw/LsVgbkMInueKEiwNvJMOHg
+9JVga5b4oaLZRDNHX4NNmAAEzhsyx3VstIxrvDp+1XGhO/Rz8JJGYk+/nX6gZg5a
+MPhiS1vMZMhuyjndRD26v/Ry/DE4Vv7uJKlMnJsVWr/QwystQSH7dTgHIWQiYaOX
+wsYwCeUW0UWXcBe1fEJjDoFIOrpM8uj4jaWGMNq/l30ROSXVl4/5ohSq4aIknzDj
+AsXJyqWb/Z8DMU8RYLB3bQ1ycvQV3+ixv6k7sVxaVvIr81iYHNPfG5ZayyRahNxv
+A+8oc4cn+Ck9RK5z0GrpG06IUMpUEKmCsIbSwU9wXzpyEktFvnsRYRM4uOPvex/+
+BBvRObogwHjY/XlAzFhTN/2euON46X/6tDIcj2DF2SxeUlvhhSWlAKzrB8a2jUV0
+kFFEvzNVxU8fdKoJO4c1
+=B3Kf
+-----END PGP SIGNATURE-----
+
+--nextPart6258559.ut2ZC54A0e--
 
