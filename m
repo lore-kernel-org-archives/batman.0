@@ -1,9 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 11 Mar 2016 16:30:43 +0100
-Message-Id: <1457710243-3603-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: use static string for table
-	headers
+Date: Fri, 11 Mar 2016 16:36:19 +0100
+Message-Id: <1457710579-4028-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: fix wrong names in kerneldoc
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,154 +17,171 @@ Cc: Antonio Quartulli <a@unstable.cc>
 
 From: Antonio Quartulli <a@unstable.cc>
 
-Use a static string when showing table headers rather then
-a nonsense parametric one with fixed arguments.
-
-It is easier to grep and it does not need to be recomputed
-at runtime each time.
-
-Reported-by: Joe Perches <joe@perches.com>
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
-[sven@narfation.org: fix conflicts with current version]
+[sven@narfation.org: Fix additional names]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v2:
- - rebased patch
- - added new static strings in bat_v.c and bat_iv_ogm.c
+ - add 11 more name fixes for kernel-doc
 
-Patch was resurrected from https://patchwork.open-mesh.org/patch/3599/
+Antonio wanted to resend this patch himself [1] but this didn't happen until
+now.
 
-I've requested an rebased version at
-https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-March/014637.html
-but done it myself because it was rather trivial.
----
- net/batman-adv/bat_iv_ogm.c            | 8 +++-----
- net/batman-adv/bat_v.c                 | 9 ++++-----
- net/batman-adv/bridge_loop_avoidance.c | 7 +++----
- net/batman-adv/distributed-arp-table.c | 4 ++--
- net/batman-adv/translation-table.c     | 9 ++++-----
- 5 files changed, 16 insertions(+), 21 deletions(-)
+[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-March/014624.html
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 2c65668..63bcd3e 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1866,9 +1866,8 @@ static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
- 	int batman_count = 0;
- 	u32 i;
- 
--	seq_printf(seq, "  %-15s %s (%s/%i) %17s [%10s]: %20s ...\n",
--		   "Originator", "last-seen", "#", BATADV_TQ_MAX_VALUE,
--		   "Nexthop", "outgoingIF", "Potential nexthops");
-+	seq_puts(seq,
-+		 "  Originator      last-seen (#/" __stringify(BATADV_TQ_MAX_VALUE) ")           Nexthop [outgoingIF]:   Potential nexthops ...\n");
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -1948,8 +1947,7 @@ static void batadv_iv_neigh_print(struct batadv_priv *bat_priv,
- 	struct batadv_hard_iface *hard_iface;
- 	int batman_count = 0;
- 
--	seq_printf(seq, "   %10s        %-13s %s\n",
--		   "IF", "Neighbor", "last-seen");
-+	seq_puts(seq, "           IF        Neighbor      last-seen\n");
- 
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 3315b9a..246f9e9 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -151,8 +151,8 @@ static void batadv_v_neigh_print(struct batadv_priv *bat_priv,
- 	struct batadv_hard_iface *hard_iface;
- 	int batman_count = 0;
- 
--	seq_printf(seq, "  %-15s %s (%11s) [%10s]\n", "Neighbor",
--		   "last-seen", "throughput", "IF");
-+	seq_puts(seq,
-+		 "  Neighbor        last-seen ( throughput) [        IF]\n");
- 
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-@@ -191,9 +191,8 @@ static void batadv_v_orig_print(struct batadv_priv *bat_priv,
- 	int batman_count = 0;
- 	u32 i;
- 
--	seq_printf(seq, "  %-15s %s (%11s) %17s [%10s]: %20s ...\n",
--		   "Originator", "last-seen", "throughput", "Nexthop",
--		   "outgoingIF", "Potential nexthops");
-+	seq_puts(seq,
-+		 "  Originator      last-seen ( throughput)           Nexthop [outgoingIF]:   Potential nexthops ...\n");
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
+
+ net/batman-adv/bridge_loop_avoidance.c |  2 +-
+ net/batman-adv/distributed-arp-table.c |  2 +-
+ net/batman-adv/icmp_socket.c           |  2 +-
+ net/batman-adv/main.h                  |  3 ++-
+ net/batman-adv/multicast.c             | 11 ++++++-----
+ net/batman-adv/originator.c            |  2 +-
+ net/batman-adv/packet.h                |  2 +-
+ net/batman-adv/soft-interface.c        |  2 +-
+ 8 files changed, 14 insertions(+), 12 deletions(-)
+
 diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 642167f..0c951a7 100644
+index 642167f..f0075ff 100644
 --- a/net/batman-adv/bridge_loop_avoidance.c
 +++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1816,8 +1816,8 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
- 		   "Claims announced for the mesh %s (orig %pM, group id %#.4x)\n",
- 		   net_dev->name, primary_addr,
- 		   ntohs(bat_priv->bla.claim_dest.group));
--	seq_printf(seq, "   %-17s    %-5s    %-17s [o] (%-6s)\n",
--		   "Client", "VID", "Originator", "CRC");
-+	seq_puts(seq,
-+		 "   Client               VID      Originator        [o] (CRC   )\n");
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
+@@ -1576,7 +1576,7 @@ bool batadv_bla_is_backbone_gw(struct sk_buff *skb,
+ }
  
-@@ -1874,8 +1874,7 @@ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
- 		   "Backbones announced for the mesh %s (orig %pM, group id %#.4x)\n",
- 		   net_dev->name, primary_addr,
- 		   ntohs(bat_priv->bla.claim_dest.group));
--	seq_printf(seq, "   %-17s    %-5s %-9s (%-6s)\n",
--		   "Originator", "VID", "last seen", "CRC");
-+	seq_puts(seq, "   Originator           VID   last seen (CRC   )\n");
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
- 
+ /**
+- * batadv_bla_init - free all bla structures
++ * batadv_bla_free - free all bla structures
+  * @bat_priv: the bat priv with all the soft interface information
+  *
+  * for softinterface free or module unload
 diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 919a8d2..771708c 100644
+index 919a8d2..ab79f3a 100644
 --- a/net/batman-adv/distributed-arp-table.c
 +++ b/net/batman-adv/distributed-arp-table.c
-@@ -814,8 +814,8 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
- 		goto out;
+@@ -717,7 +717,7 @@ void batadv_dat_status_update(struct net_device *net_dev)
+ }
  
- 	seq_printf(seq, "Distributed ARP Table (%s):\n", net_dev->name);
--	seq_printf(seq, "          %-7s          %-9s %4s %11s\n", "IPv4",
--		   "MAC", "VID", "last-seen");
-+	seq_puts(seq,
-+		 "          IPv4             MAC        VID   last-seen\n");
+ /**
+- * batadv_gw_tvlv_ogm_handler_v1 - process incoming dat tvlv container
++ * batadv_dat_tvlv_ogm_handler_v1 - process incoming dat tvlv container
+  * @bat_priv: the bat priv with all the soft interface information
+  * @orig: the orig_node of the ogm
+  * @flags: flags indicating the tvlv state (see batadv_tvlv_handler_flags)
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index 14d0013..df449a0 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -337,7 +337,7 @@ err:
+ }
  
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 2ed55f4..d7f37e5 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -1008,8 +1008,8 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq,
- 		   "Locally retrieved addresses (from %s) announced via TT (TTVN: %u):\n",
- 		   net_dev->name, (u8)atomic_read(&bat_priv->tt.vn));
--	seq_printf(seq, "       %-13s  %s %-8s %-9s (%-10s)\n", "Client", "VID",
--		   "Flags", "Last seen", "CRC");
-+	seq_puts(seq,
-+		 "       Client         VID Flags    Last seen (CRC       )\n");
+ /**
+- * batadv_socket_receive_packet - schedule an icmp packet to be sent to
++ * batadv_socket_add_packet - schedule an icmp packet to be sent to
+  *  userspace on an icmp socket.
+  * @socket_client: the socket this packet belongs to
+  * @icmph: pointer to the header of the icmp packet
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index e602408..1565df0 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -296,7 +296,8 @@ static inline bool batadv_compare_eth(const void *data1, const void *data2)
+ }
  
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -1706,9 +1706,8 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq,
- 		   "Globally announced TT entries received via the mesh %s\n",
- 		   net_dev->name);
--	seq_printf(seq, "       %-13s  %s  %s       %-15s %s (%-10s) %s\n",
--		   "Client", "VID", "(TTVN)", "Originator", "(Curr TTVN)",
--		   "CRC", "Flags");
-+	seq_puts(seq,
-+		 "       Client         VID  (TTVN)       Originator      (Curr TTVN) (CRC       ) Flags\n");
+ /**
+- * has_timed_out - compares current time (jiffies) and timestamp + timeout
++ * batadv_has_timed_out - compares current time (jiffies) and timestamp +
++ *  timeout
+  * @timestamp:		base value to compare with (in jiffies)
+  * @timeout:		added to base value before comparing (in milliseconds)
+  *
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 8caa2c7..c32f24f 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -394,7 +394,8 @@ static int batadv_mcast_forw_mode_check(struct batadv_priv *bat_priv,
+ }
  
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
+ /**
+- * batadv_mcast_want_all_ip_count - count nodes with unspecific mcast interest
++ * batadv_mcast_forw_want_all_ip_count - count nodes with unspecific mcast
++ *  interest
+  * @bat_priv: the bat priv with all the soft interface information
+  * @ethhdr: ethernet header of a packet
+  *
+@@ -433,7 +434,7 @@ batadv_mcast_forw_tt_node_get(struct batadv_priv *bat_priv,
+ }
+ 
+ /**
+- * batadv_mcast_want_forw_ipv4_node_get - get a node with an ipv4 flag
++ * batadv_mcast_forw_ipv4_node_get - get a node with an ipv4 flag
+  * @bat_priv: the bat priv with all the soft interface information
+  *
+  * Return: an orig_node which has the BATADV_MCAST_WANT_ALL_IPV4 flag set and
+@@ -460,7 +461,7 @@ batadv_mcast_forw_ipv4_node_get(struct batadv_priv *bat_priv)
+ }
+ 
+ /**
+- * batadv_mcast_want_forw_ipv6_node_get - get a node with an ipv6 flag
++ * batadv_mcast_forw_ipv6_node_get - get a node with an ipv6 flag
+  * @bat_priv: the bat priv with all the soft interface information
+  *
+  * Return: an orig_node which has the BATADV_MCAST_WANT_ALL_IPV6 flag set
+@@ -487,7 +488,7 @@ batadv_mcast_forw_ipv6_node_get(struct batadv_priv *bat_priv)
+ }
+ 
+ /**
+- * batadv_mcast_want_forw_ip_node_get - get a node with an ipv4/ipv6 flag
++ * batadv_mcast_forw_ip_node_get - get a node with an ipv4/ipv6 flag
+  * @bat_priv: the bat priv with all the soft interface information
+  * @ethhdr: an ethernet header to determine the protocol family from
+  *
+@@ -511,7 +512,7 @@ batadv_mcast_forw_ip_node_get(struct batadv_priv *bat_priv,
+ }
+ 
+ /**
+- * batadv_mcast_want_forw_unsnoop_node_get - get a node with an unsnoopable flag
++ * batadv_mcast_forw_unsnoop_node_get - get a node with an unsnoopable flag
+  * @bat_priv: the bat priv with all the soft interface information
+  *
+  * Return: an orig_node which has the BATADV_MCAST_WANT_ALL_UNSNOOPABLES flag
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index e63d6a5..84d5a1e 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -289,7 +289,7 @@ void batadv_neigh_node_put(struct batadv_neigh_node *neigh_node)
+ }
+ 
+ /**
+- * batadv_orig_node_get_router - router to the originator depending on iface
++ * batadv_orig_router_get - router to the originator depending on iface
+  * @orig_node: the orig node for the router
+  * @if_outgoing: the interface where the payload packet has been received or
+  *  the OGM should be sent to
+diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
+index 8a8d7ca..0796dfd 100644
+--- a/net/batman-adv/packet.h
++++ b/net/batman-adv/packet.h
+@@ -501,7 +501,7 @@ struct batadv_coded_packet {
+ #pragma pack()
+ 
+ /**
+- * struct batadv_unicast_tvlv - generic unicast packet with tvlv payload
++ * struct batadv_unicast_tvlv_packet - generic unicast packet with tvlv payload
+  * @packet_type: batman-adv packet type, part of the general header
+  * @version: batman-adv protocol version, part of the genereal header
+  * @ttl: time to live for this packet, part of the genereal header
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 7679f3a..bae24c0 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -539,7 +539,7 @@ struct batadv_softif_vlan *batadv_softif_vlan_get(struct batadv_priv *bat_priv,
+ }
+ 
+ /**
+- * batadv_create_vlan - allocate the needed resources for a new vlan
++ * batadv_softif_create_vlan - allocate the needed resources for a new vlan
+  * @bat_priv: the bat priv with all the soft interface information
+  * @vid: the VLAN identifier
+  *
 -- 
 2.7.0
 
