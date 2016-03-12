@@ -1,15 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 12 Mar 2016 00:37:17 +0100
-Message-ID: <7555039.bGjIxFaJ0h@sven-edge>
-In-Reply-To: <20160307143130.GB15541@lunn.ch>
+Return-Path: <a@unstable.cc>
+Date: Sat, 12 Mar 2016 12:42:36 +0800
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <20160312044236.GS13448@prodigo.lan>
 References: <1456867148-31883-1-git-send-email-andrew@lunn.ch>
  <121426826.jDACy89axc@bentobox> <20160307143130.GB15541@lunn.ch>
+ <7555039.bGjIxFaJ0h@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1695062.p6JHqROem5";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="tRcR9GoWqjXrt11v"
+Content-Disposition: inline
+In-Reply-To: <7555039.bGjIxFaJ0h@sven-edge>
 Subject: Re: [B.A.T.M.A.N.] [PATCHv2 3/4] batman-adv: Handle parent
-	interfaces in a different netns
+ interfaces in a different netns
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,60 +21,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1695062.p6JHqROem5
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
 
-On Monday 07 March 2016 15:31:30 Andrew Lunn wrote:
-[...]
-> > right now):
-> >    dev_parent_net = default_net;
-> > 	
-> > 	if (dev->rtnl_link_ops && dev->rtnl_link_ops->get_link_net)
-> > 	
-> > 		dev_parent_net = dev->rtnl_link_ops->get_link_net(dev);
-> 
-> Horrible, and i have no idea if it actually works, but how about
-> 
-> #if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0))
-> #define dev->rtnl_link_ops->get_link_net true
-> #define dev->rtnl_link_ops->get_link_net(dev) init_net
-> #endif
+--tRcR9GoWqjXrt11v
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I have prepared a quick draft of a different idea [1].
+On Sat, Mar 12, 2016 at 12:37:17AM +0100, Sven Eckelmann wrote:
+> [1] https://git.open-mesh.org/batman-adv.git/commit/fb7b5eb8c81969dc8bea3=
+56d0a3f0b5e72d2da49
 
-You have to excuse me now but I have a longer meeting with my shower to
-get rid of the feeling that I have done something horrible/dirty. :)
 
-Kind regards,
-	Sven
+Sven, what is the README there for ?
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/fb7b5eb8c81969dc8bea356d0a3f0b5e72d2da49
---nextPart1695062.p6JHqROem5
+Cheers,
+
+
+--=20
+Antonio Quartulli
+
+--tRcR9GoWqjXrt11v
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJW41atAAoJEF2HCgfBJntG9U0QAMfOnyFkE5EwJG+S/gexd1vy
-YR4z2Db7VHrd8O16ejbcpEzchsbL9HpzCMJ9Faxcv7qp4PD3p25dbO+XtnPKTLnT
-JY4Zf/NCAFHSH32l2Ndp+Cl2eohPR4fTsKYuUJVcrU5nAUT/8fzZnCD6qUVapXr6
-pYzJOwReANQKUMshUR8Ccc8ET4dOU2J8bQuewxO9RqvRXsyzi1l5suljRtQ+RTY/
-e6pwfNOMqNH+X+963XeqPLm1yAsQdkLv+aC7llIB3fcGzkN9bzCzFQjBy2BLVChu
-Hv8nqSyKO//gOvlzC8XcmT1/07Dz+K8bGC3H7a3a4M1tVrkJi9Zv98TkpvC32bv7
-1S2oUxVQfQ2L////iZcAQAkuyTNgAUV8EG+Wb8MRRzctXdSlTwNmVp/YDX2wZzWz
-mcseG2y04SglHMFecfJlsXe++g/b/BtSBvU502I8bQSOtEDpeROi0B4r/O16hPa0
-ATDpLGQ9vbznxYTvjNVEXCxviDdr5iBliqz7/lx7qMNd2xHhcVPAgzJYJdrVtGeY
-YWr2o0rKwyZrhWhb6/CtQyJoi6Jn1oV9dckSfpe7JqgDn1wbwFsQ893Hy3yQcLtM
-HxjTXWjerylY23KNbUFIdjLgERbIgxkgt2gd7Dz4l9r1laZEBKfOcbm3Iev98Kji
-y4HtB4fvZoDqKB5Ybw4z
-=E0lg
+iQIcBAEBCAAGBQJW4548AAoJENpFlCjNi1MRNVkP/3BfqMpEvXXZ2it9orSluLO5
+tHyOvQ7rWH72psmNyMfhl7YnCsqK9uA7gte5mSCq9cHlOHBa8UOcEVzm9OcYcWki
+WKtfTHco44WdKGvq99g/SCNuPs19FSoG7dM14teQNRos4T4mFoIUANVxM5KJHAp9
+x1ER0lXV60/xyT4JXL24cc0YmsClBbB/m33j0jowbjrNhbO0MxyLkdAAyf17PvsY
+TWzex2ZvONAno3pEtLCkYsNI9LtqENIyjFN/dOGiXT/y9A0RtqN8tiqE/Gbwif40
+bPYcY+jJ7fPmGmq2WsegR+6Wsd8Vl2C37FQYqfXD9M/sRqs1vd7GuLX7nlG8siS7
+vR1oT5T0iFlCzme6/k32LeCUrMcck64TvVXr2pgIM1oEEsRYwC8u8B6ZcVvAIndX
++uxlRWHTN4ZRrzpClQcA1DJ/sIKD4c2KYRMqGdpdHsV7TFK5i6PnbbYAop8Hz5va
+F8quwsd17CMPr0mxqOyHhlQGURbPkZFfV+fNoYHpu319gy4/rNtoVXQoA1gQJfkn
+5O02zC/7XI1WQXsh0v/nszWQCqkfe6hFr+SWEHmlY07OwnezvSErr/wwiybhl29b
+mqL0p4+K9ymyHas7dYE0bTdqT7zQhtM4jiEHiOb+O0uJ3Nz1huYGHzehGTEy2DCa
+nkJHEindnicSH3iX1mz3
+=soKz
 -----END PGP SIGNATURE-----
 
---nextPart1695062.p6JHqROem5--
-
+--tRcR9GoWqjXrt11v--
