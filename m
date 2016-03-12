@@ -1,15 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 12 Mar 2016 08:40:57 +0100
-Message-ID: <1658500.AjLX8FMN5Q@sven-edge>
-In-Reply-To: <3184844.OveG4HdA7g@sven-edge>
-References: <1456867148-31883-1-git-send-email-andrew@lunn.ch>
- <20160312044236.GS13448@prodigo.lan> <3184844.OveG4HdA7g@sven-edge>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart12461504.BCFGuuSzIe";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 3/4] batman-adv: Handle parent
-	interfaces in a different netns
+Date: Sat, 12 Mar 2016 10:30:18 +0100
+Message-Id: <1457775018-16546-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v3] batman-adv: use static string for table
+	headers
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,61 +16,158 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart12461504.BCFGuuSzIe
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+From: Antonio Quartulli <a@unstable.cc>
 
-On Saturday 12 March 2016 08:34:35 Sven Eckelmann wrote:
-> On Saturday 12 March 2016 12:42:36 Antonio Quartulli wrote:
-> > On Sat, Mar 12, 2016 at 12:37:17AM +0100, Sven Eckelmann wrote:
-> > > [1]
-> > > https://git.open-mesh.org/batman-adv.git/commit/fb7b5eb8c81969dc8bea356d
-> > > 0
-> > > a3f0b5e72d2da49
-> > 
-> > Sven, what is the README there for ?
-> 
-> It serves different purposes. It makes sure that the directory is created by
-> git on checkout even when there is no patch in the directory. It also makes
-> sure that the Makefile dependency glob for compat-patches/* is at least
-> generating one dependency.
-> 
-> But it should also be used to define the rules under which a patch in this
-> directory is acceptable (of course, the rules are not yet defined - so I've
-> just used a placeholder for this draft). The requirements for such a patch
-> should be really high because patches tend to fail when the code or the
-> surrounding code is changed. This is also the reason why I've combined the
-> critical code to really small functions which avoids more patch chunks for
-> more places in the code.
+Use a static string when showing table headers rather then
+a nonsense parametric one with fixed arguments.
 
-And maybe it should also describe how to generate patches for this directory
+It is easier to grep and it does not need to be recomputed
+at runtime each time.
 
-   git format-patch --abbrev=7 -U3 --diff-algorithm=histogram --no-signature --format=format:'From: %an <%ae>%nDate: %aD%nSubject: [PATCH] %B' -1
+Reported-by: Joe Perches <joe@perches.com>
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
+[sven@narfation.org: fix conflicts with current version]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+v3:
+ - workaround checkpatch error (over 80 chars) caused by __stringify
+v2:
+ - rebased patch
+ - added new static strings in bat_v.c and bat_iv_ogm.c
 
-Kind regards,
-	Sven
---nextPart12461504.BCFGuuSzIe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Patch was resurrected from https://patchwork.open-mesh.org/patch/3599/
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+I've requested an rebased version at
+https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-March/014637.html
+but done it myself because it was rather trivial.
+---
+ net/batman-adv/bat_iv_ogm.c            | 8 +++-----
+ net/batman-adv/bat_v.c                 | 9 ++++-----
+ net/batman-adv/bridge_loop_avoidance.c | 7 +++----
+ net/batman-adv/distributed-arp-table.c | 4 ++--
+ net/batman-adv/translation-table.c     | 9 ++++-----
+ 5 files changed, 16 insertions(+), 21 deletions(-)
 
-iQIcBAABCgAGBQJW48gJAAoJEF2HCgfBJntG9BgP/jAx8Zb6B8Flkl5qjGssulCd
-2gDG96DmFvJsrUdNT3gd8oE8AyfDASYGuSYMicVm4SnevT555X+cmkNhyZiVcSbY
-ym84CnzclcRrDpB5KL/pY1E4ee1kTjBpfmv2GMy8Ldrvx1nXTQwtkRaKWH3kIZu1
-KS+78VKrpR0erLUmAB86iACEP9bRt5Q91ILF3dyAaXw/Sl8wy/ICbtafZpc2t88p
-KQfMo9YzUXgTp+wrZHLUxpsG1HMyTogPeeGu6s74SgP1DZcv2lfqPdbSmxdR5eHM
-3uKfmd0MSHB2UBfdY0Mo8v0zYRCDsCpg+8a9QuWUarIOdU+cXkb/bUagYe6SEXVn
-KUEfdKmb7eF1vqNviKn7olYtP+F3n/zZaPum7iZH75b0chCQV7eHsq19Eyee6Fmr
-YWF6raKi78tMjHudeiuLK5ib8UElyq1oTUqaB3BZqalY0PxmwoSDyINUZAP3WaJt
-C/c3493wZBCrPGmBkgSF/qKxBmhnf3+9HGwZsaoGuGedOVV5+D9DWhSbH0sjJL+d
-zCeHaPv1TQg/Fp7rFYA4dB+OFog5NKJj7Fi6GIlQjl2e48wHgk118op9l25HZP3G
-WuSwDXW0jOASBkkxxNf6oozLAznfi2M/tpyU+bwzMU94T9DOkCz81SX9DRdy/4j5
-FaiTDB2tSv2F6MgIzzuF
-=3wfQ
------END PGP SIGNATURE-----
-
---nextPart12461504.BCFGuuSzIe--
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 2c65668..d9a826a 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1866,9 +1866,8 @@ static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
+ 	int batman_count = 0;
+ 	u32 i;
+ 
+-	seq_printf(seq, "  %-15s %s (%s/%i) %17s [%10s]: %20s ...\n",
+-		   "Originator", "last-seen", "#", BATADV_TQ_MAX_VALUE,
+-		   "Nexthop", "outgoingIF", "Potential nexthops");
++	seq_puts(seq,
++		 "  Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Potential nexthops ...\n");
+ 
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+@@ -1948,8 +1947,7 @@ static void batadv_iv_neigh_print(struct batadv_priv *bat_priv,
+ 	struct batadv_hard_iface *hard_iface;
+ 	int batman_count = 0;
+ 
+-	seq_printf(seq, "   %10s        %-13s %s\n",
+-		   "IF", "Neighbor", "last-seen");
++	seq_puts(seq, "           IF        Neighbor      last-seen\n");
+ 
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 3315b9a..246f9e9 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -151,8 +151,8 @@ static void batadv_v_neigh_print(struct batadv_priv *bat_priv,
+ 	struct batadv_hard_iface *hard_iface;
+ 	int batman_count = 0;
+ 
+-	seq_printf(seq, "  %-15s %s (%11s) [%10s]\n", "Neighbor",
+-		   "last-seen", "throughput", "IF");
++	seq_puts(seq,
++		 "  Neighbor        last-seen ( throughput) [        IF]\n");
+ 
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
+@@ -191,9 +191,8 @@ static void batadv_v_orig_print(struct batadv_priv *bat_priv,
+ 	int batman_count = 0;
+ 	u32 i;
+ 
+-	seq_printf(seq, "  %-15s %s (%11s) %17s [%10s]: %20s ...\n",
+-		   "Originator", "last-seen", "throughput", "Nexthop",
+-		   "outgoingIF", "Potential nexthops");
++	seq_puts(seq,
++		 "  Originator      last-seen ( throughput)           Nexthop [outgoingIF]:   Potential nexthops ...\n");
+ 
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 642167f..0c951a7 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -1816,8 +1816,8 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
+ 		   "Claims announced for the mesh %s (orig %pM, group id %#.4x)\n",
+ 		   net_dev->name, primary_addr,
+ 		   ntohs(bat_priv->bla.claim_dest.group));
+-	seq_printf(seq, "   %-17s    %-5s    %-17s [o] (%-6s)\n",
+-		   "Client", "VID", "Originator", "CRC");
++	seq_puts(seq,
++		 "   Client               VID      Originator        [o] (CRC   )\n");
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+ 
+@@ -1874,8 +1874,7 @@ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
+ 		   "Backbones announced for the mesh %s (orig %pM, group id %#.4x)\n",
+ 		   net_dev->name, primary_addr,
+ 		   ntohs(bat_priv->bla.claim_dest.group));
+-	seq_printf(seq, "   %-17s    %-5s %-9s (%-6s)\n",
+-		   "Originator", "VID", "last seen", "CRC");
++	seq_puts(seq, "   Originator           VID   last seen (CRC   )\n");
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+ 
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 919a8d2..771708c 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -814,8 +814,8 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
+ 		goto out;
+ 
+ 	seq_printf(seq, "Distributed ARP Table (%s):\n", net_dev->name);
+-	seq_printf(seq, "          %-7s          %-9s %4s %11s\n", "IPv4",
+-		   "MAC", "VID", "last-seen");
++	seq_puts(seq,
++		 "          IPv4             MAC        VID   last-seen\n");
+ 
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 2ed55f4..d7f37e5 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1008,8 +1008,8 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 	seq_printf(seq,
+ 		   "Locally retrieved addresses (from %s) announced via TT (TTVN: %u):\n",
+ 		   net_dev->name, (u8)atomic_read(&bat_priv->tt.vn));
+-	seq_printf(seq, "       %-13s  %s %-8s %-9s (%-10s)\n", "Client", "VID",
+-		   "Flags", "Last seen", "CRC");
++	seq_puts(seq,
++		 "       Client         VID Flags    Last seen (CRC       )\n");
+ 
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+@@ -1706,9 +1706,8 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ 	seq_printf(seq,
+ 		   "Globally announced TT entries received via the mesh %s\n",
+ 		   net_dev->name);
+-	seq_printf(seq, "       %-13s  %s  %s       %-15s %s (%-10s) %s\n",
+-		   "Client", "VID", "(TTVN)", "Originator", "(Curr TTVN)",
+-		   "CRC", "Flags");
++	seq_puts(seq,
++		 "       Client         VID  (TTVN)       Originator      (Curr TTVN) (CRC       ) Flags\n");
+ 
+ 	for (i = 0; i < hash->size; i++) {
+ 		head = &hash->table[i];
+-- 
+2.7.0
 
