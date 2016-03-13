@@ -1,16 +1,16 @@
 Return-Path: <andrew@lunn.ch>
-Date: Sun, 13 Mar 2016 16:35:50 +0100
+Date: Sun, 13 Mar 2016 16:38:08 +0100
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160313153550.GB9674@lunn.ch>
+Message-ID: <20160313153808.GC9674@lunn.ch>
 References: <1456867148-31883-1-git-send-email-andrew@lunn.ch>
- <1456867148-31883-3-git-send-email-andrew@lunn.ch>
- <1562656.nUcF8KtnQf@sven-edge>
+ <1456867148-31883-4-git-send-email-andrew@lunn.ch>
+ <42883547.GmOm9E46Iz@sven-edge>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1562656.nUcF8KtnQf@sven-edge>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/4] batman-adv: Create batman soft
- interfaces within correct netns.
+In-Reply-To: <42883547.GmOm9E46Iz@sven-edge>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 3/4] batman-adv: Handle parent
+ interfaces in a different netns
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,29 +23,26 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>
 
-> Just to be sure (and so that I don't have to test it here :) ): When this 
-> patch is applied, batadv_softif_create would already fail when the two 
-> namespaces have a batadv interface with the same name because the debugfs 
-> function would fail. But it would work when the batman-adv interfaces + the 
-> slave interfaces (for per-slave interface information) have different names. 
-> Right?
+> > +	const struct net *dev1_parent_net = net1;
+> > +	const struct net *dev2_parent_net = net2;
+> > +
+> > +	if (dev1->rtnl_link_ops && dev1->rtnl_link_ops->get_link_net)
+> > +		dev1_parent_net = dev1->rtnl_link_ops->get_link_net(dev1);
+> > +	if (dev2->rtnl_link_ops && dev2->rtnl_link_ops->get_link_net)
+> > +		dev2_parent_net = dev2->rtnl_link_ops->get_link_net(dev2);
+> [...]
+> > +       struct net *parent_net = net;
+> [...]
+> > +	if (net_dev->rtnl_link_ops && net_dev->rtnl_link_ops->get_link_net)
+> > +		parent_net = net_dev->rtnl_link_ops->get_link_net(net_dev);
+> > +
+> 
+> My proposal is there to move this in an extra function [1] so adding compat
+> code is easier [2].
 
-That is correct. As far as i remember, it failed in a good way,
-i.e. not an opps. Which is why i put this patch first. We could swap
-the order, have the debugfs patch first, but i though the 'why' of the
-debugfs patch is probably clearer to somebody who has just reviewed
-this patch first.
+Hi Sven
 
-> It is currently not prevented that a slave device changes the namespace after 
-> it was added. But this should not be a problem because the device will be 
-> first removed from the original namespace (so it will be removed from batX) 
-> and later added to the target namespace (see dev_change_net_namespace).
+Do you want to squash your compact changes in and add your own
+Signed-off-by?
 
-Yes, and this is the same mechanism used for other master devices,
-like bridges, teams/bonding. The slave is hot-unplugged from one name
-space and hot-plugged into another name space.
-
-> Reviewed-by: Sven Eckelmann <sven@narfation.org>
-
-Thanks
 	Andrew
