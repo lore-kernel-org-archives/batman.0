@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 13 Mar 2016 11:48:16 +0100
-Message-ID: <1562656.nUcF8KtnQf@sven-edge>
-In-Reply-To: <1456867148-31883-3-git-send-email-andrew@lunn.ch>
+Date: Sun, 13 Mar 2016 12:02:52 +0100
+Message-ID: <42883547.GmOm9E46Iz@sven-edge>
+In-Reply-To: <1456867148-31883-4-git-send-email-andrew@lunn.ch>
 References: <1456867148-31883-1-git-send-email-andrew@lunn.ch>
- <1456867148-31883-3-git-send-email-andrew@lunn.ch>
+ <1456867148-31883-4-git-send-email-andrew@lunn.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7258172.0Ozi5GYqQW";
+Content-Type: multipart/signed; boundary="nextPart2510033.6O6RCNlSoV";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/4] batman-adv: Create batman soft
-	interfaces within correct netns.
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 3/4] batman-adv: Handle parent
+	interfaces in a different netns
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,65 +22,66 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart7258172.0Ozi5GYqQW
+--nextPart2510033.6O6RCNlSoV
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday 01 March 2016 22:19:06 Andrew Lunn wrote:
-> When creating a soft interface, create it in the same netns as the
-> hard interface. Replace all references to init_net with the correct
-> name space for the interface being manipulated.
+On Tuesday 01 March 2016 22:19:07 Andrew Lunn wrote:
+> batman-adv tries to prevent the user from placing a batX soft
+> interface into another batman mesh as a hard interface. It does this
+> by walking up the devices list of parents and ensures they are all
+> none batX interfaces. iflink can point to an interface in a different
+> namespace, so also retrieve the parents name space when finding the
+> parent and use it when doing the comparison.
 > 
-> Suggested-by: Daniel Ehlers <danielehlers@mindeye.net>
 > Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> Acked-by: Antonio Quartulli <a@unstable.cc>
+> Acked-by: Antonio Quartulli <a@untable.cc>
 > ---
-> 
-> v2:
->   struct net forward declarations
->   Removed unneeded net/net_namespace.h
->   Rebased on https://git.open-mesh.org/batman-adv.git master
-> ---
->  net/batman-adv/hard-interface.c    | 9 +++++----
->  net/batman-adv/hard-interface.h    | 3 ++-
->  net/batman-adv/soft-interface.c    | 7 +++++--
->  net/batman-adv/soft-interface.h    | 3 ++-
->  net/batman-adv/sysfs.c             | 3 ++-
->  net/batman-adv/translation-table.c | 4 ++--
->  6 files changed, 18 insertions(+), 11 deletions(-)
+[...]
+>  	return (dev1_parent_iflink == dev2->ifindex) &&
+> -	       (dev2_parent_iflink == dev1->ifindex);
+> +		(dev2_parent_iflink == dev1->ifindex) &&
+> +		net_eq(dev1_parent_net, net2) &&
+> +		net_eq(dev2_parent_net, net1);
+>  }
 
-Just so that I have mentioned it: In theory '#include <net/net_namespace.h>' 
-should be removed by this patch (hard-interface.c) and added again in the next 
-patch. But this would be rather useless when applying the two patches 
-together. It may be different when this patch is applied first without the 
-next patch.
+Just spotted this:
 
-Just to be sure (and so that I don't have to test it here :) ): When this 
-patch is applied, batadv_softif_create would already fail when the two 
-namespaces have a batadv interface with the same name because the debugfs 
-function would fail. But it would work when the batman-adv interfaces + the 
-slave interfaces (for per-slave interface information) have different names. 
-Right?
-
-Just some of my notes (just in case someone else asks himself the same 
-questions):
-
-It looks to me that the only reason a device from a different namespace isn't 
-added is because batadv_softif_slave_add + batadv_store_mesh_iface is getting 
-the namespace of the new slave device and batadv_hardif_enable_interface then 
-only searches the soft-interface (batX) in this namespace.
-
-It is currently not prevented that a slave device changes the namespace after 
-it was added. But this should not be a problem because the device will be 
-first removed from the original namespace (so it will be removed from batX) 
-and later added to the target namespace (see dev_change_net_namespace).
+"(dev2_parent_iflink == dev1->ifindex) &&" and all following lines are not
+correctly aligned anymore (7 spaces vs 1 tab).
 
 
-Reviewed-by: Sven Eckelmann <sven@narfation.org>
+[...]
+> +	const struct net *dev1_parent_net = net1;
+> +	const struct net *dev2_parent_net = net2;
+> +
+> +	if (dev1->rtnl_link_ops && dev1->rtnl_link_ops->get_link_net)
+> +		dev1_parent_net = dev1->rtnl_link_ops->get_link_net(dev1);
+> +	if (dev2->rtnl_link_ops && dev2->rtnl_link_ops->get_link_net)
+> +		dev2_parent_net = dev2->rtnl_link_ops->get_link_net(dev2);
+[...]
+> +       struct net *parent_net = net;
+[...]
+> +	if (net_dev->rtnl_link_ops && net_dev->rtnl_link_ops->get_link_net)
+> +		parent_net = net_dev->rtnl_link_ops->get_link_net(net_dev);
+> +
+
+My proposal is there to move this in an extra function [1] so adding compat
+code is easier [2].
+
+
+Already said this in an earlier mail but just for completeness:
+
+Include missing in net/batman-adv/hard-interface.c
+
+    #include <net/rtnetlink.h>
 
 Kind regards,
 	Sven
---nextPart7258172.0Ozi5GYqQW
+
+[1] https://git.open-mesh.org/batman-adv.git/blob/aef6842ec0facda9ec52736f8a6ce8ca4110e91a:/net/batman-adv/hard-interface.c#l87
+[2] https://git.open-mesh.org/batman-adv.git/blob/fb7b5eb8c81969dc8bea356d0a3f0b5e72d2da49:/compat-patches/0001-get_link_net.patch
+--nextPart2510033.6O6RCNlSoV
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -88,20 +89,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJW5UVwAAoJEF2HCgfBJntGGC4P/j1loM4etxeDUojFTwr6YI0b
-YMpAECBrO5OvIh3If2WiAqRwUibh80pgF/hb4MBfYau27ns7mgC2g5QuElTXR1LZ
-71fdsG6zys59M/gcBMfUYBj9xR0/OR7yqSw7juLcZ8ppDxNzE5oDMG9g9epIaYOC
-cqEWkiVWFZl6fwk9zmWrP9nxXCxrsrhN9l7qtu402hZD4Bz+CvWdMP3ALxVRCNtA
-SfqRhqmnkfWDJEUY6X3OB2c+7d91UiCZL04+ATM/VSodktydNfl3PFSERU86sveG
-nHiLfRqF4X5WmzBg1+Wg1YAtPH/UE2LkdOGznQMzFwplX69Hsd9RxhMyhn0EDCI5
-jh7QBD6RsnqFiPrNo4dpveoauhun1X2BW13Vt7MbcD2aSY8WChdKipWrZdILayc+
-aH2mutLMMM3f4ZeWTx1rfIVbRnvlXxbRNSNUJmLA2ny6X2ebueKJEk+FJ42xvL/E
-w5j0XdcDLxgksqFHmpiq2QSqvoEgc6oZExhvBS4T/WAl06EfvWHaE1B0woDaH2PU
-F+F4mvGh24QqiCJNe+vWjnKZnyjjeAXVrRMPU3IPYyQu/wJTMOmU0NVwdddNltMV
-xgEtxmsT/iTHUHRFhUd+UZhEibwg5/73mzloQ+OzORMhoxPKEBP9SSbUpQtReaY9
-CV0ucn9InP2T6XwwNSup
-=+LSd
+iQIcBAABCgAGBQJW5UjcAAoJEF2HCgfBJntGEZYP/jSo0IlXY95+H6Oc36uUjVSE
+M+DqfIDirVkI5fdrbNNzF0l9x9yYyfd05WnX/8EnFU69bKw/oJ920ne3TEvK1N2l
+lVR+MAt6OC31QcobnhchvfobgXvgz/NSLBEvAMKayz9R/KUhbWQZDHAd+bdw3ZAa
+nikCBijXCTvSWFvJolwlssc/9JPZimHXjJ5mDVufrw5h8Ia6PX4YcFu81oDd5k33
+wIjA1ebkfm8dT4+nw3pPu0wkyfXasrsVdVHEkchw9K1TvfK9Yb6puHjtucTS4YMF
+77UYTeJv9IirtyDlZdGG+jAdWwH5BWrXI1/LsQAZP9CiBp3FzgVATn3tuxgIu8IV
+K8JY3Yc+3SEqkzaD+q6fVRhIRDpsRv2taVcy4hE1KLMbBnbWvBpKN7khEuxeKT8Z
+PTbl/ogUk1Dh4ce/2cf97HYqh28Za4oMQnOHjIAUIQIxMhZmIAeb0oPmK2/qyze8
+jHEO/++vr22lsQwfiLEO8H2lWVkGb6SA9qIipp//p+igPWvvZyBR4oIxe/mjLxG9
+f+cPgx5xWCLtQztVZXRnsWRfUmNRzXnsEWlU0Itk5aaIvI8mlzKiPN/ygqYJwqeE
+hZfJGQEuhSxmN+3w/dFktNZERn9HzO5/sATUX9UZjfDmenv7OV1l4a4yXbyA1z6B
+R5+4E2by5V6El15C7dn0
+=knM5
 -----END PGP SIGNATURE-----
 
---nextPart7258172.0Ozi5GYqQW--
+--nextPart2510033.6O6RCNlSoV--
 
