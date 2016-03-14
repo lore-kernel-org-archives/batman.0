@@ -1,9 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Mon, 14 Mar 2016 12:01:47 +0800
-Message-Id: <1457928107-22710-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: tcpdump - add OGM2 and ELP parsing
-	support
+Date: Mon, 14 Mar 2016 12:05:44 +0800
+Message-Id: <1457928344-30355-1-git-send-email-a@unstable.cc>
+In-Reply-To: <1457928107-22710-1-git-send-email-a@unstable.cc>
+References: <1457928107-22710-1-git-send-email-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] [PATCH v2] batctl: tcpdump - add OGM2 and ELP
+	parsing support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -29,12 +31,17 @@ function.
 
 Signed-off-by: Antonio Quartulli <antonio.quartulli@open-mesh.com>
 ---
+
+v2:
+- change through printing format from %.2f to %.1f
+
+
  tcpdump.c | 164 ++++++++++++++++++++++++++++++++++++++++++++------------------
  tcpdump.h |  11 +++--
  2 files changed, 123 insertions(+), 52 deletions(-)
 
 diff --git a/tcpdump.c b/tcpdump.c
-index ac03cb2..8df9915 100644
+index ac03cb2..77f6d8e 100644
 --- a/tcpdump.c
 +++ b/tcpdump.c
 @@ -49,6 +49,8 @@
@@ -210,7 +217,7 @@ index ac03cb2..8df9915 100644
 +	if (throughput == BATADV_THROUGHPUT_MAX_VALUE)
 +		snprintf(thr_str, sizeof(thr_str), "MAX");
 +	else
-+		snprintf(thr_str, sizeof(thr_str), "%.2fMbps",
++		snprintf(thr_str, sizeof(thr_str), "%.1fMbps",
 +			 (float)ntohl(batman_ogm2->throughput) / 10);
 +
 +	ether_addr = (struct ether_addr *)ether_header->ether_shost;
