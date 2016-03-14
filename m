@@ -1,15 +1,15 @@
-Return-Path: <andrew@lunn.ch>
-Date: Mon, 14 Mar 2016 20:20:38 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160314192038.GB10040@lunn.ch>
-References: <3465881.llCNFeNLl4@sven-edge> <15512323.RRrA1BdBoh@bentobox>
- <20160314140624.GA5636@lunn.ch> <58321025.0PBgHVCilp@bentobox>
+Return-Path: <germano.massullo@gmail.com>
+References: <CAGa=++Q48GRsxuqchoWqsgjxz020eyRub0+vertAN2brzRy3HA@mail.gmail.com>
+ <1817507.YIectHPgqy@sven-edge>
+From: Germano Massullo <germano.massullo@gmail.com>
+Message-ID: <56E73211.5070808@gmail.com>
+Date: Mon, 14 Mar 2016 22:50:09 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <58321025.0PBgHVCilp@bentobox>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v3 6/6] batman-adv: debugfs: Add netns
-	support
+In-Reply-To: <1817507.YIectHPgqy@sven-edge>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="aU2ucaUdEsAGXu22nTwSLqESf5XpI02wP"
+Subject: Re: [B.A.T.M.A.N.] Creating alfred code documentation
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,61 +19,71 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
 
-On Mon, Mar 14, 2016 at 04:56:57PM +0100, Sven Eckelmann wrote:
-> On Monday 14 March 2016 15:06:24 Andrew Lunn wrote:
-> > > Matthias is against applying [1] patch 6 because it would require that
-> > > batman-adv supports this interface for a long(tm) time. He proposes to use
-> > > netlink instead.
-> > > 
-> > > Andrew, do you want to change patch 6 to avoid creating the debugfs stuff in
-> > > non-init_net netns?
-> > 
-> > I'm not sure how well that is going to work, from the user space side
-> > of things.
-> > 
-> > In the kernel, we know if we are in init_net, or some other netns.
-> > 
-> > In user space, it is not so simple. Ideally, when in some other netns
-> > than the default, we need all reads/writes to debugfs to fail.
-> 
-> Hm, this would require some checks via the the current pid on open:
-> 
->     net = get_net_ns_by_pid(current->pid);
->     ... checky check via neteq(net, &init_net)...
->     put_net(pd->net);
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--aU2ucaUdEsAGXu22nTwSLqESf5XpI02wP
+Content-Type: multipart/mixed; boundary="5f8cbbOxP2DRkektoUkVLqw8GPQCwUqIR"
+From: Germano Massullo <germano.massullo@gmail.com>
+To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
+Message-ID: <56E73211.5070808@gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Creating alfred code documentation
+References: <CAGa=++Q48GRsxuqchoWqsgjxz020eyRub0+vertAN2brzRy3HA@mail.gmail.com>
+ <1817507.YIectHPgqy@sven-edge>
+In-Reply-To: <1817507.YIectHPgqy@sven-edge>
 
-I suppose this could be made to work. Not sure what error code to
-return, maybe ENXIO if batctl is not in the default netns.
- 
-> > What we
-> > don't want is it seeing the default name spaces files, because it is
-> > going to get very confusing. These files refer to something which does
-> > not exist in the current netns.
-> 
-> Wait, but thats exactly what you are doing already with your default behavior
-> (which only creates a symlink to netns/${FUNNY_ID}/. Legacy tools will still
-> read the wrong information because they don't know about the new netns paths.
+--5f8cbbOxP2DRkektoUkVLqw8GPQCwUqIR
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Correct. And this is unfixable, as far as i can see. You need the
-contents of debugfs to be dependent on the observer. The requires core
-debugfs support to calls like readdir() and open().
+Il 12/03/2016 18:55, Sven Eckelmann ha scritto:
+> I am currently not sure about the "explaining also most important
+> local variables"=20
 
-> I thought that the debugfs stuff will be replaced with netlink  and that the
-> current debugfs files are only there for non-namespace setups with legacy tools.
+For example in the function
 
-Legacy tools are always going to be broken when they are used in the
-non-default netns. Probably the best we can do is have the kernel
-return ENXIO or whatever when they access files from a different
-netns.
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
 
-We have two options for non-default netns debugfs
+static int vis_read_answer(struct globals *globals)
+{
+	const struct vis_print_ops *ops;
+	struct vis_v1 *vis_data;
+	uint16_t len;
+	struct vis_iface *ifaces;
+	struct vis_entry *vis_entries;
+// CUT
 
-1) Extend debugfs and the tools as i suggested patches for.
 
-2) Only support default netns in debugfs, and use netlink for full
-   netns aware tools.
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+I would stress the purposes description of
+struct vis_v1 *vis_data
+struct vis_iface *ifaces
+struct vis_entry *vis_entries
 
-   Andrew
+
+--5f8cbbOxP2DRkektoUkVLqw8GPQCwUqIR--
+
+--aU2ucaUdEsAGXu22nTwSLqESf5XpI02wP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJW5zJPAAoJEIq8nrxQ7aiETqYP/AwkNT9YVk1iryS0zr3EIbPs
+do3vpjlnHo2CKejdVPbupafWAUohHq/QMtimcOxP56KRd4ExxujYZdW4+VTS1jFt
+dXGBWv0vd6SEEQFhhB4ZI1zZOHmw91F/1qW9yyjgVOcN/R6mfUa+iSoubZqPBpok
+QchCjgbd9fEGUbBg5q6bJJ+DJq3FMACPPIpkTtyxoEzmeFup8yu/HLNa9YAIGPc9
+X2wnOIrQUvkHdeWJgN/VBCy+B+t9ixusDF6vySGWu5L+VxEcUmoAYLvcQ4r5IHEj
+RcO+XHYnkarZYX/FcCPVFXESxwH81IoFF7reyYWL8CaL9VfHCblPUN1JORYor+05
+VKSaCmO/bxyCZqX1EEM5BYaniSmoONYPUPgX6wXSBanG+7AUOKY+Ojvr076hW/sH
+mINJDOAzZwWgBCVmbDv6jI1K5WwxE5pefvqJnQ4CFI2tJ/tz2NY2EGzSYKEayDE4
+mqOT3BMl9FUDL/0fZfyJo5LWM6ZvC57bdg2kDaezxi0I/Co0qT0yaera6CLLjBhy
+WBktI5LiElEcilYw99rzJqVqzlURk2pFO5pJ2LDd9XE1iwvoTBJ4Hpz1r2RMNr0P
+oL4tgEqm2uUML/HzJFKTFpWjwBhqF+VGzNuo1IEexG2FbwLS9DErhT/2x6jskPC+
+C6/5VjbXbokbFAtiYXxL
+=JAZo
+-----END PGP SIGNATURE-----
+
+--aU2ucaUdEsAGXu22nTwSLqESf5XpI02wP--
