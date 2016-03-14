@@ -1,17 +1,15 @@
-Return-Path: <mschiffer@universe-factory.net>
-References: <1456867148-31883-1-git-send-email-andrew@lunn.ch>
- <1456867148-31883-5-git-send-email-andrew@lunn.ch>
- <56DD8E53.3010904@universe-factory.net> <9919433.c4WuAskJuF@sven-edge>
-From: Matthias Schiffer <mschiffer@universe-factory.net>
-Message-ID: <56E69562.9050109@universe-factory.net>
-Date: Mon, 14 Mar 2016 11:41:38 +0100
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 14 Mar 2016 11:57:40 +0100
+Message-ID: <15512323.RRrA1BdBoh@bentobox>
+In-Reply-To: <1457895034-13823-6-git-send-email-sven@narfation.org>
+References: <3465881.llCNFeNLl4@sven-edge>
+ <1457895034-13823-6-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-In-Reply-To: <9919433.c4WuAskJuF@sven-edge>
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature";
- boundary="m8fvfWq42vvOFuXGeP4WtDKDfjlHeM4PD"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: debugfs: Add netns
- support
+Content-Type: multipart/signed; boundary="nextPart42883157.KAQGEl6LGP";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3 6/6] batman-adv: debugfs: Add netns
+	support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,96 +19,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---m8fvfWq42vvOFuXGeP4WtDKDfjlHeM4PD
-Content-Type: multipart/mixed; boundary="aHhNDKsfHnokxRIpixXt22uBfAGSP36DD"
-From: Matthias Schiffer <mschiffer@universe-factory.net>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
-Message-ID: <56E69562.9050109@universe-factory.net>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: debugfs: Add netns
- support
-References: <1456867148-31883-1-git-send-email-andrew@lunn.ch>
- <1456867148-31883-5-git-send-email-andrew@lunn.ch>
- <56DD8E53.3010904@universe-factory.net> <9919433.c4WuAskJuF@sven-edge>
-In-Reply-To: <9919433.c4WuAskJuF@sven-edge>
+--nextPart42883157.KAQGEl6LGP
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---aHhNDKsfHnokxRIpixXt22uBfAGSP36DD
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+On Sunday 13 March 2016 19:50:34 Sven Eckelmann wrote:
+> From: Andrew Lunn <andrew@lunn.ch>
+> 
+> Unlike sysfs, debugfs is not netns aware. So batman has to take care
+> to avoid namespace clashes.
+> 
+> Each namespace is given a directory within debugfs/batman-adv/netns,
+> using the namespaces inum as the directory name.
+> 
+> Files for namespaces other than the global namespace are placed within
+> the namespace specific directory. Additionally, a symbolic link is
+> used to link the global namespaces inum back to debugfs/batman-adv/ so
+> tools do not need to differentiate between the global namespace and
+> other namespaces.
+> 
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  compat-patches/0002-ns.inum.patch |  25 ++++++++
+>  net/batman-adv/debugfs.c          | 130 +++++++++++++++++++++++++++++++++++++-
+>  2 files changed, 152 insertions(+), 3 deletions(-)
+>  create mode 100644 compat-patches/0002-ns.inum.patch
 
-On 03/13/2016 10:12 AM, Sven Eckelmann wrote:
-> On Monday 07 March 2016 15:21:07 Matthias Schiffer wrote:
-> [...]
->> By the way, the netns support is another good reason to switch from th=
-e
->> debugfs interfaces to a netlink-based interface (as the netlink interf=
-ace
->> wouldn't need userspace applications like batctl to be aware of the
->> namespaces). I guess I should finally finish the patches I started wri=
-ting
->> for that...
->=20
-> So what is your suggestion here? Should the namespace support for names=
-paces=20
-> be rejected and you send in your netlink implementation patches? Or sho=
-uld=20
-> this patch be merged and be removed (together with the rest of the debu=
-gfs=20
-> stuff) when your netlink support is integrated?
->=20
-> Kind regards,
-> 	Sven
->=20
+Matthias is against applying [1] patch 6 because it would require that
+batman-adv supports this interface for a long(tm) time. He proposes to use
+netlink instead.
 
+Andrew, do you want to change patch 6 to avoid creating the debugfs stuff in
+non-init_net netns?
 
-As my netlink patches need more work, I guess it would make sense for me =
-to
-rebase them onto the netns patchset.
+Kind regards,
+	Sven
 
-At least the non-netns debugfs interface would need to continue being
-supported for a while I guess. As you know, both Linus Torvalds and David=
+[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-March/014690.html
 
-are very strict about kernel ABI regressions, and I know that at least
-Linus considers debugfs kernel ABI, so the same ABI stability guarantees =
-as
-for the rest of the kernel apply. This makes me think that the netns
-support should not be merged into mainline until the netlink interface is=
-
-done, so we don't add even more legacy interfaces.
-
-I'll continue my work on the netlink patchset, I plan to send a v2 some
-time this week.
-
-Matthias
-
-
---aHhNDKsfHnokxRIpixXt22uBfAGSP36DD--
-
---m8fvfWq42vvOFuXGeP4WtDKDfjlHeM4PD
+--nextPart42883157.KAQGEl6LGP
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCgAGBQJW5pViAAoJEBbvP2TLIB2cnD0P/2wlXioCOpREFK9/UI4w7NBP
-ocXYiYF0QrmWuFgP+08XBt1EsNFHQOr9TxM9ATcjdxbU+H4Pkqt/L0ToKcCtaDSd
-lnUhzzQ0yjM5oV5691OvxMBaDiBWgBfk39FUAdpkvkQKzZJoxiOFeXHI1WuQ7GBT
-+JiTA11m3KG+A0R1J8oh2iiK+FlLt3AOLCfGNmbDnRF3AsMrTDKEcdBmMU96powR
-zSCQKN1kt4UK66bY1De6Oc1Q8soOIahGVYPDraIiNvLm9gBXkuDRSh0ABgK3iRZm
-SV5nXQ+yqHPIxr8E5CXx0tEnnJVXX4yI9ajxjdzXn+OWqYZ/+G+xLerPD53H30GE
-fUuJBFCu3/kq5htHaNR9J0LZQV9qZWIffGfH6cAV6lOOS8EMXk0fWyfGo5s1XfAf
-bDwd6EAeCGNqGtc/goSpFSL+LtKF03202q6VoJXQo2xepFxwNfbPKNDgL8haBwcP
-rcWR5ACTIUzsZLOm68yjQQJ2vV64wruqzE24PpFUK503btWKG4sMI9JYJJ+N/sog
-e6cO+9sAzyIYhB8+Hve4nokU0GYfZRNokA60H4NDKORmeCbsPBgTdXCRbheqcgv2
-35RIlgD3BlT3ylIwEoxmUXCiaCUEyjj2iK4tWNUQ4/ews6/COfaLbeJK4YyJyVm/
-8dSVxmsVvJ4hyQnk4T+S
-=QKf6
+iQIcBAABCgAGBQJW5pkkAAoJEF2HCgfBJntGrDMQAMACBvcrZ0eZu97hWz6pyTsJ
+Y5SgKt6xckNpYME4Y0REQAlzQ3hk5WliVCabw8m15BP4d57ABLLDf+TEflcFONl4
+vEvUOgGaevTpQJVh201ecvAqpakcEyZ/bO7r9kw7JZPGcoDl81KHiM1bH+CmiMIn
+mupYkfOGyDiH0ayymtyZp1E70MEHCnuIzLaVSJ04ivNHmVGVYITZF3t3zl2R3aIP
+y+8Y7h33vQopckNPKLfz48tyQP4u1cYCc1sDGgUiK9rBZxEet+L5kMiC5ThHnKe4
+YqznmEBWfwtlLuFFlVWS+u9IFEsg7GyBs9TM17yJgJsLLu424cQNhZxy4BE/9SSy
+7OABAUdcLPGyQIMEOG7e8MxSw1KN8ZCncOOeAuZGNwNfx2yTT65XW976KOqL2IEi
+loklK0K4qYbzfSP4HovB715VKx1Zb7MjmKn32+3S4oJ+dgt1aoR4IH0mdhcDjUBk
+8eXQqXSZbRiVHu+Wx2gtEdX2gIrh1qoAGJsmLMsCqru48RcdNKbnWlnBIiz4lh2o
+kRpijoOIyVa6h/Ej1B16O1mqmDl/pBYLTAYiL2OoxeecUEWS2dakg6l0MX93YRLX
+69lZi9xNL0VXE8GUON3SAGlbgUQXN5wf13FjGCOuJTaRI/0IFe349mOBdPhmwH66
+ObYMsIE6GZ4Oun1m4WxX
+=tNsc
 -----END PGP SIGNATURE-----
 
---m8fvfWq42vvOFuXGeP4WtDKDfjlHeM4PD--
+--nextPart42883157.KAQGEl6LGP--
+
