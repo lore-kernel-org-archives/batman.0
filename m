@@ -1,15 +1,16 @@
-Return-Path: <APape@phoenixcontact.com>
-In-Reply-To: <9978680.AHfZt94x15@voltaire>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 14 Mar 2016 13:08:31 +0100
+Message-ID: <3424620.VtrxI3VZ5G@bentobox>
+In-Reply-To: <OFE8016C97.82D26F0A-ONC1257F76.003FBD12-C1257F76.00416CB9@phoenixcontact.com>
 References: <1456652670-18226-1-git-send-email-sven@narfation.org>
  <9978680.AHfZt94x15@voltaire>
+ <OFE8016C97.82D26F0A-ONC1257F76.003FBD12-C1257F76.00416CB9@phoenixcontact.com>
 MIME-Version: 1.0
-From: Andreas Pape <APape@phoenixcontact.com>
-Message-ID: <OFE8016C97.82D26F0A-ONC1257F76.003FBD12-C1257F76.00416CB9@phoenixcontact.com>
-Date: Mon, 14 Mar 2016 12:54:36 +0100
-content-transfer-encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
+Content-Type: multipart/signed; boundary="nextPart2524602.Wmehs0XipQ";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: ELP - use new
- ethtool_link_get_ksettings API
+	ethtool_link_get_ksettings API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,82 +20,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi everybody,
+--nextPart2524602.Wmehs0XipQ
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-"B.A.T.M.A.N" <b.a.t.m.a.n-bounces@lists.open-mesh.org> schrieb am
-29.02.2016 03:23:42:
+On Monday 14 March 2016 12:54:36 Andreas Pape wrote:
+[...]
+> This patch breaks compatibility with older kernels (2.6.32 in my case ;-).
+> 
+> Is this intended? If I try to compile this I get
+> 
+> ..../compat-include/linux/ethtool.h:49: error: implicit declaration of
+> function '__ethtool_get_settings'
+> 
+> I stumbled across this when I tried to update and test my patches for dat
+> and bla due to the feedback I received after I updated the master branch.
 
-> Von: Marek Lindner <mareklindner@neomailbox.ch>
-> An: b.a.t.m.a.n@lists.open-mesh.org
-> Kopie: Antonio Quartulli <a@unstable.cc>
-> Datum: 29.02.2016 03:24
-> Betreff: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: ELP - use new
-> ethtool_link_get_ksettings API
-> Gesendet von: "B.A.T.M.A.N" <b.a.t.m.a.n-bounces@lists.open-mesh.org>
->
-> On Sunday, February 28, 2016 10:44:30 Sven Eckelmann wrote:
-> > From: Antonio Quartulli <a@unstable.cc>
-> >
-> > The ethtool API is changing in linux-4.6 and the B.A.T.M.A.N. V
-> > code has to be changed accordingly.
-> >
-> > Fixes: 5c3245172c01 ("batman-adv: ELP - compute the metric based on
-the
-> > estimated throughput") Signed-off-by: Antonio Quartulli
-<a@unstable.cc>
-> > [sven@narfation.org: Added compat code for
-__ethtool_get_link_ksettings]
-> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> > ---
-> > resend of "RFC v2" as patch with my Signed-off-by added
-> >
-> >  compat-include/linux/ethtool.h | 62
-> > ++++++++++++++++++++++++++++++++++++++++++ net/batman-adv/bat_v_elp.c
-  |
-> > 12 ++++----
-> >  2 files changed, 68 insertions(+), 6 deletions(-)
-> >  create mode 100644 compat-include/linux/ethtool.h
->
-> Applied in revision 3515604.
->
-> Thanks,
-> Marek
+See https://patchwork.open-mesh.org/patch/15881/
 
-This patch breaks compatibility with older kernels (2.6.32 in my case ;-).
-
-Is this intended? If I try to compile this I get
-
-..../compat-include/linux/ethtool.h:49: error: implicit declaration of
-function '__ethtool_get_settings'
-
-I stumbled across this when I tried to update and test my patches for dat
-and bla due to the feedback I received after I updated the master branch.
 
 Kind regards,
-Andreas
+	Sven
+--nextPart2524602.Wmehs0XipQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
+iQIcBAABCgAGBQJW5qm/AAoJEF2HCgfBJntGjZAP/0k5W84TipGuLyrv+IrJLTLQ
+nMS9yf8FmIFkn2yH+lT3AtP3kFpSaRMmt4oy1CpF8occPJA4CogVgAXWYSStoP4t
+aeVFJUJWnFvzVweGrxmjrrI9Zd4Vk7ma3NuQ3ABK/P7d0WQKZWBLh5veaPqh/OlN
+zSYbhxRP2+ADhgUAL/yBRxJzvRmgqgTcblA20dUAKor/n+eaexZttJl+I9P8lf0A
+50IC8TShf1qrnO0Bw/MNrd53/GZuO8IL5XAGD2YvZqnu9OAFyqihEeI3B3HNTUx2
+UiXmZE7Hw9N9ISwsvYEo1i7lSrr18GPoig/VydK9X5W06AGBQ/P2vZmCZE3gpwcO
+5fMQiute51jKrg9Q5RSI9c919b9g3we8xS/U+xET5gmLZN4bwFYo0FAl2qo3vlZj
+T6e9vSIabD9VmlmhYmzoUaqlvvwN1HRLEL3sQ7//DUKrN7pCrNGsscqEXaOV7nh4
+3967fjoTDqqnNF6fWvL1wns2Cul9PL91/cnFVOViFTIFZFaOsbDEazFvWjtFL5m/
+aaHb7iPl1YIqvfICNrPLkcIp+qqC4iB9LRvOrsGbYzfocpMQrsvjYx1pYwtzKbWy
+6JNFWBtYYoTtlNFwJssi2ltQbWpH5dgc0rkvJHk1qva3xj9g+dWA33OTMTY3TS8S
+zxo5JvnXKVejs+kbociy
+=V5sA
+-----END PGP SIGNATURE-----
 
-..................................................................
-PHOENIX CONTACT ELECTRONICS GmbH
+--nextPart2524602.Wmehs0XipQ--
 
-Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
-USt-Id-Nr.: DE811742156
-Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
-Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
-___________________________________________________________________
-Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
-nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
-rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
-d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
- Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
----------------------------------------------------------------------------=
--------------------------
-This e-mail may contain confidential and/or privileged information. If you =
-are not the intended recipient (or have received this e-mail in error) plea=
-se notify the sender immediately and destroy this e-mail. Any unauthorized =
-copying, disclosure, distribution or other use of the material or parts the=
-reof is strictly forbidden.
-___________________________________________________________________
