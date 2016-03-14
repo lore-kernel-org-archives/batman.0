@@ -1,15 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 14 Mar 2016 11:57:40 +0100
-Message-ID: <15512323.RRrA1BdBoh@bentobox>
-In-Reply-To: <1457895034-13823-6-git-send-email-sven@narfation.org>
-References: <3465881.llCNFeNLl4@sven-edge>
- <1457895034-13823-6-git-send-email-sven@narfation.org>
+Return-Path: <APape@phoenixcontact.com>
+In-Reply-To: <9978680.AHfZt94x15@voltaire>
+References: <1456652670-18226-1-git-send-email-sven@narfation.org>
+ <9978680.AHfZt94x15@voltaire>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart42883157.KAQGEl6LGP";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v3 6/6] batman-adv: debugfs: Add netns
-	support
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OFE8016C97.82D26F0A-ONC1257F76.003FBD12-C1257F76.00416CB9@phoenixcontact.com>
+Date: Mon, 14 Mar 2016 12:54:36 +0100
+content-transfer-encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: ELP - use new
+ ethtool_link_get_ksettings API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,69 +19,82 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart42883157.KAQGEl6LGP
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi everybody,
 
-On Sunday 13 March 2016 19:50:34 Sven Eckelmann wrote:
-> From: Andrew Lunn <andrew@lunn.ch>
-> 
-> Unlike sysfs, debugfs is not netns aware. So batman has to take care
-> to avoid namespace clashes.
-> 
-> Each namespace is given a directory within debugfs/batman-adv/netns,
-> using the namespaces inum as the directory name.
-> 
-> Files for namespaces other than the global namespace are placed within
-> the namespace specific directory. Additionally, a symbolic link is
-> used to link the global namespaces inum back to debugfs/batman-adv/ so
-> tools do not need to differentiate between the global namespace and
-> other namespaces.
-> 
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  compat-patches/0002-ns.inum.patch |  25 ++++++++
->  net/batman-adv/debugfs.c          | 130 +++++++++++++++++++++++++++++++++++++-
->  2 files changed, 152 insertions(+), 3 deletions(-)
->  create mode 100644 compat-patches/0002-ns.inum.patch
+"B.A.T.M.A.N" <b.a.t.m.a.n-bounces@lists.open-mesh.org> schrieb am
+29.02.2016 03:23:42:
 
-Matthias is against applying [1] patch 6 because it would require that
-batman-adv supports this interface for a long(tm) time. He proposes to use
-netlink instead.
+> Von: Marek Lindner <mareklindner@neomailbox.ch>
+> An: b.a.t.m.a.n@lists.open-mesh.org
+> Kopie: Antonio Quartulli <a@unstable.cc>
+> Datum: 29.02.2016 03:24
+> Betreff: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: ELP - use new
+> ethtool_link_get_ksettings API
+> Gesendet von: "B.A.T.M.A.N" <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+>
+> On Sunday, February 28, 2016 10:44:30 Sven Eckelmann wrote:
+> > From: Antonio Quartulli <a@unstable.cc>
+> >
+> > The ethtool API is changing in linux-4.6 and the B.A.T.M.A.N. V
+> > code has to be changed accordingly.
+> >
+> > Fixes: 5c3245172c01 ("batman-adv: ELP - compute the metric based on
+the
+> > estimated throughput") Signed-off-by: Antonio Quartulli
+<a@unstable.cc>
+> > [sven@narfation.org: Added compat code for
+__ethtool_get_link_ksettings]
+> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> > ---
+> > resend of "RFC v2" as patch with my Signed-off-by added
+> >
+> >  compat-include/linux/ethtool.h | 62
+> > ++++++++++++++++++++++++++++++++++++++++++ net/batman-adv/bat_v_elp.c
+  |
+> > 12 ++++----
+> >  2 files changed, 68 insertions(+), 6 deletions(-)
+> >  create mode 100644 compat-include/linux/ethtool.h
+>
+> Applied in revision 3515604.
+>
+> Thanks,
+> Marek
 
-Andrew, do you want to change patch 6 to avoid creating the debugfs stuff in
-non-init_net netns?
+This patch breaks compatibility with older kernels (2.6.32 in my case ;-).
+
+Is this intended? If I try to compile this I get
+
+..../compat-include/linux/ethtool.h:49: error: implicit declaration of
+function '__ethtool_get_settings'
+
+I stumbled across this when I tried to update and test my patches for dat
+and bla due to the feedback I received after I updated the master branch.
 
 Kind regards,
-	Sven
+Andreas
 
-[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-March/014690.html
 
---nextPart42883157.KAQGEl6LGP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
 
-iQIcBAABCgAGBQJW5pkkAAoJEF2HCgfBJntGrDMQAMACBvcrZ0eZu97hWz6pyTsJ
-Y5SgKt6xckNpYME4Y0REQAlzQ3hk5WliVCabw8m15BP4d57ABLLDf+TEflcFONl4
-vEvUOgGaevTpQJVh201ecvAqpakcEyZ/bO7r9kw7JZPGcoDl81KHiM1bH+CmiMIn
-mupYkfOGyDiH0ayymtyZp1E70MEHCnuIzLaVSJ04ivNHmVGVYITZF3t3zl2R3aIP
-y+8Y7h33vQopckNPKLfz48tyQP4u1cYCc1sDGgUiK9rBZxEet+L5kMiC5ThHnKe4
-YqznmEBWfwtlLuFFlVWS+u9IFEsg7GyBs9TM17yJgJsLLu424cQNhZxy4BE/9SSy
-7OABAUdcLPGyQIMEOG7e8MxSw1KN8ZCncOOeAuZGNwNfx2yTT65XW976KOqL2IEi
-loklK0K4qYbzfSP4HovB715VKx1Zb7MjmKn32+3S4oJ+dgt1aoR4IH0mdhcDjUBk
-8eXQqXSZbRiVHu+Wx2gtEdX2gIrh1qoAGJsmLMsCqru48RcdNKbnWlnBIiz4lh2o
-kRpijoOIyVa6h/Ej1B16O1mqmDl/pBYLTAYiL2OoxeecUEWS2dakg6l0MX93YRLX
-69lZi9xNL0VXE8GUON3SAGlbgUQXN5wf13FjGCOuJTaRI/0IFe349mOBdPhmwH66
-ObYMsIE6GZ4Oun1m4WxX
-=tNsc
------END PGP SIGNATURE-----
-
---nextPart42883157.KAQGEl6LGP--
-
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
+___________________________________________________________________
+Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
+nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
+rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
+d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
+ Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
