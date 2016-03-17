@@ -1,12 +1,12 @@
 Return-Path: <mschiffer@universe-factory.net>
 From: Matthias Schiffer <mschiffer@universe-factory.net>
-Date: Thu, 17 Mar 2016 17:45:35 +0100
-Message-Id: <bc3430a784d2a39f99141a335c086264532ab03c.1458231707.git.mschiffer@universe-factory.net>
+Date: Thu, 17 Mar 2016 17:45:34 +0100
+Message-Id: <598652b2037e33864565809c1e93458b57c66c92.1458231707.git.mschiffer@universe-factory.net>
 In-Reply-To: <cover.1458231707.git.mschiffer@universe-factory.net>
 References: <cover.1458231707.git.mschiffer@universe-factory.net>
 In-Reply-To: <cover.1458231707.git.mschiffer@universe-factory.net>
 References: <cover.1458231707.git.mschiffer@universe-factory.net>
-Subject: [B.A.T.M.A.N.] [RFC v2 5/5] batman-adv: add B.A.T.M.A.N. V
+Subject: [B.A.T.M.A.N.] [RFC v2 4/5] batman-adv: add B.A.T.M.A.N. IV
 	bat_{orig, neigh}_dump implementations
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -21,173 +21,77 @@ To: b.a.t.m.a.n@lists.open-mesh.net
 
 Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
 ---
- include/uapi/linux/batman_adv.h |   1 +
- net/batman-adv/bat_v.c          | 250 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 251 insertions(+)
+ include/uapi/linux/batman_adv.h |   2 +
+ net/batman-adv/bat_iv_ogm.c     | 268 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 270 insertions(+)
 
 diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index baf4ac8..27f277f 100644
+index 35d8e8c..baf4ac8 100644
 --- a/include/uapi/linux/batman_adv.h
 +++ b/include/uapi/linux/batman_adv.h
-@@ -78,6 +78,7 @@ enum {
+@@ -76,6 +76,8 @@ enum {
+ 	BATADV_ATTR_TT_FLAGS,
+ 	BATADV_ATTR_FLAG_BEST,
  	BATADV_ATTR_LAST_SEEN_MSECS,
- 	BATADV_ATTR_NEIGH_ADDRESS,
- 	BATADV_ATTR_TQ,
-+	BATADV_ATTR_THROUGHPUT,
++	BATADV_ATTR_NEIGH_ADDRESS,
++	BATADV_ATTR_TQ,
  	__BATADV_ATTR_MAX,
  };
  
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 3315b9a..203c9cd 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -29,10 +29,12 @@
- #include <linux/seq_file.h>
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 2c65668..5aa413e 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -47,10 +47,12 @@
+ #include <linux/string.h>
  #include <linux/types.h>
  #include <linux/workqueue.h>
 +#include <uapi/linux/batman_adv.h>
  
- #include "bat_v_elp.h"
- #include "bat_v_ogm.h"
+ #include "bitarray.h"
+ #include "hard-interface.h"
  #include "hash.h"
 +#include "netlink.h"
+ #include "network-coding.h"
  #include "originator.h"
  #include "packet.h"
- 
-@@ -171,6 +173,107 @@ static void batadv_v_neigh_print(struct batadv_priv *bat_priv,
+@@ -1916,6 +1918,171 @@ next:
  		seq_puts(seq, "No batman nodes in range ...\n");
  }
  
-+static int
-+batadv_v_neigh_dump_neigh(struct sk_buff *msg, u32 portid, u32 seq,
-+			  struct batadv_hardif_neigh_node *hardif_neigh)
-+{
-+	void *hdr;
-+	unsigned int last_seen_msecs;
-+	u32 throughput;
-+
-+	last_seen_msecs = jiffies_to_msecs(jiffies - hardif_neigh->last_seen);
-+	throughput = ewma_throughput_read(&hardif_neigh->bat_v.throughput);
-+	throughput = throughput * 100;
-+
-+	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family, NLM_F_MULTI,
-+			  BATADV_CMD_GET_NEIGHBORS);
-+	if (!hdr)
-+		return -ENOBUFS;
-+
-+	if (nla_put(msg, BATADV_ATTR_NEIGH_ADDRESS, ETH_ALEN,
-+		    hardif_neigh->addr) ||
-+	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
-+			hardif_neigh->if_incoming->net_dev->ifindex) ||
-+	    nla_put_u32(msg, BATADV_ATTR_LAST_SEEN_MSECS,
-+			last_seen_msecs) ||
-+	    nla_put_u32(msg, BATADV_ATTR_THROUGHPUT, throughput))
-+		goto nla_put_failure;
-+
-+	genlmsg_end(msg, hdr);
-+	return 0;
-+
-+ nla_put_failure:
-+	genlmsg_cancel(msg, hdr);
-+	return -EMSGSIZE;
-+}
-+
-+static int
-+batadv_v_neigh_dump_hardif(struct sk_buff *msg, u32 portid, u32 seq,
-+			   struct batadv_priv *bat_priv,
-+			   struct batadv_hard_iface *hard_iface,
-+			   int *idx_s)
-+{
-+	struct batadv_hardif_neigh_node *hardif_neigh;
-+	int idx = 0;
-+
-+	hlist_for_each_entry_rcu(hardif_neigh,
-+				 &hard_iface->neigh_list, list) {
-+		if (idx++ < *idx_s)
-+			continue;
-+
-+		if (batadv_v_neigh_dump_neigh(msg, portid, seq, hardif_neigh)) {
-+			*idx_s = idx - 1;
-+			return -EMSGSIZE;
-+		}
-+	}
-+
-+	*idx_s = 0;
-+	return 0;
-+}
-+
-+static void
-+batadv_v_neigh_dump(struct sk_buff *msg, struct netlink_callback *cb,
-+		    struct batadv_priv *bat_priv,
-+		    struct batadv_hard_iface *single_hardif)
-+{
-+	struct batadv_hard_iface *hard_iface;
-+	int i_hardif = 0;
-+	int i_hardif_s = cb->args[0];
-+	int idx = cb->args[1];
-+	int portid = NETLINK_CB(cb->skb).portid;
-+
-+	rcu_read_lock();
-+	if (single_hardif) {
-+		if (i_hardif_s == 0) {
-+			if (batadv_v_neigh_dump_hardif(msg, portid,
-+						       cb->nlh->nlmsg_seq,
-+						       bat_priv, single_hardif,
-+						       &idx) == 0)
-+				i_hardif++;
-+		}
-+	} else {
-+		list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-+			if (hard_iface->soft_iface != bat_priv->soft_iface)
-+				continue;
-+
-+			if (i_hardif++ < i_hardif_s)
-+				continue;
-+
-+			if (batadv_v_neigh_dump_hardif(msg, portid,
-+						       cb->nlh->nlmsg_seq,
-+						       bat_priv, hard_iface,
-+						       &idx)) {
-+				i_hardif--;
-+				break;
-+			}
-+		}
-+	}
-+	rcu_read_unlock();
-+
-+	cb->args[0] = i_hardif;
-+	cb->args[1] = idx;
-+}
-+
- /**
-  * batadv_v_orig_print - print the originator table
-  * @bat_priv: the bat priv with all the soft interface information
-@@ -239,6 +342,151 @@ next:
- 		seq_puts(seq, "No batman nodes in range ...\n");
- }
- 
-+static int
-+batadv_v_orig_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
-+			    struct batadv_priv *bat_priv,
-+			    struct batadv_hard_iface *if_outgoing,
-+			    struct batadv_orig_node *orig_node,
-+			    struct batadv_neigh_node *neigh_node,
-+			    bool best)
++static bool
++batadv_iv_ogm_neigh_get_tq_avg(struct batadv_neigh_node *neigh_node,
++			       struct batadv_hard_iface *if_outgoing,
++			       u8 *tq_avg)
 +{
 +	struct batadv_neigh_ifinfo *n_ifinfo;
-+	unsigned int last_seen_msecs;
-+	u32 throughput;
-+	void *hdr;
 +
 +	n_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
 +	if (!n_ifinfo)
-+		return 0;
++		return false;
 +
-+	throughput = n_ifinfo->bat_v.throughput * 100;
-+
++	*tq_avg = n_ifinfo->bat_iv.tq_avg;
 +	batadv_neigh_ifinfo_put(n_ifinfo);
 +
++	return true;
++}
++
++static int
++batadv_iv_ogm_orig_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
++				 struct batadv_priv *bat_priv,
++				 struct batadv_hard_iface *if_outgoing,
++				 struct batadv_orig_node *orig_node,
++				 struct batadv_neigh_node *neigh_node,
++				 bool best)
++{
++	void *hdr;
++	u8 tq_avg;
++	unsigned int last_seen_msecs;
++
 +	last_seen_msecs = jiffies_to_msecs(jiffies - orig_node->last_seen);
++
++	if (!batadv_iv_ogm_neigh_get_tq_avg(neigh_node, if_outgoing, &tq_avg))
++		return 0;
 +
 +	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family, NLM_F_MULTI,
 +			  BATADV_CMD_GET_ORIGINATORS);
@@ -199,7 +103,7 @@ index 3315b9a..203c9cd 100644
 +		    neigh_node->addr) ||
 +	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
 +			neigh_node->if_incoming->net_dev->ifindex) ||
-+	    nla_put_u32(msg, BATADV_ATTR_THROUGHPUT, throughput) ||
++	    nla_put_u8(msg, BATADV_ATTR_TQ, tq_avg) ||
 +	    nla_put_u32(msg, BATADV_ATTR_LAST_SEEN_MSECS,
 +			last_seen_msecs))
 +		goto nla_put_failure;
@@ -216,18 +120,26 @@ index 3315b9a..203c9cd 100644
 +}
 +
 +static int
-+batadv_v_orig_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
-+			 struct batadv_priv *bat_priv,
-+			 struct batadv_hard_iface *if_outgoing,
-+			 struct batadv_orig_node *orig_node, int *sub_s)
++batadv_iv_ogm_orig_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
++			      struct batadv_priv *bat_priv,
++			      struct batadv_hard_iface *if_outgoing,
++			      struct batadv_orig_node *orig_node, int *sub_s)
 +{
 +	struct batadv_neigh_node *neigh_node_best;
 +	struct batadv_neigh_node *neigh_node;
 +	int sub = 0;
 +	bool best;
++	u8 tq_avg_best;
 +
 +	neigh_node_best = batadv_orig_router_get(orig_node, if_outgoing);
 +	if (!neigh_node_best)
++		goto out;
++
++	if (!batadv_iv_ogm_neigh_get_tq_avg(neigh_node_best, if_outgoing,
++					    &tq_avg_best))
++		goto out;
++
++	if (tq_avg_best == 0)
 +		goto out;
 +
 +	hlist_for_each_entry_rcu(neigh_node, &orig_node->neigh_list, list) {
@@ -236,9 +148,9 @@ index 3315b9a..203c9cd 100644
 +
 +		best = (neigh_node == neigh_node_best);
 +
-+		if (batadv_v_orig_dump_subentry(msg, portid, seq, bat_priv,
-+						if_outgoing, orig_node,
-+						neigh_node, best)) {
++		if (batadv_iv_ogm_orig_dump_subentry(msg, portid, seq, bat_priv,
++						     if_outgoing, orig_node,
++						     neigh_node, best)) {
 +			batadv_neigh_node_put(neigh_node_best);
 +
 +			*sub_s = sub - 1;
@@ -255,10 +167,10 @@ index 3315b9a..203c9cd 100644
 +}
 +
 +static int
-+batadv_v_orig_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
-+			  struct batadv_priv *bat_priv,
-+			  struct batadv_hard_iface *if_outgoing,
-+			  struct hlist_head *head, int *idx_s, int *sub)
++batadv_iv_ogm_orig_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
++			       struct batadv_priv *bat_priv,
++			       struct batadv_hard_iface *if_outgoing,
++			       struct hlist_head *head, int *idx_s, int *sub)
 +{
 +	struct batadv_orig_node *orig_node;
 +	int idx = 0;
@@ -268,8 +180,9 @@ index 3315b9a..203c9cd 100644
 +		if (idx++ < *idx_s)
 +			continue;
 +
-+		if (batadv_v_orig_dump_entry(msg, portid, seq, bat_priv,
-+					     if_outgoing, orig_node, sub)) {
++		if (batadv_iv_ogm_orig_dump_entry(msg, portid, seq, bat_priv,
++						  if_outgoing, orig_node,
++						  sub)) {
 +			rcu_read_unlock();
 +			*idx_s = idx - 1;
 +			return -EMSGSIZE;
@@ -283,9 +196,9 @@ index 3315b9a..203c9cd 100644
 +}
 +
 +static void
-+batadv_v_orig_dump(struct sk_buff *msg, struct netlink_callback *cb,
-+		   struct batadv_priv *bat_priv,
-+		   struct batadv_hard_iface *if_outgoing)
++batadv_iv_ogm_orig_dump(struct sk_buff *msg, struct netlink_callback *cb,
++			struct batadv_priv *bat_priv,
++			struct batadv_hard_iface *if_outgoing)
 +{
 +	struct batadv_hashtable *hash = bat_priv->orig_hash;
 +	struct hlist_head *head;
@@ -297,10 +210,10 @@ index 3315b9a..203c9cd 100644
 +	while (bucket < hash->size) {
 +		head = &hash->table[bucket];
 +
-+		if (batadv_v_orig_dump_bucket(msg, portid,
-+					      cb->nlh->nlmsg_seq,
-+					      bat_priv, if_outgoing, head, &idx,
-+					      &sub))
++		if (batadv_iv_ogm_orig_dump_bucket(msg, portid,
++						   cb->nlh->nlmsg_seq,
++						   bat_priv, if_outgoing, head,
++						   &idx, &sub))
 +			break;
 +
 +		bucket++;
@@ -311,21 +224,125 @@ index 3315b9a..203c9cd 100644
 +	cb->args[2] = sub;
 +}
 +
- static int batadv_v_neigh_cmp(struct batadv_neigh_node *neigh1,
- 			      struct batadv_hard_iface *if_outgoing1,
- 			      struct batadv_neigh_node *neigh2,
-@@ -282,9 +530,11 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.bat_ogm_emit = batadv_v_ogm_emit,
- 	.bat_ogm_schedule = batadv_v_ogm_schedule,
- 	.bat_orig_print = batadv_v_orig_print,
-+	.bat_orig_dump = batadv_v_orig_dump,
- 	.bat_neigh_cmp = batadv_v_neigh_cmp,
- 	.bat_neigh_is_similar_or_better = batadv_v_neigh_is_sob,
- 	.bat_neigh_print = batadv_v_neigh_print,
-+	.bat_neigh_dump = batadv_v_neigh_dump,
- };
- 
  /**
+  * batadv_iv_hardif_neigh_print - print a single hop neighbour node
+  * @seq: neighbour table seq_file struct
+@@ -1968,6 +2135,105 @@ static void batadv_iv_neigh_print(struct batadv_priv *bat_priv,
+ 		seq_puts(seq, "No batman nodes in range ...\n");
+ }
+ 
++static int
++batadv_iv_ogm_neigh_dump_neigh(struct sk_buff *msg, u32 portid, u32 seq,
++			       struct batadv_hardif_neigh_node *hardif_neigh)
++{
++	void *hdr;
++	unsigned int last_seen_msecs;
++
++	last_seen_msecs = jiffies_to_msecs(jiffies - hardif_neigh->last_seen);
++
++	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family, NLM_F_MULTI,
++			  BATADV_CMD_GET_NEIGHBORS);
++	if (!hdr)
++		return -ENOBUFS;
++
++	if (nla_put(msg, BATADV_ATTR_NEIGH_ADDRESS, ETH_ALEN,
++		    hardif_neigh->addr) ||
++	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
++			hardif_neigh->if_incoming->net_dev->ifindex) ||
++	    nla_put_u32(msg, BATADV_ATTR_LAST_SEEN_MSECS,
++			last_seen_msecs))
++		goto nla_put_failure;
++
++	genlmsg_end(msg, hdr);
++	return 0;
++
++ nla_put_failure:
++	genlmsg_cancel(msg, hdr);
++	return -EMSGSIZE;
++}
++
++static int
++batadv_iv_ogm_neigh_dump_hardif(struct sk_buff *msg, u32 portid, u32 seq,
++				struct batadv_priv *bat_priv,
++				struct batadv_hard_iface *hard_iface,
++				int *idx_s)
++{
++	struct batadv_hardif_neigh_node *hardif_neigh;
++	int idx = 0;
++
++	hlist_for_each_entry_rcu(hardif_neigh,
++				 &hard_iface->neigh_list, list) {
++		if (idx++ < *idx_s)
++			continue;
++
++		if (batadv_iv_ogm_neigh_dump_neigh(msg, portid, seq,
++						   hardif_neigh)) {
++			*idx_s = idx - 1;
++			return -EMSGSIZE;
++		}
++	}
++
++	*idx_s = 0;
++	return 0;
++}
++
++static void
++batadv_iv_ogm_neigh_dump(struct sk_buff *msg, struct netlink_callback *cb,
++			 struct batadv_priv *bat_priv,
++			 struct batadv_hard_iface *single_hardif)
++{
++	struct batadv_hard_iface *hard_iface;
++	int i_hardif = 0;
++	int i_hardif_s = cb->args[0];
++	int idx = cb->args[1];
++	int portid = NETLINK_CB(cb->skb).portid;
++
++	rcu_read_lock();
++	if (single_hardif) {
++		if (i_hardif_s == 0) {
++			if (batadv_iv_ogm_neigh_dump_hardif(msg, portid,
++							    cb->nlh->nlmsg_seq,
++							    bat_priv,
++							    single_hardif,
++							    &idx) == 0)
++				i_hardif++;
++		}
++	} else {
++		list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
++			if (hard_iface->soft_iface != bat_priv->soft_iface)
++				continue;
++
++			if (i_hardif++ < i_hardif_s)
++				continue;
++
++			if (batadv_iv_ogm_neigh_dump_hardif(msg, portid,
++							    cb->nlh->nlmsg_seq,
++							    bat_priv,
++							    hard_iface, &idx)) {
++				i_hardif--;
++				break;
++			}
++		}
++	}
++	rcu_read_unlock();
++
++	cb->args[0] = i_hardif;
++	cb->args[1] = idx;
++}
++
+ /**
+  * batadv_iv_ogm_neigh_cmp - compare the metrics of two neighbors
+  * @neigh1: the first neighbor object of the comparison
+@@ -2062,7 +2328,9 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
+ 	.bat_neigh_cmp = batadv_iv_ogm_neigh_cmp,
+ 	.bat_neigh_is_similar_or_better = batadv_iv_ogm_neigh_is_sob,
+ 	.bat_neigh_print = batadv_iv_neigh_print,
++	.bat_neigh_dump = batadv_iv_ogm_neigh_dump,
+ 	.bat_orig_print = batadv_iv_ogm_orig_print,
++	.bat_orig_dump = batadv_iv_ogm_orig_dump,
+ 	.bat_orig_free = batadv_iv_ogm_orig_free,
+ 	.bat_orig_add_if = batadv_iv_ogm_orig_add_if,
+ 	.bat_orig_del_if = batadv_iv_ogm_orig_del_if,
 -- 
 2.7.3
 
