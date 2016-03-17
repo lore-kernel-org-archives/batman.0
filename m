@@ -1,13 +1,14 @@
 Return-Path: <mschiffer@universe-factory.net>
+References: <cover.1458231707.git.mschiffer@universe-factory.net>
 From: Matthias Schiffer <mschiffer@universe-factory.net>
-Date: Thu, 17 Mar 2016 17:45:32 +0100
-Message-Id: <d8680e91055230c7848db86247f044357ad9d364.1458231707.git.mschiffer@universe-factory.net>
+Message-ID: <56EAE3B8.3050808@universe-factory.net>
+Date: Thu, 17 Mar 2016 18:04:56 +0100
+MIME-Version: 1.0
 In-Reply-To: <cover.1458231707.git.mschiffer@universe-factory.net>
-References: <cover.1458231707.git.mschiffer@universe-factory.net>
-In-Reply-To: <cover.1458231707.git.mschiffer@universe-factory.net>
-References: <cover.1458231707.git.mschiffer@universe-factory.net>
-Subject: [B.A.T.M.A.N.] [RFC v2 2/5] batman-adv: netlink: add translation
-	table query
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature";
+ boundary="5cQKBkLAcMiS3bl5o4lqwIVBfRsDiB45h"
+Subject: Re: [B.A.T.M.A.N.] [RFC v2 0/5] batman-adv netlink query API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,514 +18,747 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.net
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-This adds the commands BATADV_CMD_GET_TRANSTABLE_LOCAL and
-BATADV_CMD_GET_TRANSTABLE_GLOBAL, which correspond to the transtable_local
-and transtable_global debugfs files.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--5cQKBkLAcMiS3bl5o4lqwIVBfRsDiB45h
+Content-Type: multipart/mixed; boundary="spmC7UoIc5fX6NAEINFDAMX246SCwatqd"
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Message-ID: <56EAE3B8.3050808@universe-factory.net>
+Subject: Re: [B.A.T.M.A.N.] [RFC v2 0/5] batman-adv netlink query API
+References: <cover.1458231707.git.mschiffer@universe-factory.net>
+In-Reply-To: <cover.1458231707.git.mschiffer@universe-factory.net>
 
-The batadv_tt_client_flags enum is moved to the UAPI to expose it as part
-of the netlink API.
+--spmC7UoIc5fX6NAEINFDAMX246SCwatqd
+Content-Type: multipart/mixed;
+ boundary="------------040206050708000103050908"
 
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
----
- include/uapi/linux/batman_adv.h    |  47 ++++++
- net/batman-adv/netlink.c           |  12 ++
- net/batman-adv/packet.h            |  36 -----
- net/batman-adv/translation-table.c | 305 +++++++++++++++++++++++++++++++++++++
- net/batman-adv/translation-table.h |   2 +
- 5 files changed, 366 insertions(+), 36 deletions(-)
+This is a multi-part message in MIME format.
+--------------040206050708000103050908
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index b9b7dfd..25dee3c 100644
---- a/include/uapi/linux/batman_adv.h
-+++ b/include/uapi/linux/batman_adv.h
-@@ -20,6 +20,42 @@
- 
- #define BATADV_NL_NAME "batadv"
- 
-+/**
-+ * enum batadv_tt_client_flags - TT client specific flags
-+ * @BATADV_TT_CLIENT_DEL: the client has to be deleted from the table
-+ * @BATADV_TT_CLIENT_ROAM: the client roamed to/from another node and the new
-+ *  update telling its new real location has not been received/sent yet
-+ * @BATADV_TT_CLIENT_WIFI: this client is connected through a wifi interface.
-+ *  This information is used by the "AP Isolation" feature
-+ * @BATADV_TT_CLIENT_ISOLA: this client is considered "isolated". This
-+ *  information is used by the Extended Isolation feature
-+ * @BATADV_TT_CLIENT_NOPURGE: this client should never be removed from the table
-+ * @BATADV_TT_CLIENT_NEW: this client has been added to the local table but has
-+ *  not been announced yet
-+ * @BATADV_TT_CLIENT_PENDING: this client is marked for removal but it is kept
-+ *  in the table for one more originator interval for consistency purposes
-+ * @BATADV_TT_CLIENT_TEMP: this global client has been detected to be part of
-+ *  the network but no nnode has already announced it
-+ *
-+ * Bits from 0 to 7 are called _remote flags_ because they are sent on the wire.
-+ * Bits from 8 to 15 are called _local flags_ because they are used for local
-+ * computations only.
-+ *
-+ * Bits from 4 to 7 - a subset of remote flags - are ensured to be in sync with
-+ * the other nodes in the network. To achieve this goal these flags are included
-+ * in the TT CRC computation.
-+ */
-+enum batadv_tt_client_flags {
-+	BATADV_TT_CLIENT_DEL     = (1 << 0),
-+	BATADV_TT_CLIENT_ROAM    = (1 << 1),
-+	BATADV_TT_CLIENT_WIFI    = (1 << 4),
-+	BATADV_TT_CLIENT_ISOLA	 = (1 << 5),
-+	BATADV_TT_CLIENT_NOPURGE = (1 << 8),
-+	BATADV_TT_CLIENT_NEW     = (1 << 9),
-+	BATADV_TT_CLIENT_PENDING = (1 << 10),
-+	BATADV_TT_CLIENT_TEMP	 = (1 << 11),
-+};
-+
- enum {
- 	BATADV_ATTR_UNSPEC,
- 	BATADV_ATTR_VERSION,
-@@ -31,6 +67,15 @@ enum {
- 	BATADV_ATTR_HARD_IFNAME,
- 	BATADV_ATTR_HARD_ADDRESS,
- 	BATADV_ATTR_ACTIVE,
-+	BATADV_ATTR_ORIG_ADDRESS,
-+	BATADV_ATTR_TT_ADDRESS,
-+	BATADV_ATTR_TT_TTVN,
-+	BATADV_ATTR_TT_LAST_TTVN,
-+	BATADV_ATTR_TT_CRC32,
-+	BATADV_ATTR_TT_VID,
-+	BATADV_ATTR_TT_FLAGS,
-+	BATADV_ATTR_FLAG_BEST,
-+	BATADV_ATTR_LAST_SEEN_MSECS,
- 	__BATADV_ATTR_MAX,
- };
- 
-@@ -41,6 +86,8 @@ enum {
- 	BATADV_CMD_GET_ROUTING_ALGOS,
- 	BATADV_CMD_GET_MESH_INFO,
- 	BATADV_CMD_GET_HARDIFS,
-+	BATADV_CMD_GET_TRANSTABLE_LOCAL,
-+	BATADV_CMD_GET_TRANSTABLE_GLOBAL,
- 	__BATADV_CMD_MAX,
- };
- 
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 6682f78..50047d4 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -233,6 +233,18 @@ static struct genl_ops batadv_netlink_ops[] = {
- 		.policy = batadv_netlink_policy,
- 		.dumpit = batadv_netlink_dump_hardifs,
- 	},
-+	{
-+		.cmd = BATADV_CMD_GET_TRANSTABLE_LOCAL,
-+		.flags = GENL_ADMIN_PERM,
-+		.policy = batadv_netlink_policy,
-+		.dumpit = batadv_tt_local_dump,
-+	},
-+	{
-+		.cmd = BATADV_CMD_GET_TRANSTABLE_GLOBAL,
-+		.flags = GENL_ADMIN_PERM,
-+		.policy = batadv_netlink_policy,
-+		.dumpit = batadv_tt_global_dump,
-+	},
- };
- 
- void __init batadv_netlink_register(void)
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index 8a8d7ca..e7eb5eb 100644
---- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -126,42 +126,6 @@ enum batadv_tt_data_flags {
- };
- 
- /**
-- * enum batadv_tt_client_flags - TT client specific flags
-- * @BATADV_TT_CLIENT_DEL: the client has to be deleted from the table
-- * @BATADV_TT_CLIENT_ROAM: the client roamed to/from another node and the new
-- *  update telling its new real location has not been received/sent yet
-- * @BATADV_TT_CLIENT_WIFI: this client is connected through a wifi interface.
-- *  This information is used by the "AP Isolation" feature
-- * @BATADV_TT_CLIENT_ISOLA: this client is considered "isolated". This
-- *  information is used by the Extended Isolation feature
-- * @BATADV_TT_CLIENT_NOPURGE: this client should never be removed from the table
-- * @BATADV_TT_CLIENT_NEW: this client has been added to the local table but has
-- *  not been announced yet
-- * @BATADV_TT_CLIENT_PENDING: this client is marked for removal but it is kept
-- *  in the table for one more originator interval for consistency purposes
-- * @BATADV_TT_CLIENT_TEMP: this global client has been detected to be part of
-- *  the network but no nnode has already announced it
-- *
-- * Bits from 0 to 7 are called _remote flags_ because they are sent on the wire.
-- * Bits from 8 to 15 are called _local flags_ because they are used for local
-- * computations only.
-- *
-- * Bits from 4 to 7 - a subset of remote flags - are ensured to be in sync with
-- * the other nodes in the network. To achieve this goal these flags are included
-- * in the TT CRC computation.
-- */
--enum batadv_tt_client_flags {
--	BATADV_TT_CLIENT_DEL     = BIT(0),
--	BATADV_TT_CLIENT_ROAM    = BIT(1),
--	BATADV_TT_CLIENT_WIFI    = BIT(4),
--	BATADV_TT_CLIENT_ISOLA	 = BIT(5),
--	BATADV_TT_CLIENT_NOPURGE = BIT(8),
--	BATADV_TT_CLIENT_NEW     = BIT(9),
--	BATADV_TT_CLIENT_PENDING = BIT(10),
--	BATADV_TT_CLIENT_TEMP	 = BIT(11),
--};
--
--/**
-  * enum batadv_vlan_flags - flags for the four MSB of any vlan ID field
-  * @BATADV_VLAN_HAS_TAG: whether the field contains a valid vlan tag or not
-  */
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index ce63a51..1e1f2a1 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -43,11 +43,15 @@
- #include <linux/stddef.h>
- #include <linux/string.h>
- #include <linux/workqueue.h>
-+#include <net/net_namespace.h>
-+#include <net/sock.h>
-+#include <uapi/linux/batman_adv.h>
- 
- #include "bridge_loop_avoidance.h"
- #include "hard-interface.h"
- #include "hash.h"
- #include "multicast.h"
-+#include "netlink.h"
- #include "originator.h"
- #include "packet.h"
- #include "soft-interface.h"
-@@ -1064,6 +1068,138 @@ out:
- 	return 0;
- }
- 
-+static int
-+batadv_tt_local_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
-+			   struct batadv_priv *bat_priv,
-+			   struct batadv_tt_common_entry *common)
-+{
-+	void *hdr;
-+	struct batadv_softif_vlan *vlan;
-+	struct batadv_tt_local_entry *local;
-+	unsigned int last_seen_msecs;
-+	u32 crc;
-+
-+	local = container_of(common, struct batadv_tt_local_entry, common);
-+	last_seen_msecs = jiffies_to_msecs(jiffies - local->last_seen);
-+
-+	vlan = batadv_softif_vlan_get(bat_priv, common->vid);
-+	if (!vlan)
-+		return 0;
-+
-+	crc = vlan->tt.crc;
-+
-+	batadv_softif_vlan_put(vlan);
-+
-+	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family, NLM_F_MULTI,
-+			  BATADV_CMD_GET_TRANSTABLE_LOCAL);
-+	if (!hdr)
-+		return -ENOBUFS;
-+
-+	if (nla_put(msg, BATADV_ATTR_TT_ADDRESS, ETH_ALEN, common->addr) ||
-+	    nla_put_u32(msg, BATADV_ATTR_TT_CRC32, crc) ||
-+	    nla_put_u16(msg, BATADV_ATTR_TT_VID,
-+			BATADV_PRINT_VID(common->vid)) ||
-+	    nla_put_u32(msg, BATADV_ATTR_TT_FLAGS, common->flags))
-+		goto nla_put_failure;
-+
-+	if (!(common->flags & BATADV_TT_CLIENT_NOPURGE)) {
-+		if (nla_put_u32(msg, BATADV_ATTR_LAST_SEEN_MSECS,
-+				last_seen_msecs))
-+			goto nla_put_failure;
-+	}
-+
-+	genlmsg_end(msg, hdr);
-+	return 0;
-+
-+ nla_put_failure:
-+	genlmsg_cancel(msg, hdr);
-+	return -EMSGSIZE;
-+}
-+
-+static int
-+batadv_tt_local_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
-+			    struct batadv_priv *bat_priv,
-+			    struct hlist_head *head, int *idx_s)
-+{
-+	struct batadv_tt_common_entry *common;
-+	int idx = 0;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(common, head, hash_entry) {
-+		if (idx++ < *idx_s)
-+			continue;
-+
-+		if (batadv_tt_local_dump_entry(msg, portid, seq, bat_priv,
-+					       common)) {
-+			rcu_read_unlock();
-+			*idx_s = idx - 1;
-+			return -EMSGSIZE;
-+		}
-+	}
-+	rcu_read_unlock();
-+
-+	*idx_s = 0;
-+	return 0;
-+}
-+
-+int batadv_tt_local_dump(struct sk_buff *msg, struct netlink_callback *cb)
-+{
-+	struct net *net = sock_net(cb->skb->sk);
-+	struct net_device *soft_iface = NULL;
-+	struct batadv_priv *bat_priv;
-+	struct batadv_hard_iface *primary_if = NULL;
-+	struct batadv_hashtable *hash;
-+	struct hlist_head *head;
-+	int ret;
-+	int ifindex;
-+	int bucket = cb->args[0];
-+	int idx = cb->args[1];
-+	int portid = NETLINK_CB(cb->skb).portid;
-+
-+	ifindex = batadv_netlink_get_ifindex(cb->nlh, BATADV_ATTR_MESH_IFINDEX);
-+	if (!ifindex)
-+		return -EINVAL;
-+
-+	soft_iface = dev_get_by_index(net, ifindex);
-+	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
-+		ret = -ENODEV;
-+		goto out;
-+	}
-+
-+	bat_priv = netdev_priv(soft_iface);
-+
-+	primary_if = batadv_primary_if_get_selected(bat_priv);
-+	if (!primary_if || primary_if->if_status != BATADV_IF_ACTIVE) {
-+		ret = -ENOENT;
-+		goto out;
-+	}
-+
-+	hash = bat_priv->tt.local_hash;
-+
-+	while (bucket < hash->size) {
-+		head = &hash->table[bucket];
-+
-+		if (batadv_tt_local_dump_bucket(msg, portid, cb->nlh->nlmsg_seq,
-+						bat_priv, head, &idx))
-+			break;
-+
-+		bucket++;
-+	}
-+
-+	ret = msg->len;
-+
-+ out:
-+	if (primary_if)
-+		batadv_hardif_put(primary_if);
-+	if (soft_iface)
-+		dev_put(soft_iface);
-+
-+	cb->args[0] = bucket;
-+	cb->args[1] = idx;
-+
-+	return ret;
-+}
-+
- static void
- batadv_tt_local_set_pending(struct batadv_priv *bat_priv,
- 			    struct batadv_tt_local_entry *tt_local_entry,
-@@ -1729,6 +1865,175 @@ out:
- 	return 0;
- }
- 
-+static int
-+batadv_tt_global_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
-+			       struct batadv_tt_common_entry *common,
-+			       struct batadv_tt_orig_list_entry *orig,
-+			       bool best)
-+{
-+	void *hdr;
-+	struct batadv_orig_node_vlan *vlan;
-+	u8 last_ttvn;
-+	u32 crc;
-+
-+	vlan = batadv_orig_node_vlan_get(orig->orig_node,
-+					 common->vid);
-+	if (!vlan)
-+		return 0;
-+
-+	crc = vlan->tt.crc;
-+
-+	batadv_orig_node_vlan_put(vlan);
-+
-+	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family, NLM_F_MULTI,
-+			  BATADV_CMD_GET_TRANSTABLE_GLOBAL);
-+	if (!hdr)
-+		return -ENOBUFS;
-+
-+	last_ttvn = atomic_read(&orig->orig_node->last_ttvn);
-+
-+	if (nla_put(msg, BATADV_ATTR_TT_ADDRESS, ETH_ALEN, common->addr) ||
-+	    nla_put(msg, BATADV_ATTR_ORIG_ADDRESS, ETH_ALEN,
-+		    orig->orig_node->orig) ||
-+	    nla_put_u8(msg, BATADV_ATTR_TT_TTVN, orig->ttvn) ||
-+	    nla_put_u8(msg, BATADV_ATTR_TT_LAST_TTVN, last_ttvn) ||
-+	    nla_put_u32(msg, BATADV_ATTR_TT_CRC32, crc) ||
-+	    nla_put_u16(msg, BATADV_ATTR_TT_VID,
-+			BATADV_PRINT_VID(common->vid)) ||
-+	    nla_put_u32(msg, BATADV_ATTR_TT_FLAGS, common->flags))
-+		goto nla_put_failure;
-+
-+	if (best && nla_put_flag(msg, BATADV_ATTR_FLAG_BEST))
-+		goto nla_put_failure;
-+
-+	genlmsg_end(msg, hdr);
-+	return 0;
-+
-+ nla_put_failure:
-+	genlmsg_cancel(msg, hdr);
-+	return -EMSGSIZE;
-+}
-+
-+static int
-+batadv_tt_global_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
-+			    struct batadv_priv *bat_priv,
-+			    struct batadv_tt_common_entry *common, int *sub_s)
-+{
-+	struct batadv_tt_orig_list_entry *orig_entry, *best_entry;
-+	struct batadv_tt_global_entry *global;
-+	struct hlist_head *head;
-+	int sub = 0;
-+	bool best;
-+
-+	global = container_of(common, struct batadv_tt_global_entry, common);
-+	best_entry = batadv_transtable_best_orig(bat_priv, global);
-+	head = &global->orig_list;
-+
-+	hlist_for_each_entry_rcu(orig_entry, head, list) {
-+		if (sub++ < *sub_s)
-+			continue;
-+
-+		best = (orig_entry == best_entry);
-+
-+		if (batadv_tt_global_dump_subentry(msg, portid, seq, common,
-+						   orig_entry, best)) {
-+			*sub_s = sub - 1;
-+			return -EMSGSIZE;
-+		}
-+	}
-+
-+	*sub_s = 0;
-+	return 0;
-+}
-+
-+static int
-+batadv_tt_global_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
-+			     struct batadv_priv *bat_priv,
-+			     struct hlist_head *head, int *idx_s, int *sub)
-+{
-+	struct batadv_tt_common_entry *common;
-+	int idx = 0;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(common, head, hash_entry) {
-+		if (idx++ < *idx_s)
-+			continue;
-+
-+		if (batadv_tt_global_dump_entry(msg, portid, seq, bat_priv,
-+						common, sub)) {
-+			rcu_read_unlock();
-+			*idx_s = idx - 1;
-+			return -EMSGSIZE;
-+		}
-+	}
-+	rcu_read_unlock();
-+
-+	*idx_s = 0;
-+	*sub = 0;
-+	return 0;
-+}
-+
-+int batadv_tt_global_dump(struct sk_buff *msg, struct netlink_callback *cb)
-+{
-+	struct net *net = sock_net(cb->skb->sk);
-+	struct net_device *soft_iface = NULL;
-+	struct batadv_priv *bat_priv;
-+	struct batadv_hard_iface *primary_if = NULL;
-+	struct batadv_hashtable *hash;
-+	struct hlist_head *head;
-+	int ret;
-+	int ifindex;
-+	int bucket = cb->args[0];
-+	int idx = cb->args[1];
-+	int sub = cb->args[2];
-+	int portid = NETLINK_CB(cb->skb).portid;
-+
-+	ifindex = batadv_netlink_get_ifindex(cb->nlh, BATADV_ATTR_MESH_IFINDEX);
-+	if (!ifindex)
-+		return -EINVAL;
-+
-+	soft_iface = dev_get_by_index(net, ifindex);
-+	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
-+		ret = -ENODEV;
-+		goto out;
-+	}
-+
-+	bat_priv = netdev_priv(soft_iface);
-+
-+	primary_if = batadv_primary_if_get_selected(bat_priv);
-+	if (!primary_if || primary_if->if_status != BATADV_IF_ACTIVE) {
-+		ret = -ENOENT;
-+		goto out;
-+	}
-+
-+	hash = bat_priv->tt.global_hash;
-+
-+	while (bucket < hash->size) {
-+		head = &hash->table[bucket];
-+
-+		if (batadv_tt_global_dump_bucket(msg, portid,
-+						 cb->nlh->nlmsg_seq, bat_priv,
-+						 head, &idx, &sub))
-+			break;
-+
-+		bucket++;
-+	}
-+
-+	ret = msg->len;
-+
-+ out:
-+	if (primary_if)
-+		batadv_hardif_put(primary_if);
-+	if (soft_iface)
-+		dev_put(soft_iface);
-+
-+	cb->args[0] = bucket;
-+	cb->args[1] = idx;
-+	cb->args[2] = sub;
-+
-+	return ret;
-+}
-+
- /**
-  * _batadv_tt_global_del_orig_entry - remove and free an orig_entry
-  * @tt_global_entry: the global entry to remove the orig_entry from
-diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
-index 7c7e2c0..6d8b5b2 100644
---- a/net/batman-adv/translation-table.h
-+++ b/net/batman-adv/translation-table.h
-@@ -33,6 +33,8 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv,
- 			   const char *message, bool roaming);
- int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset);
- int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset);
-+int batadv_tt_local_dump(struct sk_buff *msg, struct netlink_callback *cb);
-+int batadv_tt_global_dump(struct sk_buff *msg, struct netlink_callback *cb);
- void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
- 			       struct batadv_orig_node *orig_node,
- 			       s32 match_vid, const char *message);
--- 
-2.7.3
+On 03/17/2016 05:45 PM, Matthias Schiffer wrote:
+> Hi,
+> this is the second take of my netlink API patches. As mentioned before,=
+ the
+> netlink API is superior to the current debugfs API in many aspects:
+>=20
+> * debugfs is broken (see PATCH 1 for details)
+> * Netlink is namespace-aware, and can be used in unprivileged container=
+s
+>   without problems
+> * Netlink packets are more machine-readable than text files, and can be=
 
+>   easily extended without potentially breaking userspace
+> * On older kernels, seq_file can't fall back to vmalloc if kmalloc fail=
+s,
+>   which often leads to OOM when reading "originators" in large meshes, =
+as
+>   the whole file must fit into a single buffer
+>=20
+> Of course, are also a few downsides; when the data is too big to fit in=
+to
+> a single netlink packet, the provided data may be inconsistent (entries=
+ may
+> be missing or duplicated.) This will happen in large meshes only, and b=
+e
+> improbable in any case.
+>=20
+> The patches have been developed on top of the netns patchset, but shoul=
+d
+> be applicable independently (maybe with minor changes.)
+>=20
+> All netlink queries returning lists of any kind can only be used with
+> NLM_F_DUMP queries, so that arbitrarity large responses are possible (s=
+plit
+> across multiple packets if necessary.)
+>=20
+> At the moment, the following debugfs files have corresponding netlink A=
+PIs:
+>=20
+> * routing_algos
+> * neighbors
+> * originators
+> * transtable_global
+> * transtable_local
+> * (hardinterfaces for a softif can be queried)
+>=20
+> The following files are still missing:
+>=20
+> * gateways
+> * bla_claim_table
+> * bla_backbone_table
+> * dat_cache
+> * nc_nodes
+>=20
+> Obviously, documentation is also a TODO. Comments about the API design =
+are
+> very welcome...
+>=20
+> Regards,
+> Matthias
+>=20
+>=20
+
+And here is the new version of the PoC userspace tool.
+Build with:
+
+gcc -o batnl batnl.c $$(pkg-config --cflags --libs libnl-1) -Wall
+
+
+--------------040206050708000103050908
+Content-Type: text/x-csrc;
+ name="batnl.c"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+ filename="batnl.c"
+
+#include <stdio.h>
+#include <string.h>
+
+#include <net/if.h>
+#include <netlink/netlink.h>
+#include <netlink/genl/genl.h>
+#include <netlink/genl/ctrl.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include "batman_adv.h"
+
+
+static void usage()
+{
+	fprintf(stderr, "Usage:\n\n");
+	fprintf(stderr, "  batnl routing_algos\n");
+	fprintf(stderr, "  batnl info <mesh>\n");
+	fprintf(stderr, "  batnl interface <mesh>\n");
+	fprintf(stderr, "  batnl translocal <mesh>\n");
+	fprintf(stderr, "  batnl transglobal <mesh>\n");
+	fprintf(stderr, "  batnl neighbors <mesh> [<hardif>]\n");
+	fprintf(stderr, "  batnl originators <mesh> [<hardif>]\n");
+	exit(2);
+}
+
+static int print_error(struct sockaddr_nl *nla, struct nlmsgerr *nlerr, v=
+oid *arg)
+{
+	fprintf(stderr, "Error received: %s\n", strerror(-nlerr->error));
+	exit(1);
+}
+
+static int stop_callback(struct nl_msg *msg, void *arg)
+{
+	struct nlmsghdr *nlh =3D nlmsg_hdr(msg);
+	int *error =3D nlmsg_data(nlh);
+
+	if (*error)
+		fprintf(stderr, "Error received: %s\n", strerror(-*error));
+
+	return NL_STOP;
+}
+
+static int routing_algos_callback(struct nl_msg *msg, void *arg)
+{
+	struct nlmsghdr *nlh =3D nlmsg_hdr(msg);
+	struct genlmsghdr *ghdr;
+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+
+	if (!genlmsg_valid_hdr(nlh, 0)) {
+		fputs("Received invalid data from kernel.", stderr);
+		exit(1);
+	}
+
+	ghdr =3D nlmsg_data(nlh);
+
+	if (ghdr->cmd !=3D BATADV_CMD_GET_ROUTING_ALGOS)
+		return NL_OK;
+
+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0), genlmsg=
+_len(ghdr), NULL)) {
+		fputs("Received invalid data from kernel.", stderr);
+		exit(1);
+	}
+
+	const char *algo_name =3D nla_get_string(attrs[BATADV_ATTR_ALGO_NAME]);
+
+	printf(" * %s\n", algo_name);
+
+	return NL_OK;
+}
+
+static void routing_algos(struct nl_handle *sock, int family)
+{
+	struct nl_msg *msg;
+	struct nl_cb *cb;
+
+	msg =3D nlmsg_alloc();
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, NLM_F_DUMP, BATADV=
+_CMD_GET_ROUTING_ALGOS, 1);
+
+	nl_send_auto_complete(sock, msg);
+
+	nlmsg_free(msg);
+
+	cb =3D nl_cb_alloc(NL_CB_DEFAULT);
+	nl_cb_set (cb, NL_CB_VALID, NL_CB_CUSTOM, routing_algos_callback, NULL);=
+
+	nl_cb_set (cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
+	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
+
+	nl_recvmsgs(sock, cb);
+}
+
+static int info_callback(struct nl_msg *msg, void *arg)
+{
+	struct nlmsghdr *nlh =3D nlmsg_hdr(msg);
+	struct genlmsghdr *ghdr;
+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+
+	if (!genlmsg_valid_hdr(nlh, 0)) {
+		fputs("Received invalid data from kernel.", stderr);
+		exit(1);
+	}
+
+	ghdr =3D nlmsg_data(nlh);
+
+	if (ghdr->cmd !=3D BATADV_CMD_GET_MESH_INFO)
+		return NL_OK;
+
+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0), genlmsg=
+_len(ghdr), NULL)) {
+		fputs("Received invalid data from kernel.", stderr);
+		exit(1);
+	}
+
+	const char *mesh_name =3D nla_get_string(attrs[BATADV_ATTR_MESH_IFNAME])=
+;
+
+	if (attrs[BATADV_ATTR_HARD_IFNAME]) {
+		const char *version =3D nla_get_string(attrs[BATADV_ATTR_VERSION]);
+		const char *algo_name =3D nla_get_string(attrs[BATADV_ATTR_ALGO_NAME]);=
+
+		const char *primary_if =3D nla_get_string(attrs[BATADV_ATTR_HARD_IFNAME=
+]);
+		const uint8_t *primary_mac =3D nla_data(attrs[BATADV_ATTR_HARD_ADDRESS]=
+);
+
+		printf("[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%02x:%02x:%02x:%02x:%02x:%=
+02x (%s %s)]\n",
+		       version, primary_if,
+		       primary_mac[0], primary_mac[1], primary_mac[2],
+		       primary_mac[3], primary_mac[4], primary_mac[5],
+		       mesh_name, algo_name);
+
+	}
+	else {
+		printf("BATMAN mesh %s disabled\n", mesh_name);
+	}
+
+	return NL_STOP;
+}
+
+static void info(struct nl_handle *sock, int family, int ifindex)
+{
+	struct nl_msg *msg;
+	struct nl_cb *cb;
+
+	msg =3D nlmsg_alloc();
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, 0, BATADV_CMD_GET_=
+MESH_INFO, 1);
+
+	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
+
+	nl_send_auto_complete(sock, msg);
+
+	nlmsg_free(msg);
+
+	cb =3D nl_cb_alloc(NL_CB_DEFAULT);
+	nl_cb_set (cb, NL_CB_VALID, NL_CB_CUSTOM, info_callback, NULL);
+	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
+
+	nl_recvmsgs(sock, cb);
+}
+
+static int interface_callback(struct nl_msg *msg, void *arg)
+{
+	struct nlmsghdr *nlh =3D nlmsg_hdr(msg);
+	struct genlmsghdr *ghdr;
+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+
+	if (!genlmsg_valid_hdr(nlh, 0)) {
+		fputs("Received invalid data from kernel.", stderr);
+		exit(1);
+	}
+
+	ghdr =3D nlmsg_data(nlh);
+
+	if (ghdr->cmd !=3D BATADV_CMD_GET_HARDIFS)
+		return NL_OK;
+
+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0), genlmsg=
+_len(ghdr), NULL)) {
+		fputs("Received invalid data from kernel.", stderr);
+		exit(1);
+	}
+
+	const char *ifname =3D nla_get_string(attrs[BATADV_ATTR_HARD_IFNAME]);
+
+	printf("%s: %sactive\n", ifname, attrs[BATADV_ATTR_ACTIVE] ? "" : "in");=
+
+
+	return NL_OK;
+}
+
+static void interface(struct nl_handle *sock, int family, int ifindex)
+{
+	struct nl_msg *msg;
+	struct nl_cb *cb;
+
+	msg =3D nlmsg_alloc();
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, NLM_F_DUMP, BATADV=
+_CMD_GET_HARDIFS, 1);
+
+	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
+
+	nl_send_auto_complete(sock, msg);
+
+	nlmsg_free(msg);
+
+	cb =3D nl_cb_alloc(NL_CB_DEFAULT);
+	nl_cb_set (cb, NL_CB_VALID, NL_CB_CUSTOM, interface_callback, NULL);
+	nl_cb_set (cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
+	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
+
+	nl_recvmsgs(sock, cb);
+}
+
+static int translocal_callback(struct nl_msg *msg, void *arg)
+{
+	struct nlmsghdr *nlh =3D nlmsg_hdr(msg);
+	struct genlmsghdr *ghdr;
+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+
+	if (!genlmsg_valid_hdr(nlh, 0)) {
+		fputs("Received invalid data from kernel.", stderr);
+		exit(1);
+	}
+
+	ghdr =3D nlmsg_data(nlh);
+
+	if (ghdr->cmd !=3D BATADV_CMD_GET_TRANSTABLE_LOCAL)
+		return NL_OK;
+
+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0), genlmsg=
+_len(ghdr), NULL)) {
+		fputs("Received invalid data from kernel.", stderr);
+		exit(1);
+	}
+
+	uint8_t *addr =3D nla_data(attrs[BATADV_ATTR_TT_ADDRESS]);
+	int16_t vid =3D nla_get_u16(attrs[BATADV_ATTR_TT_VID]);
+	uint32_t crc32 =3D nla_get_u32(attrs[BATADV_ATTR_TT_CRC32]);
+	uint32_t flags =3D nla_get_u32(attrs[BATADV_ATTR_TT_FLAGS]);
+	int last_seen_msecs =3D 0, last_seen_secs =3D 0;
+
+	char r =3D '.', p =3D '.', n =3D '.', x =3D '.', w =3D '.', i =3D '.';
+	if (flags & BATADV_TT_CLIENT_ROAM)
+		r =3D 'R';
+	if (flags & BATADV_TT_CLIENT_NEW)
+		n =3D 'N';
+	if (flags & BATADV_TT_CLIENT_PENDING)
+		x =3D 'X';
+	if (flags & BATADV_TT_CLIENT_WIFI)
+		w =3D 'W';
+	if (flags & BATADV_TT_CLIENT_ISOLA)
+		i =3D 'I';
+
+	if (flags & BATADV_TT_CLIENT_NOPURGE)  {
+		p =3D 'P';
+	}
+	else {
+		last_seen_msecs =3D nla_get_u32(attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
+		last_seen_secs =3D last_seen_msecs / 1000;
+		last_seen_msecs =3D last_seen_msecs % 1000;
+	}
+
+
+	printf(" * %02x:%02x:%02x:%02x:%02x:%02x %4i [%c%c%c%c%c%c] %3u.%03u   (=
+0x%.8x)\n",
+	       addr[0], addr[1], addr[2],
+	       addr[3], addr[4], addr[5],
+	       vid, r, p, n, x, w, i,
+	       last_seen_secs, last_seen_msecs,
+	       crc32);
+
+	return NL_OK;
+}
+
+static void translocal(struct nl_handle *sock, int family, int ifindex)
+{
+	struct nl_msg *msg;
+	struct nl_cb *cb;
+
+	msg =3D nlmsg_alloc();
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, NLM_F_DUMP, BATADV=
+_CMD_GET_TRANSTABLE_LOCAL, 1);
+
+	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
+
+	nl_send_auto_complete(sock, msg);
+
+	nlmsg_free(msg);
+
+	cb =3D nl_cb_alloc(NL_CB_DEFAULT);
+	nl_cb_set (cb, NL_CB_VALID, NL_CB_CUSTOM, translocal_callback, NULL);
+	nl_cb_set (cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
+	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
+
+	nl_recvmsgs(sock, cb);
+}
+
+static int transglobal_callback(struct nl_msg *msg, void *arg)
+{
+	struct nlmsghdr *nlh =3D nlmsg_hdr(msg);
+	struct genlmsghdr *ghdr;
+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+
+	if (!genlmsg_valid_hdr(nlh, 0)) {
+		fputs("Received invalid data from kernel.", stderr);
+		exit(1);
+	}
+
+	ghdr =3D nlmsg_data(nlh);
+
+	if (ghdr->cmd !=3D BATADV_CMD_GET_TRANSTABLE_GLOBAL)
+		return NL_OK;
+
+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0), genlmsg=
+_len(ghdr), NULL)) {
+		fputs("Received invalid data from kernel.", stderr);
+		exit(1);
+	}
+
+	uint8_t *addr =3D nla_data(attrs[BATADV_ATTR_TT_ADDRESS]);
+	uint8_t *orig =3D nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
+	int16_t vid =3D nla_get_u16(attrs[BATADV_ATTR_TT_VID]);
+	uint8_t ttvn =3D nla_get_u8(attrs[BATADV_ATTR_TT_TTVN]);
+	uint8_t last_ttvn =3D nla_get_u8(attrs[BATADV_ATTR_TT_LAST_TTVN]);
+	uint32_t crc32 =3D nla_get_u32(attrs[BATADV_ATTR_TT_CRC32]);
+	uint32_t flags =3D nla_get_u32(attrs[BATADV_ATTR_TT_FLAGS]);
+
+	char c =3D '+', r =3D '.', w =3D '.', i =3D '.', t =3D '.';
+	if (attrs[BATADV_ATTR_FLAG_BEST])
+		c =3D '*';
+	if (flags & BATADV_TT_CLIENT_ROAM)
+		r =3D 'R';
+	if (flags & BATADV_TT_CLIENT_WIFI)
+		w =3D 'W';
+	if (flags & BATADV_TT_CLIENT_ISOLA)
+		i =3D 'I';
+	if (flags & BATADV_TT_CLIENT_TEMP)
+		t =3D 'T';
+
+
+	printf(" %c %02x:%02x:%02x:%02x:%02x:%02x %4i   (%3u) via %02x:%02x:%02x=
+:%02x:%02x:%02x     (%3u)   (0x%.8x) [%c%c%c%c]\n",
+	       c,
+	       addr[0], addr[1], addr[2],
+	       addr[3], addr[4], addr[5],
+	       vid, ttvn,
+	       orig[0], orig[1], orig[2],
+	       orig[3], orig[4], orig[5],
+	       last_ttvn, crc32, r, w, i, t);
+
+	return NL_OK;
+}
+
+static void transglobal(struct nl_handle *sock, int family, int ifindex)
+{
+	struct nl_msg *msg;
+	struct nl_cb *cb;
+
+	msg =3D nlmsg_alloc();
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, NLM_F_DUMP, BATADV=
+_CMD_GET_TRANSTABLE_GLOBAL, 1);
+
+	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
+
+	nl_send_auto_complete(sock, msg);
+
+	nlmsg_free(msg);
+
+	cb =3D nl_cb_alloc(NL_CB_DEFAULT);
+	nl_cb_set (cb, NL_CB_VALID, NL_CB_CUSTOM, transglobal_callback, NULL);
+	nl_cb_set (cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
+	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
+
+	nl_recvmsgs(sock, cb);
+}
+
+static int originators_callback(struct nl_msg *msg, void *arg)
+{
+	struct nlmsghdr *nlh =3D nlmsg_hdr(msg);
+	struct genlmsghdr *ghdr;
+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+
+	if (!genlmsg_valid_hdr(nlh, 0)) {
+		fputs("Received invalid data from kernel.", stderr);
+		exit(1);
+	}
+
+	ghdr =3D nlmsg_data(nlh);
+
+	if (ghdr->cmd !=3D BATADV_CMD_GET_ORIGINATORS)
+		return NL_OK;
+
+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0), genlmsg=
+_len(ghdr), NULL)) {
+		fputs("Received invalid data from kernel.", stderr);
+		exit(1);
+	}
+
+	uint8_t *orig =3D nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
+	uint8_t *neigh =3D nla_data(attrs[BATADV_ATTR_NEIGH_ADDRESS]);
+
+	char ifname[IF_NAMESIZE];
+	if (!if_indextoname(nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]), ifname=
+))
+		ifname[0] =3D '\0';
+
+	char c =3D '+';
+	if (attrs[BATADV_ATTR_FLAG_BEST])
+		c =3D '*';
+
+	int last_seen_msecs, last_seen_secs;
+	last_seen_msecs =3D nla_get_u32(attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
+	last_seen_secs =3D last_seen_msecs / 1000;
+	last_seen_msecs =3D last_seen_msecs % 1000;
+
+	if (attrs[BATADV_ATTR_THROUGHPUT]) {
+		unsigned throughput_mbits, throughput_kbits;
+		throughput_kbits =3D nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT]);
+		throughput_mbits =3D throughput_kbits / 1000;
+		throughput_kbits =3D throughput_kbits % 1000;
+
+		printf(" %c %02x:%02x:%02x:%02x:%02x:%02x %4i.%03is (%9u.%1u) %02x:%02x=
+:%02x:%02x:%02x:%02x [%10s]\n",
+		       c,
+		       orig[0], orig[1], orig[2],
+		       orig[3], orig[4], orig[5],
+		       last_seen_secs, last_seen_msecs,
+		       throughput_mbits, throughput_kbits / 100,
+		       neigh[0], neigh[1], neigh[2],
+		       neigh[3], neigh[4], neigh[5],
+		       ifname);
+	}
+	else {
+		uint8_t tq =3D nla_get_u8(attrs[BATADV_ATTR_TQ]);
+
+		printf(" %c %02x:%02x:%02x:%02x:%02x:%02x %4i.%03is   (%3i) %02x:%02x:%=
+02x:%02x:%02x:%02x [%10s]\n",
+		       c,
+		       orig[0], orig[1], orig[2],
+		       orig[3], orig[4], orig[5],
+		       last_seen_secs, last_seen_msecs, tq,
+		       neigh[0], neigh[1], neigh[2],
+		       neigh[3], neigh[4], neigh[5],
+		       ifname);
+	}
+
+	return NL_OK;
+}
+
+static void originators(struct nl_handle *sock, int family, int ifindex, =
+int hard_ifindex)
+{
+	struct nl_msg *msg;
+	struct nl_cb *cb;
+
+	msg =3D nlmsg_alloc();
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, NLM_F_DUMP, BATADV=
+_CMD_GET_ORIGINATORS, 1);
+
+	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
+
+	if (hard_ifindex)
+		nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, hard_ifindex);
+
+	nl_send_auto_complete(sock, msg);
+
+	nlmsg_free(msg);
+
+	cb =3D nl_cb_alloc(NL_CB_DEFAULT);
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, originators_callback, NULL);
+	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
+	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
+
+	nl_recvmsgs(sock, cb);
+}
+
+static int neighbors_callback(struct nl_msg *msg, void *arg)
+{
+	struct nlmsghdr *nlh =3D nlmsg_hdr(msg);
+	struct genlmsghdr *ghdr;
+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
+
+	if (!genlmsg_valid_hdr(nlh, 0)) {
+		fputs("Received invalid data from kernel.", stderr);
+		exit(1);
+	}
+
+	ghdr =3D nlmsg_data(nlh);
+
+	if (ghdr->cmd !=3D BATADV_CMD_GET_NEIGHBORS)
+		return NL_OK;
+
+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0), genlmsg=
+_len(ghdr), NULL)) {
+		fputs("Received invalid data from kernel.", stderr);
+		exit(1);
+	}
+
+	uint8_t *neigh =3D nla_data(attrs[BATADV_ATTR_NEIGH_ADDRESS]);
+
+	char ifname[IF_NAMESIZE];
+	if (!if_indextoname(nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]), ifname=
+))
+		ifname[0] =3D '\0';
+
+	int last_seen_msecs, last_seen_secs;
+	last_seen_msecs =3D nla_get_u32(attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
+	last_seen_secs =3D last_seen_msecs / 1000;
+	last_seen_msecs =3D last_seen_msecs % 1000;
+
+	if (attrs[BATADV_ATTR_THROUGHPUT]) {
+		unsigned throughput_mbits, throughput_kbits;
+		throughput_kbits =3D nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT]);
+		throughput_mbits =3D throughput_kbits / 1000;
+		throughput_kbits =3D throughput_kbits % 1000;
+
+		printf("%02x:%02x:%02x:%02x:%02x:%02x %4i.%03is (%9u.%1u) [%10s]\n",
+		       neigh[0], neigh[1], neigh[2],
+		       neigh[3], neigh[4], neigh[5],
+		       last_seen_secs, last_seen_msecs,
+		       throughput_mbits, throughput_kbits / 100,
+		       ifname);
+	}
+	else {
+		printf("   %10s   %02x:%02x:%02x:%02x:%02x:%02x %4i.%03is\n",
+		       ifname,
+		       neigh[0], neigh[1], neigh[2],
+		       neigh[3], neigh[4], neigh[5],
+		       last_seen_secs, last_seen_msecs);
+	}
+
+	return NL_OK;
+}
+
+static void neighbors(struct nl_handle *sock, int family, int ifindex, in=
+t hard_ifindex)
+{
+	struct nl_msg *msg;
+	struct nl_cb *cb;
+
+	msg =3D nlmsg_alloc();
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, NLM_F_DUMP, BATADV=
+_CMD_GET_NEIGHBORS, 1);
+
+	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
+
+	if (hard_ifindex)
+		nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX, hard_ifindex);
+
+	nl_send_auto_complete(sock, msg);
+
+	nlmsg_free(msg);
+
+	cb =3D nl_cb_alloc(NL_CB_DEFAULT);
+	nl_cb_set (cb, NL_CB_VALID, NL_CB_CUSTOM, neighbors_callback, NULL);
+	nl_cb_set (cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
+	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
+
+	nl_recvmsgs(sock, cb);
+}
+
+int main(int argc, char *argv[])
+{
+	struct nl_handle *sock;
+	int family;
+
+	sock =3D nl_handle_alloc();
+	genl_connect(sock);
+
+	family =3D genl_ctrl_resolve(sock, BATADV_NL_NAME);
+	if (family < 0) {
+		fputs("Your kernel doesn't support the batman-adv netlink interface.\n"=
+, stderr);
+		exit(1);
+	}
+
+	if (argc < 2 || argc > 4)
+		usage();
+
+	int ifindex =3D 0;
+	if (argc > 2) {
+		ifindex =3D if_nametoindex(argv[2]);
+		if (!ifindex)
+			usage();
+	}
+
+	int hard_ifindex =3D 0;
+	if (argc > 3) {
+		hard_ifindex =3D if_nametoindex(argv[3]);
+		if (!hard_ifindex)
+			usage();
+	}
+
+	if (!strcmp(argv[1], "routing_algos"))
+		routing_algos(sock, family);
+	else if (!strcmp(argv[1], "info"))
+		info(sock, family, ifindex);
+	else if (!strcmp(argv[1], "interface"))
+		interface(sock, family, ifindex);
+	else if (!strcmp(argv[1], "translocal"))
+		translocal(sock, family, ifindex);
+	else if (!strcmp(argv[1], "transglobal"))
+		transglobal(sock, family, ifindex);
+	else if (!strcmp(argv[1], "originators"))
+		originators(sock, family, ifindex, hard_ifindex);
+	else if (!strcmp(argv[1], "neighbors"))
+		neighbors(sock, family, ifindex, hard_ifindex);
+	else
+		usage();
+
+	return 0;
+}
+
+--------------040206050708000103050908--
+
+--spmC7UoIc5fX6NAEINFDAMX246SCwatqd--
+
+--5cQKBkLAcMiS3bl5o4lqwIVBfRsDiB45h
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCgAGBQJW6uO4AAoJEBbvP2TLIB2cU4cQANHIf8i3u7+Tjin6RdVRZoDT
+74mkSRYxqCyNs3iPOepNt9JEHydEV3IusS45FnU9689SE0k5UMPuON9eJxUcHOWQ
+HSJDY0V404ggkGyySmLjEH3+WSbEbqAp69D+OvTCeDPGj9QGPtBu/Omb3snRIqdX
+E44kI/ty29brtlkXFxIjQRb5e4iee1wRGsp6gzY5AYhALHVoNJTYN9tcCOEQ0SFH
+Tgav51AIq9Q9XyXnGlKapktvutiSND42OMkh2oscmL35a4Kzwdj/RCErPX+YBSq8
++NkA8nKMs+dYbCxKqrTs1TpfpFQmOkzr3ZrF9U0q7QtG7ulmrmJ7zTNaEc+197Sb
+gJ/IGEVRb34ed4g8DAqrkUlSJchL5/eMOkhLXRdVHnRm/JUgJSybHO8F2NzhWG7K
+8xU/N9IH2YwrlthvNUQFsIBg6fxsA/gBVcimXipPDM8uAGDSG2oQopD/Lw+jNS4P
+kdsRiVQwTbgUBOVphyIAbyIQSQNWKWL+9aGGhoKCFFYnEpXDZs0gmNE/JKeHf21f
+B9gbAamzQs52gpEegnP/szMRWV7cYbvwU1Po1witTf+GzrEUEcelMtHUyEmkTleR
+84w3g7p+zrZEcfgUZYGvfYhSTyNYFI71v3jFoofHqRW854ZGWL1NQtM8yGCSncEV
+FOGnrTjIpbMr4+CRVaQ/
+=ZnbH
+-----END PGP SIGNATURE-----
+
+--5cQKBkLAcMiS3bl5o4lqwIVBfRsDiB45h--
