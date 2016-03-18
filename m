@@ -1,14 +1,14 @@
 Return-Path: <mschiffer@universe-factory.net>
 References: <cover.1458231707.git.mschiffer@universe-factory.net>
- <56EAE3B8.3050808@universe-factory.net> <4945319.BvQuBs3oU8@sven-edge>
+ <1648365.zDTnRIsh0N@bentobox>
 From: Matthias Schiffer <mschiffer@universe-factory.net>
-Message-ID: <56EBEC41.4090404@universe-factory.net>
-Date: Fri, 18 Mar 2016 12:53:37 +0100
+Message-ID: <56EBEDF6.50704@universe-factory.net>
+Date: Fri, 18 Mar 2016 13:00:54 +0100
 MIME-Version: 1.0
-In-Reply-To: <4945319.BvQuBs3oU8@sven-edge>
+In-Reply-To: <1648365.zDTnRIsh0N@bentobox>
 Content-Type: multipart/signed; micalg=pgp-sha512;
  protocol="application/pgp-signature";
- boundary="9oQ6OoixASLNreQ6Ob9lGvIQOrK0rJqP5"
+ boundary="10AnaItJ7b65WoxLkTL51tsEKNAvFPJTi"
 Subject: Re: [B.A.T.M.A.N.] [RFC v2 0/5] batman-adv netlink query API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -23,85 +23,64 @@ To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---9oQ6OoixASLNreQ6Ob9lGvIQOrK0rJqP5
-Content-Type: multipart/mixed; boundary="AdO31G2ddBGJP17KNEnqjDVS1VvnxnSSi"
+--10AnaItJ7b65WoxLkTL51tsEKNAvFPJTi
+Content-Type: multipart/mixed; boundary="tJtiNEOI3I2f8SN8W9G2GKvOs5e8juqP3"
 From: Matthias Schiffer <mschiffer@universe-factory.net>
 To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
-Message-ID: <56EBEC41.4090404@universe-factory.net>
+Message-ID: <56EBEDF6.50704@universe-factory.net>
 Subject: Re: [B.A.T.M.A.N.] [RFC v2 0/5] batman-adv netlink query API
 References: <cover.1458231707.git.mschiffer@universe-factory.net>
- <56EAE3B8.3050808@universe-factory.net> <4945319.BvQuBs3oU8@sven-edge>
-In-Reply-To: <4945319.BvQuBs3oU8@sven-edge>
+ <1648365.zDTnRIsh0N@bentobox>
+In-Reply-To: <1648365.zDTnRIsh0N@bentobox>
 
---AdO31G2ddBGJP17KNEnqjDVS1VvnxnSSi
+--tJtiNEOI3I2f8SN8W9G2GKvOs5e8juqP3
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-On 03/18/2016 08:09 AM, Sven Eckelmann wrote:
-> On Thursday 17 March 2016 18:04:56 Matthias Schiffer wrote:
->> And here is the new version of the PoC userspace tool.
->> Build with:
+On 03/18/2016 12:23 PM, Sven Eckelmann wrote:
+> On Thursday 17 March 2016 17:45:30 Matthias Schiffer wrote:
+> [...]
+>> At the moment, the following debugfs files have corresponding netlink =
+APIs:
 >>
->> gcc -o batnl batnl.c $$(pkg-config --cflags --libs libnl-1) -Wall
+>> * routing_algos
+>> * neighbors
+>> * originators
+>> * transtable_global
+>> * transtable_local
+>> * (hardinterfaces for a softif can be queried)
+>>
+>> The following files are still missing:
+>>
+>> * gateways
+>> * bla_claim_table
+>> * bla_backbone_table
+>> * dat_cache
+>> * nc_nodes
 >=20
-> Thanks for the patches.
->=20
-> I've only looked at the test querier for a second and I am a little bit=
-=20
-> confused that you access things like attrs[BATADV_ATTR_ALGO_NAME] witho=
-ut=20
-> checking if this is available or that the received message is valid (ac=
-cording=20
-> to the nla_parse policy).
->=20
-> I know that this is only a PoC but wanted to mention it in case somebod=
-y wants=20
-> to use it as reference for a batctl/alfred implementation.
->=20
-> I like that the netlink interface doesn't introduce complex structs at =
-the=20
-> moment (but I have to think a little bit about it). The unnamed enums f=
-reak me=20
-> out a little bit (names would be nice so it is easier to write kernel-d=
-oc for=20
-> it).
->=20
-> I just ran the build_test stuff through your branch so you get an early=
-=20
-> feedback about some common problems. See the attached mail (the unused =
-symbols=20
-> seem to be only symptoms of the build failures with old kernels < 3.12)=
-=2E
+> What about the "socket" file?
 >=20
 > Kind regards,
 > 	Sven
 >=20
 
-Hi,
-regarding the first issue: I guess I should just add validation, as doing=
+Ah, I forgot about that one because it is very different from the others.=
 
-so is simple and can only improve robustness. One line of thought that
-seems to be common when dealing with such ABIs is that the kernel would
-break its ABI contract by sending invalid messages, and that userspace
-behaviour would be unspecified anyways if the kernel misbehaves.
 
-I guess we can just give the enums names. Looking through the other UAPI
-files, some enums have names, others don't.
+I think it should be possible to convert "socket" as well by wrapping the=
 
-Thanks for the build testing, I haven't put too much thought into the
-compat issues yet. The genl_register_family_with_ops error should be easy=
-
-to fix, the struct netlink_skb_parms differences might be more problemati=
-c.
+BATADV_ICMP packets in netlink packets. Or maybe it would be possible to
+drop that altogether and just do ping/traceroute in userspace with
+AF_PACKET or similar?
 
 Regards,
 Matthias
 
 
---AdO31G2ddBGJP17KNEnqjDVS1VvnxnSSi--
+--tJtiNEOI3I2f8SN8W9G2GKvOs5e8juqP3--
 
---9oQ6OoixASLNreQ6Ob9lGvIQOrK0rJqP5
+--10AnaItJ7b65WoxLkTL51tsEKNAvFPJTi
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -109,19 +88,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCgAGBQJW6+xBAAoJEBbvP2TLIB2coaQP/1NGHTDbNmyyq7PiYfizm1vm
-9BZ/KbY0O7GNUQ8rpkgM7KLfR7+1UXzr/KIGWlyezV9lPZxKcIXjSiVmapUcPHPR
-fnm1mmL/powPstbArALXQt5TvYB5g/0Gu7Pz9/CJYxryM2mYPEkHNqLN41kml2K2
-TsPVQkr6tVZdV3R44iDFVNb1e7gtzVxXh7Z6gn4NFBlnewqoVzt71/MncDpQRZwF
-1wniQA6S/fVzM6CgRlF+20bJxXAihuUC5gD7HgBosdmeYwvbzJrsdPk6eYTcLDRx
-7Ku0zWPMbU+incmLKM38AMGQyW4d+vPVXl3zmob7g4ZiodjGe3NijoFmFYJUmrgX
-rEsvwgtJxHv3RW9Gx3pb+JUIb5eRVMztaI3reQ7KYjtO7kT4b33DZPVV/8EPFF1d
-ErB1ZhG9lDjP/V3dyv1/hbDvJbm4ZUCD59kYRvKP750dpfXAqkAYpiQz/MI97O/l
-s0NzOhhTG56KQOVpMAjAD0Zv0B+cC7R7aoxsKT73aztNrPRr5lr4zA7dmGRIEKin
-eJLb8/c955H5mB0F6UYxbdUjxvnEC9qYMyXSJS66EjF6yvNzGYxqlx41UjRLXDY4
-rMZvyD+RWcTh990+TrZOi3ej+u1nSQU1AZZYnVPvBP8HdpGBW3F3gcxXFzsku4dW
-uoTXTktgNZj5FPxTKJ7R
-=JRdI
+iQIcBAEBCgAGBQJW6+32AAoJEBbvP2TLIB2c1JwP/AqGfs5g0j1y2SO9eGpkQqr6
+YOlQOK6dF5zAQjRhOl/Heg5bXciCqEjOJ2awPASupIo+mJ+3SUJxvKcVo/5k+7lF
+JnLjxA+7Mn6WSpetv8UKBrIawse1Rd/6OKGY4utvWB0AqIEIuO1eAJse3/job6rI
+WqOKs5Rk9O5LfogzV2mVi8+DTbmdswT0jCSyx3wrTGZAIdKe0kyZrw1UOgnITSUb
+69NJ/TQO07tu/PYWbDvyCWMvQhnU7VHoaPchz9NwUsmGiUerxht2jcH8CGyO0+l+
+45U5HDpWKwytr0VmCwFDS6DjwFQE6HCUT2HKIrtVaJR4uv/vktL698A1uzzjuyvs
+yEW9cuqWDcyO2gQMFi3faWjkFeTAJXCJ7wALSlo9M0kmdsjLHkCWd6iFLp95QsyM
+vdH4iBswipeTK4IsGBUyWElO7RwdLb2C2TZ2Pwht+T1a1PymcN4MwD4PGBUFuUOj
+3iAMXhxbRRA0pfdXHKydunor1U/Psj7tMgNMJXXGLmnAQ+cMct9oSowdPrYEydKQ
+gunsqB/yajy61Z9YUO33hMPUiHFKuoqKfLTRjqlPSSIY8OSsIjFPZkhFND7Pljfx
+Ejg7njhVrSIuoR+kw943AXX8hQFllhgw3P5qoClcYbMEiSeWhlyHJ9PbMnREMs48
+c1dxLN0EihomdjpOdj5T
+=UJpd
 -----END PGP SIGNATURE-----
 
---9oQ6OoixASLNreQ6Ob9lGvIQOrK0rJqP5--
+--10AnaItJ7b65WoxLkTL51tsEKNAvFPJTi--
