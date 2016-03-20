@@ -1,14 +1,9 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 20 Mar 2016 18:33:10 +0800
-Message-ID: <1959300.1njz3VpDnL@voltaire>
-In-Reply-To: <1456732267-7560-1-git-send-email-sven@narfation.org>
-References: <1456732267-7560-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2934863.h5mU1zLVa9";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Add missing headers for bool
-	type
+Date: Sun, 20 Mar 2016 18:39:56 +0800
+Message-Id: <1458470396-12067-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: replace ethertype variable with
+	ETH_P_BATMAN for readability
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,40 +14,53 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart2934863.h5mU1zLVa9
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+---
+ net/batman-adv/soft-interface.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-On Monday, February 29, 2016 08:51:07 Sven Eckelmann wrote:
-> Fixes: d58a13597ec2 ("batman-adv: Use bool as return type for boolean
-> functions") Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/bitarray.h       | 1 +
->  net/batman-adv/soft-interface.h | 1 +
->  2 files changed, 2 insertions(+)
-
-Applied in revision 2bf6bf5.
-
-Thanks,
-Marek
-
---nextPart2934863.h5mU1zLVa9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJW7nxmAAoJEFNVTo/uthzA6CQIAMH4Mx295fDEkfVNgi1fTmLz
-Jf3u0SGiBJZRLdYRfqDkQk/0Tzp8KjJUU3C2ZeBVCDnWfeXb6uNvf2048wjjalxf
-t6OUAJX9sK5Yayr+un1alv+7a8z0QQiqjG4X3kjWRTm5NnLKrbfjyvEMOc/8Q1+o
-FrlpCLNMlIc3GV9BzXcuB0/GdVCfh/gctLdIHMqwt/aGuI1BkJB0GXnd53U8WXvx
-xR/XSXulw9nx3SYdXPRDxX4n3uZXpsQ9ACPJ1OcEBUX3v6m7rVmm2VlKJ9vTrxGV
-q/esOiJBxtyeQVa2+jjRzcT8UsgT2dVYzB8orhmWYSZ9RZOWhq1UIMLwv9yta0c=
-=6tzN
------END PGP SIGNATURE-----
-
---nextPart2934863.h5mU1zLVa9--
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 1c1ed5a..4667719 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -186,7 +186,6 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_bcast_packet *bcast_packet;
+-	__be16 ethertype = htons(ETH_P_BATMAN);
+ 	static const u8 stp_addr[ETH_ALEN] = {0x01, 0x80, 0xC2, 0x00,
+ 					      0x00, 0x00};
+ 	static const u8 ectp_addr[ETH_ALEN] = {0xCF, 0x00, 0x00, 0x00,
+@@ -216,7 +215,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 	case ETH_P_8021Q:
+ 		vhdr = vlan_eth_hdr(skb);
+ 
+-		if (vhdr->h_vlan_encapsulated_proto != ethertype) {
++		/* drop batman-in-batman packets to prevent loops */
++		if (vhdr->h_vlan_encapsulated_proto != htons(ETH_P_BATMAN)) {
+ 			network_offset += VLAN_HLEN;
+ 			break;
+ 		}
+@@ -404,7 +404,6 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ {
+ 	struct batadv_bcast_packet *batadv_bcast_packet;
+ 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
+-	__be16 ethertype = htons(ETH_P_BATMAN);
+ 	struct vlan_ethhdr *vhdr;
+ 	struct ethhdr *ethhdr;
+ 	unsigned short vid;
+@@ -434,7 +433,8 @@ void batadv_interface_rx(struct net_device *soft_iface,
+ 
+ 		vhdr = (struct vlan_ethhdr *)skb->data;
+ 
+-		if (vhdr->h_vlan_encapsulated_proto != ethertype)
++		/* drop batman-in-batman packets to prevent loops */
++		if (vhdr->h_vlan_encapsulated_proto != htons(ETH_P_BATMAN))
+ 			break;
+ 
+ 		/* fall through */
+-- 
+2.7.0
 
