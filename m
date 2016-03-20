@@ -1,14 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 20 Mar 2016 12:08:24 +0100
-Message-ID: <5526455.7mZMx5I6Az@sven-edge>
-In-Reply-To: <1458470396-12067-1-git-send-email-mareklindner@neomailbox.ch>
-References: <1458470396-12067-1-git-send-email-mareklindner@neomailbox.ch>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2692847.dxF8ajxhmU";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: replace ethertype variable
-	with ETH_P_BATMAN for readability
+Date: Sun, 20 Mar 2016 12:27:53 +0100
+Message-Id: <1458473273-8769-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH maint v2] batman-adv: Reduce refcnt of
+	removed router when updating route
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,44 +14,45 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart2692847.dxF8ajxhmU
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+_batadv_update_route rcu_derefences orig_ifinfo->router outside of a
+spinlock protected region to print some information messages to the debug
+log. But this pointer is not checked again when the new pointer is assigned
+in the spinlock protected region. Thus is can happen that the value of
+orig_ifinfo->router changed in the meantime and thus the reference counter
+of the wrong router gets reduced after the spinlock protected region.
 
-On Sunday 20 March 2016 18:39:56 Marek Lindner wrote:
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> ---
->  net/batman-adv/soft-interface.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+Just rcu_dereferencing the value of orig_ifinfo->router inside the spinlock
+protected region (which also set the new pointer) is enough to get the
+correct old router object.
 
-Reviewed-by: Sven Eckelmann <sven@narfation.org>
+Fixes: d90ddb94423f ("batman-adv: Make orig_node->router an rcu protected pointer")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+--
+v2:
+ - add comment explaining the idea behind the extra rcu_dereference_protected
+---
+ net/batman-adv/routing.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Kind regards,
-	Sven
---nextPart2692847.dxF8ajxhmU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJW7oSoAAoJEF2HCgfBJntGVTQP/0I5jbGc9MzcIhBB4YGpHe/W
-UGlkqMr52BPzB5lt1XD0sDEW2l6BllTCh6CHcRKbgBpcgopMJK8zFOopzxpS0m4R
-vD+ysK0XrnwnAJoLMNOsTeexzpckonZOaFRhM/E/JGwMHy8uLws+GfpKKa4c0kwX
-4xeOJzfJ9iHg0+IwPZWYqMNieLO3pAlm2gv+o7uzEzjBWDkbe/3SM1FG56Sgj+jT
-I56dPHJzlalYNEftlP7kEkD1PyllqP/thoZQ/rw0ywmQPhhKHByck2v4X0Z96g5y
-XWX3UeOTlCqm1H0IXW9bA1jkmkjWbZJ+HWx5ZpHarUm/7XSfRbtFi2q7oFMwIcVi
-14bKM6cMk4/pG8W1QFXSq3H/O9iuNGziY5LLk4+TR5QvZbY/PybiTuOAOt+/L+tr
-T1PxuHYvd9aDVJ7eGScySokXr9jeCWTo4cr513ts5qYCnUXVtxAwVZBx+qIg6uyD
-u+h+Cf+gz0XCqAqzTHLlMmzOa26YhugTlqZsiIp0uXORqDef6Ok8IVYxkkLCU/pz
-/gm7b1gpkftFlYijBLuCMKT4F+fhvCSbngfO9XdT+XR2BrRJvwJxn9pk9YioKR/B
-5Ai5T1+9HE/yIsuagBlI0D16LjQ40JPqEsH2wmQBRwIy8Gg7nX4rnoGfH1B24yOC
-6jYwRRV7g9lX39W4zrVD
-=ZP0t
------END PGP SIGNATURE-----
-
---nextPart2692847.dxF8ajxhmU--
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 1fb1be3..18fc4db 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -104,6 +104,13 @@ static void _batadv_update_route(struct batadv_priv *bat_priv,
+ 		neigh_node = NULL;
+ 
+ 	spin_lock_bh(&orig_node->neigh_list_lock);
++	/* get previous best router to decrease the reference counter later.
++	 * curr_router used earlier may not be the current orig_ifinfo->router
++	 * because it was dereferenced outside of the neigh_list_lock protected
++	 * region.
++	 */
++	curr_router = rcu_dereference_protected(orig_ifinfo->router, true);
++
+ 	rcu_assign_pointer(orig_ifinfo->router, neigh_node);
+ 	spin_unlock_bh(&orig_node->neigh_list_lock);
+ 	batadv_orig_ifinfo_free_ref(orig_ifinfo);
+-- 
+2.8.0.rc3
 
