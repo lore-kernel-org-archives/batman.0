@@ -1,15 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 20 Mar 2016 12:01:09 +0100
-Message-ID: <16765982.vnPfJFa6WA@sven-edge>
-In-Reply-To: <9014983.RsdMSR9Elr@voltaire>
-References: <1457189627-8839-1-git-send-email-sven@narfation.org>
- <9014983.RsdMSR9Elr@voltaire>
+Date: Sun, 20 Mar 2016 12:08:24 +0100
+Message-ID: <5526455.7mZMx5I6Az@sven-edge>
+In-Reply-To: <1458470396-12067-1-git-send-email-mareklindner@neomailbox.ch>
+References: <1458470396-12067-1-git-send-email-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2942407.QqEY7UDEn7";
+Content-Type: multipart/signed; boundary="nextPart2692847.dxF8ajxhmU";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Reduce refcnt of
-	removed router when updating route
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: replace ethertype variable
+	with ETH_P_BATMAN for readability
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,47 +21,21 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart2942407.QqEY7UDEn7
+--nextPart2692847.dxF8ajxhmU
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday 20 March 2016 18:45:29 Marek Lindner wrote:
-> On Saturday, March 05, 2016 15:53:47 Sven Eckelmann wrote:
-> > --- a/net/batman-adv/routing.c
-> > +++ b/net/batman-adv/routing.c
-> > @@ -104,6 +104,8 @@ static void _batadv_update_route(struct batadv_priv
-> > *bat_priv, neigh_node = NULL;
-> > 
-> >         spin_lock_bh(&orig_node->neigh_list_lock);
-> > 
-> > +       curr_router = rcu_dereference_protected(orig_ifinfo->router,
-> > true);
-> > +
-> > 
-> >         rcu_assign_pointer(orig_ifinfo->router, neigh_node);
-> >         spin_unlock_bh(&orig_node->neigh_list_lock);
-> >         batadv_orig_ifinfo_free_ref(orig_ifinfo);
-> 
-> Don't we also need to check for curr_router->refcount > 0 to mimic the check
-> above ? Maybe a negative refcount does not hurt or is it unsigned ?
+On Sunday 20 March 2016 18:39:56 Marek Lindner wrote:
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> ---
+>  net/batman-adv/soft-interface.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 
-If this one gets negative then we would have a bug in a different place. The 
-assignment only happens in this neigh_list_lock protected block. So the 
-neigh_node behind orig_ifinfo->router must at least have a reference count of 
-1 or there was no valid reference (as in reference counter) for the pointer.
-
-The the kref_get_unless_zero before was only necessary because the curr_router 
-was aquired inside a rcu_read_lock protected region which is not perfectly in 
-sync with its writers. So it could happen that rcu_dereference returned a 
-pointer to a neigh_node but this neigh_node will be free'd (reference counter 
-== 0). And we cannot get a valid reference for an object which has refcount of 
-0. This function avoids this problem by assuming that orig_ifinfo->router is 
-NULL. This is not perfectly correct but better than having a pointer to free'd 
-memory.
+Reviewed-by: Sven Eckelmann <sven@narfation.org>
 
 Kind regards,
 	Sven
---nextPart2942407.QqEY7UDEn7
+--nextPart2692847.dxF8ajxhmU
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -70,20 +43,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJW7oL1AAoJEF2HCgfBJntGXM0QALGfREs3ycyIM08G0i12pzvw
-sZetnEjRrFN2W+nfBn1GbPl6kAZorIXSRj6ND7gCbH6EbCpzBuU0UCu0yIK5/hXp
-hsK1garUN5Cj3FeyRfzMK8/rB+ubV0/cxSVdDDR5nkkxjwiOzyRG/yrIloJejJ1o
-C5WaddHi7wI0EUqVChoXPdSLP2QNwUYTIWDQ6Me5B8c0huLyL7wysjAXRLULmbCS
-ZS8VxCUuX1CvUyfYWSg+b/itjxUjR/j0tJ8+tS9M4n908j07wu6EQKiGgKRvQzd9
-OIsZKXQP88m/1fhdlccpaDH0gAC1LZVF4gXWEjzPy0FTIpvlvhjoUd6oeYhQ8Nyq
-7+ZXaehlAqiccAkwNFzRhXRXsgaxa3ija4ptnUNt0ShIUOLXwwo50DqjDv2FNhn7
-do/vbQHW0uI1xF77B9JdD/Mnq4DxqoGDcpIwrX9cvXPWhydgzB5238AYtH23ankK
-1fRhtxTthLwLlEaHO18a/Ajzsj9hHFD32U028mR8FBa+LiswAWOeloS3l0fU9R/s
-Tm9dW7inKs1D6Nec/yLFD+Sf0od2tZAO6x00J5U3pGb+i52LVo5zbSuZZOsbdVaF
-GWipHvW/W/E9hJvXR5kQCZgOKpIb+hOx3C7511VZQZbCeknN/G++xo37D1zoemI/
-FD3HbpBijE48etXXqXGg
-=ADkN
+iQIcBAABCgAGBQJW7oSoAAoJEF2HCgfBJntGVTQP/0I5jbGc9MzcIhBB4YGpHe/W
+UGlkqMr52BPzB5lt1XD0sDEW2l6BllTCh6CHcRKbgBpcgopMJK8zFOopzxpS0m4R
+vD+ysK0XrnwnAJoLMNOsTeexzpckonZOaFRhM/E/JGwMHy8uLws+GfpKKa4c0kwX
+4xeOJzfJ9iHg0+IwPZWYqMNieLO3pAlm2gv+o7uzEzjBWDkbe/3SM1FG56Sgj+jT
+I56dPHJzlalYNEftlP7kEkD1PyllqP/thoZQ/rw0ywmQPhhKHByck2v4X0Z96g5y
+XWX3UeOTlCqm1H0IXW9bA1jkmkjWbZJ+HWx5ZpHarUm/7XSfRbtFi2q7oFMwIcVi
+14bKM6cMk4/pG8W1QFXSq3H/O9iuNGziY5LLk4+TR5QvZbY/PybiTuOAOt+/L+tr
+T1PxuHYvd9aDVJ7eGScySokXr9jeCWTo4cr513ts5qYCnUXVtxAwVZBx+qIg6uyD
+u+h+Cf+gz0XCqAqzTHLlMmzOa26YhugTlqZsiIp0uXORqDef6Ok8IVYxkkLCU/pz
+/gm7b1gpkftFlYijBLuCMKT4F+fhvCSbngfO9XdT+XR2BrRJvwJxn9pk9YioKR/B
+5Ai5T1+9HE/yIsuagBlI0D16LjQ40JPqEsH2wmQBRwIy8Gg7nX4rnoGfH1B24yOC
+6jYwRRV7g9lX39W4zrVD
+=ZP0t
 -----END PGP SIGNATURE-----
 
---nextPart2942407.QqEY7UDEn7--
+--nextPart2692847.dxF8ajxhmU--
 
