@@ -1,14 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 20 Mar 2016 15:02:11 +0100
-Message-ID: <2637858.f0vB1PRA5z@sven-edge>
-In-Reply-To: <1456817617-5762-1-git-send-email-sven@narfation.org>
-References: <1456817617-5762-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1484410.SiK5lWoyNo";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next v2] batman-adv: Disable
-	__ethtool_get_link_ksettings compat on < 3.2
+Return-Path: <hwhilse@gmail.com>
+From: Hans-Werner Hilse <hwhilse@gmail.com>
+Date: Mon, 21 Mar 2016 10:03:52 +0100
+Message-Id: <1458551033-8734-1-git-send-email-hwhilse@gmail.com>
+Subject: [B.A.T.M.A.N.] [RFC] alfred: implement TCP support for
+	server-to-server
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,53 +14,91 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Hans-Werner Hilse <hwhilse@gmail.com>
 
---nextPart1484410.SiK5lWoyNo
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+As announced in A.L.F.R.E.D. issue #202 (https://www.open-mesh.org/issues/202),
+I gave implementing server-to-server communication via TCP a spin.
 
-On Tuesday 01 March 2016 08:33:37 Sven Eckelmann wrote:
-> The __ethtool_get_link_ksettings is currently used only for kernels >=
-> 3.15. But the compat code is read by the compiler for each kernel. But
-> kernels up to 3.1 never had the function __ethtool_get_settings which is
-> used to emulate this function for kernels < 4.6. Therefore, kernels < 3.2
-> will fail to compile when this compatibility layer is enabled.
-> 
-> Fixes: 3515604d82d5 ("batman-adv: ELP - use new ethtool_link_get_ksettings
-> API") Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> v2:
->  - correct version number of the supported kernel
+The result is this - rather large - patch. I'd be glad for comments on the
+implementation. Also, I might split this into more commits, but I think I need
+ideas on how to properly separate the various parts - they mostly make sense
+to me as a unit only.
 
-This patch rejected in favor of the compat(-include) cleanup [1].
+A rough overview:
 
-Kind regards,
-	Sven
+alfred.h:
+* struct tcp_connection is new, stores socket fd, pointer to data buffer,
+  a counter for data already read from socket (TCP is a stream and we can't
+  rely on self-contained datagrams), and list management
+* struct interface is extended by a socket fd for the TCP socket and
+  a list of "tcp_connection"s
+* struct globals is extended by a "requestproto" field that stores desired
+  operation mode.
 
-[1] https://patchwork.open-mesh.org/patch/15942/
+main.c:
+* TCP operation is for now triggered by a command line flag "-t".
 
---nextPart1484410.SiK5lWoyNo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+netsock.c:
+* for each interface, a TCP socket, bound/listening, is created and teared
+  down along with the UDP sockets
+* a list of tcp_connection sockets is kept, managed and cleared alongside
+* the sockets are incorporated into the fd_set management for select()
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+recv.c:
+* process_alfred_request() gets another argument for a socket fd. It just
+  gets handed over to push_data() for sending the reply over the same
+  socket the request came from.
+* recv_alfred_stream() is new and the analog function to recv_alfred_packet().
+  It manages the data buffer and will act on a received packet if and when
+  it is completely received.
+  ALFRED_REQUEST, ALFRED_PUSH_DATA and ALFRED_STATUS_TXEND packets are
+  handled for now.
 
-iQIcBAABCgAGBQJW7q1jAAoJEF2HCgfBJntGfEAP/0vOVje7XtCG0Ixjq3Jlqur3
-cZwJ1YTSc6ZN4R/B7BVElQFrjjRR0xaaOYHyvvEyMapOa7JO+VK96VB/C4A2iIEa
-TPjNxp3lgFnCN7kIPQ8Ch9zUSpUcsjJfT7R7WqshCT2rQKcj1rU25CffQC0FR2C0
-qmWBg4bupF/L5VcwJjVMNHLUbt/TCl3RRxI8jNAio5kTIoJFziY4k9ygq6MA5pIr
-m6UKx7j+MypcQpzPrRbki2cy7XgEu3mASu+vrS/UERwt0I/8SVuoCYYYFJGYPmT4
-H0QF49PLK3nxeQJ0hRvJGWDfWJSGCq0jXIbjZnK7IJTHDIrI0PTBsnSQT/GKCExi
-2gL3eWgzqlE/RqZsdLuhkNsyABzAA1QNQn2Z383XxpBl9y4W37IEg/Xsx1L0tVMK
-LItCMcNgfl0vl6Tfnt64wp3h/wtuguRDkPf5AbP1U1zQGCO/Nb4twWOuAql0+dlb
-al/IhdmYPJ/wypa3tE9k8bVgZmH3WowZQqDrRMsgQvNVqjeYGK6ZeI/iX2xaS918
-toj+0anIPo9vautv2e+enoLuv/yxaljRJbsovkE0OUSC6bzsjrQbMXGDJ7nDWs//
-5jw2dwtY51vYTif6afPYlUs08aQBiShGIUtGWaM1Q7n0dPhztxWA4l+cGaZwWz0N
-b5UPciwGlaMpcVj+kJ21
-=awqy
------END PGP SIGNATURE-----
+send.c:
+* connect_tcp() function for setting up a new connection to a (TCP) server
+* push_data() gets a new argument for a socket fd (c.f.
+  process_alfred_request() in recv.c). If said argument is >=0, the function
+  will operate on the socket rather than recvmsg() a datagram.
+* sync_data() will act on requestproto configuration in globals struct and
+  opt to make the sync via TCP if configured to do so
+* send_alfred_stream() will use connect_tcp() to create a new connection,
+  then send a packet analog to send_alfred_packet() and will then register
+  the socket to the list of "tcp_connection"s for the interface it is
+  currently operating upon. This way, the socket can receive a reply and
+  will be handled as long as it is not closed on the other end.
 
---nextPart1484410.SiK5lWoyNo--
+server.c:
+* check_if_socket() will tear down the TCP server and client sockets
+  along with the UDP sockets
+
+unix_sock.c:
+* depending on the globals' requestproto setting, a REQUEST will be send
+  via TCP rather than UDP.
+
+
+Testing has been only in an artificial virtual setup for now. I have some
+hopes to get "mission clearance" for giving it a spin in our local
+"Freifunk" setup. Even then TCP will most certainly only be used on a
+handful of gateways since on the majority of nodes, reading values from
+A.L.F.R.E.D. is not really needed (they are mostly push-only).
+
+I'd be glad to hear some feedback.
+
+-hwh
+
+
+Hans-Werner Hilse (1):
+  alfred: implement TCP support for server-to-server communication
+
+ alfred.h    |  24 +++++++++-
+ main.c      |   8 +++-
+ netsock.c   | 148 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ recv.c      |  88 ++++++++++++++++++++++++++++++++++--
+ send.c      | 119 +++++++++++++++++++++++++++++++++++++++++++-----
+ server.c    |  11 +++++
+ unix_sock.c |   8 ++++
+ 7 files changed, 389 insertions(+), 17 deletions(-)
+
+-- 
+2.7.3
 
