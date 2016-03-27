@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 27 Mar 2016 15:49:16 +0800
-Message-ID: <5307224.UIH421Bh0F@voltaire>
-In-Reply-To: <1457189761-9275-1-git-send-email-sven@narfation.org>
-References: <1457189761-9275-1-git-send-email-sven@narfation.org>
+Date: Sun, 27 Mar 2016 15:51:32 +0800
+Message-ID: <4054492.7ouEHkgyCf@voltaire>
+In-Reply-To: <1458473273-8769-1-git-send-email-sven@narfation.org>
+References: <1458473273-8769-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2462014.juSJ0fyrXH";
+Content-Type: multipart/signed; boundary="nextPart7153813.yLa45mSVQ1";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix function names on new
-	line starting with '*'
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint v2] batman-adv: Reduce refcnt of
+	removed router when updating route
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,31 +20,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2462014.juSJ0fyrXH
+--nextPart7153813.yLa45mSVQ1
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday, March 05, 2016 15:56:01 Sven Eckelmann wrote:
-> Some really long function names in batman-adv require a newline between
-> return type and the function name. This has lead to some lines starting
-> with *batadv_...
+On Sunday, March 20, 2016 12:27:53 Sven Eckelmann wrote:
+> _batadv_update_route rcu_derefences orig_ifinfo->router outside of a
+> spinlock protected region to print some information messages to the debug
+> log. But this pointer is not checked again when the new pointer is assigned
+> in the spinlock protected region. Thus is can happen that the value of
+> orig_ifinfo->router changed in the meantime and thus the reference counter
+> of the wrong router gets reduced after the spinlock protected region.
 > 
-> This * belongs to the return type and thus should be on the same line as
-> the return type.
+> Just rcu_dereferencing the value of orig_ifinfo->router inside the spinlock
+> protected region (which also set the new pointer) is enough to get the
+> correct old router object.
 > 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/bridge_loop_avoidance.c |  6 +++---
->  net/batman-adv/main.c                  |  8 ++++----
->  net/batman-adv/network-coding.c        | 18 +++++++++---------
->  3 files changed, 16 insertions(+), 16 deletions(-)
+> Fixes: d90ddb94423f ("batman-adv: Make orig_node->router an rcu protected
+> pointer") Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> --
+> v2:
+>  - add comment explaining the idea behind the extra
+> rcu_dereference_protected ---
+>  net/batman-adv/routing.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
 
-Applied in revision 39c3bcc.
+Applied with minor modifications in revision 08ba64d.
 
 Thanks,
 Marek
 
---nextPart2462014.juSJ0fyrXH
+--nextPart7153813.yLa45mSVQ1
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -52,14 +58,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJW95B8AAoJEFNVTo/uthzA2nkIAKlrDW4GVW4vfpC8RfLP20pJ
-53lXTsI24Z3koH8QnmQktqffDlOAES275KMnxu159xtSTmVP3hpAZEDqZAnNIKYS
-5kyu50LkGLDcx4acEF1s4VD611Q2K1NMRH7NIPHGjl+oe1tRPu5sh89u3BkMObi/
-4hdDFAvechecHTpPM901SQrYiR229fhW7AkB/drbusDWn3wOh3Qqfj+SiGHPC2eX
-5vMaRH+XATja0qXBaIEiI0AU2VpEJj5HNpaq/OE2LE/wtPIlIXhdhpFY1hScLXsh
-ZrkuCeuwoXwkdM+CGjUqEGsk+xmcxNEA26yPKmIOtjKZZbxM4bcFzTndCsxjwQU=
-=0v22
+iQEcBAABCAAGBQJW95EEAAoJEFNVTo/uthzAOW4H/iV/pKPysvBgFi6XKrtBTF7h
+z7CO2UGGHWl3sqAhKsfxEj7raVKPGPUSDrkQ2wzAYF22jDjSbGDRIdxV/KIqHf9l
+E8RvMpUajJs0SUtSNxLsuA9kkoTGA0Ox9ZWSsi35XbSGYWfCxmUItOfQCtCh/J8T
+bPNtFYQn5T6yBDNi8ss1NTOF/92Ph/OxbU5pQpm02dDfFi9b7aglkIHySpnu2UsP
+u6ku/Z7uJnNGuR3gmJESpaj6fNY0dMAIL5VKPv9U3T89aoSzA8EZty1joxijf/Dg
+kbFF0nufcQ4ScF9nzkU/beKKdM/harl/FOi/kSAGNX6/Rxvsr47cOZNmutSKSaw=
+=FMTx
 -----END PGP SIGNATURE-----
 
---nextPart2462014.juSJ0fyrXH--
+--nextPart7153813.yLa45mSVQ1--
 
