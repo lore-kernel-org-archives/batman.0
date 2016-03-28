@@ -1,15 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 28 Mar 2016 23:14:58 +0800
-Message-ID: <1470998.TKTfVbPYRM@voltaire>
-In-Reply-To: <1457701271-24248-2-git-send-email-sven@narfation.org>
-References: <1457701271-24248-1-git-send-email-sven@narfation.org>
- <1457701271-24248-2-git-send-email-sven@narfation.org>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Mon, 28 Mar 2016 21:11:28 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20160328191128.GA2772@otheros>
+References: <56F5AF2F.6060904@t-online.de> <6005839.o5jWIFZeG0@voltaire>
+ <56F934F9.5000508@t-online.de> <11401348.Kx9RpUz81r@voltaire>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2579587.cdcJ4Zxxu8";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: fix debuginfo macro
-	style issue
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <11401348.Kx9RpUz81r@voltaire>
+Subject: Re: [B.A.T.M.A.N.] No rebroadcast on mesh links
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,55 +18,23 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon.wunderlich@open-mesh.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart2579587.cdcJ4Zxxu8
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+On Mon, Mar 28, 2016 at 10:43:39PM +0800, Marek Lindner wrote:
+> Can you provide insights  as to what that means and whether or not
+> tinc/fastd 'export' their internal state via an interface flag or
+> something along those lines ?
 
-On Friday, March 11, 2016 14:01:11 Sven Eckelmann wrote:
-> From: Simon Wunderlich <simon.wunderlich@open-mesh.com>
-> 
-> Structure initialization within the macros should follow the general
-> coding style used in the kernel: put the initialization of the first
-> variable and the closing brace on a separate line.
-> 
-> Reported-by: Antonio Quartulli <a@unstable.cc>
-> Signed-off-by: Simon Wunderlich <simon.wunderlich@open-mesh.com>
-> [sven@narfation.org: fix conflicts with current version]
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> Patch was resurrected from https://patchwork.open-mesh.org/patch/3769/
-> 
-> I've requested an rebased version at
-> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-March/014638.html
-> but done it myself because it was rather trivial.
-> ---
->  net/batman-adv/debugfs.c | 19 +++++++++++--------
->  1 file changed, 11 insertions(+), 8 deletions(-)
+Oh, that's a cool idea! Similar to the flag "MULTICAST" you can
+see via an "ip link", to have a flag like "TRANSITIVE", for instance,
+right? (and a net_device flag, configurable via ioctl if I don't
+mix up the internals)
 
-Applied in revision 2d34b55.
+mac80211 could unset it by default for adhoc interfaces or if
+ap-isolation is enabled. tinc, fastd or OpenVPN could set or unset
+it on their interfaces depending on their specific configuration.
+ethernet drivers would have it enabled by default. For bridges
+some more thought might be needed, what to inherit from the bridge
+slaves on the upper bridge interface.
 
-Thanks,
-Marek
-
---nextPart2579587.cdcJ4Zxxu8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJW+UpyAAoJEFNVTo/uthzA7lAH+waA7cdrQ+05ph0Nw50MAFih
-iDlFpNJFKsJJYQ1K8ZLZiWD0CqOMfQUwEyfaIheDbB1s+oVLxlh7XCw/Yj1qmOdJ
-plqdvfABOscWiu2ufFVYdrRxLtnNWBb5382Nx3cEzPHiNHqo9jPX9x3gqNFfQ3XC
-+4gIJ+zGQlxQwMAAe65iwXJsQ1DA7wm4KpjSMhJYlHilKbGZROQjAjEqHJQGQgaS
-U+tJGE5kSuainBDxcSsdPQJaLn7VptYrx3FSokgNF85ofNsj/5ei4tLRRUstF7uS
-CzY/WHTW8aGlAzP5/bHIW9ycH13NbYmTHPnSsSXWd8HN8vge48Z2fZUxPCi12d8=
-=iaY6
------END PGP SIGNATURE-----
-
---nextPart2579587.cdcJ4Zxxu8--
-
+Safe and transparent for the user. I like that idea :).
