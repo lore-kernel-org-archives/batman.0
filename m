@@ -1,16 +1,14 @@
-Return-Path: <hwhilse@gmail.com>
+Return-Path: <roland.volkmann@t-online.de>
+References: <56F5AF2F.6060904@t-online.de> <1575797.YB1vrtWgyD@sven-edge>
+ <56F5C782.6050009@t-online.de> <6005839.o5jWIFZeG0@voltaire>
+From: Roland Volkmann <roland.volkmann@t-online.de>
+Message-ID: <56F934F9.5000508@t-online.de>
+Date: Mon, 28 Mar 2016 15:43:21 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
+In-Reply-To: <6005839.o5jWIFZeG0@voltaire>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Sun, 27 Mar 2016 20:37:37 +0200
-From: Hans-Werner Hilse <hwhilse@gmail.com>
-In-Reply-To: <1459103215-22444-1-git-send-email-hwhilse@gmail.com>
-References: <1458551033-8734-1-git-send-email-hwhilse@gmail.com>
- <1459103215-22444-1-git-send-email-hwhilse@gmail.com>
-Message-ID: <69c47d370308ade423bdc4c2d54d434e@hilses.de>
-Subject: Re: [B.A.T.M.A.N.] [RFC v2] alfred: implement TCP support for
- server-to-server communication
+Subject: Re: [B.A.T.M.A.N.] No rebroadcast on mesh links
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,41 +18,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Marek Lindner <mareklindner@neomailbox.ch>, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
+Hi Marek,
 
-Am 2016-03-27 20:26, schrieb Hans-Werner Hilse:
-> [...]
-> Changes in v2:
->    - non-blocking sending over TCP sockets
+> if you are advocating in favor of this patch I see no real need to wait for
+> Linus. Maybe you can help us understand what this patch does and why it is
+> useful. These were the questions raised in https://patchwork.open-mesh.org/patch/4384/ and remain unanswered till today.
+>
+> I am also unclear why this old patch is re-hashed once more since we merged a
+> patch 3 years ago achieving the same goal without a manual knob. Can somebody
+> shed some light on this ?
+>
+> The patch in question:
+> commit cc1fde312b6d3c010784a80aff9e942e3b16d015
+> Author: Matthias Schiffer <mschiffer@universe-factory.net>
+> Date:   Sat Mar 9 23:14:23 2013 +0100
+> Subject: batman-adv: send each broadcast only once on non-wireless interfaces
 
-This uses non-blocking IO also for sending via TCP.
-TCP is chosen when the message size exceeds MAX_UDP_ANSWER (from 
-alfred.h), which is for now conservatively chosen to fit in bad-case MTU 
-settings - or if the data request came via TCP (as the same connection 
-is then used for the reply).
+this patch/commit addresses another issue than the "new" request 4384: 
+it limits the number of broadcasts to be transmitted on an interface, 
+with the limit automatically adjusting depending of type of interface.
 
-I've run this for a few hours in a test setup with 3x alfred as master 
-and 30 slaves, with some errors, dups and latency thrown in for good 
-measure (yay for VDE, virtual distributed ethernet).
+Request 4384 allows to suppress broadcast packets completely on the 
+interface, where the node has received them (no rebroadcast). This is 
+typical behavior of physical switches, where broadcasts are sent out to 
+all ports except the one, where the packet was received.
 
-The current implementation has a downside: non-blocking TCP sending for 
-now assembles the full data that is to be sent in a memory buffer, which 
-will then get sent bit by bit (depending on buffers, network and the 
-remote side). This is a consequence of the lack of a good way to 
-guarantee a consistent state of the data store over the time it takes 
-until the full message stream is completely transmitted to the remote 
-end (the data store might get modified between beginning and finishing 
-transmission).
+In Freifunk-Environments we have various types of links, and you cannot 
+determine automatically the interfaces, where you need rebroadcast and 
+where rebroadcasts should be suppressed. Some examples:
 
-An alternative approach - and a major redesign of data storage - would 
-be some kind of log-based approach. I'm not so sure if that really is 
-warranted for, and in any case, that's quite a different undertaking.
+When having Nodes meshing on WLAN (one WLAN Interface per Node) you need 
+rebroadcasts. If using fastd-VPN connections or tinc without forwarding 
+enabled and without full meshing you also need rebroadcast.
 
-The flag "-t" is still present and will toggle whether alfred will try 
-to request using TCP at all. This will allow to use a TCP-enabled alfred 
-in an environment that is not yet fully TCP enabled (this matters only 
-for the master servers AFAICS).
+But when connecting nodes with LAN-Cable and physical switch, or using 
+tinc with forwarding enabled, or having point-to-point connections, 
+especially WiFi longshots or PowerLAN-Adapters or other low bandwidth 
+connections, the rebroadcasts will waste bandwith and/or air time.
 
--hwh
+Therefore we would prefer to have this setting as a manual setting, 
+default to rebroadcast being enabled.
+
+This patch is present in Gluon for quite some time now and considered 
+stable. In practice we can save significant bandwith and ressources on 
+the Nodes in local mesh clouds having mesh-on-lan with multiple nodes 
+(and clients). Because of this experience on non-gateway nodes we also 
+want to use this feature on gateways without gluon, if multiple gateways 
+are meshed.
+
+If you need more information, please let me know.
+
+Best regards,
+Roland.
+
