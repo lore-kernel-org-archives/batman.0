@@ -1,14 +1,14 @@
-Return-Path: <roland.volkmann@t-online.de>
-References: <56F5AF2F.6060904@t-online.de> <1575797.YB1vrtWgyD@sven-edge>
- <56F5C782.6050009@t-online.de> <6005839.o5jWIFZeG0@voltaire>
-From: Roland Volkmann <roland.volkmann@t-online.de>
-Message-ID: <56F934F9.5000508@t-online.de>
-Date: Mon, 28 Mar 2016 15:43:21 +0200
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 28 Mar 2016 22:07:55 +0800
+Message-ID: <18241209.EXcgiBYQBQ@voltaire>
+In-Reply-To: <1456951556-27662-1-git-send-email-sven@narfation.org>
+References: <1456951556-27662-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-In-Reply-To: <6005839.o5jWIFZeG0@voltaire>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] No rebroadcast on mesh links
+Content-Type: multipart/signed; boundary="nextPart3067025.9yorAd6BSY";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: clarify CFG80211
+	dependency
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,58 +18,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Marek,
+--nextPart3067025.9yorAd6BSY
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-> if you are advocating in favor of this patch I see no real need to wait for
-> Linus. Maybe you can help us understand what this patch does and why it is
-> useful. These were the questions raised in https://patchwork.open-mesh.org/patch/4384/ and remain unanswered till today.
->
-> I am also unclear why this old patch is re-hashed once more since we merged a
-> patch 3 years ago achieving the same goal without a manual knob. Can somebody
-> shed some light on this ?
->
-> The patch in question:
-> commit cc1fde312b6d3c010784a80aff9e942e3b16d015
-> Author: Matthias Schiffer <mschiffer@universe-factory.net>
-> Date:   Sat Mar 9 23:14:23 2013 +0100
-> Subject: batman-adv: send each broadcast only once on non-wireless interfaces
+On Wednesday, March 02, 2016 21:45:56 Sven Eckelmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> The driver calls cfg80211_get_station, which may be part of a
+> module, so we must not enable BATMAN_ADV_BATMAN_V if
+> BATMAN_ADV=y and CFG80211=m:
+> 
+> net/built-in.o: In function `batadv_v_elp_get_throughput':
+> (text+0x5c62c): undefined reference to `cfg80211_get_station'
+> 
+> This clarifies the dependency to cover all combinations.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Fixes: 2e0a2972e354 ("batman-adv: Depend on CFG80211 for BATMAN_V")
+> Acked-by: Antonio Quartulli <a@unstable.cc>
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> Submitted for out-of-tree module with adjusted "Fixes" line. The
+> upstream commit is fb653ebddcf871e8a83a63c1e4e73d41bc3cf599
+> 
+>  net/batman-adv/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-this patch/commit addresses another issue than the "new" request 4384: 
-it limits the number of broadcasts to be transmitted on an interface, 
-with the limit automatically adjusting depending of type of interface.
+Applied in revision 4735b46.
 
-Request 4384 allows to suppress broadcast packets completely on the 
-interface, where the node has received them (no rebroadcast). This is 
-typical behavior of physical switches, where broadcasts are sent out to 
-all ports except the one, where the packet was received.
+Thanks,
+Marek
 
-In Freifunk-Environments we have various types of links, and you cannot 
-determine automatically the interfaces, where you need rebroadcast and 
-where rebroadcasts should be suppressed. Some examples:
+--nextPart3067025.9yorAd6BSY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-When having Nodes meshing on WLAN (one WLAN Interface per Node) you need 
-rebroadcasts. If using fastd-VPN connections or tinc without forwarding 
-enabled and without full meshing you also need rebroadcast.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-But when connecting nodes with LAN-Cable and physical switch, or using 
-tinc with forwarding enabled, or having point-to-point connections, 
-especially WiFi longshots or PowerLAN-Adapters or other low bandwidth 
-connections, the rebroadcasts will waste bandwith and/or air time.
+iQEcBAABCAAGBQJW+Tq7AAoJEFNVTo/uthzAtZAH/RwoCH/M5AG5pM5T/jj7gpOl
+Q1KRyLkDBCjd1BzKIyVXd2LnNTUgxs6qvHNmu4Klg9vSaqffniSZKzwYApxKGXSo
+aE1yd8jsQZx+Qve6GdhfrMFWinGNZZNfG2nOZS/Byq5c4EBGXwFBcwbvlinJ5ugD
+rOAOF93XJpYVc8fHKhaaU0VC4bdoyTnyAOk6fdIJFcXmG8YTWtXd9y9XqAo+8qE4
+L648ioLkFBTilT0AhxWaFNUBCWio1fr8SUrJIyWfn0gGBG+75/AYE6mZ0us37bI1
+9NCzNeNV4v1SMOCM/swxsxV0EFv0rSH3Qt/o+F0qG/knapuzxXmarKPnHQZ5T60=
+=5aMW
+-----END PGP SIGNATURE-----
 
-Therefore we would prefer to have this setting as a manual setting, 
-default to rebroadcast being enabled.
-
-This patch is present in Gluon for quite some time now and considered 
-stable. In practice we can save significant bandwith and ressources on 
-the Nodes in local mesh clouds having mesh-on-lan with multiple nodes 
-(and clients). Because of this experience on non-gateway nodes we also 
-want to use this feature on gateways without gluon, if multiple gateways 
-are meshed.
-
-If you need more information, please let me know.
-
-Best regards,
-Roland.
+--nextPart3067025.9yorAd6BSY--
 
