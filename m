@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 28 Mar 2016 23:10:07 +0800
-Message-ID: <12473139.x6aGNvRE0T@voltaire>
-In-Reply-To: <1457558571-5855-1-git-send-email-sven@narfation.org>
-References: <1457558571-5855-1-git-send-email-sven@narfation.org>
+Date: Mon, 28 Mar 2016 23:13:03 +0800
+Message-ID: <5701447.mB2TsHTmai@voltaire>
+In-Reply-To: <1457701271-24248-1-git-send-email-sven@narfation.org>
+References: <1457701271-24248-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3010148.ocRmnyGs2a";
+Content-Type: multipart/signed; boundary="nextPart2543655.2FXBlqDvQN";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix checkpatch warning about
-	'unsigned' type
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: use batadv_compare_eth
+	when possible
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,26 +19,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart3010148.ocRmnyGs2a
+--nextPart2543655.2FXBlqDvQN
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday, March 09, 2016 22:22:51 Sven Eckelmann wrote:
-> checkpatch.pl warns about the use of 'unsigned' as a short form for
-> 'unsigned int'.
+On Friday, March 11, 2016 14:01:10 Sven Eckelmann wrote:
+> From: Antonio Quartulli <a@unstable.cc>
 > 
+> When comparing Ethernet address it is better to use the more
+> generic batadv_compare_eth. The latter is also optimised for
+> architectures having a fast unaligned access.
+> 
+> Signed-off-by: Antonio Quartulli <a@unstable.cc>
+> [sven@narfation.org: fix conflicts with current version]
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/fragmentation.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
+> Patch was resurrected from https://patchwork.open-mesh.org/patch/3668/
+> 
+> I've requested an rebased version at
+> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-March/014639.html
+> but done it myself because it was rather trivial.
+> ---
+>  net/batman-adv/network-coding.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
 
-Applied in revision 89c1f3b.
+Applied in revision 6a1bc0a.
 
 Thanks,
 Marek
 
---nextPart3010148.ocRmnyGs2a
+--nextPart2543655.2FXBlqDvQN
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -46,14 +58,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJW+UlPAAoJEFNVTo/uthzAmN0H/2kovcQReIPlOp3x2gdptgE8
-LDSczBzX/2FZOX8yJOLeSYHAdkPd93HpY3/WL7HPxMrdDOM/UqITH9SD8eWFwOun
-0ErbG+zJpaJuEO4hxn+yHkaVm4N/gGRcOsR6myF9sPIkkaQlnb/ClVqtzuGmqeFy
-l76v42cWw8Q3ieYOGTSLA1k/Rl0w9Ptbto0Zt1msJZJOwTNVsJSxA5ZWuL5NLYQs
-bbT0Nvr6eLrqaTkChVD9S0YMPjQzITWFURcGNI8rqj6Tr2GgLu+shlLXuM+wNBYZ
-NZJzFi8LCvMtkFtx9tBVmg9vf6E6XEH67gD0O9t/0L9BsSGFccbRzF1b+ZUkYf8=
-=Lqm4
+iQEcBAABCAAGBQJW+Un/AAoJEFNVTo/uthzAIv0IAJsbzERzmevD720cs4AuK0VU
+NE+YogiMXGhzWIG13jyG7p4KM3gdGJF0T0mPOj8m20HCRUuTwRUagc4mRdxQXr5z
+XWKvpeN+x9HmDDEUE3BguNiqrjeAmoqJKOvj5GvFA2ugPYvqUCZ8vHukuUO94RF7
+uORGdbpp+cX9oMH2KBTddXVeCXvckOoUbxXAn2aYp7rgAkTHS50UW878NINVlI/T
+BhajN0g2omXGcmqh30KVyqHynEtnmLFDmL1UP4Kihow3D+etehjPhIcKdy4ArWVh
+G8Zvds2OaPAaezYBIAzSS/lgRsdUDtmARt4HkuMvPWM1PtxGIfgdcz4VNNqwW5I=
+=Eal4
 -----END PGP SIGNATURE-----
 
---nextPart3010148.ocRmnyGs2a--
+--nextPart2543655.2FXBlqDvQN--
 
