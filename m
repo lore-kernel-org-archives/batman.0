@@ -1,11 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 30 Mar 2016 14:19:32 +0200
-Message-Id: <1459340372-6971-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1459340372-6971-1-git-send-email-sven@narfation.org>
-References: <1459340372-6971-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [RFC 2/2] batman-adv: Don't re-broadcast packets on
-	non-wifi devices
+Date: Wed, 30 Mar 2016 14:23:38 +0200
+Message-ID: <4757777.aXctQe8IoD@bentobox>
+In-Reply-To: <4605306.DPF6tJRphQ@sven-edge>
+References: <56F5AF2F.6060904@t-online.de>
+ <20160329175957.GA6539@r2d2.s.lihas.de> <4605306.DPF6tJRphQ@sven-edge>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1578486.opdYYBhIz2";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] No rebroadcast on mesh links
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,31 +20,49 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-It is not necessary to re-broadcast a received broadcast packet on the
-rx-device when it is a standard ethernet device. The link medium already
-takes care of transporting it to all participants in the broadcast domain.
+--nextPart1578486.opdYYBhIz2
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-The re-broadcast on other devices is still necessary to allow the broadcast
-packet to be received by devices which are using a different link medium.
+On Tuesday 29 March 2016 20:55:41 Sven Eckelmann wrote:
+> On Tuesday 29 March 2016 19:59:57 Adrian Reyer wrote:
+> [...]
+> > > It would also be interesting if it should be a simple flag or some if
+> > > exporting the num_bcasts via $something would be sufficient. Or if the
+> > > num_bcasts should be split into num_bcasts_otherif and
+> > > num_bcasts_sameif and then exported.
+[...]
+> Thats why I said that it would have to be split into *sameif and *otherif.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/main.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Here is what I meant with splitting:
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index aad4a3a..ddad99d 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -96,7 +96,7 @@
- #define BATADV_LOG_BUF_LEN 8192	  /* has to be a power of 2 */
- 
- /* number of packets to send for broadcasts on different interface types */
--#define BATADV_NUM_BCASTS_SAMEIF 1
-+#define BATADV_NUM_BCASTS_SAMEIF 0
- #define BATADV_NUM_BCASTS_OTHERIF 1
- #define BATADV_NUM_BCASTS_WIRELESS 3
- #define BATADV_NUM_BCASTS_MAX 3
--- 
-2.8.0.rc3
+* https://patchwork.open-mesh.org/patch/15945/
+* https://patchwork.open-mesh.org/patch/15946/
+
+Kind regards,
+	Sven
+--nextPart1578486.opdYYBhIz2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJW+8VKAAoJEF2HCgfBJntG6t0P/2NwVEXenj0NxVQwiLEk80wD
+9FJONy7oEm/BWec8dgwnrby2ViDsAGS0hqPiS9qAICYpws8j1MxVG42CwR4Qbx3U
+/L7tOhhd/vJw3KgAhtDDnwhTUbCQ5R3MNyq15Eh9gzeK4XV4wJJxieOu62TpQXQj
+APwfNvUMdFRxms2o5A994aR2OTu7M6VYjv0/EvOxoDcparKHURjWFwV8V+rnbJob
+sM5lt6z8sjI1H2rHoIuG/4fEgevl0OPf8hsBpabCgawAvRBDQrVqCvPDlYZoozm2
+NXGwTUSUZ3bURzMATestNyt2mMnvpF97lcN6weaE/Jzq6iEjFXFM4H9ILXc64CGI
+/CiljsNWmAQwQQ9wIOXpoTuA0sslT0kflTX5wW/aF8jPVEaxLw3YtyHt/G4bg1B8
+c6UsK8ORFPR1DX5zHme8IK4bzUqno5VEEggUEN3q3op98istVPs/sJbyjhy9Yq13
+gdfb+kOo2rUlKKeKyFp+iJdd3vN4SDe7aucGr4BROuVPxgAoeLoMI1s5JOLp/mNX
+Y3Wyt0fh2vATQUQmctbP1QUrxVmXxHJeUIbeLcU5QMftbB5pQq4gmlq9drXwkiX3
+8S9FGv1lPqSyKhvYHPI6a6RjcvxnuXH+vIB/RrM45UrXYSn9yEmjKEn3hNRza8jy
+qsKIzlrFEfwzvthdZFWw
+=ul1R
+-----END PGP SIGNATURE-----
+
+--nextPart1578486.opdYYBhIz2--
 
