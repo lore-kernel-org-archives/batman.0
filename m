@@ -1,16 +1,13 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 31 Mar 2016 11:07:22 +0200
-Message-ID: <2334006.YMjFVZQkQ0@bentobox>
-In-Reply-To: <56FCE2A0.7000200@universe-factory.net>
-References: <1459340372-6971-1-git-send-email-sven@narfation.org>
- <1459340372-6971-2-git-send-email-sven@narfation.org>
- <56FCE2A0.7000200@universe-factory.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8155829.ISUT8DGDSY";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC 2/2] batman-adv: Don't re-broadcast packets
-	on non-wifi devices
+Return-Path: <onelektra@gmx.net>
+Date: Thu, 31 Mar 2016 11:54:45 +0200
+From: elektra <onelektra@gmx.net>
+Message-Id: <20160331115445.c1aa7ca4351a8d80dd937bbe@gmx.net>
+In-Reply-To: <DB5PR01MB18642060A402BE7C992F1E0FF1980@DB5PR01MB1864.eurprd01.prod.exchangelabs.com>
+References: <DB5PR01MB18642060A402BE7C992F1E0FF1980@DB5PR01MB1864.eurprd01.prod.exchangelabs.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] Ip rule issue
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,50 +19,62 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart8155829.ISUT8DGDSY
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi Mika -
 
-On Thursday 31 March 2016 10:41:04 Matthias Schiffer wrote:
-[...]
-> I don't think completely disabling the rebroadcast here without a way to
-> enable it again is a viable option.
-> 
-> At least when using batman-adv over VPN tunnels, making batman-adv take
-> care of establishing transitive connectivity may make sense, as batman-adv
-> does this very well and without much configuration. This is actually the
-> recommended setup for non-full-mesh setups using the VPN tool fastd (which
-> is developed by me.)
+10.1.4.2=A0is in a different subnet than=A010.1.2.0/24, so the rule to tabl=
+e 66 doesn't match.
 
-Thanks for the feedback. There was also a small questionnaire answered by
-Adrian Reyer about fastd:
-https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-March/014803.html
+The IPs of your mesh interfaces (those interfaces that batmand is supposed =
+to take care of) must be in the same subnet.=A0
 
-Kind regards,
-	Sven
+If you actually want to announce routes to different networks/hosts, use th=
+e network announcement feature of batmand: -a=A0
 
---nextPart8155829.ISUT8DGDSY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Happy testing!
+Elektra
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
 
-iQIcBAABCgAGBQJW/OjKAAoJEF2HCgfBJntGgY8P/jPjJAx9qILTaAodBX+jT3PW
-KtN7ovSWz9MF4YS/Jl/YzFNEQ7kuQ3KqswA4nNgNa9r9uEUimONwOwge9CoEELUZ
-nr53ZOIWRDZsq3444yvrZtEZr5KwIrPPJ0bZxrzEy6A58NW7TkdlRI/Y12LPoQQq
-XN6AxsZW8pnb36tfsbtWB+MJ2MghC0B9UQrnbdXjq+6PW3ul2GiZLIs2HecHNB8f
-YfPW2obgcPjtvbvHlYDpZiIfE84wWSQM3nNliUASxSdeRbNgk7RtnxNuxLg69Lot
-VXsWnKET1shyd/4lC+sLZxavkqXnDwKdON/pcWPfduaGiEX+XXZkkMC9verY1jnE
-JqiZNGwJhAxkcf2UluoY5Lcnw6pN/YeYVFjubxGlM4/USEekfF6ih0IM9mSeNqnW
-aHF2hr8lzCNNQZBznshNixSgcWSAgsiH+zjl+uU5yxvidQRpnsb1ZEVHpwHidN4k
-2UTyXaje/VBT4rOagaZ2y4z4JPfS2SKoa3Lyon4OJfORYwFDa69y3DnooxMkIaY2
-V+phk2Greds3mt5bLysHGkRFZxnUAC0i+/pnvNpPEaNPJ8DMMH9H3hMCNYiiwhbg
-p23DCrTM54tmMWmy3AeDplHRmSEtr/88fzf8z2KZpMj2iMG/YvV1ivXZMs5rvgke
-7XdBenh+N5bOKMV2EHhD
-=4Do7
------END PGP SIGNATURE-----
 
---nextPart8155829.ISUT8DGDSY--
+On Wed, 30 Mar 2016 07:31:45 +0000
+Mika Rajala <mika.rajala@patria.fi> wrote:
 
+> Hi
+>=20
+> I'm using the latest batmand with ns-3 to test routing.
+>=20
+> I'm a bit of a newbie with this stuff, so this might be really simple
+>=20
+> I'm not getting a ping through to 10.1.4.2, from a node that has this in =
+its routing table
+>=20
+> ip route ls table 66
+> 10.1.4.2 via 10.1.2.2 dev eth 0  proto static  src 10.1.2.3
+> // and so on
+>=20
+> I'm guessing it's because of this
+> ip rule
+> 0:                         from all lookup local
+> 6600:                  from all to 10.1.2.0/24 lookup 66
+> 6699:                  from all lookup 65
+> 6700:                  from all to 10.1.2.0/24 lookup 67
+> 32766:                from all lookup main
+> 32767:                from all lookup default
+>=20
+> It isn't being told to look for the route to 10.1.4.2 from the table 66 w=
+here the route is stored.
+>=20
+> -mika
+
+
+--=20
+Viral meme of radical freedom=20
+=20
+The fact that you talk in your head doesn't mean that you think.=20
+=20
+The worst way to lose control over yourself is by trying to control yoursel=
+f.=20
+=20
+Most people experience themselves as a voice in their head, telling them=20
+ who they are, what they think and what they have to do.=20
+=20
+http://en.wikipedia.org/wiki/Meme=20
