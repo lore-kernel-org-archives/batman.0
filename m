@@ -1,17 +1,16 @@
-Return-Path: <are@lihas.de>
-Date: Wed, 30 Mar 2016 21:55:05 +0200
-From: Adrian Reyer <are@lihas.de>
-Message-ID: <20160330195505.GA21460@r2d2.s.lihas.de>
-Reply-To: b.a.t.m.a.n@lists.open-mesh.org
-References: <56F5AF2F.6060904@t-online.de> <34764958.y3lWsCmXTL@prime>
- <20160330135842.GA19985@r2d2.s.lihas.de>
- <2628962.NH5e8Bopbi@bentobox>
+Return-Path: <mschiffer@universe-factory.net>
+References: <1459340372-6971-1-git-send-email-sven@narfation.org>
+ <1459340372-6971-2-git-send-email-sven@narfation.org>
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+Message-ID: <56FCE2A0.7000200@universe-factory.net>
+Date: Thu, 31 Mar 2016 10:41:04 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="mYCpIKhGyMATD0i+"
-Content-Disposition: inline
-In-Reply-To: <2628962.NH5e8Bopbi@bentobox>
-Subject: Re: [B.A.T.M.A.N.] No rebroadcast on mesh links
+In-Reply-To: <1459340372-6971-2-git-send-email-sven@narfation.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature";
+ boundary="Vmg8dviEvfLHLlVAK7dkuBS8fQhwBiCVT"
+Subject: Re: [B.A.T.M.A.N.] [RFC 2/2] batman-adv: Don't re-broadcast packets
+ on non-wifi devices
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,75 +20,78 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--Vmg8dviEvfLHLlVAK7dkuBS8fQhwBiCVT
+Content-Type: multipart/mixed; boundary="lnclvwAW4FqoOLn82var7oLGHpJC8jtib"
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
+Message-ID: <56FCE2A0.7000200@universe-factory.net>
+Subject: Re: [B.A.T.M.A.N.] [RFC 2/2] batman-adv: Don't re-broadcast packets
+ on non-wifi devices
+References: <1459340372-6971-1-git-send-email-sven@narfation.org>
+ <1459340372-6971-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1459340372-6971-2-git-send-email-sven@narfation.org>
 
---mYCpIKhGyMATD0i+
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+--lnclvwAW4FqoOLn82var7oLGHpJC8jtib
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Mar 30, 2016 at 06:08:49PM +0200, Sven Eckelmann wrote:
-> I never used fastd. So maybe you can tell me if I summarize it correctly:
+On 03/30/2016 02:19 PM, Sven Eckelmann wrote:
+> It is not necessary to re-broadcast a received broadcast packet on the
+> rx-device when it is a standard ethernet device. The link medium alread=
+y
+> takes care of transporting it to all participants in the broadcast doma=
+in.
+>=20
+> The re-broadcast on other devices is still necessary to allow the broad=
+cast
+> packet to be received by devices which are using a different link mediu=
+m.
+>=20
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
 
-Well, fastd is only a sample, though a very much used one within
-freifunk.
+I don't think completely disabling the rebroadcast here without a way to
+enable it again is a viable option.
 
->  * fastd creates point2point vpn-links and makes all of them accessible v=
-ia
->    tapX
-
-yes
-
->  * fastd only sends broadcast to its direct neighbors (vpn-links)
-
-yes, there is a real broadcast mode, but without loop avoidance, this is
-basically never used.
-
->  * the fastd daemon doesn't set some flag to indicate that it doesn't rea=
-lly
->    support broadcasts
-
-yes
-
->  * you want batman-adv to behave on this tapX exactly like on adhoc (maybe
->    with less re-broadcasts than on adhoc) to keep everything in the same
->    broadcast domain
-
-yes
-
-> And for tinc you most likely have configured mst for broadcasts ("tinc
-> handles the forwarding via spanning tree") and don't need batman-adv
-> anymore for re-broadcasts.
-
-indeed
-Please be aware fastd is only one sample of a vpn solution, there are
-many others, and most of them unforseeable to us. The suggested flag
-would fit all of them while not disturbing the save, but traffic
-consuming default.
+At least when using batman-adv over VPN tunnels, making batman-adv take
+care of establishing transitive connectivity may make sense, as batman-ad=
+v
+does this very well and without much configuration. This is actually the
+recommended setup for non-full-mesh setups using the VPN tool fastd (whic=
+h
+is developed by me.)
 
 Regards,
-	Adrian
---=20
-LiHAS - Adrian Reyer - Hessenwiesenstra=C3=9Fe 10 - D-70565 Stuttgart
-Fon: +49 (7 11) 78 28 50 90 - Fax:  +49 (7 11) 78 28 50 91
-Mail: lihas@lihas.de - Web: http://lihas.de
-Linux, Netzwerke, Consulting & Support - USt-ID: DE 227 816 626 Stuttgart
+Matthias
 
---mYCpIKhGyMATD0i+
+
+--lnclvwAW4FqoOLn82var7oLGHpJC8jtib--
+
+--Vmg8dviEvfLHLlVAK7dkuBS8fQhwBiCVT
 Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2
 
-iQEVAwUBVvwvGXn8862ZCBs9AQI5SQf+Jcc60YcbLAEuovlnnvrOGXlk4EeeTv0f
-gZFh2UPg2xbm+jldHclKgzFRuZJoYrqMARH4s114NfEVSgxnSKNQmyK1RNS8BIdQ
-65YnAweCdqIX0h239rGlV9UFX1wJBR24rrihknHMr3BVBskwf9NzwfyoBLafO6Dt
-z2s283rOEZ+0zhHy6L8ivrL09bIPnUimKw4rNtv2Io8CK7+feSZyEsem0128O8zi
-1vySShu199P6kTuvZqDheWlPA71adIEwrCwAsY0PVQDHbTO749x4nFiYzr+QqYG8
-6TGM+U3zQxdISCPOlcvnYDh5838C4pKnegx9I1y38kEHqhBd7iNiSQ==
-=p7hk
+iQIcBAEBCgAGBQJW/OKgAAoJEBbvP2TLIB2cxpoQAOraWLzeFfjBm+QcVdYwMkhA
+jwrLjFqgpIcGCfefpgpBnixG/rGKf8SMZq1VYJVTFNgIP0Q7WODevZiVFun8iQfn
+EztHUVi6JT/gHhstivy2kdsqoc3SUbXfxxOGG/mfxQ5S3RGJGBBytNNTtoyekONU
+6q7oEdcQ4/TmoospwjfLOJuVatcSyyom/EVieXacRBqrCmrohtDQs5xHbjO4X5YA
+jyNU6MM6w6HRvLJpxDgatud7lrpNLtgSHRtjvtvNUMtejr3RzpHLdn3+1wR4hA2S
+L0tE6i6P9XScdpu4s9NOELBHXuahlyA+2G0Af8LY1Xa1Wg4G5ZlU4hGkpKmIFsdA
+RvxsdtnKu5DkFiKH/IVm6Ci7jRS3vOTXBpWHmvz+41eUtnsOtA8mTy1Q2Ik1cm0Y
+6vAS1R7SttOxaTtSJMlJ66GoA8Y2OPMlD45NuP7VLVve+T3ZbC2SyNhOYuNqXYeq
+aJ4J3YXvhn8U84NlCEBMhVexMg+vvY1aQikPDxAmAr8jqTNZhME8NIsQ00VRq5AX
+935akqunKk1R1aE2epnAwmckW4lSL4ubeDUZG2Hej33iABDOfrp24GKGRbArMvE9
+VuBZzaxLE8Co+UE92YU1Nv16+2QSJkKBuTZqt48pPxbz74mWX/xNmo77IeUOjOTI
+Fr6Bys0eahMiwcQT8n4N
+=OKTe
 -----END PGP SIGNATURE-----
 
---mYCpIKhGyMATD0i+--
+--Vmg8dviEvfLHLlVAK7dkuBS8fQhwBiCVT--
