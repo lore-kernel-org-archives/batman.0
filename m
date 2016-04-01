@@ -1,9 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  1 Apr 2016 19:22:35 +0200
-Message-Id: <1459531356-8361-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] alfred: Check for invalid mac in EUI64
-	address
+Date: Fri,  1 Apr 2016 19:22:36 +0200
+Message-Id: <1459531356-8361-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1459531356-8361-1-git-send-email-sven@narfation.org>
+References: <1459531356-8361-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Only accept valid mac addresses
+	via unix socket
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,86 +17,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The ipv6_to_mac function currently only checks if the EUI64 markers are
-present but not if the mac address is valid for a host. This has to be done
-to avoid invalid data in the alfred data storage.
+Not only 00:00:00:00:00:00 but also multicast addresses are invalid as data
+source for alfred. These have to be checked too before accepting the mac
+address received from the client over the unix socket.
 
+Fixes: 58e109973bbe ("alfred: Allow setting the source mac via unix sock")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- alfred.h       |  2 ++
- batadv_query.c |  4 ++++
- util.c         | 15 +++++++++++++++
- 3 files changed, 21 insertions(+)
+ unix_sock.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/alfred.h b/alfred.h
-index 7e5db16..8ed1ef0 100644
---- a/alfred.h
-+++ b/alfred.h
-@@ -26,6 +26,7 @@
- #include <net/ethernet.h>
- #include <netinet/in.h>
- #include <netinet/udp.h>
-+#include <stdbool.h>
- #include <stdint.h>
- #include <time.h>
- #include <sys/select.h>
-@@ -196,3 +197,4 @@ int time_diff(struct timespec *tv1, struct timespec *tv2,
- 	      struct timespec *tvdiff);
- void time_random_seed(void);
- uint16_t get_random_id(void);
-+bool is_valid_ether_addr(uint8_t *addr);
-diff --git a/batadv_query.c b/batadv_query.c
-index 2604503..6dc2cf4 100644
---- a/batadv_query.c
-+++ b/batadv_query.c
-@@ -19,6 +19,7 @@
-  *
-  */
- 
-+#include "alfred.h"
- #include "batadv_query.h"
- #include <errno.h>
- #include <net/ethernet.h>
-@@ -85,6 +86,9 @@ int ipv6_to_mac(const struct in6_addr *addr, struct ether_addr *mac)
- 	mac->ether_addr_octet[4] = addr->s6_addr[14];
- 	mac->ether_addr_octet[5] = addr->s6_addr[15];
- 
-+	if (!is_valid_ether_addr(mac->ether_addr_octet))
-+		return -EINVAL;
-+
- 	return 0;
- }
- 
-diff --git a/util.c b/util.c
-index db6ec96..c7e11cc 100644
---- a/util.c
-+++ b/util.c
-@@ -19,6 +19,8 @@
-  *
-  */
- 
-+#include <netinet/ether.h>
-+#include <stdbool.h>
- #include <stddef.h>
- #include <stdint.h>
- #include <stdlib.h>
-@@ -60,3 +62,16 @@ uint16_t get_random_id(void)
+diff --git a/unix_sock.c b/unix_sock.c
+index a0ccc13..ee6dd8f 100644
+--- a/unix_sock.c
++++ b/unix_sock.c
+@@ -97,7 +97,6 @@ static int unix_sock_add_data(struct globals *globals,
+ 			      struct alfred_push_data_v0 *push,
+ 			      int client_sock)
  {
- 	return random();
- }
-+
-+bool is_valid_ether_addr(uint8_t addr[ETH_ALEN])
-+{
-+	/* multicast address */
-+	if (addr[0] & 0x01)
-+		return false;
-+
-+	/* 00:00:00:00:00:00 */
-+	if ((addr[0] | addr[1] | addr[2] | addr[3] | addr[4] | addr[5]) == 0)
-+		return false;
-+
-+	return true;
-+}
+-	static const char zero[ETH_ALEN] = { 0 };
+ 	struct alfred_data *data;
+ 	struct dataset *dataset;
+ 	int len, data_len, ret = -1;
+@@ -124,7 +123,7 @@ static int unix_sock_add_data(struct globals *globals,
+ 	/* clients should set the source mac to 00:00:00:00:00:00
+ 	 * to make the server set the source for them
+ 	 */
+-	if (memcmp(zero, data->source, sizeof(data->source)) == 0)
++	if (!is_valid_ether_addr(data->source))
+ 		memcpy(data->source, &interface->hwaddr,
+ 		       sizeof(interface->hwaddr));
+ 
 -- 
 2.8.0.rc3
 
