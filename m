@@ -1,11 +1,9 @@
-Return-Path: <philipp.psurek@gmail.com>
-Message-ID: <1459513651.4076.17.camel@gmail.com>
-From: Philipp Psurek <philipp.psurek@gmail.com>
-Date: Fri, 01 Apr 2016 14:27:31 +0200
-Content-Type: text/plain; charset="utf-8"
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] Need some help to understand the code
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri,  1 Apr 2016 15:17:35 +0200
+Message-Id: <1459516656-4404-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] MAINTAINERS: Mark BATMAN ADVANCED
+	mailing list as moderated
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,21 +13,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi all,
+The mailing list of b.a.t.m.a.n@lists.open-mesh.org is moderated for
+non-subscribers and non-whitelisted addresses. Such mails will be delayed
+but the sender will not be informed about the moderation.
 
-I'm 1st term IT student and a candidate for Freifunk's GSoC. I can
-imagine to look inside batman-adv. Therefore I've to learn much more
-beyond the „Write in C 101“ I took part last year.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-If you have some spare time please recommend me some literature that
-has helped you on your way to write batman-adv code. I've two, three
-weeks to prepare myself and evaluate if I understand the code (or some
-parts of it) or participate in fixing some other Freifunk related
-issues.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 16ccda4..835a520 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2206,7 +2206,7 @@ BATMAN ADVANCED
+ M:	Marek Lindner <mareklindner@neomailbox.ch>
+ M:	Simon Wunderlich <sw@simonwunderlich.de>
+ M:	Antonio Quartulli <a@unstable.cc>
+-L:	b.a.t.m.a.n@lists.open-mesh.org
++L:	b.a.t.m.a.n@lists.open-mesh.org (moderated for non-subscribers)
+ W:	https://www.open-mesh.org/
+ Q:	https://patchwork.open-mesh.org/project/batman/list/
+ S:	Maintained
+-- 
+2.8.0.rc3
 
-Thank you in advance and thank you for batman-adv
-
-best regards,
-   Philipp
