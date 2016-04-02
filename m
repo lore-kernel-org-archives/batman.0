@@ -1,11 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  1 Apr 2016 19:22:36 +0200
-Message-Id: <1459531356-8361-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1459531356-8361-1-git-send-email-sven@narfation.org>
-References: <1459531356-8361-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Only accept valid mac addresses
-	via unix socket
+Date: Sat, 02 Apr 2016 08:15:47 +0200
+Message-ID: <2105035.hUCDNLol8h@sven-edge>
+In-Reply-To: <1459513651.4076.17.camel@gmail.com>
+References: <1459513651.4076.17.camel@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart3812805.HtNlC8BtE2";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Need some help to understand the code
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,37 +19,65 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Not only 00:00:00:00:00:00 but also multicast addresses are invalid as data
-source for alfred. These have to be checked too before accepting the mac
-address received from the client over the unix socket.
+--nextPart3812805.HtNlC8BtE2
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Fixes: 58e109973bbe ("alfred: Allow setting the source mac via unix sock")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- unix_sock.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+On Friday 01 April 2016 14:27:31 Philipp Psurek wrote:
+[...]
+> If you have some spare time please recommend me some literature that
+> has helped you on your way to write batman-adv code. I've two, three
+> weeks to prepare myself and evaluate if I understand the code (or some
+> parts of it) or participate in fixing some other Freifunk related
+> issues.
 
-diff --git a/unix_sock.c b/unix_sock.c
-index a0ccc13..ee6dd8f 100644
---- a/unix_sock.c
-+++ b/unix_sock.c
-@@ -97,7 +97,6 @@ static int unix_sock_add_data(struct globals *globals,
- 			      struct alfred_push_data_v0 *push,
- 			      int client_sock)
- {
--	static const char zero[ETH_ALEN] = { 0 };
- 	struct alfred_data *data;
- 	struct dataset *dataset;
- 	int len, data_len, ret = -1;
-@@ -124,7 +123,7 @@ static int unix_sock_add_data(struct globals *globals,
- 	/* clients should set the source mac to 00:00:00:00:00:00
- 	 * to make the server set the source for them
- 	 */
--	if (memcmp(zero, data->source, sizeof(data->source)) == 0)
-+	if (!is_valid_ether_addr(data->source))
- 		memcpy(data->source, &interface->hwaddr,
- 		       sizeof(interface->hwaddr));
- 
--- 
-2.8.0.rc3
+Hm, I cannot speak for the other people but I would not know of any book which 
+would prepare you perfectly for writing kernel code. The best resource is the 
+kernel code itself (LXR is your friend to find things quickly) and the kernel 
+documentation (e.g. in Documentation/*). Also the Linux Kernel Newbies [1] has 
+some nice overviews and links to more information.
+
+There are also some books which are well known and can help you to understand 
+parts better [2,3,4,5]. But I think none of these are must-reads. Having some 
+of them to find out more about a special topic can be helpful. But don't 
+wonder when the example codes don't work anymore because the API in the kernel 
+changed since the book was published :)
+
+I don't know what tasks are currently open in the Freifunk GSoC. But if it is 
+multicast related then you may better ask Linus about some more literature.
+
+Kind regards,
+	Sven
+
+[1] http://kernelnewbies.org/
+[2] http://www.kroah.com/lkn/
+[3] http://www.oreilly.com/openbook/linuxdrive3/book/
+[4] http://www.oreilly.com/catalog/understandlni/
+[5] 
+https://www.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook.html
+
+--nextPart3812805.HtNlC8BtE2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJW/2OTAAoJEF2HCgfBJntG8uAQAJa6xD2iVjgjjOES69s79kOi
+F99zMuFkaVhqjb0Kt/BUOx1Grx6HZZ+ek34IICJNWCcqBIH5bb2UvCSuolACDzec
+o0dPbdCqAsZxiccyS9dsovS19etMISjiUKlL2518+jD0jUMiISs7e2WLBcPkNoiZ
+5G5PgJbTGDeBMgjkcCj/RR38DhkN/MFRcdBru5dZHVEngq2Bk4M+esGLrd7XXgNi
+Gk6UBb+RWuFFXouoz0oTq4A72kMJd/j7eU0W6/e9D5Dib1/HdUDNSwujqh6NYyad
+/kV7n8W4GGEi8YU9mVgwBUfsHg4NaB6plrMNjlQTkPY/3srBEDcfwPwa+MTZI0hJ
+Hi5fhzl6uCOR++7jt90zanAE9yoyhWmcbGs9JxS26lsPn1aGGnKNcfW4MrT5i7Fe
+RQMOz+UbRmtMbl+JiEsutukFVGr0V9H2QIQNudcJKCLAAp0cv5UIRVAEio+jSkSl
+Z1ed5YuNvx0AsOc1i7OOst0alrVtsd5qIerMK/zq+iiPx5Ao6GvnAtZ+W5N6I+Tc
+rzL11CLC3dSGGGU+Tnq232HhpyediLZsn0/X0TWWX+U0qoaWdQk9s4IcHQXFcicN
+N4ch+1AxlliLLKXj1DvejobjH/8E9ZseQj8MzmuXFqG5IeLprgOhOc/LAdOwOJAs
+gCIqZUQNatTv0QY2a8tS
+=tH2L
+-----END PGP SIGNATURE-----
+
+--nextPart3812805.HtNlC8BtE2--
 
