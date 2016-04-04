@@ -1,9 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  3 Apr 2016 19:21:47 +0200
-Message-Id: <1459704107-11844-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] alfred: Don't accept user defined dataset
-	source address in slave mode
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 04 Apr 2016 17:47:45 +0200
+Message-ID: <1746063.26TRQ81zca@prime>
+In-Reply-To: <1459531356-8361-1-git-send-email-sven@narfation.org>
+References: <1459531356-8361-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart3545163.ZHWlSRvg2z";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] alfred: Check for invalid mac in
+	EUI64 address
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,59 +20,48 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The dataset source is used by master servers to identify if it has to be
-forwarded to other master servers. The data::source of an incoming UDP
-push_data is checked and compared against the address of the node sending
-the dataset. If both are same then the dataset is marked as
-SOURCE_FIRST_HAND. Otherwise it is already synced dataset (SOURCE_SYNCED).
-Only datasets marked as SOURCE_FIRST_HAND or SOURCE_LOCAL will be forwarded
-by master servers.
+--nextPart3545163.ZHWlSRvg2z
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-Allowing slave servers to accept push_data packets via unix socket with a
-modified data::source would break the synchronization of datasets between
-the master servers. The slave server would forward data to the master
-server as always but the master would now mark the packet as SOURCE_SYNCED.
-The synchronization process would end here. Parts of the alfred servers
-would therefore have access to the dataset and some not.
+On Friday 01 April 2016 19:22:35 Sven Eckelmann wrote:
+> The ipv6_to_mac function currently only checks if the EUI64 markers are
+> present but not if the mac address is valid for a host. This has to be done
+> to avoid invalid data in the alfred data storage.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  alfred.h       |  2 ++
+>  batadv_query.c |  4 ++++
+>  util.c         | 15 +++++++++++++++
+>  3 files changed, 21 insertions(+)
 
-Instead drop the incoming push_data with a set data::source on the slave.
-No alfred server will have the dataset and the stable inconsistency is
-avoided.
+Applied in revision 46b8926.
 
-Fixes: 58e109973bbe ("alfred: Allow setting the source mac via unix sock")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-Depends on the patch https://patchwork.open-mesh.org/patch/15954/
----
- unix_sock.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+Thanks!
+     Simon
+--nextPart3545163.ZHWlSRvg2z
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-diff --git a/unix_sock.c b/unix_sock.c
-index ee6dd8f..150ad32 100644
---- a/unix_sock.c
-+++ b/unix_sock.c
-@@ -122,10 +122,18 @@ static int unix_sock_add_data(struct globals *globals,
- 
- 	/* clients should set the source mac to 00:00:00:00:00:00
- 	 * to make the server set the source for them
-+	 *
-+	 * Only alfred in master mode can accept a user defined
-+	 * source addresses. Otherwise the data would not be
-+	 * synced between master servers.
- 	 */
--	if (!is_valid_ether_addr(data->source))
--		memcpy(data->source, &interface->hwaddr,
--		       sizeof(interface->hwaddr));
-+	if (is_valid_ether_addr(data->source)) {
-+		if (memcmp(data->source, &interface->hwaddr, ETH_ALEN) != 0 &&
-+		    globals->opmode != OPMODE_MASTER)
-+			goto err;
-+	} else {
-+		memcpy(data->source, &interface->hwaddr, ETH_ALEN);
-+	}
- 
- 	if ((int)(data_len + sizeof(*data)) > len)
- 		goto err;
--- 
-2.8.0.rc3
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXAoyhAAoJEKEr45hCkp6hySIP/A1NMZx/ptQTJtHRtVXiAJiW
+s5gibP/gF+aGW794+SYydaJFKQSVdoc6Y6HvyfHFckdfiMYbQ4/RV9FzZyVM/quD
+YMb4+3VI7RaE1f/ymBq9cptSU7KsZa2Zg+YgG61leMuo8Anfg6DQF/6ZFcR60B69
+0BA3qjU3/VvBwJMwh9loTUzLJTQPRycOQlhPkt+luBfSv+91XZ7+DAd7FjUVIyhQ
+BxFk2lzr6VGqO71LGsvdUv7yxELQ8rPS3k1hUJgaMwFK5XB+MpmPVqo3YhdloVGA
+bEeSdSQB3XwPNgjYHXSVaEnZeGNb/FD8X2vfAFhtZUfKhY4QpAkT1CFxVPd+BkfQ
+q3f0L869Ppz/uzYSJO6BOmGjtvntr4rgGi/GENKzhs/bVSlDrtNGtx0bgVwPg+ZV
+l3yE1TRNYynO0UKE3JcHGY7S4wwhgrpUgoCeGQQJ1ZH57pjrzNYDwh5UB5r0tXWK
+N958kV+xSkR/R2K+38B4lLd5iOoNIXVZgg1sbB+26nGcpGpgaFZaGfI14VCJ0Yv/
+UnYaot2pe/oyGt/WcG1w75eLkB5TJ1UUtp8/S3+UwYpJSq0NL5fKnDdywXNFYo/I
+F9szGUTMzjhZHl1aH3dSN3uZgwpCIHSKOYF5zvpMtrfjkCJglFOwq+IjyGZh3Bi3
+vl2NDjI/P2jV/HxNn8W1
+=gwt+
+-----END PGP SIGNATURE-----
+
+--nextPart3545163.ZHWlSRvg2z--
 
