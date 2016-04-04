@@ -1,15 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 04 Apr 2016 17:48:06 +0200
-Message-ID: <7157804.0g29hBlr0l@prime>
-In-Reply-To: <1459531356-8361-2-git-send-email-sven@narfation.org>
-References: <1459531356-8361-1-git-send-email-sven@narfation.org>
- <1459531356-8361-2-git-send-email-sven@narfation.org>
+Date: Mon, 04 Apr 2016 17:48:33 +0200
+Message-ID: <1620382.1TbDfDECNB@prime>
+In-Reply-To: <1459704107-11844-1-git-send-email-sven@narfation.org>
+References: <1459704107-11844-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9419963.XH1PdhRNXZ";
+Content-Type: multipart/signed; boundary="nextPart4695838.Ppx7hk4gtn";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Only accept valid mac
-	addresses via unix socket
+Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Don't accept user defined
+	dataset source address in slave mode
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,23 +20,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart9419963.XH1PdhRNXZ
+--nextPart4695838.Ppx7hk4gtn
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="ISO-8859-1"
 
-On Friday 01 April 2016 19:22:36 Sven Eckelmann wrote:
-> Not only 00:00:00:00:00:00 but also multicast addresses are invalid as data
-> source for alfred. These have to be checked too before accepting the mac
-> address received from the client over the unix socket.
+On Sunday 03 April 2016 19:21:47 Sven Eckelmann wrote:
+> The dataset source is used by master servers to identify if it has to be
+> forwarded to other master servers. The data::source of an incoming UDP
+> push_data is checked and compared against the address of the node sending
+> the dataset. If both are same then the dataset is marked as
+> SOURCE_FIRST_HAND. Otherwise it is already synced dataset (SOURCE_SYNCED).
+> Only datasets marked as SOURCE_FIRST_HAND or SOURCE_LOCAL will be forwarded
+> by master servers.
+> 
+> Allowing slave servers to accept push_data packets via unix socket with a
+> modified data::source would break the synchronization of datasets between
+> the master servers. The slave server would forward data to the master
+> server as always but the master would now mark the packet as SOURCE_SYNCED.
+> The synchronization process would end here. Parts of the alfred servers
+> would therefore have access to the dataset and some not.
+> 
+> Instead drop the incoming push_data with a set data::source on the slave.
+> No alfred server will have the dataset and the stable inconsistency is
+> avoided.
 > 
 > Fixes: 58e109973bbe ("alfred: Allow setting the source mac via unix sock")
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> Depends on the patch https://patchwork.open-mesh.org/patch/15954/
+> ---
+>  unix_sock.c | 14 +++++++++++---
+>  1 file changed, 11 insertions(+), 3 deletions(-)
 
-Applied in revision 25b4ae6.
+Applied in revision 7782e61.
 
 Thanks!
      Simon
---nextPart9419963.XH1PdhRNXZ
+--nextPart4695838.Ppx7hk4gtn
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -45,20 +64,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXAoy2AAoJEKEr45hCkp6hugkQAJ689LNAHwZRmRzQuTdc7e/T
-j5VuZROgTVeaGPfnXpKLfgH2DvePvywCCNWy87alyNuO8h1hkAbTct/G8GP+Wv+E
-S5rz7Q+iIHW444AyIu6bk8bFx+7Fa8/xjDsJ+oPZNf660uQyiTCwG4WVM7NQEPpi
-CcXO4l8PE/y9Gq2eX/qWGL9jY980xevHQ4Np6xbBBpU6Y/wXGfNoCIE4lHTp/5Fn
-28UsDgr4kYW85Ebb8WTSZLlP6uTxb3lrvKbnrcheZ3G0Vw9qKD3b2CqbZrJT3f/Q
-KRH2kKzt8bD4KfQ3X1N2PcD9A0neEKuNeeHN0mDKJOCPgY7lNq2GWGX4peOtfAvZ
-9EDfj3/4niSryEhiqkOjjoQhNb7G15+sMTptrjLYtIY/4IaLMQLxBkiwl6dLHdA4
-WJmUOqzMZnaAQPt25kLBJrausZHzLBLxHbrUdWwmZ3Eqjx8PqFIjLqNiorbFhIFg
-RuKa85nkEwG7swhYTb+dWrb8M87vXAyxe3bTWyJ3ZfBiy4+waq+GQKAPKYoGUMxv
-yHpCeIdZ65aGbXmqcGlnTpu5DvzdTop8xd/Jz4YnQNvRsQivRMJUGz5VjxPZWZeO
-0C99Flr5EfgUxtEeRXWFNw9wjxjv4zXaOYYQyG562Sh+gi7C9UDMN3OKjJkLbbBz
-8yhvadlCeKu0XV4yyQXg
-=EUMa
+iQIcBAABCgAGBQJXAozRAAoJEKEr45hCkp6h9QAQAMnZdcRqveniYy5k5XV1Ol9/
+prFI+kO1T70rXV6zIYtC/r9QdgdOzqWDAjSGD1SCfs9JhzPqlIGqtGqKnGCRQqfE
+7fU54dJJiIrZizQQAMOnGh67A5Nqt66EbFVwra8th0c8NYMgxiYuzDfJLgB4hune
+EhXq8UojkF3d7FAGnSWYO1gmyfsAvnCXW84dxh4yWkpbgMmAWAqDWmFacBCRgeY3
+QNpbG8uyQd2/+oS/9kPM/NMqwvYrkHfyowJShitpu31dmd9hftUnOncJuKcDyorY
+39eGulTX0qoOFjYpk3AZ0Daqk4dp/kI0a4L43tIRE6Uz8J8pGvGiXT4u/ZQpjiIl
+cmKx8WJPShb/4gGigG6XpOmTSgNw/4RxbNwMRWosSCabx3zQ3Krb+e/Y1oCww7kr
+QGInhqMKRc69TSizvL4gYV4oA6tIKccde2RvhGTVeZ1Gi22L5v7fmgLfwHu2soLO
+Wly8AENI4Bea7cFTibx2uvoRgr6ljV1fFxmb63olOOY9PbixtyNMTMBvPjX8VZU1
+CvWish+5W1UjP+Vcu+8WRShSq647tyUe4HRdFeVHGLkyzl4qUVXnkgkKCgkRVtKb
+HOytAJnZZa5Oa7DgUddIGPFed7WRAGyonFxCCrYXH9RMi/9UsdqxxDh7y8CJAJSP
+ht3x46F8exhXWruFTn54
+=jUim
 -----END PGP SIGNATURE-----
 
---nextPart9419963.XH1PdhRNXZ--
+--nextPart4695838.Ppx7hk4gtn--
 
