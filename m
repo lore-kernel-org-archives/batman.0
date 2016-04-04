@@ -1,14 +1,13 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 04 Apr 2016 17:48:33 +0200
-Message-ID: <1620382.1TbDfDECNB@prime>
-In-Reply-To: <1459704107-11844-1-git-send-email-sven@narfation.org>
-References: <1459704107-11844-1-git-send-email-sven@narfation.org>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Tue, 5 Apr 2016 01:15:58 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20160404231558.GG3002@otheros>
+References: <1459513651.4076.17.camel@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4695838.Ppx7hk4gtn";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Don't accept user defined
-	dataset source address in slave mode
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1459513651.4076.17.camel@gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Need some help to understand the code
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,66 +17,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart4695838.Ppx7hk4gtn
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+On Fri, Apr 01, 2016 at 02:27:31PM +0200, Philipp Psurek wrote:
+> If you have some spare time please recommend me some literature that
+> has helped you on your way to write batman-adv code. I've two, three
+> weeks to prepare myself and evaluate if I understand the code (or some
+> parts of it) or participate in fixing some other Freifunk related
+> issues.
 
-On Sunday 03 April 2016 19:21:47 Sven Eckelmann wrote:
-> The dataset source is used by master servers to identify if it has to be
-> forwarded to other master servers. The data::source of an incoming UDP
-> push_data is checked and compared against the address of the node sending
-> the dataset. If both are same then the dataset is marked as
-> SOURCE_FIRST_HAND. Otherwise it is already synced dataset (SOURCE_SYNCED).
-> Only datasets marked as SOURCE_FIRST_HAND or SOURCE_LOCAL will be forwarded
-> by master servers.
-> 
-> Allowing slave servers to accept push_data packets via unix socket with a
-> modified data::source would break the synchronization of datasets between
-> the master servers. The slave server would forward data to the master
-> server as always but the master would now mark the packet as SOURCE_SYNCED.
-> The synchronization process would end here. Parts of the alfred servers
-> would therefore have access to the dataset and some not.
-> 
-> Instead drop the incoming push_data with a set data::source on the slave.
-> No alfred server will have the dataset and the stable inconsistency is
-> avoided.
-> 
-> Fixes: 58e109973bbe ("alfred: Allow setting the source mac via unix sock")
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> Depends on the patch https://patchwork.open-mesh.org/patch/15954/
-> ---
->  unix_sock.c | 14 +++++++++++---
->  1 file changed, 11 insertions(+), 3 deletions(-)
+Hi Philipp,
 
-Applied in revision 7782e61.
+A few of the basics would be lists and locking as they are used
+everywhere in the code and would be something you would need to
+use and understand for batman-adv coding.
 
-Thanks!
-     Simon
---nextPart4695838.Ppx7hk4gtn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+For lists, for instance:
+http://www.makelinux.net/ldd3/chp-11-sect-5
+http://kernelnewbies.org/FAQ/LinkedLists
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Or the kerneldoc for lists themselves :) :
+http://lxr.free-electrons.com/source/include/linux/list.h
 
-iQIcBAABCgAGBQJXAozRAAoJEKEr45hCkp6h9QAQAMnZdcRqveniYy5k5XV1Ol9/
-prFI+kO1T70rXV6zIYtC/r9QdgdOzqWDAjSGD1SCfs9JhzPqlIGqtGqKnGCRQqfE
-7fU54dJJiIrZizQQAMOnGh67A5Nqt66EbFVwra8th0c8NYMgxiYuzDfJLgB4hune
-EhXq8UojkF3d7FAGnSWYO1gmyfsAvnCXW84dxh4yWkpbgMmAWAqDWmFacBCRgeY3
-QNpbG8uyQd2/+oS/9kPM/NMqwvYrkHfyowJShitpu31dmd9hftUnOncJuKcDyorY
-39eGulTX0qoOFjYpk3AZ0Daqk4dp/kI0a4L43tIRE6Uz8J8pGvGiXT4u/ZQpjiIl
-cmKx8WJPShb/4gGigG6XpOmTSgNw/4RxbNwMRWosSCabx3zQ3Krb+e/Y1oCww7kr
-QGInhqMKRc69TSizvL4gYV4oA6tIKccde2RvhGTVeZ1Gi22L5v7fmgLfwHu2soLO
-Wly8AENI4Bea7cFTibx2uvoRgr6ljV1fFxmb63olOOY9PbixtyNMTMBvPjX8VZU1
-CvWish+5W1UjP+Vcu+8WRShSq647tyUe4HRdFeVHGLkyzl4qUVXnkgkKCgkRVtKb
-HOytAJnZZa5Oa7DgUddIGPFed7WRAGyonFxCCrYXH9RMi/9UsdqxxDh7y8CJAJSP
-ht3x46F8exhXWruFTn54
-=jUim
------END PGP SIGNATURE-----
 
---nextPart4695838.Ppx7hk4gtn--
+For locking, two kinds of locks are mostly used in batman-adv. The
+easy ones are spin-locks:
+http://lxr.free-electrons.com/source/Documentation/locking/spinlocks.txt
 
+And then there is the fancy but super awesome RCU locking :) :
+https://lwn.net/Articles/262464/
+
+
+Finally, knowing how SKBs work is something you should look into
+for Linux network coding:
+http://vger.kernel.org/~davem/skb.html
+
+
+A friend of mine had written a small (< 300 lines) but fun kernel module:
+https://github.com/Gnoxter/devcat
+
+Maybe you could set up a KVM instance and play a little with its
+code in there? Try out lists and spinlocks etc. in there without
+crashing the VM instance :).
+
+Cheers, Linus
+
+PS: If you need any help, feel free to query me in #batman on
+Freenode (nick: T_X).
