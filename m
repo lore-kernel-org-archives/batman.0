@@ -1,11 +1,14 @@
-Return-Path: <trizonelabs@gmail.com>
+Return-Path: <hwhilse@gmail.com>
 MIME-Version: 1.0
-Date: Mon, 4 Apr 2016 17:07:01 +0300
-Message-ID: <CAJuY50wPwhdnWNQOyxshmE7=gkC+NNz-FEEQ7nSsqZR8WPM5SA@mail.gmail.com>
-From: 3zl Trizonelabs <trizonelabs@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: [B.A.T.M.A.N.] i4free-gr community BATMAN-ADV application workshops
-	in Greece
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
+Date: Tue, 05 Apr 2016 09:36:06 +0200
+From: Hans-Werner Hilse <hwhilse@gmail.com>
+In-Reply-To: <6462510.GtylGfypVS@bentobox>
+References: <1459513651.4076.17.camel@gmail.com>
+ <20160404231558.GG3002@otheros> <6462510.GtylGfypVS@bentobox>
+Message-ID: <db225dbe7e4bba7088c521a02c99bb33@hilses.de>
+Subject: Re: [B.A.T.M.A.N.] Need some help to understand the code
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,21 +20,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-following the first attempt at the Athens Wireless Summit 2015 the
-i4free-gr community will perform 2 workshops  embracing BATMAN-ADV
-network applications.
+Hi,
 
-Title :
-"i4free-gr how to build small community mesh networks the easy way
-using the BRUCE framework protoype ( Openwrt & batman-advanced )"
+Am 2016-04-05 09:11, schrieb Sven Eckelmann:
+> On Tuesday 05 April 2016 01:15:58 Linus Lüssing wrote:
+>> Maybe you could set up a KVM instance and play a little with its
+>> code in there? Try out lists and spinlocks etc. in there without
+>> crashing the VM instance :).
+> 
+> There is also an easy example how to build an amd64 [1] VM image with
+> many debug helpers enabled.
 
-1.  TEI Technical University Mesolongi at 13.03.2016 Antirio
+And my 2ct: user mode linux still exists - despite making no new 
+headlines in the news - in current kernels. It might not be fit for 
+developing PCI device drivers, but for networking code, it's quite nice. 
+And you can just use gdb on it. It's all just a "make ARCH=um" away! You 
+want 100 kernel instances communicating using batman-adv? No problem! 
+Want a conditional breakpoint at some point in the code you don't yet 
+have a grip on? Inspect stack when things went wrong? Just go ahead :-)
 
-2.  FOSSCOM TEI Technical University Pireus at 16/17.04.2016
-https://ellak.gr/2016/02/fosscomm-2016-stis-16-17-apriliou-2016-sto-panepistimio-pireos/
-
-
-
-greetings to the hard-working BATMAN people
-
-3zl
+-hwh
+(who actually did run 100 UML instances, using batman-adv, just for the 
+fun of it - and to measure resulting "baseline" traffic)
