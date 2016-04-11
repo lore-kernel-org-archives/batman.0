@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 11 Apr 2016 18:13:09 +0800
-Message-ID: <8025409.qnq58rYqdb@voltaire>
-In-Reply-To: <1457190564-11419-4-git-send-email-sven@narfation.org>
+Date: Mon, 11 Apr 2016 18:18:15 +0800
+Message-ID: <3343208.0PArO0F0TK@voltaire>
+In-Reply-To: <1457190564-11419-5-git-send-email-sven@narfation.org>
 References: <1457190564-11419-1-git-send-email-sven@narfation.org>
- <1457190564-11419-4-git-send-email-sven@narfation.org>
+ <1457190564-11419-5-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1644111.5D8QhC0S7o";
+Content-Type: multipart/signed; boundary="nextPart2269056.2BVEBNM0YX";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 4/9] batman-adv: Use kref_get for
-	hard_iface subfunctions
+Subject: Re: [B.A.T.M.A.N.] [PATCH 5/9] batman-adv: Use kref_get for
+	batadv_tvlv_container_get
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,61 +19,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1644111.5D8QhC0S7o
+--nextPart2269056.2BVEBNM0YX
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday, March 05, 2016 16:09:19 Sven Eckelmann wrote:
-> The callers of the functions using batadv_hard_iface objects have to make
-> sure that they already hold a valid reference. The subfunctions don't have
-> to check whether the reference counter is > 0 because this was already
-> checked by the callers.
-
-You say the callers have to make sure that valid references exist but do they 
-or is this coming later or .. ?
-
-
-> --- a/net/batman-adv/bat_iv_ogm.c
-> +++ b/net/batman-adv/bat_iv_ogm.c
-> @@ -679,12 +679,6 @@ static void batadv_iv_ogm_aggregate_new(const unsigned
-> char *packet_buff, unsigned char *skb_buff;
->  	unsigned int skb_size;
+On Saturday, March 05, 2016 16:09:20 Sven Eckelmann wrote:
+> batadv_tvlv_container_get requires that tvlv.container_list_lock is held by
+> the caller. It is therefore not possible that an item in
+> tvlv.container_list has an reference counter of 0 and is still in the list
 > 
-> -	if (!kref_get_unless_zero(&if_incoming->refcount))
-> -		return;
-> -
-> -	if (!kref_get_unless_zero(&if_outgoing->refcount))
-> -		goto out_free_incoming;
-> -
->  	/* own packet should always be scheduled */
->  	if (!own_packet) {
->  		if (!batadv_atomic_dec_not_zero(&bat_priv->batman_queue_left)) {
-> @@ -716,6 +710,8 @@ static void batadv_iv_ogm_aggregate_new(const unsigned
-> char *packet_buff, forw_packet_aggr->packet_len = packet_len;
->  	memcpy(skb_buff, packet_buff, packet_len);
+> The kref_get function instead WARNs (with debug information) when the
+> reference counter would still be 0. This makes a bug in batman-adv better
+> visible because kref_get_unless_zero would have ignored this problem.
 > 
-> +	kref_get(&if_incoming->refcount);
-> +	kref_get(&if_outgoing->refcount);
->  	forw_packet_aggr->own = own_packet;
->  	forw_packet_aggr->if_incoming = if_incoming;
->  	forw_packet_aggr->if_outgoing = if_outgoing;
-> @@ -747,7 +743,6 @@ out_nomem:
->  		atomic_inc(&bat_priv->batman_queue_left);
->  out_free_outgoing:
->  	batadv_hardif_put(if_outgoing);
-> -out_free_incoming:
->  	batadv_hardif_put(if_incoming);
->  }
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  net/batman-adv/main.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
 
-This introduces a refcount imbalance If I am not mistaken. At the beginning of 
-the function we jump to 'out_free_outgoing'.
+Applied in revision 21a288f.
 
-Cheers,
+Thanks,
 Marek
 
---nextPart1644111.5D8QhC0S7o
+--nextPart2269056.2BVEBNM0YX
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -81,14 +52,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXC3i1AAoJEFNVTo/uthzAab4H/ReiSuKa9wP1RCT3uqLpWB4X
-yD9ZEg3zMKgtDsX2TrPyjMBJimjFE1YfLsZ41WB3GTLyPKF9IBsI7q3wx0OqW/E5
-lB0LPndq1D6LqBOWTAVJyIgDUP4kuQLoHE0faXW6MNj/6I9quY93tqQM1foHqjT3
-i0nZD0N/ZV4r7d0LNUmYxx9+UNLTEKiIPwm/E5cG45vVJnKCMVn/1MiwcC2BK3Ri
-2I/lynZ5GQbXB8M+Th2fC7FB8UuLfn6D+na1zLLR05ogIOTT8QG9b8OmFnZGhjhC
-feG5EB+5+IjmbpQ6O1iFu7+R0HAQjqrk58Y0j6hLlXflMWITNHZbBSU/I3sV9X0=
-=d9R7
+iQEcBAABCAAGBQJXC3nnAAoJEFNVTo/uthzAcUAH/RqYQYPBdz2APSGMmzaIifk+
+1oo6s/sX4okMPyt9Hf7A3FMPeUI5wnYOXxSx0e1DeTcnycWO0RMmREj2QV+TLOc6
+Dn60AszbagRNaLWrChuDdToiCdJT85vXPHYOdCkpZBu5t9aXAtqp5q/RBaq/xukN
+16yty/J4Z+wAO8C1c22WshMNJ7vWZziMuDFS5m+shrLeNAORJOW2/dGEa5NFmI+T
+NnKdzeolrnhsVPN6YgRoJlChZ+MrO9c4JgHGdjOR7a7As9M/vP2flMwakK/ez5Yv
+upPa7q/kkrhG/h5oBWLmFX4D6hJmutjC+uv/nKlmqc9xeu/r6ZPOJSVMkh5IMDk=
+=4quR
 -----END PGP SIGNATURE-----
 
---nextPart1644111.5D8QhC0S7o--
+--nextPart2269056.2BVEBNM0YX--
 
