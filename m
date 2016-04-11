@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 11 Apr 2016 23:59:36 +0800
-Message-ID: <1530605.2eAfRak7fa@voltaire>
-In-Reply-To: <1457777579-28982-1-git-send-email-sven@narfation.org>
-References: <1457777579-28982-1-git-send-email-sven@narfation.org>
+Date: Tue, 12 Apr 2016 00:04:06 +0800
+Message-ID: <2831615.2xmdSus33c@voltaire>
+In-Reply-To: <1457775018-16546-1-git-send-email-sven@narfation.org>
+References: <1457775018-16546-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2604592.JYpf5E4J5x";
+Content-Type: multipart/signed; boundary="nextPart52158209.sr77xQc4Tj";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: fix DAT candidate
-	selection (must use vid)
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3] batman-adv: use static string for
+	table headers
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,41 +21,49 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart2604592.JYpf5E4J5x
+--nextPart52158209.sr77xQc4Tj
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday, March 12, 2016 11:12:59 Sven Eckelmann wrote:
+On Saturday, March 12, 2016 10:30:18 Sven Eckelmann wrote:
 > From: Antonio Quartulli <a@unstable.cc>
 > 
-> Now that DAT is VLAN aware, it must use the VID when
-> computing the DHT address of the candidate nodes where
-> an entry is going to be stored/retrieved.
+> Use a static string when showing table headers rather then
+> a nonsense parametric one with fixed arguments.
 > 
-> Fixes: 3e26722bc9f2 ("batman-adv: make the Distributed ARP Table vlan
-> aware") Signed-off-by: Antonio Quartulli <a@unstable.cc>
+> It is easier to grep and it does not need to be recomputed
+> at runtime each time.
+> 
+> Reported-by: Joe Perches <joe@perches.com>
+> Signed-off-by: Antonio Quartulli <a@unstable.cc>
 > [sven@narfation.org: fix conflicts with current version]
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
+> v3:
+>  - workaround checkpatch error (over 80 chars) caused by __stringify
 > v2:
 >  - rebased patch
->  - added kernel-doc for new parameters
+>  - added new static strings in bat_v.c and bat_iv_ogm.c
 > 
-> Patch was resurrected from https://patchwork.open-mesh.org/patch/3427/
+> Patch was resurrected from https://patchwork.open-mesh.org/patch/3599/
 > 
 > I've requested an rebased version at
-> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-March/014636.html
+> https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-March/014637.html
 > but done it myself because it was rather trivial.
 > ---
->  net/batman-adv/distributed-arp-table.c | 17 ++++++++++-------
->  1 file changed, 10 insertions(+), 7 deletions(-)
+>  net/batman-adv/bat_iv_ogm.c            | 8 +++-----
+>  net/batman-adv/bat_v.c                 | 9 ++++-----
+>  net/batman-adv/bridge_loop_avoidance.c | 7 +++----
+>  net/batman-adv/distributed-arp-table.c | 4 ++--
+>  net/batman-adv/translation-table.c     | 9 ++++-----
+>  5 files changed, 16 insertions(+), 21 deletions(-)
 
-Applied in revision 22d98bd.
+Applied in revision f7be1df.
 
 Thanks,
 Marek
 
---nextPart2604592.JYpf5E4J5x
+--nextPart52158209.sr77xQc4Tj
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -63,14 +71,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXC8noAAoJEFNVTo/uthzAEs4IAIMEO8zwgaosJxJAsd6yv76s
-x297iXtxWE/+YkOrDtpi1dDjwOhuB4eRczhvZ98hICDKqGJ0m9hf8LAdtSVr7IkV
-ami4TV74bEP970HZ/2HBXVweEeyxvNNxg45zok9E96IlcuDJmaN0Ioz2g+Uid/rV
-8KqPDM4XWBaeNK8HO91Ib6cKjAeXD6QWw3EuchxRT+wD9LFTXBRwWY/ml4/bSn3W
-TRV9bMMPMz4+bmsVqdl9s7mGpt1SrMuaXcr7pl8UkkWGuzX3sWB8mCRZxq2jAzaB
-7jez3iAHuWE4yUpcTU1fkd8H6Qv6aYoxxrA9/haAOyMBY8Ucd7NiWB8lf80hgoE=
-=jLUO
+iQEcBAABCAAGBQJXC8r2AAoJEFNVTo/uthzAvY8H/0YnvtmYy6NPWYTQBx0HxEqO
+DpSXU4DwFiKK+574R+0SmBuv8KUWNAwjJD6CIGaewkHJa2g4v1gYGKyzRmiNEYBY
+JGrCL1oMsoHShQ6be/+z+unIdnFd3R5f1/uVee09YyRnHrGk4Z4WjTfjEcogdWnj
+gWfXJT4IJBXQjt8Kxe9yxCFQv9VM2QTLnp7w5hlduw8ASRv8PooAexQUOJo8zEDy
+qoML+pLffHseeiETDsE8GFQgEVtaSY0YZZ5K9hQXwTiXel7IlYKN6g64c+spMn1I
+G6Ff++pYXIuub/bBr8cX6ohfLc5MGkXPwjh5itTYQLkLpmkQPKfh9hW5Nk0oVQs=
+=NgK6
 -----END PGP SIGNATURE-----
 
---nextPart2604592.JYpf5E4J5x--
+--nextPart52158209.sr77xQc4Tj--
 
