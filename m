@@ -1,16 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 11 Apr 2016 12:55:30 +0200
-Message-ID: <2511766.I40HQ78nvx@bentobox>
-In-Reply-To: <8025409.qnq58rYqdb@voltaire>
-References: <1457190564-11419-1-git-send-email-sven@narfation.org>
- <1457190564-11419-4-git-send-email-sven@narfation.org>
- <8025409.qnq58rYqdb@voltaire>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4260180.ZIomt6PpI3";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 4/9] batman-adv: Use kref_get for
-	hard_iface subfunctions
+Date: Mon, 11 Apr 2016 13:06:40 +0200
+Message-Id: <1460372800-26049-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Use kref_get for hard_iface
+	subfunctions
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,51 +14,162 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart4260180.ZIomt6PpI3
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+The callers of the functions using batadv_hard_iface objects already make
+sure that they hold a valid reference. The subfunctions don't have
+to check whether the reference counter is > 0 because this was checked by
+the callers.
 
-On Monday 11 April 2016 18:13:09 Marek Lindner wrote:
-> On Saturday, March 05, 2016 16:09:19 Sven Eckelmann wrote:
-> > The callers of the functions using batadv_hard_iface objects have to make
-> > sure that they already hold a valid reference. The subfunctions don't have
-> > to check whether the reference counter is > 0 because this was already
-> > checked by the callers.
-> 
-> You say the callers have to make sure that valid references exist but do they 
-> or is this coming later or .. ?
+The kref_get function instead WARNs (with debug information) when the
+reference counter would still be 0. This makes a bug in batman-adv better
+visible because kref_get_unless_zero would have ignored this problem.
 
-This was in
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+v2:
+ - Fix imbalance in batadv_iv_ogm_aggregate_new
+ - Adjust commit message
 
-[PATCH 1/9] batman-adv: Check hard_iface refcnt before calling function
-[PATCH 2/9] batman-adv: Check hard_iface refcnt when receiving skb
+ net/batman-adv/bat_iv_ogm.c     | 14 +++-----------
+ net/batman-adv/hard-interface.c |  7 +++----
+ net/batman-adv/originator.c     | 30 +++++++-----------------------
+ 3 files changed, 13 insertions(+), 38 deletions(-)
 
-Kind regards,
-	Sven
---nextPart4260180.ZIomt6PpI3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJXC4KiAAoJEF2HCgfBJntGOtEQAIda/9CKhyk5Kr83SvvQqgRX
-yeeWwspD+mp6p8UmAnDqCNZNbKYDKFZYMEO69kzD4YwSXawo/C0i+lxVb9f5eUTw
-EObfLUmqW7WFBICGD8tW7D1mZk9E9X1LVJtv+nF6C2TBLGnsdMNDvY12WDTm0wZg
-h4/SkVRrr9DFM5emEaqlJMzwcJSq06B3JtbE45Y5oeWBOn+ejJnnAyx+7BDr21z2
-V3ZEnSqpV3aqKjqubkLSVAIv1hdvuzK/C0mJImW4PIN+HqJcSo5ZUR0YFo4mFLMF
-dELTAM048c2dCObSTC66cUHKBZSA4QbNFbMzNP3dEAxctQMoZuV4DBIsrkT8AFdl
-Omt7qZecah8S4Rwtyjrkgz4WPrkzu5oG5ZDRCIPo1ISQ2+G2+ivku7Pt0dV1rQBi
-BvpxIDWcyRKVgxTpWCzrElsH5IoAGvJhI9St8/f6UjU/CWMM1mDXZXoNKJe3q8u+
-X6OdIpoUPiOlnl0gevJyYU4b7R0e72pGp+R1JuKqBVfKHUHARnj6qUuEVzNsFKQt
-ZCHJHiSW0OEe40iXAsNKE6WiIfKb0O9k+ZfH5PKc9cM6OHSivJlJSR+ab3MEfMTK
-sr0rGLdal4NQFVxs+/JEmhR4ivuQrgCn5nLBFejyAzOc6x3dqZb/3jSSdcerzZrc
-xWNCooSU09hRcb5pzVw4
-=jYxu
------END PGP SIGNATURE-----
-
---nextPart4260180.ZIomt6PpI3--
-
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index b390ff9..395019f 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -679,18 +679,12 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 	unsigned char *skb_buff;
+ 	unsigned int skb_size;
+ 
+-	if (!kref_get_unless_zero(&if_incoming->refcount))
+-		return;
+-
+-	if (!kref_get_unless_zero(&if_outgoing->refcount))
+-		goto out_free_incoming;
+-
+ 	/* own packet should always be scheduled */
+ 	if (!own_packet) {
+ 		if (!batadv_atomic_dec_not_zero(&bat_priv->batman_queue_left)) {
+ 			batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+ 				   "batman packet queue full\n");
+-			goto out_free_outgoing;
++			return;
+ 		}
+ 	}
+ 
+@@ -716,6 +710,8 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 	forw_packet_aggr->packet_len = packet_len;
+ 	memcpy(skb_buff, packet_buff, packet_len);
+ 
++	kref_get(&if_incoming->refcount);
++	kref_get(&if_outgoing->refcount);
+ 	forw_packet_aggr->own = own_packet;
+ 	forw_packet_aggr->if_incoming = if_incoming;
+ 	forw_packet_aggr->if_outgoing = if_outgoing;
+@@ -745,10 +741,6 @@ out_free_forw_packet:
+ out_nomem:
+ 	if (!own_packet)
+ 		atomic_inc(&bat_priv->batman_queue_left);
+-out_free_outgoing:
+-	batadv_hardif_put(if_outgoing);
+-out_free_incoming:
+-	batadv_hardif_put(if_incoming);
+ }
+ 
+ /* aggregate a new packet into the existing ogm packet */
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 22cc5ec..1ef180a 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -236,8 +236,8 @@ static void batadv_primary_if_select(struct batadv_priv *bat_priv,
+ 
+ 	ASSERT_RTNL();
+ 
+-	if (new_hard_iface && !kref_get_unless_zero(&new_hard_iface->refcount))
+-		new_hard_iface = NULL;
++	if (new_hard_iface)
++		kref_get(&new_hard_iface->refcount);
+ 
+ 	curr_hard_iface = rcu_dereference_protected(bat_priv->primary_if, 1);
+ 	rcu_assign_pointer(bat_priv->primary_if, new_hard_iface);
+@@ -464,8 +464,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
+ 		goto out;
+ 
+-	if (!kref_get_unless_zero(&hard_iface->refcount))
+-		goto out;
++	kref_get(&hard_iface->refcount);
+ 
+ 	soft_iface = dev_get_by_name(&init_net, iface_name);
+ 
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 275de41..0f50c43 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -381,12 +381,8 @@ batadv_orig_ifinfo_new(struct batadv_orig_node *orig_node,
+ 	if (!orig_ifinfo)
+ 		goto out;
+ 
+-	if (if_outgoing != BATADV_IF_DEFAULT &&
+-	    !kref_get_unless_zero(&if_outgoing->refcount)) {
+-		kfree(orig_ifinfo);
+-		orig_ifinfo = NULL;
+-		goto out;
+-	}
++	if (if_outgoing != BATADV_IF_DEFAULT)
++		kref_get(&if_outgoing->refcount);
+ 
+ 	reset_time = jiffies - 1;
+ 	reset_time -= msecs_to_jiffies(BATADV_RESET_PROTECTION_MS);
+@@ -462,11 +458,8 @@ batadv_neigh_ifinfo_new(struct batadv_neigh_node *neigh,
+ 	if (!neigh_ifinfo)
+ 		goto out;
+ 
+-	if (if_outgoing && !kref_get_unless_zero(&if_outgoing->refcount)) {
+-		kfree(neigh_ifinfo);
+-		neigh_ifinfo = NULL;
+-		goto out;
+-	}
++	if (if_outgoing)
++		kref_get(&if_outgoing->refcount);
+ 
+ 	INIT_HLIST_NODE(&neigh_ifinfo->list);
+ 	kref_init(&neigh_ifinfo->refcount);
+@@ -539,15 +532,11 @@ batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
+ 	if (hardif_neigh)
+ 		goto out;
+ 
+-	if (!kref_get_unless_zero(&hard_iface->refcount))
+-		goto out;
+-
+ 	hardif_neigh = kzalloc(sizeof(*hardif_neigh), GFP_ATOMIC);
+-	if (!hardif_neigh) {
+-		batadv_hardif_put(hard_iface);
++	if (!hardif_neigh)
+ 		goto out;
+-	}
+ 
++	kref_get(&hard_iface->refcount);
+ 	INIT_HLIST_NODE(&hardif_neigh->list);
+ 	ether_addr_copy(hardif_neigh->addr, neigh_addr);
+ 	hardif_neigh->if_incoming = hard_iface;
+@@ -650,16 +639,11 @@ batadv_neigh_node_new(struct batadv_orig_node *orig_node,
+ 	if (!neigh_node)
+ 		goto out;
+ 
+-	if (!kref_get_unless_zero(&hard_iface->refcount)) {
+-		kfree(neigh_node);
+-		neigh_node = NULL;
+-		goto out;
+-	}
+-
+ 	INIT_HLIST_NODE(&neigh_node->list);
+ 	INIT_HLIST_HEAD(&neigh_node->ifinfo_list);
+ 	spin_lock_init(&neigh_node->ifinfo_lock);
+ 
++	kref_get(&hard_iface->refcount);
+ 	ether_addr_copy(neigh_node->addr, neigh_addr);
+ 	neigh_node->if_incoming = hard_iface;
+ 	neigh_node->orig_node = orig_node;
