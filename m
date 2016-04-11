@@ -1,9 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 11 Apr 2016 13:06:40 +0200
-Message-Id: <1460372800-26049-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Use kref_get for hard_iface
-	subfunctions
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 11 Apr 2016 21:04:41 +0800
+Message-ID: <4234386.Ftqvtf5DcC@voltaire>
+In-Reply-To: <1460372800-26049-1-git-send-email-sven@narfation.org>
+References: <1460372800-26049-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2493516.5g4QqtNQv7";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Use kref_get for
+	hard_iface subfunctions
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,161 +20,52 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The callers of the functions using batadv_hard_iface objects already make
-sure that they hold a valid reference. The subfunctions don't have
-to check whether the reference counter is > 0 because this was checked by
-the callers.
+--nextPart2493516.5g4QqtNQv7
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-The kref_get function instead WARNs (with debug information) when the
-reference counter would still be 0. This makes a bug in batman-adv better
-visible because kref_get_unless_zero would have ignored this problem.
+On Monday, April 11, 2016 13:06:40 Sven Eckelmann wrote:
+> The callers of the functions using batadv_hard_iface objects already make
+> sure that they hold a valid reference. The subfunctions don't have
+> to check whether the reference counter is > 0 because this was checked by
+> the callers.
+> 
+> The kref_get function instead WARNs (with debug information) when the
+> reference counter would still be 0. This makes a bug in batman-adv better
+> visible because kref_get_unless_zero would have ignored this problem.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> v2:
+>  - Fix imbalance in batadv_iv_ogm_aggregate_new
+>  - Adjust commit message
+> 
+>  net/batman-adv/bat_iv_ogm.c     | 14 +++-----------
+>  net/batman-adv/hard-interface.c |  7 +++----
+>  net/batman-adv/originator.c     | 30 +++++++-----------------------
+>  3 files changed, 13 insertions(+), 38 deletions(-)
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v2:
- - Fix imbalance in batadv_iv_ogm_aggregate_new
- - Adjust commit message
+Applied in revision 04614cb.
 
- net/batman-adv/bat_iv_ogm.c     | 14 +++-----------
- net/batman-adv/hard-interface.c |  7 +++----
- net/batman-adv/originator.c     | 30 +++++++-----------------------
- 3 files changed, 13 insertions(+), 38 deletions(-)
+Thanks,
+Marek
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index b390ff9..395019f 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -679,18 +679,12 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- 	unsigned char *skb_buff;
- 	unsigned int skb_size;
- 
--	if (!kref_get_unless_zero(&if_incoming->refcount))
--		return;
--
--	if (!kref_get_unless_zero(&if_outgoing->refcount))
--		goto out_free_incoming;
--
- 	/* own packet should always be scheduled */
- 	if (!own_packet) {
- 		if (!batadv_atomic_dec_not_zero(&bat_priv->batman_queue_left)) {
- 			batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
- 				   "batman packet queue full\n");
--			goto out_free_outgoing;
-+			return;
- 		}
- 	}
- 
-@@ -716,6 +710,8 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- 	forw_packet_aggr->packet_len = packet_len;
- 	memcpy(skb_buff, packet_buff, packet_len);
- 
-+	kref_get(&if_incoming->refcount);
-+	kref_get(&if_outgoing->refcount);
- 	forw_packet_aggr->own = own_packet;
- 	forw_packet_aggr->if_incoming = if_incoming;
- 	forw_packet_aggr->if_outgoing = if_outgoing;
-@@ -745,10 +741,6 @@ out_free_forw_packet:
- out_nomem:
- 	if (!own_packet)
- 		atomic_inc(&bat_priv->batman_queue_left);
--out_free_outgoing:
--	batadv_hardif_put(if_outgoing);
--out_free_incoming:
--	batadv_hardif_put(if_incoming);
- }
- 
- /* aggregate a new packet into the existing ogm packet */
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 22cc5ec..1ef180a 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -236,8 +236,8 @@ static void batadv_primary_if_select(struct batadv_priv *bat_priv,
- 
- 	ASSERT_RTNL();
- 
--	if (new_hard_iface && !kref_get_unless_zero(&new_hard_iface->refcount))
--		new_hard_iface = NULL;
-+	if (new_hard_iface)
-+		kref_get(&new_hard_iface->refcount);
- 
- 	curr_hard_iface = rcu_dereference_protected(bat_priv->primary_if, 1);
- 	rcu_assign_pointer(bat_priv->primary_if, new_hard_iface);
-@@ -464,8 +464,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
- 		goto out;
- 
--	if (!kref_get_unless_zero(&hard_iface->refcount))
--		goto out;
-+	kref_get(&hard_iface->refcount);
- 
- 	soft_iface = dev_get_by_name(&init_net, iface_name);
- 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 275de41..0f50c43 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -381,12 +381,8 @@ batadv_orig_ifinfo_new(struct batadv_orig_node *orig_node,
- 	if (!orig_ifinfo)
- 		goto out;
- 
--	if (if_outgoing != BATADV_IF_DEFAULT &&
--	    !kref_get_unless_zero(&if_outgoing->refcount)) {
--		kfree(orig_ifinfo);
--		orig_ifinfo = NULL;
--		goto out;
--	}
-+	if (if_outgoing != BATADV_IF_DEFAULT)
-+		kref_get(&if_outgoing->refcount);
- 
- 	reset_time = jiffies - 1;
- 	reset_time -= msecs_to_jiffies(BATADV_RESET_PROTECTION_MS);
-@@ -462,11 +458,8 @@ batadv_neigh_ifinfo_new(struct batadv_neigh_node *neigh,
- 	if (!neigh_ifinfo)
- 		goto out;
- 
--	if (if_outgoing && !kref_get_unless_zero(&if_outgoing->refcount)) {
--		kfree(neigh_ifinfo);
--		neigh_ifinfo = NULL;
--		goto out;
--	}
-+	if (if_outgoing)
-+		kref_get(&if_outgoing->refcount);
- 
- 	INIT_HLIST_NODE(&neigh_ifinfo->list);
- 	kref_init(&neigh_ifinfo->refcount);
-@@ -539,15 +532,11 @@ batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
- 	if (hardif_neigh)
- 		goto out;
- 
--	if (!kref_get_unless_zero(&hard_iface->refcount))
--		goto out;
--
- 	hardif_neigh = kzalloc(sizeof(*hardif_neigh), GFP_ATOMIC);
--	if (!hardif_neigh) {
--		batadv_hardif_put(hard_iface);
-+	if (!hardif_neigh)
- 		goto out;
--	}
- 
-+	kref_get(&hard_iface->refcount);
- 	INIT_HLIST_NODE(&hardif_neigh->list);
- 	ether_addr_copy(hardif_neigh->addr, neigh_addr);
- 	hardif_neigh->if_incoming = hard_iface;
-@@ -650,16 +639,11 @@ batadv_neigh_node_new(struct batadv_orig_node *orig_node,
- 	if (!neigh_node)
- 		goto out;
- 
--	if (!kref_get_unless_zero(&hard_iface->refcount)) {
--		kfree(neigh_node);
--		neigh_node = NULL;
--		goto out;
--	}
--
- 	INIT_HLIST_NODE(&neigh_node->list);
- 	INIT_HLIST_HEAD(&neigh_node->ifinfo_list);
- 	spin_lock_init(&neigh_node->ifinfo_lock);
- 
-+	kref_get(&hard_iface->refcount);
- 	ether_addr_copy(neigh_node->addr, neigh_addr);
- 	neigh_node->if_incoming = hard_iface;
- 	neigh_node->orig_node = orig_node;
+--nextPart2493516.5g4QqtNQv7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJXC6DpAAoJEFNVTo/uthzAKZQH/RIvERPYMPD1Q+1PzNpwr1hY
+gjV6tK1GQgIWx3hNZjCScEmuBvPhNdTpJcpvokGj5Ps/sR25H5fSAhDc8hivNGbo
+LebujB4QaU0C5J+9Z9hliD7oxcX2tVChpuM8ef0OwIJWY89Ia5P6DKeyPF+xNjOa
+k+biN+s1b7//v3vSL0PtO7fzU80Nc4wE8evIYySTNceL7mnocGjQkWKhrhuj83pG
+bHAlwsccnGv+CwY0egkfq0QVXpIyVYCquiKiOWH797QgdTZf4Qy9UzG1TJcUGU/O
+A3xM4yU1el3++gzbBt7/D4s/zsArzxt2R/BrobewhpERuOdPmkHgv4CR95tTMfI=
+=XZr9
+-----END PGP SIGNATURE-----
+
+--nextPart2493516.5g4QqtNQv7--
+
