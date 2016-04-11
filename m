@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 11 Apr 2016 18:25:55 +0800
-Message-ID: <4712273.JC3yrz0kFn@voltaire>
-In-Reply-To: <1457190564-11419-7-git-send-email-sven@narfation.org>
+Date: Mon, 11 Apr 2016 18:29:32 +0800
+Message-ID: <2627966.FG0dHkT4cf@voltaire>
+In-Reply-To: <1457190564-11419-8-git-send-email-sven@narfation.org>
 References: <1457190564-11419-1-git-send-email-sven@narfation.org>
- <1457190564-11419-7-git-send-email-sven@narfation.org>
+ <1457190564-11419-8-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1695566.mza4IrFzO8";
+Content-Type: multipart/signed; boundary="nextPart2297581.mjlPZUE8pd";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 7/9] batman-adv: Use kref_get for
-	batadv_gw_select
+Subject: Re: [B.A.T.M.A.N.] [PATCH 8/9] batman-adv: Use kref_get for
+	batadv_gw_node_add
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,14 +21,14 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1695566.mza4IrFzO8
+--nextPart2297581.mjlPZUE8pd
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday, March 05, 2016 16:09:22 Sven Eckelmann wrote:
-> batadv_gw_select requires that the caller already has a valid reference for
-> new_gw_node. It is therefore not possible that it has an reference counter
-> of 0 and was still given to this function
+On Saturday, March 05, 2016 16:09:23 Sven Eckelmann wrote:
+> batadv_gw_node_add requires that the caller already has a valid reference
+> for orig_node. It is therefore not possible that it has an reference
+> counter of 0 and was still given to this function
 > 
 > The kref_get function instead WARNs (with debug information) when the
 > reference counter would still be 0. This makes a bug in batman-adv better
@@ -36,15 +36,15 @@ On Saturday, March 05, 2016 16:09:22 Sven Eckelmann wrote:
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/gateway_client.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  net/batman-adv/gateway_client.c | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
 
-Applied in revision e698321.
+Applied in revision 25a303d.
 
 Thanks,
 Marek
 
---nextPart1695566.mza4IrFzO8
+--nextPart2297581.mjlPZUE8pd
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -52,14 +52,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXC3uzAAoJEFNVTo/uthzAZ6sH/02t4GZYaF0pakYsI62EYsKc
-Ay/mI5T20DnlYZtoNF+o/JV9ZiNzVGrFHdXd/E98B6mvvLIiO2Zz5s3iBPepOKd2
-DiZozUMmtc6dKEZV7zb6D4XxejMa7/TW6qqjt59TZ5KvTSnTbOoCwjolMVakhJCR
-eAmkgMhp0UbFjEEP5TWBjuaGtEwXM+Co/51acq3xY8Ov2UXwBSKFdlW9+ne1oG0d
-n/tjWBwzBbx5s8pushywGdoHkoNPn1pO4Ve69QBdb+wqv42BFptewPgW8mdz/Fl9
-wSqU7+rAfFxEEGmCd8Q9IKfP0War1j5TiLgKkdA2GEdQs65Nph+e1CKlTeLxZL4=
-=BXka
+iQEcBAABCAAGBQJXC3yMAAoJEFNVTo/uthzAYiIH/3EXZx5XGXW7s8gwDFmRbqF8
+MsbyORT5j3RFqi0emll80b4nZrornpaVr6HUcxW2UjJln0i9FIY2zkp9V6775mF1
+oFX8Z7P7Z9KTYLueSSAUa7K0ElFq03OP6jsDLpt2wPtVaFS57q6vt71VzhNF77UK
+vFaPJJCexJKPHuFbRwBs4jaz/UjWx66bKjAclnAK+S2NeC/EQU0W2swTEEy5LQss
++H9wZ0pOmacKVtSbu3BfqBQ3juYVsLOnKtvQoGPRGOVBLBPa+juRnWrC619v/AwS
+3ieosvCzFeQKWo84F29Uu9t2ONOqYwqQaVthjrxlB7/gpHXlAZItTQLGqeH2C4g=
+=jEmL
 -----END PGP SIGNATURE-----
 
---nextPart1695566.mza4IrFzO8--
+--nextPart2297581.mjlPZUE8pd--
 
