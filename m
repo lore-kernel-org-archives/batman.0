@@ -1,14 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 13 Apr 2016 14:22:09 +0200
-Message-ID: <2095033.CaLRngY22Z@bentobox>
-In-Reply-To: <1716190.DTWDRvZav4@prime>
-References: <56F5AF2F.6060904@t-online.de> <3605600.IEJkB4EzUh@prime>
- <1716190.DTWDRvZav4@prime>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5218805.9Zfh48isDh";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] No rebroadcast on mesh links
+Return-Path: <a@unstable.cc>
+From: Antonio Quartulli <a@unstable.cc>
+Date: Thu, 14 Apr 2016 03:34:47 +0800
+Message-Id: <1460576087-21474-1-git-send-email-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: B.A.T.M.A.N V - make sure iface
+	is reactivated upon NETDEV_UP event
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,44 +14,90 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart5218805.9Zfh48isDh
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+At the moment there is no explicit reactivation of an hard-interface
+upon NETDEV_UP event. In case of B.A.T.M.A.N. IV the interface is
+reactivated as soon as the next OGM is scheduled for sending, but this
+mechanism does not work with B.A.T.M.A.N. V. The latter does not rely
+on the same scheduling mechanism as its predecessor and for this reason
+the hard-interface remains deactivated forever after being brought down
+once.
 
-On Wednesday 13 April 2016 14:17:41 Simon Wunderlich wrote:
-[...]
-> We had a longer phone call yesterday with Marek, Antonio, Linus, Sven and 
-> myself discussing this issue and how to move forward.
+This patch fixes the reactivation mechanism by adding a new routing API
+which explicitly allows each algorithm to perform any needed operation
+upon interface re-activation.
 
-This is not correct. I was not in the call for most of the time and left 
-before a decision was made and before any progress towards a decision was 
-made.
+Such API is optional and is implemented by B.A.T.M.A.N. V only and it
+just takes care of setting the iface status to ACTIVE
 
-Kind regards,
-	Sven
---nextPart5218805.9Zfh48isDh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
+---
+ net/batman-adv/bat_v.c          | 12 ++++++++++++
+ net/batman-adv/hard-interface.c |  3 +++
+ net/batman-adv/types.h          |  1 +
+ 3 files changed, 16 insertions(+)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJXDjnxAAoJEF2HCgfBJntGgtcP/i51s1kpYaV2yBIjwcqnCqJO
-I401LxYief3SycSWxHyhO7IpLxXhgIF9cuVW/5phrdnDxPlymcY0HDLxASja6z1Z
-mxZut5bOOKGjKfG5PBH7yDsDfx+M9f5kPYnL/FUvE4akdy84jBOqlddMe2qmk9OL
-X4TyLODYHOEHDsNrqvbGpVxhEyhLv730j7CwNxZGzMeldu4G++axwF3JA47IwPqu
-sl0A5vIGfvvw/8eveWmEu3oXifeVczEGJBDO7wJZwokroHWDl8v3LMIc3eRuV0D6
-ugJp5sQN7IcV+6u3ftziYMX5WtPBmBG3zuXA3K+drIW54S/fELt0tMAREIjq371e
-/PzX4SlF4kttD0MJPi1wmHYsQfCJ6ts5QayK7L7UXT0YOJjcSKzS9Y9H6w68tJgM
-9kTg2gMx1AdqWs52ZtTe6Be01iwDXdwaG9/J0Zi2DUcMcXhtVpooLrbaX5XUO8Qg
-St4n9aqgOF6OQamX0nFF3K+2p1GdSnGh1IVvofecB5wiH+nM/BOoJjzJy9nc+E+d
-I6+E3N+bRkqdW8wMhw2bRkKexqKj1GF5e74eTAWSAjIXktytHYWt+2ukgzfXuzwc
-OCfCu3naJgTOGrRGK9OevsfphOPTUVRvc5iAlXdAOLLgQ3940fdGQVFatB2aP1wX
-nyoMAtJLV9Uxky6goyl1
-=Vh9s
------END PGP SIGNATURE-----
-
---nextPart5218805.9Zfh48isDh--
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 3315b9a..4026f19 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -32,10 +32,21 @@
+ 
+ #include "bat_v_elp.h"
+ #include "bat_v_ogm.h"
++#include "hard-interface.h"
+ #include "hash.h"
+ #include "originator.h"
+ #include "packet.h"
+ 
++static void batadv_v_iface_activate(struct batadv_hard_iface *hard_iface)
++{
++	/* B.A.T.M.A.N. V does not use any queuing mechanism, therefore it can
++	 * set the interface as ACTIVE right away, without any risk of race
++	 * condition
++	 */
++	if (hard_iface->if_status == BATADV_IF_TO_BE_ACTIVATED)
++		hard_iface->if_status = BATADV_IF_ACTIVE;
++}
++
+ static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
+ {
+ 	int ret;
+@@ -274,6 +285,7 @@ static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *neigh1,
+ 
+ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+ 	.name = "BATMAN_V",
++	.bat_iface_activate = batadv_v_iface_activate,
+ 	.bat_iface_enable = batadv_v_iface_enable,
+ 	.bat_iface_disable = batadv_v_iface_disable,
+ 	.bat_iface_update_mac = batadv_v_iface_update_mac,
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index c61d5b0..0a7deaf 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -407,6 +407,9 @@ batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
+ 
+ 	batadv_update_min_mtu(hard_iface->soft_iface);
+ 
++	if (bat_priv->bat_algo_ops->bat_iface_activate)
++		bat_priv->bat_algo_ops->bat_iface_activate(hard_iface);
++
+ out:
+ 	if (primary_if)
+ 		batadv_hardif_put(primary_if);
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 9abfb3e..316af66 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1277,6 +1277,7 @@ struct batadv_forw_packet {
+ struct batadv_algo_ops {
+ 	struct hlist_node list;
+ 	char *name;
++	void (*bat_iface_activate)(struct batadv_hard_iface *hard_iface);
+ 	int (*bat_iface_enable)(struct batadv_hard_iface *hard_iface);
+ 	void (*bat_iface_disable)(struct batadv_hard_iface *hard_iface);
+ 	void (*bat_iface_update_mac)(struct batadv_hard_iface *hard_iface);
+-- 
+2.8.1
 
