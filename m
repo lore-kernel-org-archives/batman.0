@@ -1,14 +1,14 @@
-Return-Path: <andrew@lunn.ch>
-Date: Wed, 13 Apr 2016 14:14:16 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160413121416.GA22733@lunn.ch>
-References: <20160412204259.GK29895@lunn.ch>
- <2242031.raF8ugmCc9@prime>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 13 Apr 2016 14:17:41 +0200
+Message-ID: <1716190.DTWDRvZav4@prime>
+In-Reply-To: <3605600.IEJkB4EzUh@prime>
+References: <56F5AF2F.6060904@t-online.de>
+ <20160330135842.GA19985@r2d2.s.lihas.de> <3605600.IEJkB4EzUh@prime>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2242031.raF8ugmCc9@prime>
-Subject: Re: [B.A.T.M.A.N.] skb->priority and fragments
+Content-Type: multipart/signed; boundary="nextPart2559810.qZ2jKbem2r";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] No rebroadcast on mesh links
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,86 +18,84 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wed, Apr 13, 2016 at 01:11:12PM +0200, Simon Wunderlich wrote:
-> Hi Andrew,
+--nextPart2559810.qZ2jKbem2r
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
+
+On Thursday 31 March 2016 14:11:19 Simon Wunderlich wrote:
+> [...]
 > 
-> On Tuesday 12 April 2016 22:42:59 Andrew Lunn wrote:
-> > Hi Folks
-> > 
-> > Does anybody remember the history for the follow and can explain why
-> > the code is as it is?
-> > 
-> > The soft interface transmit function, batadv_interface_tx() calls
-> > batadv_skb_set_priority(skb, 0) to set the skb->priority based on the
-> > TOS bits or 801.p.
-> > 
-> > If the packet needs to be fragmented because of MTU issues,
-> > batadv_frag_create() is used to create the fragments. It overwrites
-> > the skb->priority in the original skb to TC_PRIO_CONTROL, and leaves
-> > the fragment skb with the default priority.
-> > 
-> > This seems a bit odd to me. I would of expected the priority to of
-> > been copied from the original into the fragment.
-
-Hi Simon
-
-> I think this part could be improved. Right now, if I remember correctly, we 
-> set TC_PRIO_CONTROL by default and set another priority if we can parse the 
-> header (batadv_skb_set_priority()).
-
-Yes, that is what i thought the intention was. The implementation is a
-bit different.
-
-> There are two cases:
+> 1.) sysfs flags (as in Linus original patch, or similar):
 > 
-> 1.) On the original sender, both fragments could adopt the priority as you 
-> suggest. The code probably doesn't take care of that yet, so that could be 
-> fixed.
+>  + can be integrated fast
+>  + is already deployed and tested
+>  - requires manual work by the admin, no automatism
+>  - we can't expect that other VPNs/subsystems/etc will create automatisms to
+> specifically support batman-adv
+>  - requires us to maintain a flag for a special userbase/use case
+> 
+> 2.) TRANSITIVE flag as proposed by Linus
+> 
+>  + outside of batman-adv (no maintenance work)
+>  + can be set by the user through sysfs, similar to settings of batman-adv
+>  + semi-automation possible: Other software like VPNs, or network drivers
+> could set this flag without specifically need to integrate with batman-adv
+> (not sure if this would ever happen though)
+>  - will take some time to be adopted: first it goes into the Linux kernel,
+> OpenWRT will have it when it updates to the new kernel. That could easily be
+> 1-2 years
+>  - requires more work with on other components, don't know if the various
+> upstream projects will want that
+>  - linux-net adoption unclear (but there are already ~18 flags, why not have
+> one more)
+>  - Personally, I don't like the name TRANSITIVE. What we really want to say
+> is whether we expect all other nodes in a broadcast domain to receive
+> broadcasts sent by anyone. Maybe we could use a more clear/easier/common
+> name?
+> 
 
-I will cook up a patch for this.
- 
-> 2.) On routers on the way, the priority could only be set based on the first 
-> fragment, since the second fragment will not have a valid header to parse. And 
-> unless we remember the priority from the first fragment, we have no way to 
-> know to which priority we should set the second fragment.
+short heads up here:
 
-I don't think remembering works. It looks like it fragments from the
-tail towards the head. So we are not going to receive the IP header
-until we get the last fragment.
+We had a longer phone call yesterday with Marek, Antonio, Linus, Sven and 
+myself discussing this issue and how to move forward.
 
-> I believe case 1 can be fixed easily, for case 2 I don't have an idea right 
-> now. :)
+We agreed that the sysfs variant should be our last resort since we don't want 
+to expose too many "tuning" options in batman-adv as we already discussed in 
+this thread.
 
-There is one reasonable option i can think
-of. batadv_skb_set_priority() extracts three bits of priority
-information, either from the TOS bits, or the 801.q header.
+Instead, we want to try getting the TRANSITIVE flag into the kernel, which 
+would not only leave the tuning outside of batman-adv but also enables other 
+protocols and applications to do the right settings. Linus agreed to prepare a 
+patch for that, and we will help pushing it.
 
-The fragment header is:
+Let's see how that goes. :)
 
-struct batadv_frag_packet {
-        u8     packet_type;
-        u8     version;  /* batman version field */
-        u8     ttl;
-#if defined(__BIG_ENDIAN_BITFIELD)
-        u8     no:4;
-        u8     reserved:4;
-#elif defined(__LITTLE_ENDIAN_BITFIELD)
-        u8     reserved:4;
-	u8     no:4;
-#else
-#error "unknown bitfield endianness"
-#endif
-        u8     dest[ETH_ALEN];
-        u8     orig[ETH_ALEN];
-        __be16 seqno;
-	__be16 total_size;
-};
+Cheers,
+    Simon
+--nextPart2559810.qZ2jKbem2r
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-Place the priority information into 3 of the 4 reserved bits. The
-receiver can then set the skb->priority of the fragment before passing
-it to the hard interface.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-   Andrew
+iQIcBAABCgAGBQJXDjjlAAoJEKEr45hCkp6hiWMP/3e6woYsftcj3dOoNSxncFsp
+ypq9w7WvXWmeKPSzFF5wT9oWSO0z0MiqgysugxpV52jRmxNgZAdvMrQbV5qDRPk8
+NO/31OYWQh/MJgq+bKaLm2HmHSkKGwtY1CjbalObkTs9nXAiOoKpOkQvxrHvOhSZ
+/JLb3lqNSgeEqdElU7Neg93MYMSKYH91CE8PtCOF8HNhEq/HQS2Q7KoQKCNyoOKn
+JvJ/qilHRp/gb+GZaRoKkjxjdv0Ujfz6mOxYQJdZQYkWLZPrPztryeoLrRYDJNd9
+x6KZvuvX1cBe3B5MBB67u2vzbs65Tsp+I3Wit5ZXniyXr653UoGovnrvuMMKLTuV
+ibnpOHE1SGCTnRL6Neid8Mm6kubof3RHpZsbzdVJ6FsbcEUZ9gr8sg7MtdIJdv0j
+fCVqtc5mkw87aRGGn1mwDr87v9uuP4a6XbeBwmwK6o6wv4zF4w9UouG2B8N74lfP
+Ew9rEnHw0zwsgac8xrLl0RXjUAQAg51rjfSOKPbwjwSbhjCSU5Tk96aGtnocdObO
+ISp7SEQq/D4yvCJga6FQ4fY0jgDYAxmTB0pogfA2pZMNy3ZMwWDCQRdth9PZiYED
+nj2dRrhPlENksSflfDNAdU+JvvHwzEJ9NjM/Zz3bUTOgmWeftuabpJDr4DTbPiJI
+zThdb6gzxfZ9/N3U7ubb
+=MD4Y
+-----END PGP SIGNATURE-----
+
+--nextPart2559810.qZ2jKbem2r--
+
