@@ -1,9 +1,14 @@
-Return-Path: <a@unstable.cc>
-From: Antonio Quartulli <a@unstable.cc>
-Date: Thu, 14 Apr 2016 03:34:47 +0800
-Message-Id: <1460576087-21474-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: B.A.T.M.A.N V - make sure iface
-	is reactivated upon NETDEV_UP event
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 13 Apr 2016 22:32:43 +0200
+Message-ID: <1891393.XZXRhtYPY0@sven-edge>
+In-Reply-To: <1460576087-21474-1-git-send-email-a@unstable.cc>
+References: <1460576087-21474-1-git-send-email-a@unstable.cc>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4523817.oArv4Ho8Am";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: B.A.T.M.A.N V - make sure
+	iface is reactivated upon NETDEV_UP event
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,88 +21,52 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <a@unstable.cc>
 
-At the moment there is no explicit reactivation of an hard-interface
-upon NETDEV_UP event. In case of B.A.T.M.A.N. IV the interface is
-reactivated as soon as the next OGM is scheduled for sending, but this
-mechanism does not work with B.A.T.M.A.N. V. The latter does not rely
-on the same scheduling mechanism as its predecessor and for this reason
-the hard-interface remains deactivated forever after being brought down
-once.
+--nextPart4523817.oArv4Ho8Am
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-This patch fixes the reactivation mechanism by adding a new routing API
-which explicitly allows each algorithm to perform any needed operation
-upon interface re-activation.
+On Thursday 14 April 2016 03:34:47 Antonio Quartulli wrote:
+[...]
+> diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+> index 9abfb3e..316af66 100644
+> --- a/net/batman-adv/types.h
+> +++ b/net/batman-adv/types.h
+> @@ -1277,6 +1277,7 @@ struct batadv_forw_packet {
+>  struct batadv_algo_ops {
+>  	struct hlist_node list;
+>  	char *name;
+> +	void (*bat_iface_activate)(struct batadv_hard_iface *hard_iface);
+>  	int (*bat_iface_enable)(struct batadv_hard_iface *hard_iface);
+>  	void (*bat_iface_disable)(struct batadv_hard_iface *hard_iface);
+>  	void (*bat_iface_update_mac)(struct batadv_hard_iface *hard_iface);
 
-Such API is optional and is implemented by B.A.T.M.A.N. V only and it
-just takes care of setting the iface status to ACTIVE
+kernel-doc is missing for @bat_iface_activate
 
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
----
- net/batman-adv/bat_v.c          | 12 ++++++++++++
- net/batman-adv/hard-interface.c |  3 +++
- net/batman-adv/types.h          |  1 +
- 3 files changed, 16 insertions(+)
+Kind regards,
+	Sven
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 3315b9a..4026f19 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -32,10 +32,21 @@
- 
- #include "bat_v_elp.h"
- #include "bat_v_ogm.h"
-+#include "hard-interface.h"
- #include "hash.h"
- #include "originator.h"
- #include "packet.h"
- 
-+static void batadv_v_iface_activate(struct batadv_hard_iface *hard_iface)
-+{
-+	/* B.A.T.M.A.N. V does not use any queuing mechanism, therefore it can
-+	 * set the interface as ACTIVE right away, without any risk of race
-+	 * condition
-+	 */
-+	if (hard_iface->if_status == BATADV_IF_TO_BE_ACTIVATED)
-+		hard_iface->if_status = BATADV_IF_ACTIVE;
-+}
-+
- static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
- {
- 	int ret;
-@@ -274,6 +285,7 @@ static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *neigh1,
- 
- static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.name = "BATMAN_V",
-+	.bat_iface_activate = batadv_v_iface_activate,
- 	.bat_iface_enable = batadv_v_iface_enable,
- 	.bat_iface_disable = batadv_v_iface_disable,
- 	.bat_iface_update_mac = batadv_v_iface_update_mac,
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index c61d5b0..0a7deaf 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -407,6 +407,9 @@ batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
- 
- 	batadv_update_min_mtu(hard_iface->soft_iface);
- 
-+	if (bat_priv->bat_algo_ops->bat_iface_activate)
-+		bat_priv->bat_algo_ops->bat_iface_activate(hard_iface);
-+
- out:
- 	if (primary_if)
- 		batadv_hardif_put(primary_if);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 9abfb3e..316af66 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1277,6 +1277,7 @@ struct batadv_forw_packet {
- struct batadv_algo_ops {
- 	struct hlist_node list;
- 	char *name;
-+	void (*bat_iface_activate)(struct batadv_hard_iface *hard_iface);
- 	int (*bat_iface_enable)(struct batadv_hard_iface *hard_iface);
- 	void (*bat_iface_disable)(struct batadv_hard_iface *hard_iface);
- 	void (*bat_iface_update_mac)(struct batadv_hard_iface *hard_iface);
--- 
-2.8.1
+--nextPart4523817.oArv4Ho8Am
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXDqzrAAoJEF2HCgfBJntGD/8P/RYylDVcoxkkgQWBDBq1zdvg
+F9wbMKidHblquIZrU7h/Dnt7sdDH7/31M95Ol5+26T00lVIGq3Nzh7Y4Y/faCpI5
+GmuOpBIOA1LuDvzHt7J0bY2u0SODxhgp5bsYQ+Ki9VJlFjKkuNv5nJhoHbgFvlaE
+yG3nK2aw3j1LTKUb2L38bamubKap5Rv4AC5f/4Uz3KF457kNzu/PQjcY4s8TWuos
++xlWokZ5+Ey1fp2tRZEQjZ+passqXh7BPwfuhb1ax3pkHMC1M3oovSlyzPqTP6bC
+UyXRqItqqyrwWRMBmTB3YFwUMHmYNvsjAk9ZWIpaRw86kGUiIu47XYjCcE3x8HIR
+CXMnS53pBV5PSQqKQ7nR7mtCVwqkU2iBYnIoO26U2gmEc/9UCoeULiady0F70ouF
+BRXHChe5luJ1a2NaMKXMCYM6UHb93sDnMXncRiMfCyacPUVZ1C/ikvmX0Ji/UnOB
+R4WQrVC0NkG51brlAA7sPvRsTQI9t/u8slAnRpGKInfGxFX7fujkC0577rxAzTFB
+vFHxJOOSqP1fnh8AjYDw6en0gVSGcZ7NRpu095aCXKowNnuxRIwyfM1OShGRLHCy
+5/vJ+JEMChITITkdAUVlR5SGQ2OPxHfPBgEeoPPbCrJZXMBYQJAjHbKOJB5+I71L
+LV2CB2vGysnH1LuY4i/5
+=VNqu
+-----END PGP SIGNATURE-----
+
+--nextPart4523817.oArv4Ho8Am--
 
