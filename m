@@ -1,9 +1,16 @@
 Return-Path: <a@unstable.cc>
+Date: Thu, 14 Apr 2016 09:39:15 +0800
 From: Antonio Quartulli <a@unstable.cc>
-Date: Thu, 14 Apr 2016 09:37:05 +0800
-Message-Id: <1460597825-22660-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: B.A.T.M.A.N V - make sure
-	iface is reactivated upon NETDEV_UP event
+Message-ID: <20160414013915.GA28908@prodigo.lan>
+References: <1460576087-21474-1-git-send-email-a@unstable.cc>
+ <1891393.XZXRhtYPY0@sven-edge>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="OgqxwSJOaUobr8KG"
+Content-Disposition: inline
+In-Reply-To: <1891393.XZXRhtYPY0@sven-edge>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: B.A.T.M.A.N V - make sure
+ iface is reactivated upon NETDEV_UP event
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,104 +20,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-At the moment there is no explicit reactivation of an hard-interface
-upon NETDEV_UP event. In case of B.A.T.M.A.N. IV the interface is
-reactivated as soon as the next OGM is scheduled for sending, but this
-mechanism does not work with B.A.T.M.A.N. V. The latter does not rely
-on the same scheduling mechanism as its predecessor and for this reason
-the hard-interface remains deactivated forever after being brought down
-once.
 
-This patch fixes the reactivation mechanism by adding a new routing API
-which explicitly allows each algorithm to perform any needed operation
-upon interface re-activation.
+--OgqxwSJOaUobr8KG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Such API is optional and is implemented by B.A.T.M.A.N. V only and it
-just takes care of setting the iface status to ACTIVE
+On Wed, Apr 13, 2016 at 10:32:43PM +0200, Sven Eckelmann wrote:
+> On Thursday 14 April 2016 03:34:47 Antonio Quartulli wrote:
+> [...]
+> > diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+> > index 9abfb3e..316af66 100644
+> > --- a/net/batman-adv/types.h
+> > +++ b/net/batman-adv/types.h
+> > @@ -1277,6 +1277,7 @@ struct batadv_forw_packet {
+> >  struct batadv_algo_ops {
+> >  	struct hlist_node list;
+> >  	char *name;
+> > +	void (*bat_iface_activate)(struct batadv_hard_iface *hard_iface);
+> >  	int (*bat_iface_enable)(struct batadv_hard_iface *hard_iface);
+> >  	void (*bat_iface_disable)(struct batadv_hard_iface *hard_iface);
+> >  	void (*bat_iface_update_mac)(struct batadv_hard_iface *hard_iface);
+>=20
+> kernel-doc is missing for @bat_iface_activate
 
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
----
+Thanks Sven, I sent v2 with the kerneldoc
 
-Changes since v1:
-- added kerneldoc for bat_iface_activate
+Cheers,
 
- net/batman-adv/bat_v.c          | 12 ++++++++++++
- net/batman-adv/hard-interface.c |  3 +++
- net/batman-adv/types.h          |  3 +++
- 3 files changed, 18 insertions(+)
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 3315b9a..4026f19 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -32,10 +32,21 @@
- 
- #include "bat_v_elp.h"
- #include "bat_v_ogm.h"
-+#include "hard-interface.h"
- #include "hash.h"
- #include "originator.h"
- #include "packet.h"
- 
-+static void batadv_v_iface_activate(struct batadv_hard_iface *hard_iface)
-+{
-+	/* B.A.T.M.A.N. V does not use any queuing mechanism, therefore it can
-+	 * set the interface as ACTIVE right away, without any risk of race
-+	 * condition
-+	 */
-+	if (hard_iface->if_status == BATADV_IF_TO_BE_ACTIVATED)
-+		hard_iface->if_status = BATADV_IF_ACTIVE;
-+}
-+
- static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
- {
- 	int ret;
-@@ -274,6 +285,7 @@ static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *neigh1,
- 
- static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.name = "BATMAN_V",
-+	.bat_iface_activate = batadv_v_iface_activate,
- 	.bat_iface_enable = batadv_v_iface_enable,
- 	.bat_iface_disable = batadv_v_iface_disable,
- 	.bat_iface_update_mac = batadv_v_iface_update_mac,
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index c61d5b0..0a7deaf 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -407,6 +407,9 @@ batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
- 
- 	batadv_update_min_mtu(hard_iface->soft_iface);
- 
-+	if (bat_priv->bat_algo_ops->bat_iface_activate)
-+		bat_priv->bat_algo_ops->bat_iface_activate(hard_iface);
-+
- out:
- 	if (primary_if)
- 		batadv_hardif_put(primary_if);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 9abfb3e..443e9b8 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1250,6 +1250,8 @@ struct batadv_forw_packet {
-  * struct batadv_algo_ops - mesh algorithm callbacks
-  * @list: list node for the batadv_algo_list
-  * @name: name of the algorithm
-+ * @bat_iface_activate: start routing mechanisms when hard-interface is brought
-+ *  up
-  * @bat_iface_enable: init routing info when hard-interface is enabled
-  * @bat_iface_disable: de-init routing info when hard-interface is disabled
-  * @bat_iface_update_mac: (re-)init mac addresses of the protocol information
-@@ -1277,6 +1279,7 @@ struct batadv_forw_packet {
- struct batadv_algo_ops {
- 	struct hlist_node list;
- 	char *name;
-+	void (*bat_iface_activate)(struct batadv_hard_iface *hard_iface);
- 	int (*bat_iface_enable)(struct batadv_hard_iface *hard_iface);
- 	void (*bat_iface_disable)(struct batadv_hard_iface *hard_iface);
- 	void (*bat_iface_update_mac)(struct batadv_hard_iface *hard_iface);
--- 
-2.8.1
+--=20
+Antonio Quartulli
 
+--OgqxwSJOaUobr8KG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJXDvTDAAoJEJ4aZjxxc6bKlQYP/jOGdNUtj4coztMa9N75f49+
+PJHUlUVvfuONsuf3vdaWQe9WcL3yP3qPJP0pNvanMUG5/EqbudIDFc5tB1Qgfez3
+BejkGVUWFF+D11ZPq1snqvleplJKGWvcQxntHXFshhY9I5Gay5WrhZbbAWbs/z8H
+36uhj9NO6unqu/aCprcmOabkAgYKT2KZPvlKs8gePXKf9+UKxAdddiyfpUXjZD7P
+ozKB99bTrYgIc60TEF2A48xwHRX5OIqErQMjHgdgFzW/qwM8F9+S0Jsaav6xmxwP
+47FLOK4GWlsPGzFYraAL7WFjT96VwKGc0QDgCl4XfM3e00pi5PVmaJAV0sWFUOQ7
+SuXQi3piQjCkA9g/GZMxu08+dNS8ttfNcDqJ7N4V1+DkkfNeMqbI/G3IO5vqYtB8
+Akoql3PlmAX61O2z5XDcTsboZlV0ISPp372TU7STPDNaJ4Gk1iNk5KoncBetTo+z
+E9DP1PnUJZr8VAISeMbXXhU+5JC8E3S3r+6CDmlMYa6dt0fyk9PujtQi9XjRrFRf
+m5BvfQ+1a06FAwog+3LfPwGDfkoX6UJ4oS+VbmQDN9U/Cdd1LY0S+V08XrRjTKu0
+Qapc+VdezAzH5AVaEXac4qDaxPH7GK2n/hvvoHZbndV3RBkJkWBq3YKV6lTGc/cc
+wbhrrRR6yO/qO2SScNAl
+=I+Es
+-----END PGP SIGNATURE-----
+
+--OgqxwSJOaUobr8KG--
