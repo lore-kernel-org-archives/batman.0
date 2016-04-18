@@ -1,15 +1,13 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 18 Apr 2016 16:41:07 +0200
-Message-ID: <1812177.9NXi5yCt0r@prime>
-In-Reply-To: <20160313154222.GD9674@lunn.ch>
-References: <1456867148-31883-1-git-send-email-andrew@lunn.ch>
- <9919433.c4WuAskJuF@sven-edge> <20160313154222.GD9674@lunn.ch>
+Date: Mon, 18 Apr 2016 16:50:26 +0200
+Message-ID: <3565172.dz0c0eMaPu@prime>
+In-Reply-To: <cover.1458231707.git.mschiffer@universe-factory.net>
+References: <cover.1458231707.git.mschiffer@universe-factory.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7856567.XIba1DBJm8";
+Content-Type: multipart/signed; boundary="nextPart3522240.7J4bfdqEH0";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: debugfs: Add netns
-	support
+Subject: Re: [B.A.T.M.A.N.] [RFC v2 0/5] batman-adv netlink query API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,53 +19,82 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart7856567.XIba1DBJm8
+--nextPart3522240.7J4bfdqEH0
 Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="ISO-8859-1"
 
-Hi Andrew & list,
-
-On Sunday 13 March 2016 16:42:22 Andrew Lunn wrote:
-> On Sun, Mar 13, 2016 at 10:12:07AM +0100, Sven Eckelmann wrote:
-> > On Monday 07 March 2016 15:21:07 Matthias Schiffer wrote:
-> > [...]
-> > 
-> > > By the way, the netns support is another good reason to switch from the
-> > > debugfs interfaces to a netlink-based interface (as the netlink
-> > > interface
-> > > wouldn't need userspace applications like batctl to be aware of the
-> > > namespaces). I guess I should finally finish the patches I started
-> > > writing
-> > > for that...
-> > 
-> > So what is your suggestion here? Should the namespace support for
-> > namespaces be rejected and you send in your netlink implementation
-> > patches? Or should this patch be merged and be removed (together with the
-> > rest of the debugfs stuff) when your netlink support is integrated?
+On Thursday 17 March 2016 17:45:30 Matthias Schiffer wrote:
+> Hi,
+> this is the second take of my netlink API patches. As mentioned before, the
+> netlink API is superior to the current debugfs API in many aspects:
 > 
-> Hi Sven
+> * debugfs is broken (see PATCH 1 for details)
+> * Netlink is namespace-aware, and can be used in unprivileged containers
+>   without problems
+> * Netlink packets are more machine-readable than text files, and can be
+>   easily extended without potentially breaking userspace
+> * On older kernels, seq_file can't fall back to vmalloc if kmalloc fails,
+>   which often leads to OOM when reading "originators" in large meshes, as
+>   the whole file must fit into a single buffer
 > 
-> I would expect the debugfs code to stay around for a while, so people
-> have a chance to upgrade their batctl and alfred to the new API. We
-> probably need one release with both?
+> Of course, are also a few downsides; when the data is too big to fit into
+> a single netlink packet, the provided data may be inconsistent (entries may
+> be missing or duplicated.) This will happen in large meshes only, and be
+> improbable in any case.
+> 
+> The patches have been developed on top of the netns patchset, but should
+> be applicable independently (maybe with minor changes.)
+> 
+> All netlink queries returning lists of any kind can only be used with
+> NLM_F_DUMP queries, so that arbitrarity large responses are possible (split
+> across multiple packets if necessary.)
+> 
+> At the moment, the following debugfs files have corresponding netlink APIs:
+> 
+> * routing_algos
+> * neighbors
+> * originators
+> * transtable_global
+> * transtable_local
+> * (hardinterfaces for a softif can be queried)
+> 
+> The following files are still missing:
+> 
+> * gateways
+> * bla_claim_table
+> * bla_backbone_table
+> * dat_cache
+> * nc_nodes
+> 
+> Obviously, documentation is also a TODO. Comments about the API design are
+> very welcome...
+> 
+> Regards,
+> Matthias
 
-we had a phone discussion with Antonio, Marek, Sven and myself how to move 
-forward with netlink and namespace support.
+Hi Matthias,
 
-We concluded that having proper netlink support would be the more future proof 
-option. We would then keep debugfs but slowly phase it out in the next coming 
-years. New features would also be adopted in the netlink implementation.
+thanks for reposting this and sorry for the long silence. Since we have the 
+namespace work from Andrew now which would require netlink support, I think 
+its a good time to integrate this. :)
 
-It was also our impression that having the namespace support within netlink 
-would be the cleaner approach, although it takes more work because it requires 
-the netlink and appropriate userspace changes.
+I'll try to look into your patchset this week into more detail and give 
+feedback. In the meantime, just a few question:
 
-Andrew, what do you think? Would you like to check and rebase on Matthias' 
-patchset?
+ * Would you like to add netlink support for the missing files as well? 
+(gateways, bla, dat, nc) 
+ * Would you also like to do the batctl support? I guess we can have batctl 
+behave "compatible" by trying netlink first and fall back to debugfs for the 
+next few years
+ * Also open is the icmp socket stuff, which we could postpone and implement 
+later.
 
-Thanks,
-    Simon
---nextPart7856567.XIba1DBJm8
+Just wanted to check with your availability first, but we would like to 
+support the netlink adoption. :)
+
+Thanks!
+     Simon
+--nextPart3522240.7J4bfdqEH0
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -75,20 +102,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXFPIDAAoJEKEr45hCkp6hvkwQAM2RrAm1qor0FE1ss0SUK9M6
-NIITeIQoJUR7sdhv4+2KefAU6wAT0gD4zVKEUTA0hT9DSyZZMyliYjFtsxj37gRS
-gJOKoDt6FmIyiTe0EzqrRnJQJMC9sQblcIlah4P0aA4QgdmZIbpeK7gt3Q0dzT8V
-pBiOa2jromAIP+ayJw6cQ4BVEFzDKiXvp0GwLLPU5hr4+paAXluCKiJzlFguXg1O
-gRHR6dxOA/aILk0d68U7jRvGHBueUFprkku7JRcmthXhUR0miwpYAK1EtbU9AHdz
-I2MStbx8/WN3FVCUa6bhM9dzymPNnvVlNG8gvfROKcwpftNNURh6IB4Lr+kFSdKO
-vmjCg7jXoM4EzrNYS7XOcALvN76nfqMTkS/p7h55V/0HubGeXfQLb762uBvI5QmR
-6KMsoNvgiSuaab11QmKu1ZxDUAQeR/uAR8uLL8YNGQ0hqATdTStUqNYEsHXrKZcn
-0Uw9tW4qGTzjYTWDUZco4CjXnay3wYMJXEOy90GE0vRYjekIgF/xS2GBZlgwIIAx
-jySYDikshs7aRTDkf3VE0y3/w4GqMyGxJM/Yrf3AV7rIcnATYvyvXghL4qMXQXlw
-NP03OrT0vIBwJIYnQ5yEF1U88CqXlrAfYituKsJ5hkF7cku9kJwP5pTdhD4adSnU
-cLJ4T+G8H1tZd/OkYrjG
-=RCJf
+iQIcBAABCgAGBQJXFPQyAAoJEKEr45hCkp6hyQEQALB9U2jgR3qPwHJ34aBDO6Nx
+FI5UQiQwSvSVTbUBi1MeX2G2ZPOi+JAt0+ck+O5k8w5Zz11ujt+zPHw1kUJaNE13
+zsvE8RZhb2kBPOmQyhY7HeNWUe923qnRGTM3GhhK2Cb3Vag5TmcNjqkW+5ZKnapJ
+4xDvWgesCv7VCbQ32JeWtTntgpRKdlvrGM/mJnPL0CTNWM9xAT3pd3fZdZ5m6YHa
+G8EGrHv7eY6U9xo7nNKezLA0X6QnLeqyYJHXeuZn1DVCvW9p3KHUimM4a6HybO7H
+oNDhxAnT8+jTyt9B91nKdsB95OpXTBQoNM6pCbxI5d3JAIfLPq4B3PLLUnyH3ysB
+4XEU/1tVvGqctVkfCJRVGbmssiT3yzhmcJ1qtWTACqakUKkBXETQF3xscMA7/t2M
+EsQdI0B+pwS6drgySDHMPjhTl072U81DUMLdnBhLGm1FkLW/eA+bVoCOUueKG9hu
+6aYY8iGTjiiEXsJZcFfx8KgtCvvx9wOcH619WLnP1zf9EMIdPQFUh8YKZqHjDGqv
+gnDGcyTH/I9m+AF5a+P+XOFzSkLx2ZU0bw+bHYuD1c8eu94m6JVlj18p8Z2ef+63
+AxcEjRSvqtsoBr/fKixyqiwlvd+EUpQZBZnrHJknCgaqUcmV2FIg3UVH9s2WPEef
+7qBY6eOvDHaRHCgcnH89
+=K4YZ
 -----END PGP SIGNATURE-----
 
---nextPart7856567.XIba1DBJm8--
+--nextPart3522240.7J4bfdqEH0--
 
