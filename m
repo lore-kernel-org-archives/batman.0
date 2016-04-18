@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 18 Apr 2016 12:59:19 +0200
-Message-ID: <6039335.OQnogqN804@bentobox>
-In-Reply-To: <56EBEC41.4090404@universe-factory.net>
+Date: Mon, 18 Apr 2016 13:10:23 +0200
+Message-ID: <2503914.aZJTHeCJKl@bentobox>
+In-Reply-To: <2005230.N8INYQKvQl@sven-edge>
 References: <cover.1458231707.git.mschiffer@universe-factory.net>
- <4945319.BvQuBs3oU8@sven-edge> <56EBEC41.4090404@universe-factory.net>
+ <20160319084934.GD9971@prodigo.lan> <2005230.N8INYQKvQl@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5257553.lklAv0SSTU";
+Content-Type: multipart/signed; boundary="nextPart1773122.arRKHFQuxU";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [RFC v2 0/5] batman-adv netlink query API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,38 +18,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Matthias Schiffer <mschiffer@universe-factory.net>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart5257553.lklAv0SSTU
+--nextPart1773122.arRKHFQuxU
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday 18 March 2016 12:53:37 Matthias Schiffer wrote:
+On Saturday 19 March 2016 10:19:39 Sven Eckelmann wrote:
+> > > > > What about the "socket" file?
 [...]
-> Thanks for the build testing, I haven't put too much thought into the
-> compat issues yet. The genl_register_family_with_ops error should be easy
-> to fix, the struct netlink_skb_parms differences might be more problematic.
+> How can this be implemented 100% in userspace? Lets ignore the 
+> reply/forwarding part for a second and just concentrate on the initiator of 
+> the ping/traceroute. It can use AF_PACKET in userspace to send batadv packets 
+> directly on the hardif. But here comes the first problem... which is the 
+> correct hardif? There can be multiple and the userspace does not really know 
+> which one is the one the kernel would use at a particular time. So you have to 
+> implement the same algorithms in userspace the emulate the kernel part (or you 
+> may do something completely different). And still then you would have problems 
+> when the kernel is tweaked and the userspace didn't receive this tweak.
+> 
+> Maybe it is necessary to ask the kernel before sending the ping by asking him 
+> "hey, what interface would use use right now and what other parameters are now 
+> required". Similar to what "ip route get 8.8.8.8" would do.
+> 
+> Or am I just overcomplicated things now?
 
-The genl_register_family_with_ops error can most likely be solved by
+It can also be postponed to later. No need to have this in netns from the
+start.
 
-https://git.kernel.org/cgit/linux/kernel/git/backports/backports.git/tree/backport/backport-include/net/genetlink.h?id=a91a3e6e3a6ed6cdbbe942bafe05ae5fcdf41ce9
-
-The netlink_skb_parms most likely can be fixed by redefining NETLINK_CB to
-something which casts to a structure with the name portid for the field
-pid for Linux < 3.7.
-
-    struct netlink_skb_parms_compat {
-            struct scm_creds        creds;
-             __u32                   portid;  /* was renamed in 3.7 from "pid" */
-             __u32                   dst_group;    
-             __u32                   flags;
-             struct sock             *sk;
-    };
+But RTM_GETROUTE-like NLM_F_REQUEST requests sound feasible for a userspace
+based ICMP-like request initiation. But most likely with generic messages
+instead of structs.
 
 Kind regards,
 	Sven
---nextPart5257553.lklAv0SSTU
+--nextPart1773122.arRKHFQuxU
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -57,20 +61,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXFL4HAAoJEF2HCgfBJntGIBsQAJXuKTaDRYP7qkyEbab7qAqD
-8VdOMRxhI+PK6k5VCzjGPAzlrkaO9Z9o6Ys8bur/htYHztElV5DqconMiOAS8ABJ
-F4wsZn79YvkbhhP7buxkldWRCfxO/Aow8ZmvY1u2ozslJPyDqpXviIa3oXvm8zbj
-BYdBCmVEb4dGWELbEwXmMyfl8Ny5yjKbdnQ9xJ/EoRghVbU5I1XCK6p5hVAibAOG
-b1BxI8G2NkNuXnelQfrIWLz6RTCQnwwOEP/RSpYQWNVnxIJuUmk1ylQWWBz5wnly
-Da/i798FnNTcofurYZT2CuUEfCqB1o21U+QCrhUJ/FDEX6cpmUUYRT8ucyMZeFbw
-mM7E1BFVTGnCH3W2eTMI03nwLWcH92khjSlAk8ZOh2kuxFo14Y99HwfKu2iLU4uh
-q2M8dGmZtH/aos5jd6ilFaMY6cRrIUIVSfwypl0EnalD8X/NrUwyjZ+aC/EwbH7H
-N6f3xMO55F28kVx5k781IN3jwc3y6Px5sBKlc2XXn2GwjasyqeuloELzWZwtlSou
-AJtUucrQbOuiWN/JYaRb1wzsQhI+3O/NWT71Jt6ESfmxfZy0Ylf/GDjRJtR0cH1U
-cFFj0iOZTZMblbr5zLWapAj4gsCNYMfLGgo9jfLZH6+JzcYxjzhGr2UEvNVU1L6g
-XJdH9E7dFbWqdfKjjqwM
-=5ir4
+iQIcBAABCgAGBQJXFMCfAAoJEF2HCgfBJntGnrQQALetgivRNy8eMcBkivEjciXT
+VDJL2dqmQMONHwGgXymVmCRvAp3gKmdYDP6QVHnWl0G4J54xICYH7ehIOZoELrFn
+b/0Ccse2IqdFE9+RP+oPWpElkp3Uhe3uDDNmL8voxib/QU8HydpKUOn5o2S+HQDl
+i/MNGMfj5tL2Fz3NiUQGsJKQIAERKxXN91tPgAwIBqEAD0AKWDcCCPwOd1TlERa3
+V8BkfTdvIYoSiTOhWKxtxiErF4dwmnshTmfyAIdyzA5F/F3RFdD93N33XF0xiM3u
+PSlFa71/8KfOxoo+Ycf8rdAeqXLneak10LV+ZAC9yP68FqeYNTAXg3ne7IRnjqlq
+cMw2QxgbzVTnGLdwGycoaSgHuOMfjzVvEetiB73+hVsaneKI1grpzmtjraTekvWD
+LeW8zKvs+9OqxCXXt3N5K+8RFhQaIZitcGy+GmH8EAw3R9yL+znh3Cl5VXaXHFZS
+21xNYmoGnBwchzZNweOFKTbutcbrn5zflDaDsY7tEKhKptSSOqrliD+jdjmutpHz
+ujBKTHD79XQPCWAgT/ZDIu9/yj0XoqRMqDNt9/9OXug5qHcG80F3prX5QpFWgdGr
+KA1j+T3ZkLQ/EwxQ7ItikS9gQlfWti+1sE/Cl/r+0pBcpZpiVnzZxj7LaTe9dVRL
+j9ph6eV4Lplt5N+UZKkQ
+=s41q
 -----END PGP SIGNATURE-----
 
---nextPart5257553.lklAv0SSTU--
+--nextPart1773122.arRKHFQuxU--
 
