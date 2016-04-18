@@ -1,15 +1,14 @@
-Return-Path: <a@unstable.cc>
-Date: Sun, 17 Apr 2016 17:37:31 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160417093731.GC27815@prodigo.lan>
-References: <1460597825-22660-1-git-send-email-a@unstable.cc>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 18 Apr 2016 12:59:19 +0200
+Message-ID: <6039335.OQnogqN804@bentobox>
+In-Reply-To: <56EBEC41.4090404@universe-factory.net>
+References: <cover.1458231707.git.mschiffer@universe-factory.net>
+ <4945319.BvQuBs3oU8@sven-edge> <56EBEC41.4090404@universe-factory.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="KDt/GgjP6HVcx58l"
-Content-Disposition: inline
-In-Reply-To: <1460597825-22660-1-git-send-email-a@unstable.cc>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: B.A.T.M.A.N V - make sure
- iface is reactivated upon NETDEV_UP event
+Content-Type: multipart/signed; boundary="nextPart5257553.lklAv0SSTU";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [RFC v2 0/5] batman-adv netlink query API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,135 +18,59 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+To: Matthias Schiffer <mschiffer@universe-factory.net>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
+--nextPart5257553.lklAv0SSTU
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---KDt/GgjP6HVcx58l
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Friday 18 March 2016 12:53:37 Matthias Schiffer wrote:
+[...]
+> Thanks for the build testing, I haven't put too much thought into the
+> compat issues yet. The genl_register_family_with_ops error should be easy
+> to fix, the struct netlink_skb_parms differences might be more problematic.
 
-Hi all,
+The genl_register_family_with_ops error can most likely be solved by
 
-it looks like this patch was not interpreted the right way, probably becaus=
-e of
-a lack of communication between me and other maintainers or probably because
-too much laziness here and there...
+https://git.kernel.org/cgit/linux/kernel/git/backports/backports.git/tree/backport/backport-include/net/genetlink.h?id=a91a3e6e3a6ed6cdbbe942bafe05ae5fcdf41ce9
 
-Explanation follows below.
+The netlink_skb_parms most likely can be fixed by redefining NETLINK_CB to
+something which casts to a structure with the name portid for the field
+pid for Linux < 3.7.
 
-On Thu, Apr 14, 2016 at 09:37:05AM +0800, Antonio Quartulli wrote:
-> At the moment there is no explicit reactivation of an hard-interface
-> upon NETDEV_UP event. In case of B.A.T.M.A.N. IV the interface is
-> reactivated as soon as the next OGM is scheduled for sending, but this
-> mechanism does not work with B.A.T.M.A.N. V. The latter does not rely
-> on the same scheduling mechanism as its predecessor and for this reason
-> the hard-interface remains deactivated forever after being brought down
-> once.
->=20
-> This patch fixes the reactivation mechanism by adding a new routing API
-> which explicitly allows each algorithm to perform any needed operation
-> upon interface re-activation.
->=20
+    struct netlink_skb_parms_compat {
+            struct scm_creds        creds;
+             __u32                   portid;  /* was renamed in 3.7 from "pid" */
+             __u32                   dst_group;    
+             __u32                   flags;
+             struct sock             *sk;
+    };
 
-Right now we have a piece of infrastructure used by B.A.T.M.A.N IV that
-consists in calling batadv_send_outstanding_bat_ogm_packet() periodically,
-thus generating the following flow:
-
--> batadv_send_outstanding_bat_ogm_packet()
-	-> bat_algo_ops->bat_ogm_emit()
-	-> batadv_schedule_bat_ogm()
-		bat_algo_ops->bat_ogm_schedule()
-
-by scrolling over the mentioned functions I'd argue that such flow is rather
-tight to the B.A.T.M.A.N. IV algorithm and, although there has been a lot of
-effort in making such routines generic (that's why we have API calls in the
-middle), such infrastructure is very difficult to be used within B.A.T.M.A.=
-N. V.
-
-
-On top of that, the logic implemented within this piece of infrastructure
-aims to achieve two goals:
-1) schedule OGM sending
-2) send out aggregated OGMs
-
-
-The consequence of this was that B.A.T.M.A.N. V has its own implementation =
-for
-sending OGMs and lacks support for OGMs aggregation (and queue limitation).
-
-
-This said, the bug that this patch is trying to fix came up exactly from the
-new implementation of point 1) in B.A.T.M.A.N. V.
-
-One could argue that in order to fix this misbehaviour it would be better to
-stick to using the already implemented infrastructure, but unfortunately, as
-I explained above, this is not possible and therefore this patch can't go
-in that direction.
-
-
-This patch, instead, tries to make the first step towards changing the
-infrastructure in a way where B.A.T.M.A.N. IV will adapt to its successor
-and not viceversa.
-
-
-The idea is to have a new API call to be invoked everytime a hard interface=
- is
-brought up so that each algorithm can take its own decision about what to do
-next.
-
-At this point, the potential next steps that I see are:
-
-1) convert batadv_send_outstanding_bat_ogm_packet() and invoked routines to
-B.A.T.M.A.N. IV private code (remove bat_algo_ops->ogm_schedule/ogm_emit())
-
-2) have B.A.T.M.A.N. IV use the new iface_activate() API introduced by this
-patch (if needed)
-
-3) make the aggregation code generic so that other protocols can enjoy the =
-same
-benefit without having to re-use exactly the same logic
-
-4) implement aggregation in B.A.T.M.A.N. V with queue limitation
-
-I tried to include point 1) in this patch so that it could look more "sane"=
- from
-an architectural point of view, but given that this change is a fix (and th=
-us
-targets the net tree) I decided to squeeze it and include only what was nec=
-essary
-to fix the "interface-enabling" issue.
-
-
-I hope this helps understanding the ratio behind this patch :)
-
-Cheers,
-
-
---=20
-Antonio Quartulli
-
---KDt/GgjP6HVcx58l
+Kind regards,
+	Sven
+--nextPart5257553.lklAv0SSTU
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXE1lbAAoJEJ4aZjxxc6bKt9AQALOKdIQcx7FaMQWJQWHkfKVr
-A2us6m+VPnDAuvFKRJuvT3T1mHFkIq3+Cg5TRlzOSWxphfUgBqUVP/gueUc23Nac
-PFnn2JSsStLC5bdfawqFezRJgWj/61iFzZK2FlVYtevtJEoW5emq2ndgZ58VHTO2
-o47/CztJrnl0JDcgoa9ZejZ4J/s3VVbCB5t4+2slcFVi01If7MsKcIX7/bo4rcYc
-x8IIJAeazqDgylswbBQdT4C9bZ67uxs3UDkc7jqR079KR6zjRX8VD8IJIrSyN//u
-dQ0o/Sp8uAt3mzTfszITGe0cTgIY94tUT+89UH7YR2CJIogRdJwCRcv1D0Kz9d6m
-znCQCrL4Mip0xrDzpAPNrBp/6dykiUr2Q+8LEWFPDaEJE+qRiL+P8IWar/1Yz6qU
-JIbXqo1I+C0L5i2b6sLpX9W3idXO3Z3SNjBM6dLMoCV5ZszeQzdR3zsGRvr7zzQ1
-ZZUsX3JzeoifCma2q5nk0Y/0BGQQf13tk0GpZOM3ACyip4iDdR6JXsrTMnzE1X6P
-VmUZUlxMzn2aeiQoXvj3yigHo7nCx5iLzqmYTfYdw4SPpuKaXMeZQyyVdr9ER30L
-zNR1A/ijvJ9AA/43611wlxFjGBrexREnRZC8hw4YBP9s4AQdkZzN//A7N4L8N+BZ
-iK99+7kyDVAVlR/LsnwV
-=fjKh
+iQIcBAABCgAGBQJXFL4HAAoJEF2HCgfBJntGIBsQAJXuKTaDRYP7qkyEbab7qAqD
+8VdOMRxhI+PK6k5VCzjGPAzlrkaO9Z9o6Ys8bur/htYHztElV5DqconMiOAS8ABJ
+F4wsZn79YvkbhhP7buxkldWRCfxO/Aow8ZmvY1u2ozslJPyDqpXviIa3oXvm8zbj
+BYdBCmVEb4dGWELbEwXmMyfl8Ny5yjKbdnQ9xJ/EoRghVbU5I1XCK6p5hVAibAOG
+b1BxI8G2NkNuXnelQfrIWLz6RTCQnwwOEP/RSpYQWNVnxIJuUmk1ylQWWBz5wnly
+Da/i798FnNTcofurYZT2CuUEfCqB1o21U+QCrhUJ/FDEX6cpmUUYRT8ucyMZeFbw
+mM7E1BFVTGnCH3W2eTMI03nwLWcH92khjSlAk8ZOh2kuxFo14Y99HwfKu2iLU4uh
+q2M8dGmZtH/aos5jd6ilFaMY6cRrIUIVSfwypl0EnalD8X/NrUwyjZ+aC/EwbH7H
+N6f3xMO55F28kVx5k781IN3jwc3y6Px5sBKlc2XXn2GwjasyqeuloELzWZwtlSou
+AJtUucrQbOuiWN/JYaRb1wzsQhI+3O/NWT71Jt6ESfmxfZy0Ylf/GDjRJtR0cH1U
+cFFj0iOZTZMblbr5zLWapAj4gsCNYMfLGgo9jfLZH6+JzcYxjzhGr2UEvNVU1L6g
+XJdH9E7dFbWqdfKjjqwM
+=5ir4
 -----END PGP SIGNATURE-----
 
---KDt/GgjP6HVcx58l--
+--nextPart5257553.lklAv0SSTU--
+
