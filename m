@@ -1,14 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 18 Apr 2016 13:10:23 +0200
-Message-ID: <2503914.aZJTHeCJKl@bentobox>
-In-Reply-To: <2005230.N8INYQKvQl@sven-edge>
-References: <cover.1458231707.git.mschiffer@universe-factory.net>
- <20160319084934.GD9971@prodigo.lan> <2005230.N8INYQKvQl@sven-edge>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 18 Apr 2016 16:41:07 +0200
+Message-ID: <1812177.9NXi5yCt0r@prime>
+In-Reply-To: <20160313154222.GD9674@lunn.ch>
+References: <1456867148-31883-1-git-send-email-andrew@lunn.ch>
+ <9919433.c4WuAskJuF@sven-edge> <20160313154222.GD9674@lunn.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1773122.arRKHFQuxU";
+Content-Type: multipart/signed; boundary="nextPart7856567.XIba1DBJm8";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC v2 0/5] batman-adv netlink query API
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: debugfs: Add netns
+	support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,41 +20,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart1773122.arRKHFQuxU
+--nextPart7856567.XIba1DBJm8
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 19 March 2016 10:19:39 Sven Eckelmann wrote:
-> > > > > What about the "socket" file?
-[...]
-> How can this be implemented 100% in userspace? Lets ignore the 
-> reply/forwarding part for a second and just concentrate on the initiator of 
-> the ping/traceroute. It can use AF_PACKET in userspace to send batadv packets 
-> directly on the hardif. But here comes the first problem... which is the 
-> correct hardif? There can be multiple and the userspace does not really know 
-> which one is the one the kernel would use at a particular time. So you have to 
-> implement the same algorithms in userspace the emulate the kernel part (or you 
-> may do something completely different). And still then you would have problems 
-> when the kernel is tweaked and the userspace didn't receive this tweak.
+Hi Andrew & list,
+
+On Sunday 13 March 2016 16:42:22 Andrew Lunn wrote:
+> On Sun, Mar 13, 2016 at 10:12:07AM +0100, Sven Eckelmann wrote:
+> > On Monday 07 March 2016 15:21:07 Matthias Schiffer wrote:
+> > [...]
+> > 
+> > > By the way, the netns support is another good reason to switch from the
+> > > debugfs interfaces to a netlink-based interface (as the netlink
+> > > interface
+> > > wouldn't need userspace applications like batctl to be aware of the
+> > > namespaces). I guess I should finally finish the patches I started
+> > > writing
+> > > for that...
+> > 
+> > So what is your suggestion here? Should the namespace support for
+> > namespaces be rejected and you send in your netlink implementation
+> > patches? Or should this patch be merged and be removed (together with the
+> > rest of the debugfs stuff) when your netlink support is integrated?
 > 
-> Maybe it is necessary to ask the kernel before sending the ping by asking him 
-> "hey, what interface would use use right now and what other parameters are now 
-> required". Similar to what "ip route get 8.8.8.8" would do.
+> Hi Sven
 > 
-> Or am I just overcomplicated things now?
+> I would expect the debugfs code to stay around for a while, so people
+> have a chance to upgrade their batctl and alfred to the new API. We
+> probably need one release with both?
 
-It can also be postponed to later. No need to have this in netns from the
-start.
+we had a phone discussion with Antonio, Marek, Sven and myself how to move 
+forward with netlink and namespace support.
 
-But RTM_GETROUTE-like NLM_F_REQUEST requests sound feasible for a userspace
-based ICMP-like request initiation. But most likely with generic messages
-instead of structs.
+We concluded that having proper netlink support would be the more future proof 
+option. We would then keep debugfs but slowly phase it out in the next coming 
+years. New features would also be adopted in the netlink implementation.
 
-Kind regards,
-	Sven
---nextPart1773122.arRKHFQuxU
+It was also our impression that having the namespace support within netlink 
+would be the cleaner approach, although it takes more work because it requires 
+the netlink and appropriate userspace changes.
+
+Andrew, what do you think? Would you like to check and rebase on Matthias' 
+patchset?
+
+Thanks,
+    Simon
+--nextPart7856567.XIba1DBJm8
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -61,20 +75,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXFMCfAAoJEF2HCgfBJntGnrQQALetgivRNy8eMcBkivEjciXT
-VDJL2dqmQMONHwGgXymVmCRvAp3gKmdYDP6QVHnWl0G4J54xICYH7ehIOZoELrFn
-b/0Ccse2IqdFE9+RP+oPWpElkp3Uhe3uDDNmL8voxib/QU8HydpKUOn5o2S+HQDl
-i/MNGMfj5tL2Fz3NiUQGsJKQIAERKxXN91tPgAwIBqEAD0AKWDcCCPwOd1TlERa3
-V8BkfTdvIYoSiTOhWKxtxiErF4dwmnshTmfyAIdyzA5F/F3RFdD93N33XF0xiM3u
-PSlFa71/8KfOxoo+Ycf8rdAeqXLneak10LV+ZAC9yP68FqeYNTAXg3ne7IRnjqlq
-cMw2QxgbzVTnGLdwGycoaSgHuOMfjzVvEetiB73+hVsaneKI1grpzmtjraTekvWD
-LeW8zKvs+9OqxCXXt3N5K+8RFhQaIZitcGy+GmH8EAw3R9yL+znh3Cl5VXaXHFZS
-21xNYmoGnBwchzZNweOFKTbutcbrn5zflDaDsY7tEKhKptSSOqrliD+jdjmutpHz
-ujBKTHD79XQPCWAgT/ZDIu9/yj0XoqRMqDNt9/9OXug5qHcG80F3prX5QpFWgdGr
-KA1j+T3ZkLQ/EwxQ7ItikS9gQlfWti+1sE/Cl/r+0pBcpZpiVnzZxj7LaTe9dVRL
-j9ph6eV4Lplt5N+UZKkQ
-=s41q
+iQIcBAABCgAGBQJXFPIDAAoJEKEr45hCkp6hvkwQAM2RrAm1qor0FE1ss0SUK9M6
+NIITeIQoJUR7sdhv4+2KefAU6wAT0gD4zVKEUTA0hT9DSyZZMyliYjFtsxj37gRS
+gJOKoDt6FmIyiTe0EzqrRnJQJMC9sQblcIlah4P0aA4QgdmZIbpeK7gt3Q0dzT8V
+pBiOa2jromAIP+ayJw6cQ4BVEFzDKiXvp0GwLLPU5hr4+paAXluCKiJzlFguXg1O
+gRHR6dxOA/aILk0d68U7jRvGHBueUFprkku7JRcmthXhUR0miwpYAK1EtbU9AHdz
+I2MStbx8/WN3FVCUa6bhM9dzymPNnvVlNG8gvfROKcwpftNNURh6IB4Lr+kFSdKO
+vmjCg7jXoM4EzrNYS7XOcALvN76nfqMTkS/p7h55V/0HubGeXfQLb762uBvI5QmR
+6KMsoNvgiSuaab11QmKu1ZxDUAQeR/uAR8uLL8YNGQ0hqATdTStUqNYEsHXrKZcn
+0Uw9tW4qGTzjYTWDUZco4CjXnay3wYMJXEOy90GE0vRYjekIgF/xS2GBZlgwIIAx
+jySYDikshs7aRTDkf3VE0y3/w4GqMyGxJM/Yrf3AV7rIcnATYvyvXghL4qMXQXlw
+NP03OrT0vIBwJIYnQ5yEF1U88CqXlrAfYituKsJ5hkF7cku9kJwP5pTdhD4adSnU
+cLJ4T+G8H1tZd/OkYrjG
+=RCJf
 -----END PGP SIGNATURE-----
 
---nextPart1773122.arRKHFQuxU--
+--nextPart7856567.XIba1DBJm8--
 
