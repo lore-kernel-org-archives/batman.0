@@ -1,13 +1,11 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 18 Apr 2016 16:50:26 +0200
-Message-ID: <3565172.dz0c0eMaPu@prime>
-In-Reply-To: <cover.1458231707.git.mschiffer@universe-factory.net>
-References: <cover.1458231707.git.mschiffer@universe-factory.net>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Tue, 19 Apr 2016 04:10:35 +0200
+Message-Id: <1461031839-31182-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3522240.7J4bfdqEH0";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC v2 0/5] batman-adv netlink query API
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv13 0/4] Multicast optimizations for bridges
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,103 +17,212 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3522240.7J4bfdqEH0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
 
-On Thursday 17 March 2016 17:45:30 Matthias Schiffer wrote:
-> Hi,
-> this is the second take of my netlink API patches. As mentioned before, the
-> netlink API is superior to the current debugfs API in many aspects:
-> 
-> * debugfs is broken (see PATCH 1 for details)
-> * Netlink is namespace-aware, and can be used in unprivileged containers
->   without problems
-> * Netlink packets are more machine-readable than text files, and can be
->   easily extended without potentially breaking userspace
-> * On older kernels, seq_file can't fall back to vmalloc if kmalloc fails,
->   which often leads to OOM when reading "originators" in large meshes, as
->   the whole file must fit into a single buffer
-> 
-> Of course, are also a few downsides; when the data is too big to fit into
-> a single netlink packet, the provided data may be inconsistent (entries may
-> be missing or duplicated.) This will happen in large meshes only, and be
-> improbable in any case.
-> 
-> The patches have been developed on top of the netns patchset, but should
-> be applicable independently (maybe with minor changes.)
-> 
-> All netlink queries returning lists of any kind can only be used with
-> NLM_F_DUMP queries, so that arbitrarity large responses are possible (split
-> across multiple packets if necessary.)
-> 
-> At the moment, the following debugfs files have corresponding netlink APIs:
-> 
-> * routing_algos
-> * neighbors
-> * originators
-> * transtable_global
-> * transtable_local
-> * (hardinterfaces for a softif can be queried)
-> 
-> The following files are still missing:
-> 
-> * gateways
-> * bla_claim_table
-> * bla_backbone_table
-> * dat_cache
-> * nc_nodes
-> 
-> Obviously, documentation is also a TODO. Comments about the API design are
-> very welcome...
-> 
-> Regards,
-> Matthias
+This patchset enables the usage of the batman-adv multicast optimizations
+for scenarios involving bridges on top of e.g. bat0, too.
 
-Hi Matthias,
+The first one alters the forwarding behaviour for IGMP and MLD reports
+which is a prerequisite before enabling multicast optimizations in
+bridged setups. It also increases the MCAST TVLV version number to 2.
+More on the issue of insufficient report handling with the v1
+MCAST TVLV can be found here:
 
-thanks for reposting this and sorry for the long silence. Since we have the 
-namespace work from Andrew now which would require netlink support, I think 
-its a good time to integrate this. :)
+http://www.open-mesh.org/projects/batman-adv/wiki/Multicast-optimizations-listener-reports
 
-I'll try to look into your patchset this week into more detail and give 
-feedback. In the meantime, just a few question:
+The second patch finally enables the multicast optimizations for
+bridged setups.
 
- * Would you like to add netlink support for the missing files as well? 
-(gateways, bla, dat, nc) 
- * Would you also like to do the batctl support? I guess we can have batctl 
-behave "compatible" by trying netlink first and fall back to debugfs for the 
-next few years
- * Also open is the icmp socket stuff, which we could postpone and implement 
-later.
+Along come two more patches adding according debugging facilities
+to make it possible for the user to check why the multicast
+optimizations might not work ideally to give hints about
+what they might change about their topology.
 
-Just wanted to check with your availability first, but we would like to 
-support the netlink adoption. :)
 
-Thanks!
-     Simon
---nextPart3522240.7J4bfdqEH0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+This patchset can be found in the current linus/multicast-bridge
+branch.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Cheers, Linus
 
-iQIcBAABCgAGBQJXFPQyAAoJEKEr45hCkp6hyQEQALB9U2jgR3qPwHJ34aBDO6Nx
-FI5UQiQwSvSVTbUBi1MeX2G2ZPOi+JAt0+ck+O5k8w5Zz11ujt+zPHw1kUJaNE13
-zsvE8RZhb2kBPOmQyhY7HeNWUe923qnRGTM3GhhK2Cb3Vag5TmcNjqkW+5ZKnapJ
-4xDvWgesCv7VCbQ32JeWtTntgpRKdlvrGM/mJnPL0CTNWM9xAT3pd3fZdZ5m6YHa
-G8EGrHv7eY6U9xo7nNKezLA0X6QnLeqyYJHXeuZn1DVCvW9p3KHUimM4a6HybO7H
-oNDhxAnT8+jTyt9B91nKdsB95OpXTBQoNM6pCbxI5d3JAIfLPq4B3PLLUnyH3ysB
-4XEU/1tVvGqctVkfCJRVGbmssiT3yzhmcJ1qtWTACqakUKkBXETQF3xscMA7/t2M
-EsQdI0B+pwS6drgySDHMPjhTl072U81DUMLdnBhLGm1FkLW/eA+bVoCOUueKG9hu
-6aYY8iGTjiiEXsJZcFfx8KgtCvvx9wOcH619WLnP1zf9EMIdPQFUh8YKZqHjDGqv
-gnDGcyTH/I9m+AF5a+P+XOFzSkLx2ZU0bw+bHYuD1c8eu94m6JVlj18p8Z2ef+63
-AxcEjRSvqtsoBr/fKixyqiwlvd+EUpQZBZnrHJknCgaqUcmV2FIg3UVH9s2WPEef
-7qBY6eOvDHaRHCgcnH89
-=K4YZ
------END PGP SIGNATURE-----
 
---nextPart3522240.7J4bfdqEH0--
+-----
+
+Changes in v13:
+* Substituted a non-breaking space with a boring one
+* Dropped compat code for kernels < 3.2
+* Removed mcast tvlv container and handler support for v1 completely
+* Rebase to current master branch
+  (automatic 3-way merge without issues)
+
+Changes in v12:
+* Rebase to current master branch
+  (automatic 3-way merge, then batadv_hardif_free_ref() -> batadv_hardif_put())
+* Adding Linux upstream fix to compat-sources/net/core/skbuff.c
+  -> "net: fix bridge multicast packet checksum validation"
+     (9b368814b33, present since v4.5, queued for stable)
+
+Changes in v11:
+* Rewording of commit messages (PATCH 1/4+2/4)
+* Rebasing to master (solving conflict with kernel doc "return" changes)
+* Updating kerneldoc to proper "Return:" syntax
+* Using eth_zero_addr() over memset (fixes a new checkpatch warning)
+* Changing uint8_t to u8 and uint32_t to u32 (fixes new checkpatch warnings)
+* Turning some batadv_dbg() into batadv_info(), making querier presence more
+  visible (i.e. in dmesg too) (PATCH 3/4)
+
+Changes in v10:
+- PATCH 1/4:
+* Former "[PATCH 4/4] batman-adv: Forward IGMP/MLD reports to selected querier (only)"
+  substituted by the interim branch "batman-adv: Always flood IGMP/MLD reports"
+  with the following changes:
+  * Increased compatibility to mcast-v1-tvlv nodes by
+    registering a v1 tvlv container and handler, too
+    (note: PATCH 2/4 needs to still unregister the handler
+     if the node is bridged bc. it can't "trust" v1 nodes)
+  * Removed skb_set_network_header() call
+    (extra patch pending for review for maint)
+* Compared to patchset v9 this substitution makes things
+  compilable again for kernels < 2.6.35
+- PATCH 2/4:
+* Moved enum introduction of BATADV_DBG_MCAST to PATCH 3/4,
+  not needed in PATCH 2/4 yet
+* Adjusted compat code to new compat layout
+* Adjustments to batadv_mcast_mla_tvlv_update() to fit now
+  preceding PATCH 1/4
+* bat_priv->mcast.bridged flag already introduced here
+  (instead of in PATCH 3/4) because we need it for the new
+  mcast-v1-tvlv handling
+
+---
+  Interim Changlog of
+  "batman-adv: Always flood IGMP/MLD reports"
+
+  v1:
+   * Removed query snooping and state
+   * Squashed all three patches into one
+   * Renamed "batadv_mcast_tvlv_ogm_handler_v1()" to *_v2()
+   * Added explicit icmpv6.h include
+   * Rebased on top of master
+
+-----
+    Interim Interim Changelog of
+    "batman-adv: Unicasting multicast reports to querier-node only"
+    v6:
+     * compat: copied copyright headers from original upstream c files
+     * compat: unified ordering in compat c files:
+       -> copyright header, then includes, then kernel specific functions
+    v5:
+     * Removed RFC tag: Needed exports got merged to net-next and are going to
+       be available with Linux 4.2
+     * Redid compat solution - now fully backwards compatible down to 2.6.33
+    v4:
+     * excluded bridge part from this patchset, they should
+       hopefully be added to net-next soon
+     * Added a compat solution (PATCH 3/3)
+     * Removed Kconfig-depends as by David's suggestion the needed parsing
+       functions for MLD are going to be forced built-ins even if IPv6 is
+       going to be built as a module
+     * Removed unused variable 'int ret' in batadv_mcast_is_report_ipv6()
+     * Adjusted to new folder structure
+    v3:
+     * Adding Kconfig-depends and #if's
+       (so basically adding similar dependancy constraints as the bridge code
+        has, except that there are no depends if batman-adv gets compiled without
+        multicast optimizations)
+       -> the case of IPv6=M and batman-adv=y is still impossible if multicast
+          optimizations are enabled; but I don't see the practical demand for that
+          either - people who use IPv6 as a module will probably also want to
+          use batman-adv as a module
+    v2:
+     * various bugfixes (now runtime tested, too - should(tm) work)
+     * added netdev+bridge mailinglists
+-----
+---
+
+Changes in v9:
+- PATCH 1/4:
+* fix: added compat code for pr_warn_once()
+* compat fix for bridge export stubs: fixes compile error
+  with kernels < 3.16 without bridge (snooping) support
+- PATCH 2/4:
+* perform updates of variables within bat_priv->mcast.querier_ipv{4,6}
+  individually (there's a new, third member in 4/4 which shouldn't be
+  overriden)
+* PATCH 4/4: NEW
+
+Changes in v8 (thanks to Simon's suggestions):
+- PATCH 2/3:
+* print shadowing status log of an appearing and shadowing querier, too
+  (the bridge-querier-existence call has an additional 10s delay
+   to ensure reports had their time to arrive -
+   the bridge-querier-port call doesn't have that)
+- PATCH 3/3:
+* changing debugfs output from "+" and "-" to "U/4/6" and "."
+* fixing "no querier present" logic (introduced in [PATCHv7 3/3])
+
+Changes in v7 (thanks to Simon's suggestions):
+- PATCH 2/3:
+* renaming old/new_querier to old/new_state
+* slightly extended kerneldoc of batadv_mcast_querier_log()
+* removing words "good" and "bad" from debug output
+* simplified batadv_mcast_flags_log()
+* assignment instead of memset in batadv_mcast_mla_tvlv_update()
+  and batadv_softif_init_late()
+* simple struct member assignments instead of one complex struct
+  assigment
+* removing unnecessary memcmp's
+* substituting return statement for an if-block in
+  batadv_mcast_querier_log() and batadv_mcast_bridge_log()
+* print "Unsnoopables(U)-flag" instead of just "U-flag"
+- PATCH 3/3:
+* use bat_priv values instead of querying bridge ABI in
+  batadv_mcast_flags_print_header()
+
+Changes in v6:
+* New PATCH 2/3 inserted, moving logging to separate patch
+* More verbose logging added to PATCH 2/3:
+  Bridge and querier state changes are logged too
+* upper case to lower case for kernel doc of batadv_mcast_flags_open
+  (PATCH 2/3)
+* Adding note to kernel doc of batadv_mcast_get_bridge about
+  increased refcount (PATCH 1/3)
+* Printing some lines about current bridge and querier state to
+  debugfs too (PATCH 3/3)
+
+Changes in v5 (PATCH 2/2 only):
+* s/dat_cache/mcast_flags/ in kerneldoc (copy&paste error)
+
+Changes in v4 (PATCH 2/2 only):
+* initial {ad,e}dition of this patch
+
+Changes in v3 (PATCH 1/2 only):
+* Removed "RFC" tag in title again: The stubs and new export are upstream
+  in net-next and therefore going to be included in 3.17
+* Added some debug output:
+  * Two warning messages:
+    -> Old kernel version or no bridge IGMP/MLD snooping compiled
+  * New batman-adv log-level "mcast":
+    -> Logging mcast flag changes
+  (a third debugging facility, a new table for debugfs for a global
+   mcast flag overview will be added in a separate patch later
+   as discussed with Simon)
+
+Changes in v2 (PATCH 1/2 only):
+* fetching local (= on this same kernel) multicast listeners from
+  the bridge instead of the bat0 interface if a bridge is present
+  - just like ip addresses and routes should be used from br0, the
+  same goes for multicast listeners
+* beautification of batadv_mcast_mla_br_addr_cpy(), now using already
+  present functions from the kernel instead of own, hackish approach
+* changed names of some goto-labels (not using "skip" anymore)
+* using new, third bridge multicast export (because this export is
+  not upstream yet, I've added the "RFC" in the title):
+  br_multicast_has_querier_anywhere()
+* adding compat stubs for two bridge multicast exports, to make
+  batman-adv compile- and usable even if a 3.16 kernel was compiled
+  without bridge code - the stubs are supposed to be upstream in the
+  bridge code in 3.17 (therefore just 'compat')
+* updated kerneldocs for batadv_mcast_mla_bridge_get() and
+  batadv_mcast_mla_softif_get()
+* The two sentences in the commit message starting with "Queriers: ..."
+  were slightly modified to include the third bridge multicast export
 
