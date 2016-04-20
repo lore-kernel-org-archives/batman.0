@@ -1,14 +1,16 @@
 Return-Path: <andrew@lunn.ch>
-Date: Wed, 20 Apr 2016 04:31:36 +0200
+Date: Wed, 20 Apr 2016 04:36:40 +0200
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160420023136.GA13247@lunn.ch>
-References: <cover.1458231707.git.mschiffer@universe-factory.net>
- <3565172.dz0c0eMaPu@prime>
+Message-ID: <20160420023640.GB13247@lunn.ch>
+References: <1456867148-31883-1-git-send-email-andrew@lunn.ch>
+ <9919433.c4WuAskJuF@sven-edge> <20160313154222.GD9674@lunn.ch>
+ <1812177.9NXi5yCt0r@prime>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3565172.dz0c0eMaPu@prime>
-Subject: Re: [B.A.T.M.A.N.] [RFC v2 0/5] batman-adv netlink query API
+In-Reply-To: <1812177.9NXi5yCt0r@prime>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 4/4] batman-adv: debugfs: Add netns
+ support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,40 +20,27 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-> > The following files are still missing:
-> > 
-> > * gateways
-> > * bla_claim_table
-> > * bla_backbone_table
-> > * dat_cache
-> > * nc_nodes
-> > 
-> > Obviously, documentation is also a TODO. Comments about the API design are
-> > very welcome...
-> > 
-> > Regards,
-> > Matthias
+> we had a phone discussion with Antonio, Marek, Sven and myself how to move 
+> forward with netlink and namespace support.
 > 
-> Hi Matthias,
+> We concluded that having proper netlink support would be the more future proof 
+> option. We would then keep debugfs but slowly phase it out in the next coming 
+> years. New features would also be adopted in the netlink implementation.
 > 
-> thanks for reposting this and sorry for the long silence. Since we have the 
-> namespace work from Andrew now which would require netlink support, I think 
-> its a good time to integrate this. :)
+> It was also our impression that having the namespace support within netlink 
+> would be the cleaner approach, although it takes more work because it requires 
+> the netlink and appropriate userspace changes.
+> 
+> Andrew, what do you think? Would you like to check and rebase on Matthias' 
+> patchset?
 
-Hi Simon, Matthias
+I agree about debugfs. As i already said, i've played with netlink and
+netns. I changed my debugfs patch, so that it only creates files for
+the default netns. For all other netns, debugfs operations become a
+NOP, and you need to use netns.
 
-I picked up your patches and played with them when combined with my
-netns patches. All works well.
+     Andrew
 
-I also started on integrating the user space code with batctl. I've
-got as far as integrating netlink user space code for what you had,
-and i added gateways, and started on bla_claim_table.
-
-I'm on vacation this week, and i'm not likely to be reading emails
-again this week. 
-
-I should be able to post code next week.
-
-  Andrew
