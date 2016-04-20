@@ -1,15 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Tue, 19 Apr 2016 04:28:38 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20160419022838.GF17647@otheros>
-References: <1461031839-31182-1-git-send-email-linus.luessing@c0d3.blue>
+Return-Path: <andrew@lunn.ch>
+Date: Wed, 20 Apr 2016 04:31:36 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20160420023136.GA13247@lunn.ch>
+References: <cover.1458231707.git.mschiffer@universe-factory.net>
+ <3565172.dz0c0eMaPu@prime>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1461031839-31182-1-git-send-email-linus.luessing@c0d3.blue>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv13 0/4] Multicast optimizations for
-	bridges
+In-Reply-To: <3565172.dz0c0eMaPu@prime>
+Subject: Re: [B.A.T.M.A.N.] [RFC v2 0/5] batman-adv netlink query API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,22 +18,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tue, Apr 19, 2016 at 04:10:35AM +0200, Linus Lüssing wrote:
-> Changes in v13:
-> * Substituted a non-breaking space with a boring one
-> * Dropped compat code for kernels < 3.2
-> * Removed mcast tvlv container and handler support for v1 completely
-> * Rebase to current master branch
->   (automatic 3-way merge without issues)
+> > The following files are still missing:
+> > 
+> > * gateways
+> > * bla_claim_table
+> > * bla_backbone_table
+> > * dat_cache
+> > * nc_nodes
+> > 
+> > Obviously, documentation is also a TODO. Comments about the API design are
+> > very welcome...
+> > 
+> > Regards,
+> > Matthias
+> 
+> Hi Matthias,
+> 
+> thanks for reposting this and sorry for the long silence. Since we have the 
+> namespace work from Andrew now which would require netlink support, I think 
+> its a good time to integrate this. :)
 
-The last changes in v13 are just compile and not runtime tested so
-far. Hopefully will do this within the next few days. But, ehm,
-should be minor anyways (..., which were the last words he mumbled
-before stepping on the deadly null pointer :P).
+Hi Simon, Matthias
 
-But I thought, it might be a good idea to mail them already in
-case Simon wants to do his testing in parallel this weekend :).
+I picked up your patches and played with them when combined with my
+netns patches. All works well.
 
-Regards, Linus
+I also started on integrating the user space code with batctl. I've
+got as far as integrating netlink user space code for what you had,
+and i added gateways, and started on bla_claim_table.
+
+I'm on vacation this week, and i'm not likely to be reading emails
+again this week. 
+
+I should be able to post code next week.
+
+  Andrew
