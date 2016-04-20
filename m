@@ -1,13 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 20 Apr 2016 09:39:08 +0200
-Message-ID: <243525463.WEoUOFbSir@bentobox>
-In-Reply-To: <57173083.6020305@universe-factory.net>
+Return-Path: <mschiffer@universe-factory.net>
 References: <cover.1458231707.git.mschiffer@universe-factory.net>
  <3565172.dz0c0eMaPu@prime> <57173083.6020305@universe-factory.net>
+ <243525463.WEoUOFbSir@bentobox>
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+Message-ID: <57173485.2060407@universe-factory.net>
+Date: Wed, 20 Apr 2016 09:49:25 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7652408.dfNstchSho";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+In-Reply-To: <243525463.WEoUOFbSir@bentobox>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature";
+ boundary="SdfD450rnQVLguLpQrcVmml4Gd6QNL6MQ"
 Subject: Re: [B.A.T.M.A.N.] [RFC v2 0/5] batman-adv netlink query API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,50 +20,93 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart7652408.dfNstchSho
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--SdfD450rnQVLguLpQrcVmml4Gd6QNL6MQ
+Content-Type: multipart/mixed; boundary="C7rExgSpunaiSsW2DfVSHmplG8154G9JQ"
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
+Message-ID: <57173485.2060407@universe-factory.net>
+Subject: Re: [B.A.T.M.A.N.] [RFC v2 0/5] batman-adv netlink query API
+References: <cover.1458231707.git.mschiffer@universe-factory.net>
+ <3565172.dz0c0eMaPu@prime> <57173083.6020305@universe-factory.net>
+ <243525463.WEoUOFbSir@bentobox>
+In-Reply-To: <243525463.WEoUOFbSir@bentobox>
 
-On Wednesday 20 April 2016 09:32:19 Matthias Schiffer wrote:
-[...]
-> As I've mentioned before, regarding the batctl support, I'd love to see a
-> little library ("libbatadv"?) on top of libnl that could be used by batctl,
-> alfred and other monitoring tools (like the ones we are using in the Gluon
-> Freifunk firmwares).
+--C7rExgSpunaiSsW2DfVSHmplG8154G9JQ
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Hm, then we would have to make everything ABI stable. So we would loose the 
-flexibility of netlink (adding more fields) again just to keep the library 
-stable.
+On 04/20/2016 09:39 AM, Sven Eckelmann wrote:
+> On Wednesday 20 April 2016 09:32:19 Matthias Schiffer wrote:
+> [...]
+>> As I've mentioned before, regarding the batctl support, I'd love to se=
+e a
+>> little library ("libbatadv"?) on top of libnl that could be used by ba=
+tctl,
+>> alfred and other monitoring tools (like the ones we are using in the G=
+luon
+>> Freifunk firmwares).
+>=20
+> Hm, then we would have to make everything ABI stable. So we would loose=
+ the=20
+> flexibility of netlink (adding more fields) again just to keep the libr=
+ary=20
+> stable.
+>=20
+> Or what kind of functionality should this library expose that can be ea=
+sily be=20
+> kept stable?
+>=20
+> Kind regards,
+> 	Sven
+>=20
 
-Or what kind of functionality should this library expose that can be easily be 
-kept stable?
+I don't understand. The same code that would we added to batctl and alfre=
+d
+could just be made a library with a nicer API, so other projects can easi=
+ly
+reuse it. Of course, the library API/ABI would need to be designed in a w=
+ay
+that keeps it extensible without breaking ABI.
 
-Kind regards,
-	Sven
---nextPart7652408.dfNstchSho
+I'm thinking of functions like "iterate over all originators", which woul=
+d
+query the netlink API, and then just call a callback with the netlink
+attribute set for each originator. Just a thin wrapper making things more=
+
+usable.
+
+Regards,
+Matthias
+
+
+--C7rExgSpunaiSsW2DfVSHmplG8154G9JQ--
+
+--SdfD450rnQVLguLpQrcVmml4Gd6QNL6MQ
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXFzIcAAoJEF2HCgfBJntGQuMP/29+qCYEpc90ht5FVDkBgE9i
-uZHcXWB/rATmkwYUjlATpYgeDLODV40WRJLg6PfVCRiw615e76Z9T8Dw+woRb8H1
-EGnp7P6nI5emNtmkbuOlfWVeDjt/leOFPOQ+EiAJ673YEk8I7TtaSSpqHwtjnuYy
-MxMirn1PY472qREp+qaqmB+Lnj1xlGq5zi+D3odemfMJ5HTo8Qd1sYBoO/LarQ++
-UBo532oyW0gcww+pWJ8ac7aY2VLWRMwnfeQiLc9yA58Dn9pSzkONQzWBHu0dwKOc
-mBim52z+fLSuhriqezxesWFjFoeHqsRGQT3lWKw8058qqAHIg34wUoJx5wk8nTA4
-/ZL0928nWeDvZVu0lUWWN227Fq/497e/9WqdNmmn8CTCyxJOsOXuyy/dUcmjDRNt
-n8LhDTmHOknSW89ea2jno6TSVzZ2Xoq+njUy8+3Poo91LXipTl3t83RRMUCu+PI7
-Gv7jwkQDiIQwIkIB2619dQRcCnDnJ3VCiFGzaNs8doSJMuTp6LlwF0wUdVORfQBw
-r1ViK9FpbrRV0bTUSQFZyGA8L6h1KrBFGtr0v4tX4/SUITRGN4DzSbX8Py2LGiwf
-RT5qC77LOCElT+ZXmehiQA38ADDCsySqXvotI9eIEQma0S2V5MeYOZkVoHMe2lCa
-+FnO5E+4/5FNEmeZGwHx
-=S9Dr
+iQIcBAEBCgAGBQJXFzSFAAoJEBbvP2TLIB2cB4wP/2/zz2c0zhZRV+CIBD+gxnnl
+QdkacaFh23ph2SfH009tq4EkCxG/j2m2b0/VcMilz8gOsNx4TRZbSk3djVyaVypE
+PmCCdvBXgUvEqs0bCXGlw56EXOZ6xEycpdThsxNizC9cT9PeF93Vqnouk3roHXYc
+OPWm9eF7eGsNwxwupWQ67jFx55bVfKIflfku0jEPcJUIczhh+dOVqVI0K/DiJ6FE
+GeknCfhvRedU5VgyuX9aIUnUYs+xa1JdWpkmiq8r0F/ipSKwg7Me4RoA1ayktgXv
+40NjX+NGPwIZwi0E1n7PT5Y4LwGTGqTgvQ0yMnq8MgJvyqdGVL00Q3vve8IINfSm
+pCiqmsCx1W2sQUGOUkmc1u+KaW5GpISYq+YxbQfsi4EYV1ut0euD5eozvTb3cSLf
+PWQ8LRk51nG3dTyb2yJUGWNmekbKVJUSKP4krNotpdEkoVOmtvSd63GCQly57EES
+U296uIDh3Yn9TO3pp6l8j8DOx2yTK1g5UVDY48Bo/apDwQmOkiwjMSb5Yn3AIHb4
+IfE2l1FPitU0bd+Oy5W09z1TKx7nRgZybe43ALCcPL4zJz1F+uD6AsgKRs9WBwm8
+yXC+gu+fXN+FfTBflqbfKsZowEq07h0CP/jnrugj3/2aV7w09B98O9YlEHMNX8Mg
+81OdgeLRCNZ9DarGkc95
+=WumC
 -----END PGP SIGNATURE-----
 
---nextPart7652408.dfNstchSho--
-
+--SdfD450rnQVLguLpQrcVmml4Gd6QNL6MQ--
