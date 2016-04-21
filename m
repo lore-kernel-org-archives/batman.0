@@ -1,9 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 21 Apr 2016 12:57:27 +0200
-Message-Id: <1461236247-22642-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v4] batman-adv: Create batman soft interfaces
-	within correct netns.
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Thu, 21 Apr 2016 18:59:30 +0800
+Message-ID: <2420713.kR2VLxGM4I@voltaire>
+In-Reply-To: <1461236247-22642-1-git-send-email-sven@narfation.org>
+References: <1461236247-22642-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1528340.rzZ7FPBex7";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4] batman-adv: Create batman soft
+	interfaces within correct netns.
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,207 +20,53 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Andrew Lunn <andrew@lunn.ch>
+--nextPart1528340.rzZ7FPBex7
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-When creating a soft interface, create it in the same netns as the
-hard interface. Replace all references to init_net with the correct
-name space for the interface being manipulated.
+On Thursday, April 21, 2016 12:57:27 Sven Eckelmann wrote:
+> From: Andrew Lunn <andrew@lunn.ch>
+> 
+> When creating a soft interface, create it in the same netns as the
+> hard interface. Replace all references to init_net with the correct
+> name space for the interface being manipulated.
+> 
+> Suggested-by: Daniel Ehlers <danielehlers@mindeye.net>
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> Acked-by: Antonio Quartulli <a@unstable.cc>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> v4: rebase on current master
+> 
+>  net/batman-adv/hard-interface.c    | 10 +++++-----
+>  net/batman-adv/hard-interface.h    |  3 ++-
+>  net/batman-adv/soft-interface.c    |  7 +++++--
+>  net/batman-adv/soft-interface.h    |  3 ++-
+>  net/batman-adv/sysfs.c             |  3 ++-
+>  net/batman-adv/translation-table.c |  4 ++--
+>  6 files changed, 18 insertions(+), 12 deletions(-)
 
-Suggested-by: Daniel Ehlers <danielehlers@mindeye.net>
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-Acked-by: Antonio Quartulli <a@unstable.cc>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v4: rebase on current master
+Applied in revision ecfa261.
 
- net/batman-adv/hard-interface.c    | 10 +++++-----
- net/batman-adv/hard-interface.h    |  3 ++-
- net/batman-adv/soft-interface.c    |  7 +++++--
- net/batman-adv/soft-interface.h    |  3 ++-
- net/batman-adv/sysfs.c             |  3 ++-
- net/batman-adv/translation-table.c |  4 ++--
- 6 files changed, 18 insertions(+), 12 deletions(-)
+Thanks,
+Marek
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index c5cfda1..8c2f399 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -36,7 +36,6 @@
- #include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/workqueue.h>
--#include <net/net_namespace.h>
- 
- #include "bridge_loop_avoidance.h"
- #include "debugfs.h"
-@@ -121,6 +120,7 @@ static bool batadv_mutual_parents(const struct net_device *dev1,
- static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
- {
- 	struct net_device *parent_dev;
-+	struct net *net = dev_net(net_dev);
- 	bool ret;
- 
- 	/* check if this is a batman-adv mesh interface */
-@@ -133,7 +133,7 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
- 		return false;
- 
- 	/* recurse over the parent device */
--	parent_dev = __dev_get_by_index(&init_net, dev_get_iflink(net_dev));
-+	parent_dev = __dev_get_by_index(net, dev_get_iflink(net_dev));
- 	/* if we got a NULL parent_dev there is something broken.. */
- 	if (WARN(!parent_dev, "Cannot find parent device"))
- 		return false;
-@@ -456,7 +456,7 @@ static int batadv_master_del_slave(struct batadv_hard_iface *slave,
- }
- 
- int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
--				   const char *iface_name)
-+				   struct net *net, const char *iface_name)
- {
- 	struct batadv_priv *bat_priv;
- 	struct net_device *soft_iface, *master;
-@@ -469,10 +469,10 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 
- 	kref_get(&hard_iface->refcount);
- 
--	soft_iface = dev_get_by_name(&init_net, iface_name);
-+	soft_iface = dev_get_by_name(net, iface_name);
- 
- 	if (!soft_iface) {
--		soft_iface = batadv_softif_create(iface_name);
-+		soft_iface = batadv_softif_create(net, iface_name);
- 
- 		if (!soft_iface) {
- 			ret = -ENOMEM;
-diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
-index d74f198..a76724d 100644
---- a/net/batman-adv/hard-interface.h
-+++ b/net/batman-adv/hard-interface.h
-@@ -28,6 +28,7 @@
- #include <linux/types.h>
- 
- struct net_device;
-+struct net;
- 
- enum batadv_hard_if_state {
- 	BATADV_IF_NOT_IN_USE,
-@@ -55,7 +56,7 @@ bool batadv_is_wifi_iface(int ifindex);
- struct batadv_hard_iface*
- batadv_hardif_get_by_netdev(const struct net_device *net_dev);
- int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
--				   const char *iface_name);
-+				   struct net *net, const char *iface_name);
- void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
- 				     enum batadv_hard_if_cleanup autodel);
- void batadv_hardif_remove_interfaces(void);
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index f1ac60e..f37ce39 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -885,13 +885,14 @@ static int batadv_softif_slave_add(struct net_device *dev,
- 				   struct net_device *slave_dev)
- {
- 	struct batadv_hard_iface *hard_iface;
-+	struct net *net = dev_net(dev);
- 	int ret = -EINVAL;
- 
- 	hard_iface = batadv_hardif_get_by_netdev(slave_dev);
- 	if (!hard_iface || hard_iface->soft_iface)
- 		goto out;
- 
--	ret = batadv_hardif_enable_interface(hard_iface, dev->name);
-+	ret = batadv_hardif_enable_interface(hard_iface, net, dev->name);
- 
- out:
- 	if (hard_iface)
-@@ -988,7 +989,7 @@ static void batadv_softif_init_early(struct net_device *dev)
- 	memset(priv, 0, sizeof(*priv));
- }
- 
--struct net_device *batadv_softif_create(const char *name)
-+struct net_device *batadv_softif_create(struct net *net, const char *name)
- {
- 	struct net_device *soft_iface;
- 	int ret;
-@@ -998,6 +999,8 @@ struct net_device *batadv_softif_create(const char *name)
- 	if (!soft_iface)
- 		return NULL;
- 
-+	dev_net_set(soft_iface, net);
-+
- 	soft_iface->rtnl_link_ops = &batadv_link_ops;
- 
- 	ret = register_netdevice(soft_iface);
-diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
-index 13dcfe5..ec303dd 100644
---- a/net/batman-adv/soft-interface.h
-+++ b/net/batman-adv/soft-interface.h
-@@ -24,13 +24,14 @@
- #include <net/rtnetlink.h>
- 
- struct net_device;
-+struct net;
- struct sk_buff;
- 
- int batadv_skb_head_push(struct sk_buff *skb, unsigned int len);
- void batadv_interface_rx(struct net_device *soft_iface,
- 			 struct sk_buff *skb, int hdr_size,
- 			 struct batadv_orig_node *orig_node);
--struct net_device *batadv_softif_create(const char *name);
-+struct net_device *batadv_softif_create(struct net *net, const char *name);
- void batadv_softif_destroy_sysfs(struct net_device *soft_iface);
- bool batadv_softif_is_valid(const struct net_device *net_dev);
- extern struct rtnl_link_ops batadv_link_ops;
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index fffa230..414b207 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -832,6 +832,7 @@ static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
- 				       size_t count)
- {
- 	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
-+	struct net *net = dev_net(net_dev);
- 	struct batadv_hard_iface *hard_iface;
- 	int status_tmp = -1;
- 	int ret = count;
-@@ -875,7 +876,7 @@ static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
- 		batadv_hardif_disable_interface(hard_iface,
- 						BATADV_IF_CLEANUP_AUTO);
- 
--	ret = batadv_hardif_enable_interface(hard_iface, buff);
-+	ret = batadv_hardif_enable_interface(hard_iface, net, buff);
- 
- unlock:
- 	rtnl_unlock();
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 57efb07..feaf492 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -43,7 +43,6 @@
- #include <linux/stddef.h>
- #include <linux/string.h>
- #include <linux/workqueue.h>
--#include <net/net_namespace.h>
- 
- #include "bridge_loop_avoidance.h"
- #include "hard-interface.h"
-@@ -585,6 +584,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
- 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
- 	struct batadv_tt_local_entry *tt_local;
- 	struct batadv_tt_global_entry *tt_global = NULL;
-+	struct net *net = dev_net(soft_iface);
- 	struct batadv_softif_vlan *vlan;
- 	struct net_device *in_dev = NULL;
- 	struct hlist_head *head;
-@@ -596,7 +596,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
- 	u32 match_mark;
- 
- 	if (ifindex != BATADV_NULL_IFINDEX)
--		in_dev = dev_get_by_index(&init_net, ifindex);
-+		in_dev = dev_get_by_index(net, ifindex);
- 
- 	tt_local = batadv_tt_local_hash_find(bat_priv, addr, vid);
- 
--- 
-2.8.1
+--nextPart1528340.rzZ7FPBex7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJXGLKSAAoJEFNVTo/uthzAiB4IAINWDj7ZlnVvwZsiZLyzjAuJ
+b2AjKSPypddaRpeIqAzZAfQiOUqYL+YJtiAkHYBg1GK0p39wvKI1EttOP4Iw5Vli
+F+g6x/bjqFyjhMb5eZC7696XA6Rs8I5ltmFrlYQmG69ULBZGPMGik/f4TUahgl6r
+TLUxf3dMTuYnGOIXGUw+VERH4YqjEaanHTKpYfuT/kVMQe1xsqxRzla2S5c3ND0E
+6H74EY/9eW84Lnqfzwra5CHYCX6IaWDZTL/Re1CpOfzewXZRXcq6I5TpQTRbVe5s
+WzY7gHytFtw3gX36sO3oK6Si9g6YhW541XP6lzMwSvHqIMOb7xXFtPreD4Ru68k=
+=ICx4
+-----END PGP SIGNATURE-----
+
+--nextPart1528340.rzZ7FPBex7--
 
