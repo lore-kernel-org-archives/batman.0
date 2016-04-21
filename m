@@ -1,14 +1,15 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 21 Apr 2016 18:12:42 +0800
-Message-ID: <58450790.kUnEmWRFah@voltaire>
-In-Reply-To: <1460597825-22660-1-git-send-email-a@unstable.cc>
-References: <1460597825-22660-1-git-send-email-a@unstable.cc>
+Return-Path: <a@unstable.cc>
+Date: Thu, 21 Apr 2016 18:22:52 +0800
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <20160421102252.GB23886@prodigo>
+References: <1457711046-4603-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2042276.pO0nqJvNY3";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: B.A.T.M.A.N V - make sure
-	iface is reactivated upon NETDEV_UP event
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="+pHx0qQiF2pBVqBT"
+Content-Disposition: inline
+In-Reply-To: <1457711046-4603-1-git-send-email-sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Fix reference counting
+ of vlan object for tt_local_entry
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,61 +19,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart2042276.pO0nqJvNY3
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
 
-On Thursday, April 14, 2016 09:37:05 Antonio Quartulli wrote:
-> At the moment there is no explicit reactivation of an hard-interface
-> upon NETDEV_UP event. In case of B.A.T.M.A.N. IV the interface is
-> reactivated as soon as the next OGM is scheduled for sending, but this
-> mechanism does not work with B.A.T.M.A.N. V. The latter does not rely
-> on the same scheduling mechanism as its predecessor and for this reason
-> the hard-interface remains deactivated forever after being brought down
-> once.
-> 
-> This patch fixes the reactivation mechanism by adding a new routing API
-> which explicitly allows each algorithm to perform any needed operation
-> upon interface re-activation.
-> 
-> Such API is optional and is implemented by B.A.T.M.A.N. V only and it
-> just takes care of setting the iface status to ACTIVE
-> 
-> Signed-off-by: Antonio Quartulli <a@unstable.cc>
-> ---
-> 
-> Changes since v1:
-> - added kerneldoc for bat_iface_activate
-> 
->  net/batman-adv/bat_v.c          | 12 ++++++++++++
->  net/batman-adv/hard-interface.c |  3 +++
->  net/batman-adv/types.h          |  3 +++
->  3 files changed, 18 insertions(+)
+--+pHx0qQiF2pBVqBT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Applied in revision 69cfb8b.
+On Fri, Mar 11, 2016 at 04:44:05PM +0100, Sven Eckelmann wrote:
+> The batadv_tt_local_entry was specific to a batadv_softif_vlan and held an
+> implicit reference to it. But this reference was never stored in form of a
+> pointer in the tt_local_entry itself. Instead batadv_tt_local_remove,
+> batadv_tt_local_table_free and batadv_tt_local_purge_pending_clients depe=
+nd
+> on a consistent state of bat_priv->softif_vlan_list and that
+> batadv_softif_vlan_get always returns the batadv_softif_vlan object which
+> it has a reference for. But batadv_softif_vlan_get cannot guarantee that
+> because it is working only with rcu_read_lock on this list. It can
+> therefore happen that an vid is in this list twice or that
+> batadv_softif_vlan_get cannot find the batadv_softif_vlan for an vid due =
+to
+> some other list operations taking place at the same time.
+>=20
+> Instead add a batadv_softif_vlan pointer directly in batadv_tt_local_entry
+> which will be used for the reference counter decremented on release of
+> batadv_tt_local_entry.
+>=20
+> Fixes: 9729d2085c0f ("batman-adv: fix TT VLAN inconsistency on VLAN re-ad=
+d")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-Thanks,
-Marek
+Thanks a lot Sven ! This change, on top of fixing the ref issue, also simpl=
+ified
+the code quite a lot!
 
---nextPart2042276.pO0nqJvNY3
+Acked-by: Antonio Quartulli <a@unstable.cc>
+
+--=20
+Antonio Quartulli
+
+--+pHx0qQiF2pBVqBT
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXGKeaAAoJEFNVTo/uthzAI8oH/j1LK6bezLGJXxV9PrUa55B2
-mU23VejhqoRHL784w0sN6KUtaELEWQQNnNRWxswzNZ0o4FAl+qGx4rC1QLY1BBXQ
-WeAghDTEIWtRFSQ7ErGLtdbA8glpmIvDxm0tpbAmKyWatQtBOG6RFz8wf16a0V65
-s6TfPFYo5+h+nFynDgK2Zbd4tt02QAg0kKEqeYHcNw1JiGvq+6/UhCLNpc+B/VFB
-7xdeKXi45wzGKErFeMTArm+cGDgd1MNaWN0/+mTTdeRkAotwa/oknmIxWWJKfbIp
-sSheIdOTb5OAkrxCwH+8nYrngpVY+ZSP7ecbNlm5TH5ozso9hefs/x3z8/LLrj0=
-=ttzB
+iQIcBAEBCAAGBQJXGKn8AAoJEJ4aZjxxc6bKSJAQAIpwG6/e/8ErYgpwQTA6sKjT
+pGdstbtoVFoODlE7j4yfac+nXploiVYLfLfAU94aaDqwG295La/RkI0dSAuwSoCQ
+Z4Z17JkdTbGsYioFifygHfltgW1kOFncidMikwv1BIo73gPtnZvqcDWlWIx7PWzf
+Wwwy50w7zIuQEU4bJvviYg0fHsm1uHHQhHIRB1v33IWFyEurqm4akbG5GwDphQcA
+NroLXD/LTphgUt01etvWVTrixlzHzvS5eXdL6AaNTtdTI/jUO4NEnJNUIilRllI3
+NAIJlLs67hVI5qBccEvLLSrJZpM58IA8WDSql5jSk3nPIFYi4Jqvum+wbSdAFk2+
+C9sbaED9OG+rgivdcz/xJVzB2MSq21e7VA17pcjN6lYn3b6sQ+eK5bQxy/qtzv17
+6BFE25rdFd+wogtebtsygG+25+nkNm8+KEbYsjquUWeGoySxy2o3S+4NAiwfz6VB
+vv0243ZEPwzi+zvtLflDGp200VJOzRpZV93sJjRTCV/k+Bxu/Vq5cCqc/3nY8pq5
+bpzPqqLac8zM2XSsBEH7p5VraD0YhjjBjjvrp2lS+wf2TOsjfrwDXTMvrr83XwM8
+fzYr4AyRvGG7OgIgtcPIDq096c14sbFCE6hZfPjqTO0BWaa8Mv6+ccyvjMICuc3Y
+tiO2T+UjECrf9MvN6Gro
+=WtdO
 -----END PGP SIGNATURE-----
 
---nextPart2042276.pO0nqJvNY3--
-
+--+pHx0qQiF2pBVqBT--
