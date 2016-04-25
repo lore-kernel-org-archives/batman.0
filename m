@@ -1,18 +1,9 @@
-Return-Path: <hwhilse@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Date: Mon, 25 Apr 2016 00:02:20 +0200
-From: Hans-Werner Hilse <hwhilse@gmail.com>
-In-Reply-To: <571A6F6E.3010901@viisauksena.de>
-References: <1458551033-8734-1-git-send-email-hwhilse@gmail.com>
- <1459103215-22444-1-git-send-email-hwhilse@gmail.com>
- <69c47d370308ade423bdc4c2d54d434e@hilses.de>
- <571A6F6E.3010901@viisauksena.de>
-Message-ID: <57e11b17875af874d6922592ff9e152d@hilses.de>
-Subject: Re: [B.A.T.M.A.N.] [RFC v2] alfred: implement TCP support for
- server-to-server communication
+Return-Path: <dvlasenk@redhat.com>
+From: Denys Vlasenko <dvlasenk@redhat.com>
+Date: Mon, 25 Apr 2016 15:25:22 +0200
+Message-Id: <1461590722-2095-1-git-send-email-dvlasenk@redhat.com>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Deinline batadv_orig_hash_find,
+	save 9024 bytes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,76 +13,110 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Denys Vlasenko <dvlasenk@redhat.com>, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, linux-kernel@vger.kernel.org
 
-Hi,
+This function compiles to 473 bytes of machine code.
+21 callsites.
 
-first: many thanks for testing.
+    text     data      bss       dec     hex filename
+95903266 20860288 35991552 152755106 91adba2 vmlinux_before
+95894242 20860288 35991552 152746082 91ab862 vmlinux
 
-Am 2016-04-22 20:37, schrieb jens:
-> ####### patch stuff
-> ####### wget https://patchwork.open-mesh.org/patch/15944/raw/ -O 
-> tcp.patch
-> patch < tcp.patch
-> patching file alfred.h
-> Hunk #1 succeeded at 90 (offset 1 line).
-> Hunk #2 succeeded at 103 (offset 1 line).
-> Hunk #3 succeeded at 131 (offset 1 line).
-> Hunk #4 succeeded at 147 (offset 1 line).
-> Hunk #5 succeeded at 170 (offset 1 line).
-> Hunk #6 succeeded at 187 (offset 1 line).
-> Hunk #7 succeeded at 200 (offset 1 line).
-> Hunk #8 succeeded at 227 (offset 1 line).
-> patching file main.c
-> patching file netsock.c
-> patching file recv.c
-> patching file send.c
-> patching file server.c
-> patching file unix_sock.c
-> Hunk #1 succeeded at 229 (offset 7 lines).
-> Hunk #2 succeeded at 259 (offset 7 lines).
+Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
+CC: Marek Lindner <mareklindner@neomailbox.ch>
+CC: Simon Wunderlich <sw@simonwunderlich.de>
+CC: Antonio Quartulli <a@unstable.cc>
+CC: Sven Eckelmann <sven@narfation.org>
+CC: b.a.t.m.a.n@lists.open-mesh.org
+CC: linux-kernel@vger.kernel.org
+---
+ net/batman-adv/originator.c | 29 +++++++++++++++++++++++++++++
+ net/batman-adv/originator.h | 31 ++-----------------------------
+ 2 files changed, 31 insertions(+), 29 deletions(-)
 
-Is this patch run against git master's HEAD?
-Even then, offsets might occur, there were some minor changes since I've 
-sent the patch.
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index e4cbb07..bcf78f1 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -47,6 +47,36 @@
+ /* hash class keys */
+ static struct lock_class_key batadv_orig_hash_lock_class_key;
+ 
++struct batadv_orig_node *
++batadv_orig_hash_find(struct batadv_priv *bat_priv, const void *data)
++{
++	struct batadv_hashtable *hash = bat_priv->orig_hash;
++	struct hlist_head *head;
++	struct batadv_orig_node *orig_node, *orig_node_tmp = NULL;
++	int index;
++
++	if (!hash)
++		return NULL;
++
++	index = batadv_choose_orig(data, hash->size);
++	head = &hash->table[index];
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
++		if (!batadv_compare_eth(orig_node, data))
++			continue;
++
++		if (!kref_get_unless_zero(&orig_node->refcount))
++			continue;
++
++		orig_node_tmp = orig_node;
++		break;
++	}
++	rcu_read_unlock();
++
++	return orig_node_tmp;
++}
++
+ static void batadv_purge_orig(struct work_struct *work);
+ 
+ /**
+diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
+index 4e8b67f..db7a87d 100644
+--- a/net/batman-adv/originator.h
++++ b/net/batman-adv/originator.h
+@@ -96,34 +96,7 @@ static inline u32 batadv_choose_orig(const void *data, u32 size)
+ 	return hash % size;
+ }
+ 
+-static inline struct batadv_orig_node *
+-batadv_orig_hash_find(struct batadv_priv *bat_priv, const void *data)
+-{
+-	struct batadv_hashtable *hash = bat_priv->orig_hash;
+-	struct hlist_head *head;
+-	struct batadv_orig_node *orig_node, *orig_node_tmp = NULL;
+-	int index;
+-
+-	if (!hash)
+-		return NULL;
+-
+-	index = batadv_choose_orig(data, hash->size);
+-	head = &hash->table[index];
+-
+-	rcu_read_lock();
+-	hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
+-		if (!batadv_compare_eth(orig_node, data))
+-			continue;
+-
+-		if (!kref_get_unless_zero(&orig_node->refcount))
+-			continue;
+-
+-		orig_node_tmp = orig_node;
+-		break;
+-	}
+-	rcu_read_unlock();
+-
+-	return orig_node_tmp;
+-}
++struct batadv_orig_node *
++batadv_orig_hash_find(struct batadv_priv *bat_priv, const void *data);
+ 
+ #endif /* _NET_BATMAN_ADV_ORIGINATOR_H_ */
+-- 
+1.8.1.4
 
-> ####### build errors
-> make
->     CC main.o
->     CC server.o
->     CC client.o
->     CC netsock.o
->     CC send.o
->     CC recv.o
-> recv.c: In function 'recv_alfred_packet':
-> recv.c:436:48: warning: passing argument 5 of 'process_alfred_request'
-> makes pointer from integer without a cast
->             (struct alfred_request_v0 *)packet, -1);
->                                                 ^
-> recv.c:302:12: note: expected 'struct tcp_connection *' but argument is
-> of type 'int'
->  static int process_alfred_request(struct globals *globals,
->             ^
-
-Oh dear. I'm not sure how my gcc managed to stay quiet at this. Also, 
-I'm astonished it didn't blew to pieces during my tests.
-The "-1" is a leftover from an earlier implementation, where I still 
-thought that I hadn't that much TCP connection state to carry around - 
-so I passed socket fds. I no longer do that, and switched to a struct 
-holding the state. In this case, the "-1" should be NULL. It seems to be 
-the only oversight of this kind as far as a I can see.
-
-I will update the patch shortly.
-
-> ###### var/log/kern.log
-> Apr 22 20:01:06 fffr-spielwiese kernel: [4398895.515177] alfred[31733]:
-> segfault at 2f ip 0000000000406034 sp 00007fff9dc39580 error 6 in
-> alfred[400000+d000]
-> Apr 22 20:02:05 fffr-spielwiese kernel: [4398954.569665] alfred[32657]:
-> segfault at 2f ip 0000000000406034 sp 00007ffc45b97d50 error 6 in
-> alfred[400000+d000]
-
-In the light of a dereference of a "-1" pointer, that doesn't come as a 
-surprise.
-
--hwh
