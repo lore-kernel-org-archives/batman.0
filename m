@@ -1,14 +1,15 @@
-Return-Path: <a@unstable.cc>
-From: Antonio Quartulli <a@unstable.cc>
-Date: Tue, 26 Apr 2016 11:27:19 +0800
-Message-Id: <1461641239-7097-6-git-send-email-a@unstable.cc>
-In-Reply-To: <1461641239-7097-1-git-send-email-a@unstable.cc>
+Return-Path: <sergei.shtylyov@cogentembedded.com>
 References: <1461641239-7097-1-git-send-email-a@unstable.cc>
+ <1461641239-7097-5-git-send-email-a@unstable.cc>
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Message-ID: <83cedcb0-1090-2a0d-f3b8-c9c273c5f1d2@cogentembedded.com>
+Date: Tue, 26 Apr 2016 17:42:54 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 5/5] batman-adv: Fix broadcast/ogm queue
-	limit on a removed interface
+In-Reply-To: <1461641239-7097-5-git-send-email-a@unstable.cc>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 4/5] batman-adv: Reduce refcnt of removed
+ router when updating route
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,51 +19,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
+To: Antonio Quartulli <a@unstable.cc>, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+Hello.
 
-When removing a single interface while a broadcast or ogm packet is
-still pending then we will free the forward packet without releasing the
-queue slots again.
+On 4/26/2016 6:27 AM, Antonio Quartulli wrote:
 
-This patch is supposed to fix this issue.
+> From: Sven Eckelmann <sven@narfation.org>
+>
+> _batadv_update_route rcu_derefences orig_ifinfo->router outside of a
+> spinlock protected region to print some information messages to the debug
+> log. But this pointer is not checked again when the new pointer is assigned
+> in the spinlock protected region. Thus is can happen that the value of
 
-Fixes: 6d5808d4ae1b ("batman-adv: Add missing hardif_free_ref in forw_packet_free")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
-[sven@narfation.org: fix conflicts with current version]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
----
- net/batman-adv/send.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+    Thus is can? :-)
 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 3ce06e0a91b1..76417850d3fc 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -675,6 +675,9 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- 
- 		if (pending) {
- 			hlist_del(&forw_packet->list);
-+			if (!forw_packet->own)
-+				atomic_inc(&bat_priv->bcast_queue_left);
-+
- 			batadv_forw_packet_free(forw_packet);
- 		}
- 	}
-@@ -702,6 +705,9 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- 
- 		if (pending) {
- 			hlist_del(&forw_packet->list);
-+			if (!forw_packet->own)
-+				atomic_inc(&bat_priv->batman_queue_left);
-+
- 			batadv_forw_packet_free(forw_packet);
- 		}
- 	}
--- 
-2.8.1
+> orig_ifinfo->router changed in the meantime and thus the reference counter
+> of the wrong router gets reduced after the spinlock protected region.
+>
+> Just rcu_dereferencing the value of orig_ifinfo->router inside the spinlock
+> protected region (which also set the new pointer) is enough to get the
+> correct old router object.
+>
+> Fixes: e1a5382f978b ("batman-adv: Make orig_node->router an rcu protected pointer")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+> Signed-off-by: Antonio Quartulli <a@unstable.cc>
+> ---
+>  net/batman-adv/routing.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+>
+> diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+> index 4dd646a52f1a..b781bf753250 100644
+> --- a/net/batman-adv/routing.c
+> +++ b/net/batman-adv/routing.c
+> @@ -105,6 +105,15 @@ static void _batadv_update_route(struct batadv_priv *bat_priv,
+>  		neigh_node = NULL;
+>
+>  	spin_lock_bh(&orig_node->neigh_list_lock);
+> +	/* curr_router used earlier may not be the current orig_ifinfo->router
+> +	 * anymore because it was dereferenced outside of the neigh_list_lock
+> +	 * protected region. After the new best neighbor has replace the current
+
+    Replaced.
+
+[...]
+
+MBR, Sergei
 
