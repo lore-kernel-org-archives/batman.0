@@ -1,16 +1,11 @@
 Return-Path: <a@unstable.cc>
-Date: Mon, 25 Apr 2016 22:19:41 +0800
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160425141941.GI3381@prodigo>
-References: <1461590722-2095-1-git-send-email-dvlasenk@redhat.com>
- <20160425133950.GH3381@prodigo> <571E1F70.3040001@redhat.com>
+Date: Tue, 26 Apr 2016 11:27:14 +0800
+Message-Id: <1461641239-7097-1-git-send-email-a@unstable.cc>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="451BZW+OUuJBCAYj"
-Content-Disposition: inline
-In-Reply-To: <571E1F70.3040001@redhat.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Deinline
- batadv_orig_hash_find, save 9024 bytes
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] pull request [net]: batman-adv-0160426
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,72 +15,85 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Denys Vlasenko <dvlasenk@redhat.com>
-Cc: linux-kernel@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+
+Hi David,
+
+this is a batch intended for net. Changes are quite small, therefore I
+hope it is not a big deal to include them at this point of the release cycle.
+
+In this patchset you can find the following fixes:
+
+1) check skb size to avoid reading beyond its border when delivering
+   payloads, by Sven Eckelmann
+2) initialize last_seen time in neigh_node object to prevent cleanup
+   routine from accidentally purge it, by Marek Lindner
+3) release "recently added" slave interfaces upon virtual/batman
+   interface shutdown, by Sven Eckelmann
+4) properly decrease router object reference counter upon routing table
+   update, by Sven Eckelmann
+5) release queue slots when purging OGM packets of deactivating slave
+   interface, by Linus Lüssing
+
+Patch 2 and 3 have no "Fixes:" tag because the offending commits date
+back to when batman-adv was not yet officially in the net tree.
+
+Note that all these changes are fixing very old commits and therefore
+it would be nice if you could queue them for *stable*.
+
+Please pull or let me know of any issue!
+
+Thanks a lot,
+	Antonio
 
 
---451BZW+OUuJBCAYj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, Apr 25, 2016 at 03:45:20PM +0200, Denys Vlasenko wrote:
-> On 04/25/2016 03:39 PM, Antonio Quartulli wrote:
-> > On Mon, Apr 25, 2016 at 03:25:22PM +0200, Denys Vlasenko wrote:
-> >> This function compiles to 473 bytes of machine code.
-> >> 21 callsites.
-> >>
-> >>     text     data      bss       dec     hex filename
-> >> 95903266 20860288 35991552 152755106 91adba2 vmlinux_before
-> >> 95894242 20860288 35991552 152746082 91ab862 vmlinux
-> >=20
-> > Hi Danys,
-> >=20
-> > thanks for your patch. This function is used in a several performance c=
-ritical
-> > code paths (i.e. packet forwarding).
-> >=20
-> > Are we sure we are not losing in performance here?
->=20
-> Is this a common case?
->=20
-> 	if (!hash)
-> 		return NULL;
->=20
-> If yes, then we can inline this part only.
 
-Unfortunately not: this case is rather rare at runtime.
-These hash tables are initialized when the batman virtual interface is crea=
-ted
-and should be freed only upon interface shutdown.
+The following changes since commit 5f44abd041c5f3be76d57579ab254d78e601315b:
 
-(actually I believe this might be a good candidate for an unlikely())
+  Merge tag 'rtc-4.6-3' of git://git.kernel.org/pub/scm/linux/kernel/git/abelloni/linux (2016-04-21 15:41:13 -0700)
 
-Cheers,
+are available in the git repository at:
 
---=20
-Antonio Quartulli
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
 
---451BZW+OUuJBCAYj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+for you to fetch changes up to c4fdb6cff2aa0ae740c5f19b6f745cbbe786d42f:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+  batman-adv: Fix broadcast/ogm queue limit on a removed interface (2016-04-24 15:41:56 +0800)
 
-iQIcBAEBCAAGBQJXHid9AAoJEJ4aZjxxc6bKM5AP/ifhv/IETU6CSih4ffMiq5vm
-MPXPZgsKo18f87k0BPiP7XePkOxQGCMxDgF4MXeZPPHp8dFx2dnEef4/HVwZRciA
-VEd4pJKV0+rdOwsUjeFgJTT5+iPy6ngDhPbGMIuRfsbzO09so+eml3SIr3j3xN1F
-LjZUQs8VpXXbcAumJqAWImi2Ap1H8HWe3DsVH3vtlOt1l6UFcgpqidPLVXcs4QnJ
-WtYn7QE4V+PSHJsp9XKYVFsOXRJM+nxRhTpT/Wltpn6QcH9CaA+QwJNjdWU5x2Lt
-voNSbumtAU7e8O+oMCkaScfdRtg+vQCcoVEE1RhitF6S0C2c3g1oKOLEUuGK7yg3
-efiTm4ZLR5ISGrzPLIAPkjjVxsaRlN8LLO/yaAtJGgzNVJphMcqa+S2jEI+fIhrv
-vjFa23syN/Nj6VpZOLFcTdhmWuYilvnPFtFL9ioOOrfWur6Y+CMsn4drL+aRTj6q
-pgAhFWgDOk0oIfo0e+mk78fRFCWzsQ3zlVfUEIIgXT4I4O0Foae6oQfYLz4KU4xt
-s71KdTlrhknlE12TtFmdXwrcdpG+MjVa+ybClBoijJazRc53LZmKa9l4QuS29+2I
-GxTdZF894D4oNDfgcXsPeten5pyRx3nB9hxlKf5pavXqzdBM46lV92o0aP8hoXp6
-cZG+p0qF/qdsptOfdNnK
-=7LJV
------END PGP SIGNATURE-----
+----------------------------------------------------------------
+In this patchset you can find the following fixes:
 
---451BZW+OUuJBCAYj--
+1) check skb size to avoid reading beyond its border when delivering
+   payloads, by Sven Eckelmann
+2) initialize last_seen time in neigh_node object to prevent cleanup
+   routine from accidentally purge it, by Marek Lindner
+3) release "recently added" slave interfaces upon virtual/batman
+   interface shutdown, by Sven Eckelmann
+4) properly decrease router object reference counter upon routing table
+   update, by Sven Eckelmann
+5) release queue slots when purging OGM packets of deactivating slave
+   interface, by Linus Lüssing
+
+Patch 2 and 3 have no "Fixes:" tag because the offending commits date
+back to when batman-adv was not yet officially in the net tree.
+
+----------------------------------------------------------------
+Linus Lüssing (1):
+      batman-adv: Fix broadcast/ogm queue limit on a removed interface
+
+Marek Lindner (1):
+      batman-adv: init neigh node last seen field
+
+Sven Eckelmann (3):
+      batman-adv: Check skb size before using encapsulated ETH+VLAN header
+      batman-adv: Deactivate TO_BE_ACTIVATED hardif on shutdown
+      batman-adv: Reduce refcnt of removed router when updating route
+
+ net/batman-adv/hard-interface.c | 3 +--
+ net/batman-adv/originator.c     | 1 +
+ net/batman-adv/routing.c        | 9 +++++++++
+ net/batman-adv/send.c           | 6 ++++++
+ net/batman-adv/soft-interface.c | 8 ++++++--
+ 5 files changed, 23 insertions(+), 4 deletions(-)
