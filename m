@@ -1,13 +1,13 @@
-Return-Path: <andrew@lunn.ch>
-Date: Thu, 28 Apr 2016 22:46:10 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160428204610.GA11920@lunn.ch>
-References: <1461875848-11720-1-git-send-email-andrew@lunn.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1461875848-11720-1-git-send-email-andrew@lunn.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 00/10] netns and netlink support
+Return-Path: <davem@davemloft.net>
+Date: Thu, 28 Apr 2016 16:43:51 -0400 (EDT)
+Message-Id: <20160428.164351.907536352207317310.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1461641239-7097-1-git-send-email-a@unstable.cc>
+References: <1461641239-7097-1-git-send-email-a@unstable.cc>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request [net]: batman-adv-0160426
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,19 +17,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
+To: a@unstable.cc
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Thu, Apr 28, 2016 at 10:37:18PM +0200, Andrew Lunn wrote:
-> This patchset completes netns support, by disabling debugfs entries
-> when not in the default name space, and correctly handling interface
-> stack loops when the parent is in a different name space.
-> 
-> It additionally adds netlink support for most of the information found
-> in debugfs, and is netns awaire.
-> 
-> Note: BLA is untested, so best assume it is broken...
+From: Antonio Quartulli <a@unstable.cc>
+Date: Tue, 26 Apr 2016 11:27:14 +0800
 
-I forgot to add, no attempt has been made to compile this on older
-kernels. So it probably does not...
+> In this patchset you can find the following fixes:
 
-	 Andrew
+Pulled, even though there were some typos in the commit messages.
+
+> Patch 2 and 3 have no "Fixes:" tag because the offending commits date
+> back to when batman-adv was not yet officially in the net tree.
+
+This is not correct.  Instead, in the future, you should provide a
+Fixes: tag that indicates the commit that merged batman-adv into the
+upstream tree initially.
+
+Thanks.
