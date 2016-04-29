@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 29 Apr 2016 21:15:23 +0200
-Message-ID: <14059223.O2V5p1EoNq@sven-edge>
-In-Reply-To: <1461875848-11720-11-git-send-email-andrew@lunn.ch>
+Date: Fri, 29 Apr 2016 21:51:12 +0200
+Message-ID: <7460918.gGjtq2HAJI@sven-edge>
+In-Reply-To: <13794357.HqoOAIfBmV@bentobox>
 References: <1461875848-11720-1-git-send-email-andrew@lunn.ch>
- <1461875848-11720-11-git-send-email-andrew@lunn.ch>
+ <20160429121427.GB4053@lunn.ch> <13794357.HqoOAIfBmV@bentobox>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart162441644.nXN9VMh6S6";
+Content-Type: multipart/signed; boundary="nextPart1501387.JHULFoi7BA";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 10/10] batman-adv: add B.A.T.M.A.N. Dump
-	BLA claims via netlink
+Subject: Re: [B.A.T.M.A.N.] [PATCH 01/10] batman-adv: Handle parent
+	interfaces in a different netns
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,152 +21,182 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart162441644.nXN9VMh6S6
-Content-Type: multipart/mixed; boundary="nextPart2258048.UeUabJotxB"
+--nextPart1501387.JHULFoi7BA
+Content-Type: multipart/mixed; boundary="nextPart1676580.kur3a7VF0k"
 Content-Transfer-Encoding: quoted-printable
 
 This is a multi-part message in MIME format.
 
-=2D-nextPart2258048.UeUabJotxB
+=2D-nextPart1676580.kur3a7VF0k
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Thursday 28 April 2016 22:37:28 Andrew Lunn wrote:
-> Dump the list of bridge loop avoidance claims via the netlink socket.
+On Friday 29 April 2016 14:59:21 Sven Eckelmann wrote:
+> On Friday 29 April 2016 14:14:27 Andrew Lunn wrote:
+> > On Fri, Apr 29, 2016 at 07:52:42AM +0200, Sven Eckelmann wrote:
+> > > On Thursday 28 April 2016 22:37:19 Andrew Lunn wrote:
+> > > > batman-adv tries to prevent the user from placing a batX soft
+> > > > interface into another batman mesh as a hard interface. It does this
+> > > > by walking up the devices list of parents and ensures they are all
+> > > > none batX interfaces. iflink can point to an interface in a different
+> > > > namespace, so also retrieve the parents name space when finding the
+> > > > parent and use it when doing the comparison.
+> > > > 
+> > > > Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> > > > Acked-by: Antonio Quartulli <a@untable.cc>
+> > > > ---
+> > > 
+> > > You are unfortunately reverting back to an older version of the patch
+> > > which is harder to make compile on older kernels.
+> > 
+> > Hi Sven
+> > 
+> > Please point me at the version you would prefer.
 > 
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> ---
->  include/uapi/linux/batman_adv.h        |   6 ++
->  net/batman-adv/bridge_loop_avoidance.c | 162
-> +++++++++++++++++++++++++++++++++ net/batman-adv/bridge_loop_avoidance.h | 
->  9 +-
->  net/batman-adv/netlink.c               |   7 ++
->  4 files changed, 183 insertions(+), 1 deletion(-)
+> Partially this one: https://patchwork.open-mesh.org/patch/15921/
+> 
+> I know that your current submission doesn't contain the compat-patches part
+> (which I find rather ugly) but this version has only a single function
+> handling the batadv_getlink_net and thus could be easier to create some wild
+> #defines working around the compat problem on older versions. But it will
+> most likely end with a warning and being a big NOP on older kernels.
+> 
+> It is something like (untested):
+> 
+>     /* WARNING dirty hack for batadv_getlink_net */
+>     #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
+>     	#define get_link_net get_xstats_size || 1 ||
+> netdev->rtnl_link_ops->get_xstats_size #endif
 
-You can find the missing includes in the attached patch
+Attached is the patch version of the hack. It creates following warning:
+
+/tmp/qemu-batman/batman-adv/net/batman-adv/hard-interface.c:103:9: warning: return makes pointer from integer without a cast [-Wint-conversion]
+  return netdev->rtnl_link_ops->get_link_net(netdev);
+         ^
+
+If somebody else has a good/better idea then please post it.
 
 Kind regards,
 	Sven
-=2D-nextPart2258048.UeUabJotxB
-Content-Disposition: attachment; filename="0020-missing-includes-10.patch"
+=2D-nextPart1676580.kur3a7VF0k
+Content-Disposition: attachment; filename="0001-get_link_net-hack.patch"
 Content-Transfer-Encoding: 7Bit
-Content-Type: text/x-patch; charset="UTF-8"; name="0020-missing-includes-10.patch"
+Content-Type: text/x-patch; charset="UTF-8"; name="0001-get_link_net-hack.patch"
 
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 29 Apr 2016 21:07:57 +0200
-Subject: [PATCH] missing includes 10
+Date: Fri, 29 Apr 2016 21:48:55 +0200
+Subject: [PATCH] get_link_net hack
 =2D--
- net/batman-adv/bridge_loop_avoidance.c | 3 +++
- net/batman-adv/bridge_loop_avoidance.h | 1 +
- 2 files changed, 4 insertions(+)
+ compat.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index b3fab2a..2e40ada 100644
-=2D-- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -35,6 +35,7 @@
- #include <linux/list.h>
- #include <linux/lockdep.h>
- #include <linux/netdevice.h>
-+#include <linux/netlink.h>
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
- #include <linux/seq_file.h>
-@@ -45,6 +46,8 @@
- #include <linux/string.h>
- #include <linux/workqueue.h>
- #include <net/arp.h>
-+#include <net/genetlink.h>
-+#include <net/netlink.h>
- #include <net/sock.h>
- #include <uapi/linux/batman_adv.h>
+diff --git a/compat.h b/compat.h
+index 5a5f478..0644241 100644
+=2D-- a/compat.h
++++ b/compat.h
+@@ -140,6 +140,13 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
  
-diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge_loop_avoidance.h
-index 2d6acfd..a80b9e9 100644
-=2D-- a/net/batman-adv/bridge_loop_avoidance.h
-+++ b/net/batman-adv/bridge_loop_avoidance.h
-@@ -23,6 +23,7 @@
- #include <linux/types.h>
+ #endif /* < KERNEL_VERSION(3, 15, 0) */
  
- struct net_device;
-+struct netlink_callback;
- struct seq_file;
- struct sk_buff;
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
++
++/* WARNING for batadv_getlink_net */
++#define get_link_net get_xstats_size || 1 || netdev->rtnl_link_ops->get_xstats_size
++
++#endif /* < KERNEL_VERSION(4, 0, 0) */
++
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 3, 0)
  
+ #define IFF_NO_QUEUE	0; dev->tx_queue_len = 0
 
-=2D-nextPart2258048.UeUabJotxB--
+=2D-nextPart1676580.kur3a7VF0k--
 This is a multi-part message in MIME format.
 
---nextPart2258048.UeUabJotxB
+--nextPart1676580.kur3a7VF0k
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Thursday 28 April 2016 22:37:28 Andrew Lunn wrote:
-> Dump the list of bridge loop avoidance claims via the netlink socket.
+On Friday 29 April 2016 14:59:21 Sven Eckelmann wrote:
+> On Friday 29 April 2016 14:14:27 Andrew Lunn wrote:
+> > On Fri, Apr 29, 2016 at 07:52:42AM +0200, Sven Eckelmann wrote:
+> > > On Thursday 28 April 2016 22:37:19 Andrew Lunn wrote:
+> > > > batman-adv tries to prevent the user from placing a batX soft
+> > > > interface into another batman mesh as a hard interface. It does this
+> > > > by walking up the devices list of parents and ensures they are all
+> > > > none batX interfaces. iflink can point to an interface in a different
+> > > > namespace, so also retrieve the parents name space when finding the
+> > > > parent and use it when doing the comparison.
+> > > > 
+> > > > Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> > > > Acked-by: Antonio Quartulli <a@untable.cc>
+> > > > ---
+> > > 
+> > > You are unfortunately reverting back to an older version of the patch
+> > > which is harder to make compile on older kernels.
+> > 
+> > Hi Sven
+> > 
+> > Please point me at the version you would prefer.
 > 
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> ---
->  include/uapi/linux/batman_adv.h        |   6 ++
->  net/batman-adv/bridge_loop_avoidance.c | 162
-> +++++++++++++++++++++++++++++++++ net/batman-adv/bridge_loop_avoidance.h | 
->  9 +-
->  net/batman-adv/netlink.c               |   7 ++
->  4 files changed, 183 insertions(+), 1 deletion(-)
+> Partially this one: https://patchwork.open-mesh.org/patch/15921/
+> 
+> I know that your current submission doesn't contain the compat-patches part
+> (which I find rather ugly) but this version has only a single function
+> handling the batadv_getlink_net and thus could be easier to create some wild
+> #defines working around the compat problem on older versions. But it will
+> most likely end with a warning and being a big NOP on older kernels.
+> 
+> It is something like (untested):
+> 
+>     /* WARNING dirty hack for batadv_getlink_net */
+>     #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
+>     	#define get_link_net get_xstats_size || 1 ||
+> netdev->rtnl_link_ops->get_xstats_size #endif
 
-You can find the missing includes in the attached patch
+Attached is the patch version of the hack. It creates following warning:
+
+/tmp/qemu-batman/batman-adv/net/batman-adv/hard-interface.c:103:9: warning: return makes pointer from integer without a cast [-Wint-conversion]
+  return netdev->rtnl_link_ops->get_link_net(netdev);
+         ^
+
+If somebody else has a good/better idea then please post it.
 
 Kind regards,
 	Sven
---nextPart2258048.UeUabJotxB
-Content-Disposition: attachment; filename="0020-missing-includes-10.patch"
+--nextPart1676580.kur3a7VF0k
+Content-Disposition: attachment; filename="0001-get_link_net-hack.patch"
 Content-Transfer-Encoding: 7Bit
-Content-Type: text/x-patch; charset="UTF-8"; name="0020-missing-includes-10.patch"
+Content-Type: text/x-patch; charset="UTF-8"; name="0001-get_link_net-hack.patch"
 
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 29 Apr 2016 21:07:57 +0200
-Subject: [PATCH] missing includes 10
+Date: Fri, 29 Apr 2016 21:48:55 +0200
+Subject: [PATCH] get_link_net hack
 ---
- net/batman-adv/bridge_loop_avoidance.c | 3 +++
- net/batman-adv/bridge_loop_avoidance.h | 1 +
- 2 files changed, 4 insertions(+)
+ compat.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index b3fab2a..2e40ada 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -35,6 +35,7 @@
- #include <linux/list.h>
- #include <linux/lockdep.h>
- #include <linux/netdevice.h>
-+#include <linux/netlink.h>
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
- #include <linux/seq_file.h>
-@@ -45,6 +46,8 @@
- #include <linux/string.h>
- #include <linux/workqueue.h>
- #include <net/arp.h>
-+#include <net/genetlink.h>
-+#include <net/netlink.h>
- #include <net/sock.h>
- #include <uapi/linux/batman_adv.h>
+diff --git a/compat.h b/compat.h
+index 5a5f478..0644241 100644
+--- a/compat.h
++++ b/compat.h
+@@ -140,6 +140,13 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
  
-diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge_loop_avoidance.h
-index 2d6acfd..a80b9e9 100644
---- a/net/batman-adv/bridge_loop_avoidance.h
-+++ b/net/batman-adv/bridge_loop_avoidance.h
-@@ -23,6 +23,7 @@
- #include <linux/types.h>
+ #endif /* < KERNEL_VERSION(3, 15, 0) */
  
- struct net_device;
-+struct netlink_callback;
- struct seq_file;
- struct sk_buff;
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
++
++/* WARNING for batadv_getlink_net */
++#define get_link_net get_xstats_size || 1 || netdev->rtnl_link_ops->get_xstats_size
++
++#endif /* < KERNEL_VERSION(4, 0, 0) */
++
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 3, 0)
  
+ #define IFF_NO_QUEUE	0; dev->tx_queue_len = 0
 
---nextPart2258048.UeUabJotxB--
+--nextPart1676580.kur3a7VF0k--
 
---nextPart162441644.nXN9VMh6S6
+--nextPart1501387.JHULFoi7BA
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -174,20 +204,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXI7LLAAoJEF2HCgfBJntG89sP/iyAIJ191rAMuI9nt8M93WNB
-FZ25lqqy6xFaF/n0+0Jgv3miRx7Z1FhLUgFJqMdpK7Ak/a5MOnEnD7y6AQKCdMtJ
-fBoNLijExgeT1IQQwyMncB5koT395S41tdns1fY4OfelqN3GBpLEk/uTny/kzBmm
-41MvYbDdBigM4UW5JOBnVFmUYBGvxwFdBCATZfuME7MIviVbLLFFL+i796LJyjSK
-AEkpMVTXeXnA8YFUI8aWLsOuhhIYVDQrHvd8ZBIN8H/R7Qoqoz2sn3DSr+KzCJu4
-jw+rETfUg47jVJK09sVBq4dGEgykfFtx2BXStQJyGlfYRUdqDzRXki0/d7Mhv4Kx
-GyzpLCMUocKcDDDfmvooV+Rrrjmm+YnpYqn29pCh0ZL6i779UjP+FfgeAADqdG5r
-QRbHvU6/DMSc9rV15okkVrDh3JSWT4SfqdkKhmPAiIW84fdJAD34cA2kWUaA0K8f
-ctC9e9xeGhzsq0vEkK5e1xXTrUccwjqd6f/n4SNA+V66zyp63EluD5nGr0vU6xJN
-jabOslcdBNW1UnyfCMqOi/AAX51ZnN1e5lRuw9+KYxf/7aQAV7BGgepPNxBSc4JD
-UfbGhYmLO2zCMjQ8f2yrtsLqnkM1K7+YHE+ynylHT287sT8GwmlyBxHFVvWJbT8H
-ljedWubXLsfd6viPp+tM
-=/zHe
+iQIcBAABCgAGBQJXI7swAAoJEF2HCgfBJntGa/oQAK/3urskbt9F/WGog2u//oPO
+fdHYXtLJwKp7yCB8VYPw3uZOvEKsvVaX+4NheysvsNEaWCi/QTxXn/tEhXcNk766
+UJ6kUCdzGPS8cy3h+pZOHw1UGLOWLOv/jMBiEFgRqtSVkGmt2jve60vqPB/bVHdp
+wl05SMktKveKz/irRo03vLk5ka/cvjruP+qUpsBMW0P/NF58knY8RJjBhsbE4ovg
+vOVwOmL4AQGMFyYHAlwo56RMjjrQj2tBoVwR2EbVia8/Jtt2phbJPSGVI/OoObbu
+ZQjuCO+H3dXLr+amgHEGzT7jcm6zHTPRBQKrrw7CsYClVUKn7p847eB0fFLOy+id
+OXrhlZOw0xKZYc0WY96dkck/IVFej8B1KQctkj8M3XdizkPb8+xMi+tGzeCIZFcp
+q80ls5u1MIgTJJwZ/d+3vVTOgZQ9oLCfVYpj9d7Or1aMEo+bAH7FHHW+MXiZiw/l
+0jUujgRB3L4qrsj5Yt1FBifmGD761WIoEmfS+0C0uF8C2joi1pfvTDrqWJ1XKxzo
+/xbSfoYJRl4wD5+TOIdsWK/Be7P2BC5ZuMnA3N5GLq0sFTyldX4jDC17uWI1d7Ul
+M30zFbYMKHLwZeywiEOqos6e2D27w9cDsoer+wYkXplRwqrf/fMos03rxBXx4pkv
+HGfwdFRAnhlCW6RxtRUt
+=tIyo
 -----END PGP SIGNATURE-----
 
---nextPart162441644.nXN9VMh6S6--
+--nextPart1501387.JHULFoi7BA--
 
