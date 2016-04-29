@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 29 Apr 2016 14:30:14 +0200
-Message-ID: <4599793.FlyVu9cJ6b@bentobox>
-In-Reply-To: <20160429122753.GC4053@lunn.ch>
-References: <1461876897-12677-1-git-send-email-andrew@lunn.ch>
- <6222779.RWVmag3jgT@sven-edge> <20160429122753.GC4053@lunn.ch>
+Date: Fri, 29 Apr 2016 14:59:21 +0200
+Message-ID: <13794357.HqoOAIfBmV@bentobox>
+In-Reply-To: <20160429121427.GB4053@lunn.ch>
+References: <1461875848-11720-1-git-send-email-andrew@lunn.ch>
+ <1580619.BbQOVpWRpd@sven-edge> <20160429121427.GB4053@lunn.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1468852.jSmeyDgOcq";
+Content-Type: multipart/signed; boundary="nextPart9748751.GRvadz3E6O";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batctl: Use netlink when available,
-	rather than debugfs
+Subject: Re: [B.A.T.M.A.N.] [PATCH 01/10] batman-adv: Handle parent
+	interfaces in a different netns
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,38 +22,51 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Andrew Lunn <andrew@lunn.ch>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1468852.jSmeyDgOcq
+--nextPart9748751.GRvadz3E6O
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday 29 April 2016 14:27:53 Andrew Lunn wrote:
-[...]
+On Friday 29 April 2016 14:14:27 Andrew Lunn wrote:
+> On Fri, Apr 29, 2016 at 07:52:42AM +0200, Sven Eckelmann wrote:
+> > On Thursday 28 April 2016 22:37:19 Andrew Lunn wrote:
+> > > batman-adv tries to prevent the user from placing a batX soft
+> > > interface into another batman mesh as a hard interface. It does this
+> > > by walking up the devices list of parents and ensures they are all
+> > > none batX interfaces. iflink can point to an interface in a different
+> > > namespace, so also retrieve the parents name space when finding the
+> > > parent and use it when doing the comparison.
+> > > 
+> > > Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> > > Acked-by: Antonio Quartulli <a@untable.cc>
+> > > ---
 > > 
-> > It looks like this patch currently only adds the printing of netlink 
-> > information in a way that looks similar to the output from the legacy debugfs 
-> > files. This is ok but I find it weird that it claims in the commit message 
-> > that it uses (for everything?) netlink instead of debugfs when things like 
-> > translate_mac(...) and ping/traceroute still have to be ported to netlink.
-[...]
-
-> It never makes the claim it uses it for everything. I converted what i
-> needed for netns in my setup, and a bit more. I pretty much never use
-> ping/traceroute/BLA, gateways, etc, in my simulations, so i have no
-> itch to scratch there.
+> > You are unfortunately reverting back to an older version of the patch
+> > which is harder to make compile on older kernels.
 > 
-> I would suggest getting the current code in a state it can be
-> accepted, i.e. add the extra error checking, etc. It is mostly
-> mechanical work, once you have an example to copy. So it should not be
-> too hard to finish off the debugfs equivalents by somebody who has a
-> need for them.
+> Hi Sven
+> 
+> Please point me at the version you would prefer.
 
-It was not about the code but about the commit message. I've already said
-that the print-only implementation "is ok" and is everything we need at
-the beginning.
+Partially this one: https://patchwork.open-mesh.org/patch/15921/
+
+I know that your current submission doesn't contain the compat-patches part
+(which I find rather ugly) but this version has only a single function
+handling the batadv_getlink_net and thus could be easier to create some wild
+#defines working around the compat problem on older versions. But it will most
+likely end with a warning and being a big NOP on older kernels.
+
+It is something like (untested):
+
+    /* WARNING dirty hack for batadv_getlink_net */
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
+    	#define get_link_net get_xstats_size || 1 || netdev->rtnl_link_ops->get_xstats_size
+    #endif
+
+It is the version of the "share your drugs" hack from earlier compat hacks.
 
 Kind regards,
 	Sven
---nextPart1468852.jSmeyDgOcq
+--nextPart9748751.GRvadz3E6O
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -61,20 +74,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXI1PWAAoJEF2HCgfBJntGW8IQAMurfZtv7c3D6h7HJpIDwg+q
-xd7XgiZ59OwV8Q0eqQZlU9ljCINtKfV8isP0E/hhkWtRBcrCIE5VGtX4m7z2Bfy6
-g2xG1cVELZpMxhc/aj4aayYyQQxauwG06WnkITrHWmrGffy2DWvyQTHb5y6Atpav
-gLdptxNTO5cKwbprV0Fj7bNsALTjCMk4Kv3iYO6i0MMWrFAiLojow6RqcjFFplev
-zWk13gY0C7RO5wmCzgGJ6X2pj7hpL3A/k4EO4eeGE9B1J09sl+p30X9Jlsrb6+Yk
-XFrtuZxm+yxSpIShgjdWWR0UtuRJCImT5FZm5deb9kWr+Cgg8ik5e9W9abmg6W8g
-mK/aHNsNAfNIlYM8flxVatk5iMU6vbOpexVQWJCS+FVbH3fGEcD5Ct4lqQCOOl2S
-h0NVN/jUPkHWtdKtnamek5kK2+hz0p9VXvzrom1UgNH+us4u3VgcHriHgR1SWGPd
-JIzLQGsLdm+rR7M7WMJJWgZfz6euAi1Teir4oCBbkJoDg/HQ53dhWKvbb56ql/Ms
-tgx9pwo5NMyFlzi4eaLGpDZR6RQ6Dl8kEBh2vwCGZAwEwsZcWagYO4+vLf6Bn4Q3
-aFuK81NUUVbh1v9xk1uWX6J3uvo5jQSMqPCvqBh3i1bHCHubJ/5fUZWfqAS/JsiN
-hjVPlgOieDlZW0fHJUiJ
-=h4Th
+iQIcBAABCgAGBQJXI1qpAAoJEF2HCgfBJntGe6QQAJVNzX2n343aLAGxFqq0thaP
+WRuNeTJHVpcCLe1l0oYahzBEwPqpQ12tEm/P/aMPWBh5cuU/7PTnSoWsBxuZxLDj
+eBHvAPC2V750udAOMyhlchnkNg2necLPj/nmLvu0SwH7udEs6090pIQa4U1TgsKD
+ttj6yeq1xiIpn6hTL/gg3j5hfwosmGZBAMMYTvfwM2UWw6CxDSNe+TnNWx39alRd
+HbWQhtR5qF1UzPiU88J8JYk82PCkj4FlcCbrKFQOHgfT0WIA7yNuVVrJz4OYq5Qd
+st/I3DooFkcB5zTFSpBtrI7WbXoOyNTiKwkM+XfZFpwuWniJLm5O5Wddu6lT7bhf
+xlGEtAFtHpI+vfyezbYGw4YWRCceotzSkcr6yo/+0DufDrvC+//0QQ1vvoNjNy/M
+A/WiCDP7jXahrDqF/k5WWEQ86yKEZinaMUbMIaF1fJr8l0GRx7DW3hTxHECuBfWz
+Csw7Va3iw6Z8ePhfLXbIfTaiZCeYygunyFLLVKGlMrCVnyutuCmCDiBZVyNhK7zy
+4wTXAMxPf7h7ezc4QSGc0MAiac1OU4BWwnnNGozHHPysN7i+6ZyYCmArKySVXbyN
+mq8ptw1MZ7lIgeMMqmja8l11sKkKjbIUlnR1pOUgfy9x3HcfvGaRqvD9fYkYgF/L
+mqVdBAkOiwxPfm6GV06C
+=+NKr
 -----END PGP SIGNATURE-----
 
---nextPart1468852.jSmeyDgOcq--
+--nextPart9748751.GRvadz3E6O--
 
