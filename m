@@ -1,11 +1,11 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Sat, 30 Apr 2016 00:59:14 +0200
-Message-Id: <1461970765-24615-2-git-send-email-andrew@lunn.ch>
+Date: Sat, 30 Apr 2016 00:59:16 +0200
+Message-Id: <1461970765-24615-4-git-send-email-andrew@lunn.ch>
 In-Reply-To: <1461970765-24615-1-git-send-email-andrew@lunn.ch>
 References: <1461970765-24615-1-git-send-email-andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH v2 01/12] batman-adv: Handle parent
-	interfaces in a different netns
+Subject: [B.A.T.M.A.N.] [PATCH v2 03/12] batman-adv: Suppress debugfs
+	entries for netns's
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,132 +17,90 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
 
-batman-adv tries to prevent the user from placing a batX soft
-interface into another batman mesh as a hard interface. It does this
-by walking up the devices list of parents and ensures they are all
-none batX interfaces. iflink can point to an interface in a different
-namespace, so also retrieve the parents name space when finding the
-parent and use it when doing the comparison.
+Debugfs is not netns aware. It thus has problems when the same
+interface name exists in multiple network name spaces.
+
+Work around this by not creating entries for interfaces in name spaces
+other than the default name space. This means meshes in network
+namespaces cannot be managed via debugfs, but there will soon be a
+netlink interface which is netns aware.
 
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Acked-by: Antonio Quartulli <a@untable.cc>
 ---
-v2: Add missing header files
-    Use Sven's code to facilitate a compat.h change
+v2: Fix accidental change to __printf
+    Add missing includes.
 ---
- net/batman-adv/hard-interface.c | 56 +++++++++++++++++++++++++++++++++++------
- 1 file changed, 49 insertions(+), 7 deletions(-)
+ net/batman-adv/debugfs.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 8c2f399..cbc8112 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -36,6 +36,8 @@
- #include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/workqueue.h>
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index 9529004..e54f0da 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -42,6 +42,7 @@
+ #include <linux/types.h>
+ #include <linux/uaccess.h>
+ #include <linux/wait.h>
 +#include <net/net_namespace.h>
-+#include <net/rtnetlink.h>
+ #include <stdarg.h>
  
  #include "bridge_loop_avoidance.h"
- #include "debugfs.h"
-@@ -83,25 +85,61 @@ out:
- }
- 
- /**
-+ * batadv_getlink_net - return link net namespace (of use fallback)
-+ * @netdev: net_device to check
-+ * @fallback_net: return in case get_link_net is not available for @netdev
-+ *
-+ * Return: result of rtnl_link_ops->get_link_net or @fallback_net
-+ */
-+static const struct net *batadv_getlink_net(const struct net_device *netdev,
-+					    const struct net *fallback_net)
-+{
-+
-+	if (!netdev->rtnl_link_ops)
-+		return fallback_net;
-+
-+	if (!netdev->rtnl_link_ops->get_link_net)
-+		return fallback_net;
-+
-+	return netdev->rtnl_link_ops->get_link_net(netdev);
-+}
-+
-+/**
-  * batadv_mutual_parents - check if two devices are each others parent
-- * @dev1: 1st net_device
-- * @dev2: 2nd net_device
-+ * @dev1: 1st net dev
-+ * @net1: 1st devices netns
-+ * @dev2: 2nd net dev
-+ * @net2: 2nd devices netns
-  *
-  * veth devices come in pairs and each is the parent of the other!
-  *
-  * Return: true if the devices are each others parent, otherwise false
+@@ -495,12 +496,16 @@ void batadv_debugfs_destroy(void)
   */
- static bool batadv_mutual_parents(const struct net_device *dev1,
--				  const struct net_device *dev2)
-+				  const struct net *net1,
-+				  const struct net_device *dev2,
-+				  const struct net *net2)
+ int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface)
  {
- 	int dev1_parent_iflink = dev_get_iflink(dev1);
- 	int dev2_parent_iflink = dev_get_iflink(dev2);
-+	const struct net *dev1_parent_net;
-+	const struct net *dev2_parent_net;
++	struct net *net = dev_net(hard_iface->net_dev);
+ 	struct batadv_debuginfo **bat_debug;
+ 	struct dentry *file;
+ 
+ 	if (!batadv_debugfs)
+ 		goto out;
+ 
++	if (net != &init_net)
++		return 0;
 +
-+	dev1_parent_net = batadv_getlink_net(dev1, net1);
-+	dev2_parent_net = batadv_getlink_net(dev2, net2);
-+
-+	if (dev1->rtnl_link_ops && dev1->rtnl_link_ops->get_link_net)
-+		dev1_parent_net = dev1->rtnl_link_ops->get_link_net(dev1);
-+	if (dev2->rtnl_link_ops && dev2->rtnl_link_ops->get_link_net)
-+		dev2_parent_net = dev2->rtnl_link_ops->get_link_net(dev2);
- 
- 	if (!dev1_parent_iflink || !dev2_parent_iflink)
- 		return false;
- 
- 	return (dev1_parent_iflink == dev2->ifindex) &&
--	       (dev2_parent_iflink == dev1->ifindex);
-+		(dev2_parent_iflink == dev1->ifindex) &&
-+		net_eq(dev1_parent_net, net2) &&
-+		net_eq(dev2_parent_net, net1);
- }
- 
- /**
-@@ -119,8 +157,9 @@ static bool batadv_mutual_parents(const struct net_device *dev1,
+ 	hard_iface->debug_dir = debugfs_create_dir(hard_iface->net_dev->name,
+ 						   batadv_debugfs);
+ 	if (!hard_iface->debug_dir)
+@@ -531,6 +536,11 @@ out:
   */
- static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
+ void batadv_debugfs_del_hardif(struct batadv_hard_iface *hard_iface)
  {
--	struct net_device *parent_dev;
- 	struct net *net = dev_net(net_dev);
-+	struct net_device *parent_dev;
-+	struct net *parent_net = net;
- 	bool ret;
- 
- 	/* check if this is a batman-adv mesh interface */
-@@ -132,13 +171,16 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
- 	    dev_get_iflink(net_dev) == net_dev->ifindex)
- 		return false;
- 
-+	if (net_dev->rtnl_link_ops && net_dev->rtnl_link_ops->get_link_net)
-+		parent_net = net_dev->rtnl_link_ops->get_link_net(net_dev);
++	struct net *net = dev_net(hard_iface->net_dev);
 +
- 	/* recurse over the parent device */
--	parent_dev = __dev_get_by_index(net, dev_get_iflink(net_dev));
-+	parent_dev = __dev_get_by_index(parent_net, dev_get_iflink(net_dev));
- 	/* if we got a NULL parent_dev there is something broken.. */
- 	if (WARN(!parent_dev, "Cannot find parent device"))
- 		return false;
++	if (net != &init_net)
++		return;
++
+ 	if (batadv_debugfs) {
+ 		debugfs_remove_recursive(hard_iface->debug_dir);
+ 		hard_iface->debug_dir = NULL;
+@@ -541,11 +551,15 @@ int batadv_debugfs_add_meshif(struct net_device *dev)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
+ 	struct batadv_debuginfo **bat_debug;
++	struct net *net = dev_net(dev);
+ 	struct dentry *file;
  
--	if (batadv_mutual_parents(net_dev, parent_dev))
-+	if (batadv_mutual_parents(net_dev, net, parent_dev, parent_net))
- 		return false;
+ 	if (!batadv_debugfs)
+ 		goto out;
  
- 	ret = batadv_is_on_batman_iface(parent_dev);
++	if (net != &init_net)
++		return 0;
++
+ 	bat_priv->debug_dir = debugfs_create_dir(dev->name, batadv_debugfs);
+ 	if (!bat_priv->debug_dir)
+ 		goto out;
+@@ -582,6 +596,10 @@ out:
+ void batadv_debugfs_del_meshif(struct net_device *dev)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
++	struct net *net = dev_net(dev);
++
++	if (net != &init_net)
++		return;
+ 
+ 	batadv_debug_log_cleanup(bat_priv);
+ 
 -- 
 2.8.0.rc3
 
