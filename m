@@ -1,11 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Sun,  1 May 2016 01:06:01 +0800
-Message-Id: <1462035963-28970-3-git-send-email-a@unstable.cc>
+Date: Sun,  1 May 2016 01:06:02 +0800
+Message-Id: <1462035963-28970-4-git-send-email-a@unstable.cc>
 In-Reply-To: <1462035963-28970-1-git-send-email-a@unstable.cc>
 References: <1462035963-28970-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: B.A.T.M.A.N V - make sure
-	iface is reactivated upon NETDEV_UP event
+Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: Fix reference counting of
+	vlan object for tt_local_entry
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,98 +18,174 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
 
-At the moment there is no explicit reactivation of an hard-interface
-upon NETDEV_UP event. In case of B.A.T.M.A.N. IV the interface is
-reactivated as soon as the next OGM is scheduled for sending, but this
-mechanism does not work with B.A.T.M.A.N. V. The latter does not rely
-on the same scheduling mechanism as its predecessor and for this reason
-the hard-interface remains deactivated forever after being brought down
-once.
+From: Sven Eckelmann <sven@narfation.org>
 
-This patch fixes the reactivation mechanism by adding a new routing API
-which explicitly allows each algorithm to perform any needed operation
-upon interface re-activation.
+The batadv_tt_local_entry was specific to a batadv_softif_vlan and held an
+implicit reference to it. But this reference was never stored in form of a
+pointer in the tt_local_entry itself. Instead batadv_tt_local_remove,
+batadv_tt_local_table_free and batadv_tt_local_purge_pending_clients depend
+on a consistent state of bat_priv->softif_vlan_list and that
+batadv_softif_vlan_get always returns the batadv_softif_vlan object which
+it has a reference for. But batadv_softif_vlan_get cannot guarantee that
+because it is working only with rcu_read_lock on this list. It can
+therefore happen that an vid is in this list twice or that
+batadv_softif_vlan_get cannot find the batadv_softif_vlan for an vid due to
+some other list operations taking place at the same time.
 
-Such API is optional and is implemented by B.A.T.M.A.N. V only and it
-just takes care of setting the iface status to ACTIVE
+Instead add a batadv_softif_vlan pointer directly in batadv_tt_local_entry
+which will be used for the reference counter decremented on release of
+batadv_tt_local_entry.
 
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
+Fixes: 35df3b298fc8 ("batman-adv: fix TT VLAN inconsistency on VLAN re-add")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Antonio Quartulli <a@unstable.cc>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/bat_v.c          | 12 ++++++++++++
- net/batman-adv/hard-interface.c |  3 +++
- net/batman-adv/types.h          |  3 +++
- 3 files changed, 18 insertions(+)
+ net/batman-adv/translation-table.c | 42 ++++----------------------------------
+ net/batman-adv/types.h             |  2 ++
+ 2 files changed, 6 insertions(+), 38 deletions(-)
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 3315b9a598af..4026f198a734 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -32,10 +32,21 @@
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 0b43e86328a5..9b4551a86535 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -215,6 +215,8 @@ static void batadv_tt_local_entry_release(struct kref *ref)
+ 	tt_local_entry = container_of(ref, struct batadv_tt_local_entry,
+ 				      common.refcount);
  
- #include "bat_v_elp.h"
- #include "bat_v_ogm.h"
-+#include "hard-interface.h"
- #include "hash.h"
- #include "originator.h"
- #include "packet.h"
- 
-+static void batadv_v_iface_activate(struct batadv_hard_iface *hard_iface)
-+{
-+	/* B.A.T.M.A.N. V does not use any queuing mechanism, therefore it can
-+	 * set the interface as ACTIVE right away, without any risk of race
-+	 * condition
-+	 */
-+	if (hard_iface->if_status == BATADV_IF_TO_BE_ACTIVATED)
-+		hard_iface->if_status = BATADV_IF_ACTIVE;
-+}
++	batadv_softif_vlan_put(tt_local_entry->vlan);
 +
- static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
+ 	kfree_rcu(tt_local_entry, common.rcu);
+ }
+ 
+@@ -673,6 +675,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
+ 	kref_get(&tt_local->common.refcount);
+ 	tt_local->last_seen = jiffies;
+ 	tt_local->common.added_at = tt_local->last_seen;
++	tt_local->vlan = vlan;
+ 
+ 	/* the batman interface mac and multicast addresses should never be
+ 	 * purged
+@@ -991,7 +994,6 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 	struct batadv_tt_common_entry *tt_common_entry;
+ 	struct batadv_tt_local_entry *tt_local;
+ 	struct batadv_hard_iface *primary_if;
+-	struct batadv_softif_vlan *vlan;
+ 	struct hlist_head *head;
+ 	unsigned short vid;
+ 	u32 i;
+@@ -1027,14 +1029,6 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 			last_seen_msecs = last_seen_msecs % 1000;
+ 
+ 			no_purge = tt_common_entry->flags & np_flag;
+-
+-			vlan = batadv_softif_vlan_get(bat_priv, vid);
+-			if (!vlan) {
+-				seq_printf(seq, "Cannot retrieve VLAN %d\n",
+-					   BATADV_PRINT_VID(vid));
+-				continue;
+-			}
+-
+ 			seq_printf(seq,
+ 				   " * %pM %4i [%c%c%c%c%c%c] %3u.%03u   (%#.8x)\n",
+ 				   tt_common_entry->addr,
+@@ -1052,9 +1046,7 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ 				     BATADV_TT_CLIENT_ISOLA) ? 'I' : '.'),
+ 				   no_purge ? 0 : last_seen_secs,
+ 				   no_purge ? 0 : last_seen_msecs,
+-				   vlan->tt.crc);
+-
+-			batadv_softif_vlan_put(vlan);
++				   tt_local->vlan->tt.crc);
+ 		}
+ 		rcu_read_unlock();
+ 	}
+@@ -1099,7 +1091,6 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
  {
- 	int ret;
-@@ -274,6 +285,7 @@ static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *neigh1,
+ 	struct batadv_tt_local_entry *tt_local_entry;
+ 	u16 flags, curr_flags = BATADV_NO_FLAGS;
+-	struct batadv_softif_vlan *vlan;
+ 	void *tt_entry_exists;
  
- static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.name = "BATMAN_V",
-+	.bat_iface_activate = batadv_v_iface_activate,
- 	.bat_iface_enable = batadv_v_iface_enable,
- 	.bat_iface_disable = batadv_v_iface_disable,
- 	.bat_iface_update_mac = batadv_v_iface_update_mac,
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index c61d5b0b24d2..0a7deaf2670a 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -407,6 +407,9 @@ batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
+ 	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr, vid);
+@@ -1139,14 +1130,6 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv, const u8 *addr,
+ 	/* extra call to free the local tt entry */
+ 	batadv_tt_local_entry_put(tt_local_entry);
  
- 	batadv_update_min_mtu(hard_iface->soft_iface);
- 
-+	if (bat_priv->bat_algo_ops->bat_iface_activate)
-+		bat_priv->bat_algo_ops->bat_iface_activate(hard_iface);
-+
+-	/* decrease the reference held for this vlan */
+-	vlan = batadv_softif_vlan_get(bat_priv, vid);
+-	if (!vlan)
+-		goto out;
+-
+-	batadv_softif_vlan_put(vlan);
+-	batadv_softif_vlan_put(vlan);
+-
  out:
- 	if (primary_if)
- 		batadv_hardif_put(primary_if);
+ 	if (tt_local_entry)
+ 		batadv_tt_local_entry_put(tt_local_entry);
+@@ -1219,7 +1202,6 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
+ 	spinlock_t *list_lock; /* protects write access to the hash lists */
+ 	struct batadv_tt_common_entry *tt_common_entry;
+ 	struct batadv_tt_local_entry *tt_local;
+-	struct batadv_softif_vlan *vlan;
+ 	struct hlist_node *node_tmp;
+ 	struct hlist_head *head;
+ 	u32 i;
+@@ -1241,14 +1223,6 @@ static void batadv_tt_local_table_free(struct batadv_priv *bat_priv)
+ 						struct batadv_tt_local_entry,
+ 						common);
+ 
+-			/* decrease the reference held for this vlan */
+-			vlan = batadv_softif_vlan_get(bat_priv,
+-						      tt_common_entry->vid);
+-			if (vlan) {
+-				batadv_softif_vlan_put(vlan);
+-				batadv_softif_vlan_put(vlan);
+-			}
+-
+ 			batadv_tt_local_entry_put(tt_local);
+ 		}
+ 		spin_unlock_bh(list_lock);
+@@ -3309,7 +3283,6 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
+ 	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
+ 	struct batadv_tt_common_entry *tt_common;
+ 	struct batadv_tt_local_entry *tt_local;
+-	struct batadv_softif_vlan *vlan;
+ 	struct hlist_node *node_tmp;
+ 	struct hlist_head *head;
+ 	spinlock_t *list_lock; /* protects write access to the hash lists */
+@@ -3339,13 +3312,6 @@ static void batadv_tt_local_purge_pending_clients(struct batadv_priv *bat_priv)
+ 						struct batadv_tt_local_entry,
+ 						common);
+ 
+-			/* decrease the reference held for this vlan */
+-			vlan = batadv_softif_vlan_get(bat_priv, tt_common->vid);
+-			if (vlan) {
+-				batadv_softif_vlan_put(vlan);
+-				batadv_softif_vlan_put(vlan);
+-			}
+-
+ 			batadv_tt_local_entry_put(tt_local);
+ 		}
+ 		spin_unlock_bh(list_lock);
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 9abfb3e73c34..443e9b84e07d 100644
+index 443e9b84e07d..65afd090ab3e 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -1250,6 +1250,8 @@ struct batadv_forw_packet {
-  * struct batadv_algo_ops - mesh algorithm callbacks
-  * @list: list node for the batadv_algo_list
-  * @name: name of the algorithm
-+ * @bat_iface_activate: start routing mechanisms when hard-interface is brought
-+ *  up
-  * @bat_iface_enable: init routing info when hard-interface is enabled
-  * @bat_iface_disable: de-init routing info when hard-interface is disabled
-  * @bat_iface_update_mac: (re-)init mac addresses of the protocol information
-@@ -1277,6 +1279,7 @@ struct batadv_forw_packet {
- struct batadv_algo_ops {
- 	struct hlist_node list;
- 	char *name;
-+	void (*bat_iface_activate)(struct batadv_hard_iface *hard_iface);
- 	int (*bat_iface_enable)(struct batadv_hard_iface *hard_iface);
- 	void (*bat_iface_disable)(struct batadv_hard_iface *hard_iface);
- 	void (*bat_iface_update_mac)(struct batadv_hard_iface *hard_iface);
+@@ -1073,10 +1073,12 @@ struct batadv_tt_common_entry {
+  * struct batadv_tt_local_entry - translation table local entry data
+  * @common: general translation table data
+  * @last_seen: timestamp used for purging stale tt local entries
++ * @vlan: soft-interface vlan of the entry
+  */
+ struct batadv_tt_local_entry {
+ 	struct batadv_tt_common_entry common;
+ 	unsigned long last_seen;
++	struct batadv_softif_vlan *vlan;
+ };
+ 
+ /**
 -- 
 2.8.1
 
