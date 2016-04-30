@@ -1,11 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Sun,  1 May 2016 01:06:00 +0800
-Message-Id: <1462035963-28970-2-git-send-email-a@unstable.cc>
+Date: Sun,  1 May 2016 01:06:01 +0800
+Message-Id: <1462035963-28970-3-git-send-email-a@unstable.cc>
 In-Reply-To: <1462035963-28970-1-git-send-email-a@unstable.cc>
 References: <1462035963-28970-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: fix DAT candidate selection
-	(must use vid)
+Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: B.A.T.M.A.N V - make sure
+	iface is reactivated upon NETDEV_UP event
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,96 +18,98 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
 
-Now that DAT is VLAN aware, it must use the VID when
-computing the DHT address of the candidate nodes where
-an entry is going to be stored/retrieved.
+At the moment there is no explicit reactivation of an hard-interface
+upon NETDEV_UP event. In case of B.A.T.M.A.N. IV the interface is
+reactivated as soon as the next OGM is scheduled for sending, but this
+mechanism does not work with B.A.T.M.A.N. V. The latter does not rely
+on the same scheduling mechanism as its predecessor and for this reason
+the hard-interface remains deactivated forever after being brought down
+once.
 
-Fixes: be1db4f6615b ("batman-adv: make the Distributed ARP Table vlan aware")
+This patch fixes the reactivation mechanism by adding a new routing API
+which explicitly allows each algorithm to perform any needed operation
+upon interface re-activation.
+
+Such API is optional and is implemented by B.A.T.M.A.N. V only and it
+just takes care of setting the iface status to ACTIVE
+
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
-[sven@narfation.org: fix conflicts with current version]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/distributed-arp-table.c | 17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+ net/batman-adv/bat_v.c          | 12 ++++++++++++
+ net/batman-adv/hard-interface.c |  3 +++
+ net/batman-adv/types.h          |  3 +++
+ 3 files changed, 18 insertions(+)
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index e96d7c745b4a..3e6b2624f980 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -568,6 +568,7 @@ static void batadv_choose_next_candidate(struct batadv_priv *bat_priv,
-  * be sent to
-  * @bat_priv: the bat priv with all the soft interface information
-  * @ip_dst: ipv4 to look up in the DHT
-+ * @vid: VLAN identifier
-  *
-  * An originator O is selected if and only if its DHT_ID value is one of three
-  * closest values (from the LEFT, with wrap around if needed) then the hash
-@@ -576,7 +577,8 @@ static void batadv_choose_next_candidate(struct batadv_priv *bat_priv,
-  * Return: the candidate array of size BATADV_DAT_CANDIDATE_NUM.
-  */
- static struct batadv_dat_candidate *
--batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst)
-+batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst,
-+			     unsigned short vid)
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 3315b9a598af..4026f198a734 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -32,10 +32,21 @@
+ 
+ #include "bat_v_elp.h"
+ #include "bat_v_ogm.h"
++#include "hard-interface.h"
+ #include "hash.h"
+ #include "originator.h"
+ #include "packet.h"
+ 
++static void batadv_v_iface_activate(struct batadv_hard_iface *hard_iface)
++{
++	/* B.A.T.M.A.N. V does not use any queuing mechanism, therefore it can
++	 * set the interface as ACTIVE right away, without any risk of race
++	 * condition
++	 */
++	if (hard_iface->if_status == BATADV_IF_TO_BE_ACTIVATED)
++		hard_iface->if_status = BATADV_IF_ACTIVE;
++}
++
+ static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
  {
- 	int select;
- 	batadv_dat_addr_t last_max = BATADV_DAT_ADDR_MAX, ip_key;
-@@ -592,7 +594,7 @@ batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst)
- 		return NULL;
+ 	int ret;
+@@ -274,6 +285,7 @@ static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *neigh1,
  
- 	dat.ip = ip_dst;
--	dat.vid = 0;
-+	dat.vid = vid;
- 	ip_key = (batadv_dat_addr_t)batadv_hash_dat(&dat,
- 						    BATADV_DAT_ADDR_MAX);
+ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+ 	.name = "BATMAN_V",
++	.bat_iface_activate = batadv_v_iface_activate,
+ 	.bat_iface_enable = batadv_v_iface_enable,
+ 	.bat_iface_disable = batadv_v_iface_disable,
+ 	.bat_iface_update_mac = batadv_v_iface_update_mac,
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index c61d5b0b24d2..0a7deaf2670a 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -407,6 +407,9 @@ batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
  
-@@ -612,6 +614,7 @@ batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst)
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: payload to send
-  * @ip: the DHT key
-+ * @vid: VLAN identifier
-  * @packet_subtype: unicast4addr packet subtype to use
-  *
-  * This function copies the skb with pskb_copy() and is sent as unicast packet
-@@ -622,7 +625,7 @@ batadv_dat_select_candidates(struct batadv_priv *bat_priv, __be32 ip_dst)
-  */
- static bool batadv_dat_send_data(struct batadv_priv *bat_priv,
- 				 struct sk_buff *skb, __be32 ip,
--				 int packet_subtype)
-+				 unsigned short vid, int packet_subtype)
- {
- 	int i;
- 	bool ret = false;
-@@ -631,7 +634,7 @@ static bool batadv_dat_send_data(struct batadv_priv *bat_priv,
- 	struct sk_buff *tmp_skb;
- 	struct batadv_dat_candidate *cand;
+ 	batadv_update_min_mtu(hard_iface->soft_iface);
  
--	cand = batadv_dat_select_candidates(bat_priv, ip);
-+	cand = batadv_dat_select_candidates(bat_priv, ip, vid);
- 	if (!cand)
- 		goto out;
- 
-@@ -1022,7 +1025,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 		ret = true;
- 	} else {
- 		/* Send the request to the DHT */
--		ret = batadv_dat_send_data(bat_priv, skb, ip_dst,
-+		ret = batadv_dat_send_data(bat_priv, skb, ip_dst, vid,
- 					   BATADV_P_DAT_DHT_GET);
- 	}
++	if (bat_priv->bat_algo_ops->bat_iface_activate)
++		bat_priv->bat_algo_ops->bat_iface_activate(hard_iface);
++
  out:
-@@ -1150,8 +1153,8 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 	/* Send the ARP reply to the candidates for both the IP addresses that
- 	 * the node obtained from the ARP reply
- 	 */
--	batadv_dat_send_data(bat_priv, skb, ip_src, BATADV_P_DAT_DHT_PUT);
--	batadv_dat_send_data(bat_priv, skb, ip_dst, BATADV_P_DAT_DHT_PUT);
-+	batadv_dat_send_data(bat_priv, skb, ip_src, vid, BATADV_P_DAT_DHT_PUT);
-+	batadv_dat_send_data(bat_priv, skb, ip_dst, vid, BATADV_P_DAT_DHT_PUT);
- }
- 
- /**
+ 	if (primary_if)
+ 		batadv_hardif_put(primary_if);
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 9abfb3e73c34..443e9b84e07d 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1250,6 +1250,8 @@ struct batadv_forw_packet {
+  * struct batadv_algo_ops - mesh algorithm callbacks
+  * @list: list node for the batadv_algo_list
+  * @name: name of the algorithm
++ * @bat_iface_activate: start routing mechanisms when hard-interface is brought
++ *  up
+  * @bat_iface_enable: init routing info when hard-interface is enabled
+  * @bat_iface_disable: de-init routing info when hard-interface is disabled
+  * @bat_iface_update_mac: (re-)init mac addresses of the protocol information
+@@ -1277,6 +1279,7 @@ struct batadv_forw_packet {
+ struct batadv_algo_ops {
+ 	struct hlist_node list;
+ 	char *name;
++	void (*bat_iface_activate)(struct batadv_hard_iface *hard_iface);
+ 	int (*bat_iface_enable)(struct batadv_hard_iface *hard_iface);
+ 	void (*bat_iface_disable)(struct batadv_hard_iface *hard_iface);
+ 	void (*bat_iface_update_mac)(struct batadv_hard_iface *hard_iface);
 -- 
 2.8.1
 
