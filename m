@@ -1,11 +1,9 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Sun,  1 May 2016 01:06:03 +0800
-Message-Id: <1462035963-28970-5-git-send-email-a@unstable.cc>
-In-Reply-To: <1462035963-28970-1-git-send-email-a@unstable.cc>
-References: <1462035963-28970-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: Fix reference counting of
-	hardif_neigh_node object for neigh_node
+Date: Mon,  2 May 2016 01:36:20 +0800
+Message-Id: <1462124180-12104-1-git-send-email-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: make sure ELP/OGM orig MAC
+	is updated on address change
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,104 +13,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
-From: Sven Eckelmann <sven@narfation.org>
+When the MAC address of the primary interface is changed,
+update the originator address in the ELP and OGM skb buffers as
+well in order to reflect the change.
 
-The batadv_neigh_node was specific to a batadv_hardif_neigh_node and held
-an implicit reference to it. But this reference was never stored in form of
-a pointer in the batadv_neigh_node itself. Instead
-batadv_neigh_node_release depends on a consistent state of
-hard_iface->neigh_list and that batadv_hardif_neigh_get always returns the
-batadv_hardif_neigh_node object which it has a reference for. But
-batadv_hardif_neigh_get cannot guarantee that because it is working only
-with rcu_read_lock on this list. It can therefore happen that a neigh_addr
-is in this list twice or that batadv_hardif_neigh_get cannot find the
-batadv_hardif_neigh_node for an neigh_addr due to some other list
-operations taking place at the same time.
-
-Instead add a batadv_hardif_neigh_node pointer directly in
-batadv_neigh_node which will be used for the reference counter decremented
-on release of batadv_neigh_node.
-
-Fixes: cef63419f7db ("batman-adv: add list of unique single hop neighbors per hard-interface")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Reported-by: Marek Lindner <marek@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/originator.c | 16 +++++-----------
- net/batman-adv/types.h      |  2 ++
- 2 files changed, 7 insertions(+), 11 deletions(-)
+ net/batman-adv/bat_v.c | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index d52f67a0c057..c355a824713c 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -250,7 +250,6 @@ static void batadv_neigh_node_release(struct kref *ref)
- {
- 	struct hlist_node *node_tmp;
- 	struct batadv_neigh_node *neigh_node;
--	struct batadv_hardif_neigh_node *hardif_neigh;
- 	struct batadv_neigh_ifinfo *neigh_ifinfo;
- 	struct batadv_algo_ops *bao;
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 3ff8bd1..554ccd5 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -72,16 +72,27 @@ static void batadv_v_iface_disable(struct batadv_hard_iface *hard_iface)
+ 	batadv_v_elp_iface_disable(hard_iface);
+ }
  
-@@ -262,13 +261,7 @@ static void batadv_neigh_node_release(struct kref *ref)
- 		batadv_neigh_ifinfo_put(neigh_ifinfo);
- 	}
- 
--	hardif_neigh = batadv_hardif_neigh_get(neigh_node->if_incoming,
--					       neigh_node->addr);
--	if (hardif_neigh) {
--		/* batadv_hardif_neigh_get() increases refcount too */
--		batadv_hardif_neigh_put(hardif_neigh);
--		batadv_hardif_neigh_put(hardif_neigh);
--	}
-+	batadv_hardif_neigh_put(neigh_node->hardif_neigh);
- 
- 	if (bao->bat_neigh_free)
- 		bao->bat_neigh_free(neigh_node);
-@@ -665,6 +658,10 @@ batadv_neigh_node_new(struct batadv_orig_node *orig_node,
- 	neigh_node->orig_node = orig_node;
- 	neigh_node->last_seen = jiffies;
- 
-+	/* increment unique neighbor refcount */
-+	kref_get(&hardif_neigh->refcount);
-+	neigh_node->hardif_neigh = hardif_neigh;
-+
- 	/* extra reference for return */
- 	kref_init(&neigh_node->refcount);
- 	kref_get(&neigh_node->refcount);
-@@ -673,9 +670,6 @@ batadv_neigh_node_new(struct batadv_orig_node *orig_node,
- 	hlist_add_head_rcu(&neigh_node->list, &orig_node->neigh_list);
- 	spin_unlock_bh(&orig_node->neigh_list_lock);
- 
--	/* increment unique neighbor refcount */
--	kref_get(&hardif_neigh->refcount);
+-static void batadv_v_iface_update_mac(struct batadv_hard_iface *hard_iface)
+-{
+-}
 -
- 	batadv_dbg(BATADV_DBG_BATMAN, orig_node->bat_priv,
- 		   "Creating new neighbor %pM for orig_node %pM on interface %s\n",
- 		   neigh_addr, orig_node->orig, hard_iface->net_dev->name);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 65afd090ab3e..1e47fbe8bb7b 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -433,6 +433,7 @@ struct batadv_hardif_neigh_node {
-  * @ifinfo_lock: lock protecting private ifinfo members and list
-  * @if_incoming: pointer to incoming hard-interface
-  * @last_seen: when last packet via this neighbor was received
-+ * @hardif_neigh: hardif_neigh of this neighbor
-  * @refcount: number of contexts the object is used
-  * @rcu: struct used for freeing in an RCU-safe manner
-  */
-@@ -444,6 +445,7 @@ struct batadv_neigh_node {
- 	spinlock_t ifinfo_lock;	/* protects ifinfo_list and its members */
- 	struct batadv_hard_iface *if_incoming;
- 	unsigned long last_seen;
-+	struct batadv_hardif_neigh_node *hardif_neigh;
- 	struct kref refcount;
- 	struct rcu_head rcu;
- };
+ static void batadv_v_primary_iface_set(struct batadv_hard_iface *hard_iface)
+ {
+ 	batadv_v_elp_primary_iface_set(hard_iface);
+ 	batadv_v_ogm_primary_iface_set(hard_iface);
+ }
+ 
++static void batadv_v_iface_update_mac(struct batadv_hard_iface *hard_iface)
++{
++	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
++	struct batadv_hard_iface *primary_if;
++
++	primary_if = batadv_primary_if_get_selected(bat_priv);
++	if (primary_if != hard_iface)
++		goto out;
++
++	batadv_v_primary_iface_set(hard_iface);
++out:
++	if (primary_if)
++		batadv_hardif_put(primary_if);
++}
++
+ static void
+ batadv_v_hardif_neigh_init(struct batadv_hardif_neigh_node *hardif_neigh)
+ {
 -- 
 2.8.1
 
