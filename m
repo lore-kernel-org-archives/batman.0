@@ -1,15 +1,11 @@
 Return-Path: <a@unstable.cc>
-Date: Mon, 2 May 2016 04:59:23 +0800
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160501205923.GX11201@prodigo.lan>
-References: <1462124180-12104-1-git-send-email-a@unstable.cc>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="Sh7h4lnU5nPTsIof"
-Content-Disposition: inline
+Date: Mon,  2 May 2016 05:23:28 +0800
+Message-Id: <1462137808-719-1-git-send-email-a@unstable.cc>
 In-Reply-To: <1462124180-12104-1-git-send-email-a@unstable.cc>
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: make sure ELP/OGM orig
- MAC is updated on address change
+References: <1462124180-12104-1-git-send-email-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] [PATCH maint v2] batman-adv: make sure ELP/OGM orig
+	MAC is updated on address change
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,47 +16,55 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
+When the MAC address of the primary interface is changed,
+update the originator address in the ELP and OGM skb buffers as
+well in order to reflect the change.
 
---Sh7h4lnU5nPTsIof
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Fixes: a4b88af77e28 ("batman-adv: ELP - adding basic infrastructure")
+Reported-by: Marek Lindner <marek@neomailbox.ch>
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
+---
+ net/batman-adv/bat_v.c | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
 
-On Mon, May 02, 2016 at 01:36:20AM +0800, Antonio Quartulli wrote:
-> When the MAC address of the primary interface is changed,
-> update the originator address in the ELP and OGM skb buffers as
-> well in order to reflect the change.
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 4026f19..4ed3d5e 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -72,16 +72,27 @@ static void batadv_v_iface_disable(struct batadv_hard_iface *hard_iface)
+ 	batadv_v_elp_iface_disable(hard_iface);
+ }
+ 
+-static void batadv_v_iface_update_mac(struct batadv_hard_iface *hard_iface)
+-{
+-}
+-
+ static void batadv_v_primary_iface_set(struct batadv_hard_iface *hard_iface)
+ {
+ 	batadv_v_elp_primary_iface_set(hard_iface);
+ 	batadv_v_ogm_primary_iface_set(hard_iface);
+ }
+ 
++static void batadv_v_iface_update_mac(struct batadv_hard_iface *hard_iface)
++{
++	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
++	struct batadv_hard_iface *primary_if;
++
++	primary_if = batadv_primary_if_get_selected(bat_priv);
++	if (primary_if != hard_iface)
++		goto out;
++
++	batadv_v_primary_iface_set(hard_iface);
++out:
++	if (primary_if)
++		batadv_hardif_put(primary_if);
++}
++
+ static void
+ batadv_v_hardif_neigh_init(struct batadv_hardif_neigh_node *hardif_neigh)
+ {
+-- 
+2.8.1
 
-actually this patch is for "maint" and still misses the Fixes tag.
-
->=20
-> Reported-by: Marek Lindner <marek@neomailbox.ch>
-> Signed-off-by: Antonio Quartulli <a@unstable.cc>
-
---=20
-Antonio Quartulli
-
---Sh7h4lnU5nPTsIof
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXJm4rAAoJEJ4aZjxxc6bKqgYQAJCajsCRfrSh1okuZwxaBBdG
-AinrEWXPy4I7Q5DtaTZ27j+804t/V6ouJJY76jp7VzxrbTNtcSAsQyrm2CMj0K5P
-KaBHagWFa+QAG4BfT+TjRG1B+hpdH3AqW67fpCYxaa6toemxLG7E3dgzFnlUUWBd
-MnHj6/2YSnUMBM4jyqwSwt66wnJLG3saXx5J5Vbp1VCwy2NpC++yXSgyNFKlzmJz
-mbWd4sSGiMIZ77/KlaaAvLlgXmnATezEGyKfAxAtbwoeyMHa0RMGm7ESE7LRNAWc
-/ubJsK8wmUqVKGNfZ4bECvmAEjF8NmbiAMddh5JKWjD1AEfgDVOIifdGgOapYI24
-GzWiZk9N/QsV0729YUXML/LVspWRuNuXMmDhnX2v2ePiP4GWn87Aso+oyh5dJ9E+
-oL2hA80onI1XkIGnMEQ84EbxpL95w1ePa3S/S63UtS4inbC4GAQbAh0rQ4eN/qbm
-e+g0nmLrKWBH+VmiRNlvtn4hBWBokdViZz2xC3/3QODl5yNH1Fcw1PdThwW2GiOe
-rXuqSzxKI30JH9zuca0HSEcvmWnqRaShG/XqN6St6LMoX4d7pPR30yydBNpdlsPZ
-xDZb60ay0KYPUtUXdpOcXi+TvM9IrXs6av5F62S9l1wOrftglh9tf2mQN9zbhIvn
-8yGd7SSRcMaEHNzrusyn
-=J7/b
------END PGP SIGNATURE-----
-
---Sh7h4lnU5nPTsIof--
