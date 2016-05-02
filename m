@@ -1,15 +1,9 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 03 May 2016 01:34:37 +0800
-Message-ID: <1644824.JdrMyOTENZ@voltaire>
-In-Reply-To: <1452150672-11174-2-git-send-email-linus.luessing@c0d3.blue>
-References: <1452150672-11174-1-git-send-email-linus.luessing@c0d3.blue>
- <1452150672-11174-2-git-send-email-linus.luessing@c0d3.blue>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1670325.90i4OrrO9g";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Avoid duplicate neigh_node
-	additions
+Return-Path: <a@unstable.cc>
+From: Antonio Quartulli <a@unstable.cc>
+Date: Tue,  3 May 2016 01:45:34 +0800
+Message-Id: <1462211134-8169-1-git-send-email-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove ogm_emit and ogm_schedule
+	API calls
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,115 +14,335 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart1670325.90i4OrrO9g
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+The ogm_emit and ogm_schedule API calls were rather tight to the
+B.A.T.M.A.N. IV logic and therefore rather difficult to use
+with other algorithm implementations.
 
-On Thursday, January 07, 2016 08:11:12 Linus L=FCssing wrote:
-> Two parallel calls to batadv_neigh_node_new() might race for creating=
+Remove such calls and move the surrounding logic into the
+B.A.T.M.A.N. IV specific code.
 
-> and adding the same neig_node. Fix this by including the check for an=
-y
-> already existing, identical neigh_node within the spin-lock.
->=20
-> This fixes splats like the following:
->=20
-> [  739.535069] ------------[ cut here ]------------
-> [  739.535079] WARNING: CPU: 0 PID: 0 at
-> /usr/src/batman-adv/git/batman-adv/net/batman-adv/bat_iv_ogm.c:1004
-> batadv_iv_ogm_process_per_outif+0xe3f/0xe60 [batman_adv]() [  739.535=
-092]
-> too many matching neigh_nodes
-> [  739.535094] Modules linked in: dm_mod tun ip6table_filter ip6table=
-_mangle
-> ip6table_nat nf_nat_ipv6 ip6_tables xt_nat iptable_nat nf_nat_ipv4 nf=
-_nat
-> xt_TCPMSS xt_mark iptable_mangle xt_tcpudp xt_conntrack iptable_filte=
-r
-> ip_tables x_tables ip_gre ip_tunnel gre bridge stp llc thermal_sys
-> kvm_intel kvm crct10dif_pclmul crc32_pclmul sha256_ssse3 sha256_gener=
-ic
-> hmac drbg ansi_cprng aesni_intel aes_x86_64 lrw gf128mul glue_helper
-> ablk_helper cryptd evdev pcspkr ip6_gre ip6_tunnel tunnel6 batman_adv=
-(O)
-> libcrc32c nf_conntrack_ipv6 nf_defrag_ipv6 nf_conntrack_ipv4 nf_defra=
-g_ipv4
-> nf_conntrack autofs4 ext4 crc16 mbcache jbd2 xen_netfront xen_blkfron=
-t
-> crc32c_intel [  739.535177] CPU: 0 PID: 0 Comm: swapper/0 Tainted:
-> G        W  O    4.2.0-0.bpo.1-amd64 #1 Debian 4.2.6-3~bpo8+2
-> [  739.535186]  0000000000000000 ffffffffa013b050 ffffffff81554521
-> ffff88007d003c18 [  739.535201]  ffffffff8106fa01 0000000000000000
-> ffff8800047a087a ffff880079c3a000 [  739.735602]  ffff88007b82bf40
-> ffff88007bc2d1c0 ffffffff8106fa7a ffffffffa013aa8e [  739.735624] Cal=
-l
-> Trace:
-> [  739.735639]  <IRQ>  [<ffffffff81554521>] ? dump_stack+0x40/0x50
-> [  739.735677]  [<ffffffff8106fa01>] ? warn_slowpath_common+0x81/0xb0=
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
+---
 
-> [  739.735692]  [<ffffffff8106fa7a>] ? warn_slowpath_fmt+0x4a/0x50
-> [  739.735715]  [<ffffffffa012448f>] ?
-> batadv_iv_ogm_process_per_outif+0xe3f/0xe60 [batman_adv]
-> [  739.735740]  [<ffffffffa0124813>] ? batadv_iv_ogm_receive+0x363/0x=
-380
-> [batman_adv] [  739.735762]  [<ffffffffa0124813>] ?
-> batadv_iv_ogm_receive+0x363/0x380 [batman_adv]
-> [  739.735783]  [<ffffffff810b0841>] ?
-> __raw_callee_save___pv_queued_spin_unlock+0x11/0x20
-> [  739.735804]  [<ffffffffa012cb39>] ? batadv_batman_skb_recv+0xc9/0x=
-110
-> [batman_adv] [  739.735825]  [<ffffffff81464891>] ?
-> __netif_receive_skb_core+0x841/0x9a0 [  739.735838]  [<ffffffff810b08=
-41>] ?
-> __raw_callee_save___pv_queued_spin_unlock+0x11/0x20
-> [  739.735853]  [<ffffffff81465681>] ? process_backlog+0xa1/0x140
-> [  739.735864]  [<ffffffff81464f1a>] ? net_rx_action+0x20a/0x320
-> [  739.735878]  [<ffffffff81073aa7>] ? __do_softirq+0x107/0x270
-> [  739.735891]  [<ffffffff81073d82>] ? irq_exit+0x92/0xa0
-> [  739.735905]  [<ffffffff8137e0d1>] ? xen_evtchn_do_upcall+0x31/0x40=
+Changes from RFC:
+- batadv_send_outstanding_bat_ogm_packet() renamed to
+  batadv_iv_send_outstanding_bat_ogm_packet()
+- batadv_iv_iface_enable() moved back to its original location (was moved by
+  accident)
+- code has been tested in qemu with one node
 
-> [  739.735924]  [<ffffffff8155b8fe>] ? xen_do_hypervisor_callback+0x1=
-e/0x40
-> [  739.735939]  <EOI>  [<ffffffff810013aa>] ?
-> xen_hypercall_sched_op+0xa/0x20 [  739.735965]  [<ffffffff810013aa>] =
-?
-> xen_hypercall_sched_op+0xa/0x20 [  739.735979]  [<ffffffff8100a39c>] =
-?
-> xen_safe_halt+0xc/0x20
-> [  739.735991]  [<ffffffff8101da6c>] ? default_idle+0x1c/0xa0
-> [  739.736004]  [<ffffffff810abf6b>] ? cpu_startup_entry+0x2eb/0x350
-> [  739.736019]  [<ffffffff81b2af5e>] ? start_kernel+0x480/0x48b
-> [  739.736032]  [<ffffffff81b2d116>] ? xen_start_kernel+0x507/0x511
-> [  739.736048] ---[ end trace c106bb901244bc8c ]---
->=20
-> Reported-by: Martin Weinelt <martin@darmstadt.freifunk.net>
-> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
-> ---
->  net/batman-adv/originator.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
 
-Applied in revision 8013ae2.
+ net/batman-adv/bat_iv_ogm.c     | 68 ++++++++++++++++++++++++++++++++++++++---
+ net/batman-adv/bat_v.c          | 10 ------
+ net/batman-adv/hard-interface.c |  3 --
+ net/batman-adv/main.c           |  2 --
+ net/batman-adv/send.c           | 61 +-----------------------------------
+ net/batman-adv/send.h           |  3 +-
+ net/batman-adv/types.h          |  4 ---
+ 7 files changed, 66 insertions(+), 85 deletions(-)
 
-Thanks,
-Marek
-
---nextPart1670325.90i4OrrO9g
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJXJ4+tAAoJEFNVTo/uthzACpQIALonZAZ9I8hdvgSUmnGPYU4Q
-rQZfr3b9SCHI9YwYFW1TurOik67rY44LnOUl/h9qaBV8dEnmf3/ki1j/gQTfN+6l
-jtZg1fNB1b5fsgPbKV0FkFG0r9dwWLyYxtxmnd+YS21RLGqmloUPT9yiiFbQKaIh
-oLIXe29SLodlPkKTTuBhxQ0hBI0prBtS7GSz9EJxGKSI2vyHd0V6y9djuTvaucHh
-hTqW9fzlf/y2IJ2JKV3Pa3zld81bEyEMo+HGGDTTAW/wHSnu4R7vMFCdN4Pg7qGS
-6JnLlIpIhpgWA3zhYFpj+WgA//7dqPuWb8USCp26PyCS6BhRY83ImuVKI6HRy9U=
-=r3TT
------END PGP SIGNATURE-----
-
---nextPart1670325.90i4OrrO9g--
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index ce2f203..4398969 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -58,6 +58,8 @@
+ #include "send.h"
+ #include "translation-table.h"
+ 
++static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work);
++
+ /**
+  * enum batadv_dup_status - duplicate status
+  * @BATADV_NO_DUP: the packet is no duplicate
+@@ -730,7 +732,7 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 
+ 	/* start timer for this packet */
+ 	INIT_DELAYED_WORK(&forw_packet_aggr->delayed_work,
+-			  batadv_send_outstanding_bat_ogm_packet);
++			  batadv_iv_send_outstanding_bat_ogm_packet);
+ 	queue_delayed_work(batadv_event_workqueue,
+ 			   &forw_packet_aggr->delayed_work,
+ 			   send_time - jiffies);
+@@ -937,6 +939,19 @@ static void batadv_iv_ogm_schedule(struct batadv_hard_iface *hard_iface)
+ 	u16 tvlv_len = 0;
+ 	unsigned long send_time;
+ 
++	if ((hard_iface->if_status == BATADV_IF_NOT_IN_USE) ||
++	    (hard_iface->if_status == BATADV_IF_TO_BE_REMOVED))
++		return;
++
++	/* the interface gets activated here to avoid race conditions between
++	 * the moment of activating the interface in
++	 * hardif_activate_interface() where the originator mac is set and
++	 * outdated packets (especially uninitialized mac addresses) in the
++	 * packet queue
++	 */
++	if (hard_iface->if_status == BATADV_IF_TO_BE_ACTIVATED)
++		hard_iface->if_status = BATADV_IF_ACTIVE;
++
+ 	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 
+ 	if (hard_iface == primary_if) {
+@@ -1778,6 +1793,45 @@ static void batadv_iv_ogm_process(const struct sk_buff *skb, int ogm_offset,
+ 	batadv_orig_node_put(orig_node);
+ }
+ 
++static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
++{
++	struct delayed_work *delayed_work;
++	struct batadv_forw_packet *forw_packet;
++	struct batadv_priv *bat_priv;
++
++	delayed_work = to_delayed_work(work);
++	forw_packet = container_of(delayed_work, struct batadv_forw_packet,
++				   delayed_work);
++	bat_priv = netdev_priv(forw_packet->if_incoming->soft_iface);
++	spin_lock_bh(&bat_priv->forw_bat_list_lock);
++	hlist_del(&forw_packet->list);
++	spin_unlock_bh(&bat_priv->forw_bat_list_lock);
++
++	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
++		goto out;
++
++	batadv_iv_ogm_emit(forw_packet);
++
++	/* we have to have at least one packet in the queue to determine the
++	 * queues wake up time unless we are shutting down.
++	 *
++	 * only re-schedule if this is the "original" copy, e.g. the OGM of the
++	 * primary interface should only be rescheduled once per period, but
++	 * this function will be called for the forw_packet instances of the
++	 * other secondary interfaces as well.
++	 */
++	if (forw_packet->own &&
++	    forw_packet->if_incoming == forw_packet->if_outgoing)
++		batadv_iv_ogm_schedule(forw_packet->if_incoming);
++
++out:
++	/* don't count own packet */
++	if (!forw_packet->own)
++		atomic_inc(&bat_priv->batman_queue_left);
++
++	batadv_forw_packet_free(forw_packet);
++}
++
+ static int batadv_iv_ogm_receive(struct sk_buff *skb,
+ 				 struct batadv_hard_iface *if_incoming)
+ {
+@@ -1794,7 +1848,8 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
+ 	/* did we receive a B.A.T.M.A.N. IV OGM packet on an interface
+ 	 * that does not have B.A.T.M.A.N. IV enabled ?
+ 	 */
+-	if (bat_priv->bat_algo_ops->bat_ogm_emit != batadv_iv_ogm_emit)
++	if (bat_priv->bat_algo_ops->bat_iface_enable !=
++	    batadv_iv_ogm_iface_enable)
+ 		return NET_RX_DROP;
+ 
+ 	batadv_inc_counter(bat_priv, BATADV_CNT_MGMT_RX);
+@@ -2052,14 +2107,19 @@ out:
+ 	return ret;
+ }
+ 
++static void batadv_iv_iface_activate(struct batadv_hard_iface *hard_iface)
++{
++	/* begin scheduling originator messages on that interface */
++	batadv_iv_ogm_schedule(hard_iface);
++}
++
+ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
+ 	.name = "BATMAN_IV",
++	.bat_iface_activate = batadv_iv_iface_activate,
+ 	.bat_iface_enable = batadv_iv_ogm_iface_enable,
+ 	.bat_iface_disable = batadv_iv_ogm_iface_disable,
+ 	.bat_iface_update_mac = batadv_iv_ogm_iface_update_mac,
+ 	.bat_primary_iface_set = batadv_iv_ogm_primary_iface_set,
+-	.bat_ogm_schedule = batadv_iv_ogm_schedule,
+-	.bat_ogm_emit = batadv_iv_ogm_emit,
+ 	.bat_neigh_cmp = batadv_iv_ogm_neigh_cmp,
+ 	.bat_neigh_is_similar_or_better = batadv_iv_ogm_neigh_is_sob,
+ 	.bat_neigh_print = batadv_iv_neigh_print,
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 728c9d1..927d405 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -108,14 +108,6 @@ batadv_v_hardif_neigh_init(struct batadv_hardif_neigh_node *hardif_neigh)
+ 		  batadv_v_elp_throughput_metric_update);
+ }
+ 
+-static void batadv_v_ogm_schedule(struct batadv_hard_iface *hard_iface)
+-{
+-}
+-
+-static void batadv_v_ogm_emit(struct batadv_forw_packet *forw_packet)
+-{
+-}
+-
+ /**
+  * batadv_v_orig_print_neigh - print neighbors for the originator table
+  * @orig_node: the orig_node for which the neighbors are printed
+@@ -308,8 +300,6 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+ 	.bat_iface_update_mac = batadv_v_iface_update_mac,
+ 	.bat_primary_iface_set = batadv_v_primary_iface_set,
+ 	.bat_hardif_neigh_init = batadv_v_hardif_neigh_init,
+-	.bat_ogm_emit = batadv_v_ogm_emit,
+-	.bat_ogm_schedule = batadv_v_ogm_schedule,
+ 	.bat_orig_print = batadv_v_orig_print,
+ 	.bat_neigh_cmp = batadv_v_neigh_cmp,
+ 	.bat_neigh_is_similar_or_better = batadv_v_neigh_is_sob,
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 8c2f399..db2009d 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -553,9 +553,6 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 
+ 	batadv_hardif_recalc_extra_skbroom(soft_iface);
+ 
+-	/* begin scheduling originator messages on that interface */
+-	batadv_schedule_bat_ogm(hard_iface);
+-
+ out:
+ 	return 0;
+ 
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 5f2974b..627d14e 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -569,8 +569,6 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
+ 	    !bat_algo_ops->bat_iface_disable ||
+ 	    !bat_algo_ops->bat_iface_update_mac ||
+ 	    !bat_algo_ops->bat_primary_iface_set ||
+-	    !bat_algo_ops->bat_ogm_schedule ||
+-	    !bat_algo_ops->bat_ogm_emit ||
+ 	    !bat_algo_ops->bat_neigh_cmp ||
+ 	    !bat_algo_ops->bat_neigh_is_similar_or_better) {
+ 		pr_info("Routing algo '%s' does not implement required ops\n",
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index f2f1256..638d1c1 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -428,27 +428,7 @@ int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 				       orig_node, vid);
+ }
+ 
+-void batadv_schedule_bat_ogm(struct batadv_hard_iface *hard_iface)
+-{
+-	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+-
+-	if ((hard_iface->if_status == BATADV_IF_NOT_IN_USE) ||
+-	    (hard_iface->if_status == BATADV_IF_TO_BE_REMOVED))
+-		return;
+-
+-	/* the interface gets activated here to avoid race conditions between
+-	 * the moment of activating the interface in
+-	 * hardif_activate_interface() where the originator mac is set and
+-	 * outdated packets (especially uninitialized mac addresses) in the
+-	 * packet queue
+-	 */
+-	if (hard_iface->if_status == BATADV_IF_TO_BE_ACTIVATED)
+-		hard_iface->if_status = BATADV_IF_ACTIVE;
+-
+-	bat_priv->bat_algo_ops->bat_ogm_schedule(hard_iface);
+-}
+-
+-static void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
++void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
+ {
+ 	kfree_skb(forw_packet->skb);
+ 	if (forw_packet->if_incoming)
+@@ -604,45 +584,6 @@ out:
+ 	atomic_inc(&bat_priv->bcast_queue_left);
+ }
+ 
+-void batadv_send_outstanding_bat_ogm_packet(struct work_struct *work)
+-{
+-	struct delayed_work *delayed_work;
+-	struct batadv_forw_packet *forw_packet;
+-	struct batadv_priv *bat_priv;
+-
+-	delayed_work = to_delayed_work(work);
+-	forw_packet = container_of(delayed_work, struct batadv_forw_packet,
+-				   delayed_work);
+-	bat_priv = netdev_priv(forw_packet->if_incoming->soft_iface);
+-	spin_lock_bh(&bat_priv->forw_bat_list_lock);
+-	hlist_del(&forw_packet->list);
+-	spin_unlock_bh(&bat_priv->forw_bat_list_lock);
+-
+-	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
+-		goto out;
+-
+-	bat_priv->bat_algo_ops->bat_ogm_emit(forw_packet);
+-
+-	/* we have to have at least one packet in the queue to determine the
+-	 * queues wake up time unless we are shutting down.
+-	 *
+-	 * only re-schedule if this is the "original" copy, e.g. the OGM of the
+-	 * primary interface should only be rescheduled once per period, but
+-	 * this function will be called for the forw_packet instances of the
+-	 * other secondary interfaces as well.
+-	 */
+-	if (forw_packet->own &&
+-	    forw_packet->if_incoming == forw_packet->if_outgoing)
+-		batadv_schedule_bat_ogm(forw_packet->if_incoming);
+-
+-out:
+-	/* don't count own packet */
+-	if (!forw_packet->own)
+-		atomic_inc(&bat_priv->batman_queue_left);
+-
+-	batadv_forw_packet_free(forw_packet);
+-}
+-
+ void
+ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
+ 				 const struct batadv_hard_iface *hard_iface)
+diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
+index 6fd7270..f6fda19 100644
+--- a/net/batman-adv/send.h
++++ b/net/batman-adv/send.h
+@@ -28,6 +28,7 @@
+ struct sk_buff;
+ struct work_struct;
+ 
++void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet);
+ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 			    struct batadv_orig_node *orig_node,
+ 			    struct batadv_hard_iface *recv_if);
+@@ -38,11 +39,9 @@ int batadv_send_broadcast_skb(struct sk_buff *skb,
+ 			      struct batadv_hard_iface *hard_iface);
+ int batadv_send_unicast_skb(struct sk_buff *skb,
+ 			    struct batadv_neigh_node *neigh_node);
+-void batadv_schedule_bat_ogm(struct batadv_hard_iface *hard_iface);
+ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
+ 				    const struct sk_buff *skb,
+ 				    unsigned long delay);
+-void batadv_send_outstanding_bat_ogm_packet(struct work_struct *work);
+ void
+ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
+ 				 const struct batadv_hard_iface *hard_iface);
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 6a577f4..3687d19 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1269,8 +1269,6 @@ struct batadv_forw_packet {
+  * @bat_iface_update_mac: (re-)init mac addresses of the protocol information
+  *  belonging to this hard-interface
+  * @bat_primary_iface_set: called when primary interface is selected / changed
+- * @bat_ogm_schedule: prepare a new outgoing OGM for the send queue
+- * @bat_ogm_emit: send scheduled OGM
+  * @bat_hardif_neigh_init: called on creation of single hop entry
+  * @bat_neigh_cmp: compare the metrics of two neighbors for their respective
+  *  outgoing interfaces
+@@ -1296,8 +1294,6 @@ struct batadv_algo_ops {
+ 	void (*bat_iface_disable)(struct batadv_hard_iface *hard_iface);
+ 	void (*bat_iface_update_mac)(struct batadv_hard_iface *hard_iface);
+ 	void (*bat_primary_iface_set)(struct batadv_hard_iface *hard_iface);
+-	void (*bat_ogm_schedule)(struct batadv_hard_iface *hard_iface);
+-	void (*bat_ogm_emit)(struct batadv_forw_packet *forw_packet);
+ 	/* neigh_node handling API */
+ 	void (*bat_hardif_neigh_init)(struct batadv_hardif_neigh_node *neigh);
+ 	int (*bat_neigh_cmp)(struct batadv_neigh_node *neigh1,
+-- 
+2.8.2
 
