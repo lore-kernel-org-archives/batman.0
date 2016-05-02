@@ -1,14 +1,9 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 02 May 2016 21:37:09 +0800
-Message-ID: <2365057.Gn8jA0YdNL@voltaire>
-In-Reply-To: <1462184858-18072-1-git-send-email-a@unstable.cc>
-References: <1462184858-18072-1-git-send-email-a@unstable.cc>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4623645.OeMAiooJfz";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint v3] batman-adv: make sure ELP/OGM
-	orig MAC is updated on address change
+Date: Mon,  2 May 2016 21:58:50 +0800
+Message-Id: <1462197530-31203-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove unused callback from
+	batadv_algo_ops struct
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,53 +14,60 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart4623645.OeMAiooJfz
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+---
+ net/batman-adv/originator.c | 5 -----
+ net/batman-adv/types.h      | 3 ---
+ 2 files changed, 8 deletions(-)
 
-On Monday, May 02, 2016 18:27:38 Antonio Quartulli wrote:
-> When the MAC address of the primary interface is changed,
-> update the originator address in the ELP and OGM skb buffers as
-> well in order to reflect the change.
-> 
-> Fixes: a4b88af77e28 ("batman-adv: ELP - adding basic infrastructure")
-> Reported-by: Marek Lindner <marek@neomailbox.ch>
-> Signed-off-by: Antonio Quartulli <a@unstable.cc>
-> ---
-> 
-> Changes from v1:
-> - Fixes: tag added
-> - rebased on top of maint
-> 
-> Changes from v2:
-> - kernel-doc added
-> 
->  net/batman-adv/bat_v.c | 26 ++++++++++++++++++++++----
->  1 file changed, 22 insertions(+), 4 deletions(-)
-
-Applied in revision a636bf0.
-
-Thanks,
-Marek
-
---nextPart4623645.OeMAiooJfz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJXJ1gFAAoJEFNVTo/uthzAArgH/04c5UmzxeMeG5apCUP9MfDa
-LTOT+Ybodp43ItLwD1wGoKet5Cojdl5s1z3LQrO8YS7rLqBABXV3ZptF7JjVZgMx
-PAtVxZCww35NCO+CM/o4ZP+6C4kM3t/gqSUJdmaKp2+CVrAS+x4g7tftbvEb4x+K
-VonWjE6elG55643aATIv3pIzMgaBJsf8yzPe2b4QfplS5N73RvF93skFk2g2oYe6
-1lT+y94Z7awZQ0Zpy9qOn2Si+ZhptfJFYNjHE3RdYYWfLcufEVKqBKOvUgf9XASY
-8JC9mRwZCsJTVa30HGY7mDRhl0RTZS2BQRdcXsqrybgIj+sX5ivL2FrANEYvjJ0=
-=fcZN
------END PGP SIGNATURE-----
-
---nextPart4623645.OeMAiooJfz--
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 1ff4ee4..dd71682 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -251,10 +251,8 @@ static void batadv_neigh_node_release(struct kref *ref)
+ 	struct hlist_node *node_tmp;
+ 	struct batadv_neigh_node *neigh_node;
+ 	struct batadv_neigh_ifinfo *neigh_ifinfo;
+-	struct batadv_algo_ops *bao;
+ 
+ 	neigh_node = container_of(ref, struct batadv_neigh_node, refcount);
+-	bao = neigh_node->orig_node->bat_priv->bat_algo_ops;
+ 
+ 	hlist_for_each_entry_safe(neigh_ifinfo, node_tmp,
+ 				  &neigh_node->ifinfo_list, list) {
+@@ -263,9 +261,6 @@ static void batadv_neigh_node_release(struct kref *ref)
+ 
+ 	batadv_hardif_neigh_put(neigh_node->hardif_neigh);
+ 
+-	if (bao->bat_neigh_free)
+-		bao->bat_neigh_free(neigh_node);
+-
+ 	batadv_hardif_put(neigh_node->if_incoming);
+ 
+ 	kfree_rcu(neigh_node, rcu);
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 6a577f4..114d150 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1278,8 +1278,6 @@ struct batadv_forw_packet {
+  *  better than neigh2 for their respective outgoing interface from the metric
+  *  prospective
+  * @bat_neigh_print: print the single hop neighbor list (optional)
+- * @bat_neigh_free: free the resources allocated by the routing algorithm for a
+- *  neigh_node object
+  * @bat_orig_print: print the originator table (optional)
+  * @bat_orig_free: free the resources allocated by the routing algorithm for an
+  *  orig_node object
+@@ -1310,7 +1308,6 @@ struct batadv_algo_ops {
+ 		 struct batadv_neigh_node *neigh2,
+ 		 struct batadv_hard_iface *if_outgoing2);
+ 	void (*bat_neigh_print)(struct batadv_priv *priv, struct seq_file *seq);
+-	void (*bat_neigh_free)(struct batadv_neigh_node *neigh);
+ 	/* orig_node handling API */
+ 	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq,
+ 			       struct batadv_hard_iface *hard_iface);
+-- 
+2.8.0.rc3
 
