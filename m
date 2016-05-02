@@ -1,11 +1,14 @@
-Return-Path: <kauer@biplane.com.au>
-Message-ID: <1462190269.1971.52.camel@biplane.com.au>
-From: Karl Auer <kauer@biplane.com.au>
-Date: Mon, 02 May 2016 21:57:49 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] mesh losing internal Ilayer3 connectivity
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 02 May 2016 21:17:04 +0800
+Message-ID: <1683361.EIP8vDbSFE@voltaire>
+In-Reply-To: <1460626198-31226-1-git-send-email-a@unstable.cc>
+References: <1460626198-31226-1-git-send-email-a@unstable.cc>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1871749.M50srL4DPq";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batctl: tcpdump - filter OGM and
+	OGMv2 packets independently
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,57 +18,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: BATMAN List <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>, Antonio Quartulli <antonio@open-mesh.com>
 
-My apologies up front for a newbie question in this apparently very
-technical list. If there is a more appropriate list or forum please
-direct me to it.
+--nextPart1871749.M50srL4DPq
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-I'm running batman-adv (Chaos Calmer, r47065) on OpenWRT on the GL
--AR150 platform. It all works swimmingly, except that sometimes, for no
-apparent reason, layer 3 connectivity across the mesh (inside it) is
-lost. All nodes are still up and running and I can log into them via
-their APs or their LAN interfaces. batctl on any node still sees all
-the other nodes, and batctl can ping them by MAC address. Each node
-still has its layer3 address and can ping it locally. The arp data for
-the other nodes is correct (at least in my two-node test system). I
-don't seem to be able to delete arp entries.
+On Thursday, April 14, 2016 17:29:57 Antonio Quartulli wrote:
+> for debugging purposes it might be required to dump either OGMs
+> or OGM2s only. For this reason it is better to make the tcpdump
+> engine more flexible and accept distinct filters for the two
+> packet types.
+> 
+> Signed-off-by: Antonio Quartulli <antonio@open-mesh.com>
+> ---
+>  tcpdump.c | 15 ++++++++-------
+>  tcpdump.h | 15 ++++++++-------
+>  2 files changed, 16 insertions(+), 14 deletions(-)
 
-But no node can ping any other node by IP address. Restarting
-networking on any or even all nodes doesn't help - all that helps is
-rebooting everything.
+Applied in revision f29682c.
 
-As long as my mesh is six nodes on a table, rebooting everything is an
-option. Once deployed - not so much :-)
+Thanks,
+Marek
 
-It's possible to engineer this failure in a two-node mesh by just
-restarting networking a few times quickly.
+--nextPart1871749.M50srL4DPq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-So I'm wondering a) if this is a known issue b) if this is an obvious
-symptom of some stuff-up on my part, c) if there's a quick fix :-) and
-d) failing all of the above whether there is some way out of the
-situation without having to reboot every time.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-The mesh has one node configured as a gateway, connected to an
-upstream, and running DHCP on the bat interface. The other nodes are
-configured as gateway clients and have nothing connected on their LAN
-or WAN ports. All nodes have a static address on the bat0 interface,
-all have a static route to the gateway's (inside) IP address. All have
-an AP on the same radio as the mesh, with an RFC1918 network on it
-masqueraded into the mesh.
+iQEcBAABCAAGBQJXJ1NQAAoJEFNVTo/uthzA1aAIAKIrW8lGsVIyifphCCkUkwIK
+ebeejcMxFH5HQvW6DbDQm7XPxBMceX2YivgsmqYIHBoV0B3Lv0DiTnyHWqCP/b93
+NiAXLy2Kkk8MyH0Nk+T75AVFEzUnVAp8DqTzvLztAXK8R9W31hRFBywa34k3Y8SS
+jA/luhCt8cS5EASYInTV1KpsvriJc3Wirm/747BSlKI3ODcJIZ0Rx442x/EAdXc0
+XQQgD0mouGfuz2ZWoUSyIBrRad6cQOu5z0FdjL1CWNE0Rnee83+v3L8XlzZeEJRJ
+pArFj7R2yHgJTurT3H1yQVkEe/PpAHt2tZiWThIDiEqrjuvJFXivAvDGaeczQt4=
+=m/TN
+-----END PGP SIGNATURE-----
 
-And mostly, it works :-)
-
-Yours hopefully, K.
-
--- 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Karl Auer (kauer@biplane.com.au)
-http://www.biplane.com.au/kauer
-http://twitter.com/kauer389
-
-GPG fingerprint: E00D 64ED 9C6A 8605 21E0 0ED0 EE64 2BEE CBCB C38B
-Old fingerprint: 3C41 82BE A9E7 99A1 B931 5AE7 7638 0147 2C3C 2AC4
-
-
+--nextPart1871749.M50srL4DPq--
 
