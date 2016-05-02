@@ -1,9 +1,11 @@
-Return-Path: <a@unstable.cc>
-From: Antonio Quartulli <a@unstable.cc>
-Date: Mon,  2 May 2016 18:27:38 +0800
-Message-Id: <1462184858-18072-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH maint v3] batman-adv: make sure ELP/OGM orig
-	MAC is updated on address change
+Return-Path: <kauer@biplane.com.au>
+Message-ID: <1462190269.1971.52.camel@biplane.com.au>
+From: Karl Auer <kauer@biplane.com.au>
+Date: Mon, 02 May 2016 21:57:49 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [B.A.T.M.A.N.] mesh losing internal Ilayer3 connectivity
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,71 +15,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+To: BATMAN List <b.a.t.m.a.n@lists.open-mesh.org>
 
-When the MAC address of the primary interface is changed,
-update the originator address in the ELP and OGM skb buffers as
-well in order to reflect the change.
+My apologies up front for a newbie question in this apparently very
+technical list. If there is a more appropriate list or forum please
+direct me to it.
 
-Fixes: a4b88af77e28 ("batman-adv: ELP - adding basic infrastructure")
-Reported-by: Marek Lindner <marek@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
----
+I'm running batman-adv (Chaos Calmer, r47065) on OpenWRT on the GL
+-AR150 platform. It all works swimmingly, except that sometimes, for no
+apparent reason, layer 3 connectivity across the mesh (inside it) is
+lost. All nodes are still up and running and I can log into them via
+their APs or their LAN interfaces. batctl on any node still sees all
+the other nodes, and batctl can ping them by MAC address. Each node
+still has its layer3 address and can ping it locally. The arp data for
+the other nodes is correct (at least in my two-node test system). I
+don't seem to be able to delete arp entries.
 
-Changes from v1:
-- Fixes: tag added
-- rebased on top of maint
+But no node can ping any other node by IP address. Restarting
+networking on any or even all nodes doesn't help - all that helps is
+rebooting everything.
 
-Changes from v2:
-- kernel-doc added
+As long as my mesh is six nodes on a table, rebooting everything is an
+option. Once deployed - not so much :-)
 
- net/batman-adv/bat_v.c | 26 ++++++++++++++++++++++----
- 1 file changed, 22 insertions(+), 4 deletions(-)
+It's possible to engineer this failure in a two-node mesh by just
+restarting networking a few times quickly.
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 4026f19..4547fce 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -72,16 +72,34 @@ static void batadv_v_iface_disable(struct batadv_hard_iface *hard_iface)
- 	batadv_v_elp_iface_disable(hard_iface);
- }
- 
--static void batadv_v_iface_update_mac(struct batadv_hard_iface *hard_iface)
--{
--}
--
- static void batadv_v_primary_iface_set(struct batadv_hard_iface *hard_iface)
- {
- 	batadv_v_elp_primary_iface_set(hard_iface);
- 	batadv_v_ogm_primary_iface_set(hard_iface);
- }
- 
-+/**
-+ * batadv_v_iface_update_mac - react to hard-interface MAC address change
-+ * @hard_iface: the modified interface
-+ *
-+ * If the modified interface is the primary one, update the originator
-+ * address in the ELP and OGM messages to reflect the new MAC address.
-+ */
-+static void batadv_v_iface_update_mac(struct batadv_hard_iface *hard_iface)
-+{
-+	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	struct batadv_hard_iface *primary_if;
-+
-+	primary_if = batadv_primary_if_get_selected(bat_priv);
-+	if (primary_if != hard_iface)
-+		goto out;
-+
-+	batadv_v_primary_iface_set(hard_iface);
-+out:
-+	if (primary_if)
-+		batadv_hardif_put(primary_if);
-+}
-+
- static void
- batadv_v_hardif_neigh_init(struct batadv_hardif_neigh_node *hardif_neigh)
- {
+So I'm wondering a) if this is a known issue b) if this is an obvious
+symptom of some stuff-up on my part, c) if there's a quick fix :-) and
+d) failing all of the above whether there is some way out of the
+situation without having to reboot every time.
+
+The mesh has one node configured as a gateway, connected to an
+upstream, and running DHCP on the bat interface. The other nodes are
+configured as gateway clients and have nothing connected on their LAN
+or WAN ports. All nodes have a static address on the bat0 interface,
+all have a static route to the gateway's (inside) IP address. All have
+an AP on the same radio as the mesh, with an RFC1918 network on it
+masqueraded into the mesh.
+
+And mostly, it works :-)
+
+Yours hopefully, K.
+
 -- 
-2.8.2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Karl Auer (kauer@biplane.com.au)
+http://www.biplane.com.au/kauer
+http://twitter.com/kauer389
+
+GPG fingerprint: E00D 64ED 9C6A 8605 21E0 0ED0 EE64 2BEE CBCB C38B
+Old fingerprint: 3C41 82BE A9E7 99A1 B931 5AE7 7638 0147 2C3C 2AC4
+
+
 
