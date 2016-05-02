@@ -1,12 +1,12 @@
 Return-Path: <antonio.quartulli@open-mesh.com>
-Date: Tue, 3 May 2016 01:28:28 +0800
+Date: Tue, 3 May 2016 01:53:59 +0800
 From: Antonio Quartulli <antonio.quartulli@open-mesh.com>
-Message-ID: <20160502172828.GZ11201@prodigo.lan>
+Message-ID: <20160502175359.GA11201@prodigo.lan>
 References: <1459508076-29674-1-git-send-email-sven@open-mesh.com>
  <1459508076-29674-3-git-send-email-sven@open-mesh.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="AAiVQQES42Kk67ff"
+ protocol="application/pgp-signature"; boundary="huLXOlJ1ghGp/P5+"
 Content-Disposition: inline
 In-Reply-To: <1459508076-29674-3-git-send-email-sven@open-mesh.com>
 Subject: Re: [B.A.T.M.A.N.] [PATCH v2 3/3] batman-adv: throughput meter
@@ -24,7 +24,7 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 
 
---AAiVQQES42Kk67ff
+--huLXOlJ1ghGp/P5+
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
@@ -45,27 +45,27 @@ On Fri, Apr 01, 2016 at 12:54:36PM +0200, Sven Eckelmann wrote:
 > + */
 > +static int batadv_tp_send(void *arg)
 > +{
-> +	struct batadv_tp_vars *tp_vars =3D arg;
-> +	struct batadv_priv *bat_priv =3D tp_vars->bat_priv;
-> +	struct batadv_hard_iface *primary_if =3D NULL;
-> +	struct batadv_orig_node *orig_node =3D NULL;
+> +	struct batadv_tp_vars *tp_vars =3D3D arg;
+> +	struct batadv_priv *bat_priv =3D3D tp_vars->bat_priv;
+> +	struct batadv_hard_iface *primary_if =3D3D NULL;
+> +	struct batadv_orig_node *orig_node =3D3D NULL;
 > +	size_t payload_len, packet_len;
-> +	int err =3D 0;
+> +	int err =3D3D 0;
 > +
-> +	if (unlikely(tp_vars->role !=3D BATADV_TP_SENDER)) {
-> +		err =3D BATADV_TP_DST_UNREACHABLE;
+> +	if (unlikely(tp_vars->role !=3D3D BATADV_TP_SENDER)) {
+> +		err =3D3D BATADV_TP_DST_UNREACHABLE;
 > +		goto out;
 > +	}
 > +
-> +	orig_node =3D batadv_orig_hash_find(bat_priv, tp_vars->other_end);
+> +	orig_node =3D3D batadv_orig_hash_find(bat_priv, tp_vars->other_end);
 > +	if (unlikely(!orig_node)) {
-> +		err =3D BATADV_TP_DST_UNREACHABLE;
+> +		err =3D3D BATADV_TP_DST_UNREACHABLE;
 > +		goto out;
 > +	}
 > +
-> +	primary_if =3D batadv_primary_if_get_selected(bat_priv);
+> +	primary_if =3D3D batadv_primary_if_get_selected(bat_priv);
 > +	if (unlikely(!primary_if)) {
-> +		err =3D BATADV_TP_DST_UNREACHABLE;
+> +		err =3D3D BATADV_TP_DST_UNREACHABLE;
 > +		goto out;
 > +	}
 
@@ -95,29 +95,30 @@ against a non-existing originator and batctl crashed.
 
 Cheers,
 
+
 --=20
 Antonio Quartulli
 
---AAiVQQES42Kk67ff
+--huLXOlJ1ghGp/P5+
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXJ448AAoJEJ4aZjxxc6bKYUEP/jYxJAKpS5GnFrXbU+W5Zazm
-bv3ats0dqlpOGzozgH6hPRHbzUkbC7zOxSrxVGQzuMzrW+lROsh0ASfDx4I3A5zH
-z3QnsWPOX45ERFAQ7KQFKdB4fgp8p3bMr19N50qgWbMDX+aEKIOJtxYc6JgIhUhO
-XP9NDJEL3O//lQXoRdXLnKYGnQeyDePQu1p+1MPdCf4bBQZbBEPxKxJxeRS1ls4v
-LRUfwwo6Abl2/ycZqlw/4bA9eOpSCofuut1VhhzN+MEeKccv6HPnNPxHXEHEV1a6
-2bvNCEFcoqG2UbQDoO7RMas8EstEwYZL9hz6WQS6Mn3iJQjCD05opEYaPk8R373R
-C5E2D95urSLgXiYn84clsxJkR0d20gPmcd0zXHZtKIh1xnYV1VFBBUVsjFGJRagt
-cxbD9KrrXjHQyo3+irIYC0CRGMV10nGQDXKKpQsE3MPfgnwPEgWOQTyDR/sY9zlI
-Uu5FPsvd1yamDebOm/lJ6rPPSeHygAtvmZCjnfveEyvtTf1f6VQSpwdJi6/PRVNB
-Yn6H1vxuocUn4+jzyXecVa9vJy2tZTczVBT12YaS5TGIFdnVzNp0Lgy0Zs6HNSIV
-pwaZToRmmQ6KnTAbhWE40DoKXBJrm8l30qkHY/k/YlOJnrXDDQqrwiCyUYT2XA0m
-Y5vUZ5sxEOxir8p7XXxS
-=1hMp
+iQIcBAEBCAAGBQJXJ5Q3AAoJEJ4aZjxxc6bKekEP/1n2t+K4BwcIeupYr2MXBWhJ
+njaVQyUa9CTWATwjGwSDoy3v4JtOgaN1dZedbk1wWR3dfBMjwll/r9yUGUviVfnm
+o9TQRCzxdu//ph3282LFq/BD5bDLwFgaX22905ccmQL9Jr1+Ic/+hUcgIp9teqef
+jusWZDoh4ghqQ5FOEoZM2TDtSXdSDNPM7QtlIEITAK4LOVHwjIf6cMvCJ9Pufn8a
+UhUxM4Bru5pdJg0lL44fBJAluX1GCoc14Zowt6+J5y7SNCUSSayL1p4NqR+PSTC9
+mwv+Z3RdhPmLVqpq9DZx6D13xDy3/my/heXzLhkeV5IRIVtski8UhDfgHalBJ65n
+wiYWFMHqjbwrlTFDQNx6Zad0MhSbufnZbh1KSLeYFNGDPoNh9IZsAVlvig9zPKKs
+rnqJtbr1XqQFSn9i0JyLTGrgsw0656Y3G6JvkgBcEuxyjBweu7e3qA6Jv3fARgJq
+ILabk29v13gdVBHd0wvZ2t0ty17wYODfKTjbpxtta8QSBfY/JgQ4tUFCSl9vxIcE
+xpJXdx2Mr5raOjCdt6CLuY0aZBT2untsA23wXGfe1P72wbFvLoEGqASi4/9Qov70
+HAdJynyCxZABd8LDsSjPVWzfadZYCSXUwG6fQKHqzAJ5QBfrem9vg3wnpl3635zB
+taki8dLrdzEwsPH/Jm4A
+=G20Z
 -----END PGP SIGNATURE-----
 
---AAiVQQES42Kk67ff--
+--huLXOlJ1ghGp/P5+--
