@@ -1,16 +1,9 @@
-Return-Path: <antonio.quartulli@open-mesh.com>
-Date: Tue, 3 May 2016 01:53:59 +0800
-From: Antonio Quartulli <antonio.quartulli@open-mesh.com>
-Message-ID: <20160502175359.GA11201@prodigo.lan>
-References: <1459508076-29674-1-git-send-email-sven@open-mesh.com>
- <1459508076-29674-3-git-send-email-sven@open-mesh.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="huLXOlJ1ghGp/P5+"
-Content-Disposition: inline
-In-Reply-To: <1459508076-29674-3-git-send-email-sven@open-mesh.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 3/3] batman-adv: throughput meter
- implementation
+Return-Path: <andrew@lunn.ch>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Mon,  2 May 2016 22:56:57 +0200
+Message-Id: <1462222618-29761-1-git-send-email-andrew@lunn.ch>
+Subject: [B.A.T.M.A.N.] [PATCHv2] batctl: Use netlink to replace some of
+	debugfs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,105 +13,1280 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
 
+The kernel has gained support for exporting some information via
+netlink.  Use this when available, rather than debugfs.
 
---huLXOlJ1ghGp/P5+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+If netlink is not available, or the information is not yet available
+via netlink, batctl will fall back to debugfs.
 
-Sven,
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+---
 
-a comment is inline.
+v2: Verify mandatory attributes are returned by the kernel, and that
+    they have the expected size.
+---
+ Makefile    |   20 +-
+ debug.c     |   19 +-
+ debug.h     |    4 +-
+ functions.c |   11 +
+ functions.h |    1 +
+ main.h      |    1 +
+ netlink.c   | 1038 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 7 files changed, 1090 insertions(+), 4 deletions(-)
+ create mode 100644 netlink.c
 
-On Fri, Apr 01, 2016 at 12:54:36PM +0200, Sven Eckelmann wrote:
+diff --git a/Makefile b/Makefile
+index b82c0c6..debca29 100755
+--- a/Makefile
++++ b/Makefile
+@@ -24,7 +24,7 @@ export CONFIG_BATCTL_BISECT=n
+ 
+ # batctl build
+ BINARY_NAME = batctl
+-OBJ = main.o bat-hosts.o functions.o sys.o debug.o ping.o traceroute.o tcpdump.o  hash.o debugfs.o ioctl.o list-batman.o translate.o
++OBJ = main.o bat-hosts.o functions.o sys.o debug.o ping.o traceroute.o tcpdump.o  hash.o debugfs.o ioctl.o list-batman.o translate.o netlink.o
+ OBJ_BISECT = bisect_iv.o
+ MANPAGE = man/batctl.8
+ 
+@@ -43,6 +43,13 @@ ifndef V
+ endif
+ endif
+ 
++KERNELPATH ?= /lib/modules/$(shell uname -r)/build
++# sanity check: does KERNELPATH exist?
++ifeq ($(shell cd $(KERNELPATH) && pwd),)
++$(warning $(KERNELPATH) is missing, please set KERNELPATH)
++endif
++CFLAGS += -I $(KERNELPATH)/include/uapi/linux/
++
+ ifeq ($(origin PKG_CONFIG), undefined)
+   PKG_CONFIG = pkg-config
+   ifeq ($(shell which $(PKG_CONFIG) 2>/dev/null),)
+@@ -61,6 +68,17 @@ endif
+ CFLAGS += $(LIBNL_CFLAGS)
+ LDLIBS += $(LIBNL_LDLIBS)
+ 
++ifeq ($(origin LIBNL_GENL_CFLAGS) $(origin LIBNL_GENL_LDLIBS), undefined undefined)
++  LIBNL_GENL_NAME ?= libnl-genl-3.0
++  ifeq ($(shell $(PKG_CONFIG) --modversion $(LIBNL_GENL_NAME) 2>/dev/null),)
++    $(error No $(LIBNL_GENL_NAME) development libraries found!)
++  endif
++  LIBNL_GENL_CFLAGS += $(shell $(PKG_CONFIG) --cflags $(LIBNL_GENL_NAME))
++  LIBNL_GENL_LDLIBS += $(shell $(PKG_CONFIG) --libs $(LIBNL_GENL_NAME))
++endif
++CFLAGS += $(LIBNL_GENL_CFLAGS)
++LDLIBS += $(LIBNL_GENL_LDLIBS)
++
+ # standard build tools
+ ifeq ($(CONFIG_BATCTL_BISECT),y)
+ OBJ += $(OBJ_BISECT)
+diff --git a/debug.c b/debug.c
+index 3db3ed9..5d08b42 100644
+--- a/debug.c
++++ b/debug.c
+@@ -23,10 +23,12 @@
+ #include <unistd.h>
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <errno.h>
+ 
+ #include "debug.h"
+ #include "debugfs.h"
+ #include "functions.h"
++#include "netlink.h"
+ #include "sys.h"
+ 
+ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
+@@ -35,36 +37,42 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
+ 		.opt_short = "n",
+ 		.debugfs_name = "neighbors",
+ 		.header_lines = 2,
++		.netlink_fn = netlink_print_neighbors,
+ 	},
+ 	{
+ 		.opt_long = "originators",
+ 		.opt_short = "o",
+ 		.debugfs_name = "originators",
+ 		.header_lines = 2,
++		.netlink_fn = netlink_print_originators,
+ 	},
+ 	{
+ 		.opt_long = "gateways",
+ 		.opt_short = "gwl",
+ 		.debugfs_name = "gateways",
+ 		.header_lines = 1,
++		.netlink_fn = netlink_print_gateways,
+ 	},
+ 	{
+ 		.opt_long = "translocal",
+ 		.opt_short = "tl",
+ 		.debugfs_name = "transtable_local",
+ 		.header_lines = 2,
++		.netlink_fn = netlink_print_translocal,
+ 	},
+ 	{
+ 		.opt_long = "transglobal",
+ 		.opt_short = "tg",
+ 		.debugfs_name = "transtable_global",
+ 		.header_lines = 2,
++		.netlink_fn = netlink_print_transglobal,
+ 	},
+ 	{
+ 		.opt_long = "claimtable",
+ 		.opt_short = "cl",
+ 		.debugfs_name = "bla_claim_table",
+ 		.header_lines = 2,
++		.netlink_fn = netlink_print_bla_claim,
+ 	},
+ 	{
+ 		.opt_long = "backbonetable",
+@@ -115,7 +123,7 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
+ 	char *orig_iface = NULL;
+ 	float orig_timeout = 0.0f;
+ 	float watch_interval = 1;
+-	opterr = 0;
++	int err;
+ 
+ 	while ((optchar = getopt(argc, argv, "hnw:t:Humi:")) != -1) {
+ 		switch (optchar) {
+@@ -220,12 +228,19 @@ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv)
+ 		debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", orig_iface, full_path, sizeof(full_path));
+ 	else
+ 		debugfs_make_path(DEBUG_BATIF_PATH_FMT "/", mesh_iface, full_path, sizeof(full_path));
++
++	if (batctl_debug_tables[debug_table].netlink_fn) {
++		err = batctl_debug_tables[debug_table].netlink_fn(
++			mesh_iface, read_opt, orig_timeout, watch_interval);
++		if (err != EOPNOTSUPP)
++			return err;
++	}
+ 	return read_file(full_path, (char *)batctl_debug_tables[debug_table].debugfs_name,
+ 			 read_opt, orig_timeout, watch_interval,
+ 			 batctl_debug_tables[debug_table].header_lines);
+ }
+ 
+-int print_routing_algos(void) {
++int debug_print_routing_algos(void) {
+ 	char full_path[MAX_PATH+1];
+ 	char *debugfs_mnt;
+ 
+diff --git a/debug.h b/debug.h
+index df65f50..b09def7 100644
+--- a/debug.h
++++ b/debug.h
+@@ -48,13 +48,15 @@ struct debug_table_data {
+        const char opt_short[OPT_SHORT_MAX_LEN];
+        const char debugfs_name[DEBUG_TABLE_PATH_MAX_LEN];
+        size_t header_lines;
++       int (*netlink_fn)(char *mesh_iface, int read_opt,
++			 float orig_timeout, float watch_interval);
+ };
+ 
+ extern const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM];
+ 
+ int handle_debug_table(char *mesh_iface, int debug_table, int argc, char **argv);
+ int log_print(char *mesh_iface, int argc, char **argv);
+-int print_routing_algos(void);
++int debug_print_routing_algos(void);
+ int print_vis_info(char *mesh_iface);
+ 
+ #endif
+diff --git a/functions.c b/functions.c
+index be8f8b0..df7d159 100644
+--- a/functions.c
++++ b/functions.c
+@@ -52,6 +52,7 @@
+ #include "sys.h"
+ #include "debug.h"
+ #include "debugfs.h"
++#include "netlink.h"
+ 
+ static struct timeval start_time;
+ static char *host_name;
+@@ -849,3 +850,13 @@ err:
+ 
+ 	return arg.vid;
+ }
++
++int print_routing_algos(void)
++{
++	int err;
++
++	err = netlink_print_routing_algos();
++	if (err == EOPNOTSUPP)
++		err = debug_print_routing_algos();
++	return err;
++}
+diff --git a/functions.h b/functions.h
+index d0b05b9..1e6cfec 100644
+--- a/functions.h
++++ b/functions.h
+@@ -44,6 +44,7 @@ struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac);
+ struct ether_addr *resolve_mac(const char *asc);
+ int vlan_get_link(const char *ifname, char **parent);
+ 
++int print_routing_algos(void);
+ extern char *line_ptr;
+ 
+ enum {
+diff --git a/main.h b/main.h
+index 81f223c..a05d1f0 100644
+--- a/main.h
++++ b/main.h
+@@ -47,6 +47,7 @@
+ #endif
+ 
+ #define __packed __attribute((packed))   /* linux kernel compat */
++#define __unused __attribute__((unused))
+ #define BIT(nr)                 (1UL << (nr)) /* linux kernel compat */
+ 
+ typedef uint8_t u8; /* linux kernel compat */
+diff --git a/netlink.c b/netlink.c
+new file mode 100644
+index 0000000..0cb3657
+--- /dev/null
++++ b/netlink.c
+@@ -0,0 +1,1038 @@
++#include <stdio.h>
++#include <string.h>
++#include <unistd.h>
++#include <errno.h>
++#include <net/if.h>
++#include <netlink/netlink.h>
++#include <netlink/genl/genl.h>
++#include <netlink/genl/ctrl.h>
++#include <netinet/in.h>
++#include <arpa/inet.h>
++
++#include "bat-hosts.h"
++#include "batman_adv.h"
++#include "functions.h"
++#include "main.h"
++
++#define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
++
++struct print_opts {
++	int read_opt;
++	float orig_timeout;
++	float watch_interval;
++};
++
++struct mandatory_attr {
++	int attr;
++	int datalen;
++};
++
++static int last_err;
++
++static int invalidate_mandatory_attrs(struct nlattr *attrs[],
++				      const struct mandatory_attr *mandatory[],
++				      int num)
++{
++	int i;
++	int len;
++
++	for (i = 0; i < num; i++) {
++		if (!attrs[mandatory[i]->attr])
++			return EINVAL;
++		len = nla_len(attrs[mandatory[i]->attr]);
++		if (mandatory[i]->datalen && (len != mandatory[i]->datalen))
++			return EINVAL;
++	}
++
++	return 0;
++}
++
++static const struct mandatory_attr mandatory_attr_version= {
++	BATADV_ATTR_VERSION, 0 };
++
++static const struct mandatory_attr mandatory_attr_algo_name = {
++	BATADV_ATTR_ALGO_NAME, 0 };
++
++static const struct mandatory_attr mandatory_attr_mesh_ifindex= {
++	BATADV_ATTR_MESH_IFINDEX, sizeof(uint32_t) };
++
++static const struct mandatory_attr mandatory_attr_mesh_ifname = {
++	BATADV_ATTR_MESH_IFNAME, 0 };
++
++static const struct mandatory_attr mandatory_attr_mesh_address = {
++	BATADV_ATTR_MESH_ADDRESS, ETH_ALEN };
++
++static const struct mandatory_attr mandatory_attr_hard_ifindex= {
++	BATADV_ATTR_HARD_IFINDEX, sizeof(uint32_t) };
++
++static const struct mandatory_attr mandatory_attr_hard_ifname = {
++	BATADV_ATTR_HARD_IFNAME, 0 };
++
++static const struct mandatory_attr mandatory_attr_hard_address = {
++	BATADV_ATTR_HARD_ADDRESS, ETH_ALEN };
++
++static const struct mandatory_attr mandatory_attr_orig_address = {
++	BATADV_ATTR_ORIG_ADDRESS, ETH_ALEN };
++
++static const struct mandatory_attr mandatory_attr_tt_address = {
++	BATADV_ATTR_TT_ADDRESS, ETH_ALEN };
++
++static const struct mandatory_attr mandatory_attr_tt_ttvn = {
++	BATADV_ATTR_TT_TTVN, sizeof(uint8_t) };
++
++static const struct mandatory_attr mandatory_attr_tt_last_ttvn = {
++	BATADV_ATTR_TT_LAST_TTVN, sizeof(uint8_t) };
++
++static const struct mandatory_attr mandatory_attr_tt_crc32 = {
++	BATADV_ATTR_TT_CRC32, sizeof(uint32_t) };
++
++static const struct mandatory_attr mandatory_attr_tt_flags = {
++	BATADV_ATTR_TT_FLAGS, sizeof(uint32_t) };
++
++static const struct mandatory_attr mandatory_attr_tt_vid = {
++	BATADV_ATTR_TT_VID, sizeof(uint16_t) };
++
++static const struct mandatory_attr mandatory_attr_last_seen_msecs = {
++	BATADV_ATTR_LAST_SEEN_MSECS, sizeof(uint32_t) };
++
++static const struct mandatory_attr mandatory_attr_neigh_address = {
++	BATADV_ATTR_NEIGH_ADDRESS, ETH_ALEN };
++
++static const struct mandatory_attr mandatory_attr_tq = {
++	BATADV_ATTR_TQ, sizeof(uint8_t) };
++
++static const struct mandatory_attr mandatory_attr_bandwidth_up = {
++	BATADV_ATTR_BANDWIDTH_UP, sizeof(uint32_t) };
++
++static const struct mandatory_attr mandatory_attr_bandwidth_down = {
++	BATADV_ATTR_BANDWIDTH_DOWN, sizeof(uint32_t) };
++
++static const struct mandatory_attr mandatory_attr_router = {
++	BATADV_ATTR_ROUTER, ETH_ALEN };
++
++static const struct mandatory_attr mandatory_attr_bla_address = {
++	BATADV_ATTR_BLA_ADDRESS, ETH_ALEN };
++
++static const struct mandatory_attr mandatory_attr_bla_vid = {
++	BATADV_ATTR_BLA_VID, sizeof(uint16_t) };
++
++static const struct mandatory_attr mandatory_attr_bla_backbone = {
++	BATADV_ATTR_BLA_ADDRESS, ETH_ALEN };
++
++static const struct mandatory_attr mandatory_attr_bla_crc = {
++	BATADV_ATTR_BLA_CRC, sizeof(uint16_t) };
++
++static int print_error(struct sockaddr_nl *nla __unused,
++		       struct nlmsgerr *nlerr,
++		       void *arg __unused)
++{
++	if (nlerr->error != -EOPNOTSUPP)
++		fprintf(stderr, "Error received: %s\n",
++			strerror(-nlerr->error));
++
++	last_err = -nlerr->error;
++
++	return NL_STOP;
++}
++
++static int stop_callback(struct nl_msg *msg, void *arg __unused)
++{
++	struct nlmsghdr *nlh = nlmsg_hdr(msg);
++	int *error = nlmsg_data(nlh);
++
++	if (*error)
++		fprintf(stderr, "Error received: %s\n", strerror(-*error));
++
++	return NL_STOP;
++}
++
++static const struct mandatory_attr *info_mandatory[] = {
++	&mandatory_attr_mesh_ifname,
++	&mandatory_attr_mesh_address,
++};
++
++static const struct mandatory_attr *info_hard_mandatory[] = {
++	&mandatory_attr_version,
++	&mandatory_attr_algo_name,
++	&mandatory_attr_hard_ifname,
++	&mandatory_attr_hard_address,
++};
++
++static int info_callback(struct nl_msg *msg, void *arg __unused)
++{
++	struct nlattr *attrs[BATADV_ATTR_MAX+1];
++	struct nlmsghdr *nlh = nlmsg_hdr(msg);
++	struct genlmsghdr *ghdr;
++	const uint8_t *primary_mac ;
++	const uint8_t *mesh_mac ;
++	const char *primary_if;
++	const char *algo_name;
++	const char *mesh_name;
++	const char *version;
++
++	if (!genlmsg_valid_hdr(nlh, 0)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	ghdr = nlmsg_data(nlh);
++
++	if (ghdr->cmd != BATADV_CMD_GET_MESH_INFO)
++		return NL_OK;
++
++	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
++		      genlmsg_len(ghdr), NULL)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	if (invalidate_mandatory_attrs(attrs, info_mandatory,
++				       ARRAY_SIZE(info_mandatory))) {
++		fputs("Missing/invalid attributes from kernel\n", stderr);
++		exit(1);
++	}
++
++	mesh_name = nla_get_string(attrs[BATADV_ATTR_MESH_IFNAME]);
++	mesh_mac = nla_data(attrs[BATADV_ATTR_MESH_ADDRESS]);
++
++	if (attrs[BATADV_ATTR_HARD_IFNAME]) {
++		if (invalidate_mandatory_attrs(
++			    attrs, info_hard_mandatory,
++			    ARRAY_SIZE(info_hard_mandatory))) {
++			fputs("Missing/invalid attributes from kernel\n",
++			      stderr);
++			exit(1);
++		}
++
++		version = nla_get_string(attrs[BATADV_ATTR_VERSION]);
++		algo_name = nla_get_string(attrs[BATADV_ATTR_ALGO_NAME]);
++		primary_if = nla_get_string(attrs[BATADV_ATTR_HARD_IFNAME]);
++		primary_mac = nla_data(attrs[BATADV_ATTR_HARD_ADDRESS]);
++
++		printf("[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%02x:%02x:%02x:%02x:%02x:%02x (%s/%02x:%02x:%02x:%02x:%02x:%02x %s)]\n",
++		       version, primary_if,
++		       primary_mac[0], primary_mac[1], primary_mac[2],
++		       primary_mac[3], primary_mac[4], primary_mac[5],
++		       mesh_name,
++		       mesh_mac[0], mesh_mac[1], mesh_mac[2],
++		       mesh_mac[3], mesh_mac[4], mesh_mac[5],
++		       algo_name);
++	} else {
++		printf("BATMAN mesh %s disabled\n", mesh_name);
++	}
++
++	return NL_STOP;
++}
++
++static void netlink_print_info(int ifindex)
++{
++	struct nl_sock *sock;
++	struct nl_msg *msg;
++	struct nl_cb *cb;
++	int family;
++
++	sock = nl_socket_alloc();
++	genl_connect(sock);
++
++	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
++	if (family < 0) {
++		return;
++	}
++
++	msg = nlmsg_alloc();
++	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, 0,
++		    BATADV_CMD_GET_MESH_INFO, 1);
++
++	nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
++
++	nl_send_auto_complete(sock, msg);
++
++	nlmsg_free(msg);
++
++	cb = nl_cb_alloc(NL_CB_DEFAULT);
++	nl_cb_set (cb, NL_CB_VALID, NL_CB_CUSTOM, info_callback, NULL);
++	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
++
++	nl_recvmsgs(sock, cb);
++
++	nl_socket_free(sock);
++}
++
++static const struct mandatory_attr *routing_algos_mandatory[] = {
++	&mandatory_attr_algo_name,
++};
++
++static int routing_algos_callback(struct nl_msg *msg, void *arg __unused)
++{
++	struct nlattr *attrs[BATADV_ATTR_MAX+1];
++	struct nlmsghdr *nlh = nlmsg_hdr(msg);
++	struct genlmsghdr *ghdr;
++	const char *algo_name;
++
++	if (!genlmsg_valid_hdr(nlh, 0)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	ghdr = nlmsg_data(nlh);
++
++	if (ghdr->cmd != BATADV_CMD_GET_ROUTING_ALGOS)
++		return NL_OK;
++
++	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
++		      genlmsg_len(ghdr), NULL)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	if (invalidate_mandatory_attrs(attrs, routing_algos_mandatory,
++				       ARRAY_SIZE(routing_algos_mandatory))) {
++		fputs("Missing/invalid attributes from kernel\n", stderr);
++		exit(1);
++	}
++
++	algo_name = nla_get_string(attrs[BATADV_ATTR_ALGO_NAME]);
++
++	printf(" * %s\n", algo_name);
++
++	return NL_OK;
++}
++
++int netlink_print_routing_algos(void)
++{
++	struct nl_sock *sock;
++	struct nl_msg *msg;
++	struct nl_cb *cb;
++	int family;
++
++	sock = nl_socket_alloc();
++	genl_connect(sock);
++
++	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
++	if (family < 0) {
++		return EOPNOTSUPP;
++	}
++
++	msg = nlmsg_alloc();
++	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, NLM_F_DUMP,
++		    BATADV_CMD_GET_ROUTING_ALGOS, 1);
++
++	nl_send_auto_complete(sock, msg);
++
++	nlmsg_free(msg);
++
++	cb = nl_cb_alloc(NL_CB_DEFAULT);
++	nl_cb_set (cb, NL_CB_VALID, NL_CB_CUSTOM, routing_algos_callback,
++		   NULL);
++	nl_cb_set (cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
++	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
++
++	printf("Available routing algorithms:\n");
++
++	nl_recvmsgs(sock, cb);
++
++	nl_socket_free(sock);
++
++	return 0;
++}
++
++static const struct mandatory_attr *originators_mandatory[] = {
++	&mandatory_attr_orig_address,
++	&mandatory_attr_neigh_address,
++	&mandatory_attr_hard_ifindex,
++	&mandatory_attr_last_seen_msecs,
++};
++
++static int originators_callback(struct nl_msg *msg, void *arg)
++{
++	unsigned throughput_mbits, throughput_kbits;
++	struct nlattr *attrs[BATADV_ATTR_MAX+1];
++	struct nlmsghdr *nlh = nlmsg_hdr(msg);
++	int last_seen_msecs, last_seen_secs;
++	struct print_opts *opts = arg;
++	struct bat_host *bat_host;
++	struct genlmsghdr *ghdr;
++	char ifname[IF_NAMESIZE];
++	float last_seen;
++	uint8_t *neigh;
++	uint8_t *orig;
++	char c = ' ';
++	uint8_t tq;
++
++	if (!genlmsg_valid_hdr(nlh, 0)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	ghdr = nlmsg_data(nlh);
++
++	if (ghdr->cmd != BATADV_CMD_GET_ORIGINATORS)
++		return NL_OK;
++
++	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
++		      genlmsg_len(ghdr), NULL)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	if (invalidate_mandatory_attrs(attrs, originators_mandatory,
++				       ARRAY_SIZE(originators_mandatory))) {
++		fputs("Missing/invalid attributes from kernel\n", stderr);
++		exit(1);
++	}
++
++	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
++	neigh = nla_data(attrs[BATADV_ATTR_NEIGH_ADDRESS]);
++
++	if (!if_indextoname(nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]),
++			    ifname))
++		ifname[0] = '\0';
++
++	if (attrs[BATADV_ATTR_FLAG_BEST])
++		c = '*';
++
++	last_seen_msecs = nla_get_u32(attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
++	last_seen = (float)last_seen_msecs / 1000.0;
++	last_seen_secs = last_seen_msecs / 1000;
++	last_seen_msecs = last_seen_msecs % 1000;
++
++	/* skip timed out originators */
++	if (opts->read_opt & NO_OLD_ORIGS)
++		if (last_seen > opts->orig_timeout)
++			return NL_OK;
++
++	if (attrs[BATADV_ATTR_THROUGHPUT]) {
++		throughput_kbits = nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT]);
++		throughput_mbits = throughput_kbits / 1000;
++		throughput_kbits = throughput_kbits % 1000;
++
++		if (!(opts->read_opt & USE_BAT_HOSTS)) {
++			printf(" %c %02x:%02x:%02x:%02x:%02x:%02x %4i.%03is (%9u.%1u) %02x:%02x:%02x:%02x:%02x:%02x [%10s]\n",
++			       c,
++			       orig[0], orig[1], orig[2],
++			       orig[3], orig[4], orig[5],
++			       last_seen_secs, last_seen_msecs,
++			       throughput_mbits, throughput_kbits / 100,
++			       neigh[0], neigh[1], neigh[2],
++			       neigh[3], neigh[4], neigh[5],
++			       ifname);
++		} else {
++			bat_host = bat_hosts_find_by_mac((char *)orig);
++			if (bat_host)
++				printf(" %c %17s ", c, bat_host->name);
++			else
++				printf(" %c %02x:%02x:%02x:%02x:%02x:%02x ",
++				       c,
++				       orig[0], orig[1], orig[2],
++				       orig[3], orig[4], orig[5]);
++			printf("%4i.%03is (%9u.%1u) ",
++			       last_seen_secs, last_seen_msecs,
++			       throughput_mbits, throughput_kbits / 100);
++			bat_host = bat_hosts_find_by_mac((char *)neigh);
++			if (bat_host)
++				printf(" %c %17s ", c, bat_host->name);
++			else
++				printf(" %02x:%02x:%02x:%02x:%02x:%02x ",
++				       neigh[0], neigh[1], neigh[2],
++				       neigh[3], neigh[4], neigh[5]);
++			printf("[%10s]\n", ifname);
++		}
++	}
++	if (attrs[BATADV_ATTR_TQ]) {
++		tq = nla_get_u8(attrs[BATADV_ATTR_TQ]);
++
++		if (!(opts->read_opt & USE_BAT_HOSTS)) {
++			printf(" %c %02x:%02x:%02x:%02x:%02x:%02x %4i.%03is   (%3i) %02x:%02x:%02x:%02x:%02x:%02x [%10s]\n",
++			       c,
++			       orig[0], orig[1], orig[2],
++			       orig[3], orig[4], orig[5],
++			       last_seen_secs, last_seen_msecs, tq,
++			       neigh[0], neigh[1], neigh[2],
++			       neigh[3], neigh[4], neigh[5],
++			       ifname);
++		} else {
++			bat_host = bat_hosts_find_by_mac((char *)orig);
++			if (bat_host)
++				printf(" %c %17s ", c, bat_host->name);
++			else
++				printf(" %c %02x:%02x:%02x:%02x:%02x:%02x ",
++				       c,
++				       orig[0], orig[1], orig[2],
++				       orig[3], orig[4], orig[5]);
++			printf("%4i.%03is   (%3i) ",
++			       last_seen_secs, last_seen_msecs, tq);
++			bat_host = bat_hosts_find_by_mac((char *)neigh);
++			if (bat_host)
++				printf("%17s ", bat_host->name);
++			else
++				printf("%02x:%02x:%02x:%02x:%02x:%02x ",
++				       neigh[0], neigh[1], neigh[2],
++				       neigh[3], neigh[4], neigh[5]);
++			printf("[%10s]\n", ifname);
++		}
++	}
++
++	return NL_OK;
++}
++
++static const struct mandatory_attr *neighbors_mandatory[] = {
++	&mandatory_attr_neigh_address,
++	&mandatory_attr_hard_ifindex,
++	&mandatory_attr_last_seen_msecs,
++};
++
++static int neighbors_callback(struct nl_msg *msg, void *arg)
++{
++	struct nlattr *attrs[BATADV_ATTR_MAX+1];
++	struct nlmsghdr *nlh = nlmsg_hdr(msg);
++	struct print_opts *opts = arg;
++	struct bat_host *bat_host;
++	char ifname[IF_NAMESIZE];
++	struct genlmsghdr *ghdr;
++	uint8_t *neigh;
++
++	if (!genlmsg_valid_hdr(nlh, 0)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	ghdr = nlmsg_data(nlh);
++
++	if (ghdr->cmd != BATADV_CMD_GET_NEIGHBORS)
++		return NL_OK;
++
++	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
++		      genlmsg_len(ghdr), NULL)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	if (invalidate_mandatory_attrs(attrs, neighbors_mandatory,
++				       ARRAY_SIZE(neighbors_mandatory))) {
++		fputs("Missing/invalid attributes from kernel\n", stderr);
++		exit(1);
++	}
++
++	neigh = nla_data(attrs[BATADV_ATTR_NEIGH_ADDRESS]);
++	bat_host = bat_hosts_find_by_mac((char *)neigh);
++
++	if (!if_indextoname(nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]),
++			    ifname))
++		ifname[0] = '\0';
++
++	int last_seen_msecs, last_seen_secs;
++	last_seen_msecs = nla_get_u32(attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
++	last_seen_secs = last_seen_msecs / 1000;
++	last_seen_msecs = last_seen_msecs % 1000;
++
++	if (attrs[BATADV_ATTR_THROUGHPUT]) {
++		unsigned throughput_mbits, throughput_kbits;
++		throughput_kbits = nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT]);
++		throughput_mbits = throughput_kbits / 1000;
++		throughput_kbits = throughput_kbits % 1000;
++
++		if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
++			printf("%02x:%02x:%02x:%02x:%02x:%02x ",
++			       neigh[0], neigh[1], neigh[2],
++			       neigh[3], neigh[4], neigh[5]);
++		else
++			printf("%17s ", bat_host->name);
++
++		printf("%4i.%03is (%9u.%1u) [%10s]\n",
++		       last_seen_secs, last_seen_msecs,
++		       throughput_mbits, throughput_kbits / 100,
++		       ifname);
++	} else {
++		printf("   %10s   ", ifname);
++
++		if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
++			printf("%02x:%02x:%02x:%02x:%02x:%02x ",
++			       neigh[0], neigh[1], neigh[2],
++			       neigh[3], neigh[4], neigh[5]);
++		else
++			printf("%17s ", bat_host->name);
++
++		printf("%4i.%03is\n", last_seen_secs, last_seen_msecs);
++	}
++
++	return NL_OK;
++}
++
++static const struct mandatory_attr *transglobal_mandatory[] = {
++	&mandatory_attr_tt_address,
++	&mandatory_attr_orig_address,
++	&mandatory_attr_tt_vid,
++	&mandatory_attr_tt_ttvn,
++	&mandatory_attr_tt_last_ttvn,
++	&mandatory_attr_tt_crc32,
++	&mandatory_attr_tt_flags,
++};
++
++static int transglobal_callback(struct nl_msg *msg, void *arg)
++{
++	struct nlattr *attrs[BATADV_ATTR_MAX+1];
++	struct nlmsghdr *nlh = nlmsg_hdr(msg);
++	struct print_opts *opts = arg;
++	struct bat_host *bat_host;
++	struct genlmsghdr *ghdr;
++	uint8_t last_ttvn;
++	uint32_t crc32;
++	uint32_t flags;
++	uint8_t *addr;
++	uint8_t *orig;
++	uint8_t ttvn;
++	int16_t vid;
++
++	if (!genlmsg_valid_hdr(nlh, 0)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	ghdr = nlmsg_data(nlh);
++
++	if (ghdr->cmd != BATADV_CMD_GET_TRANSTABLE_GLOBAL)
++		return NL_OK;
++
++	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
++		      genlmsg_len(ghdr), NULL)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	if (invalidate_mandatory_attrs(attrs, transglobal_mandatory,
++				       ARRAY_SIZE(transglobal_mandatory))) {
++		fputs("Missing/invalid attributes from kernel\n", stderr);
++		exit(1);
++	}
++
++	addr = nla_data(attrs[BATADV_ATTR_TT_ADDRESS]);
++	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
++	vid = nla_get_u16(attrs[BATADV_ATTR_TT_VID]);
++	ttvn = nla_get_u8(attrs[BATADV_ATTR_TT_TTVN]);
++	last_ttvn = nla_get_u8(attrs[BATADV_ATTR_TT_LAST_TTVN]);
++	crc32 = nla_get_u32(attrs[BATADV_ATTR_TT_CRC32]);
++	flags = nla_get_u32(attrs[BATADV_ATTR_TT_FLAGS]);
++
++	char c = ' ', r = '.', w = '.', i = '.', t = '.';
++	if (attrs[BATADV_ATTR_FLAG_BEST])
++		c = '*';
++	if (flags & BATADV_TT_CLIENT_ROAM)
++		r = 'R';
++	if (flags & BATADV_TT_CLIENT_WIFI)
++		w = 'W';
++	if (flags & BATADV_TT_CLIENT_ISOLA)
++		i = 'I';
++	if (flags & BATADV_TT_CLIENT_TEMP)
++		t = 'T';
++
++	printf(" %c ", c);
++
++	bat_host = bat_hosts_find_by_mac((char *)addr);
++	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
++		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
++		       addr[0], addr[1], addr[2],
++		       addr[3], addr[4], addr[5]);
++	else
++		printf("%17s ", bat_host->name);
++
++	printf("%4i [%c%c%c%c] (%3u) ",
++	       vid, r, w, i, t, ttvn);
++
++	bat_host = bat_hosts_find_by_mac((char *)orig);
++	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
++		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
++		       orig[0], orig[1], orig[2],
++		       orig[3], orig[4], orig[5]);
++	else
++		printf("%17s ", bat_host->name);
++
++	printf("(%3u) (0x%.8x)\n",
++	       last_ttvn, crc32);
++
++	return NL_OK;
++}
++
++static const struct mandatory_attr *translocal_mandatory[] = {
++	&mandatory_attr_tt_address,
++	&mandatory_attr_tt_vid,
++	&mandatory_attr_tt_crc32,
++	&mandatory_attr_tt_flags,
++};
++
++static int translocal_callback(struct nl_msg *msg, void *arg)
++{
++	struct nlattr *attrs[BATADV_ATTR_MAX+1];
++	struct nlmsghdr *nlh = nlmsg_hdr(msg);
++	struct print_opts *opts = arg;
++	struct bat_host *bat_host;
++	struct genlmsghdr *ghdr;
++	uint8_t *addr;
++	int16_t vid;
++	uint32_t crc32;
++	uint32_t flags;
++	int last_seen_msecs = 0, last_seen_secs = 0;
++
++	if (!genlmsg_valid_hdr(nlh, 0)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	ghdr = nlmsg_data(nlh);
++
++	if (ghdr->cmd != BATADV_CMD_GET_TRANSTABLE_LOCAL)
++		return NL_OK;
++
++	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
++		      genlmsg_len(ghdr), NULL)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	if (invalidate_mandatory_attrs(attrs, translocal_mandatory,
++				       ARRAY_SIZE(translocal_mandatory))) {
++		fputs("Missing/invalid attributes from kernel\n", stderr);
++		exit(1);
++	}
++
++	addr = nla_data(attrs[BATADV_ATTR_TT_ADDRESS]);
++	vid = nla_get_u16(attrs[BATADV_ATTR_TT_VID]);
++	crc32 = nla_get_u32(attrs[BATADV_ATTR_TT_CRC32]);
++	flags = nla_get_u32(attrs[BATADV_ATTR_TT_FLAGS]);
++	last_seen_msecs = 0, last_seen_secs = 0;
++
++	char r = '.', p = '.', n = '.', x = '.', w = '.', i = '.';
++	if (flags & BATADV_TT_CLIENT_ROAM)
++		r = 'R';
++	if (flags & BATADV_TT_CLIENT_NEW)
++		n = 'N';
++	if (flags & BATADV_TT_CLIENT_PENDING)
++		x = 'X';
++	if (flags & BATADV_TT_CLIENT_WIFI)
++		w = 'W';
++	if (flags & BATADV_TT_CLIENT_ISOLA)
++		i = 'I';
++
++	if (flags & BATADV_TT_CLIENT_NOPURGE)  {
++		p = 'P';
++	} else {
++		if (!attrs[BATADV_ATTR_LAST_SEEN_MSECS]) {
++			fputs("Received invalid data from kernel.", stderr);
++			exit(1);
++		}
++
++		last_seen_msecs = nla_get_u32(
++			attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
++		last_seen_secs = last_seen_msecs / 1000;
++		last_seen_msecs = last_seen_msecs % 1000;
++	}
++
++	bat_host = bat_hosts_find_by_mac((char *)addr);
++	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
++		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
++		       addr[0], addr[1], addr[2],
++		       addr[3], addr[4], addr[5]);
++	else
++		printf("%17s ", bat_host->name);
++
++	printf("%4i [%c%c%c%c%c%c] %3u.%03u   (0x%.8x)\n",
++	       vid, r, p, n, x, w, i,
++	       last_seen_secs, last_seen_msecs,
++	       crc32);
++
++	return NL_OK;
++}
++
++static const struct mandatory_attr *gateways_mandatory[] = {
++	&mandatory_attr_orig_address,
++	&mandatory_attr_tq,
++	&mandatory_attr_router,
++	&mandatory_attr_hard_ifname,
++	&mandatory_attr_bandwidth_down,
++	&mandatory_attr_bandwidth_up,
++};
++
++static int gateways_callback(struct nl_msg *msg, void *arg)
++{
++	struct nlattr *attrs[BATADV_ATTR_MAX+1];
++	struct nlmsghdr *nlh = nlmsg_hdr(msg);
++	struct print_opts *opts = arg;
++	struct bat_host *bat_host;
++	struct genlmsghdr *ghdr;
++	const char *primary_if;
++	uint32_t bandwidth_down;
++	uint32_t bandwidth_up;
++	uint8_t *router;
++	uint8_t *orig;
++	char c = ' ';
++	uint8_t tq;
++
++	if (!genlmsg_valid_hdr(nlh, 0)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	ghdr = nlmsg_data(nlh);
++
++	if (ghdr->cmd != BATADV_CMD_GET_GATEWAYS)
++		return NL_OK;
++
++	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
++		      genlmsg_len(ghdr), NULL)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	if (invalidate_mandatory_attrs(attrs, gateways_mandatory,
++				       ARRAY_SIZE(gateways_mandatory))) {
++		fputs("Missing/invalid attributes from kernel\n", stderr);
++		exit(1);
++	}
++
++	if (attrs[BATADV_ATTR_FLAG_BEST])
++		c = '*';
++
++	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
++	tq = nla_get_u8(attrs[BATADV_ATTR_TQ]);
++	router = nla_data(attrs[BATADV_ATTR_ROUTER]);
++	primary_if = nla_get_string(attrs[BATADV_ATTR_HARD_IFNAME]);
++	bandwidth_down = nla_get_u32(attrs[BATADV_ATTR_BANDWIDTH_DOWN]);
++	bandwidth_up = nla_get_u32(attrs[BATADV_ATTR_BANDWIDTH_UP]);
++
++	printf("%c ", c);
++
++	bat_host = bat_hosts_find_by_mac((char *)orig);
++	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
++		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
++		       orig[0], orig[1], orig[2],
++		       orig[3], orig[4], orig[5]);
++	else
++		printf("%17s ", bat_host->name);
++
++	printf("(%3i) ", tq);
++
++	bat_host = bat_hosts_find_by_mac((char *)router);
++	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
++ 		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
++		       router[0], router[1], router[2],
++		       router[3], router[4], router[5]);
++	else
++		printf("%17s ", bat_host->name);
++
++	printf("[%10s]: %u.%u/%u.%u MBit\n",
++	       primary_if, bandwidth_down / 10, bandwidth_down % 10,
++	       bandwidth_up / 10, bandwidth_up % 10);
++
++	return NL_OK;
++}
++
++static const struct mandatory_attr *bla_mandatory[] = {
++	&mandatory_attr_bla_address,
++	&mandatory_attr_bla_vid,
++	&mandatory_attr_bla_backbone,
++	&mandatory_attr_bla_crc,
++};
++
++static int bla_claim_callback(struct nl_msg *msg, void *arg)
++{
++	struct nlattr *attrs[BATADV_ATTR_MAX+1];
++	struct nlmsghdr *nlh = nlmsg_hdr(msg);
++	struct print_opts *opts = arg;
++	struct bat_host *bat_host;
++	struct genlmsghdr *ghdr;
++	uint16_t backbone_crc;
++	uint8_t *backbone;
++	uint8_t *client;
++	uint16_t vid;
++	char c = ' ';
++
++	if (!genlmsg_valid_hdr(nlh, 0)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	ghdr = nlmsg_data(nlh);
++
++	if (ghdr->cmd != BATADV_CMD_GET_BLA_CLAIM)
++		return NL_OK;
++
++	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
++		      genlmsg_len(ghdr), NULL)) {
++		fputs("Received invalid data from kernel.", stderr);
++		exit(1);
++	}
++
++	if (invalidate_mandatory_attrs(attrs, bla_mandatory,
++				       ARRAY_SIZE(bla_mandatory))) {
++		fputs("Missing/invalid attributes from kernel\n", stderr);
++		exit(1);
++	}
++
++	if (attrs[BATADV_ATTR_BLA_OWN])
++		c = '*';
++
++	client = nla_data(attrs[BATADV_ATTR_BLA_ADDRESS]);
++	vid = nla_get_u16(attrs[BATADV_ATTR_BLA_VID]);
++	backbone = nla_data(attrs[BATADV_ATTR_BLA_BACKBONE]);
++	backbone_crc = nla_get_u16(attrs[BATADV_ATTR_BLA_CRC]);
++
++	bat_host = bat_hosts_find_by_mac((char *)client);
++	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
++		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
++		       client[0], client[1], client[2],
++		       client[3], client[4], client[5]);
++	else
++		printf("%17s ", bat_host->name);
++
++	printf("%5d ", vid);
++
++	bat_host = bat_hosts_find_by_mac((char *)backbone);
++	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
++ 		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
++		       backbone[0], backbone[1], backbone[2],
++		       backbone[3], backbone[4], backbone[5]);
++	else
++		printf("%17s ", bat_host->name);
++
++	printf("%c %#.4x", c, backbone_crc);
++
++	return NL_OK;
++}
++
++static int netlink_print_common(char *mesh_iface, int read_opt,
++				float orig_timeout, float watch_interval,
++				const char *header, uint8_t nl_cmd,
++				nl_recvmsg_msg_cb_t callback)
++{
++	struct print_opts opts = {
++		.read_opt = read_opt,
++		.orig_timeout = orig_timeout,
++		.watch_interval = watch_interval
++	};
++	struct nl_sock *sock;
++	struct nl_msg *msg;
++	struct nl_cb *cb;
++	int ifindex;
++	int family;
++
++	sock = nl_socket_alloc();
++	genl_connect(sock);
++
++	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
++	if (family < 0) {
++		return EOPNOTSUPP;
++	}
++
++	ifindex = if_nametoindex(mesh_iface);
++	if (!ifindex) {
++		fprintf(stderr, "Interface %s is unknown\n", mesh_iface);
++		return ENODEV;
++	}
++
++	bat_hosts_init(read_opt);
++
++	cb = nl_cb_alloc(NL_CB_DEFAULT);
++	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, callback, &opts);
++	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
++	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
++
++	do {
++		if (read_opt & CLR_CONT_READ)
++			/* clear screen, set cursor back to 0,0 */
++			printf("\033[2J\033[0;0f");
++
++		if (!(read_opt & SKIP_HEADER)) {
++			netlink_print_info(ifindex);
++			if (header)
++				printf(header);
++		}
++
++		msg = nlmsg_alloc();
++		genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0,
++			    NLM_F_DUMP, nl_cmd, 1);
++
++		nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, ifindex);
++		nl_send_auto_complete(sock, msg);
++
++		nlmsg_free(msg);
++
++		last_err = 0;
++		nl_recvmsgs(sock, cb);
++		if (!last_err && read_opt & (CONT_READ|CLR_CONT_READ))
++			usleep(1000000 * watch_interval);
++
++	} while (!last_err && read_opt & (CONT_READ|CLR_CONT_READ));
++
++	bat_hosts_free();
++
++	nl_socket_free(sock);
++
++	return last_err;
++}
++
++
++int netlink_print_originators(char *mesh_iface, int read_opts,
++			      float orig_timeout,
++			      float watch_interval)
++{
++	return netlink_print_common(mesh_iface, read_opts, orig_timeout,
++				    watch_interval, "",
++				    BATADV_CMD_GET_ORIGINATORS,
++				    originators_callback);
++}
++
++int netlink_print_neighbors(char *mesh_iface, int read_opts,
++			    float orig_timeout,
++			    float watch_interval)
++{
++	return netlink_print_common(mesh_iface, read_opts, orig_timeout,
++				    watch_interval,
++				    "           IF        Neighbor      last-seen\n""",
++				    BATADV_CMD_GET_NEIGHBORS,
++				    neighbors_callback);
++}
++
++int netlink_print_transglobal(char *mesh_iface, int read_opts,
++			      float orig_timeout,
++			      float watch_interval)
++{
++	return netlink_print_common(mesh_iface, read_opts, orig_timeout,
++				    watch_interval,
++				    "       Client         VID Flags Last ttvn     Via        ttvn  (CRC       )\n",
++				    BATADV_CMD_GET_TRANSTABLE_GLOBAL,
++				    transglobal_callback);
++}
++
++int netlink_print_translocal(char *mesh_iface, int read_opts,
++			     float orig_timeout,
++			     float watch_interval)
++{
++	return netlink_print_common(mesh_iface, read_opts, orig_timeout,
++				    watch_interval,
++				    "    Client         VID Flags    Last seen (CRC       )\n",
++				    BATADV_CMD_GET_TRANSTABLE_LOCAL,
++				    translocal_callback);
++}
++
++int netlink_print_gateways(char *mesh_iface, int read_opts,
++			   float orig_timeout,
++			   float watch_interval)
++{
++	return netlink_print_common(mesh_iface, read_opts, orig_timeout,
++				    watch_interval,
++				    "    Router           TQ      Next Hop        outgoingIf   Bandwidth\n",
++				    BATADV_CMD_GET_GATEWAYS,
++				    gateways_callback);
++}
++
++int netlink_print_bla_claim(char *mesh_iface, int read_opts,
++			    float orig_timeout,
++			    float watch_interval)
++{
++	return netlink_print_common(mesh_iface, read_opts, orig_timeout,
++				    watch_interval,
++				    "Client               VID      Originator        [o] (CRC   )\n",
++				    BATADV_CMD_GET_BLA_CLAIM,
++				    bla_claim_callback);
++}
++
++
+-- 
+2.8.0.rc3
 
-[...]
-
-> +/**
-> + * batadv_tp_send - main sending thread of a tp meter session
-> + * @arg: address of the related tp_vars
-> + *
-> + * Return: nothing, this function never returns
-> + */
-> +static int batadv_tp_send(void *arg)
-> +{
-> +	struct batadv_tp_vars *tp_vars =3D3D arg;
-> +	struct batadv_priv *bat_priv =3D3D tp_vars->bat_priv;
-> +	struct batadv_hard_iface *primary_if =3D3D NULL;
-> +	struct batadv_orig_node *orig_node =3D3D NULL;
-> +	size_t payload_len, packet_len;
-> +	int err =3D3D 0;
-> +
-> +	if (unlikely(tp_vars->role !=3D3D BATADV_TP_SENDER)) {
-> +		err =3D3D BATADV_TP_DST_UNREACHABLE;
-> +		goto out;
-> +	}
-> +
-> +	orig_node =3D3D batadv_orig_hash_find(bat_priv, tp_vars->other_end);
-> +	if (unlikely(!orig_node)) {
-> +		err =3D3D BATADV_TP_DST_UNREACHABLE;
-> +		goto out;
-> +	}
-> +
-> +	primary_if =3D3D batadv_primary_if_get_selected(bat_priv);
-> +	if (unlikely(!primary_if)) {
-> +		err =3D3D BATADV_TP_DST_UNREACHABLE;
-> +		goto out;
-> +	}
-
-in case of error we modify err and then we jump to out, but:
-
-[...]
-
-> +out:
-> +	if (likely(primary_if))
-> +		batadv_hardif_put(primary_if);
-> +	if (likely(orig_node))
-> +		batadv_orig_node_put(orig_node);
-> +
-> +	batadv_tp_sender_end(bat_priv, tp_vars);
-> +	batadv_tp_sender_cleanup(bat_priv, tp_vars);
-> +
-> +	batadv_tp_vars_put(tp_vars);
-> +
-> +	do_exit(0);
-> +}
-
-shouldn't we propagate the value saved in err to tp_vars->reason ?
-
-We found this error while using the tp_meter, because we tried to run it
-against a non-existing originator and batctl crashed.
-
-
-Cheers,
-
-
---=20
-Antonio Quartulli
-
---huLXOlJ1ghGp/P5+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXJ5Q3AAoJEJ4aZjxxc6bKekEP/1n2t+K4BwcIeupYr2MXBWhJ
-njaVQyUa9CTWATwjGwSDoy3v4JtOgaN1dZedbk1wWR3dfBMjwll/r9yUGUviVfnm
-o9TQRCzxdu//ph3282LFq/BD5bDLwFgaX22905ccmQL9Jr1+Ic/+hUcgIp9teqef
-jusWZDoh4ghqQ5FOEoZM2TDtSXdSDNPM7QtlIEITAK4LOVHwjIf6cMvCJ9Pufn8a
-UhUxM4Bru5pdJg0lL44fBJAluX1GCoc14Zowt6+J5y7SNCUSSayL1p4NqR+PSTC9
-mwv+Z3RdhPmLVqpq9DZx6D13xDy3/my/heXzLhkeV5IRIVtski8UhDfgHalBJ65n
-wiYWFMHqjbwrlTFDQNx6Zad0MhSbufnZbh1KSLeYFNGDPoNh9IZsAVlvig9zPKKs
-rnqJtbr1XqQFSn9i0JyLTGrgsw0656Y3G6JvkgBcEuxyjBweu7e3qA6Jv3fARgJq
-ILabk29v13gdVBHd0wvZ2t0ty17wYODfKTjbpxtta8QSBfY/JgQ4tUFCSl9vxIcE
-xpJXdx2Mr5raOjCdt6CLuY0aZBT2untsA23wXGfe1P72wbFvLoEGqASi4/9Qov70
-HAdJynyCxZABd8LDsSjPVWzfadZYCSXUwG6fQKHqzAJ5QBfrem9vg3wnpl3635zB
-taki8dLrdzEwsPH/Jm4A
-=G20Z
------END PGP SIGNATURE-----
-
---huLXOlJ1ghGp/P5+--
