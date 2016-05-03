@@ -1,15 +1,17 @@
-Return-Path: <andrew@lunn.ch>
-Date: Tue, 3 May 2016 14:20:46 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160503122046.GK16990@lunn.ch>
-References: <1462222618-29761-1-git-send-email-andrew@lunn.ch>
- <3295917.zMxpBmcd5T@bentobox>
+Return-Path: <antonio.quartulli@open-mesh.com>
+Date: Tue, 3 May 2016 20:21:31 +0800
+From: Antonio Quartulli <antonio.quartulli@open-mesh.com>
+Message-ID: <20160503122131.GC11201@prodigo.lan>
+References: <1459508076-29674-1-git-send-email-sven@open-mesh.com>
+ <1459508076-29674-3-git-send-email-sven@open-mesh.com>
+ <20160502172828.GZ11201@prodigo.lan> <17410440.33Me94yB3F@bentobox>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="VcZjVMblxkg0/8Ur"
 Content-Disposition: inline
-In-Reply-To: <3295917.zMxpBmcd5T@bentobox>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: Use netlink to replace some of
- debugfs
+In-Reply-To: <17410440.33Me94yB3F@bentobox>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 3/3] batman-adv: throughput meter
+ implementation
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,102 +21,69 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc, mareklindner@neomailbox.ch
+To: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tue, May 03, 2016 at 09:07:35AM +0200, Sven Eckelmann wrote:
+
+--VcZjVMblxkg0/8Ur
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, May 03, 2016 at 10:18:50AM +0200, Sven Eckelmann wrote:
+> On Tuesday 03 May 2016 01:28:28 Antonio Quartulli wrote:
 > [...]
-> > +ifeq ($(origin LIBNL_GENL_CFLAGS) $(origin LIBNL_GENL_LDLIBS), undefined undefined)
-> > +  LIBNL_GENL_NAME ?= libnl-genl-3.0
-> > +  ifeq ($(shell $(PKG_CONFIG) --modversion $(LIBNL_GENL_NAME) 2>/dev/null),)
-> > +    $(error No $(LIBNL_GENL_NAME) development libraries found!)
-> > +  endif
-> > +  LIBNL_GENL_CFLAGS += $(shell $(PKG_CONFIG) --cflags $(LIBNL_GENL_NAME))
-> > +  LIBNL_GENL_LDLIBS += $(shell $(PKG_CONFIG) --libs $(LIBNL_GENL_NAME))
-> > +endif
-> > +CFLAGS += $(LIBNL_GENL_CFLAGS)
-> > +LDLIBS += $(LIBNL_GENL_LDLIBS)
-> 
-> @Simon, @Matthias, @Antonio, @Marek: Should the header file be included in
-> batctl like nl80211.h in iw. Or should we always require the current kernel
-> header files installed to build batctl?
+> > shouldn't we propagate the value saved in err to tp_vars->reason ?
+> >=20
+> > We found this error while using the tp_meter, because we tried to run it
+> > against a non-existing originator and batctl crashed.
+>=20
+> Yes, looks like I've missed this while reviewing your tp_meter code. Was
+> the crash something like:
+>=20
+>     root@node02:~# /host/batctl/batctl  tp 02:ba:de:af:ff:01
+>     Throughput meter called towards 02:ba:de:af:ff:01
+>     tp_meter.c:198:36: runtime error: division by zero
+>     traps: batctl[246] trap divide error ip:410f31 sp:7ffea78512c0 error:=
+0 in batctl[400000+18000]
+>     Floating point exception
 
-Once the code is mostly complete and stable, i think a local copy
-would be good. It does seems to be the common way.
+exactly the same.
 
-While doing development work, it saved me copying the header file
-around for each change.
 
-I can make this change in the next version.
+>=20
+> I will most likely add code catching it in both batctl and batman-adv.
 
-> [...]
-> > +struct mandatory_attr {
-> > +	int attr;
-> > +	int datalen;
-> > +};
-> > +
-> > +static int last_err;
-> > +
-> > +static int invalidate_mandatory_attrs(struct nlattr *attrs[],
-> > +				      const struct mandatory_attr *mandatory[],
-> > +				      int num)
-> > +{
-> > +	int i;
-> > +	int len;
-> > +
-> > +	for (i = 0; i < num; i++) {
-> > +		if (!attrs[mandatory[i]->attr])
-> > +			return EINVAL;
-> > +		len = nla_len(attrs[mandatory[i]->attr]);
-> > +		if (mandatory[i]->datalen && (len != mandatory[i]->datalen))
-> > +			return EINVAL;
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static const struct mandatory_attr mandatory_attr_version= {
-> > +	BATADV_ATTR_VERSION, 0 };
-> [...]
-> > +static const struct mandatory_attr *info_hard_mandatory[] = {
-> > +	&mandatory_attr_version,
-> > +	&mandatory_attr_algo_name,
-> > +	&mandatory_attr_hard_ifname,
-> > +	&mandatory_attr_hard_address,
-> > +};
-> > +
-> > +static int info_callback(struct nl_msg *msg, void *arg __unused)
-> > +{
-> [...]
-> > +	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-> > +		      genlmsg_len(ghdr), NULL)) {
-> > +		fputs("Received invalid data from kernel.", stderr);
-> > +		exit(1);
-> > +	}
-> > +
-> > +	if (invalidate_mandatory_attrs(attrs, info_mandatory,
-> > +				       ARRAY_SIZE(info_mandatory))) {
-> > +		fputs("Missing/invalid attributes from kernel\n", stderr);
-> > +		exit(1);
-> > +	}
-> 
-> Interesting idea to check the mandatory attributes with a common function. But
-> shouldn't be the length checked by the nl_parse(..., policy) [1]? This is
-> especially important because you don't check the type.
 
-I could be missing something, but i don't see how to check the type,
-i.e. string, u8, u16, etc. The header file is defining attribute
-types:
+Thanks !
 
-enum {
-        BATADV_ATTR_UNSPEC,
-        BATADV_ATTR_VERSION,
-        BATADV_ATTR_ALGO_NAME,
-        BATADV_ATTR_MESH_IFINDEX,
+Cheers,
 
-There does not seem to be a way to say that BATADV_ATTR_VERSION is
-also an NLA_STRING.
 
-However, yes, i should do the length checking as part of nl_parse.
+--=20
+Antonio Quartulli
+Director of Embedded Software | Open Mesh, Inc.
 
-	 Andrew
+--VcZjVMblxkg0/8Ur
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJXKJfLAAoJEJ4aZjxxc6bKndUP/1Nf9n9b3YZQzKCJ118UJhHS
+Bzv6Bv4w200GlBkAfoGLLs4znChundkvCWpsKiNn5d3dTUmxPoIzYjKEgbcZgdPs
+oCqZMa9nrBuSgGCN94umz+Y2AmxOB4ioZ3PGwuIJgXYtDGlO6pmfij5SdYID9J6H
+QAVHyQRjzTTQbpJeilRM6gbbr5wHM9//z9gf41B09zsUdH36essTYrH3C/i4/9gA
+IdSqzhR5LJ7fV9e9Kefe8jBDEe32klwbwQWSawL2Cmte0awv1UcWgIzz/jEPRJ7b
+JUY02Cee0o+NmeGrXkRKIdlbszJBjOVsRY+MmSXjKvLkquzCvPat8ZM/nHOotNwk
+U2OGppkl1Grj5lk3UEdA2OZCwnQjTc4tOY2U5pQQqzWqvnbdGvRHBtQQSsDAM0Gp
+eOz/kogRlRHjlWbWawBNlZTav2khdGF6t5gIqYI+qOqSKricSiCyMkIsbQNRsLaf
+GdxPYnna20iYG5cMB+GFP0oPBO1jUjNDq6arOc5qKtgvlom5T+eifgddi0xClKMX
+/iWNiEJHA7WbHbFaxqMiDSfeGxYb5wZilJizgbVjQka6bs4LkXfGZEm19Db1kJ8b
+4l+AEl43TqDcnvNW1Kgi+hXh+gu/jWtlDCo23llipxKHbSAzFSEbfnlaFQQxFa2e
+zOQxtobM/56qDchg3aFE
+=IhAu
+-----END PGP SIGNATURE-----
+
+--VcZjVMblxkg0/8Ur--
