@@ -1,11 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Wed,  4 May 2016 06:23:39 +0800
-Message-Id: <1462314230-16257-5-git-send-email-a@unstable.cc>
+Date: Wed,  4 May 2016 06:23:40 +0800
+Message-Id: <1462314230-16257-6-git-send-email-a@unstable.cc>
 In-Reply-To: <1462314230-16257-1-git-send-email-a@unstable.cc>
 References: <1462314230-16257-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 04/15] batman-adv: use static string for
-	table headers
+Subject: [B.A.T.M.A.N.] [PATCH 05/15] batman-adv: use
+	list_for_each_entry_safe
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,147 +16,61 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>, Geliang Tang <geliangtang@163.com>
 
-Use a static string when showing table headers rather then
-a nonsense parametric one with fixed arguments.
+From: Geliang Tang <geliangtang@163.com>
 
-It is easier to grep and it does not need to be recomputed
-at runtime each time.
+Use list_for_each_entry_safe() instead of list_for_each_safe() to
+simplify the code.
 
-Reported-by: Joe Perches <joe@perches.com>
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
-[sven@narfation.org: fix conflicts with current version]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Geliang Tang <geliangtang@163.com>
+Acked-by: Antonio Quartulli <a@unstable.cc>
+Reviewed-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/bat_iv_ogm.c            | 8 +++-----
- net/batman-adv/bat_v.c                 | 9 ++++-----
- net/batman-adv/bridge_loop_avoidance.c | 7 +++----
- net/batman-adv/distributed-arp-table.c | 4 ++--
- net/batman-adv/translation-table.c     | 9 ++++-----
- 5 files changed, 16 insertions(+), 21 deletions(-)
+ net/batman-adv/icmp_socket.c | 22 +++++++++-------------
+ 1 file changed, 9 insertions(+), 13 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index cb2d1b9b0340..682fcaec56e6 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1829,9 +1829,8 @@ static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
- 	int batman_count = 0;
- 	u32 i;
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index 14d0013b387e..8a5889d134bc 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -104,25 +104,21 @@ static int batadv_socket_open(struct inode *inode, struct file *file)
  
--	seq_printf(seq, "  %-15s %s (%s/%i) %17s [%10s]: %20s ...\n",
--		   "Originator", "last-seen", "#", BATADV_TQ_MAX_VALUE,
--		   "Nexthop", "outgoingIF", "Potential nexthops");
-+	seq_puts(seq,
-+		 "  Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Potential nexthops ...\n");
+ static int batadv_socket_release(struct inode *inode, struct file *file)
+ {
+-	struct batadv_socket_client *socket_client = file->private_data;
+-	struct batadv_socket_packet *socket_packet;
+-	struct list_head *list_pos, *list_pos_tmp;
++	struct batadv_socket_client *client = file->private_data;
++	struct batadv_socket_packet *packet, *tmp;
  
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -1911,8 +1910,7 @@ static void batadv_iv_neigh_print(struct batadv_priv *bat_priv,
- 	struct batadv_hard_iface *hard_iface;
- 	int batman_count = 0;
+-	spin_lock_bh(&socket_client->lock);
++	spin_lock_bh(&client->lock);
  
--	seq_printf(seq, "   %10s        %-13s %s\n",
--		   "IF", "Neighbor", "last-seen");
-+	seq_puts(seq, "           IF        Neighbor      last-seen\n");
+ 	/* for all packets in the queue ... */
+-	list_for_each_safe(list_pos, list_pos_tmp, &socket_client->queue_list) {
+-		socket_packet = list_entry(list_pos,
+-					   struct batadv_socket_packet, list);
+-
+-		list_del(list_pos);
+-		kfree(socket_packet);
++	list_for_each_entry_safe(packet, tmp, &client->queue_list, list) {
++		list_del(&packet->list);
++		kfree(packet);
+ 	}
  
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 3315b9a598af..246f9e959849 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -151,8 +151,8 @@ static void batadv_v_neigh_print(struct batadv_priv *bat_priv,
- 	struct batadv_hard_iface *hard_iface;
- 	int batman_count = 0;
+-	batadv_socket_client_hash[socket_client->index] = NULL;
+-	spin_unlock_bh(&socket_client->lock);
++	batadv_socket_client_hash[client->index] = NULL;
++	spin_unlock_bh(&client->lock);
  
--	seq_printf(seq, "  %-15s %s (%11s) [%10s]\n", "Neighbor",
--		   "last-seen", "throughput", "IF");
-+	seq_puts(seq,
-+		 "  Neighbor        last-seen ( throughput) [        IF]\n");
+-	kfree(socket_client);
++	kfree(client);
+ 	module_put(THIS_MODULE);
  
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-@@ -191,9 +191,8 @@ static void batadv_v_orig_print(struct batadv_priv *bat_priv,
- 	int batman_count = 0;
- 	u32 i;
- 
--	seq_printf(seq, "  %-15s %s (%11s) %17s [%10s]: %20s ...\n",
--		   "Originator", "last-seen", "throughput", "Nexthop",
--		   "outgoingIF", "Potential nexthops");
-+	seq_puts(seq,
-+		 "  Originator      last-seen ( throughput)           Nexthop [outgoingIF]:   Potential nexthops ...\n");
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 0a6c8b824a00..56bc971e404b 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1815,8 +1815,8 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
- 		   "Claims announced for the mesh %s (orig %pM, group id %#.4x)\n",
- 		   net_dev->name, primary_addr,
- 		   ntohs(bat_priv->bla.claim_dest.group));
--	seq_printf(seq, "   %-17s    %-5s    %-17s [o] (%-6s)\n",
--		   "Client", "VID", "Originator", "CRC");
-+	seq_puts(seq,
-+		 "   Client               VID      Originator        [o] (CRC   )\n");
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
- 
-@@ -1873,8 +1873,7 @@ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq, void *offset)
- 		   "Backbones announced for the mesh %s (orig %pM, group id %#.4x)\n",
- 		   net_dev->name, primary_addr,
- 		   ntohs(bat_priv->bla.claim_dest.group));
--	seq_printf(seq, "   %-17s    %-5s %-9s (%-6s)\n",
--		   "Originator", "VID", "last seen", "CRC");
-+	seq_puts(seq, "   Originator           VID   last seen (CRC   )\n");
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
- 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index e96d7c745b4a..ce574e9cef3b 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -814,8 +814,8 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
- 		goto out;
- 
- 	seq_printf(seq, "Distributed ARP Table (%s):\n", net_dev->name);
--	seq_printf(seq, "          %-7s          %-9s %4s %11s\n", "IPv4",
--		   "MAC", "VID", "last-seen");
-+	seq_puts(seq,
-+		 "          IPv4             MAC        VID   last-seen\n");
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 0b43e86328a5..29fd62839fac 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -1008,8 +1008,8 @@ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq,
- 		   "Locally retrieved addresses (from %s) announced via TT (TTVN: %u):\n",
- 		   net_dev->name, (u8)atomic_read(&bat_priv->tt.vn));
--	seq_printf(seq, "       %-13s  %s %-8s %-9s (%-10s)\n", "Client", "VID",
--		   "Flags", "Last seen", "CRC");
-+	seq_puts(seq,
-+		 "       Client         VID Flags    Last seen (CRC       )\n");
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
-@@ -1706,9 +1706,8 @@ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq,
- 		   "Globally announced TT entries received via the mesh %s\n",
- 		   net_dev->name);
--	seq_printf(seq, "       %-13s  %s  %s       %-15s %s (%-10s) %s\n",
--		   "Client", "VID", "(TTVN)", "Originator", "(Curr TTVN)",
--		   "CRC", "Flags");
-+	seq_puts(seq,
-+		 "       Client         VID  (TTVN)       Originator      (Curr TTVN) (CRC       ) Flags\n");
- 
- 	for (i = 0; i < hash->size; i++) {
- 		head = &hash->table[i];
+ 	return 0;
 -- 
 2.8.2
 
