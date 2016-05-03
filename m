@@ -1,10 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Wed,  4 May 2016 06:23:41 +0800
-Message-Id: <1462314230-16257-7-git-send-email-a@unstable.cc>
+Date: Wed,  4 May 2016 06:23:43 +0800
+Message-Id: <1462314230-16257-9-git-send-email-a@unstable.cc>
 In-Reply-To: <1462314230-16257-1-git-send-email-a@unstable.cc>
 References: <1462314230-16257-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 06/15] batman-adv: use to_delayed_work
+Subject: [B.A.T.M.A.N.] [PATCH 08/15] batman-adv: Fix checkpatch warning
+	about 'unsigned' type
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,111 +16,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>, Geliang Tang <geliangtang@163.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Geliang Tang <geliangtang@163.com>
+From: Sven Eckelmann <sven@narfation.org>
 
-Use to_delayed_work() instead of open-coding it.
+checkpatch.pl warns about the use of 'unsigned' as a short form for
+'unsigned int'.
 
-Signed-off-by: Geliang Tang <geliangtang@163.com>
-Reviewed-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 2 +-
- net/batman-adv/distributed-arp-table.c | 2 +-
- net/batman-adv/network-coding.c        | 2 +-
- net/batman-adv/originator.c            | 2 +-
- net/batman-adv/send.c                  | 4 ++--
- net/batman-adv/translation-table.c     | 2 +-
- 6 files changed, 7 insertions(+), 7 deletions(-)
+ net/batman-adv/fragmentation.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 56bc971e404b..cad8cb3a88f2 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1303,7 +1303,7 @@ static void batadv_bla_periodic_work(struct work_struct *work)
- 	struct batadv_hard_iface *primary_if;
- 	int i;
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index e6956d0746a2..65536db1bff7 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -407,8 +407,8 @@ static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
+ 					  unsigned int mtu)
+ {
+ 	struct sk_buff *skb_fragment;
+-	unsigned header_size = sizeof(*frag_head);
+-	unsigned fragment_size = mtu - header_size;
++	unsigned int header_size = sizeof(*frag_head);
++	unsigned int fragment_size = mtu - header_size;
  
--	delayed_work = container_of(work, struct delayed_work, work);
-+	delayed_work = to_delayed_work(work);
- 	priv_bla = container_of(delayed_work, struct batadv_priv_bla, work);
- 	bat_priv = container_of(priv_bla, struct batadv_priv, bla);
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index ce574e9cef3b..33f273e5354b 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -152,7 +152,7 @@ static void batadv_dat_purge(struct work_struct *work)
- 	struct batadv_priv_dat *priv_dat;
- 	struct batadv_priv *bat_priv;
+ 	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
+ 	if (!skb_fragment)
+@@ -444,15 +444,15 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_frag_packet frag_header;
+ 	struct sk_buff *skb_fragment;
+-	unsigned mtu = neigh_node->if_incoming->net_dev->mtu;
+-	unsigned header_size = sizeof(frag_header);
+-	unsigned max_fragment_size, max_packet_size;
++	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
++	unsigned int header_size = sizeof(frag_header);
++	unsigned int max_fragment_size, max_packet_size;
+ 	bool ret = false;
  
--	delayed_work = container_of(work, struct delayed_work, work);
-+	delayed_work = to_delayed_work(work);
- 	priv_dat = container_of(delayed_work, struct batadv_priv_dat, work);
- 	bat_priv = container_of(priv_dat, struct batadv_priv, dat);
- 
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index b41719b6487a..0d3bf4368e9b 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -714,7 +714,7 @@ static void batadv_nc_worker(struct work_struct *work)
- 	struct batadv_priv *bat_priv;
- 	unsigned long timeout;
- 
--	delayed_work = container_of(work, struct delayed_work, work);
-+	delayed_work = to_delayed_work(work);
- 	priv_nc = container_of(delayed_work, struct batadv_priv_nc, work);
- 	bat_priv = container_of(priv_nc, struct batadv_priv, nc);
- 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index e4cbb0753e37..5b802f0dc24b 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -1222,7 +1222,7 @@ static void batadv_purge_orig(struct work_struct *work)
- 	struct delayed_work *delayed_work;
- 	struct batadv_priv *bat_priv;
- 
--	delayed_work = container_of(work, struct delayed_work, work);
-+	delayed_work = to_delayed_work(work);
- 	bat_priv = container_of(delayed_work, struct batadv_priv, orig_work);
- 	_batadv_purge_orig(bat_priv);
- 	queue_delayed_work(batadv_event_workqueue,
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 3ce06e0a91b1..20076b4c5e1d 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -552,7 +552,7 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- 	struct net_device *soft_iface;
- 	struct batadv_priv *bat_priv;
- 
--	delayed_work = container_of(work, struct delayed_work, work);
-+	delayed_work = to_delayed_work(work);
- 	forw_packet = container_of(delayed_work, struct batadv_forw_packet,
- 				   delayed_work);
- 	soft_iface = forw_packet->if_incoming->soft_iface;
-@@ -604,7 +604,7 @@ void batadv_send_outstanding_bat_ogm_packet(struct work_struct *work)
- 	struct batadv_forw_packet *forw_packet;
- 	struct batadv_priv *bat_priv;
- 
--	delayed_work = container_of(work, struct delayed_work, work);
-+	delayed_work = to_delayed_work(work);
- 	forw_packet = container_of(delayed_work, struct batadv_forw_packet,
- 				   delayed_work);
- 	bat_priv = netdev_priv(forw_packet->if_incoming->soft_iface);
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 29fd62839fac..d44ce84626c5 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -3226,7 +3226,7 @@ static void batadv_tt_purge(struct work_struct *work)
- 	struct batadv_priv_tt *priv_tt;
- 	struct batadv_priv *bat_priv;
- 
--	delayed_work = container_of(work, struct delayed_work, work);
-+	delayed_work = to_delayed_work(work);
- 	priv_tt = container_of(delayed_work, struct batadv_priv_tt, work);
- 	bat_priv = container_of(priv_tt, struct batadv_priv, tt);
+ 	/* To avoid merge and refragmentation at next-hops we never send
+ 	 * fragments larger than BATADV_FRAG_MAX_FRAG_SIZE
+ 	 */
+-	mtu = min_t(unsigned, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
++	mtu = min_t(unsigned int, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
+ 	max_fragment_size = mtu - header_size;
+ 	max_packet_size = max_fragment_size * BATADV_FRAG_MAX_FRAGMENTS;
  
 -- 
 2.8.2
