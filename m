@@ -1,14 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 03 May 2016 09:07:35 +0200
-Message-ID: <3295917.zMxpBmcd5T@bentobox>
-In-Reply-To: <1462222618-29761-1-git-send-email-andrew@lunn.ch>
-References: <1462222618-29761-1-git-send-email-andrew@lunn.ch>
+Return-Path: <sven.eckelmann@open-mesh.com>
+From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+Date: Tue, 03 May 2016 10:18:50 +0200
+Message-ID: <17410440.33Me94yB3F@bentobox>
+In-Reply-To: <20160502172828.GZ11201@prodigo.lan>
+References: <1459508076-29674-1-git-send-email-sven@open-mesh.com>
+ <1459508076-29674-3-git-send-email-sven@open-mesh.com>
+ <20160502172828.GZ11201@prodigo.lan>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1785783.ZWFYaig6Dc";
+Content-Type: multipart/signed; boundary="nextPart1858205.JrLx9EoDiN";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: Use netlink to replace some of
-	debugfs
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 3/3] batman-adv: throughput meter
+	implementation
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,89 +21,33 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: a@unstable.cc, mareklindner@neomailbox.ch
+Cc: Antonio Quartulli <antonio.quartulli@open-mesh.com>
 
---nextPart1785783.ZWFYaig6Dc
+--nextPart1858205.JrLx9EoDiN
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
+On Tuesday 03 May 2016 01:28:28 Antonio Quartulli wrote:
 [...]
-> +ifeq ($(origin LIBNL_GENL_CFLAGS) $(origin LIBNL_GENL_LDLIBS), undefined undefined)
-> +  LIBNL_GENL_NAME ?= libnl-genl-3.0
-> +  ifeq ($(shell $(PKG_CONFIG) --modversion $(LIBNL_GENL_NAME) 2>/dev/null),)
-> +    $(error No $(LIBNL_GENL_NAME) development libraries found!)
-> +  endif
-> +  LIBNL_GENL_CFLAGS += $(shell $(PKG_CONFIG) --cflags $(LIBNL_GENL_NAME))
-> +  LIBNL_GENL_LDLIBS += $(shell $(PKG_CONFIG) --libs $(LIBNL_GENL_NAME))
-> +endif
-> +CFLAGS += $(LIBNL_GENL_CFLAGS)
-> +LDLIBS += $(LIBNL_GENL_LDLIBS)
+> shouldn't we propagate the value saved in err to tp_vars->reason ?
+> 
+> We found this error while using the tp_meter, because we tried to run it
+> against a non-existing originator and batctl crashed.
 
-@Simon, @Matthias, @Antonio, @Marek: Should the header file be included in
-batctl like nl80211.h in iw. Or should we always require the current kernel
-header files installed to build batctl?
+Yes, looks like I've missed this while reviewing your tp_meter code. Was
+the crash something like:
 
+    root@node02:~# /host/batctl/batctl  tp 02:ba:de:af:ff:01
+    Throughput meter called towards 02:ba:de:af:ff:01
+    tp_meter.c:198:36: runtime error: division by zero
+    traps: batctl[246] trap divide error ip:410f31 sp:7ffea78512c0 error:0 in batctl[400000+18000]
+    Floating point exception
 
-[...]
-> +struct mandatory_attr {
-> +	int attr;
-> +	int datalen;
-> +};
-> +
-> +static int last_err;
-> +
-> +static int invalidate_mandatory_attrs(struct nlattr *attrs[],
-> +				      const struct mandatory_attr *mandatory[],
-> +				      int num)
-> +{
-> +	int i;
-> +	int len;
-> +
-> +	for (i = 0; i < num; i++) {
-> +		if (!attrs[mandatory[i]->attr])
-> +			return EINVAL;
-> +		len = nla_len(attrs[mandatory[i]->attr]);
-> +		if (mandatory[i]->datalen && (len != mandatory[i]->datalen))
-> +			return EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct mandatory_attr mandatory_attr_version= {
-> +	BATADV_ATTR_VERSION, 0 };
-[...]
-> +static const struct mandatory_attr *info_hard_mandatory[] = {
-> +	&mandatory_attr_version,
-> +	&mandatory_attr_algo_name,
-> +	&mandatory_attr_hard_ifname,
-> +	&mandatory_attr_hard_address,
-> +};
-> +
-> +static int info_callback(struct nl_msg *msg, void *arg __unused)
-> +{
-[...]
-> +	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-> +		      genlmsg_len(ghdr), NULL)) {
-> +		fputs("Received invalid data from kernel.", stderr);
-> +		exit(1);
-> +	}
-> +
-> +	if (invalidate_mandatory_attrs(attrs, info_mandatory,
-> +				       ARRAY_SIZE(info_mandatory))) {
-> +		fputs("Missing/invalid attributes from kernel\n", stderr);
-> +		exit(1);
-> +	}
-
-Interesting idea to check the mandatory attributes with a common function. But
-shouldn't be the length checked by the nl_parse(..., policy) [1]? This is
-especially important because you don't check the type.
+I will most likely add code catching it in both batctl and batman-adv.
 
 Kind regards,
 	Sven
-
-[1] http://www.infradead.org/~tgr/libnl/doc/core.html#core_attr_validation
---nextPart1785783.ZWFYaig6Dc
+--nextPart1858205.JrLx9EoDiN
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -109,20 +55,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXKE43AAoJEF2HCgfBJntGFi4P/3u9xr83F2wqzurNDM+N7X4C
-S1ZLEsetvN5j52dMtWw4bFO6b2R4Bu89jN2KTTtFNfiyoCpaErPfb3U6pTgncs5M
-kiOKJ2Rmi96e+Z9ppXRoROETcn8AvH9BexfocW9Lm+Rf2Mkfx38jhUfMrKe/BXBW
-SrQos9czl4mEkXbVpSOMiQHgp2j1ODEBSMbphjrxJ5oX0IyFaqyDQHb8d6AX7dOb
-DgOnzs1p2HkCTjODd7JYliSd6ZBO3PR1UilrMXYNngaSA2f9wISZQsfMRKeObQv3
-3lzK4qY+XqVkdGQlG3X2xVhWEJeU/2+SiReFcClYG0quHVUqR74u4Quj+91iqg+t
-8ags+Uj4ns8khiZkxKMSVRQo0vd7uvv6APyIs/JbTQowVZDKffd34gVHmjNE6zUy
-iRw6VeLTdP2K1csiZ6gzCNkckQEn3A8muuue5oA58gCtelWrrpoJI/OqtPsmqwyb
-Jljzv3vn0zcAZOX5FuA8lNwcgI6pYqXZqfeyR1xFnc95l9aQ8k8gqg818RDiIm7N
-ab4SFfHyKsyCojWSG+FeDrlJVTfDUFEaqFa52KFWrSli8E6ebyjLOZO88MhtzMs2
-oBZ6jYRZ0YVrXiAJeHHNYBj589gVrMYW/jVeQX24vwnd231KCGVhFk4e1K4xoC5G
-za5aZgN899eqQ5BUZpqY
-=631S
+iQIcBAABCgAGBQJXKF7qAAoJEF2HCgfBJntGkvAP/1w4YLNsaHAxUyKHAZJnGCvS
+zCPYx4bbrHzaQj/9FKKLyPn4p3aeiEtBUVanPncrJRvCIpmU+/B6rYH1u2LpId7e
+qMxkNwNexTX5vOQ32QSUgqHXo87IhfgtZQyPLWcuNzz+W6Bt8T+YX3AXRYAaFHWu
+Qsf5v1J5jfj+vKl6CaUhONi2SniH9+ktnp+2zkLtP9IfY0wD4uWrhrIaDbSiVYvu
+TGWhHGYAuoR6JvtxdtzvSttfddOScA+8EcxjuvDy5gyaX+M4qAV8RMRXNleVNggF
+62m66w1bFfPfPxa0msIWvWpqiUpdzESo0oUxV+pg2M8B0yz2r9+KChbqN+Jj5204
++IzIyFRrOjupSuya4k3ROcndAIjOuCJGFgMhXR8LAXmLnHIDxH5U9m3aGKGzic+7
+eQYNdDf2rZF1pf7HNEtDmPCfpezxrkg8+jm1fdOT8oowtUeGyQFNnTNV85BkPJGl
+bspUecS9DDtRZwBmiM7KYHwKLmmmZKky7g7SM03FczTeNcGJLCQzvBVk0r1hp/Ch
+eLk1nZT2G6aPMir/Skml9TsUICpVEcRUYHcyTTAtTQkDQ/Vo3BZVzs9RjvbmcmLQ
+hmWdIg1dn7Z1O3hMTPvD62cvJKZTr8kdLmsu3uQB77Xb4io0g5n2rnqOmhse8DH7
+BOfq3/PK9KkKH06ROZz2
+=mMJi
 -----END PGP SIGNATURE-----
 
---nextPart1785783.ZWFYaig6Dc--
+--nextPart1858205.JrLx9EoDiN--
 
