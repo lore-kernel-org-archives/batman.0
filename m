@@ -1,17 +1,15 @@
-Return-Path: <antonio.quartulli@open-mesh.com>
-Date: Tue, 3 May 2016 20:21:31 +0800
-From: Antonio Quartulli <antonio.quartulli@open-mesh.com>
-Message-ID: <20160503122131.GC11201@prodigo.lan>
-References: <1459508076-29674-1-git-send-email-sven@open-mesh.com>
- <1459508076-29674-3-git-send-email-sven@open-mesh.com>
- <20160502172828.GZ11201@prodigo.lan> <17410440.33Me94yB3F@bentobox>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 03 May 2016 14:26:34 +0200
+Message-ID: <1679465.5nkEMONaEr@bentobox>
+In-Reply-To: <20160503122046.GK16990@lunn.ch>
+References: <1462222618-29761-1-git-send-email-andrew@lunn.ch>
+ <3295917.zMxpBmcd5T@bentobox> <20160503122046.GK16990@lunn.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="VcZjVMblxkg0/8Ur"
-Content-Disposition: inline
-In-Reply-To: <17410440.33Me94yB3F@bentobox>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 3/3] batman-adv: throughput meter
- implementation
+Content-Type: multipart/signed; boundary="nextPart2204767.uSObNt744f";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: Use netlink to replace some of
+	debugfs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,69 +19,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+To: Andrew Lunn <andrew@lunn.ch>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
+--nextPart2204767.uSObNt744f
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---VcZjVMblxkg0/8Ur
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tuesday 03 May 2016 14:20:46 Andrew Lunn wrote:
+[...]
+> There does not seem to be a way to say that BATADV_ATTR_VERSION is
+> also an NLA_STRING.
 
-On Tue, May 03, 2016 at 10:18:50AM +0200, Sven Eckelmann wrote:
-> On Tuesday 03 May 2016 01:28:28 Antonio Quartulli wrote:
-> [...]
-> > shouldn't we propagate the value saved in err to tp_vars->reason ?
-> >=20
-> > We found this error while using the tp_meter, because we tried to run it
-> > against a non-existing originator and batctl crashed.
->=20
-> Yes, looks like I've missed this while reviewing your tp_meter code. Was
-> the crash something like:
->=20
->     root@node02:~# /host/batctl/batctl  tp 02:ba:de:af:ff:01
->     Throughput meter called towards 02:ba:de:af:ff:01
->     tp_meter.c:198:36: runtime error: division by zero
->     traps: batctl[246] trap divide error ip:410f31 sp:7ffea78512c0 error:=
-0 in batctl[400000+18000]
->     Floating point exception
+Please check "policy" in the link I gave you.
 
-exactly the same.
-
-
->=20
-> I will most likely add code catching it in both batctl and batman-adv.
-
-
-Thanks !
-
-Cheers,
-
-
---=20
-Antonio Quartulli
-Director of Embedded Software | Open Mesh, Inc.
-
---VcZjVMblxkg0/8Ur
+Kind regards,
+	Sven
+--nextPart2204767.uSObNt744f
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXKJfLAAoJEJ4aZjxxc6bKndUP/1Nf9n9b3YZQzKCJ118UJhHS
-Bzv6Bv4w200GlBkAfoGLLs4znChundkvCWpsKiNn5d3dTUmxPoIzYjKEgbcZgdPs
-oCqZMa9nrBuSgGCN94umz+Y2AmxOB4ioZ3PGwuIJgXYtDGlO6pmfij5SdYID9J6H
-QAVHyQRjzTTQbpJeilRM6gbbr5wHM9//z9gf41B09zsUdH36essTYrH3C/i4/9gA
-IdSqzhR5LJ7fV9e9Kefe8jBDEe32klwbwQWSawL2Cmte0awv1UcWgIzz/jEPRJ7b
-JUY02Cee0o+NmeGrXkRKIdlbszJBjOVsRY+MmSXjKvLkquzCvPat8ZM/nHOotNwk
-U2OGppkl1Grj5lk3UEdA2OZCwnQjTc4tOY2U5pQQqzWqvnbdGvRHBtQQSsDAM0Gp
-eOz/kogRlRHjlWbWawBNlZTav2khdGF6t5gIqYI+qOqSKricSiCyMkIsbQNRsLaf
-GdxPYnna20iYG5cMB+GFP0oPBO1jUjNDq6arOc5qKtgvlom5T+eifgddi0xClKMX
-/iWNiEJHA7WbHbFaxqMiDSfeGxYb5wZilJizgbVjQka6bs4LkXfGZEm19Db1kJ8b
-4l+AEl43TqDcnvNW1Kgi+hXh+gu/jWtlDCo23llipxKHbSAzFSEbfnlaFQQxFa2e
-zOQxtobM/56qDchg3aFE
-=IhAu
+iQIcBAABCgAGBQJXKJj6AAoJEF2HCgfBJntGHPIP/3QQxZwPFnCMU78Jg/5NKf65
+AWOJww0wy7xiGj15zM29PN/ERt+H61AHa1M8oaiQHKDUPaUgcXLDfPeF9RnejBdJ
+v6HxrwLkjZauu4TLiBuyMblxML1p8B5JD/bM1huBORwpxn0C5rxJSvMGq6KG0ccN
+wCiMIfwivtGrNtM0pzB1W148da11zs47YeTdEoD2gmC9W+c305qqeC1VmJXxiqCI
+2p0g43lkCE1Dx/7io8w6zeN2QJ7P1i06e6o6xelYz5MFd0c/9W33T+HNy/4dygKl
+pw82cm/QdeKjOElHctTiJEGFKoYJMV2ygQiXoSHmGG4U1lFxTtbC8TxNCoK1oYr1
+n2ch9Ld5yixAk4hhFffbo+KzTubF1cwpaKjo4sQMuQb0czBBSqu89vbgByuyrwOF
+wWJ/iPUpG30dYypekuVPG/aiI/CjwY0RdH42nlJJMQdZ3NhQzriz/f5Nee1S/hJt
+tMwBlB8Hd86yYPHZcXiCS3hIFJHkBr8FVdFuYXb0WmS5hcBe+dghsDQSRTJVv+dV
+YZD+0lVFT2tIRwopF0ygHNpVJtD9QYINJLWE1PFATwh2MSFpBPs+fk4zP3j/MmKC
+O2MKyrcvwtudD/0HiRc5r0RSZtGAvYeWgD/JvWZlzIYwDluBq1jhaZqUyt1o2pVO
+rrkfxMmFLhTVidSLPd9m
+=VNox
 -----END PGP SIGNATURE-----
 
---VcZjVMblxkg0/8Ur--
+--nextPart2204767.uSObNt744f--
+
