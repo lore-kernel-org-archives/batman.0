@@ -1,13 +1,15 @@
-Return-Path: <sven.eckelmann@open-mesh.com>
-From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-Date: Tue, 03 May 2016 14:32:28 +0200
-Message-ID: <10228266.x0VlN5ZfLu@bentobox>
-In-Reply-To: <5437772.flAExnCRQc@prime>
-References: <1894217.a7ufKNXfSr@bentobox> <5437772.flAExnCRQc@prime>
+Return-Path: <andrew@lunn.ch>
+Date: Tue, 3 May 2016 14:45:51 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20160503124551.GA16952@lunn.ch>
+References: <1462222618-29761-1-git-send-email-andrew@lunn.ch>
+ <3771281.MWFGszot8n@bentobox>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart11426593.zHV3OZ73mV";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [v3] Add throughput meter support
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3771281.MWFGszot8n@bentobox>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: Use netlink to replace some of
+ debugfs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,64 +19,63 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc
 
---nextPart11426593.zHV3OZ73mV
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Tuesday 03 May 2016 13:28:16 Simon Wunderlich wrote:
-> On Tuesday 03 May 2016 10:59:07 Sven Eckelmann wrote:
-> > Hi,
-> > 
-> > here is the third version of the throughput meter support. It is just a
-> > rebased version of the patchset with two little bugfixes. Both problems were
-> > detected and reported by Antonio:
-> > 
-> >  * batctl didn't check if the test_time is > 0 before doing a division
-> >  * batman-adv wasn't returning an error to batctl when dst was not reachable
-> > 
-> > 
-> > I am currently unsure how we should proceed regarding the ICMP packet type
-> > used to communicate to the userspace ([PATCH 2/3]). Andrew+Matthias already
-> > prepared a netlink patchset which looks quite good and which should be
-> > tested+applied. The consequence for this patchset would be that patch 2
-> > should be completely dropped and instead the tp_meter should become its own
-> > command in the netlink interface of batman-adv. Any opinions about that
-> > (order in which patches should be applied/netlink interface should be
-> > handled) by the Simon, Antonio, Marek, Matthias or Andrew?
+> It looks like the header line is missing here. The debugfs table show
+> something like:
 > 
-> Thanks for preparing the patchset! Antonio, Marek and me discussed and agreed 
-> that we should adopt the patchset as it is, and have the netlink support 
-> additionally at a later point.
+>     "  Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Potential nexthops ...\n");
+> 
+> or
+> 
+>     "  Originator      last-seen ( throughput)           Nexthop [outgoingIF]:   Potential nexthops ...\n");
 
-Did read Antonio the comment in the internal ticket?
+Ah, yes. I wanted to come back and look at this. It needs an extra
+call to ask what algorithm is being used, so you know which header to
+print.
 
-Kind regards,
-	Sven
---nextPart11426593.zHV3OZ73mV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+> the nexthops are also done differently now (not sure if this is better
+> but at least something which should be discussed):
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+I've deliberately not made the output the same as the kernel debugfs.
+There is no real reason to do that. You should not be 'screen
+scraping' batctl, you should use the netlink socket...
 
-iQIcBAABCgAGBQJXKJpcAAoJEF2HCgfBJntGkboQAKOzgLtxqlsmMNf3abZ1Ih/Q
-6h4NdDUN+Q/M7ur84oEByQ267bBv5/beUEv+yXZwoMKY8tTtBor/KWXBNbwObJn7
-ia1jeBHa4UHMaF59SoKrMZrE0Y59KmpZL+gNRLDn0En3bIL46Pnr4gJHl4SVpXOI
-5Pqg+99UhV4Ni5ccBoUDfLfXUFaS/WsN/xPQjvukdUd6S0WlE94V1J6CU/UbcvkS
-cCCFUVN+dBgqNWKqH0u7kfWcLNG0wbhDMLynPcF5Szq6Q/To9JC52WlZXbLElKeD
-nRkw6lB2aQpfkE6D/BbLy6q0fHz/7nZiQp7enLvQ2mSwti3CUcSH7GQwf8oJ8m60
-dsvv/W3QuPxkgmjIeaztp8TuMuVYep5eYrsr0eaijE2aBTaZuLBRP4wFDJIWVzQU
-M4rT8b14bQ8Ceo/qgiIZLqlf9H0y8NuibeO0f5WdDF+1D4LGlDXb5RiBN8BIZ+Bz
-OkmeTePsYSnsxR5OKmIY2YEfBZ7PCnjodZ396nRihaEmwEQkxq8+E2kqRnY7JMVp
-/PmhoYj/5J5kb/3EpR3iYZcdwULwmxCqFSmnwmz2Nt5SflTDcBjr4u8Q8ezgxCWw
-cN39GPrQWTLCydCDr+wGOaYPSy+SQdY4Xm9HO7/YZFQyzlCF/ldsZBU6rjkWZZ3L
-IBlilTU4SCEPImmXCFtn
-=jqSw
------END PGP SIGNATURE-----
+Anything where the kernel consolidates information does not happen. We
+get the raw information from the kernel, and it is printed as is, with
+the exception that bathosts is used to translate MAC addresses to
+names. There are also likely to be white space changes.
 
---nextPart11426593.zHV3OZ73mV--
+The callback structure used by netlink does not help here. You get to
+see one originator record at once. So in order to print consolidated
+information, you would have to build a database in the callback
+function, and once all the information is available, do the
+consolidate and then printing. Doable, but i took the easier option of
+printing a line per originator record.
 
+> originator
+> ==========
+> 
+> netlink
+> -------
+> 
+>     [B.A.T.M.A.N. adv 2016.1-62-g55e9890, MainIF/MAC: eth0/02:ba:de:af:fe:01 (bat0/f2:f2:2d:c3:71:8c BATMAN_IV)]
+>      * 02:ba:de:af:fe:02    0.004s   (251) 02:ba:de:af:fe:02 [      eth0]
+> 
+> debugfs
+> -------
+> 
+>     [B.A.T.M.A.N. adv 2016.1-62-g55e9890, MainIF/MAC: eth0/02:ba:de:af:fe:01 (bat0 BATMAN_IV)]
+>       Originator      last-seen (#/255)           Nexthop [outgoingIF]:   Potential nexthops ...
+>     02:ba:de:af:fe:02    0.024s   (251) 02:ba:de:af:fe:02 [      eth0]: 02:ba:de:af:fe:02 (251)
+> 
+> The output "No batman nodes in range ...\n" also isn't there anymore
+> (not that I would miss it).
+
+Again, the callback structure makes that messy. A global variable
+which needs setting in the callback, and after parsing all the
+records, if that global variable is not set, print the "No batman
+nodes in range ...\n"
+
+      Andrew
