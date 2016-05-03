@@ -1,16 +1,11 @@
 Return-Path: <sven.eckelmann@open-mesh.com>
 From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-Date: Tue, 03 May 2016 10:18:50 +0200
-Message-ID: <17410440.33Me94yB3F@bentobox>
-In-Reply-To: <20160502172828.GZ11201@prodigo.lan>
-References: <1459508076-29674-1-git-send-email-sven@open-mesh.com>
- <1459508076-29674-3-git-send-email-sven@open-mesh.com>
- <20160502172828.GZ11201@prodigo.lan>
+Date: Tue, 03 May 2016 10:59:07 +0200
+Message-ID: <1894217.a7ufKNXfSr@bentobox>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1858205.JrLx9EoDiN";
+Content-Type: multipart/signed; boundary="nextPart2013910.jjdKmsElY8";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 3/3] batman-adv: throughput meter
-	implementation
+Subject: [B.A.T.M.A.N.] [v3] Add throughput meter support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,33 +16,67 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <antonio.quartulli@open-mesh.com>
 
---nextPart1858205.JrLx9EoDiN
+--nextPart2013910.jjdKmsElY8
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday 03 May 2016 01:28:28 Antonio Quartulli wrote:
-[...]
-> shouldn't we propagate the value saved in err to tp_vars->reason ?
-> 
-> We found this error while using the tp_meter, because we tried to run it
-> against a non-existing originator and batctl crashed.
+Hi,
 
-Yes, looks like I've missed this while reviewing your tp_meter code. Was
-the crash something like:
+here is the third version of the throughput meter support. It is just a
+rebased version of the patchset with two little bugfixes. Both problems were
+detected and reported by Antonio:
 
-    root@node02:~# /host/batctl/batctl  tp 02:ba:de:af:ff:01
-    Throughput meter called towards 02:ba:de:af:ff:01
-    tp_meter.c:198:36: runtime error: division by zero
-    traps: batctl[246] trap divide error ip:410f31 sp:7ffea78512c0 error:0 in batctl[400000+18000]
-    Floating point exception
+ * batctl didn't check if the test_time is > 0 before doing a division
+ * batman-adv wasn't returning an error to batctl when dst was not reachable
 
-I will most likely add code catching it in both batctl and batman-adv.
+
+I am currently unsure how we should proceed regarding the ICMP packet type
+used to communicate to the userspace ([PATCH 2/3]). Andrew+Matthias already
+prepared a netlink patchset which looks quite good and which should be
+tested+applied. The consequence for this patchset would be that patch 2 should
+be completely dropped and instead the tp_meter should become its own command
+in the netlink interface of batman-adv. Any opinions about that (order in
+which patches should be applied/netlink interface should be handled) by the
+Simon, Antonio, Marek, Matthias or Andrew?
+
+
+Antonio Quartulli (4):
+      batman-adv: return netdev status in the TX path
+      batman-adv: use another ICMP packet when sending command from userspace
+      batman-adv: throughput meter implementation
+      batctl: introduce throughput meter support
+
+ net/batman-adv/Makefile         |    1 +
+ net/batman-adv/fragmentation.c  |   41 +-
+ net/batman-adv/fragmentation.h  |    6 +-
+ net/batman-adv/icmp_socket.c    |  225 +++---
+ net/batman-adv/icmp_socket.h    |    5 +-
+ net/batman-adv/main.c           |    6 +-
+ net/batman-adv/main.h           |   24 +-
+ net/batman-adv/packet.h         |  120 ++++
+ net/batman-adv/routing.c        |   33 +-
+ net/batman-adv/send.c           |   25 +-
+ net/batman-adv/soft-interface.c |    2 +
+ net/batman-adv/tp_meter.c       | 1453 +++++++++++++++++++++++++++++++++++++++
+ net/batman-adv/tp_meter.h       |   34 +
+ net/batman-adv/types.h          |  113 +++
+ 14 files changed, 1944 insertions(+), 144 deletions(-)
+
+ Makefile     |   2 +-
+ main.c       |   6 ++
+ main.h       |   1 +
+ man/batctl.8 |  24 +++++-
+ packet.h     | 120 ++++++++++++++++++++++++++++++
+ tcpdump.c    |  14 +++-
+ tp_meter.c   | 236 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ tp_meter.h   |  22 ++++++
+ 8 files changed, 421 insertions(+), 4 deletions(-)
+
 
 Kind regards,
 	Sven
---nextPart1858205.JrLx9EoDiN
+--nextPart2013910.jjdKmsElY8
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -55,20 +84,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXKF7qAAoJEF2HCgfBJntGkvAP/1w4YLNsaHAxUyKHAZJnGCvS
-zCPYx4bbrHzaQj/9FKKLyPn4p3aeiEtBUVanPncrJRvCIpmU+/B6rYH1u2LpId7e
-qMxkNwNexTX5vOQ32QSUgqHXo87IhfgtZQyPLWcuNzz+W6Bt8T+YX3AXRYAaFHWu
-Qsf5v1J5jfj+vKl6CaUhONi2SniH9+ktnp+2zkLtP9IfY0wD4uWrhrIaDbSiVYvu
-TGWhHGYAuoR6JvtxdtzvSttfddOScA+8EcxjuvDy5gyaX+M4qAV8RMRXNleVNggF
-62m66w1bFfPfPxa0msIWvWpqiUpdzESo0oUxV+pg2M8B0yz2r9+KChbqN+Jj5204
-+IzIyFRrOjupSuya4k3ROcndAIjOuCJGFgMhXR8LAXmLnHIDxH5U9m3aGKGzic+7
-eQYNdDf2rZF1pf7HNEtDmPCfpezxrkg8+jm1fdOT8oowtUeGyQFNnTNV85BkPJGl
-bspUecS9DDtRZwBmiM7KYHwKLmmmZKky7g7SM03FczTeNcGJLCQzvBVk0r1hp/Ch
-eLk1nZT2G6aPMir/Skml9TsUICpVEcRUYHcyTTAtTQkDQ/Vo3BZVzs9RjvbmcmLQ
-hmWdIg1dn7Z1O3hMTPvD62cvJKZTr8kdLmsu3uQB77Xb4io0g5n2rnqOmhse8DH7
-BOfq3/PK9KkKH06ROZz2
-=mMJi
+iQIcBAABCgAGBQJXKGhbAAoJEF2HCgfBJntGYKgQAIcDaILzNsjj3aLOXdyXfF1x
+k5c5bnqveEebWgFMa2en89rU0O+CuiWP2of3ukM5+qNpNH/0WbuJVvtB8dozOM6e
+5jnYX7aL1amzoVdalCHP76q/P3pX2AczelYKFW/E5Hpv2GGg0g3pf01Ai+k7z+Uq
+5pdEdWFqRN5bTZUIsa1Y7Pu6w14hZYgZdltnYckfjec69fnVeNvEJG0sHwLUvyZI
+xi1fBtNuOwB+DxdIYScQxBSWGsrPNCrEVNPjrzMtvAn7B53+z5A6SJzIgDock7yv
+wON62oht7NjRtnmEv/3BtRWqj96v+hD8DCCmylTOXVdGUkBoVSyYQxw9+iLLLxvJ
+AeCorPCzjd05l/D4w9uh+FGievrXIlYVg2vmZcXK9fGlppvnuUrwILxOBM58Vkr+
+9ku54+b80sEv53RVYgOO5p8E5+1YbiBZZK1lQUBo+ereqnSRVuQc8G7ypnwI8+/w
+moz8aNXgtIeAZq/P5W1YwnA5TPwGBFlFD53Cg94tyLo2UeofwbJu0E8zHOWUqzlq
+L0uyJ8SpmEaIe1Bqqz//Y+qFz43EIMIKyHM7nvPaX9djL9nKvHSHq6U2ZITFxNeX
+GPUR2KMs+YslZkvqJNjiwUPHSvpM+gG9WpFWbKnV6+rXA6uFmpqtn2dXw+7TioeS
+3XDQ0EQnLm+xx7K9xrWU
+=lI50
 -----END PGP SIGNATURE-----
 
---nextPart1858205.JrLx9EoDiN--
+--nextPart2013910.jjdKmsElY8--
 
