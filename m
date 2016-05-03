@@ -1,16 +1,15 @@
-Return-Path: <andrew@lunn.ch>
-Date: Tue, 3 May 2016 15:08:57 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160503130857.GC16952@lunn.ch>
-References: <1462222618-29761-1-git-send-email-andrew@lunn.ch>
- <1679465.5nkEMONaEr@bentobox> <20160503124719.GB16952@lunn.ch>
- <3986955.uBauJeRErD@bentobox>
+Return-Path: <a@unstable.cc>
+Date: Tue, 3 May 2016 22:42:29 +0800
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <20160503144229.GD11201@prodigo.lan>
+References: <1462035963-28970-1-git-send-email-a@unstable.cc>
+ <20160503.001813.1881857417530292443.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="WG0/bXtUnGTsWt66"
 Content-Disposition: inline
-In-Reply-To: <3986955.uBauJeRErD@bentobox>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batctl: Use netlink to replace some of
- debugfs
+In-Reply-To: <20160503.001813.1881857417530292443.davem@davemloft.net>
+Subject: Re: [B.A.T.M.A.N.] pull request [net]: batman-adv 20160430
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,48 +19,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Tue, May 03, 2016 at 02:54:26PM +0200, Sven Eckelmann wrote:
-> On Tuesday 03 May 2016 14:47:19 Andrew Lunn wrote:
-> > On Tue, May 03, 2016 at 02:26:34PM +0200, Sven Eckelmann wrote:
-> > > On Tuesday 03 May 2016 14:20:46 Andrew Lunn wrote:
-> > > [...]
-> > > > There does not seem to be a way to say that BATADV_ATTR_VERSION is
-> > > > also an NLA_STRING.
-> > > 
-> > > Please check "policy" in the link I gave you.
-> > 
-> > I did. And i still don't get how you can check the type.
-> > 
-> >   Andrew
-> 
->    struct nla_policy {
->             uint16_t        type;
->             uint16_t        minlen;
->             uint16_t        maxlen;
->    };
-> 
-> there is an entry for type, minlen and maxlen. The type member is to check for
-> the type. Here is an example how to check the type from batctl:
-> 
->     static struct nla_policy info_data_link_policy[IFLA_MAX + 1] = {
->     	[IFLA_LINKINFO]	= { .type = NLA_NESTED },
-> 	    [IFLA_LINK]	= { .type = NLA_U32 },
->     };
->     [...]
->     	ret = nlmsg_parse(n, sizeof(struct ifinfomsg), tb, IFLA_MAX,
->     			  info_data_link_policy);
 
-Ah. Now i get it.
+--WG0/bXtUnGTsWt66
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The problem is the overloaded 'type'. An attribute in a message has a
-header which includes a type. It takes the value
-e.g. BATADV_ATTR_VERSION. In nla_policy, we again have type, but this
-time it takes e.g. NLA_U32.
+On Tue, May 03, 2016 at 12:18:13AM -0400, David Miller wrote:
+> Pulled, thanks Antonio.
 
-Once you figure out type != type, it all becomes clear...
+Thanks a lot David.
 
-     Andrew
+We now have some patches for net-next that somewhat depend on the fixes you
+have recently pulled.
 
+Do you have any plan on merging net into net-next in the following days ?
+
+I am asking because I'd prefer to avoid you the hassle of dealing with the
+conflicts.
+
+Cheers,
+
+
+--=20
+Antonio Quartulli
+
+--WG0/bXtUnGTsWt66
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJXKLjVAAoJEJ4aZjxxc6bKmNkQAMYDpaTdI0gWA7wqfsK6lCBJ
+DmXSdTJ51G7dSA5H6fW4rT7SUptkswIsZEucCgUWPF6mIW8AOPX/uEmHmDbN+a7z
+TFcaZqaOpRoQbGFeP0H/riZgEDxcLpqtVM60QiyKxrHF90HDdf+vhEhFU3ovUzKW
+AVfYIVoPM4jTcJynX0W/QPZMnCpYFC6/aCrb+c7wRUYfdu1X4f+xZ7zN7qPe8k0u
+Jo4JFvK+NtJF9HrHAIS00RtjEsxwWIUKFPbrDDvQsyPTJFD6IXSYWptUm1KgWp6z
+qhe6PeKwTbQgJYTHlQLGLZM3fae9WfKyos9HF5R1sDcborf39YeOT4m0gf5eBmz9
+Sb94phS7OQl1hpHVTuaE57WvHqcrMAi5RoTdfpOVrHKbOQsU/FZnSm7K3r6la647
+drxpS8JdLc6NC4edxpTLhPjo539lfy4fz2xGdiRGImVeu+XEz8MUmA1NnCYVSFgE
+qlRSuPAxyqv0byo1IVRPS5VE3H9C+XR7386U8ArxvrkPiTe76TCz+Ej53qLaf2h4
+j01ywgA33z1O5xGFO2Vd700uw+zfP3v4ZJylRW93BzMrnZ7/tW8rS1bt/ccG4xaj
+8evfapLui31J8QJeP0sOvy5kl+0Di92aYcFxtxiWoLrP6/07OkgSEM+UmotDbT0H
+KCt4qwUEb+jaI0nXrG9+
+=7Gh1
+-----END PGP SIGNATURE-----
+
+--WG0/bXtUnGTsWt66--
