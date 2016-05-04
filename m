@@ -1,17 +1,11 @@
-Return-Path: <a@unstable.cc>
-Date: Thu, 5 May 2016 02:18:43 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160504181843.GI11201@prodigo.lan>
-References: <20160503.001813.1881857417530292443.davem@davemloft.net>
- <20160503144229.GD11201@prodigo.lan>
- <20160503.123330.1810855853724486551.davem@davemloft.net>
- <20160504.141350.1935086155659300721.davem@davemloft.net>
+Return-Path: <sven.eckelmann@open-mesh.com>
+From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+Date: Wed, 04 May 2016 21:02:05 +0200
+Message-ID: <4642303.DsCp7UQf8m@bentobox>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="SfgfV7onya2wNU+g"
-Content-Disposition: inline
-In-Reply-To: <20160504.141350.1935086155659300721.davem@davemloft.net>
-Subject: Re: [B.A.T.M.A.N.] pull request [net]: batman-adv 20160430
+Content-Type: multipart/signed; boundary="nextPart6252019.Xf3IHxijc9";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: [B.A.T.M.A.N.] [RFC v4] throughput meter  on steroids^W netlink
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,46 +15,92 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-
---SfgfV7onya2wNU+g
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--nextPart6252019.Xf3IHxijc9
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
 
-On Wed, May 04, 2016 at 02:13:50PM -0400, David Miller wrote:
->=20
-> Just FYI I did this last night.
+Hi,
 
-Thanks a lot for letting me know David.
+I was asked by the batman-adv maintainers to port the tp_meter to netli=
+nk. And
+I shouldn't do it with the patches from Andrew/Matthias applied but wit=
+h only
+a small part of patch 4.=20
 
-Cheers,
+I know, this isn't the nicest move but it allowed me to restructure the=
+ first
+commit a little bit. I've extracted the part which introduced the netli=
+nk
+family + a restructured batman_adv.h. I've also added the part which
+introduces the generic mesh information as extra patch (+kerneldoc). Th=
+is
+added some attributes which I need in tp_meter. But I can also remove t=
+he
+patch and only merge the necessary parts.
 
---=20
-Antonio Quartulli
 
---SfgfV7onya2wNU+g
+@Andrew, I hope you don't take it the wrong way. I really like your wor=
+k and
+even borrowed parts of the code for the tp_meter interface. So you are =
+now
+allowed to criticize the hell out of the changes and request some free =
+beer
+from=20Antonio, Marek and Simon :). But I hope that you like the adjustme=
+nts to
+the initial parts (at least a little bit). You would have to rebase you=
+r
+changes (which I still want to get integrated) on top when these things=
+ here
+are merged. I would also be willing to do the rebase myself and send yo=
+u the
+result (so you can add the kerneldoc and maybe make further adjustments=
+).
+
+The only "big" conflicts I see are related to the order of attributes. =
+But
+this was a long day for me and I may have forgotten something.
+
+@the_rest: Do you find the bugs introduced by moving it to netlink?
+
+The one which I know about is the inability to receive signals while th=
+e
+kernel is doing the wait_event (So the BATADV_CMD_TP_METER_CANCEL doesn=
+'t work=20
+at all). I am waiting for recommendations. The one which
+comes to my mind is not to wait for the thing to finish but to just ret=
+urn
+immediately. The client would then have to some kind of event listener =
+enabled
+which waits until the thing finished. This approach would also require =
+some
+kind of session info exchange. Does anyone else have a good idea?
+
+Kind regards,
+=09Sven
+--nextPart6252019.Xf3IHxijc9
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXKj0DAAoJEJ4aZjxxc6bKWUcP/ijyrLqOotVz5Eok+/kLXB3u
-i8gJbOf4G2jnwmBRatpbJIP5OFYGDtv7IeggI6N82da/vYFgN2hZgXmUJz7VQsRN
-Fx0izvDZmNHT6Nr6ciloJqec//ycPT6fBVwh4GsogORNNr99IcSRNl3JBjD2eE1Z
-XDVwt/Y23+KgvdGLL7ngFtu6tf6vAAbqU+ZcTa+LXB+JwqurApnQt1Cabljqtn+0
-oapo8iDEk6DWTEkV6FOG897dijljPDzSQARr0JeVq/XJEYcfPDIsP7I16ziyYcCt
-NFS3ndSbI+Ei1203EVY7iRwPSuk32rN3P4DQZJUWhMSPDhDhQH+VXz6NtnMwTwY7
-7zczw1qEeuEsAfmsTHJiM1Ee7VKckTrzXPqJ8XJsB03zY7ZCsiiDhmAUk/AKh2/w
-bG9R1gqSLlaJcAsWh6CVhEf7EKHH4h0SC4QcvxrScBBx0JvsARVCVnFHhWTLLzz2
-9lDM2xsUNhoOFnRdLU5ZG9hoQBLzvLm/CeGVDbZ0Xx0ybTeVFf72B5yLmp4/vyOB
-UeWEYQR0/cNywKtNwgRmK9RXoLSx83+Noh/NSAbs+MNmccmxVF10QwNoHg9AuwDm
-G26Ak2HXRsiKp3eC4Gf2BkcjhvUIVP7ez9DoJHj11A8TNJWryC208B28PrXzApLs
-fRT41n55sRXektk8zfQF
-=2HdI
+iQIcBAABCgAGBQJXKkctAAoJEF2HCgfBJntGK8EQALF2nguMgbHZhn97R61iibKx
+QDYBEnB5D+5F121F6/5NH7NRuOpWqL9Vjpth28RAz8Pcbd5Xd/RcoTlSskQdxYOq
+m+Z99u+w50OK7eoxVLFigus4gOzFnY4Pkj9BHvDhDbxjA39i0pxHK9Pyyh3FBDpd
+gH0t+hUFyY9Xx+Qq/peSx/cs3J/YXHhvZ815ikfddbCm5KEoVMeP/548279JWaU3
+lzn8pM3O3K8Z+KTaZj9HMdvwgc/ArtiYxuCAOiV6h1/kupnUAnQpMTX/RgpXhwEm
+zWCa+hkiYHgpbDlEQuZivcH8g4x613PhkhJHBxwzWMQ4YSf4eSRr78ElGpnGRA/h
+szPtW98unJ6/2Nn9MMhx7IBu/c4VzUXFsTF6ZfYj//iM0h4Lvly/Z4ZDIRgD5hXu
+OoqjmgP0JrmpjRlzbTnEY6n1YOAWkW8kUI3Ghoxh/02yl08Fbpo35ZtwTAnAJ+i7
+6hLuygMNVIOPv4m6TWomdlnrrG43DbYT7qaZCpqhI63in95UfDkz+bs7Cg5l/5Dw
+8ptu9pklnI8Xrpr0DHUoAsFURdV7zhokSCtIGFg8gobJ3EtwLBihiju9e5cu8eoI
+WjRt8prEHuPix1MxzmjD5E/++fWzrOvOWD2Qq24NNFyJm3g5aJTsIhCEsgawpt68
+EeDxsRxNp6eX2jp4SGgs
+=U0/a
 -----END PGP SIGNATURE-----
 
---SfgfV7onya2wNU+g--
+--nextPart6252019.Xf3IHxijc9--
+
