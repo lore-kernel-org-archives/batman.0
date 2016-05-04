@@ -1,11 +1,15 @@
-Return-Path: <a@unstable.cc>
-From: Antonio Quartulli <a@unstable.cc>
-Date: Wed,  4 May 2016 06:23:49 +0800
-Message-Id: <1462314230-16257-15-git-send-email-a@unstable.cc>
-In-Reply-To: <1462314230-16257-1-git-send-email-a@unstable.cc>
-References: <1462314230-16257-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 14/15] batman-adv: Merge
-	batadv_v_ogm_orig_update into batadv_v_ogm_route_update
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 04 May 2016 09:06:04 +0200
+Message-ID: <5243925.zzlkmNnEOT@bentobox>
+In-Reply-To: <20160503182442.GA26706@lunn.ch>
+References: <1462293026-24716-1-git-send-email-andrew@lunn.ch>
+ <20160503182442.GA26706@lunn.ch>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4630219.9SCC6cA8lE";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batctl: Use netlink to replace some of
+	debugfs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,174 +19,43 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, Simon Wunderlich <simon@open-mesh.com>, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Simon Wunderlich <simon@open-mesh.com>
+--nextPart4630219.9SCC6cA8lE
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Since batadv_v_ogm_orig_update() was only called from one place and the
-calling function became very short, merge these two functions together.
+On Tuesday 03 May 2016 20:24:42 Andrew Lunn wrote:
+[...]
+> Where is netlink.h missing?
 
-This should also reflect the protocol description of B.A.T.M.A.N. V
-better.
+The file is missing. Not the include. The includes fail because the file is 
+not part of the patch.
 
-Signed-off-by: Simon Wunderlich <simon@open-mesh.com>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
----
- net/batman-adv/bat_v_ogm.c | 117 ++++++++++++++++++---------------------------
- 1 file changed, 46 insertions(+), 71 deletions(-)
+Kind regards,
+	Sven
+--nextPart4630219.9SCC6cA8lE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 07c999734fba..4155fa57cf6d 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -234,73 +234,6 @@ void batadv_v_ogm_primary_iface_set(struct batadv_hard_iface *primary_iface)
- }
- 
- /**
-- * batadv_v_ogm_orig_update - update the originator status based on the received
-- *  OGM
-- * @bat_priv: the bat priv with all the soft interface information
-- * @orig_node: the originator to update
-- * @neigh_node: the neighbour the OGM has been received from (to update)
-- * @ogm2: the received OGM
-- * @if_outgoing: the interface where this OGM is going to be forwarded through
-- */
--static void
--batadv_v_ogm_orig_update(struct batadv_priv *bat_priv,
--			 struct batadv_orig_node *orig_node,
--			 struct batadv_neigh_node *neigh_node,
--			 const struct batadv_ogm2_packet *ogm2,
--			 struct batadv_hard_iface *if_outgoing)
--{
--	struct batadv_neigh_ifinfo *router_ifinfo = NULL, *neigh_ifinfo = NULL;
--	struct batadv_neigh_node *router = NULL;
--	s32 neigh_seq_diff;
--	u32 neigh_last_seqno;
--	u32 router_last_seqno;
--	u32 router_throughput, neigh_throughput;
--
--	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
--		   "Searching and updating originator entry of received packet\n");
--
--	/* if this neighbor already is our next hop there is nothing
--	 * to change
--	 */
--	router = batadv_orig_router_get(orig_node, if_outgoing);
--	if (router == neigh_node)
--		goto out;
--
--	/* don't consider neighbours with worse throughput.
--	 * also switch route if this seqno is BATADV_V_MAX_ORIGDIFF newer than
--	 * the last received seqno from our best next hop.
--	 */
--	if (router) {
--		router_ifinfo = batadv_neigh_ifinfo_get(router, if_outgoing);
--		neigh_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
--
--		/* if these are not allocated, something is wrong. */
--		if (!router_ifinfo || !neigh_ifinfo)
--			goto out;
--
--		neigh_last_seqno = neigh_ifinfo->bat_v.last_seqno;
--		router_last_seqno = router_ifinfo->bat_v.last_seqno;
--		neigh_seq_diff = neigh_last_seqno - router_last_seqno;
--		router_throughput = router_ifinfo->bat_v.throughput;
--		neigh_throughput = neigh_ifinfo->bat_v.throughput;
--
--		if ((neigh_seq_diff < BATADV_OGM_MAX_ORIGDIFF) &&
--		    (router_throughput >= neigh_throughput))
--			goto out;
--	}
--
--	batadv_update_route(bat_priv, orig_node, if_outgoing, neigh_node);
--
--out:
--	if (router_ifinfo)
--		batadv_neigh_ifinfo_put(router_ifinfo);
--	if (neigh_ifinfo)
--		batadv_neigh_ifinfo_put(neigh_ifinfo);
--	if (router)
--		batadv_neigh_node_put(router);
--}
--
--/**
-  * batadv_v_forward_penalty - apply a penalty to the throughput metric forwarded
-  *  with B.A.T.M.A.N. V OGMs
-  * @bat_priv: the bat priv with all the soft interface information
-@@ -546,6 +479,11 @@ static bool batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
- 	struct batadv_neigh_node *router = NULL;
- 	struct batadv_orig_node *orig_neigh_node = NULL;
- 	struct batadv_neigh_node *orig_neigh_router = NULL;
-+	struct batadv_neigh_ifinfo *router_ifinfo = NULL, *neigh_ifinfo = NULL;
-+	u32 router_throughput, neigh_throughput;
-+	u32 router_last_seqno;
-+	u32 neigh_last_seqno;
-+	s32 neigh_seq_diff;
- 	bool forward = false;
- 
- 	orig_neigh_node = batadv_v_ogm_orig_get(bat_priv, ethhdr->h_source);
-@@ -565,11 +503,44 @@ static bool batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
- 		goto out;
- 	}
- 
--	/* Update routes, and check if the OGM is from the best next hop */
--	batadv_v_ogm_orig_update(bat_priv, orig_node, neigh_node, ogm2,
--				 if_outgoing);
--
-+	/* Mark the OGM to be considered for forwarding, and update routes
-+	 * if needed.
-+	 */
- 	forward = true;
-+
-+	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+		   "Searching and updating originator entry of received packet\n");
-+
-+	/* if this neighbor already is our next hop there is nothing
-+	 * to change
-+	 */
-+	if (router == neigh_node)
-+		goto out;
-+
-+	/* don't consider neighbours with worse throughput.
-+	 * also switch route if this seqno is BATADV_V_MAX_ORIGDIFF newer than
-+	 * the last received seqno from our best next hop.
-+	 */
-+	if (router) {
-+		router_ifinfo = batadv_neigh_ifinfo_get(router, if_outgoing);
-+		neigh_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
-+
-+		/* if these are not allocated, something is wrong. */
-+		if (!router_ifinfo || !neigh_ifinfo)
-+			goto out;
-+
-+		neigh_last_seqno = neigh_ifinfo->bat_v.last_seqno;
-+		router_last_seqno = router_ifinfo->bat_v.last_seqno;
-+		neigh_seq_diff = neigh_last_seqno - router_last_seqno;
-+		router_throughput = router_ifinfo->bat_v.throughput;
-+		neigh_throughput = neigh_ifinfo->bat_v.throughput;
-+
-+		if ((neigh_seq_diff < BATADV_OGM_MAX_ORIGDIFF) &&
-+		    (router_throughput >= neigh_throughput))
-+			goto out;
-+	}
-+
-+	batadv_update_route(bat_priv, orig_node, if_outgoing, neigh_node);
- out:
- 	if (router)
- 		batadv_neigh_node_put(router);
-@@ -577,6 +548,10 @@ out:
- 		batadv_neigh_node_put(orig_neigh_router);
- 	if (orig_neigh_node)
- 		batadv_orig_node_put(orig_neigh_node);
-+	if (router_ifinfo)
-+		batadv_neigh_ifinfo_put(router_ifinfo);
-+	if (neigh_ifinfo)
-+		batadv_neigh_ifinfo_put(neigh_ifinfo);
- 
- 	return forward;
- }
--- 
-2.8.2
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXKZ9cAAoJEF2HCgfBJntGQ80P/iRQR5LunBxzzSplCUbb6JoF
+uSjXyqZxm5gyAc2NCX9BIBdio10nS+zIECHBDcZCpScJbvhIgHS5zZloPrWFqUTz
+rnivXqPKpyHatUlp9n3WtMFxibFVy2ycogV2QVGlqaAesw2wL2CUp9ANB9AQFnTh
+y/YTz2ECYEfbhSIKlyYAHpgWwfx+KjFHzZQLuoF7T2gQJGuUODAWY7F2VWm56UBH
+SzH043Qlt8x+uovM4HKDIH500J3YlOZJ+D3rUaZWLhPI4lZC41jZYfrb4iEfQCq3
+16hriNn66orKe0HJz0SQLzA5UKVUIeKFQfTNcydJxkMpCNvCWdaFklZ1yz2WoVEf
+UcJmHbluY4j39LanlyDREi/MVdwtS5sNemOHHID5w2VGGubZZyqR2ceJg1cKwFg6
+VrHpmFcXYj36BwfsBU7Q7gX2uF/uefOcjm7z9FYucYo6HmcZG5ew2PIrXV9VtO/R
+YOlqpjdDxesrlmNrWw1F5hbcFZUujHgjWi22adEiJEQQ9g8Qcw9PvkhPrCjyTnDF
+09iqaG1001bIw6Mslvm+CAu+VZg+2T4hJp9eoZ4jGC149Zgtr9i6IKTNKMjjlfnZ
+z6chIP9QjgvNqAclQrBbH0ulhfRjSkU0w5NFdnXcswYu/yNPMiRbbSqHTx3N5+/V
+lUPzSbrCsRaipsXRGJM/
+=Q6Uu
+-----END PGP SIGNATURE-----
+
+--nextPart4630219.9SCC6cA8lE--
 
