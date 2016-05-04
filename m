@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@open-mesh.com>
 From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-Date: Wed,  4 May 2016 21:06:29 +0200
-Message-Id: <1462388793-8365-1-git-send-email-sven@open-mesh.com>
+Date: Wed,  4 May 2016 21:06:31 +0200
+Message-Id: <1462388793-8365-3-git-send-email-sven@open-mesh.com>
 In-Reply-To: <4642303.DsCp7UQf8m@bentobox>
 References: <4642303.DsCp7UQf8m@bentobox>
-Subject: [B.A.T.M.A.N.] [PATCH v4 1/5] batman-adv: Add stripped down version
-	of MAINTAINERS file
+Subject: [B.A.T.M.A.N.] [PATCH v4 3/5] batman-adv: add netlink command to
+	query generic mesh information files
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,37 +18,247 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 
-From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+From: Matthias Schiffer <mschiffer@universe-factory.net>
 
-The MAINTAINERS file has to modified from time to time when either some
-URLs change or some new files are added. These changes can easily be lost
-when they actually should be part of a change adding/deleting a file.
+BATADV_CMD_GET_MESH_INFO is used to query basic information about a
+batman-adv softif (name, index and MAC address for both the softif and
+the primary hardif; routing algorithm; batman-adv version).
 
-Reported-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+[sven.eckelmann@open-mesh.com: Reduce the number of changes to
+BATADV_CMD_GET_MESH_INFO, add missing kerneldoc, add policy for attributes]
 Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 ---
- MAINTAINERS | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
- create mode 100644 MAINTAINERS
+ compat.h                        |   6 ++
+ include/uapi/linux/batman_adv.h |  18 ++++++
+ net/batman-adv/netlink.c        | 135 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 159 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-new file mode 100644
-index 0000000..7e47274
---- /dev/null
-+++ b/MAINTAINERS
-@@ -0,0 +1,12 @@
-+BATMAN ADVANCED
-+M:	Marek Lindner <mareklindner@neomailbox.ch>
-+M:	Simon Wunderlich <sw@simonwunderlich.de>
-+M:	Antonio Quartulli <a@unstable.cc>
-+L:	b.a.t.m.a.n@lists.open-mesh.org (moderated for non-subscribers)
-+W:	https://www.open-mesh.org/
-+Q:	https://patchwork.open-mesh.org/project/batman/list/
-+S:	Maintained
-+F:	Documentation/ABI/testing/sysfs-class-net-batman-adv
-+F:	Documentation/ABI/testing/sysfs-class-net-mesh
-+F:	Documentation/networking/batman-adv.txt
-+F:	net/batman-adv/
+diff --git a/compat.h b/compat.h
+index 5a5f478..7d5c8b6 100644
+--- a/compat.h
++++ b/compat.h
+@@ -62,6 +62,12 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
+ 
+ #endif /* < KERNEL_VERSION(3, 3, 0) */
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0)
++
++#define snd_portid snd_pid
++
++#endif /* < KERNEL_VERSION(3, 7, 0) */
++
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
+ 
+ #define batadv_interface_set_mac_addr(x, y) \
+diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
+index ba611a7..a908140 100644
+--- a/include/uapi/linux/batman_adv.h
++++ b/include/uapi/linux/batman_adv.h
+@@ -24,12 +24,28 @@
+  * enum batadv_nl_attrs - batman-adv netlink attributes
+  *
+  * @BATADV_ATTR_UNSPEC: unspecified attribute to catch errors
++ * @BATADV_ATTR_VERSION: batman-adv version string
++ * @BATADV_ATTR_ALGO_NAME: name of routing algorithm
++ * @BATADV_ATTR_MESH_IFINDEX: index of the batman-adv interface
++ * @BATADV_ATTR_MESH_IFNAME: name of the batman-adv interface
++ * @BATADV_ATTR_MESH_ADDRESS: mac address of the batman-adv interface
++ * @BATADV_ATTR_HARD_IFINDEX: index of the non-batman-adv interface
++ * @BATADV_ATTR_HARD_IFNAME: name of the non-batman-adv interface
++ * @BATADV_ATTR_HARD_ADDRESS: mac address of the non-batman-adv interface
+  * @__BATADV_ATTR_AFTER_LAST: internal use
+  * @NUM_BATADV_ATTR: total number of batadv_nl_attrs available
+  * @BATADV_ATTR_MAX: highest attribute number currently defined
+  */
+ enum batadv_nl_attrs {
+ 	BATADV_ATTR_UNSPEC,
++	BATADV_ATTR_VERSION,
++	BATADV_ATTR_ALGO_NAME,
++	BATADV_ATTR_MESH_IFINDEX,
++	BATADV_ATTR_MESH_IFNAME,
++	BATADV_ATTR_MESH_ADDRESS,
++	BATADV_ATTR_HARD_IFINDEX,
++	BATADV_ATTR_HARD_IFNAME,
++	BATADV_ATTR_HARD_ADDRESS,
+ 	/* add attributes above here, update the policy in netlink.c */
+ 	__BATADV_ATTR_AFTER_LAST,
+ 	NUM_BATADV_ATTR = __BATADV_ATTR_AFTER_LAST,
+@@ -40,11 +56,13 @@ enum batadv_nl_attrs {
+  * enum batadv_nl_commands - supported batman-adv netlink commands
+  *
+  * @BATADV_CMD_UNSPEC: unspecified command to catch errors
++ * @BATADV_CMD_GET_MESH_INFO: Query basic information about batman-adv device
+  * @__BATADV_CMD_AFTER_LAST: internal use
+  * @BATADV_CMD_MAX: highest used command number
+  */
+ enum batadv_nl_commands {
+ 	BATADV_CMD_UNSPEC,
++	BATADV_CMD_GET_MESH_INFO,
+ 	/* add new commands above here */
+ 	__BATADV_CMD_AFTER_LAST,
+ 	BATADV_CMD_MAX = __BATADV_CMD_AFTER_LAST - 1
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index af3e87e..568523c 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -18,12 +18,24 @@
+ #include "main.h"
+ #include "netlink.h"
+ 
++#include <linux/errno.h>
++#include <linux/fs.h>
+ #include <linux/genetlink.h>
++#include <linux/if_ether.h>
+ #include <linux/init.h>
++#include <linux/netdevice.h>
++#include <linux/netlink.h>
++#include <linux/stddef.h>
+ #include <linux/printk.h>
+ #include <net/genetlink.h>
++#include <net/netlink.h>
+ #include <uapi/linux/batman_adv.h>
+ 
++#include "hard-interface.h"
++#include "soft-interface.h"
++
++struct sk_buff;
++
+ static struct genl_family batadv_netlink_family = {
+ 	.id = GENL_ID_GENERATE,
+ 	.hdrsize = 0,
+@@ -32,7 +44,130 @@ static struct genl_family batadv_netlink_family = {
+ 	.maxattr = BATADV_ATTR_MAX,
+ };
+ 
++static struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
++	[BATADV_ATTR_VERSION]		= { .type = NLA_STRING },
++	[BATADV_ATTR_ALGO_NAME]		= { .type = NLA_STRING },
++	[BATADV_ATTR_MESH_IFINDEX]	= { .type = NLA_U32 },
++	[BATADV_ATTR_MESH_IFNAME]	= { .type = NLA_STRING },
++	[BATADV_ATTR_MESH_ADDRESS]	= { .len = ETH_ALEN },
++	[BATADV_ATTR_HARD_IFINDEX]	= { .type = NLA_U32 },
++	[BATADV_ATTR_HARD_IFNAME]	= { .type = NLA_STRING },
++	[BATADV_ATTR_HARD_ADDRESS]	= { .len = ETH_ALEN },
++};
++
++/**
++ * batadv_netlink_mesh_info_put - Fill generic information about mesh interface
++ * @msg: netlink message to be sent back
++ * @soft_iface: interface for which the data should be taken
++ *
++ *  Return: 0 on success, < 0 on error
++ */
++static int
++batadv_netlink_mesh_info_put(struct sk_buff *msg, struct net_device *soft_iface)
++{
++	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
++	struct batadv_hard_iface *primary_if = NULL;
++	struct net_device *hard_iface;
++	int ret = -ENOBUFS;
++
++	if (nla_put_string(msg, BATADV_ATTR_VERSION, BATADV_SOURCE_VERSION) ||
++	    nla_put_string(msg, BATADV_ATTR_ALGO_NAME,
++			   bat_priv->bat_algo_ops->name) ||
++	    nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, soft_iface->ifindex) ||
++	    nla_put_string(msg, BATADV_ATTR_MESH_IFNAME, soft_iface->name) ||
++	    nla_put(msg, BATADV_ATTR_MESH_ADDRESS, ETH_ALEN,
++		    soft_iface->dev_addr))
++		goto out;
++
++	primary_if = batadv_primary_if_get_selected(bat_priv);
++	if (primary_if && primary_if->if_status == BATADV_IF_ACTIVE) {
++		hard_iface = primary_if->net_dev;
++
++		if (nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
++				hard_iface->ifindex) ||
++		    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
++				   hard_iface->name) ||
++		    nla_put(msg, BATADV_ATTR_HARD_ADDRESS, ETH_ALEN,
++			    hard_iface->dev_addr))
++			goto out;
++	}
++
++	ret = 0;
++
++ out:
++	if (primary_if)
++		batadv_hardif_put(primary_if);
++
++	return ret;
++}
++
++/**
++ * batadv_netlink_mesh_info_put - Handle BATADV_CMD_GET_MESH_INFO
++ * @skb: received netlink message
++ * @info: receiver information
++ *
++ * Return: 0 on success, < 0 on error
++ */
++static int
++batadv_netlink_get_mesh_info(struct sk_buff *skb, struct genl_info *info)
++{
++	struct net *net = genl_info_net(info);
++	struct net_device *soft_iface;
++	struct sk_buff *msg = NULL;
++	void *msg_head;
++	int ifindex;
++	int ret;
++
++	if (!info->attrs[BATADV_ATTR_MESH_IFINDEX])
++		return -EINVAL;
++
++	ifindex = nla_get_u32(info->attrs[BATADV_ATTR_MESH_IFINDEX]);
++	if (!ifindex)
++		return -EINVAL;
++
++	soft_iface = dev_get_by_index(net, ifindex);
++	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
++		ret = -ENODEV;
++		goto out;
++	}
++
++	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
++	if (!msg) {
++		ret = -ENOMEM;
++		goto out;
++	}
++
++	msg_head = genlmsg_put(msg, info->snd_portid, info->snd_seq,
++			       &batadv_netlink_family, 0,
++			       BATADV_CMD_GET_MESH_INFO);
++	if (!msg_head) {
++		ret = -ENOBUFS;
++		goto out;
++	}
++
++	ret = batadv_netlink_mesh_info_put(msg, soft_iface);
++
++ out:
++	if (soft_iface)
++		dev_put(soft_iface);
++
++	if (ret) {
++		if (msg)
++			nlmsg_free(msg);
++		return ret;
++	}
++
++	genlmsg_end(msg, msg_head);
++	return genlmsg_reply(msg, info);
++}
++
+ static struct genl_ops batadv_netlink_ops[] = {
++	{
++		.cmd = BATADV_CMD_GET_MESH_INFO,
++		.flags = GENL_ADMIN_PERM,
++		.policy = batadv_netlink_policy,
++		.doit = batadv_netlink_get_mesh_info,
++	},
+ };
+ 
+ /**
 -- 
 2.8.1
 
