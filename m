@@ -1,16 +1,15 @@
-Return-Path: <a@unstable.cc>
-Date: Thu, 5 May 2016 01:20:42 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160504172042.GH11201@prodigo.lan>
-References: <1462285862-30946-1-git-send-email-fw@strlen.de>
- <1462285994-31983-1-git-send-email-fw@strlen.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="hEk4XxIzAisM6naS"
-Content-Disposition: inline
-In-Reply-To: <1462285994-31983-1-git-send-email-fw@strlen.de>
-Subject: Re: [B.A.T.M.A.N.] [PATCH net-next 4/5] treewide: replace
- dev->trans_start update with helper
+Return-Path: <davem@davemloft.net>
+Date: Wed, 04 May 2016 14:13:50 -0400 (EDT)
+Message-Id: <20160504.141350.1935086155659300721.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20160503.123330.1810855853724486551.davem@davemloft.net>
+References: <20160503.001813.1881857417530292443.davem@davemloft.net>
+ <20160503144229.GD11201@prodigo.lan>
+ <20160503.123330.1810855853724486551.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request [net]: batman-adv 20160430
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,93 +19,20 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Florian Westphal <fw@strlen.de>
-Cc: devel@driverdev.osuosl.org, linux-xtensa@linux-xtensa.org, linux-omap@vger.kernel.org, linux-scsi@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, linux-s390@vger.kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, linux-can@vger.kernel.org, linux-bluetooth@vger.kernel.org, linux-parisc@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-hams@vger.kernel.org, linux1394-devel@lists.sourceforge.net, MPT-FusionLinux.pdl@broadcom.com
+To: a@unstable.cc
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
+From: David Miller <davem@davemloft.net>
+Date: Tue, 03 May 2016 12:33:30 -0400 (EDT)
 
---hEk4XxIzAisM6naS
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> From: Antonio Quartulli <a@unstable.cc>
+> Date: Tue, 3 May 2016 22:42:29 +0800
+> 
+>> Do you have any plan on merging net into net-next in the following days ?
+>> 
+>> I am asking because I'd prefer to avoid you the hassle of dealing with the
+>> conflicts.
+> 
+> I'll try to do this in the next few days.
 
-On Tue, May 03, 2016 at 04:33:13PM +0200, Florian Westphal wrote:
-> Replace all trans_start updates with netif_trans_update helper.
-> change was done via spatch:
->=20
-> struct net_device *d;
-> @@
-> - d->trans_start =3D jiffies
-> + netif_trans_update(d)
->=20
-> Compile tested only.
->=20
-> Cc: user-mode-linux-devel@lists.sourceforge.net
-> Cc: linux-xtensa@linux-xtensa.org
-> Cc: linux1394-devel@lists.sourceforge.net
-> Cc: linux-rdma@vger.kernel.org
-> Cc: netdev@vger.kernel.org
-> Cc: MPT-FusionLinux.pdl@broadcom.com
-> Cc: linux-scsi@vger.kernel.org
-> Cc: linux-can@vger.kernel.org
-> Cc: linux-parisc@vger.kernel.org
-> Cc: linux-omap@vger.kernel.org
-> Cc: linux-hams@vger.kernel.org
-> Cc: linux-usb@vger.kernel.org
-> Cc: linux-wireless@vger.kernel.org
-> Cc: linux-s390@vger.kernel.org
-> Cc: devel@driverdev.osuosl.org
-> Cc: b.a.t.m.a.n@lists.open-mesh.org
-> Cc: linux-bluetooth@vger.kernel.org
-> Signed-off-by: Florian Westphal <fw@strlen.de>
-> ---
-
-[...]
-
->  net/batman-adv/soft-interface.c                        | 2 +-
-
-[...]
-
-> diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interf=
-ace.c
-> index 0710379..bae1397 100644
-> --- a/net/batman-adv/soft-interface.c
-> +++ b/net/batman-adv/soft-interface.c
-> @@ -208,7 +208,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
->  	if (atomic_read(&bat_priv->mesh_state) !=3D BATADV_MESH_ACTIVE)
->  		goto dropped;
-> =20
-> -	soft_iface->trans_start =3D jiffies;
-> +	netif_trans_update(soft_iface);
->  	vid =3D batadv_get_vid(skb, 0);
->  	ethhdr =3D eth_hdr(skb);
-> =20
-
-
-Acked-by: Antonio Quartulli <a@unstable.cc>
-
---=20
-Antonio Quartulli
-
---hEk4XxIzAisM6naS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXKi9qAAoJEJ4aZjxxc6bKdy0QAKpnm2haE6oZ01LtxQu1VfKB
-Qer6rc7it+otFT8jIMkZ3Be9sL2++PZyMSivw0YZRQBHwv4vsauG8HeXUmnFGS9r
-rTGv5P9Z0R1TrDTlZBXH0Pui6GIWlyKkxpRqqVu4q/xHmWH8Y2yLUXi/0BA5xB6L
-3EPPoN/WyiCdZ/NGY8WJbuyF3H+UD0s8/YXLWbOGdzxZ4UgAJp5WPVr1QdvZ4Cl7
-kqnB2g/KvHc6ruY9viT21FDjEdWvxTZlKYGbLJAQNyuM1IunThZQ/fOM82Rdtnj6
-u46FixCz2AbHVnBZht+ODlnrypKj3jBdEXu1/YclguwBHzSnwdF2M7Wswpx38VZN
-zkArU7t5LIZfiGqNpwXL0A7jovBRqI6FDJrynTKqJFjNTA/IZHwzZcWErXXp/4En
-xD/9GPLK/Lr1dUY7vteYvIjzTq3YUfPsiRsMvdyhHlDU/KJWYPrJIjotjJgXCdcT
-sLyCSGpSATmyZGhQW6BEkr3rm3y1fSOxQSD2Jmyv6sBXwaGSBpQzSalTgezUQjKm
-GpARsJONS/PpV0PbIt660Of7OikWXgDOTR6z2Oe8tPt55D+UKoUHlfQU83dPm6m1
-VW+3QZx2xue3jH05I8BeX6SKBVrtQfRh1nVi6xhkWgHaVahuh9BLgcPh2copDt/3
-UB23coo6jv90cnkJg5FC
-=6q9+
------END PGP SIGNATURE-----
-
---hEk4XxIzAisM6naS--
+Just FYI I did this last night.
