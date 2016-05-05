@@ -1,15 +1,9 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 06 May 2016 01:38:57 +0800
-Message-ID: <6956681.0eiG27MfpC@voltaire>
-In-Reply-To: <1462464426-13014-4-git-send-email-linus.luessing@c0d3.blue>
-References: <1462464426-13014-1-git-send-email-linus.luessing@c0d3.blue>
- <1462464426-13014-4-git-send-email-linus.luessing@c0d3.blue>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1842276.EoH0HCiBHi";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv14 3/4] batman-adv: Adding logging of
-	mcast flag changes
+Return-Path: <a@unstable.cc>
+From: Antonio Quartulli <a@unstable.cc>
+Date: Fri,  6 May 2016 02:46:37 +0800
+Message-Id: <1462474003-25279-1-git-send-email-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] [PATCH 1/7] batman-adv: remove useless inline
+	attribute for sysfs helper function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,64 +13,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>, mareklindner@neomailbox.ch
 
---nextPart1842276.EoH0HCiBHi
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+the compiler can optimize functions within the same C file and therefore
+there is no need to make it explicit.
 
-On Thursday, May 05, 2016 17:07:04 Linus L=FCssing wrote:
-> +       querier4.exists =3D br_multicast_has_querier_anywhere(dev, ET=
-H_P_IP);
-> +       querier4.shadowing =3D br_multicast_has_querier_adjacent(dev,=
+Remove the useless inline attribute for __batadv_store_uint_attr()
 
-> ETH_P_IP); +
-> +       querier6.exists =3D br_multicast_has_querier_anywhere(dev,
-> ETH_P_IPV6); +       querier6.shadowing =3D
-> br_multicast_has_querier_adjacent(dev, ETH_P_IPV6); +
->         mcast_data.flags |=3D BATADV_MCAST_WANT_ALL_UNSNOOPABLES;
-> =20
->         /* 1) If no querier exists at all, then multicast listeners o=
-n
-> @@ -369,17 +494,26 @@ static bool batadv_mcast_mla_tvlv_update(struct=
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
+---
+ net/batman-adv/sysfs.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-> batadv_priv *bat_priv) * In both cases, we will signalize other batma=
-n
-> nodes that * we need all multicast traffic of the according protocol.=
- */
-> -       if (!br_multicast_has_querier_anywhere(dev, ETH_P_IP) ||
-> -           br_multicast_has_querier_adjacent(dev, ETH_P_IP))
-> +       if (!querier4.exists || querier4.shadowing)
->                 mcast_data.flags |=3D BATADV_MCAST_WANT_ALL_IPV4;
-> =20
-> -       if (!br_multicast_has_querier_anywhere(dev, ETH_P_IPV6) ||
-> -           br_multicast_has_querier_adjacent(dev, ETH_P_IPV6))
-> +       if (!querier6.exists || querier6.shadowing)
->                 mcast_data.flags |=3D BATADV_MCAST_WANT_ALL_IPV6;
-
-Please move these variable assignments into your previous patch that=20=
-
-introduces this section.
-
-Thanks,
-Marek
-
---nextPart1842276.EoH0HCiBHi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJXK4UyAAoJEFNVTo/uthzAYlIIAJWAqEpovBcZJdPE6XKjojzp
-MIBHPLVpagblVOoIISAgevABk8ZF5vwVIQuKyfgjDOiQLQxPwWGFbgPJOTXnz3Ac
-ApJaIbtsmukzliuetiLhSQUatqjUwSt0mnnHWlDMpCwIjCHXUPvYoMNnh6EqPBfY
-PNWgNvfi/orDN4KXu4QsTvic5IIHVcyFCAQ4X8vE/nHt4bTHHqhczwxIv5awV33M
-mbwzp/JIX8L5L+NLfZrdz1cqXaAGjCd8Z8Mjrh0bngFEJQQYaMGA3DBz1DVxhbxv
-VnxuCkgV2FkYsFdiIJ1EEaGjFZnXII3V5qh5CIxUMXSE16D2itMGmydG1tXF/Z4=
-=tUYo
------END PGP SIGNATURE-----
-
---nextPart1842276.EoH0HCiBHi--
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index 414b207..b99ea80 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -389,12 +389,12 @@ static int batadv_store_uint_attr(const char *buff, size_t count,
+ 	return count;
+ }
+ 
+-static inline ssize_t
+-__batadv_store_uint_attr(const char *buff, size_t count,
+-			 int min, int max,
+-			 void (*post_func)(struct net_device *),
+-			 const struct attribute *attr,
+-			 atomic_t *attr_store, struct net_device *net_dev)
++static ssize_t __batadv_store_uint_attr(const char *buff, size_t count, int min,
++					int max,
++					void (*post_func)(struct net_device *),
++					const struct attribute *attr,
++					atomic_t *attr_store,
++					struct net_device *net_dev)
+ {
+ 	int ret;
+ 
+-- 
+2.8.2
 
