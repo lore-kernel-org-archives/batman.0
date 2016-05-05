@@ -1,11 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Fri,  6 May 2016 02:46:40 +0800
-Message-Id: <1462474003-25279-4-git-send-email-a@unstable.cc>
+Date: Fri,  6 May 2016 02:46:42 +0800
+Message-Id: <1462474003-25279-6-git-send-email-a@unstable.cc>
 In-Reply-To: <1462474003-25279-1-git-send-email-a@unstable.cc>
 References: <1462474003-25279-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 4/7] batman-adv: split routing API data
-	structure in subobjects
+Subject: [B.A.T.M.A.N.] [PATCH 6/7] batman-adv: make GW election code
+	protocol specific
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,463 +18,600 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <a@unstable.cc>, mareklindner@neomailbox.ch
 
-The routing API data structure contains several function
-pointers that can easily be grouped together based on the
-component they work with.
+Each routing protocol may have its own specific logic about
+gateway election which is potentially based on the metric being
+used.
 
-Split the API in subobjects in order to improve definition readability.
+Create two GW specific API functions and move the current election
+logic in the B.A.T.M.A.N. IV specific code.
 
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/bat_iv_ogm.c        | 32 ++++++++-------
- net/batman-adv/bat_v.c             | 26 ++++++++-----
- net/batman-adv/gateway_client.c    |  8 ++--
- net/batman-adv/hard-interface.c    | 16 ++++----
- net/batman-adv/main.c              | 12 +++---
- net/batman-adv/originator.c        | 30 +++++++-------
- net/batman-adv/routing.c           |  2 +-
- net/batman-adv/translation-table.c |  2 +-
- net/batman-adv/types.h             | 80 +++++++++++++++++++++-----------------
- 9 files changed, 114 insertions(+), 94 deletions(-)
+ net/batman-adv/bat_iv_ogm.c     | 219 ++++++++++++++++++++++++++++++++++++++++
+ net/batman-adv/gateway_client.c | 210 ++++----------------------------------
+ net/batman-adv/gateway_client.h |   3 +
+ net/batman-adv/gateway_common.c |   5 +-
+ net/batman-adv/types.h          |   7 ++
+ 5 files changed, 252 insertions(+), 192 deletions(-)
 
 diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 67bdba1..f2db86b 100644
+index f2db86b..b995c66 100644
 --- a/net/batman-adv/bat_iv_ogm.c
 +++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1849,7 +1849,7 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
- 	/* did we receive a B.A.T.M.A.N. IV OGM packet on an interface
- 	 * that does not have B.A.T.M.A.N. IV enabled ?
- 	 */
--	if (bat_priv->bat_algo_ops->bat_iface_enable !=
-+	if (bat_priv->bat_algo_ops->iface.bat_enable !=
- 	    batadv_iv_ogm_iface_enable)
- 		return NET_RX_DROP;
+@@ -49,6 +49,7 @@
+ #include <linux/workqueue.h>
  
-@@ -2116,18 +2116,24 @@ static void batadv_iv_iface_activate(struct batadv_hard_iface *hard_iface)
+ #include "bitarray.h"
++#include "gateway_client.h"
+ #include "hard-interface.h"
+ #include "hash.h"
+ #include "network-coding.h"
+@@ -2114,6 +2115,219 @@ static void batadv_iv_iface_activate(struct batadv_hard_iface *hard_iface)
+ 	batadv_iv_ogm_schedule(hard_iface);
+ }
  
++static struct batadv_gw_node *
++batadv_iv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
++{
++	struct batadv_neigh_node *router;
++	struct batadv_neigh_ifinfo *router_ifinfo;
++	struct batadv_gw_node *gw_node, *curr_gw = NULL;
++	u64 max_gw_factor = 0;
++	u64 tmp_gw_factor = 0;
++	u8 max_tq = 0;
++	u8 tq_avg;
++	struct batadv_orig_node *orig_node;
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
++		orig_node = gw_node->orig_node;
++		router = batadv_orig_router_get(orig_node, BATADV_IF_DEFAULT);
++		if (!router)
++			continue;
++
++		router_ifinfo = batadv_neigh_ifinfo_get(router,
++							BATADV_IF_DEFAULT);
++		if (!router_ifinfo)
++			goto next;
++
++		if (!kref_get_unless_zero(&gw_node->refcount))
++			goto next;
++
++		tq_avg = router_ifinfo->bat_iv.tq_avg;
++
++		switch (atomic_read(&bat_priv->gw.sel_class)) {
++		case 1: /* fast connection */
++			tmp_gw_factor = tq_avg * tq_avg;
++			tmp_gw_factor *= gw_node->bandwidth_down;
++			tmp_gw_factor *= 100 * 100;
++			tmp_gw_factor >>= 18;
++
++			if ((tmp_gw_factor > max_gw_factor) ||
++			    ((tmp_gw_factor == max_gw_factor) &&
++			     (tq_avg > max_tq))) {
++				if (curr_gw)
++					batadv_gw_node_put(curr_gw);
++				curr_gw = gw_node;
++				kref_get(&curr_gw->refcount);
++			}
++			break;
++
++		default: /* 2:  stable connection (use best statistic)
++			  * 3:  fast-switch (use best statistic but change as
++			  *     soon as a better gateway appears)
++			  * XX: late-switch (use best statistic but change as
++			  *     soon as a better gateway appears which has
++			  *     $routing_class more tq points)
++			  */
++			if (tq_avg > max_tq) {
++				if (curr_gw)
++					batadv_gw_node_put(curr_gw);
++				curr_gw = gw_node;
++				kref_get(&curr_gw->refcount);
++			}
++			break;
++		}
++
++		if (tq_avg > max_tq)
++			max_tq = tq_avg;
++
++		if (tmp_gw_factor > max_gw_factor)
++			max_gw_factor = tmp_gw_factor;
++
++		batadv_gw_node_put(gw_node);
++
++next:
++		batadv_neigh_node_put(router);
++		if (router_ifinfo)
++			batadv_neigh_ifinfo_put(router_ifinfo);
++	}
++	rcu_read_unlock();
++
++	return curr_gw;
++}
++
++static bool batadv_iv_gw_is_eligible(struct batadv_priv *bat_priv,
++				     struct batadv_orig_node *curr_gw_orig,
++				     struct batadv_orig_node *orig_node)
++{
++	struct batadv_neigh_ifinfo *router_orig_ifinfo = NULL;
++	struct batadv_neigh_ifinfo *router_gw_ifinfo = NULL;
++	struct batadv_neigh_node *router_gw = NULL;
++	struct batadv_neigh_node *router_orig = NULL;
++	u8 gw_tq_avg, orig_tq_avg;
++	bool ret = false;
++
++	/* dynamic re-election is performed only on fast or late switch */
++	if (atomic_read(&bat_priv->gw.sel_class) <= 2)
++		return false;
++
++	router_gw = batadv_orig_router_get(curr_gw_orig, BATADV_IF_DEFAULT);
++	if (!router_gw) {
++		ret = true;
++		goto out;
++	}
++
++	router_gw_ifinfo = batadv_neigh_ifinfo_get(router_gw,
++						   BATADV_IF_DEFAULT);
++	if (!router_gw_ifinfo) {
++		ret = true;
++		goto out;
++	}
++
++	router_orig = batadv_orig_router_get(orig_node, BATADV_IF_DEFAULT);
++	if (!router_orig)
++		goto out;
++
++	router_orig_ifinfo = batadv_neigh_ifinfo_get(router_orig,
++						     BATADV_IF_DEFAULT);
++	if (!router_orig_ifinfo)
++		goto out;
++
++	gw_tq_avg = router_gw_ifinfo->bat_iv.tq_avg;
++	orig_tq_avg = router_orig_ifinfo->bat_iv.tq_avg;
++
++	/* the TQ value has to be better */
++	if (orig_tq_avg < gw_tq_avg)
++		goto out;
++
++	/* if the routing class is greater than 3 the value tells us how much
++	 * greater the TQ value of the new gateway must be
++	 */
++	if ((atomic_read(&bat_priv->gw.sel_class) > 3) &&
++	    (orig_tq_avg - gw_tq_avg < atomic_read(&bat_priv->gw.sel_class)))
++		goto out;
++
++	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
++		   "Restarting gateway selection: better gateway found (tq curr: %i, tq new: %i)\n",
++		   gw_tq_avg, orig_tq_avg);
++
++	ret = true;
++out:
++	if (router_gw_ifinfo)
++		batadv_neigh_ifinfo_put(router_gw_ifinfo);
++	if (router_orig_ifinfo)
++		batadv_neigh_ifinfo_put(router_orig_ifinfo);
++	if (router_gw)
++		batadv_neigh_node_put(router_gw);
++	if (router_orig)
++		batadv_neigh_node_put(router_orig);
++
++	return ret;
++}
++
++/* fails if orig_node has no router */
++static int batadv_iv_gw_write_buffer_text(struct batadv_priv *bat_priv,
++					  struct seq_file *seq,
++					  const struct batadv_gw_node *gw_node)
++{
++	struct batadv_gw_node *curr_gw;
++	struct batadv_neigh_node *router;
++	struct batadv_neigh_ifinfo *router_ifinfo = NULL;
++	int ret = -1;
++
++	router = batadv_orig_router_get(gw_node->orig_node, BATADV_IF_DEFAULT);
++	if (!router)
++		goto out;
++
++	router_ifinfo = batadv_neigh_ifinfo_get(router, BATADV_IF_DEFAULT);
++	if (!router_ifinfo)
++		goto out;
++
++	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
++
++	seq_printf(seq, "%s %pM (%3i) %pM [%10s]: %u.%u/%u.%u MBit\n",
++		   (curr_gw == gw_node ? "=>" : "  "),
++		   gw_node->orig_node->orig,
++		   router_ifinfo->bat_iv.tq_avg, router->addr,
++		   router->if_incoming->net_dev->name,
++		   gw_node->bandwidth_down / 10,
++		   gw_node->bandwidth_down % 10,
++		   gw_node->bandwidth_up / 10,
++		   gw_node->bandwidth_up % 10);
++	ret = seq_has_overflowed(seq) ? -1 : 0;
++
++	if (curr_gw)
++		batadv_gw_node_put(curr_gw);
++out:
++	if (router_ifinfo)
++		batadv_neigh_ifinfo_put(router_ifinfo);
++	if (router)
++		batadv_neigh_node_put(router);
++	return ret;
++}
++
++static void batadv_iv_gw_print(struct batadv_priv *bat_priv,
++			       struct seq_file *seq)
++{
++	struct batadv_gw_node *gw_node;
++	int gw_count = 0;
++
++	seq_printf(seq,
++		   "      Gateway      (#/255)           Nexthop [outgoingIF]: advertised uplink bandwidth\n");
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
++		/* fails if orig_node has no router */
++		if (batadv_iv_gw_write_buffer_text(bat_priv, seq, gw_node) < 0)
++			continue;
++
++		gw_count++;
++	}
++	rcu_read_unlock();
++
++	if (gw_count == 0)
++		seq_puts(seq, "No gateways in range ...\n");
++}
++
  static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
  	.name = "BATMAN_IV",
--	.bat_iface_activate = batadv_iv_iface_activate,
--	.bat_iface_enable = batadv_iv_ogm_iface_enable,
--	.bat_iface_disable = batadv_iv_ogm_iface_disable,
--	.bat_iface_update_mac = batadv_iv_ogm_iface_update_mac,
--	.bat_primary_iface_set = batadv_iv_ogm_primary_iface_set,
--	.bat_neigh_cmp = batadv_iv_ogm_neigh_cmp,
--	.bat_neigh_is_similar_or_better = batadv_iv_ogm_neigh_is_sob,
--	.bat_neigh_print = batadv_iv_neigh_print,
--	.bat_orig_print = batadv_iv_ogm_orig_print,
--	.bat_orig_free = batadv_iv_ogm_orig_free,
--	.bat_orig_add_if = batadv_iv_ogm_orig_add_if,
--	.bat_orig_del_if = batadv_iv_ogm_orig_del_if,
-+	.iface = {
-+		.bat_activate = batadv_iv_iface_activate,
-+		.bat_enable = batadv_iv_ogm_iface_enable,
-+		.bat_disable = batadv_iv_ogm_iface_disable,
-+		.bat_update_mac = batadv_iv_ogm_iface_update_mac,
-+		.bat_primary_set = batadv_iv_ogm_primary_iface_set,
-+	},
-+	.neigh = {
-+		.bat_cmp = batadv_iv_ogm_neigh_cmp,
-+		.bat_is_similar_or_better = batadv_iv_ogm_neigh_is_sob,
-+		.bat_print = batadv_iv_neigh_print,
-+	},
-+	.orig = {
-+		.bat_print = batadv_iv_ogm_orig_print,
-+		.bat_free = batadv_iv_ogm_orig_free,
-+		.bat_add_if = batadv_iv_ogm_orig_add_if,
-+		.bat_del_if = batadv_iv_ogm_orig_del_if,
+ 	.iface = {
+@@ -2134,6 +2348,11 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
+ 		.bat_add_if = batadv_iv_ogm_orig_add_if,
+ 		.bat_del_if = batadv_iv_ogm_orig_del_if,
+ 	},
++	.gw = {
++		.bat_get_best_gw_node = batadv_iv_gw_get_best_gw_node,
++		.bat_is_eligible = batadv_iv_gw_is_eligible,
++		.bat_print = batadv_iv_gw_print,
 +	},
  };
  
  int __init batadv_iv_init(void)
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 932cd56..c6e4bf3 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -322,16 +322,22 @@ static ssize_t batadv_v_show_sel_class(struct batadv_priv *bat_priv, char *buff)
- 
- static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.name = "BATMAN_V",
--	.bat_iface_activate = batadv_v_iface_activate,
--	.bat_iface_enable = batadv_v_iface_enable,
--	.bat_iface_disable = batadv_v_iface_disable,
--	.bat_iface_update_mac = batadv_v_iface_update_mac,
--	.bat_primary_iface_set = batadv_v_primary_iface_set,
--	.bat_hardif_neigh_init = batadv_v_hardif_neigh_init,
--	.bat_orig_print = batadv_v_orig_print,
--	.bat_neigh_cmp = batadv_v_neigh_cmp,
--	.bat_neigh_is_similar_or_better = batadv_v_neigh_is_sob,
--	.bat_neigh_print = batadv_v_neigh_print,
-+	.iface = {
-+		.bat_activate = batadv_v_iface_activate,
-+		.bat_enable = batadv_v_iface_enable,
-+		.bat_disable = batadv_v_iface_disable,
-+		.bat_update_mac = batadv_v_iface_update_mac,
-+		.bat_primary_set = batadv_v_primary_iface_set,
-+	},
-+	.neigh = {
-+		.bat_hardif_init = batadv_v_hardif_neigh_init,
-+		.bat_cmp = batadv_v_neigh_cmp,
-+		.bat_is_similar_or_better = batadv_v_neigh_is_sob,
-+		.bat_print = batadv_v_neigh_print,
-+	},
-+	.orig = {
-+		.bat_print = batadv_v_orig_print,
-+	},
- 	.gw = {
- 		.bat_store_sel_class = batadv_v_store_sel_class,
- 		.bat_show_sel_class = batadv_v_show_sel_class,
 diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 31ba24e..acf85b1 100644
+index 18c3715..60bad90 100644
 --- a/net/batman-adv/gateway_client.c
 +++ b/net/batman-adv/gateway_client.c
-@@ -638,10 +638,10 @@ int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset)
+@@ -79,12 +79,12 @@ static void batadv_gw_node_release(struct kref *ref)
+  * batadv_gw_node_put - decrement the gw_node refcounter and possibly release it
+  * @gw_node: gateway node to free
+  */
+-static void batadv_gw_node_put(struct batadv_gw_node *gw_node)
++void batadv_gw_node_put(struct batadv_gw_node *gw_node)
+ {
+ 	kref_put(&gw_node->refcount, batadv_gw_node_release);
+ }
+ 
+-static struct batadv_gw_node *
++struct batadv_gw_node *
+ batadv_gw_get_selected_gw_node(struct batadv_priv *bat_priv)
+ {
+ 	struct batadv_gw_node *gw_node;
+@@ -163,86 +163,6 @@ void batadv_gw_reselect(struct batadv_priv *bat_priv)
+ 	atomic_set(&bat_priv->gw.reselect, 1);
+ }
+ 
+-static struct batadv_gw_node *
+-batadv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
+-{
+-	struct batadv_neigh_node *router;
+-	struct batadv_neigh_ifinfo *router_ifinfo;
+-	struct batadv_gw_node *gw_node, *curr_gw = NULL;
+-	u64 max_gw_factor = 0;
+-	u64 tmp_gw_factor = 0;
+-	u8 max_tq = 0;
+-	u8 tq_avg;
+-	struct batadv_orig_node *orig_node;
+-
+-	rcu_read_lock();
+-	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
+-		orig_node = gw_node->orig_node;
+-		router = batadv_orig_router_get(orig_node, BATADV_IF_DEFAULT);
+-		if (!router)
+-			continue;
+-
+-		router_ifinfo = batadv_neigh_ifinfo_get(router,
+-							BATADV_IF_DEFAULT);
+-		if (!router_ifinfo)
+-			goto next;
+-
+-		if (!kref_get_unless_zero(&gw_node->refcount))
+-			goto next;
+-
+-		tq_avg = router_ifinfo->bat_iv.tq_avg;
+-
+-		switch (atomic_read(&bat_priv->gw.sel_class)) {
+-		case 1: /* fast connection */
+-			tmp_gw_factor = tq_avg * tq_avg;
+-			tmp_gw_factor *= gw_node->bandwidth_down;
+-			tmp_gw_factor *= 100 * 100;
+-			tmp_gw_factor >>= 18;
+-
+-			if ((tmp_gw_factor > max_gw_factor) ||
+-			    ((tmp_gw_factor == max_gw_factor) &&
+-			     (tq_avg > max_tq))) {
+-				if (curr_gw)
+-					batadv_gw_node_put(curr_gw);
+-				curr_gw = gw_node;
+-				kref_get(&curr_gw->refcount);
+-			}
+-			break;
+-
+-		default: /* 2:  stable connection (use best statistic)
+-			  * 3:  fast-switch (use best statistic but change as
+-			  *     soon as a better gateway appears)
+-			  * XX: late-switch (use best statistic but change as
+-			  *     soon as a better gateway appears which has
+-			  *     $routing_class more tq points)
+-			  */
+-			if (tq_avg > max_tq) {
+-				if (curr_gw)
+-					batadv_gw_node_put(curr_gw);
+-				curr_gw = gw_node;
+-				kref_get(&curr_gw->refcount);
+-			}
+-			break;
+-		}
+-
+-		if (tq_avg > max_tq)
+-			max_tq = tq_avg;
+-
+-		if (tmp_gw_factor > max_gw_factor)
+-			max_gw_factor = tmp_gw_factor;
+-
+-		batadv_gw_node_put(gw_node);
+-
+-next:
+-		batadv_neigh_node_put(router);
+-		if (router_ifinfo)
+-			batadv_neigh_ifinfo_put(router_ifinfo);
+-	}
+-	rcu_read_unlock();
+-
+-	return curr_gw;
+-}
+-
+ /**
+  * batadv_gw_check_client_stop - check if client mode has been switched off
+  * @bat_priv: the bat priv with all the soft interface information
+@@ -291,7 +211,7 @@ void batadv_gw_election(struct batadv_priv *bat_priv)
+ 	if (!batadv_atomic_dec_not_zero(&bat_priv->gw.reselect) && curr_gw)
  		goto out;
  
- 	seq_printf(seq,
--		   "      %-12s (%s/%i) %17s [%10s]: advertised uplink bandwidth ... [B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%pM (%s)]\n",
--		   "Gateway", "#", BATADV_TQ_MAX_VALUE, "Nexthop", "outgoingIF",
--		   BATADV_SOURCE_VERSION, primary_if->net_dev->name,
+-	next_gw = batadv_gw_get_best_gw_node(bat_priv);
++	next_gw = bat_priv->bat_algo_ops->gw.bat_get_best_gw_node(bat_priv);
+ 
+ 	if (curr_gw == next_gw)
+ 		goto out;
+@@ -359,70 +279,31 @@ out:
+ void batadv_gw_check_election(struct batadv_priv *bat_priv,
+ 			      struct batadv_orig_node *orig_node)
+ {
+-	struct batadv_neigh_ifinfo *router_orig_tq = NULL;
+-	struct batadv_neigh_ifinfo *router_gw_tq = NULL;
+ 	struct batadv_orig_node *curr_gw_orig;
+-	struct batadv_neigh_node *router_gw = NULL;
+-	struct batadv_neigh_node *router_orig = NULL;
+-	u8 gw_tq_avg, orig_tq_avg;
++
++	/* abort immediately if the routing algorithm does not support gateway
++	 * election
++	 */
++	if (!bat_priv->bat_algo_ops->gw.bat_is_eligible)
++		return;
+ 
+ 	curr_gw_orig = batadv_gw_get_selected_orig(bat_priv);
+ 	if (!curr_gw_orig)
+ 		goto reselect;
+ 
+-	router_gw = batadv_orig_router_get(curr_gw_orig, BATADV_IF_DEFAULT);
+-	if (!router_gw)
+-		goto reselect;
+-
+-	router_gw_tq = batadv_neigh_ifinfo_get(router_gw,
+-					       BATADV_IF_DEFAULT);
+-	if (!router_gw_tq)
+-		goto reselect;
+-
+ 	/* this node already is the gateway */
+ 	if (curr_gw_orig == orig_node)
+ 		goto out;
+ 
+-	router_orig = batadv_orig_router_get(orig_node, BATADV_IF_DEFAULT);
+-	if (!router_orig)
+-		goto out;
+-
+-	router_orig_tq = batadv_neigh_ifinfo_get(router_orig,
+-						 BATADV_IF_DEFAULT);
+-	if (!router_orig_tq)
++	if (!bat_priv->bat_algo_ops->gw.bat_is_eligible(bat_priv, curr_gw_orig,
++							orig_node))
+ 		goto out;
+ 
+-	gw_tq_avg = router_gw_tq->bat_iv.tq_avg;
+-	orig_tq_avg = router_orig_tq->bat_iv.tq_avg;
+-
+-	/* the TQ value has to be better */
+-	if (orig_tq_avg < gw_tq_avg)
+-		goto out;
+-
+-	/* if the routing class is greater than 3 the value tells us how much
+-	 * greater the TQ value of the new gateway must be
+-	 */
+-	if ((atomic_read(&bat_priv->gw.sel_class) > 3) &&
+-	    (orig_tq_avg - gw_tq_avg < atomic_read(&bat_priv->gw.sel_class)))
+-		goto out;
+-
+-	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+-		   "Restarting gateway selection: better gateway found (tq curr: %i, tq new: %i)\n",
+-		   gw_tq_avg, orig_tq_avg);
+-
+ reselect:
+ 	batadv_gw_reselect(bat_priv);
+ out:
+ 	if (curr_gw_orig)
+ 		batadv_orig_node_put(curr_gw_orig);
+-	if (router_gw)
+-		batadv_neigh_node_put(router_gw);
+-	if (router_orig)
+-		batadv_neigh_node_put(router_orig);
+-	if (router_gw_tq)
+-		batadv_neigh_ifinfo_put(router_gw_tq);
+-	if (router_orig_tq)
+-		batadv_neigh_ifinfo_put(router_orig_tq);
+ }
+ 
+ /**
+@@ -584,80 +465,31 @@ void batadv_gw_node_free(struct batadv_priv *bat_priv)
+ 	spin_unlock_bh(&bat_priv->gw.list_lock);
+ }
+ 
+-/* fails if orig_node has no router */
+-static int batadv_write_buffer_text(struct batadv_priv *bat_priv,
+-				    struct seq_file *seq,
+-				    const struct batadv_gw_node *gw_node)
+-{
+-	struct batadv_gw_node *curr_gw;
+-	struct batadv_neigh_node *router;
+-	struct batadv_neigh_ifinfo *router_ifinfo = NULL;
+-	int ret = -1;
+-
+-	router = batadv_orig_router_get(gw_node->orig_node, BATADV_IF_DEFAULT);
+-	if (!router)
+-		goto out;
+-
+-	router_ifinfo = batadv_neigh_ifinfo_get(router, BATADV_IF_DEFAULT);
+-	if (!router_ifinfo)
+-		goto out;
+-
+-	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
+-
+-	seq_printf(seq, "%s %pM (%3i) %pM [%10s]: %u.%u/%u.%u MBit\n",
+-		   (curr_gw == gw_node ? "=>" : "  "),
+-		   gw_node->orig_node->orig,
+-		   router_ifinfo->bat_iv.tq_avg, router->addr,
+-		   router->if_incoming->net_dev->name,
+-		   gw_node->bandwidth_down / 10,
+-		   gw_node->bandwidth_down % 10,
+-		   gw_node->bandwidth_up / 10,
+-		   gw_node->bandwidth_up % 10);
+-	ret = seq_has_overflowed(seq) ? -1 : 0;
+-
+-	if (curr_gw)
+-		batadv_gw_node_put(curr_gw);
+-out:
+-	if (router_ifinfo)
+-		batadv_neigh_ifinfo_put(router_ifinfo);
+-	if (router)
+-		batadv_neigh_node_put(router);
+-	return ret;
+-}
+-
+ int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset)
+ {
+ 	struct net_device *net_dev = (struct net_device *)seq->private;
+ 	struct batadv_priv *bat_priv = netdev_priv(net_dev);
+ 	struct batadv_hard_iface *primary_if;
+-	struct batadv_gw_node *gw_node;
+-	int gw_count = 0;
+ 
+ 	primary_if = batadv_seq_print_text_primary_if_get(seq);
+ 	if (!primary_if)
+-		goto out;
++		return 0;
+ 
+-	seq_printf(seq,
+-		   "      Gateway      (#/255)           Nexthop [outgoingIF]: advertised uplink bandwidth ... [B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%pM (%s)]\n",
++	seq_printf(seq, "[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%pM (%s %s)]\n",
+ 		   BATADV_SOURCE_VERSION, primary_if->net_dev->name,
 -		   primary_if->net_dev->dev_addr, net_dev->name);
-+		   "      Gateway      (#/%i)           Nexthop [outgoingIF]: advertised uplink bandwidth ... [B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%pM (%s)]\n",
-+		   BATADV_TQ_MAX_VALUE, BATADV_SOURCE_VERSION,
-+		   primary_if->net_dev->name, primary_if->net_dev->dev_addr,
-+		   net_dev->name);
++		   primary_if->net_dev->dev_addr, net_dev->name,
++		   bat_priv->bat_algo_ops->name);
  
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index db2009d..72bd43f 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -245,7 +245,7 @@ static void batadv_primary_if_select(struct batadv_priv *bat_priv,
- 	if (!new_hard_iface)
- 		goto out;
+-	rcu_read_lock();
+-	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
+-		/* fails if orig_node has no router */
+-		if (batadv_write_buffer_text(bat_priv, seq, gw_node) < 0)
+-			continue;
++	batadv_hardif_put(primary_if);
  
--	bat_priv->bat_algo_ops->bat_primary_iface_set(new_hard_iface);
-+	bat_priv->bat_algo_ops->iface.bat_primary_set(new_hard_iface);
- 	batadv_primary_if_update_addr(bat_priv, curr_hard_iface);
- 
- out:
-@@ -392,7 +392,7 @@ batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
- 
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
- 
--	bat_priv->bat_algo_ops->bat_iface_update_mac(hard_iface);
-+	bat_priv->bat_algo_ops->iface.bat_update_mac(hard_iface);
- 	hard_iface->if_status = BATADV_IF_TO_BE_ACTIVATED;
- 
- 	/* the first active interface becomes our primary interface or
-@@ -407,8 +407,8 @@ batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
- 
- 	batadv_update_min_mtu(hard_iface->soft_iface);
- 
--	if (bat_priv->bat_algo_ops->bat_iface_activate)
--		bat_priv->bat_algo_ops->bat_iface_activate(hard_iface);
-+	if (bat_priv->bat_algo_ops->iface.bat_activate)
-+		bat_priv->bat_algo_ops->iface.bat_activate(hard_iface);
- 
- out:
- 	if (primary_if)
-@@ -506,7 +506,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	if (ret)
- 		goto err_dev;
- 
--	ret = bat_priv->bat_algo_ops->bat_iface_enable(hard_iface);
-+	ret = bat_priv->bat_algo_ops->iface.bat_enable(hard_iface);
- 	if (ret < 0)
- 		goto err_upper;
- 
-@@ -515,7 +515,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	hard_iface->if_status = BATADV_IF_INACTIVE;
- 	ret = batadv_orig_hash_add_if(hard_iface, bat_priv->num_ifaces);
- 	if (ret < 0) {
--		bat_priv->bat_algo_ops->bat_iface_disable(hard_iface);
-+		bat_priv->bat_algo_ops->iface.bat_disable(hard_iface);
- 		bat_priv->num_ifaces--;
- 		hard_iface->if_status = BATADV_IF_NOT_IN_USE;
- 		goto err_upper;
-@@ -596,7 +596,7 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
- 			batadv_hardif_put(new_if);
+-		gw_count++;
++	if (!bat_priv->bat_algo_ops->gw.bat_print) {
++		seq_puts(seq,
++			 "No printing function for this routing protocol\n");
++		return 0;
  	}
+-	rcu_read_unlock();
  
--	bat_priv->bat_algo_ops->bat_iface_disable(hard_iface);
-+	bat_priv->bat_algo_ops->iface.bat_disable(hard_iface);
- 	hard_iface->if_status = BATADV_IF_NOT_IN_USE;
+-	if (gw_count == 0)
+-		seq_puts(seq, "No gateways in range ...\n");
++	bat_priv->bat_algo_ops->gw.bat_print(bat_priv, seq);
  
- 	/* delete all references to this hard_iface */
-@@ -779,7 +779,7 @@ static int batadv_hard_if_event(struct notifier_block *this,
- 		batadv_check_known_mac_addr(hard_iface->net_dev);
- 
- 		bat_priv = netdev_priv(hard_iface->soft_iface);
--		bat_priv->bat_algo_ops->bat_iface_update_mac(hard_iface);
-+		bat_priv->bat_algo_ops->iface.bat_update_mac(hard_iface);
- 
- 		primary_if = batadv_primary_if_get_selected(bat_priv);
- 		if (!primary_if)
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 627d14e..ce66b96 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -565,12 +565,12 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
- 	}
- 
- 	/* all algorithms must implement all ops (for now) */
--	if (!bat_algo_ops->bat_iface_enable ||
--	    !bat_algo_ops->bat_iface_disable ||
--	    !bat_algo_ops->bat_iface_update_mac ||
--	    !bat_algo_ops->bat_primary_iface_set ||
--	    !bat_algo_ops->bat_neigh_cmp ||
--	    !bat_algo_ops->bat_neigh_is_similar_or_better) {
-+	if (!bat_algo_ops->iface.bat_enable ||
-+	    !bat_algo_ops->iface.bat_disable ||
-+	    !bat_algo_ops->iface.bat_update_mac ||
-+	    !bat_algo_ops->iface.bat_primary_set ||
-+	    !bat_algo_ops->neigh.bat_cmp ||
-+	    !bat_algo_ops->neigh.bat_is_similar_or_better) {
- 		pr_info("Routing algo '%s' does not implement required ops\n",
- 			bat_algo_ops->name);
- 		return -EINVAL;
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 076d258..366d7da 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -532,8 +532,8 @@ batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
- 
- 	kref_init(&hardif_neigh->refcount);
- 
--	if (bat_priv->bat_algo_ops->bat_hardif_neigh_init)
--		bat_priv->bat_algo_ops->bat_hardif_neigh_init(hardif_neigh);
-+	if (bat_priv->bat_algo_ops->neigh.bat_hardif_init)
-+		bat_priv->bat_algo_ops->neigh.bat_hardif_init(hardif_neigh);
- 
- 	hlist_add_head(&hardif_neigh->list, &hard_iface->neigh_list);
- 
-@@ -708,13 +708,13 @@ int batadv_hardif_neigh_seq_print_text(struct seq_file *seq, void *offset)
- 
- 	batadv_hardif_put(primary_if);
- 
--	if (!bat_priv->bat_algo_ops->bat_neigh_print) {
-+	if (!bat_priv->bat_algo_ops->neigh.bat_print) {
- 		seq_puts(seq,
- 			 "No printing function for this routing protocol\n");
- 		return 0;
- 	}
- 
--	bat_priv->bat_algo_ops->bat_neigh_print(bat_priv, seq);
-+	bat_priv->bat_algo_ops->neigh.bat_print(bat_priv, seq);
+-out:
+-	if (primary_if)
+-		batadv_hardif_put(primary_if);
  	return 0;
  }
  
-@@ -765,8 +765,8 @@ static void batadv_orig_node_free_rcu(struct rcu_head *rcu)
+diff --git a/net/batman-adv/gateway_client.h b/net/batman-adv/gateway_client.h
+index 582dd8c..4c9edde 100644
+--- a/net/batman-adv/gateway_client.h
++++ b/net/batman-adv/gateway_client.h
+@@ -39,6 +39,9 @@ void batadv_gw_node_update(struct batadv_priv *bat_priv,
+ void batadv_gw_node_delete(struct batadv_priv *bat_priv,
+ 			   struct batadv_orig_node *orig_node);
+ void batadv_gw_node_free(struct batadv_priv *bat_priv);
++void batadv_gw_node_put(struct batadv_gw_node *gw_node);
++struct batadv_gw_node *
++batadv_gw_get_selected_gw_node(struct batadv_priv *bat_priv);
+ int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset);
+ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv, struct sk_buff *skb);
+ enum batadv_dhcp_recipient
+diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
+index 3c26945..027b924 100644
+--- a/net/batman-adv/gateway_common.c
++++ b/net/batman-adv/gateway_common.c
+@@ -239,10 +239,9 @@ static void batadv_gw_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
  
- 	batadv_frag_purge_orig(orig_node, NULL);
+ 	batadv_gw_node_update(bat_priv, orig, &gateway);
  
--	if (orig_node->bat_priv->bat_algo_ops->bat_orig_free)
--		orig_node->bat_priv->bat_algo_ops->bat_orig_free(orig_node);
-+	if (orig_node->bat_priv->bat_algo_ops->orig.bat_free)
-+		orig_node->bat_priv->bat_algo_ops->orig.bat_free(orig_node);
+-	/* restart gateway selection if fast or late switching was enabled */
++	/* restart gateway selection */
+ 	if ((gateway.bandwidth_down != 0) &&
+-	    (atomic_read(&bat_priv->gw.mode) == BATADV_GW_MODE_CLIENT) &&
+-	    (atomic_read(&bat_priv->gw.sel_class) > 2))
++	    (atomic_read(&bat_priv->gw.mode) == BATADV_GW_MODE_CLIENT))
+ 		batadv_gw_check_election(bat_priv, orig);
+ }
  
- 	kfree(orig_node->tt_buff);
- 	kfree(orig_node);
-@@ -1099,7 +1099,7 @@ batadv_find_best_neighbor(struct batadv_priv *bat_priv,
- 
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(neigh, &orig_node->neigh_list, list) {
--		if (best && (bao->bat_neigh_cmp(neigh, if_outgoing,
-+		if (best && (bao->neigh.bat_cmp(neigh, if_outgoing,
- 						best, if_outgoing) <= 0))
- 			continue;
- 
-@@ -1256,13 +1256,13 @@ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
- 
- 	batadv_hardif_put(primary_if);
- 
--	if (!bat_priv->bat_algo_ops->bat_orig_print) {
-+	if (!bat_priv->bat_algo_ops->orig.bat_print) {
- 		seq_puts(seq,
- 			 "No printing function for this routing protocol\n");
- 		return 0;
- 	}
- 
--	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq,
-+	bat_priv->bat_algo_ops->orig.bat_print(bat_priv, seq,
- 					       BATADV_IF_DEFAULT);
- 
- 	return 0;
-@@ -1290,7 +1290,7 @@ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
- 	}
- 
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
--	if (!bat_priv->bat_algo_ops->bat_orig_print) {
-+	if (!bat_priv->bat_algo_ops->orig.bat_print) {
- 		seq_puts(seq,
- 			 "No printing function for this routing protocol\n");
- 		goto out;
-@@ -1306,7 +1306,7 @@ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
- 		   hard_iface->net_dev->dev_addr,
- 		   hard_iface->soft_iface->name, bat_priv->bat_algo_ops->name);
- 
--	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq, hard_iface);
-+	bat_priv->bat_algo_ops->orig.bat_print(bat_priv, seq, hard_iface);
- 
- out:
- 	if (hard_iface)
-@@ -1334,8 +1334,8 @@ int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
- 			ret = 0;
--			if (bao->bat_orig_add_if)
--				ret = bao->bat_orig_add_if(orig_node,
-+			if (bao->orig.bat_add_if)
-+				ret = bao->orig.bat_add_if(orig_node,
- 							   max_if_num);
- 			if (ret == -ENOMEM)
- 				goto err;
-@@ -1371,8 +1371,8 @@ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
- 			ret = 0;
--			if (bao->bat_orig_del_if)
--				ret = bao->bat_orig_del_if(orig_node,
-+			if (bao->orig.bat_del_if)
-+				ret = bao->orig.bat_del_if(orig_node,
- 							   max_if_num,
- 							   hard_iface->if_num);
- 			if (ret == -ENOMEM)
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index ae850f2..71a3ae5 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -522,7 +522,7 @@ batadv_find_router(struct batadv_priv *bat_priv,
- 		/* alternative candidate should be good enough to be
- 		 * considered
- 		 */
--		if (!bao->bat_neigh_is_similar_or_better(cand_router,
-+		if (!bao->neigh.bat_is_similar_or_better(cand_router,
- 							 cand->if_outgoing,
- 							 router, recv_if))
- 			goto next;
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index feaf492..79b0cdf 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -1558,7 +1558,7 @@ batadv_transtable_best_orig(struct batadv_priv *bat_priv,
- 			continue;
- 
- 		if (best_router &&
--		    bao->bat_neigh_cmp(router, BATADV_IF_DEFAULT,
-+		    bao->neigh.bat_cmp(router, BATADV_IF_DEFAULT,
- 				       best_router, BATADV_IF_DEFAULT) <= 0) {
- 			batadv_neigh_node_put(router);
- 			continue;
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index d4ca4c0..2f7ca46 100644
+index 2f7ca46..d90f160 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -1262,26 +1262,26 @@ struct batadv_forw_packet {
-  * struct batadv_algo_ops - mesh algorithm callbacks
-  * @list: list node for the batadv_algo_list
-  * @name: name of the algorithm
-- * @bat_iface_activate: start routing mechanisms when hard-interface is brought
-+ * @iface.bat_activate: start routing mechanisms when hard-interface is brought
-  *  up
-- * @bat_iface_enable: init routing info when hard-interface is enabled
-- * @bat_iface_disable: de-init routing info when hard-interface is disabled
-- * @bat_iface_update_mac: (re-)init mac addresses of the protocol information
-+ * @iface.bat_enable: init routing info when hard-interface is enabled
-+ * @iface.bat_disable: de-init routing info when hard-interface is disabled
-+ * @iface.bat_update_mac: (re-)init mac addresses of the protocol information
-  *  belonging to this hard-interface
-- * @bat_primary_iface_set: called when primary interface is selected / changed
-- * @bat_hardif_neigh_init: called on creation of single hop entry
-- * @bat_neigh_cmp: compare the metrics of two neighbors for their respective
-+ * @iface.bat_primary_set: called when primary interface is selected / changed
-+ * @neigh.bat_hardif_init: called on creation of single hop entry
-+ * @neigh.bat_cmp: compare the metrics of two neighbors for their respective
-  *  outgoing interfaces
-- * @bat_neigh_is_similar_or_better: check if neigh1 is equally similar or
-+ * @neigh.bat_is_similar_or_better: check if neigh1 is equally similar or
-  *  better than neigh2 for their respective outgoing interface from the metric
-  *  prospective
-- * @bat_neigh_print: print the single hop neighbor list (optional)
-- * @bat_orig_print: print the originator table (optional)
-- * @bat_orig_free: free the resources allocated by the routing algorithm for an
-+ * @neigh.bat_print: print the single hop neighbor list (optional)
-+ * @orig.bat_print: print the originator table (optional)
-+ * @orig.bat_free: free the resources allocated by the routing algorithm for an
-  *  orig_node object
-- * @bat_orig_add_if: ask the routing algorithm to apply the needed changes to
-+ * @orig.bat_add_if: ask the routing algorithm to apply the needed changes to
-  *  the orig_node due to a new hard-interface being added into the mesh
-- * @bat_orig_del_if: ask the routing algorithm to apply the needed changes to
-+ * @orig.bat_del_if: ask the routing algorithm to apply the needed changes to
-  *  the orig_node due to an hard-interface being removed from the mesh
-  * @gw.bat_store_sel_class: parse and stores a new GW selection class
-  * @gw.bat_show_sel_class: prints the current GW selection class
-@@ -1289,31 +1289,39 @@ struct batadv_forw_packet {
- struct batadv_algo_ops {
- 	struct hlist_node list;
- 	char *name;
--	void (*bat_iface_activate)(struct batadv_hard_iface *hard_iface);
--	int (*bat_iface_enable)(struct batadv_hard_iface *hard_iface);
--	void (*bat_iface_disable)(struct batadv_hard_iface *hard_iface);
--	void (*bat_iface_update_mac)(struct batadv_hard_iface *hard_iface);
--	void (*bat_primary_iface_set)(struct batadv_hard_iface *hard_iface);
-+	struct {
-+		void (*bat_activate)(struct batadv_hard_iface *hard_iface);
-+		int (*bat_enable)(struct batadv_hard_iface *hard_iface);
-+		void (*bat_disable)(struct batadv_hard_iface *hard_iface);
-+		void (*bat_update_mac)(struct batadv_hard_iface *hard_iface);
-+		void (*bat_primary_set)(struct batadv_hard_iface *hard_iface);
-+	} iface;
- 	/* neigh_node handling API */
--	void (*bat_hardif_neigh_init)(struct batadv_hardif_neigh_node *neigh);
--	int (*bat_neigh_cmp)(struct batadv_neigh_node *neigh1,
--			     struct batadv_hard_iface *if_outgoing1,
--			     struct batadv_neigh_node *neigh2,
--			     struct batadv_hard_iface *if_outgoing2);
--	bool (*bat_neigh_is_similar_or_better)
--		(struct batadv_neigh_node *neigh1,
--		 struct batadv_hard_iface *if_outgoing1,
--		 struct batadv_neigh_node *neigh2,
--		 struct batadv_hard_iface *if_outgoing2);
--	void (*bat_neigh_print)(struct batadv_priv *priv, struct seq_file *seq);
-+	struct {
-+		void (*bat_hardif_init)(struct batadv_hardif_neigh_node *neigh);
-+		int (*bat_cmp)(struct batadv_neigh_node *neigh1,
-+			       struct batadv_hard_iface *if_outgoing1,
-+			       struct batadv_neigh_node *neigh2,
-+			       struct batadv_hard_iface *if_outgoing2);
-+		bool (*bat_is_similar_or_better)
-+			(struct batadv_neigh_node *neigh1,
-+			 struct batadv_hard_iface *if_outgoing1,
-+			 struct batadv_neigh_node *neigh2,
-+			 struct batadv_hard_iface *if_outgoing2);
-+		void (*bat_print)(struct batadv_priv *priv,
-+				  struct seq_file *seq);
-+	} neigh;
- 	/* orig_node handling API */
--	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq,
--			       struct batadv_hard_iface *hard_iface);
--	void (*bat_orig_free)(struct batadv_orig_node *orig_node);
--	int (*bat_orig_add_if)(struct batadv_orig_node *orig_node,
--			       int max_if_num);
--	int (*bat_orig_del_if)(struct batadv_orig_node *orig_node,
--			       int max_if_num, int del_if_num);
-+	struct {
-+		void (*bat_print)(struct batadv_priv *priv,
-+				  struct seq_file *seq,
-+				  struct batadv_hard_iface *hard_iface);
-+		void (*bat_free)(struct batadv_orig_node *orig_node);
-+		int (*bat_add_if)(struct batadv_orig_node *orig_node,
-+				  int max_if_num);
-+		int (*bat_del_if)(struct batadv_orig_node *orig_node,
-+				  int max_if_num, int del_if_num);
-+	} orig;
- 	struct {
- 		ssize_t (*bat_store_sel_class)(struct batadv_priv *bat_priv,
+@@ -1327,6 +1327,13 @@ struct batadv_algo_ops {
  					       char *buff, size_t count);
+ 		ssize_t (*bat_show_sel_class)(struct batadv_priv *bat_priv,
+ 					      char *buff);
++		struct batadv_gw_node *(*bat_get_best_gw_node)
++			(struct batadv_priv *bat_priv);
++		bool (*bat_is_eligible)(struct batadv_priv *bat_priv,
++					struct batadv_orig_node *curr_gw_orig,
++					struct batadv_orig_node *orig_node);
++		void (*bat_print)(struct batadv_priv *bat_priv,
++				  struct seq_file *seq);
+ 	} gw;
+ };
+ 
 -- 
 2.8.2
 
