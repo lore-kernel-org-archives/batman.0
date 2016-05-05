@@ -1,16 +1,16 @@
 Return-Path: <a@unstable.cc>
-Date: Thu, 5 May 2016 20:06:20 +0800
+Date: Thu, 5 May 2016 22:47:27 +0800
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160505120413.GN11201@prodigo.lan>
-References: <1462434282-3307-1-git-send-email-sven.eckelmann@open-mesh.com>
- <20160505100435.GL11201@prodigo.lan> <1726573.p6gE20s2JI@sven-edge>
+Message-ID: <20160505144727.GO11201@prodigo.lan>
+References: <1457775018-16546-1-git-send-email-sven@narfation.org>
+ <2831615.2xmdSus33c@voltaire>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="D5arhb13WwWKLIR9"
+ protocol="application/pgp-signature"; boundary="07UuamFNDT4U/3KT"
 Content-Disposition: inline
-In-Reply-To: <1726573.p6gE20s2JI@sven-edge>
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: replace
- dev->trans_start update with helper
+In-Reply-To: <2831615.2xmdSus33c@voltaire>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3] batman-adv: use static string for
+ table headers
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,61 +23,75 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 
---D5arhb13WwWKLIR9
+--07UuamFNDT4U/3KT
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 05, 2016 at 12:36:54PM +0200, Sven Eckelmann wrote:
-> On Thursday 05 May 2016 18:04:35 Antonio Quartulli wrote:
-> [...]
-> > >=20
-> > > +#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 7, 0)
-> > > +
-> > > +#define netif_trans_update batadv_netif_trans_update
-> > > +static inline void batadv_netif_trans_update(struct net_device *dev)
+On Tue, Apr 12, 2016 at 12:04:06AM +0800, Marek Lindner wrote:
+> On Saturday, March 12, 2016 10:30:18 Sven Eckelmann wrote:
+> > From: Antonio Quartulli <a@unstable.cc>
 > >=20
-> > Sven,
+> > Use a static string when showing table headers rather then
+> > a nonsense parametric one with fixed arguments.
 > >=20
-> > do we really need to rename the function is the original one does not e=
-xist
-> > in kernels < 4.7 ? Or maybe it exists but does something else ?
+> > It is easier to grep and it does not need to be recomputed
+> > at runtime each time.
+> >=20
+> > Reported-by: Joe Perches <joe@perches.com>
+> > Signed-off-by: Antonio Quartulli <a@unstable.cc>
+> > [sven@narfation.org: fix conflicts with current version]
+> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> > ---
+> > v3:
+> >  - workaround checkpatch error (over 80 chars) caused by __stringify
+> > v2:
+> >  - rebased patch
+> >  - added new static strings in bat_v.c and bat_iv_ogm.c
+> >=20
+> > Patch was resurrected from https://patchwork.open-mesh.org/patch/3599/
+> >=20
+> > I've requested an rebased version at
+> > https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-March/014637.html
+> > but done it myself because it was rather trivial.
+> > ---
+> >  net/batman-adv/bat_iv_ogm.c            | 8 +++-----
+> >  net/batman-adv/bat_v.c                 | 9 ++++-----
+> >  net/batman-adv/bridge_loop_avoidance.c | 7 +++----
+> >  net/batman-adv/distributed-arp-table.c | 4 ++--
+> >  net/batman-adv/translation-table.c     | 9 ++++-----
+> >  5 files changed, 16 insertions(+), 21 deletions(-)
 >=20
-> Not necessarily but Linus' noticed for a different function that some dis=
-tros=20
-> (or stable maintainers) backported the function which we introduced. Thus=
- we=20
-> used the same trick to solve the conflict.
+> Applied in revision f7be1df.
 
-Yup, thanks for reminding!
+The Gateway table was missed here ..
 
 Cheers,
-
 
 
 --=20
 Antonio Quartulli
 
---D5arhb13WwWKLIR9
+--07UuamFNDT4U/3KT
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXKzc8AAoJEJ4aZjxxc6bKtwkP/3kHw/JiuKZqABVn2NgfKZvi
-325ZGDkHEWnikV3GhOfqYFPqCdgkaAbqJnFkvbl2u/UET1XUk+9RyxPuijzvewve
-DCFcCchJQgy7ShccTCzu6TuJ3OLO3oidfeZvVvSifeNGDEEWiSVsD2G72pAhRYmv
-t6q0cj8EfCJ7gQ/klyLXiXMn+Rc/EcSBnGA9M20RaNuANkGNEX2BHWViIDD7ffc6
-o9W974pPgSlikBDdnOJUqgHwo0SnXFkVrMTFacnTsgqIgr6lnBbsPCdMb7r4tdbL
-YyF+6JRh6glwO9NbSPUzGG+pdT0m16vfpGrQGDzx/5Q5bAt/djUTQASV/FbbgHKU
-RjoFqosnbYcqF/Xef3Wls3f1/i8ffdopYMGi55gRvz8IdW5rHVj/b6CRehsds8N/
-FWgiXAvZmafRW44gd3/NqF15SncS5qf1F5Xm6r9LrPRjtGeWVCd2iiH8lP7A/9W7
-VQAK4R+4ku5q+QkshHBt0Vs+eFfxLrVedQBD4sKOSj47zoNlJhCFzb7ReLlCXqXz
-pSeLNCbdyCx2ClMDh4W+L/Ory4sfRG21bBGk4Gazn+TxCcrObwrQ7v1sPZIBDHzh
-yKzSFolILc+CbKx6aPdRGMfDhsAA5ubbC56hhnNldEN5xL7QBQrVPxIam3HnSMHX
-0n/bk2Ua6sCR448WZcJP
-=2sZl
+iQIbBAEBCAAGBQJXK1z/AAoJEJ4aZjxxc6bKyrQP91J9qaJ3ep8V+Z0dfys9sqD8
+sgd8BRrv1KrWZMui+UT1l7kIJXzJiTgwcXOZUIafcknWRPNhOETBv0W02oyq+joZ
+guxAaruskYl7weFAb2S8oOeF6t0Syr2QZ2YSyy2GhmGmiOm7hIdGuHF2EYHAWOdX
+nEPKS9O6In3fHTzvZ/694XjgVQTRKsF762oPOYg16HH3JNu1N8PuwyM4viz5rhmk
+ATeElciGC/Ybvv3lBhLaAEa0CqiC/uD0HU+47KIzI2hosMymorwHkZh8pFs8WbXn
+21upb+nfkMCMtcpwCGqyqqz/01Ufx4U4LEgYIlmcoofhrlyzK6ZT4ND1VORWz4s2
+5F4nBBV+BSIAvZcA4z/OaFkbylNxasxVTfk0AqHosGOUIWR4yjKmYLKHCLBsYLmZ
+45FOHErNRCgXHokiM/jj+sin1nb7djqxHHpHAIiC/mTtNIQmN22hnI4s44jRPVdl
+SO/SMYWFLrIR3dVrTRDQu4rNDZUOiYXffw3C+oHgAszt4G2Pa/WEUn4lBcgEzk3x
+txwM3APcAvnQu16zB3m7Ji0qDHlrnvBQ15PtFKpx2hJKg9KHAl+gp7vIyhWAcV9e
+gIWgsedK8dlPF0PASl+Ya+RATw0BfTpXyCjOKLqUpAD4m4YOSatFX1I+yEJiOh1d
+DL1LPhSVAK3+Vd3q9lQ=
+=F6Ww
 -----END PGP SIGNATURE-----
 
---D5arhb13WwWKLIR9--
+--07UuamFNDT4U/3KT--
