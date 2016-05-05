@@ -1,15 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 05 May 2016 17:10:28 +0200
-Message-ID: <2301460.z7t4xX8ItU@sven-edge>
-In-Reply-To: <20160505144727.GO11201@prodigo.lan>
+Return-Path: <a@unstable.cc>
+Date: Thu, 5 May 2016 23:12:20 +0800
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <20160505151220.GP11201@prodigo.lan>
 References: <1457775018-16546-1-git-send-email-sven@narfation.org>
  <2831615.2xmdSus33c@voltaire> <20160505144727.GO11201@prodigo.lan>
+ <2301460.z7t4xX8ItU@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart24789468.TVpdl2UbTm";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="SUcp5/vPb8ZOOFiR"
+Content-Disposition: inline
+In-Reply-To: <2301460.z7t4xX8ItU@sven-edge>
 Subject: Re: [B.A.T.M.A.N.] [PATCH v3] batman-adv: use static string for
-	table headers
+ table headers
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,53 +21,59 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart24789468.TVpdl2UbTm
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
 
-On Thursday 05 May 2016 22:47:27 Antonio Quartulli wrote:
-[...]
-> > >  net/batman-adv/bat_iv_ogm.c            | 8 +++-----
-> > >  net/batman-adv/bat_v.c                 | 9 ++++-----
-> > >  net/batman-adv/bridge_loop_avoidance.c | 7 +++----
-> > >  net/batman-adv/distributed-arp-table.c | 4 ++--
-> > >  net/batman-adv/translation-table.c     | 9 ++++-----
-> > >  5 files changed, 16 insertions(+), 21 deletions(-)
-> > 
-> > Applied in revision f7be1df.
-> 
-> The Gateway table was missed here ..
+--SUcp5/vPb8ZOOFiR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes, it was also not part your first patch:
- https://patchwork.open-mesh.org/patch/3599/
+On Thu, May 05, 2016 at 05:10:28PM +0200, Sven Eckelmann wrote:
+> On Thursday 05 May 2016 22:47:27 Antonio Quartulli wrote:
+> [...]
+> > > >  net/batman-adv/bat_iv_ogm.c            | 8 +++-----
+> > > >  net/batman-adv/bat_v.c                 | 9 ++++-----
+> > > >  net/batman-adv/bridge_loop_avoidance.c | 7 +++----
+> > > >  net/batman-adv/distributed-arp-table.c | 4 ++--
+> > > >  net/batman-adv/translation-table.c     | 9 ++++-----
+> > > >  5 files changed, 16 insertions(+), 21 deletions(-)
+> > >=20
+> > > Applied in revision f7be1df.
+> >=20
+> > The Gateway table was missed here ..
+>=20
+> Yes, it was also not part your first patch:
+>  https://patchwork.open-mesh.org/patch/3599/
 
-Kind regards,
-	Sven
---nextPart24789468.TVpdl2UbTm
+Working on that now. I will provide a patch for this.
+
+Cheers,
+
+
+--=20
+Antonio Quartulli
+
+--SUcp5/vPb8ZOOFiR
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXK2JkAAoJEF2HCgfBJntGB0oQANTTdjxp/4iyMfp1nI+Ufr3R
-1EvBLmLUgZ7asiL/AYuJtuf0HXahZ8rN/5KFVGItGAiEkv4hd4jDvfA4pLVakv3m
-0TencIPD52+EbkEGNGw3raMuo7+2MJ12avLIYYW4yIc33qrDLXdbCCWR1IdolA8m
-yMjqYW9BeS3mI+7nFeAfuehbLswLuVecnPq5N7VJ9A7XODI/UXVUPp4KWYhoWttZ
-TsvjSu8Zx2KP9aM4QQiHEP5rx7B0AQ9TIEhXkT9RVvti3kmc/vI+6T+v0IEyKU6i
-AcunoOabK9zRIE4qtybemIxVbhT+O7N+4lyCyk3qOVJL2bPqw4uPjeaoEtsuPGir
-iwavHf3vLEGzoJHvC/STZ8LJ09TVaLZfkMUeQow7v1atAwTEocU2g101rsd8BLvZ
-/PTiQtkFJUuKJ54Zhna67AL2A8o3O1KS9x3YV8hw/z0oxCTrhzdQOUGS7c7knMD1
-kl/6YhtJ9plGx/7noFMuGjFWSKh12KS8Xw9m4qZJRDtX/vjcDRZBcXRoaGIdQ6DI
-mvOmQ8rB+sujPZqg+nllTsc7y3hZEkCSh2r/c7e2zO5NB90fpiv3I1y+yqFKXmtG
-XSTxR79UJ3bxGrr2SvZSyV4tFScLKULW1BVY5j8acauzUlFB0AZThA9fdHP0hFKE
-oT0uKTn+si7JHTABjnai
-=n9XY
+iQIcBAEBCAAGBQJXK2LUAAoJEJ4aZjxxc6bK5fEP/3g8vas2Dn4NCikk3X9o6M7D
+nXT2fXhb2Ay2KPwPa3RYc4oZ95J7A7PoF2geacuCitmymuCEVfp6QXeOT4Haedo1
+5TrCzjWFnsSXoIEYY1AqDFHUCMIOgNygrvF97UUuGDQYHCOOUKUBqbmieC1dbDv6
+YnBZHMcQOqoT66SKQnkO/JoWhiqmnLiET6fhR3gIq4Fhe/AsAOEYE/Fz3wSykGVt
+z7OfTUTW3dN0IDLHiH5s+RYgB6R2y5wsOO90z6t/r5TOJTcLSjWBzW0Ls/CcNrR6
+jd2EKeG/GlmqXbWgtn1JmDEpf6IQ6uGh2F/n/lAGOiNDw9WVVG+Jde1r44dF1t9v
+gLGJwuDPNkMGXTHV6dLBhVrep/azFMVm/wjzokCUZHABR+RwHMB5FfTn0bO/HAQY
+SZsO9zAG1T/28eqa2TtIdLWENY9HDc3qUkuzNSIV0YYA+ot3ySKV2WZUPy62Z2OD
+BmaRdIi7IHPoPog+btNGN0uM1p6YWGL8n42Q2MrYuDjK1LYY2CtHxiA31vqOUzWO
+UlUeq92PiVlRNPgaXMjfcBF66FmhgWbhqjK7MS77jisrOVIeFUWfGyQxqHX7QBZr
+57KTbplzhsYt9H7OvmfHqty9uynwSJ9Gh/vSTaZhXTKX7e/cs65y2nDwAUDiBKuM
+3ke7P4syGsWxSPqU6xW5
+=Dk3V
 -----END PGP SIGNATURE-----
 
---nextPart24789468.TVpdl2UbTm--
-
+--SUcp5/vPb8ZOOFiR--
