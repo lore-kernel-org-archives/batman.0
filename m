@@ -1,11 +1,14 @@
-Return-Path: <a@unstable.cc>
-From: Antonio Quartulli <a@unstable.cc>
-Date: Fri,  6 May 2016 02:46:43 +0800
-Message-Id: <1462474003-25279-7-git-send-email-a@unstable.cc>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 05 May 2016 22:17:18 +0200
+Message-ID: <2675515.pbCZCtK98O@sven-edge>
 In-Reply-To: <1462474003-25279-1-git-send-email-a@unstable.cc>
 References: <1462474003-25279-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 7/7] batman-adv: B.A.T.M.A.N. V - implement
-	GW selection logic
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4433634.IzqCG18mzy";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/7] batman-adv: remove useless inline
+	attribute for sysfs helper function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,266 +21,379 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <a@unstable.cc>, mareklindner@neomailbox.ch
 
-Since the GW selection logic has been made routing protocol specific
-it is now possible for B.A.T.M.A.N V to have its own mechanism by
-providing the API implementation.
+--nextPart4433634.IzqCG18mzy
+Content-Type: multipart/mixed; boundary="nextPart14925138.mhnyUsvyfy"
+Content-Transfer-Encoding: quoted-printable
 
-Implement the GW specific API in the B.A.T.M.A.N. V protocol in
-order to provide a working GW selection mechanism.
+This is a multi-part message in MIME format.
 
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
----
- net/batman-adv/bat_v.c          | 192 +++++++++++++++++++++++++++++++++++++++-
- net/batman-adv/gateway_client.c |   5 +-
- net/batman-adv/gateway_client.h |   2 +
- 3 files changed, 195 insertions(+), 4 deletions(-)
+=2D-nextPart14925138.mhnyUsvyfy
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index c6e4bf3..54933e6 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -320,6 +320,184 @@ static ssize_t batadv_v_show_sel_class(struct batadv_priv *bat_priv, char *buff)
- 	return sprintf(buff, "%u.%u MBit\n", class / 10, class % 10);
- }
- 
-+static int batadv_v_gw_throughput_get(struct batadv_gw_node *gw_node, u32 *bw)
-+{
-+	struct batadv_neigh_ifinfo *router_ifinfo = NULL;
-+	struct batadv_orig_node *orig_node;
-+	struct batadv_neigh_node *router;
-+	int ret = -1;
-+
-+	orig_node = gw_node->orig_node;
-+	router = batadv_orig_router_get(orig_node, BATADV_IF_DEFAULT);
-+	if (!router)
-+		goto out;
-+
-+	router_ifinfo = batadv_neigh_ifinfo_get(router, BATADV_IF_DEFAULT);
-+	if (!router_ifinfo)
-+		goto out;
-+
-+	/* the GW metric is computed as the minimum between the path throughput
-+	 * to reach the GW itself and the advertised bandwidth.
-+	 * This gives us an approximation of the effective throughput that the
-+	 * client can expect via this particular GW node
-+	 */
-+	*bw = router_ifinfo->bat_v.throughput;
-+	*bw = min_t(u32, *bw, gw_node->bandwidth_down);
-+
-+	ret = 0;
-+out:
-+	if (router)
-+		batadv_neigh_node_put(router);
-+	if (router_ifinfo)
-+		batadv_neigh_ifinfo_put(router_ifinfo);
-+
-+	return ret;
-+}
-+
-+static struct batadv_gw_node *
-+batadv_v_gw_get_best_gw_node(struct batadv_priv *bat_priv)
-+{
-+	struct batadv_gw_node *gw_node, *curr_gw = NULL;
-+	u32 max_bw = 0, bw, threshold;
-+
-+	threshold = atomic_read(&bat_priv->gw.sel_class);
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
-+		if (!kref_get_unless_zero(&gw_node->refcount))
-+			continue;
-+
-+		if (batadv_v_gw_throughput_get(gw_node, &bw) < 0)
-+			goto next;
-+
-+		if (curr_gw && (bw <= (max_bw + threshold)))
-+			goto next;
-+
-+		if (curr_gw)
-+			batadv_gw_node_put(curr_gw);
-+
-+		curr_gw = gw_node;
-+		kref_get(&curr_gw->refcount);
-+		max_bw = bw;
-+
-+next:
-+		batadv_gw_node_put(gw_node);
-+	}
-+	rcu_read_unlock();
-+
-+	return curr_gw;
-+}
-+
-+static bool batadv_v_gw_is_eligible(struct batadv_priv *bat_priv,
-+				    struct batadv_orig_node *curr_gw_orig,
-+				    struct batadv_orig_node *orig_node)
-+{
-+	struct batadv_gw_node *curr_gw = NULL, *orig_gw = NULL;
-+	u32 gw_throughput, orig_throughput, threshold;
-+	bool ret = false;
-+
-+	threshold = atomic_read(&bat_priv->gw.sel_class);
-+
-+	curr_gw = batadv_gw_node_get(bat_priv, curr_gw_orig);
-+	if (!curr_gw) {
-+		ret = true;
-+		goto out;
-+	}
-+
-+	if (batadv_v_gw_throughput_get(curr_gw, &gw_throughput) < 0) {
-+		ret = true;
-+		goto out;
-+	}
-+
-+	orig_gw = batadv_gw_node_get(bat_priv, orig_node);
-+	if (!orig_node)
-+		goto out;
-+
-+	if (batadv_v_gw_throughput_get(orig_gw, &orig_throughput) < 0)
-+		goto out;
-+
-+	if (orig_throughput < (gw_throughput + threshold))
-+		goto out;
-+
-+	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+		   "Restarting gateway selection: better gateway found (throughput curr: %u, throughput new: %u)\n",
-+		   gw_throughput, orig_throughput);
-+
-+	ret = true;
-+out:
-+	if (curr_gw)
-+		batadv_gw_node_put(curr_gw);
-+	if (orig_gw)
-+		batadv_gw_node_put(orig_gw);
-+
-+	return ret;
-+}
-+
-+/* fails if orig_node has no router */
-+static int batadv_v_gw_write_buffer_text(struct batadv_priv *bat_priv,
-+					 struct seq_file *seq,
-+					 const struct batadv_gw_node *gw_node)
-+{
-+	struct batadv_gw_node *curr_gw;
-+	struct batadv_neigh_node *router;
-+	struct batadv_neigh_ifinfo *router_ifinfo = NULL;
-+	int ret = -1;
-+
-+	router = batadv_orig_router_get(gw_node->orig_node, BATADV_IF_DEFAULT);
-+	if (!router)
-+		goto out;
-+
-+	router_ifinfo = batadv_neigh_ifinfo_get(router, BATADV_IF_DEFAULT);
-+	if (!router_ifinfo)
-+		goto out;
-+
-+	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
-+
-+	seq_printf(seq, "%s %pM (%9u.%1u) %pM [%10s]: %u.%u/%u.%u MBit\n",
-+		   (curr_gw == gw_node ? "=>" : "  "),
-+		   gw_node->orig_node->orig,
-+		   router_ifinfo->bat_v.throughput / 10,
-+		   router_ifinfo->bat_v.throughput % 10, router->addr,
-+		   router->if_incoming->net_dev->name,
-+		   gw_node->bandwidth_down / 10,
-+		   gw_node->bandwidth_down % 10,
-+		   gw_node->bandwidth_up / 10,
-+		   gw_node->bandwidth_up % 10);
-+	ret = seq_has_overflowed(seq) ? -1 : 0;
-+
-+	if (curr_gw)
-+		batadv_gw_node_put(curr_gw);
-+out:
-+	if (router_ifinfo)
-+		batadv_neigh_ifinfo_put(router_ifinfo);
-+	if (router)
-+		batadv_neigh_node_put(router);
-+	return ret;
-+}
-+
-+static void batadv_v_gw_print(struct batadv_priv *bat_priv,
-+			      struct seq_file *seq)
-+{
-+	struct batadv_gw_node *gw_node;
-+	int gw_count = 0;
-+
-+	seq_printf(seq,
-+		   "      Gateway        ( throughput)           Nexthop [outgoingIF]: advertised uplink bandwidth\n");
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
-+		/* fails if orig_node has no router */
-+		if (batadv_v_gw_write_buffer_text(bat_priv, seq, gw_node) < 0)
-+			continue;
-+
-+		gw_count++;
-+	}
-+	rcu_read_unlock();
-+
-+	if (gw_count == 0)
-+		seq_puts(seq, "No gateways in range ...\n");
-+}
-+
- static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.name = "BATMAN_V",
- 	.iface = {
-@@ -341,6 +519,9 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.gw = {
- 		.bat_store_sel_class = batadv_v_store_sel_class,
- 		.bat_show_sel_class = batadv_v_show_sel_class,
-+		.bat_get_best_gw_node = batadv_v_gw_get_best_gw_node,
-+		.bat_is_eligible = batadv_v_gw_is_eligible,
-+		.bat_print = batadv_v_gw_print,
- 	},
- };
- 
-@@ -353,7 +534,16 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
-  */
- int batadv_v_mesh_init(struct batadv_priv *bat_priv)
- {
--	return batadv_v_ogm_init(bat_priv);
-+	int ret = 0;
-+
-+	ret = batadv_v_ogm_init(bat_priv);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* set default throughput difference threshold to 5Mbps */
-+	atomic_set(&bat_priv->gw.sel_class, 50);
-+
-+	return 0;
- }
- 
- /**
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 60bad90..3fb8845 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -352,9 +352,8 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
-  *
-  * Return: gateway node if found or NULL otherwise.
-  */
--static struct batadv_gw_node *
--batadv_gw_node_get(struct batadv_priv *bat_priv,
--		   struct batadv_orig_node *orig_node)
-+struct batadv_gw_node *batadv_gw_node_get(struct batadv_priv *bat_priv,
-+					  struct batadv_orig_node *orig_node)
- {
- 	struct batadv_gw_node *gw_node_tmp, *gw_node = NULL;
- 
-diff --git a/net/batman-adv/gateway_client.h b/net/batman-adv/gateway_client.h
-index 4c9edde..a3e156f 100644
---- a/net/batman-adv/gateway_client.h
-+++ b/net/batman-adv/gateway_client.h
-@@ -39,6 +39,8 @@ void batadv_gw_node_update(struct batadv_priv *bat_priv,
- void batadv_gw_node_delete(struct batadv_priv *bat_priv,
- 			   struct batadv_orig_node *orig_node);
- void batadv_gw_node_free(struct batadv_priv *bat_priv);
-+struct batadv_gw_node *batadv_gw_node_get(struct batadv_priv *bat_priv,
-+					  struct batadv_orig_node *orig_node);
- void batadv_gw_node_put(struct batadv_gw_node *gw_node);
- struct batadv_gw_node *
- batadv_gw_get_selected_gw_node(struct batadv_priv *bat_priv);
--- 
-2.8.2
+On Friday 06 May 2016 02:46:37 Antonio Quartulli wrote:
+> the compiler can optimize functions within the same C file and therefore
+> there is no need to make it explicit.
+> 
+> Remove the useless inline attribute for __batadv_store_uint_attr()
+> 
+> Signed-off-by: Antonio Quartulli <a@unstable.cc>
+> ---
+>  net/batman-adv/sysfs.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+
+This is not about this particular patch but for the patch series.
+
+Please check the attached test results of the daily build tests.
+
+Kind regards,
+	Sve
+=2D-nextPart14925138.mhnyUsvyfy
+Content-Disposition: attachment; filename="gw_per_algo_test.mbox"
+Content-Transfer-Encoding: 7Bit
+Content-Type: application/mbox; name="gw_per_algo_test.mbox"
+
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Build check errors found: 2016-05-05
+From: postmaster@open-mesh.org
+Date: Thu,  5 May 2016 21:59:37 +0200 (CEST)
+
+Name of failed tests
+====================
+
+ * headers master
+ * kerneldoc master ./net/batman-adv/types.h
+ * unused_symbols master linux-3.10 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.10 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.10 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.10 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.11 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.11 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.11 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.11 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.12 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.12 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.12 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.12 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.13 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.13 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.13 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.13 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.14 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.14 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.14 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.14 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.15 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.15 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.15 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.15 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.16 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.16 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.16 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.16 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.17 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.17 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.17 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.17 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.18 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.18 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.18 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.18 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.19 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.19 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.19 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.19 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.2 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.2 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.2 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.2 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.3 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.3 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.3 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.3 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.4 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.4 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.4 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.4 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.5 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.5 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.5 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.5 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.6 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.6 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.6 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.6 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.7 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.7 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.7 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.7 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.8 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.8 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.8 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.8 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.9 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.9 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.9 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.9 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.0 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.0 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.0 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.0 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.1 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.1 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.1 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.1 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.2 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.2 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.2 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.2 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.3 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.3 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.3 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.3 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.4 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.4 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.4 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.4 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.5 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.5 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.5 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.5 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+
+Output of different failed tests
+================================
+
+headers master
+=2D-------------
+
+    diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+    index 02359d0..cb09ae5 100644
+    --- a/net/batman-adv/bat_v.c
+    +++ b/net/batman-adv/bat_v.c
+    @@ -19,6 +19,10 @@
+     #include "main.h" // IWYU pragma: keep
+     
+     #include <linux/atomic.h>
+    +#include <linux/errno.h>
+    +#include <linux/kernel.h>
+    +#include <linux/kref.h>
+    +#include <linux/stddef.h>
+     #include <linux/bug.h>
+     #include <linux/cache.h>
+     #include <linux/init.h>
+
+
+kerneldoc master ./net/batman-adv/types.h
+=2D----------------------------------------
+
+    ./net/batman-adv/types.h:1338: warning: No description found for parameter 'gw'
+
+
+unused_symbols master linux-4.5 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+=2D--------------------------------------------------------------------------
+
+    batadv_gw_node_get
+
+
+=2D-nextPart14925138.mhnyUsvyfy--
+This is a multi-part message in MIME format.
+
+--nextPart14925138.mhnyUsvyfy
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Friday 06 May 2016 02:46:37 Antonio Quartulli wrote:
+> the compiler can optimize functions within the same C file and therefore
+> there is no need to make it explicit.
+> 
+> Remove the useless inline attribute for __batadv_store_uint_attr()
+> 
+> Signed-off-by: Antonio Quartulli <a@unstable.cc>
+> ---
+>  net/batman-adv/sysfs.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+
+This is not about this particular patch but for the patch series.
+
+Please check the attached test results of the daily build tests.
+
+Kind regards,
+	Sve
+--nextPart14925138.mhnyUsvyfy
+Content-Disposition: attachment; filename="gw_per_algo_test.mbox"
+Content-Transfer-Encoding: 7Bit
+Content-Type: application/mbox; name="gw_per_algo_test.mbox"
+
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Build check errors found: 2016-05-05
+From: postmaster@open-mesh.org
+Date: Thu,  5 May 2016 21:59:37 +0200 (CEST)
+
+Name of failed tests
+====================
+
+ * headers master
+ * kerneldoc master ./net/batman-adv/types.h
+ * unused_symbols master linux-3.10 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.10 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.10 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.10 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.11 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.11 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.11 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.11 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.12 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.12 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.12 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.12 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.13 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.13 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.13 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.13 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.14 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.14 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.14 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.14 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.15 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.15 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.15 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.15 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.16 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.16 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.16 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.16 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.17 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.17 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.17 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.17 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.18 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.18 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.18 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.18 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.19 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.19 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.19 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.19 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.2 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.2 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.2 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.2 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.3 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.3 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.3 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.3 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.4 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.4 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.4 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.4 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.5 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.5 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.5 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.5 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.6 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.6 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.6 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.6 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.7 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.7 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.7 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.7 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.8 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.8 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.8 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.8 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.9 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.9 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-3.9 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-3.9 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.0 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.0 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.0 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.0 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.1 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.1 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.1 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.1 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.2 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.2 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.2 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.2 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.3 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.3 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.3 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.3 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.4 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.4 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.4 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.4 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.5 cfg: BLA=n DAT=y DEBUG=n NC=n MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.5 cfg: BLA=n DAT=y DEBUG=n NC=y MCAST=y BATMAN_V=n
+ * unused_symbols master linux-4.5 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+ * unused_symbols master linux-4.5 cfg: BLA=y DAT=y DEBUG=n NC=n MCAST=n BATMAN_V=n
+
+Output of different failed tests
+================================
+
+headers master
+--------------
+
+    diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+    index 02359d0..cb09ae5 100644
+    --- a/net/batman-adv/bat_v.c
+    +++ b/net/batman-adv/bat_v.c
+    @@ -19,6 +19,10 @@
+     #include "main.h" // IWYU pragma: keep
+     
+     #include <linux/atomic.h>
+    +#include <linux/errno.h>
+    +#include <linux/kernel.h>
+    +#include <linux/kref.h>
+    +#include <linux/stddef.h>
+     #include <linux/bug.h>
+     #include <linux/cache.h>
+     #include <linux/init.h>
+
+
+kerneldoc master ./net/batman-adv/types.h
+-----------------------------------------
+
+    ./net/batman-adv/types.h:1338: warning: No description found for parameter 'gw'
+
+
+unused_symbols master linux-4.5 cfg: BLA=n DAT=y DEBUG=y NC=n MCAST=n BATMAN_V=n
+---------------------------------------------------------------------------
+
+    batadv_gw_node_get
+
+
+--nextPart14925138.mhnyUsvyfy--
+
+--nextPart4433634.IzqCG18mzy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXK6pOAAoJEF2HCgfBJntG3FYP/RvxaORER3ebnhQ4hiS6MCa7
+95S2UQsCfuYPAWE5ZUBcdhCTFWDjXNUN74/zhYGQpklscYfvpFoOVrj8LXzRyOJn
+8uNwxLKUNB9V7bFL+nu1aP+yhRXaiOnCjwBJexsh05DwymjGrPaZmLgDWCxiOJAQ
+5ReoXNQozcHRKG6AhKIIWeckUKpG98wyFqLzw9O6ZsnZN5qK6f64D0vne3aoREu6
+AJZYG7BFxC2AYZKD0IX+mzk9hvAvJnMTOqaeyI0xQsDQRHxS4Xffnodx/odMYIgz
+3ArGNqr5X9RKjegon9udJ1Xy4IPs/wLZCEirB2eBvzU+brKxWqkDoqQAW59rcoN6
+vmN/T002OYziXfCQ1LczxM2aUyE3akgIBRswCOubVCXhlMwr583b/NSkdWicTVk5
+iFkeo1cTF4xSgmvgXMKIWVZSufieiWAHgG20RX6woaoMvNbOaYWTo2rqBiHQsQqs
+Dmwbf1TWeJGv5ngP1wAGyFzRzMqzz5CvRYIRnMS4xth0ScxhpX37qq1oI5eAVlgA
+HloCLfhneM1hNKFH8r0aCBRiNCOtIWRqpvKnS6SSxBKRyGSvsxd5CUTXXKxFmwzl
+K5Rpvjkzue1at96s+uX9HfYWJCQgyQ7WRV8a7nA5fC6mcgoCU6i2DMv2kKnml4TK
+WtHBSnRCjpKhb5ns4e6X
+=ql43
+-----END PGP SIGNATURE-----
+
+--nextPart4433634.IzqCG18mzy--
 
