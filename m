@@ -1,15 +1,8 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 05 May 2016 12:36:54 +0200
-Message-ID: <1726573.p6gE20s2JI@sven-edge>
-In-Reply-To: <20160505100435.GL11201@prodigo.lan>
-References: <1462434282-3307-1-git-send-email-sven.eckelmann@open-mesh.com>
- <20160505100435.GL11201@prodigo.lan>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8554300.RjgnsotxCg";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: replace
-	dev->trans_start update with helper
+Return-Path: <sven.eckelmann@open-mesh.com>
+From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+Date: Thu,  5 May 2016 13:09:38 +0200
+Message-Id: <1462446587-5304-1-git-send-email-sven.eckelmann@open-mesh.com>
+Subject: [B.A.T.M.A.N.] [PATCH/RFC v5 0/9] throughput meter
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,53 +13,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart8554300.RjgnsotxCg
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi,
 
-On Thursday 05 May 2016 18:04:35 Antonio Quartulli wrote:
-[...]
-> > 
-> > +#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 7, 0)
-> > +
-> > +#define netif_trans_update batadv_netif_trans_update
-> > +static inline void batadv_netif_trans_update(struct net_device *dev)
-> 
-> Sven,
-> 
-> do we really need to rename the function is the original one does not exist
-> in kernels < 4.7 ? Or maybe it exists but does something else ?
+I got no no other suggestion for the problems in my last RFC mails. So
+I've just implemented the workaround with an extra socket. The idea is
 
-Not necessarily but Linus' noticed for a different function that some distros 
-(or stable maintainers) backported the function which we introduced. Thus we 
-used the same trick to solve the conflict.
+ * userspace opens "batman-adv" "tpmeter" multicast netlink socket to
+   listen for tpmeter events
+ * tp_meter is started by userspace
+   - kernel returns a u32 cookie for the session
+ * userspace is listening for events on the multicast netlink socket
+ * tp_meter either finishes or is cancelled
+   - kernel sends tp_meter message containing the result over the
+     multicast group for batman-adv tpmeter
+ * userspace receives the events and matches against its own cookie
+ * result is printed
+
+This approach seems to work ok enough in my tests (only VMs [1]). But
+the last patches are still marked as RFC because the use of multicast
+groups introduces a backward compatibility problem. The 3.12 (and lower)
+implementation for registering and starting multicast netlink messages
+was completely different. backports.git has its own solution (which is
+rather hard to read and I didn't start to figure out how to create a
+small version for batman-adv) and someone could maybe port their
+solution to the batman-adv compat code.
+
+So if someone else wants to have a look at the compat code - please feel
+free play around with it.
 
 Kind regards,
 	Sven
---nextPart8554300.RjgnsotxCg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+[1] https://www.open-mesh.org/projects/open-mesh/wiki/Emulation_Debug
 
-iQIcBAABCgAGBQJXKyJGAAoJEF2HCgfBJntG3lMP/1CJlxmgzzpXMh68VaG1HuyA
-ZcnD3A1v4AlL+Oalh/CLY2eO2Jw+6q3u3SEHgWHdbB5UOXNEV8op4aaCBSg/vxEd
-WkrfuHKfmGYEp/MS9xsIViN+iYMcji3a2lrPs/cFWxM872L2Oy38Jd0Lr7VQ0Ar0
-NeETzlcq/HI7q4Mr288jei+W82B3Za/Q4GMb16d9Xp9yRL8faCdkiOHGNnxsdL7o
-6B2sxySfIZAiMxDcFecuUpUU4YjlKFHEBpMemoNHUvHK5lFLC8tpDsnDTFxLAkUN
-XlyN0OlGq8zqJPHfL7S69ttKkKAZ7t1FgbeJ19T7EEFEMcnIOnL/FK8Se+Ep7a71
-JZTtgdPiq5jVpubBUK6H95JYdYql80KQ3hGAumu/iDoG9dEEyIDZOcIOifZdgMXV
-C7/6NO9a92O2oHOCKzumju2uIek5VcK+XYlAZWDZdCc4Y15FNQrbnRgzh+Rg/0Wf
-1ZPZxXHsmtTdVNiZ5rD9vcczDvk5sCNm/VYFk0qv46uQoPqPwot9jT7Rthl3Hevl
-8tMQxXCdRDyb4BZzqiXyprOIFoRK8S4lJvATzxsGHaPAghj+jbwvu/WxVLfVAyG0
-TUJcYTAgKft8cAPvfNr+/4STHhBp2N1PGWBl97pPB0nDNQ0gkrbvV4CFJjml3wr8
-HvmetOUK6tpPWZinrVi0
-=z+qO
------END PGP SIGNATURE-----
-
---nextPart8554300.RjgnsotxCg--
 
