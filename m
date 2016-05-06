@@ -2,12 +2,12 @@ Return-Path: <apape@phoenixcontact.com>
 From: Andreas Pape <apape@phoenixcontact.com>
 In-Reply-To: <1462525107-19750-1-git-send-email-apape@phoenixcontact.com>
 References: <1462525107-19750-1-git-send-email-apape@phoenixcontact.com>
-Message-ID: <1462525107-19750-3-git-send-email-apape@phoenixcontact.com>
-Date: Fri, 6 May 2016 10:58:23 +0200
+Message-ID: <1462525107-19750-5-git-send-email-apape@phoenixcontact.com>
+Date: Fri, 6 May 2016 10:58:25 +0200
 content-transfer-encoding: quoted-printable
 content-type: text/plain; charset="utf-8"
-Subject: [B.A.T.M.A.N.] [PATCHv3 2/6] batman-adv: speed up dat by snooping
-	received ip traffic
+Subject: [B.A.T.M.A.N.] [PATCHv3 4/6] batman-adv: drop unicast packets from
+	other backbone gw
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,144 +19,56 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Speeding up dat address lookup is achieved by snooping all incoming ip
-traffic. This especially increases the propability in bla setups that
-a gateway into a common backbone network already has a fitting dat entry
-to answer incoming ARP requests directly coming from the backbone
-network thus further reducing ARP traffic in the mesh.
+Additional dropping of unicast packets received from another backbone gw of
+the same backbone network before being forwarded to the same backbone again
+is necessary. It was observed in a test setup that in rare cases these
+frames lead to looping unicast traffic backbone->mesh->backbone.
 
+Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
 Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
 ---
- net/batman-adv/distributed-arp-table.c |   50 ++++++++++++++++++++++++++++=
-++++
- net/batman-adv/distributed-arp-table.h |    9 +++++-
- net/batman-adv/soft-interface.c        |    4 ++
- 3 files changed, 62 insertions(+), 1 deletions(-)
+ net/batman-adv/routing.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distri=
-buted-arp-table.c
-index c11f035..58cb488 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -27,6 +27,7 @@
- #include <linux/if_arp.h>
- #include <linux/if_ether.h>
- #include <linux/if_vlan.h>
-+#include <linux/ip.h>
- #include <linux/in.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
-@@ -362,6 +363,55 @@ out:
- =09=09batadv_dat_entry_put(dat_entry);
- }
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index ae850f2..1ef0735 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -864,9 +864,11 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ =09int check, hdr_size =3D sizeof(*unicast_packet);
+ =09enum batadv_subtype subtype;
+ =09bool is4addr;
++=09struct ethhdr *ethhdr;
 
-+/**
-+ * batadv_dat_entry_check - check and update a dat entry
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @skb: socket buffer
-+ * @vid: VLAN identifier
-+ *
-+ * snoops incoming socket buffer for dat cache updates, if dat is enabled.
-+ * Can be called from other modules.
-+ */
-+void batadv_dat_entry_check(struct batadv_priv *bat_priv, struct sk_buff *=
-skb,
-+=09=09=09    unsigned short vid)
-+{
-+=09struct vlan_ethhdr *vhdr =3D NULL, tmp_vhdr;
-+=09struct ethhdr *ethhdr =3D NULL;
-+=09struct iphdr *iphdr =3D NULL, tmp_iphdr;
-+
-+=09if (!atomic_read(&bat_priv->distributed_arp_table))
-+=09=09return;
-+
+ =09unicast_packet =3D (struct batadv_unicast_packet *)skb->data;
+ =09unicast_4addr_packet =3D (struct batadv_unicast_4addr_packet *)skb->dat=
+a;
 +=09ethhdr =3D eth_hdr(skb);
-+
-+=09switch (ntohs(ethhdr->h_proto)) {
-+=09case ETH_P_IP:
-+=09=09iphdr =3D skb_header_pointer(skb, ETH_HLEN, sizeof(tmp_iphdr),
-+=09=09=09=09=09   &tmp_iphdr);
-+=09=09break;
-+=09case ETH_P_8021Q:
-+=09=09vhdr =3D skb_header_pointer(skb, 0, sizeof(tmp_vhdr),
-+=09=09=09=09=09  &tmp_vhdr);
-+=09=09if (!vhdr)
-+=09=09=09break;
-+=09=09if (ntohs(vhdr->h_vlan_encapsulated_proto) =3D=3D ETH_P_IP) {
-+=09=09=09iphdr =3D skb_header_pointer(skb, sizeof(tmp_vhdr),
-+=09=09=09=09=09=09   sizeof(tmp_iphdr),
-+=09=09=09=09=09=09   &tmp_iphdr);
+
+ =09is4addr =3D unicast_packet->packet_type =3D=3D BATADV_UNICAST_4ADDR;
+ =09/* the caller function should have already pulled 2 bytes */
+@@ -906,6 +908,20 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ =09=09=09}
+ =09=09}
+
++=09=09/* If this is a unicast packet from another backgone gw,
++=09=09 * drop it.
++=09=09 */
++=09=09orig_addr =3D ethhdr->h_source;
++=09=09orig_node =3D batadv_orig_hash_find(bat_priv, orig_addr);
++=09=09if (orig_node &&
++=09=09    batadv_bla_is_backbone_gw(skb, orig_node, hdr_size)) {
++=09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
++=09=09=09=09   "Dropped unicast pkt received from another backbone gw %pM.=
+\n",
++=09=09=09=09   orig_addr);
++=09=09=09batadv_orig_node_put(orig_node);
++=09=09=09return NET_RX_DROP;
 +=09=09}
-+=09=09break;
-+=09}
 +
-+=09if (iphdr) {
-+=09=09batadv_dbg(BATADV_DBG_DAT, bat_priv,
-+=09=09=09   "Snooped IP address: %pI4 %pM (vid: %d)\n",
-+=09=09=09   &iphdr->saddr, ethhdr->h_source,
-+=09=09=09   BATADV_PRINT_VID(vid));
-+=09=09batadv_dat_entry_add(bat_priv, iphdr->saddr,
-+=09=09=09=09     ethhdr->h_source, vid);
-+=09}
-+}
-+
- #ifdef CONFIG_BATMAN_ADV_DEBUG
-
- /**
-diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distri=
-buted-arp-table.h
-index 813ecea..cf1b93c 100644
---- a/net/batman-adv/distributed-arp-table.h
-+++ b/net/batman-adv/distributed-arp-table.h
-@@ -80,7 +80,8 @@ batadv_dat_init_own_addr(struct batadv_priv *bat_priv,
- int batadv_dat_init(struct batadv_priv *bat_priv);
- void batadv_dat_free(struct batadv_priv *bat_priv);
- int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset);
--
-+void batadv_dat_entry_check(struct batadv_priv *bat_priv, struct sk_buff *=
-skb,
-+=09=09=09    unsigned short vid);
- /**
-  * batadv_dat_inc_counter - increment the correct DAT packet counter
-  * @bat_priv: the bat priv with all the soft interface information
-@@ -173,6 +174,12 @@ static inline void batadv_dat_inc_counter(struct batad=
-v_priv *bat_priv,
- {
- }
-
-+static inline
-+void batadv_dat_entry_check(struct batadv_priv *bat_priv, struct sk_buff *=
-skb,
-+=09=09=09    unsigned short vid)
-+{
-+}
-+
- #endif /* CONFIG_BATMAN_ADV_DAT */
-
- #endif /* _NET_BATMAN_ADV_DISTRIBUTED_ARP_TABLE_H_ */
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interfac=
-e.c
-index 81665b1..1f1742a 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -28,6 +28,7 @@
- #include <linux/fs.h>
- #include <linux/if_ether.h>
- #include <linux/if_vlan.h>
-+#include <linux/ip.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
- #include <linux/kref.h>
-@@ -442,6 +443,9 @@ void batadv_interface_rx(struct net_device *soft_iface,
- =09=09goto dropped;
- =09}
-
-+=09/* Snoop incoming traffic for dat update */
-+=09batadv_dat_entry_check(bat_priv, skb, vid);
-+
- =09/* skb->dev & skb->pkt_type are set here */
- =09skb->protocol =3D eth_type_trans(skb, soft_iface);
-
+ =09=09if (batadv_dat_snoop_incoming_arp_request(bat_priv, skb,
+ =09=09=09=09=09=09=09  hdr_size))
+ =09=09=09goto rx_success;
 --
 1.7.0.4
 
