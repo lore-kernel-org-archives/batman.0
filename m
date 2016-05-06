@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 06 May 2016 12:03:57 +0200
-Message-ID: <1774690.zXGivVJ4dJ@sven-edge>
-In-Reply-To: <1462525107-19750-3-git-send-email-apape@phoenixcontact.com>
-References: <1462525107-19750-1-git-send-email-apape@phoenixcontact.com>
- <1462525107-19750-3-git-send-email-apape@phoenixcontact.com>
+Date: Fri, 06 May 2016 12:07:46 +0200
+Message-ID: <2103263.6dd1XhfGn3@sven-edge>
+In-Reply-To: <1462527819-11907-2-git-send-email-sven@narfation.org>
+References: <1462527819-11907-1-git-send-email-sven@narfation.org>
+ <1462527819-11907-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart14340448.NX9F9Fvt01";
+Content-Type: multipart/signed; boundary="nextPart2269415.yJNdegdfIv";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/6] batman-adv: speed up dat by
-	snooping received ip traffic
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 2/2] batman-adv: Fix refcnt leak in
+	batadv_v_*
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,51 +21,20 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart14340448.NX9F9Fvt01
+--nextPart2269415.yJNdegdfIv
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-Hi,
+Maybe it is better to rename the patch slightly.
 
-just some ideas (maybe not all of them are good):
+    batman-adv: Fix refcnt leak in batadv_v_neigh_*
 
-[...]
-> +       ethhdr = eth_hdr(skb);
-> +
-> +       switch (ntohs(ethhdr->h_proto)) {
-> +       case ETH_P_IP:
-> +               iphdr = skb_header_pointer(skb, ETH_HLEN, sizeof(tmp_iphdr),
-> +                                          &tmp_iphdr);
-> +               break;
-> +       case ETH_P_8021Q:
-> +               vhdr = skb_header_pointer(skb, 0, sizeof(tmp_vhdr),
-> +                                         &tmp_vhdr);
-> +               if (!vhdr)
-> +                       break;
-
-Do we need to continue here when there is no vhdr? Maybe just return.
-
-> +               if (ntohs(vhdr->h_vlan_encapsulated_proto) == ETH_P_IP) {
-
-Maybe the check here could be inverted to just return when this is not ETH_P_IP
-
-> +                       iphdr = skb_header_pointer(skb, sizeof(tmp_vhdr),
-> +                                                  sizeof(tmp_iphdr),
-> +                                                  &tmp_iphdr);
-> +               }
-> +               break;
-> +       }
-> +
-> +       if (iphdr) {
-
-You could just modify the check to:
-
-if (!iphdr)
-	return;
+But I will not resent the patch for only this change when not explicitly asked 
+for it.
 
 Kind regards,
 	Sven
---nextPart14340448.NX9F9Fvt01
+--nextPart2269415.yJNdegdfIv
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -73,20 +42,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXLGwNAAoJEF2HCgfBJntGcvcQAIq6/WuW/zRdz9xLsPsfieb7
-aKmmey2D7pypdnl9ZgSLkN9DifG//ZksWOK9dzHiYJpDEe+iprfZgRgnR35BbfBe
-RYWpOOLt/vy2fP/8pvl07gnGr5a/fM3NwSfqeHCb6NNqEiT8JKVABC69tEwlh2vQ
-CX6TW44b1VfRxW/TRu/eKMMu6Vgwjg/wkRNnFZt+aKq09Sm1SMfDb421fIfb/aER
-4jXyreOCzSB5VesVDruV86zjeuB+CKZOUoMnrXbUoZqT+OwZ+DSRLm359+vGczip
-/h/hJZpKh8UUBjKCH5rdrxl3j3uE5JR15VLUXsZkIpUsQ1O+Gdoy3m0uRQphcOSn
-7ldeMxP4QXUwhogPocaWAFYV1qBR2LyOEP2jAEfhd5erFimnibmB8BvgoPo2zo2i
-pwE8XJtHuqozQUFzHb0/pHWedYYYd453ly79wPCAGW8EhrFyufvhYpNGQb3B1akx
-FrGp5RiVjy4b4hlecL/itqRM7V6c31y7y7VAocyyAw8qnYBALX6L1aM/Yd7SysL3
-rPC8zg/g/mbwa1AWmRAliV2PntOlPfKPGfSigncOU9D7aIfpcNGAb4+Qi+mg7ylp
-gu8NnHGLs6GU9IaC8zQNZN3OoV+f32j1um15rnp5+gBwaK8z9nwEg4H5IdLXEgug
-tOKBsw98+xdv2ZrcWvl4
-=Yp1T
+iQIcBAABCgAGBQJXLGzyAAoJEF2HCgfBJntGqLsP/iOB7vNiBZI6MCdoNxeud2FM
+zyMUVoHJU2MhbSEuVGutHnFkza0sAArFFNekwpq8vG2YjEDdqHeKGcHxwnMiJHzw
+M8qAqKCR+8qM0cvzYuWDDj7/eKwjX7L+ijM9U+zxhU/AQ0aWRPlmVdB/qR9IMH7d
+tai5bGgtxto+iN3IbRmqc86WAHOi47L3SdZ7WhjW399fVkTmjISPe6oBIjFQqu5C
+8Q+s1geMKgEGn6sVSy9h9SARltolXnbG7S+rCD7UzVxAF/8UW1BMXKORB4EgkI1k
+LK6HWqWOa+iLBwKzfWBmwU51n0cgBBqoBVsFwER5oZpoF5rI1vVzCmGG7XheSnyy
+iIfd+YdgrIoZ94etbHS/sfpj/EdjqUNDc3HMOTV7KHp/uWFd9ye5Ick72hSQVf7D
+CUI5/tfpjM11Ppo6oEuIm/8urxBwjYwYbVwGKapC3HsrCTwrY7oF6kyhs6qtp3Dc
+kb6z2ZIgR5wE10GzPRJywsIrNkQlSc5DBJ82PzJ643ExjrlIUbORanFPa/s+cYio
+7ZQAOIc8xktkB6dnAkmjRrxe36QwxH4b2y1ivJxeqlVaa58utFW9Qhr0TyRIoC8d
+mlIRIPqGs6mkyus44pmw9QACvAb90XwO3ZnRCOaSsWN6OeVIdkhnkVtO7pd8eTq+
+t6AU0/4OWQYf6sg7M/0g
+=AM+8
 -----END PGP SIGNATURE-----
 
---nextPart14340448.NX9F9Fvt01--
+--nextPart2269415.yJNdegdfIv--
 
