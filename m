@@ -2,12 +2,12 @@ Return-Path: <apape@phoenixcontact.com>
 From: Andreas Pape <apape@phoenixcontact.com>
 In-Reply-To: <1462525107-19750-1-git-send-email-apape@phoenixcontact.com>
 References: <1462525107-19750-1-git-send-email-apape@phoenixcontact.com>
-Message-ID: <1462525107-19750-6-git-send-email-apape@phoenixcontact.com>
-Date: Fri, 6 May 2016 10:58:26 +0200
+Message-ID: <1462525107-19750-7-git-send-email-apape@phoenixcontact.com>
+Date: Fri, 6 May 2016 10:58:27 +0200
 content-transfer-encoding: quoted-printable
 content-type: text/plain; charset="utf-8"
-Subject: [B.A.T.M.A.N.] [PATCHv3 5/6] batman-adv: changed debug messages for
-	easier bla debugging
+Subject: [B.A.T.M.A.N.] [PATCHv3 6/6] batman-adv: handle race condition for
+	claims between gateways
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,83 +19,68 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Some of the bla debug messages are extended and additional messages are
-added for easier bla debugging. Some debug messages introduced with the
-dat changes in prior patches of this patch series have been changed to
-be more compliant to other existing debug messages.
+Consider the following situation which has been found in a test setup:
+Gateway B has claimed client C and gateway A has the same backbone
+network as B. C sends a broad- or multicast to B and directly after
+this packet decides to send another packet to A due to a better TQ
+value. B will forward the broad-/multicast into the backbone as it is
+the responsible gw and after that A will claim C as it has been
+chosen by C as the best gateway. If it now happens that A claims C
+before it has received the broad-/multicast forwarded by B (due to
+backbone topology or due to some delay in B when forwarding the
+packet) we get a critical situation: in the current code A will
+immediately unclaim C when receiving the multicast due to the
+roaming client scenario although the position of C has not changed
+in the mesh. If this happens the multi-/broadcast forwarded by B
+will be sent back into the mesh by A and we have looping packets
+until one of the gateways claims C again.
+In order to prevent this, unclaiming of a client due to the roaming
+client scenario is only done after a certain time is expired after
+the last claim of the client. 100 ms are used here, which should be
+slow enough for big backbones and slow gateways but fast enough not
+to break the roaming client use case.
 
 Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
 Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
 ---
- net/batman-adv/bridge_loop_avoidance.c |   18 ++++++++++++++----
- net/batman-adv/routing.c               |    2 +-
- 2 files changed, 15 insertions(+), 5 deletions(-)
+ net/batman-adv/bridge_loop_avoidance.c |   20 ++++++++++++++++----
+ 1 files changed, 16 insertions(+), 4 deletions(-)
 
 diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge=
 _loop_avoidance.c
-index 2f46ce9..c426327 100644
+index c426327..0790cbc 100644
 --- a/net/batman-adv/bridge_loop_avoidance.c
 +++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -715,8 +715,8 @@ static void batadv_bla_add_claim(struct batadv_priv *ba=
-t_priv,
- =09=09=09goto claim_free_ref;
-
- =09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
--=09=09=09   "bla_add_claim(): changing ownership for %pM, vid %d\n",
--=09=09=09   mac, BATADV_PRINT_VID(vid));
-+=09=09=09   "bla_add_claim(): changing ownership for %pM, vid %d to gw %pM=
-\n",
-+=09=09=09   mac, BATADV_PRINT_VID(vid), backbone_gw->orig);
-
- =09=09spin_lock_bh(&claim->backbone_gw->crc_lock);
- =09=09claim->backbone_gw->crc ^=3D crc16(0, claim->addr, ETH_ALEN);
-@@ -1240,10 +1240,13 @@ static void batadv_bla_purge_claims(struct batadv_p=
-riv *bat_priv,
- =09=09=09=09continue;
-
- =09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
--=09=09=09=09   "bla_purge_claims(): %pM, vid %d, time out\n",
-+=09=09=09=09   "bla_purge_claims(): timed out.\n");
-+
-+purge_now:
-+=09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
-+=09=09=09=09   "bla_purge_claims(): %pM, vid %d\n",
- =09=09=09=09   claim->addr, claim->vid);
-
--purge_now:
- =09=09=09batadv_handle_unclaim(bat_priv, primary_if,
- =09=09=09=09=09      claim->backbone_gw->orig,
- =09=09=09=09=09      claim->addr, claim->vid);
-@@ -1787,6 +1790,13 @@ bool batadv_bla_rx(struct batadv_priv *bat_priv, str=
-uct sk_buff *skb,
- =09=09/* possible optimization: race for a claim */
- =09=09/* No claim exists yet, claim it for us!
+@@ -1904,10 +1904,22 @@ bool batadv_bla_tx(struct batadv_priv *bat_priv, st=
+ruct sk_buff *skb,
+ =09=09/* if yes, the client has roamed and we have
+ =09=09 * to unclaim it.
  =09=09 */
-+
-+=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
-+=09=09=09   "bla_rx(): Unclaimed MAC %pM found. Claim it. Local: %s\n",
-+=09=09=09   ethhdr->h_source,
-+=09=09=09   batadv_is_my_client(bat_priv,
-+=09=09=09=09=09       ethhdr->h_source, vid) ?
-+=09=09=09   "yes" : "no");
- =09=09batadv_handle_claim(bat_priv, primary_if,
- =09=09=09=09    primary_if->net_dev->dev_addr,
- =09=09=09=09    ethhdr->h_source, vid);
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 1ef0735..99186da 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -916,7 +916,7 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- =09=09if (orig_node &&
- =09=09    batadv_bla_is_backbone_gw(skb, orig_node, hdr_size)) {
- =09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
--=09=09=09=09   "Dropped unicast pkt received from another backbone gw %pM.=
-\n",
-+=09=09=09=09   "recv_unicast_packet(): Dropped unicast pkt received from a=
-nother backbone gw %pM.\n",
- =09=09=09=09   orig_addr);
- =09=09=09batadv_orig_node_put(orig_node);
- =09=09=09return NET_RX_DROP;
+-=09=09batadv_handle_unclaim(bat_priv, primary_if,
+-=09=09=09=09      primary_if->net_dev->dev_addr,
+-=09=09=09=09      ethhdr->h_source, vid);
+-=09=09goto allow;
++=09=09if (batadv_has_timed_out(claim->lasttime, 100)) {
++=09=09=09/* only unclaim if the last claim entry is
++=09=09=09 * older than 100 ms to make sure we really
++=09=09=09 * have a roaming client here.
++=09=09=09 */
++=09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv, "bla_tx(): Roaming client %p=
+M detected. Unclaim it.\n",
++=09=09=09=09   ethhdr->h_source);
++=09=09=09batadv_handle_unclaim(bat_priv, primary_if,
++=09=09=09=09=09      primary_if->net_dev->dev_addr,
++=09=09=09=09=09      ethhdr->h_source, vid);
++=09=09=09goto allow;
++=09=09} else {
++=09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv, "bla_tx(): Race for claim %p=
+M detected. Drop packet.\n",
++=09=09=09=09   ethhdr->h_source);
++=09=09=09goto handled;
++=09=09}
+ =09}
+
+ =09/* check if it is a multicast/broadcast frame */
 --
 1.7.0.4
 
