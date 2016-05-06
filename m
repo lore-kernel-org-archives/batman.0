@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 06 May 2016 11:53:06 +0200
-Message-ID: <2070567.oGaoHu8Rmk@sven-edge>
+Date: Fri, 06 May 2016 12:03:57 +0200
+Message-ID: <1774690.zXGivVJ4dJ@sven-edge>
 In-Reply-To: <1462525107-19750-3-git-send-email-apape@phoenixcontact.com>
 References: <1462525107-19750-1-git-send-email-apape@phoenixcontact.com>
  <1462525107-19750-3-git-send-email-apape@phoenixcontact.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1726607.ftnllYezOn";
+Content-Type: multipart/signed; boundary="nextPart14340448.NX9F9Fvt01";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/6] batman-adv: speed up dat by
 	snooping received ip traffic
@@ -21,42 +21,51 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1726607.ftnllYezOn
+--nextPart14340448.NX9F9Fvt01
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday 06 May 2016 10:58:23 Andreas Pape wrote:
-> diff --git a/net/batman-adv/soft-interface.c
-> b/net/batman-adv/soft-interface.c index 81665b1..1f1742a 100644
-> --- a/net/batman-adv/soft-interface.c
-> +++ b/net/batman-adv/soft-interface.c
-> @@ -28,6 +28,7 @@
->  #include <linux/fs.h>
->  #include <linux/if_ether.h>
->  #include <linux/if_vlan.h>
-> +#include <linux/ip.h>
->  #include <linux/jiffies.h>
->  #include <linux/kernel.h>
->  #include <linux/kref.h>
+Hi,
 
-Haven't really looked at your patchset but was just interested in this new 
-function. But I didn't came to look at it because I saw this weird include. 
-Doesn't seem to make sense here at all when you look at the rest of the 
-changes in this file:
+just some ideas (maybe not all of them are good):
 
-> @@ -442,6 +443,9 @@ void batadv_interface_rx(struct net_device *soft_iface,
->  		goto dropped;
->  	}
-> 
-> +	/* Snoop incoming traffic for dat update */
-> +	batadv_dat_entry_check(bat_priv, skb, vid);
+[...]
+> +       ethhdr = eth_hdr(skb);
 > +
->  	/* skb->dev & skb->pkt_type are set here */
->  	skb->protocol = eth_type_trans(skb, soft_iface);
+> +       switch (ntohs(ethhdr->h_proto)) {
+> +       case ETH_P_IP:
+> +               iphdr = skb_header_pointer(skb, ETH_HLEN, sizeof(tmp_iphdr),
+> +                                          &tmp_iphdr);
+> +               break;
+> +       case ETH_P_8021Q:
+> +               vhdr = skb_header_pointer(skb, 0, sizeof(tmp_vhdr),
+> +                                         &tmp_vhdr);
+> +               if (!vhdr)
+> +                       break;
+
+Do we need to continue here when there is no vhdr? Maybe just return.
+
+> +               if (ntohs(vhdr->h_vlan_encapsulated_proto) == ETH_P_IP) {
+
+Maybe the check here could be inverted to just return when this is not ETH_P_IP
+
+> +                       iphdr = skb_header_pointer(skb, sizeof(tmp_vhdr),
+> +                                                  sizeof(tmp_iphdr),
+> +                                                  &tmp_iphdr);
+> +               }
+> +               break;
+> +       }
+> +
+> +       if (iphdr) {
+
+You could just modify the check to:
+
+if (!iphdr)
+	return;
 
 Kind regards,
 	Sven
---nextPart1726607.ftnllYezOn
+--nextPart14340448.NX9F9Fvt01
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -64,20 +73,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXLGmCAAoJEF2HCgfBJntGzukP/1a5mKFbZujCY4ry8uyWA+Lt
-GDL1s44BP9M4iduNWuRcEU7vifAPc3NfTBUEV3/SPHN/Nf3U5lEVxBDqJj3/cBab
-qOBc6L40kIzet/6rRfQGuLigkroCtPkTAz6HQZO4LkI5zAuqPjtJb6WbOQ6YKsVX
-ArPbj1g3ZeJA8urbLKipMimF4v78qBUUGNmlZ7w9gGArqy7RLoR1QQug4sbm4Tke
-F0/rn6Zwg5n/m3yGFNUtkS1NwifOJlsGc7LoGwCbzjiZrBpWNM0daz2pvNYXn+1T
-2H54yP3EMec0Hpmngy/3eHRVNH+Z0I+qJzpsPzAk5XWBLEm7AhFHzJfQYv1HSRuR
-pkAgOYIY+gBAfXTtHdV0Xp0VVbSYaIJyMnUOonCnR3SRIz4WYFdM/gk9WZzVlHcz
-hsPdqJWNGxCRQL4vbADldbbPX5yPZuCjesQQJntchD6IceHlv9ZrDnkLr/BKyZWy
-VZT+8weSAa6El44nDifKHHlHd+AqUI54fu1jErz1KAIq5M2iT+v6A1cZIUfGua/y
-ffLEldjbQw9hYWAEZ2K9Lvt4GrLL74OZCdGuGCseSBUxQ0bTSO2XojkVWx4KP6he
-+oVuKN8W6VRXPpIedhVI5+G4k9pDo2w3o2LYUXwH7xY9oqVl3Smtaibuy1NwYiWI
-phRVNKF+aWgjZxgvM88w
-=das9
+iQIcBAABCgAGBQJXLGwNAAoJEF2HCgfBJntGcvcQAIq6/WuW/zRdz9xLsPsfieb7
+aKmmey2D7pypdnl9ZgSLkN9DifG//ZksWOK9dzHiYJpDEe+iprfZgRgnR35BbfBe
+RYWpOOLt/vy2fP/8pvl07gnGr5a/fM3NwSfqeHCb6NNqEiT8JKVABC69tEwlh2vQ
+CX6TW44b1VfRxW/TRu/eKMMu6Vgwjg/wkRNnFZt+aKq09Sm1SMfDb421fIfb/aER
+4jXyreOCzSB5VesVDruV86zjeuB+CKZOUoMnrXbUoZqT+OwZ+DSRLm359+vGczip
+/h/hJZpKh8UUBjKCH5rdrxl3j3uE5JR15VLUXsZkIpUsQ1O+Gdoy3m0uRQphcOSn
+7ldeMxP4QXUwhogPocaWAFYV1qBR2LyOEP2jAEfhd5erFimnibmB8BvgoPo2zo2i
+pwE8XJtHuqozQUFzHb0/pHWedYYYd453ly79wPCAGW8EhrFyufvhYpNGQb3B1akx
+FrGp5RiVjy4b4hlecL/itqRM7V6c31y7y7VAocyyAw8qnYBALX6L1aM/Yd7SysL3
+rPC8zg/g/mbwa1AWmRAliV2PntOlPfKPGfSigncOU9D7aIfpcNGAb4+Qi+mg7ylp
+gu8NnHGLs6GU9IaC8zQNZN3OoV+f32j1um15rnp5+gBwaK8z9nwEg4H5IdLXEgug
+tOKBsw98+xdv2ZrcWvl4
+=Yp1T
 -----END PGP SIGNATURE-----
 
---nextPart1726607.ftnllYezOn--
+--nextPart14340448.NX9F9Fvt01--
 
