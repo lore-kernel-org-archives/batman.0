@@ -1,14 +1,13 @@
 Return-Path: <a@unstable.cc>
-Date: Sat, 7 May 2016 17:15:14 +0800
+Date: Sat, 7 May 2016 17:33:57 +0800
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160507091514.GC3907@prodigo.lan>
+Message-ID: <20160507093357.GD3907@prodigo.lan>
 References: <1462566429-26709-1-git-send-email-sven@narfation.org>
- <1656407.PytZZyZNAi@sven-edge>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="jL2BoiuKMElzg3CS"
+ protocol="application/pgp-signature"; boundary="SWTRyWv/ijrBap1m"
 Content-Disposition: inline
-In-Reply-To: <1656407.PytZZyZNAi@sven-edge>
+In-Reply-To: <1462566429-26709-1-git-send-email-sven@narfation.org>
 Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix double
  neigh_node_put in batadv_v_ogm_route_update
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -21,89 +20,57 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 
---jL2BoiuKMElzg3CS
+--SWTRyWv/ijrBap1m
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, May 07, 2016 at 09:03:13AM +0200, Sven Eckelmann wrote:
-> On Friday 06 May 2016 22:27:09 Sven Eckelmann wrote:
-> > The router is put down twice when it was non-NULL and either orig_ifinf=
-o is
-> > NULL afterwards or batman-adv receives a packet with the same sequence
-> > number. This will end up in a use-after-free when the batadv_neigh_node=
- is
-> > removed because the reference counter ended up too early at 0.
-> >=20
-> > Fixes: 667996ebeab4 ("batman-adv: OGMv2 - implement originators logic")
-> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> [...]
+On Fri, May 06, 2016 at 10:27:09PM +0200, Sven Eckelmann wrote:
+> The router is put down twice when it was non-NULL and either orig_ifinfo =
+is
+> NULL afterwards or batman-adv receives a packet with the same sequence
+> number. This will end up in a use-after-free when the batadv_neigh_node is
+> removed because the reference counter ended up too early at 0.
 >=20
-> There is a conflict with master. I hope that Antonio can share how it can=
- be
-> resolved when he submits following remaining fixes to David:
->=20
->  * batman-adv: Fix integer overflow in batadv_iv_ogm_calc_tq
->  * batman-adv: Avoid duplicate neigh_node additions
->  * batman-adv: make sure ELP/OGM orig MAC is updated on address change
->  * batman-adv: Fix unexpected free of bcast_own on add_if error
->  * batman-adv: Avoid nullptr derefence in batadv_v_neigh_is_sob
->  * batman-adv: Fix refcnt leak in batadv_v_neigh_*
->  * batman-adv: Fix double neigh_node_put in batadv_v_ogm_route_update
->=20
-> The solution for the merge conflict with master is:
->=20
-> --- a/net/batman-adv/bat_v_ogm.c
-> +++ b/net/batman-adv/bat_v_ogm.c
-> @@ -510,17 +510,10 @@
->                 goto out;
->         }
-> =20
-> -<<<<<<<
->         /* Mark the OGM to be considered for forwarding, and update routes
->          * if needed.
->          */
->         forward =3D true;
-> -=3D=3D=3D=3D=3D=3D=3D
-> -       if (router) {
-> -               batadv_neigh_node_put(router);
-> -               router =3D NULL;
-> -       }
-> ->>>>>>>
-> =20
->         batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
->                    "Searching and updating originator entry of received p=
-acket\n");
+> Fixes: 667996ebeab4 ("batman-adv: OGMv2 - implement originators logic")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-Thanks a lot for this.
+Tested-by: Antonio Quartulli <a@unstable.cc>
+
+it fixes the crash reported in "Kernel panic by BATMAN_V @WBMv9" for me.
+
+@Marek: can you also test this patch in your environment to see if you stil=
+l see
+the crash?
 
 Cheers,
 
 --=20
 Antonio Quartulli
 
---jL2BoiuKMElzg3CS
+--SWTRyWv/ijrBap1m
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXLbIiAAoJEJ4aZjxxc6bKSdQQAMIZf0GnZ2Sy4s17IQWSEAsg
-LsoEFFPXkXqt3BUhp9sp0sQGcHPOC2RVOtELLQ7Ei/t+GKkoJWZNinn+3pIeSqmz
-FRcmKxqJDCAQtzOVQe2DD1Z0jNVIEEncSMCHv+trDB53EprQzAJVw3W4GJyJkTyW
-Vw432WjQBRjIdBATFUIe96Hon7DKaIg6NX8la8Qhez3QCW2BwiXpqi9PHzpQpHTv
-gaTIjAzYfTreHkdyhyGvMfO9xBoUXLxuhSnsgUYYZncJMJwXJQnlGFS7v5nichUo
-mYtwob8ZeK5ZX8xa9EaZK9mk6CilRRy7p3V1kAGlQSbQ8pWzhM2YeA75Qv1Q5QkV
-ry2B6vEZ1KgmCLKdnO4VcGFyQJoE3FpM4TG+1HUiuPJlK2B0jm7udJDfMeDnCspc
-obcljk8zMBeBnNzraWgDGyxcBvjaOGXGZc2ze13xFFxSR/zkYKifaMBz5HAEj/UN
-ggVUuz4Jc5BV23couJ+BH3AZ62d8Rsvt6ENjZh/GZtlW0MbyTkIwnbUOxU5IkiAN
-PPfyiVml584MhQnkaesjYY6TC1X+iY27OuzHBU7f/iL/5gru3PtX3iyDoet5Zjot
-qBIpA9C8DhvKgid68X+5g5zAaiMLUWoF/P19H59YWXzgc8GiohfzcBA/EUg1vFxi
-QXLauTzATJgPMPRR0YXL
-=maGb
+iQIcBAEBCAAGBQJXLbaFAAoJEJ4aZjxxc6bKiSIP/3GWtneD2f/GQcyx4aYG82UT
+oP7O+1Ov+Rydgs7g6Irljd0ED5m/g7SiiOmDpNXV99Rf+cfVzbMq3qg1qv7c67QL
+27Z/6jpJB3VdwNs6XY1DKFa1K47Akg6OkqnuyTMmIlJxomwT4XyRrj5imqomaDHi
+JuRDEMH0BQiQFV8Blw9xc0j2iyx9XPGqq2+QyL3D9etpTGE9702B6TyoWffnqLM1
+JiOYKungBWUCPbibUe2/Z6k4xnqXjXjB6y//QrDwh7ouJxZvJN3B4Ubqg2oGL6Zn
+U4Nkun/Y/+35FOpX7OuY7V+CHIjO5yDXYraqMffuX20Cepxn/GzVr8wCiRIoFB7Q
+CkNB8/HY3Da8nxwjmvIJWUKa7EJeajLqFgzp2ppN0zhVHpvrB4LmLTtNq1MPRKfV
+l0V8iNNaq+wcLBv9onk46yETF+d++ASsn5NERVynl3IeOcYEOWpcnDbZZEO4BmDM
+zWjRlliEnGmFqDgPB7B27xhSixf7mb6mjxqXVod1CTf+i2mcfv+3ui0OkczmmWR5
+Jk6cRzBSx0+FypMf48lLF1ORrLHC+ARXlkZDd90DpZoWCQ5R8Uc7AaaTbPG9rafb
+rnfMEsQjchCjzbMFMqfI/OEL/ewEPPanjisuovTYQ5VLN+7FoYZ7OH6TT7yuUpZp
+0ySnu52mwuK6LPEOhTLb
+=5ZaR
 -----END PGP SIGNATURE-----
 
---jL2BoiuKMElzg3CS--
+--SWTRyWv/ijrBap1m--
