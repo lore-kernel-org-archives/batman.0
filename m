@@ -1,14 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 07 May 2016 20:07:51 +0800
-Message-ID: <2142847.UKtbylqlvC@voltaire>
-In-Reply-To: <1462566429-26709-1-git-send-email-sven@narfation.org>
-References: <1462566429-26709-1-git-send-email-sven@narfation.org>
+Return-Path: <mschiffer@universe-factory.net>
+References: <44fbd783f3734573bf7121e8bb3819fe@Ek.usurf.usu.edu>
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+Message-ID: <33aefc13-e1a0-cef5-74f1-d21d7112b7d3@universe-factory.net>
+Date: Sat, 7 May 2016 14:15:57 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2613205.jgjs1TSzTj";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix double
-	neigh_node_put in batadv_v_ogm_route_update
+In-Reply-To: <44fbd783f3734573bf7121e8bb3819fe@Ek.usurf.usu.edu>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature";
+ boundary="Rt97rQduPfTeE5DuFUnvxJGvL6O3NJ2Cv"
+Subject: Re: [B.A.T.M.A.N.] Alfred 2016.1 bind errors
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,51 +18,113 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart2613205.jgjs1TSzTj
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--Rt97rQduPfTeE5DuFUnvxJGvL6O3NJ2Cv
+Content-Type: multipart/mixed; boundary="SkLF07ipolN5GTU2IwetFH59oGr174FUM"
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking
+ <b.a.t.m.a.n@lists.open-mesh.org>
+Message-ID: <33aefc13-e1a0-cef5-74f1-d21d7112b7d3@universe-factory.net>
+Subject: Re: [B.A.T.M.A.N.] Alfred 2016.1 bind errors
+References: <44fbd783f3734573bf7121e8bb3819fe@Ek.usurf.usu.edu>
+In-Reply-To: <44fbd783f3734573bf7121e8bb3819fe@Ek.usurf.usu.edu>
 
-On Friday, May 06, 2016 22:27:09 Sven Eckelmann wrote:
-> The router is put down twice when it was non-NULL and either orig_ifinfo is
-> NULL afterwards or batman-adv receives a packet with the same sequence
-> number. This will end up in a use-after-free when the batadv_neigh_node is
-> removed because the reference counter ended up too early at 0.
-> 
-> Fixes: 667996ebeab4 ("batman-adv: OGMv2 - implement originators logic")
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> It looks like this bug was solved in next/master by refactoring in
-> 30c96bc7870f ("batman-adv: move and restructure batadv_v_ogm_forward")
-> 
-> only compile tested. Please add so many reported by as you want - 
-> just don't know it it is *the* bug and who actually reported it.
-> ---
->  net/batman-adv/bat_v_ogm.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+--SkLF07ipolN5GTU2IwetFH59oGr174FUM
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Applied in revision fc3e79d.
+On 05/06/2016 10:45 PM, Jonathan Haws wrote:
+> I am trying to get familiar with the Alfred tools and downloaded versio=
+n=20
+> 2016.1.  Unfortunately it didn't work - I couldn't get past a bind erro=
+r:
+>=20
+> root@sierra1:~# ./alfred -m -i bat0
+> can't bind: Cannot assign requested address
+> Failed to open interfaces
+>=20
+> I had setup batman-adv with the commands:
+>=20
+> batctl if add eth0
+> ip link set up bat0 (eth0 was already up)
+>=20
+> I rolled back to 2015.0 (per a hint at=20
+> http://wiki.pinneberg.freifunk.net/alfred) and alfred started up just=20
+> fine instead of giving the error.  However it periodically gives the=20
+> following message:
+>=20
+> announce master ...
+> Error during sent: Cannot assign requested address
+>=20
+> I also tried alfred -m -i eth0 with the same results.
+>=20
+> Is there something wrong in my configuration?  Can anyone point me in=20
+> the right direction?  I've read through the Wiki for both batman-adv an=
+d=20
+> alfred and am out of ideas.
+>=20
+> I'm trying to prove this setup and get familiar with it in a virtual=20
+> environment, so I am using VirtualBox to setup a network of 4 nodes in =
 
-Thanks,
-Marek
+> my mesh.  Should be simple enough, and batman-adv seems to work just=20
+> great - once its up and running, all nodes can communicate one with=20
+> another as expected.  Only issue is I am trying to get alfred to work=20
+> with batadv-vis to give me a graph to tell me it really is working righ=
+t.
+>=20
+> Thoughts?
+> Thanks!
+> Jon
+>=20
 
---nextPart2613205.jgjs1TSzTj
+alfred explicitly binds to the link-local IPv6 address of the interface
+since version 2016.0. I suspect one of the following caveats might be you=
+r
+problem:
+
+* The link-local IPv6 address must match the MAC address of the interface=
+
+(here bat0) (derived by flipping the 2 bit of the first byte, and adding
+fe80 and fffe); this ususally breaks when the MAC address is changed afte=
+r
+the interface is up
+* The link-local address must not be tentative when alfred is started
+(duplicate address detection must have finished; this usually means that
+the interface must be up for 3 seconds before alfred is started)
+
+I hope this helps...
+
+Regards,
+Matthias
+
+
+--SkLF07ipolN5GTU2IwetFH59oGr174FUM--
+
+--Rt97rQduPfTeE5DuFUnvxJGvL6O3NJ2Cv
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXLdqYAAoJEFNVTo/uthzA4f0IAKxiErnr574vIl1h/z8T0+Ut
-22lYV2PfH1LUhBWXyuGuRYeeastR3YEm5wxSwRuRz3qdeEM0eJ1xnkHdkJzKnb9Q
-t5PPZ/DNhjsGEdEPj28JlLkEKlLXMLfBwSBhgqCQZKVRcuY7+BOs4TQEMAu8zgjV
-43mLx3kc7kTqpQwlgi3k1h/VsLMGvuJ9fQxqHc+I5HINhHngTUtYVHEBeBEZIWQn
-WJ5LdDptfTUp2cWZ9TF5d95a7puasWrXS46zFeC+kyBcA75BJw3vF9djTLnlQxrh
-lJoxcjbsuHT5vtNp1JI5wD+wVcOe9oS6jYD+MHIVM8tfAc6VwnYJAvDNP1NgtDM=
-=rugI
+iQIcBAEBCgAGBQJXLdx9AAoJEBbvP2TLIB2cmm0QANsa6mcc4rpMrfKglKBCIjNi
+XAkL9hvKigafxBXKBaUfnTEMfXSRlrixFesRD/VaT9x/fhjQCpRblJQNxRshWFt3
+16Y+FTp8D+u0G+ugyo1EzkSAUXxe/IsWWAn8l8LPM3r+Stw8bXoaYFBDJHCHSv6k
+Cdb+Trfievc0dk14prxwEnw07UU3QojpsEZjWBcVd56ede0K9UVhvHdzL63e6V9l
+II22dT0pXiXYHRntr/qk4nA0pAyaj81ViR3+yuBEZ2dzXiRVqBcS8E12vHKtW3z5
+DMupTjNfywiCFCI365DPJKSL6dpMlCpZRnRUc4b2NQSatDt87gwz6ycHPc5by85s
+s1+zJ/tkF7Yo9cuhJf75wBxt7QPEnIls6fCnH+0lnxSNGZ1JzUaGj7Oc6saT8Q8k
+ZbRgmbNfr1+iaIK499XDlGHZjIqwd7p5KXUf+qLY+6vohaOn81TUnvh0NDRX0QE1
+3o+u69uYV2cWZQ+mDPyBBgCv3EGAf9BWtLB6VdliqZKnAHNLVqDGxk89lk9WiRxf
+210/X99nxuPn7gW1qXyC+ID9o58EbJXhJBb9KZ1qKKePer6iVTH2oPj/Q4oD2g7x
+CzEWI4kNatFvCeLyds/bjtnKty6zu68x/7LvD7B46OjazgH5IygV+Czr32IxxCKg
+H9YEFdWj0+9GC91MiyVb
+=bu2t
 -----END PGP SIGNATURE-----
 
---nextPart2613205.jgjs1TSzTj--
-
+--Rt97rQduPfTeE5DuFUnvxJGvL6O3NJ2Cv--
