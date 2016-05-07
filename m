@@ -1,13 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 07 May 2016 08:39:54 +0200
-Message-ID: <1906308.Wsn34X6QAt@sven-edge>
-In-Reply-To: <44fbd783f3734573bf7121e8bb3819fe@Ek.usurf.usu.edu>
-References: <44fbd783f3734573bf7121e8bb3819fe@Ek.usurf.usu.edu>
+Date: Sat, 07 May 2016 09:03:13 +0200
+Message-ID: <1656407.PytZZyZNAi@sven-edge>
+In-Reply-To: <1462566429-26709-1-git-send-email-sven@narfation.org>
+References: <1462566429-26709-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1724613.lWiqNDUSuE";
+Content-Type: multipart/signed; boundary="nextPart38491471.nfb4GZaIQD";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Alfred 2016.1 bind errors
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix double
+	neigh_node_put in batadv_v_ogm_route_update
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,44 +20,61 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1724613.lWiqNDUSuE
-Content-Transfer-Encoding: 7Bit
+--nextPart38491471.nfb4GZaIQD
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday 06 May 2016 20:45:50 Jonathan Haws wrote:
-> I am trying to get familiar with the Alfred tools and downloaded version
-> 2016.1.  Unfortunately it didn't work - I couldn't get past a bind error:
-> 
-> root@sierra1:~# ./alfred -m -i bat0
-> can't bind: Cannot assign requested address
-> Failed to open interfaces
-> 
-> I had setup batman-adv with the commands:
-> 
-> batctl if add eth0
-> ip link set up bat0 (eth0 was already up)
-> 
-> I rolled back to 2015.0 (per a hint at
-> http://wiki.pinneberg.freifunk.net/alfred) and alfred started up just
-> fine instead of giving the error.  However it periodically gives the
-> following message:
+On Friday 06 May 2016 22:27:09 Sven Eckelmann wrote:
+> The router is put down twice when it was non-NULL and either orig_ifi=
+nfo is
+> NULL afterwards or batman-adv receives a packet with the same sequenc=
+e
+> number. This will end up in a use-after-free when the batadv_neigh_no=
+de is
+> removed because the reference counter ended up too early at 0.
+>=20
+> Fixes: 667996ebeab4 ("batman-adv: OGMv2 - implement originators logic=
+")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+[...]
 
-Thanks for reporting it (why didn't FF Pinneberg report it?). Can you please 
-try following workaround:
+There is a conflict with master. I hope that Antonio can share how it c=
+an be
+resolved when he submits following remaining fixes to David:
 
-    make clean
-    make CONFIG_ALFRED_CAPABILITIES=n
-    # only when you've installed it before
-    make CONFIG_ALFRED_CAPABILITIES=n install
-    # try it again
-    ./alfred -m -i bat0
+ * batman-adv: Fix integer overflow in batadv_iv_ogm_calc_tq
+ * batman-adv: Avoid duplicate neigh_node additions
+ * batman-adv: make sure ELP/OGM orig MAC is updated on address change
+ * batman-adv: Fix unexpected free of bcast_own on add_if error
+ * batman-adv: Avoid nullptr derefence in batadv_v_neigh_is_sob
+ * batman-adv: Fix refcnt leak in batadv_v_neigh_*
+ * batman-adv: Fix double neigh_node_put in batadv_v_ogm_route_update
 
-It would also be interesting to see the output of `ip addr show dev bat0` and 
-the used kernel version.
+The solution for the merge conflict with master is:
 
-Kind regards,
-	Sven
---nextPart1724613.lWiqNDUSuE
+=2D-- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -510,17 +510,10 @@
+                goto out;
+        }
+=20
+=2D<<<<<<<
+        /* Mark the OGM to be considered for forwarding, and update rou=
+tes
+         * if needed.
+         */
+        forward =3D true;
+=2D=3D=3D=3D=3D=3D=3D=3D
+=2D       if (router) {
+=2D               batadv_neigh_node_put(router);
+=2D               router =3D NULL;
+=2D       }
+=2D>>>>>>>
+=20
+        batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+                   "Searching and updating originator entry of received=
+ packet\n");
+--nextPart38491471.nfb4GZaIQD
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -64,20 +82,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXLY26AAoJEF2HCgfBJntGKgsP/3sUHMyIqAzlo/XU27PfyRU6
-2I5iIMGMoYa42ya8bZWWIdsTBeYbXBOe9l5J8xQK9QR7+I86ijYmFcKtRxR6hQAo
-sQUWw0pEjQd+Wr4/0oMLp2gfDhalkoOvOcgFALQk2n96kG0SmFycI6osk0Ba0pXa
-TOc71jpavBTr7lamK4FCu8t0pBQ3X55qKHBD4b2CyLKAjIk9u0PFVf4TRzcoiFBo
-SjNw5Iftfxz/trux6hbNWhMXhs0Us0vJB5hpEeeFOdWKCsOj348yOSmxgZtQSlrr
-kt+b/ET8XyQBGOI17eKfwde0L1SOZzZZlJiRj/RYZS4gwUTYiQdL/Pm9i6OlSFyu
-TwI4mn8FP3gDytkSy1foUUYV0VFCb5OLgE0ka/DT+C3xzwht4420GDYwQSnXE9iy
-wMHMeF1QiYizi6k1CIZrCcIamlbaIa6LzIjvpLlOK12G+ClbhUv6qEbI2NHhu3CW
-jYmiP6EG9c3pT6SESFPfUZZr2TyBt5T+VncmxQYS4pGeMZ88Tw6wO44cSael5JLJ
-Q7KfCMOZgFAIHoTCUon5fHS9FBk1nxKvSq++nL7ivIHMaEpYNQkGkl3zXtyX1+D+
-FHTRXDdhKCeHzlSjszh8sf7BLYfHk/C8avB4nM+lNMF7BzbPg3K1ZDBlydGizv5W
-q5bP34xb3g9FMtZNzP2L
-=LbaJ
+iQIcBAABCgAGBQJXLZMxAAoJEF2HCgfBJntGOFYP/j2a0i1AC7TQqnE7ffkcRb4j
+yudiO/GpEnezqPDKjBDE5phTMBMWEljmnwIh7NQpcgzQCQdEzaDa3HOVlKY2jACs
+4WOY0vwGSgtHfuhYsfFwlhQChPbeeK7ROj/XRSrt6EAnh1KiiT1dKOrqNm16UxVl
+1MADq3cxzHc0gmgGzmUORjP4fduWS7E1SZqsJzbEH2UgUx+SnZqmzoxSBHqf6tXI
+Pqu6B4khh6w5gjWV9fQqMi2EYQ4OmHFBrEJYAGhA1JqFmZcZG3DWSg+ZUvuo6kdv
+55Nw1T8fme/+2YDEOyFJnhpoZZZaXexFWCbGzFEz42ImndLqSwc4rmDJ0kuStDBb
+tDbKnroWy8sTx5MfJM0oMqsdSkhSFOMVbmLgCcp6FJVpjMJ3q3DqeVWwwo4v3oTc
+LsO1elrhprpToVr6+NLxKji+R89H8WVGtKbI0gIVR+qvlfBdo+HUwGMkAmhiTiXz
+4lw8fx0u55tZPldA8RG8f3qWtC1Ye9pjGJj0RII9/fntG/Iag6Fhwp97BekdyKZ+
+vulAlJdJpEu7NtkmlcbKv9RHWcwaQWlN826xqhX3Gk+HcbvHtKa3if+JtQwXR9kB
+vWRn+EibRFkKX+/ORQIaMzzh6fyAYvonDyOS2TrMcLVGgO2G/B30nh8uSCg+UYEW
+O4PrnxgMUiC+eVgnRdxK
+=jEPK
 -----END PGP SIGNATURE-----
 
---nextPart1724613.lWiqNDUSuE--
+--nextPart38491471.nfb4GZaIQD--
 
