@@ -1,15 +1,14 @@
-Return-Path: <Jonathan.Haws@sdl.usu.edu>
-From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Date: Sat, 7 May 2016 16:48:38 +0000
-Message-ID: <73e28a80cb294865afefaa4ec6166bfd@Ek.usurf.usu.edu>
-References: <44fbd783f3734573bf7121e8bb3819fe@Ek.usurf.usu.edu>
- <1906308.Wsn34X6QAt@sven-edge>
- <bd9e8031919e41188957b3791a29d2d5@Ek.usurf.usu.edu>
-Content-Language: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Return-Path: <contact@wifibot.com>
+References: <572DF6E3.3030901@wifibot.com> <1884294.h0rzVsQuVd@sven-edge>
+ <572E1ADE.5040400@wifibot.com> <1916326.J0HcRb74sF@sven-edge>
+From: contact <contact@wifibot.com>
+Message-ID: <572E1D1C.7010505@wifibot.com>
+Date: Sat, 7 May 2016 18:51:40 +0200
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] Alfred 2016.1 bind errors
+In-Reply-To: <1916326.J0HcRb74sF@sven-edge>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] no able to switch routing algo to V ?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,15 +18,35 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, Sven
- Eckelmann <sven@narfation.org>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-=0A=
-> I am using the Yocto project to build my kernel/distro for my VMs, since=
-=0A=
-> that is what we use on our hardware.=0A=
-=0A=
-What I mean by that is that I don't have or need libcap, so I already =0A=
-have built with CONFIG_ALFRED_CAPABILITIES=3Dn.=0A=
-=0A=
-Thanks!=0A=
+yes it is in the routing feed I did not change anything from the openwrt 
+files.
+
+Ok, so you suggest to use the devel feed with thye last commit ?
+
+Regards,
+
+Laurent
+
+On 07/05/2016 18:44, Sven Eckelmann wrote:
+> On Saturday 07 May 2016 18:42:06 contact wrote:
+>> it was the default version present in yesterday openwrt stable 15.05.1
+>>
+>> in batman makefile i have :
+>>
+>> include $(TOPDIR)/rules.mk
+>>
+>> PKG_NAME:=batman-adv
+>>
+>> PKG_VERSION:=2016.1
+>> PKG_RELEASE:=1
+>> PKG_MD5SUM:=8c8e449009b4d29512d26ee308960bb5
+> This doesn't say much (and you most likely meant openwrt-routing because
+> openwrt itself doesn't provide batman-adv). But and Marek fixed a crash since
+> yesterday. Not sure if it is related.
+>
+> Kind regards,
+> 	Sven
+
