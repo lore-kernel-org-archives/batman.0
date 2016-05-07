@@ -1,14 +1,9 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun,  8 May 2016 07:25:15 +0800
-Message-Id: <1462663515-20691-2-git-send-email-mareklindner@neomailbox.ch>
-In-Reply-To: <1462663515-20691-1-git-send-email-mareklindner@neomailbox.ch>
-References: <1462663515-20691-1-git-send-email-mareklindner@neomailbox.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: update elp interval
-	documentation
+Date: Sun,  8 May 2016 07:47:16 +0800
+Message-Id: <1462664836-21988-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: init ELP tweaking options only
+	once
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,24 +16,66 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
+The ELP interval and throughput override interface settings are initialized
+with default settings on every iface_enable() call. Thus, the user space
+configuration is overridden as soon as an interface is going down and
+coming up again.
+This patch prevents this behavior by moving the configuration init to the
+interface detection routine which runs only once per interface.
+
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- Documentation/ABI/testing/sysfs-class-net-batman-adv | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/bat_v.c          | 5 -----
+ net/batman-adv/bat_v_elp.c      | 1 -
+ net/batman-adv/hard-interface.c | 7 +++++++
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-net-batman-adv b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-index ef630a6..24c845e 100644
---- a/Documentation/ABI/testing/sysfs-class-net-batman-adv
-+++ b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-@@ -4,7 +4,7 @@ Date:           Feb 2014
- Contact:        Linus Lüssing <linus.luessing@web.de>
- Description:
-                 Defines the interval in milliseconds in which batman
--                sends its probing packets for link quality measurements.
-+                emits probing packets for neighbor sensing (ELP).
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index c16cd44..3c5d251 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -70,11 +70,6 @@ static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
+ 	if (ret < 0)
+ 		batadv_v_elp_iface_disable(hard_iface);
  
- What:           /sys/class/net/<iface>/batman-adv/iface_status
- Date:           May 2010
+-	/* enable link throughput auto-detection by setting the throughput
+-	 * override to zero
+-	 */
+-	atomic_set(&hard_iface->bat_v.throughput_override, 0);
+-
+ 	return ret;
+ }
+ 
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 8909d1e..cf0262b 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -344,7 +344,6 @@ int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
+ 	/* randomize initial seqno to avoid collision */
+ 	get_random_bytes(&random_seqno, sizeof(random_seqno));
+ 	atomic_set(&hard_iface->bat_v.elp_seqno, random_seqno);
+-	atomic_set(&hard_iface->bat_v.elp_interval, 500);
+ 
+ 	/* assume full-duplex by default */
+ 	hard_iface->bat_v.flags |= BATADV_FULL_DUPLEX;
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index db2009d..dd6a5a2 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -683,6 +683,13 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 	if (batadv_is_wifi_netdev(net_dev))
+ 		hard_iface->num_bcasts = BATADV_NUM_BCASTS_WIRELESS;
+ 
++	/* enable link throughput auto-detection by setting the throughput
++	 * override to zero
++	 */
++	atomic_set(&hard_iface->bat_v.throughput_override, 0);
++
++	atomic_set(&hard_iface->bat_v.elp_interval, 500);
++
+ 	/* extra reference for return */
+ 	kref_init(&hard_iface->refcount);
+ 	kref_get(&hard_iface->refcount);
 -- 
 2.8.0.rc3
 
