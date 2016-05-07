@@ -1,9 +1,9 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat,  7 May 2016 18:43:42 +0800
-Message-Id: <1462617822-5304-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: initialize ELP orig address on
-	secondary interfaces
+Date: Sat,  7 May 2016 19:54:17 +0800
+Message-Id: <1462622057-26286-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: initialize ELP orig
+	address on secondary interfaces
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,6 +15,9 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
+
+This fix prevents nodes to wrongly create a 00:00:00:00:00:00 originator
+which can potentially interfere with the rest of the neighbor statistics.
 
 Fixes: a4b88af77e28 ("batman-adv: ELP - adding basic infrastructure")
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
