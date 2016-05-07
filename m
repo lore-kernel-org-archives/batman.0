@@ -1,14 +1,14 @@
-Return-Path: <Jonathan.Haws@sdl.usu.edu>
-From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Date: Sat, 7 May 2016 16:37:55 +0000
-Message-ID: <bd9e8031919e41188957b3791a29d2d5@Ek.usurf.usu.edu>
-References: <44fbd783f3734573bf7121e8bb3819fe@Ek.usurf.usu.edu>
- <1906308.Wsn34X6QAt@sven-edge>
-Content-Language: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Return-Path: <contact@wifibot.com>
+References: <572DF6E3.3030901@wifibot.com> <112511932.Eq5c9Kmyda@sven-edge>
+ <572E1219.7070005@wifibot.com> <1884294.h0rzVsQuVd@sven-edge>
+From: contact <contact@wifibot.com>
+Message-ID: <572E1ADE.5040400@wifibot.com>
+Date: Sat, 7 May 2016 18:42:06 +0200
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] Alfred 2016.1 bind errors
+In-Reply-To: <1884294.h0rzVsQuVd@sven-edge>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] no able to switch routing algo to V ?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,65 +18,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-On 05/07/2016 12:40 AM, Sven Eckelmann wrote:=0A=
-> On Friday 06 May 2016 20:45:50 Jonathan Haws wrote:=0A=
->> I am trying to get familiar with the Alfred tools and downloaded version=
-=0A=
->> 2016.1.  Unfortunately it didn't work - I couldn't get past a bind error=
-:=0A=
->>=0A=
->> root@sierra1:~# ./alfred -m -i bat0=0A=
->> can't bind: Cannot assign requested address=0A=
->> Failed to open interfaces=0A=
->>=0A=
->> I had setup batman-adv with the commands:=0A=
->>=0A=
->> batctl if add eth0=0A=
->> ip link set up bat0 (eth0 was already up)=0A=
->>=0A=
->> I rolled back to 2015.0 (per a hint at=0A=
->> http://wiki.pinneberg.freifunk.net/alfred) and alfred started up just=0A=
->> fine instead of giving the error.  However it periodically gives the=0A=
->> following message:=0A=
->=0A=
-> Thanks for reporting it (why didn't FF Pinneberg report it?). Can you ple=
-ase=0A=
-> try following workaround:=0A=
->=0A=
->      make clean=0A=
->      make CONFIG_ALFRED_CAPABILITIES=3Dn=0A=
->      # only when you've installed it before=0A=
->      make CONFIG_ALFRED_CAPABILITIES=3Dn install=0A=
->      # try it again=0A=
->      ./alfred -m -i bat0=0A=
->=0A=
-> It would also be interesting to see the output of `ip addr show dev bat0`=
- and=0A=
-> the used kernel version.=0A=
->=0A=
-> Kind regards,=0A=
-> 	Sven=0A=
->=0A=
-=0A=
-I am using the Yocto project to build my kernel/distro for my VMs, since =
-=0A=
-that is what we use on our hardware.  Here is the output from those =0A=
-commands:=0A=
-=0A=
-root@sierra1:~# ip link show dev bat0=0A=
-6: bat0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state =0A=
-UNKNOWN mode DEFAULT group default=0A=
-     link/ether f2:52:c3:50:2e:d7 brd ff:ff:ff:ff:ff:ff=0A=
-=0A=
-root@sierra1:~# uname -a=0A=
-Linux sierra1 4.1.18-rt15-yocto-preempt-rt #1 SMP PREEMPT RT Wed May 4 =0A=
-23:15:13 MDT 2016 x86_64 GNU/Linux=0A=
-=0A=
-My guess, per Matthias next email in the thread, is that IPv6 is =0A=
-required, which I believe is not built into my kernel.  I'll see about =0A=
-adding that and try again.=0A=
-=0A=
-Thanks!=0A=
-Jon=0A=
+it was the default version present in yesterday openwrt stable 15.05.1
+
+in batman makefile i have :
+
+include $(TOPDIR)/rules.mk
+
+PKG_NAME:=batman-adv
+
+PKG_VERSION:=2016.1
+PKG_RELEASE:=1
+PKG_MD5SUM:=8c8e449009b4d29512d26ee308960bb5
+
+On 07/05/2016 18:28, Sven Eckelmann wrote:
+> On Saturday 07 May 2016 18:04:41 contact wrote:
+>> Thank you, it is working and it is more clear for me.
+>>
+>> I have switched to V but when I switch on other V nodes, my first node
+>> reset or freeze, probably a kernel panic. Need to plug a rs232 to be
+>> able to see what could be the problem.
+>> I will switch back to IV.
+> Which version did you build?
+>
+> https://github.com/openwrt-routing/packages/commit/8dec3dc38b514ed8f1212b51f9f6039af3fb0e04
+>
+> or
+>
+> https://github.com/openwrt-routing/packages/commit/a3cd8a1729779b8a39336a863ba7f97481e81f5c
+>
+> or a different version/feed? Please make sure that you don't use a legacy feed
+> together with batman-adv v2016.1 and B.A.T.M.A.N. V. It can only be used when
+> build directly against the used mac80211 package which is only done in the two
+> openwrt feeds linked here (and in a devel feed [1] which is building always
+> against the current master).
+>
+> Kind regards,
+> 	Sven
+>
+> [1] https://git.open-mesh.org/openwrt-feed-devel.git
+
