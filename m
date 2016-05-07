@@ -1,15 +1,14 @@
-Return-Path: <contact@wifibot.com>
-References: <572DF6E3.3030901@wifibot.com> <18515809.rdrhCmqhC3@voltaire>
- <572E1EE2.3060806@wifibot.com> <1690340.pptNQMoULa@voltaire>
- <572E2088.7070802@wifibot.com> <572E2F52.6080908@wifibot.com>
-From: contact <contact@wifibot.com>
-Message-ID: <572E37C7.5040809@wifibot.com>
-Date: Sat, 7 May 2016 20:45:27 +0200
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sun, 08 May 2016 06:32:22 +0800
+Message-ID: <487554826.P4LepzjpBA@voltaire>
+In-Reply-To: <1462607444-16656-1-git-send-email-sven@narfation.org>
+References: <1462607444-16656-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-In-Reply-To: <572E2F52.6080908@wifibot.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] no able to switch routing algo to V ?
+Content-Type: multipart/signed; boundary="nextPart2549567.jWkeoGTbZk";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Add missing include
+	for batadv_v_neigh_is_sob
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,75 +20,41 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-it seems table, I saw a really fast dynamic route creation. With batman 
-IV the route took sometime 1 min to come and it was really noisy, i 
-tried many settings,
-here with V it is good, when I move toward a node it took less than 1 
-sec to create a new route and the video stream is not interrupted.
+--nextPart2549567.jWkeoGTbZk
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Sometime I loose the route it become a little bit noisy when I stop 
-moving  but here I suspect a wifi problem, need to change my channel.
+On Saturday, May 07, 2016 09:50:44 Sven Eckelmann wrote:
+> batadv_v_neigh_is_sob started to use false which is defined in
+> linux/stddef.h.
+> 
+> Fixes: 036aa7b7181e ("batman-adv: Avoid nullptr derefence in
+> batadv_v_neigh_is_sob") Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  net/batman-adv/bat_v.c | 1 +
+>  1 file changed, 1 insertion(+)
 
-I will make more test by adding other nodes on the path of the robot and 
-see how routing is done.
+Applied in revision 9685688.
 
-Thank you all :-)
+Thanks,
+Marek
 
-On 07/05/2016 20:09, contact wrote:
-> I flashed 3 nodes (2 fixe and 1 mobile streaming 2mbits of video data) 
-> ,no crash for the moment.
->
-> I am making some test to see if all is ok.
->
-> Laurent
->
-> On 07/05/2016 19:06, contact wrote:
->> seems ok , I will give a try
->> (I came today at work only to do some mesh testing on moving robots 
->> :-) , never have the time during the week ...)
->>
->> user@ubuntuvm:~/openwrt15011/openwrt$ git -C feeds/routing log
->> commit a3cd8a1729779b8a39336a863ba7f97481e81f5c
->> Author: Marek Lindner <mareklindner@neomailbox.ch>
->> Date:   Sat May 7 20:42:44 2016 +0800
->>
->>     batman-adv: 2016.1 bugfixes & stability updates
->>
->>     Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
->>
->> commit 16ceff232dc58aad799bbb3d98915eb5c78ec2af
->> Author: Axel Neumann <neumann@cgws.de>
->> Date:   Fri May 6 10:35:47 2016 +0200
->>
->>     bmx7: bump version (report channel via topology plugin)
->>
->>
->> On 07/05/2016 19:01, Marek Lindner wrote:
->>> On Saturday, May 07, 2016 18:59:14 contact wrote:
->>>> I just updated I need to recompile and re-flash my nodes it takes
->>>> sometime, can you check please if all your patches are here ?
->>>>
->>>> [..]
->>>>
->>>> Fast-forward
->>>>    ...make-sure-ELP-OGM-orig-MAC-is-updated-on-.patch |  64 
->>>> ++++++++++++
->>>>    ...-adv-Avoid-duplicate-neigh_node-additions.patch |  89 
->>>> +++++++++++++++++
->>>> ...Avoid-nullptr-derefence-in-batadv_v_neigh.patch |  38 +++++++
->>>> ...an-adv-Fix-refcnt-leak-in-batadv_v_neigh_.patch |  81 
->>>> +++++++++++++++
->>>> ...Fix-double-neigh_node_put-in-batadv_v_ogm.patch |  40 ++++++++
->>>> ...initialize-ELP-orig-address-on-secondary-.patch | 110
->>>> +++++++++++++++++++++
->>> Looks good. However, comparing git revisions (as Sven suggested) is 
->>> more
->>> precise than posting such logs.
->>>
->>> Cheers,
->>> Marek
->>
->>
->
->
+--nextPart2549567.jWkeoGTbZk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJXLmz2AAoJEFNVTo/uthzAM/IH/izjiFRE35sZDI4+N0ujnVRi
+X1YGdoDDLUM58/8IFGBcCpanjwaZThh6b8PZXmfo+VLO5pzHsmYcXo9Cq0U9+7Rs
+zhcAEDaBfa4JQ6mx+ZFE6xnp8iBgSunz6vJyZVtbu9PKN/1/HFKiqlnJ5RscYE2g
+bnNt3oYtKVeHDUZMvYAIsvBdQyGbosJzY0KSd+Ed8w+5LH7nBJVrDs9VFUU2bkAu
+gY4m3PKaXD0c/y6464u2CDwVaMd+vzd3KaItLvlh+aTGxt+XCKNk9qSSJ+0bTDg6
+lM9kdsBKUJShQtGgXZHvDtboZFCHN8uLiwLSb7CPB5TVWjcRtoPCWAARylXQyLg=
+=RsP1
+-----END PGP SIGNATURE-----
+
+--nextPart2549567.jWkeoGTbZk--
 
