@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 08 May 2016 06:35:49 +0800
-Message-ID: <1712093.Cca2OKB8GW@voltaire>
-In-Reply-To: <1462446587-5304-2-git-send-email-sven.eckelmann@open-mesh.com>
-References: <1462446587-5304-1-git-send-email-sven.eckelmann@open-mesh.com>
- <1462446587-5304-2-git-send-email-sven.eckelmann@open-mesh.com>
+Date: Sun, 08 May 2016 06:40:54 +0800
+Message-ID: <3034517.WNfr3miojD@voltaire>
+In-Reply-To: <572E37C7.5040809@wifibot.com>
+References: <572DF6E3.3030901@wifibot.com> <572E2F52.6080908@wifibot.com>
+ <572E37C7.5040809@wifibot.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3933262.5DfhDBocuR";
+Content-Type: multipart/signed; boundary="nextPart7723142.ad8ZkexDDK";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v5 1/5] batman-adv: Add stripped down
-	version of MAINTAINERS file
+Subject: Re: [B.A.T.M.A.N.] no able to switch routing algo to V ?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,31 +18,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart3933262.5DfhDBocuR
+--nextPart7723142.ad8ZkexDDK
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Thursday, May 05, 2016 13:09:39 Sven Eckelmann wrote:
-> The MAINTAINERS file has to modified from time to time when either some
-> URLs change or some new files are added. These changes can easily be lost
-> when they actually should be part of a change adding/deleting a file.
+On Saturday, May 07, 2016 20:45:27 contact wrote:
+> it seems table, I saw a really fast dynamic route creation. With batman 
+> IV the route took sometime 1 min to come and it was really noisy, i 
+> tried many settings,
+> here with V it is good, when I move toward a node it took less than 1 
+> sec to create a new route and the video stream is not interrupted.
 > 
-> Reported-by: Marek Lindner <mareklindner@neomailbox.ch>
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-> ---
->  MAINTAINERS | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
->  create mode 100644 MAINTAINERS
+> Sometime I loose the route it become a little bit noisy when I stop 
+> moving  but here I suspect a wifi problem, need to change my channel.
+> 
+> I will make more test by adding other nodes on the path of the robot and 
+> see how routing is done.
 
-Applied in revision 7608af0.
+Thanks for the feedback! By all means, share more results (good or bad) once 
+available!
 
-Thanks,
+Note that the gateway selection feature isn't working with BATMAN V yet. 
+Antonio has posted a couple of patches a few days ago but these require some 
+further massage.
+
+Cheers,
 Marek
 
---nextPart3933262.5DfhDBocuR
+--nextPart7723142.ad8ZkexDDK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -51,14 +55,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXLm3FAAoJEFNVTo/uthzAn8kH/1hx7N9q3Jy0HP66bc8fwXHS
-mhqsV76UJtSyqH23J/oCJjKzYTAsKxca+mVg9GLEOAlS/EWML/PyWtVn9gC3NUQo
-4Y5udPsIzVmEtwygZ4bVLwhsqdRt8s7maTP1LUZb0GfWEIG1p10QVb+wBOqczL/B
-WUR857USTOVUOve4DAoRXYIySxgpq0UA7JxdrpEOwBuKjGXT53+QLefQ/NVnlhZb
-/lfGRXWt1zSabAl/JQMyxgwUBM25LHoBkpZT81RX98aLn72yjDRmMXmzZOVdRgQ4
-3wRjdulx1Up8ugzjR4Iv8vr4fjmVjQmKFpOYlrkmKboI1iSw4tYlHDbNRKa7DTc=
-=6WiY
+iQEcBAABCAAGBQJXLm72AAoJEFNVTo/uthzA4XUH+QGM2EYcGj2Ey/vvVDHd9/TY
+4sQ0mFZ6y0GqSyLjy3oHkjXzre60dQnnMQ6aquZkLfVPGOlrz91Rj+fJmmkD4ISN
+GkWVI9RU09B5L5JtOrGzkaruhgvSDXgHWOXPInuj2k5bA+9agVBijsYZkC0yGd2l
+4OOY2uaED/um2j5TqIrTcCwEWTQ7R1OzNd2bsVm4eLqB4Y/FQABYay/WnQiDoGUY
+6i8/WZhrmDzlSKxMHxSdHFozL9lHVQ8Hq/aYteBRDGKCtXGwOhxPZe+qHYP70Uf8
+i6FKfBaoBzQ2cT5sU36trYUcWupn53m0PVrlAFBtDLVnDduG5WHOFn7/rnpkxVU=
+=pBxg
 -----END PGP SIGNATURE-----
 
---nextPart3933262.5DfhDBocuR--
+--nextPart7723142.ad8ZkexDDK--
 
