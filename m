@@ -1,13 +1,13 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun, 08 May 2016 01:01:31 +0800
-Message-ID: <1690340.pptNQMoULa@voltaire>
-In-Reply-To: <572E1EE2.3060806@wifibot.com>
+Return-Path: <contact@wifibot.com>
 References: <572DF6E3.3030901@wifibot.com> <18515809.rdrhCmqhC3@voltaire>
- <572E1EE2.3060806@wifibot.com>
+ <572E1EE2.3060806@wifibot.com> <1690340.pptNQMoULa@voltaire>
+From: contact <contact@wifibot.com>
+Message-ID: <572E2088.7070802@wifibot.com>
+Date: Sat, 7 May 2016 19:06:16 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3126679.ZWQMq9sBmR";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
+In-Reply-To: <1690340.pptNQMoULa@voltaire>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Subject: Re: [B.A.T.M.A.N.] no able to switch routing algo to V ?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,49 +18,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3126679.ZWQMq9sBmR
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+seems ok , I will give a try
+(I came today at work only to do some mesh testing on moving robots :-) 
+, never have the time during the week ...)
 
-On Saturday, May 07, 2016 18:59:14 contact wrote:
-> I just updated I need to recompile and re-flash my nodes it takes 
-> sometime, can you check please if all your patches are here ?
-> 
-> [..]
+user@ubuntuvm:~/openwrt15011/openwrt$ git -C feeds/routing log
+commit a3cd8a1729779b8a39336a863ba7f97481e81f5c
+Author: Marek Lindner <mareklindner@neomailbox.ch>
+Date:   Sat May 7 20:42:44 2016 +0800
+
+     batman-adv: 2016.1 bugfixes & stability updates
+
+     Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+
+commit 16ceff232dc58aad799bbb3d98915eb5c78ec2af
+Author: Axel Neumann <neumann@cgws.de>
+Date:   Fri May 6 10:35:47 2016 +0200
+
+     bmx7: bump version (report channel via topology plugin)
+
+
+On 07/05/2016 19:01, Marek Lindner wrote:
+> On Saturday, May 07, 2016 18:59:14 contact wrote:
+>> I just updated I need to recompile and re-flash my nodes it takes
+>> sometime, can you check please if all your patches are here ?
+>>
+>> [..]
+>>
+>> Fast-forward
+>>    ...make-sure-ELP-OGM-orig-MAC-is-updated-on-.patch |  64 ++++++++++++
+>>    ...-adv-Avoid-duplicate-neigh_node-additions.patch |  89 +++++++++++++++++
+>> ...Avoid-nullptr-derefence-in-batadv_v_neigh.patch |  38 +++++++
+>> ...an-adv-Fix-refcnt-leak-in-batadv_v_neigh_.patch |  81 +++++++++++++++
+>> ...Fix-double-neigh_node_put-in-batadv_v_ogm.patch |  40 ++++++++
+>> ...initialize-ELP-orig-address-on-secondary-.patch | 110
+>> +++++++++++++++++++++
+> Looks good. However, comparing git revisions (as Sven suggested) is more
+> precise than posting such logs.
 >
-> Fast-forward
->   ...make-sure-ELP-OGM-orig-MAC-is-updated-on-.patch |  64 ++++++++++++
->   ...-adv-Avoid-duplicate-neigh_node-additions.patch |  89 +++++++++++++++++
-> ...Avoid-nullptr-derefence-in-batadv_v_neigh.patch |  38 +++++++
-> ...an-adv-Fix-refcnt-leak-in-batadv_v_neigh_.patch |  81 +++++++++++++++
-> ...Fix-double-neigh_node_put-in-batadv_v_ogm.patch |  40 ++++++++
-> ...initialize-ELP-orig-address-on-secondary-.patch | 110
-> +++++++++++++++++++++
-
-Looks good. However, comparing git revisions (as Sven suggested) is more 
-precise than posting such logs.
-
-Cheers,
-Marek
-
---nextPart3126679.ZWQMq9sBmR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJXLh9rAAoJEFNVTo/uthzAXrQH/3ZWYYOjwTfkhmuCux/x73Dx
-vsI47YApt1TA2i/EWMdJz9R893/GjjZaKlGeDpmkV+t0yFFsgnkN80TDFLY5Xru5
-CIM+Bb+EvCCPc5x1OuBOLqWGK+mGKOIvbSkLnlgnTKmeJC0rCzUj7GEnFgcNlJcC
-aIH4Yg8LsBf10uaGa7I43KOgOg4A3CmKoQLQVS4qvaw9+qUlDzXjogFgpzvRTls4
-R3gIdnR+OK/BE3KDWuVCFHXCLXMHG4lStXqHGy7KupHc6UBJqCEY0cRKqsfjIK9J
-/vZH2u+jgVr3DxFJM70aEzOpOas5PGgrcL5q1sFssNHfWFg9BJUKEoYVRidPrds=
-=QGTb
------END PGP SIGNATURE-----
-
---nextPart3126679.ZWQMq9sBmR--
+> Cheers,
+> Marek
 
