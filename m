@@ -1,9 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat,  7 May 2016 19:54:17 +0800
-Message-Id: <1462622057-26286-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCHv2 maint] batman-adv: initialize ELP orig
-	address on secondary interfaces
+Date: Sat, 07 May 2016 20:07:51 +0800
+Message-ID: <2142847.UKtbylqlvC@voltaire>
+In-Reply-To: <1462566429-26709-1-git-send-email-sven@narfation.org>
+References: <1462566429-26709-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2613205.jgjs1TSzTj";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix double
+	neigh_node_put in batadv_v_ogm_route_update
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,109 +19,50 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
-This fix prevents nodes to wrongly create a 00:00:00:00:00:00 originator
-which can potentially interfere with the rest of the neighbor statistics.
+--nextPart2613205.jgjs1TSzTj
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Fixes: a4b88af77e28 ("batman-adv: ELP - adding basic infrastructure")
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
- net/batman-adv/bat_v.c     | 10 ++++++++++
- net/batman-adv/bat_v_elp.c | 31 ++++++++++++++++++++++---------
- net/batman-adv/bat_v_elp.h |  2 ++
- 3 files changed, 34 insertions(+), 9 deletions(-)
+On Friday, May 06, 2016 22:27:09 Sven Eckelmann wrote:
+> The router is put down twice when it was non-NULL and either orig_ifinfo is
+> NULL afterwards or batman-adv receives a packet with the same sequence
+> number. This will end up in a use-after-free when the batadv_neigh_node is
+> removed because the reference counter ended up too early at 0.
+> 
+> Fixes: 667996ebeab4 ("batman-adv: OGMv2 - implement originators logic")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> It looks like this bug was solved in next/master by refactoring in
+> 30c96bc7870f ("batman-adv: move and restructure batadv_v_ogm_forward")
+> 
+> only compile tested. Please add so many reported by as you want - 
+> just don't know it it is *the* bug and who actually reported it.
+> ---
+>  net/batman-adv/bat_v_ogm.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 2bcb29b..0caca2f 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -39,6 +39,16 @@
- 
- static void batadv_v_iface_activate(struct batadv_hard_iface *hard_iface)
- {
-+	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	struct batadv_hard_iface *primary_if;
-+
-+	primary_if = batadv_primary_if_get_selected(bat_priv);
-+
-+	if (primary_if) {
-+		batadv_v_elp_iface_activate(primary_if, hard_iface);
-+		batadv_hardif_put(primary_if);
-+	}
-+
- 	/* B.A.T.M.A.N. V does not use any queuing mechanism, therefore it can
- 	 * set the interface as ACTIVE right away, without any risk of race
- 	 * condition
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index 3844e7e..df42eb1 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -377,6 +377,27 @@ void batadv_v_elp_iface_disable(struct batadv_hard_iface *hard_iface)
- }
- 
- /**
-+ * batadv_v_elp_iface_activate - update the ELP buffer belonging to the given
-+ *  hard-interface
-+ * @primary_iface: the new primary interface
-+ * @hard_iface: interface holding the to-be-updated buffer
-+ */
-+void batadv_v_elp_iface_activate(struct batadv_hard_iface *primary_iface,
-+				 struct batadv_hard_iface *hard_iface)
-+{
-+	struct batadv_elp_packet *elp_packet;
-+	struct sk_buff *skb;
-+
-+	if (!hard_iface->bat_v.elp_skb)
-+		return;
-+
-+	skb = hard_iface->bat_v.elp_skb;
-+	elp_packet = (struct batadv_elp_packet *)skb->data;
-+	ether_addr_copy(elp_packet->orig,
-+			primary_iface->net_dev->dev_addr);
-+}
-+
-+/**
-  * batadv_v_elp_primary_iface_set - change internal data to reflect the new
-  *  primary interface
-  * @primary_iface: the new primary interface
-@@ -384,8 +405,6 @@ void batadv_v_elp_iface_disable(struct batadv_hard_iface *hard_iface)
- void batadv_v_elp_primary_iface_set(struct batadv_hard_iface *primary_iface)
- {
- 	struct batadv_hard_iface *hard_iface;
--	struct batadv_elp_packet *elp_packet;
--	struct sk_buff *skb;
- 
- 	/* update orig field of every elp iface belonging to this mesh */
- 	rcu_read_lock();
-@@ -393,13 +412,7 @@ void batadv_v_elp_primary_iface_set(struct batadv_hard_iface *primary_iface)
- 		if (primary_iface->soft_iface != hard_iface->soft_iface)
- 			continue;
- 
--		if (!hard_iface->bat_v.elp_skb)
--			continue;
--
--		skb = hard_iface->bat_v.elp_skb;
--		elp_packet = (struct batadv_elp_packet *)skb->data;
--		ether_addr_copy(elp_packet->orig,
--				primary_iface->net_dev->dev_addr);
-+		batadv_v_elp_iface_activate(primary_iface, hard_iface);
- 	}
- 	rcu_read_unlock();
- }
-diff --git a/net/batman-adv/bat_v_elp.h b/net/batman-adv/bat_v_elp.h
-index e95f1bc..cc130b2 100644
---- a/net/batman-adv/bat_v_elp.h
-+++ b/net/batman-adv/bat_v_elp.h
-@@ -25,6 +25,8 @@ struct work_struct;
- 
- int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface);
- void batadv_v_elp_iface_disable(struct batadv_hard_iface *hard_iface);
-+void batadv_v_elp_iface_activate(struct batadv_hard_iface *primary_iface,
-+				 struct batadv_hard_iface *hard_iface);
- void batadv_v_elp_primary_iface_set(struct batadv_hard_iface *primary_iface);
- int batadv_v_elp_packet_recv(struct sk_buff *skb,
- 			     struct batadv_hard_iface *if_incoming);
--- 
-2.8.0.rc3
+Applied in revision fc3e79d.
+
+Thanks,
+Marek
+
+--nextPart2613205.jgjs1TSzTj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJXLdqYAAoJEFNVTo/uthzA4f0IAKxiErnr574vIl1h/z8T0+Ut
+22lYV2PfH1LUhBWXyuGuRYeeastR3YEm5wxSwRuRz3qdeEM0eJ1xnkHdkJzKnb9Q
+t5PPZ/DNhjsGEdEPj28JlLkEKlLXMLfBwSBhgqCQZKVRcuY7+BOs4TQEMAu8zgjV
+43mLx3kc7kTqpQwlgi3k1h/VsLMGvuJ9fQxqHc+I5HINhHngTUtYVHEBeBEZIWQn
+WJ5LdDptfTUp2cWZ9TF5d95a7puasWrXS46zFeC+kyBcA75BJw3vF9djTLnlQxrh
+lJoxcjbsuHT5vtNp1JI5wD+wVcOe9oS6jYD+MHIVM8tfAc6VwnYJAvDNP1NgtDM=
+=rugI
+-----END PGP SIGNATURE-----
+
+--nextPart2613205.jgjs1TSzTj--
 
