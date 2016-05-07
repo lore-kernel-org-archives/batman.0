@@ -1,12 +1,13 @@
-Return-Path: <contact@wifibot.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 07 May 2016 18:28:20 +0200
+Message-ID: <1884294.h0rzVsQuVd@sven-edge>
+In-Reply-To: <572E1219.7070005@wifibot.com>
 References: <572DF6E3.3030901@wifibot.com> <112511932.Eq5c9Kmyda@sven-edge>
-From: contact <contact@wifibot.com>
-Message-ID: <572E1219.7070005@wifibot.com>
-Date: Sat, 7 May 2016 18:04:41 +0200
+ <572E1219.7070005@wifibot.com>
 MIME-Version: 1.0
-In-Reply-To: <112511932.Eq5c9Kmyda@sven-edge>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="nextPart5206996.xkpHHJt0ro";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] no able to switch routing algo to V ?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,111 +18,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
+To: contact <contact@wifibot.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Thank you, it is working and it is more clear for me.
+--nextPart5206996.xkpHHJt0ro
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-I have switched to V but when I switch on other V nodes, my first node 
-reset or freeze, probably a kernel panic. Need to plug a rs232 to be 
-able to see what could be the problem.
-I will switch back to IV.
+On Saturday 07 May 2016 18:04:41 contact wrote:
+> Thank you, it is working and it is more clear for me.
+> 
+> I have switched to V but when I switch on other V nodes, my first node
+> reset or freeze, probably a kernel panic. Need to plug a rs232 to be
+> able to see what could be the problem.
+> I will switch back to IV.
 
-for info my network file:
+Which version did you build?
 
-config interface 'lan'
-         option ifname 'eth0 bat0'
-         option force_link '1'
-         option type 'bridge'
-         option proto 'static'
-         option ipaddr '192.168.204.1'
-         option netmask '255.255.255.0'
-         option ip6assign '60'
+https://github.com/openwrt-routing/packages/commit/8dec3dc38b514ed8f1212b51f9f6039af3fb0e04
 
-config interface 'mesh'
-         option mtu '1532'
-         option proto 'batadv'
-         option mesh 'bat0'
-         option routing_algo 'BATMAN_V'
+or 
 
-config interface 'bat'
-         option ifname 'bat0'
-         option proto 'static'
-         option mtu '1532'
+https://github.com/openwrt-routing/packages/commit/a3cd8a1729779b8a39336a863ba7f97481e81f5c
 
-and my wireless :
+or a different version/feed? Please make sure that you don't use a legacy feed
+together with batman-adv v2016.1 and B.A.T.M.A.N. V. It can only be used when
+build directly against the used mac80211 package which is only done in the two
+openwrt feeds linked here (and in a devel feed [1] which is building always
+against the current master).
 
-config wifi-device  radio0
-         option type     mac80211
-         option channel  1
-         option hwmode   11g
-         option path     'pci0000:00/0000:00:00.0'
-         option htmode   HT20
-         option txpower 22
-         option disabled 0
+Kind regards,
+	Sven
 
-config wifi-iface
-         option device   radio0
-         option network  mesh
-         option mode     adhoc
-         option ssid     mesh
-         option encryption none
-         option bssid 02:CA:FE:CA:CA:42
-         option ifnam adhoc0
+[1] https://git.open-mesh.org/openwrt-feed-devel.git
 
-Best Regards,
+--nextPart5206996.xkpHHJt0ro
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-Laurent
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-On 07/05/2016 16:18, Sven Eckelmann wrote:
-> On Saturday 07 May 2016 16:08:35 contact wrote:
->> Hello,
->>
->> I just got openwrt 15.05.1 with batman-adv 2016.1 on 3 picostation HP,
->> this time a selected before the build of openwrt batman V option, I can
->> see it when it ask for available routing algo ,
->>
->> root@OpenWrt:/etc/init.d# cat /sys/kernel/debug/batman_adv/routing_algos
->> Available routing algorithms:
->>    * BATMAN_IV
->>    * BATMAN_V
->>
->> but when I do :
->>
->> echo BATMAN_V > /sys/module/batman_adv/parameters/routing_algo
->>
->> It does nothing, still on BATMAN_IV during session and on reboot ?
-> This module parameter only controls what routing algorithm is chosen when a
-> new batman-adv interface is created. So if you already have created it then
-> changing the parameter doesn't do anything to the already existing batman-adv
-> interface. Also rebooting a device will reset it either to the default or to
-> the one you've explicitly specified during the loading of the modules.
->
-> But you seem to use OpenWrt. It allows to specify the routing_algo in
-> /etc/config/network and should be applied right before the batman-adv
-> interface is created. You just have to make sure that you don't specify
-> conflicting things. An example of a simple configuration is:
->
->      config interface 'batnet'
->              option mtu '1532'
->              option proto 'batadv'
->              option mesh 'bat0'
->              option routing_algo 'BATMAN_V'
->
-> The wireless configuration would then normally reference this batnet network:
->
->      config wifi-iface 'wmesh'
->              option device 'radio0'
->              option ifname 'adhoc0'
->              option network 'batnet'
->              option mode 'adhoc'
->              option ssid 'mesh'
->              option 'mcast_rate' '18000'
->              option bssid '02:CA:FE:CA:CA:40'
->
-> This information was taken from Batman-adv-openwrt-config wiki page [1]
->
-> Kind regards,
-> 	Sven
->
-> [1] https://www.open-mesh.org/projects/batman-adv/wiki/Batman-adv-openwrt-config
+iQIcBAABCgAGBQJXLhekAAoJEF2HCgfBJntGhGYQAJLgsYqRrm0wTGKwnox4/vnQ
+dUbic2Eu+o3lC7Qr3OsxFB3D7ZsZ6mP8wdBCwSPCWcz7SuPHp9uds8/0Tgt3cvWj
+Tv1749NWPi7YRyF+1gqO7C4/Dm8uwDYGJpib7ffu6BEmInFh2mM8Nm3Ty3BoCrFI
+EgVrky/OFxVb7CA41V3dFtnK/4pT0Ts50YbZFhX8TZ+tCjnmclRGzhAdOHECFkr+
+Ec4VNDDiHtNdhj3pB1yjh4kvzb8Ho2EU9M4aNLaOQ0IXrYC2gtcbzK0WTbiTW1/5
+71Lg22OxpMUWaN2rO/0FaN9gk8fhMzZnNVHxwz9dpkeTDfO1PRSvxZZyNc6p+Oae
+bnwheLtRmo9P5Cjuia/OceWMBU/zOqLeIuP+xY7Ln8JwGUMDDpujlXXw7lN7/Zy+
+znVW54xWyF1c98kuEstO5YlSxZqPqHUwPyDya80gPUd8V0IKhWw/UDaUWZHKb2tJ
+yeyxpJ8ugOyNVKOs4YNhQgPO4i6le4eImNcucEaafrVjlG1b/fflzwcpwa8W8G8t
+kRqXfCSFVRtim2GYkI2lRwbZM9m2sL07xOaSqkdSPcMFTU4ZvfZiSl4BM7o1QK0E
+qE5lzyGIYlFSa6gaK9JzWGr4jHZb4g0xEGPAO6qyrp2IIMEt9czvrDm0ntzfAXpI
+OIUg0mOBKuyebPPhoi5Z
+=cuvI
+-----END PGP SIGNATURE-----
+
+--nextPart5206996.xkpHHJt0ro--
 
