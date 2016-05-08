@@ -1,15 +1,15 @@
 Return-Path: <a@unstable.cc>
-Date: Sun, 8 May 2016 23:36:41 +0800
+Date: Sun, 8 May 2016 23:41:59 +0800
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160508153641.GA14515@prodigo>
-References: <1462663515-20691-1-git-send-email-mareklindner@neomailbox.ch>
+Message-ID: <20160508154159.GB14515@prodigo>
+References: <1462664836-21988-1-git-send-email-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="VS++wcV0S1rZb1Fb"
+ protocol="application/pgp-signature"; boundary="LyciRD1jyfeSSjG0"
 Content-Disposition: inline
-In-Reply-To: <1462663515-20691-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: document sysfs files in
- alphabetical order
+In-Reply-To: <1462664836-21988-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: init ELP tweaking options
+ only once
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,50 +23,49 @@ To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@list
 Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 
---VS++wcV0S1rZb1Fb
+--LyciRD1jyfeSSjG0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, May 08, 2016 at 07:25:14AM +0800, Marek Lindner wrote:
-> +
-> +What:           /sys/class/net/<iface>/batman-adv/throughput_override
-> +Date:           Feb 2014
-> +Contact:        Antonio Quartulli <antonio@meshcoding.com>
+On Sun, May 08, 2016 at 07:47:16AM +0800, Marek Lindner wrote:
+> The ELP interval and throughput override interface settings are initializ=
+ed
+> with default settings on every iface_enable() call. Thus, the user space
+> configuration is overridden as soon as an interface is going down and
+> coming up again.
 
-This email address is no longer valid and should be changed - how about
-including this change in this patch as well ? Some doc refactoring can all =
-be
-squashed together I think.
+iface_enable() is only invoked when an interface is added to the mesh. Up a=
+nd
+Down should trigger a iface_activate/deactivate() only.
 
-If you don't want, this can be changed with another patch.
+Have you seen the userspace settings being reverted ?
 
 Cheers,
-
 
 --=20
 Antonio Quartulli
 
---VS++wcV0S1rZb1Fb
+--LyciRD1jyfeSSjG0
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXL10JAAoJEJ4aZjxxc6bKlaUP/jWehTFcbsqVrCOHV7LdT4+X
-TJUUXd6jZJ+G/izmcdmlB10XhOpH+dMayslUbMrhGGZE/ylaK87WRDODK4SHMYm8
-KUUFXQsk/0wTV5m4X+558pew70S1DqaiG8BIeCrolereDUJLD9WeK2tDIw+Wk3Fd
-J5KL+GSbfvHG80GRcpVcnR8JiRm6gAv1ro4SwsgxBvNls+E3GswuM6a9NgmY1YXu
-xdSqKgNnrBHBfBf7HXAGTWOY7o0SRm+HwEA+FZB9RCKcq/m1ThUMqaxUscr1xr45
-hiN3E4loZ/eVID5PLyF3fZWr4o495Z/6mN64vYh7YK9voDreArjKyJqwVJKspmCw
-6Dx3h81ysNSk2eWYzqajBLVwaMaOi0ma0FUCR/7uSzUKg83ZbF3mIoXeL0uQKmK0
-BfbhWryOUsYRGoqC/ovOc9AtFqf7BRgryAze9hpbTFAaobMX0YIGSitnUbv++IwM
-pnU2PaRmzKXeId4J9/8Z422LbaIs7hV54lN1pX2yy442U9HqW68rAW4D6fno7xwf
-5ad17yyfxTUOW0yoPhDDgcqA3KbIJyWiY++05tllR/Tmre/Cj9wmFOxBNzZ3n31o
-wbVSmlAsdPLyvb2M/4gsLdg8bmsCfC6xsZTqY85Zldfz0aQszGjfOdTUuYEVTcAF
-g7jPodwOuWLNFTqm7mnX
-=222/
+iQIcBAEBCAAGBQJXL15HAAoJEJ4aZjxxc6bKD18QAMUcvnVbFZjURTakP6p1GRyf
+hLu47pcNET73GtM0ED7DQLhVdRlcYw8/pV58tUCrZD71hGxcKPNwW3C06E9NFwF+
+6jJ5gyPqdpXnuh2D9Rg5op0ptNhxQ6DiAszbdWipS31TdvMasXF9kWxjgy7R/bb3
+7ee8XR/zS+RCPO3yrJkSILKJiVfRjxUm/WAKghvAI8xumVYTCK95lS1DSizmlcrg
+gRS32I0MIg/2K1Fb6CWTne4YmGHAirMEs1te9eXCFJIr1mjLo1ggdmgdwp7HFS9J
+SBm65hvVec21JPBwbbMQGhk12B+YPvxQSUqJw+65Lbobd9PR8Zz0JPwVrD0jHWyR
+dfigOjcJe0sJFUJWzYnmPGLw+YvIgO8/F1ObaMjlIpFViEiGMtAvOUYTVQWZNFhz
+WBSSp28CfpI9vr7VFCnwzoWdRABy7vgwuJkiNhr5nRZeDNUkgtHW4T7xV7kr0i70
+IoV1L8YnVLQro+0dYm3abF8fL6BeKpeo0ebbgmLeeyKmgNhDNXOSTqq9+SwCHfgi
+vNQBav/pOt31VIYKfALWrIGRGmpnHctY5TI7dBmEdRpYZCPCjRxoESkhr8xkPFS4
+uzTH5eog71AhqME12QVuHKUGgXNxVhC5eEBgbsgTPrzR+5AFFfsQsGGolrRAU1vL
+wRgHWSFeYISlgZbSAYtu
+=HJIz
 -----END PGP SIGNATURE-----
 
---VS++wcV0S1rZb1Fb--
+--LyciRD1jyfeSSjG0--
