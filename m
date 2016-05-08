@@ -1,9 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sun,  8 May 2016 07:47:16 +0800
-Message-Id: <1462664836-21988-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: init ELP tweaking options only
-	once
+Return-Path: <Jonathan.Haws@sdl.usu.edu>
+From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Date: Sun, 8 May 2016 04:19:08 +0000
+Message-ID: <b510fe58444c44c0afff201e7f4dfb37@Ek.usurf.usu.edu>
+References: <44fbd783f3734573bf7121e8bb3819fe@Ek.usurf.usu.edu>
+ <33aefc13-e1a0-cef5-74f1-d21d7112b7d3@universe-factory.net>
+Content-Language: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+Subject: Re: [B.A.T.M.A.N.] Alfred 2016.1 bind errors
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,69 +18,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+To: Matthias Schiffer <mschiffer@universe-factory.net>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The ELP interval and throughput override interface settings are initialized
-with default settings on every iface_enable() call. Thus, the user space
-configuration is overridden as soon as an interface is going down and
-coming up again.
-This patch prevents this behavior by moving the configuration init to the
-interface detection routine which runs only once per interface.
-
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
----
- net/batman-adv/bat_v.c          | 5 -----
- net/batman-adv/bat_v_elp.c      | 1 -
- net/batman-adv/hard-interface.c | 7 +++++++
- 3 files changed, 7 insertions(+), 6 deletions(-)
-
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index c16cd44..3c5d251 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -70,11 +70,6 @@ static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
- 	if (ret < 0)
- 		batadv_v_elp_iface_disable(hard_iface);
- 
--	/* enable link throughput auto-detection by setting the throughput
--	 * override to zero
--	 */
--	atomic_set(&hard_iface->bat_v.throughput_override, 0);
--
- 	return ret;
- }
- 
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index 8909d1e..cf0262b 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -344,7 +344,6 @@ int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
- 	/* randomize initial seqno to avoid collision */
- 	get_random_bytes(&random_seqno, sizeof(random_seqno));
- 	atomic_set(&hard_iface->bat_v.elp_seqno, random_seqno);
--	atomic_set(&hard_iface->bat_v.elp_interval, 500);
- 
- 	/* assume full-duplex by default */
- 	hard_iface->bat_v.flags |= BATADV_FULL_DUPLEX;
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index db2009d..dd6a5a2 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -683,6 +683,13 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 	if (batadv_is_wifi_netdev(net_dev))
- 		hard_iface->num_bcasts = BATADV_NUM_BCASTS_WIRELESS;
- 
-+	/* enable link throughput auto-detection by setting the throughput
-+	 * override to zero
-+	 */
-+	atomic_set(&hard_iface->bat_v.throughput_override, 0);
-+
-+	atomic_set(&hard_iface->bat_v.elp_interval, 500);
-+
- 	/* extra reference for return */
- 	kref_init(&hard_iface->refcount);
- 	kref_get(&hard_iface->refcount);
--- 
-2.8.0.rc3
-
+> alfred explicitly binds to the link-local IPv6 address of the interface=
+=0A=
+> since version 2016.0. I suspect one of the following caveats might be you=
+r=0A=
+> problem:=0A=
+>=0A=
+> * The link-local IPv6 address must match the MAC address of the interface=
+=0A=
+> (here bat0) (derived by flipping the 2 bit of the first byte, and adding=
+=0A=
+> fe80 and fffe); this ususally breaks when the MAC address is changed afte=
+r=0A=
+> the interface is up=0A=
+> * The link-local address must not be tentative when alfred is started=0A=
+> (duplicate address detection must have finished; this usually means that=
+=0A=
+> the interface must be up for 3 seconds before alfred is started)=0A=
+=0A=
+This took care of it.  I had IPv6 disabled via sysctl and once enabled =0A=
+it started working.  Here is the list of commands I entered to get a graph:=
+=0A=
+=0A=
+modprobe batman-adv=0A=
+batctl if add eth0=0A=
+ip link set up bat0=0A=
+=0A=
+alfred -i bat0 -m &=0A=
+batadv-vis > mesh.dot=0A=
+=0A=
+Thanks for the help!=0A=
