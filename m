@@ -1,15 +1,17 @@
 Return-Path: <a@unstable.cc>
-Date: Sun, 8 May 2016 23:41:59 +0800
+Date: Mon, 9 May 2016 00:33:24 +0800
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160508154159.GB14515@prodigo>
-References: <1462664836-21988-1-git-send-email-mareklindner@neomailbox.ch>
+Message-ID: <20160508163324.GC14515@prodigo>
+References: <1462474003-25279-1-git-send-email-a@unstable.cc>
+ <20160506023434.GA16484@prodigo.lan>
+ <41788197.Cke9H3Q0EA@sven-edge> <38489328.JjMjPGWWVN@sven-edge>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="LyciRD1jyfeSSjG0"
+ protocol="application/pgp-signature"; boundary="jy6Sn24JjFx/iggw"
 Content-Disposition: inline
-In-Reply-To: <1462664836-21988-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: init ELP tweaking options
- only once
+In-Reply-To: <38489328.JjMjPGWWVN@sven-edge>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/7] batman-adv: remove useless inline
+ attribute for sysfs helper function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,53 +21,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, mareklindner@neomailbox.ch
 
 
---LyciRD1jyfeSSjG0
+--jy6Sn24JjFx/iggw
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, May 08, 2016 at 07:47:16AM +0800, Marek Lindner wrote:
-> The ELP interval and throughput override interface settings are initializ=
-ed
-> with default settings on every iface_enable() call. Thus, the user space
-> configuration is overridden as soon as an interface is going down and
-> coming up again.
+On Fri, May 06, 2016 at 09:53:26AM +0200, Sven Eckelmann wrote:
+> So you either have to add it to kernel-doc or do it differently.
 
-iface_enable() is only invoked when an interface is added to the mesh. Up a=
-nd
-Down should trigger a iface_activate/deactivate() only.
+Thanks for checking this. I will split the structure in real substructures =
+with
+their own definition and document the fields there.
 
-Have you seen the userspace settings being reverted ?
+About the result from IWUY: any easy way to run it locally ? I tried to run=
+ it
+by specifying the IWYU path via CC=3D, but I get way more noisy result that=
+ what
+you reported in your previous email. I'd like to learn this so that I can e=
+asily
+understand which patch requires which include.
+
+
+On top of that, the results you posted says that I should include
+<linux/stddef.h> in bat_v.c, but it already included in that file. no?
+
 
 Cheers,
+
+
 
 --=20
 Antonio Quartulli
 
---LyciRD1jyfeSSjG0
+--jy6Sn24JjFx/iggw
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXL15HAAoJEJ4aZjxxc6bKD18QAMUcvnVbFZjURTakP6p1GRyf
-hLu47pcNET73GtM0ED7DQLhVdRlcYw8/pV58tUCrZD71hGxcKPNwW3C06E9NFwF+
-6jJ5gyPqdpXnuh2D9Rg5op0ptNhxQ6DiAszbdWipS31TdvMasXF9kWxjgy7R/bb3
-7ee8XR/zS+RCPO3yrJkSILKJiVfRjxUm/WAKghvAI8xumVYTCK95lS1DSizmlcrg
-gRS32I0MIg/2K1Fb6CWTne4YmGHAirMEs1te9eXCFJIr1mjLo1ggdmgdwp7HFS9J
-SBm65hvVec21JPBwbbMQGhk12B+YPvxQSUqJw+65Lbobd9PR8Zz0JPwVrD0jHWyR
-dfigOjcJe0sJFUJWzYnmPGLw+YvIgO8/F1ObaMjlIpFViEiGMtAvOUYTVQWZNFhz
-WBSSp28CfpI9vr7VFCnwzoWdRABy7vgwuJkiNhr5nRZeDNUkgtHW4T7xV7kr0i70
-IoV1L8YnVLQro+0dYm3abF8fL6BeKpeo0ebbgmLeeyKmgNhDNXOSTqq9+SwCHfgi
-vNQBav/pOt31VIYKfALWrIGRGmpnHctY5TI7dBmEdRpYZCPCjRxoESkhr8xkPFS4
-uzTH5eog71AhqME12QVuHKUGgXNxVhC5eEBgbsgTPrzR+5AFFfsQsGGolrRAU1vL
-wRgHWSFeYISlgZbSAYtu
-=HJIz
+iQIcBAEBCAAGBQJXL2pUAAoJEJ4aZjxxc6bKCVYP+wXEWqFL06lH8dTlqUJNWSdv
+zL9tIR9GHgxyOiGDUGKgPGvpPDCnH3SU6BBv4PU0ml/9OF3dJt///pgmOM1GTmg0
+iSdbGZmV0czL+opb5B7SbpBprNHBMPuiVQ5P8nSTuPN8jVLGjl7pP4WWvGsOJMOn
+kKCtDgFGTweonYzC/8jy9yQPLCP9qjHR9AFxAy7uOKK62TBkGloOwAAjRbSwhPkX
+Jh+9P88nGGNfxbZAF3YJIM9VmMFGO0jffRGvWmoKIPGCm1pvSKIU/+lL+ronum5h
+02688/A1VLyRp0ILomNpC7dGeRjHWnX1p88fFBxxRqUqB9wXNkEKqgmrBjemMHfR
+DIIjftNxdvSsm6lnALqr+pUnEA2tg7Wv5cw5vTgs11SNeVFERI/mmTmc6cNYgnF5
+sK58aK8UdUzXNqsoj217QrmIGj6vXNfZrv5MKwB+7DkT0Ubx8xAV3lVu2uCr8YrB
+zM/FufI+6WnOMOFXszJ47z+Lcn/gWHpQ64JLnKkAUttTCjwWTqdS8uVmZAu3GXZ2
+QyCTcCfiXj2ldqa3xxcJ9u72R6zRpL1IwmtXEk//CmkfngYcWuxDLxy1LFu58fvA
+IDwDmF/ii0UXWYTougFqA6VXdOMvjn7Y9YrkB7E/LPq4bHYc4/ZH+hqmcZ9eYEGE
+0aZ/NT8ihFB6inasJJ3E
+=lRQd
 -----END PGP SIGNATURE-----
 
---LyciRD1jyfeSSjG0--
+--jy6Sn24JjFx/iggw--
