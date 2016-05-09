@@ -1,15 +1,14 @@
-Return-Path: <andrew@lunn.ch>
-Date: Mon, 9 May 2016 16:23:04 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160509142304.GA10508@lunn.ch>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 09 May 2016 18:28:29 +0200
+Message-ID: <1689798.ZJlLjAlgFP@bentobox>
+In-Reply-To: <1462372207-28322-1-git-send-email-andrew@lunn.ch>
 References: <1462372207-28322-1-git-send-email-andrew@lunn.ch>
- <3082168.4WeLqNseqL@bentobox>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3082168.4WeLqNseqL@bentobox>
+Content-Type: multipart/signed; boundary="nextPart4088653.ajKBhvSZps";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCHv4] batctl: Use netlink to replace some of
- debugfs
+	debugfs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,20 +18,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-> This is actually a report of a possible problem by Simon (I've only
-> checked it):
+--nextPart4088653.ajKBhvSZps
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Hi Sven, Simon
+On Wednesday 04 May 2016 16:30:07 Andrew Lunn wrote:
+> +       [BATADV_ATTR_THROUGHPUT]        = { .type = NLA_FLAG },
 
-> It looks like the orig_iface handling isn't handled here (see
-> handle_debug_table "case 'i'") or am I missing something?
+Why is throughput a flag when you access it with 
 
-Yes, the -i handling is missing. Also -m and -u for translocal and
-transglobal.
+    throughput_kbits = nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT]);
 
-I will fix this up.
+Most likely just a copy+paste error and it should be NLA_U32.
 
-  Andrew
+Kind regards,
+	Sven
+--nextPart4088653.ajKBhvSZps
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXMLqtAAoJEF2HCgfBJntGIiwQAM4lEVs+PffT2bYDRZw8ZskP
+jq9oHEjzLttS5g+UpvnCx/mqZdrZtVl0Wb86zS02CEw26TPqX1ThJqcUta2Saj+g
+7k2hWNHre/xThmpyH14486l9PAf2Lr8SDbzvYfa2WB25nhzqKkW2MPxUNmAekgQj
+Goj16iRkjJYYEpTo/fiKqR0zlYU4+QN+ui4gx+Fo2UMjdFeb7Ll8l2knkRBWPWg/
+5vXLQgQqAzWoPW/d2DbaRpiyGGSOzQqVrmE1GRrI+s6CeNJ8wi5i0YJNoJWxFyCJ
++P1nlYcwuTXUfa3MLDCLpTAv1IGPWZFrjeIYVO/YjQRrwwQfCmlpSqdFhmztz6Fi
+Hi/wUPt0DEpLcByjzdmt+SBzVJYDi78XzeErWpyMSb/DzCK5wCHhDoaMzubT4jSI
+ONfAsJPyQxDS+G6+jLfkPIsD8nSdjsGWWMEW/t3K/FouH/SrSN6gDmFH3ZzpLTyq
+l0OcUfGmpelo2/jEaRCuL96pwLvtRk7Hiko10SuFYgJyjSQLxq5yF1LEIvSnYLs5
+KJO0AwiMHnhv5eccKa0M0ChOO2OqB2o+TLmx1UCffnU29X8oYw4LLUccxblOJaG6
+aSzveIXsl9FEF+wKJg7QgC1YrGdfNljD0CN+CIVRhtFqj/EAwPL1RuBi4IFoJ6Ei
+MnaDWwGF00X0scKx/zt4
+=MwXi
+-----END PGP SIGNATURE-----
+
+--nextPart4088653.ajKBhvSZps--
+
