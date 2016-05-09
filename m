@@ -1,11 +1,11 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Mon,  9 May 2016 20:07:09 +0200
-Message-Id: <1462817239-18104-3-git-send-email-andrew@lunn.ch>
+Date: Mon,  9 May 2016 20:07:08 +0200
+Message-Id: <1462817239-18104-2-git-send-email-andrew@lunn.ch>
 In-Reply-To: <1462817239-18104-1-git-send-email-andrew@lunn.ch>
 References: <1462817239-18104-1-git-send-email-andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCHv4 02/12] batman-adv: compat.h: Add workaround
-	for get_link_net()
+Subject: [B.A.T.M.A.N.] [PATCHv4 01/12] batman-adv: Handle parent interfaces
+	in a different netns
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,32 +17,128 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
----
-v2: Fix accidental newline deletion
----
- compat.h | 7 +++++++
- 1 file changed, 7 insertions(+)
+batman-adv tries to prevent the user from placing a batX soft
+interface into another batman mesh as a hard interface. It does this
+by walking up the devices list of parents and ensures they are all
+none batX interfaces. iflink can point to an interface in a different
+namespace, so also retrieve the parents name space when finding the
+parent and use it when doing the comparison.
 
-diff --git a/compat.h b/compat.h
-index 5a5f478..813e637 100644
---- a/compat.h
-+++ b/compat.h
-@@ -140,6 +140,13 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Antonio Quartulli <a@untable.cc>
+---
+v2: Add missing header files
+    Use Sven's code to facilitate a compat.h change
+
+v3: More of Sven's code to facilitate a compat.h
+---
+ net/batman-adv/hard-interface.c | 50 +++++++++++++++++++++++++++++++++++------
+ 1 file changed, 43 insertions(+), 7 deletions(-)
+
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index db2009d..5592f4a 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -36,6 +36,8 @@
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/workqueue.h>
++#include <net/net_namespace.h>
++#include <net/rtnetlink.h>
  
- #endif /* < KERNEL_VERSION(3, 15, 0) */
+ #include "bridge_loop_avoidance.h"
+ #include "debugfs.h"
+@@ -83,25 +85,55 @@ out:
+ }
  
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
+ /**
++ * batadv_getlink_net - return link net namespace (of use fallback)
++ * @netdev: net_device to check
++ * @fallback_net: return in case get_link_net is not available for @netdev
++ *
++ * Return: result of rtnl_link_ops->get_link_net or @fallback_net
++ */
++static const struct net *batadv_getlink_net(const struct net_device *netdev,
++					    const struct net *fallback_net)
++{
++	if (!netdev->rtnl_link_ops)
++		return fallback_net;
 +
-+/* WARNING for batadv_getlink_net */
-+#define get_link_net get_xstats_size || 0 || netdev->rtnl_link_ops->get_xstats_size
++	if (!netdev->rtnl_link_ops->get_link_net)
++		return fallback_net;
 +
-+#endif /* < KERNEL_VERSION(4, 0, 0) */
++	return netdev->rtnl_link_ops->get_link_net(netdev);
++}
 +
- #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 3, 0)
++/**
+  * batadv_mutual_parents - check if two devices are each others parent
+- * @dev1: 1st net_device
+- * @dev2: 2nd net_device
++ * @dev1: 1st net dev
++ * @net1: 1st devices netns
++ * @dev2: 2nd net dev
++ * @net2: 2nd devices netns
+  *
+  * veth devices come in pairs and each is the parent of the other!
+  *
+  * Return: true if the devices are each others parent, otherwise false
+  */
+ static bool batadv_mutual_parents(const struct net_device *dev1,
+-				  const struct net_device *dev2)
++				  const struct net *net1,
++				  const struct net_device *dev2,
++				  const struct net *net2)
+ {
+ 	int dev1_parent_iflink = dev_get_iflink(dev1);
+ 	int dev2_parent_iflink = dev_get_iflink(dev2);
++	const struct net *dev1_parent_net;
++	const struct net *dev2_parent_net;
++
++	dev1_parent_net = batadv_getlink_net(dev1, net1);
++	dev2_parent_net = batadv_getlink_net(dev2, net2);
  
- #define IFF_NO_QUEUE	0; dev->tx_queue_len = 0
+ 	if (!dev1_parent_iflink || !dev2_parent_iflink)
+ 		return false;
+ 
+ 	return (dev1_parent_iflink == dev2->ifindex) &&
+-	       (dev2_parent_iflink == dev1->ifindex);
++		(dev2_parent_iflink == dev1->ifindex) &&
++		net_eq(dev1_parent_net, net2) &&
++		net_eq(dev2_parent_net, net1);
+ }
+ 
+ /**
+@@ -119,8 +151,9 @@ static bool batadv_mutual_parents(const struct net_device *dev1,
+  */
+ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
+ {
+-	struct net_device *parent_dev;
+ 	struct net *net = dev_net(net_dev);
++	struct net_device *parent_dev;
++	const struct net *parent_net;
+ 	bool ret;
+ 
+ 	/* check if this is a batman-adv mesh interface */
+@@ -132,13 +165,16 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
+ 	    dev_get_iflink(net_dev) == net_dev->ifindex)
+ 		return false;
+ 
++	parent_net = batadv_getlink_net(net_dev, net);
++
+ 	/* recurse over the parent device */
+-	parent_dev = __dev_get_by_index(net, dev_get_iflink(net_dev));
++	parent_dev = __dev_get_by_index((struct net *)parent_net,
++					dev_get_iflink(net_dev));
+ 	/* if we got a NULL parent_dev there is something broken.. */
+ 	if (WARN(!parent_dev, "Cannot find parent device"))
+ 		return false;
+ 
+-	if (batadv_mutual_parents(net_dev, parent_dev))
++	if (batadv_mutual_parents(net_dev, net, parent_dev, parent_net))
+ 		return false;
+ 
+ 	ret = batadv_is_on_batman_iface(parent_dev);
 -- 
 2.8.0.rc3
 
