@@ -1,8 +1,10 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Mon,  9 May 2016 20:03:34 +0200
-Message-Id: <1462817016-17867-1-git-send-email-andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH 0/2] Fragments and QoS
+Date: Mon,  9 May 2016 20:03:35 +0200
+Message-Id: <1462817016-17867-2-git-send-email-andrew@lunn.ch>
+In-Reply-To: <1462817016-17867-1-git-send-email-andrew@lunn.ch>
+References: <1462817016-17867-1-git-send-email-andrew@lunn.ch>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Set skb priority in fragments
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,24 +16,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-BATMAN currently does not allow QoS policies to be used with
-fragmented packets. The first patch copies the skb priority from the
-unfragmented packet into the fragments as they are built, so the lower
-layers can then prioritise as appropriated.
+BATMAN will set the skb->priority based on the IP precedence or 802.1q
+tag. However, if it needs to fragment the frame, it currently leaves
+the fragment skb with the default priority and actually overwrites the
+priority in the unfragmented frame. Fix this.
 
-The second patch places the priority into the fragment header, and
-upon reception of a fragment, copies it into the skb priority, so that
-when the fragment is retransmitted, it is correctly prioritised.
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+---
+ net/batman-adv/fragmentation.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Andrew Lunn (2):
-  batman-adv: Set skb priority in fragments
-  batman-adv: Include frame priority in fragment header
-
- net/batman-adv/fragmentation.c | 4 +++-
- net/batman-adv/packet.h        | 7 +++++--
- net/batman-adv/routing.c       | 2 ++
- 3 files changed, 10 insertions(+), 3 deletions(-)
-
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 65536db..a3fefbd 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -414,7 +414,7 @@ static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
+ 	if (!skb_fragment)
+ 		goto err;
+ 
+-	skb->priority = TC_PRIO_CONTROL;
++	skb_fragment->priority = skb->priority;
+ 
+ 	/* Eat the last mtu-bytes of the skb */
+ 	skb_reserve(skb_fragment, header_size + ETH_HLEN);
 -- 
 2.8.0.rc3
 
