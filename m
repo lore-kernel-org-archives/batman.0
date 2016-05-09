@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@open-mesh.com>
 From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-Date: Mon,  9 May 2016 18:41:09 +0200
-Message-Id: <1462812071-16467-2-git-send-email-sven@open-mesh.com>
+Date: Mon,  9 May 2016 18:41:10 +0200
+Message-Id: <1462812071-16467-3-git-send-email-sven@open-mesh.com>
 In-Reply-To: <6307812.WAqRcEYAvX@bentobox>
 References: <6307812.WAqRcEYAvX@bentobox>
-Subject: [B.A.T.M.A.N.] [PATCH v7 2/4] batman-adv: add netlink command to
-	query generic mesh information files
+Subject: [B.A.T.M.A.N.] [PATCH v7 3/4] batman-adv: return netdev status in
+	the TX path
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,247 +17,308 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Matthias Schiffer <mschiffer@universe-factory.net>
+From: Antonio Quartulli <antonio.quartulli@open-mesh.com>
 
-BATADV_CMD_GET_MESH_INFO is used to query basic information about a
-batman-adv softif (name, index and MAC address for both the softif and
-the primary hardif; routing algorithm; batman-adv version).
+Return the proper netdev TX status along the TX path so that the tp_meter
+can understand when the queue is full and should stop sending packets.
 
-Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-[sven.eckelmann@open-mesh.com: Reduce the number of changes to
-BATADV_CMD_GET_MESH_INFO, add missing kerneldoc, add policy for attributes]
+Signed-off-by: Antonio Quartulli <antonio.quartulli@open-mesh.com>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 ---
- compat.h                        |   6 ++
- include/uapi/linux/batman_adv.h |  18 ++++++
- net/batman-adv/netlink.c        | 135 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 159 insertions(+)
+ net/batman-adv/fragmentation.c | 41 +++++++++++++++++++++++++----------------
+ net/batman-adv/fragmentation.h |  6 +++---
+ net/batman-adv/main.c          |  4 +++-
+ net/batman-adv/routing.c       | 24 ++++++++++++++----------
+ net/batman-adv/send.c          | 25 +++++++++++++------------
+ 5 files changed, 58 insertions(+), 42 deletions(-)
 
-diff --git a/compat.h b/compat.h
-index 5a5f478..7d5c8b6 100644
---- a/compat.h
-+++ b/compat.h
-@@ -62,6 +62,12 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
- 
- #endif /* < KERNEL_VERSION(3, 3, 0) */
- 
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0)
-+
-+#define snd_portid snd_pid
-+
-+#endif /* < KERNEL_VERSION(3, 7, 0) */
-+
- #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
- 
- #define batadv_interface_set_mac_addr(x, y) \
-diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index ba611a7..a908140 100644
---- a/include/uapi/linux/batman_adv.h
-+++ b/include/uapi/linux/batman_adv.h
-@@ -24,12 +24,28 @@
-  * enum batadv_nl_attrs - batman-adv netlink attributes
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 65536db..4cb7da2 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -434,11 +434,12 @@ err:
+  * @orig_node: final destination of the created fragments
+  * @neigh_node: next-hop of the created fragments
   *
-  * @BATADV_ATTR_UNSPEC: unspecified attribute to catch errors
-+ * @BATADV_ATTR_VERSION: batman-adv version string
-+ * @BATADV_ATTR_ALGO_NAME: name of routing algorithm
-+ * @BATADV_ATTR_MESH_IFINDEX: index of the batman-adv interface
-+ * @BATADV_ATTR_MESH_IFNAME: name of the batman-adv interface
-+ * @BATADV_ATTR_MESH_ADDRESS: mac address of the batman-adv interface
-+ * @BATADV_ATTR_HARD_IFINDEX: index of the non-batman-adv interface
-+ * @BATADV_ATTR_HARD_IFNAME: name of the non-batman-adv interface
-+ * @BATADV_ATTR_HARD_ADDRESS: mac address of the non-batman-adv interface
-  * @__BATADV_ATTR_AFTER_LAST: internal use
-  * @NUM_BATADV_ATTR: total number of batadv_nl_attrs available
-  * @BATADV_ATTR_MAX: highest attribute number currently defined
+- * Return: true on success, false otherwise.
++ * Return: the netdev tx status or -1 in case of error.
++ * When -1 is returned the skb is not consumed.
   */
- enum batadv_nl_attrs {
- 	BATADV_ATTR_UNSPEC,
-+	BATADV_ATTR_VERSION,
-+	BATADV_ATTR_ALGO_NAME,
-+	BATADV_ATTR_MESH_IFINDEX,
-+	BATADV_ATTR_MESH_IFNAME,
-+	BATADV_ATTR_MESH_ADDRESS,
-+	BATADV_ATTR_HARD_IFINDEX,
-+	BATADV_ATTR_HARD_IFNAME,
-+	BATADV_ATTR_HARD_ADDRESS,
- 	/* add attributes above here, update the policy in netlink.c */
- 	__BATADV_ATTR_AFTER_LAST,
- 	NUM_BATADV_ATTR = __BATADV_ATTR_AFTER_LAST,
-@@ -40,11 +56,13 @@ enum batadv_nl_attrs {
-  * enum batadv_nl_commands - supported batman-adv netlink commands
-  *
-  * @BATADV_CMD_UNSPEC: unspecified command to catch errors
-+ * @BATADV_CMD_GET_MESH_INFO: Query basic information about batman-adv device
-  * @__BATADV_CMD_AFTER_LAST: internal use
-  * @BATADV_CMD_MAX: highest used command number
-  */
- enum batadv_nl_commands {
- 	BATADV_CMD_UNSPEC,
-+	BATADV_CMD_GET_MESH_INFO,
- 	/* add new commands above here */
- 	__BATADV_CMD_AFTER_LAST,
- 	BATADV_CMD_MAX = __BATADV_CMD_AFTER_LAST - 1
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index af3e87e..568523c 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -18,12 +18,24 @@
- #include "main.h"
- #include "netlink.h"
+-bool batadv_frag_send_packet(struct sk_buff *skb,
+-			     struct batadv_orig_node *orig_node,
+-			     struct batadv_neigh_node *neigh_node)
++int batadv_frag_send_packet(struct sk_buff *skb,
++			    struct batadv_orig_node *orig_node,
++			    struct batadv_neigh_node *neigh_node)
+ {
+ 	struct batadv_priv *bat_priv;
+ 	struct batadv_hard_iface *primary_if = NULL;
+@@ -447,7 +448,7 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+ 	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
+ 	unsigned int header_size = sizeof(frag_header);
+ 	unsigned int max_fragment_size, max_packet_size;
+-	bool ret = false;
++	int ret = -1;
  
-+#include <linux/errno.h>
-+#include <linux/fs.h>
- #include <linux/genetlink.h>
-+#include <linux/if_ether.h>
- #include <linux/init.h>
-+#include <linux/netdevice.h>
-+#include <linux/netlink.h>
-+#include <linux/stddef.h>
- #include <linux/printk.h>
- #include <net/genetlink.h>
-+#include <net/netlink.h>
- #include <uapi/linux/batman_adv.h>
+ 	/* To avoid merge and refragmentation at next-hops we never send
+ 	 * fragments larger than BATADV_FRAG_MAX_FRAG_SIZE
+@@ -458,12 +459,12 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
  
-+#include "hard-interface.h"
-+#include "soft-interface.h"
-+
-+struct sk_buff;
-+
- static struct genl_family batadv_netlink_family = {
- 	.id = GENL_ID_GENERATE,
- 	.hdrsize = 0,
-@@ -32,7 +44,130 @@ static struct genl_family batadv_netlink_family = {
- 	.maxattr = BATADV_ATTR_MAX,
- };
- 
-+static struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
-+	[BATADV_ATTR_VERSION]		= { .type = NLA_STRING },
-+	[BATADV_ATTR_ALGO_NAME]		= { .type = NLA_STRING },
-+	[BATADV_ATTR_MESH_IFINDEX]	= { .type = NLA_U32 },
-+	[BATADV_ATTR_MESH_IFNAME]	= { .type = NLA_STRING },
-+	[BATADV_ATTR_MESH_ADDRESS]	= { .len = ETH_ALEN },
-+	[BATADV_ATTR_HARD_IFINDEX]	= { .type = NLA_U32 },
-+	[BATADV_ATTR_HARD_IFNAME]	= { .type = NLA_STRING },
-+	[BATADV_ATTR_HARD_ADDRESS]	= { .len = ETH_ALEN },
-+};
-+
-+/**
-+ * batadv_netlink_mesh_info_put - Fill generic information about mesh interface
-+ * @msg: netlink message to be sent back
-+ * @soft_iface: interface for which the data should be taken
-+ *
-+ *  Return: 0 on success, < 0 on error
-+ */
-+static int
-+batadv_netlink_mesh_info_put(struct sk_buff *msg, struct net_device *soft_iface)
-+{
-+	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
-+	struct batadv_hard_iface *primary_if = NULL;
-+	struct net_device *hard_iface;
-+	int ret = -ENOBUFS;
-+
-+	if (nla_put_string(msg, BATADV_ATTR_VERSION, BATADV_SOURCE_VERSION) ||
-+	    nla_put_string(msg, BATADV_ATTR_ALGO_NAME,
-+			   bat_priv->bat_algo_ops->name) ||
-+	    nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, soft_iface->ifindex) ||
-+	    nla_put_string(msg, BATADV_ATTR_MESH_IFNAME, soft_iface->name) ||
-+	    nla_put(msg, BATADV_ATTR_MESH_ADDRESS, ETH_ALEN,
-+		    soft_iface->dev_addr))
+ 	/* Don't even try to fragment, if we need more than 16 fragments */
+ 	if (skb->len > max_packet_size)
+-		goto out_err;
 +		goto out;
-+
-+	primary_if = batadv_primary_if_get_selected(bat_priv);
-+	if (primary_if && primary_if->if_status == BATADV_IF_ACTIVE) {
-+		hard_iface = primary_if->net_dev;
-+
-+		if (nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
-+				hard_iface->ifindex) ||
-+		    nla_put_string(msg, BATADV_ATTR_HARD_IFNAME,
-+				   hard_iface->name) ||
-+		    nla_put(msg, BATADV_ATTR_HARD_ADDRESS, ETH_ALEN,
-+			    hard_iface->dev_addr))
+ 
+ 	bat_priv = orig_node->bat_priv;
+ 	primary_if = batadv_primary_if_get_selected(bat_priv);
+ 	if (!primary_if)
+-		goto out_err;
++		goto out;
+ 
+ 	/* Create one header to be copied to all fragments */
+ 	frag_header.packet_type = BATADV_UNICAST_FRAG;
+@@ -480,23 +481,33 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+ 	while (skb->len > max_fragment_size) {
+ 		skb_fragment = batadv_frag_create(skb, &frag_header, mtu);
+ 		if (!skb_fragment)
+-			goto out_err;
 +			goto out;
-+	}
+ 
+ 		batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_TX);
+ 		batadv_add_counter(bat_priv, BATADV_CNT_FRAG_TX_BYTES,
+ 				   skb_fragment->len + ETH_HLEN);
+-		batadv_send_unicast_skb(skb_fragment, neigh_node);
++		ret = batadv_send_unicast_skb(skb_fragment, neigh_node);
++		if (ret != NET_XMIT_SUCCESS) {
++			/* return -1 so that the caller can free the original
++			 * skb
++			 */
++			ret = -1;
++			goto out;
++		}
 +
-+	ret = 0;
-+
-+ out:
-+	if (primary_if)
-+		batadv_hardif_put(primary_if);
-+
-+	return ret;
-+}
-+
-+/**
-+ * batadv_netlink_mesh_info_put - Handle BATADV_CMD_GET_MESH_INFO
-+ * @skb: received netlink message
-+ * @info: receiver information
-+ *
-+ * Return: 0 on success, < 0 on error
-+ */
-+static int
-+batadv_netlink_get_mesh_info(struct sk_buff *skb, struct genl_info *info)
-+{
-+	struct net *net = genl_info_net(info);
-+	struct net_device *soft_iface;
-+	struct sk_buff *msg = NULL;
-+	void *msg_head;
-+	int ifindex;
-+	int ret;
-+
-+	if (!info->attrs[BATADV_ATTR_MESH_IFINDEX])
-+		return -EINVAL;
-+
-+	ifindex = nla_get_u32(info->attrs[BATADV_ATTR_MESH_IFINDEX]);
-+	if (!ifindex)
-+		return -EINVAL;
-+
-+	soft_iface = dev_get_by_index(net, ifindex);
-+	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
-+		ret = -ENODEV;
+ 		frag_header.no++;
+ 
+ 		/* The initial check in this function should cover this case */
+-		if (frag_header.no == BATADV_FRAG_MAX_FRAGMENTS - 1)
+-			goto out_err;
++		if (frag_header.no == BATADV_FRAG_MAX_FRAGMENTS - 1) {
++			ret = -1;
++			goto out;
++		}
+ 	}
+ 
+ 	/* Make room for the fragment header. */
+ 	if (batadv_skb_head_push(skb, header_size) < 0 ||
+ 	    pskb_expand_head(skb, header_size + ETH_HLEN, 0, GFP_ATOMIC) < 0)
+-		goto out_err;
 +		goto out;
-+	}
-+
-+	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
-+	if (!msg) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
-+
-+	msg_head = genlmsg_put(msg, info->snd_portid, info->snd_seq,
-+			       &batadv_netlink_family, 0,
-+			       BATADV_CMD_GET_MESH_INFO);
-+	if (!msg_head) {
-+		ret = -ENOBUFS;
-+		goto out;
-+	}
-+
-+	ret = batadv_netlink_mesh_info_put(msg, soft_iface);
-+
-+ out:
-+	if (soft_iface)
-+		dev_put(soft_iface);
-+
-+	if (ret) {
-+		if (msg)
-+			nlmsg_free(msg);
-+		return ret;
-+	}
-+
-+	genlmsg_end(msg, msg_head);
-+	return genlmsg_reply(msg, info);
-+}
-+
- static struct genl_ops batadv_netlink_ops[] = {
-+	{
-+		.cmd = BATADV_CMD_GET_MESH_INFO,
-+		.flags = GENL_ADMIN_PERM,
-+		.policy = batadv_netlink_policy,
-+		.doit = batadv_netlink_get_mesh_info,
-+	},
- };
+ 
+ 	memcpy(skb->data, &frag_header, header_size);
+ 
+@@ -504,11 +515,9 @@ bool batadv_frag_send_packet(struct sk_buff *skb,
+ 	batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_TX);
+ 	batadv_add_counter(bat_priv, BATADV_CNT_FRAG_TX_BYTES,
+ 			   skb->len + ETH_HLEN);
+-	batadv_send_unicast_skb(skb, neigh_node);
++	ret = batadv_send_unicast_skb(skb, neigh_node);
+ 
+-	ret = true;
+-
+-out_err:
++out:
+ 	if (primary_if)
+ 		batadv_hardif_put(primary_if);
+ 
+diff --git a/net/batman-adv/fragmentation.h b/net/batman-adv/fragmentation.h
+index 9ff77c7..3202fe3 100644
+--- a/net/batman-adv/fragmentation.h
++++ b/net/batman-adv/fragmentation.h
+@@ -34,9 +34,9 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+ 			 struct batadv_orig_node *orig_node_src);
+ bool batadv_frag_skb_buffer(struct sk_buff **skb,
+ 			    struct batadv_orig_node *orig_node);
+-bool batadv_frag_send_packet(struct sk_buff *skb,
+-			     struct batadv_orig_node *orig_node,
+-			     struct batadv_neigh_node *neigh_node);
++int batadv_frag_send_packet(struct sk_buff *skb,
++			    struct batadv_orig_node *orig_node,
++			    struct batadv_neigh_node *neigh_node);
  
  /**
+  * batadv_frag_check_entry - check if a list of fragments has timed out
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index e78b318..d12506b 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -1194,6 +1194,7 @@ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
+ 	unsigned char *tvlv_buff;
+ 	unsigned int tvlv_len;
+ 	ssize_t hdr_len = sizeof(*unicast_tvlv_packet);
++	int res;
+ 
+ 	orig_node = batadv_orig_hash_find(bat_priv, dst);
+ 	if (!orig_node)
+@@ -1226,7 +1227,8 @@ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
+ 	tvlv_buff += sizeof(*tvlv_hdr);
+ 	memcpy(tvlv_buff, tvlv_value, tvlv_value_len);
+ 
+-	if (batadv_send_skb_to_orig(skb, orig_node, NULL) == NET_XMIT_DROP)
++	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
++	if (!(res != -1 && dev_xmit_complete(res)))
+ 		kfree_skb(skb);
+ out:
+ 	batadv_orig_node_put(orig_node);
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index ae850f2..1c3fea0 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -268,7 +268,10 @@ static int batadv_recv_my_icmp_packet(struct batadv_priv *bat_priv,
+ 		icmph->ttl = BATADV_TTL;
+ 
+ 		res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-		if (res != NET_XMIT_DROP)
++		if (res == -1)
++			goto out;
++
++		if (dev_xmit_complete(res))
+ 			ret = NET_RX_SUCCESS;
+ 
+ 		break;
+@@ -290,7 +293,7 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 	struct batadv_hard_iface *primary_if = NULL;
+ 	struct batadv_orig_node *orig_node = NULL;
+ 	struct batadv_icmp_packet *icmp_packet;
+-	int ret = NET_RX_DROP;
++	int res, ret = NET_RX_DROP;
+ 
+ 	icmp_packet = (struct batadv_icmp_packet *)skb->data;
+ 
+@@ -321,7 +324,8 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 	icmp_packet->msg_type = BATADV_TTL_EXCEEDED;
+ 	icmp_packet->ttl = BATADV_TTL;
+ 
+-	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
++	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
++	if (res != -1 && dev_xmit_complete(res))
+ 		ret = NET_RX_SUCCESS;
+ 
+ out:
+@@ -341,7 +345,7 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
+ 	struct ethhdr *ethhdr;
+ 	struct batadv_orig_node *orig_node = NULL;
+ 	int hdr_size = sizeof(struct batadv_icmp_header);
+-	int ret = NET_RX_DROP;
++	int res, ret = NET_RX_DROP;
+ 
+ 	/* drop packet if it has not necessary minimum size */
+ 	if (unlikely(!pskb_may_pull(skb, hdr_size)))
+@@ -407,7 +411,8 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
+ 	icmph->ttl--;
+ 
+ 	/* route it */
+-	if (batadv_send_skb_to_orig(skb, orig_node, recv_if) != NET_XMIT_DROP)
++	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
++	if (res != -1 && dev_xmit_complete(res))
+ 		ret = NET_RX_SUCCESS;
+ 
+ out:
+@@ -642,6 +647,8 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 		batadv_skb_set_priority(skb, hdr_len);
+ 
+ 	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
++	if (res == -1)
++		goto out;
+ 
+ 	/* translate transmit result into receive result */
+ 	if (res == NET_XMIT_SUCCESS) {
+@@ -649,12 +656,9 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 		batadv_inc_counter(bat_priv, BATADV_CNT_FORWARD);
+ 		batadv_add_counter(bat_priv, BATADV_CNT_FORWARD_BYTES,
+ 				   skb->len + ETH_HLEN);
+-
+-		ret = NET_RX_SUCCESS;
+-	} else if (res == NET_XMIT_POLICED) {
+-		/* skb was buffered and consumed */
+-		ret = NET_RX_SUCCESS;
+ 	}
++	if (dev_xmit_complete(res))
++		ret = NET_RX_SUCCESS;
+ 
+ out:
+ 	if (orig_node)
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 638d1c1..37be9cc 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -155,8 +155,11 @@ int batadv_send_unicast_skb(struct sk_buff *skb,
+  * host, NULL can be passed as recv_if and no interface alternating is
+  * attempted.
+  *
+- * Return: NET_XMIT_SUCCESS on success, NET_XMIT_DROP on failure, or
+- * NET_XMIT_POLICED if the skb is buffered for later transmit.
++ * Return: -1 on failure (and the skb is not consumed), NET_XMIT_POLICED if the
++ * skb is buffered for later transmit or the NET_XMIT status returned by the
++ * lower routine if the packet has been passed down.
++ *
++ * If the returning value is not -1 the skb has been consumed.
+  */
+ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 			    struct batadv_orig_node *orig_node,
+@@ -164,7 +167,7 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ {
+ 	struct batadv_priv *bat_priv = orig_node->bat_priv;
+ 	struct batadv_neigh_node *neigh_node;
+-	int ret = NET_XMIT_DROP;
++	int ret = -1;
+ 
+ 	/* batadv_find_router() increases neigh_nodes refcount if found. */
+ 	neigh_node = batadv_find_router(bat_priv, orig_node, recv_if);
+@@ -177,8 +180,7 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 	if (atomic_read(&bat_priv->fragmentation) &&
+ 	    skb->len > neigh_node->if_incoming->net_dev->mtu) {
+ 		/* Fragment and send packet. */
+-		if (batadv_frag_send_packet(skb, orig_node, neigh_node))
+-			ret = NET_XMIT_SUCCESS;
++		ret = batadv_frag_send_packet(skb, orig_node, neigh_node);
+ 
+ 		goto out;
+ 	}
+@@ -187,12 +189,10 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 	 * (i.e. being forwarded). If the packet originates from this node or if
+ 	 * network coding fails, then send the packet as usual.
+ 	 */
+-	if (recv_if && batadv_nc_skb_forward(skb, neigh_node)) {
++	if (recv_if && batadv_nc_skb_forward(skb, neigh_node))
+ 		ret = NET_XMIT_POLICED;
+-	} else {
+-		batadv_send_unicast_skb(skb, neigh_node);
+-		ret = NET_XMIT_SUCCESS;
+-	}
++	else
++		ret = batadv_send_unicast_skb(skb, neigh_node);
+ 
+ out:
+ 	if (neigh_node)
+@@ -318,7 +318,7 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ {
+ 	struct batadv_unicast_packet *unicast_packet;
+ 	struct ethhdr *ethhdr;
+-	int ret = NET_XMIT_DROP;
++	int res, ret = NET_XMIT_DROP;
+ 
+ 	if (!orig_node)
+ 		goto out;
+@@ -355,7 +355,8 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ 	if (batadv_tt_global_client_is_roaming(bat_priv, ethhdr->h_dest, vid))
+ 		unicast_packet->ttvn = unicast_packet->ttvn - 1;
+ 
+-	if (batadv_send_skb_to_orig(skb, orig_node, NULL) != NET_XMIT_DROP)
++	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
++	if (res != -1 && dev_xmit_complete(res))
+ 		ret = NET_XMIT_SUCCESS;
+ 
+ out:
 -- 
 2.8.1
 
