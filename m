@@ -1,14 +1,18 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 09 May 2016 15:33:25 +0200
-Message-ID: <3082168.4WeLqNseqL@bentobox>
-In-Reply-To: <1462372207-28322-1-git-send-email-andrew@lunn.ch>
-References: <1462372207-28322-1-git-send-email-andrew@lunn.ch>
+Return-Path: <a@unstable.cc>
+Date: Mon, 9 May 2016 22:20:15 +0800
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <20160509142015.GL3945@prodigo.futur3.it>
+References: <1462664836-21988-1-git-send-email-mareklindner@neomailbox.ch>
+ <8890255.lVUf8VaFkP@voltaire>
+ <20160509104533.GI3945@prodigo.futur3.it>
+ <1643067.4fJX8kxc6U@voltaire>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1490686.2OeEGBQTdK";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4] batctl: Use netlink to replace some of
-	debugfs
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="ShzQXCswyqjgWi6k"
+Content-Disposition: inline
+In-Reply-To: <1643067.4fJX8kxc6U@voltaire>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: init ELP tweaking options
+ only once
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,81 +22,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart1490686.2OeEGBQTdK
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday 04 May 2016 16:30:07 Andrew Lunn wrote:
-> +int netlink_print_originators(char *mesh_iface, int read_opts,
-> +                             float orig_timeout,
-> +                             float watch_interval)
-> +{
-> +       char *header;
-> +       int ifindex;
-> +
-> +       ifindex = if_nametoindex(mesh_iface);
-> +       if (!ifindex) {
-> +               fprintf(stderr, "Interface %s is unknown\n", mesh_iface);
-> +               return -ENODEV;
-> +       }
-> +
-> +       netlink_print_info(ifindex, PARSE_ONLY);
-> +
-> +       if (!algo_name)
-> +               return -EINVAL;
-> +
-> +       if (!strcmp("BATMAN_IV", algo_name))
-> +               header = "   Originator        last-seen (#/255) Nexthop           [outgoingIF]\n";
-> +       if (!strcmp("BATMAN_V", algo_name))
-> +               header = "   Originator        last-seen (throughput) Nexthop           [outgoingIF]\n ";
-> +
-> +       if (!header)
-> +               return -EINVAL;
-> +
-> +       return netlink_print_common(mesh_iface, read_opts, orig_timeout,
-> +                                   watch_interval, header,
-> +                                   BATADV_CMD_GET_ORIGINATORS,
-> +                                   originators_callback);
-> +}
+--ShzQXCswyqjgWi6k
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This is actually a report of a possible problem by Simon (I've only
-checked it):
+On Mon, May 09, 2016 at 09:10:44PM +0800, Marek Lindner wrote:
+> Am I right assuming you're not testing with Openwrt ? I suspect it is net=
+ifd=20
+> that removes the interface from batX entirely on ifconfig down. That migh=
+t not=20
+> be the same on your system. I can reword the commit message to not mentio=
+n=20
+> interface down if you like.
 
-It looks like the orig_iface handling isn't handled here (see
-handle_debug_table "case 'i'") or am I missing something? I would have
-expected that sets something like BATADV_ATTR_HARD_IFINDEX when
-orig_iface is available and the kernel then shows the same as in
-/sys/kernel/debug/batman_adv/$(hardif)/originators
+You are right - I was not using netifd and so my simple "ifdown & ifup" was=
+ not
+enough to trigger the reset.
 
-The parameter BATADV_ATTR_HARD_IFINDEX seems to be already parsed
-by batadv_orig_dump. But batctl never seems to set it.
+Still, I do understand that your point is to avoid resetting the elp_interv=
+al
+and throughput_override more than once during the hard_iface life span.
 
-Kind regards,
-	Sven
---nextPart1490686.2OeEGBQTdK
+
+This said, I think your patch is fine, but the commit message should be
+re-arranged in order to avoid stating that "ifdown & ifup" is a way to trig=
+ger
+the "misbehaviour".
+
+Cheers,
+
+
+
+--=20
+Antonio Quartulli
+
+--ShzQXCswyqjgWi6k
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXMJGlAAoJEF2HCgfBJntGxPUP/i2f2CxSe4u11FJu+y3N9ecj
-Pqgjh2jeEHDvYwBXO1sOy+cJta3sEajQ33P/nQRK5j+NX3SwKC5Dii2hlbdtVLwV
-Bp9yEkKarRp/SrSindHooKQg5yCEHgtaTpXQl8YMp6U1oXdJCg3GiilXjYBYOBax
-2TqQz713gqM+txbI8Fsu0jPE3Y5C+Je6cmIpqUWYCG9pR1Kh3Hmh+bOZ+30DWELa
-8l/eyJYxerg5oz7zQS1+veq+PbTkhyH77jBM8XnSxtUEMIM4m76IFjx06Kr/eTsr
-X4YIYpUe9bMriDMXAMA1L0dIf5vnvrtEcwJyPNbxSz4bx9NW/nxi+PiCygQO578V
-xiCmRcNasFxTA0HyfoQfgShETpyMWoUyky3xQdiZfHRnlLsuTyQ7xPFveuY3Fm+O
-SFZ/nD2ptu6/lJt58F1NilwdFiFXnFl4M0696was6VtXL/wFajnPJZF1J+UO2zlu
-oGtgETtaQ5tGfNwctP4yUXA9Se13qRFC28J7gUWBtJZAkoqnyqMWaBiTOo9mKb2B
-dV7iGJdB4VOYzrFsowwThKcTM8YIW9HKEKG/IaBxOpz+s0FuLHmmPNh1pcyG3mlL
-AX3YmVtt/ErbLQB9HvvAcN2KxRNw/t4Q7hrVRF4HsmNEMLb90gb7OJW6rEbJ0fEJ
-m+MNj17Nd8ICtp1XK3D1
-=SRvN
+iQIcBAEBCAAGBQJXMJyfAAoJEJ4aZjxxc6bKMJAP/0O2wO1cueSHx5zgNN83TZAd
++Wu6vDj1f05rVxgNLy6XA/+LBXAHcIiOclX43Q5xjMzCrzwYWtN9WN5ayb1UNExp
+UCA8q0vxKG44Er5uxTcKvnbtSatXlha7X8hnqC8QPCvoqKSZIfIs9r0LW5kqs/9I
+xHMLI9PvPJxa8EEYiwr7YkqIZzgKhCZz7Wqfs2DSDjw55D747nMVnyp9ebl8wcs3
+bUTNfFZyo8PVPBupukvcrzr9WtQfQtZrxLwIrF96e56iTcrroVh7yPrRYr8tBWKO
+2qG4Sa05Hpo1ACgR3Bi824LjIFYNBpWKP7i76tB+XeHhS0Z0JaSqGuJcvh9BkNpj
+cHT/Ti0OhnTxWz5TM2DwF0R2X2OEFxTbcW1oIqRZ3xGGdRwJe2nFAeCm2Ob+Vzl3
+Ql5PgUuBRLgASzGu5Dkx7+IPdyF12zoODQbxcIyWrOPxtMgcatjo1dIr+6DyBX/e
+44Dvy+kcdEWsX5kDbHfX9iHikZs3lE3equTf4CNkETfz/GasN7YIRrM2UW0jCoAF
+L9oTy3RpMJvv8gmTJmeGPTGD8yrT9YtSh0xBC0yGuJtU43XHYOKt513ywFjjarTb
+Cj838q8z+fvM00GVMo1zSSiUp3VqH+cb9eAhyUSUOge7mdRv0JrX5md5EpVrgwiQ
+xFnBzSGIP8DvDZuAKCHr
+=vAL+
 -----END PGP SIGNATURE-----
 
---nextPart1490686.2OeEGBQTdK--
-
+--ShzQXCswyqjgWi6k--
