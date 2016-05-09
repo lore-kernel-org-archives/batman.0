@@ -1,15 +1,8 @@
 Return-Path: <andrew@lunn.ch>
-Date: Mon, 9 May 2016 18:51:03 +0200
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160509165103.GB10508@lunn.ch>
-References: <1462372207-28322-1-git-send-email-andrew@lunn.ch>
- <1689798.ZJlLjAlgFP@bentobox>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1689798.ZJlLjAlgFP@bentobox>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4] batctl: Use netlink to replace some of
- debugfs
+Date: Mon,  9 May 2016 20:03:34 +0200
+Message-Id: <1462817016-17867-1-git-send-email-andrew@lunn.ch>
+Subject: [B.A.T.M.A.N.] [PATCH 0/2] Fragments and QoS
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,19 +12,26 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Mon, May 09, 2016 at 06:28:29PM +0200, Sven Eckelmann wrote:
-> On Wednesday 04 May 2016 16:30:07 Andrew Lunn wrote:
-> > +       [BATADV_ATTR_THROUGHPUT]        = { .type = NLA_FLAG },
-> 
-> Why is throughput a flag when you access it with 
-> 
->     throughput_kbits = nla_get_u32(attrs[BATADV_ATTR_THROUGHPUT]);
-> 
-> Most likely just a copy+paste error and it should be NLA_U32.
+BATMAN currently does not allow QoS policies to be used with
+fragmented packets. The first patch copies the skb priority from the
+unfragmented packet into the fragments as they are built, so the lower
+layers can then prioritise as appropriated.
 
-Yep, thanks.
+The second patch places the priority into the fragment header, and
+upon reception of a fragment, copies it into the skb priority, so that
+when the fragment is retransmitted, it is correctly prioritised.
 
-     Andrew
+Andrew Lunn (2):
+  batman-adv: Set skb priority in fragments
+  batman-adv: Include frame priority in fragment header
+
+ net/batman-adv/fragmentation.c | 4 +++-
+ net/batman-adv/packet.h        | 7 +++++--
+ net/batman-adv/routing.c       | 2 ++
+ 3 files changed, 10 insertions(+), 3 deletions(-)
+
+-- 
+2.8.0.rc3
+
