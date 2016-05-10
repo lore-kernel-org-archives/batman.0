@@ -1,11 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Wed, 11 May 2016 03:29:56 +0800
-Message-Id: <1462908605-27412-9-git-send-email-a@unstable.cc>
+Date: Wed, 11 May 2016 03:29:57 +0800
+Message-Id: <1462908605-27412-10-git-send-email-a@unstable.cc>
 In-Reply-To: <1462908605-27412-1-git-send-email-a@unstable.cc>
 References: <1462908605-27412-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 08/17] batman-adv: Increase hard_iface refcnt
-	for ptype
+Subject: [B.A.T.M.A.N.] [PATCH 09/17] batman-adv: Use kref_get for
+	batadv_tvlv_container_get
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,38 +20,36 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The hard_iface is referenced in the packet_type for batman-adv. Increase
-the refcounter of the hard_interface for it to have an explicit reference
-for it in case this functionality gets refactorted and the currently
-used implicit reference for it will be removed.
+batadv_tvlv_container_get requires that tvlv.container_list_lock is held by
+the caller. It is therefore not possible that an item in
+tvlv.container_list has an reference counter of 0 and is still in the list
+
+The kref_get function instead WARNs (with debug information) when the
+reference counter would still be 0. This makes a bug in batman-adv better
+visible because kref_get_unless_zero would have ignored this problem.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/hard-interface.c | 2 ++
- 1 file changed, 2 insertions(+)
+ net/batman-adv/main.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index f0e1899e5b6b..d3d37f3f99cf 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -522,6 +522,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 		goto err_upper;
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index c8d8bc78a518..5f2974bd1227 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -748,9 +748,7 @@ batadv_tvlv_container_get(struct batadv_priv *bat_priv, u8 type, u8 version)
+ 		if (tvlv_tmp->tvlv_hdr.version != version)
+ 			continue;
+ 
+-		if (!kref_get_unless_zero(&tvlv_tmp->refcount))
+-			continue;
+-
++		kref_get(&tvlv_tmp->refcount);
+ 		tvlv = tvlv_tmp;
+ 		break;
  	}
- 
-+	kref_get(&hard_iface->refcount);
- 	hard_iface->batman_adv_ptype.type = ethertype;
- 	hard_iface->batman_adv_ptype.func = batadv_batman_skb_recv;
- 	hard_iface->batman_adv_ptype.dev = hard_iface->net_dev;
-@@ -583,6 +584,7 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
- 	batadv_info(hard_iface->soft_iface, "Removing interface: %s\n",
- 		    hard_iface->net_dev->name);
- 	dev_remove_pack(&hard_iface->batman_adv_ptype);
-+	batadv_hardif_put(hard_iface);
- 
- 	bat_priv->num_ifaces--;
- 	batadv_orig_hash_del_if(hard_iface, bat_priv->num_ifaces);
 -- 
 2.8.2
 
