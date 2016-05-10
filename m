@@ -1,15 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 10 May 2016 11:11:32 +0200
-Message-ID: <1872939.JCcrb9gEib@bentobox>
-In-Reply-To: <1861048.i0QxsABPPD@bentobox>
-References: <1462464426-13014-1-git-send-email-linus.luessing@c0d3.blue>
- <20160510000311.GJ5816@otheros> <1861048.i0QxsABPPD@bentobox>
+Date: Tue, 10 May 2016 11:25:42 +0200
+Message-ID: <1919523.EiXNAC6LDj@bentobox>
+In-Reply-To: <12399409.fEQLp0ttQ1@bentobox>
+References: <1462817239-18104-1-git-send-email-andrew@lunn.ch>
+ <20160509190608.GA18522@lunn.ch> <12399409.fEQLp0ttQ1@bentobox>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart81272898.dMVk1l7qSi";
+Content-Type: multipart/signed; boundary="nextPart2706275.yEzUM0M43v";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv14 0/4] Multicast optimizations for
-	bridges
+Subject: Re: [B.A.T.M.A.N.] [PATCHv4 00/12] netns and netlink support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,46 +18,67 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart81272898.dMVk1l7qSi
-Content-Transfer-Encoding: 7Bit
+--nextPart2706275.yEzUM0M43v
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday 10 May 2016 09:43:00 Sven Eckelmann wrote:
-> > * linux/icmp6.h in multicast.c
-> >   -> icmp6_hdr()
-> > * linux/ipv6.h in multicast.c
-> >   -> ipv6_hdr()
-> > 
-> > * net/addrconf.h in multicast.c
-> >   -> ipv6_mc_check_mld()
-> >   -> ipv6_addr_is_ll_all_nodes()
-> > * net/ip.h in multicast.c
-> >   -> ip_eth_mc_map()
-> > * net/ipv6.h in multicast.c
-> >   -> IPV6_ADDR_MC_SCOPE
-> >   -> IPV6_ADDR_SCOPE_LINKLOCAL
-> 
-> Problem seems to be that your sources don't build at the moment. So most 
-> likely you are missing some dependencies like CONFIG_INET (and maybe even 
-> more).
+On Tuesday 10 May 2016 09:00:49 Sven Eckelmann wrote:
+> On Monday 09 May 2016 21:06:08 Andrew Lunn wrote:
+> > > I hope this helps to reduce the conflicts (even when not resolvin=
+g it
+> > > completely) between the tp_meter and the netlink patchset.
+> >=20
+> > Hi Sven
+> >=20
+> > Do you want to take over my patches and merge them all into one set=
+?
+>=20
+> No, this is the last thing I want to do :)
+>=20
+> I only want to get the "big" conflicts solved and mark the parts whic=
+h most
+> likely will needs to be changed before Marek will accept them.
+>=20
+> I will have not much time in the next days to do any private work on =
+it. So it
+> most likely not the best idea to give me the patchset with a lot of T=
+ODOs in
+> it ;)
+>=20
+> I will try to poke Antonio and Marek some more so we get a common sta=
+rting=20
+> point (the two patches from batctl/batman-adv) which we then can use =
+prepare=20
+> our patchsets with a lot less conflicts.
 
-I haven't checked all the included symbols (you should) but could it be that
-BRIDGE + IPv6 is also a missing dependency? At least there are some parts 
+Some reports which I forgot to mention yesterday and which I've just re=
+membered:
 
- * { 0x18fb237a, __VMLINUX_SYMBOL_STR(netdev_master_upper_dev_get_rcu) },
- * { 0x65e57e43, __VMLINUX_SYMBOL_STR(br_multicast_list_adjacent) },
- * { 0x671d7cb3, __VMLINUX_SYMBOL_STR(ip_mc_check_igmp) },
- * { 0x10cfbe4f, __VMLINUX_SYMBOL_STR(br_multicast_has_querier_anywhere) },
- * { 0x1d18dce9, __VMLINUX_SYMBOL_STR(br_multicast_has_querier_adjacent) },
- * { 0xaf8ed45, __VMLINUX_SYMBOL_STR(ipv6_mc_check_mld) },
 
-You can find all used symbols of a build module in net/batman-adv/batman-adv.mod.c
+bracket_align master ./net/batman-adv/bat_iv_ogm.c
+=2D-------------------------------------------------
+
+    Found wrong alignment at ./net/batman-adv/bat_iv_ogm.c:2371, was 37=
+ but expected 61
+    Found wrong alignment at ./net/batman-adv/bat_iv_ogm.c:2372, was 37=
+ but expected 61
+
+
+checkpatch master ./net/batman-adv/bat_v.c
+=2D-----------------------------------------
+
+    CHECK: Please don't use multiple blank lines
+    #450: FILE: ./net/batman-adv/bat_v.c:450:
+    +
+    +
+   =20
+    total: 0 errors, 0 warnings, 1 checks, 732 lines checked
 
 Kind regards,
-	Sven
---nextPart81272898.dMVk1l7qSi
+=09Sven
+--nextPart2706275.yEzUM0M43v
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -66,20 +86,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXMaXEAAoJEF2HCgfBJntGufAP/3tuKTEQL6Z5l1z4TVf1KpWU
-q0RkELTMlvvJm/qrvN3D7bkLYH1vnTnPdUFE3YYnowCPtXIbbCzUwVFAVKUnbx3s
-CNxUZi3ZhY+6BYSItB32uFSHBQMdieoi838cO22u2VNeE0JFDIqtrM7SQ+SnE0l7
-0HPSU+qPhguajGY37NgUWo2RSAC5wJiH375EQ23GOXwhsK/R52uMlmt5uG+CyYg5
-3haSpHORs2CcRQsa5nd7BRSqwk+hsxU9SEFD6si/bniR4sYg4/rX++NOmg2s1VcU
-d1/Ez6Djpc31+E2i11Kgddn/m72jwGe0DKuDkZmS+6jUDsOwCEr4Iqc73RGgAJ7/
-/SMya6kgz8Ew/tj9Ndb3H8RZBFiOQGI+Uv7sUfQRE3I9k5loULwDb+9aNPftOKOk
-RtHP9gdmn5HpR1ocGzEDYv5OPtzSeSiZIkuzCZcczzTNQXRm0vqVi6fF1Q2lG0uq
-dR3+MIbM8HM0GrMr65bvMLCJiBPM/64rOtjl+vqP3DfWhA4W6gmHGLt2qGXGHYen
-Ntc1pnhteBYbIZZ1lv/JyIJTRoHKQllAP9y+KsjVl58D03cw3B8Wkv8ci+KAu/jj
-/061l1/4evIX2K2sIJa3dUlqLFDDjwfS9RHb+eXijkp0l3QrZMdxkhyc85J7wsWR
-vPAr3Zq0yRMvnAZAWafQ
-=N/u+
+iQIcBAABCgAGBQJXMakWAAoJEF2HCgfBJntG5nsP/2D4/jIaNz+2b1Hti/9oVDTM
+JC51yCmHAhO8G8SXtHvlxJ9gDarvNzmRx517BkgiR3xBAJ1hNZek20HztMEL3I+k
+b1bGLHXrsn9VUG2vNNbKcEmSyGgoD/44XqatH59f5vCrMqDPYmKl/mcUa4mo02LD
+ZpbTCUhFgRJef9/QZKUunMCdqWuhIzBbJOfusnQWxKFm4z8D7a81CvcGCNcdE+K2
+cvWA8M1QYlxXEBQ7xgxjFZLncCkhqPJm06W8kSyqb2RwS1N4ajIeb+pmvDrhwQg5
+COS2d2QCr6UXNct1TaHgEk9KUsd3WXvTIo5Xslo2CM8IJZ4unbuXEft8RvVLnl+J
+LMH/wA5mhZx5FnL0yEvTKlNVObbVEWxN1QcOvppTrFi+fQ3dSWvfUd9tW1I4xkF9
+8hhCadSQernD7VofUlLtBtcrMzDUon37mP3CLFl1Gr/8CmfIXXid6rdEHb1rT2sp
+RcUO7xu7GuVghRmZfyAcTOGCm9wONZUayMwCVu+6sUGPKVl+Qh+QLcPawWqw5Nmq
+I76zkhZK9LYSl0TWwTX9vjH4vPN3OombvF+ZLMZcsUWU1jnhv0x7l2klwp7gWEj1
+0SiEfnNKkSta2o0ZsQxrnl1kOJke5fR1MzZLF/iBushO1pHpMzvjSlQHJGsHIfrL
+3yV9RI2dcQ+FnC47mlZg
+=+GH7
 -----END PGP SIGNATURE-----
 
---nextPart81272898.dMVk1l7qSi--
+--nextPart2706275.yEzUM0M43v--
 
