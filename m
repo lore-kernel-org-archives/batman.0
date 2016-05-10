@@ -1,11 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Wed, 11 May 2016 03:29:58 +0800
-Message-Id: <1462908605-27412-11-git-send-email-a@unstable.cc>
+Date: Wed, 11 May 2016 03:30:05 +0800
+Message-Id: <1462908605-27412-18-git-send-email-a@unstable.cc>
 In-Reply-To: <1462908605-27412-1-git-send-email-a@unstable.cc>
 References: <1462908605-27412-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 10/17] batman-adv: Use kref_get for
-	batadv_nc_get_nc_node
+Subject: [B.A.T.M.A.N.] [PATCH 17/17] batman-adv: use batadv_compare_eth
+	when possible
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,48 +18,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Sven Eckelmann <sven@narfation.org>
+When comparing Ethernet address it is better to use the more
+generic batadv_compare_eth. The latter is also optimised for
+architectures having a fast unaligned access.
 
-batadv_nc_get_nc_node requires that the caller already has a valid
-reference for orig_neigh_node. It is therefore not possible that it has an
-reference counter of 0 and was still given to this function
-
-The kref_get function instead WARNs (with debug information) when the
-reference counter would still be 0. This makes a bug in batman-adv better
-visible because kref_get_unless_zero would have ignored this problem.
-
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
+[sven@narfation.org: fix conflicts with current version]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/network-coding.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ net/batman-adv/network-coding.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index 1da8e0e1b18f..953dff1ad43b 100644
+index df5ae9c7e507..678f06865312 100644
 --- a/net/batman-adv/network-coding.c
 +++ b/net/batman-adv/network-coding.c
-@@ -856,8 +856,7 @@ batadv_nc_get_nc_node(struct batadv_priv *bat_priv,
- 	if (!nc_node)
- 		return NULL;
+@@ -521,12 +521,10 @@ static bool batadv_nc_hash_compare(const struct hlist_node *node,
+ 	nc_path2 = data2;
  
--	if (!kref_get_unless_zero(&orig_neigh_node->refcount))
--		goto free;
-+	kref_get(&orig_neigh_node->refcount);
+ 	/* Return 1 if the two keys are identical */
+-	if (memcmp(nc_path1->prev_hop, nc_path2->prev_hop,
+-		   sizeof(nc_path1->prev_hop)) != 0)
++	if (!batadv_compare_eth(nc_path1->prev_hop, nc_path2->prev_hop))
+ 		return false;
  
- 	/* Initialize nc_node */
- 	INIT_LIST_HEAD(&nc_node->list);
-@@ -884,10 +883,6 @@ batadv_nc_get_nc_node(struct batadv_priv *bat_priv,
- 	spin_unlock_bh(lock);
+-	if (memcmp(nc_path1->next_hop, nc_path2->next_hop,
+-		   sizeof(nc_path1->next_hop)) != 0)
++	if (!batadv_compare_eth(nc_path1->next_hop, nc_path2->next_hop))
+ 		return false;
  
- 	return nc_node;
--
--free:
--	kfree(nc_node);
--	return NULL;
- }
- 
- /**
+ 	return true;
 -- 
 2.8.2
 
