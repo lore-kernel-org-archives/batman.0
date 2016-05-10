@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 11 May 2016 05:14:36 +0800
-Message-ID: <14631712.0fzM9k8hTT@voltaire>
-In-Reply-To: <20160510145705.GB22414@prodigo.lan>
-References: <1462890719-2146-1-git-send-email-mareklindner@neomailbox.ch>
- <20160510145705.GB22414@prodigo.lan>
+Date: Wed, 11 May 2016 05:16:46 +0800
+Message-ID: <1572215.6K5rTnkNup@voltaire>
+In-Reply-To: <5732316F.7020209@tu-bs.de>
+References: <5732316F.7020209@tu-bs.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart12835150.4iWiOO02TP";
+Content-Type: multipart/signed; boundary="nextPart16817679.qITfJV8zzW";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: init ELP tweaking options
-	only once
+Subject: Re: [B.A.T.M.A.N.] Unable to ping interface in ap mode / client
+	mode with IP4 addr
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,31 +18,25 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart12835150.4iWiOO02TP
+--nextPart16817679.qITfJV8zzW
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, May 10, 2016 22:57:05 Antonio Quartulli wrote:
-> On Tue, May 10, 2016 at 10:31:59PM +0800, Marek Lindner wrote:
-> > The ELP interval and throughput override interface settings are
-> > initialized
-> > with default settings on every time an interface is added to a mesh.
-> > This patch prevents this behavior by moving the configuration init to the
-> > interface detection routine which runs only once per interface.
-> >
-> > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+On Tuesday, May 10, 2016 21:07:27 Hannes Harms wrote:
+> But I can not ping with an IP4 addr.
 > 
-> Acked-by: Antonio Quartulli <a@unstable.cc>
+> bat0 was added to a bridge interface with a static IP on both machines.
+> No DHCP server is running, because only static IPS are needed.
 
-Applied in revision 71e957c.
+Can you describe from where you are pinging (which hosts are involved) and 
+post the IP configuration (e.g. ip addr && ip route) ?
 
-Cheers,
+Thanks,
 Marek
 
---nextPart12835150.4iWiOO02TP
+--nextPart16817679.qITfJV8zzW
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -51,14 +44,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXMk88AAoJEFNVTo/uthzAW+gIAJuEk2qC/4bfN/xG5z+ywsmL
-vJ0R1orAo/DyHJmS2ECOKzZ91+naVyD3K5n7pLiFm2XM1g0sYWgXx9Da6ijSqAXE
-B3n6EFQim04ddT5K9KqnYrSQh+axQJI8175fw+BC16WQCC9MSD/2kco9TAmJasQq
-aK6EfE7EqHUUYnaIQ9RnN1FWA6moTz6jZsrxrhvRzL9Bgylyg9nPYVeJijCoLZH1
-EbixctyyM3K3Hj43eJ/ocy2IkC5w2jKmS5WWrQjltJj+J4GCORRBr/miXLKk+Jql
-DHaH5XZ75ghFXUJ4olm0smgibYDMSpMu6yB3Q5T5VPF5g5o4vsbQgOdLTqmzHd0=
-=kT+r
+iQEcBAABCAAGBQJXMk++AAoJEFNVTo/uthzAmMsIALEkLdSArd1IPmAnHhPD5w28
+SLBCYB86D/jZsboqdt9R/JAUjp+sn4MLQOhaGOP/eQjozP8mRAU69KcR03/x3DAf
+NT3b8k5x/R+N5tZBLzXfC1e/5MVHHlk5Nxpg9kbJEutqfnmC+IkoPltoyEwYgCwM
+Ga53+IIBLS+2l/g1+WpHgSGzAzNB/9PdK8sZFIs9HfX5s7djftYC9+hfDRPCaMT6
+hwsz1K0vAr6+PVjYtRDV8+glnKNB73vaPdAcNv05mokmpUchbiNJOOuUpj6kYMQG
+MrYoP3aFgnFWRChxDmrJ2chMrZXM9i4WTfqDAcxs93gb9H8sAysKCxs2zI8uPPk=
+=/Akn
 -----END PGP SIGNATURE-----
 
---nextPart12835150.4iWiOO02TP--
+--nextPart16817679.qITfJV8zzW--
 
