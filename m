@@ -1,15 +1,15 @@
-Return-Path: <a@unstable.cc>
-Date: Tue, 10 May 2016 22:57:05 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160510145705.GB22414@prodigo.lan>
-References: <1462890719-2146-1-git-send-email-mareklindner@neomailbox.ch>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Tue, 10 May 2016 23:28:45 +0800
+Message-ID: <1875667.fHtehojA4H@voltaire>
+In-Reply-To: <1462812071-16467-1-git-send-email-sven@open-mesh.com>
+References: <6307812.WAqRcEYAvX@bentobox>
+ <1462812071-16467-1-git-send-email-sven@open-mesh.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
-Content-Disposition: inline
-In-Reply-To: <1462890719-2146-1-git-send-email-mareklindner@neomailbox.ch>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: init ELP tweaking options
- only once
+Content-Type: multipart/signed; boundary="nextPart6254248.g4fFbHQqZp";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v7 1/4] batman-adv: add generic netlink
+	family for batman-adv
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,49 +19,67 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 
+--nextPart6254248.g4fFbHQqZp
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---k+w/mQv8wyuph6w0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Monday, May 09, 2016 18:41:08 Sven Eckelmann wrote:
+> From: Matthias Schiffer <mschiffer@universe-factory.net>
+> 
+> debugfs is currently severely broken virtually everywhere in the kernel
+> where files are dynamically added and removed (see
+> http://lkml.iu.edu/hypermail/linux/kernel/1506.1/02196.html for some
+> details). In addition to that, debugfs is not namespace-aware.
+> 
+> Instead of adding new debugfs entries, the whole infrastructure should be
+> moved to netlink. This will fix the long standing problem of large buffers
+> for debug tables and hard to parse text files.
+> 
+> Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> [sven.eckelmann@open-mesh.com: Strip down patch to only add genl family,
+> add missing kerneldoc]
+> Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+> ---
+>  MAINTAINERS                     |  1 +
+>  Makefile                        |  1 +
+>  compat-include/net/genetlink.h  | 34 ++++++++++++++++++++++++
+>  include/uapi/linux/batman_adv.h | 53 ++++++++++++++++++++++++++++++++++++++
+> net/batman-adv/Makefile         |  1 +
+>  net/batman-adv/main.c           |  3 +++
+>  net/batman-adv/netlink.c        | 57
+> +++++++++++++++++++++++++++++++++++++++++ net/batman-adv/netlink.h        |
+> 24 +++++++++++++++++
+>  8 files changed, 174 insertions(+)
+>  create mode 100644 compat-include/net/genetlink.h
+>  create mode 100644 include/uapi/linux/batman_adv.h
+>  create mode 100644 net/batman-adv/netlink.c
+>  create mode 100644 net/batman-adv/netlink.h
 
-On Tue, May 10, 2016 at 10:31:59PM +0800, Marek Lindner wrote:
-> The ELP interval and throughput override interface settings are initializ=
-ed
-> with default settings on every time an interface is added to a mesh.
-> This patch prevents this behavior by moving the configuration init to the
-> interface detection routine which runs only once per interface.
->=20
-> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Applied in revision 2b20eb5.
 
-Acked-by: Antonio Quartulli <a@unstable.cc>
+Thanks,
+Marek
 
---=20
-Antonio Quartulli
-
---k+w/mQv8wyuph6w0
+--nextPart6254248.g4fFbHQqZp
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXMfbBAAoJEJ4aZjxxc6bKpBsQAL493bk7XUn9jLpXamWq41PG
-xPg4IoFWlaUBKUydqR0lA31LBHd1Gg4hU/1iPlP+/ClYq2A+gRlfEtyKrLusZfu6
-zL2FMuZT0PCJXf3b3CPzHL202D5inoRE2j0FVY581M+WvZpMv6YSSjFuOE8ir4Tw
-7XG/aEVVuXqfM4PaD7E3Ojmy2f9nMQKketCr+GjwVmSvf8rDFF8SzMzS1Mfj9+wM
-6XY6M6OSdIq1JBQxlsFBXAPzdIA/3qO/g2D6BxBQ0n6PlwWytAqjr0Ofpc+yePna
-cU9wgrMJAuwccYSBxdbk+Ge5z8fnBtTU2kd858BpGFiti79XwWZvURk94PUSCoYG
-+u2Sk6NW3nP3sXyo098Szi/x6BnXAmLaZhcXc5O2xRmYiV2HW/DW4LdyjT6JLSzD
-T6HeL39z4zwiLI5blhbbsnXTQTq97OIUtlzEXVcbm3c5Hu+aK/Vi8M3g9pZhO1fW
-C7dRUWGE6XkR5zOee6HdVmX6/2yxUIgNH+TH+2u5+C3NECKxiwsTnQyUFlrfha61
-CJAT/yfx0JEVbCOSfIzzouTU8SNAxgPmCwcu3MV3eG2YxRtvub9XH//l+4cbTvp2
-I9in6q0xfe74Mzw7b0RtLXDoUM2O+LpD/Hv87ZVFSUhdUS14I7Qo5mwc1IKkBJ+j
-RiN++2uCeSmaX8YxHnU2
-=bhOq
+iQEcBAABCAAGBQJXMf4tAAoJEFNVTo/uthzAPqAH+wTi0u6/f52KhpOH9k9XiBXt
+BY2cFGOxfYz0drSa3I1wGgBCPnBrGzm9LKwLCKupSG36zTLpCtIHHA6Mmqg2u2c1
+B6y4exG4/OkKqkXnrNj8iSafqloxqY/1RHULLxNp7ZzzSL/bknwy8U/YQ0DKRgaP
+erzp82WOwdyY/zadB4riSzvPbMraQmnxLUZha3qr0F0dOfc4jO3EcUB3Fxm0cbKp
+uFxfMF/zF5Yla0O5CcYU/9TXtd9uI8c1c1OBSuzXLfMQt7Nx050P+q7PYc/lQs3w
+yeArrTe65GO3E+irg/kh0R2ghQoVFwYijOfB6nbFup0ZJY4YhX2Zc7wiJalThQ0=
+=M+VU
 -----END PGP SIGNATURE-----
 
---k+w/mQv8wyuph6w0--
+--nextPart6254248.g4fFbHQqZp--
+
