@@ -1,14 +1,16 @@
-Return-Path: <andrew@lunn.ch>
-Date: Mon, 9 May 2016 21:06:08 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160509190608.GA18522@lunn.ch>
-References: <1462817239-18104-1-git-send-email-andrew@lunn.ch>
- <1680132.z76VCK1c2R@bentobox> <1495261.OkJHpVOaGk@bentobox>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Tue, 10 May 2016 02:03:11 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20160510000311.GJ5816@otheros>
+References: <1462464426-13014-1-git-send-email-linus.luessing@c0d3.blue>
+ <1811882.4NqUN7GsV2@sven-edge>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <1495261.OkJHpVOaGk@bentobox>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv4 00/12] netns and netlink support
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1811882.4NqUN7GsV2@sven-edge>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv14 0/4] Multicast optimizations for
+	bridges
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,14 +20,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-> I hope this helps to reduce the conflicts (even when not resolving it
-> completely) between the tp_meter and the netlink patchset.
+On Thu, May 05, 2016 at 11:15:28PM +0200, Sven Eckelmann wrote:
+> On Thursday 05 May 2016 17:07:01 Linus Lüssing wrote:
+> > This patchset can be found in the current linus/multicast-bridge
+> > branch.
+> 
+> Please check the attached results of the daily build test scripts.
 
-Hi Sven
+Thanks Sven!
 
-Do you want to take over my patches and merge them all into one set?
+Just wanted to note that there seem to be some false positives in
+there.
 
-   Andrew
+"[net/batman-adv/multicast.c:1181]: (style) The function 'batadv_mcast_flags_seq_print_text' is never used."
+-> used in debugfs.c
+
+
+Also the header suggestions seem a bit unreliable to me,
+the following removals are false positives, I think:
+
+* header removals in compat-sources/*
+  -> breaks compiling
+
+* linux/icmp6.h in multicast.c
+  -> icmp6_hdr()
+* linux/ipv6.h in multicast.c
+  -> ipv6_hdr()
+
+* net/addrconf.h in multicast.c
+  -> ipv6_mc_check_mld()
+  -> ipv6_addr_is_ll_all_nodes()
+* net/ip.h in multicast.c
+  -> ip_eth_mc_map()
+* net/ipv6.h in multicast.c
+  -> IPV6_ADDR_MC_SCOPE
+  -> IPV6_ADDR_SCOPE_LINKLOCAL
+
+Moving the following includes upwards seems unnecessary:
+* linux/if_bridge.h in multicast.c
+* linux/igmp.h in multicast.c
+
+The following removals seem correct \o/:
+* linux/in6.h in multicast.c
+* net/mld.h in multicast.c
+
+Additionally, the following include seems to be missing but wasn't
+caught by the scripts:
+* net/if_inet6.h in multicast.c
+  -> ipv6_eth_mc_map()
+
+
+Let me know whether this seems about right. Or whether I am
+missing #includes in my->head :).
+
+Regards, Linus
+
+
+PS: I also do not understand the sparse complaints regarding
+ip_eth_mc_map(). The according include is currently there, seems
+to compile fine.
