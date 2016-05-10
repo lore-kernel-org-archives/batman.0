@@ -1,14 +1,14 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Tue, 10 May 2016 18:41:27 +0200
-Message-Id: <1462898487-9696-5-git-send-email-linus.luessing@c0d3.blue>
+Date: Tue, 10 May 2016 18:41:26 +0200
+Message-Id: <1462898487-9696-4-git-send-email-linus.luessing@c0d3.blue>
 In-Reply-To: <1462898487-9696-1-git-send-email-linus.luessing@c0d3.blue>
 References: <1462898487-9696-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv15 4/4] batman-adv: Add debugfs table for
-	mcast flags
+Subject: [B.A.T.M.A.N.] [PATCHv15 3/4] batman-adv: Adding logging of mcast
+	flag changes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,223 +20,248 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This patch adds a debugfs table with originators and their according
-multicast flags to help users figure out why multicast optimizations
-might be enabled or disabled for them.
+With this patch changes relevant to a node's own multicast flags are
+printed to the 'mcast' log level.
 
 Tested-by: Simon Wunderlich <sw@simonwunderlich.de>
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
- net/batman-adv/debugfs.c   |   23 ++++++++++
- net/batman-adv/multicast.c |  104 ++++++++++++++++++++++++++++++++++++++++++++
- net/batman-adv/multicast.h |    3 ++
- 3 files changed, 130 insertions(+)
+ net/batman-adv/main.h           |    4 +-
+ net/batman-adv/multicast.c      |  133 ++++++++++++++++++++++++++++++++++++++-
+ net/batman-adv/soft-interface.c |    4 ++
+ net/batman-adv/types.h          |    4 ++
+ 4 files changed, 142 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index 9529004..f187a8f 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -48,6 +48,7 @@
- #include "distributed-arp-table.h"
- #include "gateway_client.h"
- #include "icmp_socket.h"
-+#include "multicast.h"
- #include "network-coding.h"
- #include "originator.h"
- #include "translation-table.h"
-@@ -363,6 +364,22 @@ static int batadv_nc_nodes_open(struct inode *inode, struct file *file)
- }
- #endif
- 
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+/**
-+ * batadv_mcast_flags_open - prepare file handler for reads from mcast_flags
-+ * @inode: inode which was opened
-+ * @file: file handle to be initialized
-+ *
-+ * Return: 0 on success or negative error number in case of failure
-+ */
-+static int batadv_mcast_flags_open(struct inode *inode, struct file *file)
-+{
-+	struct net_device *net_dev = (struct net_device *)inode->i_private;
-+
-+	return single_open(file, batadv_mcast_flags_seq_print_text, net_dev);
-+}
-+#endif
-+
- #define BATADV_DEBUGINFO(_name, _mode, _open)		\
- struct batadv_debuginfo batadv_debuginfo_##_name = {	\
- 	.attr = {					\
-@@ -407,6 +424,9 @@ static BATADV_DEBUGINFO(transtable_local, S_IRUGO,
- #ifdef CONFIG_BATMAN_ADV_NC
- static BATADV_DEBUGINFO(nc_nodes, S_IRUGO, batadv_nc_nodes_open);
- #endif
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+static BATADV_DEBUGINFO(mcast_flags, S_IRUGO, batadv_mcast_flags_open);
-+#endif
- 
- static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- 	&batadv_debuginfo_neighbors,
-@@ -424,6 +444,9 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- #ifdef CONFIG_BATMAN_ADV_NC
- 	&batadv_debuginfo_nc_nodes,
- #endif
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+	&batadv_debuginfo_mcast_flags,
-+#endif
- 	NULL,
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 7692526..832df0f 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -231,6 +231,7 @@ __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr);
+  * @BATADV_DBG_BLA: bridge loop avoidance messages
+  * @BATADV_DBG_DAT: ARP snooping and DAT related messages
+  * @BATADV_DBG_NC: network coding related messages
++ * @BATADV_DBG_MCAST: multicast related messages
+  * @BATADV_DBG_ALL: the union of all the above log levels
+  */
+ enum batadv_dbg_level {
+@@ -240,7 +241,8 @@ enum batadv_dbg_level {
+ 	BATADV_DBG_BLA    = BIT(3),
+ 	BATADV_DBG_DAT    = BIT(4),
+ 	BATADV_DBG_NC	  = BIT(5),
+-	BATADV_DBG_ALL    = 63,
++	BATADV_DBG_MCAST  = BIT(6),
++	BATADV_DBG_ALL    = 127,
  };
  
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
 diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index d80178c..abb12f1 100644
+index a4e73f1..d80178c 100644
 --- a/net/batman-adv/multicast.c
 +++ b/net/batman-adv/multicast.c
-@@ -41,6 +41,7 @@
- #include <linux/printk.h>
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
-+#include <linux/seq_file.h>
- #include <linux/skbuff.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
-@@ -52,6 +53,8 @@
- #include <net/ip.h>
- #include <net/ipv6.h>
- 
-+#include "hard-interface.h"
-+#include "hash.h"
- #include "packet.h"
- #include "translation-table.h"
- 
-@@ -1130,6 +1133,107 @@ void batadv_mcast_init(struct batadv_priv *bat_priv)
+@@ -33,6 +33,7 @@
+ #include <linux/in.h>
+ #include <linux/ip.h>
+ #include <linux/ipv6.h>
++#include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/lockdep.h>
+@@ -334,6 +335,122 @@ static bool batadv_mcast_has_bridge(struct batadv_priv *bat_priv)
  }
  
  /**
-+ * batadv_mcast_flags_print_header - print own mcast flags to debugfs table
++ * batadv_mcast_querier_log - debug output regarding the querier status on link
 + * @bat_priv: the bat priv with all the soft interface information
-+ * @seq: debugfs table seq_file struct
++ * @str_proto: a string for the querier protocol (e.g. "IGMP" or "MLD")
++ * @old_state: the previous querier state on our link
++ * @new_state: the new querier state on our link
 + *
-+ * Prints our own multicast flags including a more specific reason why
-+ * they are set, that is prints the bridge and querier state too, to
-+ * the debugfs table specified via @seq.
++ * Outputs debug messages to the logging facility with log level 'mcast'
++ * regarding changes to the querier status on the link which are relevant
++ * to our multicast optimizations.
++ *
++ * Usually this is about whether a querier appeared or vanished in
++ * our mesh or whether the querier is in the suboptimal position of being
++ * behind our local bridge segment: Snooping switches will directly
++ * forward listener reports to the querier, therefore batman-adv and
++ * the bridge will potentially not see these listeners - the querier is
++ * potentially shadowing listeners from us then.
++ *
++ * This is only interesting for nodes with a bridge on top of their
++ * soft interface.
 + */
-+static void batadv_mcast_flags_print_header(struct batadv_priv *bat_priv,
-+					    struct seq_file *seq)
++static void
++batadv_mcast_querier_log(struct batadv_priv *bat_priv, char *str_proto,
++			 struct batadv_mcast_querier_state *old_state,
++			 struct batadv_mcast_querier_state *new_state)
 +{
-+	u8 flags = bat_priv->mcast.flags;
-+	char querier4, querier6, shadowing4, shadowing6;
-+	bool bridged = bat_priv->mcast.bridged;
++	if (!old_state->exists && new_state->exists)
++		batadv_info(bat_priv->soft_iface, "%s Querier appeared\n",
++			    str_proto);
++	else if (old_state->exists && !new_state->exists)
++		batadv_info(bat_priv->soft_iface,
++			    "%s Querier disappeared - multicast optimizations disabled\n",
++			    str_proto);
++	else if (!bat_priv->mcast.bridged && !new_state->exists)
++		batadv_info(bat_priv->soft_iface,
++			    "No %s Querier present - multicast optimizations disabled\n",
++			    str_proto);
++
++	if (new_state->exists) {
++		if ((!old_state->shadowing && new_state->shadowing) ||
++		    (!old_state->exists && new_state->shadowing))
++			batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++				   "%s Querier is behind our bridged segment: Might shadow listeners\n",
++				   str_proto);
++		else if (old_state->shadowing && !new_state->shadowing)
++			batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++				   "%s Querier is not behind our bridged segment\n",
++				   str_proto);
++	}
++}
++
++/**
++ * batadv_mcast_bridge_log - debug output for topology changes in bridged setups
++ * @bat_priv: the bat priv with all the soft interface information
++ * @bridged: a flag about whether the soft interface is currently bridged or not
++ * @querier_ipv4: (maybe) new status of a potential, selected IGMP querier
++ * @querier_ipv6: (maybe) new status of a potential, selected MLD querier
++ *
++ * If no bridges are ever used on this node, then this function does nothing.
++ *
++ * Otherwise this function outputs debug information to the 'mcast' log level
++ * which might be relevant to our multicast optimizations.
++ *
++ * More precisely, it outputs information when a bridge interface is added or
++ * removed from a soft interface. And when a bridge is present, it further
++ * outputs information about the querier state which is relevant for the
++ * multicast flags this node is going to set.
++ */
++static void
++batadv_mcast_bridge_log(struct batadv_priv *bat_priv, bool bridged,
++			struct batadv_mcast_querier_state *querier_ipv4,
++			struct batadv_mcast_querier_state *querier_ipv6)
++{
++	if (!bat_priv->mcast.bridged && bridged)
++		batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++			   "Bridge added: Setting Unsnoopables(U)-flag\n");
++	else if (bat_priv->mcast.bridged && !bridged)
++		batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++			   "Bridge removed: Unsetting Unsnoopables(U)-flag\n");
 +
 +	if (bridged) {
-+		querier4 = bat_priv->mcast.querier_ipv4.exists ? '.' : '4';
-+		querier6 = bat_priv->mcast.querier_ipv6.exists ? '.' : '6';
-+		shadowing4 = bat_priv->mcast.querier_ipv4.shadowing ? '4' : '.';
-+		shadowing6 = bat_priv->mcast.querier_ipv6.shadowing ? '6' : '.';
-+	} else {
-+		querier4 = '?';
-+		querier6 = '?';
-+		shadowing4 = '?';
-+		shadowing6 = '?';
++		batadv_mcast_querier_log(bat_priv, "IGMP",
++					 &bat_priv->mcast.querier_ipv4,
++					 querier_ipv4);
++		batadv_mcast_querier_log(bat_priv, "MLD",
++					 &bat_priv->mcast.querier_ipv6,
++					 querier_ipv6);
 +	}
++}
 +
-+	seq_printf(seq, "Multicast flags (own flags: [%c%c%c])\n",
++/**
++ * batadv_mcast_flags_logs - output debug information about mcast flag changes
++ * @bat_priv: the bat priv with all the soft interface information
++ * @flags: flags indicating the new multicast state
++ *
++ * Whenever the multicast flags this nodes announces changes (@mcast_flags vs.
++ * bat_priv->mcast.flags), this notifies userspace via the 'mcast' log level.
++ */
++static void batadv_mcast_flags_log(struct batadv_priv *bat_priv, u8 flags)
++{
++	u8 old_flags = bat_priv->mcast.flags;
++	char str_old_flags[] = "[...]";
++
++	sprintf(str_old_flags, "[%c%c%c]",
++		(old_flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES) ? 'U' : '.',
++		(old_flags & BATADV_MCAST_WANT_ALL_IPV4) ? '4' : '.',
++		(old_flags & BATADV_MCAST_WANT_ALL_IPV6) ? '6' : '.');
++
++	batadv_dbg(BATADV_DBG_MCAST, bat_priv,
++		   "Changing multicast flags from '%s' to '[%c%c%c]'\n",
++		   bat_priv->mcast.enabled ? str_old_flags : "<undefined>",
 +		   (flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES) ? 'U' : '.',
 +		   (flags & BATADV_MCAST_WANT_ALL_IPV4) ? '4' : '.',
 +		   (flags & BATADV_MCAST_WANT_ALL_IPV6) ? '6' : '.');
-+	seq_printf(seq, "* Bridged [U]\t\t\t\t%c\n", bridged ? 'U' : '.');
-+	seq_printf(seq, "* No IGMP/MLD Querier [4/6]:\t\t%c/%c\n",
-+		   querier4, querier6);
-+	seq_printf(seq, "* Shadowing IGMP/MLD Querier [4/6]:\t%c/%c\n",
-+		   shadowing4, shadowing6);
-+	seq_puts(seq, "-------------------------------------------\n");
-+	seq_printf(seq, "       %-10s %s\n", "Originator", "Flags");
 +}
 +
 +/**
-+ * batadv_mcast_flags_seq_print_text - print the mcast flags of other nodes
-+ * @seq: seq file to print on
-+ * @offset: not used
-+ *
-+ * This prints a table of (primary) originators and their according
-+ * multicast flags, including (in the header) our own.
-+ *
-+ * Return: always 0
-+ */
-+int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset)
-+{
-+	struct net_device *net_dev = (struct net_device *)seq->private;
-+	struct batadv_priv *bat_priv = netdev_priv(net_dev);
-+	struct batadv_hard_iface *primary_if;
-+	struct batadv_hashtable *hash = bat_priv->orig_hash;
-+	struct batadv_orig_node *orig_node;
-+	struct hlist_head *head;
-+	u8 flags;
-+	u32 i;
-+
-+	primary_if = batadv_seq_print_text_primary_if_get(seq);
-+	if (!primary_if)
-+		return 0;
-+
-+	batadv_mcast_flags_print_header(bat_priv, seq);
-+
-+	for (i = 0; i < hash->size; i++) {
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
-+			if (!(orig_node->capa_initialized &
-+			      BATADV_ORIG_CAPA_HAS_MCAST))
-+				continue;
-+
-+			if (!(orig_node->capabilities &
-+			      BATADV_ORIG_CAPA_HAS_MCAST)) {
-+				seq_printf(seq, "%pM -\n", orig_node->orig);
-+				continue;
-+			}
-+
-+			flags = orig_node->mcast_flags;
-+
-+			seq_printf(seq, "%pM [%c%c%c]\n", orig_node->orig,
-+				   (flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES)
-+				   ? 'U' : '.',
-+				   (flags & BATADV_MCAST_WANT_ALL_IPV4)
-+				   ? '4' : '.',
-+				   (flags & BATADV_MCAST_WANT_ALL_IPV6)
-+				   ? '6' : '.');
-+		}
-+		rcu_read_unlock();
-+	}
-+
-+	batadv_hardif_put(primary_if);
-+
-+	return 0;
-+}
-+
-+/**
-  * batadv_mcast_free - free the multicast optimizations structures
+  * batadv_mcast_mla_tvlv_update - update multicast tvlv
   * @bat_priv: the bat priv with all the soft interface information
-  */
-diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
-index 80bceec..1fb00ba 100644
---- a/net/batman-adv/multicast.h
-+++ b/net/batman-adv/multicast.h
-@@ -20,6 +20,7 @@
+  *
+@@ -349,12 +466,13 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
+ 	struct batadv_mcast_querier_state querier4 = {false, false};
+ 	struct batadv_mcast_querier_state querier6 = {false, false};
+ 	struct net_device *dev = bat_priv->soft_iface;
++	bool bridged;
  
- #include "main.h"
+ 	mcast_data.flags = BATADV_NO_FLAGS;
+ 	memset(mcast_data.reserved, 0, sizeof(mcast_data.reserved));
  
-+struct seq_file;
- struct sk_buff;
+-	bat_priv->mcast.bridged = batadv_mcast_has_bridge(bat_priv);
+-	if (!bat_priv->mcast.bridged)
++	bridged = batadv_mcast_has_bridge(bat_priv);
++	if (!bridged)
+ 		goto update;
  
- /**
-@@ -46,6 +47,8 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ #if !IS_ENABLED(CONFIG_BRIDGE_IGMP_SNOOPING)
+@@ -385,8 +503,19 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
+ 		mcast_data.flags |= BATADV_MCAST_WANT_ALL_IPV6;
  
- void batadv_mcast_init(struct batadv_priv *bat_priv);
- 
-+int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset);
+ update:
++	batadv_mcast_bridge_log(bat_priv, bridged, &querier4, &querier6);
 +
- void batadv_mcast_free(struct batadv_priv *bat_priv);
- 
- void batadv_mcast_purge_orig(struct batadv_orig_node *orig_node);
++	bat_priv->mcast.querier_ipv4.exists = querier4.exists;
++	bat_priv->mcast.querier_ipv4.shadowing = querier4.shadowing;
++
++	bat_priv->mcast.querier_ipv6.exists = querier6.exists;
++	bat_priv->mcast.querier_ipv6.shadowing = querier6.shadowing;
++
++	bat_priv->mcast.bridged = bridged;
++
+ 	if (!bat_priv->mcast.enabled ||
+ 	    mcast_data.flags != bat_priv->mcast.flags) {
++		batadv_mcast_flags_log(bat_priv, mcast_data.flags);
+ 		batadv_tvlv_container_register(bat_priv, BATADV_TVLV_MCAST, 2,
+ 					       &mcast_data, sizeof(mcast_data));
+ 		bat_priv->mcast.flags = mcast_data.flags;
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 81665b1..b60999d 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -808,6 +808,10 @@ static int batadv_softif_init_late(struct net_device *dev)
+ 	atomic_set(&bat_priv->distributed_arp_table, 1);
+ #endif
+ #ifdef CONFIG_BATMAN_ADV_MCAST
++	bat_priv->mcast.querier_ipv4.exists = false;
++	bat_priv->mcast.querier_ipv4.shadowing = false;
++	bat_priv->mcast.querier_ipv6.exists = false;
++	bat_priv->mcast.querier_ipv6.shadowing = false;
+ 	bat_priv->mcast.flags = BATADV_NO_FLAGS;
+ 	atomic_set(&bat_priv->multicast_mode, 1);
+ 	atomic_set(&bat_priv->mcast.num_disabled, 0);
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 83303c2..ab863a5 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -772,6 +772,8 @@ struct batadv_mcast_querier_state {
+  *  multicast traffic
+  * @want_all_ipv4_list: a list of orig_nodes wanting all IPv4 multicast traffic
+  * @want_all_ipv6_list: a list of orig_nodes wanting all IPv6 multicast traffic
++ * @querier_ipv4: the current state of an IGMP querier in the mesh
++ * @querier_ipv6: the current state of an MLD querier in the mesh
+  * @flags: the flags we have last sent in our mcast tvlv
+  * @enabled: whether the multicast tvlv is currently enabled
+  * @bridged: whether the soft interface has a bridge on top
+@@ -787,6 +789,8 @@ struct batadv_priv_mcast {
+ 	struct hlist_head want_all_unsnoopables_list;
+ 	struct hlist_head want_all_ipv4_list;
+ 	struct hlist_head want_all_ipv6_list;
++	struct batadv_mcast_querier_state querier_ipv4;
++	struct batadv_mcast_querier_state querier_ipv6;
+ 	u8 flags;
+ 	bool enabled;
+ 	bool bridged;
 -- 
 1.7.10.4
 
