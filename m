@@ -1,14 +1,8 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 11 May 2016 05:16:46 +0800
-Message-ID: <1572215.6K5rTnkNup@voltaire>
-In-Reply-To: <5732316F.7020209@tu-bs.de>
-References: <5732316F.7020209@tu-bs.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart16817679.qITfJV8zzW";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Unable to ping interface in ap mode / client
-	mode with IP4 addr
+Return-Path: <fw@breakpoint.cc>
+From: Florian Westphal <fw@strlen.de>
+Date: Tue, 10 May 2016 23:17:59 +0200
+Message-Id: <1462915079-22681-1-git-send-email-fw@strlen.de>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: fix skb deref after free
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,40 +12,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Florian Westphal <fw@strlen.de>
 
---nextPart16817679.qITfJV8zzW
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+batadv_send_skb_to_orig() calls dev_queue_xmit() so we can't use skb->len.
 
-On Tuesday, May 10, 2016 21:07:27 Hannes Harms wrote:
-> But I can not ping with an IP4 addr.
-> 
-> bat0 was added to a bridge interface with a static IP on both machines.
-> No DHCP server is running, because only static IPS are needed.
+Signed-off-by: Florian Westphal <fw@strlen.de>
+---
+ Noticed during review, compile tested only.
 
-Can you describe from where you are pinging (which hosts are involved) and 
-post the IP configuration (e.g. ip addr && ip route) ?
+ net/batman-adv/routing.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Thanks,
-Marek
-
---nextPart16817679.qITfJV8zzW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJXMk++AAoJEFNVTo/uthzAmMsIALEkLdSArd1IPmAnHhPD5w28
-SLBCYB86D/jZsboqdt9R/JAUjp+sn4MLQOhaGOP/eQjozP8mRAU69KcR03/x3DAf
-NT3b8k5x/R+N5tZBLzXfC1e/5MVHHlk5Nxpg9kbJEutqfnmC+IkoPltoyEwYgCwM
-Ga53+IIBLS+2l/g1+WpHgSGzAzNB/9PdK8sZFIs9HfX5s7djftYC9+hfDRPCaMT6
-hwsz1K0vAr6+PVjYtRDV8+glnKNB73vaPdAcNv05mokmpUchbiNJOOuUpj6kYMQG
-MrYoP3aFgnFWRChxDmrJ2chMrZXM9i4WTfqDAcxs93gb9H8sAysKCxs2zI8uPPk=
-=/Akn
------END PGP SIGNATURE-----
-
---nextPart16817679.qITfJV8zzW--
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index b781bf7..0c0c30e 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -601,6 +601,7 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 	struct batadv_unicast_packet *unicast_packet;
+ 	struct ethhdr *ethhdr = eth_hdr(skb);
+ 	int res, hdr_len, ret = NET_RX_DROP;
++	unsigned int len;
+ 
+ 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
+ 
+@@ -641,6 +642,7 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 	if (hdr_len > 0)
+ 		batadv_skb_set_priority(skb, hdr_len);
+ 
++	len = skb->len;
+ 	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
+ 
+ 	/* translate transmit result into receive result */
+@@ -648,7 +650,7 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 		/* skb was transmitted and consumed */
+ 		batadv_inc_counter(bat_priv, BATADV_CNT_FORWARD);
+ 		batadv_add_counter(bat_priv, BATADV_CNT_FORWARD_BYTES,
+-				   skb->len + ETH_HLEN);
++				   len + ETH_HLEN);
+ 
+ 		ret = NET_RX_SUCCESS;
+ 	} else if (res == NET_XMIT_POLICED) {
+-- 
+2.7.3
 
