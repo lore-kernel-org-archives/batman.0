@@ -1,7 +1,7 @@
 Return-Path: <linus.luessing@c0d3.blue>
-Date: Tue, 10 May 2016 02:16:01 +0200
+Date: Tue, 10 May 2016 02:30:48 +0200
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20160510001601.GK5816@otheros>
+Message-ID: <20160510003048.GL5816@otheros>
 References: <1462464426-13014-1-git-send-email-linus.luessing@c0d3.blue>
  <1811882.4NqUN7GsV2@sven-edge> <20160510000311.GJ5816@otheros>
 MIME-Version: 1.0
@@ -29,15 +29,7 @@ On Tue, May 10, 2016 at 02:03:11AM +0200, Linus Lüssing wrote:
 > > > branch.
 > > 
 > > Please check the attached results of the daily build test scripts.
-> 
-> Thanks Sven!
 
-Two more questions:
-
-I can ignore return type warnings of sparse for the copy & pasted compat
-stuff, right?
-
-Can I ignore the namespace checks mentioned in the end of the log?
-If not, how are they usually resolved for such external functions?
-
-Regards, Linus
+Is it possible for the scripts to tell why it wants an include for
+linux/kernel.h? Currently can't find any function multicast.c
+might want from it.
