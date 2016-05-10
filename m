@@ -1,16 +1,9 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 10 May 2016 22:28:46 +0800
-Message-ID: <3499726.XUqvi31ELX@voltaire>
-In-Reply-To: <20160509105716.GK3945@prodigo.futur3.it>
-References: <1462790532-32258-1-git-send-email-mareklindner@neomailbox.ch>
- <1462790532-32258-2-git-send-email-mareklindner@neomailbox.ch>
- <20160509105716.GK3945@prodigo.futur3.it>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2339627.VN1PKObRPV";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 2/2] batman-adv: update elp interval
-	documentation
+Date: Tue, 10 May 2016 22:31:59 +0800
+Message-Id: <1462890719-2146-1-git-send-email-mareklindner@neomailbox.ch>
+Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: init ELP tweaking options
+	only once
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,39 +14,69 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart2339627.VN1PKObRPV
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+The ELP interval and throughput override interface settings are initialized
+with default settings on every time an interface is added to a mesh.
+This patch prevents this behavior by moving the configuration init to the
+interface detection routine which runs only once per interface.
 
-On Monday, May 09, 2016 18:57:16 Antonio Quartulli wrote:
-> On Mon, May 09, 2016 at 06:42:12PM +0800, Marek Lindner wrote:
-> > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-> 
-> Acked-by: Antonio Quartulli <a@unstable.cc>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+---
+v2:
+   * update commit message
 
-Applied in revision 14adbd7.
+ net/batman-adv/bat_v.c          | 5 -----
+ net/batman-adv/bat_v_elp.c      | 1 -
+ net/batman-adv/hard-interface.c | 7 +++++++
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
-Cheers,
-Marek
-
---nextPart2339627.VN1PKObRPV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJXMfAeAAoJEFNVTo/uthzAV7kH/AhoqDjzl0WokLT4cVNmO+dV
-zyXbHOhBxauUvkeOSRTKuJ72qRCDj63wZ7cAhZUaE2Qh9bhOIr2yLSkBBUfTODsG
-pVoko7ay1KU68hlmhelN8ORhChLY7BKLuulOGUgdPpiCubjD3WZY2jgQ5xArJE4n
-glYa16iu5PoAcceg8LmRno4oWdWTRjyfjIkxMMPhbdUFbZRZrlMaC4AplaCPuIfe
-yEEZ9qdh9Tq4gRsdPXq6RCjXBULVlTEOO2PJM3haEIbhyVrddwoJ22PqT/N9GD/i
-Y5faKGU7E7AbMX7ZhdWHDpGsQ6v2Jdgya/YMbqraz8Foqxr5tUJDBWNM1xE8RGw=
-=5e59
------END PGP SIGNATURE-----
-
---nextPart2339627.VN1PKObRPV--
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index c16cd44..3c5d251 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -70,11 +70,6 @@ static int batadv_v_iface_enable(struct batadv_hard_iface *hard_iface)
+ 	if (ret < 0)
+ 		batadv_v_elp_iface_disable(hard_iface);
+ 
+-	/* enable link throughput auto-detection by setting the throughput
+-	 * override to zero
+-	 */
+-	atomic_set(&hard_iface->bat_v.throughput_override, 0);
+-
+ 	return ret;
+ }
+ 
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 8909d1e..cf0262b 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -344,7 +344,6 @@ int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
+ 	/* randomize initial seqno to avoid collision */
+ 	get_random_bytes(&random_seqno, sizeof(random_seqno));
+ 	atomic_set(&hard_iface->bat_v.elp_seqno, random_seqno);
+-	atomic_set(&hard_iface->bat_v.elp_interval, 500);
+ 
+ 	/* assume full-duplex by default */
+ 	hard_iface->bat_v.flags |= BATADV_FULL_DUPLEX;
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index db2009d..dd6a5a2 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -683,6 +683,13 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 	if (batadv_is_wifi_netdev(net_dev))
+ 		hard_iface->num_bcasts = BATADV_NUM_BCASTS_WIRELESS;
+ 
++	/* enable link throughput auto-detection by setting the throughput
++	 * override to zero
++	 */
++	atomic_set(&hard_iface->bat_v.throughput_override, 0);
++
++	atomic_set(&hard_iface->bat_v.elp_interval, 500);
++
+ 	/* extra reference for return */
+ 	kref_init(&hard_iface->refcount);
+ 	kref_get(&hard_iface->refcount);
+-- 
+2.8.0.rc3
 
