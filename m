@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 11 May 2016 14:24:04 +0200
-Message-ID: <5284085.o6G6OjSAFN@bentobox>
-In-Reply-To: <20160511104730.GB21549@prodigo.lan>
+Date: Wed, 11 May 2016 15:11:53 +0200
+Message-ID: <2682043.NtWpdVDLGQ@bentobox>
+In-Reply-To: <1462962557-23950-2-git-send-email-a@unstable.cc>
 References: <1462962557-23950-1-git-send-email-a@unstable.cc>
- <2789203.91ASHWIDJV@bentobox> <20160511104730.GB21549@prodigo.lan>
+ <1462962557-23950-2-git-send-email-a@unstable.cc>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1982267.lRenoCKYdx";
+Content-Type: multipart/signed; boundary="nextPart7582774.vffiLBlF25";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: remove forward
-	declaration by including proper header
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: B.A.T.M.A.N. V -
+	implement hard-iface init function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,44 +19,67 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <a@unstable.cc>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart1982267.lRenoCKYdx
+--nextPart7582774.vffiLBlF25
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday 11 May 2016 18:47:30 Antonio Quartulli wrote:
-[...]
-> Maybe I could include it only when really needed, i.e.
->  * net/batman-adv/bat_algo.h
->  * net/batman-adv/bat_v_ogm.h
-> 
-> (netlink.h does not seem to be requiring it)
+On Wednesday 11 May 2016 18:29:17 Antonio Quartulli wrote:
+> diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+> index a8cda76..a757229 100644
+> --- a/net/batman-adv/hard-interface.c
+> +++ b/net/batman-adv/hard-interface.c
+> @@ -15,6 +15,7 @@
+>   * along with this program; if not, see <http://www.gnu.org/licenses/>.
+>   */
+>  
+> +#include "bat_algo.h"
+>  #include "hard-interface.h"
+>  #include "main.h"
 
-This is rather vague and hard to detect automatically. Potentially all
-files may require it because it has things like:
+Can you please use the same order as described in
 
-    /* Debug Messages */
-    #ifdef pr_fmt
-    #undef pr_fmt
-    #endif
-    /* Append 'batman-adv: ' before kernel messages */
-    #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ https://git.open-mesh.org/batman-adv.git/commit/7df6200927271862dea5b66e24b2b08fa6ea7739
 
-Btw. Just looked at this file again and I should really consider
-redoing/rebasing the patches [1,2] from Markus Pargmann to clean it up.
+ #include "hard-interface.h"
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
+ #include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/errno.h>
+ #include <linux/fs.h>
+ #include <linux/if_arp.h>
+ #include <linux/if_ether.h>
+ #include <linux/if.h>
+ #include <linux/kernel.h>
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/netdevice.h>
+ #include <linux/printk.h>
+ #include <linux/rculist.h>
+ #include <linux/rtnetlink.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/workqueue.h>
+ 
++#include "bat_algo.h"
+ #include "bridge_loop_avoidance.h"
+ #include "debugfs.h"
+ #include "distributed-arp-table.h"
+ #include "gateway_client.h"
+ #include "originator.h"
+ #include "packet.h"
+ #include "send.h"
+ #include "soft-interface.h"
+ #include "sysfs.h"
+ #include "translation-table.h"
 
-Kind regards,
+Thanks,
 	Sven
-
-[1] https://patchwork.open-mesh.org/patch/4264/
-[2] https://patchwork.open-mesh.org/patch/4244/
-
-
-
-
---nextPart1982267.lRenoCKYdx
+--nextPart7582774.vffiLBlF25
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -64,20 +87,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXMyRkAAoJEF2HCgfBJntGWGYP/0oeleass70eGgbfQ7TkXSvy
-ZZtOqIrU+hy1KfUzuDmwoFi4MHxY5igYi7tlz6KJrnh4Sy60fEoxcZb4qFHIDkpd
-YrBxi/XNwdCBtUWK1XfFm1rlRms3qOh+sNgxQM+Lz85AksXls11lScEUYpT2YQOZ
-Tftye69EAAvC7PYNzbBf5+M6WHDo0BTLXB25+tFul2JSwawvegjsOFw96qKaBKsZ
-dGzSG/XDi5iDHRZLQfXr2zFYhv5KDQTkBX7MG2koMOFfX9daUBzHZWnEtY3HQ0a3
-JimKSSFVXPKECH8eJ8mAKbmdUKF8tO3BJSvzxsV2O3Sl4LSMJtCMaHRAedO3VNp1
-952gqXkdVFI+AEixgyRJHdTyNE/Mes+Xxc7a6LIhWsqH49xppGPyyA4J4jmegHk+
-VBy6OG2KsLiLqDoc28jj+gOhbBhb8x5wykqok/9dbcWZytb5j7q+vDjXqtz5NeuT
-7k6NEizf7Z8q+Xq14xKUv5NlnaTmgA77Bv0QBhKWQyhjZb2kpNyC5n8fjBpYBgoY
-UH3lfeznjNdT8cCi1X9E8HdJBoTD7q1QtQuFMotuRe6cDMRI2TEt4G4WekvIB+Om
-p8z1uCM9wcCJgXzunsvg5FXq6sa4LdMn0PgR2x+x1FWhEQgzY3LsacvWb+k3Ylef
-bMHo+s1j4tySwZwTEUvg
-=OjMF
+iQIcBAABCgAGBQJXMy+ZAAoJEF2HCgfBJntGu1MP/2j43sZe1RgYPNKD7omFGzIG
+zbWJm2NVyDI0niz5fIc/v0Gkq41FWr9YyYf/iUxvB9L9efEK2gnkTDF6QPqQUD0E
+EofllYaBgFmJ3OkzIo98IJZny5cDfa/2ceA0AZMTKuKd2zZFJFmFQtgJkYhGRD9h
+0+SnG/iMS6G8UEykkcFQqDefVubD0hNI/u6IhgHRjk7h5zfMO+EjHOSg7aglS+cG
+zdUGVR+34rQxHBUChCMU2Il53K/5ddMs+xBcGyF9rnCUC/lycqrLo+msY9zRHp05
+7lzt8M4jOEuxtVILjcGzp8YQYb0yHAdjwa58h6zrnwnXveRfgZA/FhV+oUvSaKh6
+ViXoMpv24gXc4LuwETPca/suLbtFDjWxCvVWFSWTO1PctgSDPh9pi7S8yRl2o0pM
+NUfkqdhz5vvuzJB3JOrSnSu+uNz9GUEYzZsNiKn3XxALgaUhbbFZoBAV56cewa2y
+Urwoi7LUzNfvAcQS3uAP7OVSgnwdhlaMZX6gRckK1+2VdOkYMvEMkHcqCSNJjEnm
+YZRcUQ/pBAJDFsG/7JBNBJpYYTRTlDOvF+McklIYmf9Cs0LFuaYZzq/NHlrfUX3d
+dOftwnugtdtIPGN1dKqaEqXRLYWQdCQqGgZgcqKhCSMMsc152gpqYo0sOWQVv9Pm
+z5aj2cAX1Rc4elLVwKuZ
+=wF5R
 -----END PGP SIGNATURE-----
 
---nextPart1982267.lRenoCKYdx--
+--nextPart7582774.vffiLBlF25--
 
