@@ -1,16 +1,15 @@
-Return-Path: <a@unstable.cc>
-Date: Wed, 11 May 2016 18:47:30 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160511104730.GB21549@prodigo.lan>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 11 May 2016 14:24:04 +0200
+Message-ID: <5284085.o6G6OjSAFN@bentobox>
+In-Reply-To: <20160511104730.GB21549@prodigo.lan>
 References: <1462962557-23950-1-git-send-email-a@unstable.cc>
- <2789203.91ASHWIDJV@bentobox>
+ <2789203.91ASHWIDJV@bentobox> <20160511104730.GB21549@prodigo.lan>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="DBIVS5p969aUjpLe"
-Content-Disposition: inline
-In-Reply-To: <2789203.91ASHWIDJV@bentobox>
+Content-Type: multipart/signed; boundary="nextPart1982267.lRenoCKYdx";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: remove forward
- declaration by including proper header
+	declaration by including proper header
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,79 +19,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
+To: Antonio Quartulli <a@unstable.cc>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
+--nextPart1982267.lRenoCKYdx
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---DBIVS5p969aUjpLe
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, May 11, 2016 at 12:38:31PM +0200, Sven Eckelmann wrote:
-> On Wednesday 11 May 2016 18:29:16 Antonio Quartulli wrote:
-> > If main.h is included, the forward declaration for struct batadv_priv
-> > is not required.
-> >=20
-> > Cc: Sven Eckelmann <sven@narfation.org>
-> > Signed-off-by: Antonio Quartulli <a@unstable.cc>
-> > ---
-> >=20
-> > Sven, is there any special region for not having the include in this fi=
-le ?
-> > It seems to be compiling just fine.
-> >=20
-> > Cheers,
->=20
-> We have some files which don't include main.h:
->=20
+On Wednesday 11 May 2016 18:47:30 Antonio Quartulli wrote:
+[...]
+> Maybe I could include it only when really needed, i.e.
 >  * net/batman-adv/bat_algo.h
 >  * net/batman-adv/bat_v_ogm.h
->  * net/batman-adv/netlink.h
->=20
-> There is a special exception which should not include it to avoid cycles =
-in
-> the includes:
->=20
->  * net/batman-adv/packet.h
->=20
-> The reason for the other three is just... there is no reason I can provide
-> other than it was not necessary for these files :). But if you want that =
-to
-> have "main.h" included everywhere then please do it really everywhere:
->=20
+> 
+> (netlink.h does not seem to be requiring it)
 
-Maybe I could include it only when really needed, i.e.
- * net/batman-adv/bat_algo.h
- * net/batman-adv/bat_v_ogm.h
+This is rather vague and hard to detect automatically. Potentially all
+files may require it because it has things like:
 
-(netlink.h does not seem to be requiring it)
+    /* Debug Messages */
+    #ifdef pr_fmt
+    #undef pr_fmt
+    #endif
+    /* Append 'batman-adv: ' before kernel messages */
+    #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-Cheers,
+Btw. Just looked at this file again and I should really consider
+redoing/rebasing the patches [1,2] from Markus Pargmann to clean it up.
 
---=20
-Antonio Quartulli
+Kind regards,
+	Sven
 
---DBIVS5p969aUjpLe
+[1] https://patchwork.open-mesh.org/patch/4264/
+[2] https://patchwork.open-mesh.org/patch/4244/
+
+
+
+
+--nextPart1982267.lRenoCKYdx
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXMw3CAAoJEJ4aZjxxc6bKO6kP/RdlDam3M+AQgbXldA6O307f
-fJITDsz0lqyisplxmlN0FgYnYVQkxGUJZL3aLhuZ3v0GbQR/891+lkleinmEFHxO
-jp9Fh1JWKXQDJAz/mC5g51XxoGjlA4xRclYf4YCOxdpOfnxLsIX7IB+ZkIId1k+z
-6Ks7Wd02iYcN9juuioa4vY4RzSYAw5xH6xUu//k1J6RXks71DhOw1Dmnz6/1OSns
-1OIzf1/W6uhdBCBHwbwEhm8qjOzvX6zR5s67WlrS5qPhdvqJvephLdb9cpSliVM9
-0QL37IijkD9lqN/JUOZOrfKm6y+gZB6C8CA3q3l5egsvwJFmoWhDcCCcTlxpDA2X
-Ds5qnJLo+qpA47XFKTswShJJ6uA1BO1l1nZAjGx0U/b0JuO2rvkgcaPXGO/K/1zl
-3DXixm32l9IWIa2HWvaKtPTiQHuapWrwH4UJ5yZg4cmNYE1LLmDMHX7HSszbnHV2
-+G2rHshCSaxJx9K19JQO4f5ojKdsZhCzbdonBkDj+6dFsCeEL0yE9mzGVXouZkCB
-CQ080AZfRcDnFTKa2yuu3+HLXPQC0qMHCKBmTCdGOkZNCpjy9umXPlSqcN00GhVV
-yXbngIoFixaI7prX9i1R/qUOYbwNY/3TIGmWOZ47MVWyQdTADuquV51rJr8QNFM2
-347EosRD0NG5lWnDiDuF
-=paDI
+iQIcBAABCgAGBQJXMyRkAAoJEF2HCgfBJntGWGYP/0oeleass70eGgbfQ7TkXSvy
+ZZtOqIrU+hy1KfUzuDmwoFi4MHxY5igYi7tlz6KJrnh4Sy60fEoxcZb4qFHIDkpd
+YrBxi/XNwdCBtUWK1XfFm1rlRms3qOh+sNgxQM+Lz85AksXls11lScEUYpT2YQOZ
+Tftye69EAAvC7PYNzbBf5+M6WHDo0BTLXB25+tFul2JSwawvegjsOFw96qKaBKsZ
+dGzSG/XDi5iDHRZLQfXr2zFYhv5KDQTkBX7MG2koMOFfX9daUBzHZWnEtY3HQ0a3
+JimKSSFVXPKECH8eJ8mAKbmdUKF8tO3BJSvzxsV2O3Sl4LSMJtCMaHRAedO3VNp1
+952gqXkdVFI+AEixgyRJHdTyNE/Mes+Xxc7a6LIhWsqH49xppGPyyA4J4jmegHk+
+VBy6OG2KsLiLqDoc28jj+gOhbBhb8x5wykqok/9dbcWZytb5j7q+vDjXqtz5NeuT
+7k6NEizf7Z8q+Xq14xKUv5NlnaTmgA77Bv0QBhKWQyhjZb2kpNyC5n8fjBpYBgoY
+UH3lfeznjNdT8cCi1X9E8HdJBoTD7q1QtQuFMotuRe6cDMRI2TEt4G4WekvIB+Om
+p8z1uCM9wcCJgXzunsvg5FXq6sa4LdMn0PgR2x+x1FWhEQgzY3LsacvWb+k3Ylef
+bMHo+s1j4tySwZwTEUvg
+=OjMF
 -----END PGP SIGNATURE-----
 
---DBIVS5p969aUjpLe--
+--nextPart1982267.lRenoCKYdx--
+
