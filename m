@@ -1,15 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 11 May 2016 08:21:27 +0200
-Message-ID: <5949161.ptvGUENbB7@bentobox>
-In-Reply-To: <1462817016-17867-2-git-send-email-andrew@lunn.ch>
-References: <1462817016-17867-1-git-send-email-andrew@lunn.ch>
- <1462817016-17867-2-git-send-email-andrew@lunn.ch>
+Date: Wed, 11 May 2016 09:29:22 +0200
+Message-ID: <16078999.daXBnunon6@bentobox>
+In-Reply-To: <1462890719-2146-1-git-send-email-mareklindner@neomailbox.ch>
+References: <1462890719-2146-1-git-send-email-mareklindner@neomailbox.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart34024259.xtYHHCdGBU";
+Content-Type: multipart/signed; boundary="nextPart6936027.HqzrhpT0mj";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Set skb priority in
-	fragments
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: init ELP tweaking options
+	only once
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,43 +19,64 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart34024259.xtYHHCdGBU
+--nextPart6936027.HqzrhpT0mj
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday 09 May 2016 20:03:35 Andrew Lunn wrote:
-> BATMAN will set the skb->priority based on the IP precedence or 802.1q
-> tag. However, if it needs to fragment the frame, it currently leaves
-> the fragment skb with the default priority and actually overwrites the
-> priority in the unfragmented frame. Fix this.
+On Tuesday 10 May 2016 22:31:59 Marek Lindner wrote:
+> The ELP interval and throughput override interface settings are initialized
+> with default settings on every time an interface is added to a mesh.
+> This patch prevents this behavior by moving the configuration init to the
+> interface detection routine which runs only once per interface.
 > 
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 > ---
->  net/batman-adv/fragmentation.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-> index 65536db..a3fefbd 100644
-> --- a/net/batman-adv/fragmentation.c
-> +++ b/net/batman-adv/fragmentation.c
-> @@ -414,7 +414,7 @@ static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
->  	if (!skb_fragment)
->  		goto err;
+[...]
+> index db2009d..dd6a5a2 100644
+> --- a/net/batman-adv/hard-interface.c
+> +++ b/net/batman-adv/hard-interface.c
+> @@ -683,6 +683,13 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+>  	if (batadv_is_wifi_netdev(net_dev))
+>  		hard_iface->num_bcasts = BATADV_NUM_BCASTS_WIRELESS;
 >  
-> -	skb->priority = TC_PRIO_CONTROL;
-> +	skb_fragment->priority = skb->priority;
->  
->  	/* Eat the last mtu-bytes of the skb */
->  	skb_reserve(skb_fragment, header_size + ETH_HLEN);
+> +	/* enable link throughput auto-detection by setting the throughput
+> +	 * override to zero
+> +	 */
+> +	atomic_set(&hard_iface->bat_v.throughput_override, 0);
+> +
+> +	atomic_set(&hard_iface->bat_v.elp_interval, 500);
+> +
+>  	/* extra reference for return */
+>  	kref_init(&hard_iface->refcount);
+>  	kref_get(&hard_iface->refcount);
 > 
 
-Please remove linux/pkt_sched.h in fragmentation.c because it is only
-used for TC_PRIO_CONTROL in master.
+This needs to check if BATMAN_V is enabled:
+
+    /home/build_test/build_env/tmp.Fco0ibFY6r/net/batman-adv/hard-interface.c:689:31: error: no member 'bat_v' in struct batadv_hard_iface
+    /home/build_test/build_env/tmp.Fco0ibFY6r/net/batman-adv/hard-interface.c:691:31: error: no member 'bat_v' in struct batadv_hard_iface
+    /home/build_test/build_env/tmp.Fco0ibFY6r/net/batman-adv/hard-interface.c: In function 'batadv_hardif_add_interface':
+    /home/build_test/build_env/tmp.Fco0ibFY6r/net/batman-adv/hard-interface.c:689:24: error: 'struct batadv_hard_iface' has no member named 'bat_v'
+      atomic_set(&hard_iface->bat_v.throughput_override, 0);
+                            ^
+    /home/build_test/build_env/tmp.Fco0ibFY6r/net/batman-adv/hard-interface.c:691:24: error: 'struct batadv_hard_iface' has no member named 'bat_v'
+      atomic_set(&hard_iface->bat_v.elp_interval, 500);
+                            ^
+    make[2]: *** [/home/build_test/build_env/tmp.Fco0ibFY6r/net/batman-adv/hard-interface.o] Error 1
+    make[1]: *** [_module_/home/build_test/build_env/tmp.Fco0ibFY6r/net/batman-adv] Error 2
+    make: *** [all] Error 2
+
+This report was brought to you by todays build test [1] - the leading provider
+of "omg, batman-adv doesn't build cleanly"
 
 Kind regards,
 	Sven
---nextPart34024259.xtYHHCdGBU
+
+[1] https://lists.open-mesh.org/pipermail/linux-merge/2016-May/003168.html
+
+--nextPart6936027.HqzrhpT0mj
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -64,20 +84,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXMs9nAAoJEF2HCgfBJntGVMsP/jp9rBB7RnD9gzDEt0C0MMeH
-1+cFcnVJGR2FLejI8s7xMZ1ssuv+rLHmrYzxiEi41j0/aN8AeOGGxAqpi2kCIBYX
-+vL/y8oedjMR8z133s9xbbJUvqrFEw+66pG+hLimBaV62R4fpfSS/woI2vzL0O5d
-AsYCQMBWbi7KEMfVoh7eAmuSB5oOALX9UrYAIA1czHg61ewH/SpixCOSQRXDSBp5
-FgdBZDljoE/BSSLwzT6Y6qqe9UA8l4CblOECvM7KV9WncuFcq2g2/ZRv2epkbIHh
-ULIAqzi6CjgdRAImPh7+LJPBHAK9bA1tM0xlnEsBeJG5cvXSDbRWXCOneAR55uxu
-Tw8gIAzoKPBV9uqc+JqcOSKrDi06UTyqbzyLFnDsErKncC0UAzblTqdVM5G/Q0Lc
-5wRA2Xvx0fvhdnYLDpUPr2MDwaRWcyeCELNzz1MmfSB/PoHfPPulATg3rrNhC2mr
-gZ0rH1XdUCDzB+I9Adu5cS51R9KcDK0KMSxcUb3/EH4HKgblmr/5gs890ZGyEcp4
-LgATdIvOkAv6ymYT1nMccxS0XPaTIF2y+VyQFs2xbZqNvJF/jMF9zTnqJt22jx+y
-ORKZ+Mx4wljUertj7Hgb9jnX+4eG1HK3BYCJsASQtMTqddo/eGyqAkhWYoHKRaBs
-Byt+8bQpwN5jFudCWweC
-=vAUe
+iQIcBAABCgAGBQJXMt9SAAoJEF2HCgfBJntGVB8P/i7bAHRaJJv/4K4FzZM5mUkb
+iBaddMS5Qc0kxgX009iAK0LTJ6O4D0++n2RCVJwC0HrXLMHP2bTCAcMR2OfKoHy8
+hjBjXBTNLmRAWJTg+ca89Gw5Q1uZiKYIViBi3MONDk17ZQ0oBTaJQQJiza6HC1td
+CAkamBYG8LsoHcE2oFB4MrqSahFeHaiEBkReaGV9VAL59LD2qHD2KuXYX94rNe+e
+uhfEK39u99oenheHfgEy5ph4/GkTK6egX+AOWungYSrsM/DCfTwvLH2suXq2+Rvs
+CE5bMq/bhr7Tl49mTxxwQYLgzO4A39PDS0wGZldDTgbdcGqWfk4tNPn3Jm7vUM30
+WKCkcCWVi0t63sQ9t+F70xZsVdcxJ7gtQWwUpfn6Ue8SLECW4tC0o+mns8zjThMU
+f91AM0djuQo+/WykJ46aqwmUkXDJO90HiYhybxOgZAMbaSIx1QD/7vtN+OrQwrDG
+WYAMIWbXvDOEwUYoj5kf3OXac0IXaJ5xcl/SmDZHRNfUoyqKP/6WYGrdnFi+h2jM
++A3ViSIsEYKgJ6E1zxpzWIHnOu4NOvi3dbLBnBzqMvErqq70loS4Lp/3ex++zLd4
+NnsyV5XwV+R87r1lNQYqgC/o5SmzfA++i3BGEAPASNgpq/NTEngwWfVzvMhZ92K2
+UL2DJ2/bOweYXuF7gtGN
+=+Zrv
 -----END PGP SIGNATURE-----
 
---nextPart34024259.xtYHHCdGBU--
+--nextPart6936027.HqzrhpT0mj--
 
