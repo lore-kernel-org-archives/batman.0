@@ -1,15 +1,11 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 11 May 2016 16:16:59 +0800
-Message-ID: <1773695.vA4OGxhCMG@voltaire>
-In-Reply-To: <1462812114-16577-2-git-send-email-sven@open-mesh.com>
-References: <6307812.WAqRcEYAvX@bentobox>
- <1462812114-16577-2-git-send-email-sven@open-mesh.com>
+Return-Path: <sven.eckelmann@open-mesh.com>
+From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+Date: Wed, 11 May 2016 11:34:33 +0200
+Message-ID: <2757709.ryloMgzIDh@bentobox>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1782314.Ys10Uh2snF";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v7 2/4] batctl: Add basic infrastructure
-	to integrate netlink
+Content-Type: multipart/signed; boundary="nextPart13675123.gqnUVY2ShH";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: [B.A.T.M.A.N.] [PATCH v8 0/4] batman-adv: throughput meter
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,38 +16,26 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 
---nextPart1782314.Ys10Uh2snF
+--nextPart13675123.gqnUVY2ShH
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, May 09, 2016 18:41:52 Sven Eckelmann wrote:
-> From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-> 
-> Netlink can be used to add new communication functionality to the kernel
-> module. It can also be used to replace the old debugfs files. The binary
-> interface used for this will be defined in the added files.
-> 
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-> 
-> Forwarded: https://patchwork.open-mesh.org/patch/16079/
-> ---
->  Makefile     | 12 ++++++++++++
->  batman_adv.h | 53 +++++++++++++++++++++++++++++++++++++++++++++++++++++
->  netlink.c    | 28 ++++++++++++++++++++++++++++
->  netlink.h    | 30 ++++++++++++++++++++++++++++++
->  4 files changed, 123 insertions(+)
->  create mode 100644 batman_adv.h
->  create mode 100644 netlink.c
->  create mode 100644 netlink.h
+Hi,
 
-Applied in revision 8f0805f.
+Marek applied some of the netlink patches to get the initial support for a 
+netlink family in the kernel. He also started to merge some of the batctl 
+patches. These were removed from this patchset.
 
-Thanks,
-Marek
+Antonio also suggested that all *_IFNAME attributes should be limited to 
+IFNAMSIZ in userspace. This was adjusted in the policy table of patch "batctl: 
+Add attributes/command for BATADV_CMD_GET_MESH_INFO"
 
---nextPart1782314.Ys10Uh2snF
+Also some conflicts with the current masters of batctl/batman-adv were fixed.
+
+Kind regards,
+	Sven
+--nextPart13675123.gqnUVY2ShH
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -59,14 +43,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXMup7AAoJEFNVTo/uthzAf/wIAJ1XnDqosYY3YJXMqWzQdIYS
-vJBw3rJvcMs1PphgGbtY7gR9nOnGdrF8hgZkXiVPiCp5MVrZGCwn3sqgvyrwrsoR
-5clFYWW9yD6w9tJO+NN4r/7r5N05Ru7z2b2hsWvc9AzLoK1HGkGM+QyQYkuhlHdM
-2ridXU4b0Wmhqo2YGW2y7OTNs0zOLzexyhgRrDxBC3GfKC8h9OtfigFUL/LGxMlZ
-oMfy7B6J0XwY2hrLVQPs3aiNG9+GaBF44PJTnbst8BklpJGoZA0QmT8suT22Nkry
-fptxrQj9Ps1IG4h9DTiVN02FrTbx/pd4yhtB76PiOebL5KnJFqQSveDNc+2GEZY=
-=i8Dm
+iQIcBAABCgAGBQJXMvypAAoJEF2HCgfBJntGqXEQALCBfdKJQCfaBXWiwyrbq5T+
+pNgsnZOSJfTWCJW8lTeNci31YW/SBCzAsz5Yt+0Klba/1AEZJ1JcTgO66xr3fTni
+zqiPgSJr6q03tBrxdTY6JZw3wBDfJzSvusXFiz1ZQBodoXFXSN9EruLF9s6SLuyU
+M2cA5nN8zO9WSQANBbuaC+xcUR+1i8r0tiJ4x9J2WQVKCC8q2ncRWVCwcnSQhG+r
+UnyuTG+VXiZ8noc23+wVs3bAztDFikwtp7Eb36s/iTI5v6ckvk0hnpaH/MZgV+io
+Lh+EEV7qdImfYARwId+780CLFDOv4Ji6vsaCRhpQPqCNXAbUcQdtkyBa36oY3AoF
+kkV6uZlxc+TKtFCAzr51qPFX/kUTSRa2Rf+JLST2XAfylmIROce0SAR3jtbRK5Hd
+LHQoqgTtMCwlQWMX682bUrxxVsieb4v4ACRJD3fnzQH1Mae8EAwLmv0oKxk+mcuM
+B9ZaBOf05j9kuW74VhpBJ6vM5bdtM2w94ndEZGqRm/wYTCvHU0EsNDANm9tFV4zU
+K4XWiehfvt0bqsIVJcL1Z2onZw3jIQuxojWQ8WPd2aGH7Xd5xUPeaYCujDUiFSgZ
+xR8bxmjhRR5KVkGhjaakgZciliQOY+rsflwA87wBdk/nmZJTcZAdYO+hMjUI895Z
+ACOBd59wnB9/BqHKAnRN
+=8vFM
 -----END PGP SIGNATURE-----
 
---nextPart1782314.Ys10Uh2snF--
+--nextPart13675123.gqnUVY2ShH--
 
