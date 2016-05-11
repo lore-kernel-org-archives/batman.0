@@ -1,11 +1,14 @@
-Return-Path: <a@unstable.cc>
-From: Antonio Quartulli <a@unstable.cc>
-Date: Wed, 11 May 2016 18:29:17 +0800
-Message-Id: <1462962557-23950-2-git-send-email-a@unstable.cc>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 11 May 2016 12:38:31 +0200
+Message-ID: <2789203.91ASHWIDJV@bentobox>
 In-Reply-To: <1462962557-23950-1-git-send-email-a@unstable.cc>
 References: <1462962557-23950-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: B.A.T.M.A.N. V - implement
-	hard-iface init function
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2964070.q8o1DZ99e3";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: remove forward
+	declaration by including proper header
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,100 +18,115 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+To: Antonio Quartulli <a@unstable.cc>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-Some fields in the hard-interface data structure are specific to the
-B.A.T.M.A.N. V protocol and have to be initialized only when such
-protocol is compiled in.
-Instead of having a #ifdef block in the middle of the hard-interface.c
-code it is better to have an algorithm private function that hides the
-precompiler logic in its own header file (like other functions).
+--nextPart2964070.q8o1DZ99e3
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
 
-Fixes: ffd2f27908e5 ("batman-adv: Only init ELP tweaking options when BATMAN_V is enabled")
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
----
- net/batman-adv/bat_algo.h       |  5 +++++
- net/batman-adv/bat_v.c          | 14 ++++++++++++++
- net/batman-adv/hard-interface.c | 10 ++--------
- 3 files changed, 21 insertions(+), 8 deletions(-)
+On Wednesday 11 May 2016 18:29:16 Antonio Quartulli wrote:
+> If main.h is included, the forward declaration for struct batadv_priv=
+
+> is not required.
+>=20
+> Cc: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Antonio Quartulli <a@unstable.cc>
+> ---
+>=20
+> Sven, is there any special region for not having the include in this =
+file ?
+> It seems to be compiling just fine.
+>=20
+> Cheers,
+
+We have some files which don't include main.h:
+
+ * net/batman-adv/bat_algo.h
+ * net/batman-adv/bat_v_ogm.h
+ * net/batman-adv/netlink.h
+
+There is a special exception which should not include it to avoid cycle=
+s in
+the includes:
+
+ * net/batman-adv/packet.h
+
+The reason for the other three is just... there is no reason I can prov=
+ide
+other than it was not necessary for these files :). But if you want tha=
+t to
+have "main.h" included everywhere then please do it really everywhere:
+
 
 diff --git a/net/batman-adv/bat_algo.h b/net/batman-adv/bat_algo.h
-index b727762..3654296 100644
---- a/net/batman-adv/bat_algo.h
+index 03dafd3..b727762 100644
+=2D-- a/net/batman-adv/bat_algo.h
 +++ b/net/batman-adv/bat_algo.h
-@@ -25,6 +25,7 @@ int batadv_iv_init(void);
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- 
- int batadv_v_init(void);
-+void batadv_v_hardif_init(struct batadv_hard_iface *hardif);
- int batadv_v_mesh_init(struct batadv_priv *bat_priv);
- void batadv_v_mesh_free(struct batadv_priv *bat_priv);
- 
-@@ -35,6 +36,10 @@ static inline int batadv_v_init(void)
- 	return 0;
- }
- 
-+static inline void batadv_v_hardif_init(struct batadv_hard_iface *hardif)
-+{
-+}
+@@ -18,7 +18,7 @@
+ #ifndef _NET_BATMAN_ADV_BAT_ALGO_H_
+ #define _NET_BATMAN_ADV_BAT_ALGO_H_
+=20
+=2Dstruct batadv_priv;
++#include "main.h"
+=20
+ int batadv_iv_init(void);
+=20
+diff --git a/net/batman-adv/bat_v_ogm.h b/net/batman-adv/bat_v_ogm.h
+index d849c75..4c4d45c 100644
+=2D-- a/net/batman-adv/bat_v_ogm.h
++++ b/net/batman-adv/bat_v_ogm.h
+@@ -18,10 +18,10 @@
+ #ifndef _BATMAN_ADV_BATADV_V_OGM_H_
+ #define _BATMAN_ADV_BATADV_V_OGM_H_
+=20
++#include "main.h"
 +
- static inline int batadv_v_mesh_init(struct batadv_priv *bat_priv)
- {
- 	return 0;
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index b9c2850..fb2d29d 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -333,6 +333,20 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- };
- 
- /**
-+ * batadv_v_hardif_init - initialize the algorithm specific fields in the
-+ *  hard-interface object
-+ * @hard_iface: the hard-interface to initialize
-+ */
-+void batadv_v_hardif_init(struct batadv_hard_iface *hard_iface)
-+{
-+	/* enable link throughput auto-detection by setting the throughput
-+	 * override to zero
-+	 */
-+	atomic_set(&hard_iface->bat_v.throughput_override, 0);
-+	atomic_set(&hard_iface->bat_v.elp_interval, 500);
-+}
+ #include <linux/types.h>
+=20
+=2Dstruct batadv_hard_iface;
+=2Dstruct batadv_priv;
+ struct sk_buff;
+=20
+ int batadv_v_ogm_init(struct batadv_priv *bat_priv);
+diff --git a/net/batman-adv/netlink.h b/net/batman-adv/netlink.h
+index fa152a8..39044cc 100644
+=2D-- a/net/batman-adv/netlink.h
++++ b/net/batman-adv/netlink.h
+@@ -18,6 +18,8 @@
+ #ifndef _NET_BATMAN_ADV_NETLINK_H_
+ #define _NET_BATMAN_ADV_NETLINK_H_
+=20
++#include "main.h"
 +
-+/**
-  * batadv_v_mesh_init - initialize the B.A.T.M.A.N. V private resources for a
-  *  mesh
-  * @bat_priv: the object representing the mesh interface to initialise
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index a8cda76..a757229 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -15,6 +15,7 @@
-  * along with this program; if not, see <http://www.gnu.org/licenses/>.
-  */
- 
-+#include "bat_algo.h"
- #include "hard-interface.h"
- #include "main.h"
- 
-@@ -683,14 +684,7 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 	if (batadv_is_wifi_netdev(net_dev))
- 		hard_iface->num_bcasts = BATADV_NUM_BCASTS_WIRELESS;
- 
--#ifdef CONFIG_BATMAN_ADV_BATMAN_V
--	/* enable link throughput auto-detection by setting the throughput
--	 * override to zero
--	 */
--	atomic_set(&hard_iface->bat_v.throughput_override, 0);
--
--	atomic_set(&hard_iface->bat_v.elp_interval, 500);
--#endif
-+	batadv_v_hardif_init(hard_iface);
- 
- 	/* extra reference for return */
- 	kref_init(&hard_iface->refcount);
--- 
-2.8.2
+ void batadv_netlink_register(void);
+ void batadv_netlink_unregister(void);
+=20
+
+Kind regards,
+=09Sven
+--nextPart2964070.q8o1DZ99e3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXMwunAAoJEF2HCgfBJntG69IQAIChoNA+03GEfJB6csG4voT2
+r9Teq1O7+DqZC6SePtF3WSWbJYxkc6hDRLqRxAIr3xU1EpS0rYHDQvwIEUYFkqIu
+D1Jo+VLps1cYAXKXJR00pm5nlWfAhW5Kf54+hnP2ZyLLCkIqPToGjWzmqDQHixP6
+LMgClHJPkQadV+zdRtmIlYYvROdLAKw1715OVSdvfKh32FXyNyt1blMbWbWcY/8P
+UhmTlIcKTAA+AMtCKDo65VgUu9Qj/ALO/wdBWDAktUuR67AZA9oXn4m1LEXn9feD
+msepYjqN3JEQW1Ap/yvKoc9XdQZRxFbvJthzE/pGMPfaUBfPoYGCLCWaIFFMKId/
+anqtlV0gv1YtwO03fSxn1yw4Uyi5xzqbCvhlVhq4uAXKCHxvmfSTooyt//EWUfQJ
+MkyZ0oN+O5MdOcrsvfrartGM/jlx5+aeQQ4vVcjM1IltEKL1CMQcsEii8ACQPQs3
+CWNh5QAahaJU2eM0R0l2100p+DK921ZW2SJahqRF86ms5LlGQgWeeTZNI8vcJZJC
+VZl6bPq7Nt5T9rV9AVq3aVHNif7TbZhdOqbsBUsYLYnD5QbcuCaK+9OpWcCXVVMP
+3I/nngMNw0pDVHusUy+nim8iF5ii9CIMNaydTUzkiNREuF8qAl7+7IOpE5wrZyG9
+phJ2J4jisQw6q2bWL9vQ
+=zJ1K
+-----END PGP SIGNATURE-----
+
+--nextPart2964070.q8o1DZ99e3--
 
