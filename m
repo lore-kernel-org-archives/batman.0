@@ -1,13 +1,8 @@
-Return-Path: <davem@davemloft.net>
-Date: Tue, 10 May 2016 23:36:45 -0400 (EDT)
-Message-Id: <20160510.233645.812129971297090233.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1462908605-27412-1-git-send-email-a@unstable.cc>
-References: <1462908605-27412-1-git-send-email-a@unstable.cc>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 20160511
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 11 May 2016 08:16:47 +0200
+Message-Id: <1462947407-25493-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unused include atomic.h
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,18 +12,29 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <a@unstable.cc>
-Date: Wed, 11 May 2016 03:29:48 +0800
+The only atomic_* function was removed in the bat_v.c and thus the include
+should also be removed.
 
-> here you have a pull request intended for net-next.
-> There are 17 patches in this batch, but most of them are cleanups
-> and minor code re-arrangement.
-> 
-> The more detailed description follows in the git tag.
-> 
-> Please pull or let me know of any problem.
+Fixes: 71e957cd30a0 ("batman-adv: init ELP tweaking options only once")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/bat_v.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-Pulled, thanks Antonio.
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 3c5d251..b9c2850 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -18,7 +18,6 @@
+ #include "bat_algo.h"
+ #include "main.h"
+ 
+-#include <linux/atomic.h>
+ #include <linux/bug.h>
+ #include <linux/cache.h>
+ #include <linux/init.h>
+-- 
+2.8.1
+
