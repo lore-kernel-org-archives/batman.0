@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 11 May 2016 15:58:25 +0800
-Message-ID: <6775496.rbfDoTAmc1@voltaire>
-In-Reply-To: <3605304.z1uU72uXKg@sven-edge>
-References: <1462915079-22681-1-git-send-email-fw@strlen.de>
- <3605304.z1uU72uXKg@sven-edge>
+Date: Wed, 11 May 2016 16:06:50 +0800
+Message-ID: <2256730.67eskflOoc@voltaire>
+In-Reply-To: <1462817016-17867-2-git-send-email-andrew@lunn.ch>
+References: <1462817016-17867-1-git-send-email-andrew@lunn.ch>
+ <1462817016-17867-2-git-send-email-andrew@lunn.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1644487.t9QnrBIoau";
+Content-Type: multipart/signed; boundary="nextPart7582636.QNUfXo0PF3";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix skb deref after free
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Set skb priority in
+	fragments
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,30 +20,28 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Florian Westphal <fw@strlen.de>
 
---nextPart1644487.t9QnrBIoau
+--nextPart7582636.QNUfXo0PF3
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, May 10, 2016 23:58:28 Sven Eckelmann wrote:
-> On Tuesday 10 May 2016 23:17:59 Florian Westphal wrote:
-> > batadv_send_skb_to_orig() calls dev_queue_xmit() so we can't use skb->len.
-> > 
-> > Signed-off-by: Florian Westphal <fw@strlen.de>
-> > ---
-> > 
-> >  Noticed during review, compile tested only.
+On Monday, May 09, 2016 20:03:35 Andrew Lunn wrote:
+> BATMAN will set the skb->priority based on the IP precedence or 802.1q
+> tag. However, if it needs to fragment the frame, it currently leaves
+> the fragment skb with the default priority and actually overwrites the
+> priority in the unfragmented frame. Fix this.
 > 
-> Fixes: d28785996ad8 ("batman-adv: network coding - buffer unicast packets
-> before forward") Reviewed-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> ---
+>  net/batman-adv/fragmentation.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision 6863d3b.
+Applied in revision e374d75.
 
 Thanks,
 Marek
 
---nextPart1644487.t9QnrBIoau
+--nextPart7582636.QNUfXo0PF3
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -50,14 +49,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXMuYhAAoJEFNVTo/uthzAafUH/10z5i+a1Iqh9XPOqdmqupqx
-0TxEkZnb5J8+ex+HJJKjnmvnibFJk68x+pxxVi9HeXkhtRM5MYw2UNLvzs7abAMj
-PZzwN+QtXoMLdWXYv8xyKiGBKebkM2NW5GtTey1MGDjCf41pZ9SY9muzTsBASwnu
-pNdPxhMnW3xN0HXZdGCY2ZVorps7Bji2qsX8WIjSVITnZdPwYZ7aHdhauCZdsRo2
-AmbM+PvJMjSSrmimXbw/JIzJe0ZNYso4jUqwQDw4oQUaJqgCZj8NlAg3KFdhhbIs
-vHMvcbjDRvNOJMIC1hVLIzGTLIKVuj40bQozhKbig+Ehbq7oDc2YvIccQqcNo3U=
-=l1J2
+iQEcBAABCAAGBQJXMugaAAoJEFNVTo/uthzAeNkIALlyvWLtVTSpKfKuafvzJzbg
+Fji/+c55xetOXvknNcLjDEy9asgNIavD2sh9E9Ia3J/iwoTOLoKyjpN0f9Zs9Ng5
+mlIE8N8x9gjyAUnW2wScJrODk8ykRa/YdWzOC3CNICbl4ZcV7Gm7NIFjZWae7Ei6
+hagsfka2Be1v+7IbFJuAysI5/Bt6I5X0C4CfKO3y3taS/jbnRcFuU0Ml5/c06bsB
+A8C4nHL99CZO7yAAmCYHz8SRTD8r55JRBG58W4NKMHW8tK5YMh6ykM2jYZsvY19d
+YEeSu15gzzuG2ybCm9KJg+oJaY6TVB80wZGY6OY+X/WMPSO25r0aMp2U0aMR0AI=
+=iQhB
 -----END PGP SIGNATURE-----
 
---nextPart1644487.t9QnrBIoau--
+--nextPart7582636.QNUfXo0PF3--
 
