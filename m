@@ -1,9 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Wed, 11 May 2016 18:29:16 +0800
-Message-Id: <1462962557-23950-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: remove forward declaration
-	by including proper header
+Date: Wed, 11 May 2016 18:29:17 +0800
+Message-Id: <1462962557-23950-2-git-send-email-a@unstable.cc>
+In-Reply-To: <1462962557-23950-1-git-send-email-a@unstable.cc>
+References: <1462962557-23950-1-git-send-email-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: B.A.T.M.A.N. V - implement
+	hard-iface init function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,35 +18,97 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <a@unstable.cc>
 
-If main.h is included, the forward declaration for struct batadv_priv
-is not required.
+Some fields in the hard-interface data structure are specific to the
+B.A.T.M.A.N. V protocol and have to be initialized only when such
+protocol is compiled in.
+Instead of having a #ifdef block in the middle of the hard-interface.c
+code it is better to have an algorithm private function that hides the
+precompiler logic in its own header file (like other functions).
 
-Cc: Sven Eckelmann <sven@narfation.org>
+Fixes: ffd2f27908e5 ("batman-adv: Only init ELP tweaking options when BATMAN_V is enabled")
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
-
-Sven, is there any special region for not having the include in this file ?
-It seems to be compiling just fine.
-
-Cheers,
-
-
- net/batman-adv/bat_algo.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/bat_algo.h       |  5 +++++
+ net/batman-adv/bat_v.c          | 14 ++++++++++++++
+ net/batman-adv/hard-interface.c | 10 ++--------
+ 3 files changed, 21 insertions(+), 8 deletions(-)
 
 diff --git a/net/batman-adv/bat_algo.h b/net/batman-adv/bat_algo.h
-index 03dafd3..b727762 100644
+index b727762..3654296 100644
 --- a/net/batman-adv/bat_algo.h
 +++ b/net/batman-adv/bat_algo.h
-@@ -18,7 +18,7 @@
- #ifndef _NET_BATMAN_ADV_BAT_ALGO_H_
- #define _NET_BATMAN_ADV_BAT_ALGO_H_
+@@ -25,6 +25,7 @@ int batadv_iv_init(void);
+ #ifdef CONFIG_BATMAN_ADV_BATMAN_V
  
--struct batadv_priv;
-+#include "main.h"
+ int batadv_v_init(void);
++void batadv_v_hardif_init(struct batadv_hard_iface *hardif);
+ int batadv_v_mesh_init(struct batadv_priv *bat_priv);
+ void batadv_v_mesh_free(struct batadv_priv *bat_priv);
  
- int batadv_iv_init(void);
+@@ -35,6 +36,10 @@ static inline int batadv_v_init(void)
+ 	return 0;
+ }
  
++static inline void batadv_v_hardif_init(struct batadv_hard_iface *hardif)
++{
++}
++
+ static inline int batadv_v_mesh_init(struct batadv_priv *bat_priv)
+ {
+ 	return 0;
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index b9c2850..fb2d29d 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -333,6 +333,20 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+ };
+ 
+ /**
++ * batadv_v_hardif_init - initialize the algorithm specific fields in the
++ *  hard-interface object
++ * @hard_iface: the hard-interface to initialize
++ */
++void batadv_v_hardif_init(struct batadv_hard_iface *hard_iface)
++{
++	/* enable link throughput auto-detection by setting the throughput
++	 * override to zero
++	 */
++	atomic_set(&hard_iface->bat_v.throughput_override, 0);
++	atomic_set(&hard_iface->bat_v.elp_interval, 500);
++}
++
++/**
+  * batadv_v_mesh_init - initialize the B.A.T.M.A.N. V private resources for a
+  *  mesh
+  * @bat_priv: the object representing the mesh interface to initialise
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index a8cda76..a757229 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -15,6 +15,7 @@
+  * along with this program; if not, see <http://www.gnu.org/licenses/>.
+  */
+ 
++#include "bat_algo.h"
+ #include "hard-interface.h"
+ #include "main.h"
+ 
+@@ -683,14 +684,7 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 	if (batadv_is_wifi_netdev(net_dev))
+ 		hard_iface->num_bcasts = BATADV_NUM_BCASTS_WIRELESS;
+ 
+-#ifdef CONFIG_BATMAN_ADV_BATMAN_V
+-	/* enable link throughput auto-detection by setting the throughput
+-	 * override to zero
+-	 */
+-	atomic_set(&hard_iface->bat_v.throughput_override, 0);
+-
+-	atomic_set(&hard_iface->bat_v.elp_interval, 500);
+-#endif
++	batadv_v_hardif_init(hard_iface);
+ 
+ 	/* extra reference for return */
+ 	kref_init(&hard_iface->refcount);
 -- 
 2.8.2
 
