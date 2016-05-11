@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Wed, 11 May 2016 15:49:48 +0800
-Message-ID: <41801220.Rv582bcDWY@voltaire>
-In-Reply-To: <1462947407-25493-1-git-send-email-sven@narfation.org>
-References: <1462947407-25493-1-git-send-email-sven@narfation.org>
+Date: Wed, 11 May 2016 15:58:25 +0800
+Message-ID: <6775496.rbfDoTAmc1@voltaire>
+In-Reply-To: <3605304.z1uU72uXKg@sven-edge>
+References: <1462915079-22681-1-git-send-email-fw@strlen.de>
+ <3605304.z1uU72uXKg@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4560049.qvg8WTiKkX";
+Content-Type: multipart/signed; boundary="nextPart1644487.t9QnrBIoau";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unused include
-	atomic.h
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix skb deref after free
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,27 +19,30 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Florian Westphal <fw@strlen.de>
 
---nextPart4560049.qvg8WTiKkX
+--nextPart1644487.t9QnrBIoau
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday, May 11, 2016 08:16:47 Sven Eckelmann wrote:
-> The only atomic_* function was removed in the bat_v.c and thus the include
-> should also be removed.
+On Tuesday, May 10, 2016 23:58:28 Sven Eckelmann wrote:
+> On Tuesday 10 May 2016 23:17:59 Florian Westphal wrote:
+> > batadv_send_skb_to_orig() calls dev_queue_xmit() so we can't use skb->len.
+> > 
+> > Signed-off-by: Florian Westphal <fw@strlen.de>
+> > ---
+> > 
+> >  Noticed during review, compile tested only.
 > 
-> Fixes: 71e957cd30a0 ("batman-adv: init ELP tweaking options only once")
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/bat_v.c | 1 -
->  1 file changed, 1 deletion(-)
+> Fixes: d28785996ad8 ("batman-adv: network coding - buffer unicast packets
+> before forward") Reviewed-by: Sven Eckelmann <sven@narfation.org>
 
-Applied in revision 84f8635.
+Applied in revision 6863d3b.
 
 Thanks,
 Marek
 
---nextPart4560049.qvg8WTiKkX
+--nextPart1644487.t9QnrBIoau
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -47,14 +50,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXMuQcAAoJEFNVTo/uthzAhv8H/25m0mMiO9ffM9pXdIa0P7HT
-4EvUB+mibGxXRTMKXxv5CkihbDP6tyGobJykBtmM/dLY8v0hyZRh7z/LDKdfQxTX
-yEfGbtNQMfkLxxbcowoQVdPv1J7IoLzZteWc/1/jBA2rJeYgOaIuOT5cpFS5nHn7
-tPgyZYZycDU4AgG0UAO3ffHLhtTRE3v8KcFMoA0eI+hV43KV/SccwWTjWgPkuTwL
-grzKvBjxB8TlGZTXN1r/Bu/gLJE64rB+3HDx/8Py2yadlEYeTkizFl3ANmX6ppu9
-jw2SScZjGV14w9LDtujJpRZBNY3DvGfjVm7QBKpJMC7JDRkS92Gif7YSaZ6DLJQ=
-=Bdpn
+iQEcBAABCAAGBQJXMuYhAAoJEFNVTo/uthzAafUH/10z5i+a1Iqh9XPOqdmqupqx
+0TxEkZnb5J8+ex+HJJKjnmvnibFJk68x+pxxVi9HeXkhtRM5MYw2UNLvzs7abAMj
+PZzwN+QtXoMLdWXYv8xyKiGBKebkM2NW5GtTey1MGDjCf41pZ9SY9muzTsBASwnu
+pNdPxhMnW3xN0HXZdGCY2ZVorps7Bji2qsX8WIjSVITnZdPwYZ7aHdhauCZdsRo2
+AmbM+PvJMjSSrmimXbw/JIzJe0ZNYso4jUqwQDw4oQUaJqgCZj8NlAg3KFdhhbIs
+vHMvcbjDRvNOJMIC1hVLIzGTLIKVuj40bQozhKbig+Ehbq7oDc2YvIccQqcNo3U=
+=l1J2
 -----END PGP SIGNATURE-----
 
---nextPart4560049.qvg8WTiKkX--
+--nextPart1644487.t9QnrBIoau--
 
