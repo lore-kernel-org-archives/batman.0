@@ -1,13 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 12 May 2016 07:05:20 +0200
-Message-ID: <1588847.AaxGtfAtFh@sven-edge>
-In-Reply-To: <CAKOC6KQMSca-tSOoKFm9t1LXrOnwHKbf3Ac0hXT6QZWxM_uwtw@mail.gmail.com>
-References: <CAKOC6KQMSca-tSOoKFm9t1LXrOnwHKbf3Ac0hXT6QZWxM_uwtw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart22861884.dEJtd8tydJ";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Problem with DHCP on batman-adv V
+Return-Path: <apape@phoenixcontact.com>
+From: Andreas Pape <apape@phoenixcontact.com>
+Message-ID: <1463034697-8867-1-git-send-email-apape@phoenixcontact.com>
+Date: Thu, 12 May 2016 08:31:31 +0200
+content-transfer-encoding: quoted-printable
+content-type: text/plain; charset="utf-8"
+Subject: [B.A.T.M.A.N.] [PATCH v4 0/6] batman-adv: Optimizations for setups
+	running dat and bla
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,61 +16,81 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart22861884.dEJtd8tydJ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This patchset introduces optimizations for batman-adv in setups having seve=
+ral
+gateways into a common (switched) Ethernet backbone network especially if d=
+at
+is additionally enabled.
 
-On Wednesday 11 May 2016 18:58:48 Alvaro Antelo wrote:
-> Hi everyone,
-> 
-> I am testing batman-adv V5 from the development feed on Chaos Calmer
-> and so far everything is working except for DHCP IPv4, only static
-> addresses.
-> In the same setup wich involves bridges connected to bat0 interfaces,
-> if I change only the routing algorithm to batman-adv IV, DHCP works
-> fine.
-> 
-> Is it a expected behaviour?
+Using the current implementation with bla and dat enabled, several problems
+can be observed in a real setup:
+1. Multiplication of ARP replies from dat enabled gateways and dat enabled
+mesh nodes leading to an "ARP reply storm" in the common backbone network.
+2. In rare corner cases bla does not fully prevent looping of unicast frames
+in the direction Backbone --> mesh --> backbone and looping of multicast
+frames in the direction mesh --> backbone --> mesh.
+The latter can lead to temporary confusion in the switched backbone resulti=
+ng
+in packet loss and communication timeouts.
 
-Afaik there is no working gateway selection logic in B.A.T.M.A.N. V. At least 
-Antonio works on some patches for this:
+The observed problems are solved by introduction of additional rules for the
+dat handling, bla packet forwarding and bla claiming/unclaiming of clients.
 
-https://patchwork.open-mesh.org/patch/16139/
-https://patchwork.open-mesh.org/patch/16140/
-https://patchwork.open-mesh.org/patch/16141/
-https://patchwork.open-mesh.org/patch/16142/
-https://patchwork.open-mesh.org/patch/16143/
+v4:
+ - removed unnecessary include in soft-interface.c
+ - solved issue with double-use and refcounting of pointers in routing.c
 
-This includes splitting up the logic and use the metrics for each routing 
-algorithm. But I think he can tell you more about now works (or doesn't) and 
-what will work after his patchset is applied.
+v3:
+
+ - rebased patchset
+ - moved snooping of ip addresses for dat speed up into separate function
+ - removed "patch of a patch"
+ - removed automatic claiming during check of a claim
+ - fixed issues of the patchset not being compiled due to chosen batman
+=09options
 
 Kind regards,
-	Sven
---nextPart22861884.dEJtd8tydJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Andreas
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Andreas Pape (6):
+  batman-adv: prevent multiple ARP replies sent by gateways if dat
+    enbled
+  batman-adv: speed up dat by snooping received ip traffic
+  batman-adv: prevent duplication of ARP replies when DAT is used
+  batman-adv: drop unicast packets from other backbone gw
+  batman-adv: changed debug messages for easier bla debugging
+  batman-adv: handle race condition for claims between gateways
 
-iQIcBAABCgAGBQJXNA8QAAoJEF2HCgfBJntGyKQP/2GhtvoTh1m0LRiHjf1F7/hU
-clffrDF6H0eEa4cZBMqXp44ydAhhvN0FrtJnrizV6y7La2cZYOEaB76nJpSjDLtM
-LUOCvMXmdfXJj3XuK+W2qoDMnxCTuC8Js5i4wwHEgHmSyTbPBzZ3GAPG6n2jn8qv
-eqXHZ9t0QDWnd6vsdoCPjy+RXP3Jvq6PJtHypETYHPPvdRVN99gXnrAOIgAuqbl3
-5aXPwnYvr6ByuIpRDZeBb0945UWvdLLLI0rc0Dn1fkQlS2XH12CtgRBZYQvfsn25
-mT+IWlC7/fE1v+2ckrsAwHtwyEThlVuC56l7z6sfuIZI6zuCEGYSBi5gaHAu8ZwH
-V8g0mby/2ev1JsLial8TbN6yEAokEbYnhE50aebqAzR0UDLtwmf1ocB7fuyxv0N+
-Z2DjoBg6XlsA44BOMif4ewWRu7qb3OF5lyzJDYd4yuIn2N2ccbnT3CNk5QllyP/E
-bupFwMEul5WNTnn+gCp+I7xM0Ag9Bcmu3V09RX355eXCvUsm3p0tnbPszdlHXWPB
-zPqboozyUIozBIntsA1zZvnpPvKeFKLMyMqXLanREUSatTmWA8/H8wdXVApI8GzM
-9BWfENE04eytLRu4CWwRsz9I7ItT/QCYJTPTfOYmV79UlPaG9gSaHM4paf3WX8Fz
-ziXZwzxvbG6kbXB/h1WS
-=pupi
------END PGP SIGNATURE-----
+ net/batman-adv/bridge_loop_avoidance.c |   87 ++++++++++++++++++++++++++---
+ net/batman-adv/bridge_loop_avoidance.h |   11 ++++
+ net/batman-adv/distributed-arp-table.c |   97 ++++++++++++++++++++++++++++=
+++++
+ net/batman-adv/distributed-arp-table.h |    9 +++-
+ net/batman-adv/routing.c               |   25 +++++++-
+ net/batman-adv/soft-interface.c        |    3 +
+ 6 files changed, 220 insertions(+), 12 deletions(-)
 
---nextPart22861884.dEJtd8tydJ--
 
+
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
+
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
+___________________________________________________________________
+Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
+nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
+rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
+d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
+ Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
