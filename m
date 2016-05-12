@@ -2,12 +2,12 @@ Return-Path: <apape@phoenixcontact.com>
 From: Andreas Pape <apape@phoenixcontact.com>
 In-Reply-To: <1463034697-8867-1-git-send-email-apape@phoenixcontact.com>
 References: <1463034697-8867-1-git-send-email-apape@phoenixcontact.com>
-Message-ID: <1463034697-8867-5-git-send-email-apape@phoenixcontact.com>
-Date: Thu, 12 May 2016 08:31:35 +0200
+Message-ID: <1463034697-8867-6-git-send-email-apape@phoenixcontact.com>
+Date: Thu, 12 May 2016 08:31:36 +0200
 content-transfer-encoding: quoted-printable
 content-type: text/plain; charset="utf-8"
-Subject: [B.A.T.M.A.N.] [PATCH v4 4/6] batman-adv: drop unicast packets from
-	other backbone gw
+Subject: [B.A.T.M.A.N.] [PATCH v4 5/6] batman-adv: changed debug messages
+	for easier bla debugging
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,66 +19,83 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Additional dropping of unicast packets received from another backbone gw of
-the same backbone network before being forwarded to the same backbone again
-is necessary. It was observed in a test setup that in rare cases these
-frames lead to looping unicast traffic backbone->mesh->backbone.
+Some of the bla debug messages are extended and additional messages are
+added for easier bla debugging. Some debug messages introduced with the
+dat changes in prior patches of this patch series have been changed to
+be more compliant to other existing debug messages.
 
+Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
 Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
 ---
- net/batman-adv/routing.c |   25 ++++++++++++++++++++++---
- 1 files changed, 22 insertions(+), 3 deletions(-)
+ net/batman-adv/bridge_loop_avoidance.c |   18 ++++++++++++++----
+ net/batman-adv/routing.c               |    2 +-
+ 2 files changed, 15 insertions(+), 5 deletions(-)
 
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge=
+_loop_avoidance.c
+index 2f46ce9..c426327 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -715,8 +715,8 @@ static void batadv_bla_add_claim(struct batadv_priv *ba=
+t_priv,
+ =09=09=09goto claim_free_ref;
+
+ =09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
+-=09=09=09   "bla_add_claim(): changing ownership for %pM, vid %d\n",
+-=09=09=09   mac, BATADV_PRINT_VID(vid));
++=09=09=09   "bla_add_claim(): changing ownership for %pM, vid %d to gw %pM=
+\n",
++=09=09=09   mac, BATADV_PRINT_VID(vid), backbone_gw->orig);
+
+ =09=09spin_lock_bh(&claim->backbone_gw->crc_lock);
+ =09=09claim->backbone_gw->crc ^=3D crc16(0, claim->addr, ETH_ALEN);
+@@ -1240,10 +1240,13 @@ static void batadv_bla_purge_claims(struct batadv_p=
+riv *bat_priv,
+ =09=09=09=09continue;
+
+ =09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
+-=09=09=09=09   "bla_purge_claims(): %pM, vid %d, time out\n",
++=09=09=09=09   "bla_purge_claims(): timed out.\n");
++
++purge_now:
++=09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
++=09=09=09=09   "bla_purge_claims(): %pM, vid %d\n",
+ =09=09=09=09   claim->addr, claim->vid);
+
+-purge_now:
+ =09=09=09batadv_handle_unclaim(bat_priv, primary_if,
+ =09=09=09=09=09      claim->backbone_gw->orig,
+ =09=09=09=09=09      claim->addr, claim->vid);
+@@ -1787,6 +1790,13 @@ bool batadv_bla_rx(struct batadv_priv *bat_priv, str=
+uct sk_buff *skb,
+ =09=09/* possible optimization: race for a claim */
+ =09=09/* No claim exists yet, claim it for us!
+ =09=09 */
++
++=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
++=09=09=09   "bla_rx(): Unclaimed MAC %pM found. Claim it. Local: %s\n",
++=09=09=09   ethhdr->h_source,
++=09=09=09   batadv_is_my_client(bat_priv,
++=09=09=09=09=09       ethhdr->h_source, vid) ?
++=09=09=09   "yes" : "no");
+ =09=09batadv_handle_claim(bat_priv, primary_if,
+ =09=09=09=09    primary_if->net_dev->dev_addr,
+ =09=09=09=09    ethhdr->h_source, vid);
 diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index e3857ed..667e2cd 100644
+index 667e2cd..7eeae86 100644
 --- a/net/batman-adv/routing.c
 +++ b/net/batman-adv/routing.c
-@@ -861,14 +861,16 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
- =09struct batadv_priv *bat_priv =3D netdev_priv(recv_if->soft_iface);
- =09struct batadv_unicast_packet *unicast_packet;
- =09struct batadv_unicast_4addr_packet *unicast_4addr_packet;
--=09u8 *orig_addr;
--=09struct batadv_orig_node *orig_node =3D NULL;
-+=09u8 *orig_addr, *orig_addr_gw;
-+=09struct batadv_orig_node *orig_node =3D NULL, *orig_node_gw =3D NULL;
- =09int check, hdr_size =3D sizeof(*unicast_packet);
- =09enum batadv_subtype subtype;
--=09bool is4addr;
-+=09bool is4addr, is_gw;
-+=09struct ethhdr *ethhdr;
-
- =09unicast_packet =3D (struct batadv_unicast_packet *)skb->data;
- =09unicast_4addr_packet =3D (struct batadv_unicast_4addr_packet *)skb->dat=
-a;
-+=09ethhdr =3D eth_hdr(skb);
-
- =09is4addr =3D unicast_packet->packet_type =3D=3D BATADV_UNICAST_4ADDR;
- =09/* the caller function should have already pulled 2 bytes */
-@@ -891,6 +893,23 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
-
- =09/* packet for me */
- =09if (batadv_is_my_mac(bat_priv, unicast_packet->dest)) {
-+=09=09/* If this is a unicast packet from another backgone gw,
-+=09=09 * drop it.
-+=09=09 */
-+=09=09orig_addr_gw =3D ethhdr->h_source;
-+=09=09orig_node_gw =3D batadv_orig_hash_find(bat_priv, orig_addr_gw);
-+=09=09if (orig_node_gw) {
-+=09=09=09is_gw =3D batadv_bla_is_backbone_gw(skb, orig_node_gw,
-+=09=09=09=09=09=09=09  hdr_size);
-+=09=09=09batadv_orig_node_put(orig_node_gw);
-+=09=09=09if (is_gw) {
-+=09=09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
-+=09=09=09=09=09   "Dropped unicast pkt received from another backbone gw %=
+@@ -904,7 +904,7 @@ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ =09=09=09batadv_orig_node_put(orig_node_gw);
+ =09=09=09if (is_gw) {
+ =09=09=09=09batadv_dbg(BATADV_DBG_BLA, bat_priv,
+-=09=09=09=09=09   "Dropped unicast pkt received from another backbone gw %=
 pM.\n",
-+=09=09=09=09=09   orig_addr_gw);
-+=09=09=09=09return NET_RX_DROP;
-+=09=09=09}
-+=09=09}
-+
- =09=09if (is4addr) {
- =09=09=09subtype =3D unicast_4addr_packet->subtype;
- =09=09=09batadv_dat_inc_counter(bat_priv, subtype);
++=09=09=09=09=09   "recv_unicast_packet(): Dropped unicast pkt received fro=
+m another backbone gw %pM.\n",
+ =09=09=09=09=09   orig_addr_gw);
+ =09=09=09=09return NET_RX_DROP;
+ =09=09=09}
 --
 1.7.0.4
 
