@@ -1,8 +1,8 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 12 May 2016 18:41:23 +0200
-Message-Id: <1463071283-20210-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: replace WARN with rate
+Date: Thu, 12 May 2016 18:52:03 +0200
+Message-Id: <1463071923-27298-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH-maintv2] batman-adv: replace WARN with rate
 	limited output on non-existing VLAN
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -28,11 +28,14 @@ limited output.
 
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
+Changes to PATCH-maint:
+ * added newline to output
+---
  net/batman-adv/translation-table.c | 6 ++++--
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 9b4551a..0236f80 100644
+index 9b4551a..48adb91 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
 @@ -650,8 +650,10 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
@@ -43,7 +46,7 @@ index 9b4551a..0236f80 100644
 -		 addr, BATADV_PRINT_VID(vid))) {
 +	if (!vlan) {
 +		net_ratelimited_function(batadv_info, soft_iface,
-+					 "adding TT local entry %pM to non-existent VLAN %d",
++					 "adding TT local entry %pM to non-existent VLAN %d\n",
 +					 addr, BATADV_PRINT_VID(vid));
  		kfree(tt_local);
  		tt_local = NULL;
