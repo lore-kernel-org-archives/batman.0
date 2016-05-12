@@ -1,16 +1,17 @@
-Return-Path: <dledford@redhat.com>
-References: <1462285862-30946-1-git-send-email-fw@strlen.de>
- <1462285994-31983-1-git-send-email-fw@strlen.de>
-From: Doug Ledford <dledford@redhat.com>
-Message-ID: <20118955-8739-b79a-e20e-96302e8b41bf@redhat.com>
-Date: Thu, 12 May 2016 15:40:46 -0400
+Return-Path: <a@unstable.cc>
+Date: Fri, 13 May 2016 05:07:18 +0800
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <20160512210718.GG21549@prodigo.lan>
+References: <1462962557-23950-1-git-send-email-a@unstable.cc>
+ <2789203.91ASHWIDJV@bentobox> <20160511104730.GB21549@prodigo.lan>
+ <5284085.o6G6OjSAFN@bentobox>
 MIME-Version: 1.0
-In-Reply-To: <1462285994-31983-1-git-send-email-fw@strlen.de>
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="MxOQ9rEvBghhBiQvcDah4SfXu2ff5Ef0r"
-Subject: Re: [B.A.T.M.A.N.] [PATCH net-next 4/5] treewide: replace
- dev->trans_start update with helper
+ protocol="application/pgp-signature"; boundary="NPukt5Otb9an/u20"
+Content-Disposition: inline
+In-Reply-To: <5284085.o6G6OjSAFN@bentobox>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: remove forward
+ declaration by including proper header
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,83 +21,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Florian Westphal <fw@strlen.de>, netdev@vger.kernel.org
-Cc: devel@driverdev.osuosl.org, linux-xtensa@linux-xtensa.org, linux-omap@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, linux-scsi@vger.kernel.org, linux-s390@vger.kernel.org, linux-rdma@vger.kernel.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, linux-can@vger.kernel.org, linux-bluetooth@vger.kernel.org, linux-parisc@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-hams@vger.kernel.org, linux1394-devel@lists.sourceforge.net, mpt-fusionlinux.pdl@broadcom.com
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---MxOQ9rEvBghhBiQvcDah4SfXu2ff5Ef0r
-Content-Type: text/plain; charset=windows-1252
+
+--NPukt5Otb9an/u20
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On 05/03/2016 10:33 AM, Florian Westphal wrote:
-> Replace all trans_start updates with netif_trans_update helper.
-> change was done via spatch:
+On Wed, May 11, 2016 at 02:24:04PM +0200, Sven Eckelmann wrote:
+> On Wednesday 11 May 2016 18:47:30 Antonio Quartulli wrote:
+> [...]
+> > Maybe I could include it only when really needed, i.e.
+> >  * net/batman-adv/bat_algo.h
+> >  * net/batman-adv/bat_v_ogm.h
+> >=20
+> > (netlink.h does not seem to be requiring it)
 >=20
-> struct net_device *d;
-> @@
-> - d->trans_start =3D jiffies
-> + netif_trans_update(d)
+> This is rather vague and hard to detect automatically. Potentially all
+> files may require it because it has things like:
 >=20
-> Compile tested only.
+>     /* Debug Messages */
+>     #ifdef pr_fmt
+>     #undef pr_fmt
+>     #endif
+>     /* Append 'batman-adv: ' before kernel messages */
+>     #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 >=20
-> Cc: user-mode-linux-devel@lists.sourceforge.net
-> Cc: linux-xtensa@linux-xtensa.org
-> Cc: linux1394-devel@lists.sourceforge.net
-> Cc: linux-rdma@vger.kernel.org
-> Cc: netdev@vger.kernel.org
-> Cc: MPT-FusionLinux.pdl@broadcom.com
-> Cc: linux-scsi@vger.kernel.org
-> Cc: linux-can@vger.kernel.org
-> Cc: linux-parisc@vger.kernel.org
-> Cc: linux-omap@vger.kernel.org
-> Cc: linux-hams@vger.kernel.org
-> Cc: linux-usb@vger.kernel.org
-> Cc: linux-wireless@vger.kernel.org
-> Cc: linux-s390@vger.kernel.org
-> Cc: devel@driverdev.osuosl.org
-> Cc: b.a.t.m.a.n@lists.open-mesh.org
-> Cc: linux-bluetooth@vger.kernel.org
-> Signed-off-by: Florian Westphal <fw@strlen.de>
-> ---
->  Checkpatch complains about whitespace damage, but
->  this extra whitespace already exists before this patch.
->=20
->  drivers/infiniband/hw/nes/nes_nic.c                    | 2 +-
->  drivers/infiniband/ulp/ipoib/ipoib_cm.c                | 2 +-
->  drivers/infiniband/ulp/ipoib/ipoib_ib.c                | 2 +-
 
-For InfiniBand bits,
+ok, how about adding it to any header file than (which is probably what you=
+ were
+suggesting in the first place)?
 
-Acked-by: Doug Ledford <dledford@redhat.com>
+
+Cheers,
+
 
 --=20
-Doug Ledford <dledford@redhat.com>
-              GPG KeyID: 0E572FDD
+Antonio Quartulli
 
-
-
---MxOQ9rEvBghhBiQvcDah4SfXu2ff5Ef0r
+--NPukt5Otb9an/u20
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iQIcBAEBCAAGBQJXNNw+AAoJELgmozMOVy/dVQcP/1RZvmqQVJpZMtptIm8OpoPW
-4QrFlnjv+KorYVaF1Hg7+0X6yfCF53ofTKRAg4zaYiASZw4AJWYzslxA9b0OvpPS
-TzMjJrbWm27+W2pH8ZivFepys9afxW5o/qb7CFYyOPOEml495zReUvTqt/nSh7jG
-8nTdwO4xH5kY4P82bDn18Lyqd/8cS7yFl1OAK88eqq+y9JgveiIsO2PlsrtFENtX
-+RyadCAluEUdfe6CZjMjUptBptIi6hfoMqmXXu4vcFs48mqbVf4QubFp5f+4wJa2
-KScILHNil3156j3TY3lpG1ukf2SfF0UYDYxco5tZlZ3O7nB3Xteif94gvvUiszyO
-IfGn3/wblQs6tRSHjMRNYiTVeYkyh0eXbdbha/7bkBG58mEjYFnrjtRuBMD2Ogmm
-uz6MhyD6Ez7mKKVBc3ooQ6SYpcwb4surHEGm36a2Utnb/vftxyPYpA75neZbSGZO
-X828tsNcxB9K8FUCEcP/Xasc5xE6kPtpwu5TIbJ7itYLs4yRoZbsmcI5UrhjqERp
-YAAiI07vifFHyFLUnfAOefjXxQOFJdQHtMphlnjfYiKXSpJsAhT2LIJpepgbovCc
-/268dPol/ul7WUbLu2P4zlnnIEQgABW6NKFMAg/N/b4XQ08VkeKv82yJ9aLuyG2J
-0QbOFyrXnR/I1OYFeDAU
-=2VMH
+iQIcBAEBCAAGBQJXNPCGAAoJEJ4aZjxxc6bKWkEP/3Bbz41uWef+Ou6agw4o74XN
+6XLzLPy/XH55uZWKshwm+ZXJB+kLRfZiYUcqd8lJQ22NjqGshJYpJ9s4IP6Iz79B
+tpj6wPRR2GTg6sVU683j73lISpgk+M30Eu84lsO6uumyfAv6bfcwmKAQIi8+NDFO
+UQdU3BIXAWF1/vCeWY8F/hMv6Q9wKFyEp4wc1w2bqOY6LIPKLHygv6L0+2bQK3yw
+TwLRCtGeABIgBDK4NWh4tTuGdNeaLQqJFXRoPdGNimG+hu9wv55OWktfi4o1yPIT
++YaCi17KAWyNtZG/W7XGbQjbmbryDRDHUaPxEMurpZXBeMrrcg4e25KI9vsYdR+q
+U7Pux7SblzkHJSW2jeK2VhtmG/NDlH4rD5XN2jZ60wgz3/v0IbeP40wLNIne3AfQ
+ZIQsn7mL3gzU6q+fSw4dJibtn2VpkUyb/QAr6SSNO61YLoWIHn1VTULAEtth4/f+
+A8WDb7Vc5U6T9JUwNIkT6WuQosByOehfp+/k8TdJwDC/q+Ewm4U2O6nBe4xFwm/C
+MOhnc+8hI16EfDAU0YhklQIGXkeZbxsGxZDKzUcMG9yB9l13pzzHuN2J8e0lrIZy
+c872iUh6oc/vxxWUv9hqx1EvyCQoGgFzT99yYbRcT//Pdv0DOtz4MYJEAR0XaHTW
+QwEB3nihMCS1lgarC6uQ
+=rH5p
 -----END PGP SIGNATURE-----
 
---MxOQ9rEvBghhBiQvcDah4SfXu2ff5Ef0r--
+--NPukt5Otb9an/u20--
