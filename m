@@ -1,15 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 13 May 2016 18:45:45 +0200
-Message-ID: <1498708.bHHSHfNHLf@bentobox>
-In-Reply-To: <1463034697-8867-2-git-send-email-apape@phoenixcontact.com>
-References: <1463034697-8867-1-git-send-email-apape@phoenixcontact.com>
- <1463034697-8867-2-git-send-email-apape@phoenixcontact.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1721976.Gxs8BP1121";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v4 1/6] batman-adv: prevent multiple ARP
-	replies sent by gateways if dat enbled
+Date: Fri, 13 May 2016 18:47:48 +0200
+Message-Id: <1463158069-966-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Include main.h in all files
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,55 +14,62 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1721976.Gxs8BP1121
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+main.h includes statements which (re)define preprocessor variables which
+influence the compiled code. This makes it necessary to include it in all
+files. For example, it redefines pr_fmt used to the module as prefix for
+each pr_* message.
 
-> --- a/net/batman-adv/distributed-arp-table.c
-> +++ b/net/batman-adv/distributed-arp-table.c
-> @@ -48,6 +48,7 @@
->  #include "originator.h"
->  #include "send.h"
->  #include "translation-table.h"
-> +#include "bridge_loop_avoidance.h"
+Reported-by: Antonio Quartulli <a@unstable.cc>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/bat_algo.h  | 2 +-
+ net/batman-adv/bat_v_ogm.h | 4 ++--
+ net/batman-adv/netlink.h   | 2 ++
+ 3 files changed, 5 insertions(+), 3 deletions(-)
 
-Please try to keep the includes in alphabetical order like this:
-
-+#include "bridge_loop_avoidance.h"
- #include "hard-interface.h"
- #include "hash.h"
- #include "originator.h"
- #include "send.h"
- #include "translation-table.h"
-
-Maybe Marek can also do this when he wants to apply it (in case 
-Simon/Marek/... don't find anything else problematic in the patchset)
-
-
-Kind regards,
-	Sven
---nextPart1721976.Gxs8BP1121
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJXNgS5AAoJEF2HCgfBJntGEesP/iChnn6BeHXt2SIXAgNHM8Us
-VkFYBaOV9y5LwCqi5MUpoIPZHnIWuhj5bX0bOcQDwqpzgw95Xu2KG9SrvO7sLX2q
-Tb7MSWU1lb3oCPNiaeT+kAFc6ZpDyuqEZbtLnCvWBzseIxaSPb0QBkHS1gDrnS1P
-NCdKmV8MxtBTo1XFqnTZztV/vUUWoN/KR3PBRwecEhKC3qwHx1XbB00eU0xP4vjt
-Fzi1PcUOBG/EabbzEgIFiO+Zer1rso0dLJPg1mbE4s5rF295EaBUqzElO7m/NsgG
-Zpfiw5I16llfdTnDNsaFOHctzerARftBG4YX81HSPNGP1iOTlEEpAhmeYLI4a4xt
-oofDgnfsDp+rjFqudSBoK6iMinEkyrrkHBBRkux1Qe7AEyGDOd4xIUsL9CIFh3nS
-JGCFiq5N3H1/CCIzFQXQq9tQTz1i4Ccxlrqsqz2Kqe6dOIqhYfdiBNdDbEbTJ7z+
-pv7S/u8PbZeORQAqQ7iV+KKGs6pRj4IDnwN3qboUH15ERVzx2j9u8ycEwRC4//a8
-WfeaPSh+No8wMUZBmhOmzk+QNothJOPZcC/S9V1arNBlzKb6cc03/5QizCOdlIFN
-Q7ifDFDmslsq2bWZGQsV38p0cBUhuwLwCWtRy+QvNARpsde6o24dUWATRl/aGadk
-UGvL6Xvj9yLi+D+qCEXt
-=1yq+
------END PGP SIGNATURE-----
-
---nextPart1721976.Gxs8BP1121--
+diff --git a/net/batman-adv/bat_algo.h b/net/batman-adv/bat_algo.h
+index 03dafd3..b727762 100644
+--- a/net/batman-adv/bat_algo.h
++++ b/net/batman-adv/bat_algo.h
+@@ -18,7 +18,7 @@
+ #ifndef _NET_BATMAN_ADV_BAT_ALGO_H_
+ #define _NET_BATMAN_ADV_BAT_ALGO_H_
+ 
+-struct batadv_priv;
++#include "main.h"
+ 
+ int batadv_iv_init(void);
+ 
+diff --git a/net/batman-adv/bat_v_ogm.h b/net/batman-adv/bat_v_ogm.h
+index d849c75..4c4d45c 100644
+--- a/net/batman-adv/bat_v_ogm.h
++++ b/net/batman-adv/bat_v_ogm.h
+@@ -18,10 +18,10 @@
+ #ifndef _BATMAN_ADV_BATADV_V_OGM_H_
+ #define _BATMAN_ADV_BATADV_V_OGM_H_
+ 
++#include "main.h"
++
+ #include <linux/types.h>
+ 
+-struct batadv_hard_iface;
+-struct batadv_priv;
+ struct sk_buff;
+ 
+ int batadv_v_ogm_init(struct batadv_priv *bat_priv);
+diff --git a/net/batman-adv/netlink.h b/net/batman-adv/netlink.h
+index fa152a8..39044cc 100644
+--- a/net/batman-adv/netlink.h
++++ b/net/batman-adv/netlink.h
+@@ -18,6 +18,8 @@
+ #ifndef _NET_BATMAN_ADV_NETLINK_H_
+ #define _NET_BATMAN_ADV_NETLINK_H_
+ 
++#include "main.h"
++
+ void batadv_netlink_register(void);
+ void batadv_netlink_unregister(void);
+ 
+-- 
+2.8.1
 
