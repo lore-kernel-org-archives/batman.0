@@ -1,10 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 13 May 2016 18:47:49 +0200
-Message-Id: <1463158069-966-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1463158069-966-1-git-send-email-sven@narfation.org>
-References: <1463158069-966-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Keep includes ordered
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Fri, 13 May 2016 19:37:11 +0200
+Message-ID: <2059800.IKvSZ5WLNp@prime>
+In-Reply-To: <1463034697-8867-2-git-send-email-apape@phoenixcontact.com>
+References: <1463034697-8867-1-git-send-email-apape@phoenixcontact.com>
+ <1463034697-8867-2-git-send-email-apape@phoenixcontact.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1657068.p0A6XecnbU";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4 1/6] batman-adv: prevent multiple ARP
+	replies sent by gateways if dat enbled
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,164 +21,68 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-It is easier to detect if a include is already there for a used
-functionality when the includes are ordered. Using an alphabetic order
-together with the grouping in commit 7df620092727 ("batman-adv: Add
-required includes to all files") makes includes better manageable.
+--nextPart1657068.p0A6XecnbU
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/bat_iv_ogm.c     | 2 +-
- net/batman-adv/gateway_common.c | 2 +-
- net/batman-adv/hard-interface.c | 2 +-
- net/batman-adv/main.h           | 6 +++---
- net/batman-adv/multicast.c      | 2 +-
- net/batman-adv/netlink.c        | 4 ++--
- net/batman-adv/send.c           | 2 +-
- net/batman-adv/sysfs.c          | 4 ++--
- 8 files changed, 12 insertions(+), 12 deletions(-)
+On Thursday 12 May 2016 08:31:32 Andreas Pape wrote:
+> @@ -1003,6 +1004,20 @@ bool batadv_dat_snoop_outgoing_arp_request(struct
+> batadv_priv *bat_priv, goto out;
+>  		}
+> 
+> +		/* If BLA is enabled, only send ARP replies if we have claimed
+> +		 * the destination for the ARP request or if no one else of
+> +		 * the backbone gws belonging to our backbone has claimed the
+> +		 * destination.
+> +		 */
+> +		if (!batadv_bla_handle_local_claim(bat_priv,
+> +						   dat_entry->mac_addr, vid)) {
+> +			batadv_dbg(BATADV_DBG_DAT, bat_priv,
+> +				   "Device %pM claimed by another backbone gw. Don't send ARP 
+reply!",
+> +				   dat_entry->mac_addr);
+> +			ret = true;
+> +			goto out;
+> +		}
+> +
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 4815db9..6dc89b0 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -31,8 +31,8 @@
- #include <linux/init.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
--#include <linux/list.h>
- #include <linux/kref.h>
-+#include <linux/list.h>
- #include <linux/lockdep.h>
- #include <linux/netdevice.h>
- #include <linux/pkt_sched.h>
-diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
-index 3c26945..7754435 100644
---- a/net/batman-adv/gateway_common.c
-+++ b/net/batman-adv/gateway_common.c
-@@ -19,8 +19,8 @@
- #include "main.h"
- 
- #include <linux/atomic.h>
--#include <linux/errno.h>
- #include <linux/byteorder/generic.h>
-+#include <linux/errno.h>
- #include <linux/kernel.h>
- #include <linux/math64.h>
- #include <linux/netdevice.h>
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index a8cda76..1e26a0b 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -23,9 +23,9 @@
- #include <linux/byteorder/generic.h>
- #include <linux/errno.h>
- #include <linux/fs.h>
-+#include <linux/if.h>
- #include <linux/if_arp.h>
- #include <linux/if_ether.h>
--#include <linux/if.h>
- #include <linux/kernel.h>
- #include <linux/kref.h>
- #include <linux/list.h>
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 832df0f..94bf4f8 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -181,12 +181,12 @@ enum batadv_uev_type {
- #include <linux/cpumask.h>
- #include <linux/etherdevice.h>
- #include <linux/if_ether.h> /* for packet.h */
-+#include <linux/if_vlan.h>
-+#include <linux/jiffies.h>
- #include <linux/netdevice.h>
-+#include <linux/percpu.h>
- #include <linux/printk.h>
- #include <linux/types.h>
--#include <linux/percpu.h>
--#include <linux/jiffies.h>
--#include <linux/if_vlan.h>
- 
- #include "types.h"
- 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index abb12f1..5a22943 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -29,8 +29,8 @@
- #include <linux/if_bridge.h>
- #include <linux/if_ether.h>
- #include <linux/igmp.h>
--#include <linux/in6.h>
- #include <linux/in.h>
-+#include <linux/in6.h>
- #include <linux/ip.h>
- #include <linux/ipv6.h>
- #include <linux/kernel.h>
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 54724b7..68152aa 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -15,8 +15,8 @@
-  * along with this program; if not, see <http://www.gnu.org/licenses/>.
-  */
- 
--#include "main.h"
- #include "netlink.h"
-+#include "main.h"
- 
- #include <linux/errno.h>
- #include <linux/fs.h>
-@@ -25,8 +25,8 @@
- #include <linux/init.h>
- #include <linux/netdevice.h>
- #include <linux/netlink.h>
--#include <linux/stddef.h>
- #include <linux/printk.h>
-+#include <linux/stddef.h>
- #include <net/genetlink.h>
- #include <net/netlink.h>
- #include <uapi/linux/batman_adv.h>
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 638d1c1..45ca6ac 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -22,8 +22,8 @@
- #include <linux/byteorder/generic.h>
- #include <linux/etherdevice.h>
- #include <linux/fs.h>
--#include <linux/if_ether.h>
- #include <linux/if.h>
-+#include <linux/if_ether.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
- #include <linux/kref.h>
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 233abcf..6244a9a 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -25,8 +25,8 @@
- #include <linux/fs.h>
- #include <linux/if.h>
- #include <linux/if_vlan.h>
--#include <linux/kref.h>
- #include <linux/kernel.h>
-+#include <linux/kref.h>
- #include <linux/netdevice.h>
- #include <linux/printk.h>
- #include <linux/rculist.h>
-@@ -38,10 +38,10 @@
- #include <linux/string.h>
- #include <linux/stringify.h>
- 
-+#include "bridge_loop_avoidance.h"
- #include "distributed-arp-table.h"
- #include "gateway_client.h"
- #include "gateway_common.h"
--#include "bridge_loop_avoidance.h"
- #include "hard-interface.h"
- #include "network-coding.h"
- #include "packet.h"
--- 
-2.8.1
+There is still my question/comment pending for this from your PATCHv2. I'll 
+quote:
+
+I  would agree to Antonio that sending a claim is not necessary, and might 
+actually lead to bad choices of the outgoing backbone gateway. After all, at 
+this point any "random" backbone gateway may answer to this request, just 
+because it has the DAT entry, but maybe may actually not be able to reach the 
+client via the mesh.
+
+I think checking if a local claim exists is a good idea, but sending a claim 
+is not a good idea - this might introduce effects which will be even more 
+complicated to debug.
+
+Cheers,
+     Simon
+--nextPart1657068.p0A6XecnbU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXNhDHAAoJEKEr45hCkp6hCXAP/2yi6f7TMuA2SjYVMVcbNIL8
+2whet9A6pewD00HzyoigGhQVQQ6QxdCyL6C4i6Opvqcu25AMiSVXAplEzBXi28JQ
+o3QUWDwXMhMuZ7Rby5xH9JfnLx1leDw+HPzeA7aJp4dYBHuuFWKuWGGtYv+9CvC/
+e+cFnLpH/2CuFWC9L1PZ/Yf7CWpL6SjZwEbUxYwWLR4pDLOpH4itmYut5Vvk6w7O
+61qK8MXnRfI8d5k8xGWGH/7nDgGzae/xSk3v7QeaRDBYwGgaJCjjM7QC2PbxjpXd
++yOCFDUd/84vb2emUK4QGBLHflIjyPhPw/BvK7KsRCkcfKYdvHyKD6RvsiSBPFIP
+H92d1WuCyxRsT0yxfmMx+ls1HLxk4aAiwWc0s3FeSbK7AcfpvFQWeTO9PKI354zu
+2Du+K9Y7+aFmaNnf8yNoP+8CyIZhGb6qWnsmIu0jlHDwbMEgVLZs/MksNHmtzq5T
+YdVzklGoZ5RJ3WUq+5xdBbiV2EGMtD407+ZOePVmphDk5SVCj7dHgfXXPwz4bl8T
+ym/1f8HTkXWarBwpk+aXxlY3iyvZX7y7uLCa+dNW8u1aElCS+sHdRVp9ao5przsk
+jjQGgkDc5ZMJjJnFENFor8kEaZScKTtZ8Q6SRWAq+U8GwqTtL8sasLJQ8zG9KlxE
+Wwk5poJZfXpx6kDoBxKT
+=g7cu
+-----END PGP SIGNATURE-----
+
+--nextPart1657068.p0A6XecnbU--
 
