@@ -1,15 +1,16 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 13 May 2016 19:07:52 +0800
-Message-ID: <2870286.TlxMuhjIas@voltaire>
-In-Reply-To: <1462874769-5077-4-git-send-email-a@unstable.cc>
+Return-Path: <a@unstable.cc>
+Date: Fri, 13 May 2016 21:21:52 +0800
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <20160513132152.GI21549@prodigo.lan>
 References: <1462874769-5077-1-git-send-email-a@unstable.cc>
- <1462874769-5077-4-git-send-email-a@unstable.cc>
+ <1891745.mZd9gkqG93@voltaire>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6280949.jvob7lOR1C";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 4/5] batman-adv: make GW election code
-	protocol specific
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="6lCXDTVICvIQMz0h"
+Content-Disposition: inline
+In-Reply-To: <1891745.mZd9gkqG93@voltaire>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 1/5] batman-adv: make the GW selection
+ class algorithm specific
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,75 +21,72 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-
---nextPart6280949.jvob7lOR1C
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Tuesday, May 10, 2016 18:06:08 Antonio Quartulli wrote:
-> +static struct batadv_gw_node *
-> +batadv_iv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
-
-> +static bool batadv_iv_gw_is_eligible(struct batadv_priv *bat_priv,
-> +				     struct batadv_orig_node *curr_gw_orig,
-> +				     struct batadv_orig_node *orig_node)
-
-> +/* fails if orig_node has no router */
-> +static int batadv_iv_gw_write_buffer_text(struct batadv_priv *bat_priv,
-> +					  struct seq_file *seq,
-> +					  const struct batadv_gw_node *gw_node)
-
-> +static void batadv_iv_gw_print(struct batadv_priv *bat_priv,
-> +			       struct seq_file *seq)
-
-How about some kernel doc ?  :)
+Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 
-> +211,7 @@ void batadv_gw_election(struct batadv_priv *bat_priv) if
-> (!batadv_atomic_dec_not_zero(&bat_priv->gw.reselect) && curr_gw) goto out;
-> 
-> -	next_gw = batadv_gw_get_best_gw_node(bat_priv);
-> +	next_gw = bat_priv->algo_ops->gw.get_best_gw_node(bat_priv);
+--6lCXDTVICvIQMz0h
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Either make the gw.get_best_gw_node() ops mandatory or check for its existence 
-before using it.
+On Fri, May 13, 2016 at 06:44:02PM +0800, Marek Lindner wrote:
+> On Tuesday, May 10, 2016 18:06:05 Antonio Quartulli wrote:
+> > +       return __batadv_store_uint_attr(buff, count, 0, BATADV_TQ_MAX_V=
+ALUE,
+> > +                                       batadv_post_gw_reselect, attr,
+> > +                                       &bat_priv->gw.sel_class,
+> > +                                       bat_priv->soft_iface);
+> > +}
+>=20
+> Why are you changing the allowed minimum from '1' to '0' ?
 
+previous change that I did not "undo". Will fix that.
 
-> @@ -1320,11 +1320,21 @@ struct batadv_algo_orig_ops {
-> 
->   * struct batadv_algo_gw_ops - mesh algorithm callbacks (GW specific)
->   * @store_sel_class: parse and stores a new GW selection class
->   * @show_sel_class: prints the current GW selection class
-> 
-> + * @get_best_gw_node: select the best GW from the list of available nodes
-> + * @is_eligible: check if a newly discovered GW is a potential candidate
-> for
-> + *  the election as best GW
-> + * @print: print the gateway table (optional)
-> 
->   */
+>=20
+>=20
+> >  /**
+> > + * struct batadv_algo_gw_ops - mesh algorithm callbacks (GW specific)
+> > + * @bat_store_sel_class: parse and stores a new GW selection class
+> > + * @bat_show_sel_class: prints the current GW selection class
+> > + */
+> > +struct batadv_algo_gw_ops {
+> > +       ssize_t (*bat_store_sel_class)(struct batadv_priv *bat_priv, ch=
+ar
+> > *buff, +                                      size_t count);
+> > +       ssize_t (*bat_show_sel_class)(struct batadv_priv *bat_priv, char
+> > *buff); +};
+>=20
+> No need to introduce the 'bat_' prefix if the next patch removes it.
 
-Shall we mark all optional ops as optional or .. ?
+I wanted to be consistent. I will invert the patches then.
+
+Thanks !
 
 Cheers,
-Marek
 
---nextPart6280949.jvob7lOR1C
+--=20
+Antonio Quartulli
+
+--6lCXDTVICvIQMz0h
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXNbWIAAoJEFNVTo/uthzA2OEIAK389uDaoon5rrkCL20HFja7
-me9xE6feJVuCtkYCnrWIgz8YCOcsQiVVvTV4UbFaKyK3mC+0t9V/omt4K2x/NW56
-OomeM8zA7e7JU89aZBGuA39PWrYwaq0cttteQxYXSKCdEtu5Q89gMiPha9nQ08P5
-52NvFlk0Gu4qDLWj9oE9I8WZL4jExOH6StrIGWlTXhdvw7hWxL1bXL9zm+3Z+EOO
-Ff/OWQW4PQDqXKgrYalbswCW7+cFTeCr9t1ac0gBvPcOOqvh7B/7wJ+1Ewz68HBg
-1KuE/f3FKBnXL/iisb80mykt5B6/FnS2snv8vESaUTH6Vg5Y6n7J7IRAGzWI4EU=
-=Tl8F
+iQIcBAEBCAAGBQJXNdTwAAoJEJ4aZjxxc6bKHpYP/1fd1KHjb/o2/ShqYVFvSdGi
+we3Y+sLTCEvHBrqVvUeLRXPIPN2E3UAu3EkvEisOxFVianHuK0/5kiBugnsSouoR
+99F1uc5yCDg4qYAa+o3B/U0bHY1rL0LUAAFBz05HRhXVcIJsN4AOLBmLnPMzoKF8
+9xApKs3fkyQcBAwqNBXCqpIsEfHRyTmkIGSw8e+aKsT3//k8FGQP/CuRmSfEamvc
+dguBukXhyI12az1AHbc9M/LsANKc1Shi9V3ktccKwuXScgCz1JNwDnaZHrjvKeKV
+qLe8lPomsUoe8qkStRq/9vsIM2UEvt1txTeNe1ljKaPzVlsegaA9PcPtfgJgC4Dt
+yLdAWEb9Y+Nnxqog5xuiJvmT51On28nyNj6hEhsXagaR/Yk0412hvUDFXDZOF5oO
+WtkJeb68EOLU0j+mcGFer5PLOy2MkFSb8ZubrDYLLrKDN31kiHqGsj6cFdXcdaGO
+shDFt5Riq+BocpP2OBhvw73sIHTWghARCPV/zwWe6saaXTIowRtonhWWo2i2F20s
+t5wyUu9/SElp5o7MXfeoclGKilDTNINwjynyqRQutIv+CNSygY1/dNoZ8GEhzHCR
++vNtF3hHdbnKSmQbtjARxLFGdEpe7ISpdFP9bPhTC1CZ2S9p5bWrygzsDkUTYKY5
+jDk7htE8wYufVWXHJmQR
+=RPGH
 -----END PGP SIGNATURE-----
 
---nextPart6280949.jvob7lOR1C--
-
+--6lCXDTVICvIQMz0h--
