@@ -1,13 +1,14 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Fri, 13 May 2016 18:35:41 +0200
-Message-Id: <1463157342-13195-2-git-send-email-linus.luessing@c0d3.blue>
+Date: Fri, 13 May 2016 18:35:42 +0200
+Message-Id: <1463157342-13195-3-git-send-email-linus.luessing@c0d3.blue>
 In-Reply-To: <1463157342-13195-1-git-send-email-linus.luessing@c0d3.blue>
 References: <1463157342-13195-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix mcast_flags debugfs output
+Subject: [B.A.T.M.A.N.] [PATCHv5 2/2] batctl: adding mcast flags debugfs
+	table
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,41 +20,137 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-We recently switched to the atomic variants set_bit() / clear_bit()
-/ test_bit() for originator capabilities.
+From: Linus Lüssing <linus.luessing@web.de>
 
-Unfortunately, this was missed for the new multicast debugfs
-entry, resulting in an empty multicast flags table.
+This patch adds an option to retrieve the per originator multicast
+flags table.
 
-Fixing this by using test_bit().
-
-Fixes: f1f0fbb2c956 ("batman-adv: Add debugfs table for mcast flags")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Linus Lüssing <linus.luessing@web.de>
 ---
- net/batman-adv/multicast.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index abb12f1..2dd5aec 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -1205,12 +1205,12 @@ int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset)
+Changes in v5:
+* fixed README description of mcast_flags (copy & paste error from DAT)
+
+Changes in v4:
+* rebase to current master (no conflicts)
+
+Changes in v3:
+* updated mcast_flags example in README file
+
+Changes in v2:
+* header_lines for 'mcast_flags' increased from 2 to 6
+* Example updated to more verbose, 6 lines debugfs header output
+* (kept order for the noted manpage section as it wasn't alphabetically
+   orderd in the first place - instead keeping the previous "logical"
+   order - 'mcast' after 'nc')
+
+ README       |   34 ++++++++++++++++++++++++++++++++++
+ debug.c      |    6 ++++++
+ debug.h      |    1 +
+ functions.c  |    1 +
+ man/batctl.8 |    3 +++
+ 5 files changed, 45 insertions(+)
+
+diff --git a/README b/README
+index b5de8a6..6df669a 100644
+--- a/README
++++ b/README
+@@ -426,6 +426,40 @@ display or modify the multicast mode setting
  
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
--			if (!(orig_node->capa_initialized &
--			      BATADV_ORIG_CAPA_HAS_MCAST))
-+			if (!test_bit(BATADV_ORIG_CAPA_HAS_MCAST,
-+				      &orig_node->capa_initialized))
- 				continue;
+ Usage: batctl multicast_mode|mm [0|1]
  
--			if (!(orig_node->capabilities &
--			      BATADV_ORIG_CAPA_HAS_MCAST)) {
-+			if (!test_bit(BATADV_ORIG_CAPA_HAS_MCAST,
-+				      &orig_node->capabilities)) {
- 				seq_printf(seq, "%pM -\n", orig_node->orig);
- 				continue;
- 			}
++batctl mcast_flags
++=================
++
++display local and remote multicast flags
++
++Usage batctl mcast_flags|mf
++
++Example:
++
++Multicast flags (own flags: [U46])
++* Bridged [U]                           U
++* No IGMP/MLD Querier [4/6]:            ./.
++* Shadowing IGMP/MLD Querier [4/6]:     4/6
++-------------------------------------------
++       Originator Flags
++02:04:64:a4:39:c1 [U..]
++02:04:64:a4:39:c2 [U..]
++02:04:64:a4:39:c3 [...]
++
++where:
++- Originator: the MAC address of the originating (primary interface)
++		batman-adv node
++- Flags: multicast flags of the according node
++- U: wants all unsnoopable multicast traffic, meaning other nodes need to always
++	forward any multicast traffic destined to ff02::1 or 224.0.0.0/24 to it
++- 4: wants all IPv4 multicast traffic, meaning other nodes need to always
++	forward any IPv4 multicast traffic to it
++- 6: wants all IPv6 multicast traffic, meaning other nodes need to always
++	forward any IPv6 multicast traffic to it
++
++If a node does not have multicast optimizations available (e.g. old batman-adv
++version or optimizations not compiled in), therefore not announcing any
++multicast tvlv/flags, a '-' will be displayed instead of '[...]'.
++
+ batctl aggregation
+ ==================
+ 
+diff --git a/debug.c b/debug.c
+index 3db3ed9..5b280cb 100644
+--- a/debug.c
++++ b/debug.c
+@@ -84,6 +84,12 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
+ 		.debugfs_name = "nc_nodes",
+ 		.header_lines = 0,
+ 	},
++	{
++		.opt_long = "mcast_flags",
++		.opt_short = "mf",
++		.debugfs_name = "mcast_flags",
++		.header_lines = 6,
++	},
+ };
+ 
+ static void debug_table_usage(int debug_table)
+diff --git a/debug.h b/debug.h
+index df65f50..46e8c3c 100644
+--- a/debug.h
++++ b/debug.h
+@@ -40,6 +40,7 @@ enum batctl_debug_tables {
+ 	BATCTL_TABLE_BLA_BACKBONES,
+ 	BATCTL_TABLE_DAT,
+ 	BATCTL_TABLE_NETWORK_CODING_NODES,
++	BATCTL_TABLE_MCAST_FLAGS,
+ 	BATCTL_TABLE_NUM,
+ };
+ 
+diff --git a/functions.c b/functions.c
+index be8f8b0..97a6dbd 100644
+--- a/functions.c
++++ b/functions.c
+@@ -68,6 +68,7 @@ const char *fs_compile_out_param[] = {
+ 	batctl_debug_tables[BATCTL_TABLE_BLA_BACKBONES].debugfs_name,
+ 	batctl_debug_tables[BATCTL_TABLE_DAT].debugfs_name,
+ 	batctl_debug_tables[BATCTL_TABLE_NETWORK_CODING_NODES].debugfs_name,
++	batctl_debug_tables[BATCTL_TABLE_MCAST_FLAGS].debugfs_name,
+ 	NULL,
+ };
+ 
+diff --git a/man/batctl.8 b/man/batctl.8
+index f8955d0..05f68d3 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -236,6 +236,9 @@ List of debug tables:
+ .RS 10
+ \- nc_nodes|nn (compile time option)
+ .RE
++.RS 10
++\- mcast_flags|mf (compile time option)
++.RE
+ .RE
+ .br
+ .IP "\fBtranslate\fP|\fBt\fP \fBMAC_address\fP|\fBbat\-host_name\fP|\fBhost_name\fP|\fBIP_address\fP"
 -- 
 1.7.10.4
 
