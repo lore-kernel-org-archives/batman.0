@@ -1,17 +1,17 @@
 Return-Path: <a@unstable.cc>
-Date: Fri, 13 May 2016 21:23:35 +0800
+Date: Fri, 13 May 2016 21:26:14 +0800
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160513132335.GJ21549@prodigo.lan>
+Message-ID: <20160513132614.GK21549@prodigo.lan>
 References: <1462874769-5077-1-git-send-email-a@unstable.cc>
- <1462874769-5077-4-git-send-email-a@unstable.cc>
- <2870286.TlxMuhjIas@voltaire>
+ <1462874769-5077-5-git-send-email-a@unstable.cc>
+ <2772485.VzmroEUk53@voltaire>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="Ublo+h3cBgJ33ahC"
+ protocol="application/pgp-signature"; boundary="EVcIhgQsEzAXu06J"
 Content-Disposition: inline
-In-Reply-To: <2870286.TlxMuhjIas@voltaire>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 4/5] batman-adv: make GW election code
- protocol specific
+In-Reply-To: <2772485.VzmroEUk53@voltaire>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 5/5] batman-adv: B.A.T.M.A.N. V -
+ implement GW selection logic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,104 +22,161 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
 
 
---Ublo+h3cBgJ33ahC
+--EVcIhgQsEzAXu06J
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, May 13, 2016 at 07:07:52PM +0800, Marek Lindner wrote:
-> On Tuesday, May 10, 2016 18:06:08 Antonio Quartulli wrote:
+On Fri, May 13, 2016 at 07:31:01PM +0800, Marek Lindner wrote:
+> On Tuesday, May 10, 2016 18:06:09 Antonio Quartulli wrote:
+> > +static int batadv_v_gw_throughput_get(struct batadv_gw_node *gw_node, =
+u32
+> > *bw)
+>=20
 > > +static struct batadv_gw_node *
-> > +batadv_iv_gw_get_best_gw_node(struct batadv_priv *bat_priv)
+> > +batadv_v_gw_get_best_gw_node(struct batadv_priv *bat_priv)
 >=20
-> > +static bool batadv_iv_gw_is_eligible(struct batadv_priv *bat_priv,
-> > +				     struct batadv_orig_node *curr_gw_orig,
-> > +				     struct batadv_orig_node *orig_node)
->=20
-> > +/* fails if orig_node has no router */
-> > +static int batadv_iv_gw_write_buffer_text(struct batadv_priv *bat_priv,
-> > +					  struct seq_file *seq,
-> > +					  const struct batadv_gw_node *gw_node)
->=20
-> > +static void batadv_iv_gw_print(struct batadv_priv *bat_priv,
-> > +			       struct seq_file *seq)
->=20
-> How about some kernel doc ?  :)
+> Kernel doc ?
 
 ok :)
 
 >=20
 >=20
-> > +211,7 @@ void batadv_gw_election(struct batadv_priv *bat_priv) if
-> > (!batadv_atomic_dec_not_zero(&bat_priv->gw.reselect) && curr_gw) goto o=
-ut;
-> >=20
-> > -	next_gw =3D batadv_gw_get_best_gw_node(bat_priv);
-> > +	next_gw =3D bat_priv->algo_ops->gw.get_best_gw_node(bat_priv);
+> > +	struct batadv_gw_node *gw_node, *curr_gw =3D NULL;
+> > +	u32 max_bw =3D 0, bw, threshold;
+> > +
+> > +	threshold =3D atomic_read(&bat_priv->gw.sel_class);
+> > +
+> > +	rcu_read_lock();
+> > +	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
+> > +		if (!kref_get_unless_zero(&gw_node->refcount))
+> > +			continue;
+> > +
+> > +		if (batadv_v_gw_throughput_get(gw_node, &bw) < 0)
+> > +			goto next;
+> > +
+> > +		if (curr_gw && (bw <=3D (max_bw + threshold)))
+> > +			goto next;
+> > +
+> > +		if (curr_gw)
+> > +			batadv_gw_node_put(curr_gw);
+> > +
+> > +		curr_gw =3D gw_node;
+> > +		kref_get(&curr_gw->refcount);
+> > +		max_bw =3D bw;
+> > +
+> > +next:
+> > +		batadv_gw_node_put(gw_node);
+> > +	}
+> > +	rcu_read_unlock();
+> > +
+> > +	return curr_gw;
+> > +}
 >=20
-> Either make the gw.get_best_gw_node() ops mandatory or check for its exis=
-tence=20
-> before using it.
+> I don't quite follow the use of 'threshold' in this function. The thresho=
+ld is=20
+> meant to decide whether the switch to another gateway is worth breaking t=
+he=20
+> existing stateful connections. Here, the code is retrieving the best gate=
+way=20
+> of all - no need for the threshold ? Moreover, the threshold might lead t=
+o=20
+> unpredictable results. If the threshold is 5 MBit/s and the first gateway=
+ in=20
+> the list offers 1 MBit/s while the second offers 5 MBit/s the better gate=
+way=20
+> is never chosen.=20
 
-I think we should always check the existence of this function.
-
-However I also wanted to propose to reject any change of the GW mode if we =
-do
-not have these APIs implemented. But tihs can be done with a later patch.
+You are right. I will re-work this part.
 
 >=20
 >=20
-> > @@ -1320,11 +1320,21 @@ struct batadv_algo_orig_ops {
-> >=20
-> >   * struct batadv_algo_gw_ops - mesh algorithm callbacks (GW specific)
-> >   * @store_sel_class: parse and stores a new GW selection class
-> >   * @show_sel_class: prints the current GW selection class
-> >=20
-> > + * @get_best_gw_node: select the best GW from the list of available no=
-des
-> > + * @is_eligible: check if a newly discovered GW is a potential candida=
-te
-> > for
-> > + *  the election as best GW
-> > + * @print: print the gateway table (optional)
-> >=20
-> >   */
+> > +static bool batadv_v_gw_is_eligible(struct batadv_priv *bat_priv,
+> > +				    struct batadv_orig_node *curr_gw_orig,
+> > +				    struct batadv_orig_node *orig_node)
 >=20
-> Shall we mark all optional ops as optional or .. ?
+> > +/* fails if orig_node has no router */
+> > +static int batadv_v_gw_write_buffer_text(struct batadv_priv *bat_priv,
+> > +					 struct seq_file *seq,
+> > +					 const struct batadv_gw_node *gw_node)
+>=20
+> > +static void batadv_v_gw_print(struct batadv_priv *bat_priv,
+> > +			      struct seq_file *seq)
+>=20
+> More room for kernel doc ..
 
-Dunno...this was a just a copy/paste from other "print" APIs. Maybe we just
-remove the "optional" text from here for now.
+there is always room for kerneldoc..
 
+>=20
+>=20
+> > @@ -387,7 +569,16 @@ static struct batadv_algo_ops batadv_batman_v
+> > __read_mostly =3D { */
+> >  int batadv_v_mesh_init(struct batadv_priv *bat_priv)
+> >  {
+> > -	return batadv_v_ogm_init(bat_priv);
+> > +	int ret =3D 0;
+> > +
+> > +	ret =3D batadv_v_ogm_init(bat_priv);
+> > +	if (ret < 0)
+> > +		return ret;
+> > +
+> > +	/* set default throughput difference threshold to 5Mbps */
+> > +	atomic_set(&bat_priv->gw.sel_class, 50);
+> > +
+> > +	return 0;
+> >  }
+>=20
+> There is no need to initial 'ret' if the next line is setting a proper va=
+lue.
+> If you moved the atomic_set() above the batadv_v_ogm_init() call most of =
+the=20
+> chachacha would go away.
+>=20
+
+mhhh ok!
+
+> In batadv_softif_init_late() bat_priv->gw.sel_class is initialized for=20
+> B.A.T.M.A.N. IV. Do you intend to keep it there ? If not, a per-routing=
+=20
+> algorithm init might be cleaner ..  :)
+>=20
+
+I do agree :)
+
+I'll rework this part too.
+
+Thanks !
 
 Cheers,
+
+
 
 
 --=20
 Antonio Quartulli
 
---Ublo+h3cBgJ33ahC
+--EVcIhgQsEzAXu06J
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXNdVXAAoJEJ4aZjxxc6bKGdMQALr272q8w4NOUNkRCujz6qrJ
-FsvGWcLQxylePQEffsgUOoSBHKD97Iy7WKLFc9w5HV+HtaUkdU8CvHSbJrlAlKe9
-/psL9mJNm4Mke5DJSulXroKa/JW+ojwo+DjqO+a7CWvGpAcBqN+/+3T+h24s3Gd/
-AtMTWr+ZYS9EjYjGHg/J1MmwIM/K+lSJPFembB/PBaOv63arC0t6WDKHX91dorgp
-GtkSJJ9okIpmRS9kdyDnhGNzTkMUy2mdWXVkLT9UzneVCJSUXYGbA441F0jFGVxB
-xxrS41yhTgX6AU+1s+1MJjMmn3CjPgcljEVBl7Y4nMp7/USaH4lc0lwz0BwCQ8Ew
-C0e9kBXb9sxaLeh4BF1WyEpuiFFXDzZceQwC+rTem82LgmtnKp/5HaSMYQqsNNnx
-RhEj2zb1uzHCsh8pE/3HACB6Ynwe13uRoHrH0+0GGLDMgsHhLgtxB4anq5Oj3pjS
-xyQh5pDb4s14gaAkxPY2M7PrU7pXrYjjFayo3p9ZHmN0lmBbDahr6rQbVaRihK6y
-IsPpsHJsQuwEB/Mw7fJGFUAh2e+lsgfNlXXms1MZVNITHKkTIOG8oyaoChN1o0os
-E6ezSdDWC38teI0AwIf9vhvwlAoqk92YkRGkPZI9UH0lkiP3DiA5bP6EE3xyu4lr
-FPoFD05vMp9WdSQlZ0/W
-=6Uo8
+iQIcBAEBCAAGBQJXNdX2AAoJEJ4aZjxxc6bK9nAP/jOJEvl9J+l3vGrm0TNcLyBJ
+7YZCkSLAqOQy+nDkq2N2/g/5F+Re91CjEMWQTl+MIw6phxEWZmR4Aoz9LdSiweB1
+nsTae5W+DdODh6V12gN28LpBE0ZNXcoDEQEcwKSsO1w0RR88QnZs1GJ4ZlNqRN1S
+BSkXgJESf6ySS9wU9yNbEdszWEmI4arVRNF80kOMkL0oDi3SsFrb81SGmqK59FMo
+sEq6HY/VJr+qQBV9HVrysC8SfgsiHbXonQ5a7pTsvPMKcsoLSKU/LgaCYKQPFYhG
+PyiAOa7aRyLFS34HRxj53prAV4tiw/iLxi/j28XJ4fK8aOqlWp1d5TyVr0zzcS/o
+FqBs0lup3AxZCHMzUqfo+xO8bErH4WKck5bioDgrLM+lsssFnP7+y3dmWBqmVAqr
+KPrYBsrBaZvIR40Hc2vmR1raym83OXZGYGScsL4Ma8smF1rDbDblbrFWGXX2a5iv
+5Vh4sKBhgHM00dOf0iLuiqx3/AgBsBa2o7DUbzHgPGZ0YLBCT+y4DzNb2o8tNbNd
+vUSsrD1CRRFSFufwPQz2DGhPdQsqiK4Fme032sBeNpAW0pEv5GHlDOL1aqip1jyi
+TvTkusW4YLKuRTxPsOzIy9URzqh5f8m/BAjLkCCHXanOBVyhSOIiVFu5LSwpx8oL
+uS5lqXSUOaMIICq83vW1
+=/0S0
 -----END PGP SIGNATURE-----
 
---Ublo+h3cBgJ33ahC--
+--EVcIhgQsEzAXu06J--
