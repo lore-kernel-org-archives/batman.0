@@ -1,14 +1,8 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 15 May 2016 14:53:38 +0200
-Message-ID: <3203929.qiFO0UqUVO@sven-edge>
-In-Reply-To: <20160515123733.GH4375@otheros>
-References: <20160514145129.GD4375@otheros> <22866212.dooYpi8Uhz@sven-edge>
- <20160515123733.GH4375@otheros>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3076118.MKdMp4bofo";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] kmalloc() vs. kmem_cache_alloc() for global TT?
+Return-Path: <a@unstable.cc>
+From: Antonio Quartulli <a@unstable.cc>
+Date: Sun, 15 May 2016 23:11:29 +0800
+Message-Id: <1463325093-3927-1-git-send-email-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] pull request [net]: batman-adv 20160515
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,59 +12,73 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3076118.MKdMp4bofo
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Hello David,
 
-On Sunday 15 May 2016 14:37:33 Linus L=FCssing wrote:
-> On Sun, May 15, 2016 at 02:15:01PM +0200, Sven Eckelmann wrote:
-> > On Sunday 15 May 2016 14:06:26 Linus L=FCssing wrote:
-> > [...]
-> >=20
-> > > [0]
-> > > https://git.open-mesh.org/batman-adv.git/shortlog/refs/heads/linu=
-s/kmem-
-> > > cac
-> > > he
-> >=20
-> > This patchset has a bad bug. It still uses kfree for tt_local objec=
-ts
-> > allocated via kmem_cache_(z)alloc.
->=20
-> Where?
+although we are extremely late in the release cycle we have 4 fixes
+which would really be worth merging before releasing linux-4.6.
 
-Search for kfree( in my patch [1]
+As you can read in the git tag below, each of them can lead to a
+kernel crash or to an unstable system.
 
-Kind regards,
-=09Sven
+We came up with several fixes after having tested our new B.A.T.M.A.N. V
+code at the Wireless Battle Mesh in Porto (PT) at the beginning of the month,
+however, what I am sending here is the minimum subset that we though being
+extremely important to avoid easy kernel crashes. The change footprint is
+also rather small.
 
-[1] https://git.open-mesh.org/batman-adv.git/blob/60ebd7bc66140380c5931=
-e8d8d2c36e17cc9d338:/net/batman-adv/translation-table.c#l706
 
---nextPart3076118.MKdMp4bofo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Please pull or let me know if you rather prefer to get this through net-next.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+If you decide to pull, you will hit some conflicts when merging net into
+net-next, but I can send you some instructions to ease the process.
 
-iQIcBAABCgAGBQJXOHFSAAoJEF2HCgfBJntG+40P+wVUQquieTPe0lvYepWhhEHE
-1jpE/cMK5VwkR8naTWTP7Rh/gYLsxOMMhSagh42kYSmQKNefdEvXBppcWG/pviAS
-KrL6PmtreyXNsxDK4ul05tLwNske88KOlRaScc4a/jIyXbTQ5GXC9Qc6j6pTs2g4
-gCfRaiR+OASDNBFag7qKVOTdXvUgE5792fVCkHT461oeF3UIolwPmU2a6YO3gRB2
-wXMfgr2tJFQWh37t29lOphZJp1b6eHsbASbgMzYw+mRizk2k4jnoh1cu4jwKW5KE
-w/ZQt5wE7c0tUEHiQBWr85zHvBdoNoahlBOJapBjNs0MN10BmysbCJpsUl+GKDWJ
-5wyLlB7GGkAXlVX0Esu1RdM04/t3bu5MAB2KiiMqJ+YP9ROF+/DVPfwlQBhI8qlN
-IADw97l1TdAxjtGvyCiOeh1fZxySU3M4b0OMTNCCLYxOGdMicHY/FXCo8aAV7D91
-SGbYGgYzEOn2AbSjmUiaxnFf5kOWLcgcBRT6ZIZnCyA2xPVHgmZgsQYi6yxi+15Z
-Z6vVfriAHBQbXJWTJbcT2hv7CgxFtKeZv17Zwq+6rOElVRQG9AC93MI2DRgc0Yyf
-rux6bs218BmLkd9iYK+Zp5eKbs7ehXOVocNWlE4QRiujBrqsEn9XSRQZ8ZWDFoRb
-hku4oJVzLbXbgXGHL0Fp
-=UlPo
------END PGP SIGNATURE-----
 
---nextPart3076118.MKdMp4bofo--
+Thanks a lot!
+	Antonio
 
+
+The following changes since commit b91506586206140154b0b44cccf88c8cc0a4dca5:
+
+  Merge branch 'xgene-fixes' (2016-05-13 21:12:07 -0400)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
+
+for you to fetch changes up to 6b892c1cb0805acee5d4ddd9e7878ed076c1b7c7:
+
+  batman-adv: Fix refcnt leak in batadv_v_neigh_* (2016-05-14 15:51:39 +0800)
+
+----------------------------------------------------------------
+During the Wireless Battle Mesh v9 in Porto (PT) at the beginning of
+May, we managed to uncover and fix some important bugs in our
+new B.A.T.M.A.N. V algorithm. These are the most critical fixes we
+came up with aimed to avoid easy kernel crashes:
+- avoid potential crash due to NULL pointer dereference in
+  B.A.T.M.A.N. V routine when a neigh_ifinfo object is not found, by
+  Sven Eckelmann
+- avoid crash due to double kref_put on neigh_node object in
+  B.A.T.M.A.N. V routine leading to use-after-free, by Sven
+  Eckelmann (this crash can be always replicated)
+- avoid use-after-free of skb when counting outgoing bytes, by Florian
+  Westphal
+- fix neigh_ifinfo object reference counting imbalance when using
+  B.A.T.M.A.N. V, by Sven Eckelmann. Such imbalance may lead to the
+  impossibility of releasing the related netdev object on shutdown.
+
+----------------------------------------------------------------
+Florian Westphal (1):
+      batman-adv: fix skb deref after free
+
+Sven Eckelmann (3):
+      batman-adv: Avoid nullptr derefence in batadv_v_neigh_is_sob
+      batman-adv: Fix double neigh_node_put in batadv_v_ogm_route_update
+      batman-adv: Fix refcnt leak in batadv_v_neigh_*
+
+ net/batman-adv/bat_v.c     | 30 ++++++++++++++++++++++++++----
+ net/batman-adv/bat_v_ogm.c |  4 +++-
+ net/batman-adv/routing.c   |  4 +++-
+ 3 files changed, 32 insertions(+), 6 deletions(-)
