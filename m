@@ -1,14 +1,13 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Sun, 15 May 2016 14:06:26 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20160515120626.GG4375@otheros>
-References: <20160514145129.GD4375@otheros>
- <2911091.OSPWlnrdxm@sven-edge>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 15 May 2016 14:15:01 +0200
+Message-ID: <22866212.dooYpi8Uhz@sven-edge>
+In-Reply-To: <20160515120626.GG4375@otheros>
+References: <20160514145129.GD4375@otheros> <2911091.OSPWlnrdxm@sven-edge>
+ <20160515120626.GG4375@otheros>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2911091.OSPWlnrdxm@sven-edge>
+Content-Type: multipart/signed; boundary="nextPart3397084.R1zBKERJzx";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] kmalloc() vs. kmem_cache_alloc() for global TT?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -19,57 +18,47 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sun, May 15, 2016 at 01:27:39PM +0200, Sven Eckelmann wrote:
-> On Saturday 14 May 2016 16:51:29 Linus Lüssing wrote:
-> > Hi,
-> > 
-> > Is anyone familiar with the implications of using kmalloc() vs.
-> > kmem_cache_alloc()? Not just allocation speed, but also RAM
-> > fragmentation is something I'm currently wondering about.
-> 
-> Yes, it should reduce the effects of allocating differently sized objects 
-> (which can create smaller regions of memory which cannot be used anymore). But 
-> my guess is that SLAB isn't that bad because it already has some caches for 
-> differently sized memory regions.
+--nextPart3397084.R1zBKERJzx
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-Yes, I tested the following patchset [0] yesterday, created a few
-hundred clients in x86 VMs and obsevered the output of /proc/slabinfo.
+On Sunday 15 May 2016 14:06:26 Linus L=FCssing wrote:
+[...]
+> [0]
+> https://git.open-mesh.org/batman-adv.git/shortlog/refs/heads/linus/km=
+em-cac
+> he
 
-* tt_global_entry uses kmalloc-node cache (objsize 192), same size for
-  a batadv_tt_global_cache
-* tt_orig_list_entry uses a kmalloc-64, same size for a
-  batadv_tt_orig_cache
+This patchset has a bad bug. It still uses kfree for tt_local objects=20=
 
-(sizeof(tt-global) -> 144, sizeof(orig-entry) -> 56,
-sizeof(tt-common) -> 64, sizeof(tt_local) -> 80)
+allocated via kmem_cache_(z)alloc.
 
-So indeed it looks like there might not be a difference in using
-one of the predefined or a custom cache fragmentation wise. And
-the wasted space seems to be the same (if I'm not misinterpreting the output
-of slabinfo).
+Kind regards,
+=09Sven
+--nextPart3397084.R1zBKERJzx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-On the other hand it seems common to use custom caches for
-larger amounts of frequently changing objects of the same type.
-Filesystems seem to use them regularly.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-> 
-> I think we should check if this helps by first testing it with the main TT 
-> objects. I've send an RFC patch [1]. Unfortunately, I am not aware of any nice 
-> tools to really check the size of the available, continuous memory chunks. The 
-> only thing partially interesting I know about is /proc/slabinfo which shows 
-> you the state of the available caches (including the slab page caches).
+iQIcBAABCgAGBQJXOGhFAAoJEF2HCgfBJntG0zoQAJ7jbM1oKiG7ZJ8Pdz3qQdaI
+8xgcyyQRNnvRzpq+Gg7sEnyQ+z64b/jo5l6L824pJMan1IjpcLlGtSEvqdx3scgl
+So3cMPplnTDtaBp7+a+MbAdKxR3zMKbe8CnWp0xIRIJh+7oGaKX9no1pjjaCcmGL
+yz85XDsIwNdnKsyJdWy3HnQM5/6umrhT+uVOJBC+kiP/yNIZ+k0YOAZLFq88GWD8
+nawBPzBnIaSzCC2OhlujgzY9tbVNaB/D7fJRxI4TBLLtjlhF2rbAsUQ4gjc80xrK
+moXWGQJApg+Jfq7cDu8T56hAznMY3Fixrx7ggk9ieIJeDdSLklRW2FPN6s5TRevV
+tWDorCydDyujXGr0NjaY7mI5VpNzk+6THCeiQiIqDJP08kF0sIsMnaaB4afuZszG
+zk3VJMOqsNTg1c7sQGJ48IEMG46cIpl6uFR4+9VLbT96sIdNsDmP6WWRxBVIFMer
+/084GFtPxe5q97aJ4wgvoK3XnrvGSc3QoTSI+SvVnedl8BHjMxkep7PFbSLv7pQ0
+XSQWQpdLsFV26Of7iU0dlNZ+GGRbEXXgKd3noYmEOqOxu3b0id+xmudTfghZEWWw
+JJfc/3bpyh/PFUDYpEduuPtM4EiglHGlYsTs6Tu1ZbDExl37ICzowX2hg+YygluJ
+Q6rdfHs0HrCUAKFGjcbS
+=+LQR
+-----END PGP SIGNATURE-----
 
-Ok, yes, that's what I had looked at yesterday, too. I'll check
-whether I can get some guys from Freifunk Rhein-Neckar or Freifunk
-Hamburg to test these patches and whether they make a difference
-for them.
+--nextPart3397084.R1zBKERJzx--
 
-> 
-> Kind regards,
-> 	Sven 
-> 
-> [1] https://patchwork.open-mesh.org/patch/16200/
-
-[0] https://git.open-mesh.org/batman-adv.git/shortlog/refs/heads/linus/kmem-cache
