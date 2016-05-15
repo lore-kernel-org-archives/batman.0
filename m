@@ -1,14 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 15 May 2016 11:07:46 +0200
-Message-Id: <1463303266-25979-6-git-send-email-sven@narfation.org>
-In-Reply-To: <1463303266-25979-1-git-send-email-sven@narfation.org>
-References: <1463303266-25979-1-git-send-email-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v3 6/6] batman-adv: Fix bat_(iv|v) function
-	declaration header
+Date: Sun, 15 May 2016 13:15:15 +0200
+Message-Id: <1463310915-7111-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [RFC] batman-adv: use kmem_cache for translation
+	table
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,233 +15,301 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The bat_algo.h had some functions declared which were not part of the
-bat_algo.c file. These are instead stored in bat_v.c and bat_iv_ogm.c. The
-declaration should therefore be also in bat_v.h and bat_iv_ogm,h to make
-them easier to find.
+The two translation tables (global, local) contain equally sized objects.
+The global translation table changes often when a client is
+connected/removed from the mesh. So it makes sense to keep a cache of the
+equally sized objects.
+
+TODO statistics, batadv_tt_roam_node?, batadv_tt_change_node?,
+batadv_tt_req_node?, ....
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-v3:
- - introduce this patch
----
- net/batman-adv/bat_algo.h          | 26 ---------------------
- net/batman-adv/bat_iv_ogm.c        |  3 ++-
- net/batman-adv/bat_iv_ogm.h        | 25 ++++++++++++++++++++
- net/batman-adv/bat_v.c             |  3 ++-
- net/batman-adv/bat_v.h             | 47 ++++++++++++++++++++++++++++++++++++++
- net/batman-adv/main.c              |  2 ++
- net/batman-adv/routing.c           |  1 -
- net/batman-adv/translation-table.c |  1 -
- 8 files changed, 78 insertions(+), 30 deletions(-)
- create mode 100644 net/batman-adv/bat_iv_ogm.h
- create mode 100644 net/batman-adv/bat_v.h
+ net/batman-adv/main.c              |  16 +++++-
+ net/batman-adv/translation-table.c | 115 ++++++++++++++++++++++++++++++++++---
+ net/batman-adv/translation-table.h |   3 +
+ 3 files changed, 125 insertions(+), 9 deletions(-)
 
-diff --git a/net/batman-adv/bat_algo.h b/net/batman-adv/bat_algo.h
-index e178206..860d773 100644
---- a/net/batman-adv/bat_algo.h
-+++ b/net/batman-adv/bat_algo.h
-@@ -24,8 +24,6 @@
- 
- struct seq_file;
- 
--int batadv_iv_init(void);
--
- extern char batadv_routing_algo[];
- extern struct list_head batadv_hardif_list;
- 
-@@ -34,28 +32,4 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
- int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
- int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
- 
--#ifdef CONFIG_BATMAN_ADV_BATMAN_V
--
--int batadv_v_init(void);
--int batadv_v_mesh_init(struct batadv_priv *bat_priv);
--void batadv_v_mesh_free(struct batadv_priv *bat_priv);
--
--#else
--
--static inline int batadv_v_init(void)
--{
--	return 0;
--}
--
--static inline int batadv_v_mesh_init(struct batadv_priv *bat_priv)
--{
--	return 0;
--}
--
--static inline void batadv_v_mesh_free(struct batadv_priv *bat_priv)
--{
--}
--
--#endif /* CONFIG_BATMAN_ADV_BATMAN_V */
--
- #endif /* _NET_BATMAN_ADV_BAT_ALGO_H_ */
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 805532a..e2d8848 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -15,7 +15,7 @@
-  * along with this program; if not, see <http://www.gnu.org/licenses/>.
-  */
- 
--#include "bat_algo.h"
-+#include "bat_iv_ogm.h"
- #include "main.h"
- 
- #include <linux/atomic.h>
-@@ -49,6 +49,7 @@
- #include <linux/types.h>
- #include <linux/workqueue.h>
- 
-+#include "bat_algo.h"
- #include "bitarray.h"
- #include "hard-interface.h"
- #include "hash.h"
-diff --git a/net/batman-adv/bat_iv_ogm.h b/net/batman-adv/bat_iv_ogm.h
-new file mode 100644
-index 0000000..b9f3550
---- /dev/null
-+++ b/net/batman-adv/bat_iv_ogm.h
-@@ -0,0 +1,25 @@
-+/* Copyright (C) 2007-2016  B.A.T.M.A.N. contributors:
-+ *
-+ * Marek Lindner, Simon Wunderlich
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#ifndef _BATMAN_ADV_BATADV_IV_OGM_H_
-+#define _BATMAN_ADV_BATADV_IV_OGM_H_
-+
-+#include "main.h"
-+
-+int batadv_iv_init(void);
-+
-+#endif /* _BATMAN_ADV_BATADV_IV_OGM_H_ */
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index b9c2850..e4a91cd 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -15,7 +15,7 @@
-  * along with this program; if not, see <http://www.gnu.org/licenses/>.
-  */
- 
--#include "bat_algo.h"
-+#include "bat_v.h"
- #include "main.h"
- 
- #include <linux/bug.h>
-@@ -30,6 +30,7 @@
- #include <linux/types.h>
- #include <linux/workqueue.h>
- 
-+#include "bat_algo.h"
- #include "bat_v_elp.h"
- #include "bat_v_ogm.h"
- #include "hard-interface.h"
-diff --git a/net/batman-adv/bat_v.h b/net/batman-adv/bat_v.h
-new file mode 100644
-index 0000000..52dd6cf
---- /dev/null
-+++ b/net/batman-adv/bat_v.h
-@@ -0,0 +1,47 @@
-+/* Copyright (C) 2011-2016  B.A.T.M.A.N. contributors:
-+ *
-+ * Marek Lindner, Linus Lüssing
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#ifndef _NET_BATMAN_ADV_BAT_V_H_
-+#define _NET_BATMAN_ADV_BAT_V_H_
-+
-+#include "main.h"
-+
-+#ifdef CONFIG_BATMAN_ADV_BATMAN_V
-+
-+int batadv_v_init(void);
-+int batadv_v_mesh_init(struct batadv_priv *bat_priv);
-+void batadv_v_mesh_free(struct batadv_priv *bat_priv);
-+
-+#else
-+
-+static inline int batadv_v_init(void)
-+{
-+	return 0;
-+}
-+
-+static inline int batadv_v_mesh_init(struct batadv_priv *bat_priv)
-+{
-+	return 0;
-+}
-+
-+static inline void batadv_v_mesh_free(struct batadv_priv *bat_priv)
-+{
-+}
-+
-+#endif /* CONFIG_BATMAN_ADV_BATMAN_V */
-+
-+#endif /* _NET_BATMAN_ADV_BAT_V_H_ */
 diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 919dd03..275604b 100644
+index 275604b..1c546d9 100644
 --- a/net/batman-adv/main.c
 +++ b/net/batman-adv/main.c
-@@ -46,6 +46,8 @@
- #include <net/rtnetlink.h>
+@@ -81,6 +81,12 @@ static void batadv_recv_handler_init(void);
  
- #include "bat_algo.h"
-+#include "bat_iv_ogm.h"
-+#include "bat_v.h"
- #include "bridge_loop_avoidance.h"
- #include "debugfs.h"
- #include "distributed-arp-table.h"
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index d1a6bad..49f464d 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -34,7 +34,6 @@
- #include <linux/spinlock.h>
- #include <linux/stddef.h>
+ static int __init batadv_init(void)
+ {
++	int ret;
++
++	ret = batadv_tt_cache_init();
++	if (ret < 0)
++		return ret;
++
+ 	INIT_LIST_HEAD(&batadv_hardif_list);
+ 	batadv_algo_init();
  
--#include "bat_algo.h"
- #include "bitarray.h"
- #include "bridge_loop_avoidance.h"
- #include "distributed-arp-table.h"
+@@ -91,9 +97,8 @@ static int __init batadv_init(void)
+ 	batadv_nc_init();
+ 
+ 	batadv_event_workqueue = create_singlethread_workqueue("bat_events");
+-
+ 	if (!batadv_event_workqueue)
+-		return -ENOMEM;
++		goto err_create_wq;
+ 
+ 	batadv_socket_init();
+ 	batadv_debugfs_init();
+@@ -106,6 +111,11 @@ static int __init batadv_init(void)
+ 		BATADV_SOURCE_VERSION, BATADV_COMPAT_VERSION);
+ 
+ 	return 0;
++
++err_create_wq:
++	batadv_tt_cache_destroy();
++
++	return -ENOMEM;
+ }
+ 
+ static void __exit batadv_exit(void)
+@@ -121,6 +131,8 @@ static void __exit batadv_exit(void)
+ 	batadv_event_workqueue = NULL;
+ 
+ 	rcu_barrier();
++
++	batadv_tt_cache_destroy();
+ }
+ 
+ int batadv_mesh_init(struct net_device *soft_iface)
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 8b812f1..13cae72 100644
+index 13cae72..f9b865b 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -44,7 +44,6 @@
- #include <linux/string.h>
- #include <linux/workqueue.h>
+@@ -22,12 +22,14 @@
+ #include <linux/bitops.h>
+ #include <linux/bug.h>
+ #include <linux/byteorder/generic.h>
++#include <linux/cache.h>
+ #include <linux/compiler.h>
+ #include <linux/crc32c.h>
+ #include <linux/errno.h>
+ #include <linux/etherdevice.h>
+ #include <linux/fs.h>
+ #include <linux/if_ether.h>
++#include <linux/init.h>
+ #include <linux/jhash.h>
+ #include <linux/jiffies.h>
+ #include <linux/kernel.h>
+@@ -54,6 +56,10 @@
+ #include "soft-interface.h"
+ #include "tvlv.h"
  
--#include "bat_algo.h"
- #include "bridge_loop_avoidance.h"
- #include "hard-interface.h"
- #include "hash.h"
++static struct kmem_cache *batadv_tl_cache __read_mostly;
++static struct kmem_cache *batadv_tg_cache __read_mostly;
++static struct kmem_cache *batadv_tt_orig_cache __read_mostly;
++
+ /* hash class keys */
+ static struct lock_class_key batadv_tt_local_hash_lock_class_key;
+ static struct lock_class_key batadv_tt_global_hash_lock_class_key;
+@@ -205,6 +211,20 @@ batadv_tt_global_hash_find(struct batadv_priv *bat_priv, const u8 *addr,
+ }
+ 
+ /**
++ * batadv_tt_local_entry_free_rcu - free the tt_local_entry
++ * @rcu: rcu pointer of the tt_local_entry
++ */
++static void batadv_tt_local_entry_free_rcu(struct rcu_head *rcu)
++{
++	struct batadv_tt_local_entry *tt_local_entry;
++
++	tt_local_entry = container_of(rcu, struct batadv_tt_local_entry,
++				      common.rcu);
++
++	kmem_cache_free(batadv_tl_cache, tt_local_entry);
++}
++
++/**
+  * batadv_tt_local_entry_release - release tt_local_entry from lists and queue
+  *  for free after rcu grace period
+  * @ref: kref pointer of the nc_node
+@@ -218,7 +238,7 @@ static void batadv_tt_local_entry_release(struct kref *ref)
+ 
+ 	batadv_softif_vlan_put(tt_local_entry->vlan);
+ 
+-	kfree_rcu(tt_local_entry, common.rcu);
++	call_rcu(&tt_local_entry->common.rcu, batadv_tt_local_entry_free_rcu);
+ }
+ 
+ /**
+@@ -234,6 +254,20 @@ batadv_tt_local_entry_put(struct batadv_tt_local_entry *tt_local_entry)
+ }
+ 
+ /**
++ * batadv_tt_global_entry_free_rcu - free the tt_global_entry
++ * @rcu: rcu pointer of the tt_global_entry
++ */
++static void batadv_tt_global_entry_free_rcu(struct rcu_head *rcu)
++{
++	struct batadv_tt_global_entry *tt_global_entry;
++
++	tt_global_entry = container_of(rcu, struct batadv_tt_global_entry,
++				       common.rcu);
++
++	kmem_cache_free(batadv_tg_cache, tt_global_entry);
++}
++
++/**
+  * batadv_tt_global_entry_release - release tt_global_entry from lists and queue
+  *  for free after rcu grace period
+  * @ref: kref pointer of the nc_node
+@@ -246,7 +280,8 @@ static void batadv_tt_global_entry_release(struct kref *ref)
+ 				       common.refcount);
+ 
+ 	batadv_tt_global_del_orig_list(tt_global_entry);
+-	kfree_rcu(tt_global_entry, common.rcu);
++
++	call_rcu(&tt_global_entry->common.rcu, batadv_tt_global_entry_free_rcu);
+ }
+ 
+ /**
+@@ -384,6 +419,19 @@ static void batadv_tt_global_size_dec(struct batadv_orig_node *orig_node,
+ }
+ 
+ /**
++ * batadv_tt_orig_list_entry_free_rcu - free the orig_entry
++ * @rcu: rcu pointer of the orig_entry
++ */
++static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
++{
++	struct batadv_tt_orig_list_entry *orig_entry;
++
++	orig_entry = container_of(rcu, struct batadv_tt_orig_list_entry, rcu);
++
++	kmem_cache_free(batadv_tt_orig_cache, orig_entry);
++}
++
++/**
+  * batadv_tt_orig_list_entry_release - release tt orig entry from lists and
+  *  queue for free after rcu grace period
+  * @ref: kref pointer of the tt orig entry
+@@ -396,7 +444,7 @@ static void batadv_tt_orig_list_entry_release(struct kref *ref)
+ 				  refcount);
+ 
+ 	batadv_orig_node_put(orig_entry->orig_node);
+-	kfree_rcu(orig_entry, rcu);
++	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
+ }
+ 
+ /**
+@@ -646,7 +694,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
+ 		goto out;
+ 	}
+ 
+-	tt_local = kmalloc(sizeof(*tt_local), GFP_ATOMIC);
++	tt_local = kmem_cache_alloc(batadv_tl_cache, GFP_ATOMIC);
+ 	if (!tt_local)
+ 		goto out;
+ 
+@@ -654,7 +702,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
+ 	vlan = batadv_softif_vlan_get(bat_priv, vid);
+ 	if (WARN(!vlan, "adding TT local entry %pM to non-existent VLAN %d",
+ 		 addr, BATADV_PRINT_VID(vid))) {
+-		kfree(tt_local);
++		kmem_cache_free(batadv_tl_cache, tt_local);
+ 		tt_local = NULL;
+ 		goto out;
+ 	}
+@@ -1342,10 +1390,12 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
+ 		goto out;
+ 	}
+ 
+-	orig_entry = kzalloc(sizeof(*orig_entry), GFP_ATOMIC);
++	orig_entry = kmem_cache_alloc(batadv_tt_orig_cache, GFP_ATOMIC);
+ 	if (!orig_entry)
+ 		goto out;
+ 
++	memset(orig_entry, 0, sizeof(*orig_entry));
++
+ 	INIT_HLIST_NODE(&orig_entry->list);
+ 	kref_get(&orig_node->refcount);
+ 	batadv_tt_global_size_inc(orig_node, tt_global->common.vid);
+@@ -1412,10 +1462,12 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 		goto out;
+ 
+ 	if (!tt_global_entry) {
+-		tt_global_entry = kzalloc(sizeof(*tt_global_entry), GFP_ATOMIC);
++		tt_global_entry = kmem_cache_alloc(batadv_tg_cache, GFP_ATOMIC);
+ 		if (!tt_global_entry)
+ 			goto out;
+ 
++		memset(tt_global_entry, 0, sizeof(*tt_global_entry));
++
+ 		common = &tt_global_entry->common;
+ 		ether_addr_copy(common->addr, tt_addr);
+ 		common->vid = vid;
+@@ -3835,3 +3887,52 @@ bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
+ 
+ 	return ret;
+ }
++
++/**
++ * batadv_tt_cache_init - Initialize tt memory object cache
++ *
++ * Return: 0 on success or negative error number in case of failure.
++ */
++int __init batadv_tt_cache_init(void)
++{
++	size_t tl_size = sizeof(struct batadv_tt_local_entry);
++	size_t tg_size = sizeof(struct batadv_tt_global_entry);
++	size_t tt_orig_size = sizeof(struct batadv_tt_orig_list_entry);
++
++	batadv_tl_cache = kmem_cache_create("batadv_tl_cache", tl_size, 0,
++					    SLAB_HWCACHE_ALIGN, NULL);
++	if (!batadv_tl_cache)
++		return -ENOMEM;
++
++	batadv_tg_cache = kmem_cache_create("batadv_tg_cache", tg_size, 0,
++					    SLAB_HWCACHE_ALIGN, NULL);
++	if (!batadv_tg_cache)
++		goto err_tg_alloc;
++
++	batadv_tt_orig_cache = kmem_cache_create("batadv_tt_orig_cache",
++						 tt_orig_size, 0,
++						 SLAB_HWCACHE_ALIGN, NULL);
++	if (!batadv_tt_orig_cache)
++		goto err_tt_orig_alloc;
++
++	return 0;
++
++err_tt_orig_alloc:
++	kmem_cache_destroy(batadv_tg_cache);
++	batadv_tg_cache = NULL;
++err_tg_alloc:
++	kmem_cache_destroy(batadv_tl_cache);
++	batadv_tl_cache = NULL;
++
++	return -ENOMEM;
++}
++
++/**
++ * batadv_tt_cache_destroy - Destroy tt memory object cache
++ */
++void batadv_tt_cache_destroy(void)
++{
++	kmem_cache_destroy(batadv_tl_cache);
++	kmem_cache_destroy(batadv_tg_cache);
++	kmem_cache_destroy(batadv_tt_orig_cache);
++}
+diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
+index 7c7e2c0..02b0f85 100644
+--- a/net/batman-adv/translation-table.h
++++ b/net/batman-adv/translation-table.h
+@@ -59,4 +59,7 @@ bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
+ bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
+ 				  const u8 *addr, unsigned short vid);
+ 
++int batadv_tt_cache_init(void);
++void batadv_tt_cache_destroy(void);
++
+ #endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */
 -- 
 2.8.1
 
