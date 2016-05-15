@@ -1,9 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 15 May 2016 13:15:15 +0200
-Message-Id: <1463310915-7111-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [RFC] batman-adv: use kmem_cache for translation
-	table
+Date: Sun, 15 May 2016 13:27:39 +0200
+Message-ID: <2911091.OSPWlnrdxm@sven-edge>
+In-Reply-To: <20160514145129.GD4375@otheros>
+References: <20160514145129.GD4375@otheros>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart28694308.2fDDb6oY2P";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] kmalloc() vs. kmem_cache_alloc() for global TT?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,301 +19,63 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The two translation tables (global, local) contain equally sized objects.
-The global translation table changes often when a client is
-connected/removed from the mesh. So it makes sense to keep a cache of the
-equally sized objects.
+--nextPart28694308.2fDDb6oY2P
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-TODO statistics, batadv_tt_roam_node?, batadv_tt_change_node?,
-batadv_tt_req_node?, ....
+On Saturday 14 May 2016 16:51:29 Linus L=FCssing wrote:
+> Hi,
+>=20
+> Is anyone familiar with the implications of using kmalloc() vs.
+> kmem_cache_alloc()? Not just allocation speed, but also RAM
+> fragmentation is something I'm currently wondering about.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/main.c              |  16 +++++-
- net/batman-adv/translation-table.c | 115 ++++++++++++++++++++++++++++++++++---
- net/batman-adv/translation-table.h |   3 +
- 3 files changed, 125 insertions(+), 9 deletions(-)
+Yes, it should reduce the effects of allocating differently sized objec=
+ts=20
+(which can create smaller regions of memory which cannot be used anymor=
+e). But=20
+my guess is that SLAB isn't that bad because it already has some caches=
+ for=20
+differently sized memory regions.
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 275604b..1c546d9 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -81,6 +81,12 @@ static void batadv_recv_handler_init(void);
- 
- static int __init batadv_init(void)
- {
-+	int ret;
-+
-+	ret = batadv_tt_cache_init();
-+	if (ret < 0)
-+		return ret;
-+
- 	INIT_LIST_HEAD(&batadv_hardif_list);
- 	batadv_algo_init();
- 
-@@ -91,9 +97,8 @@ static int __init batadv_init(void)
- 	batadv_nc_init();
- 
- 	batadv_event_workqueue = create_singlethread_workqueue("bat_events");
--
- 	if (!batadv_event_workqueue)
--		return -ENOMEM;
-+		goto err_create_wq;
- 
- 	batadv_socket_init();
- 	batadv_debugfs_init();
-@@ -106,6 +111,11 @@ static int __init batadv_init(void)
- 		BATADV_SOURCE_VERSION, BATADV_COMPAT_VERSION);
- 
- 	return 0;
-+
-+err_create_wq:
-+	batadv_tt_cache_destroy();
-+
-+	return -ENOMEM;
- }
- 
- static void __exit batadv_exit(void)
-@@ -121,6 +131,8 @@ static void __exit batadv_exit(void)
- 	batadv_event_workqueue = NULL;
- 
- 	rcu_barrier();
-+
-+	batadv_tt_cache_destroy();
- }
- 
- int batadv_mesh_init(struct net_device *soft_iface)
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 13cae72..f9b865b 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -22,12 +22,14 @@
- #include <linux/bitops.h>
- #include <linux/bug.h>
- #include <linux/byteorder/generic.h>
-+#include <linux/cache.h>
- #include <linux/compiler.h>
- #include <linux/crc32c.h>
- #include <linux/errno.h>
- #include <linux/etherdevice.h>
- #include <linux/fs.h>
- #include <linux/if_ether.h>
-+#include <linux/init.h>
- #include <linux/jhash.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
-@@ -54,6 +56,10 @@
- #include "soft-interface.h"
- #include "tvlv.h"
- 
-+static struct kmem_cache *batadv_tl_cache __read_mostly;
-+static struct kmem_cache *batadv_tg_cache __read_mostly;
-+static struct kmem_cache *batadv_tt_orig_cache __read_mostly;
-+
- /* hash class keys */
- static struct lock_class_key batadv_tt_local_hash_lock_class_key;
- static struct lock_class_key batadv_tt_global_hash_lock_class_key;
-@@ -205,6 +211,20 @@ batadv_tt_global_hash_find(struct batadv_priv *bat_priv, const u8 *addr,
- }
- 
- /**
-+ * batadv_tt_local_entry_free_rcu - free the tt_local_entry
-+ * @rcu: rcu pointer of the tt_local_entry
-+ */
-+static void batadv_tt_local_entry_free_rcu(struct rcu_head *rcu)
-+{
-+	struct batadv_tt_local_entry *tt_local_entry;
-+
-+	tt_local_entry = container_of(rcu, struct batadv_tt_local_entry,
-+				      common.rcu);
-+
-+	kmem_cache_free(batadv_tl_cache, tt_local_entry);
-+}
-+
-+/**
-  * batadv_tt_local_entry_release - release tt_local_entry from lists and queue
-  *  for free after rcu grace period
-  * @ref: kref pointer of the nc_node
-@@ -218,7 +238,7 @@ static void batadv_tt_local_entry_release(struct kref *ref)
- 
- 	batadv_softif_vlan_put(tt_local_entry->vlan);
- 
--	kfree_rcu(tt_local_entry, common.rcu);
-+	call_rcu(&tt_local_entry->common.rcu, batadv_tt_local_entry_free_rcu);
- }
- 
- /**
-@@ -234,6 +254,20 @@ batadv_tt_local_entry_put(struct batadv_tt_local_entry *tt_local_entry)
- }
- 
- /**
-+ * batadv_tt_global_entry_free_rcu - free the tt_global_entry
-+ * @rcu: rcu pointer of the tt_global_entry
-+ */
-+static void batadv_tt_global_entry_free_rcu(struct rcu_head *rcu)
-+{
-+	struct batadv_tt_global_entry *tt_global_entry;
-+
-+	tt_global_entry = container_of(rcu, struct batadv_tt_global_entry,
-+				       common.rcu);
-+
-+	kmem_cache_free(batadv_tg_cache, tt_global_entry);
-+}
-+
-+/**
-  * batadv_tt_global_entry_release - release tt_global_entry from lists and queue
-  *  for free after rcu grace period
-  * @ref: kref pointer of the nc_node
-@@ -246,7 +280,8 @@ static void batadv_tt_global_entry_release(struct kref *ref)
- 				       common.refcount);
- 
- 	batadv_tt_global_del_orig_list(tt_global_entry);
--	kfree_rcu(tt_global_entry, common.rcu);
-+
-+	call_rcu(&tt_global_entry->common.rcu, batadv_tt_global_entry_free_rcu);
- }
- 
- /**
-@@ -384,6 +419,19 @@ static void batadv_tt_global_size_dec(struct batadv_orig_node *orig_node,
- }
- 
- /**
-+ * batadv_tt_orig_list_entry_free_rcu - free the orig_entry
-+ * @rcu: rcu pointer of the orig_entry
-+ */
-+static void batadv_tt_orig_list_entry_free_rcu(struct rcu_head *rcu)
-+{
-+	struct batadv_tt_orig_list_entry *orig_entry;
-+
-+	orig_entry = container_of(rcu, struct batadv_tt_orig_list_entry, rcu);
-+
-+	kmem_cache_free(batadv_tt_orig_cache, orig_entry);
-+}
-+
-+/**
-  * batadv_tt_orig_list_entry_release - release tt orig entry from lists and
-  *  queue for free after rcu grace period
-  * @ref: kref pointer of the tt orig entry
-@@ -396,7 +444,7 @@ static void batadv_tt_orig_list_entry_release(struct kref *ref)
- 				  refcount);
- 
- 	batadv_orig_node_put(orig_entry->orig_node);
--	kfree_rcu(orig_entry, rcu);
-+	call_rcu(&orig_entry->rcu, batadv_tt_orig_list_entry_free_rcu);
- }
- 
- /**
-@@ -646,7 +694,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
- 		goto out;
- 	}
- 
--	tt_local = kmalloc(sizeof(*tt_local), GFP_ATOMIC);
-+	tt_local = kmem_cache_alloc(batadv_tl_cache, GFP_ATOMIC);
- 	if (!tt_local)
- 		goto out;
- 
-@@ -654,7 +702,7 @@ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
- 	vlan = batadv_softif_vlan_get(bat_priv, vid);
- 	if (WARN(!vlan, "adding TT local entry %pM to non-existent VLAN %d",
- 		 addr, BATADV_PRINT_VID(vid))) {
--		kfree(tt_local);
-+		kmem_cache_free(batadv_tl_cache, tt_local);
- 		tt_local = NULL;
- 		goto out;
- 	}
-@@ -1342,10 +1390,12 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
- 		goto out;
- 	}
- 
--	orig_entry = kzalloc(sizeof(*orig_entry), GFP_ATOMIC);
-+	orig_entry = kmem_cache_alloc(batadv_tt_orig_cache, GFP_ATOMIC);
- 	if (!orig_entry)
- 		goto out;
- 
-+	memset(orig_entry, 0, sizeof(*orig_entry));
-+
- 	INIT_HLIST_NODE(&orig_entry->list);
- 	kref_get(&orig_node->refcount);
- 	batadv_tt_global_size_inc(orig_node, tt_global->common.vid);
-@@ -1412,10 +1462,12 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
- 		goto out;
- 
- 	if (!tt_global_entry) {
--		tt_global_entry = kzalloc(sizeof(*tt_global_entry), GFP_ATOMIC);
-+		tt_global_entry = kmem_cache_alloc(batadv_tg_cache, GFP_ATOMIC);
- 		if (!tt_global_entry)
- 			goto out;
- 
-+		memset(tt_global_entry, 0, sizeof(*tt_global_entry));
-+
- 		common = &tt_global_entry->common;
- 		ether_addr_copy(common->addr, tt_addr);
- 		common->vid = vid;
-@@ -3835,3 +3887,52 @@ bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
- 
- 	return ret;
- }
-+
-+/**
-+ * batadv_tt_cache_init - Initialize tt memory object cache
-+ *
-+ * Return: 0 on success or negative error number in case of failure.
-+ */
-+int __init batadv_tt_cache_init(void)
-+{
-+	size_t tl_size = sizeof(struct batadv_tt_local_entry);
-+	size_t tg_size = sizeof(struct batadv_tt_global_entry);
-+	size_t tt_orig_size = sizeof(struct batadv_tt_orig_list_entry);
-+
-+	batadv_tl_cache = kmem_cache_create("batadv_tl_cache", tl_size, 0,
-+					    SLAB_HWCACHE_ALIGN, NULL);
-+	if (!batadv_tl_cache)
-+		return -ENOMEM;
-+
-+	batadv_tg_cache = kmem_cache_create("batadv_tg_cache", tg_size, 0,
-+					    SLAB_HWCACHE_ALIGN, NULL);
-+	if (!batadv_tg_cache)
-+		goto err_tg_alloc;
-+
-+	batadv_tt_orig_cache = kmem_cache_create("batadv_tt_orig_cache",
-+						 tt_orig_size, 0,
-+						 SLAB_HWCACHE_ALIGN, NULL);
-+	if (!batadv_tt_orig_cache)
-+		goto err_tt_orig_alloc;
-+
-+	return 0;
-+
-+err_tt_orig_alloc:
-+	kmem_cache_destroy(batadv_tg_cache);
-+	batadv_tg_cache = NULL;
-+err_tg_alloc:
-+	kmem_cache_destroy(batadv_tl_cache);
-+	batadv_tl_cache = NULL;
-+
-+	return -ENOMEM;
-+}
-+
-+/**
-+ * batadv_tt_cache_destroy - Destroy tt memory object cache
-+ */
-+void batadv_tt_cache_destroy(void)
-+{
-+	kmem_cache_destroy(batadv_tl_cache);
-+	kmem_cache_destroy(batadv_tg_cache);
-+	kmem_cache_destroy(batadv_tt_orig_cache);
-+}
-diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
-index 7c7e2c0..02b0f85 100644
---- a/net/batman-adv/translation-table.h
-+++ b/net/batman-adv/translation-table.h
-@@ -59,4 +59,7 @@ bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
- bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
- 				  const u8 *addr, unsigned short vid);
- 
-+int batadv_tt_cache_init(void);
-+void batadv_tt_cache_destroy(void);
-+
- #endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */
--- 
-2.8.1
+I think we should check if this helps by first testing it with the main=
+ TT=20
+objects. I've send an RFC patch [1]. Unfortunately, I am not aware of a=
+ny nice=20
+tools to really check the size of the available, continuous memory chun=
+ks. The=20
+only thing partially interesting I know about is /proc/slabinfo which s=
+hows=20
+you the state of the available caches (including the slab page caches).=
+
+
+Kind regards,
+=09Sven=20
+
+[1] https://patchwork.open-mesh.org/patch/16200/
+
+--nextPart28694308.2fDDb6oY2P
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXOF0rAAoJEF2HCgfBJntGQUUP/3ndTHbK6ddvBR9C9pjKVEKn
+HtHJGIX3oTG3iRJVcn3GL1WKjg+QTulXaodtQ6iCqOp2GObt6KENIlKlqnhZAirP
+NU8f2bEAs3k0xs8pqL2XIkeamUr4KQgWRN1UHudoFfPMGkx67J1Ohko/nrJ9Zm4J
++DQk2EKZiu1BuNermU1VEOgZen6m8rDlZHfrxU+D4obBU5+2i96/z25KxYL1xHJu
+Ca0lwrFlNcCMnSrt5DQpyz8OZMC1x+SdORo33cxCt9Cm3pJsUaYb/DyeyFAsY6SZ
+/Q5PHsQP3PnmlCjmoeTso5zxEzfwWl1JSRIlLWdfDV1skCakCaHWfkZtK10+pBJP
+pfhddf4b0oLyezYb8b2e2ljfIsiT+bNjf2itWQ45NSmBg6NACeEvbs3U4y6i5bFI
+/9AXXGRrQxbZ/uVKKyFvbk9fdq2e3wfffF4ySYSuwfo7tihCdVhPJ23gI9Jj7dcb
+VhSM83zEz0cPNH0c2/lPjH+IkbQhjVutA8/m+MUS0HH3XGVnQ4YwwsTx3uvET1e5
+jQ6XGfXrkucwM5McKq8XujroWfqrPmOjqlKI7bccRR8Q8uHOH3ai7PvPsUpc5Efd
+H+YPYtDC7FBLQxWYY9B4bGJ4FdCsId47kwAWuDqTp1y1MiP3XBALj4zli+0Gdro6
+DpMtYY+mm3IMdB2FmjBi
+=+MV0
+-----END PGP SIGNATURE-----
+
+--nextPart28694308.2fDDb6oY2P--
 
