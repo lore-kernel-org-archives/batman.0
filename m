@@ -1,12 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 15 May 2016 13:27:39 +0200
-Message-ID: <2911091.OSPWlnrdxm@sven-edge>
-In-Reply-To: <20160514145129.GD4375@otheros>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Sun, 15 May 2016 14:06:26 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20160515120626.GG4375@otheros>
 References: <20160514145129.GD4375@otheros>
+ <2911091.OSPWlnrdxm@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart28694308.2fDDb6oY2P";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2911091.OSPWlnrdxm@sven-edge>
 Subject: Re: [B.A.T.M.A.N.] kmalloc() vs. kmem_cache_alloc() for global TT?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,65 +19,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart28694308.2fDDb6oY2P
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+On Sun, May 15, 2016 at 01:27:39PM +0200, Sven Eckelmann wrote:
+> On Saturday 14 May 2016 16:51:29 Linus Lüssing wrote:
+> > Hi,
+> > 
+> > Is anyone familiar with the implications of using kmalloc() vs.
+> > kmem_cache_alloc()? Not just allocation speed, but also RAM
+> > fragmentation is something I'm currently wondering about.
+> 
+> Yes, it should reduce the effects of allocating differently sized objects 
+> (which can create smaller regions of memory which cannot be used anymore). But 
+> my guess is that SLAB isn't that bad because it already has some caches for 
+> differently sized memory regions.
 
-On Saturday 14 May 2016 16:51:29 Linus L=FCssing wrote:
-> Hi,
->=20
-> Is anyone familiar with the implications of using kmalloc() vs.
-> kmem_cache_alloc()? Not just allocation speed, but also RAM
-> fragmentation is something I'm currently wondering about.
+Yes, I tested the following patchset [0] yesterday, created a few
+hundred clients in x86 VMs and obsevered the output of /proc/slabinfo.
 
-Yes, it should reduce the effects of allocating differently sized objec=
-ts=20
-(which can create smaller regions of memory which cannot be used anymor=
-e). But=20
-my guess is that SLAB isn't that bad because it already has some caches=
- for=20
-differently sized memory regions.
+* tt_global_entry uses kmalloc-node cache (objsize 192), same size for
+  a batadv_tt_global_cache
+* tt_orig_list_entry uses a kmalloc-64, same size for a
+  batadv_tt_orig_cache
 
-I think we should check if this helps by first testing it with the main=
- TT=20
-objects. I've send an RFC patch [1]. Unfortunately, I am not aware of a=
-ny nice=20
-tools to really check the size of the available, continuous memory chun=
-ks. The=20
-only thing partially interesting I know about is /proc/slabinfo which s=
-hows=20
-you the state of the available caches (including the slab page caches).=
+(sizeof(tt-global) -> 144, sizeof(orig-entry) -> 56,
+sizeof(tt-common) -> 64, sizeof(tt_local) -> 80)
 
+So indeed it looks like there might not be a difference in using
+one of the predefined or a custom cache fragmentation wise. And
+the wasted space seems to be the same (if I'm not misinterpreting the output
+of slabinfo).
 
-Kind regards,
-=09Sven=20
+On the other hand it seems common to use custom caches for
+larger amounts of frequently changing objects of the same type.
+Filesystems seem to use them regularly.
 
-[1] https://patchwork.open-mesh.org/patch/16200/
+> 
+> I think we should check if this helps by first testing it with the main TT 
+> objects. I've send an RFC patch [1]. Unfortunately, I am not aware of any nice 
+> tools to really check the size of the available, continuous memory chunks. The 
+> only thing partially interesting I know about is /proc/slabinfo which shows 
+> you the state of the available caches (including the slab page caches).
 
---nextPart28694308.2fDDb6oY2P
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Ok, yes, that's what I had looked at yesterday, too. I'll check
+whether I can get some guys from Freifunk Rhein-Neckar or Freifunk
+Hamburg to test these patches and whether they make a difference
+for them.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+> 
+> Kind regards,
+> 	Sven 
+> 
+> [1] https://patchwork.open-mesh.org/patch/16200/
 
-iQIcBAABCgAGBQJXOF0rAAoJEF2HCgfBJntGQUUP/3ndTHbK6ddvBR9C9pjKVEKn
-HtHJGIX3oTG3iRJVcn3GL1WKjg+QTulXaodtQ6iCqOp2GObt6KENIlKlqnhZAirP
-NU8f2bEAs3k0xs8pqL2XIkeamUr4KQgWRN1UHudoFfPMGkx67J1Ohko/nrJ9Zm4J
-+DQk2EKZiu1BuNermU1VEOgZen6m8rDlZHfrxU+D4obBU5+2i96/z25KxYL1xHJu
-Ca0lwrFlNcCMnSrt5DQpyz8OZMC1x+SdORo33cxCt9Cm3pJsUaYb/DyeyFAsY6SZ
-/Q5PHsQP3PnmlCjmoeTso5zxEzfwWl1JSRIlLWdfDV1skCakCaHWfkZtK10+pBJP
-pfhddf4b0oLyezYb8b2e2ljfIsiT+bNjf2itWQ45NSmBg6NACeEvbs3U4y6i5bFI
-/9AXXGRrQxbZ/uVKKyFvbk9fdq2e3wfffF4ySYSuwfo7tihCdVhPJ23gI9Jj7dcb
-VhSM83zEz0cPNH0c2/lPjH+IkbQhjVutA8/m+MUS0HH3XGVnQ4YwwsTx3uvET1e5
-jQ6XGfXrkucwM5McKq8XujroWfqrPmOjqlKI7bccRR8Q8uHOH3ai7PvPsUpc5Efd
-H+YPYtDC7FBLQxWYY9B4bGJ4FdCsId47kwAWuDqTp1y1MiP3XBALj4zli+0Gdro6
-DpMtYY+mm3IMdB2FmjBi
-=+MV0
------END PGP SIGNATURE-----
-
---nextPart28694308.2fDDb6oY2P--
-
+[0] https://git.open-mesh.org/batman-adv.git/shortlog/refs/heads/linus/kmem-cache
