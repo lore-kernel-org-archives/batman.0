@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 15 May 2016 11:07:43 +0200
-Message-Id: <1463303266-25979-3-git-send-email-sven@narfation.org>
+Date: Sun, 15 May 2016 11:07:44 +0200
+Message-Id: <1463303266-25979-4-git-send-email-sven@narfation.org>
 In-Reply-To: <1463303266-25979-1-git-send-email-sven@narfation.org>
 References: <1463303266-25979-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3 3/6] batman-adv: split tvlv into a
-	separate file
+Subject: [B.A.T.M.A.N.] [PATCH v3 4/6] batman-adv: move bat_algo functions
+	into a separate file
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,821 +17,49 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Markus Pargmann <mpa@pengutronix.de>
-
-The tvlv functionality in main.c is mostly unrelated to the rest of the
-content. It still takes up a large portion of this source file (~45%, 588
+The bat_algo functionality in main.c is mostly unrelated to the rest of the
+content. It still takes up a large portion of this source file (~15%, 103
 lines). Moving it to a separate file makes it better visible as a main
 component of the batman-adv implementation and hides it less in the other
-helper functions in main.c
+helper functions in main.c.
 
-Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
-[sven@narfation.org: fix conflicts with current version, fix includes,
-rewrote commit message]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v3:
- - Patch was resurrected from https://patchwork.open-mesh.org/patch/4244/
- - rewrote commit message
- - fixed conflicts
- - fixed includes
+ - introduce this patch
 ---
- net/batman-adv/Makefile                |   1 +
- net/batman-adv/bat_iv_ogm.c            |   1 +
- net/batman-adv/bat_v_ogm.c             |   1 +
- net/batman-adv/distributed-arp-table.c |   1 +
- net/batman-adv/gateway_common.c        |   1 +
- net/batman-adv/main.c                  | 591 -------------------------------
- net/batman-adv/main.h                  |  34 --
- net/batman-adv/multicast.c             |   1 +
- net/batman-adv/network-coding.c        |   1 +
- net/batman-adv/routing.c               |   1 +
- net/batman-adv/translation-table.c     |   1 +
- net/batman-adv/tvlv.c                  | 630 +++++++++++++++++++++++++++++++++
- net/batman-adv/tvlv.h                  |  61 ++++
- 13 files changed, 700 insertions(+), 625 deletions(-)
- create mode 100644 net/batman-adv/tvlv.c
- create mode 100644 net/batman-adv/tvlv.h
+ net/batman-adv/Makefile            |   1 +
+ net/batman-adv/bat_algo.c          | 140 +++++++++++++++++++++++++++++++++++++
+ net/batman-adv/bat_algo.h          |  12 ++++
+ net/batman-adv/bat_v_ogm.c         |   1 +
+ net/batman-adv/debugfs.c           |   1 +
+ net/batman-adv/main.c              | 105 +---------------------------
+ net/batman-adv/main.h              |   4 --
+ net/batman-adv/originator.c        |   1 +
+ net/batman-adv/routing.c           |   1 +
+ net/batman-adv/soft-interface.c    |   1 +
+ net/batman-adv/translation-table.c |   1 +
+ 11 files changed, 160 insertions(+), 108 deletions(-)
+ create mode 100644 net/batman-adv/bat_algo.c
 
 diff --git a/net/batman-adv/Makefile b/net/batman-adv/Makefile
-index 4e5adba..a688fc0 100644
+index a688fc0..6ce53e5 100644
 --- a/net/batman-adv/Makefile
 +++ b/net/batman-adv/Makefile
-@@ -41,3 +41,4 @@ batman-adv-y += send.o
- batman-adv-y += soft-interface.o
- batman-adv-y += sysfs.o
- batman-adv-y += translation-table.o
-+batman-adv-y += tvlv.o
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 6dc89b0..948a5b4 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -58,6 +58,7 @@
- #include "routing.h"
- #include "send.h"
- #include "translation-table.h"
-+#include "tvlv.h"
+@@ -17,6 +17,7 @@
+ #
  
- static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work);
- 
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 23ea9bf..ca5a679 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -46,6 +46,7 @@
- #include "routing.h"
- #include "send.h"
- #include "translation-table.h"
-+#include "tvlv.h"
- 
- /**
-  * batadv_v_ogm_orig_get - retrieve and possibly create an originator node
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 278800a..584b827 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -48,6 +48,7 @@
- #include "originator.h"
- #include "send.h"
- #include "translation-table.h"
-+#include "tvlv.h"
- 
- static void batadv_dat_purge(struct work_struct *work);
- 
-diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
-index 7754435..6a6f2d4 100644
---- a/net/batman-adv/gateway_common.c
-+++ b/net/batman-adv/gateway_common.c
-@@ -29,6 +29,7 @@
- 
- #include "gateway_client.h"
- #include "packet.h"
-+#include "tvlv.h"
- 
- /**
-  * batadv_parse_throughput - parse supplied string buffer to extract throughput
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index e78b318..994ab82 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -31,16 +31,13 @@
- #include <linux/kernel.h>
- #include <linux/kref.h>
- #include <linux/list.h>
--#include <linux/lockdep.h>
- #include <linux/module.h>
- #include <linux/moduleparam.h>
- #include <linux/netdevice.h>
--#include <linux/pkt_sched.h>
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
- #include <linux/seq_file.h>
- #include <linux/skbuff.h>
--#include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/stddef.h>
- #include <linux/string.h>
-@@ -645,594 +642,6 @@ __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr)
- }
- 
- /**
-- * batadv_tvlv_handler_release - release tvlv handler from lists and queue for
-- *  free after rcu grace period
-- * @ref: kref pointer of the tvlv
-- */
--static void batadv_tvlv_handler_release(struct kref *ref)
--{
--	struct batadv_tvlv_handler *tvlv_handler;
--
--	tvlv_handler = container_of(ref, struct batadv_tvlv_handler, refcount);
--	kfree_rcu(tvlv_handler, rcu);
--}
--
--/**
-- * batadv_tvlv_handler_put - decrement the tvlv container refcounter and
-- *  possibly release it
-- * @tvlv_handler: the tvlv handler to free
-- */
--static void batadv_tvlv_handler_put(struct batadv_tvlv_handler *tvlv_handler)
--{
--	kref_put(&tvlv_handler->refcount, batadv_tvlv_handler_release);
--}
--
--/**
-- * batadv_tvlv_handler_get - retrieve tvlv handler from the tvlv handler list
-- *  based on the provided type and version (both need to match)
-- * @bat_priv: the bat priv with all the soft interface information
-- * @type: tvlv handler type to look for
-- * @version: tvlv handler version to look for
-- *
-- * Return: tvlv handler if found or NULL otherwise.
-- */
--static struct batadv_tvlv_handler *
--batadv_tvlv_handler_get(struct batadv_priv *bat_priv, u8 type, u8 version)
--{
--	struct batadv_tvlv_handler *tvlv_handler_tmp, *tvlv_handler = NULL;
--
--	rcu_read_lock();
--	hlist_for_each_entry_rcu(tvlv_handler_tmp,
--				 &bat_priv->tvlv.handler_list, list) {
--		if (tvlv_handler_tmp->type != type)
--			continue;
--
--		if (tvlv_handler_tmp->version != version)
--			continue;
--
--		if (!kref_get_unless_zero(&tvlv_handler_tmp->refcount))
--			continue;
--
--		tvlv_handler = tvlv_handler_tmp;
--		break;
--	}
--	rcu_read_unlock();
--
--	return tvlv_handler;
--}
--
--/**
-- * batadv_tvlv_container_release - release tvlv from lists and free
-- * @ref: kref pointer of the tvlv
-- */
--static void batadv_tvlv_container_release(struct kref *ref)
--{
--	struct batadv_tvlv_container *tvlv;
--
--	tvlv = container_of(ref, struct batadv_tvlv_container, refcount);
--	kfree(tvlv);
--}
--
--/**
-- * batadv_tvlv_container_put - decrement the tvlv container refcounter and
-- *  possibly release it
-- * @tvlv: the tvlv container to free
-- */
--static void batadv_tvlv_container_put(struct batadv_tvlv_container *tvlv)
--{
--	kref_put(&tvlv->refcount, batadv_tvlv_container_release);
--}
--
--/**
-- * batadv_tvlv_container_get - retrieve tvlv container from the tvlv container
-- *  list based on the provided type and version (both need to match)
-- * @bat_priv: the bat priv with all the soft interface information
-- * @type: tvlv container type to look for
-- * @version: tvlv container version to look for
-- *
-- * Has to be called with the appropriate locks being acquired
-- * (tvlv.container_list_lock).
-- *
-- * Return: tvlv container if found or NULL otherwise.
-- */
--static struct batadv_tvlv_container *
--batadv_tvlv_container_get(struct batadv_priv *bat_priv, u8 type, u8 version)
--{
--	struct batadv_tvlv_container *tvlv_tmp, *tvlv = NULL;
--
--	lockdep_assert_held(&bat_priv->tvlv.container_list_lock);
--
--	hlist_for_each_entry(tvlv_tmp, &bat_priv->tvlv.container_list, list) {
--		if (tvlv_tmp->tvlv_hdr.type != type)
--			continue;
--
--		if (tvlv_tmp->tvlv_hdr.version != version)
--			continue;
--
--		kref_get(&tvlv_tmp->refcount);
--		tvlv = tvlv_tmp;
--		break;
--	}
--
--	return tvlv;
--}
--
--/**
-- * batadv_tvlv_container_list_size - calculate the size of the tvlv container
-- *  list entries
-- * @bat_priv: the bat priv with all the soft interface information
-- *
-- * Has to be called with the appropriate locks being acquired
-- * (tvlv.container_list_lock).
-- *
-- * Return: size of all currently registered tvlv containers in bytes.
-- */
--static u16 batadv_tvlv_container_list_size(struct batadv_priv *bat_priv)
--{
--	struct batadv_tvlv_container *tvlv;
--	u16 tvlv_len = 0;
--
--	lockdep_assert_held(&bat_priv->tvlv.container_list_lock);
--
--	hlist_for_each_entry(tvlv, &bat_priv->tvlv.container_list, list) {
--		tvlv_len += sizeof(struct batadv_tvlv_hdr);
--		tvlv_len += ntohs(tvlv->tvlv_hdr.len);
--	}
--
--	return tvlv_len;
--}
--
--/**
-- * batadv_tvlv_container_remove - remove tvlv container from the tvlv container
-- *  list
-- * @bat_priv: the bat priv with all the soft interface information
-- * @tvlv: the to be removed tvlv container
-- *
-- * Has to be called with the appropriate locks being acquired
-- * (tvlv.container_list_lock).
-- */
--static void batadv_tvlv_container_remove(struct batadv_priv *bat_priv,
--					 struct batadv_tvlv_container *tvlv)
--{
--	lockdep_assert_held(&bat_priv->tvlv.container_list_lock);
--
--	if (!tvlv)
--		return;
--
--	hlist_del(&tvlv->list);
--
--	/* first call to decrement the counter, second call to free */
--	batadv_tvlv_container_put(tvlv);
--	batadv_tvlv_container_put(tvlv);
--}
--
--/**
-- * batadv_tvlv_container_unregister - unregister tvlv container based on the
-- *  provided type and version (both need to match)
-- * @bat_priv: the bat priv with all the soft interface information
-- * @type: tvlv container type to unregister
-- * @version: tvlv container type to unregister
-- */
--void batadv_tvlv_container_unregister(struct batadv_priv *bat_priv,
--				      u8 type, u8 version)
--{
--	struct batadv_tvlv_container *tvlv;
--
--	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
--	tvlv = batadv_tvlv_container_get(bat_priv, type, version);
--	batadv_tvlv_container_remove(bat_priv, tvlv);
--	spin_unlock_bh(&bat_priv->tvlv.container_list_lock);
--}
--
--/**
-- * batadv_tvlv_container_register - register tvlv type, version and content
-- *  to be propagated with each (primary interface) OGM
-- * @bat_priv: the bat priv with all the soft interface information
-- * @type: tvlv container type
-- * @version: tvlv container version
-- * @tvlv_value: tvlv container content
-- * @tvlv_value_len: tvlv container content length
-- *
-- * If a container of the same type and version was already registered the new
-- * content is going to replace the old one.
-- */
--void batadv_tvlv_container_register(struct batadv_priv *bat_priv,
--				    u8 type, u8 version,
--				    void *tvlv_value, u16 tvlv_value_len)
--{
--	struct batadv_tvlv_container *tvlv_old, *tvlv_new;
--
--	if (!tvlv_value)
--		tvlv_value_len = 0;
--
--	tvlv_new = kzalloc(sizeof(*tvlv_new) + tvlv_value_len, GFP_ATOMIC);
--	if (!tvlv_new)
--		return;
--
--	tvlv_new->tvlv_hdr.version = version;
--	tvlv_new->tvlv_hdr.type = type;
--	tvlv_new->tvlv_hdr.len = htons(tvlv_value_len);
--
--	memcpy(tvlv_new + 1, tvlv_value, ntohs(tvlv_new->tvlv_hdr.len));
--	INIT_HLIST_NODE(&tvlv_new->list);
--	kref_init(&tvlv_new->refcount);
--
--	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
--	tvlv_old = batadv_tvlv_container_get(bat_priv, type, version);
--	batadv_tvlv_container_remove(bat_priv, tvlv_old);
--	hlist_add_head(&tvlv_new->list, &bat_priv->tvlv.container_list);
--	spin_unlock_bh(&bat_priv->tvlv.container_list_lock);
--}
--
--/**
-- * batadv_tvlv_realloc_packet_buff - reallocate packet buffer to accommodate
-- *  requested packet size
-- * @packet_buff: packet buffer
-- * @packet_buff_len: packet buffer size
-- * @min_packet_len: requested packet minimum size
-- * @additional_packet_len: requested additional packet size on top of minimum
-- *  size
-- *
-- * Return: true of the packet buffer could be changed to the requested size,
-- * false otherwise.
-- */
--static bool batadv_tvlv_realloc_packet_buff(unsigned char **packet_buff,
--					    int *packet_buff_len,
--					    int min_packet_len,
--					    int additional_packet_len)
--{
--	unsigned char *new_buff;
--
--	new_buff = kmalloc(min_packet_len + additional_packet_len, GFP_ATOMIC);
--
--	/* keep old buffer if kmalloc should fail */
--	if (!new_buff)
--		return false;
--
--	memcpy(new_buff, *packet_buff, min_packet_len);
--	kfree(*packet_buff);
--	*packet_buff = new_buff;
--	*packet_buff_len = min_packet_len + additional_packet_len;
--
--	return true;
--}
--
--/**
-- * batadv_tvlv_container_ogm_append - append tvlv container content to given
-- *  OGM packet buffer
-- * @bat_priv: the bat priv with all the soft interface information
-- * @packet_buff: ogm packet buffer
-- * @packet_buff_len: ogm packet buffer size including ogm header and tvlv
-- *  content
-- * @packet_min_len: ogm header size to be preserved for the OGM itself
-- *
-- * The ogm packet might be enlarged or shrunk depending on the current size
-- * and the size of the to-be-appended tvlv containers.
-- *
-- * Return: size of all appended tvlv containers in bytes.
-- */
--u16 batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
--				     unsigned char **packet_buff,
--				     int *packet_buff_len, int packet_min_len)
--{
--	struct batadv_tvlv_container *tvlv;
--	struct batadv_tvlv_hdr *tvlv_hdr;
--	u16 tvlv_value_len;
--	void *tvlv_value;
--	bool ret;
--
--	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
--	tvlv_value_len = batadv_tvlv_container_list_size(bat_priv);
--
--	ret = batadv_tvlv_realloc_packet_buff(packet_buff, packet_buff_len,
--					      packet_min_len, tvlv_value_len);
--
--	if (!ret)
--		goto end;
--
--	if (!tvlv_value_len)
--		goto end;
--
--	tvlv_value = (*packet_buff) + packet_min_len;
--
--	hlist_for_each_entry(tvlv, &bat_priv->tvlv.container_list, list) {
--		tvlv_hdr = tvlv_value;
--		tvlv_hdr->type = tvlv->tvlv_hdr.type;
--		tvlv_hdr->version = tvlv->tvlv_hdr.version;
--		tvlv_hdr->len = tvlv->tvlv_hdr.len;
--		tvlv_value = tvlv_hdr + 1;
--		memcpy(tvlv_value, tvlv + 1, ntohs(tvlv->tvlv_hdr.len));
--		tvlv_value = (u8 *)tvlv_value + ntohs(tvlv->tvlv_hdr.len);
--	}
--
--end:
--	spin_unlock_bh(&bat_priv->tvlv.container_list_lock);
--	return tvlv_value_len;
--}
--
--/**
-- * batadv_tvlv_call_handler - parse the given tvlv buffer to call the
-- *  appropriate handlers
-- * @bat_priv: the bat priv with all the soft interface information
-- * @tvlv_handler: tvlv callback function handling the tvlv content
-- * @ogm_source: flag indicating whether the tvlv is an ogm or a unicast packet
-- * @orig_node: orig node emitting the ogm packet
-- * @src: source mac address of the unicast packet
-- * @dst: destination mac address of the unicast packet
-- * @tvlv_value: tvlv content
-- * @tvlv_value_len: tvlv content length
-- *
-- * Return: success if handler was not found or the return value of the handler
-- * callback.
-- */
--static int batadv_tvlv_call_handler(struct batadv_priv *bat_priv,
--				    struct batadv_tvlv_handler *tvlv_handler,
--				    bool ogm_source,
--				    struct batadv_orig_node *orig_node,
--				    u8 *src, u8 *dst,
--				    void *tvlv_value, u16 tvlv_value_len)
--{
--	if (!tvlv_handler)
--		return NET_RX_SUCCESS;
--
--	if (ogm_source) {
--		if (!tvlv_handler->ogm_handler)
--			return NET_RX_SUCCESS;
--
--		if (!orig_node)
--			return NET_RX_SUCCESS;
--
--		tvlv_handler->ogm_handler(bat_priv, orig_node,
--					  BATADV_NO_FLAGS,
--					  tvlv_value, tvlv_value_len);
--		tvlv_handler->flags |= BATADV_TVLV_HANDLER_OGM_CALLED;
--	} else {
--		if (!src)
--			return NET_RX_SUCCESS;
--
--		if (!dst)
--			return NET_RX_SUCCESS;
--
--		if (!tvlv_handler->unicast_handler)
--			return NET_RX_SUCCESS;
--
--		return tvlv_handler->unicast_handler(bat_priv, src,
--						     dst, tvlv_value,
--						     tvlv_value_len);
--	}
--
--	return NET_RX_SUCCESS;
--}
--
--/**
-- * batadv_tvlv_containers_process - parse the given tvlv buffer to call the
-- *  appropriate handlers
-- * @bat_priv: the bat priv with all the soft interface information
-- * @ogm_source: flag indicating whether the tvlv is an ogm or a unicast packet
-- * @orig_node: orig node emitting the ogm packet
-- * @src: source mac address of the unicast packet
-- * @dst: destination mac address of the unicast packet
-- * @tvlv_value: tvlv content
-- * @tvlv_value_len: tvlv content length
-- *
-- * Return: success when processing an OGM or the return value of all called
-- * handler callbacks.
-- */
--int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
--				   bool ogm_source,
--				   struct batadv_orig_node *orig_node,
--				   u8 *src, u8 *dst,
--				   void *tvlv_value, u16 tvlv_value_len)
--{
--	struct batadv_tvlv_handler *tvlv_handler;
--	struct batadv_tvlv_hdr *tvlv_hdr;
--	u16 tvlv_value_cont_len;
--	u8 cifnotfound = BATADV_TVLV_HANDLER_OGM_CIFNOTFND;
--	int ret = NET_RX_SUCCESS;
--
--	while (tvlv_value_len >= sizeof(*tvlv_hdr)) {
--		tvlv_hdr = tvlv_value;
--		tvlv_value_cont_len = ntohs(tvlv_hdr->len);
--		tvlv_value = tvlv_hdr + 1;
--		tvlv_value_len -= sizeof(*tvlv_hdr);
--
--		if (tvlv_value_cont_len > tvlv_value_len)
--			break;
--
--		tvlv_handler = batadv_tvlv_handler_get(bat_priv,
--						       tvlv_hdr->type,
--						       tvlv_hdr->version);
--
--		ret |= batadv_tvlv_call_handler(bat_priv, tvlv_handler,
--						ogm_source, orig_node,
--						src, dst, tvlv_value,
--						tvlv_value_cont_len);
--		if (tvlv_handler)
--			batadv_tvlv_handler_put(tvlv_handler);
--		tvlv_value = (u8 *)tvlv_value + tvlv_value_cont_len;
--		tvlv_value_len -= tvlv_value_cont_len;
--	}
--
--	if (!ogm_source)
--		return ret;
--
--	rcu_read_lock();
--	hlist_for_each_entry_rcu(tvlv_handler,
--				 &bat_priv->tvlv.handler_list, list) {
--		if ((tvlv_handler->flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND) &&
--		    !(tvlv_handler->flags & BATADV_TVLV_HANDLER_OGM_CALLED))
--			tvlv_handler->ogm_handler(bat_priv, orig_node,
--						  cifnotfound, NULL, 0);
--
--		tvlv_handler->flags &= ~BATADV_TVLV_HANDLER_OGM_CALLED;
--	}
--	rcu_read_unlock();
--
--	return NET_RX_SUCCESS;
--}
--
--/**
-- * batadv_tvlv_ogm_receive - process an incoming ogm and call the appropriate
-- *  handlers
-- * @bat_priv: the bat priv with all the soft interface information
-- * @batadv_ogm_packet: ogm packet containing the tvlv containers
-- * @orig_node: orig node emitting the ogm packet
-- */
--void batadv_tvlv_ogm_receive(struct batadv_priv *bat_priv,
--			     struct batadv_ogm_packet *batadv_ogm_packet,
--			     struct batadv_orig_node *orig_node)
--{
--	void *tvlv_value;
--	u16 tvlv_value_len;
--
--	if (!batadv_ogm_packet)
--		return;
--
--	tvlv_value_len = ntohs(batadv_ogm_packet->tvlv_len);
--	if (!tvlv_value_len)
--		return;
--
--	tvlv_value = batadv_ogm_packet + 1;
--
--	batadv_tvlv_containers_process(bat_priv, true, orig_node, NULL, NULL,
--				       tvlv_value, tvlv_value_len);
--}
--
--/**
-- * batadv_tvlv_handler_register - register tvlv handler based on the provided
-- *  type and version (both need to match) for ogm tvlv payload and/or unicast
-- *  payload
-- * @bat_priv: the bat priv with all the soft interface information
-- * @optr: ogm tvlv handler callback function. This function receives the orig
-- *  node, flags and the tvlv content as argument to process.
-- * @uptr: unicast tvlv handler callback function. This function receives the
-- *  source & destination of the unicast packet as well as the tvlv content
-- *  to process.
-- * @type: tvlv handler type to be registered
-- * @version: tvlv handler version to be registered
-- * @flags: flags to enable or disable TVLV API behavior
-- */
--void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
--				  void (*optr)(struct batadv_priv *bat_priv,
--					       struct batadv_orig_node *orig,
--					       u8 flags,
--					       void *tvlv_value,
--					       u16 tvlv_value_len),
--				  int (*uptr)(struct batadv_priv *bat_priv,
--					      u8 *src, u8 *dst,
--					      void *tvlv_value,
--					      u16 tvlv_value_len),
--				  u8 type, u8 version, u8 flags)
--{
--	struct batadv_tvlv_handler *tvlv_handler;
--
--	tvlv_handler = batadv_tvlv_handler_get(bat_priv, type, version);
--	if (tvlv_handler) {
--		batadv_tvlv_handler_put(tvlv_handler);
--		return;
--	}
--
--	tvlv_handler = kzalloc(sizeof(*tvlv_handler), GFP_ATOMIC);
--	if (!tvlv_handler)
--		return;
--
--	tvlv_handler->ogm_handler = optr;
--	tvlv_handler->unicast_handler = uptr;
--	tvlv_handler->type = type;
--	tvlv_handler->version = version;
--	tvlv_handler->flags = flags;
--	kref_init(&tvlv_handler->refcount);
--	INIT_HLIST_NODE(&tvlv_handler->list);
--
--	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
--	hlist_add_head_rcu(&tvlv_handler->list, &bat_priv->tvlv.handler_list);
--	spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
--}
--
--/**
-- * batadv_tvlv_handler_unregister - unregister tvlv handler based on the
-- *  provided type and version (both need to match)
-- * @bat_priv: the bat priv with all the soft interface information
-- * @type: tvlv handler type to be unregistered
-- * @version: tvlv handler version to be unregistered
-- */
--void batadv_tvlv_handler_unregister(struct batadv_priv *bat_priv,
--				    u8 type, u8 version)
--{
--	struct batadv_tvlv_handler *tvlv_handler;
--
--	tvlv_handler = batadv_tvlv_handler_get(bat_priv, type, version);
--	if (!tvlv_handler)
--		return;
--
--	batadv_tvlv_handler_put(tvlv_handler);
--	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
--	hlist_del_rcu(&tvlv_handler->list);
--	spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
--	batadv_tvlv_handler_put(tvlv_handler);
--}
--
--/**
-- * batadv_tvlv_unicast_send - send a unicast packet with tvlv payload to the
-- *  specified host
-- * @bat_priv: the bat priv with all the soft interface information
-- * @src: source mac address of the unicast packet
-- * @dst: destination mac address of the unicast packet
-- * @type: tvlv type
-- * @version: tvlv version
-- * @tvlv_value: tvlv content
-- * @tvlv_value_len: tvlv content length
-- */
--void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
--			      u8 *dst, u8 type, u8 version,
--			      void *tvlv_value, u16 tvlv_value_len)
--{
--	struct batadv_unicast_tvlv_packet *unicast_tvlv_packet;
--	struct batadv_tvlv_hdr *tvlv_hdr;
--	struct batadv_orig_node *orig_node;
--	struct sk_buff *skb;
--	unsigned char *tvlv_buff;
--	unsigned int tvlv_len;
--	ssize_t hdr_len = sizeof(*unicast_tvlv_packet);
--
--	orig_node = batadv_orig_hash_find(bat_priv, dst);
--	if (!orig_node)
--		return;
--
--	tvlv_len = sizeof(*tvlv_hdr) + tvlv_value_len;
--
--	skb = netdev_alloc_skb_ip_align(NULL, ETH_HLEN + hdr_len + tvlv_len);
--	if (!skb)
--		goto out;
--
--	skb->priority = TC_PRIO_CONTROL;
--	skb_reserve(skb, ETH_HLEN);
--	tvlv_buff = skb_put(skb, sizeof(*unicast_tvlv_packet) + tvlv_len);
--	unicast_tvlv_packet = (struct batadv_unicast_tvlv_packet *)tvlv_buff;
--	unicast_tvlv_packet->packet_type = BATADV_UNICAST_TVLV;
--	unicast_tvlv_packet->version = BATADV_COMPAT_VERSION;
--	unicast_tvlv_packet->ttl = BATADV_TTL;
--	unicast_tvlv_packet->reserved = 0;
--	unicast_tvlv_packet->tvlv_len = htons(tvlv_len);
--	unicast_tvlv_packet->align = 0;
--	ether_addr_copy(unicast_tvlv_packet->src, src);
--	ether_addr_copy(unicast_tvlv_packet->dst, dst);
--
--	tvlv_buff = (unsigned char *)(unicast_tvlv_packet + 1);
--	tvlv_hdr = (struct batadv_tvlv_hdr *)tvlv_buff;
--	tvlv_hdr->version = version;
--	tvlv_hdr->type = type;
--	tvlv_hdr->len = htons(tvlv_value_len);
--	tvlv_buff += sizeof(*tvlv_hdr);
--	memcpy(tvlv_buff, tvlv_value, tvlv_value_len);
--
--	if (batadv_send_skb_to_orig(skb, orig_node, NULL) == NET_XMIT_DROP)
--		kfree_skb(skb);
--out:
--	batadv_orig_node_put(orig_node);
--}
--
--/**
-  * batadv_get_vid - extract the VLAN identifier from skb if any
-  * @skb: the buffer containing the packet
-  * @header_len: length of the batman header preceding the ethernet header
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 94bf4f8..e523a38 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -190,7 +190,6 @@ enum batadv_uev_type {
- 
- #include "types.h"
- 
--struct batadv_ogm_packet;
- struct seq_file;
- struct sk_buff;
- 
-@@ -372,39 +371,6 @@ static inline u64 batadv_sum_counter(struct batadv_priv *bat_priv,  size_t idx)
-  */
- #define BATADV_SKB_CB(__skb)       ((struct batadv_skb_cb *)&((__skb)->cb[0]))
- 
--void batadv_tvlv_container_register(struct batadv_priv *bat_priv,
--				    u8 type, u8 version,
--				    void *tvlv_value, u16 tvlv_value_len);
--u16 batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
--				     unsigned char **packet_buff,
--				     int *packet_buff_len, int packet_min_len);
--void batadv_tvlv_ogm_receive(struct batadv_priv *bat_priv,
--			     struct batadv_ogm_packet *batadv_ogm_packet,
--			     struct batadv_orig_node *orig_node);
--void batadv_tvlv_container_unregister(struct batadv_priv *bat_priv,
--				      u8 type, u8 version);
--
--void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
--				  void (*optr)(struct batadv_priv *bat_priv,
--					       struct batadv_orig_node *orig,
--					       u8 flags,
--					       void *tvlv_value,
--					       u16 tvlv_value_len),
--				  int (*uptr)(struct batadv_priv *bat_priv,
--					      u8 *src, u8 *dst,
--					      void *tvlv_value,
--					      u16 tvlv_value_len),
--				  u8 type, u8 version, u8 flags);
--void batadv_tvlv_handler_unregister(struct batadv_priv *bat_priv,
--				    u8 type, u8 version);
--int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
--				   bool ogm_source,
--				   struct batadv_orig_node *orig_node,
--				   u8 *src, u8 *dst,
--				   void *tvlv_buff, u16 tvlv_buff_len);
--void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
--			      u8 *dst, u8 type, u8 version,
--			      void *tvlv_value, u16 tvlv_value_len);
- unsigned short batadv_get_vid(struct sk_buff *skb, size_t header_len);
- bool batadv_vlan_ap_isola_get(struct batadv_priv *bat_priv, unsigned short vid);
- 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 5a22943..4c2cecc 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -57,6 +57,7 @@
- #include "hash.h"
- #include "packet.h"
- #include "translation-table.h"
-+#include "tvlv.h"
- 
- /**
-  * batadv_mcast_get_bridge - get the bridge on top of the softif if it exists
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index 678f068..d0383de 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -55,6 +55,7 @@
- #include "packet.h"
- #include "routing.h"
- #include "send.h"
-+#include "tvlv.h"
- 
- static struct lock_class_key batadv_nc_coding_hash_lock_class_key;
- static struct lock_class_key batadv_nc_decoding_hash_lock_class_key;
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 93ee5c7..1d66289 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -46,6 +46,7 @@
- #include "send.h"
- #include "soft-interface.h"
- #include "translation-table.h"
-+#include "tvlv.h"
- 
- static int batadv_route_unicast_packet(struct sk_buff *skb,
- 				       struct batadv_hard_iface *recv_if);
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index feaf492..fa5da55 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -51,6 +51,7 @@
- #include "originator.h"
- #include "packet.h"
- #include "soft-interface.h"
-+#include "tvlv.h"
- 
- /* hash class keys */
- static struct lock_class_key batadv_tt_local_hash_lock_class_key;
-diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+ obj-$(CONFIG_BATMAN_ADV) += batman-adv.o
++batman-adv-y += bat_algo.o
+ batman-adv-y += bat_iv_ogm.o
+ batman-adv-$(CONFIG_BATMAN_ADV_BATMAN_V) += bat_v.o
+ batman-adv-$(CONFIG_BATMAN_ADV_BATMAN_V) += bat_v_elp.o
+diff --git a/net/batman-adv/bat_algo.c b/net/batman-adv/bat_algo.c
 new file mode 100644
-index 0000000..2fd542e
+index 0000000..610d4de
 --- /dev/null
-+++ b/net/batman-adv/tvlv.c
-@@ -0,0 +1,630 @@
++++ b/net/batman-adv/bat_algo.c
+@@ -0,0 +1,140 @@
 +/* Copyright (C) 2007-2016  B.A.T.M.A.N. contributors:
 + *
 + * Marek Lindner, Simon Wunderlich
@@ -851,684 +79,390 @@ index 0000000..2fd542e
 +
 +#include "main.h"
 +
-+#include <linux/byteorder/generic.h>
-+#include <linux/etherdevice.h>
-+#include <linux/fs.h>
-+#include <linux/if_ether.h>
-+#include <linux/kernel.h>
-+#include <linux/kref.h>
++#include <linux/errno.h>
 +#include <linux/list.h>
-+#include <linux/lockdep.h>
-+#include <linux/netdevice.h>
-+#include <linux/pkt_sched.h>
-+#include <linux/rculist.h>
-+#include <linux/rcupdate.h>
-+#include <linux/skbuff.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
++#include <linux/moduleparam.h>
++#include <linux/printk.h>
++#include <linux/seq_file.h>
 +#include <linux/stddef.h>
 +#include <linux/string.h>
-+#include <linux/types.h>
 +
-+#include "originator.h"
-+#include "packet.h"
-+#include "send.h"
-+#include "tvlv.h"
++#include "bat_algo.h"
++
++char batadv_routing_algo[20] = "BATMAN_IV";
++static struct hlist_head batadv_algo_list;
 +
 +/**
-+ * batadv_tvlv_handler_release - release tvlv handler from lists and queue for
-+ *  free after rcu grace period
-+ * @ref: kref pointer of the tvlv
++ * batadv_algo_init - Initialize batman-adv algorithm management data structures
 + */
-+static void batadv_tvlv_handler_release(struct kref *ref)
++void batadv_algo_init(void)
 +{
-+	struct batadv_tvlv_handler *tvlv_handler;
-+
-+	tvlv_handler = container_of(ref, struct batadv_tvlv_handler, refcount);
-+	kfree_rcu(tvlv_handler, rcu);
++	INIT_HLIST_HEAD(&batadv_algo_list);
 +}
 +
-+/**
-+ * batadv_tvlv_handler_put - decrement the tvlv container refcounter and
-+ *  possibly release it
-+ * @tvlv_handler: the tvlv handler to free
-+ */
-+static void batadv_tvlv_handler_put(struct batadv_tvlv_handler *tvlv_handler)
++static struct batadv_algo_ops *batadv_algo_get(char *name)
 +{
-+	kref_put(&tvlv_handler->refcount, batadv_tvlv_handler_release);
-+}
++	struct batadv_algo_ops *bat_algo_ops = NULL, *bat_algo_ops_tmp;
 +
-+/**
-+ * batadv_tvlv_handler_get - retrieve tvlv handler from the tvlv handler list
-+ *  based on the provided type and version (both need to match)
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @type: tvlv handler type to look for
-+ * @version: tvlv handler version to look for
-+ *
-+ * Return: tvlv handler if found or NULL otherwise.
-+ */
-+static struct batadv_tvlv_handler *
-+batadv_tvlv_handler_get(struct batadv_priv *bat_priv, u8 type, u8 version)
-+{
-+	struct batadv_tvlv_handler *tvlv_handler_tmp, *tvlv_handler = NULL;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(tvlv_handler_tmp,
-+				 &bat_priv->tvlv.handler_list, list) {
-+		if (tvlv_handler_tmp->type != type)
++	hlist_for_each_entry(bat_algo_ops_tmp, &batadv_algo_list, list) {
++		if (strcmp(bat_algo_ops_tmp->name, name) != 0)
 +			continue;
 +
-+		if (tvlv_handler_tmp->version != version)
-+			continue;
-+
-+		if (!kref_get_unless_zero(&tvlv_handler_tmp->refcount))
-+			continue;
-+
-+		tvlv_handler = tvlv_handler_tmp;
-+		break;
-+	}
-+	rcu_read_unlock();
-+
-+	return tvlv_handler;
-+}
-+
-+/**
-+ * batadv_tvlv_container_release - release tvlv from lists and free
-+ * @ref: kref pointer of the tvlv
-+ */
-+static void batadv_tvlv_container_release(struct kref *ref)
-+{
-+	struct batadv_tvlv_container *tvlv;
-+
-+	tvlv = container_of(ref, struct batadv_tvlv_container, refcount);
-+	kfree(tvlv);
-+}
-+
-+/**
-+ * batadv_tvlv_container_put - decrement the tvlv container refcounter and
-+ *  possibly release it
-+ * @tvlv: the tvlv container to free
-+ */
-+static void batadv_tvlv_container_put(struct batadv_tvlv_container *tvlv)
-+{
-+	kref_put(&tvlv->refcount, batadv_tvlv_container_release);
-+}
-+
-+/**
-+ * batadv_tvlv_container_get - retrieve tvlv container from the tvlv container
-+ *  list based on the provided type and version (both need to match)
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @type: tvlv container type to look for
-+ * @version: tvlv container version to look for
-+ *
-+ * Has to be called with the appropriate locks being acquired
-+ * (tvlv.container_list_lock).
-+ *
-+ * Return: tvlv container if found or NULL otherwise.
-+ */
-+static struct batadv_tvlv_container *
-+batadv_tvlv_container_get(struct batadv_priv *bat_priv, u8 type, u8 version)
-+{
-+	struct batadv_tvlv_container *tvlv_tmp, *tvlv = NULL;
-+
-+	lockdep_assert_held(&bat_priv->tvlv.container_list_lock);
-+
-+	hlist_for_each_entry(tvlv_tmp, &bat_priv->tvlv.container_list, list) {
-+		if (tvlv_tmp->tvlv_hdr.type != type)
-+			continue;
-+
-+		if (tvlv_tmp->tvlv_hdr.version != version)
-+			continue;
-+
-+		kref_get(&tvlv_tmp->refcount);
-+		tvlv = tvlv_tmp;
++		bat_algo_ops = bat_algo_ops_tmp;
 +		break;
 +	}
 +
-+	return tvlv;
++	return bat_algo_ops;
 +}
 +
-+/**
-+ * batadv_tvlv_container_list_size - calculate the size of the tvlv container
-+ *  list entries
-+ * @bat_priv: the bat priv with all the soft interface information
-+ *
-+ * Has to be called with the appropriate locks being acquired
-+ * (tvlv.container_list_lock).
-+ *
-+ * Return: size of all currently registered tvlv containers in bytes.
-+ */
-+static u16 batadv_tvlv_container_list_size(struct batadv_priv *bat_priv)
++int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
 +{
-+	struct batadv_tvlv_container *tvlv;
-+	u16 tvlv_len = 0;
++	struct batadv_algo_ops *bat_algo_ops_tmp;
 +
-+	lockdep_assert_held(&bat_priv->tvlv.container_list_lock);
-+
-+	hlist_for_each_entry(tvlv, &bat_priv->tvlv.container_list, list) {
-+		tvlv_len += sizeof(struct batadv_tvlv_hdr);
-+		tvlv_len += ntohs(tvlv->tvlv_hdr.len);
++	bat_algo_ops_tmp = batadv_algo_get(bat_algo_ops->name);
++	if (bat_algo_ops_tmp) {
++		pr_info("Trying to register already registered routing algorithm: %s\n",
++			bat_algo_ops->name);
++		return -EEXIST;
 +	}
 +
-+	return tvlv_len;
-+}
-+
-+/**
-+ * batadv_tvlv_container_remove - remove tvlv container from the tvlv container
-+ *  list
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @tvlv: the to be removed tvlv container
-+ *
-+ * Has to be called with the appropriate locks being acquired
-+ * (tvlv.container_list_lock).
-+ */
-+static void batadv_tvlv_container_remove(struct batadv_priv *bat_priv,
-+					 struct batadv_tvlv_container *tvlv)
-+{
-+	lockdep_assert_held(&bat_priv->tvlv.container_list_lock);
-+
-+	if (!tvlv)
-+		return;
-+
-+	hlist_del(&tvlv->list);
-+
-+	/* first call to decrement the counter, second call to free */
-+	batadv_tvlv_container_put(tvlv);
-+	batadv_tvlv_container_put(tvlv);
-+}
-+
-+/**
-+ * batadv_tvlv_container_unregister - unregister tvlv container based on the
-+ *  provided type and version (both need to match)
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @type: tvlv container type to unregister
-+ * @version: tvlv container type to unregister
-+ */
-+void batadv_tvlv_container_unregister(struct batadv_priv *bat_priv,
-+				      u8 type, u8 version)
-+{
-+	struct batadv_tvlv_container *tvlv;
-+
-+	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
-+	tvlv = batadv_tvlv_container_get(bat_priv, type, version);
-+	batadv_tvlv_container_remove(bat_priv, tvlv);
-+	spin_unlock_bh(&bat_priv->tvlv.container_list_lock);
-+}
-+
-+/**
-+ * batadv_tvlv_container_register - register tvlv type, version and content
-+ *  to be propagated with each (primary interface) OGM
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @type: tvlv container type
-+ * @version: tvlv container version
-+ * @tvlv_value: tvlv container content
-+ * @tvlv_value_len: tvlv container content length
-+ *
-+ * If a container of the same type and version was already registered the new
-+ * content is going to replace the old one.
-+ */
-+void batadv_tvlv_container_register(struct batadv_priv *bat_priv,
-+				    u8 type, u8 version,
-+				    void *tvlv_value, u16 tvlv_value_len)
-+{
-+	struct batadv_tvlv_container *tvlv_old, *tvlv_new;
-+
-+	if (!tvlv_value)
-+		tvlv_value_len = 0;
-+
-+	tvlv_new = kzalloc(sizeof(*tvlv_new) + tvlv_value_len, GFP_ATOMIC);
-+	if (!tvlv_new)
-+		return;
-+
-+	tvlv_new->tvlv_hdr.version = version;
-+	tvlv_new->tvlv_hdr.type = type;
-+	tvlv_new->tvlv_hdr.len = htons(tvlv_value_len);
-+
-+	memcpy(tvlv_new + 1, tvlv_value, ntohs(tvlv_new->tvlv_hdr.len));
-+	INIT_HLIST_NODE(&tvlv_new->list);
-+	kref_init(&tvlv_new->refcount);
-+
-+	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
-+	tvlv_old = batadv_tvlv_container_get(bat_priv, type, version);
-+	batadv_tvlv_container_remove(bat_priv, tvlv_old);
-+	hlist_add_head(&tvlv_new->list, &bat_priv->tvlv.container_list);
-+	spin_unlock_bh(&bat_priv->tvlv.container_list_lock);
-+}
-+
-+/**
-+ * batadv_tvlv_realloc_packet_buff - reallocate packet buffer to accommodate
-+ *  requested packet size
-+ * @packet_buff: packet buffer
-+ * @packet_buff_len: packet buffer size
-+ * @min_packet_len: requested packet minimum size
-+ * @additional_packet_len: requested additional packet size on top of minimum
-+ *  size
-+ *
-+ * Return: true of the packet buffer could be changed to the requested size,
-+ * false otherwise.
-+ */
-+static bool batadv_tvlv_realloc_packet_buff(unsigned char **packet_buff,
-+					    int *packet_buff_len,
-+					    int min_packet_len,
-+					    int additional_packet_len)
-+{
-+	unsigned char *new_buff;
-+
-+	new_buff = kmalloc(min_packet_len + additional_packet_len, GFP_ATOMIC);
-+
-+	/* keep old buffer if kmalloc should fail */
-+	if (!new_buff)
-+		return false;
-+
-+	memcpy(new_buff, *packet_buff, min_packet_len);
-+	kfree(*packet_buff);
-+	*packet_buff = new_buff;
-+	*packet_buff_len = min_packet_len + additional_packet_len;
-+
-+	return true;
-+}
-+
-+/**
-+ * batadv_tvlv_container_ogm_append - append tvlv container content to given
-+ *  OGM packet buffer
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @packet_buff: ogm packet buffer
-+ * @packet_buff_len: ogm packet buffer size including ogm header and tvlv
-+ *  content
-+ * @packet_min_len: ogm header size to be preserved for the OGM itself
-+ *
-+ * The ogm packet might be enlarged or shrunk depending on the current size
-+ * and the size of the to-be-appended tvlv containers.
-+ *
-+ * Return: size of all appended tvlv containers in bytes.
-+ */
-+u16 batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
-+				     unsigned char **packet_buff,
-+				     int *packet_buff_len, int packet_min_len)
-+{
-+	struct batadv_tvlv_container *tvlv;
-+	struct batadv_tvlv_hdr *tvlv_hdr;
-+	u16 tvlv_value_len;
-+	void *tvlv_value;
-+	bool ret;
-+
-+	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
-+	tvlv_value_len = batadv_tvlv_container_list_size(bat_priv);
-+
-+	ret = batadv_tvlv_realloc_packet_buff(packet_buff, packet_buff_len,
-+					      packet_min_len, tvlv_value_len);
-+
-+	if (!ret)
-+		goto end;
-+
-+	if (!tvlv_value_len)
-+		goto end;
-+
-+	tvlv_value = (*packet_buff) + packet_min_len;
-+
-+	hlist_for_each_entry(tvlv, &bat_priv->tvlv.container_list, list) {
-+		tvlv_hdr = tvlv_value;
-+		tvlv_hdr->type = tvlv->tvlv_hdr.type;
-+		tvlv_hdr->version = tvlv->tvlv_hdr.version;
-+		tvlv_hdr->len = tvlv->tvlv_hdr.len;
-+		tvlv_value = tvlv_hdr + 1;
-+		memcpy(tvlv_value, tvlv + 1, ntohs(tvlv->tvlv_hdr.len));
-+		tvlv_value = (u8 *)tvlv_value + ntohs(tvlv->tvlv_hdr.len);
++	/* all algorithms must implement all ops (for now) */
++	if (!bat_algo_ops->bat_iface_enable ||
++	    !bat_algo_ops->bat_iface_disable ||
++	    !bat_algo_ops->bat_iface_update_mac ||
++	    !bat_algo_ops->bat_primary_iface_set ||
++	    !bat_algo_ops->bat_neigh_cmp ||
++	    !bat_algo_ops->bat_neigh_is_similar_or_better) {
++		pr_info("Routing algo '%s' does not implement required ops\n",
++			bat_algo_ops->name);
++		return -EINVAL;
 +	}
 +
-+end:
-+	spin_unlock_bh(&bat_priv->tvlv.container_list_lock);
-+	return tvlv_value_len;
++	INIT_HLIST_NODE(&bat_algo_ops->list);
++	hlist_add_head(&bat_algo_ops->list, &batadv_algo_list);
++
++	return 0;
 +}
 +
-+/**
-+ * batadv_tvlv_call_handler - parse the given tvlv buffer to call the
-+ *  appropriate handlers
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @tvlv_handler: tvlv callback function handling the tvlv content
-+ * @ogm_source: flag indicating whether the tvlv is an ogm or a unicast packet
-+ * @orig_node: orig node emitting the ogm packet
-+ * @src: source mac address of the unicast packet
-+ * @dst: destination mac address of the unicast packet
-+ * @tvlv_value: tvlv content
-+ * @tvlv_value_len: tvlv content length
-+ *
-+ * Return: success if handler was not found or the return value of the handler
-+ * callback.
-+ */
-+static int batadv_tvlv_call_handler(struct batadv_priv *bat_priv,
-+				    struct batadv_tvlv_handler *tvlv_handler,
-+				    bool ogm_source,
-+				    struct batadv_orig_node *orig_node,
-+				    u8 *src, u8 *dst,
-+				    void *tvlv_value, u16 tvlv_value_len)
++int batadv_algo_select(struct batadv_priv *bat_priv, char *name)
 +{
-+	if (!tvlv_handler)
-+		return NET_RX_SUCCESS;
++	struct batadv_algo_ops *bat_algo_ops;
 +
-+	if (ogm_source) {
-+		if (!tvlv_handler->ogm_handler)
-+			return NET_RX_SUCCESS;
++	bat_algo_ops = batadv_algo_get(name);
++	if (!bat_algo_ops)
++		return -EINVAL;
 +
-+		if (!orig_node)
-+			return NET_RX_SUCCESS;
++	bat_priv->bat_algo_ops = bat_algo_ops;
 +
-+		tvlv_handler->ogm_handler(bat_priv, orig_node,
-+					  BATADV_NO_FLAGS,
-+					  tvlv_value, tvlv_value_len);
-+		tvlv_handler->flags |= BATADV_TVLV_HANDLER_OGM_CALLED;
-+	} else {
-+		if (!src)
-+			return NET_RX_SUCCESS;
++	return 0;
++}
 +
-+		if (!dst)
-+			return NET_RX_SUCCESS;
++int batadv_algo_seq_print_text(struct seq_file *seq, void *offset)
++{
++	struct batadv_algo_ops *bat_algo_ops;
 +
-+		if (!tvlv_handler->unicast_handler)
-+			return NET_RX_SUCCESS;
++	seq_puts(seq, "Available routing algorithms:\n");
 +
-+		return tvlv_handler->unicast_handler(bat_priv, src,
-+						     dst, tvlv_value,
-+						     tvlv_value_len);
++	hlist_for_each_entry(bat_algo_ops, &batadv_algo_list, list) {
++		seq_printf(seq, " * %s\n", bat_algo_ops->name);
 +	}
 +
-+	return NET_RX_SUCCESS;
++	return 0;
 +}
 +
-+/**
-+ * batadv_tvlv_containers_process - parse the given tvlv buffer to call the
-+ *  appropriate handlers
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @ogm_source: flag indicating whether the tvlv is an ogm or a unicast packet
-+ * @orig_node: orig node emitting the ogm packet
-+ * @src: source mac address of the unicast packet
-+ * @dst: destination mac address of the unicast packet
-+ * @tvlv_value: tvlv content
-+ * @tvlv_value_len: tvlv content length
-+ *
-+ * Return: success when processing an OGM or the return value of all called
-+ * handler callbacks.
-+ */
-+int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
-+				   bool ogm_source,
-+				   struct batadv_orig_node *orig_node,
-+				   u8 *src, u8 *dst,
-+				   void *tvlv_value, u16 tvlv_value_len)
++static int batadv_param_set_ra(const char *val, const struct kernel_param *kp)
 +{
-+	struct batadv_tvlv_handler *tvlv_handler;
-+	struct batadv_tvlv_hdr *tvlv_hdr;
-+	u16 tvlv_value_cont_len;
-+	u8 cifnotfound = BATADV_TVLV_HANDLER_OGM_CIFNOTFND;
-+	int ret = NET_RX_SUCCESS;
++	struct batadv_algo_ops *bat_algo_ops;
++	char *algo_name = (char *)val;
++	size_t name_len = strlen(algo_name);
 +
-+	while (tvlv_value_len >= sizeof(*tvlv_hdr)) {
-+		tvlv_hdr = tvlv_value;
-+		tvlv_value_cont_len = ntohs(tvlv_hdr->len);
-+		tvlv_value = tvlv_hdr + 1;
-+		tvlv_value_len -= sizeof(*tvlv_hdr);
++	if (name_len > 0 && algo_name[name_len - 1] == '\n')
++		algo_name[name_len - 1] = '\0';
 +
-+		if (tvlv_value_cont_len > tvlv_value_len)
-+			break;
-+
-+		tvlv_handler = batadv_tvlv_handler_get(bat_priv,
-+						       tvlv_hdr->type,
-+						       tvlv_hdr->version);
-+
-+		ret |= batadv_tvlv_call_handler(bat_priv, tvlv_handler,
-+						ogm_source, orig_node,
-+						src, dst, tvlv_value,
-+						tvlv_value_cont_len);
-+		if (tvlv_handler)
-+			batadv_tvlv_handler_put(tvlv_handler);
-+		tvlv_value = (u8 *)tvlv_value + tvlv_value_cont_len;
-+		tvlv_value_len -= tvlv_value_cont_len;
++	bat_algo_ops = batadv_algo_get(algo_name);
++	if (!bat_algo_ops) {
++		pr_err("Routing algorithm '%s' is not supported\n", algo_name);
++		return -EINVAL;
 +	}
 +
-+	if (!ogm_source)
-+		return ret;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(tvlv_handler,
-+				 &bat_priv->tvlv.handler_list, list) {
-+		if ((tvlv_handler->flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND) &&
-+		    !(tvlv_handler->flags & BATADV_TVLV_HANDLER_OGM_CALLED))
-+			tvlv_handler->ogm_handler(bat_priv, orig_node,
-+						  cifnotfound, NULL, 0);
-+
-+		tvlv_handler->flags &= ~BATADV_TVLV_HANDLER_OGM_CALLED;
-+	}
-+	rcu_read_unlock();
-+
-+	return NET_RX_SUCCESS;
++	return param_set_copystring(algo_name, kp);
 +}
 +
-+/**
-+ * batadv_tvlv_ogm_receive - process an incoming ogm and call the appropriate
-+ *  handlers
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @batadv_ogm_packet: ogm packet containing the tvlv containers
-+ * @orig_node: orig node emitting the ogm packet
-+ */
-+void batadv_tvlv_ogm_receive(struct batadv_priv *bat_priv,
-+			     struct batadv_ogm_packet *batadv_ogm_packet,
-+			     struct batadv_orig_node *orig_node)
-+{
-+	void *tvlv_value;
-+	u16 tvlv_value_len;
++static const struct kernel_param_ops batadv_param_ops_ra = {
++	.set = batadv_param_set_ra,
++	.get = param_get_string,
++};
 +
-+	if (!batadv_ogm_packet)
-+		return;
++static struct kparam_string batadv_param_string_ra = {
++	.maxlen = sizeof(batadv_routing_algo),
++	.string = batadv_routing_algo,
++};
 +
-+	tvlv_value_len = ntohs(batadv_ogm_packet->tvlv_len);
-+	if (!tvlv_value_len)
-+		return;
-+
-+	tvlv_value = batadv_ogm_packet + 1;
-+
-+	batadv_tvlv_containers_process(bat_priv, true, orig_node, NULL, NULL,
-+				       tvlv_value, tvlv_value_len);
-+}
-+
-+/**
-+ * batadv_tvlv_handler_register - register tvlv handler based on the provided
-+ *  type and version (both need to match) for ogm tvlv payload and/or unicast
-+ *  payload
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @optr: ogm tvlv handler callback function. This function receives the orig
-+ *  node, flags and the tvlv content as argument to process.
-+ * @uptr: unicast tvlv handler callback function. This function receives the
-+ *  source & destination of the unicast packet as well as the tvlv content
-+ *  to process.
-+ * @type: tvlv handler type to be registered
-+ * @version: tvlv handler version to be registered
-+ * @flags: flags to enable or disable TVLV API behavior
-+ */
-+void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-+				  void (*optr)(struct batadv_priv *bat_priv,
-+					       struct batadv_orig_node *orig,
-+					       u8 flags,
-+					       void *tvlv_value,
-+					       u16 tvlv_value_len),
-+				  int (*uptr)(struct batadv_priv *bat_priv,
-+					      u8 *src, u8 *dst,
-+					      void *tvlv_value,
-+					      u16 tvlv_value_len),
-+				  u8 type, u8 version, u8 flags)
-+{
-+	struct batadv_tvlv_handler *tvlv_handler;
-+
-+	tvlv_handler = batadv_tvlv_handler_get(bat_priv, type, version);
-+	if (tvlv_handler) {
-+		batadv_tvlv_handler_put(tvlv_handler);
-+		return;
-+	}
-+
-+	tvlv_handler = kzalloc(sizeof(*tvlv_handler), GFP_ATOMIC);
-+	if (!tvlv_handler)
-+		return;
-+
-+	tvlv_handler->ogm_handler = optr;
-+	tvlv_handler->unicast_handler = uptr;
-+	tvlv_handler->type = type;
-+	tvlv_handler->version = version;
-+	tvlv_handler->flags = flags;
-+	kref_init(&tvlv_handler->refcount);
-+	INIT_HLIST_NODE(&tvlv_handler->list);
-+
-+	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
-+	hlist_add_head_rcu(&tvlv_handler->list, &bat_priv->tvlv.handler_list);
-+	spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
-+}
-+
-+/**
-+ * batadv_tvlv_handler_unregister - unregister tvlv handler based on the
-+ *  provided type and version (both need to match)
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @type: tvlv handler type to be unregistered
-+ * @version: tvlv handler version to be unregistered
-+ */
-+void batadv_tvlv_handler_unregister(struct batadv_priv *bat_priv,
-+				    u8 type, u8 version)
-+{
-+	struct batadv_tvlv_handler *tvlv_handler;
-+
-+	tvlv_handler = batadv_tvlv_handler_get(bat_priv, type, version);
-+	if (!tvlv_handler)
-+		return;
-+
-+	batadv_tvlv_handler_put(tvlv_handler);
-+	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
-+	hlist_del_rcu(&tvlv_handler->list);
-+	spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
-+	batadv_tvlv_handler_put(tvlv_handler);
-+}
-+
-+/**
-+ * batadv_tvlv_unicast_send - send a unicast packet with tvlv payload to the
-+ *  specified host
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @src: source mac address of the unicast packet
-+ * @dst: destination mac address of the unicast packet
-+ * @type: tvlv type
-+ * @version: tvlv version
-+ * @tvlv_value: tvlv content
-+ * @tvlv_value_len: tvlv content length
-+ */
-+void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
-+			      u8 *dst, u8 type, u8 version,
-+			      void *tvlv_value, u16 tvlv_value_len)
-+{
-+	struct batadv_unicast_tvlv_packet *unicast_tvlv_packet;
-+	struct batadv_tvlv_hdr *tvlv_hdr;
-+	struct batadv_orig_node *orig_node;
-+	struct sk_buff *skb;
-+	unsigned char *tvlv_buff;
-+	unsigned int tvlv_len;
-+	ssize_t hdr_len = sizeof(*unicast_tvlv_packet);
-+
-+	orig_node = batadv_orig_hash_find(bat_priv, dst);
-+	if (!orig_node)
-+		return;
-+
-+	tvlv_len = sizeof(*tvlv_hdr) + tvlv_value_len;
-+
-+	skb = netdev_alloc_skb_ip_align(NULL, ETH_HLEN + hdr_len + tvlv_len);
-+	if (!skb)
-+		goto out;
-+
-+	skb->priority = TC_PRIO_CONTROL;
-+	skb_reserve(skb, ETH_HLEN);
-+	tvlv_buff = skb_put(skb, sizeof(*unicast_tvlv_packet) + tvlv_len);
-+	unicast_tvlv_packet = (struct batadv_unicast_tvlv_packet *)tvlv_buff;
-+	unicast_tvlv_packet->packet_type = BATADV_UNICAST_TVLV;
-+	unicast_tvlv_packet->version = BATADV_COMPAT_VERSION;
-+	unicast_tvlv_packet->ttl = BATADV_TTL;
-+	unicast_tvlv_packet->reserved = 0;
-+	unicast_tvlv_packet->tvlv_len = htons(tvlv_len);
-+	unicast_tvlv_packet->align = 0;
-+	ether_addr_copy(unicast_tvlv_packet->src, src);
-+	ether_addr_copy(unicast_tvlv_packet->dst, dst);
-+
-+	tvlv_buff = (unsigned char *)(unicast_tvlv_packet + 1);
-+	tvlv_hdr = (struct batadv_tvlv_hdr *)tvlv_buff;
-+	tvlv_hdr->version = version;
-+	tvlv_hdr->type = type;
-+	tvlv_hdr->len = htons(tvlv_value_len);
-+	tvlv_buff += sizeof(*tvlv_hdr);
-+	memcpy(tvlv_buff, tvlv_value, tvlv_value_len);
-+
-+	if (batadv_send_skb_to_orig(skb, orig_node, NULL) == NET_XMIT_DROP)
-+		kfree_skb(skb);
-+out:
-+	batadv_orig_node_put(orig_node);
-+}
-diff --git a/net/batman-adv/tvlv.h b/net/batman-adv/tvlv.h
-new file mode 100644
-index 0000000..e4369b5
---- /dev/null
-+++ b/net/batman-adv/tvlv.h
-@@ -0,0 +1,61 @@
-+/* Copyright (C) 2007-2016  B.A.T.M.A.N. contributors:
-+ *
-+ * Marek Lindner, Simon Wunderlich
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#ifndef _NET_BATMAN_ADV_TVLV_H_
-+#define _NET_BATMAN_ADV_TVLV_H_
-+
-+#include "main.h"
-+
++module_param_cb(routing_algo, &batadv_param_ops_ra, &batadv_param_string_ra,
++		0644);
+diff --git a/net/batman-adv/bat_algo.h b/net/batman-adv/bat_algo.h
+index b727762..e178206 100644
+--- a/net/batman-adv/bat_algo.h
++++ b/net/batman-adv/bat_algo.h
+@@ -20,8 +20,20 @@
+ 
+ #include "main.h"
+ 
 +#include <linux/types.h>
 +
-+struct batadv_ogm_packet;
++struct seq_file;
 +
-+void batadv_tvlv_container_register(struct batadv_priv *bat_priv,
-+				    u8 type, u8 version,
-+				    void *tvlv_value, u16 tvlv_value_len);
-+u16 batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
-+				     unsigned char **packet_buff,
-+				     int *packet_buff_len, int packet_min_len);
-+void batadv_tvlv_ogm_receive(struct batadv_priv *bat_priv,
-+			     struct batadv_ogm_packet *batadv_ogm_packet,
-+			     struct batadv_orig_node *orig_node);
-+void batadv_tvlv_container_unregister(struct batadv_priv *bat_priv,
-+				      u8 type, u8 version);
+ int batadv_iv_init(void);
+ 
++extern char batadv_routing_algo[];
++extern struct list_head batadv_hardif_list;
 +
-+void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
-+				  void (*optr)(struct batadv_priv *bat_priv,
-+					       struct batadv_orig_node *orig,
-+					       u8 flags,
-+					       void *tvlv_value,
-+					       u16 tvlv_value_len),
-+				  int (*uptr)(struct batadv_priv *bat_priv,
-+					      u8 *src, u8 *dst,
-+					      void *tvlv_value,
-+					      u16 tvlv_value_len),
-+				  u8 type, u8 version, u8 flags);
-+void batadv_tvlv_handler_unregister(struct batadv_priv *bat_priv,
-+				    u8 type, u8 version);
-+int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
-+				   bool ogm_source,
-+				   struct batadv_orig_node *orig_node,
-+				   u8 *src, u8 *dst,
-+				   void *tvlv_buff, u16 tvlv_buff_len);
-+void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
-+			      u8 *dst, u8 type, u8 version,
-+			      void *tvlv_value, u16 tvlv_value_len);
++void batadv_algo_init(void);
++int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
++int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
++int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
 +
-+#endif /* _NET_BATMAN_ADV_TVLV_H_ */
+ #ifdef CONFIG_BATMAN_ADV_BATMAN_V
+ 
+ int batadv_v_init(void);
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index ca5a679..93e3d76 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -39,6 +39,7 @@
+ #include <linux/types.h>
+ #include <linux/workqueue.h>
+ 
++#include "bat_algo.h"
+ #include "hard-interface.h"
+ #include "hash.h"
+ #include "originator.h"
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index f187a8f..227c84b 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -44,6 +44,7 @@
+ #include <linux/wait.h>
+ #include <stdarg.h>
+ 
++#include "bat_algo.h"
+ #include "bridge_loop_avoidance.h"
+ #include "distributed-arp-table.h"
+ #include "gateway_client.h"
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 994ab82..04d20c4 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -32,7 +32,6 @@
+ #include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/module.h>
+-#include <linux/moduleparam.h>
+ #include <linux/netdevice.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+@@ -69,8 +68,6 @@
+ struct list_head batadv_hardif_list;
+ static int (*batadv_rx_handler[256])(struct sk_buff *,
+ 				     struct batadv_hard_iface *);
+-char batadv_routing_algo[20] = "BATMAN_IV";
+-static struct hlist_head batadv_algo_list;
+ 
+ unsigned char batadv_broadcast_addr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+ 
+@@ -81,7 +78,7 @@ static void batadv_recv_handler_init(void);
+ static int __init batadv_init(void)
+ {
+ 	INIT_LIST_HEAD(&batadv_hardif_list);
+-	INIT_HLIST_HEAD(&batadv_algo_list);
++	batadv_algo_init();
+ 
+ 	batadv_recv_handler_init();
+ 
+@@ -538,76 +535,6 @@ void batadv_recv_handler_unregister(u8 packet_type)
+ 	batadv_rx_handler[packet_type] = batadv_recv_unhandled_packet;
+ }
+ 
+-static struct batadv_algo_ops *batadv_algo_get(char *name)
+-{
+-	struct batadv_algo_ops *bat_algo_ops = NULL, *bat_algo_ops_tmp;
+-
+-	hlist_for_each_entry(bat_algo_ops_tmp, &batadv_algo_list, list) {
+-		if (strcmp(bat_algo_ops_tmp->name, name) != 0)
+-			continue;
+-
+-		bat_algo_ops = bat_algo_ops_tmp;
+-		break;
+-	}
+-
+-	return bat_algo_ops;
+-}
+-
+-int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
+-{
+-	struct batadv_algo_ops *bat_algo_ops_tmp;
+-
+-	bat_algo_ops_tmp = batadv_algo_get(bat_algo_ops->name);
+-	if (bat_algo_ops_tmp) {
+-		pr_info("Trying to register already registered routing algorithm: %s\n",
+-			bat_algo_ops->name);
+-		return -EEXIST;
+-	}
+-
+-	/* all algorithms must implement all ops (for now) */
+-	if (!bat_algo_ops->bat_iface_enable ||
+-	    !bat_algo_ops->bat_iface_disable ||
+-	    !bat_algo_ops->bat_iface_update_mac ||
+-	    !bat_algo_ops->bat_primary_iface_set ||
+-	    !bat_algo_ops->bat_neigh_cmp ||
+-	    !bat_algo_ops->bat_neigh_is_similar_or_better) {
+-		pr_info("Routing algo '%s' does not implement required ops\n",
+-			bat_algo_ops->name);
+-		return -EINVAL;
+-	}
+-
+-	INIT_HLIST_NODE(&bat_algo_ops->list);
+-	hlist_add_head(&bat_algo_ops->list, &batadv_algo_list);
+-
+-	return 0;
+-}
+-
+-int batadv_algo_select(struct batadv_priv *bat_priv, char *name)
+-{
+-	struct batadv_algo_ops *bat_algo_ops;
+-
+-	bat_algo_ops = batadv_algo_get(name);
+-	if (!bat_algo_ops)
+-		return -EINVAL;
+-
+-	bat_priv->bat_algo_ops = bat_algo_ops;
+-
+-	return 0;
+-}
+-
+-int batadv_algo_seq_print_text(struct seq_file *seq, void *offset)
+-{
+-	struct batadv_algo_ops *bat_algo_ops;
+-
+-	seq_puts(seq, "Available routing algorithms:\n");
+-
+-	hlist_for_each_entry(bat_algo_ops, &batadv_algo_list, list) {
+-		seq_printf(seq, " * %s\n", bat_algo_ops->name);
+-	}
+-
+-	return 0;
+-}
+-
+ /**
+  * batadv_skb_crc32 - calculate CRC32 of the whole packet and skip bytes in
+  *  the header
+@@ -694,36 +621,6 @@ bool batadv_vlan_ap_isola_get(struct batadv_priv *bat_priv, unsigned short vid)
+ 	return ap_isolation_enabled;
+ }
+ 
+-static int batadv_param_set_ra(const char *val, const struct kernel_param *kp)
+-{
+-	struct batadv_algo_ops *bat_algo_ops;
+-	char *algo_name = (char *)val;
+-	size_t name_len = strlen(algo_name);
+-
+-	if (name_len > 0 && algo_name[name_len - 1] == '\n')
+-		algo_name[name_len - 1] = '\0';
+-
+-	bat_algo_ops = batadv_algo_get(algo_name);
+-	if (!bat_algo_ops) {
+-		pr_err("Routing algorithm '%s' is not supported\n", algo_name);
+-		return -EINVAL;
+-	}
+-
+-	return param_set_copystring(algo_name, kp);
+-}
+-
+-static const struct kernel_param_ops batadv_param_ops_ra = {
+-	.set = batadv_param_set_ra,
+-	.get = param_get_string,
+-};
+-
+-static struct kparam_string batadv_param_string_ra = {
+-	.maxlen = sizeof(batadv_routing_algo),
+-	.string = batadv_routing_algo,
+-};
+-
+-module_param_cb(routing_algo, &batadv_param_ops_ra, &batadv_param_string_ra,
+-		0644);
+ module_init(batadv_init);
+ module_exit(batadv_exit);
+ 
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index e523a38..91cc776 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -196,7 +196,6 @@ struct sk_buff;
+ #define BATADV_PRINT_VID(vid) ((vid & BATADV_VLAN_HAS_TAG) ? \
+ 			       (int)(vid & VLAN_VID_MASK) : -1)
+ 
+-extern char batadv_routing_algo[];
+ extern struct list_head batadv_hardif_list;
+ 
+ extern unsigned char batadv_broadcast_addr[];
+@@ -217,9 +216,6 @@ batadv_recv_handler_register(u8 packet_type,
+ 			     int (*recv_handler)(struct sk_buff *,
+ 						 struct batadv_hard_iface *));
+ void batadv_recv_handler_unregister(u8 packet_type);
+-int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
+-int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
+-int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
+ __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr);
+ 
+ /**
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 076d258..592cbda 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -34,6 +34,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/workqueue.h>
+ 
++#include "bat_algo.h"
+ #include "distributed-arp-table.h"
+ #include "fragmentation.h"
+ #include "gateway_client.h"
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 1d66289..a6429d3 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -34,6 +34,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/stddef.h>
+ 
++#include "bat_algo.h"
+ #include "bitarray.h"
+ #include "bridge_loop_avoidance.h"
+ #include "distributed-arp-table.h"
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index b60999d..f75631e 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -48,6 +48,7 @@
+ #include <linux/types.h>
+ #include <linux/workqueue.h>
+ 
++#include "bat_algo.h"
+ #include "bridge_loop_avoidance.h"
+ #include "debugfs.h"
+ #include "distributed-arp-table.h"
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index fa5da55..13ae11d 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -44,6 +44,7 @@
+ #include <linux/string.h>
+ #include <linux/workqueue.h>
+ 
++#include "bat_algo.h"
+ #include "bridge_loop_avoidance.h"
+ #include "hard-interface.h"
+ #include "hash.h"
 -- 
 2.8.1
 
