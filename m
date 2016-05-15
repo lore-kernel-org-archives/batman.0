@@ -1,8 +1,10 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Sun, 15 May 2016 23:11:29 +0800
-Message-Id: <1463325093-3927-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] pull request [net]: batman-adv 20160515
+Date: Sun, 15 May 2016 23:11:30 +0800
+Message-Id: <1463325093-3927-2-git-send-email-a@unstable.cc>
+In-Reply-To: <1463325093-3927-1-git-send-email-a@unstable.cc>
+References: <1463325093-3927-1-git-send-email-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: fix skb deref after free
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,72 +15,50 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, Antonio Quartulli <a@unstable.cc>, b.a.t.m.a.n@lists.open-mesh.org, Florian Westphal <fw@strlen.de>, Marek Lindner <mareklindner@neomailbox.ch>
 
-Hello David,
+From: Florian Westphal <fw@strlen.de>
 
-although we are extremely late in the release cycle we have 4 fixes
-which would really be worth merging before releasing linux-4.6.
+batadv_send_skb_to_orig() calls dev_queue_xmit() so we can't use skb->len.
 
-As you can read in the git tag below, each of them can lead to a
-kernel crash or to an unstable system.
+Fixes: 953324776d6d ("batman-adv: network coding - buffer unicast packets before forward")
+Signed-off-by: Florian Westphal <fw@strlen.de>
+Reviewed-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
+---
+ net/batman-adv/routing.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-We came up with several fixes after having tested our new B.A.T.M.A.N. V
-code at the Wireless Battle Mesh in Porto (PT) at the beginning of the month,
-however, what I am sending here is the minimum subset that we though being
-extremely important to avoid easy kernel crashes. The change footprint is
-also rather small.
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index b781bf753250..0c0c30e101a1 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -601,6 +601,7 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 	struct batadv_unicast_packet *unicast_packet;
+ 	struct ethhdr *ethhdr = eth_hdr(skb);
+ 	int res, hdr_len, ret = NET_RX_DROP;
++	unsigned int len;
+ 
+ 	unicast_packet = (struct batadv_unicast_packet *)skb->data;
+ 
+@@ -641,6 +642,7 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 	if (hdr_len > 0)
+ 		batadv_skb_set_priority(skb, hdr_len);
+ 
++	len = skb->len;
+ 	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
+ 
+ 	/* translate transmit result into receive result */
+@@ -648,7 +650,7 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 		/* skb was transmitted and consumed */
+ 		batadv_inc_counter(bat_priv, BATADV_CNT_FORWARD);
+ 		batadv_add_counter(bat_priv, BATADV_CNT_FORWARD_BYTES,
+-				   skb->len + ETH_HLEN);
++				   len + ETH_HLEN);
+ 
+ 		ret = NET_RX_SUCCESS;
+ 	} else if (res == NET_XMIT_POLICED) {
+-- 
+2.8.2
 
-
-Please pull or let me know if you rather prefer to get this through net-next.
-
-If you decide to pull, you will hit some conflicts when merging net into
-net-next, but I can send you some instructions to ease the process.
-
-
-Thanks a lot!
-	Antonio
-
-
-The following changes since commit b91506586206140154b0b44cccf88c8cc0a4dca5:
-
-  Merge branch 'xgene-fixes' (2016-05-13 21:12:07 -0400)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
-
-for you to fetch changes up to 6b892c1cb0805acee5d4ddd9e7878ed076c1b7c7:
-
-  batman-adv: Fix refcnt leak in batadv_v_neigh_* (2016-05-14 15:51:39 +0800)
-
-----------------------------------------------------------------
-During the Wireless Battle Mesh v9 in Porto (PT) at the beginning of
-May, we managed to uncover and fix some important bugs in our
-new B.A.T.M.A.N. V algorithm. These are the most critical fixes we
-came up with aimed to avoid easy kernel crashes:
-- avoid potential crash due to NULL pointer dereference in
-  B.A.T.M.A.N. V routine when a neigh_ifinfo object is not found, by
-  Sven Eckelmann
-- avoid crash due to double kref_put on neigh_node object in
-  B.A.T.M.A.N. V routine leading to use-after-free, by Sven
-  Eckelmann (this crash can be always replicated)
-- avoid use-after-free of skb when counting outgoing bytes, by Florian
-  Westphal
-- fix neigh_ifinfo object reference counting imbalance when using
-  B.A.T.M.A.N. V, by Sven Eckelmann. Such imbalance may lead to the
-  impossibility of releasing the related netdev object on shutdown.
-
-----------------------------------------------------------------
-Florian Westphal (1):
-      batman-adv: fix skb deref after free
-
-Sven Eckelmann (3):
-      batman-adv: Avoid nullptr derefence in batadv_v_neigh_is_sob
-      batman-adv: Fix double neigh_node_put in batadv_v_ogm_route_update
-      batman-adv: Fix refcnt leak in batadv_v_neigh_*
-
- net/batman-adv/bat_v.c     | 30 ++++++++++++++++++++++++++----
- net/batman-adv/bat_v_ogm.c |  4 +++-
- net/batman-adv/routing.c   |  4 +++-
- 3 files changed, 32 insertions(+), 6 deletions(-)
