@@ -1,11 +1,11 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Sun, 15 May 2016 23:11:31 +0800
-Message-Id: <1463325093-3927-3-git-send-email-a@unstable.cc>
+Date: Sun, 15 May 2016 23:11:32 +0800
+Message-Id: <1463325093-3927-4-git-send-email-a@unstable.cc>
 In-Reply-To: <1463325093-3927-1-git-send-email-a@unstable.cc>
 References: <1463325093-3927-1-git-send-email-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH 2/4] batman-adv: Avoid nullptr derefence in
-	batadv_v_neigh_is_sob
+Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: Fix double neigh_node_put in
+	batadv_v_ogm_route_update
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,48 +16,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>
 
 From: Sven Eckelmann <sven@narfation.org>
 
-batadv_neigh_ifinfo_get can return NULL when it cannot find (even when only
-temporarily) anymore the neigh_ifinfo in the list neigh->ifinfo_list. This
-has to be checked to avoid kernel Oopses when the ifinfo is dereferenced.
+The router is put down twice when it was non-NULL and either orig_ifinfo is
+NULL afterwards or batman-adv receives a packet with the same sequence
+number. This will end up in a use-after-free when the batadv_neigh_node is
+removed because the reference counter ended up too early at 0.
 
-This a situation which isn't expected but is already handled by functions
-like batadv_v_neigh_cmp. The same kind of warning is therefore used before
-the function returns without dereferencing the pointers.
-
-Fixes: 9786906022eb ("batman-adv: B.A.T.M.A.N. V - implement neighbor comparison API calls")
+Fixes: 9323158ef9f4 ("batman-adv: OGMv2 - implement originators logic")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/bat_v.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ net/batman-adv/bat_v_ogm.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 4026f198a734..e81ad4b8e5c8 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -27,6 +27,7 @@
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
- #include <linux/seq_file.h>
-+#include <linux/stddef.h>
- #include <linux/types.h>
- #include <linux/workqueue.h>
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index d9bcbe6e7d65..91df28a100f9 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -529,8 +529,10 @@ static void batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
+ 		goto out;
+ 	}
  
-@@ -277,6 +278,9 @@ static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *neigh1,
- 	ifinfo1 = batadv_neigh_ifinfo_get(neigh1, if_outgoing1);
- 	ifinfo2 = batadv_neigh_ifinfo_get(neigh2, if_outgoing2);
+-	if (router)
++	if (router) {
+ 		batadv_neigh_node_put(router);
++		router = NULL;
++	}
  
-+	if (WARN_ON(!ifinfo1 || !ifinfo2))
-+		return false;
-+
- 	threshold = ifinfo1->bat_v.throughput / 4;
- 	threshold = ifinfo1->bat_v.throughput - threshold;
- 
+ 	/* Update routes, and check if the OGM is from the best next hop */
+ 	batadv_v_ogm_orig_update(bat_priv, orig_node, neigh_node, ogm2,
 -- 
 2.8.2
 
