@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 15 May 2016 14:15:01 +0200
-Message-ID: <22866212.dooYpi8Uhz@sven-edge>
-In-Reply-To: <20160515120626.GG4375@otheros>
-References: <20160514145129.GD4375@otheros> <2911091.OSPWlnrdxm@sven-edge>
- <20160515120626.GG4375@otheros>
+Date: Sun, 15 May 2016 14:17:58 +0200
+Message-ID: <8086534.UgBdovvYXm@sven-edge>
+In-Reply-To: <22866212.dooYpi8Uhz@sven-edge>
+References: <20160514145129.GD4375@otheros> <20160515120626.GG4375@otheros>
+ <22866212.dooYpi8Uhz@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3397084.R1zBKERJzx";
+Content-Type: multipart/signed; boundary="nextPart1463316601.vYK9PtJmH1";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] kmalloc() vs. kmem_cache_alloc() for global TT?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,24 +20,30 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3397084.R1zBKERJzx
+--nextPart1463316601.vYK9PtJmH1
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Sunday 15 May 2016 14:06:26 Linus L=FCssing wrote:
-[...]
-> [0]
-> https://git.open-mesh.org/batman-adv.git/shortlog/refs/heads/linus/km=
-em-cac
-> he
+On Sunday 15 May 2016 14:15:01 Sven Eckelmann wrote:
+> On Sunday 15 May 2016 14:06:26 Linus L=FCssing wrote:
+> [...]
+>=20
+> > [0]
+> > https://git.open-mesh.org/batman-adv.git/shortlog/refs/heads/linus/=
+kmem-ca
+> > c
+> > he
+>=20
+> This patchset has a bad bug. It still uses kfree for tt_local objects=
 
-This patchset has a bad bug. It still uses kfree for tt_local objects=20=
+> allocated via kmem_cache_(z)alloc.
 
-allocated via kmem_cache_(z)alloc.
+Also the kmem_cache_destroy seems to be broken regarding the RCU handli=
+ng.
 
 Kind regards,
 =09Sven
---nextPart3397084.R1zBKERJzx
+--nextPart1463316601.vYK9PtJmH1
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -45,20 +51,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXOGhFAAoJEF2HCgfBJntG0zoQAJ7jbM1oKiG7ZJ8Pdz3qQdaI
-8xgcyyQRNnvRzpq+Gg7sEnyQ+z64b/jo5l6L824pJMan1IjpcLlGtSEvqdx3scgl
-So3cMPplnTDtaBp7+a+MbAdKxR3zMKbe8CnWp0xIRIJh+7oGaKX9no1pjjaCcmGL
-yz85XDsIwNdnKsyJdWy3HnQM5/6umrhT+uVOJBC+kiP/yNIZ+k0YOAZLFq88GWD8
-nawBPzBnIaSzCC2OhlujgzY9tbVNaB/D7fJRxI4TBLLtjlhF2rbAsUQ4gjc80xrK
-moXWGQJApg+Jfq7cDu8T56hAznMY3Fixrx7ggk9ieIJeDdSLklRW2FPN6s5TRevV
-tWDorCydDyujXGr0NjaY7mI5VpNzk+6THCeiQiIqDJP08kF0sIsMnaaB4afuZszG
-zk3VJMOqsNTg1c7sQGJ48IEMG46cIpl6uFR4+9VLbT96sIdNsDmP6WWRxBVIFMer
-/084GFtPxe5q97aJ4wgvoK3XnrvGSc3QoTSI+SvVnedl8BHjMxkep7PFbSLv7pQ0
-XSQWQpdLsFV26Of7iU0dlNZ+GGRbEXXgKd3noYmEOqOxu3b0id+xmudTfghZEWWw
-JJfc/3bpyh/PFUDYpEduuPtM4EiglHGlYsTs6Tu1ZbDExl37ICzowX2hg+YygluJ
-Q6rdfHs0HrCUAKFGjcbS
-=+LQR
+iQIcBAABCgAGBQJXOGj2AAoJEF2HCgfBJntGq/YP/1h8sEVSipRPgq9DCKPkFYot
+/+j7NFBdXTvYqcgDCgWrWcSDKcAfi9v1ON1pPmPBjndnEnJ6j///gQtvNR6/pW8S
+We2qc4+nPO2jLSCdYtNq1vs745yG57G4yjkNCkxu0juCiGfUvkIseF69bQGzNZpV
+fkt/z9t4veHNKT2moI8DOrVnR5v0Cbxrb2BTRoLaANi1MzJUvWb5mct+/sY7ky4Z
+RRcs6HSUK89KGaftuhnGA2qaAnBu7+OwWsdlyUT5NVipPf1Su7r+5zbf9uMSnbh2
+G9zD4iNdi35uNz2/hI+nqsXay4Y3mdpFD87iumfuKDA0IAmYHlry9S+JFy6x7KIA
+zpRPYCk9gLcVYUxLMvLn6Go3deMi77yIK6xNfP/1ikdd3HuExdufu4ZQv1dSIslr
+dQqhiDEEV43rxmjpFZEqUAQrvIoL2BtsedNT+WuH1r3n2R4mdNpZVTDp+3hBUOpE
+c61JLK4z4M2xPfyMjJx6Ov8YWqHq2C4z3tVK35oE6hrUmKYA55UIYjK6tm2TqesD
+I1wDHE/J+6WlNrQv2SgEfRVJou/eEXsQ3y0VqwdLtiXi8IiVwiy+Nz0/KmxuVdcn
+0KltIHTLn7E74Wcf8/AhM03dH/xd19WRNn9NCuTDsypZaNq1xM9qzi9emKOTHFha
+//pf6CggZQFPK1LhMuhI
+=lb2H
 -----END PGP SIGNATURE-----
 
---nextPart3397084.R1zBKERJzx--
+--nextPart1463316601.vYK9PtJmH1--
 
