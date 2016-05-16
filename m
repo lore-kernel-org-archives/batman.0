@@ -1,11 +1,11 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Mon, 16 May 2016 18:08:47 +0200
-Message-Id: <1463414932-1152-7-git-send-email-andrew@lunn.ch>
+Date: Mon, 16 May 2016 18:08:46 +0200
+Message-Id: <1463414932-1152-6-git-send-email-andrew@lunn.ch>
 In-Reply-To: <1463414932-1152-1-git-send-email-andrew@lunn.ch>
 References: <1463414932-1152-1-git-send-email-andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH v5 06/11] batman-adv: netlink: add originator
-	and neighbor table queries
+Subject: [B.A.T.M.A.N.] [PATCH v5 05/11] batman-adv: netlink: add
+	translation table query
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,210 +19,378 @@ To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
 From: Matthias Schiffer <mschiffer@universe-factory.net>
 
-Add BATADV_CMD_GET_ORIGINATORS and BATADV_CMD_GET_NEIGHBORS commands,
-using handlers bat_orig_dump and bat_neigh_dump in batadv_algo_ops. Will
-always return -EOPNOTSUPP for now, as no implementations exist yet.
+This adds the commands BATADV_CMD_GET_TRANSTABLE_LOCAL and
+BATADV_CMD_GET_TRANSTABLE_GLOBAL, which correspond to the transtable_local
+and transtable_global debugfs files.
+
+The batadv_tt_client_flags enum is moved to the UAPI to expose it as part
+of the netlink API.
 
 Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- include/uapi/linux/batman_adv.h |   4 +
- net/batman-adv/netlink.c        |  13 ++++
- net/batman-adv/originator.c     | 160 ++++++++++++++++++++++++++++++++++++++++
- net/batman-adv/originator.h     |   4 +
- net/batman-adv/types.h          |   9 +++
- 5 files changed, 190 insertions(+)
+ include/uapi/linux/batman_adv.h    |  56 ++++++
+ net/batman-adv/netlink.c           |  24 ++-
+ net/batman-adv/netlink.h           |   1 +
+ net/batman-adv/packet.h            |  36 ----
+ net/batman-adv/translation-table.c | 379 +++++++++++++++++++++++++++++++++++++
+ net/batman-adv/translation-table.h |   4 +
+ 6 files changed, 463 insertions(+), 37 deletions(-)
 
 diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index c5ef3df..1f2f5fc 100644
+index 9e7d77a..c5ef3df 100644
 --- a/include/uapi/linux/batman_adv.h
 +++ b/include/uapi/linux/batman_adv.h
-@@ -115,6 +115,8 @@ enum batadv_nl_attrs {
-  * @BATADV_CMD_GET_MESH_INFO: Query basic information about batman-adv device
-  * @BATADV_CMD_GET_ROUTING_ALGOS: Query the list of routing algorithms.
-  * @BATADV_CMD_GET_HARDIFS: Query list of hard interfaces
-+ * @BATADV_CMD_GET_ORIGINATORS: Query list of originators
-+ * @BATADV_CMD_GET_NEIGHBORS: Query list of neighbours
-  * @__BATADV_CMD_AFTER_LAST: internal use
-  * @BATADV_CMD_MAX: highest used command number
-  */
-@@ -125,6 +127,8 @@ enum batadv_nl_commands {
+@@ -21,6 +21,42 @@
+ #define BATADV_NL_NAME "batadv"
+ 
+ /**
++ * enum batadv_tt_client_flags - TT client specific flags
++ * @BATADV_TT_CLIENT_DEL: the client has to be deleted from the table
++ * @BATADV_TT_CLIENT_ROAM: the client roamed to/from another node and the new
++ *  update telling its new real location has not been received/sent yet
++ * @BATADV_TT_CLIENT_WIFI: this client is connected through a wifi interface.
++ *  This information is used by the "AP Isolation" feature
++ * @BATADV_TT_CLIENT_ISOLA: this client is considered "isolated". This
++ *  information is used by the Extended Isolation feature
++ * @BATADV_TT_CLIENT_NOPURGE: this client should never be removed from the table
++ * @BATADV_TT_CLIENT_NEW: this client has been added to the local table but has
++ *  not been announced yet
++ * @BATADV_TT_CLIENT_PENDING: this client is marked for removal but it is kept
++ *  in the table for one more originator interval for consistency purposes
++ * @BATADV_TT_CLIENT_TEMP: this global client has been detected to be part of
++ *  the network but no nnode has already announced it
++ *
++ * Bits from 0 to 7 are called _remote flags_ because they are sent on the wire.
++ * Bits from 8 to 15 are called _local flags_ because they are used for local
++ * computations only.
++ *
++ * Bits from 4 to 7 - a subset of remote flags - are ensured to be in sync with
++ * the other nodes in the network. To achieve this goal these flags are included
++ * in the TT CRC computation.
++ */
++enum batadv_tt_client_flags {
++	BATADV_TT_CLIENT_DEL     = (1 << 0),
++	BATADV_TT_CLIENT_ROAM    = (1 << 1),
++	BATADV_TT_CLIENT_WIFI    = (1 << 4),
++	BATADV_TT_CLIENT_ISOLA	 = (1 << 5),
++	BATADV_TT_CLIENT_NOPURGE = (1 << 8),
++	BATADV_TT_CLIENT_NEW     = (1 << 9),
++	BATADV_TT_CLIENT_PENDING = (1 << 10),
++	BATADV_TT_CLIENT_TEMP	 = (1 << 11),
++};
++
++/**
+  * enum batadv_nl_attrs - batman-adv netlink attributes
+  *
+  * @BATADV_ATTR_UNSPEC: unspecified attribute to catch errors
+@@ -33,6 +69,15 @@
+  * @BATADV_ATTR_HARD_IFNAME: name of the non-batman-adv interface
+  * @BATADV_ATTR_HARD_ADDRESS: mac address of the non-batman-adv interface
+  * @BATADV_ATTR_ACTIVE: Flag indicating if the hard interface is active
++ * @BATADV_ATTR_ORIG_ADDRESS: Originator MAC address
++ * @BATADV_ATTR_TT_ADDRESS: Client MAC address
++ * @BATADV_ATTR_TT_TTVN: Translation table version
++ * @BATADV_ATTR_TT_LAST_TTVN: Previous translation table version
++ * @BATADV_ATTR_TT_CRC32: CRC32 over translation table
++ * @BATADV_ATTR_TT_VID: VLAN ID
++ * @BATADV_ATTR_TT_FLAGS: Translation table client flags
++ * @BATADV_ATTR_FLAG_BEST: Flags indicating entry is the best
++ * @BATADV_ATTR_LAST_SEEN_MSECS: Time in milliseconds since last seen
+  * @__BATADV_ATTR_AFTER_LAST: internal use
+  * @NUM_BATADV_ATTR: total number of batadv_nl_attrs available
+  * @BATADV_ATTR_MAX: highest attribute number currently defined
+@@ -48,6 +93,15 @@ enum batadv_nl_attrs {
+ 	BATADV_ATTR_HARD_IFNAME,
+ 	BATADV_ATTR_HARD_ADDRESS,
+ 	BATADV_ATTR_ACTIVE,
++	BATADV_ATTR_ORIG_ADDRESS,
++	BATADV_ATTR_TT_ADDRESS,
++	BATADV_ATTR_TT_TTVN,
++	BATADV_ATTR_TT_LAST_TTVN,
++	BATADV_ATTR_TT_CRC32,
++	BATADV_ATTR_TT_VID,
++	BATADV_ATTR_TT_FLAGS,
++	BATADV_ATTR_FLAG_BEST,
++	BATADV_ATTR_LAST_SEEN_MSECS,
+ 	/* add attributes above here, update the policy in netlink.c */
+ 	__BATADV_ATTR_AFTER_LAST,
+ 	NUM_BATADV_ATTR = __BATADV_ATTR_AFTER_LAST,
+@@ -69,6 +123,8 @@ enum batadv_nl_commands {
+ 	BATADV_CMD_GET_MESH_INFO,
+ 	BATADV_CMD_GET_ROUTING_ALGOS,
  	BATADV_CMD_GET_HARDIFS,
- 	BATADV_CMD_GET_TRANSTABLE_LOCAL,
- 	BATADV_CMD_GET_TRANSTABLE_GLOBAL,
-+	BATADV_CMD_GET_ORIGINATORS,
-+	BATADV_CMD_GET_NEIGHBORS,
++	BATADV_CMD_GET_TRANSTABLE_LOCAL,
++	BATADV_CMD_GET_TRANSTABLE_GLOBAL,
  	/* add new commands above here */
  	__BATADV_CMD_AFTER_LAST,
  	BATADV_CMD_MAX = __BATADV_CMD_AFTER_LAST - 1
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index cede827..b5a9dfb 100644
+index bc4fcc2..cede827 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -36,6 +36,7 @@
- #include <net/sock.h>
- #include <uapi/linux/batman_adv.h>
+@@ -38,6 +38,7 @@
  
-+#include "originator.h"
  #include "hard-interface.h"
  #include "soft-interface.h"
- #include "translation-table.h"
-@@ -323,6 +324,18 @@ static struct genl_ops batadv_netlink_ops[] = {
++#include "translation-table.h"
+ 
+ struct genl_family batadv_netlink_family = {
+ 	.id = GENL_ID_GENERATE,
+@@ -57,6 +58,15 @@ static struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
+ 	[BATADV_ATTR_HARD_IFNAME]	= { .type = NLA_STRING },
+ 	[BATADV_ATTR_HARD_ADDRESS]	= { .len = ETH_ALEN },
+ 	[BATADV_ATTR_ACTIVE]		= { .type = NLA_FLAG },
++	[BATADV_ATTR_ORIG_ADDRESS]	= { .len = ETH_ALEN },
++	[BATADV_ATTR_TT_ADDRESS]	= { .len = ETH_ALEN },
++	[BATADV_ATTR_TT_TTVN]		= { .type = NLA_U8 },
++	[BATADV_ATTR_TT_LAST_TTVN]	= { .type = NLA_U8 },
++	[BATADV_ATTR_TT_CRC32]		= { .type = NLA_U32 },
++	[BATADV_ATTR_TT_VID]		= { .type = NLA_U16 },
++	[BATADV_ATTR_TT_FLAGS]		= { .type = NLA_U32 },
++	[BATADV_ATTR_FLAG_BEST]		= { .type = NLA_FLAG },
++	[BATADV_ATTR_LAST_SEEN_MSECS]	= { .type = NLA_U32 },
+ };
+ 
+ /**
+@@ -66,7 +76,7 @@ static struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
+  *
+  * Return: interface index, or 0.
+  */
+-static int
++int
+ batadv_netlink_get_ifindex(const struct nlmsghdr *nlh, int attrtype)
+ {
+ 	struct nlattr *attr = nlmsg_find_attr(nlh, GENL_HDRLEN, attrtype);
+@@ -301,6 +311,18 @@ static struct genl_ops batadv_netlink_ops[] = {
  		.policy = batadv_netlink_policy,
- 		.dumpit = batadv_tt_global_dump,
+ 		.dumpit = batadv_netlink_dump_hardifs,
  	},
 +	{
-+		.cmd = BATADV_CMD_GET_ORIGINATORS,
++		.cmd = BATADV_CMD_GET_TRANSTABLE_LOCAL,
 +		.flags = GENL_ADMIN_PERM,
 +		.policy = batadv_netlink_policy,
-+		.dumpit = batadv_orig_dump,
++		.dumpit = batadv_tt_local_dump,
 +	},
 +	{
-+		.cmd = BATADV_CMD_GET_NEIGHBORS,
++		.cmd = BATADV_CMD_GET_TRANSTABLE_GLOBAL,
 +		.flags = GENL_ADMIN_PERM,
 +		.policy = batadv_netlink_policy,
-+		.dumpit = batadv_hardif_neigh_dump,
++		.dumpit = batadv_tt_global_dump,
 +	},
  };
  
  /**
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 076d258..71b63e7 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -28,11 +28,15 @@
+diff --git a/net/batman-adv/netlink.h b/net/batman-adv/netlink.h
+index 0e4f134..ffa5457 100644
+--- a/net/batman-adv/netlink.h
++++ b/net/batman-adv/netlink.h
+@@ -27,6 +27,7 @@ struct nlmsghdr;
+ 
+ void batadv_netlink_register(void);
+ void batadv_netlink_unregister(void);
++int batadv_netlink_get_ifindex(const struct nlmsghdr *nlh, int attrtype);
+ 
+ extern struct genl_family batadv_netlink_family;
+ 
+diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
+index 7156779..7acc6a2 100644
+--- a/net/batman-adv/packet.h
++++ b/net/batman-adv/packet.h
+@@ -126,42 +126,6 @@ enum batadv_tt_data_flags {
+ };
+ 
+ /**
+- * enum batadv_tt_client_flags - TT client specific flags
+- * @BATADV_TT_CLIENT_DEL: the client has to be deleted from the table
+- * @BATADV_TT_CLIENT_ROAM: the client roamed to/from another node and the new
+- *  update telling its new real location has not been received/sent yet
+- * @BATADV_TT_CLIENT_WIFI: this client is connected through a wifi interface.
+- *  This information is used by the "AP Isolation" feature
+- * @BATADV_TT_CLIENT_ISOLA: this client is considered "isolated". This
+- *  information is used by the Extended Isolation feature
+- * @BATADV_TT_CLIENT_NOPURGE: this client should never be removed from the table
+- * @BATADV_TT_CLIENT_NEW: this client has been added to the local table but has
+- *  not been announced yet
+- * @BATADV_TT_CLIENT_PENDING: this client is marked for removal but it is kept
+- *  in the table for one more originator interval for consistency purposes
+- * @BATADV_TT_CLIENT_TEMP: this global client has been detected to be part of
+- *  the network but no nnode has already announced it
+- *
+- * Bits from 0 to 7 are called _remote flags_ because they are sent on the wire.
+- * Bits from 8 to 15 are called _local flags_ because they are used for local
+- * computations only.
+- *
+- * Bits from 4 to 7 - a subset of remote flags - are ensured to be in sync with
+- * the other nodes in the network. To achieve this goal these flags are included
+- * in the TT CRC computation.
+- */
+-enum batadv_tt_client_flags {
+-	BATADV_TT_CLIENT_DEL     = BIT(0),
+-	BATADV_TT_CLIENT_ROAM    = BIT(1),
+-	BATADV_TT_CLIENT_WIFI    = BIT(4),
+-	BATADV_TT_CLIENT_ISOLA	 = BIT(5),
+-	BATADV_TT_CLIENT_NOPURGE = BIT(8),
+-	BATADV_TT_CLIENT_NEW     = BIT(9),
+-	BATADV_TT_CLIENT_PENDING = BIT(10),
+-	BATADV_TT_CLIENT_TEMP	 = BIT(11),
+-};
+-
+-/**
+  * enum batadv_vlan_flags - flags for the four MSB of any vlan ID field
+  * @BATADV_VLAN_HAS_TAG: whether the field contains a valid vlan tag or not
+  */
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index feaf492..6166cc9 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -35,19 +35,26 @@
  #include <linux/list.h>
  #include <linux/lockdep.h>
  #include <linux/netdevice.h>
 +#include <linux/netlink.h>
  #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
  #include <linux/seq_file.h>
 +#include <linux/skbuff.h>
  #include <linux/slab.h>
  #include <linux/spinlock.h>
+ #include <linux/stddef.h>
+ #include <linux/string.h>
  #include <linux/workqueue.h>
++#include <net/genetlink.h>
++#include <net/netlink.h>
 +#include <net/sock.h>
 +#include <uapi/linux/batman_adv.h>
  
- #include "distributed-arp-table.h"
- #include "fragmentation.h"
-@@ -40,8 +44,10 @@
+ #include "bridge_loop_avoidance.h"
  #include "hard-interface.h"
  #include "hash.h"
  #include "multicast.h"
 +#include "netlink.h"
- #include "network-coding.h"
- #include "routing.h"
-+#include "soft-interface.h"
- #include "translation-table.h"
- 
- /* hash class keys */
-@@ -719,6 +725,83 @@ int batadv_hardif_neigh_seq_print_text(struct seq_file *seq, void *offset)
- }
- 
- /**
-+ * batadv_hardif_neigh_dump - Dump to netlink the neighbor infos for a specific
-+ *  outgoing interface
-+ * @msg: message to dump into
-+ * @cb: parameters for the dump
-+ *
-+ * Return: 0 or error value
-+ */
-+int batadv_hardif_neigh_dump(struct sk_buff *msg, struct netlink_callback *cb)
-+{
-+	struct net *net = sock_net(cb->skb->sk);
-+	struct net_device *soft_iface = NULL;
-+	struct net_device *hard_iface = NULL;
-+	struct batadv_hard_iface *hardif = BATADV_IF_DEFAULT;
-+	struct batadv_priv *bat_priv;
-+	struct batadv_hard_iface *primary_if = NULL;
-+	int ret;
-+	int ifindex, hard_ifindex;
-+
-+	ifindex = batadv_netlink_get_ifindex(cb->nlh, BATADV_ATTR_MESH_IFINDEX);
-+	if (!ifindex)
-+		return -EINVAL;
-+
-+	soft_iface = dev_get_by_index(net, ifindex);
-+	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
-+		ret = -ENODEV;
-+		goto out;
-+	}
-+
-+	bat_priv = netdev_priv(soft_iface);
-+
-+	primary_if = batadv_primary_if_get_selected(bat_priv);
-+	if (!primary_if || primary_if->if_status != BATADV_IF_ACTIVE) {
-+		ret = -ENOENT;
-+		goto out;
-+	}
-+
-+	hard_ifindex = batadv_netlink_get_ifindex(cb->nlh,
-+						  BATADV_ATTR_HARD_IFINDEX);
-+	if (hard_ifindex) {
-+		hard_iface = dev_get_by_index(net, hard_ifindex);
-+		if (hard_iface)
-+			hardif = batadv_hardif_get_by_netdev(hard_iface);
-+
-+		if (!hardif) {
-+			ret = -ENODEV;
-+			goto out;
-+		}
-+
-+		if (hardif->soft_iface != soft_iface) {
-+			ret = -ENOENT;
-+			goto out;
-+		}
-+	}
-+
-+	if (!bat_priv->bat_algo_ops->bat_neigh_dump) {
-+		ret = -EOPNOTSUPP;
-+		goto out;
-+	}
-+
-+	bat_priv->bat_algo_ops->bat_neigh_dump(msg, cb, bat_priv, hardif);
-+
-+	ret = msg->len;
-+
-+ out:
-+	if (hardif)
-+		batadv_hardif_put(hardif);
-+	if (hard_iface)
-+		dev_put(hard_iface);
-+	if (primary_if)
-+		batadv_hardif_put(primary_if);
-+	if (soft_iface)
-+		dev_put(soft_iface);
-+
-+	return ret;
-+}
-+
-+/**
-  * batadv_orig_ifinfo_release - release orig_ifinfo from lists and queue for
-  *  free after rcu grace period
-  * @ref: kref pointer of the orig_ifinfo
-@@ -1314,6 +1397,83 @@ out:
+ #include "originator.h"
+ #include "packet.h"
+ #include "soft-interface.h"
+@@ -1056,6 +1063,167 @@ out:
  	return 0;
  }
  
 +/**
-+ * batadv_orig_dump - Dump to netlink the originator infos for a specific
-+ *  outgoing interface
-+ * @msg: message to dump into
-+ * @cb: parameters for the dump
++ * batadv_tt_local_dump_entry - Dump one TT local entry into a message
++ * @msg :Netlink message to dump into
++ * @portid: Port making netlink request
++ * @seq: Sequence number of netlink message
++ * @bat_priv: The bat priv with all the soft interface information
++ * @common: tt local & tt global common data
 + *
-+ * Return: 0 or error value
++ * Return: Error code, or 0 on success
 + */
-+int batadv_orig_dump(struct sk_buff *msg, struct netlink_callback *cb)
++static int
++batadv_tt_local_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
++			   struct batadv_priv *bat_priv,
++			   struct batadv_tt_common_entry *common)
++{
++	void *hdr;
++	struct batadv_softif_vlan *vlan;
++	struct batadv_tt_local_entry *local;
++	unsigned int last_seen_msecs;
++	u32 crc;
++
++	local = container_of(common, struct batadv_tt_local_entry, common);
++	last_seen_msecs = jiffies_to_msecs(jiffies - local->last_seen);
++
++	vlan = batadv_softif_vlan_get(bat_priv, common->vid);
++	if (!vlan)
++		return 0;
++
++	crc = vlan->tt.crc;
++
++	batadv_softif_vlan_put(vlan);
++
++	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family,
++			  NLM_F_MULTI,
++			  BATADV_CMD_GET_TRANSTABLE_LOCAL);
++	if (!hdr)
++		return -ENOBUFS;
++
++	if (nla_put(msg, BATADV_ATTR_TT_ADDRESS, ETH_ALEN, common->addr) ||
++	    nla_put_u32(msg, BATADV_ATTR_TT_CRC32, crc) ||
++	    nla_put_u16(msg, BATADV_ATTR_TT_VID,
++			BATADV_PRINT_VID(common->vid)) ||
++	    nla_put_u32(msg, BATADV_ATTR_TT_FLAGS, common->flags))
++		goto nla_put_failure;
++
++	if (!(common->flags & BATADV_TT_CLIENT_NOPURGE)) {
++		if (nla_put_u32(msg, BATADV_ATTR_LAST_SEEN_MSECS,
++				last_seen_msecs))
++			goto nla_put_failure;
++	}
++
++	genlmsg_end(msg, hdr);
++	return 0;
++
++ nla_put_failure:
++	genlmsg_cancel(msg, hdr);
++	return -EMSGSIZE;
++}
++
++/**
++ * batadv_tt_local_dump_bucket - Dump one TT local bucket into a message
++ * @msg: Netlink message to dump into
++ * @portid: Port making netlink request
++ * @seq: Sequence number of netlink message
++ * @bat_priv: The bat priv with all the soft interface information
++ * @head: Pointer to the list containing the local tt entries
++ * @idx_s: Number of entries to skip
++ *
++ * Return: Error code, or 0 on success
++ */
++static int
++batadv_tt_local_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
++			    struct batadv_priv *bat_priv,
++			    struct hlist_head *head, int *idx_s)
++{
++	struct batadv_tt_common_entry *common;
++	int idx = 0;
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(common, head, hash_entry) {
++		if (idx++ < *idx_s)
++			continue;
++
++		if (batadv_tt_local_dump_entry(msg, portid, seq, bat_priv,
++					       common)) {
++			rcu_read_unlock();
++			*idx_s = idx - 1;
++			return -EMSGSIZE;
++		}
++	}
++	rcu_read_unlock();
++
++	*idx_s = 0;
++	return 0;
++}
++
++/**
++ * batadv_tt_local_dump - Dump TT local entries into a message
++ * @msg: Netlink message to dump into
++ * @cb: Parameters from query
++ *
++ * Return: Error code, or 0 on success
++ */
++int batadv_tt_local_dump(struct sk_buff *msg, struct netlink_callback *cb)
 +{
 +	struct net *net = sock_net(cb->skb->sk);
 +	struct net_device *soft_iface = NULL;
-+	struct net_device *hard_iface = NULL;
-+	struct batadv_hard_iface *hardif = BATADV_IF_DEFAULT;
 +	struct batadv_priv *bat_priv;
 +	struct batadv_hard_iface *primary_if = NULL;
++	struct batadv_hashtable *hash;
++	struct hlist_head *head;
 +	int ret;
-+	int ifindex, hard_ifindex;
++	int ifindex;
++	int bucket = cb->args[0];
++	int idx = cb->args[1];
++	int portid = NETLINK_CB(cb->skb).portid;
 +
 +	ifindex = batadv_netlink_get_ifindex(cb->nlh, BATADV_ATTR_MESH_IFINDEX);
 +	if (!ifindex)
@@ -242,117 +410,277 @@ index 076d258..71b63e7 100644
 +		goto out;
 +	}
 +
-+	hard_ifindex = batadv_netlink_get_ifindex(cb->nlh,
-+						  BATADV_ATTR_HARD_IFINDEX);
-+	if (hard_ifindex) {
-+		hard_iface = dev_get_by_index(net, hard_ifindex);
-+		if (hard_iface)
-+			hardif = batadv_hardif_get_by_netdev(hard_iface);
++	hash = bat_priv->tt.local_hash;
 +
-+		if (!hardif) {
-+			ret = -ENODEV;
-+			goto out;
-+		}
++	while (bucket < hash->size) {
++		head = &hash->table[bucket];
 +
-+		if (hardif->soft_iface != soft_iface) {
-+			ret = -ENOENT;
-+			goto out;
-+		}
++		if (batadv_tt_local_dump_bucket(msg, portid, cb->nlh->nlmsg_seq,
++						bat_priv, head, &idx))
++			break;
++
++		bucket++;
 +	}
-+
-+	if (!bat_priv->bat_algo_ops->bat_orig_dump) {
-+		ret = -EOPNOTSUPP;
-+		goto out;
-+	}
-+
-+	bat_priv->bat_algo_ops->bat_orig_dump(msg, cb, bat_priv, hardif);
 +
 +	ret = msg->len;
 +
 + out:
-+	if (hardif)
-+		batadv_hardif_put(hardif);
-+	if (hard_iface)
-+		dev_put(hard_iface);
 +	if (primary_if)
 +		batadv_hardif_put(primary_if);
 +	if (soft_iface)
 +		dev_put(soft_iface);
 +
++	cb->args[0] = bucket;
++	cb->args[1] = idx;
++
 +	return ret;
 +}
 +
- int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
- 			    int max_if_num)
- {
-diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
-index 566306b..ebc5618 100644
---- a/net/batman-adv/originator.h
-+++ b/net/batman-adv/originator.h
-@@ -31,7 +31,9 @@
+ static void
+ batadv_tt_local_set_pending(struct batadv_priv *bat_priv,
+ 			    struct batadv_tt_local_entry *tt_local_entry,
+@@ -1703,6 +1871,217 @@ out:
+ }
  
- #include "hash.h"
+ /**
++ * batadv_tt_global_dump_subentry - Dump all TT local entries into a message
++ * @msg: Netlink message to dump into
++ * @portid: Port making netlink request
++ * @seq: Sequence number of netlink message
++ * @common: tt local & tt global common data
++ * @orig: Originator node announcing a non-mesh client
++ * @best: Is the best originator for the TT entry
++ *
++ * Return: Error code, or 0 on success
++ */
++static int
++batadv_tt_global_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
++			       struct batadv_tt_common_entry *common,
++			       struct batadv_tt_orig_list_entry *orig,
++			       bool best)
++{
++	void *hdr;
++	struct batadv_orig_node_vlan *vlan;
++	u8 last_ttvn;
++	u32 crc;
++
++	vlan = batadv_orig_node_vlan_get(orig->orig_node,
++					 common->vid);
++	if (!vlan)
++		return 0;
++
++	crc = vlan->tt.crc;
++
++	batadv_orig_node_vlan_put(vlan);
++
++	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family,
++			  NLM_F_MULTI,
++			  BATADV_CMD_GET_TRANSTABLE_GLOBAL);
++	if (!hdr)
++		return -ENOBUFS;
++
++	last_ttvn = atomic_read(&orig->orig_node->last_ttvn);
++
++	if (nla_put(msg, BATADV_ATTR_TT_ADDRESS, ETH_ALEN, common->addr) ||
++	    nla_put(msg, BATADV_ATTR_ORIG_ADDRESS, ETH_ALEN,
++		    orig->orig_node->orig) ||
++	    nla_put_u8(msg, BATADV_ATTR_TT_TTVN, orig->ttvn) ||
++	    nla_put_u8(msg, BATADV_ATTR_TT_LAST_TTVN, last_ttvn) ||
++	    nla_put_u32(msg, BATADV_ATTR_TT_CRC32, crc) ||
++	    nla_put_u16(msg, BATADV_ATTR_TT_VID,
++			BATADV_PRINT_VID(common->vid)) ||
++	    nla_put_u32(msg, BATADV_ATTR_TT_FLAGS, common->flags))
++		goto nla_put_failure;
++
++	if (best && nla_put_flag(msg, BATADV_ATTR_FLAG_BEST))
++		goto nla_put_failure;
++
++	genlmsg_end(msg, hdr);
++	return 0;
++
++ nla_put_failure:
++	genlmsg_cancel(msg, hdr);
++	return -EMSGSIZE;
++}
++
++/**
++ * batadv_tt_global_dump_entry - Dump one TT global entry into a message
++ * @msg: Netlink message to dump into
++ * @portid: Port making netlink request
++ * @seq: Sequence number of netlink message
++ * @bat_priv: The bat priv with all the soft interface information
++ * @common: tt local & tt global common data
++ * @sub_s: Number of entries to skip
++ *
++ * Return: Error code, or 0 on success
++ */
++static int
++batadv_tt_global_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
++			    struct batadv_priv *bat_priv,
++			    struct batadv_tt_common_entry *common, int *sub_s)
++{
++	struct batadv_tt_orig_list_entry *orig_entry, *best_entry;
++	struct batadv_tt_global_entry *global;
++	struct hlist_head *head;
++	int sub = 0;
++	bool best;
++
++	global = container_of(common, struct batadv_tt_global_entry, common);
++	best_entry = batadv_transtable_best_orig(bat_priv, global);
++	head = &global->orig_list;
++
++	hlist_for_each_entry_rcu(orig_entry, head, list) {
++		if (sub++ < *sub_s)
++			continue;
++
++		best = (orig_entry == best_entry);
++
++		if (batadv_tt_global_dump_subentry(msg, portid, seq, common,
++						   orig_entry, best)) {
++			*sub_s = sub - 1;
++			return -EMSGSIZE;
++		}
++	}
++
++	*sub_s = 0;
++	return 0;
++}
++
++/**
++ * batadv_tt_global_dump_bucket - Dump one TT local bucket into a message
++ * @msg: Netlink message to dump into
++ * @portid: Port making netlink request
++ * @seq: Sequence number of netlink message
++ * @bat_priv: The bat priv with all the soft interface information
++ * @head: Pointer to the list containing the global tt entries
++ * @idx_s: Number of entries to skip
++ * @sub: Number of entries to skip
++ *
++ * Return: Error code, or 0 on success
++ */
++static int
++batadv_tt_global_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
++			     struct batadv_priv *bat_priv,
++			     struct hlist_head *head, int *idx_s, int *sub)
++{
++	struct batadv_tt_common_entry *common;
++	int idx = 0;
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(common, head, hash_entry) {
++		if (idx++ < *idx_s)
++			continue;
++
++		if (batadv_tt_global_dump_entry(msg, portid, seq, bat_priv,
++						common, sub)) {
++			rcu_read_unlock();
++			*idx_s = idx - 1;
++			return -EMSGSIZE;
++		}
++	}
++	rcu_read_unlock();
++
++	*idx_s = 0;
++	*sub = 0;
++	return 0;
++}
++
++/**
++ * batadv_tt_global_dump -  Dump TT global entries into a message
++ * @msg: Netlink message to dump into
++ * @cb: Parameters from query
++ *
++ * Return: Error code, or length of message on success
++ */
++int batadv_tt_global_dump(struct sk_buff *msg, struct netlink_callback *cb)
++{
++	struct net *net = sock_net(cb->skb->sk);
++	struct net_device *soft_iface = NULL;
++	struct batadv_priv *bat_priv;
++	struct batadv_hard_iface *primary_if = NULL;
++	struct batadv_hashtable *hash;
++	struct hlist_head *head;
++	int ret;
++	int ifindex;
++	int bucket = cb->args[0];
++	int idx = cb->args[1];
++	int sub = cb->args[2];
++	int portid = NETLINK_CB(cb->skb).portid;
++
++	ifindex = batadv_netlink_get_ifindex(cb->nlh, BATADV_ATTR_MESH_IFINDEX);
++	if (!ifindex)
++		return -EINVAL;
++
++	soft_iface = dev_get_by_index(net, ifindex);
++	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
++		ret = -ENODEV;
++		goto out;
++	}
++
++	bat_priv = netdev_priv(soft_iface);
++
++	primary_if = batadv_primary_if_get_selected(bat_priv);
++	if (!primary_if || primary_if->if_status != BATADV_IF_ACTIVE) {
++		ret = -ENOENT;
++		goto out;
++	}
++
++	hash = bat_priv->tt.global_hash;
++
++	while (bucket < hash->size) {
++		head = &hash->table[bucket];
++
++		if (batadv_tt_global_dump_bucket(msg, portid,
++						 cb->nlh->nlmsg_seq, bat_priv,
++						 head, &idx, &sub))
++			break;
++
++		bucket++;
++	}
++
++	ret = msg->len;
++
++ out:
++	if (primary_if)
++		batadv_hardif_put(primary_if);
++	if (soft_iface)
++		dev_put(soft_iface);
++
++	cb->args[0] = bucket;
++	cb->args[1] = idx;
++	cb->args[2] = sub;
++
++	return ret;
++}
++
++/**
+  * _batadv_tt_global_del_orig_entry - remove and free an orig_entry
+  * @tt_global_entry: the global entry to remove the orig_entry from
+  * @orig_entry: the orig entry to remove and free
+diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
+index 7c7e2c0..4697af6 100644
+--- a/net/batman-adv/translation-table.h
++++ b/net/batman-adv/translation-table.h
+@@ -22,8 +22,10 @@
+ 
+ #include <linux/types.h>
  
 +struct netlink_callback;
+ struct net_device;
  struct seq_file;
 +struct sk_buff;
  
- bool batadv_compare_orig(const struct hlist_node *node, const void *data2);
- int batadv_originator_init(struct batadv_priv *bat_priv);
-@@ -61,6 +63,7 @@ batadv_neigh_ifinfo_get(struct batadv_neigh_node *neigh,
- 			struct batadv_hard_iface *if_outgoing);
- void batadv_neigh_ifinfo_put(struct batadv_neigh_ifinfo *neigh_ifinfo);
- 
-+int batadv_hardif_neigh_dump(struct sk_buff *msg, struct netlink_callback *cb);
- int batadv_hardif_neigh_seq_print_text(struct seq_file *seq, void *offset);
- 
- struct batadv_orig_ifinfo *
-@@ -72,6 +75,7 @@ batadv_orig_ifinfo_new(struct batadv_orig_node *orig_node,
- void batadv_orig_ifinfo_put(struct batadv_orig_ifinfo *orig_ifinfo);
- 
- int batadv_orig_seq_print_text(struct seq_file *seq, void *offset);
-+int batadv_orig_dump(struct sk_buff *msg, struct netlink_callback *cb);
- int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset);
- int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
- 			    int max_if_num);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index ab863a5..6492505 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -28,6 +28,7 @@
- #include <linux/if_ether.h>
- #include <linux/kref.h>
- #include <linux/netdevice.h>
-+#include <linux/netlink.h>
- #include <linux/sched.h> /* for linux/wait.h */
- #include <linux/spinlock.h>
- #include <linux/types.h>
-@@ -1293,7 +1294,9 @@ struct batadv_forw_packet {
-  *  better than neigh2 for their respective outgoing interface from the metric
-  *  prospective
-  * @bat_neigh_print: print the single hop neighbor list (optional)
-+ * @bat_neigh_dump: dump neighbors to a netlink socket
-  * @bat_orig_print: print the originator table (optional)
-+ * @bat_orig_dump: dump originators to a netlink socket
-  * @bat_orig_free: free the resources allocated by the routing algorithm for an
-  *  orig_node object
-  * @bat_orig_add_if: ask the routing algorithm to apply the needed changes to
-@@ -1321,9 +1324,15 @@ struct batadv_algo_ops {
- 		 struct batadv_neigh_node *neigh2,
- 		 struct batadv_hard_iface *if_outgoing2);
- 	void (*bat_neigh_print)(struct batadv_priv *priv, struct seq_file *seq);
-+	void (*bat_neigh_dump)(struct sk_buff *msg, struct netlink_callback *cb,
-+			       struct batadv_priv *priv,
-+			       struct batadv_hard_iface *hard_iface);
- 	/* orig_node handling API */
- 	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq,
- 			       struct batadv_hard_iface *hard_iface);
-+	void (*bat_orig_dump)(struct sk_buff *msg, struct netlink_callback *cb,
-+			      struct batadv_priv *priv,
-+			      struct batadv_hard_iface *hard_iface);
- 	void (*bat_orig_free)(struct batadv_orig_node *orig_node);
- 	int (*bat_orig_add_if)(struct batadv_orig_node *orig_node,
- 			       int max_if_num);
+ int batadv_tt_init(struct batadv_priv *bat_priv);
+ bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
+@@ -33,6 +35,8 @@ u16 batadv_tt_local_remove(struct batadv_priv *bat_priv,
+ 			   const char *message, bool roaming);
+ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset);
+ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset);
++int batadv_tt_local_dump(struct sk_buff *msg, struct netlink_callback *cb);
++int batadv_tt_global_dump(struct sk_buff *msg, struct netlink_callback *cb);
+ void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
+ 			       struct batadv_orig_node *orig_node,
+ 			       s32 match_vid, const char *message);
 -- 
 2.8.0.rc3
 
