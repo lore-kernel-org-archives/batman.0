@@ -1,15 +1,8 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 16 May 2016 18:44:24 +0200
-Message-ID: <2753685.SqMtrV7uXX@sven-edge>
-In-Reply-To: <1463414932-1152-8-git-send-email-andrew@lunn.ch>
-References: <1463414932-1152-1-git-send-email-andrew@lunn.ch>
- <1463414932-1152-8-git-send-email-andrew@lunn.ch>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2223565.Ie4FGFiuDU";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v5 07/11] batman-adv: add B.A.T.M.A.N. IV
-	bat_{orig, neigh}_dump implementations
+Return-Path: <andrew@lunn.ch>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Mon, 16 May 2016 19:27:58 +0200
+Message-Id: <1463419689-3580-1-git-send-email-andrew@lunn.ch>
+Subject: [B.A.T.M.A.N.] [PATCH v6 00/11] netns and netlink support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,46 +12,89 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart2223565.Ie4FGFiuDU
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This patchset completes netns support, by disabling debugfs entries
+when not in the default name space, and correctly handling interface
+stack loops when the parent is in a different name space.
 
-On Monday 16 May 2016 18:08:48 Andrew Lunn wrote:
-> +                       if (batadv_iv_ogm_neigh_dump_hardif(
-> +                                   msg, portid, cb->nlh->nlmsg_seq,
-> +                                   bat_priv, hard_iface, &idx)) {
-> +                               i_hardif--;
-> +                               break;
-> +                       }
+It additionally adds netlink support for most of the information found
+in debugfs, and is netns aware.
 
-Alignment was not fixed.
+Note: BLA is still untested, so best assume it is broken...
 
-Kind regards,
-	Sven
---nextPart2223565.Ie4FGFiuDU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+v6:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+* Add missing kernel doc for local/global transtable and bla claims
+* No change to code indentation. I consider it a false positive. The
+  code is more readable the way it is, checkpatch is happy, and it
+  does not violate anything in CodingStyle, as far as i can see.
 
-iQIcBAABCgAGBQJXOfjoAAoJEF2HCgfBJntGyV8P/39Mpw1QNofwUsYMOC6l9aLM
-Mznjdl7Rt4cPtNzLU4fLTPMROT3Pk0oMQQyC8i+cVo5sDh+vAqc9ghsUh35VXGKF
-euFWvwGhkIuZ1yH6Elc7PMfw9ah+cfi+P5Y01jnQmYQ8qjMDwY0E99bF7XahYfhw
-pVNCFolvUlL2uEy/bLlI1PMHR0NNcjWQiGU+tjHHQxeZvD9IAITLRiL0qLCfopLd
-4emaXHg0qA7lGNjBvcxzGNyUrpMOA4omJUm/rXXqi02YMMyYAsOsp1O5syLsj6qp
-UbtUlmhioJgvqGJkiQIU+gPCLxymfSsjxenXx9am1q+1aJ/Qq1EwSQoxu9ebzDBw
-jqz16HxCDiCyGm1FkZBhp6HXWXR+YxsuA+l2KD1l0P3p+G+qZ+EjtQr3eXZ8RRF0
-4UXnrL1yTraRPZTpOYiTFDGRriaDd9HeeegXPhmdBhhj8bOtz96JQh5f/t/qBR9Z
-CmTtw3roWGMWnF14ggTZhwyI9FaeerAbRrA61iz2y1IGE5qrE0x2J+/Qu8yYRrab
-VjvAyG1ThXBmXEgdafjX7NVkbbf/+MmIKT1JA0PmaoGMEEudO4l0HLrHSVa6lbXu
-Mt4YZgr+Tu0rKLtYiopAY84rVKi0OcBLebXumYGN+CvqbPykZLzPvVQgH8UMaiaD
-3uQk3dOn1u8GRsPoYBMe
-=Apuk
------END PGP SIGNATURE-----
+v5:
 
---nextPart2223565.Ie4FGFiuDU--
+* Rebase on top of master which now has basic netlink support
+* Complete all the kerneldoc cut/paste work requested by Sven.
+
+v4:
+
+* Fix the batctl o -i <ifname> use case by actually performing the
+  filtering on the outgoing interface
+
+v3:
+
+* Fix the compat with older kernels. It now at least compiles with
+  3.18.32. I've not booted it though.
+    * Add missing kerneldoc
+
+v2:
+
+All changes requested by Sven:
+
+* Added lots of missing includes and structure forward declarations
+* Add two kernel doc comments
+* Fixed an obvious bug in BLA, but it is probably still broken...
+* Merged in the compat code Sven suggested. Only compile tested with 4.5.0
+
+
+Andrew Lunn (5):
+  batman-adv: Handle parent interfaces in a different netns
+  batman-adv: Suppress debugfs entries for netns's
+  batman-adv: add B.A.T.M.A.N. Dump gateways via netlink
+  batman-adv: add B.A.T.M.A.N. Dump BLA claims via netlink
+  batman-adv: Indicate netlink socket can be used with netns.
+
+Matthias Schiffer (6):
+  batman-adv: netlink: add routing_algo query
+  batman-adv: netlink: hardif query
+  batman-adv: netlink: add translation table query
+  batman-adv: netlink: add originator and neighbor table queries
+  batman-adv: add B.A.T.M.A.N. IV bat_{orig, neigh}_dump implementations
+  batman-adv: add B.A.T.M.A.N. V bat_{orig, neigh}_dump implementations
+
+ compat-include/linux/netlink.h         |  45 ++++
+ compat.h                               |   7 +
+ include/uapi/linux/batman_adv.h        |  91 ++++++++
+ net/batman-adv/bat_iv_ogm.c            | 361 +++++++++++++++++++++++++++++++
+ net/batman-adv/bat_v.c                 | 337 +++++++++++++++++++++++++++++
+ net/batman-adv/bridge_loop_avoidance.c | 166 +++++++++++++++
+ net/batman-adv/bridge_loop_avoidance.h |  10 +-
+ net/batman-adv/debugfs.c               |  18 ++
+ net/batman-adv/gateway_client.c        | 148 +++++++++++++
+ net/batman-adv/gateway_client.h        |   2 +
+ net/batman-adv/hard-interface.c        |  50 ++++-
+ net/batman-adv/main.c                  |  66 ++++++
+ net/batman-adv/main.h                  |   2 +
+ net/batman-adv/netlink.c               | 200 ++++++++++++++++-
+ net/batman-adv/netlink.h               |  10 +
+ net/batman-adv/originator.c            | 160 ++++++++++++++
+ net/batman-adv/originator.h            |   4 +
+ net/batman-adv/packet.h                |  36 ----
+ net/batman-adv/translation-table.c     | 379 +++++++++++++++++++++++++++++++++
+ net/batman-adv/translation-table.h     |   4 +
+ net/batman-adv/types.h                 |   9 +
+ 21 files changed, 2057 insertions(+), 48 deletions(-)
+ create mode 100644 compat-include/linux/netlink.h
+
+-- 
+2.8.0.rc3
 
