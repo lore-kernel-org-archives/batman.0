@@ -1,10 +1,11 @@
 Return-Path: <sven.eckelmann@open-mesh.com>
 From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-Date: Tue, 17 May 2016 19:32:33 +0200
-Message-Id: <1463506353-11676-3-git-send-email-sven.eckelmann@open-mesh.com>
-In-Reply-To: <3413869.lrcFurLlMu@bentobox>
-References: <3413869.lrcFurLlMu@bentobox>
-Subject: [B.A.T.M.A.N.] [PATCH v9] batctl: introduce throughput meter support
+Date: Tue, 17 May 2016 20:49:35 +0200
+Message-Id: <1463510975-10518-1-git-send-email-sven.eckelmann@open-mesh.com>
+In-Reply-To: <1463506353-11676-3-git-send-email-sven.eckelmann@open-mesh.com>
+References: <1463506353-11676-3-git-send-email-sven.eckelmann@open-mesh.com>
+Subject: [B.A.T.M.A.N.] [PATCH v10] batctl: introduce throughput meter
+	support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,6 +16,7 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>, Antonio Quartulli <antonio.quartulli@open-mesh.com>
 
 From: Antonio Quartulli <antonio.quartulli@open-mesh.com>
 
@@ -32,6 +34,8 @@ Based on a prototype from Edo Monticelli <montik@autistici.org>
 Signed-off-by: Antonio Quartulli <antonio.quartulli@open-mesh.com>
 Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 ---
+v10:
+ - fix "a a" typo in batman_adv.h
 v9:
  - rebase on top of current master
  - added include guards to tp_meter.h
@@ -80,7 +84,7 @@ index 3fa21f4..0cec413 100755
  OBJ += translate.o
  OBJ_BISECT = bisect_iv.o
 diff --git a/batman_adv.h b/batman_adv.h
-index a908140..623fe78 100644
+index a908140..8d379d9 100644
 --- a/batman_adv.h
 +++ b/batman_adv.h
 @@ -20,6 +20,8 @@
@@ -136,7 +140,7 @@ index a908140..623fe78 100644
  };
  
 +/**
-+ * enum batadv_tp_meter_reason - reason of a a tp meter test run stop
++ * enum batadv_tp_meter_reason - reason of a tp meter test run stop
 + * @BATADV_TP_REASON_COMPLETE: sender finished tp run
 + * @BATADV_TP_REASON_CANCEL: sender was stopped during run
 + * @BATADV_TP_REASON_DST_UNREACHABLE: receiver could not be reached or didn't
