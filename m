@@ -1,11 +1,11 @@
 Return-Path: <andrew@lunn.ch>
 From: Andrew Lunn <andrew@lunn.ch>
-Date: Tue, 17 May 2016 16:13:11 +0200
-Message-Id: <1463494399-26405-4-git-send-email-andrew@lunn.ch>
+Date: Tue, 17 May 2016 16:13:15 +0200
+Message-Id: <1463494399-26405-8-git-send-email-andrew@lunn.ch>
 In-Reply-To: <1463494399-26405-1-git-send-email-andrew@lunn.ch>
 References: <1463494399-26405-1-git-send-email-andrew@lunn.ch>
-Subject: [B.A.T.M.A.N.] [PATCH v7 03/11] batman-adv: netlink: add
-	routing_algo query
+Subject: [B.A.T.M.A.N.] [PATCH v7 07/11] batman-adv: add B.A.T.M.A.N. IV
+	bat_{orig, neigh}_dump implementations
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,145 +16,147 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
-Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 
 From: Matthias Schiffer <mschiffer@universe-factory.net>
 
-BATADV_CMD_GET_ROUTING_ALGOS is used to get the list of supported routing
-algorithms.
-
 Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-[sven.eckelmann@open-mesh.com: Reduce the number of changes to
-BATADV_CMD_GET_ROUTING_ALGOS]
-Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 ---
- compat-include/linux/netlink.h  | 45 ++++++++++++++++++++++++++++
- include/uapi/linux/batman_adv.h |  2 ++
- net/batman-adv/main.c           | 66 +++++++++++++++++++++++++++++++++++++++++
- net/batman-adv/main.h           |  2 ++
- net/batman-adv/netlink.c        | 10 +++++--
- net/batman-adv/netlink.h        |  9 ++++++
- 6 files changed, 132 insertions(+), 2 deletions(-)
- create mode 100644 compat-include/linux/netlink.h
+ include/uapi/linux/batman_adv.h |   4 +
+ net/batman-adv/bat_iv_ogm.c     | 359 ++++++++++++++++++++++++++++++++++++++++
+ net/batman-adv/netlink.c        |   2 +
+ 3 files changed, 365 insertions(+)
 
-diff --git a/compat-include/linux/netlink.h b/compat-include/linux/netlink.h
-new file mode 100644
-index 0000000..4d0eb5b
---- /dev/null
-+++ b/compat-include/linux/netlink.h
-@@ -0,0 +1,45 @@
-+/* Copyright (C) 2007-2016 B.A.T.M.A.N. contributors:
-+ *
-+ * Marek Lindner, Simon Wunderlich
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
-+ *
-+ * This file contains macros for maintaining compatibility with older versions
-+ * of the Linux kernel.
-+ */
-+
-+#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_NETLINK_H_
-+#define _NET_BATMAN_ADV_COMPAT_LINUX_NETLINK_H_
-+
-+#include <linux/version.h>
-+#include_next <linux/netlink.h>
-+
-+#include <net/scm.h>
-+
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0)
-+
-+struct batadv_netlink_skb_parms {
-+	struct ucred		creds;		/* Skb credentials	*/
-+	union {
-+		__u32		portid;
-+		__u32		pid;
-+	};
-+	__u32			dst_group;
-+};
-+
-+#undef NETLINK_CB
-+#define NETLINK_CB(skb) (*(struct batadv_netlink_skb_parms *)&((skb)->cb))
-+
-+#endif /* < KERNEL_VERSION(3, 7, 0) */
-+
-+#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_NETLINK_H_ */
 diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index a908140..d2a9740 100644
+index def3799..70ea9e4 100644
 --- a/include/uapi/linux/batman_adv.h
 +++ b/include/uapi/linux/batman_adv.h
-@@ -57,12 +57,14 @@ enum batadv_nl_attrs {
-  *
-  * @BATADV_CMD_UNSPEC: unspecified command to catch errors
-  * @BATADV_CMD_GET_MESH_INFO: Query basic information about batman-adv device
-+ * @BATADV_CMD_GET_ROUTING_ALGOS: Query the list of routing algorithms.
-  * @__BATADV_CMD_AFTER_LAST: internal use
-  * @BATADV_CMD_MAX: highest used command number
-  */
- enum batadv_nl_commands {
- 	BATADV_CMD_UNSPEC,
- 	BATADV_CMD_GET_MESH_INFO,
-+	BATADV_CMD_GET_ROUTING_ALGOS,
- 	/* add new commands above here */
- 	__BATADV_CMD_AFTER_LAST,
- 	BATADV_CMD_MAX = __BATADV_CMD_AFTER_LAST - 1
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index e78b318..fe03721 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
+@@ -78,6 +78,8 @@ enum batadv_tt_client_flags {
+  * @BATADV_ATTR_TT_FLAGS: Translation table client flags
+  * @BATADV_ATTR_FLAG_BEST: Flags indicating entry is the best
+  * @BATADV_ATTR_LAST_SEEN_MSECS: Time in milliseconds since last seen
++ * @BATADV_ATTR_NEIGH_ADDRESS: Neighbour MAC address
++ * @BATADV_ATTR_TQ: TQ to neighbour
+  * @__BATADV_ATTR_AFTER_LAST: internal use
+  * @NUM_BATADV_ATTR: total number of batadv_nl_attrs available
+  * @BATADV_ATTR_MAX: highest attribute number currently defined
+@@ -102,6 +104,8 @@ enum batadv_nl_attrs {
+ 	BATADV_ATTR_TT_FLAGS,
+ 	BATADV_ATTR_FLAG_BEST,
+ 	BATADV_ATTR_LAST_SEEN_MSECS,
++	BATADV_ATTR_NEIGH_ADDRESS,
++	BATADV_ATTR_TQ,
+ 	/* add attributes above here, update the policy in netlink.c */
+ 	__BATADV_ATTR_AFTER_LAST,
+ 	NUM_BATADV_ATTR = __BATADV_ATTR_AFTER_LAST,
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 4815db9..faeba72 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
 @@ -35,6 +35,7 @@
- #include <linux/module.h>
- #include <linux/moduleparam.h>
+ #include <linux/kref.h>
+ #include <linux/lockdep.h>
  #include <linux/netdevice.h>
 +#include <linux/netlink.h>
  #include <linux/pkt_sched.h>
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
-@@ -46,7 +47,10 @@
+ #include <linux/printk.h>
+ #include <linux/random.h>
+@@ -48,10 +49,14 @@
  #include <linux/string.h>
+ #include <linux/types.h>
  #include <linux/workqueue.h>
- #include <net/dsfield.h>
 +#include <net/genetlink.h>
 +#include <net/netlink.h>
- #include <net/rtnetlink.h>
 +#include <uapi/linux/batman_adv.h>
  
- #include "bat_algo.h"
- #include "bridge_loop_avoidance.h"
-@@ -612,6 +616,68 @@ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset)
+ #include "bitarray.h"
+ #include "hard-interface.h"
+ #include "hash.h"
++#include "netlink.h"
+ #include "network-coding.h"
+ #include "originator.h"
+ #include "packet.h"
+@@ -1976,6 +1981,233 @@ next:
  }
  
  /**
-+ * batadv_algo_dump_entry - fill in information about one supported routing
-+ *  algorithm
-+ * @msg: netlink message to be sent back
-+ * @portid: Port to reply to
-+ * @seq: Sequence number of message
-+ * @bat_algo_ops: Algorithm to be dumped
++ * batadv_iv_ogm_neigh_get_tq_avg - Get the TQ average for a neighbour on a
++ *  given outgoing interface.
++ * @neigh_node: Neighbour of interest
++ * @if_outgoing: Outgoing interface of interest
++ * @tq_avg: Pointer of where to store the TQ average
 + *
-+ * Return: Error number, or 0 on success
++ * Return: False if no average TQ available, otherwise true.
 + */
-+static int batadv_algo_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
-+				  struct batadv_algo_ops *bat_algo_ops)
++static bool
++batadv_iv_ogm_neigh_get_tq_avg(struct batadv_neigh_node *neigh_node,
++			       struct batadv_hard_iface *if_outgoing,
++			       u8 *tq_avg)
++{
++	struct batadv_neigh_ifinfo *n_ifinfo;
++
++	n_ifinfo = batadv_neigh_ifinfo_get(neigh_node, if_outgoing);
++	if (!n_ifinfo)
++		return false;
++
++	*tq_avg = n_ifinfo->bat_iv.tq_avg;
++	batadv_neigh_ifinfo_put(n_ifinfo);
++
++	return true;
++}
++
++/**
++ * batadv_iv_ogm_orig_dump_subentry - Dump an originator subentry into a
++ *  message
++ * @msg: Netlink message to dump into
++ * @portid: Port making netlink request
++ * @seq: Sequence number of netlink message
++ * @bat_priv: The bat priv with all the soft interface information
++ * @if_outgoing: Limit dump to entries with this outgoing interface
++ * @orig_node: Originator to dump
++ * @neigh_node: Single hops neighbour
++ * @best: Is the best originator
++ *
++ * Return: Error code, or 0 on success
++ */
++static int
++batadv_iv_ogm_orig_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
++				 struct batadv_priv *bat_priv,
++				 struct batadv_hard_iface *if_outgoing,
++				 struct batadv_orig_node *orig_node,
++				 struct batadv_neigh_node *neigh_node,
++				 bool best)
 +{
 +	void *hdr;
++	u8 tq_avg;
++	unsigned int last_seen_msecs;
++
++	last_seen_msecs = jiffies_to_msecs(jiffies - orig_node->last_seen);
++
++	if (!batadv_iv_ogm_neigh_get_tq_avg(neigh_node, if_outgoing, &tq_avg))
++		return 0;
++
++	if (if_outgoing != BATADV_IF_DEFAULT &&
++	    if_outgoing != neigh_node->if_incoming)
++		return 0;
 +
 +	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family,
-+			  NLM_F_MULTI, BATADV_CMD_GET_ROUTING_ALGOS);
++			  NLM_F_MULTI, BATADV_CMD_GET_ORIGINATORS);
 +	if (!hdr)
-+		return -EMSGSIZE;
++		return -ENOBUFS;
 +
-+	if (nla_put_string(msg, BATADV_ATTR_ALGO_NAME, bat_algo_ops->name))
++	if (nla_put(msg, BATADV_ATTR_ORIG_ADDRESS, ETH_ALEN,
++		    orig_node->orig) ||
++	    nla_put(msg, BATADV_ATTR_NEIGH_ADDRESS, ETH_ALEN,
++		    neigh_node->addr) ||
++	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
++			neigh_node->if_incoming->net_dev->ifindex) ||
++	    nla_put_u8(msg, BATADV_ATTR_TQ, tq_avg) ||
++	    nla_put_u32(msg, BATADV_ATTR_LAST_SEEN_MSECS,
++			last_seen_msecs))
++		goto nla_put_failure;
++
++	if (best && nla_put_flag(msg, BATADV_ATTR_FLAG_BEST))
 +		goto nla_put_failure;
 +
 +	genlmsg_end(msg, hdr);
@@ -166,117 +168,303 @@ index e78b318..fe03721 100644
 +}
 +
 +/**
-+ * batadv_algo_dump - fill in information about supported routing
-+ *  algorithms
-+ * @msg: netlink message to be sent back
-+ * @cb: Parameters to the netlink request
++ * batadv_iv_ogm_orig_dump_entry - Dump an originator entry into a message
++ * @msg: Netlink message to dump into
++ * @portid: Port making netlink request
++ * @seq: Sequence number of netlink message
++ * @bat_priv: The bat priv with all the soft interface information
++ * @if_outgoing: Limit dump to entries with this outgoing interface
++ * @orig_node: Originator to dump
++ * @sub_s: Number of sub entries to skip
 + *
-+ * Return: Length of reply message.
++ * Return: Error code, or 0 on success
 + */
-+int batadv_algo_dump(struct sk_buff *msg, struct netlink_callback *cb)
++static int
++batadv_iv_ogm_orig_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
++			      struct batadv_priv *bat_priv,
++			      struct batadv_hard_iface *if_outgoing,
++			      struct batadv_orig_node *orig_node, int *sub_s)
 +{
-+	int portid = NETLINK_CB(cb->skb).portid;
-+	struct batadv_algo_ops *bat_algo_ops;
-+	int skip = cb->args[0];
-+	int i = 0;
++	struct batadv_neigh_node *neigh_node_best;
++	struct batadv_neigh_node *neigh_node;
++	int sub = 0;
++	bool best;
++	u8 tq_avg_best;
 +
-+	hlist_for_each_entry(bat_algo_ops, &batadv_algo_list, list) {
-+		if (i++ < skip)
++	neigh_node_best = batadv_orig_router_get(orig_node, if_outgoing);
++	if (!neigh_node_best)
++		goto out;
++
++	if (!batadv_iv_ogm_neigh_get_tq_avg(neigh_node_best, if_outgoing,
++					    &tq_avg_best))
++		goto out;
++
++	if (tq_avg_best == 0)
++		goto out;
++
++	hlist_for_each_entry_rcu(neigh_node, &orig_node->neigh_list, list) {
++		if (sub++ < *sub_s)
 +			continue;
 +
-+		if (batadv_algo_dump_entry(msg, portid, cb->nlh->nlmsg_seq,
-+					   bat_algo_ops)) {
-+			i--;
-+			break;
++		best = (neigh_node == neigh_node_best);
++
++		if (batadv_iv_ogm_orig_dump_subentry(msg, portid, seq,
++						     bat_priv, if_outgoing,
++						     orig_node, neigh_node,
++						     best)) {
++			batadv_neigh_node_put(neigh_node_best);
++
++			*sub_s = sub - 1;
++			return -EMSGSIZE;
 +		}
 +	}
 +
-+	cb->args[0] = i;
++ out:
++	if (neigh_node_best)
++		batadv_neigh_node_put(neigh_node_best);
 +
-+	return msg->len;
++	*sub_s = 0;
++	return 0;
 +}
 +
 +/**
-  * batadv_skb_crc32 - calculate CRC32 of the whole packet and skip bytes in
-  *  the header
-  * @skb: skb pointing to fragmented socket buffers
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 832df0f..ea2ed80 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -191,6 +191,7 @@ enum batadv_uev_type {
- #include "types.h"
- 
- struct batadv_ogm_packet;
-+struct netlink_callback;
- struct seq_file;
- struct sk_buff;
- 
-@@ -221,6 +222,7 @@ void batadv_recv_handler_unregister(u8 packet_type);
- int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
- int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
- int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
-+int batadv_algo_dump(struct sk_buff *msg, struct netlink_callback *cb);
- __be32 batadv_skb_crc32(struct sk_buff *skb, u8 *payload_ptr);
++ * batadv_iv_ogm_orig_dump_bucket - Dump an originator bucket into a
++ *  message
++ * @msg: Netlink message to dump into
++ * @portid: Port making netlink request
++ * @seq: Sequence number of netlink message
++ * @bat_priv: The bat priv with all the soft interface information
++ * @if_outgoing: Limit dump to entries with this outgoing interface
++ * @head: Bucket to be dumped
++ * @idx_s: Number of entries to be skipped
++ * @sub: Number of sub entries to be skipped
++ *
++ * Return: Error code, or 0 on success
++ */
++static int
++batadv_iv_ogm_orig_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
++			       struct batadv_priv *bat_priv,
++			       struct batadv_hard_iface *if_outgoing,
++			       struct hlist_head *head, int *idx_s, int *sub)
++{
++	struct batadv_orig_node *orig_node;
++	int idx = 0;
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
++		if (idx++ < *idx_s)
++			continue;
++
++		if (batadv_iv_ogm_orig_dump_entry(msg, portid, seq, bat_priv,
++						  if_outgoing, orig_node,
++						  sub)) {
++			rcu_read_unlock();
++			*idx_s = idx - 1;
++			return -EMSGSIZE;
++		}
++	}
++	rcu_read_unlock();
++
++	*idx_s = 0;
++	*sub = 0;
++	return 0;
++}
++
++/**
++ * batadv_iv_ogm_orig_dump - Dump the originators into a message
++ * @msg: Netlink message to dump into
++ * @cb: Control block containing additional options
++ * @bat_priv: The bat priv with all the soft interface information
++ * @if_outgoing: Limit dump to entries with this outgoing interface
++ */
++static void
++batadv_iv_ogm_orig_dump(struct sk_buff *msg, struct netlink_callback *cb,
++			struct batadv_priv *bat_priv,
++			struct batadv_hard_iface *if_outgoing)
++{
++	struct batadv_hashtable *hash = bat_priv->orig_hash;
++	struct hlist_head *head;
++	int bucket = cb->args[0];
++	int idx = cb->args[1];
++	int sub = cb->args[2];
++	int portid = NETLINK_CB(cb->skb).portid;
++
++	while (bucket < hash->size) {
++		head = &hash->table[bucket];
++
++		if (batadv_iv_ogm_orig_dump_bucket(msg, portid,
++						   cb->nlh->nlmsg_seq,
++						   bat_priv, if_outgoing, head,
++						   &idx, &sub))
++			break;
++
++		bucket++;
++	}
++
++	cb->args[0] = bucket;
++	cb->args[1] = idx;
++	cb->args[2] = sub;
++}
++
++/**
+  * batadv_iv_hardif_neigh_print - print a single hop neighbour node
+  * @seq: neighbour table seq_file struct
+  * @hardif_neigh: hardif neighbour information
+@@ -2027,6 +2259,131 @@ static void batadv_iv_neigh_print(struct batadv_priv *bat_priv,
+ }
  
  /**
++ * batadv_iv_ogm_neigh_dump_neigh - Dump a neighbour into a netlink message
++ * @msg: Netlink message to dump into
++ * @portid: Port making netlink request
++ * @seq: Sequence number of netlink message
++ * @hardif_neigh: Neighbour to be dumped
++ *
++ * Return: Error code, or 0 on success
++ */
++static int
++batadv_iv_ogm_neigh_dump_neigh(struct sk_buff *msg, u32 portid, u32 seq,
++			       struct batadv_hardif_neigh_node *hardif_neigh)
++{
++	void *hdr;
++	unsigned int last_seen_msecs;
++
++	last_seen_msecs = jiffies_to_msecs(jiffies - hardif_neigh->last_seen);
++
++	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family,
++			  NLM_F_MULTI, BATADV_CMD_GET_NEIGHBORS);
++	if (!hdr)
++		return -ENOBUFS;
++
++	if (nla_put(msg, BATADV_ATTR_NEIGH_ADDRESS, ETH_ALEN,
++		    hardif_neigh->addr) ||
++	    nla_put_u32(msg, BATADV_ATTR_HARD_IFINDEX,
++			hardif_neigh->if_incoming->net_dev->ifindex) ||
++	    nla_put_u32(msg, BATADV_ATTR_LAST_SEEN_MSECS,
++			last_seen_msecs))
++		goto nla_put_failure;
++
++	genlmsg_end(msg, hdr);
++	return 0;
++
++ nla_put_failure:
++	genlmsg_cancel(msg, hdr);
++	return -EMSGSIZE;
++}
++
++/**
++ * batadv_iv_ogm_neigh_dump_hardif - Dump the neighbours of a hard interface
++ *  into a message
++ * @msg: Netlink message to dump into
++ * @portid: Port making netlink request
++ * @seq: Sequence number of netlink message
++ * @bat_priv: The bat priv with all the soft interface information
++ * @hard_iface: Hard interface to dump the neighbours for
++ * @idx_s: Number of entries to skip
++ *
++ * Return: Error code, or 0 on success
++ */
++static int
++batadv_iv_ogm_neigh_dump_hardif(struct sk_buff *msg, u32 portid, u32 seq,
++				struct batadv_priv *bat_priv,
++				struct batadv_hard_iface *hard_iface,
++				int *idx_s)
++{
++	struct batadv_hardif_neigh_node *hardif_neigh;
++	int idx = 0;
++
++	hlist_for_each_entry_rcu(hardif_neigh,
++				 &hard_iface->neigh_list, list) {
++		if (idx++ < *idx_s)
++			continue;
++
++		if (batadv_iv_ogm_neigh_dump_neigh(msg, portid, seq,
++						   hardif_neigh)) {
++			*idx_s = idx - 1;
++			return -EMSGSIZE;
++		}
++	}
++
++	*idx_s = 0;
++	return 0;
++}
++
++/**
++ * batadv_iv_ogm_neigh_dump - Dump the neighbours into a message
++ * @msg: Netlink message to dump into
++ * @cb: Control block containing additional options
++ * @bat_priv: The bat priv with all the soft interface information
++ * @single_hardif: Limit dump to this hard interfaace
++ */
++static void
++batadv_iv_ogm_neigh_dump(struct sk_buff *msg, struct netlink_callback *cb,
++			 struct batadv_priv *bat_priv,
++			 struct batadv_hard_iface *single_hardif)
++{
++	struct batadv_hard_iface *hard_iface;
++	int i_hardif = 0;
++	int i_hardif_s = cb->args[0];
++	int idx = cb->args[1];
++	int portid = NETLINK_CB(cb->skb).portid;
++
++	rcu_read_lock();
++	if (single_hardif) {
++		if (i_hardif_s == 0) {
++			if (batadv_iv_ogm_neigh_dump_hardif(
++				    msg, portid, cb->nlh->nlmsg_seq,
++				    bat_priv, single_hardif, &idx) == 0)
++				i_hardif++;
++		}
++	} else {
++		list_for_each_entry_rcu(hard_iface, &batadv_hardif_list,
++					list) {
++			if (hard_iface->soft_iface != bat_priv->soft_iface)
++				continue;
++
++			if (i_hardif++ < i_hardif_s)
++				continue;
++
++			if (batadv_iv_ogm_neigh_dump_hardif(
++				    msg, portid, cb->nlh->nlmsg_seq,
++				    bat_priv, hard_iface, &idx)) {
++				i_hardif--;
++				break;
++			}
++		}
++	}
++	rcu_read_unlock();
++
++	cb->args[0] = i_hardif;
++	cb->args[1] = idx;
++}
++
++/**
+  * batadv_iv_ogm_neigh_cmp - compare the metrics of two neighbors
+  * @neigh1: the first neighbor object of the comparison
+  * @if_outgoing1: outgoing interface for the first neighbor
+@@ -2125,7 +2482,9 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
+ 	.bat_neigh_cmp = batadv_iv_ogm_neigh_cmp,
+ 	.bat_neigh_is_similar_or_better = batadv_iv_ogm_neigh_is_sob,
+ 	.bat_neigh_print = batadv_iv_neigh_print,
++	.bat_neigh_dump = batadv_iv_ogm_neigh_dump,
+ 	.bat_orig_print = batadv_iv_ogm_orig_print,
++	.bat_orig_dump = batadv_iv_ogm_orig_dump,
+ 	.bat_orig_free = batadv_iv_ogm_orig_free,
+ 	.bat_orig_add_if = batadv_iv_ogm_orig_add_if,
+ 	.bat_orig_del_if = batadv_iv_ogm_orig_del_if,
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 54724b7..717d7d0 100644
+index eb7a403..0a3eeed 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -25,8 +25,8 @@
- #include <linux/init.h>
- #include <linux/netdevice.h>
- #include <linux/netlink.h>
--#include <linux/stddef.h>
- #include <linux/printk.h>
-+#include <linux/stddef.h>
- #include <net/genetlink.h>
- #include <net/netlink.h>
- #include <uapi/linux/batman_adv.h>
-@@ -36,7 +36,7 @@
- 
- struct sk_buff;
- 
--static struct genl_family batadv_netlink_family = {
-+struct genl_family batadv_netlink_family = {
- 	.id = GENL_ID_GENERATE,
- 	.hdrsize = 0,
- 	.name = BATADV_NL_NAME,
-@@ -170,6 +170,12 @@ static struct genl_ops batadv_netlink_ops[] = {
- 		.policy = batadv_netlink_policy,
- 		.doit = batadv_netlink_get_mesh_info,
- 	},
-+	{
-+		.cmd = BATADV_CMD_GET_ROUTING_ALGOS,
-+		.flags = GENL_ADMIN_PERM,
-+		.policy = batadv_netlink_policy,
-+		.dumpit = batadv_algo_dump,
-+	},
+@@ -68,6 +68,8 @@ static struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
+ 	[BATADV_ATTR_TT_FLAGS]		= { .type = NLA_U32 },
+ 	[BATADV_ATTR_FLAG_BEST]		= { .type = NLA_FLAG },
+ 	[BATADV_ATTR_LAST_SEEN_MSECS]	= { .type = NLA_U32 },
++	[BATADV_ATTR_NEIGH_ADDRESS]	= { .len = ETH_ALEN },
++	[BATADV_ATTR_TQ]		= { .type = NLA_U8 },
  };
  
  /**
-diff --git a/net/batman-adv/netlink.h b/net/batman-adv/netlink.h
-index fa152a8..0e4f134 100644
---- a/net/batman-adv/netlink.h
-+++ b/net/batman-adv/netlink.h
-@@ -18,7 +18,16 @@
- #ifndef _NET_BATMAN_ADV_NETLINK_H_
- #define _NET_BATMAN_ADV_NETLINK_H_
- 
-+#include <linux/compiler.h>
-+#include <linux/genetlink.h>
-+#include <net/genetlink.h>
-+#include <net/netlink.h>
-+
-+struct nlmsghdr;
-+
- void batadv_netlink_register(void);
- void batadv_netlink_unregister(void);
- 
-+extern struct genl_family batadv_netlink_family;
-+
- #endif /* _NET_BATMAN_ADV_NETLINK_H_ */
 -- 
 2.8.0.rc3
 
