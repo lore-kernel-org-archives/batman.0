@@ -1,16 +1,15 @@
-Return-Path: <andrew@lunn.ch>
-Date: Tue, 17 May 2016 14:18:35 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160517121835.GA23383@lunn.ch>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 17 May 2016 14:22:29 +0200
+Message-ID: <3947143.HkakSkGumX@bentobox>
+In-Reply-To: <20160517121835.GA23383@lunn.ch>
 References: <1463419689-3580-1-git-send-email-andrew@lunn.ch>
- <1463419689-3580-2-git-send-email-andrew@lunn.ch>
- <2256828.JfWKWoeer9@sven-edge>
+ <2256828.JfWKWoeer9@sven-edge> <20160517121835.GA23383@lunn.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2256828.JfWKWoeer9@sven-edge>
+Content-Type: multipart/signed; boundary="nextPart3652028.L1unVdE5VI";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v6 01/11] batman-adv: Handle parent
- interfaces in a different netns
+	interfaces in a different netns
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,38 +19,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
+To: Andrew Lunn <andrew@lunn.ch>
 Cc: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-> I think I removed this multiple times but this misalignment seems to be 
-> immortal:
-> 
-> >         return (dev1_parent_iflink == dev2->ifindex) &&
-> > -              (dev2_parent_iflink == dev1->ifindex);
-> > +               (dev2_parent_iflink == dev1->ifindex) &&
-> > +               net_eq(dev1_parent_net, net2) &&
-> > +               net_eq(dev2_parent_net, net1);
+--nextPart3652028.L1unVdE5VI
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-According to checkpatch and emacs, it is also correct as it is :-)
+On Tuesday 17 May 2016 14:18:35 Andrew Lunn wrote:
+> I'm actually getting close to the point where i'm going to give up.
 
-If you really want to enforce some other arbitrary white space
-alignment policy than checkpatch.pl, it would help if the scripts you
-are using are placed into ./tools, just like checkpatch.pl is. Better
-still, provide patches to checkpatch.pl. You should also put all your
-other tools there. Checkpatch mostly works because it is easily
-available, making it easy to push back against when people don't use
-it. Developing code for BATMAN is easy, but making it pass all your
-arbitrary style checks, header file requirements, structure forward
-declaration, negative value kerneldoc function headers, etc is hard
-and takes much much longer than developing the code. Putting these
-scripts at the figures of the developers,
-./scripts/batadv-checkpatch.pl, and you stand a better chance of
-compliance.
+Ok, I will try to not review anything from you again. Sorry for trying to 
+inform you about things which would make it harder to get these patches 
+accepted and sent upstream.
 
-I'm actually getting close to the point where i'm going to give up.
+Kind regards,
+	Sven
+--nextPart3652028.L1unVdE5VI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-    Andrew
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
+iQIcBAABCgAGBQJXOw0FAAoJEF2HCgfBJntGVNMQAIMu19Z4tG0vW6uw8dXCvhEF
+Dckk1HH9KFm5Dxz5E0OrPUkoBpGADp0SKC+XsTH1ACjqGduaJsMuXaAq/S+WDDpS
+grPNsJe4q7aDspYqdh6BcNUY+xn/mbhgRok2XzyafTQCjtSFsxc2UzyDU+zgnND/
+07jSxU4piHEHg3e440vH3xL18EwCxz/5pcQsEV8/Vwv2i1unQ8hTYtnGVJ1S2hZ3
+OZ39z6bRGjsJ7fXEefkCtOi72uymBUGS5O9s5ZBYQv7ABHi+EHfTx7cb4/HApzEe
+P+j8S9jaGnTKzgm5UWeJZGOd36iOJeHEQXZ5QF+5l8cp97b/zZ1ittsuq8jmDaUv
+pn4ihbZerqBIh1YWkMDI/Ws0C6VGK2yj9OnnomqcHvg3cQnuYKH0D0+87blbRrqT
+1s89x8o301V63T1WavYsbvLOnrknewN+I+dUeZj773dI3LPGWcP93eFwHSOnn0ET
+H8yoYszBoNnI/rqrZ/QwVrZakHbmZDfmo/AZz7dThyKY9AObjut+umCtR5P48eNL
+gLjznxm+5sfsnylnWqDjt0Wvj0/d+7DetGxgRQDGcVpoApJZ5oENJ6KNO4FrsW6Y
+lf8mC0PSrGUXkB+L2U/mM3We0yv0o26BAU9YZigsX5wOwpioXXMf6MYOscIBypmv
+yfztiefMLozT7dOohD2M
+=Fc4D
+-----END PGP SIGNATURE-----
 
-
+--nextPart3652028.L1unVdE5VI--
 
