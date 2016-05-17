@@ -1,14 +1,8 @@
 Return-Path: <andrew@lunn.ch>
-Date: Tue, 17 May 2016 15:58:20 +0200
 From: Andrew Lunn <andrew@lunn.ch>
-Message-ID: <20160517135820.GA25569@lunn.ch>
-References: <1463414932-1152-1-git-send-email-andrew@lunn.ch>
- <1646180.Hz16yHrbtt@sven-edge>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1646180.Hz16yHrbtt@sven-edge>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v5 00/11] netns and netlink support
+Date: Tue, 17 May 2016 16:13:08 +0200
+Message-Id: <1463494399-26405-1-git-send-email-andrew@lunn.ch>
+Subject: [B.A.T.M.A.N.] [PATCH v7 00/11] netns and netlink support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,78 +12,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-> headers ecsv/netlink
-> --------------------
-> 
->     diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
->     index 25fd4be..c5e6db5 100644
->     --- a/net/batman-adv/bat_v.c
->     +++ b/net/batman-adv/bat_v.c
->     @@ -19,9 +19,9 @@
->      #include "main.h"
->      
->      #include <linux/bug.h>
->     +#include <linux/cache.h>
->      #include <linux/errno.h>
->      #include <linux/if_ether.h>
->     -#include <linux/cache.h>
->      #include <linux/init.h>
->      #include <linux/jiffies.h>
->      #include <linux/netdevice.h>
+This patchset completes netns support, by disabling debugfs entries
+when not in the default name space, and correctly handling interface
+stack loops when the parent is in a different name space.
 
-So this is i think a false positive. Linus moved cache.h according the
-git blame. Nothing to do with my patch.
+It additionally adds netlink support for most of the information found
+in debugfs, and is netns awaire.
 
->     diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
->     index 949a048..e0fd914 100644
->     --- a/net/batman-adv/netlink.c
->     +++ b/net/batman-adv/netlink.c
->     @@ -36,10 +36,10 @@
->      #include <net/sock.h>
->      #include <uapi/linux/batman_adv.h>
->      
->     -#include "originator.h"
->      #include "bridge_loop_avoidance.h"
->      #include "gateway_client.h"
->      #include "hard-interface.h"
->     +#include "originator.h"
->      #include "soft-interface.h"
->      #include "translation-table.h"
+Note: BLA is untested, so best assume it is broken...
 
-This one is interesting. I copied this from your
-rebased_split_netlink/v4-0008-batman-adv-netlink-add-originator-and-neighbor-ta.patch
+v7:
 
-I did consider changing the order, but since you wrote it that way, it
-must be O.K.
+  Fix compat.h get_link_net() - Thanks Sven
+  Move originator.h in netlink.c to the correct place.
 
->     diff --git a/net/batman-adv/netlink.h b/net/batman-adv/netlink.h
->     index ef861db..fac7d91 100644
->     --- a/net/batman-adv/netlink.h
->     +++ b/net/batman-adv/netlink.h
->     @@ -18,12 +18,9 @@
->      #ifndef _NET_BATMAN_ADV_NETLINK_H_
->      #define _NET_BATMAN_ADV_NETLINK_H_
->      
->      #include "main.h"
->      
->     -#include <linux/compiler.h>
->     -#include <linux/genetlink.h>
->      #include <net/genetlink.h>
->     -#include <net/netlink.h>
->      
->      struct nlmsghdr;
+Andrew Lunn (5):
+  batman-adv: Handle parent interfaces in a different netns
+  batman-adv: Suppress debugfs entries for netns's
+  batman-adv: add B.A.T.M.A.N. Dump gateways via netlink
+  batman-adv: add B.A.T.M.A.N. Dump BLA claims via netlink
+  batman-adv: Indicate netlink socket can be used with netns.
 
-Another false positive. These are from:
+Matthias Schiffer (6):
+  batman-adv: netlink: add routing_algo query
+  batman-adv: netlink: hardif query
+  batman-adv: netlink: add translation table query
+  batman-adv: netlink: add originator and neighbor table queries
+  batman-adv: add B.A.T.M.A.N. IV bat_{orig, neigh}_dump implementations
+  batman-adv: add B.A.T.M.A.N. V bat_{orig, neigh}_dump implementations
 
-9492a25881c75ab9910328ff27834707c83df124
+ compat-include/linux/netlink.h         |  45 ++++
+ compat.h                               |   7 +
+ include/uapi/linux/batman_adv.h        |  94 ++++++++
+ net/batman-adv/bat_iv_ogm.c            | 359 +++++++++++++++++++++++++++++++
+ net/batman-adv/bat_v.c                 | 337 +++++++++++++++++++++++++++++
+ net/batman-adv/bridge_loop_avoidance.c | 166 +++++++++++++++
+ net/batman-adv/bridge_loop_avoidance.h |  10 +-
+ net/batman-adv/debugfs.c               |  18 ++
+ net/batman-adv/gateway_client.c        | 148 +++++++++++++
+ net/batman-adv/gateway_client.h        |   2 +
+ net/batman-adv/hard-interface.c        |  50 ++++-
+ net/batman-adv/main.c                  |  66 ++++++
+ net/batman-adv/main.h                  |   2 +
+ net/batman-adv/netlink.c               | 201 ++++++++++++++++-
+ net/batman-adv/netlink.h               |  10 +
+ net/batman-adv/originator.c            | 160 ++++++++++++++
+ net/batman-adv/originator.h            |   4 +
+ net/batman-adv/packet.h                |  36 ----
+ net/batman-adv/translation-table.c     | 379 +++++++++++++++++++++++++++++++++
+ net/batman-adv/translation-table.h     |   4 +
+ net/batman-adv/types.h                 |   9 +
+ 21 files changed, 2059 insertions(+), 48 deletions(-)
+ create mode 100644 compat-include/linux/netlink.h
 
-which has your Signed-off-by.
-
-So overall, nothing useful in this report.
-
-   Andrew
-
+-- 
+2.8.0.rc3
 
