@@ -1,16 +1,11 @@
 Return-Path: <a@unstable.cc>
-Date: Wed, 18 May 2016 10:16:11 +0800
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160518021611.GG12056@prodigo.lan>
-References: <3413869.lrcFurLlMu@bentobox>
- <1463506353-11676-2-git-send-email-sven.eckelmann@open-mesh.com>
+Date: Wed, 18 May 2016 13:04:44 +0800
+Message-Id: <1463547892-11290-1-git-send-email-a@unstable.cc>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="6lXr1rPCNTf1w0X8"
-Content-Disposition: inline
-In-Reply-To: <1463506353-11676-2-git-send-email-sven.eckelmann@open-mesh.com>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v9 2/2] batman-adv: throughput meter
- implementation
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] pull request: batman-adv 20160518
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,79 +15,88 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+
+Hi David,
+
+these are the fixes that couldn't make it for linux-4.6 rebased on top
+of net-next.
+
+They were all supposed to be applied on 4.6, therefore it would be nice
+if you could queue them for inclusion in the 4.6.1 stable release.
+
+Please pull or let me know of any problem!
 
 
---6lXr1rPCNTf1w0X8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, May 17, 2016 at 07:32:32PM +0200, Sven Eckelmann wrote:
-
-[...]
-
-> @@ -58,6 +59,7 @@ static void batadv_socket_add_packet(struct batadv_sock=
-et_client *socket_client,
->  void batadv_socket_init(void)
->  {
->  	memset(batadv_socket_client_hash, 0, sizeof(batadv_socket_client_hash));
-> +	batadv_tp_meter_init();
-
-Sven,
-one very last question (sorry for not spotting this earlier): if we don't h=
-andle
-the TP meter with the icmp_socket anymore, why do we tight the TP initializ=
-ation
-to the socket initialization ?
-
-Is there any reason to have it here ? Or we should move the
-batadv_tp_meter_init() call to somewhere else ?
-
-[...]
-
-> +/**
-> + * batadv_netlink_tpmeter_notify - send tp_meter result via netlink to c=
-lient
-> + * @bat_priv: the bat priv with all the soft interface information
-> + * @dst: destination of tp_meter session
-> + * @result: reason for tp meter session stop
-> + * @test_time: total time ot the tp_meter session
-> + * @total_bytes: bytes acked to the receiver
-> + * @cookie: cookie of tp_meter session
-> + *
-> + * Return: 0 on success, <0 on error
-
-you forgot the space between < and 0 ;P but if the rest is ok, I am sure Ma=
-rek
-could add it :)
+I also have a question: I have another bugfix that should only be
+applied to 4.6 and not to 4.7/net-next - should I directly send it
+to stable@vger.kernel.org ?
 
 
-The rest looks good. Thanks !
+Thanks a lot,
+	Antonio
 
---=20
-Antonio Quartulli
+The following changes since commit 917fa5353da05e8a0045b8acacba8d50400d5b12:
 
---6lXr1rPCNTf1w0X8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+  Revert "phy dp83867: Fix compilation with CONFIG_OF_MDIO=m" (2016-05-17 14:49:55 -0400)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+are available in the git repository at:
 
-iQIcBAEBCAAGBQJXO9BrAAoJEJ4aZjxxc6bKi2gP/A16eRw+qgv9/spTioznJLfT
-RTYcBI6TooSpqJ9YnAgsA6C+HhlwkACb7EYHGTi6QQYUl1wjZv+u7sILbOsglO7g
-NXL4JQCAqV4Eu16Dp5N+WL8jVOZ+5hiPXd2hzRei80Cf9tb99l8JgyCAzIFnrspG
-6XAMbCoZVW4xBeRDmvjGRQ6sfPgowkP9QJUb4Ou0LjAD7K2ItnjCosrifV0G/doS
-m7qQ3hWxHRVuIYhZCjybo7WAH+mMmIiNd9hcjz+brUciH8+sswQTkmDEcq+O3nh/
-ANPamNTvmiLx39Ne/hkm0PiXYBzKpLqo4Q3t7FzuvVDrVDn2vsVd2lmwyoL810T5
-miTxBqyXxkbQ562rA9VrFXwlhHIwSTU/0Zdu+4fYETx3SjZ3uHrV/AVTFPWj9Ezm
-tGwezJPK2l0CwBk6rjY27FRtZBX248W8hcRxo+MXQQJ4ieovMxngZs0tUGMiB4Uu
-hMfJn7Q+MygF+pwozLiO94f0UUbV2EOZgvfgyIhnd0aYF4fEKgFNLpjkY9aR3scr
-QideWubHp4CF6LC5sTAtrI2qcBTai64auKNEAuFSYkRCoMFNfuoUR/4K/1/zFjRh
-gMokysRqxfa6ww/4waFWtWEo09fvmNKK2wIwU9bqBVQ9R7Kq786+SAfK67fg5ahf
-nBf/7iH7xfkYfg5d4HMw
-=HD1F
------END PGP SIGNATURE-----
+  git://git.open-mesh.org/linux-merge.git tags/batman-adv-fix-for-davem
 
---6lXr1rPCNTf1w0X8--
+for you to fetch changes up to ebe24cea95ab969f76f2922032f6c390fdc816f2:
+
+  batman-adv: initialize ELP orig address on secondary interfaces (2016-05-18 11:49:44 +0800)
+
+----------------------------------------------------------------
+During the Wireless Battle Mesh v9 in Porto (PT) at the beginning of
+May, we managed to uncover and fix some important bugs in our
+new B.A.T.M.A.N. V algorithm. These are the fixes we came up with
+together with others that I collected in the past weeks:
+- avoid potential crash due to NULL pointer dereference in
+  B.A.T.M.A.N. V routine when a neigh_ifinfo object is not found, by
+  Sven Eckelmann
+- avoid use-after-free of skb when counting outgoing bytes, by Florian
+  Westphal
+- fix neigh_ifinfo object reference counting imbalance when using
+  B.A.T.M.A.N. V, by Sven Eckelmann. Such imbalance may lead to the
+  impossibility of releasing the related netdev object on shutdown
+- avoid invalid memory access in case of error while allocating
+  bcast_own_sum when a new hard-interface is added, by Sven Eckelmann
+- ensure originator address is updated in OMG/ELP packet content upon
+  primary interface address change, by Antonio Quartulli
+- fix integer overflow when computing TQ metric (B.A.T.M.A.N. IV), by
+  Sven Eckelmann
+- avoid race condition while adding new neigh_node which would result
+  in having two objects mapping to the same physical neighbour, by
+  Linus Lüssing
+- ensure originator address is initialized in ELP packet content on
+  secondary interfaces, by Marek Lindner
+
+----------------------------------------------------------------
+Antonio Quartulli (1):
+      batman-adv: make sure ELP/OGM orig MAC is updated on address change
+
+Florian Westphal (1):
+      batman-adv: fix skb deref after free
+
+Linus Lüssing (1):
+      batman-adv: Avoid duplicate neigh_node additions
+
+Marek Lindner (1):
+      batman-adv: initialize ELP orig address on secondary interfaces
+
+Sven Eckelmann (4):
+      batman-adv: Avoid nullptr derefence in batadv_v_neigh_is_sob
+      batman-adv: Fix refcnt leak in batadv_v_neigh_*
+      batman-adv: Fix unexpected free of bcast_own on add_if error
+      batman-adv: Fix integer overflow in batadv_iv_ogm_calc_tq
+
+ net/batman-adv/bat_iv_ogm.c |  9 +++----
+ net/batman-adv/bat_v.c      | 66 +++++++++++++++++++++++++++++++++++++++------
+ net/batman-adv/bat_v_elp.c  | 31 ++++++++++++++-------
+ net/batman-adv/bat_v_elp.h  |  2 ++
+ net/batman-adv/originator.c |  6 +++--
+ net/batman-adv/routing.c    |  4 ++-
+ 6 files changed, 93 insertions(+), 25 deletions(-)
