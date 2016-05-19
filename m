@@ -1,9 +1,13 @@
-Return-Path: <sven.eckelmann@open-mesh.com>
-From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-Date: Wed, 18 May 2016 11:58:52 +0200
-Message-Id: <1463565532-13354-1-git-send-email-sven.eckelmann@open-mesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Ignore auto-generated files in
-	compat-sources
+Return-Path: <davem@redhat.com>
+Date: Thu, 19 May 2016 11:51:52 -0700 (PDT)
+Message-Id: <20160519.115152.2155102752322148986.davem@redhat.com>
+From: David Miller <davem@redhat.com>
+In-Reply-To: <1463547892-11290-1-git-send-email-a@unstable.cc>
+References: <1463547892-11290-1-git-send-email-a@unstable.cc>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 20160518
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,26 +17,26 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+To: a@unstable.cc
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
----
- .gitignore | 2 ++
- 1 file changed, 2 insertions(+)
+From: Antonio Quartulli <a@unstable.cc>
+Date: Wed, 18 May 2016 13:04:44 +0800
 
-diff --git a/.gitignore b/.gitignore
-index 59c6a30..4c03561 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -1,5 +1,7 @@
- /compat-autoconf.h
- /compat-autoconf.h.tmp
-+/compat-sources/**/.*
-+/compat-sources/**/*.o
- /net/batman-adv/.*
- /net/batman-adv/batman-adv.ko
- /net/batman-adv/batman-adv.mod.c
--- 
-2.8.1
+> these are the fixes that couldn't make it for linux-4.6 rebased on top
+> of net-next.
+> 
+> They were all supposed to be applied on 4.6, therefore it would be nice
+> if you could queue them for inclusion in the 4.6.1 stable release.
+> 
+> Please pull or let me know of any problem!
 
+Pulled, thanks.
+
+> I also have a question: I have another bugfix that should only be
+> applied to 4.6 and not to 4.7/net-next - should I directly send it
+> to stable@vger.kernel.org ?
+
+Yeah, why don't you send it directly to the stable list.
+
+Thanks.
