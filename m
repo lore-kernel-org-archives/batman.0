@@ -1,13 +1,15 @@
-Return-Path: <davem@redhat.com>
-Date: Thu, 19 May 2016 11:51:52 -0700 (PDT)
-Message-Id: <20160519.115152.2155102752322148986.davem@redhat.com>
-From: David Miller <davem@redhat.com>
-In-Reply-To: <1463547892-11290-1-git-send-email-a@unstable.cc>
-References: <1463547892-11290-1-git-send-email-a@unstable.cc>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] pull request: batman-adv 20160518
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Thu, 19 May 2016 21:33:12 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20160519193312.GC12565@otheros>
+References: <1462525107-19750-1-git-send-email-apape@phoenixcontact.com>
+ <1462525107-19750-3-git-send-email-apape@phoenixcontact.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1462525107-19750-3-git-send-email-apape@phoenixcontact.com>
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/6] batman-adv: speed up dat by
+ snooping received ip traffic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,26 +19,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: a@unstable.cc
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Antonio Quartulli <a@unstable.cc>
-Date: Wed, 18 May 2016 13:04:44 +0800
-
-> these are the fixes that couldn't make it for linux-4.6 rebased on top
-> of net-next.
+On Fri, May 06, 2016 at 10:58:23AM +0200, Andreas Pape wrote:
+> Speeding up dat address lookup is achieved by snooping all incoming ip
+> traffic. This especially increases the propability in bla setups that
+> a gateway into a common backbone network already has a fitting dat entry
+> to answer incoming ARP requests directly coming from the backbone
+> network thus further reducing ARP traffic in the mesh.
 > 
-> They were all supposed to be applied on 4.6, therefore it would be nice
-> if you could queue them for inclusion in the 4.6.1 stable release.
-> 
-> Please pull or let me know of any problem!
+> Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
+> ---
 
-Pulled, thanks.
+This patch looks interesting :). Currently we have quite some
+ARP-requests from gateways to clients left in Freifunk setups (had
+been asking Antonio about it just yesterday) and looks like this
+patch could help here.
 
-> I also have a question: I have another bugfix that should only be
-> applied to 4.6 and not to 4.7/net-next - should I directly send it
-> to stable@vger.kernel.org ?
+> +void batadv_dat_entry_check(struct batadv_priv *bat_priv, struct sk_buff *skb,
+> +			    unsigned short vid)
+> +{
+[...]
+> +		batadv_dat_entry_add(bat_priv, iphdr->saddr,
+> +				     ethhdr->h_source, vid);
+> +	}
+> +}
 
-Yeah, why don't you send it directly to the stable list.
+There is something in batadv_dat_entry_add() that makes me a
+little worried:
 
-Thanks.
+----
+	if (dat_entry) {
+		if (!batadv_compare_eth(dat_entry->mac_addr,
+					mac_addr))
+			ether_addr_copy(dat_entry->mac_addr, mac_addr);
+----
+
+ether_addr_copy() isn't atomic, there is a race condition between
+the update and any such check - like the one just above it.
+
+This isn't really a bug of your patchset, but could make this race
+condition much more likely. In the worst case, a fast IP packet
+stream would create a constant rewrite and mostly broken
+dat_entry->mac_addr.
