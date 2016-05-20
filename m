@@ -1,17 +1,15 @@
-Return-Path: <a@unstable.cc>
-Date: Fri, 20 May 2016 15:33:13 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160520073313.GR12056@prodigo.lan>
-References: <1462190269.1971.52.camel@biplane.com.au>
- <2079546.oo0Mk8DjMd@bentobox>
- <a1c140db68d543d482a22adfbac42670@BLUPR97MB0100.062d.mgd.msft.net>
- <26642956.zsKuDycQ3V@bentobox>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Fri, 20 May 2016 16:43:14 +0800
+Message-ID: <4856686.pSXAZedqgS@voltaire>
+In-Reply-To: <1463564330-11178-1-git-send-email-sven.eckelmann@open-mesh.com>
+References: <4816418.hDXNbSuFUQ@bentobox>
+ <1463564330-11178-1-git-send-email-sven.eckelmann@open-mesh.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="+VeMz1SRxFChf6vr"
-Content-Disposition: inline
-In-Reply-To: <26642956.zsKuDycQ3V@bentobox>
-Subject: Re: [B.A.T.M.A.N.] mesh losing internal Ilayer3 connectivity
+Content-Type: multipart/signed; boundary="nextPart1597449.ghYzb6F8Yg";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v11 1/2] batman-adv: return netdev status
+	in the TX path
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,71 +19,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 
+--nextPart1597449.ghYzb6F8Yg
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---+VeMz1SRxFChf6vr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wednesday, May 18, 2016 11:38:48 Sven Eckelmann wrote:
+> From: Antonio Quartulli <antonio.quartulli@open-mesh.com>
+> 
+> Return the proper netdev TX status along the TX path so that the tp_meter
+> can understand when the queue is full and should stop sending packets.
+> 
+> Signed-off-by: Antonio Quartulli <antonio.quartulli@open-mesh.com>
+> Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+> ---
+> v11:
+>  * no changes
+> v10:
+>  * no changes
+> v9:
+>  * rebase on top of current master+"batman-adv: Include main.h in all
+> files"+ "batman-adv: Keep includes ordered by filename"
+> v8:
+>  * rebase on top of current master
+> ---
+>  net/batman-adv/fragmentation.c | 41
+> +++++++++++++++++++++++++---------------- net/batman-adv/fragmentation.h
+> |  6 +++---
+>  net/batman-adv/main.c          |  4 +++-
+>  net/batman-adv/routing.c       | 23 ++++++++++++++---------
+>  net/batman-adv/send.c          | 25 +++++++++++++------------
+>  5 files changed, 58 insertions(+), 41 deletions(-)
 
-On Fri, May 20, 2016 at 09:23:24AM +0200, Sven Eckelmann wrote:
-> On Thursday 19 May 2016 14:22:58 Nick Schaf wrote:
-> > I've run into what sounds like a similar problem, but dove in and found=
- more
-> > details.  Here's the setup:
-> >=20
-> > -19 nodes running BATMAN-adv 2014.14.0 on OpenWrt Chaos Calmer; various
-> > hardware (D-Link, BBB, Open-Mesh, WRTnode, TP-Link).
->=20
-> Only scrolled through your mail. But there are two things which I find od=
-d.
-> First you use a really old (actually not existing) version of batman-adv.
->=20
-> Then you have some TT problems. I think we had many fixes since then whic=
-h may
-> be related to your problem. But going through 2 years of fixes might be a=
-=20
-> quite hard (at very cumbersome) journey.=20
->=20
-> Maybe it is really a good idea to try to upgrade to the recent version=20
-> (2016.1+fixes) from the Chaos Calmers openwrt-routing feed on all your no=
-des.=20
-> Maybe Antonio remembers one special TT/roaming bug and can recommend one =
-to=20
-> test. But most likely testing the current version is easier.
+Applied in revision 53b6614.
 
-I don't recall any superfix which might magically solve the problems you
-are seeing. Therefore I'd just follow Sven's suggestion and try running a r=
-ecent
-version of batman-adv.
+Thanks,
+Marek
 
-Cheers,
-
-
---=20
-Antonio Quartulli
-
---+VeMz1SRxFChf6vr
+--nextPart1597449.ghYzb6F8Yg
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXPr25AAoJEJ4aZjxxc6bKLBUP/A2o6+B2Ys09Lkty0Yazl4T8
-X0C/O2g/7zuCtcwcjQqgz4N1A2zDoMUAAEQIlZv1y2ywtDfB8WFaANPkfd1SO9zs
-LPPf3S0Q/NEJ/ywygTfS4/4H5E9wZtMk1AepNtarOb9mlEMT+qc+acUx91V2Ktuo
-eD0Ugsf3tq7szz5+CdLU+XfNqc2VGRWkoIWldXwxYfi87ingmz+fZOtJc+tQbYV8
-s1cOkA0saoFDPR9jpBem+6GBr8kzeEUG1Y2qhVMKe592kWvksmf+DYvCDPGw3yX9
-h71V7wclEVXod9gtQx/csA3ie+nYeIn2/9W1azJxQEuF9Ajq9iw/JTTkJm+9axBN
-jXmzR8EX+0jvMcylY8I6s7nHpA2dUYdvt5SG9YuJcVQo6Sykp/L5kmgPdzK1sOVe
-tBvnPF6FVGj0ptQ0oWDcu3v5qwLS8IISHksFO37dpzDsWRdkJ+E+9XTHXEdF6ryq
-snQ6cxl6GvJGqeKKaGnN4fmvPYUAHGVUuN3A+3TxBapnoiij/E2x6PH9Tq2ho+5K
-9pO87itXV1KN63Q1n1zwlX1mQu8mRcl1543Mna9bVmnxJk8iOxIrJQLdmc5NbNO3
-qgsIdypt7Pvb9ijQg895Sqkt7qgsA4dtGmeCJlRSHbgQMdveBOUz3w+46NR79X+t
-dY8UVC3tRLfOXpYj1tvi
-=nwJJ
+iQEcBAABCAAGBQJXPs4iAAoJEFNVTo/uthzA4nQIAL2EDxSGjN9VXwpaJ+/Ap7dH
+e15KLFfHvZnIZzH5WPeKTdGA6nPzMgWi7Q4CZMwbOfcX2CtuRSWtyZaag6D/KMvW
+vH+J3iR6AYVP49FB30PcMEFBsJpLpjVdTLy8jpI0HoAfhvKP/pApZuXhX3bibGZE
+tC0Yig8q1eXiZwzfqopaRcP6uTvJlr4PbBcUga7VGeA9MtG4k603k8qQkoDBWWa5
+D1Qec70FWlXBabAdrmzpwO2GvxAYTN+W1t0IKJS5HKzrIYurlKHmb0RwIh7fwYE5
+JnZB9iMS5Zo99SjHe0jk6CqrNI9hC4tdCsbLDrtGTddus/uNahghJIckLX2v+Us=
+=X/7g
 -----END PGP SIGNATURE-----
 
---+VeMz1SRxFChf6vr--
+--nextPart1597449.ghYzb6F8Yg--
+
