@@ -1,16 +1,9 @@
-Return-Path: <APape@phoenixcontact.com>
-In-Reply-To: <20160519194553.GD12565@otheros>
-References: <1462525107-19750-1-git-send-email-apape@phoenixcontact.com>
- <1462525107-19750-3-git-send-email-apape@phoenixcontact.com>
- <20160519194553.GD12565@otheros>
-MIME-Version: 1.0
-From: Andreas Pape <APape@phoenixcontact.com>
-Message-ID: <OF496B57CC.AA9E34DD-ONC1257FB9.003EB7CF-C1257FB9.003F68A4@phoenixcontact.com>
-Date: Fri, 20 May 2016 13:32:35 +0200
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="ISO-8859-1"
-Subject: [B.A.T.M.A.N.] Antwort: Re: [PATCHv3 2/6] batman-adv: speed up dat
- by snooping received ip traffic
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 20 May 2016 14:06:24 +0200
+Message-Id: <1463745984-16129-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH next v2] batman-adv: Fix build against recent
+	Debian stretch kernels
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,70 +13,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-"B.A.T.M.A.N" <b.a.t.m.a.n-bounces@lists.open-mesh.org> schrieb am
-19.05.2016 21:45:53:
+The kernels for Debian stretch require some special CFLAGS settings
+which are only correctly defined when NOSTDINC_FLAGS is set during the
+execution of the Makefile via kbuild. But batman-adv sets it currently
+outside to insert compatibility include headers and compat-sources.
 
-> Von: Linus L=FCssing <linus.luessing@c0d3.blue>
-> An: The list for a Better Approach To Mobile Ad-hoc Networking
-> <b.a.t.m.a.n@lists.open-mesh.org>
-> Datum: 19.05.2016 21:47
-> Betreff: Re: [B.A.T.M.A.N.] [PATCHv3 2/6] batman-adv: speed up dat
-> by snooping received ip traffic
-> Gesendet von: "B.A.T.M.A.N" <b.a.t.m.a.n-bounces@lists.open-mesh.org>
->
-> On Fri, May 06, 2016 at 10:58:23AM +0200, Andreas Pape wrote:
-> > +void batadv_dat_entry_check(struct batadv_priv *bat_priv, struct
-> sk_buff *skb,
-> > +             unsigned short vid)
-> > +{
-> [...]
-> > +   if (iphdr) {
-> > +      batadv_dbg(BATADV_DBG_DAT, bat_priv,
-> > +            "Snooped IP address: %pI4 %pM (vid: %d)\n",
-> > +            &iphdr->saddr, ethhdr->h_source,
-> > +            BATADV_PRINT_VID(vid));
-> > +      batadv_dat_entry_add(bat_priv, iphdr->saddr,
-> > +                 ethhdr->h_source, vid);
-> > +   }
->
-> Not sure whether it is necessary, or whether there is a check
-> somewhere later within DAT. But should we exclude some
-> iphdr->saddr or ethhdr->h_source addresses? For instance a
-> DHCPDISCOVER usually has a zero-ip address.
+This can be avoided by making the top Makefile kbuild compatible and
+redefining the NOSTDINC_FLAGS when kbuild includes this Makefile. The
+actual build of the batman-adv module is then done by adding the
+subdirectory to obj-y.
 
-I think you have a good point here. Excluding especially
-ip addresses like zero-ip address seems reasonable. Although
-I think that this isn't a problem as long as no one is sending
-arp requests for such ip addresses, filling the dat table with
-unreasonable entries isn't a smart idea either. I will add some
-additional tests here for reasonable ip addresses for the next
-version of the patchset.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+v2:
+ - Fixed noise from other patches in context (should now apply cleanly on next)
 
-Thanks and regards,
-Andreas
+ Makefile | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
+diff --git a/Makefile b/Makefile
+index 5d2c058..fe574de 100644
+--- a/Makefile
++++ b/Makefile
+@@ -43,7 +43,7 @@ RM ?= rm -f
+ REVISION= $(shell	if [ -d "$(PWD)/.git" ]; then \
+ 				echo $$(git --git-dir="$(PWD)/.git" describe --always --dirty --match "v*" |sed 's/^v//' 2> /dev/null || echo "[unknown]"); \
+ 			fi)
+-export NOSTDINC_FLAGS := \
++NOSTDINC_FLAGS := \
+ 	-I$(PWD)/compat-include/ \
+ 	-include $(PWD)/compat.h \
+ 	$(CFLAGS)
+@@ -52,8 +52,12 @@ ifneq ($(REVISION),)
+ NOSTDINC_FLAGS += -DBATADV_SOURCE_VERSION=\"$(REVISION)\"
+ endif
+ 
++obj-y += net/batman-adv/
++
+ BUILD_FLAGS := \
+-	M=$(PWD)/net/batman-adv \
++	M=$(PWD) \
++	PWD=$(PWD) \
++	REVISION=$(REVISION) \
+ 	CONFIG_BATMAN_ADV=m \
+ 	CONFIG_BATMAN_ADV_DEBUG=$(CONFIG_BATMAN_ADV_DEBUG) \
+ 	CONFIG_BATMAN_ADV_BLA=$(CONFIG_BATMAN_ADV_BLA) \
+@@ -61,7 +65,7 @@ BUILD_FLAGS := \
+ 	CONFIG_BATMAN_ADV_NC=$(CONFIG_BATMAN_ADV_NC) \
+ 	CONFIG_BATMAN_ADV_MCAST=$(CONFIG_BATMAN_ADV_MCAST) \
+ 	CONFIG_BATMAN_ADV_BATMAN_V=$(CONFIG_BATMAN_ADV_BATMAN_V) \
+-	INSTALL_MOD_DIR=updates/net/batman-adv/
++	INSTALL_MOD_DIR=updates/
+ 
+ all: config
+ 	$(MAKE) -C $(KERNELPATH) $(BUILD_FLAGS)	modules
+-- 
+2.8.1
 
-
-..................................................................
-PHOENIX CONTACT ELECTRONICS GmbH
-
-Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
-USt-Id-Nr.: DE811742156
-Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
-Gesch=E4ftsf=FChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
-___________________________________________________________________
-Diese E-Mail enth=E4lt vertrauliche und/oder rechtlich gesch=FCtzte Informa=
-tionen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail irrt=FC=
-mlich erhalten haben, informieren Sie bitte sofort den Absender und vernich=
-ten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige Verwendu=
-ng sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
----------------------------------------------------------------------------=
--------------------------
-This e-mail may contain confidential and/or privileged information. If you =
-are not the intended recipient (or have received this e-mail in error) plea=
-se notify the sender immediately and destroy this e-mail. Any unauthorized =
-copying, disclosure, distribution or other use of the material or parts the=
-reof is strictly forbidden.
-___________________________________________________________________
