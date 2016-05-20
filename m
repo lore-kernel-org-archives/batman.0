@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 20 May 2016 16:43:14 +0800
-Message-ID: <4856686.pSXAZedqgS@voltaire>
-In-Reply-To: <1463564330-11178-1-git-send-email-sven.eckelmann@open-mesh.com>
-References: <4816418.hDXNbSuFUQ@bentobox>
- <1463564330-11178-1-git-send-email-sven.eckelmann@open-mesh.com>
+Date: Fri, 20 May 2016 16:52:22 +0800
+Message-ID: <3255416.Qqq4ERlxMC@voltaire>
+In-Reply-To: <1463303266-25979-1-git-send-email-sven@narfation.org>
+References: <1463303266-25979-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1597449.ghYzb6F8Yg";
+Content-Type: multipart/signed; boundary="nextPart1779818.Lb0RQ9P6qK";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v11 1/2] batman-adv: return netdev status
-	in the TX path
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3 1/6] batman-adv: Include main.h in all
+	files
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,45 +19,36 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 
---nextPart1597449.ghYzb6F8Yg
+--nextPart1779818.Lb0RQ9P6qK
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday, May 18, 2016 11:38:48 Sven Eckelmann wrote:
-> From: Antonio Quartulli <antonio.quartulli@open-mesh.com>
+On Sunday, May 15, 2016 11:07:41 Sven Eckelmann wrote:
+> main.h includes statements which (re)define preprocessor variables which
+> influence the compiled code. This makes it necessary to include it in all
+> files. For example, it redefines pr_fmt used to the module as prefix for
+> each pr_* message.
 > 
-> Return the proper netdev TX status along the TX path so that the tp_meter
-> can understand when the queue is full and should stop sending packets.
-> 
-> Signed-off-by: Antonio Quartulli <antonio.quartulli@open-mesh.com>
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+> Reported-by: Antonio Quartulli <a@unstable.cc>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
-> v11:
->  * no changes
-> v10:
->  * no changes
-> v9:
->  * rebase on top of current master+"batman-adv: Include main.h in all
-> files"+ "batman-adv: Keep includes ordered by filename"
-> v8:
->  * rebase on top of current master
+> v3:
+>  - no change
+> v2:
+>  - never existed
 > ---
->  net/batman-adv/fragmentation.c | 41
-> +++++++++++++++++++++++++---------------- net/batman-adv/fragmentation.h
-> |  6 +++---
->  net/batman-adv/main.c          |  4 +++-
->  net/batman-adv/routing.c       | 23 ++++++++++++++---------
->  net/batman-adv/send.c          | 25 +++++++++++++------------
->  5 files changed, 58 insertions(+), 41 deletions(-)
+>  net/batman-adv/bat_algo.h  | 2 +-
+>  net/batman-adv/bat_v_ogm.h | 4 ++--
+>  net/batman-adv/netlink.h   | 2 ++
+>  3 files changed, 5 insertions(+), 3 deletions(-)
 
-Applied in revision 53b6614.
+Applied in revision 97d45f9.
 
 Thanks,
 Marek
 
---nextPart1597449.ghYzb6F8Yg
+--nextPart1779818.Lb0RQ9P6qK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -66,14 +56,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXPs4iAAoJEFNVTo/uthzA4nQIAL2EDxSGjN9VXwpaJ+/Ap7dH
-e15KLFfHvZnIZzH5WPeKTdGA6nPzMgWi7Q4CZMwbOfcX2CtuRSWtyZaag6D/KMvW
-vH+J3iR6AYVP49FB30PcMEFBsJpLpjVdTLy8jpI0HoAfhvKP/pApZuXhX3bibGZE
-tC0Yig8q1eXiZwzfqopaRcP6uTvJlr4PbBcUga7VGeA9MtG4k603k8qQkoDBWWa5
-D1Qec70FWlXBabAdrmzpwO2GvxAYTN+W1t0IKJS5HKzrIYurlKHmb0RwIh7fwYE5
-JnZB9iMS5Zo99SjHe0jk6CqrNI9hC4tdCsbLDrtGTddus/uNahghJIckLX2v+Us=
-=X/7g
+iQEcBAABCAAGBQJXPtBGAAoJEFNVTo/uthzAYpQIAJRuy05hsuJ619WdZC3YPc2M
+J3QsFw8cRxXENbenito3eJzZj0C3j2SYQ4x7HoQhCp8mpu3kT5G9K/lwvPhW0Knz
++y0dNgAvztzkklffok3GIn0RYHghOvfPaMyhDINjGbZmRYck1+xyjcI8eootYA5T
+mmRtOgUETeCS9f895rsYxgMpvvJDiF8LWN56bmcT3EtDo5gC3PpNeei2ouCbCMcf
+nFrLfMrSk3pFgAgIEX3PZ1JuiBcs2OSoPzMlJDwaADXUrfBnemjkS1OOUONhP26l
+af/IX4tU4Cbuv+9h17hipGNy0fvLrzM7tNNNiFsszoPC6n6KQ0DqTOps8litSSI=
+=YsX1
 -----END PGP SIGNATURE-----
 
---nextPart1597449.ghYzb6F8Yg--
+--nextPart1779818.Lb0RQ9P6qK--
 
