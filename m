@@ -1,16 +1,15 @@
-Return-Path: <APape@phoenixcontact.com>
-In-Reply-To: <2059800.IKvSZ5WLNp@prime>
-References: <1463034697-8867-1-git-send-email-apape@phoenixcontact.com>
- <1463034697-8867-2-git-send-email-apape@phoenixcontact.com>
- <2059800.IKvSZ5WLNp@prime>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Fri, 20 May 2016 12:34:19 +0200
+Message-ID: <2389731.VthjvnFTt3@prime>
+In-Reply-To: <OFA25ED025.C66D5F5E-ONC1257FB9.00376293-C1257FB9.003771B4@phoenixcontact.com>
+References: <1463071923-27298-1-git-send-email-sw@simonwunderlich.de>
+ <OFA25ED025.C66D5F5E-ONC1257FB9.00376293-C1257FB9.003771B4@phoenixcontact.com>
 MIME-Version: 1.0
-From: Andreas Pape <APape@phoenixcontact.com>
-Message-ID: <OF742EC1C0.076B6112-ONC1257FB9.0037A638-C1257FB9.00380EA4@phoenixcontact.com>
-Date: Fri, 20 May 2016 12:12:17 +0200
-content-transfer-encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
-Subject: [B.A.T.M.A.N.] Antwort: Re: [PATCH v4 1/6] batman-adv: prevent
- multiple ARP replies sent by gateways if dat enbled
+Content-Type: multipart/signed; boundary="nextPart2658416.pOY6Yz0AJA";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Antwort: [PATCH-maintv2] batman-adv: replace
+	WARN with rate limited output on non-existing VLAN
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,150 +19,88 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: Andreas Pape <APape@phoenixcontact.com>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi Simon,
+--nextPart2658416.pOY6Yz0AJA
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
 
-Simon Wunderlich <sw@simonwunderlich.de> schrieb am 18.05.2016 14:32:09:
+Hi Andreas,
 
-> Von: Simon Wunderlich <sw@simonwunderlich.de>
-> An: Andreas Pape <APape@phoenixcontact.com>
-> Datum: 18.05.2016 14:32
-> Betreff: Re: Antwort: Re: [B.A.T.M.A.N.] [PATCH v4 1/6] batman-adv:
-> prevent multiple ARP replies sent by gateways if dat enbled
->
-> Hi Andreas,
->
-> On Wednesday 18 May 2016 09:50:21 Andreas Pape wrote:
-> > > Von: Simon Wunderlich <sw@simonwunderlich.de>
-> > > An: b.a.t.m.a.n@lists.open-mesh.org
-> > > Kopie: Andreas Pape <apape@phoenixcontact.com>
-> > > Datum: 13.05.2016 19:37
-> > > Betreff: Re: [B.A.T.M.A.N.] [PATCH v4 1/6] batman-adv: prevent
-> > > multiple ARP replies sent by gateways if dat enbled
-> > >
-> > > On Thursday 12 May 2016 08:31:32 Andreas Pape wrote:
-> > > > @@ -1003,6 +1004,20 @@ bool
-> >
-> > batadv_dat_snoop_outgoing_arp_request(struct
-> >
-> > > > batadv_priv *bat_priv, goto out;
-> > > >
-> > > >        }
-> > > >
-> > > > +      /* If BLA is enabled, only send ARP replies if we have
-claimed
-> > > > +       * the destination for the ARP request or if no one else of
-> > > > +       * the backbone gws belonging to our backbone has claimed
-the
-> > > > +       * destination.
-> > > > +       */
-> > > > +      if (!batadv_bla_handle_local_claim(bat_priv,
-> > > > +                     dat_entry->mac_addr, vid)) {
-> > > > +         batadv_dbg(BATADV_DBG_DAT, bat_priv,
-> > > > +               "Device %pM claimed by another backbone gw. Don't
-send
-> >
-> > ARP
-> >
-> > > reply!",
-> > >
-> > > > +               dat_entry->mac_addr);
-> > > > +         ret =3D true;
-> > > > +         goto out;
-> > > > +      }
-> > > > +
-> > >
-> > > There is still my question/comment pending for this from your
-PATCHv2.
-> >
-> > I'll
-> >
-> > > quote:
-> > >
-> > > I  would agree to Antonio that sending a claim is not necessary, and
-> >
-> > might
-> >
-> > > actually lead to bad choices of the outgoing backbone gateway. After
-> >
-> > all, at
-> >
-> > > this point any "random" backbone gateway may answer to this request,
-> >
-> > just
-> >
-> > > because it has the DAT entry, but maybe may actually not be able to
-> >
-> > reach the
-> >
-> > > client via the mesh.
->
->
-> looks like your reply didn't go to the mailing list, not sure if
-> this was your
-> intention. Anyway ...
->
+On Friday 20 May 2016 12:05:35 Andreas Pape wrote:
+> Hi,
+> 
+> this is a point I also stumbled across. In my use case the problem is a
+> little bit
+> more difficult.
+> I use a setup with bat interfaces bridged to ethernet interfaces and my
+> mesh nodes
+> shall forward layer2 transparently network traffic from the wired network
+> into the
+> mesh.
+> 
+> My problem now is that among the layer2 traffic there are also vlan tagged
+> frames
+> whereas the bat interface isn't member of the vlan to be forwarded itself.
+> 
+> More specific in my case the frames use vlan id 0 and are tagged mainly
+> due to the
+> reason to guarantee some QoS in the wired network.
+> 
+> Yes, I know one might argue what reason QoS priority tagging has in mesh
+> setups, but
+> these frames are not generated by my devices but I have to forward them
+> "as they are".
+> 
+> As far as I understood the code, these frames do not only lead to the WARN
+> messages
+> (and there I welcome Simon's patch) but also lead to a drop of the tagged
+> packets
+> (correct ?). If I understood this correctly I would prefer that batman
+> would handle
+> vlan tagged packets on layer 2 like an unmanaged switch does: still
+> forward such
+> packets according to the mac header.
+> 
+> What do you think?
 
-That wasn't my intention. It was just my fault;-). Sorry, if you receive
-this
-twice. I once again forgot to disable html support in my e-mail client...
+I completely agree, this is what I'd expect from batman-adv to do. However, 
+currently this isn't the case as you have noticed already.
 
-> >
-> > I removed the automatic claim in function
-batadv_bla_handle_local_claim
-> > but
-> > obviously missed to change the comment here accordingly:-( I haven't
-had
-> > much
-> > time recently to work on this and did not spent enough time to work
-> > through
-> > the new version of the patchset in a way I should have done....
->
-> Ah right, I missed that point, and was merely checking my old comments
-...
-> sorry, I should have checked better too.
->
-> >
-> > Perhaps it might be a also a good idea to rename the function to
-something
-> > which cannot be mixed easily with the function batadv_handle_claim.
-What
-> > about
-> > the name batadv_bla_check_claim?
->
-> Yes, definitely! We should rename it. check_claim sounds good to me.
->
-If there are no other objections I will change the name as discussed in my
+As a workaround, you could create vlan interfaces like bat0.0 and eth0.0 and 
+bridge those.
 
-next attempt.
+However in the long run, I think we should change the TT/VLAN code to create 
+vlan objects on the fly when we get packets and remove those vlan objects when 
+the corresponding TT local entries are gone (and no VLAN is actually 
+configured). I've put this on my list of things I'll try to work on at some 
+point, if anyone wants to prepare a patch before me please go ahead ... :)
 
-> Thanks a lot,
->       Simon
+Cheers,
+      Simon
+--nextPart2658416.pOY6Yz0AJA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-Best regards,
-Andreas
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
+iQIcBAABCgAGBQJXPugrAAoJEKEr45hCkp6h7mcP/AyvhEKdx0QA+/p+J6b9JKfk
+VYHR0oMPcE+Kb/nStng6AzRUs1WpXLUFI5q3piCkkLXKSsB9oDyvsx12kMoThgBO
+7r10aRzXp1rs18kdNGQfjKdNc9pEZO2F/iq3ouP04FR23VlW4Sp1NMpLJtDzZg9N
+T8VPCJa9q1QDPKpHyaFkfoeYQ56G9eUpcClCFpkoEdgIc4KRuFi8KFkAzF0aEW5G
++tDiIMrPG5tmX8QDpXzN3/Spke+Lc81OQuWngrKHPoXuh34marf5QxE6kwFDLOwx
+X7kR1sAY4euI0JJYkk/3JFNY8BpswONIV5+81BAJAmj5WzG7eSAz3+8jVtUiRl52
+YYlap5yoz+Ispnl2aDBR/+7BPR4xUEF830GD+vVKAcI2kyCmiCeDgjj6nLUfbmaD
+SSI0L9X7rYvPgc8AE1RGRzruTL2F3x5b9VSHN/PVT9uaki4e08qyq1Ej9zk+GXkm
+tO96c8umq4LfJ+LfAY9yzp+aFk+VkJ+mhCLcQDyHaTM9sVva6Y7S/v9tQQEHuAr7
+NSDTHutWZtpFegzTVRbSANfIlJctfKTcFhzkp3e3rnT0fgSymdqO++z3fGvQKHze
+YE6t+AZZNKOGtmYg2VOPamt6zxcWKbXBAjG46KMrP3znmg85ksPFy5FN2f3l8iEt
+f3uM1b++w9tSgkgEh/Yq
+=REws
+-----END PGP SIGNATURE-----
 
-..................................................................
-PHOENIX CONTACT ELECTRONICS GmbH
+--nextPart2658416.pOY6Yz0AJA--
 
-Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
-USt-Id-Nr.: DE811742156
-Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
-Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
-___________________________________________________________________
-Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
-nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
-rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
-d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
- Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
----------------------------------------------------------------------------=
--------------------------
-This e-mail may contain confidential and/or privileged information. If you =
-are not the intended recipient (or have received this e-mail in error) plea=
-se notify the sender immediately and destroy this e-mail. Any unauthorized =
-copying, disclosure, distribution or other use of the material or parts the=
-reof is strictly forbidden.
-___________________________________________________________________
