@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 20 May 2016 16:55:23 +0800
-Message-ID: <6134298.8kT0GqNhfy@voltaire>
-In-Reply-To: <1463303266-25979-2-git-send-email-sven@narfation.org>
+Date: Fri, 20 May 2016 16:58:01 +0800
+Message-ID: <5391263.p0XQNe6lIm@voltaire>
+In-Reply-To: <1463303266-25979-3-git-send-email-sven@narfation.org>
 References: <1463303266-25979-1-git-send-email-sven@narfation.org>
- <1463303266-25979-2-git-send-email-sven@narfation.org>
+ <1463303266-25979-3-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3117602.gpjpfpRZbL";
+Content-Type: multipart/signed; boundary="nextPart1908374.1M1rE0Eovv";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v3 2/6] batman-adv: Keep includes ordered
-	by filename
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3 3/6] batman-adv: split tvlv into a
+	separate file
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,39 +21,55 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3117602.gpjpfpRZbL
+--nextPart1908374.1M1rE0Eovv
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, May 15, 2016 11:07:42 Sven Eckelmann wrote:
-> It is easier to detect if a include is already there for a used
-> functionality when the includes are ordered. Using an alphabetic order
-> together with the grouping in commit 7df620092727 ("batman-adv: Add
-> required includes to all files") makes includes better manageable.
+On Sunday, May 15, 2016 11:07:43 Sven Eckelmann wrote:
+> From: Markus Pargmann <mpa@pengutronix.de>
 > 
+> The tvlv functionality in main.c is mostly unrelated to the rest of the
+> content. It still takes up a large portion of this source file (~45%, 588
+> lines). Moving it to a separate file makes it better visible as a main
+> component of the batman-adv implementation and hides it less in the other
+> helper functions in main.c
+> 
+> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+> [sven@narfation.org: fix conflicts with current version, fix includes,
+> rewrote commit message]
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
 > v3:
->  - adjusted title
-> v2:
->  - never existed
+>  - Patch was resurrected from https://patchwork.open-mesh.org/patch/4244/
+>  - rewrote commit message
+>  - fixed conflicts
+>  - fixed includes
 > ---
->  net/batman-adv/bat_iv_ogm.c     | 2 +-
->  net/batman-adv/gateway_common.c | 2 +-
->  net/batman-adv/hard-interface.c | 2 +-
->  net/batman-adv/main.h           | 6 +++---
->  net/batman-adv/multicast.c      | 2 +-
->  net/batman-adv/netlink.c        | 4 ++--
->  net/batman-adv/send.c           | 2 +-
->  net/batman-adv/sysfs.c          | 4 ++--
->  8 files changed, 12 insertions(+), 12 deletions(-)
+>  net/batman-adv/Makefile                |   1 +
+>  net/batman-adv/bat_iv_ogm.c            |   1 +
+>  net/batman-adv/bat_v_ogm.c             |   1 +
+>  net/batman-adv/distributed-arp-table.c |   1 +
+>  net/batman-adv/gateway_common.c        |   1 +
+>  net/batman-adv/main.c                  | 591
+> -------------------------------
+> net/batman-adv/main.h                  |  34 --
+>  net/batman-adv/multicast.c             |   1 +
+>  net/batman-adv/network-coding.c        |   1 +
+>  net/batman-adv/routing.c               |   1 +
+>  net/batman-adv/translation-table.c     |   1 +
+>  net/batman-adv/tvlv.c                  | 630
+> +++++++++++++++++++++++++++++++++
+> net/batman-adv/tvlv.h                  |  61 ++++
+>  13 files changed, 700 insertions(+), 625 deletions(-)
+>  create mode 100644 net/batman-adv/tvlv.c
+>  create mode 100644 net/batman-adv/tvlv.h
 
-Applied in revision b87df5f.
+Applied in revision 65326e3.
 
 Thanks,
 Marek
 
---nextPart3117602.gpjpfpRZbL
+--nextPart1908374.1M1rE0Eovv
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -61,14 +77,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXPtD7AAoJEFNVTo/uthzAXhoH/1iOIht1UdaEqNgYMvCypWVZ
-RyXlVFA+6N5Ga03wZVPo8eZCnppfv8QYoBG0VlUIfLa3Zxeis2YKnXoJRcKAMiHd
-y8KvO6LbqbplXrIr3ztFVq591cdkH207OsRsAwJWrbHt2+mtZsahqXvw8VM44uq4
-xcH7SgCd3XJ8jn4y0t7zxrX3zd4Tii58095iFUENciWvaWXYaug5fcEOCqKkW7Ug
-hGgS1o6bgtDehcco37esAxpX6sDJL/SOlm/h4OPdBI6ESPoab0cUi8AL5TLEe4lu
-WIeLkBCUknow2SApLutjct+LRYEOuCYlEeI13rsvJ5kjSYywlon86mw12h7sPXM=
-=lfQL
+iQEcBAABCAAGBQJXPtGZAAoJEFNVTo/uthzAMjEIAJxS7aHPzz38PWhv6SaxC9Wi
+VuZAghywqRl6PGYPMe6Hc9+6VRZ9RF3xIfQeJTlCPbzDCuvPwRl2uGBzs9szIHx5
+jfElQzKPvP5oHqi9Hd+gofdsQMsEDMO5AljsghSSBLorfW8JUuDuVbDMaZjxX9FQ
+xmy43CA/XMpK8pPJj7QXKm38dl2i1Juhc6OYzGH8sy0lymbSlUgptrVFmk4IU608
+5/lB3WzE9TtZsr8doXWFCpIZGe5usD05vvrmMsdp7C0QejeEDVCiwmgDuTU40cOh
+/VT8PECDH80McVDbbRXmwgFPFMWcyvEaLIF57ETMa76HUEbW4CsDzfw+1W4FvNc=
+=+eJt
 -----END PGP SIGNATURE-----
 
---nextPart3117602.gpjpfpRZbL--
+--nextPart1908374.1M1rE0Eovv--
 
