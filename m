@@ -1,14 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 21 May 2016 14:30:01 +0200
-Message-ID: <56303564.iUxXQk9lEV@sven-edge>
-In-Reply-To: <20160521121756.27450-1-a@unstable.cc>
+Date: Sat, 21 May 2016 14:32:38 +0200
+Message-ID: <1658184.bVJx44a0QY@sven-edge>
+In-Reply-To: <20160521121756.27450-2-a@unstable.cc>
 References: <20160521121756.27450-1-a@unstable.cc>
+ <20160521121756.27450-2-a@unstable.cc>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1905819.NtKr95TSvs";
+Content-Type: multipart/signed; boundary="nextPart2965490.BpEGivcMEp";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: remove useless forward
-	declarations
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: move include line at the
+	same place as other files
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,50 +22,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Antonio Quartulli <a@unstable.cc>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1905819.NtKr95TSvs
+--nextPart2965490.BpEGivcMEp
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday 21 May 2016 20:17:55 Antonio Quartulli wrote:
-> If main.h is included, the batman-adv private forward declarations are
-> not needed anymore. Remove them.
+On Saturday 21 May 2016 20:17:56 Antonio Quartulli wrote:
+> main.h is always included after the #ifdef guard except for
+> bat_v_elp.h. Move it at the right place.
+> 
+> Cc: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Antonio Quartulli <a@unstable.cc>
+> ---
 
-No, these are defined in packet.h and not main.h/types.h
+Good find :)
+
+Reviewed-by: Sven Eckelmann <sven@narfation.org>
 
 Kind regards,
 	Sven
 
->  net/batman-adv/gateway_client.h | 1 -
->  net/batman-adv/icmp_socket.h    | 2 --
->  2 files changed, 3 deletions(-)
+>  net/batman-adv/bat_v_elp.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/net/batman-adv/gateway_client.h
-> b/net/batman-adv/gateway_client.h index 582dd8c..c74aca5 100644
-> --- a/net/batman-adv/gateway_client.h
-> +++ b/net/batman-adv/gateway_client.h
-> @@ -22,7 +22,6 @@
+> diff --git a/net/batman-adv/bat_v_elp.h b/net/batman-adv/bat_v_elp.h
+> index cc130b2..be17c0b 100644
+> --- a/net/batman-adv/bat_v_elp.h
+> +++ b/net/batman-adv/bat_v_elp.h
+> @@ -15,11 +15,11 @@
+>   * along with this program; if not, see <http://www.gnu.org/licenses/>.
+>   */
 > 
->  #include <linux/types.h>
-> 
-> -struct batadv_tvlv_gateway_data;
->  struct seq_file;
->  struct sk_buff;
-> 
-> diff --git a/net/batman-adv/icmp_socket.h b/net/batman-adv/icmp_socket.h
-> index 618d5de..ce3ed25 100644
-> --- a/net/batman-adv/icmp_socket.h
-> +++ b/net/batman-adv/icmp_socket.h
-> @@ -22,8 +22,6 @@
-> 
->  #include <linux/types.h>
-> 
-> -struct batadv_icmp_header;
+> -#include "main.h"
 > -
->  #define BATADV_ICMP_SOCKET "socket"
+>  #ifndef _NET_BATMAN_ADV_BAT_V_ELP_H_
+>  #define _NET_BATMAN_ADV_BAT_V_ELP_H_
 > 
->  void batadv_socket_init(void);
+> +#include "main.h"
+> +
+>  struct sk_buff;
+>  struct work_struct;
 
---nextPart1905819.NtKr95TSvs
+--nextPart2965490.BpEGivcMEp
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -72,20 +70,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXQFTJAAoJEF2HCgfBJntG9vgP/iDJTBbjQrs+fPTUJUfId1H4
-Xnw5S0RCDzFDIjSWaJaRLXDZJX973t0L/DtAOBq0SnXbwn1Hq6kD8BaiSQdrd1Qj
-cfu0bHZ1e4UDa1w/2j2sjwSqUSBhL6vKozT28StrzL1/iRxwOHPw1eU41nYtyyJP
-i4YQGqWcC52OycoABG0oWofL1kIPQhmf3rw228zCjFiMhJprD5xaVhxn00J/S0lf
-CMpqeDyZfMF4nnFn+Y+UiMoL/rmaM/EgQ8pRv34zRQqExikJrOZny/DBd6KkoQss
-yusXgGYWoTbSHkIm+D9HGGWUt615a4yIWBDaf6/Usy5L7yxqj45NWoJJiaT044Q3
-plg5SOhbD5V3ApTh7cYqMVUsv+CT/jsrIFEXMmc3OwPRzoASUNY7a0W8oVzWqlwq
-Ro8+hiF4lWkQVhR4VYOF6uAIhokAEaKkjALIkNBkc0py2DJK66G8+glZh2eJwnKi
-CucMlKvI/aVL1FM0MB9iMLSYoQywkuneqVxbUjB8wKhdmunu/3giz90v1ir9d4uj
-Ddtip2R7YNi5HK2hDZd4Bi9YXKb4dOeOBmMnZccKiRqsCLqEP0bXb2usjvvwf8tp
-UeduYJkYsPW/tMNDRTg/GBWt2JcG3BDhcvE8brZNB+zKHlL2B7UnHQswQOOrvkJb
-5uYVKyfYklxz7kd6/O1e
-=LB10
+iQIcBAABCgAGBQJXQFVmAAoJEF2HCgfBJntGdHwQAIbLCPQg3HAvbUATqUbOh3vS
+8h1QZjIscjGM6j8t21eJ75YaFqVlkmuTjWtQ6O8fK3EJ+LFSFVkktSzsxKsuwg7u
+gd28hs/SACn/7L7iyIJ4Hh6UFub9Ou/wqxtfYDhtKHfuoqV3g9fvW5t/Z6hl5AgO
+L3Fj5u7qD5fzAWsVOXH+4JAuHJh2obMPnp/TzhqWbI+Ks02Np5BM3dBVLG2Os6oV
+fc6u1/sjpVCTeA54UvwY/urOpptagqNauhnd8CHlmz82/83lrAClfr/WmugAVEOd
+udNeW5ToV6NyBs4gmd0sobnRZqNcwocfMme2S3tZmaP2mdpcyL5AVh6zMair6NBJ
+2Nem3sy/iFHehGX3Q8zGwsKoX8t/FsYiVfmXO86sy0LGv/CHtZiHF6TkTl33xsh8
+UuIcHjyg5ZBhbo/Tduvf1WA2sTZW/UtR6t4/sn+hVGMI0JEEYfqtoZKEHqp7mK5M
+8rDt/AB/nhwilyt8dUnCBogwIwm+2oefdKcTVt15vuC4jWatHjOIwXbF9Q+aVR7x
+f96LULXAWPvwRwotdjE4gXgsBGgMNrFMVpNl0JWlJnjp5JXvYBijK7CYKfGobNrD
+MyfWtPLKvGVJdzq//h9L4bHc0ZqyjTa2kQiqQkIJ9mtpT7NudJwFgLpnqMwU8aia
+wX4jR3P/5YU2XzkBYsY6
+=SRK/
 -----END PGP SIGNATURE-----
 
---nextPart1905819.NtKr95TSvs--
+--nextPart2965490.BpEGivcMEp--
 
