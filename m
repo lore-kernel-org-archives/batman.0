@@ -1,16 +1,14 @@
-Return-Path: <a@unstable.cc>
-Date: Sat, 21 May 2016 20:32:52 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160521123252.GA12056@prodigo.lan>
-References: <20160521121756.27450-1-a@unstable.cc>
- <56303564.iUxXQk9lEV@sven-edge>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 21 May 2016 14:39:49 +0200
+Message-ID: <6311894.ZRre2EmoLd@sven-edge>
+In-Reply-To: <20160521121614.23779-1-a@unstable.cc>
+References: <20160521121614.23779-1-a@unstable.cc>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="ZOBTspFzEMOlPevk"
-Content-Disposition: inline
-In-Reply-To: <56303564.iUxXQk9lEV@sven-edge>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: remove useless forward
-	declarations
+Content-Type: multipart/signed; boundary="nextPart5174823.Xal9XnQjQb";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: B.A.T.M.A.N. V - implement
+	hard-iface init function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,50 +18,93 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
+--nextPart5174823.Xal9XnQjQb
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---ZOBTspFzEMOlPevk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Saturday 21 May 2016 20:16:14 Antonio Quartulli wrote:
+> Some fields in the hard-interface data structure are specific to the
+> B.A.T.M.A.N. V protocol and have to be initialized only when such
+> protocol is compiled in.
+> Instead of having a #ifdef block in the middle of the hard-interface.c
+> code it is better to have an algorithm private function that hides the
+> precompiler logic in its own header file (like other functions).
+> 
+> Fixes: ffd2f27908e5 ("batman-adv: Only init ELP tweaking options when
+> BATMAN_V is enabled") Signed-off-by: Antonio Quartulli <a@unstable.cc>
+> ---
+> 
+> Changes from v1:
+> - move bat_algo.h include line to the right location
+> 
+> Changes from v2:
+> - rebased on top of newest master to fix compile error.
+> 
+> 
+>  net/batman-adv/bat_v.c          | 14 ++++++++++++++
+>  net/batman-adv/bat_v.h          |  5 +++++
+>  net/batman-adv/hard-interface.c | 10 ++--------
+>  3 files changed, 21 insertions(+), 8 deletions(-)
+> 
+> diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+> index e4a91cd..81157a3 100644
+> --- a/net/batman-adv/bat_v.c
+> +++ b/net/batman-adv/bat_v.c
+> @@ -334,6 +334,20 @@ static struct batadv_algo_ops batadv_batman_v
+> __read_mostly = { };
+> 
+>  /**
+> + * batadv_v_hardif_init - initialize the algorithm specific fields in the
+> + *  hard-interface object
+> + * @hard_iface: the hard-interface to initialize
+> + */
+> +void batadv_v_hardif_init(struct batadv_hard_iface *hard_iface)
+> +{
+> +	/* enable link throughput auto-detection by setting the throughput
+> +	 * override to zero
+> +	 */
+> +	atomic_set(&hard_iface->bat_v.throughput_override, 0);
+> +	atomic_set(&hard_iface->bat_v.elp_interval, 500);
+> +}
+> +
+> +/**
+>   * batadv_v_mesh_init - initialize the B.A.T.M.A.N. V private resources for
+> a *  mesh
+>   * @bat_priv: the object representing the mesh interface to initialise
 
-On Sat, May 21, 2016 at 02:30:01PM +0200, Sven Eckelmann wrote:
-> On Saturday 21 May 2016 20:17:55 Antonio Quartulli wrote:
-> > If main.h is included, the batman-adv private forward declarations are
-> > not needed anymore. Remove them.
->=20
-> No, these are defined in packet.h and not main.h/types.h
+This seems to be the first use of atomic functions in this file. Can you 
+please add "#include <linux/atomic.h>" to have the atomic_set functions 
+defined.
 
-Right. This single patch can be dropped then.
+And yes, it is a lot nicer than my quick fix :)
 
-Cheers,
-
-
---=20
-Antonio Quartulli
-
---ZOBTspFzEMOlPevk
+Thanks,
+	Sven
+--nextPart5174823.Xal9XnQjQb
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXQFV0AAoJEJ4aZjxxc6bKzkYP/0k3sz8yzbR2yemOxvRXfLKn
-EYzLkaw0LCqZCuYoVUC7ClkGZ8EK75IeskysZMz0dMS27GeEPdaC6RRHkhh2h0TH
-ZbQJpmLw4KvipqEJvew7r2g1fYH/OU2+PzCkbmJ6Se/SnPREu02HIolyBdBOe+qp
-FvhanPUt2EVunq0YLBjeZp+MuB8qJRkqT6oawrHjAS99lb2pSqyhnK9Va8+htsjM
-5AdHx1kXiszzuZWzk1rtaGFUTAnt0IrFah91SgA/dFSxCSmlbURlUGxAcsK3yvkX
-c9w3jrua6pN0kJWNRIi4TDd7sdlOTAp2ECAxp9ic2x8mkUj+1bdE/t5mKv2l4BVb
-K07Mfv+2+noaMR1BIPgvH7yBpfyScCe7pIM7IfeGEJmuMuiW5A6FxfNkVNiT+Gjl
-C9aoKMeyQTMTvqMmfGjBz5qvFeMi4j3mfj7NAyudWMC+UPvSSexugm8mwtHddiBW
-JWg1eRO7aqQD6Es9J27Ze/7X/gS2VSw8XCln//2DxaCQH5gYp+CAPfhJknrvpLTX
-UXtLI4W2j/Bm0ZOEbBKLWQmgwxYmYjGH3MzSKH9CH7GCgetC3NcW2jB5Ij3Q9zHh
-LfQBsVZOdVtTYVE4vaIobJvdl5eAfbAf9njI8ucDrOCNKRI6RIFaupl4d3r1oY7J
-SrNUmC3i3C/QPiqrwEHn
-=p4js
+iQIcBAABCgAGBQJXQFcVAAoJEF2HCgfBJntGPvQQAKFtAqvRbeHC02+jI0cuv/OC
+GbF3EXuPMB+U/vBP29wjhq0RjjyU/l6TsHsTBq1LBxaxHfrmpCRKLqBlwpEkFtJr
+R4hUhtvIDJIOOKGxUosFk7W6mnDKp3F4c4SZzOXrO3+VvtOkq3R74Rith/GfzM1K
+xFtrnEQtpgUq96Ol5ut6fk/70b6x6GOzdrznb5+3lcntCwrnTzNdvVErAC6PY/ry
+crjXyWwlkaLquG6K2nSo8opW+tYXVt2WsC0EPrPH9GrlBLSdKBCaWpt6b82/pHGC
+rdAzlk36Lgk9aEFt13wyoJlmFre/3WXk53pRPGy4+MUVt0fmJX3W6l4mtUCU4QtJ
+3WWX78UciZNylsXIf15QMHXSOpg4J95kHy8KUaD8gestPeNv4jI1M6hbKT1W0bV9
+I+q2jAJ8ZFjDk8fcqnf9/OF53ixj2T5+32HkTuWOWB1sxFtoKNlb2y6YEif5etfS
+o5wKaNti5cNEAjiMDUJxunmuUohhKvRABx4+08uwbaDd4usoLpVvdNgjR+uHylyE
+rfKfRVy0bSSNf4l+MtRxSMmBP7UpKtJYkl01IQtCSJddGkerDhUmZZusiiWsE2rI
+FsEKvA8GjRT7aZn2EFAYPtv8Cy+cuH3lBxP584Xj+oMQrLw2RxWD1/44tSdU+tJG
+B7id9gmTRhBsh/ePGctd
+=X9B2
 -----END PGP SIGNATURE-----
 
---ZOBTspFzEMOlPevk--
+--nextPart5174823.Xal9XnQjQb--
+
