@@ -1,9 +1,9 @@
 Return-Path: <a@unstable.cc>
 From: Antonio Quartulli <a@unstable.cc>
-Date: Sat, 21 May 2016 17:48:17 +0800
-Message-Id: <20160521094817.401-1-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH stable-4.6] batman-adv: Fix double
-	neigh_node_put in batadv_v_ogm_route_update
+Date: Sat, 21 May 2016 20:16:14 +0800
+Message-Id: <20160521121614.23779-1-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: B.A.T.M.A.N. V - implement
+	hard-iface init function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,55 +13,108 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: stable@vger.kernel.org
-Cc: b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
-From: Sven Eckelmann <sven@narfation.org>
+Some fields in the hard-interface data structure are specific to the
+B.A.T.M.A.N. V protocol and have to be initialized only when such
+protocol is compiled in.
+Instead of having a #ifdef block in the middle of the hard-interface.c
+code it is better to have an algorithm private function that hides the
+precompiler logic in its own header file (like other functions).
 
-The router is put down twice when it was non-NULL and either orig_ifinfo is
-NULL afterwards or batman-adv receives a packet with the same sequence
-number. This will end up in a use-after-free when the batadv_neigh_node is
-removed because the reference counter ended up too early at 0.
-
-Fixes: 9323158ef9f4 ("batman-adv: OGMv2 - implement originators logic")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Fixes: ffd2f27908e5 ("batman-adv: Only init ELP tweaking options when BATMAN_V is enabled")
 Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
 
-This patch is skipping netdev and is being sent directly to stable in
-accordance with David S. Miller[1].
+Changes from v1:
+- move bat_algo.h include line to the right location
 
-The reason is that this patch applies only on linux-4.6 and not on
-linux-4.7/net because it was "accidentally" fixed by a refactoring
-commit (more details in [2]).
+Changes from v2:
+- rebased on top of newest master to fix compile error.
 
-It addresses a reference imbalance which systematically leads to a
-use-after-free and then a kernel crash.
 
-Cheers,
+ net/batman-adv/bat_v.c          | 14 ++++++++++++++
+ net/batman-adv/bat_v.h          |  5 +++++
+ net/batman-adv/hard-interface.c | 10 ++--------
+ 3 files changed, 21 insertions(+), 8 deletions(-)
 
-[1] https://www.mail-archive.com/b.a.t.m.a.n@lists.open-mesh.org/msg15258.html
-[2] https://www.mail-archive.com/b.a.t.m.a.n@lists.open-mesh.org/msg15252.html
-
- net/batman-adv/bat_v_ogm.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index d9bcbe6e7d65..91df28a100f9 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -529,8 +529,10 @@ static void batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
- 		goto out;
- 	}
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index e4a91cd..81157a3 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -334,6 +334,20 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
+ };
  
--	if (router)
-+	if (router) {
- 		batadv_neigh_node_put(router);
-+		router = NULL;
-+	}
+ /**
++ * batadv_v_hardif_init - initialize the algorithm specific fields in the
++ *  hard-interface object
++ * @hard_iface: the hard-interface to initialize
++ */
++void batadv_v_hardif_init(struct batadv_hard_iface *hard_iface)
++{
++	/* enable link throughput auto-detection by setting the throughput
++	 * override to zero
++	 */
++	atomic_set(&hard_iface->bat_v.throughput_override, 0);
++	atomic_set(&hard_iface->bat_v.elp_interval, 500);
++}
++
++/**
+  * batadv_v_mesh_init - initialize the B.A.T.M.A.N. V private resources for a
+  *  mesh
+  * @bat_priv: the object representing the mesh interface to initialise
+diff --git a/net/batman-adv/bat_v.h b/net/batman-adv/bat_v.h
+index 52dd6cf..83b7763 100644
+--- a/net/batman-adv/bat_v.h
++++ b/net/batman-adv/bat_v.h
+@@ -23,6 +23,7 @@
+ #ifdef CONFIG_BATMAN_ADV_BATMAN_V
  
- 	/* Update routes, and check if the OGM is from the best next hop */
- 	batadv_v_ogm_orig_update(bat_priv, orig_node, neigh_node, ogm2,
+ int batadv_v_init(void);
++void batadv_v_hardif_init(struct batadv_hard_iface *hardif);
+ int batadv_v_mesh_init(struct batadv_priv *bat_priv);
+ void batadv_v_mesh_free(struct batadv_priv *bat_priv);
+ 
+@@ -33,6 +34,10 @@ static inline int batadv_v_init(void)
+ 	return 0;
+ }
+ 
++static inline void batadv_v_hardif_init(struct batadv_hard_iface *hardif)
++{
++}
++
+ static inline int batadv_v_mesh_init(struct batadv_priv *bat_priv)
+ {
+ 	return 0;
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 6689656..70841c1 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -37,6 +37,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/workqueue.h>
+ 
++#include "bat_v.h"
+ #include "bridge_loop_avoidance.h"
+ #include "debugfs.h"
+ #include "distributed-arp-table.h"
+@@ -684,14 +685,7 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 	if (batadv_is_wifi_netdev(net_dev))
+ 		hard_iface->num_bcasts = BATADV_NUM_BCASTS_WIRELESS;
+ 
+-#ifdef CONFIG_BATMAN_ADV_BATMAN_V
+-	/* enable link throughput auto-detection by setting the throughput
+-	 * override to zero
+-	 */
+-	atomic_set(&hard_iface->bat_v.throughput_override, 0);
+-
+-	atomic_set(&hard_iface->bat_v.elp_interval, 500);
+-#endif
++	batadv_v_hardif_init(hard_iface);
+ 
+ 	/* extra reference for return */
+ 	kref_init(&hard_iface->refcount);
 -- 
 2.8.3
 
