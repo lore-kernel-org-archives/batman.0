@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 23 May 2016 18:01:14 +0200
-Message-Id: <1464019274-8451-3-git-send-email-sw@simonwunderlich.de>
-In-Reply-To: <1464019274-8451-1-git-send-email-sw@simonwunderlich.de>
-References: <1464019274-8451-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH v8 2/2] batctl: add netlink dump function for
-	backbone tables
+Date: Mon, 23 May 2016 17:59:44 +0200
+Message-Id: <1464019185-8381-14-git-send-email-sw@simonwunderlich.de>
+In-Reply-To: <1464019185-8381-1-git-send-email-sw@simonwunderlich.de>
+References: <1464019185-8381-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH v8 13/14] batman-adv: add backbone table
+	netlink support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,18 +17,20 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
+Dump the list of bridge loop avoidance backbones via the netlink socket.
+
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- batman_adv.h |  2 ++
- debug.c      |  1 +
- netlink.c    | 79 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- netlink.h    |  2 ++
- 4 files changed, 84 insertions(+)
+ include/uapi/linux/batman_adv.h        |   2 +
+ net/batman-adv/bridge_loop_avoidance.c | 164 +++++++++++++++++++++++++++++++++
+ net/batman-adv/bridge_loop_avoidance.h |   7 ++
+ net/batman-adv/netlink.c               |   7 ++
+ 4 files changed, 180 insertions(+)
 
-diff --git a/batman_adv.h b/batman_adv.h
+diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
 index 778e238..37157d0 100644
---- a/batman_adv.h
-+++ b/batman_adv.h
+--- a/include/uapi/linux/batman_adv.h
++++ b/include/uapi/linux/batman_adv.h
 @@ -157,6 +157,7 @@ enum batadv_nl_attrs {
   * @BATADV_CMD_GET_NEIGHBORS: Query list of neighbours
   * @BATADV_CMD_GET_GATEWAYS: Query list of gateways
@@ -45,132 +47,221 @@ index 778e238..37157d0 100644
  	/* add new commands above here */
  	__BATADV_CMD_AFTER_LAST,
  	BATADV_CMD_MAX = __BATADV_CMD_AFTER_LAST - 1
-diff --git a/debug.c b/debug.c
-index 46f03da..ddabbfb 100644
---- a/debug.c
-+++ b/debug.c
-@@ -79,6 +79,7 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
- 		.opt_short = "bbt",
- 		.debugfs_name = "bla_backbone_table",
- 		.header_lines = 2,
-+		.netlink_fn = netlink_print_bla_backbone,
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 122025e..a7f012c 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -2215,3 +2215,167 @@ out:
+ 		batadv_hardif_put(primary_if);
+ 	return 0;
+ }
++
++/**
++ * batadv_bla_backbone_dump_entry - dump one entry of the backbone table
++ * to a netlink socket
++ * @msg: buffer for the message
++ * @portid: netlink port
++ * @seq: Sequence number of netlink message
++ * @primary_if: primary interface
++ * @backbone_gw: entry to dump
++ *
++ * Return: 0 or error code.
++ */
++static int
++batadv_bla_backbone_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
++			       struct batadv_hard_iface *primary_if,
++			       struct batadv_bla_backbone_gw *backbone_gw)
++{
++	u8 *primary_addr = primary_if->net_dev->dev_addr;
++	u16 backbone_crc;
++	bool is_own;
++	int msecs;
++	void *hdr;
++	int ret = -EINVAL;
++
++	hdr = genlmsg_put(msg, portid, seq, &batadv_netlink_family,
++			  NLM_F_MULTI, BATADV_CMD_GET_BLA_BACKBONE);
++	if (!hdr) {
++		ret = -ENOBUFS;
++		goto out;
++	}
++
++	is_own = batadv_compare_eth(backbone_gw->orig, primary_addr);
++
++	spin_lock_bh(&backbone_gw->crc_lock);
++	backbone_crc = backbone_gw->crc;
++	spin_unlock_bh(&backbone_gw->crc_lock);
++
++	msecs = jiffies_to_msecs(jiffies - backbone_gw->lasttime);
++
++	if (is_own)
++		if (nla_put_flag(msg, BATADV_ATTR_BLA_OWN)) {
++			genlmsg_cancel(msg, hdr);
++			goto out;
++		}
++
++	if (nla_put(msg, BATADV_ATTR_BLA_BACKBONE, ETH_ALEN,
++		    backbone_gw->orig) ||
++	    nla_put_u16(msg, BATADV_ATTR_BLA_VID, backbone_gw->vid) ||
++	    nla_put_u16(msg, BATADV_ATTR_BLA_CRC,
++			backbone_crc) ||
++	    nla_put_u32(msg, BATADV_ATTR_LAST_SEEN_MSECS, msecs)) {
++		genlmsg_cancel(msg, hdr);
++		goto out;
++	}
++
++	genlmsg_end(msg, hdr);
++	ret = 0;
++
++out:
++	return ret;
++}
++
++/**
++ * batadv_bla_backbone_dump_bucket - dump one bucket of the backbone table
++ * to a netlink socket
++ * @msg: buffer for the message
++ * @portid: netlink port
++ * @seq: Sequence number of netlink message
++ * @primary_if: primary interface
++ * @head: bucket to dump
++ * @idx_skip: How many entries to skip
++ *
++ * Return: always 0.
++ */
++static int
++batadv_bla_backbone_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
++				struct batadv_hard_iface *primary_if,
++				struct hlist_head *head, int *idx_skip)
++{
++	struct batadv_bla_backbone_gw *backbone_gw;
++	int idx = 0;
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(backbone_gw, head, hash_entry) {
++		if (idx++ < *idx_skip)
++			continue;
++		if (batadv_bla_backbone_dump_entry(msg, portid, seq,
++						   primary_if, backbone_gw)) {
++			*idx_skip = idx - 1;
++			goto unlock;
++		}
++	}
++
++	*idx_skip = idx;
++unlock:
++	rcu_read_unlock();
++	return 0;
++}
++
++/**
++ * batadv_bla_backbone_dump - dump backbone table to a netlink socket
++ * @msg: buffer for the message
++ * @cb: callback structure containing arguments
++ *
++ * Return: message length.
++ */
++int batadv_bla_backbone_dump(struct sk_buff *msg, struct netlink_callback *cb)
++{
++	struct batadv_hard_iface *primary_if = NULL;
++	int portid = NETLINK_CB(cb->skb).portid;
++	struct net *net = sock_net(cb->skb->sk);
++	struct net_device *soft_iface = NULL;
++	struct batadv_hashtable *hash;
++	struct batadv_priv *bat_priv;
++	int bucket = cb->args[0];
++	struct hlist_head *head;
++	int idx = cb->args[1];
++	int ifindex;
++	int ret = 0;
++
++	ifindex = batadv_netlink_get_ifindex(cb->nlh,
++					     BATADV_ATTR_MESH_IFINDEX);
++	if (!ifindex)
++		return -EINVAL;
++
++	soft_iface = dev_get_by_index(net, ifindex);
++	if (!soft_iface || !batadv_softif_is_valid(soft_iface)) {
++		ret = -ENODEV;
++		goto out;
++	}
++
++	bat_priv = netdev_priv(soft_iface);
++	hash = bat_priv->bla.backbone_hash;
++
++	primary_if = batadv_primary_if_get_selected(bat_priv);
++	if (!primary_if || primary_if->if_status != BATADV_IF_ACTIVE) {
++		ret = -ENOENT;
++		goto out;
++	}
++
++	while (bucket < hash->size) {
++		head = &hash->table[bucket];
++
++		if (batadv_bla_backbone_dump_bucket(msg, portid,
++						    cb->nlh->nlmsg_seq,
++						    primary_if, head, &idx))
++			break;
++		bucket++;
++	}
++
++	cb->args[0] = bucket;
++	cb->args[1] = idx;
++
++	ret = msg->len;
++
++out:
++	if (primary_if)
++		batadv_hardif_put(primary_if);
++
++	if (soft_iface)
++		dev_put(soft_iface);
++
++	return ret;
++}
+diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge_loop_avoidance.h
+index a80b9e9..1ae93e4 100644
+--- a/net/batman-adv/bridge_loop_avoidance.h
++++ b/net/batman-adv/bridge_loop_avoidance.h
+@@ -39,6 +39,7 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset);
+ int batadv_bla_claim_dump(struct sk_buff *msg, struct netlink_callback *cb);
+ int batadv_bla_backbone_table_seq_print_text(struct seq_file *seq,
+ 					     void *offset);
++int batadv_bla_backbone_dump(struct sk_buff *msg, struct netlink_callback *cb);
+ bool batadv_bla_is_backbone_gw_orig(struct batadv_priv *bat_priv, u8 *orig,
+ 				    unsigned short vid);
+ bool batadv_bla_check_bcast_duplist(struct batadv_priv *bat_priv,
+@@ -120,6 +121,12 @@ static inline int batadv_bla_claim_dump(struct sk_buff *msg,
+ 	return -EOPNOTSUPP;
+ }
+ 
++static inline int batadv_bla_backbone_dump(struct sk_buff *msg,
++					   struct netlink_callback *cb)
++{
++	return -EOPNOTSUPP;
++}
++
+ #endif /* ifdef CONFIG_BATMAN_ADV_BLA */
+ 
+ #endif /* ifndef _NET_BATMAN_ADV_BLA_H_ */
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index e079974..e7785d9 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -600,6 +600,13 @@ static struct genl_ops batadv_netlink_ops[] = {
+ 		.policy = batadv_netlink_policy,
+ 		.dumpit = batadv_bla_claim_dump,
  	},
- 	{
- 		.opt_long = "dat_cache",
-diff --git a/netlink.c b/netlink.c
-index 51438d0..d6bb00f 100644
---- a/netlink.c
-+++ b/netlink.c
-@@ -220,6 +220,7 @@ static int info_callback(struct nl_msg *msg, void *arg)
- 			case BATADV_CMD_GET_TRANSTABLE_LOCAL:
- 				asprintf(&extra_info, ", TTVN: %u", ttvn);
- 				break;
-+			case BATADV_CMD_GET_BLA_BACKBONE:
- 			case BATADV_CMD_GET_BLA_CLAIM:
- 				asprintf(&extra_info, ", group id: 0x%04x",
- 					 bla_group_id);
-@@ -939,6 +940,74 @@ static int bla_claim_callback(struct nl_msg *msg, void *arg)
- 	return NL_OK;
- }
++	{
++		.cmd = BATADV_CMD_GET_BLA_BACKBONE,
++		.flags = GENL_ADMIN_PERM,
++		.policy = batadv_netlink_policy,
++		.dumpit = batadv_bla_backbone_dump,
++	},
++
+ };
  
-+static const int bla_backbone_mandatory[] = {
-+	BATADV_ATTR_BLA_VID,
-+	BATADV_ATTR_BLA_BACKBONE,
-+	BATADV_ATTR_BLA_CRC,
-+	BATADV_ATTR_LAST_SEEN_MSECS,
-+};
-+
-+static int bla_backbone_callback(struct nl_msg *msg, void *arg)
-+{
-+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
-+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-+	int last_seen_msecs, last_seen_secs;
-+	struct print_opts *opts = arg;
-+	struct bat_host *bat_host;
-+	struct genlmsghdr *ghdr;
-+	uint16_t backbone_crc;
-+	uint8_t *backbone;
-+	uint16_t vid;
-+
-+	if (!genlmsg_valid_hdr(nlh, 0)) {
-+		fputs("Received invalid data from kernel.\n", stderr);
-+		exit(1);
-+	}
-+
-+	ghdr = nlmsg_data(nlh);
-+
-+	if (ghdr->cmd != BATADV_CMD_GET_BLA_BACKBONE)
-+		return NL_OK;
-+
-+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
-+		fputs("Received invalid data from kernel.\n", stderr);
-+		exit(1);
-+	}
-+
-+	if (missing_mandatory_attrs(attrs, bla_backbone_mandatory,
-+				       ARRAY_SIZE(bla_backbone_mandatory))) {
-+		fputs("Missing attributes from kernel\n", stderr);
-+		exit(1);
-+	}
-+
-+	/* don't show own backbones */
-+	if (attrs[BATADV_ATTR_BLA_OWN])
-+		return NL_OK;
-+
-+	vid = nla_get_u16(attrs[BATADV_ATTR_BLA_VID]);
-+	backbone = nla_data(attrs[BATADV_ATTR_BLA_BACKBONE]);
-+	backbone_crc = nla_get_u16(attrs[BATADV_ATTR_BLA_CRC]);
-+
-+	last_seen_msecs = nla_get_u32(attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
-+	last_seen_secs = last_seen_msecs / 1000;
-+	last_seen_msecs = last_seen_msecs % 1000;
-+
-+	bat_host = bat_hosts_find_by_mac((char *)backbone);
-+	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
-+		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
-+		       backbone[0], backbone[1], backbone[2],
-+		       backbone[3], backbone[4], backbone[5]);
-+	else
-+		printf("%17s ", bat_host->name);
-+
-+	printf("on %5d %4i.%03is (0x%04x)\n",
-+	       BATADV_PRINT_VID(vid), last_seen_secs, last_seen_msecs,
-+	       backbone_crc);
-+
-+	return NL_OK;
-+}
-+
- static int netlink_print_common(char *mesh_iface, char *orig_iface,
- 				int read_opt, float orig_timeout,
- 				float watch_interval, const char *header,
-@@ -1109,3 +1178,13 @@ int netlink_print_bla_claim(char *mesh_iface, char *orig_iface, int read_opts,
- 				    BATADV_CMD_GET_BLA_CLAIM,
- 				    bla_claim_callback);
- }
-+
-+int netlink_print_bla_backbone(char *mesh_iface, char *orig_iface, int read_opts,
-+			       float orig_timeout, float watch_interval)
-+{
-+	return netlink_print_common(mesh_iface, orig_iface, read_opts,
-+				    orig_timeout, watch_interval,
-+				    "Originator           VID   last seen (CRC   )\n",
-+				    BATADV_CMD_GET_BLA_BACKBONE,
-+				    bla_backbone_callback);
-+}
-diff --git a/netlink.h b/netlink.h
-index 69f0958..5ff7ace 100644
---- a/netlink.h
-+++ b/netlink.h
-@@ -40,6 +40,8 @@ int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opt,
- 			   float orig_timeout, float watch_interval);
- int netlink_print_bla_claim(char *mesh_iface, char *orig_iface, int read_opt,
- 			    float orig_timeout, float watch_interval);
-+int netlink_print_bla_backbone(char *mesh_iface, char *orig_iface, int read_opt,
-+			       float orig_timeout, float watch_interval);
- 
- extern struct nla_policy batadv_netlink_policy[];
- 
+ /**
 -- 
 2.8.1
 
