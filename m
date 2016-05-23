@@ -1,11 +1,16 @@
 Return-Path: <a@unstable.cc>
+Date: Mon, 23 May 2016 22:09:12 +0800
 From: Antonio Quartulli <a@unstable.cc>
-Date: Mon, 23 May 2016 17:00:37 +0800
-Message-Id: <20160523090037.26896-6-a@unstable.cc>
-In-Reply-To: <20160523090037.26896-1-a@unstable.cc>
+Message-ID: <20160523140912.GE23226@prodigo.lan>
 References: <20160523090037.26896-1-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH v2 5/5] batman-adv: B.A.T.M.A.N. V -
-	implement GW selection logic
+ <20160523090037.26896-2-a@unstable.cc>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="jkO+KyKz7TfD21mV"
+Content-Disposition: inline
+In-Reply-To: <20160523090037.26896-2-a@unstable.cc>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 1/5] batman-adv: make the GW selection
+ class algorithm specific
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,322 +21,71 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
 
-Since the GW selection logic has been made routing protocol specific
-it is now possible for B.A.T.M.A.N V to have its own mechanism by
-providing the API implementation.
 
-Implement the GW specific API in the B.A.T.M.A.N. V protocol in
-order to provide a working GW selection mechanism.
+--jkO+KyKz7TfD21mV
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
----
- net/batman-adv/bat_v.c          | 220 +++++++++++++++++++++++++++++++++++++++-
- net/batman-adv/gateway_client.c |   9 +-
- net/batman-adv/gateway_client.h |   4 +
- 3 files changed, 229 insertions(+), 4 deletions(-)
+On Mon, May 23, 2016 at 05:00:33PM +0800, Antonio Quartulli wrote:
+> +static ssize_t batadv_store_gw_sel_class(struct kobject *kobj,
+> +					 struct attribute *attr, char *buff,
+> +					 size_t count)
+> +{
+> +	struct batadv_priv *bat_priv =3D batadv_kobj_to_batpriv(kobj);
+> +
+> +	if (buff[count - 1] =3D=3D '\n')
+> +		buff[count - 1] =3D '\0';
+> +
+> +	if (bat_priv->bat_algo_ops->gw.bat_store_sel_class)
+> +		return bat_priv->bat_algo_ops->gw.bat_store_sel_class(bat_priv,
+> +								      buff,
+> +								      count);
+> +
+> +	return __batadv_store_uint_attr(buff, count, 0, BATADV_TQ_MAX_VALUE,
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 3066e59..175c37c 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -24,6 +24,7 @@
- #include <linux/init.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
-+#include <linux/kref.h>
- #include <linux/netdevice.h>
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
-@@ -39,6 +40,7 @@
- #include "gateway_common.h"
- #include "hard-interface.h"
- #include "hash.h"
-+#include "log.h"
- #include "originator.h"
- #include "packet.h"
- 
-@@ -349,6 +351,210 @@ static ssize_t batadv_v_show_sel_class(struct batadv_priv *bat_priv, char *buff)
- 	return sprintf(buff, "%u.%u MBit\n", class / 10, class % 10);
- }
- 
-+/**
-+ * batadv_v_gw_throughput_get - retrieve the GW-bandwidth for a given GW
-+ * @gw_node: the GW to retrieve the metric for
-+ * @bw: the pointer where the metric will be stored. The metric is computed as
-+ *  the minimum between the GW advertised throughput and the path throughput to
-+ *  it in the mesh
-+ *
-+ * Return: 0 on success, -1 on failure
-+ */
-+static int batadv_v_gw_throughput_get(struct batadv_gw_node *gw_node, u32 *bw)
-+{
-+	struct batadv_neigh_ifinfo *router_ifinfo = NULL;
-+	struct batadv_orig_node *orig_node;
-+	struct batadv_neigh_node *router;
-+	int ret = -1;
-+
-+	orig_node = gw_node->orig_node;
-+	router = batadv_orig_router_get(orig_node, BATADV_IF_DEFAULT);
-+	if (!router)
-+		goto out;
-+
-+	router_ifinfo = batadv_neigh_ifinfo_get(router, BATADV_IF_DEFAULT);
-+	if (!router_ifinfo)
-+		goto out;
-+
-+	/* the GW metric is computed as the minimum between the path throughput
-+	 * to reach the GW itself and the advertised bandwidth.
-+	 * This gives us an approximation of the effective throughput that the
-+	 * client can expect via this particular GW node
-+	 */
-+	*bw = router_ifinfo->bat_v.throughput;
-+	*bw = min_t(u32, *bw, gw_node->bandwidth_down);
-+
-+	ret = 0;
-+out:
-+	if (router)
-+		batadv_neigh_node_put(router);
-+	if (router_ifinfo)
-+		batadv_neigh_ifinfo_put(router_ifinfo);
-+
-+	return ret;
-+}
-+
-+/**
-+ * batadv_v_gw_get_best_gw_node - retrieve the best GW node
-+ * @bat_priv: the bat priv with all the soft interface information
-+ *
-+ * Return: the GW node having the best GW-metric, NULL if no GW is known
-+ */
-+static struct batadv_gw_node *
-+batadv_v_gw_get_best_gw_node(struct batadv_priv *bat_priv)
-+{
-+	struct batadv_gw_node *gw_node, *curr_gw = NULL;
-+	u32 max_bw = 0, bw;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
-+		if (!kref_get_unless_zero(&gw_node->refcount))
-+			continue;
-+
-+		if (batadv_v_gw_throughput_get(gw_node, &bw) < 0)
-+			goto next;
-+
-+		if (curr_gw && (bw <= max_bw))
-+			goto next;
-+
-+		if (curr_gw)
-+			batadv_gw_node_put(curr_gw);
-+
-+		curr_gw = gw_node;
-+		kref_get(&curr_gw->refcount);
-+		max_bw = bw;
-+
-+next:
-+		batadv_gw_node_put(gw_node);
-+	}
-+	rcu_read_unlock();
-+
-+	return curr_gw;
-+}
-+
-+/**
-+ * batadv_v_gw_is_eligible - check if a originator would be selected as GW
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @curr_gw_orig: originator representing the currently selected GW
-+ * @orig_node: the originator representing the new candidate
-+ *
-+ * Return: true if orig_node can be selected as current GW, false otherwise
-+ */
-+static bool batadv_v_gw_is_eligible(struct batadv_priv *bat_priv,
-+				    struct batadv_orig_node *curr_gw_orig,
-+				    struct batadv_orig_node *orig_node)
-+{
-+	struct batadv_gw_node *curr_gw = NULL, *orig_gw = NULL;
-+	u32 gw_throughput, orig_throughput, threshold;
-+	bool ret = false;
-+
-+	threshold = atomic_read(&bat_priv->gw.sel_class);
-+
-+	curr_gw = batadv_gw_node_get(bat_priv, curr_gw_orig);
-+	if (!curr_gw) {
-+		ret = true;
-+		goto out;
-+	}
-+
-+	if (batadv_v_gw_throughput_get(curr_gw, &gw_throughput) < 0) {
-+		ret = true;
-+		goto out;
-+	}
-+
-+	orig_gw = batadv_gw_node_get(bat_priv, orig_node);
-+	if (!orig_node)
-+		goto out;
-+
-+	if (batadv_v_gw_throughput_get(orig_gw, &orig_throughput) < 0)
-+		goto out;
-+
-+	if (orig_throughput < (gw_throughput + threshold))
-+		goto out;
-+
-+	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+		   "Restarting gateway selection: better gateway found (throughput curr: %u, throughput new: %u)\n",
-+		   gw_throughput, orig_throughput);
-+
-+	ret = true;
-+out:
-+	if (curr_gw)
-+		batadv_gw_node_put(curr_gw);
-+	if (orig_gw)
-+		batadv_gw_node_put(orig_gw);
-+
-+	return ret;
-+}
-+
-+/* fails if orig_node has no router */
-+static int batadv_v_gw_write_buffer_text(struct batadv_priv *bat_priv,
-+					 struct seq_file *seq,
-+					 const struct batadv_gw_node *gw_node)
-+{
-+	struct batadv_gw_node *curr_gw;
-+	struct batadv_neigh_node *router;
-+	struct batadv_neigh_ifinfo *router_ifinfo = NULL;
-+	int ret = -1;
-+
-+	router = batadv_orig_router_get(gw_node->orig_node, BATADV_IF_DEFAULT);
-+	if (!router)
-+		goto out;
-+
-+	router_ifinfo = batadv_neigh_ifinfo_get(router, BATADV_IF_DEFAULT);
-+	if (!router_ifinfo)
-+		goto out;
-+
-+	curr_gw = batadv_gw_get_selected_gw_node(bat_priv);
-+
-+	seq_printf(seq, "%s %pM (%9u.%1u) %pM [%10s]: %u.%u/%u.%u MBit\n",
-+		   (curr_gw == gw_node ? "=>" : "  "),
-+		   gw_node->orig_node->orig,
-+		   router_ifinfo->bat_v.throughput / 10,
-+		   router_ifinfo->bat_v.throughput % 10, router->addr,
-+		   router->if_incoming->net_dev->name,
-+		   gw_node->bandwidth_down / 10,
-+		   gw_node->bandwidth_down % 10,
-+		   gw_node->bandwidth_up / 10,
-+		   gw_node->bandwidth_up % 10);
-+	ret = seq_has_overflowed(seq) ? -1 : 0;
-+
-+	if (curr_gw)
-+		batadv_gw_node_put(curr_gw);
-+out:
-+	if (router_ifinfo)
-+		batadv_neigh_ifinfo_put(router_ifinfo);
-+	if (router)
-+		batadv_neigh_node_put(router);
-+	return ret;
-+}
-+
-+/**
-+ * batadv_v_gw_print - print the gateway list
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @seq: gateway table seq_file struct
-+ */
-+static void batadv_v_gw_print(struct batadv_priv *bat_priv,
-+			      struct seq_file *seq)
-+{
-+	struct batadv_gw_node *gw_node;
-+	int gw_count = 0;
-+
-+	seq_printf(seq,
-+		   "      Gateway        ( throughput)           Nexthop [outgoingIF]: advertised uplink bandwidth\n");
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(gw_node, &bat_priv->gw.list, list) {
-+		/* fails if orig_node has no router */
-+		if (batadv_v_gw_write_buffer_text(bat_priv, seq, gw_node) < 0)
-+			continue;
-+
-+		gw_count++;
-+	}
-+	rcu_read_unlock();
-+
-+	if (gw_count == 0)
-+		seq_puts(seq, "No gateways in range ...\n");
-+}
-+
- static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.name = "BATMAN_V",
- 	.iface = {
-@@ -370,6 +576,9 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.gw = {
- 		.store_sel_class = batadv_v_store_sel_class,
- 		.show_sel_class = batadv_v_show_sel_class,
-+		.get_best_gw_node = batadv_v_gw_get_best_gw_node,
-+		.is_eligible = batadv_v_gw_is_eligible,
-+		.print = batadv_v_gw_print,
- 	},
- };
- 
-@@ -382,7 +591,16 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
-  */
- int batadv_v_mesh_init(struct batadv_priv *bat_priv)
- {
--	return batadv_v_ogm_init(bat_priv);
-+	int ret = 0;
-+
-+	ret = batadv_v_ogm_init(bat_priv);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* set default throughput difference threshold to 5Mbps */
-+	atomic_set(&bat_priv->gw.sel_class, 50);
-+
-+	return 0;
- }
- 
- /**
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index 34401a1..f74968f 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -212,6 +212,10 @@ void batadv_gw_election(struct batadv_priv *bat_priv)
- 	if (!batadv_atomic_dec_not_zero(&bat_priv->gw.reselect) && curr_gw)
- 		goto out;
- 
-+	/* if gw.reselect is set to 1 it means that a previous call to
-+	 * gw.is_eligible() said that we have a new best GW, therefore it can
-+	 * now be picked from the list and selected
-+	 */
- 	next_gw = bat_priv->algo_ops->gw.get_best_gw_node(bat_priv);
- 
- 	if (curr_gw == next_gw)
-@@ -353,9 +357,8 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
-  *
-  * Return: gateway node if found or NULL otherwise.
-  */
--static struct batadv_gw_node *
--batadv_gw_node_get(struct batadv_priv *bat_priv,
--		   struct batadv_orig_node *orig_node)
-+struct batadv_gw_node *batadv_gw_node_get(struct batadv_priv *bat_priv,
-+					  struct batadv_orig_node *orig_node)
- {
- 	struct batadv_gw_node *gw_node_tmp, *gw_node = NULL;
- 
-diff --git a/net/batman-adv/gateway_client.h b/net/batman-adv/gateway_client.h
-index 4c9edde..00fa434 100644
---- a/net/batman-adv/gateway_client.h
-+++ b/net/batman-adv/gateway_client.h
-@@ -47,5 +47,9 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv, struct sk_buff *skb);
- enum batadv_dhcp_recipient
- batadv_gw_dhcp_recipient_get(struct sk_buff *skb, unsigned int *header_len,
- 			     u8 *chaddr);
-+#ifdef CONFIG_BATMAN_ADV_BATMAN_V
-+struct batadv_gw_node *batadv_gw_node_get(struct batadv_priv *bat_priv,
-+					  struct batadv_orig_node *orig_node);
-+#endif /* CONFIG_BATMAN_ADV_BATMAN_V */
- 
- #endif /* _NET_BATMAN_ADV_GATEWAY_CLIENT_H_ */
--- 
-2.8.3
+unfortunately the min value is still 0 - it should be kept to 1 as it was i=
+n the
+original code.
 
+> +					batadv_post_gw_reselect, attr,
+> +					&bat_priv->gw.sel_class,
+> +					bat_priv->soft_iface);
+> +}
+
+
+I just realized that no post function is invoked here, thus changing the
+expected behaviour.
+
+
+Both problems will be fixed in my next patchset.
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+--jkO+KyKz7TfD21mV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJXQw8IAAoJEJ4aZjxxc6bKn5IP/RFFEPWYZUd5cwULYW8/YUBK
+iElPAK/mJgxDonjayeN+en6WAdIyRhnjPDTB5wbRe5UPb1El+1qb2/FPSvAq8amL
+j0TPHyJS+dnqmi9iRQDPLtIA1wPkx0oLjovlbUWKy6cxW891kWrUKvfld6AA4RAk
+rr9wKIHde7PsUX12+XkUxXhGMbJe+vPEMAUi0lL/SEObZgwrrhgVyF3JfLsJpWR6
+2SzuTYkcQG5qxbGoLCUWQ9VLghdOFLh7TIbdaa0cMWUbc2B1wNlKHFthI4qm41a4
+rZNXnRatuhWl1xrgyRX3FXnoOWTP5vOZQNI2w7tw9SKOfkaCE6BkkBehRUsGEUEP
+yoyJPeFQRnS8q+LRaTTTZR2PmnLWkmox2qzkbhmN1klcs0SkEt/+xYK3Qduvv6NP
+6gsiBZZeGKdoGogLUye/jOM7X6/Q8PDkwN3y6cKLLDSvbFzpCp7jvycvUnrGUzYm
+XwpOWAnH4OEQ033+thZFS9SsVFnlN4K/9KpnfpNpG6JX0oFN8rL78EjWqb1+oD6A
+3Atq2pw3XrgVQNGwk4qnG+04bLBZBooUYD7dZ5LmRZl00YY8sShKq1lLw7sj6OqD
+sYE0bZx0F4ntL3Q1TZzET9DeO5sIh+M1uFgpiXvlKTXzVnCWPx+LzB0tNGLDL4dV
+GrK7ebfEGnWr9MyZrg4/
+=cW2d
+-----END PGP SIGNATURE-----
+
+--jkO+KyKz7TfD21mV--
