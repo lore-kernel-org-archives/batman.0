@@ -1,15 +1,15 @@
-Return-Path: <a@unstable.cc>
-Date: Tue, 24 May 2016 18:00:18 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160524100018.GB21783@prodigo.lan>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 24 May 2016 14:49:31 +0200
+Message-ID: <1876515.iCZETFfYbK@prime>
+In-Reply-To: <20160524100018.GB21783@prodigo.lan>
 References: <1464042677-7787-1-git-send-email-linus.luessing@c0d3.blue>
+ <20160524100018.GB21783@prodigo.lan>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="2B/JsCI69OhZNC5r"
-Content-Disposition: inline
-In-Reply-To: <1464042677-7787-1-git-send-email-linus.luessing@c0d3.blue>
+Content-Type: multipart/signed; boundary="nextPart4046334.O33gTVquOG";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] RFC: batman-adv: Remove unused
- primary_if variable
+	primary_if variable
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,57 +19,65 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Antonio Quartulli <a@unstable.cc>
+Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-
---2B/JsCI69OhZNC5r
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+--nextPart4046334.O33gTVquOG
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="ISO-8859-1"
 
-On Tue, May 24, 2016 at 12:31:17AM +0200, Linus L=FCssing wrote:
-> Fixes: 29b9256e6631 ("batman-adv: consider outgoing interface in OGM send=
-ing")
-> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
-> ---
+Hi,
+
+On Tuesday 24 May 2016 18:00:18 Antonio Quartulli wrote:
+> On Tue, May 24, 2016 at 12:31:17AM +0200, Linus L=FCssing wrote:
+> > Fixes: 29b9256e6631 ("batman-adv: consider outgoing interface in OG=
+M
+> > sending") Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>=
+
+> > ---
+> >=20
+> > Note sure whether the "forw_packet->if_incoming !=3D primary_if" ch=
+eck
+> > vanished on purpose or by accident in the mentioned commit. Or whet=
+her it
+> > got substituted by some other check. Therefore sending the patch as=
+ RFC.
+> I think Simon can better comment on this, but my understanding is tha=
+t such
+> check has been moved to batadv_iv_ogm_schedule(), thus primary_if is =
+useless
+> in this function.
 >=20
-> Note sure whether the "forw_packet->if_incoming !=3D primary_if" check va=
-nished
-> on purpose or by accident in the mentioned commit. Or whether it got
-> substituted by some other check. Therefore sending the patch as RFC.
+> Simon, comments ?
 
-I think Simon can better comment on this, but my understanding is that such
-check has been moved to batadv_iv_ogm_schedule(), thus primary_if is useles=
-s in
-this function.
-
-Simon, comments ?
+Yes, the check has been moved. I would agree that the check is redundan=
+t now.=20
+Please resend without RFC and add my Acked-by :)
 
 Cheers,
-
---=20
-Antonio Quartulli
-
---2B/JsCI69OhZNC5r
+     Simon
+--nextPart4046334.O33gTVquOG
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXRCYyAAoJEJ4aZjxxc6bKbcAP/2Eq5Yr+xtTatCJCC5XpCal3
-3FWKQlW1PdDVj2QOEUio6jpJJQcCPRhgjBsv0pL1m0qbp/j/AbnYD2c4I39fU0/r
-774G3sKtZRAzAixdcCU2UOULgLJY1pXF3BKDhQ46tXWcBWzsnk9k0W6pZXQjLsQC
-ugSo6n5Wk3KNcqYj8IGRpW/2yr9ZWGTLNR8AaCktotjVR7v3/6lKEUHI5fQo4d94
-An6pZ2+u6l37kXB087/zuIFVTOYcSiWrfdW0QHhto/HqtUmazk3+w/m+ZVhAKLfy
-ukJLCBNWc66p6Laz6iBx6SFfacCBCe9Ktz8WuoGZqK+mznciKwlyzYWg4xjHfAlb
-OH46uNxY1bb9jObCTNRsQBA+u2yPZ6ib5q1ztG/hNbGg1R6IkxfZ0vW4bBMFjB8+
-94/kUNyzQB8TcXZ8Hy2y5ONq4CHgCBCKqgEYlFNSl9Rv1tbsBAqbUO/HmZtyVVw6
-mXUBm7CPuF0xQsENe8kv0qxnuETvyvLtCI7VoD2mLrnw5dAVa4EURcnViyKrOc2V
-Gr3zUmKmBhAVaKrtF6gK1RNCh0bIqZdCZHpy052SKhp+3VkjxeK3RyHYWQcnmkfi
-J4y1W7ZDl7/TNGYKdAq4YYNxXOmjH6f84dgLWnlE/VTwa1iRsQ/ILeUp7ktKUK71
-ZzR69/eZOXHJpA/wgb3k
-=GJZS
+iQIcBAABCgAGBQJXRE3bAAoJEKEr45hCkp6hvKcQAKbNSuMVMnRoRVrGIKZ2LPiM
+HbPBRP5HhrtDC29JAkdc9J9jbl0F1sd00BUaS8NUHhNTIvUjXp9iqccmZVrJaR9j
+Lm6vip3sDU+gQB//UX5dNtb56kWbp/YF8IQ4RTnyIOeg206iuI3QlWxMjFzkKU0P
+53/Mu1GhjwMWTwWk7TrPB33EXTCeBgDP/GO8eSgOzfetQky1b3DEfP0/ffs14WsJ
+2OT5ow0lKChHHCorXo/RuNKAizOGg4N+sZtGqswLrCznRJJN4H0eztgRCaxB4Eu5
+JPU1D2FoKlIHQlnJjxPrpY70Fr8fOV19xZzOR1OC5lBCqY0OnnX561H5ISZZAAyV
+sSXL/xDZmMCvs29iIqzfUWiLJjoIdfWkHbtnerxm24Hs/eVyuVhMh+g2+hKednWH
+9RRgx0zsvjb+lrrmSYVUuns1zMwwi9250AhFXoVs7XIB6Tz6Thb0c5DBUkT7zGSi
+kDmGFgAkiZej5UkswaxOL3hz2YGJetyTy8qKbG94URLgPehuxPnOlm/Q9Kb7HKhy
+dHRwht75bn9a6AAWd6CU4HCSdRDWimVQWP+ef5+S9kboT15Fd6lFR43S44wug7y+
+uFlxJHq9c7EUjFtDh8w1npHe+bFsWmEDJE5+mE3PCYvn28hvQd3hhpVAwcMbIB4I
+/EWC/A+Ak+6OTHDruz/v
+=1D69
 -----END PGP SIGNATURE-----
 
---2B/JsCI69OhZNC5r--
+--nextPart4046334.O33gTVquOG--
+
