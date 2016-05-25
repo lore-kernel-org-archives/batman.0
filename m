@@ -1,11 +1,9 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Tue, 24 May 2016 17:18:06 +0200
-Message-Id: <1464103086-8365-1-git-send-email-linus.luessing@c0d3.blue>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unused primary_if variable
+Return-Path: <a@unstable.cc>
+From: Antonio Quartulli <a@unstable.cc>
+Date: Wed, 25 May 2016 23:27:30 +0800
+Message-Id: <20160525152736.9031-1-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] [PATCH v4 0/6] GW code: make it algorithm-agnostic
+	and add B.A.T.M.A.N. V support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,58 +14,57 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
-Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
-Fixes: 29b9256e6631 ("batman-adv: consider outgoing interface in OGM sending")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/bat_iv_ogm.c |   17 ++++-------------
- 1 file changed, 4 insertions(+), 13 deletions(-)
+This cover letter only tries to recap the changes applied from the previous
+version. Please check the patch for major details.
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 5a7923c..2076048 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -529,35 +529,26 @@ static void batadv_iv_ogm_emit(struct batadv_forw_packet *forw_packet)
- {
- 	struct net_device *soft_iface;
- 	struct batadv_priv *bat_priv;
--	struct batadv_hard_iface *primary_if = NULL;
- 
- 	if (!forw_packet->if_incoming) {
- 		pr_err("Error - can't forward packet: incoming iface not specified\n");
--		goto out;
-+		return;
- 	}
- 
- 	soft_iface = forw_packet->if_incoming->soft_iface;
- 	bat_priv = netdev_priv(soft_iface);
- 
- 	if (WARN_ON(!forw_packet->if_outgoing))
--		goto out;
-+		return;
- 
- 	if (WARN_ON(forw_packet->if_outgoing->soft_iface != soft_iface))
--		goto out;
-+		return;
- 
- 	if (forw_packet->if_incoming->if_status != BATADV_IF_ACTIVE)
--		goto out;
--
--	primary_if = batadv_primary_if_get_selected(bat_priv);
--	if (!primary_if)
--		goto out;
-+		return;
- 
- 	/* only for one specific outgoing interface */
- 	batadv_iv_ogm_send_to_if(forw_packet, forw_packet->if_outgoing);
--
--out:
--	if (primary_if)
--		batadv_hardif_put(primary_if);
- }
- 
- /**
+Changes from v1:
+- rebased on top of latest master (some patches from the previous patchset were
+  merged already)
+- accidental change to the GW table header moved to right patch
+- remove bat_ prefix from API names
+- API subobjects redefined as proper struct instead of anonymous ones to fix
+  kernel-doc complaints
+- bonus kernel-doc added
+- missing include files added
+
+Changes from v2:
+- minimum default value of gw_sel_class restored to 1
+
+Changes from v3:
+- move "batman-adv: split routing API data structure in subobjects" as patch 1
+- check if algo_ops->gw.get_best_gw_node was implemented before calling it
+- add patch to disable GW mode knobs if API have not been implemented (6/6)
+
+
+Cheers,
+
+Antonio Quartulli (6):
+  batman-adv: split routing API data structure in subobjects
+  batman-adv: make the GW selection class algorithm specific
+  batman-adv: statically print gateway table header
+  batman-adv: make GW election code protocol specific
+  batman-adv: B.A.T.M.A.N. V - implement GW selection logic
+  batman-adv: disable sysfs knobs when GW-mode is not implemented
+
+ net/batman-adv/bat_algo.c          |  14 +-
+ net/batman-adv/bat_iv_ogm.c        | 252 +++++++++++++++++++++++++++++++--
+ net/batman-adv/bat_v.c             | 280 +++++++++++++++++++++++++++++++++++--
+ net/batman-adv/bat_v_elp.c         |   2 +-
+ net/batman-adv/bat_v_ogm.c         |   2 +-
+ net/batman-adv/gateway_client.c    | 223 ++++-------------------------
+ net/batman-adv/gateway_client.h    |   7 +
+ net/batman-adv/gateway_common.c    |   5 +-
+ net/batman-adv/hard-interface.c    |  16 +--
+ net/batman-adv/netlink.c           |   2 +-
+ net/batman-adv/originator.c        |  49 +++----
+ net/batman-adv/routing.c           |   8 +-
+ net/batman-adv/sysfs.c             |  64 ++++++++-
+ net/batman-adv/translation-table.c |   6 +-
+ net/batman-adv/types.h             | 137 +++++++++++-------
+ 15 files changed, 744 insertions(+), 323 deletions(-)
+
 -- 
-1.7.10.4
+2.8.3
 
