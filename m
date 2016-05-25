@@ -1,11 +1,14 @@
-Return-Path: <a@unstable.cc>
-From: Antonio Quartulli <a@unstable.cc>
-Date: Wed, 25 May 2016 23:27:36 +0800
-Message-Id: <20160525152736.9031-7-a@unstable.cc>
-In-Reply-To: <20160525152736.9031-1-a@unstable.cc>
-References: <20160525152736.9031-1-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH v4 6/6] batman-adv: disable sysfs knobs when
-	GW-mode is not implemented
+Return-Path: <hannes.harms@tu-bs.de>
+References: <5732316F.7020209@tu-bs.de> <1572215.6K5rTnkNup@voltaire>
+From: "Harms, Hannes" <hannes.harms@tu-bs.de>
+Message-ID: <5745DA52.4000403@tu-bs.de>
+Date: Wed, 25 May 2016 19:01:06 +0200
+MIME-Version: 1.0
+In-Reply-To: <1572215.6K5rTnkNup@voltaire>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] Unable to ping interface in ap mode / client
+ mode with IP4 addr
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,81 +19,27 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
 
-Now that the GW-mode code is algorithm specific, batman-adv expects the
-routing algorithm to implement some APIs to make it work.
+Hi,
 
-However, such APIs are not mandatory, therefore we might have algorithms
-not providing them. In this case all the sysfs knobs related to GW-mode
-should be deactivated to make sure that settings injected by the user
-for this feature are rejected.
+ip route did the trick.
+Now it is working.
 
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
----
- net/batman-adv/sysfs.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+Thanks,
+Hannes
 
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index bb43742..486fdd6 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -428,6 +428,13 @@ static ssize_t batadv_show_gw_mode(struct kobject *kobj, struct attribute *attr,
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
- 	int bytes_written;
- 
-+	/* GW mode is not available if the routing algorithm in use does not
-+	 * implement the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -ENOENT;
-+
- 	switch (atomic_read(&bat_priv->gw.mode)) {
- 	case BATADV_GW_MODE_CLIENT:
- 		bytes_written = sprintf(buff, "%s\n",
-@@ -455,6 +462,13 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
- 	char *curr_gw_mode_str;
- 	int gw_mode_tmp = -1;
- 
-+	/* toggling GW mode is allowed only if the routing algorithm in use
-+	 * provides the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -EINVAL;
-+
- 	if (buff[count - 1] == '\n')
- 		buff[count - 1] = '\0';
- 
-@@ -519,6 +533,13 @@ static ssize_t batadv_show_gw_sel_class(struct kobject *kobj,
- {
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
- 
-+	/* GW selection class is not available if the routing algorithm in use
-+	 * does not implement the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -ENOENT;
-+
- 	if (bat_priv->algo_ops->gw.show_sel_class)
- 		return bat_priv->algo_ops->gw.show_sel_class(bat_priv, buff);
- 
-@@ -531,6 +552,13 @@ static ssize_t batadv_store_gw_sel_class(struct kobject *kobj,
- {
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
- 
-+	/* setting the GW selection class is allowed only if the routing
-+	 * algorithm in use implements the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -EINVAL;
-+
- 	if (buff[count - 1] == '\n')
- 		buff[count - 1] = '\0';
- 
+
+Am 10.05.2016 um 23:16 schrieb Marek Lindner:
+> On Tuesday, May 10, 2016 21:07:27 Hannes Harms wrote:
+>> But I can not ping with an IP4 addr.
+>>
+>> bat0 was added to a bridge interface with a static IP on both machines.
+>> No DHCP server is running, because only static IPS are needed.
+> Can you describe from where you are pinging (which hosts are involved) and
+> post the IP configuration (e.g. ip addr && ip route) ?
+>
+> Thanks,
+> Marek
+
 -- 
-2.8.3
 
