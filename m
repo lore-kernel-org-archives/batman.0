@@ -1,13 +1,15 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 27 May 2016 13:57:31 +0200
-Message-ID: <1623525.LPZfOt2ObD@prime>
-In-Reply-To: <mailman.211.1463472563.23655.b.a.t.m.a.n@lists.open-mesh.org>
-References: <mailman.211.1463472563.23655.b.a.t.m.a.n@lists.open-mesh.org>
+Date: Fri, 27 May 2016 14:01:42 +0200
+Message-ID: <2194016.YKssNhFpyx@prime>
+In-Reply-To: <1458157872-15879-3-git-send-email-andrew@lunn.ch>
+References: <1458157872-15879-1-git-send-email-andrew@lunn.ch>
+ <1458157872-15879-3-git-send-email-andrew@lunn.ch>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5405381.SVtJIasZ0V";
+Content-Type: multipart/signed; boundary="nextPart4221905.2g3dJ3dErU";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] How to read batadv-vis jsondoc correctly
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 2/2] alfred: Mount debugfs before
+	reducing capabilities
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,47 +19,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, Patrick Bosch <patrick.d.bosch@googlemail.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
 
---nextPart5405381.SVtJIasZ0V
+--nextPart4221905.2g3dJ3dErU
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="ISO-8859-1"
 
-Hi Patrick,
-
-sorry for the late reply.
-
-On Tuesday 17 May 2016 10:09:27 Patrick Bosch via B.A.T.M.A.N wrote:
-> Hi all
+On Wednesday 16 March 2016 20:51:12 Andrew Lunn wrote:
+> The debugfs helper code has the ability to mount the debugfs file
+> system if it is not already mounted. However, it cannot do this
+> after the capabilities have been dropped. So perform the mount early,
+> and remove all the other attempts to do the mount.
 > 
-> As the title suggest, I'm wondering how to read the jsondoc output
-> correctly. It seems that every possible link is included in that
-> output, but which one is the one that is used? If there is one link,
-> it should be the one with the lowest metric, but what if a node has
-> more than one link?
+> This is especially important when using network name spaces. Each
+> namespace has its own /sys, so the mount of debugfs in the global
+> namespace is not visible in other namespaces.
 > 
-> For example the following setup:
-> 
-> Node 1
->      |
->      |
-> Node 2 ------- Node 3
-> 
-> Here, node two would have two links. Now, if there would be some more
-> nodes that are in the jsondoc output, how can I find out which are the
-> links that are in use?
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> ---
+> v2: Remove the other calls to mount
 
-The nodes which appear in the jsondoc are only originators which batman-adv 
-decided to reach directly (with one hop) - so these are direct neighbors. 
+Applied in revision d08b0e0.
 
-Basically, all of these links would be in use from one node to its neighbor, 
-so all of them are "in use". But you can't find out how much a link is 
-actually used (i.e. how many packets/bytes are transmitted), or which neighbor 
-is used to reach a distant neighbor.
-
-Cheers,
+Thanks!
      Simon
---nextPart5405381.SVtJIasZ0V
+--nextPart4221905.2g3dJ3dErU
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -65,20 +52,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXSDYrAAoJEKEr45hCkp6hWOEQAMRtDxb4QR/PTBFjhlc/LqpI
-jLhinaWWkVzcw6/MAis3O+FvEcRCF/KJiMbktYBwPBg82IHyXDgnVQRRx6lRdrGJ
-m/bYbDZ4TfYCXgXfgXbJ18TKrjnK4zWMDu4PrMHUW/VvHdQqnPz2tswH2ItY74W+
-oPUZerFSk0Ky5tpGDPu1T5Znfz+MQd7q3oJhM/nbA0BXE3PcNYOBAonJHeUJ1B4O
-k688dtk+/LHBoiQUHe+l2MqG/+XshsUPCY5maj1FwA/bsGRU+d7P/LyJfg9IzJ3O
-vG53jyLCTtOFp4V7PqW32Is8n1aSpmLhaCWbt5BiZynJVzRVzyM104nQWqHZCL29
-pZEcHOcLP6xauUho1lWD8LHIdESqtqg+VN2dQfvMQljAb+BSGuMQ3qCGl33zIfeI
-vPHok9p4mLLiKU0Up7/5390znKypRNg0gWSFFz6L5/045rbz/8Vksj9SVGM3FNVb
-CxraLi4N5vN/dLjJ9f2RPVvI9JqwmcYvagf3ttKheF1fK1jqb8lQ3AHC5j7xCb6U
-HYbIR+HostciXk4KU3Yy2uSVVseTDt0e9z+etklTivUmD576sebrRy3GJ9dpgdVQ
-BYg3n7c9LXvYjNlXQKhj+5yxxOeGdGVo1EuKFAthYHekjDlxTqgsJ2zrH7uC/eon
-UVwtaqUVbtyio/Fq0x9I
-=9eQq
+iQIcBAABCgAGBQJXSDcmAAoJEKEr45hCkp6hewQP/RZnFuJMnjLs3hhP6YESFyNN
+WQjM+1+fO91oMq3hzMF2CblFm2fW2DpWmanShxwwRnHWgxu4i/jXRIjkxsWxKCrN
+LO8nIAX/xbP4JOD/tU2IC5vdyA7ObW2XSz+GbfXSA6Iv62uj5IQzvjBrFeQjzFBC
+zzOMzNMpA6w2LVgHkbLxkn6NeBnAznZOytxbnm4MrzmA097C6Zbn0RgPOWOotY9U
+fC6Vserx4+Lck0Q7iXVtlh3IrRSMZkHgTrPD6YMr2F6FawWbzIT7fTxr804wDp/R
+v9+jX7AeKRWdUW76KZdNKfuaWVsrPEm8Ruq+rTBjtYCuu3hPO7dOHzeLtzudXdGo
+HlzppKDB5Cq8qnXnvo/MfNngp0qcekRYR8/lOMkNdROgHXTM16YI0ekwv36aQQn4
+sRd9DymOO0yXxlsWC9i94SNOGysDzBr4IDnjdNbGEfAtsTjnFyQt997ItbEtVgDY
+yeEaKPB/8ofiUtm/TJtLqiemjR20KqLdc7Fg+4lFweRlNZfxyLlD7dtyTMhXUMGp
+5yHheQ6HExkKLZ/p5JSnGQ5w8Yy4F99WWB6Lph1yLBZOcYbQl9gO5gYwDxTalROR
+/DE2eCyXS25eAPGlWbxn5R6dHODh5+4m5lSVxbEAmVawWTsDIeZrfz5m5DMrrju2
+EFe/R/tL8eBcYy4cC1D1
+=VRxz
 -----END PGP SIGNATURE-----
 
---nextPart5405381.SVtJIasZ0V--
+--nextPart4221905.2g3dJ3dErU--
 
