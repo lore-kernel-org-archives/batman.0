@@ -1,15 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 27 May 2016 14:01:42 +0200
-Message-ID: <2194016.YKssNhFpyx@prime>
-In-Reply-To: <1458157872-15879-3-git-send-email-andrew@lunn.ch>
-References: <1458157872-15879-1-git-send-email-andrew@lunn.ch>
- <1458157872-15879-3-git-send-email-andrew@lunn.ch>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 27 May 2016 15:48:37 +0200
+Message-ID: <1623801.mhGnxyytJi@bentobox>
+In-Reply-To: <20160525152736.9031-6-a@unstable.cc>
+References: <20160525152736.9031-1-a@unstable.cc>
+ <20160525152736.9031-6-a@unstable.cc>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4221905.2g3dJ3dErU";
+Content-Type: multipart/signed; boundary="nextPart1478310.4nVosVohau";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 2/2] alfred: Mount debugfs before
-	reducing capabilities
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4 5/6] batman-adv: B.A.T.M.A.N. V -
+	implement GW selection logic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,31 +20,44 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: "B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.net>
+Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart4221905.2g3dJ3dErU
+--nextPart1478310.4nVosVohau
 Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday 16 March 2016 20:51:12 Andrew Lunn wrote:
-> The debugfs helper code has the ability to mount the debugfs file
-> system if it is not already mounted. However, it cannot do this
-> after the capabilities have been dropped. So perform the mount early,
-> and remove all the other attempts to do the mount.
-> 
-> This is especially important when using network name spaces. Each
-> namespace has its own /sys, so the mount of debugfs in the global
-> namespace is not visible in other namespaces.
-> 
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> ---
-> v2: Remove the other calls to mount
+On Wednesday 25 May 2016 23:27:35 Antonio Quartulli wrote:
+> +#ifdef CONFIG_BATMAN_ADV_BATMAN_V
+> +struct batadv_gw_node *batadv_gw_node_get(struct batadv_priv *bat_priv,
+> +                                         struct batadv_orig_node *orig_node);
+> +#endif /* CONFIG_BATMAN_ADV_BATMAN_V */
 
-Applied in revision d08b0e0.
+This is rather odd because the function is also compiled (and used) even when
+CONFIG_BATMAN_ADV_BATMAN_V is not enabled.
 
-Thanks!
-     Simon
---nextPart4221905.2g3dJ3dErU
+Here is the relevant diff:
+
+> @@ -356,9 +360,8 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
+>   *
+>   * Return: gateway node if found or NULL otherwise.
+>   */
+> -static struct batadv_gw_node *
+> -batadv_gw_node_get(struct batadv_priv *bat_priv,
+> -                  struct batadv_orig_node *orig_node)
+> +struct batadv_gw_node *batadv_gw_node_get(struct batadv_priv *bat_priv,
+> +                                         struct batadv_orig_node *orig_node)
+>  {
+>         struct batadv_gw_node *gw_node_tmp, *gw_node = NULL;
+>  
+
+Maybe you should drop the CONFIG_BATMAN_ADV_BATMAN_V check.
+
+But I should at least whitelist the batadv_gw_node_get for the unused symbols
+check.
+
+Kind regards,
+	Sven
+--nextPart1478310.4nVosVohau
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -52,20 +65,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXSDcmAAoJEKEr45hCkp6hewQP/RZnFuJMnjLs3hhP6YESFyNN
-WQjM+1+fO91oMq3hzMF2CblFm2fW2DpWmanShxwwRnHWgxu4i/jXRIjkxsWxKCrN
-LO8nIAX/xbP4JOD/tU2IC5vdyA7ObW2XSz+GbfXSA6Iv62uj5IQzvjBrFeQjzFBC
-zzOMzNMpA6w2LVgHkbLxkn6NeBnAznZOytxbnm4MrzmA097C6Zbn0RgPOWOotY9U
-fC6Vserx4+Lck0Q7iXVtlh3IrRSMZkHgTrPD6YMr2F6FawWbzIT7fTxr804wDp/R
-v9+jX7AeKRWdUW76KZdNKfuaWVsrPEm8Ruq+rTBjtYCuu3hPO7dOHzeLtzudXdGo
-HlzppKDB5Cq8qnXnvo/MfNngp0qcekRYR8/lOMkNdROgHXTM16YI0ekwv36aQQn4
-sRd9DymOO0yXxlsWC9i94SNOGysDzBr4IDnjdNbGEfAtsTjnFyQt997ItbEtVgDY
-yeEaKPB/8ofiUtm/TJtLqiemjR20KqLdc7Fg+4lFweRlNZfxyLlD7dtyTMhXUMGp
-5yHheQ6HExkKLZ/p5JSnGQ5w8Yy4F99WWB6Lph1yLBZOcYbQl9gO5gYwDxTalROR
-/DE2eCyXS25eAPGlWbxn5R6dHODh5+4m5lSVxbEAmVawWTsDIeZrfz5m5DMrrju2
-EFe/R/tL8eBcYy4cC1D1
-=VRxz
+iQIcBAABCgAGBQJXSFA1AAoJEF2HCgfBJntGJzoP/3TPocT3F64t1XypewS5+smQ
+wzXcaf1pR8GYu4sm2DZFK8/UZ6/ypMnFsI6YYLlnj3R2H4f328/hgP/0V2Kfc4KP
+m4YbeF6bs6qQh17HgFAEHnmN205uNOM3BiisQj799gNXXQcvKa2fiQbJ3f2H+rd8
++6fA2oVhVvLfhB+D1QsVFKPMr9bp7GXKwvb+oDAb7sAoJi7OwL3gOGH0N6o4+YXu
+qwTsZynIksr5z0tPCfwXesZ/+DzC0kfUmAUxM5dUXEC2y8v6GoLbLVDbARvbxv1Z
+4Vu06US0Dv56LBfBhx0snusOohgYGUbz0L15dtoIJGyaDL+bzbMXGF5Wv6FLfvrl
+QmrWAuUyWEA7LKfV7fFPtaiwd2sqS3NhSlg3BeKMECJc9A1Hd4yVykU4jhpb4HjB
+JY5cyTC8NqfaeAcJkDrYYuxiozKQcUk/mpwYNL+DZjmacgxLpsxsR3b8Z9PySx+n
+IjVdQ507HRuzoQCuoa+ab0ourhogwli/4C0kypiew8nhNVih+sp7VlfV1tdupfWp
+Gjl+HI6Vr2sgu4Bl2KzvozPFDzoHS5Npvu2JUq3tATNc9NHhNN/nhPC7UfrguijQ
+uqG+bXcCG54IHTZr0xj1zobAri1bdtRMC40b2agkZhdUfSje0DokaHVH4b8acwKt
+2KZnnFRraaIFsnks8Crz
+=K5yz
 -----END PGP SIGNATURE-----
 
---nextPart4221905.2g3dJ3dErU--
+--nextPart1478310.4nVosVohau--
 
