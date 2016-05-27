@@ -1,16 +1,15 @@
-Return-Path: <a@unstable.cc>
-Date: Fri, 27 May 2016 21:57:29 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160527135729.GS13048@prodigo>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 27 May 2016 16:01:13 +0200
+Message-ID: <5051653.7LK392eFxL@bentobox>
+In-Reply-To: <20160527135729.GS13048@prodigo>
 References: <20160525152736.9031-1-a@unstable.cc>
- <20160525152736.9031-6-a@unstable.cc> <1623801.mhGnxyytJi@bentobox>
+ <1623801.mhGnxyytJi@bentobox> <20160527135729.GS13048@prodigo>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="jllsgs4PL/sXFNaa"
-Content-Disposition: inline
-In-Reply-To: <1623801.mhGnxyytJi@bentobox>
+Content-Type: multipart/signed; boundary="nextPart1777122.WKCm2vHHIH";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v4 5/6] batman-adv: B.A.T.M.A.N. V -
- implement GW selection logic
+	implement GW selection logic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,85 +19,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
+To: Antonio Quartulli <a@unstable.cc>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
+--nextPart1777122.WKCm2vHHIH
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---jllsgs4PL/sXFNaa
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Friday 27 May 2016 21:57:29 Antonio Quartulli wrote:
+[...]
+> Do you think it makes more sense to keep the declaration and whitelist the
+> function in your test ?
 
-On Fri, May 27, 2016 at 03:48:37PM +0200, Sven Eckelmann wrote:
-> On Wednesday 25 May 2016 23:27:35 Antonio Quartulli wrote:
-> > +#ifdef CONFIG_BATMAN_ADV_BATMAN_V
-> > +struct batadv_gw_node *batadv_gw_node_get(struct batadv_priv *bat_priv,
-> > +                                         struct batadv_orig_node *orig=
-_node);
-> > +#endif /* CONFIG_BATMAN_ADV_BATMAN_V */
->=20
-> This is rather odd because the function is also compiled (and used) even =
-when
-> CONFIG_BATMAN_ADV_BATMAN_V is not enabled.
->=20
-> Here is the relevant diff:
->=20
-> > @@ -356,9 +360,8 @@ static void batadv_gw_node_add(struct batadv_priv *=
-bat_priv,
-> >   *
-> >   * Return: gateway node if found or NULL otherwise.
-> >   */
-> > -static struct batadv_gw_node *
-> > -batadv_gw_node_get(struct batadv_priv *bat_priv,
-> > -                  struct batadv_orig_node *orig_node)
-> > +struct batadv_gw_node *batadv_gw_node_get(struct batadv_priv *bat_priv,
-> > +                                         struct batadv_orig_node *orig=
-_node)
-> >  {
-> >         struct batadv_gw_node *gw_node_tmp, *gw_node =3D NULL;
-> > =20
->=20
-> Maybe you should drop the CONFIG_BATMAN_ADV_BATMAN_V check.
->=20
-> But I should at least whitelist the batadv_gw_node_get for the unused sym=
-bols
-> check.
+Yes, this is the right thing(tm) to do. I've already whitelisted it for
+the unused-symbol check :)
 
-This is exactly the point: when CONFIG_BATMAN_ADV_BATMAN_V is not selected =
-this
-exported symbol is not used. Therefore I was not confident if the right way=
- to
-go was to put the declaration within the #ifdef block or not..
+Otherwise sparse and smatch will scream that the non-static function
+has no declaration.
 
-Do you think it makes more sense to keep the declaration and whitelist the
-function in your test ?
+    net/batman-adv/gateway_client.c:363:23: warning: symbol 'batadv_gw_node_get' was not declared. Should it be static?
 
-Cheers,
-
-
---=20
-Antonio Quartulli
-
---jllsgs4PL/sXFNaa
+Kind regards,
+	Sven
+--nextPart1777122.WKCm2vHHIH
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXSFJJAAoJEJ4aZjxxc6bKqVoQAJBlY7j2E1cDtJC4e2kPgv+s
-YZBZfDGbFiPFyxAHbOx4CSCM8ZsDEzGUVfkRyh1akwnCZwGIzq9sUPTN3HEK7f7Z
-gFiV2Xqais2X/CaVM2oSPX4IoGsBJC+/62813wJVpcjQ3TZ+nKI8oWygHDA+Edc1
-WL7kujfOvtCuf3VUAVWY3siNX0dXbSjRFJCvfvkP95AdssXhhq1AFQ7xJL9kGvZ/
-zZ0dtaUcud6JljilrFFGiV7fgUsRinKfUueFmhDUznTVuJfoiN237+uyN0VCW7tT
-+sBTQbDO2RM90CGv3tNYsKd+zLrSczHZUoaEEGpF0dX9sKhVu0A1pNE963hUhYpA
-K2MI9lzFRpwp5GjqiLee5xxWANg1Apm0G+LrNBAIwhGPYONamqTjWs7moqjUSqXf
-0BiMDe62KJoIekNqn90NbNNWRqfNGiO4mlt45TE8SMLtYc665BZ48RV47Ktas/5E
-5/XqXMbtDDOyK+wpQ76lI0DfcFjXC0MM6SZo3376SLTQWRtalN0EL4CeNI2cd51p
-0Eewr0qbNVIvWyMIIKA2qziqqiteOYYuVJ0WXXi/gGtMSxmD8/RSkBcUgXIPiiBf
-F/H8lCMDVvPo+GGMa1Ryi+iubRoeV5DiRgVP7PmeUjjgkPVT6VcfljssZvgYu7kZ
-5nzmhqZeESrLxycX64nt
-=qBTv
+iQIcBAABCgAGBQJXSFMpAAoJEF2HCgfBJntGKQUQAMyVp1RnIA9SevvYgaim5R5u
+lJfe8zL+OrN/zNWYbYcEZjSYtu+gcwwnf4vKl47GEwSaR/48AdwcPvK4FfnKL+d5
+fobaNreYNXUTav57CJSUe0xn/i8gk6Q6SQ+nmaSgPMg+KmRly4Y1cBBvnw4s/E8Y
+Q/CFheDsMaUgneU+ktrSm63XS42qEaXGvkobhV54EO/Xpi2QkVZKNJRrDzNzOmwp
+bydaJsGGiTFoA8Ingmzi0D7PynqNAJJOGeCwbP82c3vHxwuSjIeMCt0D3IB5Fz55
+3HVkCTnwBw0nDe0TosLGfSv/LVk1K6CwQ9jHvs1a4y1Yl9PuWlqRH7D3ZwgsMleg
+i7uJr0s32ViPrIRhuhWoMDzFEKRBV6QQFmjWAZ/j9Wf0dQ8vCZjhOSJvO24kARrX
+Yz7CivGaE5ZtN6XTgohN4k6dPLDyoW+fW/QDCxJzFXpiy/+tYaID+a6Ib54nA+bR
+NFsaP6t4O92IUP3ba+i2uyJE6LTtyNGiDdATJf6AcEem7oe8fQ45e7X8fNsHk0Th
+732fPUP2crRMb2DZMt3LIWpuO83wvog1yxz8bQvtuLSnWDE1ojuYU5kt31477GRY
+0wnelBki3j+eYzJqFefxWOjKxzB1nWC3nP9HmGqCdKQDvHdQQRMbcL25d0DMxLor
+YvyLYpkQuMcNSc9RkIbF
+=7fAq
 -----END PGP SIGNATURE-----
 
---jllsgs4PL/sXFNaa--
+--nextPart1777122.WKCm2vHHIH--
+
