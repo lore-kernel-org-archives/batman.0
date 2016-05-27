@@ -1,15 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 27 May 2016 16:01:13 +0200
-Message-ID: <5051653.7LK392eFxL@bentobox>
-In-Reply-To: <20160527135729.GS13048@prodigo>
-References: <20160525152736.9031-1-a@unstable.cc>
- <1623801.mhGnxyytJi@bentobox> <20160527135729.GS13048@prodigo>
+Return-Path: <Jonathan.Haws@sdl.usu.edu>
+From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Date: Fri, 27 May 2016 22:25:46 +0000
+Message-ID: <31c117a7ea164528a8d01a730c7dd9e8@Ek.usurf.usu.edu>
+Content-Language: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1777122.WKCm2vHHIH";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v4 5/6] batman-adv: B.A.T.M.A.N. V -
-	implement GW selection logic
+Subject: [B.A.T.M.A.N.] Non-batman Clients
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,50 +16,92 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Antonio Quartulli <a@unstable.cc>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart1777122.WKCm2vHHIH
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Friday 27 May 2016 21:57:29 Antonio Quartulli wrote:
-[...]
-> Do you think it makes more sense to keep the declaration and whitelist the
-> function in your test ?
-
-Yes, this is the right thing(tm) to do. I've already whitelisted it for
-the unused-symbol check :)
-
-Otherwise sparse and smatch will scream that the non-static function
-has no declaration.
-
-    net/batman-adv/gateway_client.c:363:23: warning: symbol 'batadv_gw_node_get' was not declared. Should it be static?
-
-Kind regards,
-	Sven
---nextPart1777122.WKCm2vHHIH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJXSFMpAAoJEF2HCgfBJntGKQUQAMyVp1RnIA9SevvYgaim5R5u
-lJfe8zL+OrN/zNWYbYcEZjSYtu+gcwwnf4vKl47GEwSaR/48AdwcPvK4FfnKL+d5
-fobaNreYNXUTav57CJSUe0xn/i8gk6Q6SQ+nmaSgPMg+KmRly4Y1cBBvnw4s/E8Y
-Q/CFheDsMaUgneU+ktrSm63XS42qEaXGvkobhV54EO/Xpi2QkVZKNJRrDzNzOmwp
-bydaJsGGiTFoA8Ingmzi0D7PynqNAJJOGeCwbP82c3vHxwuSjIeMCt0D3IB5Fz55
-3HVkCTnwBw0nDe0TosLGfSv/LVk1K6CwQ9jHvs1a4y1Yl9PuWlqRH7D3ZwgsMleg
-i7uJr0s32ViPrIRhuhWoMDzFEKRBV6QQFmjWAZ/j9Wf0dQ8vCZjhOSJvO24kARrX
-Yz7CivGaE5ZtN6XTgohN4k6dPLDyoW+fW/QDCxJzFXpiy/+tYaID+a6Ib54nA+bR
-NFsaP6t4O92IUP3ba+i2uyJE6LTtyNGiDdATJf6AcEem7oe8fQ45e7X8fNsHk0Th
-732fPUP2crRMb2DZMt3LIWpuO83wvog1yxz8bQvtuLSnWDE1ojuYU5kt31477GRY
-0wnelBki3j+eYzJqFefxWOjKxzB1nWC3nP9HmGqCdKQDvHdQQRMbcL25d0DMxLor
-YvyLYpkQuMcNSc9RkIbF
-=7fAq
------END PGP SIGNATURE-----
-
---nextPart1777122.WKCm2vHHIH--
-
+I've followed the quick start guide, but apparently I'm missing =0A=
+something when it comes to non-batman clients.=0A=
+=0A=
+I've set all this up using vagrant and VirtualBox.  The mesh seems to =0A=
+work perfectly, however when I put in non-batman clients they cannot =0A=
+communicate one with another.  I would expect that they would be able to =
+=0A=
+ping one another.=0A=
+=0A=
+I've given IP addresses to the bridge adapters on the 192.168.1.0/24 =0A=
+subnet.  The clients I've given IP addresses on that same subnet =0A=
+(192.168.1.121 and 192.168.1.142).  When I tried pinging, I don't get =0A=
+anything back.  Sniffing packets in tcpdump shows that it is never =0A=
+getting anything back, though I did get an ARP back once with the =0A=
+correct MAC address, but still couldn't ping.  Never got an ARP back =0A=
+again...=0A=
+=0A=
+I can ping from each client to the IP address of the bridge they are =0A=
+connecting to, but cannot ping anything else on the network.=0A=
+=0A=
+Any thoughts?  Hopefully someone has seen this before and can point me =0A=
+in the right direction!=0A=
+=0A=
+Also, is there a separate list for alfred, or should I use this list for =
+=0A=
+alfred questions?=0A=
+=0A=
+Thanks!=0A=
+Jon=0A=
+=0A=
+=0A=
+Here are the commands I used to setup:=0A=
+=0A=
+batctl if add eth0 (eth0 already up)=0A=
+ip link add name br0 type bridge=0A=
+ip link set dev eth1 master br0=0A=
+ip link set dev bat0 master br0=0A=
+ip link set up dev eth1=0A=
+ip link set up dev bat0=0A=
+ip addr replace dev br0 192.168.1.102/24 (and 104 on the other node)=0A=
+=0A=
+=0A=
+Here is what batadv-vis shows for my setup (I changed the labels "TT" =0A=
+for the two clients to "CLI<IP>").=0A=
+=0A=
+digraph {=0A=
+	subgraph "cluster_08:00:27:2c:10:05" {=0A=
+		"08:00:27:2c:10:05"=0A=
+	}=0A=
+	"08:00:27:2c:10:05" -> "08:00:27:6b:86:2e" [label=3D"1.016"]=0A=
+	"08:00:27:2c:10:05" -> "0a:00:27:00:00:06" [label=3D"TT"]=0A=
+	"08:00:27:2c:10:05" -> "1e:8d:d3:23:ab:d4" [label=3D"TT"]=0A=
+	"08:00:27:2c:10:05" -> "08:00:27:b1:38:03" [label=3D"CLI142"]=0A=
+	"08:00:27:2c:10:05" -> "1e:8d:d3:23:ab:d4" [label=3D"TT"]=0A=
+	"08:00:27:2c:10:05" -> "08:00:27:1c:9b:14" [label=3D"TT"]=0A=
+	subgraph "cluster_08:00:27:a2:8c:62" {=0A=
+		"08:00:27:a2:8c:62"=0A=
+	}=0A=
+	"08:00:27:a2:8c:62" -> "08:00:27:83:dd:41" [label=3D"1.000"]=0A=
+	"08:00:27:a2:8c:62" -> "08:00:27:38:31:55" [label=3D"1.000"]=0A=
+	"08:00:27:a2:8c:62" -> "08:00:27:f6:78:1a" [label=3D"TT"]=0A=
+	"08:00:27:a2:8c:62" -> "d6:f4:e6:bd:22:fb" [label=3D"TT"]=0A=
+	"08:00:27:a2:8c:62" -> "d6:f4:e6:bd:22:fb" [label=3D"TT"]=0A=
+	"08:00:27:a2:8c:62" -> "0a:00:27:00:00:05" [label=3D"TT"]=0A=
+	subgraph "cluster_08:00:27:38:31:55" {=0A=
+		"08:00:27:38:31:55"=0A=
+	}=0A=
+	"08:00:27:38:31:55" -> "08:00:27:83:dd:41" [label=3D"1.000"]=0A=
+	"08:00:27:38:31:55" -> "08:00:27:a2:8c:62" [label=3D"1.000"]=0A=
+	"08:00:27:38:31:55" -> "52:98:12:67:6b:06" [label=3D"TT"]=0A=
+	"08:00:27:38:31:55" -> "0a:00:27:00:00:04" [label=3D"TT"]=0A=
+	"08:00:27:38:31:55" -> "08:00:27:08:ee:90" [label=3D"CLI121"]=0A=
+	"08:00:27:38:31:55" -> "52:98:12:67:6b:06" [label=3D"TT"]=0A=
+	"08:00:27:38:31:55" -> "08:00:27:17:21:9d" [label=3D"TT"]=0A=
+	subgraph "cluster_08:00:27:6b:86:2e" {=0A=
+		"08:00:27:6b:86:2e"=0A=
+		"08:00:27:83:dd:41" [peripheries=3D2]=0A=
+	}=0A=
+	"08:00:27:6b:86:2e" -> "08:00:27:2c:10:05" [label=3D"1.000"]=0A=
+	"08:00:27:83:dd:41" -> "08:00:27:38:31:55" [label=3D"1.000"]=0A=
+	"08:00:27:83:dd:41" -> "08:00:27:a2:8c:62" [label=3D"1.016"]=0A=
+	"08:00:27:6b:86:2e" -> "a6:f4:5c:fa:06:cd" [label=3D"TT"]=0A=
+	"08:00:27:6b:86:2e" -> "0a:00:27:00:00:03" [label=3D"TT"]=0A=
+	"08:00:27:6b:86:2e" -> "08:00:27:9c:bb:a3" [label=3D"TT"]=0A=
+	"08:00:27:6b:86:2e" -> "a6:f4:5c:fa:06:cd" [label=3D"TT"]=0A=
+}=0A=
+=0A=
