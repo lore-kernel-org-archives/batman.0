@@ -1,12 +1,9 @@
-Return-Path: <Jonathan.Haws@sdl.usu.edu>
-From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Date: Fri, 27 May 2016 22:25:46 +0000
-Message-ID: <31c117a7ea164528a8d01a730c7dd9e8@Ek.usurf.usu.edu>
-Content-Language: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-MIME-Version: 1.0
-Subject: [B.A.T.M.A.N.] Non-batman Clients
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 28 May 2016 10:32:48 +0200
+Message-Id: <1464424368-18635-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v3] batman-adv: Fix build against recent
+	Debian Stretch kernels
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,92 +13,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-I've followed the quick start guide, but apparently I'm missing =0A=
-something when it comes to non-batman clients.=0A=
-=0A=
-I've set all this up using vagrant and VirtualBox.  The mesh seems to =0A=
-work perfectly, however when I put in non-batman clients they cannot =0A=
-communicate one with another.  I would expect that they would be able to =
-=0A=
-ping one another.=0A=
-=0A=
-I've given IP addresses to the bridge adapters on the 192.168.1.0/24 =0A=
-subnet.  The clients I've given IP addresses on that same subnet =0A=
-(192.168.1.121 and 192.168.1.142).  When I tried pinging, I don't get =0A=
-anything back.  Sniffing packets in tcpdump shows that it is never =0A=
-getting anything back, though I did get an ARP back once with the =0A=
-correct MAC address, but still couldn't ping.  Never got an ARP back =0A=
-again...=0A=
-=0A=
-I can ping from each client to the IP address of the bridge they are =0A=
-connecting to, but cannot ping anything else on the network.=0A=
-=0A=
-Any thoughts?  Hopefully someone has seen this before and can point me =0A=
-in the right direction!=0A=
-=0A=
-Also, is there a separate list for alfred, or should I use this list for =
-=0A=
-alfred questions?=0A=
-=0A=
-Thanks!=0A=
-Jon=0A=
-=0A=
-=0A=
-Here are the commands I used to setup:=0A=
-=0A=
-batctl if add eth0 (eth0 already up)=0A=
-ip link add name br0 type bridge=0A=
-ip link set dev eth1 master br0=0A=
-ip link set dev bat0 master br0=0A=
-ip link set up dev eth1=0A=
-ip link set up dev bat0=0A=
-ip addr replace dev br0 192.168.1.102/24 (and 104 on the other node)=0A=
-=0A=
-=0A=
-Here is what batadv-vis shows for my setup (I changed the labels "TT" =0A=
-for the two clients to "CLI<IP>").=0A=
-=0A=
-digraph {=0A=
-	subgraph "cluster_08:00:27:2c:10:05" {=0A=
-		"08:00:27:2c:10:05"=0A=
-	}=0A=
-	"08:00:27:2c:10:05" -> "08:00:27:6b:86:2e" [label=3D"1.016"]=0A=
-	"08:00:27:2c:10:05" -> "0a:00:27:00:00:06" [label=3D"TT"]=0A=
-	"08:00:27:2c:10:05" -> "1e:8d:d3:23:ab:d4" [label=3D"TT"]=0A=
-	"08:00:27:2c:10:05" -> "08:00:27:b1:38:03" [label=3D"CLI142"]=0A=
-	"08:00:27:2c:10:05" -> "1e:8d:d3:23:ab:d4" [label=3D"TT"]=0A=
-	"08:00:27:2c:10:05" -> "08:00:27:1c:9b:14" [label=3D"TT"]=0A=
-	subgraph "cluster_08:00:27:a2:8c:62" {=0A=
-		"08:00:27:a2:8c:62"=0A=
-	}=0A=
-	"08:00:27:a2:8c:62" -> "08:00:27:83:dd:41" [label=3D"1.000"]=0A=
-	"08:00:27:a2:8c:62" -> "08:00:27:38:31:55" [label=3D"1.000"]=0A=
-	"08:00:27:a2:8c:62" -> "08:00:27:f6:78:1a" [label=3D"TT"]=0A=
-	"08:00:27:a2:8c:62" -> "d6:f4:e6:bd:22:fb" [label=3D"TT"]=0A=
-	"08:00:27:a2:8c:62" -> "d6:f4:e6:bd:22:fb" [label=3D"TT"]=0A=
-	"08:00:27:a2:8c:62" -> "0a:00:27:00:00:05" [label=3D"TT"]=0A=
-	subgraph "cluster_08:00:27:38:31:55" {=0A=
-		"08:00:27:38:31:55"=0A=
-	}=0A=
-	"08:00:27:38:31:55" -> "08:00:27:83:dd:41" [label=3D"1.000"]=0A=
-	"08:00:27:38:31:55" -> "08:00:27:a2:8c:62" [label=3D"1.000"]=0A=
-	"08:00:27:38:31:55" -> "52:98:12:67:6b:06" [label=3D"TT"]=0A=
-	"08:00:27:38:31:55" -> "0a:00:27:00:00:04" [label=3D"TT"]=0A=
-	"08:00:27:38:31:55" -> "08:00:27:08:ee:90" [label=3D"CLI121"]=0A=
-	"08:00:27:38:31:55" -> "52:98:12:67:6b:06" [label=3D"TT"]=0A=
-	"08:00:27:38:31:55" -> "08:00:27:17:21:9d" [label=3D"TT"]=0A=
-	subgraph "cluster_08:00:27:6b:86:2e" {=0A=
-		"08:00:27:6b:86:2e"=0A=
-		"08:00:27:83:dd:41" [peripheries=3D2]=0A=
-	}=0A=
-	"08:00:27:6b:86:2e" -> "08:00:27:2c:10:05" [label=3D"1.000"]=0A=
-	"08:00:27:83:dd:41" -> "08:00:27:38:31:55" [label=3D"1.000"]=0A=
-	"08:00:27:83:dd:41" -> "08:00:27:a2:8c:62" [label=3D"1.016"]=0A=
-	"08:00:27:6b:86:2e" -> "a6:f4:5c:fa:06:cd" [label=3D"TT"]=0A=
-	"08:00:27:6b:86:2e" -> "0a:00:27:00:00:03" [label=3D"TT"]=0A=
-	"08:00:27:6b:86:2e" -> "08:00:27:9c:bb:a3" [label=3D"TT"]=0A=
-	"08:00:27:6b:86:2e" -> "a6:f4:5c:fa:06:cd" [label=3D"TT"]=0A=
-}=0A=
-=0A=
+The kernels for Debian stretch require some special CFLAGS settings which
+are only correctly defined when NOSTDINC_FLAGS is defined inside the
+execution of the Makefile via kbuild. But batman-adv sets it currently
+outside to insert compatibility include headers and compat-sources.
+
+This can be avoided by making the top Makefile kbuild compatible and
+redefining the NOSTDINC_FLAGS when kbuild include this Makefile. The actual
+build of the batman-adv module is then done by adding the subdirectory to
+obj-y.
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+v3:
+ - append NOSTDINC_FLAGS with our own flags instead of overwriting it
+v2:
+ - Fixed noise from other patches in context (should now apply cleanly on next)
+ 
+ Makefile | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 5d2c058..2568fb2 100644
+--- a/Makefile
++++ b/Makefile
+@@ -43,7 +43,7 @@ RM ?= rm -f
+ REVISION= $(shell	if [ -d "$(PWD)/.git" ]; then \
+ 				echo $$(git --git-dir="$(PWD)/.git" describe --always --dirty --match "v*" |sed 's/^v//' 2> /dev/null || echo "[unknown]"); \
+ 			fi)
+-export NOSTDINC_FLAGS := \
++NOSTDINC_FLAGS += \
+ 	-I$(PWD)/compat-include/ \
+ 	-include $(PWD)/compat.h \
+ 	$(CFLAGS)
+@@ -52,8 +52,12 @@ ifneq ($(REVISION),)
+ NOSTDINC_FLAGS += -DBATADV_SOURCE_VERSION=\"$(REVISION)\"
+ endif
+ 
++obj-y += net/batman-adv/
++
+ BUILD_FLAGS := \
+-	M=$(PWD)/net/batman-adv \
++	M=$(PWD) \
++	PWD=$(PWD) \
++	REVISION=$(REVISION) \
+ 	CONFIG_BATMAN_ADV=m \
+ 	CONFIG_BATMAN_ADV_DEBUG=$(CONFIG_BATMAN_ADV_DEBUG) \
+ 	CONFIG_BATMAN_ADV_BLA=$(CONFIG_BATMAN_ADV_BLA) \
+@@ -61,7 +65,7 @@ BUILD_FLAGS := \
+ 	CONFIG_BATMAN_ADV_NC=$(CONFIG_BATMAN_ADV_NC) \
+ 	CONFIG_BATMAN_ADV_MCAST=$(CONFIG_BATMAN_ADV_MCAST) \
+ 	CONFIG_BATMAN_ADV_BATMAN_V=$(CONFIG_BATMAN_ADV_BATMAN_V) \
+-	INSTALL_MOD_DIR=updates/net/batman-adv/
++	INSTALL_MOD_DIR=updates/
+ 
+ all: config
+ 	$(MAKE) -C $(KERNELPATH) $(BUILD_FLAGS)	modules
+-- 
+2.8.1
+
