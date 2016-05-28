@@ -1,9 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 28 May 2016 14:38:26 +0200
-Message-Id: <1464439110-3113-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: Clean up untagged vlan when
-	destroying via rtnl-link
+Date: Sat, 28 May 2016 14:38:27 +0200
+Message-Id: <1464439110-3113-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1464439110-3113-1-git-send-email-sven@narfation.org>
+References: <1464439110-3113-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/5] batman-adv: Define module rtnl link name
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,47 +15,25 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
 
-The untagged vlan object is only destroyed when the interface is removed
-via the legacy sysfs interface. But it also has to be destroyed when the
-standard rtnl-link interface is used.
+The batman-adv module can automatically be loaded when operations over the
+rtnl link are triggered. This requires only the correct rtnl link name in
+the module header.
 
-Fixes: 952cebb57518 ("batman-adv: add per VLAN interface attribute framework")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Cc: Antonio Quartulli <a@unstable.cc>
 ---
- net/batman-adv/soft-interface.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ net/batman-adv/main.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 18b6d07..7527c06 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -1040,7 +1040,9 @@ void batadv_softif_destroy_sysfs(struct net_device *soft_iface)
- static void batadv_softif_destroy_netlink(struct net_device *soft_iface,
- 					  struct list_head *head)
- {
-+	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
- 	struct batadv_hard_iface *hard_iface;
-+	struct batadv_softif_vlan *vlan;
- 
- 	list_for_each_entry(hard_iface, &batadv_hardif_list, list) {
- 		if (hard_iface->soft_iface == soft_iface)
-@@ -1048,6 +1050,13 @@ static void batadv_softif_destroy_netlink(struct net_device *soft_iface,
- 							BATADV_IF_CLEANUP_KEEP);
- 	}
- 
-+	/* destroy the "untagged" VLAN */
-+	vlan = batadv_softif_vlan_get(bat_priv, BATADV_NO_FLAGS);
-+	if (vlan) {
-+		batadv_softif_destroy_vlan(bat_priv, vlan);
-+		batadv_softif_vlan_put(vlan);
-+	}
-+
- 	batadv_sysfs_del_meshif(soft_iface);
- 	unregister_netdevice_queue(soft_iface, head);
- }
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index fe4c5e2..f61479b 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -638,3 +638,4 @@ MODULE_AUTHOR(BATADV_DRIVER_AUTHOR);
+ MODULE_DESCRIPTION(BATADV_DRIVER_DESC);
+ MODULE_SUPPORTED_DEVICE(BATADV_DRIVER_DEVICE);
+ MODULE_VERSION(BATADV_SOURCE_VERSION);
++MODULE_ALIAS_RTNL_LINK("batadv");
 -- 
 2.8.1
 
