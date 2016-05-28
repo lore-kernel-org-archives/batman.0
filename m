@@ -1,10 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 28 May 2016 14:38:27 +0200
-Message-Id: <1464439110-3113-2-git-send-email-sven@narfation.org>
+Date: Sat, 28 May 2016 14:38:28 +0200
+Message-Id: <1464439110-3113-3-git-send-email-sven@narfation.org>
 In-Reply-To: <1464439110-3113-1-git-send-email-sven@narfation.org>
 References: <1464439110-3113-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/5] batman-adv: Define module rtnl link name
+Subject: [B.A.T.M.A.N.] [PATCH 3/5] batman-adv: Use rtnl link in device
+	creation example
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,24 +17,53 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The batman-adv module can automatically be loaded when operations over the
-rtnl link are triggered. This requires only the correct rtnl link name in
-the module header.
+The standard kernel API to add new virtual interfaces and attach other
+interfaces to it is rtnl-link. batman-adv supports it since v3.10. This
+functionality should be used instead of the legacy batman-adv-only sysfs
+interface.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/main.c | 1 +
- 1 file changed, 1 insertion(+)
+ Documentation/networking/batman-adv.txt | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index fe4c5e2..f61479b 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -638,3 +638,4 @@ MODULE_AUTHOR(BATADV_DRIVER_AUTHOR);
- MODULE_DESCRIPTION(BATADV_DRIVER_DESC);
- MODULE_SUPPORTED_DEVICE(BATADV_DRIVER_DEVICE);
- MODULE_VERSION(BATADV_SOURCE_VERSION);
-+MODULE_ALIAS_RTNL_LINK("batadv");
+diff --git a/Documentation/networking/batman-adv.txt b/Documentation/networking/batman-adv.txt
+index 1b5e7a7..8a8d3d9 100644
+--- a/Documentation/networking/batman-adv.txt
++++ b/Documentation/networking/batman-adv.txt
+@@ -43,10 +43,15 @@ new interfaces to verify the compatibility. There is no  need  to
+ reload the module if you plug your USB wifi adapter into your ma-
+ chine after batman advanced was initially loaded.
+ 
+-To activate a  given  interface  simply  write  "bat0"  into  its
+-"mesh_iface" file inside the batman_adv subfolder:
++The batman-adv soft-interface can be created using  the  iproute2
++tool "ip"
+ 
+-# echo bat0 > /sys/class/net/eth0/batman_adv/mesh_iface
++# ip link add name bat0 type batadv
++
++To  activate a  given  interface  simply  attach it to the "bat0"
++interface
++
++# ip link set dev eth0 master bat0
+ 
+ Repeat  this step for all interfaces you wish to add.  Now batman
+ starts using/broadcasting on this/these interface(s).
+@@ -56,10 +61,10 @@ By reading the "iface_status" file you can check its status:
+ # cat /sys/class/net/eth0/batman_adv/iface_status
+ # active
+ 
+-To deactivate an interface you have  to  write  "none"  into  its
+-"mesh_iface" file:
++To  deactivate  an  interface  you  have   to  detach it from the
++"bat0" interface:
+ 
+-# echo none > /sys/class/net/eth0/batman_adv/mesh_iface
++# ip link set dev eth0 nomaster
+ 
+ 
+ All  mesh  wide  settings  can be found in batman's own interface
 -- 
 2.8.1
 
