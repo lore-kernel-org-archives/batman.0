@@ -1,9 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 28 May 2016 10:32:48 +0200
-Message-Id: <1464424368-18635-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3] batman-adv: Fix build against recent
-	Debian Stretch kernels
+Date: Sat, 28 May 2016 14:38:26 +0200
+Message-Id: <1464439110-3113-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: Clean up untagged vlan when
+	destroying via rtnl-link
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,63 +14,47 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
-The kernels for Debian stretch require some special CFLAGS settings which
-are only correctly defined when NOSTDINC_FLAGS is defined inside the
-execution of the Makefile via kbuild. But batman-adv sets it currently
-outside to insert compatibility include headers and compat-sources.
+The untagged vlan object is only destroyed when the interface is removed
+via the legacy sysfs interface. But it also has to be destroyed when the
+standard rtnl-link interface is used.
 
-This can be avoided by making the top Makefile kbuild compatible and
-redefining the NOSTDINC_FLAGS when kbuild include this Makefile. The actual
-build of the batman-adv module is then done by adding the subdirectory to
-obj-y.
-
+Fixes: 952cebb57518 ("batman-adv: add per VLAN interface attribute framework")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Cc: Antonio Quartulli <a@unstable.cc>
 ---
-v3:
- - append NOSTDINC_FLAGS with our own flags instead of overwriting it
-v2:
- - Fixed noise from other patches in context (should now apply cleanly on next)
- 
- Makefile | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ net/batman-adv/soft-interface.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/Makefile b/Makefile
-index 5d2c058..2568fb2 100644
---- a/Makefile
-+++ b/Makefile
-@@ -43,7 +43,7 @@ RM ?= rm -f
- REVISION= $(shell	if [ -d "$(PWD)/.git" ]; then \
- 				echo $$(git --git-dir="$(PWD)/.git" describe --always --dirty --match "v*" |sed 's/^v//' 2> /dev/null || echo "[unknown]"); \
- 			fi)
--export NOSTDINC_FLAGS := \
-+NOSTDINC_FLAGS += \
- 	-I$(PWD)/compat-include/ \
- 	-include $(PWD)/compat.h \
- 	$(CFLAGS)
-@@ -52,8 +52,12 @@ ifneq ($(REVISION),)
- NOSTDINC_FLAGS += -DBATADV_SOURCE_VERSION=\"$(REVISION)\"
- endif
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 18b6d07..7527c06 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -1040,7 +1040,9 @@ void batadv_softif_destroy_sysfs(struct net_device *soft_iface)
+ static void batadv_softif_destroy_netlink(struct net_device *soft_iface,
+ 					  struct list_head *head)
+ {
++	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
+ 	struct batadv_hard_iface *hard_iface;
++	struct batadv_softif_vlan *vlan;
  
-+obj-y += net/batman-adv/
+ 	list_for_each_entry(hard_iface, &batadv_hardif_list, list) {
+ 		if (hard_iface->soft_iface == soft_iface)
+@@ -1048,6 +1050,13 @@ static void batadv_softif_destroy_netlink(struct net_device *soft_iface,
+ 							BATADV_IF_CLEANUP_KEEP);
+ 	}
+ 
++	/* destroy the "untagged" VLAN */
++	vlan = batadv_softif_vlan_get(bat_priv, BATADV_NO_FLAGS);
++	if (vlan) {
++		batadv_softif_destroy_vlan(bat_priv, vlan);
++		batadv_softif_vlan_put(vlan);
++	}
 +
- BUILD_FLAGS := \
--	M=$(PWD)/net/batman-adv \
-+	M=$(PWD) \
-+	PWD=$(PWD) \
-+	REVISION=$(REVISION) \
- 	CONFIG_BATMAN_ADV=m \
- 	CONFIG_BATMAN_ADV_DEBUG=$(CONFIG_BATMAN_ADV_DEBUG) \
- 	CONFIG_BATMAN_ADV_BLA=$(CONFIG_BATMAN_ADV_BLA) \
-@@ -61,7 +65,7 @@ BUILD_FLAGS := \
- 	CONFIG_BATMAN_ADV_NC=$(CONFIG_BATMAN_ADV_NC) \
- 	CONFIG_BATMAN_ADV_MCAST=$(CONFIG_BATMAN_ADV_MCAST) \
- 	CONFIG_BATMAN_ADV_BATMAN_V=$(CONFIG_BATMAN_ADV_BATMAN_V) \
--	INSTALL_MOD_DIR=updates/net/batman-adv/
-+	INSTALL_MOD_DIR=updates/
- 
- all: config
- 	$(MAKE) -C $(KERNELPATH) $(BUILD_FLAGS)	modules
+ 	batadv_sysfs_del_meshif(soft_iface);
+ 	unregister_netdevice_queue(soft_iface, head);
+ }
 -- 
 2.8.1
 
