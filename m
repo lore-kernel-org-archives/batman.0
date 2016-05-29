@@ -1,9 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 29 May 2016 21:25:52 +0200
-Message-Id: <1464549952-27830-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: Fix ICMP RR ethernet
-	access after skb_linearize
+Date: Sun, 29 May 2016 22:33:39 +0200
+Message-Id: <1464553842-4680-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix use-after-free of
+	tt_req_node
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,31 +15,125 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The skb_linearize may reallocate the skb. This makes the calculated pointer
-for ethhdr invalid. But it the pointer is used later to fill in the RR
-field of the batadv_icmp_packet_rr packet.
+The tt_req_node is added and removed from a list inside a spinlock. But the
+locking is sometimes removed even when the object is still referenced and
+will be used later via this reference. For example batadv_send_tt_request
+can create a new tt_req_node (including add to a list) and later
+re-acquires the lock to remove it from the list and to free it. But at
+this time another context could have already removed this tt_req_node from
+the list and freed it.
 
-Instead re-evaluate eth_hdr after the skb_linearize+skb_cow to fix the
-pointer and avoid the invalid read.
+This can only be solved via reference counting to allow multiple contexts
+to handle the list manipulation while making sure that only the last
+context frees the list.
 
-Fixes: bb69cb678d37 ("batman-adv: generalize batman-adv icmp packet handling")
+Fixes: cea194d90b11 ("batman-adv: improved client announcement mechanism")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/routing.c | 1 +
- 1 file changed, 1 insertion(+)
+Cc: Matthias Schiffer <mschiffer@universe-factory.net>:
+this can also be interesting for batman-adv-legacy installations on servers
+with more than one core
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 0c0c30e..27e07dd 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -374,6 +374,7 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
- 		if (skb_cow(skb, ETH_HLEN) < 0)
- 			goto out;
+ net/batman-adv/translation-table.c | 27 +++++++++++++++++++++++----
+ net/batman-adv/types.h             |  2 ++
+ 2 files changed, 25 insertions(+), 4 deletions(-)
+
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 48adb91..46f90c5 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -2272,6 +2272,19 @@ static u32 batadv_tt_local_crc(struct batadv_priv *bat_priv,
+ 	return crc;
+ }
  
-+		ethhdr = eth_hdr(skb);
- 		icmph = (struct batadv_icmp_header *)skb->data;
- 		icmp_packet_rr = (struct batadv_icmp_packet_rr *)icmph;
- 		if (icmp_packet_rr->rr_cur >= BATADV_RR_LEN)
++/**
++ * batadv_tt_req_node_release - free tt_req node entry
++ * @ref: kref pointer of the tt req_node entry
++ */
++static void batadv_tt_req_node_release(struct kref *ref)
++{
++	struct batadv_tt_req_node *node;
++
++	node = container_of(ref, struct batadv_tt_req_node, refcount);
++
++	kfree(node);
++}
++
+ static void batadv_tt_req_list_free(struct batadv_priv *bat_priv)
+ {
+ 	struct batadv_tt_req_node *node;
+@@ -2281,7 +2294,7 @@ static void batadv_tt_req_list_free(struct batadv_priv *bat_priv)
+ 
+ 	hlist_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
+ 		hlist_del_init(&node->list);
+-		kfree(node);
++		kref_put(&node->refcount, batadv_tt_req_node_release);
+ 	}
+ 
+ 	spin_unlock_bh(&bat_priv->tt.req_list_lock);
+@@ -2318,7 +2331,7 @@ static void batadv_tt_req_purge(struct batadv_priv *bat_priv)
+ 		if (batadv_has_timed_out(node->issued_at,
+ 					 BATADV_TT_REQUEST_TIMEOUT)) {
+ 			hlist_del_init(&node->list);
+-			kfree(node);
++			kref_put(&node->refcount, batadv_tt_req_node_release);
+ 		}
+ 	}
+ 	spin_unlock_bh(&bat_priv->tt.req_list_lock);
+@@ -2350,9 +2363,11 @@ batadv_tt_req_node_new(struct batadv_priv *bat_priv,
+ 	if (!tt_req_node)
+ 		goto unlock;
+ 
++	kref_init(&tt_req_node->refcount);
+ 	ether_addr_copy(tt_req_node->addr, orig_node->orig);
+ 	tt_req_node->issued_at = jiffies;
+ 
++	kref_get(&tt_req_node->refcount);
+ 	hlist_add_head(&tt_req_node->list, &bat_priv->tt.req_list);
+ unlock:
+ 	spin_unlock_bh(&bat_priv->tt.req_list_lock);
+@@ -2619,9 +2634,13 @@ out:
+ 		spin_lock_bh(&bat_priv->tt.req_list_lock);
+ 		/* hlist_del_init() verifies tt_req_node still is in the list */
+ 		hlist_del_init(&tt_req_node->list);
++		kref_put(&tt_req_node->refcount, batadv_tt_req_node_release);
+ 		spin_unlock_bh(&bat_priv->tt.req_list_lock);
+-		kfree(tt_req_node);
+ 	}
++
++	if (tt_req_node)
++		kref_put(&tt_req_node->refcount, batadv_tt_req_node_release);
++
+ 	kfree(tvlv_tt_data);
+ 	return ret;
+ }
+@@ -3057,7 +3076,7 @@ static void batadv_handle_tt_response(struct batadv_priv *bat_priv,
+ 		if (!batadv_compare_eth(node->addr, resp_src))
+ 			continue;
+ 		hlist_del_init(&node->list);
+-		kfree(node);
++		kref_put(&node->refcount, batadv_tt_req_node_release);
+ 	}
+ 
+ 	spin_unlock_bh(&bat_priv->tt.req_list_lock);
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 1e47fbe..d75beef 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1129,11 +1129,13 @@ struct batadv_tt_change_node {
+  * struct batadv_tt_req_node - data to keep track of the tt requests in flight
+  * @addr: mac address address of the originator this request was sent to
+  * @issued_at: timestamp used for purging stale tt requests
++ * @refcount: number of contexts the object is used by
+  * @list: list node for batadv_priv_tt::req_list
+  */
+ struct batadv_tt_req_node {
+ 	u8 addr[ETH_ALEN];
+ 	unsigned long issued_at;
++	struct kref refcount;
+ 	struct hlist_node list;
+ };
+ 
 -- 
 2.8.1
 
