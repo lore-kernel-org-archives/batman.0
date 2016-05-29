@@ -1,11 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 29 May 2016 14:50:25 +0200
-Message-Id: <1464526225-10178-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1464439110-3113-1-git-send-email-sven@narfation.org>
-References: <1464439110-3113-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 6/6] batman-adv: Avoid sysfs name collision
-	for netns moves
+Date: Sun, 29 May 2016 21:25:52 +0200
+Message-Id: <1464549952-27830-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: Fix ICMP RR ethernet
+	access after skb_linearize
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,78 +15,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The kobject_put is only removing the sysfs entry and corresponding entries
-when its reference counter becomes zero. This tends to lead to collisions
-when a device is moved between two different network namespaces because
-some of the sysfs files have to be removed first and then added again to
-the already moved sysfs entry.
+The skb_linearize may reallocate the skb. This makes the calculated pointer
+for ethhdr invalid. But it the pointer is used later to fill in the RR
+field of the batadv_icmp_packet_rr packet.
 
-    WARNING: CPU: 0 PID: 290 at lib/kobject.c:240 kobject_add_internal+0x5ec/0x8a0
-    kobject_add_internal failed for batman_adv with -EEXIST, don't try to register things with the same name in the same directory.
+Instead re-evaluate eth_hdr after the skb_linearize+skb_cow to fix the
+pointer and avoid the invalid read.
 
-But the caller of kobject_put can already remove the sysfs entry before it
-does the kobject_put. This removal is done even when the reference counter
-is not yet zero and thus avoids the problem.
-
+Fixes: bb69cb678d37 ("batman-adv: generalize batman-adv icmp packet handling")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Minor addition while testing the patchset with namespaces +
-CONFIG_DEBUG_KOBJECT_RELEASE=y
+ net/batman-adv/routing.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Idea was taken from bridge del_nbp(...)
-
- net/batman-adv/sysfs.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 9ca90d1..a146fcf 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -713,6 +713,8 @@ rem_attr:
- 	for (bat_attr = batadv_mesh_attrs; *bat_attr; ++bat_attr)
- 		sysfs_remove_file(bat_priv->mesh_obj, &((*bat_attr)->attr));
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 0c0c30e..27e07dd 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -374,6 +374,7 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
+ 		if (skb_cow(skb, ETH_HLEN) < 0)
+ 			goto out;
  
-+	kobject_uevent(bat_priv->mesh_obj, KOBJ_REMOVE);
-+	kobject_del(bat_priv->mesh_obj);
- 	kobject_put(bat_priv->mesh_obj);
- 	bat_priv->mesh_obj = NULL;
- out:
-@@ -727,6 +729,8 @@ void batadv_sysfs_del_meshif(struct net_device *dev)
- 	for (bat_attr = batadv_mesh_attrs; *bat_attr; ++bat_attr)
- 		sysfs_remove_file(bat_priv->mesh_obj, &((*bat_attr)->attr));
- 
-+	kobject_uevent(bat_priv->mesh_obj, KOBJ_REMOVE);
-+	kobject_del(bat_priv->mesh_obj);
- 	kobject_put(bat_priv->mesh_obj);
- 	bat_priv->mesh_obj = NULL;
- }
-@@ -782,6 +786,8 @@ rem_attr:
- 	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr)
- 		sysfs_remove_file(vlan->kobj, &((*bat_attr)->attr));
- 
-+	kobject_uevent(vlan->kobj, KOBJ_REMOVE);
-+	kobject_del(vlan->kobj);
- 	kobject_put(vlan->kobj);
- 	vlan->kobj = NULL;
- out:
-@@ -801,6 +807,8 @@ void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
- 	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr)
- 		sysfs_remove_file(vlan->kobj, &((*bat_attr)->attr));
- 
-+	kobject_uevent(vlan->kobj, KOBJ_REMOVE);
-+	kobject_del(vlan->kobj);
- 	kobject_put(vlan->kobj);
- 	vlan->kobj = NULL;
- }
-@@ -1103,6 +1111,8 @@ out:
- 
- void batadv_sysfs_del_hardif(struct kobject **hardif_obj)
- {
-+	kobject_uevent(*hardif_obj, KOBJ_REMOVE);
-+	kobject_del(*hardif_obj);
- 	kobject_put(*hardif_obj);
- 	*hardif_obj = NULL;
- }
++		ethhdr = eth_hdr(skb);
+ 		icmph = (struct batadv_icmp_header *)skb->data;
+ 		icmp_packet_rr = (struct batadv_icmp_packet_rr *)icmph;
+ 		if (icmp_packet_rr->rr_cur >= BATADV_RR_LEN)
 -- 
 2.8.1
 
