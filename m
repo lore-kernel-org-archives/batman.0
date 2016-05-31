@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 31 May 2016 19:57:37 +0200
-Message-ID: <1971303.VRszsITxlU@bentobox>
-In-Reply-To: <56E2BCD8.9010200@users.sourceforge.net>
-References: <5307CAA2.8060406@users.sourceforge.net>
- <1655341.WCvHHx7pqD@bentobox> <56E2BCD8.9010200@users.sourceforge.net>
+Date: Tue, 31 May 2016 20:25:16 +0200
+Message-ID: <1488113.KCrKATXhSP@bentobox>
+In-Reply-To: <20160525152736.9031-2-a@unstable.cc>
+References: <20160525152736.9031-1-a@unstable.cc>
+ <20160525152736.9031-2-a@unstable.cc>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2819361.pbR7TpU6y1";
+Content-Type: multipart/signed; boundary="nextPart3105815.hTs3FIm0j7";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Less function calls in
-	batadv_is_ap_isolated() after error detection
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4 1/6] batman-adv: split routing API
+	data structure in subobjects
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,39 +20,48 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart2819361.pbR7TpU6y1
+--nextPart3105815.hTs3FIm0j7
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday 11 March 2016 13:40:56 SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Fri, 11 Mar 2016 13:10:20 +0100
+On Wednesday 25 May 2016 23:27:31 Antonio Quartulli wrote:
+> The routing API data structure contains several function
+> pointers that can easily be grouped together based on the
+> component they work with.
 > 
-> The variables "tt_local_entry" and "tt_global_entry" were eventually
-> checked again despite of a corresponding null pointer test before.
+> Split the API in subobjects in order to improve definition readability.
 > 
-> * Avoid this double check by reordering a function call sequence
->   and the better selection of jump targets.
+> At the same time, remove the "bat_" prefix from the API object and
+> its fields names. These are batman-adv private structs and there is no
+> need to always prepend such prefix, which only makes function invocations
+> much much longer.
 > 
-> * Omit the initialisation for these variables at the beginning then.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> Signed-off-by: Antonio Quartulli <a@unstable.cc>
 > ---
+
+My eyes don't want to read diffs anymore which only removes bat_ and replaces
+a "_" with a ".". I want more interesting stuff happening in my
+movies^Wpatches :)
 
 Reviewed-by: Sven Eckelmann <sven@narfation.org>
 
-See 
 
- * https://www.kernel.org/doc/Documentation/SubmittingPatches
-   Chapter 7: Centralized exiting of functions
- * https://plus.google.com/106378716002406849458/posts/dnanfhQ4mHQ
- * http://article.gmane.org/gmane.linux.documentation/28552
 
+Btw. this is rather unrelated to your patch. But the kerneldoc contains
+"(optional)" statements. Following functions don't have it (and didn't have it
+before your patch):
+
+ * iface.activate
+ * neigh.hardif_init
+ * orig.free
+ * orig.add_if
+ * orig.del_if
 
 Kind regards,
 	Sven
---nextPart2819361.pbR7TpU6y1
+--nextPart3105815.hTs3FIm0j7
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -60,20 +69,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXTdCRAAoJEF2HCgfBJntGO70P/iU7IgHqovdxmKQzXcXC0jRr
-cWc+CScCHwK4d63BfuYsA3zBjMFr8qv9o7X0o2frsY9qPTGt0z64nB+rtqUc5vwM
-SQ4BcgS9TtzaHmfwzQlnSTAXnrE+7zxRiiM/bUH15g94m4457Huy/4zpn7YfAntI
-1mRshwQoLxfnu6Sm79N167A/oD/Qwn0X/ud8AFfiWfM7aNs6pvoM6+niliYoIfrG
-mymftMyCPR75mfWYkqYa2MlZZj1UDuLdz6cjUJ09DtmQ3bKNRC/qDN/rOWS1yWge
-sxP2qmFChDsWIYOv0/dXTUiw1fmcw/LNRtCsJcGpypbu57gBqXlEMR4PE0wv7ECP
-jmJp2pU6tYc/NzqYKVObOVdM2DLLovyIEvtMWYqOZPTI3ZA2fZaItPhOddFRpNtl
-XtlwMBFOl5p4uZFPySCCzaRMXrK2LC5Kx9TBHEs1j+bWp3Et1VPsoeNEq160EPJl
-/xdXWXYn08RarLFuJk9VZxpKoHfD+KYYE1/XRSW5IXW2BbZLxJlEnOsVU8mIykBZ
-O7HK8e/bPz9OdI2B53epEfFC5dWKID7LJUDiCiQeibLAcxJ93HxQaxedmMatYkqG
-xylgvmgrvWehebTc4lj6/VEbG8ouKVWsjIGc4zq8iM7UMVScE0ZAWmaOlUqSYg/y
-fhVwFiqIjjghtPCVZ3Yq
-=ycIv
+iQIcBAABCgAGBQJXTdcMAAoJEF2HCgfBJntGJaYQANCP2i7+CSCnbWslOeSYqTql
+mfJmTusEGVIEY+khXeXbv9KVBJ+ll21WidmwFFMO8hiPyk0sTN0RyzunRXdKTYpE
+W1s9YxNw8/4n4gtSSWR7M6snXaHPD5ql5AblSNXYAxVdCK2vKJVjWxrSikCP7XMm
+MNniO1ZoJ5aYmxVuOyOlcBpC7kn+L5vB9JvlTNsnyK74klBupdCseq4sHcdyyFVT
+ZLYv96NN2YVVopzdkgzrZUZ3EZikMgbWTQKRjti570lDYLOQ3G1VauAOt+gKMdBN
+Iy6TfXhCQN/WCQVNMMY/jyq6gwQxwpOELBJeQyHtnLfDSNbn5IKHdGH003Hjg31w
+iO4mBx6W7UuWVD7yTxdz4HYb2vv7TOCQZBcTkW9zRcydPERJmRYHbtqa5CMQRsZk
+UtyLt0581VrBLtJ7cAq+ZSqwoKpGAlPmYcg0dxsVy85i95JtYHoa0o+4xV2/gZih
+x7bk6wpr1yfyrOPitqUlTmYt72wstT4mgGbh0nFL1PuGP2k/26nN/pwATVf8FkmL
+wlUsmL6Lxhl8sPEJ+MS675muSbuJCo9IIa1WUWCw9hqbH+OGNf6Ll0mitw8O6lk3
+cvPd61Y0jEAEsReTbJ3Eq/9mrpRMmr+6P/x2QmhyR2aza8AEKIRxttD/ihQjU4as
+X8vrRR3wNnDYhL8XJe9M
+=GTD6
 -----END PGP SIGNATURE-----
 
---nextPart2819361.pbR7TpU6y1--
+--nextPart3105815.hTs3FIm0j7--
 
