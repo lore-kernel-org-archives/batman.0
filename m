@@ -1,13 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 03 Jun 2016 11:05:12 +0200
-Message-ID: <1772143.J9E9Gy5DOZ@bentobox>
-In-Reply-To: <20160602230044.GM7555@decadent.org.uk>
-References: <20160602230044.GM7555@decadent.org.uk>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart13091256.tJHuBQ2bJD";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix double-put of vlan object
+Date: Sat,  4 Jun 2016 08:52:12 +0200
+Message-Id: <1465023132-19011-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH maint v3] batman-adv: Fix
+	use-after-free/double-free of tt_req_node
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,41 +15,177 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart13091256.tJHuBQ2bJD
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+The tt_req_node is added and removed from a list inside a spinlock. But the
+locking is sometimes removed even when the object is still referenced and
+will be used later via this reference. For example batadv_send_tt_request
+can create a new tt_req_node (including add to a list) and later
+re-acquires the lock to remove it from the list and to free it. But at this
+time another context could have already removed this tt_req_node from the
+list and freed it.
 
-On Friday 03 June 2016 00:00:44 Ben Hutchings wrote:
-> Fixes: a33d970d0b54 ("batman-adv: Fix reference counting of vlan object ...")
+CPU#0
 
-Btw the Fixes for the batman-adv.git is:
+    batadv_batman_skb_recv from net_device 0
+    -> batadv_iv_ogm_receive
+      -> batadv_iv_ogm_process
+        -> batadv_iv_ogm_process_per_outif
+          -> batadv_tvlv_ogm_receive
+            -> batadv_tvlv_ogm_receive
+              -> batadv_tvlv_containers_process
+                -> batadv_tvlv_call_handler
+                  -> batadv_tt_tvlv_ogm_handler_v1
+                    -> batadv_tt_update_orig
+                      -> batadv_send_tt_request
+                        -> batadv_tt_req_node_new
+                           spin_lock(...)
+                           allocates new tt_req_node and adds it to list
+                           spin_unlock(...)
+                           return tt_req_node
 
-Fixes: 20ca393adddf ("batman-adv: Fix reference counting of vlan object for tt_local_entry")
+CPU#1
 
-Kind regards,
-	Sven
---nextPart13091256.tJHuBQ2bJD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+    batadv_batman_skb_recv from net_device 1
+    -> batadv_recv_unicast_tvlv
+      -> batadv_tvlv_containers_process
+        -> batadv_tvlv_call_handler
+          -> batadv_tt_tvlv_unicast_handler_v1
+            -> batadv_handle_tt_response
+               spin_lock(...)
+               tt_req_node gets removed from list and is freed
+               spin_unlock(...)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+CPU#0
 
-iQIcBAABCgAGBQJXUUhIAAoJEF2HCgfBJntGsY4QAJF9LNreXCzFIkrQcQ3J+7RX
-sI+7BWXZmx7GSx+nXeLdxoQ9IucMEdE1a4mNx26Ce+74qL2VRR2xYawb+bBhDbzs
-/SAF2eb0Yvmq9e7qzlcvx6Hj1D+sHdeKK5r/NebM7U4s71eaT9MwpPeXl9YGjGKv
-S2i5Qfe23c4en0JXkrPUj5HSyyF43Y8UfkoVw1NEgfcdoApEJ4XBCR8GjWLUo+/q
-4BCpax7ZR902P7Nc3HvvuYjdyEPhmudC0hs8uElwn/IE4fZRBtx062TKOL+4eH2n
-EB3d67beJKl7leO1fVLnvdLbS1o91hBAgxC8u3Mt1WiP1HRf8MuMClyaiiTtP53R
-BcvylaNf+sjv8W+7txz0AePa7fF6Q81purBxJHwPaTkqQTQLbRzr8jJc09MqBgfw
-j0eNI3jWFgLscybXlRPuS5+Jp/tTRobB00jk0EvOclFSGG8fuLxXrqWLBc6rDJTS
-pGIe4qdAoo/BWZZL9dV110P/SuA8pT02mSEt9pwRqYw77aSdwjEGmnez2MRlKdqD
-AwLrzZ42Hs4RG7fB+6kEooetu6eZx6GVRJedYzL6/mk2yQchsswLDfqaqfV2NXXT
-V5dMO+jojP3bbkK3nQYifZd0A0sGALtPNyaAlyD38TU8fyvqQPHDkVr2MmlPDiuO
-z7hICm3Zs9XVFHoyRjJc
-=/Z2l
------END PGP SIGNATURE-----
+                      <- returned to batadv_send_tt_request
+                         spin_lock(...)
+                         tt_req_node gets removed from list and is freed
+                         MEMORY CORRUPTION/SEGFAULT/...
+                         spin_unlock(...)
 
---nextPart13091256.tJHuBQ2bJD--
+This can only be solved via reference counting to allow multiple contexts
+to handle the list manipulation while making sure that only the last
+context holding a reference will free the object.
+
+Fixes: cea194d90b11 ("batman-adv: improved client announcement mechanism")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Tested-by: Martin Weinelt <martin@darmstadt.freifunk.net>
+---
+v3:
+ - add wrapper function batadv_tt_req_node_put for kref_put(....)
+v2:
+ - fixed list->object in commit message
+ - add example what could have gone wrong in commit message
+---
+ net/batman-adv/translation-table.c | 37 +++++++++++++++++++++++++++++++++----
+ net/batman-adv/types.h             |  2 ++
+ 2 files changed, 35 insertions(+), 4 deletions(-)
+
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 48adb91..5234e53 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -2272,6 +2272,29 @@ static u32 batadv_tt_local_crc(struct batadv_priv *bat_priv,
+ 	return crc;
+ }
+ 
++/**
++ * batadv_tt_req_node_release - free tt_req node entry
++ * @ref: kref pointer of the tt req_node entry
++ */
++static void batadv_tt_req_node_release(struct kref *ref)
++{
++	struct batadv_tt_req_node *tt_req_node;
++
++	tt_req_node = container_of(ref, struct batadv_tt_req_node, refcount);
++
++	kfree(tt_req_node);
++}
++
++/**
++ * batadv_tt_req_node_put - decrement the tt_req_node refcounter and
++ *  possibly release it
++ * @tt_req_node: tt_req_node to be free'd
++ */
++static void batadv_tt_req_node_put(struct batadv_tt_req_node *tt_req_node)
++{
++	kref_put(&tt_req_node->refcount, batadv_tt_req_node_release);
++}
++
+ static void batadv_tt_req_list_free(struct batadv_priv *bat_priv)
+ {
+ 	struct batadv_tt_req_node *node;
+@@ -2281,7 +2304,7 @@ static void batadv_tt_req_list_free(struct batadv_priv *bat_priv)
+ 
+ 	hlist_for_each_entry_safe(node, safe, &bat_priv->tt.req_list, list) {
+ 		hlist_del_init(&node->list);
+-		kfree(node);
++		batadv_tt_req_node_put(node);
+ 	}
+ 
+ 	spin_unlock_bh(&bat_priv->tt.req_list_lock);
+@@ -2318,7 +2341,7 @@ static void batadv_tt_req_purge(struct batadv_priv *bat_priv)
+ 		if (batadv_has_timed_out(node->issued_at,
+ 					 BATADV_TT_REQUEST_TIMEOUT)) {
+ 			hlist_del_init(&node->list);
+-			kfree(node);
++			batadv_tt_req_node_put(node);
+ 		}
+ 	}
+ 	spin_unlock_bh(&bat_priv->tt.req_list_lock);
+@@ -2350,9 +2373,11 @@ batadv_tt_req_node_new(struct batadv_priv *bat_priv,
+ 	if (!tt_req_node)
+ 		goto unlock;
+ 
++	kref_init(&tt_req_node->refcount);
+ 	ether_addr_copy(tt_req_node->addr, orig_node->orig);
+ 	tt_req_node->issued_at = jiffies;
+ 
++	kref_get(&tt_req_node->refcount);
+ 	hlist_add_head(&tt_req_node->list, &bat_priv->tt.req_list);
+ unlock:
+ 	spin_unlock_bh(&bat_priv->tt.req_list_lock);
+@@ -2619,9 +2644,13 @@ out:
+ 		spin_lock_bh(&bat_priv->tt.req_list_lock);
+ 		/* hlist_del_init() verifies tt_req_node still is in the list */
+ 		hlist_del_init(&tt_req_node->list);
++		batadv_tt_req_node_put(tt_req_node);
+ 		spin_unlock_bh(&bat_priv->tt.req_list_lock);
+-		kfree(tt_req_node);
+ 	}
++
++	if (tt_req_node)
++		batadv_tt_req_node_put(tt_req_node);
++
+ 	kfree(tvlv_tt_data);
+ 	return ret;
+ }
+@@ -3057,7 +3086,7 @@ static void batadv_handle_tt_response(struct batadv_priv *bat_priv,
+ 		if (!batadv_compare_eth(node->addr, resp_src))
+ 			continue;
+ 		hlist_del_init(&node->list);
+-		kfree(node);
++		batadv_tt_req_node_put(node);
+ 	}
+ 
+ 	spin_unlock_bh(&bat_priv->tt.req_list_lock);
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 1e47fbe..d75beef 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1129,11 +1129,13 @@ struct batadv_tt_change_node {
+  * struct batadv_tt_req_node - data to keep track of the tt requests in flight
+  * @addr: mac address address of the originator this request was sent to
+  * @issued_at: timestamp used for purging stale tt requests
++ * @refcount: number of contexts the object is used by
+  * @list: list node for batadv_priv_tt::req_list
+  */
+ struct batadv_tt_req_node {
+ 	u8 addr[ETH_ALEN];
+ 	unsigned long issued_at;
++	struct kref refcount;
+ 	struct hlist_node list;
+ };
+ 
+-- 
+2.8.1
 
