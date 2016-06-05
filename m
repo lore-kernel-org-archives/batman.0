@@ -1,14 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 05 Jun 2016 10:22:19 +0200
-Message-ID: <1882846.Rj7N00o9iY@sven-desktop>
-In-Reply-To: <1464041662-639-1-git-send-email-linus.luessing@c0d3.blue>
-References: <1464041662-639-1-git-send-email-linus.luessing@c0d3.blue>
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Refactor forward packet
-	creation/destruction
+Date: Sun,  5 Jun 2016 20:46:59 +0200
+Message-Id: <1465152428-17299-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 01/10] alfred: vis: Fix parsing of
+	iface_status
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,28 +15,38 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tuesday 24 May 2016 00:14:22 Linus L=C3=BCssing wrote:
-[...]
-> Zombie patch - rotten & dead since 2013, but w{al,or}ks again!
+The content of batman_adv/iface_status ends with a newline. Thus
+register_interfaces has to make sure that it only compares the first line
+without the \n when comparing with the status string.
 
-Look! It's moving. It's alive. It's alive... It's alive, it's moving, i=
-t's=20
-alive, it's alive, it's alive, it's alive, IT'S ALIVE!
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ vis/vis.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-Thanks for resurrecting it :)
-
-[...]
-> +/**
-> + * batadv_forw_packet_alloc - Allocates a forwarding packet
-[...]
-> + * On success, returns the allocated forwarding packet. Otherwise re=
-turns
-> + * NULL.
-> + */
-
-Please change it to the format which kernel-doc can parse. "Return: ...=
-"
-
-Kind regards,
-=09Sven
+diff --git a/vis/vis.c b/vis/vis.c
+index 4d494bc..7eab781 100644
+--- a/vis/vis.c
++++ b/vis/vis.c
+@@ -257,6 +257,7 @@ static int register_interfaces(struct globals *globals)
+ 	DIR *iface_base_dir;
+ 	struct dirent *iface_dir;
+ 	char *path_buff, *file_content;
++	char *content_newline;
+ 
+ 	path_buff = malloc(PATH_BUFF_LEN);
+ 	if (!path_buff) {
+@@ -295,6 +296,10 @@ static int register_interfaces(struct globals *globals)
+ 		if (!file_content)
+ 			continue;
+ 
++		content_newline = strstr(file_content, "\n");
++		if (content_newline)
++			*content_newline = '\0';
++
+ 		if (strcmp(file_content, "active") == 0)
+ 			get_if_index(globals, iface_dir->d_name);
+ 
+-- 
+2.8.1
 
