@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon,  6 Jun 2016 23:05:48 +0200
-Message-Id: <1465247149-31013-4-git-send-email-sven@narfation.org>
+Date: Mon,  6 Jun 2016 23:05:49 +0200
+Message-Id: <1465247149-31013-5-git-send-email-sven@narfation.org>
 In-Reply-To: <1465247149-31013-1-git-send-email-sven@narfation.org>
 References: <1465247149-31013-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 4/5] batman-adv: Revert "postpone sysfs
-	removal when unregistering"
+Subject: [B.A.T.M.A.N.] [PATCH v2 5/5] batman-adv: Avoid sysfs name
+	collision for netns moves
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,203 +17,76 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Postponing the removal of the interface breaks the expected behavior of
-NETDEV_UNREGISTER and NETDEV_PRE_TYPE_CHANGE. This is especially
-problematic when an interface is removed and added in quick succession.
+The kobject_put is only removing the sysfs entry and corresponding entries
+when its reference counter becomes zero. This tends to lead to collisions
+when a device is moved between two different network namespaces because
+some of the sysfs files have to be removed first and then added again to
+the already moved sysfs entry.
 
-This reverts commit a33c882c1069 ("batman-adv: postpone sysfs removal when
-unregistering").
+    WARNING: CPU: 0 PID: 290 at lib/kobject.c:240 kobject_add_internal+0x5ec/0x8a0
+    kobject_add_internal failed for batman_adv with -EEXIST, don't try to register things with the same name in the same directory.
+
+But the caller of kobject_put can already remove the sysfs entry before it
+does the kobject_put. This removal is done even when the reference counter
+is not yet zero and thus avoids the problem.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v2:
  - rebased on top of current master
- - adjust commit message to use 12-char commit id + commit subject to reference
-   reverted commit
 
- net/batman-adv/hard-interface.c | 26 +++---------------------
- net/batman-adv/soft-interface.c | 44 ++++++++++++-----------------------------
- net/batman-adv/types.h          |  4 ----
- 3 files changed, 16 insertions(+), 58 deletions(-)
+ net/batman-adv/sysfs.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 6689656..6e4cc99 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -35,7 +35,6 @@
- #include <linux/rtnetlink.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
--#include <linux/workqueue.h>
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index 9ca90d1..a146fcf 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -713,6 +713,8 @@ rem_attr:
+ 	for (bat_attr = batadv_mesh_attrs; *bat_attr; ++bat_attr)
+ 		sysfs_remove_file(bat_priv->mesh_obj, &((*bat_attr)->attr));
  
- #include "bridge_loop_avoidance.h"
- #include "debugfs.h"
-@@ -624,25 +623,6 @@ out:
- 		batadv_hardif_put(primary_if);
++	kobject_uevent(bat_priv->mesh_obj, KOBJ_REMOVE);
++	kobject_del(bat_priv->mesh_obj);
+ 	kobject_put(bat_priv->mesh_obj);
+ 	bat_priv->mesh_obj = NULL;
+ out:
+@@ -727,6 +729,8 @@ void batadv_sysfs_del_meshif(struct net_device *dev)
+ 	for (bat_attr = batadv_mesh_attrs; *bat_attr; ++bat_attr)
+ 		sysfs_remove_file(bat_priv->mesh_obj, &((*bat_attr)->attr));
+ 
++	kobject_uevent(bat_priv->mesh_obj, KOBJ_REMOVE);
++	kobject_del(bat_priv->mesh_obj);
+ 	kobject_put(bat_priv->mesh_obj);
+ 	bat_priv->mesh_obj = NULL;
  }
+@@ -782,6 +786,8 @@ rem_attr:
+ 	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr)
+ 		sysfs_remove_file(vlan->kobj, &((*bat_attr)->attr));
  
--/**
-- * batadv_hardif_remove_interface_finish - cleans up the remains of a hardif
-- * @work: work queue item
-- *
-- * Free the parts of the hard interface which can not be removed under
-- * rtnl lock (to prevent deadlock situations).
-- */
--static void batadv_hardif_remove_interface_finish(struct work_struct *work)
--{
--	struct batadv_hard_iface *hard_iface;
--
--	hard_iface = container_of(work, struct batadv_hard_iface,
--				  cleanup_work);
--
--	batadv_debugfs_del_hardif(hard_iface);
--	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
--	batadv_hardif_put(hard_iface);
--}
--
- static struct batadv_hard_iface *
- batadv_hardif_add_interface(struct net_device *net_dev)
++	kobject_uevent(vlan->kobj, KOBJ_REMOVE);
++	kobject_del(vlan->kobj);
+ 	kobject_put(vlan->kobj);
+ 	vlan->kobj = NULL;
+ out:
+@@ -801,6 +807,8 @@ void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
+ 	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr)
+ 		sysfs_remove_file(vlan->kobj, &((*bat_attr)->attr));
+ 
++	kobject_uevent(vlan->kobj, KOBJ_REMOVE);
++	kobject_del(vlan->kobj);
+ 	kobject_put(vlan->kobj);
+ 	vlan->kobj = NULL;
+ }
+@@ -1103,6 +1111,8 @@ out:
+ 
+ void batadv_sysfs_del_hardif(struct kobject **hardif_obj)
  {
-@@ -675,8 +655,6 @@ batadv_hardif_add_interface(struct net_device *net_dev)
- 
- 	INIT_LIST_HEAD(&hard_iface->list);
- 	INIT_HLIST_HEAD(&hard_iface->neigh_list);
--	INIT_WORK(&hard_iface->cleanup_work,
--		  batadv_hardif_remove_interface_finish);
- 
- 	spin_lock_init(&hard_iface->neigh_list_lock);
- 
-@@ -725,7 +703,9 @@ static void batadv_hardif_remove_interface(struct batadv_hard_iface *hard_iface)
- 		return;
- 
- 	hard_iface->if_status = BATADV_IF_TO_BE_REMOVED;
--	queue_work(batadv_event_workqueue, &hard_iface->cleanup_work);
-+	batadv_debugfs_del_hardif(hard_iface);
-+	batadv_sysfs_del_hardif(&hard_iface->hardif_obj);
-+	batadv_hardif_put(hard_iface);
++	kobject_uevent(*hardif_obj, KOBJ_REMOVE);
++	kobject_del(*hardif_obj);
+ 	kobject_put(*hardif_obj);
+ 	*hardif_obj = NULL;
  }
- 
- void batadv_hardif_remove_interfaces(void)
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 7527c06..216ac03 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -39,6 +39,7 @@
- #include <linux/random.h>
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
-+#include <linux/rtnetlink.h>
- #include <linux/skbuff.h>
- #include <linux/slab.h>
- #include <linux/socket.h>
-@@ -46,7 +47,6 @@
- #include <linux/stddef.h>
- #include <linux/string.h>
- #include <linux/types.h>
--#include <linux/workqueue.h>
- 
- #include "bat_algo.h"
- #include "bridge_loop_avoidance.h"
-@@ -747,34 +747,6 @@ static void batadv_set_lockdep_class(struct net_device *dev)
- }
- 
- /**
-- * batadv_softif_destroy_finish - cleans up the remains of a softif
-- * @work: work queue item
-- *
-- * Free the parts of the soft interface which can not be removed under
-- * rtnl lock (to prevent deadlock situations).
-- */
--static void batadv_softif_destroy_finish(struct work_struct *work)
--{
--	struct batadv_softif_vlan *vlan;
--	struct batadv_priv *bat_priv;
--	struct net_device *soft_iface;
--
--	bat_priv = container_of(work, struct batadv_priv,
--				cleanup_work);
--	soft_iface = bat_priv->soft_iface;
--
--	/* destroy the "untagged" VLAN */
--	vlan = batadv_softif_vlan_get(bat_priv, BATADV_NO_FLAGS);
--	if (vlan) {
--		batadv_softif_destroy_vlan(bat_priv, vlan);
--		batadv_softif_vlan_put(vlan);
--	}
--
--	batadv_sysfs_del_meshif(soft_iface);
--	unregister_netdev(soft_iface);
--}
--
--/**
-  * batadv_softif_init_late - late stage initialization of soft interface
-  * @dev: registered network device to modify
-  *
-@@ -791,7 +763,6 @@ static int batadv_softif_init_late(struct net_device *dev)
- 
- 	bat_priv = netdev_priv(dev);
- 	bat_priv->soft_iface = dev;
--	INIT_WORK(&bat_priv->cleanup_work, batadv_softif_destroy_finish);
- 
- 	/* batadv_interface_stats() needs to be available as soon as
- 	 * register_netdevice() has been called
-@@ -1028,8 +999,19 @@ struct net_device *batadv_softif_create(struct net *net, const char *name)
- void batadv_softif_destroy_sysfs(struct net_device *soft_iface)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
-+	struct batadv_softif_vlan *vlan;
-+
-+	ASSERT_RTNL();
-+
-+	/* destroy the "untagged" VLAN */
-+	vlan = batadv_softif_vlan_get(bat_priv, BATADV_NO_FLAGS);
-+	if (vlan) {
-+		batadv_softif_destroy_vlan(bat_priv, vlan);
-+		batadv_softif_vlan_put(vlan);
-+	}
- 
--	queue_work(batadv_event_workqueue, &bat_priv->cleanup_work);
-+	batadv_sysfs_del_meshif(soft_iface);
-+	unregister_netdevice(soft_iface);
- }
- 
- /**
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 5d3f880..688bc64 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -132,7 +132,6 @@ struct batadv_hard_iface_bat_v {
-  * @rcu: struct used for freeing in an RCU-safe manner
-  * @bat_iv: per hard-interface B.A.T.M.A.N. IV data
-  * @bat_v: per hard-interface B.A.T.M.A.N. V data
-- * @cleanup_work: work queue callback item for hard-interface deinit
-  * @debug_dir: dentry for nc subdir in batman-adv directory in debugfs
-  * @neigh_list: list of unique single hop neighbors via this interface
-  * @neigh_list_lock: lock protecting neigh_list
-@@ -152,7 +151,6 @@ struct batadv_hard_iface {
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- 	struct batadv_hard_iface_bat_v bat_v;
- #endif
--	struct work_struct cleanup_work;
- 	struct dentry *debug_dir;
- 	struct hlist_head neigh_list;
- 	/* neigh_list_lock protects: neigh_list */
-@@ -1013,7 +1011,6 @@ struct batadv_priv_bat_v {
-  * @forw_bcast_list_lock: lock protecting forw_bcast_list
-  * @tp_list_lock: spinlock protecting @tp_list
-  * @orig_work: work queue callback item for orig node purging
-- * @cleanup_work: work queue callback item for soft-interface deinit
-  * @primary_if: one of the hard-interfaces assigned to this mesh interface
-  *  becomes the primary interface
-  * @bat_algo_ops: routing algorithm used by this mesh interface
-@@ -1072,7 +1069,6 @@ struct batadv_priv {
- 	spinlock_t tp_list_lock; /* protects tp_list */
- 	atomic_t tp_num;
- 	struct delayed_work orig_work;
--	struct work_struct cleanup_work;
- 	struct batadv_hard_iface __rcu *primary_if;  /* rcu protected pointer */
- 	struct batadv_algo_ops *bat_algo_ops;
- 	struct hlist_head softif_vlan_list;
 -- 
 2.8.1
 
