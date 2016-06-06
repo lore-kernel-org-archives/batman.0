@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 07 Jun 2016 00:10:51 +0800
-Message-ID: <1608583.49ByqXbT05@voltaire>
-In-Reply-To: <20160521121756.27450-1-a@unstable.cc>
+Date: Tue, 07 Jun 2016 00:12:05 +0800
+Message-ID: <5003171.nFJlRClX9B@voltaire>
+In-Reply-To: <1658184.bVJx44a0QY@sven-edge>
 References: <20160521121756.27450-1-a@unstable.cc>
+ <20160521121756.27450-2-a@unstable.cc> <1658184.bVJx44a0QY@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2758144.eKJSjKTS8u";
+Content-Type: multipart/signed; boundary="nextPart2127641.Ss0CmTLRc4";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: remove useless forward
-	declarations
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: move include line at the
+	same place as other files
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,27 +22,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart2758144.eKJSjKTS8u
+--nextPart2127641.Ss0CmTLRc4
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday, May 21, 2016 20:17:55 Antonio Quartulli wrote:
-> If main.h is included, the batman-adv private forward declarations are
-> not needed anymore. Remove them.
+On Saturday, May 21, 2016 14:32:38 Sven Eckelmann wrote:
+> Signed by sven@narfation.org.	Show Details
 > 
-> Cc: Sven Eckelmann <sven@narfation.org>
-> Signed-off-by: Antonio Quartulli <a@unstable.cc>
-> ---
->  net/batman-adv/gateway_client.h | 1 -
->  net/batman-adv/icmp_socket.h    | 2 --
->  2 files changed, 3 deletions(-)
+> On Saturday 21 May 2016 20:17:56 Antonio Quartulli wrote:
+> > main.h is always included after the #ifdef guard except for
+> > bat_v_elp.h. Move it at the right place.
+> >
+> > Cc: Sven Eckelmann <sven@narfation.org>
+> > Signed-off-by: Antonio Quartulli <a@unstable.cc>
+> > ---
+> 
+> Good find
+> 
+> Reviewed-by: Sven Eckelmann <sven@narfation.org>
 
-Applied in revision 563823d.
+Applied in revision f47544c.
 
 Thanks,
 Marek
 
---nextPart2758144.eKJSjKTS8u
+--nextPart2127641.Ss0CmTLRc4
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -49,14 +54,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXVaCLAAoJEFNVTo/uthzAF0MH/RZXRGezsDTbVpH/s82qDTC1
-MIKEaneIGTLmeXLNw8PvBnQZXRtNpVDHhq4dGLsq4fDLOQj5Iapziu+G2I3Y8J8x
-IHDGYZYPztZ4kNzDdccgWhuoLJ2H8oUm8Timg7vWt8EuUBsEtyMXQnPX9Ko8LnQx
-GobQ4UpkTfiR8a5ZLWa/eEiUt8tIXXjyEyPWMBfkaWKEllbCBD9pA1blCBNdC4sh
-iyzpMgJt4890/U+VYCdZ7TC09Xk7htyoW5zS8Mqc6i8yX6rdcksf+XahQfkjgahP
-rZ5R1LLq9LnvYE8e4qzXvQ/e425DM3uDvqj99bNcs5Hsy7dhdlwt67FwdkAr2S8=
-=oWoj
+iQEcBAABCAAGBQJXVaDVAAoJEFNVTo/uthzAHU0H/30KsTnUG87fbhV/9B75xoKW
+dZzYwXxqKzp4v72arEVRg4ijknEI2NGirp6mx8qct+trwZ3a73Hx4ZzTsHoByNvo
+qm1XtqxyPKrvvginyYtYYEDy8KBW6MyAafKnO8Qc4GglW0manZWEYIKZqQC3hTBg
+XJqXUpxlfGHroAafc8nGH91odCSSECM6HoT7tzCIvycw0yRGyKtF6UdYiukiYLi5
+MMWG+/mc6bNqNa34jejxNB7nprb+zkTiZegwK9nNmUv/OkSU9qUfN8PJEnKJ93Xu
+PyAGQuXHdsLOzbaSJUjoYrlW7nziAY1XeLwBBAHkhNGXyIz0a4jPSm5XcBIk+Hw=
+=igU1
 -----END PGP SIGNATURE-----
 
---nextPart2758144.eKJSjKTS8u--
+--nextPart2127641.Ss0CmTLRc4--
 
