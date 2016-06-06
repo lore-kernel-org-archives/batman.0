@@ -1,10 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  5 Jun 2016 20:47:08 +0200
-Message-Id: <1465152428-17299-10-git-send-email-sven@narfation.org>
-In-Reply-To: <1465152428-17299-1-git-send-email-sven@narfation.org>
-References: <1465152428-17299-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 10/10] alfred: vis: Add support for netlink
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 06 Jun 2016 23:24:45 +0800
+Message-ID: <1579809.XPBnnFdxxn@voltaire>
+In-Reply-To: <1465023132-19011-1-git-send-email-sven@narfation.org>
+References: <1465023132-19011-1-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2737814.jyjDZgA0oY";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint v3] batman-adv: Fix
+	use-after-free/double-free of tt_req_node
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,285 +20,98 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The debugfs entries are only available on the main network namespace.
-All other network namespaces have to fallback to netlink to read the local
-translation table and the originator table.
+--nextPart2737814.jyjDZgA0oY
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- vis/vis.c | 219 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 217 insertions(+), 2 deletions(-)
+On Saturday, June 04, 2016 08:52:12 Sven Eckelmann wrote:
+> The tt_req_node is added and removed from a list inside a spinlock. But the
+> locking is sometimes removed even when the object is still referenced and
+> will be used later via this reference. For example batadv_send_tt_request
+> can create a new tt_req_node (including add to a list) and later
+> re-acquires the lock to remove it from the list and to free it. But at this
+> time another context could have already removed this tt_req_node from the
+> list and freed it.
+> 
+> CPU#0
+> 
+>     batadv_batman_skb_recv from net_device 0
+>     -> batadv_iv_ogm_receive
+>       -> batadv_iv_ogm_process
+>         -> batadv_iv_ogm_process_per_outif
+>           -> batadv_tvlv_ogm_receive
+>             -> batadv_tvlv_ogm_receive
+>               -> batadv_tvlv_containers_process
+>                 -> batadv_tvlv_call_handler
+>                   -> batadv_tt_tvlv_ogm_handler_v1
+>                     -> batadv_tt_update_orig
+>                       -> batadv_send_tt_request
+>                         -> batadv_tt_req_node_new
+>                            spin_lock(...)
+>                            allocates new tt_req_node and adds it to list
+>                            spin_unlock(...)
+>                            return tt_req_node
+> 
+> CPU#1
+> 
+>     batadv_batman_skb_recv from net_device 1
+>     -> batadv_recv_unicast_tvlv
+>       -> batadv_tvlv_containers_process
+>         -> batadv_tvlv_call_handler
+>           -> batadv_tt_tvlv_unicast_handler_v1
+>             -> batadv_handle_tt_response
+>                spin_lock(...)
+>                tt_req_node gets removed from list and is freed
+>                spin_unlock(...)
+> 
+> CPU#0
+> 
+>                       <- returned to batadv_send_tt_request
+>                          spin_lock(...)
+>                          tt_req_node gets removed from list and is freed
+>                          MEMORY CORRUPTION/SEGFAULT/...
+>                          spin_unlock(...)
+> 
+> This can only be solved via reference counting to allow multiple contexts
+> to handle the list manipulation while making sure that only the last
+> context holding a reference will free the object.
+> 
+> Fixes: cea194d90b11 ("batman-adv: improved client announcement mechanism")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Tested-by: Martin Weinelt <martin@darmstadt.freifunk.net>
+> ---
+> v3:
+>  - add wrapper function batadv_tt_req_node_put for kref_put(....)
+> v2:
+>  - fixed list->object in commit message
+>  - add example what could have gone wrong in commit message
+> ---
+>  net/batman-adv/translation-table.c | 37
+> +++++++++++++++++++++++++++++++++----
+> net/batman-adv/types.h             |  2 ++
+>  2 files changed, 35 insertions(+), 4 deletions(-)
 
-diff --git a/vis/vis.c b/vis/vis.c
-index bac451b..d6bac41 100644
---- a/vis/vis.c
-+++ b/vis/vis.c
-@@ -35,10 +35,18 @@
- #include <sys/socket.h>
- #include <sys/un.h>
- #include <unistd.h>
-+
-+#include "batman_adv.h"
-+#include "netlink.h"
- #include "debugfs.h"
- 
- static struct globals vis_globals;
- 
-+struct vis_netlink_opts {
-+	struct globals *globals;
-+	struct nlquery_opts query_opts;
-+};
-+
- static char *read_file(char *fname)
- {
- 	FILE *fp;
-@@ -163,6 +171,45 @@ static int get_if_index_byname(struct globals *globals, char *ifname)
- 	return i;
- }
- 
-+static int get_if_index_devindex(struct globals *globals, int devindex)
-+{
-+	struct iface_list_entry *i_entry;
-+	char *ifname;
-+	char ifnamebuf[IF_NAMESIZE];
-+	int i;
-+
-+	if (!devindex)
-+		return -1;
-+
-+	i = 0;
-+	list_for_each_entry(i_entry, &globals->iface_list, list) {
-+		if (i_entry->devindex == devindex)
-+			return i;
-+		i++;
-+	}
-+
-+	ifname = if_indextoname(devindex, ifnamebuf);
-+	if (!ifname)
-+		return -1;
-+
-+	i_entry = malloc(sizeof(*i_entry));
-+	if (!i_entry)
-+		return -1;
-+
-+	if (get_if_mac(ifname, i_entry->mac)) {
-+		free(i_entry);
-+		return -1;
-+	}
-+
-+	i_entry->devindex = devindex;
-+	strncpy(i_entry->name, ifname, sizeof(i_entry->name));
-+	/* just to be safe ... */
-+	i_entry->name[sizeof(i_entry->name) - 1] = 0;
-+	list_add_tail(&i_entry->list, &globals->iface_list);
-+
-+	return i;
-+}
-+
- static int alfred_open_sock(struct globals *globals)
- {
- 	struct sockaddr_un addr;
-@@ -189,7 +236,75 @@ static int alfred_open_sock(struct globals *globals)
- 	return 0;
- }
- 
--static int parse_transtable_local(struct globals *globals)
-+static const int parse_transtable_local_mandatory[] = {
-+	BATADV_ATTR_TT_ADDRESS,
-+};
-+
-+static int parse_transtable_local_netlink_cb(struct nl_msg *msg, void *arg)
-+{
-+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
-+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-+	struct nlquery_opts *query_opts = arg;
-+	struct vis_netlink_opts *opts;
-+	struct genlmsghdr *ghdr;
-+	struct vis_list_entry *v_entry;
-+	uint8_t *addr;
-+
-+	opts = container_of(query_opts, struct vis_netlink_opts,
-+			    query_opts);
-+
-+	if (!genlmsg_valid_hdr(nlh, 0))
-+		return NL_OK;
-+
-+	ghdr = nlmsg_data(nlh);
-+
-+	if (ghdr->cmd != BATADV_CMD_GET_TRANSTABLE_LOCAL)
-+		return NL_OK;
-+
-+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
-+		return NL_OK;
-+	}
-+
-+	if (missing_mandatory_attrs(attrs, parse_transtable_local_mandatory,
-+				    ARRAY_SIZE(parse_transtable_local_mandatory)))
-+		return NL_OK;
-+
-+	addr = nla_data(attrs[BATADV_ATTR_TT_ADDRESS]);
-+
-+	v_entry = malloc(sizeof(*v_entry));
-+	if (!v_entry)
-+		return NL_OK;
-+
-+	memcpy(v_entry->v.mac, addr, ETH_ALEN);
-+	v_entry->v.ifindex = 255;
-+	v_entry->v.qual = 0;
-+	list_add_tail(&v_entry->list, &opts->globals->entry_list);
-+
-+	return NL_OK;
-+}
-+
-+static int parse_transtable_local_netlink(struct globals *globals)
-+{
-+	struct vis_netlink_opts opts = {
-+		.globals = globals,
-+		.query_opts = {
-+			.err = 0,
-+		},
-+	};
-+	int ret;
-+
-+	ret = netlink_query_common(globals->interface,
-+				   BATADV_CMD_GET_TRANSTABLE_LOCAL,
-+			           parse_transtable_local_netlink_cb,
-+				   &opts.query_opts);
-+	if (ret < 0)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static int parse_transtable_local_debugfs(struct globals *globals)
- {
- 	char *fbuf;
- 	char *lptr, *tptr;
-@@ -241,6 +356,17 @@ static int parse_transtable_local(struct globals *globals)
- 	return 0;
- }
- 
-+static int parse_transtable_local(struct globals *globals)
-+{
-+	int ret;
-+
-+	ret = parse_transtable_local_netlink(globals);
-+	if (ret != EOPNOTSUPP)
-+		return ret;
-+
-+	return parse_transtable_local_debugfs(globals);
-+}
-+
- static void clear_lists(struct globals *globals)
- {
- 	struct vis_list_entry *v_entry, *v_entry_safe;
-@@ -325,8 +451,86 @@ err:
- 	return EXIT_FAILURE;
- }
- 
-+static const int parse_orig_list_mandatory[] = {
-+	BATADV_ATTR_ORIG_ADDRESS,
-+	BATADV_ATTR_TQ,
-+	BATADV_ATTR_HARD_IFINDEX,
-+};
- 
--static int parse_orig_list(struct globals *globals)
-+static int parse_orig_list_netlink_cb(struct nl_msg *msg, void *arg)
-+{
-+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
-+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-+	struct nlquery_opts *query_opts = arg;
-+	struct vis_netlink_opts *opts;
-+	struct genlmsghdr *ghdr;
-+	struct vis_list_entry *v_entry;
-+	uint8_t *orig;
-+	uint8_t tq;
-+	uint32_t hardif;
-+
-+	opts = container_of(query_opts, struct vis_netlink_opts,
-+			    query_opts);
-+
-+	if (!genlmsg_valid_hdr(nlh, 0))
-+		return NL_OK;
-+
-+	ghdr = nlmsg_data(nlh);
-+
-+	if (ghdr->cmd != BATADV_CMD_GET_ORIGINATORS)
-+		return NL_OK;
-+
-+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
-+		return NL_OK;
-+	}
-+
-+	if (missing_mandatory_attrs(attrs, parse_orig_list_mandatory,
-+				    ARRAY_SIZE(parse_orig_list_mandatory)))
-+		return NL_OK;
-+
-+	if (!attrs[BATADV_ATTR_FLAG_BEST])
-+		return NL_OK;
-+
-+	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
-+	tq = nla_get_u8(attrs[BATADV_ATTR_TQ]);
-+	hardif = nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]);
-+
-+	if (tq < 1)
-+		return NL_OK;
-+
-+	v_entry = malloc(sizeof(*v_entry));
-+	if (!v_entry)
-+		return NL_OK;
-+
-+	memcpy(v_entry->v.mac, orig, ETH_ALEN);
-+	v_entry->v.ifindex = get_if_index_devindex(opts->globals, hardif);
-+	v_entry->v.qual = tq;
-+	list_add_tail(&v_entry->list, &opts->globals->entry_list);
-+
-+	return NL_OK;
-+}
-+
-+static int parse_orig_list_netlink(struct globals *globals)
-+{
-+	struct vis_netlink_opts opts = {
-+		.globals = globals,
-+		.query_opts = {
-+			.err = 0,
-+		},
-+	};
-+	int ret;
-+
-+	ret = netlink_query_common(globals->interface,
-+				   BATADV_CMD_GET_ORIGINATORS,
-+			           parse_orig_list_netlink_cb, &opts.query_opts);
-+	if (ret < 0)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static int parse_orig_list_debugfs(struct globals *globals)
- {
- 	char *fbuf;
- 	char *lptr, *tptr;
-@@ -393,6 +597,17 @@ static int parse_orig_list(struct globals *globals)
- 	return 0;
- }
- 
-+static int parse_orig_list(struct globals *globals)
-+{
-+	int ret;
-+
-+	ret = parse_orig_list_netlink(globals);
-+	if (ret != EOPNOTSUPP)
-+		return ret;
-+
-+	return parse_orig_list_debugfs(globals);
-+}
-+
- static int vis_publish_data(struct globals *globals)
- {
- 	int len, ret;
--- 
-2.8.1
+Applied in revision c3fef3d.
+
+Thanks,
+Marek
+
+--nextPart2737814.jyjDZgA0oY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJXVZW9AAoJEFNVTo/uthzA+yMH/j5LygK+qVSEZUZOiVY0Og6o
+wjQOjiW1c3plpgyXLpiljX7xu6ryO36E2L0REKfL9rYb2nWwfBB1lI8Oy96Brr8P
+4pxqL0M6PvMvb3MrH/Vg317AOo1wdeJcj/hDbRElwB5+DcLlk0EqHCD6nrS4c0iP
+Nph72P9lFhD7bO6c9g/ltsTEVKyU1/swf1jcvScM4wWOqCWd+pmym8MGHj8ka4AA
+blN3/l0PQRWLZT7lavonMU8+TL4rpDpCug81ZGrWf2whozMR+Ttw9m+DcrDxByJj
+WDklZuQHyiBCdw9G3X1T0VYHwZccpxXCcKocHTTzBFqDC6O0RjIXPOaxz6v3z0U=
+=2q3/
+-----END PGP SIGNATURE-----
+
+--nextPart2737814.jyjDZgA0oY--
 
