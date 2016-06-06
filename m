@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 06 Jun 2016 23:46:08 +0800
-Message-ID: <1902724.Bv5SF6Mgqj@voltaire>
-In-Reply-To: <20160606154402.GM13158@prodigo>
-References: <1464439110-3113-1-git-send-email-sven@narfation.org>
- <20160606154402.GM13158@prodigo>
+Date: Mon, 06 Jun 2016 23:48:18 +0800
+Message-ID: <2294596.baiiXAKhcq@voltaire>
+In-Reply-To: <50e93c92-ab98-d1eb-5703-53f1d799f722@darmstadt.freifunk.net>
+References: <1464424368-18635-1-git-send-email-sven@narfation.org>
+ <50e93c92-ab98-d1eb-5703-53f1d799f722@darmstadt.freifunk.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2401882.Gt4OllkToA";
+Content-Type: multipart/signed; boundary="nextPart1929734.he7Ez029Kn";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: Clean up untagged vlan
-	when destroying via rtnl-link
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3] batman-adv: Fix build against recent
+	Debian Stretch kernels
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,32 +20,22 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart2401882.Gt4OllkToA
+--nextPart1929734.he7Ez029Kn
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, June 06, 2016 23:44:02 Antonio Quartulli wrote:
-> On Sat, May 28, 2016 at 02:38:26PM +0200, Sven Eckelmann wrote:
-> > The untagged vlan object is only destroyed when the interface is removed
-> > via the legacy sysfs interface. But it also has to be destroyed when the
-> > standard rtnl-link interface is used.
-> >
-> > 
-> >
-> > Fixes: 952cebb57518 ("batman-adv: add per VLAN interface attribute
-> > framework") Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> > Cc: Antonio Quartulli <a@unstable.cc>
+On Tuesday, May 31, 2016 09:07:58 Martin Weinelt wrote:
+> Tested-by: Martin Weinelt <martin@darmstadt.freifunk.net>
 > 
-> Acked-by: Antonio Quartulli <a@unstable.cc>
+> Thank you, this also fixes build on Debian Jessies 4.5 Backports Kernel.
 
-Applied in revision e721749.
+Applied in revision f8fd441.
 
 Thanks,
 Marek
 
---nextPart2401882.Gt4OllkToA
+--nextPart1929734.he7Ez029Kn
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +43,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXVZrAAAoJEFNVTo/uthzA8esIAJL8LLHodHaCgo3P5+PIxa+O
-5G2to80ReMsDaFYt5saKBEFzIms056m22bMj3w9fDYru45uCH2vD46bPcHn3QvAj
-Lv7KJ/1ErH/oW4VpKMDd4gf/Qr6Dm/cI24CdhIGQUNPqMIaQ8ycXpEvo8aG/ygFi
-/UtbS01jpyNb0+vXrJfMorQdM9/SPe0JqofITKqK+ugh8Tq5sBI8JcLkOvDPdSt4
-uHVtgWuIs4J/H+h5RHKbXgbiUPFT8+sOo+3quxhe2sP0ijvuzPMc8YGmxst/qYOE
-m8C5l5jID9WrSoS8TZ7U5jWJx+0lIY/oc3wVT0XTjKd5UfJErhq6GWBSMuhuQI8=
-=P6XQ
+iQEcBAABCAAGBQJXVZtCAAoJEFNVTo/uthzAbgkH/2KP7MYaCY2Y3xH6nDzbEX1i
+rXK/9UIbwYkHk/px5z5pI1RjkZtzl/hOtXu+lr7s1HtdBJ5KP9Yvj18JW7ao0A1M
+akuwzYVFSM0CBFi6i+rcaTfH6OVFVjo6LLxHp9PwG6jFcx1QuC5ZyRIaHAMBOs0c
+AoCEnPhHop5CENKSYSy6V+5+qcLVSt0c/uL0liRymk9KaU3bk4M/9odZcFpSbrgm
+ISa29COstIsroAP8b9jLs4BZ28+q3N3avrvEBP6OZ7aH7DAOmJp/mY6idF06ixVX
+rjh4rOeboEmoLbFucYTUai/Gvg1DoBDsKrdKAfoYz4gOyNX7BeHsqeQNB8bWAr4=
+=ew5Q
 -----END PGP SIGNATURE-----
 
---nextPart2401882.Gt4OllkToA--
+--nextPart1929734.he7Ez029Kn--
 
