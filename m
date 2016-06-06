@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 07 Jun 2016 00:03:29 +0800
-Message-ID: <12029471.2jTky0Y600@voltaire>
-In-Reply-To: <1463565532-13354-1-git-send-email-sven.eckelmann@open-mesh.com>
-References: <1463565532-13354-1-git-send-email-sven.eckelmann@open-mesh.com>
+Date: Tue, 07 Jun 2016 00:05:07 +0800
+Message-ID: <3895665.ULVVK2VLiH@voltaire>
+In-Reply-To: <1463769739-3598-1-git-send-email-sven@narfation.org>
+References: <1463769739-3598-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5569507.LoRY52xtka";
+Content-Type: multipart/signed; boundary="nextPart8793224.9GfccKynVP";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Ignore auto-generated files
-	in compat-sources
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove unused vid local
+	variable in tt seq print
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,24 +19,26 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 
---nextPart5569507.LoRY52xtka
+--nextPart8793224.9GfccKynVP
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday, May 18, 2016 11:58:52 Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+On Friday, May 20, 2016 20:42:19 Sven Eckelmann wrote:
+> From: Simon Wunderlich <sw@simonwunderlich.de>
+> 
+> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  .gitignore | 2 ++
->  1 file changed, 2 insertions(+)
+>  net/batman-adv/translation-table.c | 2 --
+>  1 file changed, 2 deletions(-)
 
-Applied in revision 4833d11.
+Applied in revision 8f24d93.
 
 Thanks,
 Marek
 
---nextPart5569507.LoRY52xtka
+--nextPart8793224.9GfccKynVP
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -44,14 +46,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXVZ7RAAoJEFNVTo/uthzAYY8IAIq6LHOoufbMDx7qdNRFGTRN
-c129CbkY5heDu9xGc0RY7ErE0Nu+OoMyD2fs4ORzQ16GGtYqAskx2dMBvo2eKHHn
-bDGqyw+/m2TM4NxkZLAMioNm11U8PHEz+z54rsXj/DRQokqYmXSRLmFSjukDoXCB
-3q57++3XctCiIqx4a4CHoIdl1LNkoTvtPl0a2Y37swqJjwn0d0Sl8iWTgn7sf8/i
-tB1coieFGOVy3BwDkQw+UKw47hWuRRruoHNUV7F+z3USQiOyOOwAC9C81yP8azUZ
-zHcfecHDzXp4QykKvyuxHWfVFv8pVXrng8VMz7L+U9UgKjYCb8Jna3KL91vKk7w=
-=0cxe
+iQEcBAABCAAGBQJXVZ8zAAoJEFNVTo/uthzA4i4IAMO7+pjY5Wvkneh0W0J3ndDg
+z2Y01sbLotvpvl9xMgBbF0WZ6ZlVazbFjS1rul+caFePc2HwHu54AvRuN/lGfuTC
+gGyEdENKtGbjc76ERX5l0LT/Dx8Rf32T/Fx5FqDSoPmGUNmTONlcY+dL1GOMqGpm
+7v/m0k13uYv1B3DoZJvvoiaCNZVjpANsnZDJeXJ9fgkWaAVv7tgv1wOhrTy/Zyuh
+s8dtRBQ6GX8VTb3jpW9/nr9MhYs2Q2VZSPUeHeIX1I0olvJy5mKU36M549p13QHW
+q1BSG8obJ5X1PDjX28Jpx1af57R/nXLbC3QKEofSZTlycy30+ObhAq4eTx+Z7k8=
+=GZP/
 -----END PGP SIGNATURE-----
 
---nextPart5569507.LoRY52xtka--
+--nextPart8793224.9GfccKynVP--
 
