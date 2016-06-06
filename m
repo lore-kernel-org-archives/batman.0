@@ -1,14 +1,15 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 06 Jun 2016 23:35:22 +0800
-Message-ID: <3104087.nWbZjg80UC@voltaire>
-In-Reply-To: <1464549952-27830-1-git-send-email-sven@narfation.org>
-References: <1464549952-27830-1-git-send-email-sven@narfation.org>
+Return-Path: <a@unstable.cc>
+Date: Mon, 6 Jun 2016 23:44:02 +0800
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <20160606154402.GM13158@prodigo>
+References: <1464439110-3113-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4406306.xkeas7Rgxx";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH-maint] batman-adv: Fix ICMP RR ethernet
-	access after skb_linearize
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="gsH/BiyznuOL98BK"
+Content-Disposition: inline
+In-Reply-To: <1464439110-3113-1-git-send-email-sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/5] batman-adv: Clean up untagged vlan
+ when destroying via rtnl-link
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,47 +19,51 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart4406306.xkeas7Rgxx
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, May 29, 2016 21:25:52 Sven Eckelmann wrote:
-> The skb_linearize may reallocate the skb. This makes the calculated pointer
-> for ethhdr invalid. But it the pointer is used later to fill in the RR
-> field of the batadv_icmp_packet_rr packet.
-> 
-> Instead re-evaluate eth_hdr after the skb_linearize+skb_cow to fix the
-> pointer and avoid the invalid read.
-> 
-> Fixes: bb69cb678d37 ("batman-adv: generalize batman-adv icmp packet
-> handling") Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/routing.c | 1 +
->  1 file changed, 1 insertion(+)
+--gsH/BiyznuOL98BK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Applied in revision f6c80c2.
+On Sat, May 28, 2016 at 02:38:26PM +0200, Sven Eckelmann wrote:
+> The untagged vlan object is only destroyed when the interface is removed
+> via the legacy sysfs interface. But it also has to be destroyed when the
+> standard rtnl-link interface is used.
+>=20
+> Fixes: 952cebb57518 ("batman-adv: add per VLAN interface attribute framew=
+ork")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Cc: Antonio Quartulli <a@unstable.cc>
 
-Thanks,
-Marek
+Acked-by: Antonio Quartulli <a@unstable.cc>
 
---nextPart4406306.xkeas7Rgxx
+
+--=20
+Antonio Quartulli
+
+--gsH/BiyznuOL98BK
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXVZg6AAoJEFNVTo/uthzAgqcIALB7QqiE04bU1MuYHKLyqmQX
-o0FgLX5xamIJT2IjEZbXpJoc28M0HhcWvwM56WFTskjgPaLj1lwXWFfcplypBrce
-E0Y7mGZXqvmA+HohJhp1jJaeBh02rYfCx7AEyERwalklRmqJDvfiC3gfpGljFw10
-Ae+KMvUMiMf1Ikz46ltPKuAy2fdZLk5mJQpWWqfoGIqVKIAlHBA9oIL7eRc1tsQw
-iiErq26cTXYWi/d+DA61jA8jyNMR91uO9wrijbt3h2u5fzjcInJt1heNVW2w6j41
-zTgs6rRmTUGEliMc3gKeHBWPYWZIPjY4yjVfQQwf/Qfh6SoaZQsZaSxk8zaGH1k=
-=zydf
+iQIcBAEBCAAGBQJXVZpCAAoJEJ4aZjxxc6bKzhEQALzOC4gL7tZXH5L/YeA19t+c
+ebc0BhkIQgVKKGQ0qgAogJF5Z+LPWWUOPaluR5A9OWlQCDBcpP03u2G3gdp6CRYR
+K0ZdIdLaBONA/VFoltG/3VDzhuVA1yQM8rttFubWMQLe5CsObf4WeyDA+jcvKmn8
+o3JkKLzGYxpJY0uE8RS5fgqQWi++Xj+rbHq5sA2XsJtNxPeOYvZjNzAYNuWyiBGP
+7qyKrw3ZJ+WuR7PPQE5ufudgVa2/JgwedukzrBvOeTL13bvDV9BYWBFr426/TuJw
+KSnjpGmuTalpMKoAIZeIabNYiJhwibWqVIxEJtn+FSCzGL5RpLTfjvSs7R99nslR
+S1A7W/jw/4LfeR6y2kmcf7RWHlqNo/OpoXH537dpCW2ocUJ88gvxShrM9k3XepX3
+Dg9D562JdMzoehH7RKLKW1H3WOIJgfFgl3KcMkKu0tL+wQRhD5FhwrAX44foC/sC
+XkIvomYIw04aMCkH8P/JKYS+Ura8x520PpoErsu4rVfOI38/745vbJnTEKbpa6OQ
+uLXJtLffeSYAmb/W0QLYU+geRbdcwiaSll5v7kTcchHkaHcAfx5bCaUCSDuBPaCJ
+mYYuiIBMeXt2zbhOJPI64c1ZOBZ0v9qv4TQpgm7DkfHVx+lzpEOO579ANkVVcaj4
+s8apX3WuaGehCvBda66T
+=wHjU
 -----END PGP SIGNATURE-----
 
---nextPart4406306.xkeas7Rgxx--
-
+--gsH/BiyznuOL98BK--
