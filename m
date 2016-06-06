@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 07 Jun 2016 00:07:59 +0800
-Message-ID: <1516057.WKIYGthmEr@voltaire>
-In-Reply-To: <1463770180-4030-1-git-send-email-sven@narfation.org>
-References: <1463770180-4030-1-git-send-email-sven@narfation.org>
+Date: Tue, 07 Jun 2016 00:10:51 +0800
+Message-ID: <1608583.49ByqXbT05@voltaire>
+In-Reply-To: <20160521121756.27450-1-a@unstable.cc>
+References: <20160521121756.27450-1-a@unstable.cc>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart36650129.UEeEbDz11z";
+Content-Type: multipart/signed; boundary="nextPart2758144.eKJSjKTS8u";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: fix returned error in
-	batadv_netlink_tp_meter_cancel
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: remove useless forward
+	declarations
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,31 +19,29 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart36650129.UEeEbDz11z
+--nextPart2758144.eKJSjKTS8u
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, May 20, 2016 20:49:40 Sven Eckelmann wrote:
-> From: Simon Wunderlich <sw@simonwunderlich.de>
+On Saturday, May 21, 2016 20:17:55 Antonio Quartulli wrote:
+> If main.h is included, the batman-adv private forward declarations are
+> not needed anymore. Remove them.
 > 
-> The BATADV_CMD_TP_METER_CANCEL netlink cmd can for example fail when no
-> valid soft_iface can be found. This error should not only detected but
-> also be reported back to the caller.
-> 
-> Fixes: 98d7a766b645 ("batman-adv: throughput meter implementation")
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Cc: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Antonio Quartulli <a@unstable.cc>
 > ---
->  net/batman-adv/netlink.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  net/batman-adv/gateway_client.h | 1 -
+>  net/batman-adv/icmp_socket.h    | 2 --
+>  2 files changed, 3 deletions(-)
 
-Applied in revision f0aae6b.
+Applied in revision 563823d.
 
 Thanks,
 Marek
 
---nextPart36650129.UEeEbDz11z
+--nextPart2758144.eKJSjKTS8u
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -51,14 +49,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXVZ/fAAoJEFNVTo/uthzAXeAH/jvqS0Y/770YzvuwulOHkwzN
-jMs4PJXkQLm2Ikmc5mRTdt8dwcoBKgrwRaBJd/wAlEbwA8NcOOaejoNVI9caLLm/
-YQIyX4Bx2siZzsE/0ma2DxNrZ8DoKXWEvoJqtWS058rZttl7vg1Wa9Gg/5YeB7yG
-Ju2ibosiHozVtgacs55nrwLgV0CQesPcivAAQwFthsLCOUSKcIdm+Gm0bBwkH4eW
-gpUS8ktpnujLFUTNDmbUvHQlFBeik7C0NWmsWeMz6WcrF4IUnLsjq3AXwJ0+1YYL
-chdWXTXaKSI4+NRkJqenzW5ZCcmVu0UHhyleHXRPlUiX91LuHfnP+Xq9KBMrc2w=
-=C05m
+iQEcBAABCAAGBQJXVaCLAAoJEFNVTo/uthzAF0MH/RZXRGezsDTbVpH/s82qDTC1
+MIKEaneIGTLmeXLNw8PvBnQZXRtNpVDHhq4dGLsq4fDLOQj5Iapziu+G2I3Y8J8x
+IHDGYZYPztZ4kNzDdccgWhuoLJ2H8oUm8Timg7vWt8EuUBsEtyMXQnPX9Ko8LnQx
+GobQ4UpkTfiR8a5ZLWa/eEiUt8tIXXjyEyPWMBfkaWKEllbCBD9pA1blCBNdC4sh
+iyzpMgJt4890/U+VYCdZ7TC09Xk7htyoW5zS8Mqc6i8yX6rdcksf+XahQfkjgahP
+rZ5R1LLq9LnvYE8e4qzXvQ/e425DM3uDvqj99bNcs5Hsy7dhdlwt67FwdkAr2S8=
+=oWoj
 -----END PGP SIGNATURE-----
 
---nextPart36650129.UEeEbDz11z--
+--nextPart2758144.eKJSjKTS8u--
 
