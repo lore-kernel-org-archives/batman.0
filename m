@@ -1,15 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Thu, 09 Jun 2016 09:21:11 +0800
-Message-ID: <4442080.2LGSipZqar@voltaire>
-In-Reply-To: <55afb26665e840de9a3c2fb25f7c2ca0@Ek.usurf.usu.edu>
-References: <31c117a7ea164528a8d01a730c7dd9e8@Ek.usurf.usu.edu>
- <18b9499ee37643aea211c5921980a0d8@Ek.usurf.usu.edu>
- <55afb26665e840de9a3c2fb25f7c2ca0@Ek.usurf.usu.edu>
+Return-Path: <hannes.harms@tu-bs.de>
+References: <5757ED74.2010109@tu-bs.de> <3964079.xB3saelhBu@bentobox>
+From: "Harms, Hannes" <hannes.harms@tu-bs.de>
+Message-ID: <575972A3.8040505@tu-bs.de>
+Date: Thu, 9 Jun 2016 15:44:03 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2563317.SvzoYugkpx";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Non-batman Clients
+In-Reply-To: <3964079.xB3saelhBu@bentobox>
+Content-Type: text/plain; charset="windows-1252"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
+Subject: Re: [B.A.T.M.A.N.] How to compile BATMAN V against linux backports
+ cfg80211
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,40 +18,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2563317.SvzoYugkpx
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi Sven,
 
-On Wednesday, June 08, 2016 19:29:12 Jonathan Haws wrote:
-> So it seems to be that there is something up with unicasting from a 
-> non-batman client.  Thoughts?
+thanks for the advice.
+I managed somehow to integrate batman inside my backport tree
+and changed the Makefiles etc. Now the mesh is up and BATMAn V seems to=20
+work,
+at least I can ping other nodes and measure throughput.
 
-Do you client isolation enabled ? 
-https://www.open-mesh.org/projects/batman-adv/wiki/Ap-isolation
+But unfortunately now batctl always says that the mesh is not activated=20
+(no interface),
+which is obviously wrong. Maybe  I made somewhere a mistake while=20
+porting the code.
 
-That would achieve the desired effect.
+Can you guess what goes wrong?
 
-Cheers,
-Marek
+Best Regards,
+Hannes
 
---nextPart2563317.SvzoYugkpx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Am 08.06.2016 um 13:20 schrieb Sven Eckelmann:
+> On Wednesday 08 June 2016 12:03:32 Harms, Hannes wrote:
+>> Hi,
+>>
+>> I want to test the new batman V with throughput based metric, but I
+>> could not find out how to compile batman-adv against cfg80211 from linux
+>> backports.
+> You cannot build against the backports modules with the batman-adv Makefi=
+le.
+> This is only for systems which don't replace cfg80211 with an incompatible
+> version. But you should have a look at the OpenWrt compile rules (especia=
+lly
+> NOSTDINC_FLAGS [1]). It basically uses its own compat-hack header and uses
+> the rest from the backports compat layer + the new cfg80211 headers.
+>
+> Most important here is that you don't compile against cfg80211.h of your
+> kernel when your backports stuff uses complete different struct definitio=
+ns
+> (this is most likely what causes the crash on your system).
+>
+> Kind regards,
+> 	Sven
+>
+> [1] https://github.com/openwrt-routing/packages/blob/master/batman-adv/Ma=
+kefile
 
-iQEcBAABCAAGBQJXWMSHAAoJEFNVTo/uthzAjG8IAJsyXlt1ueqQiYOiAHlAThYn
-EhPDSPaq6ceXjmHZWPuQi4KTlv4e/naClk9t1gil9KjJ4z749gy2eDVXNMP7ijva
-Nd1DfUyRMdfI2P8sM//pqgsja/SYyPPDDMk0dRaJgKq5jfOvs7Yq37uYV2xq90IF
-p/ba0uMWIlT0q/baqaPoJcDfTGBG+TxZB6xmAxgiKxMR0fTifS7c8EXlptcDjEBx
-a3Ptx1CnE8dIwRMe7iChSY1xv17opLbYyT7Msp5CyR6hT+9RiT13iAxNYzQSw+RZ
-rFI69xuHH08boYsdjg9SvTTfZ8fKKNEQ4K6Crw+VVDmCHydP2fTbSRpg4jpG/9E=
-=NQ0h
------END PGP SIGNATURE-----
+--=20
+Dipl.-Ing. Hannes Harms
+Technische Universit=E4t Braunschweig
+Institut f=FCr mobile Maschinen und Nutzfahrzeuge
+Langer Kamp 19a
+D-38106 Braunschweig
 
---nextPart2563317.SvzoYugkpx--
+Durchwahl: +49 (0)531 391-7197
+E-Mail:  hannes.harms@tu-braunschweig.de
+http://www.tu-braunschweig.de/imn
 
