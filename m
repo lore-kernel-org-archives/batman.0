@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu,  9 Jun 2016 16:58:50 +0200
-Message-Id: <1465484333-8187-3-git-send-email-sw@simonwunderlich.de>
+Date: Thu,  9 Jun 2016 16:58:51 +0200
+Message-Id: <1465484333-8187-4-git-send-email-sw@simonwunderlich.de>
 In-Reply-To: <1465484333-8187-1-git-send-email-sw@simonwunderlich.de>
 References: <1465484333-8187-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH v9 2/5] batctl: add netlink dump function for
-	backbone tables
+Subject: [B.A.T.M.A.N.] [PATCH v9 3/5] batctl: Import alfred version of
+	debugfs.*
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,160 +17,104 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- batman_adv.h |  2 ++
- debug.c      |  1 +
- netlink.c    | 79 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- netlink.h    |  2 ++
- 4 files changed, 84 insertions(+)
+From: Sven Eckelmann <sven@narfation.org>
 
-diff --git a/batman_adv.h b/batman_adv.h
-index 778e238..37157d0 100644
---- a/batman_adv.h
-+++ b/batman_adv.h
-@@ -157,6 +157,7 @@ enum batadv_nl_attrs {
-  * @BATADV_CMD_GET_NEIGHBORS: Query list of neighbours
-  * @BATADV_CMD_GET_GATEWAYS: Query list of gateways
-  * @BATADV_CMD_GET_BLA_CLAIM: Query list of bridge loop avoidance claims
-+ * @BATADV_CMD_GET_BLA_BACKBONE: Query list of bridge loop avoidance backbones
-  * @__BATADV_CMD_AFTER_LAST: internal use
-  * @BATADV_CMD_MAX: highest used command number
-  */
-@@ -173,6 +174,7 @@ enum batadv_nl_commands {
- 	BATADV_CMD_GET_NEIGHBORS,
- 	BATADV_CMD_GET_GATEWAYS,
- 	BATADV_CMD_GET_BLA_CLAIM,
-+	BATADV_CMD_GET_BLA_BACKBONE,
- 	/* add new commands above here */
- 	__BATADV_CMD_AFTER_LAST,
- 	BATADV_CMD_MAX = __BATADV_CMD_AFTER_LAST - 1
-diff --git a/debug.c b/debug.c
-index 46f03da..ddabbfb 100644
---- a/debug.c
-+++ b/debug.c
-@@ -79,6 +79,7 @@ const struct debug_table_data batctl_debug_tables[BATCTL_TABLE_NUM] = {
- 		.opt_short = "bbt",
- 		.debugfs_name = "bla_backbone_table",
- 		.header_lines = 2,
-+		.netlink_fn = netlink_print_bla_backbone,
- 	},
- 	{
- 		.opt_long = "dat_cache",
-diff --git a/netlink.c b/netlink.c
-index d5cba14..b044046 100644
---- a/netlink.c
-+++ b/netlink.c
-@@ -223,6 +223,7 @@ static int info_callback(struct nl_msg *msg, void *arg)
- 			case BATADV_CMD_GET_TRANSTABLE_LOCAL:
- 				asprintf(&extra_info, ", TTVN: %u", ttvn);
- 				break;
-+			case BATADV_CMD_GET_BLA_BACKBONE:
- 			case BATADV_CMD_GET_BLA_CLAIM:
- 				asprintf(&extra_info, ", group id: 0x%04x",
- 					 bla_group_id);
-@@ -942,6 +943,74 @@ static int bla_claim_callback(struct nl_msg *msg, void *arg)
- 	return NL_OK;
- }
+The alfred version of debugfs.c and debugfs.h contains several cleanups
+regarding error message output, removal of unused declarations and usage of
+const buffers.
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ debugfs.c | 17 ++++++++++-------
+ debugfs.h |  4 +---
+ 2 files changed, 11 insertions(+), 10 deletions(-)
+
+diff --git a/debugfs.c b/debugfs.c
+index 3c58195..fc39322 100644
+--- a/debugfs.c
++++ b/debugfs.c
+@@ -33,6 +33,9 @@
+ static int debugfs_premounted;
+ static char debugfs_mountpoint[MAX_PATH+1];
  
-+static const int bla_backbone_mandatory[] = {
-+	BATADV_ATTR_BLA_VID,
-+	BATADV_ATTR_BLA_BACKBONE,
-+	BATADV_ATTR_BLA_CRC,
-+	BATADV_ATTR_LAST_SEEN_MSECS,
-+};
++static const char *debugfs_find_mountpoint(void);
++static int debugfs_valid_mountpoint(const char *debugfs);
 +
-+static int bla_backbone_callback(struct nl_msg *msg, void *arg)
-+{
-+	struct nlattr *attrs[BATADV_ATTR_MAX+1];
-+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-+	int last_seen_msecs, last_seen_secs;
-+	struct print_opts *opts = arg;
-+	struct bat_host *bat_host;
-+	struct genlmsghdr *ghdr;
-+	uint16_t backbone_crc;
-+	uint8_t *backbone;
-+	uint16_t vid;
-+
-+	if (!genlmsg_valid_hdr(nlh, 0)) {
-+		fputs("Received invalid data from kernel.\n", stderr);
-+		exit(1);
-+	}
-+
-+	ghdr = nlmsg_data(nlh);
-+
-+	if (ghdr->cmd != BATADV_CMD_GET_BLA_BACKBONE)
-+		return NL_OK;
-+
-+	if (nla_parse(attrs, BATADV_ATTR_MAX, genlmsg_attrdata(ghdr, 0),
-+		      genlmsg_len(ghdr), batadv_netlink_policy)) {
-+		fputs("Received invalid data from kernel.\n", stderr);
-+		exit(1);
-+	}
-+
-+	if (missing_mandatory_attrs(attrs, bla_backbone_mandatory,
-+				       ARRAY_SIZE(bla_backbone_mandatory))) {
-+		fputs("Missing attributes from kernel\n", stderr);
-+		exit(1);
-+	}
-+
-+	/* don't show own backbones */
-+	if (attrs[BATADV_ATTR_BLA_OWN])
-+		return NL_OK;
-+
-+	vid = nla_get_u16(attrs[BATADV_ATTR_BLA_VID]);
-+	backbone = nla_data(attrs[BATADV_ATTR_BLA_BACKBONE]);
-+	backbone_crc = nla_get_u16(attrs[BATADV_ATTR_BLA_CRC]);
-+
-+	last_seen_msecs = nla_get_u32(attrs[BATADV_ATTR_LAST_SEEN_MSECS]);
-+	last_seen_secs = last_seen_msecs / 1000;
-+	last_seen_msecs = last_seen_msecs % 1000;
-+
-+	bat_host = bat_hosts_find_by_mac((char *)backbone);
-+	if (!(opts->read_opt & USE_BAT_HOSTS) || !bat_host)
-+		printf("%02x:%02x:%02x:%02x:%02x:%02x ",
-+		       backbone[0], backbone[1], backbone[2],
-+		       backbone[3], backbone[4], backbone[5]);
-+	else
-+		printf("%17s ", bat_host->name);
-+
-+	printf("on %5d %4i.%03is (0x%04x)\n",
-+	       BATADV_PRINT_VID(vid), last_seen_secs, last_seen_msecs,
-+	       backbone_crc);
-+
-+	return NL_OK;
-+}
-+
- static int netlink_print_common(char *mesh_iface, char *orig_iface,
- 				int read_opt, float orig_timeout,
- 				float watch_interval, const char *header,
-@@ -1112,3 +1181,13 @@ int netlink_print_bla_claim(char *mesh_iface, char *orig_iface, int read_opts,
- 				    BATADV_CMD_GET_BLA_CLAIM,
- 				    bla_claim_callback);
- }
-+
-+int netlink_print_bla_backbone(char *mesh_iface, char *orig_iface, int read_opts,
-+			       float orig_timeout, float watch_interval)
-+{
-+	return netlink_print_common(mesh_iface, orig_iface, read_opts,
-+				    orig_timeout, watch_interval,
-+				    "Originator           VID   last seen (CRC   )\n",
-+				    BATADV_CMD_GET_BLA_BACKBONE,
-+				    bla_backbone_callback);
-+}
-diff --git a/netlink.h b/netlink.h
-index 69f0958..5ff7ace 100644
---- a/netlink.h
-+++ b/netlink.h
-@@ -40,6 +40,8 @@ int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opt,
- 			   float orig_timeout, float watch_interval);
- int netlink_print_bla_claim(char *mesh_iface, char *orig_iface, int read_opt,
- 			    float orig_timeout, float watch_interval);
-+int netlink_print_bla_backbone(char *mesh_iface, char *orig_iface, int read_opt,
-+			       float orig_timeout, float watch_interval);
+ static const char *debugfs_known_mountpoints[] = {
+ 	"/sys/kernel/debug/",
+ 	"/debug/",
+@@ -40,7 +43,8 @@ static const char *debugfs_known_mountpoints[] = {
+ };
  
- extern struct nla_policy batadv_netlink_policy[];
+ /* construct a full path to a debugfs element */
+-int debugfs_make_path(const char *fmt, char *mesh_iface, char *buffer, int size)
++int debugfs_make_path(const char *fmt, const char *mesh_iface, char *buffer,
++		      int size)
+ {
+ 	if (strlen(debugfs_mountpoint) == 0) {
+ 		buffer[0] = '\0';
+@@ -53,14 +57,14 @@ int debugfs_make_path(const char *fmt, char *mesh_iface, char *buffer, int size)
+ static int debugfs_found;
  
+ /* find the path to the mounted debugfs */
+-const char *debugfs_find_mountpoint(void)
++static const char *debugfs_find_mountpoint(void)
+ {
+ 	const char **ptr;
+ 	char type[100];
+ 	FILE *fp;
+ 
+ 	if (debugfs_found)
+-		return (const char *) debugfs_mountpoint;
++		return (const char *)debugfs_mountpoint;
+ 
+ 	ptr = debugfs_known_mountpoints;
+ 	while (*ptr) {
+@@ -68,7 +72,7 @@ const char *debugfs_find_mountpoint(void)
+ 			debugfs_found = 1;
+ 			strncpy(debugfs_mountpoint, *ptr,
+ 				sizeof(debugfs_mountpoint));
+-			debugfs_mountpoint[sizeof(debugfs_mountpoint) - 1] = '\0';
++			debugfs_mountpoint[sizeof(debugfs_mountpoint) - 1] = 0;
+ 			return debugfs_mountpoint;
+ 		}
+ 		ptr++;
+@@ -77,8 +81,7 @@ const char *debugfs_find_mountpoint(void)
+ 	/* give up and parse /proc/mounts */
+ 	fp = fopen("/proc/mounts", "r");
+ 	if (fp == NULL) {
+-		fprintf(stderr, "Error - can't open /proc/mounts for read: %s\n",
+-		       strerror(errno));
++		perror("Error - can't open /proc/mounts for read");
+ 		return NULL;
+ 	}
+ 
+@@ -101,7 +104,7 @@ const char *debugfs_find_mountpoint(void)
+ 
+ /* verify that a mountpoint is actually a debugfs instance */
+ 
+-int debugfs_valid_mountpoint(const char *debugfs)
++static int debugfs_valid_mountpoint(const char *debugfs)
+ {
+ 	struct statfs st_fs;
+ 
+diff --git a/debugfs.h b/debugfs.h
+index e608902..b4dc6bb 100644
+--- a/debugfs.h
++++ b/debugfs.h
+@@ -30,11 +30,9 @@
+ # define STR(x) _STR(x)
+ #endif
+ 
+-extern const char *debugfs_find_mountpoint(void);
+-extern int debugfs_valid_mountpoint(const char *debugfs);
+ extern int debugfs_valid_entry(const char *path);
+ extern char *debugfs_mount(const char *mountpoint);
+-extern int debugfs_make_path(const char *fmt, char *mesh_iface,
++extern int debugfs_make_path(const char *fmt, const char *mesh_iface,
+ 			     char *buffer, int size);
+ 
+ #endif /* __DEBUGFS_H__ */
 -- 
 2.8.1
 
