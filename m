@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu,  9 Jun 2016 16:58:51 +0200
-Message-Id: <1465484333-8187-4-git-send-email-sw@simonwunderlich.de>
+Date: Thu,  9 Jun 2016 16:58:52 +0200
+Message-Id: <1465484333-8187-5-git-send-email-sw@simonwunderlich.de>
 In-Reply-To: <1465484333-8187-1-git-send-email-sw@simonwunderlich.de>
 References: <1465484333-8187-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH v9 3/5] batctl: Import alfred version of
-	debugfs.*
+Subject: [B.A.T.M.A.N.] [PATCH v9 4/5] batctl: Split translate_mac from
+	debugfs backend
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,102 +19,135 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The alfred version of debugfs.c and debugfs.h contains several cleanups
-regarding error message output, removal of unused declarations and usage of
-const buffers.
+The debugfs tables cannot be used by the batctl in network namespaces.
+These have to use netlink. Thus the translate_mac should be less tightly
+linked to the debugfs tables to implement optional netlink support.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- debugfs.c | 17 ++++++++++-------
- debugfs.h |  4 +---
- 2 files changed, 11 insertions(+), 10 deletions(-)
+ functions.c | 46 +++++++++++++++++++++++++++++++++++-----------
+ functions.h |  3 ++-
+ 2 files changed, 37 insertions(+), 12 deletions(-)
 
-diff --git a/debugfs.c b/debugfs.c
-index 3c58195..fc39322 100644
---- a/debugfs.c
-+++ b/debugfs.c
-@@ -33,6 +33,9 @@
- static int debugfs_premounted;
- static char debugfs_mountpoint[MAX_PATH+1];
+diff --git a/functions.c b/functions.c
+index 5b76062..f994ced 100644
+--- a/functions.c
++++ b/functions.c
+@@ -26,6 +26,7 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <unistd.h>
++#include <stdbool.h>
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <string.h>
+@@ -371,7 +372,9 @@ out:
+ 	return res;
+ }
  
-+static const char *debugfs_find_mountpoint(void);
-+static int debugfs_valid_mountpoint(const char *debugfs);
+-struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac)
++static int translate_mac_debugfs(const char *mesh_iface,
++				 const struct ether_addr *mac,
++				 struct ether_addr *mac_out)
+ {
+ 	enum {
+ 		tg_start,
+@@ -381,26 +384,23 @@ struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac)
+ 	} pos;
+ 	char full_path[MAX_PATH+1];
+ 	char *debugfs_mnt;
+-	static struct ether_addr in_mac;
+-	struct ether_addr *mac_result, *mac_tmp;
++	struct ether_addr *mac_tmp;
+ 	FILE *f = NULL;
+ 	size_t len = 0;
+ 	char *line = NULL;
+ 	char *input, *saveptr, *token;
+ 	int line_invalid;
+-
+-	memcpy(&in_mac, mac, sizeof(in_mac));
+-	mac_result = &in_mac;
++	bool found = false;
+ 
+ 	debugfs_mnt = debugfs_mount(NULL);
+ 	if (!debugfs_mnt)
+-		goto out;
++		return -EOPNOTSUPP;
+ 
+ 	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/" DEBUG_TRANSTABLE_GLOBAL, mesh_iface, full_path, sizeof(full_path));
+ 
+ 	f = fopen(full_path, "r");
+ 	if (!f)
+-		goto out;
++		return -EOPNOTSUPP;
+ 
+ 	while (getline(&line, &len, f) != -1) {
+ 		line_invalid = 0;
+@@ -419,8 +419,8 @@ struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac)
+ 				break;
+ 			case tg_mac:
+ 				mac_tmp = ether_aton(token);
+-				if (!mac_tmp || memcmp(mac_tmp, &in_mac,
+-						       sizeof(in_mac)) != 0)
++				if (!mac_tmp || memcmp(mac_tmp, mac,
++						       ETH_ALEN) != 0)
+ 					line_invalid = 1;
+ 				else
+ 					pos = tg_via;
+@@ -434,7 +434,8 @@ struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac)
+ 				if (!mac_tmp) {
+ 					line_invalid = 1;
+ 				} else {
+-					mac_result = mac_tmp;
++					memcpy(mac_out, mac_tmp, ETH_ALEN);
++					found = true;
+ 					goto out;
+ 				}
+ 				break;
+@@ -449,6 +450,29 @@ out:
+ 	if (f)
+ 		fclose(f);
+ 	free(line);
 +
- static const char *debugfs_known_mountpoints[] = {
- 	"/sys/kernel/debug/",
- 	"/debug/",
-@@ -40,7 +43,8 @@ static const char *debugfs_known_mountpoints[] = {
- };
++	if (found)
++		return 0;
++	else
++		return -ENOENT;
++}
++
++struct ether_addr *translate_mac(const char *mesh_iface,
++				 const struct ether_addr *mac)
++{
++	struct ether_addr in_mac;
++	static struct ether_addr out_mac;
++	struct ether_addr *mac_result;
++
++	/* input mac has to be copied because it could be in the shared
++	 * ether_aton buffer
++	 */
++	memcpy(&in_mac, mac, sizeof(in_mac));
++	memcpy(&out_mac, mac, sizeof(out_mac));
++	mac_result = &out_mac;
++
++	translate_mac_debugfs(mesh_iface, &in_mac, mac_result);
++
+ 	return mac_result;
+ }
  
- /* construct a full path to a debugfs element */
--int debugfs_make_path(const char *fmt, char *mesh_iface, char *buffer, int size)
-+int debugfs_make_path(const char *fmt, const char *mesh_iface, char *buffer,
-+		      int size)
- {
- 	if (strlen(debugfs_mountpoint) == 0) {
- 		buffer[0] = '\0';
-@@ -53,14 +57,14 @@ int debugfs_make_path(const char *fmt, char *mesh_iface, char *buffer, int size)
- static int debugfs_found;
+diff --git a/functions.h b/functions.h
+index 2d29d52..1f311ca 100644
+--- a/functions.h
++++ b/functions.h
+@@ -40,7 +40,8 @@ int read_file(const char *dir, const char *path, int read_opt,
+ 	      float orig_timeout, float watch_interval, size_t header_lines);
+ int write_file(const char *dir, const char *fname, const char *arg1,
+ 	       const char *arg2);
+-struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac);
++struct ether_addr *translate_mac(const char *mesh_iface,
++				 const struct ether_addr *mac);
+ struct ether_addr *resolve_mac(const char *asc);
+ int vlan_get_link(const char *ifname, char **parent);
  
- /* find the path to the mounted debugfs */
--const char *debugfs_find_mountpoint(void)
-+static const char *debugfs_find_mountpoint(void)
- {
- 	const char **ptr;
- 	char type[100];
- 	FILE *fp;
- 
- 	if (debugfs_found)
--		return (const char *) debugfs_mountpoint;
-+		return (const char *)debugfs_mountpoint;
- 
- 	ptr = debugfs_known_mountpoints;
- 	while (*ptr) {
-@@ -68,7 +72,7 @@ const char *debugfs_find_mountpoint(void)
- 			debugfs_found = 1;
- 			strncpy(debugfs_mountpoint, *ptr,
- 				sizeof(debugfs_mountpoint));
--			debugfs_mountpoint[sizeof(debugfs_mountpoint) - 1] = '\0';
-+			debugfs_mountpoint[sizeof(debugfs_mountpoint) - 1] = 0;
- 			return debugfs_mountpoint;
- 		}
- 		ptr++;
-@@ -77,8 +81,7 @@ const char *debugfs_find_mountpoint(void)
- 	/* give up and parse /proc/mounts */
- 	fp = fopen("/proc/mounts", "r");
- 	if (fp == NULL) {
--		fprintf(stderr, "Error - can't open /proc/mounts for read: %s\n",
--		       strerror(errno));
-+		perror("Error - can't open /proc/mounts for read");
- 		return NULL;
- 	}
- 
-@@ -101,7 +104,7 @@ const char *debugfs_find_mountpoint(void)
- 
- /* verify that a mountpoint is actually a debugfs instance */
- 
--int debugfs_valid_mountpoint(const char *debugfs)
-+static int debugfs_valid_mountpoint(const char *debugfs)
- {
- 	struct statfs st_fs;
- 
-diff --git a/debugfs.h b/debugfs.h
-index e608902..b4dc6bb 100644
---- a/debugfs.h
-+++ b/debugfs.h
-@@ -30,11 +30,9 @@
- # define STR(x) _STR(x)
- #endif
- 
--extern const char *debugfs_find_mountpoint(void);
--extern int debugfs_valid_mountpoint(const char *debugfs);
- extern int debugfs_valid_entry(const char *path);
- extern char *debugfs_mount(const char *mountpoint);
--extern int debugfs_make_path(const char *fmt, char *mesh_iface,
-+extern int debugfs_make_path(const char *fmt, const char *mesh_iface,
- 			     char *buffer, int size);
- 
- #endif /* __DEBUGFS_H__ */
 -- 
 2.8.1
 
