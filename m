@@ -1,15 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 10 Jun 2016 10:15:32 +0200
-Message-ID: <2212926.bPcQB8rWAG@bentobox>
-In-Reply-To: <575972A3.8040505@tu-bs.de>
-References: <5757ED74.2010109@tu-bs.de> <3964079.xB3saelhBu@bentobox>
- <575972A3.8040505@tu-bs.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart73279775.DPv1v5Zn8Y";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] How to compile BATMAN V against linux backports
-	cfg80211
+Return-Path: <apape@phoenixcontact.com>
+From: Andreas Pape <apape@phoenixcontact.com>
+Message-ID: <1465557064-24406-1-git-send-email-apape@phoenixcontact.com>
+Date: Fri, 10 Jun 2016 13:10:58 +0200
+content-transfer-encoding: quoted-printable
+content-type: text/plain; charset="utf-8"
+Subject: [B.A.T.M.A.N.] [PATCH v5 0/6] Optimizations for setups running dat
+	and bla
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,56 +15,87 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "Harms, Hannes" <hannes.harms@tu-bs.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart73279775.DPv1v5Zn8Y
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This patchset introduces optimizations for batman-adv in setups having seve=
+ral
+gateways into a common (switched) Ethernet backbone network especially if d=
+at
+is additionally enabled.
 
-On Thursday 09 June 2016 15:44:03 Harms, Hannes wrote:
-[...]
-> But unfortunately now batctl always says that the mesh is not activated 
-> (no interface),
-> which is obviously wrong. Maybe  I made somewhere a mistake while 
-> porting the code.
-> 
-> Can you guess what goes wrong?
+Using the current implementation with bla and dat enabled, several problems
+can be observed in a real setup:
+1. Multiplication of ARP replies from dat enabled gateways and dat enabled
+mesh nodes leading to an "ARP reply storm" in the common backbone network.
+2. In rare corner cases bla does not fully prevent looping of unicast frames
+in the direction Backbone --> mesh --> backbone and looping of multicast
+frames in the direction mesh --> backbone --> mesh.
+The latter can lead to temporary confusion in the switched backbone resulti=
+ng
+in packet loss and communication timeouts.
 
-I don't even know what code you've ported. Was it batman-adv 2016.2? Maybe you
-are using an really old version and ran in an already fixed bug [1] which made
-it impossible to add down interfaces and later use them in B.A.T.M.A.N. V. Or
-there is something else because there is no "mesh is not activated" or "no
-interface" error in batctl/batman-adv and so I have to guess what you may
-have meant and what you have tried to execute.
+The observed problems are solved by introduction of additional rules for the
+dat handling, bla packet forwarding and bla claiming/unclaiming of clients.
+
+v5:
+ - changed function name to batadv_bla_check_claim
+ - put added include file in alphabetical order
+ - added check to exclude ip address 0.0.0.0 from snooping
+
+v4:
+ - removed unnecessary include in soft-interface.c
+ - solved issue with double-use and refcounting of pointers in routing.c
+
+v3:
+
+ - rebased patchset
+ - moved snooping of ip addresses for dat speed up into separate function
+ - removed "patch of a patch"
+ - removed automatic claiming during check of a claim
+ - fixed issues of the patchset not being compiled due to chosen batman
+=09options
 
 Kind regards,
-	Sven
+Andreas
 
-[1] https://www.open-mesh.org/issues/248
+Andreas Pape (6):
+  batman-adv: prevent multiple ARP replies sent by gateways if dat
+    enbled
+  batman-adv: speed up dat by snooping received ip traffic
+  batman-adv: prevent duplication of ARP replies when DAT is used
+  batman-adv: drop unicast packets from other backbone gw
+  batman-adv: changed debug messages for easier bla debugging
+  batman-adv: handle race condition for claims between gateways
 
---nextPart73279775.DPv1v5Zn8Y
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+ net/batman-adv/bridge_loop_avoidance.c |   87 ++++++++++++++++++++++++---
+ net/batman-adv/bridge_loop_avoidance.h |   11 ++++
+ net/batman-adv/distributed-arp-table.c |  102 ++++++++++++++++++++++++++++=
+++++
+ net/batman-adv/distributed-arp-table.h |    9 +++-
+ net/batman-adv/routing.c               |   25 +++++++-
+ net/batman-adv/soft-interface.c        |    3 +
+ 6 files changed, 225 insertions(+), 12 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
 
-iQIcBAABCgAGBQJXWnckAAoJEF2HCgfBJntGZMUP/19cfwFCrLM2nb5WEd7jwQYM
-4PvACEW1zV5kQF7TwMGmRTdwKXu4JUEJN4CXjWZxrlli3Y8wkMFHNx0v55Aa1ULn
-8hpQSRoKelN7k9ERXXYf2PIS/cJHZG6DnRG/bH+0uoJqmjUeUqdLKTAMSkHDAQwP
-/nJm4B80sakgdUP4G32UHBvho0tzpTWUauHWnHIqyL5t26ObOaS3hjxP9D/GJ01I
-c4eSALVRWN1e8dxJESog74m54XKMkouDYBnj4xu94uGmekFGTh8PP26//N4mRHum
-prfqq4z6/UjXSfAQvPxA6b9TuYG1LBCZaKS5lmaIFrTuVMikU8F8jAOnNm6s0ZcU
-wPqHcNbOV7HNgLvDoUxIWfmNCkjl5Yb9gefrUO9XrUbpMX2UbMbOMD5ONEuTmeR1
-oI/NyUOw4rpsoCDte7SzvsHqNdkOPU4rdVU+fGc0BUpyiQEo18jmh+VTOa/jkWyQ
-N8B+m7F7BNbJovb7bwaCx46JteGhv/fd4PnU0rAxdVzhz/+BvD5pGa3Cf4vqw0UQ
-ch4HQxMoyLMuiAQKvxkP6CbWI2D5n7i+qX1+riQhR3eFOsHj2hqa83B+AkMftqOD
-XW2vuV3KjDCTJVFukLdrBoW/nAqvS/+nuW67f9X9iFBK32Z7A7WU/kK3AYPUCeWk
-3BAG0JbSBwv/7VmRmH6H
-=j5md
------END PGP SIGNATURE-----
 
---nextPart73279775.DPv1v5Zn8Y--
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
 
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
+___________________________________________________________________
+Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
+nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
+rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
+d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
+ Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
