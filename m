@@ -1,9 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 11 Jun 2016 22:27:52 +0200
-Message-Id: <1465676873-21545-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [RFC 1/2] batman-adv: Fix speedy join in gateway
-	client mode
+Date: Sat, 11 Jun 2016 22:27:53 +0200
+Message-Id: <1465676873-21545-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1465676873-21545-1-git-send-email-sven@narfation.org>
+References: <1465676873-21545-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [RFC 2/2] batman-adv: Use broadcast as fallback for
+	gateway replies
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,15 +18,15 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: a@unstable.cc
 
-Speedy join only works when the received packet is either broadcast or an
-4addr unicast packet. Thus packets converted from broadcast to unicast via
-the gateway handling code have to be converted to 4addr packets to allow
-the receiving gateway server to add the sender address as temporary node to
-the translation table.
+The replies from gateway server to gateway client are usually sent via
+unicast packets. This only works when the destination address for the reply
+is already known to the translation table. But usually the gateway replies
+are in response to the first known contact from a device to the gateway
+server. So it can happen that the TT entry was not yet created.
 
-Not doing it will make batman-adv drop the DHCP response in many situations
-because it doesn't yet have the TT entry for the destination of the DHCP
-response.
+The gateway server has therefore use broadcast as fallback when the entry
+is not yet known. This makes the first responses from a DHCP server to a
+DHCP client more robost.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
@@ -32,24 +34,32 @@ This is completely untested. The RFC was submitted to better explain a
 problem to Antonio. This problems was noticed in real world setups but
 these patches were not yet tested in these setups.
 
- net/batman-adv/send.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/soft-interface.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 49836da..0e9445b 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -426,8 +426,8 @@ int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 	struct batadv_orig_node *orig_node;
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 216ac03..5829695 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -297,6 +297,18 @@ send:
+ 			if (forw_mode == BATADV_FORW_SINGLE)
+ 				do_bcast = false;
+ 		}
++
++		/* DHCP to from server to client should use unicast when TT
++		 * entry is available and use broadcast as fallback
++		 */
++		if (!mcast_single_orig && dhcp_rcp == BATADV_DHCP_TO_CLIENT) {
++			mcast_single_orig = batadv_transtable_search(bat_priv,
++								     NULL,
++								     dst_hint,
++								     vid);
++			if (!mcast_single_orig)
++				do_bcast = true;
++		}
+ 	}
  
- 	orig_node = batadv_gw_get_selected_orig(bat_priv);
--	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST, 0,
--				       orig_node, vid);
-+	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST_4ADDR,
-+				       BATADV_P_DATA, orig_node, vid);
- }
- 
- void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
+ 	batadv_skb_set_priority(skb, 0);
 -- 
 2.8.1
 
