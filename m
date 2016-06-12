@@ -1,11 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 11 Jun 2016 22:27:53 +0200
-Message-Id: <1465676873-21545-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1465676873-21545-1-git-send-email-sven@narfation.org>
-References: <1465676873-21545-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [RFC 2/2] batman-adv: Use broadcast as fallback for
-	gateway replies
+Return-Path: <a@unstable.cc>
+From: Antonio Quartulli <a@unstable.cc>
+Date: Sun, 12 Jun 2016 12:14:22 +0800
+Message-Id: <20160612041426.26339-1-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] [PATCH v5 0/6] GW code: make it algorithm-agnostic
+	and add B.A.T.M.A.N. V support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,50 +14,51 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: a@unstable.cc
+Cc: Antonio Quartulli <a@unstable.cc>
 
-The replies from gateway server to gateway client are usually sent via
-unicast packets. This only works when the destination address for the reply
-is already known to the translation table. But usually the gateway replies
-are in response to the first known contact from a device to the gateway
-server. So it can happen that the TT entry was not yet created.
+This cover letter only tries to recap the changes applied from the previous
+version. Please check the patch for major details.
 
-The gateway server has therefore use broadcast as fallback when the entry
-is not yet known. This makes the first responses from a DHCP server to a
-DHCP client more robost.
+Changes from v1:
+- rebased on top of latest master (some patches from the previous patchset were
+  merged already)
+- accidental change to the GW table header moved to right patch
+- remove bat_ prefix from API names
+- API subobjects redefined as proper struct instead of anonymous ones to fix
+  kernel-doc complaints
+- bonus kernel-doc added
+- missing include files added
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-This is completely untested. The RFC was submitted to better explain a
-problem to Antonio. This problems was noticed in real world setups but
-these patches were not yet tested in these setups.
+Changes from v2:
+- minimum default value of gw_sel_class restored to 1
 
- net/batman-adv/soft-interface.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+Changes from v3:
+- move "batman-adv: split routing API data structure in subobjects" as patch 1
+- check if algo_ops->gw.get_best_gw_node was implemented before calling it
+- add patch to disable GW mode knobs if API have not been implemented (6/6)
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 216ac03..5829695 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -297,6 +297,18 @@ send:
- 			if (forw_mode == BATADV_FORW_SINGLE)
- 				do_bcast = false;
- 		}
-+
-+		/* DHCP to from server to client should use unicast when TT
-+		 * entry is available and use broadcast as fallback
-+		 */
-+		if (!mcast_single_orig && dhcp_rcp == BATADV_DHCP_TO_CLIENT) {
-+			mcast_single_orig = batadv_transtable_search(bat_priv,
-+								     NULL,
-+								     dst_hint,
-+								     vid);
-+			if (!mcast_single_orig)
-+				do_bcast = true;
-+		}
- 	}
- 
- 	batadv_skb_set_priority(skb, 0);
+Changes from v4:
+- drop CONFIG_BATMAN_ADV_BATMAN_V dependency when declaring batadv_gw_node_get()
+  in gateway_client.h
+- rebased on top of current master
+
+Cheers,
+
+Antonio Quartulli (4):
+  batman-adv: make the GW selection class algorithm specific
+  batman-adv: make GW election code protocol specific
+  batman-adv: B.A.T.M.A.N. V - implement GW selection logic
+  batman-adv: disable sysfs knobs when GW-mode is not implemented
+
+ net/batman-adv/bat_iv_ogm.c     | 219 ++++++++++++++++++++++++++++++++++
+ net/batman-adv/bat_v.c          | 254 +++++++++++++++++++++++++++++++++++++++-
+ net/batman-adv/gateway_client.c | 222 +++++------------------------------
+ net/batman-adv/gateway_client.h |   5 +
+ net/batman-adv/gateway_common.c |   5 +-
+ net/batman-adv/sysfs.c          |  62 +++++++++-
+ net/batman-adv/types.h          |  23 ++++
+ 7 files changed, 592 insertions(+), 198 deletions(-)
+
 -- 
-2.8.1
+2.8.4
 
