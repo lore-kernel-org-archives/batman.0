@@ -1,11 +1,9 @@
-Return-Path: <a@unstable.cc>
-From: Antonio Quartulli <a@unstable.cc>
-Date: Sun, 12 Jun 2016 12:14:26 +0800
-Message-Id: <20160612041426.26339-5-a@unstable.cc>
-In-Reply-To: <20160612041426.26339-1-a@unstable.cc>
-References: <20160612041426.26339-1-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH v5 4/4] batman-adv: disable sysfs knobs when
-	GW-mode is not implemented
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 12 Jun 2016 10:43:19 +0200
+Message-Id: <1465721000-9174-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Fix speedy join in gateway
+	client mode
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,81 +14,38 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
 
-Now that the GW-mode code is algorithm specific, batman-adv expects the
-routing algorithm to implement some APIs to make it work.
+Speedy join only works when the received packet is either broadcast or an
+4addr unicast packet. Thus packets converted from broadcast to unicast via
+the gateway handling code have to be converted to 4addr packets to allow
+the receiving gateway server to add the sender address as temporary entry
+to the translation table.
 
-However, such APIs are not mandatory, therefore we might have algorithms
-not providing them. In this case all the sysfs knobs related to GW-mode
-should be deactivated to make sure that settings injected by the user
-for this feature are rejected.
+Not doing it will make the batman-adv gateway server drop the DHCP response
+in many situations because it doesn't yet have the TT entry for the
+destination of the DHCP response.
 
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
+Fixes: 9cbc67d9da47 ("batman-adv: change interface_rx to get orig node")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/sysfs.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+ net/batman-adv/send.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index bb43742..486fdd6 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -428,6 +428,13 @@ static ssize_t batadv_show_gw_mode(struct kobject *kobj, struct attribute *attr,
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
- 	int bytes_written;
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 49836da..0e9445b 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -426,8 +426,8 @@ int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 	struct batadv_orig_node *orig_node;
  
-+	/* GW mode is not available if the routing algorithm in use does not
-+	 * implement the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -ENOENT;
-+
- 	switch (atomic_read(&bat_priv->gw.mode)) {
- 	case BATADV_GW_MODE_CLIENT:
- 		bytes_written = sprintf(buff, "%s\n",
-@@ -455,6 +462,13 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
- 	char *curr_gw_mode_str;
- 	int gw_mode_tmp = -1;
+ 	orig_node = batadv_gw_get_selected_orig(bat_priv);
+-	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST, 0,
+-				       orig_node, vid);
++	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST_4ADDR,
++				       BATADV_P_DATA, orig_node, vid);
+ }
  
-+	/* toggling GW mode is allowed only if the routing algorithm in use
-+	 * provides the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -EINVAL;
-+
- 	if (buff[count - 1] == '\n')
- 		buff[count - 1] = '\0';
- 
-@@ -519,6 +533,13 @@ static ssize_t batadv_show_gw_sel_class(struct kobject *kobj,
- {
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
- 
-+	/* GW selection class is not available if the routing algorithm in use
-+	 * does not implement the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -ENOENT;
-+
- 	if (bat_priv->algo_ops->gw.show_sel_class)
- 		return bat_priv->algo_ops->gw.show_sel_class(bat_priv, buff);
- 
-@@ -531,6 +552,13 @@ static ssize_t batadv_store_gw_sel_class(struct kobject *kobj,
- {
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
- 
-+	/* setting the GW selection class is allowed only if the routing
-+	 * algorithm in use implements the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -EINVAL;
-+
- 	if (buff[count - 1] == '\n')
- 		buff[count - 1] = '\0';
- 
+ void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
 -- 
-2.8.4
+2.8.1
 
