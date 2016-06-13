@@ -1,15 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 13 Jun 2016 13:45:06 +0200
-Message-ID: <66630624.pJyiLFKJYK@bentobox>
-In-Reply-To: <20160612041426.26339-3-a@unstable.cc>
-References: <20160612041426.26339-1-a@unstable.cc>
- <20160612041426.26339-3-a@unstable.cc>
+Return-Path: <APape@phoenixcontact.com>
+In-Reply-To: <20160520135138.GV12056@prodigo.lan>
+References: <1462525107-19750-1-git-send-email-apape@phoenixcontact.com>
+ <1462525107-19750-3-git-send-email-apape@phoenixcontact.com>
+ <20160520135138.GV12056@prodigo.lan>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1722964.94OlFDHWk8";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v5 2/4] batman-adv: make GW election code
-	protocol specific
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OFD588994D.768F1C91-ONC1257FD1.00475329-C1257FD1.004B9309@phoenixcontact.com>
+Date: Mon, 13 Jun 2016 15:45:27 +0200
+content-transfer-encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3 2/6] batman-adv: speed up dat by
+ snooping received ip traffic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,50 +20,85 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: a@unstable.cc
 
---nextPart1722964.94OlFDHWk8
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+"B.A.T.M.A.N" <b.a.t.m.a.n-bounces@lists.open-mesh.org> schrieb am
+20.05.2016 15:51:38:
 
-On Sunday 12 June 2016 12:14:24 Antonio Quartulli wrote:
-> +static void batadv_iv_gw_print(struct batadv_priv *bat_priv,
-> +                              struct seq_file *seq)
-> +{
-> +       struct batadv_gw_node *gw_node;
-> +       int gw_count = 0;
-> +
-> +       seq_printf(seq,
-> +                  "      Gateway      (#/255)           Nexthop [outgoingIF]: advertised uplink bandwidth\n");
+> Von: Antonio Quartulli <a@unstable.cc>
+> An: The list for a Better Approach To Mobile Ad-hoc Networking
+> <b.a.t.m.a.n@lists.open-mesh.org>
+> Datum: 20.05.2016 15:52
+> Betreff: Re: [B.A.T.M.A.N.] [PATCHv3 2/6] batman-adv: speed up dat
+> by snooping received ip traffic
+> Gesendet von: "B.A.T.M.A.N" <b.a.t.m.a.n-bounces@lists.open-mesh.org>
+>
+> On Fri, May 06, 2016 at 10:58:23AM +0200, Andreas Pape wrote:
+> > Speeding up dat address lookup is achieved by snooping all incoming ip
+> > traffic. This especially increases the propability in bla setups that
+> > a gateway into a common backbone network already has a fitting dat
+entry
+> > to answer incoming ARP requests directly coming from the backbone
+> > network thus further reducing ARP traffic in the mesh.
+>
+> Any IP packet can't be sent if an ARP "handshake" has not been
+performed. This
+> means that when you are snooping an IP packet you have already snooped
+an ARP
+> packet slightly before. In which case do we really win something ?
+>
+In case of a static mesh ("static" in terms of non-moving mesh nodes and
+when the mesh nodes almost always use the same backbone gateways for a
+common
+wired backbone) we gain nothing by snooping every packet.
+The idea came up when I started experimenting with more dynamic setups
+where the mesh nodes move around with several gateways into a common
+wired backbone. In this case routing becomes more dynamically and it is
+not assured that the traffic from/for a mesh node is always routed via
+the same gateway which has already snooped the arp traffic.
 
-Maybe you wanted to use seq_puts here. At least you've used it in
-similar changes.
+> On top of that, don't you think that snooping *every* packet will badly
+affect
+> the performance ? Have you tried measuring the difference ?
+>
+I'm aware that this has an impact. I can try to measure the difference
+using
+my devices but these results of course are related to the hardware I use.
+I'm lacking experience if such results can be used to generalize a
+conclusion.
 
-Kind regards,
-	Sven
---nextPart1722964.94OlFDHWk8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+On the other hand this "feature" was not the root cause to post this
+patchset. More important for me is the prevention of the "arp reply
+storms" and the temporary loops between backbone network and the mesh
+because this generates trouble in my application.
+If it increases the propability for acceptance I don't care to remove
+the ip source address snooping from the patchset.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Best regards,
+Andreas
 
-iQIcBAABCgAGBQJXXpzCAAoJEF2HCgfBJntGMpwQAKwX3GIXTUVYEwZ2TsOM1L8p
-owo2HExOovJ6obdFGFZNjhGY/bMJUkbiPlV+DFD4/LU7/GtelbI6zPFZfWSHPCuD
-+Yb6IptpKvxiYsGZrbT6cE3fSoAtyrSmC84xFAM55MxsT0kYTHj4uU5Infzx7DIu
-ka3NrxFMIkwFnM7f2RRNwY4n8wdKBlaXfJQnrOt0K6HNGE2wihsfX783Gpq0yoTY
-rD6ZM3dWTuP1EZmfo5F4A6MFca6CxNV1yetUcNr2hp6mpEoae2O2YcpI+GU/CXQg
-jYR9T88i4lPu/E0UqBNTUk/CXbypI4JvWgY18vcoHf4sGuRamxI5QIMKh3eFS0gT
-BJD4A4+8gqD5WlDm1an4yZbjrrbIkYjHP16uI/BXTpAEANi99qfVnF5RZsUhRdsD
-pNYFWPQ9cdAhrlcGwiiVLz9XssDgY30FvDF/zcb9QMBsWLc0f4JbU4lZG7tt3cuq
-mzWWHZ7bKJ2lTiyPiinLQCyvknnjWpDg0A4w7bTRVa9LkiNeOxrWAQUInhZgBp15
-jBys4jsP9RS/Xp8VJqakl519MbSiF8igfiFT47pIuqylezurAp5BvM5bvb2D3wsJ
-tIoWiIC/HlAJTp2oSzWVNR3EyZZQ2ku0AoHAnfuV7NEuVDCwklPxA5Fb1ubvUG6g
-GiCnXS080eb3w3P/nHxu
-=bb2v
------END PGP SIGNATURE-----
 
---nextPart1722964.94OlFDHWk8--
 
+
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
+
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
+___________________________________________________________________
+Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
+nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
+rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
+d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
+ Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
