@@ -1,9 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 13 Jun 2016 07:41:29 +0200
-Message-Id: <1465796492-5039-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v5 1/4] Revert "batman-adv: Fix hardif
-	remove/add race"
+Date: Mon, 13 Jun 2016 07:41:30 +0200
+Message-Id: <1465796492-5039-2-git-send-email-sven@narfation.org>
+In-Reply-To: <1465796492-5039-1-git-send-email-sven@narfation.org>
+References: <1465796492-5039-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v5 2/4] batman-adv: Modify mesh_iface outside
+	sysfs context
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,163 +17,218 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The description given in the commit is misleading and is at least not true
-for sysfs. The sysfs file structure should instead be deleted immediately on
-rtnl notifications and be underlying objects should be removed later when
-all kobject_put were done for the object.
+The legacy sysfs interface to modify interfaces belonging to batman-adv
+is run inside a region holding s_lock. And to add a net_device, it has
+to also get the rtnl_lock. This is exactly the other way around than in
+other virtual net_devices and conflicts with netdevice notifier which
+executes inside rtnl_lock.
 
-This reverts commit 6b0485c758be ("batman-adv: Fix hardif remove/add race")
+The inverted lock situation is currently solved by executing the removal
+of netdevices via workqueue. The workqueue isn't executed inside
+rtnl_lock and thus can independently get the s_lock and the rtnl_lock.
+
+But this workaround fails when the netdevice notifier creates events in
+quick succession and the earlier triggered removal of a net_device isn't
+processed in the workqueue before the adding of the new netdevice (with
+same name) event is issued.
+
+Instead the legacy sysfs interface store events have to be enqueued in
+a workqueue to loose the s_lock. The worker is then free to get the
+required locks and the deadlock is avoided.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v5:
- - add this revert
+ - rebase on top of current master
+v4:
+ - rebase on top of current master
+v3:
+ - rebased on top of current master to fix conflicts with newest patches
+v2:
+ - rebased on top of current master to fix conflicts with newest patches
 ---
- net/batman-adv/debugfs.c        | 23 -----------------------
- net/batman-adv/debugfs.h        |  1 -
- net/batman-adv/hard-interface.c | 19 -------------------
- net/batman-adv/sysfs.c          | 17 -----------------
- net/batman-adv/sysfs.h          |  2 --
- 5 files changed, 62 deletions(-)
+ net/batman-adv/sysfs.c | 107 +++++++++++++++++++++++++++++++++++++------------
+ net/batman-adv/types.h |  13 ++++++
+ 2 files changed, 94 insertions(+), 26 deletions(-)
 
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index aea4133..1d68b6e 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -44,7 +44,6 @@
- #include "translation-table.h"
- 
- static struct dentry *batadv_debugfs;
--static atomic_t batadv_rename = ATOMIC_INIT(0);
- 
- static int batadv_algorithms_open(struct inode *inode, struct file *file)
- {
-@@ -348,28 +347,6 @@ void batadv_debugfs_del_hardif(struct batadv_hard_iface *hard_iface)
- 	}
- }
- 
--/**
-- * batadv_debugfs_rename_hardif - rename the base directory
-- * @hard_iface: hard interface which is renamed.
-- *
-- * The interface may be removed and then quickly added back
-- * again. Rename the old instance to something temporary and unique,
-- * so avoiding a name space clash if it does reappear before the deferred
-- * work completes the removal.
-- */
--void batadv_debugfs_rename_hardif(struct batadv_hard_iface *hard_iface)
--{
--	char new_name[32];
--
--	snprintf(new_name, sizeof(*new_name) - 1, "tmp-%d",
--		 atomic_inc_return(&batadv_rename));
--
--	if (batadv_debugfs && hard_iface->debug_dir) {
--		debugfs_rename(batadv_debugfs, hard_iface->debug_dir,
--			       batadv_debugfs, new_name);
--	}
--}
--
- int batadv_debugfs_add_meshif(struct net_device *dev)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(dev);
-diff --git a/net/batman-adv/debugfs.h b/net/batman-adv/debugfs.h
-index e7d19c1..1ab4e2e 100644
---- a/net/batman-adv/debugfs.h
-+++ b/net/batman-adv/debugfs.h
-@@ -34,7 +34,6 @@ int batadv_debugfs_add_meshif(struct net_device *dev);
- void batadv_debugfs_del_meshif(struct net_device *dev);
- int batadv_debugfs_add_hardif(struct batadv_hard_iface *hard_iface);
- void batadv_debugfs_del_hardif(struct batadv_hard_iface *hard_iface);
--void batadv_debugfs_rename_hardif(struct batadv_hard_iface *hard_iface);
- 
- #else
- 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index ccc7641..1f90808 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -706,23 +706,6 @@ out:
- 	return NULL;
- }
- 
--/**
-- * batadv_hardif_rename - rename the sysfs and debugfs
-- * @hard_iface: The hard interface to rename
-- *
-- * The sysfs and debugfs files cannot be removed until all users close
-- * them.  So the removal is deferred into a work queue. This however
-- * means if the interface comes back before the work queue runs, the
-- * files are still there, and so the create gives an EEXISTS error. To
-- * avoid this, rename them to a tempory name.
-- */
--static void batadv_hardif_rename(struct batadv_hard_iface *hard_iface)
--{
--	batadv_sysfs_rename_hardif(&hard_iface->hardif_obj,
--				   hard_iface->net_dev);
--	batadv_debugfs_rename_hardif(hard_iface);
--}
--
- static void batadv_hardif_remove_interface(struct batadv_hard_iface *hard_iface)
- {
- 	ASSERT_RTNL();
-@@ -736,8 +719,6 @@ static void batadv_hardif_remove_interface(struct batadv_hard_iface *hard_iface)
- 		return;
- 
- 	hard_iface->if_status = BATADV_IF_TO_BE_REMOVED;
--	batadv_hardif_rename(hard_iface);
--
- 	queue_work(batadv_event_workqueue, &hard_iface->cleanup_work);
- }
- 
 diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 9b2c28f..fe9ca94 100644
+index fe9ca94..8528959 100644
 --- a/net/batman-adv/sysfs.c
 +++ b/net/batman-adv/sysfs.c
-@@ -48,8 +48,6 @@
- #include "packet.h"
- #include "soft-interface.h"
+@@ -37,6 +37,7 @@
+ #include <linux/stddef.h>
+ #include <linux/string.h>
+ #include <linux/stringify.h>
++#include <linux/workqueue.h>
  
--static atomic_t batadv_rename = ATOMIC_INIT(0);
--
- static struct net_device *batadv_kobj_to_netdev(struct kobject *obj)
- {
- 	struct device *dev = container_of(obj->parent, struct device, kobj);
-@@ -1048,21 +1046,6 @@ out:
- 	return -ENOMEM;
+ #include "bridge_loop_avoidance.h"
+ #include "distributed-arp-table.h"
+@@ -828,31 +829,31 @@ static ssize_t batadv_show_mesh_iface(struct kobject *kobj,
+ 	return length;
  }
  
--void batadv_sysfs_rename_hardif(struct kobject **hardif_obj,
--				struct net_device *dev)
--{
--	char new_name[32];
--	int err;
--
--	snprintf(new_name, sizeof(*new_name) - 1, "tmp-%d",
--		 atomic_inc_return(&batadv_rename));
--
--	err = kobject_rename(*hardif_obj, new_name);
--	if (err)
--		batadv_err(dev, "Can't rename sysfs dir: %s/%s: %d\n",
--			   dev->name, new_name, err);
--}
--
- void batadv_sysfs_del_hardif(struct kobject **hardif_obj)
+-static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
+-				       struct attribute *attr, char *buff,
+-				       size_t count)
++/**
++ * batadv_store_mesh_iface_finish - store new hardif mesh_iface state
++ * @net_dev: netdevice to add/remove to/from batman-adv soft-interface
++ * @ifname: name of soft-interface to modify
++ *
++ * Changes the parts of the hard+soft interface which can not be modified under
++ * sysfs lock (to prevent deadlock situations).
++ *
++ * Return: 0 on success, 0 < on failure
++ */
++static int batadv_store_mesh_iface_finish(struct net_device *net_dev,
++					  char ifname[IFNAMSIZ])
  {
- 	kobject_put(*hardif_obj);
-diff --git a/net/batman-adv/sysfs.h b/net/batman-adv/sysfs.h
-index 64d3722..c76021b 100644
---- a/net/batman-adv/sysfs.h
-+++ b/net/batman-adv/sysfs.h
-@@ -48,8 +48,6 @@ void batadv_sysfs_del_meshif(struct net_device *dev);
- int batadv_sysfs_add_hardif(struct kobject **hardif_obj,
- 			    struct net_device *dev);
- void batadv_sysfs_del_hardif(struct kobject **hardif_obj);
--void batadv_sysfs_rename_hardif(struct kobject **hardif_obj,
--				struct net_device *dev);
- int batadv_sysfs_add_vlan(struct net_device *dev,
- 			  struct batadv_softif_vlan *vlan);
- void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
+-	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
+ 	struct net *net = dev_net(net_dev);
+ 	struct batadv_hard_iface *hard_iface;
+-	int status_tmp = -1;
+-	int ret = count;
++	int status_tmp;
++	int ret = 0;
++
++	ASSERT_RTNL();
+ 
+ 	hard_iface = batadv_hardif_get_by_netdev(net_dev);
+ 	if (!hard_iface)
+-		return count;
+-
+-	if (buff[count - 1] == '\n')
+-		buff[count - 1] = '\0';
+-
+-	if (strlen(buff) >= IFNAMSIZ) {
+-		pr_err("Invalid parameter for 'mesh_iface' setting received: interface name too long '%s'\n",
+-		       buff);
+-		batadv_hardif_put(hard_iface);
+-		return -EINVAL;
+-	}
++		return 0;
+ 
+-	if (strncmp(buff, "none", 4) == 0)
++	if (strncmp(ifname, "none", 4) == 0)
+ 		status_tmp = BATADV_IF_NOT_IN_USE;
+ 	else
+ 		status_tmp = BATADV_IF_I_WANT_YOU;
+@@ -861,15 +862,13 @@ static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
+ 		goto out;
+ 
+ 	if ((hard_iface->soft_iface) &&
+-	    (strncmp(hard_iface->soft_iface->name, buff, IFNAMSIZ) == 0))
++	    (strncmp(hard_iface->soft_iface->name, ifname, IFNAMSIZ) == 0))
+ 		goto out;
+ 
+-	rtnl_lock();
+-
+ 	if (status_tmp == BATADV_IF_NOT_IN_USE) {
+ 		batadv_hardif_disable_interface(hard_iface,
+ 						BATADV_IF_CLEANUP_AUTO);
+-		goto unlock;
++		goto out;
+ 	}
+ 
+ 	/* if the interface already is in use */
+@@ -877,15 +876,71 @@ static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
+ 		batadv_hardif_disable_interface(hard_iface,
+ 						BATADV_IF_CLEANUP_AUTO);
+ 
+-	ret = batadv_hardif_enable_interface(hard_iface, net, buff);
+-
+-unlock:
+-	rtnl_unlock();
++	ret = batadv_hardif_enable_interface(hard_iface, net, ifname);
+ out:
+ 	batadv_hardif_put(hard_iface);
+ 	return ret;
+ }
+ 
++/**
++ * batadv_store_mesh_iface_work - store new hardif mesh_iface state
++ * @work: work queue item
++ *
++ * Changes the parts of the hard+soft interface which can not be modified under
++ * sysfs lock (to prevent deadlock situations).
++ */
++static void batadv_store_mesh_iface_work(struct work_struct *work)
++{
++	struct batadv_store_mesh_work *store_work;
++	int ret;
++
++	store_work = container_of(work, struct batadv_store_mesh_work, work);
++
++	rtnl_lock();
++	ret = batadv_store_mesh_iface_finish(store_work->net_dev,
++					     store_work->soft_iface_name);
++	rtnl_unlock();
++
++	if (ret < 0)
++		pr_err("Failed to store new mesh_iface state %s for %s: %d\n",
++		       store_work->soft_iface_name, store_work->net_dev->name,
++		       ret);
++
++	dev_put(store_work->net_dev);
++	kfree(store_work);
++}
++
++static ssize_t batadv_store_mesh_iface(struct kobject *kobj,
++				       struct attribute *attr, char *buff,
++				       size_t count)
++{
++	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
++	struct batadv_store_mesh_work *store_work;
++
++	if (buff[count - 1] == '\n')
++		buff[count - 1] = '\0';
++
++	if (strlen(buff) >= IFNAMSIZ) {
++		pr_err("Invalid parameter for 'mesh_iface' setting received: interface name too long '%s'\n",
++		       buff);
++		return -EINVAL;
++	}
++
++	store_work = kmalloc(sizeof(*store_work), GFP_KERNEL);
++	if (!store_work)
++		return -ENOMEM;
++
++	dev_hold(net_dev);
++	INIT_WORK(&store_work->work, batadv_store_mesh_iface_work);
++	store_work->net_dev = net_dev;
++	strlcpy(store_work->soft_iface_name, buff,
++		sizeof(store_work->soft_iface_name));
++
++	queue_work(batadv_event_workqueue, &store_work->work);
++
++	return count;
++}
++
+ static ssize_t batadv_show_iface_status(struct kobject *kobj,
+ 					struct attribute *attr, char *buff)
+ {
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 0eeb68f..81de9be 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1562,4 +1562,17 @@ enum batadv_tvlv_handler_flags {
+ 	BATADV_TVLV_HANDLER_OGM_CALLED = BIT(2),
+ };
+ 
++/**
++ * struct batadv_store_mesh_work - Work queue item to detach add/del interface
++ *  from sysfs locks
++ * @net_dev: netdevice to add/remove to/from batman-adv soft-interface
++ * @soft_iface_name: name of soft-interface to modify
++ * @work: work queue item
++ */
++struct batadv_store_mesh_work {
++	struct net_device *net_dev;
++	char soft_iface_name[IFNAMSIZ];
++	struct work_struct work;
++};
++
+ #endif /* _NET_BATMAN_ADV_TYPES_H_ */
 -- 
 2.8.1
 
