@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 13 Jun 2016 13:12:52 +0200
-Message-ID: <3127928.zeFBqT8Kuq@bentobox>
+Date: Mon, 13 Jun 2016 13:26:31 +0200
+Message-ID: <1613308.eWzkVEsf7s@bentobox>
 In-Reply-To: <20160612041426.26339-4-a@unstable.cc>
 References: <20160612041426.26339-1-a@unstable.cc>
  <20160612041426.26339-4-a@unstable.cc>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart43114766.lnRbUGgHaP";
+Content-Type: multipart/signed; boundary="nextPart1855639.v8BCYeGMG9";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v5 3/4] batman-adv: B.A.T.M.A.N. V -
 	implement GW selection logic
@@ -22,29 +22,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart43114766.lnRbUGgHaP
+--nextPart1855639.v8BCYeGMG9
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
 On Sunday 12 June 2016 12:14:25 Antonio Quartulli wrote:
-> --- a/net/batman-adv/gateway_client.c
-> +++ b/net/batman-adv/gateway_client.c
-> @@ -215,6 +215,10 @@ void batadv_gw_election(struct batadv_priv *bat_priv)
->         if (!batadv_atomic_dec_not_zero(&bat_priv->gw.reselect) && curr_gw)
->                 goto out;
->  
-> +       /* if gw.reselect is set to 1 it means that a previous call to
-> +        * gw.is_eligible() said that we have a new best GW, therefore it can
-> +        * now be picked from the list and selected
-> +        */
->         next_gw = bat_priv->algo_ops->gw.get_best_gw_node(bat_priv);
+> +       if (orig_throughput < (gw_throughput + threshold))
+> +               goto out;
 
-I would guess that this should be either in patch 2/4 on in an extra patch. At
-least it is about nothing which is touched otherwise in this patch
+Possible overflow problem in batadv_v_gw_is_eligible. We don't
+know what the user will add here and what the gw_throughput is.
+
+We already had a similar problem in the BATMAN_IV gw selection
+code which resulted in weird gw selections. See f63c54bba31d
+("batman-adv: Avoid u32 overflow during gateway select").
+
+
+    if (orig_throughput < gw_throughput)
+        goto out;
+
+    if ((orig_throughput - gw_throughput) < threshold)
+        goto out;
 
 Kind regards,
 	Sven
---nextPart43114766.lnRbUGgHaP
+--nextPart1855639.v8BCYeGMG9
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -52,20 +54,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXXpU0AAoJEF2HCgfBJntGsgQQANba8iW7YDOjE2wwxr5Iq9bs
-RB5Rr3hn/yY5lVdbelTX8jRhwB36WWXod156Fm09Kx8q8HJFzCt5799OtJduGL2/
-ciVUUEJekGjVloC5LTJ/okO3m3Lk4iT78QZ+6BuGa86YZ1l9UFoVHrJLsL/XxOcy
-3STgtAVH/goLC2B80sx0hLMo8gji5rhYXWZwQy4CXbFV9udICvR/EyZ9nxn4g9Da
-aSaVQL7p78ngyPFgWz2KB3TVgpuveJwFrZOWE0HfRyHzcZX5S6IcdR5ggZTWUjTL
-dt+VHaBrF15OILnE/EglNPLh6nEWjdZTBCUZfaFKJZ3kAcGs1qCr0pcNpOMn4bmo
-1YOERSxJnVVgG6p2RMUu7ZZPl/U+kn4zsP6ET4kK6pO8PKe5XPOtjthjreyiuFUy
-jv2Kg95H9SNP6XSr0gso3A3Y3SEeofse/GW5OId/Bh9AFHoh2ynNvT4EF81MlhcR
-S8ukgS35OZJeZsGCU8WLYWx/8mFEuJmA+1Yg59nxCXPZPzIc47Y7zLtqbeCArj65
-1H/17nlorlDn+rxJ61NLs/azaVU0RYa0oaWqaX1Hg8IsRWBAyyKMtA7Ph4ntVmND
-AzvxUI0JTtqaCz/OxNa5H7px+WU8k9Nh+P/V8HPwBMqkTnjs0eHXcVXHR9IsUB85
-WNhylwYu3Qmvcws0YKRj
-=3znU
+iQIcBAABCgAGBQJXXphnAAoJEF2HCgfBJntGhnUP/iIwahmrVW45sIX5gLZDzG9V
+X2ZIELSZa7IK39DZ5+f21nchgZ5R/3krS19eI07IKpPSF4oyJk37voEpPMjhBL1k
+N7BVOD8WK4OZOvTDpQolACeLQM5KL1jE1DiG5dJdsy/DcbWvsiKzWypeikBaJsP+
+AFWwxlspESvyXIDqP+tVlhtqEjjG1f3uQg2xRSQ1ipL7NmUTRmgdDD9Q/iKsuAqU
+Z9N78rAObbByMX8w+Gn8yNDRNgyyWSl3MzhSbCNF5GaCXR8d3hqx+YKjnKYNQQ6B
+anV/t4Kff4cVQygAMV53SpITsaZrlUTUltUCUysGlssK31aXCBh2P86kAdhVeJN8
+S5snn2hzwV4fbpQ1kmBvOhB2rRG/FvAXB6Wuzjnoiz7UqOArWBa3wz3HMIHnEj2Y
+XRTjW+SHaQIXx7VRiLzuOMv/bKOmvpBmV9fQ0jW9wY/AXO0BOGWMO3Ly+Qkz1Pt9
+pWuslPu2jYVy359OFAeH5ZOfT1hsEOAQPLTsnc+WxAPGGj5ecODLxo+C2lEQRxgk
+MoZxD5WuSM8kq43Wio4YRQ1NwNG+QH4TCHPQ7/lPyGoJtziRye5ptQNjl00s55Ze
+kjWJHWa1TmT/nxZp9WYPZJBaStBEk3kBG3NVjhts1ejOQ8585QhM8s2vFiTcOz+f
+B//TMWyO8jfpPON3/to4
+=bX/E
 -----END PGP SIGNATURE-----
 
---nextPart43114766.lnRbUGgHaP--
+--nextPart1855639.v8BCYeGMG9--
 
