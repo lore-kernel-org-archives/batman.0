@@ -1,11 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 13 Jun 2016 07:41:32 +0200
-Message-Id: <1465796492-5039-4-git-send-email-sven@narfation.org>
-In-Reply-To: <1465796492-5039-1-git-send-email-sven@narfation.org>
-References: <1465796492-5039-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v5 4/4] batman-adv: Avoid sysfs name
-	collision for netns moves
+Return-Path: <APape@phoenixcontact.com>
+In-Reply-To: <7048408.piSH5dZvnO@bentobox>
+References: <1465557064-24406-1-git-send-email-apape@phoenixcontact.com>
+ <7048408.piSH5dZvnO@bentobox>
+MIME-Version: 1.0
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OF0242108B.FF91E42D-ONC1257FD1.00289079-C1257FD1.002C94B2@phoenixcontact.com>
+Date: Mon, 13 Jun 2016 10:06:55 +0200
+content-transfer-encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v5 0/6] Optimizations for setups running
+ dat and bla
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,90 +19,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-The kobject_put is only removing the sysfs entry and corresponding entries
-when its reference counter becomes zero. This tends to lead to collisions
-when a device is moved between two different network namespaces because
-some of the sysfs files have to be removed first and then added again to
-the already moved sysfs entry.
+Hi Sven,
 
-    WARNING: CPU: 0 PID: 290 at lib/kobject.c:240 kobject_add_internal+0x5ec/0x8a0
-    kobject_add_internal failed for batman_adv with -EEXIST, don't try to register things with the same name in the same directory.
+thanks for the feedback. I just realized that I forgot to rebase the
+patchset before sending it. Could this be the cause?
+When I try to apply the patches locally to a fresh cloned batman-adv
+repository, the patches succeeded but some hunks succeed with some
+offset or fuzz only due to the missing rebase.
+> Doesn't seem to apply:
+>
+>     $ git describe
+>     v2016.2-50-g3ce003c
+>     $ git am ~/bundle-11-datbla.mbox
+>     Applying: batman-adv: prevent multiple ARP replies sent by
+> gateways if dat enbled
+>     error: patch failed: net/batman-adv/distributed-arp-table.c:43
+>     error: net/batman-adv/distributed-arp-table.c: patch does not apply
+>     Patch failed at 0001 batman-adv: prevent multiple ARP replies
+> sent by gateways if dat enbled
+>     The copy of the patch that failed is found in:
+.git/rebase-apply/patch
+>     When you have resolved this problem, run "git am --continue".
+>     If you prefer to skip this patch, run "git am --skip" instead.
+>     To restore the original branch and stop patching, run "git am
+--abort".
+>
+> Btw. there seems to be an "a" missing in "enabled" of the Subject
+> of the first patch :)
+>
+Will be corrected as there's another version obviously necessary ...;-)
 
-But the caller of kobject_put can already remove the sysfs entry before it
-does the kobject_put. This removal is done even when the reference counter
-is not yet zero and thus avoids the problem.
+Best regards,
+Andreas
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v5:
- - rebase on top of current master
-v4:
- - rebase on top of current master
- - avoid deletes of vlan->kobj when it is a pointer to bat_priv->mesh_obj
-   (happens for untagged vlan and can cause some kernfs warnings)
-v3:
- - rebased on top of current master to fix conflicts with newest patches
-v2:
- - rebased on top of current master to fix conflicts with newest patches
----
- net/batman-adv/sysfs.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
 
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 8528959..4e06cb7 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -713,6 +713,8 @@ rem_attr:
- 	for (bat_attr = batadv_mesh_attrs; *bat_attr; ++bat_attr)
- 		sysfs_remove_file(bat_priv->mesh_obj, &((*bat_attr)->attr));
- 
-+	kobject_uevent(bat_priv->mesh_obj, KOBJ_REMOVE);
-+	kobject_del(bat_priv->mesh_obj);
- 	kobject_put(bat_priv->mesh_obj);
- 	bat_priv->mesh_obj = NULL;
- out:
-@@ -727,6 +729,8 @@ void batadv_sysfs_del_meshif(struct net_device *dev)
- 	for (bat_attr = batadv_mesh_attrs; *bat_attr; ++bat_attr)
- 		sysfs_remove_file(bat_priv->mesh_obj, &((*bat_attr)->attr));
- 
-+	kobject_uevent(bat_priv->mesh_obj, KOBJ_REMOVE);
-+	kobject_del(bat_priv->mesh_obj);
- 	kobject_put(bat_priv->mesh_obj);
- 	bat_priv->mesh_obj = NULL;
- }
-@@ -782,6 +786,10 @@ rem_attr:
- 	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr)
- 		sysfs_remove_file(vlan->kobj, &((*bat_attr)->attr));
- 
-+	if (vlan->kobj != bat_priv->mesh_obj) {
-+		kobject_uevent(vlan->kobj, KOBJ_REMOVE);
-+		kobject_del(vlan->kobj);
-+	}
- 	kobject_put(vlan->kobj);
- 	vlan->kobj = NULL;
- out:
-@@ -801,6 +809,10 @@ void batadv_sysfs_del_vlan(struct batadv_priv *bat_priv,
- 	for (bat_attr = batadv_vlan_attrs; *bat_attr; ++bat_attr)
- 		sysfs_remove_file(vlan->kobj, &((*bat_attr)->attr));
- 
-+	if (vlan->kobj != bat_priv->mesh_obj) {
-+		kobject_uevent(vlan->kobj, KOBJ_REMOVE);
-+		kobject_del(vlan->kobj);
-+	}
- 	kobject_put(vlan->kobj);
- 	vlan->kobj = NULL;
- }
-@@ -1103,6 +1115,8 @@ out:
- 
- void batadv_sysfs_del_hardif(struct kobject **hardif_obj)
- {
-+	kobject_uevent(*hardif_obj, KOBJ_REMOVE);
-+	kobject_del(*hardif_obj);
- 	kobject_put(*hardif_obj);
- 	*hardif_obj = NULL;
- }
--- 
-2.8.1
 
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
+
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Roland Bent, Dr. Martin Heubeck
+___________________________________________________________________
+Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
+nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
+rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
+d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
+ Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
