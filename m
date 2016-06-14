@@ -1,8 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 14 Jun 2016 08:34:53 +0200
-Message-Id: <1465886093-9609-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: remove NET_XMIT_POLICED
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Tue, 14 Jun 2016 22:56:50 +0200
+Message-Id: <1465937810-17394-1-git-send-email-linus.luessing@c0d3.blue>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Remove unused primary_if and
+	bat_priv variables
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,58 +18,61 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Florian Westphal <fw@strlen.de>
-
-BATMAN uses it as an intermediate return value to signal
-forwarding vs. buffering, but it did not return POLICED to
-callers outside of BATMAN.
-
-Signed-off-by: Florian Westphal <fw@strlen.de>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-[sven@narfation.org: rebased on top of TX path rewrite]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
+Fixes: 29b9256e6631 ("batman-adv: consider outgoing interface in OGM sending")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
-Taken from upstream commit 99860208bc62 ("sched: remove NET_XMIT_POLICED").
+v2:
+* Remove now unused bat_priv variable, too
 
-Please make sure you first apply
+ net/batman-adv/bat_iv_ogm.c | 19 ++++---------------
+ 1 file changed, 4 insertions(+), 15 deletions(-)
 
- * https://patchwork.open-mesh.org/patch/16362/
- * https://patchwork.open-mesh.org/patch/16363/
- * https://patchwork.open-mesh.org/patch/16364/
----
- net/batman-adv/send.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 49836da..729deec 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -20,6 +20,7 @@
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 19b0abd..6af4462 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -528,36 +528,25 @@ static void batadv_iv_ogm_send_to_if(struct batadv_forw_packet *forw_packet,
+ static void batadv_iv_ogm_emit(struct batadv_forw_packet *forw_packet)
+ {
+ 	struct net_device *soft_iface;
+-	struct batadv_priv *bat_priv;
+-	struct batadv_hard_iface *primary_if = NULL;
  
- #include <linux/atomic.h>
- #include <linux/byteorder/generic.h>
-+#include <linux/errno.h>
- #include <linux/etherdevice.h>
- #include <linux/fs.h>
- #include <linux/if.h>
-@@ -156,7 +157,7 @@ int batadv_send_unicast_skb(struct sk_buff *skb,
-  * host, NULL can be passed as recv_if and no interface alternating is
-  * attempted.
-  *
-- * Return: -1 on failure (and the skb is not consumed), NET_XMIT_POLICED if the
-+ * Return: -1 on failure (and the skb is not consumed), -EINPROGRESS if the
-  * skb is buffered for later transmit or the NET_XMIT status returned by the
-  * lower routine if the packet has been passed down.
-  *
-@@ -191,7 +192,7 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
- 	 * network coding fails, then send the packet as usual.
- 	 */
- 	if (recv_if && batadv_nc_skb_forward(skb, neigh_node))
--		ret = NET_XMIT_POLICED;
-+		ret = -EINPROGRESS;
- 	else
- 		ret = batadv_send_unicast_skb(skb, neigh_node);
+ 	if (!forw_packet->if_incoming) {
+ 		pr_err("Error - can't forward packet: incoming iface not specified\n");
+-		goto out;
++		return;
+ 	}
  
+ 	soft_iface = forw_packet->if_incoming->soft_iface;
+-	bat_priv = netdev_priv(soft_iface);
+ 
+ 	if (WARN_ON(!forw_packet->if_outgoing))
+-		goto out;
++		return;
+ 
+ 	if (WARN_ON(forw_packet->if_outgoing->soft_iface != soft_iface))
+-		goto out;
++		return;
+ 
+ 	if (forw_packet->if_incoming->if_status != BATADV_IF_ACTIVE)
+-		goto out;
+-
+-	primary_if = batadv_primary_if_get_selected(bat_priv);
+-	if (!primary_if)
+-		goto out;
++		return;
+ 
+ 	/* only for one specific outgoing interface */
+ 	batadv_iv_ogm_send_to_if(forw_packet, forw_packet->if_outgoing);
+-
+-out:
+-	if (primary_if)
+-		batadv_hardif_put(primary_if);
+ }
+ 
+ /**
 -- 
-2.8.1
+2.1.4
 
