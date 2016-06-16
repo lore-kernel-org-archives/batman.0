@@ -1,12 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Tue, 14 Jun 2016 23:19:43 +0200
-Message-Id: <1465939183-17868-1-git-send-email-linus.luessing@c0d3.blue>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 16 Jun 2016 21:49:15 +0200
+Message-ID: <2601328.mlZH1BliTQ@sven-edge>
+In-Reply-To: <1465937810-17394-1-git-send-email-linus.luessing@c0d3.blue>
+References: <1465937810-17394-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Introduce forward packet
-	creation helper
+Content-Type: multipart/signed; boundary="nextPart1818585.9sxb2vLDGA";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Remove unused primary_if
+	and bat_priv variables
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,316 +20,97 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This patch abstracts the forward packet creation into the new function
-batadv_forw_packet_alloc().
+--nextPart1818585.9sxb2vLDGA
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-The queue counting and interface reference counters are now handled
-internally within batadv_forw_packet_alloc() and its
-batadv_forw_packet_free() counterpart. This should reduce the risk of
-having reference/queue counting bugs again and should increase
-code readibility.
+On Tuesday 14 June 2016 22:56:50 Linus L=FCssing wrote:
+> Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
+> Fixes: 29b9256e6631 ("batman-adv: consider outgoing interface in OGM
+> sending") Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+> ---
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
-Changelog v3:
-* Fixed kernel doc for batadv_forw_packet_alloc()
-* New title / some more adjustments to commit message
+Reviewed-by: Sven Eckelmann <sven@narfation.org>
 
-Changelog v2:
-* Rebase to current master
-* Fixed typo: "ressources" vs. "resources"
-* Moved forw_packet->num_packets initialization into forw_packet_alloc(), too
-* Adjusted commit message
 
- net/batman-adv/bat_iv_ogm.c |  34 ++++-----------
- net/batman-adv/send.c       | 102 ++++++++++++++++++++++++++++++++------------
- net/batman-adv/send.h       |   6 +++
- net/batman-adv/types.h      |   2 +
- 4 files changed, 91 insertions(+), 53 deletions(-)
+> v2:
+> * Remove now unused bat_priv variable, too
+>=20
+>  net/batman-adv/bat_iv_ogm.c | 19 ++++---------------
+>  1 file changed, 4 insertions(+), 15 deletions(-)
+>=20
+> diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.=
+c
+> index 19b0abd..6af4462 100644
+> --- a/net/batman-adv/bat_iv_ogm.c
+> +++ b/net/batman-adv/bat_iv_ogm.c
+> @@ -528,36 +528,25 @@ static void batadv_iv_ogm_send_to_if(struct
+> batadv_forw_packet *forw_packet, static void batadv_iv_ogm_emit(struc=
+t
+> batadv_forw_packet *forw_packet) {
+>  =09struct net_device *soft_iface;
+> -=09struct batadv_priv *bat_priv;
+> -=09struct batadv_hard_iface *primary_if =3D NULL;
+>=20
+>  =09if (!forw_packet->if_incoming) {
+>  =09=09pr_err("Error - can't forward packet: incoming iface not speci=
+fied\n");
+> -=09=09goto out;
+> +=09=09return;
+>  =09}
+>=20
+>  =09soft_iface =3D forw_packet->if_incoming->soft_iface;
+> -=09bat_priv =3D netdev_priv(soft_iface);
+>=20
+>  =09if (WARN_ON(!forw_packet->if_outgoing))
+> -=09=09goto out;
+> +=09=09return;
+>=20
+>  =09if (WARN_ON(forw_packet->if_outgoing->soft_iface !=3D soft_iface)=
+)
+> -=09=09goto out;
+> +=09=09return;
+>=20
+>  =09if (forw_packet->if_incoming->if_status !=3D BATADV_IF_ACTIVE)
+> -=09=09goto out;
+> -
+> -=09primary_if =3D batadv_primary_if_get_selected(bat_priv);
+> -=09if (!primary_if)
+> -=09=09goto out;
+> +=09=09return;
+>=20
+>  =09/* only for one specific outgoing interface */
+>  =09batadv_iv_ogm_send_to_if(forw_packet, forw_packet->if_outgoing);
+> -
+> -out:
+> -=09if (primary_if)
+> -=09=09batadv_hardif_put(primary_if);
+>  }
+>=20
+>  /**
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 19b0abd..9763986 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -685,19 +685,12 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- 	struct batadv_forw_packet *forw_packet_aggr;
- 	unsigned char *skb_buff;
- 	unsigned int skb_size;
-+	atomic_t *queue_left = own_packet ? NULL : &bat_priv->batman_queue_left;
- 
--	/* own packet should always be scheduled */
--	if (!own_packet) {
--		if (!batadv_atomic_dec_not_zero(&bat_priv->batman_queue_left)) {
--			batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
--				   "batman packet queue full\n");
--			return;
--		}
--	}
--
--	forw_packet_aggr = kmalloc(sizeof(*forw_packet_aggr), GFP_ATOMIC);
-+	forw_packet_aggr = batadv_forw_packet_alloc(if_incoming, if_outgoing,
-+						    queue_left, bat_priv);
- 	if (!forw_packet_aggr)
--		goto out_nomem;
-+		return;
- 
- 	if (atomic_read(&bat_priv->aggregated_ogms) &&
- 	    packet_len < BATADV_MAX_AGGREGATION_BYTES)
-@@ -709,7 +702,8 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- 
- 	forw_packet_aggr->skb = netdev_alloc_skb_ip_align(NULL, skb_size);
- 	if (!forw_packet_aggr->skb)
--		goto out_free_forw_packet;
-+		goto packet_free;
-+
- 	forw_packet_aggr->skb->priority = TC_PRIO_CONTROL;
- 	skb_reserve(forw_packet_aggr->skb, ETH_HLEN);
- 
-@@ -717,12 +711,7 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- 	forw_packet_aggr->packet_len = packet_len;
- 	memcpy(skb_buff, packet_buff, packet_len);
- 
--	kref_get(&if_incoming->refcount);
--	kref_get(&if_outgoing->refcount);
- 	forw_packet_aggr->own = own_packet;
--	forw_packet_aggr->if_incoming = if_incoming;
--	forw_packet_aggr->if_outgoing = if_outgoing;
--	forw_packet_aggr->num_packets = 0;
- 	forw_packet_aggr->direct_link_flags = BATADV_NO_FLAGS;
- 	forw_packet_aggr->send_time = send_time;
- 
-@@ -743,11 +732,8 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- 			   send_time - jiffies);
- 
- 	return;
--out_free_forw_packet:
--	kfree(forw_packet_aggr);
--out_nomem:
--	if (!own_packet)
--		atomic_inc(&bat_priv->batman_queue_left);
-+packet_free:
-+	batadv_forw_packet_free(forw_packet_aggr);
- }
- 
- /* aggregate a new packet into the existing ogm packet */
-@@ -1830,10 +1816,6 @@ static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
- 		batadv_iv_ogm_schedule(forw_packet->if_incoming);
- 
- out:
--	/* don't count own packet */
--	if (!forw_packet->own)
--		atomic_inc(&bat_priv->batman_queue_left);
--
- 	batadv_forw_packet_free(forw_packet);
- }
- 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 49836da..fdeea3b 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -430,6 +430,13 @@ int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 				       orig_node, vid);
- }
- 
-+/**
-+ * batadv_forw_packet_free - free a forwarding packet
-+ * @forw_packet: The packet to free
-+ *
-+ * This frees a forwarding packet and releases any resources it might
-+ * have claimed.
-+ */
- void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
- {
- 	kfree_skb(forw_packet->skb);
-@@ -437,9 +444,70 @@ void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
- 		batadv_hardif_put(forw_packet->if_incoming);
- 	if (forw_packet->if_outgoing)
- 		batadv_hardif_put(forw_packet->if_outgoing);
-+	if (forw_packet->queue_left)
-+		atomic_inc(forw_packet->queue_left);
- 	kfree(forw_packet);
- }
- 
-+/**
-+ * batadv_forw_packet_alloc - Allocate a forwarding packet
-+ * @if_incoming: The (optional) if_incoming to be grabbed
-+ * @if_outgoing: The (optional) if_outgoing to be grabbed
-+ * @queue_left: The (optional) queue counter to decrease
-+ * @bat_priv: The bat_priv for the mesh of this forw_packet
-+ *
-+ * Allocates a forwarding packet and tries to get a reference to the
-+ * (optional) if_incoming, if_outgoing and queue_left. If queue_left
-+ * is NULL then bat_priv is optional, too.
-+ *
-+ * Return: An allocated forwarding packet on success, NULL otherwise.
-+ */
-+struct batadv_forw_packet *
-+batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
-+			 struct batadv_hard_iface *if_outgoing,
-+			 atomic_t *queue_left,
-+			 struct batadv_priv *bat_priv)
-+{
-+	struct batadv_forw_packet *forw_packet = NULL;
-+
-+	if (queue_left && !batadv_atomic_dec_not_zero(queue_left)) {
-+		if (queue_left == &bat_priv->bcast_queue_left)
-+			batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+				   "bcast queue full\n");
-+		else if (queue_left == &bat_priv->batman_queue_left)
-+			batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+				   "batman queue full\n");
-+		else
-+			batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+				   "a mysterious queue is full\n");
-+		goto out;
-+	}
-+
-+	forw_packet = kmalloc(sizeof(*forw_packet), GFP_ATOMIC);
-+	if (!forw_packet)
-+		goto err;
-+
-+	if (if_incoming)
-+		kref_get(&if_incoming->refcount);
-+
-+	if (if_outgoing)
-+		kref_get(&if_outgoing->refcount);
-+
-+	forw_packet->skb = NULL;
-+	forw_packet->queue_left = queue_left;
-+	forw_packet->if_incoming = if_incoming;
-+	forw_packet->if_outgoing = if_outgoing;
-+	forw_packet->num_packets = 0;
-+
-+	goto out;
-+
-+err:
-+	if (queue_left)
-+		atomic_inc(queue_left);
-+out:
-+	return forw_packet;
-+}
-+
- static void
- _batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 				 struct batadv_forw_packet *forw_packet,
-@@ -478,20 +546,16 @@ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 	struct batadv_bcast_packet *bcast_packet;
- 	struct sk_buff *newskb;
- 
--	if (!batadv_atomic_dec_not_zero(&bat_priv->bcast_queue_left)) {
--		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
--			   "bcast packet queue full\n");
--		goto out;
--	}
--
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
- 	if (!primary_if)
--		goto out_and_inc;
--
--	forw_packet = kmalloc(sizeof(*forw_packet), GFP_ATOMIC);
-+		goto out;
- 
-+	forw_packet = batadv_forw_packet_alloc(primary_if, NULL,
-+					       &bat_priv->bcast_queue_left,
-+					       bat_priv);
-+	batadv_hardif_put(primary_if);
- 	if (!forw_packet)
--		goto out_and_inc;
-+		goto out;
- 
- 	newskb = skb_copy(skb, GFP_ATOMIC);
- 	if (!newskb)
-@@ -504,11 +568,6 @@ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 	skb_reset_mac_header(newskb);
- 
- 	forw_packet->skb = newskb;
--	forw_packet->if_incoming = primary_if;
--	forw_packet->if_outgoing = NULL;
--
--	/* how often did we send the bcast packet ? */
--	forw_packet->num_packets = 0;
- 
- 	INIT_DELAYED_WORK(&forw_packet->delayed_work,
- 			  batadv_send_outstanding_bcast_packet);
-@@ -517,12 +576,8 @@ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 	return NETDEV_TX_OK;
- 
- packet_free:
--	kfree(forw_packet);
--out_and_inc:
--	atomic_inc(&bat_priv->bcast_queue_left);
-+	batadv_forw_packet_free(forw_packet);
- out:
--	if (primary_if)
--		batadv_hardif_put(primary_if);
- 	return NETDEV_TX_BUSY;
- }
- 
-@@ -583,7 +638,6 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- 
- out:
- 	batadv_forw_packet_free(forw_packet);
--	atomic_inc(&bat_priv->bcast_queue_left);
- }
- 
- void
-@@ -624,9 +678,6 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- 
- 		if (pending) {
- 			hlist_del(&forw_packet->list);
--			if (!forw_packet->own)
--				atomic_inc(&bat_priv->bcast_queue_left);
--
- 			batadv_forw_packet_free(forw_packet);
- 		}
- 	}
-@@ -654,9 +705,6 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- 
- 		if (pending) {
- 			hlist_del(&forw_packet->list);
--			if (!forw_packet->own)
--				atomic_inc(&bat_priv->batman_queue_left);
--
- 			batadv_forw_packet_free(forw_packet);
- 		}
- 	}
-diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
-index 7cecb75..999f786 100644
---- a/net/batman-adv/send.h
-+++ b/net/batman-adv/send.h
-@@ -28,6 +28,12 @@
- struct sk_buff;
- 
- void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet);
-+struct batadv_forw_packet *
-+batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
-+			 struct batadv_hard_iface *if_outgoing,
-+			 atomic_t *queue_left,
-+			 struct batadv_priv *bat_priv);
-+
- int batadv_send_skb_to_orig(struct sk_buff *skb,
- 			    struct batadv_orig_node *orig_node,
- 			    struct batadv_hard_iface *recv_if);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 0eeb68f..125def2 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1375,6 +1375,7 @@ struct batadv_skb_cb {
-  *  locally generated packet
-  * @if_outgoing: packet where the packet should be sent to, or NULL if
-  *  unspecified
-+ * @queue_left: The queue (counter) this packet was applied to
-  */
- struct batadv_forw_packet {
- 	struct hlist_node list;
-@@ -1387,6 +1388,7 @@ struct batadv_forw_packet {
- 	struct delayed_work delayed_work;
- 	struct batadv_hard_iface *if_incoming;
- 	struct batadv_hard_iface *if_outgoing;
-+	atomic_t *queue_left;
- };
- 
- /**
--- 
-2.1.4
+--nextPart1818585.9sxb2vLDGA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXYwK7AAoJEF2HCgfBJntGcwYP/28LTh0BbQzF6izataYyHw7y
+OpeOo0pPuTpnR+wocZx3uttNsYxp3H6BLeEEhH0UX4ri+2jOVnC8FK/YE3Tb1PDe
+7lQfMiL/WtZmWV7LUcDC3F0mFY/N2Kk/5hft9ri+XXvLuuUb4OP+Cja91ygw9+jC
+YXbVFfXl4UHyONhXY9rn0Dcx0Q8ZBNG/65MAV6934W/boaj9Ou96XjAT518ahUA4
+KkItNC0bqt4YjWpquL5iptSA4jHnu0RMLRLgG581WM35+oN3TQ9tcPgNCm4Ym5fA
+sH3kDu8JiID0QTjFNy9csz9AO+1TdID+A4+9Vwczn7b+PTjBW1iYdiJugWmEC8Xo
+Sk9DqG6m2y/WCdA0tLgjz0R8Kx0S9zd2d39SXbKyr5k7xafwBa19S/ZaQ3UkYoBo
+Wtxu/5ay49I2PIYQj7rhlN0/hS6Gs0o+huqF8CqorjB81N5TXMXelfER6G2HROtb
+JOmUHZJjqr6WaKgQGS9jswY1ScbQhK+Rm+iUzntWZNGF/UijoVluO7X/3DESVJ/6
+aKUKerSM4kBzL1i2RhZrWOF+tmOtbr1u4Jg2vZN959bGp/WJfWTVb1meZUnZAQ/F
+9unxBqnZ/yx0RG7fVOiZzKwC/mv0UiT/L5Wb4LqMvpvt3uNKut2lMi0MEOOfcNet
+XKbbqvvCn/6hCpvNV3SD
+=hgzQ
+-----END PGP SIGNATURE-----
+
+--nextPart1818585.9sxb2vLDGA--
 
