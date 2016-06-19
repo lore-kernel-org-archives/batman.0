@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 16 Jun 2016 21:49:15 +0200
-Message-ID: <2601328.mlZH1BliTQ@sven-edge>
-In-Reply-To: <1465937810-17394-1-git-send-email-linus.luessing@c0d3.blue>
-References: <1465937810-17394-1-git-send-email-linus.luessing@c0d3.blue>
+Date: Sun, 19 Jun 2016 13:00:18 +0200
+Message-ID: <5707464.HeWq3LKJdl@sven-edge>
+In-Reply-To: <1465939183-17868-1-git-send-email-linus.luessing@c0d3.blue>
+References: <1465939183-17868-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1818585.9sxb2vLDGA";
+Content-Type: multipart/signed; boundary="nextPart9401462.PQFShZi19m";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Remove unused primary_if
-	and bat_priv variables
+Subject: Re: [B.A.T.M.A.N.] [PATCHv3] batman-adv: Introduce forward packet
+	creation helper
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,76 +20,125 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1818585.9sxb2vLDGA
+--nextPart9401462.PQFShZi19m
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Tuesday 14 June 2016 22:56:50 Linus L=FCssing wrote:
-> Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
-> Fixes: 29b9256e6631 ("batman-adv: consider outgoing interface in OGM
-> sending") Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
-> ---
+On Tuesday 14 June 2016 23:19:43 Linus L=FCssing wrote:
+[...]
+> +struct batadv_forw_packet *
+> +batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
+> +=09=09=09 struct batadv_hard_iface *if_outgoing,
+> +=09=09=09 atomic_t *queue_left,
+> +=09=09=09 struct batadv_priv *bat_priv)
+> +{
+> +=09struct batadv_forw_packet *forw_packet =3D NULL;
+> +
+> +=09if (queue_left && !batadv_atomic_dec_not_zero(queue_left)) {
+> +=09=09if (queue_left =3D=3D &bat_priv->bcast_queue_left)
+> +=09=09=09batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+> +=09=09=09=09   "bcast queue full\n");
+> +=09=09else if (queue_left =3D=3D &bat_priv->batman_queue_left)
+> +=09=09=09batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+> +=09=09=09=09   "batman queue full\n");
+> +=09=09else
+> +=09=09=09batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+> +=09=09=09=09   "a mysterious queue is full\n");
+> +=09=09goto out;
+> +=09}
+
+Returning here directly is most likely easier to read. At least I had t=
+o
+check twice if the gotos in this function are all correct.
+
+And I would have written it slightly different. I don't want to say tha=
+t your
+way is worse or my version is better but just add a slightly different =
+way
+into the discussion
+
+    =09struct batadv_forw_packet *forw_packet;
+    =09const char *qname;
+   =20
+    =09if (queue_left && !batadv_atomic_dec_not_zero(queue_left)) {
+    =09=09qname =3D "unknown";
+   =20
+    =09=09if (queue_left =3D=3D &bat_priv->bcast_queue_left)
+    =09=09=09qname =3D "bcast";
+   =20
+    =09=09if (queue_left =3D=3D &bat_priv->batman_queue_left)
+    =09=09=09qname =3D "batman";
+   =20
+    =09=09batadv_dbg(BATADV_DBG_BATMAN, bat_priv, "%s queue is full\n",=
+
+    =09=09=09  qname);
+   =20
+    =09=09return NULL;
+    =09}
+
+> +       goto out;
+> +
+> +err:
+> +       if (queue_left)
+> +               atomic_inc(queue_left);
+> +out:
+> +       return forw_packet;
+> +}
+
+Maybe we can return here directly forw_packet and in the error case
+return NULL;
+
+    =09return forw_packet;
+
+    err_inc_queue_left:
+    =09if (queue_left)
+    =09=09atomic_inc(queue_left);
+   =20
+    =09return NULL;
+
+
+> @@ -478,20 +546,16 @@ int batadv_add_bcast_packet_to_list(struct bata=
+dv_priv *bat_priv,
+>  =09struct batadv_bcast_packet *bcast_packet;
+>  =09struct sk_buff *newskb;
+> =20
+> -=09if (!batadv_atomic_dec_not_zero(&bat_priv->bcast_queue_left)) {
+> -=09=09batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
+> -=09=09=09   "bcast packet queue full\n");
+> -=09=09goto out;
+> -=09}
+> -
+>  =09primary_if =3D batadv_primary_if_get_selected(bat_priv);
+>  =09if (!primary_if)
+> -=09=09goto out_and_inc;
+> -
+> -=09forw_packet =3D kmalloc(sizeof(*forw_packet), GFP_ATOMIC);
+> +=09=09goto out;
+
+I think you can return here directly
+
+> =20
+> +=09forw_packet =3D batadv_forw_packet_alloc(primary_if, NULL,
+> +=09=09=09=09=09       &bat_priv->bcast_queue_left,
+> +=09=09=09=09=09       bat_priv);
+> +=09batadv_hardif_put(primary_if);
+>  =09if (!forw_packet)
+> -=09=09goto out_and_inc;
+> +=09=09goto out;
+
+Same here
+
+
+All the mentioned things are just nitpicking. So overall:
 
 Reviewed-by: Sven Eckelmann <sven@narfation.org>
 
+Please keep the Reviewed-by in case you you resent the patch and only
+include changes which were mentioned in this mail.
 
-> v2:
-> * Remove now unused bat_priv variable, too
->=20
->  net/batman-adv/bat_iv_ogm.c | 19 ++++---------------
->  1 file changed, 4 insertions(+), 15 deletions(-)
->=20
-> diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.=
-c
-> index 19b0abd..6af4462 100644
-> --- a/net/batman-adv/bat_iv_ogm.c
-> +++ b/net/batman-adv/bat_iv_ogm.c
-> @@ -528,36 +528,25 @@ static void batadv_iv_ogm_send_to_if(struct
-> batadv_forw_packet *forw_packet, static void batadv_iv_ogm_emit(struc=
-t
-> batadv_forw_packet *forw_packet) {
->  =09struct net_device *soft_iface;
-> -=09struct batadv_priv *bat_priv;
-> -=09struct batadv_hard_iface *primary_if =3D NULL;
->=20
->  =09if (!forw_packet->if_incoming) {
->  =09=09pr_err("Error - can't forward packet: incoming iface not speci=
-fied\n");
-> -=09=09goto out;
-> +=09=09return;
->  =09}
->=20
->  =09soft_iface =3D forw_packet->if_incoming->soft_iface;
-> -=09bat_priv =3D netdev_priv(soft_iface);
->=20
->  =09if (WARN_ON(!forw_packet->if_outgoing))
-> -=09=09goto out;
-> +=09=09return;
->=20
->  =09if (WARN_ON(forw_packet->if_outgoing->soft_iface !=3D soft_iface)=
-)
-> -=09=09goto out;
-> +=09=09return;
->=20
->  =09if (forw_packet->if_incoming->if_status !=3D BATADV_IF_ACTIVE)
-> -=09=09goto out;
-> -
-> -=09primary_if =3D batadv_primary_if_get_selected(bat_priv);
-> -=09if (!primary_if)
-> -=09=09goto out;
-> +=09=09return;
->=20
->  =09/* only for one specific outgoing interface */
->  =09batadv_iv_ogm_send_to_if(forw_packet, forw_packet->if_outgoing);
-> -
-> -out:
-> -=09if (primary_if)
-> -=09=09batadv_hardif_put(primary_if);
->  }
->=20
->  /**
-
---nextPart1818585.9sxb2vLDGA
+Kind regards,
+=09Sven
+--nextPart9401462.PQFShZi19m
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -97,20 +146,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXYwK7AAoJEF2HCgfBJntGcwYP/28LTh0BbQzF6izataYyHw7y
-OpeOo0pPuTpnR+wocZx3uttNsYxp3H6BLeEEhH0UX4ri+2jOVnC8FK/YE3Tb1PDe
-7lQfMiL/WtZmWV7LUcDC3F0mFY/N2Kk/5hft9ri+XXvLuuUb4OP+Cja91ygw9+jC
-YXbVFfXl4UHyONhXY9rn0Dcx0Q8ZBNG/65MAV6934W/boaj9Ou96XjAT518ahUA4
-KkItNC0bqt4YjWpquL5iptSA4jHnu0RMLRLgG581WM35+oN3TQ9tcPgNCm4Ym5fA
-sH3kDu8JiID0QTjFNy9csz9AO+1TdID+A4+9Vwczn7b+PTjBW1iYdiJugWmEC8Xo
-Sk9DqG6m2y/WCdA0tLgjz0R8Kx0S9zd2d39SXbKyr5k7xafwBa19S/ZaQ3UkYoBo
-Wtxu/5ay49I2PIYQj7rhlN0/hS6Gs0o+huqF8CqorjB81N5TXMXelfER6G2HROtb
-JOmUHZJjqr6WaKgQGS9jswY1ScbQhK+Rm+iUzntWZNGF/UijoVluO7X/3DESVJ/6
-aKUKerSM4kBzL1i2RhZrWOF+tmOtbr1u4Jg2vZN959bGp/WJfWTVb1meZUnZAQ/F
-9unxBqnZ/yx0RG7fVOiZzKwC/mv0UiT/L5Wb4LqMvpvt3uNKut2lMi0MEOOfcNet
-XKbbqvvCn/6hCpvNV3SD
-=hgzQ
+iQIcBAABCgAGBQJXZntCAAoJEF2HCgfBJntG0GMQAKA7y5ubrLZ/uJPgWihKTKF4
+yikOqrSQgM01CFndHRDjVr6i9R5jXotNZLttPWMzfS5nFzvQc5evmYiG4WoPxA5N
+iFHv53TZGh6oxlID83jrvBlN+k7lbr1TKtuXD4rYgM2NB1Cz/Wx+xSsIhZLncoKC
+TwpXPP3KnPQcHNgkFuPiSU9647skSOvJutvthdCQDLbfX++BZkoUG0nBYXii8bTC
+Ob1os6yilhMrsC9QNd6Vnw5d6Wa3kOMJi2LgG64aZtEnrS0fpMAph+gPwYLRuAQH
++PLnVSK8sCtvTkNMBxqfHp/cV+wvyIJddzL51E5Q4aSOlSnYc7BSw/jV43NpzXIs
+1lp4RfOY4PsPgxb15LKXlRuattQi/u8ff9PIJNsOSARIMtnwfQ40em3p+rbNW2Kl
+v79HR4yIyr3IO0PYjX2g/FXvMAL2GeNn47UA+ADZguwamsyTS+7DMq8xqa9Yngir
+1IbBWN2JhdNUXHc9V004tjlyN7+5ad9+MHAsZ/IXUsnno1Odcad2iVo8v74HobWT
+X3msJ8FUYCih+e1hAjvvUERbHZI6kYSdvkVfZ9gi5vd4DXBFKzEF7vCXeYzw78ql
+xRaaMVnfuQimPHc47mRVQ9KIoF44XugdwEu7GTDfCVuBvLQLEX+mcr+CknpeKbkN
+eyulBtxht+GhZra6qVD8
+=+pAR
 -----END PGP SIGNATURE-----
 
---nextPart1818585.9sxb2vLDGA--
+--nextPart9401462.PQFShZi19m--
 
