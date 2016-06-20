@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 20 Jun 2016 19:53:28 +0200
-Message-Id: <1466445210-17616-2-git-send-email-sven@narfation.org>
+Date: Mon, 20 Jun 2016 19:54:48 +0200
+Message-Id: <1466445289-17840-1-git-send-email-sven@narfation.org>
 In-Reply-To: <1466445210-17616-1-git-send-email-sven@narfation.org>
 References: <1466445210-17616-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH next v2 2/4] batman-adv: Don't propagate
-	negative dev_queue_xmit return values
+Subject: [B.A.T.M.A.N.] [PATCH next v2 3/4] batman-adv: remove
+	NET_XMIT_POLICED
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,58 +16,56 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Florian Westphal <fw@strlen.de>, "David S . Miller" <davem@davemloft.net>
 
-batadv_send_skb_packet used by batadv_send_skb_to_orig and its return value
-is given directly to callers of batadv_send_skb_packet.
+From: Florian Westphal <fw@strlen.de>
 
-    batadv_send_skb_to_orig
-    -> batadv_send_unicast_skb
-       -> batadv_send_skb_packet
-          -> dev_queue_xmit
+BATMAN uses it as an intermediate return value to signal
+forwarding vs. buffering, but it did not return POLICED to
+callers outside of BATMAN.
 
-These callers of batadv_send_skb_to_orig expect that the skb isn't consumed
-when they receive a -1. But dev_queue_xmit may still have consumed it and
-still returned -1. Thus the free for the skb would be called twice.
-
-Fixes: e3b8acbff9c8 ("batman-adv: return netdev status in the TX path")
+Signed-off-by: Florian Westphal <fw@strlen.de>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+[sven@narfation.org: rebased on top of TX path rewrite]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v2:
  - rebased on current master
  - added patch to a common set of related patches
 
- net/batman-adv/send.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ net/batman-adv/send.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 49836da..70a8c1d 100644
+index 70a8c1d..80208f1 100644
 --- a/net/batman-adv/send.c
 +++ b/net/batman-adv/send.c
-@@ -72,6 +72,7 @@ int batadv_send_skb_packet(struct sk_buff *skb,
- {
- 	struct batadv_priv *bat_priv;
- 	struct ethhdr *ethhdr;
-+	int ret;
+@@ -20,6 +20,7 @@
  
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
- 
-@@ -109,8 +110,15 @@ int batadv_send_skb_packet(struct sk_buff *skb,
- 	/* dev_queue_xmit() returns a negative result on error.	 However on
- 	 * congestion and traffic shaping, it drops and returns NET_XMIT_DROP
- 	 * (which is > 0). This will not be treated as an error.
-+	 *
-+	 * a negative value cannot be returned because it could be interepreted
-+	 * as not consumed skb by callers of batadv_send_skb_to_orig.
+ #include <linux/atomic.h>
+ #include <linux/byteorder/generic.h>
++#include <linux/errno.h>
+ #include <linux/etherdevice.h>
+ #include <linux/fs.h>
+ #include <linux/if.h>
+@@ -164,7 +165,7 @@ int batadv_send_unicast_skb(struct sk_buff *skb,
+  * host, NULL can be passed as recv_if and no interface alternating is
+  * attempted.
+  *
+- * Return: -1 on failure (and the skb is not consumed), NET_XMIT_POLICED if the
++ * Return: -1 on failure (and the skb is not consumed), -EINPROGRESS if the
+  * skb is buffered for later transmit or the NET_XMIT status returned by the
+  * lower routine if the packet has been passed down.
+  *
+@@ -199,7 +200,7 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 	 * network coding fails, then send the packet as usual.
  	 */
--	return dev_queue_xmit(skb);
-+	ret = dev_queue_xmit(skb);
-+	if (ret < 0)
-+		ret = NET_XMIT_DROP;
-+
-+	return ret;
- send_skb_err:
- 	kfree_skb(skb);
- 	return NET_XMIT_DROP;
+ 	if (recv_if && batadv_nc_skb_forward(skb, neigh_node))
+-		ret = NET_XMIT_POLICED;
++		ret = -EINPROGRESS;
+ 	else
+ 		ret = batadv_send_unicast_skb(skb, neigh_node);
+ 
 -- 
 2.8.1
 
