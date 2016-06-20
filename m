@@ -1,14 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Mon, 20 Jun 2016 03:59:01 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20160620015901.GE3029@otheros>
-References: <1463310915-7111-1-git-send-email-sven@narfation.org>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Mon, 20 Jun 2016 16:36:23 +0800
+Message-ID: <5728038.Z0THFbVVB6@voltaire>
+In-Reply-To: <1465796492-5039-1-git-send-email-sven@narfation.org>
+References: <1465796492-5039-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1463310915-7111-1-git-send-email-sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: use kmem_cache for translation
- table
+Content-Type: multipart/signed; boundary="nextPart7391059.x9q87YcANZ";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v5 1/4] Revert "batman-adv: Fix hardif
+	remove/add race"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,30 +18,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sun, May 15, 2016 at 01:15:15PM +0200, Sven Eckelmann wrote:
-> TODO statistics, batadv_tt_roam_node?, batadv_tt_change_node?,
-> batadv_tt_req_node?, ....
+--nextPart7391059.x9q87YcANZ
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Some statistics here:
+On Monday, June 13, 2016 07:41:29 Sven Eckelmann wrote:
+> The description given in the commit is misleading and is at least not true
+> for sysfs. The sysfs file structure should instead be deleted immediately on
+> rtnl notifications and be underlying objects should be removed later when
+> all kobject_put were done for the object.
+> 
+> This reverts commit 6b0485c758be ("batman-adv: Fix hardif remove/add race")
 
-https://www.open-mesh.org/projects/batman-adv/wiki/Kmalloc-kmem-cache-tests
+Applied in revision b58db7b.
 
+@Andrew: Sven's patchset aims to fix the problem you encountered in a better 
+way while also addressing other issues. Can you give it a try in your 
+environment to confirm it fixes your problem too ?
 
-In a nutshell, on a small TP-Link TL-841NDv8 wireless router
-(MIPS/AR9341), I was able to achieve 34% more global TT entries
-(or 25% less RAM usage).
+Thanks,
+Marek
 
+--nextPart7391059.x9q87YcANZ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-Regarding SLAB_HWCACHE_ALIGN, it did not seem to make much of a
-difference. There is a slight tendency for less RAM usage without
-this flag. But it is so small, that it might be a coincident, too.
-And it is definitely negligable. At least for this architecture.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Regards, Linus
+iQEcBAABCAAGBQJXZ6sIAAoJEFNVTo/uthzAx7QH/Rl/9G7F6+qeiRzFiuvlQfI8
+x98nn41oKkuE6QBUncKcUW9eBYhSgXOdmjivLfYoGWaHN0qcqtPKlW1sAZEBMqns
+lKlLGRQECf1s7mbHi7hLQ5R5W+ZMeRrktuFm97zsrZxzEQwwCm5wchdhb7mUP8Ed
+Mmj/2M/oDU7o8oJvckg8xO2TSZ9+RlgGE1wjrWIg3ngthWI1UMD5mkIDliMItFRI
+jrEq2Bty3emeovWBT5l3uE8+GeMNZOXTysQi2ZjtuAI7hVp8joKm7bR7MjcbVp/B
+sL5Un7XKybnBs+iPaE1zhbagr7gL+NiVj4sn9iI88QRnkrMK3dEvSJUD0p3/kV4=
+=Gv/V
+-----END PGP SIGNATURE-----
 
+--nextPart7391059.x9q87YcANZ--
 
-PS: I might make some more, pretty graphs for the other test
-variables, too. But for now, there is just this one raw table for
-that.
