@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 20 Jun 2016 16:59:39 +0800
-Message-ID: <6939199.Z6Lx6A2ZIQ@voltaire>
-In-Reply-To: <2601328.mlZH1BliTQ@sven-edge>
-References: <1465937810-17394-1-git-send-email-linus.luessing@c0d3.blue>
- <2601328.mlZH1BliTQ@sven-edge>
+Date: Mon, 20 Jun 2016 17:18:34 +0800
+Message-ID: <1656954.q6VqPMNhCm@voltaire>
+In-Reply-To: <1465575241-1754-1-git-send-email-sven@narfation.org>
+References: <1465575241-1754-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4039726.sPzG1Ye0W6";
+Content-Type: multipart/signed; boundary="nextPart1518497.DkdDhklQk1";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Remove unused primary_if
-	and bat_priv variables
+Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: Avoid skb free for
+	batadv_send_skb_to_orig < -1
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,27 +20,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart4039726.sPzG1Ye0W6
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart1518497.DkdDhklQk1
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Thursday, June 16, 2016 21:49:15 Sven Eckelmann wrote:
-> On Tuesday 14 June 2016 22:56:50 Linus L=FCssing wrote:
-> > Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
-> > Fixes: 29b9256e6631 ("batman-adv: consider outgoing interface in OG=
-M
-> > sending") Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>=
+On Friday, June 10, 2016 18:14:00 Sven Eckelmann wrote:
+> The tp_meter code frees the skb when the batadv_send_skb_to_orig returns <
+> 0. But the batadv_send_skb_to_orig only defines -1 as return code for
+> failed submits with still valid skbs.
+> 
+> Fixes: 98d7a766b645 ("batman-adv: throughput meter implementation")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> Interesting because a patch was submitted to net next to remove
+> NET_XMIT_POLICED and return -EINPROGRESS instead.
+> 
+> I will maybe later send more patches because the current way of handling
+> DROPPED/free'd skb/not-freed skb is quite confusing.
+> 
+>  net/batman-adv/tp_meter.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-> > ---
->=20
-> Reviewed-by: Sven Eckelmann <sven@narfation.org>
-
-Applied in revision 7395e64.
+Applied in revision 1aaa327.
 
 Thanks,
 Marek
 
---nextPart4039726.sPzG1Ye0W6
+--nextPart1518497.DkdDhklQk1
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -49,14 +54,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXZ7B7AAoJEFNVTo/uthzAwL4H/jB3IiSNchixD8xvV1yCfjjw
-A+Oxs6pWZOXB9guxeD4WMrkJCN7UmB+RNRkhiXvwtQrebXlBx3LHxZgcHT+/Cytw
-BszpNPRT2QCTwOXUjPtpMSmcSgB3qe4eBo0VOiUUMil8qzqnZ3LToip1j3PVENTD
-CAiumXKOrZUkhpGTnYQL3gHT1mW3eNh+NNTV7I86LsxvZN0dnoON9vLfMwAUIzqV
-fhYjvXQ1m8aWalRb7h+Bby0Nfs4GjRIERBAQySJFfXlzSuQ7H4rq/EHtYzD9JI08
-Gg2XDPi80vzwilKVDsKqd/WmlwiqeHwG0D1JJWjK3I9eu4gaqXgx/CtIyifwftM=
-=DKjL
+iQEcBAABCAAGBQJXZ7TqAAoJEFNVTo/uthzArW8H/jTCh/CbAsI43P2gquzqrhlb
+/f1Lu9lSJ74OPguFoh9U54kdZVK/5sCJZwFGOg+xMDgpCH+otjNZ0otShagtP+en
+jTm2GgWJhbeuU+pLRIP/El4+JjsDgK8V8pqjpUKyGhuW55bCMX7EPntmlEEJRH7s
+Ei/t2exo3NdW6bCyry0aZUPRySsR8ObQ130yv6nkv6tRf5xJHdstgTN7pw/50OPc
+Nobg83/dtYrQ4e0muNlimWTqyKND3DQzmcO0D3XsoueQVxaeI+74/TJt5O7b7X0+
+janTyIVhlRN6ovPu0tVlzb3DVm4g3PxlZU9Dmh56K8oq2UtYt3MDMXrLzFAw3Qs=
+=KrPz
 -----END PGP SIGNATURE-----
 
---nextPart4039726.sPzG1Ye0W6--
+--nextPart1518497.DkdDhklQk1--
 
