@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 20 Jun 2016 19:54:48 +0200
-Message-Id: <1466445289-17840-1-git-send-email-sven@narfation.org>
+Date: Mon, 20 Jun 2016 19:54:49 +0200
+Message-Id: <1466445289-17840-2-git-send-email-sven@narfation.org>
 In-Reply-To: <1466445210-17616-1-git-send-email-sven@narfation.org>
 References: <1466445210-17616-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH next v2 3/4] batman-adv: remove
-	NET_XMIT_POLICED
+Subject: [B.A.T.M.A.N.] [PATCH next v2 4/4] batman-adv: Remove unnecessary
+	call to dev_xmit_complete
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,56 +16,96 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Florian Westphal <fw@strlen.de>, "David S . Miller" <davem@davemloft.net>
 
-From: Florian Westphal <fw@strlen.de>
+The dev_xmit_complete function is only necessary to check the return value
+for *_hard_xmit functions. But batman-adv only uses dev_queue_xmit to send
+data via the interface queue.
 
-BATMAN uses it as an intermediate return value to signal
-forwarding vs. buffering, but it did not return POLICED to
-callers outside of BATMAN.
+From the kerneldoc of __dev_queue_xmit:
 
-Signed-off-by: Florian Westphal <fw@strlen.de>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-[sven@narfation.org: rebased on top of TX path rewrite]
+    Regardless of the return value, the skb is consumed, so it is currently
+    difficult to retry a send to this method.  (You can bump the ref count
+    before sending to hold a reference for retry if you are careful.)
+
+Fixes: e3b8acbff9c8 ("batman-adv: return netdev status in the TX path")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v2:
- - rebased on current master
- - added patch to a common set of related patches
+ - added this patch
 
- net/batman-adv/send.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ net/batman-adv/routing.c | 10 ++++------
+ net/batman-adv/send.c    |  2 +-
+ net/batman-adv/tvlv.c    |  2 +-
+ 3 files changed, 6 insertions(+), 8 deletions(-)
 
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 2bc9645..af8e119 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -274,8 +274,7 @@ static int batadv_recv_my_icmp_packet(struct batadv_priv *bat_priv,
+ 		if (res == -1)
+ 			goto out;
+ 
+-		if (dev_xmit_complete(res))
+-			ret = NET_RX_SUCCESS;
++		ret = NET_RX_SUCCESS;
+ 
+ 		break;
+ 	case BATADV_TP:
+@@ -335,7 +334,7 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 	icmp_packet->ttl = BATADV_TTL;
+ 
+ 	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (res != -1 && dev_xmit_complete(res))
++	if (res != -1)
+ 		ret = NET_RX_SUCCESS;
+ 
+ out:
+@@ -423,7 +422,7 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
+ 
+ 	/* route it */
+ 	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
+-	if (res != -1 && dev_xmit_complete(res))
++	if (res != -1)
+ 		ret = NET_RX_SUCCESS;
+ 
+ out:
+@@ -671,8 +670,7 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 				   len + ETH_HLEN);
+ 	}
+ 
+-	if (dev_xmit_complete(res))
+-		ret = NET_RX_SUCCESS;
++	ret = NET_RX_SUCCESS;
+ 
+ out:
+ 	if (orig_node)
 diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 70a8c1d..80208f1 100644
+index 80208f1..3a10d87 100644
 --- a/net/batman-adv/send.c
 +++ b/net/batman-adv/send.c
-@@ -20,6 +20,7 @@
+@@ -366,7 +366,7 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ 		unicast_packet->ttvn = unicast_packet->ttvn - 1;
  
- #include <linux/atomic.h>
- #include <linux/byteorder/generic.h>
-+#include <linux/errno.h>
- #include <linux/etherdevice.h>
- #include <linux/fs.h>
- #include <linux/if.h>
-@@ -164,7 +165,7 @@ int batadv_send_unicast_skb(struct sk_buff *skb,
-  * host, NULL can be passed as recv_if and no interface alternating is
-  * attempted.
-  *
-- * Return: -1 on failure (and the skb is not consumed), NET_XMIT_POLICED if the
-+ * Return: -1 on failure (and the skb is not consumed), -EINPROGRESS if the
-  * skb is buffered for later transmit or the NET_XMIT status returned by the
-  * lower routine if the packet has been passed down.
-  *
-@@ -199,7 +200,7 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
- 	 * network coding fails, then send the packet as usual.
- 	 */
- 	if (recv_if && batadv_nc_skb_forward(skb, neigh_node))
--		ret = NET_XMIT_POLICED;
-+		ret = -EINPROGRESS;
- 	else
- 		ret = batadv_send_unicast_skb(skb, neigh_node);
+ 	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (res != -1 && dev_xmit_complete(res))
++	if (res != -1)
+ 		ret = NET_XMIT_SUCCESS;
  
+ out:
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index 8c59420..3d1cf0f 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -625,7 +625,7 @@ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
+ 	memcpy(tvlv_buff, tvlv_value, tvlv_value_len);
+ 
+ 	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (!(res != -1 && dev_xmit_complete(res)))
++	if (res == -1)
+ 		kfree_skb(skb);
+ out:
+ 	batadv_orig_node_put(orig_node);
 -- 
 2.8.1
 
