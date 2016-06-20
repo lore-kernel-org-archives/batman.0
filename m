@@ -1,14 +1,16 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 20 Jun 2016 17:18:34 +0800
-Message-ID: <1656954.q6VqPMNhCm@voltaire>
-In-Reply-To: <1465575241-1754-1-git-send-email-sven@narfation.org>
+Return-Path: <a@unstable.cc>
+Date: Tue, 21 Jun 2016 00:41:15 +0800
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <20160620164115.GD10666@prodigo>
 References: <1465575241-1754-1-git-send-email-sven@narfation.org>
+ <1465575241-1754-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1518497.DkdDhklQk1";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: Avoid skb free for
-	batadv_send_skb_to_orig < -1
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="XCAWwTQADTZzNDLi"
+Content-Disposition: inline
+In-Reply-To: <1465575241-1754-2-git-send-email-sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH next] batman-adv: Free tp_meter ack skb
+ when it was not consumed
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,50 +20,84 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart1518497.DkdDhklQk1
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
 
-On Friday, June 10, 2016 18:14:00 Sven Eckelmann wrote:
-> The tp_meter code frees the skb when the batadv_send_skb_to_orig returns <
-> 0. But the batadv_send_skb_to_orig only defines -1 as return code for
-> failed submits with still valid skbs.
-> 
+--XCAWwTQADTZzNDLi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, Jun 10, 2016 at 06:14:01PM +0200, Sven Eckelmann wrote:
+> batadv_send_skb_to_orig can return -1 to signal that the skb was not
+> consumed. tp_meter has then to free the skb to avoid a memory leak.
+>=20
 > Fixes: 98d7a766b645 ("batman-adv: throughput meter implementation")
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
-> Interesting because a patch was submitted to net next to remove
-> NET_XMIT_POLICED and return -EINPROGRESS instead.
-> 
-> I will maybe later send more patches because the current way of handling
-> DROPPED/free'd skb/not-freed skb is quite confusing.
-> 
->  net/batman-adv/tp_meter.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Antonio, this is not really tested. Could you please review it and tell me
+> if I may have missed something.
+>=20
+>  net/batman-adv/tp_meter.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>=20
+> diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+> index bf6bffb..2333777 100644
+> --- a/net/batman-adv/tp_meter.c
+> +++ b/net/batman-adv/tp_meter.c
+> @@ -1206,6 +1206,9 @@ static int batadv_tp_send_ack(struct batadv_priv *b=
+at_priv, const u8 *dst,
+> =20
+>  	/* send the ack */
+>  	r =3D batadv_send_skb_to_orig(skb, orig_node, NULL);
+> +	if (r =3D=3D -1)
+> +		kfree_skb(skb);
+> +
 
-Applied in revision 1aaa327.
+Good catch, Sven !
 
-Thanks,
-Marek
+However, how about changing the patch this way ?
 
---nextPart1518497.DkdDhklQk1
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -1206,7 +1206,7 @@ static int batadv_tp_send_ack(struct batadv_priv *bat=
+_priv, const u8 *dst,
+=20
+        /* send the ack */
+        r =3D batadv_send_skb_to_orig(skb, orig_node, NULL);
+-       if (r =3D=3D -1)
++       if ((r =3D=3D -1) || !dev_xmit_complete(res))
+                kfree_skb(skb);
+=20
+        if (unlikely(r < 0) || (r =3D=3D NET_XMIT_DROP)) {
+
+this is the same check we do in batadv_send_skb_unicast().
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+--XCAWwTQADTZzNDLi
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXZ7TqAAoJEFNVTo/uthzArW8H/jTCh/CbAsI43P2gquzqrhlb
-/f1Lu9lSJ74OPguFoh9U54kdZVK/5sCJZwFGOg+xMDgpCH+otjNZ0otShagtP+en
-jTm2GgWJhbeuU+pLRIP/El4+JjsDgK8V8pqjpUKyGhuW55bCMX7EPntmlEEJRH7s
-Ei/t2exo3NdW6bCyry0aZUPRySsR8ObQ130yv6nkv6tRf5xJHdstgTN7pw/50OPc
-Nobg83/dtYrQ4e0muNlimWTqyKND3DQzmcO0D3XsoueQVxaeI+74/TJt5O7b7X0+
-janTyIVhlRN6ovPu0tVlzb3DVm4g3PxlZU9Dmh56K8oq2UtYt3MDMXrLzFAw3Qs=
-=KrPz
+iQIcBAEBCAAGBQJXaByrAAoJEJ4aZjxxc6bKx8sP/iVFl9KOEb/6+4PVPUvWAgsJ
+0tI9sCusGOG2gDTnPonwkDiDhyHDTtV9e0p4FB9CpkkusLjyXk0yidXFWRmoyjqO
+nj20z6yqR/92rH1zWUdh6p0SncSkpLuWR6uQ6Q/uFGy4DIFPkET0P3cNZvaId+Ey
+QXHyZhEB91D6+rVpgb++A5v1VbyeD7dXDGSnQMqYwSmfzkvkw5fiRfYsLD70oAJ8
+ewbfEc67BKUVXkVEdv3PE9UJS+rICMKoLgK+zB51iiEQtt18QaWAzS+UkqL8qfbA
+rlWYgcw4AAvxXAALXJB8nf+xfjYRtko3gp/lptAesvLJJuyE3mcry9HPFX+10ZQ8
+CbTJHbs+3dH1UvFJ9EefCDiekeS7F/Z3Yy0Ny/oPmmTsdjZ+s2rA06SUEt6SqW4o
+FjRb6RyOiV6NV+259P83s9X9HuFA6FwEOpNcY3TLbSkDcmGnRsf0vwvCbfNxWqqT
+0R0+ZBsCpP4VTROrZvwTl2XGt3KUB7Tv0P+mHIwjMP5+t8XdRXLSUh/k+I3RqXf/
++N9x7CtC5+bF2JVoMjX1hhJnuSB0nS1MVylhflwRaeZTSeneSJo506vnF8j0YGGw
+lY2KklC53Z516pVwH3qmTzuG0fkpH7fgp7yp/O6TRI+eJ4tlBhOvcJnJWV9Kw9Kg
+90Y9bhlcZg1StkZxybBt
+=qFcG
 -----END PGP SIGNATURE-----
 
---nextPart1518497.DkdDhklQk1--
-
+--XCAWwTQADTZzNDLi--
