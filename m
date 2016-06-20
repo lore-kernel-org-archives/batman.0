@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 20 Jun 2016 16:37:41 +0800
-Message-ID: <5935107.moVPDjaayx@voltaire>
-In-Reply-To: <1465796492-5039-4-git-send-email-sven@narfation.org>
-References: <1465796492-5039-1-git-send-email-sven@narfation.org>
- <1465796492-5039-4-git-send-email-sven@narfation.org>
+Date: Mon, 20 Jun 2016 16:59:39 +0800
+Message-ID: <6939199.Z6Lx6A2ZIQ@voltaire>
+In-Reply-To: <2601328.mlZH1BliTQ@sven-edge>
+References: <1465937810-17394-1-git-send-email-linus.luessing@c0d3.blue>
+ <2601328.mlZH1BliTQ@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1494457.PuT8OmLYcd";
+Content-Type: multipart/signed; boundary="nextPart4039726.sPzG1Ye0W6";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v5 4/4] batman-adv: Avoid sysfs name
-	collision for netns moves
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2] batman-adv: Remove unused primary_if
+	and bat_priv variables
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,48 +21,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1494457.PuT8OmLYcd
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart4039726.sPzG1Ye0W6
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Monday, June 13, 2016 07:41:32 Sven Eckelmann wrote:
-> The kobject_put is only removing the sysfs entry and corresponding entries
-> when its reference counter becomes zero. This tends to lead to collisions
-> when a device is moved between two different network namespaces because
-> some of the sysfs files have to be removed first and then added again to
-> the already moved sysfs entry.
-> 
->     WARNING: CPU: 0 PID: 290 at lib/kobject.c:240
-> kobject_add_internal+0x5ec/0x8a0 kobject_add_internal failed for batman_adv
-> with -EEXIST, don't try to register things with the same name in the same
-> directory.
-> 
-> But the caller of kobject_put can already remove the sysfs entry before it
-> does the kobject_put. This removal is done even when the reference counter
-> is not yet zero and thus avoids the problem.
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> v5:
->  - rebase on top of current master
-> v4:
->  - rebase on top of current master
->  - avoid deletes of vlan->kobj when it is a pointer to bat_priv->mesh_obj
->    (happens for untagged vlan and can cause some kernfs warnings)
-> v3:
->  - rebased on top of current master to fix conflicts with newest patches
-> v2:
->  - rebased on top of current master to fix conflicts with newest patches
-> ---
->  net/batman-adv/sysfs.c | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
+On Thursday, June 16, 2016 21:49:15 Sven Eckelmann wrote:
+> On Tuesday 14 June 2016 22:56:50 Linus L=FCssing wrote:
+> > Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
+> > Fixes: 29b9256e6631 ("batman-adv: consider outgoing interface in OG=
+M
+> > sending") Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>=
 
-Applied in revision bebf178.
+> > ---
+>=20
+> Reviewed-by: Sven Eckelmann <sven@narfation.org>
+
+Applied in revision 7395e64.
 
 Thanks,
 Marek
 
---nextPart1494457.PuT8OmLYcd
+--nextPart4039726.sPzG1Ye0W6
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -70,14 +49,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXZ6tVAAoJEFNVTo/uthzA2s4H/Rwiuwv/paHC9dog1pXjVNVr
-ulxwUB+XfFFbIOiAxUee4wcaPY2wIis4J8DkdQbtc4RVi8U7gkt5mAeoKsY5Wa7I
-6IZsPau6SbYpA5QeJrpjvRg4RYN02ymAj4OYXMeNJv/2flyLB6j9U6i+rfxLHm2Z
-IQX9sUxP30t+P+hIH45r4uQNKAgZPin1x1mV9F9RA/0aeYuda/iYK7G6rX0wRQpb
-3NmathKq4Js31tENee+viiQ+zTNM4gbFt1/eQfkXxNDBOvbB/3DIH5GRl64SJnll
-S9mKmj97cSersyCfFFCeJN5ZunuDv6ijtycZmU5Jc+aSfjmA3Vii0Hmlgy1Tzzk=
-=5CA0
+iQEcBAABCAAGBQJXZ7B7AAoJEFNVTo/uthzAwL4H/jB3IiSNchixD8xvV1yCfjjw
+A+Oxs6pWZOXB9guxeD4WMrkJCN7UmB+RNRkhiXvwtQrebXlBx3LHxZgcHT+/Cytw
+BszpNPRT2QCTwOXUjPtpMSmcSgB3qe4eBo0VOiUUMil8qzqnZ3LToip1j3PVENTD
+CAiumXKOrZUkhpGTnYQL3gHT1mW3eNh+NNTV7I86LsxvZN0dnoON9vLfMwAUIzqV
+fhYjvXQ1m8aWalRb7h+Bby0Nfs4GjRIERBAQySJFfXlzSuQ7H4rq/EHtYzD9JI08
+Gg2XDPi80vzwilKVDsKqd/WmlwiqeHwG0D1JJWjK3I9eu4gaqXgx/CtIyifwftM=
+=DKjL
 -----END PGP SIGNATURE-----
 
---nextPart1494457.PuT8OmLYcd--
+--nextPart4039726.sPzG1Ye0W6--
 
