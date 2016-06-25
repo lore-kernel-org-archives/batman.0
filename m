@@ -1,15 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 25 Jun 2016 17:05:58 +0200
-Message-ID: <2076451.7rm3JqQEl7@sven-edge>
-In-Reply-To: <20160620015901.GE3029@otheros>
-References: <1463310915-7111-1-git-send-email-sven@narfation.org>
- <20160620015901.GE3029@otheros>
+Date: Sat, 25 Jun 2016 17:46:47 +0200
+Message-ID: <1666680.Y9BoZfK7nu@sven-edge>
+In-Reply-To: <1466865846-32621-1-git-send-email-sven@narfation.org>
+References: <1466865846-32621-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart11551810.KTsvSMzkQR";
+Content-Type: multipart/signed; boundary="nextPart63778614.Q0UCzesp2C";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: use kmem_cache for translation
-	table
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: use kmem_cache for
+	translation table
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,36 +20,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart11551810.KTsvSMzkQR
+--nextPart63778614.Q0UCzesp2C
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Monday 20 June 2016 03:59:01 Linus L=FCssing wrote:
-[...]
-> https://www.open-mesh.org/projects/batman-adv/wiki/Kmalloc-kmem-cache=
+On Saturday 25 June 2016 16:44:06 Sven Eckelmann wrote:
+> The translation table (global, local) is usually the part of batman-a=
+dv
+> which has the most dynamical allocated objects. Most of them
+> (tt_local_entry, tt_global_entry, tt_orig_list_entry, tt_change_node,=
+
+> tt_req_node, tt_roam_node) are equally sized. So it makes sense to ha=
+ve
+> them allocated from a kmem_cache for each type.
+>=20
+> This approach allowed a small wireless router (TP-Link TL-841NDv8; SL=
+UB
+> allocator) to store 34% more translation table entries compared to th=
+e
+> current implementation.
+>=20
+> [1] https://open-mesh.org/projects/batman-adv/wiki/Kmalloc-kmem-cache=
 =2Dtests
 >=20
->=20
-> In a nutshell, on a small TP-Link TL-841NDv8 wireless router
-> (MIPS/AR9341), I was able to achieve 34% more global TT entries
-> (or 25% less RAM usage).
-[...]
+> Reported-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
 
-Really interesting. I wouldn't have expected that kind of difference. S=
-o your=20
-ideas really seemed to have worked :)
+Here is the changelog (since the RFC):
 
-I have submitted an actual patch [1]. Do you know when it is planned to=
- have=20
-your nofdb changes [2] merged in gluon?
+v2:
+ - use kmem_cache_zalloc instead of kmem_cache_alloc + memset as
+   suggested by Linus
+ - add cache batadv_tt_change_cache, batadv_tt_req_cache,
+   batadv_tt_roam_cache
+ - Added Reported-by
+ - rewrote commit message
+ - summarize+link the results from Linus' tests
 
 Kind regards,
 =09Sven
-
-[1] https://patchwork.open-mesh.org/patch/16392/
-[2] https://github.com/freifunk-gluon/gluon/pull/780
-
---nextPart11551810.KTsvSMzkQR
+--nextPart63778614.Q0UCzesp2C
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -58,20 +68,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXbp3WAAoJEF2HCgfBJntG2OEP/jddn58/aR64Dkdrdp5VmkxP
-rDE1SxAipWYJ/ImPJjxVlCprytnXP/fkp3aaweZqV8BiX0+VgRbQpe1QvtoNk5rX
-C0ZudY65gVYC4rJADjfUL0+JNIixngFYh1W2ySLbb5DGz8REQqzc3zLNipOE86b7
-GD3cKcWQ8HRXjwujNNLQuT8iNuRLZb/jFyKKHT2JK6LEtGr35xJDffGhcHjuHEEb
-dHpvmSiWuYmLlEbGVDSETrenp5WV+IrfGj/aSjz/szpg7zXeVkoCYMgxpn7vbQWi
-z4OaBOGvN6USzA2V6HEt4yeqzBB4GaGKvccprd7P51Dqf/AafdauxZE2Ic/4oh1j
-2SvtmBCZ/qO7dL4MpRCaBDOb2euvpqmSlMkTpls+58xCKWFW50rhcHb1aBpShtvE
-yN8TMNH/gcQStnos/4u2PJldJrElZXPcig7daQMVm2n6MRFNwlkOYKFu2/lK5Q49
-OSM4TlYaxWAHfPdy7rwQzIV3CLTnlXWLiGs4yOiKZsUnzk4R56UqJBKeerfukklZ
-pr0VCvsaCyBKE120nshyXznWtnPgGUEc7au81qreTRUX9IMc2Z7HQztEdImffDSG
-q19OORI4LGq/ArcYkuDathNMomRmsStrLVMiztA+duzU0kvhEjgUfZtkoSH+bbb3
-tOH/ayZRRNc3UMsSFo8m
-=U2qG
+iQIcBAABCgAGBQJXbqdnAAoJEF2HCgfBJntGWNAQAIg++0fwbctv7uGKIRvlIfs1
+KCInFAnWjpzZkMhiNAP9LICq4IXmAsCs6IrSoL+3cF8utscNRRgCWTWERtbbzVdw
+OeMf62ZbOqQ8V0zmi2vPAY0gYIzxWbDhpGsVSYrGa5N3zYuaEhrYtvNHy5uVizev
+MqkuYEW8iBKEvmrVfURgQQHgd3Ld2209ddtMvMohlpzRc3IPJrZ5arLs+fNudMRs
+/8ePv7ezqh/b070e18f4s5Yh6rrDk6CLGr+y0pOVJR2JiawBFLvvDorBWBGM3o3E
+JoVtqRGKmxkkfiknstCsjyWEVpKADKXtNsa1YNPdDReTun+Fqr70GjGxni3t8Md8
+7iMKwmD7yWxSJ2JcNCUOaNitcusHmYBebGXLn8o2FDNKQMtK4/5WY8R1b6vX34+5
+Q1XE64O8LRPdxJwIr7kaOVa1hXZZLdbld3Yjuvaiqh5ouGNiVQ/JkL6FP9OJTQxt
+C1KL/+qFNrdy48x+Yz9kecltdfEAvxtXcOcqTmusH7ycPXAIAUVk6uH/O2HV20U4
+MW48qNWvXGjhQxOYZSJtfvh9BqrKBqYyQT7FXnCwqz9nBmdF9UDlKSmuNUGB5tbg
+FGUpAIKopIUyAVQnQp8zxH1mus77e54cCcrpUcJCdtsrNx+GOUUZm2JMruPu9XM4
+Unb//weAklOj9ywTv2mA
+=Dw2y
 -----END PGP SIGNATURE-----
 
---nextPart11551810.KTsvSMzkQR--
+--nextPart63778614.Q0UCzesp2C--
 
