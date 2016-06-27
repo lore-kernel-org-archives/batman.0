@@ -1,15 +1,15 @@
 Return-Path: <a@unstable.cc>
-Date: Mon, 27 Jun 2016 10:41:42 +0800
+Date: Mon, 27 Jun 2016 10:36:13 +0800
 From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20160627024142.GZ10666@prodigo>
+Message-ID: <20160627023613.GX10666@prodigo>
 References: <20160612041426.26339-1-a@unstable.cc>
  <20160612041426.26339-4-a@unstable.cc>
- <3127928.zeFBqT8Kuq@bentobox>
+ <1613308.eWzkVEsf7s@bentobox>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="znFrcFTOc9PDN8kJ"
+ protocol="application/pgp-signature"; boundary="tTm07/aDcFLy+pwu"
 Content-Disposition: inline
-In-Reply-To: <3127928.zeFBqT8Kuq@bentobox>
+In-Reply-To: <1613308.eWzkVEsf7s@bentobox>
 Subject: Re: [B.A.T.M.A.N.] [PATCH v5 3/4] batman-adv: B.A.T.M.A.N. V -
  implement GW selection logic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -25,61 +25,58 @@ To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
 
---znFrcFTOc9PDN8kJ
+--tTm07/aDcFLy+pwu
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jun 13, 2016 at 01:12:52PM +0200, Sven Eckelmann wrote:
+On Mon, Jun 13, 2016 at 01:26:31PM +0200, Sven Eckelmann wrote:
 > On Sunday 12 June 2016 12:14:25 Antonio Quartulli wrote:
-> > --- a/net/batman-adv/gateway_client.c
-> > +++ b/net/batman-adv/gateway_client.c
-> > @@ -215,6 +215,10 @@ void batadv_gw_election(struct batadv_priv *bat_pr=
-iv)
-> >         if (!batadv_atomic_dec_not_zero(&bat_priv->gw.reselect) && curr=
-_gw)
-> >                 goto out;
-> > =20
-> > +       /* if gw.reselect is set to 1 it means that a previous call to
-> > +        * gw.is_eligible() said that we have a new best GW, therefore =
-it can
-> > +        * now be picked from the list and selected
-> > +        */
-> >         next_gw =3D bat_priv->algo_ops->gw.get_best_gw_node(bat_priv);
+> > +       if (orig_throughput < (gw_throughput + threshold))
+> > +               goto out;
 >=20
-> I would guess that this should be either in patch 2/4 on in an extra patc=
-h. At
-> least it is about nothing which is touched otherwise in this patch
+> Possible overflow problem in batadv_v_gw_is_eligible. We don't
+> know what the user will add here and what the gw_throughput is.
+>=20
+> We already had a similar problem in the BATMAN_IV gw selection
+> code which resulted in weird gw selections. See f63c54bba31d
+> ("batman-adv: Avoid u32 overflow during gateway select").
 
-Good catch :) Thanks !
+Sven, correct me if I am wrong, but in f63c54bba31d we are changing the typ=
+e of
+the variables aimed to contain the value computed by the "overflowing"
+operation, while in this case we have everything in a if condition: should =
+the
+temporary result be implicitly casted to a larger variable as required ?
 
-I am moving the comment to patch 2/4.
+I may be wrong - but I wanted to ask you to be sure.
 
 Cheers,
+
 
 --=20
 Antonio Quartulli
 
---znFrcFTOc9PDN8kJ
+--tTm07/aDcFLy+pwu
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXcJJmAAoJEJ4aZjxxc6bK/KsP/j3DzyMtMWABOIHEvrmu5nST
-UBc2foa+J7ulHthHgsV7yqq6yDaJlSi7VmdIh3DD3jANKg/1SlWU4o8Y/3fVzE3O
-B3xN2/+aDLpS6S2+8YQrr/HUs8uM+r1GSYdYIwCqLgARxlDhGl0Rpt5Dzss1TVbb
-voLs6Fs3EBAzeiqVJOWGeWOMXlx0PPYL+ulECxvWX62X4TtEsjZsWFWLu/Vsb9bj
-JUDolE9hvZpP2ljgiCXUlW/e6pZ7wJsgPaXzY7Xeq4OYxyhqJrGyIPWsyJBJyaAX
-AXCIFfHuqoLLNIvxroGBZORomAd1F6WVlhLUCscWXSvGi9Arm9kPH2aKnCBNB2WN
-x5EEVHqBpYf9LbPsQqtpmkBQ6EACiHlUOfvk4cGEObOpQTpRLjaDzb26PeV8AzTC
-MgEQ5GomaTFOSd2fWQvFNp0nFiWf1p1F2gu5BWjbpL0pu8Rwl5XUM1o752hGOSRw
-RLNcaZNnFIjs1etWzRuvZyAkczJjal9VoIwDwzIfuAQDSLRL5R0QpvYdadhWlMfp
-4oo4JTG1RDRLg6q8eSDocORc2v8jsA9dpQIIhwJeEnzHWfD5EIcQ+N25kA+rRNs1
-RptO/z6WOh9DNEiwWaFub4nE2bFHl/g4Hs8ocHaI6ObeMknCyo0M2ZpcPQPGr28B
-T/lL728kculqthJcaofp
-=7+lo
+iQIcBAEBCAAGBQJXcJEdAAoJEJ4aZjxxc6bKJqsP/jEAocnsco7H6FZMjyxytKTE
+NBtPFtkGS0p6J2WJSOP6dldEgRBFR9Yi9JrK7nCCRYZB3tKwAaqu0xVA/z2AIZE1
+lECGqM19jYxlsZ4vVOawghlvGKaWnjNntzrDScEOIMmK59mJmk2huuEOE9qwtsR4
+o2uiade7EwlEyZpBQmUHAoP/UBQPId9IIZlkyhDuSW5lHeHr87+t9t5Tu7v5vU7l
+F+t5hIY4do3TpKE3GVcTcJ77ikWBlne6zWctgDGL43geyy6JUBZ+uuB5FAfX0+Wa
+FmCObZDfrWF4tjyP1FfoWUUGIKAprRpyc/KJLQn8y6JNYMkKN6YIPKbag03UyMiM
+PC4b4bip5LkqBF9NY5+3vbgusCInWZtQYlMACU7SL2HPK1OLUabr/0HmGAZm91Om
+LvI0pshxbuS1NKi83vFvbDJpPaaiYY4LHb8sBvja2BPfpEgigpH1TReC2SO+hJsd
+LaEWz+eaRmTTOdfrNFD45iP0RrD+w4Lh1elHlGQc41IpN7YYfacjSzoakhMG48RM
+fA/ntDVLNUkWp0Wm+zxIVPgdKJVOqZjcwLChnkKqUzzNeB+2SCahIGgdyhMWXemV
+T8+6e5p3Z/n5OsVj8a5dUPlEqBv4G+lkST0c0zwjPVULZ8uOmOCvjpGYdIQegVmy
+hb7iTKJKIUHr06UOr1FI
+=8gZE
 -----END PGP SIGNATURE-----
 
---znFrcFTOc9PDN8kJ--
+--tTm07/aDcFLy+pwu--
