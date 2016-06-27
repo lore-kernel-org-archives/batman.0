@@ -1,14 +1,16 @@
 Return-Path: <linus.luessing@c0d3.blue>
-Date: Mon, 27 Jun 2016 05:55:45 +0200
+Date: Mon, 27 Jun 2016 06:02:18 +0200
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20160627035545.GO4407@otheros>
-References: <1466982121-3504-1-git-send-email-sven@narfation.org>
+Message-ID: <20160627040218.GP4407@otheros>
+References: <1466865846-32621-1-git-send-email-sven@narfation.org>
+ <1666680.Y9BoZfK7nu@sven-edge>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <1466982121-3504-1-git-send-email-sven@narfation.org>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Remove orig_node
- reference handling from send_skb_unicast
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1666680.Y9BoZfK7nu@sven-edge>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: use kmem_cache for
+ translation table
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,29 +22,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Mon, Jun 27, 2016 at 01:02:01AM +0200, Sven Eckelmann wrote:
-> The function batadv_send_skb_unicast is not acquiring a reference for an
-> orig_node nor removing it from any datastructure. It still reduces the
-> reference counter for an object which is still in the hands of the caller.
+On Sat, Jun 25, 2016 at 05:46:47PM +0200, Sven Eckelmann wrote:
+> On Saturday 25 June 2016 16:44:06 Sven Eckelmann wrote:
+> > The translation table (global, local) is usually the part of batman-adv
+> > which has the most dynamical allocated objects. Most of them
+> > (tt_local_entry, tt_global_entry, tt_orig_list_entry, tt_change_node,
+> > tt_req_node, tt_roam_node) are equally sized. So it makes sense to have
+> > them allocated from a kmem_cache for each type.
+> > 
+> > This approach allowed a small wireless router (TP-Link TL-841NDv8; SLUB
+> > allocator) to store 34% more translation table entries compared to the
+> > current implementation.
+> > 
+> > [1] https://open-mesh.org/projects/batman-adv/wiki/Kmalloc-kmem-cache-tests
+> > 
+> > Reported-by: Linus Lüssing <linus.luessing@c0d3.blue>
+> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> > ---
 > 
-> This is confusing and can lead to problems in the reference handling in the
-> caller function.
+> Here is the changelog (since the RFC):
 > 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
+> v2:
+>  - use kmem_cache_zalloc instead of kmem_cache_alloc + memset as
+>    suggested by Linus
+>  - add cache batadv_tt_change_cache, batadv_tt_req_cache,
+>    batadv_tt_roam_cache
+>  - Added Reported-by
+>  - rewrote commit message
+>  - summarize+link the results from Linus' tests
 
-I like it, indeed easier to read, especially for the multicast
-part.
+Looks good. Do you have any typical numbers regarding tt_change_cache
+and tt_req_cache sizes for specific setups?
 
-Maybe make it a "This is confusing and could lead to ... in the future." to
-avoid people misreading it as a fix?
-
-
-> diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-> index 729deec..44be408 100644
-> --- a/net/batman-adv/send.c
-> +++ b/net/batman-adv/send.c
-> @@ -362,8 +362,6 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
-
-The kernel doc of batadv_send_skb_unicast seems to need an update,
-too ("s/ and release a reference to this orig_node//").
+Just wondering whether it is worth it to have extra caches for
+these two. (if you don't have any numbers, I might have a look at
+/proc/slabinfo with your patch for some Freifunk network(s) later
+today)
