@@ -1,15 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 27 Jun 2016 08:09:58 +0200
-Message-ID: <8290095.7NSUu8plcS@sven-edge>
-In-Reply-To: <20160627040218.GP4407@otheros>
-References: <1466865846-32621-1-git-send-email-sven@narfation.org>
- <1666680.Y9BoZfK7nu@sven-edge> <20160627040218.GP4407@otheros>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6218050.2Kq1pBdldc";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: use kmem_cache for
-	translation table
+Date: Mon, 27 Jun 2016 08:15:42 +0200
+Message-Id: <1467008142-3797-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v3] batman-adv: Remove orig_node reference
+	handling from send_skb_unicast
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,42 +15,114 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart6218050.2Kq1pBdldc
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+The function batadv_send_skb_unicast is not acquiring a reference for an
+orig_node nor removing it from any datastructure. It still reduces the
+reference counter for an object which is still in the hands of the caller.
 
-On Monday 27 June 2016 06:02:18 Linus L=FCssing wrote:
-[...]
-> Looks good. Do you have any typical numbers regarding tt_change_cache=
+This is confusing and can lead in the future to problems in the reference
+handling of the caller function.
 
-> and tt_req_cache sizes for specific setups?
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+v3:
+ - adjust commit message to sound less like an fix (thanks Linus)
+ - Remove " and release a reference to this orig_node" from kerneldoc of
+   batadv_send_skb_unicast (thanks Linus)
+v2:
+ - remove bogus multicast example
+ - remove Fixes:
+---
+ net/batman-adv/send.c           | 25 +++++++++++++++++--------
+ net/batman-adv/soft-interface.c |  3 +++
+ 2 files changed, 20 insertions(+), 8 deletions(-)
 
-No, I don't have any numbers.
-
-Kind regards,
-=09Sven
---nextPart6218050.2Kq1pBdldc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJXcMM2AAoJEF2HCgfBJntGY3sP/Re4g8tcN3JpDdrVXpM7tQO6
-bnt7+3edPrIiD3W3YH1Jq7AGqabOFz+6auSVE28/vaG2y4v7WP6yxbyKg94bU4cO
-ljeYkz7OaxLNhwW/XefIjt7FHAyBxXUcNykiiqE0MkUeZqxu4N/AU8u48bGB8vIt
-O+VQs/3Fy74jPZLWsfE+UQNUjqCwHM3KRTH819vkUdh5biY7ugEOyRCwau0sVKlc
-U95QI6+3OMIPFQopBK18ujkiv0cPY8WZ2kt8hWHf2vaqq4JqCe/0AVzxGPtsESI6
-GbdgXugHKVyyLjmky4NHBgx2+iyDRREawapomSKtPenUh7aPTEq34M2v0i5I8rt5
-dDwiIYP5N9EY6r0X/dlKG5pStatLE+ABxGlWIoZt7yCQ/MMnvJLmo1+eklZKyT0j
-A0jXadu8DfHlQxtxEi8qg42KItpHNsKOKtvyj1sakcwxjfuvRT54YTvIcgaxp0WT
-k/p2XQZMG2+Q1F/wVZpvKm/5KVypKPahk1os4AQdmtR29SpXwrjRJy3o0jRql169
-Of4alHT/R9BQIb0aQLoo7cMUkPseFMPI+v4JQlxKgvFEOJCNdyaEtNqalPjBulUV
-1uYxVi1PFZvHP6cJjo/vlLpZty1bmAL0XQEfrJ+9RG5HkOapGY8Hjw95jlElDv2g
-HaGsgIgUJ0ewnE3F10Gp
-=g71v
------END PGP SIGNATURE-----
-
---nextPart6218050.2Kq1pBdldc--
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 729deec..b4294ac 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -307,8 +307,7 @@ out:
+  *
+  * Wrap the given skb into a batman-adv unicast or unicast-4addr header
+  * depending on whether BATADV_UNICAST or BATADV_UNICAST_4ADDR was supplied
+- * as packet_type. Then send this frame to the given orig_node and release a
+- * reference to this orig_node.
++ * as packet_type. Then send this frame to the given orig_node.
+  *
+  * Return: NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
+  */
+@@ -362,8 +361,6 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ 		ret = NET_XMIT_SUCCESS;
+ 
+ out:
+-	if (orig_node)
+-		batadv_orig_node_put(orig_node);
+ 	if (ret == NET_XMIT_DROP)
+ 		kfree_skb(skb);
+ 	return ret;
+@@ -395,6 +392,7 @@ int batadv_send_skb_via_tt_generic(struct batadv_priv *bat_priv,
+ 	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
+ 	struct batadv_orig_node *orig_node;
+ 	u8 *src, *dst;
++	int ret;
+ 
+ 	src = ethhdr->h_source;
+ 	dst = ethhdr->h_dest;
+@@ -406,8 +404,13 @@ int batadv_send_skb_via_tt_generic(struct batadv_priv *bat_priv,
+ 	}
+ 	orig_node = batadv_transtable_search(bat_priv, src, dst, vid);
+ 
+-	return batadv_send_skb_unicast(bat_priv, skb, packet_type,
+-				       packet_subtype, orig_node, vid);
++	ret = batadv_send_skb_unicast(bat_priv, skb, packet_type,
++				      packet_subtype, orig_node, vid);
++
++	if (orig_node)
++		batadv_orig_node_put(orig_node);
++
++	return ret;
+ }
+ 
+ /**
+@@ -425,10 +428,16 @@ int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 			   unsigned short vid)
+ {
+ 	struct batadv_orig_node *orig_node;
++	int ret;
+ 
+ 	orig_node = batadv_gw_get_selected_orig(bat_priv);
+-	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST, 0,
+-				       orig_node, vid);
++	ret = batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST, 0,
++				      orig_node, vid);
++
++	if (orig_node)
++		batadv_orig_node_put(orig_node);
++
++	return ret;
+ }
+ 
+ void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 216ac03..e508bf5 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -57,6 +57,7 @@
+ #include "hard-interface.h"
+ #include "multicast.h"
+ #include "network-coding.h"
++#include "originator.h"
+ #include "packet.h"
+ #include "send.h"
+ #include "sysfs.h"
+@@ -377,6 +378,8 @@ dropped:
+ dropped_freed:
+ 	batadv_inc_counter(bat_priv, BATADV_CNT_TX_DROPPED);
+ end:
++	if (mcast_single_orig)
++		batadv_orig_node_put(mcast_single_orig);
+ 	if (primary_if)
+ 		batadv_hardif_put(primary_if);
+ 	return NETDEV_TX_OK;
+-- 
+2.8.1
 
