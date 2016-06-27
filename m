@@ -1,9 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 27 Jun 2016 08:15:42 +0200
-Message-Id: <1467008142-3797-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3] batman-adv: Remove orig_node reference
-	handling from send_skb_unicast
+Date: Mon, 27 Jun 2016 08:19:22 +0200
+Message-ID: <2649945.JKXkXjyaxK@sven-edge>
+In-Reply-To: <20160627023613.GX10666@prodigo>
+References: <20160612041426.26339-1-a@unstable.cc>
+ <1613308.eWzkVEsf7s@bentobox> <20160627023613.GX10666@prodigo>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4974825.Q2L8x9B8lV";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v5 3/4] batman-adv: B.A.T.M.A.N. V -
+	implement GW selection logic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,116 +19,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Antonio Quartulli <a@unstable.cc>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-The function batadv_send_skb_unicast is not acquiring a reference for an
-orig_node nor removing it from any datastructure. It still reduces the
-reference counter for an object which is still in the hands of the caller.
+--nextPart4974825.Q2L8x9B8lV
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-This is confusing and can lead in the future to problems in the reference
-handling of the caller function.
+On Monday 27 June 2016 10:36:13 Antonio Quartulli wrote:
+> On Mon, Jun 13, 2016 at 01:26:31PM +0200, Sven Eckelmann wrote:
+> > On Sunday 12 June 2016 12:14:25 Antonio Quartulli wrote:
+> > > +       if (orig_throughput < (gw_throughput + threshold))
+> > > +               goto out;
+> > 
+> > Possible overflow problem in batadv_v_gw_is_eligible. We don't
+> > know what the user will add here and what the gw_throughput is.
+> > 
+> > We already had a similar problem in the BATMAN_IV gw selection
+> > code which resulted in weird gw selections. See f63c54bba31d
+> > ("batman-adv: Avoid u32 overflow during gateway select").
+> 
+> Sven, correct me if I am wrong, but in f63c54bba31d we are changing the type of
+> the variables aimed to contain the value computed by the "overflowing"
+> operation, while in this case we have everything in a if condition: should the
+> temporary result be implicitly casted to a larger variable as required ?
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v3:
- - adjust commit message to sound less like an fix (thanks Linus)
- - Remove " and release a reference to this orig_node" from kerneldoc of
-   batadv_send_skb_unicast (thanks Linus)
-v2:
- - remove bogus multicast example
- - remove Fixes:
----
- net/batman-adv/send.c           | 25 +++++++++++++++++--------
- net/batman-adv/soft-interface.c |  3 +++
- 2 files changed, 20 insertions(+), 8 deletions(-)
+No, it isn't casted to a larger type. Yes, C has some wild casting rules but I
+would not be aware of an "help the programmer to avoid overflows" casting
+rule.
 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 729deec..b4294ac 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -307,8 +307,7 @@ out:
-  *
-  * Wrap the given skb into a batman-adv unicast or unicast-4addr header
-  * depending on whether BATADV_UNICAST or BATADV_UNICAST_4ADDR was supplied
-- * as packet_type. Then send this frame to the given orig_node and release a
-- * reference to this orig_node.
-+ * as packet_type. Then send this frame to the given orig_node.
-  *
-  * Return: NET_XMIT_DROP in case of error or NET_XMIT_SUCCESS otherwise.
-  */
-@@ -362,8 +361,6 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
- 		ret = NET_XMIT_SUCCESS;
- 
- out:
--	if (orig_node)
--		batadv_orig_node_put(orig_node);
- 	if (ret == NET_XMIT_DROP)
- 		kfree_skb(skb);
- 	return ret;
-@@ -395,6 +392,7 @@ int batadv_send_skb_via_tt_generic(struct batadv_priv *bat_priv,
- 	struct ethhdr *ethhdr = (struct ethhdr *)skb->data;
- 	struct batadv_orig_node *orig_node;
- 	u8 *src, *dst;
-+	int ret;
- 
- 	src = ethhdr->h_source;
- 	dst = ethhdr->h_dest;
-@@ -406,8 +404,13 @@ int batadv_send_skb_via_tt_generic(struct batadv_priv *bat_priv,
- 	}
- 	orig_node = batadv_transtable_search(bat_priv, src, dst, vid);
- 
--	return batadv_send_skb_unicast(bat_priv, skb, packet_type,
--				       packet_subtype, orig_node, vid);
-+	ret = batadv_send_skb_unicast(bat_priv, skb, packet_type,
-+				      packet_subtype, orig_node, vid);
-+
-+	if (orig_node)
-+		batadv_orig_node_put(orig_node);
-+
-+	return ret;
- }
- 
- /**
-@@ -425,10 +428,16 @@ int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 			   unsigned short vid)
- {
- 	struct batadv_orig_node *orig_node;
-+	int ret;
- 
- 	orig_node = batadv_gw_get_selected_orig(bat_priv);
--	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST, 0,
--				       orig_node, vid);
-+	ret = batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST, 0,
-+				      orig_node, vid);
-+
-+	if (orig_node)
-+		batadv_orig_node_put(orig_node);
-+
-+	return ret;
- }
- 
- void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 216ac03..e508bf5 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -57,6 +57,7 @@
- #include "hard-interface.h"
- #include "multicast.h"
- #include "network-coding.h"
-+#include "originator.h"
- #include "packet.h"
- #include "send.h"
- #include "sysfs.h"
-@@ -377,6 +378,8 @@ dropped:
- dropped_freed:
- 	batadv_inc_counter(bat_priv, BATADV_CNT_TX_DROPPED);
- end:
-+	if (mcast_single_orig)
-+		batadv_orig_node_put(mcast_single_orig);
- 	if (primary_if)
- 		batadv_hardif_put(primary_if);
- 	return NETDEV_TX_OK;
--- 
-2.8.1
+We had no other idea how to fix it in the mentioned commit. But here we can do
+it without casting to u64.
+
+Kind regards,
+	Sven
+--nextPart4974825.Q2L8x9B8lV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXcMVqAAoJEF2HCgfBJntGoBMP/j/UX0/zwZWP2Ukc3g+rZqmU
+bkzPO4m9yzjqQufBo3iWt/thu/MIzlOYweZBkoljYqO1xTwBjAE+/Gm6I5LxYLio
+dXDU5vG/yPHXFmvlqTT2Z6+/1d4PB5AkwPeF06N5TsdYg8vwjj8sZNd3XT3YUUVB
+AKTMwSnyNaOfV90LpqCRjDUsRLLg3eyx9Ne0uDfmv0lSAS7lhpxlyxGq4k9eCIQ5
+/C8FFUsJzohRyXk3tZ+F93+ggdCnVeDaZL0A9UG8Bx5F2Yp2R5YQWmKzrDJoGI4G
+2MyuEzrgm5bNix2I4Oz8jJbA4L1s+wCoQdJ4TS739fu4AFLoM5ZFckZd7JDluhMA
+V8F1CttYGpbRImJKHHlINH+po0uwhfnXf3+GqI+cGG9VAXU7ZNtjZ8XyBs7Fv+kt
+yLvam0woHLCyemzXs4bt2oM5dxwlh5Pl+I41vnTKNL7XOUSdjiAs5sXu4r+MeRpW
+zwflL7cC+AlocC1h5m1d3HGiYJEG3PbeRfka9TUPVK535QTsZqQjfy3fSKh6afqN
+t+yNCPVOAib27lQgk2DihzamxXpKNp/5RQ54kdEweNxLok+SX83oBPcDPoRqf5VQ
+bQgH0e9wAjUyoCg2mWaAdwMDtGuEcH5odZQNDrZ4ZU1ukMUmYK7t4bG3dpC6JMoD
+dES0P2+mGXfxW/0F2pEi
+=DrON
+-----END PGP SIGNATURE-----
+
+--nextPart4974825.Q2L8x9B8lV--
 
