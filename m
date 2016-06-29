@@ -1,11 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 29 Jun 2016 23:52:17 +0200
-Message-Id: <1467237137-8418-3-git-send-email-sven@narfation.org>
-In-Reply-To: <1467237137-8418-1-git-send-email-sven@narfation.org>
+Date: Thu, 30 Jun 2016 00:19:15 +0200
+Message-ID: <2204976.3uEdOmLjge@sven-edge>
+In-Reply-To: <1467237137-8418-2-git-send-email-sven@narfation.org>
 References: <1467237137-8418-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH maint 3/3] batman-adv: Fix reference leak in
-	batadv_find_router
+ <1467237137-8418-2-git-send-email-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart6409071.9ZkJkfjlEk";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/3] batman-adv: Fix non-atomic
+	bla_claim::backbone_gw access
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,99 +21,50 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The replacement of last_bonding_candidate in batadv_orig_node has to be an
-atomic operation. Otherwise it is possible that the reference counter of a
-batadv_orig_ifinfo is reduced which was no longer the
-last_bonding_candidate when the new candidate is added. This can either
-lead to an invalid memory access or to reference leaks which make it
-impossible to an interface which was added to batman-adv.
+--nextPart6409071.9ZkJkfjlEk
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Fixes: 797edd9e87ac ("batman-adv: add bonding again")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/routing.c | 33 ++++++++++++++++++++++++++-------
- net/batman-adv/types.h   |  4 +++-
- 2 files changed, 29 insertions(+), 8 deletions(-)
+On Wednesday 29 June 2016 23:52:16 Sven Eckelmann wrote:
+> The pointer batadv_bla_claim::backbone_gw can be changed at any time.
+> Therefore, access to it must be protected to ensure that two function
+> accessing the same backbone_gw are actually accessing the same. This is
+> especially important when the crc_lock is used or when the backbone_gw of a
+> claim is exchanged.
+> 
+> Not doing so leads to invalid memory access and/or reference leaks.
+> 
+> Fixes: a9ce0dc43e2c ("batman-adv: add basic bridge loop avoidance code")
+> Fixes: b307e72d119f ("batman-adv: lock crc access in bridge loop avoidance")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 6c2901a..82db982 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -456,6 +456,29 @@ static int batadv_check_unicast_packet(struct batadv_priv *bat_priv,
- }
- 
- /**
-+ * batadv_last_bonding_replace - Replace last_bonding_candidate of orig_node
-+ * @orig_node: originator node whose bonding candidates should be replaced
-+ * @new_candidate: new bonding candidate or NULL
-+ */
-+static void
-+batadv_last_bonding_replace(struct batadv_orig_node *orig_node,
-+			    struct batadv_orig_ifinfo *new_candidate)
-+{
-+	struct batadv_orig_ifinfo *old_candidate;
-+
-+	spin_lock_bh(&orig_node->neigh_list_lock);
-+	old_candidate = orig_node->last_bonding_candidate;
-+
-+	if (new_candidate)
-+		kref_get(&new_candidate->refcount);
-+	orig_node->last_bonding_candidate = new_candidate;
-+	spin_unlock_bh(&orig_node->neigh_list_lock);
-+
-+	if (old_candidate)
-+		batadv_orig_ifinfo_put(old_candidate);
-+}
-+
-+/**
-  * batadv_find_router - find a suitable router for this originator
-  * @bat_priv: the bat priv with all the soft interface information
-  * @orig_node: the destination node
-@@ -562,10 +585,6 @@ next:
- 	}
- 	rcu_read_unlock();
- 
--	/* last_bonding_candidate is reset below, remove the old reference. */
--	if (orig_node->last_bonding_candidate)
--		batadv_orig_ifinfo_put(orig_node->last_bonding_candidate);
--
- 	/* After finding candidates, handle the three cases:
- 	 * 1) there is a next candidate, use that
- 	 * 2) there is no next candidate, use the first of the list
-@@ -580,15 +599,15 @@ next:
- 			batadv_orig_ifinfo_put(first_candidate);
- 		}
- 		router = next_candidate_router;
--		orig_node->last_bonding_candidate = next_candidate;
-+		batadv_last_bonding_replace(orig_node, next_candidate);
- 	} else if (first_candidate) {
- 		batadv_neigh_node_put(router);
- 
- 		/* refcounting has already been done in the loop above. */
- 		router = first_candidate_router;
--		orig_node->last_bonding_candidate = first_candidate;
-+		batadv_last_bonding_replace(orig_node, first_candidate);
- 	} else {
--		orig_node->last_bonding_candidate = NULL;
-+		batadv_last_bonding_replace(orig_node, NULL);
- 	}
- 
- 	return router;
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 21fe6ad..b3f899f 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -330,7 +330,9 @@ struct batadv_orig_node {
- 	DECLARE_BITMAP(bcast_bits, BATADV_TQ_LOCAL_WINDOW_SIZE);
- 	u32 last_bcast_seqno;
- 	struct hlist_head neigh_list;
--	/* neigh_list_lock protects: neigh_list and router */
-+	/* neigh_list_lock protects: neigh_list, ifinfo_list,
-+	 * last_bonding_candidate and router
-+	 */
- 	spinlock_t neigh_list_lock;
- 	struct hlist_node hash_entry;
- 	struct batadv_priv *bat_priv;
--- 
-2.8.1
+Hm, this doesn't look really correct. Maybe we should drop this for now.
+
+Kind regards,
+	Sven
+--nextPart6409071.9ZkJkfjlEk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXdEljAAoJEF2HCgfBJntGHkUP/2yPTmH2WhXnVJBG6DdDNv35
+Gyq97lM5NEXrZaZSKF/CIZwdiJSx3acWpHG+cvZHsVpWQ8wDBTuzWLoV9MFBIZlq
+LRVW4K+6tMDMqbskgzPHssoVaC4Pbnk0K8E8gKb4eJQwRlWA1KEHuZOQsYu/ByIA
+tl3R260N71ZH00nGPvGC2kzzV0YzvJzjChZVTikuXw9PPDMtl4lxZCZmOT9MldZ+
+r7EWV17Uib8SPDnZ5pkpcooKl3+rTsr1aNMbXYdGtNG89O6nltQRVwTKD+PcLomW
+kjLA7g9WmQjw33RoY7hQ3doyJxYM/vXdoW4tq1iXX2TSSIaGQU6Nx0uEPS+MYgxB
+rDDEth9Hy14PuIY+E6v8/PtNN9P4X+SXJ6GuQLVyUqRFS7d1nUPoCQRgWwSCiOOq
+Nev6XW+pa3/K5vF7gMJPrztP9hD22pJ8FyECq30TKZtmWDMtSMqK8NdxEAfmSiZr
+RUp13KKJ88bb684sXT/ALJGeKZUumzoi77Lx5XdR6rdB5ekwi7pf39SyZnNmTSEL
+/ntqou2j6baPurPyo2P5ejYTi5oK8/wXhEfRa9BICaadl8cPambU+Peu0kcfBUbO
+AIqBioEoisRZuffiRUoCUgWRfQ0vlTMpX0K4RGLv3O9eats294RjFfQv+DkrGgyM
+S8XguI/d4M3GS+JJCjhN
+=OnaR
+-----END PGP SIGNATURE-----
+
+--nextPart6409071.9ZkJkfjlEk--
 
