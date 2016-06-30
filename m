@@ -1,14 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 30 Jun 2016 16:00:10 +0200
-Message-ID: <3504520.4WTWZUr9vM@bentobox>
-In-Reply-To: <1467274165-2866-1-git-send-email-linus.luessing@c0d3.blue>
-References: <1467274165-2866-1-git-send-email-linus.luessing@c0d3.blue>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4735833.MlyeRxG8xu";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix Kconfig dependencies
-	regarding multicast optimizations
+Date: Thu, 30 Jun 2016 20:10:46 +0200
+Message-Id: <1467310246-5820-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v2 1/3] batman-adv: Fix orig_node_vlan leak
+	on orig_node_release
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,64 +14,47 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart4735833.MlyeRxG8xu
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+batadv_orig_node_new uses batadv_orig_node_vlan_new to allocate a new
+batadv_orig_node_vlan and add it to batadv_orig_node::vlan_list. References
+to this list have also to be cleaned when the batadv_orig_node is removed.
 
-On Thursday 30 June 2016 10:09:25 Linus L=FCssing wrote:
-> Since recently the multicast optimizations are using functions from t=
-he
-> bridge module. If batman-adv is a kernel built-in, then these bridge
-> functions need to be accessible immediately. Thus adding a Kconfig
-> dependency for the multicast optimizations to depend on batman-adv be=
-ing
-> built as a module if the bridge is built as a module, too.
-[...]
->  config BATMAN_ADV_MCAST
->  =09bool "Multicast optimisation"
-> -=09depends on BATMAN_ADV && INET
-> +=09depends on BATMAN_ADV && INET && !(BRIDGE=3Dm && BATMAN_ADV=3Dy)
->  =09default n
->  =09help
->  =09  This option enables the multicast optimisation which aims to
+Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+--
+v2:
+ - nothing changed
+---
+ net/batman-adv/originator.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-The used functions are provided via stubs in include/linux/if_bridge.h =
-when
-bridge is disabled. So the symbols are only missing when the batman-adv=
- code
-is compiled as part of the kernel but the bridge code is compiled as mo=
-dules.
-So this change seems to make sense.
-
-Reviewed-by: Sven Eckelmann <sven@narfation.org>
-
-It is now part of the linux-merge.git.
-
-Kind regards,
-=09Sven
---nextPart4735833.MlyeRxG8xu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJXdSXqAAoJEF2HCgfBJntGo/kP/1h2MPNtgHgSA6fpp2rFXg1S
-tSzSSugWKtjDg7Wo+UC926GK0VvZVs1JCs26eAnOUMbEz4xwAo80wuq2TiU8YLZb
-bEI2iFe+G/ZtgCcJE8ggqSp11Wl29WzCVm5qzGsbyR+lOqs+IYT5w5vI89v4VqYZ
-VcDFIz0Sn8EaimODPVWIirOsQFbC6GCh8myQ3UlkqjRmvWEWxgKhLHAxvCbo+IEt
-ECWX9wU1P0TFOt5Symrgw4VJukkXHSir5UIkHKhW/RJkLI8X4JBy+ER5PngdKPRC
-nmogfO9mV1Nlm4isnl0Z27n1Lykz1ODU8bW8qVmEWjm4VQH+FKDy0TtEFTOVsnad
-jh9qa8zoAixfNkau/iCguoJgrS70TM1D4t8FKocaQmGKoHfTkcWak0BhrWion3lM
-pZOCaXDHMlWK5+Wov05Xul+h+bGpPpv25Ek1n9XqaJOsXmsxRNBq0exzDeiHrVWx
-VzZ/PANbXeRtiR9fxukXwDQGqQU7Rr/Zir7UnoRdOkUSgRgogOJJwzomVgVsOAPB
-cVFfIsSUfz4O27p08+vZ9RYRH1tQgc/uxQMV2Zl6Z/0+T0PqeUqYgZnt325Msnn5
-ywr6glv5Q0fn9Y/OB/qJYHayAvs8kqiJhVpUiqszwVJ/japljI8837kcwqOlQwGO
-3QcjyqnjEYLsIY6pmwn+
-=MB7L
------END PGP SIGNATURE-----
-
---nextPart4735833.MlyeRxG8xu--
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 8755e5c..40626b4 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -786,6 +786,7 @@ static void batadv_orig_node_release(struct kref *ref)
+ 	struct batadv_neigh_node *neigh_node;
+ 	struct batadv_orig_node *orig_node;
+ 	struct batadv_orig_ifinfo *orig_ifinfo;
++	struct batadv_orig_node_vlan *vlan;
+ 
+ 	orig_node = container_of(ref, struct batadv_orig_node, refcount);
+ 
+@@ -805,6 +806,13 @@ static void batadv_orig_node_release(struct kref *ref)
+ 	}
+ 	spin_unlock_bh(&orig_node->neigh_list_lock);
+ 
++	spin_lock_bh(&orig_node->vlan_list_lock);
++	hlist_for_each_entry_safe(vlan, node_tmp, &orig_node->vlan_list, list) {
++		hlist_del_rcu(&vlan->list);
++		batadv_orig_node_vlan_put(vlan);
++	}
++	spin_unlock_bh(&orig_node->vlan_list_lock);
++
+ 	/* Free nc_nodes */
+ 	batadv_nc_purge_orig(orig_node->bat_priv, orig_node, NULL);
+ 
+-- 
+2.8.1
 
