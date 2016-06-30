@@ -1,11 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 30 Jun 2016 08:18:46 +0200
-Message-Id: <1467267526-27838-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1467237137-8418-3-git-send-email-sven@narfation.org>
-References: <1467237137-8418-3-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH maint v2 3/3] batman-adv: Fix reference leak
-	in batadv_find_router
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Thu, 30 Jun 2016 10:09:25 +0200
+Message-Id: <1467274165-2866-1-git-send-email-linus.luessing@c0d3.blue>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix Kconfig dependencies
+	regarding multicast optimizations
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,123 +18,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The replacement of last_bonding_candidate in batadv_orig_node has to be an
-atomic operation. Otherwise it is possible that the reference counter of a
-batadv_orig_ifinfo is reduced which was no longer the
-last_bonding_candidate when the new candidate is added. This can either
-lead to an invalid memory access or to reference leaks which make it
-impossible to an interface which was added to batman-adv.
+Since recently the multicast optimizations are using functions from the
+bridge module. If batman-adv is a kernel built-in, then these bridge
+functions need to be accessible immediately. Thus adding a Kconfig
+dependency for the multicast optimizations to depend on batman-adv being
+built as a module if the bridge is built as a module, too.
 
-Fixes: 797edd9e87ac ("batman-adv: add bonding again")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v2:
- - get refcnt for new selected router before assigning it to returned
-   variable
- - move refcnt cleanup of all remembered candidates/routers to central place
----
- net/batman-adv/routing.c | 52 ++++++++++++++++++++++++++++++++++++------------
- net/batman-adv/types.h   |  4 +++-
- 2 files changed, 42 insertions(+), 14 deletions(-)
+This fixes build errors like the following:
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index bba9276..a4253d4 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -462,6 +462,29 @@ static int batadv_check_unicast_packet(struct batadv_priv *bat_priv,
- }
+~~~
+   net/built-in.o: In function `batadv_mcast_mla_update':
+>> (.text+0x19b7eb): undefined reference to `br_multicast_has_querier_anywhere'
+   net/built-in.o: In function `batadv_mcast_mla_update':
+>> (.text+0x19b7fa): undefined reference to `br_multicast_has_querier_adjacent'
+   net/built-in.o: In function `batadv_mcast_mla_update':
+   (.text+0x19b809): undefined reference to `br_multicast_has_querier_anywhere'
+   net/built-in.o: In function `batadv_mcast_mla_update':
+   (.text+0x19b818): undefined reference to `br_multicast_has_querier_adjacent'
+   net/built-in.o: In function `batadv_mcast_mla_update':
+>> (.text+0x19b8cf): undefined reference to `br_multicast_list_adjacent'
+~~~
+
+Fixes: 391b59cdb111 ("batman-adv: Add multicast optimization support for bridged setups")
+Reported-by: kbuild test robot <fengguang.wu@intel.com>
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+ net/batman-adv/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
+index b7ba97d..833bb14 100644
+--- a/net/batman-adv/Kconfig
++++ b/net/batman-adv/Kconfig
+@@ -66,7 +66,7 @@ config BATMAN_ADV_NC
  
- /**
-+ * batadv_last_bonding_replace - Replace last_bonding_candidate of orig_node
-+ * @orig_node: originator node whose bonding candidates should be replaced
-+ * @new_candidate: new bonding candidate or NULL
-+ */
-+static void
-+batadv_last_bonding_replace(struct batadv_orig_node *orig_node,
-+			    struct batadv_orig_ifinfo *new_candidate)
-+{
-+	struct batadv_orig_ifinfo *old_candidate;
-+
-+	spin_lock_bh(&orig_node->neigh_list_lock);
-+	old_candidate = orig_node->last_bonding_candidate;
-+
-+	if (new_candidate)
-+		kref_get(&new_candidate->refcount);
-+	orig_node->last_bonding_candidate = new_candidate;
-+	spin_unlock_bh(&orig_node->neigh_list_lock);
-+
-+	if (old_candidate)
-+		batadv_orig_ifinfo_put(old_candidate);
-+}
-+
-+/**
-  * batadv_find_router - find a suitable router for this originator
-  * @bat_priv: the bat priv with all the soft interface information
-  * @orig_node: the destination node
-@@ -568,10 +591,6 @@ next:
- 	}
- 	rcu_read_unlock();
- 
--	/* last_bonding_candidate is reset below, remove the old reference. */
--	if (orig_node->last_bonding_candidate)
--		batadv_orig_ifinfo_put(orig_node->last_bonding_candidate);
--
- 	/* After finding candidates, handle the three cases:
- 	 * 1) there is a next candidate, use that
- 	 * 2) there is no next candidate, use the first of the list
-@@ -580,21 +599,28 @@ next:
- 	if (next_candidate) {
- 		batadv_neigh_node_put(router);
- 
--		/* remove references to first candidate, we don't need it. */
--		if (first_candidate) {
--			batadv_neigh_node_put(first_candidate_router);
--			batadv_orig_ifinfo_put(first_candidate);
--		}
-+		kref_get(&next_candidate_router->refcount);
- 		router = next_candidate_router;
--		orig_node->last_bonding_candidate = next_candidate;
-+		batadv_last_bonding_replace(orig_node, next_candidate);
- 	} else if (first_candidate) {
- 		batadv_neigh_node_put(router);
- 
--		/* refcounting has already been done in the loop above. */
-+		kref_get(&first_candidate_router->refcount);
- 		router = first_candidate_router;
--		orig_node->last_bonding_candidate = first_candidate;
-+		batadv_last_bonding_replace(orig_node, first_candidate);
- 	} else {
--		orig_node->last_bonding_candidate = NULL;
-+		batadv_last_bonding_replace(orig_node, NULL);
-+	}
-+
-+	/* cleanup of candidates */
-+	if (first_candidate) {
-+		batadv_neigh_node_put(first_candidate_router);
-+		batadv_orig_ifinfo_put(first_candidate);
-+	}
-+
-+	if (next_candidate) {
-+		batadv_neigh_node_put(next_candidate_router);
-+		batadv_orig_ifinfo_put(next_candidate);
- 	}
- 
- 	return router;
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index b6353af..8a80684 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -329,7 +329,9 @@ struct batadv_orig_node {
- 	DECLARE_BITMAP(bcast_bits, BATADV_TQ_LOCAL_WINDOW_SIZE);
- 	u32 last_bcast_seqno;
- 	struct hlist_head neigh_list;
--	/* neigh_list_lock protects: neigh_list and router */
-+	/* neigh_list_lock protects: neigh_list, ifinfo_list,
-+	 * last_bonding_candidate and router
-+	 */
- 	spinlock_t neigh_list_lock;
- 	struct hlist_node hash_entry;
- 	struct batadv_priv *bat_priv;
+ config BATMAN_ADV_MCAST
+ 	bool "Multicast optimisation"
+-	depends on BATMAN_ADV && INET
++	depends on BATMAN_ADV && INET && !(BRIDGE=m && BATMAN_ADV=y)
+ 	default n
+ 	help
+ 	  This option enables the multicast optimisation which aims to
 -- 
-2.8.1
+2.1.4
 
