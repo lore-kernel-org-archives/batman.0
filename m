@@ -1,11 +1,10 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  1 Jul 2016 15:08:52 +0200
-Message-Id: <1467378549-9646-1-git-send-email-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] pull request for net-next: batman-adv 2016-07-01
+Date: Fri,  1 Jul 2016 15:08:53 +0200
+Message-Id: <1467378549-9646-2-git-send-email-sw@simonwunderlich.de>
+In-Reply-To: <1467378549-9646-1-git-send-email-sw@simonwunderlich.de>
+References: <1467378549-9646-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH 01/17] batman-adv: Start new development cycle
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,101 +17,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi David,
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/main.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-we are a bit late to submit our feature patches, but I hope we make it in time.
-Antonio is taking a pause in his upstream work, so I'll be submitting our
-batman-adv patches for now. It is my first time, so please bear with me. :)
-
-Please pull or let me know of any problem!
-
-Thank you,
-      Simon
-
-The following changes since commit 99860208bc62d8ebd5c57495b84856506fe075bc:
-
-  sched: remove NET_XMIT_POLICED (2016-06-12 22:02:11 -0400)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-20160701
-
-for you to fetch changes up to 4e3e823b5a503235630921287f130e1d8d22d200:
-
-  batman-adv: Add debugfs table for mcast flags (2016-06-30 10:29:43 +0200)
-
-----------------------------------------------------------------
-This feature patchset includes the following changes:
-
- - two patches with minimal clean up work by Antonio Quartulli and
-   Simon Wunderlich
-
- - eight patches of B.A.T.M.A.N. V, API and documentation clean
-   up work, by Antonio Quartulli and Marek Lindner
-
- - Andrew Lunn fixed the skb priority adoption when forwarding
-   fragmented packets (two patches)
-
- - Multicast optimization support is now enabled for bridges which
-   comes with some protocol updates, by Linus Luessing
-
-----------------------------------------------------------------
-Andrew Lunn (2):
-  batman-adv: Set skb priority in fragments
-  batman-adv: Include frame priority in fragment header
-
-Antonio Quartulli (4):
-  batman-adv: statically print gateway table header
-  batman-adv: remove ogm_emit and ogm_schedule API calls
-  batman-adv: remove useless inline attribute for sysfs helper function
-  batman-adv: move GW mode and selection class to private data structure
-
-Linus Lüssing (4):
-  batman-adv: Always flood IGMP/MLD reports
-  batman-adv: Add multicast optimization support for bridged setups
-  batman-adv: Adding logging of mcast flag changes
-  batman-adv: Add debugfs table for mcast flags
-
-Marek Lindner (5):
-  batman-adv: document sysfs files in alphabetical order
-  batman-adv: update elp interval documentation
-  batman-adv: refactor batadv_neigh_node_* functions to follow common
-    style
-  batman-adv: remove unused callback from batadv_algo_ops struct
-  batman-adv: init ELP tweaking options only once
-
-Simon Wunderlich (2):
-  batman-adv: Start new development cycle
-  batman-adv: remove unused vid local variable in tt seq print
-
- .../ABI/testing/sysfs-class-net-batman-adv         |  20 +-
- net/batman-adv/Kconfig                             |   2 +-
- net/batman-adv/bat_algo.h                          |   7 +-
- net/batman-adv/bat_iv_ogm.c                        |  72 ++-
- net/batman-adv/bat_v.c                             |  29 +-
- net/batman-adv/bat_v_elp.c                         |   4 +-
- net/batman-adv/bat_v_ogm.c                         |   4 +-
- net/batman-adv/debugfs.c                           |  23 +
- net/batman-adv/fragmentation.c                     |  12 +-
- net/batman-adv/gateway_client.c                    |  15 +-
- net/batman-adv/gateway_common.c                    |   6 +-
- net/batman-adv/hard-interface.c                    |   6 +-
- net/batman-adv/main.c                              |   2 -
- net/batman-adv/main.h                              |   6 +-
- net/batman-adv/multicast.c                         | 499 +++++++++++++++++++--
- net/batman-adv/multicast.h                         |   3 +
- net/batman-adv/originator.c                        |  40 +-
- net/batman-adv/originator.h                        |   6 +-
- net/batman-adv/packet.h                            |   7 +-
- net/batman-adv/routing.c                           |   2 +
- net/batman-adv/send.c                              |  61 +--
- net/batman-adv/send.h                              |   4 +-
- net/batman-adv/soft-interface.c                    |  10 +-
- net/batman-adv/sysfs.c                             |  22 +-
- net/batman-adv/translation-table.c                 |   2 -
- net/batman-adv/types.h                             |  32 +-
- 26 files changed, 704 insertions(+), 192 deletions(-)
-
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 76925266..c356d91 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -24,7 +24,7 @@
+ #define BATADV_DRIVER_DEVICE "batman-adv"
+ 
+ #ifndef BATADV_SOURCE_VERSION
+-#define BATADV_SOURCE_VERSION "2016.2"
++#define BATADV_SOURCE_VERSION "2016.3"
+ #endif
+ 
+ /* B.A.T.M.A.N. parameters */
 -- 
 2.8.1
 
