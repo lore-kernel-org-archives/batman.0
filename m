@@ -1,15 +1,15 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 01 Jul 2016 15:34:24 +0200
-Message-ID: <1569263.Zj2Iic9t9P@prime>
-In-Reply-To: <1467310294-5892-1-git-send-email-sven@narfation.org>
-References: <1467310246-5820-1-git-send-email-sven@narfation.org>
- <1467310294-5892-1-git-send-email-sven@narfation.org>
+Date: Fri, 01 Jul 2016 15:48:26 +0200
+Message-ID: <1670925.mp1DXEWlck@prime>
+In-Reply-To: <1465557064-24406-5-git-send-email-apape@phoenixcontact.com>
+References: <1465557064-24406-1-git-send-email-apape@phoenixcontact.com>
+ <1465557064-24406-5-git-send-email-apape@phoenixcontact.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2703907.YDLzbXu3mH";
+Content-Type: multipart/signed; boundary="nextPart1593069.JJEvafSRTi";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 2/3] batman-adv: Fix non-atomic
-	bla_claim::backbone_gw access
+Subject: Re: [B.A.T.M.A.N.] [PATCH v5 4/6] batman-adv: drop unicast packets
+	from other backbone gw
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,34 +19,29 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2703907.YDLzbXu3mH
+--nextPart1593069.JJEvafSRTi
 Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset="utf-8"
 
-On Thursday 30 June 2016 20:11:33 Sven Eckelmann wrote:
-> The pointer batadv_bla_claim::backbone_gw can be changed at any time.
-> Therefore, access to it must be protected to ensure that two function
-> accessing the same backbone_gw are actually accessing the same. This is
-> especially important when the crc_lock is used or when the backbone_gw of a
-> claim is exchanged.
+On Friday 10 June 2016 13:11:02 Andreas Pape wrote:
+> Additional dropping of unicast packets received from another backbone gw of
+> the same backbone network before being forwarded to the same backbone again
+> is necessary. It was observed in a test setup that in rare cases these
+> frames lead to looping unicast traffic backbone->mesh->backbone.
 > 
-> Not doing so leads to invalid memory access and/or reference leaks.
-> 
-> Fixes: a9ce0dc43e2c ("batman-adv: add basic bridge loop avoidance code")
-> Fixes: b307e72d119f ("batman-adv: lock crc access in bridge loop avoidance")
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
 
-Technically, you can already add my "Acked-by". However I'd like to suggest 
-one style change: Could you please rename batadv_bla_claim_backbone_gw into 
-batadv_bla_claim_get_backbone_gw? I think this would make it clearer what the 
-function does and also shows get/put pairs clearly in the code.
+Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
 
-Thanks!
+I believe Svens previous concerns have been cleared. When you resend this 
+patchset, please add my Acked-by into your commit message (unless you do major 
+changes in the content ...)
+
+Thanks,
      Simon
---nextPart2703907.YDLzbXu3mH
+--nextPart1593069.JJEvafSRTi
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -54,20 +49,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXdnFgAAoJEKEr45hCkp6hn3cP/jORmS/FQBANekuNpJudTMvJ
-XMaDdI8kCmfz9pTKRmnF9LmQWZ47/Dq6XiE6pOc6/LcNq9NAfk8kf4ep6J7IAv9S
-Cqgx+JZQfRwzfjqug9/B+F6pORytkSv63wnirIVOYjCXXCxK36/uJDLcxbsZJJTr
-MUY3AioE52T6N5ptKbHXWdB6fE5YC/fY0wPEcvVREbXGE7weP9ig3BM0VR2XSwLN
-70ipR6YCZhdJiHzYxAJoOYVtzaOSFxAJivMS5OpTo9adqRko+oigk1Vv/FELAYIc
-tDJFxVowMloEcJ0mhLLWrmm8PwDYTIgEXTyNUOIGVS2+pUoMzql6zlLE4zfmhUy8
-+8G0Sab0G+tjLvxAheSoFmbk3jBFi+P6X35tYTFwrtjmQLGcol8s/hNl1e/Vd35D
-kC2WYgKOtalF5yZaCtRrUfSxonh9A2eAL4kwm9OMkOVcW9pExZki/IJxXnmlgG6i
-kpYWL8bz18zVYEPczYd4f9YzNrUyYLqdHXAhXcvJvOaMn/IoSjz9TcsJMGenEjct
-7jZd4OnF6xD7M7TJIJw2BOq0siFKXzNxmvxcvZ8h6CgYBBymZ9h6TyuCYa2l1G95
-SYWy73oh9Bsn0t16Slqlaz5IWl1fvI3YGnk5QL1cA5aUJeSa9L7KTpXeQsCi5SYR
-XcoH6cgEEiqwYM8t0rJi
-=WHzQ
+iQIcBAABCgAGBQJXdnSqAAoJEKEr45hCkp6howcP/1aqsLRHbSdJqv4lSQCLIuHH
+AQ3nE9tFVitovxsQipCmw/5IdhXcQ7+q1mXaGx2bQQ0QamwzkivWPdasafGiiF1u
+FIAhu066Y9lAXisOirPXoo7Qnwaer2ftwNMZLxftKPwnmfr/dmvonCoUJKu2HZsC
+2jQ7Vqr/l0MDek3jsYT8VFJRBC+hXgx7Auyfh1EekLtepz0slyzUcT85ZHSJbyk/
+ki2WNUbkT4CEfOBD1HNoDp0HxXmhJpKwM3arIqH3uMQoD3GBRuOqJi1Or0hr/dlc
+lqQTPR7mUwCsUZ7g0clDRoc+L3m8AjhIkKVjjK6Hqnu2b3M0YO1enKbbG2qnG5mn
+tb/PlTojBTxNHpfkYAjzkOfMpqCokOAkoZSSOw8FErk0k6bgYG1sNA+Zim5Nv/sT
+CB7byEj1ZPmXnsvA1s9xrA1dIMmuv+RsVqzdmb+3YYm8sJkpR8tTU0NEGY5977DQ
+/0qiCNQljaAozTWKJrSgtbY0VLxTXVMMUToyNmxBp3oofJkLaw8APfx/TZKqlmqo
+A/DU2uNQ7HCZlfn/s02z7lqM8Hesr2r89cFjxbblBiJsY3D4MJS2QHVr7469kwrZ
+1tZdBEj+K609+W1R2iYzHq8PiZ7DA25X3z4/9dqlMHxNH38tywwS4agji3ALlYxx
+Hg0aAUhbyX3fNk+tZD1P
+=hZ5c
 -----END PGP SIGNATURE-----
 
---nextPart2703907.YDLzbXu3mH--
+--nextPart1593069.JJEvafSRTi--
 
