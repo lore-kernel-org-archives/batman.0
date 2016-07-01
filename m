@@ -1,14 +1,15 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  1 Jul 2016 15:09:09 +0200
-Message-Id: <1467378549-9646-18-git-send-email-sw@simonwunderlich.de>
-In-Reply-To: <1467378549-9646-1-git-send-email-sw@simonwunderlich.de>
-References: <1467378549-9646-1-git-send-email-sw@simonwunderlich.de>
+Date: Fri, 01 Jul 2016 15:30:43 +0200
+Message-ID: <4909174.zVFi6JY9rb@prime>
+In-Reply-To: <1467310294-5892-2-git-send-email-sven@narfation.org>
+References: <1467310246-5820-1-git-send-email-sven@narfation.org>
+ <1467310294-5892-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 17/17] batman-adv: Add debugfs table for
-	mcast flags
+Content-Type: multipart/signed; boundary="nextPart1538073.F3OOdBybVS";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 3/3] batman-adv: Fix reference leak in
+	batadv_find_router
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,231 +19,160 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+--nextPart1538073.F3OOdBybVS
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
 
-This patch adds a debugfs table with originators and their according
-multicast flags to help users figure out why multicast optimizations
-might be enabled or disabled for them.
+Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
 
-Tested-by: Simon Wunderlich <sw@simonwunderlich.de>
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/debugfs.c   |  23 ++++++++++
- net/batman-adv/multicast.c | 104 +++++++++++++++++++++++++++++++++++++++++++++
- net/batman-adv/multicast.h |   3 ++
- 3 files changed, 130 insertions(+)
+Thanks, this also looks much cleaner now!
+     Simon
 
-diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
-index 9529004..f187a8f 100644
---- a/net/batman-adv/debugfs.c
-+++ b/net/batman-adv/debugfs.c
-@@ -48,6 +48,7 @@
- #include "distributed-arp-table.h"
- #include "gateway_client.h"
- #include "icmp_socket.h"
-+#include "multicast.h"
- #include "network-coding.h"
- #include "originator.h"
- #include "translation-table.h"
-@@ -363,6 +364,22 @@ static int batadv_nc_nodes_open(struct inode *inode, struct file *file)
- }
- #endif
- 
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+/**
-+ * batadv_mcast_flags_open - prepare file handler for reads from mcast_flags
-+ * @inode: inode which was opened
-+ * @file: file handle to be initialized
-+ *
-+ * Return: 0 on success or negative error number in case of failure
-+ */
-+static int batadv_mcast_flags_open(struct inode *inode, struct file *file)
-+{
-+	struct net_device *net_dev = (struct net_device *)inode->i_private;
-+
-+	return single_open(file, batadv_mcast_flags_seq_print_text, net_dev);
-+}
-+#endif
-+
- #define BATADV_DEBUGINFO(_name, _mode, _open)		\
- struct batadv_debuginfo batadv_debuginfo_##_name = {	\
- 	.attr = {					\
-@@ -407,6 +424,9 @@ static BATADV_DEBUGINFO(transtable_local, S_IRUGO,
- #ifdef CONFIG_BATMAN_ADV_NC
- static BATADV_DEBUGINFO(nc_nodes, S_IRUGO, batadv_nc_nodes_open);
- #endif
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+static BATADV_DEBUGINFO(mcast_flags, S_IRUGO, batadv_mcast_flags_open);
-+#endif
- 
- static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- 	&batadv_debuginfo_neighbors,
-@@ -424,6 +444,9 @@ static struct batadv_debuginfo *batadv_mesh_debuginfos[] = {
- #ifdef CONFIG_BATMAN_ADV_NC
- 	&batadv_debuginfo_nc_nodes,
- #endif
-+#ifdef CONFIG_BATMAN_ADV_MCAST
-+	&batadv_debuginfo_mcast_flags,
-+#endif
- 	NULL,
- };
- 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 2d1a896..d3222db 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -41,6 +41,7 @@
- #include <linux/printk.h>
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
-+#include <linux/seq_file.h>
- #include <linux/skbuff.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
-@@ -52,6 +53,8 @@
- #include <net/ip.h>
- #include <net/ipv6.h>
- 
-+#include "hard-interface.h"
-+#include "hash.h"
- #include "packet.h"
- #include "translation-table.h"
- 
-@@ -1130,6 +1133,107 @@ void batadv_mcast_init(struct batadv_priv *bat_priv)
- }
- 
- /**
-+ * batadv_mcast_flags_print_header - print own mcast flags to debugfs table
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @seq: debugfs table seq_file struct
-+ *
-+ * Prints our own multicast flags including a more specific reason why
-+ * they are set, that is prints the bridge and querier state too, to
-+ * the debugfs table specified via @seq.
-+ */
-+static void batadv_mcast_flags_print_header(struct batadv_priv *bat_priv,
-+					    struct seq_file *seq)
-+{
-+	u8 flags = bat_priv->mcast.flags;
-+	char querier4, querier6, shadowing4, shadowing6;
-+	bool bridged = bat_priv->mcast.bridged;
-+
-+	if (bridged) {
-+		querier4 = bat_priv->mcast.querier_ipv4.exists ? '.' : '4';
-+		querier6 = bat_priv->mcast.querier_ipv6.exists ? '.' : '6';
-+		shadowing4 = bat_priv->mcast.querier_ipv4.shadowing ? '4' : '.';
-+		shadowing6 = bat_priv->mcast.querier_ipv6.shadowing ? '6' : '.';
-+	} else {
-+		querier4 = '?';
-+		querier6 = '?';
-+		shadowing4 = '?';
-+		shadowing6 = '?';
-+	}
-+
-+	seq_printf(seq, "Multicast flags (own flags: [%c%c%c])\n",
-+		   (flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES) ? 'U' : '.',
-+		   (flags & BATADV_MCAST_WANT_ALL_IPV4) ? '4' : '.',
-+		   (flags & BATADV_MCAST_WANT_ALL_IPV6) ? '6' : '.');
-+	seq_printf(seq, "* Bridged [U]\t\t\t\t%c\n", bridged ? 'U' : '.');
-+	seq_printf(seq, "* No IGMP/MLD Querier [4/6]:\t\t%c/%c\n",
-+		   querier4, querier6);
-+	seq_printf(seq, "* Shadowing IGMP/MLD Querier [4/6]:\t%c/%c\n",
-+		   shadowing4, shadowing6);
-+	seq_puts(seq, "-------------------------------------------\n");
-+	seq_printf(seq, "       %-10s %s\n", "Originator", "Flags");
-+}
-+
-+/**
-+ * batadv_mcast_flags_seq_print_text - print the mcast flags of other nodes
-+ * @seq: seq file to print on
-+ * @offset: not used
-+ *
-+ * This prints a table of (primary) originators and their according
-+ * multicast flags, including (in the header) our own.
-+ *
-+ * Return: always 0
-+ */
-+int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset)
-+{
-+	struct net_device *net_dev = (struct net_device *)seq->private;
-+	struct batadv_priv *bat_priv = netdev_priv(net_dev);
-+	struct batadv_hard_iface *primary_if;
-+	struct batadv_hashtable *hash = bat_priv->orig_hash;
-+	struct batadv_orig_node *orig_node;
-+	struct hlist_head *head;
-+	u8 flags;
-+	u32 i;
-+
-+	primary_if = batadv_seq_print_text_primary_if_get(seq);
-+	if (!primary_if)
-+		return 0;
-+
-+	batadv_mcast_flags_print_header(bat_priv, seq);
-+
-+	for (i = 0; i < hash->size; i++) {
-+		head = &hash->table[i];
-+
-+		rcu_read_lock();
-+		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
-+			if (!test_bit(BATADV_ORIG_CAPA_HAS_MCAST,
-+				      &orig_node->capa_initialized))
-+				continue;
-+
-+			if (!test_bit(BATADV_ORIG_CAPA_HAS_MCAST,
-+				      &orig_node->capabilities)) {
-+				seq_printf(seq, "%pM -\n", orig_node->orig);
-+				continue;
-+			}
-+
-+			flags = orig_node->mcast_flags;
-+
-+			seq_printf(seq, "%pM [%c%c%c]\n", orig_node->orig,
-+				   (flags & BATADV_MCAST_WANT_ALL_UNSNOOPABLES)
-+				   ? 'U' : '.',
-+				   (flags & BATADV_MCAST_WANT_ALL_IPV4)
-+				   ? '4' : '.',
-+				   (flags & BATADV_MCAST_WANT_ALL_IPV6)
-+				   ? '6' : '.');
-+		}
-+		rcu_read_unlock();
-+	}
-+
-+	batadv_hardif_put(primary_if);
-+
-+	return 0;
-+}
-+
-+/**
-  * batadv_mcast_free - free the multicast optimizations structures
-  * @bat_priv: the bat priv with all the soft interface information
-  */
-diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
-index 80bceec..1fb00ba 100644
---- a/net/batman-adv/multicast.h
-+++ b/net/batman-adv/multicast.h
-@@ -20,6 +20,7 @@
- 
- #include "main.h"
- 
-+struct seq_file;
- struct sk_buff;
- 
- /**
-@@ -46,6 +47,8 @@ batadv_mcast_forw_mode(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 
- void batadv_mcast_init(struct batadv_priv *bat_priv);
- 
-+int batadv_mcast_flags_seq_print_text(struct seq_file *seq, void *offset);
-+
- void batadv_mcast_free(struct batadv_priv *bat_priv);
- 
- void batadv_mcast_purge_orig(struct batadv_orig_node *orig_node);
--- 
-2.8.1
+On Thursday 30 June 2016 20:11:34 Sven Eckelmann wrote:
+> The replacement of last_bonding_candidate in batadv_orig_node has to be an
+> atomic operation. Otherwise it is possible that the reference counter of a
+> batadv_orig_ifinfo is reduced which was no longer the
+> last_bonding_candidate when the new candidate is added. This can either
+> lead to an invalid memory access or to reference leaks which make it
+> impossible to an interface which was added to batman-adv.
+> 
+> Fixes: 797edd9e87ac ("batman-adv: add bonding again")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> v2:
+>  - get refcnt for new selected router before assigning it to returned
+>    variable
+>  - move refcnt cleanup of all remembered candidates/routers to central place
+> ---
+>  net/batman-adv/routing.c | 52
+> ++++++++++++++++++++++++++++++++++++------------ net/batman-adv/types.h   |
+>  4 +++-
+>  2 files changed, 42 insertions(+), 14 deletions(-)
+> 
+> diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+> index bba9276..a4253d4 100644
+> --- a/net/batman-adv/routing.c
+> +++ b/net/batman-adv/routing.c
+> @@ -462,6 +462,29 @@ static int batadv_check_unicast_packet(struct
+> batadv_priv *bat_priv, }
+> 
+>  /**
+> + * batadv_last_bonding_replace - Replace last_bonding_candidate of
+> orig_node + * @orig_node: originator node whose bonding candidates should
+> be replaced + * @new_candidate: new bonding candidate or NULL
+> + */
+> +static void
+> +batadv_last_bonding_replace(struct batadv_orig_node *orig_node,
+> +			    struct batadv_orig_ifinfo *new_candidate)
+> +{
+> +	struct batadv_orig_ifinfo *old_candidate;
+> +
+> +	spin_lock_bh(&orig_node->neigh_list_lock);
+> +	old_candidate = orig_node->last_bonding_candidate;
+> +
+> +	if (new_candidate)
+> +		kref_get(&new_candidate->refcount);
+> +	orig_node->last_bonding_candidate = new_candidate;
+> +	spin_unlock_bh(&orig_node->neigh_list_lock);
+> +
+> +	if (old_candidate)
+> +		batadv_orig_ifinfo_put(old_candidate);
+> +}
+> +
+> +/**
+>   * batadv_find_router - find a suitable router for this originator
+>   * @bat_priv: the bat priv with all the soft interface information
+>   * @orig_node: the destination node
+> @@ -568,10 +591,6 @@ next:
+>  	}
+>  	rcu_read_unlock();
+> 
+> -	/* last_bonding_candidate is reset below, remove the old reference. */
+> -	if (orig_node->last_bonding_candidate)
+> -		batadv_orig_ifinfo_put(orig_node->last_bonding_candidate);
+> -
+>  	/* After finding candidates, handle the three cases:
+>  	 * 1) there is a next candidate, use that
+>  	 * 2) there is no next candidate, use the first of the list
+> @@ -580,21 +599,28 @@ next:
+>  	if (next_candidate) {
+>  		batadv_neigh_node_put(router);
+> 
+> -		/* remove references to first candidate, we don't need it. */
+> -		if (first_candidate) {
+> -			batadv_neigh_node_put(first_candidate_router);
+> -			batadv_orig_ifinfo_put(first_candidate);
+> -		}
+> +		kref_get(&next_candidate_router->refcount);
+>  		router = next_candidate_router;
+> -		orig_node->last_bonding_candidate = next_candidate;
+> +		batadv_last_bonding_replace(orig_node, next_candidate);
+>  	} else if (first_candidate) {
+>  		batadv_neigh_node_put(router);
+> 
+> -		/* refcounting has already been done in the loop above. */
+> +		kref_get(&first_candidate_router->refcount);
+>  		router = first_candidate_router;
+> -		orig_node->last_bonding_candidate = first_candidate;
+> +		batadv_last_bonding_replace(orig_node, first_candidate);
+>  	} else {
+> -		orig_node->last_bonding_candidate = NULL;
+> +		batadv_last_bonding_replace(orig_node, NULL);
+> +	}
+> +
+> +	/* cleanup of candidates */
+> +	if (first_candidate) {
+> +		batadv_neigh_node_put(first_candidate_router);
+> +		batadv_orig_ifinfo_put(first_candidate);
+> +	}
+> +
+> +	if (next_candidate) {
+> +		batadv_neigh_node_put(next_candidate_router);
+> +		batadv_orig_ifinfo_put(next_candidate);
+>  	}
+> 
+>  	return router;
+> diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+> index d82f6b4..96af6da 100644
+> --- a/net/batman-adv/types.h
+> +++ b/net/batman-adv/types.h
+> @@ -329,7 +329,9 @@ struct batadv_orig_node {
+>  	DECLARE_BITMAP(bcast_bits, BATADV_TQ_LOCAL_WINDOW_SIZE);
+>  	u32 last_bcast_seqno;
+>  	struct hlist_head neigh_list;
+> -	/* neigh_list_lock protects: neigh_list and router */
+> +	/* neigh_list_lock protects: neigh_list, ifinfo_list,
+> +	 * last_bonding_candidate and router
+> +	 */
+>  	spinlock_t neigh_list_lock;
+>  	struct hlist_node hash_entry;
+>  	struct batadv_priv *bat_priv;
+
+--nextPart1538073.F3OOdBybVS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXdnCEAAoJEKEr45hCkp6hIw8QAMI0+QKvY9yINkPwPxpWE1+R
+QUkdd93v62OWAfCFlW/R6KEMlQyI2/9iCwreQALP+hV3NFuZmXJiabdh58S3Sn5f
+pC1vQSt24lZTJKdPlwCQAME+GJ5N2npPjoTUy+vkMpW6h7bzPEH19oGHDX/9oMEu
+6NvNcsDldOYDgTkbrAy9JGMQ7TmrS/i4Roaypo476TICjEtq5I50z1DyhmpFSS+n
+FjumEGtV58DfDbPt5oQIRB6QqFTmSdjgY+VlVRmDQ8jfmxPIb0amMQLNOvcCori3
+ZGyPHxJRFB14GmyGjM72ux26UUDeTIomhtfPLCeoHg/K+xEurkF3vVe1xnZPd697
+vlbNsK3EQ/V3r5DYEt0hxRBmZKH7qzTRF8X9+iloRqeBHObQBJUbuTikcZ1kjRBJ
+8L2rp0fAhB8SjJaYoYWDlLnYnVOFARy9Z+VRI1EoPdG9g+7fLcXW1yYMaz6KyMNG
+XTI1/Lq5tTIHCVnW4kck6rc+iLE1Y4SzNHY7ix/EtIONFMAQekvnfPG9fev1yYGX
+V7yAdcR8sWjvn4D2+FbWiR+WGj9LSQ9jpwUxyCE980zUwCTD6ZAQgcOGx0oFIAfn
+p0DRpJEcqY9hOR0KxeasGxWNeVLPDGKv/vM6NPgctZTVNwm+bqZBk2/oNJA5gitj
+bRBpL1XdwVndePts9vz9
+=nOBw
+-----END PGP SIGNATURE-----
+
+--nextPart1538073.F3OOdBybVS--
 
