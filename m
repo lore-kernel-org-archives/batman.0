@@ -1,11 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  1 Jul 2016 15:49:43 +0200
-Message-Id: <1467380983-14959-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1467310294-5892-1-git-send-email-sven@narfation.org>
-References: <1467310294-5892-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v3 2/4] batman-adv: Fix non-atomic
-	bla_claim::backbone_gw access
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Fri, 01 Jul 2016 15:52:14 +0200
+Message-ID: <2959979.HSCOgA5Hin@prime>
+In-Reply-To: <1465557064-24406-2-git-send-email-apape@phoenixcontact.com>
+References: <1465557064-24406-1-git-send-email-apape@phoenixcontact.com>
+ <1465557064-24406-2-git-send-email-apape@phoenixcontact.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart36686078.4EFdiTvbJo";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v5 1/6] batman-adv: prevent multiple ARP
+	replies sent by gateways if dat enbled
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,295 +21,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The pointer batadv_bla_claim::backbone_gw can be changed at any time.
-Therefore, access to it must be protected to ensure that two function
-accessing the same backbone_gw are actually accessing the same. This is
-especially important when the crc_lock is used or when the backbone_gw of a
-claim is exchanged.
+--nextPart36686078.4EFdiTvbJo
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
 
-Not doing so leads to invalid memory access and/or reference leaks.
+On Friday 10 June 2016 13:10:59 Andreas Pape wrote:
+> If dat is enabled it must be made sure that only the backbone gw which has
+> claimed the remote destination for the ARP request answers the ARP request
+> directly if the MAC address is known due to the local dat table. This
+> prevents multiple ARP replies in a common backbone if more than one
+> gateway already knows the remote mac searched for in the ARP request.
+> 
+> Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
 
-Fixes: a9ce0dc43e2c ("batman-adv: add basic bridge loop avoidance code")
-Fixes: b307e72d119f ("batman-adv: lock crc access in bridge loop avoidance")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v3:
- - rename batadv_bla_claim_backbone_gw to batadv_bla_claim_get_backbone_gw
-v2:
- - Move backbone release of claim to batadv_claim_release
- - added kerneldoc for backbone_lock
----
- net/batman-adv/bridge_loop_avoidance.c | 111 ++++++++++++++++++++++++++-------
- net/batman-adv/types.h                 |   2 +
- 2 files changed, 90 insertions(+), 23 deletions(-)
+Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 748a9ea..a796bde 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -177,10 +177,21 @@ static void batadv_backbone_gw_put(struct batadv_bla_backbone_gw *backbone_gw)
- static void batadv_claim_release(struct kref *ref)
- {
- 	struct batadv_bla_claim *claim;
-+	struct batadv_bla_backbone_gw *old_backbone_gw;
- 
- 	claim = container_of(ref, struct batadv_bla_claim, refcount);
- 
--	batadv_backbone_gw_put(claim->backbone_gw);
-+	spin_lock_bh(&claim->backbone_lock);
-+	old_backbone_gw = claim->backbone_gw;
-+	claim->backbone_gw = NULL;
-+	spin_unlock_bh(&claim->backbone_lock);
-+
-+	spin_lock_bh(&old_backbone_gw->crc_lock);
-+	old_backbone_gw->crc ^= crc16(0, claim->addr, ETH_ALEN);
-+	spin_unlock_bh(&old_backbone_gw->crc_lock);
-+
-+	batadv_backbone_gw_put(old_backbone_gw);
-+
- 	kfree_rcu(claim, rcu);
- }
- 
-@@ -674,8 +685,10 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
- 				 const u8 *mac, const unsigned short vid,
- 				 struct batadv_bla_backbone_gw *backbone_gw)
- {
-+	struct batadv_bla_backbone_gw *old_backbone_gw;
- 	struct batadv_bla_claim *claim;
- 	struct batadv_bla_claim search_claim;
-+	bool remove_crc = false;
- 	int hash_added;
- 
- 	ether_addr_copy(search_claim.addr, mac);
-@@ -689,8 +702,10 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
- 			return;
- 
- 		ether_addr_copy(claim->addr, mac);
-+		spin_lock_init(&claim->backbone_lock);
- 		claim->vid = vid;
- 		claim->lasttime = jiffies;
-+		kref_get(&backbone_gw->refcount);
- 		claim->backbone_gw = backbone_gw;
- 
- 		kref_init(&claim->refcount);
-@@ -718,15 +733,26 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
- 			   "bla_add_claim(): changing ownership for %pM, vid %d\n",
- 			   mac, BATADV_PRINT_VID(vid));
- 
--		spin_lock_bh(&claim->backbone_gw->crc_lock);
--		claim->backbone_gw->crc ^= crc16(0, claim->addr, ETH_ALEN);
--		spin_unlock_bh(&claim->backbone_gw->crc_lock);
--		batadv_backbone_gw_put(claim->backbone_gw);
-+		remove_crc = true;
- 	}
--	/* set (new) backbone gw */
-+
-+	/* replace backbone_gw atomically and adjust reference counters */
-+	spin_lock_bh(&claim->backbone_lock);
-+	old_backbone_gw = claim->backbone_gw;
- 	kref_get(&backbone_gw->refcount);
- 	claim->backbone_gw = backbone_gw;
-+	spin_unlock_bh(&claim->backbone_lock);
-+
-+	if (remove_crc) {
-+		/* remove claim address from old backbone_gw */
-+		spin_lock_bh(&old_backbone_gw->crc_lock);
-+		old_backbone_gw->crc ^= crc16(0, claim->addr, ETH_ALEN);
-+		spin_unlock_bh(&old_backbone_gw->crc_lock);
-+	}
- 
-+	batadv_backbone_gw_put(old_backbone_gw);
-+
-+	/* add claim address to new backbone_gw */
- 	spin_lock_bh(&backbone_gw->crc_lock);
- 	backbone_gw->crc ^= crc16(0, claim->addr, ETH_ALEN);
- 	spin_unlock_bh(&backbone_gw->crc_lock);
-@@ -737,6 +763,26 @@ claim_free_ref:
- }
- 
- /**
-+ * batadv_bla_claim_get_backbone_gw - Get valid reference for backbone_gw of
-+ *  claim
-+ * @claim: claim whose backbone_gw should be returned
-+ *
-+ * Return: valid reference to claim::backbone_gw
-+ */
-+static struct batadv_bla_backbone_gw *
-+batadv_bla_claim_get_backbone_gw(struct batadv_bla_claim *claim)
-+{
-+	struct batadv_bla_backbone_gw *backbone_gw;
-+
-+	spin_lock_bh(&claim->backbone_lock);
-+	backbone_gw = claim->backbone_gw;
-+	kref_get(&backbone_gw->refcount);
-+	spin_unlock_bh(&claim->backbone_lock);
-+
-+	return backbone_gw;
-+}
-+
-+/**
-  * batadv_bla_del_claim - delete a claim from the claim hash
-  * @bat_priv: the bat priv with all the soft interface information
-  * @mac: mac address of the claim to be removed
-@@ -760,10 +806,6 @@ static void batadv_bla_del_claim(struct batadv_priv *bat_priv,
- 			   batadv_choose_claim, claim);
- 	batadv_claim_put(claim); /* reference from the hash is gone */
- 
--	spin_lock_bh(&claim->backbone_gw->crc_lock);
--	claim->backbone_gw->crc ^= crc16(0, claim->addr, ETH_ALEN);
--	spin_unlock_bh(&claim->backbone_gw->crc_lock);
--
- 	/* don't need the reference from hash_find() anymore */
- 	batadv_claim_put(claim);
- }
-@@ -1216,6 +1258,7 @@ static void batadv_bla_purge_claims(struct batadv_priv *bat_priv,
- 				    struct batadv_hard_iface *primary_if,
- 				    int now)
- {
-+	struct batadv_bla_backbone_gw *backbone_gw;
- 	struct batadv_bla_claim *claim;
- 	struct hlist_head *head;
- 	struct batadv_hashtable *hash;
-@@ -1230,14 +1273,17 @@ static void batadv_bla_purge_claims(struct batadv_priv *bat_priv,
- 
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(claim, head, hash_entry) {
-+			backbone_gw = batadv_bla_claim_get_backbone_gw(claim);
- 			if (now)
- 				goto purge_now;
--			if (!batadv_compare_eth(claim->backbone_gw->orig,
-+
-+			if (!batadv_compare_eth(backbone_gw->orig,
- 						primary_if->net_dev->dev_addr))
--				continue;
-+				goto skip;
-+
- 			if (!batadv_has_timed_out(claim->lasttime,
- 						  BATADV_BLA_CLAIM_TIMEOUT))
--				continue;
-+				goto skip;
- 
- 			batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 				   "bla_purge_claims(): %pM, vid %d, time out\n",
-@@ -1245,8 +1291,10 @@ static void batadv_bla_purge_claims(struct batadv_priv *bat_priv,
- 
- purge_now:
- 			batadv_handle_unclaim(bat_priv, primary_if,
--					      claim->backbone_gw->orig,
-+					      backbone_gw->orig,
- 					      claim->addr, claim->vid);
-+skip:
-+			batadv_backbone_gw_put(backbone_gw);
- 		}
- 		rcu_read_unlock();
- 	}
-@@ -1757,9 +1805,11 @@ batadv_bla_loopdetect_check(struct batadv_priv *bat_priv, struct sk_buff *skb,
- bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 		   unsigned short vid, bool is_bcast)
- {
-+	struct batadv_bla_backbone_gw *backbone_gw;
- 	struct ethhdr *ethhdr;
- 	struct batadv_bla_claim search_claim, *claim = NULL;
- 	struct batadv_hard_iface *primary_if;
-+	bool own_claim;
- 	bool ret;
- 
- 	ethhdr = eth_hdr(skb);
-@@ -1794,8 +1844,12 @@ bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 	}
- 
- 	/* if it is our own claim ... */
--	if (batadv_compare_eth(claim->backbone_gw->orig,
--			       primary_if->net_dev->dev_addr)) {
-+	backbone_gw = batadv_bla_claim_get_backbone_gw(claim);
-+	own_claim = batadv_compare_eth(backbone_gw->orig,
-+				       primary_if->net_dev->dev_addr);
-+	batadv_backbone_gw_put(backbone_gw);
-+
-+	if (own_claim) {
- 		/* ... allow it in any case */
- 		claim->lasttime = jiffies;
- 		goto allow;
-@@ -1859,7 +1913,9 @@ bool batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- {
- 	struct ethhdr *ethhdr;
- 	struct batadv_bla_claim search_claim, *claim = NULL;
-+	struct batadv_bla_backbone_gw *backbone_gw;
- 	struct batadv_hard_iface *primary_if;
-+	bool client_roamed;
- 	bool ret = false;
- 
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
-@@ -1889,8 +1945,12 @@ bool batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 		goto allow;
- 
- 	/* check if we are responsible. */
--	if (batadv_compare_eth(claim->backbone_gw->orig,
--			       primary_if->net_dev->dev_addr)) {
-+	backbone_gw = batadv_bla_claim_get_backbone_gw(claim);
-+	client_roamed = batadv_compare_eth(backbone_gw->orig,
-+					   primary_if->net_dev->dev_addr);
-+	batadv_backbone_gw_put(backbone_gw);
-+
-+	if (client_roamed) {
- 		/* if yes, the client has roamed and we have
- 		 * to unclaim it.
- 		 */
-@@ -1938,6 +1998,7 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
- 	struct net_device *net_dev = (struct net_device *)seq->private;
- 	struct batadv_priv *bat_priv = netdev_priv(net_dev);
- 	struct batadv_hashtable *hash = bat_priv->bla.claim_hash;
-+	struct batadv_bla_backbone_gw *backbone_gw;
- 	struct batadv_bla_claim *claim;
- 	struct batadv_hard_iface *primary_if;
- 	struct hlist_head *head;
-@@ -1962,17 +2023,21 @@ int batadv_bla_claim_table_seq_print_text(struct seq_file *seq, void *offset)
- 
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(claim, head, hash_entry) {
--			is_own = batadv_compare_eth(claim->backbone_gw->orig,
-+			backbone_gw = batadv_bla_claim_get_backbone_gw(claim);
-+
-+			is_own = batadv_compare_eth(backbone_gw->orig,
- 						    primary_addr);
- 
--			spin_lock_bh(&claim->backbone_gw->crc_lock);
--			backbone_crc = claim->backbone_gw->crc;
--			spin_unlock_bh(&claim->backbone_gw->crc_lock);
-+			spin_lock_bh(&backbone_gw->crc_lock);
-+			backbone_crc = backbone_gw->crc;
-+			spin_unlock_bh(&backbone_gw->crc_lock);
- 			seq_printf(seq, " * %pM on %5d by %pM [%c] (%#.4x)\n",
- 				   claim->addr, BATADV_PRINT_VID(claim->vid),
--				   claim->backbone_gw->orig,
-+				   backbone_gw->orig,
- 				   (is_own ? 'x' : ' '),
- 				   backbone_crc);
-+
-+			batadv_backbone_gw_put(backbone_gw);
- 		}
- 		rcu_read_unlock();
- 	}
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index ba846b0..0051222 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1042,6 +1042,7 @@ struct batadv_bla_backbone_gw {
-  * @addr: mac address of claimed non-mesh client
-  * @vid: vlan id this client was detected on
-  * @backbone_gw: pointer to backbone gw claiming this client
-+ * @backbone_lock: lock protecting backbone_gw pointer
-  * @lasttime: last time we heard of claim (locals only)
-  * @hash_entry: hlist node for batadv_priv_bla::claim_hash
-  * @refcount: number of contexts the object is used
-@@ -1051,6 +1052,7 @@ struct batadv_bla_claim {
- 	u8 addr[ETH_ALEN];
- 	unsigned short vid;
- 	struct batadv_bla_backbone_gw *backbone_gw;
-+	spinlock_t backbone_lock; /* protects backbone_gw */
- 	unsigned long lasttime;
- 	struct hlist_node hash_entry;
- 	struct rcu_head rcu;
--- 
-2.8.1
+Please add my Acked-by on resend.
+
+Thanks!
+     Simon
+--nextPart36686078.4EFdiTvbJo
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXdnWOAAoJEKEr45hCkp6hj3wQAJKwzqiSyQVl5oT6mgGGF0hX
+oOS28OMsweWCjA8eXvQ2vtk1YJ2mfBKqVGxKKF79GOKVfxm2pxlpsp0SZOYxrCdi
+0GYCAQimBFxRc3AyD/2SVKYetzWuQY87uh4zfk+6gQ9Yn1olDKs+WscmSigcqkBV
+aFRTJZgSvTjM4bgXpVYOEk9Bgh0s7+Mo/MhUHPH9Hug2RPlNKKWXMSDxIKB4wMGn
+thEGeY+3nEHHVA4vpdwPygqgU+m/Ko/3V0X2E4dzyTf1nmBtMN6HUBjGavgG1I39
+X29LgipfU2+lh90h10hUgkxBMh4+SQyJ5ffHsvHE5ShJ6DjML79MO9qfy0eU+NxY
+ynY8lbJxq5BkS67/sp2uvYFQCmmW+/UC3FCIKT2wZbahS2u1qCeA8UoFskWyO3Qn
+jwSla4sBY/FyDVBs3iBYFFvxcl7bKTYWH3JvK91g19Q+E9wvATfzWhOk4QIV2u6l
+mxGhbTh8L0Q0VNPWvoxtEPz0xMBrQZlINf6XNqONIGpOeyATcP7bnOKMpl4YWveP
+0FtjcDYMWVknpSMzrYGGiBC9QYHYXMfTEqyzJPTStvSaphozw1lUk1sayaCHxgLM
+OCSHd6Q21GZ27OrIujm2Kb+UdKPv4jSgqn0eyHGTBqDbRB+n7B1lUPjCWSrlvjZW
+JgF2/N9t/YKLIz58Uv96
+=cKeY
+-----END PGP SIGNATURE-----
+
+--nextPart36686078.4EFdiTvbJo--
 
