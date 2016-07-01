@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  1 Jul 2016 15:08:56 +0200
-Message-Id: <1467378549-9646-5-git-send-email-sw@simonwunderlich.de>
+Date: Fri,  1 Jul 2016 15:08:57 +0200
+Message-Id: <1467378549-9646-6-git-send-email-sw@simonwunderlich.de>
 In-Reply-To: <1467378549-9646-1-git-send-email-sw@simonwunderlich.de>
 References: <1467378549-9646-1-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 04/17] batman-adv: document sysfs files in
-	alphabetical order
+Subject: [B.A.T.M.A.N.] [PATCH 05/17] batman-adv: update elp interval
+	documentation
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,47 +23,27 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mare
 
 From: Marek Lindner <mareklindner@neomailbox.ch>
 
-Also update obsolete email address.
-
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Acked-by: Antonio Quartulli <a@unstable.cc>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- Documentation/ABI/testing/sysfs-class-net-batman-adv | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ Documentation/ABI/testing/sysfs-class-net-batman-adv | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Documentation/ABI/testing/sysfs-class-net-batman-adv b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-index 518f6a1..77d3083 100644
+index 77d3083..8981068 100644
 --- a/Documentation/ABI/testing/sysfs-class-net-batman-adv
 +++ b/Documentation/ABI/testing/sysfs-class-net-batman-adv
-@@ -1,13 +1,4 @@
- 
--What:		/sys/class/net/<iface>/batman-adv/throughput_override
--Date:		Feb 2014
--Contact:	Antonio Quartulli <antonio@meshcoding.com>
--description:
--		Defines the throughput value to be used by B.A.T.M.A.N. V
--		when estimating the link throughput using this interface.
--		If the value is set to 0 then batman-adv will try to
--		estimate the throughput by itself.
--
- What:           /sys/class/net/<iface>/batman-adv/elp_interval
- Date:           Feb 2014
+@@ -4,7 +4,7 @@ Date:           Feb 2014
  Contact:        Linus Lüssing <linus.luessing@web.de>
-@@ -28,3 +19,12 @@ Description:
-                 The /sys/class/net/<iface>/batman-adv/mesh_iface file
-                 displays the batman mesh interface this <iface>
-                 currently is associated with.
-+
-+What:           /sys/class/net/<iface>/batman-adv/throughput_override
-+Date:           Feb 2014
-+Contact:        Antonio Quartulli <a@unstable.cc>
-+description:
-+                Defines the throughput value to be used by B.A.T.M.A.N. V
-+                when estimating the link throughput using this interface.
-+                If the value is set to 0 then batman-adv will try to
-+                estimate the throughput by itself.
+ Description:
+                 Defines the interval in milliseconds in which batman
+-                sends its probing packets for link quality measurements.
++                emits probing packets for neighbor sensing (ELP).
+ 
+ What:           /sys/class/net/<iface>/batman-adv/iface_status
+ Date:           May 2010
 -- 
 2.8.1
 
