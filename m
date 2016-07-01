@@ -1,15 +1,15 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 01 Jul 2016 15:30:43 +0200
-Message-ID: <4909174.zVFi6JY9rb@prime>
-In-Reply-To: <1467310294-5892-2-git-send-email-sven@narfation.org>
+Date: Fri, 01 Jul 2016 15:34:24 +0200
+Message-ID: <1569263.Zj2Iic9t9P@prime>
+In-Reply-To: <1467310294-5892-1-git-send-email-sven@narfation.org>
 References: <1467310246-5820-1-git-send-email-sven@narfation.org>
- <1467310294-5892-2-git-send-email-sven@narfation.org>
+ <1467310294-5892-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1538073.F3OOdBybVS";
+Content-Type: multipart/signed; boundary="nextPart2703907.YDLzbXu3mH";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 3/3] batman-adv: Fix reference leak in
-	batadv_find_router
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 2/3] batman-adv: Fix non-atomic
+	bla_claim::backbone_gw access
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,136 +22,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1538073.F3OOdBybVS
+--nextPart2703907.YDLzbXu3mH
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="ISO-8859-1"
 
-Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
-
-Thanks, this also looks much cleaner now!
-     Simon
-
-On Thursday 30 June 2016 20:11:34 Sven Eckelmann wrote:
-> The replacement of last_bonding_candidate in batadv_orig_node has to be an
-> atomic operation. Otherwise it is possible that the reference counter of a
-> batadv_orig_ifinfo is reduced which was no longer the
-> last_bonding_candidate when the new candidate is added. This can either
-> lead to an invalid memory access or to reference leaks which make it
-> impossible to an interface which was added to batman-adv.
+On Thursday 30 June 2016 20:11:33 Sven Eckelmann wrote:
+> The pointer batadv_bla_claim::backbone_gw can be changed at any time.
+> Therefore, access to it must be protected to ensure that two function
+> accessing the same backbone_gw are actually accessing the same. This is
+> especially important when the crc_lock is used or when the backbone_gw of a
+> claim is exchanged.
 > 
-> Fixes: 797edd9e87ac ("batman-adv: add bonding again")
+> Not doing so leads to invalid memory access and/or reference leaks.
+> 
+> Fixes: a9ce0dc43e2c ("batman-adv: add basic bridge loop avoidance code")
+> Fixes: b307e72d119f ("batman-adv: lock crc access in bridge loop avoidance")
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> v2:
->  - get refcnt for new selected router before assigning it to returned
->    variable
->  - move refcnt cleanup of all remembered candidates/routers to central place
-> ---
->  net/batman-adv/routing.c | 52
-> ++++++++++++++++++++++++++++++++++++------------ net/batman-adv/types.h   |
->  4 +++-
->  2 files changed, 42 insertions(+), 14 deletions(-)
-> 
-> diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-> index bba9276..a4253d4 100644
-> --- a/net/batman-adv/routing.c
-> +++ b/net/batman-adv/routing.c
-> @@ -462,6 +462,29 @@ static int batadv_check_unicast_packet(struct
-> batadv_priv *bat_priv, }
-> 
->  /**
-> + * batadv_last_bonding_replace - Replace last_bonding_candidate of
-> orig_node + * @orig_node: originator node whose bonding candidates should
-> be replaced + * @new_candidate: new bonding candidate or NULL
-> + */
-> +static void
-> +batadv_last_bonding_replace(struct batadv_orig_node *orig_node,
-> +			    struct batadv_orig_ifinfo *new_candidate)
-> +{
-> +	struct batadv_orig_ifinfo *old_candidate;
-> +
-> +	spin_lock_bh(&orig_node->neigh_list_lock);
-> +	old_candidate = orig_node->last_bonding_candidate;
-> +
-> +	if (new_candidate)
-> +		kref_get(&new_candidate->refcount);
-> +	orig_node->last_bonding_candidate = new_candidate;
-> +	spin_unlock_bh(&orig_node->neigh_list_lock);
-> +
-> +	if (old_candidate)
-> +		batadv_orig_ifinfo_put(old_candidate);
-> +}
-> +
-> +/**
->   * batadv_find_router - find a suitable router for this originator
->   * @bat_priv: the bat priv with all the soft interface information
->   * @orig_node: the destination node
-> @@ -568,10 +591,6 @@ next:
->  	}
->  	rcu_read_unlock();
-> 
-> -	/* last_bonding_candidate is reset below, remove the old reference. */
-> -	if (orig_node->last_bonding_candidate)
-> -		batadv_orig_ifinfo_put(orig_node->last_bonding_candidate);
-> -
->  	/* After finding candidates, handle the three cases:
->  	 * 1) there is a next candidate, use that
->  	 * 2) there is no next candidate, use the first of the list
-> @@ -580,21 +599,28 @@ next:
->  	if (next_candidate) {
->  		batadv_neigh_node_put(router);
-> 
-> -		/* remove references to first candidate, we don't need it. */
-> -		if (first_candidate) {
-> -			batadv_neigh_node_put(first_candidate_router);
-> -			batadv_orig_ifinfo_put(first_candidate);
-> -		}
-> +		kref_get(&next_candidate_router->refcount);
->  		router = next_candidate_router;
-> -		orig_node->last_bonding_candidate = next_candidate;
-> +		batadv_last_bonding_replace(orig_node, next_candidate);
->  	} else if (first_candidate) {
->  		batadv_neigh_node_put(router);
-> 
-> -		/* refcounting has already been done in the loop above. */
-> +		kref_get(&first_candidate_router->refcount);
->  		router = first_candidate_router;
-> -		orig_node->last_bonding_candidate = first_candidate;
-> +		batadv_last_bonding_replace(orig_node, first_candidate);
->  	} else {
-> -		orig_node->last_bonding_candidate = NULL;
-> +		batadv_last_bonding_replace(orig_node, NULL);
-> +	}
-> +
-> +	/* cleanup of candidates */
-> +	if (first_candidate) {
-> +		batadv_neigh_node_put(first_candidate_router);
-> +		batadv_orig_ifinfo_put(first_candidate);
-> +	}
-> +
-> +	if (next_candidate) {
-> +		batadv_neigh_node_put(next_candidate_router);
-> +		batadv_orig_ifinfo_put(next_candidate);
->  	}
-> 
->  	return router;
-> diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-> index d82f6b4..96af6da 100644
-> --- a/net/batman-adv/types.h
-> +++ b/net/batman-adv/types.h
-> @@ -329,7 +329,9 @@ struct batadv_orig_node {
->  	DECLARE_BITMAP(bcast_bits, BATADV_TQ_LOCAL_WINDOW_SIZE);
->  	u32 last_bcast_seqno;
->  	struct hlist_head neigh_list;
-> -	/* neigh_list_lock protects: neigh_list and router */
-> +	/* neigh_list_lock protects: neigh_list, ifinfo_list,
-> +	 * last_bonding_candidate and router
-> +	 */
->  	spinlock_t neigh_list_lock;
->  	struct hlist_node hash_entry;
->  	struct batadv_priv *bat_priv;
 
---nextPart1538073.F3OOdBybVS
+Technically, you can already add my "Acked-by". However I'd like to suggest 
+one style change: Could you please rename batadv_bla_claim_backbone_gw into 
+batadv_bla_claim_get_backbone_gw? I think this would make it clearer what the 
+function does and also shows get/put pairs clearly in the code.
+
+Thanks!
+     Simon
+--nextPart2703907.YDLzbXu3mH
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -159,20 +54,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXdnCEAAoJEKEr45hCkp6hIw8QAMI0+QKvY9yINkPwPxpWE1+R
-QUkdd93v62OWAfCFlW/R6KEMlQyI2/9iCwreQALP+hV3NFuZmXJiabdh58S3Sn5f
-pC1vQSt24lZTJKdPlwCQAME+GJ5N2npPjoTUy+vkMpW6h7bzPEH19oGHDX/9oMEu
-6NvNcsDldOYDgTkbrAy9JGMQ7TmrS/i4Roaypo476TICjEtq5I50z1DyhmpFSS+n
-FjumEGtV58DfDbPt5oQIRB6QqFTmSdjgY+VlVRmDQ8jfmxPIb0amMQLNOvcCori3
-ZGyPHxJRFB14GmyGjM72ux26UUDeTIomhtfPLCeoHg/K+xEurkF3vVe1xnZPd697
-vlbNsK3EQ/V3r5DYEt0hxRBmZKH7qzTRF8X9+iloRqeBHObQBJUbuTikcZ1kjRBJ
-8L2rp0fAhB8SjJaYoYWDlLnYnVOFARy9Z+VRI1EoPdG9g+7fLcXW1yYMaz6KyMNG
-XTI1/Lq5tTIHCVnW4kck6rc+iLE1Y4SzNHY7ix/EtIONFMAQekvnfPG9fev1yYGX
-V7yAdcR8sWjvn4D2+FbWiR+WGj9LSQ9jpwUxyCE980zUwCTD6ZAQgcOGx0oFIAfn
-p0DRpJEcqY9hOR0KxeasGxWNeVLPDGKv/vM6NPgctZTVNwm+bqZBk2/oNJA5gitj
-bRBpL1XdwVndePts9vz9
-=nOBw
+iQIcBAABCgAGBQJXdnFgAAoJEKEr45hCkp6hn3cP/jORmS/FQBANekuNpJudTMvJ
+XMaDdI8kCmfz9pTKRmnF9LmQWZ47/Dq6XiE6pOc6/LcNq9NAfk8kf4ep6J7IAv9S
+Cqgx+JZQfRwzfjqug9/B+F6pORytkSv63wnirIVOYjCXXCxK36/uJDLcxbsZJJTr
+MUY3AioE52T6N5ptKbHXWdB6fE5YC/fY0wPEcvVREbXGE7weP9ig3BM0VR2XSwLN
+70ipR6YCZhdJiHzYxAJoOYVtzaOSFxAJivMS5OpTo9adqRko+oigk1Vv/FELAYIc
+tDJFxVowMloEcJ0mhLLWrmm8PwDYTIgEXTyNUOIGVS2+pUoMzql6zlLE4zfmhUy8
++8G0Sab0G+tjLvxAheSoFmbk3jBFi+P6X35tYTFwrtjmQLGcol8s/hNl1e/Vd35D
+kC2WYgKOtalF5yZaCtRrUfSxonh9A2eAL4kwm9OMkOVcW9pExZki/IJxXnmlgG6i
+kpYWL8bz18zVYEPczYd4f9YzNrUyYLqdHXAhXcvJvOaMn/IoSjz9TcsJMGenEjct
+7jZd4OnF6xD7M7TJIJw2BOq0siFKXzNxmvxcvZ8h6CgYBBymZ9h6TyuCYa2l1G95
+SYWy73oh9Bsn0t16Slqlaz5IWl1fvI3YGnk5QL1cA5aUJeSa9L7KTpXeQsCi5SYR
+XcoH6cgEEiqwYM8t0rJi
+=WHzQ
 -----END PGP SIGNATURE-----
 
---nextPart1538073.F3OOdBybVS--
+--nextPart2703907.YDLzbXu3mH--
 
