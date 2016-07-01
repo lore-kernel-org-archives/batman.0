@@ -1,15 +1,15 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 01 Jul 2016 15:52:14 +0200
-Message-ID: <2959979.HSCOgA5Hin@prime>
-In-Reply-To: <1465557064-24406-2-git-send-email-apape@phoenixcontact.com>
-References: <1465557064-24406-1-git-send-email-apape@phoenixcontact.com>
- <1465557064-24406-2-git-send-email-apape@phoenixcontact.com>
+Date: Fri, 01 Jul 2016 15:54:41 +0200
+Message-ID: <77232143.NV1dyT7Nfk@prime>
+In-Reply-To: <1467380983-14959-1-git-send-email-sven@narfation.org>
+References: <1467310294-5892-1-git-send-email-sven@narfation.org>
+ <1467380983-14959-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart36686078.4EFdiTvbJo";
+Content-Type: multipart/signed; boundary="nextPart1596529.HVDthZJ4DD";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v5 1/6] batman-adv: prevent multiple ARP
-	replies sent by gateways if dat enbled
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3 2/4] batman-adv: Fix non-atomic
+	bla_claim::backbone_gw access
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,28 +19,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart36686078.4EFdiTvbJo
+--nextPart1596529.HVDthZJ4DD
 Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="ISO-8859-1"
 
-On Friday 10 June 2016 13:10:59 Andreas Pape wrote:
-> If dat is enabled it must be made sure that only the backbone gw which has
-> claimed the remote destination for the ARP request answers the ARP request
-> directly if the MAC address is known due to the local dat table. This
-> prevents multiple ARP replies in a common backbone if more than one
-> gateway already knows the remote mac searched for in the ARP request.
+On Friday 01 July 2016 15:49:43 Sven Eckelmann wrote:
+> The pointer batadv_bla_claim::backbone_gw can be changed at any time.
+> Therefore, access to it must be protected to ensure that two function
+> accessing the same backbone_gw are actually accessing the same. This is
+> especially important when the crc_lock is used or when the backbone_gw of a
+> claim is exchanged.
 > 
-> Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
+> Not doing so leads to invalid memory access and/or reference leaks.
+> 
+> Fixes: a9ce0dc43e2c ("batman-adv: add basic bridge loop avoidance code")
+> Fixes: b307e72d119f ("batman-adv: lock crc access in bridge loop avoidance")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
 
-Please add my Acked-by on resend.
-
-Thanks!
+Thanks,
      Simon
---nextPart36686078.4EFdiTvbJo
+--nextPart1596529.HVDthZJ4DD
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -48,20 +51,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXdnWOAAoJEKEr45hCkp6hj3wQAJKwzqiSyQVl5oT6mgGGF0hX
-oOS28OMsweWCjA8eXvQ2vtk1YJ2mfBKqVGxKKF79GOKVfxm2pxlpsp0SZOYxrCdi
-0GYCAQimBFxRc3AyD/2SVKYetzWuQY87uh4zfk+6gQ9Yn1olDKs+WscmSigcqkBV
-aFRTJZgSvTjM4bgXpVYOEk9Bgh0s7+Mo/MhUHPH9Hug2RPlNKKWXMSDxIKB4wMGn
-thEGeY+3nEHHVA4vpdwPygqgU+m/Ko/3V0X2E4dzyTf1nmBtMN6HUBjGavgG1I39
-X29LgipfU2+lh90h10hUgkxBMh4+SQyJ5ffHsvHE5ShJ6DjML79MO9qfy0eU+NxY
-ynY8lbJxq5BkS67/sp2uvYFQCmmW+/UC3FCIKT2wZbahS2u1qCeA8UoFskWyO3Qn
-jwSla4sBY/FyDVBs3iBYFFvxcl7bKTYWH3JvK91g19Q+E9wvATfzWhOk4QIV2u6l
-mxGhbTh8L0Q0VNPWvoxtEPz0xMBrQZlINf6XNqONIGpOeyATcP7bnOKMpl4YWveP
-0FtjcDYMWVknpSMzrYGGiBC9QYHYXMfTEqyzJPTStvSaphozw1lUk1sayaCHxgLM
-OCSHd6Q21GZ27OrIujm2Kb+UdKPv4jSgqn0eyHGTBqDbRB+n7B1lUPjCWSrlvjZW
-JgF2/N9t/YKLIz58Uv96
-=cKeY
+iQIcBAABCgAGBQJXdnYhAAoJEKEr45hCkp6hGQcQAI/h6HgHUS+kndjuntLsf3nq
+UiP8df/gBC0LxIkR8apdfcrlcmdqjetq6CFTcn7e8H4dHwl6vWS1V8F9oZU3rKI2
+qGeY5H5bvq44oLKPlNxRYpMkbEnBbFFRQ79TJbj0pa15rLqbZ1Y6RfKMPAHnwNvI
+m+0tNC8PpBjU+PjhH9semM9NGVRZ2psvfcJALroXE+26wJSeeOnKlCVvfyvj497h
+1x+OzkF7py5zALJ8tdZCtcEP4MsSA5jFJBU8azH1cw+UBCgA8RfB0fT9fmBQPqee
+k2K1+85ptYlnJZz9y+Zm7uPrNc97DbFm5ceKaWY6A1Sbmhbon0GsTX4IXMBH72Om
+gc5NuYezvqxxIAfqtQIVtYYnLXbaavW+2+z0RJD9BEXb9yw3/OsODjcenLGKuzak
+hZqMMHs7gxZqAZ5cuGvU3LVIcpCI1Mq1jX/fTf39xkO+wbk1ZSIim9uoevC8BId3
+Ndu0Q55TLRtHyWlplriiYW49ccZIFbSha9CVdDSSkAWBsPk/mE5RRwFIIdgAHrLM
+VqTzBPExnFTFmVMfJ8GFKTou8m/zkiL9y7XmIkMXiPAH9rKvm9xPIg5F0iw3Pf5C
+ezZXdnISPRFyqr88H0ghP+qAdnyGxxCptlI5iNDyHIzBjX21QXzMwME484nxNbi9
+xd94YGXr1NMMQd9iR8Lb
+=o+Xu
 -----END PGP SIGNATURE-----
 
---nextPart36686078.4EFdiTvbJo--
+--nextPart1596529.HVDthZJ4DD--
 
