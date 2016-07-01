@@ -1,15 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 01 Jul 2016 10:00:25 +0200
-Message-ID: <3538968.M8hm509Ngn@bentobox>
-In-Reply-To: <1465721000-9174-2-git-send-email-sven@narfation.org>
-References: <1465721000-9174-1-git-send-email-sven@narfation.org>
- <1465721000-9174-2-git-send-email-sven@narfation.org>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Fri,  1 Jul 2016 15:08:52 +0200
+Message-Id: <1467378549-9646-1-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5849216.4seV99RveF";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Use broadcast as
-	fallback for gateway replies
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] pull request for net-next: batman-adv 2016-07-01
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,70 +15,104 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart5849216.4seV99RveF
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi David,
 
-[....]
-> Hm, I'm wondering what kind of overhead implications this could
-> have in larger mesh networks.
-> 
-> Didn't TT support temporary entries? Could the gateway server
-> inject them into its global translation table after parsing an
-> incoming DHCP packet?
+we are a bit late to submit our feature patches, but I hope we make it in time.
+Antonio is taking a pause in his upstream work, so I'll be submitting our
+batman-adv patches for now. It is my first time, so please bear with me. :)
 
-Right now we have the problem that DHCP requests (broadcasts by the user) are
-encapsulated by the gateway code in the wrong type of packet [1,2,3]. These
-are the unicast packets (non-4addr) which cannot be used to create temporary
-TT entries. This should be addressed by the first patch.
+Please pull or let me know of any problem!
 
-The second patch is currently only my bandaid (because I cannot patch all APs)
-and I would be more than happy when this patch is not required. So I would not
-object when this patch is rejected because it causes noise on the network.
+Thank you,
+      Simon
 
-For example gluon already accepted the first patch [4] and thus will hopefully
-not require the second patch anymore with 2016.2.0 for clients doing their
-DHCP Discover as broadcast.
+The following changes since commit 99860208bc62d8ebd5c57495b84856506fe075bc:
 
-Btw. the non-RFC version of the patch is here:
+  sched: remove NET_XMIT_POLICED (2016-06-12 22:02:11 -0400)
 
- https://patchwork.open-mesh.org/patch/16377/
+are available in the git repository at:
 
-I have taken the freedom to move the reply to this patch.
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-20160701
 
+for you to fetch changes up to 4e3e823b5a503235630921287f130e1d8d22d200:
 
-Kind regards,
-	Sven
+  batman-adv: Add debugfs table for mcast flags (2016-06-30 10:29:43 +0200)
 
-[1] https://patchwork.open-mesh.org/patch/16376/
-[2] https://git.open-mesh.org/batman-adv.git/blob/a36b7a3b08f4cc7c41103aa4db176a11e965e068:/net/batman-adv/routing.c#l914
-[3] https://git.open-mesh.org/batman-adv.git/blob/a36b7a3b08f4cc7c41103aa4db176a11e965e068:/net/batman-adv/soft-interface.c#l468
-[4] https://github.com/freifunk-gluon/gluon/commit/93fe275000b65a4148d6a9713a030b0d30e6a9f1
+----------------------------------------------------------------
+This feature patchset includes the following changes:
 
---nextPart5849216.4seV99RveF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+ - two patches with minimal clean up work by Antonio Quartulli and
+   Simon Wunderlich
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+ - eight patches of B.A.T.M.A.N. V, API and documentation clean
+   up work, by Antonio Quartulli and Marek Lindner
 
-iQIcBAABCgAGBQJXdiMZAAoJEF2HCgfBJntGG58QAJuovsqPU7Zh1x9XT+9Wt4XF
-lXMZgybbeLOO1CC7A5C7JLAGx+dRjutTFti6ueEYMCGAY+waVi08FA4OY9ZdrJLd
-4JPCmUzj6Tosrmwvhi+ug/jDimWCl9BF2s6z5gyA6CqhznfUAv64t0ozvPTQ/DQ2
-XyXwAAdEIivC9arrLxvzbQD59rGnjwSFbcrR+0Wx0RHjZLYYFt/zF5FdaLvIRjUs
-KCDSJaNZe1dlmlQ9fhaCA+J9yutm5rQXfZ6dt1/v58fih6cqQEWJVJlRuGHV4dQq
-7ZkFpDo29T1hbl2bjhSOOGFYGYNrbjEV0qzB2JfzDPqyMP5ZSot0ZEsI62k5Sz6W
-VwNcKll7Q+Vfxi8M7FzpiLmKjL2Odu50eGfk+H1Kn7xhqOCi7UWYoTwVYVUkYLs8
-60mtTNYB6V2Mw/X2k7UelokJi9OM2K/JIdIaUPgS0Y6IeLq0VHBX5HD9F2OsHGH7
-YfDyDA8oJXXTmd2ren74k0BWTnW0uVRv+gPedysNbjIr74RTgtHALbdiRnxv5ufj
-3YzHLT1cwizte6gC2g47lGp0QCKWsqdeaZBuEL5JKmPLb8/KkEx4SV6BtK4FRmED
-6PtaXrmkgYMDtlCzNft8DreyTNYlP8FO+CQb27Oogp64yeUToM+J0C5rxM5le8Op
-cwryyRpj0qjHvpAqvzH9
-=7uST
------END PGP SIGNATURE-----
+ - Andrew Lunn fixed the skb priority adoption when forwarding
+   fragmented packets (two patches)
 
---nextPart5849216.4seV99RveF--
+ - Multicast optimization support is now enabled for bridges which
+   comes with some protocol updates, by Linus Luessing
+
+----------------------------------------------------------------
+Andrew Lunn (2):
+  batman-adv: Set skb priority in fragments
+  batman-adv: Include frame priority in fragment header
+
+Antonio Quartulli (4):
+  batman-adv: statically print gateway table header
+  batman-adv: remove ogm_emit and ogm_schedule API calls
+  batman-adv: remove useless inline attribute for sysfs helper function
+  batman-adv: move GW mode and selection class to private data structure
+
+Linus Lüssing (4):
+  batman-adv: Always flood IGMP/MLD reports
+  batman-adv: Add multicast optimization support for bridged setups
+  batman-adv: Adding logging of mcast flag changes
+  batman-adv: Add debugfs table for mcast flags
+
+Marek Lindner (5):
+  batman-adv: document sysfs files in alphabetical order
+  batman-adv: update elp interval documentation
+  batman-adv: refactor batadv_neigh_node_* functions to follow common
+    style
+  batman-adv: remove unused callback from batadv_algo_ops struct
+  batman-adv: init ELP tweaking options only once
+
+Simon Wunderlich (2):
+  batman-adv: Start new development cycle
+  batman-adv: remove unused vid local variable in tt seq print
+
+ .../ABI/testing/sysfs-class-net-batman-adv         |  20 +-
+ net/batman-adv/Kconfig                             |   2 +-
+ net/batman-adv/bat_algo.h                          |   7 +-
+ net/batman-adv/bat_iv_ogm.c                        |  72 ++-
+ net/batman-adv/bat_v.c                             |  29 +-
+ net/batman-adv/bat_v_elp.c                         |   4 +-
+ net/batman-adv/bat_v_ogm.c                         |   4 +-
+ net/batman-adv/debugfs.c                           |  23 +
+ net/batman-adv/fragmentation.c                     |  12 +-
+ net/batman-adv/gateway_client.c                    |  15 +-
+ net/batman-adv/gateway_common.c                    |   6 +-
+ net/batman-adv/hard-interface.c                    |   6 +-
+ net/batman-adv/main.c                              |   2 -
+ net/batman-adv/main.h                              |   6 +-
+ net/batman-adv/multicast.c                         | 499 +++++++++++++++++++--
+ net/batman-adv/multicast.h                         |   3 +
+ net/batman-adv/originator.c                        |  40 +-
+ net/batman-adv/originator.h                        |   6 +-
+ net/batman-adv/packet.h                            |   7 +-
+ net/batman-adv/routing.c                           |   2 +
+ net/batman-adv/send.c                              |  61 +--
+ net/batman-adv/send.h                              |   4 +-
+ net/batman-adv/soft-interface.c                    |  10 +-
+ net/batman-adv/sysfs.c                             |  22 +-
+ net/batman-adv/translation-table.c                 |   2 -
+ net/batman-adv/types.h                             |  32 +-
+ 26 files changed, 704 insertions(+), 192 deletions(-)
+
+-- 
+2.8.1
 
