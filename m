@@ -1,11 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 03 Jul 2016 08:22:43 +0200
-Message-ID: <3010820.LJPqpTImjv@sven-edge>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2314659.rysgvYOl03";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: [B.A.T.M.A.N.] Copyright of netlink batman_adv.h
+Date: Sun,  3 Jul 2016 11:07:14 +0200
+Message-Id: <1467536834-16185-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v3] batman-adv: iv_ogm,
+	Reduce code duplication
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,53 +13,155 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Matthias Schiffer <mschiffer@universe-factory.net>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2314659.rysgvYOl03
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+From: Markus Pargmann <mpa@pengutronix.de>
 
-Hi,
+The difference between tq1 and tq2 are calculated the same way in two
+separate functions.
 
-you've created the batman_adv.h for the netlink interface of batman-adv and
-you've used the GPL-2-only license header. It is a header which is installed
-for userspace programs and will maybe be used for things which have a
-different license then the GPL-2. So it would maybe better for these use cases
-to have clear statement that they can use it freely. This can for example be
-done with a more liberal license like the ISC [1] (like in nl80211.h [2]).
+This patch moves the common code to a seperate function
+'batadv_iv_ogm_neigh_diff' which handles everything necessary. The other
+two functions can then handle errors and use the difference directly.
 
-What do you think about a license change? If you agree then I would like to
-propose a patch which requires a reply by you with an "Acked-by: ...".
+Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+[sven@narfation.org: rebased on current version, initialize return variable
+in batadv_iv_ogm_neigh_diff, add kerneldoc, convert to bool return type]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+v3:
+ - rebased on current version
+ - initialize return variable in batadv_iv_ogm_neigh_diff
+ - add kerneldoc for batadv_iv_ogm_neigh_diff
+ - convert batadv_iv_ogm_neigh_diff to bool return type
+---
+ net/batman-adv/bat_iv_ogm.c | 77 +++++++++++++++++++++++++++------------------
+ 1 file changed, 47 insertions(+), 30 deletions(-)
 
-Kind regards,
-	Sven
-
-[1] https://en.wikipedia.org/wiki/ISC_license
-[2] https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/include/uapi/linux/nl80211.h?id=4f302921c1458d790ae21147f7043f4e6b6a1085#n15
-
---nextPart2314659.rysgvYOl03
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJXeK80AAoJEF2HCgfBJntGSGkQAL14+sSR+ABa7gB0P4kzX2+o
-wu3Fe0MdSNWSV/0NIkUFgAIcYuNZRFiFzZNdswUvpAvL9rF/qu3JV0IIDRWCAZTd
-r+60GjwCAcH0+PhJNB+ninduvtzj9whhbjSEXdpMBKbw65g6zMlHK8NIbjnQEfpf
-Zar8LRajOjpjEKtRAFGH2KM3/aNcZEYtGuPxgC52VGfgHKIwutNaG/ijpUc3Kii/
-7IJhAlBWqw/G4uDozmjEFenTWFBmCoyUVsBk+l6STLifhtXCB9gAb5oWJWxdNjAR
-11YbzoJDB+M3FQ0wAmxq6NYq4LhxGJcX1oAK8ewrWtaZ26BbxKkoZIxp7GwCjsma
-BYwUyb2TVTQqPCB1kTbIQpg1vpZxRqGofkLUNEQRg90WqO8fddiixV1c9RUDx459
-0vW4IZCxx3S/ABx/O/V4AGcWbq/KDvaX+we3B+eliPtbFxN6kX87H3SbghKiyEaS
-ML1R2Af19WIq+/V9TyjRH1MdDI5LUp2X0o11zTlrOob9BX6rB2okuP7Pb2fr0Hpy
-p+IY7UirQLidkVhTpMTVX1MWsGlDHeUYaZx22AqOVxB/1f9DSTBhBEurpZME1NDn
-DCnd1ooetiDCr71klN38YNAoB1P2WmWQP6ftAhRVxQBLdzrt2pOYNho5CxNWtMCM
-IjkS5U2BE55wEEXnlucR
-=sCXQ
------END PGP SIGNATURE-----
-
---nextPart2314659.rysgvYOl03--
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 6af4462..2904ff5 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -2018,35 +2018,40 @@ static void batadv_iv_neigh_print(struct batadv_priv *bat_priv,
+ }
+ 
+ /**
+- * batadv_iv_ogm_neigh_cmp - compare the metrics of two neighbors
++ * batadv_iv_ogm_neigh_diff - calculate tq difference of two neighbors
+  * @neigh1: the first neighbor object of the comparison
+  * @if_outgoing1: outgoing interface for the first neighbor
+  * @neigh2: the second neighbor object of the comparison
+  * @if_outgoing2: outgoing interface for the second neighbor
++ * @diff: pointer to integer receiving the calculated difference
+  *
+- * Return: a value less, equal to or greater than 0 if the metric via neigh1 is
+- * lower, the same as or higher than the metric via neigh2
++ * The content of *@diff is only valid when this function returns true.
++ * It is less, equal to or greater than 0 if the metric via neigh1 is lower,
++ * the same as or higher than the metric via neigh2
++ *
++ * Return: true when the difference could be calculated, false otherwise
+  */
+-static int batadv_iv_ogm_neigh_cmp(struct batadv_neigh_node *neigh1,
+-				   struct batadv_hard_iface *if_outgoing1,
+-				   struct batadv_neigh_node *neigh2,
+-				   struct batadv_hard_iface *if_outgoing2)
++static bool batadv_iv_ogm_neigh_diff(struct batadv_neigh_node *neigh1,
++				     struct batadv_hard_iface *if_outgoing1,
++				     struct batadv_neigh_node *neigh2,
++				     struct batadv_hard_iface *if_outgoing2,
++				     int *diff)
+ {
+ 	struct batadv_neigh_ifinfo *neigh1_ifinfo, *neigh2_ifinfo;
+ 	u8 tq1, tq2;
+-	int diff;
++	bool ret = true;
+ 
+ 	neigh1_ifinfo = batadv_neigh_ifinfo_get(neigh1, if_outgoing1);
+ 	neigh2_ifinfo = batadv_neigh_ifinfo_get(neigh2, if_outgoing2);
+ 
+ 	if (!neigh1_ifinfo || !neigh2_ifinfo) {
+-		diff = 0;
++		ret = false;
+ 		goto out;
+ 	}
+ 
+ 	tq1 = neigh1_ifinfo->bat_iv.tq_avg;
+ 	tq2 = neigh2_ifinfo->bat_iv.tq_avg;
+-	diff = tq1 - tq2;
++	*diff = (int)tq1 - (int)tq2;
+ 
+ out:
+ 	if (neigh1_ifinfo)
+@@ -2054,6 +2059,32 @@ out:
+ 	if (neigh2_ifinfo)
+ 		batadv_neigh_ifinfo_put(neigh2_ifinfo);
+ 
++	return ret;
++}
++
++/**
++ * batadv_iv_ogm_neigh_cmp - compare the metrics of two neighbors
++ * @neigh1: the first neighbor object of the comparison
++ * @if_outgoing1: outgoing interface for the first neighbor
++ * @neigh2: the second neighbor object of the comparison
++ * @if_outgoing2: outgoing interface for the second neighbor
++ *
++ * Return: a value less, equal to or greater than 0 if the metric via neigh1 is
++ * lower, the same as or higher than the metric via neigh2
++ */
++static int batadv_iv_ogm_neigh_cmp(struct batadv_neigh_node *neigh1,
++				   struct batadv_hard_iface *if_outgoing1,
++				   struct batadv_neigh_node *neigh2,
++				   struct batadv_hard_iface *if_outgoing2)
++{
++	bool ret;
++	int diff;
++
++	ret = batadv_iv_ogm_neigh_diff(neigh1, if_outgoing1, neigh2,
++				       if_outgoing2, &diff);
++	if (!ret)
++		return 0;
++
+ 	return diff;
+ }
+ 
+@@ -2074,29 +2105,15 @@ batadv_iv_ogm_neigh_is_sob(struct batadv_neigh_node *neigh1,
+ 			   struct batadv_neigh_node *neigh2,
+ 			   struct batadv_hard_iface *if_outgoing2)
+ {
+-	struct batadv_neigh_ifinfo *neigh1_ifinfo, *neigh2_ifinfo;
+-	u8 tq1, tq2;
+ 	bool ret;
++	int diff;
+ 
+-	neigh1_ifinfo = batadv_neigh_ifinfo_get(neigh1, if_outgoing1);
+-	neigh2_ifinfo = batadv_neigh_ifinfo_get(neigh2, if_outgoing2);
+-
+-	/* we can't say that the metric is better */
+-	if (!neigh1_ifinfo || !neigh2_ifinfo) {
+-		ret = false;
+-		goto out;
+-	}
+-
+-	tq1 = neigh1_ifinfo->bat_iv.tq_avg;
+-	tq2 = neigh2_ifinfo->bat_iv.tq_avg;
+-	ret = (tq1 - tq2) > -BATADV_TQ_SIMILARITY_THRESHOLD;
+-
+-out:
+-	if (neigh1_ifinfo)
+-		batadv_neigh_ifinfo_put(neigh1_ifinfo);
+-	if (neigh2_ifinfo)
+-		batadv_neigh_ifinfo_put(neigh2_ifinfo);
++	ret = batadv_iv_ogm_neigh_diff(neigh1, if_outgoing1, neigh2,
++				       if_outgoing2, &diff);
++	if (!ret)
++		return false;
+ 
++	ret = diff > -BATADV_TQ_SIMILARITY_THRESHOLD;
+ 	return ret;
+ }
+ 
+-- 
+2.8.1
 
