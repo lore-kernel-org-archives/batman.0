@@ -1,11 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  3 Jul 2016 12:46:35 +0200
-Message-Id: <1467542795-29647-5-git-send-email-sven@narfation.org>
-In-Reply-To: <1467542795-29647-1-git-send-email-sven@narfation.org>
-References: <1467542795-29647-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v6 4/4] batman-adv: disable sysfs knobs when
-	GW-mode is not implemented
+Date: Sun,  3 Jul 2016 13:31:32 +0200
+Message-Id: <1467545508-7333-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v10 00/16] batman-adv: netns and netlink
+	support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,87 +14,78 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
 
-From: Antonio Quartulli <a@unstable.cc>
+Hi,
 
-Now that the GW-mode code is algorithm specific, batman-adv expects the
-routing algorithm to implement some APIs to make it work.
+This patchset completes netns support, by disabling debugfs entries
+when not in the default name space, and correctly handling interface
+stack loops when the parent is in a different name space.
 
-However, such APIs are not mandatory, therefore we might have algorithms
-not providing them. In this case all the sysfs knobs related to GW-mode
-should be deactivated to make sure that settings injected by the user
-for this feature are rejected.
+It additionally adds netlink support for most of the information found
+in debugfs, and is netns aware.
 
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v6:
- - no changes
----
- net/batman-adv/sysfs.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+This patchset is based on Andrews v7 series and contains an update/rebase
+of the v9 sent by Simon on June 6th, with the following changes:
 
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index e78bd7f..02d96f2 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -429,6 +429,13 @@ static ssize_t batadv_show_gw_mode(struct kobject *kobj, struct attribute *attr,
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
- 	int bytes_written;
- 
-+	/* GW mode is not available if the routing algorithm in use does not
-+	 * implement the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -ENOENT;
-+
- 	switch (atomic_read(&bat_priv->gw.mode)) {
- 	case BATADV_GW_MODE_CLIENT:
- 		bytes_written = sprintf(buff, "%s\n",
-@@ -456,6 +463,13 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
- 	char *curr_gw_mode_str;
- 	int gw_mode_tmp = -1;
- 
-+	/* toggling GW mode is allowed only if the routing algorithm in use
-+	 * provides the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -EINVAL;
-+
- 	if (buff[count - 1] == '\n')
- 		buff[count - 1] = '\0';
- 
-@@ -520,6 +534,13 @@ static ssize_t batadv_show_gw_sel_class(struct kobject *kobj,
- {
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
- 
-+	/* GW selection class is not available if the routing algorithm in use
-+	 * does not implement the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -ENOENT;
-+
- 	if (bat_priv->algo_ops->gw.show_sel_class)
- 		return bat_priv->algo_ops->gw.show_sel_class(bat_priv, buff);
- 
-@@ -532,6 +553,13 @@ static ssize_t batadv_store_gw_sel_class(struct kobject *kobj,
- {
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
- 
-+	/* setting the GW selection class is allowed only if the routing
-+	 * algorithm in use implements the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -EINVAL;
-+
- 	if (buff[count - 1] == '\n')
- 		buff[count - 1] = '\0';
- 
+ * add batadv_algo ops support to dump gateways dump via netlink
+ * integrate B.A.T.M.A.N. IV gateways dump code in batadv_algo
+ * add support for B.A.T.M.A.N. V gateways
+ * rebased on top of current master + gateway patches v6
+
+It should apply clean on todays master + the gateway patches v6.
+
+The batctl patches will be sent separately.
+
+Kind regards,
+	Sven
+
+Andrew Lunn (5):
+  batman-adv: Handle parent interfaces in a different netns
+  batman-adv: Suppress debugfs entries for netns's
+  batman-adv: add B.A.T.M.A.N. IV bat_gw_dump implementations
+  batman-adv: add B.A.T.M.A.N. Dump BLA claims via netlink
+  batman-adv: Indicate netlink socket can be used with netns.
+
+Matthias Schiffer (6):
+  batman-adv: netlink: add routing_algo query
+  batman-adv: netlink: hardif query
+  batman-adv: netlink: add translation table query
+  batman-adv: netlink: add originator and neighbor table queries
+  batman-adv: add B.A.T.M.A.N. IV bat_{orig, neigh}_dump implementations
+  batman-adv: add B.A.T.M.A.N. V bat_{orig, neigh}_dump implementations
+
+Simon Wunderlich (1):
+  batman-adv: add backbone table netlink support
+
+Sven Eckelmann (4):
+  batman-adv: Provide TTVN in the mesh_info netlink msg
+  batman-adv: netlink: add gateway table queries
+  batman-adv: add B.A.T.M.A.N. V bat_gw_dump implementations
+  batman-adv: Provide bla group in the mesh_info netlink msg
+
+ compat-include/linux/netlink.h         |  18 ++
+ compat.h                               |   7 +
+ include/uapi/linux/batman_adv.h        |  94 +++++++
+ net/batman-adv/bat_algo.c              |  68 +++++
+ net/batman-adv/bat_algo.h              |   3 +
+ net/batman-adv/bat_iv_ogm.c            | 471 +++++++++++++++++++++++++++++++++
+ net/batman-adv/bat_v.c                 | 465 ++++++++++++++++++++++++++++++++
+ net/batman-adv/bridge_loop_avoidance.c | 333 +++++++++++++++++++++++
+ net/batman-adv/bridge_loop_avoidance.h |  17 +-
+ net/batman-adv/debugfs.c               |  18 ++
+ net/batman-adv/gateway_client.c        |  59 +++++
+ net/batman-adv/gateway_client.h        |   2 +
+ net/batman-adv/hard-interface.c        |  50 +++-
+ net/batman-adv/netlink.c               | 217 ++++++++++++++-
+ net/batman-adv/netlink.h               |   6 +
+ net/batman-adv/originator.c            | 160 +++++++++++
+ net/batman-adv/originator.h            |   4 +
+ net/batman-adv/packet.h                |  36 ---
+ net/batman-adv/translation-table.c     | 377 ++++++++++++++++++++++++++
+ net/batman-adv/translation-table.h     |   4 +
+ net/batman-adv/types.h                 |  12 +
+ 21 files changed, 2373 insertions(+), 48 deletions(-)
+
 -- 
 2.8.1
 
