@@ -1,11 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon,  4 Jul 2016 15:02:59 +0200
-Message-Id: <1467637379-6089-12-git-send-email-sw@simonwunderlich.de>
+Date: Mon,  4 Jul 2016 15:02:54 +0200
+Message-Id: <1467637379-6089-7-git-send-email-sw@simonwunderlich.de>
 In-Reply-To: <1467637379-6089-1-git-send-email-sw@simonwunderlich.de>
 References: <1467637379-6089-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 11/11] batman-adv: split routing API data
-	structure in subobjects
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 06/11] batman-adv: Fix bat_(iv|v) function
+	declaration header
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,627 +19,260 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Antonio Quartulli <a@unstable.cc>
+From: Sven Eckelmann <sven@narfation.org>
 
-The routing API data structure contains several function
-pointers that can easily be grouped together based on the
-component they work with.
+The bat_algo.h had some functions declared which were not part of the
+bat_algo.c file. These are instead stored in bat_v.c and bat_iv_ogm.c. The
+declaration should therefore be also in bat_v.h and bat_iv_ogm,h to make
+them easier to find.
 
-Split the API in subobjects in order to improve definition readability.
-
-At the same time, remove the "bat_" prefix from the API object and
-its fields names. These are batman-adv private structs and there is no
-need to always prepend such prefix, which only makes function invocations
-much much longer.
-
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
-Reviewed-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_algo.c          |  14 ++---
- net/batman-adv/bat_iv_ogm.c        |  33 ++++++-----
- net/batman-adv/bat_v.c             |  26 +++++----
- net/batman-adv/bat_v_elp.c         |   2 +-
- net/batman-adv/bat_v_ogm.c         |   2 +-
- net/batman-adv/hard-interface.c    |  16 +++---
- net/batman-adv/netlink.c           |   2 +-
- net/batman-adv/originator.c        |  49 ++++++++--------
- net/batman-adv/routing.c           |   8 +--
- net/batman-adv/sysfs.c             |   2 +-
- net/batman-adv/translation-table.c |   6 +-
- net/batman-adv/types.h             | 114 +++++++++++++++++++++----------------
- 12 files changed, 150 insertions(+), 124 deletions(-)
+ net/batman-adv/bat_algo.h          | 31 -----------------------
+ net/batman-adv/bat_iv_ogm.c        |  3 ++-
+ net/batman-adv/bat_iv_ogm.h        | 25 ++++++++++++++++++
+ net/batman-adv/bat_v.c             |  3 ++-
+ net/batman-adv/bat_v.h             | 52 ++++++++++++++++++++++++++++++++++++++
+ net/batman-adv/hard-interface.c    |  2 +-
+ net/batman-adv/main.c              |  2 ++
+ net/batman-adv/routing.c           |  1 -
+ net/batman-adv/translation-table.c |  1 -
+ 9 files changed, 84 insertions(+), 36 deletions(-)
+ create mode 100644 net/batman-adv/bat_iv_ogm.h
+ create mode 100644 net/batman-adv/bat_v.h
 
-diff --git a/net/batman-adv/bat_algo.c b/net/batman-adv/bat_algo.c
-index 610d4de..81dbbf5 100644
---- a/net/batman-adv/bat_algo.c
-+++ b/net/batman-adv/bat_algo.c
-@@ -65,12 +65,12 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
- 	}
+diff --git a/net/batman-adv/bat_algo.h b/net/batman-adv/bat_algo.h
+index 8c7e761..860d773 100644
+--- a/net/batman-adv/bat_algo.h
++++ b/net/batman-adv/bat_algo.h
+@@ -24,8 +24,6 @@
  
- 	/* all algorithms must implement all ops (for now) */
--	if (!bat_algo_ops->bat_iface_enable ||
--	    !bat_algo_ops->bat_iface_disable ||
--	    !bat_algo_ops->bat_iface_update_mac ||
--	    !bat_algo_ops->bat_primary_iface_set ||
--	    !bat_algo_ops->bat_neigh_cmp ||
--	    !bat_algo_ops->bat_neigh_is_similar_or_better) {
-+	if (!bat_algo_ops->iface.enable ||
-+	    !bat_algo_ops->iface.disable ||
-+	    !bat_algo_ops->iface.update_mac ||
-+	    !bat_algo_ops->iface.primary_set ||
-+	    !bat_algo_ops->neigh.cmp ||
-+	    !bat_algo_ops->neigh.is_similar_or_better) {
- 		pr_info("Routing algo '%s' does not implement required ops\n",
- 			bat_algo_ops->name);
- 		return -EINVAL;
-@@ -90,7 +90,7 @@ int batadv_algo_select(struct batadv_priv *bat_priv, char *name)
- 	if (!bat_algo_ops)
- 		return -EINVAL;
+ struct seq_file;
  
--	bat_priv->bat_algo_ops = bat_algo_ops;
-+	bat_priv->algo_ops = bat_algo_ops;
+-int batadv_iv_init(void);
+-
+ extern char batadv_routing_algo[];
+ extern struct list_head batadv_hardif_list;
  
- 	return 0;
- }
+@@ -34,33 +32,4 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops);
+ int batadv_algo_select(struct batadv_priv *bat_priv, char *name);
+ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset);
+ 
+-#ifdef CONFIG_BATMAN_ADV_BATMAN_V
+-
+-int batadv_v_init(void);
+-void batadv_v_hardif_init(struct batadv_hard_iface *hardif);
+-int batadv_v_mesh_init(struct batadv_priv *bat_priv);
+-void batadv_v_mesh_free(struct batadv_priv *bat_priv);
+-
+-#else
+-
+-static inline int batadv_v_init(void)
+-{
+-	return 0;
+-}
+-
+-static inline void batadv_v_hardif_init(struct batadv_hard_iface *hardif)
+-{
+-}
+-
+-static inline int batadv_v_mesh_init(struct batadv_priv *bat_priv)
+-{
+-	return 0;
+-}
+-
+-static inline void batadv_v_mesh_free(struct batadv_priv *bat_priv)
+-{
+-}
+-
+-#endif /* CONFIG_BATMAN_ADV_BATMAN_V */
+-
+ #endif /* _NET_BATMAN_ADV_BAT_ALGO_H_ */
 diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index e2d8848..19b0abd 100644
+index 805532a..e2d8848 100644
 --- a/net/batman-adv/bat_iv_ogm.c
 +++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1853,8 +1853,7 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
- 	/* did we receive a B.A.T.M.A.N. IV OGM packet on an interface
- 	 * that does not have B.A.T.M.A.N. IV enabled ?
- 	 */
--	if (bat_priv->bat_algo_ops->bat_iface_enable !=
--	    batadv_iv_ogm_iface_enable)
-+	if (bat_priv->algo_ops->iface.enable != batadv_iv_ogm_iface_enable)
- 		return NET_RX_DROP;
+@@ -15,7 +15,7 @@
+  * along with this program; if not, see <http://www.gnu.org/licenses/>.
+  */
  
- 	batadv_inc_counter(bat_priv, BATADV_CNT_MGMT_RX);
-@@ -2120,18 +2119,24 @@ static void batadv_iv_iface_activate(struct batadv_hard_iface *hard_iface)
+-#include "bat_algo.h"
++#include "bat_iv_ogm.h"
+ #include "main.h"
  
- static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
- 	.name = "BATMAN_IV",
--	.bat_iface_activate = batadv_iv_iface_activate,
--	.bat_iface_enable = batadv_iv_ogm_iface_enable,
--	.bat_iface_disable = batadv_iv_ogm_iface_disable,
--	.bat_iface_update_mac = batadv_iv_ogm_iface_update_mac,
--	.bat_primary_iface_set = batadv_iv_ogm_primary_iface_set,
--	.bat_neigh_cmp = batadv_iv_ogm_neigh_cmp,
--	.bat_neigh_is_similar_or_better = batadv_iv_ogm_neigh_is_sob,
--	.bat_neigh_print = batadv_iv_neigh_print,
--	.bat_orig_print = batadv_iv_ogm_orig_print,
--	.bat_orig_free = batadv_iv_ogm_orig_free,
--	.bat_orig_add_if = batadv_iv_ogm_orig_add_if,
--	.bat_orig_del_if = batadv_iv_ogm_orig_del_if,
-+	.iface = {
-+		.activate = batadv_iv_iface_activate,
-+		.enable = batadv_iv_ogm_iface_enable,
-+		.disable = batadv_iv_ogm_iface_disable,
-+		.update_mac = batadv_iv_ogm_iface_update_mac,
-+		.primary_set = batadv_iv_ogm_primary_iface_set,
-+	},
-+	.neigh = {
-+		.cmp = batadv_iv_ogm_neigh_cmp,
-+		.is_similar_or_better = batadv_iv_ogm_neigh_is_sob,
-+		.print = batadv_iv_neigh_print,
-+	},
-+	.orig = {
-+		.print = batadv_iv_ogm_orig_print,
-+		.free = batadv_iv_ogm_orig_free,
-+		.add_if = batadv_iv_ogm_orig_add_if,
-+		.del_if = batadv_iv_ogm_orig_del_if,
-+	},
- };
+ #include <linux/atomic.h>
+@@ -49,6 +49,7 @@
+ #include <linux/types.h>
+ #include <linux/workqueue.h>
  
- int __init batadv_iv_init(void)
++#include "bat_algo.h"
+ #include "bitarray.h"
+ #include "hard-interface.h"
+ #include "hash.h"
+diff --git a/net/batman-adv/bat_iv_ogm.h b/net/batman-adv/bat_iv_ogm.h
+new file mode 100644
+index 0000000..b9f3550
+--- /dev/null
++++ b/net/batman-adv/bat_iv_ogm.h
+@@ -0,0 +1,25 @@
++/* Copyright (C) 2007-2016  B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner, Simon Wunderlich
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see <http://www.gnu.org/licenses/>.
++ */
++
++#ifndef _BATMAN_ADV_BATADV_IV_OGM_H_
++#define _BATMAN_ADV_BATADV_IV_OGM_H_
++
++#include "main.h"
++
++int batadv_iv_init(void);
++
++#endif /* _BATMAN_ADV_BATADV_IV_OGM_H_ */
 diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 7231440..0366cbf 100644
+index c2fea81..7231440 100644
 --- a/net/batman-adv/bat_v.c
 +++ b/net/batman-adv/bat_v.c
-@@ -322,16 +322,22 @@ err_ifinfo1:
+@@ -15,7 +15,7 @@
+  * along with this program; if not, see <http://www.gnu.org/licenses/>.
+  */
  
- static struct batadv_algo_ops batadv_batman_v __read_mostly = {
- 	.name = "BATMAN_V",
--	.bat_iface_activate = batadv_v_iface_activate,
--	.bat_iface_enable = batadv_v_iface_enable,
--	.bat_iface_disable = batadv_v_iface_disable,
--	.bat_iface_update_mac = batadv_v_iface_update_mac,
--	.bat_primary_iface_set = batadv_v_primary_iface_set,
--	.bat_hardif_neigh_init = batadv_v_hardif_neigh_init,
--	.bat_orig_print = batadv_v_orig_print,
--	.bat_neigh_cmp = batadv_v_neigh_cmp,
--	.bat_neigh_is_similar_or_better = batadv_v_neigh_is_sob,
--	.bat_neigh_print = batadv_v_neigh_print,
-+	.iface = {
-+		.activate = batadv_v_iface_activate,
-+		.enable = batadv_v_iface_enable,
-+		.disable = batadv_v_iface_disable,
-+		.update_mac = batadv_v_iface_update_mac,
-+		.primary_set = batadv_v_primary_iface_set,
-+	},
-+	.neigh = {
-+		.hardif_init = batadv_v_hardif_neigh_init,
-+		.cmp = batadv_v_neigh_cmp,
-+		.is_similar_or_better = batadv_v_neigh_is_sob,
-+		.print = batadv_v_neigh_print,
-+	},
-+	.orig = {
-+		.print = batadv_v_orig_print,
-+	},
- };
+-#include "bat_algo.h"
++#include "bat_v.h"
+ #include "main.h"
  
- /**
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index 15cf272..7d17001 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -504,7 +504,7 @@ int batadv_v_elp_packet_recv(struct sk_buff *skb,
- 	/* did we receive a B.A.T.M.A.N. V ELP packet on an interface
- 	 * that does not have B.A.T.M.A.N. V ELP enabled ?
- 	 */
--	if (strcmp(bat_priv->bat_algo_ops->name, "BATMAN_V") != 0)
-+	if (strcmp(bat_priv->algo_ops->name, "BATMAN_V") != 0)
- 		return NET_RX_DROP;
+ #include <linux/atomic.h>
+@@ -31,6 +31,7 @@
+ #include <linux/types.h>
+ #include <linux/workqueue.h>
  
- 	elp_packet = (struct batadv_elp_packet *)skb->data;
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 7ac9e0b..6fbba4e 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -754,7 +754,7 @@ int batadv_v_ogm_packet_recv(struct sk_buff *skb,
- 	/* did we receive a OGM2 packet on an interface that does not have
- 	 * B.A.T.M.A.N. V enabled ?
- 	 */
--	if (strcmp(bat_priv->bat_algo_ops->name, "BATMAN_V") != 0)
-+	if (strcmp(bat_priv->algo_ops->name, "BATMAN_V") != 0)
- 		return NET_RX_DROP;
- 
- 	if (!batadv_check_management_packet(skb, if_incoming, BATADV_OGM2_HLEN))
++#include "bat_algo.h"
+ #include "bat_v_elp.h"
+ #include "bat_v_ogm.h"
+ #include "hard-interface.h"
+diff --git a/net/batman-adv/bat_v.h b/net/batman-adv/bat_v.h
+new file mode 100644
+index 0000000..83b7763
+--- /dev/null
++++ b/net/batman-adv/bat_v.h
+@@ -0,0 +1,52 @@
++/* Copyright (C) 2011-2016  B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner, Linus Lüssing
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see <http://www.gnu.org/licenses/>.
++ */
++
++#ifndef _NET_BATMAN_ADV_BAT_V_H_
++#define _NET_BATMAN_ADV_BAT_V_H_
++
++#include "main.h"
++
++#ifdef CONFIG_BATMAN_ADV_BATMAN_V
++
++int batadv_v_init(void);
++void batadv_v_hardif_init(struct batadv_hard_iface *hardif);
++int batadv_v_mesh_init(struct batadv_priv *bat_priv);
++void batadv_v_mesh_free(struct batadv_priv *bat_priv);
++
++#else
++
++static inline int batadv_v_init(void)
++{
++	return 0;
++}
++
++static inline void batadv_v_hardif_init(struct batadv_hard_iface *hardif)
++{
++}
++
++static inline int batadv_v_mesh_init(struct batadv_priv *bat_priv)
++{
++	return 0;
++}
++
++static inline void batadv_v_mesh_free(struct batadv_priv *bat_priv)
++{
++}
++
++#endif /* CONFIG_BATMAN_ADV_BATMAN_V */
++
++#endif /* _NET_BATMAN_ADV_BAT_V_H_ */
 diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 70841c1..1f90808 100644
+index ad2c37c..70841c1 100644
 --- a/net/batman-adv/hard-interface.c
 +++ b/net/batman-adv/hard-interface.c
-@@ -247,7 +247,7 @@ static void batadv_primary_if_select(struct batadv_priv *bat_priv,
- 	if (!new_hard_iface)
- 		goto out;
+@@ -37,7 +37,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/workqueue.h>
  
--	bat_priv->bat_algo_ops->bat_primary_iface_set(new_hard_iface);
-+	bat_priv->algo_ops->iface.primary_set(new_hard_iface);
- 	batadv_primary_if_update_addr(bat_priv, curr_hard_iface);
+-#include "bat_algo.h"
++#include "bat_v.h"
+ #include "bridge_loop_avoidance.h"
+ #include "debugfs.h"
+ #include "distributed-arp-table.h"
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 05e559c..eab9d1b 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -46,6 +46,8 @@
+ #include <net/rtnetlink.h>
  
- out:
-@@ -394,7 +394,7 @@ batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
- 
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
- 
--	bat_priv->bat_algo_ops->bat_iface_update_mac(hard_iface);
-+	bat_priv->algo_ops->iface.update_mac(hard_iface);
- 	hard_iface->if_status = BATADV_IF_TO_BE_ACTIVATED;
- 
- 	/* the first active interface becomes our primary interface or
-@@ -409,8 +409,8 @@ batadv_hardif_activate_interface(struct batadv_hard_iface *hard_iface)
- 
- 	batadv_update_min_mtu(hard_iface->soft_iface);
- 
--	if (bat_priv->bat_algo_ops->bat_iface_activate)
--		bat_priv->bat_algo_ops->bat_iface_activate(hard_iface);
-+	if (bat_priv->algo_ops->iface.activate)
-+		bat_priv->algo_ops->iface.activate(hard_iface);
- 
- out:
- 	if (primary_if)
-@@ -508,7 +508,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	if (ret)
- 		goto err_dev;
- 
--	ret = bat_priv->bat_algo_ops->bat_iface_enable(hard_iface);
-+	ret = bat_priv->algo_ops->iface.enable(hard_iface);
- 	if (ret < 0)
- 		goto err_upper;
- 
-@@ -517,7 +517,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	hard_iface->if_status = BATADV_IF_INACTIVE;
- 	ret = batadv_orig_hash_add_if(hard_iface, bat_priv->num_ifaces);
- 	if (ret < 0) {
--		bat_priv->bat_algo_ops->bat_iface_disable(hard_iface);
-+		bat_priv->algo_ops->iface.disable(hard_iface);
- 		bat_priv->num_ifaces--;
- 		hard_iface->if_status = BATADV_IF_NOT_IN_USE;
- 		goto err_upper;
-@@ -598,7 +598,7 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
- 			batadv_hardif_put(new_if);
- 	}
- 
--	bat_priv->bat_algo_ops->bat_iface_disable(hard_iface);
-+	bat_priv->algo_ops->iface.disable(hard_iface);
- 	hard_iface->if_status = BATADV_IF_NOT_IN_USE;
- 
- 	/* delete all references to this hard_iface */
-@@ -783,7 +783,7 @@ static int batadv_hard_if_event(struct notifier_block *this,
- 		batadv_check_known_mac_addr(hard_iface->net_dev);
- 
- 		bat_priv = netdev_priv(hard_iface->soft_iface);
--		bat_priv->bat_algo_ops->bat_iface_update_mac(hard_iface);
-+		bat_priv->algo_ops->iface.update_mac(hard_iface);
- 
- 		primary_if = batadv_primary_if_get_selected(bat_priv);
- 		if (!primary_if)
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index c25bbb8..231f8ea 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -89,7 +89,7 @@ batadv_netlink_mesh_info_put(struct sk_buff *msg, struct net_device *soft_iface)
- 
- 	if (nla_put_string(msg, BATADV_ATTR_VERSION, BATADV_SOURCE_VERSION) ||
- 	    nla_put_string(msg, BATADV_ATTR_ALGO_NAME,
--			   bat_priv->bat_algo_ops->name) ||
-+			   bat_priv->algo_ops->name) ||
- 	    nla_put_u32(msg, BATADV_ATTR_MESH_IFINDEX, soft_iface->ifindex) ||
- 	    nla_put_string(msg, BATADV_ATTR_MESH_IFNAME, soft_iface->name) ||
- 	    nla_put(msg, BATADV_ATTR_MESH_ADDRESS, ETH_ALEN,
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 8ad17ad..7d1e542 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -534,8 +534,8 @@ batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
- 
- 	kref_init(&hardif_neigh->refcount);
- 
--	if (bat_priv->bat_algo_ops->bat_hardif_neigh_init)
--		bat_priv->bat_algo_ops->bat_hardif_neigh_init(hardif_neigh);
-+	if (bat_priv->algo_ops->neigh.hardif_init)
-+		bat_priv->algo_ops->neigh.hardif_init(hardif_neigh);
- 
- 	hlist_add_head(&hardif_neigh->list, &hard_iface->neigh_list);
- 
-@@ -706,17 +706,17 @@ int batadv_hardif_neigh_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq, "[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%pM (%s %s)]\n",
- 		   BATADV_SOURCE_VERSION, primary_if->net_dev->name,
- 		   primary_if->net_dev->dev_addr, net_dev->name,
--		   bat_priv->bat_algo_ops->name);
-+		   bat_priv->algo_ops->name);
- 
- 	batadv_hardif_put(primary_if);
- 
--	if (!bat_priv->bat_algo_ops->bat_neigh_print) {
-+	if (!bat_priv->algo_ops->neigh.print) {
- 		seq_puts(seq,
- 			 "No printing function for this routing protocol\n");
- 		return 0;
- 	}
- 
--	bat_priv->bat_algo_ops->bat_neigh_print(bat_priv, seq);
-+	bat_priv->algo_ops->neigh.print(bat_priv, seq);
- 	return 0;
- }
- 
-@@ -767,8 +767,8 @@ static void batadv_orig_node_free_rcu(struct rcu_head *rcu)
- 
- 	batadv_frag_purge_orig(orig_node, NULL);
- 
--	if (orig_node->bat_priv->bat_algo_ops->bat_orig_free)
--		orig_node->bat_priv->bat_algo_ops->bat_orig_free(orig_node);
-+	if (orig_node->bat_priv->algo_ops->orig.free)
-+		orig_node->bat_priv->algo_ops->orig.free(orig_node);
- 
- 	kfree(orig_node->tt_buff);
- 	kfree(orig_node);
-@@ -1097,12 +1097,12 @@ batadv_find_best_neighbor(struct batadv_priv *bat_priv,
- 			  struct batadv_hard_iface *if_outgoing)
- {
- 	struct batadv_neigh_node *best = NULL, *neigh;
--	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
-+	struct batadv_algo_ops *bao = bat_priv->algo_ops;
- 
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(neigh, &orig_node->neigh_list, list) {
--		if (best && (bao->bat_neigh_cmp(neigh, if_outgoing,
--						best, if_outgoing) <= 0))
-+		if (best && (bao->neigh.cmp(neigh, if_outgoing, best,
-+					    if_outgoing) <= 0))
- 			continue;
- 
- 		if (!kref_get_unless_zero(&neigh->refcount))
-@@ -1254,18 +1254,17 @@ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq, "[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%pM (%s %s)]\n",
- 		   BATADV_SOURCE_VERSION, primary_if->net_dev->name,
- 		   primary_if->net_dev->dev_addr, net_dev->name,
--		   bat_priv->bat_algo_ops->name);
-+		   bat_priv->algo_ops->name);
- 
- 	batadv_hardif_put(primary_if);
- 
--	if (!bat_priv->bat_algo_ops->bat_orig_print) {
-+	if (!bat_priv->algo_ops->orig.print) {
- 		seq_puts(seq,
- 			 "No printing function for this routing protocol\n");
- 		return 0;
- 	}
- 
--	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq,
--					       BATADV_IF_DEFAULT);
-+	bat_priv->algo_ops->orig.print(bat_priv, seq, BATADV_IF_DEFAULT);
- 
- 	return 0;
- }
-@@ -1292,7 +1291,7 @@ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
- 	}
- 
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
--	if (!bat_priv->bat_algo_ops->bat_orig_print) {
-+	if (!bat_priv->algo_ops->orig.print) {
- 		seq_puts(seq,
- 			 "No printing function for this routing protocol\n");
- 		goto out;
-@@ -1306,9 +1305,9 @@ int batadv_orig_hardif_seq_print_text(struct seq_file *seq, void *offset)
- 	seq_printf(seq, "[B.A.T.M.A.N. adv %s, IF/MAC: %s/%pM (%s %s)]\n",
- 		   BATADV_SOURCE_VERSION, hard_iface->net_dev->name,
- 		   hard_iface->net_dev->dev_addr,
--		   hard_iface->soft_iface->name, bat_priv->bat_algo_ops->name);
-+		   hard_iface->soft_iface->name, bat_priv->algo_ops->name);
- 
--	bat_priv->bat_algo_ops->bat_orig_print(bat_priv, seq, hard_iface);
-+	bat_priv->algo_ops->orig.print(bat_priv, seq, hard_iface);
- 
- out:
- 	if (hard_iface)
-@@ -1320,7 +1319,7 @@ int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
- 			    int max_if_num)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
--	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
-+	struct batadv_algo_ops *bao = bat_priv->algo_ops;
- 	struct batadv_hashtable *hash = bat_priv->orig_hash;
- 	struct hlist_head *head;
- 	struct batadv_orig_node *orig_node;
-@@ -1336,9 +1335,8 @@ int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
- 			ret = 0;
--			if (bao->bat_orig_add_if)
--				ret = bao->bat_orig_add_if(orig_node,
--							   max_if_num);
-+			if (bao->orig.add_if)
-+				ret = bao->orig.add_if(orig_node, max_if_num);
- 			if (ret == -ENOMEM)
- 				goto err;
- 		}
-@@ -1360,7 +1358,7 @@ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
- 	struct hlist_head *head;
- 	struct batadv_hard_iface *hard_iface_tmp;
- 	struct batadv_orig_node *orig_node;
--	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
-+	struct batadv_algo_ops *bao = bat_priv->algo_ops;
- 	u32 i;
- 	int ret;
- 
-@@ -1373,10 +1371,9 @@ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
- 		rcu_read_lock();
- 		hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
- 			ret = 0;
--			if (bao->bat_orig_del_if)
--				ret = bao->bat_orig_del_if(orig_node,
--							   max_if_num,
--							   hard_iface->if_num);
-+			if (bao->orig.del_if)
-+				ret = bao->orig.del_if(orig_node, max_if_num,
-+						       hard_iface->if_num);
- 			if (ret == -ENOMEM)
- 				goto err;
- 		}
+ #include "bat_algo.h"
++#include "bat_iv_ogm.h"
++#include "bat_v.h"
+ #include "bridge_loop_avoidance.h"
+ #include "debugfs.h"
+ #include "distributed-arp-table.h"
 diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 7b5de40..0f8c0dd 100644
+index a5b53a3..5833ab3 100644
 --- a/net/batman-adv/routing.c
 +++ b/net/batman-adv/routing.c
-@@ -482,7 +482,7 @@ batadv_find_router(struct batadv_priv *bat_priv,
- 		   struct batadv_orig_node *orig_node,
- 		   struct batadv_hard_iface *recv_if)
- {
--	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
-+	struct batadv_algo_ops *bao = bat_priv->algo_ops;
- 	struct batadv_neigh_node *first_candidate_router = NULL;
- 	struct batadv_neigh_node *next_candidate_router = NULL;
- 	struct batadv_neigh_node *router, *cand_router = NULL;
-@@ -536,9 +536,9 @@ batadv_find_router(struct batadv_priv *bat_priv,
- 		/* alternative candidate should be good enough to be
- 		 * considered
- 		 */
--		if (!bao->bat_neigh_is_similar_or_better(cand_router,
--							 cand->if_outgoing,
--							 router, recv_if))
-+		if (!bao->neigh.is_similar_or_better(cand_router,
-+						     cand->if_outgoing, router,
-+						     recv_if))
- 			goto next;
+@@ -34,7 +34,6 @@
+ #include <linux/spinlock.h>
+ #include <linux/stddef.h>
  
- 		/* don't use the same router twice */
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 1a7942d..fe9ca94 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -412,7 +412,7 @@ static ssize_t batadv_show_bat_algo(struct kobject *kobj,
- {
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
- 
--	return sprintf(buff, "%s\n", bat_priv->bat_algo_ops->name);
-+	return sprintf(buff, "%s\n", bat_priv->algo_ops->name);
- }
- 
- static void batadv_post_gw_reselect(struct net_device *net_dev)
+-#include "bat_algo.h"
+ #include "bitarray.h"
+ #include "bridge_loop_avoidance.h"
+ #include "distributed-arp-table.h"
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 48ce788..8bb82a3 100644
+index 53458d6..48ce788 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -1546,7 +1546,7 @@ batadv_transtable_best_orig(struct batadv_priv *bat_priv,
- 			    struct batadv_tt_global_entry *tt_global_entry)
- {
- 	struct batadv_neigh_node *router, *best_router = NULL;
--	struct batadv_algo_ops *bao = bat_priv->bat_algo_ops;
-+	struct batadv_algo_ops *bao = bat_priv->algo_ops;
- 	struct hlist_head *head;
- 	struct batadv_tt_orig_list_entry *orig_entry, *best_entry = NULL;
+@@ -44,7 +44,6 @@
+ #include <linux/string.h>
+ #include <linux/workqueue.h>
  
-@@ -1558,8 +1558,8 @@ batadv_transtable_best_orig(struct batadv_priv *bat_priv,
- 			continue;
- 
- 		if (best_router &&
--		    bao->bat_neigh_cmp(router, BATADV_IF_DEFAULT,
--				       best_router, BATADV_IF_DEFAULT) <= 0) {
-+		    bao->neigh.cmp(router, BATADV_IF_DEFAULT, best_router,
-+				   BATADV_IF_DEFAULT) <= 0) {
- 			batadv_neigh_node_put(router);
- 			continue;
- 		}
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index a331e3a..4d6a7ce 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1016,7 +1016,7 @@ struct batadv_priv_bat_v {
-  * @cleanup_work: work queue callback item for soft-interface deinit
-  * @primary_if: one of the hard-interfaces assigned to this mesh interface
-  *  becomes the primary interface
-- * @bat_algo_ops: routing algorithm used by this mesh interface
-+ * @algo_ops: routing algorithm used by this mesh interface
-  * @softif_vlan_list: a list of softif_vlan structs, one per VLAN created on top
-  *  of the mesh interface represented by this object
-  * @softif_vlan_list_lock: lock protecting softif_vlan_list
-@@ -1074,7 +1074,7 @@ struct batadv_priv {
- 	struct delayed_work orig_work;
- 	struct work_struct cleanup_work;
- 	struct batadv_hard_iface __rcu *primary_if;  /* rcu protected pointer */
--	struct batadv_algo_ops *bat_algo_ops;
-+	struct batadv_algo_ops *algo_ops;
- 	struct hlist_head softif_vlan_list;
- 	spinlock_t softif_vlan_list_lock; /* protects softif_vlan_list */
- #ifdef CONFIG_BATMAN_ADV_BLA
-@@ -1388,59 +1388,77 @@ struct batadv_forw_packet {
- };
- 
- /**
-+ * struct batadv_algo_iface_ops - mesh algorithm callbacks (interface specific)
-+ * @activate: start routing mechanisms when hard-interface is brought up
-+ * @enable: init routing info when hard-interface is enabled
-+ * @disable: de-init routing info when hard-interface is disabled
-+ * @update_mac: (re-)init mac addresses of the protocol information
-+ *  belonging to this hard-interface
-+ * @primary_set: called when primary interface is selected / changed
-+ */
-+struct batadv_algo_iface_ops {
-+	void (*activate)(struct batadv_hard_iface *hard_iface);
-+	int (*enable)(struct batadv_hard_iface *hard_iface);
-+	void (*disable)(struct batadv_hard_iface *hard_iface);
-+	void (*update_mac)(struct batadv_hard_iface *hard_iface);
-+	void (*primary_set)(struct batadv_hard_iface *hard_iface);
-+};
-+
-+/**
-+ * struct batadv_algo_neigh_ops - mesh algorithm callbacks (neighbour specific)
-+ * @hardif_init: called on creation of single hop entry
-+ * @cmp: compare the metrics of two neighbors for their respective outgoing
-+ *  interfaces
-+ * @is_similar_or_better: check if neigh1 is equally similar or better than
-+ *  neigh2 for their respective outgoing interface from the metric prospective
-+ * @print: print the single hop neighbor list (optional)
-+ */
-+struct batadv_algo_neigh_ops {
-+	void (*hardif_init)(struct batadv_hardif_neigh_node *neigh);
-+	int (*cmp)(struct batadv_neigh_node *neigh1,
-+		   struct batadv_hard_iface *if_outgoing1,
-+		   struct batadv_neigh_node *neigh2,
-+		   struct batadv_hard_iface *if_outgoing2);
-+	bool (*is_similar_or_better)(struct batadv_neigh_node *neigh1,
-+				     struct batadv_hard_iface *if_outgoing1,
-+				     struct batadv_neigh_node *neigh2,
-+				     struct batadv_hard_iface *if_outgoing2);
-+	void (*print)(struct batadv_priv *priv, struct seq_file *seq);
-+};
-+
-+/**
-+ * struct batadv_algo_orig_ops - mesh algorithm callbacks (originator specific)
-+ * @free: free the resources allocated by the routing algorithm for an orig_node
-+ *  object
-+ * @add_if: ask the routing algorithm to apply the needed changes to the
-+ *  orig_node due to a new hard-interface being added into the mesh
-+ * @del_if: ask the routing algorithm to apply the needed changes to the
-+ *  orig_node due to an hard-interface being removed from the mesh
-+ * @print: print the originator table (optional)
-+ */
-+struct batadv_algo_orig_ops {
-+	void (*free)(struct batadv_orig_node *orig_node);
-+	int (*add_if)(struct batadv_orig_node *orig_node, int max_if_num);
-+	int (*del_if)(struct batadv_orig_node *orig_node, int max_if_num,
-+		      int del_if_num);
-+	void (*print)(struct batadv_priv *priv, struct seq_file *seq,
-+		      struct batadv_hard_iface *hard_iface);
-+};
-+
-+/**
-  * struct batadv_algo_ops - mesh algorithm callbacks
-  * @list: list node for the batadv_algo_list
-  * @name: name of the algorithm
-- * @bat_iface_activate: start routing mechanisms when hard-interface is brought
-- *  up
-- * @bat_iface_enable: init routing info when hard-interface is enabled
-- * @bat_iface_disable: de-init routing info when hard-interface is disabled
-- * @bat_iface_update_mac: (re-)init mac addresses of the protocol information
-- *  belonging to this hard-interface
-- * @bat_primary_iface_set: called when primary interface is selected / changed
-- * @bat_hardif_neigh_init: called on creation of single hop entry
-- * @bat_neigh_cmp: compare the metrics of two neighbors for their respective
-- *  outgoing interfaces
-- * @bat_neigh_is_similar_or_better: check if neigh1 is equally similar or
-- *  better than neigh2 for their respective outgoing interface from the metric
-- *  prospective
-- * @bat_neigh_print: print the single hop neighbor list (optional)
-- * @bat_orig_print: print the originator table (optional)
-- * @bat_orig_free: free the resources allocated by the routing algorithm for an
-- *  orig_node object
-- * @bat_orig_add_if: ask the routing algorithm to apply the needed changes to
-- *  the orig_node due to a new hard-interface being added into the mesh
-- * @bat_orig_del_if: ask the routing algorithm to apply the needed changes to
-- *  the orig_node due to an hard-interface being removed from the mesh
-+ * @iface: callbacks related to interface handling
-+ * @neigh: callbacks related to neighbors handling
-+ * @orig: callbacks related to originators handling
-  */
- struct batadv_algo_ops {
- 	struct hlist_node list;
- 	char *name;
--	void (*bat_iface_activate)(struct batadv_hard_iface *hard_iface);
--	int (*bat_iface_enable)(struct batadv_hard_iface *hard_iface);
--	void (*bat_iface_disable)(struct batadv_hard_iface *hard_iface);
--	void (*bat_iface_update_mac)(struct batadv_hard_iface *hard_iface);
--	void (*bat_primary_iface_set)(struct batadv_hard_iface *hard_iface);
--	/* neigh_node handling API */
--	void (*bat_hardif_neigh_init)(struct batadv_hardif_neigh_node *neigh);
--	int (*bat_neigh_cmp)(struct batadv_neigh_node *neigh1,
--			     struct batadv_hard_iface *if_outgoing1,
--			     struct batadv_neigh_node *neigh2,
--			     struct batadv_hard_iface *if_outgoing2);
--	bool (*bat_neigh_is_similar_or_better)
--		(struct batadv_neigh_node *neigh1,
--		 struct batadv_hard_iface *if_outgoing1,
--		 struct batadv_neigh_node *neigh2,
--		 struct batadv_hard_iface *if_outgoing2);
--	void (*bat_neigh_print)(struct batadv_priv *priv, struct seq_file *seq);
--	/* orig_node handling API */
--	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq,
--			       struct batadv_hard_iface *hard_iface);
--	void (*bat_orig_free)(struct batadv_orig_node *orig_node);
--	int (*bat_orig_add_if)(struct batadv_orig_node *orig_node,
--			       int max_if_num);
--	int (*bat_orig_del_if)(struct batadv_orig_node *orig_node,
--			       int max_if_num, int del_if_num);
-+	struct batadv_algo_iface_ops iface;
-+	struct batadv_algo_neigh_ops neigh;
-+	struct batadv_algo_orig_ops orig;
- };
- 
- /**
+-#include "bat_algo.h"
+ #include "bridge_loop_avoidance.h"
+ #include "hard-interface.h"
+ #include "hash.h"
 -- 
 2.8.1
 
