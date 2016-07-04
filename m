@@ -2,12 +2,12 @@ Return-Path: <apape@phoenixcontact.com>
 From: Andreas Pape <apape@phoenixcontact.com>
 In-Reply-To: <1467613514-32536-1-git-send-email-apape@phoenixcontact.com>
 References: <1467613514-32536-1-git-send-email-apape@phoenixcontact.com>
-Message-ID: <1467613514-32536-2-git-send-email-apape@phoenixcontact.com>
-Date: Mon, 4 Jul 2016 08:25:10 +0200
+Message-ID: <1467613514-32536-3-git-send-email-apape@phoenixcontact.com>
+Date: Mon, 4 Jul 2016 08:25:11 +0200
 content-transfer-encoding: quoted-printable
 content-type: text/plain; charset="utf-8"
-Subject: [B.A.T.M.A.N.] [PATCH v6 1/5] batman-adv: prevent multiple ARP
-	replies sent by gateways if dat enabled
+Subject: [B.A.T.M.A.N.] [PATCH v6 2/5] batman-adv: prevent duplication of
+	ARP replies when DAT is used
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,147 +19,94 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-If dat is enabled it must be made sure that only the backbone gw which has
-claimed the remote destination for the ARP request answers the ARP request
-directly if the MAC address is known due to the local dat table. This
-prevents multiple ARP replies in a common backbone if more than one
-gateway already knows the remote mac searched for in the ARP request.
+If none of the backbone gateways in a bla setup has already knowledge of
+the mac address searched for in an incoming ARP request from the backbone
+an address resolution via the DHT of DAT is started. The gateway can send
+several ARP requests to different DHT nodes and therefore can get several
+replies. This patch assures that not all of the possible ARP replies are
+returned to the backbone by checking the local DAT cache of the gateway.
+If there is an entry in the local cache the gateway has already learned
+the requested address and there is no need to forward the additional reply
+to the backbone.
+Furthermore it is checked if this gateway has claimed the source of the ARP
+reply and only forwards it to the backbone if it has claimed the source or
+if there is no claim at all.
 
 Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
 Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bridge_loop_avoidance.c |   49 ++++++++++++++++++++++++++++=
+ net/batman-adv/distributed-arp-table.c |   32 ++++++++++++++++++++++++++++=
 ++++
- net/batman-adv/bridge_loop_avoidance.h |   11 +++++++
- net/batman-adv/distributed-arp-table.c |   15 ++++++++++
- 3 files changed, 75 insertions(+), 0 deletions(-)
+ 1 files changed, 32 insertions(+), 0 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge=
-_loop_avoidance.c
-index e4f7494..825f40d 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -2046,3 +2046,52 @@ out:
- =09=09batadv_hardif_put(primary_if);
- =09return 0;
- }
-+
-+#ifdef CONFIG_BATMAN_ADV_DAT
-+/**
-+ * batadv_bla_check_claim - check if address is claimed
-+ *
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @addr: mac address of which the claim status is checked
-+ * @vid: the VLAN ID
-+ *
-+ * addr is checked if this address is claimed by the local device itself.
-+ *
-+ * Return: true if bla is disabled or the mac is claimed by the device,
-+ * false if the device addr is already claimed by another gateway
-+ */
-+bool batadv_bla_check_claim(struct batadv_priv *bat_priv,
-+=09=09=09    u8 *addr, unsigned short vid)
-+{
-+=09struct batadv_bla_claim search_claim;
-+=09struct batadv_bla_claim *claim =3D NULL;
-+=09struct batadv_hard_iface *primary_if =3D NULL;
-+=09bool ret =3D true;
-+
-+=09if (!atomic_read(&bat_priv->bridge_loop_avoidance))
-+=09=09return ret;
-+
-+=09primary_if =3D batadv_primary_if_get_selected(bat_priv);
-+=09if (!primary_if)
-+=09=09return ret;
-+
-+=09/* First look if the mac address is claimed */
-+=09ether_addr_copy(search_claim.addr, addr);
-+=09search_claim.vid =3D vid;
-+
-+=09claim =3D batadv_claim_hash_find(bat_priv, &search_claim);
-+
-+=09/* If there is a claim and we are not owner of the claim,
-+=09 * return false.
-+=09 */
-+=09if (claim) {
-+=09=09if (!batadv_compare_eth(claim->backbone_gw->orig,
-+=09=09=09=09=09primary_if->net_dev->dev_addr))
-+=09=09=09ret =3D false;
-+=09=09batadv_claim_put(claim);
-+=09}
-+
-+=09batadv_hardif_put(primary_if);
-+=09return ret;
-+}
-+#endif
-diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge=
-_loop_avoidance.h
-index 0f01dae..9dddebc 100644
---- a/net/batman-adv/bridge_loop_avoidance.h
-+++ b/net/batman-adv/bridge_loop_avoidance.h
-@@ -47,6 +47,10 @@ void batadv_bla_update_orig_address(struct batadv_priv *=
-bat_priv,
- void batadv_bla_status_update(struct net_device *net_dev);
- int batadv_bla_init(struct batadv_priv *bat_priv);
- void batadv_bla_free(struct batadv_priv *bat_priv);
-+#ifdef CONFIG_BATMAN_ADV_DAT
-+bool batadv_bla_check_claim(struct batadv_priv *bat_priv, u8 *addr,
-+=09=09=09    unsigned short vid);
-+#endif
-
- #define BATADV_BLA_CRC_INIT=090
- #else /* ifdef CONFIG_BATMAN_ADV_BLA */
-@@ -112,6 +116,13 @@ static inline void batadv_bla_free(struct batadv_priv =
-*bat_priv)
- {
- }
-
-+static inline
-+bool batadv_bla_check_claim(struct batadv_priv *bat_priv, u8 *addr,
-+=09=09=09    unsigned short vid)
-+{
-+=09return true;
-+}
-+
- #endif /* ifdef CONFIG_BATMAN_ADV_BLA */
-
- #endif /* ifndef _NET_BATMAN_ADV_BLA_H_ */
 diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distri=
 buted-arp-table.c
-index fa76465..c0346c8 100644
+index c0346c8..6c2e774 100644
 --- a/net/batman-adv/distributed-arp-table.c
 +++ b/net/batman-adv/distributed-arp-table.c
-@@ -43,6 +43,7 @@
- #include <linux/workqueue.h>
- #include <net/arp.h>
+@@ -1191,6 +1191,7 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batad=
+v_priv *bat_priv,
+ =09__be32 ip_src, ip_dst;
+ =09u8 *hw_src, *hw_dst;
+ =09bool dropped =3D false;
++=09struct batadv_dat_entry *dat_entry =3D NULL;
+ =09unsigned short vid;
 
-+#include "bridge_loop_avoidance.h"
- #include "hard-interface.h"
- #include "hash.h"
- #include "log.h"
-@@ -1005,6 +1006,20 @@ bool batadv_dat_snoop_outgoing_arp_request(struct ba=
-tadv_priv *bat_priv,
- =09=09=09goto out;
- =09=09}
+ =09if (!atomic_read(&bat_priv->distributed_arp_table))
+@@ -1210,12 +1211,41 @@ bool batadv_dat_snoop_incoming_arp_reply(struct bat=
+adv_priv *bat_priv,
+ =09hw_dst =3D batadv_arp_hw_dst(skb, hdr_size);
+ =09ip_dst =3D batadv_arp_ip_dst(skb, hdr_size);
 
-+=09=09/* If BLA is enabled, only send ARP replies if we have claimed
-+=09=09 * the destination for the ARP request or if no one else of
-+=09=09 * the backbone gws belonging to our backbone has claimed the
-+=09=09 * destination.
-+=09=09 */
-+=09=09if (!batadv_bla_check_claim(bat_priv,
-+=09=09=09=09=09    dat_entry->mac_addr, vid)) {
-+=09=09=09batadv_dbg(BATADV_DBG_DAT, bat_priv,
-+=09=09=09=09   "Device %pM claimed by another backbone gw. Don't send ARP =
-reply!",
-+=09=09=09=09   dat_entry->mac_addr);
-+=09=09=09ret =3D true;
-+=09=09=09goto out;
-+=09=09}
++=09/* If ip_dst is already in cache and has the right mac address,
++=09 * drop this frame if this ARP reply is destined for us because it's
++=09 * most probably an ARP reply generated by another node of the DHT.
++=09 * We have most probably received already a reply earlier. Delivering
++=09 * this frame would lead to doubled receive of an ARP reply.
++=09 */
++=09dat_entry =3D batadv_dat_entry_hash_find(bat_priv, ip_src, vid);
++=09if (dat_entry && batadv_compare_eth(hw_src, dat_entry->mac_addr)) {
++=09=09batadv_dbg(BATADV_DBG_DAT, bat_priv, "Doubled ARP reply removed: ARP=
+ MSG =3D [src: %pM-%pI4 dst: %pM-%pI4]; dat_entry: %pM-%pI4\n",
++=09=09=09   hw_src, &ip_src, hw_dst, &ip_dst,
++=09=09=09   dat_entry->mac_addr,=09&dat_entry->ip);
++=09=09dropped =3D true;
++=09=09goto out;
++=09}
 +
- =09=09skb_new =3D arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
- =09=09=09=09     bat_priv->soft_iface, ip_dst, hw_src,
- =09=09=09=09     dat_entry->mac_addr, hw_src);
+ =09/* Update our internal cache with both the IP addresses the node got
+ =09 * within the ARP reply
+ =09 */
+ =09batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
+ =09batadv_dat_entry_add(bat_priv, ip_dst, hw_dst, vid);
+
++=09/* If BLA is enabled, only forward ARP replies if we have claimed the
++=09 * source of the ARP reply or if no one else of the same backbone has
++=09 * already claimed that client. This prevents that different gateways
++=09 * to the same backbone all forward the ARP reply leading to multiple
++=09 * replies in the backbone.
++=09 */
++=09if (!batadv_bla_check_claim(bat_priv, hw_src, vid)) {
++=09=09batadv_dbg(BATADV_DBG_DAT, bat_priv,
++=09=09=09   "Device %pM claimed by another backbone gw. Drop ARP reply.\n",
++=09=09=09   hw_src);
++=09=09dropped =3D true;
++=09=09goto out;
++=09}
++
+ =09/* if this REPLY is directed to a client of mine, let's deliver the
+ =09 * packet to the interface
+ =09 */
+@@ -1228,6 +1258,8 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batad=
+v_priv *bat_priv,
+ out:
+ =09if (dropped)
+ =09=09kfree_skb(skb);
++=09if (dat_entry)
++=09=09batadv_dat_entry_put(dat_entry);
+ =09/* if dropped =3D=3D false -> deliver to the interface */
+ =09return dropped;
+ }
 --
 1.7.0.4
 
