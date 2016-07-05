@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 05 Jul 2016 17:34:05 +0800
-Message-ID: <2195360.X41xBE5PPn@voltaire>
-In-Reply-To: <1467315673-9950-1-git-send-email-sven@narfation.org>
-References: <1467310246-5820-1-git-send-email-sven@narfation.org>
- <1467315673-9950-1-git-send-email-sven@narfation.org>
+Date: Tue, 05 Jul 2016 17:49:32 +0800
+Message-ID: <4124259.vpW9uLYTxL@voltaire>
+In-Reply-To: <1467536834-16185-1-git-send-email-sven@narfation.org>
+References: <1467536834-16185-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1912554.MZCYPoc4hA";
+Content-Type: multipart/signed; boundary="nextPart1671224.9KHyXMQx2K";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint v2 4/4] batman-adv: Free
-	last_bonding_candidate on release of orig_node
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3] batman-adv: iv_ogm,
+	Reduce code duplication
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,31 +20,41 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1912554.MZCYPoc4hA
+--nextPart1671224.9KHyXMQx2K
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Thursday, June 30, 2016 21:41:13 Sven Eckelmann wrote:
-> The orig_ifinfo reference counter for last_bonding_candidate in
-> batadv_orig_node has to be reduced when an originator node is released.
-> Otherwise the orig_ifinfo is leaked and the reference counter the netdevice
-> is not reduced correctly.
+On Sunday, July 03, 2016 11:07:14 Sven Eckelmann wrote:
+> From: Markus Pargmann <mpa@pengutronix.de>
 > 
-> Fixes: 797edd9e87ac ("batman-adv: add bonding again")
+> The difference between tq1 and tq2 are calculated the same way in two
+> separate functions.
+> 
+> This patch moves the common code to a seperate function
+> 'batadv_iv_ogm_neigh_diff' which handles everything necessary. The other
+> two functions can then handle errors and use the difference directly.
+> 
+> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+> [sven@narfation.org: rebased on current version, initialize return variable
+> in batadv_iv_ogm_neigh_diff, add kerneldoc, convert to bool return type]
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
-> v2:
->  - added new patch
+> v3:
+>  - rebased on current version
+>  - initialize return variable in batadv_iv_ogm_neigh_diff
+>  - add kerneldoc for batadv_iv_ogm_neigh_diff
+>  - convert batadv_iv_ogm_neigh_diff to bool return type
 > ---
->  net/batman-adv/originator.c | 7 +++++++
->  1 file changed, 7 insertions(+)
+>  net/batman-adv/bat_iv_ogm.c | 77
+> +++++++++++++++++++++++++++------------------ 1 file changed, 47
+> insertions(+), 30 deletions(-)
 
-Applied in revision 20df5c5.
+Applied in revision b7232de.
 
 Thanks,
 Marek
 
---nextPart1912554.MZCYPoc4hA
+--nextPart1671224.9KHyXMQx2K
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +62,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXe38NAAoJEFNVTo/uthzAnEwH/A8cM8IPnjGkNCt0RX+ulI49
-KUlYINlZ6XX4fAeIZtfQyR9Amz14u2orMghzrmRr4EX3DAXR0LTfutWOShLvVZ59
-H9iDnmBkIrVsHunf2EDI4KvXa7qHC5F5ndH5IFT3ezsJe1cTUZcgN+amcnB0WrN9
-xOSAuTePj6G3Fyj2Ac3XaHBALzy4DxNGyDCJzJwlQOsYGL9mJB3OG9WJMHrZZQYC
-8u58OJhac/S5lvmdLvBMBdZpOVlmTNEqreAl+BrocDrDP+Mj905rIb6/wb0UEqKo
-tKVwlQCUrnu7rm7TKJLcF7ZrtutbkM/QFVCQZUg6RqjpAJvsOAwdyNqmyM7LVkg=
-=egwU
+iQEcBAABCAAGBQJXe4KsAAoJEFNVTo/uthzA/8MH/2f820QAlpmp06CRd2y/+b47
+yI8ylVu05KGMHWp2SJVb7nghXEypfRCk2KBcSTVD/B3Fof2RZCNirz5NtSYXqEDu
+mcuDFmfdgy8asrPMYT7mtJH3iRKH5CBf7G0BmC6EnTGF38hbzfBsF5fmWSJnZpzQ
+2Na2ZmNY99AwF15AQVxLE9NYlYA2Cz/yPn3PKBWSYM4qYcvvl+eIxCtVlm7ZUwEI
+uUbUMhnt8REa9FRNn4laGyEv6//CFkQTTjPXCteqCqsNtfqy8kWNBVbuODZFcmsA
+5/jlnDBtzB1I/6tZ1KwDhZQV4uWv/TDsG0NT5nXhNXeHRbReBHgUdS1dn0H+qrs=
+=EAO9
 -----END PGP SIGNATURE-----
 
---nextPart1912554.MZCYPoc4hA--
+--nextPart1671224.9KHyXMQx2K--
 
