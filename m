@@ -1,14 +1,12 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 05 Jul 2016 17:49:32 +0800
-Message-ID: <4124259.vpW9uLYTxL@voltaire>
-In-Reply-To: <1467536834-16185-1-git-send-email-sven@narfation.org>
-References: <1467536834-16185-1-git-send-email-sven@narfation.org>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Tue,  5 Jul 2016 20:01:36 +0200
+Message-Id: <1467741697-8811-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1671224.9KHyXMQx2K";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v3] batman-adv: iv_ogm,
-	Reduce code duplication
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: Add wrapper for ARP reply
+	creation
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,56 +18,120 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1671224.9KHyXMQx2K
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Removing duplicate code.
 
-On Sunday, July 03, 2016 11:07:14 Sven Eckelmann wrote:
-> From: Markus Pargmann <mpa@pengutronix.de>
-> 
-> The difference between tq1 and tq2 are calculated the same way in two
-> separate functions.
-> 
-> This patch moves the common code to a seperate function
-> 'batadv_iv_ogm_neigh_diff' which handles everything necessary. The other
-> two functions can then handle errors and use the difference directly.
-> 
-> Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
-> [sven@narfation.org: rebased on current version, initialize return variable
-> in batadv_iv_ogm_neigh_diff, add kerneldoc, convert to bool return type]
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> v3:
->  - rebased on current version
->  - initialize return variable in batadv_iv_ogm_neigh_diff
->  - add kerneldoc for batadv_iv_ogm_neigh_diff
->  - convert batadv_iv_ogm_neigh_diff to bool return type
-> ---
->  net/batman-adv/bat_iv_ogm.c | 77
-> +++++++++++++++++++++++++++------------------ 1 file changed, 47
-> insertions(+), 30 deletions(-)
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
 
-Applied in revision b7232de.
+Changes in v2:
+* Rebase to master
+* Moved skb_reset_mac_header to earlier position (to avoid calling it on NULL)
 
-Thanks,
-Marek
+Changes in RFC -> non-RFC:
+ * Added kerneldoc
+ * Added Signed-off-by
 
---nextPart1671224.9KHyXMQx2K
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+ net/batman-adv/distributed-arp-table.c | 67 ++++++++++++++++++++--------------
+ 1 file changed, 40 insertions(+), 27 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJXe4KsAAoJEFNVTo/uthzA/8MH/2f820QAlpmp06CRd2y/+b47
-yI8ylVu05KGMHWp2SJVb7nghXEypfRCk2KBcSTVD/B3Fof2RZCNirz5NtSYXqEDu
-mcuDFmfdgy8asrPMYT7mtJH3iRKH5CBf7G0BmC6EnTGF38hbzfBsF5fmWSJnZpzQ
-2Na2ZmNY99AwF15AQVxLE9NYlYA2Cz/yPn3PKBWSYM4qYcvvl+eIxCtVlm7ZUwEI
-uUbUMhnt8REa9FRNn4laGyEv6//CFkQTTjPXCteqCqsNtfqy8kWNBVbuODZFcmsA
-5/jlnDBtzB1I/6tZ1KwDhZQV4uWv/TDsG0NT5nXhNXeHRbReBHgUdS1dn0H+qrs=
-=EAO9
------END PGP SIGNATURE-----
-
---nextPart1671224.9KHyXMQx2K--
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index b1cc8bf..081b1dc 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -948,6 +948,41 @@ static unsigned short batadv_dat_get_vid(struct sk_buff *skb, int *hdr_size)
+ }
+ 
+ /**
++ * batadv_dat_arp_create_reply - create an ARP Reply
++ * @bat_priv: the bat priv with all the soft interface information
++ * @ip_src: ARP sender IP
++ * @ip_dst: ARP target IP
++ * @hw_src: Ethernet source and ARP sender MAC
++ * @hw_dst: Ethernet destination and ARP target MAC
++ * @vid: VLAN identifier (optional, set to zero otherwise)
++ *
++ * Creates an ARP Reply from the given values, optionally encapsulated in a
++ * VLAN header.
++ *
++ * Return: An skb containing an ARP Reply.
++ */
++static struct sk_buff *
++batadv_dat_arp_create_reply(struct batadv_priv *bat_priv, __be32 ip_src,
++			    __be32 ip_dst, u8 *hw_src, u8 *hw_dst,
++			    unsigned short vid)
++{
++	struct sk_buff *skb;
++
++	skb = arp_create(ARPOP_REPLY, ETH_P_ARP, ip_dst, bat_priv->soft_iface,
++			 ip_src, hw_dst, hw_src, hw_dst);
++	if (!skb)
++		return NULL;
++
++	skb_reset_mac_header(skb);
++
++	if (vid & BATADV_VLAN_HAS_TAG)
++		skb = vlan_insert_tag(skb, htons(ETH_P_8021Q),
++				      vid & VLAN_VID_MASK);
++
++	return skb;
++}
++
++/**
+  * batadv_dat_snoop_outgoing_arp_request - snoop the ARP request and try to
+  * answer using DAT
+  * @bat_priv: the bat priv with all the soft interface information
+@@ -1005,20 +1040,12 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
+ 			goto out;
+ 		}
+ 
+-		skb_new = arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
+-				     bat_priv->soft_iface, ip_dst, hw_src,
+-				     dat_entry->mac_addr, hw_src);
++		skb_new = batadv_dat_arp_create_reply(bat_priv, ip_dst, ip_src,
++						      dat_entry->mac_addr,
++						      hw_src, vid);
+ 		if (!skb_new)
+ 			goto out;
+ 
+-		if (vid & BATADV_VLAN_HAS_TAG) {
+-			skb_new = vlan_insert_tag(skb_new, htons(ETH_P_8021Q),
+-						  vid & VLAN_VID_MASK);
+-			if (!skb_new)
+-				goto out;
+-		}
+-
+-		skb_reset_mac_header(skb_new);
+ 		skb_new->protocol = eth_type_trans(skb_new,
+ 						   bat_priv->soft_iface);
+ 		bat_priv->stats.rx_packets++;
+@@ -1082,25 +1109,11 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
+ 	if (!dat_entry)
+ 		goto out;
+ 
+-	skb_new = arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
+-			     bat_priv->soft_iface, ip_dst, hw_src,
+-			     dat_entry->mac_addr, hw_src);
+-
++	skb_new = batadv_dat_arp_create_reply(bat_priv, ip_dst, ip_src,
++					      dat_entry->mac_addr, hw_src, vid);
+ 	if (!skb_new)
+ 		goto out;
+ 
+-	/* the rest of the TX path assumes that the mac_header offset pointing
+-	 * to the inner Ethernet header has been set, therefore reset it now.
+-	 */
+-	skb_reset_mac_header(skb_new);
+-
+-	if (vid & BATADV_VLAN_HAS_TAG) {
+-		skb_new = vlan_insert_tag(skb_new, htons(ETH_P_8021Q),
+-					  vid & VLAN_VID_MASK);
+-		if (!skb_new)
+-			goto out;
+-	}
+-
+ 	/* To preserve backwards compatibility, the node has choose the outgoing
+ 	 * format based on the incoming request packet type. The assumption is
+ 	 * that a node not using the 4addr packet format doesn't support it.
+-- 
+2.1.4
 
