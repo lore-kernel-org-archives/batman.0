@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 05 Jul 2016 16:38:01 +0800
-Message-ID: <29355629.szZ4lRTEom@voltaire>
-In-Reply-To: <1466445210-17616-2-git-send-email-sven@narfation.org>
+Date: Tue, 05 Jul 2016 16:41:30 +0800
+Message-ID: <3052840.PXnslLM2oB@voltaire>
+In-Reply-To: <1466445289-17840-1-git-send-email-sven@narfation.org>
 References: <1466445210-17616-1-git-send-email-sven@narfation.org>
- <1466445210-17616-2-git-send-email-sven@narfation.org>
+ <1466445289-17840-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4646117.HEP406E42L";
+Content-Type: multipart/signed; boundary="nextPart12764151.pILtKxgPd8";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next v2 2/4] batman-adv: Don't propagate
-	negative dev_queue_xmit return values
+Subject: Re: [B.A.T.M.A.N.] [PATCH next v2 3/4] batman-adv: remove
+	NET_XMIT_POLICED
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,40 +20,37 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Florian Westphal <fw@strlen.de>, "David S . Miller" <davem@davemloft.net>
 
---nextPart4646117.HEP406E42L
+--nextPart12764151.pILtKxgPd8
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, June 20, 2016 19:53:28 Sven Eckelmann wrote:
-> batadv_send_skb_packet used by batadv_send_skb_to_orig and its return value
-> is given directly to callers of batadv_send_skb_packet.
+On Monday, June 20, 2016 19:54:48 Sven Eckelmann wrote:
+> From: Florian Westphal <fw@strlen.de>
 > 
->     batadv_send_skb_to_orig
->     -> batadv_send_unicast_skb
->        -> batadv_send_skb_packet
->           -> dev_queue_xmit
+> BATMAN uses it as an intermediate return value to signal
+> forwarding vs. buffering, but it did not return POLICED to
+> callers outside of BATMAN.
 > 
-> These callers of batadv_send_skb_to_orig expect that the skb isn't consumed
-> when they receive a -1. But dev_queue_xmit may still have consumed it and
-> still returned -1. Thus the free for the skb would be called twice.
-> 
-> Fixes: e3b8acbff9c8 ("batman-adv: return netdev status in the TX path")
+> Signed-off-by: Florian Westphal <fw@strlen.de>
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> [sven@narfation.org: rebased on top of TX path rewrite]
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
 > v2:
 >  - rebased on current master
 >  - added patch to a common set of related patches
 > 
->  net/batman-adv/send.c | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
+>  net/batman-adv/send.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 
-Applied in revision a20149c.
+Applied in revision ec76a65.
 
 Thanks,
 Marek
 
---nextPart4646117.HEP406E42L
+--nextPart12764151.pILtKxgPd8
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -61,14 +58,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXe3HpAAoJEFNVTo/uthzASIIIALH0pRf+TZOV7W3MweQpYmBM
-VswFFnQSst/1DzEq8SUFgtRD7owbjEham9ADhNU2+wo9sgx4IgN/0zH4LlMjt6Lg
-zrdPGl4LEtxwUMDiSabQiEqMnDc5WVkOwvX17R2AgCpWeg2irSZr0loWzKPE/VWn
-wkUZ/aytb4juO3OhVBpi5Av7y4GhIGOwzX/znj8r3afyoxx/ObUtJZ9wTiW38yKC
-CKDQhCUCsNMlzJ5ejgtxSZT222qiT1g/Sw40U/H+ez3bUt5Q/fTk17Yhld7FS4xp
-TChKTusNWKwOa+GiPgRWbgoVDSxR9CttXbX67Mykuq0jAavJlwplf/rCIeNJRbU=
-=UEoI
+iQEcBAABCAAGBQJXe3K6AAoJEFNVTo/uthzAadQH/A372bSAjQURGRztyWo6iQHd
+V0ppooyajITrGGdRJyQ1N5emvRoLjSSLEV2zsJcIX02PcyQUyd/t5g73jaq0GD0a
+FnaQw9df4zy7dMr2lMvAewDzRUKTXajZZ9r6RupLytJrGEiGuDyilNQ+3OeI71Ux
+dWgdZy4V9X1w+BKqkVtnIyOIeR2VXrn52E0/1L5h1pvbLz+sO5zPJ17j0nRKmmKw
+bzzc3ZyHI45ZFK5uPvJ27LLO+pbxwPuegL/XegRLmhWzpU50lQ0umK53qIaBYBg6
+rD6p62oubPtZEJ4XcfeA2/4Eq8C22I5n6eCtuWTAfhyx+NVLmxJqo+XDQNjfVtw=
+=BzmD
 -----END PGP SIGNATURE-----
 
---nextPart4646117.HEP406E42L--
+--nextPart12764151.pILtKxgPd8--
 
