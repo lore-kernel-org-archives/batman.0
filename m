@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 05 Jul 2016 16:41:30 +0800
-Message-ID: <3052840.PXnslLM2oB@voltaire>
-In-Reply-To: <1466445289-17840-1-git-send-email-sven@narfation.org>
+Date: Tue, 05 Jul 2016 16:42:44 +0800
+Message-ID: <4409004.MzGxlJWWQl@voltaire>
+In-Reply-To: <1466445289-17840-2-git-send-email-sven@narfation.org>
 References: <1466445210-17616-1-git-send-email-sven@narfation.org>
- <1466445289-17840-1-git-send-email-sven@narfation.org>
+ <1466445289-17840-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart12764151.pILtKxgPd8";
+Content-Type: multipart/signed; boundary="nextPart2235426.BPo86eleOf";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next v2 3/4] batman-adv: remove
-	NET_XMIT_POLICED
+Subject: Re: [B.A.T.M.A.N.] [PATCH next v2 4/4] batman-adv: Remove
+	unnecessary call to dev_xmit_complete
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,37 +20,39 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Florian Westphal <fw@strlen.de>, "David S . Miller" <davem@davemloft.net>
 
---nextPart12764151.pILtKxgPd8
+--nextPart2235426.BPo86eleOf
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, June 20, 2016 19:54:48 Sven Eckelmann wrote:
-> From: Florian Westphal <fw@strlen.de>
+On Monday, June 20, 2016 19:54:49 Sven Eckelmann wrote:
+> The dev_xmit_complete function is only necessary to check the return value
+> for *_hard_xmit functions. But batman-adv only uses dev_queue_xmit to send
+> data via the interface queue.
 > 
-> BATMAN uses it as an intermediate return value to signal
-> forwarding vs. buffering, but it did not return POLICED to
-> callers outside of BATMAN.
+> From the kerneldoc of __dev_queue_xmit:
 > 
-> Signed-off-by: Florian Westphal <fw@strlen.de>
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> [sven@narfation.org: rebased on top of TX path rewrite]
+>     Regardless of the return value, the skb is consumed, so it is currently
+>     difficult to retry a send to this method.  (You can bump the ref count
+>     before sending to hold a reference for retry if you are careful.)
+> 
+> Fixes: e3b8acbff9c8 ("batman-adv: return netdev status in the TX path")
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
 > v2:
->  - rebased on current master
->  - added patch to a common set of related patches
+>  - added this patch
 > 
->  net/batman-adv/send.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+>  net/batman-adv/routing.c | 10 ++++------
+>  net/batman-adv/send.c    |  2 +-
+>  net/batman-adv/tvlv.c    |  2 +-
+>  3 files changed, 6 insertions(+), 8 deletions(-)
 
-Applied in revision ec76a65.
+Applied in revision 1718050.
 
 Thanks,
 Marek
 
---nextPart12764151.pILtKxgPd8
+--nextPart2235426.BPo86eleOf
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -58,14 +60,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXe3K6AAoJEFNVTo/uthzAadQH/A372bSAjQURGRztyWo6iQHd
-V0ppooyajITrGGdRJyQ1N5emvRoLjSSLEV2zsJcIX02PcyQUyd/t5g73jaq0GD0a
-FnaQw9df4zy7dMr2lMvAewDzRUKTXajZZ9r6RupLytJrGEiGuDyilNQ+3OeI71Ux
-dWgdZy4V9X1w+BKqkVtnIyOIeR2VXrn52E0/1L5h1pvbLz+sO5zPJ17j0nRKmmKw
-bzzc3ZyHI45ZFK5uPvJ27LLO+pbxwPuegL/XegRLmhWzpU50lQ0umK53qIaBYBg6
-rD6p62oubPtZEJ4XcfeA2/4Eq8C22I5n6eCtuWTAfhyx+NVLmxJqo+XDQNjfVtw=
-=BzmD
+iQEcBAABCAAGBQJXe3MEAAoJEFNVTo/uthzACU8H/i9dhxcVhghFb+An1UGh6JuJ
+CRXMNO4433LaP/pcaR8ZWTzJ/HIsG6SGgcriHKwQ6fVQrsBHkLPySdDfqwZ/QyV2
+w+JlQtWE/yOQWiyYB5+2NQFmJaEIlXpxMGk8EFhVLZv7BWAssaGHcLX2M+zgF94Q
+bhj7Wsq+QhASA6wqQuxQDJlFjET1IR9V7eykJmhK3wyiAwvKOl9i9WSETzgMxbOa
+e6TtHjC0rYhOELnqyr3JwFW1/w0OU33T/MngE8ovxoPRuGYQxSKjy2ZZyrMy0pJv
+gkSzrgvcZT+aRA+KMlxikUCSxNI1+NlY57e2DyDj8i2vmwC0prk7bbX0qGFUeF8=
+=wPio
 -----END PGP SIGNATURE-----
 
---nextPart12764151.pILtKxgPd8--
+--nextPart2235426.BPo86eleOf--
 
