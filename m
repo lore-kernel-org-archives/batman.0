@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 05 Jul 2016 16:42:44 +0800
-Message-ID: <4409004.MzGxlJWWQl@voltaire>
-In-Reply-To: <1466445289-17840-2-git-send-email-sven@narfation.org>
-References: <1466445210-17616-1-git-send-email-sven@narfation.org>
- <1466445289-17840-2-git-send-email-sven@narfation.org>
+Date: Tue, 05 Jul 2016 16:52:14 +0800
+Message-ID: <1536732.nPTjFfZg4n@voltaire>
+In-Reply-To: <1467445934-13951-1-git-send-email-sven@narfation.org>
+References: <1467445934-13951-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2235426.BPo86eleOf";
+Content-Type: multipart/signed; boundary="nextPart3546662.bCMqq2RM6A";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH next v2 4/4] batman-adv: Remove
-	unnecessary call to dev_xmit_complete
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: Avoid nullptr
+	dereference in bla after vlan_insert_tag
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,38 +20,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2235426.BPo86eleOf
+--nextPart3546662.bCMqq2RM6A
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, June 20, 2016 19:54:49 Sven Eckelmann wrote:
-> The dev_xmit_complete function is only necessary to check the return value
-> for *_hard_xmit functions. But batman-adv only uses dev_queue_xmit to send
-> data via the interface queue.
+On Saturday, July 02, 2016 09:52:13 Sven Eckelmann wrote:
+> vlan_insert_tag can return NULL on errors. The bridge loop avoidance code
+> therefore has to check the return value of vlan_insert_tag for NULL before
+> it can safely operate on this pointer.
 > 
-> From the kerneldoc of __dev_queue_xmit:
-> 
->     Regardless of the return value, the skb is consumed, so it is currently
->     difficult to retry a send to this method.  (You can bump the ref count
->     before sending to hold a reference for retry if you are careful.)
-> 
-> Fixes: e3b8acbff9c8 ("batman-adv: return netdev status in the TX path")
+> Fixes: a9ce0dc43e2c ("batman-adv: add basic bridge loop avoidance code")
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
-> v2:
->  - added this patch
-> 
->  net/batman-adv/routing.c | 10 ++++------
->  net/batman-adv/send.c    |  2 +-
->  net/batman-adv/tvlv.c    |  2 +-
->  3 files changed, 6 insertions(+), 8 deletions(-)
+>  net/batman-adv/bridge_loop_avoidance.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 
-Applied in revision 1718050.
+Applied in revision e4cffba.
 
 Thanks,
 Marek
 
---nextPart2235426.BPo86eleOf
+--nextPart3546662.bCMqq2RM6A
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -60,14 +48,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXe3MEAAoJEFNVTo/uthzACU8H/i9dhxcVhghFb+An1UGh6JuJ
-CRXMNO4433LaP/pcaR8ZWTzJ/HIsG6SGgcriHKwQ6fVQrsBHkLPySdDfqwZ/QyV2
-w+JlQtWE/yOQWiyYB5+2NQFmJaEIlXpxMGk8EFhVLZv7BWAssaGHcLX2M+zgF94Q
-bhj7Wsq+QhASA6wqQuxQDJlFjET1IR9V7eykJmhK3wyiAwvKOl9i9WSETzgMxbOa
-e6TtHjC0rYhOELnqyr3JwFW1/w0OU33T/MngE8ovxoPRuGYQxSKjy2ZZyrMy0pJv
-gkSzrgvcZT+aRA+KMlxikUCSxNI1+NlY57e2DyDj8i2vmwC0prk7bbX0qGFUeF8=
-=wPio
+iQEcBAABCAAGBQJXe3U+AAoJEFNVTo/uthzA65EIAIN8vRG7Lw54rJ6g4eNfhqHO
+TqvVpF6LH3gRW1wzr26olZSq23RtKQyKqkZH2XESlojQoOLRbSW1c4flIqbjSsT6
+v1xrkr8PooCvCi1Nw8/QMlt2A0Tk8Hr85rQ9snCAvN0cpdyMmHf2IreHXHbzaZBd
+cgcl/IEjFsL2vBIoK002yWmz0pS4COBbxXuP+ie4ljxm1yz7koroAw/iu3eZQMet
+47xM7WHp3XJQ9O5iUsmexZBCcZQPo0PaYFgPobAye0DAtUgpl3w7UPdJTB3YdtgG
+7Q1EyWhNBy752j9RJMDetSyaKl0c98JzlydnrzMnMQBlEkriIe0e/ydHE+Z3evI=
+=RcKI
 -----END PGP SIGNATURE-----
 
---nextPart2235426.BPo86eleOf--
+--nextPart3546662.bCMqq2RM6A--
 
