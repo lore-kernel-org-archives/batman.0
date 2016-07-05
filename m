@@ -1,15 +1,15 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 05 Jul 2016 16:53:27 +0800
-Message-ID: <35799247.WFIbEZg2os@voltaire>
-In-Reply-To: <1467445934-13951-2-git-send-email-sven@narfation.org>
-References: <1467445934-13951-1-git-send-email-sven@narfation.org>
- <1467445934-13951-2-git-send-email-sven@narfation.org>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 05 Jul 2016 11:02:05 +0200
+Message-ID: <2972702.D1HUdGKSgq@prime>
+In-Reply-To: <20160704.233725.776967939409818077.davem@davemloft.net>
+References: <1467637379-6089-1-git-send-email-sw@simonwunderlich.de>
+ <20160704.233725.776967939409818077.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2238832.aT5cKSijTL";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: Avoid nullptr
-	dereference in dat after vlan_insert_tag
+Content-Type: multipart/signed; boundary="nextPart7092014.vjJ4HJfF6a";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 00/11] pull request for net-next:
+	batman-adv 2016-07-04
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,29 +19,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2238832.aT5cKSijTL
+--nextPart7092014.vjJ4HJfF6a
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday, July 02, 2016 09:52:14 Sven Eckelmann wrote:
-> vlan_insert_tag can return NULL on errors. The distributed arp table code
-> therefore has to check the return value of vlan_insert_tag for NULL before
-> it can safely operate on this pointer.
+Hi David,
+
+On Monday 04 July 2016 23:37:25 David Miller wrote:
+> From: Simon Wunderlich <sw@simonwunderlich.de>
+> Date: Mon,  4 Jul 2016 15:02:48 +0200
 > 
-> Fixes: 53c6c262a581 ("batman-adv: tag locally generated ARP reply if
-> needed") Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/distributed-arp-table.c | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
+> > this is our second and final feature pull request for batman-adv in this
+> > round.
+> > 
+> > Please pull or let me know of any problem!
+> 
+> Pulled, thanks.
+> 
+> I have no idea why you guys were using debugfs for anything that
+> actually matters like configuration. :-/  debugfs should only be
+> used for "debugging", such that if debugfs were not present the
+> full functionality of the facility would still be present.
 
-Applied in revision 898382d.
+as Sven pointed out, debugfs was not used for configuration (except for very 
+deep tune parameters which are really for debugging anyway). We use sysfs 
+(formerly) and now rtnl for configuration.
 
-Thanks,
-Marek
+However, debugfs has quite some tables showing the current state of the mesh 
+(read only) which are obviously interesting for many users as well. Therefore 
+we want to change to a netlink based interface in the long run, similar to 
+what the wireless stack and iw are doing. This will also enable new features 
+like proper namespace support, which we are going to integrate soon.
 
---nextPart2238832.aT5cKSijTL
+Cheers,
+     Simon
+--nextPart7092014.vjJ4HJfF6a
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -49,14 +64,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXe3WHAAoJEFNVTo/uthzAsD0IAK8ra9F0mPyQBnXe5IiWk4z3
-nrxyqM+ai+D7BiGLrZlg+IDpe+OFtUMH192akLa1PX2vOPwHu1ZiJJJd9ehw7skc
-LNRGdWc9UctmVCHt3nnluUPeviePPW+KDo8dZ/Tm7xJzj6Q/ZSnX0VjFqbv6hALf
-5TvJkcGNhJngztnYwCdpNc+be7R8NT18Oz9VHcXtiHSuHOk1/lQBHf9/oC2npZUA
-Y9Y3XqAIyKHDrr1AB5WkTaTweXcgtqmSQ9Tb2UnHdKxf5BY5WuiN+Uz7kemOMeGR
-uMn9tMd3dROAp3RizzNDgHChFF7tDrpH3jnl0F/RAMr57nzcpc9Xvs4PyE3wFX8=
-=6IVd
+iQIcBAABCgAGBQJXe3eNAAoJEKEr45hCkp6hzusP/0d+UXtR3yeeJhcZIEOH5PwU
+4w+elWkCzzFGZ18xj8RAzkJ4LxfZi+OiPlr/6dZp+8ix6GZjqNKR435enGanXU0J
+MNOobBUk8DsYhUix/rmoYqxAu+N91OdCVFQH4m+TQYBY4F6nQ840eTrTue/kGT4l
+DpXJlIvzASKL2EMrx4SC1hpTDTUJIo5NWpajKa/M8v5sd37ofTOyxhWy0sEIc5fb
+IW1YVeZRu7aG2QZS+nbGwJtr3duPxmYSDEo2OPSCSRJzYKr7xeau9VRCJ6yMj9IQ
+KXANN9KrXZr1A3gzO7jx27sKAUZgyy39FP8IPjV9293dqaxdVyZu4L7vsy+8+13i
+wTGSAzOrHD3Z+un273v+SOoWPV2eBKTQbep2F1Qm3okj5h7cvsJFwMlDxG7iE5Dd
+6CDJ7zIYNBLAeCGY2oLevpZvMtCFppc0NP8X9zQfDUzXM66eGIHRoGcfSlxp8ssl
+zTK4lxN5TVvBrFcJW/06t0H1/B1FGC8BMeNx1WFw34XFiFvqSQMq8P9grdtNdBho
+84eQ+0OG3Jf5zhu/mXt1+PeJgh2h37Jo7HLbSZm3tMzTYxSupNRyE4ijgB1sjjsn
+Z7AGGhB94wA7XTIjK8Cp30fMjPUvG+WWHOND0+lzQzd18CwFHJJ4VKH1Yh3XScNr
+UTWXUs9keT6D5INZzKns
+=ktub
 -----END PGP SIGNATURE-----
 
---nextPart2238832.aT5cKSijTL--
+--nextPart7092014.vjJ4HJfF6a--
 
