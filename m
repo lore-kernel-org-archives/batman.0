@@ -1,16 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 05 Jul 2016 17:26:24 +0800
-Message-ID: <3137606.2gRyssZLBh@voltaire>
-In-Reply-To: <77232143.NV1dyT7Nfk@prime>
-References: <1467310294-5892-1-git-send-email-sven@narfation.org>
- <1467380983-14959-1-git-send-email-sven@narfation.org>
- <77232143.NV1dyT7Nfk@prime>
+Date: Tue, 05 Jul 2016 17:31:35 +0800
+Message-ID: <4893842.MKhylzvCye@voltaire>
+In-Reply-To: <1467310294-5892-2-git-send-email-sven@narfation.org>
+References: <1467310246-5820-1-git-send-email-sven@narfation.org>
+ <1467310294-5892-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1535130.gZJzKIMhUe";
+Content-Type: multipart/signed; boundary="nextPart7935045.iWXBQcPMdf";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v3 2/4] batman-adv: Fix non-atomic
-	bla_claim::backbone_gw access
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 3/3] batman-adv: Fix reference leak in
+	batadv_find_router
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,33 +21,38 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1535130.gZJzKIMhUe
+--nextPart7935045.iWXBQcPMdf
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, July 01, 2016 15:54:41 Simon Wunderlich wrote:
-> On Friday 01 July 2016 15:49:43 Sven Eckelmann wrote:
-> > The pointer batadv_bla_claim::backbone_gw can be changed at any time.
-> > Therefore, access to it must be protected to ensure that two function
-> > accessing the same backbone_gw are actually accessing the same. This is
-> > especially important when the crc_lock is used or when the backbone_gw of
-> > a
-> > claim is exchanged.
-> >
-> > Not doing so leads to invalid memory access and/or reference leaks.
-> >
-> > Fixes: a9ce0dc43e2c ("batman-adv: add basic bridge loop avoidance code")
-> > Fixes: b307e72d119f ("batman-adv: lock crc access in bridge loop
-> > avoidance") Signed-off-by: Sven Eckelmann <sven@narfation.org>
+On Thursday, June 30, 2016 20:11:34 Sven Eckelmann wrote:
+> The replacement of last_bonding_candidate in batadv_orig_node has to be an
+> atomic operation. Otherwise it is possible that the reference counter of a
+> batadv_orig_ifinfo is reduced which was no longer the
+> last_bonding_candidate when the new candidate is added. This can either
+> lead to an invalid memory access or to reference leaks which make it
+> impossible to an interface which was added to batman-adv.
 > 
-> Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
+> Fixes: 797edd9e87ac ("batman-adv: add bonding again")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> v2:
+>  - get refcnt for new selected router before assigning it to returned
+>    variable
+>  - move refcnt cleanup of all remembered candidates/routers to central place
+> ---
+>  net/batman-adv/routing.c | 52
+> ++++++++++++++++++++++++++++++++++++------------
+> net/batman-adv/types.h   |  4 +++-
+>  2 files changed, 42 insertions(+), 14 deletions(-)
 
-Applied in revision e401297.
+Applied in revision 6ecc711.
 
 Thanks,
 Marek
 
---nextPart1535130.gZJzKIMhUe
+
+--nextPart7935045.iWXBQcPMdf
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -56,14 +60,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXe31BAAoJEFNVTo/uthzA+2IH/A+0AJiON0DOuUNdnB9OF3ID
-fO9/WCgcVtO3rqlk4yWzo9XcUnJJ8yESKVGyHIVEtXVgh1T5pJrrnX2UI3UjvR11
-qAcRxuQL9l5yGSFlbC1ROH1+XYeuE/ZhvlnNkyb0DCfe5O4HIjmnpaes7XkyyoSV
-sFXXVgJzrNwgu0cqce6c09X0ReY41o5LxnqQoYGls/cy4aIiPkHf4C60gEtWzNfj
-rM5K+E2H+3pAvFb8Erqt13uOF1Q4ken2DimF8SLfd9xgiMS1/jCti8hLGSfla68k
-b7bDHZYRr3BFCQ206xLKEmq9Pjq6mgU4fgfjR7oJqDMtbLfX9QJtag35nFUmhBM=
-=iEgX
+iQEcBAABCAAGBQJXe353AAoJEFNVTo/uthzAsv0H/0SOj5PcK3qV0FcZpWsTL0ZE
+R8hQPPsa0SribgOStgErd70icr29WtdC/w3WFFavlR7v+9FCRw31+NIlGdfdzFeq
+NNGMR1sPJ4cDnqpgVTa2K2kcQ0+tEccUwiQOmzrueRDYBGdqShiLArZR2rDZFfs8
+yjEbxk2WgUGIjDpiPEokAl0uSQhNIVD6lSVuLlBR7vvBVEr/Q18XOfc3ncePHx7t
+E82uvsAEdRxxxFoLBzaTa3i+TkbdxG4eLrk29gGK2o5eqBfiCfpJrAnA4ikWOVsG
+Q76dgc9rF6rYYWiNH9A2rN3aCc7HinXV6imL2bpgeTLvk9/lfIlWQv5ECZF7SEQ=
+=sRGN
 -----END PGP SIGNATURE-----
 
---nextPart1535130.gZJzKIMhUe--
+--nextPart7935045.iWXBQcPMdf--
 
