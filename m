@@ -1,14 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 05 Jul 2016 17:03:37 +0800
-Message-ID: <1757105.h26jqzYBs4@voltaire>
-In-Reply-To: <1466797412-1312-1-git-send-email-sven@narfation.org>
-References: <1466797412-1312-1-git-send-email-sven@narfation.org>
+Date: Tue, 05 Jul 2016 17:18:56 +0800
+Message-ID: <3255818.MVqnnubBri@voltaire>
+In-Reply-To: <1467310246-5820-1-git-send-email-sven@narfation.org>
+References: <1467310246-5820-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1817944.dW7xQTxpAC";
+Content-Type: multipart/signed; boundary="nextPart10410765.hbFHLhLZcx";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Avoid tt_req_node list
-	put for unhashed entry
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 1/3] batman-adv: Fix orig_node_vlan
+	leak on orig_node_release
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,31 +19,32 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart1817944.dW7xQTxpAC
+--nextPart10410765.hbFHLhLZcx
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, June 24, 2016 21:43:32 Sven Eckelmann wrote:
-> It can happen that a tt_req_node list entry was already removed from
-> tt.req_list when batadv_send_tt_request reaches the end of the function.
-> The reference counter was already reduced by 1 for the list entry and thus
-> the reference counter is not allowed to be reduced again. Otherwise, the
-> entry is freed too early and the next batadv_tt_req_node_put in this
-> function will operate on freed memory.
+On Thursday, June 30, 2016 20:10:46 Sven Eckelmann wrote:
+> batadv_orig_node_new uses batadv_orig_node_vlan_new to allocate a new
+> batadv_orig_node_vlan and add it to batadv_orig_node::vlan_list. References
+> to this list have also to be cleaned when the batadv_orig_node is removed.
 > 
-> Fixes: cea194d90b11 ("batman-adv: improved client announcement mechanism")
+> Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> --
+> v2:
+>  - nothing changed
 > ---
->  net/batman-adv/translation-table.c | 8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
+>  net/batman-adv/originator.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
 
-Applied in revision 03ecc9f.
+Applied in revision 719afd2.
 
 Thanks,
 Marek
 
---nextPart1817944.dW7xQTxpAC
+--nextPart10410765.hbFHLhLZcx
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -51,14 +52,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXe3fpAAoJEFNVTo/uthzAr2YH/jbZGOxoJlQHbxMzuG/Di/Jb
-+oCH5ou1s0H0pPG/8PXWP6B0o9UUtS+V875fPJ78fwUMe/DmNg4RS0fawM+qziu/
-c54qNHUaeNaGPbg8nlV2F4rkaQrf5kjnYGSU52TZ3IfbS+cil1TNi3bQ9DAC7MO9
-dhVeiw0n4g4NRulCfL3IjOytB+je9pmyhOX0250DZo4bREboga2n55aAirY//RnP
-ThnMB0AzHA3tu59tDOAWlMVCHJMLBINFkML44G2NFhgs1LJQ7fRZ71t7KZF8QSSU
-mR1co+ev3LJgVBy9lIkHyK39Bw52New8TTKIsIfiGQo2Hye2WdkqevwKCPHhhpo=
-=B5rH
+iQEcBAABCAAGBQJXe3uAAAoJEFNVTo/uthzAvzsH/iEgZtKUlSEoSfa5vIxq0Jhy
+HtTgafTrvjEQGqA8Ig/WzlQC3x32wBNjDILF3vTcIiwPY8nWiBObz9YsKdHFLtTp
+nP6kGSIx1vKDFmbQ6vcwNkZa2KGePDeFHpxAPfurvby2Ax+fSvz2i4KMibv/co0j
+UIgztdzc3lQakMQce3In2QddMcXngIBFpYJ5DCIj1OCqSmvbvuR1lGd0juTlY+tb
+4SXACF57cvYIO29kpkMXfsqXhl0HmD/JEFIxcuf0oJup+e6KXM0C6L6mzMpUXV5C
+s3WL45cC8FnlVNhp2Tyxa0mYPnnUiPDQPgzOCdy17gkgqTmXED8Zp2IMRxCqMU4=
+=VtDq
 -----END PGP SIGNATURE-----
 
---nextPart1817944.dW7xQTxpAC--
+--nextPart10410765.hbFHLhLZcx--
 
