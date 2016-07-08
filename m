@@ -1,9 +1,9 @@
-Return-Path: <sven.eckelmann@open-mesh.com>
-From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-Date: Fri,  8 Jul 2016 11:38:35 +0200
-Message-Id: <1467970715-18251-1-git-send-email-sven.eckelmann@open-mesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv-devel: Exchange include order for
-	uapi header files
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Fri,  8 Jul 2016 11:49:15 +0200
+Message-Id: <1467971362-3607-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH 0/7] pull request for net: batman-adv
+	2016-07-08
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,41 +13,78 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-The build of netlink.c currently fails because the definition of
-GENL_NAMESIZE and similar things are missing. This is is caused by an
-incorrect order of backports and non-backports header files mixed up with
-uapi and non-uapi header files. Parts of the header files would not get
-included by include_next because it not anymore in the remaining search
-paths.
+Hi David,
 
-Reported: Marek Lindner <marek.lindner@open-mesh.com>
-Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
----
-Please check again - I might have forgotten something.
----
- batman-adv-devel/Makefile | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+here are some more bugfix patches which we would like to have integrated
+into net, if that is still possible!
 
-diff --git a/batman-adv-devel/Makefile b/batman-adv-devel/Makefile
-index 60ac5fd..4fa20ab 100644
---- a/batman-adv-devel/Makefile
-+++ b/batman-adv-devel/Makefile
-@@ -64,10 +64,10 @@ PKG_EXTRA_CFLAGS:= \
- NOSTDINC_FLAGS = \
- 	-I$(PKG_BUILD_DIR)/net/batman-adv \
- 	-I$(PKG_BUILD_DIR)/include/ \
--	-I$(STAGING_DIR)/usr/include/mac80211-backport/uapi \
- 	-I$(STAGING_DIR)/usr/include/mac80211-backport \
--	-I$(STAGING_DIR)/usr/include/mac80211/uapi \
-+	-I$(STAGING_DIR)/usr/include/mac80211-backport/uapi \
- 	-I$(STAGING_DIR)/usr/include/mac80211 \
-+	-I$(STAGING_DIR)/usr/include/mac80211/uapi \
- 	-include backport/backport.h \
- 	-include $(PKG_BUILD_DIR)/compat-hacks.h \
- 	-DBATADV_SOURCE_VERSION=\\\"$(PKG_BATMAN_SHORTREV)\\\" \
+Please pull or let me know of any problem!
+
+Thank you,
+      Simon
+
+Sven Eckelmann (7):
+  batman-adv: Avoid nullptr dereference in bla after vlan_insert_tag
+  batman-adv: Avoid nullptr dereference in dat after vlan_insert_tag
+  batman-adv: Fix orig_node_vlan leak on orig_node_release
+  batman-adv: Fix non-atomic bla_claim::backbone_gw access
+  batman-adv: Fix reference leak in batadv_find_router
+  batman-adv: Free last_bonding_candidate on release of orig_node
+  batman-adv: Fix speedy join in gateway client mode
+
+ net/batman-adv/bridge_loop_avoidance.c | 116 ++++++++++++++++++++++++++-------
+ net/batman-adv/distributed-arp-table.c |  10 ++-
+ net/batman-adv/originator.c            |  15 +++++
+ net/batman-adv/routing.c               |  52 +++++++++++----
+ net/batman-adv/send.c                  |   4 +-
+ net/batman-adv/types.h                 |   6 +-
+ 6 files changed, 161 insertions(+), 42 deletions(-)
+
 -- 
 2.8.1
 
+The following changes since commit 5b4d10f5e0369ed79434593b7cd8e85eebbe473f:
+
+  qlcnic: use the correct ring in qlcnic_83xx_process_rcv_ring_diag() (2016-06-29 05:46:16 -0400)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20160708
+
+for you to fetch changes up to d1fe176ca51fa3cb35f70c1d876d9a090e9befce:
+
+  batman-adv: Fix speedy join in gateway client mode (2016-07-06 16:03:40 +0200)
+
+----------------------------------------------------------------
+Here are a couple batman-adv bugfix patches, all by Sven Eckelmann:
+
+ - Fix possible NULL pointer dereference for vlan_insert_tag (two patches)
+
+ - Fix reference handling in some features, which may lead to reference
+   leaks or invalid memory access (four patches)
+
+ - Fix speedy join: DHCP packets handled by the gateway feature should
+   be sent with 4-address unicast instead of 3-address unicast to make
+   speedy join work. This fixes/speeds up DHCP assignment for clients
+   which join a mesh for the first time. (one patch)
+
+----------------------------------------------------------------
+Sven Eckelmann (7):
+      batman-adv: Avoid nullptr dereference in bla after vlan_insert_tag
+      batman-adv: Avoid nullptr dereference in dat after vlan_insert_tag
+      batman-adv: Fix orig_node_vlan leak on orig_node_release
+      batman-adv: Fix non-atomic bla_claim::backbone_gw access
+      batman-adv: Fix reference leak in batadv_find_router
+      batman-adv: Free last_bonding_candidate on release of orig_node
+      batman-adv: Fix speedy join in gateway client mode
+
+ net/batman-adv/bridge_loop_avoidance.c | 116 ++++++++++++++++++++++++++-------
+ net/batman-adv/distributed-arp-table.c |  10 ++-
+ net/batman-adv/originator.c            |  15 +++++
+ net/batman-adv/routing.c               |  52 +++++++++++----
+ net/batman-adv/send.c                  |   4 +-
+ net/batman-adv/types.h                 |   6 +-
+ 6 files changed, 161 insertions(+), 42 deletions(-)
