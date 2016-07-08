@@ -1,11 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  8 Jul 2016 11:49:22 +0200
-Message-Id: <1467971362-3607-8-git-send-email-sw@simonwunderlich.de>
-In-Reply-To: <1467971362-3607-1-git-send-email-sw@simonwunderlich.de>
-References: <1467971362-3607-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 7/7] batman-adv: Fix speedy join in gateway
-	client mode
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Fri, 08 Jul 2016 17:50:29 +0800
+Message-ID: <6861135.rRYW7QbeoD@voltaire>
+In-Reply-To: <1467970715-18251-1-git-send-email-sven.eckelmann@open-mesh.com>
+References: <1467970715-18251-1-git-send-email-sven.eckelmann@open-mesh.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4423056.h3oADlmSjA";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv-devel: Exchange include order
+	for uapi header files
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,45 +18,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 
-From: Sven Eckelmann <sven@narfation.org>
+--nextPart4423056.h3oADlmSjA
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Speedy join only works when the received packet is either broadcast or an
-4addr unicast packet. Thus packets converted from broadcast to unicast via
-the gateway handling code have to be converted to 4addr packets to allow
-the receiving gateway server to add the sender address as temporary entry
-to the translation table.
+On Friday, July 08, 2016 11:38:35 Sven Eckelmann wrote:
+> The build of netlink.c currently fails because the definition of
+> GENL_NAMESIZE and similar things are missing. This is is caused by an
+> incorrect order of backports and non-backports header files mixed up with
+> uapi and non-uapi header files. Parts of the header files would not get
+> included by include_next because it not anymore in the remaining search
+> paths.
+> 
+> Reported: Marek Lindner <marek.lindner@open-mesh.com>
+> Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+> ---
+> Please check again - I might have forgotten something.
+> ---
+>  batman-adv-devel/Makefile | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Not doing it will make the batman-adv gateway server drop the DHCP response
-in many situations because it doesn't yet have the TT entry for the
-destination of the DHCP response.
+Applied in revision 5306b0e.
 
-Fixes: 371351731e9c ("batman-adv: change interface_rx to get orig node")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Acked-by: Antonio Quartulli <a@unstable.cc>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/send.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Thanks,
+Marek
 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index f2f1256..0103976 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -424,8 +424,8 @@ int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 	struct batadv_orig_node *orig_node;
- 
- 	orig_node = batadv_gw_get_selected_orig(bat_priv);
--	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST, 0,
--				       orig_node, vid);
-+	return batadv_send_skb_unicast(bat_priv, skb, BATADV_UNICAST_4ADDR,
-+				       BATADV_P_DATA, orig_node, vid);
- }
- 
- void batadv_schedule_bat_ogm(struct batadv_hard_iface *hard_iface)
--- 
-2.8.1
+--nextPart4423056.h3oADlmSjA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJXf3dlAAoJEFNVTo/uthzAHC0IAIUnzHLfH1jHpEXAWmFWpwMA
+DFNbvngJS4hwJqKpfQE86n9vQlRq2ZzQL8MyzniXxaGAiwsnLex64G34cRnRS2a1
+8Yj5fsqm8luuy0HirLuSKYS12NNDXUDp6htjh0kX67MSoH0Hqq5NFeMrDGotlUor
+OJKA5oCDjB3hguZEjCogTUcP6rIORuf89ir/2ufGPYxo63r/22UT+9aFLqOEccpP
+d/BEUqARQDlZ1Kb1pma92utAg0MmxuKlOf8e3MRegqwYROjQ8HnBlfRLH4Qv7rtT
+9fp+kFHYjZSwKQ+SEqOfwkmZmP/5zGxQpNdH6rlK6H11GbdRtKvpi6eGBaQq+RY=
+=Yac/
+-----END PGP SIGNATURE-----
+
+--nextPart4423056.h3oADlmSjA--
 
