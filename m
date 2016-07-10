@@ -1,11 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 10 Jul 2016 12:59:29 +0200
-Message-Id: <1468148369-17048-2-git-send-email-sven@narfation.org>
-In-Reply-To: <1468148369-17048-1-git-send-email-sven@narfation.org>
-References: <1468148369-17048-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [RFC 2/2] batman-adv: Disable
-	CONFIG_BATMAN_ADV_DEBUGFS by default
+Date: Sun, 10 Jul 2016 13:18:27 +0200
+Message-ID: <3888556.A4u9qGtres@sven-edge>
+In-Reply-To: <1467741697-8811-1-git-send-email-linus.luessing@c0d3.blue>
+References: <1467741697-8811-1-git-send-email-linus.luessing@c0d3.blue>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2708337.zjiajBBCXF";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv2 1/2] batman-adv: Add wrapper for ARP
+	reply creation
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,81 +20,53 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-All tools which were known to the batman-adv development team are
-supporting the batman-adv netlink interface since a while. Thus disabling
-CONFIG_BATMAN_ADV_DEBUGFS by default should not cause problems on most
-systems. It is still possible to enable it in case it is still required in
-a specific setup
+--nextPart2708337.zjiajBBCXF
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-Of course, this patch is for the future - not now.
----
- Makefile               | 2 +-
- README.external        | 2 +-
- gen-compat-autoconf.sh | 2 +-
- net/batman-adv/Kconfig | 4 ++--
- 4 files changed, 5 insertions(+), 5 deletions(-)
+On Dienstag, 5. Juli 2016 20:01:36 CEST Linus L=FCssing wrote:
+> Removing duplicate code.
+>=20
+> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+> ---
+>=20
+> Changes in v2:
+> * Rebase to master
+> * Moved skb_reset_mac_header to earlier position (to avoid calling it on
+> NULL)
 
-diff --git a/Makefile b/Makefile
-index d42bb56..84bacdc 100644
---- a/Makefile
-+++ b/Makefile
-@@ -18,7 +18,7 @@
- 
- # read README.external for more information about the configuration
- # batman-adv DebugFS entries:
--export CONFIG_BATMAN_ADV_DEBUGFS=y
-+export CONFIG_BATMAN_ADV_DEBUGFS=n
- # B.A.T.M.A.N. debugging:
- export CONFIG_BATMAN_ADV_DEBUG=n
- # B.A.T.M.A.N. bridge loop avoidance:
-diff --git a/README.external b/README.external
-index ec04364..d8470f2 100644
---- a/README.external
-+++ b/README.external
-@@ -35,7 +35,7 @@ option  can be set to to y (enabled), n (disabled) or m (build as
- module).  Available  options  and  their    possible   values are
- (default marked with an "*")
- 
-- * CONFIG_BATMAN_ADV_DEBUGFS=[y*|n] (B.A.T.M.A.N. debugfs entries)
-+ * CONFIG_BATMAN_ADV_DEBUGFS=[y|n*] (B.A.T.M.A.N. debugfs entries)
-  * CONFIG_BATMAN_ADV_DEBUG=[y|n*] (B.A.T.M.A.N. debugging)
-  * CONFIG_BATMAN_ADV_BLA=[y*|n] (B.A.T.M.A.N. bridge loop avoidance)
-  * CONFIG_BATMAN_ADV_DAT=[y*|n] (B.A.T.M.A.N. Distributed ARP Table)
-diff --git a/gen-compat-autoconf.sh b/gen-compat-autoconf.sh
-index cf36e55..d27f3fb 100755
---- a/gen-compat-autoconf.sh
-+++ b/gen-compat-autoconf.sh
-@@ -36,7 +36,7 @@ gen_config() {
- }
- 
- # write config variables
--gen_config 'CONFIG_BATMAN_ADV_DEBUGFS' ${CONFIG_BATMAN_ADV_DEBUGFS:="y"} >> "${TMP}"
-+gen_config 'CONFIG_BATMAN_ADV_DEBUGFS' ${CONFIG_BATMAN_ADV_DEBUGFS:="n"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_DEBUG' ${CONFIG_BATMAN_ADV_DEBUG:="n"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_BLA' ${CONFIG_BATMAN_ADV_BLA:="y"} >> "${TMP}"
- gen_config 'CONFIG_BATMAN_ADV_DAT' ${CONFIG_BATMAN_ADV_DAT:="y"} >> "${TMP}"
-diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
-index d9b71a1..1e220a0 100644
---- a/net/batman-adv/Kconfig
-+++ b/net/batman-adv/Kconfig
-@@ -77,13 +77,13 @@ config BATMAN_ADV_DEBUGFS
- 	bool "batman-adv debugfs entries"
- 	depends on BATMAN_ADV
- 	depends on DEBUG_FS
--	default y
-+	default n
- 	help
- 	  Enable this to export routing related debug tables via debugfs.
- 	  The information for each soft-interface and used hard-interface can be
- 	  found under batman_adv/
- 
--	  If unsure, say Y.
-+	  If unsure, say N.
- 
- config BATMAN_ADV_DEBUG
- 	bool "B.A.T.M.A.N. debugging"
--- 
-2.8.1
+Reviewed-by: Sven Eckelmann <sven@narfation.org>
+
+Small request for the next submissions: Could you please add a space betwee=
+n=20
+"PATCH" and "v2" (like `git format-patch -v2` does). This will make sure th=
+at=20
+patchwork will remove the unnecessary information "PATCH" from the title.
+
+Kind regards,
+	Sven
+--nextPart2708337.zjiajBBCXF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXgi8DAAoJEF2HCgfBJntGnWUP/i6NZrpyCXP8BWV/qRrwfOUY
+zTd/JxNm7I3lhxr7X2OyYuGKm/djI7Nqm2zo9s1TheGZRzWYObPKR52vNFOyKfhK
+mhaRNjJcOPgCIh0BIHmDvFNApQ0NjLRRDsBD9FIF7sGQQOdKUaO8MZV7GCFoolWX
+eVB15cwzdXI39lLhTDbNjQZgzpT7uxIwS1jvgHpYikxXeEY8jQkigwhST9nK8rfM
+00hzHyHe9NUTUrv22JE8IIVCVrcrYxPLEtcxuN3Sy/LGgBCqPe4lx5lHwcUL0t5x
+y5fChqLPQEfhvg3eNgaUUCX3YOYx3Jjj/8oC7hqQZotaAcBbnLDgpAcUhMYEuCu2
+71tqFfBu4m7oC4n1Z+hMtCZ56p07DUox1JOdMM4cDcNoxy9o7bt2DovhEET968IL
+foAvuZ9eHu20SYAeWCYWBrApsjNPDmM2bj9R6RwaV5+Nm2sMJdIZqregyltoiG2n
+0kmU6MugQaq5Y8DJU2U0HGbw5j6cjbJKPJgUXiPSDwmVIiNoPkk2Ye3Xw0SfTgZR
+DuL9z8j8HoezUv/wdo9EDKEErgFyDPqXFozFz5INj7qnXKcjxF46Sd0MClG2mTIG
+uTrW9QBLQVTOaLxohAOgqkIYC/98g+NP/CDCPFcEPxIxqTuCq0Rg5nnYKl6l/WRF
+8Yd4B1Sntyr6XYSMTzK9
+=dPCL
+-----END PGP SIGNATURE-----
+
+--nextPart2708337.zjiajBBCXF--
 
