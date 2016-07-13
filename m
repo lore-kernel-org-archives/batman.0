@@ -1,12 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 13 Jul 2016 17:30:17 +0200
-Message-Id: <1468423822-28324-2-git-send-email-sven@narfation.org>
+Date: Wed, 13 Jul 2016 17:30:18 +0200
+Message-Id: <1468423822-28324-3-git-send-email-sven@narfation.org>
 In-Reply-To: <1468423822-28324-1-git-send-email-sven@narfation.org>
 References: <35819279.yt4EnXKmx6@bentobox>
  <1468423822-28324-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/7] batctl: Add command to create/destroy
-	batman-adv interface
+Subject: [B.A.T.M.A.N.] [PATCH 3/7] batctl: Use rtnl to add/remove interfaces
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,180 +17,90 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The command "new" can be used to create a batman-adv interface without any
-interface attached. This is helpful when the interfaces should be
-configured independently of the first attached interface.
+The sysfs interface to add/remove interfaces to/from a batman-adv
+soft-interface was downgraded in batman-adv master to a second-class
+citizen. This was done because it has conceptional problems (for example
+locking of sysfs vs. locking of the network core code). The only direct way
+to modify network interfaces is rtnetlink. sysfs still exists but has to
+use workers which delay the actual add/del to a later point.
 
-The command "destroy" can be used to destroy a batman-adv interface without
-going through all attached interfaces and delete them manually.
+It is therefore prefered to use the modern rtnetlink. Only batman-adv
+versions older than v2013.2.0 (Linux 3.10) will not yet support the
+rtnl_link operations required for it to work.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- functions.c  |  58 ++++++++++++++++++++++++
- functions.h  |   1 +
- man/batctl.8 |   3 ++
- sys.c        | 143 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
- 4 files changed, 200 insertions(+), 5 deletions(-)
+ sys.c | 172 +++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 145 insertions(+), 27 deletions(-)
 
-diff --git a/functions.c b/functions.c
-index 327ef18..962efcf 100644
---- a/functions.c
-+++ b/functions.c
-@@ -953,3 +953,61 @@ err_free_sock:
- 
- 	return err;
- }
-+
-+static int ack_errno_handler(struct sockaddr_nl *nla __unused,
-+			     struct nlmsgerr *nlerr,
-+			     void *arg)
-+{
-+	int *err = arg;
-+
-+	*err = nlerr->error;
-+
-+	return NL_STOP;
-+}
-+
-+static int ack_wait_handler(struct nl_msg *msg __unused, void *arg __unused)
-+{
-+	return NL_STOP;
-+}
-+
-+int netlink_simple_request(struct nl_msg *msg)
-+{
-+	struct nl_sock *sock;
-+	struct nl_cb *cb;
-+	int err = 0;
-+	int ret;
-+
-+	sock = nl_socket_alloc();
-+	if (!sock)
-+		return -ENOMEM;
-+
-+	ret = nl_connect(sock, NETLINK_ROUTE);
-+	if (ret < 0) {
-+		err = -ENOMEM;
-+		goto err_free_sock;
-+	}
-+
-+	cb = nl_cb_alloc(NL_CB_DEFAULT);
-+	if (!cb) {
-+		err = -ENOMEM;
-+		goto err_free_sock;
-+	}
-+
-+	nl_cb_err(cb, NL_CB_CUSTOM, ack_errno_handler, &err);
-+	nl_cb_set(cb, NL_CB_ACK, NL_CB_CUSTOM, ack_wait_handler, NULL);
-+
-+	ret = nl_send_auto_complete(sock, msg);
-+	if (ret < 0)
-+		goto err_free_cb;
-+
-+	// ack_errno_handler sets err on errors
-+	err = 0;
-+	nl_recvmsgs(sock, cb);
-+
-+err_free_cb:
-+	nl_cb_put(cb);
-+err_free_sock:
-+	nl_socket_free(sock);
-+
-+	return err;
-+}
-diff --git a/functions.h b/functions.h
-index a6090b6..7757731 100644
---- a/functions.h
-+++ b/functions.h
-@@ -47,6 +47,7 @@ struct ether_addr *translate_mac(const char *mesh_iface,
- struct ether_addr *resolve_mac(const char *asc);
- int vlan_get_link(const char *ifname, char **parent);\
- int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg);
-+int netlink_simple_request(struct nl_msg *msg);
- 
- int print_routing_algos(void);
- extern char *line_ptr;
-diff --git a/man/batctl.8 b/man/batctl.8
-index 8bac727..8dcf18a 100644
---- a/man/batctl.8
-+++ b/man/batctl.8
-@@ -56,6 +56,9 @@ performances, is also included.
- If no parameter is given or the first parameter is neither "add" nor "del" the current interface settings are displayed.
- In order to add or delete interfaces specify "add" or "del" as first argument and append the interface names you wish to
- add or delete. Multiple interfaces can be specified.
-+.IP "\fBinterface\fP|\fBif\fP [\fBnew\fP|\fBdestroy\fP]"
-+A batman-adv interface without attached interfaces can be created using "new". The parameter "destroy" can be used to
-+free all attached interfaces and remove batman-adv interface.
- .br
- .IP "\fBorig_interval\fP|\fBit\fP [\fBinterval\fP]"
- If no parameter is given the current originator interval setting is displayed otherwise the parameter is used to set the
 diff --git a/sys.c b/sys.c
-index 0140b28..252864b 100644
+index 252864b..ac78d37 100644
 --- a/sys.c
 +++ b/sys.c
-@@ -120,6 +120,7 @@ const struct settings_data batctl_settings[BATCTL_SETTINGS_NUM] = {
- static void interface_usage(void)
- {
- 	fprintf(stderr, "Usage: batctl [options] interface [parameters] [add|del iface(s)]\n");
-+	fprintf(stderr, "       batctl [options] interface [parameters] [new|destroy]\n");
- 	fprintf(stderr, "parameters:\n");
- 	fprintf(stderr, " \t -h print this help\n");
- }
-@@ -198,10 +199,95 @@ static int print_interfaces(char *mesh_iface)
+@@ -199,6 +199,58 @@ static int print_interfaces(char *mesh_iface)
  	return EXIT_SUCCESS;
  }
  
-+static int new_interface(const char *mesh_iface)
++struct count_interfaces_rtnl_arg {
++	int ifindex;
++	unsigned int count;
++};
++
++static int count_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
 +{
-+	struct ifinfomsg rt_hdr = {
-+		.ifi_family = IFLA_UNSPEC,
-+	};
-+	struct nlattr *linkinfo;
-+	struct nl_msg *msg;
-+	int err = 0;
++	struct count_interfaces_rtnl_arg *count_arg = arg;
++	struct nlattr *attrs[IFLA_MAX + 1];
++	struct ifinfomsg *ifm;
 +	int ret;
++	int master;
 +
-+	msg = nlmsg_alloc_simple(RTM_NEWLINK,
-+				 NLM_F_REQUEST | NLM_F_CREATE | NLM_F_EXCL | NLM_F_ACK);
-+	if (!msg) {
-+		return -ENOMEM;
-+	}
++	ifm = nlmsg_data(nlmsg_hdr(msg));
++	ret = nlmsg_parse(nlmsg_hdr(msg), sizeof(*ifm), attrs, IFLA_MAX,
++			  link_policy);
++	if (ret < 0)
++		goto err;
 +
-+	ret = nlmsg_append(msg, &rt_hdr, sizeof(rt_hdr), NLMSG_ALIGNTO);
-+	if (ret < 0) {
-+		err = -ENOMEM;
-+		goto err_free_msg;
-+	}
++	if (!attrs[IFLA_IFNAME])
++		goto err;
 +
-+	ret = nla_put_string(msg, IFLA_IFNAME, mesh_iface);
-+	if (ret < 0) {
-+		err = -ENOMEM;
-+		goto err_free_msg;
-+	}
++	if (!attrs[IFLA_MASTER])
++		goto err;
 +
-+	linkinfo = nla_nest_start(msg, IFLA_LINKINFO);
-+	if (!linkinfo) {
-+		err = -ENOMEM;
-+		goto err_free_msg;
-+	}
++	master = nla_get_u32(attrs[IFLA_MASTER]);
 +
-+	ret = nla_put_string(msg, IFLA_INFO_KIND, "batadv");
-+	if (ret < 0) {
-+		err = -ENOMEM;
-+		goto err_free_msg;
-+	}
++	/* required on older kernels which don't prefilter the results */
++	if (master != count_arg->ifindex)
++		goto err;
 +
-+	nla_nest_end(msg, linkinfo);
++	count_arg->count++;
 +
-+	err = netlink_simple_request(msg);
-+
-+err_free_msg:
-+	nlmsg_free(msg);
-+
-+	return err;
++err:
++	return NL_OK;
 +}
 +
-+static int destroy_interface(const char *mesh_iface)
++static unsigned int count_interfaces(char *mesh_iface)
++{
++	struct count_interfaces_rtnl_arg count_arg;
++
++	count_arg.count = 0;
++	count_arg.ifindex = if_nametoindex(mesh_iface);
++	if (!count_arg.ifindex)
++		return 0;
++
++	query_rtnl_link(count_arg.ifindex, count_interfaces_rtnl_parse,
++			&count_arg);
++
++	return count_arg.count;
++}
++
+ static int new_interface(const char *mesh_iface)
+ {
+ 	struct ifinfomsg rt_hdr = {
+@@ -283,11 +335,54 @@ err_free_msg:
+ 	return err;
+ }
+ 
++static int set_master_interface(const char *iface, unsigned int ifmaster)
 +{
 +	struct ifinfomsg rt_hdr = {
 +		.ifi_family = IFLA_UNSPEC,
@@ -200,7 +109,7 @@ index 0140b28..252864b 100644
 +	int err = 0;
 +	int ret;
 +
-+	msg = nlmsg_alloc_simple(RTM_DELLINK, NLM_F_REQUEST | NLM_F_ACK);
++	msg = nlmsg_alloc_simple(RTM_SETLINK, NLM_F_REQUEST | NLM_F_ACK);
 +	if (!msg) {
 +		return -ENOMEM;
 +	}
@@ -211,7 +120,13 @@ index 0140b28..252864b 100644
 +		goto err_free_msg;
 +	}
 +
-+	ret = nla_put_string(msg, IFLA_IFNAME, mesh_iface);
++	ret = nla_put_string(msg, IFLA_IFNAME, iface);
++	if (ret < 0) {
++		err = -ENOMEM;
++		goto err_free_msg;
++	}
++
++	ret = nla_put_u32(msg, IFLA_MASTER, ifmaster);
 +	if (ret < 0) {
 +		err = -ENOMEM;
 +		goto err_free_msg;
@@ -227,59 +142,29 @@ index 0140b28..252864b 100644
 +
  int interface(char *mesh_iface, int argc, char **argv)
  {
- 	char *path_buff;
- 	int i, res, optchar;
-+	int ret;
+-	char *path_buff;
+-	int i, res, optchar;
++	int i, optchar;
+ 	int ret;
++	unsigned int ifindex;
++	unsigned int ifmaster;
++	const char *long_op;
++	unsigned int cnt;
  
  	while ((optchar = getopt(argc, argv, "h")) != -1) {
  		switch (optchar) {
-@@ -218,16 +304,63 @@ int interface(char *mesh_iface, int argc, char **argv)
- 		return print_interfaces(mesh_iface);
- 
- 	if ((strcmp(argv[1], "add") != 0) && (strcmp(argv[1], "a") != 0) &&
--	    (strcmp(argv[1], "del") != 0) && (strcmp(argv[1], "d") != 0)) {
-+	    (strcmp(argv[1], "del") != 0) && (strcmp(argv[1], "d") != 0) &&
-+	    (strcmp(argv[1], "new") != 0) && (strcmp(argv[1], "n") != 0) &&
-+	    (strcmp(argv[1], "destroy") != 0) && (strcmp(argv[1], "D") != 0)) {
- 		fprintf(stderr, "Error - unknown argument specified: %s\n", argv[1]);
- 		interface_usage();
- 		goto err;
+@@ -363,46 +458,69 @@ int interface(char *mesh_iface, int argc, char **argv)
+ 		break;
  	}
  
--	if (argc == 2) {
--		fprintf(stderr, "Error - missing interface name(s) after '%s'\n", argv[1]);
--		interface_usage();
+-	path_buff = malloc(PATH_BUFF_LEN);
+-	if (!path_buff) {
+-		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
 -		goto err;
-+	if (strcmp(argv[1], "destroy") == 0)
-+		argv[1][0] = 'D';
-+
-+	switch (argv[1][0]) {
-+	case 'a':
-+	case 'd':
-+		if (argc == 2) {
-+			fprintf(stderr,
-+				"Error - missing interface name(s) after '%s'\n",
-+				argv[1]);
-+			interface_usage();
-+			goto err;
-+		}
-+		break;
-+	case 'n':
-+	case 'D':
-+		if (argc != 2) {
-+			fprintf(stderr,
-+				"Error - extra parameter after '%s'\n",
-+				argv[1]);
-+			interface_usage();
-+			goto err;
-+		}
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	switch (argv[1][0]) {
-+	case 'n':
+-	}
++	/* get index of batman-adv interface - or try to create it */
++	ifmaster = if_nametoindex(mesh_iface);
++	if (!ifmaster && argv[1][0] == 'a') {
 +		ret = new_interface(mesh_iface);
 +		if (ret < 0) {
 +			fprintf(stderr,
@@ -287,21 +172,82 @@ index 0140b28..252864b 100644
 +				strerror(-ret));
 +			goto err;
 +		}
-+		return EXIT_SUCCESS;
-+	case 'D':
-+		ret = destroy_interface(mesh_iface);
+ 
+-	for (i = 2; i < argc; i++) {
+-		snprintf(path_buff, PATH_BUFF_LEN, SYS_MESH_IFACE_FMT, argv[i]);
++		ifmaster = if_nametoindex(mesh_iface);
++	}
+ 
+-		if (!file_exists(path_buff)) {
+-			snprintf(path_buff, PATH_BUFF_LEN, SYS_IFACE_DIR, argv[i]);
++	if (!ifmaster) {
++		ret = -ENODEV;
++		fprintf(stderr,
++			"Error - failed to find batman-adv interface: %s\n",
++			strerror(-ret));
++		goto err;
++	}
+ 
+-			if (!file_exists(path_buff)) {
+-				fprintf(stderr, "Error - interface does not exist: %s\n", argv[i]);
+-				continue;
+-			}
++	/* make sure that batman-adv is loaded or was loaded by new_interface */
++	if (!file_exists(module_ver_path)) {
++		fprintf(stderr, "Error - batman-adv module has not been loaded\n");
++		goto err;
++	}
+ 
+-			if (!file_exists(module_ver_path)) {
+-				fprintf(stderr, "Error - batman-adv module has not been loaded\n");
+-				goto err_buff;
+-			}
++	for (i = 2; i < argc; i++) {
++		ifindex = if_nametoindex(argv[i]);
+ 
+-			fprintf(stderr, "Error - interface type not supported by batman-adv: %s\n", argv[i]);
++		if (!ifindex) {
++			fprintf(stderr, "Error - interface does not exist: %s\n", argv[i]);
+ 			continue;
+ 		}
+ 
+ 		if (argv[1][0] == 'a')
+-			res = write_file("", path_buff, mesh_iface, NULL);
++			ifindex = ifmaster;
+ 		else
+-			res = write_file("", path_buff, "none", NULL);
++			ifindex = 0;
+ 
+-		if (res != EXIT_SUCCESS)
+-			goto err_buff;
++		ret = set_master_interface(argv[i], ifindex);
 +		if (ret < 0) {
-+			fprintf(stderr,
-+				"Error - failed to destroy batman-adv interface: %s\n",
-+				strerror(-ret));
++			if (argv[1][0] == 'a')
++				long_op = "add";
++			else
++				long_op = "delete";
++
++			fprintf(stderr, "Error - failed to %s interface %s: %s\n",
++				long_op, argv[i], strerror(-ret));
 +			goto err;
 +		}
-+		return EXIT_SUCCESS;
-+	default:
-+		break;
++	}
++
++	/* check if there is no interface left and then destroy mesh_iface */
++	if (argv[1][0] == 'd') {
++		cnt = count_interfaces(mesh_iface);
++		if (cnt == 0)
++			destroy_interface(mesh_iface);
  	}
  
- 	path_buff = malloc(PATH_BUFF_LEN);
+-	free(path_buff);
+ 	return EXIT_SUCCESS;
+ 
+-err_buff:
+-	free(path_buff);
+ err:
+ 	return EXIT_FAILURE;
+ }
 -- 
 2.8.1
 
