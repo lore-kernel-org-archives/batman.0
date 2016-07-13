@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 13 Jul 2016 17:30:22 +0200
-Message-Id: <1468423822-28324-7-git-send-email-sven@narfation.org>
+Date: Wed, 13 Jul 2016 17:30:20 +0200
+Message-Id: <1468423822-28324-5-git-send-email-sven@narfation.org>
 In-Reply-To: <1468423822-28324-1-git-send-email-sven@narfation.org>
 References: <35819279.yt4EnXKmx6@bentobox>
  <1468423822-28324-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 7/7] batctl: Move check_mesh_iface* to
-	functions.c
+Subject: [B.A.T.M.A.N.] [PATCH 5/7] batctl: Allow to disable automatic
+	interface new/destroy
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,188 +18,99 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The check_mesh_iface* functions are not used to modify anything in sysfs.
-So they are better placed in the common/shared functions file than in
-sys.c.
+Users may not want to lose their configured batman-adv soft-interface when
+they remove a single interface from it. The default configuration may not
+working well enough in the network setup of the user and thus it should be
+possible to avoid that it gets reset to it when a new interface is added
+after the last one was removed.
+
+This can be done by avoiding automatic creation of an interface when the
+command "add" is used together with the option "-M". The add would fail
+when the soft-interface disappeared for some reason and thus the
+soft-interface would not be created again with the default configuration.
+But more importantly, the "del" command can be informed with the option
+"-M" to not try to remove the soft-interface in the first place.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- functions.c | 59 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- functions.h |  2 ++
- sys.c       | 56 --------------------------------------------------------
- sys.h       |  2 --
- 4 files changed, 61 insertions(+), 58 deletions(-)
+ man/batctl.8 |  4 +++-
+ sys.c        | 12 +++++++++---
+ 2 files changed, 12 insertions(+), 4 deletions(-)
 
-diff --git a/functions.c b/functions.c
-index 962efcf..f9feca4 100644
---- a/functions.c
-+++ b/functions.c
-@@ -32,6 +32,7 @@
- #include <string.h>
- #include <errno.h>
- #include <fcntl.h>
-+#include <dirent.h>
- #include <sys/time.h>
- #include <netinet/in.h>
- #include <stdint.h>
-@@ -56,6 +57,8 @@
- #include "debugfs.h"
- #include "netlink.h"
- 
-+#define PATH_BUFF_LEN 200
-+
- static struct timeval start_time;
- static char *host_name;
- char *line_ptr = NULL;
-@@ -1011,3 +1014,59 @@ err_free_sock:
- 
- 	return err;
- }
-+
-+int check_mesh_iface(char *mesh_iface)
-+{
-+	char *base_dev = NULL;
-+	char path_buff[PATH_BUFF_LEN];
-+	int ret = -1, vid;
-+	DIR *dir;
-+
-+	/* use the parent interface if this is a VLAN */
-+	vid = vlan_get_link(mesh_iface, &base_dev);
-+	if (vid >= 0)
-+		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
-+	else
-+		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
-+
-+	/* try to open the mesh sys directory */
-+	dir = opendir(path_buff);
-+	if (!dir)
-+		goto out;
-+
-+	closedir(dir);
-+
-+	ret = 0;
-+out:
-+	if (base_dev)
-+		free(base_dev);
-+
-+	return ret;
-+}
-+
-+int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface)
-+{
-+	char path_buff[PATH_BUFF_LEN];
-+	int res;
-+
-+	/* check if this device actually belongs to the mesh interface */
-+	snprintf(path_buff, sizeof(path_buff), SYS_MESH_IFACE_FMT, hard_iface);
-+	res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
-+	if (res != EXIT_SUCCESS) {
-+		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
-+			path_buff, strerror(errno));
-+		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
-+		return EXIT_FAILURE;
-+	}
-+
-+	if (line_ptr[strlen(line_ptr) - 1] == '\n')
-+		line_ptr[strlen(line_ptr) - 1] = '\0';
-+
-+	if (strcmp(line_ptr, mesh_iface) != 0) {
-+		fprintf(stderr, "Error - interface %s is part of batman network %s, not %s\n",
-+			hard_iface, line_ptr, mesh_iface);
-+		return EXIT_FAILURE;
-+	}
-+
-+	return EXIT_SUCCESS;
-+}
-diff --git a/functions.h b/functions.h
-index 4c350f8..e413d6b 100644
---- a/functions.h
-+++ b/functions.h
-@@ -50,6 +50,8 @@ struct ether_addr *resolve_mac(const char *asc);
- int vlan_get_link(const char *ifname, char **parent);\
- int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg);
- int netlink_simple_request(struct nl_msg *msg);
-+int check_mesh_iface(char *mesh_iface);
-+int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
- 
- int print_routing_algos(void);
- extern char *line_ptr;
+diff --git a/man/batctl.8 b/man/batctl.8
+index 8dcf18a..0d77546 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -52,10 +52,12 @@ performances, is also included.
+ .br
+ .TP
+ .I \fBcommands:
+-.IP "\fBinterface\fP|\fBif\fP [\fBadd\fP|\fBdel iface(s)\fP]"
++.IP "\fBinterface\fP|\fBif\fP [\fB-M\fP] [\fBadd\fP|\fBdel iface(s)\fP]"
+ If no parameter is given or the first parameter is neither "add" nor "del" the current interface settings are displayed.
+ In order to add or delete interfaces specify "add" or "del" as first argument and append the interface names you wish to
+ add or delete. Multiple interfaces can be specified.
++The "\-M" option tells batctl to not automatically create the batman-adv interface on "add" or to destroy it when "del"
++removed all interfaces which belonged to it.
+ .IP "\fBinterface\fP|\fBif\fP [\fBnew\fP|\fBdestroy\fP]"
+ A batman-adv interface without attached interfaces can be created using "new". The parameter "destroy" can be used to
+ free all attached interfaces and remove batman-adv interface.
 diff --git a/sys.c b/sys.c
-index 59cbdae..b524340 100644
+index 7cd2690..88dd39f 100644
 --- a/sys.c
 +++ b/sys.c
-@@ -511,59 +511,3 @@ free_buff:
- out:
- 	return res;
- }
--
--int check_mesh_iface(char *mesh_iface)
--{
--	char *base_dev = NULL;
--	char path_buff[PATH_BUFF_LEN];
--	int ret = -1, vid;
--	DIR *dir;
--
--	/* use the parent interface if this is a VLAN */
--	vid = vlan_get_link(mesh_iface, &base_dev);
--	if (vid >= 0)
--		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
--	else
--		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
--
--	/* try to open the mesh sys directory */
--	dir = opendir(path_buff);
--	if (!dir)
--		goto out;
--
--	closedir(dir);
--
--	ret = 0;
--out:
--	if (base_dev)
--		free(base_dev);
--
--	return ret;
--}
--
--int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface)
--{
--	char path_buff[PATH_BUFF_LEN];
--	int res;
--
--	/* check if this device actually belongs to the mesh interface */
--	snprintf(path_buff, sizeof(path_buff), SYS_MESH_IFACE_FMT, hard_iface);
--	res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
--	if (res != EXIT_SUCCESS) {
--		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
--			path_buff, strerror(errno));
--		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
--		return EXIT_FAILURE;
--	}
--
--	if (line_ptr[strlen(line_ptr) - 1] == '\n')
--		line_ptr[strlen(line_ptr) - 1] = '\0';
--
--	if (strcmp(line_ptr, mesh_iface) != 0) {
--		fprintf(stderr, "Error - interface %s is part of batman network %s, not %s\n",
--			hard_iface, line_ptr, mesh_iface);
--		return EXIT_FAILURE;
--	}
--
--	return EXIT_SUCCESS;
--}
-diff --git a/sys.h b/sys.h
-index be9480e..1365e76 100644
---- a/sys.h
-+++ b/sys.h
-@@ -74,7 +74,5 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv);
- int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv);
- int handle_gw_setting(char *mesh_iface, int argc, char **argv);
- int handle_ra_setting(int argc, char **argv);
--int check_mesh_iface(char *mesh_iface);
--int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
+@@ -22,6 +22,7 @@
  
- #endif
+ #include <unistd.h>
+ #include <stdio.h>
++#include <stdbool.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <errno.h>
+@@ -122,6 +123,7 @@ static void interface_usage(void)
+ 	fprintf(stderr, "Usage: batctl [options] interface [parameters] [add|del iface(s)]\n");
+ 	fprintf(stderr, "       batctl [options] interface [parameters] [new|destroy]\n");
+ 	fprintf(stderr, "parameters:\n");
++	fprintf(stderr, " \t -M disable automatic creation/removal of batman-adv interface\n");
+ 	fprintf(stderr, " \t -h print this help\n");
+ }
+ 
+@@ -385,12 +387,16 @@ int interface(char *mesh_iface, int argc, char **argv)
+ 	unsigned int cnt;
+ 	int rest_argc;
+ 	char **rest_argv;
++	bool manual_mode = false;
+ 
+-	while ((optchar = getopt(argc, argv, "h")) != -1) {
++	while ((optchar = getopt(argc, argv, "hM")) != -1) {
+ 		switch (optchar) {
+ 		case 'h':
+ 			interface_usage();
+ 			return EXIT_SUCCESS;
++		case 'M':
++			manual_mode = true;
++			break;
+ 		default:
+ 			interface_usage();
+ 			return EXIT_FAILURE;
+@@ -465,7 +471,7 @@ int interface(char *mesh_iface, int argc, char **argv)
+ 
+ 	/* get index of batman-adv interface - or try to create it */
+ 	ifmaster = if_nametoindex(mesh_iface);
+-	if (!ifmaster && rest_argv[0][0] == 'a') {
++	if (!manual_mode && !ifmaster && rest_argv[0][0] == 'a') {
+ 		ret = new_interface(mesh_iface);
+ 		if (ret < 0) {
+ 			fprintf(stderr,
+@@ -518,7 +524,7 @@ int interface(char *mesh_iface, int argc, char **argv)
+ 	}
+ 
+ 	/* check if there is no interface left and then destroy mesh_iface */
+-	if (rest_argv[0][0] == 'd') {
++	if (!manual_mode && rest_argv[0][0] == 'd') {
+ 		cnt = count_interfaces(mesh_iface);
+ 		if (cnt == 0)
+ 			destroy_interface(mesh_iface);
 -- 
 2.8.1
 
