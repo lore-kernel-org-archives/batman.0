@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 15 Jul 2016 17:39:26 +0200
-Message-Id: <1468597173-25378-11-git-send-email-sven@narfation.org>
+Date: Fri, 15 Jul 2016 17:39:27 +0200
+Message-Id: <1468597173-25378-12-git-send-email-sven@narfation.org>
 In-Reply-To: <1468597173-25378-1-git-send-email-sven@narfation.org>
 References: <1468597173-25378-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 11/18] batman-adv: Place kref_get for
-	dat_entry near use
+Subject: [B.A.T.M.A.N.] [PATCH v2 12/18] batman-adv: Place kref_get for
+	gw_node near use
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -27,23 +27,40 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
 v2:
  - split patch based on type
 
- net/batman-adv/distributed-arp-table.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/gateway_client.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index b1cc8bf..059bc23 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -343,8 +343,8 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
- 	ether_addr_copy(dat_entry->mac_addr, mac_addr);
- 	dat_entry->last_update = jiffies;
- 	kref_init(&dat_entry->refcount);
--	kref_get(&dat_entry->refcount);
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 94f8f9d..afa43d4 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -333,14 +333,15 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
+ 	if (!gw_node)
+ 		return;
  
-+	kref_get(&dat_entry->refcount);
- 	hash_added = batadv_hash_add(bat_priv->dat.hash, batadv_compare_dat,
- 				     batadv_hash_dat, dat_entry,
- 				     &dat_entry->hash_entry);
++	kref_init(&gw_node->refcount);
+ 	INIT_HLIST_NODE(&gw_node->list);
+ 	kref_get(&orig_node->refcount);
+ 	gw_node->orig_node = orig_node;
+ 	gw_node->bandwidth_down = ntohl(gateway->bandwidth_down);
+ 	gw_node->bandwidth_up = ntohl(gateway->bandwidth_up);
+-	kref_init(&gw_node->refcount);
+ 
+ 	spin_lock_bh(&bat_priv->gw.list_lock);
++	kref_get(&gw_node->refcount);
+ 	hlist_add_head_rcu(&gw_node->list, &bat_priv->gw.list);
+ 	spin_unlock_bh(&bat_priv->gw.list_lock);
+ 
+@@ -351,6 +352,9 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
+ 		   ntohl(gateway->bandwidth_down) % 10,
+ 		   ntohl(gateway->bandwidth_up) / 10,
+ 		   ntohl(gateway->bandwidth_up) % 10);
++
++	/* don't return reference to new gw_node */
++	batadv_gw_node_put(gw_node);
+ }
+ 
+ /**
 -- 
 2.8.1
 
