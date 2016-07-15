@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 15 Jul 2016 17:39:19 +0200
-Message-Id: <1468597173-25378-4-git-send-email-sven@narfation.org>
+Date: Fri, 15 Jul 2016 17:39:20 +0200
+Message-Id: <1468597173-25378-5-git-send-email-sven@narfation.org>
 In-Reply-To: <1468597173-25378-1-git-send-email-sven@narfation.org>
 References: <1468597173-25378-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 04/18] batman-adv: Place kref_get for
-	neigh_ifinfo near use
+Subject: [B.A.T.M.A.N.] [PATCH v2 05/18] batman-adv: Place kref_get for
+	neigh_node near use
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -31,20 +31,19 @@ v2:
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 1db577d..1de583d 100644
+index 1de583d..3bf3065 100644
 --- a/net/batman-adv/originator.c
 +++ b/net/batman-adv/originator.c
-@@ -454,9 +454,9 @@ batadv_neigh_ifinfo_new(struct batadv_neigh_node *neigh,
+@@ -648,8 +648,8 @@ batadv_neigh_node_create(struct batadv_orig_node *orig_node,
  
- 	INIT_HLIST_NODE(&neigh_ifinfo->list);
- 	kref_init(&neigh_ifinfo->refcount);
--	kref_get(&neigh_ifinfo->refcount);
- 	neigh_ifinfo->if_outgoing = if_outgoing;
+ 	/* extra reference for return */
+ 	kref_init(&neigh_node->refcount);
+-	kref_get(&neigh_node->refcount);
  
-+	kref_get(&neigh_ifinfo->refcount);
- 	hlist_add_head_rcu(&neigh_ifinfo->list, &neigh->ifinfo_list);
++	kref_get(&neigh_node->refcount);
+ 	hlist_add_head_rcu(&neigh_node->list, &orig_node->neigh_list);
  
- out:
+ 	batadv_dbg(BATADV_DBG_BATMAN, orig_node->bat_priv,
 -- 
 2.8.1
 
