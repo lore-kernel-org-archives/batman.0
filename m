@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 15 Jul 2016 16:53:14 +0800
-Message-ID: <7771733.X2rgy4yZyd@voltaire>
-In-Reply-To: <1467545508-7333-3-git-send-email-sven@narfation.org>
+Date: Fri, 15 Jul 2016 16:55:56 +0800
+Message-ID: <1536065.ecAZSN066e@voltaire>
+In-Reply-To: <1467545508-7333-4-git-send-email-sven@narfation.org>
 References: <1467545508-7333-1-git-send-email-sven@narfation.org>
- <1467545508-7333-3-git-send-email-sven@narfation.org>
+ <1467545508-7333-4-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1601259.AODRKxi1EV";
+Content-Type: multipart/signed; boundary="nextPart4785132.sTLmCMfUZ3";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v10 02/16] batman-adv: Suppress debugfs
-	entries for netns's
+Subject: Re: [B.A.T.M.A.N.] [PATCH v10 03/16] batman-adv: netlink: add
+	routing_algo query
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,34 +21,38 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1601259.AODRKxi1EV
+--nextPart4785132.sTLmCMfUZ3
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, July 03, 2016 13:31:34 Sven Eckelmann wrote:
-> From: Andrew Lunn <andrew@lunn.ch>
+On Sunday, July 03, 2016 13:31:35 Sven Eckelmann wrote:
+> From: Matthias Schiffer <mschiffer@universe-factory.net>
 > 
-> Debugfs is not netns aware. It thus has problems when the same
-> interface name exists in multiple network name spaces.
+> BATADV_CMD_GET_ROUTING_ALGOS is used to get the list of supported routing
+> algorithms.
 > 
-> Work around this by not creating entries for interfaces in name spaces
-> other than the default name space. This means meshes in network
-> namespaces cannot be managed via debugfs, but there will soon be a
-> netlink interface which is netns aware.
-> 
+> Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
 > Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> [sven.eckelmann@open-mesh.com: Reduce the number of changes to
+> BATADV_CMD_GET_ROUTING_ALGOS, fix includes]
+> Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 > Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/debugfs.c | 18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
+>  compat-include/linux/netlink.h  | 18 +++++++++++
+>  include/uapi/linux/batman_adv.h |  2 ++
+>  net/batman-adv/bat_algo.c       | 68
+> +++++++++++++++++++++++++++++++++++++++++
+> net/batman-adv/bat_algo.h       |  3 ++
+>  net/batman-adv/netlink.c        |  9 +++++-
+>  net/batman-adv/netlink.h        |  3 ++
+>  6 files changed, 102 insertions(+), 1 deletion(-)
 
-Applied in revision 242d600.
+Applied in revision d632653.
 
 Thanks,
 Marek
 
---nextPart1601259.AODRKxi1EV
+--nextPart4785132.sTLmCMfUZ3
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -56,14 +60,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXiKR6AAoJEFNVTo/uthzAExsH+gI6gm7xCaqzIuGP3uYv07jt
-ViGVk3jouSJ2H8vU3uYl6yvHdKHoXDMHxvmiS6J0gb6JEfekmRmYWlDn10/yMbz9
-aazM4kCNvGLnYo3t4glGh5Nxnp4TIDxG/RqkrmSwIOfFFWYUZTDkFxdVvx6d76yw
-gtq9tAovf84kJUN3z3jbtrCUk/YevX2RPS/tZwznx+Biga4jwLCXW1vICSjArIVU
-7ekVi0n30Ysr68XugvRIWtTmlU3UALoQfxQb4nGZDggDXkUSx/tnLnvJ5RTg9MjM
-hzaAylLjf+oXfmKn5COLadllzx9BN5RiP/79Nk1tQepFLOG1MeeHgfp/qPPj86g=
-=cRon
+iQEcBAABCAAGBQJXiKUcAAoJEFNVTo/uthzAIzwH/RL2VqCtgFPsxihyiVHGACnP
+wcyonsES8dsorhXIhiPxSfzSZsqZGmWg1dlIHECAmjUGOEAg+0f1iXq6jWfqfD5t
+7Te+Y2ckbiR3bCTlu3Ij/JuDPT2oc0i1FfUguF0QpSv6Oc9FdohF4YYOoY8XpJ8w
+VMMxBdPa3jvaSwDCS4dCXoMhzBzs6GNitHke8E0ClSH+lZOdP+X3oDBXB6fD+Dwm
+tw3+NLMCr6UGAqLW0XBdbI/NoEHnrffaIEfa5QJyp98oFY0SMKMjvQp49vdUlhyG
+wl2Ln6HxIWzOS5i0+wOxOdy4pt0RPPsXj+7J7ouTsiJRfNWwbyQpSZesiGPTZFg=
+=uTRy
 -----END PGP SIGNATURE-----
 
---nextPart1601259.AODRKxi1EV--
+--nextPart4785132.sTLmCMfUZ3--
 
