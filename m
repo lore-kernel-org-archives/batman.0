@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 15 Jul 2016 17:39:24 +0200
-Message-Id: <1468597173-25378-9-git-send-email-sven@narfation.org>
+Date: Fri, 15 Jul 2016 17:39:25 +0200
+Message-Id: <1468597173-25378-10-git-send-email-sven@narfation.org>
 In-Reply-To: <1468597173-25378-1-git-send-email-sven@narfation.org>
 References: <1468597173-25378-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 09/18] batman-adv: Place kref_get for
-	bla_claim near use
+Subject: [B.A.T.M.A.N.] [PATCH v2 10/18] batman-adv: Place kref_get for
+	bla_backbone_gw near use
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -27,29 +27,26 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
 v2:
  - split patch based on type
 
- net/batman-adv/bridge_loop_avoidance.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ net/batman-adv/bridge_loop_avoidance.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index c75ef64..21bc3d0 100644
+index 21bc3d0..0035b8f 100644
 --- a/net/batman-adv/bridge_loop_avoidance.c
 +++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -711,12 +711,13 @@ static void batadv_bla_add_claim(struct batadv_priv *bat_priv,
- 		claim->lasttime = jiffies;
- 		kref_get(&backbone_gw->refcount);
- 		claim->backbone_gw = backbone_gw;
+@@ -519,11 +519,9 @@ batadv_bla_get_backbone_gw(struct batadv_priv *bat_priv, u8 *orig,
+ 	atomic_set(&entry->wait_periods, 0);
+ 	ether_addr_copy(entry->orig, orig);
+ 	INIT_WORK(&entry->report_work, batadv_bla_loopdetect_report);
 -
- 		kref_init(&claim->refcount);
--		kref_get(&claim->refcount);
-+
- 		batadv_dbg(BATADV_DBG_BLA, bat_priv,
- 			   "bla_add_claim(): adding new entry %pM, vid %d to hash ...\n",
- 			   mac, BATADV_PRINT_VID(vid));
-+
-+		kref_get(&claim->refcount);
- 		hash_added = batadv_hash_add(bat_priv->bla.claim_hash,
- 					     batadv_compare_claim,
- 					     batadv_choose_claim, claim,
+-	/* one for the hash, one for returning */
+ 	kref_init(&entry->refcount);
+-	kref_get(&entry->refcount);
+ 
++	kref_get(&entry->refcount);
+ 	hash_added = batadv_hash_add(bat_priv->bla.backbone_hash,
+ 				     batadv_compare_backbone_gw,
+ 				     batadv_choose_backbone_gw, entry,
 -- 
 2.8.1
 
