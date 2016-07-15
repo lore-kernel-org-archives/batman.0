@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 15 Jul 2016 17:39:31 +0200
-Message-Id: <1468597173-25378-16-git-send-email-sven@narfation.org>
+Date: Fri, 15 Jul 2016 17:39:33 +0200
+Message-Id: <1468597173-25378-18-git-send-email-sven@narfation.org>
 In-Reply-To: <1468597173-25378-1-git-send-email-sven@narfation.org>
 References: <1468597173-25378-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 16/18] batman-adv: Place kref_get for
-	nc_path near use
+Subject: [B.A.T.M.A.N.] [PATCH v2 18/18] batman-adv: Place kref_get for
+	tvlv_container near use
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -27,29 +27,26 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
 v2:
  - split patch based on type
 
- net/batman-adv/network-coding.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/tvlv.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index 4f4cfe5..165cd27 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -978,7 +978,6 @@ static struct batadv_nc_path *batadv_nc_get_path(struct batadv_priv *bat_priv,
- 	INIT_LIST_HEAD(&nc_path->packet_list);
- 	spin_lock_init(&nc_path->packet_list_lock);
- 	kref_init(&nc_path->refcount);
--	kref_get(&nc_path->refcount);
- 	nc_path->last_valid = jiffies;
- 	ether_addr_copy(nc_path->next_hop, dst);
- 	ether_addr_copy(nc_path->prev_hop, src);
-@@ -988,6 +987,7 @@ static struct batadv_nc_path *batadv_nc_get_path(struct batadv_priv *bat_priv,
- 		   nc_path->next_hop);
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index 3533867..77654f0 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -547,8 +547,12 @@ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
+ 	INIT_HLIST_NODE(&tvlv_handler->list);
  
- 	/* Add nc_path to hash table */
-+	kref_get(&nc_path->refcount);
- 	hash_added = batadv_hash_add(hash, batadv_nc_hash_compare,
- 				     batadv_nc_hash_choose, &nc_path_key,
- 				     &nc_path->hash_entry);
+ 	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
++	kref_get(&tvlv_handler->refcount);
+ 	hlist_add_head_rcu(&tvlv_handler->list, &bat_priv->tvlv.handler_list);
+ 	spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
++
++	/* don't return reference to new tvlv_handler */
++	batadv_tvlv_handler_put(tvlv_handler);
+ }
+ 
+ /**
 -- 
 2.8.1
 
