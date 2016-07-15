@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 15 Jul 2016 16:38:55 +0800
-Message-ID: <2409001.5OBQ1FXe5O@voltaire>
-In-Reply-To: <1467236757-6273-1-git-send-email-sven@narfation.org>
-References: <1467236695-6180-1-git-send-email-sven@narfation.org>
- <1467236757-6273-1-git-send-email-sven@narfation.org>
+Date: Fri, 15 Jul 2016 16:48:59 +0800
+Message-ID: <1709149.ntyVMelbak@voltaire>
+In-Reply-To: <1467545508-7333-2-git-send-email-sven@narfation.org>
+References: <1467545508-7333-1-git-send-email-sven@narfation.org>
+ <1467545508-7333-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1624238.xLo0a14mto";
+Content-Type: multipart/signed; boundary="nextPart6769122.b7P3V7TXux";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Fix consistency of
-	update route messages
+Subject: Re: [B.A.T.M.A.N.] [PATCH v10 01/16] batman-adv: Handle parent
+	interfaces in a different netns
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,30 +21,36 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1624238.xLo0a14mto
+--nextPart6769122.b7P3V7TXux
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Wednesday, June 29, 2016 23:45:57 Sven Eckelmann wrote:
-> The debug messages of _batadv_update_route were printed before the actual
-> route change is done. At this point it is not really known which
-> curr_router will be replaced. Thus the messages could print the wrong
-> operation.
+On Sunday, July 03, 2016 13:31:33 Sven Eckelmann wrote:
+> From: Andrew Lunn <andrew@lunn.ch>
 > 
-> Printing the debug messages after the operation was done avoids this
-> problem.
+> batman-adv tries to prevent the user from placing a batX soft
+> interface into another batman mesh as a hard interface. It does this
+> by walking up the devices list of parents and ensures they are all
+> none batX interfaces. iflink can point to an interface in a different
+> namespace, so also retrieve the parents name space when finding the
+> parent and use it when doing the comparison.
 > 
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> [sven@narfation.org: Fix alignments, simplify parent netns retrieval]
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 > ---
->  net/batman-adv/routing.c | 43 +++++++++++++++++--------------------------
->  1 file changed, 17 insertions(+), 26 deletions(-)
+>  compat.h                        |  7 ++++++
+>  net/batman-adv/hard-interface.c | 50
+> +++++++++++++++++++++++++++++++++++------ 2 files changed, 50
+> insertions(+), 7 deletions(-)
 
-Applied in revision 728cf51.
+Applied in revision bea804d.
 
 Thanks,
 Marek
 
---nextPart1624238.xLo0a14mto
+--nextPart6769122.b7P3V7TXux
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -52,14 +58,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXiKEfAAoJEFNVTo/uthzARK8H/0h0j/Hd/KP549nmHMoRKV/G
-VCQjEtfZb5aGjbr3+IgZJ3K9Mf+v9S+1CGIvXOOaDq78c0OShOn5sKuYjFxXjJl5
-wXeWS0l9Q9mg0ViapWGinjewytOwI6q63TpDCMEmwDGlzFEHWnzgoEr588W/4QtY
-n6WteF0dky6EAA5XXoxdpuPgdTCToWpZQgwhl2Ul3AK5SArr+B0Tt6MEJV66ebcg
-M57FcWyMiNMu2uusR3F7RnCyDStTw2ucuz/PTatVXkgmMisjR/fDW9c7ceGDoE68
-RREd9gWr6gZJp1/NpoVy/Mi2mUqkDiubgWvxrCULO8IJj0pFljfGvCjByMkwsQs=
-=EPHu
+iQEcBAABCAAGBQJXiKN7AAoJEFNVTo/uthzASIoIAJLaSZlEZsFa6Q7fChgOsCff
+Da5+ZVkrdg5tVa16hDWMrF//03fqtME/S4/9p/A8scUMDFzDoSKY+jvo80uc5F4u
+c1SNK03z1WMftinaESghGsbGloDnqw7gCMVUm3GAhCEU0FOIs1M8FFoGl/qIB2H7
+859vK8mdFR608aK1Tf7e0pOe4ofqAijEBzgTosW1YYByA2M99nabtxlk8P32PKjs
+Z2ZhKGTitSklibj+IHDvsGQpXOPi9eWDGl6V1cgiLtA+SGNX+Q79gxsA+IBOj3xD
+GHcxEwzVrShHGqRFw2a+rN+BQSwioBZQ6vVvbrpiAwDuowU2vXx6V5v4z5ioXTM=
+=kW0v
 -----END PGP SIGNATURE-----
 
---nextPart1624238.xLo0a14mto--
+--nextPart6769122.b7P3V7TXux--
 
