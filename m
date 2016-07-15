@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 15 Jul 2016 17:39:33 +0200
-Message-Id: <1468597173-25378-18-git-send-email-sven@narfation.org>
+Date: Fri, 15 Jul 2016 17:39:32 +0200
+Message-Id: <1468597173-25378-17-git-send-email-sven@narfation.org>
 In-Reply-To: <1468597173-25378-1-git-send-email-sven@narfation.org>
 References: <1468597173-25378-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 18/18] batman-adv: Place kref_get for
+Subject: [B.A.T.M.A.N.] [PATCH v2 17/18] batman-adv: Place kref_get for
 	tvlv_container near use
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -27,23 +27,24 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
 v2:
  - split patch based on type
 
- net/batman-adv/tvlv.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ net/batman-adv/tvlv.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
-index 3533867..77654f0 100644
+index 3d1cf0f..3533867 100644
 --- a/net/batman-adv/tvlv.c
 +++ b/net/batman-adv/tvlv.c
-@@ -547,8 +547,12 @@ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
- 	INIT_HLIST_NODE(&tvlv_handler->list);
- 
- 	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
-+	kref_get(&tvlv_handler->refcount);
- 	hlist_add_head_rcu(&tvlv_handler->list, &bat_priv->tvlv.handler_list);
- 	spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
+@@ -257,8 +257,13 @@ void batadv_tvlv_container_register(struct batadv_priv *bat_priv,
+ 	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
+ 	tvlv_old = batadv_tvlv_container_get(bat_priv, type, version);
+ 	batadv_tvlv_container_remove(bat_priv, tvlv_old);
 +
-+	/* don't return reference to new tvlv_handler */
-+	batadv_tvlv_handler_put(tvlv_handler);
++	kref_get(&tvlv_new->refcount);
+ 	hlist_add_head(&tvlv_new->list, &bat_priv->tvlv.container_list);
+ 	spin_unlock_bh(&bat_priv->tvlv.container_list_lock);
++
++	/* don't return reference to new tvlv_container */
++	batadv_tvlv_container_put(tvlv_new);
  }
  
  /**
