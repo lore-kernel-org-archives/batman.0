@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 17 Jul 2016 21:04:02 +0200
-Message-Id: <1468782245-12985-3-git-send-email-sven@narfation.org>
+Date: Sun, 17 Jul 2016 21:04:03 +0200
+Message-Id: <1468782245-12985-4-git-send-email-sven@narfation.org>
 In-Reply-To: <1468782245-12985-1-git-send-email-sven@narfation.org>
 References: <1468782245-12985-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 3/6] batman-adv: Consume skb in
-	batadv_frag_send_packet
+Subject: [B.A.T.M.A.N.] [PATCH 4/6] batman-adv: Consume skb in
+	batadv_send_skb_to_orig
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,130 +18,198 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 
 Sending functions in Linux consume the supplied skbuff. Doing the same in
-batadv_frag_send_packet avoids the hack of returning -1 (-EPERM) to signal
+batadv_send_skb_to_orig avoids the hack of returning -1 (-EPERM) to signal
 the caller that he is responsible for cleaning up the skb.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/fragmentation.c | 50 ++++++++++++++++++++++++------------------
- 1 file changed, 29 insertions(+), 21 deletions(-)
+ net/batman-adv/routing.c  | 11 ++---------
+ net/batman-adv/send.c     | 39 ++++++++++++++++++++++-----------------
+ net/batman-adv/tp_meter.c |  6 ------
+ net/batman-adv/tvlv.c     |  5 +----
+ 4 files changed, 25 insertions(+), 36 deletions(-)
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 461b77d..4751141 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -20,6 +20,7 @@
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 610f2c4..49ff1cf 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -262,9 +262,6 @@ static int batadv_recv_my_icmp_packet(struct batadv_priv *bat_priv,
+ 		icmph->ttl = BATADV_TTL;
  
- #include <linux/atomic.h>
- #include <linux/byteorder/generic.h>
-+#include <linux/errno.h>
- #include <linux/etherdevice.h>
- #include <linux/fs.h>
- #include <linux/if_ether.h>
-@@ -441,8 +442,7 @@ err:
-  * @orig_node: final destination of the created fragments
-  * @neigh_node: next-hop of the created fragments
+ 		res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-		if (res == -1)
+-			goto out;
+-
+ 		ret = NET_RX_SUCCESS;
+ 
+ 		break;
+@@ -325,8 +322,7 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 	icmp_packet->ttl = BATADV_TTL;
+ 
+ 	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (res != -1)
+-		ret = NET_RX_SUCCESS;
++	ret = NET_RX_SUCCESS;
+ 
+ out:
+ 	if (primary_if)
+@@ -413,8 +409,7 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
+ 
+ 	/* route it */
+ 	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
+-	if (res != -1)
+-		ret = NET_RX_SUCCESS;
++	ret = NET_RX_SUCCESS;
+ 
+ out:
+ 	if (orig_node)
+@@ -676,8 +671,6 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 
+ 	len = skb->len;
+ 	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
+-	if (res == -1)
+-		goto out;
+ 
+ 	/* translate transmit result into receive result */
+ 	if (res == NET_XMIT_SUCCESS) {
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 4f44ee2..4254172 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -165,11 +165,9 @@ int batadv_send_unicast_skb(struct sk_buff *skb,
+  * host, NULL can be passed as recv_if and no interface alternating is
+  * attempted.
   *
-- * Return: the netdev tx status or -1 in case of error.
-- * When -1 is returned the skb is not consumed.
-+ * Return: the netdev tx status or a negative errno code on a failure
+- * Return: -1 on failure (and the skb is not consumed), -EINPROGRESS if the
+- * skb is buffered for later transmit or the NET_XMIT status returned by the
++ * Return: negative errno code on a failure, -EINPROGRESS if the skb is
++ * buffered for later transmit or the NET_XMIT status returned by the
+  * lower routine if the packet has been passed down.
+- *
+- * If the returning value is not -1 the skb has been consumed.
   */
- int batadv_frag_send_packet(struct sk_buff *skb,
+ int batadv_send_skb_to_orig(struct sk_buff *skb,
  			    struct batadv_orig_node *orig_node,
-@@ -455,7 +455,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
- 	unsigned int header_size = sizeof(frag_header);
- 	unsigned int max_fragment_size, max_packet_size;
+@@ -177,12 +175,14 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ {
+ 	struct batadv_priv *bat_priv = orig_node->bat_priv;
+ 	struct batadv_neigh_node *neigh_node;
 -	int ret = -1;
 +	int ret;
  
- 	/* To avoid merge and refragmentation at next-hops we never send
- 	 * fragments larger than BATADV_FRAG_MAX_FRAG_SIZE
-@@ -465,13 +465,17 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 	max_packet_size = max_fragment_size * BATADV_FRAG_MAX_FRAGMENTS;
- 
- 	/* Don't even try to fragment, if we need more than 16 fragments */
--	if (skb->len > max_packet_size)
+ 	/* batadv_find_router() increases neigh_nodes refcount if found. */
+ 	neigh_node = batadv_find_router(bat_priv, orig_node, recv_if);
+-	if (!neigh_node)
 -		goto out;
-+	if (skb->len > max_packet_size) {
-+		ret = -EAGAIN;
++	if (!neigh_node) {
++		ret = -EINVAL;
 +		goto free_skb;
 +	}
  
- 	bat_priv = orig_node->bat_priv;
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
--	if (!primary_if)
+ 	/* Check if the skb is too large to send in one piece and fragment
+ 	 * it if needed.
+@@ -191,8 +191,10 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 	    skb->len > neigh_node->if_incoming->net_dev->mtu) {
+ 		/* Fragment and send packet. */
+ 		ret = batadv_frag_send_packet(skb, orig_node, neigh_node);
++		/* skb was consumed */
++		skb = NULL;
+ 
 -		goto out;
-+	if (!primary_if) {
-+		ret = -EINVAL;
-+		goto put_primary_if;
-+	}
- 
- 	/* Create one header to be copied to all fragments */
- 	frag_header.packet_type = BATADV_UNICAST_FRAG;
-@@ -496,34 +500,35 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 	/* Eat and send fragments from the tail of skb */
- 	while (skb->len > max_fragment_size) {
- 		skb_fragment = batadv_frag_create(skb, &frag_header, mtu);
--		if (!skb_fragment)
--			goto out;
-+		if (!skb_fragment) {
-+			ret = -ENOMEM;
-+			goto free_skb;
-+		}
- 
- 		batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_TX);
- 		batadv_add_counter(bat_priv, BATADV_CNT_FRAG_TX_BYTES,
- 				   skb_fragment->len + ETH_HLEN);
- 		ret = batadv_send_unicast_skb(skb_fragment, neigh_node);
- 		if (ret != NET_XMIT_SUCCESS) {
--			/* return -1 so that the caller can free the original
--			 * skb
--			 */
--			ret = -1;
--			goto out;
-+			ret = NET_XMIT_DROP;
-+			goto free_skb;
- 		}
- 
- 		frag_header.no++;
- 
- 		/* The initial check in this function should cover this case */
- 		if (frag_header.no == BATADV_FRAG_MAX_FRAGMENTS - 1) {
--			ret = -1;
--			goto out;
-+			ret = -EINVAL;
-+			goto free_skb;
- 		}
++		goto put_neigh_node;
  	}
  
- 	/* Make room for the fragment header. */
- 	if (batadv_skb_head_push(skb, header_size) < 0 ||
--	    pskb_expand_head(skb, header_size + ETH_HLEN, 0, GFP_ATOMIC) < 0)
--		goto out;
-+	    pskb_expand_head(skb, header_size + ETH_HLEN, 0, GFP_ATOMIC) < 0) {
-+		ret = -ENOMEM;
-+		goto free_skb;
-+	}
- 
- 	memcpy(skb->data, &frag_header, header_size);
- 
-@@ -532,10 +537,13 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 	batadv_add_counter(bat_priv, BATADV_CNT_FRAG_TX_BYTES,
- 			   skb->len + ETH_HLEN);
- 	ret = batadv_send_unicast_skb(skb, neigh_node);
-+	/* skb was consumed */
-+	skb = NULL;
+ 	/* try to network code the packet, if it is received on an interface
+@@ -204,9 +206,13 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 	else
+ 		ret = batadv_send_unicast_skb(skb, neigh_node);
  
 -out:
--	if (primary_if)
--		batadv_hardif_put(primary_if);
-+put_primary_if:
-+	batadv_hardif_put(primary_if);
+-	if (neigh_node)
+-		batadv_neigh_node_put(neigh_node);
++	/* skb was consumed */
++	skb = NULL;
++
++put_neigh_node:
++	batadv_neigh_node_put(neigh_node);
 +free_skb:
 +	kfree_skb(skb);
  
  	return ret;
+ }
+@@ -327,7 +333,7 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ {
+ 	struct batadv_unicast_packet *unicast_packet;
+ 	struct ethhdr *ethhdr;
+-	int res, ret = NET_XMIT_DROP;
++	int ret = NET_XMIT_DROP;
+ 
+ 	if (!orig_node)
+ 		goto out;
+@@ -364,13 +370,12 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ 	if (batadv_tt_global_client_is_roaming(bat_priv, ethhdr->h_dest, vid))
+ 		unicast_packet->ttvn = unicast_packet->ttvn - 1;
+ 
+-	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (res != -1)
+-		ret = NET_XMIT_SUCCESS;
++	ret = batadv_send_skb_to_orig(skb, orig_node, NULL);
++	 /* skb was consumed */
++	skb = NULL;
+ 
+ out:
+-	if (ret == NET_XMIT_DROP)
+-		kfree_skb(skb);
++	kfree_skb(skb);
+ 	return ret;
+ }
+ 
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index 2333777..f156452 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -615,9 +615,6 @@ static int batadv_tp_send_msg(struct batadv_tp_vars *tp_vars, const u8 *src,
+ 	batadv_tp_fill_prerandom(tp_vars, data, data_len);
+ 
+ 	r = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (r == -1)
+-		kfree_skb(skb);
+-
+ 	if (r == NET_XMIT_SUCCESS)
+ 		return 0;
+ 
+@@ -1206,9 +1203,6 @@ static int batadv_tp_send_ack(struct batadv_priv *bat_priv, const u8 *dst,
+ 
+ 	/* send the ack */
+ 	r = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (r == -1)
+-		kfree_skb(skb);
+-
+ 	if (unlikely(r < 0) || (r == NET_XMIT_DROP)) {
+ 		ret = BATADV_TP_REASON_DST_UNREACHABLE;
+ 		goto out;
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index 3d1cf0f..221efa3 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -591,7 +591,6 @@ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
+ 	unsigned char *tvlv_buff;
+ 	unsigned int tvlv_len;
+ 	ssize_t hdr_len = sizeof(*unicast_tvlv_packet);
+-	int res;
+ 
+ 	orig_node = batadv_orig_hash_find(bat_priv, dst);
+ 	if (!orig_node)
+@@ -624,9 +623,7 @@ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
+ 	tvlv_buff += sizeof(*tvlv_hdr);
+ 	memcpy(tvlv_buff, tvlv_value, tvlv_value_len);
+ 
+-	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (res == -1)
+-		kfree_skb(skb);
++	batadv_send_skb_to_orig(skb, orig_node, NULL);
+ out:
+ 	batadv_orig_node_put(orig_node);
  }
 -- 
 2.8.1
