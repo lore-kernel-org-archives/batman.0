@@ -1,11 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 17 Jul 2016 21:04:05 +0200
-Message-Id: <1468782245-12985-6-git-send-email-sven@narfation.org>
-In-Reply-To: <1468782245-12985-1-git-send-email-sven@narfation.org>
-References: <1468782245-12985-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 6/6] batman-adv: Remove dev_queue_xmit return
-	code exception
+Date: Mon, 18 Jul 2016 00:15:40 +0200
+Message-Id: <1468793741-4606-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Don't allow zero and
+	multicast sender address
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,59 +15,63 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-No caller of batadv_send_skb_to_orig is expecting the results to be -1
-(-EPERM) anymore when the skbuff was not consumed. They will instead expect
-that the skbuff is always consumed. Having such return code filter is
-therefore not needed anymore.
+The routing checks are validating the sender mac address. They reject every
+sender mac address which is a broadcast. But they also have to reject
+zero-mac address and multicast mac addresses.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/send.c | 17 ++++++-----------
- 1 file changed, 6 insertions(+), 11 deletions(-)
+ net/batman-adv/routing.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 4254172..2b946c1 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -64,8 +64,11 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work);
-  * If neigh_node is NULL, then the packet is broadcasted using hard_iface,
-  * otherwise it is sent as unicast to the given neighbor.
-  *
-- * Return: NET_TX_DROP in case of error or the result of dev_queue_xmit(skb)
-- * otherwise
-+ * Regardless of the return value, the skb is consumed.
-+ *
-+ * Return: A negative errno code is returned on a failure. A success does not
-+ * guarantee the frame will be transmitted as it may be dropped due
-+ * to congestion or traffic shaping.
-  */
- int batadv_send_skb_packet(struct sk_buff *skb,
- 			   struct batadv_hard_iface *hard_iface,
-@@ -73,7 +76,6 @@ int batadv_send_skb_packet(struct sk_buff *skb,
- {
- 	struct batadv_priv *bat_priv;
- 	struct ethhdr *ethhdr;
--	int ret;
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 610f2c4..b648caf 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -196,8 +196,8 @@ bool batadv_check_management_packet(struct sk_buff *skb,
+ 	if (!is_broadcast_ether_addr(ethhdr->h_dest))
+ 		return false;
  
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
+-	/* packet with broadcast sender address */
+-	if (is_broadcast_ether_addr(ethhdr->h_source))
++	/* packet with invalid sender address */
++	if (!is_valid_ether_addr(ethhdr->h_source))
+ 		return false;
  
-@@ -111,15 +113,8 @@ int batadv_send_skb_packet(struct sk_buff *skb,
- 	/* dev_queue_xmit() returns a negative result on error.	 However on
- 	 * congestion and traffic shaping, it drops and returns NET_XMIT_DROP
- 	 * (which is > 0). This will not be treated as an error.
--	 *
--	 * a negative value cannot be returned because it could be interepreted
--	 * as not consumed skb by callers of batadv_send_skb_to_orig.
- 	 */
--	ret = dev_queue_xmit(skb);
--	if (ret < 0)
--		ret = NET_XMIT_DROP;
--
--	return ret;
-+	return dev_queue_xmit(skb);
- send_skb_err:
- 	kfree_skb(skb);
- 	return NET_XMIT_DROP;
+ 	/* create a copy of the skb, if needed, to modify it. */
+@@ -357,8 +357,8 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
+ 	if (is_broadcast_ether_addr(ethhdr->h_dest))
+ 		goto out;
+ 
+-	/* packet with broadcast sender address */
+-	if (is_broadcast_ether_addr(ethhdr->h_source))
++	/* packet with invalid sender address */
++	if (!is_valid_ether_addr(ethhdr->h_source))
+ 		goto out;
+ 
+ 	/* not for me */
+@@ -449,8 +449,8 @@ static int batadv_check_unicast_packet(struct batadv_priv *bat_priv,
+ 	if (is_broadcast_ether_addr(ethhdr->h_dest))
+ 		return -EBADR;
+ 
+-	/* packet with broadcast sender address */
+-	if (is_broadcast_ether_addr(ethhdr->h_source))
++	/* packet with invalid sender address */
++	if (!is_valid_ether_addr(ethhdr->h_source))
+ 		return -EBADR;
+ 
+ 	/* not for me */
+@@ -1091,8 +1091,8 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
+ 	if (!is_broadcast_ether_addr(ethhdr->h_dest))
+ 		goto out;
+ 
+-	/* packet with broadcast sender address */
+-	if (is_broadcast_ether_addr(ethhdr->h_source))
++	/* packet with invalid sender address */
++	if (!is_valid_ether_addr(ethhdr->h_source))
+ 		goto out;
+ 
+ 	/* ignore broadcasts sent by myself */
 -- 
 2.8.1
 
