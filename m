@@ -1,15 +1,11 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Mon, 18 Jul 2016 10:15:58 +0800
-Message-ID: <1657435.3NNlWPGQ0a@voltaire>
-In-Reply-To: <1467545508-7333-10-git-send-email-sven@narfation.org>
-References: <1467545508-7333-1-git-send-email-sven@narfation.org>
- <1467545508-7333-10-git-send-email-sven@narfation.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 18 Jul 2016 12:11:13 +0200
+Message-ID: <6098496.c9QsHxvAun@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1511073.Tuzj2H357y";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v10 09/16] batman-adv: add B.A.T.M.A.N. V
-	bat_{orig, neigh}_dump implementations
+Content-Type: multipart/signed; boundary="nextPart1540179.J5x7uq34aL";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: [B.A.T.M.A.N.] [PATCH v11 00/11] batctl: netns and netlink support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,33 +17,25 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1511073.Tuzj2H357y
+--nextPart1540179.J5x7uq34aL
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, July 03, 2016 13:31:41 Sven Eckelmann wrote:
-> From: Matthias Schiffer <mschiffer@universe-factory.net>
-> 
-> Dump the algo V originators and neighbours.
-> 
-> Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> [sven@narfation.org: Fix includes, fix algo_ops integration]
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-> ---
->  include/uapi/linux/batman_adv.h |   2 +
->  net/batman-adv/bat_v.c          | 340
-> ++++++++++++++++++++++++++++++++++++++++
-> net/batman-adv/netlink.c        |   1 +
->  3 files changed, 343 insertions(+)
+Hi,
 
-Applied in revision 2ec4acd.
+This patchset adds netns/netlink support to batctl. It complements the
+batman-adv netns/netlink support v10 from July 3th. This series is an
+update from the v10 sent me on July 3th with the following changes:
 
-Thanks,
-Marek
+ * rebased on current master (didn't apply anymore because batman_adv.h
+   changes were extracted from batman-adv and these changes collided with the
+   patchset)
+ * batman_adv.h changes are now separate patches (based on batman-adv patches)
+ * asprintf return code is evaluated for systems not initializing *strp
 
---nextPart1511073.Tuzj2H357y
+Kind regards,
+        Sven
+--nextPart1540179.J5x7uq34aL
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -55,14 +43,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXjDvfAAoJEFNVTo/uthzAcyQH/0GFKgvpNAErAtIqIwGl03DZ
-GMSUFFv/BgnEBQkIcxy/Y50gzTkr4UtZjouBPbnPKVnXCfHwAZumEZSpXYgfPD7D
-lCXtcAoy6BbIWKVJ5L+8g2vyvjh7968sYrbDnPEIOZMuVT2kAZE8XDDErWFt5kpY
-yT4tS+OktZwtcRstbhX7npOyRKtC6j7vZLUwQG0cuhz/b+6kkAURG8482kSzgEdr
-ysFdnD3dZCjvHjKJ4yUHJDDVJoBO3I5QAIqaP3fD7oollAY8SqmR2t4uU/6jhOGc
-cuaWmBR4DBy/WFBITGQYCKExpP1vor6tSSBzWyq1I/+sIW3LOKdmM7JlvK+mGZw=
-=SkbP
+iQIcBAABCgAGBQJXjKtBAAoJEF2HCgfBJntGZyEP/1iHQcOxZnSzd6lMq1TwD6hq
+Sg/FbzaL3ilZ4SOW5A+yGXTOYGBCH+6c1RZAMcpTW+ndxs72Oaj1rWtOWMbXKLvK
+XGNpjHLTvfe1NfruDV4rylpnz0oU1PDk8aXNrUCCZwfFCQ7zSd0t3eWmS6dUQmsu
+DiEcASRp/Ia4uI534Q1ZRnwj4yZqZ2qg3Y7trFqFzKsb+Vk17Y/8l0MShRFdZivL
+fQgFemNCZJwN6tu1axcNxuFKNtT3y9jg2bGLByaiA4cHf2/hVNNQDrEcLOGMhWh+
+5+hxH4hZoEPRx4pztu9+daFHWiNpCLN/fTLKY8XrkeTyGe9vv2+TPY/3DZBzGVVR
+4DOcrKeaxGynKWtSOc5QjJiakRSXcqS1eqkRiv4G9sLFGK3A4yfWocY6L1sYh3to
+YTt8bjZF50rz7jwvhXVzzZ0QTmY+WdjbDYWOAEzi42s7UjCPFI4z8VSkq5EIwomw
+gE/P+uWlXs1/oRy6cgHTJFApxUTwA9+GBZY9vtnydPbhypH1lT6ogNthOq/Lb6RV
+K2Ocx7OjCKdqrNf++bCSWjnY5qih7dKV3I0gdabGtAzApZnTN2qZSwUBXL0u18Fh
+aI/bhJ26QpKc05VaE6Gu4YpgMCP0haqaKhoBKdOJNthYRr2fLl4bPUv3SCbrruNn
+bdP7qU1KhbGpuop0G+Y9
+=FgQl
 -----END PGP SIGNATURE-----
 
---nextPart1511073.Tuzj2H357y--
+--nextPart1540179.J5x7uq34aL--
 
