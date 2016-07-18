@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 18 Jul 2016 12:11:58 +0200
-Message-Id: <1468836728-21890-1-git-send-email-sven@narfation.org>
+Date: Mon, 18 Jul 2016 12:12:00 +0200
+Message-Id: <1468836728-21890-3-git-send-email-sven@narfation.org>
 In-Reply-To: <6098496.c9QsHxvAun@sven-edge>
 References: <6098496.c9QsHxvAun@sven-edge>
-Subject: [B.A.T.M.A.N.] [PATCH v11 01/11] batctl: netlink: add gateway table
-	queries
+Subject: [B.A.T.M.A.N.] [PATCH v11 03/11] batctl: add backbone table netlink
+	support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,52 +17,33 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Add BATADV_CMD_GET_GATEWAYS commands, using handlers bat_gw_dump in
-batadv_algo_ops. Will always return -EOPNOTSUPP for now, as no
-implementations exist yet.
+From: Simon Wunderlich <sw@simonwunderlich.de>
 
+Dump the list of bridge loop avoidance backbones via the netlink socket.
+
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- batman_adv.h | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ batman_adv.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/batman_adv.h b/batman_adv.h
-index 2e2747f..a13fc09 100644
+index 96b37ab..734fe83 100644
 --- a/batman_adv.h
 +++ b/batman_adv.h
-@@ -88,6 +88,9 @@ enum batadv_tt_client_flags {
-  * @BATADV_ATTR_NEIGH_ADDRESS: Neighbour MAC address
-  * @BATADV_ATTR_TQ: TQ to neighbour
-  * @BATADV_ATTR_THROUGHPUT: Estimated throughput to Neighbour
-+ * @BATADV_ATTR_BANDWIDTH_UP: Reported uplink bandwidth
-+ * @BATADV_ATTR_BANDWIDTH_DOWN: Reported downlink bandwidth
-+ * @BATADV_ATTR_ROUTER: Gateway router MAC address
-  * @__BATADV_ATTR_AFTER_LAST: internal use
-  * @NUM_BATADV_ATTR: total number of batadv_nl_attrs available
-  * @BATADV_ATTR_MAX: highest attribute number currently defined
-@@ -120,6 +123,9 @@ enum batadv_nl_attrs {
- 	BATADV_ATTR_NEIGH_ADDRESS,
- 	BATADV_ATTR_TQ,
- 	BATADV_ATTR_THROUGHPUT,
-+	BATADV_ATTR_BANDWIDTH_UP,
-+	BATADV_ATTR_BANDWIDTH_DOWN,
-+	BATADV_ATTR_ROUTER,
- 	/* add attributes above here, update the policy in netlink.c */
- 	__BATADV_ATTR_AFTER_LAST,
- 	NUM_BATADV_ATTR = __BATADV_ATTR_AFTER_LAST,
-@@ -139,6 +145,7 @@ enum batadv_nl_attrs {
-  * @BATADV_CMD_GET_TRANSTABLE_GLOBAL Query list of global translations
-  * @BATADV_CMD_GET_ORIGINATORS: Query list of originators
+@@ -157,6 +157,7 @@ enum batadv_nl_attrs {
   * @BATADV_CMD_GET_NEIGHBORS: Query list of neighbours
-+ * @BATADV_CMD_GET_GATEWAYS: Query list of gateways
+  * @BATADV_CMD_GET_GATEWAYS: Query list of gateways
+  * @BATADV_CMD_GET_BLA_CLAIM: Query list of bridge loop avoidance claims
++ * @BATADV_CMD_GET_BLA_BACKBONE: Query list of bridge loop avoidance backbones
   * @__BATADV_CMD_AFTER_LAST: internal use
   * @BATADV_CMD_MAX: highest used command number
   */
-@@ -153,6 +160,7 @@ enum batadv_nl_commands {
- 	BATADV_CMD_GET_TRANSTABLE_GLOBAL,
- 	BATADV_CMD_GET_ORIGINATORS,
+@@ -173,6 +174,7 @@ enum batadv_nl_commands {
  	BATADV_CMD_GET_NEIGHBORS,
-+	BATADV_CMD_GET_GATEWAYS,
+ 	BATADV_CMD_GET_GATEWAYS,
+ 	BATADV_CMD_GET_BLA_CLAIM,
++	BATADV_CMD_GET_BLA_BACKBONE,
  	/* add new commands above here */
  	__BATADV_CMD_AFTER_LAST,
  	BATADV_CMD_MAX = __BATADV_CMD_AFTER_LAST - 1
