@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 18 Jul 2016 12:12:05 +0200
-Message-Id: <1468836728-21890-8-git-send-email-sven@narfation.org>
+Date: Mon, 18 Jul 2016 12:12:07 +0200
+Message-Id: <1468836728-21890-10-git-send-email-sven@narfation.org>
 In-Reply-To: <6098496.c9QsHxvAun@sven-edge>
 References: <6098496.c9QsHxvAun@sven-edge>
-Subject: [B.A.T.M.A.N.] [PATCH v11 08/11] batctl: Split translate_mac from
-	debugfs backend
+Subject: [B.A.T.M.A.N.] [PATCH v11 10/11] batctl: Document a network
+	namespaces example.
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,135 +17,82 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The debugfs tables cannot be used by the batctl in network namespaces.
-These have to use netlink. Thus the translate_mac should be less tightly
-linked to the debugfs tables to implement optional netlink support.
+From: Andrew Lunn <andrew@lunn.ch>
 
+Add example of has BATMAN can be used with network name spaces in the
+README.
+
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- functions.c | 46 +++++++++++++++++++++++++++++++++++-----------
- functions.h |  3 ++-
- 2 files changed, 37 insertions(+), 12 deletions(-)
+ README | 57 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
 
-diff --git a/functions.c b/functions.c
-index 5b76062..f994ced 100644
---- a/functions.c
-+++ b/functions.c
-@@ -26,6 +26,7 @@
- #include <sys/types.h>
- #include <sys/stat.h>
- #include <unistd.h>
-+#include <stdbool.h>
- #include <stdlib.h>
- #include <stdio.h>
- #include <string.h>
-@@ -371,7 +372,9 @@ out:
- 	return res;
- }
- 
--struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac)
-+static int translate_mac_debugfs(const char *mesh_iface,
-+				 const struct ether_addr *mac,
-+				 struct ether_addr *mac_out)
- {
- 	enum {
- 		tg_start,
-@@ -381,26 +384,23 @@ struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac)
- 	} pos;
- 	char full_path[MAX_PATH+1];
- 	char *debugfs_mnt;
--	static struct ether_addr in_mac;
--	struct ether_addr *mac_result, *mac_tmp;
-+	struct ether_addr *mac_tmp;
- 	FILE *f = NULL;
- 	size_t len = 0;
- 	char *line = NULL;
- 	char *input, *saveptr, *token;
- 	int line_invalid;
--
--	memcpy(&in_mac, mac, sizeof(in_mac));
--	mac_result = &in_mac;
-+	bool found = false;
- 
- 	debugfs_mnt = debugfs_mount(NULL);
- 	if (!debugfs_mnt)
--		goto out;
-+		return -EOPNOTSUPP;
- 
- 	debugfs_make_path(DEBUG_BATIF_PATH_FMT "/" DEBUG_TRANSTABLE_GLOBAL, mesh_iface, full_path, sizeof(full_path));
- 
- 	f = fopen(full_path, "r");
- 	if (!f)
--		goto out;
-+		return -EOPNOTSUPP;
- 
- 	while (getline(&line, &len, f) != -1) {
- 		line_invalid = 0;
-@@ -419,8 +419,8 @@ struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac)
- 				break;
- 			case tg_mac:
- 				mac_tmp = ether_aton(token);
--				if (!mac_tmp || memcmp(mac_tmp, &in_mac,
--						       sizeof(in_mac)) != 0)
-+				if (!mac_tmp || memcmp(mac_tmp, mac,
-+						       ETH_ALEN) != 0)
- 					line_invalid = 1;
- 				else
- 					pos = tg_via;
-@@ -434,7 +434,8 @@ struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac)
- 				if (!mac_tmp) {
- 					line_invalid = 1;
- 				} else {
--					mac_result = mac_tmp;
-+					memcpy(mac_out, mac_tmp, ETH_ALEN);
-+					found = true;
- 					goto out;
- 				}
- 				break;
-@@ -449,6 +450,29 @@ out:
- 	if (f)
- 		fclose(f);
- 	free(line);
+diff --git a/README b/README
+index 6df669a..ce049d4 100644
+--- a/README
++++ b/README
+@@ -555,3 +555,60 @@ where:
+ - IPv4 is the IP address of a client in the mesh network
+ - MAC is the MAC address associated to that IP
+ - last-seen is the amount of time since last refresh of this entry
 +
-+	if (found)
-+		return 0;
-+	else
-+		return -ENOENT;
-+}
++batctl and network name spaces
++==============================
 +
-+struct ether_addr *translate_mac(const char *mesh_iface,
-+				 const struct ether_addr *mac)
-+{
-+	struct ether_addr in_mac;
-+	static struct ether_addr out_mac;
-+	struct ether_addr *mac_result;
++The batman-adv kernel module is netns aware. Mesh instances can be
++created in name spaces, and interfaces in that name space added to the
++mesh. The mesh interface cannot be moved between name spaces, as is
++typical for virtual interfaces.
 +
-+	/* input mac has to be copied because it could be in the shared
-+	 * ether_aton buffer
-+	 */
-+	memcpy(&in_mac, mac, sizeof(in_mac));
-+	memcpy(&out_mac, mac, sizeof(out_mac));
-+	mac_result = &out_mac;
++The following example creates two network namespaces, and uses veth
++pairs to connect them together into a mesh of three nodes.
 +
-+	translate_mac_debugfs(mesh_iface, &in_mac, mac_result);
++EMU1="ip netns exec emu1"
++EMU2="ip netns exec emu2"
 +
- 	return mac_result;
- }
- 
-diff --git a/functions.h b/functions.h
-index 2d29d52..1f311ca 100644
---- a/functions.h
-+++ b/functions.h
-@@ -40,7 +40,8 @@ int read_file(const char *dir, const char *path, int read_opt,
- 	      float orig_timeout, float watch_interval, size_t header_lines);
- int write_file(const char *dir, const char *fname, const char *arg1,
- 	       const char *arg2);
--struct ether_addr *translate_mac(char *mesh_iface, struct ether_addr *mac);
-+struct ether_addr *translate_mac(const char *mesh_iface,
-+				 const struct ether_addr *mac);
- struct ether_addr *resolve_mac(const char *asc);
- int vlan_get_link(const char *ifname, char **parent);
- 
++ip netns add emu1
++ip netns add emu2
++
++ip link add emu1-veth1 type veth peer name emu2-veth1
++ip link set emu1-veth1 netns emu1
++ip link set emu2-veth1 netns emu2
++
++$EMU1 ip link set emu1-veth1 name veth1
++$EMU2 ip link set emu2-veth1 name veth1
++
++$EMU1 ip link set veth1 up
++$EMU2 ip link set veth1 up
++
++ip link add emu1-veth2 type veth peer name veth2
++ip link set emu1-veth2 netns emu1
++$EMU1 ip link set emu1-veth2 name veth2
++
++$EMU1 ip link set veth2 up
++ip link set veth2 up
++
++$EMU1 batctl if add veth1
++$EMU1 batctl if add veth2
++$EMU1 ip link set bat0 up
++
++$EMU2 batctl if add veth1
++$EMU2 ip link set bat0 up
++
++batctl if add veth2
++ip link set bat0 up
++
++alfred and batadv-vis can also be used with name spaces. In this
++example, only netns has been used, so there are no filesystem name
++spaces. Hence the unix domain socket used by alfred needs to be given
++a unique name per instance.
++
++($EMU1 alfred -m -i bat0 -u /var/run/emu1-alfred.soc) &
++($EMU2 alfred -m -i bat0 -u /var/run/emu2-alfred.soc) &
++alfred -m -i bat0 &
++
++($EMU1 batadv-vis -s -u /var/run/emu1-alfred.soc) &
++($EMU2 batadv-vis -s -u /var/run/emu2-alfred.soc) &
++batadv-vis -s &
 -- 
 2.8.1
 
