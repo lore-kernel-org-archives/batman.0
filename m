@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 19 Jul 2016 22:44:09 +0200
-Message-Id: <1468961051-6447-2-git-send-email-sven@narfation.org>
+Date: Tue, 19 Jul 2016 22:44:10 +0200
+Message-Id: <1468961051-6447-3-git-send-email-sven@narfation.org>
 In-Reply-To: <3501586.3dVhjbZHzy@sven-edge>
 References: <3501586.3dVhjbZHzy@sven-edge>
-Subject: [B.A.T.M.A.N.] [PATCH 2/4] batctl: Use monotonic time source for
-	icmp timing
+Subject: [B.A.T.M.A.N.] [PATCH 3/4] batctl: Add helper to generate instant
+	random bytes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,85 +17,120 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-gettimeofday is not monotonic. It would give wrong results in some
-situation like leap seconds, when switching between daylight saving time
-and non-DST, NTP changes the time or when the administrator of the system
-changes it manually. The function is also obsolete since POSIX.1-2008.
+Linux provides different ways to get instant random bytes. These are not
+all supported on all systems and thus a fallback may have to be used.
+Abstract all this in a single function which can be used from different
+parts of the code.
 
-clock_gettime is recommended to get a monotonic timesource and as general
-replacement of gettimeofday.
+The current implementations are
+
+ * get random data from urandom pool via SYS_getrandom syscall
+ * get random data from reading /dev/urandom
+ * fallback to per-program prng initialized via the current time (seconds +
+   nanoseconds)
+
+All are tried in this order in hope to get a high quality random number
+source before falling back to some really low quality one.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile    |  2 +-
- functions.c | 17 +++++++++--------
- 2 files changed, 10 insertions(+), 9 deletions(-)
+ functions.c | 65 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ functions.h |  2 ++
+ 2 files changed, 67 insertions(+)
 
-diff --git a/Makefile b/Makefile
-index e980587..57d9a4e 100755
---- a/Makefile
-+++ b/Makefile
-@@ -46,7 +46,7 @@ MANPAGE = man/batctl.8
- # batctl flags and options
- CFLAGS += -Wall -W -std=gnu99 -fno-strict-aliasing -MD -MP
- CPPFLAGS += -D_GNU_SOURCE
--LDLIBS += -lm
-+LDLIBS += -lm -lrt
- 
- # disable verbose output
- ifneq ($(findstring $(MAKEFLAGS),s),s)
 diff --git a/functions.c b/functions.c
-index f9feca4..bc4f9f8 100644
+index bc4f9f8..d9f93c2 100644
 --- a/functions.c
 +++ b/functions.c
-@@ -48,6 +48,7 @@
- #include <netlink/handlers.h>
- #include <netlink/msg.h>
- #include <netlink/attr.h>
-+#include <time.h>
+@@ -41,6 +41,7 @@
+ #include <linux/if_link.h>
+ #include <linux/rtnetlink.h>
+ #include <linux/neighbour.h>
++#include <sys/syscall.h>
+ #include <errno.h>
+ #include <net/if.h>
+ #include <netlink/socket.h>
+@@ -1071,3 +1072,67 @@ int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface)
  
- #include "main.h"
- #include "functions.h"
-@@ -59,7 +60,7 @@
- 
- #define PATH_BUFF_LEN 200
- 
--static struct timeval start_time;
-+static struct timespec start_time;
- static char *host_name;
- char *line_ptr = NULL;
- 
-@@ -80,23 +81,23 @@ const char *fs_compile_out_param[] = {
- 
- void start_timer(void)
- {
--	gettimeofday(&start_time, NULL);
-+	clock_gettime(CLOCK_MONOTONIC, &start_time);
+ 	return EXIT_SUCCESS;
  }
++
++static int get_random_bytes_syscall(void *buf __unused, size_t buflen __unused)
++{
++#ifdef SYS_getrandom
++	return syscall(SYS_getrandom, buf, buflen, 0);
++#else
++	return -EOPNOTSUPP;
++#endif
++}
++
++static int get_random_bytes_urandom(void *buf, size_t buflen)
++{
++	int fd;
++	ssize_t r;
++
++	fd = open("/dev/urandom", O_RDONLY);
++	if (fd < 0)
++		return -EOPNOTSUPP;
++
++	r = read(fd, buf, buflen);
++	close(fd);
++	if (r < 0)
++		return -EOPNOTSUPP;
++
++	if ((size_t)r != buflen)
++		return -EOPNOTSUPP;
++
++	return 0;
++}
++
++static int get_random_bytes_fallback(void *buf, size_t buflen)
++{
++	struct timespec now;
++	static int initialized = 0;
++	size_t i;
++	uint8_t *bufc = buf;
++
++	/* this is not a good source for randomness */
++	if (!initialized) {
++		clock_gettime(CLOCK_MONOTONIC, &now);
++		srand(now.tv_sec ^ now.tv_nsec);
++		initialized = 1;
++	}
++
++	for (i = 0; i < buflen; i++)
++		bufc[i] = rand() & 0xff;
++
++	return 0;
++}
++
++void get_random_bytes(void *buf, size_t buflen)
++{
++	int ret;
++
++	ret = get_random_bytes_syscall(buf, buflen);
++	if (ret != -EOPNOTSUPP)
++		return;
++
++	ret = get_random_bytes_urandom(buf, buflen);
++	if (ret != -EOPNOTSUPP)
++		return;
++
++	get_random_bytes_fallback(buf, buflen);
++}
+diff --git a/functions.h b/functions.h
+index e413d6b..95cd6cf 100644
+--- a/functions.h
++++ b/functions.h
+@@ -53,6 +53,8 @@ int netlink_simple_request(struct nl_msg *msg);
+ int check_mesh_iface(char *mesh_iface);
+ int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
  
- double end_timer(void)
- {
--	struct timeval end_time, diff;
-+	struct timespec end_time, diff;
++void get_random_bytes(void *buf, size_t buflen);
++
+ int print_routing_algos(void);
+ extern char *line_ptr;
  
--	gettimeofday(&end_time, NULL);
-+	clock_gettime(CLOCK_MONOTONIC, &end_time);
- 	diff.tv_sec = end_time.tv_sec - start_time.tv_sec;
--	diff.tv_usec = end_time.tv_usec - start_time.tv_usec;
-+	diff.tv_nsec = end_time.tv_nsec - start_time.tv_nsec;
- 
--	if (diff.tv_usec < 0) {
-+	if (diff.tv_nsec < 0) {
- 		diff.tv_sec--;
--		diff.tv_usec += 1000000;
-+		diff.tv_nsec += 1000000000;
- 	}
- 
--	return (((double)diff.tv_sec * 1000) + ((double)diff.tv_usec / 1000));
-+	return (((double)diff.tv_sec * 1000) + ((double)diff.tv_nsec / 1000000));
- }
- 
- char *ether_ntoa_long(const struct ether_addr *addr)
 -- 
 2.8.1
 
