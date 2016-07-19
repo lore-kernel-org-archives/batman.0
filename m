@@ -1,15 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 19 Jul 2016 10:41:31 +0200
-Message-ID: <3103042.h6R1kj0P7L@sven-edge>
-In-Reply-To: <1468597173-25378-18-git-send-email-sven@narfation.org>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Tue, 19 Jul 2016 16:42:26 +0800
+Message-ID: <1914127.jNGRZROWUb@voltaire>
+In-Reply-To: <1468597173-25378-14-git-send-email-sven@narfation.org>
 References: <1468597173-25378-1-git-send-email-sven@narfation.org>
- <1468597173-25378-18-git-send-email-sven@narfation.org>
+ <1468597173-25378-14-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2660330.B5q3U1AySM";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 18/18] batman-adv: Place kref_get for
-	tvlv_container near use
+Content-Type: multipart/signed; boundary="nextPart3993098.BS6uffsGou";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 14/18] batman-adv: Place kref_get for
+	softif_vlan near use
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,11 +21,11 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2660330.B5q3U1AySM
+--nextPart3993098.BS6uffsGou
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Freitag, 15. Juli 2016 17:39:33 CEST Sven Eckelmann wrote:
+On Friday, July 15, 2016 17:39:29 Sven Eckelmann wrote:
 > It is hard to understand why the refcnt is increased when it isn't done
 > near the actual place the new reference is used. So using kref_get right
 > before the place which requires the reference and in the same function
@@ -35,13 +35,16 @@ On Freitag, 15. Juli 2016 17:39:33 CEST Sven Eckelmann wrote:
 > ---
 > v2:
 >  - split patch based on type
+> 
+>  net/batman-adv/soft-interface.c | 4 ++++
+>  1 file changed, 4 insertions(+)
 
-s/tvlv_container/tvlv_handler/ in subject.
+Applied in revision 67694d5.
 
-Kind regards,
-	Sven
+Thanks,
+Marek
 
---nextPart2660330.B5q3U1AySM
+--nextPart3993098.BS6uffsGou
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -49,20 +52,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXjee7AAoJEF2HCgfBJntGOIAP/it9nyywyxZvNm+6Y8AQJO22
-RkmY3EgltZgHXgPjJXAXTqgSdhcMx5XPtNgHsfdjQMSHA+M71M8RrFH5dJqPV0pe
-hzCsoScTi9nlkR6HoT7ggReC/WnCc8nqy6fKm/KcbiBsprd4VHxIl5Jd7hfTNzih
-xWp6Xh+oUVsnaDbT543J4evfRvPWoyJyOd2VSJhzziMIlFokxx7F9Ib4XPxRgPXo
-xlhqHW9P3NvEMEzCVB2oEhshdGHzw2JUoql93bycOTAXhUkoJ41zeMsat+B1wmrq
-jwaVzsFNUeaHhJqNabK5SboM0zkAnRSdcb56qPw8ILNbNw9Wd+Ssf9lQrmswdfQa
-o+KdnmP/UNEjiTJyVf9P5A8+snxUPRFDZ7nwv8zyAevfZ84D4pRWWJKmtIW5mS6a
-fLKFMudlWfzyjby0qGTtydWg6WvLG0XYzG10INJgt9jpcJFxr/Id0Uk6+r7ZtA4T
-HzRZlodMrw5Z0YzQjC4yZ6IEspN6RG+FhGT51JZLWXODjb5wuc/CJDBiwzwyvPvk
-+UEeBfcN2MqelYps+lUKZ3K3ABUIB980TOR4JHkTwW98HJKxOHSTTv3FeQ2m6E2j
-FILx8bFuZkriuQfvi9vQK/88EXBEu8cGgT5O7XTMkvLUJHAAU8xh5vqaGZcQEYMl
-Fb7wR3hUqxtStrFTQbCD
-=gpoj
+iQEcBAABCAAGBQJXjefyAAoJEFNVTo/uthzAuScH/iNVBYDfhEGc/BiMjJjriggf
+wflcX/6JksYrge5hqS0VeLhxZXz/lMrl1a6cel9zs+7bDr869mIQMg0gAqc/s4/e
+LKpb/FOxG3wwJF/4HZdMcQYEwvE1KqkUQ35EZTE0VUNTOFz764+I0LNPoQrEttYa
+tTlzv72mcsw6ZgHnSN7Wiw+peSrCZpJ1QhKTwe/sTXYaXgkG/oP9TntxhTuSqLvH
+uVDl5wa/oNvmr2Hdl2/wLaDYkaZbx6BcveH0oTR4E8TpAMxH2ML6s8Rs+TrTmmAI
+bXlS8rh8YIXSVBsF9O1MuuBeBxNROCvLqJm2RYVw27YCHHV4vbZqbdS5EEPS3yc=
+=oufF
 -----END PGP SIGNATURE-----
 
---nextPart2660330.B5q3U1AySM--
+--nextPart3993098.BS6uffsGou--
 
