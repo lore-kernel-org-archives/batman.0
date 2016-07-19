@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 19 Jul 2016 22:09:52 +0200
-Message-Id: <1468958992-2972-1-git-send-email-sven@narfation.org>
-In-Reply-To: <1468836728-21890-11-git-send-email-sven@narfation.org>
-References: <1468836728-21890-11-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v12 11/11] batctl: Use debugfs fallback when
-	netlink not supported
+Date: Tue, 19 Jul 2016 22:43:26 +0200
+Message-ID: <3501586.3dVhjbZHzy@sven-edge>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart15631304.gpuOpFT0Vp";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: [B.A.T.M.A.N.] [PATCH 0/4] batctl: Userspace batadv_icmp endpoints
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,335 +17,82 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The batman-adv release v2016.2 already has the batadv netlink family . Thus
-the fallback to debugfs not only has to be triggered when the the netlink
-family doesn't exist but also when the cmd returns a -EOPNOTSUPP. This
-still has the problem that the header is generated via a different command
-then the actual table entries. Falling back to debugfs would cause a second
-header entry for the table.
+--nextPart15631304.gpuOpFT0Vp
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-The header print functionality is therefore refactored to only gather the
-data for the header and print the actual header either with the first
-received entry or when the CMD finished without any result.
+Hi,
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v12:
- - also use debugfs for originators/gwl when get_mesh_info is not supported
----
- functions.h |   1 -
- netlink.c   | 150 ++++++++++++++++++++++++++++++++++++++++--------------------
- 2 files changed, 101 insertions(+), 50 deletions(-)
+The current endpoint for batadv_icmp* is implemented in the kernel module and 
+can be accessed via debugfs. But the debugfs cannot be accessed from non-
+default netns or when debugfs is disabled. Thus it has be possible to use it 
+via the netlink infrastructure to make it compatible with future
+setups.
 
-diff --git a/functions.h b/functions.h
-index 1f311ca..e24dea0 100644
---- a/functions.h
-+++ b/functions.h
-@@ -61,7 +61,6 @@ enum {
- 	SKIP_HEADER = 0x100,
- 	UNICAST_ONLY = 0x200,
- 	MULTICAST_ONLY = 0x400,
--	PARSE_ONLY = 0x800,
- };
- 
- #endif
-diff --git a/netlink.c b/netlink.c
-index 423fc9b..e8e94b2 100644
---- a/netlink.c
-+++ b/netlink.c
-@@ -54,6 +54,9 @@ struct print_opts {
- 	int read_opt;
- 	float orig_timeout;
- 	float watch_interval;
-+	nl_recvmsg_msg_cb_t callback;
-+	char *remaining_header;
-+	const char *static_header;
- 	uint8_t nl_cmd;
- };
- 
-@@ -139,7 +142,7 @@ static int print_error(struct sockaddr_nl *nla __unused,
- 		fprintf(stderr, "Error received: %s\n",
- 			strerror(-nlerr->error));
- 
--	last_err = -nlerr->error;
-+	last_err = nlerr->error;
- 
- 	return NL_STOP;
- }
-@@ -182,6 +185,7 @@ static int info_callback(struct nl_msg *msg, void *arg)
- 	uint8_t ttvn = 0;
- 	uint16_t bla_group_id = 0;
- 	const char *algo_name;
-+	const char *extra_header;
- 	int ret;
- 
- 	if (!genlmsg_valid_hdr(nlh, 0)) {
-@@ -230,54 +234,64 @@ static int info_callback(struct nl_msg *msg, void *arg)
- 		if (attrs[BATADV_ATTR_BLA_CRC])
- 			bla_group_id = nla_get_u16(attrs[BATADV_ATTR_BLA_CRC]);
- 
--		if (!(opts->read_opt & PARSE_ONLY)) {
--			switch (opts->nl_cmd) {
--			case BATADV_CMD_GET_TRANSTABLE_LOCAL:
--				ret = asprintf(&extra_info, ", TTVN: %u", ttvn);
--				if (ret < 0)
--					extra_info = NULL;
--				break;
--			case BATADV_CMD_GET_BLA_BACKBONE:
--			case BATADV_CMD_GET_BLA_CLAIM:
--				ret = asprintf(&extra_info, ", group id: 0x%04x",
--					       bla_group_id);
--				if (ret < 0)
--					extra_info = NULL;
--				break;
--			default:
--				extra_info = strdup("");
--				break;
--			}
--
--			printf("[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%02x:%02x:%02x:%02x:%02x:%02x (%s/%02x:%02x:%02x:%02x:%02x:%02x %s)%s]\n",
-+		switch (opts->nl_cmd) {
-+		case BATADV_CMD_GET_TRANSTABLE_LOCAL:
-+			ret = asprintf(&extra_info, ", TTVN: %u", ttvn);
-+			if (ret < 0)
-+				extra_info = NULL;
-+			break;
-+		case BATADV_CMD_GET_BLA_BACKBONE:
-+		case BATADV_CMD_GET_BLA_CLAIM:
-+			ret = asprintf(&extra_info, ", group id: 0x%04x",
-+				       bla_group_id);
-+			if (ret < 0)
-+				extra_info = NULL;
-+			break;
-+		default:
-+			extra_info = strdup("");
-+			break;
-+		}
-+
-+		if (opts->static_header)
-+			extra_header = opts->static_header;
-+		else
-+			extra_header = "";
-+
-+		ret = asprintf(&opts->remaining_header,
-+			       "[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%02x:%02x:%02x:%02x:%02x:%02x (%s/%02x:%02x:%02x:%02x:%02x:%02x %s)%s]\n%s",
- 			       version, primary_if,
- 			       primary_mac[0], primary_mac[1], primary_mac[2],
- 			       primary_mac[3], primary_mac[4], primary_mac[5],
- 			       mesh_name,
- 			       mesh_mac[0], mesh_mac[1], mesh_mac[2],
- 			       mesh_mac[3], mesh_mac[4], mesh_mac[5],
--			       algo_name, extra_info);
-+			       algo_name, extra_info, extra_header);
-+		if (ret < 0)
-+			opts->remaining_header = NULL;
- 
--			if (extra_info)
--				free(extra_info);
--		}
-+		if (extra_info)
-+			free(extra_info);
- 	} else {
--		if (!(opts->read_opt & PARSE_ONLY))
--			printf("BATMAN mesh %s disabled\n", mesh_name);
-+		ret = asprintf(&opts->remaining_header,
-+			       "BATMAN mesh %s disabled\n", mesh_name);
-+		if (ret < 0)
-+			opts->remaining_header = NULL;
- 	}
- 
- 	return NL_STOP;
- }
- 
--static void netlink_print_info(int ifindex, uint8_t nl_cmd, int read_opt)
-+static char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header)
- {
- 	struct nl_sock *sock;
- 	struct nl_msg *msg;
- 	struct nl_cb *cb;
- 	int family;
- 	struct print_opts opts = {
--		.read_opt = read_opt,
-+		.read_opt = 0,
- 		.nl_cmd = nl_cmd,
-+		.remaining_header = NULL,
-+		.static_header = header,
- 	};
- 
- 	sock = nl_socket_alloc();
-@@ -285,7 +299,7 @@ static void netlink_print_info(int ifindex, uint8_t nl_cmd, int read_opt)
- 
- 	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
- 	if (family < 0)
--		return;
-+		return NULL;
- 
- 	msg = nlmsg_alloc();
- 	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, 0,
-@@ -304,6 +318,27 @@ static void netlink_print_info(int ifindex, uint8_t nl_cmd, int read_opt)
- 	nl_recvmsgs(sock, cb);
- 
- 	nl_socket_free(sock);
-+
-+	return opts.remaining_header;
-+}
-+
-+static void netlink_print_remaining_header(struct print_opts *opts)
-+{
-+	if (!opts->remaining_header)
-+		return;
-+
-+	fputs(opts->remaining_header, stdout);
-+	free(opts->remaining_header);
-+	opts->remaining_header = NULL;
-+}
-+
-+static int netlink_print_common_cb(struct nl_msg *msg, void *arg)
-+{
-+	struct print_opts *opts = arg;
-+
-+	netlink_print_remaining_header(opts);
-+
-+	return opts->callback(msg, arg);
- }
- 
- static const int routing_algos_mandatory[] = {
-@@ -352,6 +387,9 @@ int netlink_print_routing_algos(void)
- 	struct nl_msg *msg;
- 	struct nl_cb *cb;
- 	int family;
-+	struct print_opts opts = {
-+		.callback = routing_algos_callback,
-+	};
- 
- 	sock = nl_socket_alloc();
- 	genl_connect(sock);
-@@ -368,19 +406,21 @@ int netlink_print_routing_algos(void)
- 
- 	nlmsg_free(msg);
- 
-+	opts.remaining_header = strdup("Available routing algorithms:\n");
-+
- 	cb = nl_cb_alloc(NL_CB_DEFAULT);
--	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, routing_algos_callback,
--		  NULL);
-+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, netlink_print_common_cb,
-+		  &opts);
- 	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
- 	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
- 
--	printf("Available routing algorithms:\n");
--
- 	nl_recvmsgs(sock, cb);
--
- 	nl_socket_free(sock);
- 
--	return 0;
-+	if (!last_err)
-+		netlink_print_remaining_header(&opts);
-+
-+	return last_err;
- }
- 
- static const int originators_mandatory[] = {
-@@ -1040,7 +1080,9 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
- 	struct print_opts opts = {
- 		.read_opt = read_opt,
- 		.orig_timeout = orig_timeout,
--		.watch_interval = watch_interval
-+		.watch_interval = watch_interval,
-+		.remaining_header = NULL,
-+		.callback = callback,
- 	};
- 	int hardifindex = 0;
- 	struct nl_sock *sock;
-@@ -1074,7 +1116,7 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
- 	bat_hosts_init(read_opt);
- 
- 	cb = nl_cb_alloc(NL_CB_DEFAULT);
--	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, callback, &opts);
-+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, netlink_print_common_cb, &opts);
- 	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
- 	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
- 
-@@ -1083,11 +1125,10 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
- 			/* clear screen, set cursor back to 0,0 */
- 			printf("\033[2J\033[0;0f");
- 
--		if (!(read_opt & SKIP_HEADER)) {
--			netlink_print_info(ifindex, nl_cmd, 0);
--			if (header)
--				printf("%s", header);
--		}
-+		if (!(read_opt & SKIP_HEADER))
-+			opts.remaining_header = netlink_get_info(ifindex,
-+								 nl_cmd,
-+								 header);
- 
- 		msg = nlmsg_alloc();
- 		genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0,
-@@ -1104,6 +1145,11 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
- 
- 		last_err = 0;
- 		nl_recvmsgs(sock, cb);
-+
-+		/* the header should still be printed when no entry was received */
-+		if (!last_err)
-+			netlink_print_remaining_header(&opts);
-+
- 		if (!last_err && read_opt & (CONT_READ|CLR_CONT_READ))
- 			usleep(1000000 * watch_interval);
- 
-@@ -1120,7 +1166,8 @@ int netlink_print_originators(char *mesh_iface, char *orig_iface,
- 			      int read_opts, float orig_timeout,
- 			      float watch_interval)
- {
--	char *header;
-+	char *header = NULL;
-+	char *info_header;
- 	int ifindex;
- 
- 	ifindex = if_nametoindex(mesh_iface);
-@@ -1129,10 +1176,12 @@ int netlink_print_originators(char *mesh_iface, char *orig_iface,
- 		return -ENODEV;
- 	}
- 
--	netlink_print_info(ifindex, BATADV_CMD_GET_ORIGINATORS, PARSE_ONLY);
-+	/* only parse routing algorithm name */
-+	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_ORIGINATORS, NULL);
-+	free(info_header);
- 
- 	if (strlen(algo_name_buf) == 0)
--		return -EINVAL;
-+		return -EOPNOTSUPP;
- 
- 	if (!strcmp("BATMAN_IV", algo_name_buf))
- 		header = "   Originator        last-seen (#/255) Nexthop           [outgoingIF]\n";
-@@ -1184,7 +1233,8 @@ int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opts,
- int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opts,
- 			   float orig_timeout,
- 			   float watch_interval)
--{	char *header;
-+{	char *header = NULL;
-+	char *info_header;
- 	int ifindex;
- 
- 	ifindex = if_nametoindex(mesh_iface);
-@@ -1193,10 +1243,12 @@ int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opts,
- 		return -ENODEV;
- 	}
- 
--	netlink_print_info(ifindex, BATADV_CMD_GET_ORIGINATORS, PARSE_ONLY);
-+	/* only parse routing algorithm name */
-+	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_ORIGINATORS, NULL);
-+	free(info_header);
- 
- 	if (strlen(algo_name_buf) == 0)
--		return -EINVAL;
-+		return -EOPNOTSUPP;
- 
- 	if (!strcmp("BATMAN_IV", algo_name_buf))
- 		header = "  Router            ( TQ) Next Hop          [outgoingIf]  Bandwidth\n";
--- 
-2.8.1
+The use of the socket file is completely removed and instead raw sockets with 
+BPF filters are used to send/receive batadv_icmp_packet* directly. All 
+information about interfaces and available originators are received via
+rtnetlink and the batman-adv netlink.
+
+The originators debugfs file is used when the batman-adv netlink commands are 
+not available. The routing of batadv_icmp_packets is still done inside the 
+kernel module.
+
+The patchset is based on the netlink and rtnl patchset for batctl.
+
+Kind regards,
+	Sven
+
+Sven Eckelmann (4):
+  batctl: Replace list implementation with linux-like-list
+  batctl: Use monotonic time source for icmp timing
+  batctl: Add helper to generate instant random bytes
+  batctl: Implement non-routing batadv_icmp in userspace
+
+ Makefile      |   4 +-
+ bisect_iv.c   |  40 ++-
+ bisect_iv.h   |  10 +-
+ functions.c   |  82 +++++-
+ functions.h   |   2 +
+ icmp_helper.c | 633 ++++++++++++++++++++++++++++++++++++++++++++
+ icmp_helper.h |  58 ++++
+ list-batman.c | 123 ---------
+ list-batman.h | 120 ---------
+ list.h        | 834 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ netlink.c     | 178 ++++++++++++-
+ netlink.h     |   3 +
+ ping.c        |  42 +--
+ tcpdump.c     |   7 +-
+ tcpdump.h     |   2 +-
+ traceroute.c  |  42 +--
+ 16 files changed, 1832 insertions(+), 348 deletions(-)
+ create mode 100644 icmp_helper.c
+ create mode 100644 icmp_helper.h
+ delete mode 100644 list-batman.c
+ delete mode 100644 list-batman.h
+ create mode 100644 list.h
+--nextPart15631304.gpuOpFT0Vp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXjpDuAAoJEF2HCgfBJntGmKsP/2Xd/LNljFslZJF36ExdVV/0
+z5tqz6Hds8IdLtOEel92LWYtDJTQBWDR1MtG7H3vir8aI3N6r9vvGlbqP3O1kbyD
+8i/VdxB4fbmeSxxlZ0rY3UjtNbO81MJRJ+uClI82qoYoc/9KC38X+iTGVKgtRUS+
+lGyDcLqpyT+0PNU2JMDtTI+ocf9nc5NfvE/RPWL4mS1z1ILDvPbcjXYM3xbxQEF4
+aykTHZ5YY7Fgq7KyBiDi2Zs76xvRwnf3flUYINo3/9qPIpr5jo7OFIq17PP8vD5H
+8qiP25OgVOm5eD4yF5H6GGf5PbqQowYQT99VS/wTWTlNUHHDN3lnN+UWWM7nq9Se
++cMABCwrFtVkDFwzXbGHQrPdWgmoVenxqZXubDqUi+veyVXG78HGb+nxXhsusgj8
+fQXRpkISmDgLPGd2WarK4dJMXupTh96gItlG7meKpLdtknrqu1lqcG5hQNHuaov/
+futIahv37OQt+uYJlDiV8kENzSISae7avRjL06NHIQlDUjnLeGE0hgRSUsQrvklG
+FZ4qdxhmZFDizGp0zr0ANeyTZt9B+DPcnGkIkKIqw/mlV12rOBjG/93F56jETeXa
+FA9ZUT/7lGmplH3QcJRwj5mhWDYNYFfByJ7Q36fYjS+B9HQiCRIxW4Y20IWOzrPV
+6vmmhma07haynlpB1jQ3
+=07J+
+-----END PGP SIGNATURE-----
+
+--nextPart15631304.gpuOpFT0Vp--
 
