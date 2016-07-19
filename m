@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 19 Jul 2016 16:00:41 +0800
-Message-ID: <6225691.OLhm6SdWFZ@voltaire>
-In-Reply-To: <1467545508-7333-16-git-send-email-sven@narfation.org>
+Date: Tue, 19 Jul 2016 16:03:26 +0800
+Message-ID: <1839916.e4U6hRMgOA@voltaire>
+In-Reply-To: <1467545508-7333-17-git-send-email-sven@narfation.org>
 References: <1467545508-7333-1-git-send-email-sven@narfation.org>
- <1467545508-7333-16-git-send-email-sven@narfation.org>
+ <1467545508-7333-17-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1522090.OzTStLAti6";
+Content-Type: multipart/signed; boundary="nextPart1750182.Isjt2OM8tD";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v10 15/16] batman-adv: add backbone table
-	netlink support
+Subject: Re: [B.A.T.M.A.N.] [PATCH v10 16/16] batman-adv: Indicate netlink
+	socket can be used with netns.
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,33 +19,31 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart1522090.OzTStLAti6
+--nextPart1750182.Isjt2OM8tD
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, July 03, 2016 13:31:47 Sven Eckelmann wrote:
-> From: Simon Wunderlich <sw@simonwunderlich.de>
+On Sunday, July 03, 2016 13:31:48 Sven Eckelmann wrote:
+> From: Andrew Lunn <andrew@lunn.ch>
 > 
-> Dump the list of bridge loop avoidance backbones via the netlink socket.
+> Set the netnsof flag on the family structure, indicating it can
+> be used with different network name spaces.
 > 
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 > Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  include/uapi/linux/batman_adv.h        |   2 +
->  net/batman-adv/bridge_loop_avoidance.c | 164
-> +++++++++++++++++++++++++++++++++ net/batman-adv/bridge_loop_avoidance.h
-> |   7 ++
->  net/batman-adv/netlink.c               |   7 ++
->  4 files changed, 180 insertions(+)
+>  net/batman-adv/netlink.c | 1 +
+>  1 file changed, 1 insertion(+)
 
-Applied in revision 7f609ca.
+Applied in revision 5f4c6eb.
 
 Thanks,
 Marek
 
---nextPart1522090.OzTStLAti6
+--nextPart1750182.Isjt2OM8tD
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -53,14 +51,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXjd4pAAoJEFNVTo/uthzA+f8H/is5k601BtOEMcz4MKCwijD5
-6b/pYWZ9lNamgZbeZ3xx+8uamBXiBRTaYVnS+0sLBIYN7GDyW/aUpf6wAgV3oXun
-cveuTRDtqQhB5fjpdy9s2ZmS0TM0WAErELT0awYTZ4x1MKw1yrPDxP7I/4nvvnSw
-0ycNMa8HJPnr/z3wP2Z5GSGWo6YorxewiJnmA46GP5blv0Hr1fnkUi6Kf7YjW0rE
-94aN27OZkstl6mQ3M2UVtEOMX5ytmr28jiaYHIA4rXR26wfOaStf0pb5BCYsd9FU
-xKt4JEb1aEVoWORCcr6TPOrSKnw63bhkAuT+k1bM1N+fBngpOK2ygP4AzgUiEVg=
-=O1x6
+iQEcBAABCAAGBQJXjd7OAAoJEFNVTo/uthzAjqQH/j24JW+89Q3LId/C+8XGPwbL
+zYdrn2aJaI1B+ETgOYRdwDVTUhKM7m6nv9w+uZv/sQOZpCCFNv+sN4T18KUOhrgx
+pb7nH3Y+o4lxTurk6gof114qYvzmiJDpTI3ZsSts38KHbUsSnGhNLe/hMfvI7JMs
+X51QTGnh1vC61I3q4us/vQRbpQPNRXDSHUifeyatgl903A04korAYnjeuLFum7ir
+jia6L/pZKgfeiVhaZn3yLcSGqHr6D94wQAm2mDqpJfg+ldyBSfpwEyPgzkRZWp1w
+lsluYdeGSEiiiGYI7qMxqdPjmD/ZkEddO6TeY60ihFWcqX4LeFTj4W5ITgfL5wA=
+=2Hvo
 -----END PGP SIGNATURE-----
 
---nextPart1522090.OzTStLAti6--
+--nextPart1750182.Isjt2OM8tD--
 
