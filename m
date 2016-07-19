@@ -1,15 +1,17 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Tue, 19 Jul 2016 16:46:58 +0800
-Message-ID: <1837621.1vu7PgLI7x@voltaire>
-In-Reply-To: <1468597173-25378-18-git-send-email-sven@narfation.org>
-References: <1468597173-25378-1-git-send-email-sven@narfation.org>
- <1468597173-25378-18-git-send-email-sven@narfation.org>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Tue, 19 Jul 2016 18:13:16 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20160719161316.GB10173@otheros>
+References: <1465557064-24406-1-git-send-email-apape@phoenixcontact.com>
+ <1655869.LYQpVbDg6l@prime> <20160719062907.GA10173@otheros>
+ <2594732.GzDknJdsZu@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1550965.AYJX8pX26z";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 18/18] batman-adv: Place kref_get for
-	tvlv_handler near use
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2594732.GzDknJdsZu@sven-edge>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v5 2/6] batman-adv: speed up dat by
+ snooping received ip traffic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,45 +23,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart1550965.AYJX8pX26z
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Friday, July 15, 2016 17:39:33 Sven Eckelmann wrote:
-> It is hard to understand why the refcnt is increased when it isn't done
-> near the actual place the new reference is used. So using kref_get right
-> before the place which requires the reference and in the same function
-> helps to avoid accidental problems causedy incorrect reference counting.
+On Tue, Jul 19, 2016 at 08:59:01AM +0200, Sven Eckelmann wrote:
+> On Dienstag, 19. Juli 2016 08:29:07 CEST Linus Lüssing wrote:
+> > What do you think about doing the same in batman-adv? That is,
+> > only updating, but not creating DAT cache entries from IP traffic.
+> > That should get rid of the main two concerns, accidentally
+> > snooping routed IP traffic and performance implications, shouldn't it?
 > 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> v2:
->  - split patch based on type
-> 
->  net/batman-adv/tvlv.c | 4 ++++
->  1 file changed, 4 insertions(+)
+> You have to snoop the traffic anyway and search in the dat cache for each(?) 
+> packet. And the DAT cache is distributed. So why would it avoid the 
+> performance implications?
 
-Applied in revision 95136e0.
+I was talking about the local DAT cache. Not the DHT. Antonio and
+I were thinking about a ratelimited DHT_PUT, too, but he wanted to give
+it some further thoughts. No DHT_GET involved.
 
-Thanks,
-Marek
+Also, Andreas already took care that the snooping code only uses
+stack and not heap memory. No pskb_may_pull, just
+skb_head_pointer()s. So if we were removing the DAT entry
+creation, then there'd be no more kmalloc()'s.
 
---nextPart1550965.AYJX8pX26z
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+A hashmap lookup in the local DAT cache shouldn't be that costly either,
+should it? (and we are doing one such lookup for the originator
+and translation table each already anyway)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJXjekCAAoJEFNVTo/uthzAN08H/0SAQLF8CCuzKpfZehTyCgji
-CNStpeZ25rvMmLha+sBhzUUZ01iijh32JrUnWW31OKB/SmGbn/QEJxWmU619/4I6
-n0vSpXjkenyZDQZNMoEEDjQIIuqVEWoac6v5A0Z76XZYdyGGZ54SuX2Uoquo53Uw
-DdgkZZdh+RSqvOQlnX60taYw7Cmv+5JsyAFqOddbm3r0xqrqFb2NXtu64ePCzP/z
-3J6tCNa7BMiPl13FE6hThrsZfqL/O96B0tSNozfYQQrSGMVRFT4xnrwHcLxtcbtM
-Ro0zFBCyAg4mVnbIs2vnfDDyeUlkvQzCIBuWb43i9xbl1f4IIM4QYI+rNtsBxYw=
-=3p7+
------END PGP SIGNATURE-----
-
---nextPart1550965.AYJX8pX26z--
-
+Regards, Linus
