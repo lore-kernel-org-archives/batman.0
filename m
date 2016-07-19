@@ -1,11 +1,17 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 18 Jul 2016 12:12:08 +0200
-Message-Id: <1468836728-21890-11-git-send-email-sven@narfation.org>
-In-Reply-To: <6098496.c9QsHxvAun@sven-edge>
-References: <6098496.c9QsHxvAun@sven-edge>
-Subject: [B.A.T.M.A.N.] [PATCH v11 11/11] batctl: Use debugfs fallback when
-	netlink not supported
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Tue, 19 Jul 2016 08:29:07 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20160719062907.GA10173@otheros>
+References: <1465557064-24406-1-git-send-email-apape@phoenixcontact.com>
+ <1465557064-24406-3-git-send-email-apape@phoenixcontact.com>
+ <1655869.LYQpVbDg6l@prime>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1655869.LYQpVbDg6l@prime>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v5 2/6] batman-adv: speed up dat by
+ snooping received ip traffic
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,326 +21,188 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-The batman-adv release v2016.2 already has the batadv netlink family . Thus
-the fallback to debugfs not only has to be triggered when the the netlink
-family doesn't exist but also when the cmd returns a -EOPNOTSUPP. This
-still has the problem that the header is generated via a different command
-then the actual table entries. Falling back to debugfs would cause a second
-header entry for the table.
+Hi Andreas,
 
-The header print functionality is therefore refactored to only gather the
-data for the header and print the actual header either with the first
-received entry or when the CMD finished without any result.
+After the observations in ticket #291 [0], Antonio and I had been
+discussing this topic a little further on IRC.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- functions.h |   1 -
- netlink.c   | 146 +++++++++++++++++++++++++++++++++++++++++-------------------
- 2 files changed, 99 insertions(+), 48 deletions(-)
+The Linux kernel seems to refresh its ARP table by snooping the IP
+traffic, too. But IP traffic does not create any ARP table
+entries.
 
-diff --git a/functions.h b/functions.h
-index 1f311ca..e24dea0 100644
---- a/functions.h
-+++ b/functions.h
-@@ -61,7 +61,6 @@ enum {
- 	SKIP_HEADER = 0x100,
- 	UNICAST_ONLY = 0x200,
- 	MULTICAST_ONLY = 0x400,
--	PARSE_ONLY = 0x800,
- };
- 
- #endif
-diff --git a/netlink.c b/netlink.c
-index 423fc9b..54d4cc2 100644
---- a/netlink.c
-+++ b/netlink.c
-@@ -54,6 +54,9 @@ struct print_opts {
- 	int read_opt;
- 	float orig_timeout;
- 	float watch_interval;
-+	nl_recvmsg_msg_cb_t callback;
-+	char *remaining_header;
-+	const char *static_header;
- 	uint8_t nl_cmd;
- };
- 
-@@ -139,7 +142,7 @@ static int print_error(struct sockaddr_nl *nla __unused,
- 		fprintf(stderr, "Error received: %s\n",
- 			strerror(-nlerr->error));
- 
--	last_err = -nlerr->error;
-+	last_err = nlerr->error;
- 
- 	return NL_STOP;
- }
-@@ -182,6 +185,7 @@ static int info_callback(struct nl_msg *msg, void *arg)
- 	uint8_t ttvn = 0;
- 	uint16_t bla_group_id = 0;
- 	const char *algo_name;
-+	const char *extra_header;
- 	int ret;
- 
- 	if (!genlmsg_valid_hdr(nlh, 0)) {
-@@ -230,54 +234,64 @@ static int info_callback(struct nl_msg *msg, void *arg)
- 		if (attrs[BATADV_ATTR_BLA_CRC])
- 			bla_group_id = nla_get_u16(attrs[BATADV_ATTR_BLA_CRC]);
- 
--		if (!(opts->read_opt & PARSE_ONLY)) {
--			switch (opts->nl_cmd) {
--			case BATADV_CMD_GET_TRANSTABLE_LOCAL:
--				ret = asprintf(&extra_info, ", TTVN: %u", ttvn);
--				if (ret < 0)
--					extra_info = NULL;
--				break;
--			case BATADV_CMD_GET_BLA_BACKBONE:
--			case BATADV_CMD_GET_BLA_CLAIM:
--				ret = asprintf(&extra_info, ", group id: 0x%04x",
--					       bla_group_id);
--				if (ret < 0)
--					extra_info = NULL;
--				break;
--			default:
--				extra_info = strdup("");
--				break;
--			}
--
--			printf("[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%02x:%02x:%02x:%02x:%02x:%02x (%s/%02x:%02x:%02x:%02x:%02x:%02x %s)%s]\n",
-+		switch (opts->nl_cmd) {
-+		case BATADV_CMD_GET_TRANSTABLE_LOCAL:
-+			ret = asprintf(&extra_info, ", TTVN: %u", ttvn);
-+			if (ret < 0)
-+				extra_info = NULL;
-+			break;
-+		case BATADV_CMD_GET_BLA_BACKBONE:
-+		case BATADV_CMD_GET_BLA_CLAIM:
-+			ret = asprintf(&extra_info, ", group id: 0x%04x",
-+				       bla_group_id);
-+			if (ret < 0)
-+				extra_info = NULL;
-+			break;
-+		default:
-+			extra_info = strdup("");
-+			break;
-+		}
-+
-+		if (opts->static_header)
-+			extra_header = opts->static_header;
-+		else
-+			extra_header = "";
-+
-+		ret = asprintf(&opts->remaining_header,
-+			       "[B.A.T.M.A.N. adv %s, MainIF/MAC: %s/%02x:%02x:%02x:%02x:%02x:%02x (%s/%02x:%02x:%02x:%02x:%02x:%02x %s)%s]\n%s",
- 			       version, primary_if,
- 			       primary_mac[0], primary_mac[1], primary_mac[2],
- 			       primary_mac[3], primary_mac[4], primary_mac[5],
- 			       mesh_name,
- 			       mesh_mac[0], mesh_mac[1], mesh_mac[2],
- 			       mesh_mac[3], mesh_mac[4], mesh_mac[5],
--			       algo_name, extra_info);
-+			       algo_name, extra_info, extra_header);
-+		if (ret < 0)
-+			opts->remaining_header = NULL;
- 
--			if (extra_info)
--				free(extra_info);
--		}
-+		if (extra_info)
-+			free(extra_info);
- 	} else {
--		if (!(opts->read_opt & PARSE_ONLY))
--			printf("BATMAN mesh %s disabled\n", mesh_name);
-+		ret = asprintf(&opts->remaining_header,
-+			       "BATMAN mesh %s disabled\n", mesh_name);
-+		if (ret < 0)
-+			opts->remaining_header = NULL;
- 	}
- 
- 	return NL_STOP;
- }
- 
--static void netlink_print_info(int ifindex, uint8_t nl_cmd, int read_opt)
-+static char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header)
- {
- 	struct nl_sock *sock;
- 	struct nl_msg *msg;
- 	struct nl_cb *cb;
- 	int family;
- 	struct print_opts opts = {
--		.read_opt = read_opt,
-+		.read_opt = 0,
- 		.nl_cmd = nl_cmd,
-+		.remaining_header = NULL,
-+		.static_header = header,
- 	};
- 
- 	sock = nl_socket_alloc();
-@@ -285,7 +299,7 @@ static void netlink_print_info(int ifindex, uint8_t nl_cmd, int read_opt)
- 
- 	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
- 	if (family < 0)
--		return;
-+		return NULL;
- 
- 	msg = nlmsg_alloc();
- 	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, 0,
-@@ -304,6 +318,27 @@ static void netlink_print_info(int ifindex, uint8_t nl_cmd, int read_opt)
- 	nl_recvmsgs(sock, cb);
- 
- 	nl_socket_free(sock);
-+
-+	return opts.remaining_header;
-+}
-+
-+static void netlink_print_remaining_header(struct print_opts *opts)
-+{
-+	if (!opts->remaining_header)
-+		return;
-+
-+	fputs(opts->remaining_header, stdout);
-+	free(opts->remaining_header);
-+	opts->remaining_header = NULL;
-+}
-+
-+static int netlink_print_common_cb(struct nl_msg *msg, void *arg)
-+{
-+	struct print_opts *opts = arg;
-+
-+	netlink_print_remaining_header(opts);
-+
-+	return opts->callback(msg, arg);
- }
- 
- static const int routing_algos_mandatory[] = {
-@@ -352,6 +387,9 @@ int netlink_print_routing_algos(void)
- 	struct nl_msg *msg;
- 	struct nl_cb *cb;
- 	int family;
-+	struct print_opts opts = {
-+		.callback = routing_algos_callback,
-+	};
- 
- 	sock = nl_socket_alloc();
- 	genl_connect(sock);
-@@ -368,19 +406,21 @@ int netlink_print_routing_algos(void)
- 
- 	nlmsg_free(msg);
- 
-+	opts.remaining_header = strdup("Available routing algorithms:\n");
-+
- 	cb = nl_cb_alloc(NL_CB_DEFAULT);
--	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, routing_algos_callback,
--		  NULL);
-+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, netlink_print_common_cb,
-+		  &opts);
- 	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
- 	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
- 
--	printf("Available routing algorithms:\n");
--
- 	nl_recvmsgs(sock, cb);
--
- 	nl_socket_free(sock);
- 
--	return 0;
-+	if (!last_err)
-+		netlink_print_remaining_header(&opts);
-+
-+	return last_err;
- }
- 
- static const int originators_mandatory[] = {
-@@ -1040,7 +1080,9 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
- 	struct print_opts opts = {
- 		.read_opt = read_opt,
- 		.orig_timeout = orig_timeout,
--		.watch_interval = watch_interval
-+		.watch_interval = watch_interval,
-+		.remaining_header = NULL,
-+		.callback = callback,
- 	};
- 	int hardifindex = 0;
- 	struct nl_sock *sock;
-@@ -1074,7 +1116,7 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
- 	bat_hosts_init(read_opt);
- 
- 	cb = nl_cb_alloc(NL_CB_DEFAULT);
--	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, callback, &opts);
-+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, netlink_print_common_cb, &opts);
- 	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
- 	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
- 
-@@ -1083,11 +1125,10 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
- 			/* clear screen, set cursor back to 0,0 */
- 			printf("\033[2J\033[0;0f");
- 
--		if (!(read_opt & SKIP_HEADER)) {
--			netlink_print_info(ifindex, nl_cmd, 0);
--			if (header)
--				printf("%s", header);
--		}
-+		if (!(read_opt & SKIP_HEADER))
-+			opts.remaining_header = netlink_get_info(ifindex,
-+								 nl_cmd,
-+								 header);
- 
- 		msg = nlmsg_alloc();
- 		genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0,
-@@ -1104,6 +1145,11 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
- 
- 		last_err = 0;
- 		nl_recvmsgs(sock, cb);
-+
-+		/* the header should still be printed when no entry was received */
-+		if (!last_err)
-+			netlink_print_remaining_header(&opts);
-+
- 		if (!last_err && read_opt & (CONT_READ|CLR_CONT_READ))
- 			usleep(1000000 * watch_interval);
- 
-@@ -1120,7 +1166,8 @@ int netlink_print_originators(char *mesh_iface, char *orig_iface,
- 			      int read_opts, float orig_timeout,
- 			      float watch_interval)
- {
--	char *header;
-+	char *header = NULL;
-+	char *info_header;
- 	int ifindex;
- 
- 	ifindex = if_nametoindex(mesh_iface);
-@@ -1129,7 +1176,9 @@ int netlink_print_originators(char *mesh_iface, char *orig_iface,
- 		return -ENODEV;
- 	}
- 
--	netlink_print_info(ifindex, BATADV_CMD_GET_ORIGINATORS, PARSE_ONLY);
-+	/* only parse routing algorithm name */
-+	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_ORIGINATORS, NULL);
-+	free(info_header);
- 
- 	if (strlen(algo_name_buf) == 0)
- 		return -EINVAL;
-@@ -1184,7 +1233,8 @@ int netlink_print_translocal(char *mesh_iface, char *orig_iface, int read_opts,
- int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opts,
- 			   float orig_timeout,
- 			   float watch_interval)
--{	char *header;
-+{	char *header = NULL;
-+	char *info_header;
- 	int ifindex;
- 
- 	ifindex = if_nametoindex(mesh_iface);
-@@ -1193,7 +1243,9 @@ int netlink_print_gateways(char *mesh_iface, char *orig_iface, int read_opts,
- 		return -ENODEV;
- 	}
- 
--	netlink_print_info(ifindex, BATADV_CMD_GET_ORIGINATORS, PARSE_ONLY);
-+	/* only parse routing algorithm name */
-+	info_header = netlink_get_info(ifindex, BATADV_CMD_GET_ORIGINATORS, NULL);
-+	free(info_header);
- 
- 	if (strlen(algo_name_buf) == 0)
- 		return -EINVAL;
--- 
-2.8.1
+What do you think about doing the same in batman-adv? That is,
+only updating, but not creating DAT cache entries from IP traffic.
+That should get rid of the main two concerns, accidentally
+snooping routed IP traffic and performance implications, shouldn't it?
+
+Regards, Linus
+
+
+On Fri, Jul 01, 2016 at 03:49:54PM +0200, Simon Wunderlich wrote:
+> Hi Andreas,
+> 
+> as suggested by yourself and according to the discussion, please drop this 
+> patch from the patchset on the next resend. It may be better to resend it 
+> separately when the concerns are cleared.
+> 
+> Thanks!
+>     Simon
+> 
+> On Friday 10 June 2016 13:11:00 Andreas Pape wrote:
+> > Speeding up dat address lookup is achieved by snooping all incoming ip
+> > traffic. This especially increases the propability in bla setups that
+> > a gateway into a common backbone network already has a fitting dat entry
+> > to answer incoming ARP requests directly coming from the backbone
+> > network thus further reducing ARP traffic in the mesh.
+> > 
+> > Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
+> > ---
+> >  net/batman-adv/distributed-arp-table.c |   55
+> > ++++++++++++++++++++++++++++++++ net/batman-adv/distributed-arp-table.h |  
+> >  9 +++++-
+> >  net/batman-adv/soft-interface.c        |    3 ++
+> >  3 files changed, 66 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/net/batman-adv/distributed-arp-table.c
+> > b/net/batman-adv/distributed-arp-table.c index b752f8d..998a4b8 100644
+> > --- a/net/batman-adv/distributed-arp-table.c
+> > +++ b/net/batman-adv/distributed-arp-table.c
+> > @@ -27,6 +27,7 @@
+> >  #include <linux/if_arp.h>
+> >  #include <linux/if_ether.h>
+> >  #include <linux/if_vlan.h>
+> > +#include <linux/ip.h>
+> >  #include <linux/in.h>
+> >  #include <linux/jiffies.h>
+> >  #include <linux/kernel.h>
+> > @@ -362,6 +363,60 @@ out:
+> >  		batadv_dat_entry_put(dat_entry);
+> >  }
+> > 
+> > +/**
+> > + * batadv_dat_entry_check - check and update a dat entry
+> > + * @bat_priv: the bat priv with all the soft interface information
+> > + * @skb: socket buffer
+> > + * @vid: VLAN identifier
+> > + *
+> > + * snoops incoming socket buffer for dat cache updates, if dat is enabled.
+> > + * Can be called from other modules.
+> > + */
+> > +void batadv_dat_entry_check(struct batadv_priv *bat_priv, struct sk_buff
+> > *skb, +			    unsigned short vid)
+> > +{
+> > +	struct vlan_ethhdr *vhdr = NULL, tmp_vhdr;
+> > +	struct ethhdr *ethhdr = NULL;
+> > +	struct iphdr *iphdr = NULL, tmp_iphdr;
+> > +
+> > +	if (!atomic_read(&bat_priv->distributed_arp_table))
+> > +		return;
+> > +
+> > +	ethhdr = eth_hdr(skb);
+> > +
+> > +	switch (ntohs(ethhdr->h_proto)) {
+> > +	case ETH_P_IP:
+> > +		iphdr = skb_header_pointer(skb, ETH_HLEN, sizeof(tmp_iphdr),
+> > +					   &tmp_iphdr);
+> > +		break;
+> > +	case ETH_P_8021Q:
+> > +		vhdr = skb_header_pointer(skb, 0, sizeof(tmp_vhdr),
+> > +					  &tmp_vhdr);
+> > +		if (!vhdr)
+> > +			return;
+> > +		if (ntohs(vhdr->h_vlan_encapsulated_proto) != ETH_P_IP)
+> > +			return;
+> > +		iphdr = skb_header_pointer(skb, sizeof(tmp_vhdr),
+> > +					   sizeof(tmp_iphdr),
+> > +					   &tmp_iphdr);
+> > +		break;
+> > +	}
+> > +
+> > +	if (!iphdr)
+> > +		return;
+> > +	/* don't add source address 0.0.0.0, which can occur during
+> > +	 * dhcp discover or request.
+> > +	 */
+> > +	if (ntohl(iphdr->saddr) == 0)
+> > +		return;
+> > +
+> > +	batadv_dbg(BATADV_DBG_DAT, bat_priv,
+> > +		   "Snooped IP address: %pI4 %pM (vid: %d)\n",
+> > +		   &iphdr->saddr, ethhdr->h_source,
+> > +		   BATADV_PRINT_VID(vid));
+> > +	batadv_dat_entry_add(bat_priv, iphdr->saddr, ethhdr->h_source, vid);
+> > +}
+> > +
+> >  #ifdef CONFIG_BATMAN_ADV_DEBUG
+> > 
+> >  /**
+> > diff --git a/net/batman-adv/distributed-arp-table.h
+> > b/net/batman-adv/distributed-arp-table.h index 813ecea..cf1b93c 100644
+> > --- a/net/batman-adv/distributed-arp-table.h
+> > +++ b/net/batman-adv/distributed-arp-table.h
+> > @@ -80,7 +80,8 @@ batadv_dat_init_own_addr(struct batadv_priv *bat_priv,
+> >  int batadv_dat_init(struct batadv_priv *bat_priv);
+> >  void batadv_dat_free(struct batadv_priv *bat_priv);
+> >  int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset);
+> > -
+> > +void batadv_dat_entry_check(struct batadv_priv *bat_priv, struct sk_buff
+> > *skb, +			    unsigned short vid);
+> >  /**
+> >   * batadv_dat_inc_counter - increment the correct DAT packet counter
+> >   * @bat_priv: the bat priv with all the soft interface information
+> > @@ -173,6 +174,12 @@ static inline void batadv_dat_inc_counter(struct
+> > batadv_priv *bat_priv, {
+> >  }
+> > 
+> > +static inline
+> > +void batadv_dat_entry_check(struct batadv_priv *bat_priv, struct sk_buff
+> > *skb, +			    unsigned short vid)
+> > +{
+> > +}
+> > +
+> >  #endif /* CONFIG_BATMAN_ADV_DAT */
+> > 
+> >  #endif /* _NET_BATMAN_ADV_DISTRIBUTED_ARP_TABLE_H_ */
+> > diff --git a/net/batman-adv/soft-interface.c
+> > b/net/batman-adv/soft-interface.c index 81665b1..a86748f 100644
+> > --- a/net/batman-adv/soft-interface.c
+> > +++ b/net/batman-adv/soft-interface.c
+> > @@ -442,6 +442,9 @@ void batadv_interface_rx(struct net_device *soft_iface,
+> >  		goto dropped;
+> >  	}
+> > 
+> > +	/* Snoop incoming traffic for dat update */
+> > +	batadv_dat_entry_check(bat_priv, skb, vid);
+> > +
+> >  	/* skb->dev & skb->pkt_type are set here */
+> >  	skb->protocol = eth_type_trans(skb, soft_iface);
+> > 
+> > --
+> > 1.7.0.4
+> > 
+> > 
+> > 
+> > ..................................................................
+> > PHOENIX CONTACT ELECTRONICS GmbH
+> > 
+> > Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+> > USt-Id-Nr.: DE811742156
+> > Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+> > Geschäftsführer / Executive Board: Roland Bent, Dr. Martin Heubeck
+> > ___________________________________________________________________
+> > Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte
+> > Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail
+> > irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und
+> > vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige
+> > Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+> > ---------------------------------------------------------------------------
+> > ------------------------- This e-mail may contain confidential and/or
+> > privileged information. If you are not the intended recipient (or have
+> > received this e-mail in error) please notify the sender immediately and
+> > destroy this e-mail. Any unauthorized copying, disclosure, distribution or
+> > other use of the material or parts thereof is strictly forbidden.
+> > ___________________________________________________________________
+
 
