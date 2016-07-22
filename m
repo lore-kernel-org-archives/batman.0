@@ -1,15 +1,14 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 22 Jul 2016 17:11:44 +0800
-Message-ID: <2939805.ehlbhc0Aqg@voltaire>
-In-Reply-To: <1468958992-2972-1-git-send-email-sven@narfation.org>
-References: <1468836728-21890-11-git-send-email-sven@narfation.org>
- <1468958992-2972-1-git-send-email-sven@narfation.org>
+Date: Fri, 22 Jul 2016 17:20:21 +0800
+Message-ID: <3302974.2EJeEjFU03@voltaire>
+In-Reply-To: <1468654280-10200-1-git-send-email-sven@narfation.org>
+References: <1468654280-10200-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2152514.o2AxtNMDQG";
+Content-Type: multipart/signed; boundary="nextPart1547952.ABqnm3e3aS";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v12 11/11] batctl: Use debugfs fallback
-	when netlink not supported
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Allow to disable debugfs
+	support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,38 +20,56 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2152514.o2AxtNMDQG
+--nextPart1547952.ABqnm3e3aS
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, July 19, 2016 22:09:52 Sven Eckelmann wrote:
-> The batman-adv release v2016.2 already has the batadv netlink family . Thus
-> the fallback to debugfs not only has to be triggered when the the netlink
-> family doesn't exist but also when the cmd returns a -EOPNOTSUPP. This
-> still has the problem that the header is generated via a different command
-> then the actual table entries. Falling back to debugfs would cause a second
-> header entry for the table.
+On Saturday, July 16, 2016 09:31:20 Sven Eckelmann wrote:
+> The files provided by batman-adv via debugfs are currently converted to
+> netlink. Tools which are not yet converted to use the netlink interface may
+> still rely on the old debugfs files. But systems which already upgraded
+> their tools can save some space by disabling this feature. The default
+> configuration of batman-adv on amd64 can reduce the size of the module by
+> around 11% when this feature is disabled.
 > 
-> The header print functionality is therefore refactored to only gather the
-> data for the header and print the actual header either with the first
-> received entry or when the CMD finished without any result.
+>     $ size net/batman-adv/batman-adv.ko*
+>        text    data     bss     dec     hex filename
+>      150507   10395    4160  165062   284c6 net/batman-adv/batman-adv.ko.y
+>      137106    7099    2112  146317   23b8d net/batman-adv/batman-adv.ko.n
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
-> v12:
->  - also use debugfs for originators/gwl when get_mesh_info is not supported
-> ---
->  functions.h |   1 -
->  netlink.c   | 150
-> ++++++++++++++++++++++++++++++++++++++++-------------------- 2 files
-> changed, 101 insertions(+), 50 deletions(-)
+> v2:
+>  - remove bogus "Before:" line in commit message
+> 
+>  Makefile                               |  3 +++
+>  README.external                        |  1 +
+>  compat.h                               |  5 +++++
+>  gen-compat-autoconf.sh                 |  1 +
+>  net/batman-adv/Kconfig                 | 15 +++++++++++++--
+>  net/batman-adv/Makefile                |  4 ++--
+>  net/batman-adv/bat_algo.c              |  2 ++
+>  net/batman-adv/bat_iv_ogm.c            | 12 ++++++++++++
+>  net/batman-adv/bat_v.c                 | 12 ++++++++++++
+>  net/batman-adv/bridge_loop_avoidance.c |  4 ++++
+>  net/batman-adv/debugfs.h               |  2 +-
+>  net/batman-adv/distributed-arp-table.c |  2 ++
+>  net/batman-adv/gateway_client.c        |  2 ++
+>  net/batman-adv/icmp_socket.h           | 18 +++++++++++++++++-
+>  net/batman-adv/main.c                  |  2 ++
+>  net/batman-adv/multicast.c             |  2 ++
+>  net/batman-adv/network-coding.c        |  2 ++
+>  net/batman-adv/originator.c            |  4 ++++
+>  net/batman-adv/translation-table.c     |  4 ++++
+>  net/batman-adv/types.h                 |  6 ++++++
+>  20 files changed, 97 insertions(+), 6 deletions(-)
 
-Applied in revision 5401c71.
+Applied in revision 4f47cce.
 
 Thanks,
 Marek
 
---nextPart2152514.o2AxtNMDQG
+--nextPart1547952.ABqnm3e3aS
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -60,14 +77,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXkeNQAAoJEFNVTo/uthzAopkH/RcrCplcwiJqNyHcOe6vUKwK
-an9LzslhBzkiN2WrzCZTMctaFBiY/iSGeKR6GF28dDHcsQVGPHLI5jqPkshPzpcz
-yF0F8hhDHucL6bgHcmH2xSwOwoYeYia2zTolCUqxUwvt58xnv0kXBkFVs06XbILa
-v1ogdc2wZbF2FXOyNEu/B53LHWIBUPWiep7wtl8TdXmuIE6XZEqUYaCRgIb8J8B2
-lDuiVDheGcp4dujqlcFPSsLguNfZ8I2qm7TwWh7hg2uQsXemGkQ5Vv5w2xZA3Cro
-4csECGzL4c2fmOU9Htlunv/c46xlIYww/XYGLGZ2ShHNWYz/dcWWQGmoGt0JphU=
-=dKNp
+iQEcBAABCAAGBQJXkeVVAAoJEFNVTo/uthzAuswH/2JyPhdlykfXMcZFiA0/HBFB
+6UyzQDyVFlUuPoF6HKuvkNWXNfUxAQkNspBKoEXmNULQSRVSUfYeANkUAJfSq4Pl
+mI7/BjKFlmw8JOSzXmA77QABFcDu5xwRGbdutgFEb7oLEvZ0OoB0JrE6fY5M+vDn
+fs04vXR4xK4Mgh6N+Ob9v49ylbD9Rp7+wJILUkxzTqnDaV6J7eDSu3lDQHefb6Bo
+S74thtc6zf09TbuU7zt/Cgwp1mz7KfT1ObPT5Krg+HkJQ8H9YtUHDarKImInANcV
+i6DL4FR7zW1fPCT8LPirL/2pSn2isQISSU+irdhEBmn7eAtaMCc+JiEmdUMI4ew=
+=pMTt
 -----END PGP SIGNATURE-----
 
---nextPart2152514.o2AxtNMDQG--
+--nextPart1547952.ABqnm3e3aS--
 
