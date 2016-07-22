@@ -1,15 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 22 Jul 2016 17:10:08 +0800
-Message-ID: <146919308.yMq0RX0QOi@voltaire>
-In-Reply-To: <1468836728-21890-10-git-send-email-sven@narfation.org>
-References: <6098496.c9QsHxvAun@sven-edge>
- <1468836728-21890-10-git-send-email-sven@narfation.org>
+Date: Fri, 22 Jul 2016 17:11:44 +0800
+Message-ID: <2939805.ehlbhc0Aqg@voltaire>
+In-Reply-To: <1468958992-2972-1-git-send-email-sven@narfation.org>
+References: <1468836728-21890-11-git-send-email-sven@narfation.org>
+ <1468958992-2972-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6502238.g5XMT8qde8";
+Content-Type: multipart/signed; boundary="nextPart2152514.o2AxtNMDQG";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v11 10/11] batctl: Document a network
-	namespaces example.
+Subject: Re: [B.A.T.M.A.N.] [PATCH v12 11/11] batctl: Use debugfs fallback
+	when netlink not supported
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,28 +21,38 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart6502238.g5XMT8qde8
+--nextPart2152514.o2AxtNMDQG
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, July 18, 2016 12:12:07 Sven Eckelmann wrote:
-> From: Andrew Lunn <andrew@lunn.ch>
+On Tuesday, July 19, 2016 22:09:52 Sven Eckelmann wrote:
+> The batman-adv release v2016.2 already has the batadv netlink family . Thus
+> the fallback to debugfs not only has to be triggered when the the netlink
+> family doesn't exist but also when the cmd returns a -EOPNOTSUPP. This
+> still has the problem that the header is generated via a different command
+> then the actual table entries. Falling back to debugfs would cause a second
+> header entry for the table.
 > 
-> Add example of has BATMAN can be used with network name spaces in the
-> README.
+> The header print functionality is therefore refactored to only gather the
+> data for the header and print the actual header either with the first
+> received entry or when the CMD finished without any result.
 > 
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  README | 57 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 57 insertions(+)
+> v12:
+>  - also use debugfs for originators/gwl when get_mesh_info is not supported
+> ---
+>  functions.h |   1 -
+>  netlink.c   | 150
+> ++++++++++++++++++++++++++++++++++++++++-------------------- 2 files
+> changed, 101 insertions(+), 50 deletions(-)
 
-Applied in revision 30c2e89.
+Applied in revision 5401c71.
 
 Thanks,
 Marek
 
---nextPart6502238.g5XMT8qde8
+--nextPart2152514.o2AxtNMDQG
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -50,14 +60,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXkeLwAAoJEFNVTo/uthzAt38IAL6CPyLmxCTxsaMBIdkojxOC
-F8NQA+0dkW81a0+zoHkNf8eARXXdn1TNSmmFGaKanwNpifywoRhDvyIVXu0vLawU
-U1JslHWEErwCZA0ID7+O3/zVwM9sn8XxWr4I8kC+p2BK9gZQYeePxPBqfH2Gvj/j
-ogVkJsKX6SJvx0J6g15ltHqSPfcF46HpEdIC9QSWkY685lw2YXjjziJRN3hXLU6F
-VDWgFpknCfWNiZM4H9kw4ud5TYv3c1rBY5WVoiijGEnGfNRWse30eAZhQwUAakb2
-EBSTinoakpZJ08Cg36vIvX5Oadm7Bdp+uVvjwkidBqTnqfw1x1lR2F8uY9WOWL0=
-=unzX
+iQEcBAABCAAGBQJXkeNQAAoJEFNVTo/uthzAopkH/RcrCplcwiJqNyHcOe6vUKwK
+an9LzslhBzkiN2WrzCZTMctaFBiY/iSGeKR6GF28dDHcsQVGPHLI5jqPkshPzpcz
+yF0F8hhDHucL6bgHcmH2xSwOwoYeYia2zTolCUqxUwvt58xnv0kXBkFVs06XbILa
+v1ogdc2wZbF2FXOyNEu/B53LHWIBUPWiep7wtl8TdXmuIE6XZEqUYaCRgIb8J8B2
+lDuiVDheGcp4dujqlcFPSsLguNfZ8I2qm7TwWh7hg2uQsXemGkQ5Vv5w2xZA3Cro
+4csECGzL4c2fmOU9Htlunv/c46xlIYww/XYGLGZ2ShHNWYz/dcWWQGmoGt0JphU=
+=dKNp
 -----END PGP SIGNATURE-----
 
---nextPart6502238.g5XMT8qde8--
+--nextPart2152514.o2AxtNMDQG--
 
