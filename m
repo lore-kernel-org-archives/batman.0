@@ -1,14 +1,15 @@
 Return-Path: <mareklindner@neomailbox.ch>
 From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Fri, 22 Jul 2016 16:54:50 +0800
-Message-ID: <31260547.I8XBpZylIC@voltaire>
-In-Reply-To: <1468158477-10941-1-git-send-email-sven@narfation.org>
-References: <1468158477-10941-1-git-send-email-sven@narfation.org>
+Date: Fri, 22 Jul 2016 17:00:35 +0800
+Message-ID: <4665505.ycKxL6emWq@voltaire>
+In-Reply-To: <1468836728-21890-4-git-send-email-sven@narfation.org>
+References: <6098496.c9QsHxvAun@sven-edge>
+ <1468836728-21890-4-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1754643.bjpFPdN9tU";
+Content-Type: multipart/signed; boundary="nextPart2127610.l5vASG3NdM";
  micalg="pgp-sha256"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Keep batadv netdev when
-	hardif disappears
+Subject: Re: [B.A.T.M.A.N.] [PATCH v11 04/11] batctl: Use netlink to replace
+	some of debugfs
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,36 +21,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1754643.bjpFPdN9tU
+--nextPart2127610.l5vASG3NdM
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, July 10, 2016 15:47:57 Sven Eckelmann wrote:
-> Switch-like virtual interfaces like bridge or openvswitch don't destroy
-> itself when all their attached netdevices dissappear. Instead they only
-> remove the link to the unregistered device and keep working until they get
-> removed manually.
+On Monday, July 18, 2016 12:12:01 Sven Eckelmann wrote:
+> From: Andrew Lunn <andrew@lunn.ch>
 > 
-> This has the benefit that all configurations for this interfaces are kept
-> and daemons reacting to rtnl events can just add new slave interfaces
-> without going through the complete configuration of the switch-like
-> netdevice.
+> The kernel has gained support for exporting some information via
+> netlink.  Use this when available, rather than debugfs.
 > 
-> Handling unregister events of client devices similar in batman-adv allows
-> users to drop their current workaround of dummy netdevices attached to
-> batman-adv soft-interfaces.
+> If netlink is not available, or the information is not yet available
+> via netlink, batctl will fall back to debugfs.
 > 
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> [sven@narfation.org: Add missing local TTVN in transtable_global, add
+> missing local group id to claim table, fix use-after-free of algo_name, fix
+> alignment of the originator entries]
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> [sw@simonwunderlich.de: fix claimtable output format, fix name of mandatory
+> claim table attributes, fix printing of VIDs]
+> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 > ---
->  net/batman-adv/hard-interface.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  debug.c     |   22 +-
+>  debug.h     |    4 +-
+>  functions.c |   11 +
+>  functions.h |    2 +
+>  netlink.c   | 1069
+> ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+> netlink.h   |   18 +-
+>  6 files changed, 1121 insertions(+), 5 deletions(-)
 
-Applied in revision be7cd9d.
+Applied in revision d8dd1ff.
 
 Thanks,
 Marek
 
---nextPart1754643.bjpFPdN9tU
+--nextPart2127610.l5vASG3NdM
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -57,14 +65,14 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJXkd9aAAoJEFNVTo/uthzAIZIIAJ6MeI3sC0r1uvBvA1e/8BoW
-buS2MNQA2We6CnfrjgGH+d1PcSbTomcyA9Eble+Lb5iWMVZ3dtSx58VCw9rH4JPg
-2HEnREtAl808B6Fjl9ydD2HT3z2jw75JC5FrZ/tIbEwRzICmM0K4wK5Mwl0zAyZR
-mCa7PzJYu8bgC/v7Vj1+g1ExwU/7t8ua00v3X1HouOnoZbFWUZP84miuxudZXjrO
-9MvHCQD0nCPAC6wW/Ic8W9t/9puBAzEZDJ2FKLBLXVq2qeZebt4yPeN3Njnkss0r
-7+7u4OLrMj0oZRgaPi756Ah3p0LuX5J10LauhgVM91Bkm1+Kxx22I4ys3rqXiHk=
-=5Xwx
+iQEcBAABCAAGBQJXkeCzAAoJEFNVTo/uthzAUxYH/1VsIqu4QW6rQkiKnp6YWmjD
+Ch5e3dzk+hmN5D+jZtS0KnOyIuYLBzsRqcXX8PxRMYhHISMtPa5nkZG/H0cUkC90
+bXOnPBbjJBMiQL8IJdWwNLxtpeZHTTypVqBC/nV0DqxTkqxCqxG2i6rEJFS8/vPh
+junGbB0fSzFJsYOWfr/S8In9xdUnElnduJjc99vGCyjlFMOuBGxA1PbmKuEsiPI0
+xZJBW0xZld7UNp3Y38BOfb4H+FOEVs4xev0dcTy7LiQcD4wbK9KY8gH09QATjTH3
+PdBytkVNLMlvYD8BK5eZ59ao1IPmGngaI+M6lieS6340DM+YSxKV8sSjLyMUUco=
+=mrws
 -----END PGP SIGNATURE-----
 
---nextPart1754643.bjpFPdN9tU--
+--nextPart2127610.l5vASG3NdM--
 
