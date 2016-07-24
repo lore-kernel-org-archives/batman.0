@@ -1,14 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 22 Jul 2016 15:17:46 +0200
-Message-ID: <4153918.ZK2BvdZRV2@sven-edge>
-In-Reply-To: <1469187482-29894-1-git-send-email-linus.luessing@c0d3.blue>
-References: <1469187482-29894-1-git-send-email-linus.luessing@c0d3.blue>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3239762.8UHQcbuazB";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Remove unused
-	skb_reset_mac_header()
+Date: Mon, 25 Jul 2016 00:42:44 +0200
+Message-Id: <1469400164-14302-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove needless init of
+	variables on stack
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,49 +15,120 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3239762.8UHQcbuazB
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Some variables are overwritten immediatelly in a functions. These don't
+have to be initialized to a specific value on the stack because the value
+will be overwritten before they will be used anywhere.
 
-On Freitag, 22. Juli 2016 13:38:01 CEST Linus L=FCssing wrote:
-> During broadcast queueing, the skb_reset_mac_header() sets the skb
-> to a place invalid for a MAC header, pointing right into the
-> batman-adv broadcast packet. Luckily, no one seems to actually use
-> eth_hdr(skb) afterwards until batadv_send_skb_packet() resets the
-> header to a valid position again.
->=20
-> Therefore removing this unnecessary, weird skb_reset_mac_header()
-> call.
->=20
-> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/bat_v.c          | 2 +-
+ net/batman-adv/bat_v_ogm.c      | 4 ++--
+ net/batman-adv/gateway_client.c | 2 +-
+ net/batman-adv/originator.c     | 8 ++++----
+ net/batman-adv/send.c           | 2 +-
+ 5 files changed, 9 insertions(+), 9 deletions(-)
 
-Reviewed-by: Sven Eckelmann <sven@narfation.org>
-
-Kind regards,
-	Sven
-
---nextPart3239762.8UHQcbuazB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJXkhz6AAoJEF2HCgfBJntGahQP/iD4eFl84RVmlSlSnLuGWnFb
-VH3b5KyAftnLPSexJ5YK36VoQqFwTFfPQ1D/AjRKmAEJxYLm0qjDnDEdRSpwAO2H
-E858sAbiYog44shKPdisrIQKaBDgDEFnrndUYHt78EaBI+EXFsAe5jhOyH5sF90W
-shwYIJwLfPuzoOE8uGPUDonX7uUKm7NYdrcPA8Lv5ov1KH+MCBaWRPBaoPQtw2tp
-ndb0dNHPWUXoHlUUp0eusGFdLM3Yf48Tn0oFuC3a2MEI1dFifaxmWUh5Lu34WrE4
-4bF13QIv9B21wdO8qYc0vAer/KDCmm66FwgnI0LFTEnEg/LEWmiK9L4tQbVHbdgc
-R+T4pcoxMklYCH6EDSCKAD+xcJbsYc8YZ1nYhYUalyPVNM7cTs6/5y/eFzgSdOi5
-Zzoak0u9MwWPkxIkxBiCdZFHiSqtHg4FAGrfdCZEU34ZIyL4N1Qpr5nghoadMd48
-v1wIb+Yn4s8FWZZ9xSI0A833MN/hiecdMz0CLzxFYd6y1r4HcCe7nuxf8/foQWE2
-IytD90BcSkiniIijOIAy3CYdN9jJQ0Xai6EJsm9G3UTr9gd2QwEFmZe/A8fuS28N
-O4BqSJVumduTfnHLKeANrs9KP2BmHin41OrJrRodKvTK5m3exuP3BO7M2u3TCRNO
-syl+h8T97oH95fb6h9G0
-=+bA3
------END PGP SIGNATURE-----
-
---nextPart3239762.8UHQcbuazB--
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index e79f6f0..57c795c 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -787,7 +787,7 @@ static bool batadv_v_gw_is_eligible(struct batadv_priv *bat_priv,
+ 				    struct batadv_orig_node *curr_gw_orig,
+ 				    struct batadv_orig_node *orig_node)
+ {
+-	struct batadv_gw_node *curr_gw = NULL, *orig_gw = NULL;
++	struct batadv_gw_node *curr_gw, *orig_gw = NULL;
+ 	u32 gw_throughput, orig_throughput, threshold;
+ 	bool ret = false;
+ 
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index 1aeeadc..61ff5f8 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -401,7 +401,7 @@ static int batadv_v_ogm_metric_update(struct batadv_priv *bat_priv,
+ 				      struct batadv_hard_iface *if_incoming,
+ 				      struct batadv_hard_iface *if_outgoing)
+ {
+-	struct batadv_orig_ifinfo *orig_ifinfo = NULL;
++	struct batadv_orig_ifinfo *orig_ifinfo;
+ 	struct batadv_neigh_ifinfo *neigh_ifinfo = NULL;
+ 	bool protection_started = false;
+ 	int ret = -EINVAL;
+@@ -486,7 +486,7 @@ static bool batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
+ 				      struct batadv_hard_iface *if_outgoing)
+ {
+ 	struct batadv_neigh_node *router = NULL;
+-	struct batadv_orig_node *orig_neigh_node = NULL;
++	struct batadv_orig_node *orig_neigh_node;
+ 	struct batadv_neigh_node *orig_neigh_router = NULL;
+ 	struct batadv_neigh_ifinfo *router_ifinfo = NULL, *neigh_ifinfo = NULL;
+ 	u32 router_throughput, neigh_throughput;
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index de055d6..69bfe98 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -704,7 +704,7 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
+ {
+ 	struct batadv_neigh_node *neigh_curr = NULL;
+ 	struct batadv_neigh_node *neigh_old = NULL;
+-	struct batadv_orig_node *orig_dst_node = NULL;
++	struct batadv_orig_node *orig_dst_node;
+ 	struct batadv_gw_node *gw_node = NULL;
+ 	struct batadv_gw_node *curr_gw = NULL;
+ 	struct batadv_neigh_ifinfo *curr_ifinfo, *old_ifinfo;
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 5f3bfc4..6af87c9 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -364,7 +364,7 @@ struct batadv_orig_ifinfo *
+ batadv_orig_ifinfo_new(struct batadv_orig_node *orig_node,
+ 		       struct batadv_hard_iface *if_outgoing)
+ {
+-	struct batadv_orig_ifinfo *orig_ifinfo = NULL;
++	struct batadv_orig_ifinfo *orig_ifinfo;
+ 	unsigned long reset_time;
+ 
+ 	spin_lock_bh(&orig_node->neigh_list_lock);
+@@ -520,7 +520,7 @@ batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
+ 			   const u8 *neigh_addr)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
+-	struct batadv_hardif_neigh_node *hardif_neigh = NULL;
++	struct batadv_hardif_neigh_node *hardif_neigh;
+ 
+ 	spin_lock_bh(&hard_iface->neigh_list_lock);
+ 
+@@ -563,7 +563,7 @@ static struct batadv_hardif_neigh_node *
+ batadv_hardif_neigh_get_or_create(struct batadv_hard_iface *hard_iface,
+ 				  const u8 *neigh_addr)
+ {
+-	struct batadv_hardif_neigh_node *hardif_neigh = NULL;
++	struct batadv_hardif_neigh_node *hardif_neigh;
+ 
+ 	/* first check without locking to avoid the overhead */
+ 	hardif_neigh = batadv_hardif_neigh_get(hard_iface, neigh_addr);
+@@ -683,7 +683,7 @@ batadv_neigh_node_get_or_create(struct batadv_orig_node *orig_node,
+ 				struct batadv_hard_iface *hard_iface,
+ 				const u8 *neigh_addr)
+ {
+-	struct batadv_neigh_node *neigh_node = NULL;
++	struct batadv_neigh_node *neigh_node;
+ 
+ 	/* first check without locking to avoid the overhead */
+ 	neigh_node = batadv_neigh_node_get(orig_node, hard_iface, neigh_addr);
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 8d4e1f5..e1e9136 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -562,7 +562,7 @@ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
+ 				    const struct sk_buff *skb,
+ 				    unsigned long delay)
+ {
+-	struct batadv_hard_iface *primary_if = NULL;
++	struct batadv_hard_iface *primary_if;
+ 	struct batadv_forw_packet *forw_packet;
+ 	struct batadv_bcast_packet *bcast_packet;
+ 	struct sk_buff *newskb;
+-- 
+2.8.1
 
