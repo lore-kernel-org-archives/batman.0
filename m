@@ -1,14 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 27 Jul 2016 08:58:05 +0200
-Message-ID: <3052656.ceaqRg0eoz@sven-edge>
-In-Reply-To: <20160727041734.562489d0@i3.local>
-References: <20150516220736.2d896b4b@i3.local> <2457781.aV3nu67AfV@prime>
- <20160727041734.562489d0@i3.local>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1706587.tNuL5XWICm";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Patch to add mesh_no_rebroadcast
+Date: Wed, 27 Jul 2016 12:31:07 +0200
+Message-Id: <1469615468-9261-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Use proper name for
+	fragments list head
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,42 +14,126 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Ruben Kelevra <ruben@vfn-nrw.de>
 
---nextPart1706587.tNuL5XWICm
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+The batman-adv codebase is using "list" for the list node (prev/next) and
+<list content descriptor>+"_list" for the head of a list. Not using this
+naming scheme can up in confusions because list_head is used for both the
+head of the list and the list node (prev/next) in each item of the list.
 
-On Mittwoch, 27. Juli 2016 04:17:34 CEST Ruben Kelevra wrote:
-> Any progress here?
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/fragmentation.c | 14 +++++++-------
+ net/batman-adv/fragmentation.h |  2 +-
+ net/batman-adv/originator.c    |  2 +-
+ net/batman-adv/types.h         |  6 +++---
+ 4 files changed, 12 insertions(+), 12 deletions(-)
 
-Still waiting for the TRANSITIVE flag version from Linus.
-
-Kind regards,
-	Sven
-
---nextPart1706587.tNuL5XWICm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJXmFt9AAoJEF2HCgfBJntGG7YP/jm41NecPR2UczcZT1O7NA33
-+ZPUkBQE19QllmVEkv6XJu+n4WQ+IMmGO0Vp8qJ6TKVCPMkWZNa+8U4mpj6cYkYT
-sQizp8cH5HQYqeWsPHeA8EPQsWXWe2zD09CKJ2/5GQvajxbnHAnmVhq6kiRmRHpV
-Wn8VqOYefOqD8Dr0p/D3sgMrk/gw6cUQkzqWJiJk65vk8Z/nuDtJZ+ScE98t+sbu
-hpN8HjZansJOYWcVzyWccGYPmJAT8IhtA/73HluI820By5xBWXnhOg9XZ61Rgn6m
-MQgZbgwnzocqpgaDAoVvXd6/c8430gCqIXjC+53sc0n2aQDZymqQYHh+7v11IfZr
-rI/FTUOpVYw5rXRStWgY2rykGKGfV9JB93/ZUM9rMRWtFc62RsfaUJhVkDLeSSQa
-EYsyvaoNNp4Ujl4RsHqO4hTsV3H5A0Kxee/OpzBgi8os5++GEoYQllhQdMwRCYkn
-HX33xgpyEintVulGD2T/pbXwUg3PYmJNzX8h4ERMtdvOrLoj7ug6JghjXuSIVEl7
-WwRqM0ef0dC7jxsDeBCQnzCYJZoMEClXMHFBwfHpHKUwEjCTdocnm0ppFJbpUOH2
-6s+RFRUPONafffBw24v4KMW4NO760o3rd1PVGFKo/s4d4JcIOxM6GBuhz4QOvcY1
-+Zs38XVcWR4TYeMB56nM
-=STwv
------END PGP SIGNATURE-----
-
---nextPart1706587.tNuL5XWICm--
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 0934730..f725918 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -73,7 +73,7 @@ void batadv_frag_purge_orig(struct batadv_orig_node *orig_node,
+ 		spin_lock_bh(&chain->lock);
+ 
+ 		if (!check_cb || check_cb(chain)) {
+-			batadv_frag_clear_chain(&chain->head);
++			batadv_frag_clear_chain(&chain->fragment_list);
+ 			chain->size = 0;
+ 		}
+ 
+@@ -117,8 +117,8 @@ static bool batadv_frag_init_chain(struct batadv_frag_table_entry *chain,
+ 	if (chain->seqno == seqno)
+ 		return false;
+ 
+-	if (!hlist_empty(&chain->head))
+-		batadv_frag_clear_chain(&chain->head);
++	if (!hlist_empty(&chain->fragment_list))
++		batadv_frag_clear_chain(&chain->fragment_list);
+ 
+ 	chain->size = 0;
+ 	chain->seqno = seqno;
+@@ -176,7 +176,7 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
+ 	chain = &orig_node->fragments[bucket];
+ 	spin_lock_bh(&chain->lock);
+ 	if (batadv_frag_init_chain(chain, seqno)) {
+-		hlist_add_head(&frag_entry_new->list, &chain->head);
++		hlist_add_head(&frag_entry_new->list, &chain->fragment_list);
+ 		chain->size = skb->len - hdr_size;
+ 		chain->timestamp = jiffies;
+ 		chain->total_size = ntohs(frag_packet->total_size);
+@@ -185,7 +185,7 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
+ 	}
+ 
+ 	/* Find the position for the new fragment. */
+-	hlist_for_each_entry(frag_entry_curr, &chain->head, list) {
++	hlist_for_each_entry(frag_entry_curr, &chain->fragment_list, list) {
+ 		/* Drop packet if fragment already exists. */
+ 		if (frag_entry_curr->no == frag_entry_new->no)
+ 			goto err_unlock;
+@@ -220,11 +220,11 @@ out:
+ 		 * exceeds the maximum size of one merged packet. Don't allow
+ 		 * packets to have different total_size.
+ 		 */
+-		batadv_frag_clear_chain(&chain->head);
++		batadv_frag_clear_chain(&chain->fragment_list);
+ 		chain->size = 0;
+ 	} else if (ntohs(frag_packet->total_size) == chain->size) {
+ 		/* All fragments received. Hand over chain to caller. */
+-		hlist_move_list(&chain->head, chain_out);
++		hlist_move_list(&chain->fragment_list, chain_out);
+ 		chain->size = 0;
+ 	}
+ 
+diff --git a/net/batman-adv/fragmentation.h b/net/batman-adv/fragmentation.h
+index 3202fe3..b95f619 100644
+--- a/net/batman-adv/fragmentation.h
++++ b/net/batman-adv/fragmentation.h
+@@ -47,7 +47,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ static inline bool
+ batadv_frag_check_entry(struct batadv_frag_table_entry *frags_entry)
+ {
+-	if (!hlist_empty(&frags_entry->head) &&
++	if (!hlist_empty(&frags_entry->fragment_list) &&
+ 	    batadv_has_timed_out(frags_entry->timestamp, BATADV_FRAG_TIMEOUT))
+ 		return true;
+ 	return false;
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 5f3bfc4..c6e07d6 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -1021,7 +1021,7 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
+ 	batadv_orig_node_vlan_put(vlan);
+ 
+ 	for (i = 0; i < BATADV_FRAG_BUFFER_COUNT; i++) {
+-		INIT_HLIST_HEAD(&orig_node->fragments[i].head);
++		INIT_HLIST_HEAD(&orig_node->fragments[i].fragment_list);
+ 		spin_lock_init(&orig_node->fragments[i].lock);
+ 		orig_node->fragments[i].size = 0;
+ 	}
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index b3dd1a3..02d1d32 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -184,7 +184,7 @@ struct batadv_orig_ifinfo {
+ 
+ /**
+  * struct batadv_frag_table_entry - head in the fragment buffer table
+- * @head: head of list with fragments
++ * @fragment_list: head of list with fragments
+  * @lock: lock to protect the list of fragments
+  * @timestamp: time (jiffie) of last received fragment
+  * @seqno: sequence number of the fragments in the list
+@@ -192,8 +192,8 @@ struct batadv_orig_ifinfo {
+  * @total_size: expected size of the assembled packet
+  */
+ struct batadv_frag_table_entry {
+-	struct hlist_head head;
+-	spinlock_t lock; /* protects head */
++	struct hlist_head fragment_list;
++	spinlock_t lock; /* protects fragment_list */
+ 	unsigned long timestamp;
+ 	u16 seqno;
+ 	u16 size;
+-- 
+2.8.1
 
