@@ -1,13 +1,13 @@
-Return-Path: <ruben@vfn-nrw.de>
-Date: Wed, 27 Jul 2016 04:17:34 +0200
-From: Ruben Kelevra <ruben@vfn-nrw.de>
-Message-ID: <20160727041734.562489d0@i3.local>
-In-Reply-To: <2457781.aV3nu67AfV@prime>
-References: <20150516220736.2d896b4b@i3.local> <1965971.qMo8ZFc46n@voltaire>
- <1438896208.1369.49.camel@nord-west.org> <2457781.aV3nu67AfV@prime>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 27 Jul 2016 08:58:05 +0200
+Message-ID: <3052656.ceaqRg0eoz@sven-edge>
+In-Reply-To: <20160727041734.562489d0@i3.local>
+References: <20150516220736.2d896b4b@i3.local> <2457781.aV3nu67AfV@prime>
+ <20160727041734.562489d0@i3.local>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- boundary="Sig_/ZAps5vwpo=.OE8V8JH8Udqh"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; boundary="nextPart1706587.tNuL5XWICm";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] Patch to add mesh_no_rebroadcast
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -19,92 +19,42 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Ruben Kelevra <ruben@vfn-nrw.de>
 
---Sig_/ZAps5vwpo=.OE8V8JH8Udqh
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+--nextPart1706587.tNuL5XWICm
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Any progress here?
+On Mittwoch, 27. Juli 2016 04:17:34 CEST Ruben Kelevra wrote:
+> Any progress here?
 
-Would be nice if you would just apply it, since the whole
-freifunk-community is patching this patch on all versions of batman-adv
-at the moment. So it's well tested.
+Still waiting for the TRANSITIVE flag version from Linus.
 
-Best regards
+Kind regards,
+	Sven
 
-Ruben
-
-
-Am Fri, 07 Aug 2015 02:25:22 +0200
-schrieb Simon Wunderlich <sw@simonwunderlich.de>:
-
-> Hi Bjoern,
->=20
-> there wasn't any activity on this patch (at least from our side), and
-> there wasn't any reaction on Mareks suggestion to add more
-> explanation to the patch.
->=20
-> If you want to get it adopted, please resend it (rebased on current
-> master) with a proper commit message explaining what it does and why
-> its useful - like we have for any other patch.
->=20
-> Thanks,
->      Simon
->=20
-> On Thursday 06 August 2015 23:23:28 Bjoern Franke wrote:
-> > Hi,
-> >  =20
-> > > It might be a good idea to send an explanation with the patch to
-> > > get the
-> > > discussion started. What are the arguments in favor of this
-> > > patch ? A little
-> > > more than 'Patch to add mesh_no_rebroadcast' would be nice. =20
-> >=20
-> > Is there any advance towards including this patch?
-> >=20
-> > Regards
-> > Bj=C3=B6rn =20
-
-
-
----=20
-Mit freundlichen Gr=C3=BC=C3=9Fen
-
-
-Ruben Wisniewski
-
-Vorstandsmitglied im=20
-Verbund freier Netzwerke NRW e.V.
-
-Verein zur F=C3=B6rderung von freien Netzstrukturen in NRW
-
-VR 17981 Amtsgericht K=C3=B6ln
-Internet-Service-Provider-Nr 14/223 Bundesnetzagentur
-Gemeinn=C3=BCtziger Verein im Bereich Volks- und Berufsbildung gef=C3=BChrt=
- beim
-  Finanzamt Leverkusen=20
-
-Telefon: +4921967382850
-E-Mail: vorstand@vfn-nrw.de
-Web: https://vfn-nrw.de
-
-Anschrift:
-Postfach 50 13 63,
-D-42906 Wermelskirchen
-
-
---Sig_/ZAps5vwpo=.OE8V8JH8Udqh
-Content-Type: application/pgp-signature
-Content-Description: Digitale Signatur von OpenPGP
+--nextPart1706587.tNuL5XWICm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iKAEARMKAAYFAleYGb8ACgkQgB++GrevraSfOgIIllIVJyzhw1z0FLSN/rzJs7yI
-Xt/k4lkLyrGwvnioPFrbwKQzyVBFdY1hpA5kRsW29fur/alybhSRSVyY9RNwJX4C
-BjbI1gYj6C1652Hm8P0Vn3svRTF4Ptse/A8PGN7fbxMN3sovlUnpPM8eDtVSvPKM
-40IcFiUgwhUV53TMr2lLOQ9+
-=Y0GU
+iQIcBAABCgAGBQJXmFt9AAoJEF2HCgfBJntGG7YP/jm41NecPR2UczcZT1O7NA33
++ZPUkBQE19QllmVEkv6XJu+n4WQ+IMmGO0Vp8qJ6TKVCPMkWZNa+8U4mpj6cYkYT
+sQizp8cH5HQYqeWsPHeA8EPQsWXWe2zD09CKJ2/5GQvajxbnHAnmVhq6kiRmRHpV
+Wn8VqOYefOqD8Dr0p/D3sgMrk/gw6cUQkzqWJiJk65vk8Z/nuDtJZ+ScE98t+sbu
+hpN8HjZansJOYWcVzyWccGYPmJAT8IhtA/73HluI820By5xBWXnhOg9XZ61Rgn6m
+MQgZbgwnzocqpgaDAoVvXd6/c8430gCqIXjC+53sc0n2aQDZymqQYHh+7v11IfZr
+rI/FTUOpVYw5rXRStWgY2rykGKGfV9JB93/ZUM9rMRWtFc62RsfaUJhVkDLeSSQa
+EYsyvaoNNp4Ujl4RsHqO4hTsV3H5A0Kxee/OpzBgi8os5++GEoYQllhQdMwRCYkn
+HX33xgpyEintVulGD2T/pbXwUg3PYmJNzX8h4ERMtdvOrLoj7ug6JghjXuSIVEl7
+WwRqM0ef0dC7jxsDeBCQnzCYJZoMEClXMHFBwfHpHKUwEjCTdocnm0ppFJbpUOH2
+6s+RFRUPONafffBw24v4KMW4NO760o3rd1PVGFKo/s4d4JcIOxM6GBuhz4QOvcY1
++Zs38XVcWR4TYeMB56nM
+=STwv
 -----END PGP SIGNATURE-----
 
---Sig_/ZAps5vwpo=.OE8V8JH8Udqh--
+--nextPart1706587.tNuL5XWICm--
+
