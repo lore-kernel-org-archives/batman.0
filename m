@@ -1,15 +1,10 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 28 Jul 2016 20:18:38 +0200
-Message-ID: <5348242.OI0toffihS@sven-edge>
-In-Reply-To: <1469729158.5505.10.camel@c00941>
-References: <1469726363.5505.7.camel@c00941> <31954371.21uiIYPYc7@sven-edge>
- <1469729158.5505.10.camel@c00941>
+Return-Path: <Jonathan.Haws@sdl.usu.edu>
+From: Jonathan Haws <jhaws@sdl.usu.edu>
+Date: Thu, 28 Jul 2016 14:43:16 -0600
+Message-ID: <1469738596-10972-1-git-send-email-jhaws@sdl.usu.edu>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3821250.YiRq1gnyoo";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Externalizing ALFRED_INTERVAL
-	for setting synchronization interval
+Content-Type: text/plain
+Subject: [B.A.T.M.A.N.] [PATCH] alfred: Externalized synchronization interval
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,57 +14,129 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Jonathan Haws <jhaws@sdl.usu.edu>
 
---nextPart3821250.YiRq1gnyoo
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
 
-On Donnerstag, 28. Juli 2016 18:05:59 CEST Jonathan Haws wrote:
-> I've never used send-email.  I'll do some digging, learn it, and
-> resubmit.
+ALFRED_INTERVAL is now externalized via the -p option (synchronization
+period).  If specified as option, user supplied interval is used,
+otherwise the default interval of ALFRED_INTERVAL is used.
+---
+ alfred.h     |  1 +
+ main.c       | 14 +++++++++++++-
+ man/alfred.8 |  5 +++++
+ server.c     |  4 ++--
+ 4 files changed, 21 insertions(+), 3 deletions(-)
 
-I would recommend to use msmtp to communicate with your remote SMTP server.
-More informations can be found [1] when searching for 
-
-    "git send-email" "sendemail.smtpserver" "msmtp"
-
-Btw. you can remove your password from the smtp config (but keep the
-"password" line without the "my-secret" part) and msmtp will then ask for each
-mail for your password.
-
-The interface of "git send-email" is quite easy. Just specify the name of the
-patch files as argument of "git send-email" and then it will handle the sending +
-threading for you.
-
-Kind regards,
-	Sven
-
-[1] https://git.wiki.kernel.org/index.php/GitTips#Using_msmtp_to_send_your_patches
-
---nextPart3821250.YiRq1gnyoo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJXmkx+AAoJEF2HCgfBJntG3GwP/0x+LEdeG31aNSbmmCwIym2D
-DDZQ93VrZ0dOE08/MNaSbuOZYoV0CuHRbEIQBOeVsGTtDUJ5u5UniVV1a7BEviXE
-Cl3+B9tzx8XHyhIl246smYqL7C0lSG0vG4bGouMyNFH0/hebNP/hyD132FyVickP
-LdyT9hl78IgxqvWf1+Cos8ZsmJyMs+VTycpR30buugTVDpP7+sZU9rznJ6kdDHob
-ZcwuA4Gh5yFQtEhQRO5BTly9m8Z9jMFAxnB8o2M9d0MrH6WRMFZ5LVUFeQOb0+Ei
-P4k5CqaQ1fSy2R3yShFN0bOYMaEWAycINx5cKds1E/LpMbSIB/sxitn5TWKckJo3
-3x7Z9WaHuJ1FN/9pD323QRQoPySZyFrewHt+pMByOurU89Y4ixUjFajdL59kqUiJ
-nNtovQ0sZTrPq9c8xMUAsE/ojV6lczUnU4DPLUZXqMxdYSxHR+hJ0+BtNxpInnlz
-7TFyBr8opwRyZxneieOLyA76hALSyUUmHcwX8evLQpDNVWKon5ifIpuZgndVz6cy
-cCZVK8S7/X10/p5Wo0Ll5KkBhCq6Y9HJ1jq9ROchDL/U50/i/WCKXQ2YrbnzOsIk
-ye7yTaujlEpQRVTLH8YtWmNdgOBWIxnyFXQvwtSmfGGAs3Z7GdpFvqmED8g8dhhu
-+FCPepl3PEczhE2x1U4o
-=+szS
------END PGP SIGNATURE-----
-
---nextPart3821250.YiRq1gnyoo--
+diff --git a/alfred.h b/alfred.h
+index a9906c8..5b7e965 100644
+--- a/alfred.h
++++ b/alfred.h
+@@ -131,6 +131,7 @@ struct globals {
+ 	uint16_t changed_data_type_count; /* maximum is 256 */
+ 
+ 	struct timespec if_check;
++	struct timespec sync_period;
+ 
+ 	struct hashtable_t *data_hash;
+ 	struct hashtable_t *transaction_hash;
+diff --git a/main.c b/main.c
+index 9cab705..3aa89fd 100644
+--- a/main.c
++++ b/main.c
+@@ -59,6 +59,8 @@ static void alfred_usage(void)
+ 	printf("  -m, --master                        start up the daemon in master mode, which\n");
+ 	printf("                                      accepts data from slaves and syncs it with\n");
+ 	printf("                                      other masters\n");
++	printf("  -p, --sync-period [period]          set synchronization period, in seconds\n");
++	printf("                                      fractional seconds are supported (i.e. 0.2 = 5 Hz)\n");
+ 	printf("\n");
+ 	printf("  -u, --unix-path [path]              path to unix socket used for client-server\n");
+ 	printf("                                      communication (default: \""ALFRED_SOCK_PATH_DEFAULT"\")\n");
+@@ -156,6 +158,7 @@ out:
+ static struct globals *alfred_init(int argc, char *argv[])
+ {
+ 	int opt, opt_ind, i, ret;
++	double sync_period = 0.0;
+ 	struct globals *globals;
+ 	struct option long_options[] = {
+ 		{"set-data",		required_argument,	NULL,	's'},
+@@ -170,6 +173,7 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 		{"update-command",	required_argument,	NULL,	'c'},
+ 		{"version",		no_argument,		NULL,	'v'},
+ 		{"verbose",		no_argument,		NULL,	'd'},
++		{"sync-period",		required_argument,	NULL,	'p'},
+ 		{NULL,			0,			NULL,	0},
+ 	};
+ 
+@@ -193,12 +197,14 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 	globals->unix_path = ALFRED_SOCK_PATH_DEFAULT;
+ 	globals->verbose = 0;
+ 	globals->update_command = NULL;
++	globals->sync_period.tv_sec = ALFRED_INTERVAL;
++	globals->sync_period.tv_nsec = 0;
+ 	INIT_LIST_HEAD(&globals->changed_data_types);
+ 	globals->changed_data_type_count = 0;
+ 
+ 	time_random_seed();
+ 
+-	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:dc:", long_options,
++	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:dc:p:", long_options,
+ 				  &opt_ind)) != -1) {
+ 		switch (opt) {
+ 		case 'r':
+@@ -265,6 +271,12 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 			printf("%s %s\n", argv[0], SOURCE_VERSION);
+ 			printf("A.L.F.R.E.D. - Almighty Lightweight Remote Fact Exchange Daemon\n");
+ 			return NULL;
++		case 'p':
++			sync_period = strtod(optarg, NULL);
++			globals->sync_period.tv_sec = (int) sync_period;
++			globals->sync_period.tv_nsec = (double)(sync_period - (int)sync_period) * 1e9;
++			printf(" ** Setting sync interval to: %.9f seconds (%ld.%09ld)\n", sync_period, globals->sync_period.tv_sec, globals->sync_period.tv_nsec);
++			break;
+ 		case 'h':
+ 		default:
+ 			alfred_usage();
+diff --git a/man/alfred.8 b/man/alfred.8
+index 49d42bc..df37040 100644
+--- a/man/alfred.8
++++ b/man/alfred.8
+@@ -118,6 +118,11 @@ overhead).
+ \fB\-c\fP, \fB\-\-update-command\fP \fIcommand\fP
+ Specify command to execute on data change. It will be called with data-type list
+ as arguments.
++.TP
++\fB\-p\fP, \fB\-\-sync-period\fP \fIperiod\fP
++Specify alfred synchronization period, in seconds. If not specified, the default
++ALFRED_INTERVAL setting of 10 seconds will be used. Fractional seconds are 
++supported.
+ .
+ .SH EXAMPLES
+ Start an alfred server listening on bridge br0 (assuming that this bridge
+diff --git a/server.c b/server.c
+index 47aee4f..c5df945 100644
+--- a/server.c
++++ b/server.c
+@@ -372,7 +372,7 @@ int alfred_server(struct globals *globals)
+ 
+ 	while (1) {
+ 		clock_gettime(CLOCK_MONOTONIC, &now);
+-		now.tv_sec -= ALFRED_INTERVAL;
++		time_diff(&now, &globals->sync_period, &now);
+ 		if (!time_diff(&last_check, &now, &tv)) {
+ 			tv.tv_sec = 0;
+ 			tv.tv_nsec = 0;
+@@ -409,7 +409,7 @@ int alfred_server(struct globals *globals)
+ 
+ 		if (globals->opmode == OPMODE_MASTER) {
+ 			/* we are a master */
+-			printf("announce master ...\n");
++			printf("[%ld.%09ld] announce master ...\n", last_check.tv_sec, last_check.tv_nsec);
+ 			announce_master(globals);
+ 			sync_data(globals);
+ 		} else {
+-- 
+1.9.1
 
