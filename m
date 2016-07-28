@@ -1,11 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 28 Jul 2016 19:41:07 +0200
-Message-ID: <31954371.21uiIYPYc7@sven-edge>
-In-Reply-To: <1469726363.5505.7.camel@c00941>
-References: <1469726363.5505.7.camel@c00941>
+Date: Thu, 28 Jul 2016 20:18:38 +0200
+Message-ID: <5348242.OI0toffihS@sven-edge>
+In-Reply-To: <1469729158.5505.10.camel@c00941>
+References: <1469726363.5505.7.camel@c00941> <31954371.21uiIYPYc7@sven-edge>
+ <1469729158.5505.10.camel@c00941>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3205791.yIyMBbJBVC";
+Content-Type: multipart/signed; boundary="nextPart3821250.YiRq1gnyoo";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Externalizing ALFRED_INTERVAL
 	for setting synchronization interval
@@ -18,38 +19,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3205791.yIyMBbJBVC
+--nextPart3821250.YiRq1gnyoo
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Donnerstag, 28. Juli 2016 17:19:22 CEST Jonathan Haws wrote:
-> ALFRED_INTERVAL is now externalized via the -p option (synchronization
-> period).  If specified as option, user supplied interval is used,
-> otherwise the default interval of ALFRED_INTERVAL is used.
+On Donnerstag, 28. Juli 2016 18:05:59 CEST Jonathan Haws wrote:
+> I've never used send-email.  I'll do some digging, learn it, and
+> resubmit.
 
-Fails to apply because your mail client corrupted the patch:
+I would recommend to use msmtp to communicate with your remote SMTP server.
+More informations can be found [1] when searching for 
 
-Description: alfred: Externalizing ALFRED_INTERVAL for setting synchronization interval
-Applying: alfred: Externalizing ALFRED_INTERVAL for setting synchronization interval
-fatal: corrupt patch at line 30
-Patch failed at 0001 alfred: Externalizing ALFRED_INTERVAL for setting synchronization interval
-The copy of the patch that failed is found in: .git/rebase-apply/patch
-When you have resolved this problem, run "git am --continue".
-If you prefer to skip this patch, run "git am --skip" instead.
-To restore the original branch and stop patching, run "git am --abort".
-'git am' failed with exit status 128
+    "git send-email" "sendemail.smtpserver" "msmtp"
 
-Looks like you are using "Evolution 3.10.4-0ubuntu2". Please check
- https://www.kernel.org/doc/Documentation/email-clients.txt for instructions
-how to force this client not to corrupt patches. Or just use "git send-email"
-(like most developers)
+Btw. you can remove your password from the smtp config (but keep the
+"password" line without the "my-secret" part) and msmtp will then ask for each
+mail for your password.
+
+The interface of "git send-email" is quite easy. Just specify the name of the
+patch files as argument of "git send-email" and then it will handle the sending +
+threading for you.
 
 Kind regards,
 	Sven
 
---nextPart3205791.yIyMBbJBVC
+[1] https://git.wiki.kernel.org/index.php/GitTips#Using_msmtp_to_send_your_patches
+
+--nextPart3821250.YiRq1gnyoo
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -57,20 +56,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXmkOzAAoJEF2HCgfBJntGhBwQALls8+96ew6QYSIMIgiVGiIt
-73Qv8d2b3Aocp2vnfNoc4eN0BtPLlFAdzSZSQ0q1PoJAu2Z7NEoI8Z0ON5LNS5or
-Y9Z+99AqBnLIrgR/CrsCUJCmuHQ/0cO0eMcF/FL/5+RvgcfKeo/OAxLhyhv0TNRB
-m8WGd5fuQWTAtg9QFRTXuzJ8ULGLZ9+yvXxcwDjjzWlKkPtyKYWAeAKXOtbavhM3
-a8hfNsjauSpq7EcwYZ+btBZ0UH7lWvM6nV0wiMUqUC/yzRQLGdMBxz4HKEy+N/vO
-JmggfBUuJ2C2zz9AK99TQtb7RPtDEOMSokRb8mWg4Gxa2KL6mZdmTZKGUWV5arX2
-E298NdP7REQ2yc8kl2+19IFr6XTk1MvrNJWhSf7cf2QM9HgsLzmQ6IaHT5EJ+ClX
-YO4P+k7EH9Z7WqMcWZo5els16DQaVANjY5fJLctl2lJJEACd+a9e6M8wNrVsQdxJ
-/YWz2ew10sjBNX8z9ygbc246WeDL3n7xhbHa2eSzvX/WDtGI6IuM7q1OXJ1jJVKg
-1LSdCTRe2iuAPKqxD8iLtpF2oETqBRwjbxxP9vDF8zmHsKQ9oVs7ZonbAYZWcj0H
-qAd7ox/Wcy88tPmQagFamhfSJmH7BjimcI1mQQdV/PFpVHCX4t7KoxxODTuA4jeT
-REGRCA/cp+EvsqpwWiRI
-=8oaq
+iQIcBAABCgAGBQJXmkx+AAoJEF2HCgfBJntG3GwP/0x+LEdeG31aNSbmmCwIym2D
+DDZQ93VrZ0dOE08/MNaSbuOZYoV0CuHRbEIQBOeVsGTtDUJ5u5UniVV1a7BEviXE
+Cl3+B9tzx8XHyhIl246smYqL7C0lSG0vG4bGouMyNFH0/hebNP/hyD132FyVickP
+LdyT9hl78IgxqvWf1+Cos8ZsmJyMs+VTycpR30buugTVDpP7+sZU9rznJ6kdDHob
+ZcwuA4Gh5yFQtEhQRO5BTly9m8Z9jMFAxnB8o2M9d0MrH6WRMFZ5LVUFeQOb0+Ei
+P4k5CqaQ1fSy2R3yShFN0bOYMaEWAycINx5cKds1E/LpMbSIB/sxitn5TWKckJo3
+3x7Z9WaHuJ1FN/9pD323QRQoPySZyFrewHt+pMByOurU89Y4ixUjFajdL59kqUiJ
+nNtovQ0sZTrPq9c8xMUAsE/ojV6lczUnU4DPLUZXqMxdYSxHR+hJ0+BtNxpInnlz
+7TFyBr8opwRyZxneieOLyA76hALSyUUmHcwX8evLQpDNVWKon5ifIpuZgndVz6cy
+cCZVK8S7/X10/p5Wo0Ll5KkBhCq6Y9HJ1jq9ROchDL/U50/i/WCKXQ2YrbnzOsIk
+ye7yTaujlEpQRVTLH8YtWmNdgOBWIxnyFXQvwtSmfGGAs3Z7GdpFvqmED8g8dhhu
++FCPepl3PEczhE2x1U4o
+=+szS
 -----END PGP SIGNATURE-----
 
---nextPart3205791.yIyMBbJBVC--
+--nextPart3821250.YiRq1gnyoo--
 
