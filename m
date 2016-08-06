@@ -1,15 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 06 Aug 2016 17:36:03 +0200
-Message-ID: <1567863.zhc03RTn8V@sven-edge>
-In-Reply-To: <20160806044244.GA13676@otheros>
-References: <1468793741-4606-1-git-send-email-sven@narfation.org>
- <20160806044244.GA13676@otheros>
+Date: Sat, 06 Aug 2016 18:38:35 +0200
+Message-ID: <2339296.p0oRt0exUO@sven-edge>
+In-Reply-To: <1469738596-10972-1-git-send-email-jhaws@sdl.usu.edu>
+References: <1469738596-10972-1-git-send-email-jhaws@sdl.usu.edu>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2267471.pgcOrpn3rl";
+Content-Type: multipart/signed; boundary="nextPart2484933.RfxcQpcQyo";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Don't allow zero and
-	multicast sender address
+Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Externalized synchronization
+	interval
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,37 +19,25 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Jonathan Haws <jhaws@sdl.usu.edu>
 
---nextPart2267471.pgcOrpn3rl
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart2484933.RfxcQpcQyo
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Samstag, 6. August 2016 06:42:44 CEST Linus L=FCssing wrote:
+On Donnerstag, 28. Juli 2016 14:43:16 CEST Jonathan Haws wrote:
 [...]
-> For data packets, I'm not quite sure, though. Could be interesting
-> to not restrict that now to still allow enhancements regarding
-> privacy, I think. And zero-source MAC addresses shouldn't harm
-> anything in the case of data packets, should they?
+> +			printf(" ** Setting sync interval to: %.9f seconds (%ld.%09ld)\n", sync_period, globals->sync_period.tv_sec, globals->sync_period.tv_nsec);
+[...]
+> -			printf("announce master ...\n");
+> +			printf("[%ld.%09ld] announce master ...\n", last_check.tv_sec, last_check.tv_nsec);
+[...]
 
-I have now changed it but I personally think that this will not work. Many=
-=20
-filters/firewalls go crazy when they see zero mac addresses, the first bcas=
-t=20
-batadv_is_my_mac check is not working anymore and it should not be possible=
- to=20
-send over IBSS or Sta-to-AP with a zero mac source address. From AP-to-Sta =
-is=20
-not a problem because it can use 4 addresses in its header. But the other w=
-ay=20
-around is problematic because only 3 address are in the wifi header. A=20
-transfer with zero mac address as source address from Sta-to-AP with ath9k/
-mac80211 should end up in an Ack back to 00:00:00:00:00:00 and a=20
-deauthentication frame to 00:00:00:00:00:00.
+Are these two things just relicts from your testing code?
 
 Kind regards,
 	Sven
-
---nextPart2267471.pgcOrpn3rl
+--nextPart2484933.RfxcQpcQyo
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -58,20 +45,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXpgPkAAoJEF2HCgfBJntG21kP/RxVzT1ieAZfwwqBRQp1j0+n
-0gROsyePo/8p9YrsCWp48obXTy8gZ/3yJJ5jIgqnGdt8weAz5ORvopXTqXRaWRv4
-Hm+VICYLBRAJ0bGYovk+1zRxIV05HiTFcRqh0lAmTsC+NMQ00TAM3DP36lENmr2e
-OzWaCHPD2unpy+P5JyLlnytwZK3Bizwy2gvMH16ObFayuRIoGWkZTLZNlw1xEQpx
-/VQIRfCYOfRsPBWqaHqO50DnV/xZ6wE+hUurI1m1hpJwKgEGVTk18NbENHDWQkj4
-noKYVtpiT8c1u8MHhOz5SDVgPeYl1LkpKVikUud/7tKnFdiluukREMEYCFa9ZAoT
-ZIKGYTGKAuC8g31XVwyDozvANXNja8gnzQAOea94Kx0dZTB8LFOYyshXz+uhu2DC
-wUI7wTG1tj6iL/lodqsOyMZeIHI2KzfMqeOzJG5j7tYrR+3V+rTf79Zo6HkI+6JK
-sww/OJKHYmsT47NfHK1U0h9awt4wi04e3obzC5WITkwMHC3C/diQbTWknkd6lYPb
-Yv0w7vzGM4Cb9esb/24RrDs0TNKBejPX56+qe27ugsEH6wkMJAgDpO8/R0Mmmod9
-CHrbzjqXQdS2L5FR1mx/y9NWHihvZ38yQw43AGyQNttGXw8AH1MOHc90/cVcTVq6
-dOHITfKGBMQC0RGX9a2/
-=ncAM
+iQIcBAABCgAGBQJXphKLAAoJEF2HCgfBJntGViMP/1d4uvr/PE1sJeaWHpcUFFhJ
+i6CVZB7gf49pKN8OsLrcO2JM2rRlRfcDOQqlGQ7X82C2kk5y61o1JuLh9VKvZwyG
+WS65iNAXOWbUJTrylWku13ibPK7zhIibcQJwzjE2sEfnM3JZQvZ2epnCG0NW1hVE
+2a+hWxalug0bd/m3r7BQBSUveeg7rD8oNW+rFICdAwHjilo2lAFfBTpxRHteQAbk
+/PSpQ+gqGeSQ1n3OR9ro4NZ0v6YFbJ8BSDIb1fIIc1aDgFoT8B/3Rs4A1aLXDXX2
+jxqFl/+fWOZ80Ov8a9suetdzjYvEb+dbK3YHz6fDNd31hkNCFUPI3iTJHOa2YiCE
+5H2KsdljESn88/MKS64xih/F46T1xm6Gw5bqmx7v/oqVr9TyOm+Kf+Excbql/AdN
+YHO7ewhb7ObwAP6d2Kni179qbKRp+4e8RnymGcfDf7X6aQ9v9a5jhVDWOiruN9rG
+I3qUsmUromLiRqgfDkUG9iGCGGU3vEYJFjdP0XPFRU8etozdB+nfbOQjKcS0NtSU
+YJ6I5tTtk6A5DT+M36Fwxctq+WWS4X2p0A+Xqq3zZtjKp01i6qUf6iNgkDPHe1py
+y2N1YbRKraf8CDx4M1ZExwGsQEyVvXzvJpOSFdNT5be/Nw+53FkD4rjyNG6HtsiB
+3s4FxOCYRoi93IKNPCkP
+=jXDc
 -----END PGP SIGNATURE-----
 
---nextPart2267471.pgcOrpn3rl--
+--nextPart2484933.RfxcQpcQyo--
 
