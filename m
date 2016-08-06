@@ -1,13 +1,13 @@
-Return-Path: <pau@dabax.net>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 07 Aug 2016 00:10:09 +0200
+Message-ID: <33444698.d0jSVnpdRi@sven-edge>
+In-Reply-To: <60020429-5aca-f377-5bde-a5c631fce66f@dabax.net>
 References: <20160725175212.GC2263@makrotopia.org>
-From: Pau <pau@dabax.net>
-Message-ID: <60020429-5aca-f377-5bde-a5c631fce66f@dabax.net>
-Date: Sat, 6 Aug 2016 23:43:44 +0200
+ <60020429-5aca-f377-5bde-a5c631fce66f@dabax.net>
 MIME-Version: 1.0
-In-Reply-To: <20160725175212.GC2263@makrotopia.org>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="k1CfnDTdR628P8ddcX40I7MrrMOrKSqL8"
+Content-Type: multipart/signed; boundary="nextPart1641492.T7RhkDO0UQ";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [lime-dev] bridge and batman-adv over ethernet
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -18,89 +18,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: libre-mesh developement <dev@lists.libre-mesh.org>, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>, battlemesh@ml.ninux.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: libre-mesh developement <dev@lists.libre-mesh.org>, battlemesh@ml.ninux.org, Pau <pau@dabax.net>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---k1CfnDTdR628P8ddcX40I7MrrMOrKSqL8
-Content-Type: multipart/mixed; boundary="ovFPLnnt7Dt1EOTHEBbnuJ69CP4jjSkeB"
-From: Pau <pau@dabax.net>
-To: libre-mesh developement <dev@lists.libre-mesh.org>,
- b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>,
- battlemesh@ml.ninux.org
-Message-ID: <60020429-5aca-f377-5bde-a5c631fce66f@dabax.net>
-Subject: Re: [lime-dev] bridge and batman-adv over ethernet
-References: <20160725175212.GC2263@makrotopia.org>
-In-Reply-To: <20160725175212.GC2263@makrotopia.org>
+--nextPart1641492.T7RhkDO0UQ
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---ovFPLnnt7Dt1EOTHEBbnuJ69CP4jjSkeB
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
+On Samstag, 6. August 2016 23:43:44 CEST Pau wrote:
+> It would be nice to have some update on this issue if possible.
 
-It would be nice to have some update on this issue if possible.
-
-Thank you!
-
-On 25/07/16 19:52, Daniel Golle wrote:
-> Hi!
->=20
-> We are currently trying to use the Libre-Mesh.org firmware with
-> batman-adv enabled on wired Ethernet interfaces alongside with a VLAN
-> which is a member of the bridge the batX interface also resides in.
-> ------------------------------
->  E |VLAN---batadv---bat0
->  T +--------------+ BRIDGE
->  H |VLAN------------eth0.xx
-> ------------------------------
-> We do want such a setup to have the best of both worlds: the
-> performance of a plain bridge but yet benefit from batman-adv topology
-> information, alfred and all that. As many cheap Ethernet switches do
-> not support frames larger than 1500 bytes, increasing the MTU is not an=
-
-> option and thus frames inside batman-adv end up fragmented which hurts
-> performance if encapsulating all traffic via batman-adv.
->=20
-> I remember there was a discussion during battlemesh about a race-
-> condition which can confuse BLA and thus batman-adv is still disabled
-> on wired Ethernet interfaces in Libre-Mesh by default.
-> So here I am asking you about the current state of affairs regarding
-> this issue.
-> We are discussing it on
-> https://github.com/libre-mesh/lime-packages/issues/56
-> and it would be great to hear a more detailed summary because I only
-> remember the rough details and also haven't been watching if anything
-> was fixed or improved since we all met in Porto.
->=20
-> Cheers
->=20
->=20
-> Daniel
-> _______________________________________________
-> Dev mailing list
-> Dev@lists.libre-mesh.org
-> https://lists.libre-mesh.org/mailman/listinfo/dev
->=20
-
---=20
-=2E/p4u
+Maybe you should include Gui Iribarren in your Cc list since he is the one
+who can reproduce it(?), knows anything about it and answered to the initial
+mail [1].
 
 
---ovFPLnnt7Dt1EOTHEBbnuJ69CP4jjSkeB--
+Btw. I am not sure if LibreMesh supports to receive complex bridge loop 
+messages [2] and solve the problem (e.g. by disabling the batman-adv on 
+ethernet).
 
---k1CfnDTdR628P8ddcX40I7MrrMOrKSqL8
+Kind regards,
+	Sven
+
+[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-July/016081.html
+[2] https://patchwork.open-mesh.org/patch/15916/
+
+--nextPart1641492.T7RhkDO0UQ
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBCAAGBQJXploQAAoJEAX7rWpc+YnN0yMH/1CUK8huZAhdQ+WbmgPFl+VM
-lwwjbK5im7CA6P8mTdW7qoi67B6o6yC9Mb1uJGFtwnLKRGb6EBJbHtTo9IGtaKFU
-GxQGhqGkK3oBSE/pFrgVP/Sb4U1vjIIOqJgBhm1rm+nF3u5minsX73OfpZtUI4q4
-ciajhlZRNSjh1IrAZj3bMiRWDLHQvuZUm2QNYPMzPqnn9lBhKrpsy8l/fKcXap+E
-OQOivKfLGTgdFrAzL0wMAK4cOInrUkHtEbRUILK4yd7+MDNi5nN6Vq2RYb+Y1BxH
-laZRcoR/pmSoMBknee0tobS4EsWNO0MiSXZHloCE0BdyWhlXZ14caLpfgVy+Hi8=
-=EvgE
+iQIcBAABCgAGBQJXpmBBAAoJEF2HCgfBJntGmIoP+wV9u/7GIhaxtTPpgy+WFABP
+v1Q8HfiAq/cPb5dWDQFS7+D6UFSUNJrRORptkf+n4UZcdmpYg6dvH3uTZ8WbWIyP
+mU8GVBO+1BnDZivEQmwhgZK+8Z8hj2f2qHYuTI5UPf93GAEi226+9MqRn2bX7cQy
+rqwgT/HfBstT4nGp0ryavn7h3da8fK4mNiGKAHC0qfujYWrS3m/pQYVLee7/tlZc
+jfg2WbN1MznGUnIc+STFXsPQf3d34R7FZ/r0Z7yd8PeWBQvpHQpNFf9xS6CXPYKR
+mH8D+5EYAO7QgGIyTxhiL1CUDFgT2H0827mB/t37GUWYTZ4dro0fuaRZG3MsfQvm
+lz1ZDKjLZRKvyO9ixjdzZXEEstYJaBRayvViowDC4WHBcD5/EyBocWFVouYFtqRE
+snEF7VHRu5W8VWz8M6IIaY8JMslbT3ZMzz+ELuldKOO4D/PBm1L51VhN0spicKrv
++EmMJp7iAeoMBOmNS2LBeT/aAjIYJWHNjJLLIMGx2x+onoNEPNxd8DXQOAvDIpuq
+0VosBwD2qD/O028PSHZOSBbgI2tBMSTSYtJUWj7zgGH2gF1Hmkgm7JC56uXKJLGj
+OmNMKopwX8PRDq9GPnP380dawstF6s7TQ6ghGTWTOyj5hUZUN67xptBk0xXqXBtl
+AnvggBW8pByHoc7s6XXm
+=qzvL
 -----END PGP SIGNATURE-----
 
---k1CfnDTdR628P8ddcX40I7MrrMOrKSqL8--
+--nextPart1641492.T7RhkDO0UQ--
+
