@@ -1,15 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 06 Aug 2016 19:09:56 +0200
-Message-ID: <5201292.9bhKurM9NC@sven-edge>
-In-Reply-To: <1470457899-14517-2-git-send-email-linus.luessing@c0d3.blue>
-References: <1470457899-14517-1-git-send-email-linus.luessing@c0d3.blue>
- <1470457899-14517-2-git-send-email-linus.luessing@c0d3.blue>
+Date: Sat, 06 Aug 2016 20:27:16 +0200
+Message-ID: <4452998.RYI5TAmmpm@sven-edge>
+In-Reply-To: <1470449181-11917-2-git-send-email-linus.luessing@c0d3.blue>
+References: <1470449181-11917-1-git-send-email-linus.luessing@c0d3.blue>
+ <1470449181-11917-2-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3294883.sBBDvuX1fN";
+Content-Type: multipart/signed; boundary="nextPart2261973.QoliA8VCAl";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 2/2] batman-adv: Use own timer for
-	multicast TT and TVLV updates
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3 2/2] batman-adv: Simple (re)broadcast
+	avoidance
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,75 +21,89 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3294883.sBBDvuX1fN
+--nextPart2261973.QoliA8VCAl
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Samstag, 6. August 2016 06:31:39 CEST Linus L=FCssing wrote:
-> Instead of latching onto the OGM period, this patch introduces a worker
-> dedicated to multicast TT and TVLV updates.
->=20
-> The reasoning is, that upon roaming especially the translation table
-> should be updated timely to minimize connectivity issues.
->=20
-> With BATMAN V, the idea is to greatly increase the OGM interval to
-> reduce overhead. Unfortunately, right now this could lead to
-> a bad user experience if multicast traffic is involved.
->=20
-> Therefore this patch introduces a fixed 500ms update interval for
-> multicast TT entries and the multicast TVLV.
->=20
-> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
-> ---
->=20
-> Changes in v2:
-> * updated kerneldoc regarding bat_priv->mcast.mla_list "locking"
+On Samstag, 6. August 2016 04:06:21 CEST Linus L=FCssing wrote:
 [...]
-> --- a/net/batman-adv/multicast.c
-> +++ b/net/batman-adv/multicast.c
-> @@ -60,6 +60,18 @@
->  #include "translation-table.h"
->  #include "tvlv.h"
+> diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interf=
+ace.c
+> index 08ce361..56529b3 100644
+> --- a/net/batman-adv/hard-interface.c
+> +++ b/net/batman-adv/hard-interface.c
+> @@ -228,6 +228,58 @@ bool batadv_is_wifi_netdev(struct net_device *net_de=
+vice)
+>  	return false;
+>  }
+> =20
+> +/**
+> + * batadv_hardif_no_broadcast - check whether (re)broadcast is necessary
+> + * @if_outgoing:
 
-I have some minor things but maybe you could also add the missing headers:
-
-=2D-- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -33,6 +34,7 @@
- #include <linux/in6.h>
- #include <linux/ip.h>
- #include <linux/ipv6.h>
-+#include <linux/jiffies.h>
- #include <linux/kernel.h>
- #include <linux/kref.h>
- #include <linux/list.h>
-@@ -48,6 +50,7 @@
- #include <linux/stddef.h>
- #include <linux/string.h>
- #include <linux/types.h>
-+#include <linux/workqueue.h>
- #include <net/addrconf.h>
- #include <net/if_inet6.h>
- #include <net/ip.h>
+I think you forgot to add text here
 
 [...]
->  /**
-> + * batadv_mcast_mla_update - update the own MLAs
-> + * @bat_priv: the bat priv with all the soft interface information
-> + *
-> + * Updates the own multicast listener announcements in the translation
-> + * table as well as the own, announced multicast tvlv container.
-> + *
-> + * In the end, reschedules the work timer.
-> + */
-> +static void batadv_mcast_mla_update(struct work_struct *work)
+> diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+> index 5f3bfc4..890d07d 100644
+> --- a/net/batman-adv/originator.c
+> +++ b/net/batman-adv/originator.c
+> @@ -517,7 +517,8 @@ batadv_neigh_node_get(const struct batadv_orig_node *=
+orig_node,
+>   */
+>  static struct batadv_hardif_neigh_node *
+>  batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
+> -			   const u8 *neigh_addr)
+> +			   const u8 *neigh_addr,
+> +			   struct batadv_orig_node *orig_node)
 
-There is no parameter @bat_priv. Also the description for the parameter
-work is missing.
+orig_node seems to be missing from kernel-doc
+
+[...]
+> @@ -561,7 +563,8 @@ out:
+>   */
+>  static struct batadv_hardif_neigh_node *
+>  batadv_hardif_neigh_get_or_create(struct batadv_hard_iface *hard_iface,
+> -				  const u8 *neigh_addr)
+> +				  const u8 *neigh_addr,
+> +				  struct batadv_orig_node *orig_node)
+
+orig_node seems to be missing from kernel-doc
+
+[...]
+> diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+> index 610f2c4..c1e5aa7 100644
+> --- a/net/batman-adv/routing.c
+> +++ b/net/batman-adv/routing.c
+> @@ -1142,6 +1142,7 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
+>  		goto out;
+> =20
+>  	batadv_skb_set_priority(skb, sizeof(struct batadv_bcast_packet));
+> +	skb_set_inner_mac_header(skb, sizeof(struct batadv_bcast_packet));
+
+skb_set_inner_mac_header doesn't seem to be defined in 3.9 (first defined i=
+n=20
+aefbd2b3c2a9c657605e4337f9919d6c6273e8e6). Any idea how to fix build/
+functionality for these kernels?
+
+[...]
+> @@ -634,6 +641,51 @@ static void batadv_send_outstanding_bcast_packet(str=
+uct work_struct *work)
+>  		if (forw_packet->num_packets >=3D hard_iface->num_bcasts)
+>  			continue;
+> =20
+> +		/* hint for own origin -> no neigh_node */
+> +		if (skb_mac_header(forw_packet->skb) =3D=3D
+> +		    skb_inner_mac_header(forw_packet->skb)) {
+
+skb_inner_mac_header doesn't seem to be defined in 3.9 (first defined in=20
+aefbd2b3c2a9c657605e4337f9919d6c6273e8e6). Any idea how to fix build/
+functionality for these kernels?
+
 
 Kind regards,
 	Sven
---nextPart3294883.sBBDvuX1fN
+--nextPart2261973.QoliA8VCAl
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -97,20 +111,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXphnkAAoJEF2HCgfBJntGlisP/16mbGDgE6DrkTueyI+LO5gJ
-aMD2xpiwHtFOmcgm+24p3XAHK242zvPIGqve5/ZGRHlz5zEv2M39hCU/OcJCiA+z
-ifO9VcTCBWmrjLCXGveCyqb1WYoHDl2au8Hcum0OSx79GFKWgNcMwvR42dYiuVEl
-fO+DY92IP4znTKaDxMDVRm8F26++cekPw3+PQlarUVVQgNQVfGVH8wrutCNpjd+0
-EpcBjShi/3rYOH3IKAswAg6v/igTgq7RnosMlw8Ac4xkKBIwX5Fzqh+j0AUAdCNJ
-qrrYfRZUkviUX7cGSFUOq4luyhaFlI4zPGTDDLJMhDXN159/xmgJ1E0TssyznLu+
-Y/ydmuxpo0EahpJEk9h4qHWTuIbBALQjAgN2BmgecPe9Z/BWz7eyh3ApiuLFhtO7
-Lszo3s6LXmTWpjf7+936KmQMe2uVIy4MbPk3Fl25/0I5GQrT7q2nV6Ymov7vRzk/
-5LGmu5pgvL/B9Erplp0KKdBqm2M3qlccUklnIl0y4id6yUOijJR5ov3nJlS52AiO
-RHNS6wZnp+GctLeUdyAk1Ffo3zKn+K1qtLcJGSyLMwbHgH5AXHX6GYan5OfvebEY
-j3JsOjjnaG29sm5VVmu1+Bes9vVC60LQOpLjwmmaDBIsC/Sl04lRmKde8Xc1TS1M
-UvGk1EZapn7tm//DUyBQ
-=Ph1r
+iQIcBAABCgAGBQJXpiwEAAoJEF2HCgfBJntGA1UP/A3nFJC2ywC5JAIRjQf9hW0Y
+jWlpYYKGK9CTr4GXTb4WKDgpJwFoEBbWQ7ASHXLzQ1ou19axMEoQ8CR1YmHndcsH
+P1W/SjXNirZ9JmR3vPz103RxwokvZWa3JqA1Sf7nxIt9mFy9VdfWZko+I4qj/LIV
+TQLHP0oZTBTkErW2HhAC/0snoAytpVdifSrw50oUmG/c8P1XuVY39hTG3bGrnP/+
+khLLoJ9IGYowtAifFsrn+L4M+sh6SZrHznW4FNlfhRTe+Qzghnr5QEeXaCVgP4F/
+6+3oqcyz8c3mklcVeMVgAJy6BK0VdmVK9YFxtLY3zsN6LBEmqxD+F7Ar41Vp/W6z
+PHm3n+DPgyxyBLZOObV95KA1OkGvwCZTNT9SzksFKG4pxDNHmdl513/RKniVj09l
+IUyEkYU5hWz980Jt4X4YuRD9/h1YovbQlMCIdfulUpjmip8/F4zkgBG8O2Hmy3TJ
+dwhaupz7gfXggHd/7k/xSLmpuqdTaNf+JWVwglRHuKzH5Z+fGA/4sBIcDIeXidIu
+C7LZ2+FHESYNkHHKMBxK3dmtTf5mKPRhgwTNO6XOCcL3m50tmN76v1keKm3k5Jv+
+AzdF+/jlClnUzBrfut4Y6/gLlDpkMEj2oLij6uWfv8hka7xf6+YBcfEY9soB/y3y
+ovro4CcCALHalCoEeKjl
+=TyXs
 -----END PGP SIGNATURE-----
 
---nextPart3294883.sBBDvuX1fN--
+--nextPart2261973.QoliA8VCAl--
 
