@@ -1,15 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 06 Aug 2016 10:27:08 +0200
-Message-ID: <2277921.TikbSnUKEq@sven-edge>
-In-Reply-To: <20160806044244.GA13676@otheros>
-References: <1468793741-4606-1-git-send-email-sven@narfation.org>
- <20160806044244.GA13676@otheros>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1561222.Kksk2DtxPJ";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Don't allow zero and
-	multicast sender address
+Date: Sat,  6 Aug 2016 15:50:52 +0200
+Message-Id: <1470491452-14194-1-git-send-email-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Add missing refcnt for
+	last_candidate
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,64 +15,75 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1561222.Kksk2DtxPJ
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+batadv_find_router dereferences last_bonding_candidate from
+orig_node without making sure that it has a valid reference. This reference
+has to be retrieved by increasing the reference counter while holding
+neigh_list_lock. The lock is required to avoid that
+batadv_last_bonding_replace removes the current last_bonding_candidate,
+reduces the reference counter and maybe destroys the object in this
+process.
 
-On Samstag, 6. August 2016 06:42:44 CEST Linus L=FCssing wrote:
-> On Mon, Jul 18, 2016 at 12:15:40AM +0200, Sven Eckelmann wrote:
-> > The routing checks are validating the sender mac address. They reject e=
-very
-> > sender mac address which is a broadcast. But they also have to reject
-> > zero-mac address and multicast mac addresses.
->=20
-> Initially I was a little shocked because there are legitimate
-> cases for zero-source MAC addresesses. But then I saw in the code
-> that you are talking about source MAC address of the outter
-> batman-adv frame :). Maybe that could be clarified in the commit
-> message?
+Fixes: 797edd9e87ac ("batman-adv: add bonding again")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+This patch was only build tested.
+---
+ net/batman-adv/routing.c | 28 +++++++++++++++++++++++++++-
+ 1 file changed, 27 insertions(+), 1 deletion(-)
 
-Ah yes, you are right. This should be described better in the commit
-message.
-
-> For batadv_check_management_packet(), agreed, I guess much of the
-> protocol does rely on valid source addresses.
-
-Yes, think so too.
-
-> For data packets, I'm not quite sure, though. Could be interesting
-> to not restrict that now to still allow enhancements regarding
-> privacy, I think. And zero-source MAC addresses shouldn't harm
-> anything in the case of data packets, should they?
-
-So you would prefer here that is_broadcast_ether_addr is replaced
-for bcast and ucast packets with is_multicast_ether_addr? Same for
-patch 2, right?
-
-Kind regards,
-	Sven
---nextPart1561222.Kksk2DtxPJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJXpZ9cAAoJEF2HCgfBJntGk28P/AinhbvG/T69/G++z4V9Gmph
-7h+X48lqX7Ps+dG2jjtuydooraXCQNMkG453h7Ph1j/prkB9b5OjK0hL87QZEhlv
-jYyzlx2BWJ3gSoB1gO0hcOp3egrJWVVixxJkcYZNTivpbEeHapRywDKds1gPDOwc
-BcxOjWnoflE68TbmB0RG2lJCPVwKwV79q66pjcbpFmh2ll6o6pOagSe0CXxWTjnM
-qYRRwZycK6H5kngZ8nXWshUb7rs50LWJz6OPjDEKcF8y5kkSjCP6vGcf6p2+HDkx
-RyfUolxayxjwbzadVzicJu8aTnbG9oC92VPjI+7w1sEdUFlDm7NSwP6346cYURgW
-+KyzJRPvQk/MPVfqYLV2hkvPIGO3NRDnYzW04XrH/QBXrEXr1sYzTSfSOemjqrm7
-N3jLefNomvXg6SawaVSua2AbeKl9D6QyQJRtoAbl993Ap7RKsEtMKECPaAy6ZFCM
-PVhA4G2vWO2Zf82QL3AQGNvuds4JXxTELomSu//uFPTf20OAoG8cnwJ1qlMsUyRD
-Cs7xhULe65CHZ/LhlgMybJjgED0dvzMYM+qvA2PdSBfKrnHDUpDEiJblAvUeMilF
-RcMGoDeuzpDdL3aJmiRSPCe+aCJ90yCMU5nfXRrIYeYImyK3bmcS8A0QqmvOBXGJ
-V45ZiOWBBhfeB0iXIOvD
-=+L40
------END PGP SIGNATURE-----
-
---nextPart1561222.Kksk2DtxPJ--
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index bfac086..69d425d 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -456,6 +456,29 @@ static int batadv_check_unicast_packet(struct batadv_priv *bat_priv,
+ }
+ 
+ /**
++ * batadv_last_bonding_get - Get last_bonding_candidate of orig_node
++ * @orig_node: originator node whose last bonding candidate should be retrieved
++ *
++ * Return: last bonding candidate of router or NULL if not found
++ *
++ * The object is returned with refcounter increased by 1.
++ */
++static struct batadv_orig_ifinfo *
++batadv_last_bonding_get(struct batadv_orig_node *orig_node)
++{
++	struct batadv_orig_ifinfo *last_bonding_candidate;
++
++	spin_lock_bh(&orig_node->neigh_list_lock);
++	last_bonding_candidate = orig_node->last_bonding_candidate;
++
++	if (last_bonding_candidate)
++		kref_get(&last_bonding_candidate->refcount);
++	spin_unlock_bh(&orig_node->neigh_list_lock);
++
++	return last_bonding_candidate;
++}
++
++/**
+  * batadv_last_bonding_replace - Replace last_bonding_candidate of orig_node
+  * @orig_node: originator node whose bonding candidates should be replaced
+  * @new_candidate: new bonding candidate or NULL
+@@ -525,7 +548,7 @@ batadv_find_router(struct batadv_priv *bat_priv,
+ 	 * router - obviously there are no other candidates.
+ 	 */
+ 	rcu_read_lock();
+-	last_candidate = orig_node->last_bonding_candidate;
++	last_candidate = batadv_last_bonding_get(orig_node);
+ 	if (last_candidate)
+ 		last_cand_router = rcu_dereference(last_candidate->router);
+ 
+@@ -617,6 +640,9 @@ next:
+ 		batadv_orig_ifinfo_put(next_candidate);
+ 	}
+ 
++	if (last_candidate)
++		batadv_orig_ifinfo_put(last_candidate);
++
+ 	return router;
+ }
+ 
+-- 
+2.8.1
 
