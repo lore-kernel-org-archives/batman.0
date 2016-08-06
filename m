@@ -1,9 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  6 Aug 2016 15:50:52 +0200
-Message-Id: <1470491452-14194-1-git-send-email-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Add missing refcnt for
-	last_candidate
+Date: Sat, 06 Aug 2016 16:29:28 +0200
+Message-ID: <1513365.CMgdGlnam6@sven-edge>
+In-Reply-To: <2277921.TikbSnUKEq@sven-edge>
+References: <1468793741-4606-1-git-send-email-sven@narfation.org>
+ <20160806044244.GA13676@otheros> <2277921.TikbSnUKEq@sven-edge>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2827611.l4CacGYnjJ";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Don't allow zero and
+	multicast sender address
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,75 +21,50 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-batadv_find_router dereferences last_bonding_candidate from
-orig_node without making sure that it has a valid reference. This reference
-has to be retrieved by increasing the reference counter while holding
-neigh_list_lock. The lock is required to avoid that
-batadv_last_bonding_replace removes the current last_bonding_candidate,
-reduces the reference counter and maybe destroys the object in this
-process.
+--nextPart2827611.l4CacGYnjJ
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Fixes: 797edd9e87ac ("batman-adv: add bonding again")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-This patch was only build tested.
----
- net/batman-adv/routing.c | 28 +++++++++++++++++++++++++++-
- 1 file changed, 27 insertions(+), 1 deletion(-)
+On Samstag, 6. August 2016 10:27:08 CEST Sven Eckelmann wrote:
+[...]
+> > For data packets, I'm not quite sure, though. Could be interesting
+> > to not restrict that now to still allow enhancements regarding
+> > privacy, I think. And zero-source MAC addresses shouldn't harm
+> > anything in the case of data packets, should they?
+> 
+> So you would prefer here that is_broadcast_ether_addr is replaced
+> for bcast and ucast packets with is_multicast_ether_addr? Same for
+> patch 2, right?
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index bfac086..69d425d 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -456,6 +456,29 @@ static int batadv_check_unicast_packet(struct batadv_priv *bat_priv,
- }
- 
- /**
-+ * batadv_last_bonding_get - Get last_bonding_candidate of orig_node
-+ * @orig_node: originator node whose last bonding candidate should be retrieved
-+ *
-+ * Return: last bonding candidate of router or NULL if not found
-+ *
-+ * The object is returned with refcounter increased by 1.
-+ */
-+static struct batadv_orig_ifinfo *
-+batadv_last_bonding_get(struct batadv_orig_node *orig_node)
-+{
-+	struct batadv_orig_ifinfo *last_bonding_candidate;
-+
-+	spin_lock_bh(&orig_node->neigh_list_lock);
-+	last_bonding_candidate = orig_node->last_bonding_candidate;
-+
-+	if (last_bonding_candidate)
-+		kref_get(&last_bonding_candidate->refcount);
-+	spin_unlock_bh(&orig_node->neigh_list_lock);
-+
-+	return last_bonding_candidate;
-+}
-+
-+/**
-  * batadv_last_bonding_replace - Replace last_bonding_candidate of orig_node
-  * @orig_node: originator node whose bonding candidates should be replaced
-  * @new_candidate: new bonding candidate or NULL
-@@ -525,7 +548,7 @@ batadv_find_router(struct batadv_priv *bat_priv,
- 	 * router - obviously there are no other candidates.
- 	 */
- 	rcu_read_lock();
--	last_candidate = orig_node->last_bonding_candidate;
-+	last_candidate = batadv_last_bonding_get(orig_node);
- 	if (last_candidate)
- 		last_cand_router = rcu_dereference(last_candidate->router);
- 
-@@ -617,6 +640,9 @@ next:
- 		batadv_orig_ifinfo_put(next_candidate);
- 	}
- 
-+	if (last_candidate)
-+		batadv_orig_ifinfo_put(last_candidate);
-+
- 	return router;
- }
- 
--- 
-2.8.1
+Hm, no. This doesn't make any sense for patch 2 because patch 2 is about the 
+destination and a destination with zero mac address isn't valid. Or do you see 
+any reason to accept zero mac addresses as destination in the outer ethernet 
+header?
+
+Kind regards,
+	Sven
+--nextPart2827611.l4CacGYnjJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCgAGBQJXpfRIAAoJEF2HCgfBJntGve4P/2MZFTu6uHLUdqwodRsni7dG
+0aClsyOzYFIou+pw0RzY+vD2U95k5o+is73s6CheGFyUq4cqKupULZpzqZb9W7hD
+l6bOPWaMgQ/i3q5uhiJ4O3PeaL+uPyHtvel2lbLGzQMEluKDrBzw9odZdPRRLLhH
+wCnsE/FFPzp9SeKhdEHMPFU/vn2Z0qq+Onn/GfB0IZ6hNzJj5oxqMHBT463ix+Y3
+40PoqWIzZPasIto8xVZXt84VHG1M3kQJyu8E/fcGA5nBfFQGaemJJKD3fs1W1ACh
+EFuskDFiDgomWovyiNEASFdYC0V5UhH+XmVpq5QafeWijM7v8M4Bq9lN7yRSE4Jq
+HfmIF24bYER36ZsTfIbXNDpuyk3gAdNyqkjFPuBR2JfU9nvG74z1CPHTisIfD5xx
+E5PZls1ylXIg3jPhu1GVRr0d8/e1nNEPQ+C5HGm/vViAuzKdtZc3/MtTtGiAK6i9
+IAeVxu/p6e/qxm+HdOpCYVEl4DOHTj3aVIzlTuVYYMOuXVQzPO7t2A4fLW7Xtnn8
+VFtYwCFsq6TaiV0baNM+O69oDhjzWECR11sFs2ix6hy9mA5abTtIgHYIA+Rs2ZyC
+pxIvkphMvGygmECxuigEIJ20Z+EjFjPAhnltRJs6awazEOK97HYitEe71v46P0h0
+sRk4zLnKiqKTqSCIrEpw
+=Yz8S
+-----END PGP SIGNATURE-----
+
+--nextPart2827611.l4CacGYnjJ--
 
