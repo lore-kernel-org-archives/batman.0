@@ -1,14 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 07 Aug 2016 00:10:09 +0200
-Message-ID: <33444698.d0jSVnpdRi@sven-edge>
-In-Reply-To: <60020429-5aca-f377-5bde-a5c631fce66f@dabax.net>
-References: <20160725175212.GC2263@makrotopia.org>
- <60020429-5aca-f377-5bde-a5c631fce66f@dabax.net>
+Date: Sun, 07 Aug 2016 11:34:51 +0200
+Message-ID: <2601978.hr0dLHCiFY@sven-edge>
+In-Reply-To: <1470519973-22972-2-git-send-email-linus.luessing@c0d3.blue>
+References: <1470519973-22972-1-git-send-email-linus.luessing@c0d3.blue>
+ <1470519973-22972-2-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1641492.T7RhkDO0UQ";
+Content-Type: multipart/signed; boundary="nextPart2026593.5zBBbKB3b0";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [lime-dev] bridge and batman-adv over ethernet
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4 2/2] batman-adv: Simple (re)broadcast
+	avoidance
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,31 +20,33 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: libre-mesh developement <dev@lists.libre-mesh.org>, battlemesh@ml.ninux.org, Pau <pau@dabax.net>
 
---nextPart1641492.T7RhkDO0UQ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart2026593.5zBBbKB3b0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Samstag, 6. August 2016 23:43:44 CEST Pau wrote:
-> It would be nice to have some update on this issue if possible.
+On Samstag, 6. August 2016 23:46:13 CEST Linus L=FCssing wrote:
+[...]
+> * substituted fancy skb_inner_mac_header stuff with boring forw_packet->o=
+wn :)
+[...]
+> --- a/net/batman-adv/soft-interface.c
+> +++ b/net/batman-adv/soft-interface.c
+> @@ -315,6 +315,8 @@ send:
+>  		if (batadv_dat_snoop_outgoing_arp_request(bat_priv, skb))
+>  			brd_delay =3D msecs_to_jiffies(ARP_REQ_DELAY);
+> =20
+> +		skb_reset_inner_mac_header(skb);
+> +
+>  		if (batadv_skb_head_push(skb, sizeof(*bcast_packet)) < 0)
+>  			goto dropped;
+> =20
 
-Maybe you should include Gui Iribarren in your Cc list since he is the one
-who can reproduce it(?), knows anything about it and answered to the initial
-mail [1].
-
-
-Btw. I am not sure if LibreMesh supports to receive complex bridge loop 
-messages [2] and solve the problem (e.g. by disabling the batman-adv on 
-ethernet).
+Looks like you've missed something.
 
 Kind regards,
 	Sven
-
-[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-July/016081.html
-[2] https://patchwork.open-mesh.org/patch/15916/
-
---nextPart1641492.T7RhkDO0UQ
+--nextPart2026593.5zBBbKB3b0
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
@@ -51,20 +54,20 @@ Content-Transfer-Encoding: 7Bit
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCgAGBQJXpmBBAAoJEF2HCgfBJntGmIoP+wV9u/7GIhaxtTPpgy+WFABP
-v1Q8HfiAq/cPb5dWDQFS7+D6UFSUNJrRORptkf+n4UZcdmpYg6dvH3uTZ8WbWIyP
-mU8GVBO+1BnDZivEQmwhgZK+8Z8hj2f2qHYuTI5UPf93GAEi226+9MqRn2bX7cQy
-rqwgT/HfBstT4nGp0ryavn7h3da8fK4mNiGKAHC0qfujYWrS3m/pQYVLee7/tlZc
-jfg2WbN1MznGUnIc+STFXsPQf3d34R7FZ/r0Z7yd8PeWBQvpHQpNFf9xS6CXPYKR
-mH8D+5EYAO7QgGIyTxhiL1CUDFgT2H0827mB/t37GUWYTZ4dro0fuaRZG3MsfQvm
-lz1ZDKjLZRKvyO9ixjdzZXEEstYJaBRayvViowDC4WHBcD5/EyBocWFVouYFtqRE
-snEF7VHRu5W8VWz8M6IIaY8JMslbT3ZMzz+ELuldKOO4D/PBm1L51VhN0spicKrv
-+EmMJp7iAeoMBOmNS2LBeT/aAjIYJWHNjJLLIMGx2x+onoNEPNxd8DXQOAvDIpuq
-0VosBwD2qD/O028PSHZOSBbgI2tBMSTSYtJUWj7zgGH2gF1Hmkgm7JC56uXKJLGj
-OmNMKopwX8PRDq9GPnP380dawstF6s7TQ6ghGTWTOyj5hUZUN67xptBk0xXqXBtl
-AnvggBW8pByHoc7s6XXm
-=qzvL
+iQIcBAABCgAGBQJXpwC7AAoJEF2HCgfBJntGj04QAIG1BSs7hnoJYyKOV0k0/xjT
+4hmp4JtMvDHSdkVLsEFPXPKQVC6alcar4IOv3E7dLIOiIeCo1MFyrxky35TrGOD/
++3F7A1k+gwVn/1kIQOakzMxQ1z9Y/kFS3HIoMYTDzvUIsE4/rK7woGDgsxEEyvCm
+tMWLThUeWC5CC/bWSYBPtzonyf4ylPiU9sm6oM6GwEvhPur0/W5LOf+nWAxmRRn0
+kLX32iyVoNSObO53JWRt225BS8Z4d6aGN4Dh+3ODnaIeUuml8yunzRcQRkkOqIP+
+N8coxFXaED1eM1EH00jcYumYI+apmH+XXIcrMPT7brj7d4g5/W5OpFR0rWgxSkEh
+2j3WyvHg/3eUiNRBY4JY8IxGBR3/DOwBj/AfxsYUPxsaeWqs1grvchd0wo+aAq3s
+CcQwomyOLgVSMKi6yTT1OB7zChicH0MaHA6Zd4Yeyr1hJ41w1iKHWSAyYATwzOr6
+QpZVq+BE0h/HgN/dmz3dU2Ke0QYMZVbKHhJDdZQpTThjVg6S3OwlGytM7zqzi27v
+hJazc2jEric89j6E2ZCgzZXHOpzn1hWQvc1dbvqIUzAF3EeZqRYDja9A7VUbvNCG
+0yvNKVtQ2fhM6ycS7S0MZp1px4O8gbt51/LgwCTfjEaSgVqnqeH4t1C6uRioXWFJ
+aenBTuIAN9HDrbyp/0mf
+=tmOZ
 -----END PGP SIGNATURE-----
 
---nextPart1641492.T7RhkDO0UQ--
+--nextPart2026593.5zBBbKB3b0--
 
