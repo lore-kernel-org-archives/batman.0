@@ -1,18 +1,11 @@
-Return-Path: <Jonathan.Haws@sdl.usu.edu>
-From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Date: Wed, 10 Aug 2016 19:59:12 +0000
-Message-ID: <1470859151.4736.17.camel@c00941>
-References: <1469738596-10972-1-git-send-email-jhaws@sdl.usu.edu>
- <2339296.p0oRt0exUO@sven-edge>
-In-Reply-To: <2339296.p0oRt0exUO@sven-edge>
-Reply-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Content-Language: en-US
+Return-Path: <dreamtrick@gmail.com>
+Message-ID: <1470928381.10121.0.camel@gmail.com>
+From: Ignacio Quezada <dreamtrick@gmail.com>
+Date: Thu, 11 Aug 2016 17:13:01 +0200
 Content-Type: text/plain; charset="utf-8"
-Content-ID: <4FD7CE751CA1014C8E4F0FB8CD5CB9F5@sdl.usu.edu>
-Content-Transfer-Encoding: base64
-MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Externalized synchronization
- interval
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] is the multicast performance throttled?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,15 +15,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "sven@narfation.org" <sven@narfation.org>
-Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: "b.a.t.m.a.n" <b.a.t.m.a.n@lists.open-mesh.org>
 
-PiA+ICsJCQlwcmludGYoIiAqKiBTZXR0aW5nIHN5bmMgaW50ZXJ2YWwgdG86ICUuOWYgc2Vjb25k
-cyAoJWxkLiUwOWxkKVxuIiwgc3luY19wZXJpb2QsIGdsb2JhbHMtPnN5bmNfcGVyaW9kLnR2X3Nl
-YywgZ2xvYmFscy0+c3luY19wZXJpb2QudHZfbnNlYyk7DQo+IFsuLi5dDQo+ID4gLQkJCXByaW50
-ZigiYW5ub3VuY2UgbWFzdGVyIC4uLlxuIik7DQo+ID4gKwkJCXByaW50ZigiWyVsZC4lMDlsZF0g
-YW5ub3VuY2UgbWFzdGVyIC4uLlxuIiwgbGFzdF9jaGVjay50dl9zZWMsIGxhc3RfY2hlY2sudHZf
-bnNlYyk7DQo+IFsuLi5dDQo+IA0KPiBBcmUgdGhlc2UgdHdvIHRoaW5ncyBqdXN0IHJlbGljdHMg
-ZnJvbSB5b3VyIHRlc3RpbmcgY29kZT8NCg0KWWVzIGFuZCBuby4gIEkgbGVmdCB0aGVtIGluIGJl
-Y2F1c2UgSSBmaWd1cmVkIHRoZXkgd2VyZSB1c2VmdWwgYWRkaXRpb25zDQp0byB0aGUgbWFpbiBj
-b2RlLg0K
+Hello,
+I am trying to build an application using UDP multicast sockets based
+on a network mesh built with devices connected in IBSS mode. 
+
+The kernel documentation says that this was the place to ask questions
+or anything :).
+
+Testing the application in the mentioned environment, it suffers some
+kind of throttling or buffering limiting the throughput. Testing with
+my application, without the batman interface, just 2 IBSS connected
+devices, the multicast rate goes around 100kb/s (not saying that the
+wifi link actually tops at that speed), but then just to add the
+batman-adv interface and use that instead, the multicast rate becomes
+unstable between 0-20kb/s.
+
+Disabling multicast optimization, it changes a bit the behaviour but
+still the same speed.
+
+If I change the multicast packet to a unicast packet, both setups
+achieve the same speed (~100kb/s), so the batman interface is working
+but the multicast packets are being handled in a different way. Is it
+supposed to be like that?
+
+The packets are sent right away according to the iptables counter of
+packets as well as tcpdump, but the receiver only gets them in a very
+slow way (counting but not calculating, I think it is around 8 packets
+per second).
+The MTU is set as advised, 1532 and the payload for the UDP packets is
+as big as it can be so the packet does not get fragmented.
+
+Any way to increase the rate or disabling the throttling?
+-- 
+
+MVH
+Ignacio Quezada
