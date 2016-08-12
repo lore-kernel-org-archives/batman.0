@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 12 Aug 2016 10:56:48 +0200
-Message-Id: <1470992215-11009-13-git-send-email-sw@simonwunderlich.de>
+Date: Fri, 12 Aug 2016 10:56:49 +0200
+Message-Id: <1470992215-11009-14-git-send-email-sw@simonwunderlich.de>
 In-Reply-To: <1470992215-11009-1-git-send-email-sw@simonwunderlich.de>
 References: <1470992215-11009-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 12/19] batman-adv: disable sysfs knobs when
-	GW-mode is not implemented
+Subject: [B.A.T.M.A.N.] [PATCH 13/19] batman-adv: iv_ogm,
+	Reduce code duplication
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,85 +16,150 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Markus Pargmann <mpa@pengutronix.de>
 
-From: Antonio Quartulli <a@unstable.cc>
+From: Markus Pargmann <mpa@pengutronix.de>
 
-Now that the GW-mode code is algorithm specific, batman-adv expects the
-routing algorithm to implement some APIs to make it work.
+The difference between tq1 and tq2 are calculated the same way in two
+separate functions.
 
-However, such APIs are not mandatory, therefore we might have algorithms
-not providing them. In this case all the sysfs knobs related to GW-mode
-should be deactivated to make sure that settings injected by the user
-for this feature are rejected.
+This patch moves the common code to a separate function
+'batadv_iv_ogm_neigh_diff' which handles everything necessary. The other
+two functions can then handle errors and use the difference directly.
 
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
+Signed-off-by: Markus Pargmann <mpa@pengutronix.de>
+[sven@narfation.org: rebased on current version, initialize return variable
+in batadv_iv_ogm_neigh_diff, add kerneldoc, convert to bool return type]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/sysfs.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+ net/batman-adv/bat_iv_ogm.c | 77 +++++++++++++++++++++++++++------------------
+ 1 file changed, 47 insertions(+), 30 deletions(-)
 
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index e78bd7f..02d96f2 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -429,6 +429,13 @@ static ssize_t batadv_show_gw_mode(struct kobject *kobj, struct attribute *attr,
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
- 	int bytes_written;
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index d04874f..57e0af9 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -2019,35 +2019,40 @@ static void batadv_iv_neigh_print(struct batadv_priv *bat_priv,
+ }
  
-+	/* GW mode is not available if the routing algorithm in use does not
-+	 * implement the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -ENOENT;
-+
- 	switch (atomic_read(&bat_priv->gw.mode)) {
- 	case BATADV_GW_MODE_CLIENT:
- 		bytes_written = sprintf(buff, "%s\n",
-@@ -456,6 +463,13 @@ static ssize_t batadv_store_gw_mode(struct kobject *kobj,
- 	char *curr_gw_mode_str;
- 	int gw_mode_tmp = -1;
- 
-+	/* toggling GW mode is allowed only if the routing algorithm in use
-+	 * provides the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -EINVAL;
-+
- 	if (buff[count - 1] == '\n')
- 		buff[count - 1] = '\0';
- 
-@@ -520,6 +534,13 @@ static ssize_t batadv_show_gw_sel_class(struct kobject *kobj,
+ /**
+- * batadv_iv_ogm_neigh_cmp - compare the metrics of two neighbors
++ * batadv_iv_ogm_neigh_diff - calculate tq difference of two neighbors
+  * @neigh1: the first neighbor object of the comparison
+  * @if_outgoing1: outgoing interface for the first neighbor
+  * @neigh2: the second neighbor object of the comparison
+  * @if_outgoing2: outgoing interface for the second neighbor
++ * @diff: pointer to integer receiving the calculated difference
+  *
+- * Return: a value less, equal to or greater than 0 if the metric via neigh1 is
+- * lower, the same as or higher than the metric via neigh2
++ * The content of *@diff is only valid when this function returns true.
++ * It is less, equal to or greater than 0 if the metric via neigh1 is lower,
++ * the same as or higher than the metric via neigh2
++ *
++ * Return: true when the difference could be calculated, false otherwise
+  */
+-static int batadv_iv_ogm_neigh_cmp(struct batadv_neigh_node *neigh1,
+-				   struct batadv_hard_iface *if_outgoing1,
+-				   struct batadv_neigh_node *neigh2,
+-				   struct batadv_hard_iface *if_outgoing2)
++static bool batadv_iv_ogm_neigh_diff(struct batadv_neigh_node *neigh1,
++				     struct batadv_hard_iface *if_outgoing1,
++				     struct batadv_neigh_node *neigh2,
++				     struct batadv_hard_iface *if_outgoing2,
++				     int *diff)
  {
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
+ 	struct batadv_neigh_ifinfo *neigh1_ifinfo, *neigh2_ifinfo;
+ 	u8 tq1, tq2;
+-	int diff;
++	bool ret = true;
  
-+	/* GW selection class is not available if the routing algorithm in use
-+	 * does not implement the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -ENOENT;
+ 	neigh1_ifinfo = batadv_neigh_ifinfo_get(neigh1, if_outgoing1);
+ 	neigh2_ifinfo = batadv_neigh_ifinfo_get(neigh2, if_outgoing2);
+ 
+ 	if (!neigh1_ifinfo || !neigh2_ifinfo) {
+-		diff = 0;
++		ret = false;
+ 		goto out;
+ 	}
+ 
+ 	tq1 = neigh1_ifinfo->bat_iv.tq_avg;
+ 	tq2 = neigh2_ifinfo->bat_iv.tq_avg;
+-	diff = tq1 - tq2;
++	*diff = (int)tq1 - (int)tq2;
+ 
+ out:
+ 	if (neigh1_ifinfo)
+@@ -2055,6 +2060,32 @@ out:
+ 	if (neigh2_ifinfo)
+ 		batadv_neigh_ifinfo_put(neigh2_ifinfo);
+ 
++	return ret;
++}
 +
- 	if (bat_priv->algo_ops->gw.show_sel_class)
- 		return bat_priv->algo_ops->gw.show_sel_class(bat_priv, buff);
++/**
++ * batadv_iv_ogm_neigh_cmp - compare the metrics of two neighbors
++ * @neigh1: the first neighbor object of the comparison
++ * @if_outgoing1: outgoing interface for the first neighbor
++ * @neigh2: the second neighbor object of the comparison
++ * @if_outgoing2: outgoing interface for the second neighbor
++ *
++ * Return: a value less, equal to or greater than 0 if the metric via neigh1 is
++ * lower, the same as or higher than the metric via neigh2
++ */
++static int batadv_iv_ogm_neigh_cmp(struct batadv_neigh_node *neigh1,
++				   struct batadv_hard_iface *if_outgoing1,
++				   struct batadv_neigh_node *neigh2,
++				   struct batadv_hard_iface *if_outgoing2)
++{
++	bool ret;
++	int diff;
++
++	ret = batadv_iv_ogm_neigh_diff(neigh1, if_outgoing1, neigh2,
++				       if_outgoing2, &diff);
++	if (!ret)
++		return 0;
++
+ 	return diff;
+ }
  
-@@ -532,6 +553,13 @@ static ssize_t batadv_store_gw_sel_class(struct kobject *kobj,
+@@ -2075,29 +2106,15 @@ batadv_iv_ogm_neigh_is_sob(struct batadv_neigh_node *neigh1,
+ 			   struct batadv_neigh_node *neigh2,
+ 			   struct batadv_hard_iface *if_outgoing2)
  {
- 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
+-	struct batadv_neigh_ifinfo *neigh1_ifinfo, *neigh2_ifinfo;
+-	u8 tq1, tq2;
+ 	bool ret;
++	int diff;
  
-+	/* setting the GW selection class is allowed only if the routing
-+	 * algorithm in use implements the GW API
-+	 */
-+	if (!bat_priv->algo_ops->gw.get_best_gw_node ||
-+	    !bat_priv->algo_ops->gw.is_eligible)
-+		return -EINVAL;
-+
- 	if (buff[count - 1] == '\n')
- 		buff[count - 1] = '\0';
+-	neigh1_ifinfo = batadv_neigh_ifinfo_get(neigh1, if_outgoing1);
+-	neigh2_ifinfo = batadv_neigh_ifinfo_get(neigh2, if_outgoing2);
+-
+-	/* we can't say that the metric is better */
+-	if (!neigh1_ifinfo || !neigh2_ifinfo) {
+-		ret = false;
+-		goto out;
+-	}
+-
+-	tq1 = neigh1_ifinfo->bat_iv.tq_avg;
+-	tq2 = neigh2_ifinfo->bat_iv.tq_avg;
+-	ret = (tq1 - tq2) > -BATADV_TQ_SIMILARITY_THRESHOLD;
+-
+-out:
+-	if (neigh1_ifinfo)
+-		batadv_neigh_ifinfo_put(neigh1_ifinfo);
+-	if (neigh2_ifinfo)
+-		batadv_neigh_ifinfo_put(neigh2_ifinfo);
++	ret = batadv_iv_ogm_neigh_diff(neigh1, if_outgoing1, neigh2,
++				       if_outgoing2, &diff);
++	if (!ret)
++		return false;
+ 
++	ret = diff > -BATADV_TQ_SIMILARITY_THRESHOLD;
+ 	return ret;
+ }
  
 -- 
 2.8.1
