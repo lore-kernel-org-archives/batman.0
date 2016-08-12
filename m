@@ -1,15 +1,12 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 12 Aug 2016 10:20:41 +0200
-Message-ID: <3133024.CixFyg0uHR@prime>
-In-Reply-To: <1470859151.4736.17.camel@c00941>
-References: <1469738596-10972-1-git-send-email-jhaws@sdl.usu.edu>
- <2339296.p0oRt0exUO@sven-edge> <1470859151.4736.17.camel@c00941>
+Date: Fri, 12 Aug 2016 10:56:36 +0200
+Message-Id: <1470992215-11009-1-git-send-email-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1546794.XZGupMXkr5";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Externalized synchronization
-	interval
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 00/19] pull request for net-next: batman-adv
+	2016-08-12
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,59 +16,116 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1546794.XZGupMXkr5
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi David,
 
-On Wednesday, August 10, 2016 7:59:12 PM CEST Jonathan Haws wrote:
-> > > +			printf(" ** Setting sync interval to: %.9f seconds (%ld.
-%09ld)\n",
-> > > sync_period, globals->sync_period.tv_sec,
-> > > globals->sync_period.tv_nsec);
-> 
-> > [...]
-> > 
-> > > -			printf("announce master ...\n");
-> > > +			printf("[%ld.%09ld] announce master ...\n", 
-last_check.tv_sec,
-> > > last_check.tv_nsec);
-> 
-> > [...]
-> > 
-> > Are these two things just relicts from your testing code?
-> 
-> 
-> Yes and no.  I left them in because I figured they were useful additions
-> to the main code.
+this is our first feature pull request for batman-adv, there are at least two
+more to come (the bigger features come later).
 
-Hmm, I'm not sure if I like the format, but I guess we can keep it for now. :)
+Please pull or let me know of any problem!
 
-Cheers,
-       Simon
---nextPart1546794.XZGupMXkr5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Thank you,
+      Simon
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+The following changes since commit 1fe323aa1b2390a0c57fb0b06a782f128d49094c:
 
-iQIcBAABCgAGBQJXrYbZAAoJEKEr45hCkp6hhTUP/0qLml6K8hfEwrpm6xdahjXj
-IA01AIQi2Zn9QHnsc5R9P4aB+xP7zm7uxuVmUwWMQr8op5vBK9FjkmMOMpPFnocy
-bBAuBR/hbfVgi+Zyw7sNfpS+G2ggFNTUbrGuy4I+pXhOhNyXbRPElib6onVQvyPN
-0TwiyzvAbafCPI+GE5hcWxdFUYJ1bz4FPI+YOUcmWFNPu3WzzjRnZh69ttxdHtjA
-jq6Iu++CnXMczJ38Y5ByTC9LbHaWn6tYjxH5e39Cfyso087zBBopNAAw1klqqVeT
-kJ+7y3R7x7VMqZKXkWs5zHTKIWzKmuvJB3kqaLAnkJNxCQ1cRWZZT7+n9Us1Yhxj
-AgB+vC8EnC8OyJ1Lxe9Rkiam2pGmiBb7Seo1groXqRIdMywVLTfEYE6glHddT6hx
-hvVWxdeGpSzklPq0fsjWvD8mz7K6LDLMUycBKfI+Cmvgb9tjo2P/mH5ofcNOuUN0
-A9cTX6cDqJGIYqWLtXF1PgbPxPDJV1isbI1Zk284UNOolaWtc6UJGVwUe2LBqVcR
-zoYrthH28LuK5r2zDjoIxXTwjriiQrrlAXWe+g3W3cKrMwTZjMLR91FIhgm3E8tn
-oljaa6U03sANoWd8DhfEYDCXGcb0+Ws1zzQYCQ7auZOiuw6d/rMEW6JoI95mJ5xA
-f+aQ6LWsc6rZIfwcxcG2
-=yb5g
------END PGP SIGNATURE-----
+  sctp: use event->chunk when it's valid (2016-08-08 14:31:23 -0700)
 
---nextPart1546794.XZGupMXkr5--
+are available in the git repository at:
 
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-20160812
+
+for you to fetch changes up to b5dcbad25219b82408e15e6d775a406be2116af1:
+
+  batman-adv: Fix consistency of update route messages (2016-08-09 07:54:34 +0200)
+
+----------------------------------------------------------------
+This feature patchset includes the following changes (mostly
+chronological order):
+
+ - bump version strings, by Simon Wunderlich
+
+ - kerneldoc clean up, by Sven Eckelmann
+
+ - enable RTNL automatic loading and according documentation
+   changes, by Sven Eckelmann (2 patches)
+
+ - fix/improve interface removal and associated locking, by
+   Sven Eckelmann (3 patches)
+
+ - clean up unused variables, by Linus Luessing
+
+ - implement Gateway selection code for B.A.T.M.A.N. V by
+   Antonio Quartulli (4 patches)
+
+ - rewrite TQ comparison by Markus Pargmann
+
+ - fix Cocinelle warnings on bool vs integers (by Fenguang Wu/Intels
+   kbuild test robot) and bitwise arithmetic operations (by Linus
+   Luessing)
+
+ - rewrite packet creation for forwarding for readability and to avoid
+   reference count mistakes, by Linus Luessing
+
+ - use kmem_cache for translation table, which results in more efficient
+   storing of translation table entries, by Sven Eckelmann
+
+ - rewrite/clarify reference handling for send_skb_unicast, by Sven
+   Eckelmann
+
+ - fix debug messages when updating routes, by Sven Eckelmann
+
+----------------------------------------------------------------
+Antonio Quartulli (4):
+      batman-adv: make the GW selection class algorithm specific
+      batman-adv: make GW election code protocol specific
+      batman-adv: B.A.T.M.A.N. V - implement GW selection logic
+      batman-adv: disable sysfs knobs when GW-mode is not implemented
+
+Linus Lüssing (3):
+      batman-adv: Remove unused primary_if and bat_priv variables
+      batman-adv: Introduce forward packet creation helper
+      batman-adv: Use bitwise instead of arithmetic operator for flags
+
+Markus Pargmann (1):
+      batman-adv: iv_ogm, Reduce code duplication
+
+Simon Wunderlich (1):
+      batman-adv: Start new development cycle
+
+Sven Eckelmann (9):
+      batman-adv: Document optional batadv_algo_ops
+      batman-adv: Define module rtnl link name
+      batman-adv: Use rtnl link in device creation example
+      batman-adv: Modify mesh_iface outside sysfs context
+      batman-adv: Revert "postpone sysfs removal when unregistering"
+      batman-adv: Avoid sysfs name collision for netns moves
+      batman-adv: use kmem_cache for translation table
+      batman-adv: Remove orig_node reference handling from send_skb_unicast
+      batman-adv: Fix consistency of update route messages
+
+kbuild test robot (1):
+      batman-adv: fix boolreturn.cocci warnings
+
+ Documentation/networking/batman-adv.txt |  17 +-
+ net/batman-adv/bat_iv_ogm.c             | 347 +++++++++++++++++++++++++-------
+ net/batman-adv/bat_v.c                  | 257 ++++++++++++++++++++++-
+ net/batman-adv/bridge_loop_avoidance.c  |   2 +-
+ net/batman-adv/gateway_client.c         | 222 +++-----------------
+ net/batman-adv/gateway_client.h         |   5 +
+ net/batman-adv/gateway_common.c         |   5 +-
+ net/batman-adv/hard-interface.c         |  26 +--
+ net/batman-adv/main.c                   |  17 +-
+ net/batman-adv/main.h                   |   2 +-
+ net/batman-adv/multicast.c              |   2 +-
+ net/batman-adv/routing.c                |  43 ++--
+ net/batman-adv/send.c                   | 136 +++++++++----
+ net/batman-adv/send.h                   |   6 +
+ net/batman-adv/soft-interface.c         |  47 ++---
+ net/batman-adv/sysfs.c                  | 183 ++++++++++++++---
+ net/batman-adv/translation-table.c      | 169 ++++++++++++++--
+ net/batman-adv/translation-table.h      |   3 +
+ net/batman-adv/types.h                  |  51 ++++-
+ 19 files changed, 1092 insertions(+), 448 deletions(-)
