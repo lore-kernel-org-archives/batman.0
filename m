@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 16 Aug 2016 10:32:42 +0200
-Message-Id: <1471336364-16334-15-git-send-email-sw@simonwunderlich.de>
+Date: Tue, 16 Aug 2016 10:32:44 +0200
+Message-Id: <1471336364-16334-17-git-send-email-sw@simonwunderlich.de>
 In-Reply-To: <1471336364-16334-1-git-send-email-sw@simonwunderlich.de>
 References: <1471336364-16334-1-git-send-email-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 14/16] batman-adv: Provide bla group in the
-	mesh_info netlink msg
+Subject: [B.A.T.M.A.N.] [PATCH 16/16] batman-adv: Indicate netlink socket
+	can be used with netns.
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,54 +16,33 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
+Cc: Marek Lindner <mareklindner@neomailbox.ch>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Andrew Lunn <andrew@lunn.ch>
 
-The bridge loop avoidange is the main information for the debugging of of
-bridge loop detection problems. It is therefore necessary when comparing
-the bla claim tables.
+Set the netnsof flag on the family structure, indicating it can
+be used with different network name spaces.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 ---
- net/batman-adv/netlink.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ net/batman-adv/netlink.c | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index b33675c..464de9d 100644
+index c3f6816..18831e7 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -19,6 +19,7 @@
- #include "main.h"
+@@ -54,6 +54,7 @@ struct genl_family batadv_netlink_family = {
+ 	.name = BATADV_NL_NAME,
+ 	.version = 1,
+ 	.maxattr = BATADV_ATTR_MAX,
++	.netnsok = true,
+ };
  
- #include <linux/atomic.h>
-+#include <linux/byteorder/generic.h>
- #include <linux/errno.h>
- #include <linux/fs.h>
- #include <linux/genetlink.h>
-@@ -42,6 +43,7 @@
- #include "gateway_client.h"
- #include "hard-interface.h"
- #include "originator.h"
-+#include "packet.h"
- #include "soft-interface.h"
- #include "tp_meter.h"
- #include "translation-table.h"
-@@ -141,6 +143,12 @@ batadv_netlink_mesh_info_put(struct sk_buff *msg, struct net_device *soft_iface)
- 		       (u8)atomic_read(&bat_priv->tt.vn)))
- 		goto out;
- 
-+#ifdef CONFIG_BATMAN_ADV_BLA
-+	if (nla_put_u16(msg, BATADV_ATTR_BLA_CRC,
-+			ntohs(bat_priv->bla.claim_dest.group)))
-+		goto out;
-+#endif
-+
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
- 	if (primary_if && primary_if->if_status == BATADV_IF_ACTIVE) {
- 		hard_iface = primary_if->net_dev;
+ /* multicast groups */
 -- 
 2.8.1
 
