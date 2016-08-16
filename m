@@ -1,16 +1,9 @@
-Return-Path: <dreamtrick@gmail.com>
-Message-ID: <1471284198.10713.0.camel@gmail.com>
-From: Ignacio Quezada <dreamtrick@gmail.com>
-Date: Mon, 15 Aug 2016 20:03:18 +0200
-In-Reply-To: <20160814172843.GE8599@otheros>
-References: <1470928381.10121.0.camel@gmail.com>
- <20160811154723.GJ4483@otheros> <1470931774.10121.10.camel@gmail.com>
- <20160811163153.GK4483@otheros> <1470988256.16102.4.camel@gmail.com>
- <20160814172128.GD8599@otheros> <20160814172843.GE8599@otheros>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] is the multicast performance throttled?
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 16 Aug 2016 10:32:28 +0200
+Message-Id: <1471336364-16334-1-git-send-email-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH 00/16] pull request for net-next: batman-adv
+	2016-08-16
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,25 +13,102 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
+Hi David,
 
+this is our second feature pull request for batman-adv in this round, with
+our joint work on netlink and netns support. There will be at least one more
+pull request coming later.
 
-> > Second guess (which is probably it :-) ): In general, batman-adv
-> > (re)broadcasts a multicast packet three times on an interface. To
-> > ensure proper reception even over multiple hops.
-> 
-> PS: As you are compiling batman-adv yourself, you might want to
-> try different values for BATADV_NUM_BCASTS_WIRELESS in main.h to
-> (in)validate this hypothesis.
+Please pull or let me know of any problem!
 
-This was indeed "the problem". Setting that value to 1 allowed much
-more throughput. Is the value 3 just an arbitrary number to "ensure"
-reliability? Because that would mean that if dropping some multicast
-packets now and then is not really an issue, I could just set this to 1
-in my case.
+Thank you,
+      Simon
 
---
-MVH
-Ignacio Quezada
+The following changes since commit b5dcbad25219b82408e15e6d775a406be2116af1:
+
+  batman-adv: Fix consistency of update route messages (2016-08-09 07:54:34 +0200)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-20160816
+
+for you to fetch changes up to 4c09a08b47ffac9aa3bc91870aa54c9ae39d9674:
+
+  batman-adv: Indicate netlink socket can be used with netns. (2016-08-09 07:54:43 +0200)
+
+----------------------------------------------------------------
+This feature patchset is all about adding netlink support, which should
+supersede our debugfs configuration interface in the long run. It is
+especially necessary when batman-adv should be used in different
+namespaces, since debugfs can not differentiate between those.
+
+More specifically, the following changes are included:
+
+ - Two fixes for namespace handling by Andrew Lunn, checking also the
+   namespaces for parent interfaces, and supress debugfs entries
+   for non-default netns
+
+ - Implement various netlink commands for the new interface, by
+   Matthias Schiffer, Andrew Lunn, Sven Eckelmann and Simon Wunderlich
+   (13 patches):
+    * routing algorithm list
+    * hardif list
+    * translation tables (local and global)
+    * TTVN for the translation tables
+    * originator and neighbor tables for B.A.T.M.A.N. IV
+      and B.A.T.M.A.N. V
+    * gateway dump functionality for B.A.T.M.A.N. IV
+      and B.A.T.M.A.N. V
+    * Bridge Loop Avoidance claims, and corresponding BLA group
+    * Bridge Loop Avoidance backbone tables
+
+ - Finally, mark batman-adv as netns compatible, by Andrew Lunn (1 patch)
+
+----------------------------------------------------------------
+Andrew Lunn (5):
+      batman-adv: Handle parent interfaces in a different netns
+      batman-adv: Suppress debugfs entries for netns's
+      batman-adv: add B.A.T.M.A.N. IV bat_gw_dump implementations
+      batman-adv: add B.A.T.M.A.N. Dump BLA claims via netlink
+      batman-adv: Indicate netlink socket can be used with netns.
+
+Matthias Schiffer (6):
+      batman-adv: netlink: add routing_algo query
+      batman-adv: netlink: hardif query
+      batman-adv: netlink: add translation table query
+      batman-adv: netlink: add originator and neighbor table queries
+      batman-adv: add B.A.T.M.A.N. IV bat_{orig, neigh}_dump implementations
+      batman-adv: add B.A.T.M.A.N. V bat_{orig, neigh}_dump implementations
+
+Simon Wunderlich (1):
+      batman-adv: add backbone table netlink support
+
+Sven Eckelmann (4):
+      batman-adv: Provide TTVN in the mesh_info netlink msg
+      batman-adv: netlink: add gateway table queries
+      batman-adv: add B.A.T.M.A.N. V bat_gw_dump implementations
+      batman-adv: Provide bla group in the mesh_info netlink msg
+
+ include/uapi/linux/batman_adv.h        |  94 +++++++
+ net/batman-adv/bat_algo.c              |  68 +++++
+ net/batman-adv/bat_algo.h              |   3 +
+ net/batman-adv/bat_iv_ogm.c            | 471 +++++++++++++++++++++++++++++++++
+ net/batman-adv/bat_v.c                 | 465 ++++++++++++++++++++++++++++++++
+ net/batman-adv/bridge_loop_avoidance.c | 333 +++++++++++++++++++++++
+ net/batman-adv/bridge_loop_avoidance.h |  17 +-
+ net/batman-adv/debugfs.c               |  18 ++
+ net/batman-adv/gateway_client.c        |  59 +++++
+ net/batman-adv/gateway_client.h        |   2 +
+ net/batman-adv/hard-interface.c        |  50 +++-
+ net/batman-adv/netlink.c               | 217 ++++++++++++++-
+ net/batman-adv/netlink.h               |   6 +
+ net/batman-adv/originator.c            | 160 +++++++++++
+ net/batman-adv/originator.h            |   4 +
+ net/batman-adv/packet.h                |  36 ---
+ net/batman-adv/translation-table.c     | 377 ++++++++++++++++++++++++++
+ net/batman-adv/translation-table.h     |   4 +
+ net/batman-adv/types.h                 |  12 +
+ 19 files changed, 2348 insertions(+), 48 deletions(-)
