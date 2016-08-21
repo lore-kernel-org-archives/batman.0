@@ -1,14 +1,16 @@
 Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Sun, 21 Aug 2016 05:25:34 +0200
-Message-Id: <20160821032534.11074-3-linus.luessing@c0d3.blue>
-In-Reply-To: <20160821032534.11074-1-linus.luessing@c0d3.blue>
+Date: Sun, 21 Aug 2016 05:35:00 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20160821033500.GB29805@otheros>
 References: <20160821032534.11074-1-linus.luessing@c0d3.blue>
+ <20160821032534.11074-2-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: fix batadv_forw_packet
-	kerneldoc for list attribute
+In-Reply-To: <20160821032534.11074-2-linus.luessing@c0d3.blue>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: elp: skb network header
+ API instead of skb->data access
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,26 +22,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The forw_packet list node is wrongly attributed to the icmp socket code.
+On Sun, Aug 21, 2016 at 05:25:33AM +0200, Linus Lüssing wrote:
+> Instead of playing with skb attributes directly, let's use the
+> appropriate, more descriptive API instead.
+> 
+> Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+> ---
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/types.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 74d865a..c25bec6 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1237,7 +1237,7 @@ struct batadv_skb_cb {
- 
- /**
-  * struct batadv_forw_packet - structure for bcast packets to be sent/forwarded
-- * @list: list node for batadv_socket_client::queue_list
-+ * @list: list node for batadv_priv::forw_{bat,bcast}_list
-  * @send_time: execution time for delayed_work (packet sending)
-  * @own: bool for locally generated packets (local OGMs are re-scheduled after
-  *  sending)
--- 
-2.1.4
-
+Sorry, was on the maint branch when writing and
+git-format-patch'ing this. While "git am *.patch" fails,
+"git am --3way *.patch" works and looks good to me.
