@@ -1,14 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 21 Aug 2016 08:47:28 +0200
-Message-ID: <1483845.W7oKTuDr2p@sven-edge>
-In-Reply-To: <20160821032534.11074-1-linus.luessing@c0d3.blue>
-References: <20160821032534.11074-1-linus.luessing@c0d3.blue>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart13145420.oLnsMXk0r1";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH (maint?) 1/3] batamn-adv: fix elp packet
-	data reservation
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 22 Aug 2016 15:56:00 +0200
+Message-Id: <20160822135620.15337-1-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH 00/20] pull request for net-next: batman-adv
+	2016-08-16*
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,71 +13,86 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart13145420.oLnsMXk0r1
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Hi David,
 
-On Sonntag, 21. August 2016 05:25:32 CEST Linus L=FCssing wrote:
-[...]
-> @@ -334,8 +333,9 @@ int batadv_v_elp_iface_enable(struct batadv_hard_ifac=
-e *hard_iface)
->  		goto out;
-> =20
->  	skb_reserve(hard_iface->bat_v.elp_skb, ETH_HLEN + NET_IP_ALIGN);
-> -	elp_buff =3D skb_push(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
-> -	elp_packet =3D (struct batadv_elp_packet *)elp_buff;
-> +	skb_put(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
-> +	elp_packet =3D (struct batadv_elp_packet *)
-> +			hard_iface->bat_v.elp_skb->data;
->  	memset(elp_packet, 0, BATADV_ELP_HLEN);
-> =20
->  	elp_packet->packet_type =3D BATADV_ELP;
->=20
+this is our third (and final, for now) pull request for batman-adv in this round,
+with mostly maintainability stuff.
 
-I don't get right now why you did the of split the skb_put into two differe=
-nt
-"ugly" lines (skb_put + the elp_packet assignment without elp_buff). I fear=
-=20
-that this weird (non)-alignment you've created will bite us when the patch =
-is=20
-submitted upstream.
+Please pull or let me know of any problem!
 
-Maybe you can tell us more about why this removal of elp_buff is necessary.
+Thank you,
+      Simon
 
-Btw. please use the prefix "batman-adv" in the subject and not "batamn-adv"=
- ;)
+The following changes since commit 4c09a08b47ffac9aa3bc91870aa54c9ae39d9674:
 
-And it is at the moment not important whether it goes into next or
-maint. Both will be submitted by Simon to net.git because we are currently
-completely off with our timing (compared to the upstream submissions).
-I personally would go for maint.
+  batman-adv: Indicate netlink socket can be used with netns. (2016-08-09 07:54:43 +0200)
 
-Kind regards,
-	Sven
+are available in the git repository at:
 
---nextPart13145420.oLnsMXk0r1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-20160822
 
------BEGIN PGP SIGNATURE-----
+for you to fetch changes up to dc1cbd145eecf21209d0322874e1766bcbce3e3f:
 
-iQIcBAABCgAGBQJXuU6AAAoJEF2HCgfBJntGpE8P/2tuYA2tsGbGPlDE1Q9IV8Rm
-gWTIWb8jZKM6c7wn78pEIru0ff/u0AZwfqnkA0RhFhGJJ4QB/ut71H2UIPkHx/8c
-jbAojQxiYcPd6xQt9opFAwv+0W7Jve05ETFTn+BXMQbosHlDDuS9dlSxeEqtj97p
-D14ORWcTz5fALTgFUgFMFwKeFKfG+0cDmXE036KJS1dHP3mYws5JcB5rnfXOe++o
-WbVYoQUO4VvZW3eRx8Xib3kncCXLuiHH0PIfS0Idl2GKa72mFbcRwPGsdJP8aGt6
-CrlobFlZdkuVi9WYbdkVY5ZDplRRm5YfaOyQcvAJSv9YoiZqA7D26UCA5YjEHv9s
-u/N6AsNLijSFCvIHJE4GmOSXkXN8IN5TzTnyPOQFcke92Tw8GM+GUbnX716h0Mx5
-3F4OewsmkKAleZNR2vLuABvHJT/VPAmH1VqoiwKgbz6ngV7StT8i9xRNEklrLChb
-8+Z6nMeIewtwY14pQ+qOym6r01US806p8R5c36nIKN7bICQC1uo6qWjCPwv5y7Lz
-ZUENR87oAjTrpY2taRkSugxqxRIdyqcriIHnsNuQfZ+n/8jAWb0JQQIlIij/qfV5
-tE5WPsPIprlRfV4WGXMNWWsS+AMVxlzPoECqX15wtUzKry8y5YaVK+cXo0oXgy2F
-7YPZL9VOycJ8PMoHiBXW
-=uqbq
------END PGP SIGNATURE-----
+  batman-adv: Allow to disable debugfs support (2016-08-09 07:54:54 +0200)
 
---nextPart13145420.oLnsMXk0r1--
+----------------------------------------------------------------
+This feature patchset includes the following changes:
 
+ - place kref_get near usage of referenced objects, separate patches
+   for various used objects to improve readability and maintainability
+   by Sven Eckelmann (18 patches)
+
+ - Keep batadv net device when all hard interfaces disappear, to
+   improve situations where tools currently use work arounds, by
+   Sven Eckelmann
+
+ - Add an option to disable debugfs support to minimize footprint when
+   userspace uses netlink only, by Sven Eckelmann
+
+----------------------------------------------------------------
+Sven Eckelmann (20):
+      batman-adv: Place kref_get for orig_node_vlan near use
+      batman-adv: Place kref_get for orig_ifinfo near use
+      batman-adv: Place kref_get for tt_orig_list_entry near use
+      batman-adv: Place kref_get for neigh_ifinfo near use
+      batman-adv: Place kref_get for neigh_node near use
+      batman-adv: Place kref_get for orig_node near use
+      batman-adv: Place kref_get for tt_local_entry near use
+      batman-adv: Place kref_get for tt_common near use
+      batman-adv: Place kref_get for bla_claim near use
+      batman-adv: Place kref_get for bla_backbone_gw near use
+      batman-adv: Place kref_get for dat_entry near use
+      batman-adv: Place kref_get for gw_node near use
+      batman-adv: Place kref_get for hard_iface near use
+      batman-adv: Place kref_get for softif_vlan near use
+      batman-adv: Place kref_get for nc_node near use
+      batman-adv: Place kref_get for nc_path near use
+      batman-adv: Place kref_get for tvlv_container near use
+      batman-adv: Place kref_get for tvlv_handler near use
+      batman-adv: Keep batadv netdev when hardif disappears
+      batman-adv: Allow to disable debugfs support
+
+ net/batman-adv/Kconfig                 | 15 +++++++++++++--
+ net/batman-adv/Makefile                |  4 ++--
+ net/batman-adv/bat_algo.c              |  2 ++
+ net/batman-adv/bat_iv_ogm.c            | 19 ++++++++++++++++---
+ net/batman-adv/bat_v.c                 | 12 ++++++++++++
+ net/batman-adv/bat_v_ogm.c             |  5 ++---
+ net/batman-adv/bridge_loop_avoidance.c | 13 ++++++++-----
+ net/batman-adv/debugfs.h               |  2 +-
+ net/batman-adv/distributed-arp-table.c |  4 +++-
+ net/batman-adv/gateway_client.c        | 10 ++++++++--
+ net/batman-adv/hard-interface.c        |  8 +++-----
+ net/batman-adv/icmp_socket.h           | 18 +++++++++++++++++-
+ net/batman-adv/main.c                  |  2 ++
+ net/batman-adv/multicast.c             |  2 ++
+ net/batman-adv/network-coding.c        | 11 ++++++-----
+ net/batman-adv/originator.c            | 12 ++++++++----
+ net/batman-adv/soft-interface.c        |  4 ++++
+ net/batman-adv/translation-table.c     | 10 +++++++---
+ net/batman-adv/tvlv.c                  |  9 +++++++++
+ net/batman-adv/types.h                 |  6 ++++++
+ 20 files changed, 131 insertions(+), 37 deletions(-)
