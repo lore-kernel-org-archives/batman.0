@@ -1,10 +1,10 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 22 Aug 2016 15:56:15 +0200
-Message-Id: <20160822135620.15337-16-sw@simonwunderlich.de>
+Date: Mon, 22 Aug 2016 15:56:16 +0200
+Message-Id: <20160822135620.15337-17-sw@simonwunderlich.de>
 In-Reply-To: <20160822135620.15337-1-sw@simonwunderlich.de>
 References: <20160822135620.15337-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 15/20] batman-adv: Place kref_get for nc_node
+Subject: [B.A.T.M.A.N.] [PATCH 16/20] batman-adv: Place kref_get for nc_path
 	near use
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -33,25 +33,25 @@ Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index 3814cfb..4f4cfe5 100644
+index 4f4cfe5..165cd27 100644
 --- a/net/batman-adv/network-coding.c
 +++ b/net/batman-adv/network-coding.c
-@@ -859,7 +859,6 @@ batadv_nc_get_nc_node(struct batadv_priv *bat_priv,
- 	/* Initialize nc_node */
- 	INIT_LIST_HEAD(&nc_node->list);
- 	kref_init(&nc_node->refcount);
--	kref_get(&nc_node->refcount);
- 	ether_addr_copy(nc_node->addr, orig_node->orig);
- 	kref_get(&orig_neigh_node->refcount);
- 	nc_node->orig_node = orig_neigh_node;
-@@ -878,6 +877,7 @@ batadv_nc_get_nc_node(struct batadv_priv *bat_priv,
+@@ -978,7 +978,6 @@ static struct batadv_nc_path *batadv_nc_get_path(struct batadv_priv *bat_priv,
+ 	INIT_LIST_HEAD(&nc_path->packet_list);
+ 	spin_lock_init(&nc_path->packet_list_lock);
+ 	kref_init(&nc_path->refcount);
+-	kref_get(&nc_path->refcount);
+ 	nc_path->last_valid = jiffies;
+ 	ether_addr_copy(nc_path->next_hop, dst);
+ 	ether_addr_copy(nc_path->prev_hop, src);
+@@ -988,6 +987,7 @@ static struct batadv_nc_path *batadv_nc_get_path(struct batadv_priv *bat_priv,
+ 		   nc_path->next_hop);
  
- 	/* Add nc_node to orig_node */
- 	spin_lock_bh(lock);
-+	kref_get(&nc_node->refcount);
- 	list_add_tail_rcu(&nc_node->list, list);
- 	spin_unlock_bh(lock);
- 
+ 	/* Add nc_path to hash table */
++	kref_get(&nc_path->refcount);
+ 	hash_added = batadv_hash_add(hash, batadv_nc_hash_compare,
+ 				     batadv_nc_hash_choose, &nc_path_key,
+ 				     &nc_path->hash_entry);
 -- 
 2.9.3
 
