@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 22 Aug 2016 15:56:18 +0200
-Message-Id: <20160822135620.15337-19-sw@simonwunderlich.de>
+Date: Mon, 22 Aug 2016 15:56:19 +0200
+Message-Id: <20160822135620.15337-20-sw@simonwunderlich.de>
 In-Reply-To: <20160822135620.15337-1-sw@simonwunderlich.de>
 References: <20160822135620.15337-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 18/20] batman-adv: Place kref_get for
-	tvlv_handler near use
+Subject: [B.A.T.M.A.N.] [PATCH 19/20] batman-adv: Keep batadv netdev when
+	hardif disappears
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,35 +20,40 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mare
 
 From: Sven Eckelmann <sven@narfation.org>
 
-It is hard to understand why the refcnt is increased when it isn't done
-near the actual place the new reference is used. So using kref_get right
-before the place which requires the reference and in the same function
-helps to avoid accidental problems caused by incorrect reference counting.
+Switch-like virtual interfaces like bridge or openvswitch don't destroy
+itself when all their attached netdevices dissappear. Instead they only
+remove the link to the unregistered device and keep working until they get
+removed manually.
+
+This has the benefit that all configurations for this interfaces are kept
+and daemons reacting to rtnl events can just add new slave interfaces
+without going through the complete configuration of the switch-like
+netdevice.
+
+Handling unregister events of client devices similar in batman-adv allows
+users to drop their current workaround of dummy netdevices attached to
+batman-adv soft-interfaces.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/tvlv.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ net/batman-adv/hard-interface.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
-index 3533867..77654f0 100644
---- a/net/batman-adv/tvlv.c
-+++ b/net/batman-adv/tvlv.c
-@@ -547,8 +547,12 @@ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
- 	INIT_HLIST_NODE(&tvlv_handler->list);
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 9284c73..08ce361 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -725,7 +725,7 @@ static void batadv_hardif_remove_interface(struct batadv_hard_iface *hard_iface)
+ 	/* first deactivate interface */
+ 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
+ 		batadv_hardif_disable_interface(hard_iface,
+-						BATADV_IF_CLEANUP_AUTO);
++						BATADV_IF_CLEANUP_KEEP);
  
- 	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
-+	kref_get(&tvlv_handler->refcount);
- 	hlist_add_head_rcu(&tvlv_handler->list, &bat_priv->tvlv.handler_list);
- 	spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
-+
-+	/* don't return reference to new tvlv_handler */
-+	batadv_tvlv_handler_put(tvlv_handler);
- }
- 
- /**
+ 	if (hard_iface->if_status != BATADV_IF_NOT_IN_USE)
+ 		return;
 -- 
 2.9.3
 
