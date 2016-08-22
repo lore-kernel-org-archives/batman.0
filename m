@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 22 Aug 2016 15:56:16 +0200
-Message-Id: <20160822135620.15337-17-sw@simonwunderlich.de>
+Date: Mon, 22 Aug 2016 15:56:17 +0200
+Message-Id: <20160822135620.15337-18-sw@simonwunderlich.de>
 In-Reply-To: <20160822135620.15337-1-sw@simonwunderlich.de>
 References: <20160822135620.15337-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 16/20] batman-adv: Place kref_get for nc_path
-	near use
+Subject: [B.A.T.M.A.N.] [PATCH 17/20] batman-adv: Place kref_get for
+	tvlv_container near use
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -29,29 +29,27 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/network-coding.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/tvlv.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index 4f4cfe5..165cd27 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -978,7 +978,6 @@ static struct batadv_nc_path *batadv_nc_get_path(struct batadv_priv *bat_priv,
- 	INIT_LIST_HEAD(&nc_path->packet_list);
- 	spin_lock_init(&nc_path->packet_list_lock);
- 	kref_init(&nc_path->refcount);
--	kref_get(&nc_path->refcount);
- 	nc_path->last_valid = jiffies;
- 	ether_addr_copy(nc_path->next_hop, dst);
- 	ether_addr_copy(nc_path->prev_hop, src);
-@@ -988,6 +987,7 @@ static struct batadv_nc_path *batadv_nc_get_path(struct batadv_priv *bat_priv,
- 		   nc_path->next_hop);
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index 3d1cf0f..3533867 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -257,8 +257,13 @@ void batadv_tvlv_container_register(struct batadv_priv *bat_priv,
+ 	spin_lock_bh(&bat_priv->tvlv.container_list_lock);
+ 	tvlv_old = batadv_tvlv_container_get(bat_priv, type, version);
+ 	batadv_tvlv_container_remove(bat_priv, tvlv_old);
++
++	kref_get(&tvlv_new->refcount);
+ 	hlist_add_head(&tvlv_new->list, &bat_priv->tvlv.container_list);
+ 	spin_unlock_bh(&bat_priv->tvlv.container_list_lock);
++
++	/* don't return reference to new tvlv_container */
++	batadv_tvlv_container_put(tvlv_new);
+ }
  
- 	/* Add nc_path to hash table */
-+	kref_get(&nc_path->refcount);
- 	hash_added = batadv_hash_add(hash, batadv_nc_hash_compare,
- 				     batadv_nc_hash_choose, &nc_path_key,
- 				     &nc_path->hash_entry);
+ /**
 -- 
 2.9.3
 
