@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 22 Aug 2016 15:56:12 +0200
-Message-Id: <20160822135620.15337-13-sw@simonwunderlich.de>
+Date: Mon, 22 Aug 2016 15:56:13 +0200
+Message-Id: <20160822135620.15337-14-sw@simonwunderlich.de>
 In-Reply-To: <20160822135620.15337-1-sw@simonwunderlich.de>
 References: <20160822135620.15337-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 12/20] batman-adv: Place kref_get for gw_node
-	near use
+Subject: [B.A.T.M.A.N.] [PATCH 13/20] batman-adv: Place kref_get for
+	hard_iface near use
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -29,40 +29,34 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/gateway_client.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ net/batman-adv/hard-interface.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index b889e1f..4b51b1c 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -339,14 +339,15 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
- 	if (!gw_node)
- 		return;
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 43c9a3e..9284c73 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -694,6 +694,7 @@ batadv_hardif_add_interface(struct net_device *net_dev)
+ 	INIT_HLIST_HEAD(&hard_iface->neigh_list);
  
-+	kref_init(&gw_node->refcount);
- 	INIT_HLIST_NODE(&gw_node->list);
- 	kref_get(&orig_node->refcount);
- 	gw_node->orig_node = orig_node;
- 	gw_node->bandwidth_down = ntohl(gateway->bandwidth_down);
- 	gw_node->bandwidth_up = ntohl(gateway->bandwidth_up);
--	kref_init(&gw_node->refcount);
+ 	spin_lock_init(&hard_iface->neigh_list_lock);
++	kref_init(&hard_iface->refcount);
  
- 	spin_lock_bh(&bat_priv->gw.list_lock);
-+	kref_get(&gw_node->refcount);
- 	hlist_add_head_rcu(&gw_node->list, &bat_priv->gw.list);
- 	spin_unlock_bh(&bat_priv->gw.list_lock);
+ 	hard_iface->num_bcasts = BATADV_NUM_BCASTS_DEFAULT;
+ 	if (batadv_is_wifi_netdev(net_dev))
+@@ -701,11 +702,8 @@ batadv_hardif_add_interface(struct net_device *net_dev)
  
-@@ -357,6 +358,9 @@ static void batadv_gw_node_add(struct batadv_priv *bat_priv,
- 		   ntohl(gateway->bandwidth_down) % 10,
- 		   ntohl(gateway->bandwidth_up) / 10,
- 		   ntohl(gateway->bandwidth_up) % 10);
-+
-+	/* don't return reference to new gw_node */
-+	batadv_gw_node_put(gw_node);
- }
+ 	batadv_v_hardif_init(hard_iface);
  
- /**
+-	/* extra reference for return */
+-	kref_init(&hard_iface->refcount);
+-	kref_get(&hard_iface->refcount);
+-
+ 	batadv_check_known_mac_addr(hard_iface->net_dev);
++	kref_get(&hard_iface->refcount);
+ 	list_add_tail_rcu(&hard_iface->list, &batadv_hardif_list);
+ 
+ 	return hard_iface;
 -- 
 2.9.3
 
