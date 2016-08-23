@@ -1,15 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Tue, 23 Aug 2016 03:31:00 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20160823013100.GC27083@otheros>
-References: <1467741697-8811-1-git-send-email-linus.luessing@c0d3.blue>
- <1467741697-8811-2-git-send-email-linus.luessing@c0d3.blue>
- <2069472.CH1chEaXG0@sven-edge>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <2069472.CH1chEaXG0@sven-edge>
-Subject: Re: [B.A.T.M.A.N.] [PATCHv2 2/2] batman-adv: Snoop DHCPACKs for DAT
+Return-Path: <davem@davemloft.net>
+Date: Mon, 22 Aug 2016 20:40:02 -0700 (PDT)
+Message-Id: <20160822.204002.543366993635057838.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20160822135620.15337-1-sw@simonwunderlich.de>
+References: <20160822135620.15337-1-sw@simonwunderlich.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 00/20] pull request for net-next:
+	batman-adv 2016-08-16*
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,26 +18,15 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: sw@simonwunderlich.de
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-On Sun, Jul 10, 2016 at 01:42:32PM +0200, Sven Eckelmann wrote:
-> It sounds like the patch didn't help. So I will postpone my review.
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 22 Aug 2016 15:56:00 +0200
 
-Right. As discussed with Antonio on IRC, we might go with
-Andreas's original patch to snoop IP traffic - but only to update
-already existing, local DAT entries. So some changes still needed
-in that patch there.
+> this is our third (and final, for now) pull request for batman-adv in this round,
+> with mostly maintainability stuff.
+> 
+> Please pull or let me know of any problem!
 
-The approach is similar to what the Linux IP stack does for it's own
-neighbor tables already.
-
-Then we will see how much ARP traffic is still left afterwards.
-
-I'm marking this patch as "Defered" in patchwork.
-
-
-Further revelations, test results, ideas and progress will be
-probably be tracked here:
-
-https://www.open-mesh.org/issues/291
+Pulled, thanks Simon.
