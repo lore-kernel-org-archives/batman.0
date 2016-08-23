@@ -1,12 +1,16 @@
 Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Tue, 23 Aug 2016 03:13:16 +0200
-Message-Id: <20160823011316.18602-1-linus.luessing@c0d3.blue>
+Date: Tue, 23 Aug 2016 03:17:37 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20160823011737.GB27083@otheros>
+References: <20160821032534.11074-1-linus.luessing@c0d3.blue>
+ <20160821032534.11074-2-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: fix batadv_forw_packet
-	kerneldoc for list attribute
+In-Reply-To: <20160821032534.11074-2-linus.luessing@c0d3.blue>
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: elp: skb network header
+ API instead of skb->data access
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,32 +22,15 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The forw_packet list node is wrongly attributed to the icmp socket code.
+On Sun, Aug 21, 2016 at 05:25:33AM +0200, Linus Lüssing wrote:
+> Instead of playing with skb attributes directly, let's use the
+> appropriate, more descriptive API instead.
+> 
+> Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+> ---
 
-Reviewed-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
+Hm, wanted to fix up the aligment issues Sven mentioned in PATCH
+1/3 wis this patch. But actually skb_put() assigment without
+skb->data access works directly, let's go for this two bytes fix.
 
-Changes in v2:
-* "Reviewed-by:" added
-* detached from patchset
-
- net/batman-adv/types.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index b3dd1a3..97336ec 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1363,7 +1363,7 @@ struct batadv_skb_cb {
- 
- /**
-  * struct batadv_forw_packet - structure for bcast packets to be sent/forwarded
-- * @list: list node for batadv_socket_client::queue_list
-+ * @list: list node for batadv_priv::forw_{bat,bcast}_list
-  * @send_time: execution time for delayed_work (packet sending)
-  * @own: bool for locally generated packets (local OGMs are re-scheduled after
-  *  sending)
--- 
-2.1.4
-
+And ignore this [PATCH 2/3] for now, please.
