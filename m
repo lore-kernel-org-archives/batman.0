@@ -1,15 +1,15 @@
 Return-Path: <sergei.shtylyov@cogentembedded.com>
 From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
 References: <20160822135620.15337-1-sw@simonwunderlich.de>
- <20160822135620.15337-15-sw@simonwunderlich.de>
-Message-ID: <39ff1697-a110-ac0e-5fca-26ac559b5291@cogentembedded.com>
-Date: Tue, 23 Aug 2016 16:20:00 +0300
+ <20160822135620.15337-19-sw@simonwunderlich.de>
+Message-ID: <8ee11ebe-56e2-5e47-aba9-7564e76440a6@cogentembedded.com>
+Date: Tue, 23 Aug 2016 16:36:17 +0300
 MIME-Version: 1.0
-In-Reply-To: <20160822135620.15337-15-sw@simonwunderlich.de>
+In-Reply-To: <20160822135620.15337-19-sw@simonwunderlich.de>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 14/20] batman-adv: Place kref_get for
-	softif_vlan near use
+Subject: Re: [B.A.T.M.A.N.] [PATCH 18/20] batman-adv: Place kref_get for
+ tvlv_handler near use
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,8 +22,6 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Simon Wunderlich <sw@simonwunderlich.de>, davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
 
-Hello.
-
 On 8/22/2016 4:56 PM, Simon Wunderlich wrote:
 
 > From: Sven Eckelmann <sven@narfation.org>
@@ -33,38 +31,32 @@ On 8/22/2016 4:56 PM, Simon Wunderlich wrote:
 > before the place which requires the reference and in the same function
 > helps to avoid accidental problems caused by incorrect reference counting.
 
-     I don't think your boilerplate log works for this patch where you are 
-*adding* the ref-counting.
+      Neither does the boilerplate work for this patch...
 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
 > Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 > ---
->  net/batman-adv/soft-interface.c | 4 ++++
+>  net/batman-adv/tvlv.c | 4 ++++
 >  1 file changed, 4 insertions(+)
 >
-> diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-> index e508bf5..49e16b6 100644
-> --- a/net/batman-adv/soft-interface.c
-> +++ b/net/batman-adv/soft-interface.c
-> @@ -594,6 +594,7 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
->  	}
+> diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+> index 3533867..77654f0 100644
+> --- a/net/batman-adv/tvlv.c
+> +++ b/net/batman-adv/tvlv.c
+> @@ -547,8 +547,12 @@ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
+>  	INIT_HLIST_NODE(&tvlv_handler->list);
 >
->  	spin_lock_bh(&bat_priv->softif_vlan_list_lock);
-> +	kref_get(&vlan->refcount);
->  	hlist_add_head_rcu(&vlan->list, &bat_priv->softif_vlan_list);
->  	spin_unlock_bh(&bat_priv->softif_vlan_list_lock);
->
-> @@ -604,6 +605,9 @@ int batadv_softif_create_vlan(struct batadv_priv *bat_priv, unsigned short vid)
->  			    bat_priv->soft_iface->dev_addr, vid,
->  			    BATADV_NULL_IFINDEX, BATADV_NO_MARK);
->
-> +	/* don't return reference to new softif_vlan */
-> +	batadv_softif_vlan_put(vlan);
+>  	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
+> +	kref_get(&tvlv_handler->refcount);
+>  	hlist_add_head_rcu(&tvlv_handler->list, &bat_priv->tvlv.handler_list);
+>  	spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
 > +
->  	return 0;
+> +	/* don't return reference to new tvlv_handler */
+> +	batadv_tvlv_handler_put(tvlv_handler);
 >  }
 >
+>  /**
 
 MBR, Sergei
 
