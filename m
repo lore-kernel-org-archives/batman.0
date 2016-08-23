@@ -1,12 +1,12 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Tue, 23 Aug 2016 03:13:03 +0200
-Message-Id: <20160823011303.18487-1-linus.luessing@c0d3.blue>
+Date: Tue, 23 Aug 2016 03:13:16 +0200
+Message-Id: <20160823011316.18602-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH maint v2] batman-adv: fix elp packet data
-	reservation
+Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: fix batadv_forw_packet
+	kerneldoc for list attribute
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,40 +18,32 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The skb_reserve() call only reserved headroom for the mac header, but
-not the elp packet header itself.
+The forw_packet list node is wrongly attributed to the icmp socket code.
 
-Fixing this by using skb_put()'ing towards the skb tail instead of
-skb_push()'ing towards the skb head.
-
-Fixes: a4b88af77e28 ("batman-adv: ELP - adding basic infrastructure")
+Reviewed-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
 
 Changes in v2:
-* just switch from skb_push() to skb_put()
-  => skb_put() actually returns the right point in the skb and is
-     equivalent to a second skb->data assignment after skb_put() in this case
-* batamn-adv -> batman-adv
-* explicitly directed to maint
- 
+* "Reviewed-by:" added
+* detached from patchset
 
- net/batman-adv/bat_v_elp.c | 2 +-
+ net/batman-adv/types.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index df42eb1..63762b3 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -334,7 +334,7 @@ int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
- 		goto out;
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index b3dd1a3..97336ec 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1363,7 +1363,7 @@ struct batadv_skb_cb {
  
- 	skb_reserve(hard_iface->bat_v.elp_skb, ETH_HLEN + NET_IP_ALIGN);
--	elp_buff = skb_push(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
-+	elp_buff = skb_put(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
- 	elp_packet = (struct batadv_elp_packet *)elp_buff;
- 	memset(elp_packet, 0, BATADV_ELP_HLEN);
- 
+ /**
+  * struct batadv_forw_packet - structure for bcast packets to be sent/forwarded
+- * @list: list node for batadv_socket_client::queue_list
++ * @list: list node for batadv_priv::forw_{bat,bcast}_list
+  * @send_time: execution time for delayed_work (packet sending)
+  * @own: bool for locally generated packets (local OGMs are re-scheduled after
+  *  sending)
 -- 
 2.1.4
 
