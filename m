@@ -1,11 +1,13 @@
 Return-Path: <Jonathan.Haws@sdl.usu.edu>
 From: Jonathan Haws <jhaws@sdl.usu.edu>
-Date: Thu, 25 Aug 2016 14:39:55 -0600
-Message-ID: <1472157596-19774-1-git-send-email-jhaws@sdl.usu.edu>
+Date: Thu, 25 Aug 2016 14:39:56 -0600
+Message-ID: <1472157596-19774-2-git-send-email-jhaws@sdl.usu.edu>
+In-Reply-To: <1472157596-19774-1-git-send-email-jhaws@sdl.usu.edu>
+References: <1472157596-19774-1-git-send-email-jhaws@sdl.usu.edu>
 MIME-Version: 1.0
 Content-Type: text/plain
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] alfred: Externalized synchronization
-	interval
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Adding time_subtract utility
+	function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,124 +22,67 @@ Cc: Jonathan Haws <jhaws@sdl.usu.edu>
 
 Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
 
-ALFRED_INTERVAL is now externalized via the -p option (synchronization
-period).  If specified as option, user supplied interval is used,
-otherwise the default interval of ALFRED_INTERVAL is used.
+Added time_subtract() utility function to use for simply subtracting
+one timespec from another.
 ---
- alfred.h     |  1 +
- main.c       | 14 +++++++++++++-
- man/alfred.8 |  5 +++++
- server.c     |  4 ++--
- 4 files changed, 21 insertions(+), 3 deletions(-)
+ alfred.h |  2 ++
+ server.c |  5 ++++-
+ util.c   | 13 +++++++++++++
+ 3 files changed, 19 insertions(+), 1 deletion(-)
 
 diff --git a/alfred.h b/alfred.h
-index a9906c8..5b7e965 100644
+index 5b7e965..194c62a 100644
 --- a/alfred.h
 +++ b/alfred.h
-@@ -131,6 +131,7 @@ struct globals {
- 	uint16_t changed_data_type_count; /* maximum is 256 */
- 
- 	struct timespec if_check;
-+	struct timespec sync_period;
- 
- 	struct hashtable_t *data_hash;
- 	struct hashtable_t *transaction_hash;
-diff --git a/main.c b/main.c
-index 9cab705..3aa89fd 100644
---- a/main.c
-+++ b/main.c
-@@ -59,6 +59,8 @@ static void alfred_usage(void)
- 	printf("  -m, --master                        start up the daemon in master mode, which\n");
- 	printf("                                      accepts data from slaves and syncs it with\n");
- 	printf("                                      other masters\n");
-+	printf("  -p, --sync-period [period]          set synchronization period, in seconds\n");
-+	printf("                                      fractional seconds are supported (i.e. 0.2 = 5 Hz)\n");
- 	printf("\n");
- 	printf("  -u, --unix-path [path]              path to unix socket used for client-server\n");
- 	printf("                                      communication (default: \""ALFRED_SOCK_PATH_DEFAULT"\")\n");
-@@ -156,6 +158,7 @@ out:
- static struct globals *alfred_init(int argc, char *argv[])
- {
- 	int opt, opt_ind, i, ret;
-+	double sync_period = 0.0;
- 	struct globals *globals;
- 	struct option long_options[] = {
- 		{"set-data",		required_argument,	NULL,	's'},
-@@ -170,6 +173,7 @@ static struct globals *alfred_init(int argc, char *argv[])
- 		{"update-command",	required_argument,	NULL,	'c'},
- 		{"version",		no_argument,		NULL,	'v'},
- 		{"verbose",		no_argument,		NULL,	'd'},
-+		{"sync-period",		required_argument,	NULL,	'p'},
- 		{NULL,			0,			NULL,	0},
- 	};
- 
-@@ -193,12 +197,14 @@ static struct globals *alfred_init(int argc, char *argv[])
- 	globals->unix_path = ALFRED_SOCK_PATH_DEFAULT;
- 	globals->verbose = 0;
- 	globals->update_command = NULL;
-+	globals->sync_period.tv_sec = ALFRED_INTERVAL;
-+	globals->sync_period.tv_nsec = 0;
- 	INIT_LIST_HEAD(&globals->changed_data_types);
- 	globals->changed_data_type_count = 0;
- 
- 	time_random_seed();
- 
--	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:dc:", long_options,
-+	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:dc:p:", long_options,
- 				  &opt_ind)) != -1) {
- 		switch (opt) {
- 		case 'r':
-@@ -265,6 +271,12 @@ static struct globals *alfred_init(int argc, char *argv[])
- 			printf("%s %s\n", argv[0], SOURCE_VERSION);
- 			printf("A.L.F.R.E.D. - Almighty Lightweight Remote Fact Exchange Daemon\n");
- 			return NULL;
-+		case 'p':
-+			sync_period = strtod(optarg, NULL);
-+			globals->sync_period.tv_sec = (int) sync_period;
-+			globals->sync_period.tv_nsec = (double)(sync_period - (int)sync_period) * 1e9;
-+			printf(" ** Setting sync interval to: %.9f seconds (%ld.%09ld)\n", sync_period, globals->sync_period.tv_sec, globals->sync_period.tv_nsec);
-+			break;
- 		case 'h':
- 		default:
- 			alfred_usage();
-diff --git a/man/alfred.8 b/man/alfred.8
-index 49d42bc..df37040 100644
---- a/man/alfred.8
-+++ b/man/alfred.8
-@@ -118,6 +118,11 @@ overhead).
- \fB\-c\fP, \fB\-\-update-command\fP \fIcommand\fP
- Specify command to execute on data change. It will be called with data-type list
- as arguments.
-+.TP
-+\fB\-p\fP, \fB\-\-sync-period\fP \fIperiod\fP
-+Specify alfred synchronization period, in seconds. If not specified, the default
-+ALFRED_INTERVAL setting of 10 seconds will be used. Fractional seconds are 
-+supported.
- .
- .SH EXAMPLES
- Start an alfred server listening on bridge br0 (assuming that this bridge
+@@ -196,6 +196,8 @@ int netsock_own_address(const struct globals *globals,
+ /* util.c */
+ int time_diff(struct timespec *tv1, struct timespec *tv2,
+ 	      struct timespec *tvdiff);
++void time_subtract(struct timespec *tv1, struct timespec *tv2,
++	      struct timespec *tvout);
+ void time_random_seed(void);
+ uint16_t get_random_id(void);
+ bool is_valid_ether_addr(uint8_t *addr);
 diff --git a/server.c b/server.c
-index 47aee4f..c5df945 100644
+index c5df945..884a1a7 100644
 --- a/server.c
 +++ b/server.c
-@@ -372,7 +372,7 @@ int alfred_server(struct globals *globals)
+@@ -372,7 +372,10 @@ int alfred_server(struct globals *globals)
  
  	while (1) {
  		clock_gettime(CLOCK_MONOTONIC, &now);
--		now.tv_sec -= ALFRED_INTERVAL;
-+		time_diff(&now, &globals->sync_period, &now);
+-		time_diff(&now, &globals->sync_period, &now);
++
++		/* subtract the synchronization period from the current time */
++		time_subtract(&now, &globals->sync_period, &now);
++
  		if (!time_diff(&last_check, &now, &tv)) {
  			tv.tv_sec = 0;
  			tv.tv_nsec = 0;
-@@ -409,7 +409,7 @@ int alfred_server(struct globals *globals)
+diff --git a/util.c b/util.c
+index c7e11cc..1b67f78 100644
+--- a/util.c
++++ b/util.c
+@@ -41,6 +41,19 @@ int time_diff(struct timespec *tv1, struct timespec *tv2,
+ 	return (tvdiff->tv_sec >= 0);
+ }
  
- 		if (globals->opmode == OPMODE_MASTER) {
- 			/* we are a master */
--			printf("announce master ...\n");
-+			printf("[%ld.%09ld] announce master ...\n", last_check.tv_sec, last_check.tv_nsec);
- 			announce_master(globals);
- 			sync_data(globals);
- 		} else {
++void time_subtract(struct timespec *tv1, struct timespec *tv2,
++	      struct timespec *tvout) {
++	tvout->tv_sec = tv1->tv_sec - tv2->tv_sec;
++	if (tv1->tv_nsec < tv2->tv_nsec) {
++		tvout->tv_nsec = 1000000000 + tv1->tv_nsec - tv2->tv_nsec;
++		tvout->tv_sec -= 1;
++	} else {
++		tvout->tv_nsec = tv1->tv_nsec - tv2->tv_nsec;
++	}
++
++	return;
++}
++
+ void time_random_seed(void)
+ {
+ 	struct timespec now;
 -- 
 2.7.4
 
