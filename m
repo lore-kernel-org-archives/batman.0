@@ -1,18 +1,11 @@
 Return-Path: <Jonathan.Haws@sdl.usu.edu>
-From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Date: Thu, 25 Aug 2016 20:37:32 +0000
-Message-ID: <1472157452.4465.23.camel@sdl.usu.edu>
-References: <1472157024-17530-1-git-send-email-jhaws@sdl.usu.edu>
- <1472157024-17530-2-git-send-email-jhaws@sdl.usu.edu>
-In-Reply-To: <1472157024-17530-2-git-send-email-jhaws@sdl.usu.edu>
-Reply-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <27C72774B9F0C044A79D7164C76FB96B@sdl.usu.edu>
-Content-Transfer-Encoding: base64
+From: Jonathan Haws <jhaws@sdl.usu.edu>
+Date: Thu, 25 Aug 2016 14:39:55 -0600
+Message-ID: <1472157596-19774-1-git-send-email-jhaws@sdl.usu.edu>
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Adding time_subtract utility
-	function
+Content-Type: text/plain
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] alfred: Externalized synchronization
+	interval
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,45 +15,129 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Jonathan Haws <jhaws@sdl.usu.edu>
 
-T24gVGh1LCAyMDE2LTA4LTI1IGF0IDE0OjMwIC0wNjAwLCBKb25hdGhhbiBIYXdzIHdyb3RlOg0K
-PiBTaWduZWQtb2ZmLWJ5OiBKb25hdGhhbiBIYXdzIDxqaGF3c0BzZGwudXN1LmVkdT4NCj4gDQo+
-IEFkZGVkIHRpbWVfc3VidHJhY3QoKSB1dGlsaXR5IGZ1bmN0aW9uIHRvIHVzZSBmb3Igc2ltcGx5
-IHN1YnRyYWN0aW5nDQo+IG9uZSB0aW1lc3BlYyBmcm9tIGFub3RoZXIuDQo+IC0tLQ0KPiDCoGFs
-ZnJlZC5oIHzCoMKgMiArKw0KPiDCoHNlcnZlci5jIHzCoMKgNSArKysrLQ0KPiDCoHV0aWwuY8Kg
-wqDCoHwgMTMgKysrKysrKysrKysrKw0KPiDCoDMgZmlsZXMgY2hhbmdlZCwgMTkgaW5zZXJ0aW9u
-cygrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2FsZnJlZC5oIGIvYWxmcmVk
-LmgNCj4gaW5kZXggNWI3ZTk2NS4uOWQ1ZjFlOCAxMDA2NDQNCj4gLS0tIGEvYWxmcmVkLmgNCj4g
-KysrIGIvYWxmcmVkLmgNCj4gQEAgLTE5Niw2ICsxOTYsOCBAQCBpbnQgbmV0c29ja19vd25fYWRk
-cmVzcyhjb25zdCBzdHJ1Y3QgZ2xvYmFscw0KPiAqZ2xvYmFscywNCj4gwqAvKiB1dGlsLmMgKi8N
-Cj4gwqBpbnQgdGltZV9kaWZmKHN0cnVjdCB0aW1lc3BlYyAqdHYxLCBzdHJ1Y3QgdGltZXNwZWMg
-KnR2MiwNCj4gwqAJwqDCoMKgwqDCoMKgc3RydWN0IHRpbWVzcGVjICp0dmRpZmYpOw0KPiAraW50
-IHRpbWVfc3VidHJhY3Qoc3RydWN0IHRpbWVzcGVjICp0djEsIHN0cnVjdCB0aW1lc3BlYyAqdHYy
-LA0KPiArCcKgwqDCoMKgwqDCoHN0cnVjdCB0aW1lc3BlYyAqdHZvdXQpOw0KPiDCoHZvaWQgdGlt
-ZV9yYW5kb21fc2VlZCh2b2lkKTsNCj4gwqB1aW50MTZfdCBnZXRfcmFuZG9tX2lkKHZvaWQpOw0K
-PiDCoGJvb2wgaXNfdmFsaWRfZXRoZXJfYWRkcih1aW50OF90ICphZGRyKTsNCj4gZGlmZiAtLWdp
-dCBhL3NlcnZlci5jIGIvc2VydmVyLmMNCj4gaW5kZXggYzVkZjk0NS4uODg0YTFhNyAxMDA2NDQN
-Cj4gLS0tIGEvc2VydmVyLmMNCj4gKysrIGIvc2VydmVyLmMNCj4gQEAgLTM3Miw3ICszNzIsMTAg
-QEAgaW50IGFsZnJlZF9zZXJ2ZXIoc3RydWN0IGdsb2JhbHMgKmdsb2JhbHMpDQo+IMKgDQo+IMKg
-CXdoaWxlICgxKSB7DQo+IMKgCQljbG9ja19nZXR0aW1lKENMT0NLX01PTk9UT05JQywgJm5vdyk7
-DQo+IC0JCXRpbWVfZGlmZigmbm93LCAmZ2xvYmFscy0+c3luY19wZXJpb2QsICZub3cpOw0KPiAr
-DQo+ICsJCS8qIHN1YnRyYWN0IHRoZSBzeW5jaHJvbml6YXRpb24gcGVyaW9kIGZyb20gdGhlDQo+
-IGN1cnJlbnQgdGltZSAqLw0KPiArCQl0aW1lX3N1YnRyYWN0KCZub3csICZnbG9iYWxzLT5zeW5j
-X3BlcmlvZCwgJm5vdyk7DQo+ICsNCj4gwqAJCWlmICghdGltZV9kaWZmKCZsYXN0X2NoZWNrLCAm
-bm93LCAmdHYpKSB7DQo+IMKgCQkJdHYudHZfc2VjID0gMDsNCj4gwqAJCQl0di50dl9uc2VjID0g
-MDsNCj4gZGlmZiAtLWdpdCBhL3V0aWwuYyBiL3V0aWwuYw0KPiBpbmRleCBjN2UxMWNjLi4xYjY3
-Zjc4IDEwMDY0NA0KPiAtLS0gYS91dGlsLmMNCj4gKysrIGIvdXRpbC5jDQo+IEBAIC00MSw2ICs0
-MSwxOSBAQCBpbnQgdGltZV9kaWZmKHN0cnVjdCB0aW1lc3BlYyAqdHYxLCBzdHJ1Y3QNCj4gdGlt
-ZXNwZWMgKnR2MiwNCj4gwqAJcmV0dXJuICh0dmRpZmYtPnR2X3NlYyA+PSAwKTsNCj4gwqB9DQo+
-IMKgDQo+ICt2b2lkIHRpbWVfc3VidHJhY3Qoc3RydWN0IHRpbWVzcGVjICp0djEsIHN0cnVjdCB0
-aW1lc3BlYyAqdHYyLA0KPiArCcKgwqDCoMKgwqDCoHN0cnVjdCB0aW1lc3BlYyAqdHZvdXQpIHsN
-Cj4gKwl0dm91dC0+dHZfc2VjID0gdHYxLT50dl9zZWMgLSB0djItPnR2X3NlYzsNCj4gKwlpZiAo
-dHYxLT50dl9uc2VjIDwgdHYyLT50dl9uc2VjKSB7DQo+ICsJCXR2b3V0LT50dl9uc2VjID0gMTAw
-MDAwMDAwMCArIHR2MS0+dHZfbnNlYyAtIHR2Mi0NCj4gPnR2X25zZWM7DQo+ICsJCXR2b3V0LT50
-dl9zZWMgLT0gMTsNCj4gKwl9IGVsc2Ugew0KPiArCQl0dm91dC0+dHZfbnNlYyA9IHR2MS0+dHZf
-bnNlYyAtIHR2Mi0+dHZfbnNlYzsNCj4gKwl9DQo+ICsNCj4gKwlyZXR1cm47DQo+ICt9DQo+ICsN
-Cj4gwqB2b2lkIHRpbWVfcmFuZG9tX3NlZWQodm9pZCkNCj4gwqB7DQo+IMKgCXN0cnVjdCB0aW1l
-c3BlYyBub3c7DQoNCg0KSnVzdCBpZ25vcmUgdGhpcyBwYXRjaCBmb3Igbm93IC0gd2lsbCBzdWJt
-aXQgbmV3IHNldC4gwqBBY2NpZGVudGFsbHkNCnNlbnQgdGhpcyBiZWZvcmUgaXQgd2FzIHJlYWR5
-Li4uLg0KDQo=
+Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
+
+ALFRED_INTERVAL is now externalized via the -p option (synchronization
+period).  If specified as option, user supplied interval is used,
+otherwise the default interval of ALFRED_INTERVAL is used.
+---
+ alfred.h     |  1 +
+ main.c       | 14 +++++++++++++-
+ man/alfred.8 |  5 +++++
+ server.c     |  4 ++--
+ 4 files changed, 21 insertions(+), 3 deletions(-)
+
+diff --git a/alfred.h b/alfred.h
+index a9906c8..5b7e965 100644
+--- a/alfred.h
++++ b/alfred.h
+@@ -131,6 +131,7 @@ struct globals {
+ 	uint16_t changed_data_type_count; /* maximum is 256 */
+ 
+ 	struct timespec if_check;
++	struct timespec sync_period;
+ 
+ 	struct hashtable_t *data_hash;
+ 	struct hashtable_t *transaction_hash;
+diff --git a/main.c b/main.c
+index 9cab705..3aa89fd 100644
+--- a/main.c
++++ b/main.c
+@@ -59,6 +59,8 @@ static void alfred_usage(void)
+ 	printf("  -m, --master                        start up the daemon in master mode, which\n");
+ 	printf("                                      accepts data from slaves and syncs it with\n");
+ 	printf("                                      other masters\n");
++	printf("  -p, --sync-period [period]          set synchronization period, in seconds\n");
++	printf("                                      fractional seconds are supported (i.e. 0.2 = 5 Hz)\n");
+ 	printf("\n");
+ 	printf("  -u, --unix-path [path]              path to unix socket used for client-server\n");
+ 	printf("                                      communication (default: \""ALFRED_SOCK_PATH_DEFAULT"\")\n");
+@@ -156,6 +158,7 @@ out:
+ static struct globals *alfred_init(int argc, char *argv[])
+ {
+ 	int opt, opt_ind, i, ret;
++	double sync_period = 0.0;
+ 	struct globals *globals;
+ 	struct option long_options[] = {
+ 		{"set-data",		required_argument,	NULL,	's'},
+@@ -170,6 +173,7 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 		{"update-command",	required_argument,	NULL,	'c'},
+ 		{"version",		no_argument,		NULL,	'v'},
+ 		{"verbose",		no_argument,		NULL,	'd'},
++		{"sync-period",		required_argument,	NULL,	'p'},
+ 		{NULL,			0,			NULL,	0},
+ 	};
+ 
+@@ -193,12 +197,14 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 	globals->unix_path = ALFRED_SOCK_PATH_DEFAULT;
+ 	globals->verbose = 0;
+ 	globals->update_command = NULL;
++	globals->sync_period.tv_sec = ALFRED_INTERVAL;
++	globals->sync_period.tv_nsec = 0;
+ 	INIT_LIST_HEAD(&globals->changed_data_types);
+ 	globals->changed_data_type_count = 0;
+ 
+ 	time_random_seed();
+ 
+-	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:dc:", long_options,
++	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:dc:p:", long_options,
+ 				  &opt_ind)) != -1) {
+ 		switch (opt) {
+ 		case 'r':
+@@ -265,6 +271,12 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 			printf("%s %s\n", argv[0], SOURCE_VERSION);
+ 			printf("A.L.F.R.E.D. - Almighty Lightweight Remote Fact Exchange Daemon\n");
+ 			return NULL;
++		case 'p':
++			sync_period = strtod(optarg, NULL);
++			globals->sync_period.tv_sec = (int) sync_period;
++			globals->sync_period.tv_nsec = (double)(sync_period - (int)sync_period) * 1e9;
++			printf(" ** Setting sync interval to: %.9f seconds (%ld.%09ld)\n", sync_period, globals->sync_period.tv_sec, globals->sync_period.tv_nsec);
++			break;
+ 		case 'h':
+ 		default:
+ 			alfred_usage();
+diff --git a/man/alfred.8 b/man/alfred.8
+index 49d42bc..df37040 100644
+--- a/man/alfred.8
++++ b/man/alfred.8
+@@ -118,6 +118,11 @@ overhead).
+ \fB\-c\fP, \fB\-\-update-command\fP \fIcommand\fP
+ Specify command to execute on data change. It will be called with data-type list
+ as arguments.
++.TP
++\fB\-p\fP, \fB\-\-sync-period\fP \fIperiod\fP
++Specify alfred synchronization period, in seconds. If not specified, the default
++ALFRED_INTERVAL setting of 10 seconds will be used. Fractional seconds are 
++supported.
+ .
+ .SH EXAMPLES
+ Start an alfred server listening on bridge br0 (assuming that this bridge
+diff --git a/server.c b/server.c
+index 47aee4f..c5df945 100644
+--- a/server.c
++++ b/server.c
+@@ -372,7 +372,7 @@ int alfred_server(struct globals *globals)
+ 
+ 	while (1) {
+ 		clock_gettime(CLOCK_MONOTONIC, &now);
+-		now.tv_sec -= ALFRED_INTERVAL;
++		time_diff(&now, &globals->sync_period, &now);
+ 		if (!time_diff(&last_check, &now, &tv)) {
+ 			tv.tv_sec = 0;
+ 			tv.tv_nsec = 0;
+@@ -409,7 +409,7 @@ int alfred_server(struct globals *globals)
+ 
+ 		if (globals->opmode == OPMODE_MASTER) {
+ 			/* we are a master */
+-			printf("announce master ...\n");
++			printf("[%ld.%09ld] announce master ...\n", last_check.tv_sec, last_check.tv_nsec);
+ 			announce_master(globals);
+ 			sync_data(globals);
+ 		} else {
+-- 
+2.7.4
+
