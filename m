@@ -1,12 +1,17 @@
 Return-Path: <Jonathan.Haws@sdl.usu.edu>
-From: Jonathan Haws <jhaws@sdl.usu.edu>
-Date: Thu, 25 Aug 2016 14:30:24 -0600
-Message-ID: <1472157024-17530-2-git-send-email-jhaws@sdl.usu.edu>
-In-Reply-To: <1472157024-17530-1-git-send-email-jhaws@sdl.usu.edu>
+From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Date: Thu, 25 Aug 2016 20:37:32 +0000
+Message-ID: <1472157452.4465.23.camel@sdl.usu.edu>
 References: <1472157024-17530-1-git-send-email-jhaws@sdl.usu.edu>
+ <1472157024-17530-2-git-send-email-jhaws@sdl.usu.edu>
+In-Reply-To: <1472157024-17530-2-git-send-email-jhaws@sdl.usu.edu>
+Reply-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <27C72774B9F0C044A79D7164C76FB96B@sdl.usu.edu>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Adding time_subtract utility
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Adding time_subtract utility
 	function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,72 +22,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Jonathan Haws <jhaws@sdl.usu.edu>
+To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
-
-Added time_subtract() utility function to use for simply subtracting
-one timespec from another.
----
- alfred.h |  2 ++
- server.c |  5 ++++-
- util.c   | 13 +++++++++++++
- 3 files changed, 19 insertions(+), 1 deletion(-)
-
-diff --git a/alfred.h b/alfred.h
-index 5b7e965..9d5f1e8 100644
---- a/alfred.h
-+++ b/alfred.h
-@@ -196,6 +196,8 @@ int netsock_own_address(const struct globals *globals,
- /* util.c */
- int time_diff(struct timespec *tv1, struct timespec *tv2,
- 	      struct timespec *tvdiff);
-+int time_subtract(struct timespec *tv1, struct timespec *tv2,
-+	      struct timespec *tvout);
- void time_random_seed(void);
- uint16_t get_random_id(void);
- bool is_valid_ether_addr(uint8_t *addr);
-diff --git a/server.c b/server.c
-index c5df945..884a1a7 100644
---- a/server.c
-+++ b/server.c
-@@ -372,7 +372,10 @@ int alfred_server(struct globals *globals)
- 
- 	while (1) {
- 		clock_gettime(CLOCK_MONOTONIC, &now);
--		time_diff(&now, &globals->sync_period, &now);
-+
-+		/* subtract the synchronization period from the current time */
-+		time_subtract(&now, &globals->sync_period, &now);
-+
- 		if (!time_diff(&last_check, &now, &tv)) {
- 			tv.tv_sec = 0;
- 			tv.tv_nsec = 0;
-diff --git a/util.c b/util.c
-index c7e11cc..1b67f78 100644
---- a/util.c
-+++ b/util.c
-@@ -41,6 +41,19 @@ int time_diff(struct timespec *tv1, struct timespec *tv2,
- 	return (tvdiff->tv_sec >= 0);
- }
- 
-+void time_subtract(struct timespec *tv1, struct timespec *tv2,
-+	      struct timespec *tvout) {
-+	tvout->tv_sec = tv1->tv_sec - tv2->tv_sec;
-+	if (tv1->tv_nsec < tv2->tv_nsec) {
-+		tvout->tv_nsec = 1000000000 + tv1->tv_nsec - tv2->tv_nsec;
-+		tvout->tv_sec -= 1;
-+	} else {
-+		tvout->tv_nsec = tv1->tv_nsec - tv2->tv_nsec;
-+	}
-+
-+	return;
-+}
-+
- void time_random_seed(void)
- {
- 	struct timespec now;
--- 
-2.7.4
-
+T24gVGh1LCAyMDE2LTA4LTI1IGF0IDE0OjMwIC0wNjAwLCBKb25hdGhhbiBIYXdzIHdyb3RlOg0K
+PiBTaWduZWQtb2ZmLWJ5OiBKb25hdGhhbiBIYXdzIDxqaGF3c0BzZGwudXN1LmVkdT4NCj4gDQo+
+IEFkZGVkIHRpbWVfc3VidHJhY3QoKSB1dGlsaXR5IGZ1bmN0aW9uIHRvIHVzZSBmb3Igc2ltcGx5
+IHN1YnRyYWN0aW5nDQo+IG9uZSB0aW1lc3BlYyBmcm9tIGFub3RoZXIuDQo+IC0tLQ0KPiDCoGFs
+ZnJlZC5oIHzCoMKgMiArKw0KPiDCoHNlcnZlci5jIHzCoMKgNSArKysrLQ0KPiDCoHV0aWwuY8Kg
+wqDCoHwgMTMgKysrKysrKysrKysrKw0KPiDCoDMgZmlsZXMgY2hhbmdlZCwgMTkgaW5zZXJ0aW9u
+cygrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2FsZnJlZC5oIGIvYWxmcmVk
+LmgNCj4gaW5kZXggNWI3ZTk2NS4uOWQ1ZjFlOCAxMDA2NDQNCj4gLS0tIGEvYWxmcmVkLmgNCj4g
+KysrIGIvYWxmcmVkLmgNCj4gQEAgLTE5Niw2ICsxOTYsOCBAQCBpbnQgbmV0c29ja19vd25fYWRk
+cmVzcyhjb25zdCBzdHJ1Y3QgZ2xvYmFscw0KPiAqZ2xvYmFscywNCj4gwqAvKiB1dGlsLmMgKi8N
+Cj4gwqBpbnQgdGltZV9kaWZmKHN0cnVjdCB0aW1lc3BlYyAqdHYxLCBzdHJ1Y3QgdGltZXNwZWMg
+KnR2MiwNCj4gwqAJwqDCoMKgwqDCoMKgc3RydWN0IHRpbWVzcGVjICp0dmRpZmYpOw0KPiAraW50
+IHRpbWVfc3VidHJhY3Qoc3RydWN0IHRpbWVzcGVjICp0djEsIHN0cnVjdCB0aW1lc3BlYyAqdHYy
+LA0KPiArCcKgwqDCoMKgwqDCoHN0cnVjdCB0aW1lc3BlYyAqdHZvdXQpOw0KPiDCoHZvaWQgdGlt
+ZV9yYW5kb21fc2VlZCh2b2lkKTsNCj4gwqB1aW50MTZfdCBnZXRfcmFuZG9tX2lkKHZvaWQpOw0K
+PiDCoGJvb2wgaXNfdmFsaWRfZXRoZXJfYWRkcih1aW50OF90ICphZGRyKTsNCj4gZGlmZiAtLWdp
+dCBhL3NlcnZlci5jIGIvc2VydmVyLmMNCj4gaW5kZXggYzVkZjk0NS4uODg0YTFhNyAxMDA2NDQN
+Cj4gLS0tIGEvc2VydmVyLmMNCj4gKysrIGIvc2VydmVyLmMNCj4gQEAgLTM3Miw3ICszNzIsMTAg
+QEAgaW50IGFsZnJlZF9zZXJ2ZXIoc3RydWN0IGdsb2JhbHMgKmdsb2JhbHMpDQo+IMKgDQo+IMKg
+CXdoaWxlICgxKSB7DQo+IMKgCQljbG9ja19nZXR0aW1lKENMT0NLX01PTk9UT05JQywgJm5vdyk7
+DQo+IC0JCXRpbWVfZGlmZigmbm93LCAmZ2xvYmFscy0+c3luY19wZXJpb2QsICZub3cpOw0KPiAr
+DQo+ICsJCS8qIHN1YnRyYWN0IHRoZSBzeW5jaHJvbml6YXRpb24gcGVyaW9kIGZyb20gdGhlDQo+
+IGN1cnJlbnQgdGltZSAqLw0KPiArCQl0aW1lX3N1YnRyYWN0KCZub3csICZnbG9iYWxzLT5zeW5j
+X3BlcmlvZCwgJm5vdyk7DQo+ICsNCj4gwqAJCWlmICghdGltZV9kaWZmKCZsYXN0X2NoZWNrLCAm
+bm93LCAmdHYpKSB7DQo+IMKgCQkJdHYudHZfc2VjID0gMDsNCj4gwqAJCQl0di50dl9uc2VjID0g
+MDsNCj4gZGlmZiAtLWdpdCBhL3V0aWwuYyBiL3V0aWwuYw0KPiBpbmRleCBjN2UxMWNjLi4xYjY3
+Zjc4IDEwMDY0NA0KPiAtLS0gYS91dGlsLmMNCj4gKysrIGIvdXRpbC5jDQo+IEBAIC00MSw2ICs0
+MSwxOSBAQCBpbnQgdGltZV9kaWZmKHN0cnVjdCB0aW1lc3BlYyAqdHYxLCBzdHJ1Y3QNCj4gdGlt
+ZXNwZWMgKnR2MiwNCj4gwqAJcmV0dXJuICh0dmRpZmYtPnR2X3NlYyA+PSAwKTsNCj4gwqB9DQo+
+IMKgDQo+ICt2b2lkIHRpbWVfc3VidHJhY3Qoc3RydWN0IHRpbWVzcGVjICp0djEsIHN0cnVjdCB0
+aW1lc3BlYyAqdHYyLA0KPiArCcKgwqDCoMKgwqDCoHN0cnVjdCB0aW1lc3BlYyAqdHZvdXQpIHsN
+Cj4gKwl0dm91dC0+dHZfc2VjID0gdHYxLT50dl9zZWMgLSB0djItPnR2X3NlYzsNCj4gKwlpZiAo
+dHYxLT50dl9uc2VjIDwgdHYyLT50dl9uc2VjKSB7DQo+ICsJCXR2b3V0LT50dl9uc2VjID0gMTAw
+MDAwMDAwMCArIHR2MS0+dHZfbnNlYyAtIHR2Mi0NCj4gPnR2X25zZWM7DQo+ICsJCXR2b3V0LT50
+dl9zZWMgLT0gMTsNCj4gKwl9IGVsc2Ugew0KPiArCQl0dm91dC0+dHZfbnNlYyA9IHR2MS0+dHZf
+bnNlYyAtIHR2Mi0+dHZfbnNlYzsNCj4gKwl9DQo+ICsNCj4gKwlyZXR1cm47DQo+ICt9DQo+ICsN
+Cj4gwqB2b2lkIHRpbWVfcmFuZG9tX3NlZWQodm9pZCkNCj4gwqB7DQo+IMKgCXN0cnVjdCB0aW1l
+c3BlYyBub3c7DQoNCg0KSnVzdCBpZ25vcmUgdGhpcyBwYXRjaCBmb3Igbm93IC0gd2lsbCBzdWJt
+aXQgbmV3IHNldC4gwqBBY2NpZGVudGFsbHkNCnNlbnQgdGhpcyBiZWZvcmUgaXQgd2FzIHJlYWR5
+Li4uLg0KDQo=
