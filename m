@@ -1,13 +1,14 @@
-Return-Path: <Jonathan.Haws@sdl.usu.edu>
-From: Jonathan Haws <jhaws@sdl.usu.edu>
-Date: Thu, 25 Aug 2016 14:39:56 -0600
-Message-ID: <1472157596-19774-2-git-send-email-jhaws@sdl.usu.edu>
-In-Reply-To: <1472157596-19774-1-git-send-email-jhaws@sdl.usu.edu>
-References: <1472157596-19774-1-git-send-email-jhaws@sdl.usu.edu>
+Return-Path: <a@unstable.cc>
+Date: Fri, 26 Aug 2016 09:45:36 +0800
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <20160826014536.GS16157@flavoursapulia.lan>
+References: <1472140362.4465.4.camel@sdl.usu.edu>
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Adding time_subtract utility
-	function
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="U0B5otXy6WXfork9"
+Content-Disposition: inline
+In-Reply-To: <1472140362.4465.4.camel@sdl.usu.edu>
+Subject: Re: [B.A.T.M.A.N.] Consistent bat0 hardware address?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,72 +18,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Jonathan Haws <jhaws@sdl.usu.edu>
+To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>, The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
 
-Added time_subtract() utility function to use for simply subtracting
-one timespec from another.
----
- alfred.h |  2 ++
- server.c |  5 ++++-
- util.c   | 13 +++++++++++++
- 3 files changed, 19 insertions(+), 1 deletion(-)
+--U0B5otXy6WXfork9
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/alfred.h b/alfred.h
-index 5b7e965..194c62a 100644
---- a/alfred.h
-+++ b/alfred.h
-@@ -196,6 +196,8 @@ int netsock_own_address(const struct globals *globals,
- /* util.c */
- int time_diff(struct timespec *tv1, struct timespec *tv2,
- 	      struct timespec *tvdiff);
-+void time_subtract(struct timespec *tv1, struct timespec *tv2,
-+	      struct timespec *tvout);
- void time_random_seed(void);
- uint16_t get_random_id(void);
- bool is_valid_ether_addr(uint8_t *addr);
-diff --git a/server.c b/server.c
-index c5df945..884a1a7 100644
---- a/server.c
-+++ b/server.c
-@@ -372,7 +372,10 @@ int alfred_server(struct globals *globals)
- 
- 	while (1) {
- 		clock_gettime(CLOCK_MONOTONIC, &now);
--		time_diff(&now, &globals->sync_period, &now);
-+
-+		/* subtract the synchronization period from the current time */
-+		time_subtract(&now, &globals->sync_period, &now);
-+
- 		if (!time_diff(&last_check, &now, &tv)) {
- 			tv.tv_sec = 0;
- 			tv.tv_nsec = 0;
-diff --git a/util.c b/util.c
-index c7e11cc..1b67f78 100644
---- a/util.c
-+++ b/util.c
-@@ -41,6 +41,19 @@ int time_diff(struct timespec *tv1, struct timespec *tv2,
- 	return (tvdiff->tv_sec >= 0);
- }
- 
-+void time_subtract(struct timespec *tv1, struct timespec *tv2,
-+	      struct timespec *tvout) {
-+	tvout->tv_sec = tv1->tv_sec - tv2->tv_sec;
-+	if (tv1->tv_nsec < tv2->tv_nsec) {
-+		tvout->tv_nsec = 1000000000 + tv1->tv_nsec - tv2->tv_nsec;
-+		tvout->tv_sec -= 1;
-+	} else {
-+		tvout->tv_nsec = tv1->tv_nsec - tv2->tv_nsec;
-+	}
-+
-+	return;
-+}
-+
- void time_random_seed(void)
- {
- 	struct timespec now;
--- 
-2.7.4
+On Thu, Aug 25, 2016 at 03:52:42PM +0000, Jonathan Haws wrote:
+> Is there a way to ensure that the assigned hardware address for bat0 is
+> consistent? =A0What I would like to have is keep the hardware address the
+> same across reboots. =A0Can this be done? =A0Would it be done through
+> /etc/udev/rules.d? =A0Or some other mechanism?
 
+Yes, I'd suggest using udev for this. batman-adv generates a random address
+every time it creates a new batX interface, therefore you need to use some
+userspace tool to make it static.
+
+Cheers,
+
+--=20
+Antonio Quartulli
+
+--U0B5otXy6WXfork9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJXv59AAAoJEJ4aZjxxc6bKhvcP/3hD4ktZhPK1d5tNr8HKC58h
+0ty6NOMcHQECQhUojCgswMnK3SNETmDWTSSqlxrlC2P3+kTaGbk4KEqPsoGbBwXc
+7Z1fsT1nO91XUX2y4mVV45IvMDdanCbihW129FVf0fVusRgnxo2LlB3PCH8c0bVm
+fa3OMVInssYJRD79HGq15WoY+FKSZesSpeH0EUu8NqVDbW6SDn/KYzJHy0CTzk8K
+hRgWnU846RCcQrtSQZWa/82J/w2TIXDqmZuwRhBYrxUHz1qTWzMPcgYEx1wc4XRn
+EABSyNzpjjmoD+s7RUnWJgxYSGOzFYIoSqGOLYdZlA0INn76Ejp+l/2Q/blhPiXl
+huXS7YIzEWQTC4c50y7bKOi1BC8XLSVRP+mh9s28gbmjV9oWkrtrJmNxoJkjKTpS
+Wi8EzHKd1Uoj9lgRybVhKTqZsf8588PRSLibUvWhLyFixBTtMeKsXl+mm2eXVsar
+YQ9IogMztPlczhxrPGzrEhpwIAdWopCIqZT2LyV9DEThmQ27RA5atZxUeZkJA9Ai
+f6pnONx0JhnN64IibYE8aMIL7bl5PuvNOaz2CEmCdigeEU9astEJk+EdZHWhFc+J
+H3ryo1BVZRfWWmdwiSew0lpj6SQv5U9Px7VQhKgvlXghopbcGtFrn3Xwc66uoebj
+8VtLbFbPoscR7ZUcLkIC
+=uAVK
+-----END PGP SIGNATURE-----
+
+--U0B5otXy6WXfork9--
