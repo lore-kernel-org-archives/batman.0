@@ -1,19 +1,15 @@
-Return-Path: <Jonathan.Haws@sdl.usu.edu>
-From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Date: Fri, 26 Aug 2016 15:02:51 +0000
-Message-ID: <1472223771.12832.15.camel@sdl.usu.edu>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 28 Aug 2016 09:17:17 +0200
+Message-ID: <4649649.ZYgmAyi5E7@sven-edge>
+In-Reply-To: <1472223771.12832.15.camel@sdl.usu.edu>
 References: <1472157596-19774-1-git-send-email-jhaws@sdl.usu.edu>
- <1472157596-19774-2-git-send-email-jhaws@sdl.usu.edu>
- <1663649.BbZ0OMDasJ@bentobox>
-In-Reply-To: <1663649.BbZ0OMDasJ@bentobox>
-Reply-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <84490D5320331448BAE9BB347E751772@sdl.usu.edu>
-Content-Transfer-Encoding: base64
+ <1663649.BbZ0OMDasJ@bentobox> <1472223771.12832.15.camel@sdl.usu.edu>
 MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart10159219.8Q3mOxuybs";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Adding time_subtract utility
- function
+	function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,111 +19,156 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "sven@narfation.org" <sven@narfation.org>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-T24gRnJpLCAyMDE2LTA4LTI2IGF0IDA4OjQ1ICswMjAwLCBTdmVuIEVja2VsbWFubiB3cm90ZToN
-Cj4gT24gRG9ubmVyc3RhZywgMjUuIEF1Z3VzdCAyMDE2IDE0OjM5OjU2IENFU1QgSm9uYXRoYW4g
-SGF3cyB3cm90ZToNCj4gPiANCj4gPiBTaWduZWQtb2ZmLWJ5OiBKb25hdGhhbiBIYXdzIDxqaGF3
-c0BzZGwudXN1LmVkdT4NCj4gPiANCj4gPiBBZGRlZCB0aW1lX3N1YnRyYWN0KCkgdXRpbGl0eSBm
-dW5jdGlvbiB0byB1c2UgZm9yIHNpbXBseQ0KPiA+IHN1YnRyYWN0aW5nDQo+ID4gb25lIHRpbWVz
-cGVjIGZyb20gYW5vdGhlci4NCj4gPiAtLS0NCj4gUGxlYXNlIGFkZCBhIHNtYWxsIGNoYW5nZWxv
-ZyB3aGVuIHlvdSBzZW5kIGEgbmV3IHJldmlzaW9uIChhZnRlciB0aGUNCj4gZmlyc3TCoA0KPiAi
-LS0tIikuIFBsZWFzZSBhbHNvIGFkZCB0aGUgdjIvdjMvdjQvLi4uIHZlcnNpb24gdG8geW91ciBb
-UEFUQ0guLi5dDQo+IHByZWZpeCBmb3LCoA0KPiBwYXRjaGVzIHJlcGxhY2luZyBhbiBvbGRlciB2
-ZXJzaW9uLiBUaGVzZSBhcmUgZ2VuZXJhdGVkIGF1dG9tYXRpY2FsbHkNCj4gYnkgZ2l0LQ0KPiBm
-b3JtYXQtcGF0Y2ggd2hlbiB5b3UgYWRkIHRoZSBwYXJhbWV0ZXIgIi12IDIiIG9yICItdiAzIiBv
-ciAuLi4uDQo+IA0KPiBBIGdvb2QgZXhhbXBsZSBpcyBodHRwczovL3BhdGNod29yay5vcGVuLW1l
-c2gub3JnL3BhdGNoLzE2NjYzLw0KPiANCj4gUGxlYXNlIHVzZSB0aGUgZm9ybWF0IGRlc2NyaWJl
-ZCBpbg0KPiDCoGh0dHBzOi8vd3d3Lmtlcm5lbC5vcmcvZG9jL0RvY3VtZW50YXRpb24vU3VibWl0
-dGluZ1BhdGNoZXMNCj4gDQo+IMKgwqDCoMKgVGhlIGNhbm9uaWNhbCBwYXRjaCBzdWJqZWN0IGxp
-bmUgaXM6DQo+IMKgwqDCoMKgDQo+IMKgwqDCoMKgU3ViamVjdDogW1BBVENIIDAwMS8xMjNdIHN1
-YnN5c3RlbTogc3VtbWFyeSBwaHJhc2UNCj4gDQo+IMKgwqDCoMKgVGhlIGNhbm9uaWNhbCBwYXRj
-aCBtZXNzYWdlIGJvZHkgY29udGFpbnMgdGhlIGZvbGxvd2luZzoNCj4gwqDCoMKgwqANCj4gwqDC
-oMKgwqDCoMKgLSBBICJmcm9tIiBsaW5lIHNwZWNpZnlpbmcgdGhlIHBhdGNoIGF1dGhvciAob25s
-eSBuZWVkZWQgaWYgdGhlDQo+IHBlcnNvbg0KPiDCoMKgwqDCoMKgwqDCoMKgc2VuZGluZyB0aGUg
-cGF0Y2ggaXMgbm90IHRoZSBhdXRob3IpLg0KPiDCoMKgwqDCoA0KPiDCoMKgwqDCoMKgwqAtIEFu
-IGVtcHR5IGxpbmUuDQo+IMKgwqDCoMKgDQo+IMKgwqDCoMKgwqDCoC0gVGhlIGJvZHkgb2YgdGhl
-IGV4cGxhbmF0aW9uLCBsaW5lIHdyYXBwZWQgYXQgNzUgY29sdW1ucywNCj4gd2hpY2ggd2lsbA0K
-PiDCoMKgwqDCoMKgwqDCoMKgYmUgY29waWVkIHRvIHRoZSBwZXJtYW5lbnQgY2hhbmdlbG9nIHRv
-IGRlc2NyaWJlIHRoaXMgcGF0Y2guDQo+IMKgwqDCoMKgDQo+IMKgwqDCoMKgwqDCoC0gVGhlICJT
-aWduZWQtb2ZmLWJ5OiIgbGluZXMsIGRlc2NyaWJlZCBhYm92ZSwgd2hpY2ggd2lsbA0KPiDCoMKg
-wqDCoMKgwqDCoMKgYWxzbyBnbyBpbiB0aGUgY2hhbmdlbG9nLg0KPiDCoMKgwqDCoA0KPiDCoMKg
-wqDCoMKgwqAtIEEgbWFya2VyIGxpbmUgY29udGFpbmluZyBzaW1wbHkgIi0tLSIuDQo+IMKgwqDC
-oMKgDQo+IMKgwqDCoMKgwqDCoC0gQW55IGFkZGl0aW9uYWwgY29tbWVudHMgbm90IHN1aXRhYmxl
-IGZvciB0aGUgY2hhbmdlbG9nLg0KPiDCoMKgwqDCoA0KPiDCoMKgwqDCoMKgwqAtIFRoZSBhY3R1
-YWwgcGF0Y2ggKGRpZmYgb3V0cHV0KS4NCj4gDQo+IFlvdSBkb24ndCBzZWVtIHRvIGZvbGxvdyB0
-aGVzZSBydWxlcyB5ZXQuIEluc3RlYWQgeW91IHNlZW0gc3dpdGNoIHRoZQ0KPiBTaWduZWQtDQo+
-IG9mZi1ieTogbGluZSB3aXRoIHRoZSBib2R5IG9mIHRoZSBleHBsYW5hdGlvbi4gU28gYSBnaXQt
-YW0gd2l0aCAtcw0KPiAoYXMgdGhlwqANCj4gbWFpbnRhaW5lcnMgZG8gaGVyZSkgd291bGQgdGhl
-biBwcm9kdWNlIHRoaXMgbWVzczoNCj4gDQo+IMKgwqDCoMKgYWxmcmVkOiBBZGRpbmcgdGltZV9z
-dWJ0cmFjdCB1dGlsaXR5IGZ1bmN0aW9uDQo+IMKgwqDCoMKgDQo+IMKgwqDCoMKgU2lnbmVkLW9m
-Zi1ieTogSm9uYXRoYW4gSGF3cyA8amhhd3NAc2RsLnVzdS5lZHU+DQo+IMKgwqDCoMKgDQo+IMKg
-wqDCoMKgQWRkZWQgdGltZV9zdWJ0cmFjdCgpIHV0aWxpdHkgZnVuY3Rpb24gdG8gdXNlIGZvciBz
-aW1wbHkNCj4gc3VidHJhY3RpbmcNCj4gwqDCoMKgwqBvbmUgdGltZXNwZWMgZnJvbSBhbm90aGVy
-Lg0KPiDCoMKgwqDCoFNpZ25lZC1vZmYtYnk6IFN2ZW4gRWNrZWxtYW5uIDxzdmVuQG5hcmZhdGlv
-bi5vcmc+DQo+IA0KPiANCj4gWy4uLl0NCg0KSSd2ZSBiYWNrZWQgdXAgdG8gb3JpZ2luL21hc3Rl
-ciBhbmQgd2lsbCBwcm9kdWNlIGEgc2luZ2xlIHBhdGNoLiDCoFRoZQ0KInNpZ25lZCBvZmYgYnk6
-IiB3YXMgYSBtaXN1bmRlcnN0YW5kaW5nIG9uIG15IHBhcnQuIMKgSGVyZSBpcyB3aGF0IHRoZQ0K
-Y29tbWl0IGxvZyB3aWxsIGxvb2sgbGlrZToNCg0KYWxmcmVkOiBFeHRlcm5hbGl6ZWQgc3luY2hy
-b25pemF0aW9uIGludGVydmFsDQoNCkFMRlJFRF9JTlRFUlZBTCBpcyBub3cgZXh0ZXJuYWxpemVk
-IHZpYSB0aGUgLXAgb3B0aW9uIChzeW5jaHJvbml6YXRpb24NCnBlcmlvZCkuwqDCoElmIHNwZWNp
-ZmllZCBhcyBvcHRpb24sIHVzZXIgc3VwcGxpZWQgaW50ZXJ2YWwgaXMgdXNlZCwNCm90aGVyd2lz
-ZSB0aGUgZGVmYXVsdCBpbnRlcnZhbCBvZiBBTEZSRURfSU5URVJWQUwgaXMgdXNlZC4NCg0KDQpE
-b2VzIHRoYXQgbG9vayByaWdodD8NCg0KDQo+ID4gDQo+ID4gaW5kZXggYzVkZjk0NS4uODg0YTFh
-NyAxMDA2NDQNCj4gPiAtLS0gYS9zZXJ2ZXIuYw0KPiA+ICsrKyBiL3NlcnZlci5jDQo+ID4gQEAg
-LTM3Miw3ICszNzIsMTAgQEAgaW50IGFsZnJlZF9zZXJ2ZXIoc3RydWN0IGdsb2JhbHMgKmdsb2Jh
-bHMpDQo+ID4gDQo+ID4gwqAJd2hpbGUgKDEpIHsNCj4gPiDCoAkJY2xvY2tfZ2V0dGltZShDTE9D
-S19NT05PVE9OSUMsICZub3cpOw0KPiA+IC0JCXRpbWVfZGlmZigmbm93LCAmZ2xvYmFscy0+c3lu
-Y19wZXJpb2QsICZub3cpOw0KPiA+ICsNCj4gPiArCQkvKiBzdWJ0cmFjdCB0aGUgc3luY2hyb25p
-emF0aW9uIHBlcmlvZCBmcm9tIHRoZQ0KPiA+IGN1cnJlbnQgdGltZSAqLw0KPiA+ICsJCXRpbWVf
-c3VidHJhY3QoJm5vdywgJmdsb2JhbHMtPnN5bmNfcGVyaW9kLCAmbm93KTsNCj4gPiArDQo+IEkn
-bSBndWVzc2luZyBTaW1vbiBtZWFudCB0byBoYXZlIHRoZSBjb21tZW50IGluIHRoZSBmaXJzdCBw
-YXRjaC4gSQ0KPiBkb24ndCBnZXTCoA0KPiB3aHkgeW91IG5vdyBpbnRyb2R1Y2UgYSB0aW1lX3N1
-YnRyYWN0IHdoaWNoIGlzIGp1c3QgYSBjb3B5IG9mDQo+IHRpbWVfZGlmZsKgDQo+ICh3aXRob3V0
-IHRoZSByZXR1cm4gdmFsdWUpLg0KDQpNeSByZWFkaW5nIG9mIGhpcyByZXNwb25zZSB3YXMgdGhh
-dCB0aW1lX2RpZmYgd2FzIG1lYW50IGZvciBzb21ldGhpbmcNCmNvbXBsZXRlbHkgZGlmZmVyZW50
-LCB0aHVzIHNob3VsZG4ndCBiZSB1c2VkIGhlcmUuIMKgVGh1cyBJIGNyZWF0ZWQNCnRpbWVfc3Vi
-dHJhY3QuDQoNCj4gPiANCj4gPiArdm9pZCB0aW1lX3N1YnRyYWN0KHN0cnVjdCB0aW1lc3BlYyAq
-dHYxLCBzdHJ1Y3QgdGltZXNwZWMgKnR2MiwNCj4gPiArCcKgwqDCoMKgwqDCoHN0cnVjdCB0aW1l
-c3BlYyAqdHZvdXQpIHsNCj4gPiArCXR2b3V0LT50dl9zZWMgPSB0djEtPnR2X3NlYyAtIHR2Mi0+
-dHZfc2VjOw0KPiA+ICsJaWYgKHR2MS0+dHZfbnNlYyA8IHR2Mi0+dHZfbnNlYykgew0KPiA+ICsJ
-CXR2b3V0LT50dl9uc2VjID0gMTAwMDAwMDAwMCArIHR2MS0+dHZfbnNlYyAtIHR2Mi0NCj4gPiA+
-dHZfbnNlYzsNCj4gPiArCQl0dm91dC0+dHZfc2VjIC09IDE7DQo+ID4gKwl9IGVsc2Ugew0KPiA+
-ICsJCXR2b3V0LT50dl9uc2VjID0gdHYxLT50dl9uc2VjIC0gdHYyLT50dl9uc2VjOw0KPiA+ICsJ
-fQ0KPiBIYXZlIHlvdSBjaGVja2VkIHRoZSBnbGliYyBkb2N1bWVudGF0aW9uIGFib3V0IHRoaXMg
-dG9waWMgKHNlYXJjaA0KPiBmb3LCoA0KPiB0aW1ldmFsX3N1YnRyYWN0KT8NCj4gDQo+IGh0dHBz
-Oi8vd3d3LmdudS5vcmcvc29mdHdhcmUvbGliYy9tYW51YWwvaHRtbF9ub2RlL0VsYXBzZWQtVGlt
-ZS5odG1sDQo+IA0KPiBUaGlzIG1pZ2h0IGJlIHJlbGV2YW50IHdoZW4geW91IHdhbnQgdG8gY3Jl
-YXRlIGFuIGZ1bmN0aW9uIHdoaWNoIGRvZXMNCj4gaGFuZGxlwqANCj4gbW9yZSB0aGluZ3MgdGhh
-biB0aW1lX2RpZmYgY3VycmVudGx5IGRvZXMuIE90aGVyd2lzZSBJIGRvbid0IHNlZSBhDQo+IHJl
-YXNvbiB3aHnCoA0KPiB3ZSBqdXN0IGhhdmUgdGhlIHNhbWUgY29kZSB0d2ljZSBpbiB1dGlsLmMN
-Cg0KWWVhaCwgSSd2ZSBsb29rZWQgYXQgdGhhdC4gwqBUaGUgY29kZSB0aGV5IHByZXNlbnQgdGhl
-cmUgZXNzZW50aWFsbHkNCmRvZXMgdGhlIHNhbWUgdGhpbmcuIMKgSSBjYW4gcHVsbCB0aGF0IGlu
-IGFuZCBoYXZlIGEgdGltZXNwZWNfc3VidHJhY3QNCmNhbGwsIG9yIEkgY2FuIGdvIGJhY2sgdG8g
-dGltZV9kaWZmIHdpdGggdGhlIGNvbW1lbnQuIMKgV2hpY2ggd291bGQgeW91DQpwcmVmZXI/DQoN
-Cj4gPiANCj4gPiArDQo+ID4gKwlyZXR1cm47DQo+ID4gK30NCj4gPiArDQo+IFdoeSBhIHJldHVy
-biBoZXJlPw0KDQpTdHlsZS4gwqBJIG5ldmVyIGhhdmUgYSBmdW5jdGlvbiB3aXRob3V0IGEgcmV0
-dXJuLCBldmVuIHZvaWRzLiDCoE1heWJlDQpJJ20gYSBiaXQgT0NEIG9uIHRoYXQgcG9pbnQsIGJ1
-dCBJIGp1c3QgZmVlbCBoYXBwaWVyIHNlZWluZyBpdCB0aGVyZS4NCsKgOikgwqBEZXBlbmRpbmcg
-b24gd2hhdCB5b3Ugd2FudCB0byBkbyB3aXRoIHRpbWVfc3VidHJhY3QsIHdlIGNhbiByZW1vdmUN
-CnRoaXMgcmV0dXJuIG9yIHJlcGxhY2UgdGhlIGZ1bmN0aW9uLg0KDQoNCj4gDQo+IEJ0dy4gSSBh
-bSBzZWVpbmcgd2hpdGVzcGFjZSB3YXJuaW5ncyB3aGVuIGFwcGx5aW5nIHRoZSBwYXRjaGVzLiBN
-YXliZQ0KPiB5b3UgY2FuwqANCj4gY2hlY2sgdGhlbToNCj4gDQo+IEFwcGx5aW5nIHBhdGNoICMx
-NjY2NyB1c2luZyAnZ2l0IGFtJw0KPiBEZXNjcmlwdGlvbjogWzEvMl0gYWxmcmVkOiBFeHRlcm5h
-bGl6ZWQgc3luY2hyb25pemF0aW9uIGludGVydmFsDQo+IEFwcGx5aW5nOiBhbGZyZWQ6IEV4dGVy
-bmFsaXplZCBzeW5jaHJvbml6YXRpb24gaW50ZXJ2YWwNCj4gLmdpdC9yZWJhc2UtYXBwbHkvcGF0
-Y2g6ODk6IHRyYWlsaW5nIHdoaXRlc3BhY2UuDQo+IEFMRlJFRF9JTlRFUlZBTCBzZXR0aW5nIG9m
-IDEwIHNlY29uZHMgd2lsbCBiZSB1c2VkLiBGcmFjdGlvbmFsDQo+IHNlY29uZHMgYXJlwqANCj4g
-d2FybmluZzogMSBsaW5lIGFkZHMgd2hpdGVzcGFjZSBlcnJvcnMuDQo+IEFwcGx5aW5nIHBhdGNo
-ICMxNjY2OCB1c2luZyAnZ2l0IGFtJw0KPiBEZXNjcmlwdGlvbjogWzIvMl0gYWxmcmVkOiBBZGRp
-bmcgdGltZV9zdWJ0cmFjdCB1dGlsaXR5IGZ1bmN0aW9uDQo+IEFwcGx5aW5nOiBhbGZyZWQ6IEFk
-ZGluZyB0aW1lX3N1YnRyYWN0IHV0aWxpdHkgZnVuY3Rpb24NCg0KSSdtIG5vdCBzdXJlIHdoZXJl
-IHRoaXMgd291bGQgaGF2ZSBjcm9wcGVkIHVwLCBidXQgSSdsbCBkb3VibGUgY2hlY2sgaXQNCmJl
-Zm9yZSBJIHN1Ym1pdCB0aGUgbmV4dCBwYXRjaCB2ZXJzaW9uLg0KDQoNCkknbSBuZXcgdG8gdGhl
-IGNvbnRyaWJ1dGluZyBnYW1lIC0gSSd2ZSByZWFkIHRocm91Z2ggdGhlIHdpa2ksIGJ1dA0KYXBw
-YXJlbnRseSB0aGVyZSBhcmUgb3RoZXIgZGV0YWlscyB0aGF0IEkgbWlzc2VkLiDCoElzIHRoZXJl
-IHNvbWUgZ29vZA0KZG9jdW1lbnRhdGlvbiBvbiB0aGUgdHlwaWNhbCBwcm9jZWR1cmUgdG8gZm9s
-bG93IGFuZCBmb3JtYXRzIGFuZA0Kd2hhdG5vdCB0byByZWFkIHVwIG9uPyDCoEkgdGhvdWdodCBJ
-IGhhZCB1bmRlcnN0b29kIGV2ZXJ5dGhpbmcsIGJ1dA0KYXBwYXJlbnRseSBub3QuIMKgSSBoYXRl
-IHRvIGNhdXNlIGV4dHJhIHdvcmsgZm9yIHlvdSBtYWludGFpbmVycyBzaW1wbHkNCmJlY2F1c2Ug
-SSBjYW4ndCBnZXQgYSBzaW1wbGUgcGF0Y2ggcmlnaHQuDQoNClRoYW5rcyENCg==
+--nextPart10159219.8Q3mOxuybs
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Freitag, 26. August 2016 15:02:51 CEST Jonathan Haws wrote:
+[...]
+> alfred: Externalized synchronization interval
+> 
+> ALFRED_INTERVAL is now externalized via the -p option (synchronization
+> period).  If specified as option, user supplied interval is used,
+> otherwise the default interval of ALFRED_INTERVAL is used.
+> 
+> 
+> Does that look right?
+
+Now the "Signed-off-by: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>" is missing
+at the end. You should check out "11) Sign your work" [2] to understand why
+Linux related submissions tend to have this line.
+
+The reason why it must be at the end was shown in my last mail. Tools like
+git-am or git-format-patch can automatically add the Signed-off-by of the
+person who accepts/forwards the patch - but only does it at the end of the
+commit message. So you Signed-off-by should also be at the end of the commit
+message.
+
+> > > 
+> > > index c5df945..884a1a7 100644
+> > > --- a/server.c
+> > > +++ b/server.c
+> > > @@ -372,7 +372,10 @@ int alfred_server(struct globals *globals)
+> > > 
+> > >  	while (1) {
+> > >  		clock_gettime(CLOCK_MONOTONIC, &now);
+> > > -		time_diff(&now, &globals->sync_period, &now);
+> > > +
+> > > +		/* subtract the synchronization period from the
+> > > current time */
+> > > +		time_subtract(&now, &globals->sync_period, &now);
+> > > +
+> > I'm guessing Simon meant to have the comment in the first patch. I
+> > don't get 
+> > why you now introduce a time_subtract which is just a copy of
+> > time_diff 
+> > (without the return value).
+> 
+> My reading of his response was that time_diff was meant for something
+> completely different, thus shouldn't be used here.  Thus I created
+> time_subtract.
+
+My reading was that Simon wanted just a comment which explains what is does 
+(because it was not intuitive to him).
+
+@Simon: can you clarify it for both of us? See also the following question 
+from Jonathan:
+
+[...]
+> Yeah, I've looked at that.  The code they present there essentially
+> does the same thing.  I can pull that in and have a timespec_subtract
+> call, or I can go back to time_diff with the comment.  Which would you
+> prefer?
+
+(see above)
+
+> > > 
+> > > +
+> > > +	return;
+> > > +}
+> > > +
+> > Why a return here?
+> 
+> Style.  I never have a function without a return, even voids.  Maybe
+> I'm a bit OCD on that point, but I just feel happier seeing it there.
+>  :)  Depending on what you want to do with time_subtract, we can remove
+> this return or replace the function.
+
+We prefer not to have a wasted return [4]. But lets wait for Simon's answer
+regarding the extra function.
+
+> > 
+> > Btw. I am seeing whitespace warnings when applying the patches. Maybe
+> > you can 
+> > check them:
+> > 
+> > Applying patch #16667 using 'git am'
+> > Description: [1/2] alfred: Externalized synchronization interval
+> > Applying: alfred: Externalized synchronization interval
+> > .git/rebase-apply/patch:89: trailing whitespace.
+> > ALFRED_INTERVAL setting of 10 seconds will be used. Fractional
+> > seconds are 
+> > warning: 1 line adds whitespace errors.
+> > Applying patch #16668 using 'git am'
+> > Description: [2/2] alfred: Adding time_subtract utility function
+> > Applying: alfred: Adding time_subtract utility function
+> 
+> I'm not sure where this would have cropped up, but I'll double check it
+> before I submit the next patch version.
+
+Looks like following line in the manpage has an extra space at the end:
+
+    +ALFRED_INTERVAL setting of 10 seconds will be used. Fractional seconds are 
+
+> I'm new to the contributing game - I've read through the wiki, but
+> apparently there are other details that I missed.  Is there some good
+> documentation on the typical procedure to follow and formats and
+> whatnot to read up on?  I thought I had understood everything, but
+> apparently not.  I hate to cause extra work for you maintainers simply
+> because I can't get a simple patch right.
+
+batman-adv is a a kernel module (included in the official Linux kernel) and
+thus we have to follow the linux kernel coding style [1] and submission 
+guidelines [2]. The batctl and alfred patches use the same style and we want to 
+have patches have submitted the same way [3]. But we don't tend to enforce 
+everything for alfred/batctl because these patches don't have to be forwarded 
+to the next "higher" maintainer. But odd things will still be pointed out. And
+they will also sometimes result in rejections but this depends on the
+maintainer and level of "oddity", 
+
+Kind regards,
+	Sven
+
+
+[1] https://www.kernel.org/doc/Documentation/CodingStyle
+[2] https://www.kernel.org/doc/Documentation/SubmittingPatches
+[3] https://www.open-mesh.org/projects/open-mesh/wiki/Contribute#Submitting-patches
+[4] https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/scripts/checkpatch.pl
+    search for RETURN_VOID
+--nextPart10159219.8Q3mOxuybs
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABCgAGBQJXwo/9AAoJEF2HCgfBJntGQFoP/Rllm3VB/jOIXuXn/PXkv90U
++4g3e753wtMgza2iB6LmnNUBS0XwKNNBFRPe0jPHbdTXESvwV2cQVleMUXMd3jVm
+l7Of1n5Dus/GbSTeFvXvN0fKScsvg3GOsz0kNVPiXwZUPd6fLUP8v19UulzTy+cY
+TJXKfXPMkfaNwXF6+vtUEv2Fw0MfKNOytU5ygP9MS65xb93pJPO0oMdMPJ783Eyb
+kJYb2GzLWdxdM6GkL8vcaqLt8V6+ogfNWRGIVWOCwTcFkQcxevgY8qQEjH4MT23p
+MLJvQCDOEVfrd0jABTcxaw/Mzq1Aq76DR1qTsa8n6lfVLFoLj0PPWI0TLjzUD8Nh
+LuenSojwoRFVxbH84+1u0hN4U7y5YQljgPnjThq8pOBwx3CE6mtmsPx+6GLpvDJT
+S+elB3v0hX0mvwSLHztxn79AsZIWSKCd8P7nk1GUClTxa093daXPDY6SZr8VVXWK
+OPs4545Rmv7CdGK9+wcRxakXRT9Yqh+n4N6e3ltE9s9NAXGfNCVrNoWltMTVdfGq
+BpSJkdLLHBSKO3pVyvu/7av3djhV7suykOQLOYUqjVVlkCR56WUvdrwsGH0tr9dY
+PYo72L7iu6mIX73T3YsRKdrGlGDOrb80Q+6WjIxgg6Dog5PxOfmbxfvdBs1ZwzYT
+bWpM1lcEdFQHLqPbVkjj
+=SPHf
+-----END PGP SIGNATURE-----
+
+--nextPart10159219.8Q3mOxuybs--
+
