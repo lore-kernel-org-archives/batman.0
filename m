@@ -1,7 +1,7 @@
 Return-Path: <johannes@sipsolutions.net>
-Message-ID: <1472537200.4249.5.camel@sipsolutions.net>
+Message-ID: <1472537253.4249.6.camel@sipsolutions.net>
 From: Johannes Berg <johannes@sipsolutions.net>
-Date: Tue, 30 Aug 2016 08:06:40 +0200
+Date: Tue, 30 Aug 2016 08:07:33 +0200
 In-Reply-To: <20160819200248.8202-1-linus.luessing@c0d3.blue>
  (sfid-20160819_220304_170640_809CF938)
 References: <20160819200248.8202-1-linus.luessing@c0d3.blue>
@@ -27,6 +27,10 @@ On Fri, 2016-08-19 at 22:02 +0200, Linus Lüssing wrote:
 > This allows modules using this function (currently: batman-adv) to
 > compile even if cfg80211 is not built at all, thus relaxing
 > dependencies.
+> 
+Err, excuse the earlier empty email - editing mixup.
 
+I've applied this and will send it to 4.8 so you can take advantage of
+it sooner (to adjust the Kconfig dependencies, presumably).
 
 johannes
