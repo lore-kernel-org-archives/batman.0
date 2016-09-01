@@ -1,9 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu,  1 Sep 2016 10:25:12 +0200
-Message-Id: <20160901082512.16160-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2] batman-adv: Use octal permissions instead
-	of macros
+Date: Thu,  1 Sep 2016 18:01:33 +0200
+Message-Id: <20160901160134.15593-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batctl: Fix minor typos in manpage
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,78 +14,36 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Linus prefers to have octal permission numbers instead of combinations of
-macro names ("random line noise"). Also old existing "bad symbolic
-permission bit macro use" should be converted to octal numbers.
-(http://lkml.kernel.org/r/CA+55aFw5v23T-zvDZp-MmD_EYxF8WbafwwB59934FV7g21uMGQ@mail.gmail.com)
-
-Also remove the S_IFREG bit from the octal representation because it is
-filtered out by debugfs_create.
+ * s/criterias/criteria/
+ * s/succesful/successful/
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-v2:
- - fix error in patch subject
----
- net/batman-adv/icmp_socket.c    | 4 ++--
- net/batman-adv/log.c            | 3 +--
- net/batman-adv/network-coding.c | 7 +++----
- 3 files changed, 6 insertions(+), 8 deletions(-)
+ man/batctl.8 | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
-index 378cc11..aed8125 100644
---- a/net/batman-adv/icmp_socket.c
-+++ b/net/batman-adv/icmp_socket.c
-@@ -322,8 +322,8 @@ int batadv_socket_setup(struct batadv_priv *bat_priv)
- 	if (!bat_priv->debug_dir)
- 		goto err;
- 
--	d = debugfs_create_file(BATADV_ICMP_SOCKET, S_IFREG | S_IWUSR | S_IRUSR,
--				bat_priv->debug_dir, bat_priv, &batadv_fops);
-+	d = debugfs_create_file(BATADV_ICMP_SOCKET, 0600, bat_priv->debug_dir,
-+				bat_priv, &batadv_fops);
- 	if (!d)
- 		goto err;
- 
-diff --git a/net/batman-adv/log.c b/net/batman-adv/log.c
-index 56dc532..46b0725 100644
---- a/net/batman-adv/log.c
-+++ b/net/batman-adv/log.c
-@@ -212,8 +212,7 @@ int batadv_debug_log_setup(struct batadv_priv *bat_priv)
- 	spin_lock_init(&bat_priv->debug_log->lock);
- 	init_waitqueue_head(&bat_priv->debug_log->queue_wait);
- 
--	d = debugfs_create_file("log", S_IFREG | S_IRUSR,
--				bat_priv->debug_dir, bat_priv,
-+	d = debugfs_create_file("log", 0400, bat_priv->debug_dir, bat_priv,
- 				&batadv_log_fops);
- 	if (!d)
- 		goto err;
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index e3baf69..0fc3b5f 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -1961,17 +1961,16 @@ int batadv_nc_init_debugfs(struct batadv_priv *bat_priv)
- 	if (!nc_dir)
- 		goto out;
- 
--	file = debugfs_create_u8("min_tq", S_IRUGO | S_IWUSR, nc_dir,
--				 &bat_priv->nc.min_tq);
-+	file = debugfs_create_u8("min_tq", 0644, nc_dir, &bat_priv->nc.min_tq);
- 	if (!file)
- 		goto out;
- 
--	file = debugfs_create_u32("max_fwd_delay", S_IRUGO | S_IWUSR, nc_dir,
-+	file = debugfs_create_u32("max_fwd_delay", 0644, nc_dir,
- 				  &bat_priv->nc.max_fwd_delay);
- 	if (!file)
- 		goto out;
- 
--	file = debugfs_create_u32("max_buffer_time", S_IRUGO | S_IWUSR, nc_dir,
-+	file = debugfs_create_u32("max_buffer_time", 0644, nc_dir,
- 				  &bat_priv->nc.max_buffer_time);
- 	if (!file)
- 		goto out;
+diff --git a/man/batctl.8 b/man/batctl.8
+index 8bac727..17549c0 100644
+--- a/man/batctl.8
++++ b/man/batctl.8
+@@ -129,7 +129,7 @@ examples:  5000 \->  5.0/1.0 MBit
+  5mbit/1mbit
+ .RE
+ .RS 7
+-If the node is a gateway client the parameter will decide which criterias to consider when the batman-adv module has to choose
++If the node is a gateway client the parameter will decide which criteria to consider when the batman-adv module has to choose
+ between different internet connections announced by the aforementioned servers.
+ .RE
+ .RS 17
+@@ -337,7 +337,7 @@ protocol used to transfer the data is somehow similar to TCP, but simpler: some
+ TCP features are still missing, thus protocol performances could be worst. Since
+ a fixed amount of data is transferred the experiment duration depends on the
+ network conditions. The experiment can be interrupted with CTRL + C. At the end
+-of a succesful experiment the throughput in KBytes per second is returned,
++of a successful experiment the throughput in KBytes per second is returned,
+ togheter with the experiment duration in millisecond and the amount of bytes
+ transferred. If too many packets are lost or the specified MAC address is not
+ reachable, a message notifing the error is returned instead of the result.
 -- 
 2.9.3
 
