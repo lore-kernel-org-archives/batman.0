@@ -1,11 +1,11 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 02 Sep 2016 16:21:54 +0200
-Message-ID: <16550232.yVtnsTEPCk@prime>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Sun, 4 Sep 2016 04:23:53 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20160904022353.GB8395@otheros>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1954974.cDSLruhM7t";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: [B.A.T.M.A.N.] batman-adv 2016.3 released
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Subject: [B.A.T.M.A.N.] Rebroadcast Avoidance #2 / TVLV API generalization
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,102 +17,69 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1954974.cDSLruhM7t
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Hi,
 
-Sep 1st, 2016. Today the B.A.T.M.A.N. team publishes the August 2016 update=
- to batman-adv, batctl and alfred! This release contains the multicast opti=
-mization support for bridged setups and frame priority support for fragment=
-ed packets. The initial set of patches to implement netlink support for bat=
-man-adv were integrated. As the first step, it is used to interact with the=
- new kernel throughput benchmark code. Future releases will utilize netlink=
- to replace the current debugfs tables in a more memory efficient way. Also=
- several bugfixes, code cleanups and code documentation updates are include=
-d in this version.
+Just wanted to let you know that, as I promised I would after
+the multicast part being merged, I'm now looking into an
+automatization for the no-rebroadcast flag patch.
 
-As from this release, we will report the summaries from our Changelog for e=
-ach component instead of a full text.
+In Gluon, this patch is currently used in two different use-cases:
+A) Avoid rebroadcasts on VPN links over e.g. ADSL
+   -> upstream is costly / low bandwidth
+B) Avoid rebroadcasts on wired interfaces
+   -> link becomes "noisy" with a bunch of nodes quickly
+      thanks to OGM and broadcast packet rebroadcasts => O(n^2)
 
-As the kernel module always depends on the Linux kernel it is compiled agai=
-nst, it does not make sense to provide binaries on our website. As usual, y=
-ou will find the signed tarballs in our download section:
-
-https://downloads.open-mesh.org/batman/releases/batman-adv-2016.3/
-
-as well as prepackaged binaries in your distribution.
-Thanks
-
-Thanks to all people sending in patches:
-
- * Andrew Lunn <andrew@lunn.ch>
- * Antonio Quartulli <a@unstable.cc>
- * Florian Westphal <fw@strlen.de>
- * Linus L=FCssing <linus.luessing@c0d3.blue>
- * Marek Lindner <mareklindner@neomailbox.ch>
- * Markus Pargmann <mpa@pengutronix.de>
- * Matthias Schiffer <mschiffer@universe-factory.net>
- * Simon Wunderlich <sw@simonwunderlich.de>
- * Sven Eckelmann <sven@narfation.org>
-
-batman-adv
-=2D---------
-
- * support latest kernels (3.2 - 4.8)
- * multicast optimization support for bridged setups
- * initial, limited support for batman-adv netlink family
- * throughput meter implementation
- * support for frame priority in fragment packets
- * kernel doc updates and coding style cleanups
- * bugs squashed:
-   - fix (re-)initialization of ELP tweaking options
-   - fix elp packet data reservation
-   - fix nullptr dereference after using vlan_insert_tag
-   - fix various reference counting bugs in bonding, bla, tt and originator=
- code
-   - fix speedy join in gateway client mode
-
-batctl
-=2D-----
-
- * synchronize common headers with batman-adv
- * support multicast logging and debug table
- * split tcpdump OGM packet filter in OGM and OGMv2 filter
- * add infrastructure to communicate with batadv netlink family
- * integrate command to control new kernel throughput meter
-
-alfred
-=2D-----
-
- * integrate support for batman-adv netlink
+The former case is addressed with the simple rebroadcast
+avoidance patch currently pending in patchwork.
 
 
+For the latter, I hacked some code into this branch, which seems
+to do what it is supposed to:
 
-Happy routing,
+https://git.open-mesh.org/batman-adv.git/shortlog/refs/heads/linus/neighhash
+(top three commits - warning lot's of code cleanup still to do)
 
-The B.A.T.M.A.N. team
+As a goody, it's now so generic, that it works on wireless, too
+:-).
 
---nextPart1954974.cDSLruhM7t
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+The basic idea of using a simple hash to describe/summarize the
+neighborhood of an interface comes from Henning, when we were
+discussing rebroadcasts at the last Wireless Battle Mesh during
+dinner. Kudos to him!
 
------BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJXyYsCAAoJEKEr45hCkp6htC8P/ApEano74+PUqeMuCbs2h0XU
-7czj3ZQVxwuB1godOnxsBGUIUSzwPxEhknJ6eVcy9GL103COZb8YQPJ/QxhMtyt+
-zbeL5gRRIMgetlMupgN96h2J6PWeqhxKUm3HjA29GSLMm4I2xujwAF019uPYUE3B
-1sf6tfggILlqJNdwZPp9427WlUTpezPaDPOiSvpxm+qP+dvd+sayBKjsNfH4CkUq
-ePvTPqMEANgrWAYPl4d65ompe8FwJZrd0F1/lp6m22e44Byl7ii9rph+c0VUJs6s
-RmzWSeVo8guDhZAaLVz96rvMIlEhHGAXo0ZoyDuu7kFP3Px15HIxNapiWs3wq/vR
-RKTUsV2SYI5QkVM49JEgb+BP5yK6DoKtRtz3KFKe6NobIknY/xhzEyZkRUDzAZ35
-TYJDSzPdsDOkidLja1vmPh6SNspugn6Xd2Q5A4SiFBy4zQaJ3c+vGDFTdu3K9K8J
-hJDL2JSUw4ML1iiB0txBOo67eCAt48PsfEczmqeWkvbeFhP8cO80mQjEhsf8QxxU
-GX5atRoRv3fltFth2nrVLVfBI7mjoDSTHG4kgAaPxI9DKrc+abJB3c/0UT0LyEMM
-itnRRqaeTc9Dk4bboFw6bRxYvs8fWtR1BfbPd0Oy+sxKNRbGWpsDJuMYcJ6B45WF
-9Uk+4kKyNuE9shyY/Q3N
-=ipE+
------END PGP SIGNATURE-----
+Anyways, before going into details about the neighborhood hash
+approach (I'll document and illustrate it in the wiki soon,
+anyway), I wanted to ask for some feedback for the second patch
+("batman-adv: unify OGM+Unicast TVLV handler functions (WIP)"),
+a prerequisite to easily add TVLV support to ELP:
 
---nextPart1954974.cDSLruhM7t--
+I) What do you think about the proposal for the TVLV handler API?
+   (e.g. generalizing by adding a packet_type attribute)
+~~~
+void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
+                                  int (*handler)(struct batadv_priv *bat_priv,
+                                                 void *tvlv_value,
+                                                 u16 tvlv_value_len,
+                                                 void *ctx),
+                                  u8 packet_type,
+                                  u8 tvlv_type, u8 tvlv_version, u8 flags);
 
+void batadv_tvlv_handler_unregister(struct batadv_priv *bat_priv, u8 packet_type,
+                                   u8 tvlv_type, u8 tvlv_version);
+
+int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
+                                   const struct sk_buff *skb, u8 packet_type,
+                                   unsigned int tvlv_offset,
+                                   u16 tvlv_value_len, void *ctx)
+~~~
+
+II) If you like it, would you prefer having both APIs
+simultaneously for a limited time to be able to migrate TVLVs one by
+one once they were thoroughly tested (con: code size).
+
+Or dragging everything to the new API in one patchset?
+(con: more invasive, potentially more regressions?)
+
+Regards, Linus
