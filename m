@@ -1,13 +1,13 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue,  6 Sep 2016 09:25:28 +0200
-Message-Id: <20160906072529.5587-2-sw@simonwunderlich.de>
+Date: Tue,  6 Sep 2016 09:25:29 +0200
+Message-Id: <20160906072529.5587-3-sw@simonwunderlich.de>
 In-Reply-To: <20160906072529.5587-1-sw@simonwunderlich.de>
 References: <20160906072529.5587-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 4.6] batman-adv: Fix pagefault during
+Subject: [B.A.T.M.A.N.] [PATCH 4.7] batman-adv: Fix pagefault during
 	neigh_node free
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -49,7 +49,7 @@ Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
  2 files changed, 8 deletions(-)
 
 diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index c355a82..0039e25 100644
+index ab8c4f9..1da7bfc 100644
 --- a/net/batman-adv/originator.c
 +++ b/net/batman-adv/originator.c
 @@ -251,10 +251,8 @@ static void batadv_neigh_node_release(struct kref *ref)
@@ -74,10 +74,10 @@ index c355a82..0039e25 100644
  
  	kfree_rcu(neigh_node, rcu);
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 1e47fbe..b0e7d36 100644
+index 74d865a..40aed16 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -1270,8 +1270,6 @@ struct batadv_forw_packet {
+@@ -1284,8 +1284,6 @@ struct batadv_forw_packet {
   *  better than neigh2 for their respective outgoing interface from the metric
   *  prospective
   * @bat_neigh_print: print the single hop neighbor list (optional)
@@ -86,7 +86,7 @@ index 1e47fbe..b0e7d36 100644
   * @bat_orig_print: print the originator table (optional)
   * @bat_orig_free: free the resources allocated by the routing algorithm for an
   *  orig_node object
-@@ -1302,7 +1300,6 @@ struct batadv_algo_ops {
+@@ -1316,7 +1314,6 @@ struct batadv_algo_ops {
  		 struct batadv_neigh_node *neigh2,
  		 struct batadv_hard_iface *if_outgoing2);
  	void (*bat_neigh_print)(struct batadv_priv *priv, struct seq_file *seq);
