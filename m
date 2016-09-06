@@ -1,14 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 05 Sep 2016 13:23:46 +0200
-Message-ID: <3625422.ci9gxr4ehr@bentobox>
-In-Reply-To: <20160905112029.32533-1-sven@narfation.org>
-References: <20160905112029.32533-1-sven@narfation.org>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue,  6 Sep 2016 09:25:27 +0200
+Message-Id: <20160906072529.5587-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1720946.ahZBidIvOU";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: [B.A.T.M.A.N.] [PATCH v7 0/5] batman-adv: prevent multiple ARP
-	replies sent by gateways if dat enabled
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 4.4] batman-adv: Fix pagefault during
+	neigh_node free
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,46 +16,80 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: stable@vger.kernel.org
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
 
---nextPart1720946.ahZBidIvOU
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+From: Marek Lindner <mareklindner@neomailbox.ch>
 
-Hi,
+commit d9f179877e50ae2681fe7b0b83e0d9f63b6165ad upstream.
 
-this should actually should have ended in the cover letter:
+The access of the neigh_node->orig_node is not allowed anymore when the
+batadv_neigh_node is freed. But this function is still trying to do it go
+get an routing algorithm specific function pointer via the
+neigh_node->orig_node. This function is then used to free the routing
+algorithm specific neighbor node data.
 
-The v7 version is just a rebased version of v6 [1] because Marek noticed that 
-these patches don't apply anymore.
+This sometimes causes a crash when the orig_node was already freed when the
+this function tries to read from its old memory region.
 
-Kind regards,
-	Sven
+The code can just be removed since no routing algorithm implements the
+function pointer.
 
-[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-July/015858.html
+Reported-by: Lars Bußmann <ffsoest@kill-you.net>
+Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+[sven@narfation.org: rewritten commit message to make clear that it is an
+ bugfix to an user reported crash]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/originator.c | 6 ------
+ net/batman-adv/types.h      | 3 ---
+ 2 files changed, 9 deletions(-)
 
---nextPart1720946.ahZBidIvOU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCgAGBQJXzVXCAAoJEF2HCgfBJntGYV4QAJvJHFnKGvqKhtWTiOaWi/Uz
-g9hiRbxHXXEGJBU3R4I7ZD1UKaKPfmCYWdDvkj/3igK3O5tJnYciInIaxNN0xIkb
-t6vmRXIUV+Fm8+Oe4oYO9uNzJVsG/W/SRyAaJ0LaKKtecYaMz4vCspGQvTDDTpcE
-7Apg4iEIjLcQ/HpnsWySS7zPXN2fD9DPRuY1u4yjD8Q2ffyzoq3UP2Qu0dpvR/PX
-KlVlSs5ueBMS/f9mDACj/LuG6q/q2BgIhif95iOTbJHM2c4LFGVXNix8G1H7s8ms
-7VxypZSrFXZ1KS0yUeGSHcrWD/0NvB0XJQxrZmSIJ9mriuDCct900QKchCLNTdCl
-r6+bo5SF+xxNT3qfi0awhdvCMKAHeN+R0RgVgvK9kHhbMtma4Uy+XIUVfqPv8aED
-98BVdb/o2miA5on1FxRthZFK3mvW+zA2v5B2qOMk7QWa5QE0TGE0RmF/R/6WpQfv
-ZXpgr0ObyGDKfl8fc1UTEgeDEnN63a3aE2NZ7DK4Zia3BMZbw+CQyjg/emphTpin
-5tHK52I/RdACSPMVX5eQMc2U/Jk4ZyJ/Vwk6rms+XJzh5HPd26uB/AErlq9cBb+B
-/f1bxe4RG+GwsBTj6fS15vL60uUs3GEgp/UU0QUqSBDzOojoi0WjDxMGtsykap+2
-LkXTsDtSAv8WguyoTmP+
-=Htpn
------END PGP SIGNATURE-----
-
---nextPart1720946.ahZBidIvOU--
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 17851d3..6282f02 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -197,18 +197,12 @@ static void batadv_neigh_node_release(struct batadv_neigh_node *neigh_node)
+ {
+ 	struct hlist_node *node_tmp;
+ 	struct batadv_neigh_ifinfo *neigh_ifinfo;
+-	struct batadv_algo_ops *bao;
+-
+-	bao = neigh_node->orig_node->bat_priv->bat_algo_ops;
+ 
+ 	hlist_for_each_entry_safe(neigh_ifinfo, node_tmp,
+ 				  &neigh_node->ifinfo_list, list) {
+ 		batadv_neigh_ifinfo_free_ref(neigh_ifinfo);
+ 	}
+ 
+-	if (bao->bat_neigh_free)
+-		bao->bat_neigh_free(neigh_node);
+-
+ 	batadv_hardif_free_ref(neigh_node->if_incoming);
+ 
+ 	kfree_rcu(neigh_node, rcu);
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index d260efd..cbd347c 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1136,8 +1136,6 @@ struct batadv_forw_packet {
+  * @bat_neigh_is_equiv_or_better: check if neigh1 is equally good or better
+  *  than neigh2 for their respective outgoing interface from the metric
+  *  prospective
+- * @bat_neigh_free: free the resources allocated by the routing algorithm for a
+- *  neigh_node object
+  * @bat_orig_print: print the originator table (optional)
+  * @bat_orig_free: free the resources allocated by the routing algorithm for an
+  *  orig_node object
+@@ -1165,7 +1163,6 @@ struct batadv_algo_ops {
+ 		 struct batadv_hard_iface *if_outgoing1,
+ 		 struct batadv_neigh_node *neigh2,
+ 		 struct batadv_hard_iface *if_outgoing2);
+-	void (*bat_neigh_free)(struct batadv_neigh_node *neigh);
+ 	/* orig_node handling API */
+ 	void (*bat_orig_print)(struct batadv_priv *priv, struct seq_file *seq,
+ 			       struct batadv_hard_iface *hard_iface);
+-- 
+2.8.1
 
