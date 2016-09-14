@@ -1,11 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 14 Sep 2016 14:37:34 +0200
-Message-Id: <20160914123735.9411-2-sw@simonwunderlich.de>
+Date: Wed, 14 Sep 2016 14:37:35 +0200
+Message-Id: <20160914123735.9411-3-sw@simonwunderlich.de>
 In-Reply-To: <20160914123735.9411-1-sw@simonwunderlich.de>
 References: <20160914123735.9411-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Add missing refcnt for
-	last_candidate
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: fix elp packet data
+	reservation
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,76 +21,35 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-batadv_find_router dereferences last_bonding_candidate from
-orig_node without making sure that it has a valid reference. This reference
-has to be retrieved by increasing the reference counter while holding
-neigh_list_lock. The lock is required to avoid that
-batadv_last_bonding_replace removes the current last_bonding_candidate,
-reduces the reference counter and maybe destroys the object in this
-process.
+The skb_reserve() call only reserved headroom for the mac header, but
+not the elp packet header itself.
 
-Fixes: f3b3d9018975 ("batman-adv: add bonding again")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Fixing this by using skb_put()'ing towards the skb tail instead of
+skb_push()'ing towards the skb head.
+
+Fixes: d6f94d91f766 ("batman-adv: ELP - adding basic infrastructure")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/routing.c | 28 +++++++++++++++++++++++++++-
- 1 file changed, 27 insertions(+), 1 deletion(-)
+ net/batman-adv/bat_v_elp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 7602c00..3d19947 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -470,6 +470,29 @@ static int batadv_check_unicast_packet(struct batadv_priv *bat_priv,
- }
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 7d17001..ee08540 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -335,7 +335,7 @@ int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
+ 		goto out;
  
- /**
-+ * batadv_last_bonding_get - Get last_bonding_candidate of orig_node
-+ * @orig_node: originator node whose last bonding candidate should be retrieved
-+ *
-+ * Return: last bonding candidate of router or NULL if not found
-+ *
-+ * The object is returned with refcounter increased by 1.
-+ */
-+static struct batadv_orig_ifinfo *
-+batadv_last_bonding_get(struct batadv_orig_node *orig_node)
-+{
-+	struct batadv_orig_ifinfo *last_bonding_candidate;
-+
-+	spin_lock_bh(&orig_node->neigh_list_lock);
-+	last_bonding_candidate = orig_node->last_bonding_candidate;
-+
-+	if (last_bonding_candidate)
-+		kref_get(&last_bonding_candidate->refcount);
-+	spin_unlock_bh(&orig_node->neigh_list_lock);
-+
-+	return last_bonding_candidate;
-+}
-+
-+/**
-  * batadv_last_bonding_replace - Replace last_bonding_candidate of orig_node
-  * @orig_node: originator node whose bonding candidates should be replaced
-  * @new_candidate: new bonding candidate or NULL
-@@ -539,7 +562,7 @@ batadv_find_router(struct batadv_priv *bat_priv,
- 	 * router - obviously there are no other candidates.
- 	 */
- 	rcu_read_lock();
--	last_candidate = orig_node->last_bonding_candidate;
-+	last_candidate = batadv_last_bonding_get(orig_node);
- 	if (last_candidate)
- 		last_cand_router = rcu_dereference(last_candidate->router);
- 
-@@ -631,6 +654,9 @@ next:
- 		batadv_orig_ifinfo_put(next_candidate);
- 	}
- 
-+	if (last_candidate)
-+		batadv_orig_ifinfo_put(last_candidate);
-+
- 	return router;
- }
+ 	skb_reserve(hard_iface->bat_v.elp_skb, ETH_HLEN + NET_IP_ALIGN);
+-	elp_buff = skb_push(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
++	elp_buff = skb_put(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
+ 	elp_packet = (struct batadv_elp_packet *)elp_buff;
+ 	memset(elp_packet, 0, BATADV_ELP_HLEN);
  
 -- 
 2.9.3
