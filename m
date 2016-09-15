@@ -1,10 +1,11 @@
-Return-Path: <apape@phoenixcontact.com>
-From: Andreas Pape <apape@phoenixcontact.com>
-Message-ID: <1473928860-30519-1-git-send-email-apape@phoenixcontact.com>
-Date: Thu, 15 Sep 2016 10:41:00 +0200
+Return-Path: <APape@phoenixcontact.com>
+MIME-Version: 1.0
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OF679B1A8B.6DAC88DA-ONC125802F.00308C8E-C125802F.003170ED@phoenixcontact.com>
+Date: Thu, 15 Sep 2016 11:00:03 +0200
 content-transfer-encoding: quoted-printable
-content-type: text/plain; charset="utf-8"
-Subject: [B.A.T.M.A.N.] [PATCH] batctl: optchar variable uses wrong type
+Content-Type: text/plain; charset="utf-8"
+Subject: [B.A.T.M.A.N.] batctl: problem with #define __unused in main.h
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,33 +17,30 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The variable "optchar" used char instead of int leading to a non
-working batctl tp command as the while loop parsing the tp
-arguments with the getopt command is only left via the "default"
-case leaving the tp subcommand unusable. Using type char also
-lead to a compiler warning.
+Hello
 
-Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
----
- tp_meter.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+when trying to compile the latest batctl code from the git repository I
+run into a compiler error
+(gcc 4.8.5 and eglibc-2.18) .
 
-diff --git a/tp_meter.c b/tp_meter.c
-index 7fe0d56..10dc2b9 100644
---- a/tp_meter.c
-+++ b/tp_meter.c
-@@ -395,7 +395,7 @@ int tp_meter(char *mesh_iface, int argc, char **argv)
- =09int ret =3D EXIT_FAILURE;
- =09int found_args =3D 1, read_opt =3D USE_BAT_HOSTS;
- =09uint32_t time =3D 0;
--=09char optchar;
-+=09int optchar;
- =09struct nl_sock *listen_sock =3D NULL;
- =09struct tp_result result =3D {
- =09=09.error =3D 0,
---
-1.7.0.4
+As far as I could figure out the problem is caused by the define of
+__unused in main.h. In my case
+I use the libnl-3.2.25 to compile the code. The libnl header files include
+the netdb.h header file
+which uses __unused as an element of a struct. The define in the main.h of
+the batctl code leads to a
+compiler error. Renaming the define in main.h to something like __unused_
+and corresponding
+changes in the batctl code using __unused solves the compile time issue.
+But due to my lack
+of knowledge I don't know if this breaks the code.... On my devices batctl
+seems to work properly
+after changing this, but before sending a patch, I would like to ask you
+guys first ;-)
 
+
+Best regards,
+Andreas
 
 
 ..................................................................
