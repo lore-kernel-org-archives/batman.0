@@ -1,14 +1,10 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 14 Sep 2016 14:37:35 +0200
-Message-Id: <20160914123735.9411-3-sw@simonwunderlich.de>
-In-Reply-To: <20160914123735.9411-1-sw@simonwunderlich.de>
-References: <20160914123735.9411-1-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: fix elp packet data
-	reservation
+Return-Path: <apape@phoenixcontact.com>
+From: Andreas Pape <apape@phoenixcontact.com>
+Message-ID: <1473928860-30519-1-git-send-email-apape@phoenixcontact.com>
+Date: Thu, 15 Sep 2016 10:41:00 +0200
+content-transfer-encoding: quoted-printable
+content-type: text/plain; charset="utf-8"
+Subject: [B.A.T.M.A.N.] [PATCH] batctl: optchar variable uses wrong type
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,39 +14,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Marek Lindner <mareklindner@neomailbox.ch>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+The variable "optchar" used char instead of int leading to a non
+working batctl tp command as the while loop parsing the tp
+arguments with the getopt command is only left via the "default"
+case leaving the tp subcommand unusable. Using type char also
+lead to a compiler warning.
 
-The skb_reserve() call only reserved headroom for the mac header, but
-not the elp packet header itself.
-
-Fixing this by using skb_put()'ing towards the skb tail instead of
-skb_push()'ing towards the skb head.
-
-Fixes: d6f94d91f766 ("batman-adv: ELP - adding basic infrastructure")
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
-Signed-off-by: Marek Lindner <mareklindner@neomailbox.ch>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
 ---
- net/batman-adv/bat_v_elp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ tp_meter.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index 7d17001..ee08540 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -335,7 +335,7 @@ int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
- 		goto out;
- 
- 	skb_reserve(hard_iface->bat_v.elp_skb, ETH_HLEN + NET_IP_ALIGN);
--	elp_buff = skb_push(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
-+	elp_buff = skb_put(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
- 	elp_packet = (struct batadv_elp_packet *)elp_buff;
- 	memset(elp_packet, 0, BATADV_ELP_HLEN);
- 
--- 
-2.9.3
+diff --git a/tp_meter.c b/tp_meter.c
+index 7fe0d56..10dc2b9 100644
+--- a/tp_meter.c
++++ b/tp_meter.c
+@@ -395,7 +395,7 @@ int tp_meter(char *mesh_iface, int argc, char **argv)
+ =09int ret =3D EXIT_FAILURE;
+ =09int found_args =3D 1, read_opt =3D USE_BAT_HOSTS;
+ =09uint32_t time =3D 0;
+-=09char optchar;
++=09int optchar;
+ =09struct nl_sock *listen_sock =3D NULL;
+ =09struct tp_result result =3D {
+ =09=09.error =3D 0,
+--
+1.7.0.4
 
+
+
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
+
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Ulrich Leidecker, Christoph Le=
+ifer
+__________________________________________________________________
+Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
+nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
+rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
+d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
+ Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
