@@ -1,11 +1,13 @@
-Return-Path: <APape@phoenixcontact.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 15 Sep 2016 11:19:33 +0200
+Message-ID: <1739945.WLjKjG9su1@bentobox>
+In-Reply-To: <OF679B1A8B.6DAC88DA-ONC125802F.00308C8E-C125802F.003170ED@phoenixcontact.com>
+References: <OF679B1A8B.6DAC88DA-ONC125802F.00308C8E-C125802F.003170ED@phoenixcontact.com>
 MIME-Version: 1.0
-From: Andreas Pape <APape@phoenixcontact.com>
-Message-ID: <OF679B1A8B.6DAC88DA-ONC125802F.00308C8E-C125802F.003170ED@phoenixcontact.com>
-Date: Thu, 15 Sep 2016 11:00:03 +0200
-content-transfer-encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
-Subject: [B.A.T.M.A.N.] batctl: problem with #define __unused in main.h
+Content-Type: multipart/signed; boundary="nextPart2664391.i8INFuHFU0";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] batctl: problem with #define __unused in main.h
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,51 +19,45 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hello
+--nextPart2664391.i8INFuHFU0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-when trying to compile the latest batctl code from the git repository I
-run into a compiler error
-(gcc 4.8.5 and eglibc-2.18) .
-
-As far as I could figure out the problem is caused by the define of
-__unused in main.h. In my case
-I use the libnl-3.2.25 to compile the code. The libnl header files include
-the netdb.h header file
-which uses __unused as an element of a struct. The define in the main.h of
-the batctl code leads to a
-compiler error. Renaming the define in main.h to something like __unused_
-and corresponding
-changes in the batctl code using __unused solves the compile time issue.
-But due to my lack
-of knowledge I don't know if this breaks the code.... On my devices batctl
-seems to work properly
-after changing this, but before sending a patch, I would like to ask you
-guys first ;-)
+On Donnerstag, 15. September 2016 11:00:03 CEST Andreas Pape wrote:
+> Hello
+> 
+> when trying to compile the latest batctl code from the git repository I
+> run into a compiler error
+> (gcc 4.8.5 and eglibc-2.18) .
 
 
-Best regards,
-Andreas
+Please test https://patchwork.open-mesh.org/patch/16673/ (and reply with a 
+Tested-by: Andreas Pape <APape@phoenixcontact.com>) when it works.
 
+Kind regards,
+	Sven
+--nextPart2664391.i8INFuHFU0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-..................................................................
-PHOENIX CONTACT ELECTRONICS GmbH
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
-USt-Id-Nr.: DE811742156
-Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
-Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Ulrich Leidecker, Christoph Le=
-ifer
-__________________________________________________________________
-Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
-nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
-rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
-d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
- Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
----------------------------------------------------------------------------=
--------------------------
-This e-mail may contain confidential and/or privileged information. If you =
-are not the intended recipient (or have received this e-mail in error) plea=
-se notify the sender immediately and destroy this e-mail. Any unauthorized =
-copying, disclosure, distribution or other use of the material or parts the=
-reof is strictly forbidden.
-___________________________________________________________________
+iQIcBAABCgAGBQJX2melAAoJEF2HCgfBJntGxVYP/23H6JqhAbIGFTybBgRfL7n6
+hDsbqY2V4ObYhQGniKJTytct0nG4EbNb+AYFhfewFn5XmI/KDbzCt392Dh1YhVeH
+KFYivVkhhF+qpXcvCCnypOcljNJLtoFyXxiM5bP/MEcwK1nt9oumPSUEXXf73RLu
+3ttySwTgJIuG1xKXjvQk2sMHHFW06MRO6Mg8+wTzS3/H/5mqYcCmHWz/OrpfRyal
+PA2H82gvJkW5Ok5wYeECUv6mZuabDzMCtqh8dUubGoECkP6VZGQw/dOV9v17vP7t
+Vi3JzZnXO7Mobj9eg0QMkSomqB/NHYRH8IDn3/GTU2aTrix8xPVQfmcU2hvd7vT+
+k5SlTlDCNkuz1bNSTC2ZMkxxmBd4qs0myfxbGtkDz6px2dwoX3spC9b1RiCNnnci
+lpAh/6kGm9Gl6vzNKt6ya48Fojq99NpTCajgoUPaHXlsfuZKkcjyKZGB4hvU1wo3
+FRoRDySbd6GBqruL4m46q4LEpK2ZlEyo9FFmWVYblETvS8y/GkA6rP+eyT469kyY
+d2HA9CumGteuqfC07U2rIsK4XLy+fBK5KQJJLEai1/mA1q0fy6DehH5uUe6U9+z3
+ygLqQ3xncuuSVluhSZMVGZHrYP2DPLyncNzHugdNYoHQdMcN0B/OFeWF30JcTejO
+Zp6n2xfEWgW//O3milnb
+=gCQU
+-----END PGP SIGNATURE-----
+
+--nextPart2664391.i8INFuHFU0--
+
