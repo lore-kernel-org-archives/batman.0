@@ -1,13 +1,9 @@
-Return-Path: <apape@phoenixcontact.com>
-From: Andreas Pape <apape@phoenixcontact.com>
-In-Reply-To: <20160904182331.18118-1-sven@narfation.org>
-References: <20160904182331.18118-1-sven@narfation.org>
-Mime-Version: 1.0
-Message-ID: <20160915160224.34d256a4@ubuntu>
-Date: Thu, 15 Sep 2016 16:02:24 +0200
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
-Subject: Re: [B.A.T.M.A.N.] batctl: Work around uclibc collision for __unused
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 16 Sep 2016 09:10:22 +0200
+Message-Id: <20160916071022.22560-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH next] batman-adv: remove redundant #include
+	<linux/kconfig.h>
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,44 +13,36 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Sun,  4 Sep 2016 20:23:31 +0200
-Sven Eckelmann <sven@narfation.org> wrote:
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
 
-> uclibc on 64 bit systems uses struct members called __unused. These
-> conflict with the definition of __unused in batctl. Such a conflict
-> results in a build error because the struct member will be replaced with
-> the __attribute__((unused)).
->
-> This can be avoided by renaming it to the Linux kernel name
-> "__maybe_unused".
->
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Kernel source files need not include <linux/kconfig.h> explicitly
+because the top Makefile forces to include it with:
 
-Tested-by: Andreas Pape <apape@phoenixcontact.com>
+  -include $(srctree)/include/linux/kconfig.h
 
+Link: http://lkml.kernel.org/r/1473656164-11929-1-git-send-email-yamada.masahiro@socionext.com
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/debugfs.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-..................................................................
-PHOENIX CONTACT ELECTRONICS GmbH
+diff --git a/net/batman-adv/debugfs.h b/net/batman-adv/debugfs.h
+index c68ff3d..e49121e 100644
+--- a/net/batman-adv/debugfs.h
++++ b/net/batman-adv/debugfs.h
+@@ -20,8 +20,6 @@
+ 
+ #include "main.h"
+ 
+-#include <linux/kconfig.h>
+-
+ struct net_device;
+ 
+ #define BATADV_DEBUGFS_SUBDIR "batman_adv"
+-- 
+2.9.3
 
-Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
-USt-Id-Nr.: DE811742156
-Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
-Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Ulrich Leidecker, Christoph Le=
-ifer
-__________________________________________________________________
-Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
-nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
-rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
-d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
- Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
----------------------------------------------------------------------------=
--------------------------
-This e-mail may contain confidential and/or privileged information. If you =
-are not the intended recipient (or have received this e-mail in error) plea=
-se notify the sender immediately and destroy this e-mail. Any unauthorized =
-copying, disclosure, distribution or other use of the material or parts the=
-reof is strictly forbidden.
-___________________________________________________________________
