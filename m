@@ -1,14 +1,11 @@
-Return-Path: <davem@davemloft.net>
-Date: Fri, 16 Sep 2016 04:18:53 -0400 (EDT)
-Message-Id: <20160916.041853.1865127341625101358.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20160914123735.9411-1-sw@simonwunderlich.de>
-References: <20160914123735.9411-1-sw@simonwunderlich.de>
+Return-Path: <onelektra@gmx.net>
+Date: Fri, 16 Sep 2016 12:09:54 +0200
+From: elektra <onelektra@gmx.net>
+Message-Id: <20160916120954.3629617a87475eba9e7db96e@gmx.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/2] pull request for net: batman-adv
-	2016-09-14
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] Thank you for your donations!
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,15 +15,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sw@simonwunderlich.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 14 Sep 2016 14:37:33 +0200
+Hi all -
 
-> here are some more bugfix patches which we would like to have integrated
-> into net.
-> 
-> Please pull or let me know of any problem!
+Sven has donated the money for the registration of=A0open-mesh.org=A0for tw=
+o years and Simon covered the cost for=A0open-mesh.net=A0for one year.
 
-Pulled, thanks.
+Thank you, guys!
+
+Simon suggested to drop the=A0open-mesh.netdomain in order to reduce the co=
+st.
+
+However,=A0open-mesh.net=A0is the domain that I use to refer to this projec=
+t. The project is about mesh.networking - so the domain name matches that v=
+ery nicely.
+
+Cheers and thanks again,
+Elektra
+
+--=20
+Viral meme of radical freedom=20
+=20
+The fact that you talk in your head doesn't mean that you think.=20
+=20
+The best way to lose control over yourself is trying to control yourself.=20
+=20
+Most people experience themselves as a voice in their head, telling them=20
+ who they are, what they think and what they have to do.=20
+=20
+http://en.wikipedia.org/wiki/Meme=20
