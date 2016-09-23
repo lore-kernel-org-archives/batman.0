@@ -1,9 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 23 Sep 2016 16:00:13 +0200
-Message-Id: <20160923140013.11941-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] alfred: vis: Fix direct neighbors detection
-	with netlink query
+Date: Fri, 23 Sep 2016 16:35:57 +0200
+Message-Id: <20160923143557.30828-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] alfred: Enable _GNU_SOURCE by default
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,52 +14,61 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Only entries in the originator table with the destination address equal to
-the originator address should be handled by alfred as actual neighbors.
+alfred uses any netlink library which is (more or less) compatible with
+libnl-3. This is for example libnl-tiny on OpenWrt.
 
-Fixes: bca55a86fecd ("alfred: vis: Add support for netlink")
+Programs and libraries which are build against libnl-tiny must be build
+with _GNU_SOURCE enabled to have some types in its headers defined. Thus
+_GNU_SOURCE is enabled in the OpenWrt alfred package since 2016.3. But
+sometimes using _GNU_SOURCE and sometimes not using it can have severe side
+effects which are non-trivial to debug when the developer is not also using
+the same _GNU_SOURCE preprocessor define. Thus enable _GNU_SOURCE by
+default to have similar behavior (defines, type definitions, structure
+members, ...) from headers like on OpenWrt.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- vis/vis.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ Makefile      | 1 +
+ gpsd/Makefile | 1 +
+ vis/Makefile  | 1 +
+ 3 files changed, 3 insertions(+)
 
-diff --git a/vis/vis.c b/vis/vis.c
-index 94e583e..f4d13c7 100644
---- a/vis/vis.c
-+++ b/vis/vis.c
-@@ -453,6 +453,7 @@ err:
+diff --git a/Makefile b/Makefile
+index 6daa904..552e690 100755
+--- a/Makefile
++++ b/Makefile
+@@ -36,6 +36,7 @@ MANPAGE = man/alfred.8
  
- static const int parse_orig_list_mandatory[] = {
- 	BATADV_ATTR_ORIG_ADDRESS,
-+	BATADV_ATTR_NEIGH_ADDRESS,
- 	BATADV_ATTR_TQ,
- 	BATADV_ATTR_HARD_IFINDEX,
- };
-@@ -466,6 +467,7 @@ static int parse_orig_list_netlink_cb(struct nl_msg *msg, void *arg)
- 	struct genlmsghdr *ghdr;
- 	struct vis_list_entry *v_entry;
- 	uint8_t *orig;
-+	uint8_t *neigh;
- 	uint8_t tq;
- 	uint32_t hardif;
+ # alfred flags and options
+ CFLAGS += -pedantic -Wall -W -std=gnu99 -fno-strict-aliasing -MD -MP
++CPPFLAGS += -D_GNU_SOURCE
+ LDLIBS += -lrt
  
-@@ -493,12 +495,16 @@ static int parse_orig_list_netlink_cb(struct nl_msg *msg, void *arg)
- 		return NL_OK;
+ # Turn on alfred capability dropping by default - set this to n if you don't want/need it
+diff --git a/gpsd/Makefile b/gpsd/Makefile
+index bae5660..b6172d9 100755
+--- a/gpsd/Makefile
++++ b/gpsd/Makefile
+@@ -25,6 +25,7 @@ MANPAGE = man/alfred-gpsd.8
  
- 	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
-+	neigh = nla_data(attrs[BATADV_ATTR_NEIGH_ADDRESS]);
- 	tq = nla_get_u8(attrs[BATADV_ATTR_TQ]);
- 	hardif = nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]);
+ # alfred flags and options
+ CFLAGS += -pedantic -Wall -W -std=gnu99 -fno-strict-aliasing -MD -MP
++CPPFLAGS += -D_GNU_SOURCE
  
- 	if (tq < 1)
- 		return NL_OK;
+ # disable verbose output
+ ifneq ($(findstring $(MAKEFLAGS),s),s)
+diff --git a/vis/Makefile b/vis/Makefile
+index fd99f49..22483a5 100755
+--- a/vis/Makefile
++++ b/vis/Makefile
+@@ -27,6 +27,7 @@ MANPAGE = man/batadv-vis.8
  
-+	if (memcmp(orig, neigh, ETH_ALEN) != 0)
-+		return NL_OK;
-+
- 	v_entry = malloc(sizeof(*v_entry));
- 	if (!v_entry)
- 		return NL_OK;
+ # batadv-vis flags and options
+ CFLAGS += -pedantic -Wall -W -std=gnu99 -fno-strict-aliasing -MD -MP
++CPPFLAGS += -D_GNU_SOURCE
+ LDLIBS += -lrt
+ 
+ # disable verbose output
 -- 
 2.9.3
 
