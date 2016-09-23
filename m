@@ -1,8 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 22 Sep 2016 23:46:07 +0200
-Message-Id: <20160922214607.22123-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] alfred: vis: Fix netlink function fallback
+Date: Fri, 23 Sep 2016 16:00:13 +0200
+Message-Id: <20160923140013.11941-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] alfred: vis: Fix direct neighbors detection
+	with netlink query
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,38 +15,52 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The netlink functions return -EOPNOTSUPP when the kernel doesn't support
-the netlink command. The caller can then fall back to debugfs. So check for
--EOPNOTSUPP and not EOPNOTSUPP.
+Only entries in the originator table with the destination address equal to
+the originator address should be handled by alfred as actual neighbors.
 
 Fixes: bca55a86fecd ("alfred: vis: Add support for netlink")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- vis/vis.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ vis/vis.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/vis/vis.c b/vis/vis.c
-index b865508..677f8aa 100644
+index 94e583e..f4d13c7 100644
 --- a/vis/vis.c
 +++ b/vis/vis.c
-@@ -361,7 +361,7 @@ static int parse_transtable_local(struct globals *globals)
- 	int ret;
+@@ -453,6 +453,7 @@ err:
  
- 	ret = parse_transtable_local_netlink(globals);
--	if (ret != EOPNOTSUPP)
-+	if (ret != -EOPNOTSUPP)
- 		return ret;
+ static const int parse_orig_list_mandatory[] = {
+ 	BATADV_ATTR_ORIG_ADDRESS,
++	BATADV_ATTR_NEIGH_ADDRESS,
+ 	BATADV_ATTR_TQ,
+ 	BATADV_ATTR_HARD_IFINDEX,
+ };
+@@ -466,6 +467,7 @@ static int parse_orig_list_netlink_cb(struct nl_msg *msg, void *arg)
+ 	struct genlmsghdr *ghdr;
+ 	struct vis_list_entry *v_entry;
+ 	uint8_t *orig;
++	uint8_t *neigh;
+ 	uint8_t tq;
+ 	uint32_t hardif;
  
- 	return parse_transtable_local_debugfs(globals);
-@@ -602,7 +602,7 @@ static int parse_orig_list(struct globals *globals)
- 	int ret;
+@@ -493,12 +495,16 @@ static int parse_orig_list_netlink_cb(struct nl_msg *msg, void *arg)
+ 		return NL_OK;
  
- 	ret = parse_orig_list_netlink(globals);
--	if (ret != EOPNOTSUPP)
-+	if (ret != -EOPNOTSUPP)
- 		return ret;
+ 	orig = nla_data(attrs[BATADV_ATTR_ORIG_ADDRESS]);
++	neigh = nla_data(attrs[BATADV_ATTR_NEIGH_ADDRESS]);
+ 	tq = nla_get_u8(attrs[BATADV_ATTR_TQ]);
+ 	hardif = nla_get_u32(attrs[BATADV_ATTR_HARD_IFINDEX]);
  
- 	return parse_orig_list_debugfs(globals);
+ 	if (tq < 1)
+ 		return NL_OK;
+ 
++	if (memcmp(orig, neigh, ETH_ALEN) != 0)
++		return NL_OK;
++
+ 	v_entry = malloc(sizeof(*v_entry));
+ 	if (!v_entry)
+ 		return NL_OK;
 -- 
 2.9.3
 
