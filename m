@@ -1,11 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 24 Sep 2016 17:58:06 +0200
-Message-Id: <20160924155806.9115-7-sven@narfation.org>
-In-Reply-To: <20160924155806.9115-1-sven@narfation.org>
-References: <20160924155806.9115-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 7/7] batctl: Move check_mesh_iface* to
-	functions.c
+Return-Path: <a@unstable.cc>
+From: Antonio Quartulli <a@unstable.cc>
+Date: Sun, 25 Sep 2016 08:46:36 +0800
+Message-Id: <20160925004636.11334-1-a@unstable.cc>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove unsed argument from
+	batadv_dbg_arp() function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,192 +14,83 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
-The check_mesh_iface* functions are not used to modify anything in sysfs.
-So they are better placed in the common/shared functions file than in
-sys.c.
+The argument "type" passed to the batadv_dbg_arp() function is
+never used. Remove it.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
 ---
-v2:
- - no change
+ net/batman-adv/distributed-arp-table.c | 17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
 
- functions.c | 59 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- functions.h |  2 ++
- sys.c       | 56 --------------------------------------------------------
- sys.h       |  2 --
- 4 files changed, 61 insertions(+), 58 deletions(-)
-
-diff --git a/functions.c b/functions.c
-index 962efcf..f9feca4 100644
---- a/functions.c
-+++ b/functions.c
-@@ -32,6 +32,7 @@
- #include <string.h>
- #include <errno.h>
- #include <fcntl.h>
-+#include <dirent.h>
- #include <sys/time.h>
- #include <netinet/in.h>
- #include <stdint.h>
-@@ -56,6 +57,8 @@
- #include "debugfs.h"
- #include "netlink.h"
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index e257efd..cbb4f32 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -369,12 +369,11 @@ out:
+  * batadv_dbg_arp - print a debug message containing all the ARP packet details
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: ARP packet
+- * @type: ARP type
+  * @hdr_size: size of the possible header before the ARP packet
+  * @msg: message to print together with the debugging information
+  */
+ static void batadv_dbg_arp(struct batadv_priv *bat_priv, struct sk_buff *skb,
+-			   u16 type, int hdr_size, char *msg)
++			   int hdr_size, char *msg)
+ {
+ 	struct batadv_unicast_4addr_packet *unicast_4addr_packet;
+ 	struct batadv_bcast_packet *bcast_pkt;
+@@ -441,7 +440,7 @@ static void batadv_dbg_arp(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ #else
  
-+#define PATH_BUFF_LEN 200
-+
- static struct timeval start_time;
- static char *host_name;
- char *line_ptr = NULL;
-@@ -1011,3 +1014,59 @@ err_free_sock:
- 
- 	return err;
+ static void batadv_dbg_arp(struct batadv_priv *bat_priv, struct sk_buff *skb,
+-			   u16 type, int hdr_size, char *msg)
++			   int hdr_size, char *msg)
+ {
  }
-+
-+int check_mesh_iface(char *mesh_iface)
-+{
-+	char *base_dev = NULL;
-+	char path_buff[PATH_BUFF_LEN];
-+	int ret = -1, vid;
-+	DIR *dir;
-+
-+	/* use the parent interface if this is a VLAN */
-+	vid = vlan_get_link(mesh_iface, &base_dev);
-+	if (vid >= 0)
-+		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
-+	else
-+		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
-+
-+	/* try to open the mesh sys directory */
-+	dir = opendir(path_buff);
-+	if (!dir)
-+		goto out;
-+
-+	closedir(dir);
-+
-+	ret = 0;
-+out:
-+	if (base_dev)
-+		free(base_dev);
-+
-+	return ret;
-+}
-+
-+int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface)
-+{
-+	char path_buff[PATH_BUFF_LEN];
-+	int res;
-+
-+	/* check if this device actually belongs to the mesh interface */
-+	snprintf(path_buff, sizeof(path_buff), SYS_MESH_IFACE_FMT, hard_iface);
-+	res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
-+	if (res != EXIT_SUCCESS) {
-+		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
-+			path_buff, strerror(errno));
-+		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
-+		return EXIT_FAILURE;
-+	}
-+
-+	if (line_ptr[strlen(line_ptr) - 1] == '\n')
-+		line_ptr[strlen(line_ptr) - 1] = '\0';
-+
-+	if (strcmp(line_ptr, mesh_iface) != 0) {
-+		fprintf(stderr, "Error - interface %s is part of batman network %s, not %s\n",
-+			hard_iface, line_ptr, mesh_iface);
-+		return EXIT_FAILURE;
-+	}
-+
-+	return EXIT_SUCCESS;
-+}
-diff --git a/functions.h b/functions.h
-index 4c350f8..e413d6b 100644
---- a/functions.h
-+++ b/functions.h
-@@ -50,6 +50,8 @@ struct ether_addr *resolve_mac(const char *asc);
- int vlan_get_link(const char *ifname, char **parent);\
- int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg);
- int netlink_simple_request(struct nl_msg *msg);
-+int check_mesh_iface(char *mesh_iface);
-+int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
  
- int print_routing_algos(void);
- extern char *line_ptr;
-diff --git a/sys.c b/sys.c
-index 59cbdae..b524340 100644
---- a/sys.c
-+++ b/sys.c
-@@ -511,59 +511,3 @@ free_buff:
- out:
- 	return res;
- }
--
--int check_mesh_iface(char *mesh_iface)
--{
--	char *base_dev = NULL;
--	char path_buff[PATH_BUFF_LEN];
--	int ret = -1, vid;
--	DIR *dir;
--
--	/* use the parent interface if this is a VLAN */
--	vid = vlan_get_link(mesh_iface, &base_dev);
--	if (vid >= 0)
--		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
--	else
--		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
--
--	/* try to open the mesh sys directory */
--	dir = opendir(path_buff);
--	if (!dir)
--		goto out;
--
--	closedir(dir);
--
--	ret = 0;
--out:
--	if (base_dev)
--		free(base_dev);
--
--	return ret;
--}
--
--int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface)
--{
--	char path_buff[PATH_BUFF_LEN];
--	int res;
--
--	/* check if this device actually belongs to the mesh interface */
--	snprintf(path_buff, sizeof(path_buff), SYS_MESH_IFACE_FMT, hard_iface);
--	res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
--	if (res != EXIT_SUCCESS) {
--		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
--			path_buff, strerror(errno));
--		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
--		return EXIT_FAILURE;
--	}
--
--	if (line_ptr[strlen(line_ptr) - 1] == '\n')
--		line_ptr[strlen(line_ptr) - 1] = '\0';
--
--	if (strcmp(line_ptr, mesh_iface) != 0) {
--		fprintf(stderr, "Error - interface %s is part of batman network %s, not %s\n",
--			hard_iface, line_ptr, mesh_iface);
--		return EXIT_FAILURE;
--	}
--
--	return EXIT_SUCCESS;
--}
-diff --git a/sys.h b/sys.h
-index be9480e..1365e76 100644
---- a/sys.h
-+++ b/sys.h
-@@ -74,7 +74,5 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv);
- int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv);
- int handle_gw_setting(char *mesh_iface, int argc, char **argv);
- int handle_ra_setting(int argc, char **argv);
--int check_mesh_iface(char *mesh_iface);
--int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
+@@ -983,8 +982,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
+ 	if (type != ARPOP_REQUEST)
+ 		goto out;
  
- #endif
+-	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
+-		       "Parsing outgoing ARP REQUEST");
++	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing outgoing ARP REQUEST");
+ 
+ 	ip_src = batadv_arp_ip_src(skb, hdr_size);
+ 	hw_src = batadv_arp_hw_src(skb, hdr_size);
+@@ -1075,8 +1073,7 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
+ 	ip_src = batadv_arp_ip_src(skb, hdr_size);
+ 	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
+ 
+-	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
+-		       "Parsing incoming ARP REQUEST");
++	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing incoming ARP REQUEST");
+ 
+ 	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
+ 
+@@ -1149,8 +1146,7 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
+ 	if (type != ARPOP_REPLY)
+ 		return;
+ 
+-	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
+-		       "Parsing outgoing ARP REPLY");
++	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing outgoing ARP REPLY");
+ 
+ 	hw_src = batadv_arp_hw_src(skb, hdr_size);
+ 	ip_src = batadv_arp_ip_src(skb, hdr_size);
+@@ -1195,8 +1191,7 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+ 	if (type != ARPOP_REPLY)
+ 		goto out;
+ 
+-	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
+-		       "Parsing incoming ARP REPLY");
++	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing incoming ARP REPLY");
+ 
+ 	hw_src = batadv_arp_hw_src(skb, hdr_size);
+ 	ip_src = batadv_arp_ip_src(skb, hdr_size);
 -- 
-2.9.3
+2.10.0
 
