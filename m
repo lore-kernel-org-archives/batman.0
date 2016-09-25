@@ -1,8 +1,13 @@
-Return-Path: <a@unstable.cc>
-From: Antonio Quartulli <a@unstable.cc>
-Date: Sun, 25 Sep 2016 08:46:36 +0800
-Message-Id: <20160925004636.11334-1-a@unstable.cc>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: remove unsed argument from
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 25 Sep 2016 06:54:58 +0200
+Message-ID: <8069472.sOn1bsttGR@sven-edge>
+In-Reply-To: <20160925004636.11334-1-a@unstable.cc>
+References: <20160925004636.11334-1-a@unstable.cc>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1669488.KRGZSYmC5W";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: remove unsed argument from
 	batadv_dbg_arp() function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -16,81 +21,42 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Antonio Quartulli <a@unstable.cc>
 
-The argument "type" passed to the batadv_dbg_arp() function is
-never used. Remove it.
+--nextPart1669488.KRGZSYmC5W
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
----
- net/batman-adv/distributed-arp-table.c | 17 ++++++-----------
- 1 file changed, 6 insertions(+), 11 deletions(-)
+On Sonntag, 25. September 2016 08:46:36 CEST Antonio Quartulli wrote:
+> The argument "type" passed to the batadv_dbg_arp() function is
+> never used. Remove it.
+> 
+> Signed-off-by: Antonio Quartulli <a@unstable.cc>
+> ---
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index e257efd..cbb4f32 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -369,12 +369,11 @@ out:
-  * batadv_dbg_arp - print a debug message containing all the ARP packet details
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: ARP packet
-- * @type: ARP type
-  * @hdr_size: size of the possible header before the ARP packet
-  * @msg: message to print together with the debugging information
-  */
- static void batadv_dbg_arp(struct batadv_priv *bat_priv, struct sk_buff *skb,
--			   u16 type, int hdr_size, char *msg)
-+			   int hdr_size, char *msg)
- {
- 	struct batadv_unicast_4addr_packet *unicast_4addr_packet;
- 	struct batadv_bcast_packet *bcast_pkt;
-@@ -441,7 +440,7 @@ static void batadv_dbg_arp(struct batadv_priv *bat_priv, struct sk_buff *skb,
- #else
- 
- static void batadv_dbg_arp(struct batadv_priv *bat_priv, struct sk_buff *skb,
--			   u16 type, int hdr_size, char *msg)
-+			   int hdr_size, char *msg)
- {
- }
- 
-@@ -983,8 +982,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 	if (type != ARPOP_REQUEST)
- 		goto out;
- 
--	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
--		       "Parsing outgoing ARP REQUEST");
-+	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing outgoing ARP REQUEST");
- 
- 	ip_src = batadv_arp_ip_src(skb, hdr_size);
- 	hw_src = batadv_arp_hw_src(skb, hdr_size);
-@@ -1075,8 +1073,7 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 	ip_src = batadv_arp_ip_src(skb, hdr_size);
- 	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
- 
--	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
--		       "Parsing incoming ARP REQUEST");
-+	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing incoming ARP REQUEST");
- 
- 	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
- 
-@@ -1149,8 +1146,7 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
- 	if (type != ARPOP_REPLY)
- 		return;
- 
--	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
--		       "Parsing outgoing ARP REPLY");
-+	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing outgoing ARP REPLY");
- 
- 	hw_src = batadv_arp_hw_src(skb, hdr_size);
- 	ip_src = batadv_arp_ip_src(skb, hdr_size);
-@@ -1195,8 +1191,7 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
- 	if (type != ARPOP_REPLY)
- 		goto out;
- 
--	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
--		       "Parsing incoming ARP REPLY");
-+	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing incoming ARP REPLY");
- 
- 	hw_src = batadv_arp_hw_src(skb, hdr_size);
- 	ip_src = batadv_arp_ip_src(skb, hdr_size);
--- 
-2.10.0
+Reviewed-by: Sven Eckelmann <sven@narfation.org>
+
+Kind regards,
+	Sven
+--nextPart1669488.KRGZSYmC5W
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABCgAGBQJX51iiAAoJEF2HCgfBJntG1V8P/2FTcPCazb0yuTxT6+ZtRPh6
+c/Bv2Cv/wbGa0E4xsF/2U0Kx7RYeTPeF0T//8wXCfmp/hOcD+qRIhq/YuRazMtKi
+qU8DT53ztFjPu3qqWNmEwp33EMADyw9VoCArWU88V+fhfFqLgL7BC5Uar4O5AYUu
++vEJygIZMatdQ8U33NuA2Jbi+WGfns9vYmFbWjylgiEY45ck3wMw+ESOm49jsBwt
+JSOFJNc1/XSimsnq30APuEF0BVNxgN7lXXgexEvPUPtrzy1gq6xSlfjh/Kqa9jgc
+iPONx9FWcMUh+tDHKNKnm7ZmcX9TMyS7sekHJ2hm596bGqAxj9MxxRLLgmbAxcim
+dZn26EyI7dtQ7RdkwWKUyugrbE50PVfIXLYi5KDBa1k19/0QGbqUerj1FQfhmG2x
+jxOwMNzh+oPrmRlpC6ScWMaqU4ltPrxr7ZRmuIqJxMOqWtfdh86h6XEZtq9gV9FV
+Gst57qIc/veHIjBt5arXvtgQ7IRfe+Ggl7JSbUkA9wzkACTZjYCn8wDWqk5x1xym
+UFW7Eu4qHSqAYQthXO2kyVqwY+Ff3vXCpSAZjKj/x45V8wMjCBjQ58G3AygQRcNv
+j+yaz3eoFoaHopI5skq4k90lR+vpE3XaZKvWiKTkOA1AS17lJai2zUpTOCstCYDE
+PizKSrH8wZ7QBi9WW3Ia
+=21Ee
+-----END PGP SIGNATURE-----
+
+--nextPart1669488.KRGZSYmC5W--
 
