@@ -1,15 +1,15 @@
 Return-Path: <sven.eckelmann@open-mesh.com>
 From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-Date: Thu, 29 Sep 2016 18:05:29 +0200
-Message-ID: <3001776.TrYjlrxxJQ@sven-edge>
-In-Reply-To: <20160920121245.593-3-linus.luessing@c0d3.blue>
-References: <20160920121245.593-1-linus.luessing@c0d3.blue>
- <20160920121245.593-3-linus.luessing@c0d3.blue>
+Date: Thu, 29 Sep 2016 18:22:58 +0200
+Message-ID: <5061493.MOEdlbWcnQ@sven-edge>
+In-Reply-To: <20160817210759.19357-2-linus.luessing@c0d3.blue>
+References: <20160817210759.19357-1-linus.luessing@c0d3.blue>
+ <20160817210759.19357-2-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7574504.Tvyr2yHEE3";
+Content-Type: multipart/signed; boundary="nextPart2078511.ViLt0p73xK";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Introduce packet type
-	independent TVLV handler API
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 1/2] batman-adv: fix race conditions
+	on interface removal
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,65 +21,41 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart7574504.Tvyr2yHEE3
+--nextPart2078511.ViLt0p73xK
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Dienstag, 20. September 2016 14:12:44 CEST Linus L=FCssing wrote:
-[...]
-> +/**
-> + * batadv_tvlv_ogm_unpack_ctx - unpack context received with a TVLV hand=
-ler call
-> + * @orig_node: An orig_node to pack
-> + *
-> + * This unpacks the context received within an OGM TVLV handler, here the
-> + * orig_node the packet came from.
-> + *
-> + * Return: The orig_node the packet came from.
-> + */
-> +struct batadv_orig_node *batadv_tvlv_ogm_unpack_ctx(void *ctx)
-> +{
-> +	return (struct batadv_orig_node *)ctx;
-> +}
+On Mittwoch, 17. August 2016 23:07:58 CEST Linus L=FCssing wrote:
+> +               WARN_ONCE(hlist_fake(&forw_packet->bm_list),
+> +                         "Oh oh... the kernel OOPs are on our tail now..=
+=2E Jim won't bail us out this time!\n");
 
-The function doesn't have a parameter orig_node but it is documented in the
-kernel-doc block. Instead the ctx should be documented.
+The include to define WARN_ONCE is missing. Can you please add
+"#include <linux/bug.h>" while resending the patch?
 
-[...]
->  /**
-> + * batadv_tvlv_handler_unregister2 - unregister a tvlv handler
-> + * @bat_priv: the bat priv with all the soft interface information
-> + * @tvlv_type: packet type to unregistered for
-> + * @tvlv_type: tvlv handler type to be unregistered
-
-tvlv_type is documented twice - and differently.
-
-
-Kind regards,
+Thanks,
 	Sven
-
-
---nextPart7574504.Tvyr2yHEE3
+--nextPart2078511.ViLt0p73xK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJX7TvJAAoJEF2HCgfBJntGVGsP/iIQGF5FVp9nr/+hgM5mxnHO
-Z4JMYHfpk5wfjAqSVf06J42oH69wJg/XEy2aEW+ubniU1/Qk/18n+YLelP+xKj2T
-eib7FPUDO9MkKu++dnfhQgXcL3wowYgWBgSxaVTiPRN/9tpIsWKWk9Kf0yriuiyN
-FbLGmYDjShaXQK3aFY9xw5ycBFBLFBtYh8DqYGb/4CdXN1vilNtWE8rITD2THpRc
-9P8BjxTrrNsyLQOWjNxiO4skIGMLHoZdPYQ20/FlInagr5OL4Ham6hDTyyjAmdnk
-ARUmum5DVz1qol+ZsFUl0EPzxEQIe4kQwaxpxycIU+FeiHL9NQOJ4PdbK8uBWvsF
-R5rgAOlXJVy0W5Aiu1W00iNPRli7/EAGZIs2qNdJQTtQKAjeYgUhLZ6WvidVV2xl
-UgRHszc4Ke6JXho/U+H7dzzbSPhRQLbcZMy2WL8qNEMiS4dFS9+F+ubQfEqGPNdY
-LT/gCRiFdRU9OUjf2vsS/dAh2DYg+3dkaeAVoBN/OiUUZjap6u10zGdIwwF8bhCK
-nRSZ0hJV8fryFMusj9tdHjmgRiH/OjyWRUbP7JpGLqD3mNzNMWotlGxr3YAPN5Yw
-hOVD/Q9BcWEXjfOfUkaQ8d2dnzr1xUkUhBbL1sNb1c/RQE2p6x9S2Q8Sszz6A/kU
-qVqdaYpk7BE6brJnBy5j
-=WuDd
+iQIcBAABCgAGBQJX7T/iAAoJEF2HCgfBJntGMM4P+wePrbiWYGAbZQr3ae8bEV0v
+NXZx7ciGeY8nLNFwFN+to7tMsw+u4XGrmvtyeV/OFBt02MZWM78lu5k2eHlJMzIU
+stGoXsFzYDjJaNk0QRn86ryGVYUUaGvJ/gxeqZKapdYaFEmCp1wlDJ4K9XUGIlVL
+uvSEU9rYLKD4jFanFWv/S3NU8ETiHOxVRd+DyzH+NhLFjCbDMCHgEicyY2GcW5hS
+Ok9FMo1K7D8foUqqy5RHQmpkJB1r9mW0+cuwp2xKgHGaGZFfNMurihyUXu8m+ndA
++PRK+l93dAxFS1mIhtWutGe2tjA+Ig3XtFKFHIfOG8Qh/3jXyex9119WxzrE5uog
+j+oRxdplN97gGNCOZtOd0zc0AOG1PSNQQ14xSZQc7eiZra7npSiu5HxvkoVBIcC1
+437j3JSrbz5E/sATJFIrxMaSI5OttccI0nVEfcSecUFNfCtcbuyythe4UB3CscrU
+dVeVnkioKmPZIBGSWP/5icAcwbXbQwz2e1Gr1R/RcL9iwZaS++7mmsDSqEE1t63V
+UCmTX/qkA2rhbUHUg8Jy1go/EY1bhr2/1uc+O5lLaoRYg5X2/Wr1j7bcyJAXmvzW
+WjYBEOwY7ysYaSI4Oy37VzRC/KY5buUjf+AhbA6a122V2Lq+N4N4YQhato8KQJ8Y
+3RM6VY/uCf+DRgWJPb46
+=iyvu
 -----END PGP SIGNATURE-----
 
---nextPart7574504.Tvyr2yHEE3--
+--nextPart2078511.ViLt0p73xK--
 
