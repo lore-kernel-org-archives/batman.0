@@ -1,15 +1,15 @@
 Return-Path: <sven.eckelmann@open-mesh.com>
 From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-Date: Thu, 29 Sep 2016 18:05:27 +0200
-Message-ID: <5373791.iFaFlzxZeC@sven-edge>
-In-Reply-To: <20160920121245.593-4-linus.luessing@c0d3.blue>
+Date: Thu, 29 Sep 2016 18:05:29 +0200
+Message-ID: <3001776.TrYjlrxxJQ@sven-edge>
+In-Reply-To: <20160920121245.593-3-linus.luessing@c0d3.blue>
 References: <20160920121245.593-1-linus.luessing@c0d3.blue>
- <20160920121245.593-4-linus.luessing@c0d3.blue>
+ <20160920121245.593-3-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart16220160.lsZvtvrIrO";
+Content-Type: multipart/signed; boundary="nextPart7574504.Tvyr2yHEE3";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Evaluate and use
-	neighborhood hash TVLV
+Subject: Re: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Introduce packet type
+	independent TVLV handler API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,54 +21,65 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart16220160.lsZvtvrIrO
+--nextPart7574504.Tvyr2yHEE3
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Dienstag, 20. September 2016 14:12:45 CEST Linus L=FCssing wrote:
+On Dienstag, 20. September 2016 14:12:44 CEST Linus L=FCssing wrote:
 [...]
 > +/**
->   * batadv_v_elp_neigh_update - update an ELP neighbour node
->   * @bat_priv: the bat priv with all the soft interface information
->   * @neigh_addr: the neighbour interface address
-> @@ -581,6 +628,7 @@ void batadv_v_elp_primary_iface_set(struct batadv_har=
-d_iface *primary_iface)
->   * ELP packet.
->   */
->  static void batadv_v_elp_neigh_update(struct batadv_priv *bat_priv,
-> +				      struct sk_buff *skb,
->  				      u8 *neigh_addr,
->  				      struct batadv_hard_iface *if_incoming,
->  				      struct batadv_elp_packet *elp_packet)
+> + * batadv_tvlv_ogm_unpack_ctx - unpack context received with a TVLV hand=
+ler call
+> + * @orig_node: An orig_node to pack
+> + *
+> + * This unpacks the context received within an OGM TVLV handler, here the
+> + * orig_node the packet came from.
+> + *
+> + * Return: The orig_node the packet came from.
+> + */
+> +struct batadv_orig_node *batadv_tvlv_ogm_unpack_ctx(void *ctx)
+> +{
+> +	return (struct batadv_orig_node *)ctx;
+> +}
 
+The function doesn't have a parameter orig_node but it is documented in the
+kernel-doc block. Instead the ctx should be documented.
 
-skb parameter was added but the kernel-doc header was not added.
+[...]
+>  /**
+> + * batadv_tvlv_handler_unregister2 - unregister a tvlv handler
+> + * @bat_priv: the bat priv with all the soft interface information
+> + * @tvlv_type: packet type to unregistered for
+> + * @tvlv_type: tvlv handler type to be unregistered
+
+tvlv_type is documented twice - and differently.
+
 
 Kind regards,
 	Sven
 
 
---nextPart16220160.lsZvtvrIrO
+--nextPart7574504.Tvyr2yHEE3
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJX7TvHAAoJEF2HCgfBJntGeOMP/3nOzPss2hxMtjdVJNsZOCx1
-AynnMrOMpzjM1vO4IF/J4KmFI4/qoSJFTpis0NmvOWPuAWgIJBLfX23OYgafduzn
-u+mWsRsxj5vdM3Mu8U3wd0L4bHQ0iQS7E8UREDdndj732j6+VCAFgJsWDRdR3bgC
-KZY9GsBjD/cN2KNRrqKNBNMV2TYzp9Slq8DxxWcZI7iV979qx0cnFTkezyBd7zn4
-8IYICX3G+NFM61MDzVsu7/LAn/utUf9IR9LrSr6QQJgE9i08p8C97pPBXzYwZy45
-BdjM3vezQug4469SgrM54z6jaHrPjxZdm87/1vSKcV07qL8nae2qQUa2RT3L+bNt
-Xp71NO1xEMw0H2Fz96aDI5MZzSAv3jqFIbq6c0bP/uPB/D+971Mc180+5YL6ZnLY
-LEpMDHrvAW6+buh/2lPxcKplSl/F4RKhg0aZW+flqxRnMg7BTy7NGO9Is+SYOC4Y
-wm9BnkzsJBf7RmOZg+PUXpHJJLQRpV6ohr5qh99WFe0nr7D/RJNyfsgqCFmLMhn1
-APTHPYMzzoF/HIAA+jvilg3xIJaMQiw9qFixlZ22+6oAK7GpYFyll/me/AuQ7Kcq
-4UvxQYkiR3Eh0JuxWNqqxhQKb6mSL8rnMM55VPqqwCbdjuqXWwpqgkx/vgWllfE7
-xL2+rz1yd75Z7wpMHvee
-=YC0+
+iQIcBAABCgAGBQJX7TvJAAoJEF2HCgfBJntGVGsP/iIQGF5FVp9nr/+hgM5mxnHO
+Z4JMYHfpk5wfjAqSVf06J42oH69wJg/XEy2aEW+ubniU1/Qk/18n+YLelP+xKj2T
+eib7FPUDO9MkKu++dnfhQgXcL3wowYgWBgSxaVTiPRN/9tpIsWKWk9Kf0yriuiyN
+FbLGmYDjShaXQK3aFY9xw5ycBFBLFBtYh8DqYGb/4CdXN1vilNtWE8rITD2THpRc
+9P8BjxTrrNsyLQOWjNxiO4skIGMLHoZdPYQ20/FlInagr5OL4Ham6hDTyyjAmdnk
+ARUmum5DVz1qol+ZsFUl0EPzxEQIe4kQwaxpxycIU+FeiHL9NQOJ4PdbK8uBWvsF
+R5rgAOlXJVy0W5Aiu1W00iNPRli7/EAGZIs2qNdJQTtQKAjeYgUhLZ6WvidVV2xl
+UgRHszc4Ke6JXho/U+H7dzzbSPhRQLbcZMy2WL8qNEMiS4dFS9+F+ubQfEqGPNdY
+LT/gCRiFdRU9OUjf2vsS/dAh2DYg+3dkaeAVoBN/OiUUZjap6u10zGdIwwF8bhCK
+nRSZ0hJV8fryFMusj9tdHjmgRiH/OjyWRUbP7JpGLqD3mNzNMWotlGxr3YAPN5Yw
+hOVD/Q9BcWEXjfOfUkaQ8d2dnzr1xUkUhBbL1sNb1c/RQE2p6x9S2Q8Sszz6A/kU
+qVqdaYpk7BE6brJnBy5j
+=WuDd
 -----END PGP SIGNATURE-----
 
---nextPart16220160.lsZvtvrIrO--
+--nextPart7574504.Tvyr2yHEE3--
 
