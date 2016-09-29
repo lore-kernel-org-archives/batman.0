@@ -1,15 +1,15 @@
 Return-Path: <sven.eckelmann@open-mesh.com>
 From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-Date: Thu, 29 Sep 2016 18:05:25 +0200
-Message-ID: <2166229.456RT91xVd@sven-edge>
-In-Reply-To: <20160817210759.19357-2-linus.luessing@c0d3.blue>
-References: <20160817210759.19357-1-linus.luessing@c0d3.blue>
- <20160817210759.19357-2-linus.luessing@c0d3.blue>
+Date: Thu, 29 Sep 2016 18:05:27 +0200
+Message-ID: <5373791.iFaFlzxZeC@sven-edge>
+In-Reply-To: <20160920121245.593-4-linus.luessing@c0d3.blue>
+References: <20160920121245.593-1-linus.luessing@c0d3.blue>
+ <20160920121245.593-4-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1582225.lNqDtpUsda";
+Content-Type: multipart/signed; boundary="nextPart16220160.lsZvtvrIrO";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 1/2] batman-adv: fix race conditions
-	on interface removal
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Evaluate and use
+	neighborhood hash TVLV
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,57 +21,54 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1582225.lNqDtpUsda
+--nextPart16220160.lsZvtvrIrO
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Mittwoch, 17. August 2016 23:07:58 CEST Linus L=FCssing wrote:
+On Dienstag, 20. September 2016 14:12:45 CEST Linus L=FCssing wrote:
 [...]
 > +/**
-> + * batadv_forw_packet_queue - try to queue a forwarding packet
-> + * @forw_packet: the forwarding packet to queue
-> + * @lock: a key to the store (e.g. forw_{bat,bcast}_list_lock)
-> + * @head: the shelve to queue it on (e.g. forw_{bat,bcast}_list)
-> + *
-> + * This function tries to (re)queue a forwarding packet. If packet was s=
-tolen
-> + * earlier then the shop owner will (usually) keep quiet about it.
-> + *
-> + * Caller needs to ensure that forw_packet->delayed_work was initialized.
-> + */
-> +static void batadv_forw_packet_queue(struct batadv_forw_packet *forw_pac=
-ket,
-> +				     spinlock_t *lock, struct hlist_head *head,
-> +				     unsigned long send_time)
-> +{
+>   * batadv_v_elp_neigh_update - update an ELP neighbour node
+>   * @bat_priv: the bat priv with all the soft interface information
+>   * @neigh_addr: the neighbour interface address
+> @@ -581,6 +628,7 @@ void batadv_v_elp_primary_iface_set(struct batadv_har=
+d_iface *primary_iface)
+>   * ELP packet.
+>   */
+>  static void batadv_v_elp_neigh_update(struct batadv_priv *bat_priv,
+> +				      struct sk_buff *skb,
+>  				      u8 *neigh_addr,
+>  				      struct batadv_hard_iface *if_incoming,
+>  				      struct batadv_elp_packet *elp_packet)
 
-send_time is missing in kernel-doc
 
+skb parameter was added but the kernel-doc header was not added.
 
 Kind regards,
 	Sven
 
---nextPart1582225.lNqDtpUsda
+
+--nextPart16220160.lsZvtvrIrO
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJX7TvFAAoJEF2HCgfBJntGuO8QALqJOvHjBjiu3r1FmZqoWblf
-9NoJQYvwb1u0Pko5h+lIfzRR79zE7JnzJlqi4WYbTJPPnBHvBvwtQO8PbB8XSrBa
-QpzrKPOJ3BYRJmyMjWXjoFGnA1Ryvn7zhsfD/Nt72Az9wjLafS3IVCVpbl4wOpjD
-6p6hFdBHBkMFFZScUZb3I0W34dkg9YGv5nLmNRj5H7hCcMemhmfysDYaJlSlAaoU
-PrLLzE9MtXjBnBkYcpQrBC7Zx+VqhrL82HyoJDJVjYArqskyzI5GweGlmAI9UUFi
-hj7wPmwUzhJZGMH5UpGv4ZtAZzXppSOrqleIEo6Rmat9aEyZkr2M/mXBeMDoSXF4
-E+5380bG2UeN2JcJIvH4YMNYyf/kFT8DeV21Jq3xtsXPJxw1IL4DxUy7a+qMxTPr
-EW++uMuPXBJmYdTfvcrKw1G3003dF8lUeoou3PYpX5813FyvcyLNhDtBwI72jAdR
-F9i92bCVZQTg97i+dLovDGMQJz7R0Buc5zySVBk71sn04MCJy2ltEqplRy+XyAW/
-zXwXcmJ5OHXXUeRcgCIu5Ausvj2U15tMScE4po/j66jsfjkkl9X0n7ra4mQpTUjr
-a3gmRxJtGhozITly7onebnAfp0wITIfNha/N3kaSAj4ltD86UwTc6ij6mxBG5hbx
-LhHXWeGfZsZhcthuTgcy
-=4GSJ
+iQIcBAABCgAGBQJX7TvHAAoJEF2HCgfBJntGeOMP/3nOzPss2hxMtjdVJNsZOCx1
+AynnMrOMpzjM1vO4IF/J4KmFI4/qoSJFTpis0NmvOWPuAWgIJBLfX23OYgafduzn
+u+mWsRsxj5vdM3Mu8U3wd0L4bHQ0iQS7E8UREDdndj732j6+VCAFgJsWDRdR3bgC
+KZY9GsBjD/cN2KNRrqKNBNMV2TYzp9Slq8DxxWcZI7iV979qx0cnFTkezyBd7zn4
+8IYICX3G+NFM61MDzVsu7/LAn/utUf9IR9LrSr6QQJgE9i08p8C97pPBXzYwZy45
+BdjM3vezQug4469SgrM54z6jaHrPjxZdm87/1vSKcV07qL8nae2qQUa2RT3L+bNt
+Xp71NO1xEMw0H2Fz96aDI5MZzSAv3jqFIbq6c0bP/uPB/D+971Mc180+5YL6ZnLY
+LEpMDHrvAW6+buh/2lPxcKplSl/F4RKhg0aZW+flqxRnMg7BTy7NGO9Is+SYOC4Y
+wm9BnkzsJBf7RmOZg+PUXpHJJLQRpV6ohr5qh99WFe0nr7D/RJNyfsgqCFmLMhn1
+APTHPYMzzoF/HIAA+jvilg3xIJaMQiw9qFixlZ22+6oAK7GpYFyll/me/AuQ7Kcq
+4UvxQYkiR3Eh0JuxWNqqxhQKb6mSL8rnMM55VPqqwCbdjuqXWwpqgkx/vgWllfE7
+xL2+rz1yd75Z7wpMHvee
+=YC0+
 -----END PGP SIGNATURE-----
 
---nextPart1582225.lNqDtpUsda--
+--nextPart16220160.lsZvtvrIrO--
 
