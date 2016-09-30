@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@open-mesh.com>
 From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-Date: Fri, 30 Sep 2016 15:21:00 +0200
-Message-Id: <20160930132106.5798-1-sven.eckelmann@open-mesh.com>
+Date: Fri, 30 Sep 2016 15:21:01 +0200
+Message-Id: <20160930132106.5798-2-sven.eckelmann@open-mesh.com>
 In-Reply-To: <2666783.nl87Kib46y@bentobox>
 References: <2666783.nl87Kib46y@bentobox>
-Subject: [B.A.T.M.A.N.] [PATCH v2 1/7] batman-adv: Return non-const ptr in
-	batadv_getlink_net
+Subject: [B.A.T.M.A.N.] [PATCH v2 2/7] batman-adv: Close two alignment holes
+	in batadv_hard_iface
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,54 +18,38 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 
-The returned net_namespace of batadv_getlink_net may be used with functions
-that potentially modify the struct. Thus it must return the pointer as
-non-const like rtnl_link_ops::get_link_net does.
-
 Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 ---
 v2:
  - new patch
 ---
- net/batman-adv/hard-interface.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ net/batman-adv/types.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 08ce361..a0b01cb 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -92,8 +92,8 @@ out:
-  *
-  * Return: result of rtnl_link_ops->get_link_net or @fallback_net
-  */
--static const struct net *batadv_getlink_net(const struct net_device *netdev,
--					    const struct net *fallback_net)
-+static struct net *batadv_getlink_net(const struct net_device *netdev,
-+				      struct net *fallback_net)
- {
- 	if (!netdev->rtnl_link_ops)
- 		return fallback_net;
-@@ -116,9 +116,9 @@ static const struct net *batadv_getlink_net(const struct net_device *netdev,
-  * Return: true if the devices are each others parent, otherwise false
-  */
- static bool batadv_mutual_parents(const struct net_device *dev1,
--				  const struct net *net1,
-+				  struct net *net1,
- 				  const struct net_device *dev2,
--				  const struct net *net2)
-+				  struct net *net2)
- {
- 	int dev1_parent_iflink = dev_get_iflink(dev1);
- 	int dev2_parent_iflink = dev_get_iflink(dev2);
-@@ -154,7 +154,7 @@ static bool batadv_is_on_batman_iface(const struct net_device *net_dev)
- {
- 	struct net *net = dev_net(net_dev);
- 	struct net_device *parent_dev;
--	const struct net *parent_net;
-+	struct net *parent_net;
- 	bool ret;
- 
- 	/* check if this is a batman-adv mesh interface */
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index b3dd1a3..8eef6a3 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -123,8 +123,8 @@ struct batadv_hard_iface_bat_v {
+  * @list: list node for batadv_hardif_list
+  * @if_num: identificator of the interface
+  * @if_status: status of the interface for batman-adv
+- * @net_dev: pointer to the net_device
+  * @num_bcasts: number of payload re-broadcasts on this interface (ARQ)
++ * @net_dev: pointer to the net_device
+  * @hardif_obj: kobject of the per interface sysfs "mesh" directory
+  * @refcount: number of contexts the object is used
+  * @batman_adv_ptype: packet type describing packets that should be processed by
+@@ -141,8 +141,8 @@ struct batadv_hard_iface {
+ 	struct list_head list;
+ 	s16 if_num;
+ 	char if_status;
+-	struct net_device *net_dev;
+ 	u8 num_bcasts;
++	struct net_device *net_dev;
+ 	struct kobject *hardif_obj;
+ 	struct kref refcount;
+ 	struct packet_type batman_adv_ptype;
 -- 
 2.9.3
 
