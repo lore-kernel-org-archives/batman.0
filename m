@@ -1,14 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Thu,  6 Oct 2016 01:43:08 +0200
-Message-Id: <20161005234308.29871-3-linus.luessing@c0d3.blue>
-In-Reply-To: <20161005234308.29871-1-linus.luessing@c0d3.blue>
-References: <20161005234308.29871-1-linus.luessing@c0d3.blue>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Thu, 06 Oct 2016 09:28:36 +0800
+Message-ID: <2047209.au5fF7qEnu@voltaire>
+In-Reply-To: <CAGghcR5MNrmmeHWZBFFsHC88+Qj+-SW+kf548O23iOu963ZNTg@mail.gmail.com>
+References: <CAGghcR5MNrmmeHWZBFFsHC88+Qj+-SW+kf548O23iOu963ZNTg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v3 2/2] batman-adv: fix splat on disabling an
-	interface
+Content-Type: multipart/signed; boundary="nextPart14768910.u4W9EZHJbV";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Help in setting up mesh test bed using qemu -
+	BATMAN adv
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,83 +18,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-As long as there is still a reference for a hard interface held, there
-might still be a forwarding packet relying on its attributes.
+--nextPart14768910.u4W9EZHJbV
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Therefore avoid setting hard_iface->soft_iface to NULL when disabling a
-hard interface.
+On Monday, October 3, 2016 7:44:47 PM HKT Kaushik N P wrote:
+> https://www.open-mesh.org/projects/open-mesh/wiki/Emulation (I am not
+> sure if my qemu is set up properly for there is no confirmation
+> methods that are provided to me to check if its working properly)
 
-This fixes the following, potential splat:
+What do these 'confirmation methods' you hope to find look like ? I guess to 
+most readers it isn't easy to help you because it is unclear what you find 
+missing. Another way to go about this is to state what you have done and what 
+you found not working. Then we have a clear starting point. 
 
-~~~~
-[ 3082.208900] batman_adv: bat0: Interface deactivated: eth1
-[ 3082.209483] batman_adv: bat0: Removing interface: eth1
-[ 3092.087816] cgroup: new mount options do not match the existing superblock, will be ignored
-[ 3095.774399] batman_adv: bat0: Interface deactivated: eth3
-[ 3095.780828] batman_adv: bat0: Removing interface: eth3
-[ 3096.344658] ------------[ cut here ]------------
-[ 3096.345168] WARNING: CPU: 3 PID: 1986 at ./net/batman-adv/bat_iv_ogm.c:549 batadv_iv_send_outstanding_bat_ogm_packet+0x145/0x643 [batman_adv]
-[ 3096.348972] Modules linked in: batman_adv(O-) evdev kvm_amd kvm acpi_cpufreq i2c_piix4 tpm_tis tpm irqbypass i2c_core serio_raw processor button bridge stp llc ipv6 autofs4 dm_mirror dm_region_hash dm_log dm_mod 9p fscache 9pnet_virtio 9pnet ata_generic virtio_pci libata virtio_ring virtio scsi_mod e1000 [last unloaded: batman_adv]
-[ 3096.437029] CPU: 3 PID: 1986 Comm: kworker/u8:2 Tainted: G        W  O    4.6.0-rc6+ #1
-[ 3096.439874] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.7.5-20140531_083030-gandalf 04/01/2014
-[ 3096.452150] Workqueue: bat_events batadv_iv_send_outstanding_bat_ogm_packet [batman_adv]
-[ 3096.452150]  0000000000000000 ffff88001d93bca0 ffffffff8126c26b 0000000000000000
-[ 3096.452150]  0000000000000000 ffff88001d93bcf0 ffffffff81051615 ffff88001f19f818
-[ 3096.452150]  000002251d93bd68 0000000000000046 ffff88001dc04a00 ffff88001becbe48
-[ 3096.452150] Call Trace:
-[ 3096.452150]  [<ffffffff8126c26b>] dump_stack+0x67/0x90
-[ 3096.452150]  [<ffffffff81051615>] __warn+0xc7/0xe5
-[ 3096.452150]  [<ffffffff8105164b>] warn_slowpath_null+0x18/0x1a
-[ 3096.452150]  [<ffffffffa0356f24>] batadv_iv_send_outstanding_bat_ogm_packet+0x145/0x643 [batman_adv]
-[ 3096.452150]  [<ffffffff8108b01f>] ? __lock_is_held+0x32/0x54
-[ 3096.452150]  [<ffffffff810689a2>] process_one_work+0x2a8/0x4f5
-[ 3096.452150]  [<ffffffff81068856>] ? process_one_work+0x15c/0x4f5
-[ 3096.452150]  [<ffffffff81068df2>] worker_thread+0x1d5/0x2c0
-[ 3096.452150]  [<ffffffff81068c1d>] ? process_scheduled_works+0x2e/0x2e
-[ 3096.452150]  [<ffffffff81068c1d>] ? process_scheduled_works+0x2e/0x2e
-[ 3096.452150]  [<ffffffff8106dd90>] kthread+0xc0/0xc8
-[ 3096.452150]  [<ffffffff8144de82>] ret_from_fork+0x22/0x40
-[ 3096.452150]  [<ffffffff8106dcd0>] ? __init_kthread_worker+0x55/0x55
-[ 3096.612402] ---[ end trace 647f9f325123dc05 ]---
-~~~~
 
-What happened here is, that there was still a forw_packet (here: a
-BATMAN IV OGM) in the queue of eth3 with the forw_packet->if_incoming
-set to eth1 and the forw_packet->if_outgoing set to eth3.
+> Clarification for my doubt regarding the different types of OpenWRT
+> images (like Kamikaze, Chaos Calmer, Attitude Adjustment,etc), what do
+> they do and which one I should use for working with standard Batman
+> adv setup.
 
-When eth3 is to be deactivated and removed, then this thread waits for
-the forw_packet queued on eth3 to finish. Because eth1 was deactivated
-and removed earlier and by that had forw_packet->if_incoming->soft_iface,
-set to NULL, the splat when trying to send/flush the OGM on eth3
-occures.
+That's quite broad too. As explained already, batman-adv is part of the Linux 
+kernel. Most of the releases you mentioned run a version of batman-adv. If you 
+want the latest batman-adv with the latest kernel / user space features go for 
+the latest release.
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+The image names you mention simply are different releases (Chaos Calmer being 
+the latest).
 
----
 
-Changes in v3:
-* none
+Cheers,
+Marek
 
-Changes in v2:
-* none, new patch
----
- net/batman-adv/hard-interface.c | 1 -
- 1 file changed, 1 deletion(-)
+--nextPart14768910.u4W9EZHJbV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 08ce361..e034afb 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -652,7 +652,6 @@ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
- 			batadv_softif_destroy_sysfs(hard_iface->soft_iface);
- 	}
- 
--	hard_iface->soft_iface = NULL;
- 	batadv_hardif_put(hard_iface);
- 
- out:
--- 
-2.1.4
+-----BEGIN PGP SIGNATURE-----
+
+iQEcBAABCAAGBQJX9ajEAAoJEFNVTo/uthzAfSYIAI0ZEMkXTp3g6E59fxN443/G
+EySgTv6ru4nfw7IgSZPHyXDJ1af+5rB2UWK4BQJKacDiUDWbNrpnw9DUH7xVs25x
+aC4DMFCkPtb3x2YKS0r6LrBjMLtQ1A9bu+S0P1739OcVmGyNS4iaCRiQdA1hsshJ
+G2a6psEuofnlQI8MZ/y7Fh/utWBxVADzKQB70njHzwgSr8seXnSE14XdRxzs79QI
+VmPicMJZPPJB8hpYrBt6fvxuQABMr3aCbWwrkGUM8nYlg7aPbB7HzZJUFgTFJ+FR
+UDoDv5bltck56EKkztSlD5a9Azc0liNmTy8asAtm8RyCOFQaiBVc1FwwkCSGcdU=
+=ij9n
+-----END PGP SIGNATURE-----
+
+--nextPart14768910.u4W9EZHJbV--
 
