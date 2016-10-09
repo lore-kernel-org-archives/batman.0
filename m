@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  9 Oct 2016 08:57:35 +0200
-Message-Id: <20161009065738.8279-8-sven@narfation.org>
+Date: Sun,  9 Oct 2016 08:57:36 +0200
+Message-Id: <20161009065738.8279-9-sven@narfation.org>
 In-Reply-To: <1647833.jYley1tZnH@sven-edge>
 References: <1647833.jYley1tZnH@sven-edge>
-Subject: [B.A.T.M.A.N.] [PATCH v2 08/11] batman-adv: compat: Remove
-	replacement script
+Subject: [B.A.T.M.A.N.] [PATCH v2 09/11] batman-adv: compat: Replace
+	IFF_NO_QUEUE with coccinelle
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,30 +22,41 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
 v2:
  - new patch
 ---
- Makefile | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ compat-patches/0003-iff-no-queue.cocci | 9 +++++++++
+ compat.h                               | 6 ------
+ 2 files changed, 9 insertions(+), 6 deletions(-)
+ create mode 100644 compat-patches/0003-iff-no-queue.cocci
 
-diff --git a/Makefile b/Makefile
-index 99e67da..7eea0ab 100644
---- a/Makefile
-+++ b/Makefile
-@@ -107,7 +107,7 @@ install: config $(SOURCE_STAMP)
- config:
- 	$(PWD)/gen-compat-autoconf.sh $(PWD)/compat-autoconf.h
+diff --git a/compat-patches/0003-iff-no-queue.cocci b/compat-patches/0003-iff-no-queue.cocci
+new file mode 100644
+index 0000000..9c95b85
+--- /dev/null
++++ b/compat-patches/0003-iff-no-queue.cocci
+@@ -0,0 +1,9 @@
++@@
++expression E;
++@@
++
+++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)
++ E->priv_flags |= IFF_NO_QUEUE;
+++#else
+++E->tx_queue_len = 0;
+++#endif
+diff --git a/compat.h b/compat.h
+index 78de7ea..245621f 100644
+--- a/compat.h
++++ b/compat.h
+@@ -152,10 +152,4 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
  
--$(SOURCE_STAMP): $(SOURCE) compat-patches/* compat-patches/replacements.sh
-+$(SOURCE_STAMP): $(SOURCE) compat-patches/*
- 	$(MKDIR) $(BUILD_DIR)/net/batman-adv/
- 	@$(RM) $(SOURCE_BUILD)
- 	@$(CP) $(SOURCE) $(BUILD_DIR)/net/batman-adv/
-@@ -124,7 +124,6 @@ $(SOURCE_STAMP): $(SOURCE) compat-patches/* compat-patches/replacements.sh
- 			$(SPATCH) $(SPATCH_FLAGS) --dir $(BUILD_DIR) --sp-file compat-patches/$${i} > /dev/null; \
- 		fi; \
- 	done
--	compat-patches/replacements.sh
- 	touch $(SOURCE_STAMP)
+ #endif /* < KERNEL_VERSION(4, 0, 0) */
  
- .PHONY: all clean install config
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 3, 0)
+-
+-#define IFF_NO_QUEUE	0; dev->tx_queue_len = 0
+-
+-#endif /* < KERNEL_VERSION(4, 3, 0) */
+-
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
 -- 
 2.9.3
 
