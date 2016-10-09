@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  9 Oct 2016 08:57:30 +0200
-Message-Id: <20161009065738.8279-3-sven@narfation.org>
+Date: Sun,  9 Oct 2016 08:57:31 +0200
+Message-Id: <20161009065738.8279-4-sven@narfation.org>
 In-Reply-To: <1647833.jYley1tZnH@sven-edge>
 References: <1647833.jYley1tZnH@sven-edge>
-Subject: [B.A.T.M.A.N.] [PATCH next v2 03/11] batman-adv: make netlink
-	attributes const
+Subject: [B.A.T.M.A.N.] [PATCH v2 04/11] batman-adv: Mark batadv_netlink_ops
+	as const
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,51 +17,41 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: stephen hemminger <stephen@networkplumber.org>
+The genl_ops don't need to be written by anyone and thus can be moved in a
+ro memory range.
 
-Signed-off-by: Stephen Hemminger <stephen@networkplumber.org>
-[sven@narfation.org: Add compat-patch script]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v2:
- - remove second replacement line which basically does nothing
-   (thanks Linus)
+ - new patch
 ---
- compat-patches/replacements.sh | 5 +++++
- net/batman-adv/netlink.c       | 4 ++--
- 2 files changed, 7 insertions(+), 2 deletions(-)
+ compat-patches/replacements.sh | 1 +
+ net/batman-adv/netlink.c       | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/compat-patches/replacements.sh b/compat-patches/replacements.sh
-index c7875c0..4439a0d 100755
+index 4439a0d..fc4de84 100755
 --- a/compat-patches/replacements.sh
 +++ b/compat-patches/replacements.sh
-@@ -1,3 +1,8 @@
- #! /bin/sh
- 
- set -e
-+
-+# for kernel < 3.13 to make netlink compat code work
-+sed -i \
-+	-e 's/^static const struct genl_multicast_group batadv_netlink_mcgrps/static struct genl_multicast_group batadv_netlink_mcgrps/' \
-+	build/net/batman-adv/netlink.c
+@@ -5,4 +5,5 @@ set -e
+ # for kernel < 3.13 to make netlink compat code work
+ sed -i \
+ 	-e 's/^static const struct genl_multicast_group batadv_netlink_mcgrps/static struct genl_multicast_group batadv_netlink_mcgrps/' \
++	-e 's/^static const struct genl_ops batadv_netlink_ops/static struct genl_ops batadv_netlink_ops/' \
+ 	build/net/batman-adv/netlink.c
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 18831e7..64cb6ac 100644
+index 64cb6ac..aee20a3 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -62,11 +62,11 @@ enum batadv_netlink_multicast_groups {
- 	BATADV_NL_MCGRP_TPMETER,
- };
+@@ -534,7 +534,7 @@ batadv_netlink_dump_hardifs(struct sk_buff *msg, struct netlink_callback *cb)
+ 	return msg->len;
+ }
  
--static struct genl_multicast_group batadv_netlink_mcgrps[] = {
-+static const struct genl_multicast_group batadv_netlink_mcgrps[] = {
- 	[BATADV_NL_MCGRP_TPMETER] = { .name = BATADV_NL_MCAST_GROUP_TPMETER },
- };
- 
--static struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
-+static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
- 	[BATADV_ATTR_VERSION]		= { .type = NLA_STRING },
- 	[BATADV_ATTR_ALGO_NAME]		= { .type = NLA_STRING },
- 	[BATADV_ATTR_MESH_IFINDEX]	= { .type = NLA_U32 },
+-static struct genl_ops batadv_netlink_ops[] = {
++static const struct genl_ops batadv_netlink_ops[] = {
+ 	{
+ 		.cmd = BATADV_CMD_GET_MESH_INFO,
+ 		.flags = GENL_ADMIN_PERM,
 -- 
 2.9.3
 
