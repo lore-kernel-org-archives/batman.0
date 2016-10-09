@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  9 Oct 2016 08:57:36 +0200
-Message-Id: <20161009065738.8279-9-sven@narfation.org>
+Date: Sun,  9 Oct 2016 08:57:37 +0200
+Message-Id: <20161009065738.8279-10-sven@narfation.org>
 In-Reply-To: <1647833.jYley1tZnH@sven-edge>
 References: <1647833.jYley1tZnH@sven-edge>
-Subject: [B.A.T.M.A.N.] [PATCH v2 09/11] batman-adv: compat: Replace
-	IFF_NO_QUEUE with coccinelle
+Subject: [B.A.T.M.A.N.] [PATCH v2 10/11] batman-adv: compat: Move
+	get_link_net patch to coccinelle
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,39 +22,44 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
 v2:
  - new patch
 ---
- compat-patches/0003-iff-no-queue.cocci | 9 +++++++++
- compat.h                               | 6 ------
- 2 files changed, 9 insertions(+), 6 deletions(-)
- create mode 100644 compat-patches/0003-iff-no-queue.cocci
+ compat-patches/0004-get_link_net.cocci | 13 +++++++++++++
+ compat.h                               |  7 -------
+ 2 files changed, 13 insertions(+), 7 deletions(-)
+ create mode 100644 compat-patches/0004-get_link_net.cocci
 
-diff --git a/compat-patches/0003-iff-no-queue.cocci b/compat-patches/0003-iff-no-queue.cocci
+diff --git a/compat-patches/0004-get_link_net.cocci b/compat-patches/0004-get_link_net.cocci
 new file mode 100644
-index 0000000..9c95b85
+index 0000000..1ae3192
 --- /dev/null
-+++ b/compat-patches/0003-iff-no-queue.cocci
-@@ -0,0 +1,9 @@
++++ b/compat-patches/0004-get_link_net.cocci
+@@ -0,0 +1,13 @@
 +@@
-+expression E;
++identifier netdev, fallback_net;
 +@@
 +
-++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)
-+ E->priv_flags |= IFF_NO_QUEUE;
++ static const struct net *batadv_getlink_net(const struct net_device *netdev,
++ 				             const struct net *fallback_net)
++ {
+++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
+++	return fallback_net;
 ++#else
-++E->tx_queue_len = 0;
++ ...
 ++#endif
++ }
 diff --git a/compat.h b/compat.h
-index 78de7ea..245621f 100644
+index 245621f..2865eeb 100644
 --- a/compat.h
 +++ b/compat.h
-@@ -152,10 +152,4 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
+@@ -145,11 +145,4 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
  
- #endif /* < KERNEL_VERSION(4, 0, 0) */
+ #endif /* < KERNEL_VERSION(3, 15, 0) */
  
--#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 3, 0)
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
 -
--#define IFF_NO_QUEUE	0; dev->tx_queue_len = 0
+-/* WARNING for batadv_getlink_net */
+-#define get_link_net get_xstats_size || 1 || netdev->rtnl_link_ops->get_xstats_size
 -
--#endif /* < KERNEL_VERSION(4, 3, 0) */
+-#endif /* < KERNEL_VERSION(4, 0, 0) */
 -
  #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
 -- 
