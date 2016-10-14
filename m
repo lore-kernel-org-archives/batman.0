@@ -1,13 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 14 Oct 2016 15:33:35 +0200
-Message-ID: <11536441.PBqhyhFjMe@prime>
-In-Reply-To: <20160923143557.30828-1-sven@narfation.org>
-References: <20160923143557.30828-1-sven@narfation.org>
+Date: Fri, 14 Oct 2016 15:33:40 +0200
+Message-ID: <5907468.ynQUs4eAc4@prime>
+In-Reply-To: <20160923140013.11941-1-sven@narfation.org>
+References: <20160923140013.11941-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4408979.DMUsDzYJsh";
+Content-Type: multipart/signed; boundary="nextPart8390591.DlJV02Henk";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: Enable _GNU_SOURCE by default
+Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: vis: Fix direct neighbors
+	detection with netlink query
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,49 +20,42 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart4408979.DMUsDzYJsh
+--nextPart8390591.DlJV02Henk
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Friday, September 23, 2016 4:35:57 PM CEST Sven Eckelmann wrote:
-> alfred uses any netlink library which is (more or less) compatible with
-> libnl-3. This is for example libnl-tiny on OpenWrt.
+On Friday, September 23, 2016 4:00:13 PM CEST Sven Eckelmann wrote:
+> Only entries in the originator table with the destination address equal to
+> the originator address should be handled by alfred as actual neighbors.
 > 
-> Programs and libraries which are build against libnl-tiny must be build
-> with _GNU_SOURCE enabled to have some types in its headers defined. Thus
-> _GNU_SOURCE is enabled in the OpenWrt alfred package since 2016.3. But
-> sometimes using _GNU_SOURCE and sometimes not using it can have severe side
-> effects which are non-trivial to debug when the developer is not also using
-> the same _GNU_SOURCE preprocessor define. Thus enable _GNU_SOURCE by
-> default to have similar behavior (defines, type definitions, structure
-> members, ...) from headers like on OpenWrt.
-> 
+> Fixes: bca55a86fecd ("alfred: vis: Add support for netlink")
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Applied in revision 415ebc7
+
+Applied in revision a3fb7d0
 
 Thanks!
      Simon
---nextPart4408979.DMUsDzYJsh
+--nextPart8390591.DlJV02Henk
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYAN6vAAoJEKEr45hCkp6h9Y4P/0fSRDk0lYDUTyPnK4kcrLSn
-akw+bGM6F97xWmXxXU6qNJrjJ2APw/Sjnn3+nfw0/Om92qOrwWpxFkyn2t7y7Cdf
-KcnXwKt39T5xTqETMhUlZUom/87kuod+R1A6HuotSHyLaX2c2jBLYTFqOQXAe9VL
-F+dj6wrfbVPfhVMygzueNpQh3zO0gh3AvPb9y9CYRWNkj4QMqg9//bjYBHgwrCSq
-8mjMkr03hq2K7LCcFubMqHrKZjY/Jny3U4ZoYFwpI1tZwhPuFYx2mzs8PFWGDXVz
-cquyHoCn+F4h+Ppgzurkz284uyzE5sgbpibLtj5JM3IDYT8AqZ738bDbJhbsMHsR
-XMFa8rHNgFV5nbmE8fquQz+g171BMBzMwWLds0CspZ/33kWQsXtL/zw5Xozq0ily
-GTlhz93LLa3lrvCWiLA2/IOLQdNPnkJkX3ILoSNa+zoPhzH/SHKqkYAy23AEqBiy
-hRV5Tf/tkWgMgFJDJ6TsvGd05NvIpVWru2itd7A0qB7Eg1FLV3/hN+HAZtsLw3cX
-/3q0NkY1ZgDe8HuMavbtDjpa3nIiQAeE0WjIo54IeX8rCodzesHk6Zxn1Ug0KVjo
-Wj5xUsmBtFfYlvi3cmQ8gl2oPL64JVV1PgPG8uA0PX9l/9JyMVYKll9Tebo6PAgR
-YJoPDJiwQhm3fA/SfjZC
-=XrXL
+iQIcBAABCgAGBQJYAN60AAoJEKEr45hCkp6hGHsP/RGrp59hfaGqk/d4RT1vTM+O
+rLRMVEXVH/TD8zrR8LzPNqBg/BrOhXmHf7Cg+IXlcSnGzV7c+9rCuWley6YtI1yB
+PA1AVBWVYrsBS9v5Yhye0i16mhX+Oyu6jeqygEcc2zfyI0pQM6rO/macXDvgn+2v
+uMoJlv8qPczvLiZ9Gdb7JkrHbbCoItxE0qm31rOw4Cj/V1snLXVJIeRH2sApuT9M
+gnM2TN5k3jpPHCJpBoes2rGh0PzO+fsppoSfCgUC7A8suYdQ4X1C5o86nG3JWkyq
+jqMlQb8qaPRq27JqpM1a0Wrdx5JDP5W85FVCpqlqYREBsBVyvUMVtbB/vaeSwJ3M
+RSfWPN2qmd+6pORfaabKmiblrrC9qumq51l/5VYd+ERKqq+NNcm1h/BEPUe2MD9G
+NVD36Jzq1qL9ilza6djAUFTZYFS5rZopLPy2jEc/xlKYME7UR2JQwQ0UFBoDR/nw
+8Ulh/SnAusjYr5eG2Y+ngt1zVSc9R6p3JXe5iSyja4fDu0iqJghM6ip0DAG4eePx
+g0MEP7m61V7ZTOa/ezz/VFCKVC7pTIqKnU9yy0SZVoDyGmn0zMu4lEC73LGcHTjp
+p1eJ9lEC8+ZMde86F0hctQ85fvDOguqXnchmodrBGLB/6PQUQEE6qjazwDdkF0YX
+Guh4rg18tXRbnZ9v9mPR
+=qYjb
 -----END PGP SIGNATURE-----
 
---nextPart4408979.DMUsDzYJsh--
+--nextPart8390591.DlJV02Henk--
 
