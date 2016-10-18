@@ -1,13 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 14:48:35 +0200
-Message-ID: <4320327.oZSxYfLhFA@bentobox>
-In-Reply-To: <20160921072350.13823-1-sven@narfation.org>
-References: <20160921072350.13823-1-sven@narfation.org>
+Date: Tue, 18 Oct 2016 15:01:20 +0200
+Message-ID: <1602209.FqTUcbAN8W@bentobox>
+In-Reply-To: <1467741697-8811-1-git-send-email-linus.luessing@c0d3.blue>
+References: <1467741697-8811-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1553469.l20e364RvC";
+Content-Type: multipart/signed; boundary="nextPart1745774.9bUffLMSrx";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] batman-adv: Avoid precedence issues in macros
+Subject: Re: [B.A.T.M.A.N.] [v2,
+	1/2] batman-adv: Add wrapper for ARP reply creation
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,51 +18,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1553469.l20e364RvC
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart1745774.9bUffLMSrx
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Mittwoch, 21. September 2016 09:23:50 CEST Sven Eckelmann wrote:
-> It must be avoided that arguments to a macro are evaluated ungrouped (which
-> enforces normal operator precendence). Otherwise the result of the macro
-> is not well defined.
-> 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+On Dienstag, 5. Juli 2016 20:01:36 CEST Linus L=FCssing wrote:
+> Removing duplicate code.
+>=20
+> Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+> Reviewed-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/log.h    | 12 ++++++------
->  net/batman-adv/main.h   |  4 ++--
->  net/batman-adv/packet.h |  2 +-
->  3 files changed, 9 insertions(+), 9 deletions(-)
+>=20
+> Changes in v2:
+> * Rebase to master
+> * Moved skb_reset_mac_header to earlier position (to avoid calling it on
+> NULL)
+>=20
+> Changes in RFC -> non-RFC:
+>  * Added kerneldoc
+>  * Added Signed-off-by
+>=20
+>  net/batman-adv/distributed-arp-table.c | 67
+> ++++++++++++++++++++-------------- 1 file changed, 40 insertions(+), 27
+> deletions(-)
 
-Applied in aaf289c83d63bfa43665bd76cd0b96658d2746b2 [1].
+Applied in 6be651ac911060ef7e0364650275b56a6af28cfd [1].
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/aaf289c83d63bfa43665bd76cd0b96658d2746b2
---nextPart1553469.l20e364RvC
+[1] https://git.open-mesh.org/batman-adv.git/commit/6be651ac911060ef7e03646=
+50275b56a6af28cfd
+--nextPart1745774.9bUffLMSrx
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYBhojAAoJEF2HCgfBJntGe0EP/j5Kn8RBg1NcS9OKGRydFFuG
-D0IauuhLlJCo2apfg6eaFpz/kwUfLfbEetHkbOj1frM/Gj92jkyp5EPS1EZUt3Ib
-zoXYOtoPXzTgSR6DhwNmGYWaf6msW1Dzi/EWnjDCAuAn8GkSdhDthfLoOeD08JPC
-LPMuyDH7C/mn/9C0zCsH7lL4lJE5ptuN69hNrHG81fON13URevdNLRW/Hq29bTBs
-UD0pJTIFEaGYjL6JUpEFcgLyreQVbuG+DZqjHivDv0YoFXZSNe0dlBDVJ/rRHz/h
-G9nerLOW/9UZ05J8MdYcaLowp6rjfvgkiSU7vc1ZbAitOIUw5zLjVLvL95DRKPNA
-9vZR6YNYjrvsOidfdag18lm07Dy4XNPVlsIbSfrJAqRqJKlU5cE9AdA25nwhSuVS
-vgvT7F4Q0fY/ZmmxlVkyzzAIQ/tZIAln8FyBvMjn/cOX68pYYlRxbnbqGWuJjuYL
-OKBQ9cNDxcQk5WvkLX0nu5M9oqDapWAdBRcQib+t/Q/r8J5dCBHDWE9XC+Jj6/te
-/xEXGpDN1nVBgX4T7NPAyDd50gNk+nYTIDYtj9SdNmksrJ+DT36rFpXVhEUfAnOP
-xDTtxEwqDpZfmiwQci8626sxB/6i3vXg4etUhPqVdhdKiekygAaFiKCSq9N+X7Kg
-NiEPvrBCtpeBh0wcunQm
-=/H9M
+iQIcBAABCgAGBQJYBh0gAAoJEF2HCgfBJntGI+gQAMIFDI8I8nOiB2/4FeGQiMZ+
+VIPQsuKKZp4J+7Ovafq6pAhYYC/YMHhk862mJmEZNSOdxT0FcrM4xsilcFXiH/WG
+HMQPmoqQO7uizhIZd/839gDNE4vyGch43RrLBWp2H7QgTk1beFxcGhjclByZ3MnC
+/rxH/VWM34VNj1klEQ9GvI0Keyop71QuWGsU3Jx07g2GzSPnOZh+tVGXswDfIj6+
+GwXzxxKuywqZbE8e0PQgY+xKln30xXBWHOBK7XZs3M8OoigUNB15pg7qds60F4W/
+vP7gw/oIhS4ifLR+RbwMV/VDDOUK8uIV+I7CWStFtk2G5l2gnhpc49dcEr+bw/PP
+6kBezdHfOWuQlR1A81lqbHUrmSAOJL5K3Vvc9/e2f3EoKcwDYsJhYVrMlKv9t8+x
+BpxlrFE7YWqFrrZpCIXs9io7NpzlLaGtQjBYkGP907Yv7ir+C13zdqeLfnXd/Shx
+gh6EpwJMfcM2dZkl+mBi/NnCuH/YM60eZ9t7HRb8UQrGlzyplZP1UpD+OchUXRNt
++NOmh0jQulyqzL2hlgZS5b64fyaQCLnS6fiXitmyWPAc9SGA9l6s+ZoBI62RW22Y
+fzMlSAB5ZCZd0EKjImw0n0HPulw5kitNeZxu0/o5iKWpKmZxuy/aKTDv2d6L722C
+ENp/dOmX7lEeXwNACHOD
+=GhI3
 -----END PGP SIGNATURE-----
 
---nextPart1553469.l20e364RvC--
+--nextPart1745774.9bUffLMSrx--
 
