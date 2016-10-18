@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 13:27:11 +0200
-Message-ID: <2327867.k9iLfoG7ol@bentobox>
-In-Reply-To: <1468697522-10874-2-git-send-email-sven@narfation.org>
-References: <1468697522-10874-2-git-send-email-sven@narfation.org>
+Date: Tue, 18 Oct 2016 13:27:44 +0200
+Message-ID: <37868625.JSh8zpxUr0@bentobox>
+In-Reply-To: <1469143811-15498-1-git-send-email-sven@narfation.org>
+References: <1469143811-15498-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart36021483.syTmknx3yN";
+Content-Type: multipart/signed; boundary="nextPart3255055.lmNKTRhHiF";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [5/5] batman-adv: Document new nc,
-	mcast and tpmeter log levels
+Subject: Re: [B.A.T.M.A.N.] [1/3] batman-adv: Remove unused function
+	batadv_hash_delete
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,43 +20,44 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart36021483.syTmknx3yN
+--nextPart3255055.lmNKTRhHiF
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Samstag, 16. Juli 2016 21:32:02 CEST Sven Eckelmann wrote:
+On Freitag, 22. Juli 2016 01:30:09 CEST Sven Eckelmann wrote:
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  Documentation/networking/batman-adv.txt | 17 ++++++++++-------
->  1 file changed, 10 insertions(+), 7 deletions(-)
+>  net/batman-adv/hash.h | 30 ------------------------------
+>  1 file changed, 30 deletions(-)
 
-Applied in 147152b26c2ca2714f1619fbe655cccc0afab6c9 [1].
+Applied in b9f4f99a926c9de798c6bd49d01632c07ee7c262 [1].
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/147152b26c2ca2714f1619fbe655cccc0afab6c9
---nextPart36021483.syTmknx3yN
+[1] https://git.open-mesh.org/batman-adv.git/commit/b9f4f99a926c9de798c6bd49d01632c07ee7c262
+
+--nextPart3255055.lmNKTRhHiF
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYBgcPAAoJEF2HCgfBJntGRe0P/iPfl9j7v46UOwDihxULfed+
-P43HJNzaOczf4ulWVIhlQSFMpjBOhHylCOSB4fN3ISoDJRW53pd9MhMrYDnJRm2+
-yPHRzx0qnyH9TozKLlW+wHG+nufSOjXFYg5RSTtEz8aAKe931CJx3Uamn5wKO1Qa
-I2BKLoLqvpcZ/PthTF4tkvp4fNMb/BrG6Pv094znpqFflUnmBPDAxeYZi4oCElr5
-IEU0zcHm0fKxeykDy8xt1ZsV9lZTD+PniYLGM50VN33ZjGT8zRU+PgLQPZAuYMI1
-skbBRpFX++Gt5LQmlhQXL3w6aBrYxmKiHpx40rKtjJfsO758Ss17PNv0q5xFKSjM
-G+6A0BVE6z9uY8+mYBix9oKUSVUgppZsln2ntlZUg3h3fu4usEN9ehns7Qu/dHHN
-M+0jNH4PVSC5ctKy2VJEwJyKYKcrIy+FRpJq3piH+M8RWdCmz+wFpkxp8ZeTC+71
-3pTzLBDEIoKfRW9jkaprRE5HL7daVEjJT6mYpQg5wnCYYJpc+YwaqFzzLVyeFJUe
-lVEiMbMO5OurNridSvrH75E7Y1PTajF8ET376PzTRdvYQbilfRG3lPowP4wACm17
-FptLRmC1UGxT9uW2OVZxRXve+M0QIFx4usiVTaqRQCOm5Is76FS6XyL03pE0pvjf
-w7linhkYL5P5FCGHwzlL
-=f9Md
+iQIcBAABCgAGBQJYBgcwAAoJEF2HCgfBJntGUPMQAJOgBfNbqVIQgFfHkWlIWh0P
+A0SQel/i5cefChiEANjgGvpnN76z9vycO22eq/9n3tsks2yVvN/eyU81Xy+efOQl
+B2mdYGfDnNl/M5MCaELpUkXJlOv4fcBSEXbs+Icek5f48BC3PNwcyVqIe70D5Yxs
+ougc5S7N+42w+rr2RNVuL5LI4EJSwAVQqD1b+htIHn1E0PyRz2JYQ8AjfWTCMCPN
+2oOYaD/PndjHNarkVoXRRlX9tPZ6M4dqNDaeCc5HFLmwW9e8nni3j4TzcbFc0ZDD
+15yYvbL19womIiPmK+lAcqS0lWoqXgdBnnB+UHuVOHM93G9Tl4iM1LzMwrXJcAIi
+Wwb0bzlvaZLd5wIf07CzZsQXgWkyVpNi5kMUZGfppOTtJWCLdAF2A/vv3YWBMNQi
+sf3l7RyZXLgOa59vXJam46y0HIdIU+tBa9IuUVb47kT4TK/TNstowTcn5CXixc+I
+EQv0fD6yAuTTaoENtlEH1CvNHY6ZDUh9Xdm/x5F/x1g3cYRocn4eAqn2X+ru9JJ5
+ftPEjhGdWB1nUcAOdFK+az6agA4tl2cPc9psm3fa9fRcbQ74UgaXarYA0sXqKc2w
+GDnXCEpx2I8dZv8NNHTDSrnKRbSqXpptrGHAc6S0vneZnx16D2P3rTJgLbDKwOvo
+3hDkXpHCIwP02tS7yrQ5
+=8ukd
 -----END PGP SIGNATURE-----
 
---nextPart36021483.syTmknx3yN--
+--nextPart3255055.lmNKTRhHiF--
 
