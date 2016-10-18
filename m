@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 14:29:11 +0200
-Message-ID: <1676583.l3HbVhRN6S@bentobox>
-In-Reply-To: <20160901160134.15593-2-sven@narfation.org>
-References: <20160901160134.15593-2-sven@narfation.org>
+Date: Tue, 18 Oct 2016 14:29:43 +0200
+Message-ID: <3298628.UYncQaiJYi@bentobox>
+In-Reply-To: <20160904182331.18118-1-sven@narfation.org>
+References: <20160904182331.18118-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1843602.ZKiiyJMh9Z";
+Content-Type: multipart/signed; boundary="nextPart3104721.hC10ojanqn";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [2/2] batctl: Fix unknown macro .Pp in manpage
+Subject: Re: [B.A.T.M.A.N.] batctl: Work around uclibc collision for __unused
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,47 +19,56 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1843602.ZKiiyJMh9Z
+--nextPart3104721.hC10ojanqn
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Donnerstag, 1. September 2016 18:01:34 CEST Sven Eckelmann wrote:
-> The macro .PP was accidentally modified into .Pp when the throughput meter
-> support was introduced. Revert this part of the change to stop complaints
-> by man.
+On Sonntag, 4. September 2016 20:23:31 CEST Sven Eckelmann wrote:
+> uclibc on 64 bit systems uses struct members called __unused. These
+> conflict with the definition of __unused in batctl. Such a conflict results
+> in a build error because the struct member will be replaced with the
+> __attribute__((unused)).
+> 
+> This can be avoided by renaming it to the Linux kernel name
+> "__maybe_unused".
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Tested-by: Andreas Pape <apape@phoenixcontact.com>
 > ---
->  man/batctl.8 | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  genl.c     |  4 ++--
+>  main.h     |  2 +-
+>  netlink.c  | 10 +++++-----
+>  tp_meter.c |  5 +++--
+>  4 files changed, 11 insertions(+), 10 deletions(-)
 
-Applied in 6fdeebafca44e2eb960b2fd4f47e1f72f95a62c6 [1].
+Applied in 7402351d3bef02d8dac2e9b68a9e3eca472fd33d [1].
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batctl.git/commit/6fdeebafca44e2eb960b2fd4f47e1f72f95a62c6
---nextPart1843602.ZKiiyJMh9Z
+[1] https://git.open-mesh.org/batctl.git/commit/7402351d3bef02d8dac2e9b68a9e3eca472fd33d
+
+--nextPart3104721.hC10ojanqn
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYBhWXAAoJEF2HCgfBJntGEJIP/jXqrGA4yagKF7JIPOFdv8qg
-Lwg2tbW4PAw7S90kpTDSWwFSP7UcdzH0Byussbm3d54v+UUj/arq/xUxHxba73W1
-oWKaSEDiJU1ziFdUi4LhdVs/MeI7RRjhCQD1mQh3l1PJOlvJNie3a1ev5WsVd/FE
-9jtoeMngh9iCT3VEG6bLU/AJYhTW2ltV1Slt/wdGkwiiX95zlXGS9Fg6K7Sasv76
-x23TfqksiTw66Jjk5Dh/9U7hnPwghKgrnTnGbDwUTSFoYH5tXRTIeP6A+tWXp9qQ
-0+fDaA6Oe29ROmbzXyrRpWnmn9sR3ATBEPcWocWZo65NykPsDvcL2fZD/TKRAQOe
-58EH7g3w+d3sZeJkeBCbx86yBlcJ/1owXU8dHbVWJ+B+ATSypx6+IKLJSmG+Gs2+
-pNLxGbIr/fMfZEuajMRh18h4Qz01ReIeG4wT727BOw3B27rgOordpsTDGpi7TPan
-ZlQcy0RcoP6/D+hn0kSafIyisAsmGC06aselijamOdZR4ksPl0P17nV1A1T0f9bg
-oZjgWifjOeuCk7d/oO7HFJFvA2iU6fFZ0eoGoahMNS8MqMgsXwJbjOKRC4NQQjBR
-jQd6/x4Vg+sctSunnuLL5qzIPyOoLReeMI+grMg125Ud/vaAWCUBNECHMOKy78vo
-zXkA90FmLVUXpNQW8p3d
-=8WVw
+iQIcBAABCgAGBQJYBhW3AAoJEF2HCgfBJntGL4AP/1KWlDOjCjHBU3hTUOxNx2bH
+u8KwHLib4SP4MUPrLHLtea8kxUkTea7nwVWlUOhkVrc5ReYdBYubfOhLSXxvhfyF
+9WoFDBqG7/5GVXMCcV8lwan7RF7pOCUR3wnz6m9OGyK9Yn0xOW8jHLlLujHGqMTL
+KtNl+EhAyT1ksXNO2efcWUaKgemDCwwgyNb/QGujFwee9YGQPNcZ+10CLFNi+xPs
+nMb+lFOIWIdUsDjTM8IG759Xo72faiOI0nfltgblTtI4u1/y+HIWe78CSD4tbQC7
+ij30unphs6DEwje1xVNU64K/KhBD6OykYY1wfJICqaxf/582HgFPomXW3LZQbcog
+oGExlJtZadWIX6U1+hb+pVoJlwVlZ78ZkQzln4xdLE5Uc2XzTemMhMsB4oRxaXlp
+pgsrBSNPpRQsSLl0Skwyl0jIkg3loWhmMpF9y+f1vJQ0ryNswMr2WXVBsW4Iop7W
+UpwAAvuDHbNaaA//MKU6mxYqCPXg1fFoV4b2N/6oyui+HrRMTiNfonjiiw41ie1c
+XZYAiEGBJinhVqv1UTqb4I20qdhkyNzrFGFwIuIbRL//GmKjarq4Xi9HZng+8KAT
+g/IhWYj6xyMr9koJqdWFNb5nqH6sRcHEDSngWpEN0bHFswewAqwgy8g8rfHWtPcN
+XijuDe3uJf2EH+UKsKYw
+=5gsm
 -----END PGP SIGNATURE-----
 
---nextPart1843602.ZKiiyJMh9Z--
+--nextPart3104721.hC10ojanqn--
 
