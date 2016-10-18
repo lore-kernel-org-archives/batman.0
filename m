@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 13:31:38 +0200
-Message-ID: <2164425.2NJUHuNKIV@bentobox>
-In-Reply-To: <20160920135917.24290-1-linus.luessing@c0d3.blue>
-References: <20160920135917.24290-1-linus.luessing@c0d3.blue>
+Date: Tue, 18 Oct 2016 13:32:11 +0200
+Message-ID: <8393068.B0S6OCOJg8@bentobox>
+In-Reply-To: <20160925004636.11334-1-a@unstable.cc>
+References: <20160925004636.11334-1-a@unstable.cc>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2281211.jFTeEANukq";
+Content-Type: multipart/signed; boundary="nextPart3731482.9m2Jay3BJ9";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] batman-adv: Allow selecting BATMAN V if CFG80211
-	is not built
+Subject: Re: [B.A.T.M.A.N.] batman-adv: remove unsed argument from
+	batadv_dbg_arp() function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,55 +18,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
+To: Antonio Quartulli <a@unstable.cc>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2281211.jFTeEANukq
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart3731482.9m2Jay3BJ9
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Dienstag, 20. September 2016 15:59:17 CEST Linus L=FCssing wrote:
-> With the new stub for cfg80211_get_station(), we can now build the
-> BATMAN V protocol even with a kernel that was built without any
-> wireless support.
->=20
-> Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+On Sonntag, 25. September 2016 08:46:36 CEST Antonio Quartulli wrote:
+> The argument "type" passed to the batadv_dbg_arp() function is
+> never used. Remove it.
+> 
+> Signed-off-by: Antonio Quartulli <a@unstable.cc>
 > Reviewed-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  compat-include/net/cfg80211.h | 24 ++++++++++++++++++++++++
->  net/batman-adv/Kconfig        |  2 +-
->  2 files changed, 25 insertions(+), 1 deletion(-)
->  create mode 100644 compat-include/net/cfg80211.h
+>  net/batman-adv/distributed-arp-table.c | 17 ++++++-----------
+>  1 file changed, 6 insertions(+), 11 deletions(-)
 
-Applied in aeb194c3a45fef9cc094e3509066bb2fa6627c05 [1].
+Applied in 917539ed1ca1b7e6046b44adc35d8264f33e20fb [1].
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/aeb194c3a45fef9cc094e35=
-09066bb2fa6627c05
-
---nextPart2281211.jFTeEANukq
+[1] https://git.open-mesh.org/batman-adv.git/commit/917539ed1ca1b7e6046b44adc35d8264f33e20fb
+--nextPart3731482.9m2Jay3BJ9
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYBggaAAoJEF2HCgfBJntG3bkQAIcAAtrFr4NENqfnwEbBUmVz
-90PV8yOdCgWuw9Sq2CIpubPVUl12RH2UxRUrCnuXmksGbLPoEz4Nc660Sk5s8jkf
-71QXjSHN6cwSKBrgchbhxBFI3/uOyGyXz878Vf5YmeD/rQSz2/5KHssIqaub76ve
-As6V2bKWG2kQAYOmAYGhVRvaZeIFPvdrKu+Kmt2LHjSqykVhDD2+B7uHyCAZODo0
-NoGuNRfD8CFS/rGQTaOLfKSAo0FiT04Z8zpP4wceW8cVTbHlGzl1Sv53RxXEXeAH
-0zhZ0M1JOzvYRinWYKIWwdeMiL1L455C1oRaHx7Byb7PaOZn+igR9C9T36mfEkZO
-MEXRq7WdskdqzFGxUVlI2ojWtMqeBb1KPQsc76C4mAJEF8kjhWgUz15K+8RRZ/Ac
-hBBjwWIRE+c7xJD2whvCYBMnYt7e5l0p6V1fLoIz5Zs4qEQht8fuMhpZv3T7THbC
-mt09nR1Sf76zq68e5p625m9gL5QOOGBCKfIOrmRfdlNBMddsamrdU+DIuXOACrUu
-PRE8pat+VbMzuHMQnGzPa7NE0YeGY5LSdGHwyHtleG7oiZpBIKt/oxet6jElQOOo
-3/WOWzzo1TFrd27dleC8k2sf3iqBrmFLEa/kzfq0bcLGBs26/xAGfFlZ4/GhPYCP
-qVG3/9GfJA7SZr+offXt
-=2ctX
+iQIcBAABCgAGBQJYBgg7AAoJEF2HCgfBJntGdmcP/11Oe8ZO7+dH5kw/OO2UXNlc
+hhwInpwF2vpuC9TIzQDC8wS8pxZeL+O1JvXnYKiT1eMs/aDgcdX28rSsOr/ojl+I
+aHC5FildGuscgZj2VNaZ+xLObzG2v9n6vgt27a658wBfm4ivmVkzGVlWxGQknaNv
+C+0QBGPa/g/XHja3IItX65i/wTiffo236l1yuzxoAlRQyyLvWtmUQnHi4NqVLiqU
+nsqV1ReKAqYBt9qbUfErOdwfNeQBTA60AAMJlqWWWcIw6oLgcbVrRyZLvBREM1wL
+dnTcdFLWKh5Cncun6b2kbnYbybvTrSEk5PfI4Gy2g8nS5F/6wMtY5/oKQ/KA8+Hw
+VOQtkS48koo9QE8c1Sh9w6OxU4qoqgeCxtIlmjaetcrRkyAYumyrzmz5YHy3oJVO
+mD+1CgM75/wDjcyve5sgwGMBeqTQqKqZ7YQZczANkBFtrcC9HTxflBcqqVL3DsUl
++Zpmgq2/wyq9IFqiXOz8/vCfPkuSV2vutqDzJcipOxVYyMeMrQIjMYwtGBppx1Dh
+awFSFJVjKjNNKrYPfjq+ffirGZymAbDnFBmGIQlUJYETMblU0IAByLnIc0+nQLlW
+/5h8BjhOGOxh4GjfgwqfkfUEnaOUUHB7+g9n30FJBnSj9Il36jmxTt2hNcZqPxTd
+ZWcwKK4yTAR/aGdPO53n
+=loP+
 -----END PGP SIGNATURE-----
 
---nextPart2281211.jFTeEANukq--
+--nextPart3731482.9m2Jay3BJ9--
 
