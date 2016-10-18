@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 15:57:38 +0200
-Message-Id: <20161018135743.3705-3-sven@narfation.org>
+Date: Tue, 18 Oct 2016 15:57:39 +0200
+Message-Id: <20161018135743.3705-4-sven@narfation.org>
 In-Reply-To: <2219629.dYY2ZvZvNG@bentobox>
 References: <2219629.dYY2ZvZvNG@bentobox>
-Subject: [B.A.T.M.A.N.] [PATCH v3 3/8] batman-adv: compat: Port netlink port
-	hack to coccinelle
+Subject: [B.A.T.M.A.N.] [PATCH v3 4/8] batman-adv: compat: Move netlink
+	const compat to coccinelle
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,110 +20,68 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v3:
- - no changes
+ - removed compat-include/linux/netlink.h changes which are already in master
 v2:
  - new patch
 ---
- compat-include/linux/netlink.h           | 20 +++++++-------------
- compat-include/net/genetlink.h           | 11 +++++++++++
- compat-patches/0001-netlink-portid.cocci | 17 +++++++++++++++++
- compat.h                                 |  6 ------
- 4 files changed, 35 insertions(+), 19 deletions(-)
- create mode 100644 compat-patches/0001-netlink-portid.cocci
+ compat-patches/0002-genl-const.INFO  | 15 +++++++++++++++
+ compat-patches/0002-genl-const.cocci | 10 ++++++++++
+ compat-patches/replacements.sh       |  6 ------
+ 3 files changed, 25 insertions(+), 6 deletions(-)
+ create mode 100644 compat-patches/0002-genl-const.INFO
+ create mode 100644 compat-patches/0002-genl-const.cocci
 
-diff --git a/compat-include/linux/netlink.h b/compat-include/linux/netlink.h
-index 4f2185d..ca2bdf0 100644
---- a/compat-include/linux/netlink.h
-+++ b/compat-include/linux/netlink.h
-@@ -26,19 +26,13 @@
- 
- #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0)
- 
--#include <net/scm.h>
--
--struct batadv_netlink_skb_parms {
--	struct ucred		creds;		/* Skb credentials	*/
--	union {
--		__u32		portid;
--		__u32		pid;
--	};
--	__u32			dst_group;
--};
--
--#undef NETLINK_CB
--#define NETLINK_CB(skb) (*(struct batadv_netlink_skb_parms *)&((skb)->cb))
-+#define netlink_notify_portid(__notify) (__notify->pid)
-+#define NETLINK_CB_PORTID(__skb) NETLINK_CB(__skb).pid
-+
-+#else
-+
-+#define netlink_notify_portid(__notify) (__notify->portid)
-+#define NETLINK_CB_PORTID(__skb) NETLINK_CB(__skb).portid
- 
- #endif /* < KERNEL_VERSION(3, 7, 0) */
- 
-diff --git a/compat-include/net/genetlink.h b/compat-include/net/genetlink.h
-index 72a8991..6a287e6 100644
---- a/compat-include/net/genetlink.h
-+++ b/compat-include/net/genetlink.h
-@@ -24,6 +24,17 @@
- #include <linux/version.h>
- #include_next <net/genetlink.h>
- 
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0)
-+
-+#define genl_info_snd_portid(__genl_info) (__genl_info->snd_pid)
-+
-+#else
-+
-+#define genl_info_snd_portid(__genl_info) (__genl_info->snd_portid)
-+
-+#endif /* < KERNEL_VERSION(3, 7, 0) */
-+
-+
- #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 13, 0)
- 
- #include <linux/export.h>
-diff --git a/compat-patches/0001-netlink-portid.cocci b/compat-patches/0001-netlink-portid.cocci
+diff --git a/compat-patches/0002-genl-const.INFO b/compat-patches/0002-genl-const.INFO
 new file mode 100644
-index 0000000..5fc504e
+index 0000000..192c5c6
 --- /dev/null
-+++ b/compat-patches/0001-netlink-portid.cocci
-@@ -0,0 +1,17 @@
-+@@
-+struct netlink_notify *notify;
-+@@
-+-notify->portid
-++netlink_notify_portid(notify)
++++ b/compat-patches/0002-genl-const.INFO
+@@ -0,0 +1,15 @@
++Newer kernels make generic netlink ops and multicast groups
++const, but older can't have that. We therefore introduce
++__genl_const, which can be defined depending on the kernel.
 +
-+@@
-+struct genl_info *info;
-+@@
-+-info->snd_portid
-++genl_info_snd_portid(info)
++What kernel versions require this?
 +
++XXX: try to SmPLify
++
++The struct genl_ops gave the *option* to make it const via:
++mcgrof@ergon ~/linux (git::master)$ git describe --contains f84f771d9
++v3.13-rc1~33^2~32^2~2
++
++The struct genl_multicast_group was *forced* to be const via:
++mcgrof@ergon ~/linux (git::master)$ git describe --contains 2a94fe48f
++v3.13-rc1~33^2^2
+diff --git a/compat-patches/0002-genl-const.cocci b/compat-patches/0002-genl-const.cocci
+new file mode 100644
+index 0000000..36c71d6
+--- /dev/null
++++ b/compat-patches/0002-genl-const.cocci
+@@ -0,0 +1,10 @@
 +@@
-+expression skb;
++attribute __genl_const;
 +@@
-+-NETLINK_CB(skb).portid
-++NETLINK_CB_PORTID(skb)
-diff --git a/compat.h b/compat.h
-index d987577..78de7ea 100644
---- a/compat.h
-+++ b/compat.h
-@@ -67,12 +67,6 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
++(
++-const struct genl_multicast_group
+++__genl_const struct genl_multicast_group
++|
++-const struct genl_ops
+++__genl_const struct genl_ops
++)
+diff --git a/compat-patches/replacements.sh b/compat-patches/replacements.sh
+index 7dcb953..c7875c0 100755
+--- a/compat-patches/replacements.sh
++++ b/compat-patches/replacements.sh
+@@ -1,9 +1,3 @@
+ #! /bin/sh
  
- #endif /* < KERNEL_VERSION(3, 3, 0) */
- 
--#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0)
+ set -e
 -
--#define snd_portid snd_pid
--
--#endif /* < KERNEL_VERSION(3, 7, 0) */
--
- #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
- 
- #define batadv_interface_set_mac_addr(x, y) \
+-# for kernel < 3.13 to make netlink compat code work
+-sed -i \
+-	-e 's/^static const struct genl_multicast_group batadv_netlink_mcgrps/static __genl_const struct genl_multicast_group batadv_netlink_mcgrps/' \
+-	-e 's/^static const struct genl_ops batadv_netlink_ops/static __genl_const struct genl_ops batadv_netlink_ops/' \
+-	build/net/batman-adv/netlink.c
 -- 
 2.9.3
 
