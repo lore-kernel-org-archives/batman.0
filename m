@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 15:57:37 +0200
-Message-Id: <20161018135743.3705-2-sven@narfation.org>
+Date: Tue, 18 Oct 2016 15:57:38 +0200
+Message-Id: <20161018135743.3705-3-sven@narfation.org>
 In-Reply-To: <2219629.dYY2ZvZvNG@bentobox>
 References: <2219629.dYY2ZvZvNG@bentobox>
-Subject: [B.A.T.M.A.N.] [PATCH v3 2/8] batman-adv: Add support for
-	coccinelle in compat-patches
+Subject: [B.A.T.M.A.N.] [PATCH v3 3/8] batman-adv: compat: Port netlink port
+	hack to coccinelle
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,11 +17,6 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The kernel and backports already uses spatch from coccinelle for
-development and backporting purposes. Thus we can cleanup many current
-hacks using semantic patches. These are also a lot less frail than
-traditional unified diffs.
-
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v3:
@@ -29,56 +24,106 @@ v3:
 v2:
  - new patch
 ---
- Makefile | 23 ++++++++++++++++++-----
- 1 file changed, 18 insertions(+), 5 deletions(-)
+ compat-include/linux/netlink.h           | 20 +++++++-------------
+ compat-include/net/genetlink.h           | 11 +++++++++++
+ compat-patches/0001-netlink-portid.cocci | 17 +++++++++++++++++
+ compat.h                                 |  6 ------
+ 4 files changed, 35 insertions(+), 19 deletions(-)
+ create mode 100644 compat-patches/0001-netlink-portid.cocci
 
-diff --git a/Makefile b/Makefile
-index 7ef2569..99e67da 100644
---- a/Makefile
-+++ b/Makefile
-@@ -40,11 +40,19 @@ ifeq ($(shell cd $(KERNELPATH) && pwd),)
- $(warning $(KERNELPATH) is missing, please set KERNELPATH)
- endif
+diff --git a/compat-include/linux/netlink.h b/compat-include/linux/netlink.h
+index 4f2185d..ca2bdf0 100644
+--- a/compat-include/linux/netlink.h
++++ b/compat-include/linux/netlink.h
+@@ -26,19 +26,13 @@
  
-+ifeq ($(origin SPATCH), undefined)
-+  SPATCH = spatch
-+  ifeq ($(shell which $(SPATCH) 2>/dev/null),)
-+    $(error $(SPATCH) (coccinelle) not found)
-+  endif
-+endif
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0)
+ 
+-#include <net/scm.h>
+-
+-struct batadv_netlink_skb_parms {
+-	struct ucred		creds;		/* Skb credentials	*/
+-	union {
+-		__u32		portid;
+-		__u32		pid;
+-	};
+-	__u32			dst_group;
+-};
+-
+-#undef NETLINK_CB
+-#define NETLINK_CB(skb) (*(struct batadv_netlink_skb_parms *)&((skb)->cb))
++#define netlink_notify_portid(__notify) (__notify->pid)
++#define NETLINK_CB_PORTID(__skb) NETLINK_CB(__skb).pid
 +
- export KERNELPATH
- RM ?= rm -f
- MKDIR := mkdir -p
- PATCH_FLAGS = --batch --fuzz=0 --forward --strip=1 --unified --version-control=never -g0 --remove-empty-files --no-backup-if-mismatch --reject-file=-
- PATCH := patch $(PATCH_FLAGS) -i
-+SPATCH_FLAGS := --in-place --relax-include-path --use-coccigrep
- CP := cp -fpR
++#else
++
++#define netlink_notify_portid(__notify) (__notify->portid)
++#define NETLINK_CB_PORTID(__skb) NETLINK_CB(__skb).portid
  
- SOURCE = $(wildcard net/batman-adv/*.[ch]) net/batman-adv/Makefile
-@@ -104,12 +112,17 @@ $(SOURCE_STAMP): $(SOURCE) compat-patches/* compat-patches/replacements.sh
- 	@$(RM) $(SOURCE_BUILD)
- 	@$(CP) $(SOURCE) $(BUILD_DIR)/net/batman-adv/
- 	@set -e; \
--	patches="$$(ls -1 compat-patches/|grep '.patch$$'|sort)"; \
-+	patches="$$(ls -1 compat-patches/|grep -e '.patch$$' -e '.cocci$$'|sort)"; \
- 	for i in $${patches}; do \
--		echo '  COMPAT_PATCH '$${i};\
--		cd $(BUILD_DIR); \
--		$(PATCH) ../compat-patches/$${i}; \
--		cd - > /dev/null; \
-+		echo '  COMPAT_PATCH '$${i}; \
-+		if echo $${i}|grep '.patch$$'; then \
-+			cd $(BUILD_DIR); \
-+			$(PATCH) ../compat-patches/$${i}; \
-+			cd - > /dev/null; \
-+		fi; \
-+		if echo $${i}|grep '.cocci$$'; then echo $$(pwd); \
-+			$(SPATCH) $(SPATCH_FLAGS) --dir $(BUILD_DIR) --sp-file compat-patches/$${i} > /dev/null; \
-+		fi; \
- 	done
- 	compat-patches/replacements.sh
- 	touch $(SOURCE_STAMP)
+ #endif /* < KERNEL_VERSION(3, 7, 0) */
+ 
+diff --git a/compat-include/net/genetlink.h b/compat-include/net/genetlink.h
+index 72a8991..6a287e6 100644
+--- a/compat-include/net/genetlink.h
++++ b/compat-include/net/genetlink.h
+@@ -24,6 +24,17 @@
+ #include <linux/version.h>
+ #include_next <net/genetlink.h>
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0)
++
++#define genl_info_snd_portid(__genl_info) (__genl_info->snd_pid)
++
++#else
++
++#define genl_info_snd_portid(__genl_info) (__genl_info->snd_portid)
++
++#endif /* < KERNEL_VERSION(3, 7, 0) */
++
++
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 13, 0)
+ 
+ #include <linux/export.h>
+diff --git a/compat-patches/0001-netlink-portid.cocci b/compat-patches/0001-netlink-portid.cocci
+new file mode 100644
+index 0000000..5fc504e
+--- /dev/null
++++ b/compat-patches/0001-netlink-portid.cocci
+@@ -0,0 +1,17 @@
++@@
++struct netlink_notify *notify;
++@@
++-notify->portid
+++netlink_notify_portid(notify)
++
++@@
++struct genl_info *info;
++@@
++-info->snd_portid
+++genl_info_snd_portid(info)
++
++@@
++expression skb;
++@@
++-NETLINK_CB(skb).portid
+++NETLINK_CB_PORTID(skb)
+diff --git a/compat.h b/compat.h
+index d987577..78de7ea 100644
+--- a/compat.h
++++ b/compat.h
+@@ -67,12 +67,6 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
+ 
+ #endif /* < KERNEL_VERSION(3, 3, 0) */
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0)
+-
+-#define snd_portid snd_pid
+-
+-#endif /* < KERNEL_VERSION(3, 7, 0) */
+-
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
+ 
+ #define batadv_interface_set_mac_addr(x, y) \
 -- 
 2.9.3
 
