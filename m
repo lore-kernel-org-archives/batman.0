@@ -1,14 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 14:25:34 +0200
-Message-ID: <2059029.BTNThUFUEN@bentobox>
-In-Reply-To: <1468961051-6447-2-git-send-email-sven@narfation.org>
-References: <1468961051-6447-2-git-send-email-sven@narfation.org>
+Date: Tue, 18 Oct 2016 14:28:47 +0200
+Message-ID: <2331541.j8VdOQSBGR@bentobox>
+In-Reply-To: <20160901160134.15593-1-sven@narfation.org>
+References: <20160901160134.15593-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1764497.Zdk93RuqUU";
+Content-Type: multipart/signed; boundary="nextPart1792267.00SSujNptK";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [2/4] batctl: Use monotonic time source for icmp
-	timing
+Subject: Re: [B.A.T.M.A.N.] [1/2] batctl: Fix minor typos in manpage
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,53 +19,46 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1764497.Zdk93RuqUU
+--nextPart1792267.00SSujNptK
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Dienstag, 19. Juli 2016 22:44:09 CEST Sven Eckelmann wrote:
-> gettimeofday is not monotonic. It would give wrong results in some
-> situation like leap seconds, when switching between daylight saving time
-> and non-DST, NTP changes the time or when the administrator of the system
-> changes it manually. The function is also obsolete since POSIX.1-2008.
-> 
-> clock_gettime is recommended to get a monotonic timesource and as general
-> replacement of gettimeofday.
+On Donnerstag, 1. September 2016 18:01:33 CEST Sven Eckelmann wrote:
+> * s/criterias/criteria/
+>  * s/succesful/successful/
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  Makefile    |  2 +-
->  functions.c | 17 +++++++++--------
->  2 files changed, 10 insertions(+), 9 deletions(-)
+>  man/batctl.8 | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Applied in ef7cfaa81f72292f67afe50303ac657f41280853 [1].
+Applied in fa109883ce8ad68ec6568d187cd53afca48f717c [1].
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batctl.git/commit/ef7cfaa81f72292f67afe50303ac657f41280853
-
---nextPart1764497.Zdk93RuqUU
+[1] https://git.open-mesh.org/batctl.git/commit/fa109883ce8ad68ec6568d187cd53afca48f717c
+--nextPart1792267.00SSujNptK
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYBhS/AAoJEF2HCgfBJntGYQIP/19ZpCqvOVZX4pRB6/zZ1tBa
-juPL2S7wyW7lIwL4WGppZUtyx9D+OAdJOp8va7GHfI7u1CzV4qqzxdQdmzvhMPeq
-7uVMwf/dYMGFbjcUIoUgGiWhDIJSbqlilavLknuJzrmXKn2mJC9ZlCfUAnvH4q/y
-ZcOWBEUgpUp4YPb/nKF+h88Avwer7Yu2sJwQDawELs9NEQ36bAWXG//xOvRirr0z
-Y5fl3ZL+k770PENNMrMSYMktP3DrIFRPixxxhpAd6WGzfGQsE4PjN5G+bgxEIL8Q
-eFKR6LZHIKPZE4yVnX60hs2kRiEaR0A6khfRztKeaj6m6yq3zzsMZt+aLNcOAp2J
-quoLnt1QTFNg0A8AfnkoCMS6RXEPy607MVz8kAd2xah7rON7CjBX63d63yITVLz3
-Yv2RBfjte7Nwfx2g7tS8o/oHgXU5NJ7sBezkCQFYIH+EHekAvryaEdCm7yX9+a4d
-haV2QqCT+Mi7qxFFvJovuOawu0iA8CwAGdd9DsjsYt8Z/dbpxbYBsOGe/QNKhoXK
-7lgbplV9e0b/1OA4//y9+xMmBXLUhsp6nAI+nlZ6n7cnKVCWRiaQyaN3G3BCC7ry
-oFooE6jonP7DdfqURYRXrAHwwfJ/49O/VlzlZF0O/ndGTYO1SaDga31f8ojPtrBl
-PLt1OI8cBamAV+F/O3a1
-=vks0
+iQIcBAABCgAGBQJYBhV/AAoJEF2HCgfBJntG2ZkP/0EGJfOB2s0gXvhRndC0vL2f
+F2TbcUhleJNtql7FPotQLLPlOkZpATrUN3DYXwwGyoTvePhvvPDG3NOJUgDxbB2J
+rF7M8HRpWf/aIg1rIMOE8b6pxrxeHKN0wnBA8UTuiysLuFnEfDVBIrwEeQnpQz1i
+QTghMpiHY04T7+yi146UDzT/BbB9IGL88z9sxTEaoHdowXWwRvwPLta9eDTiA3es
+Q7m2kiN2gu4ld5y8rfV7JRbGDRKSrSugAr4zWIJLbESB/oNLHuLtsUZOF/SRSvmF
+k5fnE8CzMVXmfMlLIwKKuVH3lNWi03nxoOVlAyuIzTz2bO/g3u0GTHAeEHqykI1a
+0y6WVKQt3KcU2EZqOipKJvAMkOk3JasviXMsXCfX2GObSCb7VAnZb3vVKsusOIoA
+QtfHcQQ5LOldQRx233pVj+CY/EdKiVNfSOhwpR5GxpCMM0LFaFHc9ar1XIw0IAA4
+VDAtkXkU0ACjStTibUZcJGjjwnfUcK797+GiegUt+2lFe5VdnycsuKtsf4/SdkyP
+JeX3E7Inmu+aKvcxLF8E7GisCbsTaWjzMrcENiHyixCgell131cAF2M0VOcIQdny
+PSAjOEzpwmo6qMHhrq9GSbQA0YfEE7BR4ToU5gPH/jYEvngmjp+W61QTx7jdSFDT
+ChHkmUYBtseMvnrOhD7Y
+=KV3z
 -----END PGP SIGNATURE-----
 
---nextPart1764497.Zdk93RuqUU--
+--nextPart1792267.00SSujNptK--
 
