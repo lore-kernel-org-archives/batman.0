@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 16:17:29 +0200
-Message-Id: <20161018141731.7970-7-sven@narfation.org>
+Date: Tue, 18 Oct 2016 16:17:30 +0200
+Message-Id: <20161018141731.7970-8-sven@narfation.org>
 In-Reply-To: <2403515.P9aVkiGJpp@bentobox>
 References: <2403515.P9aVkiGJpp@bentobox>
-Subject: [B.A.T.M.A.N.] [PATCH v3 7/9] batctl: Move check_mesh_iface* to
-	functions.c
+Subject: [B.A.T.M.A.N.] [PATCH v3 8/9] batctl: Add helper to generate
+	instant random bytes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,193 +17,126 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The check_mesh_iface* functions are not used to modify anything in sysfs.
-So they are better placed in the common/shared functions file than in
-sys.c.
+Linux provides different ways to get instant random bytes. These are not
+all supported on all systems and thus a fallback may have to be used.
+Abstract all this in a single function which can be used from different
+parts of the code.
+
+The current implementations are
+
+ * get random data from urandom pool via SYS_getrandom syscall
+ * get random data from reading /dev/urandom
+ * fallback to per-program prng initialized via the current time (seconds +
+   nanoseconds)
+
+All are tried in this order in hope to get a high quality random number
+source before falling back to some really low quality one.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v3:
  - rebased on current master
-v2:
- - no change
+ - changed __unused to __maybe_unused
+ - integrated in rtnl patchset due to dependencies
 ---
- functions.c | 59 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ functions.c | 66 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  functions.h |  2 ++
- sys.c       | 56 --------------------------------------------------------
- sys.h       |  2 --
- 4 files changed, 61 insertions(+), 58 deletions(-)
+ 2 files changed, 68 insertions(+)
 
 diff --git a/functions.c b/functions.c
-index 85482b4..66b2d16 100644
+index 66b2d16..abd5882 100644
 --- a/functions.c
 +++ b/functions.c
-@@ -32,6 +32,7 @@
- #include <string.h>
+@@ -41,6 +41,7 @@
+ #include <linux/if_link.h>
+ #include <linux/rtnetlink.h>
+ #include <linux/neighbour.h>
++#include <sys/syscall.h>
  #include <errno.h>
- #include <fcntl.h>
-+#include <dirent.h>
- #include <sys/time.h>
- #include <netinet/in.h>
- #include <stdint.h>
-@@ -57,6 +58,8 @@
- #include "debugfs.h"
- #include "netlink.h"
+ #include <net/if.h>
+ #include <netlink/socket.h>
+@@ -1072,3 +1073,68 @@ int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface)
  
-+#define PATH_BUFF_LEN 200
-+
- static struct timespec start_time;
- static char *host_name;
- char *line_ptr = NULL;
-@@ -1013,3 +1016,59 @@ err_free_sock:
- 
- 	return err;
+ 	return EXIT_SUCCESS;
  }
 +
-+int check_mesh_iface(char *mesh_iface)
++static int get_random_bytes_syscall(void *buf __maybe_unused,
++				    size_t buflen __maybe_unused)
 +{
-+	char *base_dev = NULL;
-+	char path_buff[PATH_BUFF_LEN];
-+	int ret = -1, vid;
-+	DIR *dir;
-+
-+	/* use the parent interface if this is a VLAN */
-+	vid = vlan_get_link(mesh_iface, &base_dev);
-+	if (vid >= 0)
-+		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
-+	else
-+		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
-+
-+	/* try to open the mesh sys directory */
-+	dir = opendir(path_buff);
-+	if (!dir)
-+		goto out;
-+
-+	closedir(dir);
-+
-+	ret = 0;
-+out:
-+	if (base_dev)
-+		free(base_dev);
-+
-+	return ret;
++#ifdef SYS_getrandom
++	return syscall(SYS_getrandom, buf, buflen, 0);
++#else
++	return -EOPNOTSUPP;
++#endif
 +}
 +
-+int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface)
++static int get_random_bytes_urandom(void *buf, size_t buflen)
 +{
-+	char path_buff[PATH_BUFF_LEN];
-+	int res;
++	int fd;
++	ssize_t r;
 +
-+	/* check if this device actually belongs to the mesh interface */
-+	snprintf(path_buff, sizeof(path_buff), SYS_MESH_IFACE_FMT, hard_iface);
-+	res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
-+	if (res != EXIT_SUCCESS) {
-+		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
-+			path_buff, strerror(errno));
-+		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
-+		return EXIT_FAILURE;
++	fd = open("/dev/urandom", O_RDONLY);
++	if (fd < 0)
++		return -EOPNOTSUPP;
++
++	r = read(fd, buf, buflen);
++	close(fd);
++	if (r < 0)
++		return -EOPNOTSUPP;
++
++	if ((size_t)r != buflen)
++		return -EOPNOTSUPP;
++
++	return 0;
++}
++
++static int get_random_bytes_fallback(void *buf, size_t buflen)
++{
++	struct timespec now;
++	static int initialized = 0;
++	size_t i;
++	uint8_t *bufc = buf;
++
++	/* this is not a good source for randomness */
++	if (!initialized) {
++		clock_gettime(CLOCK_MONOTONIC, &now);
++		srand(now.tv_sec ^ now.tv_nsec);
++		initialized = 1;
 +	}
 +
-+	if (line_ptr[strlen(line_ptr) - 1] == '\n')
-+		line_ptr[strlen(line_ptr) - 1] = '\0';
++	for (i = 0; i < buflen; i++)
++		bufc[i] = rand() & 0xff;
 +
-+	if (strcmp(line_ptr, mesh_iface) != 0) {
-+		fprintf(stderr, "Error - interface %s is part of batman network %s, not %s\n",
-+			hard_iface, line_ptr, mesh_iface);
-+		return EXIT_FAILURE;
-+	}
++	return 0;
++}
 +
-+	return EXIT_SUCCESS;
++void get_random_bytes(void *buf, size_t buflen)
++{
++	int ret;
++
++	ret = get_random_bytes_syscall(buf, buflen);
++	if (ret != -EOPNOTSUPP)
++		return;
++
++	ret = get_random_bytes_urandom(buf, buflen);
++	if (ret != -EOPNOTSUPP)
++		return;
++
++	get_random_bytes_fallback(buf, buflen);
 +}
 diff --git a/functions.h b/functions.h
-index 4c350f8..e413d6b 100644
+index e413d6b..95cd6cf 100644
 --- a/functions.h
 +++ b/functions.h
-@@ -50,6 +50,8 @@ struct ether_addr *resolve_mac(const char *asc);
- int vlan_get_link(const char *ifname, char **parent);\
- int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg);
- int netlink_simple_request(struct nl_msg *msg);
-+int check_mesh_iface(char *mesh_iface);
-+int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
+@@ -53,6 +53,8 @@ int netlink_simple_request(struct nl_msg *msg);
+ int check_mesh_iface(char *mesh_iface);
+ int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
  
++void get_random_bytes(void *buf, size_t buflen);
++
  int print_routing_algos(void);
  extern char *line_ptr;
-diff --git a/sys.c b/sys.c
-index 59cbdae..b524340 100644
---- a/sys.c
-+++ b/sys.c
-@@ -511,59 +511,3 @@ free_buff:
- out:
- 	return res;
- }
--
--int check_mesh_iface(char *mesh_iface)
--{
--	char *base_dev = NULL;
--	char path_buff[PATH_BUFF_LEN];
--	int ret = -1, vid;
--	DIR *dir;
--
--	/* use the parent interface if this is a VLAN */
--	vid = vlan_get_link(mesh_iface, &base_dev);
--	if (vid >= 0)
--		snprintf(path_buff, PATH_BUFF_LEN, SYS_VLAN_PATH, base_dev, vid);
--	else
--		snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
--
--	/* try to open the mesh sys directory */
--	dir = opendir(path_buff);
--	if (!dir)
--		goto out;
--
--	closedir(dir);
--
--	ret = 0;
--out:
--	if (base_dev)
--		free(base_dev);
--
--	return ret;
--}
--
--int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface)
--{
--	char path_buff[PATH_BUFF_LEN];
--	int res;
--
--	/* check if this device actually belongs to the mesh interface */
--	snprintf(path_buff, sizeof(path_buff), SYS_MESH_IFACE_FMT, hard_iface);
--	res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
--	if (res != EXIT_SUCCESS) {
--		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
--			path_buff, strerror(errno));
--		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
--		return EXIT_FAILURE;
--	}
--
--	if (line_ptr[strlen(line_ptr) - 1] == '\n')
--		line_ptr[strlen(line_ptr) - 1] = '\0';
--
--	if (strcmp(line_ptr, mesh_iface) != 0) {
--		fprintf(stderr, "Error - interface %s is part of batman network %s, not %s\n",
--			hard_iface, line_ptr, mesh_iface);
--		return EXIT_FAILURE;
--	}
--
--	return EXIT_SUCCESS;
--}
-diff --git a/sys.h b/sys.h
-index be9480e..1365e76 100644
---- a/sys.h
-+++ b/sys.h
-@@ -74,7 +74,5 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv);
- int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv);
- int handle_gw_setting(char *mesh_iface, int argc, char **argv);
- int handle_ra_setting(int argc, char **argv);
--int check_mesh_iface(char *mesh_iface);
--int check_mesh_iface_ownership(char *mesh_iface, char *hard_iface);
  
- #endif
 -- 
 2.9.3
 
