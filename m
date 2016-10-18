@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 15:57:36 +0200
-Message-Id: <20161018135743.3705-1-sven@narfation.org>
+Date: Tue, 18 Oct 2016 15:57:37 +0200
+Message-Id: <20161018135743.3705-2-sven@narfation.org>
 In-Reply-To: <2219629.dYY2ZvZvNG@bentobox>
 References: <2219629.dYY2ZvZvNG@bentobox>
-Subject: [B.A.T.M.A.N.] [PATCH v3 1/8] batman-adv: Mark batadv_netlink_ops
-	as const
+Subject: [B.A.T.M.A.N.] [PATCH v3 2/8] batman-adv: Add support for
+	coccinelle in compat-patches
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,43 +17,68 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The genl_ops don't need to be written by anyone and thus can be moved in a
-ro memory range.
+The kernel and backports already uses spatch from coccinelle for
+development and backporting purposes. Thus we can cleanup many current
+hacks using semantic patches. These are also a lot less frail than
+traditional unified diffs.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v3:
- - use __genl_const to keep it in ro memory for kernel >= 3.13
+ - no changes
 v2:
  - new patch
 ---
- compat-patches/replacements.sh | 1 +
- net/batman-adv/netlink.c       | 2 +-
- 2 files changed, 2 insertions(+), 1 deletion(-)
+ Makefile | 23 ++++++++++++++++++-----
+ 1 file changed, 18 insertions(+), 5 deletions(-)
 
-diff --git a/compat-patches/replacements.sh b/compat-patches/replacements.sh
-index 669b0ff..7dcb953 100755
---- a/compat-patches/replacements.sh
-+++ b/compat-patches/replacements.sh
-@@ -5,4 +5,5 @@ set -e
- # for kernel < 3.13 to make netlink compat code work
- sed -i \
- 	-e 's/^static const struct genl_multicast_group batadv_netlink_mcgrps/static __genl_const struct genl_multicast_group batadv_netlink_mcgrps/' \
-+	-e 's/^static const struct genl_ops batadv_netlink_ops/static __genl_const struct genl_ops batadv_netlink_ops/' \
- 	build/net/batman-adv/netlink.c
-diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 64cb6ac..aee20a3 100644
---- a/net/batman-adv/netlink.c
-+++ b/net/batman-adv/netlink.c
-@@ -534,7 +534,7 @@ batadv_netlink_dump_hardifs(struct sk_buff *msg, struct netlink_callback *cb)
- 	return msg->len;
- }
+diff --git a/Makefile b/Makefile
+index 7ef2569..99e67da 100644
+--- a/Makefile
++++ b/Makefile
+@@ -40,11 +40,19 @@ ifeq ($(shell cd $(KERNELPATH) && pwd),)
+ $(warning $(KERNELPATH) is missing, please set KERNELPATH)
+ endif
  
--static struct genl_ops batadv_netlink_ops[] = {
-+static const struct genl_ops batadv_netlink_ops[] = {
- 	{
- 		.cmd = BATADV_CMD_GET_MESH_INFO,
- 		.flags = GENL_ADMIN_PERM,
++ifeq ($(origin SPATCH), undefined)
++  SPATCH = spatch
++  ifeq ($(shell which $(SPATCH) 2>/dev/null),)
++    $(error $(SPATCH) (coccinelle) not found)
++  endif
++endif
++
+ export KERNELPATH
+ RM ?= rm -f
+ MKDIR := mkdir -p
+ PATCH_FLAGS = --batch --fuzz=0 --forward --strip=1 --unified --version-control=never -g0 --remove-empty-files --no-backup-if-mismatch --reject-file=-
+ PATCH := patch $(PATCH_FLAGS) -i
++SPATCH_FLAGS := --in-place --relax-include-path --use-coccigrep
+ CP := cp -fpR
+ 
+ SOURCE = $(wildcard net/batman-adv/*.[ch]) net/batman-adv/Makefile
+@@ -104,12 +112,17 @@ $(SOURCE_STAMP): $(SOURCE) compat-patches/* compat-patches/replacements.sh
+ 	@$(RM) $(SOURCE_BUILD)
+ 	@$(CP) $(SOURCE) $(BUILD_DIR)/net/batman-adv/
+ 	@set -e; \
+-	patches="$$(ls -1 compat-patches/|grep '.patch$$'|sort)"; \
++	patches="$$(ls -1 compat-patches/|grep -e '.patch$$' -e '.cocci$$'|sort)"; \
+ 	for i in $${patches}; do \
+-		echo '  COMPAT_PATCH '$${i};\
+-		cd $(BUILD_DIR); \
+-		$(PATCH) ../compat-patches/$${i}; \
+-		cd - > /dev/null; \
++		echo '  COMPAT_PATCH '$${i}; \
++		if echo $${i}|grep '.patch$$'; then \
++			cd $(BUILD_DIR); \
++			$(PATCH) ../compat-patches/$${i}; \
++			cd - > /dev/null; \
++		fi; \
++		if echo $${i}|grep '.cocci$$'; then echo $$(pwd); \
++			$(SPATCH) $(SPATCH_FLAGS) --dir $(BUILD_DIR) --sp-file compat-patches/$${i} > /dev/null; \
++		fi; \
+ 	done
+ 	compat-patches/replacements.sh
+ 	touch $(SOURCE_STAMP)
 -- 
 2.9.3
 
