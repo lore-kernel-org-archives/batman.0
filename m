@@ -1,14 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 15:39:36 +0200
-Message-ID: <2088086.l1VxCJGyzP@bentobox>
-In-Reply-To: <1470566059-3782-1-git-send-email-linus.luessing@c0d3.blue>
-References: <1470566059-3782-1-git-send-email-linus.luessing@c0d3.blue>
+Date: Tue, 18 Oct 2016 15:40:03 +0200
+Message-ID: <10941458.vKKeqiOf2h@bentobox>
+In-Reply-To: <1470514996-32044-1-git-send-email-linus.luessing@c0d3.blue>
+References: <1470514996-32044-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2003295.t5ZfRSHogU";
+Content-Type: multipart/signed; boundary="nextPart4150522.2ydUfDb9T3";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [v5,
-	1/2] batman-adv: Remove unused skb_reset_mac_header()
+Subject: Re: [B.A.T.M.A.N.] [v3,
+	1/2] batman-adv: Remove unnecessary lockdep in
+	batadv_mcast_mla_list_free
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,58 +22,60 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2003295.t5ZfRSHogU
+--nextPart4150522.2ydUfDb9T3
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Sonntag, 7. August 2016 12:34:18 CEST Linus L=FCssing wrote:
-> During broadcast queueing, the skb_reset_mac_header() sets the skb
-> to a place invalid for a MAC header, pointing right into the
-> batman-adv broadcast packet. Luckily, no one seems to actually use
-> eth_hdr(skb) afterwards until batadv_send_skb_packet() resets the
-> header to a valid position again.
+On Samstag, 6. August 2016 22:23:15 CEST Linus L=FCssing wrote:
+> batadv_mcast_mla_list_free() just frees some leftovers of a local feast
+> in batadv_mcast_mla_update(). No lockdep needed as it has nothing to do
+> with bat_priv->mcast.mla_list.
 >=20
-> Therefore removing this unnecessary, weird skb_reset_mac_header()
-> call.
->=20
+> Fixes: 5b95c427d187 ("batman-adv: Annotate deleting functions with extern=
+al
+> lock via lockdep") Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3=
+=2Eblue>
 > Reviewed-by: Sven Eckelmann <sven@narfation.org>
-> Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
 > ---
 >=20
-> Changes in v2-v5:
+> Changes in v3:
 > * none
 >=20
->  net/batman-adv/send.c | 2 --
->  1 file changed, 2 deletions(-)
+> Changes in v2:
+> * none
+>=20
+>  net/batman-adv/multicast.c | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
 
-Applied in 3d34c0a675b20cf6dd2b8680188f1ebd399c3589 [1].
+Applied in 0ef2a812dc3e9394d1b35f73a250f73a5214b134 [1].
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/3d34c0a675b20cf6dd2b868=
-0188f1ebd399c3589
---nextPart2003295.t5ZfRSHogU
+[1] https://git.open-mesh.org/batman-adv.git/commit/0ef2a812dc3e9394d1b35f7=
+3a250f73a5214b134
+
+--nextPart4150522.2ydUfDb9T3
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYBiYYAAoJEF2HCgfBJntGEgQQAMjb2cQ3CxdP+0xoRN6pcFDy
-6SSq2+YhorUmdkKF4Sk8WeUDlwn4ps+qj0cK0zlYCDn4BD1dnFnoh5n+at43hVAU
-4tJx8Tq6fMZxTLuyLbag/upglzZT5sLJT9B+8+xE6P/h+Mn4yOL4oqQyArsobLNV
-g8yZa4wg2DZ0U5v+hLHzrTkUyVo9DOpfemLdBwLnANW2T/AyFjzF60c0SVJYZjzE
-gg1jd4VGFL0vhNKk5n6AW4gg93tzmVRApoJt4DkU+1yLiyPJuYac6d2ulaVRaeGG
-I8UNIV+Gpa8cDLjZUmWpVmCDttRqLfS4ar+Y0VUkktVCriBSyeCB6cb4h2XterjG
-fUUyHVvLDRkVgrw4tisQhxsJQGkHwHsr1agRe+1+gUc7T9tVeNZVilTAzwfjEvAb
-ylHqpZGg1K4InQTnf6HFXOtZb+sfe38NyYY0GWCWF3ApTuq7XB+mb4lbTZcL6j9G
-nzEZYLCez7PlYquY0TUYJcdGFVdlDPw5VcrNnq9eJ9k3qFJfjYAwHzDatApMtLGp
-hDdhqBZsc9nh2g3zPoyBeOqTmN4DWD2piXcK2t01N9BjRT0lgbXJxYZkPiUNjo3z
-PJ2MiDleSj/2hdZuR9NWjmTyGgsC4CaG0CYPDqA44/ujwGKAT47wrsnj++LXiB+n
-U2JZN3E0TiPzYSEtLA39
-=+0A8
+iQIcBAABCgAGBQJYBiYzAAoJEF2HCgfBJntGSnoP/1wFEQf2qWZ65zruupn3R4kw
+ZnNI9FY4SPv8hXyBYsttJvptePA4CAdeEE4HA6YL9YlFCzARWMFADOEvEBL57giJ
+lyuW3W+9VlZ2+aepLn5RxXXnFaYXfifaenbiABW6YWF5VrPmUpAa92B8z0II9TTO
+1V4HIDsm0jQ6xDl+8qCE+jEB3InM0tjAR+8zVHBzmgwGZDHsAXJx2KSYdvb21ADO
+Jux8fwqctmZ235lLTry0RqYwnBU3bcb10RB59PWA6A1xA5A/u6tlEOyEEI4asX8J
+IlP3QZw2NkdIB7YRnjy2nqkBR53Ml4k1+Q17JXe/cPAqljD2Z8Sz2i9vDAnXubza
+q69StzLlRJOJ5n3+6OhXLOFd9J3xQYM4E+3zzp9N16hEMaLCUCUevZb221wmQs8Q
+0geZbU48iTY2o2HIDialR9Jw/NPLsLTZ2hLTOM+bOLLjX/1O4bawpPy75iRaJXa3
+WnZmv/qHyWk8PvqmC79qeH374xLXGP2u1eXGu1oaXrealFdax4PaT6M7vwzdyTZT
+FNKzhWpoJFs+Lq2+5RAY6KHMeYaWY9nZDitxgP2R7F/FlTHYASYx3I3s7UASO1gq
+6JgdTIuMoRNwPuCbTcHXrCzfH3wnlHu2QiPfTbPcykMciNQjmSANCeParhBdWHsv
+MIawgejr7xqmp3QiIqet
+=cppx
 -----END PGP SIGNATURE-----
 
---nextPart2003295.t5ZfRSHogU--
+--nextPart4150522.2ydUfDb9T3--
 
