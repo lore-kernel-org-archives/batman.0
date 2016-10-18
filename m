@@ -1,14 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 23:28:23 +0200
-Message-ID: <1555062.TzeBilqSPn@sven-edge>
-In-Reply-To: <20161018212125.32010-1-linus.luessing@c0d3.blue>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Wed, 19 Oct 2016 01:22:39 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20161018232239.GI6366@otheros>
 References: <20161018212125.32010-1-linus.luessing@c0d3.blue>
+ <1555062.TzeBilqSPn@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9718104.fGP9MP5nNY";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1555062.TzeBilqSPn@sven-edge>
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: compat: Substitute compat
-	code for netlink constification
+ code for netlink constification
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,69 +19,71 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart9718104.fGP9MP5nNY
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+On Tue, Oct 18, 2016 at 11:28:23PM +0200, Sven Eckelmann wrote:
+> Doesn't seem to scale. Especially when we think about batadv_netlink_ops
+> which should also be const. It is currently not const because of the
+> Linux <= 3.13 workaround.
 
-On Dienstag, 18. Oktober 2016 23:21:25 CEST Linus L=FCssing wrote:
-> Substitutes the compat-patches approach for the netlink const changes to
-> the prefered way of using compat-includes.
->=20
-> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
-> ---
->  compat-include/net/genetlink.h | 15 +++++++++++++--
->  1 file changed, 13 insertions(+), 2 deletions(-)
->=20
-> diff --git a/compat-include/net/genetlink.h b/compat-include/net/genetlin=
-k.h
-> index 72a8991..b195b47 100644
-> --- a/compat-include/net/genetlink.h
-> +++ b/compat-include/net/genetlink.h
-> @@ -28,6 +28,15 @@
-> =20
->  #include <linux/export.h>
-> =20
-> +/* multicast groups */
-> +enum __batadv_netlink_multicast_groups {
-> +	__BATADV_NL_MCGRP_TPMETER,
-> +};
-> +
-> +static struct genl_multicast_group __batadv_netlink_mcgrps[] =3D {
-> +	[__BATADV_NL_MCGRP_TPMETER] =3D { .name =3D BATADV_NL_MCAST_GROUP_TPMET=
-ER },
-> +};
-> +
+Hm, okay, batadv_netlink_ops is a little more tricky/larger, yes.
+What about a memcpy'ing approach with BUILD_BUG_ON()'s as
+safe-guards like this:
 
-Doesn't seem to scale. Especially when we think about batadv_netlink_ops
-which should also be const. It is currently not const because of the
-Linux <=3D 3.13 workaround.
 
-Kind regards,
-	Sven
-
---nextPart9718104.fGP9MP5nNY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABCgAGBQJYBpP3AAoJEF2HCgfBJntGGwsP/1BOtHVt4XppuMxMW0+pw+9j
-YLybKOuMS6B6YD7/E2j+5MNPASTveZ8QWytyNyGPxc/269nruQvYZIHUDW2Oijld
-skXbrJVT3lJNSu1qfcARmEiaR+71nYsQANFwHIkk7xISdaSMJ6GjKdpjWnPqKyXj
-JtnR99lXbSnmXWeyOokVYHVpl6h67zRnspvDhxBvu4ZcST68qnH0KdEjdqMuj/KB
-hkpN1fOLegtqXLAOJ/4qwOdp7vfKYuDvshmbc4X9t0fHu5AmAXHaD6vn5s/habos
-Ul3k0yrFpIeQTzUNMK7VGG4YGBUM5lWZsEVyccUZOQZyUMDgMLpl9wS6qs8M/Ol/
-fJ+5Asa+DiG9X1eyHvW/IrrITa/OlLWRSN4S90uWutTNe4Zdsg07sW8+3jW1N5jm
-bDgk0Yac/Cd8K0rZn99B/nfInRBn6MtcDqcO35hIzWN/YrLfmR1HGZo7tW1l6aC3
-JiRRjWppqQ8QnF8A7iIWNhcB6ELgQqDrpEm8PKYk7osFpbzUQv4bFV6jASPkbUB3
-BzpmcAD5AKvXkaF9hKNAu6+axwoTVgKqjHnNLGXKyuMD7Ee5LcK+7yRuiT+djgv8
-z2j1VZ6TARmlKgBC7R4r2kcrC0N0Xv/GYPsrhFFKd5woLE0B9m7pe0fSoCHdXvRz
-at9gtiVclmJaSNcWAXwA
-=ORlR
------END PGP SIGNATURE-----
-
---nextPart9718104.fGP9MP5nNY--
-
+diff --git a/compat-include/net/genetlink.h b/compat-include/net/genetlink.h
+index 72a8991..f16bf35 100644
+--- a/compat-include/net/genetlink.h
++++ b/compat-include/net/genetlink.h
+@@ -28,6 +28,9 @@
+ 
+ #include <linux/export.h>
+ 
++static struct genl_ops __batadv_netlink_ops[12];
++static struct genl_multicast_group __batadv_netlink_mcgrps[1];
++
+ struct batadv_genl_family {
+ 	/* data handled by the actual kernel */
+ 	struct genl_family family;
+@@ -137,15 +140,23 @@ static inline int batadv_genl_register_family(struct genl_family *family)
+ 	return ret;
+ }
+ 
+-static inline int
++static inline int __init
+ batadv_genl_register_family_with_ops_grps(struct genl_family *family,
+-					  struct genl_ops *ops, size_t n_ops,
+-					  struct genl_multicast_group *mcgrps,
++					  const struct genl_ops *ops, size_t n_ops,
++					  const struct genl_multicast_group *mcgrps,
+ 					  size_t n_mcgrps)
+ {
+-	family->ops = ops;
++	BUILD_BUG_ON(ARRAY_SIZE(__batadv_netlink_ops) != n_ops);
++	BUILD_BUG_ON(ARRAY_SIZE(__batadv_netlink_mcgrps) != n_mcgrps);
++	BUILD_BUG_ON(sizeof(__batadv_netlink_ops) != sizeof(*ops) * n_ops);
++	BUILD_BUG_ON(sizeof(__batadv_netlink_mcgrps) != sizeof(*mcgrps) * n_mcgrps);
++
++	memcpy(__batadv_netlink_ops, ops, sizeof(__batadv_netlink_ops));
++	memcpy(__batadv_netlink_mcgrps, mcgrps, sizeof(__batadv_netlink_mcgrps));
++
++	family->ops = __batadv_netlink_ops;
+ 	family->n_ops = n_ops;
+-	family->mcgrps = mcgrps;
++	family->mcgrps = __batadv_netlink_mcgrps;
+ 	family->n_mcgrps = n_mcgrps;
+ 	family->module = THIS_MODULE;
+ 
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index 64cb6ac..aee20a3 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -534,7 +534,7 @@ batadv_netlink_dump_hardifs(struct sk_buff *msg, struct netlink_callback *cb)
+ 	return msg->len;
+ }
+ 
+-static struct genl_ops batadv_netlink_ops[] = {
++static const struct genl_ops batadv_netlink_ops[] = {
+ 	{
+ 		.cmd = BATADV_CMD_GET_MESH_INFO,
+ 		.flags = GENL_ADMIN_PERM,
