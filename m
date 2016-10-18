@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 14:46:41 +0200
-Message-ID: <1527828.SI8UVEeSSk@bentobox>
-In-Reply-To: <1469615468-9261-2-git-send-email-sven@narfation.org>
-References: <1469615468-9261-2-git-send-email-sven@narfation.org>
+Date: Tue, 18 Oct 2016 14:47:40 +0200
+Message-ID: <3798601.mki1AaTVKQ@bentobox>
+In-Reply-To: <1469615468-9261-1-git-send-email-sven@narfation.org>
+References: <1469615468-9261-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2629962.XaBcu0d23V";
+Content-Type: multipart/signed; boundary="nextPart15712797.k2AkgDobz1";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [2/2] batman-adv: Use proper name for gateway
+Subject: Re: [B.A.T.M.A.N.] [1/2] batman-adv: Use proper name for fragments
 	list head
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -20,52 +20,51 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2629962.XaBcu0d23V
+--nextPart15712797.k2AkgDobz1
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Mittwoch, 27. Juli 2016 12:31:08 CEST Sven Eckelmann wrote:
+On Mittwoch, 27. Juli 2016 12:31:07 CEST Sven Eckelmann wrote:
 > The batman-adv codebase is using "list" for the list node (prev/next) and
 > <list content descriptor>+"_list" for the head of a list. Not using this
-> naming scheme can up in confusions when reading the code.
+> naming scheme can up in confusions because list_head is used for both the
+> head of the list and the list node (prev/next) in each item of the list.
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/bat_iv_ogm.c     | 6 +++---
->  net/batman-adv/bat_v.c          | 6 +++---
->  net/batman-adv/gateway_client.c | 7 ++++---
->  net/batman-adv/main.c           | 2 +-
->  net/batman-adv/types.h          | 8 ++++----
->  5 files changed, 15 insertions(+), 14 deletions(-)
+>  net/batman-adv/fragmentation.c | 14 +++++++-------
+>  net/batman-adv/fragmentation.h |  2 +-
+>  net/batman-adv/originator.c    |  2 +-
+>  net/batman-adv/types.h         |  6 +++---
+>  4 files changed, 12 insertions(+), 12 deletions(-)
 
-Applied in 21643310f1918758d22367ff5c81d34a49c3645d [1].
+Applied in dbc6c543fb9369def16146cf0278b3be0f524448 [1].
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/21643310f1918758d22367ff5c81d34a49c3645d
-
---nextPart2629962.XaBcu0d23V
+[1] https://git.open-mesh.org/batman-adv.git/commit/dbc6c543fb9369def16146cf0278b3be0f524448
+--nextPart15712797.k2AkgDobz1
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYBhmxAAoJEF2HCgfBJntGqqcQAJe9SHs3uA7HLcuYi85T+9IS
-0D7+eWxyIvWRNCtExpG2N4W4ouUZtVvSEt1DXi0RyayNhHXecTWqhmxoaXh55Hih
-nNkCdGpX02+oEUyqta0x96HPHWnzbmmcoezxipaZU5FrGpvvWsLkdIzcHM5V9+V2
-6g9VvdTFxyLORamjpCdnTi8sohZGKGCCsVQga0Xwf0ec44L4iekBdrET/mASh+WT
-s8U0qQBLjy9EhVAJ6oiRdTW9SW2v6P+Nv7HbKyR0rVF5AcI3fs2U4qB6P9WNDbC3
-4pwsrJrmtbkmQ2bjVpMQyunOr0V8Py6C4ijN6GJi7EEIoq5k0U0RRpLI7KAyBSLa
-hbCgy/+zvMOV/KWalIk942OP/nCwqCB878Bu7jBm+gOaEefhdCMQtamOm0JuoXLo
-UXwfIToafugp/t0l7FJr4cSkcWA5/DAmEoSzVO/HUm/Yq8n/j71Hv6MxReN9Tmx/
-kgIRUkj5U60tqgdwzrhtxtLL28v5YHwBGBs5x+ZIpyNPv//qd9qcql21GuyEU/61
-I0eosX/FJI5jOf+1oo5V7bTkIHemofPUedfhXN5Hz02upDy3jiK4Afc6nCT3qeYS
-m/DzO7F0eCHxbnDNsx4AnbKRMuQYmNK/yTZ3fhBcMXMRzStWLBQ4THMXce4fN4W5
-TROJbx9IcQAsYOG9Vh44
-=K5aP
+iQIcBAABCgAGBQJYBhnsAAoJEF2HCgfBJntG9jsQAL+a2ePDwjAZCzwIFimzJCsY
+GRA9lZVoMn7+IiGLPyFWFael9ydAevJLaSgWpGtmxSDmzoCHiZFlwx8CAuz64NzQ
+EvG/zphN8RSNSMuBq0i0GV+R+i64p8pzEL2/4b0CACIGESdti/zmrMeyQSrVZBBo
+2fWgE9MAM6bxOT+3PVCZC4VrvoHeC4oCN2Ne8L3AOrf2oUd7ytEtNDmjG7gtNYZ+
+QN+X5dQU/zzxVvjjze9SzUByts8DsTPxrTZWIsnUd+lfndkahHZz6fbPhPyz5DVD
+bm4pWJRb3/eLVxqe5CNmmdE63gwayX6z2uIR1ZbzqyR27exKX+R+P75AUhjYrkYF
+MMDT6F8PMRoarFnOFlWaD3x2YsRFlKN2ueBLqeuMwngm5DOUD6tWhWn4nlOPigd+
+SrNoZgwpp2xr3e/Nf8aA7P1GlwIGCL/StiutLa1GhOSpTn4stFp2XcNqXVPBzz+b
+3AGD0vdoAFZYRYkkwvCU5cGteYRhuOaNnq0JiwZOkNBA01woriTm05CTz9cBFq5/
+kA9sY/xz35YTVJS1GlyKXtV/0br3AKrdV1G2G47kugfRg/Yl+ete4wYKVTQqt01F
+Qvpxb/YpPchVxRYYZRanqxObAwhu/bCICiSrvOqZ2z+9ThYKiBuq/Xv9KvaUGg9x
+8EZ0W4GNmGy2wh4cAjyT
+=Qres
 -----END PGP SIGNATURE-----
 
---nextPart2629962.XaBcu0d23V--
+--nextPart15712797.k2AkgDobz1--
 
