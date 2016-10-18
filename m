@@ -1,14 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 14 Oct 2016 15:33:44 +0200
-Message-ID: <56788276.hNFQLni3DR@prime>
-In-Reply-To: <20160922214607.22123-1-sven@narfation.org>
-References: <20160922214607.22123-1-sven@narfation.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 18 Oct 2016 13:23:43 +0200
+Message-ID: <2177162.9nyHk8EYDH@bentobox>
+In-Reply-To: <1468697424-10701-2-git-send-email-sven@narfation.org>
+References: <1468697424-10701-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3342049.tLUy0tK4Fn";
+Content-Type: multipart/signed; boundary="nextPart2253417.EIU16JhQKu";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: vis: Fix netlink function
-	fallback
+Subject: Re: [B.A.T.M.A.N.] [2/5] batman-adv: Add B.A.T.M.A.N. V sysfs files
+	to README
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,43 +20,43 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3342049.tLUy0tK4Fn
+--nextPart2253417.EIU16JhQKu
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Thursday, September 22, 2016 11:46:07 PM CEST Sven Eckelmann wrote:
-> The netlink functions return -EOPNOTSUPP when the kernel doesn't support
-> the netlink command. The caller can then fall back to debugfs. So check for
-> -EOPNOTSUPP and not EOPNOTSUPP.
-> 
-> Fixes: bca55a86fecd ("alfred: vis: Add support for netlink")
+On Samstag, 16. Juli 2016 21:30:21 CEST Sven Eckelmann wrote:
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+>  Documentation/networking/batman-adv.txt | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied in revision 2208996.
+Applied in 05145c40763a6372df552cfdd4a9f2ef4bba0d61 [1].
 
-Thanks!
-     Simon
---nextPart3342049.tLUy0tK4Fn
+Kind regards,
+	Sven
+
+[1] https://git.open-mesh.org/batman-adv.git/commit/05145c40763a6372df552cfdd4a9f2ef4bba0d61
+--nextPart2253417.EIU16JhQKu
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYAN64AAoJEKEr45hCkp6h6pAQAKao0grjSOUWBEkkOjxCfPko
-wnoRPh7rJoNSDialbVE1uzIqPJFWlpSuD2C4HmxqIGpyCC/l4yicUge9ukYMiIHg
-Jm5NYRrf2N4eiNoQtIJzXfNsth5UaY7w839ZO2CVCjAKhvpwS0yRLzVaPASsA6bG
-xZBKu/e2zxKewMIPfLt7gs/y+KKZPWgoo+MvRDL609ZvBen2P7fVgr3pjmSxC1GV
-5Vj//YI5c2CZKyQ9Ulguat30RORtKKtVRDXjUCnASrQXoXTtikAPz5tPQm6gPZuF
-MXivg98/v9FTVv9/Ne2w62WY18lTrWdB4k7OAeKY/E6cMngpcm+2bDGAFD6B5oBB
-hDA9+W/AIDjaSsul8YjizR6ifFoxcHjXek4ykUfvLbnSeCzUB1SD7CLqllXfUkaq
-Xf7PiV1Lpt77Z8kfjX1Abt9lH2LI4mmH7pr/h8zZa3yISCDZWspaOy8n+QeRb5J1
-DN9RLBp3wYiTA4BoUokF9lpAfUZk6IwrTR5MYR4ajwO6dnIr2rS8cHG4vZtMRYek
-QBzO9jPkE1Kv6iDHLZEBRj0CF37uW/PEQpm+3v8eUt0K6xC6dPCjigxazMuARle2
-nv24QcQWkMZo499YhZ2SW3+xwYvdFeFz+b8+TD+98rvqGnJdERqaG0YP1Bsb5yLQ
-9Vt1kFF/JC7kDyubXrVW
-=r828
+iQIcBAABCgAGBQJYBgY/AAoJEF2HCgfBJntG2QsQAIS+dR9Ap45aQfI9dXHaRexq
+6flglQBpBfZADUSxiPb8mEtY4edJvORrnrVbCD8o+xta04Fstr2csOpVagd2ot6A
+thU8k3VWsv8d+EpoufefDoI7rQwwCh3KuSEGi68iB/DOeI0k8RjGz33bJV3cur8Y
+bB7y+FuXCb9nnKX9Nmq7MMnwBdJnzxbpzLUJybNnt0/ZqeNbcexRzmg90yAK7Eaq
+LcvAOfSOLQgkHNXq4p6nU87uDY0tiYjZxr3A43HZogaZsyYBcSCDgRaf8on1lT6R
+4rMH7FNM/HJA5c0Lq6TwU7zXn50vPyuHyWLPzEk79jGyndm5SztXwYTgSbOrXVKU
+aWsbW0zPJ2FGSyx6oXjT9b+ULl9WHzzWv2tk4u6fNW2xnN6ekgSewQ0ZgfXnSHAY
++0aG/VmqoC0I5e0ZN470FcPw9B1OYq/L1AdVSFmPodZyLxmmjbjydhp1/+KbkeSA
+7LheT1YcoSzNCxtXAtv91mRZ0hyDCUn0RP23Ka9XIX7k38DotI+tSz6V5cwncFZL
+ccJeq5B8yJuO0JqMxoOlPH3vwVAAQEXg9p2GgwpARYKMgfPs9olpRbPks4+ihuXH
+i4XyMqA2/bJFGcStuelfdpN7+iceiEXYNWjC2Fdo3XjGb92sU4igG9L49yQqseSY
+ZE/BFhwhqK1bJ1BGoQ6K
+=nTdP
 -----END PGP SIGNATURE-----
 
---nextPart3342049.tLUy0tK4Fn--
+--nextPart2253417.EIU16JhQKu--
 
