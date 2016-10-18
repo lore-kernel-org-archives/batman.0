@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 13:27:44 +0200
-Message-ID: <37868625.JSh8zpxUr0@bentobox>
-In-Reply-To: <1469143811-15498-1-git-send-email-sven@narfation.org>
-References: <1469143811-15498-1-git-send-email-sven@narfation.org>
+Date: Tue, 18 Oct 2016 13:28:08 +0200
+Message-ID: <1848201.Rvlg2gJ3J4@bentobox>
+In-Reply-To: <1469143811-15498-2-git-send-email-sven@narfation.org>
+References: <1469143811-15498-2-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3255055.lmNKTRhHiF";
+Content-Type: multipart/signed; boundary="nextPart3510028.vOjm60GLg5";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [1/3] batman-adv: Remove unused function
-	batadv_hash_delete
+Subject: Re: [B.A.T.M.A.N.] [2/3] batman-adv: Move batadv_sum_counter to
+	soft-interface.c
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,44 +20,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3255055.lmNKTRhHiF
+--nextPart3510028.vOjm60GLg5
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Freitag, 22. Juli 2016 01:30:09 CEST Sven Eckelmann wrote:
+On Freitag, 22. Juli 2016 01:30:10 CEST Sven Eckelmann wrote:
+> The function batadv_sum_counter is only used in soft-interface.c and has no
+> special relevance for main.h.
+> 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/hash.h | 30 ------------------------------
->  1 file changed, 30 deletions(-)
+>  net/batman-adv/main.h           | 21 ---------------------
+>  net/batman-adv/soft-interface.c | 21 +++++++++++++++++++++
+>  2 files changed, 21 insertions(+), 21 deletions(-)
 
-Applied in b9f4f99a926c9de798c6bd49d01632c07ee7c262 [1].
+Applied in 173408336c72f5d1ce049b3adeba8d1ce9a3a2b8 [1].
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/b9f4f99a926c9de798c6bd49d01632c07ee7c262
-
---nextPart3255055.lmNKTRhHiF
+[1] https://git.open-mesh.org/batman-adv.git/commit/173408336c72f5d1ce049b3adeba8d1ce9a3a2b8
+--nextPart3510028.vOjm60GLg5
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYBgcwAAoJEF2HCgfBJntGUPMQAJOgBfNbqVIQgFfHkWlIWh0P
-A0SQel/i5cefChiEANjgGvpnN76z9vycO22eq/9n3tsks2yVvN/eyU81Xy+efOQl
-B2mdYGfDnNl/M5MCaELpUkXJlOv4fcBSEXbs+Icek5f48BC3PNwcyVqIe70D5Yxs
-ougc5S7N+42w+rr2RNVuL5LI4EJSwAVQqD1b+htIHn1E0PyRz2JYQ8AjfWTCMCPN
-2oOYaD/PndjHNarkVoXRRlX9tPZ6M4dqNDaeCc5HFLmwW9e8nni3j4TzcbFc0ZDD
-15yYvbL19womIiPmK+lAcqS0lWoqXgdBnnB+UHuVOHM93G9Tl4iM1LzMwrXJcAIi
-Wwb0bzlvaZLd5wIf07CzZsQXgWkyVpNi5kMUZGfppOTtJWCLdAF2A/vv3YWBMNQi
-sf3l7RyZXLgOa59vXJam46y0HIdIU+tBa9IuUVb47kT4TK/TNstowTcn5CXixc+I
-EQv0fD6yAuTTaoENtlEH1CvNHY6ZDUh9Xdm/x5F/x1g3cYRocn4eAqn2X+ru9JJ5
-ftPEjhGdWB1nUcAOdFK+az6agA4tl2cPc9psm3fa9fRcbQ74UgaXarYA0sXqKc2w
-GDnXCEpx2I8dZv8NNHTDSrnKRbSqXpptrGHAc6S0vneZnx16D2P3rTJgLbDKwOvo
-3hDkXpHCIwP02tS7yrQ5
-=8ukd
+iQIcBAABCgAGBQJYBgdIAAoJEF2HCgfBJntGjDgQAKcrrVppTynw5Dcf/PO5LdFj
+fZXX260uVBOOJCHQrJ+p6S3wQyZem//h7bkLKy+38GnQCfOgXAAWtczrFByUgo3J
+wLT82Z+48NNwOJ3RNchxJL4+rnaSNCe9+6ZYyxuoMHj9FLt/jEEn13m6z9+fHatc
+TkLcznYLkNsvodkP4T/OGyFq/5nkvO7VyddtNBWAyqMW3e9xGVq7QdhB5wn355hK
+CpXvuLM1N6f+xOHru2FaW2E2N5OXdN23ts91iPtiS5icF6nTQqzVnXe41TbQ0H3x
+q4+8BkRx5lNB6+zNoPTRRWcaVBggftg9F8lQiuJr7WYQ+CkmTxlk+XOR0vkPgRj1
+313L0dFnNq6mSVI0hAR0ZMPua6io+jX6Yc1bGQ3AVkeYv7V3VtdvA7YBsoC6jreE
+E3fpJC+vkUsKDPjBVs0t9StyOupHXL514UUqHX/keQrcDgnbUkABus1BlPa+BTTd
+D1XeKapI5Szmci3qnMklPN3nFZDeMbfg0ptBvvDlp/KBT4L+BDS4RoLshXsmvDJ2
+thWrrt4S7jILpAgCuz+JqPYbsfC8qRqGWAs4jHx3gsOt0ASB+d+ytTGNWJZjTbxI
+HlgOFZ14nvqSucMmyBqu6x7pphhdg4eQg3CxFQmICzC5NwlXMP5d1/A6qMketSxu
+ylxwb9Oc1Lxmpp8NTxVq
+=rWoi
 -----END PGP SIGNATURE-----
 
---nextPart3255055.lmNKTRhHiF--
+--nextPart3510028.vOjm60GLg5--
 
