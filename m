@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 15:01:20 +0200
-Message-ID: <1602209.FqTUcbAN8W@bentobox>
-In-Reply-To: <1467741697-8811-1-git-send-email-linus.luessing@c0d3.blue>
-References: <1467741697-8811-1-git-send-email-linus.luessing@c0d3.blue>
+Date: Tue, 18 Oct 2016 15:39:36 +0200
+Message-ID: <2088086.l1VxCJGyzP@bentobox>
+In-Reply-To: <1470566059-3782-1-git-send-email-linus.luessing@c0d3.blue>
+References: <1470566059-3782-1-git-send-email-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1745774.9bUffLMSrx";
+Content-Type: multipart/signed; boundary="nextPart2003295.t5ZfRSHogU";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [v2,
-	1/2] batman-adv: Add wrapper for ARP reply creation
+Subject: Re: [B.A.T.M.A.N.] [v5,
+	1/2] batman-adv: Remove unused skb_reset_mac_header()
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,58 +21,58 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1745774.9bUffLMSrx
+--nextPart2003295.t5ZfRSHogU
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
-On Dienstag, 5. Juli 2016 20:01:36 CEST Linus L=FCssing wrote:
-> Removing duplicate code.
+On Sonntag, 7. August 2016 12:34:18 CEST Linus L=FCssing wrote:
+> During broadcast queueing, the skb_reset_mac_header() sets the skb
+> to a place invalid for a MAC header, pointing right into the
+> batman-adv broadcast packet. Luckily, no one seems to actually use
+> eth_hdr(skb) afterwards until batadv_send_skb_packet() resets the
+> header to a valid position again.
 >=20
-> Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+> Therefore removing this unnecessary, weird skb_reset_mac_header()
+> call.
+>=20
 > Reviewed-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
 > ---
 >=20
-> Changes in v2:
-> * Rebase to master
-> * Moved skb_reset_mac_header to earlier position (to avoid calling it on
-> NULL)
+> Changes in v2-v5:
+> * none
 >=20
-> Changes in RFC -> non-RFC:
->  * Added kerneldoc
->  * Added Signed-off-by
->=20
->  net/batman-adv/distributed-arp-table.c | 67
-> ++++++++++++++++++++-------------- 1 file changed, 40 insertions(+), 27
-> deletions(-)
+>  net/batman-adv/send.c | 2 --
+>  1 file changed, 2 deletions(-)
 
-Applied in 6be651ac911060ef7e0364650275b56a6af28cfd [1].
+Applied in 3d34c0a675b20cf6dd2b8680188f1ebd399c3589 [1].
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/6be651ac911060ef7e03646=
-50275b56a6af28cfd
---nextPart1745774.9bUffLMSrx
+[1] https://git.open-mesh.org/batman-adv.git/commit/3d34c0a675b20cf6dd2b868=
+0188f1ebd399c3589
+--nextPart2003295.t5ZfRSHogU
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYBh0gAAoJEF2HCgfBJntGI+gQAMIFDI8I8nOiB2/4FeGQiMZ+
-VIPQsuKKZp4J+7Ovafq6pAhYYC/YMHhk862mJmEZNSOdxT0FcrM4xsilcFXiH/WG
-HMQPmoqQO7uizhIZd/839gDNE4vyGch43RrLBWp2H7QgTk1beFxcGhjclByZ3MnC
-/rxH/VWM34VNj1klEQ9GvI0Keyop71QuWGsU3Jx07g2GzSPnOZh+tVGXswDfIj6+
-GwXzxxKuywqZbE8e0PQgY+xKln30xXBWHOBK7XZs3M8OoigUNB15pg7qds60F4W/
-vP7gw/oIhS4ifLR+RbwMV/VDDOUK8uIV+I7CWStFtk2G5l2gnhpc49dcEr+bw/PP
-6kBezdHfOWuQlR1A81lqbHUrmSAOJL5K3Vvc9/e2f3EoKcwDYsJhYVrMlKv9t8+x
-BpxlrFE7YWqFrrZpCIXs9io7NpzlLaGtQjBYkGP907Yv7ir+C13zdqeLfnXd/Shx
-gh6EpwJMfcM2dZkl+mBi/NnCuH/YM60eZ9t7HRb8UQrGlzyplZP1UpD+OchUXRNt
-+NOmh0jQulyqzL2hlgZS5b64fyaQCLnS6fiXitmyWPAc9SGA9l6s+ZoBI62RW22Y
-fzMlSAB5ZCZd0EKjImw0n0HPulw5kitNeZxu0/o5iKWpKmZxuy/aKTDv2d6L722C
-ENp/dOmX7lEeXwNACHOD
-=GhI3
+iQIcBAABCgAGBQJYBiYYAAoJEF2HCgfBJntGEgQQAMjb2cQ3CxdP+0xoRN6pcFDy
+6SSq2+YhorUmdkKF4Sk8WeUDlwn4ps+qj0cK0zlYCDn4BD1dnFnoh5n+at43hVAU
+4tJx8Tq6fMZxTLuyLbag/upglzZT5sLJT9B+8+xE6P/h+Mn4yOL4oqQyArsobLNV
+g8yZa4wg2DZ0U5v+hLHzrTkUyVo9DOpfemLdBwLnANW2T/AyFjzF60c0SVJYZjzE
+gg1jd4VGFL0vhNKk5n6AW4gg93tzmVRApoJt4DkU+1yLiyPJuYac6d2ulaVRaeGG
+I8UNIV+Gpa8cDLjZUmWpVmCDttRqLfS4ar+Y0VUkktVCriBSyeCB6cb4h2XterjG
+fUUyHVvLDRkVgrw4tisQhxsJQGkHwHsr1agRe+1+gUc7T9tVeNZVilTAzwfjEvAb
+ylHqpZGg1K4InQTnf6HFXOtZb+sfe38NyYY0GWCWF3ApTuq7XB+mb4lbTZcL6j9G
+nzEZYLCez7PlYquY0TUYJcdGFVdlDPw5VcrNnq9eJ9k3qFJfjYAwHzDatApMtLGp
+hDdhqBZsc9nh2g3zPoyBeOqTmN4DWD2piXcK2t01N9BjRT0lgbXJxYZkPiUNjo3z
+PJ2MiDleSj/2hdZuR9NWjmTyGgsC4CaG0CYPDqA44/ujwGKAT47wrsnj++LXiB+n
+U2JZN3E0TiPzYSEtLA39
+=+0A8
 -----END PGP SIGNATURE-----
 
---nextPart1745774.9bUffLMSrx--
+--nextPart2003295.t5ZfRSHogU--
 
