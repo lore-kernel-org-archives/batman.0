@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 13:30:25 +0200
-Message-ID: <7277042.g0rG2STMS3@bentobox>
-In-Reply-To: <20160916071022.22560-1-sven@narfation.org>
-References: <20160916071022.22560-1-sven@narfation.org>
+Date: Tue, 18 Oct 2016 13:31:38 +0200
+Message-ID: <2164425.2NJUHuNKIV@bentobox>
+In-Reply-To: <20160920135917.24290-1-linus.luessing@c0d3.blue>
+References: <20160920135917.24290-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7068195.8TCJeUZGzR";
+Content-Type: multipart/signed; boundary="nextPart2281211.jFTeEANukq";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [next] batman-adv: remove redundant #include
-	<linux/kconfig.h>
+Subject: Re: [B.A.T.M.A.N.] batman-adv: Allow selecting BATMAN V if CFG80211
+	is not built
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,56 +18,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart7068195.8TCJeUZGzR
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart2281211.jFTeEANukq
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Freitag, 16. September 2016 09:10:22 CEST Sven Eckelmann wrote:
-> From: Masahiro Yamada <yamada.masahiro@socionext.com>
-> 
-> Kernel source files need not include <linux/kconfig.h> explicitly
-> because the top Makefile forces to include it with:
-> 
->   -include $(srctree)/include/linux/kconfig.h
-> 
-> Link:
-> http://lkml.kernel.org/r/1473656164-11929-1-git-send-email-yamada.masahiro@
-> socionext.com Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+On Dienstag, 20. September 2016 15:59:17 CEST Linus L=FCssing wrote:
+> With the new stub for cfg80211_get_station(), we can now build the
+> BATMAN V protocol even with a kernel that was built without any
+> wireless support.
+>=20
+> Signed-off-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+> Reviewed-by: Sven Eckelmann <sven@narfation.org>
 > ---
->  net/batman-adv/debugfs.h | 2 --
->  1 file changed, 2 deletions(-)
+>  compat-include/net/cfg80211.h | 24 ++++++++++++++++++++++++
+>  net/batman-adv/Kconfig        |  2 +-
+>  2 files changed, 25 insertions(+), 1 deletion(-)
+>  create mode 100644 compat-include/net/cfg80211.h
 
-Applied in d9ca9a3c1687e25511fd0e8ab1cc520083664c24 [1].
+Applied in aeb194c3a45fef9cc094e3509066bb2fa6627c05 [1].
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/d9ca9a3c1687e25511fd0e8ab1cc520083664c24
---nextPart7068195.8TCJeUZGzR
+[1] https://git.open-mesh.org/batman-adv.git/commit/aeb194c3a45fef9cc094e35=
+09066bb2fa6627c05
+
+--nextPart2281211.jFTeEANukq
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYBgfRAAoJEF2HCgfBJntGnoQP/jUwMR33FraSwHFOer2OwqjJ
-L9LaUNMOEdqCLIFwsBbvO6TJFcQluy+aV6yA2ndYELU4+XsKHicd+RmZbNzTYwkS
-bSgCDZWqSk2ByI7NMpnrUne9MGV54edgUosLmbAfkjoYPz+ZoNJU8fMS4Ooni4WZ
-LRKZX6dyAfQkfDDII3gEhc29hXO//Gpvdy0hervjvSm3l7HzIeZPyawiP7nVluWY
-vK8ObwnsP9V63N/iPavwV09fJF9lo2Uur33gcENatlYIJQzk4RsjgoFWzUDJyG3T
-RRk1iBm+ADWXzPWtSxl2v0GuEAs1kI1pgzTeECSjf1+h2Q+AL8bRCwc7TY4ep8Ne
-K34SQngCI/W4159BfQd8H2YKLj8yvvkT/DCMKC5JA8UzWfVGMl/ZOk3bOqy1Rpxd
-GQ1c6I+1GiRltyv87vv+xGsHIwkyvHgZSwKy7ohzd/QNleUu8vdi2nl+1JXH34Qj
-93TdQ6qsr4WrMGBNESbubqpR/oJjuI9Pccj0Y7RSMYsAxLklT8rlg7Qtj+qXGDfE
-hZsV8n6wy879jufvlrZ5bcLxQ4YQOZC3wKyzx/daGjmem8YbDiNitFGWYX4iPV8W
-TCejaQJVTgqtVfH/0qC/aPxC8q4yiLpfKb2WbWLq1IlAES/StnrN1wQLwdQkZxIS
-uT0JBVw9dZ05YbK2gTxD
-=fcf1
+iQIcBAABCgAGBQJYBggaAAoJEF2HCgfBJntG3bkQAIcAAtrFr4NENqfnwEbBUmVz
+90PV8yOdCgWuw9Sq2CIpubPVUl12RH2UxRUrCnuXmksGbLPoEz4Nc660Sk5s8jkf
+71QXjSHN6cwSKBrgchbhxBFI3/uOyGyXz878Vf5YmeD/rQSz2/5KHssIqaub76ve
+As6V2bKWG2kQAYOmAYGhVRvaZeIFPvdrKu+Kmt2LHjSqykVhDD2+B7uHyCAZODo0
+NoGuNRfD8CFS/rGQTaOLfKSAo0FiT04Z8zpP4wceW8cVTbHlGzl1Sv53RxXEXeAH
+0zhZ0M1JOzvYRinWYKIWwdeMiL1L455C1oRaHx7Byb7PaOZn+igR9C9T36mfEkZO
+MEXRq7WdskdqzFGxUVlI2ojWtMqeBb1KPQsc76C4mAJEF8kjhWgUz15K+8RRZ/Ac
+hBBjwWIRE+c7xJD2whvCYBMnYt7e5l0p6V1fLoIz5Zs4qEQht8fuMhpZv3T7THbC
+mt09nR1Sf76zq68e5p625m9gL5QOOGBCKfIOrmRfdlNBMddsamrdU+DIuXOACrUu
+PRE8pat+VbMzuHMQnGzPa7NE0YeGY5LSdGHwyHtleG7oiZpBIKt/oxet6jElQOOo
+3/WOWzzo1TFrd27dleC8k2sf3iqBrmFLEa/kzfq0bcLGBs26/xAGfFlZ4/GhPYCP
+qVG3/9GfJA7SZr+offXt
+=2ctX
 -----END PGP SIGNATURE-----
 
---nextPart7068195.8TCJeUZGzR--
+--nextPart2281211.jFTeEANukq--
 
