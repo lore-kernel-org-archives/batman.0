@@ -1,12 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 18 Oct 2016 16:16:39 +0200
-Message-ID: <2403515.P9aVkiGJpp@bentobox>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart8345717.vEB8GI2dtN";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: [B.A.T.M.A.N.] [PATCH v3 0/9] batctl: rtnetlink interface
-	manipulation + userspace icmp
+Date: Tue, 18 Oct 2016 16:17:23 +0200
+Message-Id: <20161018141731.7970-1-sven@narfation.org>
+In-Reply-To: <2403515.P9aVkiGJpp@bentobox>
+References: <2403515.P9aVkiGJpp@bentobox>
+Subject: [B.A.T.M.A.N.] [PATCH v3 1/9] batctl: Use rtnl to query list of
+	softif devices
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,77 +17,270 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart8345717.vEB8GI2dtN
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+The normal way of network related programs to query the state of interfaces
+is to use the rtnetlink. Most of these data can also be queried via sysfs
+but it is easier to use the same way for both retrieving the list of
+interfaces and modifying the list of interfaces.
 
-Hi,
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+v3:
+ - rebased on current master
+v2:
+ - no change
+---
+ functions.c |  64 +++++++++++++++++++++++++++++++++++
+ functions.h |   5 ++-
+ sys.c       | 111 +++++++++++++++++++++++++++++++++---------------------------
+ 3 files changed, 129 insertions(+), 51 deletions(-)
 
-I had to merge the ICMP and rtnetlink patchset [1] into one single patchset
-because the two remaining ICMP patches depend on the rtnetlink query
-functionality. This is already the biggest change to the patchset(s). Other
-minor things are:
-
- * remove patchset already in master
- * rebased patchset(s) on top of current master
- * changed __unused to __maybe_unused
-
-Kind regards,
-	Sven
-
-[1] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-July/015941.html
-[2] https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-July/016046.html
-
-Sven Eckelmann (9):
-      batctl: Use rtnl to query list of softif devices
-      batctl: Add command to create/destroy batman-adv interface
-      batctl: Use rtnl to add/remove interfaces
-      batctl: Parse interface arguments relative to last parsed option
-      batctl: Allow to disable automatic interface create/destroy
-      batctl: Move interface command to extra file
-      batctl: Move check_mesh_iface* to functions.c
-      batctl: Add helper to generate instant random bytes
-      batctl: Implement non-routing batadv_icmp in userspace
-
- Makefile      |   2 +
- functions.c   | 248 +++++++++++++++++++++++
- functions.h   |  12 +-
- icmp_helper.c | 633 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- icmp_helper.h |  58 ++++++
- interface.c   | 457 ++++++++++++++++++++++++++++++++++++++++++
- interface.h   |  29 +++
- main.c        |   1 +
- man/batctl.8  |   7 +-
- netlink.c     | 178 ++++++++++++++++-
- netlink.h     |   3 +
- ping.c        |  42 ++--
- sys.c         | 215 +-------------------
- sys.h         |   3 -
- traceroute.c  |  42 ++--
- 15 files changed, 1654 insertions(+), 276 deletions(-)
-
-
---nextPart8345717.vEB8GI2dtN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABCgAGBQJYBi7HAAoJEF2HCgfBJntGh2wP/jTnOsDzwnjIn72jU/KDGrsb
-/qXhn22V+ze/ZDecJ79nyxU39d76/P0gPO3gYyd4DYOiR/YZlJg0w844XTrlIv4A
-cy1B6xtkTdbaGs4R/bAq5+VlqoZYZPyvL74WbFRc0lnNha63m7c30eV+puvSPgzt
-O/ol+4/PMyymJnEQRBD4rHP7gEot/ohL2Racz78o7ujPicC8fopKUPRmXNPkjjDy
-iWUQBz+iGVCYuJO44VFCoi4w2Eu/EbFBOddPy9bKDEMg3iN26Mtlk6dUxFtcs+kN
-nORrh3v8VpyLo033LxGhWLMwUlxCX4MasbsjHIdZXaQhoYP+qd0YDCpJpayDEx3e
-a3nkZ2e+uPIVazTb0nsXAOUJRBYizsR5S0qI5lJW77gOwkNxLGFVotud6hXkUPEt
-87a+TITjND5JvtKCOAAzmGyxAgg9WPesd8Yoo9BgIIiMqvxkuV5fQqzyNAkNYvAW
-kpHzMUdEB1PQEkKqGtqtPUnDF7+hvYwJ44kWorXgEF7zKA0iEWGJZtNNTVJfbHwo
-LetcIeJQN3mpG0ZVVp+wKV2kUd/s0nS0M7kw7puVj+xA8DdHYoFtiv4d8MPZyc+U
-irYsVtPB81SIkfAx/+exNOCmwRii4vfb61juBIKRXKxNF7qcM/Qd4P5h+v01SZhN
-HD6GWaXa98QwwFqnID2Y
-=6SWY
------END PGP SIGNATURE-----
-
---nextPart8345717.vEB8GI2dtN--
+diff --git a/functions.c b/functions.c
+index 92de8e3..8470b49 100644
+--- a/functions.c
++++ b/functions.c
+@@ -37,6 +37,7 @@
+ #include <stdint.h>
+ #include <linux/netlink.h>
+ #include <net/ethernet.h>
++#include <linux/if_link.h>
+ #include <linux/rtnetlink.h>
+ #include <linux/neighbour.h>
+ #include <errno.h>
+@@ -890,3 +891,66 @@ int print_routing_algos(void)
+ 		err = debug_print_routing_algos();
+ 	return err;
+ }
++
++int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg)
++{
++	struct ifinfomsg rt_hdr = {
++		.ifi_family = IFLA_UNSPEC,
++	};
++	struct nl_sock *sock;
++	struct nl_msg *msg;
++	struct nl_cb *cb;
++	int err = 0;
++	int ret;
++
++	sock = nl_socket_alloc();
++	if (!sock)
++		return -ENOMEM;
++
++	ret = nl_connect(sock, NETLINK_ROUTE);
++	if (ret < 0) {
++		err = -ENOMEM;
++		goto err_free_sock;
++	}
++
++	cb = nl_cb_alloc(NL_CB_DEFAULT);
++	if (!cb) {
++		err = -ENOMEM;
++		goto err_free_sock;
++	}
++
++	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, func, arg);
++
++	msg = nlmsg_alloc_simple(RTM_GETLINK, NLM_F_REQUEST | NLM_F_DUMP);
++	if (!msg) {
++		err = -ENOMEM;
++		goto err_free_cb;
++	}
++
++	ret = nlmsg_append(msg, &rt_hdr, sizeof(rt_hdr), NLMSG_ALIGNTO);
++	if (ret < 0) {
++		err = -ENOMEM;
++		goto err_free_msg;
++	}
++
++	ret = nla_put_u32(msg, IFLA_MASTER, ifindex);
++	if (ret < 0) {
++		err = -ENOMEM;
++		goto err_free_msg;
++	}
++
++	ret = nl_send_auto_complete(sock, msg);
++	if (ret < 0)
++		goto err_free_msg;
++
++	nl_recvmsgs(sock, cb);
++
++err_free_msg:
++	nlmsg_free(msg);
++err_free_cb:
++	nl_cb_put(cb);
++err_free_sock:
++	nl_socket_free(sock);
++
++	return err;
++}
+diff --git a/functions.h b/functions.h
+index e24dea0..a6090b6 100644
+--- a/functions.h
++++ b/functions.h
+@@ -23,6 +23,8 @@
+ #define _BATCTL_FUNCTIONS_H
+ 
+ #include <net/ethernet.h>
++#include <netlink/netlink.h>
++#include <netlink/handlers.h>
+ #include <stddef.h>
+ 
+ 
+@@ -43,7 +45,8 @@ int write_file(const char *dir, const char *fname, const char *arg1,
+ struct ether_addr *translate_mac(const char *mesh_iface,
+ 				 const struct ether_addr *mac);
+ struct ether_addr *resolve_mac(const char *asc);
+-int vlan_get_link(const char *ifname, char **parent);
++int vlan_get_link(const char *ifname, char **parent);\
++int query_rtnl_link(int ifindex, nl_recvmsg_msg_cb_t func, void *arg);
+ 
+ int print_routing_algos(void);
+ extern char *line_ptr;
+diff --git a/sys.c b/sys.c
+index ca837f6..0140b28 100644
+--- a/sys.c
++++ b/sys.c
+@@ -26,6 +26,11 @@
+ #include <string.h>
+ #include <errno.h>
+ #include <dirent.h>
++#include <net/if.h>
++#include <linux/if_link.h>
++#include <netlink/netlink.h>
++#include <netlink/msg.h>
++#include <netlink/attr.h>
+ 
+ #include "main.h"
+ #include "sys.h"
+@@ -119,72 +124,78 @@ static void interface_usage(void)
+ 	fprintf(stderr, " \t -h print this help\n");
+ }
+ 
+-static int print_interfaces(char *mesh_iface)
+-{
+-	DIR *iface_base_dir;
+-	struct dirent *iface_dir;
+-	char *path_buff;
+-	int res;
++static struct nla_policy link_policy[IFLA_MAX + 1] = {
++	[IFLA_IFNAME]           = { .type = NLA_STRING, .maxlen = IFNAMSIZ },
++	[IFLA_MASTER]         = { .type = NLA_U32 },
++};
+ 
+-	if (!file_exists(module_ver_path)) {
+-		fprintf(stderr, "Error - batman-adv module has not been loaded\n");
++struct print_interfaces_rtnl_arg {
++	int ifindex;
++};
++
++static int print_interfaces_rtnl_parse(struct nl_msg *msg, void *arg)
++{
++	struct print_interfaces_rtnl_arg *print_arg = arg;
++	struct nlattr *attrs[IFLA_MAX + 1];
++	char path_buff[PATH_BUFF_LEN];
++	struct ifinfomsg *ifm;
++	char *ifname;
++	int ret;
++	const char *status;
++	int master;
++
++	ifm = nlmsg_data(nlmsg_hdr(msg));
++	ret = nlmsg_parse(nlmsg_hdr(msg), sizeof(*ifm), attrs, IFLA_MAX,
++			  link_policy);
++	if (ret < 0)
+ 		goto err;
+-	}
+ 
+-	path_buff = malloc(PATH_BUFF_LEN);
+-	if (!path_buff) {
+-		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
++	if (!attrs[IFLA_IFNAME])
+ 		goto err;
+-	}
+ 
+-	iface_base_dir = opendir(SYS_IFACE_PATH);
+-	if (!iface_base_dir) {
+-		fprintf(stderr, "Error - the directory '%s' could not be read: %s\n",
+-		       SYS_IFACE_PATH, strerror(errno));
+-		fprintf(stderr, "Is the batman-adv module loaded and sysfs mounted ?\n");
+-		goto err_buff;
+-	}
++	if (!attrs[IFLA_MASTER])
++		goto err;
+ 
+-	while ((iface_dir = readdir(iface_base_dir)) != NULL) {
+-		snprintf(path_buff, PATH_BUFF_LEN, SYS_MESH_IFACE_FMT, iface_dir->d_name);
+-		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
+-		if (res != EXIT_SUCCESS)
+-			continue;
++	ifname = nla_get_string(attrs[IFLA_IFNAME]);
++	master = nla_get_u32(attrs[IFLA_MASTER]);
+ 
+-		if (line_ptr[strlen(line_ptr) - 1] == '\n')
+-			line_ptr[strlen(line_ptr) - 1] = '\0';
++	/* required on older kernels which don't prefilter the results */
++	if (master != print_arg->ifindex)
++		goto err;
+ 
+-		if (strcmp(line_ptr, "none") == 0)
+-			goto free_line;
++	snprintf(path_buff, sizeof(path_buff), SYS_IFACE_STATUS_FMT, ifname);
++	ret = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
++	if (ret != EXIT_SUCCESS)
++		status = "<error reading status>\n";
++	else
++		status = line_ptr;
+ 
+-		if (strcmp(line_ptr, mesh_iface) != 0)
+-			goto free_line;
++	printf("%s: %s", ifname, status);
+ 
+-		free(line_ptr);
+-		line_ptr = NULL;
++	free(line_ptr);
++	line_ptr = NULL;
+ 
+-		snprintf(path_buff, PATH_BUFF_LEN, SYS_IFACE_STATUS_FMT, iface_dir->d_name);
+-		res = read_file("", path_buff, USE_READ_BUFF | SILENCE_ERRORS, 0, 0, 0);
+-		if (res != EXIT_SUCCESS) {
+-			fprintf(stderr, "<error reading status>\n");
+-			continue;
+-		}
++err:
++	return NL_OK;
++}
+ 
+-		printf("%s: %s", iface_dir->d_name, line_ptr);
++static int print_interfaces(char *mesh_iface)
++{
++	struct print_interfaces_rtnl_arg print_arg;
+ 
+-free_line:
+-		free(line_ptr);
+-		line_ptr = NULL;
++	if (!file_exists(module_ver_path)) {
++		fprintf(stderr, "Error - batman-adv module has not been loaded\n");
++		return EXIT_FAILURE;
+ 	}
+ 
+-	free(path_buff);
+-	closedir(iface_base_dir);
+-	return EXIT_SUCCESS;
++	print_arg.ifindex = if_nametoindex(mesh_iface);
++	if (!print_arg.ifindex)
++		return EXIT_FAILURE;
+ 
+-err_buff:
+-	free(path_buff);
+-err:
+-	return EXIT_FAILURE;
++	query_rtnl_link(print_arg.ifindex, print_interfaces_rtnl_parse,
++			&print_arg);
++
++	return EXIT_SUCCESS;
+ }
+ 
+ int interface(char *mesh_iface, int argc, char **argv)
+-- 
+2.9.3
 
