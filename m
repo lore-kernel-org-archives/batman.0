@@ -1,17 +1,11 @@
 Return-Path: <linus.luessing@c0d3.blue>
-Date: Thu, 20 Oct 2016 20:33:03 +0200
+Date: Thu, 20 Oct 2016 23:56:14 +0200
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20161020183303.GD32033@otheros>
-References: <20161018212125.32010-1-linus.luessing@c0d3.blue>
- <1555062.TzeBilqSPn@sven-edge> <20161018232239.GI6366@otheros>
- <9062705.AOdrQGRa4W@bentobox>
+Message-ID: <20161020215614.GG32033@otheros>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <9062705.AOdrQGRa4W@bentobox>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: compat: Substitute compat
- code for netlink constification
+Subject: [B.A.T.M.A.N.] Add VLAN tag size to MTU recommendation?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,36 +15,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Leo =?utf-8?Q?Kr=C3=BCger?= <leo@hamburg.freifunk.net>
 
-On Wed, Oct 19, 2016 at 08:31:03AM +0200, Sven Eckelmann wrote:
-> On Mittwoch, 19. Oktober 2016 01:22:39 CEST Linus Lüssing wrote:
-> > On Tue, Oct 18, 2016 at 11:28:23PM +0200, Sven Eckelmann wrote:
-> > > Doesn't seem to scale. Especially when we think about batadv_netlink_ops
-> > > which should also be const. It is currently not const because of the
-> > > Linux <= 3.13 workaround.
-> > 
-> > Hm, okay, batadv_netlink_ops is a little more tricky/larger, yes.
-> > What about a memcpy'ing approach with BUILD_BUG_ON()'s as
-> > safe-guards like this:
-> 
-> Yes, this would also be an idea. But I would personally just use the 
-> coccinelle approach because it needs less extra hacks. Or do you have any 
-> problems with coccinelle?
+Hi,
 
-Hm, no, dunno. Just haven't really looked at coccinelle yet and
-thought your point 3. (cocinelle) were on place 4. instead.
-Besides, I had fun creating this compat patch and was marvelled
-that the BUILD_BUG_ON() worked even with function parameters :D
-(maybe, actually because they were const now? You clever compiler
-:D).
+First of all, just wanted to forward this awesome diagram
+regarding MTUs in Gluon-Setups which Freifunk Hamburg created
+:D :
 
-Also, it looks like the whole compat infrastructure is growing and
-I'm wondering whether it is easier to maintain slightly larger
-compat-includes vs. then two more places where compat changes
-could come from.
+https://twitter.com/ohrensesselnet/status/789176399655350272
+
+Which might be helpful for anyone new to understand how the
+encapsulation in batman-adv works and how the MTU recommendations
+of the underlying hard interfaces are calculated.
+
+(I need to ask Leo for the sources, maybe a version without the
+fastd overhead might be interesting for an MTU-explained page in
+the open-mesh.org wiki :)?)
 
 
-But I don't feel strongly about it, if others think coccinelle is
-easier to review and maintain, then I'm fine with it and will have
-a closer look at coccinelle :).
+While checking the calculations Freifunk Hamburg did, I was
+wondering whether the batadv_hardif_min_mtu() function should add
+an extra 4 bytes for VLAN tagged, encapsulated payload to the MTU
+calculations and the kmesg recommendations, especially since
+Antonio's great work made TT fully VLAN-aware?
+
+Open-Mesh.com/Cloudtrax routers are using the VLAN awareness, right?
+Is the wifi interface MTU there just set to +4 bytes over the kmesg
+recommedation?
+
+Regards, Linus
