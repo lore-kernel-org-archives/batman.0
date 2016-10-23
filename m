@@ -1,14 +1,15 @@
-Return-Path: <jarod@redhat.com>
-Date: Sat, 22 Oct 2016 21:08:26 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Message-ID: <20161023010826.GD32569@redhat.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 23 Oct 2016 09:17:50 +0200
+Message-ID: <2358358.cV5hCSMD7y@sven-edge>
+In-Reply-To: <20161023010826.GD32569@redhat.com>
 References: <20161022074624.30033-1-sven@narfation.org>
+ <20161023010826.GD32569@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20161022074624.30033-1-sven@narfation.org>
+Content-Type: multipart/signed; boundary="nextPart2805415.6Z7vPSiFGp";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Revert "use core MTU range
- checking in misc drivers"
+	checking in misc drivers"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,39 +19,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
+To: Jarod Wilson <jarod@redhat.com>
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, linux-kernel@vger.kernel.org
 
-On Sat, Oct 22, 2016 at 09:46:24AM +0200, Sven Eckelmann wrote:
-> The maximum MTU is defined via the slave devices of an batman-adv
-> interface. Thus it is not possible to calculate the max_mtu during the
-> creation of the batman-adv device when no slave devices are attached. Doing
-> so would for example break non-fragmentation setups which then
-> (incorrectly) allow an MTU of 1500 even when underlying device cannot
-> transport 1500 bytes + batman-adv headers.
-> 
-> Checking the dynamically calculated max_mtu via the minimum of the slave
-> devices MTU during .ndo_change_mtu is also used by the bridge interface.
-> 
-> Cc: Jarod Wilson <jarod@redhat.com>
-> Fixes: b3e3893e1253 ("net: use core MTU range checking in misc drivers")
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> Original patch + my comment: https://patchwork.ozlabs.org/patch/684722/
-> 
-> I just got informed about this patch when it was already applied in net-next.
-> So I can only ask for an revet of the batman-adv parts
+--nextPart2805415.6Z7vPSiFGp
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Apologies, I tried to cc everyone I could find in MAINTAINERS, but your
-name wasn't one of the three listed for batman devices. You're going to
-need more than just this revert though, since batman-adv calls
-ether_setup, which will set min_mtu = 68, max_mtu = 1500, unless
-batadv_hardif_min_mtu() always returns something 1500 or less. Actually,
-looking at that, you could omit the mtu < 68 bit from
-batadv_interface_change_mtu() too, since that'll already get done in the
-core, but I have no clue what you need for max_mtu.
+On Samstag, 22. Oktober 2016 21:08:26 CEST Jarod Wilson wrote:
+[...]
+> You're going to
+> need more than just this revert though, since batman-adv calls
+> ether_setup, which will set min_mtu = 68, max_mtu = 1500, unless
+> batadv_hardif_min_mtu() always returns something 1500 or less.
 
--- 
-Jarod Wilson
-jarod@redhat.com
+It does only returns 1500 or less at the moment.
+
+    return min_t(int, min_mtu - batadv_max_header_len(), ETH_DATA_LEN);
+
+> Actually,
+> looking at that, you could omit the mtu < 68 bit from
+> batadv_interface_change_mtu() too, since that'll already get done in the
+> core, but I have no clue what you need for max_mtu.
+
+I would like to get this revert through net-next.git before anything else.
+
+Kind regards,
+	Sven
+--nextPart2805415.6Z7vPSiFGp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABCgAGBQJYDGQeAAoJEF2HCgfBJntGuVIQAIzsbzEegMhBUWxVyUQSaa/9
+2hrcGTEvAZIkpONvw0b88RAO2OYKRvpI8SgPHCZ49DoGrorE1+Gt9vfSApIWaxrD
+OMydAEtHzDjAGIxIu5ht2/vS4TzCWhun6lUzZDP+qGCSw1GDRcDQ1VSwhhj2D+TL
+pwPRF655f78nWQAsO5sXBHakOHzdg+Vqvem1Mpn9Q6or7Svzurtxqm4ZglHpyLTZ
+uRcpcl9FjFlGkyBn3LSXxhDBoU/UcwlYCFt5hDy616eFJVMsmVaVU3QXQqM/PbTa
+jCoEjzYyIRE1XAplf86pe+B2QZiIg1/zRs7uCISNTDZ9eRh3yO2bjOuHOjhE/8Br
+whEXr4ZZbLvO8OgtJaKMqRcx6BRx9tYXGork2vg3ILUfdOa8ivQEFVVZpW2ZObaq
+LV0f8SmbPtI90pcKM2EH34Z3XhGM4xEBBK3VN/n2Z6ZjOKZaZoearaW+Bm7m9DyO
+owpAcgMI/oxkaJPVkBMkBwe5QIGFRJKn3TWeSVYRIUU2gdHBlXwZMWbypaNqsQ/I
+diWyp+c6yiyKqIUOIssiGA9WQeJPzaXnn0Q6pLJWmKxadW4yHmyAoKUKJVhD0+6K
+Iz40mBAizFdGB7UhF582veriMzsNtWNWFRjHzknbCx+FuF5AO0TXIivjryxVTHKG
+i+yjQyWLdO8iKiKAP9zb
+=kdmv
+-----END PGP SIGNATURE-----
+
+--nextPart2805415.6Z7vPSiFGp--
 
