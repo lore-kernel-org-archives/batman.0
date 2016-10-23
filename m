@@ -1,9 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 22 Oct 2016 09:46:24 +0200
-Message-Id: <20161022074624.30033-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Revert "use core MTU range
-	checking in misc drivers"
+Return-Path: <jarod@redhat.com>
+Date: Sat, 22 Oct 2016 21:08:26 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Message-ID: <20161023010826.GD32569@redhat.com>
+References: <20161022074624.30033-1-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20161022074624.30033-1-sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Revert "use core MTU range
+ checking in misc drivers"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,69 +18,39 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: netdev@vger.kernel.org
-Cc: Jarod Wilson <jarod@redhat.com>, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, linux-kernel@vger.kernel.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net, linux-kernel@vger.kernel.org
 
-The maximum MTU is defined via the slave devices of an batman-adv
-interface. Thus it is not possible to calculate the max_mtu during the
-creation of the batman-adv device when no slave devices are attached. Doing
-so would for example break non-fragmentation setups which then
-(incorrectly) allow an MTU of 1500 even when underlying device cannot
-transport 1500 bytes + batman-adv headers.
+On Sat, Oct 22, 2016 at 09:46:24AM +0200, Sven Eckelmann wrote:
+> The maximum MTU is defined via the slave devices of an batman-adv
+> interface. Thus it is not possible to calculate the max_mtu during the
+> creation of the batman-adv device when no slave devices are attached. Doing
+> so would for example break non-fragmentation setups which then
+> (incorrectly) allow an MTU of 1500 even when underlying device cannot
+> transport 1500 bytes + batman-adv headers.
+> 
+> Checking the dynamically calculated max_mtu via the minimum of the slave
+> devices MTU during .ndo_change_mtu is also used by the bridge interface.
+> 
+> Cc: Jarod Wilson <jarod@redhat.com>
+> Fixes: b3e3893e1253 ("net: use core MTU range checking in misc drivers")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> Original patch + my comment: https://patchwork.ozlabs.org/patch/684722/
+> 
+> I just got informed about this patch when it was already applied in net-next.
+> So I can only ask for an revet of the batman-adv parts
 
-Checking the dynamically calculated max_mtu via the minimum of the slave
-devices MTU during .ndo_change_mtu is also used by the bridge interface.
+Apologies, I tried to cc everyone I could find in MAINTAINERS, but your
+name wasn't one of the three listed for batman devices. You're going to
+need more than just this revert though, since batman-adv calls
+ether_setup, which will set min_mtu = 68, max_mtu = 1500, unless
+batadv_hardif_min_mtu() always returns something 1500 or less. Actually,
+looking at that, you could omit the mtu < 68 bit from
+batadv_interface_change_mtu() too, since that'll already get done in the
+core, but I have no clue what you need for max_mtu.
 
-Cc: Jarod Wilson <jarod@redhat.com>
-Fixes: b3e3893e1253 ("net: use core MTU range checking in misc drivers")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-Original patch + my comment: https://patchwork.ozlabs.org/patch/684722/
-
-I just got informed about this patch when it was already applied in net-next.
-So I can only ask for an revet of the batman-adv parts
-
- net/batman-adv/soft-interface.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
-
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 112679d..49e16b6 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -158,6 +158,17 @@ static int batadv_interface_set_mac_addr(struct net_device *dev, void *p)
- 	return 0;
- }
- 
-+static int batadv_interface_change_mtu(struct net_device *dev, int new_mtu)
-+{
-+	/* check ranges */
-+	if ((new_mtu < 68) || (new_mtu > batadv_hardif_min_mtu(dev)))
-+		return -EINVAL;
-+
-+	dev->mtu = new_mtu;
-+
-+	return 0;
-+}
-+
- /**
-  * batadv_interface_set_rx_mode - set the rx mode of a device
-  * @dev: registered network device to modify
-@@ -909,6 +920,7 @@ static const struct net_device_ops batadv_netdev_ops = {
- 	.ndo_vlan_rx_add_vid = batadv_interface_add_vid,
- 	.ndo_vlan_rx_kill_vid = batadv_interface_kill_vid,
- 	.ndo_set_mac_address = batadv_interface_set_mac_addr,
-+	.ndo_change_mtu = batadv_interface_change_mtu,
- 	.ndo_set_rx_mode = batadv_interface_set_rx_mode,
- 	.ndo_start_xmit = batadv_interface_tx,
- 	.ndo_validate_addr = eth_validate_addr,
-@@ -975,7 +987,6 @@ struct net_device *batadv_softif_create(struct net *net, const char *name)
- 	dev_net_set(soft_iface, net);
- 
- 	soft_iface->rtnl_link_ops = &batadv_link_ops;
--	soft_iface->max_mtu = batadv_hardif_min_mtu(soft_iface);
- 
- 	ret = register_netdevice(soft_iface);
- 	if (ret < 0) {
 -- 
-2.9.3
+Jarod Wilson
+jarod@redhat.com
 
