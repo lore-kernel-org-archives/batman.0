@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 24 Oct 2016 11:56:35 +0200
-Message-ID: <2154828.J4DYXdbl73@prime>
-In-Reply-To: <1468782245-12985-1-git-send-email-sven@narfation.org>
-References: <1468782245-12985-1-git-send-email-sven@narfation.org>
+Date: Mon, 24 Oct 2016 12:10:03 +0200
+Message-ID: <50942836.NYZ1al9d9y@prime>
+In-Reply-To: <1470495863-22251-1-git-send-email-sven@narfation.org>
+References: <1470495863-22251-1-git-send-email-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1829671.o0LugPh1kP";
+Content-Type: multipart/signed; boundary="nextPart6208484.U3vJlx4aq2";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/6] batman-adv: use consume_skb for
-	non-dropped packets
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3 1/3] batman-adv: Disallow mcast src
+	address for data frames
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,43 +20,42 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1829671.o0LugPh1kP
+--nextPart6208484.U3vJlx4aq2
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, July 17, 2016 9:04:00 PM CEST Sven Eckelmann wrote:
-> kfree_skb assumes that an skb is dropped after an failure and notes that.
-> consume_skb should be used in non-failure situations. Such information is
-> important for dropmonitor netlink which tells how many packets were dropped
-> and where this drop happened.
+On Saturday, August 6, 2016 5:04:21 PM CEST Sven Eckelmann wrote:
+> The routing checks are validating the source mac address of the outer
+> ethernet header. They reject every source mac address which is a broadcast
+> address. But they also have to reject and multicast mac addresses.
 > 
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-Applied the whole series in 59426a7..69fd4c0
+Applied this series in 3868d9b..bca103c.
 
 Thanks,
      Simon
---nextPart1829671.o0LugPh1kP
+--nextPart6208484.U3vJlx4aq2
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYDdrTAAoJEKEr45hCkp6hX4MP/j2pLrRjbzPWgtYlYB/uvx53
-qPoPAOcedMcWdoDx/0B+HRmUOdNsdWJa9qrSc8K6oMu/OJW+LXM6bI7i1hhGj7Hz
-94dvv0s/M03Wcpx6j6YpUJCWpmPOGlNuRJBlGgZZj7eT3P6LtFAO4nA8Z8WK16p/
-repIBr32e+z56plOXoEj1DZ2O2n3a0YeDXOdKkN1xEAbKHLYJNSkZTYYuoKcQuNl
-o2JRmdAFrSY2bSQE2VrM5mKcYmoyp3hJPLWpuzmDXMKvSu8S0NjjvNx9V1flzeOM
-/cbkxEdrcUu1erqsXk+Ut2P4/8UqHXh7riIbheu9KEwIow2LYCylQwLeQFyE8G1H
-pQufsoMOsVhWFVQkscjpmXbm/29f+PgMiboSi21hK3TapSQiXCw+a7YjzbJOwa7W
-zlT/8s5J049bBjVDKo4BIwlgFSVDwauTOzbV4ZFQ+84th5LH9Mnc3qeyVt86s2bt
-wG2wi0SN1Jp7J1D+6tAao0fWdFF/AOK3s370Ob4PXO/C06Dd8OmgEmFC1YiC1Ej3
-R/K05RfOMrizh7TJtM8Gy5LhEB2F9fZRf+TWbjwgcCLznPc0Dud+JeFQ7S4S2hm8
-I4DfwZ1VCPNiLTyu0NYDgC0nPdrb6RLnfjwWXyjoj5f73wqPmz/xHwYrCdJegE2G
-rnck8BW5u3RleR08viBl
-=nx9B
+iQIcBAABCgAGBQJYDd37AAoJEKEr45hCkp6hzngQANE9tJoTFXiuYV5SVQ2IMeXg
+Uloy6z93kgs3mSk0MN317Vx4DK0M64MdonOE8wOzs4NT5g7gV560cS8pQttTDTwC
+uFetLkRupGuyOVWGTqxgxHcSR3HNFQNFHxGgrTD1npnE338+55+CpmhNaO9nUNp1
+YIHJTHcy/uUQdwutEemAHq13ynVLbqEM33/dPUEjlNYBtjIlX283WWzcpPhax/wK
+b7JB8E0pXX5Za2xAXIAyZ5pTw5QFTELPYJuIokaQpROH3RzZzHlaqp9l/WaHVNQY
+2RiJOT9L7Vf6KTPH5StrLHJkpp7JIPFR/c1+M/l0Bi9sYUci2QOKu7ev0Isiv8Ku
+g90KB1gT3LZl7zVJk8EeLSeL3snPx4IFjPVrk8IpwyMZ1m254i0KzH4yTaLLR0sc
+e6MSnnRoSiuavvZ9bP1D6QMs4ga96rM+Jy+/MAzLwf5ShLbiLv+i5Rj+qhQtEvQe
+eD3cfMbJsYbt1gp3FTfDQe8MAqq5bzS0zM20NPE6a1fhpHBoNfFEMrnsaa4cCH5o
+jo39tmjoCbbhrw0hZYWcFxWpo6ZQbbzGLXUjLBRL+YW/MaFaOStNkKhTjzRjtSG8
+IRbhPeVcpzTvzORrYnnxwyzODIY5J2jlBtvQE9HJS6RjgWzhdpcj5OoPr1tBTjSI
+fzTTGAoaRrBpULWzhZmP
+=d8/z
 -----END PGP SIGNATURE-----
 
---nextPart1829671.o0LugPh1kP--
+--nextPart6208484.U3vJlx4aq2--
 
