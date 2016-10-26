@@ -1,14 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 26 Oct 2016 17:55:13 +0200
-Message-Id: <20161026155515.18075-2-sw@simonwunderlich.de>
+Date: Wed, 26 Oct 2016 17:55:14 +0200
+Message-Id: <20161026155515.18075-3-sw@simonwunderlich.de>
 In-Reply-To: <20161026155515.18075-1-sw@simonwunderlich.de>
 References: <20161026155515.18075-1-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: Modify neigh_list only with
-	rcu-list functions
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Add BATADV_DBG_TP_METER to
+	BATADV_DBG_ALL
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,37 +16,33 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven.eckelmann@open-mesh.com>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+From: Sven Eckelmann <sven@narfation.org>
 
-The batadv_hard_iface::neigh_list is accessed via rcu based primitives.
-Thus all operations done on it have to fulfill the requirements by RCU. So
-using non-RCU mechanisms like hlist_add_head is not allowed because it
-misses the barriers required to protect concurrent readers when accessing
-the data behind the pointer.
+The BATADV_DBG_ALL has to contain the bit of BATADV_DBG_TP_METER to really
+support all available debug messages.
 
-Fixes: cef63419f7db ("batman-adv: add list of unique single hop neighbors per hard-interface")
-Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
-Acked-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Fixes: 33a3bb4a3345 ("batman-adv: throughput meter implementation")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/originator.c | 2 +-
+ net/batman-adv/log.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 5f3bfc4..7c8d160 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -544,7 +544,7 @@ batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
- 	if (bat_priv->algo_ops->neigh.hardif_init)
- 		bat_priv->algo_ops->neigh.hardif_init(hardif_neigh);
+diff --git a/net/batman-adv/log.h b/net/batman-adv/log.h
+index e0e1a88..d2905a8 100644
+--- a/net/batman-adv/log.h
++++ b/net/batman-adv/log.h
+@@ -63,7 +63,7 @@ enum batadv_dbg_level {
+ 	BATADV_DBG_NC		= BIT(5),
+ 	BATADV_DBG_MCAST	= BIT(6),
+ 	BATADV_DBG_TP_METER	= BIT(7),
+-	BATADV_DBG_ALL		= 127,
++	BATADV_DBG_ALL		= 255,
+ };
  
--	hlist_add_head(&hardif_neigh->list, &hard_iface->neigh_list);
-+	hlist_add_head_rcu(&hardif_neigh->list, &hard_iface->neigh_list);
- 
- out:
- 	spin_unlock_bh(&hard_iface->neigh_list_lock);
+ #ifdef CONFIG_BATMAN_ADV_DEBUG
 -- 
 2.10.1
 
