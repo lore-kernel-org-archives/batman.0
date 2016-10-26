@@ -1,68 +1,157 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 26 Oct 2016 09:00:07 +0200
-Message-ID: <9918036.G0oVuDqgJn@bentobox>
-In-Reply-To: <580FE89F.1090808@yahoo.com>
-References: <580F251E.7060400@yahoo.com> <2155840.zTA8OrSqiX@bentobox>
- <580FE89F.1090808@yahoo.com>
+Return-Path: <johnzeng2013@yahoo.com>
+Message-ID: <581058E6.4080706@yahoo.com>
+Date: Wed, 26 Oct 2016 15:19:02 +0800
+From: johnzeng <johnzeng2013@yahoo.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2317939.brZvWcdXuE";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Whether Batman-adv need suitable wifi network
-	card (support interface modes ( mesh point ) ) .
+Subject: Re: Whether Batman-adv need suitable wifi network card (support
+ interface modes ( mesh point ) ) .
+References: <580F251E.7060400@yahoo.com> <580FE89F.1090808@yahoo.com>
+ <580FFD64.7020704@yahoo.com> <4752844.Su7blveJaV@bentobox>
+In-Reply-To: <4752844.Su7blveJaV@bentobox>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
+	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
- <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n/>
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
- <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: johnzeng <johnzeng2013@yahoo.com>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2317939.brZvWcdXuE
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="UTF-8"
 
-On Mittwoch, 26. Oktober 2016 07:19:59 CEST johnzeng wrote:
-[...]
-> Whether Atheros (AR54xx=E3=80=81AR91xx=E3=80=81AR92xx=E3=80=81AR93xx=E5=
-=8F=8AAR95xx) will be=20
-> suitable for batman-adv ?
->=20
-> their driver is ath9k .
-[...]
+Hello Sven:
 
-All should work in their PCI(e) version and I think I've used all
-of them in the past - not sure about AR54xx (which were early
-draft-n devices). The first three are rather old and they would
-not be my first choice.
 
-Kind regards,
-	Sven
---nextPart2317939.brZvWcdXuE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
 
------BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYEFR3AAoJEF2HCgfBJntGdEUP/R4Yb03CpQQ/5wkLefD6e4Lw
-B9j4Gj6J2TTmNSBN4iD790w8ZOrbh8ne5m7VrfL7v3cuU/Ty3HtVWaxohl9d2tDd
-yzN3CFCsOkHRtnGMprdoXU40FiVckVSZDKPxEsJuTnzgSqeE4Ta48otqnwO1IR34
-J0C0owPn+WvU0U7xyQZVzF5AHDkCUamsS1iI715+Ho1m5ttP2e5pvxA5yCnhllLk
-iH2gqJ8Ng0NvMFnq2O9iNNSzfBqSq49c06oPbvh70sVom9Z4VsWv3/nli7PCH5mT
-BntwKJXHSIFckJH70qVcS38WGyCRorVgdVdo36zjGL1tC60Q4oyZmx8YxprLaxUv
-zPtNswR24zF5xzU+OF40fesdpmxXcQuGAbQIXIhbjX+fc11WQJ46oPi08baU+W6t
-tJ2HjV3H8xDRaVcwu/jXzQvWCMAOfiAWTYsvcDKCNCt5X26bMObKzWF40trUBUCO
-172MZRdLahhbViW/qVONG6oKYH+4D3Fpi+UkbZVzdflDWgyJfk9QNql1Zi+yqJq1
-h5rdOItb1TntSZTInnQ6Ir0KC0dcJ+h0c4bNoFao/YfeweeQfKTT/9kT7ikrwLeU
-MWsfkKqZrtaVOTk8YV4hdhcYCoYUUFAj/QKqpJTIaVJ7/slqFeZ3XeDLAYhm4fzd
-Nn7YiBgi3HvVr71A3apK
-=AxPZ
------END PGP SIGNATURE-----
 
---nextPart2317939.brZvWcdXuE--
+
+HostB wlan0 : mac addr : ether 00:1d:43:10:15:44
+
+HostA wlan0 : mac addr: ether c8:3a:35:c9:ce:71
+
+
+
+
+i run the command at Host A ( Rt2070 ) at ( ping HostA from HostB)
+iw dev wlan0 station dump:
+Station 00:1d:43:10:15:44 (on wlan0)
+inactive time: 140 ms
+rx bytes: 4977553
+rx packets: 126014
+tx bytes: 0
+tx packets: 0
+tx retries: 0
+tx failed: 0
+rx drop misc: 0
+signal: -39 dBm
+signal avg: -39 dBm
+tx bitrate: 1.0 MBit/s
+rx bitrate: 1.0 MBit/s
+authorized: yes
+authenticated: yes
+associated: yes
+preamble: long
+WMM/WME: no
+MFP: no
+TDLS peer: no
+DTIM period: 0
+beacon interval:100
+connected time: 10084 seconds
+
+[root@alarmpi ~]# tcpdump -i bat0
+
+07:01:40.635517 ARP, Reply 0.0.0.0 is-at 43:05:43:05:00:00 (oui 
+Unknown), length 28
+07:01:50.655521 ARP, Reply 0.0.0.0 is-at 43:05:43:05:00:00 (oui 
+Unknown), length 28
+
+[root@alarmpi ~]# tcpdump -i wlan0
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on wlan0, link-type EN10MB (Ethernet), capture size 262144 bytes
+07:02:35.815528 c8:3a:35:c9:ce:71 (oui Unknown) > Broadcast, ethertype 
+Unknown (0x4305), length 66:
+0x0000: 000f 3202 d7e6 278c c83a 35c9 ce71 c83a ..2...'..:5..q.:
+0x0010: 35c9 ce71 00ff 001c 0401 000c 0104 0001 5..q............
+0x0020: 48b5 3b30 0000 0000 0601 0004 0000 0000 H.;0............
+0x0030: 0201 0000
+
+
+and i ping ip address belong to hostB (wlan0 )from HostA and it will be 
+fine .
+
+batctl o No batman nodes in range
+
+-----------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+
+and i run same command at Host B ( RTL8188CUS ) at ( ping HostB from HostA)
+
+iw dev wlan0 station dump:
+
+" is blank "
+
+[root@alarmpi ~]# tcpdump -i bat0
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on bat0, link-type EN10MB (Ethernet), capture size 262144 bytes
+06:55:51.505401 ARP, Request who-has bogon tell bogon, length 28
+06:55:51.506177 ARP, Reply bogon is-at a6:b8:8a:11:be:a2 (oui Unknown), 
+length 28
+
+tcpdump -i wlan0
+
+06:57:11.425351 c8:3a:35:c9:ce:71 (oui Unknown) > Broadcast, ethertype 
+Unknown (0x4305), length 66:
+0x0000: 000f 3202 d7e6 2649 c83a 35c9 ce71 c83a ..2...&I.:5..q.:
+0x0010: 35c9 ce71 00ff 001c 0401 000c 0104 0001 5..q............
+0x0020: 48b5 3b30 0000 0000 0601 0004 0000 0000 H.;0............
+0x0030: 0201 0000 ....
+06:57:11.534759 00:1d:43:10:15:44 (oui Unknown) > Broadcast, ethertype 
+Unknown (0x4305), length 66:
+0x0000: 000f 3105 d7e6 2649 c83a 35c9 ce71 c83a ..1...&I.:5..q.:
+0x0010: 35c9 ce71 0000 001c 0401 000c 0104 0001 5..q............
+0x0020: 48b5 3b30 0000 0000 0601 0004 0000 0000 H.;0............
+0x0030: 0201 0000
+
+
+and i ping ip address belong to hostA wlan0 from HostB and it will be fine .
+
+batctl o No batman nodes in range
+
+
+------------------------------------------------------------------------------------------------------------
+
+And i thought Rt2070 support Broadcast and RTL8188CUS don't support 
+Broadcast or send ...
+
+because when i ping ip (RTL8188CUS) from Rt2070 , and i can see ping 
+packet via (tcpdump -i bat0 ) and i can see Rt2070 mac addr via (tcpdump 
+-i wlan0 ) at HOSTB,
+
+but i ping ip (Rt2070) from RTL8188CUS and i can't see any ping packet 
+from RTL8188CUS and i can't see RTL8188CUS mac via (tcpdump -i wlan0 ) 
+at HOSTA
+
+
+Whether it will be master reason ?
+
+
+Thanks
+...
+
+
+
+
+
+
+
+
+
+
+于 2016年10月26日 14:07, Sven Eckelmann 写道:
+> iw dev wlan0 station dump
 
