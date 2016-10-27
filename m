@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 27 Oct 2016 21:01:46 +0200
-Message-Id: <20161027190150.7880-14-sw@simonwunderlich.de>
+Date: Thu, 27 Oct 2016 21:01:47 +0200
+Message-Id: <20161027190150.7880-15-sw@simonwunderlich.de>
 In-Reply-To: <20161027190150.7880-1-sw@simonwunderlich.de>
 References: <20161027190150.7880-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 13/17] batman-adv: Remove needless init of
-	variables on stack
+Subject: [B.A.T.M.A.N.] [PATCH 14/17] batman-adv: Use proper name for
+	fragments list head
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,144 +20,126 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Sven Eckelmann <sven@narfation.org>
 
-Some variables are overwritten immediatelly in a functions. These don't
-have to be initialized to a specific value on the stack because the value
-will be overwritten before they will be used anywhere.
+The batman-adv codebase is using "list" for the list node (prev/next) and
+<list content descriptor>+"_list" for the head of a list. Not using this
+naming scheme can up in confusions because list_head is used for both the
+head of the list and the list node (prev/next) in each item of the list.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_v.c          | 2 +-
- net/batman-adv/bat_v_ogm.c      | 4 ++--
- net/batman-adv/fragmentation.c  | 4 ++--
- net/batman-adv/gateway_client.c | 2 +-
- net/batman-adv/originator.c     | 8 ++++----
- net/batman-adv/send.c           | 2 +-
- 6 files changed, 11 insertions(+), 11 deletions(-)
+ net/batman-adv/fragmentation.c | 14 +++++++-------
+ net/batman-adv/fragmentation.h |  2 +-
+ net/batman-adv/originator.c    |  2 +-
+ net/batman-adv/types.h         |  6 +++---
+ 4 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index e79f6f0..57c795c 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -787,7 +787,7 @@ static bool batadv_v_gw_is_eligible(struct batadv_priv *bat_priv,
- 				    struct batadv_orig_node *curr_gw_orig,
- 				    struct batadv_orig_node *orig_node)
- {
--	struct batadv_gw_node *curr_gw = NULL, *orig_gw = NULL;
-+	struct batadv_gw_node *curr_gw, *orig_gw = NULL;
- 	u32 gw_throughput, orig_throughput, threshold;
- 	bool ret = false;
- 
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 1aeeadc..61ff5f8 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -401,7 +401,7 @@ static int batadv_v_ogm_metric_update(struct batadv_priv *bat_priv,
- 				      struct batadv_hard_iface *if_incoming,
- 				      struct batadv_hard_iface *if_outgoing)
- {
--	struct batadv_orig_ifinfo *orig_ifinfo = NULL;
-+	struct batadv_orig_ifinfo *orig_ifinfo;
- 	struct batadv_neigh_ifinfo *neigh_ifinfo = NULL;
- 	bool protection_started = false;
- 	int ret = -EINVAL;
-@@ -486,7 +486,7 @@ static bool batadv_v_ogm_route_update(struct batadv_priv *bat_priv,
- 				      struct batadv_hard_iface *if_outgoing)
- {
- 	struct batadv_neigh_node *router = NULL;
--	struct batadv_orig_node *orig_neigh_node = NULL;
-+	struct batadv_orig_node *orig_neigh_node;
- 	struct batadv_neigh_node *orig_neigh_router = NULL;
- 	struct batadv_neigh_ifinfo *router_ifinfo = NULL, *neigh_ifinfo = NULL;
- 	u32 router_throughput, neigh_throughput;
 diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 0934730..1b2f5b9 100644
+index 1b2f5b9..2b967a3 100644
 --- a/net/batman-adv/fragmentation.c
 +++ b/net/batman-adv/fragmentation.c
-@@ -252,7 +252,7 @@ batadv_frag_merge_packets(struct hlist_head *chain)
- {
- 	struct batadv_frag_packet *packet;
- 	struct batadv_frag_list_entry *entry;
--	struct sk_buff *skb_out = NULL;
-+	struct sk_buff *skb_out;
- 	int size, hdr_size = sizeof(struct batadv_frag_packet);
+@@ -73,7 +73,7 @@ void batadv_frag_purge_orig(struct batadv_orig_node *orig_node,
+ 		spin_lock_bh(&chain->lock);
  
- 	/* Remove first entry, as this is the destination for the rest of the
-@@ -352,7 +352,7 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
- 			 struct batadv_orig_node *orig_node_src)
+ 		if (!check_cb || check_cb(chain)) {
+-			batadv_frag_clear_chain(&chain->head);
++			batadv_frag_clear_chain(&chain->fragment_list);
+ 			chain->size = 0;
+ 		}
+ 
+@@ -117,8 +117,8 @@ static bool batadv_frag_init_chain(struct batadv_frag_table_entry *chain,
+ 	if (chain->seqno == seqno)
+ 		return false;
+ 
+-	if (!hlist_empty(&chain->head))
+-		batadv_frag_clear_chain(&chain->head);
++	if (!hlist_empty(&chain->fragment_list))
++		batadv_frag_clear_chain(&chain->fragment_list);
+ 
+ 	chain->size = 0;
+ 	chain->seqno = seqno;
+@@ -176,7 +176,7 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
+ 	chain = &orig_node->fragments[bucket];
+ 	spin_lock_bh(&chain->lock);
+ 	if (batadv_frag_init_chain(chain, seqno)) {
+-		hlist_add_head(&frag_entry_new->list, &chain->head);
++		hlist_add_head(&frag_entry_new->list, &chain->fragment_list);
+ 		chain->size = skb->len - hdr_size;
+ 		chain->timestamp = jiffies;
+ 		chain->total_size = ntohs(frag_packet->total_size);
+@@ -185,7 +185,7 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
+ 	}
+ 
+ 	/* Find the position for the new fragment. */
+-	hlist_for_each_entry(frag_entry_curr, &chain->head, list) {
++	hlist_for_each_entry(frag_entry_curr, &chain->fragment_list, list) {
+ 		/* Drop packet if fragment already exists. */
+ 		if (frag_entry_curr->no == frag_entry_new->no)
+ 			goto err_unlock;
+@@ -220,11 +220,11 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
+ 		 * exceeds the maximum size of one merged packet. Don't allow
+ 		 * packets to have different total_size.
+ 		 */
+-		batadv_frag_clear_chain(&chain->head);
++		batadv_frag_clear_chain(&chain->fragment_list);
+ 		chain->size = 0;
+ 	} else if (ntohs(frag_packet->total_size) == chain->size) {
+ 		/* All fragments received. Hand over chain to caller. */
+-		hlist_move_list(&chain->head, chain_out);
++		hlist_move_list(&chain->fragment_list, chain_out);
+ 		chain->size = 0;
+ 	}
+ 
+diff --git a/net/batman-adv/fragmentation.h b/net/batman-adv/fragmentation.h
+index 3202fe3..b95f619 100644
+--- a/net/batman-adv/fragmentation.h
++++ b/net/batman-adv/fragmentation.h
+@@ -47,7 +47,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ static inline bool
+ batadv_frag_check_entry(struct batadv_frag_table_entry *frags_entry)
  {
- 	struct batadv_priv *bat_priv = netdev_priv(recv_if->soft_iface);
--	struct batadv_orig_node *orig_node_dst = NULL;
-+	struct batadv_orig_node *orig_node_dst;
- 	struct batadv_neigh_node *neigh_node = NULL;
- 	struct batadv_frag_packet *packet;
- 	u16 total_size;
-diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
-index de055d6..69bfe98 100644
---- a/net/batman-adv/gateway_client.c
-+++ b/net/batman-adv/gateway_client.c
-@@ -704,7 +704,7 @@ bool batadv_gw_out_of_range(struct batadv_priv *bat_priv,
- {
- 	struct batadv_neigh_node *neigh_curr = NULL;
- 	struct batadv_neigh_node *neigh_old = NULL;
--	struct batadv_orig_node *orig_dst_node = NULL;
-+	struct batadv_orig_node *orig_dst_node;
- 	struct batadv_gw_node *gw_node = NULL;
- 	struct batadv_gw_node *curr_gw = NULL;
- 	struct batadv_neigh_ifinfo *curr_ifinfo, *old_ifinfo;
+-	if (!hlist_empty(&frags_entry->head) &&
++	if (!hlist_empty(&frags_entry->fragment_list) &&
+ 	    batadv_has_timed_out(frags_entry->timestamp, BATADV_FRAG_TIMEOUT))
+ 		return true;
+ 	return false;
 diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 5f3bfc4..6af87c9 100644
+index 6af87c9..518b1ed 100644
 --- a/net/batman-adv/originator.c
 +++ b/net/batman-adv/originator.c
-@@ -364,7 +364,7 @@ struct batadv_orig_ifinfo *
- batadv_orig_ifinfo_new(struct batadv_orig_node *orig_node,
- 		       struct batadv_hard_iface *if_outgoing)
- {
--	struct batadv_orig_ifinfo *orig_ifinfo = NULL;
-+	struct batadv_orig_ifinfo *orig_ifinfo;
- 	unsigned long reset_time;
+@@ -1021,7 +1021,7 @@ struct batadv_orig_node *batadv_orig_node_new(struct batadv_priv *bat_priv,
+ 	batadv_orig_node_vlan_put(vlan);
  
- 	spin_lock_bh(&orig_node->neigh_list_lock);
-@@ -520,7 +520,7 @@ batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
- 			   const u8 *neigh_addr)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
--	struct batadv_hardif_neigh_node *hardif_neigh = NULL;
-+	struct batadv_hardif_neigh_node *hardif_neigh;
+ 	for (i = 0; i < BATADV_FRAG_BUFFER_COUNT; i++) {
+-		INIT_HLIST_HEAD(&orig_node->fragments[i].head);
++		INIT_HLIST_HEAD(&orig_node->fragments[i].fragment_list);
+ 		spin_lock_init(&orig_node->fragments[i].lock);
+ 		orig_node->fragments[i].size = 0;
+ 	}
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 97336ec..d31e7ec 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -184,7 +184,7 @@ struct batadv_orig_ifinfo {
  
- 	spin_lock_bh(&hard_iface->neigh_list_lock);
- 
-@@ -563,7 +563,7 @@ static struct batadv_hardif_neigh_node *
- batadv_hardif_neigh_get_or_create(struct batadv_hard_iface *hard_iface,
- 				  const u8 *neigh_addr)
- {
--	struct batadv_hardif_neigh_node *hardif_neigh = NULL;
-+	struct batadv_hardif_neigh_node *hardif_neigh;
- 
- 	/* first check without locking to avoid the overhead */
- 	hardif_neigh = batadv_hardif_neigh_get(hard_iface, neigh_addr);
-@@ -683,7 +683,7 @@ batadv_neigh_node_get_or_create(struct batadv_orig_node *orig_node,
- 				struct batadv_hard_iface *hard_iface,
- 				const u8 *neigh_addr)
- {
--	struct batadv_neigh_node *neigh_node = NULL;
-+	struct batadv_neigh_node *neigh_node;
- 
- 	/* first check without locking to avoid the overhead */
- 	neigh_node = batadv_neigh_node_get(orig_node, hard_iface, neigh_addr);
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 8d4e1f5..e1e9136 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -562,7 +562,7 @@ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 				    const struct sk_buff *skb,
- 				    unsigned long delay)
- {
--	struct batadv_hard_iface *primary_if = NULL;
-+	struct batadv_hard_iface *primary_if;
- 	struct batadv_forw_packet *forw_packet;
- 	struct batadv_bcast_packet *bcast_packet;
- 	struct sk_buff *newskb;
+ /**
+  * struct batadv_frag_table_entry - head in the fragment buffer table
+- * @head: head of list with fragments
++ * @fragment_list: head of list with fragments
+  * @lock: lock to protect the list of fragments
+  * @timestamp: time (jiffie) of last received fragment
+  * @seqno: sequence number of the fragments in the list
+@@ -192,8 +192,8 @@ struct batadv_orig_ifinfo {
+  * @total_size: expected size of the assembled packet
+  */
+ struct batadv_frag_table_entry {
+-	struct hlist_head head;
+-	spinlock_t lock; /* protects head */
++	struct hlist_head fragment_list;
++	spinlock_t lock; /* protects fragment_list */
+ 	unsigned long timestamp;
+ 	u16 seqno;
+ 	u16 size;
 -- 
 2.10.1
 
