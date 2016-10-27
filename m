@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 27 Oct 2016 21:01:35 +0200
-Message-Id: <20161027190150.7880-3-sw@simonwunderlich.de>
+Date: Thu, 27 Oct 2016 21:01:36 +0200
+Message-Id: <20161027190150.7880-4-sw@simonwunderlich.de>
 In-Reply-To: <20161027190150.7880-1-sw@simonwunderlich.de>
 References: <20161027190150.7880-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 02/17] batman-adv: Add B.A.T.M.A.N. V sysfs
-	files to README
+Subject: [B.A.T.M.A.N.] [PATCH 03/17] batman-adv: Add network_coding and
+	mcast sysfs files to README
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,22 +23,29 @@ From: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- Documentation/networking/batman-adv.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/networking/batman-adv.txt | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/Documentation/networking/batman-adv.txt b/Documentation/networking/batman-adv.txt
-index 8a8d3d9..d414e60 100644
+index d414e60..8afa991 100644
 --- a/Documentation/networking/batman-adv.txt
 +++ b/Documentation/networking/batman-adv.txt
-@@ -32,7 +32,7 @@ compatible interfaces. Once found, it will create  subfolders  in
- the /sys directories of each supported interface, e.g.
+@@ -71,10 +71,11 @@ All  mesh  wide  settings  can be found in batman's own interface
+ folder:
  
- # ls /sys/class/net/eth0/batman_adv/
--# iface_status  mesh_iface
-+# elp_interval  iface_status  mesh_iface  throughput_override
+ # ls /sys/class/net/bat0/mesh/
+-#aggregated_ogms        distributed_arp_table  gw_sel_class    orig_interval
+-#ap_isolation           fragmentation          hop_penalty     routing_algo
+-#bonding                gw_bandwidth           isolation_mark  vlan0
+-#bridge_loop_avoidance  gw_mode                log_level
++# aggregated_ogms        fragmentation  isolation_mark  routing_algo
++# ap_isolation           gw_bandwidth   log_level       vlan0
++# bonding                gw_mode        multicast_mode
++# bridge_loop_avoidance  gw_sel_class   network_coding
++# distributed_arp_table  hop_penalty    orig_interval
  
- If an interface does not have the "batman_adv" subfolder it prob-
- ably is not supported. Not supported  interfaces  are:  loopback,
+ There is a special folder for debugging information:
+ 
 -- 
 2.10.1
 
