@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 27 Oct 2016 21:01:37 +0200
-Message-Id: <20161027190150.7880-5-sw@simonwunderlich.de>
+Date: Thu, 27 Oct 2016 21:01:38 +0200
+Message-Id: <20161027190150.7880-6-sw@simonwunderlich.de>
 In-Reply-To: <20161027190150.7880-1-sw@simonwunderlich.de>
 References: <20161027190150.7880-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 04/17] batman-adv: Add dat, mcast,
-	nc and neighbor debugfs files to README
+Subject: [B.A.T.M.A.N.] [PATCH 05/17] batman-adv: Document new nc,
+	mcast and tpmeter log levels
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,27 +23,37 @@ From: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- Documentation/networking/batman-adv.txt | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ Documentation/networking/batman-adv.txt | 17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
 
 diff --git a/Documentation/networking/batman-adv.txt b/Documentation/networking/batman-adv.txt
-index 8afa991..a918131 100644
+index a918131..ccf9467 100644
 --- a/Documentation/networking/batman-adv.txt
 +++ b/Documentation/networking/batman-adv.txt
-@@ -80,9 +80,10 @@ folder:
- There is a special folder for debugging information:
+@@ -161,13 +161,16 @@ file in debugfs
+ The additional debug output is by default disabled. It can be en-
+ abled  during run time. Following log_levels are defined:
  
- # ls /sys/kernel/debug/batman_adv/bat0/
--# bla_backbone_table  log                 transtable_global
--# bla_claim_table     originators         transtable_local
--# gateways            socket
-+# bla_backbone_table  log          neighbors          transtable_local
-+# bla_claim_table     mcast_flags  originators
-+# dat_cache           nc           socket
-+# gateways            nc_nodes     transtable_global
+-0 - All  debug  output  disabled
+-1 - Enable messages related to routing / flooding / broadcasting
+-2 - Enable messages related to route added / changed / deleted
+-4 - Enable messages related to translation table operations
+-8 - Enable messages related to bridge loop avoidance
+-16 - Enable messaged related to DAT, ARP snooping and parsing
+-31 - Enable all messages
++  0 - All  debug  output  disabled
++  1 - Enable messages related to routing / flooding / broadcasting
++  2 - Enable messages related to route added / changed / deleted
++  4 - Enable messages related to translation table operations
++  8 - Enable messages related to bridge loop avoidance
++ 16 - Enable messages related to DAT, ARP snooping and parsing
++ 32 - Enable messages related to network coding
++ 64 - Enable messages related to multicast
++128 - Enable messages related to throughput meter
++255 - Enable all messages
  
- Some of the files contain all sort of status information  regard-
- ing  the  mesh  network.  For  example, you can view the table of
+ The debug output can be changed at runtime  using  the  file
+ /sys/class/net/bat0/mesh/log_level. e.g.
 -- 
 2.10.1
 
