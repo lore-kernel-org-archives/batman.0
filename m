@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 27 Oct 2016 21:01:50 +0200
-Message-Id: <20161027190150.7880-18-sw@simonwunderlich.de>
+Date: Thu, 27 Oct 2016 21:01:43 +0200
+Message-Id: <20161027190150.7880-11-sw@simonwunderlich.de>
 In-Reply-To: <20161027190150.7880-1-sw@simonwunderlich.de>
 References: <20161027190150.7880-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 17/17] batman-adv: Avoid precedence issues in
-	macros
+Subject: [B.A.T.M.A.N.] [PATCH 10/17] batman-adv: remove unsed argument from
+	batadv_dbg_arp() function
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,73 +16,87 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Antonio Quartulli <a@unstable.cc>
 
-It must be avoided that arguments to a macro are evaluated ungrouped (which
-enforces normal operator precendence). Otherwise the result of the macro
-is not well defined.
+The argument "type" passed to the batadv_dbg_arp() function is
+never used. Remove it.
 
+Signed-off-by: Antonio Quartulli <a@unstable.cc>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/log.h    | 12 ++++++------
- net/batman-adv/main.h   |  4 ++--
- net/batman-adv/packet.h |  2 +-
- 3 files changed, 9 insertions(+), 9 deletions(-)
+ net/batman-adv/distributed-arp-table.c | 17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
 
-diff --git a/net/batman-adv/log.h b/net/batman-adv/log.h
-index e0e1a88..ab47acf 100644
---- a/net/batman-adv/log.h
-+++ b/net/batman-adv/log.h
-@@ -71,12 +71,12 @@ int batadv_debug_log(struct batadv_priv *bat_priv, const char *fmt, ...)
- __printf(2, 3);
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index e257efd..cbb4f32 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -369,12 +369,11 @@ static void batadv_dat_entry_add(struct batadv_priv *bat_priv, __be32 ip,
+  * batadv_dbg_arp - print a debug message containing all the ARP packet details
+  * @bat_priv: the bat priv with all the soft interface information
+  * @skb: ARP packet
+- * @type: ARP type
+  * @hdr_size: size of the possible header before the ARP packet
+  * @msg: message to print together with the debugging information
+  */
+ static void batadv_dbg_arp(struct batadv_priv *bat_priv, struct sk_buff *skb,
+-			   u16 type, int hdr_size, char *msg)
++			   int hdr_size, char *msg)
+ {
+ 	struct batadv_unicast_4addr_packet *unicast_4addr_packet;
+ 	struct batadv_bcast_packet *bcast_pkt;
+@@ -441,7 +440,7 @@ static void batadv_dbg_arp(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ #else
  
- /* possibly ratelimited debug output */
--#define _batadv_dbg(type, bat_priv, ratelimited, fmt, arg...)	\
--	do {							\
--		if (atomic_read(&bat_priv->log_level) & type && \
--		    (!ratelimited || net_ratelimit()))		\
--			batadv_debug_log(bat_priv, fmt, ## arg);\
--	}							\
-+#define _batadv_dbg(type, bat_priv, ratelimited, fmt, arg...)		\
-+	do {								\
-+		if (atomic_read(&(bat_priv)->log_level) & (type) &&	\
-+		    (!(ratelimited) || net_ratelimit()))		\
-+			batadv_debug_log(bat_priv, fmt, ## arg);	\
-+	}								\
- 	while (0)
- #else /* !CONFIG_BATMAN_ADV_DEBUG */
- __printf(4, 5)
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 6a2328d..daddca9 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -199,8 +199,8 @@ struct packet_type;
- struct seq_file;
- struct sk_buff;
+ static void batadv_dbg_arp(struct batadv_priv *bat_priv, struct sk_buff *skb,
+-			   u16 type, int hdr_size, char *msg)
++			   int hdr_size, char *msg)
+ {
+ }
  
--#define BATADV_PRINT_VID(vid) ((vid & BATADV_VLAN_HAS_TAG) ? \
--			       (int)(vid & VLAN_VID_MASK) : -1)
-+#define BATADV_PRINT_VID(vid) (((vid) & BATADV_VLAN_HAS_TAG) ? \
-+			       (int)((vid) & VLAN_VID_MASK) : -1)
+@@ -983,8 +982,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
+ 	if (type != ARPOP_REQUEST)
+ 		goto out;
  
- extern struct list_head batadv_hardif_list;
+-	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
+-		       "Parsing outgoing ARP REQUEST");
++	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing outgoing ARP REQUEST");
  
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index d2e9bbd..7a36bcf 100644
---- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -21,7 +21,7 @@
- #include <asm/byteorder.h>
- #include <linux/types.h>
+ 	ip_src = batadv_arp_ip_src(skb, hdr_size);
+ 	hw_src = batadv_arp_hw_src(skb, hdr_size);
+@@ -1075,8 +1073,7 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
+ 	ip_src = batadv_arp_ip_src(skb, hdr_size);
+ 	ip_dst = batadv_arp_ip_dst(skb, hdr_size);
  
--#define batadv_tp_is_error(n) ((u8)n > 127 ? 1 : 0)
-+#define batadv_tp_is_error(n) ((u8)(n) > 127 ? 1 : 0)
+-	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
+-		       "Parsing incoming ARP REQUEST");
++	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing incoming ARP REQUEST");
  
- /**
-  * enum batadv_packettype - types for batman-adv encapsulated packets
+ 	batadv_dat_entry_add(bat_priv, ip_src, hw_src, vid);
+ 
+@@ -1149,8 +1146,7 @@ void batadv_dat_snoop_outgoing_arp_reply(struct batadv_priv *bat_priv,
+ 	if (type != ARPOP_REPLY)
+ 		return;
+ 
+-	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
+-		       "Parsing outgoing ARP REPLY");
++	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing outgoing ARP REPLY");
+ 
+ 	hw_src = batadv_arp_hw_src(skb, hdr_size);
+ 	ip_src = batadv_arp_ip_src(skb, hdr_size);
+@@ -1195,8 +1191,7 @@ bool batadv_dat_snoop_incoming_arp_reply(struct batadv_priv *bat_priv,
+ 	if (type != ARPOP_REPLY)
+ 		goto out;
+ 
+-	batadv_dbg_arp(bat_priv, skb, type, hdr_size,
+-		       "Parsing incoming ARP REPLY");
++	batadv_dbg_arp(bat_priv, skb, hdr_size, "Parsing incoming ARP REPLY");
+ 
+ 	hw_src = batadv_arp_hw_src(skb, hdr_size);
+ 	ip_src = batadv_arp_ip_src(skb, hdr_size);
 -- 
 2.10.1
 
