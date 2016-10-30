@@ -1,8 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 30 Oct 2016 11:46:29 +0100
-Message-Id: <20161030104629.16418-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Install module in
+Date: Sun, 30 Oct 2016 11:49:32 +0100
+Message-Id: <20161030104932.17878-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH maint v2] batman-adv: Install module in
 	$INSTALL_MOD_DIR/updates/net/batman-adv
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -26,11 +26,13 @@ obj-y dir relative to build/ in the source directory.
 Reported-by: Jean-Jacques Sarton <jj.sarton@t-online.de>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- Makefile | 17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+Remove clean target change which was accidentally added to this patch
+
+ Makefile | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 7ef2569..2f5cff6 100644
+index 7ef2569..b852a17 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -46,6 +46,7 @@ MKDIR := mkdir -p
@@ -74,15 +76,7 @@ index 7ef2569..2f5cff6 100644
  	REVISION=$(REVISION) \
  	CONFIG_BATMAN_ADV=m \
  	CONFIG_BATMAN_ADV_DEBUG=$(CONFIG_BATMAN_ADV_DEBUG) \
-@@ -89,6 +90,7 @@ all: config $(SOURCE_STAMP)
- 	$(MAKE) -C $(KERNELPATH) $(BUILD_FLAGS)	modules
- 
- clean:
-+	$(MAKE) -C $(KERNELPATH) $(BUILD_FLAGS) modules_clean
- 	$(RM) compat-autoconf.h*
- 	$(RM) -r $(BUILD_DIR)
- 
-@@ -101,6 +103,7 @@ config:
+@@ -101,6 +102,7 @@ config:
  
  $(SOURCE_STAMP): $(SOURCE) compat-patches/* compat-patches/replacements.sh
  	$(MKDIR) $(BUILD_DIR)/net/batman-adv/
