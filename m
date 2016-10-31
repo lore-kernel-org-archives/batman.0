@@ -1,9 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 31 Oct 2016 08:27:19 +0100
-Message-Id: <20161031072719.26286-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH maint v3] batman-adv: Install module in
-	$INSTALL_MOD_DIR/updates/net/batman-adv
+Date: Mon, 31 Oct 2016 08:35:40 +0100
+Message-ID: <1637163.TC9CcXIrIP@sven-edge>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart3120250.DSUSTJpM4J";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: [B.A.T.M.A.N.] [PATCH 0/6] batman-adv: Revert coccinelle compat
+	support
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,74 +18,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-depmod may skip the batman-adv.ko module in the $INSTALL_MOD_DIR/update/
-folder when it contains the word "build" as directory name.
+--nextPart3120250.DSUSTJpM4J
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Avoid this extra directory "build" in the installation path by making the
-obj-y dir relative to build/ in the source directory.
+Hi,
 
-Reported-by: Jean-Jacques Sarton <jj.sarton@t-online.de>
-Fixes: 66ac14a09445 ("batman-adv: Introduce compat-patches support")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-v3:
- - adjust commit message
-v2:
- - Remove clean target change which was accidentally added to this patch
+it seems that the coccinelle package in Debian Jessie is not able to parse
+semantic patches [1]. This basically breaks the batman-adv build on many
+stable systems and thus makes the out-of-tree module unusable on these
+systems.
 
- Makefile | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+I have currently no better idea than reverting these patches.
 
-diff --git a/Makefile b/Makefile
-index 1d2e01c..e9c499f 100644
---- a/Makefile
-+++ b/Makefile
-@@ -54,6 +54,7 @@ PATCH_FLAGS = --batch --fuzz=0 --forward --strip=1 --unified --version-control=n
- PATCH := patch $(PATCH_FLAGS) -i
- SPATCH_FLAGS := --in-place --relax-include-path --use-coccigrep --very-quiet
- CP := cp -fpR
-+LN := ln -sf
- 
- SOURCE = $(wildcard net/batman-adv/*.[ch]) net/batman-adv/Makefile
- SOURCE_BUILD = $(wildcard $(BUILD_DIR)/net/batman-adv/*.[ch]) $(BUILD_DIR)/net/batman-adv/Makefile
-@@ -63,25 +64,25 @@ REVISION= $(shell	if [ -d "$(PWD)/.git" ]; then \
- 				echo $$(git --git-dir="$(PWD)/.git" describe --always --dirty --match "v*" |sed 's/^v//' 2> /dev/null || echo "[unknown]"); \
- 			fi)
- NOSTDINC_FLAGS += \
--	-I$(PWD)/compat-include/ \
--	-I$(PWD)/include/ \
--	-include $(PWD)/compat.h \
-+	-I$(PWD)/../compat-include/ \
-+	-I$(PWD)/../include/ \
-+	-include $(PWD)/../compat.h \
- 	$(CFLAGS)
- 
- ifneq ($(REVISION),)
- NOSTDINC_FLAGS += -DBATADV_SOURCE_VERSION=\"$(REVISION)\"
- endif
- 
--include $(PWD)/compat-sources/Makefile
-+-include $(PWD)/../compat-sources/Makefile
- 
--obj-y += build/net/batman-adv/
-+obj-y += net/batman-adv/
- 
- export batman-adv-y
- 
- 
- BUILD_FLAGS := \
--	M=$(PWD) \
--	PWD=$(PWD) \
-+	M=$(BUILD_DIR) \
-+	PWD=$(BUILD_DIR) \
- 	REVISION=$(REVISION) \
- 	CONFIG_BATMAN_ADV=m \
- 	CONFIG_BATMAN_ADV_DEBUG=$(CONFIG_BATMAN_ADV_DEBUG) \
-@@ -109,6 +110,7 @@ config:
- 
- $(SOURCE_STAMP): $(SOURCE) compat-patches/*
- 	$(MKDIR) $(BUILD_DIR)/net/batman-adv/
-+	@$(LN) ../Makefile $(BUILD_DIR)/Makefile
- 	@$(RM) $(SOURCE_BUILD)
- 	@$(CP) $(SOURCE) $(BUILD_DIR)/net/batman-adv/
- 	@set -e; \
+Kind regards,
+	Sven
+
+PS: Linus, do you want to try to get rid of replacement.sh?
+
+[1] https://www.open-mesh.org/issues/303
+
+--nextPart3120250.DSUSTJpM4J
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABCgAGBQJYFvRMAAoJEF2HCgfBJntG4dwP+wV6/kYZh1P3RWZ7UDU0KxiG
+99b7GWxvCQKrK41+qRp40lVXQQj/4PcpKrjFysTA4EdmxWTRLqS6K5HnxTtzFwvb
+340kjYYD3l+VN5wG2hoB9QM6tIvYpQ2onfiPk5pU+JgyLpbGR2hpZ8ABj0i4a7Z4
+Q3MZXfs0nZ3LgFBJH3lX2VoEEpNpmUxACJ6sMIM+2hw0Y1HcTL3qjnl5iPgc4eed
+IMYLaCK6I02FFy7jAQImHCye6USIOkaz9lNm4IgiGYWrrSG1cLtDazhpfw819CMr
+GULCTCjvpc45WeU21li6WpAPo84C+MH7ChvJwGaAdHMHJibYbTDZI8NwfcRlTCmb
+aPKAvZz5SO6VgMuZ/sKmOcGzfkvkNmYLZFZ7W9fBkd0qE4okZKfm65mT4C9bHrRV
+Hm9JOTkIdSa2K44pdwQrXpEB+xNCuwELopk661b8qwtdTmNdJHK2R8JTiGwpLN6s
+0410wVgh9pnB1oYY8wJc7Q8IapdQaJ1S/jUq8DqELbbCaBtl3oqH0hm/RX6wikEW
+PwRVa7yYFo7HS1IuoF71Ck21vJlrKah/zDpt2OQWYCLK/IrDvEEn0KDDyOzfE2a/
+S8uqejSO/8hINPMp2PpLbldcsASWDC3BIFypC0mTKnlpnPLXWST3//xumxqDj/sa
+NafISOvQZZntziLImu2h
+=AUqa
+-----END PGP SIGNATURE-----
+
+--nextPart3120250.DSUSTJpM4J--
+
