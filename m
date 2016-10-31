@@ -1,16 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Mon, 31 Oct 2016 10:57:25 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20161031095725.GL7448@otheros>
-References: <20161005234308.29871-1-linus.luessing@c0d3.blue>
- <1546440.hnPT5BvDlZ@sven-edge> <20161031072217.GK7448@otheros>
- <2258656.3t3hhMR4e6@sven-edge>
+Return-Path: <martin@darmstadt.freifunk.net>
+References: <20161031072719.26286-1-sven@narfation.org>
+From: Martin Weinelt <martin@darmstadt.freifunk.net>
+Message-ID: <8a9f3ed7-de1a-d404-aaee-db31f7684b5d@darmstadt.freifunk.net>
+Date: Mon, 31 Oct 2016 14:04:03 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <2258656.3t3hhMR4e6@sven-edge>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v3 1/2] batman-adv: fix race conditions
- on interface removal
+In-Reply-To: <20161031072719.26286-1-sven@narfation.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint v3] batman-adv: Install module in
+ $INSTALL_MOD_DIR/updates/net/batman-adv
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,16 +18,83 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Mon, Oct 31, 2016 at 09:09:44AM +0100, Sven Eckelmann wrote:
-> No, this is not what happens. bm_list->pprev is set by
-> hlist_add_fake to &bm_list->next and not to bm_list->next.
+Thank you, depmod again properly recognizes the module now.
 
-Argh! You're absolutely right... now looks like it to me too, that a
-simple hlist_add_fake(&forw_packet->bm_list) is enough in
-batadv_forw_packet_steal() (and that the INIT_HLIST_NODE(bm_list)
-in the alloc function is sufficient).
+Tested-by: Martin Weinelt <martin@darmstadt.freifunk.net>
 
-I'll retest, not sure what issues I thought I had seen without
-the extra list head addition.
+On 31.10.2016 08:27, Sven Eckelmann wrote:
+> depmod may skip the batman-adv.ko module in the $INSTALL_MOD_DIR/update/
+> folder when it contains the word "build" as directory name.
+> 
+> Avoid this extra directory "build" in the installation path by making the
+> obj-y dir relative to build/ in the source directory.
+> 
+> Reported-by: Jean-Jacques Sarton <jj.sarton@t-online.de>
+> Fixes: 66ac14a09445 ("batman-adv: Introduce compat-patches support")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> v3:
+>  - adjust commit message
+> v2:
+>  - Remove clean target change which was accidentally added to this patch
+> 
+>  Makefile | 16 +++++++++-------
+>  1 file changed, 9 insertions(+), 7 deletions(-)
+> 
+> diff --git a/Makefile b/Makefile
+> index 1d2e01c..e9c499f 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -54,6 +54,7 @@ PATCH_FLAGS = --batch --fuzz=0 --forward --strip=1 --unified --version-control=n
+>  PATCH := patch $(PATCH_FLAGS) -i
+>  SPATCH_FLAGS := --in-place --relax-include-path --use-coccigrep --very-quiet
+>  CP := cp -fpR
+> +LN := ln -sf
+>  
+>  SOURCE = $(wildcard net/batman-adv/*.[ch]) net/batman-adv/Makefile
+>  SOURCE_BUILD = $(wildcard $(BUILD_DIR)/net/batman-adv/*.[ch]) $(BUILD_DIR)/net/batman-adv/Makefile
+> @@ -63,25 +64,25 @@ REVISION= $(shell	if [ -d "$(PWD)/.git" ]; then \
+>  				echo $$(git --git-dir="$(PWD)/.git" describe --always --dirty --match "v*" |sed 's/^v//' 2> /dev/null || echo "[unknown]"); \
+>  			fi)
+>  NOSTDINC_FLAGS += \
+> -	-I$(PWD)/compat-include/ \
+> -	-I$(PWD)/include/ \
+> -	-include $(PWD)/compat.h \
+> +	-I$(PWD)/../compat-include/ \
+> +	-I$(PWD)/../include/ \
+> +	-include $(PWD)/../compat.h \
+>  	$(CFLAGS)
+>  
+>  ifneq ($(REVISION),)
+>  NOSTDINC_FLAGS += -DBATADV_SOURCE_VERSION=\"$(REVISION)\"
+>  endif
+>  
+> -include $(PWD)/compat-sources/Makefile
+> +-include $(PWD)/../compat-sources/Makefile
+>  
+> -obj-y += build/net/batman-adv/
+> +obj-y += net/batman-adv/
+>  
+>  export batman-adv-y
+>  
+>  
+>  BUILD_FLAGS := \
+> -	M=$(PWD) \
+> -	PWD=$(PWD) \
+> +	M=$(BUILD_DIR) \
+> +	PWD=$(BUILD_DIR) \
+>  	REVISION=$(REVISION) \
+>  	CONFIG_BATMAN_ADV=m \
+>  	CONFIG_BATMAN_ADV_DEBUG=$(CONFIG_BATMAN_ADV_DEBUG) \
+> @@ -109,6 +110,7 @@ config:
+>  
+>  $(SOURCE_STAMP): $(SOURCE) compat-patches/*
+>  	$(MKDIR) $(BUILD_DIR)/net/batman-adv/
+> +	@$(LN) ../Makefile $(BUILD_DIR)/Makefile
+>  	@$(RM) $(SOURCE_BUILD)
+>  	@$(CP) $(SOURCE) $(BUILD_DIR)/net/batman-adv/
+>  	@set -e; \
+> 
+
