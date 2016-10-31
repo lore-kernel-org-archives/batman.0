@@ -1,12 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 31 Oct 2016 08:35:40 +0100
-Message-ID: <1637163.TC9CcXIrIP@sven-edge>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3120250.DSUSTJpM4J";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: [B.A.T.M.A.N.] [PATCH 0/6] batman-adv: Revert coccinelle compat
-	support
+Date: Mon, 31 Oct 2016 08:36:24 +0100
+Message-Id: <20161031073629.31819-1-sven@narfation.org>
+In-Reply-To: <1637163.TC9CcXIrIP@sven-edge>
+References: <1637163.TC9CcXIrIP@sven-edge>
+Subject: [B.A.T.M.A.N.] [PATCH 1/6] batman-adv: Revert "compat: Move vid api
+	wrapper to coccinelle"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,47 +17,189 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3120250.DSUSTJpM4J
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+The coccinelle in Debian Jessie seems to be broken. It fails to parse
+the patches and thus makes it impossible to use the out-of-tree
+module in these systems. Therefore drop it for now.
 
-Hi,
+This reverts commit 7f40f382af1125698ad149d1b743c2de70a5ad5c.
 
-it seems that the coccinelle package in Debian Jessie is not able to parse
-semantic patches [1]. This basically breaks the batman-adv build on many
-stable systems and thus makes the out-of-tree module unusable on these
-systems.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ compat-include/linux/netdevice.h        |  6 ---
+ compat-patches/0005-vid-callbacks.cocci | 74 ---------------------------------
+ compat.h                                | 54 ++++++++++++++++++++++++
+ 3 files changed, 54 insertions(+), 80 deletions(-)
+ delete mode 100644 compat-patches/0005-vid-callbacks.cocci
 
-I have currently no better idea than reverting these patches.
-
-Kind regards,
-	Sven
-
-PS: Linus, do you want to try to get rid of replacement.sh?
-
-[1] https://www.open-mesh.org/issues/303
-
---nextPart3120250.DSUSTJpM4J
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABCgAGBQJYFvRMAAoJEF2HCgfBJntG4dwP+wV6/kYZh1P3RWZ7UDU0KxiG
-99b7GWxvCQKrK41+qRp40lVXQQj/4PcpKrjFysTA4EdmxWTRLqS6K5HnxTtzFwvb
-340kjYYD3l+VN5wG2hoB9QM6tIvYpQ2onfiPk5pU+JgyLpbGR2hpZ8ABj0i4a7Z4
-Q3MZXfs0nZ3LgFBJH3lX2VoEEpNpmUxACJ6sMIM+2hw0Y1HcTL3qjnl5iPgc4eed
-IMYLaCK6I02FFy7jAQImHCye6USIOkaz9lNm4IgiGYWrrSG1cLtDazhpfw819CMr
-GULCTCjvpc45WeU21li6WpAPo84C+MH7ChvJwGaAdHMHJibYbTDZI8NwfcRlTCmb
-aPKAvZz5SO6VgMuZ/sKmOcGzfkvkNmYLZFZ7W9fBkd0qE4okZKfm65mT4C9bHrRV
-Hm9JOTkIdSa2K44pdwQrXpEB+xNCuwELopk661b8qwtdTmNdJHK2R8JTiGwpLN6s
-0410wVgh9pnB1oYY8wJc7Q8IapdQaJ1S/jUq8DqELbbCaBtl3oqH0hm/RX6wikEW
-PwRVa7yYFo7HS1IuoF71Ck21vJlrKah/zDpt2OQWYCLK/IrDvEEn0KDDyOzfE2a/
-S8uqejSO/8hINPMp2PpLbldcsASWDC3BIFypC0mTKnlpnPLXWST3//xumxqDj/sa
-NafISOvQZZntziLImu2h
-=AUqa
------END PGP SIGNATURE-----
-
---nextPart3120250.DSUSTJpM4J--
+diff --git a/compat-include/linux/netdevice.h b/compat-include/linux/netdevice.h
+index 0536549..e71e614 100644
+--- a/compat-include/linux/netdevice.h
++++ b/compat-include/linux/netdevice.h
+@@ -28,12 +28,6 @@
+ 
+ #include <linux/netdev_features.h>
+ 
+-#define __vid_api_returntype void
+-
+-#else
+-
+-#define __vid_api_returntype int
+-
+ #endif /* < KERNEL_VERSION(3, 3, 0) */
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
+diff --git a/compat-patches/0005-vid-callbacks.cocci b/compat-patches/0005-vid-callbacks.cocci
+deleted file mode 100644
+index 2cebc0e..0000000
+--- a/compat-patches/0005-vid-callbacks.cocci
++++ /dev/null
+@@ -1,74 +0,0 @@
+-@ add_assignment @
+-identifier batadv_interface_add_vid, batadv_netdev_ops;
+-@@
+-
+- struct net_device_ops batadv_netdev_ops = {
+- 	.ndo_vlan_rx_add_vid = batadv_interface_add_vid,
+- };
+-
+-@ kill_assignment @
+-identifier batadv_interface_kill_vid, batadv_netdev_ops;
+-@@
+-
+- struct net_device_ops batadv_netdev_ops = {
+- 	.ndo_vlan_rx_kill_vid = batadv_interface_kill_vid,
+- };
+-
+-@ add_vid @
+-identifier add_assignment.batadv_interface_add_vid;
+-type be16;
+-identifier dev, proto, vid;
+-@@
+-
+--batadv_interface_add_vid
+-+batadv_interface_add_vid_orig
+-			       (struct net_device *dev, be16 proto,
+-				unsigned short vid)
+- { ... }
+-
+-+static __vid_api_returntype batadv_interface_add_vid(struct net_device *dev,
+-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
+-+			   			      be16 proto,
+-+#endif
+-+			   			      unsigned short vid)
+-+{
+-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 0)
+-+    be16 proto = htons(ETH_P_8021Q);
+-+#endif
+-+
+-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 3, 0)
+-+	batadv_interface_add_vid_orig(dev, proto, vid);
+-+#else
+-+	return batadv_interface_add_vid_orig(dev, proto, vid);
+-+#endif
+-+}
+-
+-
+-@ kill_vid @
+-identifier kill_assignment.batadv_interface_kill_vid;
+-type be16;
+-identifier dev, proto, vid;
+-@@
+-
+--batadv_interface_kill_vid
+-+batadv_interface_kill_vid_orig
+-			       (struct net_device *dev, be16 proto,
+-				unsigned short vid)
+- { ... }
+-
+-+static __vid_api_returntype batadv_interface_kill_vid(struct net_device *dev,
+-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
+-+			   			       be16 proto,
+-+#endif
+-+			   			       unsigned short vid)
+-+{
+-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 0)
+-+    be16 proto = htons(ETH_P_8021Q);
+-+#endif
+-+
+-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 3, 0)
+-+	batadv_interface_kill_vid_orig(dev, proto, vid);
+-+#else
+-+	return batadv_interface_kill_vid_orig(dev, proto, vid);
+-+#endif
+-+}
+diff --git a/compat.h b/compat.h
+index d59fb5f..2865eeb 100644
+--- a/compat.h
++++ b/compat.h
+@@ -42,6 +42,31 @@
+ 
+ #endif /* < KERNEL_VERSION(3, 9, 0) */
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 3, 0)
++
++#define batadv_interface_add_vid(x, y, z) \
++__batadv_interface_add_vid(struct net_device *dev, __be16 proto,\
++                          unsigned short vid);\
++static void batadv_interface_add_vid(struct net_device *dev, unsigned short vid)\
++{\
++       __batadv_interface_add_vid(dev, htons(ETH_P_8021Q), vid);\
++}\
++static int __batadv_interface_add_vid(struct net_device *dev, __be16 proto,\
++                                     unsigned short vid)
++
++#define batadv_interface_kill_vid(x, y, z) \
++__batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
++                           unsigned short vid);\
++static void batadv_interface_kill_vid(struct net_device *dev,\
++                                     unsigned short vid)\
++{\
++       __batadv_interface_kill_vid(dev, htons(ETH_P_8021Q), vid);\
++}\
++static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
++                                      unsigned short vid)
++
++#endif /* < KERNEL_VERSION(3, 3, 0) */
++
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
+ 
+ #define batadv_interface_set_mac_addr(x, y) \
+@@ -70,6 +95,35 @@ static int __batadv_interface_tx(struct sk_buff *skb, \
+ 
+ #endif /* < KERNEL_VERSION(3, 9, 0) */
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 0)
++
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 3, 0)
++
++#define batadv_interface_add_vid(x, y, z) \
++__batadv_interface_add_vid(struct net_device *dev, __be16 proto,\
++			   unsigned short vid);\
++static int batadv_interface_add_vid(struct net_device *dev, unsigned short vid)\
++{\
++	return __batadv_interface_add_vid(dev, htons(ETH_P_8021Q), vid);\
++}\
++static int __batadv_interface_add_vid(struct net_device *dev, __be16 proto,\
++				      unsigned short vid)
++
++#define batadv_interface_kill_vid(x, y, z) \
++__batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
++			    unsigned short vid);\
++static int batadv_interface_kill_vid(struct net_device *dev,\
++				     unsigned short vid)\
++{\
++	return __batadv_interface_kill_vid(dev, htons(ETH_P_8021Q), vid);\
++}\
++static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
++				       unsigned short vid)
++
++#endif /* >= KERNEL_VERSION(3, 3, 0) */
++
++#endif /* < KERNEL_VERSION(3, 10, 0) */
++
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 15, 0)
+ 
+ /* the expected behaviour of this function is to return 0 on success, therefore
+-- 
+2.10.1
 
