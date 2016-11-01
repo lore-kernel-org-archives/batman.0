@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 01 Nov 2016 16:00:28 +0100
-Message-ID: <1694277.7a7ditMbRV@prime>
-In-Reply-To: <20161101121937.31890-1-sven@narfation.org>
-References: <20161101121937.31890-1-sven@narfation.org>
+Date: Tue, 01 Nov 2016 16:00:30 +0100
+Message-ID: <1483710.kMJpSMCJEJ@prime>
+In-Reply-To: <20161101121725.31181-1-sven@narfation.org>
+References: <20161101121725.31181-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5797378.d4TvB7iLTC";
+Content-Type: multipart/signed; boundary="nextPart1647144.LXcfJo7FEk";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2] alfred: vis: Don't fail when debugfs
-	cannot be mounted
+Subject: Re: [B.A.T.M.A.N.] [PATCH] alfred: vis: Add missing return for
+	vis_server
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,42 +20,38 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart5797378.d4TvB7iLTC
+--nextPart1647144.LXcfJo7FEk
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Tuesday, November 1, 2016 1:19:37 PM CET Sven Eckelmann wrote:
-> The vis server is supposed to use netlink when available. This allows to
-> work on systems without debugfs and under network namespaces. Thus it is
-> now not strictly required anymore to have debugfs available.
-> 
+On Tuesday, November 1, 2016 1:17:25 PM CET Sven Eckelmann wrote:
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-Applied in a580287.
+Applied in a2f7436.
 
 Thanks,
-     Simon
---nextPart5797378.d4TvB7iLTC
+   Simon
+--nextPart1647144.LXcfJo7FEk
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYGK4MAAoJEKEr45hCkp6hxAYP/1QjTnlrX864IpzABblK6bvE
-UsGKo4zay7r7Ed8EH6SMiKAoYD1DtfFTG0atnvQdrbJ/CeI1boRvaVWignBY7+cN
-iHLQDg5jgHxnJkZGrIMlsOv7PXuaXInOOa5ig6/g3VSxjorM6l3lxzJIK8h9VKRY
-nNlvWuEAFYReohvIKWrxAVSxiQQ9KylbXSmdjha/GySxnuHadBGKuZPfRSFwTSY3
-wV3feYBp3+Da3WrUbQR+rtzHoQ2TZbA2EY8pGoI3/AGH0sJvmYKeRzjfvdZTdgTB
-CZTByQR6IutFjf+RMwXWDslnczHvUJUAyfsF1XprcQ6nJoM0f+FzEQgQmjtpTjIJ
-omLIyZpxHGRQ79c55IQdamRBMQfULm2lpLiH1HHNb0owjxt2aGj4g1PxOU7cArbU
-XKWsxoceSnE57DN2DpSdmTUptdCqg946/015ZcOOPQbCPyn6N9pm/ansZmjmnaQe
-tGuVKDGxJBkDbInsapycL6syVy6Slnt03a/g9y7mCtQUMUOQzwLwyBHkkRt+Iu1y
-FdF2r+fLnEv5aepdvEmIDvMDEXbmhI51s6+fIgYPg8UGGBXTNt0zIS9GGxNHK+Nx
-OfKrCzpI8OKR8Kel5694/bJcx+3Zr2KT/tinNCxRnuWauSdV6mrheDEuSwamUxNm
-6N+nvjbsIRhQtw2/K5Xa
-=VN8s
+iQIcBAABCgAGBQJYGK4OAAoJEKEr45hCkp6h0r8QAKt0AKajSKYWoPVHEna0HeBM
+qrYykWiMjBJnwFBLnqIzjKj4RxBXTRjpbKd48eWdZNAjNCrimh7p43ZIJ4EzFahC
+qd72BQiyP6meFixj1l+3Q3tKegnVLx6Ep5GBdRyeJuG5wdciWQojdXKcelHppSpw
+ZGOqcC9B7V+2OBAeFulNy21CzDT/YwWRGb8EWAWzlph4ifAfArvdKXepB3Ke7+cQ
+RtUtYdoPYkS4c8VNM6S/MzIfz19Df+IpOYqBBYA9O40z22mKYbWA8n63/WmDRsmB
+S985U//sa2kLE6x3+bdfTJceFadxYUuU5i6lazzOtoYYEPPu9IKdJG1xXUltDAb2
+hs+si3lfoN/RPVqMEomNIs5nNgpNEuKUIRfsr+a5CFGazQgb2B0qQNGOuYEWB7mR
+IPRmGl75K1QROIxUVtVspd1fZJjlx21m3MrREVk70yXxOAfM0NbBzHIoMoe3dR04
+EauOGBDGfza1JlYi688Mx3KloP+6yuj703hx1yVlatXPu6SGOYSz8Pd90hdEfBgf
+VisOErgI57IXSewPB+F37PJZuUU0kVuFeDmfo3pymChsHCHxcVO1dWla21tUhy05
+zxwdmIyNoo4YUibGkhav9jJ+i/8+2ndnyyB4cTn7AZkYAFb1gg+N3rMYkQ8A5Nx4
+4H9ZyVjjH9E/FFbXXrw2
+=cMx7
 -----END PGP SIGNATURE-----
 
---nextPart5797378.d4TvB7iLTC--
+--nextPart1647144.LXcfJo7FEk--
 
