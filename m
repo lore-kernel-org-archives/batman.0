@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 01 Nov 2016 08:30:09 +0100
-Message-ID: <11199075.qxFJ5G89LN@bentobox>
-In-Reply-To: <20161029080328.26584-2-sven@narfation.org>
-References: <20161029080328.26584-2-sven@narfation.org>
+Date: Tue, 01 Nov 2016 08:30:34 +0100
+Message-ID: <10484382.jDe0LnMza3@bentobox>
+In-Reply-To: <20161029080328.26584-3-sven@narfation.org>
+References: <20161029080328.26584-3-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1882604.hFivVFfKiA";
+Content-Type: multipart/signed; boundary="nextPart6513165.tz98PTrof6";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [2/3] batman-adv: genetlink: statically
-	initialize families
+Subject: Re: [B.A.T.M.A.N.] [3/3] batman-adv: genetlink: mark families as
+	__ro_after_init
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,59 +20,63 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1882604.hFivVFfKiA
+--nextPart6513165.tz98PTrof6
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Samstag, 29. Oktober 2016 10:03:27 CET Sven Eckelmann wrote:
+On Samstag, 29. Oktober 2016 10:03:28 CET Sven Eckelmann wrote:
 > From: Johannes Berg <johannes.berg@intel.com>
 > 
-> Instead of providing macros/inline functions to initialize
-> the families, make all users initialize them statically and
-> get rid of the macros.
+> Now genl_register_family() is the only thing (other than the
+> users themselves, perhaps, but I didn't find any doing that)
+> writing to the family struct.
 > 
-> This reduces the kernel code size by about 1.6k on x86-64
-> (with allyesconfig).
+> In all families that I found, genl_register_family() is only
+> called from __init functions (some indirectly, in which case
+> I've add __init annotations to clarifly things), so all can
+> actually be marked __ro_after_init.
+> 
+> This protects the data structure from accidental corruption.
 > 
 > Signed-off-by: Johannes Berg <johannes.berg@intel.com>
 > Signed-off-by: David S. Miller <davem@davemloft.net>
-> [sven@narfation.org: adjust compat code]
+> [sven@narfation.org: Add compat code]
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
 > ---
 > Patch already in net-next
 > 
->  compat-include/net/genetlink.h | 21 ++-------------------
->  net/batman-adv/netlink.c       | 25 +++++++++++++++----------
->  2 files changed, 17 insertions(+), 29 deletions(-)
+>  compat-include/linux/cache.h | 35 +++++++++++++++++++++++++++++++++++
+>  net/batman-adv/netlink.c     |  2 +-
+>  2 files changed, 36 insertions(+), 1 deletion(-)
+>  create mode 100644 compat-include/linux/cache.h
 
-Applied in f0f80621705b629aa04ca90411633b9b3dd3c61f [1].
+Applied in c776b4a071d82f8ad0e35d1b9472758ecf69a75e [1].
 
 Kind regards,
         Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/f0f80621705b629aa04ca90411633b9b3dd3c61f
-
---nextPart1882604.hFivVFfKiA
+[1] https://git.open-mesh.org/batman-adv.git/commit/c776b4a071d82f8ad0e35d1b9472758ecf69a75e
+--nextPart6513165.tz98PTrof6
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYGESBAAoJEF2HCgfBJntG1tIP/1gXvqNFqrQPIW9WwParSuFL
-n7VPCEnk8gMVCGNO4/LRFsy4eCNl9bJniDKM/0jLrBItXqZUE4DrJMTWlBMF5xXE
-nfYBX1yvgYqvI2WQ8RItOAu8DsDhy6Fdp4ejEhoXpzvIi/GsWbfvd5G6it9veJUI
-9c2jgl1OG3blMAK0c0wxyfhhC0zO1ctvOkQEgVQDFx2KuEaTQo3yK4EDghU3GS1a
-gJjv3nV6SVbSYKWyk6uHBd4kq97u+XQVYsUTxrmjON6TTzGP/chGt42MepZwyAZM
-GE7I68uLMusR3utiQguluXRK+CdeQ5Vv0Nh41LAbZxw6Yi3zqC/jDtNXgD5l45ub
-P8Ekk+6dB0lz8Yk99fQ/FpyKUkEiHZtffrkE/li+BjYzHiSiLXlZKdm15rfTTNwm
-IFZQPNkkDOSpEIMEi9C30UGa8lTt6tgiiOhYm15H34RmV9kgJZKkKEfOuNKFeih6
-5ZE/0pWi1+cChuly8iQ3QLb23q50OPmbuLzWvmewcZHxkdNW58G8nsUIgWmmpnbm
-Ieoi4B/a6Dng8pkWB4uUsjFbg1swoEsyRlVtXM97Bi4qnfGm4MGHtwBbbMaJlMso
-cQeIDDUAWGcuDpaepaNntVwhN7+9FqyO5RdyFUT54uxb8Cry334oq0ExsJASQVYG
-kF3xZP6EawiSYCHE+RzT
-=ALqR
+iQIcBAABCgAGBQJYGESaAAoJEF2HCgfBJntGYSAP/Rn5gzbOBFyH1cbcuVWiQe/Y
+wLVLopPSBSY9OAXhwrGRaLjjzFQMyfTwXw3C9wBPx8FiJdA7I7f4QffIbj2Inl0y
+K1poUnMKG7HB9dTANJHwuiDXVQoXChW8IO21/HC0JO8l6XjP2f/i3nPCv0Som/JN
+Sw7fu4ZZMCtupVLyxBmbGWQ2VWBbpdj8xzgsT7jSuKhUTEz3hz7g39/9o/5qTzLU
+pZJ0IlRs2RdgXe/p7JfpEt5cdsyTV0CRu9m4dsrPXjuFa5Ev6AUom80sRmpjQf90
+PDr+qlHpYt34lQyzoS++ReqgVJVV9LK2iKOmTMl19mUfWWIOlQGaCBxVqZgDE0cS
+iCAt9nqdFE4VPORv3fveuqsjncPQZF3S8Owjm/yBxhDGFc7stneo0Bj+bdZvsK8t
+WV+GX+AWGUQ4PD4s7JBX+LCmOE8dqlFe9UzbFNU9TfX2QA0F5C1KxOPuCkZTh2VU
+WpUjS/HPbNUdf4kAONY0ni1/pTI+HyiRNXFumIUa+PSMYRCG0McZ9BGMHbdLTr5n
+KRqfP2hNUroCkbu36jnIKTjdRDqYLiczLZtTdOnoWumq872IRurVArpv+soO5uhz
++4hqWXCUCM/NHVCkFupCRQjg8Zvk76yeTzLLyhGlQC9rvIGUtvEtiPsHFS6Mjnbr
+ltAAlQDxgKU1WR8Zo3TR
+=81Fr
 -----END PGP SIGNATURE-----
 
---nextPart1882604.hFivVFfKiA--
+--nextPart6513165.tz98PTrof6--
 
