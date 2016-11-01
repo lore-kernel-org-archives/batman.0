@@ -1,17 +1,12 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Tue, 1 Nov 2016 01:53:46 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20161101005346.GD3264@otheros>
-References: <1637163.TC9CcXIrIP@sven-edge>
- <20161031073629.31819-4-sven@narfation.org>
- <20161101004619.GC3264@otheros>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue,  1 Nov 2016 07:17:50 +0100
+Message-Id: <20161101061750.15995-1-sven@narfation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20161101004619.GC3264@otheros>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 4/6] batman-adv: Revert "compat: Move
- netlink const compat to coccinelle"
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Deactivate __ro_after_init for
+	kernels < 4.10
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,14 +16,40 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tue, Nov 01, 2016 at 01:46:19AM +0100, Linus Lüssing wrote:
-> 684d4cad930d97902 ("batman-adv: Remove replacement compat script")
-> needs to be reverted first before this patch applies cleanly,
-> doesn't it?
+The pre-4.10 kernels must write to batadv_netlink_family after the family
+was registered. Thus disabling __ro_after_init for now is required on these
+kernels.
 
-Ah, sorry, no, just noticed you rebased it on master +
-"batman-adv: Install module in $INSTALL_MOD_DIR/updates/net/batman-adv".
+Fixes: c776b4a071d8 ("batman-adv: genetlink: mark families as __ro_after_init")
+Reported-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ compat-include/linux/cache.h | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-Cherry-picking that commit onto master first helped.
+diff --git a/compat-include/linux/cache.h b/compat-include/linux/cache.h
+index 93dff58..7b7069a 100644
+--- a/compat-include/linux/cache.h
++++ b/compat-include/linux/cache.h
+@@ -24,11 +24,13 @@
+ #include <linux/version.h>
+ #include_next <linux/cache.h>
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
+ 
+-#ifndef __ro_after_init
+-#define __ro_after_init
++/* hack for netlink.c which marked the family ops as ro */
++#ifdef __ro_after_init
++#undef __ro_after_init
+ #endif
++#define __ro_after_init
+ 
+ #endif /* < KERNEL_VERSION(4, 6, 0) */
+ 
+-- 
+2.10.2
+
