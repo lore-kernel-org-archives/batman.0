@@ -1,6 +1,6 @@
 Return-Path: <johnzeng2013@yahoo.com>
-Message-ID: <581B086E.8040400@yahoo.com>
-Date: Thu, 03 Nov 2016 17:50:38 +0800
+Message-ID: <581B22F1.6010009@yahoo.com>
+Date: Thu, 03 Nov 2016 19:43:45 +0800
 From: johnzeng <johnzeng2013@yahoo.com>
 MIME-Version: 1.0
 Subject: Re: if i hope to build  relay network via batman-adv , whether i
@@ -18,33 +18,29 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
 
 
-Hello Dear SIr :
+Hello Dear Sven:
 
-When i compile the part , whether i need make
-CONFIG_BATMAN_ADV_BATMAN_V=y at batman-adv-2016.2
+there are /a clerical/ //error// about batctl nc and i compiled the part .
+
+run these command in according to advisement for relay mode
+
+	      batctl nc 1
+	      echo 1 > /sys/class/net/bat0/mesh/network_coding
+	      ip link set dev wlan0 promisc on
+	      ip link set dev wlan0 mtu 1546
 
 
-Thanks
-> Hello Dear Sir :
->
-> if i hope to build relay network via batman-adv , whether i will obtain
-> Networkcoding part via config menuconfig and compile.
->
-> whether i need config other except part A ?
->
-> Part A
->
-> 	 batctl nc 0
-> 	 echo 0 > /sys/class/net/bat0/mesh/network_coding
-> 	 ip link set dev wlan0 promisc on
-> 	 ip link set dev wlan0 mtu 1546
->
->
->            Thanks 
->
->
->
+
+if i send a packet from host A to hostC via hostB, whether hostB will
+open relay mode at layer2 .
+
+
+Best Regards
+
+TIger
+
+
 
