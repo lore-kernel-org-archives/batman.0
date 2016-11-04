@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 04 Nov 2016 08:14:58 +0100
-Message-ID: <2867028.pt44pYxOGK@bentobox>
-In-Reply-To: <20161029071843.4614-1-sven@narfation.org>
-References: <20161029071843.4614-1-sven@narfation.org>
+Date: Fri, 04 Nov 2016 08:16:22 +0100
+Message-ID: <1751615.omgmT43EIh@bentobox>
+In-Reply-To: <20161102171443.9491-1-sven@narfation.org>
+References: <20161102171443.9491-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2308367.dNnyZv1ROQ";
+Content-Type: multipart/signed; boundary="nextPart3354241.6QqCRhqIVE";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [maint] batman-adv: Detect missing primaryif
-	during tp_send as error
+Subject: Re: [B.A.T.M.A.N.] [maint] batman-adv: Revert "fix splat on
+	disabling an interface"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,52 +19,66 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: a@unstable.cc
+Cc: julian@freifunk-rtk.de
 
---nextPart2308367.dNnyZv1ROQ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart3354241.6QqCRhqIVE
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Samstag, 29. Oktober 2016 09:18:43 CET Sven Eckelmann wrote:
-> The throughput meter detects different situations as problems for the
-> current test. It stops the test after these and reports it to userspace.
-> This also has to be done when the primary interface disappeared during the
-> test.
-> 
-> Fixes: 98d7a766b645 ("batman-adv: throughput meter implementation")
-> Reported-by: Joe Perches <joe@perches.com>
+On Mittwoch, 2. November 2016 18:14:43 CET Sven Eckelmann wrote:
+> The commit bac7733d06fa ("batman-adv: fix splat on disabling an interface=
+")
+> fixed a warning but at the same time broke the rtnl function add_slave for
+> devices which were temporarily removed.
+>=20
+> batadv_softif_slave_add requires soft_iface of and hard_iface to be NULL
+> before it is allowed to be enslaved. But this resetting of soft_iface to
+> NULL in batadv_hardif_disable_interface was removed with the aforemention=
+ed
+> commit.
+>=20
+> Reported-by: Julian Labus <julian@freifunk-rtk.de>
 > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Cc: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+> Acked-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
 > ---
->  net/batman-adv/tp_meter.c | 1 +
+> This is a simple revert. Linus, feel free to propose a patch to remove the
+> "|| hard_iface->soft_iface" when you think it is safe and you've tested
+> that it works
+>=20
+> Bug report for it can be found at https://www.open-mesh.org/issues/307
+> ---
+>  net/batman-adv/hard-interface.c | 1 +
 >  1 file changed, 1 insertion(+)
 
-Applied in 41af4814a81c0ff3c228f130578347b2f77805e0 [1].
+Applied in 89d0e31c2cc790743ee373b717c05ca85caf8384 [1].
 
 Kind regards,
         Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/41af4814a81c0ff3c228f130578347b2f77805e0
---nextPart2308367.dNnyZv1ROQ
+[1] https://git.open-mesh.org/batman-adv.git/commit/89d0e31c2cc790743ee373b=
+717c05ca85caf8384
+--nextPart3354241.6QqCRhqIVE
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYHDVyAAoJEF2HCgfBJntGVrUQAJx7mhkS4F+91AZsn7to/YkJ
-nKTHTm9nsgW2hVkFzhop/PQVxn7AZ+V+Rii9TpIubbZgLcsU8u0vZ0yqfzmkgntc
-21L8yyGPieoEdK885sQb4coRNA2GjVJvB0NRt2wUXYVXPfNlYGGVqIcafheDH0eI
-O5D9donNOTFmbd2ZCOKX5sdm07eyO79KeqFB2JyTIY3/Qmp33jtghbEgD58SK7Ni
-hZRj4BijBFYHFTLsin59NFnelmBw2FiMUtywdZfm3OofOEfO0AjVjLvS1y/yBNji
-Tnl3bsHBEhj4wrKDd3t6OohNOLE9Wb/6YsLWXSvxxNYyjqBlNXw3CzbEF4OsZPhu
-a+GQ/FMY3hj0vCo0fyzxMAArNnyx/dxAaMFwCWosRx651uw9CJvIpWwqAXFDvWXs
-Kqon6WXIgyDjQ35RZpWcyUqcoo+pQf3Yoqzb8t8ICMO+U5upKypp8rHSX+TvBHe/
-wWWc7zDtnvhCtmTfYD9EA5T3VPjEYu5V+OoVBmshVK1PsNH3vmpnOdNsoF7qlgtK
-wH38JPSWtG7KtdWfYEUUgx34CbQseHsF8hGj743nancdWpJdPfTlDeWMJpTGE0V1
-fFdyfV5BoHO9kezCogvFz9RQXF4UmFALZaLjuRnm272Jx29yRyD8Ke2GvcFmz9GS
-4bZmzFJw48iHwlpyRuTp
-=k6jU
+iQIcBAABCgAGBQJYHDXGAAoJEF2HCgfBJntGAW4QALgSWwYK8lvgLVYxo5Zy3U56
+RSVBvxfBLbwDZi2X/lkKWQjvlHF8rVHfpABg/Vsi6d8WmP+2lTCDTFuRa7D9aPEI
+nkHMCtrJOrNGySFGL/yBRLCeOWxKr2cdXyPVjPc1jlriIzBHb7PZ4QehVRutvcMY
+iCXw4xGKZBZQh4z2CglGkz6yya6Dm/mNutyaw1w92GxJ8Trxgzc8diMw+ox7xBdQ
+2CxMP+U463rhjkNiKuPyofHqg67GOSZarjLIHZK1gnXRudIHP/beaGgA1zWaVwLO
+BNZvz8uQ2SPSYLyhfGIPbfWfO8yBvdohG6VYptomEEoWYb8Dpk5ORcSNx7GcUGgT
+GYsF4I3UQTJ1OaNN3KT5aofUJnyGbrJW2dSW/E6jV6Z/bFB8henMd9W169x+BFPw
+zlgIKQ5LXzXSC1LanoOeOZvlQPv7vFx17g89kyy9PP/1/xads7dd76PeBKS52IuB
+GVSlcEGppzcCF6bE6ecA9QEwkuc1XTx9zIZsKxuH23BAMusvN6v8VrQPgqxI049l
+Axh9hBUCFfAYsQjFKu+uHAaOqT8YKiCHc8vlodxGZTl9czOSV4p9BCpx5O74i9YV
+boBG9wxFNXxuEVjYvG7Kqu86QxdOmmAy1P+/K4H+Qvry0pgKA/+dEN8wAPdieESP
+Z0fKSdw3iMmCvCdeXfsS
+=VwJH
 -----END PGP SIGNATURE-----
 
---nextPart2308367.dNnyZv1ROQ--
+--nextPart3354241.6QqCRhqIVE--
 
