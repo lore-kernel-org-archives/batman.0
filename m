@@ -1,46 +1,46 @@
-Return-Path: <johnzeng2013@yahoo.com>
-Message-ID: <581B22F1.6010009@yahoo.com>
-Date: Thu, 03 Nov 2016 19:43:45 +0800
-From: johnzeng <johnzeng2013@yahoo.com>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Fri, 4 Nov 2016 04:42:07 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20161104034207.GD4490@otheros>
+References: <20161102171443.9491-1-sven@narfation.org>
 MIME-Version: 1.0
-Subject: Re: if i hope to build  relay network via batman-adv , whether i
- will obtain Networkcoding part  via config menuconfig and compile?
-References: <581B0429.6000206@yahoo.com>
-In-Reply-To: <581B0429.6000206@yahoo.com>
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20161102171443.9491-1-sven@narfation.org>
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Revert "fix splat on
+ disabling an interface"
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
+ <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n/>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven@narfation.org>
+ <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: julian@freifunk-rtk.de
 
+On Wed, Nov 02, 2016 at 06:14:43PM +0100, Sven Eckelmann wrote:
+> The commit bac7733d06fa ("batman-adv: fix splat on disabling an interface")
+> fixed a warning but at the same time broke the rtnl function add_slave for
+> devices which were temporarily removed.
+> 
+> batadv_softif_slave_add requires soft_iface of and hard_iface to be NULL
+> before it is allowed to be enslaved. But this resetting of soft_iface to
+> NULL in batadv_hardif_disable_interface was removed with the aforementioned
+> commit.
+> 
+> Reported-by: Julian Labus <julian@freifunk-rtk.de>
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Cc: Linus Lüssing <linus.luessing@c0d3.blue>
+> ---
 
-Hello Dear Sven:
+Like I said in the ticket, I can't reproduce the splat with
+v2016.4 plus this revert right now.
 
-there are /a clerical/ //error// about batctl nc and i compiled the part .
+Maybe changes to the hard-interface handling might have fixed it
+properly in the mean time.
 
-run these command in according to advisement for relay mode
-
-	      batctl nc 1
-	      echo 1 > /sys/class/net/bat0/mesh/network_coding
-	      ip link set dev wlan0 promisc on
-	      ip link set dev wlan0 mtu 1546
-
-
-
-if i send a packet from host A to hostC via hostB, whether hostB will
-open relay mode at layer2 .
-
-
-Best Regards
-
-TIger
-
-
-
+Acked-by: Linus Lüssing <linus.luessing@c0d3.blue>
