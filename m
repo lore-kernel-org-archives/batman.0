@@ -1,84 +1,91 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 04 Nov 2016 08:16:22 +0100
-Message-ID: <1751615.omgmT43EIh@bentobox>
-In-Reply-To: <20161102171443.9491-1-sven@narfation.org>
-References: <20161102171443.9491-1-sven@narfation.org>
+Return-Path: <johnzeng2013@yahoo.com>
+Message-ID: <581C7F4A.80104@yahoo.com>
+Date: Fri, 04 Nov 2016 20:30:02 +0800
+From: johnzeng <johnzeng2013@yahoo.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3354241.6QqCRhqIVE";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [maint] batman-adv: Revert "fix splat on
-	disabling an interface"
+Subject: i have a question ? How many relay nodes can be supported at
+ NetworkCoding ( mtu 1546 ) .
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n.lists.open-mesh.org>
+	<b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
- <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n/>
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
- <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: julian@freifunk-rtk.de
+	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart3354241.6QqCRhqIVE
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
 
-On Mittwoch, 2. November 2016 18:14:43 CET Sven Eckelmann wrote:
-> The commit bac7733d06fa ("batman-adv: fix splat on disabling an interface=
-")
-> fixed a warning but at the same time broke the rtnl function add_slave for
-> devices which were temporarily removed.
->=20
-> batadv_softif_slave_add requires soft_iface of and hard_iface to be NULL
-> before it is allowed to be enslaved. But this resetting of soft_iface to
-> NULL in batadv_hardif_disable_interface was removed with the aforemention=
-ed
-> commit.
->=20
-> Reported-by: Julian Labus <julian@freifunk-rtk.de>
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> Cc: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
-> Acked-by: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
-> ---
-> This is a simple revert. Linus, feel free to propose a patch to remove the
-> "|| hard_iface->soft_iface" when you think it is safe and you've tested
-> that it works
->=20
-> Bug report for it can be found at https://www.open-mesh.org/issues/307
-> ---
->  net/batman-adv/hard-interface.c | 1 +
->  1 file changed, 1 insertion(+)
 
-Applied in 89d0e31c2cc790743ee373b717c05ca85caf8384 [1].
+Hello Dear Sir :
 
-Kind regards,
-        Sven
+i read some detail about NetworkCoding , my understanding :
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/89d0e31c2cc790743ee373b=
-717c05ca85caf8384
---nextPart3354241.6QqCRhqIVE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+every relay node will detects neighbors packet at promisc mode and
+combine these packet into a single transmission ,
 
------BEGIN PGP SIGNATURE-----
+and every relay mode will keep some usaful ( Ingoing: c8:3a:35:c9:ce:71
+.... ) and they will add some encoded information into packet
+( will send destination )
 
-iQIcBAABCgAGBQJYHDXGAAoJEF2HCgfBJntGAW4QALgSWwYK8lvgLVYxo5Zy3U56
-RSVBvxfBLbwDZi2X/lkKWQjvlHF8rVHfpABg/Vsi6d8WmP+2lTCDTFuRa7D9aPEI
-nkHMCtrJOrNGySFGL/yBRLCeOWxKr2cdXyPVjPc1jlriIzBHb7PZ4QehVRutvcMY
-iCXw4xGKZBZQh4z2CglGkz6yya6Dm/mNutyaw1w92GxJ8Trxgzc8diMw+ox7xBdQ
-2CxMP+U463rhjkNiKuPyofHqg67GOSZarjLIHZK1gnXRudIHP/beaGgA1zWaVwLO
-BNZvz8uQ2SPSYLyhfGIPbfWfO8yBvdohG6VYptomEEoWYb8Dpk5ORcSNx7GcUGgT
-GYsF4I3UQTJ1OaNN3KT5aofUJnyGbrJW2dSW/E6jV6Z/bFB8henMd9W169x+BFPw
-zlgIKQ5LXzXSC1LanoOeOZvlQPv7vFx17g89kyy9PP/1/xads7dd76PeBKS52IuB
-GVSlcEGppzcCF6bE6ecA9QEwkuc1XTx9zIZsKxuH23BAMusvN6v8VrQPgqxI049l
-Axh9hBUCFfAYsQjFKu+uHAaOqT8YKiCHc8vlodxGZTl9czOSV4p9BCpx5O74i9YV
-boBG9wxFNXxuEVjYvG7Kqu86QxdOmmAy1P+/K4H+Qvry0pgKA/+dEN8wAPdieESP
-Z0fKSdw3iMmCvCdeXfsS
-=VwJH
------END PGP SIGNATURE-----
+So we will run the part --- ip link set dev wlan0 mtu 1546 ( more than
+1532 )
 
---nextPart3354241.6QqCRhqIVE--
+but i have a question ? How many relay nodes can be supported at
+NetworkCoding ( mtu 1546 ) .
 
+
+Thanks
+
+Tiger
+
+batctl nn
+Node: c8:3a:35:c9:ce:71
+Ingoing: c8:3a:35:c9:ce:71
+Outgoing: c8:3a:35:c9:ce:71
+
+[root@alarmpi ~]# batctl nc
+enabled
+
+
+[root@alarmpi ~]# batctl statistics
+tx: 18
+tx_bytes: 2076
+tx_dropped: 32
+rx: 767
+rx_bytes: 33993
+forward: 0
+forward_bytes: 0
+mgmt_tx: 7956
+mgmt_tx_bytes: 542012
+mgmt_rx: 3132
+mgmt_rx_bytes: 222572
+frag_tx: 0
+frag_tx_bytes: 0
+frag_rx: 0
+frag_rx_bytes: 0
+frag_fwd: 0
+frag_fwd_bytes: 0
+tt_request_tx: 0
+tt_request_rx: 1
+tt_response_tx: 1
+tt_response_rx: 0
+tt_roam_adv_tx: 0
+tt_roam_adv_rx: 0
+dat_get_tx: 2
+dat_get_rx: 0
+dat_put_tx: 0
+dat_put_rx: 4
+dat_cached_reply_tx: 0
+nc_code: 0
+nc_code_bytes: 0
+nc_recode: 0
+nc_recode_bytes: 0
+nc_buffer: 17
+nc_decode: 0
+nc_decode_bytes: 0
+nc_decode_failed: 0
+nc_sniffed: 0
