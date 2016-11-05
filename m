@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 05 Nov 2016 09:31:10 +0100
-Message-ID: <2647191.IP1m5t5WQf@sven-edge>
-In-Reply-To: <32cfb197-7944-7b9c-0d1c-6f6267d355de@t-online.de>
-References: <32cfb197-7944-7b9c-0d1c-6f6267d355de@t-online.de>
+Date: Sat, 05 Nov 2016 09:32:32 +0100
+Message-ID: <1697924.LOXfUT59a6@sven-edge>
+In-Reply-To: <b861d75b-1ece-c8d6-a7cf-1b26b2c47bfb@t-online.de>
+References: <b861d75b-1ece-c8d6-a7cf-1b26b2c47bfb@t-online.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5498253.02ksB0TNvq";
+Content-Type: multipart/signed; boundary="nextPart7583789.uzNvsA1TdJ";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Batman an more than one Gateway
+Subject: Re: [B.A.T.M.A.N.] Alfred not working within network name space
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,59 +17,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Jean-Jacques Sarton <jj.sarton@t-online.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart5498253.02ksB0TNvq
+--nextPart7583789.uzNvsA1TdJ
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Freitag, 4. November 2016 22:37:24 CET Jean-Jacques Sarton wrote:
-> Hello,
+On Dienstag, 1. November 2016 20:07:24 CET Jean-Jacques Sarton wrote:
+> This patch shall allow to use the debugfs as previouly, including
+> the check for valify of the interface used.
+> For netns the check seem to be implemented within the function
+> netlink_query_common().
+> For netlink we check if the originators ans transtable_global
+> informations are accessible through netlink.
 > 
-> I have take a look to the configuration of our gateways.
-> Inho there are some points which are not OK,
-> Broadcasts are rebroadecasted on a wired connection,
-> this seem for me to be an issue.
+> To: b.a.t.m.a.n@lists.open-mesh.org
+> 
+> Signed-off-by: Jean-Jacques Sarton <jj.sarton@t-online.de>
+> ---
+>  batadv_query.c | 14 +++++++++++++-
+>  netlink.c      | 27 +++++++++++++++++++++++++++
+>  netlink.h      |  1 +
+>  3 files changed, 41 insertions(+), 1 deletion(-)
 
-No, this is even required on some "wired" connections. For example Matthias 
-Schiffer was against a change to remove rebroadcasts from the incoming 
-interface when it is not a wifi interface. He requires it because his fastd is 
-using non-wifi (so it basically a wired) interfaces. But it doesn't take care 
-of any broadcast distributions for data which is incoming. He is relying on 
-the fact that broadcast/multicast data he sends from a client to the fastd 
-server is automatically rebroadcasted back once to the incoming interface. 
-This will then force fastd to send this data to all its clients.
-
-You also don't know what is actually behind the wireless device. So you can 
-easily build a setup (yes, I have already seen this) which has a non-
-transitive ethernet to ethernet-like bridge device which attaches via a second 
-ethernet to the unit running batman-adv. Not rebroadcasting here would again 
-create missing broadcast problems like with the standard wifi hidden node 
-setups.
+@Jean-Jacques: What is the status?
 
 Kind regards,
 	Sven
---nextPart5498253.02ksB0TNvq
+
+--nextPart7583789.uzNvsA1TdJ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYHZjOAAoJEF2HCgfBJntGXXYP/1jxsQxB2JEPFicYC8pF2KCF
-MiXhJpkrZwQIMkXLOpzFmQKpDD3KvF4GyP15+iJb0L5Y1ohp5h82+0T/P9qpxsit
-j2jEpXq6E5rOx5qC5pjNmQn/BbovHSdmPrQxzzvmmT7mc0NQGcp5w5tZE22vcGAk
-kETTLcpAjBQqRWnoMLxPcb4c9GkEfNYUmYyGDxtzLLgqwItXIXw+82L+tawJbatP
-i02PKvLHw5GCsVvjVfCdcnGzQ1CwUgCwJvRrKRkVP06XdsxW6eB/niAQ3tykcQCe
-qSHASuxAtJlIeaVh34fFrx9v7Ahdg1gJBcc2kJ1jqB1EXGPsoi9ygRvdFw2zcdwN
-5wf1Nxx8hW2MYP1BfwVfzS5W8gOfltMBXHjQUFMV24PZhWjh54VX00dWYd7M4rjP
-Iv5Z7UKy+c7qv4iJGX0uXQ0AttyxPwinCtteGLMezrW0gU+/X/nGw95V2XWTxYzJ
-KxgEVTAlpXi+2r1x8oXh1HkOqCeuM/FQiqXyu/ZW89X8cYBokJQG7xPlh+VUq8f7
-Yblt1Qhr4Bd5kTn1aayxl+okssz6Eyh1lEZQQoQE+DpZ/bBMOmtp7bm3uF4Tq9Jp
-pkxBiY4ld7K1HTdxkUKAJrOhL4yb7Av/J4EoEHC5xHTPGtgkhhhUsK+gekn4nJRu
-DWYszXt9RzV25QSZOeei
-=zIWy
+iQIcBAABCgAGBQJYHZkgAAoJEF2HCgfBJntGR1AQAMsKRG+34EgBk2Iqa5K+oFE6
+P6OpdQWpuUus6ppMi2n5WzWXV1API9Y1FA0hV8hiA18aBAj7C2Oqx1baGcTuTdko
+KA2volPozU11KiSMyiGvXs+QQR2a1Wj+sm+vP8pUm80X1aiOrQl8CPXD6BImZFnu
+vgsI0uU7RHAkc8ZiwfkSBPfEW7u9yAGezgQs3AHL/qGJNiHp5nKquUR28SVul6OK
+ESKaamGOC6uSAtd0PH9Y6YtJiLVHReGbP6OU6Nd5IUDZg6yQnJtQmZfAeFcJpo0m
+4rYtbMT76jTGgO9Z13bspo4Tgq4q9LlIXECEsn3TIF/cfGpzZgl802tjNb+Dhqip
+6TAFsohwrsMEuEeRUbm9A3IHoE8LGY08UA2VMg2Y0/WICZ9uaBw8NmNQMWMTbOy+
+QPdnrZG6V0x+luWmY7Y2eKT+EYPRJ5DH0NNE6fZ8CDuUQuwA88/wedbQFVRZoCIW
+VM+SFEaO/LhL31+CxI4IXQjEEAcW7LAkcW22ASca5ObatNAmrs7uy++490QsObcs
+qEskKxc84qR44N2PCndKigrLGO7fBDlROLwClFQg0z/Anj/ToahrFY8HIKjOKJO0
+oDGs8lGh3/DynxCKT+Urdr/lR6hthxI6K8qVkg1Nr86h7lI5isNTogZfMqsebLE6
+Sc66Iur04saQ6v3w0ctN
+=NICZ
 -----END PGP SIGNATURE-----
 
---nextPart5498253.02ksB0TNvq--
+--nextPart7583789.uzNvsA1TdJ--
 
