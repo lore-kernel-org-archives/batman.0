@@ -1,12 +1,13 @@
-Return-Path: <jj.sarton@t-online.de>
-From: Jean-Jacques Sarton <jj.sarton@t-online.de>
-Message-ID: <32cfb197-7944-7b9c-0d1c-6f6267d355de@t-online.de>
-Date: Fri, 4 Nov 2016 22:37:24 +0100
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sat, 05 Nov 2016 11:14:50 +0800
+Message-ID: <2562442.4W30obIVjL@lafayette>
+In-Reply-To: <32cfb197-7944-7b9c-0d1c-6f6267d355de@t-online.de>
+References: <32cfb197-7944-7b9c-0d1c-6f6267d355de@t-online.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="mterVCg5SMJJ5mhKuI5LVkWbGEQJ2csJS"
-Subject: [B.A.T.M.A.N.] Batman an more than one Gateway
+Content-Type: multipart/signed; boundary="nextPart2611375.FFshLlMIPT";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Batman an more than one Gateway
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,132 +17,71 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: B.A.T.M.A.N@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---mterVCg5SMJJ5mhKuI5LVkWbGEQJ2csJS
-Content-Type: multipart/mixed; boundary="MBNJX2SWB3L3nQ3O4pIk8tExEiIJDEmfn";
- protected-headers="v1"
-From: Jean-Jacques Sarton <jj.sarton@t-online.de>
-To: B.A.T.M.A.N@lists.open-mesh.org
-Message-ID: <32cfb197-7944-7b9c-0d1c-6f6267d355de@t-online.de>
-Subject: Batman an more than one Gateway
+--nextPart2611375.FFshLlMIPT
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---MBNJX2SWB3L3nQ3O4pIk8tExEiIJDEmfn
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Hello,
+> I have take a look to the configuration of our gateways.
+> Inho there are some points which are not OK,
+> Broadcasts are rebroadecasted on a wired connection,
 
-I have take a look to the configuration of our gateways.
-Inho there are some points which are not OK,
-Broadcasts are rebroadecasted on a wired connection,
-this seem for me to be an issue.
+please note that batman's payload reboradcast behavior is unrelated to the 
+batman gateway feature. The effect of the batman gateway feature is explained 
+here: https://www.open-mesh.org/projects/batman-adv/wiki/Gateways
 
-Our network has two gw which are interconnected.
-I have listed the interfaces and the output from
-batctl on the GW and also what batxtl said on a node
+Rebroadcast on an interface depends on the interface type. Generally, batman 
+runs on 3 different types of interfaces:
 
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+ * WiFi: payload broadcasts are transmitted 3 times to increase the chances of 
+a successful transmission
+ * VPN / wired Ethernet: payload broadcast is transmitted once as most sane 
+VPNs don't experience packet loss
 
- Interfaces for gateway Q0:
- br0:	         12:e8:ef:7f:0d:c7
-  bat0:          12:e8:ef:7f:0d:c9
-   ftun-q1:      12:e8:ef:7f:0d:c8
-   mesh-vpn:     aa:ff:ca:ca:fe:03
-
--------------------
-# batctl gwl
-      Gateway      (#/255)           Nexthop [outgoingIF]: advertised upl=
-ink bandwidth ... [B.A.T.M.A.N. adv 2014.3.0, MainIF/MAC: ftun-q1/12:e8:e=
-f:7f:0d:c8 (bat0)]
-   ca:b1:f2:63:f3:cf (251) ca:b1:f2:63:f3:cf [   ftun-q1]: 50.0/50.0 MBit=
+Guessing from your interface names you are running VPNs and not wired 
+Ethernet, is that correct ?
 
 
---------------------------------------
-On node (connected with Q0):
+> this seem for me to be an issue.
 
-# batctl n
-[B.A.T.M.A.N. adv 2016.4, MainIF/MAC: mesh0/92:fb:53:11:44:f1 (bat0/90:f6=
-:52:11:44:f1 BATMAN_IV)]
-IF             Neighbor              last-seen
-     mesh-vpn	  aa:ff:ca:ca:fe:03    3.342s
-
----------------------
-# batctl gwl
-[B.A.T.M.A.N. adv 2016.4, MainIF/MAC: mesh0/92:fb:53:11:44:f1 (bat0/90:f6=
-:52:11:44:f1 BATMAN_IV)]
-  Router            ( TQ) Next Hop          [outgoingIf]  Bandwidth
-* ca:b1:f2:63:f3:cf (240) aa:ff:ca:ca:fe:03 [  mesh-vpn]: 50.0/50.0 MBit
-  12:e8:ef:7f:0d:c8 (255) aa:ff:ca:ca:fe:03 [  mesh-vpn]: 50.0/50.0 MBit
-
-Translated Interface/Location
-   ftun-q1/Q0       (255) mesh-vpn/Q0
-*  ftun-q0/Q1       (240) mesh-vpn/Q0
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-Interfaces for gateway Q1:
- br0:	         ca:b1:f2:63:f3:cd
-  bat0:          ca:b1:f2:63:f3:cd
-   ftun-q0:      ca:b1:f2:63:f3:cf
-   mesh-vpn:     aa:ff:ca:ca:fe:01
-
----------------------
-# batctl gwl
-      Gateway      (#/255)           Nexthop [outgoingIF]: advertised upl=
-ink bandwidth ... [B.A.T.M.A.N. adv 2014.3.0, MainIF/MAC: ftun-q0/ca:b1:f=
-2:63:f3:cf (bat0)]
-   12:e8:ef:7f:0d:c8 (255) 12:e8:ef:7f:0d:c8 [   ftun-q0]: 50.0/50.0 MBit=
+What exactly is the issue ? 
 
 
---------------------------------------
-On node (connected with Q1):
+>       Gateway      (#/255)           Nexthop [outgoingIF]: advertised uplink
+> bandwidth ... [B.A.T.M.A.N. adv 2014.3.0, MainIF/MAC:
+> ftun-q1/12:e8:ef:7f:0d:c8 (bat0)] ca:b1:f2:63:f3:cf (251) ca:b1:f2:63:f3:cf
+> [   ftun-q1]: 50.0/50.0 MBit
+> 
+> [B.A.T.M.A.N. adv 2016.4, MainIF/MAC: mesh0/92:fb:53:11:44:f1
+> (bat0/90:f6:52:11:44:f1 BATMAN_IV)] IF             Neighbor             
+> last-seen
+>      mesh-vpn	  aa:ff:ca:ca:fe:03    3.342s
 
-# batctl n
-[B.A.T.M.A.N. adv 2016.4, MainIF/MAC: mesh0/92:fb:53:11:44:f1 (bat0/90:f6=
-:52:11:44:f1 BATMAN_IV)]
-IF             Neighbor              last-seen
-     mesh-vpn	  aa:ff:ca:ca:fe:01    4.413s
-
----------------------
-# batctl gwl
-[B.A.T.M.A.N. adv 2016.4, MainIF/MAC: mesh0/92:fb:53:11:44:f1 (bat0/90:f6=
-:52:11:44:f1 BATMAN_IV)]
-  Router            ( TQ) Next Hop          [outgoingIf]  Bandwidth
-  ca:b1:f2:63:f3:cf (255) aa:ff:ca:ca:fe:01 [  mesh-vpn]: 50.0/50.0 MBit
-* 12:e8:ef:7f:0d:c8 (240) aa:ff:ca:ca:fe:01 [  mesh-vpn]: 50.0/50.0 MBit
-
-Translated Interface/Location
-   ftun-q0/Q1       (255) mesh-vpn/Q1
-*  ftun-q1/Q0       (240) mesh-vpn/Q1
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-Regards,
-
-Jean-Jacques
+It is recommended to run the same batman version on all nodes to avoid 
+unexpected behavior. These 2 versions are separated by 2 years of development.
 
 
---MBNJX2SWB3L3nQ3O4pIk8tExEiIJDEmfn--
+Cheers,
+Marek
 
---mterVCg5SMJJ5mhKuI5LVkWbGEQJ2csJS
+--nextPart2611375.FFshLlMIPT
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
 
-iF0EARECAB0FAlgc/5QWHGpqLnNhcnRvbkB0LW9ubGluZS5kZQAKCRAz0luJHcLB
-C5cpAJ0WRckUdK5FJTK5cdoGic8iOjwI1ACePikRiPiQIl9VwDOBYK/Pjbtsspo=
-=xVZB
+iQEcBAABCAAGBQJYHU6qAAoJEFNVTo/uthzAgyUH/2Gzl0IBMfMJ/eKE9ovUQeBa
+0963MoCjMOaMD5HO35slb6mL5jEupmXHqF5iC8xhZKJRLZmojKz6AW0JuA1hWR6N
+hh7fnEMG7JgRnTKwQ4qDePoHP7AkwDy6Ztt3QJwe9ihFbbOWJZP+m0FyyDjzTEdO
+ILv5+0C/irMEb+q6uyusEf6SJy4v5kFRtXF3fqpncaLHx08epJN5hEhoUaP0tZ9A
+5vMMoEvu8w2pd4ck2dvUKOrNTfLg8l5VvOtMlWoNOnb0v3pM2E/Otq3gU6HSi8Pq
+Gp7lyL4nhOjKGLhvhYzimcN1I4i/4+5GvN5e1Oxl2/h1CqbL0eqSMiHMYdHc0tM=
+=x+S+
 -----END PGP SIGNATURE-----
 
---mterVCg5SMJJ5mhKuI5LVkWbGEQJ2csJS--
+--nextPart2611375.FFshLlMIPT--
+
