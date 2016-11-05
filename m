@@ -1,14 +1,14 @@
-Return-Path: <jj.sarton@t-online.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 05 Nov 2016 23:25:38 +0100
+Message-ID: <7866334.t3BPe0EmV2@sven-edge>
+In-Reply-To: <0b99a1f3-aa99-eb62-46cf-f959011a05e6@t-online.de>
 References: <32cfb197-7944-7b9c-0d1c-6f6267d355de@t-online.de>
  <2562442.4W30obIVjL@lafayette>
-From: Jean-Jacques Sarton <jj.sarton@t-online.de>
-Message-ID: <0b99a1f3-aa99-eb62-46cf-f959011a05e6@t-online.de>
-Date: Sat, 5 Nov 2016 22:29:19 +0100
+ <0b99a1f3-aa99-eb62-46cf-f959011a05e6@t-online.de>
 MIME-Version: 1.0
-In-Reply-To: <2562442.4W30obIVjL@lafayette>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="mBgkofEiIULJFejoNrjfFsBW5FdVok2QB"
+Content-Type: multipart/signed; boundary="nextPart1965912.nshPCKIYAe";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] Batman an more than one Gateway
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -21,138 +21,71 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---mBgkofEiIULJFejoNrjfFsBW5FdVok2QB
-Content-Type: multipart/mixed; boundary="DLfoXvXMC99uBclhIWSVrOSnTDlV14OSB";
- protected-headers="v1"
-From: Jean-Jacques Sarton <jj.sarton@t-online.de>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Message-ID: <0b99a1f3-aa99-eb62-46cf-f959011a05e6@t-online.de>
-Subject: Re: [B.A.T.M.A.N.] Batman an more than one Gateway
-References: <32cfb197-7944-7b9c-0d1c-6f6267d355de@t-online.de>
- <2562442.4W30obIVjL@lafayette>
-In-Reply-To: <2562442.4W30obIVjL@lafayette>
+--nextPart1965912.nshPCKIYAe
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---DLfoXvXMC99uBclhIWSVrOSnTDlV14OSB
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+On Samstag, 5. November 2016 22:29:19 CET Jean-Jacques Sarton wrote:
+> Am 05.11.2016 um 04:14 schrieb Marek Lindner:
+> > Hi,
+> > 
+> >> I have take a look to the configuration of our gateways.
+> >> Inho there are some points which are not OK,
+> >> Broadcasts are rebroadecasted on a wired connection,
+> > 
+> > please note that batman's payload reboradcast behavior is unrelated to the 
+> > batman gateway feature. The effect of the batman gateway feature is explained 
+> > here: https://www.open-mesh.org/projects/batman-adv/wiki/Gateways
+> > 
+> This seem to work but for IPv6 there is nothing and the client get
+> RA's from all GW.
 
-Hi Marek,
+The important message from Marek (we already told you this multiple
+times) was:
 
+"batman-adv gateway feature" has nothing to do with "rebroadcast".
 
-Am 05.11.2016 um 04:14 schrieb Marek Lindner:
-> Hi,
->=20
->> I have take a look to the configuration of our gateways.
->> Inho there are some points which are not OK,
->> Broadcasts are rebroadecasted on a wired connection,
->=20
-> please note that batman's payload reboradcast behavior is unrelated to =
-the=20
-> batman gateway feature. The effect of the batman gateway feature is exp=
-lained=20
-> here: https://www.open-mesh.org/projects/batman-adv/wiki/Gateways
->=20
-This seem to work but for IPv6 there is nothing and the client get
-RA's from all GW.
+So please stop mixing these things together in all your messages. It also
+doesn't help when you now start to bring up IPv6 RAs. They are not IPv4
+DHCP requests and are therefore as unrelated to the "batman-adv gateway
+feature" as "rebroadcasts".
 
-> Rebroadcast on an interface depends on the interface type. Generally, b=
-atman=20
-> runs on 3 different types of interfaces:
->=20
->  * WiFi: payload broadcasts are transmitted 3 times to increase the cha=
-nces of=20
-> a successful transmission
-This wjat not the case, no WIFI connection or neighbors
->  * VPN / wired Ethernet: payload broadcast is transmitted once as most =
-sane=20
-> VPNs don't experience packet loss
+> > * VPN / wired Ethernet: payload broadcast is transmitted once as most sane 
+> > VPNs don't experience packet loss
+> 
+> This what the interface type used. This mean that the gateway send
+> a broadcast via wire and the node get it as if there where no VPN between
+> GW and node. rebroadcasting is not OK here.
 
-This what the interface type used. This mean that the gateway send
-a broadcast via wire and the node get it as if there where no VPN between=
+This can be wrong (as explained in my last mail). Gluon only sets the
+no_rebroadcast on the Freifunk router because it doesn't have to handle
+distribution of broadcast to multiple fastd endpoints. It would be
+completely wrong when set on the fastd server (handling multiple clients).
+See my other mail for details.
 
-GW and node. rebroadcasting is not OK here.
-
-> Guessing from your interface names you are running VPNs and not wired=20
-> Ethernet, is that correct ?
-see above
-
->> this seem for me to be an issue.
->=20
-> What exactly is the issue ?=20
-
-A good question. If all node act in the same maner we will get
-a lot of traffic which must be received ny the gateway.
->=20
->>       Gateway      (#/255)           Nexthop [outgoingIF]: advertised =
-uplink
->> bandwidth ... [B.A.T.M.A.N. adv 2014.3.0, MainIF/MAC:
->> ftun-q1/12:e8:ef:7f:0d:c8 (bat0)] ca:b1:f2:63:f3:cf (251) ca:b1:f2:63:=
-f3:cf
->> [   ftun-q1]: 50.0/50.0 MBit
->>
->> [B.A.T.M.A.N. adv 2016.4, MainIF/MAC: mesh0/92:fb:53:11:44:f1
->> (bat0/90:f6:52:11:44:f1 BATMAN_IV)] IF             Neighbor           =
- =20
->> last-seen
->>      mesh-vpn	  aa:ff:ca:ca:fe:03    3.342s
->=20
-> It is recommended to run the same batman version on all nodes to avoid =
-
-> unexpected behavior. These 2 versions are separated by 2 years of devel=
-opment.
-
-I agree the version on the GW and the node shall be the same.
-On the other hand the older version and the version I used use the
-same protocol so that I expect not problem.
-
-I have made check with a Freifunk router and on the same time with
-my network space router.
-All router used what connected to the same GW. I have seen
-rebroadcast on both router attached to the PC which what
-configured as router for 2 different subnets.
-On the Freifunk router there what less rebroadcasting.
-The command batctl gwl shown an othter preferred gateway. This
-may explain the differences in the number of rebroadcasting.
-
-On a Gluon Freifunk node conneted to Q1:
-
-# batctl gwl
-      Gateway      (#/255)           Nexthop [outgoingIF]: advertised upl=
-ink bandwidth ... [B.A.T.M.A.N. adv 2015.1, MainIF/MAC: mesh-vpn/16:d0:20=
-:41:5a:72 (bat0)]
-   12:e8:ef:7f:0d:c8 (238) aa:ff:ca:ca:fe:01 [  mesh-vpn]: 50.0/50.0 MBit=
-
-=3D> ca:b1:f2:63:f3:cf (255) aa:ff:ca:ca:fe:01 [  mesh-vpn]: 50.0/50.0 MB=
-it
-
-Translated Interface/Location
-   ftun-q1/Q0        (238) mesh-vpn/Q1       [  mesh-vpn]: 50.0/50.0 MBit=
-
-=3D> ftun-q0/Q1        (255) mesh-vpn/Q1       [  mesh-vpn]: 50.0/50.0 MB=
-it
-
-I know the batman version on the FFF router is not so old as
-the GW version.
-
-Cheer,
-
-Jean-Jacques
-
-
---DLfoXvXMC99uBclhIWSVrOSnTDlV14OSB--
-
---mBgkofEiIULJFejoNrjfFsBW5FdVok2QB
+Kind regards,
+	Sven
+--nextPart1965912.nshPCKIYAe
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
 
-iF0EARECAB0FAlgeTy8WHGpqLnNhcnRvbkB0LW9ubGluZS5kZQAKCRAz0luJHcLB
-C4mcAJ93sZxwfskHnvfcN81k80PSnsvFAwCfYxW20XVJTrkgFx1lWUECr9HQCGA=
-=7NY8
+iQIcBAABCgAGBQJYHlxiAAoJEF2HCgfBJntG++IQAKAfCSGQ7gKw7ngcJrM1YFX2
+eCcgNlXuqk/+tQBEvBbUmSO2DbXcXsURhT2xXq/zIeij6Xk/52MZTDGVF+SzfijD
+WCzaRZAC+TwLcf+1gd8Ez3eKLnBji0oBehgkJJJejM4rFtgtF3+r3PdZ+vhYY05W
+c7DTbQXW0c0GViTfX8rMINEp6s05TJ5s4OHE+CcX2x/QzmAbj0fg+MvlmsBCPUGj
+MLYrQ6vqytv5o141tWQBs8w0tY/sChi9qY+e3Em78mf21eirNLxPwpmNIojN5Iz5
+GEiY1xP9ZqtTCk2rIWadYUZnId/avuPQtLqVLSS65zqzjOH2b8DRiAX7XSqEghMy
+U3dq9GRXxZqqiBd1hZmVyS0LBcO/0MirpEYpZW3RQevbGa4S2oOVmusSBIMm9lpC
+r5EczCB5USh59VbZYg6UUtceubqxzn1Mbxb7H7+VWwx/nxn4XRswyM2tAPzyJrP5
+z9Ej9GHa9CPfmN2Z/yGAQGUOGIGaHhnnmfaOm0nutMRHyKBY79lepHK4Wh/l1NwP
+AmIR0TfH9FT1PegRPJp2jiCHvloSzU4CEKgNbryK7r9kvMi25GjnjMyfAEMYc/pH
+EcvQDJ+6+FU0r7/Nb6ar4v/pi8bktq6Idxgeqn9Qk6vGvQA9tZgK69o9OmvL41Yq
+5MmjJr3/AU8zlMfmekDs
+=YINw
 -----END PGP SIGNATURE-----
 
---mBgkofEiIULJFejoNrjfFsBW5FdVok2QB--
+--nextPart1965912.nshPCKIYAe--
+
