@@ -1,12 +1,12 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 05 Nov 2016 11:14:50 +0800
-Message-ID: <2562442.4W30obIVjL@lafayette>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 05 Nov 2016 09:31:10 +0100
+Message-ID: <2647191.IP1m5t5WQf@sven-edge>
 In-Reply-To: <32cfb197-7944-7b9c-0d1c-6f6267d355de@t-online.de>
 References: <32cfb197-7944-7b9c-0d1c-6f6267d355de@t-online.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2611375.FFshLlMIPT";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; boundary="nextPart5498253.02ksB0TNvq";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] Batman an more than one Gateway
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,71 +17,59 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2611375.FFshLlMIPT
+--nextPart5498253.02ksB0TNvq
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-Hi,
-
+On Freitag, 4. November 2016 22:37:24 CET Jean-Jacques Sarton wrote:
+> Hello,
+> 
 > I have take a look to the configuration of our gateways.
 > Inho there are some points which are not OK,
 > Broadcasts are rebroadecasted on a wired connection,
-
-please note that batman's payload reboradcast behavior is unrelated to the 
-batman gateway feature. The effect of the batman gateway feature is explained 
-here: https://www.open-mesh.org/projects/batman-adv/wiki/Gateways
-
-Rebroadcast on an interface depends on the interface type. Generally, batman 
-runs on 3 different types of interfaces:
-
- * WiFi: payload broadcasts are transmitted 3 times to increase the chances of 
-a successful transmission
- * VPN / wired Ethernet: payload broadcast is transmitted once as most sane 
-VPNs don't experience packet loss
-
-Guessing from your interface names you are running VPNs and not wired 
-Ethernet, is that correct ?
-
-
 > this seem for me to be an issue.
 
-What exactly is the issue ? 
+No, this is even required on some "wired" connections. For example Matthias 
+Schiffer was against a change to remove rebroadcasts from the incoming 
+interface when it is not a wifi interface. He requires it because his fastd is 
+using non-wifi (so it basically a wired) interfaces. But it doesn't take care 
+of any broadcast distributions for data which is incoming. He is relying on 
+the fact that broadcast/multicast data he sends from a client to the fastd 
+server is automatically rebroadcasted back once to the incoming interface. 
+This will then force fastd to send this data to all its clients.
 
+You also don't know what is actually behind the wireless device. So you can 
+easily build a setup (yes, I have already seen this) which has a non-
+transitive ethernet to ethernet-like bridge device which attaches via a second 
+ethernet to the unit running batman-adv. Not rebroadcasting here would again 
+create missing broadcast problems like with the standard wifi hidden node 
+setups.
 
->       Gateway      (#/255)           Nexthop [outgoingIF]: advertised uplink
-> bandwidth ... [B.A.T.M.A.N. adv 2014.3.0, MainIF/MAC:
-> ftun-q1/12:e8:ef:7f:0d:c8 (bat0)] ca:b1:f2:63:f3:cf (251) ca:b1:f2:63:f3:cf
-> [   ftun-q1]: 50.0/50.0 MBit
-> 
-> [B.A.T.M.A.N. adv 2016.4, MainIF/MAC: mesh0/92:fb:53:11:44:f1
-> (bat0/90:f6:52:11:44:f1 BATMAN_IV)] IF             Neighbor             
-> last-seen
->      mesh-vpn	  aa:ff:ca:ca:fe:03    3.342s
-
-It is recommended to run the same batman version on all nodes to avoid 
-unexpected behavior. These 2 versions are separated by 2 years of development.
-
-
-Cheers,
-Marek
-
---nextPart2611375.FFshLlMIPT
+Kind regards,
+	Sven
+--nextPart5498253.02ksB0TNvq
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEcBAABCAAGBQJYHU6qAAoJEFNVTo/uthzAgyUH/2Gzl0IBMfMJ/eKE9ovUQeBa
-0963MoCjMOaMD5HO35slb6mL5jEupmXHqF5iC8xhZKJRLZmojKz6AW0JuA1hWR6N
-hh7fnEMG7JgRnTKwQ4qDePoHP7AkwDy6Ztt3QJwe9ihFbbOWJZP+m0FyyDjzTEdO
-ILv5+0C/irMEb+q6uyusEf6SJy4v5kFRtXF3fqpncaLHx08epJN5hEhoUaP0tZ9A
-5vMMoEvu8w2pd4ck2dvUKOrNTfLg8l5VvOtMlWoNOnb0v3pM2E/Otq3gU6HSi8Pq
-Gp7lyL4nhOjKGLhvhYzimcN1I4i/4+5GvN5e1Oxl2/h1CqbL0eqSMiHMYdHc0tM=
-=x+S+
+iQIcBAABCgAGBQJYHZjOAAoJEF2HCgfBJntGXXYP/1jxsQxB2JEPFicYC8pF2KCF
+MiXhJpkrZwQIMkXLOpzFmQKpDD3KvF4GyP15+iJb0L5Y1ohp5h82+0T/P9qpxsit
+j2jEpXq6E5rOx5qC5pjNmQn/BbovHSdmPrQxzzvmmT7mc0NQGcp5w5tZE22vcGAk
+kETTLcpAjBQqRWnoMLxPcb4c9GkEfNYUmYyGDxtzLLgqwItXIXw+82L+tawJbatP
+i02PKvLHw5GCsVvjVfCdcnGzQ1CwUgCwJvRrKRkVP06XdsxW6eB/niAQ3tykcQCe
+qSHASuxAtJlIeaVh34fFrx9v7Ahdg1gJBcc2kJ1jqB1EXGPsoi9ygRvdFw2zcdwN
+5wf1Nxx8hW2MYP1BfwVfzS5W8gOfltMBXHjQUFMV24PZhWjh54VX00dWYd7M4rjP
+Iv5Z7UKy+c7qv4iJGX0uXQ0AttyxPwinCtteGLMezrW0gU+/X/nGw95V2XWTxYzJ
+KxgEVTAlpXi+2r1x8oXh1HkOqCeuM/FQiqXyu/ZW89X8cYBokJQG7xPlh+VUq8f7
+Yblt1Qhr4Bd5kTn1aayxl+okssz6Eyh1lEZQQoQE+DpZ/bBMOmtp7bm3uF4Tq9Jp
+pkxBiY4ld7K1HTdxkUKAJrOhL4yb7Av/J4EoEHC5xHTPGtgkhhhUsK+gekn4nJRu
+DWYszXt9RzV25QSZOeei
+=zIWy
 -----END PGP SIGNATURE-----
 
---nextPart2611375.FFshLlMIPT--
+--nextPart5498253.02ksB0TNvq--
 
