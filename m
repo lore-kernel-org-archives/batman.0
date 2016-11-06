@@ -1,14 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 06 Nov 2016 11:48:34 +0100
-Message-ID: <3987570.iOS7FDS5sO@sven-edge>
-In-Reply-To: <1478427394-11607-1-git-send-email-jj.sarton@t-online.de>
-References: <1478427394-11607-1-git-send-email-jj.sarton@t-online.de>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Sun, 6 Nov 2016 18:50:07 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20161106175007.GE9484@otheros>
+References: <32cfb197-7944-7b9c-0d1c-6f6267d355de@t-online.de>
+ <2562442.4W30obIVjL@lafayette>
+ <0b99a1f3-aa99-eb62-46cf-f959011a05e6@t-online.de>
+ <7866334.t3BPe0EmV2@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart14640500.2gCn11Ymaq";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [[PATCH] Alfred not working within network name
-	space add static to function declaration
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <7866334.t3BPe0EmV2@sven-edge>
+Subject: Re: [B.A.T.M.A.N.] Batman an more than one Gateway
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,65 +20,32 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart14640500.2gCn11Ymaq
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+On Sat, Nov 05, 2016 at 11:25:38PM +0100, Sven Eckelmann wrote:
+> This can be wrong (as explained in my last mail). Gluon only sets the
+> no_rebroadcast on the Freifunk router because it doesn't have to handle
+> distribution of broadcast to multiple fastd endpoints. It would be
+> completely wrong when set on the fastd server (handling multiple clients).
+> See my other mail for details.
 
-On Sonntag, 6. November 2016 11:16:34 CET Jean-Jacques Sarton wrote:
-> Fix scope of function to static
-> 
-> Signed-off-by: Jean-Jacques Sarton <jj.sarton@t-online.de>
-> ---
->  batadv_query.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Just as a small addition, I think I've said it in the ticket, too:
+Jean-Jacques, in one point, you're absolutely right:
 
-Please read my reply to https://patchwork.open-mesh.org/patch/16803/
+When there is just one neighbor on an interface, then rebroadcasts
+can easily be avoided. Which is the case in your scenario on the
+VPN client(!) side.
 
-Same applies here.
-
-Kind regards,
-	Sven
-
-> 
-> diff --git a/batadv_query.c b/batadv_query.c
-> index dc8a042..69f5a48 100644
-> --- a/batadv_query.c
-> +++ b/batadv_query.c
-> @@ -136,7 +136,7 @@ int ipv6_to_mac(const struct in6_addr *addr, struct ether_addr *mac)
->  	return 0;
->  }
->  
-> -int batadv_interface_check_debugfs(const char *mesh_iface)
-> +static int batadv_interface_check_debugfs(const char *mesh_iface)
->  {
->  	char full_path[MAX_PATH + 1];
->  	FILE *f;
-> 
+Gluon has this extra patch for batman-adv, this no_rebroadcast
+knob. But an automatic detection which should cover this specific
+VPN client case, was merged into upstream batman-adv just a few
+days ago \o/ :).
 
 
---nextPart14640500.2gCn11Ymaq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+For any case with more than one neighbor on an interface it is
+very hard to detect whether upon receiving a broadcast all other
+neighbors have received this broadcast too.
 
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABCgAGBQJYHwqCAAoJEF2HCgfBJntGH4UP/1TdvloO7o3mKmbJAT+6/1Tn
-n6RlwDEsWDqOMCnk3sTgQxxSNskGSN5CgE2lZYJbQ1lvQj1VoE9vdOKzgnd7Glxx
-QUaAGOHYJPbBer/XzUIHAcKUd0dTEpqUZP+xDDjo3c1YvjDbwkBx5zmOUgwKFA4o
-ABilP2+gWZzRm67yDtyMl43W9lqz5xLY8CJNCxbnbruhdDEPjZsto27XD0UUbzqk
-ZUijfnbKI1Y0xpHB9/dn6JD7vBh0jBPFgMo52CP14KXg6+akIK0SDvYHuZ3zQ1Gg
-ls++7/lKywiEA9ixZdCmPTehKVPOzr9wAFsPglU/FmDVY1sJFTJo1rVog5NAuPop
-FqRVVpCYxnGFg8tzZ4TgBLcFmfjQlrx4xPZOTE0nb2wAF0phYDxb9Ij5qinvbyMX
-t4wF5MpyfX/LJIpLQeRBNYOAbIIqKmC2tK+tj1GTRIKj30nyQqlNwsk76oVyeWCc
-JfzAtsFlf2vB1XuCRz8USXbIDmfWTIdXEagyghcX2iqPgcWQOB1f9y04WwtruFHC
-TXT7uJcQ2GWgxtImM1sACFKGQ7pAUguJ7g/UMjJi3BR7yQQnZrwmAy5gy37rPXO7
-bjwGNNiIjIXQBUDovtF8s8HIpaEIihpQqTJ5NCbn7rYUVQh/vk8VMSjgM74TxHo4
-dgn+TGQnPkvCufRXNF7j
-=sKYs
------END PGP SIGNATURE-----
-
---nextPart14640500.2gCn11Ymaq--
-
+If we can't say for sure, then we unfortunately need to stay safe
+and rebroadcast to avoid horrible packet loss / broken connections /
+armageddon.
