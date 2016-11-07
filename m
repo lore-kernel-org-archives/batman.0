@@ -4,13 +4,13 @@ References: <32cfb197-7944-7b9c-0d1c-6f6267d355de@t-online.de>
  <0b99a1f3-aa99-eb62-46cf-f959011a05e6@t-online.de>
  <7866334.t3BPe0EmV2@sven-edge> <20161106175007.GE9484@otheros>
 From: Jean-Jacques Sarton <jj.sarton@t-online.de>
-Message-ID: <234e2c3a-c666-1d2b-d7e5-f1f88c22dc8e@t-online.de>
-Date: Mon, 7 Nov 2016 22:48:29 +0100
+Message-ID: <98acd005-3645-c5c5-683c-b898ca7a166d@t-online.de>
+Date: Mon, 7 Nov 2016 23:03:02 +0100
 MIME-Version: 1.0
 In-Reply-To: <20161106175007.GE9484@otheros>
 Content-Type: multipart/signed; micalg=pgp-sha1;
  protocol="application/pgp-signature";
- boundary="n9UNdVO2kDBQDkhLWG4QlD3DAfoVICwCD"
+ boundary="IvWmQCueImeIkvb2B5LK2O5sCa9U4tWMd"
 Subject: Re: [B.A.T.M.A.N.] Batman an more than one Gateway
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -24,13 +24,13 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---n9UNdVO2kDBQDkhLWG4QlD3DAfoVICwCD
-Content-Type: multipart/mixed; boundary="70NUfi4wrHRB1V4C2oDJMRT4JIhE2pM1g";
+--IvWmQCueImeIkvb2B5LK2O5sCa9U4tWMd
+Content-Type: multipart/mixed; boundary="swUGmKR7kTisuj5xabsAuhbGKd16m6L72";
  protected-headers="v1"
 From: Jean-Jacques Sarton <jj.sarton@t-online.de>
 To: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n@lists.open-mesh.org>
-Message-ID: <234e2c3a-c666-1d2b-d7e5-f1f88c22dc8e@t-online.de>
+Message-ID: <98acd005-3645-c5c5-683c-b898ca7a166d@t-online.de>
 Subject: Re: [B.A.T.M.A.N.] Batman an more than one Gateway
 References: <32cfb197-7944-7b9c-0d1c-6f6267d355de@t-online.de>
  <2562442.4W30obIVjL@lafayette>
@@ -38,48 +38,13 @@ References: <32cfb197-7944-7b9c-0d1c-6f6267d355de@t-online.de>
  <7866334.t3BPe0EmV2@sven-edge> <20161106175007.GE9484@otheros>
 In-Reply-To: <20161106175007.GE9484@otheros>
 
---70NUfi4wrHRB1V4C2oDJMRT4JIhE2pM1g
+--swUGmKR7kTisuj5xabsAuhbGKd16m6L72
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-Hallo Linus,
+Hallo Linusm
 
-I must think about the need of rebroadcast. I agree
-that message may be lost. The tcp/ip stack has the
-charge of resolving such problems. For udp the partner
-may accept packet loss, for example streaming of video
-or sound, or have an own protocol for resolving this.
-
-The layer 2 broadcast message are normally important and
-sending occur as event. The frame may be lost. If the lost
-is on the originator, nobody will become a message.
-The packet lost may occur far from the originator an one or
-more participant may not get the frame. If all systems are
-in the wifi mesh network (each has neighbor with different
-connection to the internet), forwarding shall allow
-that the frame arrive via the wifi mesh devices. For
-system which has no neighbor, the possibility of packet
-lost is much greater and only broadcasting more time
-may resolve the problem. Sending a broadcast back
-can only considered as an acknowledgement. If there
-are not more "acknowledgement" as known systems
-(gw + node) some participant should not have got
-the frame and the originator has to send the broadcast
-again.
-
-If I have a look to the clients connected via
-wifi on a node broadcasts originated by the client
-must not reach the node, but I have not notified
-problems due to lost of ARP and so on. The only think
-I can see is a lot of arp an rs mainly from smartphones.
-
-There are probably a lot of thinks I have not understood
-regardinh the mesh network.
-
-Regards,
-
-Jean-Jacques
-
+Soll ich es auf Franz=C3=B6sich schreoben ?
 Am 06.11.2016 um 18:50 schrieb Linus L=C3=BCssing:
 > On Sat, Nov 05, 2016 at 11:25:38PM +0100, Sven Eckelmann wrote:
 >> This can be wrong (as explained in my last mail). Gluon only sets the
@@ -107,16 +72,32 @@ ts).
 > very hard to detect whether upon receiving a broadcast all other
 > neighbors have received this broadcast too.
 >=20
+OK with my previous mail I have wrote about my impressions.
+
+I more as an neighbor is connected to an interface, you can not
+be sure that all neighbor have received the broadcast.
+Waiting and counting the rebroadcasts may be a solution but
+rebroadcasting can be replaced by an acknowledgment frame.
+If I have 3 node a b and c b will see a and c but a and c
+may be to far from each other so that the rebroadcast from a
+will not reach c until b repeat the broadcast which will
+be rebroadcasted,...
+
+
 > If we can't say for sure, then we unfortunately need to stay safe
 > and rebroadcast to avoid horrible packet loss / broken connections /
 > armageddon.
 >=20
+Holzhammer Methode ?
+
+Gr=C3=BC=C3=9Fe,
+
+Jean-Jacques
 
 
+--swUGmKR7kTisuj5xabsAuhbGKd16m6L72--
 
---70NUfi4wrHRB1V4C2oDJMRT4JIhE2pM1g--
-
---n9UNdVO2kDBQDkhLWG4QlD3DAfoVICwCD
+--IvWmQCueImeIkvb2B5LK2O5sCa9U4tWMd
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -124,9 +105,9 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iF0EARECAB0FAlgg9q0WHGpqLnNhcnRvbkB0LW9ubGluZS5kZQAKCRAz0luJHcLB
-C2E4AJ9cOYUEO36DyTcS1u6MYlNtnh9LGQCfeKvy2EbsKgWeOmoLkYVzyxx0wWQ=
-=rIc9
+iF0EARECAB0FAlgg+hYWHGpqLnNhcnRvbkB0LW9ubGluZS5kZQAKCRAz0luJHcLB
+C315AJwKi49cmX+zfmgXUA12Fu99yI+zGACeJDHlOEqgSxF2t0CVk/vOJ/JI/lY=
+=cWdM
 -----END PGP SIGNATURE-----
 
---n9UNdVO2kDBQDkhLWG4QlD3DAfoVICwCD--
+--IvWmQCueImeIkvb2B5LK2O5sCa9U4tWMd--
