@@ -1,13 +1,14 @@
-Return-Path: <eric.dumazet@gmail.com>
-Message-ID: <1478624389.17367.12.camel@edumazet-glaptop3.roam.corp.google.com>
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Tue, 08 Nov 2016 08:59:49 -0800
-In-Reply-To: <20161108164526.7518-14-sw@simonwunderlich.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 08 Nov 2016 18:28:02 +0100
+Message-ID: <2044854.g075mifYzn@bentobox>
+In-Reply-To: <1478624389.17367.12.camel@edumazet-glaptop3.roam.corp.google.com>
 References: <20161108164526.7518-1-sw@simonwunderlich.de>
  <20161108164526.7518-14-sw@simonwunderlich.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ <1478624389.17367.12.camel@edumazet-glaptop3.roam.corp.google.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart19485984.88u8rGP59H";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH 13/17] batman-adv: Consume skb in receive
 	handlers
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,71 +20,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>
+To: Eric Dumazet <eric.dumazet@gmail.com>
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net
 
-On Tue, 2016-11-08 at 17:45 +0100, Simon Wunderlich wrote:
-> From: Sven Eckelmann <sven@narfation.org>
+--nextPart19485984.88u8rGP59H
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Dienstag, 8. November 2016 08:59:49 CET Eric Dumazet wrote:
+[...]
+> > +free_skb:
+> >  	consume_skb(skb);
+> > -	return NET_RX_SUCCESS;
+> > +
+> > +	return ret;
+> >  }
 > 
-> Receiving functions in Linux consume the supplied skbuff. Doing the same in
-> the batadv_rx_handler functions makes the behavior more similar to the rest
-> of the Linux network code.
 > 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
-> ---
->  net/batman-adv/bat_iv_ogm.c     |  17 +++--
->  net/batman-adv/bat_v_elp.c      |  25 ++++---
->  net/batman-adv/bat_v_ogm.c      |  10 +--
->  net/batman-adv/main.c           |  11 +--
->  net/batman-adv/network-coding.c |  11 +--
->  net/batman-adv/routing.c        | 149 +++++++++++++++++++++++++++-------------
->  6 files changed, 141 insertions(+), 82 deletions(-)
-> 
-> diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-> index 310f391..b9941bf 100644
-> --- a/net/batman-adv/bat_iv_ogm.c
-> +++ b/net/batman-adv/bat_iv_ogm.c
-> @@ -1823,17 +1823,18 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
->  	struct batadv_ogm_packet *ogm_packet;
->  	u8 *packet_pos;
->  	int ogm_offset;
-> -	bool ret;
-> +	bool res;
-> +	int ret = NET_RX_DROP;
->  
-> -	ret = batadv_check_management_packet(skb, if_incoming, BATADV_OGM_HLEN);
-> -	if (!ret)
-> -		return NET_RX_DROP;
-> +	res = batadv_check_management_packet(skb, if_incoming, BATADV_OGM_HLEN);
-> +	if (!res)
-> +		goto free_skb;
->  
->  	/* did we receive a B.A.T.M.A.N. IV OGM packet on an interface
->  	 * that does not have B.A.T.M.A.N. IV enabled ?
->  	 */
->  	if (bat_priv->algo_ops->iface.enable != batadv_iv_ogm_iface_enable)
-> -		return NET_RX_DROP;
-> +		goto free_skb;
->  
->  	batadv_inc_counter(bat_priv, BATADV_CNT_MGMT_RX);
->  	batadv_add_counter(bat_priv, BATADV_CNT_MGMT_RX_BYTES,
-> @@ -1854,8 +1855,12 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
->  		ogm_packet = (struct batadv_ogm_packet *)packet_pos;
->  	}
->  
-> +	ret = NET_RX_SUCCESS;
-> +
-> +free_skb:
->  	consume_skb(skb);
-> -	return NET_RX_SUCCESS;
-> +
-> +	return ret;
->  }
+> Okay, but we do have kfree_skb() and consume_skb() and they should be
+> used appropriately.
 
+Yes, this patch is one part of reaching this goal. Some other parts are also
+in this patchset. But other changes like the one you've mention here (change
+some consume_skb partially back to kfree_skb) have still to be done. But
+first we have to clean up the main portion of the mess :)
 
-Okay, but we do have kfree_skb() and consume_skb() and they should be
-used appropriately.
+Kind regards,
+	Sven
+--nextPart19485984.88u8rGP59H
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
+-----BEGIN PGP SIGNATURE-----
 
+iQIcBAABCgAGBQJYIgsiAAoJEF2HCgfBJntGHbAP/iC8CjIcYNWBK6PORprNkgmd
+DdhbpxGA/MbmA62tm1QHUnaXx3rkXD6gJIJF4WUWodg11KlO3lKXWRSBcUmXp1jE
+UJVZCXI5W2ihk6O+1RSQ7qt2q6Hi2OndVy73+mHm9epPdqVkNvsQHM/MNi7xofeO
+se1Nkv3EjLxg67T8b+s4DlOQDZEa5kmgRL4fXTe1xscMg+tEpAF4zrlN4uCcVOVc
+/nGNQfRqNfcTATRkXYQt+7d2KCmPwlNqNVf88El/mS3f0RHT8Z8pAIkcxjGfW6Tc
+ZZgY8nYBGfRUKe2+/qECaPU+3t7D8dse4tdTaRtMy2szMdonFGpooEEhrp7/Rdz4
+OYaw6SD0H8XjNA09dxclD8UB6YSUYHuo2JHXdpZoyjmD3jU8cceytKpxo1OzhTz0
+99VsuUzHwYQvKrLdfA42Qeoo8tI/NzO7lc7Xn30hXp9xPBn1/39rBqBet0Bfxxfq
+uZ8TFOatO3tiLePfbTZK3Go0R+6UUsz/fpc6HH9hCXcaxxXLXiV5b4UjmARP/Yzq
+2LZvoCIUWX2Ub0BRgvKcIunZq24XVEwabF7dRp8dfOguRRANAvoxVbvCcSYkgnNx
+XHUC5iSQKw0kr0B3b2BF94mqw4B1daXqKEyWhxoUI8/1hXwUNVO8ImD5G4mWZHXA
+LIZWtFlXhoevJxPZQJvg
+=3YVA
+-----END PGP SIGNATURE-----
+
+--nextPart19485984.88u8rGP59H--
 
