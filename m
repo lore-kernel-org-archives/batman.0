@@ -1,17 +1,9 @@
-Return-Path: <eric.dumazet@gmail.com>
-Message-ID: <1478626981.17367.16.camel@edumazet-glaptop3.roam.corp.google.com>
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Tue, 08 Nov 2016 09:43:01 -0800
-In-Reply-To: <2044854.g075mifYzn@bentobox>
-References: <20161108164526.7518-1-sw@simonwunderlich.de>
- <20161108164526.7518-14-sw@simonwunderlich.de>
- <1478624389.17367.12.camel@edumazet-glaptop3.roam.corp.google.com>
- <2044854.g075mifYzn@bentobox>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 13/17] batman-adv: Consume skb in receive
-	handlers
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue,  8 Nov 2016 18:59:05 +0100
+Message-Id: <20161108175905.29961-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Consume dropped packets with
+	kfree_skb
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,45 +13,92 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tue, 2016-11-08 at 18:28 +0100, Sven Eckelmann wrote:
-> On Dienstag, 8. November 2016 08:59:49 CET Eric Dumazet wrote:
-> [...]
-> > > +free_skb:
-> > >  	consume_skb(skb);
-> > > -	return NET_RX_SUCCESS;
-> > > +
-> > > +	return ret;
-> > >  }
-> > 
-> > 
-> > Okay, but we do have kfree_skb() and consume_skb() and they should be
-> > used appropriately.
-> 
-> Yes, this patch is one part of reaching this goal. Some other parts are also
-> in this patchset. But other changes like the one you've mention here (change
-> some consume_skb partially back to kfree_skb) have still to be done. But
-> first we have to clean up the main portion of the mess :)
+The dropped skbs were previously free'd using kfree_skb in
+batadv_batman_skb_recv with kfree_skb. This has to be done again directly
+in the functions which also consume the skb on success.
 
-Sure, but your patch 13/17 should address this right away.
+Reported-by: Eric Dumazet <eric.dumazet@gmail.com>
+Fixes: 83fef820ecdb ("batman-adv: Consume skb in receive handlers")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ net/batman-adv/bat_iv_ogm.c | 5 ++++-
+ net/batman-adv/bat_v_elp.c  | 7 +++++--
+ net/batman-adv/bat_v_ogm.c  | 5 ++++-
+ net/batman-adv/routing.c    | 2 +-
+ 4 files changed, 14 insertions(+), 5 deletions(-)
 
-You must not call consume_skb() if you are dropping a packet.
-
-Prior to this patch, kfree_skb() was properly called, and after this
-patch, consume_skb() is called instead.
-
-
--       ret = (*batadv_rx_handler[idx])(skb, hard_iface);
--
--       if (ret == NET_RX_DROP)
--               kfree_skb(skb);
-+       (*batadv_rx_handler[idx])(skb, hard_iface);
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 36a1b3d..f00f666 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1851,7 +1851,10 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
+ 	ret = NET_RX_SUCCESS;
  
-You can not claim working on these issues and at the same time add them
-back.
-
-
-
+ free_skb:
+-	consume_skb(skb);
++	if (ret == NET_RX_SUCCESS)
++		consume_skb(skb);
++	else
++		kfree_skb(skb);
+ 
+ 	return ret;
+ }
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 6376240..f2fb2f0 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -498,7 +498,7 @@ int batadv_v_elp_packet_recv(struct sk_buff *skb,
+ 	struct batadv_hard_iface *primary_if;
+ 	struct ethhdr *ethhdr = (struct ethhdr *)skb_mac_header(skb);
+ 	bool res;
+-	int ret;
++	int ret = NET_RX_DROP;
+ 
+ 	res = batadv_check_management_packet(skb, if_incoming, BATADV_ELP_HLEN);
+ 	if (!res)
+@@ -531,7 +531,10 @@ int batadv_v_elp_packet_recv(struct sk_buff *skb,
+ 	batadv_hardif_put(primary_if);
+ 
+ free_skb:
+-	consume_skb(skb);
++	if (ret == NET_RX_SUCCESS)
++		consume_skb(skb);
++	else
++		kfree_skb(skb);
+ 
+ 	return ret;
+ }
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index ef3a88d..38b9aab 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -844,7 +844,10 @@ int batadv_v_ogm_packet_recv(struct sk_buff *skb,
+ 	ret = NET_RX_SUCCESS;
+ 
+ free_skb:
+-	consume_skb(skb);
++	if (ret == NET_RX_SUCCESS)
++		consume_skb(skb);
++	else
++		kfree_skb(skb);
+ 
+ 	return ret;
+ }
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 7d9ae4b..6713bdf 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -1066,7 +1066,7 @@ int batadv_recv_unicast_tvlv(struct sk_buff *skb,
+ 	}
+ 
+ free_skb:
+-	consume_skb(skb);
++	kfree_skb(skb);
+ 
+ 	return ret;
+ }
+-- 
+2.10.2
 
