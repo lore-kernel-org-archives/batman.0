@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue,  8 Nov 2016 17:45:10 +0100
-Message-Id: <20161108164526.7518-2-sw@simonwunderlich.de>
+Date: Tue,  8 Nov 2016 17:45:11 +0100
+Message-Id: <20161108164526.7518-3-sw@simonwunderlich.de>
 In-Reply-To: <20161108164526.7518-1-sw@simonwunderlich.de>
 References: <20161108164526.7518-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 01/17] batman-adv: Introduce missing headers
-	for genetlink restructure
+Subject: [B.A.T.M.A.N.] [PATCH 02/17] batman-adv: Mark batadv_netlink_ops as
+	const
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,33 +20,28 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Sven Eckelmann <sven@narfation.org>
 
-Fixes: 56989f6d8568 ("genetlink: mark families as __ro_after_init")
-Fixes: 2ae0f17df1cd ("genetlink: use idr to track families")
+The genl_ops don't need to be written by anyone and thus can be moved in a
+ro memory range.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/netlink.c | 3 +++
- 1 file changed, 3 insertions(+)
+ net/batman-adv/netlink.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index 005012b..2171281 100644
+index 2171281..0627381 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -20,11 +20,14 @@
+@@ -530,7 +530,7 @@ batadv_netlink_dump_hardifs(struct sk_buff *msg, struct netlink_callback *cb)
+ 	return msg->len;
+ }
  
- #include <linux/atomic.h>
- #include <linux/byteorder/generic.h>
-+#include <linux/cache.h>
- #include <linux/errno.h>
-+#include <linux/export.h>
- #include <linux/fs.h>
- #include <linux/genetlink.h>
- #include <linux/if_ether.h>
- #include <linux/init.h>
-+#include <linux/kernel.h>
- #include <linux/netdevice.h>
- #include <linux/netlink.h>
- #include <linux/printk.h>
+-static struct genl_ops batadv_netlink_ops[] = {
++static const struct genl_ops batadv_netlink_ops[] = {
+ 	{
+ 		.cmd = BATADV_CMD_GET_MESH_INFO,
+ 		.flags = GENL_ADMIN_PERM,
 -- 
 2.10.1
 
