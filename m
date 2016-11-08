@@ -1,11 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue,  8 Nov 2016 17:45:26 +0100
-Message-Id: <20161108164526.7518-18-sw@simonwunderlich.de>
-In-Reply-To: <20161108164526.7518-1-sw@simonwunderlich.de>
+Return-Path: <eric.dumazet@gmail.com>
+Message-ID: <1478624389.17367.12.camel@edumazet-glaptop3.roam.corp.google.com>
+From: Eric Dumazet <eric.dumazet@gmail.com>
+Date: Tue, 08 Nov 2016 08:59:49 -0800
+In-Reply-To: <20161108164526.7518-14-sw@simonwunderlich.de>
 References: <20161108164526.7518-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 17/17] batman-adv: Reject unicast packet with
-	zero/mcast dst address
+ <20161108164526.7518-14-sw@simonwunderlich.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 13/17] batman-adv: Consume skb in receive
+	handlers
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,47 +19,71 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net
 
-From: Sven Eckelmann <sven@narfation.org>
+On Tue, 2016-11-08 at 17:45 +0100, Simon Wunderlich wrote:
+> From: Sven Eckelmann <sven@narfation.org>
+> 
+> Receiving functions in Linux consume the supplied skbuff. Doing the same in
+> the batadv_rx_handler functions makes the behavior more similar to the rest
+> of the Linux network code.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+> ---
+>  net/batman-adv/bat_iv_ogm.c     |  17 +++--
+>  net/batman-adv/bat_v_elp.c      |  25 ++++---
+>  net/batman-adv/bat_v_ogm.c      |  10 +--
+>  net/batman-adv/main.c           |  11 +--
+>  net/batman-adv/network-coding.c |  11 +--
+>  net/batman-adv/routing.c        | 149 +++++++++++++++++++++++++++-------------
+>  6 files changed, 141 insertions(+), 82 deletions(-)
+> 
+> diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+> index 310f391..b9941bf 100644
+> --- a/net/batman-adv/bat_iv_ogm.c
+> +++ b/net/batman-adv/bat_iv_ogm.c
+> @@ -1823,17 +1823,18 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
+>  	struct batadv_ogm_packet *ogm_packet;
+>  	u8 *packet_pos;
+>  	int ogm_offset;
+> -	bool ret;
+> +	bool res;
+> +	int ret = NET_RX_DROP;
+>  
+> -	ret = batadv_check_management_packet(skb, if_incoming, BATADV_OGM_HLEN);
+> -	if (!ret)
+> -		return NET_RX_DROP;
+> +	res = batadv_check_management_packet(skb, if_incoming, BATADV_OGM_HLEN);
+> +	if (!res)
+> +		goto free_skb;
+>  
+>  	/* did we receive a B.A.T.M.A.N. IV OGM packet on an interface
+>  	 * that does not have B.A.T.M.A.N. IV enabled ?
+>  	 */
+>  	if (bat_priv->algo_ops->iface.enable != batadv_iv_ogm_iface_enable)
+> -		return NET_RX_DROP;
+> +		goto free_skb;
+>  
+>  	batadv_inc_counter(bat_priv, BATADV_CNT_MGMT_RX);
+>  	batadv_add_counter(bat_priv, BATADV_CNT_MGMT_RX_BYTES,
+> @@ -1854,8 +1855,12 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
+>  		ogm_packet = (struct batadv_ogm_packet *)packet_pos;
+>  	}
+>  
+> +	ret = NET_RX_SUCCESS;
+> +
+> +free_skb:
+>  	consume_skb(skb);
+> -	return NET_RX_SUCCESS;
+> +
+> +	return ret;
+>  }
 
-An unicast batman-adv packet cannot be transmitted to a multicast or zero
-mac address. So reject incoming packets which still have these classes of
-addresses as destination mac address in the outer ethernet header.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/routing.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Okay, but we do have kfree_skb() and consume_skb() and they should be
+used appropriately.
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 381f040..7d9ae4b 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -364,8 +364,8 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
- 
- 	ethhdr = eth_hdr(skb);
- 
--	/* packet with unicast indication but broadcast recipient */
--	if (is_broadcast_ether_addr(ethhdr->h_dest))
-+	/* packet with unicast indication but non-unicast recipient */
-+	if (!is_valid_ether_addr(ethhdr->h_dest))
- 		goto free_skb;
- 
- 	/* packet with broadcast/multicast sender address */
-@@ -462,8 +462,8 @@ static int batadv_check_unicast_packet(struct batadv_priv *bat_priv,
- 
- 	ethhdr = eth_hdr(skb);
- 
--	/* packet with unicast indication but broadcast recipient */
--	if (is_broadcast_ether_addr(ethhdr->h_dest))
-+	/* packet with unicast indication but non-unicast recipient */
-+	if (!is_valid_ether_addr(ethhdr->h_dest))
- 		return -EBADR;
- 
- 	/* packet with broadcast/multicast sender address */
--- 
-2.10.1
+
 
