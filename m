@@ -1,14 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 08 Nov 2016 18:28:02 +0100
-Message-ID: <2044854.g075mifYzn@bentobox>
-In-Reply-To: <1478624389.17367.12.camel@edumazet-glaptop3.roam.corp.google.com>
+Return-Path: <eric.dumazet@gmail.com>
+Message-ID: <1478626981.17367.16.camel@edumazet-glaptop3.roam.corp.google.com>
+From: Eric Dumazet <eric.dumazet@gmail.com>
+Date: Tue, 08 Nov 2016 09:43:01 -0800
+In-Reply-To: <2044854.g075mifYzn@bentobox>
 References: <20161108164526.7518-1-sw@simonwunderlich.de>
  <20161108164526.7518-14-sw@simonwunderlich.de>
  <1478624389.17367.12.camel@edumazet-glaptop3.roam.corp.google.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart19485984.88u8rGP59H";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+ <2044854.g075mifYzn@bentobox>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Subject: Re: [B.A.T.M.A.N.] [PATCH 13/17] batman-adv: Consume skb in receive
 	handlers
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,54 +21,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Eric Dumazet <eric.dumazet@gmail.com>
+To: Sven Eckelmann <sven@narfation.org>
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, davem@davemloft.net
 
---nextPart19485984.88u8rGP59H
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Dienstag, 8. November 2016 08:59:49 CET Eric Dumazet wrote:
-[...]
-> > +free_skb:
-> >  	consume_skb(skb);
-> > -	return NET_RX_SUCCESS;
-> > +
-> > +	return ret;
-> >  }
+On Tue, 2016-11-08 at 18:28 +0100, Sven Eckelmann wrote:
+> On Dienstag, 8. November 2016 08:59:49 CET Eric Dumazet wrote:
+> [...]
+> > > +free_skb:
+> > >  	consume_skb(skb);
+> > > -	return NET_RX_SUCCESS;
+> > > +
+> > > +	return ret;
+> > >  }
+> > 
+> > 
+> > Okay, but we do have kfree_skb() and consume_skb() and they should be
+> > used appropriately.
 > 
-> 
-> Okay, but we do have kfree_skb() and consume_skb() and they should be
-> used appropriately.
+> Yes, this patch is one part of reaching this goal. Some other parts are also
+> in this patchset. But other changes like the one you've mention here (change
+> some consume_skb partially back to kfree_skb) have still to be done. But
+> first we have to clean up the main portion of the mess :)
 
-Yes, this patch is one part of reaching this goal. Some other parts are also
-in this patchset. But other changes like the one you've mention here (change
-some consume_skb partially back to kfree_skb) have still to be done. But
-first we have to clean up the main portion of the mess :)
+Sure, but your patch 13/17 should address this right away.
 
-Kind regards,
-	Sven
---nextPart19485984.88u8rGP59H
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+You must not call consume_skb() if you are dropping a packet.
 
------BEGIN PGP SIGNATURE-----
+Prior to this patch, kfree_skb() was properly called, and after this
+patch, consume_skb() is called instead.
 
-iQIcBAABCgAGBQJYIgsiAAoJEF2HCgfBJntGHbAP/iC8CjIcYNWBK6PORprNkgmd
-DdhbpxGA/MbmA62tm1QHUnaXx3rkXD6gJIJF4WUWodg11KlO3lKXWRSBcUmXp1jE
-UJVZCXI5W2ihk6O+1RSQ7qt2q6Hi2OndVy73+mHm9epPdqVkNvsQHM/MNi7xofeO
-se1Nkv3EjLxg67T8b+s4DlOQDZEa5kmgRL4fXTe1xscMg+tEpAF4zrlN4uCcVOVc
-/nGNQfRqNfcTATRkXYQt+7d2KCmPwlNqNVf88El/mS3f0RHT8Z8pAIkcxjGfW6Tc
-ZZgY8nYBGfRUKe2+/qECaPU+3t7D8dse4tdTaRtMy2szMdonFGpooEEhrp7/Rdz4
-OYaw6SD0H8XjNA09dxclD8UB6YSUYHuo2JHXdpZoyjmD3jU8cceytKpxo1OzhTz0
-99VsuUzHwYQvKrLdfA42Qeoo8tI/NzO7lc7Xn30hXp9xPBn1/39rBqBet0Bfxxfq
-uZ8TFOatO3tiLePfbTZK3Go0R+6UUsz/fpc6HH9hCXcaxxXLXiV5b4UjmARP/Yzq
-2LZvoCIUWX2Ub0BRgvKcIunZq24XVEwabF7dRp8dfOguRRANAvoxVbvCcSYkgnNx
-XHUC5iSQKw0kr0B3b2BF94mqw4B1daXqKEyWhxoUI8/1hXwUNVO8ImD5G4mWZHXA
-LIZWtFlXhoevJxPZQJvg
-=3YVA
------END PGP SIGNATURE-----
 
---nextPart19485984.88u8rGP59H--
+-       ret = (*batadv_rx_handler[idx])(skb, hard_iface);
+-
+-       if (ret == NET_RX_DROP)
+-               kfree_skb(skb);
++       (*batadv_rx_handler[idx])(skb, hard_iface);
+ 
+You can not claim working on these issues and at the same time add them
+back.
+
+
+
 
