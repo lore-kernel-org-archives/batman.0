@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed,  9 Nov 2016 23:25:53 +0100
-Message-Id: <20161109222606.29039-5-sw@simonwunderlich.de>
+Date: Wed,  9 Nov 2016 23:25:54 +0100
+Message-Id: <20161109222606.29039-6-sw@simonwunderlich.de>
 In-Reply-To: <20161109222606.29039-1-sw@simonwunderlich.de>
 References: <20161109222606.29039-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 04/17] batman-adv: Add wrapper for ARP reply
-	creation
+Subject: [B.A.T.M.A.N.] [PATCH 05/17] batman-adv: Remove unnecessary lockdep
+	in batadv_mcast_mla_list_free
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,113 +23,51 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Linus Lüssing <linus.luessing@c0d3.blue>
 
-Removing duplicate code.
+batadv_mcast_mla_list_free() just frees some leftovers of a local feast
+in batadv_mcast_mla_update(). No lockdep needed as it has nothing to do
+with bat_priv->mcast.mla_list.
 
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/distributed-arp-table.c | 67 ++++++++++++++++++++--------------
- 1 file changed, 40 insertions(+), 27 deletions(-)
+ net/batman-adv/multicast.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index cbb4f32..49576c5 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -949,6 +949,41 @@ static unsigned short batadv_dat_get_vid(struct sk_buff *skb, int *hdr_size)
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 13661f4..45757fa 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -231,19 +231,15 @@ static int batadv_mcast_mla_bridge_get(struct net_device *dev,
+ 
+ /**
+  * batadv_mcast_mla_list_free - free a list of multicast addresses
+- * @bat_priv: the bat priv with all the soft interface information
+  * @mcast_list: the list to free
+  *
+  * Removes and frees all items in the given mcast_list.
+  */
+-static void batadv_mcast_mla_list_free(struct batadv_priv *bat_priv,
+-				       struct hlist_head *mcast_list)
++static void batadv_mcast_mla_list_free(struct hlist_head *mcast_list)
+ {
+ 	struct batadv_hw_addr *mcast_entry;
+ 	struct hlist_node *tmp;
+ 
+-	lockdep_assert_held(&bat_priv->tt.commit_lock);
+-
+ 	hlist_for_each_entry_safe(mcast_entry, tmp, mcast_list, list) {
+ 		hlist_del(&mcast_entry->list);
+ 		kfree(mcast_entry);
+@@ -560,7 +556,7 @@ void batadv_mcast_mla_update(struct batadv_priv *bat_priv)
+ 	batadv_mcast_mla_tt_add(bat_priv, &mcast_list);
+ 
+ out:
+-	batadv_mcast_mla_list_free(bat_priv, &mcast_list);
++	batadv_mcast_mla_list_free(&mcast_list);
  }
  
  /**
-+ * batadv_dat_arp_create_reply - create an ARP Reply
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @ip_src: ARP sender IP
-+ * @ip_dst: ARP target IP
-+ * @hw_src: Ethernet source and ARP sender MAC
-+ * @hw_dst: Ethernet destination and ARP target MAC
-+ * @vid: VLAN identifier (optional, set to zero otherwise)
-+ *
-+ * Creates an ARP Reply from the given values, optionally encapsulated in a
-+ * VLAN header.
-+ *
-+ * Return: An skb containing an ARP Reply.
-+ */
-+static struct sk_buff *
-+batadv_dat_arp_create_reply(struct batadv_priv *bat_priv, __be32 ip_src,
-+			    __be32 ip_dst, u8 *hw_src, u8 *hw_dst,
-+			    unsigned short vid)
-+{
-+	struct sk_buff *skb;
-+
-+	skb = arp_create(ARPOP_REPLY, ETH_P_ARP, ip_dst, bat_priv->soft_iface,
-+			 ip_src, hw_dst, hw_src, hw_dst);
-+	if (!skb)
-+		return NULL;
-+
-+	skb_reset_mac_header(skb);
-+
-+	if (vid & BATADV_VLAN_HAS_TAG)
-+		skb = vlan_insert_tag(skb, htons(ETH_P_8021Q),
-+				      vid & VLAN_VID_MASK);
-+
-+	return skb;
-+}
-+
-+/**
-  * batadv_dat_snoop_outgoing_arp_request - snoop the ARP request and try to
-  * answer using DAT
-  * @bat_priv: the bat priv with all the soft interface information
-@@ -1005,20 +1040,12 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 			goto out;
- 		}
- 
--		skb_new = arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
--				     bat_priv->soft_iface, ip_dst, hw_src,
--				     dat_entry->mac_addr, hw_src);
-+		skb_new = batadv_dat_arp_create_reply(bat_priv, ip_dst, ip_src,
-+						      dat_entry->mac_addr,
-+						      hw_src, vid);
- 		if (!skb_new)
- 			goto out;
- 
--		if (vid & BATADV_VLAN_HAS_TAG) {
--			skb_new = vlan_insert_tag(skb_new, htons(ETH_P_8021Q),
--						  vid & VLAN_VID_MASK);
--			if (!skb_new)
--				goto out;
--		}
--
--		skb_reset_mac_header(skb_new);
- 		skb_new->protocol = eth_type_trans(skb_new,
- 						   bat_priv->soft_iface);
- 		bat_priv->stats.rx_packets++;
-@@ -1081,25 +1108,11 @@ bool batadv_dat_snoop_incoming_arp_request(struct batadv_priv *bat_priv,
- 	if (!dat_entry)
- 		goto out;
- 
--	skb_new = arp_create(ARPOP_REPLY, ETH_P_ARP, ip_src,
--			     bat_priv->soft_iface, ip_dst, hw_src,
--			     dat_entry->mac_addr, hw_src);
--
-+	skb_new = batadv_dat_arp_create_reply(bat_priv, ip_dst, ip_src,
-+					      dat_entry->mac_addr, hw_src, vid);
- 	if (!skb_new)
- 		goto out;
- 
--	/* the rest of the TX path assumes that the mac_header offset pointing
--	 * to the inner Ethernet header has been set, therefore reset it now.
--	 */
--	skb_reset_mac_header(skb_new);
--
--	if (vid & BATADV_VLAN_HAS_TAG) {
--		skb_new = vlan_insert_tag(skb_new, htons(ETH_P_8021Q),
--					  vid & VLAN_VID_MASK);
--		if (!skb_new)
--			goto out;
--	}
--
- 	/* To preserve backwards compatibility, the node has choose the outgoing
- 	 * format based on the incoming request packet type. The assumption is
- 	 * that a node not using the 4addr packet format doesn't support it.
 -- 
 2.10.1
 
