@@ -1,80 +1,106 @@
-Return-Path: <johnzeng2013@yahoo.com>
-Message-ID: <5822BB41.7060305@yahoo.com>
-Date: Wed, 09 Nov 2016 13:59:29 +0800
-From: johnzeng <johnzeng2013@yahoo.com>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed,  9 Nov 2016 23:25:49 +0100
+Message-Id: <20161109222606.29039-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Subject: Re: [B.A.T.M.A.N.] i have a question ? How many relay nodes can be
- supported at NetworkCoding ( mtu 1546 ) .
-References: <581C7F4A.80104@yahoo.com> <2907018.3yHk8Vyvxo@sven-edge>
- <mailman.63.1478602511.678.b.a.t.m.a.n@lists.open-mesh.org>
- <23104849.8bNq0ZtGq3@prime>
- <mailman.86.1478663442.678.b.a.t.m.a.n@lists.open-mesh.org>
- <20161109052815.GG3391@otheros>
-In-Reply-To: <20161109052815.GG3391@otheros>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 00/17] pull request for net-next: batman-adv
+	2016-11-08 v2
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
-	<b.a.t.m.a.n.lists.open-mesh.org>
+ <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
-List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n>
+ <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=unsubscribe>
+List-Archive: <http://lists.open-mesh.org/pipermail/b.a.t.m.a.n/>
 List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
-	<mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: =?UTF-8?B?TGludXMgTMO8c3Npbmc=?= <linus.luessing@c0d3.blue>
-Cc: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+ <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
+Hi David,
 
-Hello Dear Linus:
+this is an updated version from yesterdays pull request. Sven did changes
+according to Eric Dumazets comments in Patch 13, everything else staid the
+same.
 
-                            Ok , i see , i will test it in according to 
-your advisement .
+Please pull or let me know of any problem!
 
+Thank you,
+      Simon
 
-                            Thanks , have a good day with you
+The following changes since commit a283ad5066cd63f595224c7476001cfc367fdf2e:
 
+  Merge tag 'batadv-next-for-davem-20161027' of git://git.open-mesh.org/linux-merge (2016-10-29 16:26:50 -0400)
 
-                            Tiger
+are available in the git repository at:
 
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-20161108-v2
 
+for you to fetch changes up to 93bbaab455f30fd43911e0881a02107a17150a62:
 
-于 2016年11月09日 13:28, Linus Lüssing 写道:
-> On Wed, Nov 09, 2016 at 04:50:45AM +0100, johnzeng via B.A.T.M.A.N wrote:
->> Date: Wed, 09 Nov 2016 11:50:30 +0800
->> From: johnzeng <johnzeng2013@yahoo.com>
->> To: Simon Wunderlich <sw@simonwunderlich.de>
->> CC: b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>,
->>   Martin Hundebøll <martin@hundeboll.net>
->> Subject: Re: [B.A.T.M.A.N.] i have a question ? How many relay nodes can be
->>   supported at NetworkCoding ( mtu 1546 ) .
->>
->>                               I can understand network coding , it will be
->> same as proxy or Intermediator at Layer 2 ,
-> Maybe there is a complete misunderstanding what "network coding"
-> is?
->
-> Maybe an easier expression would be "packet mixing" or "magic packet
-> mangling" [1].
->
-> Any code that does something with networking is usually *not*
-> "network coding" (at least in this context here).
->
-> Have a look at the links Sven has provided earlier.
->
->>
->>                              Your meaning :  Batman-adv can build Similar
->> mechanism ( Intermediator )  via intermediator , it wil be  relay based real
->> application packet ( not relay based Broadcast packet)
-> Just try it :-). Compile batman-adv *without network coding* with
-> your A-B-C scenario and see how it magically works, too :-).
->
-> Regards, Linus
->
->
-> [1]: Please no expert hit me :D. I know, ultimately, network coding would
-> replace packet based networks, if I remember Frank's talk
-> in Leipzig correctly
->
-> https://www.youtube.com/watch?v=yluj7e_rfVE
+  batman-adv: Reject unicast packet with zero/mcast dst address (2016-11-08 19:02:36 +0100)
 
+----------------------------------------------------------------
+This feature and cleanup patchset includes the following changes:
+
+ - netlink and code cleanups by Sven Eckelmann (3 patches)
+
+ - Cleanup and minor fixes by Linus Luessing (3 patches)
+
+ - Speed up multicast update intervals, by Linus Luessing
+
+ - Avoid (re)broadcast in meshes for some easy cases,
+   by Linus Luessing
+
+ - Clean up tx return state handling, by Sven Eckelmann (6 patches)
+
+ - Fix some special mac address handling cases, by Sven Eckelmann
+   (3 patches)
+
+----------------------------------------------------------------
+Linus Lüssing (5):
+      batman-adv: Add wrapper for ARP reply creation
+      batman-adv: Remove unnecessary lockdep in batadv_mcast_mla_list_free
+      batman-adv: Remove unused skb_reset_mac_header()
+      batman-adv: Use own timer for multicast TT and TVLV updates
+      batman-adv: Simple (re)broadcast avoidance
+
+Sven Eckelmann (12):
+      batman-adv: Introduce missing headers for genetlink restructure
+      batman-adv: Mark batadv_netlink_ops as const
+      batman-adv: Close two alignment holes in batadv_hard_iface
+      batman-adv: use consume_skb for non-dropped packets
+      batman-adv: Count all non-success TX packets as dropped
+      batman-adv: Consume skb in batadv_frag_send_packet
+      batman-adv: Consume skb in batadv_send_skb_to_orig
+      batman-adv: Consume skb in receive handlers
+      batman-adv: Remove dev_queue_xmit return code exception
+      batman-adv: Disallow mcast src address for data frames
+      batman-adv: Disallow zero and mcast src address for mgmt frames
+      batman-adv: Reject unicast packet with zero/mcast dst address
+
+ net/batman-adv/bat_iv_ogm.c            |  33 ++++--
+ net/batman-adv/bat_v_elp.c             |  30 +++---
+ net/batman-adv/bat_v_ogm.c             |  71 ++++++++++++-
+ net/batman-adv/distributed-arp-table.c |  67 +++++++-----
+ net/batman-adv/fragmentation.c         |  70 ++++++++-----
+ net/batman-adv/hard-interface.c        |  52 ++++++++++
+ net/batman-adv/hard-interface.h        |  16 +++
+ net/batman-adv/main.c                  |  11 +-
+ net/batman-adv/main.h                  |   1 +
+ net/batman-adv/multicast.c             |  70 ++++++++++---
+ net/batman-adv/multicast.h             |   6 --
+ net/batman-adv/netlink.c               |   5 +-
+ net/batman-adv/network-coding.c        |  35 ++++---
+ net/batman-adv/originator.c            |  13 ++-
+ net/batman-adv/routing.c               | 180 ++++++++++++++++++++-------------
+ net/batman-adv/send.c                  | 140 ++++++++++++++++++-------
+ net/batman-adv/send.h                  |   6 +-
+ net/batman-adv/soft-interface.c        |   6 +-
+ net/batman-adv/tp_meter.c              |   6 --
+ net/batman-adv/translation-table.c     |   4 -
+ net/batman-adv/tvlv.c                  |   5 +-
+ net/batman-adv/types.h                 |  10 +-
+ 22 files changed, 582 insertions(+), 255 deletions(-)
