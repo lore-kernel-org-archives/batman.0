@@ -1,14 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed,  9 Nov 2016 23:25:57 +0100
-Message-Id: <20161109222606.29039-9-sw@simonwunderlich.de>
+Date: Wed,  9 Nov 2016 23:25:58 +0100
+Message-Id: <20161109222606.29039-10-sw@simonwunderlich.de>
 In-Reply-To: <20161109222606.29039-1-sw@simonwunderlich.de>
 References: <20161109222606.29039-1-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 08/17] batman-adv: Simple (re)broadcast
-	avoidance
+Subject: [B.A.T.M.A.N.] [PATCH 09/17] batman-adv: use consume_skb for
+	non-dropped packets
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,461 +18,363 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+From: Sven Eckelmann <sven@narfation.org>
 
-With this patch, (re)broadcasting on a specific interfaces is avoided:
+kfree_skb assumes that an skb is dropped after an failure and notes that.
+consume_skb should be used in non-failure situations. Such information is
+important for dropmonitor netlink which tells how many packets were dropped
+and where this drop happened.
 
-* No neighbor: There is no need to broadcast on an interface if there
-  is no node behind it.
-
-* Single neighbor is source: If there is just one neighbor on an
-  interface and if this neighbor is the one we actually got this
-  broadcast packet from, then we do not need to echo it back.
-
-* Single neighbor is originator: If there is just one neighbor on
-  an interface and if this neighbor is the originator of this
-  broadcast packet, then we do not need to echo it back.
-
-Goodies for BATMAN V:
-
-("Upgrade your BATMAN IV network to V now to get these for free!")
-
-Thanks to the split of OGMv1 into two packet types, OGMv2 and ELP
-that is, we can now apply the same optimizations stated above to OGMv2
-packets, too.
-
-Furthermore, with BATMAN V, rebroadcasts can be reduced in certain
-multi interface cases, too, where BATMAN IV cannot. This is thanks to
-the removal of the "secondary interface originator" concept in BATMAN V.
-
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_v_ogm.c      | 56 +++++++++++++++++++++++++++++++++++++++++
- net/batman-adv/hard-interface.c | 52 ++++++++++++++++++++++++++++++++++++++
- net/batman-adv/hard-interface.h | 16 ++++++++++++
- net/batman-adv/originator.c     | 13 +++++++---
- net/batman-adv/routing.c        |  2 +-
- net/batman-adv/send.c           | 55 +++++++++++++++++++++++++++++++++++++++-
+ net/batman-adv/bat_iv_ogm.c     | 13 ++++++++-----
+ net/batman-adv/fragmentation.c  | 20 ++++++++++++++------
+ net/batman-adv/network-coding.c | 24 +++++++++++++++---------
+ net/batman-adv/send.c           | 27 +++++++++++++++++++--------
  net/batman-adv/send.h           |  3 ++-
  net/batman-adv/soft-interface.c |  2 +-
- net/batman-adv/types.h          |  2 ++
- 9 files changed, 193 insertions(+), 8 deletions(-)
+ 6 files changed, 59 insertions(+), 30 deletions(-)
 
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 61ff5f8..9922ccd 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -140,6 +140,7 @@ static void batadv_v_ogm_send(struct work_struct *work)
- 	unsigned char *ogm_buff, *pkt_buff;
- 	int ogm_buff_len;
- 	u16 tvlv_len = 0;
-+	int ret;
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 0b9be62..310f391 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -698,7 +698,7 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
  
- 	bat_v = container_of(work, struct batadv_priv_bat_v, ogm_wq.work);
- 	bat_priv = container_of(bat_v, struct batadv_priv, bat_v);
-@@ -182,6 +183,31 @@ static void batadv_v_ogm_send(struct work_struct *work)
- 		if (!kref_get_unless_zero(&hard_iface->refcount))
- 			continue;
+ 	forw_packet_aggr->skb = netdev_alloc_skb_ip_align(NULL, skb_size);
+ 	if (!forw_packet_aggr->skb) {
+-		batadv_forw_packet_free(forw_packet_aggr);
++		batadv_forw_packet_free(forw_packet_aggr, true);
+ 		return;
+ 	}
  
-+		ret = batadv_hardif_no_broadcast(hard_iface, NULL, NULL);
-+		if (ret) {
-+			char *type;
-+
-+			switch (ret) {
-+			case BATADV_HARDIF_BCAST_NORECIPIENT:
-+				type = "no neighbor";
-+				break;
-+			case BATADV_HARDIF_BCAST_DUPFWD:
-+				type = "single neighbor is source";
-+				break;
-+			case BATADV_HARDIF_BCAST_DUPORIG:
-+				type = "single neighbor is originator";
-+				break;
-+			default:
-+				type = "unknown";
-+			}
-+
-+			batadv_dbg(BATADV_DBG_BATMAN, bat_priv, "OGM2 from ourselve on %s surpressed: %s\n",
-+				   hard_iface->net_dev->name, type);
-+
-+			batadv_hardif_put(hard_iface);
-+			continue;
-+		}
-+
- 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
- 			   "Sending own OGM2 packet (originator %pM, seqno %u, throughput %u, TTL %d) on interface %s [%pM]\n",
- 			   ogm_packet->orig, ntohl(ogm_packet->seqno),
-@@ -651,6 +677,7 @@ static void batadv_v_ogm_process(const struct sk_buff *skb, int ogm_offset,
- 	struct batadv_hard_iface *hard_iface;
- 	struct batadv_ogm2_packet *ogm_packet;
- 	u32 ogm_throughput, link_throughput, path_throughput;
-+	int ret;
- 
- 	ethhdr = eth_hdr(skb);
- 	ogm_packet = (struct batadv_ogm2_packet *)(skb->data + ogm_offset);
-@@ -716,6 +743,35 @@ static void batadv_v_ogm_process(const struct sk_buff *skb, int ogm_offset,
- 		if (!kref_get_unless_zero(&hard_iface->refcount))
- 			continue;
- 
-+		ret = batadv_hardif_no_broadcast(hard_iface,
-+						 ogm_packet->orig,
-+						 hardif_neigh->orig);
-+
-+		if (ret) {
-+			char *type;
-+
-+			switch (ret) {
-+			case BATADV_HARDIF_BCAST_NORECIPIENT:
-+				type = "no neighbor";
-+				break;
-+			case BATADV_HARDIF_BCAST_DUPFWD:
-+				type = "single neighbor is source";
-+				break;
-+			case BATADV_HARDIF_BCAST_DUPORIG:
-+				type = "single neighbor is originator";
-+				break;
-+			default:
-+				type = "unknown";
-+			}
-+
-+			batadv_dbg(BATADV_DBG_BATMAN, bat_priv, "OGM2 packet from %pM on %s surpressed: %s\n",
-+				   ogm_packet->orig, hard_iface->net_dev->name,
-+				   type);
-+
-+			batadv_hardif_put(hard_iface);
-+			continue;
-+		}
-+
- 		batadv_v_ogm_process_per_outif(bat_priv, ethhdr, ogm_packet,
- 					       orig_node, neigh_node,
- 					       if_incoming, hard_iface);
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index 08ce361..a7a462e 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -228,6 +228,58 @@ bool batadv_is_wifi_netdev(struct net_device *net_device)
- 	return false;
- }
- 
-+/**
-+ * batadv_hardif_no_broadcast - check whether (re)broadcast is necessary
-+ * @if_outgoing: the outgoing interface checked and considered for (re)broadcast
-+ * @orig_addr: the originator of this packet
-+ * @orig_neigh: originator address of the forwarder we just got the packet from
-+ *  (NULL if we originated)
-+ *
-+ * Checks whether a packet needs to be (re)broadcasted on the given interface.
-+ *
-+ * Return:
-+ *	BATADV_HARDIF_BCAST_NORECIPIENT: No neighbor on interface
-+ *	BATADV_HARDIF_BCAST_DUPFWD: Just one neighbor, but it is the forwarder
-+ *	BATADV_HARDIF_BCAST_DUPORIG: Just one neighbor, but it is the originator
-+ *	BATADV_HARDIF_BCAST_OK: Several neighbors, must broadcast
-+ */
-+int batadv_hardif_no_broadcast(struct batadv_hard_iface *if_outgoing,
-+			       u8 *orig_addr, u8 *orig_neigh)
-+{
-+	struct batadv_hardif_neigh_node *hardif_neigh;
-+	struct hlist_node *first;
-+	int ret = BATADV_HARDIF_BCAST_OK;
-+
-+	rcu_read_lock();
-+
-+	/* 0 neighbors -> no (re)broadcast */
-+	first = rcu_dereference(hlist_first_rcu(&if_outgoing->neigh_list));
-+	if (!first) {
-+		ret = BATADV_HARDIF_BCAST_NORECIPIENT;
-+		goto out;
-+	}
-+
-+	/* >1 neighbors -> (re)brodcast */
-+	if (rcu_dereference(hlist_next_rcu(first)))
-+		goto out;
-+
-+	hardif_neigh = hlist_entry(first, struct batadv_hardif_neigh_node,
-+				   list);
-+
-+	/* 1 neighbor, is the originator -> no rebroadcast */
-+	if (orig_addr && batadv_compare_eth(hardif_neigh->orig, orig_addr)) {
-+		ret = BATADV_HARDIF_BCAST_DUPORIG;
-+	/* 1 neighbor, is the one we received from -> no rebroadcast */
-+	} else if (orig_neigh &&
-+		   batadv_compare_eth(hardif_neigh->orig, orig_neigh)) {
-+		ret = BATADV_HARDIF_BCAST_DUPFWD;
-+	}
-+
-+out:
-+	rcu_read_unlock();
-+	return ret;
-+}
-+
- static struct batadv_hard_iface *
- batadv_hardif_get_active(const struct net_device *soft_iface)
- {
-diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
-index a76724d..a043182 100644
---- a/net/batman-adv/hard-interface.h
-+++ b/net/batman-adv/hard-interface.h
-@@ -40,6 +40,20 @@ enum batadv_hard_if_state {
- };
- 
- /**
-+ * enum batadv_hard_if_bcast - broadcast avoidance options
-+ * @BATADV_HARDIF_BCAST_OK: Do broadcast on according hard interface
-+ * @BATADV_HARDIF_BCAST_NORECIPIENT: Broadcast not needed, there is no recipient
-+ * @BATADV_HARDIF_BCAST_DUPFWD: There is just the neighbor we got it from
-+ * @BATADV_HARDIF_BCAST_DUPORIG: There is just the originator
-+ */
-+enum batadv_hard_if_bcast {
-+	BATADV_HARDIF_BCAST_OK = 0,
-+	BATADV_HARDIF_BCAST_NORECIPIENT,
-+	BATADV_HARDIF_BCAST_DUPFWD,
-+	BATADV_HARDIF_BCAST_DUPORIG,
-+};
-+
-+/**
-  * enum batadv_hard_if_cleanup - Cleanup modi for soft_iface after slave removal
-  * @BATADV_IF_CLEANUP_KEEP: Don't automatically delete soft-interface
-  * @BATADV_IF_CLEANUP_AUTO: Delete soft-interface after last slave was removed
-@@ -63,6 +77,8 @@ void batadv_hardif_remove_interfaces(void);
- int batadv_hardif_min_mtu(struct net_device *soft_iface);
- void batadv_update_min_mtu(struct net_device *soft_iface);
- void batadv_hardif_release(struct kref *ref);
-+int batadv_hardif_no_broadcast(struct batadv_hard_iface *if_outgoing,
-+			       u8 *orig_addr, u8 *orig_neigh);
- 
- /**
-  * batadv_hardif_put - decrement the hard interface refcounter and possibly
-diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
-index 518b1ed..ad26559 100644
---- a/net/batman-adv/originator.c
-+++ b/net/batman-adv/originator.c
-@@ -512,12 +512,14 @@ batadv_neigh_node_get(const struct batadv_orig_node *orig_node,
-  * batadv_hardif_neigh_create - create a hardif neighbour node
-  * @hard_iface: the interface this neighbour is connected to
-  * @neigh_addr: the interface address of the neighbour to retrieve
-+ * @orig_node: originator object representing the neighbour
-  *
-  * Return: the hardif neighbour node if found or created or NULL otherwise.
-  */
- static struct batadv_hardif_neigh_node *
- batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
--			   const u8 *neigh_addr)
-+			   const u8 *neigh_addr,
-+			   struct batadv_orig_node *orig_node)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
- 	struct batadv_hardif_neigh_node *hardif_neigh;
-@@ -536,6 +538,7 @@ batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
- 	kref_get(&hard_iface->refcount);
- 	INIT_HLIST_NODE(&hardif_neigh->list);
- 	ether_addr_copy(hardif_neigh->addr, neigh_addr);
-+	ether_addr_copy(hardif_neigh->orig, orig_node->orig);
- 	hardif_neigh->if_incoming = hard_iface;
- 	hardif_neigh->last_seen = jiffies;
- 
-@@ -556,12 +559,14 @@ batadv_hardif_neigh_create(struct batadv_hard_iface *hard_iface,
-  *  node
-  * @hard_iface: the interface this neighbour is connected to
-  * @neigh_addr: the interface address of the neighbour to retrieve
-+ * @orig_node: originator object representing the neighbour
-  *
-  * Return: the hardif neighbour node if found or created or NULL otherwise.
-  */
- static struct batadv_hardif_neigh_node *
- batadv_hardif_neigh_get_or_create(struct batadv_hard_iface *hard_iface,
--				  const u8 *neigh_addr)
-+				  const u8 *neigh_addr,
-+				  struct batadv_orig_node *orig_node)
- {
- 	struct batadv_hardif_neigh_node *hardif_neigh;
- 
-@@ -570,7 +575,7 @@ batadv_hardif_neigh_get_or_create(struct batadv_hard_iface *hard_iface,
+@@ -1611,7 +1611,7 @@ batadv_iv_ogm_process_per_outif(const struct sk_buff *skb, int ogm_offset,
  	if (hardif_neigh)
- 		return hardif_neigh;
+ 		batadv_hardif_neigh_put(hardif_neigh);
  
--	return batadv_hardif_neigh_create(hard_iface, neigh_addr);
-+	return batadv_hardif_neigh_create(hard_iface, neigh_addr, orig_node);
+-	kfree_skb(skb_priv);
++	consume_skb(skb_priv);
  }
  
  /**
-@@ -630,7 +635,7 @@ batadv_neigh_node_create(struct batadv_orig_node *orig_node,
- 		goto out;
- 
- 	hardif_neigh = batadv_hardif_neigh_get_or_create(hard_iface,
--							 neigh_addr);
-+							 neigh_addr, orig_node);
- 	if (!hardif_neigh)
- 		goto out;
- 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 7e8dc64..a4cb157 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -1170,7 +1170,7 @@ int batadv_recv_bcast_packet(struct sk_buff *skb,
- 	batadv_skb_set_priority(skb, sizeof(struct batadv_bcast_packet));
- 
- 	/* rebroadcast packet */
--	batadv_add_bcast_packet_to_list(bat_priv, skb, 1);
-+	batadv_add_bcast_packet_to_list(bat_priv, skb, 1, false);
- 
- 	/* don't hand the broadcast up if it is from an originator
- 	 * from the same backbone.
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index be3f6d7..d9bbb00 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -549,6 +549,7 @@ _batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
-  * @bat_priv: the bat priv with all the soft interface information
-  * @skb: broadcast packet to add
-  * @delay: number of jiffies to wait before sending
-+ * @own_packet: true if it is a self-generated broadcast packet
-  *
-  * add a broadcast packet to the queue and setup timers. broadcast packets
-  * are sent multiple times to increase probability for being received.
-@@ -560,7 +561,8 @@ _batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
-  */
- int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 				    const struct sk_buff *skb,
--				    unsigned long delay)
-+				    unsigned long delay,
-+				    bool own_packet)
- {
- 	struct batadv_hard_iface *primary_if;
- 	struct batadv_forw_packet *forw_packet;
-@@ -587,6 +589,7 @@ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 	bcast_packet->ttl--;
- 
- 	forw_packet->skb = newskb;
-+	forw_packet->own = own_packet;
- 
- 	INIT_DELAYED_WORK(&forw_packet->delayed_work,
- 			  batadv_send_outstanding_bcast_packet);
-@@ -603,11 +606,16 @@ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
- static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- {
- 	struct batadv_hard_iface *hard_iface;
-+	struct batadv_hardif_neigh_node *neigh_node;
+@@ -1783,6 +1783,7 @@ static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
  	struct delayed_work *delayed_work;
  	struct batadv_forw_packet *forw_packet;
-+	struct batadv_bcast_packet *bcast_packet;
- 	struct sk_buff *skb1;
- 	struct net_device *soft_iface;
  	struct batadv_priv *bat_priv;
-+	u8 *neigh_addr;
-+	u8 *orig_neigh;
-+	int ret = 0;
++	bool dropped = false;
  
  	delayed_work = to_delayed_work(work);
  	forw_packet = container_of(delayed_work, struct batadv_forw_packet,
-@@ -625,6 +633,8 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- 	if (batadv_dat_drop_broadcast_packet(bat_priv, forw_packet))
+@@ -1792,8 +1793,10 @@ static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
+ 	hlist_del(&forw_packet->list);
+ 	spin_unlock_bh(&bat_priv->forw_bat_list_lock);
+ 
+-	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
++	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING) {
++		dropped = true;
  		goto out;
++	}
  
-+	bcast_packet = (struct batadv_bcast_packet *)forw_packet->skb->data;
-+
- 	/* rebroadcast packet */
- 	rcu_read_lock();
- 	list_for_each_entry_rcu(hard_iface, &batadv_hardif_list, list) {
-@@ -634,6 +644,49 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- 		if (forw_packet->num_packets >= hard_iface->num_bcasts)
- 			continue;
+ 	batadv_iv_ogm_emit(forw_packet);
  
-+		if (forw_packet->own) {
-+			neigh_node = NULL;
-+		} else {
-+			neigh_addr = eth_hdr(forw_packet->skb)->h_source;
-+			neigh_node = batadv_hardif_neigh_get(hard_iface,
-+							     neigh_addr);
-+		}
-+
-+		orig_neigh = neigh_node ? neigh_node->orig : NULL;
-+
-+		ret = batadv_hardif_no_broadcast(hard_iface, bcast_packet->orig,
-+						 orig_neigh);
-+
-+		if (ret) {
-+			char *type;
-+
-+			switch (ret) {
-+			case BATADV_HARDIF_BCAST_NORECIPIENT:
-+				type = "no neighbor";
-+				break;
-+			case BATADV_HARDIF_BCAST_DUPFWD:
-+				type = "single neighbor is source";
-+				break;
-+			case BATADV_HARDIF_BCAST_DUPORIG:
-+				type = "single neighbor is originator";
-+				break;
-+			default:
-+				type = "unknown";
-+			}
-+
-+			batadv_dbg(BATADV_DBG_BATMAN, bat_priv, "BCAST packet from orig %pM on %s surpressed: %s\n",
-+				   bcast_packet->orig,
-+				   hard_iface->net_dev->name, type);
-+
-+			if (neigh_node)
-+				batadv_hardif_neigh_put(neigh_node);
-+
-+			continue;
-+		}
-+
-+		if (neigh_node)
-+			batadv_hardif_neigh_put(neigh_node);
-+
- 		if (!kref_get_unless_zero(&hard_iface->refcount))
- 			continue;
+@@ -1810,7 +1813,7 @@ static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
+ 		batadv_iv_ogm_schedule(forw_packet->if_incoming);
  
+ out:
+-	batadv_forw_packet_free(forw_packet);
++	batadv_forw_packet_free(forw_packet, dropped);
+ }
+ 
+ static int batadv_iv_ogm_receive(struct sk_buff *skb,
+@@ -1851,7 +1854,7 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
+ 		ogm_packet = (struct batadv_ogm_packet *)packet_pos;
+ 	}
+ 
+-	kfree_skb(skb);
++	consume_skb(skb);
+ 	return NET_RX_SUCCESS;
+ }
+ 
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 2b967a3..a2e28a1 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -42,17 +42,23 @@
+ /**
+  * batadv_frag_clear_chain - delete entries in the fragment buffer chain
+  * @head: head of chain with entries.
++ * @dropped: whether the chain is cleared because all fragments are dropped
+  *
+  * Free fragments in the passed hlist. Should be called with appropriate lock.
+  */
+-static void batadv_frag_clear_chain(struct hlist_head *head)
++static void batadv_frag_clear_chain(struct hlist_head *head, bool dropped)
+ {
+ 	struct batadv_frag_list_entry *entry;
+ 	struct hlist_node *node;
+ 
+ 	hlist_for_each_entry_safe(entry, node, head, list) {
+ 		hlist_del(&entry->list);
+-		kfree_skb(entry->skb);
++
++		if (dropped)
++			kfree_skb(entry->skb);
++		else
++			consume_skb(entry->skb);
++
+ 		kfree(entry);
+ 	}
+ }
+@@ -73,7 +79,7 @@ void batadv_frag_purge_orig(struct batadv_orig_node *orig_node,
+ 		spin_lock_bh(&chain->lock);
+ 
+ 		if (!check_cb || check_cb(chain)) {
+-			batadv_frag_clear_chain(&chain->fragment_list);
++			batadv_frag_clear_chain(&chain->fragment_list, true);
+ 			chain->size = 0;
+ 		}
+ 
+@@ -118,7 +124,7 @@ static bool batadv_frag_init_chain(struct batadv_frag_table_entry *chain,
+ 		return false;
+ 
+ 	if (!hlist_empty(&chain->fragment_list))
+-		batadv_frag_clear_chain(&chain->fragment_list);
++		batadv_frag_clear_chain(&chain->fragment_list, true);
+ 
+ 	chain->size = 0;
+ 	chain->seqno = seqno;
+@@ -220,7 +226,7 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
+ 		 * exceeds the maximum size of one merged packet. Don't allow
+ 		 * packets to have different total_size.
+ 		 */
+-		batadv_frag_clear_chain(&chain->fragment_list);
++		batadv_frag_clear_chain(&chain->fragment_list, true);
+ 		chain->size = 0;
+ 	} else if (ntohs(frag_packet->total_size) == chain->size) {
+ 		/* All fragments received. Hand over chain to caller. */
+@@ -254,6 +260,7 @@ batadv_frag_merge_packets(struct hlist_head *chain)
+ 	struct batadv_frag_list_entry *entry;
+ 	struct sk_buff *skb_out;
+ 	int size, hdr_size = sizeof(struct batadv_frag_packet);
++	bool dropped = false;
+ 
+ 	/* Remove first entry, as this is the destination for the rest of the
+ 	 * fragments.
+@@ -270,6 +277,7 @@ batadv_frag_merge_packets(struct hlist_head *chain)
+ 	if (pskb_expand_head(skb_out, 0, size - skb_out->len, GFP_ATOMIC) < 0) {
+ 		kfree_skb(skb_out);
+ 		skb_out = NULL;
++		dropped = true;
+ 		goto free;
+ 	}
+ 
+@@ -291,7 +299,7 @@ batadv_frag_merge_packets(struct hlist_head *chain)
+ 
+ free:
+ 	/* Locking is not needed, because 'chain' is not part of any orig. */
+-	batadv_frag_clear_chain(chain);
++	batadv_frag_clear_chain(chain, dropped);
+ 	return skb_out;
+ }
+ 
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index c213dde..3af66d3 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -260,10 +260,16 @@ static void batadv_nc_path_put(struct batadv_nc_path *nc_path)
+ /**
+  * batadv_nc_packet_free - frees nc packet
+  * @nc_packet: the nc packet to free
++ * @dropped: whether the packet is freed because is is dropped
+  */
+-static void batadv_nc_packet_free(struct batadv_nc_packet *nc_packet)
++static void batadv_nc_packet_free(struct batadv_nc_packet *nc_packet,
++				  bool dropped)
+ {
+-	kfree_skb(nc_packet->skb);
++	if (dropped)
++		kfree_skb(nc_packet->skb);
++	else
++		consume_skb(nc_packet->skb);
++
+ 	batadv_nc_path_put(nc_packet->nc_path);
+ 	kfree(nc_packet);
+ }
+@@ -576,7 +582,7 @@ static void batadv_nc_send_packet(struct batadv_nc_packet *nc_packet)
+ {
+ 	batadv_send_unicast_skb(nc_packet->skb, nc_packet->neigh_node);
+ 	nc_packet->skb = NULL;
+-	batadv_nc_packet_free(nc_packet);
++	batadv_nc_packet_free(nc_packet, false);
+ }
+ 
+ /**
+@@ -610,7 +616,7 @@ static bool batadv_nc_sniffed_purge(struct batadv_priv *bat_priv,
+ 
+ 	/* purge nc packet */
+ 	list_del(&nc_packet->list);
+-	batadv_nc_packet_free(nc_packet);
++	batadv_nc_packet_free(nc_packet, true);
+ 
+ 	res = true;
+ 
+@@ -1208,11 +1214,11 @@ static bool batadv_nc_code_packets(struct batadv_priv *bat_priv,
+ 	}
+ 
+ 	/* skb_src is now coded into skb_dest, so free it */
+-	kfree_skb(skb_src);
++	consume_skb(skb_src);
+ 
+ 	/* avoid duplicate free of skb from nc_packet */
+ 	nc_packet->skb = NULL;
+-	batadv_nc_packet_free(nc_packet);
++	batadv_nc_packet_free(nc_packet, false);
+ 
+ 	/* Send the coded packet and return true */
+ 	batadv_send_unicast_skb(skb_dest, first_dest);
+@@ -1399,7 +1405,7 @@ static void batadv_nc_skb_store_before_coding(struct batadv_priv *bat_priv,
+ 	/* batadv_nc_skb_store_for_decoding() clones the skb, so we must free
+ 	 * our ref
+ 	 */
+-	kfree_skb(skb);
++	consume_skb(skb);
+ }
+ 
+ /**
+@@ -1723,7 +1729,7 @@ batadv_nc_skb_decode_packet(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 	ether_addr_copy(unicast_packet->dest, orig_dest);
+ 	unicast_packet->ttvn = ttvn;
+ 
+-	batadv_nc_packet_free(nc_packet);
++	batadv_nc_packet_free(nc_packet, false);
+ 	return unicast_packet;
+ }
+ 
+@@ -1860,7 +1866,7 @@ static int batadv_nc_recv_coded_packet(struct sk_buff *skb,
+ 	return batadv_recv_unicast_packet(skb, recv_if);
+ 
+ free_nc_packet:
+-	batadv_nc_packet_free(nc_packet);
++	batadv_nc_packet_free(nc_packet, true);
+ 	return NET_RX_DROP;
+ }
+ 
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index d9bbb00..0f86293 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -451,13 +451,19 @@ int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ /**
+  * batadv_forw_packet_free - free a forwarding packet
+  * @forw_packet: The packet to free
++ * @dropped: whether the packet is freed because is is dropped
+  *
+  * This frees a forwarding packet and releases any resources it might
+  * have claimed.
+  */
+-void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
++void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet,
++			     bool dropped)
+ {
+-	kfree_skb(forw_packet->skb);
++	if (dropped)
++		kfree_skb(forw_packet->skb);
++	else
++		consume_skb(forw_packet->skb);
++
+ 	if (forw_packet->if_incoming)
+ 		batadv_hardif_put(forw_packet->if_incoming);
+ 	if (forw_packet->if_outgoing)
+@@ -598,7 +604,7 @@ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
+ 	return NETDEV_TX_OK;
+ 
+ err_packet_free:
+-	batadv_forw_packet_free(forw_packet);
++	batadv_forw_packet_free(forw_packet, true);
+ err:
+ 	return NETDEV_TX_BUSY;
+ }
+@@ -613,6 +619,7 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
+ 	struct sk_buff *skb1;
+ 	struct net_device *soft_iface;
+ 	struct batadv_priv *bat_priv;
++	bool dropped = false;
+ 	u8 *neigh_addr;
+ 	u8 *orig_neigh;
+ 	int ret = 0;
+@@ -627,11 +634,15 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
+ 	hlist_del(&forw_packet->list);
+ 	spin_unlock_bh(&bat_priv->forw_bcast_list_lock);
+ 
+-	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
++	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING) {
++		dropped = true;
+ 		goto out;
++	}
+ 
+-	if (batadv_dat_drop_broadcast_packet(bat_priv, forw_packet))
++	if (batadv_dat_drop_broadcast_packet(bat_priv, forw_packet)) {
++		dropped = true;
+ 		goto out;
++	}
+ 
+ 	bcast_packet = (struct batadv_bcast_packet *)forw_packet->skb->data;
+ 
+@@ -709,7 +720,7 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
+ 	}
+ 
+ out:
+-	batadv_forw_packet_free(forw_packet);
++	batadv_forw_packet_free(forw_packet, dropped);
+ }
+ 
+ void
+@@ -750,7 +761,7 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
+ 
+ 		if (pending) {
+ 			hlist_del(&forw_packet->list);
+-			batadv_forw_packet_free(forw_packet);
++			batadv_forw_packet_free(forw_packet, true);
+ 		}
+ 	}
+ 	spin_unlock_bh(&bat_priv->forw_bcast_list_lock);
+@@ -777,7 +788,7 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
+ 
+ 		if (pending) {
+ 			hlist_del(&forw_packet->list);
+-			batadv_forw_packet_free(forw_packet);
++			batadv_forw_packet_free(forw_packet, true);
+ 		}
+ 	}
+ 	spin_unlock_bh(&bat_priv->forw_bat_list_lock);
 diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
-index 999f786..86009b5 100644
+index 86009b5..c580194 100644
 --- a/net/batman-adv/send.h
 +++ b/net/batman-adv/send.h
-@@ -46,7 +46,8 @@ int batadv_send_unicast_skb(struct sk_buff *skb,
- 			    struct batadv_neigh_node *neigh_node);
- int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 				    const struct sk_buff *skb,
--				    unsigned long delay);
-+				    unsigned long delay,
-+				    bool own_packet);
- void
- batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- 				 const struct batadv_hard_iface *hard_iface);
+@@ -27,7 +27,8 @@
+ 
+ struct sk_buff;
+ 
+-void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet);
++void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet,
++			     bool dropped);
+ struct batadv_forw_packet *
+ batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
+ 			 struct batadv_hard_iface *if_outgoing,
 diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index f37c1c7..109f53b 100644
+index 109f53b..2f0304e 100644
 --- a/net/batman-adv/soft-interface.c
 +++ b/net/batman-adv/soft-interface.c
-@@ -357,7 +357,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 		seqno = atomic_inc_return(&bat_priv->bcast_seqno);
- 		bcast_packet->seqno = htonl(seqno);
- 
--		batadv_add_bcast_packet_to_list(bat_priv, skb, brd_delay);
-+		batadv_add_bcast_packet_to_list(bat_priv, skb, brd_delay, true);
- 
+@@ -362,7 +362,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
  		/* a copy is stored in the bcast list, therefore removing
  		 * the original skb.
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 0d46aea..98ebac0 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -408,6 +408,7 @@ struct batadv_hardif_neigh_node_bat_v {
-  * struct batadv_hardif_neigh_node - unique neighbor per hard-interface
-  * @list: list node for batadv_hard_iface::neigh_list
-  * @addr: the MAC address of the neighboring interface
-+ * @orig: the address of the originator this neighbor node belongs to
-  * @if_incoming: pointer to incoming hard-interface
-  * @last_seen: when last packet via this neighbor was received
-  * @bat_v: B.A.T.M.A.N. V private data
-@@ -417,6 +418,7 @@ struct batadv_hardif_neigh_node_bat_v {
- struct batadv_hardif_neigh_node {
- 	struct hlist_node list;
- 	u8 addr[ETH_ALEN];
-+	u8 orig[ETH_ALEN];
- 	struct batadv_hard_iface *if_incoming;
- 	unsigned long last_seen;
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
+ 		 */
+-		kfree_skb(skb);
++		consume_skb(skb);
+ 
+ 	/* unicast packet */
+ 	} else {
 -- 
 2.10.1
 
