@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed,  9 Nov 2016 23:25:58 +0100
-Message-Id: <20161109222606.29039-10-sw@simonwunderlich.de>
+Date: Wed,  9 Nov 2016 23:26:01 +0100
+Message-Id: <20161109222606.29039-13-sw@simonwunderlich.de>
 In-Reply-To: <20161109222606.29039-1-sw@simonwunderlich.de>
 References: <20161109222606.29039-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 09/17] batman-adv: use consume_skb for
-	non-dropped packets
+Subject: [B.A.T.M.A.N.] [PATCH 12/17] batman-adv: Consume skb in
+	batadv_send_skb_to_orig
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,361 +20,201 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Sven Eckelmann <sven@narfation.org>
 
-kfree_skb assumes that an skb is dropped after an failure and notes that.
-consume_skb should be used in non-failure situations. Such information is
-important for dropmonitor netlink which tells how many packets were dropped
-and where this drop happened.
+Sending functions in Linux consume the supplied skbuff. Doing the same in
+batadv_send_skb_to_orig avoids the hack of returning -1 (-EPERM) to signal
+the caller that he is responsible for cleaning up the skb.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_iv_ogm.c     | 13 ++++++++-----
- net/batman-adv/fragmentation.c  | 20 ++++++++++++++------
- net/batman-adv/network-coding.c | 24 +++++++++++++++---------
- net/batman-adv/send.c           | 27 +++++++++++++++++++--------
- net/batman-adv/send.h           |  3 ++-
- net/batman-adv/soft-interface.c |  2 +-
- 6 files changed, 59 insertions(+), 30 deletions(-)
+ net/batman-adv/routing.c  | 11 ++---------
+ net/batman-adv/send.c     | 39 ++++++++++++++++++++++-----------------
+ net/batman-adv/tp_meter.c |  6 ------
+ net/batman-adv/tvlv.c     |  5 +----
+ 4 files changed, 25 insertions(+), 36 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 0b9be62..310f391 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -698,7 +698,7 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index a4cb157..4d2679a 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -262,9 +262,6 @@ static int batadv_recv_my_icmp_packet(struct batadv_priv *bat_priv,
+ 		icmph->ttl = BATADV_TTL;
  
- 	forw_packet_aggr->skb = netdev_alloc_skb_ip_align(NULL, skb_size);
- 	if (!forw_packet_aggr->skb) {
--		batadv_forw_packet_free(forw_packet_aggr);
-+		batadv_forw_packet_free(forw_packet_aggr, true);
- 		return;
- 	}
+ 		res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-		if (res == -1)
+-			goto out;
+-
+ 		ret = NET_RX_SUCCESS;
  
-@@ -1611,7 +1611,7 @@ batadv_iv_ogm_process_per_outif(const struct sk_buff *skb, int ogm_offset,
- 	if (hardif_neigh)
- 		batadv_hardif_neigh_put(hardif_neigh);
+ 		break;
+@@ -325,8 +322,7 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 	icmp_packet->ttl = BATADV_TTL;
  
--	kfree_skb(skb_priv);
-+	consume_skb(skb_priv);
- }
- 
- /**
-@@ -1783,6 +1783,7 @@ static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
- 	struct delayed_work *delayed_work;
- 	struct batadv_forw_packet *forw_packet;
- 	struct batadv_priv *bat_priv;
-+	bool dropped = false;
- 
- 	delayed_work = to_delayed_work(work);
- 	forw_packet = container_of(delayed_work, struct batadv_forw_packet,
-@@ -1792,8 +1793,10 @@ static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
- 	hlist_del(&forw_packet->list);
- 	spin_unlock_bh(&bat_priv->forw_bat_list_lock);
- 
--	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
-+	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING) {
-+		dropped = true;
- 		goto out;
-+	}
- 
- 	batadv_iv_ogm_emit(forw_packet);
- 
-@@ -1810,7 +1813,7 @@ static void batadv_iv_send_outstanding_bat_ogm_packet(struct work_struct *work)
- 		batadv_iv_ogm_schedule(forw_packet->if_incoming);
+ 	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (res != -1)
+-		ret = NET_RX_SUCCESS;
++	ret = NET_RX_SUCCESS;
  
  out:
--	batadv_forw_packet_free(forw_packet);
-+	batadv_forw_packet_free(forw_packet, dropped);
- }
+ 	if (primary_if)
+@@ -413,8 +409,7 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
  
- static int batadv_iv_ogm_receive(struct sk_buff *skb,
-@@ -1851,7 +1854,7 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
- 		ogm_packet = (struct batadv_ogm_packet *)packet_pos;
- 	}
+ 	/* route it */
+ 	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
+-	if (res != -1)
+-		ret = NET_RX_SUCCESS;
++	ret = NET_RX_SUCCESS;
  
--	kfree_skb(skb);
-+	consume_skb(skb);
- 	return NET_RX_SUCCESS;
- }
+ out:
+ 	if (orig_node)
+@@ -702,8 +697,6 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
  
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 2b967a3..a2e28a1 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -42,17 +42,23 @@
- /**
-  * batadv_frag_clear_chain - delete entries in the fragment buffer chain
-  * @head: head of chain with entries.
-+ * @dropped: whether the chain is cleared because all fragments are dropped
-  *
-  * Free fragments in the passed hlist. Should be called with appropriate lock.
-  */
--static void batadv_frag_clear_chain(struct hlist_head *head)
-+static void batadv_frag_clear_chain(struct hlist_head *head, bool dropped)
- {
- 	struct batadv_frag_list_entry *entry;
- 	struct hlist_node *node;
+ 	len = skb->len;
+ 	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
+-	if (res == -1)
+-		goto out;
  
- 	hlist_for_each_entry_safe(entry, node, head, list) {
- 		hlist_del(&entry->list);
--		kfree_skb(entry->skb);
-+
-+		if (dropped)
-+			kfree_skb(entry->skb);
-+		else
-+			consume_skb(entry->skb);
-+
- 		kfree(entry);
- 	}
- }
-@@ -73,7 +79,7 @@ void batadv_frag_purge_orig(struct batadv_orig_node *orig_node,
- 		spin_lock_bh(&chain->lock);
- 
- 		if (!check_cb || check_cb(chain)) {
--			batadv_frag_clear_chain(&chain->fragment_list);
-+			batadv_frag_clear_chain(&chain->fragment_list, true);
- 			chain->size = 0;
- 		}
- 
-@@ -118,7 +124,7 @@ static bool batadv_frag_init_chain(struct batadv_frag_table_entry *chain,
- 		return false;
- 
- 	if (!hlist_empty(&chain->fragment_list))
--		batadv_frag_clear_chain(&chain->fragment_list);
-+		batadv_frag_clear_chain(&chain->fragment_list, true);
- 
- 	chain->size = 0;
- 	chain->seqno = seqno;
-@@ -220,7 +226,7 @@ static bool batadv_frag_insert_packet(struct batadv_orig_node *orig_node,
- 		 * exceeds the maximum size of one merged packet. Don't allow
- 		 * packets to have different total_size.
- 		 */
--		batadv_frag_clear_chain(&chain->fragment_list);
-+		batadv_frag_clear_chain(&chain->fragment_list, true);
- 		chain->size = 0;
- 	} else if (ntohs(frag_packet->total_size) == chain->size) {
- 		/* All fragments received. Hand over chain to caller. */
-@@ -254,6 +260,7 @@ batadv_frag_merge_packets(struct hlist_head *chain)
- 	struct batadv_frag_list_entry *entry;
- 	struct sk_buff *skb_out;
- 	int size, hdr_size = sizeof(struct batadv_frag_packet);
-+	bool dropped = false;
- 
- 	/* Remove first entry, as this is the destination for the rest of the
- 	 * fragments.
-@@ -270,6 +277,7 @@ batadv_frag_merge_packets(struct hlist_head *chain)
- 	if (pskb_expand_head(skb_out, 0, size - skb_out->len, GFP_ATOMIC) < 0) {
- 		kfree_skb(skb_out);
- 		skb_out = NULL;
-+		dropped = true;
- 		goto free;
- 	}
- 
-@@ -291,7 +299,7 @@ batadv_frag_merge_packets(struct hlist_head *chain)
- 
- free:
- 	/* Locking is not needed, because 'chain' is not part of any orig. */
--	batadv_frag_clear_chain(chain);
-+	batadv_frag_clear_chain(chain, dropped);
- 	return skb_out;
- }
- 
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index c213dde..3af66d3 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -260,10 +260,16 @@ static void batadv_nc_path_put(struct batadv_nc_path *nc_path)
- /**
-  * batadv_nc_packet_free - frees nc packet
-  * @nc_packet: the nc packet to free
-+ * @dropped: whether the packet is freed because is is dropped
-  */
--static void batadv_nc_packet_free(struct batadv_nc_packet *nc_packet)
-+static void batadv_nc_packet_free(struct batadv_nc_packet *nc_packet,
-+				  bool dropped)
- {
--	kfree_skb(nc_packet->skb);
-+	if (dropped)
-+		kfree_skb(nc_packet->skb);
-+	else
-+		consume_skb(nc_packet->skb);
-+
- 	batadv_nc_path_put(nc_packet->nc_path);
- 	kfree(nc_packet);
- }
-@@ -576,7 +582,7 @@ static void batadv_nc_send_packet(struct batadv_nc_packet *nc_packet)
- {
- 	batadv_send_unicast_skb(nc_packet->skb, nc_packet->neigh_node);
- 	nc_packet->skb = NULL;
--	batadv_nc_packet_free(nc_packet);
-+	batadv_nc_packet_free(nc_packet, false);
- }
- 
- /**
-@@ -610,7 +616,7 @@ static bool batadv_nc_sniffed_purge(struct batadv_priv *bat_priv,
- 
- 	/* purge nc packet */
- 	list_del(&nc_packet->list);
--	batadv_nc_packet_free(nc_packet);
-+	batadv_nc_packet_free(nc_packet, true);
- 
- 	res = true;
- 
-@@ -1208,11 +1214,11 @@ static bool batadv_nc_code_packets(struct batadv_priv *bat_priv,
- 	}
- 
- 	/* skb_src is now coded into skb_dest, so free it */
--	kfree_skb(skb_src);
-+	consume_skb(skb_src);
- 
- 	/* avoid duplicate free of skb from nc_packet */
- 	nc_packet->skb = NULL;
--	batadv_nc_packet_free(nc_packet);
-+	batadv_nc_packet_free(nc_packet, false);
- 
- 	/* Send the coded packet and return true */
- 	batadv_send_unicast_skb(skb_dest, first_dest);
-@@ -1399,7 +1405,7 @@ static void batadv_nc_skb_store_before_coding(struct batadv_priv *bat_priv,
- 	/* batadv_nc_skb_store_for_decoding() clones the skb, so we must free
- 	 * our ref
- 	 */
--	kfree_skb(skb);
-+	consume_skb(skb);
- }
- 
- /**
-@@ -1723,7 +1729,7 @@ batadv_nc_skb_decode_packet(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 	ether_addr_copy(unicast_packet->dest, orig_dest);
- 	unicast_packet->ttvn = ttvn;
- 
--	batadv_nc_packet_free(nc_packet);
-+	batadv_nc_packet_free(nc_packet, false);
- 	return unicast_packet;
- }
- 
-@@ -1860,7 +1866,7 @@ static int batadv_nc_recv_coded_packet(struct sk_buff *skb,
- 	return batadv_recv_unicast_packet(skb, recv_if);
- 
- free_nc_packet:
--	batadv_nc_packet_free(nc_packet);
-+	batadv_nc_packet_free(nc_packet, true);
- 	return NET_RX_DROP;
- }
- 
+ 	/* translate transmit result into receive result */
+ 	if (res == NET_XMIT_SUCCESS) {
 diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index d9bbb00..0f86293 100644
+index 0f86293..b00aac7 100644
 --- a/net/batman-adv/send.c
 +++ b/net/batman-adv/send.c
-@@ -451,13 +451,19 @@ int batadv_send_skb_via_gw(struct batadv_priv *bat_priv, struct sk_buff *skb,
- /**
-  * batadv_forw_packet_free - free a forwarding packet
-  * @forw_packet: The packet to free
-+ * @dropped: whether the packet is freed because is is dropped
+@@ -165,11 +165,9 @@ int batadv_send_unicast_skb(struct sk_buff *skb,
+  * host, NULL can be passed as recv_if and no interface alternating is
+  * attempted.
   *
-  * This frees a forwarding packet and releases any resources it might
-  * have claimed.
+- * Return: -1 on failure (and the skb is not consumed), -EINPROGRESS if the
+- * skb is buffered for later transmit or the NET_XMIT status returned by the
++ * Return: negative errno code on a failure, -EINPROGRESS if the skb is
++ * buffered for later transmit or the NET_XMIT status returned by the
+  * lower routine if the packet has been passed down.
+- *
+- * If the returning value is not -1 the skb has been consumed.
   */
--void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet)
-+void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet,
-+			     bool dropped)
+ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 			    struct batadv_orig_node *orig_node,
+@@ -177,12 +175,14 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
  {
--	kfree_skb(forw_packet->skb);
-+	if (dropped)
-+		kfree_skb(forw_packet->skb);
-+	else
-+		consume_skb(forw_packet->skb);
-+
- 	if (forw_packet->if_incoming)
- 		batadv_hardif_put(forw_packet->if_incoming);
- 	if (forw_packet->if_outgoing)
-@@ -598,7 +604,7 @@ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 	return NETDEV_TX_OK;
+ 	struct batadv_priv *bat_priv = orig_node->bat_priv;
+ 	struct batadv_neigh_node *neigh_node;
+-	int ret = -1;
++	int ret;
  
- err_packet_free:
--	batadv_forw_packet_free(forw_packet);
-+	batadv_forw_packet_free(forw_packet, true);
- err:
- 	return NETDEV_TX_BUSY;
- }
-@@ -613,6 +619,7 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- 	struct sk_buff *skb1;
- 	struct net_device *soft_iface;
- 	struct batadv_priv *bat_priv;
-+	bool dropped = false;
- 	u8 *neigh_addr;
- 	u8 *orig_neigh;
- 	int ret = 0;
-@@ -627,11 +634,15 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- 	hlist_del(&forw_packet->list);
- 	spin_unlock_bh(&bat_priv->forw_bcast_list_lock);
- 
--	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING)
-+	if (atomic_read(&bat_priv->mesh_state) == BATADV_MESH_DEACTIVATING) {
-+		dropped = true;
- 		goto out;
+ 	/* batadv_find_router() increases neigh_nodes refcount if found. */
+ 	neigh_node = batadv_find_router(bat_priv, orig_node, recv_if);
+-	if (!neigh_node)
+-		goto out;
++	if (!neigh_node) {
++		ret = -EINVAL;
++		goto free_skb;
 +	}
  
--	if (batadv_dat_drop_broadcast_packet(bat_priv, forw_packet))
-+	if (batadv_dat_drop_broadcast_packet(bat_priv, forw_packet)) {
-+		dropped = true;
- 		goto out;
-+	}
+ 	/* Check if the skb is too large to send in one piece and fragment
+ 	 * it if needed.
+@@ -191,8 +191,10 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 	    skb->len > neigh_node->if_incoming->net_dev->mtu) {
+ 		/* Fragment and send packet. */
+ 		ret = batadv_frag_send_packet(skb, orig_node, neigh_node);
++		/* skb was consumed */
++		skb = NULL;
  
- 	bcast_packet = (struct batadv_bcast_packet *)forw_packet->skb->data;
- 
-@@ -709,7 +720,7 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
+-		goto out;
++		goto put_neigh_node;
  	}
+ 
+ 	/* try to network code the packet, if it is received on an interface
+@@ -204,9 +206,13 @@ int batadv_send_skb_to_orig(struct sk_buff *skb,
+ 	else
+ 		ret = batadv_send_unicast_skb(skb, neigh_node);
+ 
+-out:
+-	if (neigh_node)
+-		batadv_neigh_node_put(neigh_node);
++	/* skb was consumed */
++	skb = NULL;
++
++put_neigh_node:
++	batadv_neigh_node_put(neigh_node);
++free_skb:
++	kfree_skb(skb);
+ 
+ 	return ret;
+ }
+@@ -327,7 +333,7 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ {
+ 	struct batadv_unicast_packet *unicast_packet;
+ 	struct ethhdr *ethhdr;
+-	int res, ret = NET_XMIT_DROP;
++	int ret = NET_XMIT_DROP;
+ 
+ 	if (!orig_node)
+ 		goto out;
+@@ -364,13 +370,12 @@ int batadv_send_skb_unicast(struct batadv_priv *bat_priv,
+ 	if (batadv_tt_global_client_is_roaming(bat_priv, ethhdr->h_dest, vid))
+ 		unicast_packet->ttvn = unicast_packet->ttvn - 1;
+ 
+-	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (res != -1)
+-		ret = NET_XMIT_SUCCESS;
++	ret = batadv_send_skb_to_orig(skb, orig_node, NULL);
++	 /* skb was consumed */
++	skb = NULL;
  
  out:
--	batadv_forw_packet_free(forw_packet);
-+	batadv_forw_packet_free(forw_packet, dropped);
+-	if (ret == NET_XMIT_DROP)
+-		kfree_skb(skb);
++	kfree_skb(skb);
+ 	return ret;
  }
  
- void
-@@ -750,7 +761,7 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index 2333777..f156452 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -615,9 +615,6 @@ static int batadv_tp_send_msg(struct batadv_tp_vars *tp_vars, const u8 *src,
+ 	batadv_tp_fill_prerandom(tp_vars, data, data_len);
  
- 		if (pending) {
- 			hlist_del(&forw_packet->list);
--			batadv_forw_packet_free(forw_packet);
-+			batadv_forw_packet_free(forw_packet, true);
- 		}
- 	}
- 	spin_unlock_bh(&bat_priv->forw_bcast_list_lock);
-@@ -777,7 +788,7 @@ batadv_purge_outstanding_packets(struct batadv_priv *bat_priv,
- 
- 		if (pending) {
- 			hlist_del(&forw_packet->list);
--			batadv_forw_packet_free(forw_packet);
-+			batadv_forw_packet_free(forw_packet, true);
- 		}
- 	}
- 	spin_unlock_bh(&bat_priv->forw_bat_list_lock);
-diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
-index 86009b5..c580194 100644
---- a/net/batman-adv/send.h
-+++ b/net/batman-adv/send.h
-@@ -27,7 +27,8 @@
- 
- struct sk_buff;
- 
--void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet);
-+void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet,
-+			     bool dropped);
- struct batadv_forw_packet *
- batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
- 			 struct batadv_hard_iface *if_outgoing,
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 109f53b..2f0304e 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -362,7 +362,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 		/* a copy is stored in the bcast list, therefore removing
- 		 * the original skb.
- 		 */
+ 	r = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (r == -1)
 -		kfree_skb(skb);
-+		consume_skb(skb);
+-
+ 	if (r == NET_XMIT_SUCCESS)
+ 		return 0;
  
- 	/* unicast packet */
- 	} else {
+@@ -1206,9 +1203,6 @@ static int batadv_tp_send_ack(struct batadv_priv *bat_priv, const u8 *dst,
+ 
+ 	/* send the ack */
+ 	r = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (r == -1)
+-		kfree_skb(skb);
+-
+ 	if (unlikely(r < 0) || (r == NET_XMIT_DROP)) {
+ 		ret = BATADV_TP_REASON_DST_UNREACHABLE;
+ 		goto out;
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index 77654f0..a783420 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -600,7 +600,6 @@ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
+ 	unsigned char *tvlv_buff;
+ 	unsigned int tvlv_len;
+ 	ssize_t hdr_len = sizeof(*unicast_tvlv_packet);
+-	int res;
+ 
+ 	orig_node = batadv_orig_hash_find(bat_priv, dst);
+ 	if (!orig_node)
+@@ -633,9 +632,7 @@ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
+ 	tvlv_buff += sizeof(*tvlv_hdr);
+ 	memcpy(tvlv_buff, tvlv_value, tvlv_value_len);
+ 
+-	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (res == -1)
+-		kfree_skb(skb);
++	batadv_send_skb_to_orig(skb, orig_node, NULL);
+ out:
+ 	batadv_orig_node_put(orig_node);
+ }
 -- 
 2.10.1
 
