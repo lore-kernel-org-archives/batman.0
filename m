@@ -1,11 +1,13 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 12 Nov 2016 10:25:24 +0100
-Message-Id: <20161112092524.13170-7-sven@narfation.org>
-In-Reply-To: <4404358.R7R4S15M79@sven-edge>
-References: <4404358.R7R4S15M79@sven-edge>
-Subject: [B.A.T.M.A.N.] [PATCH 7/7] alfred: Allow TXEND to start new
-	transaction
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Sat, 12 Nov 2016 11:46:24 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20161112104624.GE3151@otheros>
+References: <CAA_JP8UVeCpytzkirob9WsOA0BOkhVgZyA-Wa1=p+PV0hgRx8w@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <CAA_JP8UVeCpytzkirob9WsOA0BOkhVgZyA-Wa1=p+PV0hgRx8w@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] MTU for batman-adv w/ vlans?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,55 +17,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-A TXEND which comes before all other PUSH_DATA packets also has to create
-its own transaction. Otherwise it cannot store the number of expected
-packets for this transaction.
+On Fri, Nov 11, 2016 at 07:26:36AM -0700, dan wrote:
+> I'm not 100% clear on how batman-adv works with vlans, so excuse me if
+> I've taken a wrong path.
+> 
+> 
+> I have a small 2 radio mesh node with 1 ethernet port for non-mesh
+> access.  wlan0 and wlan1 in bat0, bat0 and eth0 in mesh-bridge.
+> 
+> MTU is 1532 on WLAN0.
+> 
+> If I want a VLAN to pass through the eth0 interface as if it were
+> trunk, what needs to be done?
+> my thought was, increase WLAN0 MTU to 1536 and eth0 to 1504....
 
-The PUSH_DATA packets can then trigger the finish of the transaction. Or
-the transaction will timeout automatically.
+(I had a similar MTU/fragmentation discussion with Marek recently, so
+now I can pretend to be smart :D)
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- recv.c | 19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
+For BATMAN_V, if you want VLANs to pass without fragmentation,
+then you need to increase the MTU of WLAN0 *and* eth0 to 1536, so +4
+bytes compared to what "dmesg" currently suggests, yes.
 
-diff --git a/recv.c b/recv.c
-index 9fabfa4..bd208fd 100644
---- a/recv.c
-+++ b/recv.c
-@@ -359,13 +359,28 @@ static int process_alfred_status_txend(struct globals *globals,
- 	search.id = ntohs(request->tx.id);
- 
- 	head = hash_find(globals->transaction_hash, &search);
--	if (!head)
--		return -1;
-+	if (!head) {
-+		/* slave must create the transactions to be able to correctly
-+		 *  wait for it */
-+		if (globals->opmode != OPMODE_MASTER)
-+			goto err;
-+
-+		/* 0-packet txend for unknown transaction */
-+		if (ntohs(request->tx.seqno) == 0)
-+			goto err;
-+
-+		head = transaction_add(globals, mac, ntohs(request->tx.id));
-+		if (!head)
-+			goto err;
-+	}
-+	clock_gettime(CLOCK_MONOTONIC, &head->last_rx_time);
- 
- 	head->txend_packets = ntohs(request->tx.seqno);
- 	finish_alfred_transaction(globals, head, mac);
- 
- 	return 0;
-+err:
-+	return -1;
- }
- 
- int recv_alfred_packet(struct globals *globals, struct interface *interface,
--- 
-2.10.2
+If you do not care about fragmentation, then the default 1500
+should "just work", both for wlan0 and eth0, too.
 
+
+> will that work?  or do I need to create a vlan  bat0.1 and eth0.1 and
+> bridge them?
+
+Depends on what you want. Do bridged-in clients do the
+VLAN-tagging on their own? Or do you want the mesh node to tag incoming,
+not yet tagged frames?
+
+Or do you just want to split one physical wire into multiple, virtual
+ones? Then you'd need VLANs on eth0 (and would add eth0.1 to
+batman-adv instead of eth0).
+
+
+I guess, the question is, what is the original intent. What made you
+you think about using VLANs in the first place?
+
+Regards, Linus
