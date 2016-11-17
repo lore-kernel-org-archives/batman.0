@@ -1,13 +1,13 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Sat, 12 Nov 2016 11:46:24 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20161112104624.GE3151@otheros>
-References: <CAA_JP8UVeCpytzkirob9WsOA0BOkhVgZyA-Wa1=p+PV0hgRx8w@mail.gmail.com>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Thu, 17 Nov 2016 17:06:31 +0100
+Message-ID: <7777028.4BuxxMg4pt@prime>
+In-Reply-To: <4404358.R7R4S15M79@sven-edge>
+References: <4404358.R7R4S15M79@sven-edge>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CAA_JP8UVeCpytzkirob9WsOA0BOkhVgZyA-Wa1=p+PV0hgRx8w@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] MTU for batman-adv w/ vlans?
+Content-Type: multipart/signed; boundary="nextPart9514810.QbCuEtcsbT";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH 0/7] alfred: Allow out-of-order TXEND
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,46 +17,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Fri, Nov 11, 2016 at 07:26:36AM -0700, dan wrote:
-> I'm not 100% clear on how batman-adv works with vlans, so excuse me if
-> I've taken a wrong path.
+--nextPart9514810.QbCuEtcsbT
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Saturday, November 12, 2016 10:24:32 AM CET Sven Eckelmann wrote:
+> Hi,
 > 
+> alfred allows to have out-of-order push data packet delivery. But these push
+> data packets are only accepted when they finish with an TXEND that has as
+> its seqno the amount of packets alfred received for this transaction. A
+> TXEND packet which is received before the last push data frame was received
+> would therefore cause the complete transaction to be canceled on the
+> receiver side.
 > 
-> I have a small 2 radio mesh node with 1 ethernet port for non-mesh
-> access.  wlan0 and wlan1 in bat0, bat0 and eth0 in mesh-bridge.
+> It was observed on a TP-Link TL-WR841N/ND v8 [1] that after the upgrade to
+> Gluon 2016.2 many (if not the most) transaction were out of order. The TXEND
+> was received before the actual push data was submitted. The master server
+> reacted to this by:
 > 
-> MTU is 1532 on WLAN0.
+> 1. TXEND packet received to unknown transaction with seqno != 0
+>    -> TXEND packet was dropped
+> 2. PUSH_DATA packet received with seqno 0 received
+>    -> new transaction was created
+> 3. transaction timeout happened
+>    -> transaction was dropped
 > 
-> If I want a VLAN to pass through the eth0 interface as if it were
-> trunk, what needs to be done?
-> my thought was, increase WLAN0 MTU to 1536 and eth0 to 1504....
+> This patchset now changes the behavior to automatically create transactions
+> when TXEND packets are received. The routines to decode TXEND and PUSH_DATA
+> packets will check if all frames of a transaction were received and commit
+> the data when the check was successful.
+> 
+> This stabilized the statistics [2] for the previously mentioned node.
 
-(I had a similar MTU/fragmentation discussion with Marek recently, so
-now I can pretend to be smart :D)
+Adopted this series in commits 323c1ed..12a478c.
 
-For BATMAN_V, if you want VLANs to pass without fragmentation,
-then you need to increase the MTU of WLAN0 *and* eth0 to 1536, so +4
-bytes compared to what "dmesg" currently suggests, yes.
+Thanks,
+     Simon
+--nextPart9514810.QbCuEtcsbT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-If you do not care about fragmentation, then the default 1500
-should "just work", both for wlan0 and eth0, too.
+-----BEGIN PGP SIGNATURE-----
 
+iQIcBAABCgAGBQJYLdWHAAoJEKEr45hCkp6hzd8P/3vx5dFqjFvVUr/BtmgdfgTA
+WmUZC9VbwafFldD9dbtG6Lbg7T7DTdwtj0cImkz8p0o4KPcPsQi5Kjy7T0Yhd4V3
+vdB7iEpYAaVmizd7iwwiwRux5w2hD0CJ/mKbRlyDkURX6gy5r/wORrizSmBqGE/Z
+QIWVMJqwBIixZrNL4vKO6aqclQ/w3NXNFLIfgCbJTMzAdHCNMdLSfByR5CNW9rqY
+m7pZfAWlxs3IQkkEi+73gveWgsjKKGiKkQ0tYNA3uvj2CeoywsLSfsXGSVjcxoPe
+CZX7gmPXl8lRwKAx9LHCJwVGtEzm7qienzVvz3ByU0S71E9sWqgi8r0Yo9m8IZjd
+Az6RHpdTTudByCWUR1M1U09qHIz1KtFy34mFp1j1yblz7/j0NUu1ggU48Ui2seaa
+jZ63sF/DWVZPxU3D6dn0FeSfofhgxS/nmqvVbPBLm+SO+VnrulPhvTeNEOVYNoa5
+ET3L2tYpwXLRfeDeyDP1iufffK4Ak92zBJOlkeIG6dZnMBG0/gT9II8wlTmCMJeU
+iNDxASxkRu3VULPNKnhNCepyKTgiG/qr0ibZyBqFVCxYrdBSEogsHs6bXxf20tMt
+9pHI0G/NLGPopqM3pNklSEFiWAXhsI7CLODDpxwnHhSqTccczMOR6btY0dlHCmRB
+kQsCvgb1M9w+3GY4dxfm
+=wWe/
+-----END PGP SIGNATURE-----
 
-> will that work?  or do I need to create a vlan  bat0.1 and eth0.1 and
-> bridge them?
+--nextPart9514810.QbCuEtcsbT--
 
-Depends on what you want. Do bridged-in clients do the
-VLAN-tagging on their own? Or do you want the mesh node to tag incoming,
-not yet tagged frames?
-
-Or do you just want to split one physical wire into multiple, virtual
-ones? Then you'd need VLANs on eth0 (and would add eth0.1 to
-batman-adv instead of eth0).
-
-
-I guess, the question is, what is the original intent. What made you
-you think about using VLANs in the first place?
-
-Regards, Linus
