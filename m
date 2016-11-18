@@ -1,13 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 17 Nov 2016 17:06:31 +0100
-Message-ID: <7777028.4BuxxMg4pt@prime>
-In-Reply-To: <4404358.R7R4S15M79@sven-edge>
-References: <4404358.R7R4S15M79@sven-edge>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Fri, 18 Nov 2016 11:33:27 +0100
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20161118103327.GB4255@otheros>
+References: <1479373493121113@kroah.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9514810.QbCuEtcsbT";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/7] alfred: Allow out-of-order TXEND
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1479373493121113@kroah.com>
+Subject: Re: [B.A.T.M.A.N.] Patch "batman-adv: fix splat on disabling an
+ interface" has been added to the 4.8-stable tree
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,64 +20,29 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart9514810.QbCuEtcsbT
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Saturday, November 12, 2016 10:24:32 AM CET Sven Eckelmann wrote:
-> Hi,
+On Thu, Nov 17, 2016 at 10:04:53AM +0100, gregkh@linuxfoundation.org wrote:
 > 
-> alfred allows to have out-of-order push data packet delivery. But these push
-> data packets are only accepted when they finish with an TXEND that has as
-> its seqno the amount of packets alfred received for this transaction. A
-> TXEND packet which is received before the last push data frame was received
-> would therefore cause the complete transaction to be canceled on the
-> receiver side.
+> This is a note to let you know that I've just added the patch titled
 > 
-> It was observed on a TP-Link TL-WR841N/ND v8 [1] that after the upgrade to
-> Gluon 2016.2 many (if not the most) transaction were out of order. The TXEND
-> was received before the actual push data was submitted. The master server
-> reacted to this by:
+>     batman-adv: fix splat on disabling an interface
 > 
-> 1. TXEND packet received to unknown transaction with seqno != 0
->    -> TXEND packet was dropped
-> 2. PUSH_DATA packet received with seqno 0 received
->    -> new transaction was created
-> 3. transaction timeout happened
->    -> transaction was dropped
+> to the 4.8-stable tree which can be found at:
+>     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 > 
-> This patchset now changes the behavior to automatically create transactions
-> when TXEND packets are received. The routines to decode TXEND and PUSH_DATA
-> packets will check if all frames of a transaction were received and commit
-> the data when the check was successful.
+> The filename of the patch is:
+>      batman-adv-fix-splat-on-disabling-an-interface.patch
+> and it can be found in the queue-4.8 subdirectory.
 > 
-> This stabilized the statistics [2] for the previously mentioned node.
+> If you, or anyone else, feels it should not be added to the stable tree,
+> please let <stable@vger.kernel.org> know about it.
+> 
+> 
+> From 9799c50372b23ed774791bdb87d700f1286ee8a9 Mon Sep 17 00:00:00 2001
+> From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+> Date: Thu, 6 Oct 2016 01:43:08 +0200
+> Subject: batman-adv: fix splat on disabling an interface
+> [...]
 
-Adopted this series in commits 323c1ed..12a478c.
-
-Thanks,
-     Simon
---nextPart9514810.QbCuEtcsbT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABCgAGBQJYLdWHAAoJEKEr45hCkp6hzd8P/3vx5dFqjFvVUr/BtmgdfgTA
-WmUZC9VbwafFldD9dbtG6Lbg7T7DTdwtj0cImkz8p0o4KPcPsQi5Kjy7T0Yhd4V3
-vdB7iEpYAaVmizd7iwwiwRux5w2hD0CJ/mKbRlyDkURX6gy5r/wORrizSmBqGE/Z
-QIWVMJqwBIixZrNL4vKO6aqclQ/w3NXNFLIfgCbJTMzAdHCNMdLSfByR5CNW9rqY
-m7pZfAWlxs3IQkkEi+73gveWgsjKKGiKkQ0tYNA3uvj2CeoywsLSfsXGSVjcxoPe
-CZX7gmPXl8lRwKAx9LHCJwVGtEzm7qienzVvz3ByU0S71E9sWqgi8r0Yo9m8IZjd
-Az6RHpdTTudByCWUR1M1U09qHIz1KtFy34mFp1j1yblz7/j0NUu1ggU48Ui2seaa
-jZ63sF/DWVZPxU3D6dn0FeSfofhgxS/nmqvVbPBLm+SO+VnrulPhvTeNEOVYNoa5
-ET3L2tYpwXLRfeDeyDP1iufffK4Ak92zBJOlkeIG6dZnMBG0/gT9II8wlTmCMJeU
-iNDxASxkRu3VULPNKnhNCepyKTgiG/qr0ibZyBqFVCxYrdBSEogsHs6bXxf20tMt
-9pHI0G/NLGPopqM3pNklSEFiWAXhsI7CLODDpxwnHhSqTccczMOR6btY0dlHCmRB
-kQsCvgb1M9w+3GY4dxfm
-=wWe/
------END PGP SIGNATURE-----
-
---nextPart9514810.QbCuEtcsbT--
-
+Does anyone know whether I should mail Greg, asking him not to apply it?
+Or is the revert of this commit supposed to trickle through soon
+anyways?
