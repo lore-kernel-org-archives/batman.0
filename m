@@ -1,7 +1,7 @@
 Return-Path: <fgao@ikuai8.com>
 From: fgao@ikuai8.com
-Date: Mon, 21 Nov 2016 23:03:56 +0800
-Message-Id: <1479740636-3904-1-git-send-email-fgao@ikuai8.com>
+Date: Mon, 21 Nov 2016 23:00:32 +0800
+Message-Id: <1479740432-3721-1-git-send-email-fgao@ikuai8.com>
 Subject: [B.A.T.M.A.N.] [PATCH net-next 1/2] net: batman-adv: Treat
 	NET_XMIT_CN as transmit successfully
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
