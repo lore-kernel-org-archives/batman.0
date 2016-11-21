@@ -1,14 +1,8 @@
 Return-Path: <fgao@ikuai8.com>
-MIME-Version: 1.0
-In-Reply-To: <CA+6hz4rVCL2oxeQUojcqptNfcZdtLZdgEA2_j7iU1-B=s12SHg@mail.gmail.com>
-References: <1479725922-5112-1-git-send-email-fgao@ikuai8.com>
- <20161121110915.GB22120@breakpoint.cc>
- <CA+6hz4rVCL2oxeQUojcqptNfcZdtLZdgEA2_j7iU1-B=s12SHg@mail.gmail.com>
-From: Gao Feng <fgao@ikuai8.com>
-Date: Mon, 21 Nov 2016 21:31:59 +0800
-Message-ID: <CA+6hz4p9sRHsmNS+x+MsEfx774=C08UJvaFqaRYund3+9dw91w@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] [PATCH net v2 1/1] net: batman-adv: Treat
+From: fgao@ikuai8.com
+Date: Mon, 21 Nov 2016 23:03:56 +0800
+Message-Id: <1479740636-3904-1-git-send-email-fgao@ikuai8.com>
+Subject: [B.A.T.M.A.N.] [PATCH net-next 1/2] net: batman-adv: Treat
 	NET_XMIT_CN as transmit successfully
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -19,54 +13,128 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Florian Westphal <fw@strlen.de>
-Cc: mareklindner@neomailbox.ch, Linux Kernel Network Developers <netdev@vger.kernel.org>, b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc, "David S. Miller" <davem@davemloft.net>
+To: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, davem@davemloft.net, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, gfree.wind@gmail.com
 
-Hi Florian,
+From: Gao Feng <gfree.wind@gmail.com>
+
+The tc could return NET_XMIT_CN as one congestion notification, but
+it does not mean the packet is lost. Other modules like ipvlan,
+macvlan, and others treat NET_XMIT_CN as success too.
+
+So batman-adv should add the NET_XMIT_CN check.
+
+Signed-off-by: Gao Feng <gfree.wind@gmail.com>
+---
+ net/batman-adv/distributed-arp-table.c |  2 +-
+ net/batman-adv/fragmentation.c         |  2 +-
+ net/batman-adv/routing.c               | 10 +++++-----
+ net/batman-adv/soft-interface.c        |  2 +-
+ net/batman-adv/tp_meter.c              |  2 +-
+ 5 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 49576c5..f6ff4de 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -659,7 +659,7 @@ static bool batadv_dat_send_data(struct batadv_priv *bat_priv,
+ 		}
+ 
+ 		send_status = batadv_send_unicast_skb(tmp_skb, neigh_node);
+-		if (send_status == NET_XMIT_SUCCESS) {
++		if (send_status == NET_XMIT_SUCCESS || send_status == NET_XMIT_CN) {
+ 			/* count the sent packet */
+ 			switch (packet_subtype) {
+ 			case BATADV_P_DAT_DHT_GET:
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 9c561e6..5239616 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -509,7 +509,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 		batadv_add_counter(bat_priv, BATADV_CNT_FRAG_TX_BYTES,
+ 				   skb_fragment->len + ETH_HLEN);
+ 		ret = batadv_send_unicast_skb(skb_fragment, neigh_node);
+-		if (ret != NET_XMIT_SUCCESS) {
++		if (ret != NET_XMIT_SUCCESS && ret != NET_XMIT_CN) {
+ 			ret = NET_XMIT_DROP;
+ 			goto free_skb;
+ 		}
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 6713bdf..6b08b26 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -262,7 +262,7 @@ static int batadv_recv_my_icmp_packet(struct batadv_priv *bat_priv,
+ 		icmph->ttl = BATADV_TTL;
+ 
+ 		res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-		if (res == NET_XMIT_SUCCESS)
++		if (res == NET_XMIT_SUCCESS || res == NET_XMIT_CN)
+ 			ret = NET_RX_SUCCESS;
+ 
+ 		/* skb was consumed */
+@@ -330,7 +330,7 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 	icmp_packet->ttl = BATADV_TTL;
+ 
+ 	res = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (res == NET_RX_SUCCESS)
++	if (res == NET_RX_SUCCESS || res == NET_XMIT_CN)
+ 		ret = NET_XMIT_SUCCESS;
+ 
+ 	/* skb was consumed */
+@@ -424,7 +424,7 @@ int batadv_recv_icmp_packet(struct sk_buff *skb,
+ 
+ 	/* route it */
+ 	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
+-	if (res == NET_XMIT_SUCCESS)
++	if (res == NET_XMIT_SUCCESS || res == NET_XMIT_CN)
+ 		ret = NET_RX_SUCCESS;
+ 
+ 	/* skb was consumed */
+@@ -719,14 +719,14 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
+ 
+ 	len = skb->len;
+ 	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
+-	if (res == NET_XMIT_SUCCESS)
++	if (res == NET_XMIT_SUCCESS || res == NET_XMIT_CN)
+ 		ret = NET_RX_SUCCESS;
+ 
+ 	/* skb was consumed */
+ 	skb = NULL;
+ 
+ 	/* translate transmit result into receive result */
+-	if (res == NET_XMIT_SUCCESS) {
++	if (res == NET_XMIT_SUCCESS || res == NET_XMIT_CN) {
+ 		/* skb was transmitted and consumed */
+ 		batadv_inc_counter(bat_priv, BATADV_CNT_FORWARD);
+ 		batadv_add_counter(bat_priv, BATADV_CNT_FORWARD_BYTES,
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 7b3494a..60516bb 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -386,7 +386,7 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 			ret = batadv_send_skb_via_tt(bat_priv, skb, dst_hint,
+ 						     vid);
+ 		}
+-		if (ret != NET_XMIT_SUCCESS)
++		if (ret != NET_XMIT_SUCCESS && ret != NET_XMIT_CN)
+ 			goto dropped_freed;
+ 	}
+ 
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index f156452..44bfb1e 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -615,7 +615,7 @@ static int batadv_tp_send_msg(struct batadv_tp_vars *tp_vars, const u8 *src,
+ 	batadv_tp_fill_prerandom(tp_vars, data, data_len);
+ 
+ 	r = batadv_send_skb_to_orig(skb, orig_node, NULL);
+-	if (r == NET_XMIT_SUCCESS)
++	if (r == NET_XMIT_SUCCESS || r == NET_XMIT_CN)
+ 		return 0;
+ 
+ 	return BATADV_TP_REASON_CANT_SEND;
+-- 
+1.9.1
 
 
-On Mon, Nov 21, 2016 at 9:24 PM, Gao Feng <fgao@ikuai8.com> wrote:
-> Hi Florian,
->
-> On Mon, Nov 21, 2016 at 7:09 PM, Florian Westphal <fw@strlen.de> wrote:
->> fgao@ikuai8.com <fgao@ikuai8.com> wrote:
->>> From: Gao Feng <fgao@ikuai8.com>
->>>
->>> The tc could return NET_XMIT_CN as one congestion notification, but
->>> it does not mean the packet is lost. Other modules like ipvlan,
->>> macvlan, and others treat NET_XMIT_CN as success too.
->>>
->>> So batman-adv should add the NET_XMIT_CN check.
->>
->> "The tc could return NET_XMIT_CN as one congestion notification, but
->> it means another packet got dropped. Other modules like batman do not
->> treat NET_XMIT_CN as success, so modules like ipvlan, macvlan, ..
->> should ignore it as well."
-
-I didn't get you in the last email
-
-You mean the NET_XMIT_CN should be treated as one error?
-But the comment of NET_XMIT_CN says "It indicates that the device will
-soon be dropping packets, or already drops some packets of the same
-priority". It is not sure another packet is dropped.
-
-BTW, the macro "net_xmit_eval" does not treat NET_XMIT_CN as one error.
-
-Regards
-Feng
-
->>
->> What I am asking is:
->> Are you sure adding NET_XMIT_CN handling everywhere is the right way to
->> resolve the inconsistency?
->
-> Or create one new macro to handle this case like net_xmit_eval.
-> For example,
-> #define net_xmit_ok(ret)    (ret == NET_XMIT_SUCCESS || ret == NET_XMIT_CN)
->
-> Is it ok? But it should be done for net-next.
->
-> Best Regards
-> Feng
 
 
