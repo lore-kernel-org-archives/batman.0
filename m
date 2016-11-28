@@ -1,8 +1,10 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 24 Nov 2016 16:11:01 +0100
-Message-Id: <20161124151101.31677-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: don't add loop detect macs to TT
+Return-Path: <sam@bristolwireless.net>
+Date: Mon, 28 Nov 2016 21:25:05 +0000
+Message-ID: <20161128212505.Horde.S4UVNu_tyJh3C4mpeY9N2E3@slackmail.co.uk>
+From: sam@bristolwireless.net
+Content-Type: multipart/mixed; boundary="=_0zpptakkIwx_nPHVP2TF6po"
+MIME-Version: 1.0
+Subject: [B.A.T.M.A.N.] Batman-adv over LoRa?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,70 +15,75 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Simon Wunderlich <simon.wunderlich@open-mesh.com>
 
-From: Simon Wunderlich <simon.wunderlich@open-mesh.com>
+This message is in MIME format.
 
-The bridge loop avoidance (BLA) feature of batman-adv sends packets to
-probe for Mesh/LAN packet loops. Those packets are not sent by real
-clients and should therefore not be added to the translation table (TT).
+--=_0zpptakkIwx_nPHVP2TF6po
+Content-Type: text/plain; charset=utf-8; format=flowed; DelSp=Yes
+Content-Disposition: inline
 
-Signed-off-by: Simon Wunderlich <simon.wunderlich@open-mesh.com>
----
- net/batman-adv/bridge_loop_avoidance.h | 18 ++++++++++++++++++
- net/batman-adv/soft-interface.c        |  3 ++-
- 2 files changed, 20 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge_loop_avoidance.h
-index 1ae93e4..af550d8 100644
---- a/net/batman-adv/bridge_loop_avoidance.h
-+++ b/net/batman-adv/bridge_loop_avoidance.h
-@@ -20,6 +20,8 @@
- 
- #include "main.h"
- 
-+#include <linux/compiler.h>
-+#include <linux/stddef.h>
- #include <linux/types.h>
- 
- struct net_device;
-@@ -27,6 +29,22 @@ struct netlink_callback;
- struct seq_file;
- struct sk_buff;
- 
-+/**
-+ * batadv_bla_is_loopdetect_mac - check if the mac address is from a loop detect
-+ *  frame sent by bridge loop avoidance
-+ * @mac: mac address to check
-+ *
-+ * Returns true if the it looks like a loop detect frame
-+ * (mac starts with BA:BE), false otherwise
-+ */
-+static inline bool batadv_bla_is_loopdetect_mac(const uint8_t *mac)
-+{
-+	if (mac[0] == 0xba && mac[1] == 0xbe)
-+		return true;
-+
-+	return false;
-+}
-+
- #ifdef CONFIG_BATMAN_ADV_BLA
- bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 		   unsigned short vid, bool is_bcast);
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 7b3494a..1f55b4b 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -258,7 +258,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	ethhdr = eth_hdr(skb);
- 
- 	/* Register the client MAC in the transtable */
--	if (!is_multicast_ether_addr(ethhdr->h_source)) {
-+	if (!is_multicast_ether_addr(ethhdr->h_source) &&
-+	    !batadv_bla_is_loopdetect_mac(ethhdr->h_source)) {
- 		client_added = batadv_tt_local_add(soft_iface, ethhdr->h_source,
- 						   vid, skb->skb_iif,
- 						   skb->mark);
--- 
-2.10.2
+Hi All
+
+I'm interested in a long-range, low bandwidth, low power mesh network.
+
+I'm wondering if it's as easy as buying a Tplink 3020, sticking  
+OpenWrt on it and plugging in a LoRa USB  
+http://webshop.imst.de/radio-modules/lora-products/iu880b-long-range-usb-adapter-74.html then configuring BATMAN to talk over that  
+interface?
+
+The aim is to Run MDP over it  
+http://developer.servalproject.org/dokuwiki/doku.php?id=content:tech:mdp So  
+that mobile phones can access data/short messages over the wireless  
+interface of the TPlink/ OpenWRT device, using the Serval app  
+https://play.google.com/store/apps/details?id=org.servalproject&hl=en_GB (VOIP  
+isn't going to be possible)
+
+So LoRa as level 1
+BATMAN as level 2
+MDP as level 3
+
+Is this at all feasible? Is it easy? (I suspect not!)
+
+Has anyone tried BATMAN over LoRa?
+
+More on LoRa here:  
+http://static1.squarespace.com/static/54cecce7e4b054df1848b5f9/t/57489e6e07eaa0105215dc6c/1464376943218/Reversing-Lora-Knight.pdf
+
+Thanks
+
+Sam
+
+
+
+
+--=_0zpptakkIwx_nPHVP2TF6po
+Content-Type: application/pgp-keys
+Content-Description: PGP Public Key
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+mQGiBFF8yYERBADh8msukJR8mJ8UCmZwsvHGML1bT199twYZjyXN993QwFLgq6y2
+y7kexct7TEPVsq0E+zWHY9MLDsQv3lu5YBGSeffq7lFfkdXlFn5jtu4imn6XBpzE
+xizxZpT8uFw2DLDLn24kpfXAeIcSOMdG+URZdAHvnax8qPtVKiqA1rtuBwCghmxP
+RNzulSFCL3LZL6D2SxO1Gp0D/1fVBuEI6P8I7O1lyqBzbZxqQ8SaJlz7ca5wIiBn
+uee61dDOWovzk0HeqBTcnliZyf7NJxHUKgfjZi7Vcc0iFtJpfESraECKnhnOU1qc
+fwdFIC/A7BsBkKIc64F3X8YMPvJ8S/D6yytCRNR24+hLcMSKX0PmwgLCldiafZ6Y
+34hQA/9kNWIXgk4417e4kutVRFYU9C23KCX6JdZ8LWP9jfqtexfllQkZG1wWEDtp
+VkfWS3MevTY/jMAs7xVBlHQZwyPEPlW4eoe/YZ4nT1pYifID/CsT1RBv1Rxi1uLy
+5gMUQ83ua8uwBWEPyXC+iF4iVBCNutDS33LucAKA+mXpWbEU9LQqU2FtIFJvc3Np
+dGVyICgyKSA8c2FtQGJyaXN0b2x3aXJlbGVzcy5uZXQ+iGIEExECACIFAlF8yYEC
+GyMGCwkIBwMCBhUIAgkKCwQWAgMBAh4BAheAAAoJEBdTRjzvUNflnJcAn1o3XqQf
+CPoUsDgCKKMcupZp9juiAJ9L4qVcCEC9CIq/6YPrmO5Ht+wr0bkBDQRRfMmBEAQA
+0qKruPeY1ZQ3Ex4kWezmpM+VkvpkNE5RclLQQSSaO9XPMyYvBMwCPc7yxwOj0gWl
+wF/rGjITrDIZF8UA3ipK4mruodktAj9G0xOiwACeKq5Eh/ovO1dGLSBcz4G1292D
+Ud53Nd+03qeU7eTtSa7XmxVIGhfkM1op92j4qMhzOe8AAwUD/iiX1kiT1zn3ntqS
+M3gpgTwAZJWjHDi/u6qyTtjMnTw86z7lxIaQ3aJjiWrA1zVZOniqGxiXYzf4qST9
+XpIpD7klhnXeSIRMcfK3Y+qqMklJmR+UpZBWsYl0uWRRMXWe8CGG2SgW8UlAJpNw
+WI3XmdFqhIYVJ+Qv2DqNg6eLoR9WiEkEGBECAAkFAlF8yYECGwwACgkQF1NGPO9Q
+1+VkXACdEmzE8aQTM0xmJGmroCH+jLLS4GYAniQ4vIsNkcheNhMo6uyM8uGawAj2
+=BqPJ
+-----END PGP PUBLIC KEY BLOCK-----
+--=_0zpptakkIwx_nPHVP2TF6po--
 
