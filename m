@@ -1,12 +1,9 @@
-Return-Path: <dan.carpenter@oracle.com>
-Date: Wed, 30 Nov 2016 22:53:27 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Message-ID: <20161130195327.GA10274@mwanda>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] [bug report] batman-adv: make the TT CRC logic VLAN
-	specific
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 30 Nov 2016 21:47:09 +0100
+Message-Id: <20161130204709.16257-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Check for alloc errors
+	when preparing TT local data
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,49 +13,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: antonio@open-mesh.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: a@unstable.cc
 
-Hello Antonio Quartulli,
+batadv_tt_prepare_tvlv_local_data can fail to allocate the memory for the
+new TVLV block. The caller is informed about this problem with the returned
+length of 0. Not checking this value results in an invalid memory access
+when either tt_data or tt_change is accessed.
 
-The patch 7ea7b4a14275: "batman-adv: make the TT CRC logic VLAN
-specific" from Jul 30, 2013, leads to the following static checker
-warning:
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Fixes: 21a57f6e7a3b ("batman-adv: make the TT CRC logic VLAN specific")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+The very good report from Dan Carpenter can be found at
+https://lists.open-mesh.org/pipermail/b.a.t.m.a.n/2016-November/016713.html
 
-	net/batman-adv/translation-table.c:3294 batadv_send_my_tt_response()
-	error: uninitialized symbol 'tt_change'.
+ net/batman-adv/translation-table.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-net/batman-adv/translation-table.c
-  3282          if (!full_table) {
-  3283                  spin_lock_bh(&bat_priv->tt.last_changeset_lock);
-  3284  
-  3285                  tt_len = bat_priv->tt.last_changeset_len;
-  3286                  tvlv_len = batadv_tt_prepare_tvlv_local_data(bat_priv,
-  3287                                                               &tvlv_tt_data,
-  3288                                                               &tt_change,
-  3289                                                               &tt_len);
-  3290                  if (!tt_len)
-  3291                          goto unlock;
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 7f66309..0dc85eb 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -3282,7 +3282,7 @@ static bool batadv_send_my_tt_response(struct batadv_priv *bat_priv,
+ 							     &tvlv_tt_data,
+ 							     &tt_change,
+ 							     &tt_len);
+-		if (!tt_len)
++		if (!tt_len || !tvlv_len)
+ 			goto unlock;
+ 
+ 		/* Copy the last orig_node's OGM buffer */
+@@ -3300,7 +3300,7 @@ static bool batadv_send_my_tt_response(struct batadv_priv *bat_priv,
+ 							     &tvlv_tt_data,
+ 							     &tt_change,
+ 							     &tt_len);
+-		if (!tt_len)
++		if (!tt_len || !tvlv_len)
+ 			goto out;
+ 
+ 		/* fill the rest of the tvlv with the real TT entries */
+-- 
+2.10.2
 
-This should probably be changed to:
-
-			if (!tt_len || !tvlv_len)
-				goto unlock;
-
-There seems to be an assumption that "tt_len" is set to zero on the
-error path?  That's another way to fix this, I suppose.
-
-  3292  
-  3293                  /* Copy the last orig_node's OGM buffer */
-  3294                  memcpy(tt_change, bat_priv->tt.last_changeset,
-  3295                         bat_priv->tt.last_changeset_len);
-  3296                  spin_unlock_bh(&bat_priv->tt.last_changeset_lock);
-  3297          } else {
-
-See also:
-
-	net/batman-adv/translation-table.c:3313 batadv_send_my_tt_response()
-	error: uninitialized symbol 'tt_change'.
-
-regards,
-dan carpenter
