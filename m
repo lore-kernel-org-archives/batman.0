@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 14 Dec 2016 21:49:32 +0100
-Message-ID: <1839226.YuCrK3WLFe@sven-edge>
+Date: Wed, 14 Dec 2016 21:57:13 +0100
+Message-ID: <22125564.dpOglzWBpa@sven-edge>
 In-Reply-To: <20161006064142.20003-3-linus.luessing@c0d3.blue>
 References: <20161006064142.20003-1-linus.luessing@c0d3.blue>
  <20161006064142.20003-3-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1759315.ek7toy45ip";
+Content-Type: multipart/signed; boundary="nextPart1598062.xEk4Jpn8b3";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v2 2/4] batman-adv: Store and transmit
 	own neighborhood hash
@@ -21,45 +21,40 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1759315.ek7toy45ip
+--nextPart1598062.xEk4Jpn8b3
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
 On Donnerstag, 6. Oktober 2016 08:41:39 CET Linus L=FCssing wrote:
-> ~((u32)0);
+> +       nhh_data =3D (struct batadv_tvlv_nhh_data *)elp_buff;
+> +       nhh_data->min_throughput =3D htonl(0);
+> +       memset(nhh_data, 0, size);
 
-I already saw this multiple times. Maybe you could use U32_MAX from
-linux/kernel.h.
-
-> u32 min_throughput =3D ~((u32)0), max_throughput =3D 0;
-
-I personally don't like multiple assignments in one line. Makes it
-harder to check what is assigned and what is actually the next
-statement.
+Why do you set min_throughput and then use memset to overwrite it again?
 
 Kind regards,
 	Sven
---nextPart1759315.ek7toy45ip
+--nextPart1598062.xEk4Jpn8b3
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlhRsFwACgkQXYcKB8Em
-e0b5VRAAmSJXpc9VZoCuFnbpeccTzf1nByTok7nrfh98gyzjJLjzfHnMTcDsgAy9
-fm88FTRBDpGcfnMMlXXrcpPeJW+r1Y5F0H95fjq2d8WGzxWw+LjiXr2nBnwwRAzF
-zVZgxe4bI6rhjFyrelqYeD86nyThHwnAPO0HROYzX9ioOPeEuqlxbJIHu8Znp/uc
-kvVjiwulLICSzvG0QQ/PwGSl1KV6uMGvZkp1rlegXVUkW8XPseaVkfqssVDgfuc8
-4iE6U+F6l8lQ3SIxg+WdjA0O+iVFeKgTWClyvPM0G7KQFDUk4CqeTaU/TFkWNAqd
-HRKidvopxd2P1p9h6p/nhmYMTdt+KJeIvZRTP+MEazW8ZOP7913+n8yYm1nWeQ5b
-lmFKA+dmAWnTuyYg/yAbOz5Q/r32342vR1iq38VfoLGHviP0+2J8lIttfbwmQXFL
-xdAbHODmO3mRtH2NB+kZzkg48sZ5rgGVXAfS/60bSJsuCyzsFXUS82zeJbMlioSf
-t4DzNSHXlb1nNl8/ERS8uvH0Ip0SHF4UBI6uBHPKIREUW0M9MtVXpH6yo8jf+0ss
-nQmqvFlAj6pIkfSZuyyCBNRWl3vAAQOBp7J7ivu41SLsm9rArzSzxuzm/3C3R9RE
-sIg3Q86/ruNTukQ3Su8i4V+vKFZSmjH0lUfq6gZwOwdpSFwUIug=
-=gcvw
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlhRsikACgkQXYcKB8Em
+e0ZqhBAArUhgVVUPQXYdnKN2llyTxLyOqfMQu1XLtLKUXjnWvecwaIldPtND4faC
+tlsDGL2YCNKRu+P2oj1quKZ8KUH9Bt5zGoUBKCgdHNAdcBg+d+x5PGpDsoXXRvwz
++fTXsmu6i3fg4qsAkWKoiX+dklV3rbcAjUg1dENBOnf3p+OBfMorohTlTbB8IsHS
+F4ziIFnM2d2sv+YMSbrnS0x5i6o6zwGn84ge5K7QGslUqJu+xZXAuCmOWnwdAjf4
+YicD9nCIzxx8wrGLnAABSm/mfhTXSFMoJY+pDkmlBU1SCEhS9D0IxIQrlryv4IcV
+cCvI3vCeAFpIt7+v+NNPmL6sRqldu0EaR4DqD/DAtssSXYOqEu+xOPoyAjCvF4tA
+uxG495RVaVdE+gUz3BBZD5JPhc9VCKeuR5vPIV7ojaGISaTvI7Yx+doQLWWZ6bMi
+h2f59t/BFnbrXy106Aq1h5M7KDbUv6CWQoee6bVSAh3eE/tZON395RbKJg2tWYYu
+b2kuGsnLZH+olaYHH86qZsGdu+Ffic06N+VMOKxrmuiYxmG2SoggQ7aan1e49tHY
+pg4pTajCP5ekv3g+j/FM+rjjHQztEmPJh95gPl+5O5zrw425k3LhTrTrXh9isBOB
+lQnme8WpCXvzCX5WywxSAs2kWoHvdBFo/LN1MyjulT4pZjC3XoU=
+=qEZi
 -----END PGP SIGNATURE-----
 
---nextPart1759315.ek7toy45ip--
+--nextPart1598062.xEk4Jpn8b3--
 
