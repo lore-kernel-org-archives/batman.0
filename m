@@ -1,12 +1,12 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 14 Dec 2016 21:28:33 +0100
-Message-ID: <740883563.LbP4XMaFY9@sven-edge>
+Date: Wed, 14 Dec 2016 21:49:32 +0100
+Message-ID: <1839226.YuCrK3WLFe@sven-edge>
 In-Reply-To: <20161006064142.20003-3-linus.luessing@c0d3.blue>
 References: <20161006064142.20003-1-linus.luessing@c0d3.blue>
  <20161006064142.20003-3-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4160459.CjJZC0o5yR";
+Content-Type: multipart/signed; boundary="nextPart1759315.ek7toy45ip";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v2 2/4] batman-adv: Store and transmit
 	own neighborhood hash
@@ -21,56 +21,45 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart4160459.CjJZC0o5yR
+--nextPart1759315.ek7toy45ip
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset="iso-8859-1"
 
 On Donnerstag, 6. Oktober 2016 08:41:39 CET Linus L=FCssing wrote:
->  struct batadv_elp_packet {
->         u8     packet_type;
-> @@ -247,6 +258,8 @@ struct batadv_elp_packet {
->         u8     orig[ETH_ALEN];
->         __be32 seqno;
->         __be32 elp_interval;
-> +       __be16 reserved;
-> +       __be16 tvlv_len;
->  };
+> ~((u32)0);
 
-Um, you simply increase the size of the elp_packet? Isn't this potentially=
-=20
-breaking compat with older versions? batadv_v_elp_packet_recv is using=20
-BATADV_ELP_HLEN (sizeof(struct batadv_elp_packet)) as minimal size/header_l=
-en=20
-in batadv_check_management_packet.
+I already saw this multiple times. Maybe you could use U32_MAX from
+linux/kernel.h.
 
-Only thing saving you here is the padding on some links. But this padding=20
-could cause some odd behaviour in batadv_tvlv_containers_process2 when=20
-tvlv_len is bogus/padding.
+> u32 min_throughput =3D ~((u32)0), max_throughput =3D 0;
+
+I personally don't like multiple assignments in one line. Makes it
+harder to check what is assigned and what is actually the next
+statement.
 
 Kind regards,
 	Sven
-
---nextPart4160459.CjJZC0o5yR
+--nextPart1759315.ek7toy45ip
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlhRq3EACgkQXYcKB8Em
-e0ZI0hAAgZ2MCg/lqWOuUzf9envCPC6dgurCk1N4ucv6KuGf34YZMT1ELM8Lx2cJ
-82fTlGvolNmuQybQh95taryyOQFZ3wtIkOz3xiVDR8LJDolPa9H44XB0SyJPEMl8
-5xXKPF1hYdHRfPZxMB2XdXA0Cjjrfr5zSFrwiCLuMjqxaktpI60/5PxY5P9bSA3b
-6zWFY7Y5sk/Ymb0Ij+QCtOtmiw4eCHFqAq1sY1Kxmwaf6DzVAii/JNbZFapp+dvk
-KO9l2bcK6XGldnOqxcZCsq04wosPmsOt+qnW6p0TVMUPRZZ/yAIXOO2G6xdM1l95
-QeWtfAKd6BBpWZcg18Zpvlqa/W05yJPxtcuMYs7m/VkRCwrlkdI9/XJCDJXK1K4Z
-MSeRaivorGC3MhRmIFtdNYrGHTKKzXKTe5tHu20UdgDFFLzpEo3mMAuYxPhL5m3Y
-decOC7VCSFQqxgLCMNBZlxOjffevTe7c41BgcHb0JLUZDZ6huqGt83g9IjCzxh73
-6L415BISWxEjmsHF8K1JLtzSWjVGM+VhIPLsVyTtNCeHxnxPetG3kXmzP34op8op
-GlsrqdLVMfMRTjHNxV8L+Sqgjz1HCfbu+3V9vDoeHDBBjRHjDDHKSDM8oODf3XJW
-6Oerb8wODeTC6aCx29kF8PRlb/Kksp9OoEFL5uaJXmYlRTAOGLM=
-=gvAb
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlhRsFwACgkQXYcKB8Em
+e0b5VRAAmSJXpc9VZoCuFnbpeccTzf1nByTok7nrfh98gyzjJLjzfHnMTcDsgAy9
+fm88FTRBDpGcfnMMlXXrcpPeJW+r1Y5F0H95fjq2d8WGzxWw+LjiXr2nBnwwRAzF
+zVZgxe4bI6rhjFyrelqYeD86nyThHwnAPO0HROYzX9ioOPeEuqlxbJIHu8Znp/uc
+kvVjiwulLICSzvG0QQ/PwGSl1KV6uMGvZkp1rlegXVUkW8XPseaVkfqssVDgfuc8
+4iE6U+F6l8lQ3SIxg+WdjA0O+iVFeKgTWClyvPM0G7KQFDUk4CqeTaU/TFkWNAqd
+HRKidvopxd2P1p9h6p/nhmYMTdt+KJeIvZRTP+MEazW8ZOP7913+n8yYm1nWeQ5b
+lmFKA+dmAWnTuyYg/yAbOz5Q/r32342vR1iq38VfoLGHviP0+2J8lIttfbwmQXFL
+xdAbHODmO3mRtH2NB+kZzkg48sZ5rgGVXAfS/60bSJsuCyzsFXUS82zeJbMlioSf
+t4DzNSHXlb1nNl8/ERS8uvH0Ip0SHF4UBI6uBHPKIREUW0M9MtVXpH6yo8jf+0ss
+nQmqvFlAj6pIkfSZuyyCBNRWl3vAAQOBp7J7ivu41SLsm9rArzSzxuzm/3C3R9RE
+sIg3Q86/ruNTukQ3Su8i4V+vKFZSmjH0lUfq6gZwOwdpSFwUIug=
+=gcvw
 -----END PGP SIGNATURE-----
 
---nextPart4160459.CjJZC0o5yR--
+--nextPart1759315.ek7toy45ip--
 
