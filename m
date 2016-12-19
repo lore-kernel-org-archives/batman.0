@@ -1,17 +1,13 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Mon, 19 Dec 2016 11:29:51 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20161219102951.GK6323@otheros>
-References: <20161006064142.20003-1-linus.luessing@c0d3.blue>
- <20161006064142.20003-4-linus.luessing@c0d3.blue>
- <1616382.Ux6hIh5e6R@bentobox>
+Return-Path: <a@unstable.cc>
+Date: Mon, 19 Dec 2016 18:10:24 +0800
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <20161219101024.GB8485@prodigo.lan>
+References: <CAPkwMUejbf31RfVY_nCJSVwe=_mGVO3y5PY9zzfkQk0eDc1HTA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1616382.Ux6hIh5e6R@bentobox>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 3/4] batman-adv: Introduce packet type
- independent TVLV handler API
+In-Reply-To: <CAPkwMUejbf31RfVY_nCJSVwe=_mGVO3y5PY9zzfkQk0eDc1HTA@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Fail to create tunnels using br-lan
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,38 +18,48 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Francisco Javier =?iso-8859-1?Q?Sim=F3?= Reigadas <javier.simo@urjc.es>, Andrei Buciulea <andreibuciulea@gmail.com>
 
-On Wed, Dec 14, 2016 at 03:50:38PM +0100, Sven Eckelmann wrote:
-> On Donnerstag, 6. Oktober 2016 08:41:40 CET Linus Lüssing wrote:
-> > @@ -1842,8 +1844,12 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
-> >  
-> >                 packet_pos = skb->data + ogm_offset;
-> >                 ogm_packet = (struct batadv_ogm_packet *)packet_pos;
-> > +
-> > +               skb_set_network_header(skb, ogm_offset);
-> >         }
-> >  
-> > +       skb_reset_network_header(skb);
-> > +
-> >         kfree_skb(skb);
-> >         return NET_RX_SUCCESS;
-> >  }
+On Mon, Dec 19, 2016 at 11:06:01AM +0100, Carlos Rey-Moreno wrote:
+> Hi everyone,
 > 
-> Why must we skb_reset_network_header before the kfree?
+> A student who is collaborating with me, Andrei, cc'ed, is carrying out
+> traffic performance analysis in a mesh network (which uses batman-adv)
+> in order to compare the benefits of introducing Simplemux [1].
+> Basically, simplemux multiplexes small packets in bigger packets and
+> compresses them to reduce overhead. These packets are then sent
+> through a tunnel to another end in the network.
+> 
+> So far, simplemux shows very positive results by creating the tunnel
+> in between two computers connected at each end of a multihop network
+> composed by a chain of 5 nodes.
+> 
+> The idea would be to test the performance benefits of simplemux when
+> the tunnels are created between the mesh nodes instead, so they could
+> aggregate, let's say, all the VoIP packets from different SIP clients
+> calling other SIP clients in the mesh or via the gateway.
+> 
+> The tunnels can be successfully created in OpenWRT, but it fails when
+> assigning the physical interface the tunnel should use. It works when
+> a physical interface is used, i.e. eth0, but fails with br-lan
+> provided it is a virtual interface.
+> 
+> # openvpn --mktun --dev tun0 --user root
+> 
+> # ifconfig tun0 up
+> 
+> # ./simplemux -i tun0 -e br-lan -M N -c 192.168.0.5
+> 
+> I was wondering if anyone in the list could point Andrei in the right direction.
+> 
+> Thank you very much in advance.
 
-Technically, yes, there's no need for it.
+Dear Carlos,
 
-Usually I would have prefered keeping the skb network header
-pointer just after the ethernet header just like anything else on the
-receive path does right now. Would be messy if you could never be
-sure where that pointer actually points at.
+this looks pretty much about OpenVPN (if I am not wrong). Are you sure you
+posted it to the right mailing list?
 
-On the other hand it was too convenient to use it here :).
+Cheers,
 
-
-What do you think about wrapping the WARN_ON, while loop and
-skb_reset_network_header() into a new function with a functional,
-non-modifying touch regarding the input skb?
-
-Or do you think I should just remove the
-skb_reset_network_header() here?
+-- 
+Antonio Quartulli
