@@ -1,9 +1,10 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 17 Dec 2016 11:58:29 +0100
-Message-Id: <20161217105829.13461-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unused variable in
-	batadv_tt_local_set_flags
+Return-Path: <carlos.reymoreno@gmail.com>
+MIME-Version: 1.0
+From: Carlos Rey-Moreno <carlos.reymoreno@gmail.com>
+Date: Mon, 19 Dec 2016 11:06:01 +0100
+Message-ID: <CAPkwMUejbf31RfVY_nCJSVwe=_mGVO3y5PY9zzfkQk0eDc1HTA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: [B.A.T.M.A.N.] Fail to create tunnels using br-lan
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,33 +14,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+Cc: Andrei Buciulea <andreibuciulea@gmail.com>, =?UTF-8?Q?Francisco_Javier_Sim=C3=B3_Reigadas?= <javier.simo@urjc.es>
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/translation-table.c | 2 --
- 1 file changed, 2 deletions(-)
+Hi everyone,
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 30ecbfb4..367e88fe 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -3714,7 +3714,6 @@ static void batadv_tt_local_set_flags(struct batadv_priv *bat_priv, u16 flags,
- {
- 	struct batadv_hashtable *hash = bat_priv->tt.local_hash;
- 	struct batadv_tt_common_entry *tt_common_entry;
--	u16 changed_num = 0;
- 	struct hlist_head *head;
- 	u32 i;
- 
-@@ -3736,7 +3735,6 @@ static void batadv_tt_local_set_flags(struct batadv_priv *bat_priv, u16 flags,
- 					continue;
- 				tt_common_entry->flags &= ~flags;
- 			}
--			changed_num++;
- 
- 			if (!count)
- 				continue;
+A student who is collaborating with me, Andrei, cc'ed, is carrying out
+traffic performance analysis in a mesh network (which uses batman-adv)
+in order to compare the benefits of introducing Simplemux [1].
+Basically, simplemux multiplexes small packets in bigger packets and
+compresses them to reduce overhead. These packets are then sent
+through a tunnel to another end in the network.
+
+So far, simplemux shows very positive results by creating the tunnel
+in between two computers connected at each end of a multihop network
+composed by a chain of 5 nodes.
+
+The idea would be to test the performance benefits of simplemux when
+the tunnels are created between the mesh nodes instead, so they could
+aggregate, let's say, all the VoIP packets from different SIP clients
+calling other SIP clients in the mesh or via the gateway.
+
+The tunnels can be successfully created in OpenWRT, but it fails when
+assigning the physical interface the tunnel should use. It works when
+a physical interface is used, i.e. eth0, but fails with br-lan
+provided it is a virtual interface.
+
+# openvpn --mktun --dev tun0 --user root
+
+# ifconfig tun0 up
+
+# ./simplemux -i tun0 -e br-lan -M N -c 192.168.0.5
+
+I was wondering if anyone in the list could point Andrei in the right direction.
+
+Thank you very much in advance.
+
+carlos
+
+[1] https://github.com/Simplemux/simplemux
+
 -- 
-2.11.0
-
+Carlos Rey-Moreno, PhD
+PostDoctoral Fellow University of the Western Cape
+Zenzeleni Networks: zenzeleni.net
+https://www.youtube.com/watch?v=YxTPSWMX26M
+Cel: +27 (0) 76 986 3633
+Skype: carlos.reymoreno Twitter: Creym
