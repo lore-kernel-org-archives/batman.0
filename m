@@ -1,17 +1,16 @@
 Return-Path: <linus.luessing@c0d3.blue>
-Date: Mon, 19 Dec 2016 14:32:26 +0100
+Date: Tue, 20 Dec 2016 12:55:50 +0100
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20161219133226.GM6323@otheros>
+Message-ID: <20161220115550.GN6323@otheros>
 References: <20161006064142.20003-1-linus.luessing@c0d3.blue>
- <20161006064142.20003-3-linus.luessing@c0d3.blue>
- <740883563.LbP4XMaFY9@sven-edge>
+ <20161219105027.GL6323@otheros> <3103100.ET4KBLGWzf@sven-edge>
+ <3954768.uotHLiEBeb@sven-edge>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <740883563.LbP4XMaFY9@sven-edge>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 2/4] batman-adv: Store and transmit
- own neighborhood hash
+In-Reply-To: <3954768.uotHLiEBeb@sven-edge>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 3/4] batman-adv: Introduce packet type
+ independent TVLV handler API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,29 +22,27 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wed, Dec 14, 2016 at 09:28:33PM +0100, Sven Eckelmann wrote:
-> On Donnerstag, 6. Oktober 2016 08:41:39 CET Linus Lüssing wrote:
-> >  struct batadv_elp_packet {
-> >         u8     packet_type;
-> > @@ -247,6 +258,8 @@ struct batadv_elp_packet {
-> >         u8     orig[ETH_ALEN];
-> >         __be32 seqno;
-> >         __be32 elp_interval;
-> > +       __be16 reserved;
-> > +       __be16 tvlv_len;
-> >  };
+On Mon, Dec 19, 2016 at 12:43:49PM +0100, Sven Eckelmann wrote:
+> On Montag, 19. Dezember 2016 12:37:43 CET Sven Eckelmann wrote:
+> > I was not talking about the packing functions.
 > 
-> Um, you simply increase the size of the elp_packet? Isn't this potentially 
-> breaking compat with older versions? batadv_v_elp_packet_recv is using 
-> BATADV_ELP_HLEN (sizeof(struct batadv_elp_packet)) as minimal size/header_len 
-> in batadv_check_management_packet.
-> 
-> Only thing saving you here is the padding on some links. But this padding 
-> could cause some odd behaviour in batadv_tvlv_containers_process2 when 
-> tvlv_len is bogus/padding.
+> Just read my initial mails. Looks like I've copied the wrong function name 
+> "batadv_tvlv_ogm_pack_ctx". But I was talking about the parameter in of 
+> "batadv_tvlv_containers_process2". So I am the reason for the confusion :)
 
-Urgh, could catch, you're right.
+Just to check, you suggest removing this line:
+https://git.open-mesh.org/batman-adv.git/blob/1ddd189528fc332bf286ffd56b629da26a6b149c:/net/batman-adv/tvlv.c#l662
 
-Luckily, it seems like it's only breaking compatibility in one direction.
-And it's the direction where a non-compatibility breaking solution
-is possible.
+And to replace the passing of "ctx" with an "orig_node" here:
+https://git.open-mesh.org/batman-adv.git/blob/1ddd189528fc332bf286ffd56b629da26a6b149c:/net/batman-adv/tvlv.c#l682
+
+(which works as a "void *" parameter accepts any type, without the
+need of casting explicitly)
+
+
+If that's what you mean, hm, not sure. Feels dangerous, such
+automatic casting, doesn't it?
+
+I'm really wondering whether I should go for the approach of
+hiding the "void *" in a new type. And only having the "void *"
+fiddeling inside _pack()/_unpack() functions.
