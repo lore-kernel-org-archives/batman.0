@@ -1,9 +1,10 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 27 Dec 2016 08:51:17 +0100
-Message-Id: <20161227075117.5802-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [[PATCH maint]] batman-adv: Decrease hardif refcnt
-	on fragmentation send error
+Return-Path: <dandenson@gmail.com>
+MIME-Version: 1.0
+From: dan <dandenson@gmail.com>
+Date: Fri, 30 Dec 2016 09:14:30 -0700
+Message-ID: <CAA_JP8X3t8P7wx875L3D_jVcPKLFPozRPv8_XToGhAybagyebg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: [B.A.T.M.A.N.] wire throughput?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,66 +14,16 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-An error before the hardif is found has to free the skb. But every error
-after that has to free the skb + put the hard interface.
+Does anyone have any numbers or a link to some performance metrics of
+batman-adv on wired interfaces?
 
-Fixes: 8b4132b1447a ("batman-adv: Consume skb in batadv_frag_send_packet")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/fragmentation.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+I have a little project and I want to see how batman-adv will work in
+place of RSTP for making a ring network (or multiple rings).  How
+close to wire-speed can batman-adv get on 1Gbps full duplex ethernet
+links.
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 9c561e68..0854ebd8 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -474,7 +474,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 	primary_if = batadv_primary_if_get_selected(bat_priv);
- 	if (!primary_if) {
- 		ret = -EINVAL;
--		goto put_primary_if;
-+		goto free_skb;
- 	}
- 
- 	/* Create one header to be copied to all fragments */
-@@ -502,7 +502,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 		skb_fragment = batadv_frag_create(skb, &frag_header, mtu);
- 		if (!skb_fragment) {
- 			ret = -ENOMEM;
--			goto free_skb;
-+			goto put_primary_if;
- 		}
- 
- 		batadv_inc_counter(bat_priv, BATADV_CNT_FRAG_TX);
-@@ -511,7 +511,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 		ret = batadv_send_unicast_skb(skb_fragment, neigh_node);
- 		if (ret != NET_XMIT_SUCCESS) {
- 			ret = NET_XMIT_DROP;
--			goto free_skb;
-+			goto put_primary_if;
- 		}
- 
- 		frag_header.no++;
-@@ -519,7 +519,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 		/* The initial check in this function should cover this case */
- 		if (frag_header.no == BATADV_FRAG_MAX_FRAGMENTS - 1) {
- 			ret = -EINVAL;
--			goto free_skb;
-+			goto put_primary_if;
- 		}
- 	}
- 
-@@ -527,7 +527,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 	if (batadv_skb_head_push(skb, header_size) < 0 ||
- 	    pskb_expand_head(skb, header_size + ETH_HLEN, 0, GFP_ATOMIC) < 0) {
- 		ret = -ENOMEM;
--		goto free_skb;
-+		goto put_primary_if;
- 	}
- 
- 	memcpy(skb->data, &frag_header, header_size);
--- 
-2.11.0
-
+What I'm really looking for is using batman-adv as a SPB alternative
+providing transparent layer2 connectivity with not only redundant
+paths, but best paths.
