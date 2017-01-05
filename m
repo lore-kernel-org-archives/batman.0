@@ -1,14 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 04 Jan 2017 00:32:34 +0100
-Message-ID: <9825624.m3t6gvsDHK@prime>
-In-Reply-To: <20161217105829.13461-1-sven@narfation.org>
-References: <20161217105829.13461-1-sven@narfation.org>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 05 Jan 2017 08:51:02 +0100
+Message-ID: <2739485.ZOxij8zM53@bentobox>
+In-Reply-To: <CAPkwMUfc9K3J+0wwegZOuLCba5JY_5GP33jcykPa1etpWKkNsw@mail.gmail.com>
+References: <CAPkwMUejbf31RfVY_nCJSVwe=_mGVO3y5PY9zzfkQk0eDc1HTA@mail.gmail.com>
+ <20161219101024.GB8485@prodigo.lan>
+ <CAPkwMUfc9K3J+0wwegZOuLCba5JY_5GP33jcykPa1etpWKkNsw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3098260.e36zUG0D19";
+Content-Type: multipart/signed; boundary="nextPart1678598.RlGp2bNVnc";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unused variable in
-	batadv_tt_local_set_flags
+Subject: Re: [B.A.T.M.A.N.] Fail to create tunnels using br-lan
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,42 +20,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Francisco Javier =?ISO-8859-1?Q?Sim=F3?= Reigadas <javier.simo@urjc.es>, Andrei Buciulea <andreibuciulea@gmail.com>
 
---nextPart3098260.e36zUG0D19
+--nextPart1678598.RlGp2bNVnc
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday, December 17, 2016 11:58:29 AM CET Sven Eckelmann wrote:
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/translation-table.c | 2 --
->  1 file changed, 2 deletions(-)
+On Montag, 19. Dezember 2016 11:55:40 CET Carlos Rey-Moreno wrote:
+> Dear Antonio, we will post it in the OpenVPN mailing list too, but I
+> was hoping that someone in the list had been able to establish tunnels
+> in between batmand-adv nodes using the br-lan interface.
 
-Applied in c11379b5.
+Sorry, but we don't understand what your question has to do with batman-adv. 
+In your example there is no actual reference to batman-adv. Only simplemux and 
+OpenVPN is shown in the example. We don't know simplemux and cannot tell you 
+why it may not work (is it the problematic tool? Not really clear in your 
+question). The latter is known but seems to be used in L3 mode and therefore 
+useless for bridges and batman-adv.
 
-Thanks,
-     Simon
---nextPart3098260.e36zUG0D19
+> The tunnels can be successfully created in OpenWRT, but it fails when
+> assigning the physical interface the tunnel should use. It works when
+> a physical interface is used,
+
+So it fails and works at the same time with "physical interface"s? What 
+exactly fails here? Is it batman-adv related? Doesn't look to me like it does.
+
+Kind regards,
+	Sven
+--nextPart1678598.RlGp2bNVnc
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlhsNJIACgkQoSvjmEKS
-nqGvzxAAupZ/lCvFx8i5T7mag4dJKhpFSMUMUY9pMoPbiYLEop0XU5k6HXXnhEUZ
-OWrkHaaF5LW4noI5/kaxNzwXkjoSR3ylqFnVFDFHk6E7W7s5T0ZLx8uomVIQg/3T
-CT0fQqkBgZ7BzpAyPXJbSOToXOT1vGw+4vOW4/1ecNAAyMNPeIPj6dFZzTJgJrIb
-dzNh9PllO4xFPlahWndViiT9D2H722jbUMmAbqkjeElixNAjJ+EFPL8dmxEErZZZ
-QqMiS28E+DrPBwWBuKsGUzPdthk34sMZf8tKsb3V1JzG3EEuYvPHOaXh5EuqBNbh
-V7xxcZqZhHHb3HTuW+pkE+TkzD9dMQKaBPF1Ts4TP0HkCfLoPuLUk8FiD5CYgfjl
-CMXB/3YxyOf3bwZzFJ7GYPKXoYaciUqaS0QLDllIRWnx8mUQVeIHZkSjAibqcoUI
-DgU9KAVtd5jsfwdcQ14gKefOK3uC1pvUYJJd649Pav5O/yYWYsGmdhYUk/HpW4Zb
-xu9+zwFYBIzVMyRcbMUcGXO7zxgj2RT+07m0ZgclW1tvvrHhSofyrCnYHvuq45rg
-17ExO4Rwd2baP/9yfl7Xob2G6aoOg8LYHDKsamo3N9N1A1cY4+q6/vDlLF5GeXSh
-5/ipnRQoFIyHTQV1BneqZfUZ+0Jx1ujh4fcs/4y0H02H1Vd8km8=
-=OSB+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlht+uYACgkQXYcKB8Em
+e0afxhAA1eMK2AMjIvfTknVAz5kEIrIu6VN58leToKOL57PtuaG22rJP+zoPbLKg
+9hq+rONUUFk2fX2ly70kE7kCh9izZ8EqEIE6toKnoZey3WgMKvmlUCF4s1XEG9bD
+YXtCA4twUYFsvwFFRQMnyVU6iUjS9tLAyU25gkX4IYYhm98kMm5ZP/7Z/jFnbyD9
+Uskln2H4BjJn8Q6ohCFMtnBKe8rAcCLHjZNNWRVGu9UzYrYyZSHctT50EP6Vs+YH
+LjWSXiS4yNnuzB85DHjGRHH/7wmVAraByj17qrGErwOjMU02dsNZJ5RHkoDBbpVN
+rJujSKpKE5S2imcygX9ndNT4IxSPoVxz9kjecYZvlGY/7QnanT8OIj15PJFiCa3t
+QEifmHJxb2Nnxbuy+topUuxB6V/3jlAqDH0/7hLNBPCFB6odLhaZI7lmmwDRDru5
+xkl01tGzPey35IS1SFVAQTtLDMbPw8FPcURKyUTAxz3faftwrwa1aNDzthp4563a
+sI/d7Arp77UyptGdzmZxV+MuF/UARxpQearmd9gwCRPhYsmP13PE4GeRT/Ak+8Ud
+6CN4srk117bbvHi3lXWLzHDV4LKkSAmuj2KnFiWOMOfTYFTAqONTE2SCKOhAiZU8
+uvBN5lRw7tZEnRPrkq9jMnByrjjAiqhvdsFjClf45y548wDugBo=
+=JFaP
 -----END PGP SIGNATURE-----
 
---nextPart3098260.e36zUG0D19--
+--nextPart1678598.RlGp2bNVnc--
 
