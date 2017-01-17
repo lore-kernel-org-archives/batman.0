@@ -1,16 +1,13 @@
-Return-Path: <Jonathan.Haws@sdl.usu.edu>
-From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Date: Tue, 17 Jan 2017 15:39:00 +0000
-Message-ID: <1484667540.3000.7.camel@sdl.usu.edu>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 17 Jan 2017 17:54:57 +0100
+Message-ID: <1560076.ER48KEDWps@bentobox>
+In-Reply-To: <1484667540.3000.7.camel@sdl.usu.edu>
 References: <1484596174-16341-1-git-send-email-jhaws@sdl.usu.edu>
- <4570303.DAXUuCGGu2@bentobox>
-In-Reply-To: <4570303.DAXUuCGGu2@bentobox>
-Reply-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <E23BB7AAA4757E45BE254A04BDD98FA2@sdl.usu.edu>
-Content-Transfer-Encoding: base64
+ <4570303.DAXUuCGGu2@bentobox> <1484667540.3000.7.camel@sdl.usu.edu>
 MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2643948.4sSCiV7SFk";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] IPv4 multicast distribution support.
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -21,72 +18,99 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-PiBQYXRjaCBzdWJqZWN0IHByZWZpeCBpcyB3cm9uZyAoYWN0dWFsbHksIGl0IGlzIG1pc3Npbmcp
-Lg0KDQpHb29kIGNhdGNoLiDCoEp1c3QgbWlzc2VkIGl0LiDCoEknbGwgbW9kaWZ5IHRoZSBwYXRj
-aCB3aXRoIHRoYXQgaW5jbHVkZWQuDQoNCj4gPiANCj4gPiAraW50IGlwdjRfdG9fbWFjKGNvbnN0
-IGFsZnJlZF9hZGRyICphZGRyLCBzdHJ1Y3QgZXRoZXJfYWRkciAqbWFjKQ0KPiA+ICt7DQo+ID4g
-K8KgwqBtYWMtPmV0aGVyX2FkZHJfb2N0ZXRbMF0gPSAwOw0KPiA+ICvCoMKgbWFjLT5ldGhlcl9h
-ZGRyX29jdGV0WzFdID0gMDsNCj4gPiArwqDCoG1hYy0+ZXRoZXJfYWRkcl9vY3RldFsyXSA9IChh
-ZGRyLT5pcHY0LnNfYWRkciA+PiAyNCkgJiAweEZGOw0KPiA+ICvCoMKgbWFjLT5ldGhlcl9hZGRy
-X29jdGV0WzNdID0gKGFkZHItPmlwdjQuc19hZGRyID4+IDE2KSAmIDB4RkY7DQo+ID4gK8KgwqBt
-YWMtPmV0aGVyX2FkZHJfb2N0ZXRbNF0gPSAoYWRkci0+aXB2NC5zX2FkZHIgPj7CoMKgOCkgJiAw
-eEZGOw0KPiA+ICvCoMKgbWFjLT5ldGhlcl9hZGRyX29jdGV0WzVdID0gKGFkZHItPmlwdjQuc19h
-ZGRyID4+wqDCoDApICYgMHhGRjsNCj4gPiArDQo+ID4gK8KgwqBpZiAoIWlzX3ZhbGlkX2V0aGVy
-X2FkZHIobWFjLT5ldGhlcl9hZGRyX29jdGV0KSkNCj4gPiArwqDCoMKgwqByZXR1cm4gLUVJTlZB
-TDsNCj4gPiArDQo+ID4gK8KgwqByZXR1cm4gMDsNCj4gPiArfQ0KPiANCj4gVGhpcyB3aWxsIG5v
-dCByZXR1cm4gdGhlIG1hYyBhZGRyZXNzIG9mIHRoZSBkZXZpY2UuIEl0IHdpbGwgdGhlcmVmb3Jl
-DQo+IGJyZWFrDQo+IHRoZSBzeW5jaHJvbml6YXRpb24gY29kZS4gc2VlIFNPVVJDRV9GSVJTVF9I
-QU5EIGluIHN5bmNfZGF0YSBhbmQgdGhlDQo+IGNvZGUNCj4gd2hpY2ggc2V0cyBkYXRhX3NvdXJj
-ZSBpbiBmaW5pc2hfYWxmcmVkX3B1c2hfZGF0YS4NCg0KWW91IGFyZSBjb3JyZWN0IC0gdGhpcyBk
-b2VzIG5vdCByZXR1cm4gdGhlIE1BQyBhZGRyZXNzIG9mIHRoZSBkZXZpY2UuDQrCoFJhdGhlciBp
-dCB1c2VzIHRoZSBzb3VyY2UgSVAgYWRkcmVzcy4gwqBTaW5jZSB3ZSdyZSBkZWFsaW5nIHdpdGgg
-SVB2NA0KaW4gdGhpcyBjYXNlIEkgYmVsaWV2ZSBpdCBpcyBzYWZlIHRvIGFzc3VtZSB0aGF0IHRo
-ZSBuZXR3b3JrIGhhcyBiZWVuDQpwcm9wZXJseSBjb25maWd1cmVkIGFuZCB0aGUgcmVtb3RlIG5v
-ZGUgd2lsbCBoYXZlIGEgdmFsaWQgSVB2NCBhZGRyZXNzLA0Kd2hpY2ggaXMgdXNlZCBoZXJlLiDC
-oEluIG15IHRlc3RpbmcgdGhlIHN5bmNocm9uaXphdGlvbiBhbmQgZGF0YSBzaGFyaW5nDQp3b3Jr
-ZWQgcHJvcGVybHkgYW5kIGFsbCBkYXRhIHdhcyBzaGFyZWQgYXMgZXhwZWN0ZWQuDQoNCldoYXQg
-d291bGQgeW91IGxpa2UgdG8gc2VlIGhlcmU/IMKgV291bGQgeW91IHByZWZlciBhbiBBUlAgcmVx
-dWVzdCB0byBnbw0KYW5kIGdldCB0aGUgTUFDIGFkZHJlc3Mgb2YgdGhlIHJlbW90ZSBub2RlPw0K
-DQo+ID4gDQo+ID4gQEAgLTYxLDYgKzYyLDcgQEAgc3RhdGljIHZvaWQgYWxmcmVkX3VzYWdlKHZv
-aWQpDQo+ID4gwqDCoMKgwqDCoMKgwqDCoHByaW50ZigiwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoG90aGVy
-DQo+ID4gbWFzdGVyc1xuIik7DQo+ID4gwqDCoMKgwqDCoMKgwqDCoHByaW50ZigiwqDCoC1wLCAt
-LXN5bmMtcGVyaW9kIFtwZXJpb2RdwqDCoMKgwqDCoMKgwqDCoMKgwqBzZXQNCj4gPiBzeW5jaHJv
-bml6YXRpb24gcGVyaW9kLCBpbiBzZWNvbmRzXG4iKTsNCj4gPiDCoMKgwqDCoMKgwqDCoMKgcHJp
-bnRmKCLCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgZnJhY3Rpb25hbA0KPiA+IHNlY29uZHMgYXJlIHN1cHBv
-cnRlZCAoaS5lLiAwLjIgPSA1IEh6KVxuIik7DQo+ID4gK8KgwqDCoMKgwqDCoMKgcHJpbnRmKCLC
-oMKgLTTCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoHNwZWNpZnkgSVB2NA0KPiA+IG11bHRpY2FzdCBhZGRyZXNzIGFuZCBv
-cGVyYXRlIGluIElQdjQgbW9kZSIpOw0KPiA+IMKgwqDCoMKgwqDCoMKgwqBwcmludGYoIlxuIik7
-DQo+ID4gwqDCoMKgwqDCoMKgwqDCoHByaW50ZigiwqDCoC11LCAtLXVuaXgtcGF0aCBbcGF0aF3C
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcGF0aCB0byB1bml4DQo+ID4gc29ja2V0IHVzZWQg
-Zm9yIGNsaWVudC1zZXJ2ZXJcbiIpOw0KPiA+IMKgwqDCoMKgwqDCoMKgwqBwcmludGYoIsKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqBjb21tdW5pY2F0aW9uDQo+ID4gKGRlZmF1bHQ6IFwiIkFMRlJFRF9TT0NL
-X1BBVEhfREVGQVVMVCJcIilcbiIpOw0KPiANCj4gVGhlIGRvY3VtZW50YXRpb24gaXMgd3Jvbmcu
-IEl0IHJlcXVpcmVzIGFuIGFyZ3VtZW50IGJ1dCB0aGUgYXJndW1lbnQNCj4gaXMgbm90DQo+IHNo
-b3duLg0KPiANCj4gU2FtZSBwcm9ibGVtIGluIHRoZSBtYW5wYWdlLg0KDQpDb3JyZWN0IC0gYWdh
-aW4sIG15IG1pc3Rha2UuIMKgSSdsbCBmaXggaXQgaW4gdGhlIHVwZGF0ZWQgcGF0Y2guDQoNCj4g
-PiBJIHJlYWxpemUgdGhhdCB0aGUgY29kZSBpbiB0aGlzIHBhdGNoIGlzIG5vdCBmb3JtYXR0ZWQg
-cHJvcGVybHksDQo+ID4gYnV0IEkNCj4gPiB3YXMgdW5hYmxlIHRvIGdldCBjaGVja3BhdGNoLnBs
-IHRvIHNjYW4gdGhpcyByaWdodCAtIGl0IG5lZWRzIGENCj4gPiBmdWxsDQo+ID4ga2VybmVsIHRy
-ZWUuwqDCoElzIHRoZXJlIGFub3RoZXIgZm9ybWF0dGluZyBzY3JpcHQgSSBjYW4gcnVuPw0KPiBX
-aGF0IGlzIHRoZSBwcm9ibGVtIHdpdGggZG93bmxvYWRpbmcgdGhlIGtlcm5lbCBzb3VyY2VzPyBB
-bmQgYXV0by0NCj4gZm9ybWF0dGluZw0KPiBzY3JpcHRzIHRlbmQgdG8gbm90IGdldCBldmVyeXRo
-aW5nIHJpZ2h0IGFuZCBtYWtlIHRoaW5ncyB3b3JzZSBpbg0KPiBzb21lIGNhc2VzLg0KPiBjaGVj
-a3BhdGNoLnBsIGlzIHRoZXJlZm9yZSBvbmx5IHRvIHBvaW50IG91dCBzb21lIG9idmlvdXMgcHJv
-YmxlbXMuDQoNCkkgZGlkIGRvd25sb2FkIHRoZSBrZXJuZWwgc291cmNlLCBidXQgd2hlbiBJIHRy
-eSB0byBydW4gdGhlIHNjcmlwdCBpdA0KZWl0aGVyIHRlbGxzIG1lIHRoYXQgSSBkb24ndCBoYXZl
-IGEgdmFsaWQga2VybmVsIHRyZWUgKHdoZW4gdXNpbmcgdGhlDQpzb3VyY2VzIGZvciBteSBYdWJ1
-bnR1IGtlcm5lbCkgb3IgdGhhdCB0aGUgZmlsZSBJJ20gdHJ5aW5nIHRvIHNjYW4NCmlzbid0IHBh
-cnQgb2YgdGhlIHRyZWUgKHdoZW4gdXNpbmcgdGhlIGxhdGVzdCBmcm9tIGtlcm5lbC5vcmcpLiDC
-oEkndmUNCm5ldmVyIHVzZWQgdGhhdCB0b29sIGluIHRoZSBwYXN0IC0gY2FuIHlvdSBzZW5kIG1l
-IGEgdXNhZ2UgZXhhbXBsZSBmb3INCnNjYW5uaW5nIGEgZmlsZSBpbiB0aGUgYWxmcmVkIHRyZWU/
-DQoNCj4gRm9yIGV4YW1wbGUgdGhhdCB5b3UgYXJlIHJlcGxhY2UgdGFicyAoOCBzcGFjZXMgd2lk
-ZSBpbiBhbGZyZWQgY29kZSkNCj4gc29tZXRpbWVzDQo+IHdpdGggMiBzcGFjZXMuDQoNClllcyAt
-IEknZCBsb3ZlIGZvciBjaGVja3BhdGNoLnBsIHRvIHNjYW4gaXQgYW5kIGdpdmUgbWUgYSBsaXN0
-IG9mIHdoYXQNCnRvIGZpeCB0byBtYWtlIHN1cmUgSSBkb24ndCBtaXNzIGFueXRoaW5nLg0KDQoN
-ClRoYW5rcyE=
+--nextPart2643948.4sSCiV7SFk
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Dienstag, 17. Januar 2017 15:39:00 CET Jonathan Haws wrote:
+[...]
+> > > 
+> > > +int ipv4_to_mac(const alfred_addr *addr, struct ether_addr *mac)
+> > > +{
+[...]
+> > This will not return the mac address of the device. It will therefore
+> > break
+> > the synchronization code. see SOURCE_FIRST_HAND in sync_data and the
+> > code
+> > which sets data_source in finish_alfred_push_data.
+> 
+> You are correct - this does not return the MAC address of the device.
+>  Rather it uses the source IP address.  Since we're dealing with IPv4
+> in this case I believe it is safe to assume that the network has been
+> properly configured and the remote node will have a valid IPv4 address,
+> which is used here.  In my testing the synchronization and data sharing
+> worked properly and all data was shared as expected.
+
+It should not be synced between masters when the data was received from a 
+slave (because the master will not detect it as FIRST_HAND). If it does still 
+work then you have a bug somewhere else.
+
+[...]
+> What would you like to see here?  Would you prefer an ARP request to go
+> and get the MAC address of the remote node?
+
+Doesn't sound that nice. @Simon, do you have an opinion about this patch 
+before Jonathan rewrites it? (It may take a while until he answers because he 
+should be offline this week)
+
+[...]
+> > > I realize that the code in this patch is not formatted properly,
+> > > but I
+> > > was unable to get checkpatch.pl to scan this right - it needs a
+> > > full
+> > > kernel tree.  Is there another formatting script I can run?
+> > What is the problem with downloading the kernel sources? And auto-
+> > formatting
+> > scripts tend to not get everything right and make things worse in
+> > some cases.
+> > checkpatch.pl is therefore only to point out some obvious problems.
+> 
+> I did download the kernel source, but when I try to run the script it
+> either tells me that I don't have a valid kernel tree (when using the
+> sources for my Xubuntu kernel) or that the file I'm trying to scan
+> isn't part of the tree (when using the latest from kernel.org).  I've
+> never used that tool in the past - can you send me a usage example for
+> scanning a file in the alfred tree?
+
+Just did this from my linux-next.git checkout:
+
+    ./scripts/checkpatch.pl --strict --ignore=LONG_LINE_STRING \
+      --ignore=LONG_LINE --ignore=LONG_LINE_COMMENT \
+      --ignore=FSF_MAILING_ADDRESS \
+      -f ../alfred/main.c
+
+or:
+
+    ./scripts/checkpatch.pl --strict --ignore=LONG_LINE_STRING \
+      --ignore=LONG_LINE --ignore=LONG_LINE_COMMENT \
+      --ignore=FSF_MAILING_ADDRESS \
+      ../alfred/0001-IPv4-multicast-distribution-support.patch
+
+Kind regards,
+	Sven
+--nextPart2643948.4sSCiV7SFk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlh+TGEACgkQXYcKB8Em
+e0adwxAAwyD5SfDPc7k7UsM4+bfzBpeM3FR49sKO7kdbD5i9JfpYjJzM8OBSmsxu
+k9/e/Racn61vobW4H0FGtPs2BbvgpubhOB5VY5uEl++qMPXx0NH+gqH1w/VI0aNO
+SKcwq0k6z0RDRJ563kDcMAEPMNOllCke4Npj9yGyMsNSyjR9m6zX7sPD6wX+H/g/
+TpaEV5ud/kOTUMGgOAL02MjKJKJYaUkuvw7r4jRUsOmPBs1JUAoJ1xL5q3Jl705e
+w5ltOAR2pCw/atHMVw5kHu97jiDuTh/FgUFQ3R4aw/n9SdRLGp08ZtB2sy5/qyEG
+qzhCaOC+GE56/ruwKP45gOHXbs+l2Wj0ocChTG853Ex3pIVGKP61ZXy5Pi5HPo2l
+LdAhKI2mNcXh0n7dl9yQD5ehhXorTGyQK9AUZLQVXnWsucxsbpOWZXg1o866xpNS
+U9/NBbOsFpwwJwKUchIBx1ArHdjk+ONpEeezGuQgs3FN+eBl+UfOBiAez8OzN36B
+P6xvwFroKGBzg1W8H6WwPwd53ZhbMTiTfYr/Kx3qXa4vCY2eAokxRtCiCR8mP3Iz
+18py8VDYbWHMRZrBaV4Lyh6CgDpPdClar9CBcZhwGXUnQxdZvDJucuhr9GkXRYai
+tVKkOn61BDrhN/L4t2gXtMQ3c8HGpDSpk+CSIpply7A0io/r7hU=
+=p3yZ
+-----END PGP SIGNATURE-----
+
+--nextPart2643948.4sSCiV7SFk--
+
