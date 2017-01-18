@@ -1,10 +1,16 @@
 Return-Path: <Jonathan.Haws@sdl.usu.edu>
-From: Jonathan Haws <jhaws@sdl.usu.edu>
-Date: Tue, 17 Jan 2017 22:01:24 -0700
-Message-ID: <1484715684-8127-1-git-send-email-jhaws@sdl.usu.edu>
+From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Date: Wed, 18 Jan 2017 05:04:08 +0000
+Message-ID: <1484715848.3539.2.camel@sdl.usu.edu>
+References: <1484715684-8127-1-git-send-email-jhaws@sdl.usu.edu>
+In-Reply-To: <1484715684-8127-1-git-send-email-jhaws@sdl.usu.edu>
+Reply-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <093B520AEAE04C448F35E0D1484FCA00@sdl.usu.edu>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: [B.A.T.M.A.N.] [PATCH v2] [alfred] IPv4 multicast distribution
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2] [alfred] IPv4 multicast distribution
 	support.
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -15,818 +21,539 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Jonathan Haws <jhaws@sdl.usu.edu>
+To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-Enabled via -4 expert option where multicast group address is specified.
-This option will disable IPv6 communication and is intended for use in
-networks which do not support IPv6 addressing.
-
-When this option is enabled, all IPv6 communication is disabled. Combining
-IPv4 and IPv6 alfred nodes is unsupported.
-
-Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
----
- README         |   4 +-
- alfred.h       |  20 +++++---
- batadv_query.c |  53 +++++++++++++-------
- batadv_query.h |   5 +-
- client.c       |   2 +-
- main.c         |  14 ++++--
- man/alfred.8   |   5 ++
- netsock.c      | 156 +++++++++++++++++++++++++++++++++++++++++++++++++++++----
- recv.c         |  61 +++++++++++++++-------
- send.c         |  48 +++++++++++-------
- server.c       |   8 +--
- unix_sock.c    |   2 +-
- 12 files changed, 295 insertions(+), 83 deletions(-)
-
-diff --git a/README b/README
-index bc1c3bc..28f3dc9 100644
---- a/README
-+++ b/README
-@@ -20,7 +20,9 @@ programs to communicate with alfred (done via unix sockets). alfred then takes
- care of distributing the local information to other alfred servers on other
- nodes. This is done via IPv6 link-local multicast, and does not require any
- configuration. A user can request data from alfred, and will receive the
--information available from all alfred servers in the network.
-+information available from all alfred servers in the network. Alternatively,
-+alfred can be configured to distribute the local information via IPv4 multicast.
-+This is configured by setting the IPv4 multicast group address in the -4 option.
- 
- Compilation
- -----------
-diff --git a/alfred.h b/alfred.h
-index 2e8db1e..bec69a1 100644
---- a/alfred.h
-+++ b/alfred.h
-@@ -48,6 +48,11 @@ enum data_source {
- 	SOURCE_SYNCED = 2,
- };
- 
-+typedef union {
-+	struct in_addr ipv4;
-+	struct in6_addr ipv6;
-+} alfred_addr;
-+
- struct dataset {
- 	struct alfred_data data;
- 	unsigned char *buf;
-@@ -80,7 +85,7 @@ struct transaction_head {
- 
- struct server {
- 	struct ether_addr hwaddr;
--	struct in6_addr address;
-+	alfred_addr address;
- 	struct timespec last_seen;
- 	uint8_t tq;
- };
-@@ -100,7 +105,7 @@ enum clientmode {
- 
- struct interface {
- 	struct ether_addr hwaddr;
--	struct in6_addr address;
-+	alfred_addr address;
- 	uint32_t scope_id;
- 	char *interface;
- 	int netsock;
-@@ -122,6 +127,7 @@ struct globals {
- 	int clientmode_arg;
- 	int clientmode_version;
- 	int verbose;
-+	int ipv4mode;
- 
- 	int unix_sock;
- 	const char *unix_path;
-@@ -142,7 +148,7 @@ struct globals {
- 
- #define MAX_PAYLOAD ((1 << 16) - 1 - sizeof(struct udphdr))
- 
--extern const struct in6_addr in6addr_localmcast;
-+extern alfred_addr alfred_mcast;
- 
- /* server.c */
- int alfred_server(struct globals *globals);
-@@ -169,13 +175,13 @@ static inline bool transaction_finished(struct transaction_head *head)
- 
- /* send.c */
- int push_data(struct globals *globals, struct interface *interface,
--	      struct in6_addr *destination, enum data_source max_source_level,
-+	      alfred_addr *destination, enum data_source max_source_level,
- 	      int type_filter, uint16_t tx_id);
- int announce_master(struct globals *globals);
- int push_local_data(struct globals *globals);
- int sync_data(struct globals *globals);
--ssize_t send_alfred_packet(struct interface *interface,
--			   const struct in6_addr *dest, void *buf, int length);
-+ssize_t send_alfred_packet(struct globals *globals, struct interface *interface,
-+			   const alfred_addr *dest, void *buf, int length);
- /* unix_sock.c */
- int unix_sock_read(struct globals *globals);
- int unix_sock_open_daemon(struct globals *globals);
-@@ -195,7 +201,7 @@ int netsock_prepare_select(struct globals *globals, fd_set *fds, int maxsock);
- void netsock_check_error(struct globals *globals, fd_set *errfds);
- int netsock_receive_packet(struct globals *globals, fd_set *fds);
- int netsock_own_address(const struct globals *globals,
--			const struct in6_addr *address);
-+			const alfred_addr *address);
- /* util.c */
- int time_diff(struct timespec *tv1, struct timespec *tv2,
- 	      struct timespec *tvdiff);
-diff --git a/batadv_query.c b/batadv_query.c
-index ac45b9b..f616501 100644
---- a/batadv_query.c
-+++ b/batadv_query.c
-@@ -80,22 +80,22 @@ out:
- 	return ret;
- }
- 
--int mac_to_ipv6(const struct ether_addr *mac, struct in6_addr *addr)
-+int mac_to_ipv6(const struct ether_addr *mac, alfred_addr *addr)
- {
- 	memset(addr, 0, sizeof(*addr));
--	addr->s6_addr[0] = 0xfe;
--	addr->s6_addr[1] = 0x80;
-+	addr->ipv6.s6_addr[0] = 0xfe;
-+	addr->ipv6.s6_addr[1] = 0x80;
- 
--	addr->s6_addr[8] = mac->ether_addr_octet[0] ^ 0x02;
--	addr->s6_addr[9] = mac->ether_addr_octet[1];
--	addr->s6_addr[10] = mac->ether_addr_octet[2];
-+	addr->ipv6.s6_addr[8] = mac->ether_addr_octet[0] ^ 0x02;
-+	addr->ipv6.s6_addr[9] = mac->ether_addr_octet[1];
-+	addr->ipv6.s6_addr[10] = mac->ether_addr_octet[2];
- 
--	addr->s6_addr[11] = 0xff;
--	addr->s6_addr[12] = 0xfe;
-+	addr->ipv6.s6_addr[11] = 0xff;
-+	addr->ipv6.s6_addr[12] = 0xfe;
- 
--	addr->s6_addr[13] = mac->ether_addr_octet[3];
--	addr->s6_addr[14] = mac->ether_addr_octet[4];
--	addr->s6_addr[15] = mac->ether_addr_octet[5];
-+	addr->ipv6.s6_addr[13] = mac->ether_addr_octet[3];
-+	addr->ipv6.s6_addr[14] = mac->ether_addr_octet[4];
-+	addr->ipv6.s6_addr[15] = mac->ether_addr_octet[5];
- 
- 	return 0;
- }
-@@ -118,17 +118,32 @@ int is_ipv6_eui64(const struct in6_addr *addr)
- 	return 1;
- }
- 
--int ipv6_to_mac(const struct in6_addr *addr, struct ether_addr *mac)
-+int ipv6_to_mac(const alfred_addr *addr, struct ether_addr *mac)
- {
--	if (!is_ipv6_eui64(addr))
-+	if (!is_ipv6_eui64(&addr->ipv6))
- 		return -EINVAL;
- 
--	mac->ether_addr_octet[0] = addr->s6_addr[8] ^ 0x02;
--	mac->ether_addr_octet[1] = addr->s6_addr[9];
--	mac->ether_addr_octet[2] = addr->s6_addr[10];
--	mac->ether_addr_octet[3] = addr->s6_addr[13];
--	mac->ether_addr_octet[4] = addr->s6_addr[14];
--	mac->ether_addr_octet[5] = addr->s6_addr[15];
-+	mac->ether_addr_octet[0] = addr->ipv6.s6_addr[8] ^ 0x02;
-+	mac->ether_addr_octet[1] = addr->ipv6.s6_addr[9];
-+	mac->ether_addr_octet[2] = addr->ipv6.s6_addr[10];
-+	mac->ether_addr_octet[3] = addr->ipv6.s6_addr[13];
-+	mac->ether_addr_octet[4] = addr->ipv6.s6_addr[14];
-+	mac->ether_addr_octet[5] = addr->ipv6.s6_addr[15];
-+
-+	if (!is_valid_ether_addr(mac->ether_addr_octet))
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+int ipv4_to_mac(const alfred_addr *addr, struct ether_addr *mac)
-+{
-+	mac->ether_addr_octet[0] = 0;
-+	mac->ether_addr_octet[1] = 0;
-+	mac->ether_addr_octet[2] = (addr->ipv4.s_addr >> 24) & 0xFF;
-+	mac->ether_addr_octet[3] = (addr->ipv4.s_addr >> 16) & 0xFF;
-+	mac->ether_addr_octet[4] = (addr->ipv4.s_addr >>  8) & 0xFF;
-+	mac->ether_addr_octet[5] = (addr->ipv4.s_addr >>  0) & 0xFF;
- 
- 	if (!is_valid_ether_addr(mac->ether_addr_octet))
- 		return -EINVAL;
-diff --git a/batadv_query.h b/batadv_query.h
-index 0df8a35..ec69290 100644
---- a/batadv_query.h
-+++ b/batadv_query.h
-@@ -28,8 +28,9 @@ struct ether_addr *translate_mac(const char *mesh_iface,
- 				 const struct ether_addr *mac);
- uint8_t get_tq(const char *mesh_iface, struct ether_addr *mac);
- int batadv_interface_check(const char *mesh_iface);
--int mac_to_ipv6(const struct ether_addr *mac, struct in6_addr *addr);
--int ipv6_to_mac(const struct in6_addr *addr, struct ether_addr *mac);
-+int mac_to_ipv6(const struct ether_addr *mac, alfred_addr *addr);
-+int ipv6_to_mac(const alfred_addr *addr, struct ether_addr *mac);
-+int ipv4_to_mac(const alfred_addr *addr, struct ether_addr *mac);
- int is_ipv6_eui64(const struct in6_addr *addr);
- 
- #endif
-diff --git a/client.c b/client.c
-index 357fdb9..4102046 100644
---- a/client.c
-+++ b/client.c
-@@ -239,7 +239,7 @@ static int check_interface(const char *iface)
- 		return -1;
- 	}
- 
--	sock = socket(PF_INET6, SOCK_DGRAM, 0);
-+	sock = socket(PF_INET, SOCK_DGRAM, 0);
- 	if (sock < 0) {
- 		perror("can't open socket");
- 		return -1;
-diff --git a/main.c b/main.c
-index 0d30ea4..446eecf 100644
---- a/main.c
-+++ b/main.c
-@@ -19,6 +19,7 @@
-  *
-  */
- 
-+#include <arpa/inet.h>
- #include <getopt.h>
- #include <signal.h>
- #include <stdio.h>
-@@ -61,6 +62,7 @@ static void alfred_usage(void)
- 	printf("                                      other masters\n");
- 	printf("  -p, --sync-period [period]          set synchronization period, in seconds\n");
- 	printf("                                      fractional seconds are supported (i.e. 0.2 = 5 Hz)\n");
-+	printf("  -4 [group-address]                  specify IPv4 multicast address and operate in IPv4 mode");
- 	printf("\n");
- 	printf("  -u, --unix-path [path]              path to unix socket used for client-server\n");
- 	printf("                                      communication (default: \""ALFRED_SOCK_PATH_DEFAULT"\")\n");
-@@ -196,6 +198,7 @@ static struct globals *alfred_init(int argc, char *argv[])
- 	globals->mesh_iface = "bat0";
- 	globals->unix_path = ALFRED_SOCK_PATH_DEFAULT;
- 	globals->verbose = 0;
-+	globals->ipv4mode = 0;
- 	globals->update_command = NULL;
- 	globals->sync_period.tv_sec = ALFRED_INTERVAL;
- 	globals->sync_period.tv_nsec = 0;
-@@ -204,7 +207,7 @@ static struct globals *alfred_init(int argc, char *argv[])
- 
- 	time_random_seed();
- 
--	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:dc:p:", long_options,
-+	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:dc:p:4:", long_options,
- 				  &opt_ind)) != -1) {
- 		switch (opt) {
- 		case 'r':
-@@ -273,10 +276,15 @@ static struct globals *alfred_init(int argc, char *argv[])
- 			return NULL;
- 		case 'p':
- 			sync_period = strtod(optarg, NULL);
--			globals->sync_period.tv_sec = (int) sync_period;
--			globals->sync_period.tv_nsec = (double) (sync_period - (int) sync_period) * 1e9;
-+			globals->sync_period.tv_sec = (int)sync_period;
-+			globals->sync_period.tv_nsec = (double)(sync_period - (int)sync_period) * 1e9;
- 			printf(" ** Setting sync interval to: %.9f seconds (%ld.%09ld)\n", sync_period, globals->sync_period.tv_sec, globals->sync_period.tv_nsec);
- 			break;
-+		case '4':
-+			globals->ipv4mode = 1;
-+			inet_pton(AF_INET, optarg, &alfred_mcast.ipv4);
-+			printf(" ** IPv4 Multicast Mode: %x\n", alfred_mcast.ipv4.s_addr);
-+			break;
- 		case 'h':
- 		default:
- 			alfred_usage();
-diff --git a/man/alfred.8 b/man/alfred.8
-index 5936e64..a2c3d4c 100644
---- a/man/alfred.8
-+++ b/man/alfred.8
-@@ -123,6 +123,11 @@ as arguments.
- Specify alfred synchronization period, in seconds. If not specified, the default
- ALFRED_INTERVAL setting of 10 seconds will be used. Fractional seconds are
- supported.
-+.TP
-+\fB\-4 \fIgroup-address\fP \fP
-+Specify the IPv4 multicast group address and enable IPv4 data-sharing (disabling
-+IPv6 communication). This option is required on systems that do not support IPv6
-+addressing.
- .
- .SH EXAMPLES
- Start an alfred server listening on bridge br0 (assuming that this bridge
-diff --git a/netsock.c b/netsock.c
-index 86db8a6..0df7701 100644
---- a/netsock.c
-+++ b/netsock.c
-@@ -43,10 +43,12 @@
- #include "list.h"
- #include "hash.h"
- 
--const struct in6_addr in6addr_localmcast = {{{ 0xff, 0x02, 0x00, 0x00,
--					       0x00, 0x00, 0x00, 0x00,
--					       0x00, 0x00, 0x00, 0x00,
--					       0x00, 0x00, 0x00, 0x01 } } };
-+alfred_addr alfred_mcast = {
-+		.ipv6 = {{{ 0xff, 0x02, 0x00, 0x00,
-+			    0x00, 0x00, 0x00, 0x00,
-+			    0x00, 0x00, 0x00, 0x00,
-+			    0x00, 0x00, 0x00, 0x01 } } }
-+};
- 
- static int server_compare(void *d1, void *d2)
- {
-@@ -262,7 +264,7 @@ static int netsock_open(struct interface *interface)
- 	memset(&sin6_mc, 0, sizeof(sin6_mc));
- 	sin6_mc.sin6_port = htons(ALFRED_PORT);
- 	sin6_mc.sin6_family = AF_INET6;
--	memcpy(&sin6_mc.sin6_addr, &in6addr_localmcast,
-+	memcpy(&sin6_mc.sin6_addr, &alfred_mcast,
- 	       sizeof(sin6_mc.sin6_addr));
- 	sin6_mc.sin6_scope_id = interface->scope_id;
- 
-@@ -291,7 +293,7 @@ static int netsock_open(struct interface *interface)
- 		goto err;
- 	}
- 
--	memcpy(&mreq.ipv6mr_multiaddr, &in6addr_localmcast,
-+	memcpy(&mreq.ipv6mr_multiaddr, &alfred_mcast,
- 	       sizeof(mreq.ipv6mr_multiaddr));
- 	mreq.ipv6mr_interface = interface->scope_id;
- 
-@@ -335,6 +337,132 @@ err:
- 	return -1;
- }
- 
-+static int netsock_open4(struct interface *interface)
-+{
-+	int sock;
-+	int sock_mc;
-+	struct sockaddr_in sin4, sin_mc;
-+	struct ip_mreq mreq;
-+	struct ifreq ifr;
-+	int ret;
-+
-+	interface->netsock = -1;
-+	interface->netsock_mcast = -1;
-+
-+	sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-+	if (sock  < 0) {
-+		perror("ipv4: can't open socket");
-+		return -1;
-+	}
-+
-+	sock_mc = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-+	if (sock_mc  < 0) {
-+		perror("ipv4: can't open mc socket");
-+		return -1;
-+	}
-+
-+	memset(&ifr, 0, sizeof(ifr));
-+	strncpy(ifr.ifr_name, interface->interface, IFNAMSIZ);
-+	ifr.ifr_name[IFNAMSIZ - 1] = '\0';
-+	if (ioctl(sock_mc, SIOCGIFHWADDR, &ifr) == -1) {
-+		perror("ipv4: can't get MAC address");
-+		goto err;
-+	}
-+	memcpy(&interface->hwaddr, &ifr.ifr_hwaddr.sa_data, 6);
-+
-+	memset(&sin4, 0, sizeof(sin4));
-+	sin4.sin_port = htons(ALFRED_PORT);
-+	sin4.sin_family = AF_INET;
-+	sin4.sin_addr.s_addr = INADDR_ANY;
-+
-+	memset(&sin_mc, 0, sizeof(sin_mc));
-+	sin_mc.sin_port = htons(ALFRED_PORT);
-+	sin_mc.sin_family = AF_INET;
-+	memcpy(&sin_mc.sin_addr, &alfred_mcast, sizeof(sin_mc.sin_addr));
-+
-+	enable_raw_bind_capability(1);
-+	if (setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE, interface->interface,
-+		       strlen(interface->interface) + 1)) {
-+		perror("ipv4: can't bind to device");
-+		goto err;
-+	}
-+
-+	if (setsockopt(sock_mc, SOL_SOCKET, SO_BINDTODEVICE,
-+		       interface->interface, strlen(interface->interface) + 1)) {
-+		perror("ipv4: can't bind to device");
-+		goto err;
-+	}
-+	enable_raw_bind_capability(0);
-+
-+	ret = 1;
-+	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &ret, sizeof(ret)) < 0) {
-+		perror("ipv4: can't set reuse flag");
-+		goto err;
-+	}
-+	if (setsockopt(sock_mc, SOL_SOCKET, SO_REUSEADDR, &ret, sizeof(ret)) < 0) {
-+		perror("ipv4: can't set mc reuse flag");
-+		goto err;
-+	}
-+
-+	if (bind(sock, (struct sockaddr *)&sin4, sizeof(sin4)) < 0) {
-+		perror("ipv4: can't bind");
-+		goto err;
-+	}
-+
-+	if (bind(sock_mc, (struct sockaddr *)&sin_mc, sizeof(sin_mc)) < 0) {
-+		perror("ipv4: can't bind mc");
-+		goto err;
-+	}
-+
-+	memcpy(&mreq.imr_multiaddr, &alfred_mcast.ipv4, sizeof(mreq.imr_multiaddr));
-+
-+	if (ioctl(sock_mc, SIOCGIFADDR, &ifr) < 0) {
-+		perror("ipv4: can't get IP address");
-+		goto err;
-+	}
-+	mreq.imr_interface = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr;
-+	memcpy(&interface->address.ipv4,
-+	       &((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr,
-+	       sizeof(struct in_addr));
-+
-+	if (setsockopt(sock_mc, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq))) {
-+		perror("ipv4: can't add multicast membership");
-+		goto err;
-+	}
-+
-+	ret = fcntl(sock, F_GETFL, 0);
-+	if (ret < 0) {
-+		perror("failed to get file status flags");
-+		goto err;
-+	}
-+
-+	ret = fcntl(sock, F_SETFL, ret | O_NONBLOCK);
-+	if (ret < 0) {
-+		perror("failed to set file status flags");
-+		goto err;
-+	}
-+
-+	ret = fcntl(sock_mc, F_GETFL, 0);
-+	if (ret < 0) {
-+		perror("ipv4: failed to get file status flags");
-+		goto err;
-+	}
-+
-+	ret = fcntl(sock_mc, F_SETFL, ret | O_NONBLOCK);
-+	if (ret < 0) {
-+		perror("ipv4: failed to set file status flags");
-+		goto err;
-+	}
-+
-+	interface->netsock = sock;
-+	interface->netsock_mcast = sock_mc;
-+
-+	return 0;
-+r:
-+	close(sock_mc);
-+	return -1;
-+}
-+
- int netsock_open_all(struct globals *globals)
- {
- 	int num_socks = 0;
-@@ -342,7 +470,11 @@ int netsock_open_all(struct globals *globals)
- 	struct interface *interface;
- 
- 	list_for_each_entry(interface, &globals->interfaces, list) {
--		ret = netsock_open(interface);
-+		if (globals->ipv4mode)
-+			ret = netsock_open4(interface);
-+		else
-+			ret = netsock_open(interface);
-+
- 		if (ret >= 0)
- 			num_socks++;
- 	}
-@@ -355,8 +487,12 @@ void netsock_reopen(struct globals *globals)
- 	struct interface *interface;
- 
- 	list_for_each_entry(interface, &globals->interfaces, list) {
--		if (interface->netsock < 0)
--			netsock_open(interface);
-+		if (interface->netsock < 0) {
-+			if (globals->ipv4mode)
-+				netsock_open4(interface);
-+			else
-+				netsock_open(interface);
-+		}
- 	}
- }
- 
-@@ -430,7 +566,7 @@ int netsock_receive_packet(struct globals *globals, fd_set *fds)
- }
- 
- int netsock_own_address(const struct globals *globals,
--			const struct in6_addr *address)
-+			const alfred_addr *address)
- {
- 	struct interface *interface;
- 
-diff --git a/recv.c b/recv.c
-index bb8cc05..39df07f 100644
---- a/recv.c
-+++ b/recv.c
-@@ -190,7 +190,7 @@ static int finish_alfred_transaction(struct globals *globals,
- }
- 
- static int process_alfred_push_data(struct globals *globals,
--				    struct in6_addr *source,
-+				    alfred_addr *source,
- 				    struct alfred_push_data_v0 *push)
- {
- 	int len;
-@@ -200,7 +200,10 @@ static int process_alfred_push_data(struct globals *globals,
- 	struct transaction_packet *transaction_packet;
- 	int found;
- 
--	ret = ipv6_to_mac(source, &mac);
-+	if (globals->ipv4mode)
-+		ret = ipv4_to_mac(source, &mac);
-+	else
-+		ret = ipv6_to_mac(source, &mac);
- 	if (ret < 0)
- 		goto err;
- 
-@@ -260,7 +263,7 @@ err:
- static int
- process_alfred_announce_master(struct globals *globals,
- 			       struct interface *interface,
--			       struct in6_addr *source,
-+			       alfred_addr *source,
- 			       struct alfred_announce_master_v0 *announce)
- {
- 	struct server *server;
-@@ -271,7 +274,10 @@ process_alfred_announce_master(struct globals *globals,
- 
- 	len = ntohs(announce->header.length);
- 
--	ret = ipv6_to_mac(source, &mac);
-+	if (globals->ipv4mode)
-+		ret = ipv4_to_mac(source, &mac);
-+	else
-+		ret = ipv6_to_mac(source, &mac);
- 	if (ret < 0)
- 		return -1;
- 
-@@ -316,7 +322,7 @@ process_alfred_announce_master(struct globals *globals,
- 
- static int process_alfred_request(struct globals *globals,
- 				  struct interface *interface,
--				  struct in6_addr *source,
-+				  alfred_addr *source,
- 				  struct alfred_request_v0 *request)
- {
- 	int len;
-@@ -336,7 +342,7 @@ static int process_alfred_request(struct globals *globals,
- }
- 
- static int process_alfred_status_txend(struct globals *globals,
--				       struct in6_addr *source,
-+				       alfred_addr *source,
- 				       struct alfred_status_v0 *request)
- {
- 	struct transaction_head search, *head;
-@@ -351,7 +357,10 @@ static int process_alfred_status_txend(struct globals *globals,
- 	if (len != (sizeof(*request) - sizeof(request->header)))
- 		return -1;
- 
--	ret = ipv6_to_mac(source, &mac);
-+	if (globals->ipv4mode)
-+		ret = ipv4_to_mac(source, &mac);
-+	else
-+		ret = ipv6_to_mac(source, &mac);
- 	if (ret < 0)
- 		return -1;
- 
-@@ -389,15 +398,25 @@ int recv_alfred_packet(struct globals *globals, struct interface *interface,
- 	uint8_t buf[MAX_PAYLOAD];
- 	ssize_t length;
- 	struct alfred_tlv *packet;
--	struct sockaddr_in6 source;
-+	struct sockaddr_in *source;
-+	struct sockaddr_in source4;
-+	struct sockaddr_in6 source6;
- 	socklen_t sourcelen;
-+	alfred_addr alfred_source;
- 
- 	if (interface->netsock < 0)
- 		return -1;
- 
--	sourcelen = sizeof(source);
-+	if (globals->ipv4mode) {
-+		source = (struct sockaddr_in *)&source4;
-+		sourcelen = sizeof(source4);
-+	} else {
-+		source = (struct sockaddr_in *)&source6;
-+		sourcelen = sizeof(source6);
-+	}
-+
- 	length = recvfrom(recv_sock, buf, sizeof(buf), 0,
--			  (struct sockaddr *)&source, &sourcelen);
-+			  (struct sockaddr *)source, &sourcelen);
- 	if (length <= 0) {
- 		perror("read from network socket failed");
- 		return -1;
-@@ -405,12 +424,18 @@ int recv_alfred_packet(struct globals *globals, struct interface *interface,
- 
- 	packet = (struct alfred_tlv *)buf;
- 
--	/* drop packets not sent over link-local ipv6 */
--	if (!is_ipv6_eui64(&source.sin6_addr))
--		return -1;
-+	if (globals->ipv4mode) {
-+		memcpy(&alfred_source, &source4.sin_addr, sizeof(source4.sin_addr));
-+	} else {
-+		memcpy(&alfred_source, &source6.sin6_addr, sizeof(source6.sin6_addr));
-+
-+		/* drop packets not sent over link-local ipv6 */
-+		if (!is_ipv6_eui64(&alfred_source.ipv6))
-+			return -1;
-+	}
- 
- 	/* drop packets from ourselves */
--	if (netsock_own_address(globals, &source.sin6_addr))
-+	if (netsock_own_address(globals, &alfred_source))
- 		return -1;
- 
- 	/* drop truncated packets */
-@@ -424,20 +449,20 @@ int recv_alfred_packet(struct globals *globals, struct interface *interface,
- 
- 	switch (packet->type) {
- 	case ALFRED_PUSH_DATA:
--		process_alfred_push_data(globals, &source.sin6_addr,
-+		process_alfred_push_data(globals, &alfred_source,
- 					 (struct alfred_push_data_v0 *)packet);
- 		break;
- 	case ALFRED_ANNOUNCE_MASTER:
- 		process_alfred_announce_master(globals, interface,
--					       &source.sin6_addr,
-+					       &alfred_source,
- 					       (struct alfred_announce_master_v0 *)packet);
- 		break;
- 	case ALFRED_REQUEST:
--		process_alfred_request(globals, interface, &source.sin6_addr,
-+		process_alfred_request(globals, interface, &alfred_source,
- 				       (struct alfred_request_v0 *)packet);
- 		break;
- 	case ALFRED_STATUS_TXEND:
--		process_alfred_status_txend(globals, &source.sin6_addr,
-+		process_alfred_status_txend(globals, &alfred_source,
- 					    (struct alfred_status_v0 *)packet);
- 		break;
- 	default:
-diff --git a/send.c b/send.c
-index c7a2af2..b566503 100644
---- a/send.c
-+++ b/send.c
-@@ -42,7 +42,7 @@ int announce_master(struct globals *globals)
- 		announcement.header.version = ALFRED_VERSION;
- 		announcement.header.length = htons(0);
- 
--		send_alfred_packet(interface, &in6addr_localmcast,
-+		send_alfred_packet(globals, interface, &alfred_mcast,
- 				   &announcement, sizeof(announcement));
- 	}
- 
-@@ -50,7 +50,7 @@ int announce_master(struct globals *globals)
- }
- 
- int push_data(struct globals *globals, struct interface *interface,
--	      struct in6_addr *destination, enum data_source max_source_level,
-+	      alfred_addr *destination, enum data_source max_source_level,
- 	      int type_filter, uint16_t tx_id)
- {
- 	struct hash_it_t *hashit = NULL;
-@@ -90,7 +90,7 @@ int push_data(struct globals *globals, struct interface *interface,
- 			tlv_length += sizeof(*push) - sizeof(push->header);
- 			push->header.length = htons(tlv_length);
- 			push->tx.seqno = htons(seqno++);
--			send_alfred_packet(interface, destination, push,
-+			send_alfred_packet(globals, interface, destination, push,
- 					   sizeof(*push) + total_length);
- 			total_length = 0;
- 		}
-@@ -114,7 +114,7 @@ int push_data(struct globals *globals, struct interface *interface,
- 		tlv_length += sizeof(*push) - sizeof(push->header);
- 		push->header.length = htons(tlv_length);
- 		push->tx.seqno = htons(seqno++);
--		send_alfred_packet(interface, destination, push,
-+		send_alfred_packet(globals, interface, destination, push,
- 				   sizeof(*push) + total_length);
- 	}
- 
-@@ -128,7 +128,7 @@ int push_data(struct globals *globals, struct interface *interface,
- 		status_end.tx.id = tx_id;
- 		status_end.tx.seqno = htons(seqno);
- 
--		send_alfred_packet(interface, destination, &status_end,
-+		send_alfred_packet(globals, interface, destination, &status_end,
- 				   sizeof(status_end));
- 	}
- 
-@@ -170,24 +170,38 @@ int push_local_data(struct globals *globals)
- 	return 0;
- }
- 
--ssize_t send_alfred_packet(struct interface *interface,
--			   const struct in6_addr *dest, void *buf, int length)
-+ssize_t send_alfred_packet(struct globals *globals, struct interface *interface,
-+			   const alfred_addr *dest, void *buf, int length)
- {
- 	ssize_t ret;
--	struct sockaddr_in6 dest_addr;
--
--	memset(&dest_addr, 0, sizeof(dest_addr));
--	dest_addr.sin6_family = AF_INET6;
--	dest_addr.sin6_port = htons(ALFRED_PORT);
--	dest_addr.sin6_scope_id = interface->scope_id;
--	memcpy(&dest_addr.sin6_addr, dest, sizeof(*dest));
-+	struct sockaddr *dest_addr;
-+	struct sockaddr_in6 dest_addr6;
-+	struct sockaddr_in dest_addr4;
-+	socklen_t slen;
-+
-+	if (globals->ipv4mode) {
-+		memset(&dest_addr4, 0, sizeof(dest_addr4));
-+		dest_addr4.sin_family = AF_INET;
-+		dest_addr4.sin_port = htons(ALFRED_PORT);
-+		memcpy(&dest_addr4.sin_addr, &dest->ipv4, sizeof(dest->ipv4));
-+
-+		slen = sizeof(struct sockaddr_in);
-+		dest_addr = (struct sockaddr *)&dest_addr4;
-+	} else {
-+		memset(&dest_addr6, 0, sizeof(dest_addr6));
-+		dest_addr6.sin6_family = AF_INET6;
-+		dest_addr6.sin6_port = htons(ALFRED_PORT);
-+		dest_addr6.sin6_scope_id = interface->scope_id;
-+		memcpy(&dest_addr6.sin6_addr, &dest->ipv6, sizeof(dest->ipv6));
-+
-+		slen = sizeof(struct sockaddr_in6);
-+		dest_addr = (struct sockaddr *)&dest_addr6;
-+	}
- 
- 	if (interface->netsock < 0)
- 		return 0;
- 
--	ret = sendto(interface->netsock, buf, length, 0,
--		     (struct sockaddr *)&dest_addr,
--		     sizeof(struct sockaddr_in6));
-+	ret = sendto(interface->netsock, buf, length, 0, dest_addr, slen);
- 	if (ret == -EPERM) {
- 		perror("Error during sent");
- 		close(interface->netsock);
-diff --git a/server.c b/server.c
-index f6e0c8a..2c4042a 100644
---- a/server.c
-+++ b/server.c
-@@ -218,7 +218,7 @@ static int purge_data(struct globals *globals)
- 	return 0;
- }
- 
--static void check_if_socket(struct interface *interface)
-+static void check_if_socket(struct interface *interface, struct globals *globals)
- {
- 	int sock;
- 	struct ifreq ifr;
-@@ -226,7 +226,7 @@ static void check_if_socket(struct interface *interface)
- 	if (interface->netsock < 0)
- 		return;
- 
--	sock = socket(PF_INET6, SOCK_DGRAM, 0);
-+	sock = socket(PF_INET, SOCK_DGRAM, 0);
- 	if (sock < 0) {
- 		perror("can't open socket");
- 		return;
-@@ -240,7 +240,7 @@ static void check_if_socket(struct interface *interface)
- 		goto close;
- 	}
- 
--	if (interface->scope_id != (uint32_t)ifr.ifr_ifindex) {
-+	if (!globals->ipv4mode && (interface->scope_id != (uint32_t)ifr.ifr_ifindex)) {
- 		fprintf(stderr,
- 			"iface index changed from %"PRIu32" to %d, closing netsock\n",
- 			interface->scope_id, ifr.ifr_ifindex);
-@@ -282,7 +282,7 @@ static void check_if_sockets(struct globals *globals)
- 	globals->if_check = now;
- 
- 	list_for_each_entry(interface, &globals->interfaces, list)
--		check_if_socket(interface);
-+		check_if_socket(interface, globals);
- }
- 
- static void execute_update_command(struct globals *globals)
-diff --git a/unix_sock.c b/unix_sock.c
-index 0a819a2..4a8c6e0 100644
---- a/unix_sock.c
-+++ b/unix_sock.c
-@@ -258,7 +258,7 @@ static int unix_sock_req_data(struct globals *globals,
- 	head->client_socket = client_sock;
- 	head->requested_type = request->requested_type;
- 
--	send_alfred_packet(interface, &globals->best_server->address,
-+	send_alfred_packet(globals, interface, &globals->best_server->address,
- 			   request, sizeof(*request));
- 
- 	return 0;
--- 
-2.7.4
-
+VmVyc2lvbiAyIGZpeGVzIGZvcm1hdHRpbmcgaXNzdWVzICh0aGFua3MgZm9yIHRoZSB0aXBzIG9u
+DQpjaGVja3BhdGNoLnBsKSBhbmQgYWxzbyB0aGUgZG9jdW1lbnRhdGlvbiBwcm9ibGVtcy4NCg0K
+SXQgZG9lcyAqbm90KiBhZGRyZXNzIHRoZSBpc3N1ZSBTdmVuIHBvaW50ZWQgb3V0IGFib3V0IHN5
+bmNocm9uaXphdGlvbg0KcHJvYmxlbXMuIMKgSSdsbCB3YWl0IHVudGlsIFNpbW9uIGlzIGJhY2sg
+YW5kIGhhcyBhIGNoYW5jZSB0byBjaGltZSBpbg0KYmVmb3JlIHJld29ya2luZyB0aGF0LiDCoEhv
+d2V2ZXIsIGFzIGl0IHN0YW5kcyBub3csIHRoaXMgaXMgd2hhdCB0aGUNCnBhdGNoIGxvb2tzIGxp
+a2UuDQoNCi0tIA0KSm9uYXRoYW4gUi4gSGF3cw0KRW1iZWRkZWQgRW5naW5lZXINClNwYWNlIER5
+bmFtaWNzIExhYm9yYXRvcnkNCmpoYXdzQHNkbC51c3UuZWR1DQoNCg0KDQpPbiBUdWUsIDIwMTct
+MDEtMTcgYXQgMjI6MDEgLTA3MDAsIEpvbmF0aGFuIEhhd3Mgd3JvdGU6DQo+IEVuYWJsZWQgdmlh
+IC00IGV4cGVydCBvcHRpb24gd2hlcmUgbXVsdGljYXN0IGdyb3VwIGFkZHJlc3MgaXMNCj4gc3Bl
+Y2lmaWVkLg0KPiBUaGlzIG9wdGlvbiB3aWxsIGRpc2FibGUgSVB2NiBjb21tdW5pY2F0aW9uIGFu
+ZCBpcyBpbnRlbmRlZCBmb3IgdXNlDQo+IGluDQo+IG5ldHdvcmtzIHdoaWNoIGRvIG5vdCBzdXBw
+b3J0IElQdjYgYWRkcmVzc2luZy4NCj4gDQo+IFdoZW4gdGhpcyBvcHRpb24gaXMgZW5hYmxlZCwg
+YWxsIElQdjYgY29tbXVuaWNhdGlvbiBpcyBkaXNhYmxlZC4NCj4gQ29tYmluaW5nDQo+IElQdjQg
+YW5kIElQdjYgYWxmcmVkIG5vZGVzIGlzIHVuc3VwcG9ydGVkLg0KPiANCj4gU2lnbmVkLW9mZi1i
+eTogSm9uYXRoYW4gSGF3cyA8amhhd3NAc2RsLnVzdS5lZHU+DQo+IC0tLQ0KPiDCoFJFQURNRcKg
+wqDCoMKgwqDCoMKgwqDCoHzCoMKgwqA0ICstDQo+IMKgYWxmcmVkLmjCoMKgwqDCoMKgwqDCoHzC
+oMKgMjAgKysrKystLS0NCj4gwqBiYXRhZHZfcXVlcnkuYyB8wqDCoDUzICsrKysrKysrKysrKyst
+LS0tLS0tDQo+IMKgYmF0YWR2X3F1ZXJ5LmggfMKgwqDCoDUgKy0NCj4gwqBjbGllbnQuY8KgwqDC
+oMKgwqDCoMKgfMKgwqDCoDIgKy0NCj4gwqBtYWluLmPCoMKgwqDCoMKgwqDCoMKgwqB8wqDCoDE0
+ICsrKystLQ0KPiDCoG1hbi9hbGZyZWQuOMKgwqDCoHzCoMKgwqA1ICsrDQo+IMKgbmV0c29jay5j
+wqDCoMKgwqDCoMKgfCAxNTYNCj4gKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKystLS0tDQo+IMKgcmVjdi5jwqDCoMKgwqDCoMKgwqDCoMKgfMKgwqA2
+MSArKysrKysrKysrKysrKystLS0tLS0tDQo+IMKgc2VuZC5jwqDCoMKgwqDCoMKgwqDCoMKgfMKg
+wqA0OCArKysrKysrKysrKy0tLS0tLS0NCj4gwqBzZXJ2ZXIuY8KgwqDCoMKgwqDCoMKgfMKgwqDC
+oDggKy0tDQo+IMKgdW5peF9zb2NrLmPCoMKgwqDCoHzCoMKgwqAyICstDQo+IMKgMTIgZmlsZXMg
+Y2hhbmdlZCwgMjk1IGluc2VydGlvbnMoKyksIDgzIGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAt
+LWdpdCBhL1JFQURNRSBiL1JFQURNRQ0KPiBpbmRleCBiYzFjM2JjLi4yOGYzZGM5IDEwMDY0NA0K
+PiAtLS0gYS9SRUFETUUNCj4gKysrIGIvUkVBRE1FDQo+IEBAIC0yMCw3ICsyMCw5IEBAIHByb2dy
+YW1zIHRvIGNvbW11bmljYXRlIHdpdGggYWxmcmVkIChkb25lIHZpYSB1bml4DQo+IHNvY2tldHMp
+LiBhbGZyZWQgdGhlbiB0YWtlcw0KPiDCoGNhcmUgb2YgZGlzdHJpYnV0aW5nIHRoZSBsb2NhbCBp
+bmZvcm1hdGlvbiB0byBvdGhlciBhbGZyZWQgc2VydmVycw0KPiBvbiBvdGhlcg0KPiDCoG5vZGVz
+LiBUaGlzIGlzIGRvbmUgdmlhIElQdjYgbGluay1sb2NhbCBtdWx0aWNhc3QsIGFuZCBkb2VzIG5v
+dA0KPiByZXF1aXJlIGFueQ0KPiDCoGNvbmZpZ3VyYXRpb24uIEEgdXNlciBjYW4gcmVxdWVzdCBk
+YXRhIGZyb20gYWxmcmVkLCBhbmQgd2lsbCByZWNlaXZlDQo+IHRoZQ0KPiAtaW5mb3JtYXRpb24g
+YXZhaWxhYmxlIGZyb20gYWxsIGFsZnJlZCBzZXJ2ZXJzIGluIHRoZSBuZXR3b3JrLg0KPiAraW5m
+b3JtYXRpb24gYXZhaWxhYmxlIGZyb20gYWxsIGFsZnJlZCBzZXJ2ZXJzIGluIHRoZSBuZXR3b3Jr
+Lg0KPiBBbHRlcm5hdGl2ZWx5LA0KPiArYWxmcmVkIGNhbiBiZSBjb25maWd1cmVkIHRvIGRpc3Ry
+aWJ1dGUgdGhlIGxvY2FsIGluZm9ybWF0aW9uIHZpYQ0KPiBJUHY0IG11bHRpY2FzdC4NCj4gK1Ro
+aXMgaXMgY29uZmlndXJlZCBieSBzZXR0aW5nIHRoZSBJUHY0IG11bHRpY2FzdCBncm91cCBhZGRy
+ZXNzIGluDQo+IHRoZSAtNCBvcHRpb24uDQo+IMKgDQo+IMKgQ29tcGlsYXRpb24NCj4gwqAtLS0t
+LS0tLS0tLQ0KPiBkaWZmIC0tZ2l0IGEvYWxmcmVkLmggYi9hbGZyZWQuaA0KPiBpbmRleCAyZThk
+YjFlLi5iZWM2OWExIDEwMDY0NA0KPiAtLS0gYS9hbGZyZWQuaA0KPiArKysgYi9hbGZyZWQuaA0K
+PiBAQCAtNDgsNiArNDgsMTEgQEAgZW51bSBkYXRhX3NvdXJjZSB7DQo+IMKgCVNPVVJDRV9TWU5D
+RUQgPSAyLA0KPiDCoH07DQo+IMKgDQo+ICt0eXBlZGVmIHVuaW9uIHsNCj4gKwlzdHJ1Y3QgaW5f
+YWRkciBpcHY0Ow0KPiArCXN0cnVjdCBpbjZfYWRkciBpcHY2Ow0KPiArfSBhbGZyZWRfYWRkcjsN
+Cj4gKw0KPiDCoHN0cnVjdCBkYXRhc2V0IHsNCj4gwqAJc3RydWN0IGFsZnJlZF9kYXRhIGRhdGE7
+DQo+IMKgCXVuc2lnbmVkIGNoYXIgKmJ1ZjsNCj4gQEAgLTgwLDcgKzg1LDcgQEAgc3RydWN0IHRy
+YW5zYWN0aW9uX2hlYWQgew0KPiDCoA0KPiDCoHN0cnVjdCBzZXJ2ZXIgew0KPiDCoAlzdHJ1Y3Qg
+ZXRoZXJfYWRkciBod2FkZHI7DQo+IC0Jc3RydWN0IGluNl9hZGRyIGFkZHJlc3M7DQo+ICsJYWxm
+cmVkX2FkZHIgYWRkcmVzczsNCj4gwqAJc3RydWN0IHRpbWVzcGVjIGxhc3Rfc2VlbjsNCj4gwqAJ
+dWludDhfdCB0cTsNCj4gwqB9Ow0KPiBAQCAtMTAwLDcgKzEwNSw3IEBAIGVudW0gY2xpZW50bW9k
+ZSB7DQo+IMKgDQo+IMKgc3RydWN0IGludGVyZmFjZSB7DQo+IMKgCXN0cnVjdCBldGhlcl9hZGRy
+IGh3YWRkcjsNCj4gLQlzdHJ1Y3QgaW42X2FkZHIgYWRkcmVzczsNCj4gKwlhbGZyZWRfYWRkciBh
+ZGRyZXNzOw0KPiDCoAl1aW50MzJfdCBzY29wZV9pZDsNCj4gwqAJY2hhciAqaW50ZXJmYWNlOw0K
+PiDCoAlpbnQgbmV0c29jazsNCj4gQEAgLTEyMiw2ICsxMjcsNyBAQCBzdHJ1Y3QgZ2xvYmFscyB7
+DQo+IMKgCWludCBjbGllbnRtb2RlX2FyZzsNCj4gwqAJaW50IGNsaWVudG1vZGVfdmVyc2lvbjsN
+Cj4gwqAJaW50IHZlcmJvc2U7DQo+ICsJaW50IGlwdjRtb2RlOw0KPiDCoA0KPiDCoAlpbnQgdW5p
+eF9zb2NrOw0KPiDCoAljb25zdCBjaGFyICp1bml4X3BhdGg7DQo+IEBAIC0xNDIsNyArMTQ4LDcg
+QEAgc3RydWN0IGdsb2JhbHMgew0KPiDCoA0KPiDCoCNkZWZpbmUgTUFYX1BBWUxPQUQgKCgxIDw8
+IDE2KSAtIDEgLSBzaXplb2Yoc3RydWN0IHVkcGhkcikpDQo+IMKgDQo+IC1leHRlcm4gY29uc3Qg
+c3RydWN0IGluNl9hZGRyIGluNmFkZHJfbG9jYWxtY2FzdDsNCj4gK2V4dGVybiBhbGZyZWRfYWRk
+ciBhbGZyZWRfbWNhc3Q7DQo+IMKgDQo+IMKgLyogc2VydmVyLmMgKi8NCj4gwqBpbnQgYWxmcmVk
+X3NlcnZlcihzdHJ1Y3QgZ2xvYmFscyAqZ2xvYmFscyk7DQo+IEBAIC0xNjksMTMgKzE3NSwxMyBA
+QCBzdGF0aWMgaW5saW5lIGJvb2wgdHJhbnNhY3Rpb25fZmluaXNoZWQoc3RydWN0DQo+IHRyYW5z
+YWN0aW9uX2hlYWQgKmhlYWQpDQo+IMKgDQo+IMKgLyogc2VuZC5jICovDQo+IMKgaW50IHB1c2hf
+ZGF0YShzdHJ1Y3QgZ2xvYmFscyAqZ2xvYmFscywgc3RydWN0IGludGVyZmFjZSAqaW50ZXJmYWNl
+LA0KPiAtCcKgwqDCoMKgwqDCoHN0cnVjdCBpbjZfYWRkciAqZGVzdGluYXRpb24sIGVudW0gZGF0
+YV9zb3VyY2UNCj4gbWF4X3NvdXJjZV9sZXZlbCwNCj4gKwnCoMKgwqDCoMKgwqBhbGZyZWRfYWRk
+ciAqZGVzdGluYXRpb24sIGVudW0gZGF0YV9zb3VyY2UNCj4gbWF4X3NvdXJjZV9sZXZlbCwNCj4g
+wqAJwqDCoMKgwqDCoMKgaW50IHR5cGVfZmlsdGVyLCB1aW50MTZfdCB0eF9pZCk7DQo+IMKgaW50
+IGFubm91bmNlX21hc3RlcihzdHJ1Y3QgZ2xvYmFscyAqZ2xvYmFscyk7DQo+IMKgaW50IHB1c2hf
+bG9jYWxfZGF0YShzdHJ1Y3QgZ2xvYmFscyAqZ2xvYmFscyk7DQo+IMKgaW50IHN5bmNfZGF0YShz
+dHJ1Y3QgZ2xvYmFscyAqZ2xvYmFscyk7DQo+IC1zc2l6ZV90IHNlbmRfYWxmcmVkX3BhY2tldChz
+dHJ1Y3QgaW50ZXJmYWNlICppbnRlcmZhY2UsDQo+IC0JCQnCoMKgwqBjb25zdCBzdHJ1Y3QgaW42
+X2FkZHIgKmRlc3QsIHZvaWQgKmJ1ZiwNCj4gaW50IGxlbmd0aCk7DQo+ICtzc2l6ZV90IHNlbmRf
+YWxmcmVkX3BhY2tldChzdHJ1Y3QgZ2xvYmFscyAqZ2xvYmFscywgc3RydWN0IGludGVyZmFjZQ0K
+PiAqaW50ZXJmYWNlLA0KPiArCQkJwqDCoMKgY29uc3QgYWxmcmVkX2FkZHIgKmRlc3QsIHZvaWQg
+KmJ1ZiwgaW50DQo+IGxlbmd0aCk7DQo+IMKgLyogdW5peF9zb2NrLmMgKi8NCj4gwqBpbnQgdW5p
+eF9zb2NrX3JlYWQoc3RydWN0IGdsb2JhbHMgKmdsb2JhbHMpOw0KPiDCoGludCB1bml4X3NvY2tf
+b3Blbl9kYWVtb24oc3RydWN0IGdsb2JhbHMgKmdsb2JhbHMpOw0KPiBAQCAtMTk1LDcgKzIwMSw3
+IEBAIGludCBuZXRzb2NrX3ByZXBhcmVfc2VsZWN0KHN0cnVjdCBnbG9iYWxzDQo+ICpnbG9iYWxz
+LCBmZF9zZXQgKmZkcywgaW50IG1heHNvY2spOw0KPiDCoHZvaWQgbmV0c29ja19jaGVja19lcnJv
+cihzdHJ1Y3QgZ2xvYmFscyAqZ2xvYmFscywgZmRfc2V0ICplcnJmZHMpOw0KPiDCoGludCBuZXRz
+b2NrX3JlY2VpdmVfcGFja2V0KHN0cnVjdCBnbG9iYWxzICpnbG9iYWxzLCBmZF9zZXQgKmZkcyk7
+DQo+IMKgaW50IG5ldHNvY2tfb3duX2FkZHJlc3MoY29uc3Qgc3RydWN0IGdsb2JhbHMgKmdsb2Jh
+bHMsDQo+IC0JCQljb25zdCBzdHJ1Y3QgaW42X2FkZHIgKmFkZHJlc3MpOw0KPiArCQkJY29uc3Qg
+YWxmcmVkX2FkZHIgKmFkZHJlc3MpOw0KPiDCoC8qIHV0aWwuYyAqLw0KPiDCoGludCB0aW1lX2Rp
+ZmYoc3RydWN0IHRpbWVzcGVjICp0djEsIHN0cnVjdCB0aW1lc3BlYyAqdHYyLA0KPiDCoAnCoMKg
+wqDCoMKgwqBzdHJ1Y3QgdGltZXNwZWMgKnR2ZGlmZik7DQo+IGRpZmYgLS1naXQgYS9iYXRhZHZf
+cXVlcnkuYyBiL2JhdGFkdl9xdWVyeS5jDQo+IGluZGV4IGFjNDViOWIuLmY2MTY1MDEgMTAwNjQ0
+DQo+IC0tLSBhL2JhdGFkdl9xdWVyeS5jDQo+ICsrKyBiL2JhdGFkdl9xdWVyeS5jDQo+IEBAIC04
+MCwyMiArODAsMjIgQEAgb3V0Og0KPiDCoAlyZXR1cm4gcmV0Ow0KPiDCoH0NCj4gwqANCj4gLWlu
+dCBtYWNfdG9faXB2Nihjb25zdCBzdHJ1Y3QgZXRoZXJfYWRkciAqbWFjLCBzdHJ1Y3QgaW42X2Fk
+ZHIgKmFkZHIpDQo+ICtpbnQgbWFjX3RvX2lwdjYoY29uc3Qgc3RydWN0IGV0aGVyX2FkZHIgKm1h
+YywgYWxmcmVkX2FkZHIgKmFkZHIpDQo+IMKgew0KPiDCoAltZW1zZXQoYWRkciwgMCwgc2l6ZW9m
+KCphZGRyKSk7DQo+IC0JYWRkci0+czZfYWRkclswXSA9IDB4ZmU7DQo+IC0JYWRkci0+czZfYWRk
+clsxXSA9IDB4ODA7DQo+ICsJYWRkci0+aXB2Ni5zNl9hZGRyWzBdID0gMHhmZTsNCj4gKwlhZGRy
+LT5pcHY2LnM2X2FkZHJbMV0gPSAweDgwOw0KPiDCoA0KPiAtCWFkZHItPnM2X2FkZHJbOF0gPSBt
+YWMtPmV0aGVyX2FkZHJfb2N0ZXRbMF0gXiAweDAyOw0KPiAtCWFkZHItPnM2X2FkZHJbOV0gPSBt
+YWMtPmV0aGVyX2FkZHJfb2N0ZXRbMV07DQo+IC0JYWRkci0+czZfYWRkclsxMF0gPSBtYWMtPmV0
+aGVyX2FkZHJfb2N0ZXRbMl07DQo+ICsJYWRkci0+aXB2Ni5zNl9hZGRyWzhdID0gbWFjLT5ldGhl
+cl9hZGRyX29jdGV0WzBdIF4gMHgwMjsNCj4gKwlhZGRyLT5pcHY2LnM2X2FkZHJbOV0gPSBtYWMt
+PmV0aGVyX2FkZHJfb2N0ZXRbMV07DQo+ICsJYWRkci0+aXB2Ni5zNl9hZGRyWzEwXSA9IG1hYy0+
+ZXRoZXJfYWRkcl9vY3RldFsyXTsNCj4gwqANCj4gLQlhZGRyLT5zNl9hZGRyWzExXSA9IDB4ZmY7
+DQo+IC0JYWRkci0+czZfYWRkclsxMl0gPSAweGZlOw0KPiArCWFkZHItPmlwdjYuczZfYWRkclsx
+MV0gPSAweGZmOw0KPiArCWFkZHItPmlwdjYuczZfYWRkclsxMl0gPSAweGZlOw0KPiDCoA0KPiAt
+CWFkZHItPnM2X2FkZHJbMTNdID0gbWFjLT5ldGhlcl9hZGRyX29jdGV0WzNdOw0KPiAtCWFkZHIt
+PnM2X2FkZHJbMTRdID0gbWFjLT5ldGhlcl9hZGRyX29jdGV0WzRdOw0KPiAtCWFkZHItPnM2X2Fk
+ZHJbMTVdID0gbWFjLT5ldGhlcl9hZGRyX29jdGV0WzVdOw0KPiArCWFkZHItPmlwdjYuczZfYWRk
+clsxM10gPSBtYWMtPmV0aGVyX2FkZHJfb2N0ZXRbM107DQo+ICsJYWRkci0+aXB2Ni5zNl9hZGRy
+WzE0XSA9IG1hYy0+ZXRoZXJfYWRkcl9vY3RldFs0XTsNCj4gKwlhZGRyLT5pcHY2LnM2X2FkZHJb
+MTVdID0gbWFjLT5ldGhlcl9hZGRyX29jdGV0WzVdOw0KPiDCoA0KPiDCoAlyZXR1cm4gMDsNCj4g
+wqB9DQo+IEBAIC0xMTgsMTcgKzExOCwzMiBAQCBpbnQgaXNfaXB2Nl9ldWk2NChjb25zdCBzdHJ1
+Y3QgaW42X2FkZHIgKmFkZHIpDQo+IMKgCXJldHVybiAxOw0KPiDCoH0NCj4gwqANCj4gLWludCBp
+cHY2X3RvX21hYyhjb25zdCBzdHJ1Y3QgaW42X2FkZHIgKmFkZHIsIHN0cnVjdCBldGhlcl9hZGRy
+ICptYWMpDQo+ICtpbnQgaXB2Nl90b19tYWMoY29uc3QgYWxmcmVkX2FkZHIgKmFkZHIsIHN0cnVj
+dCBldGhlcl9hZGRyICptYWMpDQo+IMKgew0KPiAtCWlmICghaXNfaXB2Nl9ldWk2NChhZGRyKSkN
+Cj4gKwlpZiAoIWlzX2lwdjZfZXVpNjQoJmFkZHItPmlwdjYpKQ0KPiDCoAkJcmV0dXJuIC1FSU5W
+QUw7DQo+IMKgDQo+IC0JbWFjLT5ldGhlcl9hZGRyX29jdGV0WzBdID0gYWRkci0+czZfYWRkcls4
+XSBeIDB4MDI7DQo+IC0JbWFjLT5ldGhlcl9hZGRyX29jdGV0WzFdID0gYWRkci0+czZfYWRkcls5
+XTsNCj4gLQltYWMtPmV0aGVyX2FkZHJfb2N0ZXRbMl0gPSBhZGRyLT5zNl9hZGRyWzEwXTsNCj4g
+LQltYWMtPmV0aGVyX2FkZHJfb2N0ZXRbM10gPSBhZGRyLT5zNl9hZGRyWzEzXTsNCj4gLQltYWMt
+PmV0aGVyX2FkZHJfb2N0ZXRbNF0gPSBhZGRyLT5zNl9hZGRyWzE0XTsNCj4gLQltYWMtPmV0aGVy
+X2FkZHJfb2N0ZXRbNV0gPSBhZGRyLT5zNl9hZGRyWzE1XTsNCj4gKwltYWMtPmV0aGVyX2FkZHJf
+b2N0ZXRbMF0gPSBhZGRyLT5pcHY2LnM2X2FkZHJbOF0gXiAweDAyOw0KPiArCW1hYy0+ZXRoZXJf
+YWRkcl9vY3RldFsxXSA9IGFkZHItPmlwdjYuczZfYWRkcls5XTsNCj4gKwltYWMtPmV0aGVyX2Fk
+ZHJfb2N0ZXRbMl0gPSBhZGRyLT5pcHY2LnM2X2FkZHJbMTBdOw0KPiArCW1hYy0+ZXRoZXJfYWRk
+cl9vY3RldFszXSA9IGFkZHItPmlwdjYuczZfYWRkclsxM107DQo+ICsJbWFjLT5ldGhlcl9hZGRy
+X29jdGV0WzRdID0gYWRkci0+aXB2Ni5zNl9hZGRyWzE0XTsNCj4gKwltYWMtPmV0aGVyX2FkZHJf
+b2N0ZXRbNV0gPSBhZGRyLT5pcHY2LnM2X2FkZHJbMTVdOw0KPiArDQo+ICsJaWYgKCFpc192YWxp
+ZF9ldGhlcl9hZGRyKG1hYy0+ZXRoZXJfYWRkcl9vY3RldCkpDQo+ICsJCXJldHVybiAtRUlOVkFM
+Ow0KPiArDQo+ICsJcmV0dXJuIDA7DQo+ICt9DQo+ICsNCj4gK2ludCBpcHY0X3RvX21hYyhjb25z
+dCBhbGZyZWRfYWRkciAqYWRkciwgc3RydWN0IGV0aGVyX2FkZHIgKm1hYykNCj4gK3sNCj4gKwlt
+YWMtPmV0aGVyX2FkZHJfb2N0ZXRbMF0gPSAwOw0KPiArCW1hYy0+ZXRoZXJfYWRkcl9vY3RldFsx
+XSA9IDA7DQo+ICsJbWFjLT5ldGhlcl9hZGRyX29jdGV0WzJdID0gKGFkZHItPmlwdjQuc19hZGRy
+ID4+IDI0KSAmIDB4RkY7DQo+ICsJbWFjLT5ldGhlcl9hZGRyX29jdGV0WzNdID0gKGFkZHItPmlw
+djQuc19hZGRyID4+IDE2KSAmIDB4RkY7DQo+ICsJbWFjLT5ldGhlcl9hZGRyX29jdGV0WzRdID0g
+KGFkZHItPmlwdjQuc19hZGRyID4+wqDCoDgpICYgMHhGRjsNCj4gKwltYWMtPmV0aGVyX2FkZHJf
+b2N0ZXRbNV0gPSAoYWRkci0+aXB2NC5zX2FkZHIgPj7CoMKgMCkgJiAweEZGOw0KPiDCoA0KPiDC
+oAlpZiAoIWlzX3ZhbGlkX2V0aGVyX2FkZHIobWFjLT5ldGhlcl9hZGRyX29jdGV0KSkNCj4gwqAJ
+CXJldHVybiAtRUlOVkFMOw0KPiBkaWZmIC0tZ2l0IGEvYmF0YWR2X3F1ZXJ5LmggYi9iYXRhZHZf
+cXVlcnkuaA0KPiBpbmRleCAwZGY4YTM1Li5lYzY5MjkwIDEwMDY0NA0KPiAtLS0gYS9iYXRhZHZf
+cXVlcnkuaA0KPiArKysgYi9iYXRhZHZfcXVlcnkuaA0KPiBAQCAtMjgsOCArMjgsOSBAQCBzdHJ1
+Y3QgZXRoZXJfYWRkciAqdHJhbnNsYXRlX21hYyhjb25zdCBjaGFyDQo+ICptZXNoX2lmYWNlLA0K
+PiDCoAkJCQnCoGNvbnN0IHN0cnVjdCBldGhlcl9hZGRyICptYWMpOw0KPiDCoHVpbnQ4X3QgZ2V0
+X3RxKGNvbnN0IGNoYXIgKm1lc2hfaWZhY2UsIHN0cnVjdCBldGhlcl9hZGRyICptYWMpOw0KPiDC
+oGludCBiYXRhZHZfaW50ZXJmYWNlX2NoZWNrKGNvbnN0IGNoYXIgKm1lc2hfaWZhY2UpOw0KPiAt
+aW50IG1hY190b19pcHY2KGNvbnN0IHN0cnVjdCBldGhlcl9hZGRyICptYWMsIHN0cnVjdCBpbjZf
+YWRkcg0KPiAqYWRkcik7DQo+IC1pbnQgaXB2Nl90b19tYWMoY29uc3Qgc3RydWN0IGluNl9hZGRy
+ICphZGRyLCBzdHJ1Y3QgZXRoZXJfYWRkcg0KPiAqbWFjKTsNCj4gK2ludCBtYWNfdG9faXB2Nihj
+b25zdCBzdHJ1Y3QgZXRoZXJfYWRkciAqbWFjLCBhbGZyZWRfYWRkciAqYWRkcik7DQo+ICtpbnQg
+aXB2Nl90b19tYWMoY29uc3QgYWxmcmVkX2FkZHIgKmFkZHIsIHN0cnVjdCBldGhlcl9hZGRyICpt
+YWMpOw0KPiAraW50IGlwdjRfdG9fbWFjKGNvbnN0IGFsZnJlZF9hZGRyICphZGRyLCBzdHJ1Y3Qg
+ZXRoZXJfYWRkciAqbWFjKTsNCj4gwqBpbnQgaXNfaXB2Nl9ldWk2NChjb25zdCBzdHJ1Y3QgaW42
+X2FkZHIgKmFkZHIpOw0KPiDCoA0KPiDCoCNlbmRpZg0KPiBkaWZmIC0tZ2l0IGEvY2xpZW50LmMg
+Yi9jbGllbnQuYw0KPiBpbmRleCAzNTdmZGI5Li40MTAyMDQ2IDEwMDY0NA0KPiAtLS0gYS9jbGll
+bnQuYw0KPiArKysgYi9jbGllbnQuYw0KPiBAQCAtMjM5LDcgKzIzOSw3IEBAIHN0YXRpYyBpbnQg
+Y2hlY2tfaW50ZXJmYWNlKGNvbnN0IGNoYXIgKmlmYWNlKQ0KPiDCoAkJcmV0dXJuIC0xOw0KPiDC
+oAl9DQo+IMKgDQo+IC0Jc29jayA9IHNvY2tldChQRl9JTkVUNiwgU09DS19ER1JBTSwgMCk7DQo+
+ICsJc29jayA9IHNvY2tldChQRl9JTkVULCBTT0NLX0RHUkFNLCAwKTsNCj4gwqAJaWYgKHNvY2sg
+PCAwKSB7DQo+IMKgCQlwZXJyb3IoImNhbid0IG9wZW4gc29ja2V0Iik7DQo+IMKgCQlyZXR1cm4g
+LTE7DQo+IGRpZmYgLS1naXQgYS9tYWluLmMgYi9tYWluLmMNCj4gaW5kZXggMGQzMGVhNC4uNDQ2
+ZWVjZiAxMDA2NDQNCj4gLS0tIGEvbWFpbi5jDQo+ICsrKyBiL21haW4uYw0KPiBAQCAtMTksNiAr
+MTksNyBAQA0KPiDCoCAqDQo+IMKgICovDQo+IMKgDQo+ICsjaW5jbHVkZSA8YXJwYS9pbmV0Lmg+
+DQo+IMKgI2luY2x1ZGUgPGdldG9wdC5oPg0KPiDCoCNpbmNsdWRlIDxzaWduYWwuaD4NCj4gwqAj
+aW5jbHVkZSA8c3RkaW8uaD4NCj4gQEAgLTYxLDYgKzYyLDcgQEAgc3RhdGljIHZvaWQgYWxmcmVk
+X3VzYWdlKHZvaWQpDQo+IMKgCXByaW50ZigiwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoG90aGVyDQo+IG1h
+c3RlcnNcbiIpOw0KPiDCoAlwcmludGYoIsKgwqAtcCwgLS1zeW5jLXBlcmlvZCBbcGVyaW9kXcKg
+wqDCoMKgwqDCoMKgwqDCoMKgc2V0DQo+IHN5bmNocm9uaXphdGlvbiBwZXJpb2QsIGluIHNlY29u
+ZHNcbiIpOw0KPiDCoAlwcmludGYoIsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBmcmFjdGlvbmFsDQo+IHNl
+Y29uZHMgYXJlIHN1cHBvcnRlZCAoaS5lLiAwLjIgPSA1IEh6KVxuIik7DQo+ICsJcHJpbnRmKCLC
+oMKgLTQgW2dyb3VwLWFkZHJlc3NdwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+c3BlY2lmeSBJUHY0DQo+IG11bHRpY2FzdCBhZGRyZXNzIGFuZCBvcGVyYXRlIGluIElQdjQgbW9k
+ZSIpOw0KPiDCoAlwcmludGYoIlxuIik7DQo+IMKgCXByaW50ZigiwqDCoC11LCAtLXVuaXgtcGF0
+aCBbcGF0aF3CoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcGF0aCB0byB1bml4DQo+IHNvY2tl
+dCB1c2VkIGZvciBjbGllbnQtc2VydmVyXG4iKTsNCj4gwqAJcHJpbnRmKCLCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgY29tbXVuaWNhdGlvbg0KPiAoZGVmYXVsdDogXCIiQUxGUkVEX1NPQ0tfUEFUSF9ERUZB
+VUxUIlwiKVxuIik7DQo+IEBAIC0xOTYsNiArMTk4LDcgQEAgc3RhdGljIHN0cnVjdCBnbG9iYWxz
+ICphbGZyZWRfaW5pdChpbnQgYXJnYywgY2hhcg0KPiAqYXJndltdKQ0KPiDCoAlnbG9iYWxzLT5t
+ZXNoX2lmYWNlID0gImJhdDAiOw0KPiDCoAlnbG9iYWxzLT51bml4X3BhdGggPSBBTEZSRURfU09D
+S19QQVRIX0RFRkFVTFQ7DQo+IMKgCWdsb2JhbHMtPnZlcmJvc2UgPSAwOw0KPiArCWdsb2JhbHMt
+PmlwdjRtb2RlID0gMDsNCj4gwqAJZ2xvYmFscy0+dXBkYXRlX2NvbW1hbmQgPSBOVUxMOw0KPiDC
+oAlnbG9iYWxzLT5zeW5jX3BlcmlvZC50dl9zZWMgPSBBTEZSRURfSU5URVJWQUw7DQo+IMKgCWds
+b2JhbHMtPnN5bmNfcGVyaW9kLnR2X25zZWMgPSAwOw0KPiBAQCAtMjA0LDcgKzIwNyw3IEBAIHN0
+YXRpYyBzdHJ1Y3QgZ2xvYmFscyAqYWxmcmVkX2luaXQoaW50IGFyZ2MsIGNoYXINCj4gKmFyZ3Zb
+XSkNCj4gwqANCj4gwqAJdGltZV9yYW5kb21fc2VlZCgpOw0KPiDCoA0KPiAtCXdoaWxlICgob3B0
+ID0gZ2V0b3B0X2xvbmcoYXJnYywgYXJndiwNCj4gIm1zOnI6aGk6Yjp2VjpNOkk6dTpkYzpwOiIs
+IGxvbmdfb3B0aW9ucywNCj4gKwl3aGlsZSAoKG9wdCA9IGdldG9wdF9sb25nKGFyZ2MsIGFyZ3Ys
+DQo+ICJtczpyOmhpOmI6dlY6TTpJOnU6ZGM6cDo0OiIsIGxvbmdfb3B0aW9ucywNCj4gwqAJCQkJ
+wqDCoCZvcHRfaW5kKSkgIT0gLTEpIHsNCj4gwqAJCXN3aXRjaCAob3B0KSB7DQo+IMKgCQljYXNl
+ICdyJzoNCj4gQEAgLTI3MywxMCArMjc2LDE1IEBAIHN0YXRpYyBzdHJ1Y3QgZ2xvYmFscyAqYWxm
+cmVkX2luaXQoaW50IGFyZ2MsDQo+IGNoYXIgKmFyZ3ZbXSkNCj4gwqAJCQlyZXR1cm4gTlVMTDsN
+Cj4gwqAJCWNhc2UgJ3AnOg0KPiDCoAkJCXN5bmNfcGVyaW9kID0gc3RydG9kKG9wdGFyZywgTlVM
+TCk7DQo+IC0JCQlnbG9iYWxzLT5zeW5jX3BlcmlvZC50dl9zZWMgPSAoaW50KQ0KPiBzeW5jX3Bl
+cmlvZDsNCj4gLQkJCWdsb2JhbHMtPnN5bmNfcGVyaW9kLnR2X25zZWMgPSAoZG91YmxlKQ0KPiAo
+c3luY19wZXJpb2QgLSAoaW50KSBzeW5jX3BlcmlvZCkgKiAxZTk7DQo+ICsJCQlnbG9iYWxzLT5z
+eW5jX3BlcmlvZC50dl9zZWMgPQ0KPiAoaW50KXN5bmNfcGVyaW9kOw0KPiArCQkJZ2xvYmFscy0+
+c3luY19wZXJpb2QudHZfbnNlYyA9DQo+IChkb3VibGUpKHN5bmNfcGVyaW9kIC0gKGludClzeW5j
+X3BlcmlvZCkgKiAxZTk7DQo+IMKgCQkJcHJpbnRmKCIgKiogU2V0dGluZyBzeW5jIGludGVydmFs
+IHRvOiAlLjlmDQo+IHNlY29uZHMgKCVsZC4lMDlsZClcbiIsIHN5bmNfcGVyaW9kLCBnbG9iYWxz
+LT5zeW5jX3BlcmlvZC50dl9zZWMsDQo+IGdsb2JhbHMtPnN5bmNfcGVyaW9kLnR2X25zZWMpOw0K
+PiDCoAkJCWJyZWFrOw0KPiArCQljYXNlICc0JzoNCj4gKwkJCWdsb2JhbHMtPmlwdjRtb2RlID0g
+MTsNCj4gKwkJCWluZXRfcHRvbihBRl9JTkVULCBvcHRhcmcsDQo+ICZhbGZyZWRfbWNhc3QuaXB2
+NCk7DQo+ICsJCQlwcmludGYoIiAqKiBJUHY0IE11bHRpY2FzdCBNb2RlOiAleFxuIiwNCj4gYWxm
+cmVkX21jYXN0LmlwdjQuc19hZGRyKTsNCj4gKwkJCWJyZWFrOw0KPiDCoAkJY2FzZSAnaCc6DQo+
+IMKgCQlkZWZhdWx0Og0KPiDCoAkJCWFsZnJlZF91c2FnZSgpOw0KPiBkaWZmIC0tZ2l0IGEvbWFu
+L2FsZnJlZC44IGIvbWFuL2FsZnJlZC44DQo+IGluZGV4IDU5MzZlNjQuLmEyYzNkNGMgMTAwNjQ0
+DQo+IC0tLSBhL21hbi9hbGZyZWQuOA0KPiArKysgYi9tYW4vYWxmcmVkLjgNCj4gQEAgLTEyMyw2
+ICsxMjMsMTEgQEAgYXMgYXJndW1lbnRzLg0KPiDCoFNwZWNpZnkgYWxmcmVkIHN5bmNocm9uaXph
+dGlvbiBwZXJpb2QsIGluIHNlY29uZHMuIElmIG5vdCBzcGVjaWZpZWQsDQo+IHRoZSBkZWZhdWx0
+DQo+IMKgQUxGUkVEX0lOVEVSVkFMIHNldHRpbmcgb2YgMTAgc2Vjb25kcyB3aWxsIGJlIHVzZWQu
+IEZyYWN0aW9uYWwNCj4gc2Vjb25kcyBhcmUNCj4gwqBzdXBwb3J0ZWQuDQo+ICsuVFANCj4gK1xm
+QlwtNCBcZklncm91cC1hZGRyZXNzXGZQIFxmUA0KPiArU3BlY2lmeSB0aGUgSVB2NCBtdWx0aWNh
+c3QgZ3JvdXAgYWRkcmVzcyBhbmQgZW5hYmxlIElQdjQgZGF0YS0NCj4gc2hhcmluZyAoZGlzYWJs
+aW5nDQo+ICtJUHY2IGNvbW11bmljYXRpb24pLiBUaGlzIG9wdGlvbiBpcyByZXF1aXJlZCBvbiBz
+eXN0ZW1zIHRoYXQgZG8gbm90DQo+IHN1cHBvcnQgSVB2Ng0KPiArYWRkcmVzc2luZy4NCj4gwqAu
+DQo+IMKgLlNIIEVYQU1QTEVTDQo+IMKgU3RhcnQgYW4gYWxmcmVkIHNlcnZlciBsaXN0ZW5pbmcg
+b24gYnJpZGdlIGJyMCAoYXNzdW1pbmcgdGhhdCB0aGlzDQo+IGJyaWRnZQ0KPiBkaWZmIC0tZ2l0
+IGEvbmV0c29jay5jIGIvbmV0c29jay5jDQo+IGluZGV4IDg2ZGI4YTYuLjBkZjc3MDEgMTAwNjQ0
+DQo+IC0tLSBhL25ldHNvY2suYw0KPiArKysgYi9uZXRzb2NrLmMNCj4gQEAgLTQzLDEwICs0Mywx
+MiBAQA0KPiDCoCNpbmNsdWRlICJsaXN0LmgiDQo+IMKgI2luY2x1ZGUgImhhc2guaCINCj4gwqAN
+Cj4gLWNvbnN0IHN0cnVjdCBpbjZfYWRkciBpbjZhZGRyX2xvY2FsbWNhc3QgPSB7e3sgMHhmZiwg
+MHgwMiwgMHgwMCwNCj4gMHgwMCwNCj4gLQkJCQkJwqDCoMKgwqDCoMKgwqAweDAwLCAweDAwLCAw
+eDAwLA0KPiAweDAwLA0KPiAtCQkJCQnCoMKgwqDCoMKgwqDCoDB4MDAsIDB4MDAsIDB4MDAsDQo+
+IDB4MDAsDQo+IC0JCQkJCcKgwqDCoMKgwqDCoMKgMHgwMCwgMHgwMCwgMHgwMCwNCj4gMHgwMSB9
+IH0gfTsNCj4gK2FsZnJlZF9hZGRyIGFsZnJlZF9tY2FzdCA9IHsNCj4gKwkJLmlwdjYgPSB7e3sg
+MHhmZiwgMHgwMiwgMHgwMCwgMHgwMCwNCj4gKwkJCcKgwqDCoMKgMHgwMCwgMHgwMCwgMHgwMCwg
+MHgwMCwNCj4gKwkJCcKgwqDCoMKgMHgwMCwgMHgwMCwgMHgwMCwgMHgwMCwNCj4gKwkJCcKgwqDC
+oMKgMHgwMCwgMHgwMCwgMHgwMCwgMHgwMSB9IH0gfQ0KPiArfTsNCj4gwqANCj4gwqBzdGF0aWMg
+aW50IHNlcnZlcl9jb21wYXJlKHZvaWQgKmQxLCB2b2lkICpkMikNCj4gwqB7DQo+IEBAIC0yNjIs
+NyArMjY0LDcgQEAgc3RhdGljIGludCBuZXRzb2NrX29wZW4oc3RydWN0IGludGVyZmFjZQ0KPiAq
+aW50ZXJmYWNlKQ0KPiDCoAltZW1zZXQoJnNpbjZfbWMsIDAsIHNpemVvZihzaW42X21jKSk7DQo+
+IMKgCXNpbjZfbWMuc2luNl9wb3J0ID0gaHRvbnMoQUxGUkVEX1BPUlQpOw0KPiDCoAlzaW42X21j
+LnNpbjZfZmFtaWx5ID0gQUZfSU5FVDY7DQo+IC0JbWVtY3B5KCZzaW42X21jLnNpbjZfYWRkciwg
+JmluNmFkZHJfbG9jYWxtY2FzdCwNCj4gKwltZW1jcHkoJnNpbjZfbWMuc2luNl9hZGRyLCAmYWxm
+cmVkX21jYXN0LA0KPiDCoAnCoMKgwqDCoMKgwqDCoHNpemVvZihzaW42X21jLnNpbjZfYWRkcikp
+Ow0KPiDCoAlzaW42X21jLnNpbjZfc2NvcGVfaWQgPSBpbnRlcmZhY2UtPnNjb3BlX2lkOw0KPiDC
+oA0KPiBAQCAtMjkxLDcgKzI5Myw3IEBAIHN0YXRpYyBpbnQgbmV0c29ja19vcGVuKHN0cnVjdCBp
+bnRlcmZhY2UNCj4gKmludGVyZmFjZSkNCj4gwqAJCWdvdG8gZXJyOw0KPiDCoAl9DQo+IMKgDQo+
+IC0JbWVtY3B5KCZtcmVxLmlwdjZtcl9tdWx0aWFkZHIsICZpbjZhZGRyX2xvY2FsbWNhc3QsDQo+
+ICsJbWVtY3B5KCZtcmVxLmlwdjZtcl9tdWx0aWFkZHIsICZhbGZyZWRfbWNhc3QsDQo+IMKgCcKg
+wqDCoMKgwqDCoMKgc2l6ZW9mKG1yZXEuaXB2Nm1yX211bHRpYWRkcikpOw0KPiDCoAltcmVxLmlw
+djZtcl9pbnRlcmZhY2UgPSBpbnRlcmZhY2UtPnNjb3BlX2lkOw0KPiDCoA0KPiBAQCAtMzM1LDYg
+KzMzNywxMzIgQEAgZXJyOg0KPiDCoAlyZXR1cm4gLTE7DQo+IMKgfQ0KPiDCoA0KPiArc3RhdGlj
+IGludCBuZXRzb2NrX29wZW40KHN0cnVjdCBpbnRlcmZhY2UgKmludGVyZmFjZSkNCj4gK3sNCj4g
+KwlpbnQgc29jazsNCj4gKwlpbnQgc29ja19tYzsNCj4gKwlzdHJ1Y3Qgc29ja2FkZHJfaW4gc2lu
+NCwgc2luX21jOw0KPiArCXN0cnVjdCBpcF9tcmVxIG1yZXE7DQo+ICsJc3RydWN0IGlmcmVxIGlm
+cjsNCj4gKwlpbnQgcmV0Ow0KPiArDQo+ICsJaW50ZXJmYWNlLT5uZXRzb2NrID0gLTE7DQo+ICsJ
+aW50ZXJmYWNlLT5uZXRzb2NrX21jYXN0ID0gLTE7DQo+ICsNCj4gKwlzb2NrID0gc29ja2V0KFBG
+X0lORVQsIFNPQ0tfREdSQU0sIElQUFJPVE9fVURQKTsNCj4gKwlpZiAoc29ja8KgwqA8IDApIHsN
+Cj4gKwkJcGVycm9yKCJpcHY0OiBjYW4ndCBvcGVuIHNvY2tldCIpOw0KPiArCQlyZXR1cm4gLTE7
+DQo+ICsJfQ0KPiArDQo+ICsJc29ja19tYyA9IHNvY2tldChQRl9JTkVULCBTT0NLX0RHUkFNLCBJ
+UFBST1RPX1VEUCk7DQo+ICsJaWYgKHNvY2tfbWPCoMKgPCAwKSB7DQo+ICsJCXBlcnJvcigiaXB2
+NDogY2FuJ3Qgb3BlbiBtYyBzb2NrZXQiKTsNCj4gKwkJcmV0dXJuIC0xOw0KPiArCX0NCj4gKw0K
+PiArCW1lbXNldCgmaWZyLCAwLCBzaXplb2YoaWZyKSk7DQo+ICsJc3RybmNweShpZnIuaWZyX25h
+bWUsIGludGVyZmFjZS0+aW50ZXJmYWNlLCBJRk5BTVNJWik7DQo+ICsJaWZyLmlmcl9uYW1lW0lG
+TkFNU0laIC0gMV0gPSAnXDAnOw0KPiArCWlmIChpb2N0bChzb2NrX21jLCBTSU9DR0lGSFdBRERS
+LCAmaWZyKSA9PSAtMSkgew0KPiArCQlwZXJyb3IoImlwdjQ6IGNhbid0IGdldCBNQUMgYWRkcmVz
+cyIpOw0KPiArCQlnb3RvIGVycjsNCj4gKwl9DQo+ICsJbWVtY3B5KCZpbnRlcmZhY2UtPmh3YWRk
+ciwgJmlmci5pZnJfaHdhZGRyLnNhX2RhdGEsIDYpOw0KPiArDQo+ICsJbWVtc2V0KCZzaW40LCAw
+LCBzaXplb2Yoc2luNCkpOw0KPiArCXNpbjQuc2luX3BvcnQgPSBodG9ucyhBTEZSRURfUE9SVCk7
+DQo+ICsJc2luNC5zaW5fZmFtaWx5ID0gQUZfSU5FVDsNCj4gKwlzaW40LnNpbl9hZGRyLnNfYWRk
+ciA9IElOQUREUl9BTlk7DQo+ICsNCj4gKwltZW1zZXQoJnNpbl9tYywgMCwgc2l6ZW9mKHNpbl9t
+YykpOw0KPiArCXNpbl9tYy5zaW5fcG9ydCA9IGh0b25zKEFMRlJFRF9QT1JUKTsNCj4gKwlzaW5f
+bWMuc2luX2ZhbWlseSA9IEFGX0lORVQ7DQo+ICsJbWVtY3B5KCZzaW5fbWMuc2luX2FkZHIsICZh
+bGZyZWRfbWNhc3QsDQo+IHNpemVvZihzaW5fbWMuc2luX2FkZHIpKTsNCj4gKw0KPiArCWVuYWJs
+ZV9yYXdfYmluZF9jYXBhYmlsaXR5KDEpOw0KPiArCWlmIChzZXRzb2Nrb3B0KHNvY2ssIFNPTF9T
+T0NLRVQsIFNPX0JJTkRUT0RFVklDRSwgaW50ZXJmYWNlLQ0KPiA+aW50ZXJmYWNlLA0KPiArCQnC
+oMKgwqDCoMKgwqDCoHN0cmxlbihpbnRlcmZhY2UtPmludGVyZmFjZSkgKyAxKSkgew0KPiArCQlw
+ZXJyb3IoImlwdjQ6IGNhbid0IGJpbmQgdG8gZGV2aWNlIik7DQo+ICsJCWdvdG8gZXJyOw0KPiAr
+CX0NCj4gKw0KPiArCWlmIChzZXRzb2Nrb3B0KHNvY2tfbWMsIFNPTF9TT0NLRVQsIFNPX0JJTkRU
+T0RFVklDRSwNCj4gKwkJwqDCoMKgwqDCoMKgwqBpbnRlcmZhY2UtPmludGVyZmFjZSwgc3RybGVu
+KGludGVyZmFjZS0NCj4gPmludGVyZmFjZSkgKyAxKSkgew0KPiArCQlwZXJyb3IoImlwdjQ6IGNh
+bid0IGJpbmQgdG8gZGV2aWNlIik7DQo+ICsJCWdvdG8gZXJyOw0KPiArCX0NCj4gKwllbmFibGVf
+cmF3X2JpbmRfY2FwYWJpbGl0eSgwKTsNCj4gKw0KPiArCXJldCA9IDE7DQo+ICsJaWYgKHNldHNv
+Y2tvcHQoc29jaywgU09MX1NPQ0tFVCwgU09fUkVVU0VBRERSLCAmcmV0LA0KPiBzaXplb2YocmV0
+KSkgPCAwKSB7DQo+ICsJCXBlcnJvcigiaXB2NDogY2FuJ3Qgc2V0IHJldXNlIGZsYWciKTsNCj4g
+KwkJZ290byBlcnI7DQo+ICsJfQ0KPiArCWlmIChzZXRzb2Nrb3B0KHNvY2tfbWMsIFNPTF9TT0NL
+RVQsIFNPX1JFVVNFQUREUiwgJnJldCwNCj4gc2l6ZW9mKHJldCkpIDwgMCkgew0KPiArCQlwZXJy
+b3IoImlwdjQ6IGNhbid0IHNldCBtYyByZXVzZSBmbGFnIik7DQo+ICsJCWdvdG8gZXJyOw0KPiAr
+CX0NCj4gKw0KPiArCWlmIChiaW5kKHNvY2ssIChzdHJ1Y3Qgc29ja2FkZHIgKikmc2luNCwgc2l6
+ZW9mKHNpbjQpKSA8IDApDQo+IHsNCj4gKwkJcGVycm9yKCJpcHY0OiBjYW4ndCBiaW5kIik7DQo+
+ICsJCWdvdG8gZXJyOw0KPiArCX0NCj4gKw0KPiArCWlmIChiaW5kKHNvY2tfbWMsIChzdHJ1Y3Qg
+c29ja2FkZHIgKikmc2luX21jLA0KPiBzaXplb2Yoc2luX21jKSkgPCAwKSB7DQo+ICsJCXBlcnJv
+cigiaXB2NDogY2FuJ3QgYmluZCBtYyIpOw0KPiArCQlnb3RvIGVycjsNCj4gKwl9DQo+ICsNCj4g
+KwltZW1jcHkoJm1yZXEuaW1yX211bHRpYWRkciwgJmFsZnJlZF9tY2FzdC5pcHY0LA0KPiBzaXpl
+b2YobXJlcS5pbXJfbXVsdGlhZGRyKSk7DQo+ICsNCj4gKwlpZiAoaW9jdGwoc29ja19tYywgU0lP
+Q0dJRkFERFIsICZpZnIpIDwgMCkgew0KPiArCQlwZXJyb3IoImlwdjQ6IGNhbid0IGdldCBJUCBh
+ZGRyZXNzIik7DQo+ICsJCWdvdG8gZXJyOw0KPiArCX0NCj4gKwltcmVxLmltcl9pbnRlcmZhY2Ug
+PSAoKHN0cnVjdCBzb2NrYWRkcl9pbiAqKSZpZnIuaWZyX2FkZHIpLQ0KPiA+c2luX2FkZHI7DQo+
+ICsJbWVtY3B5KCZpbnRlcmZhY2UtPmFkZHJlc3MuaXB2NCwNCj4gKwnCoMKgwqDCoMKgwqDCoCYo
+KHN0cnVjdCBzb2NrYWRkcl9pbiAqKSZpZnIuaWZyX2FkZHIpLT5zaW5fYWRkciwNCj4gKwnCoMKg
+wqDCoMKgwqDCoHNpemVvZihzdHJ1Y3QgaW5fYWRkcikpOw0KPiArDQo+ICsJaWYgKHNldHNvY2tv
+cHQoc29ja19tYywgSVBQUk9UT19JUCwgSVBfQUREX01FTUJFUlNISVAsDQo+ICZtcmVxLCBzaXpl
+b2YobXJlcSkpKSB7DQo+ICsJCXBlcnJvcigiaXB2NDogY2FuJ3QgYWRkIG11bHRpY2FzdCBtZW1i
+ZXJzaGlwIik7DQo+ICsJCWdvdG8gZXJyOw0KPiArCX0NCj4gKw0KPiArCXJldCA9IGZjbnRsKHNv
+Y2ssIEZfR0VURkwsIDApOw0KPiArCWlmIChyZXQgPCAwKSB7DQo+ICsJCXBlcnJvcigiZmFpbGVk
+IHRvIGdldCBmaWxlIHN0YXR1cyBmbGFncyIpOw0KPiArCQlnb3RvIGVycjsNCj4gKwl9DQo+ICsN
+Cj4gKwlyZXQgPSBmY250bChzb2NrLCBGX1NFVEZMLCByZXQgfCBPX05PTkJMT0NLKTsNCj4gKwlp
+ZiAocmV0IDwgMCkgew0KPiArCQlwZXJyb3IoImZhaWxlZCB0byBzZXQgZmlsZSBzdGF0dXMgZmxh
+Z3MiKTsNCj4gKwkJZ290byBlcnI7DQo+ICsJfQ0KPiArDQo+ICsJcmV0ID0gZmNudGwoc29ja19t
+YywgRl9HRVRGTCwgMCk7DQo+ICsJaWYgKHJldCA8IDApIHsNCj4gKwkJcGVycm9yKCJpcHY0OiBm
+YWlsZWQgdG8gZ2V0IGZpbGUgc3RhdHVzIGZsYWdzIik7DQo+ICsJCWdvdG8gZXJyOw0KPiArCX0N
+Cj4gKw0KPiArCXJldCA9IGZjbnRsKHNvY2tfbWMsIEZfU0VURkwsIHJldCB8IE9fTk9OQkxPQ0sp
+Ow0KPiArCWlmIChyZXQgPCAwKSB7DQo+ICsJCXBlcnJvcigiaXB2NDogZmFpbGVkIHRvIHNldCBm
+aWxlIHN0YXR1cyBmbGFncyIpOw0KPiArCQlnb3RvIGVycjsNCj4gKwl9DQo+ICsNCj4gKwlpbnRl
+cmZhY2UtPm5ldHNvY2sgPSBzb2NrOw0KPiArCWludGVyZmFjZS0+bmV0c29ja19tY2FzdCA9IHNv
+Y2tfbWM7DQo+ICsNCj4gKwlyZXR1cm4gMDsNCj4gK3I6DQo+ICsJY2xvc2Uoc29ja19tYyk7DQo+
+ICsJcmV0dXJuIC0xOw0KPiArfQ0KPiArDQo+IMKgaW50IG5ldHNvY2tfb3Blbl9hbGwoc3RydWN0
+IGdsb2JhbHMgKmdsb2JhbHMpDQo+IMKgew0KPiDCoAlpbnQgbnVtX3NvY2tzID0gMDsNCj4gQEAg
+LTM0Miw3ICs0NzAsMTEgQEAgaW50IG5ldHNvY2tfb3Blbl9hbGwoc3RydWN0IGdsb2JhbHMgKmds
+b2JhbHMpDQo+IMKgCXN0cnVjdCBpbnRlcmZhY2UgKmludGVyZmFjZTsNCj4gwqANCj4gwqAJbGlz
+dF9mb3JfZWFjaF9lbnRyeShpbnRlcmZhY2UsICZnbG9iYWxzLT5pbnRlcmZhY2VzLCBsaXN0KSB7
+DQo+IC0JCXJldCA9IG5ldHNvY2tfb3BlbihpbnRlcmZhY2UpOw0KPiArCQlpZiAoZ2xvYmFscy0+
+aXB2NG1vZGUpDQo+ICsJCQlyZXQgPSBuZXRzb2NrX29wZW40KGludGVyZmFjZSk7DQo+ICsJCWVs
+c2UNCj4gKwkJCXJldCA9IG5ldHNvY2tfb3BlbihpbnRlcmZhY2UpOw0KPiArDQo+IMKgCQlpZiAo
+cmV0ID49IDApDQo+IMKgCQkJbnVtX3NvY2tzKys7DQo+IMKgCX0NCj4gQEAgLTM1NSw4ICs0ODcs
+MTIgQEAgdm9pZCBuZXRzb2NrX3Jlb3BlbihzdHJ1Y3QgZ2xvYmFscyAqZ2xvYmFscykNCj4gwqAJ
+c3RydWN0IGludGVyZmFjZSAqaW50ZXJmYWNlOw0KPiDCoA0KPiDCoAlsaXN0X2Zvcl9lYWNoX2Vu
+dHJ5KGludGVyZmFjZSwgJmdsb2JhbHMtPmludGVyZmFjZXMsIGxpc3QpIHsNCj4gLQkJaWYgKGlu
+dGVyZmFjZS0+bmV0c29jayA8IDApDQo+IC0JCQluZXRzb2NrX29wZW4oaW50ZXJmYWNlKTsNCj4g
+KwkJaWYgKGludGVyZmFjZS0+bmV0c29jayA8IDApIHsNCj4gKwkJCWlmIChnbG9iYWxzLT5pcHY0
+bW9kZSkNCj4gKwkJCQluZXRzb2NrX29wZW40KGludGVyZmFjZSk7DQo+ICsJCQllbHNlDQo+ICsJ
+CQkJbmV0c29ja19vcGVuKGludGVyZmFjZSk7DQo+ICsJCX0NCj4gwqAJfQ0KPiDCoH0NCj4gwqAN
+Cj4gQEAgLTQzMCw3ICs1NjYsNyBAQCBpbnQgbmV0c29ja19yZWNlaXZlX3BhY2tldChzdHJ1Y3Qg
+Z2xvYmFscw0KPiAqZ2xvYmFscywgZmRfc2V0ICpmZHMpDQo+IMKgfQ0KPiDCoA0KPiDCoGludCBu
+ZXRzb2NrX293bl9hZGRyZXNzKGNvbnN0IHN0cnVjdCBnbG9iYWxzICpnbG9iYWxzLA0KPiAtCQkJ
+Y29uc3Qgc3RydWN0IGluNl9hZGRyICphZGRyZXNzKQ0KPiArCQkJY29uc3QgYWxmcmVkX2FkZHIg
+KmFkZHJlc3MpDQo+IMKgew0KPiDCoAlzdHJ1Y3QgaW50ZXJmYWNlICppbnRlcmZhY2U7DQo+IMKg
+DQo+IGRpZmYgLS1naXQgYS9yZWN2LmMgYi9yZWN2LmMNCj4gaW5kZXggYmI4Y2MwNS4uMzlkZjA3
+ZiAxMDA2NDQNCj4gLS0tIGEvcmVjdi5jDQo+ICsrKyBiL3JlY3YuYw0KPiBAQCAtMTkwLDcgKzE5
+MCw3IEBAIHN0YXRpYyBpbnQgZmluaXNoX2FsZnJlZF90cmFuc2FjdGlvbihzdHJ1Y3QNCj4gZ2xv
+YmFscyAqZ2xvYmFscywNCj4gwqB9DQo+IMKgDQo+IMKgc3RhdGljIGludCBwcm9jZXNzX2FsZnJl
+ZF9wdXNoX2RhdGEoc3RydWN0IGdsb2JhbHMgKmdsb2JhbHMsDQo+IC0JCQkJwqDCoMKgwqBzdHJ1
+Y3QgaW42X2FkZHIgKnNvdXJjZSwNCj4gKwkJCQnCoMKgwqDCoGFsZnJlZF9hZGRyICpzb3VyY2Us
+DQo+IMKgCQkJCcKgwqDCoMKgc3RydWN0IGFsZnJlZF9wdXNoX2RhdGFfdjANCj4gKnB1c2gpDQo+
+IMKgew0KPiDCoAlpbnQgbGVuOw0KPiBAQCAtMjAwLDcgKzIwMCwxMCBAQCBzdGF0aWMgaW50IHBy
+b2Nlc3NfYWxmcmVkX3B1c2hfZGF0YShzdHJ1Y3QNCj4gZ2xvYmFscyAqZ2xvYmFscywNCj4gwqAJ
+c3RydWN0IHRyYW5zYWN0aW9uX3BhY2tldCAqdHJhbnNhY3Rpb25fcGFja2V0Ow0KPiDCoAlpbnQg
+Zm91bmQ7DQo+IMKgDQo+IC0JcmV0ID0gaXB2Nl90b19tYWMoc291cmNlLCAmbWFjKTsNCj4gKwlp
+ZiAoZ2xvYmFscy0+aXB2NG1vZGUpDQo+ICsJCXJldCA9IGlwdjRfdG9fbWFjKHNvdXJjZSwgJm1h
+Yyk7DQo+ICsJZWxzZQ0KPiArCQlyZXQgPSBpcHY2X3RvX21hYyhzb3VyY2UsICZtYWMpOw0KPiDC
+oAlpZiAocmV0IDwgMCkNCj4gwqAJCWdvdG8gZXJyOw0KPiDCoA0KPiBAQCAtMjYwLDcgKzI2Myw3
+IEBAIGVycjoNCj4gwqBzdGF0aWMgaW50DQo+IMKgcHJvY2Vzc19hbGZyZWRfYW5ub3VuY2VfbWFz
+dGVyKHN0cnVjdCBnbG9iYWxzICpnbG9iYWxzLA0KPiDCoAkJCcKgwqDCoMKgwqDCoMKgc3RydWN0
+IGludGVyZmFjZSAqaW50ZXJmYWNlLA0KPiAtCQkJwqDCoMKgwqDCoMKgwqBzdHJ1Y3QgaW42X2Fk
+ZHIgKnNvdXJjZSwNCj4gKwkJCcKgwqDCoMKgwqDCoMKgYWxmcmVkX2FkZHIgKnNvdXJjZSwNCj4g
+wqAJCQnCoMKgwqDCoMKgwqDCoHN0cnVjdCBhbGZyZWRfYW5ub3VuY2VfbWFzdGVyX3YwDQo+ICph
+bm5vdW5jZSkNCj4gwqB7DQo+IMKgCXN0cnVjdCBzZXJ2ZXIgKnNlcnZlcjsNCj4gQEAgLTI3MSw3
+ICsyNzQsMTAgQEAgcHJvY2Vzc19hbGZyZWRfYW5ub3VuY2VfbWFzdGVyKHN0cnVjdCBnbG9iYWxz
+DQo+ICpnbG9iYWxzLA0KPiDCoA0KPiDCoAlsZW4gPSBudG9ocyhhbm5vdW5jZS0+aGVhZGVyLmxl
+bmd0aCk7DQo+IMKgDQo+IC0JcmV0ID0gaXB2Nl90b19tYWMoc291cmNlLCAmbWFjKTsNCj4gKwlp
+ZiAoZ2xvYmFscy0+aXB2NG1vZGUpDQo+ICsJCXJldCA9IGlwdjRfdG9fbWFjKHNvdXJjZSwgJm1h
+Yyk7DQo+ICsJZWxzZQ0KPiArCQlyZXQgPSBpcHY2X3RvX21hYyhzb3VyY2UsICZtYWMpOw0KPiDC
+oAlpZiAocmV0IDwgMCkNCj4gwqAJCXJldHVybiAtMTsNCj4gwqANCj4gQEAgLTMxNiw3ICszMjIs
+NyBAQCBwcm9jZXNzX2FsZnJlZF9hbm5vdW5jZV9tYXN0ZXIoc3RydWN0IGdsb2JhbHMNCj4gKmds
+b2JhbHMsDQo+IMKgDQo+IMKgc3RhdGljIGludCBwcm9jZXNzX2FsZnJlZF9yZXF1ZXN0KHN0cnVj
+dCBnbG9iYWxzICpnbG9iYWxzLA0KPiDCoAkJCQnCoMKgc3RydWN0IGludGVyZmFjZSAqaW50ZXJm
+YWNlLA0KPiAtCQkJCcKgwqBzdHJ1Y3QgaW42X2FkZHIgKnNvdXJjZSwNCj4gKwkJCQnCoMKgYWxm
+cmVkX2FkZHIgKnNvdXJjZSwNCj4gwqAJCQkJwqDCoHN0cnVjdCBhbGZyZWRfcmVxdWVzdF92MCAq
+cmVxdWVzdCkNCj4gwqB7DQo+IMKgCWludCBsZW47DQo+IEBAIC0zMzYsNyArMzQyLDcgQEAgc3Rh
+dGljIGludCBwcm9jZXNzX2FsZnJlZF9yZXF1ZXN0KHN0cnVjdCBnbG9iYWxzDQo+ICpnbG9iYWxz
+LA0KPiDCoH0NCj4gwqANCj4gwqBzdGF0aWMgaW50IHByb2Nlc3NfYWxmcmVkX3N0YXR1c190eGVu
+ZChzdHJ1Y3QgZ2xvYmFscyAqZ2xvYmFscywNCj4gLQkJCQnCoMKgwqDCoMKgwqDCoHN0cnVjdCBp
+bjZfYWRkciAqc291cmNlLA0KPiArCQkJCcKgwqDCoMKgwqDCoMKgYWxmcmVkX2FkZHIgKnNvdXJj
+ZSwNCj4gwqAJCQkJwqDCoMKgwqDCoMKgwqBzdHJ1Y3QgYWxmcmVkX3N0YXR1c192MA0KPiAqcmVx
+dWVzdCkNCj4gwqB7DQo+IMKgCXN0cnVjdCB0cmFuc2FjdGlvbl9oZWFkIHNlYXJjaCwgKmhlYWQ7
+DQo+IEBAIC0zNTEsNyArMzU3LDEwIEBAIHN0YXRpYyBpbnQgcHJvY2Vzc19hbGZyZWRfc3RhdHVz
+X3R4ZW5kKHN0cnVjdA0KPiBnbG9iYWxzICpnbG9iYWxzLA0KPiDCoAlpZiAobGVuICE9IChzaXpl
+b2YoKnJlcXVlc3QpIC0gc2l6ZW9mKHJlcXVlc3QtPmhlYWRlcikpKQ0KPiDCoAkJcmV0dXJuIC0x
+Ow0KPiDCoA0KPiAtCXJldCA9IGlwdjZfdG9fbWFjKHNvdXJjZSwgJm1hYyk7DQo+ICsJaWYgKGds
+b2JhbHMtPmlwdjRtb2RlKQ0KPiArCQlyZXQgPSBpcHY0X3RvX21hYyhzb3VyY2UsICZtYWMpOw0K
+PiArCWVsc2UNCj4gKwkJcmV0ID0gaXB2Nl90b19tYWMoc291cmNlLCAmbWFjKTsNCj4gwqAJaWYg
+KHJldCA8IDApDQo+IMKgCQlyZXR1cm4gLTE7DQo+IMKgDQo+IEBAIC0zODksMTUgKzM5OCwyNSBA
+QCBpbnQgcmVjdl9hbGZyZWRfcGFja2V0KHN0cnVjdCBnbG9iYWxzICpnbG9iYWxzLA0KPiBzdHJ1
+Y3QgaW50ZXJmYWNlICppbnRlcmZhY2UsDQo+IMKgCXVpbnQ4X3QgYnVmW01BWF9QQVlMT0FEXTsN
+Cj4gwqAJc3NpemVfdCBsZW5ndGg7DQo+IMKgCXN0cnVjdCBhbGZyZWRfdGx2ICpwYWNrZXQ7DQo+
+IC0Jc3RydWN0IHNvY2thZGRyX2luNiBzb3VyY2U7DQo+ICsJc3RydWN0IHNvY2thZGRyX2luICpz
+b3VyY2U7DQo+ICsJc3RydWN0IHNvY2thZGRyX2luIHNvdXJjZTQ7DQo+ICsJc3RydWN0IHNvY2th
+ZGRyX2luNiBzb3VyY2U2Ow0KPiDCoAlzb2NrbGVuX3Qgc291cmNlbGVuOw0KPiArCWFsZnJlZF9h
+ZGRyIGFsZnJlZF9zb3VyY2U7DQo+IMKgDQo+IMKgCWlmIChpbnRlcmZhY2UtPm5ldHNvY2sgPCAw
+KQ0KPiDCoAkJcmV0dXJuIC0xOw0KPiDCoA0KPiAtCXNvdXJjZWxlbiA9IHNpemVvZihzb3VyY2Up
+Ow0KPiArCWlmIChnbG9iYWxzLT5pcHY0bW9kZSkgew0KPiArCQlzb3VyY2UgPSAoc3RydWN0IHNv
+Y2thZGRyX2luICopJnNvdXJjZTQ7DQo+ICsJCXNvdXJjZWxlbiA9IHNpemVvZihzb3VyY2U0KTsN
+Cj4gKwl9IGVsc2Ugew0KPiArCQlzb3VyY2UgPSAoc3RydWN0IHNvY2thZGRyX2luICopJnNvdXJj
+ZTY7DQo+ICsJCXNvdXJjZWxlbiA9IHNpemVvZihzb3VyY2U2KTsNCj4gKwl9DQo+ICsNCj4gwqAJ
+bGVuZ3RoID0gcmVjdmZyb20ocmVjdl9zb2NrLCBidWYsIHNpemVvZihidWYpLCAwLA0KPiAtCQkJ
+wqDCoChzdHJ1Y3Qgc29ja2FkZHIgKikmc291cmNlLCAmc291cmNlbGVuKTsNCj4gKwkJCcKgwqAo
+c3RydWN0IHNvY2thZGRyICopc291cmNlLCAmc291cmNlbGVuKTsNCj4gwqAJaWYgKGxlbmd0aCA8
+PSAwKSB7DQo+IMKgCQlwZXJyb3IoInJlYWQgZnJvbSBuZXR3b3JrIHNvY2tldCBmYWlsZWQiKTsN
+Cj4gwqAJCXJldHVybiAtMTsNCj4gQEAgLTQwNSwxMiArNDI0LDE4IEBAIGludCByZWN2X2FsZnJl
+ZF9wYWNrZXQoc3RydWN0IGdsb2JhbHMgKmdsb2JhbHMsDQo+IHN0cnVjdCBpbnRlcmZhY2UgKmlu
+dGVyZmFjZSwNCj4gwqANCj4gwqAJcGFja2V0ID0gKHN0cnVjdCBhbGZyZWRfdGx2ICopYnVmOw0K
+PiDCoA0KPiAtCS8qIGRyb3AgcGFja2V0cyBub3Qgc2VudCBvdmVyIGxpbmstbG9jYWwgaXB2NiAq
+Lw0KPiAtCWlmICghaXNfaXB2Nl9ldWk2NCgmc291cmNlLnNpbjZfYWRkcikpDQo+IC0JCXJldHVy
+biAtMTsNCj4gKwlpZiAoZ2xvYmFscy0+aXB2NG1vZGUpIHsNCj4gKwkJbWVtY3B5KCZhbGZyZWRf
+c291cmNlLCAmc291cmNlNC5zaW5fYWRkciwNCj4gc2l6ZW9mKHNvdXJjZTQuc2luX2FkZHIpKTsN
+Cj4gKwl9IGVsc2Ugew0KPiArCQltZW1jcHkoJmFsZnJlZF9zb3VyY2UsICZzb3VyY2U2LnNpbjZf
+YWRkciwNCj4gc2l6ZW9mKHNvdXJjZTYuc2luNl9hZGRyKSk7DQo+ICsNCj4gKwkJLyogZHJvcCBw
+YWNrZXRzIG5vdCBzZW50IG92ZXIgbGluay1sb2NhbCBpcHY2ICovDQo+ICsJCWlmICghaXNfaXB2
+Nl9ldWk2NCgmYWxmcmVkX3NvdXJjZS5pcHY2KSkNCj4gKwkJCXJldHVybiAtMTsNCj4gKwl9DQo+
+IMKgDQo+IMKgCS8qIGRyb3AgcGFja2V0cyBmcm9tIG91cnNlbHZlcyAqLw0KPiAtCWlmIChuZXRz
+b2NrX293bl9hZGRyZXNzKGdsb2JhbHMsICZzb3VyY2Uuc2luNl9hZGRyKSkNCj4gKwlpZiAobmV0
+c29ja19vd25fYWRkcmVzcyhnbG9iYWxzLCAmYWxmcmVkX3NvdXJjZSkpDQo+IMKgCQlyZXR1cm4g
+LTE7DQo+IMKgDQo+IMKgCS8qIGRyb3AgdHJ1bmNhdGVkIHBhY2tldHMgKi8NCj4gQEAgLTQyNCwy
+MCArNDQ5LDIwIEBAIGludCByZWN2X2FsZnJlZF9wYWNrZXQoc3RydWN0IGdsb2JhbHMgKmdsb2Jh
+bHMsDQo+IHN0cnVjdCBpbnRlcmZhY2UgKmludGVyZmFjZSwNCj4gwqANCj4gwqAJc3dpdGNoIChw
+YWNrZXQtPnR5cGUpIHsNCj4gwqAJY2FzZSBBTEZSRURfUFVTSF9EQVRBOg0KPiAtCQlwcm9jZXNz
+X2FsZnJlZF9wdXNoX2RhdGEoZ2xvYmFscywgJnNvdXJjZS5zaW42X2FkZHIsDQo+ICsJCXByb2Nl
+c3NfYWxmcmVkX3B1c2hfZGF0YShnbG9iYWxzLCAmYWxmcmVkX3NvdXJjZSwNCj4gwqAJCQkJCcKg
+KHN0cnVjdCBhbGZyZWRfcHVzaF9kYXRhX3YwDQo+ICopcGFja2V0KTsNCj4gwqAJCWJyZWFrOw0K
+PiDCoAljYXNlIEFMRlJFRF9BTk5PVU5DRV9NQVNURVI6DQo+IMKgCQlwcm9jZXNzX2FsZnJlZF9h
+bm5vdW5jZV9tYXN0ZXIoZ2xvYmFscywgaW50ZXJmYWNlLA0KPiAtCQkJCQnCoMKgwqDCoMKgwqDC
+oCZzb3VyY2Uuc2luNl9hZGRyLA0KPiArCQkJCQnCoMKgwqDCoMKgwqDCoCZhbGZyZWRfc291cmNl
+LA0KPiDCoAkJCQkJwqDCoMKgwqDCoMKgwqAoc3RydWN0DQo+IGFsZnJlZF9hbm5vdW5jZV9tYXN0
+ZXJfdjAgKilwYWNrZXQpOw0KPiDCoAkJYnJlYWs7DQo+IMKgCWNhc2UgQUxGUkVEX1JFUVVFU1Q6
+DQo+IC0JCXByb2Nlc3NfYWxmcmVkX3JlcXVlc3QoZ2xvYmFscywgaW50ZXJmYWNlLA0KPiAmc291
+cmNlLnNpbjZfYWRkciwNCj4gKwkJcHJvY2Vzc19hbGZyZWRfcmVxdWVzdChnbG9iYWxzLCBpbnRl
+cmZhY2UsDQo+ICZhbGZyZWRfc291cmNlLA0KPiDCoAkJCQnCoMKgwqDCoMKgwqDCoChzdHJ1Y3Qg
+YWxmcmVkX3JlcXVlc3RfdjANCj4gKilwYWNrZXQpOw0KPiDCoAkJYnJlYWs7DQo+IMKgCWNhc2Ug
+QUxGUkVEX1NUQVRVU19UWEVORDoNCj4gLQkJcHJvY2Vzc19hbGZyZWRfc3RhdHVzX3R4ZW5kKGds
+b2JhbHMsDQo+ICZzb3VyY2Uuc2luNl9hZGRyLA0KPiArCQlwcm9jZXNzX2FsZnJlZF9zdGF0dXNf
+dHhlbmQoZ2xvYmFscywgJmFsZnJlZF9zb3VyY2UsDQo+IMKgCQkJCQnCoMKgwqDCoChzdHJ1Y3Qg
+YWxmcmVkX3N0YXR1c192MA0KPiAqKXBhY2tldCk7DQo+IMKgCQlicmVhazsNCj4gwqAJZGVmYXVs
+dDoNCj4gZGlmZiAtLWdpdCBhL3NlbmQuYyBiL3NlbmQuYw0KPiBpbmRleCBjN2EyYWYyLi5iNTY2
+NTAzIDEwMDY0NA0KPiAtLS0gYS9zZW5kLmMNCj4gKysrIGIvc2VuZC5jDQo+IEBAIC00Miw3ICs0
+Miw3IEBAIGludCBhbm5vdW5jZV9tYXN0ZXIoc3RydWN0IGdsb2JhbHMgKmdsb2JhbHMpDQo+IMKg
+CQlhbm5vdW5jZW1lbnQuaGVhZGVyLnZlcnNpb24gPSBBTEZSRURfVkVSU0lPTjsNCj4gwqAJCWFu
+bm91bmNlbWVudC5oZWFkZXIubGVuZ3RoID0gaHRvbnMoMCk7DQo+IMKgDQo+IC0JCXNlbmRfYWxm
+cmVkX3BhY2tldChpbnRlcmZhY2UsICZpbjZhZGRyX2xvY2FsbWNhc3QsDQo+ICsJCXNlbmRfYWxm
+cmVkX3BhY2tldChnbG9iYWxzLCBpbnRlcmZhY2UsDQo+ICZhbGZyZWRfbWNhc3QsDQo+IMKgCQkJ
+CcKgwqDCoCZhbm5vdW5jZW1lbnQsDQo+IHNpemVvZihhbm5vdW5jZW1lbnQpKTsNCj4gwqAJfQ0K
+PiDCoA0KPiBAQCAtNTAsNyArNTAsNyBAQCBpbnQgYW5ub3VuY2VfbWFzdGVyKHN0cnVjdCBnbG9i
+YWxzICpnbG9iYWxzKQ0KPiDCoH0NCj4gwqANCj4gwqBpbnQgcHVzaF9kYXRhKHN0cnVjdCBnbG9i
+YWxzICpnbG9iYWxzLCBzdHJ1Y3QgaW50ZXJmYWNlICppbnRlcmZhY2UsDQo+IC0JwqDCoMKgwqDC
+oMKgc3RydWN0IGluNl9hZGRyICpkZXN0aW5hdGlvbiwgZW51bSBkYXRhX3NvdXJjZQ0KPiBtYXhf
+c291cmNlX2xldmVsLA0KPiArCcKgwqDCoMKgwqDCoGFsZnJlZF9hZGRyICpkZXN0aW5hdGlvbiwg
+ZW51bSBkYXRhX3NvdXJjZQ0KPiBtYXhfc291cmNlX2xldmVsLA0KPiDCoAnCoMKgwqDCoMKgwqBp
+bnQgdHlwZV9maWx0ZXIsIHVpbnQxNl90IHR4X2lkKQ0KPiDCoHsNCj4gwqAJc3RydWN0IGhhc2hf
+aXRfdCAqaGFzaGl0ID0gTlVMTDsNCj4gQEAgLTkwLDcgKzkwLDcgQEAgaW50IHB1c2hfZGF0YShz
+dHJ1Y3QgZ2xvYmFscyAqZ2xvYmFscywgc3RydWN0DQo+IGludGVyZmFjZSAqaW50ZXJmYWNlLA0K
+PiDCoAkJCXRsdl9sZW5ndGggKz0gc2l6ZW9mKCpwdXNoKSAtIHNpemVvZihwdXNoLQ0KPiA+aGVh
+ZGVyKTsNCj4gwqAJCQlwdXNoLT5oZWFkZXIubGVuZ3RoID0gaHRvbnModGx2X2xlbmd0aCk7DQo+
+IMKgCQkJcHVzaC0+dHguc2Vxbm8gPSBodG9ucyhzZXFubysrKTsNCj4gLQkJCXNlbmRfYWxmcmVk
+X3BhY2tldChpbnRlcmZhY2UsIGRlc3RpbmF0aW9uLA0KPiBwdXNoLA0KPiArCQkJc2VuZF9hbGZy
+ZWRfcGFja2V0KGdsb2JhbHMsIGludGVyZmFjZSwNCj4gZGVzdGluYXRpb24sIHB1c2gsDQo+IMKg
+CQkJCQnCoMKgwqBzaXplb2YoKnB1c2gpICsNCj4gdG90YWxfbGVuZ3RoKTsNCj4gwqAJCQl0b3Rh
+bF9sZW5ndGggPSAwOw0KPiDCoAkJfQ0KPiBAQCAtMTE0LDcgKzExNCw3IEBAIGludCBwdXNoX2Rh
+dGEoc3RydWN0IGdsb2JhbHMgKmdsb2JhbHMsIHN0cnVjdA0KPiBpbnRlcmZhY2UgKmludGVyZmFj
+ZSwNCj4gwqAJCXRsdl9sZW5ndGggKz0gc2l6ZW9mKCpwdXNoKSAtIHNpemVvZihwdXNoLT5oZWFk
+ZXIpOw0KPiDCoAkJcHVzaC0+aGVhZGVyLmxlbmd0aCA9IGh0b25zKHRsdl9sZW5ndGgpOw0KPiDC
+oAkJcHVzaC0+dHguc2Vxbm8gPSBodG9ucyhzZXFubysrKTsNCj4gLQkJc2VuZF9hbGZyZWRfcGFj
+a2V0KGludGVyZmFjZSwgZGVzdGluYXRpb24sIHB1c2gsDQo+ICsJCXNlbmRfYWxmcmVkX3BhY2tl
+dChnbG9iYWxzLCBpbnRlcmZhY2UsIGRlc3RpbmF0aW9uLA0KPiBwdXNoLA0KPiDCoAkJCQnCoMKg
+wqBzaXplb2YoKnB1c2gpICsgdG90YWxfbGVuZ3RoKTsNCj4gwqAJfQ0KPiDCoA0KPiBAQCAtMTI4
+LDcgKzEyOCw3IEBAIGludCBwdXNoX2RhdGEoc3RydWN0IGdsb2JhbHMgKmdsb2JhbHMsIHN0cnVj
+dA0KPiBpbnRlcmZhY2UgKmludGVyZmFjZSwNCj4gwqAJCXN0YXR1c19lbmQudHguaWQgPSB0eF9p
+ZDsNCj4gwqAJCXN0YXR1c19lbmQudHguc2Vxbm8gPSBodG9ucyhzZXFubyk7DQo+IMKgDQo+IC0J
+CXNlbmRfYWxmcmVkX3BhY2tldChpbnRlcmZhY2UsIGRlc3RpbmF0aW9uLA0KPiAmc3RhdHVzX2Vu
+ZCwNCj4gKwkJc2VuZF9hbGZyZWRfcGFja2V0KGdsb2JhbHMsIGludGVyZmFjZSwgZGVzdGluYXRp
+b24sDQo+ICZzdGF0dXNfZW5kLA0KPiDCoAkJCQnCoMKgwqBzaXplb2Yoc3RhdHVzX2VuZCkpOw0K
+PiDCoAl9DQo+IMKgDQo+IEBAIC0xNzAsMjQgKzE3MCwzOCBAQCBpbnQgcHVzaF9sb2NhbF9kYXRh
+KHN0cnVjdCBnbG9iYWxzICpnbG9iYWxzKQ0KPiDCoAlyZXR1cm4gMDsNCj4gwqB9DQo+IMKgDQo+
+IC1zc2l6ZV90IHNlbmRfYWxmcmVkX3BhY2tldChzdHJ1Y3QgaW50ZXJmYWNlICppbnRlcmZhY2Us
+DQo+IC0JCQnCoMKgwqBjb25zdCBzdHJ1Y3QgaW42X2FkZHIgKmRlc3QsIHZvaWQgKmJ1ZiwNCj4g
+aW50IGxlbmd0aCkNCj4gK3NzaXplX3Qgc2VuZF9hbGZyZWRfcGFja2V0KHN0cnVjdCBnbG9iYWxz
+ICpnbG9iYWxzLCBzdHJ1Y3QgaW50ZXJmYWNlDQo+ICppbnRlcmZhY2UsDQo+ICsJCQnCoMKgwqBj
+b25zdCBhbGZyZWRfYWRkciAqZGVzdCwgdm9pZCAqYnVmLCBpbnQNCj4gbGVuZ3RoKQ0KPiDCoHsN
+Cj4gwqAJc3NpemVfdCByZXQ7DQo+IC0Jc3RydWN0IHNvY2thZGRyX2luNiBkZXN0X2FkZHI7DQo+
+IC0NCj4gLQltZW1zZXQoJmRlc3RfYWRkciwgMCwgc2l6ZW9mKGRlc3RfYWRkcikpOw0KPiAtCWRl
+c3RfYWRkci5zaW42X2ZhbWlseSA9IEFGX0lORVQ2Ow0KPiAtCWRlc3RfYWRkci5zaW42X3BvcnQg
+PSBodG9ucyhBTEZSRURfUE9SVCk7DQo+IC0JZGVzdF9hZGRyLnNpbjZfc2NvcGVfaWQgPSBpbnRl
+cmZhY2UtPnNjb3BlX2lkOw0KPiAtCW1lbWNweSgmZGVzdF9hZGRyLnNpbjZfYWRkciwgZGVzdCwg
+c2l6ZW9mKCpkZXN0KSk7DQo+ICsJc3RydWN0IHNvY2thZGRyICpkZXN0X2FkZHI7DQo+ICsJc3Ry
+dWN0IHNvY2thZGRyX2luNiBkZXN0X2FkZHI2Ow0KPiArCXN0cnVjdCBzb2NrYWRkcl9pbiBkZXN0
+X2FkZHI0Ow0KPiArCXNvY2tsZW5fdCBzbGVuOw0KPiArDQo+ICsJaWYgKGdsb2JhbHMtPmlwdjRt
+b2RlKSB7DQo+ICsJCW1lbXNldCgmZGVzdF9hZGRyNCwgMCwgc2l6ZW9mKGRlc3RfYWRkcjQpKTsN
+Cj4gKwkJZGVzdF9hZGRyNC5zaW5fZmFtaWx5ID0gQUZfSU5FVDsNCj4gKwkJZGVzdF9hZGRyNC5z
+aW5fcG9ydCA9IGh0b25zKEFMRlJFRF9QT1JUKTsNCj4gKwkJbWVtY3B5KCZkZXN0X2FkZHI0LnNp
+bl9hZGRyLCAmZGVzdC0+aXB2NCwNCj4gc2l6ZW9mKGRlc3QtPmlwdjQpKTsNCj4gKw0KPiArCQlz
+bGVuID0gc2l6ZW9mKHN0cnVjdCBzb2NrYWRkcl9pbik7DQo+ICsJCWRlc3RfYWRkciA9IChzdHJ1
+Y3Qgc29ja2FkZHIgKikmZGVzdF9hZGRyNDsNCj4gKwl9IGVsc2Ugew0KPiArCQltZW1zZXQoJmRl
+c3RfYWRkcjYsIDAsIHNpemVvZihkZXN0X2FkZHI2KSk7DQo+ICsJCWRlc3RfYWRkcjYuc2luNl9m
+YW1pbHkgPSBBRl9JTkVUNjsNCj4gKwkJZGVzdF9hZGRyNi5zaW42X3BvcnQgPSBodG9ucyhBTEZS
+RURfUE9SVCk7DQo+ICsJCWRlc3RfYWRkcjYuc2luNl9zY29wZV9pZCA9IGludGVyZmFjZS0+c2Nv
+cGVfaWQ7DQo+ICsJCW1lbWNweSgmZGVzdF9hZGRyNi5zaW42X2FkZHIsICZkZXN0LT5pcHY2LA0K
+PiBzaXplb2YoZGVzdC0+aXB2NikpOw0KPiArDQo+ICsJCXNsZW4gPSBzaXplb2Yoc3RydWN0IHNv
+Y2thZGRyX2luNik7DQo+ICsJCWRlc3RfYWRkciA9IChzdHJ1Y3Qgc29ja2FkZHIgKikmZGVzdF9h
+ZGRyNjsNCj4gKwl9DQo+IMKgDQo+IMKgCWlmIChpbnRlcmZhY2UtPm5ldHNvY2sgPCAwKQ0KPiDC
+oAkJcmV0dXJuIDA7DQo+IMKgDQo+IC0JcmV0ID0gc2VuZHRvKGludGVyZmFjZS0+bmV0c29jaywg
+YnVmLCBsZW5ndGgsIDAsDQo+IC0JCcKgwqDCoMKgwqAoc3RydWN0IHNvY2thZGRyICopJmRlc3Rf
+YWRkciwNCj4gLQkJwqDCoMKgwqDCoHNpemVvZihzdHJ1Y3Qgc29ja2FkZHJfaW42KSk7DQo+ICsJ
+cmV0ID0gc2VuZHRvKGludGVyZmFjZS0+bmV0c29jaywgYnVmLCBsZW5ndGgsIDAsIGRlc3RfYWRk
+ciwNCj4gc2xlbik7DQo+IMKgCWlmIChyZXQgPT0gLUVQRVJNKSB7DQo+IMKgCQlwZXJyb3IoIkVy
+cm9yIGR1cmluZyBzZW50Iik7DQo+IMKgCQljbG9zZShpbnRlcmZhY2UtPm5ldHNvY2spOw0KPiBk
+aWZmIC0tZ2l0IGEvc2VydmVyLmMgYi9zZXJ2ZXIuYw0KPiBpbmRleCBmNmUwYzhhLi4yYzQwNDJh
+IDEwMDY0NA0KPiAtLS0gYS9zZXJ2ZXIuYw0KPiArKysgYi9zZXJ2ZXIuYw0KPiBAQCAtMjE4LDcg
+KzIxOCw3IEBAIHN0YXRpYyBpbnQgcHVyZ2VfZGF0YShzdHJ1Y3QgZ2xvYmFscyAqZ2xvYmFscykN
+Cj4gwqAJcmV0dXJuIDA7DQo+IMKgfQ0KPiDCoA0KPiAtc3RhdGljIHZvaWQgY2hlY2tfaWZfc29j
+a2V0KHN0cnVjdCBpbnRlcmZhY2UgKmludGVyZmFjZSkNCj4gK3N0YXRpYyB2b2lkIGNoZWNrX2lm
+X3NvY2tldChzdHJ1Y3QgaW50ZXJmYWNlICppbnRlcmZhY2UsIHN0cnVjdA0KPiBnbG9iYWxzICpn
+bG9iYWxzKQ0KPiDCoHsNCj4gwqAJaW50IHNvY2s7DQo+IMKgCXN0cnVjdCBpZnJlcSBpZnI7DQo+
+IEBAIC0yMjYsNyArMjI2LDcgQEAgc3RhdGljIHZvaWQgY2hlY2tfaWZfc29ja2V0KHN0cnVjdCBp
+bnRlcmZhY2UNCj4gKmludGVyZmFjZSkNCj4gwqAJaWYgKGludGVyZmFjZS0+bmV0c29jayA8IDAp
+DQo+IMKgCQlyZXR1cm47DQo+IMKgDQo+IC0Jc29jayA9IHNvY2tldChQRl9JTkVUNiwgU09DS19E
+R1JBTSwgMCk7DQo+ICsJc29jayA9IHNvY2tldChQRl9JTkVULCBTT0NLX0RHUkFNLCAwKTsNCj4g
+wqAJaWYgKHNvY2sgPCAwKSB7DQo+IMKgCQlwZXJyb3IoImNhbid0IG9wZW4gc29ja2V0Iik7DQo+
+IMKgCQlyZXR1cm47DQo+IEBAIC0yNDAsNyArMjQwLDcgQEAgc3RhdGljIHZvaWQgY2hlY2tfaWZf
+c29ja2V0KHN0cnVjdCBpbnRlcmZhY2UNCj4gKmludGVyZmFjZSkNCj4gwqAJCWdvdG8gY2xvc2U7
+DQo+IMKgCX0NCj4gwqANCj4gLQlpZiAoaW50ZXJmYWNlLT5zY29wZV9pZCAhPSAodWludDMyX3Qp
+aWZyLmlmcl9pZmluZGV4KSB7DQo+ICsJaWYgKCFnbG9iYWxzLT5pcHY0bW9kZSAmJiAoaW50ZXJm
+YWNlLT5zY29wZV9pZCAhPQ0KPiAodWludDMyX3QpaWZyLmlmcl9pZmluZGV4KSkgew0KPiDCoAkJ
+ZnByaW50ZihzdGRlcnIsDQo+IMKgCQkJImlmYWNlIGluZGV4IGNoYW5nZWQgZnJvbSAlIlBSSXUz
+MiIgdG8gJWQsDQo+IGNsb3NpbmcgbmV0c29ja1xuIiwNCj4gwqAJCQlpbnRlcmZhY2UtPnNjb3Bl
+X2lkLCBpZnIuaWZyX2lmaW5kZXgpOw0KPiBAQCAtMjgyLDcgKzI4Miw3IEBAIHN0YXRpYyB2b2lk
+IGNoZWNrX2lmX3NvY2tldHMoc3RydWN0IGdsb2JhbHMNCj4gKmdsb2JhbHMpDQo+IMKgCWdsb2Jh
+bHMtPmlmX2NoZWNrID0gbm93Ow0KPiDCoA0KPiDCoAlsaXN0X2Zvcl9lYWNoX2VudHJ5KGludGVy
+ZmFjZSwgJmdsb2JhbHMtPmludGVyZmFjZXMsIGxpc3QpDQo+IC0JCWNoZWNrX2lmX3NvY2tldChp
+bnRlcmZhY2UpOw0KPiArCQljaGVja19pZl9zb2NrZXQoaW50ZXJmYWNlLCBnbG9iYWxzKTsNCj4g
+wqB9DQo+IMKgDQo+IMKgc3RhdGljIHZvaWQgZXhlY3V0ZV91cGRhdGVfY29tbWFuZChzdHJ1Y3Qg
+Z2xvYmFscyAqZ2xvYmFscykNCj4gZGlmZiAtLWdpdCBhL3VuaXhfc29jay5jIGIvdW5peF9zb2Nr
+LmMNCj4gaW5kZXggMGE4MTlhMi4uNGE4YzZlMCAxMDA2NDQNCj4gLS0tIGEvdW5peF9zb2NrLmMN
+Cj4gKysrIGIvdW5peF9zb2NrLmMNCj4gQEAgLTI1OCw3ICsyNTgsNyBAQCBzdGF0aWMgaW50IHVu
+aXhfc29ja19yZXFfZGF0YShzdHJ1Y3QgZ2xvYmFscw0KPiAqZ2xvYmFscywNCj4gwqAJaGVhZC0+
+Y2xpZW50X3NvY2tldCA9IGNsaWVudF9zb2NrOw0KPiDCoAloZWFkLT5yZXF1ZXN0ZWRfdHlwZSA9
+IHJlcXVlc3QtPnJlcXVlc3RlZF90eXBlOw0KPiDCoA0KPiAtCXNlbmRfYWxmcmVkX3BhY2tldChp
+bnRlcmZhY2UsICZnbG9iYWxzLT5iZXN0X3NlcnZlci0NCj4gPmFkZHJlc3MsDQo+ICsJc2VuZF9h
+bGZyZWRfcGFja2V0KGdsb2JhbHMsIGludGVyZmFjZSwgJmdsb2JhbHMtDQo+ID5iZXN0X3NlcnZl
+ci0+YWRkcmVzcywNCj4gwqAJCQnCoMKgwqByZXF1ZXN0LCBzaXplb2YoKnJlcXVlc3QpKTsNCj4g
+wqANCj4gwqAJcmV0dXJuIDA7
