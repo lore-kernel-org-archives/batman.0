@@ -1,14 +1,14 @@
-Return-Path: <davem@davemloft.net>
-Date: Wed, 18 Jan 2017 17:27:50 -0500 (EST)
-Message-Id: <20170118.172750.1394406967719526972.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20170118164501.1934-1-tklauser@distanz.ch>
-References: <20170118164501.1934-1-tklauser@distanz.ch>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH net-next] net: Remove usage of net_device
-	last_rx member
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 19 Jan 2017 08:49:36 +0100
+Message-ID: <4353909.3ARBFDpkjy@bentobox>
+In-Reply-To: <1484804915-14791-1-git-send-email-jhaws@sdl.usu.edu>
+References: <1484804915-14791-1-git-send-email-jhaws@sdl.usu.edu>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2170510.Jgd1RvMRHq";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v3] [alfred] IPv4 multicast distribution
+	support.
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,38 +18,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: tklauser@distanz.ch
-Cc: devel@driverdev.osuosl.org, eric.dumazet@gmail.com, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, stephen@networkplumber.org, linux-m68k@lists.linux-m68k.org, intel-wired-lan@lists.osuosl.org, j.vosburgh@gmail.com, vfalico@gmail.com, andy@greyhouse.net, mlindner@marvell.com
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Jonathan Haws <jhaws@sdl.usu.edu>
 
-From: Tobias Klauser <tklauser@distanz.ch>
-Date: Wed, 18 Jan 2017 17:45:01 +0100
+--nextPart2170510.Jgd1RvMRHq
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-> The network stack no longer uses the last_rx member of struct net_device
-> since the bonding driver switched to use its own private last_rx in
-> commit 9f242738376d ("bonding: use last_arp_rx in slave_last_rx()").
+On Mittwoch, 18. Januar 2017 22:48:35 CET Jonathan Haws wrote:
+> Enabled via -4 expert option where multicast group address is specified.
+> This option will disable IPv6 communication and is intended for use in
+> networks which do not support IPv6 addressing.
 > 
-> However, some drivers still (ab)use the field for their own purposes and
-> some driver just update it without actually using it.
+> When this option is enabled, all IPv6 communication is disabled. Combining
+> IPv4 and IPv6 alfred nodes is unsupported.
 > 
-> Previously, there was an accompanying comment for the last_rx member
-> added in commit 4dc89133f49b ("net: add a comment on netdev->last_rx")
-> which asked drivers not to update is, unless really needed. However,
-> this commend was removed in commit f8ff080dacec ("bonding: remove
-> useless updating of slave->dev->last_rx"), so some drivers added later
-> on still did update last_rx.
+> Hardware address handling done by submitting queries to the local ARP
+> cache rather than forcing an ARP request.
 > 
-> Remove all usage of last_rx and switch three drivers (sky2, atp and
-> smc91c92_cs) which actually read and write it to use their own private
-> copy in netdev_priv.
-> 
-> Compile-tested with allyesconfig and allmodconfig on x86 and arm.
-> 
-> Cc: Eric Dumazet <eric.dumazet@gmail.com>
-> Cc: Jay Vosburgh <j.vosburgh@gmail.com>
-> Cc: Veaceslav Falico <vfalico@gmail.com>
-> Cc: Andy Gospodarek <andy@greyhouse.net>
-> Cc: Mirko Lindner <mlindner@marvell.com>
-> Cc: Stephen Hemminger <stephen@networkplumber.org>
-> Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
+> Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
+> ---
 
-Applied, thanks.
+I haven't looked at the patch. But please use "alfred: " And not "[alfred]" [1].
+
+Kind regards,
+	Sven
+
+[1] https://git.open-mesh.org/alfred.git/shortlog
+
+
+--nextPart2170510.Jgd1RvMRHq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAliAb5AACgkQXYcKB8Em
+e0YjlBAAnNDTrS9RVzPtN7yp211FMkbdgrDVFRS5qL7hQ97UKyvxfKo2kX/EF7hx
+84+EHLlSv3NELt5OpbRD5BC2nHT+osd1ioCKzUGpqBDtJKFDpwvzRxWsFABtYSSM
+TW1Z6Fd5uOmU4TCfPwgYA1y0X4Mx14G6cdcT9ZQ2njARpkDxxUln2AVCJj7/Rhs4
+p1nx42lKfuFxZ1l8rPffHn1BN930evAHA4xGsLNJnbMyuqbIRhPndM1sj501dvNy
+a6rIBDY0FzniolM8GBSGeEvTR/9O+2QWUopseYNgYCXZpCKv7YP+OyGkFLqVvb6g
+jp5Kl/T9g3Eh+z2Fo/7ULg+p9E6xbiWHRDdSHfR8ba4/rQsEVUolQI9KUG+jrCXb
+q31mQb95K4TCd+KZvD7l1aSr5G0V46H8igaH9PREeiaTyt/726DcZvQVfMdbimpR
+NA9FrtmikQGQjf2UrgbjmDAnrg+djD/bSMQYs/QP0aMFwDghnhq/AWSCjTfEr4/4
+8VDuO7H6ZuOrykdR35JEg1759Fjj6OgctbjYSKQqC5z3FjZXVnYEWh1yj24xLgFb
+pXXfOF6o5PGeH+aXDJicIFpubLmKph/3p070QO71Cw85sDfKVtheyg0jOCMNAfrM
+tyXXoMQjfEa4ZZHy14x6cbbfmorQg/GAVkQfUUdifnYGeie6Qi8=
+=dDLJ
+-----END PGP SIGNATURE-----
+
+--nextPart2170510.Jgd1RvMRHq--
+
