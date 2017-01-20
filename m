@@ -1,9 +1,11 @@
-Return-Path: <tklauser@distanz.ch>
-From: Tobias Klauser <tklauser@distanz.ch>
-Date: Wed, 18 Jan 2017 17:45:01 +0100
-Message-Id: <20170118164501.1934-1-tklauser@distanz.ch>
-Subject: [B.A.T.M.A.N.] [PATCH net-next] net: Remove usage of net_device
-	last_rx member
+Return-Path: <Jonathan.Haws@sdl.usu.edu>
+From: Jonathan Haws <jhaws@sdl.usu.edu>
+Date: Thu, 19 Jan 2017 21:01:04 -0700
+Message-ID: <1484884864-7315-1-git-send-email-jhaws@sdl.usu.edu>
+MIME-Version: 1.0
+Content-Type: text/plain
+Subject: [B.A.T.M.A.N.] [PATCH v4] alfred: IPv4 multicast distribution
+	support.
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,486 +15,878 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: netdev@vger.kernel.org
-Cc: devel@driverdev.osuosl.org, Eric Dumazet <eric.dumazet@gmail.com>, Jay Vosburgh <j.vosburgh@gmail.com>, b.a.t.m.a.n@lists.open-mesh.org, Stephen Hemminger <stephen@networkplumber.org>, linux-m68k@lists.linux-m68k.org, intel-wired-lan@lists.osuosl.org, Veaceslav Falico <vfalico@gmail.com>, Andy Gospodarek <andy@greyhouse.net>, Mirko Lindner <mlindner@marvell.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Jonathan Haws <jhaws@sdl.usu.edu>
 
-The network stack no longer uses the last_rx member of struct net_device
-since the bonding driver switched to use its own private last_rx in
-commit 9f242738376d ("bonding: use last_arp_rx in slave_last_rx()").
+Enabled via -4 expert option where multicast group address is specified.
+This option will disable IPv6 communication and is intended for use in
+networks which do not support IPv6 addressing.
 
-However, some drivers still (ab)use the field for their own purposes and
-some driver just update it without actually using it.
+When this option is enabled, all IPv6 communication is disabled. Combining
+IPv4 and IPv6 alfred nodes is unsupported.
 
-Previously, there was an accompanying comment for the last_rx member
-added in commit 4dc89133f49b ("net: add a comment on netdev->last_rx")
-which asked drivers not to update is, unless really needed. However,
-this commend was removed in commit f8ff080dacec ("bonding: remove
-useless updating of slave->dev->last_rx"), so some drivers added later
-on still did update last_rx.
+Hardware address handling done by submitting queries to the local ARP
+cache rather than forcing an ARP request.
 
-Remove all usage of last_rx and switch three drivers (sky2, atp and
-smc91c92_cs) which actually read and write it to use their own private
-copy in netdev_priv.
-
-Compile-tested with allyesconfig and allmodconfig on x86 and arm.
-
-Cc: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Jay Vosburgh <j.vosburgh@gmail.com>
-Cc: Veaceslav Falico <vfalico@gmail.com>
-Cc: Andy Gospodarek <andy@greyhouse.net>
-Cc: Mirko Lindner <mlindner@marvell.com>
-Cc: Stephen Hemminger <stephen@networkplumber.org>
-Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
+Signed-off-by: Jonathan Haws <jhaws@sdl.usu.edu>
 ---
- arch/m68k/emu/nfeth.c                              | 1 -
- drivers/net/ethernet/cavium/liquidio/lio_main.c    | 1 -
- drivers/net/ethernet/cavium/liquidio/lio_vf_main.c | 1 -
- drivers/net/ethernet/hisilicon/hns/hns_enet.c      | 1 -
- drivers/net/ethernet/intel/e1000e/netdev.c         | 6 +++---
- drivers/net/ethernet/intel/igb/igb_main.c          | 6 +++---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c      | 7 +++----
- drivers/net/ethernet/marvell/sky2.c                | 6 +++---
- drivers/net/ethernet/marvell/sky2.h                | 1 +
- drivers/net/ethernet/qualcomm/emac/emac-mac.c      | 1 -
- drivers/net/ethernet/realtek/atp.c                 | 7 +++----
- drivers/net/ethernet/smsc/smc91c92_cs.c            | 6 ++++--
- drivers/net/irda/bfin_sir.c                        | 5 ++---
- drivers/net/irda/sh_sir.c                          | 1 -
- drivers/staging/ks7010/ks_hostif.c                 | 2 --
- drivers/staging/netlogic/xlr_net.c                 | 1 -
- drivers/staging/rtl8192e/rtllib_rx.c               | 1 -
- drivers/staging/rtl8192u/ieee80211/ieee80211_rx.c  | 4 ----
- drivers/staging/wlan-ng/hfa384x_usb.c              | 1 -
- drivers/staging/wlan-ng/p80211netdev.c             | 2 --
- include/linux/netdevice.h                          | 3 ---
- net/batman-adv/bridge_loop_avoidance.c             | 1 -
- net/batman-adv/distributed-arp-table.c             | 1 -
- net/batman-adv/soft-interface.c                    | 2 --
- 24 files changed, 22 insertions(+), 46 deletions(-)
+ README         |   4 +-
+ alfred.h       |  23 ++++++---
+ batadv_query.c |  50 +++++++++++-------
+ batadv_query.h |   6 ++-
+ client.c       |   2 +-
+ main.c         |  14 ++++--
+ man/alfred.8   |   5 ++
+ netsock.c      | 156 +++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ recv.c         |  63 ++++++++++++++++-------
+ send.c         |  48 +++++++++++-------
+ server.c       |   8 +--
+ unix_sock.c    |   2 +-
+ util.c         |  30 +++++++++++
+ 13 files changed, 328 insertions(+), 83 deletions(-)
 
-diff --git a/arch/m68k/emu/nfeth.c b/arch/m68k/emu/nfeth.c
-index fc4be028c418..e45ce4243aaa 100644
---- a/arch/m68k/emu/nfeth.c
-+++ b/arch/m68k/emu/nfeth.c
-@@ -124,7 +124,6 @@ static inline void recv_packet(struct net_device *dev)
+diff --git a/README b/README
+index bc1c3bc..28f3dc9 100644
+--- a/README
++++ b/README
+@@ -20,7 +20,9 @@ programs to communicate with alfred (done via unix sockets). alfred then takes
+ care of distributing the local information to other alfred servers on other
+ nodes. This is done via IPv6 link-local multicast, and does not require any
+ configuration. A user can request data from alfred, and will receive the
+-information available from all alfred servers in the network.
++information available from all alfred servers in the network. Alternatively,
++alfred can be configured to distribute the local information via IPv4 multicast.
++This is configured by setting the IPv4 multicast group address in the -4 option.
  
- 	skb->protocol = eth_type_trans(skb, dev);
- 	netif_rx(skb);
--	dev->last_rx = jiffies;
- 	dev->stats.rx_packets++;
- 	dev->stats.rx_bytes += pktlen;
- 
-diff --git a/drivers/net/ethernet/cavium/liquidio/lio_main.c b/drivers/net/ethernet/cavium/liquidio/lio_main.c
-index 2b89ec291b8b..5ee3f007c613 100644
---- a/drivers/net/ethernet/cavium/liquidio/lio_main.c
-+++ b/drivers/net/ethernet/cavium/liquidio/lio_main.c
-@@ -2360,7 +2360,6 @@ liquidio_push_packet(u32 octeon_id __attribute__((unused)),
- 		if (packet_was_received) {
- 			droq->stats.rx_bytes_received += len;
- 			droq->stats.rx_pkts_received++;
--			netdev->last_rx = jiffies;
- 		} else {
- 			droq->stats.rx_dropped++;
- 			netif_info(lio, rx_err, lio->netdev,
-diff --git a/drivers/net/ethernet/cavium/liquidio/lio_vf_main.c b/drivers/net/ethernet/cavium/liquidio/lio_vf_main.c
-index 19d88fb387ce..e96cf6cdecfd 100644
---- a/drivers/net/ethernet/cavium/liquidio/lio_vf_main.c
-+++ b/drivers/net/ethernet/cavium/liquidio/lio_vf_main.c
-@@ -1571,7 +1571,6 @@ liquidio_push_packet(u32 octeon_id __attribute__((unused)),
- 		if (packet_was_received) {
- 			droq->stats.rx_bytes_received += len;
- 			droq->stats.rx_pkts_received++;
--			netdev->last_rx = jiffies;
- 		} else {
- 			droq->stats.rx_dropped++;
- 			netif_info(lio, rx_err, lio->netdev,
-diff --git a/drivers/net/ethernet/hisilicon/hns/hns_enet.c b/drivers/net/ethernet/hisilicon/hns/hns_enet.c
-index b7cb61385ad8..f7b75e96c1c3 100644
---- a/drivers/net/ethernet/hisilicon/hns/hns_enet.c
-+++ b/drivers/net/ethernet/hisilicon/hns/hns_enet.c
-@@ -797,7 +797,6 @@ static void hns_nic_rx_up_pro(struct hns_nic_ring_data *ring_data,
- 
- 	skb->protocol = eth_type_trans(skb, ndev);
- 	(void)napi_gro_receive(&ring_data->napi, skb);
--	ndev->last_rx = jiffies;
- }
- 
- static int hns_desc_unused(struct hnae_ring *ring)
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 79651eb608ff..2175cced402f 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -240,9 +240,9 @@ static void e1000e_dump(struct e1000_adapter *adapter)
- 	/* Print netdevice Info */
- 	if (netdev) {
- 		dev_info(&adapter->pdev->dev, "Net device Info\n");
--		pr_info("Device Name     state            trans_start      last_rx\n");
--		pr_info("%-15s %016lX %016lX %016lX\n", netdev->name,
--			netdev->state, dev_trans_start(netdev), netdev->last_rx);
-+		pr_info("Device Name     state            trans_start\n");
-+		pr_info("%-15s %016lX %016lX\n", netdev->name,
-+			netdev->state, dev_trans_start(netdev));
- 	}
- 
- 	/* Print Registers */
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 7fc95493b692..be456bae8169 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -383,9 +383,9 @@ static void igb_dump(struct igb_adapter *adapter)
- 	/* Print netdevice Info */
- 	if (netdev) {
- 		dev_info(&adapter->pdev->dev, "Net device Info\n");
--		pr_info("Device Name     state            trans_start      last_rx\n");
--		pr_info("%-15s %016lX %016lX %016lX\n", netdev->name,
--			netdev->state, dev_trans_start(netdev), netdev->last_rx);
-+		pr_info("Device Name     state            trans_start\n");
-+		pr_info("%-15s %016lX %016lX\n", netdev->name,
-+			netdev->state, dev_trans_start(netdev));
- 	}
- 
- 	/* Print Registers */
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index ffe7d940d9ff..3b3b52b62a5f 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -611,12 +611,11 @@ static void ixgbe_dump(struct ixgbe_adapter *adapter)
- 	if (netdev) {
- 		dev_info(&adapter->pdev->dev, "Net device Info\n");
- 		pr_info("Device Name     state            "
--			"trans_start      last_rx\n");
--		pr_info("%-15s %016lX %016lX %016lX\n",
-+			"trans_start\n");
-+		pr_info("%-15s %016lX %016lX\n",
- 			netdev->name,
- 			netdev->state,
--			dev_trans_start(netdev),
--			netdev->last_rx);
-+			dev_trans_start(netdev));
- 	}
- 
- 	/* Print Registers */
-diff --git a/drivers/net/ethernet/marvell/sky2.c b/drivers/net/ethernet/marvell/sky2.c
-index be003c5a4f5f..2b2cc3f3ca10 100644
---- a/drivers/net/ethernet/marvell/sky2.c
-+++ b/drivers/net/ethernet/marvell/sky2.c
-@@ -2666,7 +2666,7 @@ static inline void sky2_rx_done(struct sky2_hw *hw, unsigned port,
- 	sky2->rx_stats.bytes += bytes;
- 	u64_stats_update_end(&sky2->rx_stats.syncp);
- 
--	dev->last_rx = jiffies;
-+	sky2->last_rx = jiffies;
- 	sky2_rx_update(netdev_priv(dev), rxqaddr[port]);
- }
- 
-@@ -2953,7 +2953,7 @@ static int sky2_rx_hung(struct net_device *dev)
- 	u8 fifo_lev = sky2_read8(hw, Q_ADDR(rxq, Q_RL));
- 
- 	/* If idle and MAC or PCI is stuck */
--	if (sky2->check.last == dev->last_rx &&
-+	if (sky2->check.last == sky2->last_rx &&
- 	    ((mac_rp == sky2->check.mac_rp &&
- 	      mac_lev != 0 && mac_lev >= sky2->check.mac_lev) ||
- 	     /* Check if the PCI RX hang */
-@@ -2965,7 +2965,7 @@ static int sky2_rx_hung(struct net_device *dev)
- 			      fifo_rp, sky2_read8(hw, Q_ADDR(rxq, Q_WP)));
- 		return 1;
- 	} else {
--		sky2->check.last = dev->last_rx;
-+		sky2->check.last = sky2->last_rx;
- 		sky2->check.mac_rp = mac_rp;
- 		sky2->check.mac_lev = mac_lev;
- 		sky2->check.fifo_rp = fifo_rp;
-diff --git a/drivers/net/ethernet/marvell/sky2.h b/drivers/net/ethernet/marvell/sky2.h
-index ec6dcd80152b..0fe160796842 100644
---- a/drivers/net/ethernet/marvell/sky2.h
-+++ b/drivers/net/ethernet/marvell/sky2.h
-@@ -2247,6 +2247,7 @@ struct sky2_port {
- 	u16		     rx_data_size;
- 	u16		     rx_nfrags;
- 
-+	unsigned long	     last_rx;
- 	struct {
- 		unsigned long last;
- 		u32	mac_rp;
-diff --git a/drivers/net/ethernet/qualcomm/emac/emac-mac.c b/drivers/net/ethernet/qualcomm/emac/emac-mac.c
-index 0b4deb31e742..d297ed961da6 100644
---- a/drivers/net/ethernet/qualcomm/emac/emac-mac.c
-+++ b/drivers/net/ethernet/qualcomm/emac/emac-mac.c
-@@ -1213,7 +1213,6 @@ void emac_mac_rx_process(struct emac_adapter *adpt, struct emac_rx_queue *rx_q,
- 		emac_receive_skb(rx_q, skb, (u16)RRD_CVALN_TAG(&rrd),
- 				 (bool)RRD_CVTAG(&rrd));
- 
--		netdev->last_rx = jiffies;
- 		(*num_pkts)++;
- 	} while (*num_pkts < max_pkts);
- 
-diff --git a/drivers/net/ethernet/realtek/atp.c b/drivers/net/ethernet/realtek/atp.c
-index 570ed3bd3cbf..9bcd4aefc9c5 100644
---- a/drivers/net/ethernet/realtek/atp.c
-+++ b/drivers/net/ethernet/realtek/atp.c
-@@ -170,7 +170,7 @@ struct net_local {
-     spinlock_t lock;
-     struct net_device *next_module;
-     struct timer_list timer;	/* Media selection timer. */
--    long last_rx_time;		/* Last Rx, in jiffies, to handle Rx hang. */
-+    unsigned long last_rx_time;	/* Last Rx, in jiffies, to handle Rx hang. */
-     int saved_tx_size;
-     unsigned int tx_unit_busy:1;
-     unsigned char re_tx,	/* Number of packet retransmissions. */
-@@ -668,11 +668,11 @@ static irqreturn_t atp_interrupt(int irq, void *dev_instance)
- 			}
- 			num_tx_since_rx++;
- 		} else if (num_tx_since_rx > 8 &&
--			   time_after(jiffies, dev->last_rx + HZ)) {
-+			   time_after(jiffies, lp->last_rx_time + HZ)) {
- 			if (net_debug > 2)
- 				printk(KERN_DEBUG "%s: Missed packet? No Rx after %d Tx and "
- 					   "%ld jiffies status %02x  CMR1 %02x.\n", dev->name,
--					   num_tx_since_rx, jiffies - dev->last_rx, status,
-+					   num_tx_since_rx, jiffies - lp->last_rx_time, status,
- 					   (read_nibble(ioaddr, CMR1) >> 3) & 15);
- 			dev->stats.rx_missed_errors++;
- 			hardware_init(dev);
-@@ -789,7 +789,6 @@ static void net_rx(struct net_device *dev)
- 		read_block(ioaddr, pkt_len, skb_put(skb,pkt_len), dev->if_port);
- 		skb->protocol = eth_type_trans(skb, dev);
- 		netif_rx(skb);
--		dev->last_rx = jiffies;
- 		dev->stats.rx_packets++;
- 		dev->stats.rx_bytes += pkt_len;
- 	}
-diff --git a/drivers/net/ethernet/smsc/smc91c92_cs.c b/drivers/net/ethernet/smsc/smc91c92_cs.c
-index 67154621abcf..97280daba27f 100644
---- a/drivers/net/ethernet/smsc/smc91c92_cs.c
-+++ b/drivers/net/ethernet/smsc/smc91c92_cs.c
-@@ -113,6 +113,7 @@ struct smc_private {
-     struct mii_if_info		mii_if;
-     int				duplex;
-     int				rx_ovrn;
-+    unsigned long		last_rx;
+ Compilation
+ -----------
+diff --git a/alfred.h b/alfred.h
+index 2e8db1e..6bdaac7 100644
+--- a/alfred.h
++++ b/alfred.h
+@@ -48,6 +48,11 @@ enum data_source {
+ 	SOURCE_SYNCED = 2,
  };
  
- /* Special definitions for Megahertz multifunction cards */
-@@ -1491,6 +1492,7 @@ static void smc_rx(struct net_device *dev)
-     if (!(rx_status & RS_ERRORS)) {
- 	/* do stuff to make a new packet */
- 	struct sk_buff *skb;
-+	struct smc_private *smc = netdev_priv(dev);
- 	
- 	/* Note: packet_length adds 5 or 6 extra bytes here! */
- 	skb = netdev_alloc_skb(dev, packet_length+2);
-@@ -1509,7 +1511,7 @@ static void smc_rx(struct net_device *dev)
- 	skb->protocol = eth_type_trans(skb, dev);
- 	
- 	netif_rx(skb);
--	dev->last_rx = jiffies;
-+	smc->last_rx = jiffies;
- 	dev->stats.rx_packets++;
- 	dev->stats.rx_bytes += packet_length;
- 	if (rx_status & RS_MULTICAST)
-@@ -1790,7 +1792,7 @@ static void media_check(u_long arg)
-     }
++typedef union {
++	struct in_addr ipv4;
++	struct in6_addr ipv6;
++} alfred_addr;
++
+ struct dataset {
+ 	struct alfred_data data;
+ 	unsigned char *buf;
+@@ -80,7 +85,7 @@ struct transaction_head {
  
-     /* Ignore collisions unless we've had no rx's recently */
--    if (time_after(jiffies, dev->last_rx + HZ)) {
-+    if (time_after(jiffies, smc->last_rx + HZ)) {
- 	if (smc->tx_err || (smc->media_status & EPH_16COL))
- 	    media |= EPH_16COL;
-     }
-diff --git a/drivers/net/irda/bfin_sir.c b/drivers/net/irda/bfin_sir.c
-index be5bb0b7f29c..3151b580dbd6 100644
---- a/drivers/net/irda/bfin_sir.c
-+++ b/drivers/net/irda/bfin_sir.c
-@@ -22,7 +22,7 @@ static int max_rate = 57600;
- static int max_rate = 115200;
- #endif
+ struct server {
+ 	struct ether_addr hwaddr;
+-	struct in6_addr address;
++	alfred_addr address;
+ 	struct timespec last_seen;
+ 	uint8_t tq;
+ };
+@@ -100,11 +105,12 @@ enum clientmode {
  
--static void turnaround_delay(unsigned long last_jif, int mtt)
-+static void turnaround_delay(int mtt)
- {
- 	long ticks;
+ struct interface {
+ 	struct ether_addr hwaddr;
+-	struct in6_addr address;
++	alfred_addr address;
+ 	uint32_t scope_id;
+ 	char *interface;
+ 	int netsock;
+ 	int netsock_mcast;
++	int netsock_arp;
  
-@@ -209,7 +209,6 @@ static void bfin_sir_rx_chars(struct net_device *dev)
- 	UART_CLEAR_LSR(port);
- 	ch = UART_GET_CHAR(port);
- 	async_unwrap_char(dev, &self->stats, &self->rx_buff, ch);
--	dev->last_rx = jiffies;
+ 	struct hashtable_t *server_hash;
+ 
+@@ -122,6 +128,7 @@ struct globals {
+ 	int clientmode_arg;
+ 	int clientmode_version;
+ 	int verbose;
++	int ipv4mode;
+ 
+ 	int unix_sock;
+ 	const char *unix_path;
+@@ -142,7 +149,7 @@ struct globals {
+ 
+ #define MAX_PAYLOAD ((1 << 16) - 1 - sizeof(struct udphdr))
+ 
+-extern const struct in6_addr in6addr_localmcast;
++extern alfred_addr alfred_mcast;
+ 
+ /* server.c */
+ int alfred_server(struct globals *globals);
+@@ -169,13 +176,13 @@ static inline bool transaction_finished(struct transaction_head *head)
+ 
+ /* send.c */
+ int push_data(struct globals *globals, struct interface *interface,
+-	      struct in6_addr *destination, enum data_source max_source_level,
++	      alfred_addr *destination, enum data_source max_source_level,
+ 	      int type_filter, uint16_t tx_id);
+ int announce_master(struct globals *globals);
+ int push_local_data(struct globals *globals);
+ int sync_data(struct globals *globals);
+-ssize_t send_alfred_packet(struct interface *interface,
+-			   const struct in6_addr *dest, void *buf, int length);
++ssize_t send_alfred_packet(struct globals *globals, struct interface *interface,
++			   const alfred_addr *dest, void *buf, int length);
+ /* unix_sock.c */
+ int unix_sock_read(struct globals *globals);
+ int unix_sock_open_daemon(struct globals *globals);
+@@ -195,10 +202,12 @@ int netsock_prepare_select(struct globals *globals, fd_set *fds, int maxsock);
+ void netsock_check_error(struct globals *globals, fd_set *errfds);
+ int netsock_receive_packet(struct globals *globals, fd_set *fds);
+ int netsock_own_address(const struct globals *globals,
+-			const struct in6_addr *address);
++			const alfred_addr *address);
+ /* util.c */
+ int time_diff(struct timespec *tv1, struct timespec *tv2,
+ 	      struct timespec *tvdiff);
+ void time_random_seed(void);
+ uint16_t get_random_id(void);
+ bool is_valid_ether_addr(uint8_t *addr);
++int ipv4_arp_request(struct interface *interface, const alfred_addr *addr,
++		     struct ether_addr *mac);
+diff --git a/batadv_query.c b/batadv_query.c
+index ac45b9b..6ec086b 100644
+--- a/batadv_query.c
++++ b/batadv_query.c
+@@ -80,22 +80,22 @@ out:
+ 	return ret;
  }
  
- static irqreturn_t bfin_sir_rx_int(int irq, void *dev_id)
-@@ -510,7 +509,7 @@ static void bfin_sir_send_work(struct work_struct *work)
- 	int tx_cnt = 10;
+-int mac_to_ipv6(const struct ether_addr *mac, struct in6_addr *addr)
++int mac_to_ipv6(const struct ether_addr *mac, alfred_addr *addr)
+ {
+ 	memset(addr, 0, sizeof(*addr));
+-	addr->s6_addr[0] = 0xfe;
+-	addr->s6_addr[1] = 0x80;
++	addr->ipv6.s6_addr[0] = 0xfe;
++	addr->ipv6.s6_addr[1] = 0x80;
  
- 	while (bfin_sir_is_receiving(dev) && --tx_cnt)
--		turnaround_delay(dev->last_rx, self->mtt);
-+		turnaround_delay(self->mtt);
+-	addr->s6_addr[8] = mac->ether_addr_octet[0] ^ 0x02;
+-	addr->s6_addr[9] = mac->ether_addr_octet[1];
+-	addr->s6_addr[10] = mac->ether_addr_octet[2];
++	addr->ipv6.s6_addr[8] = mac->ether_addr_octet[0] ^ 0x02;
++	addr->ipv6.s6_addr[9] = mac->ether_addr_octet[1];
++	addr->ipv6.s6_addr[10] = mac->ether_addr_octet[2];
  
- 	bfin_sir_stop_rx(port);
+-	addr->s6_addr[11] = 0xff;
+-	addr->s6_addr[12] = 0xfe;
++	addr->ipv6.s6_addr[11] = 0xff;
++	addr->ipv6.s6_addr[12] = 0xfe;
  
-diff --git a/drivers/net/irda/sh_sir.c b/drivers/net/irda/sh_sir.c
-index e3fe9a286136..fede6864c737 100644
---- a/drivers/net/irda/sh_sir.c
-+++ b/drivers/net/irda/sh_sir.c
-@@ -547,7 +547,6 @@ static void sh_sir_rx(struct sh_sir_self *self)
+-	addr->s6_addr[13] = mac->ether_addr_octet[3];
+-	addr->s6_addr[14] = mac->ether_addr_octet[4];
+-	addr->s6_addr[15] = mac->ether_addr_octet[5];
++	addr->ipv6.s6_addr[13] = mac->ether_addr_octet[3];
++	addr->ipv6.s6_addr[14] = mac->ether_addr_octet[4];
++	addr->ipv6.s6_addr[15] = mac->ether_addr_octet[5];
  
- 		async_unwrap_char(self->ndev, &self->ndev->stats,
- 				  &self->rx_buff, (u8)data);
--		self->ndev->last_rx = jiffies;
+ 	return 0;
+ }
+@@ -118,17 +118,29 @@ int is_ipv6_eui64(const struct in6_addr *addr)
+ 	return 1;
+ }
  
- 		if (EOFD & sh_sir_read(self, IRIF_SIR_FRM))
- 			continue;
-diff --git a/drivers/staging/ks7010/ks_hostif.c b/drivers/staging/ks7010/ks_hostif.c
-index 1fbd495e5e63..c7652c35be19 100644
---- a/drivers/staging/ks7010/ks_hostif.c
-+++ b/drivers/staging/ks7010/ks_hostif.c
-@@ -461,7 +461,6 @@ void hostif_data_indication(struct ks_wlan_private *priv)
- 			skb->protocol = eth_type_trans(skb, skb->dev);
- 			priv->nstats.rx_packets++;
- 			priv->nstats.rx_bytes += rx_ind_size;
--			skb->dev->last_rx = jiffies;
- 			netif_rx(skb);
- 		} else {
- 			priv->nstats.rx_dropped++;
-@@ -494,7 +493,6 @@ void hostif_data_indication(struct ks_wlan_private *priv)
- 			skb->protocol = eth_type_trans(skb, skb->dev);
- 			priv->nstats.rx_packets++;
- 			priv->nstats.rx_bytes += rx_ind_size;
--			skb->dev->last_rx = jiffies;
- 			netif_rx(skb);
- 		} else {
- 			priv->nstats.rx_dropped++;
-diff --git a/drivers/staging/netlogic/xlr_net.c b/drivers/staging/netlogic/xlr_net.c
-index f84069ffa8c6..781ef623233e 100644
---- a/drivers/staging/netlogic/xlr_net.c
-+++ b/drivers/staging/netlogic/xlr_net.c
-@@ -155,7 +155,6 @@ static void xlr_net_fmn_handler(int bkt, int src_stnid, int size, int code,
- 		skb_reserve(skb, BYTE_OFFSET);
- 		skb_put(skb, length);
- 		skb->protocol = eth_type_trans(skb, skb->dev);
--		skb->dev->last_rx = jiffies;
- 		netif_rx(skb);
- 		/* Fill rx ring */
- 		skb_data = xlr_alloc_skb();
-diff --git a/drivers/staging/rtl8192e/rtllib_rx.c b/drivers/staging/rtl8192e/rtllib_rx.c
-index e5ba7d1a809f..43a77745e6fb 100644
---- a/drivers/staging/rtl8192e/rtllib_rx.c
-+++ b/drivers/staging/rtl8192e/rtllib_rx.c
-@@ -1375,7 +1375,6 @@ static int rtllib_rx_InfraAdhoc(struct rtllib_device *ieee, struct sk_buff *skb,
- 		ieee->LinkDetectInfo.NumRecvDataInPeriod++;
- 		ieee->LinkDetectInfo.NumRxOkInPeriod++;
- 	}
--	dev->last_rx = jiffies;
+-int ipv6_to_mac(const struct in6_addr *addr, struct ether_addr *mac)
++int ipv6_to_mac(const alfred_addr *addr, struct ether_addr *mac)
+ {
+-	if (!is_ipv6_eui64(addr))
++	if (!is_ipv6_eui64(&addr->ipv6))
+ 		return -EINVAL;
  
- 	/* Data frame - extract src/dst addresses */
- 	rtllib_rx_extract_addr(ieee, hdr, dst, src, bssid);
-diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_rx.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_rx.c
-index 82f654305414..b1f2fdfcb718 100644
---- a/drivers/staging/rtl8192u/ieee80211/ieee80211_rx.c
-+++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_rx.c
-@@ -1103,11 +1103,7 @@ int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
- 		stats = hostap_get_stats(dev);
- 		from_assoc_ap = 1;
- 	}
--#endif
--
--	dev->last_rx = jiffies;
+-	mac->ether_addr_octet[0] = addr->s6_addr[8] ^ 0x02;
+-	mac->ether_addr_octet[1] = addr->s6_addr[9];
+-	mac->ether_addr_octet[2] = addr->s6_addr[10];
+-	mac->ether_addr_octet[3] = addr->s6_addr[13];
+-	mac->ether_addr_octet[4] = addr->s6_addr[14];
+-	mac->ether_addr_octet[5] = addr->s6_addr[15];
++	mac->ether_addr_octet[0] = addr->ipv6.s6_addr[8] ^ 0x02;
++	mac->ether_addr_octet[1] = addr->ipv6.s6_addr[9];
++	mac->ether_addr_octet[2] = addr->ipv6.s6_addr[10];
++	mac->ether_addr_octet[3] = addr->ipv6.s6_addr[13];
++	mac->ether_addr_octet[4] = addr->ipv6.s6_addr[14];
++	mac->ether_addr_octet[5] = addr->ipv6.s6_addr[15];
++
++	if (!is_valid_ether_addr(mac->ether_addr_octet))
++		return -EINVAL;
++
++	return 0;
++}
++
++int ipv4_to_mac(struct interface *interface,
++		const alfred_addr *addr, struct ether_addr *mac)
++{
++	if (ipv4_arp_request(interface, addr, mac) < 0)
++		return -EINVAL;
  
--#ifdef NOT_YET
- 	if ((ieee->iw_mode == IW_MODE_MASTER ||
- 	     ieee->iw_mode == IW_MODE_REPEAT) &&
- 	    !from_assoc_ap) {
-diff --git a/drivers/staging/wlan-ng/hfa384x_usb.c b/drivers/staging/wlan-ng/hfa384x_usb.c
-index 4fe037aeef12..6134eba5cad4 100644
---- a/drivers/staging/wlan-ng/hfa384x_usb.c
-+++ b/drivers/staging/wlan-ng/hfa384x_usb.c
-@@ -3409,7 +3409,6 @@ static void hfa384x_usbin_rx(struct wlandevice *wlandev, struct sk_buff *skb)
- 			&usbin->rxfrm.desc.frame_control, hdrlen);
+ 	if (!is_valid_ether_addr(mac->ether_addr_octet))
+ 		return -EINVAL;
+diff --git a/batadv_query.h b/batadv_query.h
+index 0df8a35..9aa4f0e 100644
+--- a/batadv_query.h
++++ b/batadv_query.h
+@@ -28,8 +28,10 @@ struct ether_addr *translate_mac(const char *mesh_iface,
+ 				 const struct ether_addr *mac);
+ uint8_t get_tq(const char *mesh_iface, struct ether_addr *mac);
+ int batadv_interface_check(const char *mesh_iface);
+-int mac_to_ipv6(const struct ether_addr *mac, struct in6_addr *addr);
+-int ipv6_to_mac(const struct in6_addr *addr, struct ether_addr *mac);
++int mac_to_ipv6(const struct ether_addr *mac, alfred_addr *addr);
++int ipv6_to_mac(const alfred_addr *addr, struct ether_addr *mac);
++int ipv4_to_mac(struct interface *interface,
++		const alfred_addr *addr, struct ether_addr *mac);
+ int is_ipv6_eui64(const struct in6_addr *addr);
  
- 		skb->dev = wlandev->netdev;
--		skb->dev->last_rx = jiffies;
- 
- 		/* And set the frame length properly */
- 		skb_trim(skb, data_len + hdrlen);
-diff --git a/drivers/staging/wlan-ng/p80211netdev.c b/drivers/staging/wlan-ng/p80211netdev.c
-index 73fcf07254fe..53dbbd69e552 100644
---- a/drivers/staging/wlan-ng/p80211netdev.c
-+++ b/drivers/staging/wlan-ng/p80211netdev.c
-@@ -252,7 +252,6 @@ static int p80211_convert_to_ether(struct wlandevice *wlandev,
+ #endif
+diff --git a/client.c b/client.c
+index 357fdb9..4102046 100644
+--- a/client.c
++++ b/client.c
+@@ -239,7 +239,7 @@ static int check_interface(const char *iface)
+ 		return -1;
  	}
  
- 	if (skb_p80211_to_ether(wlandev, wlandev->ethconv, skb) == 0) {
--		skb->dev->last_rx = jiffies;
- 		wlandev->netdev->stats.rx_packets++;
- 		wlandev->netdev->stats.rx_bytes += skb->len;
- 		netif_rx_ni(skb);
-@@ -287,7 +286,6 @@ static void p80211netdev_rx_bh(unsigned long arg)
- 				skb->ip_summed = CHECKSUM_NONE;
- 				skb->pkt_type = PACKET_OTHERHOST;
- 				skb->protocol = htons(ETH_P_80211_RAW);
--				dev->last_rx = jiffies;
- 
- 				dev->stats.rx_packets++;
- 				dev->stats.rx_bytes += skb->len;
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 97ae0ac513ee..3868c32d98af 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -1551,7 +1551,6 @@ enum netdev_priv_flags {
-  *	@ax25_ptr:	AX.25 specific data
-  *	@ieee80211_ptr:	IEEE 802.11 specific data, assign before registering
+-	sock = socket(PF_INET6, SOCK_DGRAM, 0);
++	sock = socket(PF_INET, SOCK_DGRAM, 0);
+ 	if (sock < 0) {
+ 		perror("can't open socket");
+ 		return -1;
+diff --git a/main.c b/main.c
+index 0d30ea4..446eecf 100644
+--- a/main.c
++++ b/main.c
+@@ -19,6 +19,7 @@
   *
-- *	@last_rx:	Time of last Rx
-  *	@dev_addr:	Hw address (before bcast,
-  *			because most packets are unicast)
-  *
-@@ -1777,8 +1776,6 @@ struct net_device {
- /*
-  * Cache lines mostly used on receive path (including eth_type_trans())
   */
--	unsigned long		last_rx;
+ 
++#include <arpa/inet.h>
+ #include <getopt.h>
+ #include <signal.h>
+ #include <stdio.h>
+@@ -61,6 +62,7 @@ static void alfred_usage(void)
+ 	printf("                                      other masters\n");
+ 	printf("  -p, --sync-period [period]          set synchronization period, in seconds\n");
+ 	printf("                                      fractional seconds are supported (i.e. 0.2 = 5 Hz)\n");
++	printf("  -4 [group-address]                  specify IPv4 multicast address and operate in IPv4 mode");
+ 	printf("\n");
+ 	printf("  -u, --unix-path [path]              path to unix socket used for client-server\n");
+ 	printf("                                      communication (default: \""ALFRED_SOCK_PATH_DEFAULT"\")\n");
+@@ -196,6 +198,7 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 	globals->mesh_iface = "bat0";
+ 	globals->unix_path = ALFRED_SOCK_PATH_DEFAULT;
+ 	globals->verbose = 0;
++	globals->ipv4mode = 0;
+ 	globals->update_command = NULL;
+ 	globals->sync_period.tv_sec = ALFRED_INTERVAL;
+ 	globals->sync_period.tv_nsec = 0;
+@@ -204,7 +207,7 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 
+ 	time_random_seed();
+ 
+-	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:dc:p:", long_options,
++	while ((opt = getopt_long(argc, argv, "ms:r:hi:b:vV:M:I:u:dc:p:4:", long_options,
+ 				  &opt_ind)) != -1) {
+ 		switch (opt) {
+ 		case 'r':
+@@ -273,10 +276,15 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 			return NULL;
+ 		case 'p':
+ 			sync_period = strtod(optarg, NULL);
+-			globals->sync_period.tv_sec = (int) sync_period;
+-			globals->sync_period.tv_nsec = (double) (sync_period - (int) sync_period) * 1e9;
++			globals->sync_period.tv_sec = (int)sync_period;
++			globals->sync_period.tv_nsec = (double)(sync_period - (int)sync_period) * 1e9;
+ 			printf(" ** Setting sync interval to: %.9f seconds (%ld.%09ld)\n", sync_period, globals->sync_period.tv_sec, globals->sync_period.tv_nsec);
+ 			break;
++		case '4':
++			globals->ipv4mode = 1;
++			inet_pton(AF_INET, optarg, &alfred_mcast.ipv4);
++			printf(" ** IPv4 Multicast Mode: %x\n", alfred_mcast.ipv4.s_addr);
++			break;
+ 		case 'h':
+ 		default:
+ 			alfred_usage();
+diff --git a/man/alfred.8 b/man/alfred.8
+index 5936e64..a2c3d4c 100644
+--- a/man/alfred.8
++++ b/man/alfred.8
+@@ -123,6 +123,11 @@ as arguments.
+ Specify alfred synchronization period, in seconds. If not specified, the default
+ ALFRED_INTERVAL setting of 10 seconds will be used. Fractional seconds are
+ supported.
++.TP
++\fB\-4 \fIgroup-address\fP \fP
++Specify the IPv4 multicast group address and enable IPv4 data-sharing (disabling
++IPv6 communication). This option is required on systems that do not support IPv6
++addressing.
+ .
+ .SH EXAMPLES
+ Start an alfred server listening on bridge br0 (assuming that this bridge
+diff --git a/netsock.c b/netsock.c
+index 86db8a6..3ddde69 100644
+--- a/netsock.c
++++ b/netsock.c
+@@ -43,10 +43,12 @@
+ #include "list.h"
+ #include "hash.h"
+ 
+-const struct in6_addr in6addr_localmcast = {{{ 0xff, 0x02, 0x00, 0x00,
+-					       0x00, 0x00, 0x00, 0x00,
+-					       0x00, 0x00, 0x00, 0x00,
+-					       0x00, 0x00, 0x00, 0x01 } } };
++alfred_addr alfred_mcast = {
++		.ipv6 = {{{ 0xff, 0x02, 0x00, 0x00,
++			    0x00, 0x00, 0x00, 0x00,
++			    0x00, 0x00, 0x00, 0x00,
++			    0x00, 0x00, 0x00, 0x01 } } }
++};
+ 
+ static int server_compare(void *d1, void *d2)
+ {
+@@ -262,7 +264,7 @@ static int netsock_open(struct interface *interface)
+ 	memset(&sin6_mc, 0, sizeof(sin6_mc));
+ 	sin6_mc.sin6_port = htons(ALFRED_PORT);
+ 	sin6_mc.sin6_family = AF_INET6;
+-	memcpy(&sin6_mc.sin6_addr, &in6addr_localmcast,
++	memcpy(&sin6_mc.sin6_addr, &alfred_mcast,
+ 	       sizeof(sin6_mc.sin6_addr));
+ 	sin6_mc.sin6_scope_id = interface->scope_id;
+ 
+@@ -291,7 +293,7 @@ static int netsock_open(struct interface *interface)
+ 		goto err;
+ 	}
+ 
+-	memcpy(&mreq.ipv6mr_multiaddr, &in6addr_localmcast,
++	memcpy(&mreq.ipv6mr_multiaddr, &alfred_mcast,
+ 	       sizeof(mreq.ipv6mr_multiaddr));
+ 	mreq.ipv6mr_interface = interface->scope_id;
+ 
+@@ -335,6 +337,132 @@ err:
+ 	return -1;
+ }
+ 
++static int netsock_open4(struct interface *interface)
++{
++	int sock;
++	int sock_mc;
++	struct sockaddr_in sin4, sin_mc;
++	struct ip_mreq mreq;
++	struct ifreq ifr;
++	int ret;
++
++	interface->netsock = -1;
++	interface->netsock_mcast = -1;
++
++	sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
++	if (sock  < 0) {
++		perror("ipv4: can't open socket");
++		return -1;
++	}
++
++	sock_mc = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
++	if (sock_mc  < 0) {
++		perror("ipv4: can't open mc socket");
++		return -1;
++	}
++
++	memset(&ifr, 0, sizeof(ifr));
++	strncpy(ifr.ifr_name, interface->interface, IFNAMSIZ);
++	ifr.ifr_name[IFNAMSIZ - 1] = '\0';
++	if (ioctl(sock_mc, SIOCGIFHWADDR, &ifr) == -1) {
++		perror("ipv4: can't get MAC address");
++		goto err4;
++	}
++	memcpy(&interface->hwaddr, &ifr.ifr_hwaddr.sa_data, 6);
++
++	memset(&sin4, 0, sizeof(sin4));
++	sin4.sin_port = htons(ALFRED_PORT);
++	sin4.sin_family = AF_INET;
++	sin4.sin_addr.s_addr = INADDR_ANY;
++
++	memset(&sin_mc, 0, sizeof(sin_mc));
++	sin_mc.sin_port = htons(ALFRED_PORT);
++	sin_mc.sin_family = AF_INET;
++	memcpy(&sin_mc.sin_addr, &alfred_mcast, sizeof(sin_mc.sin_addr));
++
++	enable_raw_bind_capability(1);
++	if (setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE, interface->interface,
++		       strlen(interface->interface) + 1)) {
++		perror("ipv4: can't bind to device");
++		goto err4;
++	}
++
++	if (setsockopt(sock_mc, SOL_SOCKET, SO_BINDTODEVICE,
++		       interface->interface, strlen(interface->interface) + 1)) {
++		perror("ipv4: can't bind to device");
++		goto err4;
++	}
++	enable_raw_bind_capability(0);
++
++	ret = 1;
++	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &ret, sizeof(ret)) < 0) {
++		perror("ipv4: can't set reuse flag");
++		goto err4;
++	}
++	if (setsockopt(sock_mc, SOL_SOCKET, SO_REUSEADDR, &ret, sizeof(ret)) < 0) {
++		perror("ipv4: can't set mc reuse flag");
++		goto err4;
++	}
++
++	if (bind(sock, (struct sockaddr *)&sin4, sizeof(sin4)) < 0) {
++		perror("ipv4: can't bind");
++		goto err4;
++	}
++
++	if (bind(sock_mc, (struct sockaddr *)&sin_mc, sizeof(sin_mc)) < 0) {
++		perror("ipv4: can't bind mc");
++		goto err4;
++	}
++
++	memcpy(&mreq.imr_multiaddr, &alfred_mcast.ipv4, sizeof(mreq.imr_multiaddr));
++
++	if (ioctl(sock_mc, SIOCGIFADDR, &ifr) < 0) {
++		perror("ipv4: can't get IP address");
++		goto err4;
++	}
++	mreq.imr_interface = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr;
++	memcpy(&interface->address.ipv4,
++	       &((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr,
++	       sizeof(struct in_addr));
++
++	if (setsockopt(sock_mc, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq))) {
++		perror("ipv4: can't add multicast membership");
++		goto err4;
++	}
++
++	ret = fcntl(sock, F_GETFL, 0);
++	if (ret < 0) {
++		perror("failed to get file status flags");
++		goto err4;
++	}
++
++	ret = fcntl(sock, F_SETFL, ret | O_NONBLOCK);
++	if (ret < 0) {
++		perror("failed to set file status flags");
++		goto err4;
++	}
++
++	ret = fcntl(sock_mc, F_GETFL, 0);
++	if (ret < 0) {
++		perror("ipv4: failed to get file status flags");
++		goto err4;
++	}
++
++	ret = fcntl(sock_mc, F_SETFL, ret | O_NONBLOCK);
++	if (ret < 0) {
++		perror("ipv4: failed to set file status flags");
++		goto err4;
++	}
++
++	interface->netsock = sock;
++	interface->netsock_mcast = sock_mc;
++
++	return 0;
++err4:
++	close(sock_mc);
++	return -1;
++}
++
+ int netsock_open_all(struct globals *globals)
+ {
+ 	int num_socks = 0;
+@@ -342,7 +470,11 @@ int netsock_open_all(struct globals *globals)
+ 	struct interface *interface;
+ 
+ 	list_for_each_entry(interface, &globals->interfaces, list) {
+-		ret = netsock_open(interface);
++		if (globals->ipv4mode)
++			ret = netsock_open4(interface);
++		else
++			ret = netsock_open(interface);
++
+ 		if (ret >= 0)
+ 			num_socks++;
+ 	}
+@@ -355,8 +487,12 @@ void netsock_reopen(struct globals *globals)
+ 	struct interface *interface;
+ 
+ 	list_for_each_entry(interface, &globals->interfaces, list) {
+-		if (interface->netsock < 0)
+-			netsock_open(interface);
++		if (interface->netsock < 0) {
++			if (globals->ipv4mode)
++				netsock_open4(interface);
++			else
++				netsock_open(interface);
++		}
+ 	}
+ }
+ 
+@@ -430,7 +566,7 @@ int netsock_receive_packet(struct globals *globals, fd_set *fds)
+ }
+ 
+ int netsock_own_address(const struct globals *globals,
+-			const struct in6_addr *address)
++			const alfred_addr *address)
+ {
+ 	struct interface *interface;
+ 
+diff --git a/recv.c b/recv.c
+index bb8cc05..3fd964d 100644
+--- a/recv.c
++++ b/recv.c
+@@ -190,7 +190,8 @@ static int finish_alfred_transaction(struct globals *globals,
+ }
+ 
+ static int process_alfred_push_data(struct globals *globals,
+-				    struct in6_addr *source,
++				    struct interface *interface,
++				    alfred_addr *source,
+ 				    struct alfred_push_data_v0 *push)
+ {
+ 	int len;
+@@ -200,7 +201,10 @@ static int process_alfred_push_data(struct globals *globals,
+ 	struct transaction_packet *transaction_packet;
+ 	int found;
+ 
+-	ret = ipv6_to_mac(source, &mac);
++	if (globals->ipv4mode)
++		ret = ipv4_to_mac(interface, source, &mac);
++	else
++		ret = ipv6_to_mac(source, &mac);
+ 	if (ret < 0)
+ 		goto err;
+ 
+@@ -260,7 +264,7 @@ err:
+ static int
+ process_alfred_announce_master(struct globals *globals,
+ 			       struct interface *interface,
+-			       struct in6_addr *source,
++			       alfred_addr *source,
+ 			       struct alfred_announce_master_v0 *announce)
+ {
+ 	struct server *server;
+@@ -271,7 +275,10 @@ process_alfred_announce_master(struct globals *globals,
+ 
+ 	len = ntohs(announce->header.length);
+ 
+-	ret = ipv6_to_mac(source, &mac);
++	if (globals->ipv4mode)
++		ret = ipv4_to_mac(interface, source, &mac);
++	else
++		ret = ipv6_to_mac(source, &mac);
+ 	if (ret < 0)
+ 		return -1;
+ 
+@@ -316,7 +323,7 @@ process_alfred_announce_master(struct globals *globals,
+ 
+ static int process_alfred_request(struct globals *globals,
+ 				  struct interface *interface,
+-				  struct in6_addr *source,
++				  alfred_addr *source,
+ 				  struct alfred_request_v0 *request)
+ {
+ 	int len;
+@@ -336,7 +343,8 @@ static int process_alfred_request(struct globals *globals,
+ }
+ 
+ static int process_alfred_status_txend(struct globals *globals,
+-				       struct in6_addr *source,
++				       struct interface *interface,
++				       alfred_addr *source,
+ 				       struct alfred_status_v0 *request)
+ {
+ 	struct transaction_head search, *head;
+@@ -351,7 +359,10 @@ static int process_alfred_status_txend(struct globals *globals,
+ 	if (len != (sizeof(*request) - sizeof(request->header)))
+ 		return -1;
+ 
+-	ret = ipv6_to_mac(source, &mac);
++	if (globals->ipv4mode)
++		ret = ipv4_to_mac(interface, source, &mac);
++	else
++		ret = ipv6_to_mac(source, &mac);
+ 	if (ret < 0)
+ 		return -1;
+ 
+@@ -389,15 +400,25 @@ int recv_alfred_packet(struct globals *globals, struct interface *interface,
+ 	uint8_t buf[MAX_PAYLOAD];
+ 	ssize_t length;
+ 	struct alfred_tlv *packet;
+-	struct sockaddr_in6 source;
++	struct sockaddr_in *source;
++	struct sockaddr_in source4;
++	struct sockaddr_in6 source6;
+ 	socklen_t sourcelen;
++	alfred_addr alfred_source;
+ 
+ 	if (interface->netsock < 0)
+ 		return -1;
+ 
+-	sourcelen = sizeof(source);
++	if (globals->ipv4mode) {
++		source = (struct sockaddr_in *)&source4;
++		sourcelen = sizeof(source4);
++	} else {
++		source = (struct sockaddr_in *)&source6;
++		sourcelen = sizeof(source6);
++	}
++
+ 	length = recvfrom(recv_sock, buf, sizeof(buf), 0,
+-			  (struct sockaddr *)&source, &sourcelen);
++			  (struct sockaddr *)source, &sourcelen);
+ 	if (length <= 0) {
+ 		perror("read from network socket failed");
+ 		return -1;
+@@ -405,12 +426,18 @@ int recv_alfred_packet(struct globals *globals, struct interface *interface,
+ 
+ 	packet = (struct alfred_tlv *)buf;
+ 
+-	/* drop packets not sent over link-local ipv6 */
+-	if (!is_ipv6_eui64(&source.sin6_addr))
+-		return -1;
++	if (globals->ipv4mode) {
++		memcpy(&alfred_source, &source4.sin_addr, sizeof(source4.sin_addr));
++	} else {
++		memcpy(&alfred_source, &source6.sin6_addr, sizeof(source6.sin6_addr));
++
++		/* drop packets not sent over link-local ipv6 */
++		if (!is_ipv6_eui64(&alfred_source.ipv6))
++			return -1;
++	}
+ 
+ 	/* drop packets from ourselves */
+-	if (netsock_own_address(globals, &source.sin6_addr))
++	if (netsock_own_address(globals, &alfred_source))
+ 		return -1;
+ 
+ 	/* drop truncated packets */
+@@ -424,20 +451,20 @@ int recv_alfred_packet(struct globals *globals, struct interface *interface,
+ 
+ 	switch (packet->type) {
+ 	case ALFRED_PUSH_DATA:
+-		process_alfred_push_data(globals, &source.sin6_addr,
++		process_alfred_push_data(globals, interface, &alfred_source,
+ 					 (struct alfred_push_data_v0 *)packet);
+ 		break;
+ 	case ALFRED_ANNOUNCE_MASTER:
+ 		process_alfred_announce_master(globals, interface,
+-					       &source.sin6_addr,
++					       &alfred_source,
+ 					       (struct alfred_announce_master_v0 *)packet);
+ 		break;
+ 	case ALFRED_REQUEST:
+-		process_alfred_request(globals, interface, &source.sin6_addr,
++		process_alfred_request(globals, interface, &alfred_source,
+ 				       (struct alfred_request_v0 *)packet);
+ 		break;
+ 	case ALFRED_STATUS_TXEND:
+-		process_alfred_status_txend(globals, &source.sin6_addr,
++		process_alfred_status_txend(globals, interface, &alfred_source,
+ 					    (struct alfred_status_v0 *)packet);
+ 		break;
+ 	default:
+diff --git a/send.c b/send.c
+index c7a2af2..b566503 100644
+--- a/send.c
++++ b/send.c
+@@ -42,7 +42,7 @@ int announce_master(struct globals *globals)
+ 		announcement.header.version = ALFRED_VERSION;
+ 		announcement.header.length = htons(0);
+ 
+-		send_alfred_packet(interface, &in6addr_localmcast,
++		send_alfred_packet(globals, interface, &alfred_mcast,
+ 				   &announcement, sizeof(announcement));
+ 	}
+ 
+@@ -50,7 +50,7 @@ int announce_master(struct globals *globals)
+ }
+ 
+ int push_data(struct globals *globals, struct interface *interface,
+-	      struct in6_addr *destination, enum data_source max_source_level,
++	      alfred_addr *destination, enum data_source max_source_level,
+ 	      int type_filter, uint16_t tx_id)
+ {
+ 	struct hash_it_t *hashit = NULL;
+@@ -90,7 +90,7 @@ int push_data(struct globals *globals, struct interface *interface,
+ 			tlv_length += sizeof(*push) - sizeof(push->header);
+ 			push->header.length = htons(tlv_length);
+ 			push->tx.seqno = htons(seqno++);
+-			send_alfred_packet(interface, destination, push,
++			send_alfred_packet(globals, interface, destination, push,
+ 					   sizeof(*push) + total_length);
+ 			total_length = 0;
+ 		}
+@@ -114,7 +114,7 @@ int push_data(struct globals *globals, struct interface *interface,
+ 		tlv_length += sizeof(*push) - sizeof(push->header);
+ 		push->header.length = htons(tlv_length);
+ 		push->tx.seqno = htons(seqno++);
+-		send_alfred_packet(interface, destination, push,
++		send_alfred_packet(globals, interface, destination, push,
+ 				   sizeof(*push) + total_length);
+ 	}
+ 
+@@ -128,7 +128,7 @@ int push_data(struct globals *globals, struct interface *interface,
+ 		status_end.tx.id = tx_id;
+ 		status_end.tx.seqno = htons(seqno);
+ 
+-		send_alfred_packet(interface, destination, &status_end,
++		send_alfred_packet(globals, interface, destination, &status_end,
+ 				   sizeof(status_end));
+ 	}
+ 
+@@ -170,24 +170,38 @@ int push_local_data(struct globals *globals)
+ 	return 0;
+ }
+ 
+-ssize_t send_alfred_packet(struct interface *interface,
+-			   const struct in6_addr *dest, void *buf, int length)
++ssize_t send_alfred_packet(struct globals *globals, struct interface *interface,
++			   const alfred_addr *dest, void *buf, int length)
+ {
+ 	ssize_t ret;
+-	struct sockaddr_in6 dest_addr;
 -
- 	/* Interface address info used in eth_type_trans() */
- 	unsigned char		*dev_addr;
+-	memset(&dest_addr, 0, sizeof(dest_addr));
+-	dest_addr.sin6_family = AF_INET6;
+-	dest_addr.sin6_port = htons(ALFRED_PORT);
+-	dest_addr.sin6_scope_id = interface->scope_id;
+-	memcpy(&dest_addr.sin6_addr, dest, sizeof(*dest));
++	struct sockaddr *dest_addr;
++	struct sockaddr_in6 dest_addr6;
++	struct sockaddr_in dest_addr4;
++	socklen_t slen;
++
++	if (globals->ipv4mode) {
++		memset(&dest_addr4, 0, sizeof(dest_addr4));
++		dest_addr4.sin_family = AF_INET;
++		dest_addr4.sin_port = htons(ALFRED_PORT);
++		memcpy(&dest_addr4.sin_addr, &dest->ipv4, sizeof(dest->ipv4));
++
++		slen = sizeof(struct sockaddr_in);
++		dest_addr = (struct sockaddr *)&dest_addr4;
++	} else {
++		memset(&dest_addr6, 0, sizeof(dest_addr6));
++		dest_addr6.sin6_family = AF_INET6;
++		dest_addr6.sin6_port = htons(ALFRED_PORT);
++		dest_addr6.sin6_scope_id = interface->scope_id;
++		memcpy(&dest_addr6.sin6_addr, &dest->ipv6, sizeof(dest->ipv6));
++
++		slen = sizeof(struct sockaddr_in6);
++		dest_addr = (struct sockaddr *)&dest_addr6;
++	}
  
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index e7f690b571ea..36917a7b1b59 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -449,7 +449,6 @@ static void batadv_bla_send_claim(struct batadv_priv *bat_priv, u8 *mac,
- 	batadv_inc_counter(bat_priv, BATADV_CNT_RX);
- 	batadv_add_counter(bat_priv, BATADV_CNT_RX_BYTES,
- 			   skb->len + ETH_HLEN);
--	soft_iface->last_rx = jiffies;
+ 	if (interface->netsock < 0)
+ 		return 0;
  
- 	netif_rx(skb);
- out:
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 49576c5a3fe3..6394206bfcae 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -1050,7 +1050,6 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 						   bat_priv->soft_iface);
- 		bat_priv->stats.rx_packets++;
- 		bat_priv->stats.rx_bytes += skb->len + ETH_HLEN + hdr_size;
--		bat_priv->soft_iface->last_rx = jiffies;
+-	ret = sendto(interface->netsock, buf, length, 0,
+-		     (struct sockaddr *)&dest_addr,
+-		     sizeof(struct sockaddr_in6));
++	ret = sendto(interface->netsock, buf, length, 0, dest_addr, slen);
+ 	if (ret == -EPERM) {
+ 		perror("Error during sent");
+ 		close(interface->netsock);
+diff --git a/server.c b/server.c
+index f6e0c8a..2c4042a 100644
+--- a/server.c
++++ b/server.c
+@@ -218,7 +218,7 @@ static int purge_data(struct globals *globals)
+ 	return 0;
+ }
  
- 		netif_rx(skb_new);
- 		batadv_dbg(BATADV_DBG_DAT, bat_priv, "ARP request replied locally\n");
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 7b3494ae6ad9..420e19b501f2 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -481,8 +481,6 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 	batadv_add_counter(bat_priv, BATADV_CNT_RX_BYTES,
- 			   skb->len + ETH_HLEN);
+-static void check_if_socket(struct interface *interface)
++static void check_if_socket(struct interface *interface, struct globals *globals)
+ {
+ 	int sock;
+ 	struct ifreq ifr;
+@@ -226,7 +226,7 @@ static void check_if_socket(struct interface *interface)
+ 	if (interface->netsock < 0)
+ 		return;
  
--	soft_iface->last_rx = jiffies;
--
- 	/* Let the bridge loop avoidance check the packet. If will
- 	 * not handle it, we can safely push it up.
- 	 */
+-	sock = socket(PF_INET6, SOCK_DGRAM, 0);
++	sock = socket(PF_INET, SOCK_DGRAM, 0);
+ 	if (sock < 0) {
+ 		perror("can't open socket");
+ 		return;
+@@ -240,7 +240,7 @@ static void check_if_socket(struct interface *interface)
+ 		goto close;
+ 	}
+ 
+-	if (interface->scope_id != (uint32_t)ifr.ifr_ifindex) {
++	if (!globals->ipv4mode && (interface->scope_id != (uint32_t)ifr.ifr_ifindex)) {
+ 		fprintf(stderr,
+ 			"iface index changed from %"PRIu32" to %d, closing netsock\n",
+ 			interface->scope_id, ifr.ifr_ifindex);
+@@ -282,7 +282,7 @@ static void check_if_sockets(struct globals *globals)
+ 	globals->if_check = now;
+ 
+ 	list_for_each_entry(interface, &globals->interfaces, list)
+-		check_if_socket(interface);
++		check_if_socket(interface, globals);
+ }
+ 
+ static void execute_update_command(struct globals *globals)
+diff --git a/unix_sock.c b/unix_sock.c
+index 0a819a2..4a8c6e0 100644
+--- a/unix_sock.c
++++ b/unix_sock.c
+@@ -258,7 +258,7 @@ static int unix_sock_req_data(struct globals *globals,
+ 	head->client_socket = client_sock;
+ 	head->requested_type = request->requested_type;
+ 
+-	send_alfred_packet(interface, &globals->best_server->address,
++	send_alfred_packet(globals, interface, &globals->best_server->address,
+ 			   request, sizeof(*request));
+ 
+ 	return 0;
+diff --git a/util.c b/util.c
+index ea75643..84ab3af 100644
+--- a/util.c
++++ b/util.c
+@@ -23,7 +23,10 @@
+ #include <stdbool.h>
+ #include <stddef.h>
+ #include <stdint.h>
++#include <stdio.h>
+ #include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
+ #include <sys/time.h>
+ #include <time.h>
+ #include "alfred.h"
+@@ -75,3 +78,30 @@ bool is_valid_ether_addr(uint8_t addr[ETH_ALEN])
+ 
+ 	return true;
+ }
++
++int ipv4_arp_request(struct interface *interface, const alfred_addr *addr,
++		     struct ether_addr *mac)
++{
++	struct arpreq arpreq;
++	struct sockaddr_in *sin;
++
++	memset(&arpreq, 0, sizeof(arpreq));
++	memset(mac, 0, ETH_ALEN);
++
++	sin = (struct sockaddr_in *)&arpreq.arp_pa;
++	sin->sin_family = AF_INET;
++	sin->sin_addr.s_addr = addr->ipv4.s_addr;
++
++	strcpy(arpreq.arp_dev, interface->interface);
++	if (ioctl(interface->netsock, SIOCGARP, &arpreq) < 0)
++		return -1;
++
++	if (arpreq.arp_flags & ATF_COM) {
++		memcpy(mac, arpreq.arp_ha.sa_data, sizeof(*mac));
++	} else {
++		perror("arp: incomplete");
++		return -1;
++	}
++
++	return 0;
++}
 -- 
-2.11.0
-
+2.7.4
 
