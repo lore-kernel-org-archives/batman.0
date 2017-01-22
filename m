@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 22 Jan 2017 13:07:10 +0100
-Message-ID: <2527763.cX7mnL5d4j@sven-edge>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1493157.xdLuNoaAub";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: [B.A.T.M.A.N.] [PATCH 0/4] batctl: Minor cleanups related to tcpdump
+Date: Sun, 22 Jan 2017 13:07:46 +0100
+Message-Id: <20170122120749.27932-1-sven@narfation.org>
+In-Reply-To: <2527763.cX7mnL5d4j@sven-edge>
+References: <2527763.cX7mnL5d4j@sven-edge>
+Subject: [B.A.T.M.A.N.] [PATCH 1/4] batctl: tcpdump: Reset socket state on
+	initialization error
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,43 +17,184 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1493157.xdLuNoaAub
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+The raw dump_if sockets for tcpdump are closed+freed when an error happens
+during initialization. But only fully initialized sockets were correctly
+cleaned up. The socket causing the error was not handled by the standard
+cleanup code.
 
-Hi,
+Moving the dump_if initialization code in a separate function makes it
+possible to also clean up the current dump_if without increasing the code
+complexity.
 
-here are just some random cleanups/fixes for things I've noticed while having 
-a look at https://www.open-mesh.org/issues/298.
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ tcpdump.c | 143 ++++++++++++++++++++++++++++++++++----------------------------
+ 1 file changed, 78 insertions(+), 65 deletions(-)
 
-      batctl: tcpdump: Reset socket state on initialization error
-      batctl: tcpdump: Free resources on SIG(TERM|INT)
-      batctl: ping: Use sig_atomic_t variable to stop ping
-      batctl: Simplify standard error messages with perror
-
-Kind regards,
-	Sven
---nextPart1493157.xdLuNoaAub
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAliEoG4ACgkQXYcKB8Em
-e0bHxA/9GF0eRsxNOFMr5GVxNMSoT4eMAPu0Ow7uxi/AKZdtCq1xsQloKDNJ17K9
-UMKQCvc49HuabtCoEHmP36ZTmzDgxyO35FxsDcNDoejaN7DFFQFLOJuYtVm9JVbI
-jfxPTU1H0jzH6nNQVeAYtRNKWRKaVz6tcvkamOLMjZxad/DVUqqTp3gbv58K4jS0
-/Qf08JFdqeudZUR0ZGKVFPdBrQgDYN39HNoxnnQIfou9lOcUcPzyy6iQzyqUzz/e
-SmFGKbRXlyosKnOThyhmvtDtoEcefbC2uU2fRtcgaVn05iCk4W84ggGzrGictqYl
-drKqJ53eMiMNKlaAgyDLu+B2tqbBj2Ur+cG2tvc9N+yRSAg2h2KHI6nS7Ic8qz0Q
-K2w5z+cHe/duXYMxtewJm7Q8EIWNtU+3jhTkf+Ve7066OT8NuHtnsvYN3HmaI8M+
-V7/7cAUqvk1ztPAIubSUStNrtve/zhb1h2EkTYEyK0OcfAclmL7E/T8wUaVNlap+
-n0gluZobJjgH4DnY17TXsKkJHg7tM2CxQNHhvJfJl3RGNyNWKWeA1+jvHPBnziXD
-iaPxvx+HoGpMk5t95L5gdHNxxIUAoQyxq76bqtZeuvEgep+hWCLujQlTbclG/Z9M
-Vv+sYZXyTRxfcXcuHXaF9FSlb+2dhakd8/W7/emsCa6f3IIf9WY=
-=9dgb
------END PGP SIGNATURE-----
-
---nextPart1493157.xdLuNoaAub--
+diff --git a/tcpdump.c b/tcpdump.c
+index c7e0cbc..586a2ca 100644
+--- a/tcpdump.c
++++ b/tcpdump.c
+@@ -1113,9 +1113,84 @@ static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len, int rea
+ 	parse_eth_hdr(packet_buff, buff_len, read_opt, time_printed);
+ }
+ 
+-int tcpdump(int argc, char **argv)
++static struct dump_if *create_dump_interface(char *iface)
+ {
++	struct dump_if *dump_if;
+ 	struct ifreq req;
++	int res;
++
++	dump_if = malloc(sizeof(struct dump_if));
++	if (!dump_if)
++		return NULL;
++
++	memset(dump_if, 0, sizeof(struct dump_if));
++
++	dump_if->dev = iface;
++	if (strlen(dump_if->dev) > IFNAMSIZ - 1) {
++		fprintf(stderr, "Error - interface name too long: %s\n", dump_if->dev);
++		goto free_dumpif;
++	}
++
++	dump_if->raw_sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
++	if (dump_if->raw_sock < 0) {
++		fprintf(stderr, "Error - can't create raw socket: %s\n", strerror(errno));
++		goto free_dumpif;
++	}
++
++	memset(&req, 0, sizeof (struct ifreq));
++	strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
++	req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
++
++	res = ioctl(dump_if->raw_sock, SIOCGIFHWADDR, &req);
++	if (res < 0) {
++		fprintf(stderr, "Error - can't create raw socket (SIOCGIFHWADDR): %s\n", strerror(errno));
++		goto close_socket;
++	}
++
++	dump_if->hw_type = req.ifr_hwaddr.sa_family;
++
++	switch (dump_if->hw_type) {
++	case ARPHRD_ETHER:
++	case ARPHRD_IEEE80211_PRISM:
++	case ARPHRD_IEEE80211_RADIOTAP:
++		break;
++	default:
++		fprintf(stderr, "Error - interface '%s' is of unknown type: %i\n", dump_if->dev, dump_if->hw_type);
++		goto close_socket;
++	}
++
++	memset(&req, 0, sizeof (struct ifreq));
++	strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
++	req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
++
++	res = ioctl(dump_if->raw_sock, SIOCGIFINDEX, &req);
++	if (res < 0) {
++		fprintf(stderr, "Error - can't create raw socket (SIOCGIFINDEX): %s\n", strerror(errno));
++		goto close_socket;
++	}
++
++	dump_if->addr.sll_family   = AF_PACKET;
++	dump_if->addr.sll_protocol = htons(ETH_P_ALL);
++	dump_if->addr.sll_ifindex  = req.ifr_ifindex;
++
++	res = bind(dump_if->raw_sock, (struct sockaddr *)&dump_if->addr, sizeof(struct sockaddr_ll));
++	if (res < 0) {
++		fprintf(stderr, "Error - can't bind raw socket: %s\n", strerror(errno));
++		goto close_socket;
++	}
++
++	return dump_if;
++
++close_socket:
++	close(dump_if->raw_sock);
++free_dumpif:
++	free(dump_if);
++
++	return NULL;
++}
++
++int tcpdump(int argc, char **argv)
++{
+ 	struct timeval tv;
+ 	struct dump_if *dump_if, *dump_if_tmp;
+ 	struct list_head dump_if_list;
+@@ -1172,71 +1247,9 @@ int tcpdump(int argc, char **argv)
+ 	FD_ZERO(&wait_sockets);
+ 
+ 	while (argc > found_args) {
+-
+-		dump_if = malloc(sizeof(struct dump_if));
+-		memset(dump_if, 0, sizeof(struct dump_if));
+-		dump_if->raw_sock = -1;
+-
+-		dump_if->dev = argv[found_args];
+-
+-		if (strlen(dump_if->dev) > IFNAMSIZ - 1) {
+-			fprintf(stderr, "Error - interface name too long: %s\n", dump_if->dev);
+-			goto out;
+-		}
+-
+-		dump_if->raw_sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+-
+-		if (dump_if->raw_sock < 0) {
+-			fprintf(stderr, "Error - can't create raw socket: %s\n", strerror(errno));
+-			goto out;
+-		}
+-
+-		memset(&req, 0, sizeof (struct ifreq));
+-		strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
+-		req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
+-
+-		res = ioctl(dump_if->raw_sock, SIOCGIFHWADDR, &req);
+-		if (res < 0) {
+-			fprintf(stderr, "Error - can't create raw socket (SIOCGIFHWADDR): %s\n", strerror(errno));
+-			close(dump_if->raw_sock);
+-			goto out;
+-		}
+-
+-		dump_if->hw_type = req.ifr_hwaddr.sa_family;
+-
+-		switch (dump_if->hw_type) {
+-		case ARPHRD_ETHER:
+-		case ARPHRD_IEEE80211_PRISM:
+-		case ARPHRD_IEEE80211_RADIOTAP:
+-			break;
+-		default:
+-			fprintf(stderr, "Error - interface '%s' is of unknown type: %i\n", dump_if->dev, dump_if->hw_type);
+-			goto out;
+-		}
+-
+-		memset(&req, 0, sizeof (struct ifreq));
+-		strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
+-		req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
+-
+-		res = ioctl(dump_if->raw_sock, SIOCGIFINDEX, &req);
+-
+-		if (res < 0) {
+-			fprintf(stderr, "Error - can't create raw socket (SIOCGIFINDEX): %s\n", strerror(errno));
+-			close(dump_if->raw_sock);
++		dump_if = create_dump_interface(argv[found_args]);
++		if (!dump_if)
+ 			goto out;
+-		}
+-
+-		dump_if->addr.sll_family   = AF_PACKET;
+-		dump_if->addr.sll_protocol = htons(ETH_P_ALL);
+-		dump_if->addr.sll_ifindex  = req.ifr_ifindex;
+-
+-		res = bind(dump_if->raw_sock, (struct sockaddr *)&dump_if->addr, sizeof(struct sockaddr_ll));
+-
+-		if (res < 0) {
+-			fprintf(stderr, "Error - can't bind raw socket: %s\n", strerror(errno));
+-			close(dump_if->raw_sock);
+-			goto out;
+-		}
+ 
+ 		if (dump_if->raw_sock > max_sock)
+ 			max_sock = dump_if->raw_sock;
+-- 
+2.11.0
 
