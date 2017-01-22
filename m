@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 22 Jan 2017 13:21:12 +0100
-Message-Id: <20170122122113.29588-8-sven@narfation.org>
+Date: Sun, 22 Jan 2017 13:21:13 +0100
+Message-Id: <20170122122113.29588-9-sven@narfation.org>
 In-Reply-To: <3266034.EiLA6asg3G@sven-edge>
 References: <3266034.EiLA6asg3G@sven-edge>
-Subject: [B.A.T.M.A.N.] [PATCH 8/9] batctl: Allow to read sysfs settings as
-	normal user
+Subject: [B.A.T.M.A.N.] [PATCH 9/9] batctl: Allow to read list of interfaces
+	as normal user
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,37 +17,37 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The sysfs files can be read by normal users. Only writing to these files is
-restricted. Don't artificially restrict access to these files by the batctl
-subcommands.
+The list of interfaces attached to a batman-adv interface can be read by a
+normal user via rtnetlink or sysfs. Only modifying this list requires more
+acesss. Don't artificially restrict access to this information by the
+batctl sucommand.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- sys.c | 4 ++--
+ interface.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/sys.c b/sys.c
-index a695c18..65b438c 100644
---- a/sys.c
-+++ b/sys.c
-@@ -253,8 +253,6 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
+diff --git a/interface.c b/interface.c
+index 01ee6fc..5a57be6 100644
+--- a/interface.c
++++ b/interface.c
+@@ -324,14 +324,14 @@ int interface(char *mesh_iface, int argc, char **argv)
  		}
  	}
  
--	check_root_or_die("batctl");
+-	check_root_or_die("batctl interface");
 -
- 	/* prepare the classic path */
- 	path_buff = malloc(PATH_BUFF_LEN);
- 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
-@@ -272,6 +270,8 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
- 		goto out;
- 	}
+ 	rest_argc = argc - optind;
+ 	rest_argv = &argv[optind];
  
-+	check_root_or_die("batctl");
+ 	if (rest_argc == 0)
+ 		return print_interfaces(mesh_iface);
+ 
++	check_root_or_die("batctl interface");
 +
- 	if (!batctl_settings[setting].params)
- 		goto write_file;
- 
+ 	if ((strcmp(rest_argv[0], "add") != 0) && (strcmp(rest_argv[0], "a") != 0) &&
+ 	    (strcmp(rest_argv[0], "del") != 0) && (strcmp(rest_argv[0], "d") != 0) &&
+ 	    (strcmp(rest_argv[0], "create") != 0) && (strcmp(rest_argv[0], "c") != 0) &&
 -- 
 2.11.0
 
