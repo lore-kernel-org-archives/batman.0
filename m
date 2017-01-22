@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 22 Jan 2017 13:21:11 +0100
-Message-Id: <20170122122113.29588-7-sven@narfation.org>
+Date: Sun, 22 Jan 2017 13:21:12 +0100
+Message-Id: <20170122122113.29588-8-sven@narfation.org>
 In-Reply-To: <3266034.EiLA6asg3G@sven-edge>
 References: <3266034.EiLA6asg3G@sven-edge>
-Subject: [B.A.T.M.A.N.] [PATCH 7/9] batctl: Allow to read gw_mode as normal
-	user
+Subject: [B.A.T.M.A.N.] [PATCH 8/9] batctl: Allow to read sysfs settings as
+	normal user
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,9 +17,9 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The gw_mode sysfs file can be read by normal users. Only writing to this
-file is restricted. Don't artificially restrict access to this file by the
-batctl subcommand.
+The sysfs files can be read by normal users. Only writing to these files is
+restricted. Don't artificially restrict access to these files by the batctl
+subcommands.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
@@ -27,27 +27,27 @@ Signed-off-by: Sven Eckelmann <sven@narfation.org>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/sys.c b/sys.c
-index ac978bf..a695c18 100644
+index a695c18..65b438c 100644
 --- a/sys.c
 +++ b/sys.c
-@@ -328,8 +328,6 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
+@@ -253,8 +253,6 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
  		}
  	}
  
--	check_root_or_die("batctl gw_mode");
+-	check_root_or_die("batctl");
 -
+ 	/* prepare the classic path */
  	path_buff = malloc(PATH_BUFF_LEN);
  	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
- 
-@@ -386,6 +384,8 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
+@@ -272,6 +270,8 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
  		goto out;
  	}
  
-+	check_root_or_die("batctl gw_mode");
++	check_root_or_die("batctl");
 +
- 	if (strcmp(argv[1], "client") == 0)
- 		gw_mode = GW_MODE_CLIENT;
- 	else if (strcmp(argv[1], "server") == 0)
+ 	if (!batctl_settings[setting].params)
+ 		goto write_file;
+ 
 -- 
 2.11.0
 
