@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 22 Jan 2017 13:07:49 +0100
-Message-Id: <20170122120749.27932-4-sven@narfation.org>
-In-Reply-To: <2527763.cX7mnL5d4j@sven-edge>
-References: <2527763.cX7mnL5d4j@sven-edge>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] batctl: Simplify standard error messages
-	with perror
+Date: Sun, 22 Jan 2017 13:20:42 +0100
+Message-ID: <3266034.EiLA6asg3G@sven-edge>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2562601.vs4QOjhsND";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: [B.A.T.M.A.N.] [PATCH 0/9] batctl: relax root privileges check
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,159 +17,57 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The error string of errno can either be printed via fprintf + strerror or
-by simply using the helper function perror. Using the latter can simplify
-the code slightly by reducing the line length.
+--nextPart2562601.vs4QOjhsND
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- bat-hosts.c   |  2 +-
- icmp_helper.c |  7 ++++---
- ioctl.c       |  8 ++++----
- tcpdump.c     | 10 +++++-----
- 4 files changed, 14 insertions(+), 13 deletions(-)
+Hi,
 
-diff --git a/bat-hosts.c b/bat-hosts.c
-index 015fbcb..b530243 100644
---- a/bat-hosts.c
-+++ b/bat-hosts.c
-@@ -128,7 +128,7 @@ static void parse_hosts_file(struct hashtable_t **hash, const char path[], int r
- 
- 		if (!bat_host) {
- 			if (read_opt & USE_BAT_HOSTS)
--				fprintf(stderr, "Error - could not allocate memory: %s\n", strerror(errno));
-+				perror("Error - could not allocate memory");
- 			goto out;
- 		}
- 
-diff --git a/icmp_helper.c b/icmp_helper.c
-index fb461d5..0eea5c4 100644
---- a/icmp_helper.c
-+++ b/icmp_helper.c
-@@ -30,6 +30,7 @@
- #include <netinet/ether.h>
- #include <stdbool.h>
- #include <stdint.h>
-+#include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
- #include <sys/ioctl.h>
-@@ -190,7 +191,7 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
- 
- 	iface->sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
- 	if (iface->sock < 0) {
--		fprintf(stderr, "Error - can't create raw socket: %s\n", strerror(errno));
-+		perror("Error - can't create raw socket");
- 		ret = -errno;
- 		goto free_iface;
- 	}
-@@ -201,7 +202,7 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
- 
- 	ret = ioctl(iface->sock, SIOCGIFINDEX, &req);
- 	if (ret < 0) {
--		fprintf(stderr, "Error - can't create raw socket (SIOCGIFINDEX): %s\n", strerror(errno));
-+		perror("Error - can't create raw socket (SIOCGIFINDEX)");
- 		ret = -errno;
- 		goto close_sock;
- 	}
-@@ -214,7 +215,7 @@ static int icmp_interface_add(const char *ifname, const uint8_t mac[ETH_ALEN])
- 
- 	ret = bind(iface->sock, (struct sockaddr *)&sll, sizeof(struct sockaddr_ll));
- 	if (ret < 0) {
--		fprintf(stderr, "Error - can't bind raw socket: %s\n", strerror(errno));
-+		perror("Error - can't bind raw socket");
- 		ret = -errno;
- 		goto close_sock;
- 	}
-diff --git a/ioctl.c b/ioctl.c
-index b1db5e4..d95fc8d 100644
---- a/ioctl.c
-+++ b/ioctl.c
-@@ -48,7 +48,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
- 	ifr->ifr_data = (void *)&drvinfo;
- 	err = ioctl(fd, SIOCETHTOOL, ifr);
- 	if (err < 0) {
--		fprintf(stderr, "Error - can't open driver information: %s\n", strerror(errno));
-+		perror("Error - can't open driver information");
- 		goto out;
- 	}
- 
-@@ -72,7 +72,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
- 	ifr->ifr_data = (void *)strings;
- 	err = ioctl(fd, SIOCETHTOOL, ifr);
- 	if (err < 0) {
--		fprintf(stderr, "Error - can't get stats strings information: %s\n", strerror(errno));
-+		perror("Error - can't get stats strings information");
- 		goto out;
- 	}
- 
-@@ -81,7 +81,7 @@ static int statistics_custom_get(int fd, struct ifreq *ifr)
- 	ifr->ifr_data = (void *) stats;
- 	err = ioctl(fd, SIOCETHTOOL, ifr);
- 	if (err < 0) {
--		fprintf(stderr, "Error - can't get stats information: %s\n", strerror(errno));
-+		perror("Error - can't get stats information");
- 		goto out;
- 	}
- 
-@@ -110,7 +110,7 @@ int ioctl_statistics_get(char *mesh_iface)
- 
- 	fd = socket(AF_INET, SOCK_DGRAM, 0);
- 	if (fd < 0) {
--		fprintf(stderr, "Error - can't open socket: %s\n", strerror(errno));
-+		perror("Error - can't open socket");
- 		goto out;
- 	}
- 
-diff --git a/tcpdump.c b/tcpdump.c
-index 92171a3..3000343 100644
---- a/tcpdump.c
-+++ b/tcpdump.c
-@@ -1134,7 +1134,7 @@ static struct dump_if *create_dump_interface(char *iface)
- 
- 	dump_if->raw_sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
- 	if (dump_if->raw_sock < 0) {
--		fprintf(stderr, "Error - can't create raw socket: %s\n", strerror(errno));
-+		perror("Error - can't create raw socket");
- 		goto free_dumpif;
- 	}
- 
-@@ -1144,7 +1144,7 @@ static struct dump_if *create_dump_interface(char *iface)
- 
- 	res = ioctl(dump_if->raw_sock, SIOCGIFHWADDR, &req);
- 	if (res < 0) {
--		fprintf(stderr, "Error - can't create raw socket (SIOCGIFHWADDR): %s\n", strerror(errno));
-+		perror("Error - can't create raw socket (SIOCGIFHWADDR)");
- 		goto close_socket;
- 	}
- 
-@@ -1166,7 +1166,7 @@ static struct dump_if *create_dump_interface(char *iface)
- 
- 	res = ioctl(dump_if->raw_sock, SIOCGIFINDEX, &req);
- 	if (res < 0) {
--		fprintf(stderr, "Error - can't create raw socket (SIOCGIFINDEX): %s\n", strerror(errno));
-+		perror("Error - can't create raw socket (SIOCGIFINDEX)");
- 		goto close_socket;
- 	}
- 
-@@ -1176,7 +1176,7 @@ static struct dump_if *create_dump_interface(char *iface)
- 
- 	res = bind(dump_if->raw_sock, (struct sockaddr *)&dump_if->addr, sizeof(struct sockaddr_ll));
- 	if (res < 0) {
--		fprintf(stderr, "Error - can't bind raw socket: %s\n", strerror(errno));
-+		perror("Error - can't bind raw socket");
- 		goto close_socket;
- 	}
- 
-@@ -1290,7 +1290,7 @@ int tcpdump(int argc, char **argv)
- 			continue;
- 
- 		if (res < 0) {
--			fprintf(stderr, "Error - can't select on raw socket: %s\n", strerror(errno));
-+			perror("Error - can't select on raw socket");
- 			continue;
- 		}
- 
--- 
-2.11.0
+batctl has a "root" user check since the beginning of this tool. It even got a
+TODO comment in 58525b8330e9 ("batctl: adjust vis.c coding style"):
+
+    /* TODO: remove this generic check here and move it into the individual functions */
+
+This patchset is now trying to resolve this TODO.
+
+ * batctl: Move root privileges check in separate function
+ * batctl: Use geteuid for checks of root privileges
+ * batctl: Return type of error on netlink_get_info error
+ * batctl: Make root privileges check function specific
+ * batctl: Allow to retrieve interface stats as non-root
+ * batctl: Allow to read loglevel as normal user
+ * batctl: Allow to read gw_mode as normal user
+ * batctl: Allow to read sysfs settings as normal user
+ * batctl: Allow to read list of interfaces as normal user
+
+"Return type of error on netlink_get_info error" may look a little bit odd in
+this list. But it was required in my initial test to avoid that "originators"
+and "gwl" try to start a debugfs access when the netlink function should have
+returned a "-EPERM" (but did return a -EOPNOTSUPP).
+
+Kind regards,
+	Sven
+--nextPart2562601.vs4QOjhsND
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAliEo5oACgkQXYcKB8Em
+e0bUcBAAhG2baiQ6OlzYbiqZ2gPpNgW5my056+bCOjJdKc9MWDS/09BgcCBZZkFv
+7slAabnMYVVeV3r3FPipYwuTnxXMnFocGU8QIuaWlXnLOHDBOFLijGjHWTMIbfXS
+QNNuvj24MtbqhmFPTGYzpyUIyHHXiUYxoPpfT+hJh8VI8kNI1XsBZFw+PRfPGFEj
+Gp+oznRSAiqE/t/TnfczSSl4dvtC5boPUJ1ie9RKTTpBJnan+aCmq59sSWXkLFBu
+aHFUhKOS4k9CN0tnm5tdL92BKSjmok8tIA6hjKVUaNFEm5/LC7EKBkuf2STEeo8h
+1n8juLYsR7NbTdI8ERcKChV2s3lPnmkc+nRmLRNzUU1QoHhWJ9VdJlNYFfOVVAKy
+TCFMD9PFcihVZw52k/IIWCdjk/5Zc0J9DnreDl2SBuizLv1FX3Q6KzPlnmkAdKmy
+OuUj2hToZbg8L7PJmP/hbjBskuXlVd+pOKdkWZWH4ejY9zJ9Dk4Ea6V3G1dyTR36
+LF9ESZdB3GWqYN25RuJABouLsV9b93YkMbA8wibSrI84GiHXHi1/6ebh2bm0RC3a
+O6Kk9xtv7QmxTn+ei+F4AVIwx5Qn0DdX+LS+B1FWpzXn5bLZMMS3AitFG8hGJw4q
+/bJdTc524CXNpIb4ke039lUiIndHT/DDZtClftrSMliKBDYcX0c=
+=Lh6G
+-----END PGP SIGNATURE-----
+
+--nextPart2562601.vs4QOjhsND--
 
