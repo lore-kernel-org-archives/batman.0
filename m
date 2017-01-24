@@ -1,13 +1,14 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 24 Jan 2017 13:49:26 +0100
-Message-ID: <74264595.mJidA94r61@prime>
-In-Reply-To: <3266034.EiLA6asg3G@sven-edge>
-References: <3266034.EiLA6asg3G@sven-edge>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 24 Jan 2017 14:05:42 +0100
+Message-ID: <1899098.CrQhkxgaNY@bentobox>
+In-Reply-To: <1484884864-7315-1-git-send-email-jhaws@sdl.usu.edu>
+References: <1484884864-7315-1-git-send-email-jhaws@sdl.usu.edu>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart19043309.p5yLf1qLYS";
+Content-Type: multipart/signed; boundary="nextPart2972737.mF0oC81SWp";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/9] batctl: relax root privileges check
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4] alfred: IPv4 multicast distribution
+	support.
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,65 +19,105 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Jonathan Haws <jhaws@sdl.usu.edu>
 
---nextPart19043309.p5yLf1qLYS
+--nextPart2972737.mF0oC81SWp
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sunday, January 22, 2017 1:20:42 PM CET Sven Eckelmann wrote:
-> Hi,
-> 
-> batctl has a "root" user check since the beginning of this tool. It even got
-> a TODO comment in 58525b8330e9 ("batctl: adjust vis.c coding style"):
-> 
->     /* TODO: remove this generic check here and move it into the individual
-> functions */
-> 
-> This patchset is now trying to resolve this TODO.
-> 
->  * batctl: Move root privileges check in separate function
->  * batctl: Use geteuid for checks of root privileges
->  * batctl: Return type of error on netlink_get_info error
->  * batctl: Make root privileges check function specific
->  * batctl: Allow to retrieve interface stats as non-root
->  * batctl: Allow to read loglevel as normal user
->  * batctl: Allow to read gw_mode as normal user
->  * batctl: Allow to read sysfs settings as normal user
->  * batctl: Allow to read list of interfaces as normal user
-> 
-> "Return type of error on netlink_get_info error" may look a little bit odd
-> in this list. But it was required in my initial test to avoid that
-> "originators" and "gwl" try to start a debugfs access when the netlink
-> function should have returned a "-EPERM" (but did return a -EOPNOTSUPP).
-> 
-> Kind regards,
-> 	Sven
+On Donnerstag, 19. Januar 2017 21:01:04 CET Jonathan Haws wrote:
+> @@ -273,10 +276,15 @@ static struct globals *alfred_init(int argc, char *argv[])
+>  			return NULL;
+>  		case 'p':
+>  			sync_period = strtod(optarg, NULL);
+> -			globals->sync_period.tv_sec = (int) sync_period;
+> -			globals->sync_period.tv_nsec = (double) (sync_period - (int) sync_period) * 1e9;
+> +			globals->sync_period.tv_sec = (int)sync_period;
+> +			globals->sync_period.tv_nsec = (double)(sync_period - (int)sync_period) * 1e9;
+>  			printf(" ** Setting sync interval to: %.9f seconds (%ld.%09ld)\n", sync_period, globals->sync_period.tv_sec, globals->sync_period.tv_nsec);
+>  			break;
 
-I've adopted this series into 91b23ca..515cf78.
+This doesn't seem to belong in this patch.
 
-Thanks!!
-     Simon
---nextPart19043309.p5yLf1qLYS
+> +static int netsock_open4(struct interface *interface)
+> +{
+> +	int sock;
+> +	int sock_mc;
+> +	struct sockaddr_in sin4, sin_mc;
+> +	struct ip_mreq mreq;
+> +	struct ifreq ifr;
+> +	int ret;
+> +
+> +	interface->netsock = -1;
+> +	interface->netsock_mcast = -1;
+> +
+> +	sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+> +	if (sock  < 0) {
+> +		perror("ipv4: can't open socket");
+> +		return -1;
+> +	}
+> +
+> +	sock_mc = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+> +	if (sock_mc  < 0) {
+> +		perror("ipv4: can't open mc socket");
+> +		return -1;
+> +	}
+
+You don't sock in this situation (on errors)?
+
+> +	memset(&ifr, 0, sizeof(ifr));
+> +	strncpy(ifr.ifr_name, interface->interface, IFNAMSIZ);
+> +	ifr.ifr_name[IFNAMSIZ - 1] = '\0';
+> +	if (ioctl(sock_mc, SIOCGIFHWADDR, &ifr) == -1) {
+> +		perror("ipv4: can't get MAC address");
+> +		goto err4;
+
+And now (see err4) you only close sock_mc? This applies to basically the rest
+of the function. So I will skip it and not mention every place which looks
+suspicious.
+
+[....]
+> +
+> +	interface->netsock = sock;
+> +	interface->netsock_mcast = sock_mc;
+> +
+> +	return 0;
+> +err4:
+> +	close(sock_mc);
+> +	return -1;
+> +}
+> +
+
+You only close sock_mc on errors but not sock?
+
+And please chose something better [1] than err4.
+
+Kind regards,
+	Sven
+
+[1] https://static.lwn.net/kerneldoc/process/coding-style.html#centralized-exiting-of-functions
+
+--nextPart2972737.mF0oC81SWp
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAliHTVYACgkQoSvjmEKS
-nqFpcg/+MWjKKTCOUX/A34NQY+NvmQkK33JErgtY2HpRuUiW8PCk99L3AqSXQSbw
-+3n40K/X1t+EcnldXlNI0Hg6tK4fSI/iwsQKHCHH2I+oH4AoFy/+PzQ67QNPHhdX
-/MmzWQ4MsvsRX5/fsKV3vNcjgM3VM1tcpSu37AfFXbfaToCN8WVS5+kdl0jsHvAu
-Bz7Q7wh275VxwYricnabJ9XuVSUL8pk/IQP8z/y9LcTGEg8BRq40gNI5MXZ8eNca
-3dXEcZlEYgnQphmPNGSZ6c/VXqfJ330JNTQHDol/uIZxnbKu6yzSumh8czMVylnY
-S1zlkq2bje1mDCEV6hH5+b7uFaS15Fw59betIGrMJ4+QcCUQdeJLgase4eqPubFF
-o+i4sDUXYajK8bw4fvmMm0x0ehbd+aN17ZjYco5+rCxPROr/UyhwyR1da7mWM3y4
-gp2sbJeakgaxCsM+V3+UmkLbXuw5OL55gDfJU738x1Gtj7AR/Qva+QPJY+BwqJ5V
-9RUVRdlIwuV6zy7FTa04q46cb3k37B349h6NrweqAuRl4PgJSnodB4QRRFUo3+W0
-SdClm3EfEI1MC9sYvfbncf2EUv4Ekke9okKkkrL82TaBjLW25q+prTicwdpvVkc7
-D9wEgV9/I8afo/ptA+pgwBlvf8mYKeHwxvdW88Heb4ZsTQpRDP8=
-=s1PD
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAliHUSYACgkQXYcKB8Em
+e0aa9BAAtlIkBmzqxDRhNf68QXIw4A07WstcjnfS1Fuh/JhtdleWGputxxyk2OrN
+7OQqLRzh2fU22HS9U8XuA4cec3VB9dvt8dMZ8I/yDS3bhYlqHp1bIR+rlrD7/fqh
+T/fZ+eQbamTcT46ixdScpS1GEcuqpyuC2hA525S+C05B24zmGWMwz6PW6PpnynEp
+rjqn/gnEzdZPsQIIOiDSoMhudVShNaFq+/ur37E+2KOXvMxCXcbIPgwOyd2m7RrQ
+jDINr3W0khS0UxjMmzzaCAH2gR6cloVY76LJR67YeBghbPMHqQUi5RvStVHrqjXi
+hQi7LXcsnYRoTljTXmtuQAen+XdmVZAI74WcvWC7ABIX0NMN3yR7A9k28iATVqYp
+ALGZ6flNxVP9gIoF9NmOOYKwJuMvRBPxwsiuEa7g1uOf5hR3Pe9f1e2i6oT8kS+R
+cyC6IQ4OesWyXIzmu96FR+RSU8wAikbGxRTTTZHydUffGRJW7UqN/ebguf+iPZYe
+cH915vasyNmsq781/2yCpylpgA90+1WAF4KW8grOWtjiFhKcFwqiAZ3TFXV5oyhs
+M7+U7jl0J3LMJDoEcTNEZoK2S8EbfzlJpG0zimHEMnMe/8wEzFpRKMTlbSjjyefs
+LlM/XFkx7vlHN+iHjgcDyt8mTKRlLLl72TcuZldvKJ/OZieOU7U=
+=xDN9
 -----END PGP SIGNATURE-----
 
---nextPart19043309.p5yLf1qLYS--
+--nextPart2972737.mF0oC81SWp--
 
