@@ -1,14 +1,13 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 24 Jan 2017 13:46:49 +0100
-Message-ID: <4093841.YFahW3B88D@bentobox>
-In-Reply-To: <20170124000030.29160-1-linus.luessing@c0d3.blue>
-References: <20170124000030.29160-1-linus.luessing@c0d3.blue>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 24 Jan 2017 13:49:26 +0100
+Message-ID: <74264595.mJidA94r61@prime>
+In-Reply-To: <3266034.EiLA6asg3G@sven-edge>
+References: <3266034.EiLA6asg3G@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4449103.YAIthYbshD";
+Content-Type: multipart/signed; boundary="nextPart19043309.p5yLf1qLYS";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: restructure cfg80211 compat
-	code
+Subject: Re: [B.A.T.M.A.N.] [PATCH 0/9] batctl: relax root privileges check
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,59 +18,65 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart4449103.YAIthYbshD
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart19043309.p5yLf1qLYS
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Dienstag, 24. Januar 2017 01:00:30 CET Linus L=FCssing wrote:
-> This commit restructures the compat code regarding cfg80211 to achieve
-> the following:
->=20
-> a) Allows to compile kernels < 3.16 with -Werror by replacing the
-> "#warning" with a runtime warning through pr_warn_once().
-> b) Allows to run < 3.16 kernels without warnings if no cfg80211 based
-> interface is used.
-> c) Migrates cfg80211 compat code from compat.h to compat cfg80211.h to
-> keep compat.h slim.
->=20
-> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
-> ---
->  compat-include/net/cfg80211.h | 21 ++++++++++++++++++++-
->  compat.h                      | 21 ---------------------
->  2 files changed, 20 insertions(+), 22 deletions(-)
+On Sunday, January 22, 2017 1:20:42 PM CET Sven Eckelmann wrote:
+> Hi,
+> 
+> batctl has a "root" user check since the beginning of this tool. It even got
+> a TODO comment in 58525b8330e9 ("batctl: adjust vis.c coding style"):
+> 
+>     /* TODO: remove this generic check here and move it into the individual
+> functions */
+> 
+> This patchset is now trying to resolve this TODO.
+> 
+>  * batctl: Move root privileges check in separate function
+>  * batctl: Use geteuid for checks of root privileges
+>  * batctl: Return type of error on netlink_get_info error
+>  * batctl: Make root privileges check function specific
+>  * batctl: Allow to retrieve interface stats as non-root
+>  * batctl: Allow to read loglevel as normal user
+>  * batctl: Allow to read gw_mode as normal user
+>  * batctl: Allow to read sysfs settings as normal user
+>  * batctl: Allow to read list of interfaces as normal user
+> 
+> "Return type of error on netlink_get_info error" may look a little bit odd
+> in this list. But it was required in my initial test to avoid that
+> "originators" and "gwl" try to start a debugfs access when the netlink
+> function should have returned a "-EPERM" (but did return a -EOPNOTSUPP).
+> 
+> Kind regards,
+> 	Sven
 
-Applied in 3da7de5d6aa8f69d6d7daa62f3e6d3f7ebed5772 [1]
+I've adopted this series into 91b23ca..515cf78.
 
-Thanks,
-	Sven
-
-[1] https://git.open-mesh.org/batman-adv.git/commit/3da7de5d6aa8f69d6d7daa6=
-2f3e6d3f7ebed5772
-
-
---nextPart4449103.YAIthYbshD
+Thanks!!
+     Simon
+--nextPart19043309.p5yLf1qLYS
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAliHTLkACgkQXYcKB8Em
-e0aZXA//cXbqSaKYVbEwNRNOXx4PPUkRuEfs7TxKicVYBZy9yWbtrVoglk3FXvir
-gbixnjHhvnxbIh6F73lzPvd0so6+bniaS77Sfej24ehQuDYmJ3+DIN9u6Ii67BcW
-xSKupSowGhG5J7gGyNd5h8Q6TfQR13qBHI7enYNLLZQF3RLVHsQNk75ksyUr1u0K
-2Fb6aqxH0hA127bMc0P6JfgtYAdH7ASxcKXNCrgcRXHteZX1q7Muf6AmnWitXZAe
-6a7MEhC4h04CsnNm3vFX58ldHrg4v6DTXvdV8QZmSneA7polt9a85xcB49DXvipI
-Qwkk4XxCtvIW9jcewN3bP4dfrlHRNLZ4dOT0B5JoqjmwhDbwqwallSr7ihwzcHVT
-p8WZqjll+xC3DvPl0LtBevAdnBRE/M41WqjHp7MmNqp+uP49SVUn8bhdx54TiGnX
-9FO7byO5JXEYG1JagN2OfVBEH+R/wOZ4iGwrPhRR0fEWNfFceaxZfx4m9G4lzhtz
-9qHJRk7fpXWTz6e7OWgecuUNXGUOim1V7PXk9WKDXY8M4mxZ7hyTi7epWrJKm0Z5
-eyvH4CNzUS7zLkQcX+5Qhopsh3SeoxvJ3thbMmhEeXS9iSXnQq3p3RZim2zFWEiV
-JRTETIkIHmnv2AcDzAWBH1zVKYhUeDy0jSnG4yiWQppfMuRSn9I=
-=bXWV
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAliHTVYACgkQoSvjmEKS
+nqFpcg/+MWjKKTCOUX/A34NQY+NvmQkK33JErgtY2HpRuUiW8PCk99L3AqSXQSbw
++3n40K/X1t+EcnldXlNI0Hg6tK4fSI/iwsQKHCHH2I+oH4AoFy/+PzQ67QNPHhdX
+/MmzWQ4MsvsRX5/fsKV3vNcjgM3VM1tcpSu37AfFXbfaToCN8WVS5+kdl0jsHvAu
+Bz7Q7wh275VxwYricnabJ9XuVSUL8pk/IQP8z/y9LcTGEg8BRq40gNI5MXZ8eNca
+3dXEcZlEYgnQphmPNGSZ6c/VXqfJ330JNTQHDol/uIZxnbKu6yzSumh8czMVylnY
+S1zlkq2bje1mDCEV6hH5+b7uFaS15Fw59betIGrMJ4+QcCUQdeJLgase4eqPubFF
+o+i4sDUXYajK8bw4fvmMm0x0ehbd+aN17ZjYco5+rCxPROr/UyhwyR1da7mWM3y4
+gp2sbJeakgaxCsM+V3+UmkLbXuw5OL55gDfJU738x1Gtj7AR/Qva+QPJY+BwqJ5V
+9RUVRdlIwuV6zy7FTa04q46cb3k37B349h6NrweqAuRl4PgJSnodB4QRRFUo3+W0
+SdClm3EfEI1MC9sYvfbncf2EUv4Ekke9okKkkrL82TaBjLW25q+prTicwdpvVkc7
+D9wEgV9/I8afo/ptA+pgwBlvf8mYKeHwxvdW88Heb4ZsTQpRDP8=
+=s1PD
 -----END PGP SIGNATURE-----
 
---nextPart4449103.YAIthYbshD--
+--nextPart19043309.p5yLf1qLYS--
 
