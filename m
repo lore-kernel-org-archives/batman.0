@@ -1,19 +1,15 @@
-Return-Path: <Jonathan.Haws@sdl.usu.edu>
-From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Date: Tue, 24 Jan 2017 16:07:47 +0000
-Message-ID: <1485274067.2398.50.camel@sdl.usu.edu>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 24 Jan 2017 17:09:39 +0100
+Message-ID: <1860403.1ETbzszp8C@prime>
+In-Reply-To: <1485272132.2398.4.camel@sdl.usu.edu>
 References: <1484884864-7315-1-git-send-email-jhaws@sdl.usu.edu>
- <4448368.uV4yijacOc@prime> <1485272731.2398.15.camel@sdl.usu.edu>
- <1595128.WQAW59UAnQ@prime>
-In-Reply-To: <1595128.WQAW59UAnQ@prime>
-Reply-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <DDDB06795854C34C87C476FF85FA618C@sdl.usu.edu>
-Content-Transfer-Encoding: base64
+ <1899098.CrQhkxgaNY@bentobox> <1485272132.2398.4.camel@sdl.usu.edu>
 MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1624737.IpWfhFjuPn";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v4] alfred: IPv4 multicast distribution
- support.
+	support.
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,38 +19,91 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "sw@simonwunderlich.de" <sw@simonwunderlich.de>, "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org, Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
 
-DQo+ID4gPiDCoCogSSBkbyBub3Qgd2FudCB0byBnaXZlIHN1cHBvcnQgZm9yIElQdjQtcmVsYXRl
-ZCBxdWVzdGlvbnMgb2YNCj4gPiA+IHVzZXJzLg0KPiA+ID4gV291bGTCoA0KPiA+ID4geW91IGJl
-IGF2YWlsYWJsZSB0byBtYWludGFpbiBhbmQgYW5zd2VyIHF1ZXN0aW9ucyByZWdhcmRpbmcgdGhl
-DQo+ID4gPiBJUHY0DQo+ID4gPiBzdXBwb3J0Pw0KPiA+IEknZCBiZSBoYXBweSB0byBhbnN3ZXIg
-cXVlc3Rpb25zLCBidXQgaXQgd291bGQgYmUgYmVzdCBpZiB0aG9zZQ0KPiA+IHF1ZXN0aW9ucyBh
-cmUgZGlyZWN0ZWQgdG8gdGhlIGxpc3QgYW5kIG15IGFkZHJlc3MgaXMgaW4gdGhlIENDDQo+ID4g
-ZmllbGQuDQo+ID4gwqBUaGF0IHdheSBJJ2xsIGRlZmluaXRlbHkgc2VlIGl0IGFuZCBjYW4gYW5z
-d2VyLsKgwqBJZiBpdCBqdXN0IGdvZXMNCj4gPiB0bw0KPiA+IHRoZSBsaXN0IGluIGdlbmVyYWwg
-SSdsbCB2ZXJ5IGxpa2VseSBtaXNzIHRoZSBtZXNzYWdlLsKgwqBJcyB0aGF0DQo+ID4gc29tZXRp
-bmcgdGhhdCBjb3VsZCBiZSBhZGRlZCB0byB0aGUgV2lraT8NCj4gSG1tLCB5b3UgY2FuIGFkZCBh
-bnl0aGluZyB5b3Ugd2FudCBpbiB0aGUgd2lraSwgYnV0IGl0J3MgdW5saWtlbHkNCj4gc29tZW9u
-ZSB3aWxswqANCj4gcmVhZCBpdCBiZWZvcmUgYXNraW5nIGhlcmUgb24gdGhlIG1haWxpbmcgbGlz
-dCwgYXQgbGVhc3QgdG8gbXkNCj4gcGVyc29uYWzCoA0KPiBleHBlcmllbmNlLiA7KQ0KPiANCj4g
-QnV0IGlmIHlvdSBjb21taXQgdG8gbG9vayBpbnRvIHRoZXNlIGlzc3VlcywganVzdCB0cnkgdG8g
-Y2F0Y2ggdGhlDQo+IG1haWxzIHNlbnTCoA0KPiBoZXJlIHRvIHRoaXMgbWFpbGluZyBsaXN0IC0g
-aWYgeW91IGRvbid0IGknbGwgdHJ5IHRvIGZvcndhcmQgdGhlbSB0bw0KPiB5b3UuIDopDQoNCkkn
-bGwgZG8gbXkgYmVzdCB0byBrZWVwIGFuIGV5ZSBvbiB0aGluZ3MuIMKgSWYgeW91IHNlZSBzb21l
-dGhpbmcgYW5kIEkNCmRvbid0IHJlc3BvbmQsIEknZCBhcHByZWNpYXRlIHRoZSBmb3J3YXJkLg0K
-DQo+ID4gDQo+ID4gPiANCj4gPiA+IA0KPiA+ID4gwqAqIERvIHlvdSBwbGFuIHRvIHByb3ZpZGUg
-T3BlbldSVCBzdXBwb3J0IGFzIHdlbGw/IChUaGlzIGlzIG1vcmUNCj4gPiA+IG91dA0KPiA+ID4g
-b2bCoA0KPiA+ID4gY3VyaW9zaXR5KQ0KPiA+IEkgd2Fzbid0IHBsYW5uaW5nIG9uIE9wZW5XUlQg
-c3VwcG9ydC4gV2hhdCB3b3VsZCBiZSBlbnRhaWxlZD8gV2hlbg0KPiA+IEkNCj4gPiBoZWFyIE9w
-ZW5XUlQsIEkgdGhpbmsgb2YgdGhlIGZpcm13YXJlIEkgY2FuIGxvYWQgb250byBteSBvbGQNCj4g
-PiBMaW5rc3lzDQo+ID4gV1JUNTRHIEFQLsKgwqBXb3VsZCBpdCBzaW1wbHkgYmUgdGVzdGluZyB0
-aGVzZSBjaGFuZ2VzIG9uIHRoYXQNCj4gPiBkZXZpY2U/DQo+IEJhc2ljYWxseSB3ZSBhbHJlYWR5
-IGhhdmUgYW4gT3BlbldSVC9MRURFIGludGVncmF0aW9uIFsxXSB3aGljaA0KPiBwcm92aWRlc8Kg
-DQo+IGNvbmZpZ3VyYXRpb24gb3B0aW9ucyBpbiBhIGNvbmZpZyBmaWxlLCB3aGljaCBhcmUgcGFy
-c2VkIGFuZCBhcHBsaWVkDQo+IGV0Yy4NCj4gDQo+IE5vdCBzdXJlIGlmIHRoZSBhbmNpZW50IFdS
-VDU0RyBpcyBzdGlsbCBldmVuIHByb3Blcmx5IHN1cHBvcnRlZCwgYnV0DQo+IHRoZXJlIGFyZcKg
-DQo+IGRvemVucyBvZiBjaGVhcCBhbmQgbW9yZSBtb2Rlcm5zIEFQcyB5b3UgY2FuIHVzZSBpdC4g
-QnV0IGlmIHlvdSBhcmUNCj4gbm90wqANCj4gZmFtaWxpYXIgd2l0aCBPcGVuV1JULCBkb24ndCB3
-b3JyeSwgc29tZW9uZSBlbHNlIGNhbiBwcm92aWRlIHRoZQ0KPiBpbnRlZ3JhdGlvbsKgDQo+IGlm
-IHRoZXkgbmVlZCBpdC4gOikNCg0KSSB0aGluayB0aGF0IHNvdW5kcyBncmVhdC4gwqBUaGFua3Mh
+--nextPart1624737.IpWfhFjuPn
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Tuesday, January 24, 2017 3:35:33 PM CET Jonathan Haws wrote:
+> > > @@ -273,10 +276,15 @@ static struct globals *alfred_init(int argc,
+> > > char *argv[])
+> > >  			return NULL;
+> > >  		case 'p':
+> > >  			sync_period = strtod(optarg, NULL);
+> > > -			globals->sync_period.tv_sec = (int)
+> > > sync_period;
+> > > -			globals->sync_period.tv_nsec = (double)
+> > > (sync_period - (int) sync_period) * 1e9;
+> > > +			globals->sync_period.tv_sec =
+> > > (int)sync_period;
+> > > +			globals->sync_period.tv_nsec =
+> > > (double)(sync_period - (int)sync_period) * 1e9;
+> > >  			printf(" ** Setting sync interval to: %.9f
+> > > seconds (%ld.%09ld)\n", sync_period, globals->sync_period.tv_sec,
+> > > globals->sync_period.tv_nsec);
+> > >  			break;
+> > 
+> > This doesn't seem to belong in this patch.
+> 
+> 
+> Yes, that is correct.  I must have fixed that formatting when I was
+> going through everything else.  Would you like me to take it out of
+> this patch?
+
+Yes, format fixes should go into format fix patches preferably, not into 
+patches adding functions. :)
+
+>[...]
+> > > 
+> > > +
+> > > +	interface->netsock = sock;
+> > > +	interface->netsock_mcast = sock_mc;
+> > > +
+> > > +	return 0;
+> > > +err4:
+> > > +	close(sock_mc);
+> > > +	return -1;
+> > > +}
+> > > +
+> > 
+> > You only close sock_mc on errors but not sock?
+> > 
+> > And please chose something better [1] than err4.
+> 
+> 
+> I see why you'd want me to rename the goto - however it was chosen to
+> differentiate between the err goto in netsock_open.  I called it err4
+> since it is for the netsock_open4() function dealing with IPv4.  Would
+> err_ipv4 be better?
+
+Why not just using err? Since its a different function, I don't see why not 
+re-using the label. Actually I would prefer that ...
+
+Cheers,
+     Simon
+
+--nextPart1624737.IpWfhFjuPn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAliHfEMACgkQoSvjmEKS
+nqGtCBAAro7Zqo3k0b3D6726x5UNbLAhEDwVHo2+A3XUNb7wk5XW0iz59IXUkxbe
+tGLfDA3AdLS7OfAsne64Pwsui8/9dXDK8Wmtp2absvGzcFH9gcUF1lSqpec523lH
+IapnW4L2d5SpgkNFC9gFTRadYsOmn4KXpRDWtRiPw98iGfue3K6Q+42lJfCgfsxb
+7xwq6W8jS60/e7fwLzOoPgwKi0gUBRWlh25/Pvhjyyh1oH0gFkrUrRtt1InnflrQ
+FHAMMUfmeq2FzJxWkqnb91upkc2kq0R99rb3LROgjzywK79dtqMjVqmtz13x+7S3
+55qVYCdazqnIRyTyau5vyWGoPMIXzAobrqUwBZDUWrMFAAcn/82+poFV8LWwfOtU
+Ylsep1DuYFNl1F1fAV1j/YJ3tZbkKcWLev8orQoQekp9Dfq5dc6Uzc5LN/o4UYcW
+nX6OqA+2qmahVXvomGb67H5ta6/gUyeAKuNrfTCYIBMosu9gDZ0aDHB9yv3LI98D
+Urn276pO/KF8iEoK2DqR6CgF0hE/ccNnMgqpqgJ3obqop8vGR0FQ72n5eNBrS8XS
+Ue/OH6aiInbQPF9NhzWyQvJhMA7pdbRsCxvBbhPuhFg3eve/diqsDPPBEIPGilZm
+7MYPm4myBpJfd+oBDO4loMGxjYhuH2GpUHahnPvvtFkwNwCsxao=
+=pfiC
+-----END PGP SIGNATURE-----
+
+--nextPart1624737.IpWfhFjuPn--
+
