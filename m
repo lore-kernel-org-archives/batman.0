@@ -1,13 +1,18 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 24 Jan 2017 14:39:10 +0100
-Message-ID: <2809895.eiDvevZ9tY@bentobox>
-In-Reply-To: <98a77a75-ac8e-455a-6060-343b9020cd27@viisauksena.de>
-References: <98a77a75-ac8e-455a-6060-343b9020cd27@viisauksena.de>
+Return-Path: <Jonathan.Haws@sdl.usu.edu>
+From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Date: Tue, 24 Jan 2017 15:35:33 +0000
+Message-ID: <1485272132.2398.4.camel@sdl.usu.edu>
+References: <1484884864-7315-1-git-send-email-jhaws@sdl.usu.edu>
+ <1899098.CrQhkxgaNY@bentobox>
+In-Reply-To: <1899098.CrQhkxgaNY@bentobox>
+Reply-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
+Content-Language: en-US
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <8D99F2905F2BA24F8E24D42FD719CA83@sdl.usu.edu>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2429114.OGntAQ9Hoq";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] limit of if per batman
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4] alfred: IPv4 multicast distribution
+ support.
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,62 +22,52 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart2429114.OGntAQ9Hoq
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Montag, 23. Januar 2017 18:26:59 CET jens wrote:
-> somebody told me that for gre there is a limit of 255 per kernel,
-> does this also aply for gretap
-
-I've already used over 500 (sry, not 9000) gretap tunnels. And I've just did
-the same on Linux 4.9 with gre to test the 255 limit for L3.
-
-    for i in `seq 1 255`; do
-      echo $i
-      ip link add gre$i type gre local 192.168.2.227 remote 192.168.3.$i ttl 255 dev enp0s31f6
-      ip link set up dev gre$i
-
-      ip link add grex$i type gre local 192.168.2.227 remote 192.168.4.$i ttl 255 dev enp0s31f6
-      ip link set up dev grex$i
-    done
-
-At least my Linux kernel was not generating any error messages. Maybe this
-limit was removed already?
-
-
-> and mainly - is there a limit for if i can add to bat0 - since every
-> gretap is a "if"
-
-There is no artificial limit added by batman-adv. But transmitting a lot of
-broadcasts over 255 virtual links sharing the same physical link
-might get interesting (independent of batman-adv).
-
-Kind regards,
-	Sven
---nextPart2429114.OGntAQ9Hoq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAliHWP4ACgkQXYcKB8Em
-e0aeThAAu/iHiFN70rAdoRHZUJR2+o9X2VfTDvk9QICYHeWb8e1RBejBIADRIvX9
-EJtnXkHMjxQ4wauk1Ku45OYSUdRoE/ogsyNCjv5btBrTZ2cTLAW5DgIUWk8wwzSe
-TdjaOL21BRnt7QKSNqpRedtTlj6YMMbh7tjjIPlj6jMQrO7w0lhNVowgU5wiRbSM
-JrpKZKhaaWsE39/ZF2m8a7yHThUktJ90dyerxfYjMrzyhgdb/5MmGHOFcKXEiQGV
-lCYZY0sSTdB3a5bJHeAbePGjsr7ht5NE+D/JjhD/r7KVbj4ofIeZAtiTsUMfaaYO
-nDXUuLm6ZqW/FKlSo11Z8gDuNodbOMEaQzVgqs8B0gpeGqXQYRuR5oxiGg+FEwza
-qHVp+4wjKjIv5mcygB/nEgJu9FMbYsntqUtpvr0WwhURQznZz2IslgEaNtw7b+Z3
-a8c8VAtPoFa2lK865kMkJCXOcQCehq8anttaD3bw7sS7pM/xAwMv0IgsfyJjjhhn
-7eVrk9xKOqANd3bHIEJD8uC6uXGe3jJEnL42Q/uGcQ+E1gHjjUhLdI9mqWAv3n/O
-CgQ2leoKNwUrzaCvyBXgqZyXZ6OI9xwO3patc7ObSsXDJ7P2Giss7lGQD/7lOcm3
-iYduq6145S1CAXSFD5qHjLTbbRQXPl+5Dz2bEu4qPdjAKu4tWi8=
-=HFxS
------END PGP SIGNATURE-----
-
---nextPart2429114.OGntAQ9Hoq--
-
+PiA+IEBAIC0yNzMsMTAgKzI3NiwxNSBAQCBzdGF0aWMgc3RydWN0IGdsb2JhbHMgKmFsZnJlZF9p
+bml0KGludCBhcmdjLA0KPiA+IGNoYXIgKmFyZ3ZbXSkNCj4gPiDCoAkJCXJldHVybiBOVUxMOw0K
+PiA+IMKgCQljYXNlICdwJzoNCj4gPiDCoAkJCXN5bmNfcGVyaW9kID0gc3RydG9kKG9wdGFyZywg
+TlVMTCk7DQo+ID4gLQkJCWdsb2JhbHMtPnN5bmNfcGVyaW9kLnR2X3NlYyA9IChpbnQpDQo+ID4g
+c3luY19wZXJpb2Q7DQo+ID4gLQkJCWdsb2JhbHMtPnN5bmNfcGVyaW9kLnR2X25zZWMgPSAoZG91
+YmxlKQ0KPiA+IChzeW5jX3BlcmlvZCAtIChpbnQpIHN5bmNfcGVyaW9kKSAqIDFlOTsNCj4gPiAr
+CQkJZ2xvYmFscy0+c3luY19wZXJpb2QudHZfc2VjID0NCj4gPiAoaW50KXN5bmNfcGVyaW9kOw0K
+PiA+ICsJCQlnbG9iYWxzLT5zeW5jX3BlcmlvZC50dl9uc2VjID0NCj4gPiAoZG91YmxlKShzeW5j
+X3BlcmlvZCAtIChpbnQpc3luY19wZXJpb2QpICogMWU5Ow0KPiA+IMKgCQkJcHJpbnRmKCIgKiog
+U2V0dGluZyBzeW5jIGludGVydmFsIHRvOiAlLjlmDQo+ID4gc2Vjb25kcyAoJWxkLiUwOWxkKVxu
+Iiwgc3luY19wZXJpb2QsIGdsb2JhbHMtPnN5bmNfcGVyaW9kLnR2X3NlYywNCj4gPiBnbG9iYWxz
+LT5zeW5jX3BlcmlvZC50dl9uc2VjKTsNCj4gPiDCoAkJCWJyZWFrOw0KPiBUaGlzIGRvZXNuJ3Qg
+c2VlbSB0byBiZWxvbmcgaW4gdGhpcyBwYXRjaC4NCg0KWWVzLCB0aGF0IGlzIGNvcnJlY3QuIMKg
+SSBtdXN0IGhhdmUgZml4ZWQgdGhhdCBmb3JtYXR0aW5nIHdoZW4gSSB3YXMNCmdvaW5nIHRocm91
+Z2ggZXZlcnl0aGluZyBlbHNlLiDCoFdvdWxkIHlvdSBsaWtlIG1lIHRvIHRha2UgaXQgb3V0IG9m
+DQp0aGlzIHBhdGNoPw0KDQo+ID4gK3N0YXRpYyBpbnQgbmV0c29ja19vcGVuNChzdHJ1Y3QgaW50
+ZXJmYWNlICppbnRlcmZhY2UpDQo+ID4gK3sNCj4gPiArCWludCBzb2NrOw0KPiA+ICsJaW50IHNv
+Y2tfbWM7DQo+ID4gKwlzdHJ1Y3Qgc29ja2FkZHJfaW4gc2luNCwgc2luX21jOw0KPiA+ICsJc3Ry
+dWN0IGlwX21yZXEgbXJlcTsNCj4gPiArCXN0cnVjdCBpZnJlcSBpZnI7DQo+ID4gKwlpbnQgcmV0
+Ow0KPiA+ICsNCj4gPiArCWludGVyZmFjZS0+bmV0c29jayA9IC0xOw0KPiA+ICsJaW50ZXJmYWNl
+LT5uZXRzb2NrX21jYXN0ID0gLTE7DQo+ID4gKw0KPiA+ICsJc29jayA9IHNvY2tldChQRl9JTkVU
+LCBTT0NLX0RHUkFNLCBJUFBST1RPX1VEUCk7DQo+ID4gKwlpZiAoc29ja8KgwqA8IDApIHsNCj4g
+PiArCQlwZXJyb3IoImlwdjQ6IGNhbid0IG9wZW4gc29ja2V0Iik7DQo+ID4gKwkJcmV0dXJuIC0x
+Ow0KPiA+ICsJfQ0KPiA+ICsNCj4gPiArCXNvY2tfbWMgPSBzb2NrZXQoUEZfSU5FVCwgU09DS19E
+R1JBTSwgSVBQUk9UT19VRFApOw0KPiA+ICsJaWYgKHNvY2tfbWPCoMKgPCAwKSB7DQo+ID4gKwkJ
+cGVycm9yKCJpcHY0OiBjYW4ndCBvcGVuIG1jIHNvY2tldCIpOw0KPiA+ICsJCXJldHVybiAtMTsN
+Cj4gPiArCX0NCj4gWW91IGRvbid0IHNvY2sgaW4gdGhpcyBzaXR1YXRpb24gKG9uIGVycm9ycyk/
+DQoNCkh1aCwgSSBoYWQgc2F3IHRoYXQgYXMgd2VsbCBhbmQgdGhvdWdodCBJIGhhZCBpdCBmaXhl
+ZC4gwqBJJ2xsIG1ha2Ugc3VyZQ0KSSBkaWRuJ3QganVzdCBtaXNzIGEgY29tbWl0Lg0KDQo+ID4g
+DQo+ID4gKwltZW1zZXQoJmlmciwgMCwgc2l6ZW9mKGlmcikpOw0KPiA+ICsJc3RybmNweShpZnIu
+aWZyX25hbWUsIGludGVyZmFjZS0+aW50ZXJmYWNlLCBJRk5BTVNJWik7DQo+ID4gKwlpZnIuaWZy
+X25hbWVbSUZOQU1TSVogLSAxXSA9ICdcMCc7DQo+ID4gKwlpZiAoaW9jdGwoc29ja19tYywgU0lP
+Q0dJRkhXQUREUiwgJmlmcikgPT0gLTEpIHsNCj4gPiArCQlwZXJyb3IoImlwdjQ6IGNhbid0IGdl
+dCBNQUMgYWRkcmVzcyIpOw0KPiA+ICsJCWdvdG8gZXJyNDsNCj4gQW5kIG5vdyAoc2VlIGVycjQp
+IHlvdSBvbmx5IGNsb3NlIHNvY2tfbWM/IFRoaXMgYXBwbGllcyB0byBiYXNpY2FsbHkNCj4gdGhl
+IHJlc3QNCj4gb2YgdGhlIGZ1bmN0aW9uLiBTbyBJIHdpbGwgc2tpcCBpdCBhbmQgbm90IG1lbnRp
+b24gZXZlcnkgcGxhY2Ugd2hpY2gNCj4gbG9va3MNCj4gc3VzcGljaW91cy4NCg0KU2FtZSBjb21t
+ZW50IGFzIGFib3ZlLg0KDQo+ID4gDQo+ID4gKw0KPiA+ICsJaW50ZXJmYWNlLT5uZXRzb2NrID0g
+c29jazsNCj4gPiArCWludGVyZmFjZS0+bmV0c29ja19tY2FzdCA9IHNvY2tfbWM7DQo+ID4gKw0K
+PiA+ICsJcmV0dXJuIDA7DQo+ID4gK2VycjQ6DQo+ID4gKwljbG9zZShzb2NrX21jKTsNCj4gPiAr
+CXJldHVybiAtMTsNCj4gPiArfQ0KPiA+ICsNCj4gWW91IG9ubHkgY2xvc2Ugc29ja19tYyBvbiBl
+cnJvcnMgYnV0IG5vdCBzb2NrPw0KPiANCj4gQW5kIHBsZWFzZSBjaG9zZSBzb21ldGhpbmcgYmV0
+dGVyIFsxXSB0aGFuIGVycjQuDQoNCkkgc2VlIHdoeSB5b3UnZCB3YW50IG1lIHRvIHJlbmFtZSB0
+aGUgZ290byAtIGhvd2V2ZXIgaXQgd2FzIGNob3NlbiB0bw0KZGlmZmVyZW50aWF0ZSBiZXR3ZWVu
+IHRoZSBlcnIgZ290byBpbiBuZXRzb2NrX29wZW4uIMKgSSBjYWxsZWQgaXQgZXJyNA0Kc2luY2Ug
+aXQgaXMgZm9yIHRoZSBuZXRzb2NrX29wZW40KCkgZnVuY3Rpb24gZGVhbGluZyB3aXRoIElQdjQu
+IMKgV291bGQNCmVycl9pcHY0IGJlIGJldHRlcj8NCg0K
