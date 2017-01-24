@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 24 Jan 2017 12:44:38 +0100
-Message-ID: <4448368.uV4yijacOc@prime>
-In-Reply-To: <1484884864-7315-1-git-send-email-jhaws@sdl.usu.edu>
-References: <1484884864-7315-1-git-send-email-jhaws@sdl.usu.edu>
+Date: Tue, 24 Jan 2017 13:41:26 +0100
+Message-ID: <4792653.oeXsgRQRRR@prime>
+In-Reply-To: <2527763.cX7mnL5d4j@sven-edge>
+References: <2527763.cX7mnL5d4j@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4048512.lWkgNfKFCe";
+Content-Type: multipart/signed; boundary="nextPart1540618.WDi4tl9tFu";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v4] alfred: IPv4 multicast distribution
-	support.
+Subject: Re: [B.A.T.M.A.N.] [PATCH 0/4] batctl: Minor cleanups related to
+	tcpdump
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,59 +19,50 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Jonathan Haws <jhaws@sdl.usu.edu>
 
---nextPart4048512.lWkgNfKFCe
+--nextPart1540618.WDi4tl9tFu
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Thursday, January 19, 2017 9:01:04 PM CET Jonathan Haws wrote:
-> Enabled via -4 expert option where multicast group address is specified.
-> This option will disable IPv6 communication and is intended for use in
-> networks which do not support IPv6 addressing.
+On Sunday, January 22, 2017 1:07:10 PM CET Sven Eckelmann wrote:
+> Hi,
 > 
-> When this option is enabled, all IPv6 communication is disabled. Combining
-> IPv4 and IPv6 alfred nodes is unsupported.
+> here are just some random cleanups/fixes for things I've noticed while
+> having a look at https://www.open-mesh.org/issues/298.
 > 
-> Hardware address handling done by submitting queries to the local ARP
-> cache rather than forcing an ARP request.
+>       batctl: tcpdump: Reset socket state on initialization error
+>       batctl: tcpdump: Free resources on SIG(TERM|INT)
+>       batctl: ping: Use sig_atomic_t variable to stop ping
+>       batctl: Simplify standard error messages with perror
+> 
 
-Thanks Jonathan for your patch! I've just looked through the patch and 
-discussed the matter with Sven yesterday. We are both not too big fans of 
-supporting IPv4, but since it helps your scenario and you supplied a well 
-written patch which properly abstracts the address mode and has separate IPv4/
-IPv6 functions, I think we can adopt it.
+Merged this series into dfe9da9..fae430b.
 
-Just two general questions/remarks:
-
- * I do not want to give support for IPv4-related questions of users. Would 
-you be available to maintain and answer questions regarding the IPv4 support?
- * Do you plan to provide OpenWRT support as well? (This is more out of 
-curiosity)
-
-Thank you,
+Thanks,
      Simon
---nextPart4048512.lWkgNfKFCe
+
+
+--nextPart1540618.WDi4tl9tFu
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAliHPiYACgkQoSvjmEKS
-nqHHQRAAndzS7VBjs+8yHZx6w9ZiTRPxYty5HpRALXf/DraNGyd3Ic6VS2mXiS18
-nOdcxTOJP/lapfEs3h0DFPpLqmCebakvGsBxAUS8oNqdAFo9omy3wJONdWPgwNHc
-DHerEE8Ufemdzp6BB4KS/fVVxe6MZeEC9grZMIjKauBAjj/9MLH3lOBAPvBBrOxX
-TUUCskhMxmCicXyI7oG+/n9a3YGz8ZXg2BibfnTPF0w6mZLYmqPSgM9+dAeGlzoD
-l1cQXRN2kBuzh89PY15v9pkZNZCWREUP2sezCRRncSPKVcXZw+k0Jt3zZKjYd+Mf
-KgaiT6NMJzh0hdHRpjelleypz9ivrx+cUqOSEVk0cB5WmR5ZVbxFs0F856xZKNfK
-nlkEJailQg+jx4rplE0iFdhUB5fzuiTyIuZF/0wXbfnhXHq1c/xij8cF4E0KGdiF
-NuDom3yvyORWJ47mqfydEJiwBTJB1co5P4rVeTE+dbs90w+2UwXn82gd2NLgt9yH
-/bf09mK7bx/45RgT2Wgptu+jYWZG/QZq81W1f4X2QXgiT6hjeqCTwjbHK1ebloMK
-dfsZL847xHiJ6pzmSJeUOwfZTlKvSHprY/8MQ1RY0HpWgz6mIrUmSKl4ahhtKoG+
-ypiej0ecw/k8JVcys8VC7GcTye6me1fzoZOnSKHMqDwn8DDzeWM=
-=7bRY
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAliHS3YACgkQoSvjmEKS
+nqGeJg//UKuwYGWFEznZhXZ1+zawYvNgmvtCJl5kGXILQ9yomTvPHyLkvqet7/I2
+kKJXfUxl2TCZXj78Xx7donp39teX//mtNI+6RZv0adIQuOK2qQNGpN5DCVLgxkhv
+Z1fnG+OEP+JnkjHlZwnGIZG0/KRriI79YEUwOhPgQubRiYtfhUWJC2T3N34/Hrz1
+7n/oIOLkc3/qcfli5cknnXwg5mzPhsrr+ltsLQLEICD8fPRxtbaWbUExhDNv70uN
+gDvGLYW3kzRH2SGDvVUg2nzqMjlDvVoFhmC4Hmd8VZlhtNufUjjbwP64e51pO6MV
+VRZahmQjA9Va7iNr/4BRBVqmUrluBnft9BMxelG/33c7GvFCliFeBfjHzB7EMvDg
+kvqQZYtbC2rfLW05Sh0dsGfCr+kPVmnkIm0mX4RPE/61gm8B+T4XIt3LcMIL3cCv
+vfcH3Z1NO0KyYRF4GYmHxOFirqS+idcRluXX3fOHFv6SutvDOgWhvgLt5X0y28Wl
+Inz1rHyhKNrJvEnoY7swuGdcsxHNgQpiusNwpvxDegIH7Y88XBzR0QQAQrCT6eZL
+0aEqhmTFPa5YxEF9xS3msZDXALaOSe2XJcw6OYNlx988AIzYm6e9dFmDZRF+Cvi+
+Tew8SqqMjGthHFWkw1oPl4JRazCKeBSsSlC+Y7psdsaOxRih5kk=
+=a62R
 -----END PGP SIGNATURE-----
 
---nextPart4048512.lWkgNfKFCe--
+--nextPart1540618.WDi4tl9tFu--
 
