@@ -1,11 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Tue, 24 Jan 2017 01:00:30 +0100
-Message-Id: <20170124000030.29160-1-linus.luessing@c0d3.blue>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 24 Jan 2017 12:44:38 +0100
+Message-ID: <4448368.uV4yijacOc@prime>
+In-Reply-To: <1484884864-7315-1-git-send-email-jhaws@sdl.usu.edu>
+References: <1484884864-7315-1-git-send-email-jhaws@sdl.usu.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: restructure cfg80211 compat code
+Content-Type: multipart/signed; boundary="nextPart4048512.lWkgNfKFCe";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4] alfred: IPv4 multicast distribution
+	support.
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,90 +19,59 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Antonio Quartulli <a@unstable.cc>
+Cc: Jonathan Haws <jhaws@sdl.usu.edu>
 
-This commit restructures the compat code regarding cfg80211 to achieve
-the following:
+--nextPart4048512.lWkgNfKFCe
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-a) Allows to compile kernels < 3.16 with -Werror by replacing the
-"#warning" with a runtime warning through pr_warn_once().
-b) Allows to run < 3.16 kernels without warnings if no cfg80211 based
-interface is used.
-c) Migrates cfg80211 compat code from compat.h to compat cfg80211.h to
-keep compat.h slim.
+On Thursday, January 19, 2017 9:01:04 PM CET Jonathan Haws wrote:
+> Enabled via -4 expert option where multicast group address is specified.
+> This option will disable IPv6 communication and is intended for use in
+> networks which do not support IPv6 addressing.
+> 
+> When this option is enabled, all IPv6 communication is disabled. Combining
+> IPv4 and IPv6 alfred nodes is unsupported.
+> 
+> Hardware address handling done by submitting queries to the local ARP
+> cache rather than forcing an ARP request.
 
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- compat-include/net/cfg80211.h | 21 ++++++++++++++++++++-
- compat.h                      | 21 ---------------------
- 2 files changed, 20 insertions(+), 22 deletions(-)
+Thanks Jonathan for your patch! I've just looked through the patch and 
+discussed the matter with Sven yesterday. We are both not too big fans of 
+supporting IPv4, but since it helps your scenario and you supplied a well 
+written patch which properly abstracts the address mode and has separate IPv4/
+IPv6 functions, I think we can adopt it.
 
-diff --git a/compat-include/net/cfg80211.h b/compat-include/net/cfg80211.h
-index 8dbbf0e..6e0eca3 100644
---- a/compat-include/net/cfg80211.h
-+++ b/compat-include/net/cfg80211.h
-@@ -4,9 +4,28 @@
- #include <linux/version.h>
- #include_next <net/cfg80211.h>
- 
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 16, 0)
-+
-+static inline int cfg80211_get_station(struct net_device *dev,
-+				       const u8 *mac_addr,
-+				       struct station_info *sinfo)
-+{
-+	pr_warn_once("cfg80211 based throughput metric is only supported with Linux 3.16+\n");
-+	return -ENOENT;
-+}
-+
-+/* The following define substitutes the expected_throughput field with a random
-+ * one existing in the station_info struct. It can be random because due to the
-+ * function above it will never be used. Only needed to make the code compile
-+ */
-+#define expected_throughput filled
-+
-+#endif /* < KERNEL_VERSION(3, 16, 0) */
-+
- #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
- 
--#if !IS_ENABLED(CONFIG_CFG80211)
-+#if !IS_ENABLED(CONFIG_CFG80211) && \
-+    LINUX_VERSION_CODE >= KERNEL_VERSION(3, 16, 0)
- 
- #define cfg80211_get_station(dev, mac_addr, sinfo) \
- 	batadv_cfg80211_get_station(dev, mac_addr, sinfo)
-diff --git a/compat.h b/compat.h
-index 5397629..e43c413 100644
---- a/compat.h
-+++ b/compat.h
-@@ -130,27 +130,6 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
- 
- #endif /* < KERNEL_VERSION(3, 10, 0) */
- 
--#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 16, 0)
--
--/* the expected behaviour of this function is to return 0 on success, therefore
-- * it is possible to define it as 1 so that batman-adv thinks like something
-- * went wrong. It will then decide what to do.
-- */
--#define cfg80211_get_station(_a, _b, _c) (1)
--/* the following define substitute the expected_throughput field with a random
-- * one existing in the station_info struct. It can be random because due to the
-- * define above it will never be used. We need it only to make the code compile
-- */
--#define expected_throughput filled
--
--#ifdef CONFIG_BATMAN_ADV_BATMAN_V
--
--#warning cfg80211 based throughput metric is only supported with Linux 3.15+
--
--#endif
--
--#endif /* < KERNEL_VERSION(3, 16, 0) */
--
- #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
- 
- /* wild hack for batadv_getlink_net only */
--- 
-2.1.4
+Just two general questions/remarks:
+
+ * I do not want to give support for IPv4-related questions of users. Would 
+you be available to maintain and answer questions regarding the IPv4 support?
+ * Do you plan to provide OpenWRT support as well? (This is more out of 
+curiosity)
+
+Thank you,
+     Simon
+--nextPart4048512.lWkgNfKFCe
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAliHPiYACgkQoSvjmEKS
+nqHHQRAAndzS7VBjs+8yHZx6w9ZiTRPxYty5HpRALXf/DraNGyd3Ic6VS2mXiS18
+nOdcxTOJP/lapfEs3h0DFPpLqmCebakvGsBxAUS8oNqdAFo9omy3wJONdWPgwNHc
+DHerEE8Ufemdzp6BB4KS/fVVxe6MZeEC9grZMIjKauBAjj/9MLH3lOBAPvBBrOxX
+TUUCskhMxmCicXyI7oG+/n9a3YGz8ZXg2BibfnTPF0w6mZLYmqPSgM9+dAeGlzoD
+l1cQXRN2kBuzh89PY15v9pkZNZCWREUP2sezCRRncSPKVcXZw+k0Jt3zZKjYd+Mf
+KgaiT6NMJzh0hdHRpjelleypz9ivrx+cUqOSEVk0cB5WmR5ZVbxFs0F856xZKNfK
+nlkEJailQg+jx4rplE0iFdhUB5fzuiTyIuZF/0wXbfnhXHq1c/xij8cF4E0KGdiF
+NuDom3yvyORWJ47mqfydEJiwBTJB1co5P4rVeTE+dbs90w+2UwXn82gd2NLgt9yH
+/bf09mK7bx/45RgT2Wgptu+jYWZG/QZq81W1f4X2QXgiT6hjeqCTwjbHK1ebloMK
+dfsZL847xHiJ6pzmSJeUOwfZTlKvSHprY/8MQ1RY0HpWgz6mIrUmSKl4ahhtKoG+
+ypiej0ecw/k8JVcys8VC7GcTye6me1fzoZOnSKHMqDwn8DDzeWM=
+=7bRY
+-----END PGP SIGNATURE-----
+
+--nextPart4048512.lWkgNfKFCe--
 
