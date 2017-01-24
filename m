@@ -1,18 +1,15 @@
-Return-Path: <Jonathan.Haws@sdl.usu.edu>
-From: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Date: Tue, 24 Jan 2017 15:45:31 +0000
-Message-ID: <1485272731.2398.15.camel@sdl.usu.edu>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 24 Jan 2017 17:05:17 +0100
+Message-ID: <1595128.WQAW59UAnQ@prime>
+In-Reply-To: <1485272731.2398.15.camel@sdl.usu.edu>
 References: <1484884864-7315-1-git-send-email-jhaws@sdl.usu.edu>
- <4448368.uV4yijacOc@prime>
-In-Reply-To: <4448368.uV4yijacOc@prime>
-Reply-To: Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <293C10BAF5982F45BCA0120461D9A92B@sdl.usu.edu>
-Content-Transfer-Encoding: base64
+ <4448368.uV4yijacOc@prime> <1485272731.2398.15.camel@sdl.usu.edu>
 MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2241719.3uAN2ySI4d";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH v4] alfred: IPv4 multicast distribution
- support.
+	support.
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,38 +19,104 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org, Jonathan Haws <Jonathan.Haws@sdl.usu.edu>
 
-PiANCj4gPiANCj4gPiBFbmFibGVkIHZpYSAtNCBleHBlcnQgb3B0aW9uIHdoZXJlIG11bHRpY2Fz
-dCBncm91cCBhZGRyZXNzIGlzDQo+ID4gc3BlY2lmaWVkLg0KPiA+IFRoaXMgb3B0aW9uIHdpbGwg
-ZGlzYWJsZSBJUHY2IGNvbW11bmljYXRpb24gYW5kIGlzIGludGVuZGVkIGZvciB1c2UNCj4gPiBp
-bg0KPiA+IG5ldHdvcmtzIHdoaWNoIGRvIG5vdCBzdXBwb3J0IElQdjYgYWRkcmVzc2luZy4NCj4g
-PiANCj4gPiBXaGVuIHRoaXMgb3B0aW9uIGlzIGVuYWJsZWQsIGFsbCBJUHY2IGNvbW11bmljYXRp
-b24gaXMgZGlzYWJsZWQuDQo+ID4gQ29tYmluaW5nDQo+ID4gSVB2NCBhbmQgSVB2NiBhbGZyZWQg
-bm9kZXMgaXMgdW5zdXBwb3J0ZWQuDQo+ID4gDQo+ID4gSGFyZHdhcmUgYWRkcmVzcyBoYW5kbGlu
-ZyBkb25lIGJ5IHN1Ym1pdHRpbmcgcXVlcmllcyB0byB0aGUgbG9jYWwNCj4gPiBBUlANCj4gPiBj
-YWNoZSByYXRoZXIgdGhhbiBmb3JjaW5nIGFuIEFSUCByZXF1ZXN0Lg0KPiBUaGFua3MgSm9uYXRo
-YW4gZm9yIHlvdXIgcGF0Y2ghIEkndmUganVzdCBsb29rZWQgdGhyb3VnaCB0aGUgcGF0Y2gNCj4g
-YW5kwqANCj4gZGlzY3Vzc2VkIHRoZSBtYXR0ZXIgd2l0aCBTdmVuIHllc3RlcmRheS4gV2UgYXJl
-IGJvdGggbm90IHRvbyBiaWcNCj4gZmFucyBvZsKgDQo+IHN1cHBvcnRpbmcgSVB2NCwgYnV0IHNp
-bmNlIGl0IGhlbHBzIHlvdXIgc2NlbmFyaW8gYW5kIHlvdSBzdXBwbGllZCBhDQo+IHdlbGzCoA0K
-PiB3cml0dGVuIHBhdGNoIHdoaWNoIHByb3Blcmx5IGFic3RyYWN0cyB0aGUgYWRkcmVzcyBtb2Rl
-IGFuZCBoYXMNCj4gc2VwYXJhdGUgSVB2NC8NCj4gSVB2NiBmdW5jdGlvbnMsIEkgdGhpbmsgd2Ug
-Y2FuIGFkb3B0IGl0Lg0KPiANCj4gSnVzdCB0d28gZ2VuZXJhbCBxdWVzdGlvbnMvcmVtYXJrczoN
-Cj4gDQo+IMKgKiBJIGRvIG5vdCB3YW50IHRvIGdpdmUgc3VwcG9ydCBmb3IgSVB2NC1yZWxhdGVk
-IHF1ZXN0aW9ucyBvZiB1c2Vycy4NCj4gV291bGTCoA0KPiB5b3UgYmUgYXZhaWxhYmxlIHRvIG1h
-aW50YWluIGFuZCBhbnN3ZXIgcXVlc3Rpb25zIHJlZ2FyZGluZyB0aGUgSVB2NA0KPiBzdXBwb3J0
-Pw0KSSdkIGJlIGhhcHB5IHRvIGFuc3dlciBxdWVzdGlvbnMsIGJ1dCBpdCB3b3VsZCBiZSBiZXN0
-IGlmIHRob3NlDQpxdWVzdGlvbnMgYXJlIGRpcmVjdGVkIHRvIHRoZSBsaXN0IGFuZCBteSBhZGRy
-ZXNzIGlzIGluIHRoZSBDQyBmaWVsZC4NCsKgVGhhdCB3YXkgSSdsbCBkZWZpbml0ZWx5IHNlZSBp
-dCBhbmQgY2FuIGFuc3dlci4gwqBJZiBpdCBqdXN0IGdvZXMgdG8NCnRoZSBsaXN0IGluIGdlbmVy
-YWwgSSdsbCB2ZXJ5IGxpa2VseSBtaXNzIHRoZSBtZXNzYWdlLiDCoElzIHRoYXQNCnNvbWV0aW5n
-IHRoYXQgY291bGQgYmUgYWRkZWQgdG8gdGhlIFdpa2k/DQoNCg0KPiANCj4gwqAqIERvIHlvdSBw
-bGFuIHRvIHByb3ZpZGUgT3BlbldSVCBzdXBwb3J0IGFzIHdlbGw/IChUaGlzIGlzIG1vcmUgb3V0
-DQo+IG9mwqANCj4gY3VyaW9zaXR5KQ0KSSB3YXNuJ3QgcGxhbm5pbmcgb24gT3BlbldSVCBzdXBw
-b3J0LiBXaGF0IHdvdWxkIGJlIGVudGFpbGVkPyBXaGVuIEkNCmhlYXIgT3BlbldSVCwgSSB0aGlu
-ayBvZiB0aGUgZmlybXdhcmUgSSBjYW4gbG9hZCBvbnRvIG15IG9sZCBMaW5rc3lzDQpXUlQ1NEcg
-QVAuIMKgV291bGQgaXQgc2ltcGx5IGJlIHRlc3RpbmcgdGhlc2UgY2hhbmdlcyBvbiB0aGF0IGRl
-dmljZT8NCg0KLS0gDQpKb25hdGhhbiBSLiBIYXdzDQpFbWJlZGRlZCBFbmdpbmVlcg0KU3BhY2Ug
-RHluYW1pY3MgTGFib3JhdG9yeQ0Kamhhd3NAc2RsLnVzdS5lZHUNCig0MzUpIDcxMy0zNDg5DQoN
-Cg==
+--nextPart2241719.3uAN2ySI4d
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+Hey Jonathan,
+
+On Tuesday, January 24, 2017 3:45:31 PM CET Jonathan Haws wrote:
+> > 
+> > 
+> > > 
+> > > Enabled via -4 expert option where multicast group address is
+> > > specified.
+> > > This option will disable IPv6 communication and is intended for use
+> > > in
+> > > networks which do not support IPv6 addressing.
+> > > 
+> > > When this option is enabled, all IPv6 communication is disabled.
+> > > Combining
+> > > IPv4 and IPv6 alfred nodes is unsupported.
+> > > 
+> > > Hardware address handling done by submitting queries to the local
+> > > ARP
+> > > cache rather than forcing an ARP request.
+> > 
+> > Thanks Jonathan for your patch! I've just looked through the patch
+> > and 
+> > discussed the matter with Sven yesterday. We are both not too big
+> > fans of 
+> > supporting IPv4, but since it helps your scenario and you supplied a
+> > well 
+> > written patch which properly abstracts the address mode and has
+> > separate IPv4/
+> > IPv6 functions, I think we can adopt it.
+> > 
+> > Just two general questions/remarks:
+> > 
+> >  * I do not want to give support for IPv4-related questions of users.
+> > Would 
+> > you be available to maintain and answer questions regarding the IPv4
+> > support?
+> 
+> I'd be happy to answer questions, but it would be best if those
+> questions are directed to the list and my address is in the CC field.
+>  That way I'll definitely see it and can answer.  If it just goes to
+> the list in general I'll very likely miss the message.  Is that
+> someting that could be added to the Wiki?
+
+Hmm, you can add anything you want in the wiki, but it's unlikely someone will 
+read it before asking here on the mailing list, at least to my personal 
+experience. ;)
+
+But if you commit to look into these issues, just try to catch the mails sent 
+here to this mailing list - if you don't i'll try to forward them to you. :)
+
+> > 
+> >  * Do you plan to provide OpenWRT support as well? (This is more out
+> > of 
+> > curiosity)
+> 
+> I wasn't planning on OpenWRT support. What would be entailed? When I
+> hear OpenWRT, I think of the firmware I can load onto my old Linksys
+> WRT54G AP.  Would it simply be testing these changes on that device?
+
+Basically we already have an OpenWRT/LEDE integration [1] which provides 
+configuration options in a config file, which are parsed and applied etc.
+
+Not sure if the ancient WRT54G is still even properly supported, but there are 
+dozens of cheap and more moderns APs you can use it. But if you are not 
+familiar with OpenWRT, don't worry, someone else can provide the integration 
+if they need it. :)
+
+Cheers,
+     Simon
+
+[1] https://github.com/openwrt-routing/packages/tree/master/alfred
+--nextPart2241719.3uAN2ySI4d
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAliHez0ACgkQoSvjmEKS
+nqHDnw//UqIjML+jElyRMzxpQgkIrOxbVR8KUI2tAwEiGr/LI96xOGo6rX4UjmwK
+HVShOSApphglojOVMcUiJ6681KU20ls7sQX6s59jI/XN+6o+vI+pX0JaVmpmkuSQ
+k+TvdGqjdCbjR31sWSK3lJUJcZSban5bu1UJHBa/yLwryRB8amohstojKNr/Bbyz
+Qzy8m99h6oH6rURDIrNvLnOWj303KQYELMzlLLtFUhWOxsvHfaICKAvnJ4hZZSup
+PGNzwrrtpZ1/BwJS+ACDm5D6hdb4q04GBraDjqrAG1T4OqFkhuH2Abnl41OCf6PJ
+9fcOtNCaW9u+bdj8xFv5yNS4ICa2rCnVAoVyoNY9or+FVmm6CfqEq8SSjSimlA8C
+Hufd4aPMGH/Tw1WvnnB8sb1ReKCD7oac1eNSCxydW82NKz0a8/yI6es4/e8hFGqU
+KKS9Mw8HTsZzAqLIq4MzFq0nMAYJKAJe2WXglLjnoJvU3y+hhZ8eqzIVBoZqI4DR
+z+ANV7rJfMBWJgWk8ai2ZNpJ2yF3upKBPUrS/cMYqD1fNE1e0tGQxPKPcqQ0ObEn
+WSGdzAwRtkEYTPIEg/bMdPlDy2zZqMykyZQattUFPU/5kLZp+tG7lQ7opOeGzJZz
+yb/58fqLFqWkg9DqcHKGHQOEAd5JeO/CHkojZDG/5RwEe/cR3wY=
+=pDue
+-----END PGP SIGNATURE-----
+
+--nextPart2241719.3uAN2ySI4d--
+
