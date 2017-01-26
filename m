@@ -1,10 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 26 Jan 2017 17:43:58 +0100
-Message-Id: <20170126164404.16074-2-sw@simonwunderlich.de>
+Date: Thu, 26 Jan 2017 17:43:59 +0100
+Message-Id: <20170126164404.16074-3-sw@simonwunderlich.de>
 In-Reply-To: <20170126164404.16074-1-sw@simonwunderlich.de>
 References: <20170126164404.16074-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 1/7] batman-adv: Start new development cycle
+Subject: [B.A.T.M.A.N.] [PATCH 2/7] batman-adv: don't add loop detect macs
+	to TT
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,26 +16,70 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <simon.wunderlich@open-mesh.com>
 
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+From: Simon Wunderlich <simon.wunderlich@open-mesh.com>
+
+The bridge loop avoidance (BLA) feature of batman-adv sends packets to
+probe for Mesh/LAN packet loops. Those packets are not sent by real
+clients and should therefore not be added to the translation table (TT).
+
+Signed-off-by: Simon Wunderlich <simon.wunderlich@open-mesh.com>
 ---
- net/batman-adv/main.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/bridge_loop_avoidance.h | 18 ++++++++++++++++++
+ net/batman-adv/soft-interface.c        |  3 ++-
+ 2 files changed, 20 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index a6cc8040a21d..8683542067ba 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -24,7 +24,7 @@
- #define BATADV_DRIVER_DEVICE "batman-adv"
+diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge_loop_avoidance.h
+index 1ae93e46fb98..2827cd3c13d2 100644
+--- a/net/batman-adv/bridge_loop_avoidance.h
++++ b/net/batman-adv/bridge_loop_avoidance.h
+@@ -20,6 +20,8 @@
  
- #ifndef BATADV_SOURCE_VERSION
--#define BATADV_SOURCE_VERSION "2016.5"
-+#define BATADV_SOURCE_VERSION "2017.0"
- #endif
+ #include "main.h"
  
- /* B.A.T.M.A.N. parameters */
++#include <linux/compiler.h>
++#include <linux/stddef.h>
+ #include <linux/types.h>
+ 
+ struct net_device;
+@@ -27,6 +29,22 @@ struct netlink_callback;
+ struct seq_file;
+ struct sk_buff;
+ 
++/**
++ * batadv_bla_is_loopdetect_mac - check if the mac address is from a loop detect
++ *  frame sent by bridge loop avoidance
++ * @mac: mac address to check
++ *
++ * Return: true if the it looks like a loop detect frame
++ * (mac starts with BA:BE), false otherwise
++ */
++static inline bool batadv_bla_is_loopdetect_mac(const uint8_t *mac)
++{
++	if (mac[0] == 0xba && mac[1] == 0xbe)
++		return true;
++
++	return false;
++}
++
+ #ifdef CONFIG_BATMAN_ADV_BLA
+ bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
+ 		   unsigned short vid, bool is_bcast);
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 7b3494ae6ad9..1f55b4b9181c 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -258,7 +258,8 @@ static int batadv_interface_tx(struct sk_buff *skb,
+ 	ethhdr = eth_hdr(skb);
+ 
+ 	/* Register the client MAC in the transtable */
+-	if (!is_multicast_ether_addr(ethhdr->h_source)) {
++	if (!is_multicast_ether_addr(ethhdr->h_source) &&
++	    !batadv_bla_is_loopdetect_mac(ethhdr->h_source)) {
+ 		client_added = batadv_tt_local_add(soft_iface, ethhdr->h_source,
+ 						   vid, skb->skb_iif,
+ 						   skb->mark);
 -- 
 2.11.0
 
