@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 26 Jan 2017 17:44:03 +0100
-Message-Id: <20170126164404.16074-7-sw@simonwunderlich.de>
+Date: Thu, 26 Jan 2017 17:44:04 +0100
+Message-Id: <20170126164404.16074-8-sw@simonwunderlich.de>
 In-Reply-To: <20170126164404.16074-1-sw@simonwunderlich.de>
 References: <20170126164404.16074-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 6/7] batman-adv: Remove one condition check
-	in batadv_route_unicast_packet
+Subject: [B.A.T.M.A.N.] [PATCH 7/7] batman-adv: Treat NET_XMIT_CN as
+	transmit successfully
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,45 +20,33 @@ Cc: Gao Feng <gfree.wind@gmail.com>, netdev@vger.kernel.org, b.a.t.m.a.n@lists.o
 
 From: Gao Feng <gfree.wind@gmail.com>
 
-It could decrease one condition check to collect some statements in the
-first condition block.
+The tc could return NET_XMIT_CN as one congestion notification, but
+it does not mean the packet is lost. Other modules like ipvlan,
+macvlan, and others treat NET_XMIT_CN as success too.
+
+So batman-adv should handle NET_XMIT_CN also as NET_XMIT_SUCCESS.
 
 Signed-off-by: Gao Feng <gfree.wind@gmail.com>
+[sven@narfation.org: Moved NET_XMIT_CN handling to batadv_send_skb_packet]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/routing.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ net/batman-adv/send.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
-index 5f050fbdfff7..7fd740b6e36d 100644
---- a/net/batman-adv/routing.c
-+++ b/net/batman-adv/routing.c
-@@ -719,20 +719,19 @@ static int batadv_route_unicast_packet(struct sk_buff *skb,
- 
- 	len = skb->len;
- 	res = batadv_send_skb_to_orig(skb, orig_node, recv_if);
--	if (res == NET_XMIT_SUCCESS)
--		ret = NET_RX_SUCCESS;
--
--	/* skb was consumed */
--	skb = NULL;
- 
- 	/* translate transmit result into receive result */
- 	if (res == NET_XMIT_SUCCESS) {
-+		ret = NET_RX_SUCCESS;
- 		/* skb was transmitted and consumed */
- 		batadv_inc_counter(bat_priv, BATADV_CNT_FORWARD);
- 		batadv_add_counter(bat_priv, BATADV_CNT_FORWARD_BYTES,
- 				   len + ETH_HLEN);
- 	}
- 
-+	/* skb was consumed */
-+	skb = NULL;
-+
- put_orig_node:
- 	batadv_orig_node_put(orig_node);
- free_skb:
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index d7308263b8fa..d9b2889064a6 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -115,7 +115,7 @@ int batadv_send_skb_packet(struct sk_buff *skb,
+ 	 * congestion and traffic shaping, it drops and returns NET_XMIT_DROP
+ 	 * (which is > 0). This will not be treated as an error.
+ 	 */
+-	return dev_queue_xmit(skb);
++	return net_xmit_eval(dev_queue_xmit(skb));
+ send_skb_err:
+ 	kfree_skb(skb);
+ 	return NET_XMIT_DROP;
 -- 
 2.11.0
 
