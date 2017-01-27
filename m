@@ -1,14 +1,11 @@
-Return-Path: <davem@davemloft.net>
-Date: Thu, 26 Jan 2017 14:31:34 -0500 (EST)
-Message-Id: <20170126.143134.1263227760995643461.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20170126164404.16074-1-sw@simonwunderlich.de>
-References: <20170126164404.16074-1-sw@simonwunderlich.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/7] pull request for net-next:
-	batman-adv 2017-01-26
+Return-Path: <Jonathan.Haws@sdl.usu.edu>
+From: Jonathan Haws <jhaws@sdl.usu.edu>
+Date: Thu, 26 Jan 2017 19:23:09 -0700
+Message-ID: <1485483789-5327-1-git-send-email-jhaws@sdl.usu.edu>
+MIME-Version: 1.0
+Content-Type: text/plain
+Subject: [B.A.T.M.A.N.] [PATCH v1] alfred: Formatting patch for sync-period
+	casts
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,18 +15,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sw@simonwunderlich.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Jonathan Haws <jhaws@sdl.usu.edu>
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 26 Jan 2017 17:43:57 +0100
+---
+ main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> this is the updated version of yesterdays feature/cleanup pull request for
-> batman-adv which should go into net-next. We've followed your suggestion
-> regarding the NET_XMIT_CN handling and modified Gaos patch accordingly.
-> 
-> The remaining patches are untouched.
-> 
-> Please pull or let me know of any problem!
+diff --git a/main.c b/main.c
+index 1cabe15..446eecf 100644
+--- a/main.c
++++ b/main.c
+@@ -276,8 +276,8 @@ static struct globals *alfred_init(int argc, char *argv[])
+ 			return NULL;
+ 		case 'p':
+ 			sync_period = strtod(optarg, NULL);
+-			globals->sync_period.tv_sec = (int) sync_period;
+-			globals->sync_period.tv_nsec = (double) (sync_period - (int) sync_period) * 1e9;
++			globals->sync_period.tv_sec = (int)sync_period;
++			globals->sync_period.tv_nsec = (double)(sync_period - (int)sync_period) * 1e9;
+ 			printf(" ** Setting sync interval to: %.9f seconds (%ld.%09ld)\n", sync_period, globals->sync_period.tv_sec, globals->sync_period.tv_nsec);
+ 			break;
+ 		case '4':
+-- 
+2.7.4
 
-Pulled, thanks.
