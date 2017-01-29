@@ -1,14 +1,14 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Sun, 29 Jan 2017 05:39:41 +0100
-Message-Id: <20170129043943.11341-3-linus.luessing@c0d3.blue>
+Date: Sun, 29 Jan 2017 05:39:42 +0100
+Message-Id: <20170129043943.11341-4-linus.luessing@c0d3.blue>
 In-Reply-To: <20170129043943.11341-1-linus.luessing@c0d3.blue>
 References: <20170129043943.11341-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v3 2/4] batman-adv: Store and transmit own
-	neighborhood hash
+Subject: [B.A.T.M.A.N.] [PATCH v3 3/4] batman-adv: Introduce packet type
+	independent TVLV handler API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,594 +20,899 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Adds a sha512 hash as a TVLV to an ELP packet. Hash is the "sum" of all
-neighbors (ordered alphabetically, concatenated, binary) a node sees
-on a specific interface.
+Instead of having one TVLV registration function for OGMs and one for
+unicast packets, this patch adds a new, generic tvlv handler
+registratiorn function, which simply uses a packet type as parameter.
 
-Furthermore, the best and worst TX metric of all these neighbors on an
-interface are added to the TVLV.
+For now, this patch only migrates the multicast and gateway tvlv
+handlers to this new API, as these two have been tested and verified
+to work by the author.
+
+The benefits of this new API:
+
+* A more unified TVLV handling
+* Easier to add TVLV capabilities to any new, upcoming packet type
+* Does not rely on linearized skb data
+
+Further ToDos (for later patches):
+
+* Insert handler hooks for unicast_tvlv packets too and
+  migrate BATADV_TVLV_{DAT,NC,TT,ROAM} to new API after
+  further testing.
+* Remove old TVLV handler API
 
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 
 ---
 
-Note: This patch throws two checkpatch warnings which are faulty,
-though.
-
 Changes in v3:
-* ~((u32)0) -> U32_MAX (thanks Sven!)
-* avoid one-liner multi variable assignments (thanks Sven!)
-* avoid redundant set+memset -> only memset over nhh_data->neigh_hash
-  (thanks Sven!)
-* set conservative hard_iface->max_throughput init value
-* do not attach NHH TVLV on uncertain/initialization value of
-  hard_iface->max_throughput either
-* fix elp packet backwards compatibility (thanks Sven!)
-  -> keep parsing elp packets without new tvlv field
-* remove unncessary linux/sha.h include (thanks Sven!)
-* remove linux/string.h addition in originator.h,
-  memcmp was introduced in the previous patch already
+* remove unnecessary skb_reset_network_header() call
+  shortly before kfree_skb() batadv_iv_ogm_receive()
+* remove tvlv (un)pack_ctx wrappers
+(thanks Sven!)
 
 Changes in v2:
-* Moved sorted storing of hardif neighbors to a separate patch
-* Kconfig: switched "depends on CRYPTO_SHA512" to "select CRYPTO_SHA512"
-* compat: for SHASH_DESC_ON_STACK() macro
-* kerneldoc: added "struct" prefix in kerneldoc of batadv_tvlv_nhh_data
-* added includes:
-  - linux/string.h in bat_v.c
-  - linux/{printk.h,err.h} in bat_v_elp.c
-  - linux/string.h in originator.c
+* add includes for linux/{bug,printk}.h
+* update forward declaration to "struct sk_buff;" in tvlv.h
+* kerneldoc:
+  - change a "@tvlv_type" to "@packet_type",
+  - fixed batadv_tvlv_ogm_unpack_ctx() parameter kerneldoc
 (thanks Sven!)
 ---
- compat-include/crypto/hash.h |  16 ++++
- net/batman-adv/Kconfig       |   1 +
- net/batman-adv/bat_v.c       |  28 ++++++-
- net/batman-adv/bat_v.h       |   5 ++
- net/batman-adv/bat_v_elp.c   | 186 ++++++++++++++++++++++++++++++++++++++++++-
- net/batman-adv/bat_v_elp.h   |   2 +
- net/batman-adv/log.c         |   4 +-
- net/batman-adv/main.c        |   1 +
- net/batman-adv/packet.h      |  26 ++++++
- net/batman-adv/types.h       |   8 ++
- 10 files changed, 271 insertions(+), 6 deletions(-)
- create mode 100644 compat-include/crypto/hash.h
+ net/batman-adv/bat_iv_ogm.c            |   6 +-
+ net/batman-adv/bat_v_ogm.c             |  17 +-
+ net/batman-adv/distributed-arp-table.c |   4 +-
+ net/batman-adv/gateway_common.c        |  44 +++--
+ net/batman-adv/multicast.c             |  37 +++--
+ net/batman-adv/network-coding.c        |   4 +-
+ net/batman-adv/tvlv.c                  | 296 ++++++++++++++++++++++++++++++---
+ net/batman-adv/tvlv.h                  |  22 ++-
+ net/batman-adv/types.h                 |  24 ++-
+ 9 files changed, 374 insertions(+), 80 deletions(-)
 
-diff --git a/compat-include/crypto/hash.h b/compat-include/crypto/hash.h
-new file mode 100644
-index 0000000..2dd72ea
---- /dev/null
-+++ b/compat-include/crypto/hash.h
-@@ -0,0 +1,16 @@
-+#ifndef _NET_BATMAN_ADV_COMPAT_CRYPTO_HASH_H_
-+#define _NET_BATMAN_ADV_COMPAT_CRYPTO_HASH_H_
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 7c3d994..c79699d 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1491,7 +1491,7 @@ batadv_iv_ogm_process_per_outif(const struct sk_buff *skb, int ogm_offset,
+ 	}
+ 
+ 	if (if_outgoing == BATADV_IF_DEFAULT)
+-		batadv_tvlv_ogm_receive(bat_priv, ogm_packet, orig_node);
++		batadv_tvlv_ogm_receive(bat_priv, skb, orig_node);
+ 
+ 	/* if sender is a direct neighbor the sender mac equals
+ 	 * originator mac
+@@ -1836,6 +1836,8 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
+ 	ogm_offset = 0;
+ 	ogm_packet = (struct batadv_ogm_packet *)skb->data;
+ 
++	WARN_ON(skb_network_offset(skb) != 0);
 +
-+#include <linux/version.h>
-+#include_next <crypto/hash.h>
+ 	/* unpack the aggregated packets and process them one by one */
+ 	while (batadv_iv_ogm_aggr_packet(ogm_offset, skb_headlen(skb),
+ 					 ogm_packet->tvlv_len)) {
+@@ -1846,6 +1848,8 @@ static int batadv_iv_ogm_receive(struct sk_buff *skb,
+ 
+ 		packet_pos = skb->data + ogm_offset;
+ 		ogm_packet = (struct batadv_ogm_packet *)packet_pos;
 +
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 18, 0)
-+
-+#define SHASH_DESC_ON_STACK(shash, ctx)				  \
-+	char __##shash##_desc[sizeof(struct shash_desc) +	  \
-+		crypto_shash_descsize(ctx)] CRYPTO_MINALIGN_ATTR; \
-+	struct shash_desc *shash = (struct shash_desc *)__##shash##_desc
-+
-+#endif /* < KERNEL_VERSION(3, 18, 0) */
-+
-+#endif	/* _NET_BATMAN_ADV_COMPAT_CRYPTO_HASH_H_ */
-diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
-index b73b96a..54980d8 100644
---- a/net/batman-adv/Kconfig
-+++ b/net/batman-adv/Kconfig
-@@ -18,6 +18,7 @@ config BATMAN_ADV
- config BATMAN_ADV_BATMAN_V
- 	bool "B.A.T.M.A.N. V protocol (experimental)"
- 	depends on BATMAN_ADV && !(CFG80211=m && BATMAN_ADV=y)
-+	select CRYPTO_SHA512
- 	default n
- 	help
- 	  This option enables the B.A.T.M.A.N. V protocol, the successor
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index 0acd081..992e428 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -33,6 +33,7 @@
- #include <linux/rcupdate.h>
- #include <linux/seq_file.h>
- #include <linux/stddef.h>
-+#include <linux/string.h>
- #include <linux/types.h>
- #include <linux/workqueue.h>
- #include <net/genetlink.h>
-@@ -1070,11 +1071,17 @@ static struct batadv_algo_ops batadv_batman_v __read_mostly = {
++		skb_set_network_header(skb, ogm_offset);
+ 	}
+ 
+ 	ret = NET_RX_SUCCESS;
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index 03a35c9..cfc9228 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -594,7 +594,7 @@ out:
+ /**
+  * batadv_v_ogm_process_per_outif - process a batman v OGM for an outgoing if
+  * @bat_priv: the bat priv with all the soft interface information
+- * @ethhdr: the Ethernet header of the OGM2
++ * @skb: the skb containing the OGM2
+  * @ogm2: OGM2 structure
+  * @orig_node: Originator structure for which the OGM has been received
+  * @neigh_node: the neigh_node through with the OGM has been received
+@@ -603,13 +603,15 @@ out:
   */
- void batadv_v_hardif_init(struct batadv_hard_iface *hard_iface)
+ static void
+ batadv_v_ogm_process_per_outif(struct batadv_priv *bat_priv,
+-			       const struct ethhdr *ethhdr,
++			       const struct sk_buff *skb,
+ 			       const struct batadv_ogm2_packet *ogm2,
+ 			       struct batadv_orig_node *orig_node,
+ 			       struct batadv_neigh_node *neigh_node,
+ 			       struct batadv_hard_iface *if_incoming,
+ 			       struct batadv_hard_iface *if_outgoing)
  {
-+	struct batadv_hard_iface_bat_v *bat_v = &hard_iface->bat_v;
-+
- 	/* enable link throughput auto-detection by setting the throughput
- 	 * override to zero
- 	 */
--	atomic_set(&hard_iface->bat_v.throughput_override, 0);
--	atomic_set(&hard_iface->bat_v.elp_interval, 500);
-+	atomic_set(&bat_v->throughput_override, 0);
-+	atomic_set(&bat_v->elp_interval, 500);
-+
-+	bat_v->min_throughput = 0;
-+	bat_v->max_throughput = U32_MAX;
-+	memset(bat_v->neigh_hash, 0, sizeof(bat_v->neigh_hash));
- }
++	const struct ethhdr *ethhdr = eth_hdr(skb);
++	unsigned int tvlv_offset = sizeof(*ogm2);
+ 	int seqno_age;
+ 	bool forward;
  
- /**
-@@ -1108,6 +1115,14 @@ void batadv_v_mesh_free(struct batadv_priv *bat_priv)
- }
+@@ -623,11 +625,16 @@ batadv_v_ogm_process_per_outif(struct batadv_priv *bat_priv,
+ 		return;
  
- /**
-+ * batadv_v_free - free the B.A.T.M.A.N. V global, mesh independent resources
-+ */
-+void batadv_v_free(void)
-+{
-+	batadv_v_elp_free();
-+}
-+
-+/**
-  * batadv_v_init - B.A.T.M.A.N. V initialization function
-  *
-  * Description: Takes care of initializing all the subcomponents.
-@@ -1119,11 +1134,15 @@ int __init batadv_v_init(void)
+ 	/* only unknown & newer OGMs contain TVLVs we are interested in */
+-	if ((seqno_age > 0) && (if_outgoing == BATADV_IF_DEFAULT))
++	if ((seqno_age > 0) && (if_outgoing == BATADV_IF_DEFAULT)) {
++		batadv_tvlv_containers_process2(bat_priv, skb, BATADV_OGM2,
++						tvlv_offset,
++						ntohs(ogm2->tvlv_len),
++						orig_node);
+ 		batadv_tvlv_containers_process(bat_priv, true, orig_node,
+ 					       NULL, NULL,
+ 					       (unsigned char *)(ogm2 + 1),
+ 					       ntohs(ogm2->tvlv_len));
++	}
+ 
+ 	/* if the metric update went through, update routes if needed */
+ 	forward = batadv_v_ogm_route_update(bat_priv, ethhdr, ogm2, orig_node,
+@@ -728,7 +735,7 @@ static void batadv_v_ogm_process(const struct sk_buff *skb, int ogm_offset,
+ 	path_throughput = min_t(u32, link_throughput, ogm_throughput);
+ 	ogm_packet->throughput = htonl(path_throughput);
+ 
+-	batadv_v_ogm_process_per_outif(bat_priv, ethhdr, ogm_packet, orig_node,
++	batadv_v_ogm_process_per_outif(bat_priv, skb, ogm_packet, orig_node,
+ 				       neigh_node, if_incoming,
+ 				       BATADV_IF_DEFAULT);
+ 
+@@ -772,7 +779,7 @@ static void batadv_v_ogm_process(const struct sk_buff *skb, int ogm_offset,
+ 			continue;
+ 		}
+ 
+-		batadv_v_ogm_process_per_outif(bat_priv, ethhdr, ogm_packet,
++		batadv_v_ogm_process_per_outif(bat_priv, skb, ogm_packet,
+ 					       orig_node, neigh_node,
+ 					       if_incoming, hard_iface);
+ 
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 1bfd1db..fa3768a 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -733,7 +733,7 @@ static void batadv_dat_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ 					   u8 flags,
+ 					   void *tvlv_value, u16 tvlv_value_len)
  {
- 	int ret;
+-	if (flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND)
++	if (flags & BATADV_TVLV_HANDLER_CIFNOTFND)
+ 		clear_bit(BATADV_ORIG_CAPA_HAS_DAT, &orig->capabilities);
+ 	else
+ 		set_bit(BATADV_ORIG_CAPA_HAS_DAT, &orig->capabilities);
+@@ -775,7 +775,7 @@ int batadv_dat_init(struct batadv_priv *bat_priv)
  
-+	ret = batadv_v_elp_init();
-+	if (ret < 0)
-+		return ret;
-+
- 	/* B.A.T.M.A.N. V echo location protocol packet  */
- 	ret = batadv_recv_handler_register(BATADV_ELP,
- 					   batadv_v_elp_packet_recv);
- 	if (ret < 0)
--		return ret;
-+		goto elp_free;
- 
- 	ret = batadv_recv_handler_register(BATADV_OGM2,
- 					   batadv_v_ogm_packet_recv);
-@@ -1136,6 +1155,9 @@ int __init batadv_v_init(void)
- 
- 	return ret;
- 
-+elp_free:
-+	batadv_v_elp_free();
-+
- ogm_unregister:
- 	batadv_recv_handler_unregister(BATADV_OGM2);
- 
-diff --git a/net/batman-adv/bat_v.h b/net/batman-adv/bat_v.h
-index dd7c4b6..9782ba1 100644
---- a/net/batman-adv/bat_v.h
-+++ b/net/batman-adv/bat_v.h
-@@ -23,6 +23,7 @@
- #ifdef CONFIG_BATMAN_ADV_BATMAN_V
- 
- int batadv_v_init(void);
-+void batadv_v_free(void);
- void batadv_v_hardif_init(struct batadv_hard_iface *hardif);
- int batadv_v_mesh_init(struct batadv_priv *bat_priv);
- void batadv_v_mesh_free(struct batadv_priv *bat_priv);
-@@ -34,6 +35,10 @@ static inline int batadv_v_init(void)
+ 	batadv_tvlv_handler_register(bat_priv, batadv_dat_tvlv_ogm_handler_v1,
+ 				     NULL, BATADV_TVLV_DAT, 1,
+-				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
++				     BATADV_TVLV_HANDLER_CIFNOTFND);
+ 	batadv_dat_tvlv_container_update(bat_priv);
  	return 0;
  }
- 
-+static inline void batadv_v_free(void)
-+{
-+}
-+
- static inline void batadv_v_hardif_init(struct batadv_hard_iface *hardif)
- {
+diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
+index 5db2e43..b2c7039 100644
+--- a/net/batman-adv/gateway_common.c
++++ b/net/batman-adv/gateway_common.c
+@@ -207,25 +207,26 @@ ssize_t batadv_gw_bandwidth_set(struct net_device *net_dev, char *buff,
  }
-diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
-index b90c990..df7bc64 100644
---- a/net/batman-adv/bat_v_elp.c
-+++ b/net/batman-adv/bat_v_elp.c
-@@ -18,8 +18,10 @@
- #include "bat_v_elp.h"
+ 
+ /**
+- * batadv_gw_tvlv_ogm_handler_v1 - process incoming gateway tvlv container
++ * batadv_gw_tvlv_ogm_handler - process incoming gateway tvlv container
+  * @bat_priv: the bat priv with all the soft interface information
+- * @orig: the orig_node of the ogm
+- * @flags: flags indicating the tvlv state (see batadv_tvlv_handler_flags)
+  * @tvlv_value: tvlv buffer containing the gateway data
+  * @tvlv_value_len: tvlv buffer length
++ * @ctx: handler specific context information (here: orig_node)
++ *
++ * Return: Always NET_RX_SUCCESS.
+  */
+-static void batadv_gw_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+-					  struct batadv_orig_node *orig,
+-					  u8 flags,
+-					  void *tvlv_value, u16 tvlv_value_len)
++static int batadv_gw_tvlv_ogm_handler(struct batadv_priv *bat_priv,
++				      void *tvlv_value,
++				      u16 tvlv_value_len,
++				      void *ctx)
+ {
++	struct batadv_orig_node *orig_node = ctx;
+ 	struct batadv_tvlv_gateway_data gateway, *gateway_ptr;
+ 
+-	/* only fetch the tvlv value if the handler wasn't called via the
+-	 * CIFNOTFND flag and if there is data to fetch
++	/* might either be too small due to a broken packet,
++	 * or zero because no matching TVLV was found in the provided OGM
+ 	 */
+-	if ((flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND) ||
+-	    (tvlv_value_len < sizeof(gateway))) {
++	if (tvlv_value_len < sizeof(gateway)) {
+ 		gateway.bandwidth_down = 0;
+ 		gateway.bandwidth_up = 0;
+ 	} else {
+@@ -239,12 +240,14 @@ static void batadv_gw_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ 		}
+ 	}
+ 
+-	batadv_gw_node_update(bat_priv, orig, &gateway);
++	batadv_gw_node_update(bat_priv, orig_node, &gateway);
+ 
+ 	/* restart gateway selection */
+ 	if ((gateway.bandwidth_down != 0) &&
+ 	    (atomic_read(&bat_priv->gw.mode) == BATADV_GW_MODE_CLIENT))
+-		batadv_gw_check_election(bat_priv, orig);
++		batadv_gw_check_election(bat_priv, orig_node);
++
++	return NET_RX_SUCCESS;
+ }
+ 
+ /**
+@@ -253,9 +256,12 @@ static void batadv_gw_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+  */
+ void batadv_gw_init(struct batadv_priv *bat_priv)
+ {
+-	batadv_tvlv_handler_register(bat_priv, batadv_gw_tvlv_ogm_handler_v1,
+-				     NULL, BATADV_TVLV_GW, 1,
+-				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
++	batadv_tvlv_handler_register2(bat_priv, batadv_gw_tvlv_ogm_handler,
++				      BATADV_IV_OGM, BATADV_TVLV_GW, 1,
++				      BATADV_TVLV_HANDLER_CIFNOTFND);
++	batadv_tvlv_handler_register2(bat_priv, batadv_gw_tvlv_ogm_handler,
++				      BATADV_OGM2, BATADV_TVLV_GW, 1,
++				      BATADV_TVLV_HANDLER_CIFNOTFND);
+ }
+ 
+ /**
+@@ -265,5 +271,9 @@ void batadv_gw_init(struct batadv_priv *bat_priv)
+ void batadv_gw_free(struct batadv_priv *bat_priv)
+ {
+ 	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_GW, 1);
+-	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_GW, 1);
++
++	batadv_tvlv_handler_unregister2(bat_priv, BATADV_IV_OGM, BATADV_TVLV_GW,
++					1);
++	batadv_tvlv_handler_unregister2(bat_priv, BATADV_OGM2, BATADV_TVLV_GW,
++					1);
+ }
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 952ba81..9e3a20d 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -1112,23 +1112,23 @@ static void batadv_mcast_want_ipv6_update(struct batadv_priv *bat_priv,
+ /**
+  * batadv_mcast_tvlv_ogm_handler - process incoming multicast tvlv container
+  * @bat_priv: the bat priv with all the soft interface information
+- * @orig: the orig_node of the ogm
+- * @flags: flags indicating the tvlv state (see batadv_tvlv_handler_flags)
+  * @tvlv_value: tvlv buffer containing the multicast data
+  * @tvlv_value_len: tvlv buffer length
++ * @ctx: handler specific context information (here: orig_node)
++ *
++ * Return: Always NET_RX_SUCCESS.
+  */
+-static void batadv_mcast_tvlv_ogm_handler(struct batadv_priv *bat_priv,
+-					  struct batadv_orig_node *orig,
+-					  u8 flags,
+-					  void *tvlv_value,
+-					  u16 tvlv_value_len)
++static int batadv_mcast_tvlv_ogm_handler(struct batadv_priv *bat_priv,
++					 void *tvlv_value,
++					 u16 tvlv_value_len,
++					 void *ctx)
+ {
+-	bool orig_mcast_enabled = !(flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
++	struct batadv_orig_node *orig = ctx;
++	bool orig_mcast_enabled = !!tvlv_value;
+ 	u8 mcast_flags = BATADV_NO_FLAGS;
+ 	bool orig_initialized;
+ 
+-	if (orig_mcast_enabled && tvlv_value &&
+-	    (tvlv_value_len >= sizeof(mcast_flags)))
++	if (orig_mcast_enabled && (tvlv_value_len >= sizeof(mcast_flags)))
+ 		mcast_flags = *(u8 *)tvlv_value;
+ 
+ 	spin_lock_bh(&orig->mcast_handler_lock);
+@@ -1163,6 +1163,8 @@ static void batadv_mcast_tvlv_ogm_handler(struct batadv_priv *bat_priv,
+ 
+ 	orig->mcast_flags = mcast_flags;
+ 	spin_unlock_bh(&orig->mcast_handler_lock);
++
++	return NET_RX_SUCCESS;
+ }
+ 
+ /**
+@@ -1171,9 +1173,12 @@ static void batadv_mcast_tvlv_ogm_handler(struct batadv_priv *bat_priv,
+  */
+ void batadv_mcast_init(struct batadv_priv *bat_priv)
+ {
+-	batadv_tvlv_handler_register(bat_priv, batadv_mcast_tvlv_ogm_handler,
+-				     NULL, BATADV_TVLV_MCAST, 2,
+-				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
++	batadv_tvlv_handler_register2(bat_priv, batadv_mcast_tvlv_ogm_handler,
++				      BATADV_IV_OGM, BATADV_TVLV_MCAST, 2,
++				      BATADV_TVLV_HANDLER_CIFNOTFND);
++	batadv_tvlv_handler_register2(bat_priv, batadv_mcast_tvlv_ogm_handler,
++				      BATADV_OGM2, BATADV_TVLV_MCAST, 2,
++				      BATADV_TVLV_HANDLER_CIFNOTFND);
+ 
+ 	INIT_DELAYED_WORK(&bat_priv->mcast.work, batadv_mcast_mla_update);
+ 	batadv_mcast_start_timer(bat_priv);
+@@ -1291,7 +1296,11 @@ void batadv_mcast_free(struct batadv_priv *bat_priv)
+ 	cancel_delayed_work_sync(&bat_priv->mcast.work);
+ 
+ 	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_MCAST, 2);
+-	batadv_tvlv_handler_unregister(bat_priv, BATADV_TVLV_MCAST, 2);
++
++	batadv_tvlv_handler_unregister2(bat_priv, BATADV_IV_OGM,
++					BATADV_TVLV_MCAST, 2);
++	batadv_tvlv_handler_unregister2(bat_priv, BATADV_OGM2,
++					BATADV_TVLV_MCAST, 2);
+ 
+ 	/* safely calling outside of worker, as worker was canceled above */
+ 	batadv_mcast_mla_tt_retract(bat_priv, NULL);
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index e1f6fc7..e340662 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -137,7 +137,7 @@ static void batadv_nc_tvlv_ogm_handler_v1(struct batadv_priv *bat_priv,
+ 					  u8 flags,
+ 					  void *tvlv_value, u16 tvlv_value_len)
+ {
+-	if (flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND)
++	if (flags & BATADV_TVLV_HANDLER_CIFNOTFND)
+ 		clear_bit(BATADV_ORIG_CAPA_HAS_NC, &orig->capabilities);
+ 	else
+ 		set_bit(BATADV_ORIG_CAPA_HAS_NC, &orig->capabilities);
+@@ -176,7 +176,7 @@ int batadv_nc_mesh_init(struct batadv_priv *bat_priv)
+ 
+ 	batadv_tvlv_handler_register(bat_priv, batadv_nc_tvlv_ogm_handler_v1,
+ 				     NULL, BATADV_TVLV_NC, 1,
+-				     BATADV_TVLV_HANDLER_OGM_CIFNOTFND);
++				     BATADV_TVLV_HANDLER_CIFNOTFND);
+ 	batadv_nc_tvlv_container_update(bat_priv);
+ 	return 0;
+ 
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index 1d9e267..2e5886f 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -17,6 +17,7 @@
+ 
  #include "main.h"
  
-+#include <crypto/hash.h>
- #include <linux/atomic.h>
++#include <linux/bug.h>
  #include <linux/byteorder/generic.h>
-+#include <linux/err.h>
- #include <linux/errno.h>
  #include <linux/etherdevice.h>
- #include <linux/ethtool.h>
-@@ -29,6 +31,7 @@
- #include <linux/kernel.h>
- #include <linux/kref.h>
+ #include <linux/fs.h>
+@@ -27,6 +28,7 @@
+ #include <linux/lockdep.h>
  #include <linux/netdevice.h>
+ #include <linux/pkt_sched.h>
 +#include <linux/printk.h>
- #include <linux/random.h>
  #include <linux/rculist.h>
  #include <linux/rcupdate.h>
-@@ -49,6 +52,8 @@
- #include "routing.h"
- #include "send.h"
+ #include <linux/skbuff.h>
+@@ -68,23 +70,28 @@ static void batadv_tvlv_handler_put(struct batadv_tvlv_handler *tvlv_handler)
+  * batadv_tvlv_handler_get - retrieve tvlv handler from the tvlv handler list
+  *  based on the provided type and version (both need to match)
+  * @bat_priv: the bat priv with all the soft interface information
+- * @type: tvlv handler type to look for
+- * @version: tvlv handler version to look for
++ * @packet_type: packet type to look for
++ * @tvlv_type: tvlv handler type to look for
++ * @tvlv_version: tvlv handler version to look for
+  *
+  * Return: tvlv handler if found or NULL otherwise.
+  */
+ static struct batadv_tvlv_handler *
+-batadv_tvlv_handler_get(struct batadv_priv *bat_priv, u8 type, u8 version)
++batadv_tvlv_handler_get(struct batadv_priv *bat_priv, int packet_type,
++			u8 tvlv_type, u8 tvlv_version)
+ {
+ 	struct batadv_tvlv_handler *tvlv_handler_tmp, *tvlv_handler = NULL;
  
-+static struct crypto_shash *tfm;
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(tvlv_handler_tmp,
+ 				 &bat_priv->tvlv.handler_list, list) {
+-		if (tvlv_handler_tmp->type != type)
++		if (tvlv_handler_tmp->packet_type != packet_type)
+ 			continue;
+ 
+-		if (tvlv_handler_tmp->version != version)
++		if (tvlv_handler_tmp->tvlv_type != tvlv_type)
++			continue;
 +
- /**
-  * batadv_v_elp_start_timer - restart timer for ELP periodic work
-  * @hard_iface: the interface for which the timer has to be reset
-@@ -65,6 +70,136 @@ static void batadv_v_elp_start_timer(struct batadv_hard_iface *hard_iface)
++		if (tvlv_handler_tmp->tvlv_version != tvlv_version)
+ 			continue;
+ 
+ 		if (!kref_get_unless_zero(&tvlv_handler_tmp->refcount))
+@@ -387,7 +394,7 @@ static int batadv_tvlv_call_handler(struct batadv_priv *bat_priv,
+ 		tvlv_handler->ogm_handler(bat_priv, orig_node,
+ 					  BATADV_NO_FLAGS,
+ 					  tvlv_value, tvlv_value_len);
+-		tvlv_handler->flags |= BATADV_TVLV_HANDLER_OGM_CALLED;
++		tvlv_handler->flags |= BATADV_TVLV_HANDLER_CALLED;
+ 	} else {
+ 		if (!src)
+ 			return NET_RX_SUCCESS;
+@@ -407,6 +414,139 @@ static int batadv_tvlv_call_handler(struct batadv_priv *bat_priv,
  }
  
  /**
-+ * batadv_v_elp_update_neigh_hash - updates neighborhood hash related data
-+ * @hard_iface: interface which the data has to be prepared for
++ * batadv_tvlv_call_handler2 - call the appropriate tvlv handler
++ * @bat_priv: the bat priv with all the soft interface information
++ * @packet_type: packet type to look and call for
++ * @tvlv_type: tvlv handler type to look and call for
++ * @tvlv_version: tvlv handler version to look and call for
++ * @tvlv_value: tvlv content
++ * @tvlv_value_len: tvlv content length
++ * @ctx: handler specific context information
 + *
-+ * Firstly, this function updates the neighborhood hash of a hard interface.
-+ * That is it resummarizes the present neighborhood into one compact hash
-+ * representation.
-+ *
-+ * Secondly, minimum and maximum throughput values within this neighorhood are
-+ * updated.
++ * Return: NET_RX_SUCCESS if handler was found and called successfully,
++ * NET_RX_DROP otherwise.
 + */
-+static void batadv_v_elp_update_neigh_hash(struct batadv_hard_iface *hard_iface)
++static int batadv_tvlv_call_handler2(struct batadv_priv *bat_priv,
++				     u8 packet_type, u8 tvlv_type,
++				     u8 tvlv_version, void *tvlv_value,
++				     u16 tvlv_value_len, void *ctx)
 +{
-+	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
-+	struct batadv_hardif_neigh_node *hardif_neigh = NULL;
-+	struct ewma_throughput *ewma_throughput;
-+	u8 *own_addr = hard_iface->net_dev->dev_addr;
-+	u32 min_throughput = U32_MAX;
-+	u32 max_throughput = 0;
-+	u32 throughput;
++	struct batadv_tvlv_handler *tvlv_handler;
 +	int ret;
 +
-+	SHASH_DESC_ON_STACK(shash, tfm);
++	tvlv_handler = batadv_tvlv_handler_get(bat_priv, packet_type, tvlv_type,
++					       tvlv_version);
++	if (!tvlv_handler)
++		return NET_RX_DROP;
 +
-+	shash->flags = 0;
-+	shash->tfm = tfm;
++	ret = tvlv_handler->handler(bat_priv, tvlv_value, tvlv_value_len, ctx);
++	tvlv_handler->flags |= BATADV_TVLV_HANDLER_CALLED;
 +
-+	ret = crypto_shash_init(shash);
-+	if (ret)
-+		goto err;
++	batadv_tvlv_handler_put(tvlv_handler);
++
++	return ret;
++}
++
++/**
++ * batadv_tvlv_call_unfound_handlers - call any handler not called yet
++ * @bat_priv: the bat priv with all the soft interface information
++ * @packet_type: the packet type to call handlers of unfound TVLVs for
++ * @ctx: handler specific context information
++ *
++ * For any registered TVLV handler with a CIFNOTFND flag: If a matching
++ * tvlv type was not found in a specific packet (type) then this calls the
++ * according handler with an empty (NULL) tvlv_value and tvlv_value_len of
++ * zero now.
++ */
++static void batadv_tvlv_call_unfound_handlers(struct batadv_priv *bat_priv,
++					      int packet_type, void *ctx)
++{
++	struct batadv_tvlv_handler *tvlv_handler;
 +
 +	rcu_read_lock();
-+	hlist_for_each_entry_rcu(hardif_neigh,
-+				 &hard_iface->neigh_list, list) {
-+		/* insert own address at the right spot */
-+		if (own_addr && (memcmp(own_addr, hardif_neigh->addr,
-+					ETH_ALEN) < 0)) {
-+			ret = crypto_shash_update(shash, own_addr, ETH_ALEN);
-+			if (ret) {
-+				rcu_read_unlock();
-+				goto err;
-+			}
++	hlist_for_each_entry_rcu(tvlv_handler,
++				 &bat_priv->tvlv.handler_list, list) {
++		if (tvlv_handler->packet_type != packet_type)
++			continue;
 +
-+			own_addr = NULL;
-+		}
++		if ((tvlv_handler->flags & BATADV_TVLV_HANDLER_CIFNOTFND) &&
++		    !(tvlv_handler->flags & BATADV_TVLV_HANDLER_CALLED))
++			tvlv_handler->handler(bat_priv, NULL, 0, ctx);
 +
-+		ret = crypto_shash_update(shash, hardif_neigh->addr, ETH_ALEN);
-+		if (ret) {
-+			rcu_read_unlock();
-+			goto err;
-+		}
-+
-+		ewma_throughput = &hardif_neigh->bat_v.throughput;
-+		throughput = ewma_throughput_read(ewma_throughput);
-+
-+		if (throughput < min_throughput)
-+			min_throughput = throughput;
-+
-+		if (throughput > max_throughput)
-+			max_throughput = throughput;
++		tvlv_handler->flags &= ~BATADV_TVLV_HANDLER_CALLED;
 +	}
 +	rcu_read_unlock();
++}
 +
-+	if (own_addr) {
-+		ret = crypto_shash_update(shash, own_addr, ETH_ALEN);
-+		if (ret)
-+			goto err;
++/**
++ * batadv_tvlv_containers_process2 - parse and process TVLV content of a packet
++ * @bat_priv: the bat priv with all the soft interface information
++ * @skb: the packet to parse and process TVLV data from
++ * @packet_type: the packet type to call handlers for
++ * @tvlv_offset: offset from the skb data pointer to the first tvlv header
++ * @tvlv_value_len: total tvlv content length (sum of all tvlv headers+values)
++ * @ctx: handler specific context information
++ *
++ * This function parses TVLV options of the given skb and tries to call the
++ * appropriate, registered handlers.
++ *
++ * In the end, all not yet called handlers (because no appropriate TVLV was
++ * found in the packet) which were registered with a CIFNOTFND flag are
++ * called with empty tvlv_value pointers.
++ *
++ * Return: NET_RX_SUCCESS if all TVLVs were known and parsed, as well as
++ * any TVLV handler called successfully. Returns NET_RX_DROP otherwise.
++ */
++int batadv_tvlv_containers_process2(struct batadv_priv *bat_priv,
++				    const struct sk_buff *skb, u8 packet_type,
++				    unsigned int tvlv_offset,
++				    u16 tvlv_value_len, void *ctx)
++{
++	struct batadv_tvlv_hdr *tvlv_hdr, tvlv_hdr_buff;
++	u8 *tvlv_value, tvlv_value_buff[128];
++	u16 tvlv_value_cont_len;
++	int ret = NET_RX_SUCCESS;
++
++	while (tvlv_value_len >= sizeof(*tvlv_hdr)) {
++		tvlv_hdr = skb_header_pointer(skb, tvlv_offset,
++					      sizeof(tvlv_hdr_buff),
++					      &tvlv_hdr_buff);
++		if (!tvlv_hdr)
++			return NET_RX_DROP;
++
++		tvlv_value_cont_len = ntohs(tvlv_hdr->len);
++		tvlv_offset += sizeof(*tvlv_hdr);
++		tvlv_value_len -= sizeof(*tvlv_hdr);
++
++		if (tvlv_value_cont_len > sizeof(tvlv_value_buff)) {
++			pr_warn_once("batman-adv: TVLVs greater than 128 bytes unsupported for now, ignoring\n");
++			goto skip_handler_call;
++		}
++
++		if (tvlv_value_cont_len > tvlv_value_len)
++			return NET_RX_DROP;
++
++		tvlv_value = skb_header_pointer(skb, tvlv_offset,
++						tvlv_value_cont_len,
++						tvlv_value_buff);
++		if (!tvlv_value)
++			return NET_RX_DROP;
++
++		ret |= batadv_tvlv_call_handler2(bat_priv, packet_type,
++						 tvlv_hdr->type,
++						 tvlv_hdr->version, tvlv_value,
++						 tvlv_value_cont_len, ctx);
++skip_handler_call:
++		tvlv_offset += tvlv_value_cont_len;
++		tvlv_value_len -= tvlv_value_cont_len;
 +	}
 +
-+	ret = crypto_shash_final(shash, hard_iface->bat_v.neigh_hash);
-+	if (ret)
-+		goto err;
++	batadv_tvlv_call_unfound_handlers(bat_priv, packet_type, ctx);
 +
-+	hard_iface->bat_v.min_throughput = min_throughput;
-+	hard_iface->bat_v.max_throughput = max_throughput;
-+
-+	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
-+		   "Updated neighbor hash on interface %s: %*phN, min_through: %u kbit/s, max_through: %u kbit/s\n",
-+		   hard_iface->net_dev->name,
-+		   (int)sizeof(hard_iface->bat_v.neigh_hash),
-+		   hard_iface->bat_v.neigh_hash,
-+		   hard_iface->bat_v.min_throughput * 100,
-+		   hard_iface->bat_v.max_throughput * 100);
-+
-+	return;
-+
-+err:
-+	memset(hard_iface->bat_v.neigh_hash, 0,
-+	       sizeof(hard_iface->bat_v.neigh_hash));
-+	hard_iface->bat_v.min_throughput = 0;
-+	hard_iface->bat_v.max_throughput = U32_MAX;
-+
-+	pr_warn_once("An error occurred while calculating neighbor hash for %s\n",
-+		     hard_iface->net_dev->name);
++	return ret;
 +}
 +
 +/**
-+ * batadv_v_elp_update_neigh_hash_tvlv - updates a neighborhood hash tvlv
-+ * @hard_iface: interface which the tvlv is updated for
-+ * @skb: the to be transmitted ELP packet containing the neighborhood tvlv
+  * batadv_tvlv_containers_process - parse the given tvlv buffer to call the
+  *  appropriate handlers
+  * @bat_priv: the bat priv with all the soft interface information
+@@ -429,7 +569,7 @@ int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
+ 	struct batadv_tvlv_handler *tvlv_handler;
+ 	struct batadv_tvlv_hdr *tvlv_hdr;
+ 	u16 tvlv_value_cont_len;
+-	u8 cifnotfound = BATADV_TVLV_HANDLER_OGM_CIFNOTFND;
++	u8 cifnotfound = BATADV_TVLV_HANDLER_CIFNOTFND;
+ 	int ret = NET_RX_SUCCESS;
+ 
+ 	while (tvlv_value_len >= sizeof(*tvlv_hdr)) {
+@@ -441,7 +581,7 @@ int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
+ 		if (tvlv_value_cont_len > tvlv_value_len)
+ 			break;
+ 
+-		tvlv_handler = batadv_tvlv_handler_get(bat_priv,
++		tvlv_handler = batadv_tvlv_handler_get(bat_priv, -1,
+ 						       tvlv_hdr->type,
+ 						       tvlv_hdr->version);
+ 
+@@ -461,12 +601,15 @@ int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
+ 	rcu_read_lock();
+ 	hlist_for_each_entry_rcu(tvlv_handler,
+ 				 &bat_priv->tvlv.handler_list, list) {
+-		if ((tvlv_handler->flags & BATADV_TVLV_HANDLER_OGM_CIFNOTFND) &&
+-		    !(tvlv_handler->flags & BATADV_TVLV_HANDLER_OGM_CALLED))
++		if (tvlv_handler->packet_type != -1)
++			continue;
++
++		if ((tvlv_handler->flags & BATADV_TVLV_HANDLER_CIFNOTFND) &&
++		    !(tvlv_handler->flags & BATADV_TVLV_HANDLER_CALLED))
+ 			tvlv_handler->ogm_handler(bat_priv, orig_node,
+ 						  cifnotfound, NULL, 0);
+ 
+-		tvlv_handler->flags &= ~BATADV_TVLV_HANDLER_OGM_CALLED;
++		tvlv_handler->flags &= ~BATADV_TVLV_HANDLER_CALLED;
+ 	}
+ 	rcu_read_unlock();
+ 
+@@ -477,27 +620,95 @@ int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
+  * batadv_tvlv_ogm_receive - process an incoming ogm and call the appropriate
+  *  handlers
+  * @bat_priv: the bat priv with all the soft interface information
+- * @batadv_ogm_packet: ogm packet containing the tvlv containers
++ * @skb: ogm packet containing the tvlv containers
+  * @orig_node: orig node emitting the ogm packet
 + *
-+ * Prepares the neighborhood hash tvlv of an ELP packet by updating its
-+ * hash as well as minimum and maximum throughput values.
++ * Caller needs to ensure that the skb network header points to the appropriate
++ * OGM header.
+  */
+ void batadv_tvlv_ogm_receive(struct batadv_priv *bat_priv,
+-			     struct batadv_ogm_packet *batadv_ogm_packet,
++			     const struct sk_buff *skb,
+ 			     struct batadv_orig_node *orig_node)
+ {
++	struct batadv_ogm_packet *ogm_packet;
++	unsigned int tvlv_offset;
+ 	void *tvlv_value;
+ 	u16 tvlv_value_len;
+ 
+-	if (!batadv_ogm_packet)
++	ogm_packet = (struct batadv_ogm_packet *)skb_network_header(skb);
++	if (!ogm_packet)
+ 		return;
+ 
+-	tvlv_value_len = ntohs(batadv_ogm_packet->tvlv_len);
++	tvlv_value_len = ntohs(ogm_packet->tvlv_len);
+ 	if (!tvlv_value_len)
+ 		return;
+ 
+-	tvlv_value = batadv_ogm_packet + 1;
++	tvlv_offset = skb_network_offset(skb) + sizeof(*ogm_packet);
++	tvlv_value = ogm_packet + 1;
+ 
+ 	batadv_tvlv_containers_process(bat_priv, true, orig_node, NULL, NULL,
+ 				       tvlv_value, tvlv_value_len);
++	batadv_tvlv_containers_process2(bat_priv, skb, BATADV_IV_OGM,
++					tvlv_offset, tvlv_value_len, orig_node);
++}
++
++/**
++ * batadv_tvlv_handler_register - register a tvlv handler
++ * @bat_priv: the bat priv with all the soft interface information
++ * @handler: TVLV handler callback function
++ * @packet_type: packet type to register this handler for
++ * @tvlv_type: tvlv handler type to be registered
++ * @tvlv_version: tvlv handler version to be registered
++ * @flags: flags to enable or disable TVLV API behavior
++ *
++ * Registers a handler for incoming packets of the provided packet type.
++ * When a packet of this type with a matching TVLV (both tvlv type and version)
++ * is received then the registered handler is called with the according TVLV
++ * value, length and packet context.
++ *
++ * If 'flags' is set to BATADV_TVLV_HANDLER_CIFNOTFND:
++ * Then the handler might be called with an empty tvlv_value (NULL) and
++ * tvlv_value_len (zero) if a packet with a matching packet type but no
++ * matching TVLV was received.
 + */
-+static void
-+batadv_v_elp_update_neigh_hash_tvlv(struct batadv_hard_iface *hard_iface,
-+				    struct sk_buff *skb)
++void batadv_tvlv_handler_register2(struct batadv_priv *bat_priv,
++				   int (*handler)(struct batadv_priv *bat_priv,
++						  void *tvlv_value,
++						  u16 tvlv_value_len,
++						  void *ctx),
++				   u8 packet_type, u8 tvlv_type,
++				   u8 tvlv_version, u8 flags)
 +{
-+	struct batadv_hard_iface_bat_v *hard_iface_v = &hard_iface->bat_v;
-+	struct batadv_elp_packet *elp_packet;
-+	struct batadv_tvlv_hdr *tvlv_hdr;
-+	struct batadv_tvlv_nhh_data *nhh_data;
++	struct batadv_tvlv_handler *tvlv_handler;
 +
-+	elp_packet = (struct batadv_elp_packet *)skb_network_header(skb);
-+	tvlv_hdr = (struct batadv_tvlv_hdr *)(elp_packet + 1);
-+	nhh_data = (struct batadv_tvlv_nhh_data *)(tvlv_hdr + 1);
-+
-+	/* no rumours: do not announce uncertain/initialization values */
-+	if (hard_iface_v->min_throughput == 0 ||
-+	    hard_iface_v->max_throughput == U32_MAX) {
-+		elp_packet->tvlv_len = 0;
-+		skb_trim(skb, skb->len - sizeof(*tvlv_hdr) - sizeof(*nhh_data));
-+	} else {
-+		nhh_data->min_throughput = htonl(hard_iface_v->min_throughput);
-+		nhh_data->max_throughput = htonl(hard_iface_v->max_throughput);
-+		memcpy(nhh_data->neigh_hash, hard_iface_v->neigh_hash,
-+		       sizeof(hard_iface_v->neigh_hash));
++	tvlv_handler = batadv_tvlv_handler_get(bat_priv, packet_type, tvlv_type,
++					       tvlv_version);
++	if (tvlv_handler) {
++		batadv_tvlv_handler_put(tvlv_handler);
++		return;
 +	}
-+}
 +
-+/**
-  * batadv_v_elp_get_throughput - get the throughput towards a neighbour
-  * @neigh: the neighbour for which the throughput has to be obtained
-  *
-@@ -274,6 +409,9 @@ static void batadv_v_elp_periodic_work(struct work_struct *work)
- 	elp_interval = atomic_read(&hard_iface->bat_v.elp_interval);
- 	elp_packet->elp_interval = htonl(elp_interval);
- 
-+	batadv_v_elp_update_neigh_hash(hard_iface);
-+	batadv_v_elp_update_neigh_hash_tvlv(hard_iface, skb);
++	tvlv_handler = kzalloc(sizeof(*tvlv_handler), GFP_ATOMIC);
++	if (!tvlv_handler)
++		return;
 +
- 	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
- 		   "Sending broadcast ELP packet on interface %s, seqno %u\n",
- 		   hard_iface->net_dev->name,
-@@ -329,23 +467,43 @@ out:
- int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
- {
- 	struct batadv_elp_packet *elp_packet;
-+	struct batadv_tvlv_hdr *tvlv_hdr;
-+	struct batadv_tvlv_nhh_data *nhh_data;
- 	unsigned char *elp_buff;
- 	u32 random_seqno;
- 	size_t size;
- 	int res = -ENOMEM;
- 
- 	size = ETH_HLEN + NET_IP_ALIGN + BATADV_ELP_HLEN;
-+	size +=	sizeof(*nhh_data) + sizeof(*tvlv_hdr);
++	tvlv_handler->ogm_handler = NULL;
++	tvlv_handler->unicast_handler = NULL;
++	tvlv_handler->handler = handler;
++	tvlv_handler->packet_type = packet_type;
++	tvlv_handler->tvlv_type = tvlv_type;
++	tvlv_handler->tvlv_version = tvlv_version;
++	tvlv_handler->flags = flags;
++	kref_init(&tvlv_handler->refcount);
++	INIT_HLIST_NODE(&tvlv_handler->list);
 +
- 	hard_iface->bat_v.elp_skb = dev_alloc_skb(size);
- 	if (!hard_iface->bat_v.elp_skb)
- 		goto out;
- 
- 	skb_reserve(hard_iface->bat_v.elp_skb, ETH_HLEN + NET_IP_ALIGN);
-+	skb_reset_network_header(hard_iface->bat_v.elp_skb);
++	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
++	kref_get(&tvlv_handler->refcount);
++	hlist_add_head_rcu(&tvlv_handler->list, &bat_priv->tvlv.handler_list);
++	spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
 +
- 	elp_buff = skb_put(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
- 	elp_packet = (struct batadv_elp_packet *)elp_buff;
- 	memset(elp_packet, 0, BATADV_ELP_HLEN);
- 
- 	elp_packet->packet_type = BATADV_ELP;
- 	elp_packet->version = BATADV_COMPAT_VERSION;
-+	elp_packet->tvlv_len = htons(sizeof(*nhh_data) + sizeof(*tvlv_hdr));
-+
-+	elp_buff = skb_put(hard_iface->bat_v.elp_skb, sizeof(*tvlv_hdr));
-+	tvlv_hdr = (struct batadv_tvlv_hdr *)elp_buff;
-+	tvlv_hdr->type = BATADV_TVLV_NHH;
-+	tvlv_hdr->version = 1;
-+	tvlv_hdr->len = htons(sizeof(*nhh_data));
-+
-+	size = sizeof(*nhh_data);
-+	elp_buff = skb_put(hard_iface->bat_v.elp_skb, size);
-+	nhh_data = (struct batadv_tvlv_nhh_data *)elp_buff;
-+	nhh_data->min_throughput = htonl(0);
-+	nhh_data->max_throughput = htonl(U32_MAX);
-+	memset(nhh_data->neigh_hash, 0, size);
- 
- 	/* randomize initial seqno to avoid collision */
- 	get_random_bytes(&random_seqno, sizeof(random_seqno));
-@@ -497,10 +655,14 @@ int batadv_v_elp_packet_recv(struct sk_buff *skb,
- 	struct batadv_elp_packet *elp_packet;
- 	struct batadv_hard_iface *primary_if;
- 	struct ethhdr *ethhdr = (struct ethhdr *)skb_mac_header(skb);
-+	unsigned int min_elp_len = BATADV_ELP_HLEN;
- 	bool res;
- 	int ret = NET_RX_DROP;
- 
--	res = batadv_check_management_packet(skb, if_incoming, BATADV_ELP_HLEN);
-+	min_elp_len -= sizeof(elp_packet->tvlv_len);
-+	min_elp_len -= sizeof(elp_packet->reserved);
-+
-+	res = batadv_check_management_packet(skb, if_incoming, min_elp_len);
- 	if (!res)
- 		goto free_skb;
- 
-@@ -538,3 +700,25 @@ free_skb:
- 
- 	return ret;
++	/* don't return reference to new tvlv_handler */
++	batadv_tvlv_handler_put(tvlv_handler);
  }
-+
-+/**
-+ * batadv_v_elp_init - initialize global ELP structures
+ 
+ /**
+@@ -510,8 +721,8 @@ void batadv_tvlv_ogm_receive(struct batadv_priv *bat_priv,
+  * @uptr: unicast tvlv handler callback function. This function receives the
+  *  source & destination of the unicast packet as well as the tvlv content
+  *  to process.
+- * @type: tvlv handler type to be registered
+- * @version: tvlv handler version to be registered
++ * @tvlv_type: tvlv handler type to be registered
++ * @tvlv_version: tvlv handler version to be registered
+  * @flags: flags to enable or disable TVLV API behavior
+  */
+ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
+@@ -524,11 +735,13 @@ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
+ 					      u8 *src, u8 *dst,
+ 					      void *tvlv_value,
+ 					      u16 tvlv_value_len),
+-				  u8 type, u8 version, u8 flags)
++				  u8 tvlv_type, u8 tvlv_version,
++				  u8 flags)
+ {
+ 	struct batadv_tvlv_handler *tvlv_handler;
+ 
+-	tvlv_handler = batadv_tvlv_handler_get(bat_priv, type, version);
++	tvlv_handler = batadv_tvlv_handler_get(bat_priv, -1, tvlv_type,
++					       tvlv_version);
+ 	if (tvlv_handler) {
+ 		batadv_tvlv_handler_put(tvlv_handler);
+ 		return;
+@@ -540,8 +753,10 @@ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
+ 
+ 	tvlv_handler->ogm_handler = optr;
+ 	tvlv_handler->unicast_handler = uptr;
+-	tvlv_handler->type = type;
+-	tvlv_handler->version = version;
++	tvlv_handler->handler = NULL;
++	tvlv_handler->packet_type = -1;
++	tvlv_handler->tvlv_type = tvlv_type;
++	tvlv_handler->tvlv_version = tvlv_version;
+ 	tvlv_handler->flags = flags;
+ 	kref_init(&tvlv_handler->refcount);
+ 	INIT_HLIST_NODE(&tvlv_handler->list);
+@@ -556,18 +771,47 @@ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
+ }
+ 
+ /**
++ * batadv_tvlv_handler_unregister2 - unregister a tvlv handler
++ * @bat_priv: the bat priv with all the soft interface information
++ * @packet_type: packet type to unregister for
++ * @tvlv_type: tvlv handler type to be unregistered
++ * @tvlv_version: tvlv handler version to be unregistered
 + *
-+ * Return: A negative value on error, zero on success.
++ * Unregisters a TVLV handler based on the provided packet type, tvlv type
++ * and version (all need to match).
 + */
-+int batadv_v_elp_init(void)
++void batadv_tvlv_handler_unregister2(struct batadv_priv *bat_priv,
++				     u8 packet_type, u8 tvlv_type,
++				     u8 tvlv_version)
 +{
-+	tfm = crypto_alloc_shash("sha512", 0, 0);
-+	if (IS_ERR(tfm))
-+		return PTR_ERR(tfm);
++	struct batadv_tvlv_handler *tvlv_handler;
 +
-+	return 0;
++	tvlv_handler = batadv_tvlv_handler_get(bat_priv, packet_type, tvlv_type,
++					       tvlv_version);
++	if (!tvlv_handler)
++		return;
++
++	batadv_tvlv_handler_put(tvlv_handler);
++	spin_lock_bh(&bat_priv->tvlv.handler_list_lock);
++	hlist_del_rcu(&tvlv_handler->list);
++	spin_unlock_bh(&bat_priv->tvlv.handler_list_lock);
++	batadv_tvlv_handler_put(tvlv_handler);
 +}
 +
 +/**
-+ * batadv_v_elp_free - free global ELP structures
-+ */
-+void batadv_v_elp_free(void)
-+{
-+	crypto_free_shash(tfm);
-+}
-diff --git a/net/batman-adv/bat_v_elp.h b/net/batman-adv/bat_v_elp.h
-index 376ead2..2e73047 100644
---- a/net/batman-adv/bat_v_elp.h
-+++ b/net/batman-adv/bat_v_elp.h
-@@ -23,6 +23,8 @@
- struct sk_buff;
- struct work_struct;
- 
-+int batadv_v_elp_init(void);
-+void batadv_v_elp_free(void);
- int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface);
- void batadv_v_elp_iface_disable(struct batadv_hard_iface *hard_iface);
- void batadv_v_elp_iface_activate(struct batadv_hard_iface *primary_iface,
-diff --git a/net/batman-adv/log.c b/net/batman-adv/log.c
-index 4ef4bde..5c0337d 100644
---- a/net/batman-adv/log.c
-+++ b/net/batman-adv/log.c
-@@ -65,7 +65,7 @@ static int batadv_fdebug_log(struct batadv_priv_debug_log *debug_log,
- 			     const char *fmt, ...)
+  * batadv_tvlv_handler_unregister - unregister tvlv handler based on the
+  *  provided type and version (both need to match)
+  * @bat_priv: the bat priv with all the soft interface information
+- * @type: tvlv handler type to be unregistered
+- * @version: tvlv handler version to be unregistered
++ * @tvlv_type: tvlv handler type to be unregistered
++ * @tvlv_version: tvlv handler version to be unregistered
+  */
+ void batadv_tvlv_handler_unregister(struct batadv_priv *bat_priv,
+-				    u8 type, u8 version)
++				    u8 tvlv_type, u8 tvlv_version)
  {
- 	va_list args;
--	static char debug_log_buf[256];
-+	static char debug_log_buf[512];
- 	char *p;
+ 	struct batadv_tvlv_handler *tvlv_handler;
  
- 	if (!debug_log)
-@@ -89,7 +89,7 @@ static int batadv_fdebug_log(struct batadv_priv_debug_log *debug_log,
- int batadv_debug_log(struct batadv_priv *bat_priv, const char *fmt, ...)
- {
- 	va_list args;
--	char tmp_log_buf[256];
-+	char tmp_log_buf[512];
+-	tvlv_handler = batadv_tvlv_handler_get(bat_priv, type, version);
++	tvlv_handler = batadv_tvlv_handler_get(bat_priv, -1, tvlv_type,
++					       tvlv_version);
+ 	if (!tvlv_handler)
+ 		return;
  
- 	va_start(args, fmt);
- 	vscnprintf(tmp_log_buf, sizeof(tmp_log_buf), fmt, args);
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 5000c54..5efe40b 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -137,6 +137,7 @@ static void __exit batadv_exit(void)
- 	rcu_barrier();
+diff --git a/net/batman-adv/tvlv.h b/net/batman-adv/tvlv.h
+index 4d01400..3496f36 100644
+--- a/net/batman-adv/tvlv.h
++++ b/net/batman-adv/tvlv.h
+@@ -22,7 +22,7 @@
  
- 	batadv_tt_cache_destroy();
-+	batadv_v_free();
- }
- 
- int batadv_mesh_init(struct net_device *soft_iface)
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index 8e8a5db..4de324f 100644
---- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -19,6 +19,7 @@
- #define _NET_BATMAN_ADV_PACKET_H_
- 
- #include <asm/byteorder.h>
-+#include <crypto/sha.h>
  #include <linux/types.h>
  
- #define batadv_tp_is_error(n) ((u8)(n) > 127 ? 1 : 0)
-@@ -163,6 +164,14 @@ enum batadv_tvlv_type {
- 	BATADV_TVLV_MCAST	= 0x06,
- };
+-struct batadv_ogm_packet;
++struct sk_buff;
  
-+/**
-+ * enum batadv_tvlv_elp_type - tvlv type definitions for ELP messages
-+ * @BATADV_TVLV_NHH: neighborhood hash
-+ */
-+enum batadv_tvlv_elp_type {
-+	BATADV_TVLV_NHH		= 0x01,
-+};
-+
- #pragma pack(2)
- /* the destination hardware field in the ARP frame is used to
-  * transport the claim type and the group id
-@@ -240,6 +249,8 @@ struct batadv_ogm2_packet {
-  * @orig: originator mac address
-  * @seqno: sequence number
-  * @elp_interval: currently used ELP sending interval in ms
-+ * @reserved: reserved bytes for alignment
-+ * @tvlv_len: length of tvlv data following the elp header
-  */
- struct batadv_elp_packet {
- 	u8     packet_type;
-@@ -247,6 +258,8 @@ struct batadv_elp_packet {
- 	u8     orig[ETH_ALEN];
- 	__be32 seqno;
- 	__be32 elp_interval;
-+	__be16 reserved;
-+	__be16 tvlv_len;
- };
+ void batadv_tvlv_container_register(struct batadv_priv *bat_priv,
+ 				    u8 type, u8 version,
+@@ -31,11 +31,18 @@ u16 batadv_tvlv_container_ogm_append(struct batadv_priv *bat_priv,
+ 				     unsigned char **packet_buff,
+ 				     int *packet_buff_len, int packet_min_len);
+ void batadv_tvlv_ogm_receive(struct batadv_priv *bat_priv,
+-			     struct batadv_ogm_packet *batadv_ogm_packet,
++			     const struct sk_buff *skb,
+ 			     struct batadv_orig_node *orig_node);
+ void batadv_tvlv_container_unregister(struct batadv_priv *bat_priv,
+ 				      u8 type, u8 version);
  
- #define BATADV_ELP_HLEN sizeof(struct batadv_elp_packet)
-@@ -618,4 +631,17 @@ struct batadv_tvlv_mcast_data {
- 	u8 reserved[3];
- };
- 
-+/**
-+ * struct batadv_tvlv_nhh_data - neighborhood hash data
-+ * @min_throughput: worst of all TX throughputs this neighbor has to others
-+ * @max_throughput: best of all TX throughputs this neighbor has to others
-+ * @neigh_hash: a sha512 hash of all neighbors this neighbor sees
-+ *  (hash over the alphabetically ordered, concatenated, binary representation)
-+ */
-+struct batadv_tvlv_nhh_data {
-+	__be32 min_throughput;
-+	__be32 max_throughput;
-+	u8 neigh_hash[SHA512_DIGEST_SIZE];
-+};
-+
- #endif /* _NET_BATMAN_ADV_PACKET_H_ */
++void batadv_tvlv_handler_register2(struct batadv_priv *bat_priv,
++				   int (*handler)(struct batadv_priv *bat_priv,
++						  void *tvlv_value,
++						  u16 tvlv_value_len,
++						  void *ctx),
++				   u8 packet_type, u8 tvlv_type,
++				   u8 tvlv_version, u8 flags);
+ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
+ 				  void (*optr)(struct batadv_priv *bat_priv,
+ 					       struct batadv_orig_node *orig,
+@@ -46,14 +53,21 @@ void batadv_tvlv_handler_register(struct batadv_priv *bat_priv,
+ 					      u8 *src, u8 *dst,
+ 					      void *tvlv_value,
+ 					      u16 tvlv_value_len),
+-				  u8 type, u8 version, u8 flags);
++				  u8 tvlv_type, u8 tvlv_version, u8 flags);
++void batadv_tvlv_handler_unregister2(struct batadv_priv *bat_priv,
++				     u8 packet_type, u8 tvlv_type,
++				     u8 tvlv_version);
+ void batadv_tvlv_handler_unregister(struct batadv_priv *bat_priv,
+-				    u8 type, u8 version);
++				    u8 tvlv_type, u8 tvlv_version);
+ int batadv_tvlv_containers_process(struct batadv_priv *bat_priv,
+ 				   bool ogm_source,
+ 				   struct batadv_orig_node *orig_node,
+ 				   u8 *src, u8 *dst,
+ 				   void *tvlv_buff, u16 tvlv_buff_len);
++int batadv_tvlv_containers_process2(struct batadv_priv *bat_priv,
++				    const struct sk_buff *skb, u8 packet_type,
++				    unsigned int tvlv_offset,
++				    u16 tvlv_value_len, void *ctx);
+ void batadv_tvlv_unicast_send(struct batadv_priv *bat_priv, u8 *src,
+ 			      u8 *dst, u8 type, u8 version,
+ 			      void *tvlv_value, u16 tvlv_value_len);
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 8f64a5c..000a26d 100644
+index 000a26d..6dbdbf6 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -22,6 +22,7 @@
- #error only "main.h" can be included directly
- #endif
- 
-+#include <crypto/sha.h>
- #include <linux/average.h>
- #include <linux/bitops.h>
- #include <linux/compiler.h>
-@@ -108,6 +109,10 @@ enum batadv_v_hard_iface_flags {
-  * @elp_wq: workqueue used to schedule ELP transmissions
-  * @throughput_override: throughput override to disable link auto-detection
-  * @flags: interface specific flags
-+ * @min_throughput: worst of all TX throughputs this neighbor has to others
-+ * @max_throughput: best of all TX throughputs this neighbor has to others
-+ * @neigh_hash: a sha512 hash of all neighbors this neighbor sees
-+ *  (hash over the alphabetically ordered, concatenated, binary representation)
-  */
- struct batadv_hard_iface_bat_v {
- 	atomic_t elp_interval;
-@@ -116,6 +121,9 @@ struct batadv_hard_iface_bat_v {
- 	struct delayed_work elp_wq;
- 	atomic_t throughput_override;
+@@ -1603,8 +1603,11 @@ struct batadv_tvlv_container {
+  *  incoming OGM packets
+  * @unicast_handler: handler callback which is given the tvlv payload to process
+  *  on incoming unicast tvlv packets
+- * @type: tvlv type this handler feels responsible for
+- * @version: tvlv version this handler feels responsible for
++ * @handler: handler callback which is given the tvlv payload to process on
++ *  incoming packets of the given packet type
++ * @packet_type: packet type this handler feels responsible for
++ * @tvlv_type: tvlv type this handler feels responsible for
++ * @tvlv_version: tvlv version this handler feels responsible for
+  * @flags: tvlv handler flags
+  * @refcount: number of contexts the object is used
+  * @rcu: struct used for freeing in an RCU-safe manner
+@@ -1617,8 +1620,11 @@ struct batadv_tvlv_handler {
+ 	int (*unicast_handler)(struct batadv_priv *bat_priv,
+ 			       u8 *src, u8 *dst,
+ 			       void *tvlv_value, u16 tvlv_value_len);
+-	u8 type;
+-	u8 version;
++	int (*handler)(struct batadv_priv *bat_priv, void *tvlv_value,
++		       u16 tvlv_value_len, void *ctx);
++	int packet_type;
++	u8 tvlv_type;
++	u8 tvlv_version;
  	u8 flags;
-+	u32 min_throughput;
-+	u32 max_throughput;
-+	u8 neigh_hash[SHA512_DIGEST_SIZE];
+ 	struct kref refcount;
+ 	struct rcu_head rcu;
+@@ -1626,15 +1632,15 @@ struct batadv_tvlv_handler {
+ 
+ /**
+  * enum batadv_tvlv_handler_flags - tvlv handler flags definitions
+- * @BATADV_TVLV_HANDLER_OGM_CIFNOTFND: tvlv ogm processing function will call
++ * @BATADV_TVLV_HANDLER_CIFNOTFND: tvlv processing function will call
+  *  this handler even if its type was not found (with no data)
+- * @BATADV_TVLV_HANDLER_OGM_CALLED: interval tvlv handling flag - the API marks
++ * @BATADV_TVLV_HANDLER_CALLED: internal tvlv handling flag - the API marks
+  *  a handler as being called, so it won't be called if the
+- *  BATADV_TVLV_HANDLER_OGM_CIFNOTFND flag was set
++ *  BATADV_TVLV_HANDLER_CIFNOTFND flag was set
+  */
+ enum batadv_tvlv_handler_flags {
+-	BATADV_TVLV_HANDLER_OGM_CIFNOTFND = BIT(1),
+-	BATADV_TVLV_HANDLER_OGM_CALLED = BIT(2),
++	BATADV_TVLV_HANDLER_CIFNOTFND = BIT(1),
++	BATADV_TVLV_HANDLER_CALLED = BIT(2),
  };
  
  /**
