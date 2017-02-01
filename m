@@ -1,16 +1,11 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Tue, 31 Jan 2017 21:39:59 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20170131203959.GA3899@otheros>
-References: <20170129051428.12179-1-linus.luessing@c0d3.blue>
- <1710363.lgBWTzDvpW@bentobox>
+Return-Path: <dandenson@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1710363.lgBWTzDvpW@bentobox>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: decrease maximum fragment
-	size
+From: dan <dandenson@gmail.com>
+Date: Wed, 1 Feb 2017 07:17:00 -0700
+Message-ID: <CAA_JP8UAMyYUrKx0nYEhRyRTM2jObS2qFwaAmN=BwD298c93Jg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: [B.A.T.M.A.N.] how to hand ptp links and still access radio
+	management interfaces
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,24 +15,28 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Tue, Jan 31, 2017 at 12:07:24PM +0100, Sven Eckelmann wrote:
-> On Sonntag, 29. Januar 2017 06:14:28 CET Linus Lüssing wrote:
-> [...]
-> > However, currently "Fragmentation v2" does not support re-fragmentation.
-> > Which means that once a packet is split into two packets of 1400 + x
-> > bytes for instance and the next hop provides an interface with an even
-> > smaller MTU of 1280 bytes, then the larger fragment is lost.
-> [...]
-> 
-> Beside this change, did you try to make the fragments more equally sized?
-> Here is just some really ugly and untested pseudo code:
+I'm trying to figure out the best way to handle this:
 
-Have thought about it initially but pushed it asided when I
-noticed it would only help regarding the initial issue for the
-unicast packets but not potentially large TTs.
+(bat0-eth1) <===> PTP Radio1 ~~~~~~~ PTP Radio2 <===> (eth1-bat0)
+(eth1 is in bat0)
 
-But generally, I like the idea of making fragments more equally
-sized :-).
+These radios only have 1 interface (ie, no management interface) so I
+have to handle their configuration by assigning an IP to the same
+interface I want to connect into batman-adv.
+
+I considered:
+bat0-bridge-eth1 <===> PTP Radio1 ~~~~~~~ PTP Radio2 <===> eth1-bridge-bat0
+but this means the link isn't in the mesh
+
+I don't know if this would work:
+bat0-bridge-eth1 <===> PTP Radio1 ~~~~~~~ PTP Radio2 <===> eth1-bridge-bat0
+(bat0-eth1.10)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~(bat0-eth1.10)
+because I don't know if the eth1.10 vlan will be touched by the
+bridge, or if it will work with bat0 this way.
+
+The purpose here is to use higher end radios like a ubiquiti airfiber
+5x to reduce hop-counts and increase capacity.
+
+Any thoughts?
