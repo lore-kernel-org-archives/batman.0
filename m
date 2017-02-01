@@ -1,8 +1,8 @@
 Return-Path: <fboehm@aon.at>
 References: <CAA_JP8UAMyYUrKx0nYEhRyRTM2jObS2qFwaAmN=BwD298c93Jg@mail.gmail.com>
 From: fboehm <fboehm@aon.at>
-Message-ID: <547999bd-e8cb-d91b-d4a3-7d385237b67b@aon.at>
-Date: Wed, 1 Feb 2017 18:57:39 +0100
+Message-ID: <f2f7a980-c7c0-8b71-a4f7-4a4c7501f3d5@aon.at>
+Date: Wed, 1 Feb 2017 18:57:07 +0100
 MIME-Version: 1.0
 In-Reply-To: <CAA_JP8UAMyYUrKx0nYEhRyRTM2jObS2qFwaAmN=BwD298c93Jg@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
@@ -19,6 +19,21 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+
+I didn't test the following. So I could be totally wrong :)
+
+Airfiber allows to configure VLAN for the management traffic. That means 
+you can activate VLAN100 on the Airfiber device and create interface 
+eth1.100 at the Batman-router.
+
+Kinda like you described in your 2nd sketch. The main difference is that 
+now the Airfiber management traffic is VLAN tagged and the Batman 
+mesh-traffic remains untagged.
+
+Bridging eth1.100 with bat0 should make the Airfiber device available 
+everywhere in your network. Which isn't necessarily desired.
+
+Franz
 
 Am 2017-02-01 um 15:17 schrieb dan:
 > I'm trying to figure out the best way to handle this:
@@ -46,17 +61,3 @@ Am 2017-02-01 um 15:17 schrieb dan:
 > Any thoughts?
 >
 
-I didn't test the following. So I could be totally wrong :)
-
-Airfiber allows to configure VLAN for the management traffic. That means 
-you can activate VLAN100 on the Airfiber device and create interface 
-eth1.100 at the Batman-router.
-
-Kinda like you described in your 2nd sketch. The main difference is that 
-now the Airfiber management traffic is VLAN tagged and the Batman 
-mesh-traffic remains untagged.
-
-Bridging eth1.100 with bat0 should make the Airfiber device available 
-everywhere in your network. Which isn't necessarily desired.
-
-Franz
