@@ -1,15 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 06 Feb 2017 11:25:00 +0100
-Message-ID: <1502082.JgMhZiz8zA@bentobox>
-In-Reply-To: <20170129135743.21312-6-linus.luessing@c0d3.blue>
-References: <20170129135743.21312-1-linus.luessing@c0d3.blue>
- <20170129135743.21312-6-linus.luessing@c0d3.blue>
+Return-Path: <a@unstable.cc>
+Date: Mon, 6 Feb 2017 19:48:23 +0800
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <20170206114823.GG12187@prodigo.lan>
+References: <20160905112029.32533-1-sven@narfation.org>
+ <2104576.qJKP21On3P@bentobox>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart13764954.RDTyJuW1uR";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 5/6] batman-adv: restructure rebroadcast
-	counter into forw_packet API
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="xUq7mlTLx96rFlBf"
+Content-Disposition: inline
+In-Reply-To: <2104576.qJKP21On3P@bentobox>
+Subject: Re: [B.A.T.M.A.N.] [PATCH v7 1/5] batman-adv: prevent multiple ARP
+ replies sent by gateways if dat enabled
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,54 +20,59 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart13764954.RDTyJuW1uR
+
+--xUq7mlTLx96rFlBf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
 
-On Sonntag, 29. Januar 2017 14:57:42 CET Linus L=FCssing wrote:
-> This patch refactors the num_packets counter of a forw_packet in the
-> following three ways:
->=20
-> 1) Removed dual-use of forw_packet::num_packets:
->    -> now for aggregation purposes only
-> 2) Using forw_packet::skb::cb::num_bcasts instead:
->    -> for easier access in aggregation code later
-> 3) make access to num_bcasts private to batadv_forw_packet_*()
+Hi,
 
-I like this change but have some questions (but no time to check it). Is cb=
-=20
-initialized when a new skbuff is allocated? And what about the initializati=
-on=20
-for packets we get via batadv_interface_tx? At least batman-adv is only=20
-setting it to zero when we receive a new packet from an hardif=20
-(batadv_batman_skb_recv).
+On Mon, Feb 06, 2017 at 10:56:25AM +0100, Sven Eckelmann wrote:
+> It is therefore currently unknown how to continue from here. Antonio, ple=
+ase=20
+> provide a statement what we should do with the patches.
 
-Kind regards,
-	Sven
+There were two issues here:
+1) the code was not really following the kernel style and I started my bran=
+ch to
+"smoothen" it a little bit and possibly re-propose it to the mailing list;
 
---nextPart13764954.RDTyJuW1uR
+2) in one of the patches I found a logical issue that needed some rework.
+Unfortunately, I can't recall exactly where the issue was. I'd need to dig
+again into the code. I can have a look later this week and let you know wha=
+t I
+find.
+
+
+Cheers,
+
+
+--=20
+Antonio Quartulli
+
+--xUq7mlTLx96rFlBf
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAliYTvwACgkQXYcKB8Em
-e0bK5g/7BOkhW/L1oKx58RgEDkwr9W3XtznkTBSrRWcGEIadw6HeoMad1C4NclMd
-wQ8i4+MsGhDrQ+OSY8Aynr9MPzIPI4yoUGF5/kZX8trPEtct397zkkfkRznl+vF6
-WxAhK2rMPHOgcOqmD8FTzrKN7+XJEYJO4stgLSogJSZ0JD7g58vOFHHORXR5ienP
-RS3xeNi2P/rxeQao5hp5dPj/O/WTRgwu+EIdoPrV2s1TzHA3ROA8zvXdmzJ6smAn
-DVWxjP0BSpfeulPsSLsvL10Dsnh/L139m54AR9a3+n449F5ltRESGFPOMEQqWzT+
-J8D8BXZcgsef1r0s7Y+BxaRCirP+86/D+EttcXQ7DjeoLI3C88IY7op0wlEhGByP
-YE5ouj4wqv5bdcE84jGt8KtTGs/lYoXl2voZVhuYezedWFXv/w/gQCbrWzU3EC90
-HHoHN3HM3lEVRtaSwhniUAF4bxpBqbu9StLherCkdrHijnMBC1muNvTfjmiSiWIT
-zGsaKHHQRqwZbEUnKBPP+3BG2Qaz3Elwp2Zb423CncOvFLAoYmanvZc8axwUsTXO
-eL7Vx5sq5rHfez7U6kYquT9YllcHVO0nMlPEy9N5vBF1VsGb2W4BpvEiF5qT8FSo
-kiLKimfouktE603mCMf24X4ogaKIeQtWhG9l+cx7I8N8wlWYUr8=
-=7MOU
+iQIcBAEBCAAGBQJYmGKEAAoJEJ6F1zG2JyOsX+4QAKKwJeSWgKRaMjiWL1NP9B4w
+U/mE4cykbqdm8CREOpF8YlKHez5h7xQj/j/pI9Tr0WbAVaJZJO2kjddmY9jww26A
+HYXnx5BEyIiPRrNQ6ASNsmbVP78xC6dqUhjwrvb6tDuZauqf/UVgksW2vtUYk3kv
+b0ECnR/8Q8wdXZpGhmzPKJiTbbSWhkEjkAMNl/80vUUB9b+gQ86K1iVVtiohVf9C
+TN+Qw+9VkKWN12RWu7uFWd9aDlZbbJ9EizOJKJhcU/KZ8vfTvAm3gmYD/NR2Ovke
+V8G+vwJhOG0Jy7AudmthTutcp1WxABaJU9uM4eWEae9tbyY7uNTQoVjdzuwq85dJ
+tjx1+KUWWLHOIFO/DLtSfW1tz1gDmWvXghTq8SViPsDyaSvL62obFy39QwtVLP5j
+Siig6hF6fLR5SV2Jtt6c8HYkUpH8Pj9zo/wjkJtPwLPyUNoSSrYIK5+MkE8qtqD1
+RPHFIWbfL1YXZmOVHZM3imtenyp7Jk40gFKXi6E0WLb81ruU+Vq1ClPh0WJnqj+q
+9Q43t6wmraRX+0B38hCbVc3uk9fZlYkXcZdFzAjvA56uOXMfZfHhLuv+mmU3NRaX
+vUfOfB0RPutS1MMnUeJUSh+AzuOfeKGDNSH4CBI9xfY7SNOdltktkYFflEj9+rpO
+ITfFaPtGh7wTTVuajp7x
+=yeZX
 -----END PGP SIGNATURE-----
 
---nextPart13764954.RDTyJuW1uR--
-
+--xUq7mlTLx96rFlBf--
