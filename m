@@ -1,14 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 06 Feb 2017 10:56:25 +0100
-Message-ID: <2104576.qJKP21On3P@bentobox>
-In-Reply-To: <20160905112029.32533-1-sven@narfation.org>
-References: <20160905112029.32533-1-sven@narfation.org>
+Date: Mon, 06 Feb 2017 11:25:00 +0100
+Message-ID: <1502082.JgMhZiz8zA@bentobox>
+In-Reply-To: <20170129135743.21312-6-linus.luessing@c0d3.blue>
+References: <20170129135743.21312-1-linus.luessing@c0d3.blue>
+ <20170129135743.21312-6-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2041130.bnv7Vr86ay";
+Content-Type: multipart/signed; boundary="nextPart13764954.RDTyJuW1uR";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v7 1/5] batman-adv: prevent multiple ARP
-	replies sent by gateways if dat enabled
+Subject: Re: [B.A.T.M.A.N.] [PATCH 5/6] batman-adv: restructure rebroadcast
+	counter into forw_packet API
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,66 +20,53 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: a@unstable.cc
 
---nextPart2041130.bnv7Vr86ay
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart13764954.RDTyJuW1uR
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-Hi,
+On Sonntag, 29. Januar 2017 14:57:42 CET Linus L=FCssing wrote:
+> This patch refactors the num_packets counter of a forw_packet in the
+> following three ways:
+>=20
+> 1) Removed dual-use of forw_packet::num_packets:
+>    -> now for aggregation purposes only
+> 2) Using forw_packet::skb::cb::num_bcasts instead:
+>    -> for easier access in aggregation code later
+> 3) make access to num_bcasts private to batadv_forw_packet_*()
 
-On Montag, 5. September 2016 13:20:25 CET Sven Eckelmann wrote:
-> From: Andreas Pape <APape@phoenixcontact.com>
-> 
-> If dat is enabled it must be made sure that only the backbone gw which has
-> claimed the remote destination for the ARP request answers the ARP request
-> directly if the MAC address is known due to the local dat table. This
-> prevents multiple ARP replies in a common backbone if more than one
-> gateway already knows the remote mac searched for in the ARP request.
-[....]
-
-Just in case someone it wondering why this wasn't applied yet. Antonio didn't 
-like the patches and thus the patches were assigned to him in Patchwork [1]. 
-It is currently unknown what problems he meant, but he created a branch under 
-his namespace [2]. This branch only contains a re-factorization of the first 
-patch (+ batadv_bla_check_claim/batadv_bla_is_my_claim behavior changes when 
-batadv_primary_if_get_selected or batadv_claim_hash_find return NULL). We 
-currently don't know whether this all or if he had more problems with these 
-patches.
-
-It is therefore currently unknown how to continue from here. Antonio, please 
-provide a statement what we should do with the patches.
-
-We don't want to add new patches before the v2017.0 release but maybe this is 
-a candidate for v2017.1.
+I like this change but have some questions (but no time to check it). Is cb=
+=20
+initialized when a new skbuff is allocated? And what about the initializati=
+on=20
+for packets we get via batadv_interface_tx? At least batman-adv is only=20
+setting it to zero when we receive a new packet from an hardif=20
+(batadv_batman_skb_recv).
 
 Kind regards,
 	Sven
 
-[1] https://patchwork.open-mesh.org/project/b.a.t.m.a.n./list/?delegate=7
-[2] https://git.open-mesh.org/batman-adv.git/shortlog/refs/heads/ordex/bla_dat
-
---nextPart2041130.bnv7Vr86ay
+--nextPart13764954.RDTyJuW1uR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAliYSEkACgkQXYcKB8Em
-e0b7eg/9GnfQn4ioqX3nLBuRsnfDrLLJ8CuB7Wnt1R0QDETIl6WeDk3cmLbgiF5w
-yyFqSdwCBA0evwwsmEiiLsuXtVr/n1dNCUnREWDgtEWq6Ml5MnJQXjfdu1CJTzHx
-ZQbdZpdzl6RaFvzO3esxplxWWQ1Mz/WLBoNPUMHhB/YSk7JDf1u0sBl2JZW4Y04k
-RrH3lU4Qrmh/iK5gr1cVIqksDJt2efFTkTiDOkEEWo5NiIccgWjVzs4St040kHx6
-kyi3g0N2ouo2s82h25gK0/MpAlGaE6uCMoZUfMuIAlvbcWzBVjcScqn05gGD3Dby
-99XRF3WkIjYeCeVNKU/dxyRbYdSz3UEDr8OWTxKDyHWMTnL+HVfNGMEaHBHKP9sX
-c9KF1ujJsugu7L951BwzOtMZ3TTuVdG8xEtfZrFHQjGatTSLy1aQuALj8Eo6YRgC
-HKA9O2IsOK8ZJkNzC89ITGOnKtvyKwL5q6OfTV275Fb1ulAVzsjA1z2FqF+rM6rd
-vPDcqqq1DD3z0ziunzjGz2a7EXCM+CYLfnXfrcyUYrv5gk2FOnKAaDOso7G7e8aC
-g6PfK9xTMqn72Jmf8BIymVjrHBfKEkEMhAVZ5/ssp1FiNxAZUGFnmRzBWAVBOR59
-iRUmzx4DXr7S+ORl26ToSKgf5uUsxB8KUvsTI6bEO2iqTt5JmBQ=
-=8K1Y
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAliYTvwACgkQXYcKB8Em
+e0bK5g/7BOkhW/L1oKx58RgEDkwr9W3XtznkTBSrRWcGEIadw6HeoMad1C4NclMd
+wQ8i4+MsGhDrQ+OSY8Aynr9MPzIPI4yoUGF5/kZX8trPEtct397zkkfkRznl+vF6
+WxAhK2rMPHOgcOqmD8FTzrKN7+XJEYJO4stgLSogJSZ0JD7g58vOFHHORXR5ienP
+RS3xeNi2P/rxeQao5hp5dPj/O/WTRgwu+EIdoPrV2s1TzHA3ROA8zvXdmzJ6smAn
+DVWxjP0BSpfeulPsSLsvL10Dsnh/L139m54AR9a3+n449F5ltRESGFPOMEQqWzT+
+J8D8BXZcgsef1r0s7Y+BxaRCirP+86/D+EttcXQ7DjeoLI3C88IY7op0wlEhGByP
+YE5ouj4wqv5bdcE84jGt8KtTGs/lYoXl2voZVhuYezedWFXv/w/gQCbrWzU3EC90
+HHoHN3HM3lEVRtaSwhniUAF4bxpBqbu9StLherCkdrHijnMBC1muNvTfjmiSiWIT
+zGsaKHHQRqwZbEUnKBPP+3BG2Qaz3Elwp2Zb423CncOvFLAoYmanvZc8axwUsTXO
+eL7Vx5sq5rHfez7U6kYquT9YllcHVO0nMlPEy9N5vBF1VsGb2W4BpvEiF5qT8FSo
+kiLKimfouktE603mCMf24X4ogaKIeQtWhG9l+cx7I8N8wlWYUr8=
+=7MOU
 -----END PGP SIGNATURE-----
 
---nextPart2041130.bnv7Vr86ay--
+--nextPart13764954.RDTyJuW1uR--
 
