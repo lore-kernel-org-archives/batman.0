@@ -1,16 +1,14 @@
-Return-Path: <a@unstable.cc>
-Date: Mon, 6 Feb 2017 19:48:23 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20170206114823.GG12187@prodigo.lan>
-References: <20160905112029.32533-1-sven@narfation.org>
- <2104576.qJKP21On3P@bentobox>
+Return-Path: <dandenson@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="xUq7mlTLx96rFlBf"
-Content-Disposition: inline
-In-Reply-To: <2104576.qJKP21On3P@bentobox>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v7 1/5] batman-adv: prevent multiple ARP
- replies sent by gateways if dat enabled
+In-Reply-To: <f2f7a980-c7c0-8b71-a4f7-4a4c7501f3d5@aon.at>
+References: <CAA_JP8UAMyYUrKx0nYEhRyRTM2jObS2qFwaAmN=BwD298c93Jg@mail.gmail.com>
+ <f2f7a980-c7c0-8b71-a4f7-4a4c7501f3d5@aon.at>
+From: dan <dandenson@gmail.com>
+Date: Wed, 8 Feb 2017 16:33:08 -0700
+Message-ID: <CAA_JP8WHB+SbkFWc3CCqY_tyPPq57X+hbHUH2bni62qqiSvnYg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: Re: [B.A.T.M.A.N.] how to hand ptp links and still access radio
+ management interfaces
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,59 +18,71 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+
+Will that work?
+
+bat0 is untagged
+bat0 contains eth0
+
+bat1 is for management
+bat1 contains eth0.10
 
 
---xUq7mlTLx96rFlBf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I thought that bat0 could trunk VLANs if the MTU is 1528? (1500 + 24
+batman-adv overhead + 4 VLAN)
 
-Hi,
-
-On Mon, Feb 06, 2017 at 10:56:25AM +0100, Sven Eckelmann wrote:
-> It is therefore currently unknown how to continue from here. Antonio, ple=
-ase=20
-> provide a statement what we should do with the patches.
-
-There were two issues here:
-1) the code was not really following the kernel style and I started my bran=
-ch to
-"smoothen" it a little bit and possibly re-propose it to the mailing list;
-
-2) in one of the patches I found a logical issue that needed some rework.
-Unfortunately, I can't recall exactly where the issue was. I'd need to dig
-again into the code. I can have a look later this week and let you know wha=
-t I
-find.
+So which wins?  If bat0 has a VLAN10 traversing it, but eth0.10 is in
+bat0, then something breaks.
 
 
-Cheers,
 
 
---=20
-Antonio Quartulli
 
---xUq7mlTLx96rFlBf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
------BEGIN PGP SIGNATURE-----
 
-iQIcBAEBCAAGBQJYmGKEAAoJEJ6F1zG2JyOsX+4QAKKwJeSWgKRaMjiWL1NP9B4w
-U/mE4cykbqdm8CREOpF8YlKHez5h7xQj/j/pI9Tr0WbAVaJZJO2kjddmY9jww26A
-HYXnx5BEyIiPRrNQ6ASNsmbVP78xC6dqUhjwrvb6tDuZauqf/UVgksW2vtUYk3kv
-b0ECnR/8Q8wdXZpGhmzPKJiTbbSWhkEjkAMNl/80vUUB9b+gQ86K1iVVtiohVf9C
-TN+Qw+9VkKWN12RWu7uFWd9aDlZbbJ9EizOJKJhcU/KZ8vfTvAm3gmYD/NR2Ovke
-V8G+vwJhOG0Jy7AudmthTutcp1WxABaJU9uM4eWEae9tbyY7uNTQoVjdzuwq85dJ
-tjx1+KUWWLHOIFO/DLtSfW1tz1gDmWvXghTq8SViPsDyaSvL62obFy39QwtVLP5j
-Siig6hF6fLR5SV2Jtt6c8HYkUpH8Pj9zo/wjkJtPwLPyUNoSSrYIK5+MkE8qtqD1
-RPHFIWbfL1YXZmOVHZM3imtenyp7Jk40gFKXi6E0WLb81ruU+Vq1ClPh0WJnqj+q
-9Q43t6wmraRX+0B38hCbVc3uk9fZlYkXcZdFzAjvA56uOXMfZfHhLuv+mmU3NRaX
-vUfOfB0RPutS1MMnUeJUSh+AzuOfeKGDNSH4CBI9xfY7SNOdltktkYFflEj9+rpO
-ITfFaPtGh7wTTVuajp7x
-=yeZX
------END PGP SIGNATURE-----
-
---xUq7mlTLx96rFlBf--
+On Wed, Feb 1, 2017 at 10:57 AM, fboehm <fboehm@aon.at> wrote:
+> I didn't test the following. So I could be totally wrong :)
+>
+> Airfiber allows to configure VLAN for the management traffic. That means you
+> can activate VLAN100 on the Airfiber device and create interface eth1.100 at
+> the Batman-router.
+>
+> Kinda like you described in your 2nd sketch. The main difference is that now
+> the Airfiber management traffic is VLAN tagged and the Batman mesh-traffic
+> remains untagged.
+>
+> Bridging eth1.100 with bat0 should make the Airfiber device available
+> everywhere in your network. Which isn't necessarily desired.
+>
+> Franz
+>
+> Am 2017-02-01 um 15:17 schrieb dan:
+>>
+>> I'm trying to figure out the best way to handle this:
+>>
+>> (bat0-eth1) <===> PTP Radio1 ~~~~~~~ PTP Radio2 <===> (eth1-bat0)
+>> (eth1 is in bat0)
+>>
+>> These radios only have 1 interface (ie, no management interface) so I
+>> have to handle their configuration by assigning an IP to the same
+>> interface I want to connect into batman-adv.
+>>
+>> I considered:
+>> bat0-bridge-eth1 <===> PTP Radio1 ~~~~~~~ PTP Radio2 <===>
+>> eth1-bridge-bat0
+>> but this means the link isn't in the mesh
+>>
+>> I don't know if this would work:
+>> bat0-bridge-eth1 <===> PTP Radio1 ~~~~~~~ PTP Radio2 <===>
+>> eth1-bridge-bat0
+>> (bat0-eth1.10)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~(bat0-eth1.10)
+>> because I don't know if the eth1.10 vlan will be touched by the
+>> bridge, or if it will work with bat0 this way.
+>>
+>> The purpose here is to use higher end radios like a ubiquiti airfiber
+>> 5x to reduce hop-counts and increase capacity.
+>>
+>> Any thoughts?
+>>
+>
