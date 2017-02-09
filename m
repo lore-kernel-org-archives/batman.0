@@ -1,14 +1,13 @@
-Return-Path: <a@unstable.cc>
-Date: Thu, 9 Feb 2017 15:44:17 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20170209074417.GG11922@prodigo.lan>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Thu, 09 Feb 2017 10:38:30 +0100
+Message-ID: <3144822.pnbq1OJLDA@prime>
+In-Reply-To: <20170209074417.GG11922@prodigo.lan>
 References: <CAA_JP8VHB3amFyjwfTtJdc-2E1DgDU5q4NdmVJ6HGVL5g97cZg@mail.gmail.com>
- <1505249.1X2o3mks0n@bentobox>
+ <1505249.1X2o3mks0n@bentobox> <20170209074417.GG11922@prodigo.lan>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="vSsTm1kUtxIHoa7M"
-Content-Disposition: inline
-In-Reply-To: <1505249.1X2o3mks0n@bentobox>
+Content-Type: multipart/signed; boundary="nextPart6222057.Q2OYxxpaCI";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] bat0 trunk vlans?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -19,79 +18,86 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
+To: Antonio Quartulli <a@unstable.cc>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
+--nextPart6222057.Q2OYxxpaCI
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---vSsTm1kUtxIHoa7M
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thursday, February 9, 2017 3:44:17 PM CET Antonio Quartulli wrote:
+> On Thu, Feb 09, 2017 at 08:33:13AM +0100, Sven Eckelmann wrote:
+> > On Mittwoch, 8. Februar 2017 16:40:38 CET dan wrote:
+> > > Assuming MTU is great enough (1528 right? 1500+24 batman-adv+4 VLAN),
+> > > can the bat0 interface act as trunk for VLANs?
+> > > 
+> > > 2 Nodes:
+> > > bat0:
+> > > eth1
+> > > 
+> > > bridge0:
+> > > eth0|bat0
+> > > 
+> > > 
+> > > 
+> > > device connected to node1-eth0 tags vlan20, does that traverse the
+> > > bat0 mesh and come out node2-eth0 with tag in-tact?  Does it traverse
+> > > node1-eth0 at all?
+> > 
+> > Afaik, the VLANs not on configured on batX will be rejected since TT was
+> > made VLAN aware [1]. I think Simon and Antonio can clarify this.
+> 
+> I agree with Sven. The Translation Table (TT) component should complain by
+> printing the message that you can see in the link.
+> 
+> This happens because TT needs to know about all the VLANs in order to learn
+> the MAC addresses of the clients.
+> 
+> However, TT gets to know a new VLAN only when this is actually created (i.e.
+> by creating bat0.X).
+> 
+> 
+> The solution would be to create a VLAN on top of bat0 (i.e. bat0.20) and let
+> the tagging happen at the node.
 
-On Thu, Feb 09, 2017 at 08:33:13AM +0100, Sven Eckelmann wrote:
-> On Mittwoch, 8. Februar 2017 16:40:38 CET dan wrote:
-> > Assuming MTU is great enough (1528 right? 1500+24 batman-adv+4 VLAN),
-> > can the bat0 interface act as trunk for VLANs?
-> >=20
-> > 2 Nodes:
-> > bat0:
-> > eth1
-> >=20
-> > bridge0:
-> > eth0|bat0
-> >=20
-> >=20
-> >=20
-> > device connected to node1-eth0 tags vlan20, does that traverse the
-> > bat0 mesh and come out node2-eth0 with tag in-tact?  Does it traverse
-> > node1-eth0 at all?
->=20
-> Afaik, the VLANs not on configured on batX will be rejected since TT was =
-made
-> VLAN aware [1]. I think Simon and Antonio can clarify this.
+To be a bit more precise, do something like this on each node:
 
-I agree with Sven. The Translation Table (TT) component should complain by
-printing the message that you can see in the link.
+vconfig add bat0 20
+vconfig add eth0 20
+brctl addbr bridge-vlan20
+brctl addif bat0.20
+brctl addif eth0.20
 
-This happens because TT needs to know about all the VLANs in order to learn=
- the
-MAC addresses of the clients.
+repeat those steps for other VLANs you want to use.
 
-However, TT gets to know a new VLAN only when this is actually created (i.e=
-=2E by
-creating bat0.X).
-
-
-The solution would be to create a VLAN on top of bat0 (i.e. bat0.20) and le=
-t the
-tagging happen at the node.
+We are aware that this is not "proper trunking" - I would think it would be 
+better to let batman-adv automatically detect and handle VLANs in the TT code. 
+But this isn't done currently, so you need to cope with this workaround.
 
 Cheers,
+     Simon
 
-
-
---=20
-Antonio Quartulli
-
---vSsTm1kUtxIHoa7M
+--nextPart6222057.Q2OYxxpaCI
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAEBCAAGBQJYnB3OAAoJEJ6F1zG2JyOsxA0P/1rKiJPrLy3ItKWsiX6+EFdn
-CAXqcC+gBapFBtxbxhbKppnkIgEEVes7Kw0c3agzI0s2Jht/NlWJim1RKBbl6I/+
-a2NXvrqEvftYil/xFw065mXK1yLAiHBc4OcE6jdPXevUVGRaMlgQHAITEjoqprAa
-s/JU54RL9lOV2bim/fjSFSbcTYWcoq8onJVS5OxRR8ffgV0vwbiFGP+p91KfhxYr
-LB7j3UFMUi3gJ8ZL96cleF37PdbxpredxqNcK8AvOZbrVjAu41K1gfGbCObZlDyO
-0aIjoz5POL7cS32vA39Z6MnUl4xpPAK+RPnUSr0ol6ICSC9Ifrbs49mfpDd0V13H
-/QS1NhUcxmMaMVYkaqYtrFdfW4JWpHhpDRn4NZgDRIW4JmpX5TXmnUTlq8i3eK3g
-umbAG5lgke8Bq3KVSzHaaQYP4UVXmjt/+7PpvilsvA/9mSstQcY58mp5bjuSvBGJ
-q+FNMoolPWVdVTpyflNC3E1D50+rgXTbxeTHEhyJqdo+oktkuATjNBbt2suqmTTi
-kEajFaweZGR/GDlP3gmS2981H2kmZCGcmsJmDxhOiGadn53kJ8cAJlPB1TwUpnBY
-+2TRjVJgITQzeDa5phujklPJ04QkAysjVHuwjxHZVAwm+oz9W83Bh8uavRJHiMdR
-8w1Lr1D+OckmOkIU7DYz
-=dMTm
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlicOJcACgkQoSvjmEKS
+nqFokBAAuwk9ZdUvlRdNqI1JzWB4/iDTxovzv+NOmEGPDaFD/D/eEMygnMFstV4Q
+aj/bWZyXAUveYLrYClTndGoSStPLZRsM3/Ctxtv9j/z2Dfj2LalYWsLgxRezZD2u
+mYqD+W2O4CRGToCk7qZWzkpjL4vrqt7g5szuFuCZgleajsN4m9hF/YLOiZv7CBhd
+FhwEQ8bW6O6w0gSAljpqzDl8pkxmo6Y887aNDPno86Mfd2dk5dzaOj3PgBRnKwdA
+RvYuTANF5MRdm/0N+af4pijRlCIYd2VFyAtBhmtQE8waRFAbiFOie48kColFm6U9
+MZchg94aE8ajvV7ay4wcHuT1f3x2LvysK2YI1ia/pEU/TGONhFXUS3mNY7orzjgF
+j7tHaZjSBsrMiWneZO7PBA13IhSl+NVXGpM+hTK+ZmAw9RiZ+6oY7emLfOKdH1zh
+Jhva6npvAC74ERZuj5rCQT3idwKNckhozH7Mt+ONaIWjJkzwwnfXxc9xXHaU9qX/
+xxuD5b/w26fJ4LclqFBOAU0U6YSubD+LIEsl2ZzRe7W1SeBJOlUxpHw4EokRTwNN
+1/GEfWEHH5LpxVbbjLLsxsVestgnnio4QXjrVV/w/zwtTMplHpG03CcKZNCAkXdN
+5ChqjqzPFHJ4+Es9jmVS6nE2wCsnTxJEerbqm6G0WnURoL0SeQw=
+=95Kk
 -----END PGP SIGNATURE-----
 
---vSsTm1kUtxIHoa7M--
+--nextPart6222057.Q2OYxxpaCI--
+
