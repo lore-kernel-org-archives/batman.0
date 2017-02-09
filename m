@@ -1,12 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 09 Feb 2017 08:33:13 +0100
-Message-ID: <1505249.1X2o3mks0n@bentobox>
-In-Reply-To: <CAA_JP8VHB3amFyjwfTtJdc-2E1DgDU5q4NdmVJ6HGVL5g97cZg@mail.gmail.com>
+Return-Path: <a@unstable.cc>
+Date: Thu, 9 Feb 2017 15:44:17 +0800
+From: Antonio Quartulli <a@unstable.cc>
+Message-ID: <20170209074417.GG11922@prodigo.lan>
 References: <CAA_JP8VHB3amFyjwfTtJdc-2E1DgDU5q4NdmVJ6HGVL5g97cZg@mail.gmail.com>
+ <1505249.1X2o3mks0n@bentobox>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1884335.rR9ciycqZz";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="vSsTm1kUtxIHoa7M"
+Content-Disposition: inline
+In-Reply-To: <1505249.1X2o3mks0n@bentobox>
 Subject: Re: [B.A.T.M.A.N.] bat0 trunk vlans?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,59 +19,79 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: a@unstable.cc
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1884335.rR9ciycqZz
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
 
-On Mittwoch, 8. Februar 2017 16:40:38 CET dan wrote:
-> Assuming MTU is great enough (1528 right? 1500+24 batman-adv+4 VLAN),
-> can the bat0 interface act as trunk for VLANs?
-> 
-> 2 Nodes:
-> bat0:
-> eth1
-> 
-> bridge0:
-> eth0|bat0
-> 
-> 
-> 
-> device connected to node1-eth0 tags vlan20, does that traverse the
-> bat0 mesh and come out node2-eth0 with tag in-tact?  Does it traverse
-> node1-eth0 at all?
+--vSsTm1kUtxIHoa7M
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Afaik, the VLANs not on configured on batX will be rejected since TT was made
-VLAN aware [1]. I think Simon and Antonio can clarify this.
+On Thu, Feb 09, 2017 at 08:33:13AM +0100, Sven Eckelmann wrote:
+> On Mittwoch, 8. Februar 2017 16:40:38 CET dan wrote:
+> > Assuming MTU is great enough (1528 right? 1500+24 batman-adv+4 VLAN),
+> > can the bat0 interface act as trunk for VLANs?
+> >=20
+> > 2 Nodes:
+> > bat0:
+> > eth1
+> >=20
+> > bridge0:
+> > eth0|bat0
+> >=20
+> >=20
+> >=20
+> > device connected to node1-eth0 tags vlan20, does that traverse the
+> > bat0 mesh and come out node2-eth0 with tag in-tact?  Does it traverse
+> > node1-eth0 at all?
+>=20
+> Afaik, the VLANs not on configured on batX will be rejected since TT was =
+made
+> VLAN aware [1]. I think Simon and Antonio can clarify this.
 
-Kind regard,
-	Sven
+I agree with Sven. The Translation Table (TT) component should complain by
+printing the message that you can see in the link.
 
-[1] https://git.open-mesh.org/batman-adv.git/blob/HEAD:/net/batman-adv/translation-table.c#l715
+This happens because TT needs to know about all the VLANs in order to learn=
+ the
+MAC addresses of the clients.
 
---nextPart1884335.rR9ciycqZz
+However, TT gets to know a new VLAN only when this is actually created (i.e=
+=2E by
+creating bat0.X).
+
+
+The solution would be to create a VLAN on top of bat0 (i.e. bat0.20) and le=
+t the
+tagging happen at the node.
+
+Cheers,
+
+
+
+--=20
+Antonio Quartulli
+
+--vSsTm1kUtxIHoa7M
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlicGzkACgkQXYcKB8Em
-e0bqPg/9Hf7TTPPAXfsmYVPzCAGRPxk7KYoWGI7ONKdCrQtv9Sl/RFNbDpR3Sxfj
-Z0j/kaYZVqm8RrryXE4Pg4VTOK127013ymrhS4++NTOqaNdSM0RsWR7iNfBUEOcQ
-zffBRAoabCBELK1vndz8My3QeIOZV8/mlt7kz63g980UW8PFgZV0EpaibHc3LZ55
-WuBpfQxjZHAX/f802qbHpzQJsD8nTw0RcT4bn1Rhu11PnRs7+uEt/4G+Fu5wiSwS
-ZJ2t3Mi5kDN+LpBdraBW1aV69TWV5/cM81Z8KafxYG8mm/wHpcXmPhl3XjB1bdb8
-XLJTdl+OeGNm3/piU03VfkqLjWdJO4B6sG4djKThcFI0+b5e/Y8naCsQcsBzLXI5
-oTAP3/rKFPWewJuDZcGmCWCaQtteI86A5GtYAQqXakLC8IMCSOwOl5qkqTcyFMIF
-khNof+TdIY+h9V0lMtkZJuIFLTg36vbLey9LDmwQ17Plsn8inxqIs3SD3vZXECU0
-L6kNHWmY46zz0/i+LVqaQvzQjF/RvfwXWYgIf3QmVQdPTVtLp9BDP/09pNCaKXFH
-Mxo9KXFzIO6qN/Ic7C1A28Op+6SZIlloCZSYP6S1HbOlSxkCfLmHr+GlX+1K0I0z
-PD+GvY0xK3rU1bwnpnGKgUGQR/o3jUVRAePg9jsytdlxz5MZ2hI=
-=558U
+iQIcBAEBCAAGBQJYnB3OAAoJEJ6F1zG2JyOsxA0P/1rKiJPrLy3ItKWsiX6+EFdn
+CAXqcC+gBapFBtxbxhbKppnkIgEEVes7Kw0c3agzI0s2Jht/NlWJim1RKBbl6I/+
+a2NXvrqEvftYil/xFw065mXK1yLAiHBc4OcE6jdPXevUVGRaMlgQHAITEjoqprAa
+s/JU54RL9lOV2bim/fjSFSbcTYWcoq8onJVS5OxRR8ffgV0vwbiFGP+p91KfhxYr
+LB7j3UFMUi3gJ8ZL96cleF37PdbxpredxqNcK8AvOZbrVjAu41K1gfGbCObZlDyO
+0aIjoz5POL7cS32vA39Z6MnUl4xpPAK+RPnUSr0ol6ICSC9Ifrbs49mfpDd0V13H
+/QS1NhUcxmMaMVYkaqYtrFdfW4JWpHhpDRn4NZgDRIW4JmpX5TXmnUTlq8i3eK3g
+umbAG5lgke8Bq3KVSzHaaQYP4UVXmjt/+7PpvilsvA/9mSstQcY58mp5bjuSvBGJ
+q+FNMoolPWVdVTpyflNC3E1D50+rgXTbxeTHEhyJqdo+oktkuATjNBbt2suqmTTi
+kEajFaweZGR/GDlP3gmS2981H2kmZCGcmsJmDxhOiGadn53kJ8cAJlPB1TwUpnBY
++2TRjVJgITQzeDa5phujklPJ04QkAysjVHuwjxHZVAwm+oz9W83Bh8uavRJHiMdR
+8w1Lr1D+OckmOkIU7DYz
+=dMTm
 -----END PGP SIGNATURE-----
 
---nextPart1884335.rR9ciycqZz--
-
+--vSsTm1kUtxIHoa7M--
