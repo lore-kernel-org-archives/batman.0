@@ -1,18 +1,12 @@
-Return-Path: <fboehm@aon.at>
-References: <CAA_JP8UAMyYUrKx0nYEhRyRTM2jObS2qFwaAmN=BwD298c93Jg@mail.gmail.com>
- <f2f7a980-c7c0-8b71-a4f7-4a4c7501f3d5@aon.at>
- <CAA_JP8WHB+SbkFWc3CCqY_tyPPq57X+hbHUH2bni62qqiSvnYg@mail.gmail.com>
- <1a42289f-d68a-e883-ecf9-d284c5c4376a@aon.at>
- <20170211064100.GB29718@otheros>
-From: fboehm <fboehm@aon.at>
-Message-ID: <05a26616-f73b-7b43-3cc1-6088e399b8bc@aon.at>
-Date: Sat, 11 Feb 2017 12:03:33 +0100
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 12 Feb 2017 11:26:33 +0100
+Message-Id: <20170212102634.6279-1-sven@narfation.org>
 MIME-Version: 1.0
-In-Reply-To: <20170211064100.GB29718@otheros>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] how to hand ptp links and still access radio
- management interfaces
+Subject: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: Fix double free during
+	fragment merge error
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -23,30 +17,65 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-Am 2017-02-11 um 07:41 schrieb Linus Lüssing:
-> On Fri, Feb 10, 2017 at 09:50:32AM +0100, fboehm wrote:
->> Because the Airfiber isn't aware of Batman header and can't
->> process such network traffic.
->
-> Hm, why is that? The Airfiber can surely forward ethernet frames,
-> can't it?
->
-> Been using a pair of Ubiquiti NanoBridges with their stock
-> firmware in WDS-bridging mode to forward batman-adv frames
-> successfully in the past.
->
-> Regards, Linus
->
-True. But I think my information has to be seen in context to the 
-initial thread topic: "access radio management interface of Airfiber".
+The function batadv_frag_skb_buffer was supposed not to consume the skbuff
+on errors. This was followed in the helper function
+batadv_frag_insert_packet when the skb would potentially be inserted in the
+fragment queue. But it could happen that the next helper function
+batadv_frag_merge_packets would try to merge the fragments and fail. This
+results in a kfree_skb of all the enqueued fragments (including the just
+inserted one). batadv_recv_frag_packet would detect the error in
+batadv_frag_skb_buffer and try to free the skb again.
 
-That means if you manage Airfiber via a separate management VLAN, then 
-this management-VLAN-Interface is unaware of batman header.
+The behavior of batadv_frag_skb_buffer (and its helper
+batadv_frag_insert_packet) must therefore be changed to always consume the
+skbuff to have a common behavior and avoid the double kfree_skb.
 
-The capability of Airfiber to forward/bridge Ethernet frames with an 
-embedded Batman header remains unaffected of this.
+Fixes: 9b3eab61754d ("batman-adv: Receive fragmented packets and merge")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+Cc: Martin Hundebøll <martin@hundeboll.net>
 
-I Hope this clarifies the misunderstanding.
+ net/batman-adv/fragmentation.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-Franz
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index ead18ca8..7b523e6c 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -239,8 +239,10 @@ err_unlock:
+ 	spin_unlock_bh(&chain->lock);
+ 
+ err:
+-	if (!ret)
++	if (!ret) {
+ 		kfree(frag_entry_new);
++		kfree_skb(skb);
++	}
+ 
+ 	return ret;
+ }
+@@ -313,7 +315,7 @@ free:
+  *
+  * There are three possible outcomes: 1) Packet is merged: Return true and
+  * set *skb to merged packet; 2) Packet is buffered: Return true and set *skb
+- * to NULL; 3) Error: Return false and leave skb as is.
++ * to NULL; 3) Error: Return false and free skb.
+  *
+  * Return: true when packet is merged or buffered, false when skb is not not
+  * used.
+@@ -338,9 +340,9 @@ bool batadv_frag_skb_buffer(struct sk_buff **skb,
+ 		goto out_err;
+ 
+ out:
+-	*skb = skb_out;
+ 	ret = true;
+ out_err:
++	*skb = skb_out;
+ 	return ret;
+ }
+ 
+-- 
+2.11.0
+
