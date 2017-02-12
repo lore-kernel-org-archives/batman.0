@@ -1,12 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 12 Feb 2017 11:26:33 +0100
-Message-Id: <20170212102634.6279-1-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: Fix double free during
-	fragment merge error
+Date: Sun, 12 Feb 2017 11:26:34 +0100
+Message-Id: <20170212102634.6279-2-sven@narfation.org>
+In-Reply-To: <20170212102634.6279-1-sven@narfation.org>
+References: <20170212102634.6279-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Keep fragments equally sized
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,65 +15,93 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: =?UTF-8?q?Martin=20Hundeb=C3=B8ll?= <martin@hundeboll.net>
 
-The function batadv_frag_skb_buffer was supposed not to consume the skbuff
-on errors. This was followed in the helper function
-batadv_frag_insert_packet when the skb would potentially be inserted in the
-fragment queue. But it could happen that the next helper function
-batadv_frag_merge_packets would try to merge the fragments and fail. This
-results in a kfree_skb of all the enqueued fragments (including the just
-inserted one). batadv_recv_frag_packet would detect the error in
-batadv_frag_skb_buffer and try to free the skb again.
+The batman-adv fragmentation packets have the design problem that they
+cannot be refragmented. This often leads to problems when networks are
+incorrectly configured and don't use a common MTU.
 
-The behavior of batadv_frag_skb_buffer (and its helper
-batadv_frag_insert_packet) must therefore be changed to always consume the
-skbuff to have a common behavior and avoid the double kfree_skb.
+The sender could for example fragment a 1500 byte packet to fit in a 1280
+bytes large MTU. This would create a 1280 large packet and a 284 bytes
+large packet. But the next hop is then not able to transport 1280 bytes to
+its next hop. The 1280 byte large packet will be dropped but the 284 bytes
+large packet will still be forwarded to its destination.
 
-Fixes: 9b3eab61754d ("batman-adv: Receive fragmented packets and merge")
+This can partly being avoided by splitting packets more equally. In this
+example, the two 782 bytes large packets could both potentially reach its
+destination.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-Cc: Martin Hundebøll <martin@hundeboll.net>
+This patch is meant to enter master together with
+https://patchwork.open-mesh.org/patch/16933/
 
- net/batman-adv/fragmentation.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ net/batman-adv/fragmentation.c | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
 
 diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index ead18ca8..7b523e6c 100644
+index 7b523e6c..8655db03 100644
 --- a/net/batman-adv/fragmentation.c
 +++ b/net/batman-adv/fragmentation.c
-@@ -239,8 +239,10 @@ err_unlock:
- 	spin_unlock_bh(&chain->lock);
- 
- err:
--	if (!ret)
-+	if (!ret) {
- 		kfree(frag_entry_new);
-+		kfree_skb(skb);
-+	}
- 
- 	return ret;
- }
-@@ -313,7 +315,7 @@ free:
+@@ -404,7 +404,7 @@ out:
+  * batadv_frag_create - create a fragment from skb
+  * @skb: skb to create fragment from
+  * @frag_head: header to use in new fragment
+- * @mtu: size of new fragment
++ * @fragment_size: size of new fragment
   *
-  * There are three possible outcomes: 1) Packet is merged: Return true and
-  * set *skb to merged packet; 2) Packet is buffered: Return true and set *skb
-- * to NULL; 3) Error: Return false and leave skb as is.
-+ * to NULL; 3) Error: Return false and free skb.
-  *
-  * Return: true when packet is merged or buffered, false when skb is not not
-  * used.
-@@ -338,9 +340,9 @@ bool batadv_frag_skb_buffer(struct sk_buff **skb,
- 		goto out_err;
+  * Split the passed skb into two fragments: A new one with size matching the
+  * passed mtu and the old one with the rest. The new skb contains data from the
+@@ -414,11 +414,11 @@ out:
+  */
+ static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
+ 					  struct batadv_frag_packet *frag_head,
+-					  unsigned int mtu)
++					  unsigned int fragment_size)
+ {
+ 	struct sk_buff *skb_fragment;
+ 	unsigned int header_size = sizeof(*frag_head);
+-	unsigned int fragment_size = mtu - header_size;
++	unsigned int mtu = fragment_size + header_size;
  
- out:
--	*skb = skb_out;
- 	ret = true;
- out_err:
-+	*skb = skb_out;
- 	return ret;
- }
+ 	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
+ 	if (!skb_fragment)
+@@ -456,7 +456,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 	struct sk_buff *skb_fragment;
+ 	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
+ 	unsigned int header_size = sizeof(frag_header);
+-	unsigned int max_fragment_size, max_packet_size;
++	unsigned int max_fragment_size, num_fragments;
+ 	int ret;
  
+ 	/* To avoid merge and refragmentation at next-hops we never send
+@@ -464,10 +464,15 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 	 */
+ 	mtu = min_t(unsigned int, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
+ 	max_fragment_size = mtu - header_size;
+-	max_packet_size = max_fragment_size * BATADV_FRAG_MAX_FRAGMENTS;
++
++	if (skb->len == 0 || max_fragment_size == 0)
++		return -EINVAL;
++
++	num_fragments = (skb->len - 1) / max_fragment_size + 1;
++	max_fragment_size = (skb->len - 1) / num_fragments + 1;
+ 
+ 	/* Don't even try to fragment, if we need more than 16 fragments */
+-	if (skb->len > max_packet_size) {
++	if (num_fragments > BATADV_FRAG_MAX_FRAGMENTS) {
+ 		ret = -EAGAIN;
+ 		goto free_skb;
+ 	}
+@@ -501,7 +506,8 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 
+ 	/* Eat and send fragments from the tail of skb */
+ 	while (skb->len > max_fragment_size) {
+-		skb_fragment = batadv_frag_create(skb, &frag_header, mtu);
++		skb_fragment = batadv_frag_create(skb, &frag_header,
++						  max_fragment_size);
+ 		if (!skb_fragment) {
+ 			ret = -ENOMEM;
+ 			goto put_primary_if;
 -- 
 2.11.0
 
