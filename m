@@ -1,16 +1,15 @@
-Return-Path: <a@unstable.cc>
-Date: Thu, 16 Feb 2017 23:13:48 +0800
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <20170216151348.GM12961@prodigo.lan>
-References: <20160905112029.32533-1-sven@narfation.org>
- <2104576.qJKP21On3P@bentobox> <20170206114823.GG12187@prodigo.lan>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="tEFtbjk+mNEviIIX"
-Content-Disposition: inline
-In-Reply-To: <20170206114823.GG12187@prodigo.lan>
-Subject: Re: [B.A.T.M.A.N.] [PATCH v7 1/5] batman-adv: prevent multiple ARP
- replies sent by gateways if dat enabled
+Return-Path: <ben@decadent.org.uk>
+Message-ID: <1487261150.22520.6.camel@decadent.org.uk>
+From: Ben Hutchings <ben@decadent.org.uk>
+Date: Thu, 16 Feb 2017 16:05:50 +0000
+In-Reply-To: <20170216065613.GB24635@otheros>
+References: <lsq.1487198490.691915840@decadent.org.uk>
+ <lsq.1487198494.509932883@decadent.org.uk> <20170216065613.GB24635@otheros>
+Content-Type: multipart/signed; micalg="pgp-sha512";
+ protocol="application/pgp-signature"; boundary="=-81tzo38deM2eTW+K9GOg"
+Mime-Version: 1.0
+Subject: Re: [B.A.T.M.A.N.] [PATCH 3.2 049/126] batman-adv: fix splat on
+ disabling an interface
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,71 +19,66 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: Linus =?ISO-8859-1?Q?L=FCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, akpm@linux-foundation.org
 
 
---tEFtbjk+mNEviIIX
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--=-81tzo38deM2eTW+K9GOg
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On Mon, Feb 06, 2017 at 07:48:23PM +0800, Antonio Quartulli wrote:
-> Hi,
+On Thu, 2017-02-16 at 07:56 +0100, Linus L=C3=BCssing wrote:
+> On Wed, Feb 15, 2017 at 10:41:34PM +0000, Ben Hutchings wrote:
+> > 3.2.85-rc1 review patch.=C2=A0=C2=A0If anyone has any objections, pleas=
+e let me know.
+> >=20
+> > ------------------
+> >=20
+> > From: Linus L=C3=BCssing <linus.luessing@c0d3.blue>
+> >=20
+> > commit 9799c50372b23ed774791bdb87d700f1286ee8a9 upstream.
 >=20
-> On Mon, Feb 06, 2017 at 10:56:25AM +0100, Sven Eckelmann wrote:
-> > It is therefore currently unknown how to continue from here. Antonio, p=
-lease=20
-> > provide a statement what we should do with the patches.
+> Hi Ben,
 >=20
-> There were two issues here:
-> 1) the code was not really following the kernel style and I started my br=
-anch to
-> "smoothen" it a little bit and possibly re-propose it to the mailing list;
+> This commit was reverted in
+> 27915aa61060fd8954a68a86657784705955088a
+> ('batman-adv: Revert "fix splat on disabling an interface"').
 >=20
+> Greg dropped this patch from his stable queue back then, too [0].
 
-I pushed my ordex/bla_dat branch after rebasing it on top of current master.
+Sorry, I should have seen the note for this.  I've dropped this from
+both 3.2 and 3.16 queues.
 
-Patch 1 and 2 are ok for me.
+Ben.
 
-The doubts I had were about the rest, which is mostly about rearrangement of
-BLA.
-
-@Simon, I think here I'd need you to give a deep look to understand what co=
-uld
-possibly go wrong in the cases described. These changes may violate some of=
- the
-scenarios fixed by BLA..
-
-Could you please have a look?
-
-
-Cheers,
-
+> Regards, Linus
+>=20
+> [0]: https://marc.info/?l=3Dlinux-kernel&m=3D147938417410032
 --=20
-Antonio Quartulli
+Ben Hutchings
+The most exhausting thing in life is being insincere. - Anne Morrow
+Lindberg
 
---tEFtbjk+mNEviIIX
+
+--=-81tzo38deM2eTW+K9GOg
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAEBCAAGBQJYpcGpAAoJEJ6F1zG2JyOsMs4QALpC9g4EVXLtBNMibRfceYD5
-TWjbgJ/aWPKDE8MzeLdTkKNLoiw2Q+m13igW4IUGDbDnQrSLpinJ6nel7qhrGVK9
-6baJ66wYMPIxKC//C7KOnA23FlicnqtFtm7lgpkJbXSayRKLdMl/OLfAOQQvx/+d
-mPy9CMj9zKPZg/ylEjDWI1LXpCQrBSiLqrZs/oX2apY+4V4Jwxkh5Y1Dj6762J2o
-vljLt5rkoTj7s74p30RcubvM/FJ5dNrO09iNg315xiPovJXlFFaEnA5R6qTCCGNX
-PVWlLQfkfLtsF9p/0V93XknAf1RufzNwwMZuh7BCNaWxgqNf9rdj6oN7l6YDicJt
-zLMLo7u++6Y7IFWE0ZXot75/zzPt1/giGNGOG/klH7ZFhWaUpnhjNOzxUtRJuwf1
-zPepRU6Dd8mrk3dj2uCrpD96m6rDfu9RdOPVzXLyk/Ruos6ZScAHjdF66QRb+y/F
-5OM9BOw+QSXCnwS5zxHae0DMwayzJHtkugFMjZEu+WpKmsZ3dhN1N+sHB8yfOXvY
-8p7QwLedh3oLoFgRzeR8OMkcXuBVZGaeFsW2Zyo0MWCY4fjQqnU5W7bCGmfAS3ey
-mB8f+fZiZcxRQSLsEpuLUxlNAiQn4vuSxNjL7IvpddSvWPCWT1gio8dVekTLBadO
-1D+3zmc5rnoIywoTaghm
-=aC/f
+iQIzBAABCgAdFiEErCspvTSmr92z9o8157/I7JWGEQkFAlilzd4ACgkQ57/I7JWG
+EQncsxAAw1jKwKJTl8F1QXXWE0BP73rcFZ0VM6xlt7IrLwLnFxXxw8HZa9amXYfO
+VwDRv671ER/+5ilwhMikgnsrEz3EON8pKCR4x17LB1KOhHAKemUflHoJQA/pgL5Q
+WNuGnZ5N0+PFwG5MLC8qYBYfEUXFMqUjkJBZUIZDkAHw0FVEj3myQ7xKAh3ZCUkg
+pfEJpUmF6h329pignnrgHeV5Zipss7/tzOwYybxGTG/zvsPgNJKjC94poKtrEQVn
+X4/Vk/p5O0x55ys8W6aZse/0z4o1sKpPegSgmboUuO8aX8zmRAEt2l0z+C4EmNRb
+/cgMbcjJrSQABAErVI7bD5+9lYbaoeC75CSiisx2weLqJhBK7UtyYJb7tUxib6K3
+CE6ytbcl4kTHvxpaX5vRF82v608DCUUOuzT9gydeJmBsNKbX9AwwNB8QCpx3cehT
+yl6hXeRAXFvrXwVvs4HRoC6HQkyC0sdXCMvYF1kWD2yQdAwB7msrqRR0zV0g53+e
+qr9lBK2pYhoQt4LMZVrzc8OR32e/c/ngcEX/t1y4KUYWxieno1MdU4OheIZcce/e
+qrR9HqHgIUHTdiqPdeCc5YvOIDgEIdr8gM0ZMjh6WGreA2NqihITir78MTbbPQT2
+Fyx4S+Qk2tWCapRKkwn+CpZa3bDFAd96Uo+dN+UKM0u9v/WPUn8=
+=PcQs
 -----END PGP SIGNATURE-----
 
---tEFtbjk+mNEviIIX--
+--=-81tzo38deM2eTW+K9GOg--
