@@ -1,16 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Thu, 16 Feb 2017 07:56:13 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20170216065613.GB24635@otheros>
-References: <lsq.1487198490.691915840@decadent.org.uk>
- <lsq.1487198494.509932883@decadent.org.uk>
-MIME-Version: 1.0
+Return-Path: <itsmeshantanu@hotmail.com>
+From: Shantanoo Desai <itsmeshantanu@hotmail.com>
+Date: Thu, 16 Feb 2017 12:35:32 +0000
+Message-ID: <DB5PR09MB0391C18D43FB524CC828F191B35A0@DB5PR09MB0391.eurprd09.prod.outlook.com>
+Reply-To: "shantanoo_desai@hotmail.com" <shantanoo_desai@hotmail.com>
+Content-Language: en-US
 Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <lsq.1487198494.509932883@decadent.org.uk>
-Subject: Re: [B.A.T.M.A.N.] [PATCH 3.2 049/126] batman-adv: fix splat on
- disabling an interface
+Content-ID: <327641E756D9854B82B75D83BB85859C@eurprd09.prod.outlook.com>
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+Subject: [B.A.T.M.A.N.] Distributing Data using BATMAN-Multicast
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,26 +18,18 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Ben Hutchings <ben@decadent.org.uk>
-Cc: b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, akpm@linux-foundation.org
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
-On Wed, Feb 15, 2017 at 10:41:34PM +0000, Ben Hutchings wrote:
-> 3.2.85-rc1 review patch.  If anyone has any objections, please let me know.
-> 
-> ------------------
-> 
-> From: Linus Lüssing <linus.luessing@c0d3.blue>
-> 
-> commit 9799c50372b23ed774791bdb87d700f1286ee8a9 upstream.
-
-Hi Ben,
-
-This commit was reverted in
-27915aa61060fd8954a68a86657784705955088a
-('batman-adv: Revert "fix splat on disabling an interface"').
-
-Greg dropped this patch from his stable queue back then, too [0].
-
-Regards, Linus
-
-[0]: https://marc.info/?l=linux-kernel&m=147938417410032
+SGVsbG8gYWxsLA0KDQoNCkkgaGF2ZSBkZXZlbG9wZWQgYSBNdWx0aWNhc3QgYmFzZWQgRGF0YSBE
+aXN0cmlidXRpb24gcHJvdG9jb2wgYW5kIHdvdWxkIA0KbGlrZSB0byBjb21wYXJlIGl0IHdpdGgg
+QmF0bWFuJ3MgTXVsdGljYXN0IGZlYXR1cmUuIEkga25vdyBob3cgdG8gZW5hYmxlIA0KdGhlIG11
+bHRpY2FzdCBvbiB0aGUgdGhlIG1lc2ggaW50ZXJmYWNlIGJ1dCBpcyB0aGVyZSBhbnkgdG9vbCBv
+ciB1dGlsaXR5IA0KSSBjYW4gdXNlIHRvIHNlbmQgZGF0YSBvdmVyIHRoZSBNZXNoIG5ldHdvcmsg
+PyBzY3Agb2Ygc2Z0cCB3b24ndCB3b3JrIA0Kc2luY2UgdGhlcmUgaXMgbm8gbXVsdGljYXN0IG9y
+IGJyb2FkY2FzdGluZyBwcmVzZW50IGluIHRoZW0uDQoNCkkgd291bGQgbGlrZSB0byBjb21wYXJl
+IGhvdyBxdWljayBjYW4gZGF0YSBiZSBkaXNzZW1pbmF0ZWQgaW4gYSBCYXRtYW4gDQplbmFibGVk
+IE1lc2ggbmV0d29yayB2ZXJzdXMgdGhlIHByb3RvY29sIHRoYXQgSSBoYXZlIGRldmVsb3BlZCBv
+dmVyIGFuIA0KYWRob2MgbmV0d29yayBjb25zaXN0aW5nIG9mIG11bHRpcGxlIFJhc3BiZXJyeSBQ
+aXMuDQoNCg0KQW55IGhpbnRzIHdvdWxkIGJlIHN1Z2dlc3RlZC4NCg0KDQpUaGFua3MsDQoNCg0K
+U2hhbg0KDQoNCi0tIA0KU2hhbnRhbm9vIERlc2FpDQoNCk1TYy4gQ29tbXVuaWNhdGlvbiAmIElu
+Zm9ybWF0aW9uIFRlY2guDQoNCkJyZW1lbiwgR2VybWFueQ0KDQo=
