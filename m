@@ -1,14 +1,14 @@
 Return-Path: <linus.luessing@c0d3.blue>
 From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Date: Fri, 17 Feb 2017 11:17:07 +0100
-Message-Id: <20170217101708.19336-6-linus.luessing@c0d3.blue>
+Date: Fri, 17 Feb 2017 11:17:08 +0100
+Message-Id: <20170217101708.19336-7-linus.luessing@c0d3.blue>
 In-Reply-To: <20170217101708.19336-1-linus.luessing@c0d3.blue>
 References: <20170217101708.19336-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v2 5/6] batman-adv: restructure rebroadcast
-	counter into forw_packet API
+Subject: [B.A.T.M.A.N.] [PATCH v2 6/6] batman-adv: do not aggregate
+	rebroadcasts in the same packet
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,63 +20,206 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-This patch refactors the num_packets counter of a forw_packet in the
-following three ways:
+With this patch, aggregating a broadcast packet multiple times into the
+same aggregation packet is avoided. Otherwise such aggregation would
+defeat the purpose of retransmissions (i.e. increasing reliability).
 
-1) Removed dual-use of forw_packet::num_packets:
-   -> now for aggregation purposes only
-2) Using forw_packet::skb::cb::num_bcasts instead:
-   -> for easier access in aggregation code later
-3) make access to num_bcasts private to batadv_forw_packet_*()
+Instead packets which are supposed to be retransmitted are just put
+back into the aggregation queue and will be part of the next aggregation
+packet again.
 
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
- net/batman-adv/distributed-arp-table.c |  2 +-
- net/batman-adv/main.c                  |  3 ++
- net/batman-adv/send.c                  | 50 ++++++++++++++++++++++++++++++++--
- net/batman-adv/send.h                  |  1 +
- net/batman-adv/soft-interface.c        |  3 ++
- net/batman-adv/types.h                 |  4 ++-
- 6 files changed, 58 insertions(+), 5 deletions(-)
+ net/batman-adv/aggregation.c | 69 +++++++++++++++++++++++++++++++++++---------
+ net/batman-adv/bat_iv_ogm.c  |  3 +-
+ net/batman-adv/send.c        | 58 +++++++++++++++++++++++++++++++++----
+ net/batman-adv/send.h        |  8 ++++-
+ net/batman-adv/types.h       |  3 ++
+ 5 files changed, 120 insertions(+), 21 deletions(-)
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index fa3768a..959ffae 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -1256,7 +1256,7 @@ bool batadv_dat_drop_broadcast_packet(struct batadv_priv *bat_priv,
- 	/* If this packet is an ARP_REQUEST and the node already has the
- 	 * information that it is going to ask, then the packet can be dropped
- 	 */
--	if (forw_packet->num_packets)
-+	if (batadv_forw_packet_is_rebroadcast(forw_packet))
- 		goto out;
- 
- 	vid = batadv_dat_get_vid(forw_packet->skb, &hdr_size);
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 5d96eae..0faf28f 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -534,6 +534,9 @@ static void batadv_recv_handler_init(void)
- 	BUILD_BUG_ON(sizeof(struct batadv_tvlv_tt_change) != 12);
- 	BUILD_BUG_ON(sizeof(struct batadv_tvlv_roam_adv) != 8);
- 
-+	i = FIELD_SIZEOF(struct sk_buff, cb);
-+	BUILD_BUG_ON(sizeof(struct batadv_skb_cb) > i);
-+
- 	/* broadcast packet */
- 	batadv_rx_handler[BATADV_BCAST] = batadv_recv_bcast_packet;
- 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index d2fa511..08b61e0 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -798,6 +798,50 @@ err:
- 	return NETDEV_TX_BUSY;
+diff --git a/net/batman-adv/aggregation.c b/net/batman-adv/aggregation.c
+index 21b29be..1dd6eb9 100644
+--- a/net/batman-adv/aggregation.c
++++ b/net/batman-adv/aggregation.c
+@@ -253,7 +253,41 @@ batadv_aggr_queue_is_full(struct batadv_hard_iface *hard_iface)
  }
  
+ /**
++ * batadv_aggr_queue_tail - add packet to tail of an aggregation queue
++ * @skb: the packet to queue
++ * @hard_iface: the interface to queue on
++ *
++ * Tries to add a broadcast packet to an aggregation queue. This might fail if
++ * the queue has no more free slots available. In that case, the caller needs to
++ * take care of freeing the skb.
++ *
++ * Return: True on successful queueing, false otherwise.
++ */
++static bool batadv_aggr_queue_tail(struct sk_buff *skb,
++				   struct batadv_hard_iface *hard_iface)
++{
++	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
++	bool ret = true;
++
++	spin_lock_bh(&hard_iface->aggr.aggr_list_lock);
++	if (batadv_aggr_queue_is_full(hard_iface)) {
++		batadv_inc_counter(bat_priv, BATADV_CNT_AGGR_QUEUE_FULL);
++		ret = false;
++	} else {
++		batadv_inc_counter(bat_priv, BATADV_CNT_AGGR_PARTS_TX);
++		batadv_add_counter(bat_priv, BATADV_CNT_AGGR_PARTS_TX_BYTES,
++				   skb->len + ETH_HLEN);
++
++		skb_queue_tail(&hard_iface->aggr.aggr_list, skb);
++	}
++	spin_unlock_bh(&hard_iface->aggr.aggr_list_lock);
++
++	return ret;
++}
++
 +/**
-+ * batadv_forw_packet_bcasts_left - check if a retransmission is necessary
-+ * @forw_packet: the forwarding packet to check
+  * batadv_aggr_squash_chunk - squash packets into an aggregate
++ * @hard_iface: the interface to potentially requeue on
+  * @head: a list of to be squashed packets
+  * @size: the size of the to be created aggregation packet
+  *  (excluding the ethernet header)
+@@ -261,11 +295,14 @@ batadv_aggr_queue_is_full(struct batadv_hard_iface *hard_iface)
+  * Allocates an aggregation packet and squashes the provided list of broadcast
+  * packets into it. The provided list of packets is freed/consumed.
+  *
++ * Batman broadcast packets are potentially requeued.
++ *
+  * Return: An aggregation packet ready for transmission on success, NULL
+  * otherwise.
+  */
+ static struct sk_buff *
+-batadv_aggr_squash_chunk(struct sk_buff_head *head,
++batadv_aggr_squash_chunk(struct batadv_hard_iface *hard_iface,
++			 struct sk_buff_head *head,
+ 			 int size)
+ {
+ 	struct sk_buff *skb, *skb_tmp, *skb_aggr;
+@@ -296,7 +333,15 @@ batadv_aggr_squash_chunk(struct sk_buff_head *head,
+ 		to = skb_put(skb_aggr, len);
+ 		skb_copy_bits(skb, offset, to, len);
+ 		skb_unlink(skb, head);
+-		consume_skb(skb);
++
++		batadv_send_bcasts_inc(skb);
++
++		if (batadv_send_bcasts_left(skb, hard_iface)) {
++			if (!batadv_aggr_queue_tail(skb, hard_iface))
++				kfree_skb(skb);
++		} else {
++			consume_skb(skb);
++		}
+ 
+ 		tvlv_len += len + sizeof(struct batadv_tvlv_hdr);
+ 	}
+@@ -345,7 +390,7 @@ static bool batadv_aggr_send_chunk(struct batadv_hard_iface *hard_iface)
+ 	skb_queue_head_init(&head);
+ 	emptied = batadv_aggr_get_chunk(hard_iface, &head, &size);
+ 
+-	skb = batadv_aggr_squash_chunk(&head, size);
++	skb = batadv_aggr_squash_chunk(hard_iface, &head, size);
+ 	if (!skb)
+ 		goto out;
+ 
+@@ -394,6 +439,7 @@ static void batadv_aggr_work(struct work_struct *work)
+ int batadv_aggr_queue(struct sk_buff *skb, struct batadv_hard_iface *hard_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(hard_iface->soft_iface);
++	int ret;
+ 
+ 	if (!atomic_read(&bat_priv->aggregation))
+ 		return NET_XMIT_DROP;
+@@ -401,18 +447,15 @@ int batadv_aggr_queue(struct sk_buff *skb, struct batadv_hard_iface *hard_iface)
+ 	if (atomic_read(&bat_priv->aggr_num_disabled))
+ 		return NET_XMIT_DROP;
+ 
+-	if (batadv_aggr_queue_is_full(hard_iface)) {
+-		batadv_inc_counter(bat_priv, BATADV_CNT_AGGR_QUEUE_FULL);
+-		return NET_XMIT_DROP;
++	/* we handle rebroadcasts here instead of the forw_packet API */
++	if (batadv_send_is_rebroadcast(skb)) {
++		consume_skb(skb);
++		return NET_XMIT_SUCCESS;
+ 	}
+ 
+-	spin_lock_bh(&hard_iface->aggr.aggr_list_lock);
+-	skb_queue_tail(&hard_iface->aggr.aggr_list, skb);
+-	spin_unlock_bh(&hard_iface->aggr.aggr_list_lock);
+-
+-	batadv_inc_counter(bat_priv, BATADV_CNT_AGGR_PARTS_TX);
+-	batadv_add_counter(bat_priv, BATADV_CNT_AGGR_PARTS_TX_BYTES,
+-			   skb->len + ETH_HLEN);
++	ret = batadv_aggr_queue_tail(skb, hard_iface);
++	if (!ret)
++		return NET_XMIT_DROP;
+ 
+ 	return NET_XMIT_SUCCESS;
+ }
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 896a387..5f61b6b 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -697,7 +697,8 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
+ 		return;
+ 
+ 	forw_packet_aggr = batadv_forw_packet_alloc(if_incoming, if_outgoing,
+-						    queue_left, bat_priv, skb);
++						    queue_left, bat_priv, skb,
++						    false);
+ 	if (!forw_packet_aggr) {
+ 		kfree_skb(skb);
+ 		return;
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 08b61e0..cec6ae8 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -492,6 +492,8 @@ void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet,
+  * @queue_left: The (optional) queue counter to decrease
+  * @bat_priv: The bat_priv for the mesh of this forw_packet
+  * @skb: The raw packet this forwarding packet shall contain
++ * @resend: Whether this packet should be transmitted more than once on wireless
++ *  interfaces
+  *
+  * Allocates a forwarding packet and tries to get a reference to the
+  * (optional) if_incoming, if_outgoing and queue_left. If queue_left
+@@ -504,7 +506,8 @@ batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
+ 			 struct batadv_hard_iface *if_outgoing,
+ 			 atomic_t *queue_left,
+ 			 struct batadv_priv *bat_priv,
+-			 struct sk_buff *skb)
++			 struct sk_buff *skb,
++			 bool resend)
+ {
+ 	struct batadv_forw_packet *forw_packet;
+ 	const char *qname;
+@@ -542,6 +545,8 @@ batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
+ 	forw_packet->if_outgoing = if_outgoing;
+ 	forw_packet->num_packets = 0;
+ 
++	BATADV_SKB_CB(forw_packet->skb)->resend = resend;
++
+ 	return forw_packet;
+ 
+ err:
+@@ -775,7 +780,7 @@ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
+ 
+ 	forw_packet = batadv_forw_packet_alloc(primary_if, NULL,
+ 					       &bat_priv->bcast_queue_left,
+-					       bat_priv, newskb);
++					       bat_priv, newskb, true);
+ 	batadv_hardif_put(primary_if);
+ 	if (!forw_packet)
+ 		goto err_packet_free;
+@@ -799,6 +804,29 @@ err:
+ }
+ 
+ /**
++ * batadv_send_bcasts_left - check if a retransmission is necessary
++ * @skb: the packet to check
 + * @hard_iface: the interface to check on
 + *
 + * Checks whether a given packet has any (re)transmissions left on the provided
@@ -88,112 +231,110 @@ index d2fa511..08b61e0 100644
 + *
 + * Return: True if (re)transmissions are left, false otherwise.
 + */
-+static bool
-+batadv_forw_packet_bcasts_left(struct batadv_forw_packet *forw_packet,
-+			       struct batadv_hard_iface *hard_iface)
++bool batadv_send_bcasts_left(struct sk_buff *skb,
++			     struct batadv_hard_iface *hard_iface)
 +{
 +	int max = hard_iface ? hard_iface->num_bcasts : BATADV_NUM_BCASTS_MAX;
++	bool resend = !hard_iface || BATADV_SKB_CB(skb)->resend;
 +
-+	return BATADV_SKB_CB(forw_packet->skb)->num_bcasts < max;
++	return resend && BATADV_SKB_CB(skb)->num_bcasts < max;
 +}
 +
 +/**
-+ * batadv_forw_packet_bcasts_inc - increment retransmission counter of a packet
-+ * @forw_packet: the packet to increase the counter for
-+ */
-+static void
-+batadv_forw_packet_bcasts_inc(struct batadv_forw_packet *forw_packet)
-+{
-+	BATADV_SKB_CB(forw_packet->skb)->num_bcasts++;
-+}
-+
-+/**
-+ * batadv_forw_packet_is_rebroadcast - check packet for previous transmissions
-+ * @forw_packet: the packet to check
-+ *
-+ * Return: True if this packet was transmitted before, false otherwise.
-+ */
-+bool batadv_forw_packet_is_rebroadcast(struct batadv_forw_packet *forw_packet)
-+{
-+	return BATADV_SKB_CB(forw_packet->skb)->num_bcasts > 0;
-+}
-+
- static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
+  * batadv_forw_packet_bcasts_left - check if a retransmission is necessary
+  * @forw_packet: the forwarding packet to check
+  * @hard_iface: the interface to check on
+@@ -816,9 +844,16 @@ static bool
+ batadv_forw_packet_bcasts_left(struct batadv_forw_packet *forw_packet,
+ 			       struct batadv_hard_iface *hard_iface)
  {
- 	struct batadv_hard_iface *hard_iface;
-@@ -837,7 +881,7 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- 		if (hard_iface->soft_iface != soft_iface)
- 			continue;
+-	int max = hard_iface ? hard_iface->num_bcasts : BATADV_NUM_BCASTS_MAX;
++	return batadv_send_bcasts_left(forw_packet->skb, hard_iface);
++}
  
--		if (forw_packet->num_packets >= hard_iface->num_bcasts)
-+		if (!batadv_forw_packet_bcasts_left(forw_packet, hard_iface))
- 			continue;
+-	return BATADV_SKB_CB(forw_packet->skb)->num_bcasts < max;
++/**
++ * batadv_send_bcasts_inc - increment the retransmission counter of an skb
++ * @skb: the packet to increase the counter for
++ */
++void batadv_send_bcasts_inc(struct sk_buff *skb)
++{
++	BATADV_SKB_CB(skb)->num_bcasts++;
+ }
  
- 		if (forw_packet->own) {
-@@ -896,10 +940,10 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- 	}
- 	rcu_read_unlock();
+ /**
+@@ -828,7 +863,18 @@ batadv_forw_packet_bcasts_left(struct batadv_forw_packet *forw_packet,
+ static void
+ batadv_forw_packet_bcasts_inc(struct batadv_forw_packet *forw_packet)
+ {
+-	BATADV_SKB_CB(forw_packet->skb)->num_bcasts++;
++	batadv_send_bcasts_inc(forw_packet->skb);
++}
++
++/**
++ * batadv_send_is_rebroadcast - check whether this packet was transmitted before
++ * @skb: the packet to check
++ *
++ * Return: True if this packet was transmitted already, false otherwise.
++ */
++bool batadv_send_is_rebroadcast(struct sk_buff *skb)
++{
++	return BATADV_SKB_CB(skb)->num_bcasts > 0;
+ }
  
--	forw_packet->num_packets++;
-+	batadv_forw_packet_bcasts_inc(forw_packet);
+ /**
+@@ -839,7 +885,7 @@ batadv_forw_packet_bcasts_inc(struct batadv_forw_packet *forw_packet)
+  */
+ bool batadv_forw_packet_is_rebroadcast(struct batadv_forw_packet *forw_packet)
+ {
+-	return BATADV_SKB_CB(forw_packet->skb)->num_bcasts > 0;
++	return batadv_send_is_rebroadcast(forw_packet->skb);
+ }
  
- 	/* if we still have some more bcasts to send */
--	if (forw_packet->num_packets < BATADV_NUM_BCASTS_MAX) {
-+	if (batadv_forw_packet_bcasts_left(forw_packet, NULL)) {
- 		batadv_forw_packet_bcast_queue(bat_priv, forw_packet,
- 					       send_time);
- 		return;
+ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
 diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
-index 8e75890..a16b34f 100644
+index a16b34f..cd1ee81 100644
 --- a/net/batman-adv/send.h
 +++ b/net/batman-adv/send.h
-@@ -40,6 +40,7 @@ bool batadv_forw_packet_steal(struct batadv_forw_packet *packet, spinlock_t *l);
+@@ -35,13 +35,19 @@ batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
+ 			 struct batadv_hard_iface *if_outgoing,
+ 			 atomic_t *queue_left,
+ 			 struct batadv_priv *bat_priv,
+-			 struct sk_buff *skb);
++			 struct sk_buff *skb,
++			 bool resend);
+ bool batadv_forw_packet_steal(struct batadv_forw_packet *packet, spinlock_t *l);
  void batadv_forw_packet_ogmv1_queue(struct batadv_priv *bat_priv,
  				    struct batadv_forw_packet *forw_packet,
  				    unsigned long send_time);
-+bool batadv_forw_packet_is_rebroadcast(struct batadv_forw_packet *forw_packet);
+ bool batadv_forw_packet_is_rebroadcast(struct batadv_forw_packet *forw_packet);
  
++bool batadv_send_bcasts_left(struct sk_buff *skb,
++			     struct batadv_hard_iface *hard_iface);
++void batadv_send_bcasts_inc(struct sk_buff *skb);
++bool batadv_send_is_rebroadcast(struct sk_buff *skb);
++
  int batadv_send_skb_to_orig(struct sk_buff *skb,
  			    struct batadv_orig_node *orig_node,
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index abe21f1..2bb5030 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -230,6 +230,9 @@ static int batadv_interface_tx(struct sk_buff *skb,
- 	if (atomic_read(&bat_priv->mesh_state) != BATADV_MESH_ACTIVE)
- 		goto dropped;
- 
-+	/* reset control block to avoid left overs from previous users */
-+	memset(skb->cb, 0, sizeof(struct batadv_skb_cb));
-+
- 	netif_trans_update(soft_iface);
- 	vid = batadv_get_vid(skb, 0);
- 	ethhdr = eth_hdr(skb);
+ 			    struct batadv_hard_iface *recv_if);
 diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index b0e5dd6..0c5c373 100644
+index 0c5c373..f6787fb 100644
 --- a/net/batman-adv/types.h
 +++ b/net/batman-adv/types.h
-@@ -1444,9 +1444,11 @@ struct batadv_nc_packet {
-  *  relevant to batman-adv in the skb->cb buffer in skbs.
+@@ -1445,10 +1445,13 @@ struct batadv_nc_packet {
   * @decoded: Marks a skb as decoded, which is checked when searching for coding
   *  opportunities in network-coding.c
-+ * @num_bcasts: Counter for broadcast packet retransmissions
+  * @num_bcasts: Counter for broadcast packet retransmissions
++ * @resend: Whether this packet should be transmitted more than once on wireless
++ *  interfaces
   */
  struct batadv_skb_cb {
  	bool decoded;
-+	int num_bcasts;
+ 	int num_bcasts;
++	bool resend;
  };
  
  /**
-@@ -1459,7 +1461,7 @@ struct batadv_skb_cb {
-  * @skb: bcast packet's skb buffer
-  * @packet_len: size of aggregated OGM packet inside the skb buffer
-  * @direct_link_flags: direct link flags for aggregated OGM packets
-- * @num_packets: counter for bcast packet retransmission
-+ * @num_packets: counter for aggregated OGMv1 packets
-  * @delayed_work: work queue callback item for packet sending
-  * @if_incoming: pointer to incoming hard-iface or primary iface if
-  *  locally generated packet
 -- 
 2.1.4
 
