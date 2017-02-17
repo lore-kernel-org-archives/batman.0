@@ -1,13 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 17 Feb 2017 07:55:06 +0100
-Message-ID: <2028520.vrkpGIZa5q@bentobox>
-In-Reply-To: <dm0efb.oli4aj.1hge137-qmf@riseup.net>
-References: <dm0efb.oli4aj.1hge137-qmf@riseup.net>
+Date: Fri, 17 Feb 2017 08:56:44 +0100
+Message-ID: <2164005.BaM7rbROku@bentobox>
+In-Reply-To: <DB5PR09MB0391C18D43FB524CC828F191B35A0@DB5PR09MB0391.eurprd09.prod.outlook.com>
+References: <DB5PR09MB0391C18D43FB524CC828F191B35A0@DB5PR09MB0391.eurprd09.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3692812.Hd1avgpvS4";
+Content-Type: multipart/signed; boundary="nextPart1577754.dcWfnuF4NX";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Unable to Change from BATMAN_IV to BATMAN_V
+Subject: Re: [B.A.T.M.A.N.] Distributing Data using BATMAN-Multicast
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,46 +17,56 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org, "shantanoo_desai@hotmail.com" <shantanoo_desai@hotmail.com>
 
---nextPart3692812.Hd1avgpvS4
+--nextPart1577754.dcWfnuF4NX
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Freitag, 17. Februar 2017 04:25:25 CET leftbydefault@riseup.net wrote:
-> I came across a thread previously on this same issue with respect to openwrt.
-> 
-> I tried to change the routing algo following tweaking section of batman wiki as soon as loading the batman_adv module.
-> 
-> I am able to see BATMAN_V under availabile algorithms but available for next instance of batx. I understand it has to be done before this bat0 interface is created, but I am doing this before bringing up bat0 using ifconfig
+On Donnerstag, 16. Februar 2017 12:35:32 CET Shantanoo Desai wrote:
+> I have developed a Multicast based Data Distribution protocol
+[...]
+> I would like to compare how quick can data be disseminated in a Batman 
+> enabled Mesh network versus the protocol that I have developed
 
-Mo, it "ifconfig xxxx up" is way to late. It the module has to switched to
-BATMAN_V before the batX interface is created (this is before the setup
-function of the netdev is executed in the kernel).
+You've already lost me here. You say that your protocol is a "data
+distribution protocol" which is using multicast ("Multicast based"). But the
+L2 multicast feature [1] of batman-adv is an optimization which tried to
+reduce the amount of broadcasts on the underlying layer (for example wifi)
+while still allow interested multicast listeners to receive the data. So you
+could say that it "implements" L2 multicast in a slightly different way than
+in older batman-adv versions (which was just using broadcasts on the
+underlying layer).
+
+So your description sounds to me like these things are two different things
+for two different tasks. Basically two different layers in the stack. Can you
+clarify this?
 
 Kind regards,
 	Sven
---nextPart3692812.Hd1avgpvS4
+
+[1] https://www.open-mesh.org/projects/batman-adv/wiki/Multicast-optimizations
+--nextPart1577754.dcWfnuF4NX
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlimnkoACgkQXYcKB8Em
-e0Y0LBAApakoBShKb7IHQQ0kKv0tw36BJlAIyzhyO1P/8JnS1Y57nedmCUtGePGF
-ljSy/X4GKcipiw6iRwPiv7yYv+Y1DIccpJ5xSdMiDkd9B9H6vEEoFmpr6W3KUIXm
-GNJAPIBqFXzS6dDrklnkQEMRhql+VA/ylRmLeC/tiaf/cNQ51CVQ25vDWGC1cLOe
-rDxlVbpiQOhMfgHLGVOJDdA7eESSjJY0mRne1greHb7t9hs2ggzL04JdvluU5gIL
-2VQJMeZmEjJcNp/PmgtHTRNiy8nR/2qb2090cHOFVTkCCN2sfvPNShi7IjZBbwc8
-CtgSXbpn25ViZX0AQna66KbGgUKSbvGFnmsCXCyU0UqV99TBOPp4bvHPFb5qz/NN
-S/i2poTFVa7RRY7s0N+pkf+xYt94YecwHbPNWFlxeZ9VzLTIcSeV/AVnJGicaQ3f
-dx17/7ElKbpB1/fjFZ5gLA0E6dcXKsmf9L22cH/3iyihScZDlv9xtyqB11SaeauA
-UaoaUj2ukf46/zEVVb4yeVe3wb29qtvH1Fk02XCobcqY2PBJemcLRS6vtDoUFdF8
-cTLtakBrEwMNyvGZzKCBaWEFZ+IVFOLqIV4p4j9VTd2syywK97+yvomdkdurzJEJ
-dotD0yNmog8Jr6XpUd/sRpaV9ty3njUXSrMPETmK25Pfir3wURA=
-=4nKN
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlimrLwACgkQXYcKB8Em
+e0ZTYg/8DPxAYOpYAkVjI5Eo89d8hGgrmMU9lJCL4sR55rEbP3m4i7V3vyAaEaT5
+UpsVJcw9Kuvg53YZ6CuaAer2pq2+yIeUZ7iopZ/wec08BO6uws4NkdGIq/FLV2H9
+02NkLAQI2QsZiHWiAa85dDrfpFhXXN+fHDjJWRlh2uK5d0dDzohVSfIY/MJP95yl
+OUylpw8FC0JvbQXq6CXjtxXeuFx+zLfW5n+090vYcsmw4wh7lL+6G5DPc10yH+lo
+BrZCpWXIhZzBMjQ6g8EVvh1fJNHDFCw2qTlj5zTJJ1zOW3jipYNRp+P8HdcIjhqU
+mI3ighAscSQ5b/K4OTQsm583ALQLoOMa7O2NSub0zUVMZ+MajSlhiuV5hg6jbh0X
+FMBd8ZT2fEYwY5PSAfXSE4w8lHi4VzrDNHppGaXrB0ZTjp5nrUi0QZc/4q1YzONi
+BUTdDqCR8PbcqZEtHvfv1oo8i0xfAQS+xqATLa9w8LGCliNuq7luoWVeRq3BipPk
+S6Da+czz6CfHSG1EzWuleGCiLLUZjRCG9gp3D8fXjve1rfQasbpU8rDeuDZbA6EG
+h6PNCxMwppTWmuQfsc9gej43JzzK0q3QXQd/Moa8mQOk+LZnlnWcUalJBVYFinfH
+ho8j99ipREw4eK33HJ/jbt+onqrq780/DlbBkqyTLRpakqxsCIU=
+=wQFq
 -----END PGP SIGNATURE-----
 
---nextPart3692812.Hd1avgpvS4--
+--nextPart1577754.dcWfnuF4NX--
 
