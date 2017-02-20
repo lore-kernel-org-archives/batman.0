@@ -1,9 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 20 Feb 2017 17:45:38 +0100
-Message-Id: <20170220164539.27339-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Remove preprocessor checks
-	in multicast.c
+Date: Mon, 20 Feb 2017 17:45:39 +0100
+Message-Id: <20170220164539.27339-2-sven@narfation.org>
+In-Reply-To: <20170220164539.27339-1-sven@narfation.org>
+References: <20170220164539.27339-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Fix possible side-effects in
+	macros
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,75 +17,49 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-It is not necessary to disable these code sections in case other kernel
-features are disabled. Instead the IS_ENABLED tests can be added directly
-in the code and the compiler can remove the unnecessary code parts during
-its optimization run.
+An argument of a macro should not be used multiple times. Otherwise
+embedded operations in these arguments will be executed multiple times.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/multicast.c | 16 ++++++----------
- 1 file changed, 6 insertions(+), 10 deletions(-)
+ net/batman-adv/log.h  | 5 +++--
+ net/batman-adv/main.h | 6 ++++--
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 952ba81..0e9112c 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -182,10 +182,8 @@ static void batadv_mcast_mla_br_addr_cpy(char *dst, const struct br_ip *src)
- {
- 	if (src->proto == htons(ETH_P_IP))
- 		ip_eth_mc_map(src->u.ip4, dst);
--#if IS_ENABLED(CONFIG_IPV6)
--	else if (src->proto == htons(ETH_P_IPV6))
-+	else if (IS_ENABLED(CONFIG_IPV6) && src->proto == htons(ETH_P_IPV6))
- 		ipv6_eth_mc_map(&src->u.ip6, dst);
--#endif
- 	else
- 		eth_zero_addr(dst);
- }
-@@ -494,9 +492,8 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
- 	if (!bridged)
- 		goto update;
+diff --git a/net/batman-adv/log.h b/net/batman-adv/log.h
+index 7a2b9f4..65ce97e 100644
+--- a/net/batman-adv/log.h
++++ b/net/batman-adv/log.h
+@@ -73,9 +73,10 @@ __printf(2, 3);
+ /* possibly ratelimited debug output */
+ #define _batadv_dbg(type, bat_priv, ratelimited, fmt, arg...)		\
+ 	do {								\
+-		if (atomic_read(&(bat_priv)->log_level) & (type) &&	\
++		struct batadv_priv *__batpriv = (bat_priv);		\
++		if (atomic_read(&__batpriv->log_level) & (type) &&	\
+ 		    (!(ratelimited) || net_ratelimit()))		\
+-			batadv_debug_log(bat_priv, fmt, ## arg);	\
++			batadv_debug_log(__batpriv, fmt, ## arg);	\
+ 	}								\
+ 	while (0)
+ #else /* !CONFIG_BATMAN_ADV_DEBUG */
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 57a8103..9aab2e6 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -200,8 +200,10 @@ struct packet_type;
+ struct seq_file;
+ struct sk_buff;
  
--#if !IS_ENABLED(CONFIG_BRIDGE_IGMP_SNOOPING)
--	pr_warn_once("No bridge IGMP snooping compiled - multicast optimizations disabled\n");
--#endif
-+	if (!IS_ENABLED(CONFIG_BRIDGE_IGMP_SNOOPING))
-+		pr_warn_once("No bridge IGMP snooping compiled - multicast optimizations disabled\n");
+-#define BATADV_PRINT_VID(vid) (((vid) & BATADV_VLAN_HAS_TAG) ? \
+-			       (int)((vid) & VLAN_VID_MASK) : -1)
++#define BATADV_PRINT_VID(vid) ({ \
++	unsigned short _vid = (vid); \
++	(_vid & BATADV_VLAN_HAS_TAG) ? (int)(_vid & VLAN_VID_MASK) : -1; \
++})
  
- 	querier4.exists = br_multicast_has_querier_anywhere(dev, ETH_P_IP);
- 	querier4.shadowing = br_multicast_has_querier_adjacent(dev, ETH_P_IP);
-@@ -671,7 +668,6 @@ static int batadv_mcast_forw_mode_check_ipv4(struct batadv_priv *bat_priv,
- 	return 0;
- }
+ extern struct list_head batadv_hardif_list;
  
--#if IS_ENABLED(CONFIG_IPV6)
- /**
-  * batadv_mcast_is_report_ipv6 - check for MLD reports
-  * @skb: the ethernet frame destined for the mesh
-@@ -736,7 +732,6 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
- 
- 	return 0;
- }
--#endif
- 
- /**
-  * batadv_mcast_forw_mode_check - check for optimized forwarding potential
-@@ -765,11 +760,12 @@ static int batadv_mcast_forw_mode_check(struct batadv_priv *bat_priv,
- 	case ETH_P_IP:
- 		return batadv_mcast_forw_mode_check_ipv4(bat_priv, skb,
- 							 is_unsnoopable);
--#if IS_ENABLED(CONFIG_IPV6)
- 	case ETH_P_IPV6:
-+		if (!IS_ENABLED(CONFIG_IPV6))
-+			return -EINVAL;
-+
- 		return batadv_mcast_forw_mode_check_ipv6(bat_priv, skb,
- 							 is_unsnoopable);
--#endif
- 	default:
- 		return -EINVAL;
- 	}
 -- 
 2.11.0
 
