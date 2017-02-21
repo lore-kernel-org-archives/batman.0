@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 21 Feb 2017 18:27:29 +0100
-Message-ID: <2747006.Pa2tuinOe8@bentobox>
-In-Reply-To: <20170213194431.24075-1-linus.luessing@c0d3.blue>
-References: <20170213194431.24075-1-linus.luessing@c0d3.blue>
+Date: Tue, 21 Feb 2017 18:28:35 +0100
+Message-ID: <3561262.vdVOCJ3LT9@bentobox>
+In-Reply-To: <20170212102634.6279-1-sven@narfation.org>
+References: <20170212102634.6279-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart9725692.62bTmEj2WV";
+Content-Type: multipart/signed; boundary="nextPart1873494.43aJmcFi8j";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix transmission of
-	final, 16th fragment
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: Fix double free
+	during fragment merge error
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,53 +19,56 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Martin =?ISO-8859-1?Q?Hundeb=F8ll?= <martin@hundeboll.net>
 
---nextPart9725692.62bTmEj2WV
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart1873494.43aJmcFi8j
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Montag, 13. Februar 2017 20:44:31 CET Linus L=FCssing wrote:
-> Trying to split and transmit a unicast packet in 16 parts will fail for
-> the final fragment: After having sent the 15th one with a frag_packet.no
-> index of 14, we will increase the the index to 15 - and return with an
-> error code immediately, even though one more fragment is due for
-> transmission and allowed.
->=20
-> Fixing this issue by moving the check before incrementing the index.
->=20
-> While at it, adding an unlikely(), because the check is actually more of
-> an assertion.
->=20
-> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+On Sonntag, 12. Februar 2017 11:26:33 CET Sven Eckelmann wrote:
+> The function batadv_frag_skb_buffer was supposed not to consume the skbuff
+> on errors. This was followed in the helper function
+> batadv_frag_insert_packet when the skb would potentially be inserted in the
+> fragment queue. But it could happen that the next helper function
+> batadv_frag_merge_packets would try to merge the fragments and fail. This
+> results in a kfree_skb of all the enqueued fragments (including the just
+> inserted one). batadv_recv_frag_packet would detect the error in
+> batadv_frag_skb_buffer and try to free the skb again.
+> 
+> The behavior of batadv_frag_skb_buffer (and its helper
+> batadv_frag_insert_packet) must therefore be changed to always consume the
+> skbuff to have a common behavior and avoid the double kfree_skb.
+> 
+> Fixes: 9b3eab61754d ("batman-adv: Receive fragmented packets and merge")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-Applied in 464eff3b1768ff190466a453a57ac140ea5cb756 [1]
+Applied in e3bab02816097f860545d9ce9ae0808c69d7c92f [1].
 
-Thanks,
+Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/464eff3b1768ff190466a45=
-3a57ac140ea5cb756
---nextPart9725692.62bTmEj2WV
+[1] https://git.open-mesh.org/batman-adv.git/commit/e3bab02816097f860545d9ce9ae0808c69d7c92f
+--nextPart1873494.43aJmcFi8j
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAliseIEACgkQXYcKB8Em
-e0ZllRAAjv6SsKOd3uUBFZAsqrQEi52xptchkA/TKd95bO30wGxZHRlTr1RAVPjd
-JY8zJtLUwXTfb6rwDtz89jxmPIabdu2/Ug2ZQQ0LCpNHG8/hURqtge0IXKEiqOjj
-AKneFvVg919wpMRu5cItsNiuxcUlVbpTKmozqlF7gzdBr0r/+z2x6q6z6O4TKzkz
-Y9VNVWwHXBwj/sqxBuc3x50alJKCcjBNp1oAvZz2XIH/W6Ec/swVB1lltMsJZ0Z1
-eilmiAa7h0wfGIEOcogOh+k3kxAq+6q0OOhE0cYFoOsBf8YnXXxrx8H0iTdhBh7L
-U3jSFbyrtRXB9SXURmWJdg856Pg2TIU/PnGvxh2Qjkb1GiwLgyeWmATuRIC69h/K
-OHDKAzJHacOLYCYRjaeoUcItB9fXoxLxnrvEbxCj/aJjF7R98t5wIY4WvzfrXd1k
-JuWlSxIHLC48UC0phYwx/hp+a4JAs/ElVHwJRmSCCQnF1/i2q3eEOaEkNkm+1rnY
-pwFM9hnL4M1amYWvd9CwaGeEdHil2Ze7hSH3DUawntP2EpQWVs2VPU/BdU6LKdGE
-2GW3EgUCFtKnWDHfmBAO8AgicjLzszX/U6sIBrrCwtQLbGh1ye3mgJR9WpE8JhMz
-E5ODjqRdXqxgwT2zjrYHm/0YAoQ+DqbDCWptrDXBtzndd9xX4sY=
-=FW4k
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAliseMMACgkQXYcKB8Em
+e0buNBAApQb92jrF+Pi8s2e9kkCDJ0J5ByU4M8flkIEZ6Ny6jI21jYVgjB2OmEFq
+9s5nJkd97J1lZQBhugSJ+/NAB2qscRHsUIhwrBSYstMvFXE1n7T1kz5AuxPDIrX3
+hGZQ1W+u8a28i0T/gayi9C6ILvdMUe8gjKbSI1EoAl3iRw/RMnrrTpPCEzY5xLbQ
+kzmgF4woNQmbxaAaOHxuVvCW/zkC66eN7c4HqZN4F69HckU8Y4BGfkoMyK5E675Q
++t0sp32PcLu+Y8EHzPwqxpVgyS8oc6u42YaTA/+l6p0yS4nl5BVJagufXjnqvdlz
+wwJm9Wh06ieKyH4Tx3+YGRs4vzqCN3+34KXkb6EUdA/mz6LRyBlqjUXiPRJ3G5b7
+QHpQLIRyBZ7TudfkOf6qX4QugL4+uHNeV2wUKUWdqCrPgLPeEKW5j1EPg1nfj9fd
+tp88/M8VlgYiJj41c87QXf1TaySZmoFKwWc4zfshDLQvyFJu6tZtUMhyTa5+reqr
+dXzbLHyJAfIKSYKOpT1gOAZOmvLAnYT8zVkNfP19OLdu0KSbTbaSlQnzUzc63QC8
+Arjt3WMAaq3UhLVXDAgMi7+vg1Ul5yJCcKf+oNlGNb/VCNqWrFbo1q1hLAe/PN1s
+EPatR30otz/zQdzrbSB3wDdXxikbeETGJPiftcl5oo6XgKEf8aY=
+=LIMC
 -----END PGP SIGNATURE-----
 
---nextPart9725692.62bTmEj2WV--
+--nextPart1873494.43aJmcFi8j--
 
