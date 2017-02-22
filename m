@@ -1,11 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 22 Feb 2017 17:24:47 +0100
-Message-ID: <4486600.Xps1bk75uv@bentobox>
+Date: Wed, 22 Feb 2017 17:25:41 +0100
+Message-Id: <20170222162542.23620-1-sven@narfation.org>
+In-Reply-To: <4486600.Xps1bk75uv@bentobox>
+References: <4486600.Xps1bk75uv@bentobox>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3218682.Z2CvcKjbXh";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: [B.A.T.M.A.N.] [PATCH v2 0/2] batman-adv: fragment size adjustments
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH v2 1/2] batman-adv: decrease maximum fragment
+	size
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,56 +20,57 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3218682.Z2CvcKjbXh
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+From: Matthias Schiffer <mschiffer@universe-factory.net>
 
-Hi,
+With this patch the maximum fragment size is reduced from 1400 to 1280
+bytes.
 
-here is the second version of both fragment size patches. There is no actual
-change - just rebased on top of master.
+Fragmentation v2 correctly uses the smaller of 1400 and the interface
+MTU, thus generally supporting interfaces with an MTU < 1400 bytes, too.
 
-I'll recommend the commit message (from Linus!) of the first patch for more
-details.
+However, currently "Fragmentation v2" does not support re-fragmentation.
+Which means that once a packet is split into two packets of 1400 + x
+bytes for instance and the next hop provides an interface with an even
+smaller MTU of 1280 bytes, then the larger fragment is lost.
 
+A maximum fragment size of 1280 bytes is a safer option as this is the
+minimum MTU required by IPv6, making interfaces with an MTU < 1280
+rather exotic.
+
+Regarding performance, this should have no negative impact on unicast
+traffic: Having some more bytes in the smaller and some less in the
+larger does not change the sum of both fragments.
+
+Concerning TT, choosing 1280 bytes fragments might result in more TT
+messages than necessary when a large network is bridged into batman-adv.
+However, the TT overhead in general is marginal due to its reactive
+nature, therefore such a performance impact on TT should not be
+noticeable for a user.
+
+Cc: Matthias Schiffer <mschiffer@universe-factory.net>
+[linus.luessing@c0d3.blue: Added commit message]
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
 v2:
+ - rebased on master
 
- * rebased on top of master
+ net/batman-adv/main.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Kind regards,
-	Sven
-
-
-Matthias Schiffer (1):
-  batman-adv: decrease maximum fragment size
-
-Sven Eckelmann (1):
-  batman-adv: Keep fragments equally sized
-
- net/batman-adv/fragmentation.c | 20 +++++++++++++-------
- net/batman-adv/main.h          |  2 +-
- 2 files changed, 14 insertions(+), 8 deletions(-)
---nextPart3218682.Z2CvcKjbXh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlitu08ACgkQXYcKB8Em
-e0bjjRAAvNKjpxwQ7hF565bRsPhkMWcyzYBjmO1uESUEdCayT1rWimjy0p9i/CAf
-0G7Y4nTsrf/5aLjd07m/DuCJyXHEswV7uwcFNtNOE5BItA6dzejnamtt0EdWGmp5
-dy73EtZnB+8NhFc6cQry7igM5btLer57+63cSGMSUEQ0vgmNY7BbZFQjqbAA+Hwe
-6isqvxRr2XV4H0ldzKRl3cE1Hc4qQXxfuuvJmrsj9PhcxiVAQg71NdFoMVxSV59p
-uNdRH2Tsc0aRWSkPfuwVJAwhJsnzIbRzNO9xChDgN485jr9thvo61hD0u2bzUMVv
-28eiLLe3bxL04sU7PKJfgOnG2pB4Sr8X47WNDhtEGzCVARImh7JZIXa0sSRqz1jQ
-X17tTX+VxJjEB6uImChBk90EB9rNjZcd5yhhnrSJoFpNspa529L3Icm5DHgmbjZF
-e1UPC1/1ltsAhh4kCVaTxTJdDsPJvHfjafLfEOpOnuetXtlv92b9UPTFv0NJq65L
-2q26+ELV0zAbs8PVsqDy6c6V3zqM39HILI0LJx7AZB8TuT85Hs3VVFwx82TbNpdU
-8dVWXHDyYpczf5RE0BfatMQkW0yBozFkqTRjwx6S7KQzjzKKsc5MLGJX/Pc99utW
-WgZ5sAeF80blWDnIUkLpZsBF7YaJVo63jAroFGQTdA9ldgJ3Z2k=
-=rkEA
------END PGP SIGNATURE-----
-
---nextPart3218682.Z2CvcKjbXh--
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 57a8103..81c6a38 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -168,7 +168,7 @@ enum batadv_uev_type {
+ /* Maximum number of fragments for one packet */
+ #define BATADV_FRAG_MAX_FRAGMENTS 16
+ /* Maxumim size of each fragment */
+-#define BATADV_FRAG_MAX_FRAG_SIZE 1400
++#define BATADV_FRAG_MAX_FRAG_SIZE 1280
+ /* Time to keep fragments while waiting for rest of the fragments */
+ #define BATADV_FRAG_TIMEOUT 10000
+ 
+-- 
+2.11.0
 
