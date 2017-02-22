@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 22 Feb 2017 17:25:41 +0100
-Message-Id: <20170222162542.23620-1-sven@narfation.org>
+Date: Wed, 22 Feb 2017 17:25:42 +0100
+Message-Id: <20170222162542.23620-2-sven@narfation.org>
 In-Reply-To: <4486600.Xps1bk75uv@bentobox>
 References: <4486600.Xps1bk75uv@bentobox>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v2 1/2] batman-adv: decrease maximum fragment
-	size
+Subject: [B.A.T.M.A.N.] [PATCH v2 2/2] batman-adv: Keep fragments equally
+	sized
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,57 +20,93 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Matthias Schiffer <mschiffer@universe-factory.net>
+The batman-adv fragmentation packets have the design problem that they
+cannot be refragmented. This often leads to problems when networks are
+incorrectly configured and don't use a common MTU.
 
-With this patch the maximum fragment size is reduced from 1400 to 1280
-bytes.
+The sender could for example fragment a 1500 byte packet to fit in a 1280
+bytes large MTU. This would create a 1280 large packet and a 284 bytes
+large packet. But the next hop is then not able to transport 1280 bytes to
+its next hop. The 1280 byte large packet will be dropped but the 284 bytes
+large packet will still be forwarded to its destination.
 
-Fragmentation v2 correctly uses the smaller of 1400 and the interface
-MTU, thus generally supporting interfaces with an MTU < 1400 bytes, too.
+This can partly being avoided by splitting packets more equally. In this
+example, the two 782 bytes large packets could both potentially reach its
+destination.
 
-However, currently "Fragmentation v2" does not support re-fragmentation.
-Which means that once a packet is split into two packets of 1400 + x
-bytes for instance and the next hop provides an interface with an even
-smaller MTU of 1280 bytes, then the larger fragment is lost.
-
-A maximum fragment size of 1280 bytes is a safer option as this is the
-minimum MTU required by IPv6, making interfaces with an MTU < 1280
-rather exotic.
-
-Regarding performance, this should have no negative impact on unicast
-traffic: Having some more bytes in the smaller and some less in the
-larger does not change the sum of both fragments.
-
-Concerning TT, choosing 1280 bytes fragments might result in more TT
-messages than necessary when a large network is bridged into batman-adv.
-However, the TT overhead in general is marginal due to its reactive
-nature, therefore such a performance impact on TT should not be
-noticeable for a user.
-
-Cc: Matthias Schiffer <mschiffer@universe-factory.net>
-[linus.luessing@c0d3.blue: Added commit message]
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
 v2:
  - rebased on master
 
- net/batman-adv/main.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/batman-adv/fragmentation.c | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 57a8103..81c6a38 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -168,7 +168,7 @@ enum batadv_uev_type {
- /* Maximum number of fragments for one packet */
- #define BATADV_FRAG_MAX_FRAGMENTS 16
- /* Maxumim size of each fragment */
--#define BATADV_FRAG_MAX_FRAG_SIZE 1400
-+#define BATADV_FRAG_MAX_FRAG_SIZE 1280
- /* Time to keep fragments while waiting for rest of the fragments */
- #define BATADV_FRAG_TIMEOUT 10000
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 11a23fd..8f964be 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -404,7 +404,7 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+  * batadv_frag_create - create a fragment from skb
+  * @skb: skb to create fragment from
+  * @frag_head: header to use in new fragment
+- * @mtu: size of new fragment
++ * @fragment_size: size of new fragment
+  *
+  * Split the passed skb into two fragments: A new one with size matching the
+  * passed mtu and the old one with the rest. The new skb contains data from the
+@@ -414,11 +414,11 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+  */
+ static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
+ 					  struct batadv_frag_packet *frag_head,
+-					  unsigned int mtu)
++					  unsigned int fragment_size)
+ {
+ 	struct sk_buff *skb_fragment;
+ 	unsigned int header_size = sizeof(*frag_head);
+-	unsigned int fragment_size = mtu - header_size;
++	unsigned int mtu = fragment_size + header_size;
  
+ 	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
+ 	if (!skb_fragment)
+@@ -456,7 +456,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 	struct sk_buff *skb_fragment;
+ 	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
+ 	unsigned int header_size = sizeof(frag_header);
+-	unsigned int max_fragment_size, max_packet_size;
++	unsigned int max_fragment_size, num_fragments;
+ 	int ret;
+ 
+ 	/* To avoid merge and refragmentation at next-hops we never send
+@@ -464,10 +464,15 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 	 */
+ 	mtu = min_t(unsigned int, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
+ 	max_fragment_size = mtu - header_size;
+-	max_packet_size = max_fragment_size * BATADV_FRAG_MAX_FRAGMENTS;
++
++	if (skb->len == 0 || max_fragment_size == 0)
++		return -EINVAL;
++
++	num_fragments = (skb->len - 1) / max_fragment_size + 1;
++	max_fragment_size = (skb->len - 1) / num_fragments + 1;
+ 
+ 	/* Don't even try to fragment, if we need more than 16 fragments */
+-	if (skb->len > max_packet_size) {
++	if (num_fragments > BATADV_FRAG_MAX_FRAGMENTS) {
+ 		ret = -EAGAIN;
+ 		goto free_skb;
+ 	}
+@@ -507,7 +512,8 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 			goto put_primary_if;
+ 		}
+ 
+-		skb_fragment = batadv_frag_create(skb, &frag_header, mtu);
++		skb_fragment = batadv_frag_create(skb, &frag_header,
++						  max_fragment_size);
+ 		if (!skb_fragment) {
+ 			ret = -ENOMEM;
+ 			goto put_primary_if;
 -- 
 2.11.0
 
