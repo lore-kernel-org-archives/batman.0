@@ -1,12 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 22 Feb 2017 17:16:01 +0100
-Message-ID: <82659786.7iirk8N2EY@bentobox>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5318833.N59XkUhVpo";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: [B.A.T.M.A.N.] [PATCH v2 0/4] batman-adv: cleanups patches for
-	Linux 4.12
+Date: Wed, 22 Feb 2017 17:16:39 +0100
+Message-Id: <20170222161642.22899-1-sven@narfation.org>
+In-Reply-To: <82659786.7iirk8N2EY@bentobox>
+References: <82659786.7iirk8N2EY@bentobox>
+Subject: [B.A.T.M.A.N.] [PATCH v2 1/4] batman-adv: Remove preprocessor
+	checks in multicast.c
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,69 +17,78 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart5318833.N59XkUhVpo
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+It is not necessary to disable these code sections in case other kernel
+features are disabled. Instead the IS_ENABLED tests can be added directly
+in the code and the compiler can remove the unnecessary code parts during
+its optimization run.
 
-Hi,
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+v2:
+ - rebased patch on master
 
-here is the second version of cleanup patches. It addresses a couple of new
-checks from checkpatch.pl:
+ net/batman-adv/multicast.c | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
 
- * CHECK: Macro argument reuse '%s' - possible side-effects?
- * CHECK: Unbalanced braces around else statement
-
-The last check currently creates a lot of false positives but a fix for it was
-already submitted to Andrew Morton (+ accepted).
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 952ba81..0e9112c 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -182,10 +182,8 @@ static void batadv_mcast_mla_br_addr_cpy(char *dst, const struct br_ip *src)
+ {
+ 	if (src->proto == htons(ETH_P_IP))
+ 		ip_eth_mc_map(src->u.ip4, dst);
+-#if IS_ENABLED(CONFIG_IPV6)
+-	else if (src->proto == htons(ETH_P_IPV6))
++	else if (IS_ENABLED(CONFIG_IPV6) && src->proto == htons(ETH_P_IPV6))
+ 		ipv6_eth_mc_map(&src->u.ip6, dst);
+-#endif
+ 	else
+ 		eth_zero_addr(dst);
+ }
+@@ -494,9 +492,8 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
+ 	if (!bridged)
+ 		goto update;
  
-It also contains a patch which converts the preprocessor blocks in
-multicast.c to simple inline checks. The compiler can directly take care of
-removing the unused code when some CONFIG_* option disabled.
-
-
-changes in v2:
-
- * rebased on top of master
- * split "Fix possible side-effects in macros" in two patches
- * converted BATADV_PRINT_VID to an inline function
-
-Kind regards,
-	Sven
-
-Sven Eckelmann (4):
-  batman-adv: Remove preprocessor checks in multicast.c
-  batman-adv: Fix unbalanced braces around else statement
-  batman-adv: Fix possible side-effects in _batadv_dbg
-  batman-adv: Convert BATADV_PRINT_VID macro to function
-
- net/batman-adv/bridge_loop_avoidance.c | 38 +++++++++++++++---------------
- net/batman-adv/distributed-arp-table.c |  6 ++---
- net/batman-adv/log.h                   |  5 ++--
- net/batman-adv/main.h                  | 16 +++++++++++--
- net/batman-adv/multicast.c             | 16 +++++--------
- net/batman-adv/translation-table.c     | 42 ++++++++++++++++++----------------
- 6 files changed, 67 insertions(+), 56 deletions(-)
---nextPart5318833.N59XkUhVpo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlituUEACgkQXYcKB8Em
-e0bCohAAlYYtaH4JfgNmtnnezfNxjOZQsJ6KgHcyMVzFLslWwjYk88ZGIOKUcyoS
-lrvbWW9TlvAfMg2Tk+0MXfBQEf4qgkg/1xxIOgRhn+sxYc6rvsNg4Rmxfic2k838
-n/wmZSS08GqJlwYl5b/lHdRVwUMNmysJxVt9Ap0BNzfzGHMDY/v0pxuQbi9abFwV
-9q06AHNvVnVSeaJH43q1VmoWzyL4eiILfrZpWNZxXSW0h6Mh3vYsvqwFfYJOPgqY
-SuEg/L8trL6v7JZ1Q6XoPfM/SkIObLfa1Rbr69WOXcnL33IyVNfDNyZN2KtaXShj
-9pEJX64xmqFXSXBBkd38+loIrJ6x1Ub1AX8B1rFkHkYk5mf2DllvFoNwANGL7apG
-btPd7Pp+k05cplrnzP+y7SujmKyjVgy/nYKihAxE9bixa65FdpBQuwel7imlyO8y
-64GAk0/IDIRK2QZlrugmsnXxyYVllEd8BVPjOyzQg3H+05B6JwLMK/ot77tOMD8M
-fbwLFvteZbFe4Dc+8mo4INvUkoD96AlxYs+kNlIKdItyy34C/m3pSzWIt0tNgqP4
-hXvxcMzvJ2e9bjmfnzCsEWEpnN46aE7jVBcSFgWtTMZHr99qfo8YB1F3+i3QCW/F
-yatr6qd8nIiKcIJzPhvcgrsceAG47qZ5QNY31JtOti8Hxx+ViWc=
-=V1GW
------END PGP SIGNATURE-----
-
---nextPart5318833.N59XkUhVpo--
+-#if !IS_ENABLED(CONFIG_BRIDGE_IGMP_SNOOPING)
+-	pr_warn_once("No bridge IGMP snooping compiled - multicast optimizations disabled\n");
+-#endif
++	if (!IS_ENABLED(CONFIG_BRIDGE_IGMP_SNOOPING))
++		pr_warn_once("No bridge IGMP snooping compiled - multicast optimizations disabled\n");
+ 
+ 	querier4.exists = br_multicast_has_querier_anywhere(dev, ETH_P_IP);
+ 	querier4.shadowing = br_multicast_has_querier_adjacent(dev, ETH_P_IP);
+@@ -671,7 +668,6 @@ static int batadv_mcast_forw_mode_check_ipv4(struct batadv_priv *bat_priv,
+ 	return 0;
+ }
+ 
+-#if IS_ENABLED(CONFIG_IPV6)
+ /**
+  * batadv_mcast_is_report_ipv6 - check for MLD reports
+  * @skb: the ethernet frame destined for the mesh
+@@ -736,7 +732,6 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
+ 
+ 	return 0;
+ }
+-#endif
+ 
+ /**
+  * batadv_mcast_forw_mode_check - check for optimized forwarding potential
+@@ -765,11 +760,12 @@ static int batadv_mcast_forw_mode_check(struct batadv_priv *bat_priv,
+ 	case ETH_P_IP:
+ 		return batadv_mcast_forw_mode_check_ipv4(bat_priv, skb,
+ 							 is_unsnoopable);
+-#if IS_ENABLED(CONFIG_IPV6)
+ 	case ETH_P_IPV6:
++		if (!IS_ENABLED(CONFIG_IPV6))
++			return -EINVAL;
++
+ 		return batadv_mcast_forw_mode_check_ipv6(bat_priv, skb,
+ 							 is_unsnoopable);
+-#endif
+ 	default:
+ 		return -EINVAL;
+ 	}
+-- 
+2.11.0
 
