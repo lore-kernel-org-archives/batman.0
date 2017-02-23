@@ -1,14 +1,10 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 22 Feb 2017 17:25:42 +0100
-Message-Id: <20170222162542.23620-2-sven@narfation.org>
-In-Reply-To: <4486600.Xps1bk75uv@bentobox>
-References: <4486600.Xps1bk75uv@bentobox>
+Return-Path: <derick.deleon@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH v2 2/2] batman-adv: Keep fragments equally
-	sized
+From: Derick Roman De Leon Leal <derick.deleon@gmail.com>
+Date: Thu, 23 Feb 2017 17:37:55 -0600
+Message-ID: <CAM0tZWZ-PTLAY2k6Y4Ktfu1OuR3ME44tkFgAQaaoYP5i58GUZQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Subject: [B.A.T.M.A.N.] Node freezes but still alive
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,93 +16,144 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The batman-adv fragmentation packets have the design problem that they
-cannot be refragmented. This often leads to problems when networks are
-incorrectly configured and don't use a common MTU.
+First of all, thanks in advance for this fantastic mesh protocol. I am
+kind of new at this so any advice is welcome.
 
-The sender could for example fragment a 1500 byte packet to fit in a 1280
-bytes large MTU. This would create a 1280 large packet and a 284 bytes
-large packet. But the next hop is then not able to transport 1280 bytes to
-its next hop. The 1280 byte large packet will be dropped but the 284 bytes
-large packet will still be forwarded to its destination.
+I have a little setup with two nodes and one gateway, from time to
+time one of the nodes just stops transmitting data.
 
-This can partly being avoided by splitting packets more equally. In this
-example, the two 782 bytes large packets could both potentially reach its
-destination.
+I see the node on the originators list but the TQ never changes unlike
+when its working OK that the TQ changes a bit during the day. The
+thing is that the node is there, since the last-seen time is updating
+every few seconds just like when is working normal. I have tried
+changing my batman configuration with no positive results. Also, I
+have changed the nodes and this is still happening.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Acked-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
-v2:
- - rebased on master
+This happens and resolves itself in a couple of hours, but it does not
+happen in other setups I have with more nodes.
 
- net/batman-adv/fragmentation.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+I tried to search the internet for this issue with zero luck. The
+three devices are OM2P-HS v3 running Openwrt r49395 with batman-adv
+2016.2 using BATMAN IV.
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 11a23fd..8f964be 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -404,7 +404,7 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
-  * batadv_frag_create - create a fragment from skb
-  * @skb: skb to create fragment from
-  * @frag_head: header to use in new fragment
-- * @mtu: size of new fragment
-+ * @fragment_size: size of new fragment
-  *
-  * Split the passed skb into two fragments: A new one with size matching the
-  * passed mtu and the old one with the rest. The new skb contains data from the
-@@ -414,11 +414,11 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
-  */
- static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
- 					  struct batadv_frag_packet *frag_head,
--					  unsigned int mtu)
-+					  unsigned int fragment_size)
- {
- 	struct sk_buff *skb_fragment;
- 	unsigned int header_size = sizeof(*frag_head);
--	unsigned int fragment_size = mtu - header_size;
-+	unsigned int mtu = fragment_size + header_size;
- 
- 	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
- 	if (!skb_fragment)
-@@ -456,7 +456,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 	struct sk_buff *skb_fragment;
- 	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
- 	unsigned int header_size = sizeof(frag_header);
--	unsigned int max_fragment_size, max_packet_size;
-+	unsigned int max_fragment_size, num_fragments;
- 	int ret;
- 
- 	/* To avoid merge and refragmentation at next-hops we never send
-@@ -464,10 +464,15 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 	 */
- 	mtu = min_t(unsigned int, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
- 	max_fragment_size = mtu - header_size;
--	max_packet_size = max_fragment_size * BATADV_FRAG_MAX_FRAGMENTS;
-+
-+	if (skb->len == 0 || max_fragment_size == 0)
-+		return -EINVAL;
-+
-+	num_fragments = (skb->len - 1) / max_fragment_size + 1;
-+	max_fragment_size = (skb->len - 1) / num_fragments + 1;
- 
- 	/* Don't even try to fragment, if we need more than 16 fragments */
--	if (skb->len > max_packet_size) {
-+	if (num_fragments > BATADV_FRAG_MAX_FRAGMENTS) {
- 		ret = -EAGAIN;
- 		goto free_skb;
- 	}
-@@ -507,7 +512,8 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 			goto put_primary_if;
- 		}
- 
--		skb_fragment = batadv_frag_create(skb, &frag_header, mtu);
-+		skb_fragment = batadv_frag_create(skb, &frag_header,
-+						  max_fragment_size);
- 		if (!skb_fragment) {
- 			ret = -ENOMEM;
- 			goto put_primary_if;
--- 
-2.11.0
+Have you guys have encountered this problem before?
+Is my configuration wrong in any way?
+Do you have any recommendations for me?
 
+Below is the configuration I am using, hope this helps. Please let me
+know if there is any more information I can make available to you to
+help me solve this problem.
+
+Thanks a lot for taking the time to read all this. I appreciate any
+comments and feedback you can give.
+
+Kind Regards,
+Derick
+
+
+
+Nodes Configuration: -----------------------------------------------------
+
+batman-adv +++++++++++++++++++++
+
+config 'mesh' 'bat0'
+option 'interfaces' 'mesh'
+option 'aggregated_ogms'
+option 'ap_isolation' '1'
+option 'bonding'
+option 'fragmentation' '1'
+option 'gw_bandwidth'
+option 'gw_mode' 'client'
+option 'gw_sel_class'
+option 'log_level'
+option 'orig_interval'
+option 'vis_mode'
+option 'bridge_loop_avoidance' '1'
+option 'distributed_arp_table'
+option 'multicast_mode'
+option 'network_coding'
+option 'hop_penalty'
+option 'isolation_mark'
+
+wireless +++++++++++++++++++++++++++
+
+config wifi-device  radio0
+option type     mac80211
+option channel  6
+option hwmode 11g
+option path 'platform/ar934x_wmac'
+option htmode HT20
+option country MX
+
+config wifi-iface wlan0
+option ifname   wlan0
+option device   radio0
+option network  lan
+option mode     sta
+option encryption none
+option disabled 0
+
+config wifi-iface mesh0
+option device radio0
+option ifname   adhoc0
+option network  mesh
+option mode     adhoc
+option ssid MY-SSID111
+option bssid    CA:FE:CA:FE:CA:FE
+
+network +++++++++++++++++++++++++
+
+config interface 'loopback'
+option ifname 'lo'
+option proto 'static'
+option ipaddr '127.0.0.1'
+option netmask '255.0.0.0'
+
+config globals 'globals'
+option ula_prefix 'fdaa:8902:bcc0::/48'
+
+config interface 'lan'
+    option ifname 'eth0 bat0'
+    option force_link '1'
+    option type 'bridge'
+    option proto 'dhcp'
+    list dns 8.8.8.8
+    list dns 8.8.4.4
+    option peerdns 0
+
+config interface 'wan'
+    option ifname 'eth1'
+    option proto 'dhcp'
+
+config interface 'wan6'
+    option ifname 'eth1'
+    option proto 'dhcpv6'
+
+config interface 'mesh'
+    option proto 'batadv'
+    option mtu '1528'
+    option mesh 'bat0'
+
+
+Gateway configuration
+-------------------------------------------------------------
+everything is the same as in the nodes configuration but batman-adv file.
+
+config 'mesh' 'bat0'
+option 'interfaces' 'mesh'
+option 'aggregated_ogms'
+option 'ap_isolation' '1'
+option 'bonding'
+option 'fragmentation' '1'
+option 'gw_bandwidth'
+option 'gw_mode' 'server'
+option 'gw_sel_class'
+option 'log_level'
+option 'orig_interval'
+option 'vis_mode'
+option 'bridge_loop_avoidance' '1'
+option 'distributed_arp_table'
+option 'multicast_mode'
+option 'network_coding'
+option 'hop_penalty'
+option 'isolation_mark'
