@@ -1,10 +1,14 @@
-Return-Path: <derick.deleon@gmail.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 28 Feb 2017 18:17:52 +0100
+Message-ID: <1965329.a5H9OJeWsh@bentobox>
+In-Reply-To: <4486600.Xps1bk75uv@bentobox>
+References: <4486600.Xps1bk75uv@bentobox>
 MIME-Version: 1.0
-From: Derick Roman De Leon Leal <derick.deleon@gmail.com>
-Date: Sat, 25 Feb 2017 12:38:46 -0600
-Message-ID: <CAM0tZWbH0wP+f0YnaBfKMN5nsuqy5XGKxtjCiT=gaO=Q12KjZg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Subject: Re: [B.A.T.M.A.N.] Node freezes but still alive
+Content-Type: multipart/signed; boundary="nextPart10817268.Oegav3C1oK";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 0/2] batman-adv: fragment size
+	adjustments
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,54 +20,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Thanks Linus and Antonio for your replies.
+--nextPart10817268.Oegav3C1oK
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-I guess is a driver issue, the thing is that I have been using this
-exact same configuration in other 10 locations without a problem. It
-sure is strange.
+On Mittwoch, 22. Februar 2017 17:24:47 CET Sven Eckelmann wrote:
+[...]
+> Matthias Schiffer (1):
+>   batman-adv: decrease maximum fragment size
+> 
+> Sven Eckelmann (1):
+>   batman-adv: Keep fragments equally sized
 
-I don't know if this helps, but I saw this in the log.
+Patches applied in eb60b63140af [1] and 3caa5d14206c [2].
 
-Sat Feb 25 17:23:52 2017 kern.info kernel: [21168.652823] batman_adv:
-bat0: IGMP Querier disappeared - multicast optimizations disabled
-Sat Feb 25 17:24:02 2017 kern.info kernel: [21178.691583] batman_adv:
-bat0: IGMP Querier appeared
+Thanks,
+	Sven
 
-A quick google search showed that this has to do with multicast, which
-is disabled in my configuration. Should I enable it?
+[1] https://git.open-mesh.org/batman-adv.git/commit/eb60b63140af5ec01ea0916837c2816cad10d6c1
+[2] https://git.open-mesh.org/batman-adv.git/commit/3caa5d14206ce8d4bd48bc931f213dec47ea1566
 
-Also, I have noticed that the node with the issue is constantly
-requesting who-has the gateway.
+--nextPart10817268.Oegav3C1oK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-I ran this command from the gateway.
-batctl td -x257 adhoc0
+-----BEGIN PGP SIGNATURE-----
 
-18:23:44.134458 BAT ae:86:74:47:8b:02: BCAST, orig ae:86:74:47:8b:02,
-seq 1933, ARP, Request who-has 10.10.0.1 tell 10.10.0.142
-(ac:86:74:47:8b:00), length 28
-18:23:44.145748 BAT ae:86:74:47:8b:02: BCAST, orig ae:86:74:47:8b:02,
-seq 1933, ARP, Request who-has 10.10.0.1 tell 10.10.0.142
-(ac:86:74:47:8b:00), length 28
-18:23:45.124692 BAT ae:86:74:47:8b:02: BCAST, orig ae:86:74:47:8b:02,
-seq 1934, ARP, Request who-has 10.10.0.1 tell 10.10.0.142
-(ac:86:74:47:8b:00), length 28
-18:23:45.125725 BAT 60:e3:27:f2:71:1c > ae:86:74:47:8b:02: UCAST, ttvn
-2, ttl 50, ARP, Reply 10.10.0.1 is-at 6a:64:42:e7:bf:cb, length 28
-18:23:45.139625 BAT ae:86:74:47:8b:02: BCAST, orig ae:86:74:47:8b:02,
-seq 1934, ARP, Request who-has 10.10.0.1 tell 10.10.0.142
-(ac:86:74:47:8b:00), length 28
-18:23:45.144519 BAT ae:86:74:47:8b:02: BCAST, orig ae:86:74:47:8b:02,
-seq 1934, ARP, Request who-has 10.10.0.1 tell 10.10.0.142
-(ac:86:74:47:8b:00), length 28
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAli1sMAACgkQXYcKB8Em
+e0Y1Ug//eIjtvNKG1SNBDiP330BgbqcoTsglV/QsPhkUvnK5aMT8ry1OZB5N3Mbl
+aCcDbXJ67+TDZ8WH2ht7ipvBs4k6UTzGl64H2tpUL5UOjVCBVMCkD5j06rmeJ4M0
++z1M9s0Gqw/6Esz3/D8h4jcWVEI23VccuPWJwCV0pyJu051SGpOrZyyxhKo4WbzI
+V5aYM9V7Wfx4uaK1m4/+Lxj1UFIXV/AI40AFjC0QkK0Na16IbEd27ONIEw3OikdB
+3IdlV0b9xPQqrggpxEKIRHlwA/pDsjVKdkbwwcEAfTjoTZjxSZ2EzhQEC7vb2Y2K
+xMufAmLwB1kEIZ5xscALKK6UGvIlxVOcSfFUSnub5+JjTgKH0CgopLpnUc1lyQAw
+H+Lb57PJgPwZIutMJ1oqq2IKKuk4dd7HNSc8iwiG+9cgfWF1X6frB4jsrZHEQE7D
+Notg3IRpo6mLbieNjcSpr7bbcOF/Xk7/+ndpKwdf1pXVDLm3syVC090TUqi3u2Sr
+SB6165AomFT/xIk/Sd7Y5FBIYWKehp3XlValEOl4xH3Nf1kn5NFjKUiq4uKTbham
+Qcjmo5BDcxBg/K1VAQXZj8XBsqlW8qz2L8CkQA7/SChLRTqNmHP7vsbhqjjOVjuE
+B5wuT92iDGtw82GxzwJ8QPAr0wniHsx8SU/utJvW/5VHcfbFdYQ=
+=xc2C
+-----END PGP SIGNATURE-----
 
-Does this means that there is IPv4 transmission?
+--nextPart10817268.Oegav3C1oK--
 
-Is there a way to make sure this is a driver problem?
-
-In the meanwhile I will try a LEDE and a newer Openwrt.
-
-Thanks again for all your help, any comment is welcome.
-
-
-Best Regards,
-Derick
