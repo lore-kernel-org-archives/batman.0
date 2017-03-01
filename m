@@ -1,14 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 28 Feb 2017 18:18:42 +0100
-Message-ID: <1646679.UiJDxG6OOU@bentobox>
-In-Reply-To: <82659786.7iirk8N2EY@bentobox>
-References: <82659786.7iirk8N2EY@bentobox>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed,  1 Mar 2017 16:53:31 +0100
+Message-Id: <20170301155333.19406-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart26609296.54z9HBzrYy";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 0/4] batman-adv: cleanups patches for
-	Linux 4.12
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 0/2] pull request for net: batman-adv
+	2017-03-01
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,45 +16,45 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart26609296.54z9HBzrYy
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi David,
 
-On Mittwoch, 22. Februar 2017 17:16:01 CET Sven Eckelmann wrote:
-[...]
-> Sven Eckelmann (4):
->   batman-adv: Remove preprocessor checks in multicast.c
->   batman-adv: Fix unbalanced braces around else statement
->   batman-adv: Fix possible side-effects in _batadv_dbg
->   batman-adv: Convert BATADV_PRINT_VID macro to function
+here are two bugfixes which we would like to see integrated into net.
 
-Patches applied in b4008f675b37 - 2acbc2abb975.
+Please pull or let me know of any problem!
 
-Kind regards,
-	Sven
---nextPart26609296.54z9HBzrYy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Thank you,
+      Simon
 
------BEGIN PGP SIGNATURE-----
+The following changes since commit 4ea33ef0f9e95b69db9131d7afd98563713e81b0:
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAli1sPIACgkQXYcKB8Em
-e0bfsQ//cBD3fjBe6/G8K5RsifJoFvtd8oTacrHBOrfzNKJXnLstg+hwNc1OzUKJ
-c3cmrOSa1ljMg5nPnwZdJ9+ZFXsK56K505eFhhdS20mouInZHySYqjQ91sPV/Fof
-kY39lpDxZhH4BocwUaihjVSaoPMRhsNUrtzKt6kfcVQ7jCKP74ZhUHmzHmiyHRhv
-NA+MwOVtHTfY/Sgpk7KcTwBJmAlhvFgVNktez0mDjPaYCnFE1jhupNd/LOKtKp65
-ErbmYvUkgDZ04G/+OnV40e8RmMvKMEDSsLJ4eh/TK86lqVr88SfvgLo+V9H9FFlM
-gsVEgZ1GqOqgHFbT2f8QbvgSqtE5gRWY8pT49ssYi9A1wEvjPoFoP/4yJCvgsLLI
-m8ZKWh0IdHq6b3ObH+yhRSPewmCj9GWv/zPGCbZEKXz0+ZwRui6TwXaBMjN49fHL
-4iO8awFuM8+VIrnTHqFjvft8js+jmoHIHobs9s4CSwbha/wuWilT0G2+ZM8sKsFo
-QlO0eR6JCjNJ2OBu7AiIfRlK+ev7cCA0iMDjvkd4JxD0tipzUXmG9g8Ll9SU0pcJ
-NX1DNF086Pvn71RS9V+5sulpsUUp/jbd3j2rLH9SBUkc/pGz7O3obfv1BDpeaY6l
-j+TFicm8XqJAXWJ5+ZRQV9rCSWmhreqmkDQuvscBVzYQ2paU0rk=
-=nsRY
------END PGP SIGNATURE-----
+  batman-adv: Decrease hardif refcnt on fragmentation send error (2017-01-04 08:22:04 +0100)
 
---nextPart26609296.54z9HBzrYy--
+are available in the git repository at:
 
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20170301
+
+for you to fetch changes up to 51c6b429c0c95e67edd1cb0b548c5cf6a6604763:
+
+  batman-adv: Fix transmission of final, 16th fragment (2017-02-21 18:33:35 +0100)
+
+----------------------------------------------------------------
+Here are two batman-adv bugfixes:
+
+ - fix a potential double free when fragment merges fail,
+   by Sven Eckelmann
+
+ - fix failing tranmission of the 16th (last) fragment if that exists,
+   by Linus Lüssing
+
+----------------------------------------------------------------
+Linus Lüssing (1):
+      batman-adv: Fix transmission of final, 16th fragment
+
+Sven Eckelmann (1):
+      batman-adv: Fix double free during fragment merge error
+
+ net/batman-adv/fragmentation.c | 20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
