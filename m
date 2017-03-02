@@ -1,14 +1,12 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed,  1 Mar 2017 16:53:33 +0100
-Message-Id: <20170301155333.19406-3-sw@simonwunderlich.de>
-In-Reply-To: <20170301155333.19406-1-sw@simonwunderlich.de>
-References: <20170301155333.19406-1-sw@simonwunderlich.de>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Thu,  2 Mar 2017 10:44:09 +0100
+Message-Id: <20170302094409.20995-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Fix transmission of final,
-	16th fragment
+Subject: [B.A.T.M.A.N.] [PATCH] RFC: batman-adv: Increase hashtable size for
+	the global translation table
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,60 +16,49 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+With the addition of multicast optimization features in batman-adv
+not only unicast but also multicast addresses are now fed into the
+translatation table. This approximately increases the number of
+entries by a factor of roughly 2 to 3.
 
-Trying to split and transmit a unicast packet in 16 parts will fail for
-the final fragment: After having sent the 15th one with a frag_packet.no
-index of 14, we will increase the the index to 15 - and return with an
-error code immediately, even though one more fragment is due for
-transmission and allowed.
+Also, the number of client devices in some known, public mesh networks
+has grown to nearly 4000.
 
-Fixing this issue by moving the check before incrementing the index.
+Therefore this patch inceases the global translation table size from
+1024 to 16384 to reduce load in larger mesh networks.
 
-While at it, adding an unlikely(), because the check is actually more of
-an assertion.
-
-Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
 Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/fragmentation.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 31e97e9aee0d..11149e5be4e0 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -501,6 +501,12 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+---
+ToDo (maybe): Gather some statistics on how much this might reduce load
+in some particular networks.
+
+This might be a hotfix for some larger Freifunk mesh networks which are
+experiencing a significantly higher load level since they switched to
+a recent batman-adv version. Validating whether the hashtable size might
+be the reason is currently being investigated.
+
+On the long run we should switch to the resizable hash table implementation
+the kernel now provides since not that long ago.
+---
+ net/batman-adv/translation-table.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index e75b493..e87825c 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1462,7 +1462,7 @@ static int batadv_tt_global_init(struct batadv_priv *bat_priv)
+ 	if (bat_priv->tt.global_hash)
+ 		return 0;
  
- 	/* Eat and send fragments from the tail of skb */
- 	while (skb->len > max_fragment_size) {
-+		/* The initial check in this function should cover this case */
-+		if (unlikely(frag_header.no == BATADV_FRAG_MAX_FRAGMENTS - 1)) {
-+			ret = -EINVAL;
-+			goto put_primary_if;
-+		}
-+
- 		skb_fragment = batadv_frag_create(skb, &frag_header, mtu);
- 		if (!skb_fragment) {
- 			ret = -ENOMEM;
-@@ -517,12 +523,6 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 		}
+-	bat_priv->tt.global_hash = batadv_hash_new(1024);
++	bat_priv->tt.global_hash = batadv_hash_new(16384);
  
- 		frag_header.no++;
--
--		/* The initial check in this function should cover this case */
--		if (frag_header.no == BATADV_FRAG_MAX_FRAGMENTS - 1) {
--			ret = -EINVAL;
--			goto put_primary_if;
--		}
- 	}
- 
- 	/* Make room for the fragment header. */
+ 	if (!bat_priv->tt.global_hash)
+ 		return -ENOMEM;
 -- 
-2.11.0
+2.1.4
 
