@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 04 Mar 2017 16:32:23 +0100
-Message-ID: <13175888.lmslI35NF1@sven-edge>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2632178.PuzgCAmdEp";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: [B.A.T.M.A.N.] [PATCH maint 0/3] batman-adv: 2017.0 bugfixes
+Date: Sat,  4 Mar 2017 16:33:29 +0100
+Message-Id: <20170304153331.22420-1-sven@narfation.org>
+In-Reply-To: <13175888.lmslI35NF1@sven-edge>
+References: <13175888.lmslI35NF1@sven-edge>
+Subject: [B.A.T.M.A.N.] [PATCH maint 1/3] batman-adv: average: change to
+	declare precision, not factor
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,62 +17,136 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2632178.PuzgCAmdEp
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+From: Johannes Berg <johannes.berg@intel.com>
 
-Hi,
+Declaring the factor is counter-intuitive, and people are prone
+to using small(-ish) values even when that makes no sense.
 
-here are some patches which are for maint. These address different
-bugs [1,2,3]. The last fragmentation patch is already part of master. But
-Martin Weinelt and Matthias Schiffer identified it as a bugfix for a problem
-of Freifunk Darmstadt. The commit message of this change was therefore
-rewritten to also explain that it fixes this problem.
+Change the DECLARE_EWMA() macro to take the fractional precision,
+in bits, rather than a factor, and update all users.
 
-Kind regards,
-	Sven
+While at it, add some more documentation.
 
+Acked-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Johannes Berg <johannes.berg@intel.com>
+[sven@narfation.org: Added compatibility code]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ compat-include/linux/average.h | 67 +++++++++++++++++++++++++++---------------
+ net/batman-adv/types.h         |  2 +-
+ 2 files changed, 45 insertions(+), 24 deletions(-)
 
-[1] https://www.open-mesh.org/issues/326
-[2] https://www.open-mesh.org/issues/327
-[3] https://www.open-mesh.org/issues/328
-
-Johannes Berg (1):
-  batman-adv: average: change to declare precision, not factor
-
-Sven Eckelmann (2):
-  batman-adv: Keep fragments equally sized
-  batman-adv: Initialize gw sel_class via batadv_algo
-
- compat-include/linux/average.h  | 67 +++++++++++++++++++++++++++--------------
- net/batman-adv/bat_iv_ogm.c     | 11 +++++++
- net/batman-adv/bat_v.c          | 14 +++++++--
- net/batman-adv/fragmentation.c  | 20 +++++++-----
- net/batman-adv/gateway_common.c |  5 +++
- net/batman-adv/soft-interface.c |  1 -
- net/batman-adv/types.h          |  4 ++-
- 7 files changed, 87 insertions(+), 35 deletions(-)
---nextPart2632178.PuzgCAmdEp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAli63gcACgkQXYcKB8Em
-e0bTgw/+NNGhcGBpXw8QJ/m7P9vN4LMSKWteR5PImq02hsEftJqrazojQp3+bZ7v
-v+iGJYfhWaoJ5hQ+X//2peBX2P432pHn7Dc1DC+gHa8RqV2Cf90GLRTFO2Ok5I3l
-O8ypw22ZgoER0AmsmWO85hBG0P3mvhr60F4ivNW2X0bfeTGZQhCEJJ0LLEhQLHH2
-Iv2fWAPrCHblu2jl/SM0oI/m2n4Pr+YuxpTK8pxi9UhXJcAL4I+THREUKneKDQIg
-6LrlYbSC59mir7gKZpT9Wg46FaLQOzj6Yaj9J9vIKv4xJCQOVg5oM7ij6DAJPy9n
-5GwtV711CyS7j+4qu9wyKlnGt50YGQHNCBhYbTE5uMmuFOBwaKiW9s8N7o4FROXt
-tZ/j2SfsH93CMSVpChdumsDmCMVddANOfxD8jc1HVoKGoPUBF4acQU8DPkzi8idP
-uKElpf86jMx42RiAVN2wTDjmd6/BGwUGDPTXAwKZINQg2aqT3rzbl8SgfdNTXQlz
-K1+fSErq2z/xJHU6iNN8D6dALeT5KBhdD5AVM1mWOIxtGAXNJSQaZRUhc0tL/0oE
-yp4Lya5VUoJaJpgH84InVO5F4zKZZlh8AgNonHxaO1qTtP4NhIyRKQfwn1KM13N4
-gkvZHPTCzUs0+Yf/nvqyfbD3bKV5BSiuqiwYoo3qEg+milT1eWQ=
-=lkZo
------END PGP SIGNATURE-----
-
---nextPart2632178.PuzgCAmdEp--
+diff --git a/compat-include/linux/average.h b/compat-include/linux/average.h
+index ec022cb6..a1e3c254 100644
+--- a/compat-include/linux/average.h
++++ b/compat-include/linux/average.h
+@@ -26,49 +26,70 @@
+ 
+ #include <linux/bug.h>
+ 
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 3, 0)
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 3, 0)
++#undef DECLARE_EWMA
++#endif /* < KERNEL_VERSION(4, 3, 0) */
+ 
+-/* Exponentially weighted moving average (EWMA) */
++/*
++ * Exponentially weighted moving average (EWMA)
++ *
++ * This implements a fixed-precision EWMA algorithm, with both the
++ * precision and fall-off coefficient determined at compile-time
++ * and built into the generated helper funtions.
++ *
++ * The first argument to the macro is the name that will be used
++ * for the struct and helper functions.
++ *
++ * The second argument, the precision, expresses how many bits are
++ * used for the fractional part of the fixed-precision values.
++ *
++ * The third argument, the weight reciprocal, determines how the
++ * new values will be weighed vs. the old state, new values will
++ * get weight 1/weight_rcp and old values 1-1/weight_rcp. Note
++ * that this parameter must be a power of two for efficiency.
++ */
+ 
+-#define DECLARE_EWMA(name, _factor, _weight)				\
++#define DECLARE_EWMA(name, _precision, _weight_rcp)			\
+ 	struct ewma_##name {						\
+ 		unsigned long internal;					\
+ 	};								\
+ 	static inline void ewma_##name##_init(struct ewma_##name *e)	\
+ 	{								\
+-		BUILD_BUG_ON(!__builtin_constant_p(_factor));		\
+-		BUILD_BUG_ON(!__builtin_constant_p(_weight));		\
+-		BUILD_BUG_ON_NOT_POWER_OF_2(_factor);			\
+-		BUILD_BUG_ON_NOT_POWER_OF_2(_weight);			\
++		BUILD_BUG_ON(!__builtin_constant_p(_precision));	\
++		BUILD_BUG_ON(!__builtin_constant_p(_weight_rcp));	\
++		/*							\
++		 * Even if you want to feed it just 0/1 you should have	\
++		 * some bits for the non-fractional part...		\
++		 */							\
++		BUILD_BUG_ON((_precision) > 30);			\
++		BUILD_BUG_ON_NOT_POWER_OF_2(_weight_rcp);		\
+ 		e->internal = 0;					\
+ 	}								\
+ 	static inline unsigned long					\
+ 	ewma_##name##_read(struct ewma_##name *e)			\
+ 	{								\
+-		BUILD_BUG_ON(!__builtin_constant_p(_factor));		\
+-		BUILD_BUG_ON(!__builtin_constant_p(_weight));		\
+-		BUILD_BUG_ON_NOT_POWER_OF_2(_factor);			\
+-		BUILD_BUG_ON_NOT_POWER_OF_2(_weight);			\
+-		return e->internal >> ilog2(_factor);			\
++		BUILD_BUG_ON(!__builtin_constant_p(_precision));	\
++		BUILD_BUG_ON(!__builtin_constant_p(_weight_rcp));	\
++		BUILD_BUG_ON((_precision) > 30);			\
++		BUILD_BUG_ON_NOT_POWER_OF_2(_weight_rcp);		\
++		return e->internal >> (_precision);			\
+ 	}								\
+ 	static inline void ewma_##name##_add(struct ewma_##name *e,	\
+ 					     unsigned long val)		\
+ 	{								\
+ 		unsigned long internal = ACCESS_ONCE(e->internal);	\
+-		unsigned long weight = ilog2(_weight);			\
+-		unsigned long factor = ilog2(_factor);			\
++		unsigned long weight_rcp = ilog2(_weight_rcp);		\
++		unsigned long precision = _precision;			\
+ 									\
+-		BUILD_BUG_ON(!__builtin_constant_p(_factor));		\
+-		BUILD_BUG_ON(!__builtin_constant_p(_weight));		\
+-		BUILD_BUG_ON_NOT_POWER_OF_2(_factor);			\
+-		BUILD_BUG_ON_NOT_POWER_OF_2(_weight);			\
++		BUILD_BUG_ON(!__builtin_constant_p(_precision));	\
++		BUILD_BUG_ON(!__builtin_constant_p(_weight_rcp));	\
++		BUILD_BUG_ON((_precision) > 30);			\
++		BUILD_BUG_ON_NOT_POWER_OF_2(_weight_rcp);		\
+ 									\
+ 		ACCESS_ONCE(e->internal) = internal ?			\
+-			(((internal << weight) - internal) +		\
+-				(val << factor)) >> weight :		\
+-			(val << factor);				\
++			(((internal << weight_rcp) - internal) +	\
++				(val << precision)) >> weight_rcp :	\
++			(val << precision);				\
+ 	}
+ 
+-#endif /* < KERNEL_VERSION(4, 3, 0) */
+-
+ #endif /* _NET_BATMAN_ADV_COMPAT_LINUX_AVERAGE_H */
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 8f64a5c0..66b25e41 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -402,7 +402,7 @@ struct batadv_gw_node {
+ 	struct rcu_head rcu;
+ };
+ 
+-DECLARE_EWMA(throughput, 1024, 8)
++DECLARE_EWMA(throughput, 10, 8)
+ 
+ /**
+  * struct batadv_hardif_neigh_node_bat_v - B.A.T.M.A.N. V private neighbor
+-- 
+2.11.0
 
