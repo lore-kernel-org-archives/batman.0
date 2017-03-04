@@ -1,11 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  4 Mar 2017 16:33:29 +0100
-Message-Id: <20170304153331.22420-1-sven@narfation.org>
-In-Reply-To: <13175888.lmslI35NF1@sven-edge>
+Date: Sat,  4 Mar 2017 16:33:30 +0100
+Message-Id: <20170304153331.22420-2-sven@narfation.org>
+In-Reply-To: <20170304153331.22420-1-sven@narfation.org>
 References: <13175888.lmslI35NF1@sven-edge>
-Subject: [B.A.T.M.A.N.] [PATCH maint 1/3] batman-adv: average: change to
-	declare precision, not factor
+ <20170304153331.22420-1-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH maint 2/3] batman-adv: Keep fragments equally
+	sized
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,136 +21,104 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Johannes Berg <johannes.berg@intel.com>
+The batman-adv fragmentation packets have the design problem that they
+cannot be refragmented and cannot handle padding by the underlying link.
+The latter often leads to problems when networks are incorrectly configured
+and don't use a common MTU.
 
-Declaring the factor is counter-intuitive, and people are prone
-to using small(-ish) values even when that makes no sense.
+The sender could for example fragment a 1257 byte frame (plus inner
+ethernet header (14) and batadv unicast header (10)) to fit in a 1280 bytes
+large MTU of the underlying link. This would create a 1280 large frame
+(fragment 2) and a 41 bytes large frame (fragment 1). The extra 40 bytes
+are the fragment header (20) added to each fragment.
 
-Change the DECLARE_EWMA() macro to take the fractional precision,
-in bits, rather than a factor, and update all users.
+Let us assume that the next hop is then not able to transport 1280 bytes to
+its next hop. The 1280 byte large packet will be dropped but the 41 bytes
+large packet will still be forwarded to its destination.
 
-While at it, add some more documentation.
+Or let us assume that the underlying hardware requires that each frame has
+a minimum size (e.g. 60 bytes). Then it will pad the 41 bytes frame to 60
+bytes. The receiver of the 60 bytes frame will no longer be able to
+correctly assemble the two frames together because it is not aware that 19
+bytes of the 60 bytes frame are padding and don't belong to the reassembled
+frame.
 
-Acked-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Johannes Berg <johannes.berg@intel.com>
-[sven@narfation.org: Added compatibility code]
+This can partly be avoided by splitting frames more equally. In this
+example, the 661 and 660 bytes large fragment frames could both potentially
+reach its destination without being to large or too small.
+
+Reported-by: Martin Weinelt <martin@darmstadt.freifunk.net>
+Fixes: db56e4ecf5c2 ("batman-adv: Fragment and send skbs larger than mtu")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Linus Lüssing <linus.luessing@c0d3.blue>
 ---
- compat-include/linux/average.h | 67 +++++++++++++++++++++++++++---------------
- net/batman-adv/types.h         |  2 +-
- 2 files changed, 45 insertions(+), 24 deletions(-)
+ net/batman-adv/fragmentation.c | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
 
-diff --git a/compat-include/linux/average.h b/compat-include/linux/average.h
-index ec022cb6..a1e3c254 100644
---- a/compat-include/linux/average.h
-+++ b/compat-include/linux/average.h
-@@ -26,49 +26,70 @@
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 11a23fd6..8f964bea 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -404,7 +404,7 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+  * batadv_frag_create - create a fragment from skb
+  * @skb: skb to create fragment from
+  * @frag_head: header to use in new fragment
+- * @mtu: size of new fragment
++ * @fragment_size: size of new fragment
+  *
+  * Split the passed skb into two fragments: A new one with size matching the
+  * passed mtu and the old one with the rest. The new skb contains data from the
+@@ -414,11 +414,11 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+  */
+ static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
+ 					  struct batadv_frag_packet *frag_head,
+-					  unsigned int mtu)
++					  unsigned int fragment_size)
+ {
+ 	struct sk_buff *skb_fragment;
+ 	unsigned int header_size = sizeof(*frag_head);
+-	unsigned int fragment_size = mtu - header_size;
++	unsigned int mtu = fragment_size + header_size;
  
- #include <linux/bug.h>
+ 	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
+ 	if (!skb_fragment)
+@@ -456,7 +456,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 	struct sk_buff *skb_fragment;
+ 	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
+ 	unsigned int header_size = sizeof(frag_header);
+-	unsigned int max_fragment_size, max_packet_size;
++	unsigned int max_fragment_size, num_fragments;
+ 	int ret;
  
--#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 3, 0)
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 3, 0)
-+#undef DECLARE_EWMA
-+#endif /* < KERNEL_VERSION(4, 3, 0) */
+ 	/* To avoid merge and refragmentation at next-hops we never send
+@@ -464,10 +464,15 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 	 */
+ 	mtu = min_t(unsigned int, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
+ 	max_fragment_size = mtu - header_size;
+-	max_packet_size = max_fragment_size * BATADV_FRAG_MAX_FRAGMENTS;
++
++	if (skb->len == 0 || max_fragment_size == 0)
++		return -EINVAL;
++
++	num_fragments = (skb->len - 1) / max_fragment_size + 1;
++	max_fragment_size = (skb->len - 1) / num_fragments + 1;
  
--/* Exponentially weighted moving average (EWMA) */
-+/*
-+ * Exponentially weighted moving average (EWMA)
-+ *
-+ * This implements a fixed-precision EWMA algorithm, with both the
-+ * precision and fall-off coefficient determined at compile-time
-+ * and built into the generated helper funtions.
-+ *
-+ * The first argument to the macro is the name that will be used
-+ * for the struct and helper functions.
-+ *
-+ * The second argument, the precision, expresses how many bits are
-+ * used for the fractional part of the fixed-precision values.
-+ *
-+ * The third argument, the weight reciprocal, determines how the
-+ * new values will be weighed vs. the old state, new values will
-+ * get weight 1/weight_rcp and old values 1-1/weight_rcp. Note
-+ * that this parameter must be a power of two for efficiency.
-+ */
- 
--#define DECLARE_EWMA(name, _factor, _weight)				\
-+#define DECLARE_EWMA(name, _precision, _weight_rcp)			\
- 	struct ewma_##name {						\
- 		unsigned long internal;					\
- 	};								\
- 	static inline void ewma_##name##_init(struct ewma_##name *e)	\
- 	{								\
--		BUILD_BUG_ON(!__builtin_constant_p(_factor));		\
--		BUILD_BUG_ON(!__builtin_constant_p(_weight));		\
--		BUILD_BUG_ON_NOT_POWER_OF_2(_factor);			\
--		BUILD_BUG_ON_NOT_POWER_OF_2(_weight);			\
-+		BUILD_BUG_ON(!__builtin_constant_p(_precision));	\
-+		BUILD_BUG_ON(!__builtin_constant_p(_weight_rcp));	\
-+		/*							\
-+		 * Even if you want to feed it just 0/1 you should have	\
-+		 * some bits for the non-fractional part...		\
-+		 */							\
-+		BUILD_BUG_ON((_precision) > 30);			\
-+		BUILD_BUG_ON_NOT_POWER_OF_2(_weight_rcp);		\
- 		e->internal = 0;					\
- 	}								\
- 	static inline unsigned long					\
- 	ewma_##name##_read(struct ewma_##name *e)			\
- 	{								\
--		BUILD_BUG_ON(!__builtin_constant_p(_factor));		\
--		BUILD_BUG_ON(!__builtin_constant_p(_weight));		\
--		BUILD_BUG_ON_NOT_POWER_OF_2(_factor);			\
--		BUILD_BUG_ON_NOT_POWER_OF_2(_weight);			\
--		return e->internal >> ilog2(_factor);			\
-+		BUILD_BUG_ON(!__builtin_constant_p(_precision));	\
-+		BUILD_BUG_ON(!__builtin_constant_p(_weight_rcp));	\
-+		BUILD_BUG_ON((_precision) > 30);			\
-+		BUILD_BUG_ON_NOT_POWER_OF_2(_weight_rcp);		\
-+		return e->internal >> (_precision);			\
- 	}								\
- 	static inline void ewma_##name##_add(struct ewma_##name *e,	\
- 					     unsigned long val)		\
- 	{								\
- 		unsigned long internal = ACCESS_ONCE(e->internal);	\
--		unsigned long weight = ilog2(_weight);			\
--		unsigned long factor = ilog2(_factor);			\
-+		unsigned long weight_rcp = ilog2(_weight_rcp);		\
-+		unsigned long precision = _precision;			\
- 									\
--		BUILD_BUG_ON(!__builtin_constant_p(_factor));		\
--		BUILD_BUG_ON(!__builtin_constant_p(_weight));		\
--		BUILD_BUG_ON_NOT_POWER_OF_2(_factor);			\
--		BUILD_BUG_ON_NOT_POWER_OF_2(_weight);			\
-+		BUILD_BUG_ON(!__builtin_constant_p(_precision));	\
-+		BUILD_BUG_ON(!__builtin_constant_p(_weight_rcp));	\
-+		BUILD_BUG_ON((_precision) > 30);			\
-+		BUILD_BUG_ON_NOT_POWER_OF_2(_weight_rcp);		\
- 									\
- 		ACCESS_ONCE(e->internal) = internal ?			\
--			(((internal << weight) - internal) +		\
--				(val << factor)) >> weight :		\
--			(val << factor);				\
-+			(((internal << weight_rcp) - internal) +	\
-+				(val << precision)) >> weight_rcp :	\
-+			(val << precision);				\
+ 	/* Don't even try to fragment, if we need more than 16 fragments */
+-	if (skb->len > max_packet_size) {
++	if (num_fragments > BATADV_FRAG_MAX_FRAGMENTS) {
+ 		ret = -EAGAIN;
+ 		goto free_skb;
  	}
+@@ -507,7 +512,8 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 			goto put_primary_if;
+ 		}
  
--#endif /* < KERNEL_VERSION(4, 3, 0) */
--
- #endif /* _NET_BATMAN_ADV_COMPAT_LINUX_AVERAGE_H */
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 8f64a5c0..66b25e41 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -402,7 +402,7 @@ struct batadv_gw_node {
- 	struct rcu_head rcu;
- };
- 
--DECLARE_EWMA(throughput, 1024, 8)
-+DECLARE_EWMA(throughput, 10, 8)
- 
- /**
-  * struct batadv_hardif_neigh_node_bat_v - B.A.T.M.A.N. V private neighbor
+-		skb_fragment = batadv_frag_create(skb, &frag_header, mtu);
++		skb_fragment = batadv_frag_create(skb, &frag_header,
++						  max_fragment_size);
+ 		if (!skb_fragment) {
+ 			ret = -ENOMEM;
+ 			goto put_primary_if;
 -- 
 2.11.0
 
