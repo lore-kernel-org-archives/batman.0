@@ -1,14 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  4 Mar 2017 17:29:25 +0100
-Message-Id: <20170304162925.559-1-sven@narfation.org>
-In-Reply-To: <20170304153331.22420-2-sven@narfation.org>
-References: <20170304153331.22420-2-sven@narfation.org>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 07 Mar 2017 09:13:21 +0100
+Message-ID: <2035871.z3RUodcJXp@prime>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH maint v2 2/3] batman-adv: Keep fragments
-	equally sized
+Content-Type: multipart/signed; boundary="nextPart1575753.X2SaokHrIA";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: [B.A.T.M.A.N.] Fwd: [Battlemesh] Wireless Battlemesh v10 - Official
+	Announcement
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,111 +18,152 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The batman-adv fragmentation packets have the design problem that they
-cannot be refragmented and cannot handle padding by the underlying link.
-The latter often leads to problems when networks are incorrectly configured
-and don't use a common MTU.
+--nextPart1575753.X2SaokHrIA
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 
-The sender could for example fragment a 1271 byte frame (plus external
-ethernet header (14) and batadv unicast header (10)) to fit in a 1280 bytes
-large MTU of the underlying link (max. 1294 byte frames). This would create
-a 1294 bytes large frame (fragment 2) and a 55 bytes large frame
-(fragment 1). The extra 54 bytes are the fragment header (20) added to each
-fragment and the external ethernet header (14) for the second fragment.
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
+The Wireless Battle Mesh v10
+5th - 11th of June 2017, Vienna, Austria
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D
 
-Let us assume that the next hop is then not able to transport 1294 bytes to
-its next hop. The 1294 byte large frame will be dropped but the 55 bytes
-large fragment will still be forwarded to its destination.
+The next 'Wireless Battle of the Mesh' will take place from Mon 5th -
+Sun 11th of June in the Austrian Museum of Folk Life And Folk Art
+(http://www.volkskundemuseum.at) in Vienna.
 
-Or let us assume that the underlying hardware requires that each frame has
-a minimum size (e.g. 60 bytes). Then it will pad the 55 bytes frame to 60
-bytes. The receiver of the 60 bytes frame will no longer be able to
-correctly assemble the two frames together because it is not aware that 5
-bytes of the 60 bytes frame are padding and don't belong to the reassembled
-frame.
+The event aims to bring together all people from across the globe that
+are interested in wireless mesh network technologies and community
+networks in general. 6 days full of expert presentations, late night
+hacking sessions, measurement campaigns, protocol discussions, and a
+whole lotta other meshy things.
 
-This can partly be avoided by splitting frames more equally. In this
-example, the 675 and 674 bytes large fragment frames could both potentially
-reach its destination without being too large or too small.
+So if you are a mesh networking enthusiast, community networking
+activist, or have an interest in mesh networks in general, you have to
+check this out!
 
-Reported-by: Martin Weinelt <martin@darmstadt.freifunk.net>
-Fixes: db56e4ecf5c2 ("batman-adv: Fragment and send skbs larger than mtu")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Acked-by: Linus Lüssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/fragmentation.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+Continuously updated information about the event:
+http://battlemesh.org/BattleMeshV10
 
-Cc: Matthias Schiffer <mschiffer@universe-factory.net>
 
-v2:
 
- - rewrite commit message to include the header to the ethernet frame size
+Location
+=3D=3D=3D=3D=3D=3D=3D=3D
 
-diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
-index 11a23fd6..8f964bea 100644
---- a/net/batman-adv/fragmentation.c
-+++ b/net/batman-adv/fragmentation.c
-@@ -404,7 +404,7 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
-  * batadv_frag_create - create a fragment from skb
-  * @skb: skb to create fragment from
-  * @frag_head: header to use in new fragment
-- * @mtu: size of new fragment
-+ * @fragment_size: size of new fragment
-  *
-  * Split the passed skb into two fragments: A new one with size matching the
-  * passed mtu and the old one with the rest. The new skb contains data from the
-@@ -414,11 +414,11 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
-  */
- static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
- 					  struct batadv_frag_packet *frag_head,
--					  unsigned int mtu)
-+					  unsigned int fragment_size)
- {
- 	struct sk_buff *skb_fragment;
- 	unsigned int header_size = sizeof(*frag_head);
--	unsigned int fragment_size = mtu - header_size;
-+	unsigned int mtu = fragment_size + header_size;
- 
- 	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
- 	if (!skb_fragment)
-@@ -456,7 +456,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 	struct sk_buff *skb_fragment;
- 	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
- 	unsigned int header_size = sizeof(frag_header);
--	unsigned int max_fragment_size, max_packet_size;
-+	unsigned int max_fragment_size, num_fragments;
- 	int ret;
- 
- 	/* To avoid merge and refragmentation at next-hops we never send
-@@ -464,10 +464,15 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 	 */
- 	mtu = min_t(unsigned int, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
- 	max_fragment_size = mtu - header_size;
--	max_packet_size = max_fragment_size * BATADV_FRAG_MAX_FRAGMENTS;
-+
-+	if (skb->len == 0 || max_fragment_size == 0)
-+		return -EINVAL;
-+
-+	num_fragments = (skb->len - 1) / max_fragment_size + 1;
-+	max_fragment_size = (skb->len - 1) / num_fragments + 1;
- 
- 	/* Don't even try to fragment, if we need more than 16 fragments */
--	if (skb->len > max_packet_size) {
-+	if (num_fragments > BATADV_FRAG_MAX_FRAGMENTS) {
- 		ret = -EAGAIN;
- 		goto free_skb;
- 	}
-@@ -507,7 +512,8 @@ int batadv_frag_send_packet(struct sk_buff *skb,
- 			goto put_primary_if;
- 		}
- 
--		skb_fragment = batadv_frag_create(skb, &frag_header, mtu);
-+		skb_fragment = batadv_frag_create(skb, &frag_header,
-+						  max_fragment_size);
- 		if (!skb_fragment) {
- 			ret = -ENOMEM;
- 			goto put_primary_if;
--- 
-2.11.0
+We are located in the upper floor of very nice historical museum in the
+middle of Vienna. One large conference room and two adjacent hacking
+areas are at our full disposal there. The whole area offers nice
+atmosphere and plenty of room to deploy measurement testbeds. The
+adjacent park is a beautiful analog distraction, especially in this time
+of the year. The metalab - a very active local hackerspace - is only 5
+minutes away.
+
+
+Accommodation Offering
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+=46or those of you who are looking for a convenient and low cost
+accommodation option: we have made block reservation for 40 people in a
+nice hostel 10-15min walking distance from the Museum. The packages
+include 6 nights in a four-bed room incl. breakfast - for a mere =E2=82=AC1=
+00.
+=46ollow the simple instructions below to get one of these hot deals  a
+first come first serve scheduler is used.
+
+
+Registration
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+The event is *free of charge* and registration is optional - but it
+makes the organisation much easier if you tell us in advance that you
+plan to come.
+
+Please send a mail to v10@battlemesh.org that looks somewhat like this:
+
+
+########
+Subject: Registration
+
+Name and/or Nick
+Accommodation package: [Yes/No]
+T-Shirt Size: [S/M/L/none]
+Other details you want to share: (e.g. community, country, URLs, twitter
+handle, dietary restrictions, ...)
+########
+
+We will then put your name on the public participants list:
+http://battlemesh.org/BattleMeshV10/Participants
+
+And we will answer with payment instructions for the accommodation
+package to those that are interested in one.
+
+
+Travel Scholarships
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+If you want to apply for a travel scholarship (compensating the costs of
+a long distance flight to Vienna and back) please explicitly tell us so
+in the registration mail. We will then ask you to prepare a short video
+message in which you are giving a brief introduction to yourself and
+your interests.
+
+
+Spread the Word
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+Please help us spreading the word by forwarding this announcement to all
+lists and people that might be interested. Blogging about it is also
+very appreciated, and if you do so, please add a ping-back to the wiki page:
+
+http://battlemesh.org/BattleMeshV10
+
+
+The Local Infrastructure Core Team
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D
+Albert Rafetseder (albert.rafetseder at univie.ac.at, key ID 0x90382EC8)
+Clemens Hopfer (datacop at wireloss.net, key ID 0x5EBA9D09)
+Paul Fuxjaeger (paul.fuxjaeger at gmx.at, key ID 0xB5BB47E7)
+
+
+Contact
+=3D=3D=3D=3D=3D=3D=3D
+
+* Web: http://battlemesh.org/BattleMeshV10
+* Email: http://ml.ninux.org/mailman/listinfo/battlemesh
+* IRC: irc.freenode.net #battlemesh
+* Twitter: https://twitter.com/battlemesh/
+
+_______________________________________________
+Battlemesh mailing list
+Battlemesh@ml.ninux.org
+http://ml.ninux.org/mailman/listinfo/battlemesh
+
+=2D----------------------------------------
+--nextPart1575753.X2SaokHrIA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAli+a6EACgkQoSvjmEKS
+nqHETxAAjj4yJ0x+oKlZUqMg0Bt03YHfKYb+2lTMIHL8426deUGolfp3+syNE3Qe
+anY0Ty/2eOhKSRkfg+npsmoPa0+2WfcW8tQ7BJiJ4p9Hi8HqKATzDq0EgvEV5Fa5
+g1WLVwi9PNR08SQNRVq2Ymy9VoWMopnH07PZ079Wx8xMpDo+EWAXE58Wzp0mDvdf
+cbhXmqocjl9kyi1T/+23T0bJ6XNBuoThqR5hmqa4fzX0WdUmJddofy1gOriNKC2w
+M32+SiIPxXKLn6eFbTfE3b89hwjZmfkcyMpFJvJ5ZUS6ivqJ3Aosu92vfU2M4rzQ
+Wnqx6uYYKJTS4Zo7JyAPf5/NnczRp3NRbZRBiFLtGMhp+AtoCxbwP8/v/NoWx7G2
+h9VUgFdMRclMTMQi3ubLAZyASWy7rL/3o3J6lWCOG/4z7coSZQv11GJNxaDzpHgy
+aVN1YK/C1UhvOLH8G36Srrz3TjoDVsvysLAtIenfWMVAMXZpbItLbN2gY7aRIYGa
+ud6B1Xs/xmTtxgkxw2GYxTh2TA9ECgdhrBm57OnOWFFVUmuASAAsSdg6u1KxdcPJ
+xdDCXebrsy5vCDFoXCe0/+56Oi1RIoLbURDto1GrOz3wPQEcqbjaaO8yB2kx7fVl
+9Jhibhzhc8kCYav5pNirydAsf9InDl5utLsgbhAbJ8UWkTmgZ5k=
+=UOXm
+-----END PGP SIGNATURE-----
+
+--nextPart1575753.X2SaokHrIA--
 
