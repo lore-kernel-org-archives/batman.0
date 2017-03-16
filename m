@@ -1,12 +1,13 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 16 Mar 2017 13:55:10 +0100
-Message-Id: <20170316125512.30364-1-sw@simonwunderlich.de>
+Date: Thu, 16 Mar 2017 13:55:11 +0100
+Message-Id: <20170316125512.30364-2-sw@simonwunderlich.de>
+In-Reply-To: <20170316125512.30364-1-sw@simonwunderlich.de>
+References: <20170316125512.30364-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 0/2] pull request for net: batman-adv
-	2017-03-16
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batman-adv: Keep fragments equally sized
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,45 +20,108 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi David,
+From: Sven Eckelmann <sven@narfation.org>
 
-here are two bugfixes for batman-adv which we would like to see integrated into net.
+The batman-adv fragmentation packets have the design problem that they
+cannot be refragmented and cannot handle padding by the underlying link.
+The latter often leads to problems when networks are incorrectly configured
+and don't use a common MTU.
 
-Please pull or let me know of any problem!
+The sender could for example fragment a 1271 byte frame (plus external
+ethernet header (14) and batadv unicast header (10)) to fit in a 1280 bytes
+large MTU of the underlying link (max. 1294 byte frames). This would create
+a 1294 bytes large frame (fragment 2) and a 55 bytes large frame
+(fragment 1). The extra 54 bytes are the fragment header (20) added to each
+fragment and the external ethernet header (14) for the second fragment.
 
-Thank you,
-      Simon
+Let us assume that the next hop is then not able to transport 1294 bytes to
+its next hop. The 1294 byte large frame will be dropped but the 55 bytes
+large fragment will still be forwarded to its destination.
 
-The following changes since commit 51c6b429c0c95e67edd1cb0b548c5cf6a6604763:
+Or let us assume that the underlying hardware requires that each frame has
+a minimum size (e.g. 60 bytes). Then it will pad the 55 bytes frame to 60
+bytes. The receiver of the 60 bytes frame will no longer be able to
+correctly assemble the two frames together because it is not aware that 5
+bytes of the 60 bytes frame are padding and don't belong to the reassembled
+frame.
 
-  batman-adv: Fix transmission of final, 16th fragment (2017-02-21 18:33:35 +0100)
+This can partly be avoided by splitting frames more equally. In this
+example, the 675 and 674 bytes large fragment frames could both potentially
+reach its destination without being too large or too small.
 
-are available in the git repository at:
+Reported-by: Martin Weinelt <martin@darmstadt.freifunk.net>
+Fixes: ee75ed88879a ("batman-adv: Fragment and send skbs larger than mtu")
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/fragmentation.c | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
 
-  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20170316
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 11149e5be4e0..106bda56ec98 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -404,7 +404,7 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+  * batadv_frag_create - create a fragment from skb
+  * @skb: skb to create fragment from
+  * @frag_head: header to use in new fragment
+- * @mtu: size of new fragment
++ * @fragment_size: size of new fragment
+  *
+  * Split the passed skb into two fragments: A new one with size matching the
+  * passed mtu and the old one with the rest. The new skb contains data from the
+@@ -414,11 +414,11 @@ bool batadv_frag_skb_fwd(struct sk_buff *skb,
+  */
+ static struct sk_buff *batadv_frag_create(struct sk_buff *skb,
+ 					  struct batadv_frag_packet *frag_head,
+-					  unsigned int mtu)
++					  unsigned int fragment_size)
+ {
+ 	struct sk_buff *skb_fragment;
+ 	unsigned int header_size = sizeof(*frag_head);
+-	unsigned int fragment_size = mtu - header_size;
++	unsigned int mtu = fragment_size + header_size;
+ 
+ 	skb_fragment = netdev_alloc_skb(NULL, mtu + ETH_HLEN);
+ 	if (!skb_fragment)
+@@ -456,7 +456,7 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 	struct sk_buff *skb_fragment;
+ 	unsigned int mtu = neigh_node->if_incoming->net_dev->mtu;
+ 	unsigned int header_size = sizeof(frag_header);
+-	unsigned int max_fragment_size, max_packet_size;
++	unsigned int max_fragment_size, num_fragments;
+ 	int ret;
+ 
+ 	/* To avoid merge and refragmentation at next-hops we never send
+@@ -464,10 +464,15 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 	 */
+ 	mtu = min_t(unsigned int, mtu, BATADV_FRAG_MAX_FRAG_SIZE);
+ 	max_fragment_size = mtu - header_size;
+-	max_packet_size = max_fragment_size * BATADV_FRAG_MAX_FRAGMENTS;
++
++	if (skb->len == 0 || max_fragment_size == 0)
++		return -EINVAL;
++
++	num_fragments = (skb->len - 1) / max_fragment_size + 1;
++	max_fragment_size = (skb->len - 1) / num_fragments + 1;
+ 
+ 	/* Don't even try to fragment, if we need more than 16 fragments */
+-	if (skb->len > max_packet_size) {
++	if (num_fragments > BATADV_FRAG_MAX_FRAGMENTS) {
+ 		ret = -EAGAIN;
+ 		goto free_skb;
+ 	}
+@@ -507,7 +512,8 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 			goto put_primary_if;
+ 		}
+ 
+-		skb_fragment = batadv_frag_create(skb, &frag_header, mtu);
++		skb_fragment = batadv_frag_create(skb, &frag_header,
++						  max_fragment_size);
+ 		if (!skb_fragment) {
+ 			ret = -ENOMEM;
+ 			goto put_primary_if;
+-- 
+2.11.0
 
-for you to fetch changes up to 1a9070ec91b37234fe915849b767c61584c64a44:
-
-  batman-adv: Initialize gw sel_class via batadv_algo (2017-03-04 17:32:06 +0100)
-
-----------------------------------------------------------------
-Here are two batman-adv bugfixes:
-
- - Keep fragments equally sized, avoids some problems with too small fragments,
-   by Sven Eckelmann
-
- - Initialize gateway class correctly when BATMAN V is compiled in,
-   by Sven Eckelmann
-
-----------------------------------------------------------------
-Sven Eckelmann (2):
-      batman-adv: Keep fragments equally sized
-      batman-adv: Initialize gw sel_class via batadv_algo
-
- net/batman-adv/bat_iv_ogm.c     | 11 +++++++++++
- net/batman-adv/bat_v.c          | 14 +++++++++++---
- net/batman-adv/fragmentation.c  | 20 +++++++++++++-------
- net/batman-adv/gateway_common.c |  5 +++++
- net/batman-adv/soft-interface.c |  1 -
- net/batman-adv/types.h          |  2 ++
- 6 files changed, 42 insertions(+), 11 deletions(-)
