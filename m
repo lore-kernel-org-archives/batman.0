@@ -1,14 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 08 Mar 2017 12:44:59 +0100
-Message-ID: <1615223.p23g8khHDd@bentobox>
-In-Reply-To: <20170308114359.26916-1-sven@narfation.org>
-References: <20170308114359.26916-1-sven@narfation.org>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Thu, 16 Mar 2017 13:55:10 +0100
+Message-Id: <20170316125512.30364-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5377389.NsRLCbqjcT";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Use __func__ to add function
-	names to messages
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 0/2] pull request for net: batman-adv
+	2017-03-16
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,45 +16,48 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart5377389.NsRLCbqjcT
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi David,
 
-Hi,
+here are two bugfixes for batman-adv which we would like to see integrated into net.
 
-this should mute following warning from checkpatch.pl:
+Please pull or let me know of any problem!
 
-    WARNING: Prefer using "%s", __func__ to embedded function names
-    #876: FILE: ./net/batman-adv/tp_meter.c:876:
-    +                              "Meter: batadv_tp_send() cannot send packets (%d)\n",
-    
-    total: 0 errors, 1 warnings, 0 checks, 1502 lines checked
+Thank you,
+      Simon
 
-Kind regards,
-	Sven
---nextPart5377389.NsRLCbqjcT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+The following changes since commit 51c6b429c0c95e67edd1cb0b548c5cf6a6604763:
 
------BEGIN PGP SIGNATURE-----
+  batman-adv: Fix transmission of final, 16th fragment (2017-02-21 18:33:35 +0100)
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAli/7rsACgkQXYcKB8Em
-e0bKiw/+O2YUVuw1VZnnV+mT1U2okwcXUv6t2CayV7mZc4UK9+kmVzVF/6BxBYK3
-gOXzdJfo1mRRAAHbeVV0IdFfs1H+uuUD925efzG9/kTa3QBib3ckJck6FyE8hlRb
-MxMGeQVQAAiAsbBkZjMXNBpbRLTKZhAL4XahOU/Ain2g0GEZEpcsIiluNBKMPD26
-nhAJs86T8j0nnQhnGkDd4uJ3amY76OmH84hy/4DRm3ggWvdLjRAAE/ojI7F5R3Zo
-+lYuc3uq+b6z68zY3WXrgb1zZLarH2EB+CXWnOBs4+5b/KPf+kyCe81npWg+skCV
-iU9JJ+Rf645qgTMknpOpMtc+bikV36lcbFyzlPiicO25V3R59GGa66FQHJh0mLlZ
-WNejGHzZcxJXKgj7Gh46gTAWVJKbEiazFuEulTvSI861mqpaViTAaFvW1/noAPTk
-+90njtsE21PdOA7PlUto5nNH03vVjAoSBk1K9YDPrZLSn4W97Tf4FpiLkiR4FJpI
-Nwma1btCiwCw1+s4201Cns9uw7KdJ+RZU4Am6IlKG9dwiS3unZO6irSBa7nmwQRu
-KWLGM3bPOuZcHZBS3YQ8RJsmyenw0+EnHVNDB1+xxhf110wvVlIY6u7k+J2YyWNM
-rWejxoSikJWL7mceeFquOPNxRpickDdrggjhtaLHzUBNlgYyZz0=
-=1J5u
------END PGP SIGNATURE-----
+are available in the git repository at:
 
---nextPart5377389.NsRLCbqjcT--
+  git://git.open-mesh.org/linux-merge.git tags/batadv-net-for-davem-20170316
 
+for you to fetch changes up to 1a9070ec91b37234fe915849b767c61584c64a44:
+
+  batman-adv: Initialize gw sel_class via batadv_algo (2017-03-04 17:32:06 +0100)
+
+----------------------------------------------------------------
+Here are two batman-adv bugfixes:
+
+ - Keep fragments equally sized, avoids some problems with too small fragments,
+   by Sven Eckelmann
+
+ - Initialize gateway class correctly when BATMAN V is compiled in,
+   by Sven Eckelmann
+
+----------------------------------------------------------------
+Sven Eckelmann (2):
+      batman-adv: Keep fragments equally sized
+      batman-adv: Initialize gw sel_class via batadv_algo
+
+ net/batman-adv/bat_iv_ogm.c     | 11 +++++++++++
+ net/batman-adv/bat_v.c          | 14 +++++++++++---
+ net/batman-adv/fragmentation.c  | 20 +++++++++++++-------
+ net/batman-adv/gateway_common.c |  5 +++++
+ net/batman-adv/soft-interface.c |  1 -
+ net/batman-adv/types.h          |  2 ++
+ 6 files changed, 42 insertions(+), 11 deletions(-)
