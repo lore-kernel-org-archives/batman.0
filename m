@@ -1,11 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 16 Mar 2017 14:34:29 +0100
-Message-Id: <20170316133429.3923-6-sw@simonwunderlich.de>
-In-Reply-To: <20170316133429.3923-1-sw@simonwunderlich.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 16 Mar 2017 14:54:38 +0100
+Message-ID: <1593560.U0KQ5s47cQ@bentobox>
+In-Reply-To: <20170316133429.3923-3-sw@simonwunderlich.de>
 References: <20170316133429.3923-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCHv8 5/5] batman-adv: handle race condition for
-	claims between gateways
+ <20170316133429.3923-3-sw@simonwunderlich.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart6478866.HEWfkx5gMg";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCHv8 2/5] batman-adv: prevent duplication of
+	ARP replies when DAT is used
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,72 +19,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: a@unstable.cc
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc
 
-From: Andreas Pape <APape@phoenixcontact.com>
+--nextPart6478866.HEWfkx5gMg
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-Consider the following situation which has been found in a test setup:
-Gateway B has claimed client C and gateway A has the same backbone
-network as B. C sends a broad- or multicast to B and directly after
-this packet decides to send another packet to A due to a better TQ
-value. B will forward the broad-/multicast into the backbone as it is
-the responsible gw and after that A will claim C as it has been
-chosen by C as the best gateway. If it now happens that A claims C
-before it has received the broad-/multicast forwarded by B (due to
-backbone topology or due to some delay in B when forwarding the
-packet) we get a critical situation: in the current code A will
-immediately unclaim C when receiving the multicast due to the
-roaming client scenario although the position of C has not changed
-in the mesh. If this happens the multi-/broadcast forwarded by B
-will be sent back into the mesh by A and we have looping packets
-until one of the gateways claims C again.
-In order to prevent this, unclaiming of a client due to the roaming
-client scenario is only done after a certain time is expired after
-the last claim of the client. 100 ms are used here, which should be
-slow enough for big backbones and slow gateways but fast enough not
-to break the roaming client use case.
+On Donnerstag, 16. M=E4rz 2017 14:34:26 CET Simon Wunderlich wrote:
+> +       /* If BLA is enabled, only forward ARP replies if we have claimed=
+ the
+> +        * source of the ARP reply or if no one else of the same backbone=
+ has
+> +        * already claimed that client. This prevents that different gate=
+ways
+> +        * to the same backbone all forward the ARP reply leading to mult=
+iple
+> +        * replies in the backbone.
+> +        */
+> +       if (!batadv_bla_is_my_claim(bat_priv, hw_src, vid)) {
+> +               batadv_dbg(BATADV_DBG_DAT, bat_priv,
+> +                          "Device %pM claimed by another backbone gw. Dr=
+op ARP reply.\n",
+> +                          hw_src);
+> +               dropped =3D true;
+> +               goto out;
+> +       }
+> +
 
-Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
-Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
-[sven@narfation.org: fix conflicts with current version]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/bridge_loop_avoidance.c | 20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+Thanks for the rebasing. But there is no function
+"batadv_bla_is_my_claim". It was called batadv_bla_check_claim in patch 1.
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index 852a2be1..d07e89ec 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1973,10 +1973,22 @@ bool batadv_bla_tx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 		/* if yes, the client has roamed and we have
- 		 * to unclaim it.
- 		 */
--		batadv_handle_unclaim(bat_priv, primary_if,
--				      primary_if->net_dev->dev_addr,
--				      ethhdr->h_source, vid);
--		goto allow;
-+		if (batadv_has_timed_out(claim->lasttime, 100)) {
-+			/* only unclaim if the last claim entry is
-+			 * older than 100 ms to make sure we really
-+			 * have a roaming client here.
-+			 */
-+			batadv_dbg(BATADV_DBG_BLA, bat_priv, "bla_tx(): Roaming client %pM detected. Unclaim it.\n",
-+				   ethhdr->h_source);
-+			batadv_handle_unclaim(bat_priv, primary_if,
-+					      primary_if->net_dev->dev_addr,
-+					      ethhdr->h_source, vid);
-+			goto allow;
-+		} else {
-+			batadv_dbg(BATADV_DBG_BLA, bat_priv, "bla_tx(): Race for claim %pM detected. Drop packet.\n",
-+				   ethhdr->h_source);
-+			goto handled;
-+		}
- 	}
- 
- 	/* check if it is a multicast/broadcast frame */
--- 
-2.11.0
+And please also add a space between "PATCH" and "v8". This is how
+"git format-patch -v8" would have created it. And patchwork can handle it a
+little bit better when "PATCH" is a well separated word.
+
+Kind regards,
+	Sven
+--nextPart6478866.HEWfkx5gMg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAljKmR4ACgkQXYcKB8Em
+e0ZDvxAAsNcSdRTJhatEWzFiHBKr+t0S2lqepDOEEE7DM2isiqKsNSbenNfZRHXL
+1YzfM952bfl5U3VUL8bpfVlk/5Iu49lxNX4rEOferRXOIsu/m+6V883SkQw6xbdq
+7Xm4AZOdYqSdyWw5Fa6j7uXO03gCgIbpA1qTJr3jPWgyR+QlZnrHJ8InAUEov5Lt
+kdhvHdKJgUPdpVNVfXrRLYUyeWFdyQNBhldVNnyQ5UDTOgptoz27RsakzeB7KuWE
+QIRcCgz/05ewiKhcO/zA4XKo9B55BtL7ceWtDYFO5TejKqlTud0zPBoZ34Hsnjo9
+Ri8mNdKhoU8Fe1qmMl4hifpPtf4nSHtnOFvjB0DI53neqbNjaAXzK0GrdtFcga22
+HxAdPBm70cxQRVWAPYe8MTV31hUvm2lmBo9ALTOiwWdzGAbZ0EJTQSsNPqpXMMXd
+9LoG4ACMahinpMvIbIybzMF4LfA29FQ6vN1BQm62WGxWNVGDDy5dpASjR3uP9tpL
+pSOTQYDyftFLyQJg3p/dpEFZPVbL6/Q+aphSf6fQZYfRSeqf/uGul0kPYtcxhtqG
+y/98HimGUvqn8jMlDdxjeOXRXBRdnogq1Lz/5fvfByvOEHoZzo3b0yFVQcBvBp0a
+szxWmuhcCziWADtKRNkCTgXpwp3se6YwScWIj0q8MWn0L1sJtZw=
+=0kVA
+-----END PGP SIGNATURE-----
+
+--nextPart6478866.HEWfkx5gMg--
 
