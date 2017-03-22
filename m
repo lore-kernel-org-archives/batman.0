@@ -1,14 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 17 Mar 2017 12:55:37 +0100
-Message-ID: <22921287.EDBOfWLgxC@bentobox>
-In-Reply-To: <20170308114359.26916-1-sven@narfation.org>
-References: <20170308114359.26916-1-sven@narfation.org>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 22 Mar 2017 10:26:06 +0100
+Message-ID: <1643382.tEoIBi2FKQ@prime>
+In-Reply-To: <20170316133429.3923-1-sw@simonwunderlich.de>
+References: <20170316133429.3923-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2232197.HjOGGuYrDW";
+Content-Type: multipart/signed; boundary="nextPart1525917.lcbnaoi1NH";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Use __func__ to add function
-	names to messages
+Subject: Re: [B.A.T.M.A.N.] [PATCHv8 0/5] Optimizations for setups running
+	dat and bla
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,49 +19,50 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: a@unstable.cc
 
---nextPart2232197.HjOGGuYrDW
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+--nextPart1525917.lcbnaoi1NH
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-On Mittwoch, 8. M=E4rz 2017 12:43:59 CET Sven Eckelmann wrote:
-> The name of the function might change in which these messages are printed.
-> It is therefore better to let the compiler handle the insertion of the
-> correct function name.
->=20
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
->  net/batman-adv/tp_meter.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+On Thursday, March 16, 2017 2:34:24 PM CET Simon Wunderlich wrote:
+> This is yet another rebased version of Andreas' patchset. I've used
+> Antonios branch, but reverted his changes to the first patch, since
+> there were unexplained semantic changes (e.g. when no gateway is
+> claiming the client) which I don't think are correct.
+> 
+> Antonio, if you want, please explain your changes or let us discuss.
+> 
+> Otherwise, I'd suggest to keep this patchset around for a few days (!)
+> for a final review, and then merge it.
 
-Applied in 9f363d7edd25ae73fa7dc5fef30db71a55c27c32 [1].
+Just applied this series into 0c794961..cbb2ccc1
 
-Kind regards,
-	Sven
+I've fixed the 3rd patch on the way according to Svens comment.
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/9f363d7edd25ae73fa7dc5f=
-ef30db71a55c27c32
---nextPart2232197.HjOGGuYrDW
+Thanks again for the contribution!
+      Simon
+--nextPart1525917.lcbnaoi1NH
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAljLzrkACgkQXYcKB8Em
-e0aXMA/+IECzvF2VHq7K2lf1yW9+78zAfSbqwpDbHxLUOCaMEr4c6joKnN3zYPUR
-lCM5RU7CkQzXXiLvCjp+oWSQLjCJWBi7i7H8u9BG5VLCDfFFnIo6SobS5wBMRiYD
-UYbed9JRufU8rO5g03sDGV8cEHzHfv4mhugAJPI431tJjcZ+US1BM0+Qt8o7+BgD
-GZC1FQgJ1syBwa8U1n/oKS8xbUwqoTnPQRYEWttR5PHR3owKeQ+KhQQiO+aIVWnV
-ZROXHCeuMZnQhHTNiZK7fSq2LZdHvXlRwD2delUttQMSkcadp9+eLmQof+3BnGQy
-sZosO82Qma2qxG1IuXcTOzcvIaxoPGzkE1f79InODoUhYM5PGlV476SUE5//doZ+
-WrWTK2cm7Yv9XgqXb6mBVVUTW+sszMnlHVqvANm66b7O7urX+B+qHwVVIyrTXIBe
-K4sgxbfIk025eoOox2CN5/8KVcQnF1CglJwdhg8oJ4J/cISMe6Rhjqb4r8bqoL3q
-peUtbbKtQ14Q9dJdUpwQDtTqp3eJzvhCwghsvyg1Yl+qtwMwgwXzCxojPnY8jJI0
-7MQD2bNa6ukbc/099SsmGJSvLtX6QKKzSU3ZI77asAS5PQkcoAeSwaAaTF8XSDv8
-9qhqkxUeg25C3vhye9N2tg6/JOaMMSuigWuYimD/EkYbb+Nvmqc=
-=/WaV
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAljSQy4ACgkQoSvjmEKS
+nqHCXQ//VUGz0OQpHsqFIbV9oj2w4pYavHqUp/03kfWdHNIj21J8zvD7UDASI5qT
+6/R2l6eEDkX2Z7Lrn+ikPIq3Kt+ud1Glj6XQO0OaqRbgU6DppHKYt+o9Yp+Z7rwH
+2mGq2QkpyUPpxliKk7l1yfLbfaTbcZBekaq6JhPDO7ApMfpC2SEegkLf7lGosPLa
+LuGyvrbt2AJsh2BuD1HXse80fhZYtN31/6NdXuSi6fvryXnqeiFKOQw6CEXUsvYH
+mFvv/A7uYgDcMkdDP7gWN4fYhkvJF6GoMoMb6TaS6vLXpLF1bqbz4zyf9ncQxnax
+WTu3nSIjXRYK+FcVLPDMQpSe84XxWiIMQNzSc7GyDHuNCyhBVs/yqKX7MOQP4rLZ
+EkFk5UPRo/GZJWTn9zamDoXWqMLPcmSPAs1DD6e9D5h8Ds4RFAOXC233WDva5WCk
+vgTXeeTACLpGOfgSz+lhk8adEqy3uu4eAEB3PTiBW3MzmyeHv0AhhFeg/cRq3tU/
+yc/8K4f8dZLPCbu1LWZ28eDXZfMKz61+DAV9DMwKEV9GttYPvwwNP38PeaRjPdAU
+6qLQtMT6n0Ji0qUukk2E+9tM01m8O94V7GfLiIhx0VxgyN/60I+JzmoJgZb3QWuf
+AC0lOiFRgjKQiOjLf5gj3tbBKisoJY2fInYTDDcQPv4Hhn881TE=
+=LS+Q
 -----END PGP SIGNATURE-----
 
---nextPart2232197.HjOGGuYrDW--
+--nextPart1525917.lcbnaoi1NH--
 
