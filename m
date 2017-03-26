@@ -1,14 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 22 Mar 2017 10:26:06 +0100
-Message-ID: <1643382.tEoIBi2FKQ@prime>
-In-Reply-To: <20170316133429.3923-1-sw@simonwunderlich.de>
-References: <20170316133429.3923-1-sw@simonwunderlich.de>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 26 Mar 2017 11:14:20 +0200
+Message-ID: <1914867.vhgrey3SkF@sven-edge>
+In-Reply-To: <20170217101708.19336-5-linus.luessing@c0d3.blue>
+References: <20170217101708.19336-1-linus.luessing@c0d3.blue>
+ <20170217101708.19336-5-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1525917.lcbnaoi1NH";
+Content-Type: multipart/signed; boundary="nextPart4402413.6iYuhv8sdG";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCHv8 0/5] Optimizations for setups running
-	dat and bla
+Subject: Re: [B.A.T.M.A.N.] [PATCH v2 4/6] batman-adv: privatize forw_packet
+	skb assignment
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,50 +20,56 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: a@unstable.cc
 
---nextPart1525917.lcbnaoi1NH
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+--nextPart4402413.6iYuhv8sdG
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On Thursday, March 16, 2017 2:34:24 PM CET Simon Wunderlich wrote:
-> This is yet another rebased version of Andreas' patchset. I've used
-> Antonios branch, but reverted his changes to the first patch, since
-> there were unexplained semantic changes (e.g. when no gateway is
-> claiming the client) which I don't think are correct.
-> 
-> Antonio, if you want, please explain your changes or let us discuss.
-> 
-> Otherwise, I'd suggest to keep this patchset around for a few days (!)
-> for a final review, and then merge it.
+On Freitag, 17. Februar 2017 11:17:06 CEST Linus L=FCssing wrote:
+> An skb is assigned to a forw_packet only once, shortly after the
+> forw_packet allocation.
+>=20
+> With this patch the assignment is moved into the this allocation
+> function.
+>=20
+> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
+> ---
+>  net/batman-adv/bat_iv_ogm.c | 17 +++++++++--------
+>  net/batman-adv/send.c       | 21 ++++++++++++---------
+>  net/batman-adv/send.h       |  3 ++-
+>  3 files changed, 23 insertions(+), 18 deletions(-)
 
-Just applied this series into 0c794961..cbb2ccc1
+Added this patch as 61913abf08296a5ae20df1a8553b019be6f83824 [1]. Have added
+it out of order to have at least the non-controversial "cleanup" patches
+integrated. The other patches can therefore use the provided functionality
+and you don't have to resent these patches anymore.
 
-I've fixed the 3rd patch on the way according to Svens comment.
+Thanks,
+	Sven
 
-Thanks again for the contribution!
-      Simon
---nextPart1525917.lcbnaoi1NH
+[1] https://git.open-mesh.org/batman-adv.git/commit/61913abf08296a5ae20df1a=
+8553b019be6f83824
+--nextPart4402413.6iYuhv8sdG
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAljSQy4ACgkQoSvjmEKS
-nqHCXQ//VUGz0OQpHsqFIbV9oj2w4pYavHqUp/03kfWdHNIj21J8zvD7UDASI5qT
-6/R2l6eEDkX2Z7Lrn+ikPIq3Kt+ud1Glj6XQO0OaqRbgU6DppHKYt+o9Yp+Z7rwH
-2mGq2QkpyUPpxliKk7l1yfLbfaTbcZBekaq6JhPDO7ApMfpC2SEegkLf7lGosPLa
-LuGyvrbt2AJsh2BuD1HXse80fhZYtN31/6NdXuSi6fvryXnqeiFKOQw6CEXUsvYH
-mFvv/A7uYgDcMkdDP7gWN4fYhkvJF6GoMoMb6TaS6vLXpLF1bqbz4zyf9ncQxnax
-WTu3nSIjXRYK+FcVLPDMQpSe84XxWiIMQNzSc7GyDHuNCyhBVs/yqKX7MOQP4rLZ
-EkFk5UPRo/GZJWTn9zamDoXWqMLPcmSPAs1DD6e9D5h8Ds4RFAOXC233WDva5WCk
-vgTXeeTACLpGOfgSz+lhk8adEqy3uu4eAEB3PTiBW3MzmyeHv0AhhFeg/cRq3tU/
-yc/8K4f8dZLPCbu1LWZ28eDXZfMKz61+DAV9DMwKEV9GttYPvwwNP38PeaRjPdAU
-6qLQtMT6n0Ji0qUukk2E+9tM01m8O94V7GfLiIhx0VxgyN/60I+JzmoJgZb3QWuf
-AC0lOiFRgjKQiOjLf5gj3tbBKisoJY2fInYTDDcQPv4Hhn881TE=
-=LS+Q
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAljXhmwACgkQXYcKB8Em
+e0bX2Q/8D+3+0pDJekv+rtPUpDNqUU69pfvKip6FTToA3sKzKl26nbEskZW9xbsE
+DseBX8GlEDijj5IzRlgNl7Il3aoq4sB1+Q633xa6RZOwRz1ErmpQIvgD9eSKRgbN
+QXjUFsonH2hJ1KDycXMVaCpaNOnk13ddUgKVNpfdEqE0t77tlPbwq1M25iJ7pEhO
+D3m2zpkvsAh607BRvrP53Smpt0SerWigsfxXh1r23GnbZaLfRrLpbwjeFjKpJxJU
+OR0hfVUokv/Bw6k1OwolGMmUx9VVbeziKEqXvQPn/hTSsjYBV+rRlaQ6zWOXrVNE
+YOmE4vMC88uT3htka4cpboaSO3hXBt6NPrJpYd9S6wtnePwHuVbY/4sZ1kT7HR5m
+krXJ7UCTbqqKnjl1Bgux1J/Yzy1seg73AE53wlpOllYQniT9DhjXEEb7NgHKApLA
+9dF2OFA0bFUa0UOHByXpqHtZjPq+HykYnemOM/Y16cHn7xKCc4Xisf1/lpqfgH1U
+9oEywmsGU0e82Q4KaiaIyIgBPzSVIiO9lsE+9xw1apDty8gd4QGuXPkmirCXgl0m
+OCfMHZcJSvRUOvH50D4wTXRH/kY/Y+/EyCRafdrHb5xef+/z/LC3jhDSG7aoa9cJ
+6Qgozxx5kVc+avyQg1cRM407T6datHNbFeq3wUrR26FYMezFdVQ=
+=DJZ+
 -----END PGP SIGNATURE-----
 
---nextPart1525917.lcbnaoi1NH--
+--nextPart4402413.6iYuhv8sdG--
 
