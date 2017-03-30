@@ -1,15 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 26 Mar 2017 11:14:22 +0200
-Message-ID: <1842913.ZZCfD9UzWp@sven-edge>
-In-Reply-To: <20170217101708.19336-6-linus.luessing@c0d3.blue>
-References: <20170217101708.19336-1-linus.luessing@c0d3.blue>
- <20170217101708.19336-6-linus.luessing@c0d3.blue>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1743670.cS6KVZ5Akb";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v2 5/6] batman-adv: restructure
-	rebroadcast counter into forw_packet API
+Return-Path: <tremyfr@gmail.com>
+From: Philippe Reynes <tremyfr@gmail.com>
+Date: Thu, 30 Mar 2017 23:01:27 +0200
+Message-Id: <1490907687-11784-1-git-send-email-tremyfr@gmail.com>
+Subject: [B.A.T.M.A.N.] [PATCH] net: batman-adv: use new api
+	ethtool_{get|set}_link_ksettings
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,65 +13,78 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, linux-kernel@vger.kernel.org, Philippe Reynes <tremyfr@gmail.com>
 
---nextPart1743670.cS6KVZ5Akb
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+The ethtool api {get|set}_settings is deprecated.
+We move this driver to new api {get|set}_link_ksettings.
 
-On Freitag, 17. Februar 2017 11:17:07 CEST Linus L=FCssing wrote:
-> This patch refactors the num_packets counter of a forw_packet in the
-> following three ways:
->=20
-> 1) Removed dual-use of forw_packet::num_packets:
->    -> now for aggregation purposes only
-> 2) Using forw_packet::skb::cb::num_bcasts instead:
->    -> for easier access in aggregation code later
-> 3) make access to num_bcasts private to batadv_forw_packet_*()
->=20
-> Signed-off-by: Linus L=FCssing <linus.luessing@c0d3.blue>
-> ---
->  net/batman-adv/distributed-arp-table.c |  2 +-
->  net/batman-adv/main.c                  |  3 ++
->  net/batman-adv/send.c                  | 50 ++++++++++++++++++++++++++++=
-++++--
->  net/batman-adv/send.h                  |  1 +
->  net/batman-adv/soft-interface.c        |  3 ++
->  net/batman-adv/types.h                 |  4 ++-
->  6 files changed, 58 insertions(+), 5 deletions(-)
+I've only compiled this change. If someone may test it,
+it would be very nice.
 
-Added this patch as c5d596e8b96e97da64c8aea759ddc016bca760a1 [1]. Have added
-it out of order to have at least the non-controversial "cleanup" patches
-integrated. The other patches can therefore use the provided functionality
-and you don't have to resent these patches anymore.
+Signed-off-by: Philippe Reynes <tremyfr@gmail.com>
+---
+ net/batman-adv/soft-interface.c |   25 ++++++++++++-------------
+ 1 files changed, 12 insertions(+), 13 deletions(-)
 
-Thanks,
-	Sven
-
-[1] https://git.open-mesh.org/batman-adv.git/commit/c5d596e8b96e97da64c8aea=
-759ddc016bca760a1
-
---nextPart1743670.cS6KVZ5Akb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAljXhm4ACgkQXYcKB8Em
-e0ZkbRAAp4k5RFp7Y+/QzABS9QIpZtf3LpbUHPsCNvG+C+KHoq+ssYBYQyzmfylO
-X58KkPfqVDLUYXQr0UZFtb59sJnl1gI9/6dd5qDrN6Jcbv5N4CIL6UHAdBIBxyDs
-Go76xhBA9gYdHNaxQYn1DJ3IYirl0bkYseP3/LN5fK9EnSGegcnxIa56ZhZM9Eq2
-9S1nlCHlINIoGy2bYU4ZsUXHooh2jWNQXnnYcCsARFCp5ZkWi0jYFD1N15XNhrks
-7h+FFsgz+rqosnS2RCW0+nJgloAkiYvOSzfs7H7mpdQ2JfR3toIhm632BkdiMpVH
-dqTI2TilzAuXOLFbzXcuPff46SHlzbemCoRknIUwDEe471+ZijCYOWeyYtNx59i3
-XH7fs8uaAr32oRbFZsBdE83Bdyeo/W+t8L6o+J9rFQ7JAJRkzPwY1z72uPnit3F7
-4J6AQzHci2d0T+SDRKuKS4QFpLIpQFFED90WFBr8Ylw3jwwZ5aIIEbkgXcyFE4nE
-RbdejV/4GYsEzs7h7ptWNEDvhCwz7cSgDGzWqizPuL44BhLgr+NgyFFsxHrCqRCc
-a8bktwlweUhkYEeov1vunjLv9RC6od3b0/QqoD93JX2Cmj5o+PMuBOtx7/eM6f1h
-Zx7/EiAFCOBt68Dw+2UqhwXlLcwxq4gB3g+1OlmJqXqccnLAhsw=
-=IRZx
------END PGP SIGNATURE-----
-
---nextPart1743670.cS6KVZ5Akb--
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index d042c99..07f6627 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -64,7 +64,8 @@
+ #include "sysfs.h"
+ #include "translation-table.h"
+ 
+-static int batadv_get_settings(struct net_device *dev, struct ethtool_cmd *cmd);
++static int batadv_get_link_ksettings(struct net_device *dev,
++				     struct ethtool_link_ksettings *cmd);
+ static void batadv_get_drvinfo(struct net_device *dev,
+ 			       struct ethtool_drvinfo *info);
+ static u32 batadv_get_msglevel(struct net_device *dev);
+@@ -76,7 +77,6 @@ static void batadv_get_ethtool_stats(struct net_device *dev,
+ static int batadv_get_sset_count(struct net_device *dev, int stringset);
+ 
+ static const struct ethtool_ops batadv_ethtool_ops = {
+-	.get_settings = batadv_get_settings,
+ 	.get_drvinfo = batadv_get_drvinfo,
+ 	.get_msglevel = batadv_get_msglevel,
+ 	.set_msglevel = batadv_set_msglevel,
+@@ -84,6 +84,7 @@ static void batadv_get_ethtool_stats(struct net_device *dev,
+ 	.get_strings = batadv_get_strings,
+ 	.get_ethtool_stats = batadv_get_ethtool_stats,
+ 	.get_sset_count = batadv_get_sset_count,
++	.get_link_ksettings = batadv_get_link_ksettings,
+ };
+ 
+ int batadv_skb_head_push(struct sk_buff *skb, unsigned int len)
+@@ -1085,18 +1086,16 @@ struct rtnl_link_ops batadv_link_ops __read_mostly = {
+ };
+ 
+ /* ethtool */
+-static int batadv_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
++static int batadv_get_link_ksettings(struct net_device *dev,
++				     struct ethtool_link_ksettings *cmd)
+ {
+-	cmd->supported = 0;
+-	cmd->advertising = 0;
+-	ethtool_cmd_speed_set(cmd, SPEED_10);
+-	cmd->duplex = DUPLEX_FULL;
+-	cmd->port = PORT_TP;
+-	cmd->phy_address = 0;
+-	cmd->transceiver = XCVR_INTERNAL;
+-	cmd->autoneg = AUTONEG_DISABLE;
+-	cmd->maxtxpkt = 0;
+-	cmd->maxrxpkt = 0;
++	ethtool_link_ksettings_zero_link_mode(cmd, supported);
++	ethtool_link_ksettings_zero_link_mode(cmd, advertising);
++	cmd->base.speed = SPEED_10;
++	cmd->base.duplex = DUPLEX_FULL;
++	cmd->base.port = PORT_TP;
++	cmd->base.phy_address = 0;
++	cmd->base.autoneg = AUTONEG_DISABLE;
+ 
+ 	return 0;
+ }
+-- 
+1.7.4.4
 
