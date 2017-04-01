@@ -1,13 +1,14 @@
-Return-Path: <tremyfr@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <5459529.jjAg0OrKDG@bentobox>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 01 Apr 2017 08:40:54 +0200
+Message-ID: <2462780.uK9AJZJh1Z@sven-edge>
+In-Reply-To: <CAC=8w91DZHq4dKzUS=8w1fUvPG_CmT=HT3amQ15-iVgAV23fmQ@mail.gmail.com>
 References: <1490907687-11784-1-git-send-email-tremyfr@gmail.com>
  <5459529.jjAg0OrKDG@bentobox>
-From: Philippe Reynes <tremyfr@gmail.com>
-Date: Fri, 31 Mar 2017 22:33:34 +0200
-Message-ID: <CAC=8w91DZHq4dKzUS=8w1fUvPG_CmT=HT3amQ15-iVgAV23fmQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+ <CAC=8w91DZHq4dKzUS=8w1fUvPG_CmT=HT3amQ15-iVgAV23fmQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2102377.nSGi7hxipA";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] net: batman-adv: use new api
 	ethtool_{get|set}_link_ksettings
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,32 +20,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
+To: Philippe Reynes <tremyfr@gmail.com>
 Cc: mareklindner@neomailbox.ch, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc, linux-kernel@vger.kernel.org, davem@davemloft.net
 
-Hi Sven,
+--nextPart2102377.nSGi7hxipA
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-On 3/31/17, Sven Eckelmann <sven@narfation.org> wrote:
-> On Donnerstag, 30. M=C3=A4rz 2017 23:01:27 CEST Philippe Reynes wrote:
->> The ethtool api {get|set}_settings is deprecated.
->> We move this driver to new api {get|set}_link_ksettings.
->>
->> I've only compiled this change. If someone may test it,
->> it would be very nice.
->>
->> Signed-off-by: Philippe Reynes <tremyfr@gmail.com>
->> ---
->>  net/batman-adv/soft-interface.c |   25 ++++++++++++-------------
->>  1 files changed, 12 insertions(+), 13 deletions(-)
->
-> Do you know if anyone already prepared the get_link_ksettings support for
-> kernels older than 4.6 for backports.git?
+On Freitag, 31. M=E4rz 2017 22:33:34 CEST Philippe Reynes wrote:
+> > Do you know if anyone already prepared the get_link_ksettings support f=
+or
+> > kernels older than 4.6 for backports.git?
+>=20
+> Sorry, I don't know this repo. Do you have an url please ?
+> But I suppose that nobody works on such backport.
 
-Sorry, I don't know this repo. Do you have an url please ?
-But I suppose that nobody works on such backport.
+More information about it can be found at https://backports.wiki.kernel.org=
+=20
+and https://git.kernel.org/pub/scm/linux/kernel/git/backports/backports.git/
 
-> Kind regards,
-> 	Sven
+Btw. the code you are modifying will most likely be dropped. Your patch wil=
+l=20
+get rejected because of this. But thanks for submitting the api conversion=
+=20
+patch (even when it will be rejected).
 
-Regards,
-Philippe
+Kind regards,
+	Sven
+--nextPart2102377.nSGi7hxipA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAljfS3YACgkQXYcKB8Em
+e0Yk1hAA2WM/HUWS0NOzi7PbCPWsjzIM4VPpcTKN7UKWfasm1lgzcWH92r3ZXsvn
+z5We3j5vBxamLlJmw4X11O0+EIscNf9miIR6Xei3Ubhkl5A1DAtAYIneRJ5m3TI+
+35G5BR0rdYNjCr/IFrslaWKbsuN4ajF5v0/6AuYb7HGDMjiRNt3JXhMmD8M/9i25
+Ojp+kS2lNPfwsxyOLzJgyHHFhWOtZ5dUWf53N2G+EVKIDqqKge9F5YpUNB/LBpWh
+2F+NdAk3G3KA6+GSkBi1jP8bpM85s5R3w+8rG3o+KJcy/G8oOz2EiIjO4HpmEyas
+MfiXGEwD/QAdYrIaqJILCPiIyL+s0Lb3Cm1dqLrRXW0+ht21KdqLtOgRFfEoC6XY
+wPeUkdRDO1iEonm6g70ZARPrxDSs1d/3bgZheISSo+73ufDoY4HlhJxPl8Wn7Igv
+jWnqjQ+Ykq1yw7QRAJNv74q8yreXLrgyN8EG4+SJRiwLZOkeIzfbnPI9xAqUL+rX
+sWGRe7bU5Fjzqo8uefXFGdM6evKnDVt1WKawY1PWqDp47ZFh9wS1kdyRbmtItZm8
+IunKwalws0slEZ31tpcLxAccXEN/Zj1JuyK2La65mafpQW3aYVmUICNpOuksOfCv
+EaskxI6Z1iBCkCBkB8v0A7JgWHiFZcBmEhseuxU3Mj5cMHKGrHY=
+=KOpf
+-----END PGP SIGNATURE-----
+
+--nextPart2102377.nSGi7hxipA--
+
