@@ -1,12 +1,12 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 01 Apr 2017 23:35:27 +0800
-Message-ID: <4718881.bFuYIQTkPT@lafayette>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 03 Apr 2017 18:12:25 +0200
+Message-ID: <1614094.q8xjyvsmAh@prime>
 In-Reply-To: <20170401124706.18257-1-sven@narfation.org>
 References: <20170401124706.18257-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1561962.5MkHQC86zt";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
+Content-Type: multipart/signed; boundary="nextPart4923518.JeR1JaYdr6";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH 0/4] batman-adv: ethtool code cleanup
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -19,37 +19,48 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1561962.5MkHQC86zt
+--nextPart4923518.JeR1JaYdr6
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday, April 1, 2017 2:47:02 PM HKT Sven Eckelmann wrote:
-> Sven Eckelmann (4):
->   batman-adv: Use ethtool helper to get link status
->   batman-adv: Remove ethtool msglevel functions
->   batman-adv: Remove ethtool .get_settings stub
->   batman-adv: Group ethtool related code together
+On Saturday, April 1, 2017 2:47:02 PM CEST Sven Eckelmann wrote:
+> Hi,
+> 
+> Philippe Reynes sent in a patch [1] to convert the get_settings stuff to
+> the new ethtool link_ksettings api. I've therefore asked Marek (original
+> author of the ethtool stubs) whether the code is still needed for
+> something.
+> 
+> He couldn't remember anything about it. This was therefore a good
+> opportunity to completely get rid of the code - instead of converting
+> not useful code to the new api.
 
-For this patch series:
+Merged in 9e8d507d..080d75e5.
 
-Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
+Thanks!!
+     Simon
 
---nextPart1561962.5MkHQC86zt
+--nextPart4923518.JeR1JaYdr6
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCAAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAljfyL8ACgkQU1VOj+62
-HMCwXggAsq7MlUMrX+NXMH87nwDDaCR2rRBUMh1M+JgFtBk+GHTjVy+L/Kd/CLsG
-rREEZCwgzVLjkDoBtsn4iK5+lINsXe7EwiqBWZayks9Okz0vavOTatODadWN3rsL
-/5l3ugGCeg7Bz9qnneHfEZDTrgbtujIK9Xaxk7WgLUDiwIGPorymkZ4JEOHY4/Wx
-XElUHyk1Sv1xYIiMdFaJ3pyueNKV28+ZOjw1rkGmk+cLV7VWOYsYAFcihzL0vq8b
-GjI8f6Atog4YZrOrz7EBtghYLP1t1VUjtpVL2bV0m4qZy/6IfG5NPIHqCXB2sw1p
-gPTlEfRn7x9Q8WscsKjnFbDGazaNIg==
-=E8UQ
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAljidGkACgkQoSvjmEKS
+nqH5uw//RdOotWb9eQZ01eb5c+mjrmDtP4dVUpsC9JGhgIDxI+uEWJQn9fZXjigL
+Q7GpWUKFiA/aM0DJt2xhK5n0mDhDQjq9dik5KTiY0jLnsmSII9RoBz7sdx+IPfjS
+pl/S0jzg/9NjC4AQA1y92gKL50kgZ++dRjts6yz+x4rSThGsDPoKHm1voh3vjUYB
+ZdLmZctVUfX8sweyRG449cdcPZ6X4koX3NiPw6rHd0QOS8jZ09PAaUQA0tTItSxP
+CFuw3YT358OOHtWx8vCpATD16fy1Wq5LfAPY+m7SxxHdPB4dkW20eyWLkrsFS92L
+NcshvbAFEe09UIA1CQRNz7CkXeHCdoBpNhhb1Ax0SzxKin9S+lvMV9eifPjLrYVS
+6M6JV1PyrnncwTvmd530nLuOYyIxCHzNu3sEIw6nGQ8VINMymwGNrrcv1rN5BzIo
+PsK98g6n3g5mpiaZy2jjtaag0VJbDIqkEwPcwK3ZwYf09yBON53kxbNnHnzekFHg
+Dvv+ZJ5d6Cfjnh87oHW8aSsWHF5P6qhuTC67IQIGl/ZE/yNPUnlq/hrj58aVPeZz
+Q+S49JrB8W/RFZgPaaLTOb0w4CeWH6KO0l1bW2tKzSsXASelQeahBTvbSo25Y59f
+UY/STFFlosZKPAAbKm29BnRdjbIkt75qtrg1C9lNLPn7XMwGw+s=
+=YFuQ
 -----END PGP SIGNATURE-----
 
---nextPart1561962.5MkHQC86zt--
+--nextPart4923518.JeR1JaYdr6--
 
