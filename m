@@ -1,9 +1,14 @@
-Return-Path: <tklauser@sym2.noone.org>
-From: Tobias Klauser <tklauser@distanz.ch>
-Date: Wed,  5 Apr 2017 13:46:31 +0200
-Message-Id: <1491392791-30041-1-git-send-email-tklauser@distanz.ch>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Use net_device_stats from struct
-	net_device
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 05 Apr 2017 16:09:05 +0200
+Message-ID: <2848897.eWlOuJHVo0@bentobox>
+In-Reply-To: <1491392791-30041-1-git-send-email-tklauser@distanz.ch>
+References: <1491392791-30041-1-git-send-email-tklauser@distanz.ch>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart16955875.CyQnhcT5fl";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Use net_device_stats from
+	struct net_device
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,79 +18,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, Tobias Klauser <tklauser@distanz.ch>, Antonio Quartulli <a@unstable.cc>, Marek Lindner <mareklindner@neomailbox.ch>
 
-Instead of using a private copy of struct net_device_stats in struct
-batadv_priv, use stats from struct net_device.
+--nextPart16955875.CyQnhcT5fl
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
----
- net/batman-adv/distributed-arp-table.c | 9 +++++----
- net/batman-adv/soft-interface.c        | 2 +-
- net/batman-adv/types.h                 | 2 --
- 3 files changed, 6 insertions(+), 7 deletions(-)
+On Mittwoch, 5. April 2017 13:46:31 CEST Tobias Klauser wrote:
+> Instead of using a private copy of struct net_device_stats in struct
+> batadv_priv, use stats from struct net_device.
+> 
+> Signed-off-by: Tobias Klauser <tklauser@distanz.ch>
+> ---
+>  net/batman-adv/distributed-arp-table.c | 9 +++++----
+>  net/batman-adv/soft-interface.c        | 2 +-
+>  net/batman-adv/types.h                 | 2 --
+>  3 files changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
-index 1bfd1dbc2feb..936b08ee5b45 100644
---- a/net/batman-adv/distributed-arp-table.c
-+++ b/net/batman-adv/distributed-arp-table.c
-@@ -1002,6 +1002,7 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 	bool ret = false;
- 	struct batadv_dat_entry *dat_entry = NULL;
- 	struct sk_buff *skb_new;
-+	struct net_device *soft_iface = bat_priv->soft_iface;
- 	int hdr_size = 0;
- 	unsigned short vid;
- 
-@@ -1046,10 +1047,10 @@ bool batadv_dat_snoop_outgoing_arp_request(struct batadv_priv *bat_priv,
- 		if (!skb_new)
- 			goto out;
- 
--		skb_new->protocol = eth_type_trans(skb_new,
--						   bat_priv->soft_iface);
--		bat_priv->stats.rx_packets++;
--		bat_priv->stats.rx_bytes += skb->len + ETH_HLEN + hdr_size;
-+		skb_new->protocol = eth_type_trans(skb_new, soft_iface);
-+
-+		soft_iface->stats.rx_packets++;
-+		soft_iface->stats.rx_bytes += skb->len + ETH_HLEN + hdr_size;
- 
- 		netif_rx(skb_new);
- 		batadv_dbg(BATADV_DBG_DAT, bat_priv, "ARP request replied locally\n");
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index d042c99af028..71895c58e6d8 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -140,7 +140,7 @@ static u64 batadv_sum_counter(struct batadv_priv *bat_priv,  size_t idx)
- static struct net_device_stats *batadv_interface_stats(struct net_device *dev)
- {
- 	struct batadv_priv *bat_priv = netdev_priv(dev);
--	struct net_device_stats *stats = &bat_priv->stats;
-+	struct net_device_stats *stats = &dev->stats;
- 
- 	stats->tx_packets = batadv_sum_counter(bat_priv, BATADV_CNT_TX);
- 	stats->tx_bytes = batadv_sum_counter(bat_priv, BATADV_CNT_TX_BYTES);
-diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
-index 246f21b4973b..5c55e48d8941 100644
---- a/net/batman-adv/types.h
-+++ b/net/batman-adv/types.h
-@@ -1000,7 +1000,6 @@ struct batadv_priv_bat_v {
-  * struct batadv_priv - per mesh interface data
-  * @mesh_state: current status of the mesh (inactive/active/deactivating)
-  * @soft_iface: net device which holds this struct as private data
-- * @stats: structure holding the data for the ndo_get_stats() call
-  * @bat_counters: mesh internal traffic statistic counters (see batadv_counters)
-  * @aggregated_ogms: bool indicating whether OGM aggregation is enabled
-  * @bonding: bool indicating whether traffic bonding is enabled
-@@ -1055,7 +1054,6 @@ struct batadv_priv_bat_v {
- struct batadv_priv {
- 	atomic_t mesh_state;
- 	struct net_device *soft_iface;
--	struct net_device_stats stats;
- 	u64 __percpu *bat_counters; /* Per cpu counters */
- 	atomic_t aggregated_ogms;
- 	atomic_t bonding;
--- 
-2.12.2.399.g034667a45805
+Nice find. I had to look up when the code was introduced and when the
+common netdev stats member was added. Interestingly, both were from
+2007 :)
+
+Applied in ab044f8e3eaf84c4cc95d7606fadfdfa006dc8ec [1]
+
+Thanks,
+	Sven
+
+[1] https://git.open-mesh.org/linux-merge.git/commit/ab044f8e3eaf84c4cc95d7606fadfdfa006dc8ec
+--nextPart16955875.CyQnhcT5fl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAljk+oEACgkQXYcKB8Em
+e0aRJhAAlhOX+KTNyH12m2d0ZKtokik4wGN8eQI8mWTcpS9AdVauKjqrW36p9JuY
+mnJ0ySSHnXriEfoleE/PTe/cn+TGqMs9k6PNGVUfsr+AqiBBYx1DL8WcjWi7ch9V
+wPfpBDDrglKn6D4hwkP65ooJdscT4cdtxwhThxtJv2aqt+N5fK6roDhwi1VrCVwy
+iBnuvgmrj8C4OrkzkfQ/GsruBTSoLHIm2eGYVJbHaNwNZASvsaTrm1pNYTR+Ysru
+ryX1PRLEx4QtlhTUqkQrSANfEUobnquNXEVHqvUmsMHglhh1sZBiW00OeJsdyWe1
+EWtZxvG6g96p1LGe9Hl9uOclRIYze4Plmhc0Bo7av+Ws75nMvMcrrl2O2Vz8n5e3
+3xP2aNM4EX4l85qfZshze+Y6cSe14WAI7Dk9dyzLko75SWMMj3iwNSeJXu7ZShig
+NfQoWREyToIVrG8Gx6Ah0PakSWl2NwEPvIoy7Ic98PXMUq/xdUybSc2WuQwDZZW3
+rhDe56YWycg4hPqwhr1SeH6caYNO/4EUm3EwQge16mVN7010WjO1m4L3VLrmp+5k
+DVQ4S64v0/FHCKKfOh0Fr6cARmCWa+Sqp1uuFnyxNdjEF7qXmVz/R1Ai/MnY70b2
+muWw9vZVFhc81Wl92/clcY+WQBgWzX3i/Vs7jYLbSUsxXMeTuwg=
+=Xawn
+-----END PGP SIGNATURE-----
+
+--nextPart16955875.CyQnhcT5fl--
 
