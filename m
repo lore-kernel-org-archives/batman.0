@@ -1,14 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu,  6 Apr 2017 16:07:35 +0200
-Message-Id: <20170406140741.30745-14-sw@simonwunderlich.de>
+Date: Thu,  6 Apr 2017 16:07:40 +0200
+Message-Id: <20170406140741.30745-19-sw@simonwunderlich.de>
 In-Reply-To: <20170406140741.30745-1-sw@simonwunderlich.de>
 References: <20170406140741.30745-1-sw@simonwunderlich.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 13/19] batman-adv: privatize forw_packet skb
-	assignment
+Subject: [B.A.T.M.A.N.] [PATCH 18/19] batman-adv: Group ethtool related code
+	together
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,146 +18,233 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-From: Linus Lüssing <linus.luessing@c0d3.blue>
+From: Sven Eckelmann <sven@narfation.org>
 
-An skb is assigned to a forw_packet only once, shortly after the
-forw_packet allocation.
+The ethtool code was spread in soft-interface.c. This makes reading the
+code and working on it unnecessary complicated. Having everything in a
+common place next to the other code which references it, makes it slightly
+easier.
 
-With this patch the assignment is moved into the this allocation
-function.
-
-Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_iv_ogm.c | 17 +++++++++--------
- net/batman-adv/send.c       | 21 ++++++++++++---------
- net/batman-adv/send.h       |  3 ++-
- 3 files changed, 23 insertions(+), 18 deletions(-)
+ net/batman-adv/soft-interface.c | 191 +++++++++++++++++++---------------------
+ 1 file changed, 92 insertions(+), 99 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 7c3d994e90d8..f665ff3ede53 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -679,15 +679,11 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- {
- 	struct batadv_priv *bat_priv = netdev_priv(if_incoming->soft_iface);
- 	struct batadv_forw_packet *forw_packet_aggr;
-+	struct sk_buff *skb;
- 	unsigned char *skb_buff;
- 	unsigned int skb_size;
- 	atomic_t *queue_left = own_packet ? NULL : &bat_priv->batman_queue_left;
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 6f22b1283c92..f33bee08bd99 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -64,21 +64,6 @@
+ #include "sysfs.h"
+ #include "translation-table.h"
  
--	forw_packet_aggr = batadv_forw_packet_alloc(if_incoming, if_outgoing,
--						    queue_left, bat_priv);
--	if (!forw_packet_aggr)
--		return;
+-static void batadv_get_drvinfo(struct net_device *dev,
+-			       struct ethtool_drvinfo *info);
+-static void batadv_get_strings(struct net_device *dev, u32 stringset, u8 *data);
+-static void batadv_get_ethtool_stats(struct net_device *dev,
+-				     struct ethtool_stats *stats, u64 *data);
+-static int batadv_get_sset_count(struct net_device *dev, int stringset);
 -
- 	if (atomic_read(&bat_priv->aggregated_ogms) &&
- 	    packet_len < BATADV_MAX_AGGREGATION_BYTES)
- 		skb_size = BATADV_MAX_AGGREGATION_BYTES;
-@@ -696,9 +692,14 @@ static void batadv_iv_ogm_aggregate_new(const unsigned char *packet_buff,
- 
- 	skb_size += ETH_HLEN;
- 
--	forw_packet_aggr->skb = netdev_alloc_skb_ip_align(NULL, skb_size);
--	if (!forw_packet_aggr->skb) {
--		batadv_forw_packet_free(forw_packet_aggr, true);
-+	skb = netdev_alloc_skb_ip_align(NULL, skb_size);
-+	if (!skb)
-+		return;
-+
-+	forw_packet_aggr = batadv_forw_packet_alloc(if_incoming, if_outgoing,
-+						    queue_left, bat_priv, skb);
-+	if (!forw_packet_aggr) {
-+		kfree_skb(skb);
- 		return;
- 	}
- 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index 1489ec27daff..7bf470204e10 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -482,6 +482,7 @@ void batadv_forw_packet_free(struct batadv_forw_packet *forw_packet,
-  * @if_outgoing: The (optional) if_outgoing to be grabbed
-  * @queue_left: The (optional) queue counter to decrease
-  * @bat_priv: The bat_priv for the mesh of this forw_packet
-+ * @skb: The raw packet this forwarding packet shall contain
-  *
-  * Allocates a forwarding packet and tries to get a reference to the
-  * (optional) if_incoming, if_outgoing and queue_left. If queue_left
-@@ -493,7 +494,8 @@ struct batadv_forw_packet *
- batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
- 			 struct batadv_hard_iface *if_outgoing,
- 			 atomic_t *queue_left,
--			 struct batadv_priv *bat_priv)
-+			 struct batadv_priv *bat_priv,
-+			 struct sk_buff *skb)
- {
- 	struct batadv_forw_packet *forw_packet;
- 	const char *qname;
-@@ -525,7 +527,7 @@ batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
- 
- 	INIT_HLIST_NODE(&forw_packet->list);
- 	INIT_HLIST_NODE(&forw_packet->cleanup_list);
--	forw_packet->skb = NULL;
-+	forw_packet->skb = skb;
- 	forw_packet->queue_left = queue_left;
- 	forw_packet->if_incoming = if_incoming;
- 	forw_packet->if_outgoing = if_outgoing;
-@@ -756,22 +758,23 @@ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 	if (!primary_if)
- 		goto err;
- 
-+	newskb = skb_copy(skb, GFP_ATOMIC);
-+	if (!newskb) {
-+		batadv_hardif_put(primary_if);
-+		goto err;
-+	}
-+
- 	forw_packet = batadv_forw_packet_alloc(primary_if, NULL,
- 					       &bat_priv->bcast_queue_left,
--					       bat_priv);
-+					       bat_priv, newskb);
- 	batadv_hardif_put(primary_if);
- 	if (!forw_packet)
--		goto err;
+-static const struct ethtool_ops batadv_ethtool_ops = {
+-	.get_drvinfo = batadv_get_drvinfo,
+-	.get_link = ethtool_op_get_link,
+-	.get_strings = batadv_get_strings,
+-	.get_ethtool_stats = batadv_get_ethtool_stats,
+-	.get_sset_count = batadv_get_sset_count,
+-};
 -
--	newskb = skb_copy(skb, GFP_ATOMIC);
--	if (!newskb)
- 		goto err_packet_free;
+ int batadv_skb_head_push(struct sk_buff *skb, unsigned int len)
+ {
+ 	int result;
+@@ -944,6 +929,98 @@ static const struct net_device_ops batadv_netdev_ops = {
+ 	.ndo_del_slave = batadv_softif_slave_del,
+ };
  
- 	/* as we have a copy now, it is safe to decrease the TTL */
- 	bcast_packet = (struct batadv_bcast_packet *)newskb->data;
- 	bcast_packet->ttl--;
- 
--	forw_packet->skb = newskb;
- 	forw_packet->own = own_packet;
- 
- 	INIT_DELAYED_WORK(&forw_packet->delayed_work,
-@@ -781,7 +784,7 @@ int batadv_add_bcast_packet_to_list(struct batadv_priv *bat_priv,
- 	return NETDEV_TX_OK;
- 
- err_packet_free:
--	batadv_forw_packet_free(forw_packet, true);
-+	kfree_skb(newskb);
- err:
- 	return NETDEV_TX_BUSY;
- }
-diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
-index f21166d10323..8e75890406d2 100644
---- a/net/batman-adv/send.h
-+++ b/net/batman-adv/send.h
-@@ -34,7 +34,8 @@ struct batadv_forw_packet *
- batadv_forw_packet_alloc(struct batadv_hard_iface *if_incoming,
- 			 struct batadv_hard_iface *if_outgoing,
- 			 atomic_t *queue_left,
--			 struct batadv_priv *bat_priv);
-+			 struct batadv_priv *bat_priv,
-+			 struct sk_buff *skb);
- bool batadv_forw_packet_steal(struct batadv_forw_packet *packet, spinlock_t *l);
- void batadv_forw_packet_ogmv1_queue(struct batadv_priv *bat_priv,
- 				    struct batadv_forw_packet *forw_packet,
++static void batadv_get_drvinfo(struct net_device *dev,
++			       struct ethtool_drvinfo *info)
++{
++	strlcpy(info->driver, "B.A.T.M.A.N. advanced", sizeof(info->driver));
++	strlcpy(info->version, BATADV_SOURCE_VERSION, sizeof(info->version));
++	strlcpy(info->fw_version, "N/A", sizeof(info->fw_version));
++	strlcpy(info->bus_info, "batman", sizeof(info->bus_info));
++}
++
++/* Inspired by drivers/net/ethernet/dlink/sundance.c:1702
++ * Declare each description string in struct.name[] to get fixed sized buffer
++ * and compile time checking for strings longer than ETH_GSTRING_LEN.
++ */
++static const struct {
++	const char name[ETH_GSTRING_LEN];
++} batadv_counters_strings[] = {
++	{ "tx" },
++	{ "tx_bytes" },
++	{ "tx_dropped" },
++	{ "rx" },
++	{ "rx_bytes" },
++	{ "forward" },
++	{ "forward_bytes" },
++	{ "mgmt_tx" },
++	{ "mgmt_tx_bytes" },
++	{ "mgmt_rx" },
++	{ "mgmt_rx_bytes" },
++	{ "frag_tx" },
++	{ "frag_tx_bytes" },
++	{ "frag_rx" },
++	{ "frag_rx_bytes" },
++	{ "frag_fwd" },
++	{ "frag_fwd_bytes" },
++	{ "tt_request_tx" },
++	{ "tt_request_rx" },
++	{ "tt_response_tx" },
++	{ "tt_response_rx" },
++	{ "tt_roam_adv_tx" },
++	{ "tt_roam_adv_rx" },
++#ifdef CONFIG_BATMAN_ADV_DAT
++	{ "dat_get_tx" },
++	{ "dat_get_rx" },
++	{ "dat_put_tx" },
++	{ "dat_put_rx" },
++	{ "dat_cached_reply_tx" },
++#endif
++#ifdef CONFIG_BATMAN_ADV_NC
++	{ "nc_code" },
++	{ "nc_code_bytes" },
++	{ "nc_recode" },
++	{ "nc_recode_bytes" },
++	{ "nc_buffer" },
++	{ "nc_decode" },
++	{ "nc_decode_bytes" },
++	{ "nc_decode_failed" },
++	{ "nc_sniffed" },
++#endif
++};
++
++static void batadv_get_strings(struct net_device *dev, u32 stringset, u8 *data)
++{
++	if (stringset == ETH_SS_STATS)
++		memcpy(data, batadv_counters_strings,
++		       sizeof(batadv_counters_strings));
++}
++
++static void batadv_get_ethtool_stats(struct net_device *dev,
++				     struct ethtool_stats *stats, u64 *data)
++{
++	struct batadv_priv *bat_priv = netdev_priv(dev);
++	int i;
++
++	for (i = 0; i < BATADV_CNT_NUM; i++)
++		data[i] = batadv_sum_counter(bat_priv, i);
++}
++
++static int batadv_get_sset_count(struct net_device *dev, int stringset)
++{
++	if (stringset == ETH_SS_STATS)
++		return BATADV_CNT_NUM;
++
++	return -EOPNOTSUPP;
++}
++
++static const struct ethtool_ops batadv_ethtool_ops = {
++	.get_drvinfo = batadv_get_drvinfo,
++	.get_link = ethtool_op_get_link,
++	.get_strings = batadv_get_strings,
++	.get_ethtool_stats = batadv_get_ethtool_stats,
++	.get_sset_count = batadv_get_sset_count,
++};
++
+ /**
+  * batadv_softif_free - Deconstructor of batadv_soft_interface
+  * @dev: Device to cleanup and remove
+@@ -1076,87 +1153,3 @@ struct rtnl_link_ops batadv_link_ops __read_mostly = {
+ 	.setup		= batadv_softif_init_early,
+ 	.dellink	= batadv_softif_destroy_netlink,
+ };
+-
+-static void batadv_get_drvinfo(struct net_device *dev,
+-			       struct ethtool_drvinfo *info)
+-{
+-	strlcpy(info->driver, "B.A.T.M.A.N. advanced", sizeof(info->driver));
+-	strlcpy(info->version, BATADV_SOURCE_VERSION, sizeof(info->version));
+-	strlcpy(info->fw_version, "N/A", sizeof(info->fw_version));
+-	strlcpy(info->bus_info, "batman", sizeof(info->bus_info));
+-}
+-
+-/* Inspired by drivers/net/ethernet/dlink/sundance.c:1702
+- * Declare each description string in struct.name[] to get fixed sized buffer
+- * and compile time checking for strings longer than ETH_GSTRING_LEN.
+- */
+-static const struct {
+-	const char name[ETH_GSTRING_LEN];
+-} batadv_counters_strings[] = {
+-	{ "tx" },
+-	{ "tx_bytes" },
+-	{ "tx_dropped" },
+-	{ "rx" },
+-	{ "rx_bytes" },
+-	{ "forward" },
+-	{ "forward_bytes" },
+-	{ "mgmt_tx" },
+-	{ "mgmt_tx_bytes" },
+-	{ "mgmt_rx" },
+-	{ "mgmt_rx_bytes" },
+-	{ "frag_tx" },
+-	{ "frag_tx_bytes" },
+-	{ "frag_rx" },
+-	{ "frag_rx_bytes" },
+-	{ "frag_fwd" },
+-	{ "frag_fwd_bytes" },
+-	{ "tt_request_tx" },
+-	{ "tt_request_rx" },
+-	{ "tt_response_tx" },
+-	{ "tt_response_rx" },
+-	{ "tt_roam_adv_tx" },
+-	{ "tt_roam_adv_rx" },
+-#ifdef CONFIG_BATMAN_ADV_DAT
+-	{ "dat_get_tx" },
+-	{ "dat_get_rx" },
+-	{ "dat_put_tx" },
+-	{ "dat_put_rx" },
+-	{ "dat_cached_reply_tx" },
+-#endif
+-#ifdef CONFIG_BATMAN_ADV_NC
+-	{ "nc_code" },
+-	{ "nc_code_bytes" },
+-	{ "nc_recode" },
+-	{ "nc_recode_bytes" },
+-	{ "nc_buffer" },
+-	{ "nc_decode" },
+-	{ "nc_decode_bytes" },
+-	{ "nc_decode_failed" },
+-	{ "nc_sniffed" },
+-#endif
+-};
+-
+-static void batadv_get_strings(struct net_device *dev, u32 stringset, u8 *data)
+-{
+-	if (stringset == ETH_SS_STATS)
+-		memcpy(data, batadv_counters_strings,
+-		       sizeof(batadv_counters_strings));
+-}
+-
+-static void batadv_get_ethtool_stats(struct net_device *dev,
+-				     struct ethtool_stats *stats, u64 *data)
+-{
+-	struct batadv_priv *bat_priv = netdev_priv(dev);
+-	int i;
+-
+-	for (i = 0; i < BATADV_CNT_NUM; i++)
+-		data[i] = batadv_sum_counter(bat_priv, i);
+-}
+-
+-static int batadv_get_sset_count(struct net_device *dev, int stringset)
+-{
+-	if (stringset == ETH_SS_STATS)
+-		return BATADV_CNT_NUM;
+-
+-	return -EOPNOTSUPP;
+-}
 -- 
 2.11.0
 
