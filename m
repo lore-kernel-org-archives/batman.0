@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu,  6 Apr 2017 16:07:24 +0200
-Message-Id: <20170406140741.30745-3-sw@simonwunderlich.de>
+Date: Thu,  6 Apr 2017 16:07:38 +0200
+Message-Id: <20170406140741.30745-17-sw@simonwunderlich.de>
 In-Reply-To: <20170406140741.30745-1-sw@simonwunderlich.de>
 References: <20170406140741.30745-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 02/19] batman-adv: Reduce preprocessor checks
-	in multicast.c
+Subject: [B.A.T.M.A.N.] [PATCH 16/19] batman-adv: Remove ethtool msglevel
+	functions
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,64 +20,55 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Sven Eckelmann <sven@narfation.org>
 
-It is not necessary to disable these code sections in case other kernel
-features are disabled. Instead the IS_ENABLED tests can be added directly
-in the code and the compiler can remove the unnecessary code parts during
-its optimization run.
+batadv devices don't support msglevel. The ethtool stubs therefore returned
+that it isn't supported. But instead, the complete function can be dropped
+to avoid that bogus values are shown in ethtool.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Marek Lindner <mareklindner@neomailbox.ch>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/multicast.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+ net/batman-adv/soft-interface.c | 13 -------------
+ 1 file changed, 13 deletions(-)
 
-diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
-index 952ba81a565b..d327670641ac 100644
---- a/net/batman-adv/multicast.c
-+++ b/net/batman-adv/multicast.c
-@@ -494,9 +494,8 @@ static bool batadv_mcast_mla_tvlv_update(struct batadv_priv *bat_priv)
- 	if (!bridged)
- 		goto update;
- 
--#if !IS_ENABLED(CONFIG_BRIDGE_IGMP_SNOOPING)
--	pr_warn_once("No bridge IGMP snooping compiled - multicast optimizations disabled\n");
--#endif
-+	if (!IS_ENABLED(CONFIG_BRIDGE_IGMP_SNOOPING))
-+		pr_warn_once("No bridge IGMP snooping compiled - multicast optimizations disabled\n");
- 
- 	querier4.exists = br_multicast_has_querier_anywhere(dev, ETH_P_IP);
- 	querier4.shadowing = br_multicast_has_querier_adjacent(dev, ETH_P_IP);
-@@ -671,7 +670,6 @@ static int batadv_mcast_forw_mode_check_ipv4(struct batadv_priv *bat_priv,
- 	return 0;
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index eff23d519c6f..3e0ee2afb814 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -67,8 +67,6 @@
+ static int batadv_get_settings(struct net_device *dev, struct ethtool_cmd *cmd);
+ static void batadv_get_drvinfo(struct net_device *dev,
+ 			       struct ethtool_drvinfo *info);
+-static u32 batadv_get_msglevel(struct net_device *dev);
+-static void batadv_set_msglevel(struct net_device *dev, u32 value);
+ static void batadv_get_strings(struct net_device *dev, u32 stringset, u8 *data);
+ static void batadv_get_ethtool_stats(struct net_device *dev,
+ 				     struct ethtool_stats *stats, u64 *data);
+@@ -77,8 +75,6 @@ static int batadv_get_sset_count(struct net_device *dev, int stringset);
+ static const struct ethtool_ops batadv_ethtool_ops = {
+ 	.get_settings = batadv_get_settings,
+ 	.get_drvinfo = batadv_get_drvinfo,
+-	.get_msglevel = batadv_get_msglevel,
+-	.set_msglevel = batadv_set_msglevel,
+ 	.get_link = ethtool_op_get_link,
+ 	.get_strings = batadv_get_strings,
+ 	.get_ethtool_stats = batadv_get_ethtool_stats,
+@@ -1109,15 +1105,6 @@ static void batadv_get_drvinfo(struct net_device *dev,
+ 	strlcpy(info->bus_info, "batman", sizeof(info->bus_info));
  }
  
--#if IS_ENABLED(CONFIG_IPV6)
- /**
-  * batadv_mcast_is_report_ipv6 - check for MLD reports
-  * @skb: the ethernet frame destined for the mesh
-@@ -736,7 +734,6 @@ static int batadv_mcast_forw_mode_check_ipv6(struct batadv_priv *bat_priv,
- 
- 	return 0;
- }
--#endif
- 
- /**
-  * batadv_mcast_forw_mode_check - check for optimized forwarding potential
-@@ -765,11 +762,12 @@ static int batadv_mcast_forw_mode_check(struct batadv_priv *bat_priv,
- 	case ETH_P_IP:
- 		return batadv_mcast_forw_mode_check_ipv4(bat_priv, skb,
- 							 is_unsnoopable);
--#if IS_ENABLED(CONFIG_IPV6)
- 	case ETH_P_IPV6:
-+		if (!IS_ENABLED(CONFIG_IPV6))
-+			return -EINVAL;
-+
- 		return batadv_mcast_forw_mode_check_ipv6(bat_priv, skb,
- 							 is_unsnoopable);
--#endif
- 	default:
- 		return -EINVAL;
- 	}
+-static u32 batadv_get_msglevel(struct net_device *dev)
+-{
+-	return -EOPNOTSUPP;
+-}
+-
+-static void batadv_set_msglevel(struct net_device *dev, u32 value)
+-{
+-}
+-
+ /* Inspired by drivers/net/ethernet/dlink/sundance.c:1702
+  * Declare each description string in struct.name[] to get fixed sized buffer
+  * and compile time checking for strings longer than ETH_GSTRING_LEN.
 -- 
 2.11.0
 
