@@ -1,9 +1,14 @@
-Return-Path: <gfree.wind@foxmail.com>
-From: gfree.wind@foxmail.com
-Date: Tue, 25 Apr 2017 20:03:20 +0800
-Message-Id: <1493121800-28066-1-git-send-email-gfree.wind@foxmail.com>
-Subject: [B.A.T.M.A.N.] [PATCH net] net: batman-adv: Fix possible memleaks
-	when fail to register_netdevice
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 25 Apr 2017 15:53:19 +0200
+Message-ID: <1756616.320MP6AHYH@bentobox>
+In-Reply-To: <1493121800-28066-1-git-send-email-gfree.wind@foxmail.com>
+References: <1493121800-28066-1-git-send-email-gfree.wind@foxmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1829633.f4Iu6E4eP0";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH net] net: batman-adv: Fix possible
+	memleaks when fail to register_netdevice
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,35 +18,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: mareklindner@neomailbox.ch, sw@simonwunderlich.de, a@unstable.cc, davem@davemloft.net, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
-Cc: Gao Feng <fgao@ikuai8.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: mareklindner@neomailbox.ch, netdev@vger.kernel.org, a@unstable.cc, Gao Feng <fgao@ikuai8.com>, davem@davemloft.net, gfree.wind@foxmail.com
 
-From: Gao Feng <fgao@ikuai8.com>
+--nextPart1829633.f4Iu6E4eP0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Because the func batadv_softif_init_late allocate some resources and
-it would be invoked in register_netdevice. So we need to invoke the
-func batadv_softif_free instead of free_netdev to cleanup when fail
-to register_netdevice.
+On Dienstag, 25. April 2017 20:03:20 CEST gfree.wind@foxmail.com wrote:
+> From: Gao Feng <fgao@ikuai8.com>
+> 
+> Because the func batadv_softif_init_late allocate some resources and
+> it would be invoked in register_netdevice. So we need to invoke the
+> func batadv_softif_free instead of free_netdev to cleanup when fail
+> to register_netdevice.
 
-Signed-off-by: Gao Feng <fgao@ikuai8.com>
----
- net/batman-adv/soft-interface.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I could be wrong, but shouldn't the destructor be replaced with free_netdevice 
+and the batadv_softif_free (without the free_netdev) used as ndo_uninit? The 
+line you've changed should then be kept as free_netdevice.
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index d042c99..90bf990 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -1011,7 +1011,7 @@ struct net_device *batadv_softif_create(struct net *net, const char *name)
- 	if (ret < 0) {
- 		pr_err("Unable to register the batman interface '%s': %i\n",
- 		       name, ret);
--		free_netdev(soft_iface);
-+		batadv_softif_free(soft_iface);
- 		return NULL;
- 	}
- 
--- 
-1.9.1
+At least this seems to be important when using rtnl_newlink() instead of the 
+legacy sysfs netdev stuff from batman-adv. rtnl_newlink() would also only call 
+free_netdevice and thus also not run batadv_softif_free. This seems to be only 
+fixable by calling ndo_uninit.
 
+Kind regards,
+	Sven
+--nextPart1829633.f4Iu6E4eP0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlj/VM8ACgkQXYcKB8Em
+e0Z9YhAAw25hf8lye40CPtVfOSvgC3dhUI5IQzSGtYaru0zeGCj0Zz0KExeqrgnI
+k/7woi6xS1Cot7UXFHxKEyWkYvZ4/8HnIQlreJBVgVFAghoyjWfiaO76QN3/rcS6
+BYCYnbxKlHUyfzMXZFsB6ae2UGW1HbhiBg0hHCZY7GqYn1G7cNywkeAqhCMMbnOJ
+DaOSX7cYSL0eJymyWMu3VPeB0+oP+YtJhYa/nRvhGGb+45Q4ETu85vg3lNTTUyxo
+onu+PZY5nKZd/WYwMIw1epiKp5GSjHahDZ2fQGtFcaj01XQ0cYrvAM0pb+xm20kD
+wA/tbqNVCGqzeM7Kn1ov5wbF8uuRW4Fv7dqCEYuzz23uDbb4gGDPhOErBGgFAv+5
+sJV4dNBWvqFUbMntlDYb3kEj+5X0Pgx+A9pJ8N7axNmRQmCkgfL0TPW2LEuQlI2Z
+KQavA3suqbSQHBKJGh/jeP3SniJXFDBY3ksW9Y8wSCy3owO4c7bCOGAko3kpHwk5
+faXoSIIPcI0qsK6ONdn+ft2B6b20y7egIMmLpY20hwXusUmp4juyZyFrtA4TTA9d
+lZQm9ayXY/Ca4dUm150pUEIL+kx76rwz5xGaz7WKGQGXlsnMvOr2WS+Y20I3DQz5
+rffehmN75TMNgIHeybOw9IdaMmSzCvi/EfG7EjpJ0MR1AJUwXpg=
+=zmrp
+-----END PGP SIGNATURE-----
+
+--nextPart1829633.f4Iu6E4eP0--
 
