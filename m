@@ -1,15 +1,15 @@
-Return-Path: <xbing6@gmail.com>
-References: <9309484e-a9c2-0476-3ddf-a2d68a51c58e@gmail.com>
- <1626579.VOjpoqf3Fa@prime> <e7d58eab-dfaf-bd5f-945e-1ebb1cac90af@gmail.com>
- <1558277.kIpDkU8F5M@prime>
-From: Xuebing Wang <xbing6@gmail.com>
-Message-ID: <0a5a6ac9-6409-fec9-4045-3780bedaadb8@gmail.com>
-Date: Wed, 26 Apr 2017 10:49:37 +0800
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 26 Apr 2017 07:57:44 +0200
+Message-ID: <3994535.Z9kqCnttI2@bentobox>
+In-Reply-To: <002901d2be25$d9092bd0$8b1b8370$@foxmail.com>
+References: <1493121800-28066-1-git-send-email-gfree.wind@foxmail.com>
+ <1756616.320MP6AHYH@bentobox> <002901d2be25$d9092bd0$8b1b8370$@foxmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1558277.kIpDkU8F5M@prime>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [batman-adv] Does batman-adv works perfectly?
+Content-Type: multipart/signed; boundary="nextPart3772731.Kub63pVygl";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH net] net: batman-adv: Fix possible
+	memleaks when fail to register_netdevice
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,96 +19,67 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: Gao Feng <gfree.wind@foxmail.com>
+Cc: mareklindner@neomailbox.ch, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc, 'Gao Feng' <fgao@ikuai8.com>, davem@davemloft.net
 
-Hi Simon,
+--nextPart3772731.Kub63pVygl
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-=> It is used commercially as well on some hundred thousand devices.
+On Mittwoch, 26. April 2017 08:41:30 CEST Gao Feng wrote:
+> On Dienstag, 25. April 2017 20:03:20 CEST gfree.wind@foxmail.com wrote:
+> > From: Gao Feng <fgao@ikuai8.com>
+> > 
+> > Because the func batadv_softif_init_late allocate some resources and
+> > it would be invoked in register_netdevice. So we need to invoke the
+> > func batadv_softif_free instead of free_netdev to cleanup when fail
+> > to register_netdevice.
+> 
+> I could be wrong, but shouldn't the destructor be replaced with free_netdevice 
+> and the batadv_softif_free (without the free_netdev) used as ndo_uninit? The 
+> line you've changed should then be kept as free_netdevice.
+> 
+> At least this seems to be important when using rtnl_newlink() instead of the 
+> legacy sysfs netdev stuff from batman-adv. rtnl_newlink() would also only call 
+> free_netdevice and thus also not run batadv_softif_free. This seems to be only 
+> fixable by calling ndo_uninit.
+> 
+> Sorry, I don't get you.
+> The net_dev is created in this func batadv_softif_create.
+> Why couldn't invoke batadv_softif_free to cleanup when fail to
+> register_netdevice?
+> 
 
-Are you saying that batman-adv has hundred of thousands (100,000+) nodes 
-installed? Thanks for your always help.
+Because it is the legacy way to create the batadv interfaces and there is a 
+"new" one. The new way is to use rtnl link (see batadv_link_ops). 
 
-Xuebing Wang
+The rtnl linke (rtnl_newlink) would not benefit from your fix and therefore 
+still show the old behavior. I think a different fix is necessary to solve the 
+problem for both ways to create an batadv interface.
 
-On 2017年04月22日 16:35, Simon Wunderlich wrote:
-> Hi Xuebing,
->
-> actually, ath9k is the most used hardware platform used with batman-adv, at
-> least as far as I'm aware. It is used commercially as well on some hundred
-> thousand devices. I would assume that it's very hard (or impossible) to find a
-> "perfect" running hardware platform and drivers. On other drivers, you will
-> have trouble to even get IBSS/11s mode running.
->
-> The question is, how do you handle faults - usually, there are workarounds
-> applied which happen automatically like the ones we have referenced in this
-> thread. They don't happen very often (i.e. less than once a day), and many of
-> them can be fixed quite fast (except for the deaf problem, which may take ~30
-> seconds to recover).
->
-> However, there are also some problems which happen more often in certain
-> environments or on certain hardware (maybe due to bad choices in RF design
-> ...). There also may be problems in certain driver versions (i.e.
-> regressions). And of course, there can be issues which have not yet been
-> addressed.
->
-> BTW, I've just seen that you use psk2-ccmp. There is a known problem with key
-> cache corruption. I'm not sure if it was already solved and merged in Chaos
-> Calmer [1]. You may want to try if the problem appears without encryption.
->
-> Cheers,
->        Simon
->
-> [1] https://patchwork.kernel.org/patch/9381651/
->
-> On Saturday, April 22, 2017 3:12:54 PM CEST Xuebing Wang wrote:
->> Hi Simon / Sven,
->>
->> Do you know any hardware platform on which batman-adv (or batmand) work
->> perfectly and field-proven? Thanks.
->>
->> Xuebing Wang
->>
->> On 2017年04月06日 15:04, Simon Wunderlich wrote:
->>> Hello Xuebing,
->>>
->>> it sounds like you have WiFi driver issues. There are some effects like
->>> key
->>> cache corruption, deafness, and other effects known for the AR93xx series.
->>> To confirm, you can try to use IPv6 link local ping (ping6
->>> fe80:...%wlan0) to your neighbors. If you can ping but batman can't (e.g.
->>> use batctl) it's a batman issue. If both pings don't get through, it's
->>> most likely a WiFi driver issue. In this case, a master or something
->>> doesn't help. :)
->>>
->>> Cheers,
->>>
->>>        Simon
->>>
->>> On Thursday, April 6, 2017 10:32:29 AM CEST Xuebing Wang wrote:
->>>> Hi community,
->>>>
->>>> We have batman-adv working on OpenWRT Chaos Calmer.
->>>> - Atheros ar9331 MIPS platform + built-in ath9k WiFi
->>>> - batman-adv version 2016.1
->>>> - routing_algos = BATMAN_IV
->>>> - Wireless interface MTU = 1532, adhoc network encryption "psk2-ccmp"
->>>> - bat0 interface MTU = 1500
->>>>
->>>> We have batman-adv running on 10+ sites. For each site, there are 10-20
->>>> nodes in the mesh network.
->>>>
->>>> batman-adv runs almost perfectly (*almost*). Occasionally (occurrence
->>>> rate is low), node drops off the batman-adv / adhoc mesh.
->>>> - Sometimes, node can recover (re-joins the mesh network automatically),
->>>> but not always.
->>>>
->>>> Any suggestions? Does batman-adv works perfectly in the field (i.e.
->>>> running for 1 year with 100+ nodes without any issues)?
->>>>
->>>> What about I use one node as Master, and other nodes ping this Master
->>>> every 10s (or 30 seconds) (to keep mesh from inactivity)? Does this help?
->>>>
->>>> Thanks.
->>>> Xuebing Wang
+Kind regards,
+	Sven
+--nextPart3772731.Kub63pVygl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlkANtgACgkQXYcKB8Em
+e0ZVyA//Upbu4Lep+T49diKyjqfthpeUZLYA8UQnJ+NaHsDUV/uo68aGfQXJkdJt
+RZ7bubgMee8Qf1FE6qLxi6Tj6b54iapPO2YGf00Owc1EyCgAZpw9XTOcR7Pjt7/o
+fvYd5mK4cZoMtJloD+2j7UX4MtdtUGgNDt5Pv4q6Bq75DXs84oooAeJzdvv8PANF
+IfpIJ3zxY0tf5FeXkHH4FzuRAoT7dC2RLGtVgoWpjVeM6N8A20L7xnhOF47BGOyi
+1UY/Iu5dbU2VQJ6N4Yw4TreVI1kjztcf+yPH0C0SDb0xd131QQRVsCpDa8m06oQV
+U6G2AReJFTBUh9sulb4CGcTbLtBLIaxI/4PhuWmuT+dr3j0X2+uHk+cCwxSFz6Hb
+Dn6S3oPqDQhyxhUFlG1nofyamPqaAYuinLGegGn20ZD0/QFdTiKmkvYSXsvBQ7dc
+Qaor9YCBFdnA6aB01HFKZuZMtEC4bb4t+DCY7gQQWQJjkvlVE0EA8hv7T5rlL5bu
+ko9r/QcRkFl+R/hT8VY0GlA7hk55ssQ07AzgNS8ntlWEx0FErwX/ucUgwt+63Ijt
+0vc5JbMFkaWP20SDWxRKjr5bd6DDO+dNFFUYx7aXMEwKlBInWe5RaBI+5fPV5eH0
+sgL02AE6DTlS5Nf7Ujld4nPLXJgqd3lvPhZs+YshB6zQ5vUe/6A=
+=ykFc
+-----END PGP SIGNATURE-----
+
+--nextPart3772731.Kub63pVygl--
 
