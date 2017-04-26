@@ -1,12 +1,12 @@
-Return-Path: <dandenson@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <c63cb109-81bf-4a08-6b29-813a89590170@viisauksena.de>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 26 Apr 2017 18:05:48 +0200
+Message-ID: <1504855.vmUtePouqW@prime>
+In-Reply-To: <1493216459.18414.3.camel@openmailbox.org>
 References: <1493216459.18414.3.camel@openmailbox.org>
- <c63cb109-81bf-4a08-6b29-813a89590170@viisauksena.de>
-From: dan <dandenson@gmail.com>
-Date: Wed, 26 Apr 2017 09:53:23 -0600
-Message-ID: <CAA_JP8W9drbSJQDDc4Lqxr-ceDRfydYrHWwSR+ZBCw6R5oyiDw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1782383.EhJu8sBe6S";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] how well does batman-adv scale
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,57 +17,62 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-I can't see how it could scale.  Each node needs a table of all other
-nodes to calculate the cost for each path.  This is a LOT of data and
-each node rebroadcasts it's neighbor's information so the more
-neighbors, the more rebroadcasting.
+--nextPart1782383.EhJu8sBe6S
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Maybe if you had a long string of nodes with each node only seeing 1-2
-other nodes, it might scale up higher, but that's not the point of
-mesh networking.
+Hi,
 
-It really means that under idea circumstances, overhead is going to
-scale up with node count by percent.  So a few nodes is low overhead,
-but 50 nodes might be as much as 50% and so on.
+"works well" depends much on  your scenario.
 
-This is a critical flaw in batman-adv to scale up. Requiring each node
-to know all other nodes.  If this rule could be changed to have
-batman-adv only keep track of gateway nodes and nodes in the path to a
-gateway, then it could scale vastly further.
+I've seen many well-working networks with 100-300 nodes. There are Freifunk 
+community networks with over 1000 nodes running batman-adv (i.e. "standard" 
+users like laptops and smartphones), but they employ a lot of filtering to 
+avoid too much broadcast.
+
+Unless you have special restrictions like minimal broadcast traffic or high 
+capacity on the wireless links, memory and CPU, I would not recommend to plan 
+for 10 000 nodes and beyond.
+
+Cheers,
+     Simon
+
+On Wednesday, April 26, 2017 4:20:59 PM CEST fuumind wrote:
+> Hi list!
+> 
+> Been lurking for almost a year on the battlemesh list and recently
+> joined here as well. 
+> 
+> I'm curious about how well batman-adv scales. Would a network of 10 000
+> nodes work well? What about 100 000 nodes or 1 000 000?
+> 
+> Thanks!
+> fuumind
 
 
+--nextPart1782383.EhJu8sBe6S
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-On Wed, Apr 26, 2017 at 9:10 AM, jens <jens@viisauksena.de> wrote:
-> i think this could scale , but you will need sufficient power / ethernet
-> capacities at the nodes.
->
-> and the biggest problem may be that these endpoints make much noise on
-> the layer2 level.
-> (disovery protocolls and stuff like this)
->
-> you could easily imagine what would happen if you have a layer2 switch
-> with 100000 ports.
->
-> i think that most of the time you will not do this, and implement some
-> sort of routing between some clouds of batman-adv networks.
->
->
->
-> On 26.04.2017 16:20, fuumind wrote:
->> Hi list!
->>
->> Been lurking for almost a year on the battlemesh list and recently
->> joined here as well.
->>
->> I'm curious about how well batman-adv scales. Would a network of 10 000
->> nodes work well? What about 100 000 nodes or 1 000 000?
->>
->> Thanks!
->> fuumind
->>
->
-> --
-> make the world nicer, please use PGP encryption
->
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlkAxVwACgkQoSvjmEKS
+nqF5PA/7BNE+SFgY9OUNv1+Xj+x6CgePWsOCC8i2tgOyjSDKFJpTbE4P1afxcpPo
+oYX+ThzzmL7ZaLhT1yN1cSmiqpd+HOLItBFZJ6GynOrUAJQ5kEppP7WrKsWLMU70
+5duTYrjobLtViGYVWiQ17TL6LOvpegcZPxQzLNHjzsplsJLeqSRI1cXxy/hPtiuf
+xhlOhvmrHekcWcyODCSF8rpQOTnleEKkE/dIiJCq9alKKBeAlVzmQbp0mr1RAoVw
+HBsDDAMQ8EBkOfSSbIrh9w5AgUxo38FD79hByUBVZ37ltD685xZXS25o9rXRRdkl
+/Kc0g/bSQXVEqLDufdGdalbbw6xVhVm2IzySmeJNlmdMLYr2tJsSIqp/HpWnsp/b
+bu5y16MpqgE2ITvBl7HGdgYrXHddWTTEIaiaiM2V9FCSpP6cjNinJKx3ZRZxT+72
+7t3ZKaov142En7b/0ewV4Wg1voiL/fa+0gKB7INiIptx/NTHcriJmhLIRFKJH0gp
+4BmE6SWtZjjn2Ej02SFX44Vgl66vidi1qZ2WNtCxIUDEQQytjgRF7wDdM99+mtgF
+qYqVyMmzzZGEJYUtZiND7PqVWY4V4Swy7oi5FWIXrAjmPbndTeihegiCp8cyPrXx
+YAg7t5aOn4NTNg6AAFK4Fg5bsjzHw7lIfOes3ko1LL9gwonoEXs=
+=liud
+-----END PGP SIGNATURE-----
+
+--nextPart1782383.EhJu8sBe6S--
+
