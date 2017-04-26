@@ -1,12 +1,13 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 26 Apr 2017 18:05:48 +0200
-Message-ID: <1504855.vmUtePouqW@prime>
-In-Reply-To: <1493216459.18414.3.camel@openmailbox.org>
+Return-Path: <fuumind@openmailbox.org>
+Message-ID: <1493222768.13937.11.camel@openmailbox.org>
+From: fuumind <fuumind@openmailbox.org>
+Date: Wed, 26 Apr 2017 18:06:08 +0200
+In-Reply-To: <c63cb109-81bf-4a08-6b29-813a89590170@viisauksena.de>
 References: <1493216459.18414.3.camel@openmailbox.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1782383.EhJu8sBe6S";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+ <c63cb109-81bf-4a08-6b29-813a89590170@viisauksena.de>
+Content-Type: text/plain; charset="utf-8"
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Subject: Re: [B.A.T.M.A.N.] how well does batman-adv scale
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -19,60 +20,49 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1782383.EhJu8sBe6S
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi Jens! 
 
-Hi,
+By 'sufficient power', do you mean processing power to handle overhead
+traffic? I'm imagining a network which primarily connects WLANs.
 
-"works well" depends much on  your scenario.
+Clouds of batman-adv networks sounds like a good idea. Any idea about
+how to implement the interfaces between these clouds? How big should
+they be allowed to grow before forming a new cloud?
 
-I've seen many well-working networks with 100-300 nodes. There are Freifunk 
-community networks with over 1000 nodes running batman-adv (i.e. "standard" 
-users like laptops and smartphones), but they employ a lot of filtering to 
-avoid too much broadcast.
+fuumind
 
-Unless you have special restrictions like minimal broadcast traffic or high 
-capacity on the wireless links, memory and CPU, I would not recommend to plan 
-for 10 000 nodes and beyond.
 
-Cheers,
-     Simon
-
-On Wednesday, April 26, 2017 4:20:59 PM CEST fuumind wrote:
-> Hi list!
+ons 2017-04-26 klockan 17:10 +0200 skrev jens:
+> i think this could scale , but you will need sufficient power /
+> ethernet
+> capacities at the nodes.
 > 
-> Been lurking for almost a year on the battlemesh list and recently
-> joined here as well. 
+> and the biggest problem may be that these endpoints make much noise
+> on
+> the layer2 level.
+> (disovery protocolls and stuff like this)
 > 
-> I'm curious about how well batman-adv scales. Would a network of 10 000
-> nodes work well? What about 100 000 nodes or 1 000 000?
+> you could easily imagine what would happen if you have a layer2
+> switch
+> with 100000 ports.
 > 
-> Thanks!
-> fuumind
-
-
---nextPart1782383.EhJu8sBe6S
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlkAxVwACgkQoSvjmEKS
-nqF5PA/7BNE+SFgY9OUNv1+Xj+x6CgePWsOCC8i2tgOyjSDKFJpTbE4P1afxcpPo
-oYX+ThzzmL7ZaLhT1yN1cSmiqpd+HOLItBFZJ6GynOrUAJQ5kEppP7WrKsWLMU70
-5duTYrjobLtViGYVWiQ17TL6LOvpegcZPxQzLNHjzsplsJLeqSRI1cXxy/hPtiuf
-xhlOhvmrHekcWcyODCSF8rpQOTnleEKkE/dIiJCq9alKKBeAlVzmQbp0mr1RAoVw
-HBsDDAMQ8EBkOfSSbIrh9w5AgUxo38FD79hByUBVZ37ltD685xZXS25o9rXRRdkl
-/Kc0g/bSQXVEqLDufdGdalbbw6xVhVm2IzySmeJNlmdMLYr2tJsSIqp/HpWnsp/b
-bu5y16MpqgE2ITvBl7HGdgYrXHddWTTEIaiaiM2V9FCSpP6cjNinJKx3ZRZxT+72
-7t3ZKaov142En7b/0ewV4Wg1voiL/fa+0gKB7INiIptx/NTHcriJmhLIRFKJH0gp
-4BmE6SWtZjjn2Ej02SFX44Vgl66vidi1qZ2WNtCxIUDEQQytjgRF7wDdM99+mtgF
-qYqVyMmzzZGEJYUtZiND7PqVWY4V4Swy7oi5FWIXrAjmPbndTeihegiCp8cyPrXx
-YAg7t5aOn4NTNg6AAFK4Fg5bsjzHw7lIfOes3ko1LL9gwonoEXs=
-=liud
------END PGP SIGNATURE-----
-
---nextPart1782383.EhJu8sBe6S--
-
+> i think that most of the time you will not do this, and implement
+> some
+> sort of routing between some clouds of batman-adv networks.
+> 
+> 
+> 
+> On 26.04.2017 16:20, fuumind wrote:
+> > 
+> > Hi list!
+> > 
+> > Been lurking for almost a year on the battlemesh list and recently
+> > joined here as well. 
+> > 
+> > I'm curious about how well batman-adv scales. Would a network of 10
+> > 000
+> > nodes work well? What about 100 000 nodes or 1 000 000?
+> > 
+> > Thanks!
+> > fuumind
+> > 
