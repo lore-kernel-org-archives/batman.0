@@ -1,18 +1,14 @@
-Return-Path: <gfree.wind@foxmail.com>
-From: "Gao Feng" <gfree.wind@foxmail.com>
-References: <1493121800-28066-1-git-send-email-gfree.wind@foxmail.com>
- <3994535.Z9kqCnttI2@bentobox> <002101d2be58$8bcaaa00$a35ffe00$@foxmail.com>
- <2857108.moq831zFsU@bentobox>
-In-Reply-To: <2857108.moq831zFsU@bentobox>
-Date: Wed, 26 Apr 2017 15:28:26 +0800
-Message-ID: <005501d2be5e$b2bb0550$18310ff0$@foxmail.com>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 26 Apr 2017 09:46:10 +0200
+Message-ID: <2353415.Uvg9THrFoq@prime>
+In-Reply-To: <0a5a6ac9-6409-fec9-4045-3780bedaadb8@gmail.com>
+References: <9309484e-a9c2-0476-3ddf-a2d68a51c58e@gmail.com>
+ <1558277.kIpDkU8F5M@prime> <0a5a6ac9-6409-fec9-4045-3780bedaadb8@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Language: zh-cn
-Subject: Re: [B.A.T.M.A.N.] [PATCH net] net: batman-adv: Fix possible
-	memleaks when fail to register_netdevice
+Content-Type: multipart/signed; boundary="nextPart2741734.jzVYabWQ4M";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [batman-adv] Does batman-adv works perfectly?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,57 +18,50 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: 'Sven Eckelmann' <sven@narfation.org>
-Cc: mareklindner@neomailbox.ch, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc, 'Gao Feng' <fgao@ikuai8.com>, davem@davemloft.net
+To: Xuebing Wang <xbing6@gmail.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-> From: Sven Eckelmann [mailto:sven@narfation.org]
-> Sent: Wednesday, April 26, 2017 3:17 PM
-> On Mittwoch, 26. April 2017 14:44:24 CEST Gao Feng wrote:
-> [...]
-> > I get it now, thanks.
-> [...]
-> > BTW, I think although the batadv_softif_create is legacy, we should
-> > fix it when it still exists :)
+--nextPart2741734.jzVYabWQ4M
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+Hi Xuebing, On Wednesday, April 26, 2017 10:49:37 AM CEST Xuebing Wang wrote:
+> Hi Simon,
 > 
-> I didn't meant that we should not fix it. I just said that it looks to me
-like the fix
-> should look different to ensure that it actually fixes the sysfs and rtnl
-link
-> implementation for the batadv interface creation. Right now the ndo_uninit
-> (when it would be set by batadv) is called in the netdev core functions
-when an
-> error happens during the registration. This is not the case for the
-destructor.
-
-Thanks your answer.
-I assumed the destructor is not for this case before.. 
-
-> Your patch would not change it. It therefore looks like you simply have to
-move
-> the current destructor (without the free_netdev) to ndo_uninit and change
-the
-> destructor to free_netdev.
-
-Yes, that patch didn't touch badman-adv. Because current badman-adv doesn't
-support newlink now.
-It would be good that cleanup the resource in ndo_uninit routine.
-
-Best Regards
-Feng
- 
+> => It is used commercially as well on some hundred thousand devices.
 > 
-> The batadv ops doesn't have a newlink function. It will therefore use the
-> register_netdevice code path which calls free_netdev on failures. The
-extra
-> cleanup you've added in
-> https://www.mail-archive.com/netdev@vger.kernel.org/msg165253.html can
-> therefore not work for batman-adv. Actually, it is not touching anything
-> batman-adv related. The suggestion to change the register_netdevice ->
-> free_netdev part in rtnl_newlink was new in the reply to the batadv
-discussion.
-> It is therefore still an open discussion how it is correctly fixed.
-> 
-> Kind regards,
-> 	Sven
+> Are you saying that batman-adv has hundred of thousands (100,000+) nodes
+> installed? Thanks for your always help.
 
+Yes, installed and actively in use. The devices having batman-adv installed 
+are probably some millions, since many Linux PC distributions ship the module 
+along with their Linux kernel. On Debian for example, batman-adv is just an 
+insmod away. ;)
+
+Cheers,
+     Simon
+
+--nextPart2741734.jzVYabWQ4M
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlkAUEIACgkQoSvjmEKS
+nqFCaQ//fLgsFk0cvD7QaxNOJEuccmj/3Id8+Ql25zP+7NGbu07Zm37hZCghRo5J
+1Xt7GjC1+G+JJxr0bviTGcaLmIBKRer1tWGHDI2U+jRd4RpmA61i819lYEc8A7w+
+sOqDcv8jjlZlXc0OsLHghPr1obugYRna7rGWg2otwtRCRuwRSg/sNLw3AD9GLJqP
+KG+cC+JY3unmeuZu/JDTmg4dPQRqPA2kWu8eA4BfRkqz/4s9fo41qRFRqCP/I0FL
+xHPC/hwx6Vwjb3TAKKUk8agkzc2pUCKcUcpdCjZR3zDanHZk770OhAbSZq+RJ8Z3
+oLgJwnl9td04ZmFn/u+z+3mR7xv4MlC4KhqTnNvnGk2/A11WmHrr9trwx/G1h1nK
+1SXG33UcMAFAx7W6nsxqEYfpz8MWTBDJNnPSkeQbdF5LRls59Xn2UXN0RNPqeDbR
+iv/Oi3NCTaxIonODgX/2X4TDlZDtdUBQnsV2atxWq7gqnufAlvXRXaZSp18jfV+o
+UnrgsT2okPjsHhOaeEPg5+zXoMaq/JOWbYQs3t/GpBPEUvejaaWpY116WV3zcs2L
+O6i0EkBAtJmFCKHf+huiDsl7u2PB2PRJZ7w73WcfdS+fcDLJjR1By2a5Cmih7MHJ
+8Tdljz52GPLg8VLyufrQgJMPXgjiww4ptAD3k0hGSjJuxLG/JmI=
+=nObo
+-----END PGP SIGNATURE-----
+
+--nextPart2741734.jzVYabWQ4M--
 
