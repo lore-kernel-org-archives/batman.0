@@ -1,13 +1,16 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 26 Apr 2017 07:57:44 +0200
-Message-ID: <3994535.Z9kqCnttI2@bentobox>
-In-Reply-To: <002901d2be25$d9092bd0$8b1b8370$@foxmail.com>
+Return-Path: <gfree.wind@foxmail.com>
+From: "Gao Feng" <gfree.wind@foxmail.com>
 References: <1493121800-28066-1-git-send-email-gfree.wind@foxmail.com>
  <1756616.320MP6AHYH@bentobox> <002901d2be25$d9092bd0$8b1b8370$@foxmail.com>
+ <3994535.Z9kqCnttI2@bentobox>
+In-Reply-To: <3994535.Z9kqCnttI2@bentobox>
+Date: Wed, 26 Apr 2017 14:44:24 +0800
+Message-ID: <002101d2be58$8bcaaa00$a35ffe00$@foxmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3772731.Kub63pVygl";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Language: zh-cn
 Subject: Re: [B.A.T.M.A.N.] [PATCH net] net: batman-adv: Fix possible
 	memleaks when fail to register_netdevice
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,67 +22,86 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Gao Feng <gfree.wind@foxmail.com>
+To: 'Sven Eckelmann' <sven@narfation.org>
 Cc: mareklindner@neomailbox.ch, netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, a@unstable.cc, 'Gao Feng' <fgao@ikuai8.com>, davem@davemloft.net
 
---nextPart3772731.Kub63pVygl
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-On Mittwoch, 26. April 2017 08:41:30 CEST Gao Feng wrote:
-> On Dienstag, 25. April 2017 20:03:20 CEST gfree.wind@foxmail.com wrote:
-> > From: Gao Feng <fgao@ikuai8.com>
-> > 
-> > Because the func batadv_softif_init_late allocate some resources and
-> > it would be invoked in register_netdevice. So we need to invoke the
-> > func batadv_softif_free instead of free_netdev to cleanup when fail
-> > to register_netdevice.
+> From: Sven Eckelmann [mailto:sven@narfation.org]
+> Sent: Wednesday, April 26, 2017 1:58 PM
+> On Mittwoch, 26. April 2017 08:41:30 CEST Gao Feng wrote:
+> > On Dienstag, 25. April 2017 20:03:20 CEST gfree.wind@foxmail.com wrote:
+> > > From: Gao Feng <fgao@ikuai8.com>
+> > >
+> > > Because the func batadv_softif_init_late allocate some resources and
+> > > it would be invoked in register_netdevice. So we need to invoke the
+> > > func batadv_softif_free instead of free_netdev to cleanup when fail
+> > > to register_netdevice.
+> >
+> > I could be wrong, but shouldn't the destructor be replaced with
+> > free_netdevice and the batadv_softif_free (without the free_netdev)
+> > used as ndo_uninit? The line you've changed should then be kept as
+> free_netdevice.
+> >
+> > At least this seems to be important when using rtnl_newlink() instead
+> > of the legacy sysfs netdev stuff from batman-adv. rtnl_newlink() would
+> > also only call free_netdevice and thus also not run
+> > batadv_softif_free. This seems to be only fixable by calling ndo_uninit.
+> >
+> > Sorry, I don't get you.
+> > The net_dev is created in this func batadv_softif_create.
+> > Why couldn't invoke batadv_softif_free to cleanup when fail to
+> > register_netdevice?
+> >
 > 
-> I could be wrong, but shouldn't the destructor be replaced with free_netdevice 
-> and the batadv_softif_free (without the free_netdev) used as ndo_uninit? The 
-> line you've changed should then be kept as free_netdevice.
+> Because it is the legacy way to create the batadv interfaces and there is
+a
+> "new" one. The new way is to use rtnl link (see batadv_link_ops).
 > 
-> At least this seems to be important when using rtnl_newlink() instead of the 
-> legacy sysfs netdev stuff from batman-adv. rtnl_newlink() would also only call 
-> free_netdevice and thus also not run batadv_softif_free. This seems to be only 
-> fixable by calling ndo_uninit.
+> The rtnl linke (rtnl_newlink) would not benefit from your fix and
+therefore still
+> show the old behavior. I think a different fix is necessary to solve the
+problem
+> for both ways to create an batadv interface.
 > 
-> Sorry, I don't get you.
-> The net_dev is created in this func batadv_softif_create.
-> Why couldn't invoke batadv_softif_free to cleanup when fail to
-> register_netdevice?
-> 
+> Kind regards,
+> 	Sven
 
-Because it is the legacy way to create the batadv interfaces and there is a 
-"new" one. The new way is to use rtnl link (see batadv_link_ops). 
+I get it now, thanks.
+Actually I sent another patch about the memleaks when invoke newlink and
+fail to register_netdev.
+You could refer to it by
+https://www.mail-archive.com/netdev@vger.kernel.org/msg165253.html.
 
-The rtnl linke (rtnl_newlink) would not benefit from your fix and therefore 
-still show the old behavior. I think a different fix is necessary to solve the 
-problem for both ways to create an batadv interface.
+In this patch, I add the cleanup when fail to register_netdev.
+It would be more simple if modify the rtnl_newlink and invoke the destructor
+of netdev when failed.
+Like the following codes.
+	if (ops->newlink) {
+		err = ops->newlink(link_net ? : net, dev, tb, data);
+		if (err < 0) {
+			if (dev->reg_state == NETREG_UNINITIALIZED)
+				if (dev->destructor)
+					dev->destructor(dev)
+				else
+					free_netdev(dev);
+				goto out;
+			}
+		} else {
+			err = register_netdevice(dev);
+			if (err < 0) {
+				if (dev->destructor)
+					dev->destructor(dev);
+				else
+					free_netdev(dev);
+				goto out;
+			}
+	}
 
-Kind regards,
-	Sven
---nextPart3772731.Kub63pVygl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+But I don't know if it breaks the design newlink and destructor.
 
------BEGIN PGP SIGNATURE-----
+BTW, I think although the batadv_softif_create is legacy, we should fix it
+when it still exists :)
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlkANtgACgkQXYcKB8Em
-e0ZVyA//Upbu4Lep+T49diKyjqfthpeUZLYA8UQnJ+NaHsDUV/uo68aGfQXJkdJt
-RZ7bubgMee8Qf1FE6qLxi6Tj6b54iapPO2YGf00Owc1EyCgAZpw9XTOcR7Pjt7/o
-fvYd5mK4cZoMtJloD+2j7UX4MtdtUGgNDt5Pv4q6Bq75DXs84oooAeJzdvv8PANF
-IfpIJ3zxY0tf5FeXkHH4FzuRAoT7dC2RLGtVgoWpjVeM6N8A20L7xnhOF47BGOyi
-1UY/Iu5dbU2VQJ6N4Yw4TreVI1kjztcf+yPH0C0SDb0xd131QQRVsCpDa8m06oQV
-U6G2AReJFTBUh9sulb4CGcTbLtBLIaxI/4PhuWmuT+dr3j0X2+uHk+cCwxSFz6Hb
-Dn6S3oPqDQhyxhUFlG1nofyamPqaAYuinLGegGn20ZD0/QFdTiKmkvYSXsvBQ7dc
-Qaor9YCBFdnA6aB01HFKZuZMtEC4bb4t+DCY7gQQWQJjkvlVE0EA8hv7T5rlL5bu
-ko9r/QcRkFl+R/hT8VY0GlA7hk55ssQ07AzgNS8ntlWEx0FErwX/ucUgwt+63Ijt
-0vc5JbMFkaWP20SDWxRKjr5bd6DDO+dNFFUYx7aXMEwKlBInWe5RaBI+5fPV5eH0
-sgL02AE6DTlS5Nf7Ujld4nPLXJgqd3lvPhZs+YshB6zQ5vUe/6A=
-=ykFc
------END PGP SIGNATURE-----
+Regards
+Feng
 
---nextPart3772731.Kub63pVygl--
 
