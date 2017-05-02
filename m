@@ -1,9 +1,17 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 28 Apr 2017 22:26:10 +0200
-Message-Id: <20170428202610.27022-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: handle race condition for claims
-	also in batadv_bla_rx
+Return-Path: <are@lihas.de>
+Date: Tue, 2 May 2017 13:35:02 +0200
+From: Adrian Reyer <are@lihas.de>
+Message-ID: <20170502113502.jjvlpqksmlhguxle@r2d3.s.lihas.de>
+References: <1493216459.18414.3.camel@openmailbox.org>
+ <1504855.vmUtePouqW@prime>
+ <1493376248.28193.6.camel@openmailbox.org>
+ <3080757.qWi1On8dnJ@prime>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="on6epfasp3s4syxp"
+Content-Disposition: inline
+In-Reply-To: <3080757.qWi1On8dnJ@prime>
+Subject: Re: [B.A.T.M.A.N.] how well does batman-adv scale
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,113 +21,64 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Andreas Pape <apape@phoenixcontact.com>
 
-Like in the case of the patch for batadv_bla_tx to handle a race
-condition when claiming a mac address for bla, a similar situation
-can occur when claiming is triggered via batadv_bla_rx. This patch
-solves this with a similar approach as for batadv_bla_tx.
+--on6epfasp3s4syxp
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
----
- net/batman-adv/bridge_loop_avoidance.c |   31 ++++++++++++++++++++-----------
- net/batman-adv/translation-table.c     |   26 ++++++++++++++++++++++++++
- net/batman-adv/translation-table.h     |    3 +++
- 3 files changed, 49 insertions(+), 11 deletions(-)
+On Fri, Apr 28, 2017 at 02:23:16PM +0200, Simon Wunderlich wrote:
+> On Friday, April 28, 2017 12:44:08 PM CEST fuumind wrote:
+> > Ok, so clouds of a few hundred nodes would work reasonably well and at
+> > the same time keep customization to a minimum.
+> Yes
+> > What makes OSPF a better candidate for interfacing between the clouds?
+> > Does it keep a more limited routing table and thus minimize overhead
+> > traffic? I haven't been able to figure it out good enough yet.
+> Which technology is the best is beyond my knowledge.
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index d07e89e..cab8980 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1847,19 +1847,28 @@ bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 
- 	if (!claim) {
- 		/* possible optimization: race for a claim */
--		/* No claim exists yet, claim it for us!
-+		/* Make sure this packet is not looping back
-+		 * from our own backbone.
- 		 */
- 
--		batadv_dbg(BATADV_DBG_BLA, bat_priv,
--			   "bla_rx(): Unclaimed MAC %pM found. Claim it. Local: %s\n",
--			   ethhdr->h_source,
--			   batadv_is_my_client(bat_priv,
--					       ethhdr->h_source, vid) ?
--			   "yes" : "no");
--		batadv_handle_claim(bat_priv, primary_if,
--				    primary_if->net_dev->dev_addr,
--				    ethhdr->h_source, vid);
--		goto allow;
-+		if (batadv_tt_local_has_timed_out(bat_priv, ethhdr->h_source,
-+						  vid, 100)) {
-+			/* No claim exists yet, claim it for us!
-+			 */
-+			batadv_dbg(BATADV_DBG_BLA, bat_priv,
-+				   "bla_rx(): Unclaimed MAC %pM found. Claim it. Local: %s\n",
-+				   ethhdr->h_source,
-+				   batadv_is_my_client(bat_priv,
-+						       ethhdr->h_source, vid) ?
-+				   "yes" : "no");
-+
-+			batadv_handle_claim(bat_priv, primary_if,
-+					    primary_if->net_dev->dev_addr,
-+					    ethhdr->h_source, vid);
-+			goto allow;
-+		} else {
-+			goto handled;
-+		}
- 	}
- 
- 	/* if it is our own claim ... */
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index e75b493..b908195 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -4380,3 +4380,29 @@ void batadv_tt_cache_destroy(void)
- 	kmem_cache_destroy(batadv_tt_req_cache);
- 	kmem_cache_destroy(batadv_tt_roam_cache);
- }
-+
-+bool batadv_tt_local_has_timed_out(struct batadv_priv *bat_priv,
-+				   const u8 *addr, unsigned short vid,
-+				   unsigned int timeout)
-+{
-+	struct batadv_tt_local_entry *tt_local_entry;
-+	bool ret = true;
-+
-+	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr, vid);
-+	if (!tt_local_entry)
-+		goto out;
-+	/* Check if the client has been logically deleted (but is kept for
-+	 * consistency purpose)
-+	 */
-+	if ((tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING) ||
-+	    (tt_local_entry->common.flags & BATADV_TT_CLIENT_ROAM))
-+		goto out;
-+	/* Check that the tt_local_entry has a certain age */
-+	if (!batadv_has_timed_out(tt_local_entry->last_seen, timeout))
-+		ret = false;
-+
-+out:
-+	if (tt_local_entry)
-+		batadv_tt_local_entry_put(tt_local_entry);
-+	return ret;
-+}
-diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
-index 411d586..b05d0d8 100644
---- a/net/batman-adv/translation-table.h
-+++ b/net/batman-adv/translation-table.h
-@@ -65,5 +65,8 @@ bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
- 
- int batadv_tt_cache_init(void);
- void batadv_tt_cache_destroy(void);
-+bool batadv_tt_local_has_timed_out(struct batadv_priv *bat_priv,
-+				   const u8 *addr, unsigned short vid,
-+				   unsigned int timeout);
- 
- #endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */
--- 
-1.7.0.4
+We (Freifunk Stuttgart) use a setup similar to this.
+A split in different Layer3 Routingdomains had been necessary, as the
+batman-management traffic reached 1mbit/s at about 300 batman nodes.
+Geographically we depend on vpn-links to servers for our network, so
+we rarely have longer lines that could aggregate some information. The
+local uplinks are often consumer internet lines als slow as 16mbit/s
+down- and 1mbit/s upstream.
+Our different batman-segments are distributed between several core
+gateways. These gateway are linked together via a backbone vpn, no batman
+there, just routing within that vpn.
+Our first idea had been tinc vpn (meshing vpn) + OSPF, however, tinc
+mesh and ospf don't play nice, we had a really unstable network. In my
+eyes, ospf needs a stable network, some vpn between some internet
+servers as a virtual switch is not good enough.
+Atm we use tinc + tinc internal routing. This works well but is somewhat
+unflexible when it comes to new networks.
+In future we will try and convert to p2p vpn links (probably openvpn)
+between the gateways and use bgp for the routing stuff.
 
+Regards,
+	Adrian
+--=20
+LiHAS - Adrian Reyer - Hessenwiesenstra=C3=9Fe 10 - D-70565 Stuttgart
+Fon: +49 (7 11) 78 28 50 90 - Fax:  +49 (7 11) 78 28 50 91
+Mail: lihas@lihas.de - Web: http://lihas.de
+Linux, Netzwerke, Consulting & Support - USt-ID: DE 227 816 626 Stuttgart
+
+--on6epfasp3s4syxp
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEoYEF06NCPUA1+BdmuHS31pP6XDYFAlkIbtwACgkQuHS31pP6
+XDbhtwf/V2c3/4XdhKLxUdm4z3IKo2+OENo61KJ9mbSJYGGY4snSNNBMkRMrYmph
+X4Sti+G+LIRF2g4L7gIwhCpQYbiSbBIgpvc9vZegsbbSRPmDh3P0p7pwtznEZtxH
+beQbxUAl0VFiJslmeNm2CYth9lor3naYngtpQTz9gS4+wSA80ZPJeyaFWCp4rtvQ
+QJKW/zM0ofxsX2IQ99hznWWZ2NGTJ72eAOxg1GK68okNDVjyL4QsF4iMQliNjCiK
+wfQ+DEQC3ZwgjY6iESKBthVNKEZUyb5O6LWtIWEByPHd2T1h9WO+EIfPdAzHQSi9
+KQFgZuY7kuIwPhW3hEB+MsqwYrvk7g==
+=vPtt
+-----END PGP SIGNATURE-----
+
+--on6epfasp3s4syxp--
