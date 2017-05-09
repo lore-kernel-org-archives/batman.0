@@ -1,15 +1,14 @@
-Return-Path: <elfring@users.sourceforge.net>
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-References: <512d2e7c-0967-9303-2b68-6c9ef53d6ed2@users.sourceforge.net>
-Message-ID: <0813673a-a824-5fd7-7388-65d3af475002@users.sourceforge.net>
-Date: Sat, 6 May 2017 18:15:36 +0200
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 09 May 2017 17:50:41 +0200
+Message-ID: <38318850.GE51cWUxAf@prime>
+In-Reply-To: <20170428202610.27022-1-sw@simonwunderlich.de>
+References: <20170428202610.27022-1-sw@simonwunderlich.de>
 MIME-Version: 1.0
-In-Reply-To: <512d2e7c-0967-9303-2b68-6c9ef53d6ed2@users.sourceforge.net>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: Combine two seq_puts() calls
- into one call in batadv_nc_nodes_seq_print_text()
+Content-Type: multipart/signed; boundary="nextPart2029916.TUcI1g4g74";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: handle race condition for
+	claims also in batadv_bla_rx
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,37 +18,67 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: Andreas Pape <apape@phoenixcontact.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 6 May 2017 17:57:36 +0200
+--nextPart2029916.TUcI1g4g74
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-A bit of text was put into a sequence by two separate function calls.
-Print the same data by a single function call instead.
+On Friday, April 28, 2017 10:26:10 PM CEST Simon Wunderlich wrote:
+> From: Andreas Pape <apape@phoenixcontact.com>
+> 
+> Like in the case of the patch for batadv_bla_tx to handle a race
+> condition when claiming a mac address for bla, a similar situation
+> can occur when claiming is triggered via batadv_bla_rx. This patch
+> solves this with a similar approach as for batadv_bla_tx.
+> 
+> Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
 
-This issue was detected by using the Coccinelle software.
+Hi Andreas,
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- net/batman-adv/network-coding.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+thanks again for the patch - in general, I think this looks good, although I 
+don't follow completely where you saw that. Can you describe the scenario a 
+little more?
 
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index e1f6fc72fe3e..3604d7899e2c 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -1935,9 +1935,7 @@ int batadv_nc_nodes_seq_print_text(struct seq_file *seq, void *offset)
- 						list)
- 				seq_printf(seq, "%pM ",
- 					   nc_node->addr);
--			seq_puts(seq, "\n");
--
--			seq_puts(seq, " Outgoing: ");
-+			seq_puts(seq, "\n Outgoing: ");
- 			/* For out_nc_node to this orig_node */
- 			list_for_each_entry_rcu(nc_node,
- 						&orig_node->out_coding_list,
--- 
-2.12.2
+We usually don't process packets from the mesh sent by nodes on the same LAN 
+segment - we look at the originator and check the BLA group using 
+batadv_check_claim_group().
+
+There are two things which we could improve documentation-wise:
+
+1.) Have some kernel doc  batadv_tt_local_has_timed_out - we want to have 
+kerneldoc for every new function we add.
+
+2.) Describe the scenario in a comment in batadv_bla_rx(). I find the comment 
+not too convincing, see above.
+
+Again, if this situation is really happening then I believe this patch 
+provides a good solution which I'd like to adopt. :)
+
+Thank you,
+     Simon
+--nextPart2029916.TUcI1g4g74
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlkR5VEACgkQoSvjmEKS
+nqERhw//cXxhO94gD6RIS72fqwXVNodoJkP60nj3JAT2Dc3ooIixfb8rNeWDatg3
+jNMrxSlDHq5WW0fBV4SFsG5A4J4Gx4EXq7wZ18ZdJZ7h3VuNt6E6v9CVdrkG5vr8
+bKUm/cIrH3SLhZ1c9SUo+GgvUVD2D0ytiSPmAe93W+J+2r8ESgWTEg0fubsrhd3B
+HWQXal0XaekQY//tamkZyOhlPKUzHhTmymnAu5yPHc/PmdY8J7Feg1wRUcmcW7CC
+Oxz5d6mj1avcJ1NLjoxLwsxjGstNKtyLzp+FCKyvUd348Z0cZoGRhAl0AkoV2f7i
+TnNEVGFV/tQfFh/TlmE6+Xv1b44+fY6WXwd6r2xZ+u76Z2W0HREMd3tTOhDJxriB
+sxjCd75Rl/X0f1CCKlCavX550Hs6GGJm56TZGsPjV0GrUNvKCkVktW2ucljFouxp
+QNZe6iPTdYtuu+XyA+YlIJlzGRNK/SYjO+li90Pifbt85gfN1NTQnDr/glk04kC3
+GPqy7p69ypNgXQ9D8ILGiniTeXbDU2izfPImEe8eqIRZDjV0EZGvCZOM6IcaxLxZ
+5L/hIXRTBiUNZ0RVb0TL4HGyx1fJpQaj7mDef1JwauVYfp33JA858R2cPsKJz7z3
+MXxuosPVT44Dfs8CzuVzx8IyN3YW6MyaBox4C/MsweevShlay2k=
+=2Mif
+-----END PGP SIGNATURE-----
+
+--nextPart2029916.TUcI1g4g74--
 
