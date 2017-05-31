@@ -1,11 +1,15 @@
 Return-Path: <linus.luessing@c0d3.blue>
-Date: Wed, 31 May 2017 15:50:06 +0200
+Date: Wed, 31 May 2017 16:20:13 +0200
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20170531135006.GC29826@otheros>
+Message-ID: <20170531142013.GD29826@otheros>
+References: <OF367AF97D.9569B75C-ONC1258131.00480417-C1258131.00491EA2@phoenixcontact.com>
+ <13855542.45yYzsjnKj@prime>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] B.A.T.M.A.N. Agenda for BattleMesh
+In-Reply-To: <13855542.45yYzsjnKj@prime>
+Subject: Re: [B.A.T.M.A.N.] MAC addresses of loop detect frames in global
+ translation-table
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,18 +19,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi,
+On Wed, May 31, 2017 at 03:39:23PM +0200, Simon Wunderlich wrote:
+> Hi Andreas,
+> 
+> yes, those are loop detection packets. Preventing these entries from the local 
+> translation table has been implemented only recently. We can potentially do 
+> the same for global addresses as well, it just hasn't been done so far ... at 
+> least I don't see a reason prevening us from that. It is probably added by 
+> "speedy join" in the first place.
 
-Thought it might be a good idea to collect the topics we
-could/should discuss or work on at the BattleMesh in Vienna
-concerning B.A.T.M.A.N. I started with a list of things I'd be
-interested in in the link below - feel free to add yours, too:
+This was the case at least for me. Andreas, do yours have the
+temporary flag set, too?
 
-https://etherpad.wikimedia.org/p/batman-wbm10
+I'm wondering why these packets end up in the mesh in the first
+place. (Preventing things as late as in tt_gobal_add() / on
+mesh receiving nodes seems like a workaround?)
 
 Regards, Linus
-
-PS: If you are adding discussion topics, ideally you'd be in
-Vienna, too ;).
