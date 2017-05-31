@@ -1,12 +1,12 @@
-Return-Path: <philipp.psurek@gmail.com>
-Message-ID: <1496077749.5980.2.camel@gmail.com>
-From: Philipp Psurek <philipp.psurek@gmail.com>
-Date: Mon, 29 May 2017 19:09:09 +0200
+Return-Path: <APape@phoenixcontact.com>
+MIME-Version: 1.0
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OF367AF97D.9569B75C-ONC1258131.00480417-C1258131.00491EA2@phoenixcontact.com>
+Date: Wed, 31 May 2017 15:18:39 +0200
+content-transfer-encoding: quoted-printable
 Content-Type: text/plain; charset="utf-8"
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [batctl] compiling with gcc 7.1.0: there are some
- notes and warnings
+Subject: [B.A.T.M.A.N.] MAC addresses of loop detect frames in global
+ translation-table
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,62 +18,46 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi all,
+Hello,
 
-it's nothing to worry about but since 2011 I always noticed a clean
-compile run of your code. Now with gcc 7.1.0 there are some warnings
-and notes that might interest you:
+I stumbled across some weired MAC addresses starting with ba:be in the
+global translation-table when running batman-adv-2017.0.1. I run my setup
+with bla enabled.
 
-~ LANG=C make
-    CC bat-hosts.o
-    CC debugfs.o
-    CC debug.o
-    CC functions.o
-    CC genl.o
-    CC hash.o
-    CC icmp_helper.o
-    CC interface.o
-    CC ioctl.o
-    CC main.o
-    CC netlink.o
-    CC ping.o
-    CC sys.o
-In file included from sys.c:37:0:
-sys.c: In function 'handle_ra_setting':
-sys.h:33:25: warning: '%s' directive output may be truncated writing up to 255 bytes into a region of size 185 [-Wformat-truncation=]
- #define SYS_IFACE_PATH  "/sys/class/net"
-                         ^
-sys.h:38:30: note: in expansion of macro 'SYS_IFACE_PATH'
- #define SYS_ROUTING_ALGO_FMT SYS_IFACE_PATH"/%s/mesh/routing_algo"
-                              ^~~~~~~~~~~~~~
-sys.c:480:38: note: in expansion of macro 'SYS_ROUTING_ALGO_FMT'
-   snprintf(path_buff, PATH_BUFF_LEN, SYS_ROUTING_ALGO_FMT, iface_dir->d_name);
-                                      ^~~~~~~~~~~~~~~~~~~~
-sys.h:38:46: note: format string is defined here
- #define SYS_ROUTING_ALGO_FMT SYS_IFACE_PATH"/%s/mesh/routing_algo"
-                                              ^~
-sys.c:480:3: note: 'snprintf' output between 34 and 289 bytes into a destination of size 200
-   snprintf(path_buff, PATH_BUFF_LEN, SYS_ROUTING_ALGO_FMT, iface_dir->d_name);
-   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CC tcpdump.o
-    CC tp_meter.o
-tp_meter.c: In function 'tp_meter':
-tp_meter.c:502:3: warning: this statement may fall through [-Wimplicit-fallthrough=]
-   printf("CANCEL received: test aborted\n");
-   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-tp_meter.c:504:2: note: here
-  case BATADV_TP_REASON_COMPLETE:
-  ^~~~
-    CC traceroute.o
-    CC translate.o
-    LD batctl
+Most of the entries in the global tt of my devices consist of these mac
+addresses. Looking through the code they come from frames which seem to be
+used for loop detection. Adding such MAC addresses to the local tt is
+prevented with the help of the batadv_bla_is_loopdetect_mac function. I
+wonder why adding these macs to the global tt is not prevented in a
+simliar way. Would it be possible to add a corresponding check to
+batadv_tt_global_add to prevent these macs from being added to the global
+tt? Or is there a specific reason why these mac addresses must occur in
+the global tt and which I have not understood so far?
 
-# batctl -v
-batctl 2017.1-1-g3069ca8 [batman-adv: 2017.1-4-g2149d80d]
+Best regards,
+Andreas
 
-It's really nothing bad at all. gcc 7.1.0 is somehow a little bit
-capricious but with more suggestions to make cleaner code.
 
-best regards
 
-Philipp
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
+
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Ulrich Leidecker, Christoph Le=
+ifer
+__________________________________________________________________
+Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
+nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
+rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
+d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
+ Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
