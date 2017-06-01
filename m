@@ -1,11 +1,15 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu,  1 Jun 2017 17:11:26 +0200
-Message-Id: <20170601151126.20708-3-sw@simonwunderlich.de>
-In-Reply-To: <20170601151126.20708-1-sw@simonwunderlich.de>
+Date: Thu, 01 Jun 2017 17:12:44 +0200
+Message-ID: <1510478.XXh1M6D72J@prime>
+In-Reply-To: <20170601151126.20708-2-sw@simonwunderlich.de>
 References: <20170601151126.20708-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: simplify return handling in
- some TT functions
+ <20170601151126.20708-2-sw@simonwunderlich.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4578013.rxioT3ABBc";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: handle race condition for
+ claims also in batadv_bla_rx
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,64 +21,46 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/translation-table.c | 17 ++++++-----------
- 1 file changed, 6 insertions(+), 11 deletions(-)
+--nextPart4578013.rxioT3ABBc
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index 4b64a9a6..e1133bc6 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -2488,18 +2488,16 @@ static bool
- _batadv_is_ap_isolated(struct batadv_tt_local_entry *tt_local_entry,
- 		       struct batadv_tt_global_entry *tt_global_entry)
- {
--	bool ret = false;
--
- 	if (tt_local_entry->common.flags & BATADV_TT_CLIENT_WIFI &&
- 	    tt_global_entry->common.flags & BATADV_TT_CLIENT_WIFI)
--		ret = true;
-+		return true;
- 
- 	/* check if the two clients are marked as isolated */
- 	if (tt_local_entry->common.flags & BATADV_TT_CLIENT_ISOLA &&
- 	    tt_global_entry->common.flags & BATADV_TT_CLIENT_ISOLA)
--		ret = true;
-+		return true;
- 
--	return ret;
-+	return false;
- }
- 
- /**
-@@ -4010,8 +4008,6 @@ bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
- 					  const unsigned char *addr,
- 					  unsigned short vid)
- {
--	bool ret = false;
--
- 	/* ignore loop detect macs, they are not supposed to be in the tt local
- 	 * data as well.
- 	 */
-@@ -4021,14 +4017,13 @@ bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
- 	if (!batadv_tt_global_add(bat_priv, orig_node, addr, vid,
- 				  BATADV_TT_CLIENT_TEMP,
- 				  atomic_read(&orig_node->last_ttvn)))
--		goto out;
-+		return false;
- 
- 	batadv_dbg(BATADV_DBG_TT, bat_priv,
- 		   "Added temporary global client (addr: %pM, vid: %d, orig: %pM)\n",
- 		   addr, batadv_print_vid(vid), orig_node->orig);
--	ret = true;
--out:
--	return ret;
-+
-+	return true;
- }
- 
- /**
--- 
-2.11.0
+On Thursday, June 1, 2017 5:11:25 PM CEST Simon Wunderlich wrote:
+> From: Andreas Pape <apape@phoenixcontact.com>
+> 
+> Like in the case of the patch for batadv_bla_tx to handle a race
+> condition when claiming a mac address for bla, a similar situation
+> can occur when claiming is triggered via batadv_bla_rx. This patch
+> solves this with a similar approach as for batadv_bla_tx.
+> 
+> Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
+> Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+
+Whoops, resent accidently, please ignore....
+
+Thanks,
+    Simon
+--nextPart4578013.rxioT3ABBc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlkwLuwACgkQoSvjmEKS
+nqEdZg//YiN25+/sWwOGGCWQvn5h7j6eFe8WQmdkFKSdfE97i3DiyY2UCXswv0Pa
+wmN4xfyRMn2k0dLFJxVXHuegKMbipVGJHQvwfdL4SBulgfxYi04TJAl5IGMyLKF6
+BKGzK/SNSTZdV+lNHHEjpWHNk1y4ezfmKHfu8cUFempHJ9vXFzYnPoZnyfnpDch/
+xbokXlKXjBBc+92TZxO7lRLgwlEe3BjnqPC+Q99ENV1rIyA5rza7Y7yZQlpwPWt7
+pp1Yj6/52u+piBWyMmZoDi4UkpGy6mZ8LjIdN/ZiXjk+TSVNMgYL9aNnpTYqCY7q
+5K0juvSjzp8oSoxSs9bJfzvs9ZUero5Qb/SvrxySjvt2UwWNRm0N6ZNvthXGU/3N
+t+tr8dsA5KI2zmqP6JwnNMqyfA8qgE9ts9g6OVSNhvsNcOFLdx9M4B44ARS/1g6d
+l3iC2W2rdgkIgX7ROhmooeS72R3JucE7A5Ee4h5hez/vgg5gevqD94NhuiZqld8Q
+ca4kl1rzvP1Jsu9ufXpeyom/DS2/pdWnVH54tUn2lTyVtCN0itYcSKo9yRZ4pleF
+FzH1i+pCFF1IaOL3wKR6k8Ua71ACnJFzZz9nCYtYjN+mDzBp0Lh0gqXg1YAGQy9X
+Cyc0vlGoCDZdKroHxPZCg0RX2mYuYDCCKG74Va2QWwP/37KDm9o=
+=ZrJB
+-----END PGP SIGNATURE-----
+
+--nextPart4578013.rxioT3ABBc--
 
