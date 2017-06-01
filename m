@@ -1,14 +1,11 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 01 Jun 2017 10:34:39 +0200
-Message-ID: <2479408.89UKcKX64H@prime>
-In-Reply-To: <1496077749.5980.2.camel@gmail.com>
-References: <1496077749.5980.2.camel@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6742198.GXJmilYNL4";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [batctl] compiling with gcc 7.1.0: there are
- some notes and warnings
+Return-Path: <apape@phoenixcontact.com>
+From: Andreas Pape <apape@phoenixcontact.com>
+Message-ID: <20170601085804.4756-1-apape@phoenixcontact.com>
+Date: Thu, 1 Jun 2017 10:58:04 +0200
+content-transfer-encoding: quoted-printable
+content-type: text/plain; charset="utf-8"
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: prevent adding of loop detection
+ mac addresses to global tt
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,99 +17,58 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart6742198.GXJmilYNL4
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This patch prevents that entries in the global translation table are genera=
+ted
+for mac addresses used by loop detection frames.
 
-On Monday, May 29, 2017 7:09:09 PM CEST Philipp Psurek wrote:
-> Hi all,
-> 
-> it's nothing to worry about but since 2011 I always noticed a clean
-> compile run of your code. Now with gcc 7.1.0 there are some warnings
-> and notes that might interest you:
-> 
-> ~ LANG=C make
->     CC bat-hosts.o
->     CC debugfs.o
->     CC debug.o
->     CC functions.o
->     CC genl.o
->     CC hash.o
->     CC icmp_helper.o
->     CC interface.o
->     CC ioctl.o
->     CC main.o
->     CC netlink.o
->     CC ping.o
->     CC sys.o
-> In file included from sys.c:37:0:
-> sys.c: In function 'handle_ra_setting':
-> sys.h:33:25: warning: '%s' directive output may be truncated writing up to
-> 255 bytes into a region of size 185 [-Wformat-truncation=] #define
-> SYS_IFACE_PATH  "/sys/class/net"
->                          ^
-> sys.h:38:30: note: in expansion of macro 'SYS_IFACE_PATH'
->  #define SYS_ROUTING_ALGO_FMT SYS_IFACE_PATH"/%s/mesh/routing_algo"
->                               ^~~~~~~~~~~~~~
-> sys.c:480:38: note: in expansion of macro 'SYS_ROUTING_ALGO_FMT'
->    snprintf(path_buff, PATH_BUFF_LEN, SYS_ROUTING_ALGO_FMT,
-> iface_dir->d_name); ^~~~~~~~~~~~~~~~~~~~
-> sys.h:38:46: note: format string is defined here
->  #define SYS_ROUTING_ALGO_FMT SYS_IFACE_PATH"/%s/mesh/routing_algo"
->                                               ^~
-> sys.c:480:3: note: 'snprintf' output between 34 and 289 bytes into a
-> destination of size 200 snprintf(path_buff, PATH_BUFF_LEN,
-> SYS_ROUTING_ALGO_FMT, iface_dir->d_name);
-> ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> CC tcpdump.o
->     CC tp_meter.o
-> tp_meter.c: In function 'tp_meter':
-> tp_meter.c:502:3: warning: this statement may fall through
-> [-Wimplicit-fallthrough=] printf("CANCEL received: test aborted\n");
->    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> tp_meter.c:504:2: note: here
->   case BATADV_TP_REASON_COMPLETE:
->   ^~~~
->     CC traceroute.o
->     CC translate.o
->     LD batctl
-> 
-> # batctl -v
-> batctl 2017.1-1-g3069ca8 [batman-adv: 2017.1-4-g2149d80d]
-> 
-> It's really nothing bad at all. gcc 7.1.0 is somehow a little bit
-> capricious but with more suggestions to make cleaner code.
-> 
-Hi Philipp,
+Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
+---
+ net/batman-adv/translation-table.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-thanks for showing this. I think none of that is really critical, and the fall 
-through is actually intended.
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translatio=
+n-table.c
+index e75b493..ca1e0f7 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1618,8 +1618,10 @@ static bool batadv_tt_global_add(struct batadv_priv =
+*bat_priv,
+ =09struct batadv_tt_common_entry *common;
+ =09u16 local_flags;
 
-Do you want to propose a patch for these things?
+-=09/* ignore global entries from backbone nodes */
+-=09if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig, vid))
++=09/* ignore global entries from backbone nodes or
++=09 * adding of entries related to loop detect frames */
++=09if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig, vid) ||
++=09=09batadv_bla_is_loopdetect_mac(tt_addr))
+ =09=09return true;
 
-Cheers,
-    Simon
---nextPart6742198.GXJmilYNL4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+ =09tt_global_entry =3D batadv_tt_global_hash_find(bat_priv, tt_addr, vid);
+--
+1.7.0.4
 
------BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlkv0Z8ACgkQoSvjmEKS
-nqFNKA//bTX1kaM1HSbg3DElESl9Ra9bE4V3iLq/9C9WVo3f4sE2hpxCz5ZdXV+y
-JABi60aBoTEBGM/BMof6mMut5ydnfMTSKmmYk/BIHvPspwuRyUPKvn+jGiZFV+6m
-oeAm6xqEMDvmq4PHKGWv6uV+OfaohCafKh4soJdXcT5wuGJxDIEj2ppOKhm5IKuU
-8nYcK9+Loq2e2j0ajkpn1Yx+iVGMGsHPNFHyqi8wk4iEj4drkAelD/cmhQksw89Q
-3ESIbAUaGBggiSH5mRvwwE8xxVyGgcL3yjpOKIk5MWNKP9tp/VvN7k2wCHwh+f/R
-bWg99mYM5Hs4F5204IND7tmt/TAV1VqxHTWN/zCrJL3jYiM2EDuVuN9lMK0le3Nm
-DH+l5hTEZrEJwdqL4ppBp4HGC3aFUdU2tv4ttGb4pr8Qr0VWQg+F34UAFnEoKp/x
-1Yh4KzNUpDmrNM0SAJEGLNUbIcawZLBu1gMOQ2eCFMPi2x3Of6rUMHuOTRkJgvNA
-Zwlxuv2yOtV1pJeKxbkDF0IWZEgynqnZ/lha1aoqkEGkVfLJAJKt9v3cKdM+GU9h
-+G7p5aEftQhlFtUuTWCq9JPsbRNxDgfYWh0ODeP8lmMc6yS7LIX0NMvbNSg5dDSH
-U384QGYyT8vcq8FTZjPSBVticZXp70jMOXp+9y5fUgShowmS46U=
-=NKlE
------END PGP SIGNATURE-----
 
---nextPart6742198.GXJmilYNL4--
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
 
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Ulrich Leidecker, Christoph Le=
+ifer
+__________________________________________________________________
+Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
+nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
+rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
+d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
+ Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
