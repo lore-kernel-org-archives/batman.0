@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu,  1 Jun 2017 17:11:25 +0200
-Message-Id: <20170601151126.20708-2-sw@simonwunderlich.de>
+Date: Thu,  1 Jun 2017 17:11:26 +0200
+Message-Id: <20170601151126.20708-3-sw@simonwunderlich.de>
 In-Reply-To: <20170601151126.20708-1-sw@simonwunderlich.de>
 References: <20170601151126.20708-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: handle race condition for claims
- also in batadv_bla_rx
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batman-adv: simplify return handling in
+ some TT functions
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,112 +17,64 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Andreas Pape <apape@phoenixcontact.com>
-
-Like in the case of the patch for batadv_bla_tx to handle a race
-condition when claiming a mac address for bla, a similar situation
-can occur when claiming is triggered via batadv_bla_rx. This patch
-solves this with a similar approach as for batadv_bla_tx.
-
-Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 31 ++++++++++++++++++++-----------
- net/batman-adv/translation-table.c     | 26 ++++++++++++++++++++++++++
- net/batman-adv/translation-table.h     |  3 +++
- 3 files changed, 49 insertions(+), 11 deletions(-)
+ net/batman-adv/translation-table.c | 17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index d07e89ec..cab89803 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -1847,19 +1847,28 @@ bool batadv_bla_rx(struct batadv_priv *bat_priv, struct sk_buff *skb,
- 
- 	if (!claim) {
- 		/* possible optimization: race for a claim */
--		/* No claim exists yet, claim it for us!
-+		/* Make sure this packet is not looping back
-+		 * from our own backbone.
- 		 */
- 
--		batadv_dbg(BATADV_DBG_BLA, bat_priv,
--			   "bla_rx(): Unclaimed MAC %pM found. Claim it. Local: %s\n",
--			   ethhdr->h_source,
--			   batadv_is_my_client(bat_priv,
--					       ethhdr->h_source, vid) ?
--			   "yes" : "no");
--		batadv_handle_claim(bat_priv, primary_if,
--				    primary_if->net_dev->dev_addr,
--				    ethhdr->h_source, vid);
--		goto allow;
-+		if (batadv_tt_local_has_timed_out(bat_priv, ethhdr->h_source,
-+						  vid, 100)) {
-+			/* No claim exists yet, claim it for us!
-+			 */
-+			batadv_dbg(BATADV_DBG_BLA, bat_priv,
-+				   "bla_rx(): Unclaimed MAC %pM found. Claim it. Local: %s\n",
-+				   ethhdr->h_source,
-+				   batadv_is_my_client(bat_priv,
-+						       ethhdr->h_source, vid) ?
-+				   "yes" : "no");
-+
-+			batadv_handle_claim(bat_priv, primary_if,
-+					    primary_if->net_dev->dev_addr,
-+					    ethhdr->h_source, vid);
-+			goto allow;
-+		} else {
-+			goto handled;
-+		}
- 	}
- 
- 	/* if it is our own claim ... */
 diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index e75b4937..b908195d 100644
+index 4b64a9a6..e1133bc6 100644
 --- a/net/batman-adv/translation-table.c
 +++ b/net/batman-adv/translation-table.c
-@@ -4380,3 +4380,29 @@ void batadv_tt_cache_destroy(void)
- 	kmem_cache_destroy(batadv_tt_req_cache);
- 	kmem_cache_destroy(batadv_tt_roam_cache);
+@@ -2488,18 +2488,16 @@ static bool
+ _batadv_is_ap_isolated(struct batadv_tt_local_entry *tt_local_entry,
+ 		       struct batadv_tt_global_entry *tt_global_entry)
+ {
+-	bool ret = false;
+-
+ 	if (tt_local_entry->common.flags & BATADV_TT_CLIENT_WIFI &&
+ 	    tt_global_entry->common.flags & BATADV_TT_CLIENT_WIFI)
+-		ret = true;
++		return true;
+ 
+ 	/* check if the two clients are marked as isolated */
+ 	if (tt_local_entry->common.flags & BATADV_TT_CLIENT_ISOLA &&
+ 	    tt_global_entry->common.flags & BATADV_TT_CLIENT_ISOLA)
+-		ret = true;
++		return true;
+ 
+-	return ret;
++	return false;
  }
-+
-+bool batadv_tt_local_has_timed_out(struct batadv_priv *bat_priv,
-+				   const u8 *addr, unsigned short vid,
-+				   unsigned int timeout)
-+{
-+	struct batadv_tt_local_entry *tt_local_entry;
-+	bool ret = true;
-+
-+	tt_local_entry = batadv_tt_local_hash_find(bat_priv, addr, vid);
-+	if (!tt_local_entry)
-+		goto out;
-+	/* Check if the client has been logically deleted (but is kept for
-+	 * consistency purpose)
-+	 */
-+	if ((tt_local_entry->common.flags & BATADV_TT_CLIENT_PENDING) ||
-+	    (tt_local_entry->common.flags & BATADV_TT_CLIENT_ROAM))
-+		goto out;
-+	/* Check that the tt_local_entry has a certain age */
-+	if (!batadv_has_timed_out(tt_local_entry->last_seen, timeout))
-+		ret = false;
-+
-+out:
-+	if (tt_local_entry)
-+		batadv_tt_local_entry_put(tt_local_entry);
-+	return ret;
-+}
-diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
-index 411d5861..b05d0d88 100644
---- a/net/batman-adv/translation-table.h
-+++ b/net/batman-adv/translation-table.h
-@@ -65,5 +65,8 @@ bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
  
- int batadv_tt_cache_init(void);
- void batadv_tt_cache_destroy(void);
-+bool batadv_tt_local_has_timed_out(struct batadv_priv *bat_priv,
-+				   const u8 *addr, unsigned short vid,
-+				   unsigned int timeout);
+ /**
+@@ -4010,8 +4008,6 @@ bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
+ 					  const unsigned char *addr,
+ 					  unsigned short vid)
+ {
+-	bool ret = false;
+-
+ 	/* ignore loop detect macs, they are not supposed to be in the tt local
+ 	 * data as well.
+ 	 */
+@@ -4021,14 +4017,13 @@ bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
+ 	if (!batadv_tt_global_add(bat_priv, orig_node, addr, vid,
+ 				  BATADV_TT_CLIENT_TEMP,
+ 				  atomic_read(&orig_node->last_ttvn)))
+-		goto out;
++		return false;
  
- #endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */
+ 	batadv_dbg(BATADV_DBG_TT, bat_priv,
+ 		   "Added temporary global client (addr: %pM, vid: %d, orig: %pM)\n",
+ 		   addr, batadv_print_vid(vid), orig_node->orig);
+-	ret = true;
+-out:
+-	return ret;
++
++	return true;
+ }
+ 
+ /**
 -- 
 2.11.0
 
