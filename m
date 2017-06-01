@@ -1,14 +1,15 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Thu, 01 Jun 2017 13:43:28 +0200
-Message-ID: <2546838.CaOxSCmaqC@prime>
-In-Reply-To: <20170601085804.4756-1-apape@phoenixcontact.com>
+Return-Path: <APape@phoenixcontact.com>
+In-Reply-To: <2546838.CaOxSCmaqC@prime>
 References: <20170601085804.4756-1-apape@phoenixcontact.com>
+ <2546838.CaOxSCmaqC@prime>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2976867.KrvH1CQKyG";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: prevent adding of loop
- detection mac addresses to global tt
+From: Andreas Pape <APape@phoenixcontact.com>
+Message-ID: <OF4B9C9CC2.5612B965-ONC1258132.0050B1C0-C1258132.00514F1D@phoenixcontact.com>
+Date: Thu, 1 Jun 2017 16:48:06 +0200
+content-transfer-encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Subject: [B.A.T.M.A.N.] Antwort: Re: [PATCH] batman-adv: prevent adding of
+ loop detection mac addresses to global tt
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,72 +19,55 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Simon Wunderlich <sw@simonwunderlich.de>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2976867.KrvH1CQKyG
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi Simon,
 
-On Thursday, June 1, 2017 10:58:04 AM CEST Andreas Pape wrote:
-> This patch prevents that entries in the global translation table are
-> generated for mac addresses used by loop detection frames.
-> 
-> Signed-off-by: Andreas Pape <apape@phoenixcontact.com>
-> ---
->  net/batman-adv/translation-table.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/net/batman-adv/translation-table.c
-> b/net/batman-adv/translation-table.c index e75b493..ca1e0f7 100644
-> --- a/net/batman-adv/translation-table.c
-> +++ b/net/batman-adv/translation-table.c
-> @@ -1618,8 +1618,10 @@ static bool batadv_tt_global_add(struct batadv_priv
-> *bat_priv, struct batadv_tt_common_entry *common;
->  	u16 local_flags;
-> 
-> -	/* ignore global entries from backbone nodes */
-> -	if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig, vid))
-> +	/* ignore global entries from backbone nodes or
-> +	 * adding of entries related to loop detect frames */
-> +	if (batadv_bla_is_backbone_gw_orig(bat_priv, orig_node->orig, vid) ||
-> +		batadv_bla_is_loopdetect_mac(tt_addr))
->  		return true;
-> 
->  	tt_global_entry = batadv_tt_global_hash_find(bat_priv, tt_addr, vid);
+>
+> I was thinking, if we implement it like this we may still have problems
+if an
+> older batman-adv version is adding the ba:be mac addresses locally.
+> This could
+> create a problem, because the transmitted tt table is not added
+completely,
+> thus the CRC will not match and will lead to a "TT request/response
+loop".
+>
+> What do you think? Maybe we should only add it for the speedy join case,
+but
+> accept it if a node really added these mac addresses locally?
 
-Thank you for your patch.
+I'm afraid I haven't understood the speedy join mechanism / use case good
+enough
+to make a good proposal here, but I'm volunteering for testing if someone
+else
+has a better solution then my rough approach ;-)
 
-I was thinking, if we implement it like this we may still have problems if an 
-older batman-adv version is adding the ba:be mac addresses locally. This could 
-create a problem, because the transmitted tt table is not added completely, 
-thus the CRC will not match and will lead to a "TT request/response loop".
+Kind regards,
+Andreas
 
-What do you think? Maybe we should only add it for the speedy join case, but 
-accept it if a node really added these mac addresses locally?
 
-Thanks,
-      Simon
---nextPart2976867.KrvH1CQKyG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
 
------BEGIN PGP SIGNATURE-----
+..................................................................
+PHOENIX CONTACT ELECTRONICS GmbH
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlkv/eAACgkQoSvjmEKS
-nqFzgRAAvnoGFX7HA/XYVJMVt77MqwIMwtBwkVx257jOKh2nPQpax4qMSH6hPxU3
-14sdKgngFvHHpOkb1UnV7U0VosyuaumJjdhnLaE+afUXDqX1MoXxwutV8eswUuU1
-49zHoXs7Sqy5aghrYxld5y6o3EJGUDCLUPAT7SOActO/HSCIs5CyVQF1nGTecfMh
-kvlbFtRqlodQ7MlExq+xAMw1sT7Gr0JiGL81dzFl8IkTxqEX8oVoaSrBoNG3zbES
-b2VndI05N4wbzv/AUdXsz8fwfDQs+bErcl0RTEqiVZ9quN44klWbxoE4RSLildJw
-vEj0lNVi95H/oUzAUxaK3Id31kKm2QCzD6WpnCV29Aa9MADRAIlNvSVYxhLOMeAg
-mtRM0a68RrmxXNLDYPUQh90DMa3S8m8KFxF1oZ1a4VaKPes58BQYYIvOpre7VROC
-sv0gCt2akEGOlxIzmJ+g2VjGtqqRvJXBY/Wg/l7gKgFjdC+Lol2EBVdA7CCqhKW3
-1qFiuGOlKIJtCUI2OaJ0HPcBy5XAiYmgLE52f6hL6GulruiXw47eGkW5bXUOEG6O
-Rr3yphZkTUVfvDUjoeKi1BH5AvdEJdc5ARPJMK4aoVKG7c+By+3Z6iWW4O/ixxvz
-TMXFpO6YYt691PwKT1fHZoXmzAySTvFfeDot35inKvSqjwl5Ch8=
-=hEiQ
------END PGP SIGNATURE-----
-
---nextPart2976867.KrvH1CQKyG--
-
+Sitz der Gesellschaft / registered office of the company: 31812 Bad Pyrmont
+USt-Id-Nr.: DE811742156
+Amtsgericht Hannover HRB 100528 / district court Hannover HRB 100528
+Gesch=C3=A4ftsf=C3=BChrer / Executive Board: Ulrich Leidecker, Christoph Le=
+ifer
+__________________________________________________________________
+Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte I=
+nformationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail i=
+rrt=C3=BCmlich erhalten haben, informieren Sie bitte sofort den Absender un=
+d vernichten Sie diese Mail. Das unerlaubte Kopieren, jegliche anderweitige=
+ Verwendung sowie die unbefugte Weitergabe dieser Mail ist nicht gestattet.
+---------------------------------------------------------------------------=
+-------------------------
+This e-mail may contain confidential and/or privileged information. If you =
+are not the intended recipient (or have received this e-mail in error) plea=
+se notify the sender immediately and destroy this e-mail. Any unauthorized =
+copying, disclosure, distribution or other use of the material or parts the=
+reof is strictly forbidden.
+___________________________________________________________________
