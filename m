@@ -1,12 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 02 Jun 2017 09:04:55 +0200
-Message-ID: <7877746.ih6RbTeLZ5@bentobox>
-In-Reply-To: <f353223e-4902-6eba-c655-36d46d07c892@gmail.com>
+Return-Path: <xbing6@gmail.com>
 References: <f353223e-4902-6eba-c655-36d46d07c892@gmail.com>
+ <7877746.ih6RbTeLZ5@bentobox>
+From: Xuebing Wang <xbing6@gmail.com>
+Message-ID: <bc5192e1-8855-6704-0a7e-0e76ee443450@gmail.com>
+Date: Fri, 2 Jun 2017 16:57:03 +0800
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart16092208.ac2xgR62U0";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+In-Reply-To: <7877746.ih6RbTeLZ5@bentobox>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
+Content-Language: en-US
 Subject: Re: [B.A.T.M.A.N.] [batman-adv] one edge case with 40+ neighbors
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,41 +19,33 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Xuebing Wang <xbing6@gmail.com>
+To: Sven Eckelmann <sven@narfation.org>
 Cc: Simon Wunderlich <sw@simonwunderlich.de>, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart16092208.ac2xgR62U0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi Sven,
 
-On Freitag, 2. Juni 2017 14:57:18 CEST Xuebing Wang wrote:
->  And batman-adv seemingly does not work for this edge
+Thanks for asking this. It is my fault that I did not ask our QA and 
+tell the community the details.
 
-Please define "does not work" in your setup.
+The syndrome is that there are randomly nodes that can not ping other 
+nodes, it happens quite often within a day. As I changed ath_dbg() to 
+ath_warn() to print messages before ath9k_queue_reset() in our release, 
+we get "tx hung, resetting the chip" in dmesg (for RESET_TYPE_TX_HANG).
+-- I am using software encryption.
 
-Kind regards,
-	Sven
---nextPart16092208.ac2xgR62U0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+This seems pointing to that ath9k driver can not handle 40 connections 
+for IBSS/adhoc? Based on our test, 20 connections for ath9k IBSS/adhoc 
+are definitely ok.
 
------BEGIN PGP SIGNATURE-----
+Thanks.
+Xuebing Wang
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlkxDhcACgkQXYcKB8Em
-e0YCgA/9Et7k1a23w9lvG15jCaePn5FPs3G0f46lMszAoyXD0wQYDXiDBW3xH2KR
-FryLsk8Thz1T5MrUraFHOCYP/OD6wYquZkeWJXeCwm8Q1ndtMX9XLMwYdU5U/ygZ
-ISNU4JqFwkr5J1sYTU1pbGQpSNkPErcxvkIVHJH1ECn+KL4FEBY0dYDfb6/dK8w0
-+6wa+lViMnSsBAx3qv98n6eQIu/9o8ZRciJ6aBCPuMiTmB/qXZIiXu9FZRlNbUYJ
-j8tGX24OtUV+oJYuv8ZSiL2DPh1renJ3d0cGwlT73NmZs/S/tcbR/7eARbm3+2v4
-eb0UxxKhOW8RACSuHKGBYJWfc6bUbCLoZEzofRAM7GTmEuKUaHHdzYTqJeZzwmkQ
-5hcLtxU2TYlxpOwvcrn5BZ6S/Lc2WNTXoLJ60jR6uusbyFR1OXKoIvaDmkpTnv6B
-I6+KylMXS5JXSL8N1Kj1K4GNpuH53M9HPkB8rEb9KbCObb25vcfpUFvcPXa9mpU+
-Kh3MrpG7rkAiWmovgOC28FD0tk61XAj0001NzN2gL+3RfYG8dgnwVIiT2cZour1x
-RDlzgFBrfh0nDm1s5gLYng48dNrv7LmurdFMFpUFs+ol9aN3/kSYIIFB73PMEE8c
-6L7bmB90wx3tx4N8+Z/nh/GUhF4zbCDi2t7OqXFxTcGlmK2PQ0g=
-=GdaD
------END PGP SIGNATURE-----
 
---nextPart16092208.ac2xgR62U0--
+On 2017年06月02日 15:04, Sven Eckelmann wrote:
+> On Freitag, 2. Juni 2017 14:57:18 CEST Xuebing Wang wrote:
+>>   And batman-adv seemingly does not work for this edge
+> Please define "does not work" in your setup.
+>
+> Kind regards,
+> 	Sven
 
