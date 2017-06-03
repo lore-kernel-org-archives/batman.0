@@ -1,13 +1,16 @@
 Return-Path: <xbing6@gmail.com>
+References: <edc163f6-a49c-21f3-9cf1-74df6e262fdb@gmail.com>
+ <CAJ-Vmo=4-wKKV_4pXTSgVqdPOyR+zOrHbtVP4Mv9vxaueyrh=A@mail.gmail.com>
 From: Xuebing Wang <xbing6@gmail.com>
-Message-ID: <edc163f6-a49c-21f3-9cf1-74df6e262fdb@gmail.com>
-Date: Sat, 3 Jun 2017 12:09:15 +0800
+Message-ID: <c9f21f91-992d-604f-91ac-4784e8258c3e@gmail.com>
+Date: Sat, 3 Jun 2017 13:28:56 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <CAJ-Vmo=4-wKKV_4pXTSgVqdPOyR+zOrHbtVP4Mv9vxaueyrh=A@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
 Content-Language: en-US
-Subject: [B.A.T.M.A.N.] [wpa_supplicant] Is there a way to limit peers (to
- about 12) for IBSS/adhoc?
+Subject: Re: [B.A.T.M.A.N.] [wpa_supplicant] Is there a way to limit peers
+ (to about 12) for IBSS/adhoc?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,70 +20,34 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: hostap@lists.infradead.org
-Cc: "ath10k@lists.infradead.org" <ath10k@lists.infradead.org>, b.a.t.m.a.n@lists.open-mesh.org, simon Wunderlich <sw@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>, Jason Toschlog <jason.toschlog@gmail.com>
-
-Hi community,
-
-This email is mainly addressed to hostap/wpa_supplicant mailing list.
-
-Descriptions of my issue:
-- I am establishing IBSS/adhoc network using OpenWRT 15.05 + ath9k (AR9331).
-- When nodes are relatively closely placed, the peers (the term is 
-'neighbors' in batman-adv mesh) reach 40, ath9k driver detects "tx hung, 
-resetting the chip" (for RESET_TYPE_TX_HANG).
-- This ath9k "tx hung" randomly happens among the 40 nodes (in adhoc 
-network), and it happens relatively often (seemingly randomly for 
-nodes), and randomly makes some nodes un-usable.
-- This appears to be an issue with ath9k kernel driver or ath9k hardware 
-that it can not handle ~40 peers.
-- IBSS/adhoc with 20 peers work well.
-
-Is there a config in wpa_supplicant that we can limit the number of peers?
-
-In the other words, once the number of peers ('iw wlan0 station dump') 
-reaches a pre-configured number (e.g. 12 or 16), wpa_supplicant does not 
-authenticate any more, for IBSS/adhoc only?
-- A subtle detail: once a new beacon with higher RSSI is detected, the 
-current connection with lowest RSSI will be de-authenticated, and to 
-authenticate this new peer (with higher RSSI in beacon).
-
-Is this "limiting number of peers for IBSS/adhoc" a good work-around for 
-40+ peers adhoc network, although the ultimate root cause seemingly is 
-with ath9k kernel driver or ath9k hardware?
-
-Also, if there are many (like 40+) peers in IBSS/adhoc network, I am not 
-sure how medium access contention and collisions factor in, for 
-management frames?
-
-Here is my wpa_supplicant conf file:
-------
-ctrl_interface=/var/run/wpa_supplicant
-
-# use 'ap_scan=2' on all devices connected to the network
-# this is unnecessary if you only want the network to be created when no 
-other networks are available
-ap_scan=2
-
-network={
-     ssid="Net-xxxxxxxx"
-     mode=1
-     frequency=2462
-     proto=WPA2
-     key_mgmt=WPA-PSK
-     pairwise=CCMP
-     group=CCMP
-     psk="xxxxxxxx"
-}
-------
-
-Another approach could be to use user-space shell script to "iw <dev> 
-ibss leave" for the lower RSSI stations?
-- As I am using batman-adv to build mesh network on the top of 
-IBSS/adhoc, a similar approach can be done at batman-adv level.
-
-Suggestions?
+To: Adrian Chadd <adrian@freebsd.org>
+Cc: hostap@lists.infradead.org, Jason Toschlog <jason.toschlog@gmail.com>, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, "ath10k@lists.infradead.org" <ath10k@lists.infradead.org>, simon Wunderlich <sw@simonwunderlich.de>
 
 Thanks.
+
+I did not try 40 IBSS nodes without encryption. I am using software 
+encryption for ath9k because of key caching issues discussed in below 
+threads:
+https://patchwork.kernel.org/patch/9381651/
+https://github.com/cozybit/authsae/issues/42
+
+This is a customer site in the field, our temporary work-around is to 
+create 2 networks (each is with 20 nodes) by using different SSID.
+
+Because this is customer site in the field, it is not convenient to 
+change and test. Does it make sense to test without encryption, 
+encryption is a MUST?
+
 Xuebing Wang
+
+On 2017年06月03日 13:18, Adrian Chadd wrote:
+> Hi!
+>
+> Does it happen if you run 40 IBSS nodes without encryption?
+>
+> (I wonder if it's a MAC or PHY bug..)
+>
+>
+> -adrian
+>
 
