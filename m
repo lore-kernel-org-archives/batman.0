@@ -1,15 +1,14 @@
-Return-Path: <xbing6@gmail.com>
-References: <f353223e-4902-6eba-c655-36d46d07c892@gmail.com>
- <7877746.ih6RbTeLZ5@bentobox>
-From: Xuebing Wang <xbing6@gmail.com>
-Message-ID: <bc5192e1-8855-6704-0a7e-0e76ee443450@gmail.com>
-Date: Fri, 2 Jun 2017 16:57:03 +0800
-MIME-Version: 1.0
-In-Reply-To: <7877746.ih6RbTeLZ5@bentobox>
-Content-Type: text/plain; charset="utf-8"; format="flowed"
+Return-Path: <philipp.psurek@gmail.com>
+Message-ID: <1496456054.22954.3.camel@gmail.com>
+From: Philipp Psurek <philipp.psurek@gmail.com>
+Date: Sat, 03 Jun 2017 04:14:14 +0200
+In-Reply-To: <2479408.89UKcKX64H@prime>
+References: <1496077749.5980.2.camel@gmail.com> <2479408.89UKcKX64H@prime>
+Content-Type: text/plain; charset="utf-8"
+Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Language: en-US
-Subject: Re: [B.A.T.M.A.N.] [batman-adv] one edge case with 40+ neighbors
+Subject: Re: [B.A.T.M.A.N.] [batctl] compiling with gcc 7.1.0: there are
+ some notes and warnings
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,33 +18,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>
-Cc: Simon Wunderlich <sw@simonwunderlich.de>, b.a.t.m.a.n@lists.open-mesh.org
+To: Simon Wunderlich <sw@simonwunderlich.de>, b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Sven,
+Hi Simon
 
-Thanks for asking this. It is my fault that I did not ask our QA and 
-tell the community the details.
+Am Donnerstag, den 01.06.2017, 10:34 +0200 schrieb Simon Wunderlich:
+> I think none of that is really critical, and the fall through is
+> actually intended.
 
-The syndrome is that there are randomly nodes that can not ping other 
-nodes, it happens quite often within a day. As I changed ath_dbg() to 
-ath_warn() to print messages before ath9k_queue_reset() in our release, 
-we get "tx hung, resetting the chip" in dmesg (for RESET_TYPE_TX_HANG).
--- I am using software encryption.
+Yes, this isn't critical. This report was FYI about an exotic compiler.
 
-This seems pointing to that ath9k driver can not handle 40 connections 
-for IBSS/adhoc? Based on our test, 20 connections for ath9k IBSS/adhoc 
-are definitely ok.
+> Do you want to propose a patch for these things?
 
-Thanks.
-Xuebing Wang
+Give me some time to understand the code and I look what I can do in my
+spare time. This might take some time.
 
+best regards
 
-On 2017年06月02日 15:04, Sven Eckelmann wrote:
-> On Freitag, 2. Juni 2017 14:57:18 CEST Xuebing Wang wrote:
->>   And batman-adv seemingly does not work for this edge
-> Please define "does not work" in your setup.
->
-> Kind regards,
-> 	Sven
-
+Philipp
