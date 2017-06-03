@@ -1,14 +1,13 @@
-Return-Path: <philipp.psurek@gmail.com>
-Message-ID: <1496461256.22954.9.camel@gmail.com>
-From: Philipp Psurek <philipp.psurek@gmail.com>
-In-Reply-To: <2479408.89UKcKX64H@prime>
-References: <1496077749.5980.2.camel@gmail.com> <2479408.89UKcKX64H@prime>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 03 Jun 2017 05:40:56 +0200
-Mime-Version: 1.0
+Return-Path: <xbing6@gmail.com>
+From: Xuebing Wang <xbing6@gmail.com>
+Message-ID: <edc163f6-a49c-21f3-9cf1-74df6e262fdb@gmail.com>
+Date: Sat, 3 Jun 2017 12:09:15 +0800
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: change PATH_BUFF_LEN to maximal
- possible value
+Content-Language: en-US
+Subject: [B.A.T.M.A.N.] [wpa_supplicant] Is there a way to limit peers (to
+ about 12) for IBSS/adhoc?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,41 +17,70 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Simon Wunderlich <sw@simonwunderlich.de>, b.a.t.m.a.n@lists.open-mesh.org
+To: hostap@lists.infradead.org
+Cc: "ath10k@lists.infradead.org" <ath10k@lists.infradead.org>, b.a.t.m.a.n@lists.open-mesh.org, simon Wunderlich <sw@simonwunderlich.de>, Sven Eckelmann <sven@narfation.org>, Jason Toschlog <jason.toschlog@gmail.com>
 
-'snprintf' output in sys.c can be between 34 and 289 bytes and should
-not write into a destination of size 200
+Hi community,
 
-snprintf(path_buff, PATH_BUFF_LEN, SYS_ROUTING_ALGO_FMT, iface_dir->d_name);
+This email is mainly addressed to hostap/wpa_supplicant mailing list.
 
+Descriptions of my issue:
+- I am establishing IBSS/adhoc network using OpenWRT 15.05 + ath9k (AR9331).
+- When nodes are relatively closely placed, the peers (the term is 
+'neighbors' in batman-adv mesh) reach 40, ath9k driver detects "tx hung, 
+resetting the chip" (for RESET_TYPE_TX_HANG).
+- This ath9k "tx hung" randomly happens among the 40 nodes (in adhoc 
+network), and it happens relatively often (seemingly randomly for 
+nodes), and randomly makes some nodes un-usable.
+- This appears to be an issue with ath9k kernel driver or ath9k hardware 
+that it can not handle ~40 peers.
+- IBSS/adhoc with 20 peers work well.
 
+Is there a config in wpa_supplicant that we can limit the number of peers?
 
+In the other words, once the number of peers ('iw wlan0 station dump') 
+reaches a pre-configured number (e.g. 12 or 16), wpa_supplicant does not 
+authenticate any more, for IBSS/adhoc only?
+- A subtle detail: once a new beacon with higher RSSI is detected, the 
+current connection with lowest RSSI will be de-authenticated, and to 
+authenticate this new peer (with higher RSSI in beacon).
 
+Is this "limiting number of peers for IBSS/adhoc" a good work-around for 
+40+ peers adhoc network, although the ultimate root cause seemingly is 
+with ath9k kernel driver or ath9k hardware?
 
+Also, if there are many (like 40+) peers in IBSS/adhoc network, I am not 
+sure how medium access contention and collisions factor in, for 
+management frames?
 
-diff --git a/functions.c b/functions.c
-index 2239440..8337ee8 100644
---- a/functions.c
-+++ b/functions.c
-@@ -59,7 +59,7 @@
- #include "debugfs.h"
- #include "netlink.h"
- 
--#define PATH_BUFF_LEN 200
-+#define PATH_BUFF_LEN 289
- 
- static struct timespec start_time;
- static char *host_name;
-diff --git a/functions.h b/functions.h
-index eca1406..c0a02a8 100644
---- a/functions.h
-+++ b/functions.h
-@@ -31,7 +31,7 @@
- #define ETH_STR_LEN 17
- #define BATMAN_ADV_TAG "batman-adv:"
- 
--#define PATH_BUFF_LEN 200
-+#define PATH_BUFF_LEN 289
- 
- /* return time delta from start to end in milliseconds */
- void start_timer(void);
+Here is my wpa_supplicant conf file:
+------
+ctrl_interface=/var/run/wpa_supplicant
+
+# use 'ap_scan=2' on all devices connected to the network
+# this is unnecessary if you only want the network to be created when no 
+other networks are available
+ap_scan=2
+
+network={
+     ssid="Net-xxxxxxxx"
+     mode=1
+     frequency=2462
+     proto=WPA2
+     key_mgmt=WPA-PSK
+     pairwise=CCMP
+     group=CCMP
+     psk="xxxxxxxx"
+}
+------
+
+Another approach could be to use user-space shell script to "iw <dev> 
+ibss leave" for the lower RSSI stations?
+- As I am using batman-adv to build mesh network on the top of 
+IBSS/adhoc, a similar approach can be done at batman-adv level.
+
+Suggestions?
+
+Thanks.
+Xuebing Wang
+
