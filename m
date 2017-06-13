@@ -1,15 +1,15 @@
-Return-Path: <philipp.psurek@gmail.com>
-From: Philipp Psurek <philipp.psurek@gmail.com>
-Date: Tue, 13 Jun 2017 10:26:00 +0200
-Message-Id: <20170613082600.24910-3-philipp.psurek@gmail.com>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 13 Jun 2017 10:42:42 +0200
+Message-ID: <5165411.4zREtZmZax@prime>
 In-Reply-To: <20170613082600.24910-1-philipp.psurek@gmail.com>
 References: <1496077749.5980.2.camel@gmail.com>
  <20170613082600.24910-1-philipp.psurek@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] batctl: suppress implicit-fallthrough
- compiler warning
+Content-Type: multipart/signed; boundary="nextPart5739106.PGtkkUh4p5";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [batctl] compiling with gcc 7.1.0: there are
+ some notes and warnings
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,41 +19,57 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Philipp Psurek <philipp.psurek@gmail.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-GCC 7.1.0 complains about an intended fallthrough.
-“__attribute__ ((fallthrough))” in this part of code would suppress this
-warning. Because older GCC compiler don’t understand this statement attribute
-and because there is already a comment in the source containing
-“falls?[ \t-]*thr(ough|u)” we can suppress the warning with the
-“-Wimplicit-fallthrough=2” warning option. Unintended fallthroughs without a
-comment will trigger this warning.
+--nextPart5739106.PGtkkUh4p5
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Older GCC compiler don’t understand this warning option and exits with error.
-There has to be a compiler recognition after that only GCC =>7.1.0 receives
-this option.
+Hi Philipp,
 
-Signed-off-by: Philipp Psurek <philipp.psurek@gmail.com>
----
- Makefile | 5 +++++
- 1 file changed, 5 insertions(+)
+sorry for the late reply - I was out at battlemesh last week, so I didn't had 
+time to check them. But yes, the format was lacking indeed, thanks for fixing 
+that. :)
 
-diff --git a/Makefile b/Makefile
-index 6bebb7d..29b7e2f 100755
---- a/Makefile
-+++ b/Makefile
-@@ -101,6 +101,11 @@ MKDIR ?= mkdir -p
- COMPILE.c = $(Q_CC)$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
- LINK.o = $(Q_LD)$(CC) $(CFLAGS) $(LDFLAGS) $(TARGET_ARCH)
- 
-+# Check for GCC >=7
-+ifeq ($(shell $(CC) -x c++ --std=c++17 -E -P - <<< __cplusplus),201703L)
-+       CFLAGS += -Wimplicit-fallthrough=2
-+endif
-+
- # standard install paths
- PREFIX = /usr/local
- SBINDIR = $(PREFIX)/sbin
--- 
-2.13.0
+I'll check the patches and reply to them directly.
+
+Thanks,
+    Simon
+
+On Tuesday, June 13, 2017 10:25:58 AM CEST Philipp Psurek wrote:
+> Hi Simon,
+> 
+> I assume my patches were not formatted according to the rules and this is
+> the reason why there has been no comment on them. I hope the patches are
+> now more satisfying.
+> 
+> best regards
+> 
+> Philipp
+
+
+--nextPart5739106.PGtkkUh4p5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlk/pYIACgkQoSvjmEKS
+nqFRPA//Q34fo+IeoaugnDtW8exuBi2THjO2By6V++Tm9MYeOaP47r/SQwMMCYwc
+yGBkuWEE0frjF1vrc1cIkEkXhpzH/SSAptUGSBF3fCorU5KmhV3QY8TcAkaZp0RQ
+84ZS6/f0GCVtTIISD3B2xeAA7hoGUBr4Co3dv70nw/CKA01cRTK58gTKsHckquda
+hk0v4XWXrgxUEbyxuPm1OliRFA6IcDOqhW0hBngqecea7v6eRYPTdh3KFN7d/KRM
+yax85Dn0iWigZE03GSD+0zKF5v8tTnVygsW8bRlSUAx3ra4fuTAwkpa5qYOgzxuf
+A9nAl3tQhOgHZ5850tbixbIwa/y7wDv+Xfh0W5tJ5aHn4lHgliACcnhI5iKCKB3Z
+GmnijA3vrrddPskwikV+O/YUFUQ9qWmslXnCml161NduRCH2l2Q81wIHpAAG9NBF
+AERLrTGJrniW7Zkrk1CMFD6BCQk/nVGuGE+5Vrgmm8n1fnzqntNlfAPcgoWsMrtR
+SxsGBUvdc8KCGMq8plzbFAvRHU1b0hlq2QnnT4/byF8uHo7EZTnrxr+7yoGoZqAA
+dZRbVt64TlL4HjDab1lu0uYmcbJTNOWFJSz0nQ2dviz73U/Zj2DaOz39kWx5KbLn
+ZmAev9A7gxrk56VCzsE3IXXc2XPD9Da2sycKjwfoyauW5UShgtg=
+=jMXb
+-----END PGP SIGNATURE-----
+
+--nextPart5739106.PGtkkUh4p5--
 
