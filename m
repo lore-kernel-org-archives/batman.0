@@ -1,14 +1,12 @@
 Return-Path: <philipp.psurek@gmail.com>
 From: Philipp Psurek <philipp.psurek@gmail.com>
-Date: Tue, 13 Jun 2017 10:25:58 +0200
-Message-Id: <20170613082600.24910-1-philipp.psurek@gmail.com>
-In-Reply-To: <1496077749.5980.2.camel@gmail.com>
+Date: Tue, 13 Jun 2017 10:25:59 +0200
+Message-Id: <20170613082600.24910-2-philipp.psurek@gmail.com>
+In-Reply-To: <20170613082600.24910-1-philipp.psurek@gmail.com>
 References: <1496077749.5980.2.camel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [batctl] compiling with gcc 7.1.0: there are
- some notes and warnings
+ <20170613082600.24910-1-philipp.psurek@gmail.com>
+Subject: [B.A.T.M.A.N.] [PATCH 1/2] batctl: change PATH_BUFF_LEN to maximal
+ possible value
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,13 +18,45 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Simon,
+The output of
 
-I assume my patches were not formatted according to the rules and this is the
-reason why there has been no comment on them. I hope the patches are now
-more satisfying.
+snprintf(path_buff, PATH_BUFF_LEN, SYS_ROUTING_ALGO_FMT, iface_dir->d_name)
 
-best regards
+in sys.c can be between 34 and 289 bytes and should not write into a
+destination of size 200.
 
-Philipp
+Signed-off-by: Philipp Psurek <philipp.psurek@gmail.com>
+---
+ functions.c | 2 +-
+ functions.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/functions.c b/functions.c
+index 2239440..8337ee8 100644
+--- a/functions.c
++++ b/functions.c
+@@ -59,7 +59,7 @@
+ #include "debugfs.h"
+ #include "netlink.h"
+ 
+-#define PATH_BUFF_LEN 200
++#define PATH_BUFF_LEN 289
+ 
+ static struct timespec start_time;
+ static char *host_name;
+diff --git a/functions.h b/functions.h
+index eca1406..c0a02a8 100644
+--- a/functions.h
++++ b/functions.h
+@@ -31,7 +31,7 @@
+ #define ETH_STR_LEN 17
+ #define BATMAN_ADV_TAG "batman-adv:"
+ 
+-#define PATH_BUFF_LEN 200
++#define PATH_BUFF_LEN 289
+ 
+ /* return time delta from start to end in milliseconds */
+ void start_timer(void);
+-- 
+2.13.0
 
