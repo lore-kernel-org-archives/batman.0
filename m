@@ -1,16 +1,14 @@
-Return-Path: <philipp.psurek@gmail.com>
-Message-ID: <1497356708.31945.7.camel@gmail.com>
-From: Philipp Psurek <philipp.psurek@gmail.com>
-Date: Tue, 13 Jun 2017 14:25:08 +0200
-In-Reply-To: <1765005.rRRDaVj5Ib@bentobox>
-References: <20170613103916.27299-1-philipp.psurek@gmail.com>
- <2394098.zSA1hTeZKT@prime> <2063591.f2Dj0aj4GU@bentobox>
- <1765005.rRRDaVj5Ib@bentobox>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <davem@davemloft.net>
+Date: Tue, 13 Jun 2017 13:52:10 -0400 (EDT)
+Message-Id: <20170613.135210.682754612103220286.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20170613113700.31220-1-sw@simonwunderlich.de>
+References: <20170613113700.31220-1-sw@simonwunderlich.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: suppress implicit-fallthrough
- compiler warning
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH 00/10] pull request for net-next:
+ batman-adv 2017-06-13
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,23 +18,14 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: sw@simonwunderlich.de
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-Am Dienstag, den 13.06.2017, 13:53 +0200 schrieb Sven Eckelmann:
-> The other option would have been to change it to:
-> 
->     /* fall through - print the partial result */
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Tue, 13 Jun 2017 13:36:50 +0200
 
-Thank you Sven for pointing this out. This one works perfectly! Regex
-understanding 4TW ;-)
+> here is our feature/cleanup pull request of batman-adv to go into net-next.
+> 
+> Please pull or let me know of any problem!
 
-Thank you Simon for restyling the patch.
-
-Batctl compiles now without any warnings with GCC 7.1.0. I’m surprised
-how far it has come: the compiler inspects comments now …
-
-Thank you all for B.A.T.M.A.N.-Advanced
-
-Best regards,
-
-Philipp
+Pulled, thanks.
