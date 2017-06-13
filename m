@@ -1,14 +1,12 @@
-Return-Path: <davem@davemloft.net>
-Date: Tue, 13 Jun 2017 13:46:55 -0400 (EDT)
-Message-Id: <20170613.134655.806771445954651420.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20170613111531.29082-1-sw@simonwunderlich.de>
-References: <20170613111531.29082-1-sw@simonwunderlich.de>
+Return-Path: <joe@perches.com>
+Message-ID: <1497390701.18751.26.camel@perches.com>
+From: Joe Perches <joe@perches.com>
+Date: Tue, 13 Jun 2017 14:51:41 -0700
+Content-Type: text/plain; charset="iso-8859-1"
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/2] pull request for net: batman-adv
- 2017-06-13
+Content-Transfer-Encoding: quoted-printable
+Subject: [B.A.T.M.A.N.] Odd use of %14pM in
+ net/batman-adv/distributed-arp-table.c
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,14 +16,30 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sw@simonwunderlich.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>
+Cc: "David S. Miller" <davem@davemloft.net>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 13 Jun 2017 13:15:29 +0200
+An output mac address is 17 bytes
 
-> here are two batman-adv bugfixes for net.
-> 
-> Please pull or let me know of any problem!
+         1
+12345678901234567
+00:11:22:33:44:55
 
-Pulled, thanks.
+but in net/batman-adv/distributed-arp-table.c
+
+int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
+{
+[...]
+			seq_printf(seq, " * %15pI4 %14pM %4i %6i:%02i\n",
+				=A0=A0=A0&dat_entry->ip, dat_entry->mac_addr,
+				=A0=A0=A0batadv_print_vid(dat_entry->vid),
+				=A0=A0=A0last_seen_mins, last_seen_secs);
+
+%14pM is odd as this should not emit the last byte of the
+mac address.  So given the example above, it would output
+00:11:22:33:44
+
+Is that what's really desired?
+
+If so, I'd suggest using something more obvious like %5phC
+
