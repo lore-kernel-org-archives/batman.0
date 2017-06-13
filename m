@@ -1,10 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 13 Jun 2017 13:36:51 +0200
-Message-Id: <20170613113700.31220-2-sw@simonwunderlich.de>
+Date: Tue, 13 Jun 2017 13:36:52 +0200
+Message-Id: <20170613113700.31220-3-sw@simonwunderlich.de>
 In-Reply-To: <20170613113700.31220-1-sw@simonwunderlich.de>
 References: <20170613113700.31220-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 01/10] batman-adv: Start new development cycle
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 02/10] batman-adv: decrease maximum fragment
+ size
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,26 +19,57 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Matthias Schiffer <mschiffer@universe-factory.net>, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
+From: Matthias Schiffer <mschiffer@universe-factory.net>
+
+With this patch the maximum fragment size is reduced from 1400 to 1280
+bytes.
+
+Fragmentation v2 correctly uses the smaller of 1400 and the interface
+MTU, thus generally supporting interfaces with an MTU < 1400 bytes, too.
+
+However, currently "Fragmentation v2" does not support re-fragmentation.
+Which means that once a packet is split into two packets of 1400 + x
+bytes for instance and the next hop provides an interface with an even
+smaller MTU of 1280 bytes, then the larger fragment is lost.
+
+A maximum fragment size of 1280 bytes is a safer option as this is the
+minimum MTU required by IPv6, making interfaces with an MTU < 1280
+rather exotic.
+
+Regarding performance, this should have no negative impact on unicast
+traffic: Having some more bytes in the smaller and some less in the
+larger does not change the sum of both fragments.
+
+Concerning TT, choosing 1280 bytes fragments might result in more TT
+messages than necessary when a large network is bridged into batman-adv.
+However, the TT overhead in general is marginal due to its reactive
+nature, therefore such a performance impact on TT should not be
+noticeable for a user.
+
+Cc: Matthias Schiffer <mschiffer@universe-factory.net>
+[linus.luessing@c0d3.blue: Added commit message]
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
  net/batman-adv/main.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 810f7d026f54..feaf60e4cbc3 100644
+index feaf60e4cbc3..2be8f1f46529 100644
 --- a/net/batman-adv/main.h
 +++ b/net/batman-adv/main.h
-@@ -24,7 +24,7 @@
- #define BATADV_DRIVER_DEVICE "batman-adv"
+@@ -168,7 +168,7 @@ enum batadv_uev_type {
+ /* Maximum number of fragments for one packet */
+ #define BATADV_FRAG_MAX_FRAGMENTS 16
+ /* Maxumim size of each fragment */
+-#define BATADV_FRAG_MAX_FRAG_SIZE 1400
++#define BATADV_FRAG_MAX_FRAG_SIZE 1280
+ /* Time to keep fragments while waiting for rest of the fragments */
+ #define BATADV_FRAG_TIMEOUT 10000
  
- #ifndef BATADV_SOURCE_VERSION
--#define BATADV_SOURCE_VERSION "2017.1"
-+#define BATADV_SOURCE_VERSION "2017.2"
- #endif
- 
- /* B.A.T.M.A.N. parameters */
 -- 
 2.11.0
 
