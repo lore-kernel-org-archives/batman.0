@@ -1,14 +1,14 @@
 Return-Path: <davem@davemloft.net>
-Date: Tue, 13 Jun 2017 13:52:10 -0400 (EDT)
-Message-Id: <20170613.135210.682754612103220286.davem@davemloft.net>
+Date: Tue, 13 Jun 2017 13:46:55 -0400 (EDT)
+Message-Id: <20170613.134655.806771445954651420.davem@davemloft.net>
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20170613113700.31220-1-sw@simonwunderlich.de>
-References: <20170613113700.31220-1-sw@simonwunderlich.de>
+In-Reply-To: <20170613111531.29082-1-sw@simonwunderlich.de>
+References: <20170613111531.29082-1-sw@simonwunderlich.de>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 00/10] pull request for net-next:
- batman-adv 2017-06-13
+Subject: Re: [B.A.T.M.A.N.] [PATCH 0/2] pull request for net: batman-adv
+ 2017-06-13
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -22,9 +22,9 @@ To: sw@simonwunderlich.de
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 13 Jun 2017 13:36:50 +0200
+Date: Tue, 13 Jun 2017 13:15:29 +0200
 
-> here is our feature/cleanup pull request of batman-adv to go into net-next.
+> here are two batman-adv bugfixes for net.
 > 
 > Please pull or let me know of any problem!
 
