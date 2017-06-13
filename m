@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 13 Jun 2017 13:36:53 +0200
-Message-Id: <20170613113700.31220-4-sw@simonwunderlich.de>
+Date: Tue, 13 Jun 2017 13:36:54 +0200
+Message-Id: <20170613113700.31220-5-sw@simonwunderlich.de>
 In-Reply-To: <20170613113700.31220-1-sw@simonwunderlich.de>
 References: <20170613113700.31220-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 03/10] batman-adv: Replace a seq_puts() call
- by seq_putc() in two functions
+Subject: [B.A.T.M.A.N.] [PATCH 04/10] batman-adv: Combine two seq_puts()
+ calls into one call in batadv_nc_nodes_seq_print_text()
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,8 +20,8 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Markus Elfring <elf
 
 From: Markus Elfring <elfring@users.sourceforge.net>
 
-Two single characters (line breaks) should be put into a sequence.
-Thus use the corresponding function "seq_putc".
+A bit of text was put into a sequence by two separate function calls.
+Print the same data by a single function call instead.
 
 This issue was detected by using the Coccinelle software.
 
@@ -29,36 +29,24 @@ Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_iv_ogm.c | 2 +-
- net/batman-adv/bat_v.c      | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/network-coding.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 495ba7cdcb04..1f80392ab37c 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1944,7 +1944,7 @@ static void batadv_iv_ogm_orig_print(struct batadv_priv *bat_priv,
- 
- 			batadv_iv_ogm_orig_print_neigh(orig_node, if_outgoing,
- 						       seq);
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index e1f6fc72fe3e..3604d7899e2c 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -1935,9 +1935,7 @@ int batadv_nc_nodes_seq_print_text(struct seq_file *seq, void *offset)
+ 						list)
+ 				seq_printf(seq, "%pM ",
+ 					   nc_node->addr);
 -			seq_puts(seq, "\n");
-+			seq_putc(seq, '\n');
- 			batman_count++;
- 
- next:
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index a36c8e7291d6..4e2724c5b33d 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -400,7 +400,7 @@ static void batadv_v_orig_print(struct batadv_priv *bat_priv,
- 				   neigh_node->if_incoming->net_dev->name);
- 
- 			batadv_v_orig_print_neigh(orig_node, if_outgoing, seq);
--			seq_puts(seq, "\n");
-+			seq_putc(seq, '\n');
- 			batman_count++;
- 
- next:
+-
+-			seq_puts(seq, " Outgoing: ");
++			seq_puts(seq, "\n Outgoing: ");
+ 			/* For out_nc_node to this orig_node */
+ 			list_for_each_entry_rcu(nc_node,
+ 						&orig_node->out_coding_list,
 -- 
 2.11.0
 
