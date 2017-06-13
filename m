@@ -1,12 +1,15 @@
 Return-Path: <philipp.psurek@gmail.com>
 From: Philipp Psurek <philipp.psurek@gmail.com>
-Date: Tue, 13 Jun 2017 10:25:59 +0200
-Message-Id: <20170613082600.24910-2-philipp.psurek@gmail.com>
+Date: Tue, 13 Jun 2017 10:26:00 +0200
+Message-Id: <20170613082600.24910-3-philipp.psurek@gmail.com>
 In-Reply-To: <20170613082600.24910-1-philipp.psurek@gmail.com>
 References: <1496077749.5980.2.camel@gmail.com>
  <20170613082600.24910-1-philipp.psurek@gmail.com>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] batctl: change PATH_BUFF_LEN to maximal
- possible value
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] batctl: suppress implicit-fallthrough
+ compiler warning
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,45 +21,39 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The output of
+GCC 7.1.0 complains about an intended fallthrough.
+“__attribute__ ((fallthrough))” in this part of code would suppress this
+warning. Because older GCC compiler don’t understand this statement attribute
+and because there is already a comment in the source containing
+“falls?[ \t-]*thr(ough|u)” we can suppress the warning with the
+“-Wimplicit-fallthrough=2” warning option. Unintended fallthroughs without a
+comment will trigger this warning.
 
-snprintf(path_buff, PATH_BUFF_LEN, SYS_ROUTING_ALGO_FMT, iface_dir->d_name)
-
-in sys.c can be between 34 and 289 bytes and should not write into a
-destination of size 200.
+Older GCC compiler don’t understand this warning option and exits with error.
+There has to be a compiler recognition after that only GCC =>7.1.0 receives
+this option.
 
 Signed-off-by: Philipp Psurek <philipp.psurek@gmail.com>
 ---
- functions.c | 2 +-
- functions.h | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ Makefile | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/functions.c b/functions.c
-index 2239440..8337ee8 100644
---- a/functions.c
-+++ b/functions.c
-@@ -59,7 +59,7 @@
- #include "debugfs.h"
- #include "netlink.h"
+diff --git a/Makefile b/Makefile
+index 6bebb7d..29b7e2f 100755
+--- a/Makefile
++++ b/Makefile
+@@ -101,6 +101,11 @@ MKDIR ?= mkdir -p
+ COMPILE.c = $(Q_CC)$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c
+ LINK.o = $(Q_LD)$(CC) $(CFLAGS) $(LDFLAGS) $(TARGET_ARCH)
  
--#define PATH_BUFF_LEN 200
-+#define PATH_BUFF_LEN 289
- 
- static struct timespec start_time;
- static char *host_name;
-diff --git a/functions.h b/functions.h
-index eca1406..c0a02a8 100644
---- a/functions.h
-+++ b/functions.h
-@@ -31,7 +31,7 @@
- #define ETH_STR_LEN 17
- #define BATMAN_ADV_TAG "batman-adv:"
- 
--#define PATH_BUFF_LEN 200
-+#define PATH_BUFF_LEN 289
- 
- /* return time delta from start to end in milliseconds */
- void start_timer(void);
++# Check for GCC >=7
++ifeq ($(shell $(CC) -x c++ --std=c++17 -E -P - <<< __cplusplus),201703L)
++       CFLAGS += -Wimplicit-fallthrough=2
++endif
++
+ # standard install paths
+ PREFIX = /usr/local
+ SBINDIR = $(PREFIX)/sbin
 -- 
 2.13.0
 
