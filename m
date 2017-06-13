@@ -1,11 +1,16 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Tue, 13 Jun 2017 13:36:56 +0200
-Message-Id: <20170613113700.31220-7-sw@simonwunderlich.de>
-In-Reply-To: <20170613113700.31220-1-sw@simonwunderlich.de>
-References: <20170613113700.31220-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 06/10] batman-adv: tp_meter: mark init
- function with __init
+Date: Tue, 13 Jun 2017 13:46:04 +0200
+Message-ID: <2394098.zSA1hTeZKT@prime>
+In-Reply-To: <20170613110824.27786-2-philipp.psurek@gmail.com>
+References: <20170613103916.27299-1-philipp.psurek@gmail.com>
+ <20170613110824.27786-1-philipp.psurek@gmail.com>
+ <20170613110824.27786-2-philipp.psurek@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4993340.4OMjdkEZGQ";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: suppress implicit-fallthrough
+ compiler warning
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,45 +20,73 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Antonio Quartulli <a@unstable.cc>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+To: Philipp Psurek <philipp.psurek@gmail.com>
+Cc: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Antonio Quartulli <a@unstable.cc>
+--nextPart4993340.4OMjdkEZGQ
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 
-batadv_tp_meter_init() is invoked in batadv_init() only
-which is marked with __init.
+On Tuesday, June 13, 2017 1:08:24 PM CEST Philipp Psurek wrote:
+> GCC 7.1.0 complains about an intended fallthrough.
+> =E2=80=9C__attribute__ ((fallthrough))=E2=80=9D in this part of code woul=
+d suppress this
+> warning. Because older GCC compiler don=E2=80=99t understand this stateme=
+nt
+> attribute and because there is already a comment in the source containing
+> =E2=80=9Cfalls?[ \t-]*thr(ough|u)=E2=80=9D we can suppress the warning wi=
+th the
+> =E2=80=9C-Wimplicit-fallthrough=3D2=E2=80=9D warning option. Unintended f=
+allthroughs without a
+> comment would trigger this warning again.
+>=20
+> To avoid compiler recognition in the Makefile a simply change of the comm=
+ent
+> is sufficient to suppress the warning. For some reason only stand alone
+> comments mentioned in [1] are recognized so the comment has to be split up
+> into two parts.
+>=20
+> [1]
+> https://gcc.gnu.org/onlinedocs/gcc-7.1.0/gcc/Warning-Options.html#index-W=
+im
+> plicit-fallthrough_003d
+>=20
+> Signed-off-by: Philipp Psurek <philipp.psurek@gmail.com>
 
-For this reason batadv_tp_meter_init() can be marked with
-__init as well and dropped after module load.
+Thank you for your persistence and testing!
 
-Signed-off-by: Antonio Quartulli <a@unstable.cc>
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/tp_meter.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+I've adopted your patch, but put the second part of the comment into the=20
+following case to avoid the ugliness. I didn't test with gcc 7.1 but hope t=
+hat=20
+should work. Please check here:
 
-diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index 556f9a865ddf..e3e2585d0977 100644
---- a/net/batman-adv/tp_meter.c
-+++ b/net/batman-adv/tp_meter.c
-@@ -27,6 +27,7 @@
- #include <linux/etherdevice.h>
- #include <linux/fs.h>
- #include <linux/if_ether.h>
-+#include <linux/init.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
- #include <linux/kref.h>
-@@ -1497,7 +1498,7 @@ void batadv_tp_meter_recv(struct batadv_priv *bat_priv, struct sk_buff *skb)
- /**
-  * batadv_tp_meter_init - initialize global tp_meter structures
-  */
--void batadv_tp_meter_init(void)
-+void __init batadv_tp_meter_init(void)
- {
- 	get_random_bytes(batadv_tp_prerandom, sizeof(batadv_tp_prerandom));
- }
--- 
-2.11.0
+https://git.open-mesh.org/batctl.git/blobdiff/
+620226bf8cff30e6dd966c8fe922b2d4cddf843b..
+50ee3c45feeda6d8c04ee127097badf99f78a26e:/tp_meter.c
+
+Thank you!
+      Simon
+--nextPart4993340.4OMjdkEZGQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlk/0HwACgkQoSvjmEKS
+nqHvXA/5AdBTamW9wgGBWfE30qoGYDb7UV7vgWhEKo428Q7kWNKyHkfRpm8qB+hB
+tfBykj4dOWWK1ryqdZttsMZuFUW6ONj4TDTYTGpb9NALlN4U55FNOEHLqdz3thTd
+cz0tswKQ636Erfr67XEFWB+uSwXGRFv7e3c/tDBsYiDwcr913FsvC3GZhwO8u7fi
+IkJiC/Vy2y6YiJSbMFiiJHcppeD3+4xdB/X+TCXMqJVoh7ZGsrNHrRonAblC32jL
+KSSpMC0oBS4NIGQkW8SAHzXEa5ZHrpW4hgf6NefD9z+zUAHgfkIO+rhVPa/dWbxl
+FnpLZ7+j2S2sT37zAHug6R1aQelO762peMZLCrfQIjLNAMjXWvEvRPvf95UIjI8+
+VJaAjzSB1p435pmNM6pvLJfna/jZyfe4PBjICLfHVceS/7Xx7EPxtdGNRy22LF6D
+9bijKGu1J1l0H8GzeDC+hHHLMyAm9nJx8AhLGlRUwfljRUz/cFjxfdfbqnWH6lOA
+mHEcSKNbRJxZrJLsged8VRWDeNgI14eR/+S93h6mpaxtIFR7x3rPKVyR6WWl1aVk
+2wwAPYWRmggqCLsmnoEQseicqLffG7KLWkQFvtrUjmWkdmUmWOxt1aEgiQq/tJql
+7MdunLhbIPnkGQCO2XnsU/5u5sejq6Gfw0YsG2xIEtUBD8oPfQA=
+=pI56
+-----END PGP SIGNATURE-----
+
+--nextPart4993340.4OMjdkEZGQ--
 
