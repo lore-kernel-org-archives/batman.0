@@ -1,15 +1,11 @@
 Return-Path: <joe@perches.com>
-Message-ID: <1497432736.18751.39.camel@perches.com>
 From: Joe Perches <joe@perches.com>
-Date: Wed, 14 Jun 2017 02:32:16 -0700
+Date: Wed, 14 Jun 2017 02:33:52 -0700
+Message-Id: <c3693cdd478c68f078f105f55972a4406b333e69.1497432565.git.joe@perches.com>
 In-Reply-To: <5300874.nPgxNW8UST@bentobox>
-References: <1497390701.18751.26.camel@perches.com>
- <5300874.nPgxNW8UST@bentobox>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] Odd use of %14pM in
- net/batman-adv/distributed-arp-table.c
+References: <5300874.nPgxNW8UST@bentobox>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unnecessary length
+ qualifier in %14pM
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,29 +15,29 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>
+Cc: Sven Eckelmann <sven@narfation.org>, "David S. Miller" <davem@davemloft.net>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, 2017-06-14 at 10:23 +0200, Sven Eckelmann wrote:
-> On Dienstag, 13. Juni 2017 14:51:41 CEST Joe Perches wrote:
-> > An output mac address is 17 bytes
-> 
-> [...]
-> > but in net/batman-adv/distributed-arp-table.c
-> 
-> [...]
-> > %14pM is odd as this should not emit the last byte of the
-> > mac address.  So given the example above, it would output
-> > 00:11:22:33:44
-> 
-> [...]
-> 
-> I completely agree too the "wrong length" part. It is currently not omitting 
-> the last byte:
+It's misleading and unnecessary.
 
-Right, I only looked at vsprintf.c and mistook precision for
-field_width.
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ net/batman-adv/distributed-arp-table.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Do you want to provide a patch to convert it to simple %pM's?
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 6930d6b50f99..b6cfa78e9381 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -834,7 +834,7 @@ int batadv_dat_cache_seq_print_text(struct seq_file *seq, void *offset)
+ 			last_seen_msecs = last_seen_msecs % 60000;
+ 			last_seen_secs = last_seen_msecs / 1000;
+ 
+-			seq_printf(seq, " * %15pI4 %14pM %4i %6i:%02i\n",
++			seq_printf(seq, " * %15pI4 %pM %4i %6i:%02i\n",
+ 				   &dat_entry->ip, dat_entry->mac_addr,
+ 				   batadv_print_vid(dat_entry->vid),
+ 				   last_seen_mins, last_seen_secs);
+-- 
+2.10.0.rc2.1.g053435c
 
-OK.
