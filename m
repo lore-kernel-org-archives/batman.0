@@ -1,15 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 14 Jun 2017 21:41:56 +0200
-Message-ID: <2028385.iHyglIbUJM@sven-edge>
-In-Reply-To: <c3693cdd478c68f078f105f55972a4406b333e69.1497432565.git.joe@perches.com>
-References: <5300874.nPgxNW8UST@bentobox>
- <c3693cdd478c68f078f105f55972a4406b333e69.1497432565.git.joe@perches.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart13492754.E2cbH7caMq";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove unnecessary length
- qualifier in %14pM
+Date: Sun, 18 Jun 2017 09:20:30 +0200
+Message-Id: <20170618072032.23937-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: convert many more places to
+ skb_put_zero()
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,47 +13,116 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Joe Perches <joe@perches.com>
-Cc: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, "David S. Miller" <davem@davemloft.net>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart13492754.E2cbH7caMq
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+From: Johannes Berg <johannes.berg@intel.com>
 
-On Mittwoch, 14. Juni 2017 02:33:52 CEST Joe Perches wrote:
-> It's misleading and unnecessary.
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  net/batman-adv/distributed-arp-table.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+There were many places that my previous spatch didn't find,
+as pointed out by yuan linyu in various patches.
 
-The patch was applied and is currently queued up as 
-454ea1866ef45c6f1b747bd27a8203318be72b5d in batadv/net-next.
+The following spatch found many more and also removes the
+now unnecessary casts:
 
-Thanks,
-	Sven
---nextPart13492754.E2cbH7caMq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+    @@
+    identifier p, p2;
+    expression len;
+    expression skb;
+    type t, t2;
+    @@
+    (
+    -p = skb_put(skb, len);
+    +p = skb_put_zero(skb, len);
+    |
+    -p = (t)skb_put(skb, len);
+    +p = skb_put_zero(skb, len);
+    )
+    ... when != p
+    (
+    p2 = (t2)p;
+    -memset(p2, 0, len);
+    |
+    -memset(p, 0, len);
+    )
 
------BEGIN PGP SIGNATURE-----
+    @@
+    type t, t2;
+    identifier p, p2;
+    expression skb;
+    @@
+    t *p;
+    ...
+    (
+    -p = skb_put(skb, sizeof(t));
+    +p = skb_put_zero(skb, sizeof(t));
+    |
+    -p = (t *)skb_put(skb, sizeof(t));
+    +p = skb_put_zero(skb, sizeof(t));
+    )
+    ... when != p
+    (
+    p2 = (t2)p;
+    -memset(p2, 0, sizeof(*p));
+    |
+    -memset(p, 0, sizeof(*p));
+    )
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAllBkYQACgkQXYcKB8Em
-e0YTgg//fGwGz+F0a3HpSTMOa8UCkn2Dj4IRL7+E8Lyix4BjjeF0Yu60q0s+5wGG
-KLJkjWtn2mdfXjPo8Z8qlay+O3H6OBQGnCJ8n0YnvdmYlfl2bp+oY8jPOhOQ6ILN
-btZ/6VqQBODZB+ueFNtL+7iLA2z1khRD8H5hMnLH6A8IE520q8O4PU/SNYF5Hxvg
-z5QgpRp4IDLSC0lTHpyKYQEsEKY+w0k7pcBFTr7iCZO5BWidy6H2wLK+oe7l+OGN
-527Dra9vsQVEuvd8cVKGiwFBInH0UpoBze5tYrOq70CyYDy9mo//7/ypTVPQQOs3
-/V/167F34lUmdTnLZTdaQCEqhKuAcar4CdrzxZc801Wonm2+F7sM2awKkZySiQPd
-GzYAizqVnigmO6nDGRYRFmqFNcS4mM1ltbACg+jGXezln3wTTSqyP4HXCpVd2t8a
-LgAp53wQaEfEnYSvtoaSnInKGKhf0jcfjazi0aY7gwZghfMshgTYalDHdv9AMDxP
-lIzOzKDXWtJzwsOyOSutFtf3CtKds8wy5DxrjP7NEhUasNKjg8EmadRmZUibuTYg
-dbTQKWrlMA01MUbAxiQ1KBEg2nWMhV45E5GUgR7KoFMhU7xS8HCvhgvTWBPM1Pf2
-KQCQ12puwPJhTU20sesW7l2fgs/r1oWa0J8k6ajz64sfsmfW7Ww=
-=wuow
------END PGP SIGNATURE-----
+    @@
+    expression skb, len;
+    @@
+    -memset(skb_put(skb, len), 0, len);
+    +skb_put_zero(skb, len);
 
---nextPart13492754.E2cbH7caMq--
+Apply it to the tree (with one manual fixup to keep the
+comment in vxlan.c, which spatch removed.)
+
+Signed-off-by: Johannes Berg <johannes.berg@intel.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+[sven@narfation.org: Add compat code]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+This patch is already part of net-next. Only the compat code is new.
+
+ compat-include/linux/skbuff.h | 13 +++++++++++++
+ net/batman-adv/bat_v_elp.c    |  3 +--
+ 2 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/compat-include/linux/skbuff.h b/compat-include/linux/skbuff.h
+index 95f645ad..02bc11de 100644
+--- a/compat-include/linux/skbuff.h
++++ b/compat-include/linux/skbuff.h
+@@ -76,4 +76,17 @@ struct sk_buff *skb_checksum_trimmed(struct sk_buff *skb,
+ 
+ #endif /* < KERNEL_VERSION(4, 2, 0) */
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 13, 0)
++
++static inline void *skb_put_zero(struct sk_buff *skb, unsigned int len)
++{
++	void *tmp = skb_put(skb, len);
++
++	memset(tmp, 0, len);
++
++	return tmp;
++}
++
++#endif /* < KERNEL_VERSION(4, 13, 0) */
++
+ #endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_SKBUFF_H_ */
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index b58007b7..bd1064d9 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -346,9 +346,8 @@ int batadv_v_elp_iface_enable(struct batadv_hard_iface *hard_iface)
+ 		goto out;
+ 
+ 	skb_reserve(hard_iface->bat_v.elp_skb, ETH_HLEN + NET_IP_ALIGN);
+-	elp_buff = skb_put(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
++	elp_buff = skb_put_zero(hard_iface->bat_v.elp_skb, BATADV_ELP_HLEN);
+ 	elp_packet = (struct batadv_elp_packet *)elp_buff;
+-	memset(elp_packet, 0, BATADV_ELP_HLEN);
+ 
+ 	elp_packet->packet_type = BATADV_ELP;
+ 	elp_packet->version = BATADV_COMPAT_VERSION;
+-- 
+2.11.0
 
