@@ -1,14 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 20 Jun 2017 08:33:33 +0200
-Message-ID: <4541231.cHCCYZPiDH@bentobox>
-In-Reply-To: <OF851B1547.E69BF39C-ONC1258145.001F7A29-C1258145.001FFF17@phoenixcontact.com>
-References: <OF851B1547.E69BF39C-ONC1258145.001F7A29-C1258145.001FFF17@phoenixcontact.com>
+Return-Path: <linus.luessing@c0d3.blue>
+From: =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Date: Fri, 23 Jun 2017 17:48:26 +0200
+Message-Id: <20170623154826.7792-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3943966.zVXaI9mDBU";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] batman-adv: is it possible to increase mtu size
- for batman-adv interfaces?
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix TT sync flag
+ inconsistencies
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,56 +18,206 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart3943966.zVXaI9mDBU
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This patch fixes an issue in the translation table code potentially
+leading to a TT Request + Response storm. The issue may occur for nodes
+involving BLA and an inconsistent configuration of the batman-adv AP
+isolation feature. However, since the new multicast optimizations, a
+single, malformed packet may lead to a mesh-wide, persistent
+Denial-of-Service, too.
 
-On Dienstag, 20. Juni 2017 07:49:28 CEST Andreas Pape wrote:
-> Hi,
-> 
-> currently the mtu size of batman-adv soft-interfaces is limited to
-> ETH_DATA_LEN (1500 bytes) in function batadv_hardif_min_mtu as far as I
-> understand.
-> 
-> A comment in this function states that batman-adv "does not support MTUs
-> bigger than ETH_DATA_LEN". Is there a specific reason for this or would it
-> be possible to increase the MTU size to something like 1518 by simply
-> replacing all limitations to ETH_DATA_LEN with a higher value?
+The issue occurs because nodes are currently OR-ing the TT sync flags of
+all originators announcing a specific MAC address via the
+translation table. When an intermediate node now receives a TT Request
+and wants to answer this on behave of the destination node then this
+intermediate node now responds with an altered flag field and broken
+CRC. The next OGM of the real destination will lead to a CRC mismatch
+and triggering a TT Request and Response again.
 
-There is no protocol specific reason why it is limited to 1500 bytes. But I 
-think there is more needed than just changing all appearances of ETH_DATA_LEN. 
-For example, at the moment we don't use more than 1500 and thus we didn't had 
-to overwrite some of the special netdev variables for the maximum mtu. Maybe 
-someone remebers the patches which wanted to touch this part of batman-adv but 
-which were then dropped because batman-adv was only using an MTU of 1500 or 
-less. Here is the revert of the change which tried that: https://
-patchwork.kernel.org/patch/9390379/
+Furthermore, the OR-ing is currently never undone as long as at least
+one originator announcing the according MAC address remains, leading to
+the potential persistency of this issue.
 
-There is most likely a lot more which will cause some kind of problem.
+This patch fixes this issue by storing the flags used in the CRC
+calculation on a a per TT orig entry basis to be able to respond with
+the correct, original flags in an intermediate TT Response for one
+thing. And to be able to correctly unset sync flags once all nodes
+announcing a sync flag vanish for another.
 
-Kind regards,
-	Sven
---nextPart3943966.zVXaI9mDBU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Fixes: fa614fd04692 ("batman-adv: fix tt_global_entries flags update")
+Signed-off-by: Linus Lüssing <linus.luessing@c0d3.blue>
+---
+ net/batman-adv/translation-table.c | 62 ++++++++++++++++++++++++++++++--------
+ net/batman-adv/types.h             |  2 ++
+ 2 files changed, 51 insertions(+), 13 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAllIwb0ACgkQXYcKB8Em
-e0aHdhAAyzIaAO9HpDEJH7D+wHaUcgRaiIqI7Y/ew2CNTbxKeJsZpwiy7/DJ9qdA
-Z/e+xlRUlK6wLBJPs4wvEWo8Hk6y3VAZZiEa3Xd+IORBkqqLqkTCKtpcR6ZAFZJA
-FoIC4APg9Y6n963E3ycLcKyQAiVMy6U7qh8tZ+/xeBLb4aFN7VIBUI6vUSYJK4e4
-2CIlntuIMCTMHvq/sYQvEKQVBNj601z1zBxfxU8/i8fDQKBy9o7UWF2p5Jfsbra+
-yR8lgohYcefQKRbCASezUwTfUOZlVeLHvEoGDhJZ9z81afE2oq3g4JkJgg1wA3VW
-DiN7iTc7SAlLP5dGQwIwN8YPTKXoCWnAkJsXE57JEwy10II5um2WUKRwmxr7/ujt
-/qhyLihHLvmIt+0f5qAG1eKcHrMipKAQ0suS0uyb3V6ra8oRk/lZrvU3ER07b/QE
-rRtPaLEvy2lGXteuoLPmgDTtxKzBn3kihH3WU0MYNPo/9AVq6gGOGXzcd+cQI4iC
-r6qau8+5zOmAkRpM7oDWqV9vi2v5Ga+zhWaLCll7M1gm5wsvjfWWXgkKSu95V1Wn
-lYEUQ8nP4lzK6XYQ9QjJ8weYO+6xwTwk4egT3kKxKaBcJ8mbjcDFdnmAB0AMga37
-bSjz1eU4BYSIGQjiki5K/FzN5eADqcSAEDJ9bT1242WRZtwu6Ns=
-=3Nsj
------END PGP SIGNATURE-----
-
---nextPart3943966.zVXaI9mDBU--
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index e1133bc..ef18b5b 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1549,9 +1549,41 @@ batadv_tt_global_entry_has_orig(const struct batadv_tt_global_entry *entry,
+ 	return found;
+ }
+ 
++/**
++ * batadv_tt_global_sync_flags - update TT sync flags
++ * @tt_global: the TT global entry to update sync flags in
++ *
++ * Updates the sync flag bits in the tt_global flag attribute with a logical
++ * OR of all sync flags from any of its TT orig entries.
++ */
++static void
++batadv_tt_global_sync_flags(struct batadv_tt_global_entry *tt_global)
++{
++	struct batadv_tt_orig_list_entry *orig_entry;
++	const struct hlist_head *head;
++	u16 flags = BATADV_NO_FLAGS;
++
++	rcu_read_lock();
++	head = &tt_global->orig_list;
++	hlist_for_each_entry_rcu(orig_entry, head, list)
++		flags |= orig_entry->flags;
++	rcu_read_unlock();
++
++	flags |= tt_global->common.flags & (~BATADV_TT_SYNC_MASK);
++	tt_global->common.flags = flags;
++}
++
++/**
++ * batadv_tt_global_orig_entry_add - add or update a TT orig entry
++ * @tt_global: the TT global entry to add an orig entry in
++ * @orig_node: the originator to add an orig entry for
++ * @ttvn: translation table version number of this changeset
++ * @flags: TT sync flags
++ */
+ static void
+ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
+-				struct batadv_orig_node *orig_node, int ttvn)
++				struct batadv_orig_node *orig_node, int ttvn,
++				u8 flags)
+ {
+ 	struct batadv_tt_orig_list_entry *orig_entry;
+ 
+@@ -1561,7 +1593,8 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
+ 		 * was added during a "temporary client detection"
+ 		 */
+ 		orig_entry->ttvn = ttvn;
+-		goto out;
++		orig_entry->flags = flags;
++		goto sync_flags;
+ 	}
+ 
+ 	orig_entry = kmem_cache_zalloc(batadv_tt_orig_cache, GFP_ATOMIC);
+@@ -1573,6 +1606,7 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
+ 	batadv_tt_global_size_inc(orig_node, tt_global->common.vid);
+ 	orig_entry->orig_node = orig_node;
+ 	orig_entry->ttvn = ttvn;
++	orig_entry->flags = flags;
+ 	kref_init(&orig_entry->refcount);
+ 
+ 	spin_lock_bh(&tt_global->list_lock);
+@@ -1582,6 +1616,8 @@ batadv_tt_global_orig_entry_add(struct batadv_tt_global_entry *tt_global,
+ 	spin_unlock_bh(&tt_global->list_lock);
+ 	atomic_inc(&tt_global->orig_list_count);
+ 
++sync_flags:
++	batadv_tt_global_sync_flags(tt_global);
+ out:
+ 	if (orig_entry)
+ 		batadv_tt_orig_list_entry_put(orig_entry);
+@@ -1702,12 +1738,6 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 			common->flags &= ~BATADV_TT_CLIENT_TEMP;
+ 		}
+ 
+-		/* the change can carry possible "attribute" flags like the
+-		 * TT_CLIENT_WIFI, therefore they have to be copied in the
+-		 * client entry
+-		 */
+-		common->flags |= flags;
+-
+ 		/* If there is the BATADV_TT_CLIENT_ROAM flag set, there is only
+ 		 * one originator left in the list and we previously received a
+ 		 * delete + roaming change for this originator.
+@@ -1723,7 +1753,8 @@ static bool batadv_tt_global_add(struct batadv_priv *bat_priv,
+ 	}
+ add_orig_entry:
+ 	/* add the new orig_entry (if needed) or update it */
+-	batadv_tt_global_orig_entry_add(tt_global_entry, orig_node, ttvn);
++	batadv_tt_global_orig_entry_add(tt_global_entry, orig_node, ttvn,
++					flags & BATADV_TT_SYNC_MASK);
+ 
+ 	batadv_dbg(BATADV_DBG_TT, bat_priv,
+ 		   "Creating new global tt entry: %pM (vid: %d, via %pM)\n",
+@@ -1946,6 +1977,7 @@ batadv_tt_global_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
+ 			       struct batadv_tt_orig_list_entry *orig,
+ 			       bool best)
+ {
++	u16 flags = (common->flags & (~BATADV_TT_SYNC_MASK)) | orig->flags;
+ 	void *hdr;
+ 	struct batadv_orig_node_vlan *vlan;
+ 	u8 last_ttvn;
+@@ -1975,7 +2007,7 @@ batadv_tt_global_dump_subentry(struct sk_buff *msg, u32 portid, u32 seq,
+ 	    nla_put_u8(msg, BATADV_ATTR_TT_LAST_TTVN, last_ttvn) ||
+ 	    nla_put_u32(msg, BATADV_ATTR_TT_CRC32, crc) ||
+ 	    nla_put_u16(msg, BATADV_ATTR_TT_VID, common->vid) ||
+-	    nla_put_u32(msg, BATADV_ATTR_TT_FLAGS, common->flags))
++	    nla_put_u32(msg, BATADV_ATTR_TT_FLAGS, flags))
+ 		goto nla_put_failure;
+ 
+ 	if (best && nla_put_flag(msg, BATADV_ATTR_FLAG_BEST))
+@@ -2589,6 +2621,7 @@ static u32 batadv_tt_global_crc(struct batadv_priv *bat_priv,
+ 				unsigned short vid)
+ {
+ 	struct batadv_hashtable *hash = bat_priv->tt.global_hash;
++	struct batadv_tt_orig_list_entry *tt_orig;
+ 	struct batadv_tt_common_entry *tt_common;
+ 	struct batadv_tt_global_entry *tt_global;
+ 	struct hlist_head *head;
+@@ -2627,8 +2660,9 @@ static u32 batadv_tt_global_crc(struct batadv_priv *bat_priv,
+ 			/* find out if this global entry is announced by this
+ 			 * originator
+ 			 */
+-			if (!batadv_tt_global_entry_has_orig(tt_global,
+-							     orig_node))
++			tt_orig = batadv_tt_global_orig_entry_find(tt_global,
++								   orig_node);
++			if (!tt_orig)
+ 				continue;
+ 
+ 			/* use network order to read the VID: this ensures that
+@@ -2640,10 +2674,12 @@ static u32 batadv_tt_global_crc(struct batadv_priv *bat_priv,
+ 			/* compute the CRC on flags that have to be kept in sync
+ 			 * among nodes
+ 			 */
+-			flags = tt_common->flags & BATADV_TT_SYNC_MASK;
++			flags = tt_orig->flags;
+ 			crc_tmp = crc32c(crc_tmp, &flags, sizeof(flags));
+ 
+ 			crc ^= crc32c(crc_tmp, tt_common->addr, ETH_ALEN);
++
++			batadv_tt_orig_list_entry_put(tt_orig);
+ 		}
+ 		rcu_read_unlock();
+ 	}
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index ea43a64..a627958 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1260,6 +1260,7 @@ struct batadv_tt_global_entry {
+  * struct batadv_tt_orig_list_entry - orig node announcing a non-mesh client
+  * @orig_node: pointer to orig node announcing this non-mesh client
+  * @ttvn: translation table version number which added the non-mesh client
++ * @flags: per orig entry TT sync flags
+  * @list: list node for batadv_tt_global_entry::orig_list
+  * @refcount: number of contexts the object is used
+  * @rcu: struct used for freeing in an RCU-safe manner
+@@ -1267,6 +1268,7 @@ struct batadv_tt_global_entry {
+ struct batadv_tt_orig_list_entry {
+ 	struct batadv_orig_node *orig_node;
+ 	u8 ttvn;
++	u8 flags;
+ 	struct hlist_node list;
+ 	struct kref refcount;
+ 	struct rcu_head rcu;
+-- 
+2.1.4
 
