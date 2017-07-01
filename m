@@ -1,12 +1,14 @@
-Return-Path: <mareklindner@neomailbox.ch>
-From: Marek Lindner <mareklindner@neomailbox.ch>
-Date: Sat, 01 Jul 2017 23:34:37 +0800
-Message-ID: <3606832.Ug1eaxX1Ot@lafayette>
-In-Reply-To: <20170623154826.7792-1-linus.luessing@c0d3.blue>
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Sat, 1 Jul 2017 18:47:11 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20170701164711.GA13650@otheros>
 References: <20170623154826.7792-1-linus.luessing@c0d3.blue>
+ <3606832.Ug1eaxX1Ot@lafayette>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart35709541.tFLr3jMBsv";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <3606832.Ug1eaxX1Ot@lafayette>
 Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix TT sync flag
  inconsistencies
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -20,40 +22,31 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart35709541.tFLr3jMBsv
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="iso-8859-1"
+Hi Marek,
 
-On Friday, June 23, 2017 5:48:26 PM HKT Linus L=FCssing wrote:
-> @@ -1946,6 +1977,7 @@ batadv_tt_global_dump_subentry(struct sk_buff *msg,
-> u32 portid, u32 seq, struct batadv_tt_orig_list_entry *orig, bool best)
->  {
-> +       u16 flags =3D (common->flags & (~BATADV_TT_SYNC_MASK)) | orig->fl=
-ags;
+Thanks for having a first glance at this patch!
 
-Why do we need to output the combined global (partially masked) and the fla=
-gs=20
-propagated by originator ? Shouldn't writing orig->flags be what we want ?
+On Sat, Jul 01, 2017 at 11:34:37PM +0800, Marek Lindner wrote:
+> On Friday, June 23, 2017 5:48:26 PM HKT Linus Lüssing wrote:
+> > @@ -1946,6 +1977,7 @@ batadv_tt_global_dump_subentry(struct sk_buff *msg,
+> > u32 portid, u32 seq, struct batadv_tt_orig_list_entry *orig, bool best)
+> >  {
+> > +       u16 flags = (common->flags & (~BATADV_TT_SYNC_MASK)) | orig->flags;
+> 
+> Why do we need to output the combined global (partially masked) and the flags 
+> propagated by originator ? Shouldn't writing orig->flags be what we want ?
 
-Cheers,
-Marek
+I thought it'd be helpful to be able to look at the sync flags
+on a per originator basis. So that users can more easily spot nodes with
+broken flags and can take action sooner.
 
---nextPart35709541.tFLr3jMBsv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Next to Simon's report we have had two more, independent reporters
+stumbling over the same issue later. This would help people to more
+easily identify which nodes and maybe what kind of nodes are usually
+sending broken packets. Parsing the "batctl log" for that is also
+possible for this, but not as easy as looking at "batctl tg". And
+"batctl log" isn't available in a batman-adv default build anyway.
 
------BEGIN PGP SIGNATURE-----
+Does that make sense?
 
-iQEzBAABCAAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAllXwQ0ACgkQU1VOj+62
-HMD+nAf/X/Y+8r4lJcqZkWVITT3UPsqKD1f8w4fPzkoSWkbB9Bxua+pXbuJp6PqK
-x0O4maYh/ju4RPfdOZoaNZeTlXxGsru24DmbA+HDVzrf0Mb/70ir6WgbcgA7lEwI
-CSsOyyzAxxHjR0WOxbrFGY6JAyKdnX2DfWV8Zk5Ix3W33U0NzMnrgCa/2XNAGbRL
-kosoHUHJcEesb/vY9TYtUbyVKq5wmTeXoAD4ovsl+evAq+7BgkKwdzcYfrtuLF+9
-R2pEbsUymlHBjdROeVaQz6WSUB7snrm7x+flzSUXixcj76SUOPnTdNdyynT6hASZ
-iPH4xxPH4mel9XneENPGMWlCPyFg+g==
-=JeeC
------END PGP SIGNATURE-----
-
---nextPart35709541.tFLr3jMBsv--
-
+Regards, Linus
