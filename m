@@ -1,11 +1,14 @@
-Return-Path: <colin.king@canonical.com>
-From: Colin King <colin.king@canonical.com>
-Date: Mon, 26 Jun 2017 11:26:44 +0100
-Message-Id: <20170626102644.11337-1-colin.king@canonical.com>
+Return-Path: <mareklindner@neomailbox.ch>
+From: Marek Lindner <mareklindner@neomailbox.ch>
+Date: Sat, 01 Jul 2017 23:34:37 +0800
+Message-ID: <3606832.Ug1eaxX1Ot@lafayette>
+In-Reply-To: <20170623154826.7792-1-linus.luessing@c0d3.blue>
+References: <20170623154826.7792-1-linus.luessing@c0d3.blue>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH][V2] batman-adv: fix various spelling mistakes
+Content-Type: multipart/signed; boundary="nextPart35709541.tFLr3jMBsv";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix TT sync flag
+ inconsistencies
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,83 +18,42 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Marek Lindner <mareklindner@neomailbox.ch>, Simon Wunderlich <sw@simonwunderlich.de>, Antonio Quartulli <a@unstable.cc>, "David S . Miller" <davem@davemloft.net>, b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Colin Ian King <colin.king@canonical.com>
+--nextPart35709541.tFLr3jMBsv
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 
-Trivial fix to spelling mistakes in batadv_dbg debug messages and
-also in a comment and ensure comment line is not wider than 80
-characters
+On Friday, June 23, 2017 5:48:26 PM HKT Linus L=FCssing wrote:
+> @@ -1946,6 +1977,7 @@ batadv_tt_global_dump_subentry(struct sk_buff *msg,
+> u32 portid, u32 seq, struct batadv_tt_orig_list_entry *orig, bool best)
+>  {
+> +       u16 flags =3D (common->flags & (~BATADV_TT_SYNC_MASK)) | orig->fl=
+ags;
 
-"ourselve" -> "ourselves"
-"surpressed" -> "suppressed"
-"troughput" -> "throughput"
+Why do we need to output the combined global (partially masked) and the fla=
+gs=20
+propagated by originator ? Shouldn't writing orig->flags be what we want ?
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- net/batman-adv/bat_v_ogm.c | 12 ++++++------
- net/batman-adv/send.c      |  2 +-
- 2 files changed, 7 insertions(+), 7 deletions(-)
+Cheers,
+Marek
 
-diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
-index 1e3dc374bfde..a38b09347e2e 100644
---- a/net/batman-adv/bat_v_ogm.c
-+++ b/net/batman-adv/bat_v_ogm.c
-@@ -200,7 +200,7 @@ static void batadv_v_ogm_send(struct work_struct *work)
- 				type = "unknown";
- 			}
- 
--			batadv_dbg(BATADV_DBG_BATMAN, bat_priv, "OGM2 from ourselve on %s surpressed: %s\n",
-+			batadv_dbg(BATADV_DBG_BATMAN, bat_priv, "OGM2 from ourselves on %s suppressed: %s\n",
- 				   hard_iface->net_dev->name, type);
- 
- 			batadv_hardif_put(hard_iface);
-@@ -683,18 +683,18 @@ static void batadv_v_ogm_process(const struct sk_buff *skb, int ogm_offset,
- 	ogm_throughput = ntohl(ogm_packet->throughput);
- 
- 	batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
--		   "Received OGM2 packet via NB: %pM, IF: %s [%pM] (from OG: %pM, seqno %u, troughput %u, TTL %u, V %u, tvlv_len %u)\n",
-+		   "Received OGM2 packet via NB: %pM, IF: %s [%pM] (from OG: %pM, seqno %u, throughput %u, TTL %u, V %u, tvlv_len %u)\n",
- 		   ethhdr->h_source, if_incoming->net_dev->name,
- 		   if_incoming->net_dev->dev_addr, ogm_packet->orig,
- 		   ntohl(ogm_packet->seqno), ogm_throughput, ogm_packet->ttl,
- 		   ogm_packet->version, ntohs(ogm_packet->tvlv_len));
- 
--	/* If the troughput metric is 0, immediately drop the packet. No need to
--	 * create orig_node / neigh_node for an unusable route.
-+	/* If the throughput metric is 0, immediately drop the packet. No need
-+	 * to create orig_node / neigh_node for an unusable route.
- 	 */
- 	if (ogm_throughput == 0) {
- 		batadv_dbg(BATADV_DBG_BATMAN, bat_priv,
--			   "Drop packet: originator packet with troughput metric of 0\n");
-+			   "Drop packet: originator packet with throughput metric of 0\n");
- 		return;
- 	}
- 
-@@ -762,7 +762,7 @@ static void batadv_v_ogm_process(const struct sk_buff *skb, int ogm_offset,
- 				type = "unknown";
- 			}
- 
--			batadv_dbg(BATADV_DBG_BATMAN, bat_priv, "OGM2 packet from %pM on %s surpressed: %s\n",
-+			batadv_dbg(BATADV_DBG_BATMAN, bat_priv, "OGM2 packet from %pM on %s suppressed: %s\n",
- 				   ogm_packet->orig, hard_iface->net_dev->name,
- 				   type);
- 
-diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
-index d239a9d72ac3..054a65e6eb68 100644
---- a/net/batman-adv/send.c
-+++ b/net/batman-adv/send.c
-@@ -911,7 +911,7 @@ static void batadv_send_outstanding_bcast_packet(struct work_struct *work)
- 				type = "unknown";
- 			}
- 
--			batadv_dbg(BATADV_DBG_BATMAN, bat_priv, "BCAST packet from orig %pM on %s surpressed: %s\n",
-+			batadv_dbg(BATADV_DBG_BATMAN, bat_priv, "BCAST packet from orig %pM on %s suppressed: %s\n",
- 				   bcast_packet->orig,
- 				   hard_iface->net_dev->name, type);
- 
--- 
-2.11.0
+--nextPart35709541.tFLr3jMBsv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEEI5CG6MPJfr3knG//U1VOj+62HMAFAllXwQ0ACgkQU1VOj+62
+HMD+nAf/X/Y+8r4lJcqZkWVITT3UPsqKD1f8w4fPzkoSWkbB9Bxua+pXbuJp6PqK
+x0O4maYh/ju4RPfdOZoaNZeTlXxGsru24DmbA+HDVzrf0Mb/70ir6WgbcgA7lEwI
+CSsOyyzAxxHjR0WOxbrFGY6JAyKdnX2DfWV8Zk5Ix3W33U0NzMnrgCa/2XNAGbRL
+kosoHUHJcEesb/vY9TYtUbyVKq5wmTeXoAD4ovsl+evAq+7BgkKwdzcYfrtuLF+9
+R2pEbsUymlHBjdROeVaQz6WSUB7snrm7x+flzSUXixcj76SUOPnTdNdyynT6hASZ
+iPH4xxPH4mel9XneENPGMWlCPyFg+g==
+=JeeC
+-----END PGP SIGNATURE-----
+
+--nextPart35709541.tFLr3jMBsv--
 
