@@ -1,16 +1,14 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Wed, 5 Jul 2017 07:59:40 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20170705055939.GF3112@otheros>
-References: <20170623154826.7792-1-linus.luessing@c0d3.blue>
- <3606832.Ug1eaxX1Ot@lafayette> <20170701173456.GB13650@otheros>
- <20170703040801.GD27857@prodigo.unstable.cc>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 05 Jul 2017 08:30:14 +0200
+Message-ID: <5016212.eXVVEQaTKU@bentobox>
+In-Reply-To: <20170618075928.27964-1-sven@narfation.org>
+References: <20170618075928.27964-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20170703040801.GD27857@prodigo.unstable.cc>
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix TT sync flag
- inconsistencies
+Content-Type: multipart/signed; boundary="nextPart3371115.3ChBtnttFg";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove variable deprecated
+ by skb_put_data
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,44 +18,54 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Antonio,
+--nextPart3371115.3ChBtnttFg
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Thanks for looking at it, too :-).
-
-On Mon, Jul 03, 2017 at 12:08:01PM +0800, Antonio Quartulli wrote:
-> [...]
+On Sonntag, 18. Juni 2017 09:59:28 CEST Sven Eckelmann wrote:
+> skb_put_data makes it unnecessary to store the skb_put return value to copy
+> some data to the packet. The returned pointer of skb_put_data should
+> therefore not stored by functions which previously only used it to copy
+> some data.
 > 
-> Linus,
-> 
-> each originator announces flags covered by BATADV_TT_REMOTE_MASK (0x00FF),
-> however you are extracting only those covered by BATADV_TT_SYNC_MASK (0x00F0).
-> 
-> Am I wrong or this is preventing the other 4 REMOTE flags (0x000F) to be set in
-> tt_global_entry->common->flags (because you always filter them out when updating
-> the entry)?
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> This patch belongs to the series
+>  https://patchwork.open-mesh.org/project/b.a.t.m.a.n./list/?series=11
+> It must not be squashed in the "batman-adv: introduce and use skb_put_data()"
+> because it is already part of net-next and we must port the change in our
+> patch in a separate pull request.
 
-Hm, as far as I can tell, the ROAM flag is still set here:
-http://elixir.free-electrons.com/linux/latest/source/net/batman-adv/translation-table.c#L787
+Applied as 6e94ef826db0 [1] to reduce the number of warnings from the daily 
+build tests.
 
-And unset here:
-http://elixir.free-electrons.com/linux/latest/source/net/batman-adv/translation-table.c#L1720
+Kind regards,
+	Sven
 
-And the TEMP flag is unset here:
-http://elixir.free-electrons.com/linux/latest/source/net/batman-adv/translation-table.c#L1702
+[1] https://git.open-mesh.org/batman-adv.git/commit/6e94ef826db02e0f6b0fb286ee0c9ba86254bc2b
+--nextPart3371115.3ChBtnttFg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-And is set... hm, ok, was the TEMP flag set by the now deleted
-"common->flags |= flags;"?
+-----BEGIN PGP SIGNATURE-----
 
-But then I'm confused, how would the TEMP flag have worked before
-patch fa614fd04692? Or was that patch not only supposed to fix the
-WIFI but also the TEMP flag?
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAllch3YACgkQXYcKB8Em
+e0YejBAAtqQCWaQqHD1KzUnQ5EHj4fwTM9qaiWokHVmHvgXMCGcx9ejY3/tzH6Ob
+OrcU64eH7rvWbHp8hPBVVrBa6PD42kb6GYoISpWZKf1BcBem+kIDaGM4dBjY5Gxd
+uM4BWzbEMP4Q9lV3T6r42/uwPkh35eOxAl52HTxGPAhLT4wnco3BV4rKI1EgUnbI
+fiWtP5NYi2Xm2gPHuLRj0FQqUI1+oItBIv5O2mG8oVfzpXzgFSD5lxyfrQXcBXSY
+tiTBc9/U1lkZ40XPyyaCRZM6W+5KNzhoQFjLRHXa7o48XBRuQx+x+M7SMVw2ZWzs
+oDb/FXpTsg7s72CTnesW/g/3VuV7VyFuduCuRrjStQRyEOydiIxEhiAHMM1AvozE
+mkID1t9rsy+SCWbBWTxmMIC0kkiaORpEhHqTZgwu9+PPNd7GcxVvIraCf382WriM
+YZEupYi4CNBczTCCL7UlmBLlf6gZx2lTtd7LqMCNNJ9anPfPWgZ7EIlbDecMh1NR
+VyRrvXobbiqQQqgAeUt7HnT0d/weIOxhFZlJJlnlKesrFIWFLXQeZTt9KM3TdufS
+7TYMrTrmrgk9ctBwPyjbLC69L//spx6FeAm29xgrrQQbqtSmIQTxlmvbjKeiJJJf
+OBV74GrLSLWr8w0fd/PC3mBbvtSDO7Uphw7Fp7Mq8bkHp9iTUGs=
+=6dr2
+-----END PGP SIGNATURE-----
 
-If so, what would you prefer, should I replace the
-"common->flags |= flags" with something like a
-"common->flags |= flags & (~BATADV_TT_SYNC_MASK)"? Or would you
-prefer setting the TEMP flag somewhere else explicitly, similarly
-like we seemingly handle the ROAM flag explicitly, too?
+--nextPart3371115.3ChBtnttFg--
 
-Regards, Linus
