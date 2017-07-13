@@ -1,8 +1,13 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 12 Jul 2017 13:14:48 +0200
-Message-Id: <20170712111448.30712-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Convert batman-adv.txt to
+Date: Thu, 13 Jul 2017 18:24:56 +0200
+Message-ID: <1781795.uu9pZesUxg@sven-edge>
+In-Reply-To: <20170712111448.30712-1-sven@narfation.org>
+References: <20170712111448.30712-1-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart4312718.Yc3DkGrqEf";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Convert batman-adv.txt to
  reStructuredText
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -14,509 +19,53 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: linux-doc@vger.kernel.org, corbet@lwn.net, Sven Eckelmann <sven@narfation.org>
 
-Converting the freeform text to parsable reStructuredText, allows the
-integration in the sphinx based documentation system of the kernel. It will
-therefore be accessible as hypertext under
-https://www.kernel.org/doc/html/latest/
+--nextPart4312718.Yc3DkGrqEf
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- Documentation/networking/00-INDEX       |   2 -
- Documentation/networking/batman-adv.rst | 220 ++++++++++++++++++++++++++++++++
- Documentation/networking/batman-adv.txt | 215 -------------------------------
- Documentation/networking/index.rst      |   1 +
- MAINTAINERS                             |   2 +-
- 5 files changed, 222 insertions(+), 218 deletions(-)
- create mode 100644 Documentation/networking/batman-adv.rst
- delete mode 100644 Documentation/networking/batman-adv.txt
+On Mittwoch, 12. Juli 2017 13:14:48 CEST Sven Eckelmann wrote:
+>  Documentation/networking/00-INDEX       |   2 -
+>  Documentation/networking/batman-adv.rst | 220 ++++++++++++++++++++++++++++++++
+>  Documentation/networking/batman-adv.txt | 215 -------------------------------
+>  Documentation/networking/index.rst      |   1 +
+>  MAINTAINERS                             |   2 +-
+>  5 files changed, 222 insertions(+), 218 deletions(-)
+>  create mode 100644 Documentation/networking/batman-adv.rst
+>  delete mode 100644 Documentation/networking/batman-adv.txt
 
-diff --git a/Documentation/networking/00-INDEX b/Documentation/networking/00-INDEX
-index c6beb5f1637f..7a79b3587dd3 100644
---- a/Documentation/networking/00-INDEX
-+++ b/Documentation/networking/00-INDEX
-@@ -30,8 +30,6 @@ atm.txt
- 	- info on where to get ATM programs and support for Linux.
- ax25.txt
- 	- info on using AX.25 and NET/ROM code for Linux
--batman-adv.txt
--	- B.A.T.M.A.N routing protocol on top of layer 2 Ethernet Frames.
- baycom.txt
- 	- info on the driver for Baycom style amateur radio modems
- bonding.txt
-diff --git a/Documentation/networking/batman-adv.rst b/Documentation/networking/batman-adv.rst
-new file mode 100644
-index 000000000000..a342b2cc3dc6
---- /dev/null
-+++ b/Documentation/networking/batman-adv.rst
-@@ -0,0 +1,220 @@
-+==========
-+batman-adv
-+==========
-+
-+Batman advanced is a new approach to wireless networking which does no longer
-+operate on the IP basis. Unlike the batman daemon, which exchanges information
-+using UDP packets and sets routing tables, batman-advanced operates on ISO/OSI
-+Layer 2 only and uses and routes (or better: bridges) Ethernet Frames. It
-+emulates a virtual network switch of all nodes participating. Therefore all
-+nodes appear to be link local, thus all higher operating protocols won't be
-+affected by any changes within the network. You can run almost any protocol
-+above batman advanced, prominent examples are: IPv4, IPv6, DHCP, IPX.
-+
-+Batman advanced was implemented as a Linux kernel driver to reduce the overhead
-+to a minimum. It does not depend on any (other) network driver, and can be used
-+on wifi as well as ethernet lan, vpn, etc ... (anything with ethernet-style
-+layer 2).
-+
-+
-+Configuration
-+=============
-+
-+Load the batman-adv module into your kernel::
-+
-+  $ insmod batman-adv.ko
-+
-+The module is now waiting for activation. You must add some interfaces on which
-+batman can operate. After loading the module batman advanced will scan your
-+systems interfaces to search for compatible interfaces. Once found, it will
-+create subfolders in the ``/sys`` directories of each supported interface,
-+e.g.::
-+
-+  $ ls /sys/class/net/eth0/batman_adv/
-+  elp_interval iface_status mesh_iface throughput_override
-+
-+If an interface does not have the ``batman_adv`` subfolder, it probably is not
-+supported. Not supported interfaces are: loopback, non-ethernet and batman's
-+own interfaces.
-+
-+Note: After the module was loaded it will continuously watch for new
-+interfaces to verify the compatibility. There is no need to reload the module
-+if you plug your USB wifi adapter into your machine after batman advanced was
-+initially loaded.
-+
-+The batman-adv soft-interface can be created using the iproute2 tool ``ip``::
-+
-+  $ ip link add name bat0 type batadv
-+
-+To activate a given interface simply attach it to the ``bat0`` interface::
-+
-+  $ ip link set dev eth0 master bat0
-+
-+Repeat this step for all interfaces you wish to add. Now batman starts
-+using/broadcasting on this/these interface(s).
-+
-+By reading the "iface_status" file you can check its status::
-+
-+  $ cat /sys/class/net/eth0/batman_adv/iface_status
-+  active
-+
-+To deactivate an interface you have to detach it from the "bat0" interface::
-+
-+  $ ip link set dev eth0 nomaster
-+
-+
-+All mesh wide settings can be found in batman's own interface folder::
-+
-+  $ ls /sys/class/net/bat0/mesh/
-+  aggregated_ogms       fragmentation isolation_mark routing_algo
-+  ap_isolation          gw_bandwidth  log_level      vlan0
-+  bonding               gw_mode       multicast_mode
-+  bridge_loop_avoidance gw_sel_class  network_coding
-+  distributed_arp_table hop_penalty   orig_interval
-+
-+There is a special folder for debugging information::
-+
-+  $ ls /sys/kernel/debug/batman_adv/bat0/
-+  bla_backbone_table log         neighbors         transtable_local
-+  bla_claim_table    mcast_flags originators
-+  dat_cache          nc          socket
-+  gateways           nc_nodes    transtable_global
-+
-+Some of the files contain all sort of status information regarding the mesh
-+network. For example, you can view the table of originators (mesh
-+participants) with::
-+
-+  $ cat /sys/kernel/debug/batman_adv/bat0/originators
-+
-+Other files allow to change batman's behaviour to better fit your requirements.
-+For instance, you can check the current originator interval (value in
-+milliseconds which determines how often batman sends its broadcast packets)::
-+
-+  $ cat /sys/class/net/bat0/mesh/orig_interval
-+  1000
-+
-+and also change its value::
-+
-+  $ echo 3000 > /sys/class/net/bat0/mesh/orig_interval
-+
-+In very mobile scenarios, you might want to adjust the originator interval to a
-+lower value. This will make the mesh more responsive to topology changes, but
-+will also increase the overhead.
-+
-+
-+Usage
-+=====
-+
-+To make use of your newly created mesh, batman advanced provides a new
-+interface "bat0" which you should use from this point on. All interfaces added
-+to batman advanced are not relevant any longer because batman handles them for
-+you. Basically, one "hands over" the data by using the batman interface and
-+batman will make sure it reaches its destination.
-+
-+The "bat0" interface can be used like any other regular interface. It needs an
-+IP address which can be either statically configured or dynamically (by using
-+DHCP or similar services)::
-+
-+  NodeA: ip link set up dev bat0
-+  NodeA: ip addr add 192.168.0.1/24 dev bat0
-+
-+  NodeB: ip link set up dev bat0
-+  NodeB: ip addr add 192.168.0.2/24 dev bat0
-+  NodeB: ping 192.168.0.1
-+
-+Note: In order to avoid problems remove all IP addresses previously assigned to
-+interfaces now used by batman advanced, e.g.::
-+
-+  $ ip addr flush dev eth0
-+
-+
-+Logging/Debugging
-+=================
-+
-+All error messages, warnings and information messages are sent to the kernel
-+log. Depending on your operating system distribution this can be read in one of
-+a number of ways. Try using the commands: ``dmesg``, ``logread``, or looking in
-+the files ``/var/log/kern.log`` or ``/var/log/syslog``. All batman-adv messages
-+are prefixed with "batman-adv:" So to see just these messages try::
-+
-+  $ dmesg | grep batman-adv
-+
-+When investigating problems with your mesh network, it is sometimes necessary to
-+see more detail debug messages. This must be enabled when compiling the
-+batman-adv module. When building batman-adv as part of kernel, use "make
-+menuconfig" and enable the option ``B.A.T.M.A.N. debugging``
-+(``CONFIG_BATMAN_ADV_DEBUG=y``).
-+
-+Those additional debug messages can be accessed using a special file in
-+debugfs::
-+
-+  $ cat /sys/kernel/debug/batman_adv/bat0/log
-+
-+The additional debug output is by default disabled. It can be enabled during
-+run time. Following log_levels are defined:
-+
-+.. flat-table::
-+
-+   * - 0
-+     - All debug output disabled
-+   * - 1
-+     - Enable messages related to routing / flooding / broadcasting
-+   * - 2
-+     - Enable messages related to route added / changed / deleted
-+   * - 4
-+     - Enable messages related to translation table operations
-+   * - 8
-+     - Enable messages related to bridge loop avoidance
-+   * - 16
-+     - Enable messages related to DAT, ARP snooping and parsing
-+   * - 32
-+     - Enable messages related to network coding
-+   * - 64
-+     - Enable messages related to multicast
-+   * - 128
-+     - Enable messages related to throughput meter
-+   * - 255
-+     - Enable all messages
-+
-+The debug output can be changed at runtime using the file
-+``/sys/class/net/bat0/mesh/log_level``. e.g.::
-+
-+  $ echo 6 > /sys/class/net/bat0/mesh/log_level
-+
-+will enable debug messages for when routes change.
-+
-+Counters for different types of packets entering and leaving the batman-adv
-+module are available through ethtool::
-+
-+  $ ethtool --statistics bat0
-+
-+
-+batctl
-+======
-+
-+As batman advanced operates on layer 2, all hosts participating in the virtual
-+switch are completely transparent for all protocols above layer 2. Therefore
-+the common diagnosis tools do not work as expected. To overcome these problems,
-+batctl was created. At the moment the batctl contains ping, traceroute, tcpdump
-+and interfaces to the kernel module settings.
-+
-+For more information, please see the manpage (``man batctl``).
-+
-+batctl is available on https://www.open-mesh.org/
-+
-+
-+Contact
-+=======
-+
-+Please send us comments, experiences, questions, anything :)
-+
-+IRC:
-+  #batman on irc.freenode.org
-+Mailing-list:
-+  b.a.t.m.a.n@open-mesh.org (optional subscription at
-+  https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n)
-+
-+You can also contact the Authors:
-+
-+* Marek Lindner <mareklindner@neomailbox.ch>
-+* Simon Wunderlich <sw@simonwunderlich.de>
-diff --git a/Documentation/networking/batman-adv.txt b/Documentation/networking/batman-adv.txt
-deleted file mode 100644
-index ccf94677b240..000000000000
---- a/Documentation/networking/batman-adv.txt
-+++ /dev/null
-@@ -1,215 +0,0 @@
--BATMAN-ADV
------------
--
--Batman  advanced  is  a new approach to wireless networking which
--does no longer operate on the IP basis. Unlike the batman daemon,
--which  exchanges  information  using UDP packets and sets routing
--tables, batman-advanced operates on ISO/OSI Layer 2 only and uses
--and  routes  (or  better: bridges) Ethernet Frames. It emulates a
--virtual network switch of all nodes participating.  Therefore all
--nodes  appear  to be link local, thus all higher operating proto-
--cols won't be affected by any changes within the network. You can
--run almost any protocol above batman advanced, prominent examples
--are: IPv4, IPv6, DHCP, IPX.
--
--Batman advanced was implemented as a Linux kernel driver  to  re-
--duce the overhead to a minimum. It does not depend on any (other)
--network driver, and can be used on wifi as well as ethernet  lan,
--vpn,  etc ... (anything with ethernet-style layer 2).
--
--
--CONFIGURATION
---------------
--
--Load the batman-adv module into your kernel:
--
--# insmod batman-adv.ko
--
--The  module  is now waiting for activation. You must add some in-
--terfaces on which batman can operate. After  loading  the  module
--batman  advanced  will scan your systems interfaces to search for
--compatible interfaces. Once found, it will create  subfolders  in
--the /sys directories of each supported interface, e.g.
--
--# ls /sys/class/net/eth0/batman_adv/
--# elp_interval  iface_status  mesh_iface  throughput_override
--
--If an interface does not have the "batman_adv" subfolder it prob-
--ably is not supported. Not supported  interfaces  are:  loopback,
--non-ethernet and batman's own interfaces.
--
--Note:  After the module was loaded it will continuously watch for
--new interfaces to verify the compatibility. There is no  need  to
--reload the module if you plug your USB wifi adapter into your ma-
--chine after batman advanced was initially loaded.
--
--The batman-adv soft-interface can be created using  the  iproute2
--tool "ip"
--
--# ip link add name bat0 type batadv
--
--To  activate a  given  interface  simply  attach it to the "bat0"
--interface
--
--# ip link set dev eth0 master bat0
--
--Repeat  this step for all interfaces you wish to add.  Now batman
--starts using/broadcasting on this/these interface(s).
--
--By reading the "iface_status" file you can check its status:
--
--# cat /sys/class/net/eth0/batman_adv/iface_status
--# active
--
--To  deactivate  an  interface  you  have   to  detach it from the
--"bat0" interface:
--
--# ip link set dev eth0 nomaster
--
--
--All  mesh  wide  settings  can be found in batman's own interface
--folder:
--
--# ls /sys/class/net/bat0/mesh/
--# aggregated_ogms        fragmentation  isolation_mark  routing_algo
--# ap_isolation           gw_bandwidth   log_level       vlan0
--# bonding                gw_mode        multicast_mode
--# bridge_loop_avoidance  gw_sel_class   network_coding
--# distributed_arp_table  hop_penalty    orig_interval
--
--There is a special folder for debugging information:
--
--# ls /sys/kernel/debug/batman_adv/bat0/
--# bla_backbone_table  log          neighbors          transtable_local
--# bla_claim_table     mcast_flags  originators
--# dat_cache           nc           socket
--# gateways            nc_nodes     transtable_global
--
--Some of the files contain all sort of status information  regard-
--ing  the  mesh  network.  For  example, you can view the table of
--originators (mesh participants) with:
--
--# cat /sys/kernel/debug/batman_adv/bat0/originators
--
--Other files allow to change batman's behaviour to better fit your
--requirements.  For instance, you can check the current originator
--interval (value in milliseconds which determines how often batman
--sends its broadcast packets):
--
--# cat /sys/class/net/bat0/mesh/orig_interval
--# 1000
--
--and also change its value:
--
--# echo 3000 > /sys/class/net/bat0/mesh/orig_interval
--
--In very mobile scenarios, you might want to adjust the originator
--interval to a lower value. This will make the mesh  more  respon-
--sive to topology changes, but will also increase the overhead.
--
--
--USAGE
-------
--
--To  make use of your newly created mesh, batman advanced provides
--a new interface "bat0" which you should use from this  point  on.
--All  interfaces  added  to  batman  advanced are not relevant any
--longer because batman handles them for you. Basically, one "hands
--over" the data by using the batman interface and batman will make
--sure it reaches its destination.
--
--The "bat0" interface can be used like any  other  regular  inter-
--face.  It needs an IP address which can be either statically con-
--figured or dynamically (by using DHCP or similar services):
--
--# NodeA: ip link set up dev bat0
--# NodeA: ip addr add 192.168.0.1/24 dev bat0
--
--# NodeB: ip link set up dev bat0
--# NodeB: ip addr add 192.168.0.2/24 dev bat0
--# NodeB: ping 192.168.0.1
--
--Note:  In  order to avoid problems remove all IP addresses previ-
--ously assigned to interfaces now used by batman advanced, e.g.
--
--# ip addr flush dev eth0
--
--
--LOGGING/DEBUGGING
-------------------
--
--All error messages, warnings and information messages are sent to
--the kernel log. Depending on your operating  system  distribution
--this  can  be read in one of a number of ways. Try using the com-
--mands: dmesg, logread, or looking in the files  /var/log/kern.log
--or  /var/log/syslog.  All  batman-adv  messages are prefixed with
--"batman-adv:" So to see just these messages try
--
--# dmesg | grep batman-adv
--
--When investigating problems with your mesh network  it  is  some-
--times  necessary  to see more detail debug messages. This must be
--enabled when compiling the batman-adv module. When building  bat-
--man-adv  as  part of kernel, use "make menuconfig" and enable the
--option "B.A.T.M.A.N. debugging".
--
--Those additional  debug messages can be accessed  using a special
--file in debugfs
--
--# cat /sys/kernel/debug/batman_adv/bat0/log
--
--The additional debug output is by default disabled. It can be en-
--abled  during run time. Following log_levels are defined:
--
--  0 - All  debug  output  disabled
--  1 - Enable messages related to routing / flooding / broadcasting
--  2 - Enable messages related to route added / changed / deleted
--  4 - Enable messages related to translation table operations
--  8 - Enable messages related to bridge loop avoidance
-- 16 - Enable messages related to DAT, ARP snooping and parsing
-- 32 - Enable messages related to network coding
-- 64 - Enable messages related to multicast
--128 - Enable messages related to throughput meter
--255 - Enable all messages
--
--The debug output can be changed at runtime  using  the  file
--/sys/class/net/bat0/mesh/log_level. e.g.
--
--# echo 6 > /sys/class/net/bat0/mesh/log_level
--
--will enable debug messages for when routes change.
--
--Counters for different types of packets entering and leaving the
--batman-adv module are available through ethtool:
--
--# ethtool --statistics bat0
--
--
--BATCTL
--------
--
--As batman advanced operates on layer 2 all hosts participating in
--the  virtual switch are completely transparent for all  protocols
--above layer 2. Therefore the common diagnosis tools do  not  work
--as  expected.  To  overcome these problems batctl was created. At
--the  moment the  batctl contains ping,  traceroute,  tcpdump  and
--interfaces to the kernel module settings.
--
--For more information, please see the manpage (man batctl).
--
--batctl is available on https://www.open-mesh.org/
--
--
--CONTACT
---------
--
--Please send us comments, experiences, questions, anything :)
--
--IRC:            #batman   on   irc.freenode.org
--Mailing-list:   b.a.t.m.a.n@open-mesh.org (optional  subscription
--          at https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n)
--
--You can also contact the Authors:
--
--Marek  Lindner  <mareklindner@neomailbox.ch>
--Simon  Wunderlich  <sw@simonwunderlich.de>
-diff --git a/Documentation/networking/index.rst b/Documentation/networking/index.rst
-index b5bd87e01f52..66e620866245 100644
---- a/Documentation/networking/index.rst
-+++ b/Documentation/networking/index.rst
-@@ -6,6 +6,7 @@ Contents:
- .. toctree::
-    :maxdepth: 2
- 
-+   batman-adv
-    kapi
-    z8530book
- 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 2af3ab3f7702..62d216af5bd4 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2481,7 +2481,7 @@ Q:	https://patchwork.open-mesh.org/project/batman/list/
- S:	Maintained
- F:	Documentation/ABI/testing/sysfs-class-net-batman-adv
- F:	Documentation/ABI/testing/sysfs-class-net-mesh
--F:	Documentation/networking/batman-adv.txt
-+F:	Documentation/networking/batman-adv.rst
- F:	include/uapi/linux/batman_adv.h
- F:	net/batman-adv/
- 
--- 
-2.11.0
+Just in case somebody wonders, this is really a patch against the Linux kernel 
+and not against the batman-adv repository. The batman-adv repository doesn't 
+require the changes to:
+
+ * Documentation/networking/00-INDEX
+ * Documentation/networking/index.rst
+
+But it requires a change of the README link.
+
+Kind regards,
+	Sven
+--nextPart4312718.Yc3DkGrqEf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAllnntgACgkQXYcKB8Em
+e0YYXBAAurSZEOWLnoa3MeNbM4k9EqFJQmYPXcMXctdPilB5kxnfO6HOr8GKLt5G
+VqPC54rrHcGAXrORZ4PvIThhbNo/aipJph5b0ZSZb/YOrNRUyEm/8oQoQsS3NSLc
+sXEFwIFmj4IYGhKN7R0PN42RzH2fZ6TfOaJOaoLOPPMzmqwZQOQwMl6iTu6XDZ/Q
+M5nauoD0uAayccspNm58ohlkZ+unnQL3CHDv7ebZB4E8mHPyHptzh78kVISJae7z
+n4rhFtCfa//nTL33gruHkqRG53NHLf0ai/TsZzLUW6uY1f9IqnwRdo/6rt8JlYI8
+5u4UharOnqlWq9kKHIoLTPZ3MWanlWfeboKXTW/W2Q3uoA+VszoIWEDiiW+qPbir
+RP5nm8e71/+Kzz5jG9bGtKmhOISbWBqXfpBXLDyk69fTcZroEcHfsOEmIHZrg+CT
+ggyf2bsn8Trsel8F4RZ6YgXb1RXnvdt/ptp9Y4FbyV+aCcyinyWY/7H2zDRtBP4u
+KX3n7RGOxB6cONI8DwNIVEEpxbJJWct0NyBY6TXmiZxGDkXM+QgGcBgP2inumWMf
+LrZ/FIbi2Pqa0N7cVoFLK6UnSOwX7OPfe+atGm+0Or8NB4E40AJ/gQT0xxhfkQqf
+ha5hEsNyulJJB7JMhTvucSiYOszFwxhe8KFxcxPMaTVY9RXHAuY=
+=28T8
+-----END PGP SIGNATURE-----
+
+--nextPart4312718.Yc3DkGrqEf--
 
