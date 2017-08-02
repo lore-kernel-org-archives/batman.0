@@ -1,10 +1,13 @@
-Return-Path: <duttaabhinanda@gmail.com>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 02 Aug 2017 21:40:01 +0200
+Message-ID: <6131794.gKgmBHkUSh@sven-edge>
+In-Reply-To: <CAAAG0x8tVYAFisRAE6iLdvoPuKFcpyMQ0vS_DD72+AjcUWcQ6w@mail.gmail.com>
+References: <CAAAG0x8tVYAFisRAE6iLdvoPuKFcpyMQ0vS_DD72+AjcUWcQ6w@mail.gmail.com>
 MIME-Version: 1.0
-From: Abhinanda Dutta <duttaabhinanda@gmail.com>
-Date: Wed, 2 Aug 2017 12:54:13 -0400
-Message-ID: <CAAAG0x8tVYAFisRAE6iLdvoPuKFcpyMQ0vS_DD72+AjcUWcQ6w@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Subject: [B.A.T.M.A.N.] help regarding interfacing b.a.t.m.a.n with
+Content-Type: multipart/signed; boundary="nextPart1513162.4EvpaD4hIg";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] help regarding interfacing b.a.t.m.a.n with
  mininet-wifi
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -16,26 +19,50 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Abhinanda Dutta <duttaabhinanda@gmail.com>
 
-Hi,
+--nextPart1513162.4EvpaD4hIg
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-I am currently trying to interface batman with an emulator called
-Mininet-wifi. My emulator is emulating the wifi-direct where there are
-4 mobile stations and there are 2 wlan. I am trying to use batman for
-routing so that I can ping between stations which are not in the same
-wlan through a hop.
+On Mittwoch, 2. August 2017 12:54:13 CEST Abhinanda Dutta wrote:
+> Is there any way to make batman-adv interact with the real
+> mininet-wifi environment.
 
-The problem I am facing is though batctl functions are working fine,
-it is not interacting with the real mininet-wifi environment.
+You've provided nearly no information. So I can only provide some general 
+advices: Make sure that you use a net-namespace aware version of batctl and 
+batman-adv (>= 2016.5). Make sure that you start batctl in the correct 
+namespace. Check the debug tables and the interface configuration in your 
+namespaces. Check with wireshark which paths the packets take between the 
+hwsim interfaces.
 
-By that I mean if I use batctl tr MAC_ADDRESS it traces the route
-between nodes even if they are on 2 different wlan or batctl p
-MAC_ADDRESS pings the 2 stations. However if I try to see the route in
-the real Linux terminal using route or watch route command it doesn't
-show the route or ping between stations.
+Just to make it clear: I've never used mininet-wifi. I've only used mininet (+ 
+some special openvswitch based configurations) + kvm instances per namespace 
+to simulate some networks with older versions of batman-adv.
 
-Is there any way to make batman-adv interact with the real
-mininet-wifi environment.
+Kind regards,
+	Sven
+--nextPart1513162.4EvpaD4hIg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-Thanks,
-Abhinanda
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlmCKpEACgkQXYcKB8Em
+e0ZkHA/+J3E4FZJ3rFKNJO49tW46jufs7rYLpp4CokwmMWrBzab5z3Zq43i5rz+Q
+mwbiXeQ6okQN9geR7V6rTRvQ3fn6HY1UFCe9Z2UKapv9/pu6EUYlvl1IUfW6tpnM
+ojr0ygVnRrYatzxAcp3AeoXOnRGtPZk8qMOPS5StJsUoId0f0Q47x9O56bfbkl2V
+Lrz2sh6ZIWwbX3simyLknl4B8O1MkacEUpkdOUDP2akKd+ZXL112Pv61SpLaaGQC
+WBqq9UqN+BgaDAnza+J7U1qj0maFfXA1Ti5PFt3AS8VZ6UmLtN0qTrhpA1sMVTJ4
+UuFAChgOeF+cKEFBKC4OBDc4gWg7AGNA8Nbpmi4QcAS9GtpwQ0nQLG3vapRZGvdD
+CRAHjCse+WZoF3Mgs6sI6b4jQn218ZIuUuLeKP+bsWMDjkdhFvJ0QoSRdv9J9pEy
+L5AawdLoD1XAUOk7/cyNeSz0KzlU8gqrNRm9ouX3NegZkwDKCiEPHl+oJqvhnOJy
+NNf6b/ITditxlw3ITwkRTquHNFggxv1Z/vBjJ2V6gN0L2FRMjNmR1i0Hi8XWKN9v
+uyrOR4jWQPTuxwBePB7JYotSuiNBxbdzCqtiY4tS4XjQShuYI3vg1K3OiofGABaD
+1LPPgEqvzCM8tTtjgfEWoRJXTA4rgVYC4OunD33agTRhXokmo9Y=
+=lQfA
+-----END PGP SIGNATURE-----
+
+--nextPart1513162.4EvpaD4hIg--
+
