@@ -1,14 +1,12 @@
-Return-Path: <davem@davemloft.net>
-Date: Thu, 03 Aug 2017 09:24:35 -0700 (PDT)
-Message-Id: <20170803.092435.417901891907711162.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20170802142322.13376-1-sw@simonwunderlich.de>
-References: <20170802142322.13376-1-sw@simonwunderlich.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <M.Vanhoutte@TELEVIC.com>
+From: Mattias Vanhoutte <m.vanhoutte@televic.com>
+Message-ID: <49206786-169d-f793-5d48-f74dc8f4e838@televic.com>
+Date: Wed, 9 Aug 2017 08:31:43 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/6] pull request for net-next:
- batman-adv 2017-08-02
+Content-Language: en-US
+Subject: [B.A.T.M.A.N.] No bandwidth over wired Batman mesh network
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,14 +16,60 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sw@simonwunderlich.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed,  2 Aug 2017 16:23:16 +0200
+Hi,
 
-> here is a small feature/cleanup pull request of batman-adv to go into net-next.
-> 
-> Please pull or let me know of any problem!
 
-Also pulled, thank you.
+I am trying to use B.A.T.M.A.N. on a wired mesh network (ethx 
+interfaces) version: batctl 2017.0 [batman-adv: 2017.0.1], but I got 
+very/no bandwith over the BATMAN interfaces.
+
+I have PC1 which is Intel based, 64 bit, kernel 4.9.0-3-amd64, OS is 
+Debian, build batman from sources:
+
+- eth0 10.1.98.250/24 address
+
+- bat0 172.16.100.250/24 address
+
+I have PC2 which is ARM based, 32 bit, kernel 4.6.0-xilinx-v2016.3, OS 
+is yocto build, build batman from sources
+
+- eth0 10.1.98.3/24 address
+
+- bat0 172.16.100.1/24 address
+
+PC1 and PC2 are directly connected with ethernet cable (no switch in the 
+network)
+
+I did network measurements with iperf (TCP and UDP) between PC1 and PC2 
+in 2 conditions:
+
+  - Without using batman, I got symmectric bandwidth between PC1 and PC2 
+(measured TCP and UDP on ethx interface), TCP bandwidth is 300-400 Mbits/sec
+  - With using batman, I got something strange: bandwidh PC1 -> PC2 is 
+22 Kbit/sec and bandwidth PC2 -> PC1 is 110 Mbit/sec (measured TCP on 
+bat0 interfaces)
+     Also for UDP measurements I got bandwidth=0 measured PC1 -> PC2 and 
+222 Mbit/sec PC2 -> PC1
+
+There is no firewall active on both devices.
+Does anybody has an idea why I got no bandwidth in 1 Direction? Is there 
+something I should configure when I build and want to use batman on 2 
+different types of operating systems / CPU?
+
+I also did tests between 2 devices of type PC2, then I got symmetric 
+bandwidths in both directions:
+
+  - without using batman: 430 Mbits/s in both directions PC1 <> PC2
+  - with using batman: 125 Mbit/s in both directions PC1 <> PC2
+
+So here I see a large drop of the TCP bandwidth by using batman 430 -> 
+125 Mbit/s. Is this normal behavior?
+
+Can anybody tell me where and how I can see debug messages from Batman?
+
+
+Kind Regards,
+
+Mattias Vanhoutte
