@@ -1,10 +1,10 @@
 Return-Path: <dandenson@gmail.com>
 MIME-Version: 1.0
 From: dan <dandenson@gmail.com>
-Date: Wed, 16 Aug 2017 09:43:34 -0600
-Message-ID: <CAA_JP8WFZPzDzFLAAOydhjuL7Ex26_RtbnH-pEhaCe4Fs70FEA@mail.gmail.com>
+Date: Wed, 16 Aug 2017 09:47:08 -0600
+Message-ID: <CAA_JP8Wk17XHM+H2d5dWkoWgS7dabwDhvPnR0n6wtiP1BxCqiA@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Subject: [B.A.T.M.A.N.] batman on top of vlan?
+Subject: [B.A.T.M.A.N.] can batman-adv carry a vlan?
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,11 +16,8 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Can batman operate on top of a vlan?  For example, a wireless link
-with MTU of 1532 to accommodate both batman and the vlan.  Plugs into
-the batman-adv box on eth0, configure eth0.10 and add eth0.10 to bat0.
-
-This is meant to solve a specific issue of needing non-batman-adv
-access to the radio web-ui's on the native/untagged vlan1
-
-thanks.
+Can batman-adv carry a vlan?  For example, 2 mesh nodes are directly
+connected via eth0 on both devices.  bat0 contains eth0 on both
+devices.
+Can a bat0.20 vlan be created on each side and will batman-adv pass
+traffic assuming 1532 MTU is set?
