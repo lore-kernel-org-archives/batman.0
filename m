@@ -1,13 +1,10 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Thu, 10 Aug 2017 04:43:54 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20170810024354.GM27539@otheros>
-References: <49206786-169d-f793-5d48-f74dc8f4e838@televic.com>
+Return-Path: <kartikeswar@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <49206786-169d-f793-5d48-f74dc8f4e838@televic.com>
-Subject: Re: [B.A.T.M.A.N.] No bandwidth over wired Batman mesh network
+From: Kartikeswar K <kartikeswar@gmail.com>
+Date: Wed, 16 Aug 2017 15:57:29 +0200
+Message-ID: <CA+DjzFb8JV2opdLOTaPdm0wNXh95fvQSBcTdreUSmEQrVn5tKQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Subject: [B.A.T.M.A.N.] Manually Updating Translation table
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,14 +14,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Wed, Aug 09, 2017 at 08:31:43AM +0200, Mattias Vanhoutte wrote:
-> So here I see a large drop of the TCP bandwidth by using batman 430 -> 125
-> Mbit/s. Is this normal behavior?
+Dear BATMAN Community members,
 
-Could be. Especially if you haven't increased the MTU on eth0 or
-lowered the MTU on bat0 to avoid the batman-adv internal
-frame fragmentation. See the warning displayed in "dmesg | grep
-batman-adv" :-). 32bit ARM might not be fast enough to fragment
-frames at a rate of 430Mbit/s.
+I am new to BATMAN Mesh network and looking forward for answer to my
+query related to updating Local Translation Table in a BATMAN Node.
+
+I would like to make a mesh network where I would like to update the
+client entry in Local Translation manually. Is it possible to add the
+entry manually in translation table?
+If so, I would like to know how can I update this table in BATMAN from
+user space?
+
+Thanks in advance and would appreciate your responses.
+
+Thanks & Regards,
+Kartikeswar Koppula
+kartikeswar@gmail.com
