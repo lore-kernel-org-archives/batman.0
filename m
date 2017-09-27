@@ -1,15 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 19 Sep 2017 20:03:02 +0200
-Message-ID: <3304342.Cn2WAyygd4@sven-edge>
-In-Reply-To: <21450666.KfjLfFv3KI@sven-edge>
-References: <20170712111448.30712-1-sven@narfation.org>
- <21450666.KfjLfFv3KI@sven-edge>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart7969482.3gnLqKv7te";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Convert batman-adv.txt to
- reStructuredText
+Date: Wed, 27 Sep 2017 22:27:13 +0200
+Message-Id: <20170927202713.16934-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Remove useless function
+ skb_header_release
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,47 +15,35 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart7969482.3gnLqKv7te
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+From: Gao Feng <gfree.wind@vip.163.com>
 
-On Samstag, 29. Juli 2017 10:01:18 CEST Sven Eckelmann wrote:
-> On Mittwoch, 12. Juli 2017 13:14:48 CEST Sven Eckelmann wrote:
-> > Converting the freeform text to parsable reStructuredText, allows the
-> > integration in the sphinx based documentation system of the kernel. It will
-> > therefore be accessible as hypertext under
-> > https://www.kernel.org/doc/html/latest/
-> > 
-> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> 
-> Applied as ab3618d92710b2e09f2c9dddf8099eb339f4fbb9 [1]
+There is no one which would invokes the function skb_header_release.
+So just remove it now.
 
-This file is now part of the documentation and can now be found under
- https://www.kernel.org/doc/html/latest/networking/batman-adv.html
+Signed-off-by: Gao Feng <gfree.wind@vip.163.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+This patch was already accepted by David and should be applied directly after
+the release of batman-adv 2017.3. And yes, I know that this line is too long
+now
 
-Kind regards,
-	Sven
---nextPart7969482.3gnLqKv7te
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+ net/batman-adv/soft-interface.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlnBW9YACgkQXYcKB8Em
-e0Z60Q/+KS5qhFAYxVNZkhwNah0vckmKWRx/TlPcWfPeaBUnDNXGn7vvtaAFf8Qn
-ZoPANtgDifjYzmBedvWJp6waTTxMT0tOxity/2VijlHpPnbvagye/AwHcHejjHTs
-WuXq5RyJw0KbH+u6ngv2oTLKFNC6kz13mWiK5BPZojZygcl+kihwGnyAHrg29c84
-4pdU7x/OHJ+29i/Qw2lDZpDVZ+4maEb1IPGY79h9y/VY8ntHcnVqWUHC2c/OEvh5
-7+vtW2YNOxre0y9foB7wCDbWvF8F/teVZ0G4qDl0YtD4Iaepq9T4O5JkBqZNHJRV
-xGSV9KG7vrDRPrFnCKm1s3beuvOGLhjeU+hUgHswB8KiaHzse1YH4lyHC4ZqZbFb
-NqHr2bDifZiabjD15GHxDvWxBbQ9BADoubaQOi72hYsqPQm3oiQSHQbxzoT/wjHh
-xiGgpZHVxlsiXw+XQu018q/FL0VHeDyoxWP/ixiPZTIdeP4bheqny8lqal0+GXcy
-jR3jrmFPv7cZtsch9nBX2VPW69e4DSGvviSH0DlKM9N/7MxAv+JqP7jVesO1guoq
-V65uAqHIYRjg43pgHXSgaVd+TnXpijiarn11xLnkm6Cgimu69oRpIXenxhVRBB+c
-tM5lFZXZT64qBKCZO+kwhwgyP0hpZ1moh7gmfFmP3YJ9CN2IxsA=
-=+HPZ
------END PGP SIGNATURE-----
-
---nextPart7969482.3gnLqKv7te--
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 10f7edfb..c2c98674 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -69,7 +69,7 @@ int batadv_skb_head_push(struct sk_buff *skb, unsigned int len)
+ 	int result;
+ 
+ 	/* TODO: We must check if we can release all references to non-payload
+-	 * data using skb_header_release in our skbs to allow skb_cow_header to
++	 * data using __skb_header_release in our skbs to allow skb_cow_header to
+ 	 * work optimally. This means that those skbs are not allowed to read
+ 	 * or write any data which is before the current position of skb->data
+ 	 * after that call and thus allow other skbs with the same data buffer
+-- 
+2.11.0
 
