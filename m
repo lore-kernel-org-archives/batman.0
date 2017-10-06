@@ -1,11 +1,9 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  6 Oct 2017 15:54:37 +0200
-Message-Id: <20171006135437.26736-5-sw@simonwunderlich.de>
-In-Reply-To: <20171006135437.26736-1-sw@simonwunderlich.de>
-References: <20171006135437.26736-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: Add argument names for
- function ptr definitions
+Date: Fri,  6 Oct 2017 15:54:33 +0200
+Message-Id: <20171006135437.26736-1-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH 0/4] pull request for net-next: batman-adv
+ 2017-10-06
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,46 +14,61 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Sven Eckelmann <sven@narfation.org>
+Hi David,
 
-checkpatch started to report unnamed arguments in function pointer
-definitions. Add the corresponding names to these definitions to avoid this
-warning.
+here is a small cleanup pull request of batman-adv to go into net-next.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- net/batman-adv/main.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Please pull or let me know of any problem!
 
-diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index 033819aefc39..4daed7ad46f2 100644
---- a/net/batman-adv/main.c
-+++ b/net/batman-adv/main.c
-@@ -73,8 +73,8 @@
-  * list traversals just rcu-locked
-  */
- struct list_head batadv_hardif_list;
--static int (*batadv_rx_handler[256])(struct sk_buff *,
--				     struct batadv_hard_iface *);
-+static int (*batadv_rx_handler[256])(struct sk_buff *skb,
-+				     struct batadv_hard_iface *recv_if);
- 
- unsigned char batadv_broadcast_addr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
- 
-@@ -540,8 +540,8 @@ batadv_recv_handler_register(u8 packet_type,
- 			     int (*recv_handler)(struct sk_buff *,
- 						 struct batadv_hard_iface *))
- {
--	int (*curr)(struct sk_buff *,
--		    struct batadv_hard_iface *);
-+	int (*curr)(struct sk_buff *skb,
-+		    struct batadv_hard_iface *recv_if);
- 	curr = batadv_rx_handler[packet_type];
- 
- 	if (curr != batadv_recv_unhandled_packet &&
--- 
-2.11.0
+Thank you,
+      Simon
 
+The following changes since commit 242c1a28eb61cb34974e8aa05235d84355940a8a:
+
+  net: Remove useless function skb_header_release (2017-09-22 20:43:13 -0700)
+
+are available in the git repository at:
+
+  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-20171006
+
+for you to fetch changes up to 706cc9f51d9a22528af18d4b3ffbd17b30a1d3b0:
+
+  batman-adv: Add argument names for function ptr definitions (2017-09-30 09:31:34 +0200)
+
+----------------------------------------------------------------
+This cleanup patchset includes the following patches:
+
+ - bump version strings, by Simon Wunderlich
+
+ - Cleanup patches to make checkpatch happy, by Sven Eckelmann (3 patches)
+
+----------------------------------------------------------------
+Simon Wunderlich (1):
+      batman-adv: Start new development cycle
+
+Sven Eckelmann (3):
+      batman-adv: Remove unnecessary parentheses
+      batman-adv: Fix "line over 80 characters" checkpatch warning
+      batman-adv: Add argument names for function ptr definitions
+
+ net/batman-adv/bat_iv_ogm.c            | 24 ++++++++++++------------
+ net/batman-adv/bat_v.c                 |  2 +-
+ net/batman-adv/bat_v_elp.c             |  6 +++---
+ net/batman-adv/bat_v_ogm.c             | 12 ++++++------
+ net/batman-adv/distributed-arp-table.c |  4 ++--
+ net/batman-adv/gateway_client.c        |  8 ++++----
+ net/batman-adv/gateway_common.c        | 18 +++++++++---------
+ net/batman-adv/hard-interface.c        | 12 ++++++------
+ net/batman-adv/icmp_socket.c           |  4 ++--
+ net/batman-adv/main.c                  | 12 ++++++------
+ net/batman-adv/main.h                  |  2 +-
+ net/batman-adv/multicast.c             |  2 +-
+ net/batman-adv/originator.c            | 26 +++++++++++++-------------
+ net/batman-adv/routing.c               |  6 +++---
+ net/batman-adv/send.c                  |  6 +++---
+ net/batman-adv/soft-interface.c        |  6 +++---
+ net/batman-adv/sysfs.c                 |  4 ++--
+ net/batman-adv/tp_meter.c              |  2 +-
+ 18 files changed, 78 insertions(+), 78 deletions(-)
