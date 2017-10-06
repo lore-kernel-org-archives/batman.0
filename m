@@ -1,9 +1,10 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri,  6 Oct 2017 15:54:33 +0200
-Message-Id: <20171006135437.26736-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 0/4] pull request for net-next: batman-adv
- 2017-10-06
+Date: Fri,  6 Oct 2017 15:54:34 +0200
+Message-Id: <20171006135437.26736-2-sw@simonwunderlich.de>
+In-Reply-To: <20171006135437.26736-1-sw@simonwunderlich.de>
+References: <20171006135437.26736-1-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: Start new development cycle
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,59 +17,24 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Simon Wunderlich <sw@simonwunderlich.de>
 
-Hi David,
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/main.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-here is a small cleanup pull request of batman-adv to go into net-next.
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index 05cc7637c064..edb2f239d04d 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -24,7 +24,7 @@
+ #define BATADV_DRIVER_DEVICE "batman-adv"
+ 
+ #ifndef BATADV_SOURCE_VERSION
+-#define BATADV_SOURCE_VERSION "2017.3"
++#define BATADV_SOURCE_VERSION "2017.4"
+ #endif
+ 
+ /* B.A.T.M.A.N. parameters */
+-- 
+2.11.0
 
-Please pull or let me know of any problem!
-
-Thank you,
-      Simon
-
-The following changes since commit 242c1a28eb61cb34974e8aa05235d84355940a8a:
-
-  net: Remove useless function skb_header_release (2017-09-22 20:43:13 -0700)
-
-are available in the git repository at:
-
-  git://git.open-mesh.org/linux-merge.git tags/batadv-next-for-davem-20171006
-
-for you to fetch changes up to 706cc9f51d9a22528af18d4b3ffbd17b30a1d3b0:
-
-  batman-adv: Add argument names for function ptr definitions (2017-09-30 09:31:34 +0200)
-
-----------------------------------------------------------------
-This cleanup patchset includes the following patches:
-
- - bump version strings, by Simon Wunderlich
-
- - Cleanup patches to make checkpatch happy, by Sven Eckelmann (3 patches)
-
-----------------------------------------------------------------
-Simon Wunderlich (1):
-      batman-adv: Start new development cycle
-
-Sven Eckelmann (3):
-      batman-adv: Remove unnecessary parentheses
-      batman-adv: Fix "line over 80 characters" checkpatch warning
-      batman-adv: Add argument names for function ptr definitions
-
- net/batman-adv/bat_iv_ogm.c            | 24 ++++++++++++------------
- net/batman-adv/bat_v.c                 |  2 +-
- net/batman-adv/bat_v_elp.c             |  6 +++---
- net/batman-adv/bat_v_ogm.c             | 12 ++++++------
- net/batman-adv/distributed-arp-table.c |  4 ++--
- net/batman-adv/gateway_client.c        |  8 ++++----
- net/batman-adv/gateway_common.c        | 18 +++++++++---------
- net/batman-adv/hard-interface.c        | 12 ++++++------
- net/batman-adv/icmp_socket.c           |  4 ++--
- net/batman-adv/main.c                  | 12 ++++++------
- net/batman-adv/main.h                  |  2 +-
- net/batman-adv/multicast.c             |  2 +-
- net/batman-adv/originator.c            | 26 +++++++++++++-------------
- net/batman-adv/routing.c               |  6 +++---
- net/batman-adv/send.c                  |  6 +++---
- net/batman-adv/soft-interface.c        |  6 +++---
- net/batman-adv/sysfs.c                 |  4 ++--
- net/batman-adv/tp_meter.c              |  2 +-
- 18 files changed, 78 insertions(+), 78 deletions(-)
