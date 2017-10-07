@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  7 Oct 2017 08:54:09 +0200
-Message-Id: <20171007065409.22412-2-sven@narfation.org>
-In-Reply-To: <20171007065409.22412-1-sven@narfation.org>
-References: <20171007065409.22412-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [RFC 2/2] batman-adv: Add extack to upper device
+Date: Sat,  7 Oct 2017 14:18:53 +0200
+Message-Id: <20171007121853.6278-2-sven@narfation.org>
+In-Reply-To: <20171007121853.6278-1-sven@narfation.org>
+References: <20171007121853.6278-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Add extack to upper device
  linking
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -23,13 +23,41 @@ Add extack arg to netdev_upper_dev_link and netdev_master_upper_dev_link
 
 Signed-off-by: David Ahern <dsahern@gmail.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
+[sven@narfation.org: Add compat code]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
-This change is already part of net-next (queued up for 4.15) we must
-therefore apply it after the compat code was added.
+ compat-include/linux/netdevice.h | 11 ++++++++---
+ net/batman-adv/hard-interface.c  |  2 +-
+ 2 files changed, 9 insertions(+), 4 deletions(-)
 
- net/batman-adv/hard-interface.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
+diff --git a/compat-include/linux/netdevice.h b/compat-include/linux/netdevice.h
+index 00ed5e40..c29d6d21 100644
+--- a/compat-include/linux/netdevice.h
++++ b/compat-include/linux/netdevice.h
+@@ -66,15 +66,20 @@
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
+ 
+-#define netdev_master_upper_dev_link(dev, upper_dev, upper_priv, upper_info) \
++#define netdev_master_upper_dev_link(dev, upper_dev, upper_priv, upper_info, extack) \
+ 	netdev_set_master(dev, upper_dev)
+ 
+ #elif LINUX_VERSION_CODE < KERNEL_VERSION(4, 5, 0)
+ 
+-#define netdev_master_upper_dev_link(dev, upper_dev, upper_priv, upper_info) \
++#define netdev_master_upper_dev_link(dev, upper_dev, upper_priv, upper_info, extack) \
+ 	netdev_master_upper_dev_link(dev, upper_dev)
+ 
+-#endif /* < KERNEL_VERSION(4, 5, 0) */
++#elif LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
++
++#define netdev_master_upper_dev_link(dev, upper_dev, upper_priv, upper_info, extack) \
++	netdev_master_upper_dev_link(dev, upper_dev, upper_priv, upper_info)
++
++#endif /* < KERNEL_VERSION(4, 15, 0) */
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 7, 0)
+ 
 diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
 index d4aa99c0..4e3d5340 100644
 --- a/net/batman-adv/hard-interface.c
