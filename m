@@ -1,11 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  7 Oct 2017 14:18:53 +0200
-Message-Id: <20171007121853.6278-2-sven@narfation.org>
-In-Reply-To: <20171007121853.6278-1-sven@narfation.org>
-References: <20171007121853.6278-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/3] batman-adv: Add extack to upper device
- linking
+Date: Sat,  7 Oct 2017 14:18:52 +0200
+Message-Id: <20171007121853.6278-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: Add extack to ndo_add_slave
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,58 +16,47 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 From: David Ahern <dsahern@gmail.com>
 
-Add extack arg to netdev_upper_dev_link and netdev_master_upper_dev_link
+Pass extack to do_set_master and down to ndo_add_slave
 
 Signed-off-by: David Ahern <dsahern@gmail.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 [sven@narfation.org: Add compat code]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- compat-include/linux/netdevice.h | 11 ++++++++---
- net/batman-adv/hard-interface.c  |  2 +-
- 2 files changed, 9 insertions(+), 4 deletions(-)
+ compat.h                        | 7 +++++++
+ net/batman-adv/soft-interface.c | 3 ++-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/compat-include/linux/netdevice.h b/compat-include/linux/netdevice.h
-index 00ed5e40..c29d6d21 100644
---- a/compat-include/linux/netdevice.h
-+++ b/compat-include/linux/netdevice.h
-@@ -66,15 +66,20 @@
+diff --git a/compat.h b/compat.h
+index e43c4136..c10ad589 100644
+--- a/compat.h
++++ b/compat.h
+@@ -152,4 +152,11 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
  
- #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
+ #endif /* < KERNEL_VERSION(4, 6, 0) */
  
--#define netdev_master_upper_dev_link(dev, upper_dev, upper_priv, upper_info) \
-+#define netdev_master_upper_dev_link(dev, upper_dev, upper_priv, upper_info, extack) \
- 	netdev_set_master(dev, upper_dev)
- 
- #elif LINUX_VERSION_CODE < KERNEL_VERSION(4, 5, 0)
- 
--#define netdev_master_upper_dev_link(dev, upper_dev, upper_priv, upper_info) \
-+#define netdev_master_upper_dev_link(dev, upper_dev, upper_priv, upper_info, extack) \
- 	netdev_master_upper_dev_link(dev, upper_dev)
- 
--#endif /* < KERNEL_VERSION(4, 5, 0) */
-+#elif LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
 +
-+#define netdev_master_upper_dev_link(dev, upper_dev, upper_priv, upper_info, extack) \
-+	netdev_master_upper_dev_link(dev, upper_dev, upper_priv, upper_info)
++#define batadv_softif_slave_add(__dev, __slave_dev, __extack) \
++	batadv_softif_slave_add(__dev, __slave_dev)
 +
 +#endif /* < KERNEL_VERSION(4, 15, 0) */
- 
- #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 7, 0)
- 
-diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
-index d4aa99c0..4e3d5340 100644
---- a/net/batman-adv/hard-interface.c
-+++ b/net/batman-adv/hard-interface.c
-@@ -738,7 +738,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
- 	bat_priv = netdev_priv(hard_iface->soft_iface);
- 
- 	ret = netdev_master_upper_dev_link(hard_iface->net_dev,
--					   soft_iface, NULL, NULL);
-+					   soft_iface, NULL, NULL, NULL);
- 	if (ret)
- 		goto err_dev;
- 
++
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 3af4b0b2..543d2c3e 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -867,7 +867,8 @@ static int batadv_softif_init_late(struct net_device *dev)
+  * Return: 0 if successful or error otherwise.
+  */
+ static int batadv_softif_slave_add(struct net_device *dev,
+-				   struct net_device *slave_dev)
++				   struct net_device *slave_dev,
++				   struct netlink_ext_ack *extack)
+ {
+ 	struct batadv_hard_iface *hard_iface;
+ 	struct net *net = dev_net(dev);
 -- 
 2.11.0
 
