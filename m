@@ -1,8 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  7 Oct 2017 14:18:52 +0200
-Message-Id: <20171007121853.6278-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: Add extack to ndo_add_slave
+Date: Sat,  7 Oct 2017 14:21:22 +0200
+Message-Id: <20171007122122.6470-1-sven@narfation.org>
+In-Reply-To: <20171007121853.6278-1-sven@narfation.org>
+References: <20171007121853.6278-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 3/3] batman-adv: Add missing kerneldoc for
+ extack
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -13,50 +16,29 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: davem@davemloft.net, netdev@vger.kernel.org, Sven Eckelmann <sven@narfation.org>, David Ahern <dsahern@gmail.com>
 
-From: David Ahern <dsahern@gmail.com>
+The parameter extack was added to batadv_softif_slave_add without adding
+the kernel-doc for it. This caused kernel-doc warnings.
 
-Pass extack to do_set_master and down to ndo_add_slave
-
-Signed-off-by: David Ahern <dsahern@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-[sven@narfation.org: Add compat code]
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Cc: David Ahern <dsahern@gmail.com>
 ---
- compat.h                        | 7 +++++++
- net/batman-adv/soft-interface.c | 3 ++-
- 2 files changed, 9 insertions(+), 1 deletion(-)
+ net/batman-adv/soft-interface.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/compat.h b/compat.h
-index e43c4136..c10ad589 100644
---- a/compat.h
-+++ b/compat.h
-@@ -152,4 +152,11 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
- 
- #endif /* < KERNEL_VERSION(4, 6, 0) */
- 
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-+
-+#define batadv_softif_slave_add(__dev, __slave_dev, __extack) \
-+	batadv_softif_slave_add(__dev, __slave_dev)
-+
-+#endif /* < KERNEL_VERSION(4, 15, 0) */
-+
- #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
 diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 3af4b0b2..543d2c3e 100644
+index 543d2c3e..9f673cdf 100644
 --- a/net/batman-adv/soft-interface.c
 +++ b/net/batman-adv/soft-interface.c
-@@ -867,7 +867,8 @@ static int batadv_softif_init_late(struct net_device *dev)
+@@ -863,6 +863,7 @@ static int batadv_softif_init_late(struct net_device *dev)
+  * batadv_softif_slave_add - Add a slave interface to a batadv_soft_interface
+  * @dev: batadv_soft_interface used as master interface
+  * @slave_dev: net_device which should become the slave interface
++ * @extack: extended ACK report struct
+  *
   * Return: 0 if successful or error otherwise.
   */
- static int batadv_softif_slave_add(struct net_device *dev,
--				   struct net_device *slave_dev)
-+				   struct net_device *slave_dev,
-+				   struct netlink_ext_ack *extack)
- {
- 	struct batadv_hard_iface *hard_iface;
- 	struct net *net = dev_net(dev);
 -- 
 2.11.0
 
