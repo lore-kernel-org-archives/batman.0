@@ -1,8 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  7 Oct 2017 08:54:08 +0200
-Message-Id: <20171007065409.22412-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [RFC 1/2] batman-adv: Add extack to ndo_add_slave
+Date: Sat,  7 Oct 2017 08:54:09 +0200
+Message-Id: <20171007065409.22412-2-sven@narfation.org>
+In-Reply-To: <20171007065409.22412-1-sven@narfation.org>
+References: <20171007065409.22412-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [RFC 2/2] batman-adv: Add extack to upper device
+ linking
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,7 +19,7 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 From: David Ahern <dsahern@gmail.com>
 
-Pass extack to do_set_master and down to ndo_add_slave
+Add extack arg to netdev_upper_dev_link and netdev_master_upper_dev_link
 
 Signed-off-by: David Ahern <dsahern@gmail.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
@@ -24,23 +27,22 @@ Signed-off-by: David S. Miller <davem@davemloft.net>
 This change is already part of net-next (queued up for 4.15) we must
 therefore apply it after the compat code was added.
 
- net/batman-adv/soft-interface.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ net/batman-adv/hard-interface.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 3af4b0b2..543d2c3e 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -867,7 +867,8 @@ static int batadv_softif_init_late(struct net_device *dev)
-  * Return: 0 if successful or error otherwise.
-  */
- static int batadv_softif_slave_add(struct net_device *dev,
--				   struct net_device *slave_dev)
-+				   struct net_device *slave_dev,
-+				   struct netlink_ext_ack *extack)
- {
- 	struct batadv_hard_iface *hard_iface;
- 	struct net *net = dev_net(dev);
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index d4aa99c0..4e3d5340 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -738,7 +738,7 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 	bat_priv = netdev_priv(hard_iface->soft_iface);
+ 
+ 	ret = netdev_master_upper_dev_link(hard_iface->net_dev,
+-					   soft_iface, NULL, NULL);
++					   soft_iface, NULL, NULL, NULL);
+ 	if (ret)
+ 		goto err_dev;
+ 
 -- 
 2.11.0
 
