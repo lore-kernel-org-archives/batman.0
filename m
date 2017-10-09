@@ -1,9 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon,  9 Oct 2017 17:33:06 +0200
-Message-Id: <20171009153307.29245-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/2] alfred: Only query debugfs when netlink
- failed
+Date: Mon,  9 Oct 2017 17:33:07 +0200
+Message-Id: <20171009153307.29245-2-sven@narfation.org>
+In-Reply-To: <20171009153307.29245-1-sven@narfation.org>
+References: <20171009153307.29245-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Only check for minimal length of
+ fixed size packets
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,36 +17,49 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-It is enough to just request the data from netlink and skip debugfs when
-netlink didn't return an error. The overwrite of the ret variable was only
-for testing purposes and should no longer be used.
+These fixed size packets could have some optional information in the
+future. We should therefore not limit the size of these packets to the size
+of the non-tlv header.
 
-Fixes: a7bc3d9a2b3f ("alfred: Cache the global translation table entries")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- batadv_query.c | 2 --
- 1 file changed, 2 deletions(-)
+Any objections? Not sure if this is really necessary. But could be useful
+in the future.
+---
+ recv.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/batadv_query.c b/batadv_query.c
-index 8580f1b..78b92cd 100644
---- a/batadv_query.c
-+++ b/batadv_query.c
-@@ -308,7 +308,6 @@ struct hashtable_t *tg_hash_new(const char *mesh_iface)
- 	ret = translate_mac_netlink(mesh_iface, tg_hash);
- 	enable_net_admin_capability(0);
+diff --git a/recv.c b/recv.c
+index 12bb3f1..e897e3d 100644
+--- a/recv.c
++++ b/recv.c
+@@ -284,7 +284,7 @@ process_alfred_announce_master(struct globals *globals,
+ 	if (announce->header.version != ALFRED_VERSION)
+ 		return -1;
  
--	ret = -EOPNOTSUPP;
- 	if (ret == -EOPNOTSUPP)
- 		translate_mac_debugfs(mesh_iface, tg_hash);
+-	if (len != (sizeof(*announce) - sizeof(announce->header)))
++	if (len < (sizeof(*announce) - sizeof(announce->header)))
+ 		return -1;
  
-@@ -477,7 +476,6 @@ struct hashtable_t *orig_hash_new(const char *mesh_iface)
- 	ret = get_tq_netlink(mesh_iface, orig_hash);
- 	enable_net_admin_capability(0);
+ 	server = hash_find(interface->server_hash, &mac);
+@@ -320,7 +320,7 @@ static int process_alfred_request(struct globals *globals,
+ 	if (request->header.version != ALFRED_VERSION)
+ 		return -1;
  
--	ret = -EOPNOTSUPP;
- 	if (ret == -EOPNOTSUPP)
- 		get_tq_debugfs(mesh_iface, orig_hash);
+-	if (len != (sizeof(*request) - sizeof(request->header)))
++	if (len < (sizeof(*request) - sizeof(request->header)))
+ 		return -1;
  
+ 	push_data(globals, interface, source, SOURCE_SYNCED,
+@@ -343,7 +343,7 @@ static int process_alfred_status_txend(struct globals *globals,
+ 	if (request->header.version != ALFRED_VERSION)
+ 		return -1;
+ 
+-	if (len != (sizeof(*request) - sizeof(request->header)))
++	if (len < (sizeof(*request) - sizeof(request->header)))
+ 		return -1;
+ 
+ 	if (globals->ipv4mode)
 -- 
 2.11.0
 
