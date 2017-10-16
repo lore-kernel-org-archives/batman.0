@@ -1,11 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon,  9 Oct 2017 17:33:07 +0200
-Message-Id: <20171009153307.29245-2-sven@narfation.org>
-In-Reply-To: <20171009153307.29245-1-sven@narfation.org>
-References: <20171009153307.29245-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 2/2] alfred: Only check for minimal length of
- fixed size packets
+Return-Path: <sven.eckelmann@openmesh.com>
+From: Sven Eckelmann <sven.eckelmann@openmesh.com>
+Date: Mon, 16 Oct 2017 09:48:03 +0200
+Message-Id: <20171016074803.17947-1-sven.eckelmann@openmesh.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Avoid spurious warnings from
+ bat_v neigh_cmp implementation
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,50 +17,61 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Joseph Stefek <joseph.stefek@openmesh.com>, =?UTF-8?q?Steffen=20F=C3=B6rster?= <steffen@chemnitz.freifunk.net>, Sven Eckelmann <sven.eckelmann@openmesh.com>, Antonio Quartulli <a@unstable.cc>
 
-These fixed size packets could have some optional information in the
-future. We should therefore not limit the size of these packets to the size
-of the non-tlv header.
+The neighbor compare API implementation for B.A.T.M.A.N. V checks whether
+the neigh_ifinfo for this neighbor on a specific interface exists. A
+warning is printed when it isn't found.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+But it is not called inside a lock which would prevent that this
+information is lost right before batadv_neigh_ifinfo_get. It must therefore
+be expected that batadv_v_neigh_(cmp|is_sob) might not be able to get the
+requested neigh_ifinfo.
+
+A WARN_ON for such a situation seems not to be appropriate because this
+will only flood the kernel logs. The warnings must therefore be removed.
+
+Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
 ---
-Any objections? Not sure if this is really necessary. But could be useful
-in the future.
----
- recv.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Cc: Antonio Quartulli <a@unstable.cc>
 
-diff --git a/recv.c b/recv.c
-index 12bb3f1..e897e3d 100644
---- a/recv.c
-+++ b/recv.c
-@@ -284,7 +284,7 @@ process_alfred_announce_master(struct globals *globals,
- 	if (announce->header.version != ALFRED_VERSION)
- 		return -1;
+This patch is for https://www.open-mesh.org/issues/343
+---
+ net/batman-adv/bat_v.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 93ef1c0..69436d2 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -623,11 +623,11 @@ static int batadv_v_neigh_cmp(struct batadv_neigh_node *neigh1,
+ 	int ret = 0;
  
--	if (len != (sizeof(*announce) - sizeof(announce->header)))
-+	if (len < (sizeof(*announce) - sizeof(announce->header)))
- 		return -1;
+ 	ifinfo1 = batadv_neigh_ifinfo_get(neigh1, if_outgoing1);
+-	if (WARN_ON(!ifinfo1))
++	if (!ifinfo1)
+ 		goto err_ifinfo1;
  
- 	server = hash_find(interface->server_hash, &mac);
-@@ -320,7 +320,7 @@ static int process_alfred_request(struct globals *globals,
- 	if (request->header.version != ALFRED_VERSION)
- 		return -1;
+ 	ifinfo2 = batadv_neigh_ifinfo_get(neigh2, if_outgoing2);
+-	if (WARN_ON(!ifinfo2))
++	if (!ifinfo2)
+ 		goto err_ifinfo2;
  
--	if (len != (sizeof(*request) - sizeof(request->header)))
-+	if (len < (sizeof(*request) - sizeof(request->header)))
- 		return -1;
+ 	ret = ifinfo1->bat_v.throughput - ifinfo2->bat_v.throughput;
+@@ -649,11 +649,11 @@ static bool batadv_v_neigh_is_sob(struct batadv_neigh_node *neigh1,
+ 	bool ret = false;
  
- 	push_data(globals, interface, source, SOURCE_SYNCED,
-@@ -343,7 +343,7 @@ static int process_alfred_status_txend(struct globals *globals,
- 	if (request->header.version != ALFRED_VERSION)
- 		return -1;
+ 	ifinfo1 = batadv_neigh_ifinfo_get(neigh1, if_outgoing1);
+-	if (WARN_ON(!ifinfo1))
++	if (!ifinfo1)
+ 		goto err_ifinfo1;
  
--	if (len != (sizeof(*request) - sizeof(request->header)))
-+	if (len < (sizeof(*request) - sizeof(request->header)))
- 		return -1;
+ 	ifinfo2 = batadv_neigh_ifinfo_get(neigh2, if_outgoing2);
+-	if (WARN_ON(!ifinfo2))
++	if (!ifinfo2)
+ 		goto err_ifinfo2;
  
- 	if (globals->ipv4mode)
+ 	threshold = ifinfo1->bat_v.throughput / 4;
 -- 
 2.11.0
 
