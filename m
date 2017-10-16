@@ -1,14 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 16 Oct 2017 19:07:25 +0200
-Message-ID: <2908300.Ae86fhuNlt@sven-edge>
-In-Reply-To: <20171007121853.6278-1-sven@narfation.org>
-References: <20171007121853.6278-1-sven@narfation.org>
+Return-Path: <sven.eckelmann@openmesh.com>
+From: Sven Eckelmann <sven.eckelmann@openmesh.com>
+Date: Mon, 16 Oct 2017 19:11:02 +0200
+Message-ID: <3698882.cXEurrRWIr@sven-edge>
+In-Reply-To: <20171016074803.17947-1-sven.eckelmann@openmesh.com>
+References: <20171016074803.17947-1-sven.eckelmann@openmesh.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5803045.Be0CearnLX";
+Content-Type: multipart/signed; boundary="nextPart8475264.J4oTvNEsHq";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 1/3] batman-adv: Add extack to
- ndo_add_slave
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Avoid spurious warnings from
+ bat_v neigh_cmp implementation
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,55 +19,59 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Joseph Stefek <joseph.stefek@openmesh.com>, Antonio Quartulli <a@unstable.cc>, Steffen =?ISO-8859-1?Q?F=F6rster?= <steffen@chemnitz.freifunk.net>
 
---nextPart5803045.Be0CearnLX
+--nextPart8475264.J4oTvNEsHq
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Samstag, 7. Oktober 2017 14:18:52 CEST Sven Eckelmann wrote:
-> From: David Ahern <dsahern@gmail.com>
+On Montag, 16. Oktober 2017 09:48:03 CEST Sven Eckelmann wrote:
+> The neighbor compare API implementation for B.A.T.M.A.N. V checks whether
+> the neigh_ifinfo for this neighbor on a specific interface exists. A
+> warning is printed when it isn't found.
 > 
-> Pass extack to do_set_master and down to ndo_add_slave
+> But it is not called inside a lock which would prevent that this
+> information is lost right before batadv_neigh_ifinfo_get. It must therefore
+> be expected that batadv_v_neigh_(cmp|is_sob) might not be able to get the
+> requested neigh_ifinfo.
 > 
-> Signed-off-by: David Ahern <dsahern@gmail.com>
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> [sven@narfation.org: Add compat code]
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> A WARN_ON for such a situation seems not to be appropriate because this
+> will only flood the kernel logs. The warnings must therefore be removed.
+> 
+> Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
 > ---
->  compat.h                        | 7 +++++++
->  net/batman-adv/soft-interface.c | 3 ++-
->  2 files changed, 9 insertions(+), 1 deletion(-)
+> Cc: Antonio Quartulli <a@unstable.cc>
+> 
+> This patch is for https://www.open-mesh.org/issues/343
 
-
-All three patches applied in 7a1f25d9..0ce469be [1,2,3]
+Patch was applied in 0dee8aba [1]
 
 Kind regards,
 	Sven
 
-[1] https://patchwork.open-mesh.org/patch/17098/
-[2] https://patchwork.open-mesh.org/patch/17097/
-[3] https://patchwork.open-mesh.org/patch/17099/
---nextPart5803045.Be0CearnLX
+[1] https://git.open-mesh.org/batman-adv.git/commit/0dee8aba4702f82197ed3428ede6b3884fdff5ca
+
+--nextPart8475264.J4oTvNEsHq
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlnk500ACgkQXYcKB8Em
-e0YrpA/+OlSoEYCQzD2BcxJi38+o5AWUWLcUvkPzoyyQ7OLv+hc4xtesGOCy9Re3
-n0g/s+sw3LMacrDUqpx2zoz5EKcdWazG8GASwynlH8URG9Vvgn6p7WkGwVo2hgCU
-xEF3k6xvokTKlO41BYYrGSaZr52uIemjjAqGDIAUs1gBtb4IN1efkOU2GAXNEmAe
-65kI0ABwGOtq0cJgtSYP7VGbxccry5Xdp9ofJQ344U57ucPdKpmB2/AG0soETiyT
-Uuwd0y/AbkbcojQi9Jkz+/gk0g23t6N/0DTisKqB+5u/U5YPI6OL95mcWhc0oYO6
-08ZsHRulXxTpApsFynxE3CkxB74LOd1dOG7pzeM+vwmdukaaDccfifSdROJveGHV
-oaqFMy+guWQUeRoGY/DJVNTirbx+JGUnacPeyvPtkwVF4GxbpAWV9Ogl26JAS7Oy
-oHckaqRYuvipILyxYsmVq2quChEtyaCiRaDgo38bcvze5T2OFMsSA7B45VA9z9KU
-Tu5YFB6t1cmAcZRX/DP4SCVsnT9yCstpVG0va/a+cwMWC0TYv3nMukOOhZOIGkB1
-sLrmspXdoI4PUBbuSR3bOB+RkvSbpvrTJVRim1Uu5c+FSwbKXdGavwtQul1umm9i
-SRQJ0jRVoR6pC9sVCQrfsqpxmaxrM79FIg1bx4jDF3AYOPo4LAg=
-=uWLM
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlnk6CYACgkQXYcKB8Em
+e0as3hAAxn5d+GtaZUN5fy7XGIw6BfHmh3N30uQh9s9aYrIYUMnTD0v/ZN9GolX2
+baB5U5xNueLtnLjTqqQBUguOUJ55epZVMS97ycCu0hd2ir9oDytBlLL6o9o2giZJ
+IaCsf+WgDNVwTxS9aTkXGL/Edo6rz3joAjNKUkw+F0EMrKRdtiyWNpNU/6kbGr6P
+syI/W7PYdteJ0rkXusuaKPsNOTusOmduiARnHehdVvvT0hA4oiUXucIXfw1KcJRG
+pUNs2N3kdSrgJAVW6PaFgKa8GyRoOiTz1mlieNTnYsAdO8AiTLHvYmLGxJOpAA+P
+toOCfndJpfyP6UtFqUm0JChSPdpFnBc6PcUk5FXCIlStlIcABngnfLcqreVLxopS
+2E0RVvx+F3XsgqA+aING3WMfJe4ZA0rkQJFXCqo/+Qd7l5n+jaiD3Xe9BS5Z8wgw
+QXo6iReuSaLdqmGAEOBAzUP2PABKXTcdqtdiA3mbePBdtiSCH7BzXdmGX0a7QoB5
+179g7W4qh+eQV6XhrOehTJBlnsKEPNPqKu0TTQJGaX9jPAnGu9H9OJ9h/zOVf56E
+PjskYq9Etz6GUHllGp3j+Ove0XNpfe1N8fSAxhay/KZET6T/DuF46bmdqYPTxUht
+BlQW6qtUcxQY5PC6WgDQFOvalCIBlH74ajRvDIVF8hrGxd/Bt6o=
+=eyXx
 -----END PGP SIGNATURE-----
 
---nextPart5803045.Be0CearnLX--
+--nextPart8475264.J4oTvNEsHq--
 
