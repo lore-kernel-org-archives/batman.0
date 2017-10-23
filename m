@@ -1,11 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 21 Oct 2017 13:46:49 +0200
-Message-ID: <6677419.eTnXb6rzk9@sven-edge>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 23 Oct 2017 17:21:16 +0200
+Message-ID: <2426942.o1Iv1Lg3Ss@prime>
 In-Reply-To: <20171021094546.8299-1-sven@narfation.org>
 References: <20171021094546.8299-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1540062.bKFrxQjjMu";
+Content-Type: multipart/signed; boundary="nextPart4821622.niHM4j1QSe";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: use inline kernel-doc for
  uapi constants
@@ -20,50 +20,47 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1540062.bKFrxQjjMu
+--nextPart4821622.niHM4j1QSe
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Samstag, 21. Oktober 2017 11:45:46 CEST Sven Eckelmann wrote:
-[...]
-> +
-> +	/**
-> +	 * @BATADV_CMD_GET_GATEWAYS: Query list of gateways
-> +	 */
->  	BATADV_CMD_GET_GATEWAYS,
+On Saturday, October 21, 2017 11:45:46 AM CEST Sven Eckelmann wrote:
+> The enums of constants for netlink tends to become rather large over time.
+> Documenting them is easier when the kernel-doc is actually next to constant
+> and not in a different block above the enum.
+> 
+> Also inline kernel-doc allows multi-paragraph description. This could be
+> required to better document the netlink command types and the expected
+> return values.
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-Just wanted to mention that this could also have been written [1] as:
+Thanks Sven, I think this really improves readability. Applied in commit 
+dcad23d0.
 
-	/** @BATADV_CMD_GET_GATEWAYS: Query list of gateways */
-
-I was just lazy and formatted everything as multiline comment instead of 
-checking whether any of the entries would fit in a single line comment.
-
-Kind regards,
-	Sven
-
-[1] https://www.kernel.org/doc/html/v4.11/doc-guide/kernel-doc.html#in-line-member-documentation-comments
---nextPart1540062.bKFrxQjjMu
+Thank you,
+     Simon
+--nextPart4821622.niHM4j1QSe
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlnrM6kACgkQXYcKB8Em
-e0bOJg//ZvZ+R3iCKb8rQVzKrBhZLNB4DUTePe87GuSCPlvQ75n+wS6Iy5an4/kL
-eS9z/YSSEIwXyhRy5X+LipN0osE9UJ9Hpk/mB3EMXsbMOTxqXBM58/V6hIcbh9wP
-IMeMZzuFKNKZGuucmxC5dMSKRSQ7I34QbKL9V1W6p2BmrxCIxb4oSFf5RBVcxuAT
-YPXbEXOrb2c+A4A/I1TszpSPUqX+ZkKbz+dpEwsTXpDcrePFT/UdIJVdt8y6ZBn9
-hvRgr5NmfatkIOj8IfF1Ww14DksQQtWu3bw5xxYoj+SeLbYNnQYj1RGM3Maiyu6M
-BLJCl/SlZIo86elbMvlYg1VtpJpR8fW4V3O5Uvb1GgPxTyTR8DDvB4PqwqOfEecE
-5FvNxna88Jl67ldTQCNwYVmpqOtctAUlyPYs1uW2XM3uf1UvSPDLQR0549o5zGUj
-X0zhaexeWRa7jvlPDDCm9leum8c2LzuzEYq/kf6X65cVp6iV+1OTifxzDG2dvkiV
-1imaqb/FVFIfXwerYQ5qp/qqYNAb/T7bZh8dm8vgztAItaWMl8maPjltDEkZVMoI
-Hbrw+JdBGYwylFvzdB6yOeKr6D1lrbPxA8ktF+Ut1l+l6ctVVkNAHChF/xItrhMK
-V2q2eXhwFhoeUC6BAJLGZUJLrNC+AdR8FWGh6WKkbpANw8bXdOI=
-=Vlu8
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlnuCOwACgkQoSvjmEKS
+nqEUPhAA1YXuU8KFnaijhG2QuOeJgmBJ5pt4wkrShKvJBS0cv+/2OYszuL87VK5n
+7atr5ZsNo3yxCkMdp5n1E62IXtS+AhR+hAw/NzS8BGXkA/XjcemEEOmhq/F/d8s5
+A+IRq5fI8D0K1G/6vtFxONNXfoAXawnTfXfBh3Azw4TuX0Lc9Pr2iMGDGN/hAudm
+ndCurpAhS2nXJxdhTsws+lc462mukQ7y5DATIdk5llDZVEOZLtifvYmpt5WyFkCq
+Bkt8qHs7NtrbFMj+Dmh045rkKO4RmB23U5I/Yb2Ac+uCb419dUMFJpnOAaCNGNhL
+w4X+BbuuZQzVR6SQd+pca/PL6vfP4PV7KBeYApXAbGK86yNNbsGLe9yagn+T28eH
+KS6zBysdUiXlfo8OHhY/0/yYHW5rr4aycHi8Wdg1E6VYdpUYrs/vlfYpxeLTXQhD
+5//e61yg7KJSncch/qXshfA2uVPP7iUshW5gl54293WQ8gMmW9rDHO4WTUlTKCL+
+3XJGbA3stg4CLuKYSVGY1df4l1PTEMmhN8lloV1o1CPnwdTrXxbv0Hkr1ILf+G7v
+2cFBNu62Xj8gRgx/mHNiBYMhfTG90/RkRvKZ1PyuPteEYUGEkda77jWbTYBJiDPz
+am0Xj/+QV9x5oeVxRS7RJiOXSQ4foVxZERVEQOVd7ZSFr3r4iUM=
+=4NI/
 -----END PGP SIGNATURE-----
 
---nextPart1540062.bKFrxQjjMu--
+--nextPart4821622.niHM4j1QSe--
 
