@@ -1,14 +1,17 @@
-Return-Path: <davem@davemloft.net>
-Date: Tue, 24 Oct 2017 01:15:32 +0100 (WEST)
-Message-Id: <20171024.011532.1257110831650284794.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20171023153704.32120-1-sw@simonwunderlich.de>
-References: <20171023153704.32120-1-sw@simonwunderlich.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/3] pull request for net-next:
- batman-adv 2017-10-23
+Return-Path: <linus.luessing@c0d3.blue>
+Date: Wed, 25 Oct 2017 15:15:31 +0200
+From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
+Message-ID: <20171025131531.GI2750@otheros>
+References: <CA+DjzFb8JV2opdLOTaPdm0wNXh95fvQSBcTdreUSmEQrVn5tKQ@mail.gmail.com>
+ <20170816144705.GA11501@otheros>
+ <mailman.4.1502895970.6668.b.a.t.m.a.n@lists.open-mesh.org>
+ <20170816154159.GB11501@otheros>
+ <CACXSwgp6X3NcAd7jv4K3rQBMmHwjwsYPZp5D88wOuBJ4yB=h9A@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <CACXSwgp6X3NcAd7jv4K3rQBMmHwjwsYPZp5D88wOuBJ4yB=h9A@mail.gmail.com>
+Subject: Re: [B.A.T.M.A.N.] Manually Updating Translation table
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,15 +21,21 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sw@simonwunderlich.de
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
+To: Kartikeswar Koppula <kartik@corenetdynamics.com>
+Cc: "Kartikeswar Koppula via B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 23 Oct 2017 17:37:01 +0200
+Hi Kartik,
 
-> here is another small documentation/cleanup pull request of batman-adv to go
-> into net-next.
-> 
-> Please pull or let me know of any problem!
+On Wed, Oct 25, 2017 at 02:46:32PM +0200, Kartikeswar Koppula wrote:
+> I checked the routes manually and it looks okay.
 
-Pulled, thanks Simon.
+Could you share those? Next to "ip route show" the following tables
+would be interesting, too:
+
+$ ip address show
+$ brctl show
+$ batctl tg
+$ batctl o
+$ batctl n
+
+Regards, Linus
