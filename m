@@ -1,17 +1,10 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Wed, 25 Oct 2017 15:15:31 +0200
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20171025131531.GI2750@otheros>
-References: <CA+DjzFb8JV2opdLOTaPdm0wNXh95fvQSBcTdreUSmEQrVn5tKQ@mail.gmail.com>
- <20170816144705.GA11501@otheros>
- <mailman.4.1502895970.6668.b.a.t.m.a.n@lists.open-mesh.org>
- <20170816154159.GB11501@otheros>
- <CACXSwgp6X3NcAd7jv4K3rQBMmHwjwsYPZp5D88wOuBJ4yB=h9A@mail.gmail.com>
+Return-Path: <carlitonueno@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CACXSwgp6X3NcAd7jv4K3rQBMmHwjwsYPZp5D88wOuBJ4yB=h9A@mail.gmail.com>
-Subject: Re: [B.A.T.M.A.N.] Manually Updating Translation table
+From: Carlito Nueno <carlitonueno@gmail.com>
+Date: Wed, 1 Nov 2017 20:07:52 -0700
+Message-ID: <CAEUauspRyThs6WLqp3E2=7pHG=emT9F9eckfEWsBUwvnktaiPQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Subject: [B.A.T.M.A.N.] Set preferred mesh backhaul link
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,21 +14,22 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Kartikeswar Koppula <kartik@corenetdynamics.com>
-Cc: "Kartikeswar Koppula via B.A.T.M.A.N" <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi Kartik,
+Hi,
 
-On Wed, Oct 25, 2017 at 02:46:32PM +0200, Kartikeswar Koppula wrote:
-> I checked the routes manually and it looks okay.
+I have two access points with 2.4GHz and 5GHz radios.
 
-Could you share those? Next to "ip route show" the following tables
-would be interesting, too:
+Node A and Node B
 
-$ ip address show
-$ brctl show
-$ batctl tg
-$ batctl o
-$ batctl n
+Both radios are mesh via batman-adv. I can see them with batctl if.
 
-Regards, Linus
+Node A is server - batctl gw server
+Node B is client
+
+So here is my problem:
+
+When I check batctl gwl, it shows that it uses Node A's 2.4GHz
+interface. How can I set it so that it prefers 5GHz as mesh backhaul?
+
+Thanks!
