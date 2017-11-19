@@ -1,11 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 19 Nov 2017 17:12:04 +0100
-Message-Id: <20171119161207.32588-4-sven@narfation.org>
-In-Reply-To: <20171119161207.32588-1-sven@narfation.org>
-References: <20171119161207.32588-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 3/6] batman-adv: Include net.h for
- net_ratelimited_function
+Date: Sun, 19 Nov 2017 17:12:01 +0100
+Message-Id: <20171119161207.32588-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 0/6] batman-adv: Include cleanup
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,39 +14,54 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The linux/net.h provides the net_ratelimited_function. It should
-therefore be included directly before it is used.
+Hi,
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- net/batman-adv/network-coding.c    | 1 +
- net/batman-adv/translation-table.c | 1 +
- 2 files changed, 2 insertions(+)
+I went through the build_test.git's testhelpers/kernel_mappings.iwyu and
+cleaned that up a little bit. This requires that we have to adjust the
+batman-adv sources slighty.
 
-diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
-index f614d74f..64f14f66 100644
---- a/net/batman-adv/network-coding.c
-+++ b/net/batman-adv/network-coding.c
-@@ -38,6 +38,7 @@
- #include <linux/kref.h>
- #include <linux/list.h>
- #include <linux/lockdep.h>
-+#include <linux/net.h>
- #include <linux/netdevice.h>
- #include <linux/printk.h>
- #include <linux/random.h>
-diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
-index db7a67ee..ce90bfd7 100644
---- a/net/batman-adv/translation-table.c
-+++ b/net/batman-adv/translation-table.c
-@@ -39,6 +39,7 @@
- #include <linux/kref.h>
- #include <linux/list.h>
- #include <linux/lockdep.h>
-+#include <linux/net.h>
- #include <linux/netdevice.h>
- #include <linux/netlink.h>
- #include <linux/rculist.h>
+I have also found a build problem when you try to build B.A.T.M.A.N. V
+against Linux < 3.7 and fixed it in the same patchset.
+
+Kind regards,
+	Sven
+
+Sven Eckelmann (6):
+  batman-adv: include gfp.h for GFP_* defines
+  batman-adv: include build_bug.h for BUILD_BUG_ON define
+  batman-adv: Include net.h for net_ratelimited_function
+  batman-adv: include kobject.h for kobject_* functions
+  batman-adv: Remove unused sched.h include
+  batman-adv: compat: Map to linux/nl80211.h for Linux < 3.7
+
+ compat-include/linux/build_bug.h       | 34 ++++++++++++++++++++++++++++++++++
+ compat-include/uapi/linux/nl80211.h    |  4 ++++
+ net/batman-adv/bat_iv_ogm.c            |  2 +-
+ net/batman-adv/bat_v_elp.c             |  2 +-
+ net/batman-adv/bat_v_ogm.c             |  2 +-
+ net/batman-adv/bridge_loop_avoidance.c |  2 +-
+ net/batman-adv/debugfs.c               |  1 -
+ net/batman-adv/distributed-arp-table.c |  2 +-
+ net/batman-adv/fragmentation.c         |  2 +-
+ net/batman-adv/gateway_client.c        |  2 +-
+ net/batman-adv/hard-interface.c        |  2 +-
+ net/batman-adv/hash.c                  |  2 +-
+ net/batman-adv/icmp_socket.c           |  1 +
+ net/batman-adv/log.c                   |  1 +
+ net/batman-adv/main.c                  |  4 ++--
+ net/batman-adv/multicast.c             |  2 +-
+ net/batman-adv/netlink.c               |  2 +-
+ net/batman-adv/network-coding.c        |  3 ++-
+ net/batman-adv/originator.c            |  2 +-
+ net/batman-adv/send.c                  |  2 +-
+ net/batman-adv/soft-interface.c        |  2 +-
+ net/batman-adv/sysfs.c                 |  3 ++-
+ net/batman-adv/tp_meter.c              |  4 ++--
+ net/batman-adv/translation-table.c     |  5 +++--
+ net/batman-adv/tvlv.c                  |  2 +-
+ 25 files changed, 66 insertions(+), 24 deletions(-)
+ create mode 100644 compat-include/linux/build_bug.h
+
 -- 
 2.11.0
 
