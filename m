@@ -1,11 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 19 Nov 2017 15:05:53 +0100
-Message-Id: <20171119140553.24435-7-sven@narfation.org>
-In-Reply-To: <20171119140553.24435-1-sven@narfation.org>
-References: <20171119140553.24435-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 6/6] batctl: Change batman_adv.h license to
- MIT
+Date: Sun, 19 Nov 2017 15:05:56 +0100
+Message-Id: <20171119140602.24504-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 0/6] alfred: License cleanup
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,70 +14,78 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The ISC license is considered as not recommended in "Linux kernel licensing
-rules". It should only be used for existing code or for importing code from
-a different project with that license.
+Hi,
 
-But the kernel still has the similar sounding MIT/Expat license under the
-preferred licenses. Switching to this license for this relatively new file
-should therefore allow batman-adv to better follow the new licensing rules.
+the kernel community is currently trying to make the licensing status more
+clear in each file. This is mostly done by adding SPDX license identifiers
+and defining a set of rules how these license related information has to
+be stored.
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-Only apply this change after the change was applied in batman-adv.
+I've used this opportunity to also go through all files of alfred (for
+example with FSFE's `reuse lint`) and to annotate the files according to
+the "Linux licensing rules" and FSFE's REUSE practices.
 
-Please check
+There are two things which could be seen as controversial:
 
-* https://www.gnu.org/licenses/license-list.html
-* https://en.wikipedia.org/w/index.php?title=ISC_license&oldid=791486092
-* https://en.wikipedia.org/w/index.php?title=MIT_License&oldid=809249689
+* change of batman_adv.h to the Linux preferred license
+  (I am waiting for Acks in the batman-adv patchset)
+* explicitly mark remaining files as licensed under the GPL-2.0
 
-For more information about these licenses.
----
- batman_adv.h | 28 +++++++++++++++++-----------
- 1 file changed, 17 insertions(+), 11 deletions(-)
+Kind regards,
+	Sven
 
-diff --git a/batman_adv.h b/batman_adv.h
-index fb45338..ae00c99 100644
---- a/batman_adv.h
-+++ b/batman_adv.h
-@@ -1,19 +1,25 @@
--/* SPDX-License-Identifier: ISC */
-+/* SPDX-License-Identifier: MIT */
- /* Copyright (C) 2016-2017  B.A.T.M.A.N. contributors:
-  *
-  * Matthias Schiffer
-  *
-- * Permission to use, copy, modify, and/or distribute this software for any
-- * purpose with or without fee is hereby granted, provided that the above
-- * copyright notice and this permission notice appear in all copies.
-+ * Permission is hereby granted, free of charge, to any person obtaining a
-+ * copy of this software and associated documentation files (the "Software"),
-+ * to deal in the Software without restriction, including without limitation
-+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
-+ * and/or sell copies of the Software, and to permit persons to whom the
-+ * Software is furnished to do so, subject to the following conditions:
-  *
-- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-+ * DEALINGS IN THE SOFTWARE.
-  */
- 
- #ifndef _UAPI_LINUX_BATMAN_ADV_H_
+Sven Eckelmann (6):
+  alfred: Rename LICENSE to Linux's LICENSES/preferred/GPL-2.0
+  alfred: Add License-Filename to GPL-2.0 files
+  alfred: Import Linux's LICENSES/preferred/MIT
+  alfred: Add SPDX license identifier above copyright header
+  alfred: Mark remaining files as GPL-2.0
+  alfred: Change batman_adv.h license to MIT
+
+ .gitattributes                        |  3 +++
+ CHANGELOG.license                     |  2 ++
+ LICENSE => LICENSES/preferred/GPL-2.0 | 13 +++++++++++++
+ LICENSES/preferred/MIT                | 30 ++++++++++++++++++++++++++++++
+ Makefile                              |  2 ++
+ README.license                        |  2 ++
+ alfred.h                              |  5 +++--
+ batadv_query.c                        |  5 +++--
+ batadv_query.h                        |  5 +++--
+ batadv_querynl.c                      |  5 +++--
+ batadv_querynl.h                      |  5 +++--
+ batman_adv.h                          | 27 +++++++++++++++++----------
+ bitops.h                              |  1 +
+ client.c                              |  5 +++--
+ debugfs.c                             |  5 +++--
+ debugfs.h                             |  5 +++--
+ gpsd/Makefile                         |  2 ++
+ gpsd/alfred-gpsd.c                    |  5 +++--
+ gpsd/alfred-gpsd.h                    |  5 +++--
+ gpsd/man/alfred-gpsd.8                |  2 ++
+ hash.c                                |  5 +++--
+ hash.h                                |  5 +++--
+ list.h                                |  5 +++--
+ main.c                                |  5 +++--
+ man/alfred.8                          |  2 ++
+ netlink.c                             |  5 +++--
+ netlink.h                             |  5 +++--
+ netsock.c                             |  5 +++--
+ packet.h                              |  5 +++--
+ recv.c                                |  5 +++--
+ send.c                                |  5 +++--
+ server.c                              |  5 +++--
+ unix_sock.c                           |  5 +++--
+ util.c                                |  5 +++--
+ vis/Makefile                          |  2 ++
+ vis/man/batadv-vis.8                  |  2 ++
+ vis/vis.c                             |  5 +++--
+ vis/vis.h                             |  5 +++--
+ 38 files changed, 155 insertions(+), 60 deletions(-)
+ create mode 100644 CHANGELOG.license
+ rename LICENSE => LICENSES/preferred/GPL-2.0 (97%)
+ create mode 100644 LICENSES/preferred/MIT
+ create mode 100644 README.license
+
 -- 
 2.11.0
 
