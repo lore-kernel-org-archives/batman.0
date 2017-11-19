@@ -1,11 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 19 Nov 2017 15:05:09 +0100
-Message-Id: <20171119140517.24329-2-sven@narfation.org>
+Date: Sun, 19 Nov 2017 15:05:11 +0100
+Message-Id: <20171119140517.24329-4-sven@narfation.org>
 In-Reply-To: <20171119140517.24329-1-sven@narfation.org>
 References: <20171119140517.24329-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 1/9] batman-adv: Add GPL-2.0 as Linux's
- LICENSES/preferred/GPL-2.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] [PATCH 3/9] batman-adv: Add SPDX license identifier
+ above copyright header
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,379 +20,882 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The batman-adv project shares files with other projects hosted on
-kernel.org. These other projects use the filename
-LICENSES/preferred/GPL-2.0 for the GPL-2.0 license. It is therefore
-required to also use the same name for the license file when these files
-reference this in their license header.
+The "Linux kernel licensing rules" require that each file has a SPDX
+license identifier as first line (and sometimes as second line).
 
-The SPDX header was imported from Linux but the actual GPL-2.0 text was
-downloaded from https://www.gnu.org/licenses/gpl-2.0.txt
+The FSFE REUSE practices [1] would also require the same tags but have no
+restrictions on the placement in the source file. Using the "Linux kernel
+licensing rules" is therefore also fulfilling the FSFE REUSE practices
+requirements at the same time.
+
+[1] https://reuse.software/practices/
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- LICENSES/preferred/GPL-2.0 | 352 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 352 insertions(+)
- create mode 100644 LICENSES/preferred/GPL-2.0
+ Makefile                               | 2 +-
+ compat-include/linux/average.h         | 1 +
+ compat-include/linux/cache.h           | 1 +
+ compat-include/linux/etherdevice.h     | 1 +
+ compat-include/linux/ethtool.h         | 1 +
+ compat-include/linux/export.h          | 1 +
+ compat-include/linux/genetlink.h       | 1 +
+ compat-include/linux/if_ether.h        | 1 +
+ compat-include/linux/if_vlan.h         | 1 +
+ compat-include/linux/kernel.h          | 1 +
+ compat-include/linux/kref.h            | 1 +
+ compat-include/linux/list.h            | 1 +
+ compat-include/linux/net.h             | 1 +
+ compat-include/linux/netdev_features.h | 1 +
+ compat-include/linux/netdevice.h       | 1 +
+ compat-include/linux/netlink.h         | 1 +
+ compat-include/linux/random.h          | 1 +
+ compat-include/linux/rculist.h         | 1 +
+ compat-include/linux/seq_file.h        | 1 +
+ compat-include/linux/skbuff.h          | 1 +
+ compat-include/linux/slab.h            | 1 +
+ compat-include/net/genetlink.h         | 1 +
+ compat-sources/net/core/skbuff.c       | 1 +
+ compat-sources/net/ipv4/igmp.c         | 1 +
+ compat-sources/net/ipv6/mcast_snoop.c  | 1 +
+ compat.h                               | 1 +
+ include/uapi/linux/batman_adv.h        | 1 +
+ net/batman-adv/Makefile                | 2 +-
+ net/batman-adv/bat_algo.c              | 1 +
+ net/batman-adv/bat_algo.h              | 1 +
+ net/batman-adv/bat_iv_ogm.c            | 1 +
+ net/batman-adv/bat_iv_ogm.h            | 1 +
+ net/batman-adv/bat_v.c                 | 1 +
+ net/batman-adv/bat_v.h                 | 1 +
+ net/batman-adv/bat_v_elp.c             | 1 +
+ net/batman-adv/bat_v_elp.h             | 1 +
+ net/batman-adv/bat_v_ogm.c             | 1 +
+ net/batman-adv/bat_v_ogm.h             | 1 +
+ net/batman-adv/bitarray.c              | 1 +
+ net/batman-adv/bitarray.h              | 1 +
+ net/batman-adv/bridge_loop_avoidance.c | 1 +
+ net/batman-adv/bridge_loop_avoidance.h | 1 +
+ net/batman-adv/debugfs.c               | 1 +
+ net/batman-adv/debugfs.h               | 1 +
+ net/batman-adv/distributed-arp-table.c | 1 +
+ net/batman-adv/distributed-arp-table.h | 1 +
+ net/batman-adv/fragmentation.c         | 1 +
+ net/batman-adv/fragmentation.h         | 1 +
+ net/batman-adv/gateway_client.c        | 1 +
+ net/batman-adv/gateway_client.h        | 1 +
+ net/batman-adv/gateway_common.c        | 1 +
+ net/batman-adv/gateway_common.h        | 1 +
+ net/batman-adv/hard-interface.c        | 1 +
+ net/batman-adv/hard-interface.h        | 1 +
+ net/batman-adv/hash.c                  | 1 +
+ net/batman-adv/hash.h                  | 1 +
+ net/batman-adv/icmp_socket.c           | 1 +
+ net/batman-adv/icmp_socket.h           | 1 +
+ net/batman-adv/log.c                   | 1 +
+ net/batman-adv/log.h                   | 1 +
+ net/batman-adv/main.c                  | 1 +
+ net/batman-adv/main.h                  | 1 +
+ net/batman-adv/multicast.c             | 1 +
+ net/batman-adv/multicast.h             | 1 +
+ net/batman-adv/netlink.c               | 1 +
+ net/batman-adv/netlink.h               | 1 +
+ net/batman-adv/network-coding.c        | 1 +
+ net/batman-adv/network-coding.h        | 1 +
+ net/batman-adv/originator.c            | 1 +
+ net/batman-adv/originator.h            | 1 +
+ net/batman-adv/packet.h                | 1 +
+ net/batman-adv/routing.c               | 1 +
+ net/batman-adv/routing.h               | 1 +
+ net/batman-adv/send.c                  | 1 +
+ net/batman-adv/send.h                  | 1 +
+ net/batman-adv/soft-interface.c        | 1 +
+ net/batman-adv/soft-interface.h        | 1 +
+ net/batman-adv/sysfs.c                 | 1 +
+ net/batman-adv/sysfs.h                 | 1 +
+ net/batman-adv/tp_meter.c              | 1 +
+ net/batman-adv/tp_meter.h              | 1 +
+ net/batman-adv/translation-table.c     | 1 +
+ net/batman-adv/translation-table.h     | 1 +
+ net/batman-adv/tvlv.c                  | 1 +
+ net/batman-adv/tvlv.h                  | 1 +
+ net/batman-adv/types.h                 | 1 +
+ 86 files changed, 86 insertions(+), 2 deletions(-)
 
-diff --git a/LICENSES/preferred/GPL-2.0 b/LICENSES/preferred/GPL-2.0
-new file mode 100644
-index 00000000..3bb0d185
---- /dev/null
-+++ b/LICENSES/preferred/GPL-2.0
-@@ -0,0 +1,352 @@
-+Valid-License-Identifier: GPL-2.0
-+Valid-License-Identifier: GPL-2.0+
-+SPDX-URL: https://spdx.org/licenses/GPL-2.0.html
-+Usage-Guide:
-+  To use this license in source code, put one of the following SPDX
-+  tag/value pairs into a comment according to the placement
-+  guidelines in the licensing rules documentation.
-+  For 'GNU General Public License (GPL) version 2 only' use:
-+    SPDX-License-Identifier: GPL-2.0
-+  For 'GNU General Public License (GPL) version 2 or any later version' use:
-+    SPDX-License-Identifier: GPL-2.0+
-+License-Text:
-+
-+                    GNU GENERAL PUBLIC LICENSE
-+                       Version 2, June 1991
-+
-+ Copyright (C) 1989, 1991 Free Software Foundation, Inc.,
-+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-+ Everyone is permitted to copy and distribute verbatim copies
-+ of this license document, but changing it is not allowed.
-+
-+                            Preamble
-+
-+  The licenses for most software are designed to take away your
-+freedom to share and change it.  By contrast, the GNU General Public
-+License is intended to guarantee your freedom to share and change free
-+software--to make sure the software is free for all its users.  This
-+General Public License applies to most of the Free Software
-+Foundation's software and to any other program whose authors commit to
-+using it.  (Some other Free Software Foundation software is covered by
-+the GNU Lesser General Public License instead.)  You can apply it to
-+your programs, too.
-+
-+  When we speak of free software, we are referring to freedom, not
-+price.  Our General Public Licenses are designed to make sure that you
-+have the freedom to distribute copies of free software (and charge for
-+this service if you wish), that you receive source code or can get it
-+if you want it, that you can change the software or use pieces of it
-+in new free programs; and that you know you can do these things.
-+
-+  To protect your rights, we need to make restrictions that forbid
-+anyone to deny you these rights or to ask you to surrender the rights.
-+These restrictions translate to certain responsibilities for you if you
-+distribute copies of the software, or if you modify it.
-+
-+  For example, if you distribute copies of such a program, whether
-+gratis or for a fee, you must give the recipients all the rights that
-+you have.  You must make sure that they, too, receive or can get the
-+source code.  And you must show them these terms so they know their
-+rights.
-+
-+  We protect your rights with two steps: (1) copyright the software, and
-+(2) offer you this license which gives you legal permission to copy,
-+distribute and/or modify the software.
-+
-+  Also, for each author's protection and ours, we want to make certain
-+that everyone understands that there is no warranty for this free
-+software.  If the software is modified by someone else and passed on, we
-+want its recipients to know that what they have is not the original, so
-+that any problems introduced by others will not reflect on the original
-+authors' reputations.
-+
-+  Finally, any free program is threatened constantly by software
-+patents.  We wish to avoid the danger that redistributors of a free
-+program will individually obtain patent licenses, in effect making the
-+program proprietary.  To prevent this, we have made it clear that any
-+patent must be licensed for everyone's free use or not licensed at all.
-+
-+  The precise terms and conditions for copying, distribution and
-+modification follow.
-+
-+                    GNU GENERAL PUBLIC LICENSE
-+   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
-+
-+  0. This License applies to any program or other work which contains
-+a notice placed by the copyright holder saying it may be distributed
-+under the terms of this General Public License.  The "Program", below,
-+refers to any such program or work, and a "work based on the Program"
-+means either the Program or any derivative work under copyright law:
-+that is to say, a work containing the Program or a portion of it,
-+either verbatim or with modifications and/or translated into another
-+language.  (Hereinafter, translation is included without limitation in
-+the term "modification".)  Each licensee is addressed as "you".
-+
-+Activities other than copying, distribution and modification are not
-+covered by this License; they are outside its scope.  The act of
-+running the Program is not restricted, and the output from the Program
-+is covered only if its contents constitute a work based on the
-+Program (independent of having been made by running the Program).
-+Whether that is true depends on what the Program does.
-+
-+  1. You may copy and distribute verbatim copies of the Program's
-+source code as you receive it, in any medium, provided that you
-+conspicuously and appropriately publish on each copy an appropriate
-+copyright notice and disclaimer of warranty; keep intact all the
-+notices that refer to this License and to the absence of any warranty;
-+and give any other recipients of the Program a copy of this License
-+along with the Program.
-+
-+You may charge a fee for the physical act of transferring a copy, and
-+you may at your option offer warranty protection in exchange for a fee.
-+
-+  2. You may modify your copy or copies of the Program or any portion
-+of it, thus forming a work based on the Program, and copy and
-+distribute such modifications or work under the terms of Section 1
-+above, provided that you also meet all of these conditions:
-+
-+    a) You must cause the modified files to carry prominent notices
-+    stating that you changed the files and the date of any change.
-+
-+    b) You must cause any work that you distribute or publish, that in
-+    whole or in part contains or is derived from the Program or any
-+    part thereof, to be licensed as a whole at no charge to all third
-+    parties under the terms of this License.
-+
-+    c) If the modified program normally reads commands interactively
-+    when run, you must cause it, when started running for such
-+    interactive use in the most ordinary way, to print or display an
-+    announcement including an appropriate copyright notice and a
-+    notice that there is no warranty (or else, saying that you provide
-+    a warranty) and that users may redistribute the program under
-+    these conditions, and telling the user how to view a copy of this
-+    License.  (Exception: if the Program itself is interactive but
-+    does not normally print such an announcement, your work based on
-+    the Program is not required to print an announcement.)
-+
-+These requirements apply to the modified work as a whole.  If
-+identifiable sections of that work are not derived from the Program,
-+and can be reasonably considered independent and separate works in
-+themselves, then this License, and its terms, do not apply to those
-+sections when you distribute them as separate works.  But when you
-+distribute the same sections as part of a whole which is a work based
-+on the Program, the distribution of the whole must be on the terms of
-+this License, whose permissions for other licensees extend to the
-+entire whole, and thus to each and every part regardless of who wrote it.
-+
-+Thus, it is not the intent of this section to claim rights or contest
-+your rights to work written entirely by you; rather, the intent is to
-+exercise the right to control the distribution of derivative or
-+collective works based on the Program.
-+
-+In addition, mere aggregation of another work not based on the Program
-+with the Program (or with a work based on the Program) on a volume of
-+a storage or distribution medium does not bring the other work under
-+the scope of this License.
-+
-+  3. You may copy and distribute the Program (or a work based on it,
-+under Section 2) in object code or executable form under the terms of
-+Sections 1 and 2 above provided that you also do one of the following:
-+
-+    a) Accompany it with the complete corresponding machine-readable
-+    source code, which must be distributed under the terms of Sections
-+    1 and 2 above on a medium customarily used for software interchange; or,
-+
-+    b) Accompany it with a written offer, valid for at least three
-+    years, to give any third party, for a charge no more than your
-+    cost of physically performing source distribution, a complete
-+    machine-readable copy of the corresponding source code, to be
-+    distributed under the terms of Sections 1 and 2 above on a medium
-+    customarily used for software interchange; or,
-+
-+    c) Accompany it with the information you received as to the offer
-+    to distribute corresponding source code.  (This alternative is
-+    allowed only for noncommercial distribution and only if you
-+    received the program in object code or executable form with such
-+    an offer, in accord with Subsection b above.)
-+
-+The source code for a work means the preferred form of the work for
-+making modifications to it.  For an executable work, complete source
-+code means all the source code for all modules it contains, plus any
-+associated interface definition files, plus the scripts used to
-+control compilation and installation of the executable.  However, as a
-+special exception, the source code distributed need not include
-+anything that is normally distributed (in either source or binary
-+form) with the major components (compiler, kernel, and so on) of the
-+operating system on which the executable runs, unless that component
-+itself accompanies the executable.
-+
-+If distribution of executable or object code is made by offering
-+access to copy from a designated place, then offering equivalent
-+access to copy the source code from the same place counts as
-+distribution of the source code, even though third parties are not
-+compelled to copy the source along with the object code.
-+
-+  4. You may not copy, modify, sublicense, or distribute the Program
-+except as expressly provided under this License.  Any attempt
-+otherwise to copy, modify, sublicense or distribute the Program is
-+void, and will automatically terminate your rights under this License.
-+However, parties who have received copies, or rights, from you under
-+this License will not have their licenses terminated so long as such
-+parties remain in full compliance.
-+
-+  5. You are not required to accept this License, since you have not
-+signed it.  However, nothing else grants you permission to modify or
-+distribute the Program or its derivative works.  These actions are
-+prohibited by law if you do not accept this License.  Therefore, by
-+modifying or distributing the Program (or any work based on the
-+Program), you indicate your acceptance of this License to do so, and
-+all its terms and conditions for copying, distributing or modifying
-+the Program or works based on it.
-+
-+  6. Each time you redistribute the Program (or any work based on the
-+Program), the recipient automatically receives a license from the
-+original licensor to copy, distribute or modify the Program subject to
-+these terms and conditions.  You may not impose any further
-+restrictions on the recipients' exercise of the rights granted herein.
-+You are not responsible for enforcing compliance by third parties to
-+this License.
-+
-+  7. If, as a consequence of a court judgment or allegation of patent
-+infringement or for any other reason (not limited to patent issues),
-+conditions are imposed on you (whether by court order, agreement or
-+otherwise) that contradict the conditions of this License, they do not
-+excuse you from the conditions of this License.  If you cannot
-+distribute so as to satisfy simultaneously your obligations under this
-+License and any other pertinent obligations, then as a consequence you
-+may not distribute the Program at all.  For example, if a patent
-+license would not permit royalty-free redistribution of the Program by
-+all those who receive copies directly or indirectly through you, then
-+the only way you could satisfy both it and this License would be to
-+refrain entirely from distribution of the Program.
-+
-+If any portion of this section is held invalid or unenforceable under
-+any particular circumstance, the balance of the section is intended to
-+apply and the section as a whole is intended to apply in other
-+circumstances.
-+
-+It is not the purpose of this section to induce you to infringe any
-+patents or other property right claims or to contest validity of any
-+such claims; this section has the sole purpose of protecting the
-+integrity of the free software distribution system, which is
-+implemented by public license practices.  Many people have made
-+generous contributions to the wide range of software distributed
-+through that system in reliance on consistent application of that
-+system; it is up to the author/donor to decide if he or she is willing
-+to distribute software through any other system and a licensee cannot
-+impose that choice.
-+
-+This section is intended to make thoroughly clear what is believed to
-+be a consequence of the rest of this License.
-+
-+  8. If the distribution and/or use of the Program is restricted in
-+certain countries either by patents or by copyrighted interfaces, the
-+original copyright holder who places the Program under this License
-+may add an explicit geographical distribution limitation excluding
-+those countries, so that distribution is permitted only in or among
-+countries not thus excluded.  In such case, this License incorporates
-+the limitation as if written in the body of this License.
-+
-+  9. The Free Software Foundation may publish revised and/or new versions
-+of the General Public License from time to time.  Such new versions will
-+be similar in spirit to the present version, but may differ in detail to
-+address new problems or concerns.
-+
-+Each version is given a distinguishing version number.  If the Program
-+specifies a version number of this License which applies to it and "any
-+later version", you have the option of following the terms and conditions
-+either of that version or of any later version published by the Free
-+Software Foundation.  If the Program does not specify a version number of
-+this License, you may choose any version ever published by the Free Software
-+Foundation.
-+
-+  10. If you wish to incorporate parts of the Program into other free
-+programs whose distribution conditions are different, write to the author
-+to ask for permission.  For software which is copyrighted by the Free
-+Software Foundation, write to the Free Software Foundation; we sometimes
-+make exceptions for this.  Our decision will be guided by the two goals
-+of preserving the free status of all derivatives of our free software and
-+of promoting the sharing and reuse of software generally.
-+
-+                            NO WARRANTY
-+
-+  11. BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
-+FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
-+OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
-+PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED
-+OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS
-+TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE
-+PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,
-+REPAIR OR CORRECTION.
-+
-+  12. IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
-+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
-+REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES,
-+INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING
-+OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED
-+TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY
-+YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER
-+PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
-+POSSIBILITY OF SUCH DAMAGES.
-+
-+                     END OF TERMS AND CONDITIONS
-+
-+            How to Apply These Terms to Your New Programs
-+
-+  If you develop a new program, and you want it to be of the greatest
-+possible use to the public, the best way to achieve this is to make it
-+free software which everyone can redistribute and change under these terms.
-+
-+  To do so, attach the following notices to the program.  It is safest
-+to attach them to the start of each source file to most effectively
-+convey the exclusion of warranty; and each file should have at least
-+the "copyright" line and a pointer to where the full notice is found.
-+
-+    <one line to give the program's name and a brief idea of what it does.>
-+    Copyright (C) <year>  <name of author>
-+
-+    This program is free software; you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation; either version 2 of the License, or
-+    (at your option) any later version.
-+
-+    This program is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License along
-+    with this program; if not, write to the Free Software Foundation, Inc.,
-+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+
-+Also add information on how to contact you by electronic and paper mail.
-+
-+If the program is interactive, make it output a short notice like this
-+when it starts in an interactive mode:
-+
-+    Gnomovision version 69, Copyright (C) year name of author
-+    Gnomovision comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
-+    This is free software, and you are welcome to redistribute it
-+    under certain conditions; type `show c' for details.
-+
-+The hypothetical commands `show w' and `show c' should show the appropriate
-+parts of the General Public License.  Of course, the commands you use may
-+be called something other than `show w' and `show c'; they could even be
-+mouse-clicks or menu items--whatever suits your program.
-+
-+You should also get your employer (if you work as a programmer) or your
-+school, if any, to sign a "copyright disclaimer" for the program, if
-+necessary.  Here is a sample; alter the names:
-+
-+  Yoyodyne, Inc., hereby disclaims all copyright interest in the program
-+  `Gnomovision' (which makes passes at compilers) written by James Hacker.
-+
-+  <signature of Ty Coon>, 1 April 1989
-+  Ty Coon, President of Vice
-+
-+This General Public License does not permit incorporating your program into
-+proprietary programs.  If your program is a subroutine library, you may
-+consider it more useful to permit linking proprietary applications with the
-+library.  If this is what you want to do, use the GNU Lesser General
-+Public License instead of this License.
+diff --git a/Makefile b/Makefile
+index e40f26a5..7a5cb243 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,4 +1,4 @@
+-#
++# SPDX-License-Identifier: GPL-2.0
+ # Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+ #
+ # Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/average.h b/compat-include/linux/average.h
+index b5a3d3d7..2bbaf97f 100644
+--- a/compat-include/linux/average.h
++++ b/compat-include/linux/average.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/cache.h b/compat-include/linux/cache.h
+index 11ba7c6b..ea3b98a7 100644
+--- a/compat-include/linux/cache.h
++++ b/compat-include/linux/cache.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/etherdevice.h b/compat-include/linux/etherdevice.h
+index 58bab019..fbeaa677 100644
+--- a/compat-include/linux/etherdevice.h
++++ b/compat-include/linux/etherdevice.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/ethtool.h b/compat-include/linux/ethtool.h
+index b802e9ca..9259614a 100644
+--- a/compat-include/linux/ethtool.h
++++ b/compat-include/linux/ethtool.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2016-2017  B.A.T.M.A.N. contributors:
+  *
+  * Antonio Quartulli
+diff --git a/compat-include/linux/export.h b/compat-include/linux/export.h
+index e786e1c8..39679142 100644
+--- a/compat-include/linux/export.h
++++ b/compat-include/linux/export.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/genetlink.h b/compat-include/linux/genetlink.h
+index 90e8414f..0abaeb96 100644
+--- a/compat-include/linux/genetlink.h
++++ b/compat-include/linux/genetlink.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/if_ether.h b/compat-include/linux/if_ether.h
+index 3c2532c6..71001820 100644
+--- a/compat-include/linux/if_ether.h
++++ b/compat-include/linux/if_ether.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/if_vlan.h b/compat-include/linux/if_vlan.h
+index 3114e67c..994a855d 100644
+--- a/compat-include/linux/if_vlan.h
++++ b/compat-include/linux/if_vlan.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/kernel.h b/compat-include/linux/kernel.h
+index c6cf8773..26938cd8 100644
+--- a/compat-include/linux/kernel.h
++++ b/compat-include/linux/kernel.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/kref.h b/compat-include/linux/kref.h
+index f92ae695..124173ff 100644
+--- a/compat-include/linux/kref.h
++++ b/compat-include/linux/kref.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/list.h b/compat-include/linux/list.h
+index ea071bf8..776ef03c 100644
+--- a/compat-include/linux/list.h
++++ b/compat-include/linux/list.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/net.h b/compat-include/linux/net.h
+index e5636601..0dbfd913 100644
+--- a/compat-include/linux/net.h
++++ b/compat-include/linux/net.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/netdev_features.h b/compat-include/linux/netdev_features.h
+index ce85956f..28510994 100644
+--- a/compat-include/linux/netdev_features.h
++++ b/compat-include/linux/netdev_features.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/netdevice.h b/compat-include/linux/netdevice.h
+index 6bbf8d8b..1f3b9c47 100644
+--- a/compat-include/linux/netdevice.h
++++ b/compat-include/linux/netdevice.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/netlink.h b/compat-include/linux/netlink.h
+index cbc5577d..578d2efc 100644
+--- a/compat-include/linux/netlink.h
++++ b/compat-include/linux/netlink.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/random.h b/compat-include/linux/random.h
+index 19d445e6..a88e6fd9 100644
+--- a/compat-include/linux/random.h
++++ b/compat-include/linux/random.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/rculist.h b/compat-include/linux/rculist.h
+index 0f3eec38..bc2db8ec 100644
+--- a/compat-include/linux/rculist.h
++++ b/compat-include/linux/rculist.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/seq_file.h b/compat-include/linux/seq_file.h
+index 6a70f0b6..e98f41bb 100644
+--- a/compat-include/linux/seq_file.h
++++ b/compat-include/linux/seq_file.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/skbuff.h b/compat-include/linux/skbuff.h
+index f60247bd..0b641d67 100644
+--- a/compat-include/linux/skbuff.h
++++ b/compat-include/linux/skbuff.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/linux/slab.h b/compat-include/linux/slab.h
+index 3afd0330..33de121b 100644
+--- a/compat-include/linux/slab.h
++++ b/compat-include/linux/slab.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-include/net/genetlink.h b/compat-include/net/genetlink.h
+index 66bec7aa..f69fd148 100644
+--- a/compat-include/net/genetlink.h
++++ b/compat-include/net/genetlink.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/compat-sources/net/core/skbuff.c b/compat-sources/net/core/skbuff.c
+index a130b0ee..f62e31af 100644
+--- a/compat-sources/net/core/skbuff.c
++++ b/compat-sources/net/core/skbuff.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  *	Routines having to do with the 'struct sk_buff' memory handlers.
+  *
+diff --git a/compat-sources/net/ipv4/igmp.c b/compat-sources/net/ipv4/igmp.c
+index e8439a03..d6e08c73 100644
+--- a/compat-sources/net/ipv4/igmp.c
++++ b/compat-sources/net/ipv4/igmp.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  *	Linux NET3:	Internet Group Management Protocol  [IGMP]
+  *
+diff --git a/compat-sources/net/ipv6/mcast_snoop.c b/compat-sources/net/ipv6/mcast_snoop.c
+index fca0bbfa..5e500f73 100644
+--- a/compat-sources/net/ipv6/mcast_snoop.c
++++ b/compat-sources/net/ipv6/mcast_snoop.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2010: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+  * Copyright (C) 2015: Linus Lüssing <linus.luessing@c0d3.blue>
+  *
+diff --git a/compat.h b/compat.h
+index 8acfc724..15996d77 100644
+--- a/compat.h
++++ b/compat.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
+index efd641c8..fb453382 100644
+--- a/include/uapi/linux/batman_adv.h
++++ b/include/uapi/linux/batman_adv.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: ISC */
+ /* Copyright (C) 2016-2017  B.A.T.M.A.N. contributors:
+  *
+  * Matthias Schiffer
+diff --git a/net/batman-adv/Makefile b/net/batman-adv/Makefile
+index f70dbd8a..93165ca0 100644
+--- a/net/batman-adv/Makefile
++++ b/net/batman-adv/Makefile
+@@ -1,4 +1,4 @@
+-#
++# SPDX-License-Identifier: GPL-2.0
+ # Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+ #
+ # Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/bat_algo.c b/net/batman-adv/bat_algo.c
+index 921700ab..36407f5b 100644
+--- a/net/batman-adv/bat_algo.c
++++ b/net/batman-adv/bat_algo.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/bat_algo.h b/net/batman-adv/bat_algo.h
+index 78836cf3..5c0a260e 100644
+--- a/net/batman-adv/bat_algo.h
++++ b/net/batman-adv/bat_algo.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2011-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Linus Lüssing
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 96bc5d46..4de912c8 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/bat_iv_ogm.h b/net/batman-adv/bat_iv_ogm.h
+index 62e5ff65..1646664d 100644
+--- a/net/batman-adv/bat_iv_ogm.h
++++ b/net/batman-adv/bat_iv_ogm.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 91c4b64f..c2eac642 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2013-2017  B.A.T.M.A.N. contributors:
+  *
+  * Linus Lüssing, Marek Lindner
+diff --git a/net/batman-adv/bat_v.h b/net/batman-adv/bat_v.h
+index eb14b048..060e088f 100644
+--- a/net/batman-adv/bat_v.h
++++ b/net/batman-adv/bat_v.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2011-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Linus Lüssing
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index ab10da9a..1aa175a4 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2011-2017  B.A.T.M.A.N. contributors:
+  *
+  * Linus Lüssing, Marek Lindner
+diff --git a/net/batman-adv/bat_v_elp.h b/net/batman-adv/bat_v_elp.h
+index 6edab11e..2d6f6611 100644
+--- a/net/batman-adv/bat_v_elp.h
++++ b/net/batman-adv/bat_v_elp.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2013-2017  B.A.T.M.A.N. contributors:
+  *
+  * Linus Lüssing, Marek Lindner
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index f63a6f82..0ce2d95a 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2013-2017  B.A.T.M.A.N. contributors:
+  *
+  * Antonio Quartulli
+diff --git a/net/batman-adv/bat_v_ogm.h b/net/batman-adv/bat_v_ogm.h
+index 31e37733..31066c51 100644
+--- a/net/batman-adv/bat_v_ogm.h
++++ b/net/batman-adv/bat_v_ogm.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2013-2017  B.A.T.M.A.N. contributors:
+  *
+  * Antonio Quartulli
+diff --git a/net/batman-adv/bitarray.c b/net/batman-adv/bitarray.c
+index 260059b0..8b0d2dc1 100644
+--- a/net/batman-adv/bitarray.c
++++ b/net/batman-adv/bitarray.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2006-2017  B.A.T.M.A.N. contributors:
+  *
+  * Simon Wunderlich, Marek Lindner
+diff --git a/net/batman-adv/bitarray.h b/net/batman-adv/bitarray.h
+index 4a36989a..69e8fff5 100644
+--- a/net/batman-adv/bitarray.h
++++ b/net/batman-adv/bitarray.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2006-2017  B.A.T.M.A.N. contributors:
+  *
+  * Simon Wunderlich, Marek Lindner
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index fd91fd67..f5b917b6 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2011-2017  B.A.T.M.A.N. contributors:
+  *
+  * Simon Wunderlich
+diff --git a/net/batman-adv/bridge_loop_avoidance.h b/net/batman-adv/bridge_loop_avoidance.h
+index 67e5d0cb..4c9497b4 100644
+--- a/net/batman-adv/bridge_loop_avoidance.h
++++ b/net/batman-adv/bridge_loop_avoidance.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2011-2017  B.A.T.M.A.N. contributors:
+  *
+  * Simon Wunderlich
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index 563f2614..e5f76c76 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2010-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner
+diff --git a/net/batman-adv/debugfs.h b/net/batman-adv/debugfs.h
+index 555f62a0..85bd864c 100644
+--- a/net/batman-adv/debugfs.h
++++ b/net/batman-adv/debugfs.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2010-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 8590e7bf..e708fda4 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2011-2017  B.A.T.M.A.N. contributors:
+  *
+  * Antonio Quartulli
+diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distributed-arp-table.h
+index 1e5a8f76..beedd7d5 100644
+--- a/net/batman-adv/distributed-arp-table.h
++++ b/net/batman-adv/distributed-arp-table.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2011-2017  B.A.T.M.A.N. contributors:
+  *
+  * Antonio Quartulli
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 72ba5689..c49ca050 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2013-2017  B.A.T.M.A.N. contributors:
+  *
+  * Martin Hundebøll <martin@hundeboll.net>
+diff --git a/net/batman-adv/fragmentation.h b/net/batman-adv/fragmentation.h
+index dd9b28f2..a2ed3b47 100644
+--- a/net/batman-adv/fragmentation.h
++++ b/net/batman-adv/fragmentation.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2013-2017  B.A.T.M.A.N. contributors:
+  *
+  * Martin Hundebøll <martin@hundeboll.net>
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 974cee04..b962430a 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2009-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner
+diff --git a/net/batman-adv/gateway_client.h b/net/batman-adv/gateway_client.h
+index 5d3e4e5c..c34c75c1 100644
+--- a/net/batman-adv/gateway_client.h
++++ b/net/batman-adv/gateway_client.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2009-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner
+diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
+index b08b8e48..ddef07af 100644
+--- a/net/batman-adv/gateway_common.c
++++ b/net/batman-adv/gateway_common.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2009-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner
+diff --git a/net/batman-adv/gateway_common.h b/net/batman-adv/gateway_common.h
+index 3f6d9c9c..a1fb66f9 100644
+--- a/net/batman-adv/gateway_common.h
++++ b/net/batman-adv/gateway_common.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2009-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index cd5e8e57..464c98f2 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
+index c56c4e60..d1760649 100644
+--- a/net/batman-adv/hard-interface.h
++++ b/net/batman-adv/hard-interface.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/hash.c b/net/batman-adv/hash.c
+index d7833f7f..33fd8fae 100644
+--- a/net/batman-adv/hash.c
++++ b/net/batman-adv/hash.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2006-2017  B.A.T.M.A.N. contributors:
+  *
+  * Simon Wunderlich, Marek Lindner
+diff --git a/net/batman-adv/hash.h b/net/batman-adv/hash.h
+index ffde3e61..55819b20 100644
+--- a/net/batman-adv/hash.h
++++ b/net/batman-adv/hash.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2006-2017  B.A.T.M.A.N. contributors:
+  *
+  * Simon Wunderlich, Marek Lindner
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index d46b7fd0..ca51c488 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner
+diff --git a/net/batman-adv/icmp_socket.h b/net/batman-adv/icmp_socket.h
+index 41531641..c904f20e 100644
+--- a/net/batman-adv/icmp_socket.h
++++ b/net/batman-adv/icmp_socket.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner
+diff --git a/net/batman-adv/log.c b/net/batman-adv/log.c
+index c2e541fd..78e4dddb 100644
+--- a/net/batman-adv/log.c
++++ b/net/batman-adv/log.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2010-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner
+diff --git a/net/batman-adv/log.h b/net/batman-adv/log.h
+index 7b251b45..f880d874 100644
+--- a/net/batman-adv/log.h
++++ b/net/batman-adv/log.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index d6d0bbe6..6b3db9b4 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index bc518dca..6cfbba52 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index bbd6013f..3cef5a76 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2014-2017  B.A.T.M.A.N. contributors:
+  *
+  * Linus Lüssing
+diff --git a/net/batman-adv/multicast.h b/net/batman-adv/multicast.h
+index 026dc285..ef098ce3 100644
+--- a/net/batman-adv/multicast.h
++++ b/net/batman-adv/multicast.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2014-2017  B.A.T.M.A.N. contributors:
+  *
+  * Linus Lüssing
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index 5d588b7b..d70d0e2d 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2016-2017  B.A.T.M.A.N. contributors:
+  *
+  * Matthias Schiffer
+diff --git a/net/batman-adv/netlink.h b/net/batman-adv/netlink.h
+index f6f33e02..f2aa2fcc 100644
+--- a/net/batman-adv/netlink.h
++++ b/net/batman-adv/netlink.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2016-2017  B.A.T.M.A.N. contributors:
+  *
+  * Matthias Schiffer
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index ba41be15..c3d65af3 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2012-2017  B.A.T.M.A.N. contributors:
+  *
+  * Martin Hundebøll, Jeppe Ledet-Pedersen
+diff --git a/net/batman-adv/network-coding.h b/net/batman-adv/network-coding.h
+index b78dcbaa..80a88ef0 100644
+--- a/net/batman-adv/network-coding.h
++++ b/net/batman-adv/network-coding.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2012-2017  B.A.T.M.A.N. contributors:
+  *
+  * Martin Hundebøll, Jeppe Ledet-Pedersen
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 889263ce..f365de37 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2009-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
+index 9b0c6f5a..220c12f2 100644
+--- a/net/batman-adv/originator.h
++++ b/net/batman-adv/originator.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
+index f1fd0311..d58288c3 100644
+--- a/net/batman-adv/packet.h
++++ b/net/batman-adv/packet.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index 1d27e798..0acfa6ee 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/routing.h b/net/batman-adv/routing.h
+index 0a24d83e..5a92e883 100644
+--- a/net/batman-adv/routing.h
++++ b/net/batman-adv/routing.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index cc235db8..a9c505b7 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
+index 5e3c1428..f6ead20b 100644
+--- a/net/batman-adv/send.h
++++ b/net/batman-adv/send.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 7384de4f..178d998b 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/soft-interface.h b/net/batman-adv/soft-interface.h
+index 85708f95..40123cb4 100644
+--- a/net/batman-adv/soft-interface.h
++++ b/net/batman-adv/soft-interface.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index 2e11d6d5..e54a662b 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2010-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner
+diff --git a/net/batman-adv/sysfs.h b/net/batman-adv/sysfs.h
+index 35a6f8fa..0a3d41d5 100644
+--- a/net/batman-adv/sysfs.h
++++ b/net/batman-adv/sysfs.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2010-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index b6c9ea0c..f890319b 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2012-2017  B.A.T.M.A.N. contributors:
+  *
+  * Edo Monticelli, Antonio Quartulli
+diff --git a/net/batman-adv/tp_meter.h b/net/batman-adv/tp_meter.h
+index f4fc6f31..cb19c283 100644
+--- a/net/batman-adv/tp_meter.h
++++ b/net/batman-adv/tp_meter.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2012-2017  B.A.T.M.A.N. contributors:
+  *
+  * Edo Monticelli, Antonio Quartulli
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 98d688a4..efa4ef02 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich, Antonio Quartulli
+diff --git a/net/batman-adv/translation-table.h b/net/batman-adv/translation-table.h
+index 2b4ffd9e..21273aea 100644
+--- a/net/batman-adv/translation-table.h
++++ b/net/batman-adv/translation-table.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich, Antonio Quartulli
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index a310341d..fcaa7bd4 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -1,3 +1,4 @@
++// SPDX-License-Identifier: GPL-2.0
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/tvlv.h b/net/batman-adv/tvlv.h
+index 314c77ec..661467be 100644
+--- a/net/batman-adv/tvlv.h
++++ b/net/batman-adv/tvlv.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index e2d1d1f1..a00079fb 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -1,3 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
+  *
+  * Marek Lindner, Simon Wunderlich
 -- 
 2.11.0
 
