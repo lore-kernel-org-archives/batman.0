@@ -1,8 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 19 Nov 2017 17:12:01 +0100
-Message-Id: <20171119161207.32588-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 0/6] batman-adv: Include cleanup
+Date: Sun, 19 Nov 2017 17:12:03 +0100
+Message-Id: <20171119161207.32588-3-sven@narfation.org>
+In-Reply-To: <20171119161207.32588-1-sven@narfation.org>
+References: <20171119161207.32588-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 2/6] batman-adv: include build_bug.h for
+ BUILD_BUG_ON define
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -14,54 +17,98 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Hi,
+commit bc6245e5efd7 ("bug: split BUILD_BUG stuff out into
+<linux/build_bug.h>") added a new header for BUILD_BUG_ON. It should
+therefore be included instead of linux/bug.h
 
-I went through the build_test.git's testhelpers/kernel_mappings.iwyu and
-cleaned that up a little bit. This requires that we have to adjust the
-batman-adv sources slighty.
-
-I have also found a build problem when you try to build B.A.T.M.A.N. V
-against Linux < 3.7 and fixed it in the same patchset.
-
-Kind regards,
-	Sven
-
-Sven Eckelmann (6):
-  batman-adv: include gfp.h for GFP_* defines
-  batman-adv: include build_bug.h for BUILD_BUG_ON define
-  batman-adv: Include net.h for net_ratelimited_function
-  batman-adv: include kobject.h for kobject_* functions
-  batman-adv: Remove unused sched.h include
-  batman-adv: compat: Map to linux/nl80211.h for Linux < 3.7
-
- compat-include/linux/build_bug.h       | 34 ++++++++++++++++++++++++++++++++++
- compat-include/uapi/linux/nl80211.h    |  4 ++++
- net/batman-adv/bat_iv_ogm.c            |  2 +-
- net/batman-adv/bat_v_elp.c             |  2 +-
- net/batman-adv/bat_v_ogm.c             |  2 +-
- net/batman-adv/bridge_loop_avoidance.c |  2 +-
- net/batman-adv/debugfs.c               |  1 -
- net/batman-adv/distributed-arp-table.c |  2 +-
- net/batman-adv/fragmentation.c         |  2 +-
- net/batman-adv/gateway_client.c        |  2 +-
- net/batman-adv/hard-interface.c        |  2 +-
- net/batman-adv/hash.c                  |  2 +-
- net/batman-adv/icmp_socket.c           |  1 +
- net/batman-adv/log.c                   |  1 +
- net/batman-adv/main.c                  |  4 ++--
- net/batman-adv/multicast.c             |  2 +-
- net/batman-adv/netlink.c               |  2 +-
- net/batman-adv/network-coding.c        |  3 ++-
- net/batman-adv/originator.c            |  2 +-
- net/batman-adv/send.c                  |  2 +-
- net/batman-adv/soft-interface.c        |  2 +-
- net/batman-adv/sysfs.c                 |  3 ++-
- net/batman-adv/tp_meter.c              |  4 ++--
- net/batman-adv/translation-table.c     |  5 +++--
- net/batman-adv/tvlv.c                  |  2 +-
- 25 files changed, 66 insertions(+), 24 deletions(-)
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ compat-include/linux/build_bug.h   | 34 ++++++++++++++++++++++++++++++++++
+ net/batman-adv/main.c              |  2 +-
+ net/batman-adv/tp_meter.c          |  2 +-
+ net/batman-adv/translation-table.c |  2 +-
+ 4 files changed, 37 insertions(+), 3 deletions(-)
  create mode 100644 compat-include/linux/build_bug.h
 
+diff --git a/compat-include/linux/build_bug.h b/compat-include/linux/build_bug.h
+new file mode 100644
+index 00000000..d1ebfa71
+--- /dev/null
++++ b/compat-include/linux/build_bug.h
+@@ -0,0 +1,34 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner, Simon Wunderlich
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see <http://www.gnu.org/licenses/>.
++ *
++ * License-Filename: LICENSES/preferred/GPL-2.0
++ *
++ * This file contains macros for maintaining compatibility with older versions
++ * of the Linux kernel.
++ */
++
++#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_BUILD_BUG_H_
++#define _NET_BATMAN_ADV_COMPAT_LINUX_BUILD_BUG_H_
++
++#include <linux/version.h>
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
++#include_next <linux/build_bug.h>
++#else
++#include <linux/bug.h>
++#endif
++
++#endif /* _NET_BATMAN_ADV_COMPAT_LINUX_BUILD_BUG_H_ */
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 45f0f4ff..107b50e5 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -21,7 +21,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
+-#include <linux/bug.h>
++#include <linux/build_bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/crc32c.h>
+ #include <linux/errno.h>
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index 52e667ec..6b044717 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -22,7 +22,7 @@
+ #include "main.h"
+ 
+ #include <linux/atomic.h>
+-#include <linux/bug.h>
++#include <linux/build_bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/cache.h>
+ #include <linux/compiler.h>
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 66092c6b..db7a67ee 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -23,7 +23,7 @@
+ 
+ #include <linux/atomic.h>
+ #include <linux/bitops.h>
+-#include <linux/bug.h>
++#include <linux/build_bug.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/cache.h>
+ #include <linux/compiler.h>
 -- 
 2.11.0
 
