@@ -1,8 +1,8 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 20 Nov 2017 22:02:14 +0100
-Message-Id: <20171120210217.8941-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 0/3] batman-adv: Convert CHANGELOG/README to
+Date: Mon, 20 Nov 2017 22:02:21 +0100
+Message-Id: <20171120210223.9002-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH 0/2] alfred: Convert CHANGELOG/README to
  reStructuredText
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -30,31 +30,25 @@ simple and we only wanted to show the date (not the time) anymore.
 And the actual changelog lists should be kept (mostly untouched - beside
 some minor format fixes to make it reStructuredText compatible).
 
-This patchset is based on the "batman-adv: License cleanup" patchset.
+This patchset is based on the "alfred: License cleanup" patchset.
 
 Kind regards,
 	Sven
+Sven Eckelmann (2):
+  alfred: Convert CHANGELOG to reStructuredText
+  alfred: Convert README to reStructuredText
 
-Sven Eckelmann (3):
-  batman-adv: Add .rst to README symlink
-  batman-adv: Convert CHANGELOG to reStructuredText
-  batman-adv: Convert README to reStructuredText
-
- CHANGELOG               | 634 ---------------------------------------------
- CHANGELOG.license       |   2 -
- CHANGELOG.rst           | 666 ++++++++++++++++++++++++++++++++++++++++++++++++
- README.external         |  51 ----
- README.external.license |   2 -
- README.external.rst     |  59 +++++
- README => README.rst    |   0
- 7 files changed, 725 insertions(+), 689 deletions(-)
+ CHANGELOG            | 169 ----------------------------
+ CHANGELOG.license    |   2 -
+ CHANGELOG.rst        | 175 +++++++++++++++++++++++++++++
+ README.license       |   2 -
+ README => README.rst | 311 +++++++++++++++++++++++++++------------------------
+ 5 files changed, 339 insertions(+), 320 deletions(-)
  delete mode 100644 CHANGELOG
  delete mode 100644 CHANGELOG.license
  create mode 100644 CHANGELOG.rst
- delete mode 100644 README.external
- delete mode 100644 README.external.license
- create mode 100644 README.external.rst
- rename README => README.rst (100%)
+ delete mode 100644 README.license
+ rename README => README.rst (55%)
 
 -- 
 2.11.0
