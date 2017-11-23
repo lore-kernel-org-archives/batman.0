@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@openmesh.com>
 From: Sven Eckelmann <sven.eckelmann@openmesh.com>
-Date: Thu, 23 Nov 2017 15:04:35 +0100
-Message-Id: <20171123140444.17119-2-sven.eckelmann@openmesh.com>
+Date: Thu, 23 Nov 2017 15:04:36 +0100
+Message-Id: <20171123140444.17119-3-sven.eckelmann@openmesh.com>
 In-Reply-To: <20171123140444.17119-1-sven.eckelmann@openmesh.com>
 References: <20171123140444.17119-1-sven.eckelmann@openmesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH 01/10] batctl: Print dummy value when
- localtime failed
+Subject: [B.A.T.M.A.N.] [PATCH 02/10] batctl: Handle failure during
+ hash_iterator allocation
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,32 +18,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven.eckelmann@openmesh.com>
 
-localtime can return NULL when the local time could not be calculated.
-Accessing this NULL pointer is not allowed.
+The iterator functions should not try to start the iteration when the
+iterator could not be allocated.
 
-Fixes: 05f27bfcd302 ("add arp packets , change output")
 Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
 ---
- tcpdump.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ hash.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/tcpdump.c b/tcpdump.c
-index 4ede76b..5eb99cf 100644
---- a/tcpdump.c
-+++ b/tcpdump.c
-@@ -104,7 +104,11 @@ static int print_time(void)
- 	gettimeofday(&tv, NULL);
- 	tm = localtime(&tv.tv_sec);
+diff --git a/hash.c b/hash.c
+index f4a7af7..0e4d1e3 100644
+--- a/hash.c
++++ b/hash.c
+@@ -120,6 +120,9 @@ struct hash_it_t *hash_iterate(struct hashtable_t *hash,
  
--	printf("%02d:%02d:%02d.%06ld ", tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec);
-+	if (tm)
-+		printf("%02d:%02d:%02d.%06ld ", tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec);
-+	else
-+		printf("00:00:00.000000 ");
+ 	if (iter_in == NULL) {
+ 		iter = debugMalloc(sizeof(struct hash_it_t), 301);
++		if (!iter)
++			return NULL;
 +
- 	return 1;
- }
- 
+ 		iter->index =  -1;
+ 		iter->bucket = NULL;
+ 		iter->prev_bucket = NULL;
 -- 
 2.11.0
 
