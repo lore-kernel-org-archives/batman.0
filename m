@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@openmesh.com>
 From: Sven Eckelmann <sven.eckelmann@openmesh.com>
-Date: Thu, 23 Nov 2017 15:04:42 +0100
-Message-Id: <20171123140444.17119-9-sven.eckelmann@openmesh.com>
+Date: Thu, 23 Nov 2017 15:04:43 +0100
+Message-Id: <20171123140444.17119-10-sven.eckelmann@openmesh.com>
 In-Reply-To: <20171123140444.17119-1-sven.eckelmann@openmesh.com>
 References: <20171123140444.17119-1-sven.eckelmann@openmesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH 08/10] batctl: Free nl_sock when
- if_nametoindex failed
+Subject: [B.A.T.M.A.N.] [PATCH 09/10] batctl: tcpdump: Fix types for for TT
+ v1
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,38 +18,28 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven.eckelmann@openmesh.com>
 
-The if_nametoindex can return an error. The code must then free the
-previously allocated nl_sock and stop the function with an error code.
+The num_entry and num_vlan variables are accessed (printed) as u16
+variables and not like integers. They should therefore also be stored like
+that.
 
-Fixes: d8dd1ff1a0fe ("batctl: Use netlink to replace some of debugfs")
 Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
 ---
- netlink.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ tcpdump.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/netlink.c b/netlink.c
-index de81d08..7b97809 100644
---- a/netlink.c
-+++ b/netlink.c
-@@ -1137,7 +1137,8 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
- 	ifindex = if_nametoindex(mesh_iface);
- 	if (!ifindex) {
- 		fprintf(stderr, "Interface %s is unknown\n", mesh_iface);
--		return -ENODEV;
-+		last_err = -ENODEV;
-+		goto err_free_sock;
- 	}
- 
- 	if (orig_iface) {
-@@ -1145,7 +1146,8 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
- 		if (!hardifindex) {
- 			fprintf(stderr, "Interface %s is unknown\n",
- 				orig_iface);
--			return -ENODEV;
-+			last_err = -ENODEV;
-+			goto err_free_sock;
- 		}
- 	}
+diff --git a/tcpdump.c b/tcpdump.c
+index 5eb99cf..a1b057b 100644
+--- a/tcpdump.c
++++ b/tcpdump.c
+@@ -158,7 +158,8 @@ static void batctl_tvlv_parse_tt_v1(void *buff, ssize_t buff_len)
+ {
+ 	struct batadv_tvlv_tt_data *tvlv = buff;
+ 	struct batadv_tvlv_tt_vlan_data *vlan;
+-	int i, num_vlan, num_entry;
++	int i;
++	unsigned short num_vlan, num_entry;
+ 	const char *type;
+ 	size_t vlan_len;
  
 -- 
 2.11.0
