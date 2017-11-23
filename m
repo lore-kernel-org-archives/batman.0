@@ -1,13 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 23 Nov 2017 15:36:04 +0100
-Message-ID: <7304207.KlJx96cEKj@bentobox>
-In-Reply-To: <20171119140517.24329-9-sven@narfation.org>
+Return-Path: <andrew@lunn.ch>
+Date: Thu, 23 Nov 2017 16:43:29 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+Message-ID: <20171123154329.GE30167@lunn.ch>
 References: <20171119140517.24329-1-sven@narfation.org>
  <20171119140517.24329-9-sven@narfation.org>
+ <7304207.KlJx96cEKj@bentobox>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart60460437.ysuWmuGTCV";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7304207.KlJx96cEKj@bentobox>
 Subject: Re: [B.A.T.M.A.N.] [PATCH 8/9] batman-adv: Change batman_adv.h
  license to MIT
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,65 +20,61 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Andrew Lunn <andrew@lunn.ch>
+To: Sven Eckelmann <sven@narfation.org>
 Cc: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart60460437.ysuWmuGTCV
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-
-Hi Andrew,
-
-On Sonntag, 19. November 2017 15:05:16 CET Sven Eckelmann wrote:
-> The ISC license is considered as not recommended in "Linux kernel licensing
-> rules". It should only be used for existing code or for importing code from
-> a different project with that license.
+On Thu, Nov 23, 2017 at 03:36:04PM +0100, Sven Eckelmann wrote:
+> Hi Andrew,
 > 
-> But the kernel still has the similar sounding MIT/Expat license under the
-> preferred licenses. Switching to this license for this relatively new file
-> should therefore allow batman-adv to better follow the new licensing rules.
+> On Sonntag, 19. November 2017 15:05:16 CET Sven Eckelmann wrote:
+> > The ISC license is considered as not recommended in "Linux kernel licensing
+> > rules". It should only be used for existing code or for importing code from
+> > a different project with that license.
+> > 
+> > But the kernel still has the similar sounding MIT/Expat license under the
+> > preferred licenses. Switching to this license for this relatively new file
+> > should therefore allow batman-adv to better follow the new licensing rules.
+> > 
+> > Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> > ---
+> > I would ask for Acked-by from following persons
 > 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
-> ---
-> I would ask for Acked-by from following persons
+> What I wanted to say here: "I would like to get an Acked-by reply from 
+> following persons" (thanks to Simon, Matthias and Antonio for the fast 
+> response).
 
-What I wanted to say here: "I would like to get an Acked-by reply from 
-following persons" (thanks to Simon, Matthias and Antonio for the fast 
-response).
+Hi Sven
 
-[...]
-> Cc: Andrew Lunn <andrew@lunn.ch>
+Sorry, was not paying close enough attentions to notice you wanted my
+feedback.
 
-You've also worked on the netlink support (a lot) and you have at least one 
-change of batman_adv.h [1] which can clearly be traced back to you. I would 
-therefore be really nice when you either could also send an Acked-by or tell 
-us about your concerns.
+I just looked at Linus's current master branch:
 
-Thanks,
-	Sven
+~/linux/include/uapi$ grep -hr SPDX * | sort | uniq -c 
+     14 /* SPDX-License-Identifier: GPL-1.0+ WITH Linux-syscall-note */
+    541 /* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+    113 /* SPDX-License-Identifier: GPL-2.0+ WITH Linux-syscall-note */
+      1 /* SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) AND MIT) */
+     21 /* SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR BSD-2-Clause) */
+     17 /* SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR BSD-3-Clause) */
+      4 /* SPDX-License-Identifier: ((GPL-2.0+ WITH Linux-syscall-note) OR BSD-3-Clause) */
+      3 /* SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR MIT) */
+      3 /* SPDX-License-Identifier: LGPL-2.0+ WITH Linux-syscall-note */
+      3 /* SPDX-License-Identifier: LGPL-2.1 WITH Linux-syscall-note */
+     15 /* SPDX-License-Identifier: LGPL-2.1+ WITH Linux-syscall-note */
 
-[1] https://git.open-mesh.org/batman-adv.git/blobdiff/15315a94ad98af583d207daaaf3f0bcda6c4573d..3b7a636060205a97fac5469ab6ab701ee30eb52b:/include/uapi/linux/batman_adv.h
---nextPart60460437.ysuWmuGTCV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+We are in the region of "Lies, damn lies, and statistics", but
+everything with an SPDX tag has some form of GPL/LGPL. Now, adding
+SPDX tags is a new activity, and adding the GPLs tags have been done
+first, since they are easier to do. So it could be there are a lot of
+UAPI header files which are not {L}GPL. Also, given this small sample,
+it seems BSD is more popular over MIT.
 
------BEGIN PGP SIGNATURE-----
+I understand the reasons for ISC to MIT, so
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAloW3NQACgkQXYcKB8Em
-e0bM2hAAr8/WeZZ9maYZ37jkA08Ndzs4ZpWtHE4NEMggGazAmY7ripC2GeKWtHK2
-OGsrkPTaZycMYD+LAhUNpR2d/A9mGWUg69jUXTBABwbreX2mgjFZAETh5OO4h8fK
-L0mHJzACVxrbPF3UZAgNunszNqpALt92vP6TKRfQ5BgCfr5Tk1AyXg4zRQfv9h8z
-aLRwGsPJjD0LSYL6t348FKwUl1rVj9J4dhJtPavqvQT+vL4idbVovf7Qj/6XJZIy
-7JF6YSGW1cU63Uv3jphwUU0YTHUjGfadvfCi9cIYCsvUnZB3HQgCzzuTPj67pZec
-KzyRNfeRLf45RwxWOhb9K2oJMY7zWHk8j/3Fq8Ik9CPNBgvurPJXKOwrqdNjNZVI
-oOpLy9UCB7J8im7aM3u5uSRPXOvSm5UgM+jTsIWdkSyaN7oHlgf6KwTT973IKLYw
-GCohwfd87rOHfXyfdUTfxULsSPrrIo0jTLaiDeMT3m5v9YjTiOt+9YUmtGoQ1u3e
-15EB3dPvCk0dk5SWrmRYNwMLjD8dpQYEQMHDXOS6yEfkE64x7SUrd+29L0h9/Ok5
-YrlO1tWW/D7Pslz9GNndHZyMKSY3Mx4EtfQz2lmjRh3u9hKqXnwXamBPRPE53rcW
-FuQl9qYzBs55rznJjNtXDqdFyxWB8D3EQggowP2lKjvLMA78JD4=
-=Jgzn
------END PGP SIGNATURE-----
+Acked-by: Andrew Lunn <andrew@lunn.ch>
 
---nextPart60460437.ysuWmuGTCV--
+However, i wounder if GPL-2.0 WITH Linux-syscall-note OR one of the
+BSD variants would be more consistent with the rest of the kernel?
 
+    Andrew
