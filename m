@@ -1,9 +1,8 @@
 Return-Path: <sven.eckelmann@openmesh.com>
 From: Sven Eckelmann <sven.eckelmann@openmesh.com>
-Date: Thu, 23 Nov 2017 13:21:42 +0100
-Message-Id: <20171123122142.2968-1-sven.eckelmann@openmesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH] alfred: Handle failure during hash iterator
- allocation
+Date: Thu, 23 Nov 2017 15:04:34 +0100
+Message-Id: <20171123140444.17119-1-sven.eckelmann@openmesh.com>
+Subject: [B.A.T.M.A.N.] [PATCH 00/10] batctl: Fixes and minor cleanup
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,28 +16,51 @@ To: b.a.t.m.a.n@lists.open-mesh.org
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The hash_iterate functions should not try to start the iteration when the
-iterator could not be allocated.
+Hi,
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- hash.c | 3 +++
- 1 file changed, 3 insertions(+)
+today I had the unpleasent experience to receive [1] to a lot of PDF files
+which seem to contain some reports of the Klocwork static code analysis tool.
+Most of the stuff was nonsense about memory/resource leaks (even when it
+stored in some kind of structure one line before). I gathered the only
+interesting portions and prepared some patches for them.
 
-diff --git a/hash.c b/hash.c
-index 5a3cdef..116e46f 100644
---- a/hash.c
-+++ b/hash.c
-@@ -116,6 +116,9 @@ struct hash_it_t *hash_iterate(struct hashtable_t *hash,
- 
- 	if (!iter_in) {
- 		iter = debugMalloc(sizeof(struct hash_it_t), 301);
-+		if (!iter)
-+			return NULL;
-+
- 		iter->index =  -1;
- 		iter->bucket = NULL;
- 		iter->prev_bucket = NULL;
+The last two patches are actually not really bug fixes but are about code
+which completely killed the static analyzer. I didn't like the code in
+the last patch (looked to complex for something relatively easy) and thus
+I've just replaced it.
+
+WARNING: these things were only compile tested
+
+Kind regards,
+	Sven
+
+
+[1] not unpleasent due to some issue reports. But going through several
+    hundred false positives wasn't my goal for today. Someone at seems to
+    get paid by false-positives which this Klocworks analyzer produces
+    (and there are really some braindead ones - even clang's static analyzer
+    looks like a genius against some of these reports) 
+
+Sven Eckelmann (10):
+  batctl: Print dummy value when localtime failed
+  batctl: Handle failure during hash_iterator allocation
+  batctl: Handle allocation error for path_buff
+  batctl: Handle nlmsg_alloc errors
+  batctl: Handle nl_socket_alloc errors
+  batctl: Handle nl_cb_alloc errors
+  batctl: Free nl_sock on genl_ctrl_resolve error
+  batctl: Free nl_sock when if_nametoindex failed
+  batctl: tcpdump: Fix types for for TT v1
+  batctl: Simplify concatenation of pathnames
+
+ bat-hosts.c |  4 +---
+ functions.c |  8 ++------
+ hash.c      |  3 +++
+ netlink.c   | 63 +++++++++++++++++++++++++++++++++++++++++++++++++++++--------
+ sys.c       | 15 +++++++++++++++
+ tcpdump.c   |  9 +++++++--
+ 6 files changed, 83 insertions(+), 19 deletions(-)
+
 -- 
 2.11.0
 
