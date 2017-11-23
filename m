@@ -1,11 +1,10 @@
 Return-Path: <sven.eckelmann@openmesh.com>
 From: Sven Eckelmann <sven.eckelmann@openmesh.com>
-Date: Thu, 23 Nov 2017 15:04:37 +0100
-Message-Id: <20171123140444.17119-4-sven.eckelmann@openmesh.com>
+Date: Thu, 23 Nov 2017 15:04:38 +0100
+Message-Id: <20171123140444.17119-5-sven.eckelmann@openmesh.com>
 In-Reply-To: <20171123140444.17119-1-sven.eckelmann@openmesh.com>
 References: <20171123140444.17119-1-sven.eckelmann@openmesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH 03/10] batctl: Handle allocation error for
- path_buff
+Subject: [B.A.T.M.A.N.] [PATCH 04/10] batctl: Handle nlmsg_alloc errors
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,55 +17,62 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven.eckelmann@openmesh.com>
 
-Fixes: 5a1af99276b0 ("batctl: adapt batctl to new sysfs interface handling")
-Fixes: 306fcb4480c9 ("batctl: support for multiple mesh clouds")
-Fixes: af115c9acf44 ("batctl: support new gateway sysfs API")
-Fixes: 2c2cb260ad2e ("batctl: list supported and configured routing algorithms")
+nlmsg_alloc may return NULL on errors. The processing has to be aborted
+when this happens.
+
+Fixes: d8dd1ff1a0fe ("batctl: Use netlink to replace some of debugfs")
 Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
 ---
- sys.c | 15 +++++++++++++++
+ netlink.c | 15 +++++++++++++++
  1 file changed, 15 insertions(+)
 
-diff --git a/sys.c b/sys.c
-index 65b438c..c49b428 100644
---- a/sys.c
-+++ b/sys.c
-@@ -153,6 +153,11 @@ int handle_loglevel(char *mesh_iface, int argc, char **argv)
- 	}
+diff --git a/netlink.c b/netlink.c
+index 7fb1ee1..e3d7892 100644
+--- a/netlink.c
++++ b/netlink.c
+@@ -302,6 +302,11 @@ static char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header)
+ 		return NULL;
  
- 	path_buff = malloc(PATH_BUFF_LEN);
-+	if (!path_buff) {
-+		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
-+		return EXIT_FAILURE;
+ 	msg = nlmsg_alloc();
++	if (!msg) {
++		nl_socket_free(sock);
++		return NULL;
 +	}
 +
- 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
+ 	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, 0,
+ 		    BATADV_CMD_GET_MESH_INFO, 1);
  
- 	if (argc != 1) {
-@@ -255,6 +260,11 @@ int handle_sys_setting(char *mesh_iface, int setting, int argc, char **argv)
+@@ -399,6 +404,11 @@ int netlink_print_routing_algos(void)
+ 		return -EOPNOTSUPP;
  
- 	/* prepare the classic path */
- 	path_buff = malloc(PATH_BUFF_LEN);
-+	if (!path_buff) {
-+		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
-+		return EXIT_FAILURE;
+ 	msg = nlmsg_alloc();
++	if (!msg) {
++		last_err = -ENOMEM;
++		goto err_free_sock;
 +	}
 +
- 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
+ 	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, NLM_F_DUMP,
+ 		    BATADV_CMD_GET_ROUTING_ALGOS, 1);
  
- 	/* if the specified interface is a VLAN then change the path to point
-@@ -329,6 +339,11 @@ int handle_gw_setting(char *mesh_iface, int argc, char **argv)
- 	}
+@@ -415,6 +425,8 @@ int netlink_print_routing_algos(void)
+ 	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
  
- 	path_buff = malloc(PATH_BUFF_LEN);
-+	if (!path_buff) {
-+		fprintf(stderr, "Error - could not allocate path buffer: out of memory ?\n");
-+		return EXIT_FAILURE;
-+	}
+ 	nl_recvmsgs(sock, cb);
 +
- 	snprintf(path_buff, PATH_BUFF_LEN, SYS_BATIF_PATH_FMT, mesh_iface);
++err_free_sock:
+ 	nl_socket_free(sock);
  
- 	if (argc == 1) {
+ 	if (!last_err)
+@@ -1131,6 +1143,9 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
+ 								 header);
+ 
+ 		msg = nlmsg_alloc();
++		if (!msg)
++			continue;
++
+ 		genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0,
+ 			    NLM_F_DUMP, nl_cmd, 1);
+ 
 -- 
 2.11.0
 
