@@ -1,10 +1,11 @@
 Return-Path: <sven.eckelmann@openmesh.com>
 From: Sven Eckelmann <sven.eckelmann@openmesh.com>
-Date: Thu, 23 Nov 2017 15:04:40 +0100
-Message-Id: <20171123140444.17119-7-sven.eckelmann@openmesh.com>
+Date: Thu, 23 Nov 2017 15:04:41 +0100
+Message-Id: <20171123140444.17119-8-sven.eckelmann@openmesh.com>
 In-Reply-To: <20171123140444.17119-1-sven.eckelmann@openmesh.com>
 References: <20171123140444.17119-1-sven.eckelmann@openmesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH 06/10] batctl: Handle nl_cb_alloc errors
+Subject: [B.A.T.M.A.N.] [PATCH 07/10] batctl: Free nl_sock on
+ genl_ctrl_resolve error
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,71 +18,58 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: Sven Eckelmann <sven.eckelmann@openmesh.com>
 
-nl_cb_alloc may return NULL on errors. The processing has to be aborted
-when this happens.
+genl_ctrl_resolve may return NULL on errors. The code must then free the
+socket which was used to start the genl_ctrl_resolve and stop the function
+with an error code.
 
 Fixes: d8dd1ff1a0fe ("batctl: Use netlink to replace some of debugfs")
 Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
 ---
- netlink.c | 17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+ netlink.c | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
 
 diff --git a/netlink.c b/netlink.c
-index d7aeb9a..b95063a 100644
+index b95063a..de81d08 100644
 --- a/netlink.c
 +++ b/netlink.c
-@@ -320,11 +320,15 @@ static char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header)
- 	nlmsg_free(msg);
+@@ -301,8 +301,10 @@ static char *netlink_get_info(int ifindex, uint8_t nl_cmd, const char *header)
+ 	genl_connect(sock);
  
- 	cb = nl_cb_alloc(NL_CB_DEFAULT);
-+	if (!cb)
-+		goto err_free_sock;
-+
- 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, info_callback, &opts);
- 	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
+ 	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
+-	if (family < 0)
++	if (family < 0) {
++		nl_socket_free(sock);
+ 		return NULL;
++	}
  
- 	nl_recvmsgs(sock, cb);
+ 	msg = nlmsg_alloc();
+ 	if (!msg) {
+@@ -410,8 +412,10 @@ int netlink_print_routing_algos(void)
+ 	genl_connect(sock);
  
-+err_free_sock:
- 	nl_socket_free(sock);
- 
- 	return opts.remaining_header;
-@@ -425,6 +429,11 @@ int netlink_print_routing_algos(void)
- 	opts.remaining_header = strdup("Available routing algorithms:\n");
- 
- 	cb = nl_cb_alloc(NL_CB_DEFAULT);
-+	if (!cb) {
-+		last_err = -ENOMEM;
+ 	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
+-	if (family < 0)
+-		return -EOPNOTSUPP;
++	if (family < 0) {
++		last_err = -EOPNOTSUPP;
 +		goto err_free_sock;
 +	}
-+
- 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, netlink_print_common_cb,
- 		  &opts);
- 	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
-@@ -1134,9 +1143,14 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
- 		}
- 	}
  
-+	cb = nl_cb_alloc(NL_CB_DEFAULT);
-+	if (!cb) {
-+		last_err = -ENOMEM;
+ 	msg = nlmsg_alloc();
+ 	if (!msg) {
+@@ -1125,8 +1129,10 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
+ 	genl_connect(sock);
+ 
+ 	family = genl_ctrl_resolve(sock, BATADV_NL_NAME);
+-	if (family < 0)
+-		return -EOPNOTSUPP;
++	if (family < 0) {
++		last_err = -EOPNOTSUPP;
 +		goto err_free_sock;
 +	}
-+
- 	bat_hosts_init(read_opt);
  
--	cb = nl_cb_alloc(NL_CB_DEFAULT);
- 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, netlink_print_common_cb, &opts);
- 	nl_cb_set(cb, NL_CB_FINISH, NL_CB_CUSTOM, stop_callback, NULL);
- 	nl_cb_err(cb, NL_CB_CUSTOM, print_error, NULL);
-@@ -1181,6 +1195,7 @@ static int netlink_print_common(char *mesh_iface, char *orig_iface,
- 
- 	bat_hosts_free();
- 
-+err_free_sock:
- 	nl_socket_free(sock);
- 
- 	return last_err;
+ 	ifindex = if_nametoindex(mesh_iface);
+ 	if (!ifindex) {
 -- 
 2.11.0
 
