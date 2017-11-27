@@ -1,8 +1,13 @@
 Return-Path: <sven.eckelmann@openmesh.com>
 From: Sven Eckelmann <sven.eckelmann@openmesh.com>
-Date: Mon, 27 Nov 2017 13:33:41 +0100
-Message-Id: <20171127123341.11365-1-sven.eckelmann@openmesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH] flow_dissector: Parse batman-adv unicast
+Date: Mon, 27 Nov 2017 13:36:36 +0100
+Message-ID: <215971903.lTGvM6jJST@bentobox>
+In-Reply-To: <20171127123341.11365-1-sven.eckelmann@openmesh.com>
+References: <20171127123341.11365-1-sven.eckelmann@openmesh.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2258844.jg0tSgbsW8";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] flow_dissector: Parse batman-adv unicast
  headers
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -14,97 +19,48 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven.eckelmann@openmesh.com>
 
-The batman-adv unicast packets contain a full layer 2 frame in encapsulated
-form. The flow dissector must therefore be able to parse the batman-adv
-unicast header to reach the layer 2+3 information to allow RPS to schedule
-the flow to different cores.
+--nextPart2258844.jg0tSgbsW8
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
----
+On Montag, 27. November 2017 13:33:41 CET Sven Eckelmann wrote:
+> The batman-adv unicast packets contain a full layer 2 frame in encapsulated
+> form. The flow dissector must therefore be able to parse the batman-adv
+> unicast header to reach the layer 2+3 information to allow RPS to schedule
+> the flow to different cores.
+> 
+> Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
+> ---
+[...]
 
-I've played around with the RPS+XPS to better distribute traffic to
-different cores on modern SoCs. It was observed that the batman-adv unicast
-traffic stayed at one core and this limited the overall throughput.
+Arghh, this should have been an RFC. I will mark it this way in patchwork but 
+please don't be confused on the mailing list about the subject.
 
-The test was done between a modern PC which was running iperf over
-batman-adv. Another PC was also running iperf was just transmitting the
-traffic over ethernet. A QCA Dakota (IPQ4018) based device was in the
-middle and received the ethernet traffic on one port, encapsulated it as
-batman-adv unicast and transferred the resulting packet via ethernet to the
-modern PC.
+Kind regards,
+	Sven
 
-    $ iperf -c 192.168.23.2 -t 30 -i 1  -P16
+--nextPart2258844.jg0tSgbsW8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-It was observed that only the receive processing was affected. Adding this
-relative simple patch allowed me to increase the ethernet throughput from
-689 Mbits/sec (with one core doing the interrupt processing and 1 core
-completely busy with the other processing) to 910 Mbits/sec (one core doing
-the interrupt processing and the other 3 cores were sharing the load). In
-theory, the device with the patch could have handled a lot more traffic
-than 910 Mbit/sec - at least the RPS cores were not even near 100% load.
+-----BEGIN PGP SIGNATURE-----
 
-This should bring a lot more when testing with good 802.11ac WiFi links
-because the wifi stack/driver are usually stressing the CPU a lot more than
-normal ethernet drivers.
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlocBtQACgkQXYcKB8Em
+e0abpA/7Bsey8mTbAqVyk0CdxveZSoQ3LL4IRiuhFBkmloIlm1lCSS+9A/W5qsrY
+BxFdLGbfLfLFq+AhXfKuYnKN3+opQhbttocuK5JudQHn7/5jZMBafhXYgeIxLkf4
+S8k/Jkrfajtp7dZSV1USw7sytu8jMYQ83+HHmK8c36ncIzwN/+L7WofxYcpbVJLk
+zZyZVYklzyLos2bZLuJyKO0qx/ZcfF8B64UfJwK2mOMnAJ+7BXdk2fq9D1EWGYM3
+HITFaH7U3H+t3XxaLqw0q7wnyJZ/tFvc9Tjpegwo57NGyNfvn4WHP9CgmK69RZhA
+LQQnYBO6STcwutpslYKLwz3O657ww5jlrNqJ1xDYxjwPV9aPsjNDQqbLqpV06Gnc
+IcZRajBRePVEnIBsV7JpRFtFp8E7/wU2CFkstgoTi11+vJiJ8ISI/aTbybiPSw9X
+Votr1LnUsWJercC68LcR9B0gc2LnbSfbEPa5aY+gWXMbzj7eQtRn/HqO8LT0dsXY
+sitHgJ44qQCdG7ONo1UabBCPlktS/gNqN0dQYJY8Ps+yOD5g226DhCxgw4X60DUd
+Q5Vrn8Q44VMOZOve2ZnHgJdz4nOx9/6HaSNCOiD2tJy2Qfqb4zZ4EX99OPogPPWH
+YuuY8QchR9dGHq0m4p5VDa7P5M8Vhua4UPDWjPeMCfHONUNL1hk=
+=03pc
+-----END PGP SIGNATURE-----
 
-The change itself is not really invasive but could be a lot cleaner when
-the packet header information would be available under include/... . And I
-don't know yet whether it would make sense to add a new flow dissector key
-with the batman-adv destination address. This is also the reason why I only
-post this to the b.a.t.m.a.n@lists.open-mesh.org mailing list.
-
-Anyway, maybe some other people ran into the same problem and want to test
-it.
----
- net/core/flow_dissector.c | 33 +++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
-
-diff --git a/net/core/flow_dissector.c b/net/core/flow_dissector.c
-index 0a977373d003..bbf894fff3fc 100644
---- a/net/core/flow_dissector.c
-+++ b/net/core/flow_dissector.c
-@@ -595,6 +595,39 @@ bool __skb_flow_dissect(const struct sk_buff *skb,
- 
- 		break;
- 	}
-+	case htons(ETH_P_BATMAN): {
-+		/* TODO provide struct in include/uapi/... header */
-+		struct batadv_unicast_packet {
-+			u8 packet_type;
-+			u8 version;
-+			u8 ttl;
-+			u8 ttvn;
-+			u8 dest[ETH_ALEN];
-+		};
-+
-+		struct {
-+			struct batadv_unicast_packet batadv_unicast;
-+			struct ethhdr eth;
-+		} *hdr, _hdr;
-+
-+		hdr = __skb_header_pointer(skb, nhoff, sizeof(_hdr), data, hlen,
-+					   &_hdr);
-+		if (!hdr)
-+			goto out_bad;
-+
-+		if (hdr->batadv_unicast.version != 15)
-+			break;
-+
-+		if (hdr->batadv_unicast.packet_type != 0x40)
-+			break;
-+
-+		/* TODO set batman-adv dest address as flow key? */
-+
-+		proto = hdr->eth.h_proto;
-+		nhoff += sizeof(*hdr);
-+
-+		goto again;
-+	}
- 	case htons(ETH_P_8021AD):
- 	case htons(ETH_P_8021Q): {
- 		const struct vlan_hdr *vlan;
--- 
-2.11.0
+--nextPart2258844.jg0tSgbsW8--
 
