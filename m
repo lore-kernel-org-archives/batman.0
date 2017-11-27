@@ -1,11 +1,9 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Fri, 24 Nov 2017 22:48:16 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20171124214816.GA10087@otheros>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Subject: [B.A.T.M.A.N.] Interpreting a Mem-Info Section of an OOM
+Return-Path: <sven.eckelmann@openmesh.com>
+From: Sven Eckelmann <sven.eckelmann@openmesh.com>
+Date: Mon, 27 Nov 2017 13:33:41 +0100
+Message-Id: <20171127123341.11365-1-sven.eckelmann@openmesh.com>
+Subject: [B.A.T.M.A.N.] [PATCH] flow_dissector: Parse batman-adv unicast
+ headers
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,49 +14,97 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: gluon@luebeck.freifunk.net
+Cc: Sven Eckelmann <sven.eckelmann@openmesh.com>
 
-Hi,
+The batman-adv unicast packets contain a full layer 2 frame in encapsulated
+form. The flow dissector must therefore be able to parse the batman-adv
+unicast header to reach the layer 2+3 information to allow RPS to schedule
+the flow to different cores.
 
-With some larger mesh networks running Gluon some Out-of-Memory
-cases on 32MB RAM devices were reported [0].
+Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
+---
 
-For the following Mem-Info section, the number of free pages
-confuses me a little:
+I've played around with the RPS+XPS to better distribute traffic to
+different cores on modern SoCs. It was observed that the batman-adv unicast
+traffic stayed at one core and this limited the overall throughput.
 
-[...]
-[  236.529242] Mem-Info:
-[  236.531561] active_anon:691 inactive_anon:9 isolated_anon:0
-[  236.531561]  active_file:131 inactive_file:138 isolated_file:0
-[  236.531561]  unevictable:0 dirty:0 writeback:0 unstable:0
-[  236.531561]  slab_reclaimable:205 slab_unreclaimable:3105
-[  236.531561]  mapped:39 shmem:28 pagetables:80 bounce:0
-[  236.531561]  free:289 free_pcp:0 free_cma:0
-[  236.563259] Normal free:1156kB min:1024kB low:1280kB high:1536kB active_anon:2764kB inactive_anon:36kB active_file:524kB inactive_file:552kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:32768kB managed:27776kB mlocked:0kB dirty:0kB writeback:0kB mapped:156kB shmem:112kB slab_reclaimable:820kB slab_unreclaimable:12420kB kernel_stack:424kB pagetables:320kB unstable:0kB bounce:0kB free_pcp:0kB local_pcp:0kB free_cma:0kB writeback_tmp:0kB pages_scanned:6492 all_unreclaimable? yes
-[  236.607070] lowmem_reserve[]: 0 0
-[  236.610425] Normal: 125*4kB (UME) 34*8kB (UME) 16*16kB (UME) 4*32kB (ME) 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 1156kB
-[  236.623157] 297 total pagecache pages
-[  236.626852] 0 pages in swap cache
-[  236.630189] Swap cache stats: add 0, delete 0, find 0/0
-[  236.635455] Free swap  = 0kB
-[  236.638355] Total swap = 0kB
-[  236.641251] 8192 pages RAM
-[  236.643971] 0 pages HighMem/MovableOnly
-[  236.647837] 1248 pages reserved
-[...]
+The test was done between a modern PC which was running iperf over
+batman-adv. Another PC was also running iperf was just transmitting the
+traffic over ethernet. A QCA Dakota (IPQ4018) based device was in the
+middle and received the ethernet traffic on one port, encapsulated it as
+batman-adv unicast and transferred the resulting packet via ethernet to the
+modern PC.
 
-(Full log here[1], including some slabinfo; with a backport of
-these slabinfo related patches applied [2])
+    $ iperf -c 192.168.23.2 -t 30 -i 1  -P16
 
-It says that only 289 pages are left. However those numbers listed
-in the Mem-Info section do not seem to add up to 8192 minus 1289 reserved
-minus 289 free pages.
+It was observed that only the receive processing was affected. Adding this
+relative simple patch allowed me to increase the ethernet throughput from
+689 Mbits/sec (with one core doing the interrupt processing and 1 core
+completely busy with the other processing) to 910 Mbits/sec (one core doing
+the interrupt processing and the other 3 cores were sharing the load). In
+theory, the device with the patch could have handled a lot more traffic
+than 910 Mbit/sec - at least the RPS cores were not even near 100% load.
 
-Any idea why it might list only 289 free pages?
+This should bring a lot more when testing with good 802.11ac WiFi links
+because the wifi stack/driver are usually stressing the CPU a lot more than
+normal ethernet drivers.
 
-Regards, Linus
+The change itself is not really invasive but could be a lot cleaner when
+the packet header information would be available under include/... . And I
+don't know yet whether it would make sense to add a new flow dissector key
+with the batman-adv destination address. This is also the reason why I only
+post this to the b.a.t.m.a.n@lists.open-mesh.org mailing list.
 
-[0]: https://github.com/freifunk-gluon/gluon/issues/1243
-     https://github.com/freifunk-gluon/gluon/issues/1197
-[1]: https://paste.linuxlounge.net/#/GUMP_cQOKwgqQhf5_gBfPU1Vv0A!7bT80KaCMPcUC_zIBbw6h5s3ewQ27IFuYW5_H42HWC0
-[2]: https://lkml.org/lkml/2017/10/4/788
+Anyway, maybe some other people ran into the same problem and want to test
+it.
+---
+ net/core/flow_dissector.c | 33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
+
+diff --git a/net/core/flow_dissector.c b/net/core/flow_dissector.c
+index 0a977373d003..bbf894fff3fc 100644
+--- a/net/core/flow_dissector.c
++++ b/net/core/flow_dissector.c
+@@ -595,6 +595,39 @@ bool __skb_flow_dissect(const struct sk_buff *skb,
+ 
+ 		break;
+ 	}
++	case htons(ETH_P_BATMAN): {
++		/* TODO provide struct in include/uapi/... header */
++		struct batadv_unicast_packet {
++			u8 packet_type;
++			u8 version;
++			u8 ttl;
++			u8 ttvn;
++			u8 dest[ETH_ALEN];
++		};
++
++		struct {
++			struct batadv_unicast_packet batadv_unicast;
++			struct ethhdr eth;
++		} *hdr, _hdr;
++
++		hdr = __skb_header_pointer(skb, nhoff, sizeof(_hdr), data, hlen,
++					   &_hdr);
++		if (!hdr)
++			goto out_bad;
++
++		if (hdr->batadv_unicast.version != 15)
++			break;
++
++		if (hdr->batadv_unicast.packet_type != 0x40)
++			break;
++
++		/* TODO set batman-adv dest address as flow key? */
++
++		proto = hdr->eth.h_proto;
++		nhoff += sizeof(*hdr);
++
++		goto again;
++	}
+ 	case htons(ETH_P_8021AD):
+ 	case htons(ETH_P_8021Q): {
+ 		const struct vlan_hdr *vlan;
+-- 
+2.11.0
+
