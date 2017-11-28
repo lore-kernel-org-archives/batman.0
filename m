@@ -1,14 +1,8 @@
-Return-Path: <sven.eckelmann@openmesh.com>
-From: Sven Eckelmann <sven.eckelmann@openmesh.com>
-Date: Mon, 27 Nov 2017 13:36:36 +0100
-Message-ID: <215971903.lTGvM6jJST@bentobox>
-In-Reply-To: <20171127123341.11365-1-sven.eckelmann@openmesh.com>
-References: <20171127123341.11365-1-sven.eckelmann@openmesh.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2258844.jg0tSgbsW8";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] flow_dissector: Parse batman-adv unicast
- headers
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 28 Nov 2017 08:39:15 +0100
+Message-Id: <20171128073915.11117-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [RFC] batman-adv: setup_timer() -> timer_setup()
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,47 +14,539 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2258844.jg0tSgbsW8
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+From: Kees Cook <keescook@chromium.org>
 
-On Montag, 27. November 2017 13:33:41 CET Sven Eckelmann wrote:
-> The batman-adv unicast packets contain a full layer 2 frame in encapsulated
-> form. The flow dissector must therefore be able to parse the batman-adv
-> unicast header to reach the layer 2+3 information to allow RPS to schedule
-> the flow to different cores.
-> 
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
-> ---
-[...]
+This converts all remaining cases of the old setup_timer() API into using
+timer_setup(), where the callback argument is the structure already
+holding the struct timer_list. These should have no behavioral changes,
+since they just change which pointer is passed into the callback with
+the same available pointers after conversion. It handles the following
+examples, in addition to some other variations.
 
-Arghh, this should have been an RFC. I will mark it this way in patchwork but 
-please don't be confused on the mailing list about the subject.
+Casting from unsigned long:
 
-Kind regards,
-	Sven
+    void my_callback(unsigned long data)
+    {
+        struct something *ptr = (struct something *)data;
+    ...
+    }
+    ...
+    setup_timer(&ptr->my_timer, my_callback, ptr);
 
---nextPart2258844.jg0tSgbsW8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+and forced object casts:
 
------BEGIN PGP SIGNATURE-----
+    void my_callback(struct something *ptr)
+    {
+    ...
+    }
+    ...
+    setup_timer(&ptr->my_timer, my_callback, (unsigned long)ptr);
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlocBtQACgkQXYcKB8Em
-e0abpA/7Bsey8mTbAqVyk0CdxveZSoQ3LL4IRiuhFBkmloIlm1lCSS+9A/W5qsrY
-BxFdLGbfLfLFq+AhXfKuYnKN3+opQhbttocuK5JudQHn7/5jZMBafhXYgeIxLkf4
-S8k/Jkrfajtp7dZSV1USw7sytu8jMYQ83+HHmK8c36ncIzwN/+L7WofxYcpbVJLk
-zZyZVYklzyLos2bZLuJyKO0qx/ZcfF8B64UfJwK2mOMnAJ+7BXdk2fq9D1EWGYM3
-HITFaH7U3H+t3XxaLqw0q7wnyJZ/tFvc9Tjpegwo57NGyNfvn4WHP9CgmK69RZhA
-LQQnYBO6STcwutpslYKLwz3O657ww5jlrNqJ1xDYxjwPV9aPsjNDQqbLqpV06Gnc
-IcZRajBRePVEnIBsV7JpRFtFp8E7/wU2CFkstgoTi11+vJiJ8ISI/aTbybiPSw9X
-Votr1LnUsWJercC68LcR9B0gc2LnbSfbEPa5aY+gWXMbzj7eQtRn/HqO8LT0dsXY
-sitHgJ44qQCdG7ONo1UabBCPlktS/gNqN0dQYJY8Ps+yOD5g226DhCxgw4X60DUd
-Q5Vrn8Q44VMOZOve2ZnHgJdz4nOx9/6HaSNCOiD2tJy2Qfqb4zZ4EX99OPogPPWH
-YuuY8QchR9dGHq0m4p5VDa7P5M8Vhua4UPDWjPeMCfHONUNL1hk=
-=03pc
------END PGP SIGNATURE-----
+become:
 
---nextPart2258844.jg0tSgbsW8--
+    void my_callback(struct timer_list *t)
+    {
+        struct something *ptr = from_timer(ptr, t, my_timer);
+    ...
+    }
+    ...
+    timer_setup(&ptr->my_timer, my_callback, 0);
+
+Direct function assignments:
+
+    void my_callback(unsigned long data)
+    {
+        struct something *ptr = (struct something *)data;
+    ...
+    }
+    ...
+    ptr->my_timer.function = my_callback;
+
+have a temporary cast added, along with converting the args:
+
+    void my_callback(struct timer_list *t)
+    {
+        struct something *ptr = from_timer(ptr, t, my_timer);
+    ...
+    }
+    ...
+    ptr->my_timer.function = (TIMER_FUNC_TYPE)my_callback;
+
+And finally, callbacks without a data assignment:
+
+    void my_callback(unsigned long data)
+    {
+    ...
+    }
+    ...
+    setup_timer(&ptr->my_timer, my_callback, 0);
+
+have their argument renamed to verify they're unused during conversion:
+
+    void my_callback(struct timer_list *unused)
+    {
+    ...
+    }
+    ...
+    timer_setup(&ptr->my_timer, my_callback, 0);
+
+The conversion is done with the following Coccinelle script:
+
+spatch --very-quiet --all-includes --include-headers \
+	-I ./arch/x86/include -I ./arch/x86/include/generated \
+	-I ./include -I ./arch/x86/include/uapi \
+	-I ./arch/x86/include/generated/uapi -I ./include/uapi \
+	-I ./include/generated/uapi --include ./include/linux/kconfig.h \
+	--dir . \
+	--cocci-file ~/src/data/timer_setup.cocci
+
+@fix_address_of@
+expression e;
+@@
+
+ setup_timer(
+-&(e)
++&e
+ , ...)
+
+// Update any raw setup_timer() usages that have a NULL callback, but
+// would otherwise match change_timer_function_usage, since the latter
+// will update all function assignments done in the face of a NULL
+// function initialization in setup_timer().
+@change_timer_function_usage_NULL@
+expression _E;
+identifier _timer;
+type _cast_data;
+@@
+
+(
+-setup_timer(&_E->_timer, NULL, _E);
++timer_setup(&_E->_timer, NULL, 0);
+|
+-setup_timer(&_E->_timer, NULL, (_cast_data)_E);
++timer_setup(&_E->_timer, NULL, 0);
+|
+-setup_timer(&_E._timer, NULL, &_E);
++timer_setup(&_E._timer, NULL, 0);
+|
+-setup_timer(&_E._timer, NULL, (_cast_data)&_E);
++timer_setup(&_E._timer, NULL, 0);
+)
+
+@change_timer_function_usage@
+expression _E;
+identifier _timer;
+struct timer_list _stl;
+identifier _callback;
+type _cast_func, _cast_data;
+@@
+
+(
+-setup_timer(&_E->_timer, _callback, _E);
++timer_setup(&_E->_timer, _callback, 0);
+|
+-setup_timer(&_E->_timer, &_callback, _E);
++timer_setup(&_E->_timer, _callback, 0);
+|
+-setup_timer(&_E->_timer, _callback, (_cast_data)_E);
++timer_setup(&_E->_timer, _callback, 0);
+|
+-setup_timer(&_E->_timer, &_callback, (_cast_data)_E);
++timer_setup(&_E->_timer, _callback, 0);
+|
+-setup_timer(&_E->_timer, (_cast_func)_callback, _E);
++timer_setup(&_E->_timer, _callback, 0);
+|
+-setup_timer(&_E->_timer, (_cast_func)&_callback, _E);
++timer_setup(&_E->_timer, _callback, 0);
+|
+-setup_timer(&_E->_timer, (_cast_func)_callback, (_cast_data)_E);
++timer_setup(&_E->_timer, _callback, 0);
+|
+-setup_timer(&_E->_timer, (_cast_func)&_callback, (_cast_data)_E);
++timer_setup(&_E->_timer, _callback, 0);
+|
+-setup_timer(&_E._timer, _callback, (_cast_data)_E);
++timer_setup(&_E._timer, _callback, 0);
+|
+-setup_timer(&_E._timer, _callback, (_cast_data)&_E);
++timer_setup(&_E._timer, _callback, 0);
+|
+-setup_timer(&_E._timer, &_callback, (_cast_data)_E);
++timer_setup(&_E._timer, _callback, 0);
+|
+-setup_timer(&_E._timer, &_callback, (_cast_data)&_E);
++timer_setup(&_E._timer, _callback, 0);
+|
+-setup_timer(&_E._timer, (_cast_func)_callback, (_cast_data)_E);
++timer_setup(&_E._timer, _callback, 0);
+|
+-setup_timer(&_E._timer, (_cast_func)_callback, (_cast_data)&_E);
++timer_setup(&_E._timer, _callback, 0);
+|
+-setup_timer(&_E._timer, (_cast_func)&_callback, (_cast_data)_E);
++timer_setup(&_E._timer, _callback, 0);
+|
+-setup_timer(&_E._timer, (_cast_func)&_callback, (_cast_data)&_E);
++timer_setup(&_E._timer, _callback, 0);
+|
+ _E->_timer@_stl.function = _callback;
+|
+ _E->_timer@_stl.function = &_callback;
+|
+ _E->_timer@_stl.function = (_cast_func)_callback;
+|
+ _E->_timer@_stl.function = (_cast_func)&_callback;
+|
+ _E._timer@_stl.function = _callback;
+|
+ _E._timer@_stl.function = &_callback;
+|
+ _E._timer@_stl.function = (_cast_func)_callback;
+|
+ _E._timer@_stl.function = (_cast_func)&_callback;
+)
+
+// callback(unsigned long arg)
+@change_callback_handle_cast
+ depends on change_timer_function_usage@
+identifier change_timer_function_usage._callback;
+identifier change_timer_function_usage._timer;
+type _origtype;
+identifier _origarg;
+type _handletype;
+identifier _handle;
+@@
+
+ void _callback(
+-_origtype _origarg
++struct timer_list *t
+ )
+ {
+(
+	... when != _origarg
+	_handletype *_handle =
+-(_handletype *)_origarg;
++from_timer(_handle, t, _timer);
+	... when != _origarg
+|
+	... when != _origarg
+	_handletype *_handle =
+-(void *)_origarg;
++from_timer(_handle, t, _timer);
+	... when != _origarg
+|
+	... when != _origarg
+	_handletype *_handle;
+	... when != _handle
+	_handle =
+-(_handletype *)_origarg;
++from_timer(_handle, t, _timer);
+	... when != _origarg
+|
+	... when != _origarg
+	_handletype *_handle;
+	... when != _handle
+	_handle =
+-(void *)_origarg;
++from_timer(_handle, t, _timer);
+	... when != _origarg
+)
+ }
+
+// callback(unsigned long arg) without existing variable
+@change_callback_handle_cast_no_arg
+ depends on change_timer_function_usage &&
+                     !change_callback_handle_cast@
+identifier change_timer_function_usage._callback;
+identifier change_timer_function_usage._timer;
+type _origtype;
+identifier _origarg;
+type _handletype;
+@@
+
+ void _callback(
+-_origtype _origarg
++struct timer_list *t
+ )
+ {
++	_handletype *_origarg = from_timer(_origarg, t, _timer);
++
+	... when != _origarg
+-	(_handletype *)_origarg
++	_origarg
+	... when != _origarg
+ }
+
+// Avoid already converted callbacks.
+@match_callback_converted
+ depends on change_timer_function_usage &&
+            !change_callback_handle_cast &&
+	    !change_callback_handle_cast_no_arg@
+identifier change_timer_function_usage._callback;
+identifier t;
+@@
+
+ void _callback(struct timer_list *t)
+ { ... }
+
+// callback(struct something *handle)
+@change_callback_handle_arg
+ depends on change_timer_function_usage &&
+	    !match_callback_converted &&
+            !change_callback_handle_cast &&
+            !change_callback_handle_cast_no_arg@
+identifier change_timer_function_usage._callback;
+identifier change_timer_function_usage._timer;
+type _handletype;
+identifier _handle;
+@@
+
+ void _callback(
+-_handletype *_handle
++struct timer_list *t
+ )
+ {
++	_handletype *_handle = from_timer(_handle, t, _timer);
+	...
+ }
+
+// If change_callback_handle_arg ran on an empty function, remove
+// the added handler.
+@unchange_callback_handle_arg
+ depends on change_timer_function_usage &&
+	    change_callback_handle_arg@
+identifier change_timer_function_usage._callback;
+identifier change_timer_function_usage._timer;
+type _handletype;
+identifier _handle;
+identifier t;
+@@
+
+ void _callback(struct timer_list *t)
+ {
+-	_handletype *_handle = from_timer(_handle, t, _timer);
+ }
+
+// We only want to refactor the setup_timer() data argument if we've found
+// the matching callback. This undoes changes in change_timer_function_usage.
+@unchange_timer_function_usage
+ depends on change_timer_function_usage &&
+            !change_callback_handle_cast &&
+            !change_callback_handle_cast_no_arg &&
+	    !change_callback_handle_arg@
+expression change_timer_function_usage._E;
+identifier change_timer_function_usage._timer;
+identifier change_timer_function_usage._callback;
+type change_timer_function_usage._cast_data;
+@@
+
+(
+-timer_setup(&_E->_timer, _callback, 0);
++setup_timer(&_E->_timer, _callback, (_cast_data)_E);
+|
+-timer_setup(&_E._timer, _callback, 0);
++setup_timer(&_E._timer, _callback, (_cast_data)&_E);
+)
+
+// If we fixed a callback from a .function assignment, fix the
+// assignment cast now.
+@change_timer_function_assignment
+ depends on change_timer_function_usage &&
+            (change_callback_handle_cast ||
+             change_callback_handle_cast_no_arg ||
+             change_callback_handle_arg)@
+expression change_timer_function_usage._E;
+identifier change_timer_function_usage._timer;
+identifier change_timer_function_usage._callback;
+type _cast_func;
+typedef TIMER_FUNC_TYPE;
+@@
+
+(
+ _E->_timer.function =
+-_callback
++(TIMER_FUNC_TYPE)_callback
+ ;
+|
+ _E->_timer.function =
+-&_callback
++(TIMER_FUNC_TYPE)_callback
+ ;
+|
+ _E->_timer.function =
+-(_cast_func)_callback;
++(TIMER_FUNC_TYPE)_callback
+ ;
+|
+ _E->_timer.function =
+-(_cast_func)&_callback
++(TIMER_FUNC_TYPE)_callback
+ ;
+|
+ _E._timer.function =
+-_callback
++(TIMER_FUNC_TYPE)_callback
+ ;
+|
+ _E._timer.function =
+-&_callback;
++(TIMER_FUNC_TYPE)_callback
+ ;
+|
+ _E._timer.function =
+-(_cast_func)_callback
++(TIMER_FUNC_TYPE)_callback
+ ;
+|
+ _E._timer.function =
+-(_cast_func)&_callback
++(TIMER_FUNC_TYPE)_callback
+ ;
+)
+
+// Sometimes timer functions are called directly. Replace matched args.
+@change_timer_function_calls
+ depends on change_timer_function_usage &&
+            (change_callback_handle_cast ||
+             change_callback_handle_cast_no_arg ||
+             change_callback_handle_arg)@
+expression _E;
+identifier change_timer_function_usage._timer;
+identifier change_timer_function_usage._callback;
+type _cast_data;
+@@
+
+ _callback(
+(
+-(_cast_data)_E
++&_E->_timer
+|
+-(_cast_data)&_E
++&_E._timer
+|
+-_E
++&_E->_timer
+)
+ )
+
+// If a timer has been configured without a data argument, it can be
+// converted without regard to the callback argument, since it is unused.
+@match_timer_function_unused_data@
+expression _E;
+identifier _timer;
+identifier _callback;
+@@
+
+(
+-setup_timer(&_E->_timer, _callback, 0);
++timer_setup(&_E->_timer, _callback, 0);
+|
+-setup_timer(&_E->_timer, _callback, 0L);
++timer_setup(&_E->_timer, _callback, 0);
+|
+-setup_timer(&_E->_timer, _callback, 0UL);
++timer_setup(&_E->_timer, _callback, 0);
+|
+-setup_timer(&_E._timer, _callback, 0);
++timer_setup(&_E._timer, _callback, 0);
+|
+-setup_timer(&_E._timer, _callback, 0L);
++timer_setup(&_E._timer, _callback, 0);
+|
+-setup_timer(&_E._timer, _callback, 0UL);
++timer_setup(&_E._timer, _callback, 0);
+|
+-setup_timer(&_timer, _callback, 0);
++timer_setup(&_timer, _callback, 0);
+|
+-setup_timer(&_timer, _callback, 0L);
++timer_setup(&_timer, _callback, 0);
+|
+-setup_timer(&_timer, _callback, 0UL);
++timer_setup(&_timer, _callback, 0);
+|
+-setup_timer(_timer, _callback, 0);
++timer_setup(_timer, _callback, 0);
+|
+-setup_timer(_timer, _callback, 0L);
++timer_setup(_timer, _callback, 0);
+|
+-setup_timer(_timer, _callback, 0UL);
++timer_setup(_timer, _callback, 0);
+)
+
+@change_callback_unused_data
+ depends on match_timer_function_unused_data@
+identifier match_timer_function_unused_data._callback;
+type _origtype;
+identifier _origarg;
+@@
+
+ void _callback(
+-_origtype _origarg
++struct timer_list *unused
+ )
+ {
+	... when != _origarg
+ }
+
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+TODO: this requires some compat code because this functionality was
+added first with v4.14 (we have to check in more detail)
+
+ net/batman-adv/tp_meter.c | 14 ++++++--------
+ 1 file changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index 4b90033f35a8..15cd2139381e 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -488,9 +488,9 @@ static void batadv_tp_reset_sender_timer(struct batadv_tp_vars *tp_vars)
+  * Switch to Slow Start, set the ss_threshold to half of the current cwnd and
+  * reset the cwnd to 3*MSS
+  */
+-static void batadv_tp_sender_timeout(unsigned long arg)
++static void batadv_tp_sender_timeout(struct timer_list *t)
+ {
+-	struct batadv_tp_vars *tp_vars = (struct batadv_tp_vars *)arg;
++	struct batadv_tp_vars *tp_vars = from_timer(tp_vars, t, timer);
+ 	struct batadv_priv *bat_priv = tp_vars->bat_priv;
+ 
+ 	if (atomic_read(&tp_vars->sending) == 0)
+@@ -1020,8 +1020,7 @@ void batadv_tp_start(struct batadv_priv *bat_priv, const u8 *dst,
+ 	atomic64_set(&tp_vars->tot_sent, 0);
+ 
+ 	kref_get(&tp_vars->refcount);
+-	setup_timer(&tp_vars->timer, batadv_tp_sender_timeout,
+-		    (unsigned long)tp_vars);
++	timer_setup(&tp_vars->timer, batadv_tp_sender_timeout, 0);
+ 
+ 	tp_vars->bat_priv = bat_priv;
+ 	tp_vars->start_time = jiffies;
+@@ -1109,9 +1108,9 @@ static void batadv_tp_reset_receiver_timer(struct batadv_tp_vars *tp_vars)
+  *  reached without received ack
+  * @arg: address of the related tp_vars
+  */
+-static void batadv_tp_receiver_shutdown(unsigned long arg)
++static void batadv_tp_receiver_shutdown(struct timer_list *t)
+ {
+-	struct batadv_tp_vars *tp_vars = (struct batadv_tp_vars *)arg;
++	struct batadv_tp_vars *tp_vars = from_timer(tp_vars, t, timer);
+ 	struct batadv_tp_unacked *un, *safe;
+ 	struct batadv_priv *bat_priv;
+ 
+@@ -1373,8 +1372,7 @@ batadv_tp_init_recv(struct batadv_priv *bat_priv,
+ 	hlist_add_head_rcu(&tp_vars->list, &bat_priv->tp_list);
+ 
+ 	kref_get(&tp_vars->refcount);
+-	setup_timer(&tp_vars->timer, batadv_tp_receiver_shutdown,
+-		    (unsigned long)tp_vars);
++	timer_setup(&tp_vars->timer, batadv_tp_receiver_shutdown, 0);
+ 
+ 	batadv_tp_reset_receiver_timer(tp_vars);
+ 
+-- 
+2.11.0
 
