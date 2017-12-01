@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri,  1 Dec 2017 14:40:42 +0100
-Message-Id: <20171201134042.8531-1-sven@narfation.org>
-In-Reply-To: <20171119140553.24435-1-sven@narfation.org>
-References: <20171119140553.24435-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH v2 5/6] batctl: Mark remaining files as
+Date: Fri,  1 Dec 2017 14:41:25 +0100
+Message-Id: <20171201134125.8594-1-sven@narfation.org>
+In-Reply-To: <20171119140602.24504-1-sven@narfation.org>
+References: <20171119140602.24504-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v2 5/6] alfred: Mark remaining files as
  GPL-2.0
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -26,37 +26,48 @@ which don't allow comments.
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
 v2:
-- Removed CHANGELOG.license README.license
+- removed CHANGELOG.license and README.license
 ---
- .gitattributes   | 3 +++
- bat-hosts.sample | 3 +++
- man/batctl.8     | 2 ++
- 3 files changed, 8 insertions(+)
+ .gitattributes         | 3 +++
+ gpsd/man/alfred-gpsd.8 | 2 ++
+ man/alfred.8           | 2 ++
+ vis/man/batadv-vis.8   | 2 ++
+ 4 files changed, 9 insertions(+)
 
 diff --git a/.gitattributes b/.gitattributes
-index 1d2a7e9..402ecae 100644
+index eeef3e0..3a9a74f 100644
 --- a/.gitattributes
 +++ b/.gitattributes
-@@ -1,3 +1,6 @@
+@@ -1,2 +1,5 @@
 +# SPDX-License-Identifier: GPL-2.0
 +# License-Filename: LICENSES/preferred/GPL-2.0
 +
  /.gitignore export-ignore
  /.gitattributes export-ignore
- *.c   diff=cpp
-diff --git a/bat-hosts.sample b/bat-hosts.sample
-index 6042b35..ba0d776 100644
---- a/bat-hosts.sample
-+++ b/bat-hosts.sample
-@@ -1 +1,4 @@
-+# SPDX-License-Identifier: GPL-2.0
-+# License-Filename: LICENSES/preferred/GPL-2.0
-+
- 0:d2:58:ca:91:e8	example
-diff --git a/man/batctl.8 b/man/batctl.8
-index 9ee0e31..7cf66ca 100644
---- a/man/batctl.8
-+++ b/man/batctl.8
+diff --git a/gpsd/man/alfred-gpsd.8 b/gpsd/man/alfred-gpsd.8
+index 3799293..87879ee 100644
+--- a/gpsd/man/alfred-gpsd.8
++++ b/gpsd/man/alfred-gpsd.8
+@@ -1,3 +1,5 @@
++.\" SPDX-License-Identifier: GPL-2.0
++.\" License-Filename: LICENSES/preferred/GPL-2.0
+ .\"                                      Hey, EMACS: -*- nroff -*-
+ .\" First parameter, NAME, should be all caps
+ .\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+diff --git a/man/alfred.8 b/man/alfred.8
+index a2c3d4c..7e31e12 100644
+--- a/man/alfred.8
++++ b/man/alfred.8
+@@ -1,3 +1,5 @@
++.\" SPDX-License-Identifier: GPL-2.0
++.\" License-Filename: LICENSES/preferred/GPL-2.0
+ .\"                                      Hey, EMACS: -*- nroff -*-
+ .\" First parameter, NAME, should be all caps
+ .\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
+diff --git a/vis/man/batadv-vis.8 b/vis/man/batadv-vis.8
+index 20dead7..94be0e9 100644
+--- a/vis/man/batadv-vis.8
++++ b/vis/man/batadv-vis.8
 @@ -1,3 +1,5 @@
 +.\" SPDX-License-Identifier: GPL-2.0
 +.\" License-Filename: LICENSES/preferred/GPL-2.0
