@@ -1,14 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 01 Dec 2017 12:31:22 +0100
-Message-ID: <3026754.xcniUJ4oqX@bentobox>
-In-Reply-To: <20171129092502.10474-1-sven.eckelmann@openmesh.com>
-References: <20171129092502.10474-1-sven.eckelmann@openmesh.com>
+Return-Path: <sven.eckelmann@openmesh.com>
+From: Sven Eckelmann <sven.eckelmann@openmesh.com>
+Date: Fri, 01 Dec 2017 12:32:03 +0100
+Message-ID: <1769003.2RLLWacTU4@bentobox>
+In-Reply-To: <20171129095042.12587-1-sven.eckelmann@openmesh.com>
+References: <20171129095042.12587-1-sven.eckelmann@openmesh.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2085319.RAPMeIBsJY";
+Content-Type: multipart/signed; boundary="nextPart3172578.JQIqqbaoUP";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Always initialize fragment
- header priority
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix check of retrieved
+ orig_gw in batadv_v_gw_is_eligible
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,51 +19,54 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Antonio Quartulli <a@unstable.cc>
 
---nextPart2085319.RAPMeIBsJY
+--nextPart3172578.JQIqqbaoUP
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Mittwoch, 29. November 2017 10:25:02 CET Sven Eckelmann wrote:
-> From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+On Mittwoch, 29. November 2017 10:50:42 CET Sven Eckelmann wrote:
+> The batadv_v_gw_is_eligible function already assumes that orig_node is not
+> NULL. But batadv_gw_node_get may have failed to find the originator. It
+> must therefore be checked whether the batadv_gw_node_get failed and not
+> whether orig_node is NULL to detect this error.
 > 
-> The batman-adv unuicast fragment header contains 3 bits for the priority of
-> the packet. These bits will be initialized when the skb->priority contains
-> a value between 256 and 263. But otherwise, the uninitialized bits from the
-> stack will be used.
-> 
-> Fixes: 4f241fcea704 ("batman-adv: Include frame priority in fragment header")
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
+> Fixes: 80b2d47be2c7 ("batman-adv: B.A.T.M.A.N. V - implement GW selection logic")
+> Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
 > ---
-> Cc: Andrew Lunn <andrew@lunn.ch>
+> Cc: Antonio Quartulli <a@unstable.cc>
+> ---
+>  net/batman-adv/bat_v.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
 
-Applied in e45a75c82fea [1]
+Applied in c7380677d616 [1]
 
 Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/e45a75c82feae23a20d2744ccfde03780ccdafc7
---nextPart2085319.RAPMeIBsJY
+[1] https://git.open-mesh.org/batman-adv.git/commit/c7380677d6167f3798d3ea7a4f1a93663f3c7915
+--nextPart3172578.JQIqqbaoUP
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlohPYoACgkQXYcKB8Em
-e0Z7+BAAsNtE7oWt46xgyFhlsOWPOlkefaz8kCE//jr9AFM6O/DCS2xZfBVegnf0
-zA0SpiFQbvf5SgOgy5z3vxaQC6ZSPMoARyWgeoyNy3c5HEIQIThs3XYYEiOsGnGR
-XBxXfrQzJJiBk9U311hMCVzOmfMVEIsM20to0SOle9XVqEv6u6bvKJz15u4vIk+u
-ncKIaMq+1f/7Btm3DG14akk63BiDHJvjavc6xfLP9ylWyu/wju0Ekzq+YyXIJiLr
-/b4pmzrjh08zGVxBgruUUZYQ+dKvYNUSZbBbovOM9T4V8esx0dXzzrNbxRunpW8/
-1B5UtxPFBVHCXEDNZtu4tNvwGKHUun50rhcUrsajp17otUTu72HAxbJ0MwhBy+1k
-lcNiPklrFElJ1o5u7bc7wSIuTv6VgGXZ6QiIuO82Xfp4ZLz7YgcPnQaInod0vfKm
-bPgqy3ORZAIelFRbFnGMaWA7Oha3eEMRjpLmGhBQbN0jOgueLqGpv7nY9nFq0tRh
-pR6l/M9AKG2dZOGbBnovLk72EJSDtbdNW6xqGhGtwvBl6Nk4IlNPgbhslHuI7SMR
-nrKVpa0Pw0l8Grht+8U8XEmD9ct7giD4uXbPwKjSJY3M1SfMQx5YtaF1LBYnc/Mq
-1teVh2LRkn6oQmVGjlWAKLiaPyYz+8IMp2JqlyLTFG6psd9mSNE=
-=gTYM
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlohPbMACgkQXYcKB8Em
+e0bEpA/9HXASpeYnfWB1ssxxAxWggpW3g3jyioN4liWoOH0lQkgN6uSPsN7wojZ3
+gUaf19d6NaxFe0X4/2ehlapVMkBjQOm8nGqT0vaIQMvku5/pg2eW+mYfOMaKuUGV
+0mqPjID4HRGjwXxAayOItVq9fRKVuNmEHFlEzYQuNKa8dWhzdxFMAxk4hqRyyXsc
+seWSGKF8YkEPB/MeSm4oU9SrDOu2ycfC0WITvF4YlpqEdWtiWtc1QAgHhoBnQxGf
+MQ9XvMcbZ6TS6cvD9xoBKlwKWb95fyHXKHzTjWF6ZL9KwWo1O+Cy0tAi9I5MsgoX
+jxs6igwe/my8wwWd2s10nKA3w9x5w2lL9lu+b2rT59ohE4uMtZ3lgLv07Gj4wOxs
+gs8FwJJkYUCJekRJJxilQVuZJ9t6EltOVVg7EaffJLVXIdc7MimBY+xlAaO7iJVl
+6Kehsi6NUJNXidRpaLufpxSygV3NS8ntazN8XbvBABhNCMfrsc5UHQC4k19RL0xU
+kvKm1v+YR39tPtKoLkZt8gS9Rtoo/cAItDqRZxLZlLJisSNRPGsFTsMEFFjbzgqb
+tXl3uzGthimB9PNbpTgW5Z39YKeef74eTB3IxeSkAiAUZ85SQFRSQqM+vYZNQkiG
+pt8xssFPYIV0I7RdsgAZ0UR2orTVuh4OgLDjRBn9PS9ZcAz25CA=
+=nw5Q
 -----END PGP SIGNATURE-----
 
---nextPart2085319.RAPMeIBsJY--
+--nextPart3172578.JQIqqbaoUP--
 
