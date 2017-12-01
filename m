@@ -1,15 +1,13 @@
-Return-Path: <a@unstable.cc>
-References: <20171129095042.12587-1-sven.eckelmann@openmesh.com>
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <a1a9b230-a53f-4b1c-1494-0f472aea21d2@unstable.cc>
-Date: Wed, 29 Nov 2017 18:36:27 +0800
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 01 Dec 2017 08:58:55 +0100
+Message-ID: <108010722.Nn6OHKNu2M@bentobox>
+In-Reply-To: <20171128073915.11117-1-sven@narfation.org>
+References: <20171128073915.11117-1-sven@narfation.org>
 MIME-Version: 1.0
-In-Reply-To: <20171129095042.12587-1-sven.eckelmann@openmesh.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="3wx3jrW8CWpNOO4dgjKPmOpsoWhTolwtN"
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix check of retrieved
- orig_gw in batadv_v_gw_is_eligible
+Content-Type: multipart/signed; boundary="nextPart1682626.z9y0SORoze";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: setup_timer() -> timer_setup()
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,72 +17,53 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Sven Eckelmann <sven.eckelmann@openmesh.com>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---3wx3jrW8CWpNOO4dgjKPmOpsoWhTolwtN
-Content-Type: multipart/mixed; boundary="xx1cTXQEUebsJCiLEG3ABlVPDvVls03QA";
- protected-headers="v1"
-From: Antonio Quartulli <a@unstable.cc>
-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>,
- Sven Eckelmann <sven.eckelmann@openmesh.com>
-Message-ID: <a1a9b230-a53f-4b1c-1494-0f472aea21d2@unstable.cc>
-Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix check of retrieved orig_gw
- in batadv_v_gw_is_eligible
-References: <20171129095042.12587-1-sven.eckelmann@openmesh.com>
-In-Reply-To: <20171129095042.12587-1-sven.eckelmann@openmesh.com>
+--nextPart1682626.z9y0SORoze
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---xx1cTXQEUebsJCiLEG3ABlVPDvVls03QA
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
+On Dienstag, 28. November 2017 08:39:15 CET Sven Eckelmann wrote:
+> From: Kees Cook <keescook@chromium.org>
+> 
+> This converts all remaining cases of the old setup_timer() API into using
+> timer_setup(), where the callback argument is the structure already
+> holding the struct timer_list. These should have no behavioral changes,
+> since they just change which pointer is passed into the callback with
+> the same available pointers after conversion. It handles the following
+> examples, in addition to some other variations.
+[...]
+> ---
+> TODO: this requires some compat code because this functionality was
+> added first with v4.14 (we have to check in more detail)
 
+Forgot to say that this is blocking the next release. It was merged into 
+Torvalds' tree without spending its time in linux-next and directly entered 
+v4.15-rc1. 
 
-
-On 29/11/17 17:50, Sven Eckelmann wrote:
-> The batadv_v_gw_is_eligible function already assumes that orig_node is =
-not
-> NULL. But batadv_gw_node_get may have failed to find the originator. It=
-
-> must therefore be checked whether the batadv_gw_node_get failed and not=
-
-> whether orig_node is NULL to detect this error.
->=20
-> Fixes: 80b2d47be2c7 ("batman-adv: B.A.T.M.A.N. V - implement GW selecti=
-on logic")
-> Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
-
-Acked-by: Antonio Quartulli <a@unstable.cc>
-
-
-
---=20
-Antonio Quartulli
-
-
---xx1cTXQEUebsJCiLEG3ABlVPDvVls03QA--
-
---3wx3jrW8CWpNOO4dgjKPmOpsoWhTolwtN
+Kind regards,
+	Sven
+--nextPart1682626.z9y0SORoze
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAloejasACgkQB6U8WA7y
-zXQKzhAAjbFqAc5FNv59ojIbmji5Z1WIQFgQEv1wY1mHy3rKVsmP0//xtuc26s/y
-w8esutxtLaEEwCep2uReFjeBlxy6VV6FfAmW7RMmgT0xWCrnyUKo15Pga9i3bgop
-vwAcdarzN4sV9NMmBorXfKoJxjPReLPgSlr5MwYrir2vYiSMHzWLxlbS0J4H4R10
-xJo4R+w9lxxvIYAXhnYIjk3GG/H+AdivK9iSSg2PgD9jL7aUpT3C0oLigE9aVmQ0
-uDR/qo4PhMA31n5gyaFW6EHNKISaJwM425vhTpxzyDJvYAoH81drGMknpzHSbkwo
-QW9GSxCsBLA64zFIC3gWIiy766Na+YD/eHB/TpXtDWJHBM+2rFc5/M3J8E97E4BQ
-etOFHXUhJPg3gY4JH0i4XjEILU2JCx6ABzflTBj8aidUT0QccFEvSBojMsSJnbnM
-Ymx6sstaJQM9SVdEZwUigZ7v6w1x0kZ7PQtRZSbt4gPL3gIW9nTgGnItCzjh/vP9
-Rnqm+JOrWz9dpoLb7ezkmtxccwG3y3UyqFV3DmJrDXSsvX34wR88Bc0sNQBOz+M0
-3jyaGno4I3qnVhv4LDIn53k8Rda1IzWsol3Ep8amWMVNW8mZGiSA1faZuIPNcXrP
-1pEMSgT3eODv6Li7iiKxfCfhHsP21eDI/Yp5cE8ndOq8PBT+tAA=
-=BeDk
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlohC78ACgkQXYcKB8Em
+e0YGKhAAzeG/Senns48p+u9ysaIIEaJP1B8QIYC7Y1tTQU+sNEKI42W8jC+f6xl/
+igcVMkYJcp0NzytJQCzLaTEJc3pkb1mIkOGDUcucu/ynfrw+Dzmqck8fzqmmaQfE
+JFtF6QQHymgCK8rBleR8erLHUMq3n3EpEfMoU2RQNB4uOhUqkPmKEM6jTXkD4zJI
+VU+PypihIp50fSzq/OvKXi/BsncQO9hOfyYxXYepAhy4ClXCnBbW1oavbEANPSyz
+7vgNFSgUGMA81QjAIF777yDH+u0+SDTZKfAkDkhNK8nJcFc71SJzODIiPTYOyeHI
+uox/JD4QbR8M2JXIL0yR2XU1PR57Kojneco/3S5PKKrRQnSayuBzL9AXeMrYBa4/
+7bcoArnIhzBw2oCWYbCfi5fkM6Kw62mquudNHesLQ7jl5bz/GLIJX1ZpZ0KqGuma
+FPu8iUbVNCV/09nMANd7A87jFvPmpPT+v+H2EyV4fcfmJT2A+BFOwy1tcOYg1g80
+A1jZTRwXHkUkdDHw0iwO4rKU5tm4yzcmJrEEr+1Gl6nQf5ZRhiTUlk6XGkX+wj5h
+taciemCDFesSp/eSVFMCZdBKHan6vzDKwHqIe84F0YO75JSrjDIF4Mtj0ErKGpPO
+43+fpGvJYhjv7IqxlbQAhbaDSUzxKzR5aYYFeUpR4BYZPItl6wc=
+=yI9/
 -----END PGP SIGNATURE-----
 
---3wx3jrW8CWpNOO4dgjKPmOpsoWhTolwtN--
+--nextPart1682626.z9y0SORoze--
+
