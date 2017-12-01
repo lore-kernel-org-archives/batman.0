@@ -1,14 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Fri, 01 Dec 2017 14:23:20 +0100
-Message-ID: <1878596.DcBCnC8XNM@bentobox>
-In-Reply-To: <20171120210217.8941-1-sven@narfation.org>
-References: <20171120210217.8941-1-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1543920.Y91IMmZAtZ";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/3] batman-adv: Convert CHANGELOG/README
- to reStructuredText
+Date: Fri,  1 Dec 2017 14:39:21 +0100
+Message-Id: <20171201133921.8414-1-sven@narfation.org>
+In-Reply-To: <20171119140517.24329-8-sven@narfation.org>
+References: <20171119140517.24329-8-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH v2 7/9] batman-adv: Mark remaining files as
+ GPL-2.0
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,54 +17,41 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart1543920.Y91IMmZAtZ
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Some files were not explicitly marked with any license. It is therefore
+assumed that these are licensed under the GPL-2.0. Make this unambiguous by
+adding this information direct to the file using the SPDX license
+identifier. The FSFE REUSE *.license annotation file is used for files
+which don't allow comments.
 
-On Montag, 20. November 2017 22:02:14 CET you wrote:
-> Hi,
-> 
-> I was talking today with Simon about the "License cleanup" changes. He
-> would prefer when the *.license files don't exist (when possible). Luckily,
-> I already wanted to convert these files (or at least the READMEs) to
-> reStructuredText and I've already shown in these patchsets how the
-> SPDX annotation should be done for the lrest files. So it was just
-> logically to immediately post the conversion to rst and integration
-> of this tag.
-> 
-> We've also discussed how the changelog should look like. It should be
-> simple and we only wanted to show the date (not the time) anymore.
-> And the actual changelog lists should be kept (mostly untouched - beside
-> some minor format fixes to make it reStructuredText compatible).
-> 
-> This patchset is based on the "batman-adv: License cleanup" patchset.
-[...]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+v2:
+- removed CHANGELOG.license README.external.license
+---
+ .gitattributes      | 3 +++
+ MAINTAINERS.license | 2 ++
+ 2 files changed, 5 insertions(+)
+ create mode 100644 MAINTAINERS.license
 
-Applied in 4ea6bec..6be59ad but without the *.license parts.
-
-Kind regards,
-        Sven
---nextPart1543920.Y91IMmZAtZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlohV8gACgkQXYcKB8Em
-e0amMhAAtzcm8JXr5nfasZZSB/T3B0MjVndPe7al7Zu2CZ7yghaqZnIq1p57X9ke
-Z1LRDIcCY9YL4O4b+nZqD4JGjwKBEY0CS5b5SG0Q4Rx452C+Ak8z1XuVHyaJvjvP
-5w/Ge+CHhCTPwtxktNsqV8wFXDVusZGUWb3QgqQROgg0+IJx+AyWmX3IAEHLRGas
-RSkfCOsXA4CO6ShAhgi5bBJ1vSc0nlSjvy2LFGDHB2bncV5fIMZUKUPzo8lPT40o
-aGNsDRV9dGCdRwqNZmcXwJQTi060+kLcJ+DJlVkO45JPL2gq+Mmw9GqWHLmiqiAj
-zqFNiOdDIR55oPzRhAwUWQuoqOz7JN5zb3fIXyxEKHFhiIeC2/Ymjednd1AQQJLS
-1v1XSWgaE0tPiPL4BruPGuWpu4FjKfdOgLUTIt/cc+OZQJh5WkrUZIy3EPiD8N4t
-+xEv6VfOOogLjY8Jy70VC9l+WsKptnBE6IBWXsgn7RM5bsRf5ygBowsWlqohahRM
-wot1jNMyEiDiuxpd4wS9Ext8sYWNSw9j7lMcFm9bGmlUJUM7HQ7AsaUCYEvRFFz7
-NtnmUydWEkAMhk2urpsIOwWPJnL960F/cUjzrK2oUyByVIxFPHKDdn+h93YHH0gw
-KMlR+LfweI6jp8+XRf7kjRgPx6S67d7VarFt3nGZ/tf5XbaEMLw=
-=SomW
------END PGP SIGNATURE-----
-
---nextPart1543920.Y91IMmZAtZ--
+diff --git a/.gitattributes b/.gitattributes
+index 1d2a7e9..402ecae 100644
+--- a/.gitattributes
++++ b/.gitattributes
+@@ -1,3 +1,6 @@
++# SPDX-License-Identifier: GPL-2.0
++# License-Filename: LICENSES/preferred/GPL-2.0
++
+ /.gitignore export-ignore
+ /.gitattributes export-ignore
+ *.c   diff=cpp
+diff --git a/MAINTAINERS.license b/MAINTAINERS.license
+new file mode 100644
+index 0000000..a55d70e
+--- /dev/null
++++ b/MAINTAINERS.license
+@@ -0,0 +1,2 @@
++SPDX-License-Identifier: GPL-2.0
++License-Filename: LICENSES/preferred/GPL-2.0
+-- 
+2.11.0
 
