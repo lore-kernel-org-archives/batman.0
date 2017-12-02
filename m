@@ -1,11 +1,11 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  2 Dec 2017 19:51:52 +0100
-Message-Id: <20171202185153.552-8-sven@narfation.org>
+Date: Sat,  2 Dec 2017 19:51:53 +0100
+Message-Id: <20171202185153.552-9-sven@narfation.org>
 In-Reply-To: <20171202185153.552-1-sven@narfation.org>
 References: <20171202185153.552-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 7/8] batman-adv: Add kernel-doc to functions
- in headers
+Subject: [B.A.T.M.A.N.] [PATCH 8/8] batman-adv: Add kernel-doc to externally
+ visible functions
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,276 +17,903 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-Externally visible functions should be documented with kernel-doc. This
-usually refers to non-static functions but also static inline files in
-headers are visible in other files and should therefore be documented.
+According to the kernel-doc documentation, externally visible functions
+should be documented. This refers to all all non-static function which can
+(and will) be used by functions in other sources files.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bitarray.h       |  7 +++-
- net/batman-adv/hard-interface.h |  6 +++
- net/batman-adv/hash.h           | 11 +++++-
- net/batman-adv/log.h            | 35 +++++++++++++++++-
- net/batman-adv/main.h           | 82 ++++++++++++++++++++++++++++++++++-------
- net/batman-adv/originator.h     |  9 ++++-
- 6 files changed, 131 insertions(+), 19 deletions(-)
+ net/batman-adv/bat_algo.c          | 27 ++++++++++++++++++++++++
+ net/batman-adv/bat_iv_ogm.c        |  5 +++++
+ net/batman-adv/debugfs.c           | 16 ++++++++++++++
+ net/batman-adv/gateway_client.c    | 38 +++++++++++++++++++++++++++++++++
+ net/batman-adv/gateway_common.c    |  9 ++++++++
+ net/batman-adv/hard-interface.c    | 36 ++++++++++++++++++++++++++++++-
+ net/batman-adv/hash.c              | 17 +++++++++++++--
+ net/batman-adv/icmp_socket.c       |  9 ++++++++
+ net/batman-adv/log.c               | 17 +++++++++++++++
+ net/batman-adv/main.c              | 31 +++++++++++++++++++++++++++
+ net/batman-adv/originator.c        | 43 ++++++++++++++++++++++++++++++++++++++
+ net/batman-adv/routing.c           | 29 +++++++++++++++++++++++++
+ net/batman-adv/send.c              | 18 ++++++++++++++++
+ net/batman-adv/soft-interface.c    | 20 ++++++++++++++++++
+ net/batman-adv/sysfs.c             | 32 ++++++++++++++++++++++++++++
+ net/batman-adv/translation-table.c | 37 ++++++++++++++++++++++++++++++++
+ 16 files changed, 381 insertions(+), 3 deletions(-)
 
-diff --git a/net/batman-adv/bitarray.h b/net/batman-adv/bitarray.h
-index f7b8c401..a24eb9d3 100644
---- a/net/batman-adv/bitarray.h
-+++ b/net/batman-adv/bitarray.h
-@@ -46,7 +46,12 @@ static inline bool batadv_test_bit(const unsigned long *seq_bits,
- 	return test_bit(diff, seq_bits) != 0;
+diff --git a/net/batman-adv/bat_algo.c b/net/batman-adv/bat_algo.c
+index 6857045f..df47db01 100644
+--- a/net/batman-adv/bat_algo.c
++++ b/net/batman-adv/bat_algo.c
+@@ -60,6 +60,12 @@ static struct batadv_algo_ops *batadv_algo_get(char *name)
+ 	return bat_algo_ops;
  }
  
--/* turn corresponding bit on, so we can remember that we got the packet */
 +/**
-+ * batadv_set_bit() - Turn corresponding bit on, so we can remember that we got
-+ *  the packet
-+ * @seq_bits: bitmap of the packet receive window
-+ * @n: relative sequence number of newly received packet
++ * batadv_algo_register() - Register callbacks for a mesh algorithm
++ * @bat_algo_ops: mesh algorithm callbacks to add
++ *
++ * Return: 0 on success or negative error number in case of failure
 + */
- static inline void batadv_set_bit(unsigned long *seq_bits, s32 n)
+ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
  {
- 	/* if too old, just drop it */
-diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
-index 6d1e40f6..18f75c0f 100644
---- a/net/batman-adv/hard-interface.h
-+++ b/net/batman-adv/hard-interface.h
-@@ -129,6 +129,12 @@ static inline void batadv_hardif_put(struct batadv_hard_iface *hard_iface)
- 	kref_put(&hard_iface->refcount, batadv_hardif_release);
+ 	struct batadv_algo_ops *bat_algo_ops_tmp;
+@@ -89,6 +95,19 @@ int batadv_algo_register(struct batadv_algo_ops *bat_algo_ops)
+ 	return 0;
  }
  
 +/**
-+ * batadv_primary_if_get_selected() - Get reference to primary interface
++ * batadv_algo_select() - Select algorithm of soft interface
++ * @bat_priv: the bat priv with all the soft interface information
++ * @name: name of the algorithm to select
++ *
++ * The algorithm callbacks for the soft interface will be set when the algorithm
++ * with the correct name was found. Any previous selected algorithm will not be
++ * deinitialized and the new selected algorithm will also not be initialized.
++ * It is therefore not allowed to call batadv_algo_select outside the creation
++ * function of the soft interface.
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int batadv_algo_select(struct batadv_priv *bat_priv, char *name)
+ {
+ 	struct batadv_algo_ops *bat_algo_ops;
+@@ -103,6 +122,14 @@ int batadv_algo_select(struct batadv_priv *bat_priv, char *name)
+ }
+ 
+ #ifdef CONFIG_BATMAN_ADV_DEBUGFS
++
++/**
++ * batadv_algo_seq_print_text() - Print the supported algorithms in a seq file
++ * @seq: seq file to print on
++ * @offset: not used
++ *
++ * Return: always 0
++ */
+ int batadv_algo_seq_print_text(struct seq_file *seq, void *offset)
+ {
+ 	struct batadv_algo_ops *bat_algo_ops;
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 7c603e4b..60a39046 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -2852,6 +2852,11 @@ static struct batadv_algo_ops batadv_batman_iv __read_mostly = {
+ 	},
+ };
+ 
++/**
++ * batadv_iv_init() - B.A.T.M.A.N. IV initialization function
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int __init batadv_iv_init(void)
+ {
+ 	int ret;
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index 6771b959..120db677 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -259,6 +259,9 @@ static struct batadv_debuginfo *batadv_hardif_debuginfos[] = {
+ 	NULL,
+ };
+ 
++/**
++ * batadv_debugfs_init() - Initialize soft interface independent debugfs entries
++ */
+ void batadv_debugfs_init(void)
+ {
+ 	struct batadv_debuginfo **bat_debug;
+@@ -289,6 +292,9 @@ void batadv_debugfs_init(void)
+ 	batadv_debugfs = NULL;
+ }
+ 
++/**
++ * batadv_debugfs_destroy() - Remove all debugfs entries
++ */
+ void batadv_debugfs_destroy(void)
+ {
+ 	debugfs_remove_recursive(batadv_debugfs);
+@@ -355,6 +361,12 @@ void batadv_debugfs_del_hardif(struct batadv_hard_iface *hard_iface)
+ 	}
+ }
+ 
++/**
++ * batadv_debugfs_add_meshif() - Initialize interface dependent debugfs entries
++ * @dev: netdev struct of the soft interface
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int batadv_debugfs_add_meshif(struct net_device *dev)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
+@@ -401,6 +413,10 @@ int batadv_debugfs_add_meshif(struct net_device *dev)
+ 	return -ENOMEM;
+ }
+ 
++/**
++ * batadv_debugfs_del_meshif() - Remove interface dependent debugfs entries
++ * @dev: netdev struct of the soft interface
++ */
+ void batadv_debugfs_del_meshif(struct net_device *dev)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 9754005f..075655b2 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -92,6 +92,12 @@ void batadv_gw_node_put(struct batadv_gw_node *gw_node)
+ 	kref_put(&gw_node->refcount, batadv_gw_node_release);
+ }
+ 
++/**
++ * batadv_gw_get_selected_gw_node() - Get currently selected gateway
 + * @bat_priv: the bat priv with all the soft interface information
 + *
-+ * Return: primary interface (with increased refcnt), otherwise NULL
++ * Return: selected gateway (with increased refcnt), NULL on errors
 + */
- static inline struct batadv_hard_iface *
- batadv_primary_if_get_selected(struct batadv_priv *bat_priv)
+ struct batadv_gw_node *
+ batadv_gw_get_selected_gw_node(struct batadv_priv *bat_priv)
  {
-diff --git a/net/batman-adv/hash.h b/net/batman-adv/hash.h
-index accac5c2..bf6126a7 100644
---- a/net/batman-adv/hash.h
-+++ b/net/batman-adv/hash.h
-@@ -120,8 +120,15 @@ static inline int batadv_hash_add(struct batadv_hashtable *hash,
+@@ -110,6 +116,12 @@ batadv_gw_get_selected_gw_node(struct batadv_priv *bat_priv)
+ 	return gw_node;
+ }
+ 
++/**
++ * batadv_gw_get_selected_orig() - Get originator of currently selected gateway
++ * @bat_priv: the bat priv with all the soft interface information
++ *
++ * Return: orig_node of selected gateway (with increased refcnt), NULL on errors
++ */
+ struct batadv_orig_node *
+ batadv_gw_get_selected_orig(struct batadv_priv *bat_priv)
+ {
+@@ -203,6 +215,10 @@ void batadv_gw_check_client_stop(struct batadv_priv *bat_priv)
+ 	batadv_gw_node_put(curr_gw);
+ }
+ 
++/**
++ * batadv_gw_election() - Elect the best gateway
++ * @bat_priv: the bat priv with all the soft interface information
++ */
+ void batadv_gw_election(struct batadv_priv *bat_priv)
+ {
+ 	struct batadv_gw_node *curr_gw = NULL;
+@@ -291,6 +307,11 @@ void batadv_gw_election(struct batadv_priv *bat_priv)
+ 		batadv_neigh_ifinfo_put(router_ifinfo);
+ }
+ 
++/**
++ * batadv_gw_check_election() - Elect orig node as best gateway when eligible
++ * @bat_priv: the bat priv with all the soft interface information
++ * @orig_node: orig node which is to be checked
++ */
+ void batadv_gw_check_election(struct batadv_priv *bat_priv,
+ 			      struct batadv_orig_node *orig_node)
+ {
+@@ -459,6 +480,11 @@ void batadv_gw_node_update(struct batadv_priv *bat_priv,
+ 		batadv_gw_node_put(gw_node);
+ }
+ 
++/**
++ * batadv_gw_node_delete() - Remove orig_node from gateway list
++ * @bat_priv: the bat priv with all the soft interface information
++ * @orig_node: orig node which is currently in process of being removed
++ */
+ void batadv_gw_node_delete(struct batadv_priv *bat_priv,
+ 			   struct batadv_orig_node *orig_node)
+ {
+@@ -470,6 +496,10 @@ void batadv_gw_node_delete(struct batadv_priv *bat_priv,
+ 	batadv_gw_node_update(bat_priv, orig_node, &gateway);
+ }
+ 
++/**
++ * batadv_gw_node_free() - Free gateway information from soft interface
++ * @bat_priv: the bat priv with all the soft interface information
++ */
+ void batadv_gw_node_free(struct batadv_priv *bat_priv)
+ {
+ 	struct batadv_gw_node *gw_node;
+@@ -485,6 +515,14 @@ void batadv_gw_node_free(struct batadv_priv *bat_priv)
+ }
+ 
+ #ifdef CONFIG_BATMAN_ADV_DEBUGFS
++
++/**
++ * batadv_gw_client_seq_print_text() - Print the gateway table in a seq file
++ * @seq: seq file to print on
++ * @offset: not used
++ *
++ * Return: always 0
++ */
+ int batadv_gw_client_seq_print_text(struct seq_file *seq, void *offset)
+ {
+ 	struct net_device *net_dev = (struct net_device *)seq->private;
+diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
+index c1194b77..d7f8ea82 100644
+--- a/net/batman-adv/gateway_common.c
++++ b/net/batman-adv/gateway_common.c
+@@ -164,6 +164,15 @@ void batadv_gw_tvlv_container_update(struct batadv_priv *bat_priv)
+ 	}
+ }
+ 
++/**
++ * batadv_gw_bandwidth_set() - Parse and set download/upload gateway bandwidth
++ *  from supplied string buffer
++ * @net_dev: netdev struct of the soft interface
++ * @buff: the buffer containing the user data
++ * @count: number of bytes in the buffer
++ *
++ * Return: 'count' on success or a negative error code in case of failure
++ */
+ ssize_t batadv_gw_bandwidth_set(struct net_device *net_dev, char *buff,
+ 				size_t count)
+ {
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 49083455..8b164ebf 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -66,6 +66,12 @@ void batadv_hardif_release(struct kref *ref)
+ 	kfree_rcu(hard_iface, rcu);
+ }
+ 
++/**
++ * batadv_hardif_get_by_netdev() - Get hard interface object of a net_device
++ * @net_dev: net_device to search for
++ *
++ * Return: batadv_hard_iface of net_dev (with increased refcnt), NULL on errors
++ */
+ struct batadv_hard_iface *
+ batadv_hardif_get_by_netdev(const struct net_device *net_dev)
+ {
+@@ -560,6 +566,13 @@ static void batadv_hardif_recalc_extra_skbroom(struct net_device *soft_iface)
+ 	soft_iface->needed_tailroom = lower_tailroom;
+ }
+ 
++/**
++ * batadv_hardif_min_mtu() - Calculate maximum MTU for soft interface
++ * @soft_iface: netdev struct of the soft interface
++ *
++ * Return: MTU for the soft-interface (limited by the minimal MTU of all active
++ *  slave interfaces)
++ */
+ int batadv_hardif_min_mtu(struct net_device *soft_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
+@@ -606,7 +619,11 @@ int batadv_hardif_min_mtu(struct net_device *soft_iface)
+ 	return min_t(int, min_mtu - batadv_max_header_len(), ETH_DATA_LEN);
+ }
+ 
+-/* adjusts the MTU if a new interface with a smaller MTU appeared. */
++/**
++ * batadv_update_min_mtu() - Adjusts the MTU if a new interface with a smaller
++ *  MTU appeared
++ * @soft_iface: netdev struct of the soft interface
++ */
+ void batadv_update_min_mtu(struct net_device *soft_iface)
+ {
+ 	soft_iface->mtu = batadv_hardif_min_mtu(soft_iface);
+@@ -691,6 +708,14 @@ static int batadv_master_del_slave(struct batadv_hard_iface *slave,
  	return ret;
  }
  
--/* removes data from hash, if found. data could be the structure you use with
-- * just the key filled, we just need the key for comparing.
 +/**
-+ * batadv_hash_remove() - Removes data from hash, if found
-+ * @hash: hash table
-+ * @compare: callback to determine if 2 hash elements are identical
-+ * @choose: callback calculating the hash index
-+ * @data: data passed to the aforementioned callbacks as argument
++ * batadv_hardif_enable_interface() - Enslave hard interface to soft interface
++ * @hard_iface: hard interface to add to soft interface
++ * @net: the applicable net namespace
++ * @iface_name: name of the soft interface
 + *
-+ * ata could be the structure you use with  just the key filled, we just need
-+ * the key for comparing.
-  *
-  * Return: returns pointer do data on success, so you can remove the used
-  * structure yourself, or NULL on error
-diff --git a/net/batman-adv/log.h b/net/batman-adv/log.h
-index 4c48a89d..cee64b14 100644
---- a/net/batman-adv/log.h
-+++ b/net/batman-adv/log.h
-@@ -78,7 +78,14 @@ enum batadv_dbg_level {
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 				   struct net *net, const char *iface_name)
+ {
+@@ -802,6 +827,12 @@ int batadv_hardif_enable_interface(struct batadv_hard_iface *hard_iface,
+ 	return ret;
+ }
+ 
++/**
++ * batadv_hardif_disable_interface() - Remove hard interface from soft interface
++ * @hard_iface: hard interface to be removed
++ * @autodel: whether to delete soft interface when it doesn't contain any other
++ *  slave interfaces
++ */
+ void batadv_hardif_disable_interface(struct batadv_hard_iface *hard_iface,
+ 				     enum batadv_hard_if_cleanup autodel)
+ {
+@@ -936,6 +967,9 @@ static void batadv_hardif_remove_interface(struct batadv_hard_iface *hard_iface)
+ 	batadv_hardif_put(hard_iface);
+ }
+ 
++/**
++ * batadv_hardif_remove_interfaces() - Remove all hard interfaces
++ */
+ void batadv_hardif_remove_interfaces(void)
+ {
+ 	struct batadv_hard_iface *hard_iface, *hard_iface_tmp;
+diff --git a/net/batman-adv/hash.c b/net/batman-adv/hash.c
+index b5f7e139..58e0c1df 100644
+--- a/net/batman-adv/hash.c
++++ b/net/batman-adv/hash.c
+@@ -33,7 +33,10 @@ static void batadv_hash_init(struct batadv_hashtable *hash)
+ 	}
+ }
+ 
+-/* free only the hashtable and the hash itself. */
++/**
++ * batadv_hash_destroy() - Free only the hashtable and the hash itself
++ * @hash: hash object to destroy
++ */
+ void batadv_hash_destroy(struct batadv_hashtable *hash)
+ {
+ 	kfree(hash->list_locks);
+@@ -41,7 +44,12 @@ void batadv_hash_destroy(struct batadv_hashtable *hash)
+ 	kfree(hash);
+ }
+ 
+-/* allocates and clears the hash */
++/**
++ * batadv_hash_new() - Allocates and clears the hashtable
++ * @size: number of hash buckets to allocate
++ *
++ * Return: newly allocated hashtable, NULL on errors
++ */
+ struct batadv_hashtable *batadv_hash_new(u32 size)
+ {
+ 	struct batadv_hashtable *hash;
+@@ -70,6 +78,11 @@ struct batadv_hashtable *batadv_hash_new(u32 size)
+ 	return NULL;
+ }
+ 
++/**
++ * batadv_hash_set_lock_class() - Set specific lockdep class for hash spinlocks
++ * @hash: hash object to modify
++ * @key: lockdep class key address
++ */
+ void batadv_hash_set_lock_class(struct batadv_hashtable *hash,
+ 				struct lock_class_key *key)
+ {
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index 02e7463b..c12aeed3 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -55,6 +55,9 @@ static void batadv_socket_add_packet(struct batadv_socket_client *socket_client,
+ 				     struct batadv_icmp_header *icmph,
+ 				     size_t icmp_len);
+ 
++/**
++ * batadv_socket_init() - Initialize soft interface independent socket data
++ */
+ void batadv_socket_init(void)
+ {
+ 	memset(batadv_socket_client_hash, 0, sizeof(batadv_socket_client_hash));
+@@ -314,6 +317,12 @@ static const struct file_operations batadv_fops = {
+ 	.llseek = no_llseek,
+ };
+ 
++/**
++ * batadv_socket_setup() - Create debugfs "socket" file
++ * @bat_priv: the bat priv with all the soft interface information
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int batadv_socket_setup(struct batadv_priv *bat_priv)
+ {
+ 	struct dentry *d;
+diff --git a/net/batman-adv/log.c b/net/batman-adv/log.c
+index 4ef4bde2..3ba04d51 100644
+--- a/net/batman-adv/log.c
++++ b/net/batman-adv/log.c
+@@ -86,6 +86,13 @@ static int batadv_fdebug_log(struct batadv_priv_debug_log *debug_log,
+ 	return 0;
+ }
+ 
++/**
++ * batadv_debug_log() - Add debug log entry
++ * @bat_priv: the bat priv with all the soft interface information
++ * @fmt: format string
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
  int batadv_debug_log(struct batadv_priv *bat_priv, const char *fmt, ...)
- __printf(2, 3);
- 
--/* possibly ratelimited debug output */
-+/**
-+ * _batadv_dbg() - Store debug output with(out) ratelimiting
-+ * @type: type of debug message
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @ratelimited: whether output should be rate limited
-+ * @fmt: format string
-+ * @arg...: variable arguments
-+ */
- #define _batadv_dbg(type, bat_priv, ratelimited, fmt, arg...)		\
- 	do {								\
- 		struct batadv_priv *__batpriv = (bat_priv);		\
-@@ -97,11 +104,30 @@ static inline void _batadv_dbg(int type __always_unused,
- }
- #endif
- 
-+/**
-+ * batadv_dbg() - Store debug output without ratelimiting
-+ * @type: type of debug message
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @arg...: format string and variable arguments
-+ */
- #define batadv_dbg(type, bat_priv, arg...) \
- 	_batadv_dbg(type, bat_priv, 0, ## arg)
-+
-+/**
-+ * batadv_dbg_ratelimited() - Store debug output with ratelimiting
-+ * @type: type of debug message
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @arg...: format string and variable arguments
-+ */
- #define batadv_dbg_ratelimited(type, bat_priv, arg...) \
- 	_batadv_dbg(type, bat_priv, 1, ## arg)
- 
-+/**
-+ * batadv_info() - Store message in debug buffer and print it to kmsg buffer
-+ * @net_dev: the soft interface net device
-+ * @fmt: format string
-+ * @arg...: variable arguments
-+ */
- #define batadv_info(net_dev, fmt, arg...)				\
- 	do {								\
- 		struct net_device *_netdev = (net_dev);                 \
-@@ -109,6 +135,13 @@ static inline void _batadv_dbg(int type __always_unused,
- 		batadv_dbg(BATADV_DBG_ALL, _batpriv, fmt, ## arg);	\
- 		pr_info("%s: " fmt, _netdev->name, ## arg);		\
- 	} while (0)
-+
-+/**
-+ * batadv_err() - Store error in debug buffer and print it to kmsg buffer
-+ * @net_dev: the soft interface net device
-+ * @fmt: format string
-+ * @arg...: variable arguments
-+ */
- #define batadv_err(net_dev, fmt, arg...)				\
- 	do {								\
- 		struct net_device *_netdev = (net_dev);                 \
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 86e61d63..d1f0501e 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -297,40 +297,96 @@ static inline bool batadv_has_timed_out(unsigned long timestamp,
- 	return time_is_before_jiffies(timestamp + msecs_to_jiffies(timeout));
- }
- 
-+/**
-+ * batadv_atomic_dec_not_zero() - Decrease unless the number is 0
-+ * @v: pointer of type atomic_t
-+ *
-+ * Return: non-zero if v was not 0, and zero otherwise.
-+ */
- #define batadv_atomic_dec_not_zero(v)	atomic_add_unless((v), -1, 0)
- 
--/* Returns the smallest signed integer in two's complement with the sizeof x */
-+/**
-+ * batadv_smallest_signed_int() - Returns the smallest signed integer in two's
-+ *  complement with the sizeof x
-+ * @x: type of integer
-+ *
-+ * Return: smallest signed integer of type
-+ */
- #define batadv_smallest_signed_int(x) (1u << (7u + 8u * (sizeof(x) - 1u)))
- 
--/* Checks if a sequence number x is a predecessor/successor of y.
-- * they handle overflows/underflows and can correctly check for a
-- * predecessor/successor unless the variable sequence number has grown by
-- * more then 2**(bitwidth(x)-1)-1.
-+/**
-+ * batadv_seq_before() - Checks if a sequence number x is a predecessor of y
-+ * @x: potential predecessor of @y
-+ * @y: value to compare @x against
-+ *
-+ * It handles overflows/underflows and can correctly check for a predecessor
-+ * unless the variable sequence number has grown by more then
-+ * 2**(bitwidth(x)-1)-1.
-+ *
-  * This means that for a u8 with the maximum value 255, it would think:
-- *  - when adding nothing - it is neither a predecessor nor a successor
-- *  - before adding more than 127 to the starting value - it is a predecessor,
-- *  - when adding 128 - it is neither a predecessor nor a successor,
-- *  - after adding more than 127 to the starting value - it is a successor
-+ *
-+ * * when adding nothing - it is neither a predecessor nor a successor
-+ * * before adding more than 127 to the starting value - it is a predecessor,
-+ * * when adding 128 - it is neither a predecessor nor a successor,
-+ * * after adding more than 127 to the starting value - it is a successor
-+ *
-+ * Return: true when x is a predecessor of y, false otherwise
-  */
- #define batadv_seq_before(x, y) ({typeof(x)_d1 = (x); \
- 				 typeof(y)_d2 = (y); \
- 				 typeof(x)_dummy = (_d1 - _d2); \
- 				 (void)(&_d1 == &_d2); \
- 				 _dummy > batadv_smallest_signed_int(_dummy); })
-+
-+/**
-+ * batadv_seq_after() - Checks if a sequence number x is a successor of y
-+ * @x: potential sucessor of @y
-+ * @y: value to compare @x against
-+ *
-+ * It handles overflows/underflows and can correctly check for a successor
-+ * unless the variable sequence number has grown by more then
-+ * 2**(bitwidth(x)-1)-1.
-+ *
-+ * This means that for a u8 with the maximum value 255, it would think:
-+ *
-+ * * when adding nothing - it is neither a predecessor nor a successor
-+ * * before adding more than 127 to the starting value - it is a predecessor,
-+ * * when adding 128 - it is neither a predecessor nor a successor,
-+ * * after adding more than 127 to the starting value - it is a successor
-+ *
-+ * Return: true when x is a successor of y, false otherwise
-+ */
- #define batadv_seq_after(x, y) batadv_seq_before(y, x)
- 
--/* Stop preemption on local cpu while incrementing the counter */
-+/**
-+ * batadv_add_counter() - Add to per cpu statistics counter of soft interface
-+ * @bat_priv: the bat priv with all the soft interface information
-+ * @idx: counter index which should be modified
-+ * @count: value to increase counter by
-+ *
-+ * Stop preemption on local cpu while incrementing the counter
-+ */
- static inline void batadv_add_counter(struct batadv_priv *bat_priv, size_t idx,
- 				      size_t count)
  {
- 	this_cpu_add(bat_priv->bat_counters[idx], count);
+ 	va_list args;
+@@ -197,6 +204,12 @@ static const struct file_operations batadv_log_fops = {
+ 	.llseek         = no_llseek,
+ };
+ 
++/**
++ * batadv_debug_log_setup() - Initialize debug log
++ * @bat_priv: the bat priv with all the soft interface information
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int batadv_debug_log_setup(struct batadv_priv *bat_priv)
+ {
+ 	struct dentry *d;
+@@ -222,6 +235,10 @@ int batadv_debug_log_setup(struct batadv_priv *bat_priv)
+ 	return -ENOMEM;
  }
  
 +/**
-+ * batadv_inc_counter() - Increase per cpu statistics counter of soft interface
-+ * @b: the bat priv with all the soft interface information
-+ * @i: counter index which should be modified
++ * batadv_debug_log_cleanup() - Destroy debug log
++ * @bat_priv: the bat priv with all the soft interface information
 + */
- #define batadv_inc_counter(b, i) batadv_add_counter(b, i, 1)
- 
--/* Define a macro to reach the control buffer of the skb. The members of the
-- * control buffer are defined in struct batadv_skb_cb in types.h.
-- * The macro is inspired by the similar macro TCP_SKB_CB() in tcp.h.
-+/**
-+ * BATADV_SKB_CB() - Get batadv_skb_cb from skb control buffer
-+ * @__skb: skb holding the control buffer
-+ *
-+ * The members of the control buffer are defined in struct batadv_skb_cb in
-+ * types.h. The macro is inspired by the similar macro TCP_SKB_CB() in tcp.h.
-+ *
-+ * Return: pointer to the batadv_skb_cb of the skb
-  */
- #define BATADV_SKB_CB(__skb)       ((struct batadv_skb_cb *)&((__skb)->cb[0]))
- 
-diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
-index 40c7f039..c73fcf7e 100644
---- a/net/batman-adv/originator.h
-+++ b/net/batman-adv/originator.h
-@@ -83,8 +83,13 @@ batadv_orig_node_vlan_get(struct batadv_orig_node *orig_node,
- 			  unsigned short vid);
- void batadv_orig_node_vlan_put(struct batadv_orig_node_vlan *orig_vlan);
- 
--/* hashfunction to choose an entry in a hash table of given size
-- * hash algorithm from http://en.wikipedia.org/wiki/Hash_table
-+/**
-+ * batadv_choose_orig() - Return the index of the orig entry in the hash table
-+ * @data: mac address of the originator node
-+ * @size: the size of the hash table
-+ *
-+ * Return: the hash index where the object represented by @data should be
-+ * stored at.
-  */
- static inline u32 batadv_choose_orig(const void *data, u32 size)
+ void batadv_debug_log_cleanup(struct batadv_priv *bat_priv)
  {
+ 	kfree(bat_priv->debug_log);
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 40ed4d21..66bd1919 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -139,6 +139,12 @@ static void __exit batadv_exit(void)
+ 	batadv_tt_cache_destroy();
+ }
+ 
++/**
++ * batadv_mesh_init() - Initialize soft interface
++ * @soft_iface: netdev struct of the soft interface
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int batadv_mesh_init(struct net_device *soft_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
+@@ -216,6 +222,10 @@ int batadv_mesh_init(struct net_device *soft_iface)
+ 	return ret;
+ }
+ 
++/**
++ * batadv_mesh_free() - Deinitialize soft interface
++ * @soft_iface: netdev struct of the soft interface
++ */
+ void batadv_mesh_free(struct net_device *soft_iface)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(soft_iface);
+@@ -412,6 +422,16 @@ static int batadv_recv_unhandled_packet(struct sk_buff *skb,
+ /* incoming packets with the batman ethertype received on any active hard
+  * interface
+  */
++
++/**
++ * batadv_batman_skb_recv() - Handle incoming message from an hard interface
++ * @skb: the received packet
++ * @dev: the net device that the packet was received on
++ * @ptype: packet type of incoming packet (ETH_P_BATMAN)
++ * @orig_dev: the original receive net device (e.g. bonded device)
++ *
++ * Return: NET_RX_SUCCESS on success or NET_RX_DROP in case of failure
++ */
+ int batadv_batman_skb_recv(struct sk_buff *skb, struct net_device *dev,
+ 			   struct packet_type *ptype,
+ 			   struct net_device *orig_dev)
+@@ -535,6 +555,13 @@ static void batadv_recv_handler_init(void)
+ 	batadv_rx_handler[BATADV_UNICAST_FRAG] = batadv_recv_frag_packet;
+ }
+ 
++/**
++ * batadv_recv_handler_register() - Register handler for batman-adv packet type
++ * @packet_type: batadv_packettype which should be handled
++ * @recv_handler: receive handler for the packet type
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int
+ batadv_recv_handler_register(u8 packet_type,
+ 			     int (*recv_handler)(struct sk_buff *,
+@@ -552,6 +579,10 @@ batadv_recv_handler_register(u8 packet_type,
+ 	return 0;
+ }
+ 
++/**
++ * batadv_recv_handler_unregister() - Unregister handler for packet type
++ * @packet_type: batadv_packettype which should no longer be handled
++ */
+ void batadv_recv_handler_unregister(u8 packet_type)
+ {
+ 	batadv_rx_handler[packet_type] = batadv_recv_unhandled_packet;
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 477432da..19e7461c 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -57,6 +57,13 @@
+ /* hash class keys */
+ static struct lock_class_key batadv_orig_hash_lock_class_key;
+ 
++/**
++ * batadv_orig_hash_find() - Find and return originator from orig_hash
++ * @bat_priv: the bat priv with all the soft interface information
++ * @data: mac address of the originator
++ *
++ * Return: orig_node (with increased refcnt), NULL on errors
++ */
+ struct batadv_orig_node *
+ batadv_orig_hash_find(struct batadv_priv *bat_priv, const void *data)
+ {
+@@ -200,6 +207,12 @@ void batadv_orig_node_vlan_put(struct batadv_orig_node_vlan *orig_vlan)
+ 	kref_put(&orig_vlan->refcount, batadv_orig_node_vlan_release);
+ }
+ 
++/**
++ * batadv_originator_init() - Initialize all originator structures
++ * @bat_priv: the bat priv with all the soft interface information
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int batadv_originator_init(struct batadv_priv *bat_priv)
+ {
+ 	if (bat_priv->orig_hash)
+@@ -958,6 +971,10 @@ void batadv_orig_node_put(struct batadv_orig_node *orig_node)
+ 	kref_put(&orig_node->refcount, batadv_orig_node_release);
+ }
+ 
++/**
++ * batadv_originator_free() - Free all originator structures
++ * @bat_priv: the bat priv with all the soft interface information
++ */
+ void batadv_originator_free(struct batadv_priv *bat_priv)
+ {
+ 	struct batadv_hashtable *hash = bat_priv->orig_hash;
+@@ -1373,12 +1390,24 @@ static void batadv_purge_orig(struct work_struct *work)
+ 			   msecs_to_jiffies(BATADV_ORIG_WORK_PERIOD));
+ }
+ 
++/**
++ * batadv_purge_orig_ref() - Purge all outdated originators
++ * @bat_priv: the bat priv with all the soft interface information
++ */
+ void batadv_purge_orig_ref(struct batadv_priv *bat_priv)
+ {
+ 	_batadv_purge_orig(bat_priv);
+ }
+ 
+ #ifdef CONFIG_BATMAN_ADV_DEBUGFS
++
++/**
++ * batadv_orig_seq_print_text() - Print the originator table in a seq file
++ * @seq: seq file to print on
++ * @offset: not used
++ *
++ * Return: always 0
++ */
+ int batadv_orig_seq_print_text(struct seq_file *seq, void *offset)
+ {
+ 	struct net_device *net_dev = (struct net_device *)seq->private;
+@@ -1531,6 +1560,13 @@ int batadv_orig_dump(struct sk_buff *msg, struct netlink_callback *cb)
+ 	return ret;
+ }
+ 
++/**
++ * batadv_orig_hash_add_if() - Add interface to originators in orig_hash
++ * @hard_iface: hard interface to add (already slave of the soft interface)
++ * @max_if_num: new number of interfaces
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
+ 			    int max_if_num)
+ {
+@@ -1566,6 +1602,13 @@ int batadv_orig_hash_add_if(struct batadv_hard_iface *hard_iface,
+ 	return -ENOMEM;
+ }
+ 
++/**
++ * batadv_orig_hash_del_if() - Remove interface from originators in orig_hash
++ * @hard_iface: hard interface to remove (still slave of the soft interface)
++ * @max_if_num: new number of interfaces
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int batadv_orig_hash_del_if(struct batadv_hard_iface *hard_iface,
+ 			    int max_if_num)
+ {
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index d2d02c68..cfd31042 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -180,6 +180,14 @@ bool batadv_window_protected(struct batadv_priv *bat_priv, s32 seq_num_diff,
+ 	return false;
+ }
+ 
++/**
++ * batadv_check_management_packet() - Check preconditions for management packets
++ * @skb: incoming packet buffer
++ * @hard_iface: incoming hard interface
++ * @header_len: minimal header length of packet type
++ *
++ * Return: true when management preconditions are met, false otherwise
++ */
+ bool batadv_check_management_packet(struct sk_buff *skb,
+ 				    struct batadv_hard_iface *hard_iface,
+ 				    int header_len)
+@@ -347,6 +355,13 @@ static int batadv_recv_icmp_ttl_exceeded(struct batadv_priv *bat_priv,
+ 	return ret;
+ }
+ 
++/**
++ * batadv_recv_icmp_packet() - Process incoming icmp packet
++ * @skb: incoming packet buffer
++ * @recv_if: incoming hard interface
++ *
++ * Return: NET_RX_SUCCESS on success or NET_RX_DROP in case of failure
++ */
+ int batadv_recv_icmp_packet(struct sk_buff *skb,
+ 			    struct batadv_hard_iface *recv_if)
+ {
+@@ -935,6 +950,13 @@ int batadv_recv_unhandled_unicast_packet(struct sk_buff *skb,
+ 	return NET_RX_DROP;
+ }
+ 
++/**
++ * batadv_recv_unicast_packet() - Process incoming unicast packet
++ * @skb: incoming packet buffer
++ * @recv_if: incoming hard interface
++ *
++ * Return: NET_RX_SUCCESS on success or NET_RX_DROP in case of failure
++ */
+ int batadv_recv_unicast_packet(struct sk_buff *skb,
+ 			       struct batadv_hard_iface *recv_if)
+ {
+@@ -1155,6 +1177,13 @@ int batadv_recv_frag_packet(struct sk_buff *skb,
+ 	return ret;
+ }
+ 
++/**
++ * batadv_recv_bcast_packet() - Process incoming broadcast packet
++ * @skb: incoming packet buffer
++ * @recv_if: incoming hard interface
++ *
++ * Return: NET_RX_SUCCESS on success or NET_RX_DROP in case of failure
++ */
+ int batadv_recv_bcast_packet(struct sk_buff *skb,
+ 			     struct batadv_hard_iface *recv_if)
+ {
+diff --git a/net/batman-adv/send.c b/net/batman-adv/send.c
+index 5c2f5dd3..1007fc20 100644
+--- a/net/batman-adv/send.c
++++ b/net/batman-adv/send.c
+@@ -123,12 +123,30 @@ int batadv_send_skb_packet(struct sk_buff *skb,
+ 	return NET_XMIT_DROP;
+ }
+ 
++/**
++ * batadv_send_broadcast_skb() - Send broadcast packet via hard interface
++ * @skb: packet to be transmitted (with batadv header and no outer eth header)
++ * @hard_iface: outgoing interface
++ *
++ * Return: A negative errno code is returned on a failure. A success does not
++ * guarantee the frame will be transmitted as it may be dropped due
++ * to congestion or traffic shaping.
++ */
+ int batadv_send_broadcast_skb(struct sk_buff *skb,
+ 			      struct batadv_hard_iface *hard_iface)
+ {
+ 	return batadv_send_skb_packet(skb, hard_iface, batadv_broadcast_addr);
+ }
+ 
++/**
++ * batadv_send_unicast_skb() - Send unicast packet to neighbor
++ * @skb: packet to be transmitted (with batadv header and no outer eth header)
++ * @neigh: neighbor which is used as next hop to destination
++ *
++ * Return: A negative errno code is returned on a failure. A success does not
++ * guarantee the frame will be transmitted as it may be dropped due
++ * to congestion or traffic shaping.
++ */
+ int batadv_send_unicast_skb(struct sk_buff *skb,
+ 			    struct batadv_neigh_node *neigh)
+ {
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 4f6b2d5c..d2171ecf 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -64,6 +64,13 @@
+ #include "sysfs.h"
+ #include "translation-table.h"
+ 
++/**
++ * batadv_skb_head_push() - Increase header size and move (push) head pointer
++ * @skb: packet buffer which should be modified
++ * @len: number of bytes to add
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int batadv_skb_head_push(struct sk_buff *skb, unsigned int len)
+ {
+ 	int result;
+@@ -1063,6 +1070,13 @@ static void batadv_softif_init_early(struct net_device *dev)
+ 	dev->ethtool_ops = &batadv_ethtool_ops;
+ }
+ 
++/**
++ * batadv_softif_create() - Create and register soft interface
++ * @net: the applicable net namespace
++ * @name: name of the new soft interface
++ *
++ * Return: newly allocated soft_interface, NULL on errors
++ */
+ struct net_device *batadv_softif_create(struct net *net, const char *name)
+ {
+ 	struct net_device *soft_iface;
+@@ -1140,6 +1154,12 @@ static void batadv_softif_destroy_netlink(struct net_device *soft_iface,
+ 	unregister_netdevice_queue(soft_iface, head);
+ }
+ 
++/**
++ * batadv_softif_is_valid() - Check whether device is a batadv soft interface
++ * @net_dev: device which should be checked
++ *
++ * Return: true when net_dev is a batman-adv interface, false otherwise
++ */
+ bool batadv_softif_is_valid(const struct net_device *net_dev)
+ {
+ 	if (net_dev->netdev_ops->ndo_start_xmit == batadv_interface_tx)
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index c32f5334..cac0d32b 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -733,6 +733,12 @@ static struct batadv_attribute *batadv_vlan_attrs[] = {
+ 	NULL,
+ };
+ 
++/**
++ * batadv_sysfs_add_meshif() - Add soft interface specific sysfs entries
++ * @dev: netdev struct of the soft interface
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int batadv_sysfs_add_meshif(struct net_device *dev)
+ {
+ 	struct kobject *batif_kobject = &dev->dev.kobj;
+@@ -773,6 +779,10 @@ int batadv_sysfs_add_meshif(struct net_device *dev)
+ 	return -ENOMEM;
+ }
+ 
++/**
++ * batadv_sysfs_del_meshif() - Remove soft interface specific sysfs entries
++ * @dev: netdev struct of the soft interface
++ */
+ void batadv_sysfs_del_meshif(struct net_device *dev)
+ {
+ 	struct batadv_priv *bat_priv = netdev_priv(dev);
+@@ -1130,6 +1140,13 @@ static struct batadv_attribute *batadv_batman_attrs[] = {
+ 	NULL,
+ };
+ 
++/**
++ * batadv_sysfs_add_hardif() - Add hard interface specific sysfs entries
++ * @hardif_obj: address where to store the pointer to new sysfs folder
++ * @dev: netdev struct of the hard interface
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int batadv_sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
+ {
+ 	struct kobject *hardif_kobject = &dev->dev.kobj;
+@@ -1164,6 +1181,11 @@ int batadv_sysfs_add_hardif(struct kobject **hardif_obj, struct net_device *dev)
+ 	return -ENOMEM;
+ }
+ 
++/**
++ * batadv_sysfs_del_hardif() - Remove hard interface specific sysfs entries
++ * @hardif_obj: address to the pointer to which stores batman-adv sysfs folder
++ *  of the hard interface
++ */
+ void batadv_sysfs_del_hardif(struct kobject **hardif_obj)
+ {
+ 	kobject_uevent(*hardif_obj, KOBJ_REMOVE);
+@@ -1172,6 +1194,16 @@ void batadv_sysfs_del_hardif(struct kobject **hardif_obj)
+ 	*hardif_obj = NULL;
+ }
+ 
++/**
++ * batadv_throw_uevent() - Send an uevent with batman-adv specific env data
++ * @bat_priv: the bat priv with all the soft interface information
++ * @type: subsystem type of event. Stored in uevent's BATTYPE
++ * @action: action type of event. Stored in uevent's BATACTION
++ * @data: string with additional information to the event (ignored for
++ *  BATADV_UEV_DEL). Stored in uevent's BATDATA
++ *
++ * Return: 0 on success or negative error number in case of failure
++ */
+ int batadv_throw_uevent(struct batadv_priv *bat_priv, enum batadv_uev_type type,
+ 			enum batadv_uev_action action, const char *data)
+ {
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index e562da36..2b4bacd6 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -1053,6 +1053,14 @@ static void batadv_tt_tvlv_container_update(struct batadv_priv *bat_priv)
+ }
+ 
+ #ifdef CONFIG_BATMAN_ADV_DEBUGFS
++
++/**
++ * batadv_tt_local_seq_print_text() - Print the local tt table in a seq file
++ * @seq: seq file to print on
++ * @offset: not used
++ *
++ * Return: always 0
++ */
+ int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset)
+ {
+ 	struct net_device *net_dev = (struct net_device *)seq->private;
+@@ -1925,6 +1933,13 @@ batadv_tt_global_print_entry(struct batadv_priv *bat_priv,
+ 	}
+ }
+ 
++/**
++ * batadv_tt_global_seq_print_text() - Print the global tt table in a seq file
++ * @seq: seq file to print on
++ * @offset: not used
++ *
++ * Return: always 0
++ */
+ int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset)
+ {
+ 	struct net_device *net_dev = (struct net_device *)seq->private;
+@@ -3727,6 +3742,10 @@ static void batadv_tt_purge(struct work_struct *work)
+ 			   msecs_to_jiffies(BATADV_TT_WORK_PERIOD));
+ }
+ 
++/**
++ * batadv_tt_free() - Free translation table of soft interface
++ * @bat_priv: the bat priv with all the soft interface information
++ */
+ void batadv_tt_free(struct batadv_priv *bat_priv)
+ {
+ 	batadv_tvlv_container_unregister(bat_priv, BATADV_TVLV_TT, 1);
+@@ -3874,6 +3893,15 @@ void batadv_tt_local_commit_changes(struct batadv_priv *bat_priv)
+ 	spin_unlock_bh(&bat_priv->tt.commit_lock);
+ }
+ 
++/**
++ * batadv_is_ap_isolated() - Check if packet from upper layer should be dropped
++ * @bat_priv: the bat priv with all the soft interface information
++ * @src: source mac address of packet
++ * @dst: destination mac address of packet
++ * @vid: vlan id of packet
++ *
++ * Return: true when src+dst(+vid) pair should be isolated, false otherwise
++ */
+ bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, u8 *src, u8 *dst,
+ 			   unsigned short vid)
+ {
+@@ -4045,6 +4073,15 @@ bool batadv_tt_local_client_is_roaming(struct batadv_priv *bat_priv,
+ 	return ret;
+ }
+ 
++/**
++ * batadv_tt_add_temporary_global_entry() - Add temporary entry to global TT
++ * @bat_priv: the bat priv with all the soft interface information
++ * @orig_node: orig node which the temporary entry should be associated with
++ * @addr: mac address of the client
++ * @vid: VLAN id of the new temporary global translation table
++ *
++ * Return: true when temporary tt entry could be added, false otherwise
++ */
+ bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
+ 					  struct batadv_orig_node *orig_node,
+ 					  const unsigned char *addr,
 -- 
 2.11.0
 
