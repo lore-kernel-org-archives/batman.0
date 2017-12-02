@@ -1,10 +1,10 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat,  2 Dec 2017 19:51:50 +0100
-Message-Id: <20171202185153.552-6-sven@narfation.org>
+Date: Sat,  2 Dec 2017 19:51:51 +0100
+Message-Id: <20171202185153.552-7-sven@narfation.org>
 In-Reply-To: <20171202185153.552-1-sven@narfation.org>
 References: <20171202185153.552-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH 5/8] batman-adv: Add kernel-doc to structs in
+Subject: [B.A.T.M.A.N.] [PATCH 6/8] batman-adv: Add kernel-doc to enums in
  headers
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -17,69 +17,116 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-All structs in types.h are already documented. But some other headers
-still have private structs which also should be documented.
+All enums in types.h are already documented. But some other headers
+still have private enums which also should be documented.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/hash.h  | 14 +++++++++++---
- net/batman-adv/sysfs.h | 13 +++++++++++++
- 2 files changed, 24 insertions(+), 3 deletions(-)
+ net/batman-adv/hard-interface.h | 23 +++++++++++++++++++++++
+ net/batman-adv/main.h           | 32 ++++++++++++++++++++++++++++++++
+ 2 files changed, 55 insertions(+)
 
-diff --git a/net/batman-adv/hash.h b/net/batman-adv/hash.h
-index 1aabe40b..accac5c2 100644
---- a/net/batman-adv/hash.h
-+++ b/net/batman-adv/hash.h
-@@ -45,10 +45,18 @@ typedef bool (*batadv_hashdata_compare_cb)(const struct hlist_node *,
- typedef u32 (*batadv_hashdata_choose_cb)(const void *, u32);
- typedef void (*batadv_hashdata_free_cb)(struct hlist_node *, void *);
+diff --git a/net/batman-adv/hard-interface.h b/net/batman-adv/hard-interface.h
+index ba4ba081..6d1e40f6 100644
+--- a/net/batman-adv/hard-interface.h
++++ b/net/batman-adv/hard-interface.h
+@@ -30,12 +30,35 @@
+ struct net_device;
+ struct net;
  
 +/**
-+ * struct batadv_hashtable - Wrapper of simple hlist based hashtable
++ * enum batadv_hard_if_state - State of a hard interface
 + */
- struct batadv_hashtable {
--	struct hlist_head *table;   /* the hashtable itself with the buckets */
--	spinlock_t *list_locks;     /* spinlock for each hash list entry */
--	u32 size;		    /* size of hashtable */
-+	/** @table: the hashtable itself with the buckets */
-+	struct hlist_head *table;
+ enum batadv_hard_if_state {
++	/**
++	 * @BATADV_IF_NOT_IN_USE: interface is not used as slave interface of a
++	 * batman-adv soft interface
++	 */
+ 	BATADV_IF_NOT_IN_USE,
 +
-+	/** @list_locks: spinlock for each hash list entry */
-+	spinlock_t *list_locks;
++	/**
++	 * @BATADV_IF_TO_BE_REMOVED: interface will be removed from soft
++	 * interface
++	 */
+ 	BATADV_IF_TO_BE_REMOVED,
 +
-+	/** @size: size of hashtable */
-+	u32 size;
++	/** @BATADV_IF_INACTIVE: interface is deactivated */
+ 	BATADV_IF_INACTIVE,
++
++	/** @BATADV_IF_ACTIVE: interface is used */
+ 	BATADV_IF_ACTIVE,
++
++	/** @BATADV_IF_TO_BE_ACTIVATED: interface is getting activated */
+ 	BATADV_IF_TO_BE_ACTIVATED,
++
++	/**
++	 * @BATADV_IF_I_WANT_YOU: interface is queued up (using sysfs) for being
++	 * added as slave interface of a batman-adv soft interface
++	 */
+ 	BATADV_IF_I_WANT_YOU,
  };
  
- /* allocates and clears the hash */
-diff --git a/net/batman-adv/sysfs.h b/net/batman-adv/sysfs.h
-index e487412e..8fe65c9b 100644
---- a/net/batman-adv/sysfs.h
-+++ b/net/batman-adv/sysfs.h
-@@ -35,10 +35,23 @@ struct net_device;
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index c3840ce8..86e61d63 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -140,24 +140,56 @@
   */
- #define BATADV_SYSFS_VLAN_SUBDIR_PREFIX "vlan"
+ #define BATADV_TP_MAX_NUM 5
  
 +/**
-+ * struct batadv_attribute - sysfs export helper for batman-adv attributes
++ * enum batadv_mesh_state - State of a soft interface
 + */
- struct batadv_attribute {
-+	/** @attr: sysfs attribute file */
- 	struct attribute attr;
+ enum batadv_mesh_state {
++	/** @BATADV_MESH_INACTIVE: soft interface is not yet running */
+ 	BATADV_MESH_INACTIVE,
 +
-+	/**
-+	 * @show: function to export the current attribute's content to sysfs
-+	 */
- 	ssize_t (*show)(struct kobject *kobj, struct attribute *attr,
- 			char *buf);
++	/** @BATADV_MESH_ACTIVE: interface is up and running */
+ 	BATADV_MESH_ACTIVE,
 +
-+	/**
-+	 * @store: function to load new value from character buffer and save it
-+	 * in batman-adv attribute
-+	 */
- 	ssize_t (*store)(struct kobject *kobj, struct attribute *attr,
- 			 char *buf, size_t count);
++	/** @BATADV_MESH_DEACTIVATING: interface is getting shut down */
+ 	BATADV_MESH_DEACTIVATING,
  };
+ 
+ #define BATADV_BCAST_QUEUE_LEN		256
+ #define BATADV_BATMAN_QUEUE_LEN	256
+ 
++/**
++ * enum batadv_uev_action - action type of uevent
++ */
+ enum batadv_uev_action {
++	/** @BATADV_UEV_ADD: gateway was selected (after none was selected) */
+ 	BATADV_UEV_ADD = 0,
++
++	/**
++	 * @BATADV_UEV_DEL: selected gateway was removed and none is selected
++	 * anymore
++	 */
+ 	BATADV_UEV_DEL,
++
++	/**
++	 * @BATADV_UEV_CHANGE: a different gateway was selected as based gateway
++	 */
+ 	BATADV_UEV_CHANGE,
++
++	/**
++	 * @BATADV_UEV_LOOPDETECT: loop was detected which cannot be handled by
++	 * bridge loop avoidance
++	 */
+ 	BATADV_UEV_LOOPDETECT,
+ };
+ 
++/**
++ * enum batadv_uev_type - Type of uevent
++ */
+ enum batadv_uev_type {
++	/** @BATADV_UEV_GW: selected gateway was modified */
+ 	BATADV_UEV_GW = 0,
++
++	/** @BATADV_UEV_BLA: bridge loop avoidance event */
+ 	BATADV_UEV_BLA,
+ };
+ 
 -- 
 2.11.0
 
