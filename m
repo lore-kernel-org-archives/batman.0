@@ -1,12 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun,  3 Dec 2017 11:26:45 +0100
-Message-Id: <20171203102645.5490-1-sven@narfation.org>
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 04 Dec 2017 12:59:23 +0100
+Message-ID: <6784418.ciu8HoDoe8@prime>
+In-Reply-To: <20171202074559.3582-1-sven@narfation.org>
+References: <20171202074559.3582-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Fix lock for ogm cnt access in
- batadv_iv_ogm_calc_tq
+Content-Type: multipart/signed; boundary="nextPart2153741.zO6c1yocZh";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batctl: Handle allocation error in
+ vlan_get_link_parse
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,48 +19,44 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven@narfation.org>, Marek Lindner <mareklindner@neomailbox.ch>, =?UTF-8?q?Linus=20L=C3=BCssing?= <linus.luessing@c0d3.blue>
 
-The originator node object orig_neigh_node is used to when accessing the
-bcast_own(_sum) and real_packet_count information. The access to them has
-to be protected with the spinlock in orig_neigh_node.
+--nextPart2153741.zO6c1yocZh
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-But the function uses the lock in orig_node instead. This is incorrect
-because they could be two different originator node objects.
+On Saturday, December 2, 2017 8:45:59 AM CET Sven Eckelmann wrote:
+> The malloc could fail and return NULL. In this case, the processing of the
+> current interface index has to be stopped to avoid writing to NULL (which
+> would cause a segfault).
+> 
+> Fixes: d29288fe0583 ("batctl: implement vlan-to-link helper functions")
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-Fixes: f14416760b62 ("batman-adv: protect bit operations to count OGMs with spinlock")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-WARNING: This is only compile tested
+Applied in 2ea390c.
 
-Cc: Marek Lindner <mareklindner@neomailbox.ch>
-Cc: Linus Lüssing <linus.luessing@c0d3.blue>
----
- net/batman-adv/bat_iv_ogm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Thank you!
+      Simon
+--nextPart2153741.zO6c1yocZh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 1b659ab6..bbe8414b 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1214,7 +1214,7 @@ static bool batadv_iv_ogm_calc_tq(struct batadv_orig_node *orig_node,
- 	orig_node->last_seen = jiffies;
- 
- 	/* find packet count of corresponding one hop neighbor */
--	spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
-+	spin_lock_bh(&orig_neigh_node->bat_iv.ogm_cnt_lock);
- 	if_num = if_incoming->if_num;
- 	orig_eq_count = orig_neigh_node->bat_iv.bcast_own_sum[if_num];
- 	neigh_ifinfo = batadv_neigh_ifinfo_new(neigh_node, if_outgoing);
-@@ -1224,7 +1224,7 @@ static bool batadv_iv_ogm_calc_tq(struct batadv_orig_node *orig_node,
- 	} else {
- 		neigh_rq_count = 0;
- 	}
--	spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
-+	spin_unlock_bh(&orig_neigh_node->bat_iv.ogm_cnt_lock);
- 
- 	/* pay attention to not get a value bigger than 100 % */
- 	if (orig_eq_count > neigh_rq_count)
--- 
-2.11.0
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlolOJsACgkQoSvjmEKS
+nqEjjxAAs7pXzJj5Mnw5Ydnl1GlPR5WMpfHcWTZjyEUfy3N/fjczawvuhEoTezK5
+AYbVE/gPCr1PQwdklEuuvUpE7lQJdHVTKDbZ+xo5QxOiwlo96ooqzDBb0JP45X51
+kH7MNQcxdFuVWmxrG6137rOWsrA5QFHThihe6GVGfNm1WS2SKQv63jEno8XimI9t
+qpCS0gozJV7wcPEUQhRyZtvoq3B4Itm0ni8RVAcdbe8ivSRL2xhRoPbvSiMeP6eU
+ICI1cQ48uHixTVbsKwN/0NVU8MpZjy0mGUDQV5i13pQDiCkt73MOJBwCluFBUIYH
+Qu3yOkgYVQ8Jw3zZWw8h4EsGjX3AtGb2FRupBtW7s1KzBNTbm1dcIyG65nh3/YMM
+6NEsrXq/1JW1qGIhI05AVRQbuJq9OJyNd0wvTohAY2HCn50MXyoB9KJPjH4iiI3h
+hClxwW9ASEeFM7QEDMXLQf3EZmg8FUAUSuQNYksu6hlNb/QX+bfsAG9kTr9hfxNU
+/+Jt8ZJI1T1/44FAjCRInfW137s3pj9R+xv27uFn2HP/PwY5paNwKOpzhIk0pzPg
+N6z5+QgqrqA7erh5Qh3MthW+kDYBOxuD+NpgyZcAWFsNEEWjPIlDDfGkWk6t48mC
+Y2oI2/179ZOTQDCPnboJ2lJYmt0w9cnwOmy/PnVjhepVKC21a1o=
+=LJHL
+-----END PGP SIGNATURE-----
+
+--nextPart2153741.zO6c1yocZh--
 
