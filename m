@@ -1,9 +1,10 @@
 Return-Path: <sven.eckelmann@openmesh.com>
 From: Sven Eckelmann <sven.eckelmann@openmesh.com>
-Date: Tue,  5 Dec 2017 15:35:08 +0100
-Message-Id: <20171205143514.4441-1-sven.eckelmann@openmesh.com>
-Subject: [B.A.T.M.A.N.] [RFC v2 0/6] flow_dissector: Provide basic
- batman-adv unicast handling
+Date: Tue,  5 Dec 2017 15:35:09 +0100
+Message-Id: <20171205143514.4441-2-sven.eckelmann@openmesh.com>
+In-Reply-To: <20171205143514.4441-1-sven.eckelmann@openmesh.com>
+References: <20171205143514.4441-1-sven.eckelmann@openmesh.com>
+Subject: [B.A.T.M.A.N.] [RFC v2 1/6] batman-adv: Change nl references to genl
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,152 +17,114 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: netdev@vger.kernel.org
 Cc: "David S . Miller" <davem@davemloft.net>, Jiri Pirko <jiri@mellanox.com>, Eric Dumazet <edumazet@google.com>, linux-kernel@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven.eckelmann@openmesh.com>
 
-Hi,
+The batman-adv netlink functionality is actually not pure netlink but is
+using NETLINK_GENERIC and related API. The code should therefore also use
+this "genl" instead of "nl" to make this more clear.
 
-we are currently starting to use batman-adv as mesh protocol on multicore
-embedded devices. These usually don't have a lot of CPU power per core but
-are reasonable fast when using multiple cores.
+Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
+---
+ include/uapi/linux/batman_adv.h | 14 +++++++-------
+ net/batman-adv/main.c           |  2 +-
+ net/batman-adv/netlink.c        | 10 ++++++----
+ 3 files changed, 14 insertions(+), 12 deletions(-)
 
-It was noticed that sending was working very well but receiving was
-basically only using on CPU core per neighbor. The reason for that is
-format of the (normal) incoming packet:
-
-
-    +--------------------+
-    | ip(v6)hdr          |
-    +--------------------+
-    | inner ethhdr       |
-    +--------------------+
-    | batadv unicast hdr |
-    +--------------------+
-    | outer ethhdr       |
-    +--------------------+
-
-The flow dissector will therefore stop after parsing the outer ethernet
-header and will not parse the actual ipv(4|6)/... header of the packet. Our
-assumption was now that it would help us to add minimal support to the flow
-dissector to jump over the batman-adv unicast and inner ethernet header
-(like in gre ETH_P_TEB). The patch was implemented in a slightly hacky
-way [1] and the results looked quite promising.
-
-Now we comes the actual "problematic" part. The packet format is currently
-only available in net/batman-adv/packet.h. I've guessed that it should be
-moved somewhere under include/ to make it accessible to the flow dissector
-in a "standard way".
-
-First we have to find the correct place for it. I am not aware of any
-standard for that - so I've grepped for some packet headers which are used
-by the dissector and found following files (most likely not a complete
-list):
-
-* linux/if_vlan.h
-* net/gre.h
-* net/tipc.h
-* uapi/linux/if_arp.h
-* uapi/linux/if_ether.h
-* uapi/linux/if_pppox.h
-* uapi/linux/ip.h
-* uapi/linux/ipv6.h
-* uapi/linux/mpls.h
-* uapi/linux/tcp.h
-
-
-So I would say that uapi/linux is the "winner" here. This would actually
-also helpful for userspace tools which either inject packets or monitor
-interfaces + dissect packets (for example batctl). Now to the actual
-filename. batman_adv.h is already used in the moment for the netlink
-definition and I would like to avoid that these two things are placed in
-the same file. 
-
-A quick grep for "NL_NAME" showed me following names:
-
-* linux/nl802154.h
-* net/nl802154.h
-* uapi/linux/batman_adv.h
-* uapi/linux/devlink.h
-* uapi/linux/dlm_netlink.h
-* uapi/linux/fou.h
-* uapi/linux/if_macsec.h
-* uapi/linux/if_team.h
-* uapi/linux/ila.h
-* uapi/linux/ip_vs.h
-* uapi/linux/irda.h
-* uapi/linux/l2tp.h
-* uapi/linux/nfc.h
-* uapi/linux/nl80211.h
-* uapi/linux/psample.h
-* uapi/linux/seg6_genl.h
-* uapi/linux/taskstats.h
-* uapi/linux/tcp_metrics.h
-* uapi/linux/tipc_config.h
-* uapi/linux/tipc_netlink.h
-
-There doesn't seem to be any common way to do it - so I have to guess what
-the best names could be. I've decided (but please provide better
-alternatives) to use batadv_genl.h (for generic netlink stuff) and batadv.h
-(for the packet format).
-
-
-I would really appreciate it when you would provide feedback to the
-naming/placement of the files. Btw. the patches are currently based on the
-top of batadv/net-next [2] and this repository contains changes which still
-have to be submitted to net-next.
-
-Changes in v2:
-=============
-
-* removed the batman-adv unicast packet header definition from flow_dissector.c
-* moved the batman-adv packet.h/uapi headers around to provide the correct
-  definitions to flow_dissector.c
-
-Kind regards,
-	Sven
-
-[1] https://patchwork.open-mesh.org/patch/17162/
-[2] https://git.open-mesh.org/linux-merge.git/shortlog/refs/heads/batadv/net-next
-
-Sven Eckelmann (6):
-  batman-adv: Change nl references to genl
-  batman-adv: Rename batman-adv.h to batadv_genl.h
-  batman-adv: Let packet.h include its headers directly
-  batman-adv: Remove usage of BIT(x) in packet.h
-  batman-adv: Convert packet.h to uapi header
-  flow_dissector: Parse batman-adv unicast headers
-
- MAINTAINERS                                        |  3 +-
- .../packet.h => include/uapi/linux/batadv.h        | 32 ++++++++++++----------
- include/uapi/linux/{batman_adv.h => batadv_genl.h} | 20 +++++++-------
- net/batman-adv/bat_algo.c                          |  2 +-
- net/batman-adv/bat_iv_ogm.c                        |  4 +--
- net/batman-adv/bat_v.c                             |  4 +--
- net/batman-adv/bat_v_elp.c                         |  2 +-
- net/batman-adv/bat_v_ogm.c                         |  2 +-
- net/batman-adv/bridge_loop_avoidance.c             |  4 +--
- net/batman-adv/distributed-arp-table.h             |  2 +-
- net/batman-adv/fragmentation.c                     |  2 +-
- net/batman-adv/gateway_client.c                    |  4 +--
- net/batman-adv/gateway_common.c                    |  2 +-
- net/batman-adv/hard-interface.c                    |  2 +-
- net/batman-adv/icmp_socket.c                       |  2 +-
- net/batman-adv/main.c                              |  6 ++--
- net/batman-adv/main.h                              |  4 +--
- net/batman-adv/multicast.c                         |  2 +-
- net/batman-adv/netlink.c                           | 14 ++++++----
- net/batman-adv/network-coding.c                    |  2 +-
- net/batman-adv/originator.c                        |  2 +-
- net/batman-adv/routing.c                           |  2 +-
- net/batman-adv/send.h                              |  3 +-
- net/batman-adv/soft-interface.c                    |  2 +-
- net/batman-adv/sysfs.c                             |  2 +-
- net/batman-adv/tp_meter.c                          |  4 +--
- net/batman-adv/translation-table.c                 |  4 +--
- net/batman-adv/tvlv.c                              |  2 +-
- net/batman-adv/types.h                             |  5 ++--
- net/core/flow_dissector.c                          | 30 ++++++++++++++++++++
- 30 files changed, 101 insertions(+), 70 deletions(-)
- rename net/batman-adv/packet.h => include/uapi/linux/batadv.h (96%)
- rename include/uapi/linux/{batman_adv.h => batadv_genl.h} (95%)
-
+diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
+index ae00c99cbed0..a0fed6c01a46 100644
+--- a/include/uapi/linux/batman_adv.h
++++ b/include/uapi/linux/batman_adv.h
+@@ -25,9 +25,9 @@
+ #ifndef _UAPI_LINUX_BATMAN_ADV_H_
+ #define _UAPI_LINUX_BATMAN_ADV_H_
+ 
+-#define BATADV_NL_NAME "batadv"
++#define BATADV_GENL_NAME "batadv"
+ 
+-#define BATADV_NL_MCAST_GROUP_TPMETER	"tpmeter"
++#define BATADV_GENL_MCAST_GROUP_TPMETER "tpmeter"
+ 
+ /**
+  * enum batadv_tt_client_flags - TT client specific flags
+@@ -92,9 +92,9 @@ enum batadv_tt_client_flags {
+ };
+ 
+ /**
+- * enum batadv_nl_attrs - batman-adv netlink attributes
++ * enum batadv_genl_attrs - batman-adv netlink attributes
+  */
+-enum batadv_nl_attrs {
++enum batadv_genl_attrs {
+ 	/**
+ 	 * @BATADV_ATTR_UNSPEC: unspecified attribute to catch errors
+ 	 */
+@@ -280,7 +280,7 @@ enum batadv_nl_attrs {
+ 	__BATADV_ATTR_AFTER_LAST,
+ 
+ 	/**
+-	 * @NUM_BATADV_ATTR: total number of batadv_nl_attrs available
++	 * @NUM_BATADV_ATTR: total number of batadv_genl_attrs available
+ 	 */
+ 	NUM_BATADV_ATTR = __BATADV_ATTR_AFTER_LAST,
+ 
+@@ -291,9 +291,9 @@ enum batadv_nl_attrs {
+ };
+ 
+ /**
+- * enum batadv_nl_commands - supported batman-adv netlink commands
++ * enum batadv_genl_commands - supported batman-adv netlink commands
+  */
+-enum batadv_nl_commands {
++enum batadv_genl_commands {
+ 	/**
+ 	 * @BATADV_CMD_UNSPEC: unspecified command to catch errors
+ 	 */
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index fc6dcea30238..a56ae758f799 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -687,4 +687,4 @@ MODULE_DESCRIPTION(BATADV_DRIVER_DESC);
+ MODULE_SUPPORTED_DEVICE(BATADV_DRIVER_DEVICE);
+ MODULE_VERSION(BATADV_SOURCE_VERSION);
+ MODULE_ALIAS_RTNL_LINK("batadv");
+-MODULE_ALIAS_GENL_FAMILY(BATADV_NL_NAME);
++MODULE_ALIAS_GENL_FAMILY(BATADV_GENL_NAME);
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index a68443d3f119..a9679bdca432 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -58,11 +58,13 @@ struct genl_family batadv_netlink_family;
+ 
+ /* multicast groups */
+ enum batadv_netlink_multicast_groups {
+-	BATADV_NL_MCGRP_TPMETER,
++	BATADV_GENL_MCGRP_TPMETER,
+ };
+ 
+ static const struct genl_multicast_group batadv_netlink_mcgrps[] = {
+-	[BATADV_NL_MCGRP_TPMETER] = { .name = BATADV_NL_MCAST_GROUP_TPMETER },
++	[BATADV_GENL_MCGRP_TPMETER] = {
++		.name = BATADV_GENL_MCAST_GROUP_TPMETER
++	},
+ };
+ 
+ static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
+@@ -298,7 +300,7 @@ int batadv_netlink_tpmeter_notify(struct batadv_priv *bat_priv, const u8 *dst,
+ 
+ 	genlmsg_multicast_netns(&batadv_netlink_family,
+ 				dev_net(bat_priv->soft_iface), msg, 0,
+-				BATADV_NL_MCGRP_TPMETER, GFP_KERNEL);
++				BATADV_GENL_MCGRP_TPMETER, GFP_KERNEL);
+ 
+ 	return 0;
+ 
+@@ -611,7 +613,7 @@ static const struct genl_ops batadv_netlink_ops[] = {
+ 
+ struct genl_family batadv_netlink_family __ro_after_init = {
+ 	.hdrsize = 0,
+-	.name = BATADV_NL_NAME,
++	.name = BATADV_GENL_NAME,
+ 	.version = 1,
+ 	.maxattr = BATADV_ATTR_MAX,
+ 	.netnsok = true,
 -- 
 2.11.0
 
