@@ -1,10 +1,11 @@
 Return-Path: <sven.eckelmann@openmesh.com>
 From: Sven Eckelmann <sven.eckelmann@openmesh.com>
-Date: Tue,  5 Dec 2017 15:35:09 +0100
-Message-Id: <20171205143514.4441-2-sven.eckelmann@openmesh.com>
+Date: Tue,  5 Dec 2017 15:35:10 +0100
+Message-Id: <20171205143514.4441-3-sven.eckelmann@openmesh.com>
 In-Reply-To: <20171205143514.4441-1-sven.eckelmann@openmesh.com>
 References: <20171205143514.4441-1-sven.eckelmann@openmesh.com>
-Subject: [B.A.T.M.A.N.] [RFC v2 1/6] batman-adv: Change nl references to genl
+Subject: [B.A.T.M.A.N.] [RFC v2 2/6] batman-adv: Rename batman-adv.h to
+ batadv_genl.h
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,114 +18,210 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: netdev@vger.kernel.org
 Cc: "David S . Miller" <davem@davemloft.net>, Jiri Pirko <jiri@mellanox.com>, Eric Dumazet <edumazet@google.com>, linux-kernel@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven.eckelmann@openmesh.com>
 
-The batman-adv netlink functionality is actually not pure netlink but is
-using NETLINK_GENERIC and related API. The code should therefore also use
-this "genl" instead of "nl" to make this more clear.
+This file contains the relevant information to let userspace communicate
+with batman-adv over generic netlink. The relevant genl enums for the
+attributes and commands have the prefix batadv_genl. Renaming this file to
+this name therefore represents the content better and avoids confusion with
+the file which will contain the packet format definitions.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
 ---
- include/uapi/linux/batman_adv.h | 14 +++++++-------
- net/batman-adv/main.c           |  2 +-
- net/batman-adv/netlink.c        | 10 ++++++----
- 3 files changed, 14 insertions(+), 12 deletions(-)
+ MAINTAINERS                                        | 2 +-
+ include/uapi/linux/{batman_adv.h => batadv_genl.h} | 6 +++---
+ net/batman-adv/bat_algo.c                          | 2 +-
+ net/batman-adv/bat_iv_ogm.c                        | 2 +-
+ net/batman-adv/bat_v.c                             | 2 +-
+ net/batman-adv/bridge_loop_avoidance.c             | 2 +-
+ net/batman-adv/gateway_client.c                    | 2 +-
+ net/batman-adv/main.c                              | 2 +-
+ net/batman-adv/netlink.c                           | 2 +-
+ net/batman-adv/originator.c                        | 2 +-
+ net/batman-adv/tp_meter.c                          | 2 +-
+ net/batman-adv/translation-table.c                 | 2 +-
+ net/batman-adv/types.h                             | 2 +-
+ 13 files changed, 15 insertions(+), 15 deletions(-)
+ rename include/uapi/linux/{batman_adv.h => batadv_genl.h} (98%)
 
-diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
-index ae00c99cbed0..a0fed6c01a46 100644
+diff --git a/MAINTAINERS b/MAINTAINERS
+index aa71ab52fd76..68abe39ee87a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2563,7 +2563,7 @@ S:	Maintained
+ F:	Documentation/ABI/testing/sysfs-class-net-batman-adv
+ F:	Documentation/ABI/testing/sysfs-class-net-mesh
+ F:	Documentation/networking/batman-adv.rst
+-F:	include/uapi/linux/batman_adv.h
++F:	include/uapi/linux/batadv_genl.h
+ F:	net/batman-adv/
+ 
+ BAYCOM/HDLCDRV DRIVERS FOR AX.25
+diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batadv_genl.h
+similarity index 98%
+rename from include/uapi/linux/batman_adv.h
+rename to include/uapi/linux/batadv_genl.h
+index a0fed6c01a46..8ed28676e198 100644
 --- a/include/uapi/linux/batman_adv.h
-+++ b/include/uapi/linux/batman_adv.h
-@@ -25,9 +25,9 @@
- #ifndef _UAPI_LINUX_BATMAN_ADV_H_
- #define _UAPI_LINUX_BATMAN_ADV_H_
++++ b/include/uapi/linux/batadv_genl.h
+@@ -22,8 +22,8 @@
+  * DEALINGS IN THE SOFTWARE.
+  */
  
--#define BATADV_NL_NAME "batadv"
-+#define BATADV_GENL_NAME "batadv"
+-#ifndef _UAPI_LINUX_BATMAN_ADV_H_
+-#define _UAPI_LINUX_BATMAN_ADV_H_
++#ifndef _UAPI_LINUX_BATADV_GENL_H_
++#define _UAPI_LINUX_BATADV_GENL_H_
  
--#define BATADV_NL_MCAST_GROUP_TPMETER	"tpmeter"
-+#define BATADV_GENL_MCAST_GROUP_TPMETER "tpmeter"
+ #define BATADV_GENL_NAME "batadv"
  
- /**
-  * enum batadv_tt_client_flags - TT client specific flags
-@@ -92,9 +92,9 @@ enum batadv_tt_client_flags {
+@@ -423,4 +423,4 @@ enum batadv_tp_meter_reason {
+ 	BATADV_TP_REASON_TOO_MANY		= 133,
  };
  
- /**
-- * enum batadv_nl_attrs - batman-adv netlink attributes
-+ * enum batadv_genl_attrs - batman-adv netlink attributes
-  */
--enum batadv_nl_attrs {
-+enum batadv_genl_attrs {
- 	/**
- 	 * @BATADV_ATTR_UNSPEC: unspecified attribute to catch errors
- 	 */
-@@ -280,7 +280,7 @@ enum batadv_nl_attrs {
- 	__BATADV_ATTR_AFTER_LAST,
+-#endif /* _UAPI_LINUX_BATMAN_ADV_H_ */
++#endif /* _UAPI_LINUX_BATADV_GENL_H_ */
+diff --git a/net/batman-adv/bat_algo.c b/net/batman-adv/bat_algo.c
+index 37390a21e5e9..07392a25235f 100644
+--- a/net/batman-adv/bat_algo.c
++++ b/net/batman-adv/bat_algo.c
+@@ -31,7 +31,7 @@
+ #include <linux/string.h>
+ #include <net/genetlink.h>
+ #include <net/netlink.h>
+-#include <uapi/linux/batman_adv.h>
++#include <uapi/linux/batadv_genl.h>
  
- 	/**
--	 * @NUM_BATADV_ATTR: total number of batadv_nl_attrs available
-+	 * @NUM_BATADV_ATTR: total number of batadv_genl_attrs available
- 	 */
- 	NUM_BATADV_ATTR = __BATADV_ATTR_AFTER_LAST,
+ #include "bat_algo.h"
+ #include "netlink.h"
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 4055338de7f0..7727a39c4265 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -54,7 +54,7 @@
+ #include <linux/workqueue.h>
+ #include <net/genetlink.h>
+ #include <net/netlink.h>
+-#include <uapi/linux/batman_adv.h>
++#include <uapi/linux/batadv_genl.h>
  
-@@ -291,9 +291,9 @@ enum batadv_nl_attrs {
- };
+ #include "bat_algo.h"
+ #include "bitarray.h"
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 7eea24204b55..b43ba53daafd 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -39,7 +39,7 @@
+ #include <linux/workqueue.h>
+ #include <net/genetlink.h>
+ #include <net/netlink.h>
+-#include <uapi/linux/batman_adv.h>
++#include <uapi/linux/batadv_genl.h>
  
- /**
-- * enum batadv_nl_commands - supported batman-adv netlink commands
-+ * enum batadv_genl_commands - supported batman-adv netlink commands
-  */
--enum batadv_nl_commands {
-+enum batadv_genl_commands {
- 	/**
- 	 * @BATADV_CMD_UNSPEC: unspecified command to catch errors
- 	 */
+ #include "bat_algo.h"
+ #include "bat_v_elp.h"
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index 15d64a575034..1a9594d68db2 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -52,7 +52,7 @@
+ #include <net/genetlink.h>
+ #include <net/netlink.h>
+ #include <net/sock.h>
+-#include <uapi/linux/batman_adv.h>
++#include <uapi/linux/batadv_genl.h>
+ 
+ #include "hard-interface.h"
+ #include "hash.h"
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 5e2d00731e9f..23c8032ce478 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -45,7 +45,7 @@
+ #include <linux/stddef.h>
+ #include <linux/udp.h>
+ #include <net/sock.h>
+-#include <uapi/linux/batman_adv.h>
++#include <uapi/linux/batadv_genl.h>
+ 
+ #include "gateway_common.h"
+ #include "hard-interface.h"
 diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
-index fc6dcea30238..a56ae758f799 100644
+index a56ae758f799..c034e5c504c4 100644
 --- a/net/batman-adv/main.c
 +++ b/net/batman-adv/main.c
-@@ -687,4 +687,4 @@ MODULE_DESCRIPTION(BATADV_DRIVER_DESC);
- MODULE_SUPPORTED_DEVICE(BATADV_DRIVER_DEVICE);
- MODULE_VERSION(BATADV_SOURCE_VERSION);
- MODULE_ALIAS_RTNL_LINK("batadv");
--MODULE_ALIAS_GENL_FAMILY(BATADV_NL_NAME);
-+MODULE_ALIAS_GENL_FAMILY(BATADV_GENL_NAME);
+@@ -48,7 +48,7 @@
+ #include <linux/workqueue.h>
+ #include <net/dsfield.h>
+ #include <net/rtnetlink.h>
+-#include <uapi/linux/batman_adv.h>
++#include <uapi/linux/batadv_genl.h>
+ 
+ #include "bat_algo.h"
+ #include "bat_iv_ogm.h"
 diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
-index a68443d3f119..a9679bdca432 100644
+index a9679bdca432..5a66eb6c45f1 100644
 --- a/net/batman-adv/netlink.c
 +++ b/net/batman-adv/netlink.c
-@@ -58,11 +58,13 @@ struct genl_family batadv_netlink_family;
+@@ -42,7 +42,7 @@
+ #include <net/genetlink.h>
+ #include <net/netlink.h>
+ #include <net/sock.h>
+-#include <uapi/linux/batman_adv.h>
++#include <uapi/linux/batadv_genl.h>
  
- /* multicast groups */
- enum batadv_netlink_multicast_groups {
--	BATADV_NL_MCGRP_TPMETER,
-+	BATADV_GENL_MCGRP_TPMETER,
- };
+ #include "bat_algo.h"
+ #include "bridge_loop_avoidance.h"
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index dafc73811aa6..ec7b357e1781 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -41,7 +41,7 @@
+ #include <linux/stddef.h>
+ #include <linux/workqueue.h>
+ #include <net/sock.h>
+-#include <uapi/linux/batman_adv.h>
++#include <uapi/linux/batadv_genl.h>
  
- static const struct genl_multicast_group batadv_netlink_mcgrps[] = {
--	[BATADV_NL_MCGRP_TPMETER] = { .name = BATADV_NL_MCAST_GROUP_TPMETER },
-+	[BATADV_GENL_MCGRP_TPMETER] = {
-+		.name = BATADV_GENL_MCAST_GROUP_TPMETER
-+	},
- };
+ #include "bat_algo.h"
+ #include "distributed-arp-table.h"
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index d73346057310..152189b6f862 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -51,7 +51,7 @@
+ #include <linux/timer.h>
+ #include <linux/wait.h>
+ #include <linux/workqueue.h>
+-#include <uapi/linux/batman_adv.h>
++#include <uapi/linux/batadv_genl.h>
  
- static const struct nla_policy batadv_netlink_policy[NUM_BATADV_ATTR] = {
-@@ -298,7 +300,7 @@ int batadv_netlink_tpmeter_notify(struct batadv_priv *bat_priv, const u8 *dst,
+ #include "hard-interface.h"
+ #include "log.h"
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 5d3ba12002df..0065b8a2a1e4 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -54,7 +54,7 @@
+ #include <net/genetlink.h>
+ #include <net/netlink.h>
+ #include <net/sock.h>
+-#include <uapi/linux/batman_adv.h>
++#include <uapi/linux/batadv_genl.h>
  
- 	genlmsg_multicast_netns(&batadv_netlink_family,
- 				dev_net(bat_priv->soft_iface), msg, 0,
--				BATADV_NL_MCGRP_TPMETER, GFP_KERNEL);
-+				BATADV_GENL_MCGRP_TPMETER, GFP_KERNEL);
+ #include "bridge_loop_avoidance.h"
+ #include "hard-interface.h"
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index e4a79f9e2e24..9b78d9364e45 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -37,7 +37,7 @@
+ #include <linux/types.h>
+ #include <linux/wait.h>
+ #include <linux/workqueue.h>
+-#include <uapi/linux/batman_adv.h>
++#include <uapi/linux/batadv_genl.h>
  
- 	return 0;
+ #include "packet.h"
  
-@@ -611,7 +613,7 @@ static const struct genl_ops batadv_netlink_ops[] = {
- 
- struct genl_family batadv_netlink_family __ro_after_init = {
- 	.hdrsize = 0,
--	.name = BATADV_NL_NAME,
-+	.name = BATADV_GENL_NAME,
- 	.version = 1,
- 	.maxattr = BATADV_ATTR_MAX,
- 	.netnsok = true,
 -- 
 2.11.0
 
