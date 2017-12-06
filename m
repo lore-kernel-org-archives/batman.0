@@ -1,13 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 06 Dec 2017 11:43:02 +0100
-Message-ID: <15758616.MhDsWncctP@bentobox>
-In-Reply-To: <20171119140517.24329-1-sven@narfation.org>
-References: <20171119140517.24329-1-sven@narfation.org>
+Date: Wed, 06 Dec 2017 11:43:06 +0100
+Message-ID: <3221021.b1BNhtzxAk@bentobox>
+In-Reply-To: <20171119165913.23313-1-sven@narfation.org>
+References: <20171119165913.23313-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart63026022.hpu5jhkS8c";
+Content-Type: multipart/signed; boundary="nextPart1872477.cNLA0X4QYl";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/9] batman-adv: License cleanup
+Subject: Re: [B.A.T.M.A.N.] [PATCH] batman-adv: Deinline
+ batadv_orig_hash_find, save 7339 bytes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,54 +19,57 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Denys Vlasenko <dvlasenk@redhat.com>
 
---nextPart63026022.hpu5jhkS8c
+--nextPart1872477.cNLA0X4QYl
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sonntag, 19. November 2017 15:05:08 CET Sven Eckelmann wrote:
-> Hi,
+On Sonntag, 19. November 2017 17:59:13 CET Sven Eckelmann wrote:
+> From: Denys Vlasenko <dvlasenk@redhat.com>
 > 
-> the kernel community is currently trying to make the licensing status more
-> clear in each file. This is mostly done by adding SPDX license identifiers
-> and defining a set of rules how these license related information has to
-> be stored.
+> This function compiles to 288 bytes of machine code for Linux 4.14 on
+> Debian Stretch amd64 and (6.3.0-18) with the default configuration. 27
+> callsites (25 used in default config).
 > 
-> I've used this opportunity to go through all files (for example with FSFE's
-> `reuse lint`) and to annotate the files according to the "Linux licensing
-> rules" and FSFE's REUSE practices.
+>    text    data     bss     dec     hex filename
+>  179291   10317    4416  194024   2f5e8 batman-adv.ko.pre
+>  171952   10317    4416  186685   2d93d batman-adv.ko.post
 > 
-> There are two things which could be seen as controversial:
-> 
-> * change of batman_adv.h to the Linux preferred license
->   (I am waiting for Acks)
-> * explicitly mark remaining files as licensed under the GPL-2.0
+> Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
+> [sven@narfation.org: Fix includes, correct sizes+counts in commit message]
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> v3:
+>  - updated the statistics against Linux 4.14
 
-Applied in f795e77ba40d..8de104e049ea
+Applied in f795e77ba40d [1]
 
 Kind regards,
 	Sven
---nextPart63026022.hpu5jhkS8c
+
+[1] https://git.open-mesh.org/batman-adv.git/commit/f795e77ba40d104a6a20f5706b88fae1671dd1a5
+--nextPart1872477.cNLA0X4QYl
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlonybYACgkQXYcKB8Em
-e0a/uBAAlvR6Gtja5xJA4sssJxm5liZ3pATYi0MdwLqhVStO2xyC36zz8wwk85y2
-F6Q9vtbIynBt2Q1CKIRzph5tdDt/0d0ohWIyEb/WCSg24u2+I5u25xTzF/JCXoMW
-dZmXEwFtnDYIBzrMT3rQ+M0x4QFpUtN3DahDvXGCVfN9jFpz4MUgv7FxomFCjpAV
-2Vi1IHIkME9ssohhvtLvaBaLGMbfmymEOFYBmlwQUgaD5d3ni8N7bQDL07OOIBB/
-Z4CIl7cIrOG6FvifnC9oYfhzNWNIVeuBQYwWOg48AmH1lyHysLYryCodufH7oZwV
-HsdNqqkdgL1O0ZmarsdreS/mXjVoOX4PbJSOpkAevqbiRanthuse3tCR4mZ/HQjM
-Eub+76JBoRxnv0WkJQisQuZ2py18xva0NEh5qJyjH0R7gzxemEWsYDFnivD12AE7
-qLSkDVM9Gem/wqlEvBMKYaLrxuLH+YkqIhq0BHsXWQIgtllHZo9X+0KtdfbqsnI0
-GmxgF3VaZeE8OcWoRLpetTdgw9F82vI87qN2rJCwYp9DyyUrolcMbRXDL/AZyAwY
-/6FZq9y9d3qjVhq/jta3nyzreXQto5ZOucdDQc11pB1vAP/xZX5cKrlNZCm4CPLY
-cLberGU9bcDeUWhmac1M8hpmYxDChlLyeCeAIJrSVl8JvPc7BrE=
-=JDNY
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlonyboACgkQXYcKB8Em
+e0aTAg/9FO5HVPEVGflftGGRWXNHfBYolIc+6O/DxhHhaiB43ZrXb4KIyuoMIK8C
+ZVIJWErVvGcXOzk7FPWeZBpOzmJPX093QYN63r1Wh0BlsHCp9Iq1A47BLYHgkrBx
+YXAqtIZL5YbZvIL/oQppK2OwX8DLvZDlg10mxYdrfaiz5SnW7bC6cls1rnaXgRTz
+AJnQ+bCasbmD+VNpDMxHxtRBauq2xVA1mJ1J2WKIfkeSO/q+mRHKnvLW3s4XMUWT
+iRue7ozqiZkb7FvsUmCtoTW/4Z87xbk+jKsUI9Ol4s+sEwVlU+ltYQ6BJuUbirvv
+V2Ds55hoid2YJgYCVQtutkozHZWT7sj14kGpxd9bXIIGTBJUT9FximjYKqLKRTWc
+mxZJRXHx9ae577HHgzkygFZa3ZQhMmQ96NHNgWu0izDRKUTFKYhct65S4IG6giUO
+WHMy55voqF0iWsgGx864yjsWnJg9YvsiDIJl3gk41QriUPb/Syfj1AwINdxFeRsq
+IEFVop7SQbsbZxC/L7wyccA2iPGqrarR75We/3+pVHB3nJHjirW9BI916XJTsmD/
+k/3YFzU2DMhZgA+grkjXlc46TRhjQt8ubsGDKMtZMtIHPnuvQeNX3qxv7IPtA0UX
+FDOkIGTuh4mWvUk89gA1ryTfOzxzBbOupO5EIT5Ovz0XjsyOVhY=
+=iivC
 -----END PGP SIGNATURE-----
 
---nextPart63026022.hpu5jhkS8c--
+--nextPart1872477.cNLA0X4QYl--
 
