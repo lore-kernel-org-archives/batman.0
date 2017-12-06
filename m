@@ -1,13 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Wed, 06 Dec 2017 11:52:59 +0100
-Message-ID: <94537663.xTi0rPAMDM@bentobox>
-In-Reply-To: <20171119140553.24435-1-sven@narfation.org>
-References: <20171119140553.24435-1-sven@narfation.org>
+Date: Wed, 06 Dec 2017 11:58:49 +0100
+Message-ID: <1625731.QymgRaWFpc@bentobox>
+In-Reply-To: <20171119140602.24504-7-sven@narfation.org>
+References: <20171119140602.24504-1-sven@narfation.org>
+ <20171119140602.24504-7-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2597253.nmAlqqjNGN";
+Content-Type: multipart/signed; boundary="nextPart6846968.rVGsBduMFQ";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 0/6] batctl: License cleanup
+Subject: Re: [B.A.T.M.A.N.] [PATCH 6/6] alfred: Change batman_adv.h license
+ to MIT
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,53 +21,55 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2597253.nmAlqqjNGN
+--nextPart6846968.rVGsBduMFQ
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Sonntag, 19. November 2017 15:05:47 CET Sven Eckelmann wrote:
-> Hi,
+On Sonntag, 19. November 2017 15:06:02 CET Sven Eckelmann wrote:
+> The ISC license is considered as not recommended in "Linux kernel licensing
+> rules". It should only be used for existing code or for importing code from
+> a different project with that license.
 > 
-> the kernel community is currently trying to make the licensing status more
-> clear in each file. This is mostly done by adding SPDX license identifiers
-> and defining a set of rules how these license related information has to
-> be stored.
+> But the kernel still has the similar sounding MIT/Expat license under the
+> preferred licenses. Switching to this license for this relatively new file
+> should therefore allow batman-adv to better follow the new licensing rules.
 > 
-> I've used this opportunity to also go through all files of batctl (for
-> example with FSFE's `reuse lint`) and to annotate the files according to
-> the "Linux licensing rules" and FSFE's REUSE practices.
-> 
-> There are two things which could be seen as controversial:
-> 
-> * change of batman_adv.h to the Linux preferred license
->   (I am waiting for Acks in the batman-adv patchset)
-> * explicitly mark remaining files as licensed under the GPL-2.0
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> ---
+> Only apply this change after the change was applied in batman-adv.
 
-Applied in 007ece3..11b729f
+The batman-adv change was applied and it received following Acked-by's [1]
+
+Acked-by: Antonio Quartulli <a@unstable.cc>
+Acked-by: Matthias Schiffer <mschiffer@universe-factory.net>
+Acked-by: Simon Wunderlich <sw@simonwunderlich.de>
+Acked-by: Andrew Lunn <andrew@lunn.ch>
 
 Kind regards,
 	Sven
---nextPart2597253.nmAlqqjNGN
+
+[1] https://patchwork.open-mesh.org/patch/17116/
+--nextPart6846968.rVGsBduMFQ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlonzAsACgkQXYcKB8Em
-e0Z2ZxAAhrCMrP071P4NvbWIxmsBUte7ZRe4OUuhnVPOPcIXFvgO+QAVDUC0VqSQ
-RqjjmUTsk9+6c1MPdodRqMaE2yRE4jo6bgZIk7Vq3FKD6Srt0R4c19ObxqTzpxTz
-VF1bIAEs7CQ3xVziP2ehqI0rZSQIPj1W6Uxw0kBp0QhBjFYTaswRqvPLtGdk6FNw
-0VFKXNb7ehAp/1kuoyO+3rX9D0nOqzau/6517pzJPXWucrxbEBy3QbOb+XkVXr1h
-oKjUp0IpMpubZObx4Zb4tiUeYcHklWgY/ic2VKyuMVQNoXQkaMeaPR/h2C2C6FdV
-gMQOY5vLKJ+sfXiHkF+hfU1ono0IRPsv5GZ6U9l8xxcxRe3y4Z40jE4ZjvEHH0q8
-m2Vf7+CmDV1hv3AitNeayF2iInfh+uyIR9xwxLCo8ae3Jg9njjdvtCeP/vJefzgV
-D7jfGsDkukThwKw52kzxm8Tr0J/+4PGHkROSrmWwamz7BtjBYyQmPCsPu0MIES8F
-CjHyQ9KPB8yPiYc+GlkynhuSNzwe/hQ5FBPXGRsbAto/p7151B+UzK4HeQ9SCeAt
-5mx9tQlbR2CONz7QQiZFPi0NBBeL910hE+lx0b3V4rM7RZZPyVvVa2wxsoVc7zBv
-0w3uo8AEeL9q9d9wfUcwead2CyC0Uuniyoq34lfxOvi05P63xrg=
-=48vy
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlonzWkACgkQXYcKB8Em
+e0a+Ug/+NZrFXkZBYV1c9QLJb7y2ejk3FQvrqq8gwomW2ggZQJFhH7X8Ow97Q5wX
+MSVI9PV2063pQowaLxum3vX2eCnaVG5q2/LmS/n5q86aMtV6E/mTTLlcVVdzGspu
+CK8XTzQO9bKDXBeatIysSlgnq/0WUWyDWWnkGBUFmhf98a4mDDGSnr0pIq+Dvc6x
+9DR3YPPfvgS57ZEs8G3vSBCo7ks5qsKXVlXMQJW5dkHQK55KGkjNpdndF7CFbEBp
+445n4597Xa2PCbfmLBccwulibaRiuKsRs4p9EwWOf3FRjmS2zLem7JfjHoWvB3J6
+Up8zDlxJepVQo4Isl6l3ySUqKeQ/h0ajRCKbKd98e2VwREXlSCyjlFe3VllH8GlJ
+wwS4ajz+5YGh9sElGpnj87y5iIu/dc3/FWuoozMGr1pOyi4qcjMPROoRwA6nbe7S
+RXT8XzWRwbJcCVCJXa85lbqpbcNLywQ4gBd+3NIEgQ11y+dvdFrc0QhnIcsVvC80
+fcy1iCpbnMKuZV4IbYk7V6ifNpYl9AeF93PrSolqakbBBypQ357kHfoMtvs33Fh/
+ywkSX7EB3/Y1TRWLIOMM2oXQp/UPIGyXgrok7e+QfrC9szYRqkn9pBjD4aOBTHMa
+XTycSZZ3gpMIivbtdW3O3qIZvgZsaEEFqM8INB23azDATOzzwmY=
+=ioY7
 -----END PGP SIGNATURE-----
 
---nextPart2597253.nmAlqqjNGN--
+--nextPart6846968.rVGsBduMFQ--
 
