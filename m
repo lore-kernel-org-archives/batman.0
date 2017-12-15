@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 15 Dec 2017 12:31:42 +0100
-Message-Id: <20171215113143.12852-4-sw@simonwunderlich.de>
+Date: Fri, 15 Dec 2017 12:31:43 +0100
+Message-Id: <20171215113143.12852-5-sw@simonwunderlich.de>
 In-Reply-To: <20171215113143.12852-1-sw@simonwunderlich.de>
 References: <20171215113143.12852-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 3/4] batman-adv: Fix kernel-doc for timer
- functions
+Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: Fix lock for ogm cnt access
+ in batadv_iv_ogm_calc_tq
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,39 +20,42 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The commit e99e88a9d2b0 ("treewide: setup_timer() -> timer_setup()")
-changed the argument name and type of the timer function but didn't adjust
-the kernel-doc of these functions.
+The originator node object orig_neigh_node is used to when accessing the
+bcast_own(_sum) and real_packet_count information. The access to them has
+to be protected with the spinlock in orig_neigh_node.
 
+But the function uses the lock in orig_node instead. This is incorrect
+because they could be two different originator node objects.
+
+Fixes: 0ede9f41b217 ("batman-adv: protect bit operations to count OGMs with spinlock")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
-Acked-by: Kees Cook <keescook@chromium.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/tp_meter.c | 4 ++--
+ net/batman-adv/bat_iv_ogm.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
-index 15cd2139381e..ebc4e2241c77 100644
---- a/net/batman-adv/tp_meter.c
-+++ b/net/batman-adv/tp_meter.c
-@@ -482,7 +482,7 @@ static void batadv_tp_reset_sender_timer(struct batadv_tp_vars *tp_vars)
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index 1b659ab652fb..bbe8414b6ee7 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -1214,7 +1214,7 @@ static bool batadv_iv_ogm_calc_tq(struct batadv_orig_node *orig_node,
+ 	orig_node->last_seen = jiffies;
  
- /**
-  * batadv_tp_sender_timeout - timer that fires in case of packet loss
-- * @arg: address of the related tp_vars
-+ * @t: address to timer_list inside tp_vars
-  *
-  * If fired it means that there was packet loss.
-  * Switch to Slow Start, set the ss_threshold to half of the current cwnd and
-@@ -1106,7 +1106,7 @@ static void batadv_tp_reset_receiver_timer(struct batadv_tp_vars *tp_vars)
- /**
-  * batadv_tp_receiver_shutdown - stop a tp meter receiver when timeout is
-  *  reached without received ack
-- * @arg: address of the related tp_vars
-+ * @t: address to timer_list inside tp_vars
-  */
- static void batadv_tp_receiver_shutdown(struct timer_list *t)
- {
+ 	/* find packet count of corresponding one hop neighbor */
+-	spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
++	spin_lock_bh(&orig_neigh_node->bat_iv.ogm_cnt_lock);
+ 	if_num = if_incoming->if_num;
+ 	orig_eq_count = orig_neigh_node->bat_iv.bcast_own_sum[if_num];
+ 	neigh_ifinfo = batadv_neigh_ifinfo_new(neigh_node, if_outgoing);
+@@ -1224,7 +1224,7 @@ static bool batadv_iv_ogm_calc_tq(struct batadv_orig_node *orig_node,
+ 	} else {
+ 		neigh_rq_count = 0;
+ 	}
+-	spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
++	spin_unlock_bh(&orig_neigh_node->bat_iv.ogm_cnt_lock);
+ 
+ 	/* pay attention to not get a value bigger than 100 % */
+ 	if (orig_eq_count > neigh_rq_count)
 -- 
 2.11.0
 
