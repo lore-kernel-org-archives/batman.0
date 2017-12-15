@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 15 Dec 2017 12:43:11 +0100
-Message-Id: <20171215114320.13645-12-sw@simonwunderlich.de>
+Date: Fri, 15 Dec 2017 12:43:12 +0100
+Message-Id: <20171215114320.13645-13-sw@simonwunderlich.de>
 In-Reply-To: <20171215114320.13645-1-sw@simonwunderlich.de>
 References: <20171215114320.13645-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 11/20] batman-adv: include kobject.h for
- kobject_* functions
+Subject: [B.A.T.M.A.N.] [PATCH 12/20] batman-adv: Remove unused sched.h
+ include
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,27 +20,28 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The linux/kobject.h provides the kobject_* function declarations and should
-therefore be included directly before they are used.
+The linux/wait.h include was removed with commit 421d988b2c08 ("batman-adv:
+Consolidate logging related functions"). The previously required (but not
+unused) linux/sched.h include can also be dropped now.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/sysfs.c | 1 +
- 1 file changed, 1 insertion(+)
+ net/batman-adv/debugfs.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
-index 5c29e38a1ad1..9eed06647065 100644
---- a/net/batman-adv/sysfs.c
-+++ b/net/batman-adv/sysfs.c
-@@ -29,6 +29,7 @@
- #include <linux/if.h>
- #include <linux/if_vlan.h>
- #include <linux/kernel.h>
-+#include <linux/kobject.h>
- #include <linux/kref.h>
+diff --git a/net/batman-adv/debugfs.c b/net/batman-adv/debugfs.c
+index e5f76c76f3ed..96df39597ae7 100644
+--- a/net/batman-adv/debugfs.c
++++ b/net/batman-adv/debugfs.c
+@@ -28,7 +28,6 @@
+ #include <linux/fs.h>
  #include <linux/netdevice.h>
  #include <linux/printk.h>
+-#include <linux/sched.h> /* for linux/wait.h */
+ #include <linux/seq_file.h>
+ #include <linux/stat.h>
+ #include <linux/stddef.h>
 -- 
 2.11.0
 
