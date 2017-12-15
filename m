@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 15 Dec 2017 12:43:13 +0100
-Message-Id: <20171215114320.13645-14-sw@simonwunderlich.de>
+Date: Fri, 15 Dec 2017 12:43:06 +0100
+Message-Id: <20171215114320.13645-7-sw@simonwunderlich.de>
 In-Reply-To: <20171215114320.13645-1-sw@simonwunderlich.de>
 References: <20171215114320.13645-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 13/20] batman-adv: Add missing kernel-doc to
- packet.h
+Subject: [B.A.T.M.A.N.] [PATCH 06/20] batman-adv: Add license header to
+ Kconfig
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,62 +20,44 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
+The last remaining file without license notice and/or SPDX license
+identifier under net/batman-adv/ is the Kconfig. It should have been
+licensed under the same conditions as the rest of batman-adv and the
+Makefile which uses the CONFIG_* variables from Kconfig.
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/packet.h | 25 +++++++++++++++++++++++--
- 1 file changed, 23 insertions(+), 2 deletions(-)
+ net/batman-adv/Kconfig | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index d58288c3a99d..ebe0605d1505 100644
---- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -24,6 +24,12 @@
- #include <asm/byteorder.h>
- #include <linux/types.h>
- 
-+/**
-+ * batadv_tp_is_error() - Check throughput meter return code for error
-+ * @n: throughput meter return code
-+ *
-+ * Return: 0 when not error was detected, != 0 otherwise
-+ */
- #define batadv_tp_is_error(n) ((u8)(n) > 127 ? 1 : 0)
- 
- /**
-@@ -91,7 +97,15 @@ enum batadv_iv_flags {
- 	BATADV_DIRECTLINK          = BIT(2),
- };
- 
--/* ICMP message types */
-+/**
-+ * enum batadv_icmp_packettype - ICMP message types
-+ * @BATADV_ECHO_REPLY: success reply to BATADV_ECHO_REQUEST
-+ * @BATADV_DESTINATION_UNREACHABLE: failure when route to destination not found
-+ * @BATADV_ECHO_REQUEST: request BATADV_ECHO_REPLY from destination
-+ * @BATADV_TTL_EXCEEDED: error after BATADV_ECHO_REQUEST traversed too many hops
-+ * @BATADV_PARAMETER_PROBLEM: return code for malformed messages
-+ * @BATADV_TP: throughput meter packet
-+ */
- enum batadv_icmp_packettype {
- 	BATADV_ECHO_REPLY	       = 0,
- 	BATADV_DESTINATION_UNREACHABLE = 3,
-@@ -139,7 +153,14 @@ enum batadv_vlan_flags {
- 	BATADV_VLAN_HAS_TAG	= BIT(15),
- };
- 
--/* claim frame types for the bridge loop avoidance */
-+/**
-+ * enum batadv_bla_claimframe - claim frame types for the bridge loop avoidance
-+ * @BATADV_CLAIM_TYPE_CLAIM: claim of a client mac address
-+ * @BATADV_CLAIM_TYPE_UNCLAIM: unclaim of a client mac address
-+ * @BATADV_CLAIM_TYPE_ANNOUNCE: announcement of backbone with current crc
-+ * @BATADV_CLAIM_TYPE_REQUEST: request of full claim table
-+ * @BATADV_CLAIM_TYPE_LOOPDETECT: mesh-traversing loop detect packet
-+ */
- enum batadv_bla_claimframe {
- 	BATADV_CLAIM_TYPE_CLAIM		= 0x00,
- 	BATADV_CLAIM_TYPE_UNCLAIM	= 0x01,
+diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
+index b73b96a2854b..73d84707965a 100644
+--- a/net/batman-adv/Kconfig
++++ b/net/batman-adv/Kconfig
+@@ -1,3 +1,22 @@
++# SPDX-License-Identifier: GPL-2.0
++# Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
++#
++# Marek Lindner, Simon Wunderlich
++#
++# This program is free software; you can redistribute it and/or
++# modify it under the terms of version 2 of the GNU General Public
++# License as published by the Free Software Foundation.
++#
++# This program is distributed in the hope that it will be useful, but
++# WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++# General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, see <http://www.gnu.org/licenses/>.
++#
++# License-Filename: LICENSES/preferred/GPL-2.0
++
+ #
+ # B.A.T.M.A.N meshing protocol
+ #
 -- 
 2.11.0
 
