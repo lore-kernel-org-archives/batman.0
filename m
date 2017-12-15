@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Fri, 15 Dec 2017 12:31:43 +0100
-Message-Id: <20171215113143.12852-5-sw@simonwunderlich.de>
+Date: Fri, 15 Dec 2017 12:31:40 +0100
+Message-Id: <20171215113143.12852-2-sw@simonwunderlich.de>
 In-Reply-To: <20171215113143.12852-1-sw@simonwunderlich.de>
 References: <20171215113143.12852-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 4/4] batman-adv: Fix lock for ogm cnt access
- in batadv_iv_ogm_calc_tq
+Subject: [B.A.T.M.A.N.] [PATCH 1/4] batman-adv: Always initialize fragment
+ header priority
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,46 +16,35 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sven.eckelmann@open-mesh.com>, Simon Wunderlich <sw@simonwunderlich.de>
 
-From: Sven Eckelmann <sven@narfation.org>
+From: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 
-The originator node object orig_neigh_node is used to when accessing the
-bcast_own(_sum) and real_packet_count information. The access to them has
-to be protected with the spinlock in orig_neigh_node.
+The batman-adv unuicast fragment header contains 3 bits for the priority of
+the packet. These bits will be initialized when the skb->priority contains
+a value between 256 and 263. But otherwise, the uninitialized bits from the
+stack will be used.
 
-But the function uses the lock in orig_node instead. This is incorrect
-because they could be two different originator node objects.
-
-Fixes: 0ede9f41b217 ("batman-adv: protect bit operations to count OGMs with spinlock")
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Fixes: c0f25c802b33 ("batman-adv: Include frame priority in fragment header")
+Signed-off-by: Sven Eckelmann <sven.eckelmann@open-mesh.com>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/bat_iv_ogm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/fragmentation.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
-index 1b659ab652fb..bbe8414b6ee7 100644
---- a/net/batman-adv/bat_iv_ogm.c
-+++ b/net/batman-adv/bat_iv_ogm.c
-@@ -1214,7 +1214,7 @@ static bool batadv_iv_ogm_calc_tq(struct batadv_orig_node *orig_node,
- 	orig_node->last_seen = jiffies;
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index a98cf1104a30..ebe6e38934e4 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -499,6 +499,8 @@ int batadv_frag_send_packet(struct sk_buff *skb,
+ 	 */
+ 	if (skb->priority >= 256 && skb->priority <= 263)
+ 		frag_header.priority = skb->priority - 256;
++	else
++		frag_header.priority = 0;
  
- 	/* find packet count of corresponding one hop neighbor */
--	spin_lock_bh(&orig_node->bat_iv.ogm_cnt_lock);
-+	spin_lock_bh(&orig_neigh_node->bat_iv.ogm_cnt_lock);
- 	if_num = if_incoming->if_num;
- 	orig_eq_count = orig_neigh_node->bat_iv.bcast_own_sum[if_num];
- 	neigh_ifinfo = batadv_neigh_ifinfo_new(neigh_node, if_outgoing);
-@@ -1224,7 +1224,7 @@ static bool batadv_iv_ogm_calc_tq(struct batadv_orig_node *orig_node,
- 	} else {
- 		neigh_rq_count = 0;
- 	}
--	spin_unlock_bh(&orig_node->bat_iv.ogm_cnt_lock);
-+	spin_unlock_bh(&orig_neigh_node->bat_iv.ogm_cnt_lock);
- 
- 	/* pay attention to not get a value bigger than 100 % */
- 	if (orig_eq_count > neigh_rq_count)
+ 	ether_addr_copy(frag_header.orig, primary_if->net_dev->dev_addr);
+ 	ether_addr_copy(frag_header.dest, orig_node->orig);
 -- 
 2.11.0
 
