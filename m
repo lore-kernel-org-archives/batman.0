@@ -1,15 +1,12 @@
-Return-Path: <sven.eckelmann@openmesh.com>
-From: Sven Eckelmann <sven.eckelmann@openmesh.com>
-Date: Sat, 16 Dec 2017 09:45:20 +0100
-Message-ID: <2130928.Gov3uGz9Ek@sven-edge>
-In-Reply-To: <CAF=yD-LSwR3ggm5Ss4sLNx08bG8ks5TT+SvryDK5ReKtv1-dBQ@mail.gmail.com>
-References: <20171215182313.15767-1-sven.eckelmann@openmesh.com>
- <CAF=yD-LSwR3ggm5Ss4sLNx08bG8ks5TT+SvryDK5ReKtv1-dBQ@mail.gmail.com>
+Return-Path: <gui@altermundi.net>
+From: Gui Iribarren <gui@altermundi.net>
+Message-ID: <975dadcd-f5f4-15ab-7926-f7b4beedcdb9@altermundi.net>
+Date: Sat, 16 Dec 2017 16:08:24 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart17600194.ePNuLTmzPI";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC v3 0/4] flow_dissector: Provide basic
- batman-adv unicast handling
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+Subject: [B.A.T.M.A.N.] weird alfred problem
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,46 +16,121 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Willem de Bruijn <willemdebruijn.kernel@gmail.com>, Network Development <netdev@vger.kernel.org>, Jiri Pirko <jiri@mellanox.com>, LKML <linux-kernel@vger.kernel.org>, Eric Dumazet <edumazet@google.com>, Tom Herbert <tom@herbertland.com>, "David S . Miller" <davem@davemloft.net>
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart17600194.ePNuLTmzPI
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+found this situation today, on a node that otherwise works normal
+("alfred -r 64" normally returns around ~50 lines of output)
 
-On Freitag, 15. Dezember 2017 17:51:19 CET Willem de Bruijn wrote:
-[....]
-> Thanks for making these changes. The flow dissection looks good to me.
-> 
-> One possible issue is that this exposes kernel fixed width types u8/u16/..
-> to userspace. For posix compatibility reasons, uapi headers use the
-> variant with underscores.
+https://pastebin.com/7xkXUnsr
 
-Thanks for the info - missed this.
+any idea what could lead to this state?
+(after a reboot, everything was fine again)
 
-Kind regards,
-	Sven
---nextPart17600194.ePNuLTmzPI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+(copypaste follows for reference)
 
------BEGIN PGP SIGNATURE-----
+root@giordano:~# uptime
+ 09:56:49 up 4 days, 21:49,  load average: 0.40, 0.13, 0.08
+root@giordano:~# alfred -r 64
+# returns immediately, tcpdump on br-lan doesn't see any packet out
+root@giordano:~# alfred -r 64
+root@giordano:~# ps |grep alfred
+ 1182 root      1044 S    /usr/sbin/alfred -i br-lan -b bat0
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlo03SAACgkQXYcKB8Em
-e0YhUQ/7BY6lfN2hKcwEoNcyBdmsbIIyYwxCrh1lO112QIXQhP6E8hHSD9qWe8Cw
-8Fl8qYKsJ4DNLvzMFTyh9XjAHIHyxEYOn7gwhvhphnqTn2qlXkYhHM0AqN64d1Kq
-egnPfaKlepLbr/x1u47Atg6KgAd6RlbILrjiVsnIniGk17Zxfjy/ZQno+UuEF8pJ
-A1dEb4pJCvnhk3UpLFxCgHZqlVvzwCVMrwp0xMXCugIaGJO4K2Mxe7tmM2GiAr0z
-TSreo6SPrMXDNQ48APLaNLV9zDWW/xLCACBLimE//3GTYSyBWjN8nJePEssQdVh7
-pt+LdVS7lvC1H9sYkWHoG7SuZOKteQyTgIl9AbLxABlq9rtnQUSE539UeatgTVTb
-Ds7YnEOPKqJYNr4QRxsBDGrOx6YoBj2ONwZLEUSzawMQH05e0NaXR+ki6fby0xGv
-l5omGnvn2a3zP30vFns6sUwcXdKZSGi6biJeM+ixj/R1ujR5PL8mQGB+gy1e04YV
-MEw/5xnKjCdjxtNsQ3aUv0H/PSbX0mxcjmU2LiVnvwMTZk04xD4nUVGQ1A2vU6fi
-iWCu7gXuqlvsukgY6I7V9G0c1piiY6PIboPmEA4SjsZlscNFrfk/2pR5XXgUt/5K
-7BNnlhxExyInCduVMjEOBFXLuXS1U+Rsszu8yey9svsftxfzWT0=
-=NhkC
------END PGP SIGNATURE-----
+root@giordano:~# tcpdump -i br-lan  udp port 16962
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on br-lan, link-type EN10MB (Ethernet), capture size 262144 bytes
+09:46:40.945074 IP6 fe80::c24a:ff:fefc:38df.16962 > ip6-allnodes.16962:
+UDP, length 4
+09:46:40.987477 IP6 fe80::c24a:ff:fefc:3a87.16962 > ip6-allnodes.16962:
+UDP, length 4
+[...]
+i correctly see these two incoming announcements from the two masters in
+the network (giordano is slave)
 
---nextPart17600194.ePNuLTmzPI--
+### Tested changing mode to Master, no luck
+root@giordano:~# alfred -M master
+root@giordano:~# alfred -r 64
+### waited a minute or so, but never saw any outgoing announcement
+### over br-lan (still seeing the other incoming announcements)
 
+root@giordano:~# /etc/init.d/alfred restart
+/etc/init.d/alfred: waiting 30 secs for br-lan address...
+/etc/init.d/alfred: starting alfred
+can't connect to unix socket: Connection refused
+can't connect to unix socket: Connection refused
+can't connect to unix socket: Connection refused
+can't connect to unix socket: Connection refused
+can't connect to unix socket: Connection refused
+can't connect to unix socket: Connection refused
+can't connect to unix socket: Connection refused
+can't connect to unix socket: Connection refused
+can't connect to unix socket: Connection refused
+root@giordano:~# ps |grep alfred
+30114 root      1184 S    grep alfred
+
+root@giordano:~# netstat -tunpl
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address
+State       PID/Program name
+tcp        0      0 0.0.0.0:53              0.0.0.0:*
+LISTEN      1726/dnsmasq
+tcp        0      0 0.0.0.0:22              0.0.0.0:*
+LISTEN      847/dropbear
+tcp        0      0 127.0.0.1:5303          0.0.0.0:*
+LISTEN      973/orangerpcd
+tcp        0      0 :::12865                :::*
+LISTEN      858/netserver
+tcp        0      0 :::80                   :::*
+LISTEN      856/lighttpd
+tcp        0      0 :::53                   :::*
+LISTEN      1726/dnsmasq
+tcp        0      0 :::22                   :::*
+LISTEN      847/dropbear
+udp        0      0 0.0.0.0:53              0.0.0.0:*
+       1726/dnsmasq
+udp        0      0 0.0.0.0:67              0.0.0.0:*
+       1726/dnsmasq
+udp        0      0 :::53                   :::*
+       1726/dnsmasq
+udp        0      0 ff02::2:6240            :::*
+       874/bmx6
+udp        0      0 fe80::c24a:ff:fefc:4154:6240 :::*
+            874/bmx6
+udp        0      0 ff02::2:6240            :::*
+       874/bmx6
+udp        0      0 fe80::c24a:ff:fefc:4155:6240 :::*
+            874/bmx6
+udp        0      0 ff02::2:6240            :::*
+       874/bmx6
+udp        0      0 fe80::c24a:ff:fefc:4153:6240 :::*
+            874/bmx6
+
+root@giordano:~# alfred -i br-lan -b bat0 -d
+can't bind: Address not available
+Failed to open interfaces
+root@giordano:~# alfred -i br-lan -b bat0 -d
+can't bind: Address not available
+Failed to open interfaces
+root@giordano:~# alfred -i br-lan -b bat0 -d
+can't bind: Address not available
+Failed to open interfaces
+root@giordano:~# alfred -i br-lan -b bat0 -d
+can't bind: Address not available
+Failed to open interfaces
+root@giordano:~# alfred -i br-lan -b bat0 -d
+can't bind: Address not available
+Failed to open interfaces
+
+root@giordano:~# ip a s br-lan
+11: br-lan: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue
+state UP group default qlen 1000
+    link/ether c2:4a:00:fc:41:54 brd ff:ff:ff:ff:ff:ff
+    inet 10.5.0.31/21 brd 10.5.7.255 scope global br-lan
+       valid_lft forever preferred_lft forever
+    inet6 2801:1e8:2::5341:fc00/64 scope global
+       valid_lft forever preferred_lft forever
+    inet6 fe80::d4f4:2aff:feb8:ce2d/64 scope link
+       valid_lft forever preferred_lft forever
+
+root@giordano:~# uptime
+ 10:29:41 up 4 days, 22:22,  load average: 0.08, 0.14, 0.10
