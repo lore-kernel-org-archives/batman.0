@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 20 Dec 2017 12:01:09 +0100
-Message-Id: <20171220110124.13117-5-sw@simonwunderlich.de>
+Date: Wed, 20 Dec 2017 12:01:10 +0100
+Message-Id: <20171220110124.13117-6-sw@simonwunderlich.de>
 In-Reply-To: <20171220110124.13117-1-sw@simonwunderlich.de>
 References: <20171220110124.13117-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 04/19] batman-adv: Add SPDX license
- identifier to batman-adv.rst
+Subject: [B.A.T.M.A.N.] [PATCH 05/19] batman-adv: Add license header to
+ Kconfig
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,25 +20,42 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The "Linux licensing rules" require that also the restructuredText files
-are marked with the appropriate SPDX license identifier.
+The last remaining file without license notice and/or SPDX license
+identifier under net/batman-adv/ is the Kconfig. It should have been
+licensed under the same conditions as the rest of batman-adv and the
+Makefile which uses the CONFIG_* variables from Kconfig.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- Documentation/networking/batman-adv.rst | 2 ++
- 1 file changed, 2 insertions(+)
+ net/batman-adv/Kconfig | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/Documentation/networking/batman-adv.rst b/Documentation/networking/batman-adv.rst
-index a342b2cc3dc6..245fb6c0ab6f 100644
---- a/Documentation/networking/batman-adv.rst
-+++ b/Documentation/networking/batman-adv.rst
-@@ -1,3 +1,5 @@
-+.. SPDX-License-Identifier: GPL-2.0
+diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
+index b73b96a2854b..c44f6515be5e 100644
+--- a/net/batman-adv/Kconfig
++++ b/net/batman-adv/Kconfig
+@@ -1,3 +1,20 @@
++# SPDX-License-Identifier: GPL-2.0
++# Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
++#
++# Marek Lindner, Simon Wunderlich
++#
++# This program is free software; you can redistribute it and/or
++# modify it under the terms of version 2 of the GNU General Public
++# License as published by the Free Software Foundation.
++#
++# This program is distributed in the hope that it will be useful, but
++# WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++# General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, see <http://www.gnu.org/licenses/>.
 +
- ==========
- batman-adv
- ==========
+ #
+ # B.A.T.M.A.N meshing protocol
+ #
 -- 
 2.11.0
 
