@@ -1,11 +1,11 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 20 Dec 2017 12:01:10 +0100
-Message-Id: <20171220110124.13117-6-sw@simonwunderlich.de>
+Date: Wed, 20 Dec 2017 12:01:11 +0100
+Message-Id: <20171220110124.13117-7-sw@simonwunderlich.de>
 In-Reply-To: <20171220110124.13117-1-sw@simonwunderlich.de>
 References: <20171220110124.13117-1-sw@simonwunderlich.de>
-Subject: [B.A.T.M.A.N.] [PATCH 05/19] batman-adv: Add license header to
- Kconfig
+Subject: [B.A.T.M.A.N.] [PATCH 06/19] batman-adv: Change batman_adv.h
+ license to MIT
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,42 +20,64 @@ Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Sven Eckelmann <sve
 
 From: Sven Eckelmann <sven@narfation.org>
 
-The last remaining file without license notice and/or SPDX license
-identifier under net/batman-adv/ is the Kconfig. It should have been
-licensed under the same conditions as the rest of batman-adv and the
-Makefile which uses the CONFIG_* variables from Kconfig.
+The ISC license is considered as not recommended in "Linux kernel licensing
+rules". It should only be used for existing code or for importing code from
+a different project with that license.
+
+But the kernel still has the similar sounding MIT/Expat license under the
+preferred licenses. Switching to this license for this relatively new file
+should therefore allow batman-adv to better follow the new licensing rules.
 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Acked-by: Antonio Quartulli <a@unstable.cc>
+Acked-by: Matthias Schiffer <mschiffer@universe-factory.net>
+Acked-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- net/batman-adv/Kconfig | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ include/uapi/linux/batman_adv.h | 28 +++++++++++++++++-----------
+ 1 file changed, 17 insertions(+), 11 deletions(-)
 
-diff --git a/net/batman-adv/Kconfig b/net/batman-adv/Kconfig
-index b73b96a2854b..c44f6515be5e 100644
---- a/net/batman-adv/Kconfig
-+++ b/net/batman-adv/Kconfig
-@@ -1,3 +1,20 @@
-+# SPDX-License-Identifier: GPL-2.0
-+# Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
-+#
-+# Marek Lindner, Simon Wunderlich
-+#
-+# This program is free software; you can redistribute it and/or
-+# modify it under the terms of version 2 of the GNU General Public
-+# License as published by the Free Software Foundation.
-+#
-+# This program is distributed in the hope that it will be useful, but
-+# WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+# General Public License for more details.
-+#
-+# You should have received a copy of the GNU General Public License
-+# along with this program; if not, see <http://www.gnu.org/licenses/>.
-+
- #
- # B.A.T.M.A.N meshing protocol
- #
+diff --git a/include/uapi/linux/batman_adv.h b/include/uapi/linux/batman_adv.h
+index fb4533826163..ae00c99cbed0 100644
+--- a/include/uapi/linux/batman_adv.h
++++ b/include/uapi/linux/batman_adv.h
+@@ -1,19 +1,25 @@
+-/* SPDX-License-Identifier: ISC */
++/* SPDX-License-Identifier: MIT */
+ /* Copyright (C) 2016-2017  B.A.T.M.A.N. contributors:
+  *
+  * Matthias Schiffer
+  *
+- * Permission to use, copy, modify, and/or distribute this software for any
+- * purpose with or without fee is hereby granted, provided that the above
+- * copyright notice and this permission notice appear in all copies.
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
+  *
+- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
+  */
+ 
+ #ifndef _UAPI_LINUX_BATMAN_ADV_H_
 -- 
 2.11.0
 
