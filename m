@@ -1,14 +1,11 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 18 Dec 2017 22:51:58 +0100
-Message-ID: <2202407.cOva1GthCj@sven-edge>
-In-Reply-To: <CAHuRCtSXTMBekv95iaoxVQtxGWLvk4HOz_SbOsn4WdXT9HpaFg@mail.gmail.com>
-References: <CAHuRCtSXTMBekv95iaoxVQtxGWLvk4HOz_SbOsn4WdXT9HpaFg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart20184143.8Uk1HXENVE";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Batman -adv no longer backwards compatible with
- kernels Pre -4.0???
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 20 Dec 2017 12:01:07 +0100
+Message-Id: <20171220110124.13117-3-sw@simonwunderlich.de>
+In-Reply-To: <20171220110124.13117-1-sw@simonwunderlich.de>
+References: <20171220110124.13117-1-sw@simonwunderlich.de>
+Subject: [B.A.T.M.A.N.] [PATCH 02/19] batman-adv: Deinline
+ batadv_orig_hash_find, save 7339 bytes
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,61 +15,138 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: jorge power <jorge@alumni.ufl.edu>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org, Denys Vlasenko <dvlasenk@redhat.com>, Sven Eckelmann <sven@narfation.org>, Simon Wunderlich <sw@simonwunderlich.de>
 
---nextPart20184143.8Uk1HXENVE
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+From: Denys Vlasenko <dvlasenk@redhat.com>
 
-On Montag, 18. Dezember 2017 15:55:48 CET jorge power wrote:
-> I am running kernel 3.3.8 and trying to use batman adv ver 2017.4.
-> I am getting error:
-> 
-> net/batman-adv/hard-interface.c:101:28: error: 'const struct
-> rtnl_link_ops' has no member named 'get_link_net'
-[...]
-> So was the backwards compatability broken intentionally so its no
-> longer backwards compatible with older kernels?
-> 
-> What can i do?
+This function compiles to 288 bytes of machine code for Linux 4.14 on
+Debian Stretch amd64 and (6.3.0-18) with the default configuration. 27
+callsites (25 used in default config).
 
-Stop trying to do your own stuff and use the full compat layer from batman-adv 
-or LEDE (mac80211 + small batman-adv compat layer). We will not integrate any 
-compat stuff in net/batman-adv/ because this is the part which is part of the 
-official kernel [1]. So if you don't want to use the compat stuff then please
-don't complain about having build errors.
+   text    data     bss     dec     hex filename
+ 179291   10317    4416  194024   2f5e8 batman-adv.ko.pre
+ 171952   10317    4416  186685   2d93d batman-adv.ko.post
 
-And in case  somebody wonders: Yes, he acknowledged on IRC that he is not 
-using the compat stuff from batman-adv to build against OpenWrt (without the 
-OpenWrt package!!!!).
+Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
+[sven@narfation.org: Fix includes, correct sizes+counts in commit message]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+---
+ net/batman-adv/originator.c | 32 ++++++++++++++++++++++++++++++++
+ net/batman-adv/originator.h | 37 ++-----------------------------------
+ 2 files changed, 34 insertions(+), 35 deletions(-)
 
-Kind regards,
-	Sven
-
-[1] the official kernel doesn't require compat and doesn't want it
-    https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/scripts/checkpatch.pl?id=cb81fc6a3cf694345f29858624e5d9f3509d30d4#n3829
---nextPart20184143.8Uk1HXENVE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlo4OH4ACgkQXYcKB8Em
-e0aYgA//fhIvKBOXuN6GamLMDR7fJXTAWVPAsrSrql7PMdfRRON6xOGh7WMn3w2A
-TGBGwupmqFFOI8QcdGRz2z+07r9zW8Jo0mmhLEGewmL60P/EzosAf4BtzTcEdGzs
-cJXG4CJoJsydMwHLxjf0hscNIDNnlgiltHSMZJQZ2CuW2kPHL/XWV9SYgUTlAEiB
-OcaXmeee850+rJgIm0j9A6OYIyunk0dPcW3TQ3clr/5x/UCl/Eeg7yKAZiuZklGy
-qAjwU953NiB/sN4SMs5aKDkCamMYOul3fERu709Xt/hI5xD4G1Ldi7OavxIoSi3V
-mBWAdDbAvij2csgLEsKvvhYj9cOanFX2IGQyguu7lVeJ+w5598JcGlK2eIMvA+yQ
-4H+/G70Hkw6Y/oXa0b69X+eZul84hZcxFrvznNuaYebA6J2VZwOGwaVx/WEPxRxk
-cjvXriqvkHGgtCPXsf8r9KpQ0W46VFWJRd1uapQuUgzXU2g990v1EVSHNKKrAPFM
-HF90KVJ6e77ICDIngzPsEpzPC+W2gZeBVwwepgcILwTNU1EUbIbDRahGLl7TfMgg
-noTuzZwAtSOscIy3AIQvjLGcV7Z1foZvJlzeTCJ6lPDl3JoesxDAohbkR6dH2/6Z
-v68nHVG4s9V4wNHNlLsHDFFxOZZ1dWZ9/jFViWLWwOquM5SLtr4=
-=ZR6I
------END PGP SIGNATURE-----
-
---nextPart20184143.8Uk1HXENVE--
+diff --git a/net/batman-adv/originator.c b/net/batman-adv/originator.c
+index 2967b86c13da..0a565d0422bb 100644
+--- a/net/batman-adv/originator.c
++++ b/net/batman-adv/originator.c
+@@ -30,10 +30,12 @@
+ #include <linux/netdevice.h>
+ #include <linux/netlink.h>
+ #include <linux/rculist.h>
++#include <linux/rcupdate.h>
+ #include <linux/seq_file.h>
+ #include <linux/skbuff.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
++#include <linux/stddef.h>
+ #include <linux/workqueue.h>
+ #include <net/sock.h>
+ #include <uapi/linux/batman_adv.h>
+@@ -55,6 +57,36 @@
+ /* hash class keys */
+ static struct lock_class_key batadv_orig_hash_lock_class_key;
+ 
++struct batadv_orig_node *
++batadv_orig_hash_find(struct batadv_priv *bat_priv, const void *data)
++{
++	struct batadv_hashtable *hash = bat_priv->orig_hash;
++	struct hlist_head *head;
++	struct batadv_orig_node *orig_node, *orig_node_tmp = NULL;
++	int index;
++
++	if (!hash)
++		return NULL;
++
++	index = batadv_choose_orig(data, hash->size);
++	head = &hash->table[index];
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
++		if (!batadv_compare_eth(orig_node, data))
++			continue;
++
++		if (!kref_get_unless_zero(&orig_node->refcount))
++			continue;
++
++		orig_node_tmp = orig_node;
++		break;
++	}
++	rcu_read_unlock();
++
++	return orig_node_tmp;
++}
++
+ static void batadv_purge_orig(struct work_struct *work);
+ 
+ /**
+diff --git a/net/batman-adv/originator.h b/net/batman-adv/originator.h
+index d94220a6d21a..40c7f039d5d7 100644
+--- a/net/batman-adv/originator.h
++++ b/net/batman-adv/originator.h
+@@ -23,14 +23,8 @@
+ #include <linux/compiler.h>
+ #include <linux/if_ether.h>
+ #include <linux/jhash.h>
+-#include <linux/kref.h>
+-#include <linux/rculist.h>
+-#include <linux/rcupdate.h>
+-#include <linux/stddef.h>
+ #include <linux/types.h>
+ 
+-#include "hash.h"
+-
+ struct netlink_callback;
+ struct seq_file;
+ struct sk_buff;
+@@ -100,34 +94,7 @@ static inline u32 batadv_choose_orig(const void *data, u32 size)
+ 	return hash % size;
+ }
+ 
+-static inline struct batadv_orig_node *
+-batadv_orig_hash_find(struct batadv_priv *bat_priv, const void *data)
+-{
+-	struct batadv_hashtable *hash = bat_priv->orig_hash;
+-	struct hlist_head *head;
+-	struct batadv_orig_node *orig_node, *orig_node_tmp = NULL;
+-	int index;
+-
+-	if (!hash)
+-		return NULL;
+-
+-	index = batadv_choose_orig(data, hash->size);
+-	head = &hash->table[index];
+-
+-	rcu_read_lock();
+-	hlist_for_each_entry_rcu(orig_node, head, hash_entry) {
+-		if (!batadv_compare_eth(orig_node, data))
+-			continue;
+-
+-		if (!kref_get_unless_zero(&orig_node->refcount))
+-			continue;
+-
+-		orig_node_tmp = orig_node;
+-		break;
+-	}
+-	rcu_read_unlock();
+-
+-	return orig_node_tmp;
+-}
++struct batadv_orig_node *
++batadv_orig_hash_find(struct batadv_priv *bat_priv, const void *data);
+ 
+ #endif /* _NET_BATMAN_ADV_ORIGINATOR_H_ */
+-- 
+2.11.0
 
