@@ -1,15 +1,14 @@
-Return-Path: <willemdebruijn.kernel@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <20171221122436.GD1930@nanopsycho>
+Return-Path: <davem@davemloft.net>
+Date: Thu, 21 Dec 2017 15:40:13 -0500 (EST)
+Message-Id: <20171221.154013.465159930243668403.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20171221091742.8020-1-sven.eckelmann@openmesh.com>
 References: <20171221091742.8020-1-sven.eckelmann@openmesh.com>
- <20171221091742.8020-6-sven.eckelmann@openmesh.com>
- <20171221122436.GD1930@nanopsycho>
-From: Willem de Bruijn <willemdebruijn.kernel@gmail.com>
-Date: Thu, 21 Dec 2017 11:58:44 -0500
-Message-ID: <CAF=yD-Kcdh2q6JJ9kVC8=mbkwaxE0VVrs+DD187j5NzOsayiAw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Subject: Re: [B.A.T.M.A.N.] [PATCH v4 5/5] flow_dissector: Parse batman-adv
- unicast headers
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Subject: Re: [B.A.T.M.A.N.] [PATCH v4 0/5] flow_dissector: Provide basic
+ batman-adv unicast handling
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,31 +18,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: Jiri Pirko <jiri@resnulli.us>
-Cc: Sven Eckelmann <sven.eckelmann@openmesh.com>, b.a.t.m.a.n@lists.open-mesh.org, Network Development <netdev@vger.kernel.org>, Tom Herbert <tom@herbertland.com>, Jiri Pirko <jiri@mellanox.com>, LKML <linux-kernel@vger.kernel.org>, Eric Dumazet <edumazet@google.com>
+To: sven.eckelmann@openmesh.com
+Cc: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, willemdebruijn.kernel@gmail.com, tom@herbertland.com, jiri@mellanox.com, linux-kernel@vger.kernel.org, edumazet@google.com
 
-On Thu, Dec 21, 2017 at 7:24 AM, Jiri Pirko <jiri@resnulli.us> wrote:
-> Thu, Dec 21, 2017 at 10:17:42AM CET, sven.eckelmann@openmesh.com wrote:
->>The batman-adv unicast packets contain a full layer 2 frame in encapsulated
->>form. The flow dissector must therefore be able to parse the batman-adv
->>unicast header to reach the layer 2+3 information.
->>
->>  +--------------------+
->>  | ip(v6)hdr          |
->>  +--------------------+
->>  | inner ethhdr       |
->>  +--------------------+
->>  | batadv unicast hdr |
->>  +--------------------+
->>  | outer ethhdr       |
->>  +--------------------+
->>
->>The obtained information from the upper layer can then be used by RPS to
->>schedule the processing on separate cores. This allows better distribution
->>of multiple flows from the same neighbor to different cores.
->>
->>Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
->
-> Reviewed-by: Jiri Pirko <jiri@mellanox.com>
+From: Sven Eckelmann <sven.eckelmann@openmesh.com>
+Date: Thu, 21 Dec 2017 10:17:37 +0100
 
-Acked-by: Willem de Bruijn <willemb@google.com>
+> we are currently starting to use batman-adv as mesh protocol on multicore
+> embedded devices. These usually don't have a lot of CPU power per core but
+> are reasonable fast when using multiple cores.
+> 
+> It was noticed that sending was working very well but receiving was
+> basically only using on CPU core per neighbor. The reason for that is
+> format of the (normal) incoming packet:
+> 
+>   +--------------------+
+>   | ip(v6)hdr          |
+>   +--------------------+
+>   | inner ethhdr       |
+>   +--------------------+
+>   | batadv unicast hdr |
+>   +--------------------+
+>   | outer ethhdr       |
+>   +--------------------+
+> 
+> The flow dissector will therefore stop after parsing the outer ethernet
+> header and will not parse the actual ipv(4|6)/... header of the packet. Our
+> assumption was now that it would help us to add minimal support to the flow
+> dissector to jump over the batman-adv unicast and inner ethernet header
+> (like in gre ETH_P_TEB). The patch was implemented in a slightly hacky
+> way [1] and the results looked quite promising.
+> 
+> I didn't get any feedback how the files should actually be named. So I am
+> now just using the names from RFC v3
+> 
+> The discussion of the RFC v3 can be found in the related patches of
+> https://patchwork.ozlabs.org/cover/849345/
+> 
+> The discussion of the RFC v2 can be found in the related patches of
+> https://patchwork.ozlabs.org/cover/844783/
+
+Series applied, thanks!
