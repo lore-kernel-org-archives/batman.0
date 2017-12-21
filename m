@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@openmesh.com>
 From: Sven Eckelmann <sven.eckelmann@openmesh.com>
-Date: Thu, 21 Dec 2017 10:17:38 +0100
-Message-Id: <20171221091742.8020-2-sven.eckelmann@openmesh.com>
+Date: Thu, 21 Dec 2017 10:17:39 +0100
+Message-Id: <20171221091742.8020-3-sven.eckelmann@openmesh.com>
 In-Reply-To: <20171221091742.8020-1-sven.eckelmann@openmesh.com>
 References: <20171221091742.8020-1-sven.eckelmann@openmesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH v4 1/5] batman-adv: Let packet.h include its
- headers directly
+Subject: [B.A.T.M.A.N.] [PATCH v4 2/5] batman-adv: Remove usage of BIT(x) in
+ packet.h
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,42 +18,75 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: netdev@vger.kernel.org, Willem de Bruijn <willemdebruijn.kernel@gmail.com>, Tom Herbert <tom@herbertland.com>, Jiri Pirko <jiri@mellanox.com>, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Sven Eckelmann <sven.eckelmann@openmesh.com>
 
-The headers used by packet.h should also be included by it directly. main.h
-is currently dealing with it in batman-adv, but this will no longer work
-when this header is moved to include/uapi/linux/.
+The BIT(x) macro is no longer available for uapi headers because it is
+defined outside of it (linux/bitops.h). The use of it must therefore be
+avoided and replaced by an appropriate other representation.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
 ---
- net/batman-adv/main.h   | 2 --
- net/batman-adv/packet.h | 2 ++
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ net/batman-adv/packet.h | 23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
 
-diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
-index 5ac86df48c42..d5484ac381d3 100644
---- a/net/batman-adv/main.h
-+++ b/net/batman-adv/main.h
-@@ -217,10 +217,8 @@ enum batadv_uev_type {
- 
- /* Kernel headers */
- 
--#include <linux/bitops.h> /* for packet.h */
- #include <linux/compiler.h>
- #include <linux/etherdevice.h>
--#include <linux/if_ether.h> /* for packet.h */
- #include <linux/if_vlan.h>
- #include <linux/jiffies.h>
- #include <linux/percpu.h>
 diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index dccbd4a6f019..6b6563867455 100644
+index 6b6563867455..44f20d03205b 100644
 --- a/net/batman-adv/packet.h
 +++ b/net/batman-adv/packet.h
-@@ -20,6 +20,8 @@
+@@ -20,7 +20,6 @@
  #define _NET_BATMAN_ADV_PACKET_H_
  
  #include <asm/byteorder.h>
-+#include <linux/bitops.h>
-+#include <linux/if_ether.h>
+-#include <linux/bitops.h>
+ #include <linux/if_ether.h>
  #include <linux/types.h>
+ 
+@@ -92,9 +91,9 @@ enum batadv_subtype {
+  *     one hop neighbor on the interface where it was originally received.
+  */
+ enum batadv_iv_flags {
+-	BATADV_NOT_BEST_NEXT_HOP   = BIT(0),
+-	BATADV_PRIMARIES_FIRST_HOP = BIT(1),
+-	BATADV_DIRECTLINK          = BIT(2),
++	BATADV_NOT_BEST_NEXT_HOP   = 1UL << 0,
++	BATADV_PRIMARIES_FIRST_HOP = 1UL << 1,
++	BATADV_DIRECTLINK          = 1UL << 2,
+ };
+ 
+ /**
+@@ -123,9 +122,9 @@ enum batadv_icmp_packettype {
+  * @BATADV_MCAST_WANT_ALL_IPV6: we want all IPv6 multicast packets
+  */
+ enum batadv_mcast_flags {
+-	BATADV_MCAST_WANT_ALL_UNSNOOPABLES	= BIT(0),
+-	BATADV_MCAST_WANT_ALL_IPV4		= BIT(1),
+-	BATADV_MCAST_WANT_ALL_IPV6		= BIT(2),
++	BATADV_MCAST_WANT_ALL_UNSNOOPABLES	= 1UL << 0,
++	BATADV_MCAST_WANT_ALL_IPV4		= 1UL << 1,
++	BATADV_MCAST_WANT_ALL_IPV6		= 1UL << 2,
+ };
+ 
+ /* tt data subtypes */
+@@ -139,10 +138,10 @@ enum batadv_mcast_flags {
+  * @BATADV_TT_FULL_TABLE: contains full table to replace existing table
+  */
+ enum batadv_tt_data_flags {
+-	BATADV_TT_OGM_DIFF   = BIT(0),
+-	BATADV_TT_REQUEST    = BIT(1),
+-	BATADV_TT_RESPONSE   = BIT(2),
+-	BATADV_TT_FULL_TABLE = BIT(4),
++	BATADV_TT_OGM_DIFF   = 1UL << 0,
++	BATADV_TT_REQUEST    = 1UL << 1,
++	BATADV_TT_RESPONSE   = 1UL << 2,
++	BATADV_TT_FULL_TABLE = 1UL << 4,
+ };
+ 
+ /**
+@@ -150,7 +149,7 @@ enum batadv_tt_data_flags {
+  * @BATADV_VLAN_HAS_TAG: whether the field contains a valid vlan tag or not
+  */
+ enum batadv_vlan_flags {
+-	BATADV_VLAN_HAS_TAG	= BIT(15),
++	BATADV_VLAN_HAS_TAG	= 1UL << 15,
+ };
  
  /**
 -- 
