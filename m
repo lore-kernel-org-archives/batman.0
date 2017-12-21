@@ -1,15 +1,9 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Thu, 21 Dec 2017 06:58:10 +0100
-Message-ID: <4060789.SGkTrSoHMT@sven-edge>
-In-Reply-To: <20171220.143946.211997742797133128.davem@davemloft.net>
-References: <20171220110124.13117-1-sw@simonwunderlich.de>
- <20171220.143946.211997742797133128.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1669468.C6FPmEiCKP";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH 00/19] pull request for net-next:
- batman-adv 2017-12-20
+Return-Path: <sven.eckelmann@openmesh.com>
+From: Sven Eckelmann <sven.eckelmann@openmesh.com>
+Date: Thu, 21 Dec 2017 10:17:37 +0100
+Message-Id: <20171221091742.8020-1-sven.eckelmann@openmesh.com>
+Subject: [B.A.T.M.A.N.] [PATCH v4 0/5] flow_dissector: Provide basic
+ batman-adv unicast handling
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,49 +14,113 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: David Miller <davem@davemloft.net>, sw@simonwunderlich.de, netdev@vger.kernel.org
+Cc: netdev@vger.kernel.org, Willem de Bruijn <willemdebruijn.kernel@gmail.com>, Tom Herbert <tom@herbertland.com>, Jiri Pirko <jiri@mellanox.com>, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Sven Eckelmann <sven.eckelmann@openmesh.com>
 
---nextPart1669468.C6FPmEiCKP
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi,
 
-On Mittwoch, 20. Dezember 2017 14:39:46 CET David Miller wrote:
-[...]
-> Pulled, but there was a minor docbook annotation conflict I had to
-> address.
-> 
-> This pull added () to the function names in the docbook comments,
-> but this overlapped with the fix of a variable name in the docbook
-> info for the same function.
-> 
-> It was trivial, but please take a look.
+we are currently starting to use batman-adv as mesh protocol on multicore
+embedded devices. These usually don't have a lot of CPU power per core but
+are reasonable fast when using multiple cores.
 
-Thanks, looks exactly like the merge I did while testing the net fixes with 
-the net-next changes.
+It was noticed that sending was working very well but receiving was
+basically only using on CPU core per neighbor. The reason for that is
+format of the (normal) incoming packet:
+
+  +--------------------+
+  | ip(v6)hdr          |
+  +--------------------+
+  | inner ethhdr       |
+  +--------------------+
+  | batadv unicast hdr |
+  +--------------------+
+  | outer ethhdr       |
+  +--------------------+
+
+The flow dissector will therefore stop after parsing the outer ethernet
+header and will not parse the actual ipv(4|6)/... header of the packet. Our
+assumption was now that it would help us to add minimal support to the flow
+dissector to jump over the batman-adv unicast and inner ethernet header
+(like in gre ETH_P_TEB). The patch was implemented in a slightly hacky
+way [1] and the results looked quite promising.
+
+I didn't get any feedback how the files should actually be named. So I am
+now just using the names from RFC v3
+
+The discussion of the RFC v3 can be found in the related patches of
+https://patchwork.ozlabs.org/cover/849345/
+
+The discussion of the RFC v2 can be found in the related patches of
+https://patchwork.ozlabs.org/cover/844783/
+
+
+Changes in v4:
+==============
+
+* added  patch to change the u8/u16 to __u8/__u16 in
+  include/uapi/linux/batadv_packet.h
+  - requested by Willem de Bruijn <willemdebruijn.kernel@gmail.com>
+
+Changes in v3:
+==============
+
+* removed change of uapi/linux/batman_adv.h to uapi/linux/batadv_genl.h
+  - requested by Willem de Bruijn <willemdebruijn.kernel@gmail.com>
+* removed naming fixes for enums/defines in uapi/linux/batadv_genl.h
+  - requested by Willem de Bruijn <willemdebruijn.kernel@gmail.com>
+* renamed uapi/linux/batadv.h to uapi/linux/batadv_packet.h
+* moved batadv dissector functionality in own function
+  - requested by Tom Herbert <tom@herbertland.com>
+* added support for flags FLOW_DISSECTOR_F_STOP_AT_ENCAP and
+  FLOW_DIS_ENCAPSULATION
+  - requested by Willem de Bruijn <willemdebruijn.kernel@gmail.com>
+
+Changes in v2:
+==============
+
+* removed the batman-adv unicast packet header definition from flow_dissector.c
+* moved the batman-adv packet.h/uapi headers around to provide the correct
+  definitions to flow_dissector.c
 
 Kind regards,
-	Sven
---nextPart1669468.C6FPmEiCKP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+        Sven
 
------BEGIN PGP SIGNATURE-----
+Sven Eckelmann (5):
+  batman-adv: Let packet.h include its headers directly
+  batman-adv: Remove usage of BIT(x) in packet.h
+  batman-adv: Remove kernel fixed width types in packet.h
+  batman-adv: Convert packet.h to uapi header
+  flow_dissector: Parse batman-adv unicast headers
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlo7TXIACgkQXYcKB8Em
-e0bvnxAAhN8+MUNTfpnUdX8KLL1Ia2Fi2XBOBpod9PRFMoix/lGGP8gz5kBooXlj
-nPIROMXTO6RA2VLO7H3eWwBX62msVTjEVxIgVDSmlBcN78XtNSBCA5Bg8STTn7+E
-QqA6Hv5wDznoqyDjLLpmtLAkQyYPtoVnt84MUq33qoD3WRJsUzRlRaSC9P9AagKh
-U9lYskgRG98WbrQkc6tlrVQy6vom0xL+lQu9f5W3w7iEjuyNyluh63MvI1q9Svn7
-iA/Ia6DKffyA022ODM8eNEAkoWnVuRl/YrbWRFk5FFTJVGhGNHTV5sHEqwflDPAK
-pidoE2nyHxqi23wVSIhNc0pJQJcsgPInUujXOxCA/IRo6zD68rbuELDLvM1xJvRW
-zqnLPJYl5GD6v0kJTkMxxp5gbG6hjWmaYmA4OI3HFQ3+MUPVD0UzQqdGIj1XDFDb
-TJhIGlLSA/DJiwq9Vb5fla04xRTRYO2OpPZROVYtvlIyO+NtMMpJhKgCLqPnKLMb
-HLyQyDglpMR11B7V6COHGjFTpIYmiWuHvS1FAcUbubmPBkMFvpFwDQxxTZLAyTlH
-prJE+QPGhOJwyrSb7gLVDQLOk51TynA2XQv3lwCd3YHXQLnoBSQuxeUNpIPb/3Uv
-OSDozd+RHb85z0a7Nu2MqAP/nrNk/CQCov34CxRdbkvD+5Ctdbo=
-=pwKf
------END PGP SIGNATURE-----
+ MAINTAINERS                                        |   1 +
+ .../packet.h => include/uapi/linux/batadv_packet.h | 245 +++++++++++----------
+ net/batman-adv/bat_iv_ogm.c                        |   2 +-
+ net/batman-adv/bat_v.c                             |   2 +-
+ net/batman-adv/bat_v_elp.c                         |   2 +-
+ net/batman-adv/bat_v_ogm.c                         |   2 +-
+ net/batman-adv/bridge_loop_avoidance.c             |   2 +-
+ net/batman-adv/distributed-arp-table.h             |   2 +-
+ net/batman-adv/fragmentation.c                     |   2 +-
+ net/batman-adv/gateway_client.c                    |   2 +-
+ net/batman-adv/gateway_common.c                    |   2 +-
+ net/batman-adv/hard-interface.c                    |   2 +-
+ net/batman-adv/icmp_socket.c                       |   2 +-
+ net/batman-adv/main.c                              |   2 +-
+ net/batman-adv/main.h                              |   4 +-
+ net/batman-adv/multicast.c                         |   2 +-
+ net/batman-adv/netlink.c                           |   2 +-
+ net/batman-adv/network-coding.c                    |   2 +-
+ net/batman-adv/routing.c                           |   2 +-
+ net/batman-adv/send.h                              |   3 +-
+ net/batman-adv/soft-interface.c                    |   2 +-
+ net/batman-adv/sysfs.c                             |   2 +-
+ net/batman-adv/tp_meter.c                          |   2 +-
+ net/batman-adv/translation-table.c                 |   2 +-
+ net/batman-adv/tvlv.c                              |   2 +-
+ net/batman-adv/types.h                             |   3 +-
+ net/core/flow_dissector.c                          |  57 +++++
+ 27 files changed, 205 insertions(+), 150 deletions(-)
+ rename net/batman-adv/packet.h => include/uapi/linux/batadv_packet.h (85%)
 
---nextPart1669468.C6FPmEiCKP--
+-- 
+2.11.0
 
