@@ -1,11 +1,11 @@
 Return-Path: <sven.eckelmann@openmesh.com>
 From: Sven Eckelmann <sven.eckelmann@openmesh.com>
-Date: Thu, 21 Dec 2017 10:17:40 +0100
-Message-Id: <20171221091742.8020-4-sven.eckelmann@openmesh.com>
+Date: Thu, 21 Dec 2017 10:17:41 +0100
+Message-Id: <20171221091742.8020-5-sven.eckelmann@openmesh.com>
 In-Reply-To: <20171221091742.8020-1-sven.eckelmann@openmesh.com>
 References: <20171221091742.8020-1-sven.eckelmann@openmesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH v4 3/5] batman-adv: Remove kernel fixed width
- types in packet.h
+Subject: [B.A.T.M.A.N.] [PATCH v4 4/5] batman-adv: Convert packet.h to uapi
+ header
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,391 +18,522 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
 To: b.a.t.m.a.n@lists.open-mesh.org
 Cc: netdev@vger.kernel.org, Willem de Bruijn <willemdebruijn.kernel@gmail.com>, Tom Herbert <tom@herbertland.com>, Jiri Pirko <jiri@mellanox.com>, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Sven Eckelmann <sven.eckelmann@openmesh.com>
 
-The uapi headers use the __u8/__u16/... version of the fixed width types
-instead of u8/u16/... The use of the latter must be avoided before
-packet.h is copied to include/uapi/linux/.
+The header file is used by different userspace programs to inject packets
+or to decode sniffed packets. It should therefore be available to them as
+userspace header.
+
+Also other components in the kernel (like the flow dissector) require
+access to the packet definitions to be able to decode ETH_P_BATMAN ethernet
+packets.
 
 Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
 ---
- net/batman-adv/packet.h | 214 ++++++++++++++++++++++++------------------------
- 1 file changed, 107 insertions(+), 107 deletions(-)
+ MAINTAINERS                                                   | 1 +
+ net/batman-adv/packet.h => include/uapi/linux/batadv_packet.h | 8 ++++----
+ net/batman-adv/bat_iv_ogm.c                                   | 2 +-
+ net/batman-adv/bat_v.c                                        | 2 +-
+ net/batman-adv/bat_v_elp.c                                    | 2 +-
+ net/batman-adv/bat_v_ogm.c                                    | 2 +-
+ net/batman-adv/bridge_loop_avoidance.c                        | 2 +-
+ net/batman-adv/distributed-arp-table.h                        | 2 +-
+ net/batman-adv/fragmentation.c                                | 2 +-
+ net/batman-adv/gateway_client.c                               | 2 +-
+ net/batman-adv/gateway_common.c                               | 2 +-
+ net/batman-adv/hard-interface.c                               | 2 +-
+ net/batman-adv/icmp_socket.c                                  | 2 +-
+ net/batman-adv/main.c                                         | 2 +-
+ net/batman-adv/main.h                                         | 2 +-
+ net/batman-adv/multicast.c                                    | 2 +-
+ net/batman-adv/netlink.c                                      | 2 +-
+ net/batman-adv/network-coding.c                               | 2 +-
+ net/batman-adv/routing.c                                      | 2 +-
+ net/batman-adv/send.h                                         | 3 +--
+ net/batman-adv/soft-interface.c                               | 2 +-
+ net/batman-adv/sysfs.c                                        | 2 +-
+ net/batman-adv/tp_meter.c                                     | 2 +-
+ net/batman-adv/translation-table.c                            | 2 +-
+ net/batman-adv/tvlv.c                                         | 2 +-
+ net/batman-adv/types.h                                        | 3 +--
+ 26 files changed, 29 insertions(+), 30 deletions(-)
+ rename net/batman-adv/packet.h => include/uapi/linux/batadv_packet.h (99%)
 
-diff --git a/net/batman-adv/packet.h b/net/batman-adv/packet.h
-index 44f20d03205b..3b2d2db993aa 100644
+diff --git a/MAINTAINERS b/MAINTAINERS
+index aa71ab52fd76..4d6af00a5f10 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2563,6 +2563,7 @@ S:	Maintained
+ F:	Documentation/ABI/testing/sysfs-class-net-batman-adv
+ F:	Documentation/ABI/testing/sysfs-class-net-mesh
+ F:	Documentation/networking/batman-adv.rst
++F:	include/uapi/linux/batadv_packet.h
+ F:	include/uapi/linux/batman_adv.h
+ F:	net/batman-adv/
+ 
+diff --git a/net/batman-adv/packet.h b/include/uapi/linux/batadv_packet.h
+similarity index 99%
+rename from net/batman-adv/packet.h
+rename to include/uapi/linux/batadv_packet.h
+index 3b2d2db993aa..5cb360be2a11 100644
 --- a/net/batman-adv/packet.h
-+++ b/net/batman-adv/packet.h
-@@ -29,7 +29,7 @@
++++ b/include/uapi/linux/batadv_packet.h
+@@ -1,4 +1,4 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
++/* SPDX-License-Identifier: (GPL-2.0 WITH Linux-syscall-note) */
+ /* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
   *
-  * Return: 0 when not error was detected, != 0 otherwise
+  * Marek Lindner, Simon Wunderlich
+@@ -16,8 +16,8 @@
+  * along with this program; if not, see <http://www.gnu.org/licenses/>.
   */
--#define batadv_tp_is_error(n) ((u8)(n) > 127 ? 1 : 0)
-+#define batadv_tp_is_error(n) ((__u8)(n) > 127 ? 1 : 0)
+ 
+-#ifndef _NET_BATMAN_ADV_PACKET_H_
+-#define _NET_BATMAN_ADV_PACKET_H_
++#ifndef _UAPI_LINUX_BATADV_PACKET_H_
++#define _UAPI_LINUX_BATADV_PACKET_H_
+ 
+ #include <asm/byteorder.h>
+ #include <linux/if_ether.h>
+@@ -641,4 +641,4 @@ struct batadv_tvlv_mcast_data {
+ 	__u8 reserved[3];
+ };
+ 
+-#endif /* _NET_BATMAN_ADV_PACKET_H_ */
++#endif /* _UAPI_LINUX_BATADV_PACKET_H_ */
+diff --git a/net/batman-adv/bat_iv_ogm.c b/net/batman-adv/bat_iv_ogm.c
+index c9955f29a2bf..a4a331c56a60 100644
+--- a/net/batman-adv/bat_iv_ogm.c
++++ b/net/batman-adv/bat_iv_ogm.c
+@@ -52,6 +52,7 @@
+ #include <linux/workqueue.h>
+ #include <net/genetlink.h>
+ #include <net/netlink.h>
++#include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
+ 
+ #include "bat_algo.h"
+@@ -63,7 +64,6 @@
+ #include "netlink.h"
+ #include "network-coding.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "routing.h"
+ #include "send.h"
+ #include "translation-table.h"
+diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
+index 14ec3677c391..f5abe4a4e247 100644
+--- a/net/batman-adv/bat_v.c
++++ b/net/batman-adv/bat_v.c
+@@ -37,6 +37,7 @@
+ #include <linux/workqueue.h>
+ #include <net/genetlink.h>
+ #include <net/netlink.h>
++#include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
+ 
+ #include "bat_algo.h"
+@@ -49,7 +50,6 @@
+ #include "log.h"
+ #include "netlink.h"
+ #include "originator.h"
+-#include "packet.h"
+ 
+ struct sk_buff;
+ 
+diff --git a/net/batman-adv/bat_v_elp.c b/net/batman-adv/bat_v_elp.c
+index 59ae96cef596..a83478c46597 100644
+--- a/net/batman-adv/bat_v_elp.c
++++ b/net/batman-adv/bat_v_elp.c
+@@ -42,13 +42,13 @@
+ #include <linux/types.h>
+ #include <linux/workqueue.h>
+ #include <net/cfg80211.h>
++#include <uapi/linux/batadv_packet.h>
+ 
+ #include "bat_algo.h"
+ #include "bat_v_ogm.h"
+ #include "hard-interface.h"
+ #include "log.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "routing.h"
+ #include "send.h"
+ 
+diff --git a/net/batman-adv/bat_v_ogm.c b/net/batman-adv/bat_v_ogm.c
+index e415974c540d..ba59b77c605d 100644
+--- a/net/batman-adv/bat_v_ogm.c
++++ b/net/batman-adv/bat_v_ogm.c
+@@ -39,13 +39,13 @@
+ #include <linux/string.h>
+ #include <linux/types.h>
+ #include <linux/workqueue.h>
++#include <uapi/linux/batadv_packet.h>
+ 
+ #include "bat_algo.h"
+ #include "hard-interface.h"
+ #include "hash.h"
+ #include "log.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "routing.h"
+ #include "send.h"
+ #include "translation-table.h"
+diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
+index e647450e5d0f..fad47853ad3c 100644
+--- a/net/batman-adv/bridge_loop_avoidance.c
++++ b/net/batman-adv/bridge_loop_avoidance.c
+@@ -50,6 +50,7 @@
+ #include <net/genetlink.h>
+ #include <net/netlink.h>
+ #include <net/sock.h>
++#include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
+ 
+ #include "hard-interface.h"
+@@ -57,7 +58,6 @@
+ #include "log.h"
+ #include "netlink.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "soft-interface.h"
+ #include "sysfs.h"
+ #include "translation-table.h"
+diff --git a/net/batman-adv/distributed-arp-table.h b/net/batman-adv/distributed-arp-table.h
+index 3d47bedaf661..12897eb46268 100644
+--- a/net/batman-adv/distributed-arp-table.h
++++ b/net/batman-adv/distributed-arp-table.h
+@@ -24,9 +24,9 @@
+ #include <linux/compiler.h>
+ #include <linux/netdevice.h>
+ #include <linux/types.h>
++#include <uapi/linux/batadv_packet.h>
+ 
+ #include "originator.h"
+-#include "packet.h"
+ 
+ struct seq_file;
+ struct sk_buff;
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index 36f8a84153bf..b893627767f2 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -33,10 +33,10 @@
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/string.h>
++#include <uapi/linux/batadv_packet.h>
+ 
+ #include "hard-interface.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "routing.h"
+ #include "send.h"
+ #include "soft-interface.h"
+diff --git a/net/batman-adv/gateway_client.c b/net/batman-adv/gateway_client.c
+index 2488e25d0eef..37fe9a644f22 100644
+--- a/net/batman-adv/gateway_client.c
++++ b/net/batman-adv/gateway_client.c
+@@ -43,6 +43,7 @@
+ #include <linux/stddef.h>
+ #include <linux/udp.h>
+ #include <net/sock.h>
++#include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
+ 
+ #include "gateway_common.h"
+@@ -50,7 +51,6 @@
+ #include "log.h"
+ #include "netlink.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "routing.h"
+ #include "soft-interface.h"
+ #include "sysfs.h"
+diff --git a/net/batman-adv/gateway_common.c b/net/batman-adv/gateway_common.c
+index 83bfeecf661c..b3e156af2256 100644
+--- a/net/batman-adv/gateway_common.c
++++ b/net/batman-adv/gateway_common.c
+@@ -27,10 +27,10 @@
+ #include <linux/netdevice.h>
+ #include <linux/stddef.h>
+ #include <linux/string.h>
++#include <uapi/linux/batadv_packet.h>
+ 
+ #include "gateway_client.h"
+ #include "log.h"
+-#include "packet.h"
+ #include "tvlv.h"
  
  /**
-  * enum batadv_packettype - types for batman-adv encapsulated packets
-@@ -191,8 +191,8 @@ enum batadv_tvlv_type {
-  * transport the claim type and the group id
-  */
- struct batadv_bla_claim_dst {
--	u8     magic[3];	/* FF:43:05 */
--	u8     type;		/* bla_claimframe */
-+	__u8   magic[3];	/* FF:43:05 */
-+	__u8   type;		/* bla_claimframe */
- 	__be16 group;		/* group id */
- };
+diff --git a/net/batman-adv/hard-interface.c b/net/batman-adv/hard-interface.c
+index 13d04dba0b3a..5f186bff284a 100644
+--- a/net/batman-adv/hard-interface.c
++++ b/net/batman-adv/hard-interface.c
+@@ -38,6 +38,7 @@
+ #include <linux/spinlock.h>
+ #include <net/net_namespace.h>
+ #include <net/rtnetlink.h>
++#include <uapi/linux/batadv_packet.h>
  
-@@ -212,15 +212,15 @@ struct batadv_bla_claim_dst {
-  * @tvlv_len: length of tvlv data following the ogm header
-  */
- struct batadv_ogm_packet {
--	u8     packet_type;
--	u8     version;
--	u8     ttl;
--	u8     flags;
-+	__u8   packet_type;
-+	__u8   version;
-+	__u8   ttl;
-+	__u8   flags;
- 	__be32 seqno;
--	u8     orig[ETH_ALEN];
--	u8     prev_sender[ETH_ALEN];
--	u8     reserved;
--	u8     tq;
-+	__u8   orig[ETH_ALEN];
-+	__u8   prev_sender[ETH_ALEN];
-+	__u8   reserved;
-+	__u8   tq;
- 	__be16 tvlv_len;
- 	/* __packed is not needed as the struct size is divisible by 4,
- 	 * and the largest data type in this struct has a size of 4.
-@@ -241,12 +241,12 @@ struct batadv_ogm_packet {
-  * @throughput: the currently flooded path throughput
-  */
- struct batadv_ogm2_packet {
--	u8     packet_type;
--	u8     version;
--	u8     ttl;
--	u8     flags;
-+	__u8   packet_type;
-+	__u8   version;
-+	__u8   ttl;
-+	__u8   flags;
- 	__be32 seqno;
--	u8     orig[ETH_ALEN];
-+	__u8   orig[ETH_ALEN];
- 	__be16 tvlv_len;
- 	__be32 throughput;
- 	/* __packed is not needed as the struct size is divisible by 4,
-@@ -265,9 +265,9 @@ struct batadv_ogm2_packet {
-  * @elp_interval: currently used ELP sending interval in ms
-  */
- struct batadv_elp_packet {
--	u8     packet_type;
--	u8     version;
--	u8     orig[ETH_ALEN];
-+	__u8   packet_type;
-+	__u8   version;
-+	__u8   orig[ETH_ALEN];
- 	__be32 seqno;
- 	__be32 elp_interval;
- };
-@@ -290,14 +290,14 @@ struct batadv_elp_packet {
-  * members are padded the same way as they are in real packets.
-  */
- struct batadv_icmp_header {
--	u8 packet_type;
--	u8 version;
--	u8 ttl;
--	u8 msg_type; /* see ICMP message types above */
--	u8 dst[ETH_ALEN];
--	u8 orig[ETH_ALEN];
--	u8 uid;
--	u8 align[3];
-+	__u8 packet_type;
-+	__u8 version;
-+	__u8 ttl;
-+	__u8 msg_type; /* see ICMP message types above */
-+	__u8 dst[ETH_ALEN];
-+	__u8 orig[ETH_ALEN];
-+	__u8 uid;
-+	__u8 align[3];
- };
+ #include "bat_v.h"
+ #include "bridge_loop_avoidance.h"
+@@ -46,7 +47,6 @@
+ #include "gateway_client.h"
+ #include "log.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "send.h"
+ #include "soft-interface.h"
+ #include "sysfs.h"
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index f2ef75b7fa73..8041cf106c37 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -44,11 +44,11 @@
+ #include <linux/string.h>
+ #include <linux/uaccess.h>
+ #include <linux/wait.h>
++#include <uapi/linux/batadv_packet.h>
  
- /**
-@@ -313,14 +313,14 @@ struct batadv_icmp_header {
-  * @seqno: ICMP sequence number
-  */
- struct batadv_icmp_packet {
--	u8     packet_type;
--	u8     version;
--	u8     ttl;
--	u8     msg_type; /* see ICMP message types above */
--	u8     dst[ETH_ALEN];
--	u8     orig[ETH_ALEN];
--	u8     uid;
--	u8     reserved;
-+	__u8   packet_type;
-+	__u8   version;
-+	__u8   ttl;
-+	__u8   msg_type; /* see ICMP message types above */
-+	__u8   dst[ETH_ALEN];
-+	__u8   orig[ETH_ALEN];
-+	__u8   uid;
-+	__u8   reserved;
- 	__be16 seqno;
- };
+ #include "hard-interface.h"
+ #include "log.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "send.h"
  
-@@ -342,15 +342,15 @@ struct batadv_icmp_packet {
-  *  store it using network order
-  */
- struct batadv_icmp_tp_packet {
--	u8  packet_type;
--	u8  version;
--	u8  ttl;
--	u8  msg_type; /* see ICMP message types above */
--	u8  dst[ETH_ALEN];
--	u8  orig[ETH_ALEN];
--	u8  uid;
--	u8  subtype;
--	u8  session[2];
-+	__u8   packet_type;
-+	__u8   version;
-+	__u8   ttl;
-+	__u8   msg_type; /* see ICMP message types above */
-+	__u8   dst[ETH_ALEN];
-+	__u8   orig[ETH_ALEN];
-+	__u8   uid;
-+	__u8   subtype;
-+	__u8   session[2];
- 	__be32 seqno;
- 	__be32 timestamp;
- };
-@@ -381,16 +381,16 @@ enum batadv_icmp_tp_subtype {
-  * @rr: route record array
-  */
- struct batadv_icmp_packet_rr {
--	u8     packet_type;
--	u8     version;
--	u8     ttl;
--	u8     msg_type; /* see ICMP message types above */
--	u8     dst[ETH_ALEN];
--	u8     orig[ETH_ALEN];
--	u8     uid;
--	u8     rr_cur;
-+	__u8   packet_type;
-+	__u8   version;
-+	__u8   ttl;
-+	__u8   msg_type; /* see ICMP message types above */
-+	__u8   dst[ETH_ALEN];
-+	__u8   orig[ETH_ALEN];
-+	__u8   uid;
-+	__u8   rr_cur;
- 	__be16 seqno;
--	u8     rr[BATADV_RR_LEN][ETH_ALEN];
-+	__u8   rr[BATADV_RR_LEN][ETH_ALEN];
- };
+ static struct batadv_socket_client *batadv_socket_client_hash[256];
+diff --git a/net/batman-adv/main.c b/net/batman-adv/main.c
+index 8bee4279d579..d31c8266e244 100644
+--- a/net/batman-adv/main.c
++++ b/net/batman-adv/main.c
+@@ -46,6 +46,7 @@
+ #include <linux/workqueue.h>
+ #include <net/dsfield.h>
+ #include <net/rtnetlink.h>
++#include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
  
- #define BATADV_ICMP_MAX_PACKET_SIZE	sizeof(struct batadv_icmp_packet_rr)
-@@ -416,11 +416,11 @@ struct batadv_icmp_packet_rr {
-  * @dest: originator destination of the unicast packet
-  */
- struct batadv_unicast_packet {
--	u8 packet_type;
--	u8 version;
--	u8 ttl;
--	u8 ttvn; /* destination translation table version number */
--	u8 dest[ETH_ALEN];
-+	__u8 packet_type;
-+	__u8 version;
-+	__u8 ttl;
-+	__u8 ttvn; /* destination translation table version number */
-+	__u8 dest[ETH_ALEN];
- 	/* "4 bytes boundary + 2 bytes" long to make the payload after the
- 	 * following ethernet header again 4 bytes boundary aligned
- 	 */
-@@ -435,9 +435,9 @@ struct batadv_unicast_packet {
-  */
- struct batadv_unicast_4addr_packet {
- 	struct batadv_unicast_packet u;
--	u8 src[ETH_ALEN];
--	u8 subtype;
--	u8 reserved;
-+	__u8 src[ETH_ALEN];
-+	__u8 subtype;
-+	__u8 reserved;
- 	/* "4 bytes boundary + 2 bytes" long to make the payload after the
- 	 * following ethernet header again 4 bytes boundary aligned
- 	 */
-@@ -457,22 +457,22 @@ struct batadv_unicast_4addr_packet {
-  * @total_size: size of the merged packet
-  */
- struct batadv_frag_packet {
--	u8     packet_type;
--	u8     version;  /* batman version field */
--	u8     ttl;
-+	__u8   packet_type;
-+	__u8   version;  /* batman version field */
-+	__u8   ttl;
- #if defined(__BIG_ENDIAN_BITFIELD)
--	u8     no:4;
--	u8     priority:3;
--	u8     reserved:1;
-+	__u8   no:4;
-+	__u8   priority:3;
-+	__u8   reserved:1;
- #elif defined(__LITTLE_ENDIAN_BITFIELD)
--	u8     reserved:1;
--	u8     priority:3;
--	u8     no:4;
-+	__u8   reserved:1;
-+	__u8   priority:3;
-+	__u8   no:4;
- #else
- #error "unknown bitfield endianness"
- #endif
--	u8     dest[ETH_ALEN];
--	u8     orig[ETH_ALEN];
-+	__u8   dest[ETH_ALEN];
-+	__u8   orig[ETH_ALEN];
- 	__be16 seqno;
- 	__be16 total_size;
- };
-@@ -487,12 +487,12 @@ struct batadv_frag_packet {
-  * @orig: originator of the broadcast packet
-  */
- struct batadv_bcast_packet {
--	u8     packet_type;
--	u8     version;  /* batman version field */
--	u8     ttl;
--	u8     reserved;
-+	__u8   packet_type;
-+	__u8   version;  /* batman version field */
-+	__u8   ttl;
-+	__u8   reserved;
- 	__be32 seqno;
--	u8     orig[ETH_ALEN];
-+	__u8   orig[ETH_ALEN];
- 	/* "4 bytes boundary + 2 bytes" long to make the payload after the
- 	 * following ethernet header again 4 bytes boundary aligned
- 	 */
-@@ -516,19 +516,19 @@ struct batadv_bcast_packet {
-  * @coded_len: length of network coded part of the payload
-  */
- struct batadv_coded_packet {
--	u8     packet_type;
--	u8     version;  /* batman version field */
--	u8     ttl;
--	u8     first_ttvn;
--	/* u8  first_dest[ETH_ALEN]; - saved in mac header destination */
--	u8     first_source[ETH_ALEN];
--	u8     first_orig_dest[ETH_ALEN];
-+	__u8   packet_type;
-+	__u8   version;  /* batman version field */
-+	__u8   ttl;
-+	__u8   first_ttvn;
-+	/* __u8 first_dest[ETH_ALEN]; - saved in mac header destination */
-+	__u8   first_source[ETH_ALEN];
-+	__u8   first_orig_dest[ETH_ALEN];
- 	__be32 first_crc;
--	u8     second_ttl;
--	u8     second_ttvn;
--	u8     second_dest[ETH_ALEN];
--	u8     second_source[ETH_ALEN];
--	u8     second_orig_dest[ETH_ALEN];
-+	__u8   second_ttl;
-+	__u8   second_ttvn;
-+	__u8   second_dest[ETH_ALEN];
-+	__u8   second_source[ETH_ALEN];
-+	__u8   second_orig_dest[ETH_ALEN];
- 	__be32 second_crc;
- 	__be16 coded_len;
- };
-@@ -547,14 +547,14 @@ struct batadv_coded_packet {
-  * @align: 2 bytes to align the header to a 4 byte boundary
-  */
- struct batadv_unicast_tvlv_packet {
--	u8     packet_type;
--	u8     version;  /* batman version field */
--	u8     ttl;
--	u8     reserved;
--	u8     dst[ETH_ALEN];
--	u8     src[ETH_ALEN];
-+	__u8   packet_type;
-+	__u8   version;  /* batman version field */
-+	__u8   ttl;
-+	__u8   reserved;
-+	__u8   dst[ETH_ALEN];
-+	__u8   src[ETH_ALEN];
- 	__be16 tvlv_len;
--	u16    align;
-+	__u16  align;
- };
+ #include "bat_algo.h"
+@@ -63,7 +64,6 @@
+ #include "netlink.h"
+ #include "network-coding.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "routing.h"
+ #include "send.h"
+ #include "soft-interface.h"
+diff --git a/net/batman-adv/main.h b/net/batman-adv/main.h
+index d5484ac381d3..f7ba3f96d8f3 100644
+--- a/net/batman-adv/main.h
++++ b/net/batman-adv/main.h
+@@ -223,8 +223,8 @@ enum batadv_uev_type {
+ #include <linux/jiffies.h>
+ #include <linux/percpu.h>
+ #include <linux/types.h>
++#include <uapi/linux/batadv_packet.h>
+ 
+-#include "packet.h"
+ #include "types.h"
+ 
+ struct net_device;
+diff --git a/net/batman-adv/multicast.c b/net/batman-adv/multicast.c
+index 8a503c526b90..cbdeb47ec3f6 100644
+--- a/net/batman-adv/multicast.c
++++ b/net/batman-adv/multicast.c
+@@ -55,11 +55,11 @@
+ #include <net/if_inet6.h>
+ #include <net/ip.h>
+ #include <net/ipv6.h>
++#include <uapi/linux/batadv_packet.h>
+ 
+ #include "hard-interface.h"
+ #include "hash.h"
+ #include "log.h"
+-#include "packet.h"
+ #include "translation-table.h"
+ #include "tvlv.h"
+ 
+diff --git a/net/batman-adv/netlink.c b/net/batman-adv/netlink.c
+index 103d4bdcdbdb..a823d3899bad 100644
+--- a/net/batman-adv/netlink.c
++++ b/net/batman-adv/netlink.c
+@@ -40,6 +40,7 @@
+ #include <net/genetlink.h>
+ #include <net/netlink.h>
+ #include <net/sock.h>
++#include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
+ 
+ #include "bat_algo.h"
+@@ -47,7 +48,6 @@
+ #include "gateway_client.h"
+ #include "hard-interface.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "soft-interface.h"
+ #include "tp_meter.h"
+ #include "translation-table.h"
+diff --git a/net/batman-adv/network-coding.c b/net/batman-adv/network-coding.c
+index 3758be7fd881..b48116bb24ef 100644
+--- a/net/batman-adv/network-coding.c
++++ b/net/batman-adv/network-coding.c
+@@ -49,12 +49,12 @@
+ #include <linux/stddef.h>
+ #include <linux/string.h>
+ #include <linux/workqueue.h>
++#include <uapi/linux/batadv_packet.h>
+ 
+ #include "hard-interface.h"
+ #include "hash.h"
+ #include "log.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "routing.h"
+ #include "send.h"
+ #include "tvlv.h"
+diff --git a/net/batman-adv/routing.c b/net/batman-adv/routing.c
+index eb835bde502a..b6891e8b741c 100644
+--- a/net/batman-adv/routing.c
++++ b/net/batman-adv/routing.c
+@@ -34,6 +34,7 @@
+ #include <linux/skbuff.h>
+ #include <linux/spinlock.h>
+ #include <linux/stddef.h>
++#include <uapi/linux/batadv_packet.h>
+ 
+ #include "bitarray.h"
+ #include "bridge_loop_avoidance.h"
+@@ -44,7 +45,6 @@
+ #include "log.h"
+ #include "network-coding.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "send.h"
+ #include "soft-interface.h"
+ #include "tp_meter.h"
+diff --git a/net/batman-adv/send.h b/net/batman-adv/send.h
+index 8c7399dd06ca..1e8c79093623 100644
+--- a/net/batman-adv/send.h
++++ b/net/batman-adv/send.h
+@@ -24,8 +24,7 @@
+ #include <linux/compiler.h>
+ #include <linux/spinlock.h>
+ #include <linux/types.h>
+-
+-#include "packet.h"
++#include <uapi/linux/batadv_packet.h>
+ 
+ struct sk_buff;
+ 
+diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
+index 1eb5555c5fe4..900c5ce21cd4 100644
+--- a/net/batman-adv/soft-interface.c
++++ b/net/batman-adv/soft-interface.c
+@@ -49,6 +49,7 @@
+ #include <linux/stddef.h>
+ #include <linux/string.h>
+ #include <linux/types.h>
++#include <uapi/linux/batadv_packet.h>
+ 
+ #include "bat_algo.h"
+ #include "bridge_loop_avoidance.h"
+@@ -60,7 +61,6 @@
+ #include "multicast.h"
+ #include "network-coding.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "send.h"
+ #include "sysfs.h"
+ #include "translation-table.h"
+diff --git a/net/batman-adv/sysfs.c b/net/batman-adv/sysfs.c
+index 56fb42551453..c1578fa0b952 100644
+--- a/net/batman-adv/sysfs.c
++++ b/net/batman-adv/sysfs.c
+@@ -39,6 +39,7 @@
+ #include <linux/string.h>
+ #include <linux/stringify.h>
+ #include <linux/workqueue.h>
++#include <uapi/linux/batadv_packet.h>
+ 
+ #include "bridge_loop_avoidance.h"
+ #include "distributed-arp-table.h"
+@@ -47,7 +48,6 @@
+ #include "hard-interface.h"
+ #include "log.h"
+ #include "network-coding.h"
+-#include "packet.h"
+ #include "soft-interface.h"
+ 
+ static struct net_device *batadv_kobj_to_netdev(struct kobject *obj)
+diff --git a/net/batman-adv/tp_meter.c b/net/batman-adv/tp_meter.c
+index b443b9d28918..c68c41e713a6 100644
+--- a/net/batman-adv/tp_meter.c
++++ b/net/batman-adv/tp_meter.c
+@@ -49,13 +49,13 @@
+ #include <linux/timer.h>
+ #include <linux/wait.h>
+ #include <linux/workqueue.h>
++#include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
+ 
+ #include "hard-interface.h"
+ #include "log.h"
+ #include "netlink.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "send.h"
  
  /**
-@@ -564,8 +564,8 @@ struct batadv_unicast_tvlv_packet {
-  * @len: tvlv container length
-  */
- struct batadv_tvlv_hdr {
--	u8     type;
--	u8     version;
-+	__u8   type;
-+	__u8   version;
- 	__be16 len;
- };
+diff --git a/net/batman-adv/translation-table.c b/net/batman-adv/translation-table.c
+index 0e53be3f8df0..7550a9ccd695 100644
+--- a/net/batman-adv/translation-table.c
++++ b/net/batman-adv/translation-table.c
+@@ -52,6 +52,7 @@
+ #include <net/genetlink.h>
+ #include <net/netlink.h>
+ #include <net/sock.h>
++#include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
  
-@@ -588,8 +588,8 @@ struct batadv_tvlv_gateway_data {
-  *  one batadv_tvlv_tt_vlan_data object per announced vlan
-  */
- struct batadv_tvlv_tt_data {
--	u8     flags;
--	u8     ttvn;
-+	__u8   flags;
-+	__u8   ttvn;
- 	__be16 num_vlan;
- };
+ #include "bridge_loop_avoidance.h"
+@@ -60,7 +61,6 @@
+ #include "log.h"
+ #include "netlink.h"
+ #include "originator.h"
+-#include "packet.h"
+ #include "soft-interface.h"
+ #include "tvlv.h"
  
-@@ -603,7 +603,7 @@ struct batadv_tvlv_tt_data {
- struct batadv_tvlv_tt_vlan_data {
- 	__be32 crc;
- 	__be16 vid;
--	u16    reserved;
-+	__u16  reserved;
- };
+diff --git a/net/batman-adv/tvlv.c b/net/batman-adv/tvlv.c
+index e189f026974c..5ffcb45ac6ff 100644
+--- a/net/batman-adv/tvlv.c
++++ b/net/batman-adv/tvlv.c
+@@ -36,9 +36,9 @@
+ #include <linux/stddef.h>
+ #include <linux/string.h>
+ #include <linux/types.h>
++#include <uapi/linux/batadv_packet.h>
  
- /**
-@@ -615,9 +615,9 @@ struct batadv_tvlv_tt_vlan_data {
-  * @vid: VLAN identifier
-  */
- struct batadv_tvlv_tt_change {
--	u8     flags;
--	u8     reserved[3];
--	u8     addr[ETH_ALEN];
-+	__u8   flags;
-+	__u8   reserved[3];
-+	__u8   addr[ETH_ALEN];
- 	__be16 vid;
- };
+ #include "originator.h"
+-#include "packet.h"
+ #include "send.h"
+ #include "tvlv.h"
  
-@@ -627,7 +627,7 @@ struct batadv_tvlv_tt_change {
-  * @vid: VLAN identifier
-  */
- struct batadv_tvlv_roam_adv {
--	u8     client[ETH_ALEN];
-+	__u8   client[ETH_ALEN];
- 	__be16 vid;
- };
+diff --git a/net/batman-adv/types.h b/net/batman-adv/types.h
+index 77b145eba193..bb1578410e0c 100644
+--- a/net/batman-adv/types.h
++++ b/net/batman-adv/types.h
+@@ -35,10 +35,9 @@
+ #include <linux/types.h>
+ #include <linux/wait.h>
+ #include <linux/workqueue.h>
++#include <uapi/linux/batadv_packet.h>
+ #include <uapi/linux/batman_adv.h>
  
-@@ -637,8 +637,8 @@ struct batadv_tvlv_roam_adv {
-  * @reserved: reserved field
-  */
- struct batadv_tvlv_mcast_data {
--	u8 flags;
--	u8 reserved[3];
-+	__u8 flags;
-+	__u8 reserved[3];
- };
+-#include "packet.h"
+-
+ struct seq_file;
  
- #endif /* _NET_BATMAN_ADV_PACKET_H_ */
+ #ifdef CONFIG_BATMAN_ADV_DAT
 -- 
 2.11.0
 
