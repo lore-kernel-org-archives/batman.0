@@ -1,14 +1,8 @@
-Return-Path: <davem@davemloft.net>
-Date: Thu, 21 Dec 2017 15:40:13 -0500 (EST)
-Message-Id: <20171221.154013.465159930243668403.davem@davemloft.net>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20171221091742.8020-1-sven.eckelmann@openmesh.com>
-References: <20171221091742.8020-1-sven.eckelmann@openmesh.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Subject: Re: [B.A.T.M.A.N.] [PATCH v4 0/5] flow_dissector: Provide basic
- batman-adv unicast handling
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sun, 24 Dec 2017 15:30:23 +0100
+Message-Id: <20171224143023.4209-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: annotate ->poll() instances
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,44 +12,93 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: sven.eckelmann@openmesh.com
-Cc: b.a.t.m.a.n@lists.open-mesh.org, netdev@vger.kernel.org, willemdebruijn.kernel@gmail.com, tom@herbertland.com, jiri@mellanox.com, linux-kernel@vger.kernel.org, edumazet@google.com
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-From: Sven Eckelmann <sven.eckelmann@openmesh.com>
-Date: Thu, 21 Dec 2017 10:17:37 +0100
+From: Al Viro <viro@zeniv.linux.org.uk>
 
-> we are currently starting to use batman-adv as mesh protocol on multicore
-> embedded devices. These usually don't have a lot of CPU power per core but
-> are reasonable fast when using multiple cores.
-> 
-> It was noticed that sending was working very well but receiving was
-> basically only using on CPU core per neighbor. The reason for that is
-> format of the (normal) incoming packet:
-> 
->   +--------------------+
->   | ip(v6)hdr          |
->   +--------------------+
->   | inner ethhdr       |
->   +--------------------+
->   | batadv unicast hdr |
->   +--------------------+
->   | outer ethhdr       |
->   +--------------------+
-> 
-> The flow dissector will therefore stop after parsing the outer ethernet
-> header and will not parse the actual ipv(4|6)/... header of the packet. Our
-> assumption was now that it would help us to add minimal support to the flow
-> dissector to jump over the batman-adv unicast and inner ethernet header
-> (like in gre ETH_P_TEB). The patch was implemented in a slightly hacky
-> way [1] and the results looked quite promising.
-> 
-> I didn't get any feedback how the files should actually be named. So I am
-> now just using the names from RFC v3
-> 
-> The discussion of the RFC v3 can be found in the related patches of
-> https://patchwork.ozlabs.org/cover/849345/
-> 
-> The discussion of the RFC v2 can be found in the related patches of
-> https://patchwork.ozlabs.org/cover/844783/
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+[sven@narfation.org: add compat code]
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+The patch is already in
+https://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs.git/log/?h=for-next
+---
+ compat-include/linux/types.h | 38 ++++++++++++++++++++++++++++++++++++++
+ net/batman-adv/icmp_socket.c |  2 +-
+ net/batman-adv/log.c         |  2 +-
+ 3 files changed, 40 insertions(+), 2 deletions(-)
+ create mode 100644 compat-include/linux/types.h
 
-Series applied, thanks!
+diff --git a/compat-include/linux/types.h b/compat-include/linux/types.h
+new file mode 100644
+index 00000000..f33f2bb2
+--- /dev/null
++++ b/compat-include/linux/types.h
+@@ -0,0 +1,38 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner, Simon Wunderlich
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see <http://www.gnu.org/licenses/>.
++ *
++ * This file contains macros for maintaining compatibility with older versions
++ * of the Linux kernel.
++ */
++
++#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_TYPES_H_
++#define _NET_BATMAN_ADV_COMPAT_LINUX_TYPES_H_
++
++#include <linux/version.h>
++#include_next <linux/types.h>
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 16, 0)
++
++#ifdef __CHECK_POLL
++typedef unsigned __bitwise __poll_t;
++#else
++typedef unsigned __poll_t;
++#endif
++
++#endif /* < KERNEL_VERSION(4, 16, 0) */
++
++#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_TYPES_H_ */
+diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
+index 8041cf10..581375d0 100644
+--- a/net/batman-adv/icmp_socket.c
++++ b/net/batman-adv/icmp_socket.c
+@@ -297,7 +297,7 @@ static ssize_t batadv_socket_write(struct file *file, const char __user *buff,
+ 	return len;
+ }
+ 
+-static unsigned int batadv_socket_poll(struct file *file, poll_table *wait)
++static __poll_t batadv_socket_poll(struct file *file, poll_table *wait)
+ {
+ 	struct batadv_socket_client *socket_client = file->private_data;
+ 
+diff --git a/net/batman-adv/log.c b/net/batman-adv/log.c
+index da004980..9be74a44 100644
+--- a/net/batman-adv/log.c
++++ b/net/batman-adv/log.c
+@@ -185,7 +185,7 @@ static ssize_t batadv_log_read(struct file *file, char __user *buf,
+ 	return error;
+ }
+ 
+-static unsigned int batadv_log_poll(struct file *file, poll_table *wait)
++static __poll_t batadv_log_poll(struct file *file, poll_table *wait)
+ {
+ 	struct batadv_priv *bat_priv = file->private_data;
+ 	struct batadv_priv_debug_log *debug_log = bat_priv->debug_log;
+-- 
+2.11.0
+
