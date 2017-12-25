@@ -1,8 +1,13 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sun, 24 Dec 2017 15:30:23 +0100
-Message-Id: <20171224143023.4209-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: annotate ->poll() instances
+Return-Path: <laurent@wifibot.com>
+From: laurent <laurent@wifibot.com>
+Message-ID: <b00b8bd2-68bc-54fd-4d1c-cd3f9655fac1@wifibot.com>
+Date: Mon, 25 Dec 2017 18:36:56 +0100
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+Subject: [B.A.T.M.A.N.] cannot recompile my openwrt image with last version
+ of batman-adv 2017-4
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -12,93 +17,44 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-From: Al Viro <viro@zeniv.linux.org.uk>
+Hello,
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-[sven@narfation.org: add compat code]
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
-The patch is already in
-https://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs.git/log/?h=for-next
----
- compat-include/linux/types.h | 38 ++++++++++++++++++++++++++++++++++++++
- net/batman-adv/icmp_socket.c |  2 +-
- net/batman-adv/log.c         |  2 +-
- 3 files changed, 40 insertions(+), 2 deletions(-)
- create mode 100644 compat-include/linux/types.h
+I had an openwrt image with batman-adv 2017-0 that compile fine but when 
+I have updated to 2017-4 I got this error (it is a warning but treated 
+as an error):
 
-diff --git a/compat-include/linux/types.h b/compat-include/linux/types.h
-new file mode 100644
-index 00000000..f33f2bb2
---- /dev/null
-+++ b/compat-include/linux/types.h
-@@ -0,0 +1,38 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
-+ *
-+ * Marek Lindner, Simon Wunderlich
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
-+ *
-+ * This file contains macros for maintaining compatibility with older versions
-+ * of the Linux kernel.
-+ */
-+
-+#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_TYPES_H_
-+#define _NET_BATMAN_ADV_COMPAT_LINUX_TYPES_H_
-+
-+#include <linux/version.h>
-+#include_next <linux/types.h>
-+
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 16, 0)
-+
-+#ifdef __CHECK_POLL
-+typedef unsigned __bitwise __poll_t;
-+#else
-+typedef unsigned __poll_t;
-+#endif
-+
-+#endif /* < KERNEL_VERSION(4, 16, 0) */
-+
-+#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_TYPES_H_ */
-diff --git a/net/batman-adv/icmp_socket.c b/net/batman-adv/icmp_socket.c
-index 8041cf10..581375d0 100644
---- a/net/batman-adv/icmp_socket.c
-+++ b/net/batman-adv/icmp_socket.c
-@@ -297,7 +297,7 @@ static ssize_t batadv_socket_write(struct file *file, const char __user *buff,
- 	return len;
- }
- 
--static unsigned int batadv_socket_poll(struct file *file, poll_table *wait)
-+static __poll_t batadv_socket_poll(struct file *file, poll_table *wait)
- {
- 	struct batadv_socket_client *socket_client = file->private_data;
- 
-diff --git a/net/batman-adv/log.c b/net/batman-adv/log.c
-index da004980..9be74a44 100644
---- a/net/batman-adv/log.c
-+++ b/net/batman-adv/log.c
-@@ -185,7 +185,7 @@ static ssize_t batadv_log_read(struct file *file, char __user *buf,
- 	return error;
- }
- 
--static unsigned int batadv_log_poll(struct file *file, poll_table *wait)
-+static __poll_t batadv_log_poll(struct file *file, poll_table *wait)
- {
- 	struct batadv_priv *bat_priv = file->private_data;
- 	struct batadv_priv_debug_log *debug_log = bat_priv->debug_log;
--- 
-2.11.0
+I am able to compile alone the module in the build forlder:
+
+/home/user/gateworks-openwrt/build_dir/target-arm_mpcore+vfp_musl-1.1.12_eabi/linux-cns3xxx/batman-adv-2017.4/net/batman-adv/bat_iv_ogm.c:734:2: 
+error: implicit declaration of function 'skb_put_data' 
+[-Werror=implicit-function-declaration]
+   skb_put_data(forw_packet_aggr->skb, packet_buff, packet_len);
+   ^
+cc1: some warnings being treated as errors
+make[5]: *** 
+[/home/user/gateworks-openwrt/build_dir/target-arm_mpcore+vfp_musl-1.1.12_eabi/linux-cns3xxx/batman-adv-2017.4/net/batman-adv/bat_iv_ogm.o] 
+Error 1
+make[4]: *** 
+[_module_/home/user/gateworks-openwrt/build_dir/target-arm_mpcore+vfp_musl-1.1.12_eabi/linux-cns3xxx/batman-adv-2017.4/net/batman-adv] 
+Error 2
+make[4]: Leaving directory 
+`/home/user/gateworks-openwrt/build_dir/target-arm_mpcore+vfp_musl-1.1.12_eabi/linux-cns3xxx/linux-4.4'
+make[3]: *** 
+[/home/user/gateworks-openwrt/build_dir/target-arm_mpcore+vfp_musl-1.1.12_eabi/linux-cns3xxx/batman-adv-2017.4/.built] 
+Error 2
+make[3]: Leaving directory 
+`/home/user/gateworks-openwrt/feeds/routing/batman-adv'
+make[2]: *** [package/feeds/routing/batman-adv/compile] Error 2
+make[2]: Leaving directory `/home/user/gateworks-openwrt'
+make[1]: *** 
+[/home/user/gateworks-openwrt/staging_dir/target-arm_mpcore+vfp_musl-1.1.12_eabi/stamp/.package_compile] 
+Error 2
+make[1]: Leaving directory `/home/user/gateworks-openwrt'
+make: *** [world] Error 2
+
+Thank you
+
+Laurent
 
