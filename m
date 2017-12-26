@@ -1,12 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 25 Dec 2017 20:24:47 +0100
-Message-ID: <3091209.OFEMCjJbTv@sven-edge>
-In-Reply-To: <b00b8bd2-68bc-54fd-4d1c-cd3f9655fac1@wifibot.com>
+Return-Path: <laurent@wifibot.com>
 References: <b00b8bd2-68bc-54fd-4d1c-cd3f9655fac1@wifibot.com>
+ <3091209.OFEMCjJbTv@sven-edge>
+From: laurent <laurent@wifibot.com>
+Message-ID: <dfbc17dc-bc7d-d830-79c8-50db9e0ee0a9@wifibot.com>
+Date: Tue, 26 Dec 2017 10:08:15 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6568613.LWMlrtIcFN";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+In-Reply-To: <3091209.OFEMCjJbTv@sven-edge>
+Content-Type: text/plain; charset="windows-1252"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
+Content-Language: en-US
 Subject: Re: [B.A.T.M.A.N.] cannot recompile my openwrt image with last
  version of batman-adv 2017-4
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,52 +20,80 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: laurent <laurent@wifibot.com>
+To: Sven Eckelmann <sven@narfation.org>, b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart6568613.LWMlrtIcFN
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hello,
 
-On Montag, 25. Dezember 2017 18:36:56 CET laurent wrote:
-[...]
-> I am able to compile alone the module in the build forlder:
-> 
-> /home/user/gateworks-openwrt/build_dir/target-arm_mpcore+vfp_musl-1.1.12_eabi/linux-cns3xxx/batman-adv-2017.4/net/batman-adv/bat_iv_ogm.c:734:2: 
-> error: implicit declaration of function 'skb_put_data' 
-> [-Werror=implicit-function-declaration]
->    skb_put_data(forw_packet_aggr->skb, packet_buff, packet_len);
->    ^
+I was using the openwrt package feed for my version, but finally it=20
+works by cleaning properly the old version and re update the feed again,=20
+I had also corrected a small error line 324 in the new "compat-hacks.h"=20
+for 2017.4 :
 
-Please use a batman-adv package which is compatible for your OpenWrt version. 
-Or use LEDE (master) with openwrt-routing. Don't try to compile 
-openwrt-routing master (which is for LEDE master) against OpenWrt Chaos 
-Calmer.
+static inline void =A0=A0=A0 (struct timer_list *timer,
+ =A0=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0=A0=A0=A0=A0=A0 void (*callback)(struct t=
+imer_list *),
+ =A0=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0=A0=A0=A0=A0=A0 unsigned int flags)
+{
+ =A0=A0=A0 __setup_timer(timer, (TIMER_FUNC_TYPE)callback,
+ =A0=A0=A0 =A0=A0=A0 =A0=A0=A0=A0=A0 (TIMER_DATA_TYPE)timer, flags);
+}
 
-Kind regards,
-	Sven
+by
 
---nextPart6568613.LWMlrtIcFN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+static inline void *timer_setup(struct timer_list *timer,
+ =A0=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0=A0=A0=A0=A0=A0 void (*callback)(struct t=
+imer_list *),
+ =A0=A0=A0 =A0=A0=A0 =A0=A0=A0 =A0=A0=A0=A0=A0=A0 unsigned int flags)
+{
+ =A0=A0=A0 __setup_timer(timer, (TIMER_FUNC_TYPE)callback,
+ =A0=A0=A0 =A0=A0=A0 =A0=A0=A0=A0=A0 (TIMER_DATA_TYPE)timer, flags);
+}
 
------BEGIN PGP SIGNATURE-----
+it is fine now.
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlpBUH8ACgkQXYcKB8Em
-e0ZhhxAAs/zg7NoxPg9m3/zReAcymzYJsDiDtDpWNkzg+J/aWDTS0ZC8cO/1XoKP
-Og1q1es/n0tBWwaFMG28U+gRVT8Q6SPX1is2vasmOOwi3iIeQ+aLXvqCmnKaWsIg
-xMUooXNLMv77aRSzNcZEscaWA7ZE5muqrpFa7j+FNY97iLbzpV94pMAzlKTo8bIb
-HFY9DkVNeNzYKyw/CoDWAKrvgi07aiplTZbBeyUTyAbDtxj8Vi5S9jiFY6Ef1YUq
-6pzRQ7SPpvZcO9AS4Kyrb1CuSIZmuiqvgdjWc/m+OEvnr2poCCqsPPnov5kXfwX6
-T4FVcdTUhXLWKu0R50lLW7K+8nmLoWSqY7eBCuBsXTt/3Pt9UVLwEpebq9p10W41
-wtMz19yqajqIZOK67ZA6DDmYVnazvUGwkPURmroq7xvAAC4XdHEKZlA7ksKO7ZCB
-E/X3QzX1oFeDIB/fMZykc8AsCSnWW4mTGhOWC/OjannPXfcaX0T8IQbYWfZHfKcN
-xV9fPowzQ9j33KrZaez77dOAdKipBnYE+OS0+HvND0+174qYtBK/F9g3t7w/dACq
-BtsiiIuVlfUf3I4bmiBl1TyfNdgtUTFqoKWThY9LXu9Gdl/x0mHeCZy5P4pubMez
-3tZ5FOP7KmjCzV3GnaT4mn0kQPstde2aHUfgORuGtjbMVX8bQSo=
-=0hlU
------END PGP SIGNATURE-----
+I am doing this upgrade because I had some trouble by settings 5 fixed=20
+nodes in our place and making a robot passing at 6km/h near them, the=20
+route was not stable.
+So i am trying to have the new version to begin to tune some parameters.
+The robot is using 1.5Mbs bandwidth and it stream UDP h264 video packet,=20
+the other side is sending only a few tcp control packets.
+A long time ago I was using ubiquity hardware but now for batman-adv we=20
+have bought gateworks hardware, they are more maintained.
 
---nextPart6568613.LWMlrtIcFN--
+i am still have this feeling that when all nodes see each-other the=20
+calculated route is not stable in my case (version IV or V).
+
+Does batman-adv have like olsr an hysteresis parameter to stabilize the=20
+route once calculated ?
+
+With 3 nodes all is ok.
+
+I will make a new test and post a new thread with more infos
+
+Best Regards,
+
+Laurent
+
+
+
+On 25/12/2017 20:24, Sven Eckelmann wrote:
+> On Montag, 25. Dezember 2017 18:36:56 CET laurent wrote:
+> [...]
+>> I am able to compile alone the module in the build forlder:
+>>
+>> /home/user/gateworks-openwrt/build_dir/target-arm_mpcore+vfp_musl-1.1.12=
+_eabi/linux-cns3xxx/batman-adv-2017.4/net/batman-adv/bat_iv_ogm.c:734:2:
+>> error: implicit declaration of function 'skb_put_data'
+>> [-Werror=3Dimplicit-function-declaration]
+>>     skb_put_data(forw_packet_aggr->skb, packet_buff, packet_len);
+>>     ^
+> Please use a batman-adv package which is compatible for your OpenWrt vers=
+ion.
+> Or use LEDE (master) with openwrt-routing. Don't try to compile
+> openwrt-routing master (which is for LEDE master) against OpenWrt Chaos
+> Calmer.
+>
+> Kind regards,
+> 	Sven
+
 
