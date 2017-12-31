@@ -1,7 +1,7 @@
 Return-Path: <linus.luessing@c0d3.blue>
-Date: Sun, 31 Dec 2017 17:48:42 +0100
+Date: Sun, 31 Dec 2017 18:05:59 +0100
 From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20171231164842.GB2985@otheros>
+Message-ID: <20171231170559.GC2985@otheros>
 References: <08d40a5302ac411895c49cf6b7e17d5b@MB82.inbox01.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -21,16 +21,9 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-Hi,
-
-If I understood correctly then the ARP cache life on the
-polling/management platform is larger than 10min. Would it
-be an option for you to lower that one to some value below the
-10min. translation table timeout? (the default for the
-ARP/neighbor in Linux is a random value between 30-90 seconds
-if I remember correctly)
-
-Would that solve your issue?
+And one more question: How are the IPv4 addresses assigned? Static
+configuration or via DHCP? If the latter, what is your current
+lease timeout and would it be an option to lower it?
 
 Regards, Linus
 
