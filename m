@@ -1,17 +1,14 @@
-Return-Path: <a@unstable.cc>
-References: <08d40a5302ac411895c49cf6b7e17d5b@MB82.inbox01.com>
- <1824062.p4cHhaC8Qk@prime>
- <e4bb792ab8264961a4ecb1921abd4cca@MB82.inbox01.com>
-From: Antonio Quartulli <a@unstable.cc>
-Message-ID: <ccb6aeba-0e65-87c3-9464-aa062610c6b2@unstable.cc>
-Date: Fri, 5 Jan 2018 15:39:18 +0800
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 05 Jan 2018 09:30:27 +0100
+Message-ID: <1726572.H7yRIExqUN@sven-edge>
+In-Reply-To: <609290bb4d6430ba6261347d43d53809a495afb9.1461267645.git.joe@perches.com>
+References: <609290bb4d6430ba6261347d43d53809a495afb9.1461267645.git.joe@perches.com>
 MIME-Version: 1.0
-In-Reply-To: <e4bb792ab8264961a4ecb1921abd4cca@MB82.inbox01.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="KXfMM4JUBc7kqo8Z4ONlnfADArzbH0ABs"
-Subject: Re: [B.A.T.M.A.N.] Can b.a.t.m.a.n. be configured to ARP for
- unknown clients?
+Content-Type: multipart/signed; boundary="nextPart2118981.8yq2m74chs";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] checkpatch: Add test for keywords not starting
+ on tabstops
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -21,101 +18,74 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>, Robert Bates <rbates@freewave.com>, Simon Wunderlich <sw@simonwunderlich.de>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---KXfMM4JUBc7kqo8Z4ONlnfADArzbH0ABs
-Content-Type: multipart/mixed; boundary="CNr1hOhnrjBYl4OwO9iiAIJuceQR9R48X";
- protected-headers="v1"
-From: Antonio Quartulli <a@unstable.cc>
-To: The list for a Better Approach To Mobile Ad-hoc Networking
- <b.a.t.m.a.n@lists.open-mesh.org>, Robert Bates <rbates@freewave.com>,
- Simon Wunderlich <sw@simonwunderlich.de>
-Message-ID: <ccb6aeba-0e65-87c3-9464-aa062610c6b2@unstable.cc>
-Subject: Re: [B.A.T.M.A.N.] Can b.a.t.m.a.n. be configured to ARP for unknown
- clients?
-References: <08d40a5302ac411895c49cf6b7e17d5b@MB82.inbox01.com>
- <1824062.p4cHhaC8Qk@prime>
- <e4bb792ab8264961a4ecb1921abd4cca@MB82.inbox01.com>
-In-Reply-To: <e4bb792ab8264961a4ecb1921abd4cca@MB82.inbox01.com>
+--nextPart2118981.8yq2m74chs
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
---CNr1hOhnrjBYl4OwO9iiAIJuceQR9R48X
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
+On Donnerstag, 21. April 2016 12:41:37 CET Joe Perches wrote:
+> It's somewhat common and in general a defect for c90 keywords to
+> not start on a tabstop.
+> 
+> Add a test for this condition and warn when it occurs.
 
-Hi Robert,
+This seems to create some new false positives:
 
-On 05/01/18 09:16, Robert Bates wrote:
-> Hi Simon,
->=20
-> Thanks for the reply.  I'd already proposed changing the timer value to=
- my team (e.g., to 1 hour), and we're likely going to get that done (agai=
-n, we license this product from another developer, and don't even have di=
-rect access to the code under our current arrangement).  I agree that it =
-seems to be the most straight-forward solution, but others in the team fe=
-el that the desired fix will involve either some type of "ARP if unknown"=
-, or timer-based ARP mechanism on the part of some other component/piece =
-of software. =20
+    WARNING: Statements should start on a tabstop
+    #919: FILE: ./net/batman-adv/sysfs.c:919:
+    +                                     char ifname[IFNAMSIZ])
+    
+    total: 0 errors, 1 warnings, 0 checks, 1251 lines checked
 
-what do you exactly mean with "ARP if unknown"?
-In theory the ARP packet should be sent exactly by that client that now
-is unknown. Are you proposing some reactive discovery of unknown clients?=
+The code at this position is:
+
+    /**
+     * batadv_store_mesh_iface_finish() - store new hardif mesh_iface state
+     * @net_dev: netdevice to add/remove to/from batman-adv soft-interface
+     * @ifname: name of soft-interface to modify
+     *
+     * Changes the parts of the hard+soft interface which can not be modified under
+     * sysfs lock (to prevent deadlock situations).
+     *
+     * Return: 0 on success, 0 < on failure
+     */
+    static int batadv_store_mesh_iface_finish(struct net_device *net_dev,
+    					  char ifname[IFNAMSIZ])
+    {
+    	struct net *net = dev_net(net_dev);
 
 
-> I like your idea of periodically reading tt_local and pinging the clien=
-ts.  I'm going to bring that up when we have the next in-person discussio=
-n about a fix (a few people are still out on holiday vacation).  I like t=
-he fact that with that approach, the additional traffic introduced is onl=
-y toward locally connected clients, and not over the mesh.  Each node is =
-doing this with its locally connected clients, circumventing timeout and =
-removal.  I like it.  You mentioned some potential pitfalls.  We will tal=
-k through what those might look like in our customer environments, but my=
- sense is that there is no significant downside.  I could wrong.
+I know, my mail client is most likely mangling the tabs - so better check
+https://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git/tree/net/batman-adv/sysfs.c?id=72deacce011bde7475c90e6ee7d4c7d28c384873#n918
 
-don't forget that this can get racy: when you iterate over the local
-table, clients of your interest may have already disappeared (unless you
-make the probe reliable and with interval shorter than the TT timeout).
+Problem seems to be the [IFNAMSIZ]
 
-At the same time, how do you distinguish between clients that have to be
-pinged and clients that do not need that?
+Kind regards,
+	Sven
 
-Another thing: consider that performing a simple ICMP ping from the mesh
-node to the local client won't be enough, because no packet generated by
-the client will enter the bat0 interface, thus it won't be detected by
-batman-adv.
-
-
-Cheers,
-
-
-
---=20
-Antonio Quartulli
-
-
---CNr1hOhnrjBYl4OwO9iiAIJuceQR9R48X--
-
---KXfMM4JUBc7kqo8Z4ONlnfADArzbH0ABs
+--nextPart2118981.8yq2m74chs
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEERdCuyFSHc3WdqS4EB6U8WA7yzXQFAlpPK6YACgkQB6U8WA7y
-zXSK3Q/+J7o+JEtrUUL6DRGOhaB8qQziPLk9PS8nLBcF8RM/5TQnkMn3YUzE8pWl
-9tg8o5xOH9eXdDkMrMl7hv13EPunBodsHgo9wzIhQwmqK8O937n2+j2DOHwLOsBD
-qObR3LcBk20Ph9r/qgxe83NU3/tHUr0sa2vvbHhZrqkyUQ1UIlt3AnRkWP5KiztA
-6Ji2WsDJbyrhT20NpX1HDFzmuwFTiQGaXBEBt2ndqrSDJjnMURAa+kae3iLq59Ma
-5cZdCxwLpsa8OZhDyX54dDj9AjBGyW1g5OaYv7G4XitNRy0jfqt8nlqlpTja/urq
-ZiiK5+wbxQliR7eLlLHqcUWnyBWv5BSOlzlbUUDN0djIROAlJ5MYAW2r8IMt4UUK
-9bpBXgKlIL8n92dDb9X/Nxbk7f/MEsMHkDWn1qJVqL7zaYbPhtFqhX4PcCSQoQzP
-7e44R721Pg4Hh7llVFybbE+puCDflvk9qZKOMhjzAUXpYMkSl2Eo67JhioPnQyyw
-eKCzYWxPf0HewxiQtXw/iHUrKXpOFTuxqjT/EjFNiJ8C/B24VQ0BEA+A7rO6d7xe
-DnUSuAPl9FyINxu5+ezCR5FtrvkX4TZzqHf5XYR7jAi3AWQjSaNtEAJudHZ8kdE8
-DsmPEowtOFaU+CcwegFsbz1eAUp+AWT7dib5gFycgUJJwVgwYsA=
-=q1XH
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlpPN6MACgkQXYcKB8Em
+e0awwRAAnV7oWu69DmfLhTun2AQ1PUCf7KKNuYPKwj0qUIuBYFPrOs3QjFEDBHwP
+HKxqsOcphzOqw2spTlRARrFIkR0toOvbgN+2xpw48+zp7dlvazrHZzMhqj+Upo0R
+NWAvesY5MJSTz70sqp7MtK3sPxuK7ZI/JwwdUPYS5bukKBQuTA2VRxR65wfjPgXM
+x9yEOHmIgsA9vLfzhXlSPk688UQ4UYpKCHxZlwDmzd8lp5kpB/2TnoniDM0xbFKi
+Pp5FBw1A7M2yKVJ0A7TH9gMVRfaNMSyyyeAiE6+uQkuY+Udk40yl2Xz8CDeAc/2o
+7YkaCwzxo8b4R5ELYH5Xu8Q3Sv1IstmWPDsKTBw9w8AjBnJ/4uNQ1m7B6K/6fk4C
+f635UdoUr5aMufQq2P3tq7qUu1FAeZnOMwobEmEfKbMW4m0tUHEbLVlGWSYEVP1F
+SSUs9SdYd/AC2zPTGL8p0PdlV1/OerUrMMsNogCyG9ZD5+VpVpuwZl3NcuaGIQoa
+5uda7BiLVHtl33qRajo+io0RHcjqfj+dI9qUgkr1GrcwGEhbBcB9GMq+Bo8s5lKU
+UTmVyiwEQExr9rFfS+5Br4OYj+CSxSsHNCmdq1hyHDP7gm5wiGuFIcZNh+vdKmi8
+z30e9jEcLHZCsHnCJVH4TYuDQALkByNYGIdXQ5HQCJUl5oe7TyE=
+=f7xb
 -----END PGP SIGNATURE-----
 
---KXfMM4JUBc7kqo8Z4ONlnfADArzbH0ABs--
+--nextPart2118981.8yq2m74chs--
+
