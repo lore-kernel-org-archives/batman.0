@@ -1,13 +1,12 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 09 Jan 2018 16:07:30 +0100
-Message-ID: <7814426.c12CkHkdfC@bentobox>
-In-Reply-To: <HE1PR0201MB15935BB539A298E68A7C187FE9100@HE1PR0201MB1593.eurprd02.prod.outlook.com>
-References: <HE1PR0201MB15935BB539A298E68A7C187FE9100@HE1PR0201MB1593.eurprd02.prod.outlook.com>
+Return-Path: <Alex.Linchieh@gd-ms.ca>
+From: "Linchieh, Alex" <Alex.Linchieh@gd-ms.ca>
+Date: Wed, 17 Jan 2018 23:41:47 +0000
+Message-ID: <EAA43A4A33E954458F0C43C14387663A631A4567@ottsvw192.gdcan.com>
+Content-Language: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2515801.Ea44D3Mvpa";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] Master's Thesis on B.A.T.M.A.N routing protocol
+Subject: [B.A.T.M.A.N.] Simple Multicast on Batman-Adv
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -17,65 +16,58 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "Md. Islam" <md.s.islam@student.tut.fi>
-Cc: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>, Martin =?ISO-8859-1?Q?Hundeb=F8ll?= <martin@hundeboll.net>, Simon Wunderlich <sw@simonwunderlich.de>
+To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
 
---nextPart2515801.Ea44D3Mvpa
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hello,
 
-On Dienstag, 9. Januar 2018 14:48:15 CET Md. Islam wrote:
-[...]
-> I am a final year masters student of Tampere University of Technology, 
-> Finland and my major is computer networking. Now, i have to start my thesis 
-> and B.A.T.M.A.N protocol seems very interesting to me. My supervisior told 
-> to work on B.A.T.M.A.N  routing protocol by network coding. 
+I am having some issues getting simple multicast to work under batman-adv (=
+2017.4).
 
-Can you please clarify whether you are talking about actual "network coding" 
-(as in CATWOMAN [1,2,3])? Because this part in batman-adv is mostly not used 
-for various reasons.
+I have isolated the system as much as I can to reduce any uncertainties ass=
+ociated with wlan. My test environment consists of 4 virtual machines (ubun=
+tu server 17.10) that are connected to each other via an internal ethernet =
+network. I have been able to get the bat0 interface working over the ethern=
+et interface (enp0s3). I am able to get the devices to ping eachother over =
+the batman mesh as well as send iperf test data via TCP and UDP unicast mod=
+es. However I have not been able to get multicast running properly over the=
+ bat0 interface.
 
-But when you are interested in network coding then you may get help from Simon 
-Wunderlich and Martin Hundeboll. But at least Simon is doing research in that
-area - but not using batman-adv.
+The commands I am using to initialize batman-adv on each of the virtual mac=
+hines are as follows:
 
-> I would like to  ask, does it has enough scope to develop by network code ? 
+Sudo modprobe batman-adv
+Sudo ifconfig enp0s3 up
+Sudo batctl if add enp0s3
+Sudo ifconfig bat0 192.168.14.x/24	where "x" is replaced with a number depe=
+nding on the VM
+Sudo route add -host 239.255.10.10 bat0
 
-Sorry, but I failed to parse the sentence
+I am using iperf in order to generate multicast traffic from the iperf clie=
+nt (192.168.14.1), and the iperf servers (192.168.2, 3, 4). The client whic=
+h generates multicast data is able to "connect" to the multicast address an=
+d send data. Iperf also shows that the servers are able to subscribe to the=
+ multicast address however this is as far as I can get because the multicas=
+t data does not appear to ever reach the subscribers. When I use tcp dump t=
+o monitor the bat0 interfaces on these devices, I can see outgoing multicas=
+t traffic from the multicast sender, however the bat0 interface on the mult=
+icast receivers does not show anything, so it looks like none of the multic=
+ast traffic seems to be reaching any of the subscribers (or perhaps the mul=
+ticast subscribers aren't able to communicate that they are subscribed to t=
+he multicast address).
 
-> and could you  please tell me what other area (right topic) of B.A.T.M.A.N  
-> is avaible for  research or thesis topic. Thank you very much for your time. 
+I have tested this with "batctl mm" set to both enabled and disabled. In ad=
+dition, when I try to run "batctl mf" it says that I am not connected to a =
+mesh (even though I am).
 
-Many here are no (longer) university researchers. So we don't have a official 
-list of topics of such things. But maybe someone else has some ideas.
+I have also duplicated this test using just the internal Ethernet network (=
+static IP addresses, batman disabled) and muilticast seems to work fine. Th=
+is leads me to believe that there is something with batman-adv that I am ov=
+erlooking.
 
-Kind regards,
-	Sven
+If anyone could shed some light on enabling multicast on batman that would =
+be greatly appreciated.
 
-[1] https://www.open-mesh.org/projects/batman-adv/wiki/NetworkCoding
-[2] https://downloads.open-mesh.org/batman/papers/batman-adv_network_coding.pdf
-[3] https://vbn.aau.dk/da/publications/catwoman(214ee21a-e786-495d-85c9-3efac4718ead).html
---nextPart2515801.Ea44D3Mvpa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Thanks,
+Alex
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlpU2rIACgkQXYcKB8Em
-e0Y6iw//TEjZY6XkNlZWAfWWFtMjzaoZI7NWIkqQJgaCNdgrZoT24BSJejWnRPdk
-TObSVsMyXxbv1IVKo0a5jsa5kZb39L9hD3QtrCaPOdCfLl3ufU7fRpc2zp3VYSMz
-NfeDBhFcWeLBs3nFVpnzdFHavopBMYLRsrPKenflSJ40VBKBAvzzRf4elzxTKkEM
-tlUWRWeGzXovglZABYFmUneSSCsbMo9iqjVvFaE34eCl3cehWTssz02+4Q9SLTBV
-WYb/Ir60ip1KPcHf7AtYm/10arxjOmD+Ma8QX5qX437UwNZwwLWJUOwykNg1D0Nm
-2goUAgAm5Px12zxqfYsxDw6/MWkd5BXKWd/EIf5RL32z2YUj5eouXsKIW5BzEeAD
-B5/kQD8v69I6fw7Rn0ysmeBPgvltK+0UeXENmLCGchJNXyM8EPbuweL5NEIe5ICG
-DhPxZu66xjYd84/Gg6NgOmu+2WbjsRaSvd8mV22DvJNTvReTXn6R1ZZZ0ANtbqX4
-UVKdKvGSQQWJc1hZjxOJ994/iKZvuaONhTZQFxgYl6JCQxMPfjGNPDB7hwb7WXqZ
-4vTqwSg8KRqWZegN7CNS6LP6poDxy7aNLU+3L5I5GusHvUAZz5IkmBT/9Dv19vAI
-BT/39q0TrBV5PnKJoaLhwAUNiTojUUoWavhUz3j5tND+YEQkWa0=
-=C/fQ
------END PGP SIGNATURE-----
-
---nextPart2515801.Ea44D3Mvpa--
 
