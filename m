@@ -1,14 +1,14 @@
-Return-Path: <Alex.Linchieh@gd-ms.ca>
-From: "Linchieh, Alex" <Alex.Linchieh@gd-ms.ca>
-Date: Thu, 18 Jan 2018 00:20:06 +0000
-Message-ID: <EAA43A4A33E954458F0C43C14387663A631A4588@ottsvw192.gdcan.com>
+Return-Path: <dandenson@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <EAA43A4A33E954458F0C43C14387663A631A4588@ottsvw192.gdcan.com>
 References: <EAA43A4A33E954458F0C43C14387663A631A4567@ottsvw192.gdcan.com>
  <CAA_JP8XHGyA4yYxw1WuH12K+YYe4SvZUPe3GkC4EZSz1YNY+gA@mail.gmail.com>
-In-Reply-To: <CAA_JP8XHGyA4yYxw1WuH12K+YYe4SvZUPe3GkC4EZSz1YNY+gA@mail.gmail.com>
-Content-Language: en-US
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-MIME-Version: 1.0
+ <EAA43A4A33E954458F0C43C14387663A631A4588@ottsvw192.gdcan.com>
+From: dan <dandenson@gmail.com>
+Date: Wed, 17 Jan 2018 17:24:42 -0700
+Message-ID: <CAA_JP8WAwdvaGQv6eOnJMCcfznEt9M66g+5Ys8KQG+ZHErRP_Q@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Subject: Re: [B.A.T.M.A.N.] Simple Multicast on Batman-Adv
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
@@ -21,53 +21,73 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
 
-VGhhdCByZXNvbHZlZCBpdC4gVGhhbmsgeW91IERhbiENCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdl
-LS0tLS0NCkZyb206IEIuQS5ULk0uQS5OIFttYWlsdG86Yi5hLnQubS5hLm4tYm91bmNlc0BsaXN0
-cy5vcGVuLW1lc2gub3JnXSBPbiBCZWhhbGYgT2YgZGFuDQpTZW50OiBXZWRuZXNkYXksIEphbnVh
-cnkgMTcsIDIwMTggNDo1NyBQTQ0KVG86IFRoZSBsaXN0IGZvciBhIEJldHRlciBBcHByb2FjaCBU
-byBNb2JpbGUgQWQtaG9jIE5ldHdvcmtpbmcNClN1YmplY3Q6IFJlOiBbQi5BLlQuTS5BLk4uXSBT
-aW1wbGUgTXVsdGljYXN0IG9uIEJhdG1hbi1BZHYNCg0KSSBkb250IHNlZSB5b3Ugc2V0dGluZyBN
-VFUgb24gZW5wMHMzLg0KDQpPbiBXZWQsIEphbiAxNywgMjAxOCBhdCA0OjQxIFBNLCBMaW5jaGll
-aCwgQWxleCA8QWxleC5MaW5jaGllaEBnZC1tcy5jYT4gd3JvdGU6DQo+IEhlbGxvLA0KPg0KPiBJ
-IGFtIGhhdmluZyBzb21lIGlzc3VlcyBnZXR0aW5nIHNpbXBsZSBtdWx0aWNhc3QgdG8gd29yayB1
-bmRlciBiYXRtYW4tYWR2ICgyMDE3LjQpLg0KPg0KPiBJIGhhdmUgaXNvbGF0ZWQgdGhlIHN5c3Rl
-bSBhcyBtdWNoIGFzIEkgY2FuIHRvIHJlZHVjZSBhbnkgdW5jZXJ0YWludGllcyBhc3NvY2lhdGVk
-IHdpdGggd2xhbi4gTXkgdGVzdCBlbnZpcm9ubWVudCBjb25zaXN0cyBvZiA0IHZpcnR1YWwgbWFj
-aGluZXMgKHVidW50dSBzZXJ2ZXIgMTcuMTApIHRoYXQgYXJlIGNvbm5lY3RlZCB0byBlYWNoIG90
-aGVyIHZpYSBhbiBpbnRlcm5hbCBldGhlcm5ldCBuZXR3b3JrLiBJIGhhdmUgYmVlbiBhYmxlIHRv
-IGdldCB0aGUgYmF0MCBpbnRlcmZhY2Ugd29ya2luZyBvdmVyIHRoZSBldGhlcm5ldCBpbnRlcmZh
-Y2UgKGVucDBzMykuIEkgYW0gYWJsZSB0byBnZXQgdGhlIGRldmljZXMgdG8gcGluZyBlYWNob3Ro
-ZXIgb3ZlciB0aGUgYmF0bWFuIG1lc2ggYXMgd2VsbCBhcyBzZW5kIGlwZXJmIHRlc3QgZGF0YSB2
-aWEgVENQIGFuZCBVRFAgdW5pY2FzdCBtb2Rlcy4gSG93ZXZlciBJIGhhdmUgbm90IGJlZW4gYWJs
-ZSB0byBnZXQgbXVsdGljYXN0IHJ1bm5pbmcgcHJvcGVybHkgb3ZlciB0aGUgYmF0MCBpbnRlcmZh
-Y2UuDQo+DQo+IFRoZSBjb21tYW5kcyBJIGFtIHVzaW5nIHRvIGluaXRpYWxpemUgYmF0bWFuLWFk
-diBvbiBlYWNoIG9mIHRoZSB2aXJ0dWFsIG1hY2hpbmVzIGFyZSBhcyBmb2xsb3dzOg0KPg0KPiBT
-dWRvIG1vZHByb2JlIGJhdG1hbi1hZHYNCj4gU3VkbyBpZmNvbmZpZyBlbnAwczMgdXANCj4gU3Vk
-byBiYXRjdGwgaWYgYWRkIGVucDBzMw0KPiBTdWRvIGlmY29uZmlnIGJhdDAgMTkyLjE2OC4xNC54
-LzI0ICAgICAgd2hlcmUgIngiIGlzIHJlcGxhY2VkIHdpdGggYSBudW1iZXIgZGVwZW5kaW5nIG9u
-IHRoZSBWTQ0KPiBTdWRvIHJvdXRlIGFkZCAtaG9zdCAyMzkuMjU1LjEwLjEwIGJhdDANCj4NCj4g
-SSBhbSB1c2luZyBpcGVyZiBpbiBvcmRlciB0byBnZW5lcmF0ZSBtdWx0aWNhc3QgdHJhZmZpYyBm
-cm9tIHRoZSBpcGVyZiBjbGllbnQgKDE5Mi4xNjguMTQuMSksIGFuZCB0aGUgaXBlcmYgc2VydmVy
-cyAoMTkyLjE2OC4yLCAzLCA0KS4gVGhlIGNsaWVudCB3aGljaCBnZW5lcmF0ZXMgbXVsdGljYXN0
-IGRhdGEgaXMgYWJsZSB0byAiY29ubmVjdCIgdG8gdGhlIG11bHRpY2FzdCBhZGRyZXNzIGFuZCBz
-ZW5kIGRhdGEuIElwZXJmIGFsc28gc2hvd3MgdGhhdCB0aGUgc2VydmVycyBhcmUgYWJsZSB0byBz
-dWJzY3JpYmUgdG8gdGhlIG11bHRpY2FzdCBhZGRyZXNzIGhvd2V2ZXIgdGhpcyBpcyBhcyBmYXIg
-YXMgSSBjYW4gZ2V0IGJlY2F1c2UgdGhlIG11bHRpY2FzdCBkYXRhIGRvZXMgbm90IGFwcGVhciB0
-byBldmVyIHJlYWNoIHRoZSBzdWJzY3JpYmVycy4gV2hlbiBJIHVzZSB0Y3AgZHVtcCB0byBtb25p
-dG9yIHRoZSBiYXQwIGludGVyZmFjZXMgb24gdGhlc2UgZGV2aWNlcywgSSBjYW4gc2VlIG91dGdv
-aW5nIG11bHRpY2FzdCB0cmFmZmljIGZyb20gdGhlIG11bHRpY2FzdCBzZW5kZXIsIGhvd2V2ZXIg
-dGhlIGJhdDAgaW50ZXJmYWNlIG9uIHRoZSBtdWx0aWNhc3QgcmVjZWl2ZXJzIGRvZXMgbm90IHNo
-b3cgYW55dGhpbmcsIHNvIGl0IGxvb2tzIGxpa2Ugbm9uZSBvZiB0aGUgbXVsdGljYXN0IHRyYWZm
-aWMgc2VlbXMgdG8gYmUgcmVhY2hpbmcgYW55IG9mIHRoZSBzdWJzY3JpYmVycyAob3IgcGVyaGFw
-cyB0aGUgbXVsdGljYXN0IHN1YnNjcmliZXJzIGFyZW4ndCBhYmxlIHRvIGNvbW11bmljYXRlIHRo
-YXQgdGhleSBhcmUgc3Vic2NyaWJlZCB0byB0aGUgbXVsdGljYXN0IGFkZHJlc3MpLg0KPg0KPiBJ
-IGhhdmUgdGVzdGVkIHRoaXMgd2l0aCAiYmF0Y3RsIG1tIiBzZXQgdG8gYm90aCBlbmFibGVkIGFu
-ZCBkaXNhYmxlZC4gSW4gYWRkaXRpb24sIHdoZW4gSSB0cnkgdG8gcnVuICJiYXRjdGwgbWYiIGl0
-IHNheXMgdGhhdCBJIGFtIG5vdCBjb25uZWN0ZWQgdG8gYSBtZXNoIChldmVuIHRob3VnaCBJIGFt
-KS4NCj4NCj4gSSBoYXZlIGFsc28gZHVwbGljYXRlZCB0aGlzIHRlc3QgdXNpbmcganVzdCB0aGUg
-aW50ZXJuYWwgRXRoZXJuZXQgbmV0d29yayAoc3RhdGljIElQIGFkZHJlc3NlcywgYmF0bWFuIGRp
-c2FibGVkKSBhbmQgbXVpbHRpY2FzdCBzZWVtcyB0byB3b3JrIGZpbmUuIFRoaXMgbGVhZHMgbWUg
-dG8gYmVsaWV2ZSB0aGF0IHRoZXJlIGlzIHNvbWV0aGluZyB3aXRoIGJhdG1hbi1hZHYgdGhhdCBJ
-IGFtIG92ZXJsb29raW5nLg0KPg0KPiBJZiBhbnlvbmUgY291bGQgc2hlZCBzb21lIGxpZ2h0IG9u
-IGVuYWJsaW5nIG11bHRpY2FzdCBvbiBiYXRtYW4gdGhhdCB3b3VsZCBiZSBncmVhdGx5IGFwcHJl
-Y2lhdGVkLg0KPg0KPiBUaGFua3MsDQo+IEFsZXgNCj4NCj4NCg==
+awesome.
+
+On Wed, Jan 17, 2018 at 5:20 PM, Linchieh, Alex <Alex.Linchieh@gd-ms.ca> wr=
+ote:
+> That resolved it. Thank you Dan!
+>
+> -----Original Message-----
+> From: B.A.T.M.A.N [mailto:b.a.t.m.a.n-bounces@lists.open-mesh.org] On Beh=
+alf Of dan
+> Sent: Wednesday, January 17, 2018 4:57 PM
+> To: The list for a Better Approach To Mobile Ad-hoc Networking
+> Subject: Re: [B.A.T.M.A.N.] Simple Multicast on Batman-Adv
+>
+> I dont see you setting MTU on enp0s3.
+>
+> On Wed, Jan 17, 2018 at 4:41 PM, Linchieh, Alex <Alex.Linchieh@gd-ms.ca> =
+wrote:
+>> Hello,
+>>
+>> I am having some issues getting simple multicast to work under batman-ad=
+v (2017.4).
+>>
+>> I have isolated the system as much as I can to reduce any uncertainties =
+associated with wlan. My test environment consists of 4 virtual machines (u=
+buntu server 17.10) that are connected to each other via an internal ethern=
+et network. I have been able to get the bat0 interface working over the eth=
+ernet interface (enp0s3). I am able to get the devices to ping eachother ov=
+er the batman mesh as well as send iperf test data via TCP and UDP unicast =
+modes. However I have not been able to get multicast running properly over =
+the bat0 interface.
+>>
+>> The commands I am using to initialize batman-adv on each of the virtual =
+machines are as follows:
+>>
+>> Sudo modprobe batman-adv
+>> Sudo ifconfig enp0s3 up
+>> Sudo batctl if add enp0s3
+>> Sudo ifconfig bat0 192.168.14.x/24      where "x" is replaced with a num=
+ber depending on the VM
+>> Sudo route add -host 239.255.10.10 bat0
+>>
+>> I am using iperf in order to generate multicast traffic from the iperf c=
+lient (192.168.14.1), and the iperf servers (192.168.2, 3, 4). The client w=
+hich generates multicast data is able to "connect" to the multicast address=
+ and send data. Iperf also shows that the servers are able to subscribe to =
+the multicast address however this is as far as I can get because the multi=
+cast data does not appear to ever reach the subscribers. When I use tcp dum=
+p to monitor the bat0 interfaces on these devices, I can see outgoing multi=
+cast traffic from the multicast sender, however the bat0 interface on the m=
+ulticast receivers does not show anything, so it looks like none of the mul=
+ticast traffic seems to be reaching any of the subscribers (or perhaps the =
+multicast subscribers aren't able to communicate that they are subscribed t=
+o the multicast address).
+>>
+>> I have tested this with "batctl mm" set to both enabled and disabled. In=
+ addition, when I try to run "batctl mf" it says that I am not connected to=
+ a mesh (even though I am).
+>>
+>> I have also duplicated this test using just the internal Ethernet networ=
+k (static IP addresses, batman disabled) and muilticast seems to work fine.=
+ This leads me to believe that there is something with batman-adv that I am=
+ overlooking.
+>>
+>> If anyone could shed some light on enabling multicast on batman that wou=
+ld be greatly appreciated.
+>>
+>> Thanks,
+>> Alex
+>>
+>>
