@@ -1,15 +1,9 @@
-Return-Path: <dandenson@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <EAA43A4A33E954458F0C43C14387663A631A4588@ottsvw192.gdcan.com>
-References: <EAA43A4A33E954458F0C43C14387663A631A4567@ottsvw192.gdcan.com>
- <CAA_JP8XHGyA4yYxw1WuH12K+YYe4SvZUPe3GkC4EZSz1YNY+gA@mail.gmail.com>
- <EAA43A4A33E954458F0C43C14387663A631A4588@ottsvw192.gdcan.com>
-From: dan <dandenson@gmail.com>
-Date: Wed, 17 Jan 2018 17:24:42 -0700
-Message-ID: <CAA_JP8WAwdvaGQv6eOnJMCcfznEt9M66g+5Ys8KQG+ZHErRP_Q@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [B.A.T.M.A.N.] Simple Multicast on Batman-Adv
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 19 Jan 2018 09:34:45 +0100
+Message-Id: <20180119083445.12832-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix DECLARE_EWMA compat
+ with newer kernels
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,75 +13,98 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-awesome.
+Newer kernels removed the ACCESS_ONCE macro and are now using the more
+specialized forms READ_ONCE and WRITE_ONCE. The DECLARE_EWMA compat code
+used ACCESS_ONCE and fails to build against kernels which include the
+commit b899a850431e ("compiler.h: Remove ACCESS_ONCE()").
 
-On Wed, Jan 17, 2018 at 5:20 PM, Linchieh, Alex <Alex.Linchieh@gd-ms.ca> wr=
-ote:
-> That resolved it. Thank you Dan!
->
-> -----Original Message-----
-> From: B.A.T.M.A.N [mailto:b.a.t.m.a.n-bounces@lists.open-mesh.org] On Beh=
-alf Of dan
-> Sent: Wednesday, January 17, 2018 4:57 PM
-> To: The list for a Better Approach To Mobile Ad-hoc Networking
-> Subject: Re: [B.A.T.M.A.N.] Simple Multicast on Batman-Adv
->
-> I dont see you setting MTU on enp0s3.
->
-> On Wed, Jan 17, 2018 at 4:41 PM, Linchieh, Alex <Alex.Linchieh@gd-ms.ca> =
-wrote:
->> Hello,
->>
->> I am having some issues getting simple multicast to work under batman-ad=
-v (2017.4).
->>
->> I have isolated the system as much as I can to reduce any uncertainties =
-associated with wlan. My test environment consists of 4 virtual machines (u=
-buntu server 17.10) that are connected to each other via an internal ethern=
-et network. I have been able to get the bat0 interface working over the eth=
-ernet interface (enp0s3). I am able to get the devices to ping eachother ov=
-er the batman mesh as well as send iperf test data via TCP and UDP unicast =
-modes. However I have not been able to get multicast running properly over =
-the bat0 interface.
->>
->> The commands I am using to initialize batman-adv on each of the virtual =
-machines are as follows:
->>
->> Sudo modprobe batman-adv
->> Sudo ifconfig enp0s3 up
->> Sudo batctl if add enp0s3
->> Sudo ifconfig bat0 192.168.14.x/24      where "x" is replaced with a num=
-ber depending on the VM
->> Sudo route add -host 239.255.10.10 bat0
->>
->> I am using iperf in order to generate multicast traffic from the iperf c=
-lient (192.168.14.1), and the iperf servers (192.168.2, 3, 4). The client w=
-hich generates multicast data is able to "connect" to the multicast address=
- and send data. Iperf also shows that the servers are able to subscribe to =
-the multicast address however this is as far as I can get because the multi=
-cast data does not appear to ever reach the subscribers. When I use tcp dum=
-p to monitor the bat0 interfaces on these devices, I can see outgoing multi=
-cast traffic from the multicast sender, however the bat0 interface on the m=
-ulticast receivers does not show anything, so it looks like none of the mul=
-ticast traffic seems to be reaching any of the subscribers (or perhaps the =
-multicast subscribers aren't able to communicate that they are subscribed t=
-o the multicast address).
->>
->> I have tested this with "batctl mm" set to both enabled and disabled. In=
- addition, when I try to run "batctl mf" it says that I am not connected to=
- a mesh (even though I am).
->>
->> I have also duplicated this test using just the internal Ethernet networ=
-k (static IP addresses, batman disabled) and muilticast seems to work fine.=
- This leads me to believe that there is something with batman-adv that I am=
- overlooking.
->>
->> If anyone could shed some light on enabling multicast on batman that wou=
-ld be greatly appreciated.
->>
->> Thanks,
->> Alex
->>
->>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ compat-include/linux/average.h  |  8 +++++---
+ compat-include/linux/compiler.h | 37 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 42 insertions(+), 3 deletions(-)
+ create mode 100644 compat-include/linux/compiler.h
+
+diff --git a/compat-include/linux/average.h b/compat-include/linux/average.h
+index a1e3c254..ce847d5d 100644
+--- a/compat-include/linux/average.h
++++ b/compat-include/linux/average.h
+@@ -25,6 +25,8 @@
+ #include_next <linux/average.h>
+ 
+ #include <linux/bug.h>
++#include <linux/compiler.h>
++#include <linux/log2.h>
+ 
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 3, 0)
+ #undef DECLARE_EWMA
+@@ -77,7 +79,7 @@
+ 	static inline void ewma_##name##_add(struct ewma_##name *e,	\
+ 					     unsigned long val)		\
+ 	{								\
+-		unsigned long internal = ACCESS_ONCE(e->internal);	\
++		unsigned long internal = READ_ONCE(e->internal);	\
+ 		unsigned long weight_rcp = ilog2(_weight_rcp);		\
+ 		unsigned long precision = _precision;			\
+ 									\
+@@ -86,10 +88,10 @@
+ 		BUILD_BUG_ON((_precision) > 30);			\
+ 		BUILD_BUG_ON_NOT_POWER_OF_2(_weight_rcp);		\
+ 									\
+-		ACCESS_ONCE(e->internal) = internal ?			\
++		WRITE_ONCE(e->internal, internal ?			\
+ 			(((internal << weight_rcp) - internal) +	\
+ 				(val << precision)) >> weight_rcp :	\
+-			(val << precision);				\
++			(val << precision));				\
+ 	}
+ 
+ #endif /* _NET_BATMAN_ADV_COMPAT_LINUX_AVERAGE_H */
+diff --git a/compat-include/linux/compiler.h b/compat-include/linux/compiler.h
+new file mode 100644
+index 00000000..62b6a2f9
+--- /dev/null
++++ b/compat-include/linux/compiler.h
+@@ -0,0 +1,37 @@
++/* Copyright (C) 2007-2017  B.A.T.M.A.N. contributors:
++ *
++ * Marek Lindner, Simon Wunderlich
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see <http://www.gnu.org/licenses/>.
++ *
++ * This file contains macros for maintaining compatibility with older versions
++ * of the Linux kernel.
++ */
++
++#ifndef _NET_BATMAN_ADV_COMPAT_LINUX_COMPILER_H_
++#define _NET_BATMAN_ADV_COMPAT_LINUX_COMPILER_H_
++
++#include <linux/version.h>
++#include_next <linux/compiler.h>
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 19, 0)
++
++#define READ_ONCE(x) ACCESS_ONCE(x)
++
++#define WRITE_ONCE(x, val) ({ \
++	ACCESS_ONCE(x) = (val); \
++})
++
++#endif /* < KERNEL_VERSION(3, 19, 0) */
++
++#endif	/* _NET_BATMAN_ADV_COMPAT_LINUX_COMPILER_H_ */
+-- 
+2.11.0
+
