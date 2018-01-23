@@ -1,9 +1,13 @@
 Return-Path: <mschiffer@universe-factory.net>
 From: Matthias Schiffer <mschiffer@universe-factory.net>
-Date: Tue, 23 Jan 2018 10:59:49 +0100
-Message-Id: <05cee97344804ffb2a8df87603663a098fd0cb36.1516701590.git.mschiffer@universe-factory.net>
-Subject: [B.A.T.M.A.N.] [PATCH maint v2 1/2] batman-adv: fix packet checksum
- in receive path
+Date: Tue, 23 Jan 2018 10:59:50 +0100
+Message-Id: <3f5713999a5f61ed7221944276393b4ff40a9416.1516701590.git.mschiffer@universe-factory.net>
+In-Reply-To: <05cee97344804ffb2a8df87603663a098fd0cb36.1516701590.git.mschiffer@universe-factory.net>
+References: <05cee97344804ffb2a8df87603663a098fd0cb36.1516701590.git.mschiffer@universe-factory.net>
+In-Reply-To: <05cee97344804ffb2a8df87603663a098fd0cb36.1516701590.git.mschiffer@universe-factory.net>
+References: <05cee97344804ffb2a8df87603663a098fd0cb36.1516701590.git.mschiffer@universe-factory.net>
+Subject: [B.A.T.M.A.N.] [PATCH maint v2 2/2] batman-adv: invalidate checksum
+ on fragment reassembly
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,10 +19,11 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-eth_type_trans() internally calls skb_pull(), which does not adjust the
-skb checksum; skb_postpull_rcsum() is necessary to avoid log spam of the
-form "bat0: hw csum failure" when packets with CHECKSUM_COMPLETE are
-received.
+A more sophisticated implementation could try to combine fragment checksums
+when all fragments have CHECKSUM_COMPLETE and are split at even offsets.
+For now, we just set ip_summed to CHECKSUM_NONE to avoid "hw csum failure"
+warnings in the kernel log when fragmented frames are received. In
+consequence, skb_pull_rcsum() can be replaced with skb_pull().
 
 Note that in usual setups, packets don't reach batman-adv with
 CHECKSUM_COMPLETE (I assume NICs bail out of checksumming when they see
@@ -28,28 +33,23 @@ batman-adv on top of a VXLAN interface.
 
 Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
 ---
- net/batman-adv/soft-interface.c | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+ net/batman-adv/fragmentation.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/soft-interface.c b/net/batman-adv/soft-interface.c
-index 9f673cdf..6f7ce7a6 100644
---- a/net/batman-adv/soft-interface.c
-+++ b/net/batman-adv/soft-interface.c
-@@ -451,13 +451,7 @@ void batadv_interface_rx(struct net_device *soft_iface,
- 
- 	/* skb->dev & skb->pkt_type are set here */
- 	skb->protocol = eth_type_trans(skb, soft_iface);
--
--	/* should not be necessary anymore as we use skb_pull_rcsum()
--	 * TODO: please verify this and remove this TODO
--	 * -- Dec 21st 2009, Simon Wunderlich
--	 */
--
--	/* skb->ip_summed = CHECKSUM_UNNECESSARY; */
-+	skb_postpull_rcsum(skb, eth_hdr(skb), ETH_HLEN);
- 
- 	batadv_inc_counter(bat_priv, BATADV_CNT_RX);
- 	batadv_add_counter(bat_priv, BATADV_CNT_RX_BYTES,
+diff --git a/net/batman-adv/fragmentation.c b/net/batman-adv/fragmentation.c
+index ebe6e389..1bb2b43f 100644
+--- a/net/batman-adv/fragmentation.c
++++ b/net/batman-adv/fragmentation.c
+@@ -287,7 +287,8 @@ batadv_frag_merge_packets(struct hlist_head *chain)
+ 	/* Move the existing MAC header to just before the payload. (Override
+ 	 * the fragment header.)
+ 	 */
+-	skb_pull_rcsum(skb_out, hdr_size);
++	skb_pull(skb_out, hdr_size);
++	skb_out->ip_summed = CHECKSUM_NONE;
+ 	memmove(skb_out->data - ETH_HLEN, skb_mac_header(skb_out), ETH_HLEN);
+ 	skb_set_mac_header(skb_out, -ETH_HLEN);
+ 	skb_reset_network_header(skb_out);
 -- 
 2.16.1
 
