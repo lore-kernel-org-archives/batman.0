@@ -1,12 +1,12 @@
-Return-Path: <linus.luessing@c0d3.blue>
-Date: Tue, 23 Jan 2018 12:46:51 +0100
-From: Linus =?utf-8?Q?L=C3=BCssing?= <linus.luessing@c0d3.blue>
-Message-ID: <20180123114651.GC23784@otheros>
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 23 Jan 2018 13:21:08 +0100
+Message-ID: <3054592.V1b4d6Bjbj@bentobox>
+In-Reply-To: <05cee97344804ffb2a8df87603663a098fd0cb36.1516701590.git.mschiffer@universe-factory.net>
 References: <05cee97344804ffb2a8df87603663a098fd0cb36.1516701590.git.mschiffer@universe-factory.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <05cee97344804ffb2a8df87603663a098fd0cb36.1516701590.git.mschiffer@universe-factory.net>
+Content-Type: multipart/signed; boundary="nextPart2354350.EuDcRRZAWy";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
 Subject: Re: [B.A.T.M.A.N.] [PATCH maint v2 1/2] batman-adv: fix packet
  checksum in receive path
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -18,34 +18,63 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: The list for a Better Approach To Mobile Ad-hoc Networking <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
 
-On Tue, Jan 23, 2018 at 10:59:49AM +0100, Matthias Schiffer wrote:
+--nextPart2354350.EuDcRRZAWy
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+
+On Dienstag, 23. Januar 2018 10:59:49 CET Matthias Schiffer wrote:
 > eth_type_trans() internally calls skb_pull(), which does not adjust the
 > skb checksum; skb_postpull_rcsum() is necessary to avoid log spam of the
 > form "bat0: hw csum failure" when packets with CHECKSUM_COMPLETE are
 > received.
-> 
+>=20
 > Note that in usual setups, packets don't reach batman-adv with
 > CHECKSUM_COMPLETE (I assume NICs bail out of checksumming when they see
 > batadv's ethtype?), which is why the log messages do nor occur on every
 > system using batman-adv. I could reproduce this issue by stacking
 > batman-adv on top of a VXLAN interface.
-> 
+>=20
 > Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
+> ---
 
-Seems reasonable, this change.
+Applied both as 798174b15153 [1] and 2c1bce065baa [2].  They are also queue=
+d=20
+up in linux-merge [3] but will most likely only forwarded when Simon is bac=
+k=20
+from=20his vacation. Tested-by's are still welcome :)
 
-I'm just a little confused though: Two years ago someone had reported
-checksumming errors with a Raspberry Pi and batman-adv:
+Thanks,
+	Sven
 
-https://www.open-mesh.org/issues/224
+[1] https://git.open-mesh.org/batman-adv.git/commit/798174b15153afd88268f2f=
+87811602f68b3f2c6
+[2] https://git.open-mesh.org/batman-adv.git/commit/2c1bce065baa688bc1eca41=
+16f83ca3b790432a5
+[3] https://git.open-mesh.org/linux-merge.git/shortlog/refs/heads/batadv/ne=
+t
+--nextPart2354350.EuDcRRZAWy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-And they seemed to be gone in newer kernel versions, while hardware
-checksumming was supposedly still enabled.
+-----BEGIN PGP SIGNATURE-----
 
-Are the issues reproduceable without using VXLANs (for instance on
-a Pi1 or Pi2)? Are they reproduceable on a recent kernel version?
-(I guess you tested with a 4.4 kernel?)
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlpnKLQACgkQXYcKB8Em
+e0bDHQ//a6CO/cQWr5tNYmOcbMyXEhhij6IpMXsQRTQ9AjH/x/SoqCHYjFM96gyJ
+TpqEJEt8d7o+ZrjSiYBCYi8xwl8FFJ5PERnnxvIGAwSp/Axud5KHx7WcODydCzfg
+AyIWWghInpbEDEeogBpKTNqdV1UOb42OtNOT7ZwPSyEd5S6V/qf7fe7WQyiD9pvm
+UqjT9hVW40WR/JJbrFKSwJvFwnHVfxTC/8gDCEm8Y3NxJgSRuYO+IxVk60J0kpe/
+TNEeNGSIhcBAkjh08IlWIUH+fD9T8A168yYTX0I0VFZsbJyz5x38CmsgHJ5isdHt
+7s1EBz3QB8uPLFzmFGrjp2QEO2hYzSgigeFOyVhrgjmOIwbE8Fn/jWhm9TsxQW7T
+RI4VCE1TCSsmPuXEjQqLDCoXHuoMiz0kiNPJZOohUzL5lAFT76hp2sczwgHwq9/G
+XykxIzorutb4cQU7gvXHVCjXBUnCl18e65gg/gd1YftXOrQO1qB0DfMT49kmkYAJ
+kgiEh7Gs6fm3IuDCxYNkK+tuwaSbhAwnHDAD29brZ138U1hNR9HdfCWg+J9d6ryZ
+oUnJheU/eMZpXM9Cn7jzImwojyvoJWqVimqYIf+QIGUT7Js6eskjjjcPgkeQy+TF
+oe3dM3NPZ6+P0TS5khbzcSS9Qb/s3sMlpNfLaaHYe+Pvw+gjNrQ=
+=mSv5
+-----END PGP SIGNATURE-----
 
-Regards, Linus
+--nextPart2354350.EuDcRRZAWy--
+
