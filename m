@@ -1,14 +1,15 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 23 Jan 2018 13:33:01 +0100
-Message-ID: <2280205.kRTqscCMRg@bentobox>
-In-Reply-To: <4799954.f95c8XAbim@sven-edge>
-References: <98a77a75-ac8e-455a-6060-343b9020cd27@viisauksena.de>
- <2528254.P9avF0yZu7@bentobox> <4799954.f95c8XAbim@sven-edge>
+Return-Path: <max@principal.rfc2324.org>
+Date: Tue, 23 Jan 2018 15:25:19 +0100
+From: Maximilian Wilhelm <max@rfc2324.org>
+Message-ID: <20180123142519.GC27702@principal.rfc2324.org>
+References: <6d1b250c047fb4cd3aac72d9e921ed33428fdaf5.1516648598.git.mschiffer@universe-factory.net>
+ <2357913.Ue9Sgfg8BR@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart5518173.ts8ksIh0YP";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] limit of if per batman
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <2357913.Ue9Sgfg8BR@sven-edge>
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: fix packet checksum in
+ receive path
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,64 +19,46 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: b.a.t.m.a.n@lists.open-mesh.org
+To: Sven Eckelmann <sven@narfation.org>
+Cc: b.a.t.m.a.n@lists.open-mesh.org, Matthias Schiffer <mschiffer@universe-factory.net>, Maximilian Wilhelm <max@sdn.clinic>, Felix Kaechele <felix@kaechele.ca>, Mephisto <mephisto@mephis.to>
 
---nextPart5518173.ts8ksIh0YP
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Anno domini 2018 Sven Eckelmann scripsit:
 
-On Dienstag, 26. Dezember 2017 15:19:41 CET Sven Eckelmann wrote:
-> On Mittwoch, 25. Januar 2017 08:15:52 CET Sven Eckelmann wrote:
-> [...]
-> > > this made me curious , and i modified your script a bit - turns out
-> > > after the 127. IF you add to batman-adv you get an Error -
-> > > all 510 gretap links was succesfully build ...
-> > > # ifconfig |grep gre| wc -l
-> > > 515
-> > > # batctl if|sort|wc -l
-> > > 127
-> > > the error is mainly
-> > > *Error - can't write to file
-> > > '/sys/class/net/gre128/batman_adv/mesh_iface': Cannot allocate memory
-> > [...]
-> [...]
-> > I would guess that your system mostly fails becauseit  cannot handle the
-> > allocation of the "large" arrays which store:
-> [...]
-> 
-> Looks like their could also be a different problem when your test system uses 
-> signed characters by default. Please try the patch [1] which changes the type 
-> from char/s16 to unsigned int.
+> On Montag, 22. Januar 2018 20:24:50 CET Matthias Schiffer wrote:
 [...]
-> [1] https://patchwork.open-mesh.org/patch/17247/
+> > I don't know what the exact circumstances are that trigger the log spam,
+> > but it seems this was broken forever (I could also reproduce the issue with
+> > our compat-14 legacy branch)... so please ask David to queue this up for
+> > stable :)
+> 
+> Yes, this is broken since earliest commits. The most relevant commit in 
+> batman-adv is:
+> 
+> Fixes: fe28a94c01e1 ("batman-adv: receive packets directly using skbs")
+> 
+> But I would propose to use following in the kernel tree:
+> 
+> Fixes: c6c8fea29769 ("net: Add batman-adv meshing protocol")
+> 
+> The 4.15 release will be soon(tm) and Simon is currently on vacation. So we 
+> will most likely postpone the submission to David until Simon found a way out 
+> of the snow and after 4.15 is released...
+> 
+> But it would be nice when some people could test the patch [1] (together with 
+> vxlan?) on batman-adv or batman-adv-legacy. And please provide a 
+> "Tested-by: Full Name <email@example.org>" [2] reply when it works.
 
-Were you able to run some tests?
+I took a Debian Kernel package (4.14.13-1~bpo9+1), applied the patch
+and deployed the package on a gateway running BATMAN over VTEPs. The
+log messages from previous kernels don't show up anymore <3.
 
-Kind regards,
-	Sven
+Tested-by: Maximilian Wilhelm <max@sdn.clinic>
 
+Thanks!
 
---nextPart5518173.ts8ksIh0YP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlpnK30ACgkQXYcKB8Em
-e0b8uBAAxTSDlgYWve5RTRag3fuPI06thtOaLffnGFhTPc1G5IssjbFy8y5cPlao
-iLEQaTb65358jf8aivG+gVM4SqARvH6PRsWDVucy5/6tARon3tHpLWhGp2dit4zc
-ZgeQ0jEz+Cn9Ue0B54s0AYSBSfT3OC06ZTWenK/rc+kBQf12KeYFtftcXfeWuWZ+
-WMnN3dzUKaXTA3DrDgIkyorJ1pWJD05xapF4O+9OiBQQOIjRxKXZcA3jtCWaAM9h
-iU9kXIds7ekh6DbrkBB2WkqfYoaGzCKDcLNM0ISc/yc90iqPuir4HQ+jWJAG8Uvq
-ePFDmjchhupF3FsdfbpdeXzQt3lAL8atMfjpByuPp7lxpU4DR6VDLoZL+M6cRqqa
-65bL3AzrLw9PkoDDhQO9WTZKVcI4ciWnmwCblbAwFiqY1nU11qMrnVZwYW4GLT46
-v8lFe1XGTZ/dSEwopqhBLncVSTzap8DYJlYkaqrYdvaFNSFSaQGMWTRnJcn8y9E5
-9M3QYFzSr0pi4h3fG3ugraEokvDniTYD+H0cz8U74OvHANlJCsACF/L1mGOabwaN
-XrTXFvw3TvsLkGdx+XQfZvdBr7vhE4YLOJn5dO61Rkm2vlBL78qp+9FsbTHc9HUo
-OishC3yHYrb/54j21oW/CVrS1gZH0KMKf0O68+UMQh2op+RfzPM=
-=9G6f
------END PGP SIGNATURE-----
-
---nextPart5518173.ts8ksIh0YP--
-
+Best
+Max
+-- 
+"I have to admit I've always suspected that MTBWTF would be a more useful
+ metric of real-world performance."
+ -- Valdis Kletnieks on NANOG
