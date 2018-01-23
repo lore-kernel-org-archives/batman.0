@@ -1,14 +1,14 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 23 Jan 2018 13:21:08 +0100
-Message-ID: <3054592.V1b4d6Bjbj@bentobox>
-In-Reply-To: <05cee97344804ffb2a8df87603663a098fd0cb36.1516701590.git.mschiffer@universe-factory.net>
-References: <05cee97344804ffb2a8df87603663a098fd0cb36.1516701590.git.mschiffer@universe-factory.net>
+Date: Tue, 23 Jan 2018 13:33:01 +0100
+Message-ID: <2280205.kRTqscCMRg@bentobox>
+In-Reply-To: <4799954.f95c8XAbim@sven-edge>
+References: <98a77a75-ac8e-455a-6060-343b9020cd27@viisauksena.de>
+ <2528254.P9avF0yZu7@bentobox> <4799954.f95c8XAbim@sven-edge>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2354350.EuDcRRZAWy";
+Content-Type: multipart/signed; boundary="nextPart5518173.ts8ksIh0YP";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint v2 1/2] batman-adv: fix packet
- checksum in receive path
+Subject: Re: [B.A.T.M.A.N.] limit of if per batman
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,61 +20,62 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart2354350.EuDcRRZAWy
-Content-Transfer-Encoding: quoted-printable
+--nextPart5518173.ts8ksIh0YP
+Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Dienstag, 23. Januar 2018 10:59:49 CET Matthias Schiffer wrote:
-> eth_type_trans() internally calls skb_pull(), which does not adjust the
-> skb checksum; skb_postpull_rcsum() is necessary to avoid log spam of the
-> form "bat0: hw csum failure" when packets with CHECKSUM_COMPLETE are
-> received.
->=20
-> Note that in usual setups, packets don't reach batman-adv with
-> CHECKSUM_COMPLETE (I assume NICs bail out of checksumming when they see
-> batadv's ethtype?), which is why the log messages do nor occur on every
-> system using batman-adv. I could reproduce this issue by stacking
-> batman-adv on top of a VXLAN interface.
->=20
-> Signed-off-by: Matthias Schiffer <mschiffer@universe-factory.net>
-> ---
+On Dienstag, 26. Dezember 2017 15:19:41 CET Sven Eckelmann wrote:
+> On Mittwoch, 25. Januar 2017 08:15:52 CET Sven Eckelmann wrote:
+> [...]
+> > > this made me curious , and i modified your script a bit - turns out
+> > > after the 127. IF you add to batman-adv you get an Error -
+> > > all 510 gretap links was succesfully build ...
+> > > # ifconfig |grep gre| wc -l
+> > > 515
+> > > # batctl if|sort|wc -l
+> > > 127
+> > > the error is mainly
+> > > *Error - can't write to file
+> > > '/sys/class/net/gre128/batman_adv/mesh_iface': Cannot allocate memory
+> > [...]
+> [...]
+> > I would guess that your system mostly fails becauseit  cannot handle the
+> > allocation of the "large" arrays which store:
+> [...]
+> 
+> Looks like their could also be a different problem when your test system uses 
+> signed characters by default. Please try the patch [1] which changes the type 
+> from char/s16 to unsigned int.
+[...]
+> [1] https://patchwork.open-mesh.org/patch/17247/
 
-Applied both as 798174b15153 [1] and 2c1bce065baa [2].  They are also queue=
-d=20
-up in linux-merge [3] but will most likely only forwarded when Simon is bac=
-k=20
-from=20his vacation. Tested-by's are still welcome :)
+Were you able to run some tests?
 
-Thanks,
+Kind regards,
 	Sven
 
-[1] https://git.open-mesh.org/batman-adv.git/commit/798174b15153afd88268f2f=
-87811602f68b3f2c6
-[2] https://git.open-mesh.org/batman-adv.git/commit/2c1bce065baa688bc1eca41=
-16f83ca3b790432a5
-[3] https://git.open-mesh.org/linux-merge.git/shortlog/refs/heads/batadv/ne=
-t
---nextPart2354350.EuDcRRZAWy
+
+--nextPart5518173.ts8ksIh0YP
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlpnKLQACgkQXYcKB8Em
-e0bDHQ//a6CO/cQWr5tNYmOcbMyXEhhij6IpMXsQRTQ9AjH/x/SoqCHYjFM96gyJ
-TpqEJEt8d7o+ZrjSiYBCYi8xwl8FFJ5PERnnxvIGAwSp/Axud5KHx7WcODydCzfg
-AyIWWghInpbEDEeogBpKTNqdV1UOb42OtNOT7ZwPSyEd5S6V/qf7fe7WQyiD9pvm
-UqjT9hVW40WR/JJbrFKSwJvFwnHVfxTC/8gDCEm8Y3NxJgSRuYO+IxVk60J0kpe/
-TNEeNGSIhcBAkjh08IlWIUH+fD9T8A168yYTX0I0VFZsbJyz5x38CmsgHJ5isdHt
-7s1EBz3QB8uPLFzmFGrjp2QEO2hYzSgigeFOyVhrgjmOIwbE8Fn/jWhm9TsxQW7T
-RI4VCE1TCSsmPuXEjQqLDCoXHuoMiz0kiNPJZOohUzL5lAFT76hp2sczwgHwq9/G
-XykxIzorutb4cQU7gvXHVCjXBUnCl18e65gg/gd1YftXOrQO1qB0DfMT49kmkYAJ
-kgiEh7Gs6fm3IuDCxYNkK+tuwaSbhAwnHDAD29brZ138U1hNR9HdfCWg+J9d6ryZ
-oUnJheU/eMZpXM9Cn7jzImwojyvoJWqVimqYIf+QIGUT7Js6eskjjjcPgkeQy+TF
-oe3dM3NPZ6+P0TS5khbzcSS9Qb/s3sMlpNfLaaHYe+Pvw+gjNrQ=
-=mSv5
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlpnK30ACgkQXYcKB8Em
+e0b8uBAAxTSDlgYWve5RTRag3fuPI06thtOaLffnGFhTPc1G5IssjbFy8y5cPlao
+iLEQaTb65358jf8aivG+gVM4SqARvH6PRsWDVucy5/6tARon3tHpLWhGp2dit4zc
+ZgeQ0jEz+Cn9Ue0B54s0AYSBSfT3OC06ZTWenK/rc+kBQf12KeYFtftcXfeWuWZ+
+WMnN3dzUKaXTA3DrDgIkyorJ1pWJD05xapF4O+9OiBQQOIjRxKXZcA3jtCWaAM9h
+iU9kXIds7ekh6DbrkBB2WkqfYoaGzCKDcLNM0ISc/yc90iqPuir4HQ+jWJAG8Uvq
+ePFDmjchhupF3FsdfbpdeXzQt3lAL8atMfjpByuPp7lxpU4DR6VDLoZL+M6cRqqa
+65bL3AzrLw9PkoDDhQO9WTZKVcI4ciWnmwCblbAwFiqY1nU11qMrnVZwYW4GLT46
+v8lFe1XGTZ/dSEwopqhBLncVSTzap8DYJlYkaqrYdvaFNSFSaQGMWTRnJcn8y9E5
+9M3QYFzSr0pi4h3fG3ugraEokvDniTYD+H0cz8U74OvHANlJCsACF/L1mGOabwaN
+XrTXFvw3TvsLkGdx+XQfZvdBr7vhE4YLOJn5dO61Rkm2vlBL78qp+9FsbTHc9HUo
+OishC3yHYrb/54j21oW/CVrS1gZH0KMKf0O68+UMQh2op+RfzPM=
+=9G6f
 -----END PGP SIGNATURE-----
 
---nextPart2354350.EuDcRRZAWy--
+--nextPart5518173.ts8ksIh0YP--
 
