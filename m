@@ -1,14 +1,15 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 03 Feb 2018 08:41:24 +0100
-Message-ID: <1871109.rBcZyFIX0N@sven-edge>
-In-Reply-To: <2280205.kRTqscCMRg@bentobox>
-References: <98a77a75-ac8e-455a-6060-343b9020cd27@viisauksena.de>
- <4799954.f95c8XAbim@sven-edge> <2280205.kRTqscCMRg@bentobox>
+Date: Sat, 03 Feb 2018 09:40:53 +0100
+Message-ID: <2600801.iuZaCSQALx@sven-edge>
+In-Reply-To: <2157409.R7zQT89qM7@bentobox>
+References: <0272f809d25b41fcab4ec5c4b66014f5e341d424.1516792897.git.mschiffer@universe-factory.net>
+ <2157409.R7zQT89qM7@bentobox>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2817755.XncDFrWVSs";
+Content-Type: multipart/signed; boundary="nextPart2284266.5RCCdCvgJg";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] limit of if per batman
+Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: always assume 2-byte packet
+ alignment
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,69 +19,72 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: jens@viisauksena.de
-Cc: b.a.t.m.a.n@lists.open-mesh.org
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>
 
---nextPart2817755.XncDFrWVSs
+--nextPart2284266.5RCCdCvgJg
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Dienstag, 23. Januar 2018 13:33:01 CET Sven Eckelmann wrote:
-> On Dienstag, 26. Dezember 2017 15:19:41 CET Sven Eckelmann wrote:
-> > On Mittwoch, 25. Januar 2017 08:15:52 CET Sven Eckelmann wrote:
-> > [...]
-> > > > this made me curious , and i modified your script a bit - turns out
-> > > > after the 127. IF you add to batman-adv you get an Error -
-> > > > all 510 gretap links was succesfully build ...
-> > > > # ifconfig |grep gre| wc -l
-> > > > 515
-> > > > # batctl if|sort|wc -l
-> > > > 127
-> > > > the error is mainly
-> > > > *Error - can't write to file
-> > > > '/sys/class/net/gre128/batman_adv/mesh_iface': Cannot allocate memory
-> > > [...]
-> > [...]
-> > > I would guess that your system mostly fails becauseit  cannot handle the
-> > > allocation of the "large" arrays which store:
-> > [...]
-> > 
-> > Looks like their could also be a different problem when your test system uses 
-> > signed characters by default. Please try the patch [1] which changes the type 
-> > from char/s16 to unsigned int.
-> [...]
-> > [1] https://patchwork.open-mesh.org/patch/17247/
+On Mittwoch, 24. Januar 2018 14:40:03 CET Sven Eckelmann wrote:
+[...]
+> I know your intentions and I understand the problem. But there is the chance 
+> that David Miller will reject this patch - like he did it some years ago 
+> with a similar (not the same) patch:
 > 
-> Were you able to run some tests?
+>     "I'm not applying this, please try work to implement this more
+>     acceptably first." [1]
+> 
+> But maybe he has now some other opinion because the unaligned problem is 
+> caused by the encapsulation in VXLAN or maybe he has a better idea. At 
+> least VXLAN encap stuff should affect a lot more net code than batman-adv.
+[...]
 
-Would be good to have this tested because we already missed the Linux 4.15 
-release.
+Looks like we have to assume that David has nothing against the patch and we 
+should get the patch integrated.
+
+Affected are any kind of access to the 32 bit values:
+
+* &batadv_ogm_packet->seqno
+* &batadv_ogm2_packet->seqno
+* &batadv_ogm2_packet->throughput
+* &batadv_elp_packet->seqno
+* &batadv_elp_packet->elp_interval
+* &batadv_icmp_tp_packet->seqno
+* &batadv_icmp_tp_packet->timestamp
+* &batadv_tvlv_gateway_data->bandwidth_down
+* &batadv_tvlv_gateway_data->bandwidth_up
+* &batadv_tvlv_tt_vlan_data->crc
+
+I personally would love to hear that there is a better way to fix this 
+problem. But either this or something like the (out of tree) hacks from 
+OpenWrt [1] seem to be required to work around this problem.
 
 Kind regards,
 	Sven
 
-
---nextPart2817755.XncDFrWVSs
+[1] https://github.com/openwrt/openwrt/blob/master/target/linux/ar71xx/patches-4.9/910-unaligned_access_hacks.patch
+--nextPart2284266.5RCCdCvgJg
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlp1Z6QACgkQXYcKB8Em
-e0bkpw//Tr7E30NwmSMhibnw3HKKkwLhEHjZgvWR8jZF5FlExRNxBl4qd77w196T
-rZkMR8oa9VXKR7/8bzsAgZT9KVc6LrCCkY3RQWUidWAx9nOE5dW/wYZlvuBtVve4
-VPRA7+sLeRVkqKFf90zVKgCUK4kvB7/uXY3gxnIhLXswwQF22wOiw0jvJz5G7KOs
-cmAf8A+uiHSfEqz60kT+1u1s58kN+bnXnRToyR8TCmNJM+rck/kmOruH8f/ktFs6
-ujeK8cWkgRXAnjY1G/bUcm6NQ8jl5Fixrl8MY5t1c0r0O5lInQhP8+YL3dF27EJ2
-BSeW0rDJd5c1F0thItveSMBJxZlkfHyXeU18g+G6wFvsLvXDl+mDcw0YmU95Lj91
-AbBxuwqlL7nkGh4w5dMlOeEjHLUvbnVzPhuN/mwftf6TRVOfYB6dv4kMaLDTZU7C
-xt3f4INqwVTSqtSLFxqGsnuTOSXUAbI2Q/B/ltMI4TVqSCKMXPbE+eLnVsxT93nO
-SNE+X+7BpyWlKomgvSkW678PoGCGh1aJ0rdHwl/dc3CHqvvEit6PJq/aD2Zfftql
-60wCNPmji6WLUuZaN4MGa/cx0zfLuPwrBkaSO26KzgFTwk5oKMggK8Yf5I9yRLDN
-Acq9BNvl28qOBdm/XcvnnLFPTbeVJvsq18R/Vvb4x26y9LMED40=
-=FDA7
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlp1dZUACgkQXYcKB8Em
+e0bs8A//YyHrZKnEtqEi3pM61lsIyg0cnwzKSXXYVA/KnQGQBzznjeFYMpUUrhkR
+s00OyMNXuo+aai4ejpm2MARwL/jYBy9kweSGhJQh74/iUeJe8Xh7U5V9xh0pDxWr
+NVB+c9pK1S9jxE3dK5BS3ms0cV9vPN1bQ6DulrpfZaighEXFxIRyOEmfTPdb9EhJ
+fb0luG3v0w96YnHzAZ5O8Efwxr/Jx+/tov1fA6CG9zZUJQEaWIMqXKIE8p9FP6MY
+8UpPKPg+ySbD6p9TzJc/0IzQkhw0oTcEyvocPqnQRjwCocpnKOLeLs2ttahDwm3s
+TOuajppcGYQNXGzd6Sj3YhVK1tBqaH6yc+qRyfrYWWn+8LZ6+Y93iCS1f5y9NVa8
+Kn0cY5UvwlYlr9p9mvpukOnpPqTOqKrA+NBwxp9BLVe9v8NAMmwmLbvvH/dt5t8A
+jXICA0TZI+X+jtGJVDxaE6+zfg5eBzyp0zj4vZMYiygMXteAcNqgFmgrjENzVlpV
+AjHz7ulJZ7W+zSkQ2Sgztr/NBgCLCw+rgVYnXewVeTCo5dguLiAP+PQirAqwoD8S
+3alOhjf5XMfQLh3bhs3a2Yr1vedk/KQsRvLvD9HUK+U5IFbwFAdK9tn2udp3N6Vv
++pSzeh2CZ2fjIHYpVa1iHEyTThERgWGL44IM1hoHR/A+xLCWBos=
+=jb+m
 -----END PGP SIGNATURE-----
 
---nextPart2817755.XncDFrWVSs--
+--nextPart2284266.5RCCdCvgJg--
 
