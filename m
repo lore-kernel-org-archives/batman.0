@@ -1,15 +1,13 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 03 Feb 2018 09:40:53 +0100
-Message-ID: <2600801.iuZaCSQALx@sven-edge>
-In-Reply-To: <2157409.R7zQT89qM7@bentobox>
-References: <0272f809d25b41fcab4ec5c4b66014f5e341d424.1516792897.git.mschiffer@universe-factory.net>
- <2157409.R7zQT89qM7@bentobox>
+Return-Path: <mmokhi.fbsd@gmail.com>
+Sender: Mahdi Mokhtari <mmokhi.fbsd@gmail.com>
+From: Mahdi Mokhtari <mmokhi@FreeBSD.org>
+Message-ID: <839a5aa7-ed42-27d5-1453-6b152943d811@FreeBSD.org>
+Date: Tue, 13 Feb 2018 18:52:51 +0330
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2284266.5RCCdCvgJg";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [RFC] batman-adv: always assume 2-byte packet
- alignment
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature";
+ boundary="GTCBYbZZFz9JOoUUBVKQ67rO2JCnK1PZG"
+Subject: [B.A.T.M.A.N.] batman-adv and/or batmand porting effort to FreeBSD
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,71 +18,79 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>
 
---nextPart2284266.5RCCdCvgJg
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--GTCBYbZZFz9JOoUUBVKQ67rO2JCnK1PZG
+Content-Type: multipart/mixed; boundary="6X1Y5IZNxzRLSH9ZNp80VQkCi6pmVdnxA";
+ protected-headers="v1"
+From: Mahdi Mokhtari <MMokhi@FreeBSD.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Message-ID: <839a5aa7-ed42-27d5-1453-6b152943d811@FreeBSD.org>
+Subject: batman-adv and/or batmand porting effort to FreeBSD
 
-On Mittwoch, 24. Januar 2018 14:40:03 CET Sven Eckelmann wrote:
-[...]
-> I know your intentions and I understand the problem. But there is the chance 
-> that David Miller will reject this patch - like he did it some years ago 
-> with a similar (not the same) patch:
-> 
->     "I'm not applying this, please try work to implement this more
->     acceptably first." [1]
-> 
-> But maybe he has now some other opinion because the unaligned problem is 
-> caused by the encapsulation in VXLAN or maybe he has a better idea. At 
-> least VXLAN encap stuff should affect a lot more net code than batman-adv.
-[...]
+--6X1Y5IZNxzRLSH9ZNp80VQkCi6pmVdnxA
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Content-Language: en-US
 
-Looks like we have to assume that David has nothing against the patch and we 
-should get the patch integrated.
+Hi,
 
-Affected are any kind of access to the 32 bit values:
+After some time of playing with the B.A.T.M.A.N protocol and
+net-interface on OpenWRT and Debian I was thinking to use it with
+the servers I use everyday (and maybe on routers/appliances I have
+nanoBSD on).
 
-* &batadv_ogm_packet->seqno
-* &batadv_ogm2_packet->seqno
-* &batadv_ogm2_packet->throughput
-* &batadv_elp_packet->seqno
-* &batadv_elp_packet->elp_interval
-* &batadv_icmp_tp_packet->seqno
-* &batadv_icmp_tp_packet->timestamp
-* &batadv_tvlv_gateway_data->bandwidth_down
-* &batadv_tvlv_gateway_data->bandwidth_up
-* &batadv_tvlv_tt_vlan_data->crc
+So I started an effort...
+(As a background) I already ported some applications to FreeBSD [and I'm
+maintaining them] and
+also I did work already on the Linux emulation layer of FreeBSD (FreeBSD
+has a Linux syscall-emulation and Linux-KPI layers).
+So my approach (as naturally I didn't expect the build of batman-adv.ko
+to be successful as is),
+was based on the approach that we [at FreeBSD] did to port Linux's
+drm... <https://github.com/FreeBSDDesktop/kms-drm>
+I ended up in adding some header-files to FreeBSD Linux-KPI (like
+average.h, percpu.h, ...).
+Now I'm at a state that Netlink blocks me and I'm to determine next step =
+:-)
+[Which I don't assume it being trivial with my current approach]
 
-I personally would love to hear that there is a better way to fix this 
-problem. But either this or something like the (out of tree) hacks from 
-OpenWrt [1] seem to be required to work around this problem.
+So I'd like to ask:
+1- Is it better approach to "rewrite" batman-adv.ko [at least
+Netlink-ish (let's call "Linuxism") parts] than what I'm doing now?
+2- Any other efforts are being done out there?
+3- is batmand deprecated [So I should mainly focus on batman-adv.ko]?
+4- any other comments do you have? :D
 
-Kind regards,
-	Sven
+P.S. sorry if I'm not really good at starting conversation from scratch
+and out-of-nowhere :D
+but I hope by continuing the collaboration we can have better (more
+enriched) FreeBSD and better (as in more portable) B.A.T.M.A.N :-)
 
-[1] https://github.com/openwrt/openwrt/blob/master/target/linux/ar71xx/patches-4.9/910-unaligned_access_hacks.patch
---nextPart2284266.5RCCdCvgJg
+
+--=20
+Best regards, MMokhi.
+
+
+--6X1Y5IZNxzRLSH9ZNp80VQkCi6pmVdnxA--
+
+--GTCBYbZZFz9JOoUUBVKQ67rO2JCnK1PZG
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlp1dZUACgkQXYcKB8Em
-e0bs8A//YyHrZKnEtqEi3pM61lsIyg0cnwzKSXXYVA/KnQGQBzznjeFYMpUUrhkR
-s00OyMNXuo+aai4ejpm2MARwL/jYBy9kweSGhJQh74/iUeJe8Xh7U5V9xh0pDxWr
-NVB+c9pK1S9jxE3dK5BS3ms0cV9vPN1bQ6DulrpfZaighEXFxIRyOEmfTPdb9EhJ
-fb0luG3v0w96YnHzAZ5O8Efwxr/Jx+/tov1fA6CG9zZUJQEaWIMqXKIE8p9FP6MY
-8UpPKPg+ySbD6p9TzJc/0IzQkhw0oTcEyvocPqnQRjwCocpnKOLeLs2ttahDwm3s
-TOuajppcGYQNXGzd6Sj3YhVK1tBqaH6yc+qRyfrYWWn+8LZ6+Y93iCS1f5y9NVa8
-Kn0cY5UvwlYlr9p9mvpukOnpPqTOqKrA+NBwxp9BLVe9v8NAMmwmLbvvH/dt5t8A
-jXICA0TZI+X+jtGJVDxaE6+zfg5eBzyp0zj4vZMYiygMXteAcNqgFmgrjENzVlpV
-AjHz7ulJZ7W+zSkQ2Sgztr/NBgCLCw+rgVYnXewVeTCo5dguLiAP+PQirAqwoD8S
-3alOhjf5XMfQLh3bhs3a2Yr1vedk/KQsRvLvD9HUK+U5IFbwFAdK9tn2udp3N6Vv
-+pSzeh2CZ2fjIHYpVa1iHEyTThERgWGL44IM1hoHR/A+xLCWBos=
-=jb+m
+iQGTBAEBCgB9FiEESuhb4AjR3liB/CMeuAn4o9TFroQFAlqDAtpfFIAAAAAALgAo
+aXNzdWVyLWZwckBub3RhdGlvbnMub3BlbnBncC5maWZ0aGhvcnNlbWFuLm5ldDRB
+RTg1QkUwMDhEMURFNTg4MUZDMjMxRUI4MDlGOEEzRDRDNUFFODQACgkQuAn4o9TF
+roSqhgf/YXSjAAgUIKJ64zWIDUSAhxv0KMmvqer5qTG737chjgz8Q2jPPePBRqZb
+1x2GnjOk96SOdbQiZmnqODzPKWkJwjK+LXHPTKhuEjdnTPMbZD+WAlEgT5NbM8OM
+mI9NGjDFOpwGgG48sKq/QkIF9LhFF/m8//FXMxata9Bh4PmWowoM4O4PQfGCn6WE
++F4z+blmzuBi62ymR8vYrrE5R92o9uo4q6lvfw0s8X6K27QTSW3eD9zzwps9YEu5
+A1ZNNcTdTUr78/z/ykiIgEDww+oSowNgLm6BC+wqd1fXwCl4To4OGY97ZqJ14a0c
+OY9cP4Nb4oibffHc5/7q+OO0SS+/gQ==
+=vXUt
 -----END PGP SIGNATURE-----
 
---nextPart2284266.5RCCdCvgJg--
-
+--GTCBYbZZFz9JOoUUBVKQ67rO2JCnK1PZG--
