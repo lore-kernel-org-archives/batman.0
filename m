@@ -1,12 +1,12 @@
-Return-Path: <sw@simonwunderlich.de>
-From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Wed, 14 Feb 2018 10:03:44 +0100
-Message-ID: <3678642.ZAPEa3b1nE@prime>
+Return-Path: <onelektra@gmx.net>
+Date: Wed, 14 Feb 2018 13:39:50 +0100
+From: elektra <onelektra@gmx.net>
+Message-Id: <20180214133950.a921cbaa0c78a058bcca6372@gmx.net>
 In-Reply-To: <839a5aa7-ed42-27d5-1453-6b152943d811@FreeBSD.org>
 References: <839a5aa7-ed42-27d5-1453-6b152943d811@FreeBSD.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart6355617.sW6ZeaDrje";
- micalg="pgp-sha512"; protocol="application/pgp-signature"
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Subject: Re: [B.A.T.M.A.N.] batman-adv and/or batmand porting effort to
  FreeBSD
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
@@ -19,15 +19,28 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Mahdi Mokhtari <mmokhi@freebsd.org>
 
---nextPart6355617.sW6ZeaDrje
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Hi Mokhi -
+  
+batmand implements IP-based routing with an older version of the B.A.T.M.A.N. protocol. Development is stalled. It currently lacks originator message aggregation and IPv6 support. I might add some improvements and features one day, but don't bet your money on it.
 
-Hi Mokhi,
+However, it is a simple, lightweight and fully working mesh routing daemon that has been used mainly by Villagetelco and community networks. It can be used in high range, low bandwidth networks such as meshes between maritime sensors or short wave packet radio. For this, small packet size is required and using IPv6 addresses is unnecessary overhead.
+  
+Today most community networks that mainly deal with Internet traffic have replaced it with batman-adv, though. It offers more features and is under active development.
 
-On Tuesday, February 13, 2018 6:52:51 PM CET Mahdi Mokhtari wrote:
+batman-adv is a different approach, as it doesn't implement IP-based routing but a virtual layer 2 switch via the mesh. batman-adv offers interesting and exciting capabilities, thanks to the different approach. However, the technical implementation is way more difficult and porting it to a different OS is probably a lot of work, as Simon has pointed out.
+  
+A IP-based fork of batmand is bmx6/7, which is actively developed, has IPv6 support, originator message aggregation support and many other bells and whistles.
+  
+There might be a *BSD port already, but I don't know. Porting bmx* should be relatively easy, as it is a IP routing daemon.
+  
+Cheers,
+Elektra
+
+
+On Tue, 13 Feb 2018 18:52:51 +0330
+Mahdi Mokhtari <mmokhi@FreeBSD.org> wrote:
+
 > Hi,
 > 
 > After some time of playing with the B.A.T.M.A.N protocol and
@@ -48,72 +61,33 @@ On Tuesday, February 13, 2018 6:52:51 PM CET Mahdi Mokhtari wrote:
 > average.h, percpu.h, ...).
 > Now I'm at a state that Netlink blocks me and I'm to determine next step :-)
 > [Which I don't assume it being trivial with my current approach]
-
-That sounds interesting ... will you be able to follow up the port with our 
-development, or what is your plan on that? I'd assume that you need to rewrite 
-a rather large chunk of "Linuxism" as you say, and I would assume that porting 
-newer versions as we release would be quite some manual work.
-
 > 
 > So I'd like to ask:
 > 1- Is it better approach to "rewrite" batman-adv.ko [at least
 > Netlink-ish (let's call "Linuxism") parts] than what I'm doing now?
-
-I don't have enough knowledge of FreeBSD to answer that. I would assume that 
-the skb handling and netlink/debugfs parts are Linux specific. You'd at least 
-need to rewrite those. You better don't touch the routing code, I would not 
-advise rewriting that.
-
 > 2- Any other efforts are being done out there?
-
-I'm not aware. At least nothing serious (I remember someone demanding batman-
-adv to work in web browsers). :D
-
 > 3- is batmand deprecated [So I should mainly focus on batman-adv.ko]?
-
-We agreed to not call it deprecated, but there hasn't been any developments in 
-the past 7 years except for some build-specific issues. I'd suggest to focus on 
-batman-adv.ko. batmand may be easier to port though, but I see more people 
-using batman-adv today.
-
 > 4- any other comments do you have? :D
-
-Good luck! :D
-
-And please keep us posted!
-
 > 
 > P.S. sorry if I'm not really good at starting conversation from scratch
 > and out-of-nowhere :D
 > but I hope by continuing the collaboration we can have better (more
 > enriched) FreeBSD and better (as in more portable) B.A.T.M.A.N :-)
+> 
+> 
+> -- 
+> Best regards, MMokhi.
+> 
 
-Looking forward to it!
 
-Cheers,
-     Simon
-
---nextPart6355617.sW6ZeaDrje
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlqD+3AACgkQoSvjmEKS
-nqH9OQ//UdEiIUUidWE5aHMtE6EMo1GZYu9O68FUFkkDPPAbaENOPwt1+hqj/7wY
-v2L5o9KFsSpOyNIvPSYKRGjNFP0DLX2dueyQDdnmXgkEpdHx3L/QP0dffKz6dnsy
-7/UkU/0gy6mBGZgql54cjfGynPctqZLBVHaceesS/eK5Wv63qyAqp9YcIsRXGIgJ
-9vngN3+aokhbqhDQV7xXjWTpsC7PoQPSwZ3y4pvB1U9r14UBrGD0GcXUp5CIL0Ug
-soA4VGF3CXqWn5nKH6Xfn52mHr7QZiMskFbqKV+zhYeiu72I28vx9XYLwbvA+4MH
-L2U8nSND5MgohdJjUAX8W6QMsydLRPXIe2eM9AE4StLydziNFPy0fAt/49TH3jBj
-hdJY2kkdXIAkOg/qpv6g7ZVtv0Hnqn8tVR0CV4F1Iogmy8mYVP1FKtm51NOV3ZZ9
-3eePYW28kREcRt+ngyN3XzwDpvneum3gzrNfR5sbWyLPD6MnMDRGD5OlD+fM2QJF
-by1vyIOYfLd8C6u+fPGM7YGu79r2VLmxpql6gqgO3EsUTwgebtlYaoeXvCEu0iCv
-G/cJzTFbSWqKr0dPHFCdhivqej9aZc0SJb1wYdLv4BAqYspxcigLOQusO0Bfa4rH
-lVqLIvIvBzar0BmFN4sPJX8L6I3rihzkB3ddvquCLXS4Z7/FCYo=
-=OFbA
------END PGP SIGNATURE-----
-
---nextPart6355617.sW6ZeaDrje--
-
+-- 
+Viral meme of radical freedom 
+ 
+The fact that you talk in your head doesn't mean that you think. 
+ 
+The best way to lose control over yourself is trying to control yourself. 
+ 
+Most people experience themselves as a voice in their head, telling them 
+ who they are, what they think and what they have to do. 
+ 
+http://en.wikipedia.org/wiki/Meme 
