@@ -1,12 +1,14 @@
-Return-Path: <Fred.Fox@ARS.USDA.GOV>
-From: "Fox, Fred" <Fred.Fox@ARS.USDA.GOV>
-Date: Fri, 16 Feb 2018 17:52:45 +0000
-Message-ID: <16f5ebd27da0414cac5517460d4da8b4@DM2PR0201MB028.001f.mgd2.msft.net>
-Content-Language: en-US
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Fri, 16 Feb 2018 19:21:58 +0100
+Message-ID: <3886732.fMB69kGgru@sven-edge>
+In-Reply-To: <16f5ebd27da0414cac5517460d4da8b4@DM2PR0201MB028.001f.mgd2.msft.net>
+References: <16f5ebd27da0414cac5517460d4da8b4@DM2PR0201MB028.001f.mgd2.msft.net>
 MIME-Version: 1.0
-Subject: [B.A.T.M.A.N.] Debian Testing kernel module, BATMAN_V not supported
+Content-Type: multipart/signed; boundary="nextPart3193087.EtNZXuA0SL";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] Debian Testing kernel module,
+ BATMAN_V not supported
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,43 +18,93 @@ List-Post: <mailto:b.a.t.m.a.n@lists.open-mesh.org>
 List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
-To: "b.a.t.m.a.n@lists.open-mesh.org" <b.a.t.m.a.n@lists.open-mesh.org>
+To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: "Fox, Fred" <Fred.Fox@ars.usda.gov>
 
+--nextPart3193087.EtNZXuA0SL
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-When I try to set the routing algorithm to use BATMAN_V it returns the erro=
-r:
+On Freitag, 16. Februar 2018 18:52:45 CET Fox, Fred wrote:
+> 
+> When I try to set the routing algorithm to use BATMAN_V it returns the error:
+> 
+> [ 2327:090973] batman_adv: Routing algorithm 'BATMAN_V' not supported
+[...]
+> I am guessing that the option CONFIG_BATMAN_ADV_BATMAN_V=n was used when the kernel module was compiled.
+> 
+> - Is disabling BATMAN_V the default for most distributions?
 
-[ 2327:090973] batman_adv: Routing algorithm 'BATMAN_V' not supported
+Most likely. This option is disabled by default in the kernel and I would 
+guess that most distributions don't manually enable it. An exception is 
+OpenWrt/LEDE.
 
-Running batctl -v shows:
+If you want that Debian enables the option then you have to sent a wishlist 
+bug report [1] against the Linux package in Debian [2]. 
 
-batctl Debian 2017.4-1 [batman_adv: 2017.3]
+> - Is it because of stability issues with current wireless drivers (as reading the mailing list implies)?
 
-The kernel version from uname -a is:
+Hm? Where did somebody write something like that?
 
-Linux [host] 4.14.0-3-686 #1 SMP Debian 4.14.13-1 (2018-01-14) i686 GNU/Lin=
-ux
+The code itself is just not often used (afaik) and rather experimental.
 
-I am guessing that the option CONFIG_BATMAN_ADV_BATMAN_V=3Dn was used when =
-the kernel module was compiled.
+There is one big problem with wifi driver: only wifi drivers with 
+minstrel(-ht) support provide a useful *expected throughput* via cfg80211 - 
+something which B.A.T.M.A.N. V requires to work correctly. So you are 
+currently limited to drivers like ath5k/ath9k or mt76.
 
-- Is disabling BATMAN_V the default for most distributions?
-- Is it because of stability issues with current wireless drivers (as readi=
-ng the mailing list implies)?
-- Does anyone know what distributions enable BATMAN_V for their kernels?
+[...]
+> In testing BATMAN_IV with my hardware, I noticed that as long as Node A could see Node C, it would communicate directly with it, even if the links between nodes A-B and nodes B-C had much higher throughput (tested with batctl tp). Would like to see if BATMAN_V would select the higher throughput path.
 
-In testing BATMAN_IV with my hardware, I noticed that as long as Node A cou=
-ld see Node C, it would communicate directly with it, even if the links bet=
-ween nodes A-B and nodes B-C had much higher throughput (tested with batctl=
- tp). Would like to see if BATMAN_V would select the higher throughput path=
-.
+B.A.T.M.A.N. IV is not using a throughput based metric - instead it uses loss. 
+You can try to tweak your wifi settings a little bit to help B.A.T.M.A.N. IV 
+to calculate better routes - the most important setting is the multicast rate. 
+Make sure that have increased it (a lot) to avoid sending the OGMs at the 
+lowest rate (which has most of the time also the highest success rate).
 
+But when you really need a throughput based metric then you should either 
+rebuild your kernel with B.A.T.M.A.N. IV enabled or just build the external 
+kernel module [3] with:
 
+    make CONFIG_BATMAN_ADV_BATMAN_V=y
+    sudo make CONFIG_BATMAN_ADV_BATMAN_V=y install
+    sudo rmmod batman-adv
+    sudo modprobe batman-adv
 
+Check that you have really loaded correct module.
 
-This electronic message contains information generated by the USDA solely f=
-or the intended recipients. Any unauthorized interception of this message o=
-r the use or disclosure of the information it contains may violate the law =
-and subject the violator to civil or criminal penalties. If you believe you=
- have received this message in error, please notify the sender and delete t=
-he email immediately.
+> This electronic message contains information generated by the USDA solely for the intended recipients. Any unauthorized interception of this message or the use or disclosure of the information it contains may violate the law and subject the violator to civil or criminal penalties. If you believe you have received this message in error, please notify the sender and delete the email immediately.
+
+Please try not to add such things to your mails when you send them to *public* 
+mailing lists.
+
+Kind regards,
+	Sven
+
+[1] https://www.debian.org/Bugs/Reporting
+[2] https://bugs.debian.org/cgi-bin/pkgreport.cgi?repeatmerged=yes&src=linux
+[3] https://www.open-mesh.org/projects/open-mesh/wiki/Download#batman-adv-in-the-Linux-tree
+--nextPart3193087.EtNZXuA0SL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEF10rh2Elc9zjMuACXYcKB8Eme0YFAlqHIUYACgkQXYcKB8Em
+e0anqRAAnq14ppsj6ohb5gWwDntsP12FDo7bmOANFh964JiJBiajYoLiT5UP7wVK
+1aa//ElE6btETof1wSvB+Ub97h5FbvFBP9bf0Vu9WQ0g8zigBZuEU8Jn4H2YMQmJ
+OFH19ckrMdWkUvitsnSDgCcC5ERhaAPsskfQl4omI/M3lH8L3UoOaJZGQInfI0ji
+LiHBOWIhIUofjLOLBEyp6AHRelJpRang3Krkkc9BxgeZUF7gC557nqNCXiyI9n0G
+VzHCDfxHOF1L4G9HZ6PA/az/LrBRntqExRWD9GK5crJ5Pa8LX5XWsQPjyChP2c9p
+851iP1pwzy8WKOz0Pg0uO6ablsD1B8SJCfZ8gaj7olJW4fClXGI8TuV8frDgqpM6
+nI6DHMH6bfCYsTBhK4X0aszYCKdwqzgYFU0NTX6bBzhtL9J10zvvWvMbATqbuxIa
+LsVkCyNk+1KbssgPAHF3Jprrm3BBOxXpVEV++0yEooEyJZDKmUQS5dbxBNGfHpD+
+qtADbmnL13+/0yNN5BP7Yj+nD0MaOCY3nT452NVSWJzgp2a2e+cI1CLgIMlyZOAg
+eZ3YjomfOtuHIbvJTtnZewM6yVQ4/gn2JybFqzT0KqJ0HoqAEadotj+ua8Y4k+N+
+yedWOlZC3I04l0dQfep4xQN0so05Wcjh4mlbd9EPQ11nLhhYxvE=
+=fBbp
+-----END PGP SIGNATURE-----
+
+--nextPart3193087.EtNZXuA0SL--
+
