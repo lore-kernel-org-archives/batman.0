@@ -1,11 +1,9 @@
-Return-Path: <sven.eckelmann@openmesh.com>
-From: Sven Eckelmann <sven.eckelmann@openmesh.com>
-Date: Mon, 19 Feb 2018 14:08:53 +0100
-Message-Id: <20180219130853.31325-2-sven.eckelmann@openmesh.com>
-In-Reply-To: <20180219130853.31325-1-sven.eckelmann@openmesh.com>
-References: <20180219130853.31325-1-sven.eckelmann@openmesh.com>
-Subject: [B.A.T.M.A.N.] [PATCH maint 2/2] batman-adv: Ignore invalid
- batadv_v_gw during netlink send
+Return-Path: <sven@narfation.org>
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 20 Feb 2018 12:08:10 +0100
+Message-Id: <20180220110810.10676-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH] batman-adv: Avoid relation operator
+ comparison with bool
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -16,34 +14,37 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven.eckelmann@openmesh.com>
+Cc: Sven Eckelmann <sven@narfation.org>, David Binderman <dcb314@hotmail.com>, Antonio Quartulli <a@unstable.cc>, Markus Pargmann <mpa@pengutronix.de>
 
-The function batadv_v_gw_dump stops the processing loop when
-batadv_v_gw_dump_entry returns a non-0 return code. This should only
-happen when the buffer is full. Otherwise, an empty message may be
-returned by batadv_gw_dump. This empty message will then stop the netlink
-dumping of gateway entries. At worst, not a single entry is returned to
-userspace even when plenty of possible gateways exist.
+commit 34b3c3850e7d ("batman-adv: Distributed ARP Table - create DHT helper
+functions") introduced a return check of batadv_compare_eth which uses a
+boolean return value since commit 16af73458aca ("batman-adv: main,
+batadv_compare_eth return bool"). A relational (<, >, <= or >=) operator
+is not the right one for such a check.
 
-Fixes: 15315a94ad98 ("batman-adv: add B.A.T.M.A.N. V bat_gw_dump implementations")
-Signed-off-by: Sven Eckelmann <sven.eckelmann@openmesh.com>
+Reported-by: David Binderman <dcb314@hotmail.com>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bat_v.c | 2 +-
+Cc: David Binderman <dcb314@hotmail.com>
+Cc: Antonio Quartulli <a@unstable.cc>
+Cc: Markus Pargmann <mpa@pengutronix.de>
+---
+ net/batman-adv/distributed-arp-table.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/batman-adv/bat_v.c b/net/batman-adv/bat_v.c
-index e0e2bfcd..683bcc52 100644
---- a/net/batman-adv/bat_v.c
-+++ b/net/batman-adv/bat_v.c
-@@ -929,7 +929,7 @@ static int batadv_v_gw_dump_entry(struct sk_buff *msg, u32 portid, u32 seq,
- 	struct batadv_neigh_ifinfo *router_ifinfo = NULL;
- 	struct batadv_neigh_node *router;
- 	struct batadv_gw_node *curr_gw;
--	int ret = -EINVAL;
-+	int ret = 0;
- 	void *hdr;
+diff --git a/net/batman-adv/distributed-arp-table.c b/net/batman-adv/distributed-arp-table.c
+index 760c0de7..a39a07d6 100644
+--- a/net/batman-adv/distributed-arp-table.c
++++ b/net/batman-adv/distributed-arp-table.c
+@@ -493,7 +493,7 @@ static bool batadv_is_orig_node_eligible(struct batadv_dat_candidate *res,
+ 	 * the one with the lowest address
+ 	 */
+ 	if (tmp_max == max && max_orig_node &&
+-	    batadv_compare_eth(candidate->orig, max_orig_node->orig) > 0)
++	    batadv_compare_eth(candidate->orig, max_orig_node->orig))
+ 		goto out;
  
- 	router = batadv_orig_router_get(gw_node->orig_node, BATADV_IF_DEFAULT);
+ 	ret = true;
 -- 
 2.11.0
 
