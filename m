@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 26 Feb 2018 17:35:48 +0100
-Message-ID: <2208285.pQLjLXacrd@prime>
-In-Reply-To: <20180226125132.30767-1-sven@narfation.org>
-References: <20180226125132.30767-1-sven@narfation.org>
+Date: Mon, 26 Feb 2018 17:40:49 +0100
+Message-ID: <1579093.AxJxHVZVZT@prime>
+In-Reply-To: <20171226141401.13046-1-sven@narfation.org>
+References: <20171226141401.13046-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart18998465.UoeHJPyO1h";
+Content-Type: multipart/signed; boundary="nextPart4538987.eB448S5pYM";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Only use compat.h for
- kernel builds
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Fix internal interface
+ indices types
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -20,66 +20,66 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
---nextPart18998465.UoeHJPyO1h
+--nextPart4538987.eB448S5pYM
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, February 26, 2018 1:51:32 PM CET Sven Eckelmann wrote:
-> The compat.h will be included by default via the -include gcc parameter.
-> This is done by appending the incude information to NOSTDINC_FLAGS in the
-> Makefile. But Debian decided [1] that this NOSTDINC_FLAGS must also be used
-> when not compiling kernel sources. This for example happens when the
-> gcc-version.sh script is executed. This results in error messages like
+On Tuesday, December 26, 2017 3:14:01 PM CET Sven Eckelmann wrote:
+> batman-adv uses internal indices for each enabled and active interface.
+> It is currently used by the B.A.T.M.A.N. IV algorithm to identifify the
+> correct position in the ogm_cnt bitmaps.
 > 
->   In file included from <command-line>:0:0:
->   /usr/src//batman-adv/build/../compat.h:25:52: fatal error:
-> linux/version.h: No such file or directory #include <linux/version.h> /*
-> LINUX_VERSION_CODE */
->                                                       ^
->   compilation terminated.
->   In file included from <command-line>:0:0:
->   /usr/src//batman-adv/build/../compat.h:25:52: fatal error:
-> linux/version.h: No such file or directory #include <linux/version.h> /*
-> LINUX_VERSION_CODE */
->                                                       ^
->   compilation terminated.
->   /usr/src/linux-headers-4.14.0-0.bpo.3-common/scripts/gcc-version.sh: line
-> 32: printf: #: invalid number
-> /usr/src/linux-headers-4.14.0-0.bpo.3-common/scripts/gcc-version.sh: line
-> 32: printf: #: invalid number /bin/sh: 1: [: 0001: unexpected operator
+> The type for the number of enabled interfaces (which defines the next
+> interface index) was set to char. This type can be (depending on the
+> architecture) either signed (limiting batman-adv to 127 active slave
+> interfaces) or unsigned (limiting batman-adv to 255 active slave
+> interfaces).
 > 
-> This can be avoided by disabling the compat.h whenever the preprocessor
-> define __KERNEL__ is not set.
+> This limit was not correctly checked when an interface was enabled and thus
+> an overflow happened. This was only catched on systems with the signed char
+> type when the B.A.T.M.A.N. IV code tried to resize its counter arrays with
+> a negative size.
 > 
-> [1] https://patchwork.kernel.org/patch/5238591/
+> The if_num interface index was only a s16 and therefore significantly
+> smaller than the ifindex (int) used by the code net code.
 > 
-> Signed-off-by: Sven Eckelmann <sven@narfation.org>
+> Both &batadv_hard_iface->if_num and &batadv_priv->num_ifaces must be
+> (unsigned) int to support the same number of slave interfaces as the net
+> core code. And the interface activation code must check the number of
+> active slave interfaces to avoid integer overflows.
+> 
+> Fixes: d1fbb61d0534 ("raw socket operations added: create / destroy / bind /
+> send broadcast of own OGMs implemented orig interval configurable via
+> /proc/net/batman-adv/orig_interval") Fixes: ea6f8d42a595 ("batman-adv: move
+> /proc interface handling to /sys") Signed-off-by: Sven Eckelmann
+> <sven@narfation.org>
 
-Applied in 934b3884.
+Applied in d5db560d. As discussed, I've applied this into the master branch to 
+avoid merge conflicts, since we are about to release anyway.
 
 Thank you!
-     Simon
---nextPart18998465.UoeHJPyO1h
+      Simon
+--nextPart4538987.eB448S5pYM
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlqUN2QACgkQoSvjmEKS
-nqGnSxAA2FxjZnv/m73vOQtUqQsSbiK/0FYC7+c5lmG9grNaHGJs0JXrVDAC9BCR
-IoworSFtoSdCJv5VbQinVfHS1wTOR0YFD2YiGERcOgLscmEcaxQk+AQZ8t3I+CUY
-nNOrwHzYiwCcytk/4ykeI+/DZzcAhGos9zP6fHhyYhf4CiS7bopgzHnsmQJIZ318
-6bkD/aGg5JY2nuHgHwJGS3jMTQelYOVC3N+mv0PTuhI1mRABKQZYhQ4nl8Vy5UOy
-N5W9W/aKvB7V3D2F0Rub1Uj83xspRQOhrNbBj3DNeNZSlaMu2Dy2kfwF7TehIkcL
-UCt/rXi7UBXqVhbISs5SniC2LO8vAm8wr9xIy/iWGmJeJ9YEIZIeAo9+/J7CtoFR
-xyLvXmWKtIodtysq0jvxgj6FK04eXSdeC3NHz0AgDAoQYbHqDfMIm0DONPH9VDr+
-78vwnBt3gvW0WVU1ZuHkZbaxuWofNToOvp+lFgCTFkjqd93cUAxugyb9Bu4bGfKX
-mYJWadI6B1dGbPqTKYUHFyzkN7wK3Hf5daptkSdXon8LioPAGjEuKIS1NrdHzZnd
-be7ElYW9CzOpSbdSBNdKWi3LJKZuBMlZJvVL2iF0PhKhGjIN4txR5oioQEk0FSyz
-aY1u8aTczkVA2VWsZaCbVmJw0isaQkSlNH0BrfPsEbeef+b87AY=
-=DYwy
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlqUOJEACgkQoSvjmEKS
+nqH8Vg/+LAY9QzkN9akKqlF+GEuxNb5iItmQ787JsxvAXTIxD4FrVUO5R09uglKe
+zueh7lCobsTECP7a5i8Pa2/5I5UdlNr5w4jCyY0n8tMHaWm6oe80GK49kVCQFc03
+OTc2GL3VT6EUFssE1SGRjKTYy9iBedzDbsdWgm5C4UiZG8awU0Hb3uUelJu075no
+otYVuxc7y3CF6YGIE+gue+urUhnN0MpUF2eCViCegjQr9Lk23WEnaBtTyiXnBcTT
+1QycvOIGXRGlG35L61a2Rg+EBWc/EYZ2agvASpeLIjqAiQJlcD8oFTrjZUmdPLG8
+yILaUaTPpCM8+FwZLs2srf84udM+mDRAMGKr4jzObcnkYOg7HiBExjqPx5d/6vqA
+sPtlmAcG6AltU8VU/fb38QilvaRL1Mxd0m+fykG8ko5mmeVe82YdAGPZm1GQdUks
+dlxoM8cBKLDlnBItx57CS6YYb2wqp48CHIDFf8fXvL29Fuxnb2t0yzavLlqitBXK
+eGKhErP5jOD0gUh+PnRtRZZ0z2J3+P2dNVKiF60r32NkE9L2o7iMyizFIg2jErCi
+OIXx/S61Yok69pe+JW8ezGhmDPY+uO3UdQuvV55fOpK1UFzK2arj0qVerQXl3mFq
+NFVtOiAlPRIbv7YtKVBiJpGhuHrpx5MiXzDVKPCbypdidDIr2UE=
+=dK+N
 -----END PGP SIGNATURE-----
 
---nextPart18998465.UoeHJPyO1h--
+--nextPart4538987.eB448S5pYM--
 
