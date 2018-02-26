@@ -1,12 +1,9 @@
 Return-Path: <sven@narfation.org>
 From: Sven Eckelmann <sven@narfation.org>
-Date: Sat, 24 Feb 2018 12:03:36 +0100
-Message-Id: <20180224110337.11985-1-sven@narfation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Subject: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: Fix netlink dumping of
- BLA claims
+Date: Mon, 26 Feb 2018 13:51:32 +0100
+Message-Id: <20180226125132.30767-1-sven@narfation.org>
+Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Only use compat.h for
+ kernel builds
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -18,61 +15,56 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The function batadv_bla_claim_dump_bucket must be able to handle
-non-complete dumps of a single bucket. It tries to do that by saving the
-latest dumped index in *idx_skip to inform the caller about the current
-state.
+The compat.h will be included by default via the -include gcc parameter.
+This is done by appending the incude information to NOSTDINC_FLAGS in the
+Makefile. But Debian decided [1] that this NOSTDINC_FLAGS must also be used
+when not compiling kernel sources. This for example happens when the
+gcc-version.sh script is executed. This results in error messages like
 
-But the caller only assumes that buckets were not completely dumped when
-the return code is non-zero. This function must therefore also return a
-non-zero index when the dumping of an entry failed. Otherwise the caller
-will just skip all remaining buckets.
+  In file included from <command-line>:0:0:
+  /usr/src//batman-adv/build/../compat.h:25:52: fatal error: linux/version.h: No such file or directory
+   #include <linux/version.h> /* LINUX_VERSION_CODE */
+                                                      ^
+  compilation terminated.
+  In file included from <command-line>:0:0:
+  /usr/src//batman-adv/build/../compat.h:25:52: fatal error: linux/version.h: No such file or directory
+   #include <linux/version.h> /* LINUX_VERSION_CODE */
+                                                      ^
+  compilation terminated.
+  /usr/src/linux-headers-4.14.0-0.bpo.3-common/scripts/gcc-version.sh: line 32: printf: #: invalid number
+  /usr/src/linux-headers-4.14.0-0.bpo.3-common/scripts/gcc-version.sh: line 32: printf: #: invalid number
+  /bin/sh: 1: [: 0001: unexpected operator
 
-And the function must also reset *idx_skip back to zero when it finished a
-bucket. Otherwise it will skip the same number of entries in the next
-bucket as the previous one had.
+This can be avoided by disabling the compat.h whenever the preprocessor
+define __KERNEL__ is not set.
 
-Fixes: 3b7a63606020 ("batman-adv: add B.A.T.M.A.N. Dump BLA claims via netlink")
-Reported-by: Linus Lüssing <linus.luessing@c0d3.blue>
+[1] https://patchwork.kernel.org/patch/5238591/
+
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 ---
- net/batman-adv/bridge_loop_avoidance.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ compat.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/net/batman-adv/bridge_loop_avoidance.c b/net/batman-adv/bridge_loop_avoidance.c
-index cdd8e8e4..60ce119e 100644
---- a/net/batman-adv/bridge_loop_avoidance.c
-+++ b/net/batman-adv/bridge_loop_avoidance.c
-@@ -2161,22 +2161,25 @@ batadv_bla_claim_dump_bucket(struct sk_buff *msg, u32 portid, u32 seq,
- {
- 	struct batadv_bla_claim *claim;
- 	int idx = 0;
-+	int ret = 0;
+diff --git a/compat.h b/compat.h
+index c10ad589..759829f9 100644
+--- a/compat.h
++++ b/compat.h
+@@ -21,6 +21,8 @@
+ #ifndef _NET_BATMAN_ADV_COMPAT_H_
+ #define _NET_BATMAN_ADV_COMPAT_H_
  
- 	rcu_read_lock();
- 	hlist_for_each_entry_rcu(claim, head, hash_entry) {
- 		if (idx++ < *idx_skip)
- 			continue;
--		if (batadv_bla_claim_dump_entry(msg, portid, seq,
--						primary_if, claim)) {
++#ifdef __KERNEL__
 +
-+		ret = batadv_bla_claim_dump_entry(msg, portid, seq,
-+						  primary_if, claim);
-+		if (ret) {
- 			*idx_skip = idx - 1;
- 			goto unlock;
- 		}
- 	}
+ #include <linux/version.h>	/* LINUX_VERSION_CODE */
+ #include <linux/kconfig.h>
+ #include <generated/autoconf.h>
+@@ -159,4 +161,6 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
  
--	*idx_skip = idx;
-+	*idx_skip = 0;
- unlock:
- 	rcu_read_unlock();
--	return 0;
-+	return ret;
- }
+ #endif /* < KERNEL_VERSION(4, 15, 0) */
  
- /**
++#endif /* __KERNEL__ */
++
+ #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
 -- 
-2.16.1
+2.11.0
 
