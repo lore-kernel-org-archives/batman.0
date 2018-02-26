@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 26 Feb 2018 17:34:22 +0100
-Message-ID: <1556526.EynG4TUbRq@prime>
-In-Reply-To: <20180219130853.31325-1-sven.eckelmann@openmesh.com>
-References: <20180219130853.31325-1-sven.eckelmann@openmesh.com>
+Date: Mon, 26 Feb 2018 17:35:48 +0100
+Message-ID: <2208285.pQLjLXacrd@prime>
+In-Reply-To: <20180226125132.30767-1-sven@narfation.org>
+References: <20180226125132.30767-1-sven@narfation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3072704.2SsbaMkAQ4";
+Content-Type: multipart/signed; boundary="nextPart18998465.UoeHJPyO1h";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: Ignore invalid
- batadv_iv_gw during netlink send
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Only use compat.h for
+ kernel builds
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,49 +19,67 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
-Cc: Sven Eckelmann <sven.eckelmann@openmesh.com>
 
---nextPart3072704.2SsbaMkAQ4
+--nextPart18998465.UoeHJPyO1h
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Monday, February 19, 2018 2:08:52 PM CET Sven Eckelmann wrote:
-> The function batadv_iv_gw_dump stops the processing loop when
-> batadv_iv_gw_dump_entry returns a non-0 return code. This should only
-> happen when the buffer is full. Otherwise, an empty message may be
-> returned by batadv_gw_dump. This empty message will then stop the netlink
-> dumping of gateway entries. At worst, not a single entry is returned to
-> userspace even when plenty of possible gateways exist.
+On Monday, February 26, 2018 1:51:32 PM CET Sven Eckelmann wrote:
+> The compat.h will be included by default via the -include gcc parameter.
+> This is done by appending the incude information to NOSTDINC_FLAGS in the
+> Makefile. But Debian decided [1] that this NOSTDINC_FLAGS must also be used
+> when not compiling kernel sources. This for example happens when the
+> gcc-version.sh script is executed. This results in error messages like
 > 
-> Fixes: fa3228924152 ("batman-adv: add B.A.T.M.A.N. IV bat_gw_dump
-> implementations") Signed-off-by: Sven Eckelmann
-> <sven.eckelmann@openmesh.com>
+>   In file included from <command-line>:0:0:
+>   /usr/src//batman-adv/build/../compat.h:25:52: fatal error:
+> linux/version.h: No such file or directory #include <linux/version.h> /*
+> LINUX_VERSION_CODE */
+>                                                       ^
+>   compilation terminated.
+>   In file included from <command-line>:0:0:
+>   /usr/src//batman-adv/build/../compat.h:25:52: fatal error:
+> linux/version.h: No such file or directory #include <linux/version.h> /*
+> LINUX_VERSION_CODE */
+>                                                       ^
+>   compilation terminated.
+>   /usr/src/linux-headers-4.14.0-0.bpo.3-common/scripts/gcc-version.sh: line
+> 32: printf: #: invalid number
+> /usr/src/linux-headers-4.14.0-0.bpo.3-common/scripts/gcc-version.sh: line
+> 32: printf: #: invalid number /bin/sh: 1: [: 0001: unexpected operator
+> 
+> This can be avoided by disabling the compat.h whenever the preprocessor
+> define __KERNEL__ is not set.
+> 
+> [1] https://patchwork.kernel.org/patch/5238591/
+> 
+> Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-I've applied both patches in this series in c58f37c2 and 12f1d3a6.
+Applied in 934b3884.
 
 Thank you!
-      Simon
---nextPart3072704.2SsbaMkAQ4
+     Simon
+--nextPart18998465.UoeHJPyO1h
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlqUNw4ACgkQoSvjmEKS
-nqEuShAAyimM6sBsZgdT/xpdKtl4sGauuc0MZmlOW+vDzrk25beJuQLO485Fs/2j
-r7v77waP4Dxkq5lGRBbl3yY+tM03L2YWcLow4JoPrgCkehQ0AkZm3MfzFr0Q2/8x
-GhmJX9IiTBdCR3biboKXTIhFLno3pezoXSVw/7IEwWnuKzcKdIhC1MNY1kUbQC9f
-dodCGzMY0zQgyCoPk+Rz+AAJp4JeMibdqE1kGdhU5Gg2p+WtuhJ1bhszoeiNVHVV
-oW/2hPYtRNxbfoaBPjhbezmkkBtcNc9KrsJZmkxEo9M8YR5nU8THo60HCprhkx/R
-4HNkJV2xhydImjkF1IwdbbL9EHej888dBbUvp4IZFvKPG+5Ck3bdqcVzInkE46fh
-5zSem/4IPKWujSf4iNZI0irXW0wb7zuYjGnqxdwaTsrrzJbPvCgwEauPD/sO01Fu
-q+GFAeKCGSLV9vasq5edE224KceSsZedLkLn1YO4mpKXrLWwObWKfl/y8REWdgjm
-xJXSWXrAvVwd6qlEdvo4c8KILeC+12HubUUHDv8gf+BgllpypKJ5G2q9pmlN0VNK
-bk1P+yusLMd6TLZdOjT87juaKXhaCQRvj+f821IuJV2uk9LmhbZsTX1BIRJZiLqB
-qpbSbQgBv0ajDvV8DxVCO1bUi4SEEbhgb/Q34hfLYyqTKvKrKM0=
-=d0eO
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlqUN2QACgkQoSvjmEKS
+nqGnSxAA2FxjZnv/m73vOQtUqQsSbiK/0FYC7+c5lmG9grNaHGJs0JXrVDAC9BCR
+IoworSFtoSdCJv5VbQinVfHS1wTOR0YFD2YiGERcOgLscmEcaxQk+AQZ8t3I+CUY
+nNOrwHzYiwCcytk/4ykeI+/DZzcAhGos9zP6fHhyYhf4CiS7bopgzHnsmQJIZ318
+6bkD/aGg5JY2nuHgHwJGS3jMTQelYOVC3N+mv0PTuhI1mRABKQZYhQ4nl8Vy5UOy
+N5W9W/aKvB7V3D2F0Rub1Uj83xspRQOhrNbBj3DNeNZSlaMu2Dy2kfwF7TehIkcL
+UCt/rXi7UBXqVhbISs5SniC2LO8vAm8wr9xIy/iWGmJeJ9YEIZIeAo9+/J7CtoFR
+xyLvXmWKtIodtysq0jvxgj6FK04eXSdeC3NHz0AgDAoQYbHqDfMIm0DONPH9VDr+
+78vwnBt3gvW0WVU1ZuHkZbaxuWofNToOvp+lFgCTFkjqd93cUAxugyb9Bu4bGfKX
+mYJWadI6B1dGbPqTKYUHFyzkN7wK3Hf5daptkSdXon8LioPAGjEuKIS1NrdHzZnd
+be7ElYW9CzOpSbdSBNdKWi3LJKZuBMlZJvVL2iF0PhKhGjIN4txR5oioQEk0FSyz
+aY1u8aTczkVA2VWsZaCbVmJw0isaQkSlNH0BrfPsEbeef+b87AY=
+=DYwy
 -----END PGP SIGNATURE-----
 
---nextPart3072704.2SsbaMkAQ4--
+--nextPart18998465.UoeHJPyO1h--
 
