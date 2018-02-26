@@ -1,14 +1,14 @@
 Return-Path: <sw@simonwunderlich.de>
 From: Simon Wunderlich <sw@simonwunderlich.de>
-Date: Mon, 26 Feb 2018 17:34:20 +0100
-Message-ID: <1590623.xibrY8hj9p@prime>
-In-Reply-To: <20180224110337.11985-1-sven@narfation.org>
-References: <20180224110337.11985-1-sven@narfation.org>
+Date: Mon, 26 Feb 2018 17:34:22 +0100
+Message-ID: <1556526.EynG4TUbRq@prime>
+In-Reply-To: <20180219130853.31325-1-sven.eckelmann@openmesh.com>
+References: <20180219130853.31325-1-sven.eckelmann@openmesh.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart21712148.KCTdsoDomd";
+Content-Type: multipart/signed; boundary="nextPart3072704.2SsbaMkAQ4";
  micalg="pgp-sha512"; protocol="application/pgp-signature"
-Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: Fix netlink
- dumping of BLA claims
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: Ignore invalid
+ batadv_iv_gw during netlink send
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -19,51 +19,49 @@ List-Help: <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=help>
 List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
+Cc: Sven Eckelmann <sven.eckelmann@openmesh.com>
 
---nextPart21712148.KCTdsoDomd
+--nextPart3072704.2SsbaMkAQ4
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 
-On Saturday, February 24, 2018 12:03:36 PM CET Sven Eckelmann wrote:
-> The function batadv_bla_claim_dump_bucket must be able to handle
-> non-complete dumps of a single bucket. It tries to do that by saving the
-> latest dumped index in *idx_skip to inform the caller about the current
-> state.
+On Monday, February 19, 2018 2:08:52 PM CET Sven Eckelmann wrote:
+> The function batadv_iv_gw_dump stops the processing loop when
+> batadv_iv_gw_dump_entry returns a non-0 return code. This should only
+> happen when the buffer is full. Otherwise, an empty message may be
+> returned by batadv_gw_dump. This empty message will then stop the netlink
+> dumping of gateway entries. At worst, not a single entry is returned to
+> userspace even when plenty of possible gateways exist.
 > 
-> But the caller only assumes that buckets were not completely dumped when
-> the return code is non-zero. This function must therefore also return a
-> non-zero index when the dumping of an entry failed. Otherwise the caller
-> will just skip all remaining buckets.
-> 
-> And the function must also reset *idx_skip back to zero when it finished a
-> bucket. Otherwise it will skip the same number of entries in the next
-> bucket as the previous one had.
+> Fixes: fa3228924152 ("batman-adv: add B.A.T.M.A.N. IV bat_gw_dump
+> implementations") Signed-off-by: Sven Eckelmann
+> <sven.eckelmann@openmesh.com>
 
-I've applied both patches in this series in 49197c00 and 29e4759e.
+I've applied both patches in this series in c58f37c2 and 12f1d3a6.
 
 Thank you!
       Simon
---nextPart21712148.KCTdsoDomd
+--nextPart3072704.2SsbaMkAQ4
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part.
 Content-Transfer-Encoding: 7Bit
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlqUNwwACgkQoSvjmEKS
-nqF3MBAAoB/87uq6l1PAOGpa8/y/CVZo4CyuvTi4Q0UlbbZh/Jp5rRBanQRlUGZJ
-9EdPtizfYRFYfOWbDO0jzUPs7Y/180+6f15F2OJ7fZEOvjzMWISk98/Oc2q9km3a
-vdBfTDl24VkZB7zW/vGN8gbqlUkleIW+oBrxkOJzW485LzKAkuJqmhAhZhwvzr7q
-oocjEHeQULXoOWBziIc7G+j9YitHMxKavVe5n+f8SG8s37YbDh6NoIqrUKo6KXxA
-sXMSeEnwjd5p6AaExcIMZSAY3Ll4AzefM+zD+7Tj+m93IO+kb7budn6ajKdZIKCZ
-oFvqvDEAwicNWzK3BzhaEintHjWtgVIgCrc1wGEsyHVqO7rB/jj0M4P5Ds7kru2W
-ea6qcg1GNOUvrFhzZ2e8ui9RJpmQrMHrv4wbz/jd+ATvShyAFxNbpFWx/zrnPkfo
-q5iTPvzGUS9s9vBTYR4LDC7AMdT5i7G5lGajO8kc7X3v9p1CNtZ6gnEO54U0iWZs
-CdWTpb0Y7AAQsj9RJH09iqCOb3Ffou0QzyzhzcldKpAX7NXRhl6OCyiyreuhI279
-uUTzy7GST166KEevYvlMdCB2oOBEw4neB1yaFcPDv73vF7U+xqe6pFnPYSu6Jv2F
-805TdxjMc7u3REEbrclA5jlqgB2ZjIZjHbZnB/7R+S/X6Dr/2ZQ=
-=z3C6
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlqUNw4ACgkQoSvjmEKS
+nqEuShAAyimM6sBsZgdT/xpdKtl4sGauuc0MZmlOW+vDzrk25beJuQLO485Fs/2j
+r7v77waP4Dxkq5lGRBbl3yY+tM03L2YWcLow4JoPrgCkehQ0AkZm3MfzFr0Q2/8x
+GhmJX9IiTBdCR3biboKXTIhFLno3pezoXSVw/7IEwWnuKzcKdIhC1MNY1kUbQC9f
+dodCGzMY0zQgyCoPk+Rz+AAJp4JeMibdqE1kGdhU5Gg2p+WtuhJ1bhszoeiNVHVV
+oW/2hPYtRNxbfoaBPjhbezmkkBtcNc9KrsJZmkxEo9M8YR5nU8THo60HCprhkx/R
+4HNkJV2xhydImjkF1IwdbbL9EHej888dBbUvp4IZFvKPG+5Ck3bdqcVzInkE46fh
+5zSem/4IPKWujSf4iNZI0irXW0wb7zuYjGnqxdwaTsrrzJbPvCgwEauPD/sO01Fu
+q+GFAeKCGSLV9vasq5edE224KceSsZedLkLn1YO4mpKXrLWwObWKfl/y8REWdgjm
+xJXSWXrAvVwd6qlEdvo4c8KILeC+12HubUUHDv8gf+BgllpypKJ5G2q9pmlN0VNK
+bk1P+yusLMd6TLZdOjT87juaKXhaCQRvj+f821IuJV2uk9LmhbZsTX1BIRJZiLqB
+qpbSbQgBv0ajDvV8DxVCO1bUi4SEEbhgb/Q34hfLYyqTKvKrKM0=
+=d0eO
 -----END PGP SIGNATURE-----
 
---nextPart21712148.KCTdsoDomd--
+--nextPart3072704.2SsbaMkAQ4--
 
