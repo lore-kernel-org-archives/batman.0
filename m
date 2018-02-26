@@ -1,9 +1,14 @@
-Return-Path: <sven@narfation.org>
-From: Sven Eckelmann <sven@narfation.org>
-Date: Mon, 26 Feb 2018 13:51:32 +0100
-Message-Id: <20180226125132.30767-1-sven@narfation.org>
-Subject: [B.A.T.M.A.N.] [PATCH maint] batman-adv: Only use compat.h for
- kernel builds
+Return-Path: <sw@simonwunderlich.de>
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Mon, 26 Feb 2018 17:34:20 +0100
+Message-ID: <1590623.xibrY8hj9p@prime>
+In-Reply-To: <20180224110337.11985-1-sven@narfation.org>
+References: <20180224110337.11985-1-sven@narfation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart21712148.KCTdsoDomd";
+ micalg="pgp-sha512"; protocol="application/pgp-signature"
+Subject: Re: [B.A.T.M.A.N.] [PATCH maint 1/2] batman-adv: Fix netlink
+ dumping of BLA claims
 List-Id: The list for a Better Approach To Mobile Ad-hoc Networking
  <b.a.t.m.a.n.lists.open-mesh.org>
 List-Unsubscribe: <https://lists.open-mesh.org/mm/options/b.a.t.m.a.n>,
@@ -15,56 +20,50 @@ List-Subscribe: <https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n>,
  <mailto:b.a.t.m.a.n-request@lists.open-mesh.org?subject=subscribe>
 To: b.a.t.m.a.n@lists.open-mesh.org
 
-The compat.h will be included by default via the -include gcc parameter.
-This is done by appending the incude information to NOSTDINC_FLAGS in the
-Makefile. But Debian decided [1] that this NOSTDINC_FLAGS must also be used
-when not compiling kernel sources. This for example happens when the
-gcc-version.sh script is executed. This results in error messages like
+--nextPart21712148.KCTdsoDomd
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-  In file included from <command-line>:0:0:
-  /usr/src//batman-adv/build/../compat.h:25:52: fatal error: linux/version.h: No such file or directory
-   #include <linux/version.h> /* LINUX_VERSION_CODE */
-                                                      ^
-  compilation terminated.
-  In file included from <command-line>:0:0:
-  /usr/src//batman-adv/build/../compat.h:25:52: fatal error: linux/version.h: No such file or directory
-   #include <linux/version.h> /* LINUX_VERSION_CODE */
-                                                      ^
-  compilation terminated.
-  /usr/src/linux-headers-4.14.0-0.bpo.3-common/scripts/gcc-version.sh: line 32: printf: #: invalid number
-  /usr/src/linux-headers-4.14.0-0.bpo.3-common/scripts/gcc-version.sh: line 32: printf: #: invalid number
-  /bin/sh: 1: [: 0001: unexpected operator
+On Saturday, February 24, 2018 12:03:36 PM CET Sven Eckelmann wrote:
+> The function batadv_bla_claim_dump_bucket must be able to handle
+> non-complete dumps of a single bucket. It tries to do that by saving the
+> latest dumped index in *idx_skip to inform the caller about the current
+> state.
+> 
+> But the caller only assumes that buckets were not completely dumped when
+> the return code is non-zero. This function must therefore also return a
+> non-zero index when the dumping of an entry failed. Otherwise the caller
+> will just skip all remaining buckets.
+> 
+> And the function must also reset *idx_skip back to zero when it finished a
+> bucket. Otherwise it will skip the same number of entries in the next
+> bucket as the previous one had.
 
-This can be avoided by disabling the compat.h whenever the preprocessor
-define __KERNEL__ is not set.
+I've applied both patches in this series in 49197c00 and 29e4759e.
 
-[1] https://patchwork.kernel.org/patch/5238591/
+Thank you!
+      Simon
+--nextPart21712148.KCTdsoDomd
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-Signed-off-by: Sven Eckelmann <sven@narfation.org>
----
- compat.h | 4 ++++
- 1 file changed, 4 insertions(+)
+-----BEGIN PGP SIGNATURE-----
 
-diff --git a/compat.h b/compat.h
-index c10ad589..759829f9 100644
---- a/compat.h
-+++ b/compat.h
-@@ -21,6 +21,8 @@
- #ifndef _NET_BATMAN_ADV_COMPAT_H_
- #define _NET_BATMAN_ADV_COMPAT_H_
- 
-+#ifdef __KERNEL__
-+
- #include <linux/version.h>	/* LINUX_VERSION_CODE */
- #include <linux/kconfig.h>
- #include <generated/autoconf.h>
-@@ -159,4 +161,6 @@ static int __batadv_interface_kill_vid(struct net_device *dev, __be16 proto,\
- 
- #endif /* < KERNEL_VERSION(4, 15, 0) */
- 
-+#endif /* __KERNEL__ */
-+
- #endif /* _NET_BATMAN_ADV_COMPAT_H_ */
--- 
-2.11.0
+iQIzBAABCgAdFiEE1ilQI7G+y+fdhnrfoSvjmEKSnqEFAlqUNwwACgkQoSvjmEKS
+nqF3MBAAoB/87uq6l1PAOGpa8/y/CVZo4CyuvTi4Q0UlbbZh/Jp5rRBanQRlUGZJ
+9EdPtizfYRFYfOWbDO0jzUPs7Y/180+6f15F2OJ7fZEOvjzMWISk98/Oc2q9km3a
+vdBfTDl24VkZB7zW/vGN8gbqlUkleIW+oBrxkOJzW485LzKAkuJqmhAhZhwvzr7q
+oocjEHeQULXoOWBziIc7G+j9YitHMxKavVe5n+f8SG8s37YbDh6NoIqrUKo6KXxA
+sXMSeEnwjd5p6AaExcIMZSAY3Ll4AzefM+zD+7Tj+m93IO+kb7budn6ajKdZIKCZ
+oFvqvDEAwicNWzK3BzhaEintHjWtgVIgCrc1wGEsyHVqO7rB/jj0M4P5Ds7kru2W
+ea6qcg1GNOUvrFhzZ2e8ui9RJpmQrMHrv4wbz/jd+ATvShyAFxNbpFWx/zrnPkfo
+q5iTPvzGUS9s9vBTYR4LDC7AMdT5i7G5lGajO8kc7X3v9p1CNtZ6gnEO54U0iWZs
+CdWTpb0Y7AAQsj9RJH09iqCOb3Ffou0QzyzhzcldKpAX7NXRhl6OCyiyreuhI279
+uUTzy7GST166KEevYvlMdCB2oOBEw4neB1yaFcPDv73vF7U+xqe6pFnPYSu6Jv2F
+805TdxjMc7u3REEbrclA5jlqgB2ZjIZjHbZnB/7R+S/X6Dr/2ZQ=
+=z3C6
+-----END PGP SIGNATURE-----
+
+--nextPart21712148.KCTdsoDomd--
 
